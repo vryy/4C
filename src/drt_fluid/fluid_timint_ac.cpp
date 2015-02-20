@@ -12,6 +12,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "fluid_timint_ac.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"
 
 /*----------------------------------------------------------------------*
@@ -41,10 +42,16 @@ FLD::TimIntAC::~TimIntAC()
  *----------------------------------------------------------------------*/
 void FLD::TimIntAC::ReadRestart(int step)
 {
-  IO::DiscretizationReader reader(discret_,step);
+  const Teuchos::ParameterList& fs3idynac = DRT::Problem::Instance()->FS3IDynamicParams().sublist("AC");
+  const bool restartfromfsi = DRT::INPUT::IntegralValue<int>(fs3idynac,"RESTART_FROM_PART_FSI"); //fs3idynac.get<int>("RESTART_FROM_PART_FSI");
 
-//  reader.ReadVector(gridv_,"gridv");
-  reader.ReadVector(trueresidual_,"residual");
+  if (not restartfromfsi) //standard restart
+  {
+    IO::DiscretizationReader reader(discret_,step);
+
+    reader.ReadVector(trueresidual_,"residual");
+  }
+  //else //nothing to do in this case since we start from a partitioned Fsi problem where the trueresidual has not been written!
 
   return;
 }
@@ -58,7 +65,7 @@ void FLD::TimIntAC::Output()
 
   if ( uprestart_ > 0 and step_%uprestart_ == 0 ) //iff we write an restartable output
   {
-    output_->WriteVector("residual", trueresidual_); //we need this to be able to calculate wss
+    output_->WriteVector("residual", trueresidual_); //we need this to be able to calculate WSS when restarting
   }
   return;
 }

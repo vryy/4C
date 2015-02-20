@@ -5759,24 +5759,26 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fs3idynac = fs3idyn.sublist(
       "AC",false,
-      "Atherosclerosis Fluid-Structure Interaction Control section for partitioned FS3I"
+      "Atherosclerosis Fluid-Structure-Scalar-Scalar Interaction control section"
        );
 
   // FSI time steps per SSI time step
-  IntParameter("FSISTEPSPERSCATRASTEP",1,"FSI time steps per SSI time step",&fs3idynac);
+  IntParameter("FSI_STEPS_PER_SCATRA_STEP",1,"FSI time steps per SSI time step",&fs3idynac);
 
   // Periodicity of the FSI problem
   DoubleParameter("PERIODICITY",-1.0,"Periodicity of the FSI problem",&fs3idynac);
 
   // Periodicity of the FSI problem
-  IntParameter("PERIODSTOSTEADYSTATE",-1.0,"Periods after FSI problem is steady state",&fs3idynac);
+  IntParameter("PERIODS_TO_STEADY_STATE",-1.0,"Periods after FSI problem is steady state",&fs3idynac);
 
   // Periodicity of the FSI problem
-  IntParameter("PERIODSTOFSIUPDATE",-1.0,"Periods after FSI problem is steady state",&fs3idynac);
+  IntParameter("PERIODS_TO_FSI_UPDATE",-1.0,"Periods after FSI problem is steady state",&fs3idynac);
 
   // Periodicity of the FSI problem
-  DoubleParameter("FSIUPDATETOL",-1.0,"Tolerance to determine the time to recalculate a FSI period",&fs3idynac);
+  DoubleParameter("FSI_UPDATE_TOL",-1.0,"Tolerance to determine the time to recalculate a FSI period",&fs3idynac);
 
+  //Restart from FSI instead of FS3I
+  BoolParameter("RESTART_FROM_PART_FSI","no","restart from fsi instead of fs3i",&fs3idynac);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& lomacontrol = list->sublist(

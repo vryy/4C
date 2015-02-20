@@ -63,9 +63,9 @@ COUPALGO                        fs3i_SequStagg //fs3i_IterStagg //
 CONVTOL                         1e-03
 ITEMAX                          20
 ----------------------------------------------------------------FS3I DYNAMIC/AC
-FSISTEPSPERSCATRASTEP           2
+FSI_STEPS_PER_SCATRA_STEP       2
 PERIODICITY                     0.03
-PERIODSTOSTEADYSTATE            1
+PERIODS_TO_STEADY_STATE         1
 //PERIODSTOFSIUPDATE              2
 //FSIUPDATETOL                    0.1
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC

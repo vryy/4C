@@ -37,12 +37,12 @@ FS3I::ACFSI::ACFSI(const Epetra_Comm& comm)
   const Teuchos::ParameterList& fs3idynac = fs3idyn.sublist("AC");
 
   // get input parameters for AC FS3I problems
-  fsiperssisteps_ = fs3idynac.get<int>("FSISTEPSPERSCATRASTEP");
-  //  if (fsiperssisteps_ != 1) //at this point this case is already been dealed by Manipulating the FSI parameter list
+  fsiperssisteps_ = fs3idynac.get<int>("FSI_STEPS_PER_SCATRA_STEP");
+  //  if (fsiperssisteps_ != 1) //at this point this case is already been dealed with by manipulating the FSI parameter list
   fsiperiod_ = fs3idynac.get<double>("PERIODICITY");
-  periodstillfsiisperiodic_ = fs3idynac.get<int>("PERIODSTOSTEADYSTATE");
-  periodstoupdatefsi_ = fs3idynac.get<int>("PERIODSTOFSIUPDATE");
-  fsiupdatetol_ = fs3idynac.get<double>("FSIUPDATETOL");
+  periodstillfsiisperiodic_ = fs3idynac.get<int>("PERIODS_TO_STEADY_STATE");
+  periodstoupdatefsi_ = fs3idynac.get<int>("PERIODS_TO_FSI_UPDATE");
+  fsiupdatetol_ = fs3idynac.get<double>("FSI_UPDATE_TOL");
 
   //some input testing
   if (periodstillfsiisperiodic_ > 0) //if fsi is going to be periodic at some point
@@ -75,14 +75,31 @@ void FS3I::ACFSI::ReadRestart()
   // read restart information, set vectors and variables
   // (Note that dofmaps might have changed in a redistribution call!)
   const int restart = DRT::Problem::Instance()->Restart();
+
   if (restart)
   {
-    fsi_->ReadRestart(restart*fsiperssisteps_);
+    const Teuchos::ParameterList& fs3idynac = DRT::Problem::Instance()->FS3IDynamicParams().sublist("AC");
 
-    for (unsigned i=0; i<scatravec_.size(); ++i)
+    const bool restartfromfsi = DRT::INPUT::IntegralValue<int>(fs3idynac,"RESTART_FROM_PART_FSI"); //fs3idynac.get<int>("RESTART_FROM_PART_FSI");
+
+    if (not restartfromfsi) //standard restart
     {
-      Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> currscatra = scatravec_[i];
-      currscatra->ScaTraField()->ReadRestart(restart);
+      fsi_->ReadRestart(restart*fsiperssisteps_);
+
+      for (unsigned i=0; i<scatravec_.size(); ++i)
+      {
+        Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> currscatra = scatravec_[i];
+        currscatra->ScaTraField()->ReadRestart(restart);
+      }
+    }
+    else //we do not want to read the scatras values and the lagrange multiplyers, since we start from a partitioned FSI
+    {
+      fsi_->StructureField()->ReadRestart(restart*fsiperssisteps_);
+      fsi_->FluidField()->ReadRestart(restart*fsiperssisteps_);
+
+      fsi_->AleField()->ReadRestart(restart*fsiperssisteps_);
+
+      fsi_->SetTimeStep(fsi_->FluidField()->Time(),fsi_->FluidField()->Step());
     }
 
     time_ = fsi_->FluidField()->Time();
@@ -157,20 +174,12 @@ void FS3I::ACFSI::OuterLoop()
 void FS3I::ACFSI::OuterLoopSequStagg()
 {
   SetStructScatraSolution();
-//  std::cout<<__FILE__<<__LINE__<<"\t fluid disp: "<<std::setprecision(7)<<*fsi_->FluidField()->Dispnp()<<std::endl;
-//  std::cout<<__FILE__<<__LINE__<<"\t struct disp: "<<std::setprecision(7)<<*fsi_->StructureField()->Dispnp()<<std::endl;
-//  std::cout<<__FILE__<<__LINE__<<"\t fluid vel: "<<std::setprecision(7)<<*fsi_->FluidField()->Velnp()<<std::endl;
-//  std::cout<<__FILE__<<__LINE__<<"\t struct vel: "<<std::setprecision(7)<<*fsi_->StructureField()->Velnp()<<std::endl;
 
   DoFSIStep();
 
   SetFSISolution();
 
-//    std::cout<<__FILE__<<__LINE__<<"\t fluid phi: "<<std::setprecision(7)<<*scatravec_[0]->ScaTraField()->Phinp()<<std::endl;
-//    std::cout<<__FILE__<<__LINE__<<"\t struct phi: "<<std::setprecision(7)<<*scatravec_[1]->ScaTraField()->Phinp()<<std::endl;
   DoScatraStep();
-//  std::cout<<__FILE__<<__LINE__<<"\t fluid phi: "<<std::setprecision(7)<<*scatravec_[0]->ScaTraField()->Phinp()<<std::endl;
-//   std::cout<<__FILE__<<__LINE__<<"\t struct phi: "<<std::setprecision(7)<<*scatravec_[1]->ScaTraField()->Phinp()<<std::endl;
 
 }
 
@@ -343,7 +352,7 @@ void FS3I::ACFSI::DoFSIStepPeriodic()
   //update time and step in FSI and all subproblems
   SetTimeStepInFSI(time_,step_*fsiperssisteps_);
 
-  if (fsiperssisteps_ != 1) //in case of subcyling we need to fix the screen output
+  if (fsiperssisteps_ != 1) //in case of subcyling we want to fix the screen output
   {
     fsi_->SetTimeStep(time_+fsi_->Dt()*(fsiperssisteps_-1),(step_+1)*fsiperssisteps_-1);
   }

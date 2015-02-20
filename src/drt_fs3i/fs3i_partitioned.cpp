@@ -230,7 +230,7 @@ Teuchos::ParameterList& FS3I::PartFS3I::ManipulateDt(const Teuchos::ParameterLis
 {
   Teuchos::ParameterList& timeparams= *( new Teuchos::ParameterList(fs3idyn));
 
-  const int fsisubcycles = fs3idyn.sublist("AC").get<int>("FSISTEPSPERSCATRASTEP");
+  const int fsisubcycles = fs3idyn.sublist("AC").get<int>("FSI_STEPS_PER_SCATRA_STEP");
 
   if (fsisubcycles != 1) //if we have subcycling for ac_fsi
   {
