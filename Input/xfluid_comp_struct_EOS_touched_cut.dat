@@ -107,6 +107,7 @@ GMSH_DISCRET_OUT                no
 GMSH_CUT_OUT                    no
 VOLUME_GAUSS_POINTS_BY          DirectDivergence
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
+NODAL_DOFSET_STRATEGY           full
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche
