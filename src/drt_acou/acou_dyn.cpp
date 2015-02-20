@@ -18,7 +18,7 @@ Maintainer: Svenja Schoeder
 
 #include "acou_dyn.H"
 #include "acou_ele.H"
-#include "acou_visc_ele.H"
+#include "acou_sol_ele.H"
 #include "acou_impl.H"
 #include "acou_impl_euler.H"
 #include "acou_impl_trap.H"
@@ -76,19 +76,13 @@ void acoustics_drt()
   int degreep1 = 0;
   if(DRT::INPUT::IntegralValue<INPAR::ACOU::PhysicalType>(acouparams,"PHYSICAL_TYPE") == INPAR::ACOU::acou_lossless)
     degreep1 = dynamic_cast<DRT::ELEMENTS::Acou*>(acoudishdg->lRowElement(0))->Degree() + 1 ; //DRT::ELEMENTS::Acou::degree + 1;
+  else if(DRT::INPUT::IntegralValue<INPAR::ACOU::PhysicalType>(acouparams,"PHYSICAL_TYPE") == INPAR::ACOU::acou_solid)
+    degreep1 = dynamic_cast<DRT::ELEMENTS::AcouSol*>(acoudishdg->lRowElement(0))->Degree() + 1 ; //DRT::ELEMENTS::AcouSol::degree +1;
   else
-    degreep1 = dynamic_cast<DRT::ELEMENTS::AcouVisc*>(acoudishdg->lRowElement(0))->Degree() + 1 ; //DRT::ELEMENTS::AcouVisc::degree +1;
+    dserror("PHYSICAL TYPE unknown");
   int nscalardofs = 1;
   for(int i=0; i<dim; ++i)
     nscalardofs *= degreep1;
-
-//  int elementndof = 0;
-//  if(DRT::INPUT::IntegralValue<INPAR::ACOU::PhysicalType>(acouparams,"PHYSICAL_TYPE") == INPAR::ACOU::acou_lossless)
-//    elementndof =  acoudishdg->NumMyRowElements() > 0 ?
-//        dynamic_cast<DRT::ELEMENTS::Acou*>(acoudishdg->lRowElement(0))->NumDofPerElementAuxiliary() : 0;//elementndof =  dim * nscalardofs + nscalardofs; // velocity DoFs +  pressure DoFs
-//  else
-//    elementndof = acoudishdg->NumMyRowElements() > 0 ?
-//        dynamic_cast<DRT::ELEMENTS::AcouVisc*>(acoudishdg->lRowElement(0))->NumDofPerElementAuxiliary() : 0;//nscalardofs * ( dim * dim + dim + 2); // velocity gradient, velocity, pressure, density
 
   // set degrees of freedom in the discretization
   //acoudishdg->BuildDofSetAuxProxy(0,elementndof,0,false);

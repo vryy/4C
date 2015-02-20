@@ -7760,20 +7760,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("TIMESTEP",0.01,"Time increment dt",&acousticdyn);
   IntParameter("NUMSTEP",100,"Total number of time steps",&acousticdyn);
   DoubleParameter("MAXTIME",1.0,"Total simulation time",&acousticdyn);
-  setStringToIntegralParameter<int>("CALCERROR","No",
-                               "compute error compared to analytical solution",
-                               tuple<std::string>(
-                                 "No",
-                                 "1D",
-                                 "2D"
-                                 ),
-                               tuple<int>(
-                                   INPAR::ACOU::calcerror_no,
-                                   INPAR::ACOU::calcerror_1d,
-                                   INPAR::ACOU::calcerror_2d
-                                   ),
-                               &acousticdyn);
-
+  IntParameter("CALCERRORFUNCNO",-1,"Function for Error Calculation",&acousticdyn);
 
   IntParameter("UPRES",1,"Increment for writing solution",&acousticdyn);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&acousticdyn);
@@ -7786,10 +7773,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                     "fluid properties",
                     tuple<std::string>(
                     "lossless",
-                    "viscous"),
+                    "solid"),
                     tuple<int>(
                     INPAR::ACOU::acou_lossless,
-                    INPAR::ACOU::acou_viscous),
+                    INPAR::ACOU::acou_solid),
                     &acousticdyn);
 
 

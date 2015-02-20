@@ -98,14 +98,22 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
     if (mat->MaterialType() != INPAR::MAT::m_acousticmat)
       dserror("for physical type 'lossless' please supply MAT_Acoustic");
     ElementInit(ele, params);
-    localSolver_->ProjectField(ele, params, mat, discretization, lm, elevec1,elevec2, dyna_);
+    localSolver_->ProjectField(ele, params, elevec1,elevec2);
+    break;
+  }
+  case ACOU::project_dirich_field:
+  {
+    if (mat->MaterialType() != INPAR::MAT::m_acousticmat)
+      dserror("for physical type 'lossless' please supply MAT_Acoustic");
+    ElementInit(ele, params);
+    localSolver_->ProjectDirichField(ele, params, elevec1);
     break;
   }
   case ACOU::project_optical_field:
   {
     if (mat->MaterialType() != INPAR::MAT::m_acousticmat)
       dserror("for physical type 'lossless' please supply MAT_Acoustic");
-    localSolver_->ProjectOpticalField(ele, params, mat, discretization, lm,elevec1, elevec2, dyna_);
+    localSolver_->ProjectOpticalField(ele, params, elevec2);
     break;
   }
   case ACOU::ele_init:
@@ -130,7 +138,7 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
   {
     const bool padapty = params.get<bool>("padaptivity");
     ReadGlobalVectors(ele, discretization, lm, padapty);
-    NodeBasedValues(ele, discretization, lm, elevec1, padapty);
+    NodeBasedValues(ele, elevec1, padapty);
     break;
   }
   case ACOU::interpolate_psi_to_node:
@@ -138,14 +146,14 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
     const bool padapty = params.get<bool>("padaptivity");
     double dt = params.get<double>("dt");
     ReadGlobalVectors(ele, discretization, lm, padapty);
-    NodeBasedPsi(mat, ele, discretization, lm, elevec1, dt);
+    NodeBasedPsi(mat, ele, elevec1, dt);
     break;
   }
   case ACOU::calc_acou_error:
   {
     const bool padapty = params.get<bool>("padaptivity");
     ReadGlobalVectors(ele, discretization, lm, padapty);
-    ComputeAnalyticError(ele, params, mat, discretization, lm, elevec1);
+    ComputeError(ele, params, elevec1);
     break;
   }
   case ACOU::calc_abc:
@@ -160,7 +168,7 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
     }
 
     if (!params.isParameter("nodeindices"))
-      localSolver_->ComputeAbsorbingBC(ele, params, mat, face, elemat1, elevec1,sumindex);
+      localSolver_->ComputeAbsorbingBC(ele, params, mat, face, elemat1, sumindex);
     else
       dserror("why would you set an absorbing LINE in THREE dimensions?");
 
@@ -214,10 +222,10 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
     localSolver_->ComputeMatrices(mat, *ele, dt, dyna_, adjoint);
 
     if (!resonly)
-      localSolver_->CondenseLocalPart(elemat1, dyna_);
+      localSolver_->CondenseLocalPart(elemat1);
 
     VectorHandling(ele, params, dt);
-    localSolver_->ComputeResidual(params, mat, elevec1, interiorVelnp_, interiorPressnp_, traceVal_, dyna_);
+    localSolver_->ComputeResidual(params, elevec1, interiorVelnp_, interiorPressnp_, traceVal_);
 
     break;
   }
@@ -240,7 +248,7 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
     if (unsigned(elevec1.M()) != lm.size())
       elevec1.Size(lm.size());
 
-    UpdateInteriorVariablesAndComputeResidual(discretization, params, *ele, mat, elevec1, dt, errormaps, updateonly);
+    UpdateInteriorVariablesAndComputeResidual(params, *ele, mat, elevec1, dt, errormaps, updateonly);
     break;
   }
   default:
@@ -264,9 +272,9 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::InitializeShapes(
     shapes_ = Teuchos::rcp(new DRT::UTILS::ShapeValues<distype>(ele->Degree(), usescompletepoly_,2 * ele->Degree()));
 
   if (localSolver_ == Teuchos::null)
-    localSolver_ = Teuchos::rcp(new LocalSolver(*shapes_));
+    localSolver_ = Teuchos::rcp(new LocalSolver(*shapes_,dyna_));
   else if (localSolver_->ndofs_ != shapes_->ndofs_)
-    localSolver_ = Teuchos::rcp(new LocalSolver(*shapes_));
+    localSolver_ = Teuchos::rcp(new LocalSolver(*shapes_,dyna_));
 
   localSolver_->FaceSpecificConstruction(ele, usescompletepoly_);
 }
@@ -278,8 +286,10 @@ template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AcouEleCalc<distype>::VectorHandling(
     DRT::ELEMENTS::Acou * ele, Teuchos::ParameterList& params, double& dt)
 {
-  if (dyna_ == INPAR::ACOU::acou_dirk23 || dyna_ == INPAR::ACOU::acou_dirk33 ||
-      dyna_ == INPAR::ACOU::acou_dirk34 || dyna_ == INPAR::ACOU::acou_dirk54)
+  if ( dyna_ == INPAR::ACOU::acou_dirk23 ||
+       dyna_ == INPAR::ACOU::acou_dirk33 ||
+       dyna_ == INPAR::ACOU::acou_dirk34 ||
+       dyna_ == INPAR::ACOU::acou_dirk54 )
   {
     // when we are here, the time integrator is dirk, and we have to do the update things
     double dirk_a[6][6];
@@ -618,9 +628,8 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::ElementInitFromRestart(
  * ComputeError
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::AcouEleCalc<distype>::ComputeAnalyticError(DRT::ELEMENTS::Acou* ele,
-    Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
-    DRT::Discretization& discretization, const std::vector<int>& lm,
+void DRT::ELEMENTS::AcouEleCalc<distype>::ComputeError(DRT::ELEMENTS::Acou* ele,
+    Teuchos::ParameterList& params,
     Epetra_SerialDenseVector& elevec)
 {
   shapes_->Evaluate(*ele);
@@ -632,12 +641,11 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::ComputeAnalyticError(DRT::ELEMENTS::Ac
   LINALG::Matrix<nsd_, nen_> deriv;
   LINALG::Matrix<nsd_, nsd_> xjm;
 
-  const MAT::AcousticMat* actmat = static_cast<const MAT::AcousticMat*>(mat.get());
-  double c = actmat->SpeedofSound();
   double time = params.get<double>("time");
 
   // get function
-  const int *start_func = params.getPtr<int>("funct");
+  int funcno = params.get<int>("funct");
+  funcno--;
 
   double err_p = 0.0,norm_p = 0.0;
   double numerical = 0.0;
@@ -668,38 +676,13 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::ComputeAnalyticError(DRT::ELEMENTS::Ac
     for (unsigned int d=0; d<nsd_; ++d)
       xyz[d]=xyzmat(d,0);
 
-    if (params.get<INPAR::ACOU::CalcError>("error calculation") == INPAR::ACOU::calcerror_1d)
-    {
-      // careful: we assume that the x-axis is the orientation of your 1D problem
-      double xyzp[nsd_];
-      double xyzm[nsd_];
-      xyzp[0]=xyz[0]+c*time;
-      xyzm[0]=xyz[0]-c*time;
-      for (unsigned int d=1; d<nsd_; ++d)
-      {
-        xyzp[d] = xyz[d];
-        xyzm[d] = xyz[d];
-      }
-      // calculation of the analytical solution
-      exact = 0.5 * DRT::Problem::Instance()->Funct(*start_func-1).Evaluate(0,xyzp,0.0,NULL)
-            + 0.5 * DRT::Problem::Instance()->Funct(*start_func-1).Evaluate(0,xyzm,0.0,NULL);
-    }
-    else if(params.get<INPAR::ACOU::CalcError>("error calculation") == INPAR::ACOU::calcerror_2d)
-    {
-      dserror("insert your analytic solution here!");
-      double FACTOR = 1.6e5;
-      double ell = 0.02;
-      double xi = 4.0e5;
-      exact = 2.0 * xi * FACTOR * ell * (xyz[0] * std::cos(xi * time) - xyz[1] * std::sin(xi* time)) * std::exp(-FACTOR*(std::pow(xyz[1] - ell * std::cos(xi*time),2) + std::pow(xyz[0]-ell*std::sin(xi*time),2)));
-    }
-    else
-      dserror("no analytical solution available");
+    exact = DRT::Problem::Instance()->Funct(funcno).Evaluate(0,xyz,time,NULL);
 
     err_p += ( exact - numerical ) * ( exact - numerical ) * highjfac;
     norm_p += exact * exact * highjfac;
   }
-  elevec[1] += err_p;
-  elevec[3] += norm_p;
+  elevec[0] += err_p;
+  elevec[1] += norm_p;
 
   return;
 }
@@ -781,10 +764,10 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::ElementInit(DRT::ELEMENTS::Acou* ele,
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ProjectField(
-    DRT::ELEMENTS::Acou* ele, Teuchos::ParameterList& params,
-    Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
-    const std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2, INPAR::ACOU::DynamicType dyna)
+    DRT::ELEMENTS::Acou* ele,
+    Teuchos::ParameterList& params,
+    Epetra_SerialDenseVector& elevec1,
+    Epetra_SerialDenseVector& elevec2)
 {
   shapes_.Evaluate(*ele);
 
@@ -822,7 +805,6 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ProjectField(
           localMat(i,j) += shapes_.shfunct(i,q) * gradient[j] * fac;
       }
     }
-
     Mmat.Multiply('N', 'T', 1., massPart, massPartW, 0.);
     {
       Epetra_SerialDenseSolver inverseMass;
@@ -830,16 +812,15 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ProjectField(
       inverseMass.SetVectors(localMat, localMat);
       inverseMass.Solve();
     }
-
     for (unsigned int r = 0; r < shapes_.ndofs_; ++r)
     {
       ele->eleinteriorPressnp_(r) += localMat(r, nsd_); // pressure
       for (unsigned int i=0;i<nsd_;++i)
-        ele->eleinteriorVelnp_(i*shapes_.ndofs_+r) += localMat(r, i);
+        ele->eleinteriorVelnp_(i*shapes_.ndofs_+r) += localMat(r, i); // velocity
     }
 
   }
-  switch (dyna)
+  switch (dyna_)
   {
   case INPAR::ACOU::acou_bdf4:
     ele->eleinteriorVelnmmm_ = ele->eleinteriorVelnp_;
@@ -853,8 +834,66 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ProjectField(
   default:
     ele->eleinteriorVeln_ = ele->eleinteriorVelnp_;
     ele->eleinteriorPressn_ = ele->eleinteriorPressnp_;
-    break;// here you go
+    break; // here you go
   }
+
+  if(dyna_==INPAR::ACOU::acou_trapezoidal) // then we have to set the initial trace field, because the calculation of the residual in the first time step needs a correct trace field!
+  {
+    // trace variable
+    int nfdofs = 0;
+    for (unsigned int face=0; face<nfaces_; ++face)
+    {
+      DRT::UTILS::ShapeValuesFaceParams svfparams(ele->Faces()[face]->Degree(),shapes_.usescompletepoly_,2 * ele->Faces()[face]->Degree());
+      shapesface_ = DRT::UTILS::ShapeValuesFaceCache<distype>::Instance().Create(svfparams);
+      shapesface_->EvaluateFace(*ele, face);
+
+      Epetra_SerialDenseMatrix mass(shapesface_->nfdofs_,shapesface_->nfdofs_);
+      Epetra_SerialDenseMatrix trVec(shapesface_->nfdofs_,1);
+
+      mass.Scale(0.);
+      trVec.Scale(0.);
+
+      for (unsigned int q=0; q<shapesface_->nfdofs_; ++q)
+      {
+        const double fac = shapesface_->jfac(q);
+        double xyz[nsd_];
+        for (unsigned int d=0; d<nsd_; ++d)
+          xyz[d] = shapesface_->xyzreal(d,q);
+        double p;
+        double gradient[nsd_];
+        EvaluateAll(*start_func, xyz, p, gradient); // u and p at quadrature point
+
+        // now fill the components in the mass matrix and the right hand side
+        for (unsigned int i=0; i<shapesface_->nfdofs_; ++i)
+        {
+          // mass matrix
+          for (unsigned int j=0; j<shapesface_->nfdofs_; ++j)
+            mass(i,j) += shapesface_->shfunct(i,q) * shapesface_->shfunct(j,q) * fac;
+          trVec(i,0) += shapesface_->shfunct(i,q) * p * fac;
+        }
+      }
+      Epetra_SerialDenseSolver inverseMass;
+      inverseMass.SetMatrix(mass);
+      inverseMass.SetVectors(trVec,trVec);
+      inverseMass.Solve();
+      for (unsigned int i=0; i<shapesface_->nfdofs_; ++i)
+        elevec1(nfdofs+i) = trVec(i,0);
+      nfdofs += shapesface_->nfdofs_;
+    }
+  }
+  return 0;
+}
+
+/*----------------------------------------------------------------------*
+ * ProjectDirichField
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ProjectDirichField(
+    DRT::ELEMENTS::Acou* ele,
+    Teuchos::ParameterList& params,
+    Epetra_SerialDenseVector& elevec1)
+{
+  shapes_.Evaluate(*ele);
 
   // in case this paramter "faceconsider" is set, we are applying Dirichlet values
   // and have to evaluate the trace field for the given face!
@@ -865,10 +904,7 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ProjectField(
     //Teuchos::Array<int> *onoff = params.getPtr<Teuchos::Array<int> >("onoff");
     //double *time = params.getPtr<double>("time");
 
-    DRT::UTILS::ShapeValuesFaceParams svfparams(
-        ele->Faces()[*faceConsider]->Degree(),
-        shapes_.usescompletepoly_,
-        2 * ele->Faces()[*faceConsider]->Degree());
+    DRT::UTILS::ShapeValuesFaceParams svfparams(ele->Faces()[*faceConsider]->Degree(),shapes_.usescompletepoly_,2 * ele->Faces()[*faceConsider]->Degree());
     shapesface_ = DRT::UTILS::ShapeValuesFaceCache<distype>::Instance().Create(svfparams);
     shapesface_->EvaluateFace(*ele, *faceConsider);
 
@@ -913,10 +949,9 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ProjectField(
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ProjectOpticalField(
-    DRT::ELEMENTS::Acou* ele, Teuchos::ParameterList& params,
-    Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
-    const std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2, INPAR::ACOU::DynamicType dyna)
+    DRT::ELEMENTS::Acou* ele,
+    Teuchos::ParameterList& params,
+    Epetra_SerialDenseVector& elevec2)
 {
 
   shapes_.Evaluate(*ele);
@@ -974,10 +1009,6 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ProjectOpticalField(
   // so we do exactly the same as in ProjectInitalField BUT call an other
   // evaluate function which will interpolate from given lightxyz and values
 
-  const MAT::AcousticMat* actmat = static_cast<const MAT::AcousticMat*>(mat.get());
-  double rho = actmat->Density();
-  double pulse = params.get<double>("pulse");
-
   // internal variables
   if (elevec2.M() > 0)
   {
@@ -990,7 +1021,7 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ProjectOpticalField(
       for (unsigned int d = 0; d < nsd_; ++d)
         xyz[d] = shapes_.xyzreal(d, q); // coordinates of quadrature point in real coordinates
       double p = 0.0;
-      EvaluateLight(lightxyz, values, numlightnode, xyz, p, rho / pulse, absorptioncoeff); // p at quadrature point
+      EvaluateLight(lightxyz, values, numlightnode, xyz, p, absorptioncoeff); // p at quadrature point
 
       for (unsigned int i = 0; i < shapes_.ndofs_; ++i)
       {
@@ -1014,7 +1045,7 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ProjectOpticalField(
       ele->eleinteriorPressnp_(r) += localMat(r, 0); // pressure
     }
   }
-  switch (dyna)
+  switch (dyna_)
   {
   case INPAR::ACOU::acou_bdf4:
     ele->eleinteriorPressnmmm_ = ele->eleinteriorPressnp_; // no break here
@@ -1045,7 +1076,11 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::EvaluateAll(
   }
   else if(DRT::Problem::Instance()->Funct(start_func-1).NumberComponents()!=1)
     dserror("Supply ONE component for your start function or NUMDIM+1, not anything else! The first component is for the pressure, the others for the velocity.");
-
+  else
+  {
+    for(unsigned int d=0; d<nsd_; ++d)
+      v[d] = 0.0;
+  }
   return;
 }
 
@@ -1055,7 +1090,7 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::EvaluateAll(
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::EvaluateLight(
     double lightxyz[][nsd_], double values[], int numnode,
-    const double(&xyz)[nsd_], double &p, double rho,
+    const double(&xyz)[nsd_], double &p,
     double absorptioncoeff) const
 {
 
@@ -1065,87 +1100,86 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::EvaluateLight(
     if (numnode != 4)
       dserror("wrong number of nodes given");
 
-      //*******************************************************************
-      LINALG::Matrix<4, 4> coeff(true);
-      for(int i=0; i<4; ++i)
-      {
-        coeff(i,0)=1.0;
-        coeff(i,1)=lightxyz[i][0];
-        coeff(i,2)=lightxyz[i][1];
-        coeff(i,3)=lightxyz[i][0]*lightxyz[i][1];
-      }
-      LINALG::Matrix<4,4> coeff_N(true);
-      coeff_N(0,0)=1.0;
-      coeff_N(1,1)=1.0;
-      coeff_N(2,2)=1.0;
-      coeff_N(3,3)=1.0;
-      {
-        LINALG::FixedSizeSerialDenseSolver<4,4,4> inverseCoeff;
-        inverseCoeff.SetMatrix(coeff);
-        inverseCoeff.SetVectors(coeff_N,coeff_N);
-        int err = inverseCoeff.Solve();
-        if(err != 0) dserror("Inversion of matrix in light evaluation failed with errorcode %d",err);
-      }
-
-      p = ( coeff_N(0,0) + coeff_N(1,0) * xyz[0] + coeff_N(2,0) * xyz[1] + coeff_N(3,0) * xyz[0] * xyz[1] ) * values[0]
-      + ( coeff_N(0,1) + coeff_N(1,1) * xyz[0] + coeff_N(2,1) * xyz[1] + coeff_N(3,1) * xyz[0] * xyz[1] ) * values[1]
-      + ( coeff_N(0,2) + coeff_N(1,2) * xyz[0] + coeff_N(2,2) * xyz[1] + coeff_N(3,2) * xyz[0] * xyz[1] ) * values[2]
-      + ( coeff_N(0,3) + coeff_N(1,3) * xyz[0] + coeff_N(2,3) * xyz[1] + coeff_N(3,3) * xyz[0] * xyz[1] ) * values[3];
-      p *= -absorptioncoeff;
-
-    }
-    else if (distype == DRT::Element::hex8)
+    //*******************************************************************
+    LINALG::Matrix<4, 4> coeff(true);
+    for(int i=0; i<4; ++i)
     {
-      if(numnode != 8) dserror("wrong number of nodes given");
+      coeff(i,0)=1.0;
+      coeff(i,1)=lightxyz[i][0];
+      coeff(i,2)=lightxyz[i][1];
+      coeff(i,3)=lightxyz[i][0]*lightxyz[i][1];
+    }
+    LINALG::Matrix<4,4> coeff_N(true);
+    coeff_N(0,0)=1.0;
+    coeff_N(1,1)=1.0;
+    coeff_N(2,2)=1.0;
+    coeff_N(3,3)=1.0;
+    {
+      LINALG::FixedSizeSerialDenseSolver<4,4,4> inverseCoeff;
+      inverseCoeff.SetMatrix(coeff);
+      inverseCoeff.SetVectors(coeff_N,coeff_N);
+      int err = inverseCoeff.Solve();
+      if(err != 0) dserror("Inversion of matrix in light evaluation failed with errorcode %d",err);
+    }
 
-      //*******************************************************************
-      LINALG::Matrix<8,8> coeff(true);
-      for(int i=0; i<8; ++i)
-      {
-        coeff(i,0)=1.0;
-        coeff(i,1)=lightxyz[i][0];
-        coeff(i,2)=lightxyz[i][1];
-        coeff(i,3)=lightxyz[i][2];
-        coeff(i,4)=lightxyz[i][0]*lightxyz[i][1];
-        coeff(i,5)=lightxyz[i][0]*lightxyz[i][2];
-        coeff(i,6)=lightxyz[i][1]*lightxyz[i][2];
-        coeff(i,7)=lightxyz[i][0]*lightxyz[i][1]*lightxyz[i][2];
-      }
-      LINALG::Matrix<8,8> coeff_N(true);
-      for(int i=0; i<8; ++i)
+    p = ( coeff_N(0,0) + coeff_N(1,0) * xyz[0] + coeff_N(2,0) * xyz[1] + coeff_N(3,0) * xyz[0] * xyz[1] ) * values[0]
+                                                                                                                   + ( coeff_N(0,1) + coeff_N(1,1) * xyz[0] + coeff_N(2,1) * xyz[1] + coeff_N(3,1) * xyz[0] * xyz[1] ) * values[1]
+                                                                                                                                                                                                                                + ( coeff_N(0,2) + coeff_N(1,2) * xyz[0] + coeff_N(2,2) * xyz[1] + coeff_N(3,2) * xyz[0] * xyz[1] ) * values[2]
+                                                                                                                                                                                                                                                                                                                                             + ( coeff_N(0,3) + coeff_N(1,3) * xyz[0] + coeff_N(2,3) * xyz[1] + coeff_N(3,3) * xyz[0] * xyz[1] ) * values[3];
+    p *= -absorptioncoeff;
+
+  }
+  else if (distype == DRT::Element::hex8)
+  {
+    if(numnode != 8) dserror("wrong number of nodes given");
+
+    //*******************************************************************
+    LINALG::Matrix<8,8> coeff(true);
+    for(int i=0; i<8; ++i)
+    {
+      coeff(i,0)=1.0;
+      coeff(i,1)=lightxyz[i][0];
+      coeff(i,2)=lightxyz[i][1];
+      coeff(i,3)=lightxyz[i][2];
+      coeff(i,4)=lightxyz[i][0]*lightxyz[i][1];
+      coeff(i,5)=lightxyz[i][0]*lightxyz[i][2];
+      coeff(i,6)=lightxyz[i][1]*lightxyz[i][2];
+      coeff(i,7)=lightxyz[i][0]*lightxyz[i][1]*lightxyz[i][2];
+    }
+    LINALG::Matrix<8,8> coeff_N(true);
+    for(int i=0; i<8; ++i)
       coeff_N(i,i)=1.0;
 
-      {
-        LINALG::FixedSizeSerialDenseSolver<8,8,8> inverseCoeff;
-        inverseCoeff.SetMatrix(coeff);
-        inverseCoeff.SetVectors(coeff_N,coeff_N);
-        int err = inverseCoeff.Solve();
-        if(err != 0) dserror("Inversion of matrix in light evaluation failed with errorcode %d",err);
-      }
-
-      p = ( coeff_N(0,0) + coeff_N(1,0) * xyz[0] + coeff_N(2,0) * xyz[1] + coeff_N(3,0) * xyz[2] + coeff_N(4,0) * xyz[0] * xyz[1] + coeff_N(5,0) * xyz[0] * xyz[2] + coeff_N(6,0) * xyz[1] * xyz[2] + coeff_N(7,0) * xyz[0] * xyz[1] * xyz[2] ) * values[0]
-      + ( coeff_N(0,1) + coeff_N(1,1) * xyz[0] + coeff_N(2,1) * xyz[1] + coeff_N(3,1) * xyz[2] + coeff_N(4,1) * xyz[0] * xyz[1] + coeff_N(5,1) * xyz[0] * xyz[2] + coeff_N(6,1) * xyz[1] * xyz[2] + coeff_N(7,1) * xyz[0] * xyz[1] * xyz[2] ) * values[1]
-      + ( coeff_N(0,2) + coeff_N(1,2) * xyz[0] + coeff_N(2,2) * xyz[1] + coeff_N(3,2) * xyz[2] + coeff_N(4,2) * xyz[0] * xyz[1] + coeff_N(5,2) * xyz[0] * xyz[2] + coeff_N(6,2) * xyz[1] * xyz[2] + coeff_N(7,2) * xyz[0] * xyz[1] * xyz[2] ) * values[2]
-      + ( coeff_N(0,3) + coeff_N(1,3) * xyz[0] + coeff_N(2,3) * xyz[1] + coeff_N(3,3) * xyz[2] + coeff_N(4,3) * xyz[0] * xyz[1] + coeff_N(5,3) * xyz[0] * xyz[2] + coeff_N(6,3) * xyz[1] * xyz[2] + coeff_N(7,3) * xyz[0] * xyz[1] * xyz[2] ) * values[3]
-      + ( coeff_N(0,4) + coeff_N(1,4) * xyz[0] + coeff_N(2,4) * xyz[1] + coeff_N(3,4) * xyz[2] + coeff_N(4,4) * xyz[0] * xyz[1] + coeff_N(5,4) * xyz[0] * xyz[2] + coeff_N(6,4) * xyz[1] * xyz[2] + coeff_N(7,4) * xyz[0] * xyz[1] * xyz[2] ) * values[4]
-      + ( coeff_N(0,5) + coeff_N(1,5) * xyz[0] + coeff_N(2,5) * xyz[1] + coeff_N(3,5) * xyz[2] + coeff_N(4,5) * xyz[0] * xyz[1] + coeff_N(5,5) * xyz[0] * xyz[2] + coeff_N(6,5) * xyz[1] * xyz[2] + coeff_N(7,5) * xyz[0] * xyz[1] * xyz[2] ) * values[5]
-      + ( coeff_N(0,6) + coeff_N(1,6) * xyz[0] + coeff_N(2,6) * xyz[1] + coeff_N(3,6) * xyz[2] + coeff_N(4,6) * xyz[0] * xyz[1] + coeff_N(5,6) * xyz[0] * xyz[2] + coeff_N(6,6) * xyz[1] * xyz[2] + coeff_N(7,6) * xyz[0] * xyz[1] * xyz[2] ) * values[6]
-      + ( coeff_N(0,7) + coeff_N(1,7) * xyz[0] + coeff_N(2,7) * xyz[1] + coeff_N(3,7) * xyz[2] + coeff_N(4,7) * xyz[0] * xyz[1] + coeff_N(5,7) * xyz[0] * xyz[2] + coeff_N(6,7) * xyz[1] * xyz[2] + coeff_N(7,7) * xyz[0] * xyz[1] * xyz[2] ) * values[7];
-      p *= -absorptioncoeff;
+    {
+      LINALG::FixedSizeSerialDenseSolver<8,8,8> inverseCoeff;
+      inverseCoeff.SetMatrix(coeff);
+      inverseCoeff.SetVectors(coeff_N,coeff_N);
+      int err = inverseCoeff.Solve();
+      if(err != 0) dserror("Inversion of matrix in light evaluation failed with errorcode %d",err);
     }
-    else
+
+    p = ( coeff_N(0,0) + coeff_N(1,0) * xyz[0] + coeff_N(2,0) * xyz[1] + coeff_N(3,0) * xyz[2] + coeff_N(4,0) * xyz[0] * xyz[1] + coeff_N(5,0) * xyz[0] * xyz[2] + coeff_N(6,0) * xyz[1] * xyz[2] + coeff_N(7,0) * xyz[0] * xyz[1] * xyz[2] ) * values[0]
+                                                                                                                                                                                                                                                       + ( coeff_N(0,1) + coeff_N(1,1) * xyz[0] + coeff_N(2,1) * xyz[1] + coeff_N(3,1) * xyz[2] + coeff_N(4,1) * xyz[0] * xyz[1] + coeff_N(5,1) * xyz[0] * xyz[2] + coeff_N(6,1) * xyz[1] * xyz[2] + coeff_N(7,1) * xyz[0] * xyz[1] * xyz[2] ) * values[1]
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        + ( coeff_N(0,2) + coeff_N(1,2) * xyz[0] + coeff_N(2,2) * xyz[1] + coeff_N(3,2) * xyz[2] + coeff_N(4,2) * xyz[0] * xyz[1] + coeff_N(5,2) * xyz[0] * xyz[2] + coeff_N(6,2) * xyz[1] * xyz[2] + coeff_N(7,2) * xyz[0] * xyz[1] * xyz[2] ) * values[2]
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         + ( coeff_N(0,3) + coeff_N(1,3) * xyz[0] + coeff_N(2,3) * xyz[1] + coeff_N(3,3) * xyz[2] + coeff_N(4,3) * xyz[0] * xyz[1] + coeff_N(5,3) * xyz[0] * xyz[2] + coeff_N(6,3) * xyz[1] * xyz[2] + coeff_N(7,3) * xyz[0] * xyz[1] * xyz[2] ) * values[3]
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          + ( coeff_N(0,4) + coeff_N(1,4) * xyz[0] + coeff_N(2,4) * xyz[1] + coeff_N(3,4) * xyz[2] + coeff_N(4,4) * xyz[0] * xyz[1] + coeff_N(5,4) * xyz[0] * xyz[2] + coeff_N(6,4) * xyz[1] * xyz[2] + coeff_N(7,4) * xyz[0] * xyz[1] * xyz[2] ) * values[4]
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           + ( coeff_N(0,5) + coeff_N(1,5) * xyz[0] + coeff_N(2,5) * xyz[1] + coeff_N(3,5) * xyz[2] + coeff_N(4,5) * xyz[0] * xyz[1] + coeff_N(5,5) * xyz[0] * xyz[2] + coeff_N(6,5) * xyz[1] * xyz[2] + coeff_N(7,5) * xyz[0] * xyz[1] * xyz[2] ) * values[5]
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            + ( coeff_N(0,6) + coeff_N(1,6) * xyz[0] + coeff_N(2,6) * xyz[1] + coeff_N(3,6) * xyz[2] + coeff_N(4,6) * xyz[0] * xyz[1] + coeff_N(5,6) * xyz[0] * xyz[2] + coeff_N(6,6) * xyz[1] * xyz[2] + coeff_N(7,6) * xyz[0] * xyz[1] * xyz[2] ) * values[6]
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             + ( coeff_N(0,7) + coeff_N(1,7) * xyz[0] + coeff_N(2,7) * xyz[1] + coeff_N(3,7) * xyz[2] + coeff_N(4,7) * xyz[0] * xyz[1] + coeff_N(5,7) * xyz[0] * xyz[2] + coeff_N(6,7) * xyz[1] * xyz[2] + coeff_N(7,7) * xyz[0] * xyz[1] * xyz[2] ) * values[7];
+    p *= -absorptioncoeff;
+  }
+  else
     dserror("not yet implemented");
 
-    return;
-  }
+  return;
+}
 
-      /*----------------------------------------------------------------------*
-       * NodeBasedValues
-       *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ * NodeBasedValues
+ *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AcouEleCalc<distype>::NodeBasedValues(
-    DRT::ELEMENTS::Acou* ele, DRT::Discretization& discretization,
-    const std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
+    DRT::ELEMENTS::Acou* ele, Epetra_SerialDenseVector& elevec1,
     bool padaptivity)
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::AcouEleCalc::NodeBasedValues");
@@ -1242,7 +1276,6 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::NodeBasedValues(
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AcouEleCalc<distype>::NodeBasedPsi(
     const Teuchos::RCP<MAT::Material> &mat, DRT::ELEMENTS::Acou* ele,
-    DRT::Discretization& discretization, const std::vector<int>& lm,
     Epetra_SerialDenseVector& elevec1, double dt)
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::AcouEleCalc::NodeBasedValues");
@@ -1313,8 +1346,8 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::Done()
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::LocalSolver(
-    DRT::UTILS::ShapeValues<distype> &shapeValues) :
-    ndofs_(shapeValues.ndofs_), shapes_(shapeValues)
+    DRT::UTILS::ShapeValues<distype> &shapeValues, INPAR::ACOU::DynamicType &dyna) :
+    ndofs_(shapeValues.ndofs_), shapes_(shapeValues), dyna_(dyna)
 {
   // shape all matrices
   reshapeMatrixIfNecessary(Amat, nsd_ * ndofs_, nsd_ * ndofs_);
@@ -1355,7 +1388,7 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::FaceSpecificConstruction(
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AcouEleCalc<distype>::UpdateInteriorVariablesAndComputeResidual(
-    DRT::Discretization & discretization, Teuchos::ParameterList& params,
+    Teuchos::ParameterList& params,
     DRT::ELEMENTS::Acou & ele, const Teuchos::RCP<MAT::Material> &mat,
     Epetra_SerialDenseVector & elevec, double dt, bool errormaps,
     bool updateonly)
@@ -1364,8 +1397,7 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::UpdateInteriorVariablesAndComputeResid
 
   int onfdofs = elevec.M();
   double theta = 1.0;
-  if (dyna_ == INPAR::ACOU::acou_trapezoidal)
-    theta = 0.66;
+  if (dyna_ == INPAR::ACOU::acou_trapezoidal) theta = 0.66;
   int stage = -1;
   int dirk_q = -1;
 
@@ -1407,8 +1439,10 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::UpdateInteriorVariablesAndComputeResid
       interiorPressn_[i] = interiorPressnp_[i] * 48.0 / 25.0 - interiorPressnm_[i] * 36.0 / 25.0 + interiorPressnmm_[i] * 16.0 / 25.0 - interiorPressnmmm_[i] * 3.0 / 25.0;
     dt *= 12.0 / 25.0;
   }
-  else if (dyna_ == INPAR::ACOU::acou_dirk23 || dyna_ == INPAR::ACOU::acou_dirk33 ||
-           dyna_ == INPAR::ACOU::acou_dirk34 || dyna_ == INPAR::ACOU::acou_dirk54)
+  else if (dyna_ == INPAR::ACOU::acou_dirk23 ||
+           dyna_ == INPAR::ACOU::acou_dirk33 ||
+           dyna_ == INPAR::ACOU::acou_dirk34 ||
+           dyna_ == INPAR::ACOU::acou_dirk54)
   {
     // do the dirk
     stage = params.get<int>("stage");
@@ -1450,7 +1484,7 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::UpdateInteriorVariablesAndComputeResid
 
   Epetra_SerialDenseVector tempVec2(shapes_->ndofs_);
   Epetra_SerialDenseVector tempVec3(shapes_->ndofs_);
-  localSolver_->ComputeSource(params,mat,tempVec2,tempVec3);
+  localSolver_->ComputeSource(params,tempVec2,tempVec3);
 
   tempVec2.Multiply('N', 'N', 1.0, localSolver_->Mmat, interiorPressn_, 1.0);
   if (theta != 1.0)
@@ -1459,7 +1493,7 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::UpdateInteriorVariablesAndComputeResid
     tempVec2.Multiply('N', 'N', -(1.0 - theta), localSolver_->Dmat,interiorPressn_, 1.0);
     tempVec2.Multiply('N', 'N', -(1.0 - theta), localSolver_->Emat,traceVal_SDV_m, 1.0);
   }
-  tempVec2.Multiply('N', 'N', -(theta), localSolver_->Emat, traceVal_SDV, 1.0);
+  tempVec2.Multiply('N', 'N', -theta, localSolver_->Emat, traceVal_SDV, 1.0);
 
   // now, we have to do the Schur complement thing, just as in "CondenseLocalPart" but without C and E
   Epetra_SerialDenseMatrix tempMat1(shapes_->ndofs_, nsd_ * shapes_->ndofs_);
@@ -1487,8 +1521,10 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::UpdateInteriorVariablesAndComputeResid
   // tell this change in the interior variables the discretization
   bool padaptivity = params.get<bool>("padaptivity");
 
-  if (dyna_ == INPAR::ACOU::acou_dirk23 || dyna_ == INPAR::ACOU::acou_dirk33 ||
-      dyna_ == INPAR::ACOU::acou_dirk34 || dyna_ == INPAR::ACOU::acou_dirk54)
+  if (dyna_ == INPAR::ACOU::acou_dirk23 ||
+      dyna_ == INPAR::ACOU::acou_dirk33 ||
+      dyna_ == INPAR::ACOU::acou_dirk34 ||
+      dyna_ == INPAR::ACOU::acou_dirk54)
   {
     double dirk_a[6][6];
     double dirk_b[6];
@@ -1594,8 +1630,11 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::UpdateInteriorVariablesAndComputeResid
   // *****************************************************
   // compute residual second (reuse intermediate matrices)
   // *****************************************************
-  if (dyna_ == INPAR::ACOU::acou_dirk23 || dyna_ == INPAR::ACOU::acou_dirk33 ||
-      dyna_ == INPAR::ACOU::acou_dirk34 || dyna_ == INPAR::ACOU::acou_dirk54)
+
+  if (dyna_ == INPAR::ACOU::acou_dirk23 ||
+      dyna_ == INPAR::ACOU::acou_dirk33 ||
+      dyna_ == INPAR::ACOU::acou_dirk34 ||
+      dyna_ == INPAR::ACOU::acou_dirk54)
   {
     double dirk_a[6][6];
     double dirk_b[6];
@@ -2046,12 +2085,12 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::ComputePMonNodeVals(
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::
 ComputeSource(Teuchos::ParameterList&       params,
-              const Teuchos::RCP<MAT::Material>&  mat,
               Epetra_SerialDenseVector          & interiorSourcen,
               Epetra_SerialDenseVector          & interiorSourcenp)
 {
   int funcno = params.get<int>("sourcefuncno");
   if(funcno<0) return; // there is no such thing as a volume force
+  if(DRT::Problem::Instance()->Funct(funcno).NumberComponents()>1) dserror("for standard acou, the source term has to be scalar, i.e. only 1 component");
 
   // the vector to be filled
   Epetra_SerialDenseVector source(shapes_.ndofs_);
@@ -2205,7 +2244,7 @@ template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ComputeAbsorbingBC(
     DRT::ELEMENTS::Acou* ele, Teuchos::ParameterList& params,
     Teuchos::RCP<MAT::Material> & mat, int face,
-    Epetra_SerialDenseMatrix &elemat, Epetra_SerialDenseVector &elevec,
+    Epetra_SerialDenseMatrix &elemat,
     int indexstart)
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::AcouEleCalc::ComputeAbsorbingBC");
@@ -2383,8 +2422,7 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::EvaluateFaceAdjoint(
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ComputeInteriorMatrices(
-    const Teuchos::RCP<MAT::Material> &mat, double dt,
-    INPAR::ACOU::DynamicType dyna)
+    const Teuchos::RCP<MAT::Material> &mat, double dt)
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::AcouEleCalc::ComputeInteriorMatrices");
 
@@ -2447,10 +2485,8 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ComputeInteriorMatrices(
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ComputeResidual(
     Teuchos::ParameterList&       params,
-    Teuchos::RCP<MAT::Material>&  mat,
     Epetra_SerialDenseVector & elevec, Epetra_SerialDenseVector & interiorVeln,
-    Epetra_SerialDenseVector & interiorPressn, std::vector<double> traceVal,
-    INPAR::ACOU::DynamicType dyna)
+    Epetra_SerialDenseVector & interiorPressn, std::vector<double> traceVal)
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::AcouEleCalc::ComputeResidual");
 
@@ -2466,30 +2502,28 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ComputeResidual(
 
    for trapezoidal rule
    -1
-   +---------+    +----------------------------------------------------------+
-   |         |    |    n-1                     n-1          n-1              |
-   n              | A    B  |    | A V     - (1 - theta) ( B P   + C Lambda    )            |                    n-1     n-1           n-1
+                   +---------+    +----------------------------------------------------------+
+                   |         |    |    n-1                     n-1          n-1              |
+    n              | A    B  |    | A V     - (1 - theta) ( B P   + C Lambda    )            |                    n-1     n-1           n-1
    R  = - [ I  J ] |         |    |    n-1                     n-1       n-1           n-1   | - (1 - theta) ( I V   + J P    + G Lambda    )
-   | H   D+M |    | M P     - (1 - theta) ( H V   + DmM P    + E Lambda    ) |
-   +---------+    +----------------------------------------------------------+
+                   | H   D+M |    | M P     - (1 - theta) ( H V   + DmM P    + E Lambda    ) |
+                   +---------+    +----------------------------------------------------------+
    */
 
   int onfdofs = elevec.M();
   Epetra_SerialDenseVector traceVal_SDV(onfdofs);
-  if (dyna == INPAR::ACOU::acou_trapezoidal)
+  if (dyna_ == INPAR::ACOU::acou_trapezoidal)
     for (int i = 0; i < onfdofs; ++i)
       traceVal_SDV(i) = traceVal[i];
 
   double theta = 1.0;
-  if (dyna == INPAR::ACOU::acou_trapezoidal)
-    theta = 0.66;
+  if (dyna_ == INPAR::ACOU::acou_trapezoidal) theta = 0.66;
 
   Epetra_SerialDenseVector tempVec1(ndofs_);
   Epetra_SerialDenseVector tempVec2(ndofs_);
-  ComputeSource(params,mat,tempVec2,tempVec1);
+  ComputeSource(params,tempVec2,tempVec1);
 
   tempVec1.Multiply('N', 'N', 1.0, Mmat, interiorPressn, 1.0);
-
   if (theta != 1.0)
   {
     tempVec1.Multiply('N', 'N', -(1.0 - theta), Hmat, interiorVeln, 1.0);
@@ -2631,32 +2665,31 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ComputeFaceMatrices(
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::CondenseLocalPart(
-    Epetra_SerialDenseMatrix &eleMat, INPAR::ACOU::DynamicType dyna)
+    Epetra_SerialDenseMatrix &eleMat)
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::AcouEleCalc::CondenseLocalPart");
 
   /*
    THE MATRIX
-   -1
-   +--------+    +-----+
-   |        |    |     |
-   | A   B  |    |  C  |
-   K = - [ I  J ] |        |    |     | + G  = - I x - J y + G
-   | H  D+M |    |  E  |
-   +--------+    +-----+
+                             -1
+                   +--------+    +-----+
+                   |        |    |     |
+                   | A   B  |    |  C  |
+    K = - [ I  J ] |        |    |     | + G  = - I x - J y + G
+                   | H  D+M |    |  E  |
+                   +--------+    +-----+
 
-   -1     -1           -1
-   y = [ D - H  A   B  ]   [ E - H  A   C  ]
+                      -1     -1           -1
+       y = [ D - H  A   B  ]   [ E - H  A   C  ]
 
-   -1
-   x = A   [  C - B  y ]
+            -1
+       x = A   [  C - B  y ]
 
    */
 
   int onfdofs = eleMat.M();
   double theta = 1.0;
-  if (dyna == INPAR::ACOU::acou_trapezoidal)
-    theta = 0.66;
+  if (dyna_ == INPAR::ACOU::acou_trapezoidal) theta = 0.66;
 
   Epetra_SerialDenseMatrix tempMat1(ndofs_, ndofs_ * nsd_);
   tempMat1.Multiply('N', 'N', theta, Hmat, invAmat, 0.0); // =  H A^{-1}
@@ -2735,7 +2768,7 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ComputeMatrices(
   }
   double tau = 1.0 / (c)  ;/// dt;
 
-  ComputeInteriorMatrices(mat, dt, dyna);
+  ComputeInteriorMatrices(mat, dt);
 
   int sumindex = 0;
   for (unsigned int face = 0; face < nfaces_; ++face)

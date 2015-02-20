@@ -16,7 +16,7 @@ Maintainer: Svenja Schoeder
 #include "acou_ele_factory.H"
 #include "acou_ele_interface.H"
 #include "acou_ele_calc.H"
-#include "acou_visc_ele_calc.H"
+#include "acou_sol_ele_calc.H"
 
 /*--------------------------------------------------------------------------*
  |                                                  (public) schoeder 07/13 |
@@ -103,9 +103,9 @@ template<DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::AcouEleInterface* DRT::ELEMENTS::AcouFactory::DefineProblemType(std::string problem)
 {
   if (problem == "std" )
-  return DRT::ELEMENTS::AcouEleCalc<distype>::Instance();
-  else if (problem == "visc")
-    return DRT::ELEMENTS::AcouViscEleCalc<distype>::Instance();
+    return DRT::ELEMENTS::AcouEleCalc<distype>::Instance();
+  else if (problem == "sol")
+    return DRT::ELEMENTS::AcouSolEleCalc<distype>::Instance();
   else
     dserror("Defined problem type does not exist!!");
 

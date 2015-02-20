@@ -12,7 +12,6 @@ Maintainer: Svenja Schoeder
 *----------------------------------------------------------------------*/
 
 #include "acou_ele.H"
-#include "acou_visc_ele.H"
 #include "acou_ele_boundary_calc.H"
 #include "acou_ele_intfaces_calc.H"
 #include "../drt_lib/drt_discret.H"

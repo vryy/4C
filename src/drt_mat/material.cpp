@@ -85,7 +85,7 @@ Maintainer: Lena Wiechert
 #include "air_0d_O2_saturation.H"
 #include "particle_mat.H"
 #include "acoustic.H"
-#include "acoustic_visc.H"
+#include "acoustic_sol.H"
 #include "activefiber.H"
 
 /*----------------------------------------------------------------------*
@@ -614,11 +614,11 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     MAT::PAR::AcousticMat* params = static_cast<MAT::PAR::AcousticMat*>(curmat->Parameter());
     return params->CreateMaterial();
   }
-  case INPAR::MAT::m_acousticviscmat:
+  case INPAR::MAT::m_acousticsolmat:
   {
     if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::AcousticViscMat(curmat));
-    MAT::PAR::AcousticViscMat* params = static_cast<MAT::PAR::AcousticViscMat*>(curmat->Parameter());
+      curmat->SetParameter(new MAT::PAR::AcousticSolMat(curmat));
+    MAT::PAR::AcousticSolMat* params = static_cast<MAT::PAR::AcousticSolMat*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_activefiber:

@@ -39,15 +39,7 @@ namespace INPAR
     enum PhysicalType
     {
       acou_lossless,
-      acou_viscous
-    };
-
-    /// Calculation of the error
-    enum CalcError
-    {
-      calcerror_no,
-      calcerror_1d,
-      calcerror_2d
+      acou_solid
     };
 
     /// Type of Inverse Analysis

@@ -36,7 +36,8 @@ enum Action {
   interpolate_psi_to_node,            // 11
   ele_init,                           // 12
   fill_restart_vecs,                  // 13
-  ele_init_from_restart               // 14
+  ele_init_from_restart,              // 14
+  project_dirich_field                // 15
 }; // enum Action
 
 } // namespace ACOU

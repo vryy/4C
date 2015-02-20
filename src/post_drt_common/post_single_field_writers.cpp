@@ -438,13 +438,11 @@ void ParticleFilter::WriteAllResults(PostField* field)
 void AcouFilter::WriteAllResults(PostField* field)
 {
   writer_->WriteResult("velnp", "velocity", nodebased, 3);
-  writer_->WriteResult("velocity_gradient", "velocity_gradient", nodebased, 6);
+  writer_->WriteResult("stress", "stress", nodebased, 6);
   writer_->WriteResult("pressure", "pressure", nodebased, 1);
-  writer_->WriteResult("density", "density", nodebased, 1);
   writer_->WriteResult("par_vel", "par_vel", nodebased, 1);
   writer_->WriteResult("trace_velocity", "trace_velocity", nodebased, 3);
   writer_->WriteResult("pressure_avg", "pressure_avg", elementbased, 1);
-  writer_->WriteResult("density_avg", "density_avg", elementbased, 1);
   writer_->WriteResult("error", "error", elementbased, 1);
   writer_->WriteResult("degree", "degree", elementbased, 1);
   WriteElementResults(field);

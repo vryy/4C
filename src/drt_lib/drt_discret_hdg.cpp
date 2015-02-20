@@ -155,7 +155,7 @@ void DRT::DiscretizationHDG::DoDirichletCondition(DRT::Condition&             co
     std::vector<int> dummy;
     Teuchos::ParameterList initParams;
     if(DRT::Problem::Instance(0)->ProblemType()==prb_acou)
-      initParams.set<int>("action", ACOU::project_field);
+      initParams.set<int>("action", ACOU::project_dirich_field);
     else
       initParams.set<int>("action", FLD::project_fluid_field); // TODO: Introduce a general action type that is valid for all problems
     if (funct != NULL) {

@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file acou_visc_ele.cpp
+\file acou_sol_ele.cpp
 \brief
 
 <pre>
@@ -11,22 +11,22 @@ Maintainer: Svenja Schoeder
 
 *----------------------------------------------------------------------*/
 
-#include "acou_visc_ele.H"
+#include "acou_sol_ele.H"
 #include "acou_ele_boundary_calc.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils_factory.H"
 #include "../drt_lib/drt_linedefinition.H"
 
-DRT::ELEMENTS::AcouViscType DRT::ELEMENTS::AcouViscType::instance_;
-DRT::ELEMENTS::AcouViscBoundaryType DRT::ELEMENTS::AcouViscBoundaryType::instance_;
-DRT::ELEMENTS::AcouViscIntFaceType DRT::ELEMENTS::AcouViscIntFaceType::instance_;
+DRT::ELEMENTS::AcouSolType DRT::ELEMENTS::AcouSolType::instance_;
+DRT::ELEMENTS::AcouSolBoundaryType DRT::ELEMENTS::AcouSolBoundaryType::instance_;
+DRT::ELEMENTS::AcouSolIntFaceType DRT::ELEMENTS::AcouSolIntFaceType::instance_;
 
 /*----------------------------------------------------------------------*
  |                                                        schoeder 02/14|
  *----------------------------------------------------------------------*/
-DRT::ParObject* DRT::ELEMENTS::AcouViscType::Create( const std::vector<char> & data )
+DRT::ParObject* DRT::ELEMENTS::AcouSolType::Create( const std::vector<char> & data )
 {
-  DRT::ELEMENTS::AcouVisc* object = new DRT::ELEMENTS::AcouVisc(-1,-1);
+  DRT::ELEMENTS::AcouSol* object = new DRT::ELEMENTS::AcouSol(-1,-1);
   object->Unpack(data);
   return object;
 }
@@ -34,14 +34,14 @@ DRT::ParObject* DRT::ELEMENTS::AcouViscType::Create( const std::vector<char> & d
 /*----------------------------------------------------------------------*
  |                                                        schoeder 02/14|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::AcouViscType::Create(const std::string  eletype,
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::AcouSolType::Create(const std::string  eletype,
                                                              const std::string  eledistype,
                                                              const int     id,
                                                              const int     owner)
 {
-  if (eletype=="ACOUSTICVISC")
+  if (eletype=="ACOUSTICSOL")
   {
-    return Teuchos::rcp(new DRT::ELEMENTS::AcouVisc(id,owner));
+    return Teuchos::rcp(new DRT::ELEMENTS::AcouSol(id,owner));
   }
   return Teuchos::null;
 }
@@ -49,17 +49,17 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::AcouViscType::Create(const std::string
 /*----------------------------------------------------------------------*
  |                                                        schoeder 02/14|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::AcouViscType::Create( const int id, const int owner )
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::AcouSolType::Create( const int id, const int owner )
 {
-  return Teuchos::rcp(new DRT::ELEMENTS::AcouVisc(id,owner));
+  return Teuchos::rcp(new DRT::ELEMENTS::AcouSol(id,owner));
 }
 
 /*----------------------------------------------------------------------*
  |                                                        schoeder 02/14|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::AcouViscType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+void DRT::ELEMENTS::AcouSolType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
 {
-  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["ACOUSTICVISC"];
+  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["ACOUSTICSOL"];
 
   // 3D elements
   defs["HEX8"]
@@ -103,7 +103,7 @@ void DRT::ELEMENTS::AcouViscType::SetupElementDefinition( std::map<std::string,s
  |  ctor (public)                                         schoeder 02/14|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::AcouVisc::AcouVisc(int id, int owner) :
+DRT::ELEMENTS::AcouSol::AcouSol(int id, int owner) :
 Acou(id,owner),
 degree_(1),
 completepol_(true)
@@ -114,7 +114,7 @@ completepol_(true)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                    schoeder 02/14|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::AcouVisc::AcouVisc(const DRT::ELEMENTS::AcouVisc& old) :
+DRT::ELEMENTS::AcouSol::AcouSol(const DRT::ELEMENTS::AcouSol& old) :
 Acou(old             ),
 distype_    (old.distype_    ),
 degree_(old.degree_),
@@ -126,9 +126,9 @@ completepol_(old.completepol_)
  |  Deep copy this instance of Acou and return pointer to it (public)   |
  |                                                        schoeder 02/14|
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::AcouVisc::Clone() const
+DRT::Element* DRT::ELEMENTS::AcouSol::Clone() const
 {
-  DRT::ELEMENTS::AcouVisc* newelement = new DRT::ELEMENTS::AcouVisc(*this);
+  DRT::ELEMENTS::AcouSol* newelement = new DRT::ELEMENTS::AcouSol(*this);
   return newelement;
 }
 
@@ -137,7 +137,7 @@ DRT::Element* DRT::ELEMENTS::AcouVisc::Clone() const
  |  Pack data                                                  (public) |
  |                                                        schoeder 07/13|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::AcouVisc::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::AcouSol::Pack(DRT::PackBuffer& data) const
 {
   DRT::PackBuffer::SizeMarker sm( data );
   sm.Insert();
@@ -164,7 +164,7 @@ void DRT::ELEMENTS::AcouVisc::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                        schoeder 07/13|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::AcouVisc::Unpack(const std::vector<char>& data)
+void DRT::ELEMENTS::AcouSol::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
   // extract type
@@ -195,7 +195,7 @@ void DRT::ELEMENTS::AcouVisc::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                         schoeder 02/14|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::AcouVisc::~AcouVisc()
+DRT::ELEMENTS::AcouSol::~AcouSol()
 {
   return;
 }
@@ -204,14 +204,14 @@ DRT::ELEMENTS::AcouVisc::~AcouVisc()
 /*----------------------------------------------------------------------*
  |  print this element (public)                           schoeder 02/14|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::AcouVisc::Print(std::ostream& os) const
+void DRT::ELEMENTS::AcouSol::Print(std::ostream& os) const
 {
-  os << "AcouVisc ";
+  os << "AcouSol ";
   Element::Print(os);
   return;
 }
 
-bool DRT::ELEMENTS::AcouVisc::ReadElement(const std::string& eletype,
+bool DRT::ELEMENTS::AcouSol::ReadElement(const std::string& eletype,
                                       const std::string& distype,
                                       DRT::INPUT::LineDefinition* linedef)
 {
@@ -238,7 +238,7 @@ bool DRT::ELEMENTS::AcouVisc::ReadElement(const std::string& eletype,
 /*----------------------------------------------------------------------*
  |  get vector of lines              (public)             schoeder 07/13|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::AcouVisc::Lines()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::AcouSol::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -250,7 +250,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::AcouVisc::Lines()
 
   if (NumLine()>1) // 1D boundary element and 2D/3D parent element
   {
-    return DRT::UTILS::ElementBoundaryFactory<AcouViscBoundary,AcouVisc>(DRT::UTILS::buildLines,this);
+    return DRT::UTILS::ElementBoundaryFactory<AcouSolBoundary,AcouSol>(DRT::UTILS::buildLines,this);
   }
   else if (NumLine()==1) // 1D boundary element and 1D parent element -> body load (calculated in evaluate)
   {
@@ -270,7 +270,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::AcouVisc::Lines()
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                       schoeder 07/13|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::AcouVisc::Surfaces()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::AcouSol::Surfaces()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -280,7 +280,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::AcouVisc::Surfaces()
 
   // so we have to allocate new line elements:
   if (NumSurface() > 1)   // 2D boundary element and 3D parent element
-    return DRT::UTILS::ElementBoundaryFactory<AcouViscBoundary,AcouVisc>(DRT::UTILS::buildSurfaces,this);
+    return DRT::UTILS::ElementBoundaryFactory<AcouSolBoundary,AcouSol>(DRT::UTILS::buildSurfaces,this);
   else if (NumSurface() == 1) // 2D boundary element and 2D parent element -> body load (calculated in evaluate)
   {
     // 2D (we return the element itself)
@@ -299,7 +299,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::AcouVisc::Surfaces()
 /*----------------------------------------------------------------------*
  |  get vector of volumes (length 1) (public)             schoeder 07/13|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::AcouVisc::Volumes()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::AcouSol::Volumes()
 {
   if (NumVolume()==1) // 3D boundary element and a 3D parent element -> body load (calculated in evaluate)
   {
@@ -319,7 +319,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::AcouVisc::Volumes()
 /*----------------------------------------------------------------------*
  |  get face element (public)                             schoeder 01/14|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::AcouVisc::CreateFaceElement( DRT::Element* parent_slave,           //!< parent slave fluid3 element
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::AcouSol::CreateFaceElement( DRT::Element* parent_slave,           //!< parent slave fluid3 element
                                                                    int nnode,                            //!< number of surface nodes
                                                                    const int* nodeids,                   //!< node ids of surface element
                                                                    DRT::Node** nodes,                    //!< nodes of surface element
@@ -329,10 +329,10 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::AcouVisc::CreateFaceElement( DRT::Elem
 )
 {
   // dynamic cast for slave parent element
-  DRT::ELEMENTS::AcouVisc * slave_pele = dynamic_cast<DRT::ELEMENTS::AcouVisc *>( parent_slave );
+  DRT::ELEMENTS::AcouSol * slave_pele = dynamic_cast<DRT::ELEMENTS::AcouSol *>( parent_slave );
 
   // insert both parent elements
-  return DRT::UTILS::ElementIntFaceFactory<AcouViscIntFace,AcouVisc>( -1,             //!< internal face element id
+  return DRT::UTILS::ElementIntFaceFactory<AcouSolIntFace,AcouSol>( -1,             //!< internal face element id
                                                               -1,             //!< owner of internal face element
                                                               nnode,          //!< number of surface nodes
                                                               nodeids,        //!< node ids of surface element
@@ -359,7 +359,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::AcouVisc::CreateFaceElement( DRT::Elem
 //=======================================================================
 //=======================================================================
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::AcouViscBoundaryType::Create( const int id, const int owner )
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::AcouSolBoundaryType::Create( const int id, const int owner )
 {
   return Teuchos::null;
 }
@@ -369,10 +369,10 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::AcouViscBoundaryType::Create( const in
  |  ctor (public)                                        schoeder 07/13 |
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::AcouViscBoundary::AcouViscBoundary(int id, int owner,
+DRT::ELEMENTS::AcouSolBoundary::AcouSolBoundary(int id, int owner,
                                           int nnode, const int* nodeids,
                                           DRT::Node** nodes,
-                                          DRT::ELEMENTS::AcouVisc* parent,
+                                          DRT::ELEMENTS::AcouSol* parent,
                                           const int lsurface) :
 AcouBoundary(id,owner,nnode,nodeids,nodes,parent,lsurface)
 {
@@ -385,7 +385,7 @@ AcouBoundary(id,owner,nnode,nodeids,nodes,parent,lsurface)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                   schoeder 07/13 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::AcouViscBoundary::AcouViscBoundary(const DRT::ELEMENTS::AcouViscBoundary& old) :
+DRT::ELEMENTS::AcouSolBoundary::AcouSolBoundary(const DRT::ELEMENTS::AcouSolBoundary& old) :
 AcouBoundary(old)
 {
   return;
@@ -395,9 +395,9 @@ AcouBoundary(old)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                       schoeder 07/13 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::AcouViscBoundary::Clone() const
+DRT::Element* DRT::ELEMENTS::AcouSolBoundary::Clone() const
 {
-  DRT::ELEMENTS::AcouViscBoundary* newelement = new DRT::ELEMENTS::AcouViscBoundary(*this);
+  DRT::ELEMENTS::AcouSolBoundary* newelement = new DRT::ELEMENTS::AcouSolBoundary(*this);
   return newelement;
 }
 
@@ -405,7 +405,7 @@ DRT::Element* DRT::ELEMENTS::AcouViscBoundary::Clone() const
  |  Pack data                                                  (public) |
  |                                                        schoeder 07/13|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::AcouViscBoundary::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::AcouSolBoundary::Pack(DRT::PackBuffer& data) const
 {
   DRT::PackBuffer::SizeMarker sm( data );
   sm.Insert();
@@ -426,7 +426,7 @@ void DRT::ELEMENTS::AcouViscBoundary::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                        schoeder 07/13|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::AcouViscBoundary::Unpack(const std::vector<char>& data)
+void DRT::ELEMENTS::AcouSolBoundary::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
   // extract type
@@ -450,7 +450,7 @@ void DRT::ELEMENTS::AcouViscBoundary::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                         schoeder 07/13|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::AcouViscBoundary::~AcouViscBoundary()
+DRT::ELEMENTS::AcouSolBoundary::~AcouSolBoundary()
 {
   return;
 }
@@ -458,9 +458,9 @@ DRT::ELEMENTS::AcouViscBoundary::~AcouViscBoundary()
 /*----------------------------------------------------------------------*
  |  print this element (public)                          schoeder 07/13 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::AcouViscBoundary::Print(std::ostream& os) const
+void DRT::ELEMENTS::AcouSolBoundary::Print(std::ostream& os) const
 {
-  os << "AcouViscBoundary ";
+  os << "AcouSolBoundary ";
   Element::Print(os);
   return;
 }
@@ -468,7 +468,7 @@ void DRT::ELEMENTS::AcouViscBoundary::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                        schoeder 07/13 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::AcouViscBoundary::Evaluate(
+int DRT::ELEMENTS::AcouSolBoundary::Evaluate(
     Teuchos::ParameterList&   params,
     DRT::Discretization&      discretization,
     std::vector<int>&         lm,
@@ -486,7 +486,7 @@ int DRT::ELEMENTS::AcouViscBoundary::Evaluate(
 /*----------------------------------------------------------------------*
  |  Get degrees of freedom used by this element (public) schoeder 07/13 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::AcouViscBoundary::LocationVector(
+void DRT::ELEMENTS::AcouSolBoundary::LocationVector(
     const Discretization&    dis,
     LocationArray&           la,
     bool                     doDirichlet,
@@ -511,7 +511,7 @@ void DRT::ELEMENTS::AcouViscBoundary::LocationVector(
 //=======================================================================
 //=======================================================================
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::AcouViscIntFaceType::Create( const int id, const int owner )
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::AcouSolIntFaceType::Create( const int id, const int owner )
 {
   return Teuchos::null;
 }
@@ -519,13 +519,13 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::AcouViscIntFaceType::Create( const int
 /*----------------------------------------------------------------------*
  |  ctor (public)                                         schoeder 01/14|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::AcouViscIntFace::AcouViscIntFace(int id,                                ///< element id
+DRT::ELEMENTS::AcouSolIntFace::AcouSolIntFace(int id,                                ///< element id
                                           int owner,                             ///< owner (= owner of parent element with smallest gid)
                                           int nnode,                             ///< number of nodes
                                           const int* nodeids,                    ///< node ids
                                           DRT::Node** nodes,                     ///< nodes of surface
-                                          DRT::ELEMENTS::AcouVisc* parent_master,   ///< master parent element
-                                          DRT::ELEMENTS::AcouVisc* parent_slave,    ///< slave parent element
+                                          DRT::ELEMENTS::AcouSol* parent_master,   ///< master parent element
+                                          DRT::ELEMENTS::AcouSol* parent_slave,    ///< slave parent element
                                           const int lsurface_master,             ///< local surface index with respect to master parent element
                                           const int lsurface_slave,              ///< local surface index with respect to slave parent element
                                           const std::vector<int> localtrafomap   ///< get the transformation map between the local coordinate systems of the face w.r.t the master parent element's face's coordinate system and the slave element's face's coordinate system
@@ -544,7 +544,7 @@ localtrafomap_(localtrafomap)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                    schoeder 01/14|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::AcouViscIntFace::AcouViscIntFace(const DRT::ELEMENTS::AcouViscIntFace& old) :
+DRT::ELEMENTS::AcouSolIntFace::AcouSolIntFace(const DRT::ELEMENTS::AcouSolIntFace& old) :
 AcouIntFace(old),
 localtrafomap_(old.localtrafomap_)
 {
@@ -555,9 +555,9 @@ localtrafomap_(old.localtrafomap_)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                        schoeder 01/14|
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::AcouViscIntFace::Clone() const
+DRT::Element* DRT::ELEMENTS::AcouSolIntFace::Clone() const
 {
-  DRT::ELEMENTS::AcouViscIntFace* newelement = new DRT::ELEMENTS::AcouViscIntFace(*this);
+  DRT::ELEMENTS::AcouSolIntFace* newelement = new DRT::ELEMENTS::AcouSolIntFace(*this);
   return newelement;
 }
 
@@ -565,7 +565,7 @@ DRT::Element* DRT::ELEMENTS::AcouViscIntFace::Clone() const
  |                                                             (public) |
  |                                                       schoeder 01/14 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::AcouViscIntFace::Shape() const
+DRT::Element::DiscretizationType DRT::ELEMENTS::AcouSolIntFace::Shape() const
 {
   // could be called for master parent or slave parent element, doesn't matter
   return DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentMasterElement()->Shape());
@@ -574,7 +574,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::AcouViscIntFace::Shape() const
 /*----------------------------------------------------------------------*
  |  dtor (public)                                        schoeder 01/14 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::AcouViscIntFace::~AcouViscIntFace()
+DRT::ELEMENTS::AcouSolIntFace::~AcouSolIntFace()
 {
   return;
 }
@@ -582,7 +582,7 @@ DRT::ELEMENTS::AcouViscIntFace::~AcouViscIntFace()
 /*----------------------------------------------------------------------*
  |  create the patch location vector (public)            schoeder 01/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::AcouViscIntFace::PatchLocationVector(
+void DRT::ELEMENTS::AcouSolIntFace::PatchLocationVector(
     DRT::Discretization & discretization,       ///< discretization
     std::vector<int>&     nds_master,           ///< nodal dofset w.r.t master parent element
     std::vector<int>&     nds_slave,            ///< nodal dofset w.r.t slave parent element
@@ -598,7 +598,7 @@ void DRT::ELEMENTS::AcouViscIntFace::PatchLocationVector(
     )
 {
   // create one patch location vector containing all dofs of master, slave and
-  // *this AcouViscIntFace element only once (no duplicates)
+  // *this AcouSolIntFace element only once (no duplicates)
 
   //-----------------------------------------------------------------------
   const int m_numnode = ParentMasterElement()->NumNode();
@@ -776,9 +776,9 @@ void DRT::ELEMENTS::AcouViscIntFace::PatchLocationVector(
 /*----------------------------------------------------------------------*
  |  print this element (public)                          schoeder 01/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::AcouViscIntFace::Print(std::ostream& os) const
+void DRT::ELEMENTS::AcouSolIntFace::Print(std::ostream& os) const
 {
-  os << "AcouViscIntFace ";
+  os << "AcouSolIntFace ";
   Element::Print(os);
   return;
 }

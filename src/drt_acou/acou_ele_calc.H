@@ -50,12 +50,9 @@ namespace ELEMENTS
         Epetra_SerialDenseVector& elevec1)
     { dserror("Not implemented"); return 1; };
 
-    void ComputeAnalyticError(
+    void ComputeError(
         DRT::ELEMENTS::Acou*          ele,
         Teuchos::ParameterList&       params,
-        Teuchos::RCP<MAT::Material>&  mat,
-        DRT::Discretization&          discretization,
-        const std::vector<int>&       lm,
         Epetra_SerialDenseVector&     elevec);
 
     /// projection of optical field
@@ -64,16 +61,12 @@ namespace ELEMENTS
 
     /// map solution values to nodes
     void NodeBasedValues(DRT::ELEMENTS::Acou*                 ele,
-                         DRT::Discretization&                 discretization,
-                         const std::vector<int>&              lm,
                          Epetra_SerialDenseVector&            elevec1,
                          bool                                 padaptivity);
 
     /// map solution values to nodes
     void NodeBasedPsi(const Teuchos::RCP<MAT::Material>    &mat,
                       DRT::ELEMENTS::Acou*                 ele,
-                      DRT::Discretization&                 discretization,
-                      const std::vector<int>&              lm,
                       Epetra_SerialDenseVector&            elevec1,
                       double                               dt);
 
@@ -131,22 +124,19 @@ namespace ELEMENTS
       static const unsigned int nsd_    = AcouEleCalc<distype>::nsd_;
       static const unsigned int nfaces_ = AcouEleCalc<distype>::nfaces_;
 
-      LocalSolver (DRT::UTILS::ShapeValues<distype> &shapeValues);
+      LocalSolver (DRT::UTILS::ShapeValues<distype> &shapeValues, INPAR::ACOU::DynamicType &dyna);
 
       void FaceSpecificConstruction(const DRT::ELEMENTS::Acou* ele,
                                     bool completepoly);
 
       /// compute the residual
       void ComputeResidual(Teuchos::ParameterList&       params,
-                           Teuchos::RCP<MAT::Material>&  mat,
                            Epetra_SerialDenseVector          & eleVec,
                            Epetra_SerialDenseVector          & interiorVeln,
                            Epetra_SerialDenseVector          & interiorPressn,
-                           std::vector<double>               traceVal,
-                           INPAR::ACOU::DynamicType          dyna);
+                           std::vector<double>               traceVal);
 
-      void ComputeSource(Teuchos::ParameterList&       params,
-                         const Teuchos::RCP<MAT::Material>&  mat,
+      void ComputeSource(Teuchos::ParameterList&           params,
                          Epetra_SerialDenseVector          & interiorSourcen,
                          Epetra_SerialDenseVector          & interiorSourcenp);
 
@@ -156,7 +146,6 @@ namespace ELEMENTS
                               Teuchos::RCP<MAT::Material> & mat,
                               int                         face,
                               Epetra_SerialDenseMatrix    &elemat,
-                              Epetra_SerialDenseVector    &elevec,
                               int                          indexstart);
 
       /// add terms corresponding to the absorbing boundary condition
@@ -186,8 +175,7 @@ namespace ELEMENTS
 
       /// set up interior matrices
       void ComputeInteriorMatrices(const Teuchos::RCP<MAT::Material> &mat,
-                                   double                            dt,
-                                   INPAR::ACOU::DynamicType          dyna);
+                                   double                            dt);
 
       /// set up face matrices
       void ComputeFaceMatrices(const int                          face,
@@ -197,8 +185,7 @@ namespace ELEMENTS
 
       // condense the local matrix (involving cell velocity gradients, velocities and pressure) into
       // the element matrix for the trace and similarly for the residuals
-      void CondenseLocalPart(Epetra_SerialDenseMatrix &elemat,
-                             INPAR::ACOU::DynamicType dyna);
+      void CondenseLocalPart(Epetra_SerialDenseMatrix &elemat);
 
       void EvaluateFaceAdjoint(double fnodexyz[][nsd_],
                                double values[],
@@ -206,26 +193,21 @@ namespace ELEMENTS
                                const double (&xyz)[nsd_],
                                double &val) const;
 
-
       /// projection of function field
       int ProjectField(DRT::ELEMENTS::Acou*                 ele,
-                               Teuchos::ParameterList&              params,
-                               Teuchos::RCP<MAT::Material>&         mat,
-                               DRT::Discretization&                 discretization,
-                               const std::vector<int>&              lm,
-                               Epetra_SerialDenseVector&            elevec1,
-                               Epetra_SerialDenseVector&            elevec2,
-                               INPAR::ACOU::DynamicType             dyna);
+                       Teuchos::ParameterList&              params,
+                       Epetra_SerialDenseVector&            elevec1,
+                       Epetra_SerialDenseVector&            elevec2);
+
+      /// projection of Dirichlet function field
+      int ProjectDirichField(DRT::ELEMENTS::Acou*                 ele,
+                             Teuchos::ParameterList&              params,
+                             Epetra_SerialDenseVector&            elevec1);
 
       /// projection of optical field
       int ProjectOpticalField(DRT::ELEMENTS::Acou*                 ele,
                                       Teuchos::ParameterList&              params,
-                                      Teuchos::RCP<MAT::Material>&         mat,
-                                      DRT::Discretization&                 discretization,
-                                      const std::vector<int>&              lm,
-                                      Epetra_SerialDenseVector&            elevec1,
-                                      Epetra_SerialDenseVector&            elevec2,
-                                      INPAR::ACOU::DynamicType             dyna);
+                                      Epetra_SerialDenseVector&            elevec2);
 
       void EvaluateAll(const int start_func,
                        const double (&xyz)[nsd_],
@@ -237,7 +219,6 @@ namespace ELEMENTS
                          int    numnode,
                          const double (&xyz)[nsd_],
                          double  &p,
-                         double rho,
                          double absorptioncoeff) const;
 
       // convention: we sort the entries in the matrices the following way:
@@ -268,11 +249,12 @@ namespace ELEMENTS
       // auxiliary stuff
       Epetra_SerialDenseMatrix  massPart;
       Epetra_SerialDenseMatrix  massPartW;
+
+      INPAR::ACOU::DynamicType &dyna_;
     };
 
     /// updates interior variables and calculates residual
-    void UpdateInteriorVariablesAndComputeResidual(DRT::Discretization &             discretization,
-                                                   Teuchos::ParameterList&           params,
+    void UpdateInteriorVariablesAndComputeResidual(Teuchos::ParameterList&           params,
                                                    DRT::ELEMENTS::Acou &             ele,
                                                    const Teuchos::RCP<MAT::Material> &mat,
                                                    Epetra_SerialDenseVector          & elevec,

@@ -223,7 +223,7 @@ public:
   */
   virtual int NumDofPerFace(const unsigned face) const
   {
-    return NumDofPerComponent(face); // seems redundant, but this is different for fluid_ele_hdg und acou_visc_ele!
+    return NumDofPerComponent(face); // seems redundant, but this is different for fluid_ele_hdg and acou_sol_ele!
   }
 
   /*!

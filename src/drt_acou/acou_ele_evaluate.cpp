@@ -14,7 +14,7 @@ Maintainer: Svenja Schoeder
 #include "../drt_inpar/inpar_acou.H"
 #include "acou_ele_interface.H"
 #include "acou_ele.H"
-#include "acou_visc_ele.H"
+#include "acou_sol_ele.H"
 
 /*---------------------------------------------------------------------*
 *----------------------------------------------------------------------*/
@@ -42,8 +42,8 @@ int DRT::ELEMENTS::Acou::Evaluate(Teuchos::ParameterList&            params,
 {
   Teuchos::RCP<MAT::Material> mat = Material();
 
-  if(dynamic_cast<const DRT::ELEMENTS::AcouVisc*>(this))
-    return DRT::ELEMENTS::AcouFactory::ProvideImpl(Shape(),"visc")->Evaluate(
+  if(dynamic_cast<const DRT::ELEMENTS::AcouSol*>(this))
+    return DRT::ELEMENTS::AcouFactory::ProvideImpl(Shape(),"sol")->Evaluate(
                 this,
                 discretization,
                 lm,

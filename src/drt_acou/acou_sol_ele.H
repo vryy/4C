@@ -1,5 +1,5 @@
 /*!
-\file acou_visc_ele.H
+\file acou_sol_ele.H
 
 \brief A C++ wrapper for the acoustic element
 
@@ -14,8 +14,8 @@ Maintainer: Svenja Schoeder
 </pre>
 */
 
-#ifndef ACOU_VISC_ELE_H
-#define ACOU_VISC_ELE_H
+#ifndef ACOU_SOL_ELE_H
+#define ACOU_SOL_ELE_H
 
 #include "acou_ele.H"
 
@@ -27,13 +27,13 @@ class Discretization;
 namespace ELEMENTS
 {
 
-class AcouViscType : public AcouType
+class AcouSolType : public AcouType
 {
 public:
 
-  std::string Name() const { return "AcouViscType"; }
+  std::string Name() const { return "AcouSolType"; }
 
-  static AcouViscType & Instance() { return instance_; };
+  static AcouSolType & Instance() { return instance_; };
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
@@ -48,14 +48,14 @@ public:
 
 private:
 
-  static AcouViscType instance_;
+  static AcouSolType instance_;
 };
 
 
 /*!
-\brief Viscoelastic acoustic element
+\brief Soloelastic acoustic element
 */
-class AcouVisc : public Acou
+class AcouSol : public Acou
 {
 public:
 
@@ -65,7 +65,7 @@ public:
   /*!
   \brief standard constructor
   */
-  AcouVisc(
+  AcouSol(
     int id,    ///< A unique global id
     int owner  ///< ???
     );
@@ -75,7 +75,7 @@ public:
   Makes a deep copy of a Element
 
   */
-  AcouVisc(const AcouVisc& old);
+  AcouSol(const AcouSol& old);
 
   /*!
   \brief Deep copy this instance and return pointer to the copy
@@ -160,7 +160,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return AcouViscType::Instance().UniqueParObjectId(); }
+  virtual int UniqueParObjectId() const { return AcouSolType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -180,7 +180,7 @@ public:
   /*!
   \brief Destructor
   */
-  virtual ~AcouVisc();
+  virtual ~AcouSol();
 
   /*!
   \brief Get number of degrees of freedom per node
@@ -208,7 +208,7 @@ public:
   virtual int NumDofPerElementAuxiliary() const
   {
     const int nsd = DRT::UTILS::getDimension(distype_);
-    return (nsd*(nsd+1)+2) * DRT::UTILS::getBasisSize(distype_, degree_, completepol_);
+    return (nsd*(nsd+1)+1) * DRT::UTILS::getBasisSize(distype_, degree_, completepol_);
   }
 
   virtual int NumDofPerElement() const { return 0; }
@@ -249,18 +249,29 @@ public:
                    DRT::INPUT::LineDefinition* linedef);
 
   //@}
+  // state vectors which do not have to be stored as global distributed vector, since
+  // we are in a discontinuous setting here
+  //! @name interior stored states
 
-  /// local values from interior solution vector at all needed time steps
-  Epetra_SerialDenseVector eleinteriorValnp_;
-  Epetra_SerialDenseVector eleinteriorValn_;
-  Epetra_SerialDenseVector eleinteriorValnm_;
-  Epetra_SerialDenseVector eleinteriorValnmm_;
-  Epetra_SerialDenseVector eleinteriorValnmmm_;
+  /// local values from interior solution vector (gradient of velocity) at n+1
+  Epetra_SerialDenseVector eleinteriorGradVelnp_;
 
-  /// local values from interior solution vector (gradient, velocity) at DIRK stages
-  std::vector<Epetra_SerialDenseVector> eles_;
-  std::vector<Epetra_SerialDenseVector> eley_;
-  std::vector<Epetra_SerialDenseVector> elef_;
+  /// local values from interior solution vector (gradient of velocity) at n
+  Epetra_SerialDenseVector eleinteriorGradVeln_;
+
+  /// local values from interior solution vector (gradient of velocity) at n-1 (BDF)
+  Epetra_SerialDenseVector eleinteriorGradVelnm_;
+
+  /// local values from interior solution vector (gradient of velocity) at n-2 (BDF)
+  Epetra_SerialDenseVector eleinteriorGradVelnmm_;
+
+  /// local values from interior solution vector (gradient of velocity) at n-3 (BDF)
+  Epetra_SerialDenseVector eleinteriorGradVelnmmm_;
+
+  /// local values from interior solution vector (gradient of velocity) at DIRK stages
+  std::vector<Epetra_SerialDenseVector> elesgv_;
+  std::vector<Epetra_SerialDenseVector> eleygv_;
+  std::vector<Epetra_SerialDenseVector> elefgv_;
 
 protected:
 
@@ -279,7 +290,7 @@ private:
   }
 
   // don't want = operator
-  AcouVisc& operator = (const AcouVisc& old);
+  AcouSol& operator = (const AcouSol& old);
 
   // stores the degree of the element
   unsigned char degree_;
@@ -287,28 +298,28 @@ private:
   // stores the polynomial type (tensor product or complete polynomial)
   bool completepol_;
 
-}; // class AcouVisc
+}; // class AcouSol
 
-// class AcouViscBoundaryType
+// class AcouSolBoundaryType
 
-class AcouViscBoundaryType : public AcouBoundaryType
+class AcouSolBoundaryType : public AcouBoundaryType
 {
 public:
 
-  std::string Name() const { return "AcouViscBoundaryType"; }
+  std::string Name() const { return "AcouSolBoundaryType"; }
 
-  static AcouViscBoundaryType & Instance() { return instance_; };
+  static AcouSolBoundaryType & Instance() { return instance_; };
 
   virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
 
 private:
 
-  static AcouViscBoundaryType instance_;
+  static AcouSolBoundaryType instance_;
 };
 
-// class AcouViscBoundary
+// class AcouSolBoundary
 
-class AcouViscBoundary : public AcouBoundary
+class AcouSolBoundary : public AcouBoundary
 {
 public:
 
@@ -326,8 +337,8 @@ public:
   \param parent: The parent acou element of this surface
   \param lsurface: the local surface number of this surface w.r.t. the parent element
   */
-  AcouViscBoundary(int id, int owner, int nnode, const int* nodeids,
-             DRT::Node** nodes, DRT::ELEMENTS::AcouVisc* parent, const int lsurface);
+  AcouSolBoundary(int id, int owner, int nnode, const int* nodeids,
+             DRT::Node** nodes, DRT::ELEMENTS::AcouSol* parent, const int lsurface);
 
   /*!
   \brief Copy Constructor
@@ -335,7 +346,7 @@ public:
   Makes a deep copy of a Element
 
   */
-  AcouViscBoundary(const AcouViscBoundary& old);
+  AcouSolBoundary(const AcouSolBoundary& old);
 
   /*!
   \brief Deep copy this instance of an element and return pointer to the copy
@@ -352,7 +363,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of the drt_parobject.H file.
   */
-  virtual int UniqueParObjectId() const { return AcouViscBoundaryType::Instance().UniqueParObjectId(); }
+  virtual int UniqueParObjectId() const { return AcouSolBoundaryType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -374,7 +385,7 @@ public:
   \brief Destructor
 
   */
-  virtual ~AcouViscBoundary();
+  virtual ~AcouSolBoundary();
 
   //@}
 
@@ -401,7 +412,7 @@ public:
   void Print(std::ostream& os) const;
 
   virtual DRT::ElementType & ElementType() const
-  { return AcouViscBoundaryType::Instance(); }
+  { return AcouSolBoundaryType::Instance(); }
 
   //@}
 
@@ -481,19 +492,19 @@ private:
 
 
   // don't want = operator
-  AcouViscBoundary& operator = (const AcouViscBoundary& old);
+  AcouSolBoundary& operator = (const AcouSolBoundary& old);
 
-}; // class AcouViscBoundary
+}; // class AcouSolBoundary
 
-// class AcouViscIntFaceType
+// class AcouSolIntFaceType
 
-class AcouViscIntFaceType : public DRT::ElementType
+class AcouSolIntFaceType : public DRT::ElementType
 {
 public:
 
-  std::string Name() const { return "AcouViscIntFaceType"; }
+  std::string Name() const { return "AcouSolIntFaceType"; }
 
-  static AcouViscIntFaceType & Instance() { return instance_; };
+  static AcouSolIntFaceType & Instance() { return instance_; };
 
   virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
 
@@ -503,12 +514,12 @@ public:
 
 private:
 
-  static AcouViscIntFaceType instance_;
+  static AcouSolIntFaceType instance_;
 };
 
-// class AcouViscIntFace
+// class AcouSolIntFace
 
-class AcouViscIntFace : public AcouIntFace
+class AcouSolIntFace : public AcouIntFace
 {
 public:
 
@@ -529,13 +540,13 @@ public:
   \param lsurface_slave: the local surface number of this surface w.r.t. the slave parent element
   \param localtrafomap: transformation map between the local coordinate systems of the face w.r.t the master parent element's face's coordinate system and the slave element's face's coordinate system
   */
-  AcouViscIntFace( int id,
+  AcouSolIntFace( int id,
                 int owner,
                 int nnode,
                 const int* nodeids,
                 DRT::Node** nodes,
-                DRT::ELEMENTS::AcouVisc* parent_master,
-                DRT::ELEMENTS::AcouVisc* parent_slave,
+                DRT::ELEMENTS::AcouSol* parent_master,
+                DRT::ELEMENTS::AcouSol* parent_slave,
                 const int lsurface_master,
                 const int lsurface_slave,
                 const std::vector<int> localtrafomap
@@ -546,7 +557,7 @@ public:
 
   Makes a deep copy of a Element
   */
-  AcouViscIntFace(const AcouViscIntFace& old);
+  AcouSolIntFace(const AcouSolIntFace& old);
 
   /*!
   \brief Deep copy this instance of an element and return pointer to the copy
@@ -568,12 +579,12 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of the drt_parobject.H file.
   */
-  virtual int UniqueParObjectId() const { return AcouViscIntFaceType::Instance().UniqueParObjectId(); }
+  virtual int UniqueParObjectId() const { return AcouSolIntFaceType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Destructor
   */
-  virtual ~AcouViscIntFace();
+  virtual ~AcouSolIntFace();
 
   //@}
 
@@ -631,30 +642,30 @@ public:
   void Print(std::ostream& os) const;
 
   virtual DRT::ElementType & ElementType() const
-  { return AcouViscIntFaceType::Instance(); }
+  { return AcouSolIntFaceType::Instance(); }
 
   //@}
 
   /*!
   \brief return the master parent acou element
   */
-  DRT::ELEMENTS::AcouVisc* ParentMasterElement() const
+  DRT::ELEMENTS::AcouSol* ParentMasterElement() const
   {
     DRT::Element* parent = this->DRT::Element::ParentMasterElement();
     // make sure the static cast below is really valid
-    dsassert(dynamic_cast<DRT::ELEMENTS::AcouVisc*>(parent) != NULL, "Master element is no acou visc element");
-    return static_cast<DRT::ELEMENTS::AcouVisc*>(parent);
+    dsassert(dynamic_cast<DRT::ELEMENTS::AcouSol*>(parent) != NULL, "Master element is no acou sol element");
+    return static_cast<DRT::ELEMENTS::AcouSol*>(parent);
   }
 
   /*!
   \brief return the slave parent acou element
   */
-  DRT::ELEMENTS::AcouVisc* ParentSlaveElement() const
+  DRT::ELEMENTS::AcouSol* ParentSlaveElement() const
   {
     DRT::Element* parent = this->DRT::Element::ParentSlaveElement();
     // make sure the static cast below is really valid
-    dsassert(dynamic_cast<DRT::ELEMENTS::AcouVisc*>(parent) != NULL, "Slave element is no acou visc element");
-    return static_cast<DRT::ELEMENTS::AcouVisc*>(parent);
+    dsassert(dynamic_cast<DRT::ELEMENTS::AcouSol*>(parent) != NULL, "Slave element is no acou sol element");
+    return static_cast<DRT::ELEMENTS::AcouSol*>(parent);
   }
 
   /*!
@@ -670,7 +681,7 @@ public:
 private:
 
   // don't want = operator
-  AcouViscIntFace& operator = (const AcouViscIntFace& old);
+  AcouSolIntFace& operator = (const AcouSolIntFace& old);
 
   /*!
    \brief map for the face's nodes between the local coordinate systems of the face w.r.t the master parent element's face's coordinate system
@@ -678,11 +689,11 @@ private:
    */
   std::vector<int> localtrafomap_;
 
-}; // class AcouViscIntFace
+}; // class AcouSolIntFace
 
 } // namespace ELEMENTS
 } // namespace DRT
 
 
 
-#endif // ACOU_VISC_ELE_H
+#endif // ACOU_SOL_ELE_H

@@ -252,7 +252,7 @@ void ACOU::TimIntImplDIRK::Solve()
 
     //if(step_<=1)
     //{
-      // std::cout<<"LINALG::Condest  "<<LINALG::Condest(dynamic_cast<LINALG::SparseMatrix&>(*sysmat_),Ifpack_GMRES,1500,1e-6)<<std::endl;
+       //std::cout<<"LINALG::Condest  "<<LINALG::Condest(dynamic_cast<LINALG::SparseMatrix&>(*sysmat_),Ifpack_GMRES,1000,1e-6)<<std::endl;
       //Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_)->EpetraMatrix()->Print(std::cout);
       //LINALG::PrintMatrixInMatlabFormat("xxx_mat.mat",*(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_)->EpetraMatrix()));
     //}
@@ -261,6 +261,7 @@ void ACOU::TimIntImplDIRK::Solve()
     // update interior variables
     double tcpuele = Teuchos::Time::wallTime();
     UpdateInteriorVariablesAndAssemebleRHS(i);
+    ApplyDirichletToSystem(i);
     dtele_ += Teuchos::Time::wallTime()-tcpuele;
 
   } // for(unsigned int i=0; i<dirk_q_; ++i)

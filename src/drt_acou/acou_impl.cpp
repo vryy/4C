@@ -12,7 +12,6 @@ Maintainer: Svenja Schoeder
 
 #include "acou_impl.H"
 #include "acou_ele.H"
-#include "acou_visc_ele.H"
 #include "acou_ele_action.H"
 #include "acou_resulttest.H"
 #include "acou_utils.H"
@@ -59,19 +58,18 @@ ACOU::AcouImplicitTimeInt::AcouImplicitTimeInt(
   errormaps_      (DRT::INPUT::IntegralValue<bool>(*params_,"ERRORMAPS")),
   padaptivity_    (DRT::INPUT::IntegralValue<bool>(*params_,"P_ADAPTIVITY")),
   padapttol_      (params_->get<double>("P_ADAPT_TOL")),
-  calcerr_        (DRT::INPUT::IntegralValue<INPAR::ACOU::CalcError>(*params,"CALCERROR")),
+  calcerr_        (false),
   adjoint_rhs_    (Teuchos::null)
 {
-
-  if ( dtp_ == 0.0)  dserror("Can't work with time step size == 0.0");
+  if(dtp_ == 0.0)  dserror("Can't work with time step size == 0.0");
   if(padaptivity_==true && errormaps_==false) dserror("If you want to do p-adaptivity, you also have to set the flag ERRORMAPS to Yes");
   if(padaptivity_==true && dyna_==INPAR::ACOU::acou_trapezoidal) dserror("p-adaptivity not implemented for trapezoidal time integration, use impl or dirk!");
   if(padaptivity_==true && (dyna_==INPAR::ACOU::acou_dirk23 || dyna_==INPAR::ACOU::acou_dirk33 || dyna_==INPAR::ACOU::acou_dirk34 || dyna_==INPAR::ACOU::acou_dirk54 ))
       dserror("p-adaptivity not yet implemented for dirk time integration!"); // TODO asap
   if(padaptivity_==true && discret_->Comm().NumProc()>1) dserror("p-adaptivity does not yet work in parallel!"); // TODO asap
-  if(sourcefuncno_>=0)
-    if(DRT::Problem::Instance()->Funct(sourcefuncno_).NumberComponents()>1)
-      dserror("Source term has to be scalar!");
+
+  if(params_->get<int>("CALCERRORFUNCNO")>0)
+    calcerr_ = true;
 
   // create all vectors
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
@@ -82,7 +80,6 @@ ACOU::AcouImplicitTimeInt::AcouImplicitTimeInt(
   // create vector containing element based error values
   if(errormaps_)
     error_ = LINALG::CreateVector(*(discret_->ElementRowMap()),true);
-
 
   if(adjoint_)
   {
@@ -216,22 +213,20 @@ void ACOU::AcouImplicitTimeInt::SetInitialField(int startfuncno, double pulse)
     elevec1.Scale(0.0);elevec2.Scale(0.0);
     DRT::Element *ele = discret_->lColElement(el);
     ele->LocationVector(*discret_,la,false);
-    //if (static_cast<std::size_t>(elevec1.M()) != la[0].lm_.size())
-    //  elevec1.Shape(la[0].lm_.size(), 1);
+
+    if (static_cast<std::size_t>(elevec1.M()) != la[0].lm_.size())
+      elevec1.Shape(la[0].lm_.size(), 1);
     if (elevec2.M() != discret_->NumDof(1,ele))
       elevec2.Shape(discret_->NumDof(1,ele), 1);
 
     ele->Evaluate(initParams,*discret_,la[0].lm_,elemat1,elemat2,elevec1,elevec2,elevec3);
-
     // now fill the ele vector into the discretization
-    //for (unsigned int i=0; i<la[0].lm_.size(); ++i)
-    //  la[0].lm_[i] = dofrowmap->LID(la[0].lm_[i]);
-    //err += velnp_->ReplaceMyValues(la[0].lm_.size(),elevec1.A(),&la[0].lm_[0]);
-    //std::cout<<"el"<<el<<" err "<<err<<std::endl;
-    // err += veln_ ->ReplaceMyValues(la[0].lm_.size(),elevec1.A(),&la[0].lm_[0]);
-    // err += velnm_->ReplaceMyValues(la[0].lm_.size(),elevec1.A(),&la[0].lm_[0]);
+    for (unsigned int i=0; i<la[0].lm_.size(); ++i)
+      la[0].lm_[i] = discret_->DofRowMap(0)->LID(la[0].lm_[i]);
+
+    err += velnp_->ReplaceMyValues(la[0].lm_.size(),elevec1.A(),&la[0].lm_[0]);
   }
-  if(err!=0) dserror("Could not replace all values");
+  //if(err!=0) dserror("Could not replace all values");
 
   veln_->Update(1.0,*velnp_,0.0);
   velnm_->Update(1.0,*velnp_,0.0);
@@ -307,6 +302,7 @@ void ACOU::AcouImplicitTimeInt::SetInitialPhotoAcousticField(double pulse,
           localrelevantghostelements.push_back(optel);
         } // do not want to consider ghosted elements
       }
+
       // now, every proc knows the owner of this acoustical element
       discret_->Comm().MaxAll(&myacoueleowner,&acoueleowner,1);
 
@@ -726,7 +722,7 @@ void ACOU::AcouImplicitTimeInt::PrintInformationToScreen()
     //if(phys_ == INPAR::ACOU::acou_lossless)
     //  std::cout << "polynomial order            " << DRT::ELEMENTS::Acou::degree << std::endl;
     //else
-    //  std::cout << "polynomial order            " << DRT::ELEMENTS::AcouVisc::degree << std::endl;
+    //  std::cout << "polynomial order            " << DRT::ELEMENTS::AcouSol::degree << std::endl;
     std::cout << "time step size              " << dtp_ << std::endl;
     std::cout << "time integration scheme     " << Name() << std::endl;
     std::cout << "---------------------------------------------------------------------------------" << std::endl;
@@ -750,6 +746,9 @@ void ACOU::AcouImplicitTimeInt::Integrate(Teuchos::RCP<Epetra_MultiVector> histo
 
   // output of initial field (given by function for purely acoustic simulation or given by optics for PAT simulation)
   Output(history,splitter);
+
+  // evaluate error
+  EvaluateErrorComparedToAnalyticalSol();
 
   // call elements to calculate system matrix/rhs and assemble
   AssembleMatAndRHS();
@@ -797,11 +796,12 @@ void ACOU::AcouImplicitTimeInt::Solve()
   const double tcpusolve=Teuchos::Time::wallTime();
   solver_->Solve(sysmat_->EpetraOperator(),velnp_,residual_,true,false,Teuchos::null);
   dtsolve_ = Teuchos::Time::wallTime()-tcpusolve;
+ // velnp_->Print(std::cout);
 
   // update interior variables
   UpdateInteriorVariablesAndAssemebleRHS();
-  ApplyDirichletToSystem();
 
+  ApplyDirichletToSystem();
   return;
 } // Solve
 
@@ -891,10 +891,10 @@ void ACOU::AcouImplicitTimeInt::AssembleMatAndRHS()
     }
   }
   sysmat_->Complete();
-  //std::cout<<"RESIDUAL"<<std::endl;
-  //residual_->Print(std::cout);
-  //std::cout<<"SYSMAT"<<std::endl;
-  //Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_)->EpetraMatrix()->Print(std::cout);
+
+  // residual_->Print(std::cout);
+  // Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_)->EpetraMatrix()->Print(std::cout);
+
   return;
 } // AssembleMatAndRHS
 
@@ -1172,16 +1172,15 @@ namespace
 
     return;
   } // getNodalPsiHDG
-  void getNodeVectorsHDGVisc(DRT::Discretization              &dis,
+
+  void getNodeVectorsHDGSolid(DRT::Discretization              &dis,
                             const Teuchos::RCP<Epetra_Vector> &traceValues,
                             const int                          ndim,
                             Teuchos::RCP<Epetra_MultiVector>  &velocitygradient,
                             Teuchos::RCP<Epetra_MultiVector>  &velocity,
                             Teuchos::RCP<Epetra_Vector>       &pressure,
-                            Teuchos::RCP<Epetra_Vector>       &density,
                             Teuchos::RCP<Epetra_MultiVector>  &tracevelocity,
                             Teuchos::RCP<Epetra_Vector>       &cellPres,
-                            Teuchos::RCP<Epetra_Vector>       &cellDensity,
                             INPAR::ACOU::PhysicalType         phys)
   {
     {
@@ -1189,10 +1188,8 @@ namespace
       velocity.reset(new Epetra_MultiVector(*nodemap,3));
       velocitygradient.reset(new Epetra_MultiVector(*nodemap,6));
       pressure.reset(new Epetra_Vector(*nodemap));
-      density.reset(new Epetra_Vector(*nodemap));
       tracevelocity.reset(new Epetra_MultiVector(*nodemap,3));
       cellPres.reset(new Epetra_Vector(*dis.ElementRowMap()));
-      cellDensity.reset(new Epetra_Vector(*dis.ElementRowMap()));
     }
 
     // call element routine for interpolate HDG to elements
@@ -1211,10 +1208,8 @@ namespace
 
     velocity->PutScalar(0.0);
     pressure->PutScalar(0.0);
-    density->PutScalar(0.0);
     tracevelocity->PutScalar(0.0);
     cellPres->PutScalar(0.0);
-    cellDensity->PutScalar(0.0);
 
     for (int el=0; el<dis.NumMyColElements();++el)
     {
@@ -1243,20 +1238,17 @@ namespace
         for (int d=0; d<6; ++d)
           velocitygradient->SumIntoMyValue(localIndex,d,interpolVec(ele->NumNode()*(2*ndim+2+d)+i+2));
         (*pressure)[localIndex] += interpolVec(ele->NumNode()*(2*ndim)+i);
-        (*density)[localIndex] += interpolVec(ele->NumNode()*(2*ndim+1)+i);
       }
       const int eleIndex = dis.ElementRowMap()->LID(ele->Id());
       if (eleIndex >= 0)
       {
         (*cellPres)[eleIndex] += interpolVec(ele->NumNode()*(2*ndim+2));
-        (*cellDensity)[eleIndex] += interpolVec(ele->NumNode()*(2*ndim+2)+1);
       }
     } // for (int el=0; el<dis.NumMyColElements();++el)
 
     for (int i=0; i<pressure->MyLength(); ++i)
     {
       (*pressure)[i] /= touchCount[i];
-      (*density)[i] /= touchCount[i];
       for (int d=0; d<ndim; ++d)
       {
         (*velocity)[d][i] /= touchCount[i];
@@ -1268,7 +1260,7 @@ namespace
     dis.ClearState();
 
     return;
-  } // getNodeVectorsHDGVisc
+  } // getNodeVectorsHDGSolid
 
 } // namespace
 
@@ -1281,22 +1273,21 @@ void ACOU::AcouImplicitTimeInt::Output(Teuchos::RCP<Epetra_MultiVector> history,
   TEUCHOS_FUNC_TIME_MONITOR("ACOU::AcouImplicitTimeInt::Output");
 
   // output of solution
-
   Teuchos::RCP<Epetra_Vector> interpolatedPressure, traceVel, cellPres;
   Teuchos::RCP<Epetra_MultiVector> interpolatedVelocity;
   Teuchos::RCP<Epetra_Vector> interpolatedDensity, cellDensity;
   Teuchos::RCP<Epetra_MultiVector> traceVelocity;
   Teuchos::RCP<Epetra_MultiVector> interpolatedVelocityGradient;
   if(phys_ == INPAR::ACOU::acou_lossless)
-  { discret_->Comm().Barrier();
+  {
     getNodeVectorsHDG(*discret_, velnp_, numdim_,
                       interpolatedVelocity, interpolatedPressure, traceVel, cellPres, phys_,padaptivity_);
-    discret_->Comm().Barrier();}
-  else
+  }
+  else // if(phys_ == INPAR::ACOU::acou_solid)
   {
-    getNodeVectorsHDGVisc(*discret_, velnp_, numdim_,
-        interpolatedVelocityGradient,interpolatedVelocity,interpolatedPressure,interpolatedDensity,
-        traceVelocity,cellPres,cellDensity,phys_);
+    getNodeVectorsHDGSolid(*discret_, velnp_, numdim_,
+        interpolatedVelocityGradient,interpolatedVelocity,interpolatedPressure,
+        traceVelocity,cellPres,phys_);
   }
 
   if( history != Teuchos::null )
@@ -1382,13 +1373,12 @@ void ACOU::AcouImplicitTimeInt::Output(Teuchos::RCP<Epetra_MultiVector> history,
     {
       output_->WriteVector("par_vel",traceVel);
     }
-    else
+    else // (phys_ == INPAR::ACOU::acou_solid)
     {
-      output_->WriteVector("density",interpolatedDensity);
-      output_->WriteVector("density_avg",cellDensity);
       output_->WriteVector("trace_velocity",traceVelocity);
-      output_->WriteVector("velocity_gradient",interpolatedVelocityGradient,output_->nodevector);
+      output_->WriteVector("stress",interpolatedVelocityGradient,output_->nodevector);
     }
+
     if(errormaps_) output_->WriteVector("error",error_);
     if(padaptivity_) output_->WriteVector("degree",dmap);
 
@@ -1521,19 +1511,21 @@ void ACOU::AcouImplicitTimeInt::NodalPressureField(Teuchos::RCP<Epetra_Vector> o
     for(int i=0; i<traceVel->MyLength(); ++i)
       outvec->ReplaceMyValue(i,0,interpolatedPressure->operator [](i));
   }
-  else
+  else if(phys_ == INPAR::ACOU::acou_solid)
   {
-    Teuchos::RCP<Epetra_Vector> interpolatedPressure, cellPres, interpolatedDensity, cellDensity;
+    Teuchos::RCP<Epetra_Vector> interpolatedPressure, cellPres;
     Teuchos::RCP<Epetra_MultiVector> interpolatedVelocity, traceVelocity;
     Teuchos::RCP<Epetra_MultiVector> interpolatedVelocityGradient;
 
-    getNodeVectorsHDGVisc(*discret_, velnp_, numdim_,
-        interpolatedVelocityGradient,interpolatedVelocity,interpolatedPressure,interpolatedDensity,
-        traceVelocity,cellPres,cellDensity,phys_);
+    getNodeVectorsHDGSolid(*discret_, velnp_, numdim_,
+        interpolatedVelocityGradient,interpolatedVelocity,interpolatedPressure,
+        traceVelocity,cellPres,phys_);
 
     for(int i=0; i<traceVelocity->MyLength(); ++i)
       outvec->ReplaceMyValue(i,0,interpolatedPressure->operator [](i));
   }
+  else
+    dserror("not yet implemented");
   return;
 } // NodalPressurField
 
@@ -1542,7 +1534,7 @@ void ACOU::AcouImplicitTimeInt::NodalPressureField(Teuchos::RCP<Epetra_Vector> o
  *----------------------------------------------------------------------*/
 void ACOU::AcouImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
 {
-  if(calcerr_ != INPAR::ACOU::calcerror_no)
+  if(calcerr_)
   {
     // call element routine
     Teuchos::ParameterList params;
@@ -1550,31 +1542,56 @@ void ACOU::AcouImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
     params.set<double>("time",time_);
     params.set<bool>("padaptivity",padaptivity_);
     params.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
-    params.set<INPAR::ACOU::CalcError>("error calculation",calcerr_);
-    params.set<int>("funct",params_->get<int>("STARTFUNCNO"));
+    params.set<int>("funct",params_->get<int>("CALCERRORFUNCNO"));
 
     discret_->SetState(0,"trace",velnp_);
 
-    Teuchos::RCP<Epetra_SerialDenseVector> errors = Teuchos::rcp(new Epetra_SerialDenseVector(3+3));
+    Teuchos::RCP<Epetra_SerialDenseVector> errors = Teuchos::rcp(new Epetra_SerialDenseVector(6));
 
     // call loop over elements (assemble nothing)
     discret_->EvaluateScalars(params, errors);
     discret_->ClearState();
 
     // std::vector containing
-    // [0]: relative L2 velocity error
-    // [1]: relative L2 pressure error
-    // [2]: relative H1 velocity error
+    // [0]: L2 pressure error
+    // [1]: L2 pressure norm
+    // [2]: L2 velocity error
+    // [3]: L2 velocity norm
+    // [4]: L2 velocity gradient error
+    // [5]: L2 velocity gradient norm
+
     Teuchos::RCP<std::vector<double> > relerror = Teuchos::rcp(new std::vector<double>(3));
 
+    if ( (*errors)[1] != 0.0 )
+      (*relerror)[0] = sqrt((*errors)[0])/sqrt((*errors)[1]);
+    else if ((*errors)[0] != 0.0)
+      (*relerror)[0] = 1.0;
+    else
+      (*relerror)[0] = 0.0;
+
     if ( (*errors)[3] != 0.0 )
-      (*relerror)[1] = sqrt((*errors)[1])/sqrt((*errors)[3]);
-    else if ((*errors)[1] != 0.0)
+      (*relerror)[1] = sqrt((*errors)[2])/sqrt((*errors)[3]);
+    else if ((*errors)[2] != 0.0)
       (*relerror)[1] = 1.0;
     else
       (*relerror)[1] = 0.0;
 
-    if(!myrank_) std::cout<<"time "<<time_<<" relative L2 pressure error "<<(*relerror)[1]<<" absolute L2 pressure error "<<sqrt((*errors)[1])<< " L2 pressure norm "<<sqrt((*errors)[3])<<std::endl;
+    if ( (*errors)[5] != 0.0 )
+      (*relerror)[2] = sqrt((*errors)[4])/sqrt((*errors)[5]);
+    else if ((*errors)[4] != 0.0)
+      (*relerror)[2] = 1.0;
+    else
+      (*relerror)[2] = 0.0;
+
+    if(!myrank_)
+    {
+      std::cout<<"time "<<time_<<" relative L2 pressure error "<<(*relerror)[0]<<" absolute L2 pressure error "<<sqrt((*errors)[0])<< " L2 pressure norm "<<sqrt((*errors)[1])<<std::endl;
+      if(phys_==INPAR::ACOU::acou_solid)
+      {
+        std::cout<<"time "<<time_<<" relative L2 velocity error "<<(*relerror)[1]<<" absolute L2 velocity error "<<sqrt((*errors)[2])<< " L2 velocity norm "<<sqrt((*errors)[3])<<std::endl;
+        std::cout<<"time "<<time_<<" relative L2 velgradi error "<<(*relerror)[2]<<" absolute L2 velgradi error "<<sqrt((*errors)[4])<< " L2 velgradi norm "<<sqrt((*errors)[5])<<std::endl;
+      }
+    }
   }
   return;
 }

@@ -1810,7 +1810,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     std::set<std::string> acouelementtypes;
     acouelementtypes.insert("ACOUSTIC");
-    acouelementtypes.insert("ACOUSTICVISC");
+    acouelementtypes.insert("ACOUSTICSOL");
 
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(acoudis, reader, "--ACOUSTIC ELEMENTS",acouelementtypes)));
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));

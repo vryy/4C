@@ -1,6 +1,6 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file acou_visc_ele_calc.H
+\file acou_sol_ele_calc.H
 
 \brief Routines for acoustic elements
 
@@ -13,11 +13,11 @@ Maintainer: Svenja Schoeder
 */
 /*--------------------------------------------------------------------------*/
 
-#ifndef ACOU_VISC_ELE_CALC_H
-#define ACOU_VISC_ELE_CALC_H
+#ifndef ACOU_SOL_ELE_CALC_H
+#define ACOU_SOL_ELE_CALC_H
 
 #include "acou_ele_interface.H"
-#include "acou_visc_ele.H"
+#include "acou_sol_ele.H"
 #include "../drt_fem_general/drt_utils_gausspoints.H"
 #include "../drt_inpar/inpar_acou.H"
 #include "../drt_fem_general/drt_utils_shapevalues_hdg.H"
@@ -35,7 +35,7 @@ namespace ELEMENTS
 */
 
 template<DRT::Element::DiscretizationType distype>
-class AcouViscEleCalc : public AcouEleInterface
+class AcouSolEleCalc : public AcouEleInterface
 {
 public:
   //! nen_: number of element nodes (T. Hughes: The Finite Element Method)
@@ -57,27 +57,22 @@ public:
   void ComputeError(
       DRT::ELEMENTS::Acou*          ele,
       Teuchos::ParameterList&       params,
-      Teuchos::RCP<MAT::Material>&  mat,
-      DRT::Discretization&          discretization,
-      const std::vector<int>&       lm,
       Epetra_SerialDenseVector&     elevec);
 
   /// projection of function field
   virtual int ProjectField(DRT::ELEMENTS::Acou*                 ele,
                            Teuchos::ParameterList&              params,
-                           Teuchos::RCP<MAT::Material>&         mat,
-                           DRT::Discretization&                 discretization,
-                           const std::vector<int>&              lm,
                            Epetra_SerialDenseVector&            elevec1,
                            Epetra_SerialDenseVector&            elevec2);
+
+  /// projection of Dirichlet function field
+  virtual int ProjectDirichField(DRT::ELEMENTS::Acou*                 ele,
+                                 Teuchos::ParameterList&              params,
+                                 Epetra_SerialDenseVector&            elevec1);
 
   /// projection of optical field
   virtual int ProjectOpticalField(DRT::ELEMENTS::Acou*                 ele,
                                   Teuchos::ParameterList&              params,
-                                  Teuchos::RCP<MAT::Material>&         mat,
-                                  DRT::Discretization&                 discretization,
-                                  const std::vector<int>&              lm,
-                                  Epetra_SerialDenseVector&            elevec1,
                                   Epetra_SerialDenseVector&            elevec2);
 
   /// projection of optical field
@@ -85,16 +80,13 @@ public:
                            Teuchos::ParameterList&              params);
 
   /// map solution values to nodes
-  void NodeBasedValues(DRT::ELEMENTS::Acou*                 ele,
-                       DRT::Discretization&                 discretization,
-                       const std::vector<int>&              lm,
+  void NodeBasedValues(const Teuchos::RCP<MAT::Material>    &mat,
+                       DRT::ELEMENTS::Acou*                 ele,
                        Epetra_SerialDenseVector&            elevec1);
 
   /// map solution values to nodes
   void NodeBasedPsi(const Teuchos::RCP<MAT::Material>    &mat,
                     DRT::ELEMENTS::Acou*                 ele,
-                    DRT::Discretization&                 discretization,
-                    const std::vector<int>&              lm,
                     Epetra_SerialDenseVector&            elevec1,
                     double                               dt);
 
@@ -133,10 +125,10 @@ public:
                        bool                                 offdiag = false);
 
 
-  virtual ~AcouViscEleCalc() {}
+  virtual ~AcouSolEleCalc() {}
 
   /// Singleton access method
-  static AcouViscEleCalc<distype> * Instance( bool create=true );
+  static AcouSolEleCalc<distype> * Instance( bool create=true );
 
   /// called upon destruction
   virtual void Done();
@@ -144,13 +136,13 @@ public:
 
 private:
   /// private Constructor since we are a Singleton.
-  AcouViscEleCalc();
+  AcouSolEleCalc();
 
   /// local solver that inverts local problem on an element and can solve with various vectors
   struct LocalSolver
   {
-    static const unsigned int nsd_    = AcouViscEleCalc<distype>::nsd_;
-    static const unsigned int nfaces_ = AcouViscEleCalc<distype>::nfaces_;
+    static const unsigned int nsd_    = AcouSolEleCalc<distype>::nsd_;
+    static const unsigned int nfaces_ = AcouSolEleCalc<distype>::nfaces_;
 
     LocalSolver (const DRT::ELEMENTS::Acou* ele,
                  const DRT::UTILS::ShapeValues<distype> &shapeValues,
@@ -165,12 +157,14 @@ private:
                             Epetra_SerialDenseMatrix    &elemat,
                             Epetra_SerialDenseVector    &elevec);
 
+    void ComputeSource(Teuchos::ParameterList&           params,
+                       Epetra_SerialDenseVector          & interiorSourcen,
+                       Epetra_SerialDenseVector          & interiorSourcenp);
+
     /// add terms corresponding to the absorbing boundary condition
     void ComputeSourcePressureMonitor(DRT::ELEMENTS::Acou*        ele,
                             Teuchos::ParameterList&     params,
-                            Teuchos::RCP<MAT::Material> & mat,
                             int                         face,
-                            Epetra_SerialDenseMatrix    &elemat,
                             Epetra_SerialDenseVector    &elevec);
 
     /// add terms corresponding to the absorbing boundary condition
@@ -182,26 +176,22 @@ private:
                               Epetra_SerialDenseVector    &elevec);
 
     /// set up interior matrices
-    void ComputeInteriorMatrices(const Teuchos::RCP<MAT::Material> &mat,
-                                 double                            dt,
-                                 INPAR::ACOU::DynamicType          dyna);
+    void ComputeInteriorMatrices();
+
     /// set up face matrices
-    void ComputeFaceMatrices(const int                          face,
-                             const Teuchos::RCP<MAT::Material>& mat,
-                             double                             dt);
+    void ComputeFaceMatrices(const int face);
+
     // condense the local matrix (involving cell velocity gradients, velocities and pressure) into
     // the element matrix for the trace and similarly for the residuals
     void CondenseLocalPart(Epetra_SerialDenseMatrix &elemat,
                            INPAR::ACOU::DynamicType dyna);
 
     /// compute the residual
-    void ComputeResidual(Teuchos::ParameterList&     params,
-                         DRT::ELEMENTS::Acou &                ele,
+    void ComputeResidual(Teuchos::ParameterList&           params,
                          Epetra_SerialDenseVector          & eleVec,
                          Epetra_SerialDenseVector          & interiorGradVeln,
                          Epetra_SerialDenseVector          & interiorVeln,
                          Epetra_SerialDenseVector          & interiorPressn,
-                         Epetra_SerialDenseVector          & interiorDensn,
                          std::vector<double>               traceVal,
                          INPAR::ACOU::DynamicType          dyna);
 
@@ -228,22 +218,15 @@ private:
     Epetra_SerialDenseMatrix gmat;
     Epetra_SerialDenseMatrix hmat;
     Epetra_SerialDenseMatrix imat;
-    Epetra_SerialDenseMatrix invimat;
     Epetra_SerialDenseMatrix jmat;
     Epetra_SerialDenseMatrix kmat;
     Epetra_SerialDenseMatrix lmat;
-    Epetra_SerialDenseMatrix lhatmat;
     Epetra_SerialDenseMatrix mmat;
     Epetra_SerialDenseMatrix nmat;
-    Epetra_SerialDenseMatrix omat;
-    Epetra_SerialDenseMatrix pmat;
-
   };
   /// updates interior variables and calculates residual
-  void UpdateInteriorVariablesAndComputeResidual(DRT::Discretization &             discretization,
-                                                 Teuchos::ParameterList&           params,
+  void UpdateInteriorVariablesAndComputeResidual(Teuchos::ParameterList&           params,
                                                  DRT::ELEMENTS::Acou *             ele,
-                                                 const Teuchos::RCP<MAT::Material> &mat,
                                                  Epetra_SerialDenseVector          & elevec,
                                                  double                            dt,
                                                  bool                              errormaps,
@@ -259,10 +242,7 @@ private:
 
   /// add terms corresponding to the absorbing boundary condition
   void ComputePMonNodeVals(DRT::ELEMENTS::Acou*        ele,
-                          Teuchos::ParameterList&     params,
-                          Teuchos::RCP<MAT::Material> & mat,
                           int                         face,
-                          Epetra_SerialDenseMatrix    &elemat,
                           Epetra_SerialDenseVector    &elevec);
 
   /// reads from global vectors
@@ -286,7 +266,10 @@ private:
 
   void EvaluateAll(const int start_func,
                    const double (&xyz)[nsd_],
-                   double  &p) const;
+                   double  &p,
+                   double  (&v)[nsd_],
+                   double  (&gv)[nsd_*nsd_],
+                   double t) const;
 
   void EvaluateLight(double lightxyz[][nsd_],
                      double values[],
@@ -306,46 +289,31 @@ private:
   std::vector<double> traceVal_;          /// extracted values from trace solution vector
   std::vector<double> traceValm_;         /// extracted values from old trace
 
-  /// local values from interior solution vector (velocity gradients, velocities, pressure) at n+1
-  std::vector<double> interiorValnp_;
-  /// local values from interior solution vector (velocity gradients, velocities, pressure) at n
-  std::vector<double> interiorValn_;
-  /// local values from interior solution vector (velocity gradients, velocities, pressure) at n-1
-  std::vector<double> interiorValnm_;
-  /// local values from interior solution vector (velocity gradients, velocities, pressure) at n-2
-  std::vector<double> interiorValnmm_;
-  /// local values from interior solution vector (velocity gradients, velocities, pressure) at n-2
-  std::vector<double> interiorValnmmm_;
 
   /// local values from interior solution vector (gradient, velocity) at n+1
   Epetra_SerialDenseVector interiorGradVelnp_;
   Epetra_SerialDenseVector interiorVelnp_;
   Epetra_SerialDenseVector interiorPressnp_;
-  Epetra_SerialDenseVector interiorDensnp_;
 
   /// local values from interior solution vector (gradient, velocity) at n
   Epetra_SerialDenseVector interiorGradVeln_;
   Epetra_SerialDenseVector interiorVeln_;
   Epetra_SerialDenseVector interiorPressn_;
-  Epetra_SerialDenseVector interiorDensn_;
 
   /// local values from interior solution vector (gradient, velocity) at n-1
   Epetra_SerialDenseVector interiorGradVelnm_;
   Epetra_SerialDenseVector interiorVelnm_;
   Epetra_SerialDenseVector interiorPressnm_;
-  Epetra_SerialDenseVector interiorDensnm_;
 
   /// local values from interior solution vector (gradient, velocity) at n-2
   Epetra_SerialDenseVector interiorGradVelnmm_;
   Epetra_SerialDenseVector interiorVelnmm_;
   Epetra_SerialDenseVector interiorPressnmm_;
-  Epetra_SerialDenseVector interiorDensnmm_;
 
   /// local values from interior solution vector (gradient, velocity) at n-3
   Epetra_SerialDenseVector interiorGradVelnmmm_;
   Epetra_SerialDenseVector interiorVelnmmm_;
   Epetra_SerialDenseVector interiorPressnmmm_;
-  Epetra_SerialDenseVector interiorDensnmmm_;
 
   /// time integration scheme
   INPAR::ACOU::DynamicType dyna_;
@@ -357,4 +325,4 @@ private:
 } // namespace ELEMENTS
 } // namespace DRT
 
-#endif /* ACOU_VISC_ELE_CALC_H */
+#endif /* ACOU_SOL_ELE_CALC_H */

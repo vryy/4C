@@ -192,7 +192,7 @@ protected:
   bool errormaps_;                      /// flag indicating whether error maps are calculated
   bool padaptivity_;                    /// p-adaptivity flag
   double padapttol_;                    /// p-adaptivity error tolerance
-  INPAR::ACOU::CalcError calcerr_;      /// flag for error calculation
+  bool calcerr_;                        /// flag for error calculation
 
   /// (standard) system matrix
   Teuchos::RCP<LINALG::SparseOperator> sysmat_;

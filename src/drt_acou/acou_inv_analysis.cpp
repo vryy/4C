@@ -13,7 +13,6 @@ Maintainer: Svenja Schoeder
 
 #include "acou_inv_analysis.H"
 #include "acou_ele.H"
-#include "acou_visc_ele.H"
 #include "acou_impl_euler.H"
 #include "acou_impl_trap.H"
 #include "acou_impl_dirk.H"
@@ -185,7 +184,7 @@ void ACOU::InvAnalysis::ReadMonitor(std::string monitorfilename)
   acou_discret_->Comm().Barrier();
 
 
-  //abcnodes_map_ = Teuchos::rcp(new Epetra_Map(-1, abcnodes.size(), &abcnodes[0], 0, acou_discret_->Comm()));
+//abcnodes_map_ = Teuchos::rcp(new Epetra_Map(-1, abcnodes.size(), &abcnodes[0], 0, acou_discret_->Comm()));
   abcnodes_map_ = Teuchos::rcp(new Epetra_Map(-1, pressuremonnodesunique.size(), &pressuremonnodesunique[0], 0, acou_discret_->Comm()));
   abcnodes_mapex_ = Teuchos::rcp(new LINALG::MapExtractor(*(acou_discret_->NodeRowMap()),abcnodes_map_,true));
 
