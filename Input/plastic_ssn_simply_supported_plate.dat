@@ -68,7 +68,7 @@ STABILIZATION_S                 1.0
 NORMCOMBI_RESFPLASTCONSTR       And
 NORMCOMBI_DISPPLASTINCR         And
 TOLPLASTCONSTR                  1.e-6
-TOLDELTALP                      1.e-8
+TOLDELTALP                      1.e-10
 TOLEASRES                       1e-4
 TOLEASINCR                      1e-8
 --------------------------------------------------------------------SOLVER 1
@@ -76,7 +76,7 @@ NAME                            Structure_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_PlasticElastHyper NUMMAT 1 MATIDS 2 DENS 1.0 INITYIELD 248
-MAT 2 ELAST_CoupLogNeoHooke MODE YN C1 69e4 C2 0.3
+MAT 2 ELAST_CoupLogNeoHooke MODE YN C1 69.0e4 C2 0.3
 -------------------------------------------------------------CURVE1
 CURVE 1 on Polygonal T 0 BYABSTIME Yes 0 1  FACTOR 0 60
 ------------------------------------------------DESIGN DESCRIPTION

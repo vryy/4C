@@ -2293,7 +2293,7 @@ void MAT::PlasticElastHyper::MatrixExponential3x3( LINALG::Matrix<3,3>& MatrixIn
     MatrixInOut(i,i)=1.;
   LINALG::Matrix<3,3> tmp(MatrixInOut);
   LINALG::Matrix<3,3> tmp2(MatrixInOut);
-  while (n<50 && tmp.Norm2()/facn>1.e-16)
+  while (n<50 && tmp.Norm2()/facn>1.e-32)
   {
     n++;
     facn*=n;
@@ -2345,7 +2345,7 @@ void MAT::PlasticElastHyper::MatrixExponentialDerivativeSym3x3(const LINALG::Mat
     fac.push_back(nfac);
 
     // compute nmax and Xn
-    while (nIter<50 && tmp2.Norm2()/nfac>1.e-16)
+    while (nIter<50 && tmp2.Norm2()/nfac>1.e-32)
     {
       nIter++;
       nfac *= nIter;
@@ -2523,7 +2523,7 @@ void MAT::PlasticElastHyper::MatrixExponentialDerivative3x3(const LINALG::Matrix
   fac.push_back(nfac);
 
   // compute nmax and Xn
-  while (nIter<50 && tmp2.Norm2()/nfac>1.e-16)
+  while (nIter<50 && tmp2.Norm2()/nfac>1.e-32)
   {
     nIter++;
     nfac *= nIter;
