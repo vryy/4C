@@ -7779,13 +7779,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                     INPAR::ACOU::acou_solid),
                     &acousticdyn);
 
-
-  // for nonlinear time integration
-  DoubleParameter("CONVTOL",1.0e-9,"Convergence tolerance for Newton loop",&acousticdyn);
-  IntParameter("ITEMAX",10,"Maximum number of iterations for Newton loop",&acousticdyn);
-
   // photoacoustics
-  DoubleParameter("PULSEDURATION",15e-9,"Laser pulse duration",&acousticdyn);
   BoolParameter("PHOTOACOU","No","Coupling with Scatra for Diffusive Light Transport",&acousticdyn);
   BoolParameter("MESHCONFORM","No","Conformity of scatra and acoustical mesh",&acousticdyn);
 

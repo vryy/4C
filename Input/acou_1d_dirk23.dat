@@ -28,7 +28,6 @@ MAXTIME                         1.0
 UPRES                           5
 RESTARTEVRY                     0
 STARTFUNCNO                     1
-PULSEDURATION                   15e-9
 PHOTOACOU                       No
 ERRORMAPS                       No
 TIMEINT                         dirk23

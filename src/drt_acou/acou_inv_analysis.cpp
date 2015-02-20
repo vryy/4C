@@ -559,7 +559,6 @@ void ACOU::InvAnalysis::SolveStandardProblem()
   }
   bool meshconform = DRT::INPUT::IntegralValue<bool>(*acouparams_,"MESHCONFORM");
 
-  double pulse = acouparams_->get<double>("PULSEDURATION");
   acouparams_->set<bool>("adjoint",false);
 
   std::string outname = name_;
@@ -598,7 +597,7 @@ void ACOU::InvAnalysis::SolveStandardProblem()
     dserror("Unknown time integration scheme for problem type Acoustics");
     break;
   }
-  acoualgo_->SetInitialPhotoAcousticField(pulse,phi_,scatra_discret_,meshconform);
+  acoualgo_->SetInitialPhotoAcousticField(phi_,scatra_discret_,meshconform);
 
   // we have to call a slightly changed routine, which fills our history vector which we need for the adjoint problem
   acou_rhs_->Scale(0.0);

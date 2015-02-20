@@ -193,7 +193,7 @@ void ACOU::AcouImplicitTimeInt::SetInitialZeroField()
 /*----------------------------------------------------------------------*
  |  Initialization of algorithm by given function (pub)  schoeder 01/14 |
  *----------------------------------------------------------------------*/
-void ACOU::AcouImplicitTimeInt::SetInitialField(int startfuncno, double pulse)
+void ACOU::AcouImplicitTimeInt::SetInitialField(int startfuncno)
 {
   Epetra_SerialDenseVector elevec1, elevec2, elevec3;
   Epetra_SerialDenseMatrix elemat1, elemat2;
@@ -201,7 +201,6 @@ void ACOU::AcouImplicitTimeInt::SetInitialField(int startfuncno, double pulse)
   Teuchos::ParameterList initParams;
   initParams.set<int>("action",ACOU::project_field);
   initParams.set<int>("funct",startfuncno);
-  initParams.set<double>("pulse",pulse);
   initParams.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
   initParams.set<bool>("padaptivity",padaptivity_);
   initParams.set<INPAR::ACOU::DynamicType>("dynamic type",dyna_);
@@ -237,7 +236,7 @@ void ACOU::AcouImplicitTimeInt::SetInitialField(int startfuncno, double pulse)
 /*----------------------------------------------------------------------*
  | Initialization by given scatra solution vector (pub)  schoeder 01/14 |
  *----------------------------------------------------------------------*/
-void ACOU::AcouImplicitTimeInt::SetInitialPhotoAcousticField(double pulse,
+void ACOU::AcouImplicitTimeInt::SetInitialPhotoAcousticField(
                                                        Teuchos::RCP<Epetra_Vector> light,
                                                        Teuchos::RCP<DRT::Discretization> scatradis,
                                                        bool meshconform)
@@ -262,7 +261,6 @@ void ACOU::AcouImplicitTimeInt::SetInitialPhotoAcousticField(double pulse,
   DRT::Element::LocationArray la(2);
 
   initParams.set<int>("action",ACOU::project_optical_field);
-  initParams.set<double>("pulse",pulse);
   initParams.set<bool>("mesh conform",meshconform);
 
   int numoptele = scatradis->NumGlobalElements();

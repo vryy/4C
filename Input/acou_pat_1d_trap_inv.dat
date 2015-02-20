@@ -32,7 +32,6 @@ MAXTIME                         0.0000059999
 UPRES                           1
 RESTARTEVRY                     0
 STARTFUNCNO                     1
-PULSEDURATION                   15e-9
 PHOTOACOU                       Yes
 MESHCONFORM                     Yes
 ERRORMAPS                       No

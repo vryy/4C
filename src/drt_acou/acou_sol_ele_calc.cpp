@@ -1532,7 +1532,7 @@ void DRT::ELEMENTS::AcouSolEleCalc<distype>::ComputeMatrices(const Teuchos::RCP<
   const MAT::AcousticSolMat* actmat = static_cast<const MAT::AcousticSolMat*>(mat.get());
   double rho = actmat->Density();
   double c = actmat->SpeedofSound();
-  double tau = 1.0;
+  double tau = 1.0; // or rho * c (because of the units)
   double visc = actmat->Viscosity();
 
   zeroMatrix(localSolver_->amat);

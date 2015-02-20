@@ -85,10 +85,10 @@ public:
   virtual void SetInitialZeroField();
 
   /// set initial field by given function
-  virtual void SetInitialField(int startfuncno, double pulse);
+  virtual void SetInitialField(int startfuncno);
 
   /// set initial field by given light distribution
-  virtual void SetInitialPhotoAcousticField(double pulse, Teuchos::RCP<Epetra_Vector> light, Teuchos::RCP<DRT::Discretization> scatradis, bool meshconform);
+  virtual void SetInitialPhotoAcousticField(Teuchos::RCP<Epetra_Vector> light, Teuchos::RCP<DRT::Discretization> scatradis, bool meshconform);
 
   /// print out user information
   void PrintInformationToScreen();

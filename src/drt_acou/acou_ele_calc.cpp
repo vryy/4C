@@ -2590,7 +2590,7 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ComputeFaceMatrices(
 
   const MAT::AcousticMat* actmat = static_cast<const MAT::AcousticMat*>(mat.get());
   double c = actmat->SpeedofSound();
-  double tau = 1.0 / (c) ;/// dt; // / 1.0e6;
+  double tau = 1.0 / c ;
 
   // loop over number of shape functions
   for (unsigned int q = 0; q < ndofs_; ++q)
@@ -2766,7 +2766,7 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ComputeMatrices(
   default:
     break;
   }
-  double tau = 1.0 / (c)  ;/// dt;
+  double tau = 1.0 / c ;
 
   ComputeInteriorMatrices(mat, dt);
 

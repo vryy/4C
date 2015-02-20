@@ -128,9 +128,6 @@ void acoustics_drt()
     params->set<bool>("adjoint",false);
   }
 
-  // set pulse duration
-  double pulse = acouparams.get<double>("PULSEDURATION");
-
   // set restart step if we do not perform inverse analysis
   int restart = -1;
   if(!invanalysis)
@@ -243,13 +240,13 @@ void acoustics_drt()
     else if (!photoacou) // standard acoustic simulation
     {
       int startfuncno = acouparams.get<int>("STARTFUNCNO");
-      acoualgo->SetInitialField(startfuncno,pulse);
+      acoualgo->SetInitialField(startfuncno);
     }
     else // initial field calculated in dependence on light distribution - photoacoustic setting
     {
       bool meshconform = DRT::INPUT::IntegralValue<bool>(acouparams,"MESHCONFORM");
       // calculate initial pressure distribution by means of the scalar transport problem
-      acoualgo->SetInitialPhotoAcousticField(pulse,scatrainitialpress,DRT::Problem::Instance()->GetDis("scatra"), meshconform);
+      acoualgo->SetInitialPhotoAcousticField(scatrainitialpress,DRT::Problem::Instance()->GetDis("scatra"), meshconform);
     }
     acoualgo->Integrate();
 

@@ -29,7 +29,6 @@ RESTARTEVRY                     0
 STARTFUNCNO                     2
 SOURCETERMFUNCNO                3
 CALCERRORFUNCNO                 4
-PULSEDURATION                   15e-9
 PHOTOACOU                       No
 PHYSICAL_TYPE                   solid
 ERRORMAPS                       No
