@@ -348,8 +348,11 @@ void STR::TimIntImpl::Predict()
 
   // set predictor type
   if (HaveSemiSmoothPlasticity())
+  {
     plastman_->SetData().pred_type_=pred_;
-
+    plastman_->SetData().no_recovery_=false; // recovery here also includes prediction
+    plastman_->SetData().no_pl_condensation_=false;
+    }
   // residual of condensed variables (e.g. EAS) for NewtonLS
   if (fresn_str_!=Teuchos::null)
   {

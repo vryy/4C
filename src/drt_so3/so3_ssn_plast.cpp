@@ -389,6 +389,8 @@ void DRT::ELEMENTS::So3_Plast<distype>::Unpack(
    for (int i=0; i<size; i++)
      ExtractfromPack(position,data,dDp_last_iter_[i]);
 
+   data_=Teuchos::null;
+
    if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
