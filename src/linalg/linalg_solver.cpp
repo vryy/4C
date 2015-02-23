@@ -667,6 +667,11 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToIfpack(const Teuchos
     ifpacklist.set("relaxation: sweeps",inparams.get<int>("IFPACKGFILL")); // misuse IFPACKGFILL parameter
   }
   break;
+  case INPAR::SOLVER::azprec_Chebyshev:
+  {
+    ifpacklist.set("chebyshev: degree", inparams.get<int>("IFPACKGFILL"));
+  }
+  break;
   }
 
   return ifpacklist;
@@ -1484,6 +1489,11 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
       azlist.set("AZ_precond",AZ_user_precond);
       azlist.set("Preconditioner Type","point relaxation");
       break;
+    case INPAR::SOLVER::azprec_Chebyshev:
+      // using ifpack
+      azlist.set("AZ_precond", AZ_user_precond);
+      azlist.set("Preconditioner Type","Chebyshev");
+      break;
     case INPAR::SOLVER::azprec_SymmGaussSeidel:
       // using ifpack
       azlist.set("AZ_precond",AZ_user_precond);
@@ -1591,7 +1601,8 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
         azprectyp == INPAR::SOLVER::azprec_SymmGaussSeidel ||
         azprectyp == INPAR::SOLVER::azprec_GaussSeidel ||
         azprectyp == INPAR::SOLVER::azprec_DownwindGaussSeidel ||
-        azprectyp == INPAR::SOLVER::azprec_Jacobi)
+        azprectyp == INPAR::SOLVER::azprec_Jacobi ||
+        azprectyp == INPAR::SOLVER::azprec_Chebyshev)
     {
       Teuchos::ParameterList& ifpacklist = outparams.sublist("IFPACK Parameters");
       ifpacklist = LINALG::Solver::TranslateBACIToIfpack(inparams);
