@@ -40,7 +40,6 @@ MATID                           1
 WRITEFLUX                       totalflux_boundary
 OUTMEAN                         Yes
 SKIPINITDER                     Yes
-INITPOTCALC                     no
 MAXTIME                         0.02
 NUMSTEP                         20
 RESTARTEVRY                     10

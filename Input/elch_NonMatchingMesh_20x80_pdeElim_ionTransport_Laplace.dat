@@ -40,7 +40,6 @@ UPRES                           1
 CALCERROR                       No
 MATID                           2
 MESHTYING                       Condensed_Smat
-ONLYPOTENTIAL                   yes
 OUTMEAN                         yes
 --------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-09
@@ -51,6 +50,7 @@ DEFINITION_TAU                  Zero
 ------------------------------------------------------ELCH CONTROL
 TEMPERATURE                     11604.506 // abused as a scaling factor in order to have: F/RT = 1.0
 EQUPOT                          ENC_PDE_ELIM
+ONLYPOTENTIAL                   yes
 -------------------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     Dual
 PARALLEL_REDIST                 no

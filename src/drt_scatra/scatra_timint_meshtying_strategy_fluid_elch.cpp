@@ -61,7 +61,7 @@ Teuchos::RCP<LINALG::SparseOperator> SCATRA::MeshtyingStrategyFluidElch::InitSys
   // special case: only potential is coupled
   // =>   coupleddof = [0, 0, ..., 0, 1]
   std::vector<int> coupleddof(scatratimint_->NumScal()+1,1);
-  if(DRT::INPUT::IntegralValue<int>(*(scatratimint_->ScatraParameterList()),"ONLYPOTENTIAL"))
+  if(DRT::INPUT::IntegralValue<int>(*(ElchTimInt()->ElchParameterList()),"ONLYPOTENTIAL"))
     for(int i=0; i<scatratimint_->NumScal(); ++i)
       coupleddof[i] = 0;
 

@@ -256,11 +256,15 @@ void SCATRA::ScaTraTimIntElchOST::ComputeTimeDerivPot0(const bool init)
 }
 
 
-/*----------------------------------------------------------------------*
- | set old part of RHS for galvanostatic equation             gjb 04/10 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchOST::ElectrodeKineticsSetOldPartOfRHS()
+/*--------------------------------------------------------------------------*
+ | set part of residual vector belonging to previous time step   fang 02/15 |
+ *--------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElchOST::SetOldPartOfRighthandside()
 {
+  // call base class routine
+  TimIntOneStepTheta::SetOldPartOfRighthandside();
+
+  // contribution from galvanostatic equation
   if((DRT::INPUT::IntegralValue<int>(*elchparams_,"GALVANOSTATIC")) or
       dlcapexists_==true)
   {
@@ -502,11 +506,15 @@ void SCATRA::ScaTraTimIntElchBDF2::ComputeTimeDerivPot0(const bool init)
 }
 
 
-/*----------------------------------------------------------------------*
- | set old part of RHS for galvanostatic equation             gjb 04/10 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchBDF2::ElectrodeKineticsSetOldPartOfRHS()
+/*--------------------------------------------------------------------------*
+ | set part of residual vector belonging to previous time step   fang 02/15 |
+ *--------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElchBDF2::SetOldPartOfRighthandside()
 {
+  // call base class routine
+  TimIntBDF2::SetOldPartOfRighthandside();
+
+  // contribution from galvanostatic equation
   if ((DRT::INPUT::IntegralValue<int>(*elchparams_,"GALVANOSTATIC")) or
       dlcapexists_==true)
   {

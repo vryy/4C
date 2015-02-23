@@ -58,7 +58,6 @@ INITIALFIELD                    field_by_condition              // test this opt
 FSSUGRDIFF                      No
 WRITEFLUX                       No
 MATID                           1
-INITPOTCALC                     yes
 SKIPINITDER                     no
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 //
@@ -77,6 +76,7 @@ ABSTOLRES                       5.0e-13
 ----------------------------------------------------------------ELCH CONTROL
 EQUPOT                          divi
 DIFFCOND_FORMULATION            Yes
+INITPOTCALC                     yes
 -------------------------------------------------------ELCH CONTROL/DIFFCOND
 CURRENT_SOLUTION_VAR            No
 MAT_NEWMAN_CONST_A              1.0

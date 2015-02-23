@@ -575,6 +575,7 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtAssemble()
   ApplyDirichletBC(time_,phin_,Teuchos::null);
 
   // evaluate Neumann boundary conditions at time t = 0
+  // TODO: Neumann boundary conditions on additional degrees of freedom (e.g. electric potential) must actually not be considered here!
   ApplyNeumannBC(neumann_loads_);
 
   // zero out residual vector and add Neumann loads
@@ -620,6 +621,10 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtAssemble()
     // call loop over elements
     discret_->Evaluate(eleparams,sysmat_,residual_);
     discret_->ClearState();
+
+    // evaluate solution-depending boundary and interface conditions
+    // TODO: include this with correct scaling (divide out time factor)
+    // EvaluateSolutionDependingConditions(sysmat_,residual_);
 
     // finalize the complete matrix
     sysmat_->Complete();

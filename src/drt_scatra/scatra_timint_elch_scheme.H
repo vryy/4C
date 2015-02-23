@@ -63,8 +63,8 @@ protected:
   //!  compute scalar time derivate parameters of the input voltage to compute double layer current densities
   void ComputeTimeDerivPot0(const bool init);
 
-  //! set old part of RHS for galvanostatic equation
-  void ElectrodeKineticsSetOldPartOfRHS();
+  //! set part of residual vector belonging to previous time step
+  void SetOldPartOfRighthandside();
 }; // class TimIntElchOST
 
 
@@ -106,8 +106,8 @@ protected:
   //!  compute scalar time derivate parameters of the input voltage to compute double layer current densities
   void ComputeTimeDerivPot0(const bool init);
 
-  //! set old part of RHS for galvanostatic equation
-  void ElectrodeKineticsSetOldPartOfRHS();
+  //! set part of residual vector belonging to previous time step
+  void SetOldPartOfRighthandside();
 }; // class TimIntElchBDF2
 
 
@@ -148,9 +148,6 @@ protected:
 
   //!  compute scalar time derivate parameters of the input voltage to compute double layer current densities
   void ComputeTimeDerivPot0(const bool init);
-
-  //! set old part of RHS for galvanostatic equation
-  void ElectrodeKineticsSetOldPartOfRHS(){dserror(""); return;};
 }; // class TimIntElchGenAlpha
 
 
@@ -191,9 +188,6 @@ protected:
 
   //!  compute scalar time derivate parameters of the input voltage to compute double layer current densities
   void ComputeTimeDerivPot0(const bool init);
-
-  //! set old part of RHS for galvanostatic equation
-  void ElectrodeKineticsSetOldPartOfRHS(){return;};
 }; // class TimIntElchStatationary
 } // namespace SCATRA
 

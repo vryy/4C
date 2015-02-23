@@ -173,7 +173,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhs(
   //-----------------------------------------------------------------------
 
   if (my::scatraparatimint_->IsIncremental() and not my::scatraparatimint_->IsStationary())
-    this->CalcRHSLinMass(erhs,k,rhsfac,fac,DiffManager()->GetPhasePoro(0),DiffManager()->GetPhasePoro(0));
+    my::CalcRHSLinMass(erhs,k,rhsfac,fac,DiffManager()->GetPhasePoro(0),DiffManager()->GetPhasePoro(0));
 
   // adaption of rhs with respect to time integration
   my::ComputeRhsInt(rhsint,DiffManager()->GetPhasePoro(0),DiffManager()->GetPhasePoro(0),hist);

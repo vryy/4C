@@ -119,7 +119,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalcMatAndRhs(
 
   // 3a) element rhs: standard Galerkin contributions from non-history part of instationary term if needed
   if(not my::scatraparatimint_->IsStationary())
-    this->CalcRHSLinMass(erhs,k,rhsfac,fac,1.,1.);
+    my::CalcRHSLinMass(erhs,k,rhsfac,fac,1.,1.);
 
   // 3b) element rhs: standard Galerkin contributions from rhsint vector (contains body force vector and history vector)
   // need to adapt rhsint vector to time integration scheme first

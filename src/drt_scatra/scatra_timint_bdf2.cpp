@@ -181,9 +181,6 @@ void SCATRA::TimIntBDF2::SetOldPartOfRighthandside()
     theta_=1.0;
   }
 
-  // for electrochemical applications
-  ElectrodeKineticsSetOldPartOfRHS();
-
   return;
 }
 

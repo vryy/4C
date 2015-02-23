@@ -5444,16 +5444,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   BoolParameter("SKIPINITDER",
       "no","Flag to skip computation of initial time derivative",&scatradyn);
 
-  setStringToIntegralParameter<int>("INITPOTCALC","no",
-                                    "Automatically calculate initial field for electric potential",
-                                    tuple<std::string>(
-                                        "no",
-                                        "yes"),
-                                    tuple<int>(
-                                        INPAR::SCATRA::initpotcalc_no,
-                                        INPAR::SCATRA::initpotcalc_yes),
-                                    &scatradyn);
-
   setStringToIntegralParameter<int>("FSSUGRDIFF",
                                "No",
                                "fine-scale subgrid diffusivity",
@@ -5482,9 +5472,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                         INPAR::FLUID::condensed_bmat,
                                         INPAR::FLUID::condensed_bmat_merged),   //use the condensed_bmat_merged strategy
                                     &scatradyn);
-
-  BoolParameter("ONLYPOTENTIAL","no",
-        "Coupling of general ion transport equation with Laplace equation",&scatradyn);
 
   // linear solver id used for scalar transport/elch problems
   IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for scalar transport/elch...",&scatradyn);
@@ -5810,10 +5797,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for LOMA problem",&lomacontrol);
 
   /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& elchcontrol = list->sublist(
-      "ELCH CONTROL",
-      false,
-      "control parameters for electrochemistry problems\n");
+  Teuchos::ParameterList& elchcontrol = list->sublist("ELCH CONTROL",false,"control parameters for electrochemistry problems\n");
 
   IntParameter("MOVBOUNDARYITEMAX",10,"Maximum number of outer iterations in electrode shape change computations",&elchcontrol);
   DoubleParameter("MOVBOUNDARYCONVTOL",1e-6,"Convergence check tolerance for outer loop in electrode shape change computations",&elchcontrol);
@@ -5878,24 +5862,17 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    INPAR::ELCH::equpot_laplace,
                                    INPAR::ELCH::equpot_divi),
                                   &elchcontrol);
-  BoolParameter("BLOCKPRECOND","NO",
-      "Switch to block-preconditioned family of solvers, only works with block preconditioners like CheapSIMPLE!",&elchcontrol);
-
-  BoolParameter("DIFFCOND_FORMULATION","No",
-        "Activation of diffusion-conduction formulation",&elchcontrol);
+  BoolParameter("BLOCKPRECOND","NO","Switch to block-preconditioned family of solvers, only works with block preconditioners like CheapSIMPLE!",&elchcontrol);
+  BoolParameter("DIFFCOND_FORMULATION","No","Activation of diffusion-conduction formulation",&elchcontrol);
+  BoolParameter("INITPOTCALC","No","Automatically calculate initial field for electric potential",&elchcontrol);
+  BoolParameter("ONLYPOTENTIAL","no","Coupling of general ion transport equation with Laplace equation",&elchcontrol);
 
   /*----------------------------------------------------------------------*/
   // attention: this list is a sublist of elchcontrol
-
-    Teuchos::ParameterList& elchdiffcondcontrol = elchcontrol.sublist(
-        "DIFFCOND",
-        false,
-        "control parameters for electrochemical diffusion conduction problems\n");
+    Teuchos::ParameterList& elchdiffcondcontrol = elchcontrol.sublist("DIFFCOND",false,"control parameters for electrochemical diffusion conduction problems\n");
 
     BoolParameter("CURRENT_SOLUTION_VAR","No","Current as a solution variable",&elchdiffcondcontrol);
-
-    BoolParameter("MAT_DIFFCOND_DIFFBASED","Yes",
-        "Coupling terms of chemical diffusion for current equation are based on t and kappa",&elchdiffcondcontrol);
+    BoolParameter("MAT_DIFFCOND_DIFFBASED","Yes","Coupling terms of chemical diffusion for current equation are based on t and kappa",&elchdiffcondcontrol);
 
     /// dilute solution theory (diffusion potential in current equation):
     ///    A          B

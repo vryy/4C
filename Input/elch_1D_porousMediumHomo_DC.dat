@@ -46,7 +46,6 @@ WRITEFLUX                       totalflux_boundary
 WRITEFLUX_IDS                   1 2
 OUTMEAN                         Yes
 SKIPINITDER                     Yes
-INITPOTCALC                     no
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-12
 ABSTOLRES                       1e-16

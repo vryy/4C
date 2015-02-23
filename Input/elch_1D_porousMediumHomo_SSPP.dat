@@ -53,7 +53,6 @@ MATID                           1
 WRITEFLUX                       totalflux_boundary
 OUTMEAN                         Yes
 SKIPINITDER                     No
-INITPOTCALC                     yes
 MAXTIME                         0.1
 NUMSTEP                         10
 RESTARTEVRY                     50
@@ -81,6 +80,7 @@ GSTAT_LENGTH_CURRENTPATH        0.075
 GSTATCONDID_CATHODE             0
 GSTATCONDID_ANODE               1
 DIFFCOND_FORMULATION            Yes
+INITPOTCALC                     yes
 ---------------------------------------------ELCH CONTROL/DIFFCOND
 CURRENT_SOLUTION_VAR            No
 MAT_NEWMAN_CONST_A              2.0

@@ -109,7 +109,7 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
     double& meanoverpot        //!< mean surface overpotential
   );
 
-  //! output electrode interior status information to screen
+  //! output electrode interior status information to screen and files
   void OutputElectrodeInfoInterior();
 
   //! output cell voltage to screen
@@ -198,6 +198,12 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
 
   //! update time-dependent electrode state variables at the end of an time step
   virtual void ElectrodeKineticsTimeUpdate() = 0;
+
+  //! compute contributions of solution-depending boundary and interface conditions to global system of equations
+  void EvaluateSolutionDependingConditions(
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,      //!< system matrix
+    Teuchos::RCP<Epetra_Vector>          rhs                //!< rhs vector
+  );
 
   /*--- query and output ---------------------------------------------------*/
 

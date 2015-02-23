@@ -50,7 +50,6 @@ OUTPUT_GMSH                     No
 OUTMEAN                         Yes
 CALCERROR                       No
 CONVFORM                        conservative
-INITPOTCALC                     no
 VELCURVENO                      -1
 WRITEFLUX_IDS 1 2 // do not write flux of species 3
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR

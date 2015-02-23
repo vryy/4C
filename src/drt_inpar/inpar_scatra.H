@@ -235,12 +235,6 @@ namespace INPAR
       fluxeval_alldof
     };
 
-    enum Initpotcalc
-    {
-      initpotcalc_no,
-      initpotcalc_yes
-    };
-
     /// type of finite difference check
     enum FDCheck
     {

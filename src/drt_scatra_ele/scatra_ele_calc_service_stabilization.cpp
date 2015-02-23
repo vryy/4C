@@ -1059,14 +1059,31 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcSubgrVelocityVisc(
     LINALG::Matrix<nsd_,1>&   epsilonvel
     )
 {
-  for (int i=0; i<nen_; ++i)
+  if(nsd_ == 3)
   {
-    double sum = (derxy2_(0,i)+derxy2_(1,i)+derxy2_(2,i));
+    for (int i=0; i<nen_; ++i)
+    {
+      double sum = (derxy2_(0,i)+derxy2_(1,i)+derxy2_(2,i));
 
-    epsilonvel(0) = (sum*evelnp_(0,i))/2.0;
-    epsilonvel(1) = (sum*evelnp_(1,i))/2.0;
-    epsilonvel(2) = (sum*evelnp_(2,i))/2.0;
+      epsilonvel(0) += (sum*evelnp_(0,i))/2.0;
+      epsilonvel(1) += (sum*evelnp_(1,i))/2.0;
+      epsilonvel(2) += (sum*evelnp_(2,i))/2.0;
+    }
   }
+
+  else if(nsd_ == 2)
+  {
+    for (int i=0; i<nen_; ++i)
+    {
+      double sum = (derxy2_(0,i)+derxy2_(1,i));
+
+      epsilonvel(0) += (sum*evelnp_(0,i))/2.0;
+      epsilonvel(1) += (sum*evelnp_(1,i))/2.0;
+    }
+  }
+
+  else
+   dserror("Epsilon(u) is not implemented for the 1D case!");
 
   return;
 } // DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcSubgrVelocityVisc

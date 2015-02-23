@@ -51,7 +51,6 @@ MATID                           1
 WRITEFLUX                       No
 OUTMEAN                         Yes
 SKIPINITDER                     yes
-INITPOTCALC                     no
 MAXTIME                         0.25
 NUMSTEP                         5
 RESTARTEVRY                     5

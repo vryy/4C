@@ -10,7 +10,6 @@ Maintainer: Andreas Ehrl
             089 - 289-15252
 </pre>
  *------------------------------------------------------------------------------------------------*/
-
 #include "../drt_fluid/fluid_utils.H" // for splitter
 
 #include "../drt_io/io_control.H"
@@ -458,10 +457,10 @@ void SCATRA::ScaTraTimIntElch::Update(const int num)
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::OutputProblemSpecific()
 {
-  // print electrode boundary status information to screen and/or file
+  // print electrode boundary status information to screen and files
   OutputElectrodeInfoBoundary();
 
-  // print electrode interior status information to screen
+  // print electrode interior status information to screen and files
   OutputElectrodeInfoInterior();
 
   // print cell voltage to screen
@@ -667,7 +666,7 @@ Teuchos::RCP< std::vector<double> > SCATRA::ScaTraTimIntElch::OutputSingleElectr
       = DRT::Problem::Instance()->OutputControlFile()->FileName()+".electrode_status_"+temp.str()+".txt";
 
       std::ofstream f;
-      if (Step() <= 1)
+      if (Step() == 0)
       {
         f.open(fname.c_str(),std::fstream::trunc);
         f << "#ID,Step,Time,Total_current,Area_of_boundary,Mean_current_density_electrode_kinetics,Mean_current_density_dl,Mean_overpotential,Mean_electrode_pot_diff,Mean_opencircuit_pot,Electrode_pot,Mean_concentration\n";
@@ -697,9 +696,9 @@ Teuchos::RCP< std::vector<double> > SCATRA::ScaTraTimIntElch::OutputSingleElectr
 } // SCATRA::ScaTraTimIntElch::OutputSingleElectrodeInfoBoundary
 
 
-/*----------------------------------------------------------------------*
- | output electrode interior status information to screen    fang 01/15 |
- *----------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------------*
+ | output electrode interior status information to screen and files   fang 01/15 |
+ *-------------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
 {
   // extract conditions for electrode state of charge
@@ -709,7 +708,7 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
   // perform all following operations only if there is at least one condition for electrode state of charge
   if(conditions.size() > 0)
   {
-    // print header
+    // print header to screen
     if(myrank_ == 0)
     {
       std::cout << "Electrode state of charge and related:" << std::endl;
@@ -763,15 +762,39 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
       else
         mode.assign(" charge  ");
 
-      // screen output
-      if(myrank_ == 0)
-        std::cout << "| " << std::setw(2) << condid << " |   " << std::setw(7) << std::setprecision(2) << std::fixed << soc*100. << " %     |     " << std::setw(5) << std::abs(c_rate) << "      |   " << mode.c_str() << "    |" << std::endl;
-
       // update state of charge for current electrode
       (*electrodesoc_)[condid] = soc;
+
+      // print results to screen and files
+      if(myrank_ == 0)
+      {
+        // print results to screen
+        std::cout << "| " << std::setw(2) << condid << " |   " << std::setw(7) << std::setprecision(2) << std::fixed << soc*100. << " %     |     " << std::setw(5) << std::abs(c_rate) << "      |   " << mode.c_str() << "    |" << std::endl;
+
+        // set file name
+        std::ostringstream id;
+        id << condid;
+        const std::string filename(DRT::Problem::Instance()->OutputControlFile()->FileName()+".electrode_soc_"+id.str()+".txt");
+
+        // open file in appropriate mode and write header at beginning
+        std::ofstream file;
+        if(Step() == 0)
+        {
+          file.open(filename.c_str(),std::fstream::trunc);
+          file << "Step,Time,SOC,CRate" << std::endl;
+        }
+        else
+          file.open(filename.c_str(),std::fstream::app);
+
+        // write results for current electrode to file
+        file << Step() << "," << Time() << "," << std::setprecision(6) << std::fixed << soc << "," << c_rate << std::endl;
+
+        // close file
+        file.close();
+      } // if(myrank_ == 0)
     } // loop over conditions
 
-    // print finish line
+    // print finish line to screen
     if(myrank_ == 0)
       std::cout << "+----+-----------------+----------------+----------------+" << std::endl;
   }
@@ -840,13 +863,36 @@ void SCATRA::ScaTraTimIntElch::OutputCellVoltage()
         std::cout << "| " << std::setw(2) << condid << " |         " << std::setw(6) << std::setprecision(3) << std::fixed << potentials[condid] << "          |" << std::endl;
     } // loop over conditions
 
-    // print cell voltage to screen
+    // compute cell voltage
+    const double cellvoltage = std::abs(potentials[0]-potentials[1]);
+
+    // print cell voltage to screen and file
     if(myrank_ == 0)
     {
+      // print cell voltage to screen
       std::cout << "+----+-------------------------+" << std::endl;
-      std::cout << "| cell voltage: " << std::setw(6) << std::abs(potentials[0]-potentials[1]) << "         |" << std::endl;
+      std::cout << "| cell voltage: " << std::setw(6) << cellvoltage << "         |" << std::endl;
       std::cout << "+----+-------------------------+" << std::endl;
-    }
+
+      // set file name
+      const std::string filename(DRT::Problem::Instance()->OutputControlFile()->FileName()+".cell_voltage.txt");
+
+      // open file in appropriate mode and write header at beginning
+      std::ofstream file;
+      if(Step() == 0)
+      {
+        file.open(filename.c_str(),std::fstream::trunc);
+        file << "Step,Time,CellVoltage" << std::endl;
+      }
+      else
+        file.open(filename.c_str(),std::fstream::app);
+
+      // write results for current electrode to file
+      file << Step() << "," << Time() << "," << std::setprecision(6) << std::fixed << cellvoltage << std::endl;
+
+      // close file
+      file.close();
+    } // if(myrank_ == 0)
   }
 
   return;
@@ -1100,7 +1146,7 @@ void SCATRA::ScaTraTimIntElch::AdaptNumScal()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
 {
-  if (DRT::INPUT::IntegralValue<int>(*params_,"INITPOTCALC")==INPAR::SCATRA::initpotcalc_yes)
+  if(DRT::INPUT::IntegralValue<int>(*elchparams_,"INITPOTCALC"))
   {
     // time measurement:
     TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + calc initial potential field");
@@ -1640,6 +1686,24 @@ void SCATRA::ScaTraTimIntElch::LinearizationNernstCondition()
 
   return;
 } //  SCATRA::ScaTraTimIntImpl::LinearizationNernstCondition()
+
+
+/*----------------------------------------------------------------------------*
+ | evaluate solution-depending boundary and interface conditions   fang 10/14 |
+ *----------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElch::EvaluateSolutionDependingConditions(
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,      //!< system matrix
+    Teuchos::RCP<Epetra_Vector>          rhs                //!< rhs vector
+)
+{
+  // evaluate electrode boundary conditions
+  EvaluateElectrodeBoundaryConditions(systemmatrix,rhs);
+
+  // call base class routine
+  ScaTraTimIntImpl::EvaluateSolutionDependingConditions(systemmatrix,rhs);
+
+  return;
+} // ScaTraTimIntElch::EvaluateSolutionDependingConditions
 
 
 /*----------------------------------------------------------------------*

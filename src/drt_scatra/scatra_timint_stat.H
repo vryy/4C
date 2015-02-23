@@ -99,7 +99,7 @@ protected:
     };
 
   /// Set the part of the righthandside belonging to the last timestep.
-  void SetOldPartOfRighthandside();
+  virtual void SetOldPartOfRighthandside();
 
   /// do explicit predictor step (nothing to predict for stationary problems!)
   void ExplicitPredictor(){return;};
@@ -124,12 +124,6 @@ protected:
 
   /// return the right time-scaling-factor for the true residual
   double ResidualScaling() const { return 1.0; }
-
-  /// update time-dependent electrode state variables at the end of an time step
-  virtual void ElectrodeKineticsTimeUpdate(){return;};
-
-  /// return phi at evaluation time
-  virtual Teuchos::RCP<Epetra_Vector> EvaluationPhi(){return phinp_;};
 
 private:
 

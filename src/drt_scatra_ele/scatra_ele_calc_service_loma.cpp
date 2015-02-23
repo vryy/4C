@@ -226,14 +226,31 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::CalcSubgrVelocityVisc(
   double prefac = 1.0/3.0;
   my::derxy2_.Scale(prefac);
 
-  for (int i=0; i<my::nen_; ++i)
+  if(my::nsd_ == 3)
   {
-    double sum = (my::derxy2_(0,i)+my::derxy2_(1,i)+my::derxy2_(2,i))/prefac;
+    for (int i=0; i<my::nen_; ++i)
+    {
+      double sum = (my::derxy2_(0,i)+my::derxy2_(1,i)+my::derxy2_(2,i))/prefac;
 
-    epsilonvel(0) = ((sum + my::derxy2_(0,i))*my::evelnp_(0,i) + my::derxy2_(3,i)*my::evelnp_(1,i) + my::derxy2_(4,i)*my::evelnp_(2,i))/2.0;
-    epsilonvel(1) = (my::derxy2_(3,i)*my::evelnp_(0,i) + (sum + my::derxy2_(1,i))*my::evelnp_(1,i) + my::derxy2_(5,i)*my::evelnp_(2,i))/2.0;
-    epsilonvel(2) = (my::derxy2_(4,i)*my::evelnp_(0,i) + my::derxy2_(5,i)*my::evelnp_(1,i) + (sum + my::derxy2_(2,i))*my::evelnp_(2,i))/2.0;
+      epsilonvel(0) += ((sum + my::derxy2_(0,i))*my::evelnp_(0,i) + my::derxy2_(3,i)*my::evelnp_(1,i) + my::derxy2_(4,i)*my::evelnp_(2,i))/2.0;
+      epsilonvel(1) += (my::derxy2_(3,i)*my::evelnp_(0,i) + (sum + my::derxy2_(1,i))*my::evelnp_(1,i) + my::derxy2_(5,i)*my::evelnp_(2,i))/2.0;
+      epsilonvel(2) += (my::derxy2_(4,i)*my::evelnp_(0,i) + my::derxy2_(5,i)*my::evelnp_(1,i) + (sum + my::derxy2_(2,i))*my::evelnp_(2,i))/2.0;
+    }
   }
+
+  else if(my::nsd_ == 2)
+  {
+    for (int i=0; i<my::nen_; ++i)
+    {
+      double sum = (my::derxy2_(0,i)+my::derxy2_(1,i))/prefac;
+
+      epsilonvel(0) += ((sum + my::derxy2_(0,i))*my::evelnp_(0,i) + my::derxy2_(2,i)*my::evelnp_(1,i))/2.0;
+      epsilonvel(1) += (my::derxy2_(2,i)*my::evelnp_(0,i) + (sum + my::derxy2_(1,i))*my::evelnp_(1,i))/2.0;
+    }
+  }
+
+  else
+   dserror("Epsilon(u) is not implemented for the 1D case!");
 
   my::derxy2_.Scale(1.0/prefac);
 

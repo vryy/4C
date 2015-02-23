@@ -40,7 +40,6 @@ MATID                           1
 WRITEFLUX                       diffusiveflux_boundary
 OUTMEAN                         Yes
 SKIPINITDER                     Yes
-INITPOTCALC                     no
 MAXTIME                         0.2
 NUMSTEP                         20
 RESTARTEVRY                     10

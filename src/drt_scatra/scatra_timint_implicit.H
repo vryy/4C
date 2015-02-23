@@ -429,6 +429,9 @@ public:
   //! return density field at time n+alpha_F (gen-alpha) or n+1 (otherwise) for natural convection
   Teuchos::RCP<Epetra_Vector> Densafnp() { return densafnp_; }
 
+  //! problem-specific outputs
+  virtual void OutputProblemSpecific(){return;};
+
   /*========================================================================*/
   //! @name Elch methods
   /*========================================================================*/
@@ -442,34 +445,6 @@ public:
 
   //! calculate initial field for electric potential based on ion concentrations (ELCH)
   virtual void CalcInitialPotentialField(){return;};
-
-  //! compute contributions of solution-depending boundary and interface conditions to global system of equations
-  void EvaluateSolutionDependingConditions(
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,      //!< system matrix
-    Teuchos::RCP<Epetra_Vector>          rhs                //!< rhs vector
-  );
-
-  //! evaluate electrode boundary conditions
-  virtual void EvaluateElectrodeBoundaryConditions(
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,   //!< system matrix
-    Teuchos::RCP<Epetra_Vector>          rhs             //!< rhs vector
-  ){return;};
-
-  //! evaluate scatra-scatra interface coupling conditions
-  void EvaluateS2ICoupling(
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,      //!< system matrix
-    Teuchos::RCP<LINALG::SparseOperator> auxiliarymatrix,   //!< auxiliary matrix for coupling terms
-    Teuchos::RCP<Epetra_Vector>          rhs                //!< rhs vector
-  );
-
-  //! problem-specific outputs
-  virtual void OutputProblemSpecific(){return;};
-
-  //! Add Linearization for Nernst-BC
-  virtual void  LinearizationNernstCondition(){return;};
-
-  //! apply galvanostatic control (update electrode potential)
-  virtual bool ApplyGalvanostaticControl(){return true;};
 
   //! check for negative values of concentrations (ELCH)
   virtual void CheckConcentrationValues(
@@ -519,24 +494,6 @@ public:
 
   //! set scatra structure displacement vector due to biofilm growth
   void SetScStrGrDisp(Teuchos::RCP<Epetra_MultiVector> scatra_struct_growth_disp);
-
-  /*========================================================================*/
-  //! @name  not classified method - to be kept clean!!!
-  /*========================================================================*/
-
-  // nothing here at the moment
-
-  /*========================================================================*/
-
-  /*========================================================================*/
-  //! @name  obsolete or unused methods - to be deleted soon (at noon)!!!
-  /*========================================================================*/
-
-  // nothing here at the moment
-
-  /*========================================================================*/
-
-
 
 protected:
 
@@ -688,9 +645,11 @@ protected:
       Teuchos::RCP<Epetra_MultiVector> gradPhi,
       const Teuchos::RCP<const Epetra_Vector> phi);
 
-  /// return phi at evaluation time
-  virtual Teuchos::RCP<Epetra_Vector> EvaluationPhi() = 0;
-
+  //! compute contributions of solution-depending boundary and interface conditions to global system of equations
+  virtual void EvaluateSolutionDependingConditions(
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,      //!< system matrix
+    Teuchos::RCP<Epetra_Vector>          rhs                //!< rhs vector
+  );
 
   /*--- query and output ---------------------------------------------------*/
 
@@ -786,18 +745,6 @@ protected:
 
   /*--- query and output ---------------------------------------------------*/
 
-
-
-  /*========================================================================*/
-  //! @name low-Mach-number flow
-  /*========================================================================*/
-
-  /*--- set, prepare, and predict ------------------------------------------*/
-
-  /*--- calculate and update -----------------------------------------------*/
-
-  /*--- query and output ---------------------------------------------------*/
-
   /*========================================================================*/
   //! @name AVM3 and related
   /*========================================================================*/
@@ -839,7 +786,7 @@ protected:
   /*!
    * \brief Extract the Dirichlet toggle vector based on Dirichlet BC maps
    *
-   * This method provides backward compatability only. Formerly, the Dirichlet
+   * This method provides backward compatibility only. Formerly, the Dirichlet
    * conditions were handled with the Dirichlet toggle vector. Now, they are
    * stored and applied with maps, ie #dbcmaps_. Eventually, this method will
    * be removed.
@@ -1164,10 +1111,6 @@ protected:
 
   //! flag for printing out integral values of reaction
   const bool outintegrreac_;
-
-
 }; // class ScaTraTimIntImpl
-
 } // namespace SCATRA
-
 #endif  // #ifndef SCATRA_TIMINT_IMPLICIT_H

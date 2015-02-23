@@ -192,7 +192,6 @@ CONVFORM                        conservative
 GAMMA                           0.5
 INITFUNCNO                      1
 INITIALFIELD                    field_by_function
-INITPOTCALC                     no
 MAXTIME                         10000.0
 NUMSTEP                         5
 OUTMEAN                         No

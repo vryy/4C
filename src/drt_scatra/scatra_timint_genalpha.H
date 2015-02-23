@@ -119,7 +119,7 @@ protected:
   void PrepareFirstTimeStep();
 
   /// Set the part of the righthandside belonging to the last timestep.
-  void SetOldPartOfRighthandside();
+  virtual void SetOldPartOfRighthandside();
 
   /// do explicit predictor step (-> better starting value for nonlinear solver)
   void ExplicitPredictor();
@@ -144,15 +144,6 @@ protected:
 
   /// return the right time-scaling-factor for the true residual
   double ResidualScaling() const { return 1.0/(dta_*genalphafac_); }
-
-  /// update time-dependent electrode state variables at the end of an time step
-  virtual void ElectrodeKineticsTimeUpdate(){return;};
-
-  /// set old part of RHS for galvanostatic equation
-  virtual void ElectrodeKineticsSetOldPartOfRHS(){return;};
-
-  /// return phi at evaluation time
-  virtual Teuchos::RCP<Epetra_Vector> EvaluationPhi(){return phiaf_;};
 
   /// scalar at time n+alpha_F and n+alpha_M
   Teuchos::RCP<Epetra_Vector>  phiaf_;

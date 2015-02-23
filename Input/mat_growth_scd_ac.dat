@@ -50,7 +50,6 @@ FSSUGRDIFF                      No
 GAMMA                           0.5
 INITFUNCNO                      1
 INITIALFIELD                    field_by_function
-INITPOTCALC                     no
 LINEAR_SOLVER                   1
 MATID                           -1
 MAXTIME                         1000

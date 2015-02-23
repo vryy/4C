@@ -2374,9 +2374,6 @@ void SCATRA::ScaTraTimIntImpl::EvaluateSolutionDependingConditions(
     Teuchos::RCP<Epetra_Vector>          rhs                //!< rhs vector
 )
 {
-  // evaluate electrode boundary conditions
-  EvaluateElectrodeBoundaryConditions(systemmatrix,rhs);
-
   // evaluate meshtying
   strategy_->EvaluateMeshtying();
 

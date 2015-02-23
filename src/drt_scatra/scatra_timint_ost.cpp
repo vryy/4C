@@ -172,9 +172,6 @@ void SCATRA::TimIntOneStepTheta::SetOldPartOfRighthandside()
   // hist_ = phin_ + dt*(1-Theta)*phidtn_
   hist_->Update(1.0, *phin_, dta_*(1.0-theta_), *phidtn_, 0.0);
 
-  // for electrochemical applications
-  ElectrodeKineticsSetOldPartOfRHS();
-
   return;
 }
 

@@ -60,7 +60,7 @@ class MeshtyingStrategyFluidElch : public MeshtyingStrategyFluid
     MeshtyingStrategyFluidElch(const MeshtyingStrategyFluidElch& old);
 
     //! return pointer to elch time integrator after cast
-    SCATRA::ScaTraTimIntElch* ElchTimInt() {return dynamic_cast<SCATRA::ScaTraTimIntElch*>(scatratimint_);};
+    SCATRA::ScaTraTimIntElch* ElchTimInt() const {return dynamic_cast<SCATRA::ScaTraTimIntElch*>(scatratimint_);};
 }; // class MeshtyingStrategyFluidElch
 } // namespace SCATRA
 #endif // #ifndef SCATRA_TIMINT_MESHTYING_STRATEGY_FLUID_ELCH_H
