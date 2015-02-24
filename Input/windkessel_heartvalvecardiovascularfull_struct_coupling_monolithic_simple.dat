@@ -238,9 +238,9 @@ FUNCT1 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION (5.0*(t-(0.18+20.0/(5.0*(20.0-(-30.
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
 // movement of apex node
-STRUCTURE DIS structure NODE 858 QUANTITY dispx VALUE -9.82650063833502863e+00 TOLERANCE 1e-5
-STRUCTURE DIS structure NODE 858 QUANTITY dispy VALUE -3.96541414471428455e+00 TOLERANCE 1e-5
-STRUCTURE DIS structure NODE 858 QUANTITY dispz VALUE -3.57871952221455403e-01 TOLERANCE 1e-5
+STRUCTURE DIS structure NODE 858 QUANTITY dispx VALUE -9.21131989060899770e+00 TOLERANCE 1e-5
+STRUCTURE DIS structure NODE 858 QUANTITY dispy VALUE -3.77965969757650067e+00 TOLERANCE 1e-5
+STRUCTURE DIS structure NODE 858 QUANTITY dispz VALUE 8.09967757384731507e-02 TOLERANCE 1e-5
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          1
@@ -248,8 +248,8 @@ NDSURF                          15
 NDVOL                           0
 -----------DESIGN SURF HEART VALVE CARDIOVASCULAR FULL WINDKESSEL CONDITIONS
 DSURF                           2
-E 6 - id 0 R_qvout_max 1.0e3 R_qvout_min 1.0e-6 R_qvin_max 1.0e3 R_qvin_min 1.0e-6 E_at_max 0.0782e-3 E_at_min 0.0711e-3 C_ar 7500.0 R_ar 0.000154578769242 L_ar 0.0 C_ven 7500.0 R_ven 0.000154578769242 L_ven 0.0 p_at_0 0.6 p_ar_0 9.49864821926 p_ven_0 0.3 q_ar_0 0.0 q_ven_0 0.0 V_ar_0 352.0e3 V_ven_0 1040.0e3 V_at_dias 14.0e3 V_at_syst 13.0e3 at_act_curve 1
-E 7 - id 1 R_qvout_max 1.0e3 R_qvout_min 1.0e-6 R_qvin_max 1.0e3 R_qvin_min 1.0e-6 E_at_max 0.0300e-3 E_at_min 0.0273e-3 C_ar 22500.0 R_ar 5.15262564139e-05 L_ar 0.0 C_ven 22500.0 R_ven 5.15262564139e-05 L_ven 0.0 p_at_0 0.3 p_ar_0 1.89972964385 p_ven_0 0.6 q_ar_0 0.0 q_ven_0 0.0 V_ar_0 84.9e3 V_ven_0 93.0e3 V_at_dias 14.0e3 V_at_syst 13.0e3 at_act_curve 2
+E 6 - id 0 R_qvout_max 1.0e3 R_qvout_min 1.0e-6 R_qvin_max 1.0e3 R_qvin_min 1.0e-6 E_at_max 0.0782e-3 E_at_min 0.0711e-3 at_act_curve 1 C_ar 7500.0 R_ar 0.000154578769242 L_ar 0.0 C_ven 7500.0 R_ven 0.000154578769242 L_ven 0.0 p_at_0 0.6 p_ar_0 9.49864821926 p_ven_0 0.3 q_ar_0 0.0 q_ven_0 0.0 V_at_0 5.0e3 V_ar_0 352.0e3 V_ven_0 1040.0e3
+E 7 - id 1 R_qvout_max 1.0e3 R_qvout_min 1.0e-6 R_qvin_max 1.0e3 R_qvin_min 1.0e-6 E_at_max 0.0300e-3 E_at_min 0.0273e-3 at_act_curve 2 C_ar 22500.0 R_ar 5.15262564139e-05 L_ar 0.0 C_ven 22500.0 R_ven 5.15262564139e-05 L_ven 0.0 p_at_0 0.3 p_ar_0 1.89972964385 p_ven_0 0.6 q_ar_0 0.0 q_ven_0 0.0 V_at_0 4.0e3 V_ar_0 84.9e3 V_ven_0 93.0e3
 ------------------------DESIGN SURF WINDKESSEL STRUCTURE COUPLING CONDITIONS
 DSURF                           2
 E 8 - coupling_id 0

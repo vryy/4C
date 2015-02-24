@@ -4025,8 +4025,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(windkesselheartvalvecardiovascularfullcond,"R_qvout_min"); // minimal arterial valve resistance
   AddNamedReal(windkesselheartvalvecardiovascularfullcond,"R_qvin_max"); // maximal atrial valve resistance
   AddNamedReal(windkesselheartvalvecardiovascularfullcond,"R_qvin_min"); // minimal atrial valve resistance
-  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"E_at_max"); // maximal atrial elastance
-  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"E_at_min"); // minimal atrial elastance
+  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"E_at_max"); // maximum atrial elastance
+  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"E_at_min"); // baseline atrial elastance
+  windkesselheartvalvecardiovascularfullcond->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("at_act_curve"))); // atrial activation curve
+  windkesselheartvalvecardiovascularfullcond->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("curve",1,true,true))); // atrial activation curve
   AddNamedReal(windkesselheartvalvecardiovascularfullcond,"C_ar"); // arterial compliance
   AddNamedReal(windkesselheartvalvecardiovascularfullcond,"R_ar"); // arterial resistance
   AddNamedReal(windkesselheartvalvecardiovascularfullcond,"L_ar"); // arterial inertance
@@ -4038,12 +4040,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(windkesselheartvalvecardiovascularfullcond,"p_ven_0"); // initial venous pressure
   AddNamedReal(windkesselheartvalvecardiovascularfullcond,"q_ar_0"); // initial arterial flow
   AddNamedReal(windkesselheartvalvecardiovascularfullcond,"q_ven_0"); // initial venous flow
+  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"V_at_0"); // initial volume of atrium
   AddNamedReal(windkesselheartvalvecardiovascularfullcond,"V_ar_0"); // initial volume of arteries and capillaries
   AddNamedReal(windkesselheartvalvecardiovascularfullcond,"V_ven_0"); // initial volume of veins
-  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"V_at_dias"); // diastolic volume of atrium at zero pressure
-  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"V_at_syst"); // systolic volume of atrium at zero pressure
-  windkesselheartvalvecardiovascularfullcond->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("at_act_curve")));
-  windkesselheartvalvecardiovascularfullcond->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("curve",1,true,true)));
 
   condlist.push_back(windkesselheartvalvecardiovascularfullcond);
 

@@ -1847,12 +1847,6 @@ void UTILS::Windkessel::EvaluateHeartValveCardiovascularFullWindkessel(
       y_at_n = DRT::Problem::Instance()->Curve(curvenum).f(tim);
     }
 
-    double V_at_dias = windkesselcond_[condID]->GetDouble("V_at_dias");
-    double V_at_syst = windkesselcond_[condID]->GetDouble("V_at_syst");
-    double V_at_rest_ = (1.-y_at_)*(V_at_dias - V_at_syst) + V_at_syst;
-    double V_at_rest_n = (1.-y_at_n)*(V_at_dias - V_at_syst) + V_at_syst;
-    double V_at_rest_m = theta * V_at_rest_n + (1.-theta) * V_at_rest_;
-
     double R_qvout_max = windkesselcond_[condID]->GetDouble("R_qvout_max");
     double R_qvout_min = windkesselcond_[condID]->GetDouble("R_qvout_min");
     double R_qvin_max = windkesselcond_[condID]->GetDouble("R_qvin_max");
@@ -1861,8 +1855,8 @@ void UTILS::Windkessel::EvaluateHeartValveCardiovascularFullWindkessel(
     double E_at_max = windkesselcond_[condID]->GetDouble("E_at_max");
     double E_at_min = windkesselcond_[condID]->GetDouble("E_at_min");
 
-    double E_at_ = (E_at_max - E_at_min)*y_at_ + E_at_min;
-    double E_at_n = (E_at_max - E_at_min)*y_at_n + E_at_min;
+    double E_at_ = (E_at_max-E_at_min)*y_at_ + E_at_min;
+    double E_at_n = (E_at_max-E_at_min)*y_at_n + E_at_min;
     double E_at_m = theta * E_at_n + (1.-theta) * E_at_;
 
     double C_ar = windkesselcond_[condID]->GetDouble("C_ar");
@@ -1872,10 +1866,13 @@ void UTILS::Windkessel::EvaluateHeartValveCardiovascularFullWindkessel(
     double L_ar = windkesselcond_[condID]->GetDouble("L_ar");
     double L_ven = windkesselcond_[condID]->GetDouble("L_ven");
 
-    double V_ar_0 = windkesselcond_[condID]->GetDouble("V_ar_0");
-    double V_ven_0 = windkesselcond_[condID]->GetDouble("V_ven_0");
     double p_ar_0 = windkesselcond_[condID]->GetDouble("p_ar_0");
     double p_ven_0 = windkesselcond_[condID]->GetDouble("p_ven_0");
+
+    // initial compartment volumes - do not physically contribute to model
+    double V_at_0 = windkesselcond_[condID]->GetDouble("V_at_0");
+    double V_ar_0 = windkesselcond_[condID]->GetDouble("V_ar_0");
+    double V_ven_0 = windkesselcond_[condID]->GetDouble("V_ven_0");
 
     // Windkessel stiffness
     Epetra_SerialDenseMatrix wkstiff(numdof_per_cond,numdof_per_cond);
@@ -1945,7 +1942,7 @@ void UTILS::Windkessel::EvaluateHeartValveCardiovascularFullWindkessel(
       factor_wkdof[1] = 0.;
       factor_dwkdof[1] = 0.;
       factor_Q[1] = 0.;
-      factor_1[1] = (p_at_n/E_at_n + V_at_rest_n - (p_at_/E_at_ + V_at_rest_))/ts_size - q_ven_other_m + q_vin_m;
+      factor_1[1] = (p_at_n/E_at_n - p_at_/E_at_)/ts_size - q_ven_other_m + q_vin_m;
 
       factor_wkdof[2] = 0.;
       factor_dwkdof[2] = C_ar;
@@ -2124,7 +2121,7 @@ void UTILS::Windkessel::EvaluateHeartValveCardiovascularFullWindkessel(
       p_ven_m = (*sysvec6)[numdof_per_cond*condID+3];
 
       // atrial volume
-      (*sysvec9)[numdof_per_cond*condID + 0] = p_at_m/E_at_m + V_at_rest_m;
+      (*sysvec9)[numdof_per_cond*condID + 0] = p_at_m/E_at_m + V_at_0;
       // arterial compartment volume
       (*sysvec9)[numdof_per_cond*condID + 1] = C_ar * (p_ar_m - p_ar_0) + V_ar_0;
       // venous compartment volume
