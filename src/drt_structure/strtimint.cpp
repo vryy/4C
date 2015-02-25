@@ -3207,7 +3207,7 @@ INPAR::STR::ConvergenceStatus STR::TimInt::PerformErrorAction(INPAR::STR::Conver
       const double numproc = discret_->Comm().NumProc();
       randnum /= numproc;
       if (rand_tsfac_ > 1.0)      rand_tsfac_ = randnum*0.49+0.51;
-      else if (rand_tsfac_ < 1.0) rand_tsfac_ = randnum*0.49+1.0;
+      else if (rand_tsfac_ < 1.0) rand_tsfac_ = randnum*0.99+1.0;
       else                        rand_tsfac_ = randnum*1.48+0.51;
       if (myrank_ == 0) IO::cout << "Nonlinear solver failed to converge: modifying time-step size by random number between 0.51 and 1.99 -> here: " << rand_tsfac_ << " !" << IO::endl;
       // multiply time-step size by random number
