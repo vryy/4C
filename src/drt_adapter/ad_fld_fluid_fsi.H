@@ -197,7 +197,7 @@ namespace ADAPTER {
   protected:
 
     /// create conditioned dof-map extractor for the fluid
-    void SetupInterface();
+    virtual void SetupInterface();
 
     /// build inner velocity dof-map
     void BuildInnerVelMap();

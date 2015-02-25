@@ -2,7 +2,7 @@
 /*!
 \file xfluidresulttest.cpp
 
-\brief tesing of fluid calculation results
+\brief testing of fluid calculation results
 
 <pre>
 Maintainer: Benedikt Schott
@@ -18,7 +18,6 @@ Maintainer: Benedikt Schott
 
 #include "xfluid.H"
 #include "xfluidfluid.H"
-#include "xfluidfluidnew.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_linedefinition.H"
@@ -35,19 +34,6 @@ FLD::XFluidResultTest::XFluidResultTest( const FLD::XFluid& xfluid )
 }
 
 FLD::XFluidResultTest::XFluidResultTest( const FLD::XFluidFluid& xfluid )
-  : DRT::ResultTest("FLUID"),
-    discret_( xfluid.discret_ ),
-    velnp_( xfluid.state_->velnp_ ),
-    coupl_discret_(xfluid.embdis_),
-    coupl_velnp_( xfluid.velnp_ ),
-    node_from_zero_(false)
-{
-  // Todo: remove this constructor
-  // Todo: remove the "node_from_zero" flag for fluidfluid:
-  // adapt the test cases!
-}
-
-FLD::XFluidResultTest::XFluidResultTest( const FLD::XFluidFluidNew& xfluid )
   : DRT::ResultTest("FLUID"),
     discret_( xfluid.discret_ ),
     velnp_( xfluid.state_->velnp_ ),

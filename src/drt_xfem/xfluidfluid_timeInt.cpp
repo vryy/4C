@@ -822,7 +822,7 @@ void XFEM::XFluidFluidTimeIntegration::FindEmbEleAndInterpolateValues(std::vecto
 
     if (closeeles.empty())
     {
-      IO::cout << "The search radius is empty on one processor! You may need to change the XFLUIDFLUID_SEARCHRADIUS is your dat-file."<< IO::endl;
+      //IO::cout << "The search radius is empty on one processor! You may need to change the XFLUIDFLUID_SEARCHRADIUS is your dat-file."<< IO::endl;
       continue;
     }
 

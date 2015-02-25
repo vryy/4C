@@ -190,12 +190,12 @@ namespace FLD
 //    void ComputeInterfaceVelocities();
 
     /// set Dirichlet and Neumann boundary conditions
-    virtual void SetDirichletNeumannBC();
+    void SetDirichletNeumannBC();
 
 
     //! @name access methods for composite algorithms
     /// monolithic FSI needs to access the linear fluid problem
-    Teuchos::RCP<const Epetra_Vector> InitialGuess() { std::cout << "InitialGuess" <<std::endl;  return state_->incvel_; }
+    virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() { std::cout << "InitialGuess" <<std::endl;  return state_->incvel_; }
     Teuchos::RCP<Epetra_Vector> Residual()     { return state_->residual_; }
     /// implement adapter fluid
     Teuchos::RCP<const Epetra_Vector> RHS(){ return Residual(); }
@@ -283,7 +283,7 @@ namespace FLD
        Teuchos::RCP<DRT::Discretization> scatradis
        );
 
-    void UpdateGridv();
+    virtual void UpdateGridv();
 
     Teuchos::RCP<DRT::DiscretizationXFEM> DiscretisationXFEM()
     {

@@ -394,7 +394,7 @@ void FSI::MonolithicNoNOX::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   }
 
   // transfer the current ale mesh positions to the fluid field
-  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluid(AleField()->WriteAccessDispnp());
+  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluid(AleField()->Dispnp());
   FluidField()->ApplyMeshDisplacement(fluiddisp);
 
   {
@@ -613,15 +613,6 @@ void FSI::MonolithicNoNOX::Update()
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicNoNOX::Update");
 
-
-  // In case of ALE relaxation
-  if ( fluid_->MonolithicXffsiApproach() != INPAR::XFEM::XFFSI_Full_Newton and
-       fluid_->IsAleRelaxationStep(Step()))
-  {
-    // Set the old state of ALE displacement before relaxation
-    fluid_->ApplyEmbFixedMeshDisplacement(AleToFluid(AleField()->WriteAccessDispnp()));
-  }
-
   RecoverLagrangeMultiplier();
 
   // In case of ALE relaxation
@@ -635,20 +626,13 @@ void FSI::MonolithicNoNOX::Update()
     AleField()->Solve();
     // Now apply the ALE-displacement to the (embedded) fluid and update the
     // grid velocity
-    FluidField()->ApplyMeshDisplacement(AleToFluid(AleField()->WriteAccessDispnp()));
+    FluidField()->ApplyMeshDisplacement(AleToFluid(AleField()->Dispnp()));
   }
 
   // update subsequent fields
   StructureField()->Update();
   FluidField()->Update();
   AleField()->Update();
-
-  if ( fluid_->MonolithicXffsiApproach() != INPAR::XFEM::XFFSI_Full_Newton and
-       fluid_->IsAleRelaxationStep(Step()))
-  {
-    // Build the ALE-matrix after the update
-    AleField()->CreateSystemMatrix(AleField()->Interface());
-  }
 }
 
 /*----------------------------------------------------------------------*/

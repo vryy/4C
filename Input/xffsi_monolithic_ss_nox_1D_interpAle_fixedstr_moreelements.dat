@@ -83,7 +83,7 @@ MONOLITHIC_XFFSI_APPROACH       xffsi_fixedALE_interpolation
 RELAXING_ALE                    yes
 RELAXING_ALE_EVERY              1
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-COUPLING_METHOD                 Hybrid_LM_Cauchy_stress
+COUPLING_METHOD                 Nitsche
 COUPLING_STRATEGY               xfluid_sided_coupling
 XFF_CONV_STAB_SCALING           none
 -------------------------------------------------------------------MATERIALS

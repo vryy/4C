@@ -69,14 +69,16 @@ void ADAPTER::FluidFSI::Init()
   FluidWrapper::Init();
 
   // cast fluid to fluidimplicit
-  fluidimpl_ = Teuchos::rcp_dynamic_cast<FLD::FluidImplicitTimeInt>(fluid_);
+  if (fluidimpl_ == Teuchos::null)
+    fluidimpl_ = Teuchos::rcp_dynamic_cast<FLD::FluidImplicitTimeInt>(fluid_);
+
   if (fluidimpl_ == Teuchos::null)
     dserror("Failed to cast ADAPTER::Fluid to FLD::FluidImplicitTimeInt.");
 
   // create fluid map extractor
   SetupInterface();
 
-  fluidimpl_->SetSurfaceSplitter(&(*Interface()));
+  fluidimpl_->SetSurfaceSplitter(&(*interface_));
 
   // create map of inner velocity dof (no FSI or Dirichlet conditions)
   BuildInnerVelMap();
@@ -681,7 +683,7 @@ void ADAPTER::FluidFSI::BuildInnerVelMap()
   // dofs at the interface are excluded
   // we use only velocity dofs and only those without Dirichlet constraint
   std::vector<Teuchos::RCP<const Epetra_Map> > maps;
-  maps.push_back(VelocityRowMap());
+  maps.push_back(FluidWrapper::VelocityRowMap());
   maps.push_back(Interface()->OtherMap());
   maps.push_back(GetDBCMapExtractor()->OtherMap());
   innervelmap_ = LINALG::MultiMapExtractor::IntersectMaps(maps);

@@ -21,36 +21,34 @@ Maintainer: Raffaela Kruse
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::FluidFluidFSI::FluidFluidFSI(
-    Teuchos::RCP<Fluid> fluid,
-    Teuchos::RCP<DRT::Discretization> embfluiddis,
-    Teuchos::RCP<DRT::Discretization> bgfluiddis,
-    Teuchos::RCP<LINALG::Solver> solver,
-    Teuchos::RCP<Teuchos::ParameterList> params,
-    Teuchos::RCP<IO::DiscretizationWriter> output,
-    bool isale,
-    bool dirichletcond)
+  Teuchos::RCP<Fluid> xfluidfluid,
+  Teuchos::RCP<Fluid> embfluid,
+  Teuchos::RCP<LINALG::Solver> solver,
+  Teuchos::RCP<Teuchos::ParameterList> params,
+  bool isale,
+  bool dirichletcond)
   : FluidFSI(
-      fluid,
-      embfluiddis,
+      xfluidfluid,
+      embfluid->Discretization(),
       solver,
       params,
-      output,
+      embfluid->Discretization()->Writer(),
       isale,
       dirichletcond)
 {
   // cast fluid to XFluidFluid
-  xfluidfluid_ = Teuchos::rcp_dynamic_cast<FLD::XFluidFluid>(fluid_);
+  xfluidfluid_ = Teuchos::rcp_dynamic_cast<FLD::XFluidFluid>(xfluidfluid);
   if (xfluidfluid_ == Teuchos::null)
     dserror("Failed to cast ADAPTER::Fluid to FLD::XFluidFluid.");
+  fluidimpl_ = Teuchos::rcp_dynamic_cast<FLD::FluidImplicitTimeInt>(embfluid);
+  if (fluidimpl_ == Teuchos::null)
+    dserror("Failed to cast ADAPTER::Fluid to FLD::FluidImplicitTimInt.");
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidFluidFSI::Init()
 {
-  // call base class init
-  FluidWrapper::Init();
-
   // determine the type of monolithic approach
   const Teuchos::ParameterList& xfluiddyn  = params_->sublist("XFLUID DYNAMIC/GENERAL");
   monolithic_approach_ = DRT::INPUT::IntegralValue<INPAR::XFEM::Monolithic_xffsi_Approach>
@@ -71,18 +69,24 @@ void ADAPTER::FluidFluidFSI::Init()
   // create map extractor for combined fluid domains
   // (to distinguish between FSI interface DOF / merged inner embedded & background fluid DOF)
   mergedfluidinterface_ = Teuchos::rcp(new FLD::UTILS::MapExtractor());
-  SetupInterface();
-
-  interfaceforcen_ = Teuchos::rcp(new Epetra_Vector(*(FluidFSI::Interface()->FSICondMap())));
-
-  // build inner velocity dof map (no DBC, no FSI)
-  FluidFSI::BuildInnerVelMap();
+  // call base class init
+  FluidFSI::Init();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidFluidFSI::PrepareTimeStep()
 {
+  if ( Interface()->FSICondRelevant()
+       && (monolithic_approach_ == INPAR::XFEM::XFFSI_FixedALE_Partitioned ||
+           monolithic_approach_ == INPAR::XFEM::XFFSI_FixedALE_Interpolation))
+  {
+    xfluidfluid_->SetInterfaceFixed();
+  }
+  else
+  {
+    xfluidfluid_->SetInterfaceFree();
+  }
   xfluidfluid_->PrepareTimeStep();
 }
 
@@ -101,6 +105,10 @@ void ADAPTER::FluidFluidFSI::Solve()
   xfluidfluid_->PrepareSolve();
   // solve
   xfluidfluid_->Solve();
+
+  if (meshmap_ == Teuchos::null)
+    dserror("Uninitialized mesh map");
+  *xfluidfluid_->WriteAccessDispOldState() = *fluidimpl_->Dispnp();
 }
 
 
@@ -108,23 +116,28 @@ void ADAPTER::FluidFluidFSI::Solve()
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidFluidFSI::Update()
 {
-  if ( IsAleRelaxationStep(Step())
+  if ( Interface()->FSICondRelevant()
+       && IsAleRelaxationStep(Step())
        && (monolithic_approach_ == INPAR::XFEM::XFFSI_FixedALE_Partitioned ||
            monolithic_approach_ == INPAR::XFEM::XFFSI_FixedALE_Interpolation))
   {
-    // cut to abtain new interface position
-    xfluidfluid_->CutAndSetState();
+    // allow new interface position
+    xfluidfluid_->SetInterfaceFree();
 
-    // perform xfem time integration
-    xfluidfluid_->DoTimeStepTransfer();
+    // cut with new interface location and do XFEM time integration
+    xfluidfluid_->PrepareSolve();
 
     if (monolithic_approach_ == INPAR::XFEM::XFFSI_FixedALE_Partitioned)
       xfluidfluid_->UpdateMonolithicFluidSolution(FluidFSI::Interface()->FSICondMap());
 
     // refresh the merged fluid map extractor
     SetupInterface();
+
     // create new extended shape derivatives matrix
     PrepareShapeDerivatives();
+
+    // fix interface position again
+    xfluidfluid_->SetInterfaceFixed();
   }
 
   FluidWrapper::Update();
@@ -139,37 +152,14 @@ Teuchos::RCP<FLD::UTILS::XFluidFluidMapExtractor>const& ADAPTER::FluidFluidFSI::
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidFluidFSI::ApplyEmbFixedMeshDisplacement(Teuchos::RCP<const Epetra_Vector> disp)
-{
-  if (meshmap_ == Teuchos::null)
-    dserror("Uninitialized mesh map");
-  meshmap_->InsertCondVector(disp,xfluidfluid_->WriteAccessDispOldState());
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void ADAPTER::FluidFluidFSI::ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp)
 {
-  // it transfers the displacement we get from Ale-dis to the displacement of the
-  // embedded-fluid-dis
-  if (meshmap_ == Teuchos::null)
-    dserror("Uninitialized mesh map");
+  // store old state
+  Teuchos::RCP<const Epetra_Vector> disp = meshmap_->ExtractCondVector(fluidimpl_->Dispnp());
+  meshmap_->InsertCondVector(disp,xfluidfluid_->WriteAccessDispOldState());
+  // apply mesh displacement and update grid velocity
+  FluidFSI::ApplyMeshDisplacement(fluiddisp);
 
-  meshmap_->InsertCondVector(fluiddisp, xfluidfluid_->WriteAccessDispnp());
-
-  // new grid velocity
-  xfluidfluid_->UpdateGridv();
-
-  return;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void ADAPTER::FluidFluidFSI::ApplyMeshVelocity(Teuchos::RCP<const Epetra_Vector> gridvel)
-{
-  if (meshmap_ == Teuchos::null)
-    dserror("Missing mesh map!");
-  meshmap_->InsertCondVector(gridvel,xfluidfluid_->WriteAccessGridVel());
   return;
 }
 
@@ -193,6 +183,9 @@ void ADAPTER::FluidFluidFSI::Evaluate(
   Teuchos::RCP<const Epetra_Vector> stepinc ///< solution increment between time step n and n+1
 )
 {
+  if (monolithic_approach_ == INPAR::XFEM::XFFSI_Full_Newton)
+    *xfluidfluid_->WriteAccessDispOldState() = *fluidimpl_->Dispnp();
+
   // call the usual routine
   xfluidfluid_->Evaluate(stepinc);
 
@@ -224,13 +217,6 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::FluidFluidFSI::VelocityRowMap()
 const Teuchos::RCP<DRT::Discretization>& ADAPTER::FluidFluidFSI::Discretization()
 {
   return xfluidfluid_->EmbeddedDiscretization();
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-const Teuchos::RCP<IO::DiscretizationWriter>& ADAPTER::FluidFluidFSI::DiscWriter()
-{
-  return xfluidfluid_->EmbeddedDiscWriter();
 }
 
 /*----------------------------------------------------------------------*

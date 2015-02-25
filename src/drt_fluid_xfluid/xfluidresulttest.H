@@ -2,7 +2,7 @@
 /*!
 \file xfluidresulttest.H
 
-\brief tesing of fluid calculation results
+\brief testing of fluid calculation results
 
 <pre>
 Maintainer: Benedikt Schott
@@ -29,7 +29,7 @@ namespace FLD
 // forward declarations
 class XFluid;
 class XFluidFluid;
-class XFluidFluidNew;
+class XFluidFluid;
 
 /*!
   ResultTest class for XFluid
@@ -41,11 +41,8 @@ public:
   //! ctor for standard XFEM problems
   XFluidResultTest( const FLD::XFluid& xfluid );
 
-  //! ctor for XFF-problems (to be removed!)
-  XFluidResultTest( const FLD::XFluidFluid& xfluid );
-
   //! ctor for XFF-problems
-  XFluidResultTest( const FLD::XFluidFluidNew& xfluid );
+  XFluidResultTest( const FLD::XFluidFluid& xfluid );
 
   /// our version of nodal value tests
   /*!

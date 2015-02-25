@@ -60,13 +60,11 @@ void FSI::FluidFluidMonolithicFluidSplit::Update()
   // time to relax the ALE-mesh?
   if (FluidField()->IsAleRelaxationStep(Step()))
   {
-    FluidField()->ApplyEmbFixedMeshDisplacement(AleToFluid(AleField()->WriteAccessDispnp()));
-
     if (Comm().MyPID() == 0)
       IO::cout << "Relaxing Ale" << IO::endl;
 
     AleField()->Solve();
-    FluidField()->ApplyMeshDisplacement(AleToFluid(AleField()->WriteAccessDispnp()));
+    FluidField()->ApplyMeshDisplacement(AleToFluid(AleField()->Dispnp()));
   }
 
   // update fields
@@ -86,9 +84,10 @@ void FSI::FluidFluidMonolithicFluidSplit::PrepareTimeStep()
   if (Step() == 0 || !FluidField()->IsAleRelaxationStep(Step()-1))
     return;
 
-  // REMARK:
   // as the new xfem-cut may lead to a change in the fluid dof-map,
-  // we have to rebuild the block system matrix
+  // we have to refresh the block system matrix,
+  // rebuild the merged DOF map & update map extractor for combined
+  // Dirichlet maps
   FSI::MonolithicFluidSplit::CreateCombinedDofRowMap();
   SetupDBCMapExtractor();
   FSI::MonolithicFluidSplit::CreateSystemMatrix();

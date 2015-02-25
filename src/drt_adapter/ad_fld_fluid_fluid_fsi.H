@@ -58,24 +58,23 @@ namespace ADAPTER {
   public:
 
     /// constructor
-    FluidFluidFSI(Teuchos::RCP<Fluid> fluid,
-        Teuchos::RCP<DRT::Discretization> embfluiddis,
-        Teuchos::RCP<DRT::Discretization> bgfluiddis,
+    FluidFluidFSI(
+        Teuchos::RCP<Fluid> xfluidfluid,
+        Teuchos::RCP<Fluid> embfluid,
         Teuchos::RCP<LINALG::Solver> solver,
         Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<IO::DiscretizationWriter> output,
         bool isale,
         bool dirichletcond);
 
     /// initialize and prepare maps
-    virtual void Init();
+    void Init();
 
     /// prepare time step
     void PrepareTimeStep();
 
     /// save results of current time step, do XFEM cut and refresh the
     /// merged fluid map extractor
-    virtual void Update();
+    void Update();
 
     /// solve for pure fluid-fluid-ale problem
     void Solve();
@@ -84,51 +83,44 @@ namespace ADAPTER {
     //@{
 
     // get merged xfluid-fluid dof row map
-    virtual Teuchos::RCP<const Epetra_Map> DofRowMap();
+    Teuchos::RCP<const Epetra_Map> DofRowMap();
 
     /// communication object at the interface
-    virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const { return mergedfluidinterface_; }
+    Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const { return mergedfluidinterface_; }
 
-    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel)
+    Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel)
     { dserror("Do not call RexationSolve for XFFSI."); return Teuchos::null; }
 
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces()
+    Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces()
     { dserror("Do not call ExtractInterfaceForces for XFFSI."); return Teuchos::null; }
 
     /// get block system matrix
-    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
 
     /// get the velocity row map of the embedded fluid
-    virtual Teuchos::RCP<const Epetra_Map> VelocityRowMap();
+    Teuchos::RCP<const Epetra_Map> VelocityRowMap();
 
     // access to embedded discretization
     const Teuchos::RCP<DRT::Discretization>& Discretization();
 
     // return discretization writer of embedded fluid discretization (for special purpose output)
-    const Teuchos::RCP<IO::DiscretizationWriter>& DiscWriter();
+    const Teuchos::RCP<IO::DiscretizationWriter>& DiscWriter(){ return output_; }
 
     /// get map extractor for background/embedded fluid
-    virtual Teuchos::RCP<FLD::UTILS::XFluidFluidMapExtractor>const& XFluidFluidMapExtractor();
+    Teuchos::RCP<FLD::UTILS::XFluidFluidMapExtractor>const& XFluidFluidMapExtractor();
 
     //@}
 
-    /// set old ALE displacement state before relaxation
-    virtual void ApplyEmbFixedMeshDisplacement(Teuchos::RCP<const Epetra_Vector> disp);
-
-    /// apply embedded fluid mesh displacement
-    virtual void ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp);
-
-    /// apply embedded fluid mesh velocity
-    virtual void ApplyMeshVelocity(Teuchos::RCP<const Epetra_Vector> gridvel);
+    void ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp);
 
     /// evaluate the fluid and update the merged fluid/FSI DOF-map extractor in case of a change in the DOF-maps
-    virtual void Evaluate(
+    void Evaluate(
       Teuchos::RCP<const Epetra_Vector> stepinc ///< solution increment between time step n and n+1
-      );
+    );
 
     /// request fluid system matrix & shapederivatives as blockmatrices when called with true
     /// (indicated monolithic XFFSI with fluidsplit)
-    virtual void UseBlockMatrix(bool split_fluidsysmat = false);
+    void UseBlockMatrix(bool split_fluidsysmat = false);
 
     /// determine, whether the ALE-mesh should be relaxed at current time step
     bool IsAleRelaxationStep(int step) const;
@@ -151,7 +143,7 @@ namespace ADAPTER {
     void PrepareShapeDerivatives();
 
     /// type cast pointer to XFluidFluid
-    Teuchos::RCP<FLD::XFluidFluid>         xfluidfluid_;
+    Teuchos::RCP<FLD::XFluidFluid>      xfluidfluid_;
 
     /// fsi map extractor for merged fluid maps (to keep fsi interface-DOF apart from
     /// merged inner DOF (inner embedded fluid together with background fluid)
