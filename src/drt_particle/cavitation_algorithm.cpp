@@ -413,7 +413,16 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
   if(!simplebubbleforce_)
   {
     // project velocity gradient of fluid to nodal level via L2 projection and store it in a ParameterList
-    Teuchos::RCP<Epetra_MultiVector> projected_velgrad = FLD::UTILS::ComputeL2ProjectedVelGradient(fluiddis_,fluid_->Veln());
+    const int dim = DRT::Problem::Instance()->NDim();
+    const int numvec = dim*dim;
+    Teuchos::ParameterList params;
+    params.set<int>("action",FLD::velgradient_projection);
+    const int solvernumber = DRT::Problem::Instance()->FluidDynamicParams().get<int>("VELGRAD_PROJ_SOLVER");
+
+    Teuchos::RCP<Epetra_MultiVector> projected_velgrad =
+        DRT::UTILS::ComputeNodalL2Projection(fluiddis_, fluid_->Veln(), "vel", numvec, params, solvernumber);
+
+    // store projected velocity gradient (ux,x  ux,y  ux,z  uy,x  uy,y  uy,z  uz,x  uz,y  uz,z)
     fluiddis_->AddMultiVectorToParameterList(p, "velgradient", projected_velgrad);
   }
 

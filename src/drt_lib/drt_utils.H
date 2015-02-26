@@ -165,6 +165,25 @@ namespace UTILS
       std::vector<int>& lm,
       const int num);
 
+  /*!
+    \brief compute L2 projection of a dof based field onto a node based field in a least
+    squares sense
+
+    \return an Epetra_MultiVector based on the discret's node row map containing numvec vectors
+            with the projected state
+
+    \author Georg Hammerl
+    \date 06/14
+   */
+  Teuchos::RCP<Epetra_MultiVector> ComputeNodalL2Projection(
+      Teuchos::RCP<DRT::Discretization> dis,   ///< underlying discretization
+      Teuchos::RCP<const Epetra_Vector> state, ///< state vector needed on element level
+      const std::string statename,             ///< name of state which will be set
+      const int numvec,                        ///< number of entries per node to project
+      Teuchos::ParameterList& params,          ///< parameter list that contains the element action
+      const int solvernumber                   ///< solver number for solving the resulting global system
+    );
+
 
 /*!
 \brief handles random numbers through boost
