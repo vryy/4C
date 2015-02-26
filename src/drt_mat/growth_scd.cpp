@@ -847,9 +847,10 @@ void MAT::GrowthScdACRadial::Evaluate
     LINALG::Matrix<3, 3> Sdach(true);
     VectorToMatrix(Sdach,Sdachvec,MAT::voigt_stress);
 
+    LINALG::Matrix<3, 3> tmp(true);
+    tmp.MultiplyNT(Sdach,F_ginv);
     LINALG::Matrix<3, 3> S(true);
-    S.MultiplyNT(Sdach,F_ginv);
-    S.MultiplyNN(F_ginv,S);
+    S.MultiplyNN(F_ginv,tmp);
 
     MatrixToVector(S,*stress,MAT::voigt_stress);
 
@@ -889,26 +890,30 @@ void MAT::GrowthScdACRadial::Evaluate
 //    //  dF_ginvdtheta.Scale(1/eps);
 //
 //
+//    LINALG::Matrix<3, 3> tmp11(true);
+//    tmp11.MultiplyNN(Sdach,F_ginv);
 //    LINALG::Matrix<3, 3> tmp1(true);
-//    tmp1.MultiplyNN(Sdach,F_ginv);
-//    tmp1.MultiplyNN(dF_ginvdtheta,tmp1);
+//    tmp1.MultiplyNN(dF_ginvdtheta,tmp11);
 //
+//    LINALG::Matrix<3, 3> Stilde1(true);
+//    Stilde1.MultiplyNN(Sdach,dF_ginvdtheta);
 //    LINALG::Matrix<3, 3> Stilde(true);
-//    Stilde.MultiplyNN(Sdach,dF_ginvdtheta);
-//    Stilde.MultiplyNN(F_ginv,Stilde);
+//    Stilde.MultiplyNN(F_ginv,Stilde1);
 //
 //    Stilde+=tmp1;
 //    LINALG::Matrix<6, 1> Stildevec(true);
 //    MatrixToVector(Stilde,Stildevec,MAT::voigt_stress);
 //
 //
+//    LINALG::Matrix<3, 3> tmp21(true);
+//    tmp21.MultiplyNN(C,F_ginv);
 //    LINALG::Matrix<3, 3> tmp2(true);
-//    tmp2.MultiplyNN(C,F_ginv);
-//    tmp2.MultiplyNN(dF_ginvdtheta,tmp2);
+//    tmp2.MultiplyNN(dF_ginvdtheta,tmp21);
 //
+//    LINALG::Matrix<3, 3> Ctilde1(true);
+//    Ctilde1.MultiplyNN(C,dF_ginvdtheta);
 //    LINALG::Matrix<3, 3> Ctilde(true);
-//    Ctilde.MultiplyNN(C,dF_ginvdtheta);
-//    Ctilde.MultiplyNN(F_ginv,Ctilde);
+//    Ctilde.MultiplyNN(F_ginv,Ctilde1);
 //
 //    Ctilde+=tmp2;
 //
@@ -924,10 +929,12 @@ void MAT::GrowthScdACRadial::Evaluate
 //                          + cmatdach(i, 4) * Ctildevec(4) + cmatdach(i, 5) * Ctildevec(5);
 //    }
 //
+//    LINALG::Matrix<3, 3> tmp41(true);
+//    VectorToMatrix(tmp41,cmatelasC,MAT::voigt_strain);
+//    LINALG::Matrix<3, 3> tmp42(true);
+//    tmp42.MultiplyNN(tmp41,F_ginv);
 //    LINALG::Matrix<3, 3> tmp4(true);
-//    VectorToMatrix(tmp4,cmatelasC,MAT::voigt_strain);
-//    tmp4.MultiplyNN(tmp4,F_ginv);
-//    tmp4.MultiplyNN(F_ginv,tmp4);
+//    tmp4.MultiplyNN(F_ginv,tmp42);
 //
 //    LINALG::Matrix<6, 1> tmp5(true);
 //    MatrixToVector(tmp4,tmp5,MAT::voigt_stress);
@@ -1001,9 +1008,10 @@ void MAT::GrowthScdACRadial::Evaluate
     LINALG::Matrix<3, 3> Sdach(true);
     VectorToMatrix(Sdach,Sdachvec,MAT::voigt_stress);
 
+    LINALG::Matrix<3, 3> tmp(true);
+    tmp.MultiplyNT(Sdach,F_ginv);
     LINALG::Matrix<3, 3> S(true);
-    S.MultiplyNT(Sdach,F_ginv);
-    S.MultiplyNN(F_ginv,S);
+    S.MultiplyNN(F_ginv,tmp);
 
     MatrixToVector(S,*stress,MAT::voigt_stress);
 
