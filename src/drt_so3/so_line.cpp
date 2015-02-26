@@ -18,6 +18,10 @@ Maintainer: Michael Gee
 
 DRT::ELEMENTS::StructuralLineType DRT::ELEMENTS::StructuralLineType::instance_;
 
+DRT::ELEMENTS::StructuralLineType& DRT::ELEMENTS::StructuralLineType::Instance()
+{
+  return instance_;
+}
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::StructuralLineType::Create( const int id, const int owner )
 {

@@ -15,6 +15,11 @@ Maintainer: Matthias Mayr
 
 DRT::ELEMENTS::NURBS::Ale2_NurbsType DRT::ELEMENTS::NURBS::Ale2_NurbsType::instance_;
 
+DRT::ELEMENTS::NURBS::Ale2_NurbsType& DRT::ELEMENTS::NURBS::Ale2_NurbsType::Instance()
+{
+  return instance_;
+}
+
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 DRT::ParObject* DRT::ELEMENTS::NURBS::Ale2_NurbsType::Create(

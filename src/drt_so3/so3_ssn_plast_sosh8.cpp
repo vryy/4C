@@ -35,6 +35,11 @@ Maintainer: Alexander Seitz
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_sh8PlastType DRT::ELEMENTS::So_sh8PlastType::instance_;
 
+DRT::ELEMENTS::So_sh8PlastType& DRT::ELEMENTS::So_sh8PlastType::Instance()
+{
+  return instance_;
+}
+
 /*----------------------------------------------------------------------*
 | create the new element type (public)                     seitz 05/14 |
 | is called in ElementRegisterType                                     |

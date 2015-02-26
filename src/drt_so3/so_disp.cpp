@@ -23,6 +23,10 @@ Maintainer: Axel Gerstenberger
 
 DRT::ELEMENTS::SoDispType DRT::ELEMENTS::SoDispType::instance_;
 
+DRT::ELEMENTS::SoDispType& DRT::ELEMENTS::SoDispType::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::SoDispType::Create( const std::vector<char> & data )
 {

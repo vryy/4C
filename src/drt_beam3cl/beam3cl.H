@@ -48,11 +48,7 @@ namespace DRT
           return "BeamCLType";
         }
 
-        static BeamCLType & Instance()
-        {
-          return instance_;
-        }
-        ;
+        static BeamCLType & Instance();
 
         virtual DRT::ParObject* Create(const std::vector<char> & data);
 

@@ -48,7 +48,7 @@ public:
 
   std::string Name() const { return "Ale3_NurbsType"; }
 
-  static Ale3_NurbsType & Instance() { return instance_; };
+  static Ale3_NurbsType & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 

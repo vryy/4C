@@ -44,7 +44,7 @@ public:
 
   std::string Name() const { return "So_hex20Type"; }
 
-  static So_hex20Type & Instance() { return instance_; };
+  static So_hex20Type & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 

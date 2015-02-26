@@ -24,6 +24,11 @@
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_sh18PlastType DRT::ELEMENTS::So_sh18PlastType::instance_;
 
+DRT::ELEMENTS::So_sh18PlastType& DRT::ELEMENTS::So_sh18PlastType::Instance()
+{
+  return instance_;
+}
+
 /*----------------------------------------------------------------------*
 | create the new element type (public)                     seitz 11/14 |
 | is called in ElementRegisterType                                     |

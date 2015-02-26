@@ -16,6 +16,10 @@ Maintainer: Alexander Popp
 
 MORTAR::MortarElementGeoDecouplType MORTAR::MortarElementGeoDecouplType::instance_;
 
+MORTAR::MortarElementGeoDecouplType& MORTAR::MortarElementGeoDecouplType::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* MORTAR::MortarElementGeoDecouplType::Create( const std::vector<char> & data )
 {

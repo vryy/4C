@@ -41,7 +41,7 @@ public:
 
   std::string Name() const { return "Torsion3Type"; }
 
-  static Torsion3Type & Instance() { return instance_; };
+  static Torsion3Type & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 

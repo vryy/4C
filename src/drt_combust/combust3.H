@@ -374,7 +374,7 @@ public:
 
   std::string Name() const { return "Combust3SurfaceType"; }
 
-  static Combust3SurfaceType & Instance() { return instance_; };
+  static Combust3SurfaceType & Instance();
 
   virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
 
@@ -578,7 +578,7 @@ public:
 
   std::string Name() const { return "Combust3LineType"; }
 
-  static Combust3LineType & Instance() { return instance_; };
+  static Combust3LineType & Instance();
 
   virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
 
@@ -748,7 +748,7 @@ private:
 
       std::string Name() const { return "Combust3IntFaceType"; }
 
-      static Combust3IntFaceType & Instance() { return instance_; };
+      static Combust3IntFaceType & Instance();
 
       virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
 

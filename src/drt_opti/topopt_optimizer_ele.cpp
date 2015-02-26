@@ -20,6 +20,10 @@ Maintainer: Martin Winklmaier
 
 DRT::ELEMENTS::TopOptType DRT::ELEMENTS::TopOptType::instance_;
 
+DRT::ELEMENTS::TopOptType& DRT::ELEMENTS::TopOptType::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::TopOptType::Create( const std::vector<char> & data )
 {
@@ -119,6 +123,11 @@ void DRT::ELEMENTS::TopOptType::SetupElementDefinition( std::map<std::string,std
 
 
 DRT::ELEMENTS::TopOptBoundaryType DRT::ELEMENTS::TopOptBoundaryType::instance_;
+
+DRT::ELEMENTS::TopOptBoundaryType& DRT::ELEMENTS::TopOptBoundaryType::Instance()
+{
+  return instance_;
+}
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::TopOptBoundaryType::Create( const int id, const int owner )
 {

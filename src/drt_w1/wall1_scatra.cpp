@@ -19,6 +19,10 @@
 
 DRT::ELEMENTS::Wall1ScatraType DRT::ELEMENTS::Wall1ScatraType::instance_;
 
+DRT::ELEMENTS::Wall1ScatraType& DRT::ELEMENTS::Wall1ScatraType::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::Wall1ScatraType::Create( const std::vector<char> & data )
 {

@@ -846,7 +846,7 @@ public:
 
   std::string Name() const { return "RedInterAcinarDepType"; }
 
-  static RedInterAcinarDepType & Instance() { return instance_; };
+  static RedInterAcinarDepType & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
@@ -1229,7 +1229,7 @@ public:
 
   std::string Name() const { return "RedAirBloodScatraType"; }
 
-  static RedAirBloodScatraType & Instance() { return instance_; };
+  static RedAirBloodScatraType & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
@@ -1607,7 +1607,7 @@ public:
 
   std::string Name() const { return "RedAirBloodScatraLine3Type"; }
 
-  static RedAirBloodScatraLine3Type & Instance() { return instance_; };
+  static RedAirBloodScatraLine3Type & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 

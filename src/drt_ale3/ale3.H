@@ -68,7 +68,7 @@ public:
 
   std::string Name() const { return "Ale3Type"; }
 
-  static Ale3Type & Instance() { return instance_; };
+  static Ale3Type & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
@@ -503,7 +503,7 @@ public:
 
   std::string Name() const { return "Ale3SurfaceType"; }
 
-  static Ale3SurfaceType & Instance() { return instance_; };
+  static Ale3SurfaceType & Instance();
 
   virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
 

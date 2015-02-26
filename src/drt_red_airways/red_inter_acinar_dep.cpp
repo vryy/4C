@@ -21,6 +21,10 @@ using namespace DRT::UTILS;
 
 DRT::ELEMENTS::RedInterAcinarDepType DRT::ELEMENTS::RedInterAcinarDepType::instance_;
 
+DRT::ELEMENTS::RedInterAcinarDepType& DRT::ELEMENTS::RedInterAcinarDepType::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::RedInterAcinarDepType::Create( const std::vector<char> & data )
 {

@@ -23,6 +23,11 @@ using namespace DRT::UTILS;
 
 DRT::ELEMENTS::ArteryType DRT::ELEMENTS::ArteryType::instance_;
 
+DRT::ELEMENTS::ArteryType & DRT::ELEMENTS::ArteryType::Instance()
+{
+  return instance_;
+}
+
 DRT::ParObject* DRT::ELEMENTS::ArteryType::Create( const std::vector<char> & data )
 {
   DRT::ELEMENTS::Artery* object = new DRT::ELEMENTS::Artery(-1,-1);

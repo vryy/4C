@@ -28,6 +28,11 @@ Maintainer: Michael Gee
 
 DRT::ELEMENTS::NStet5Type DRT::ELEMENTS::NStet5Type::instance_;
 
+DRT::ELEMENTS::NStet5Type& DRT::ELEMENTS::NStet5Type::Instance()
+{
+  return instance_;
+}
+
 
 //-----------------------------------------------------------------------
 //-----------------------------------------------------------------------
@@ -79,13 +84,13 @@ void DRT::ELEMENTS::NStet5Type::NodalBlockInformation( DRT::Element * dwele, int
 void DRT::ELEMENTS::NStet5Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
   DRT::UTILS::ComputeStructure3DNullSpace( dis, ns, x0, numdf, dimns );
-  
+
   // do nullspace for element degrees of freedom
   const Epetra_Map* rowmap = dis.DofRowMap(0);
   const int lrows = rowmap->NumMyElements();
   double* mode[6];
   for (int i=0; i<dimns; ++i) mode[i] = &(ns[i*lrows]);
-  
+
   for (int i=0; i<dis.NumMyRowElements(); ++i)
   {
     DRT::Element* ele = dis.lRowElement(i);
@@ -506,7 +511,7 @@ void DRT::ELEMENTS::NStet5Type::InitAdjacency(
 
     //-----------------------------------------------------------------
     // lm array
-    const int ndofperpatch = ((int)nodepatch.size() + 
+    const int ndofperpatch = ((int)nodepatch.size() +
                               (int)myadjele.size()) * 3;
 
     // location and ownership vector of nodal patch
@@ -520,14 +525,14 @@ void DRT::ELEMENTS::NStet5Type::InitAdjacency(
       for (unsigned j=0; j<dofs.size(); ++j)
         lm[count++]        = dofs[j];
     }
-    
+
 #if 0
     printf("node %d nodal dofs: ",nodeidL);
     for (int i=0; i<count; ++i) printf("%d ",lm[i]);
     printf("\n");
     int start = count;
 #endif
-    
+
     // add dofs of center nodes from elements. These appear as element dofs
     for (unsigned j=0; j<myadjele.size(); ++j)
     {
@@ -535,13 +540,13 @@ void DRT::ELEMENTS::NStet5Type::InitAdjacency(
       for (unsigned j=0; j<dofs.size(); ++j)
         lm[count++]        = dofs[j];
     }
-    
+
 #if 0
     printf("node %d ele   dofs: ",nodeidL);
     for (int i=start; i<count; ++i) printf("%d ",lm[i]);
     printf("\n\n");
-#endif    
-    
+#endif
+
     adjlm[nodeidL] = lm;
 
     //-----------------------------------------------------------------
@@ -579,10 +584,10 @@ void DRT::ELEMENTS::NStet5Type::InitAdjacency(
 #endif
 
           masterele[ele->Id()] = subele;
-          
+
           // no longer need to look at this element
-          break; 
-        } 
+          break;
+        }
       }
       if (!foundit) dserror("Weired, this adjele seems not attached to me");
     } // for (unsigned j=0; j<myadjele.size(); ++j)
@@ -627,12 +632,12 @@ void DRT::ELEMENTS::NStet5Type::InitAdjacency(
           std::vector<int>::iterator fool = find(lm.begin(),lm.end(),elelm[l]);
           lmlm[j][k][l] = fool-lm.begin();
         }
-        
+
       }
     }
     adjlmlm[nodeidL] = lmlm;
-   
-  
+
+
 
   } // for (node=noderids.begin(); node != noderids.end(); ++node)
   return;

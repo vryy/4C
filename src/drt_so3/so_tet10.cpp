@@ -32,6 +32,10 @@ Maintainer: Jonas Biehler
 
 DRT::ELEMENTS::So_tet10Type DRT::ELEMENTS::So_tet10Type::instance_;
 
+DRT::ELEMENTS::So_tet10Type& DRT::ELEMENTS::So_tet10Type::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::So_tet10Type::Create( const std::vector<char> & data )
 {

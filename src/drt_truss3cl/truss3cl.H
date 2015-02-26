@@ -46,7 +46,7 @@ public:
 
   std::string Name() const { return "Truss3CLType"; }
 
-  static Truss3CLType & Instance() { return instance_; };
+  static Truss3CLType & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 

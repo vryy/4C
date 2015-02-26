@@ -26,6 +26,11 @@ Maintainer: Christoph Meier
 
 DRT::ELEMENTS::Beam3Type DRT::ELEMENTS::Beam3Type::instance_;
 
+DRT::ELEMENTS::Beam3Type& DRT::ELEMENTS::Beam3Type::Instance()
+{
+  return instance_;
+}
+
 DRT::ParObject* DRT::ELEMENTS::Beam3Type::Create( const std::vector<char> & data )
 {
   DRT::ELEMENTS::Beam3* object = new DRT::ELEMENTS::Beam3(-1,-1);

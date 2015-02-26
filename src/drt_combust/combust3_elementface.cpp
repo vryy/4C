@@ -20,6 +20,11 @@ Maintainer: Ursula Rasthofer
 
 DRT::ELEMENTS::Combust3IntFaceType DRT::ELEMENTS::Combust3IntFaceType::instance_;
 
+DRT::ELEMENTS::Combust3IntFaceType& DRT::ELEMENTS::Combust3IntFaceType::Instance()
+{
+  return instance_;
+}
+
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Combust3IntFaceType::Create( const int id, const int owner )
 {

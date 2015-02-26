@@ -41,7 +41,7 @@ public:
 
   std::string Name() const { return "Truss2Type"; }
 
-  static Truss2Type & Instance() { return instance_; };
+  static Truss2Type & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 

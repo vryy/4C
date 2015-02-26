@@ -27,7 +27,7 @@ public:
 
   std::string Name() const { return "So_shw6Type"; }
 
-  static So_shw6Type & Instance() { return instance_; };
+  static So_shw6Type & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 

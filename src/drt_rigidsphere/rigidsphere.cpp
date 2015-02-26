@@ -27,6 +27,10 @@ Maintainer: Christoph Meier
 
 DRT::ELEMENTS::RigidsphereType DRT::ELEMENTS::RigidsphereType::instance_;
 
+DRT::ELEMENTS::RigidsphereType& DRT::ELEMENTS::RigidsphereType::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::RigidsphereType::Create( const std::vector<char> & data )
 {

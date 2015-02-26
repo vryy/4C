@@ -20,6 +20,11 @@ Maintainer: Alexander Popp
 
 DRT::ELEMENTS::So_shw6Type DRT::ELEMENTS::So_shw6Type::instance_;
 
+DRT::ELEMENTS::So_shw6Type& DRT::ELEMENTS::So_shw6Type::Instance()
+{
+  return instance_;
+}
+
 
 DRT::ParObject* DRT::ELEMENTS::So_shw6Type::Create( const std::vector<char> & data )
 {

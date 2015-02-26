@@ -55,7 +55,7 @@ public:
 
   std::string Name() const { return "NStet5Type"; }
 
-  static NStet5Type & Instance() { return instance_; };
+  static NStet5Type & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
@@ -185,7 +185,7 @@ private:
 
 
   //! build deformation gradient
-  template<typename T> 
+  template<typename T>
   static LINALG::TMatrix<T,3,3> TBuildF(const LINALG::TMatrix<T,4,3>& xdisp,
                                         const LINALG::Matrix<4,3>& nxyz)
   {
@@ -201,7 +201,7 @@ private:
   }
 
   //! build and return determinant of a 3x3 matrix
-  template<typename T> 
+  template<typename T>
   T Determinant3x3(LINALG::TMatrix<T,3,3>& A)
   {
     T b00 = A(0,0);
@@ -466,7 +466,7 @@ protected:
   inline double Vol() { return V_; }
 
   ///----------------------------------------------- prestressing switch & time
-  /// prestressing and invdesign assume 4 Gausspoints per element, 
+  /// prestressing and invdesign assume 4 Gausspoints per element,
   /// that is, one per sub-element
   INPAR::STR::PreStress                                                pstype_;
   double                                                               pstime_;
@@ -488,7 +488,7 @@ protected:
   //! nodal connectivity  of subelements
   int                                                      sublm_[16];
   inline const int* SubLM(int i) const { return &(sublm_[i*4]); }
-  
+
   //! coordinates of middle node
   double                                                   midX_[3];
   inline const double* MidX() const { return midX_; }
@@ -496,11 +496,11 @@ protected:
   //! derivatives of shape functions for subtets
   LINALG::Matrix<4,3>                                      subnxyz_[4];
   inline const LINALG::Matrix<4,3>& SubNxyz(int i) const { return subnxyz_[i]; }
-  
+
   //! reference volume of subelements
   double                                                   subV_[4];
   inline const double& SubV(int i) const { return subV_[i]; }
-  
+
   LINALG::Matrix<3,3>                                      subF_[4];
   inline LINALG::Matrix<3,3>& SubF(int i) { return subF_[i]; }
   //---------------------------------------------------------------------------

@@ -19,6 +19,10 @@ Maintainer: Michael Gee
 
 DRT::ELEMENTS::StructuralSurfaceType DRT::ELEMENTS::StructuralSurfaceType::instance_;
 
+DRT::ELEMENTS::StructuralSurfaceType& DRT::ELEMENTS::StructuralSurfaceType::Instance()
+{
+  return instance_;
+}
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::StructuralSurfaceType::Create( const int id, const int owner )
 {

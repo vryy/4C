@@ -29,6 +29,10 @@ Maintainer: Thomas Kloeppel
 
 DRT::ELEMENTS::So_hex27Type DRT::ELEMENTS::So_hex27Type::instance_;
 
+DRT::ELEMENTS::So_hex27Type& DRT::ELEMENTS::So_hex27Type::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::So_hex27Type::Create( const std::vector<char> & data )
 {

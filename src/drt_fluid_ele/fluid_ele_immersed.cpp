@@ -16,6 +16,10 @@ Maintainers: Andreas Rauch & Anh-Tu Vuong
 
 DRT::ELEMENTS::FluidTypeImmersed DRT::ELEMENTS::FluidTypeImmersed::instance_;
 
+DRT::ELEMENTS::FluidTypeImmersed& DRT::ELEMENTS::FluidTypeImmersed::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::FluidTypeImmersed::Create( const std::vector<char> & data)
 {

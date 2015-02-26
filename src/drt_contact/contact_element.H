@@ -34,11 +34,7 @@ public:
     return "CoElementType";
   }
 
-  static CoElementType & Instance()
-  {
-    return instance_;
-  }
-  ;
+  static CoElementType& Instance();
 
   virtual DRT::ParObject* Create(const std::vector<char> & data);
 

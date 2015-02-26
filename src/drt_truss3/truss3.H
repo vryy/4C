@@ -47,11 +47,7 @@ public:
     return "Truss3Type";
   }
 
-  static Truss3Type & Instance()
-  {
-    return instance_;
-  }
-  ;
+  static Truss3Type & Instance();
 
   virtual DRT::ParObject* Create(const std::vector<char> & data);
 

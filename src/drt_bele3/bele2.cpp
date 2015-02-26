@@ -21,6 +21,11 @@ Maintainer: Ursula Mayer
 
 DRT::ELEMENTS::Bele2Type DRT::ELEMENTS::Bele2Type::instance_;
 
+DRT::ELEMENTS::Bele2Type& DRT::ELEMENTS::Bele2Type::Instance()
+{
+  return instance_;
+}
+
 DRT::ParObject* DRT::ELEMENTS::Bele2Type::Create( const std::vector<char> & data )
 {
   DRT::ELEMENTS::Bele2* object = new DRT::ELEMENTS::Bele2(-1,-1);

@@ -27,7 +27,7 @@ public:
 
   std::string Name() const { return "FluidTypeImmersed"; }
 
-  static FluidType & Instance() { return instance_; };
+  static FluidTypeImmersed & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data);
 

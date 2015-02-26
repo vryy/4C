@@ -22,6 +22,11 @@ Maintainer: Matthias Mayr
 
 DRT::ELEMENTS::Ale3Type DRT::ELEMENTS::Ale3Type::instance_;
 
+DRT::ELEMENTS::Ale3Type & DRT::ELEMENTS::Ale3Type::Instance()
+{
+  return instance_;
+}
+
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 DRT::ParObject* DRT::ELEMENTS::Ale3Type::Create(const std::vector<char> & data)

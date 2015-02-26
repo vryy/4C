@@ -20,6 +20,10 @@ using namespace DRT::UTILS;
 
 DRT::ELEMENTS::RedAirBloodScatraLine3Type DRT::ELEMENTS::RedAirBloodScatraLine3Type::instance_;
 
+DRT::ELEMENTS::RedAirBloodScatraLine3Type& DRT::ELEMENTS::RedAirBloodScatraLine3Type::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::RedAirBloodScatraLine3Type::Create( const std::vector<char> & data )
 {

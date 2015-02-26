@@ -47,7 +47,7 @@ public:
 
   std::string Name() const { return "ArteryType"; }
 
-  static ArteryType & Instance() { return instance_; };
+  static ArteryType & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
@@ -120,8 +120,8 @@ public:
   virtual int NumLine() const
   {if (NumNode()==2) return 1;
       else {
-	  dserror("Could not determine number of lines");
-	  return -1;
+    dserror("Could not determine number of lines");
+    return -1;
       }
   }
 

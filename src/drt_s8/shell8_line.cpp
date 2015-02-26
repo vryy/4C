@@ -20,6 +20,10 @@ Maintainer: Michael Gee
 
 DRT::ELEMENTS::Shell8LineType DRT::ELEMENTS::Shell8LineType::instance_;
 
+DRT::ELEMENTS::Shell8LineType& DRT::ELEMENTS::Shell8LineType::Instance()
+{
+  return instance_;
+}
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 01/07|

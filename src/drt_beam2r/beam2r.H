@@ -37,7 +37,7 @@ public:
 
   std::string Name() const { return "Beam2rType"; }
 
-  static Beam2rType & Instance() { return instance_; };
+  static Beam2rType & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 

@@ -234,7 +234,7 @@ public:
 
   std::string Name() const { return "Bele3LineType"; }
 
-  static Bele3LineType & Instance() { return instance_; };
+  static Bele3LineType & Instance();
 
   virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
 

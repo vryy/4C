@@ -18,6 +18,10 @@ Maintainer: Ursula Mayer
 
 DRT::ELEMENTS::Vele3Type DRT::ELEMENTS::Vele3Type::instance_;
 
+DRT::ELEMENTS::Vele3Type& DRT::ELEMENTS::Vele3Type::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::Vele3Type::Create( const std::vector<char> & data )
 {

@@ -36,7 +36,7 @@ public:
 
   std::string Name() const { return "MortarElementGeoDecouplType"; }
 
-  static MortarElementGeoDecouplType & Instance() { return instance_; };
+  static MortarElementGeoDecouplType & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 

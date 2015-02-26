@@ -21,6 +21,10 @@ Maintainer: Alexander Popp
 
 DRT::ELEMENTS::So_sh8Type DRT::ELEMENTS::So_sh8Type::instance_;
 
+DRT::ELEMENTS::So_sh8Type& DRT::ELEMENTS::So_sh8Type::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::So_sh8Type::Create( const std::vector<char> & data )
 {

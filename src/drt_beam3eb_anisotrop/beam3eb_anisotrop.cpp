@@ -27,6 +27,10 @@ Maintainer: Christoph Meier
 
 DRT::ELEMENTS::Beam3ebanisotropType DRT::ELEMENTS::Beam3ebanisotropType::instance_;
 
+DRT::ELEMENTS::Beam3ebanisotropType & DRT::ELEMENTS::Beam3ebanisotropType::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::Beam3ebanisotropType::Create( const std::vector<char> & data )
 {

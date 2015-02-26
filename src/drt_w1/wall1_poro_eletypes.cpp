@@ -25,6 +25,10 @@
 
 DRT::ELEMENTS::WallQuad4PoroType DRT::ELEMENTS::WallQuad4PoroType::instance_;
 
+DRT::ELEMENTS::WallQuad4PoroType& DRT::ELEMENTS::WallQuad4PoroType::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::WallQuad4PoroType::Create( const std::vector<char> & data )
 {
@@ -94,6 +98,10 @@ int DRT::ELEMENTS::WallQuad4PoroType::Initialize(DRT::Discretization& dis)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::WallQuad9PoroType DRT::ELEMENTS::WallQuad9PoroType::instance_;
 
+DRT::ELEMENTS::WallQuad9PoroType& DRT::ELEMENTS::WallQuad9PoroType::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::WallQuad9PoroType::Create( const std::vector<char> & data )
 {
@@ -164,6 +172,10 @@ int DRT::ELEMENTS::WallQuad9PoroType::Initialize(DRT::Discretization& dis)
 
 DRT::ELEMENTS::WallNurbs4PoroType DRT::ELEMENTS::WallNurbs4PoroType::instance_;
 
+DRT::ELEMENTS::WallNurbs4PoroType& DRT::ELEMENTS::WallNurbs4PoroType::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::WallNurbs4PoroType::Create( const std::vector<char> & data )
 {
@@ -234,6 +246,10 @@ int DRT::ELEMENTS::WallNurbs4PoroType::Initialize(DRT::Discretization& dis)
 
 DRT::ELEMENTS::WallNurbs9PoroType DRT::ELEMENTS::WallNurbs9PoroType::instance_;
 
+DRT::ELEMENTS::WallNurbs9PoroType& DRT::ELEMENTS::WallNurbs9PoroType::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::WallNurbs9PoroType::Create( const std::vector<char> & data )
 {

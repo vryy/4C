@@ -32,6 +32,12 @@ Maintainer: Michael Gee
 
 
 DRT::ELEMENTS::So_hex8Type DRT::ELEMENTS::So_hex8Type::instance_;
+
+DRT::ELEMENTS::So_hex8Type& DRT::ELEMENTS::So_hex8Type::Instance()
+{
+  return instance_;
+}
+
 namespace {
   const std::string name = DRT::ELEMENTS::So_hex8Type::Instance().Name();
 }

@@ -43,7 +43,7 @@ public:
 
   std::string Name() const { return "TransportType"; }
 
-  static TransportType & Instance() { return instance_; };
+  static TransportType & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
@@ -413,7 +413,7 @@ public:
 
   std::string Name() const { return "TransportBoundaryType"; }
 
-  static TransportBoundaryType & Instance() { return instance_; };
+  static TransportBoundaryType & Instance();
 
   virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
 

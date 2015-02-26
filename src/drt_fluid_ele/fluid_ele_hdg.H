@@ -39,7 +39,7 @@ namespace ELEMENTS
 
     std::string Name() const { return "FluidHDGType"; }
 
-    static FluidHDGType & Instance() { return instance_; };
+    static FluidHDGType & Instance();
 
     virtual DRT::ParObject* Create( const std::vector<char> & data );
 

@@ -16,6 +16,10 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 
 DRT::ELEMENTS::FluidBoundaryType DRT::ELEMENTS::FluidBoundaryType::instance_;
 
+DRT::ELEMENTS::FluidBoundaryType& DRT::ELEMENTS::FluidBoundaryType::Instance()
+{
+  return instance_;
+}
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidBoundaryType::Create( const int id, const int owner )
 {

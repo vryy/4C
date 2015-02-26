@@ -30,7 +30,7 @@ public:
 
   std::string Name() const { return "So_hex8fbarType"; }
 
-  static So_hex8fbarType & Instance() { return instance_; };
+  static So_hex8fbarType & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 

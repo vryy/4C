@@ -32,6 +32,10 @@ Maintainer: Moritz Frenzel
 
 DRT::ELEMENTS::So_weg6Type DRT::ELEMENTS::So_weg6Type::instance_;
 
+DRT::ELEMENTS::So_weg6Type& DRT::ELEMENTS::So_weg6Type::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::So_weg6Type::Create( const std::vector<char> & data )
 {

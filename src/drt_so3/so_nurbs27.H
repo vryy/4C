@@ -59,7 +59,7 @@ public:
 
   std::string Name() const { return "So_nurbs27Type"; }
 
-  static So_nurbs27Type & Instance() { return instance_; };
+  static So_nurbs27Type & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 

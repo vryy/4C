@@ -20,6 +20,10 @@
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_hex8PoroType DRT::ELEMENTS::So_hex8PoroType::instance_;
 
+DRT::ELEMENTS::So_hex8PoroType& DRT::ELEMENTS::So_hex8PoroType::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::So_hex8PoroType::Create( const std::vector<char> & data )
 {
@@ -90,6 +94,10 @@ int DRT::ELEMENTS::So_hex8PoroType::Initialize(DRT::Discretization& dis)
 
 DRT::ELEMENTS::So_tet4PoroType DRT::ELEMENTS::So_tet4PoroType::instance_;
 
+DRT::ELEMENTS::So_tet4PoroType& DRT::ELEMENTS::So_tet4PoroType::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::So_tet4PoroType::Create( const std::vector<char> & data )
 {
@@ -159,6 +167,10 @@ int DRT::ELEMENTS::So_tet4PoroType::Initialize(DRT::Discretization& dis)
 
 DRT::ELEMENTS::So_hex27PoroType DRT::ELEMENTS::So_hex27PoroType::instance_;
 
+DRT::ELEMENTS::So_hex27PoroType& DRT::ELEMENTS::So_hex27PoroType::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::So_hex27PoroType::Create( const std::vector<char> & data )
 {
@@ -228,6 +240,10 @@ int DRT::ELEMENTS::So_hex27PoroType::Initialize(DRT::Discretization& dis)
 
 DRT::ELEMENTS::So_tet10PoroType DRT::ELEMENTS::So_tet10PoroType::instance_;
 
+DRT::ELEMENTS::So_tet10PoroType& DRT::ELEMENTS::So_tet10PoroType::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::So_tet10PoroType::Create( const std::vector<char> & data )
 {
@@ -297,6 +313,10 @@ int DRT::ELEMENTS::So_tet10PoroType::Initialize(DRT::Discretization& dis)
 
 DRT::ELEMENTS::So_nurbs27PoroType DRT::ELEMENTS::So_nurbs27PoroType::instance_;
 
+DRT::ELEMENTS::So_nurbs27PoroType& DRT::ELEMENTS::So_nurbs27PoroType::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::So_nurbs27PoroType::Create( const std::vector<char> & data )
 {

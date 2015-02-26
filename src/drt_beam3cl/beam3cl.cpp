@@ -25,6 +25,11 @@ Maintainer: Kei Müller
 
 DRT::ELEMENTS::BeamCLType DRT::ELEMENTS::BeamCLType::instance_;
 
+DRT::ELEMENTS::BeamCLType& DRT::ELEMENTS::BeamCLType::Instance()
+{
+  return instance_;
+}
+
 DRT::ParObject* DRT::ELEMENTS::BeamCLType::Create( const std::vector<char> & data )
 {
   DRT::ELEMENTS::BeamCL* object = new DRT::ELEMENTS::BeamCL(-1,-1);

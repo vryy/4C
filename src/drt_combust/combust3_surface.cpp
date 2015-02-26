@@ -17,6 +17,11 @@ Maintainer: Ursula Rasthofer
 
 DRT::ELEMENTS::Combust3SurfaceType DRT::ELEMENTS::Combust3SurfaceType::instance_;
 
+DRT::ELEMENTS::Combust3SurfaceType& DRT::ELEMENTS::Combust3SurfaceType::Instance()
+{
+  return instance_;
+}
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 01/07|

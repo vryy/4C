@@ -21,6 +21,11 @@ Maintainer: Sudhakar
 
 DRT::ELEMENTS::DcohesiveType DRT::ELEMENTS::DcohesiveType::instance_;
 
+DRT::ELEMENTS::DcohesiveType& DRT::ELEMENTS::DcohesiveType::Instance()
+{
+  return instance_;
+}
+
 DRT::ParObject* DRT::ELEMENTS::DcohesiveType::Create( const std::vector<char> & data )
 {
   DRT::ELEMENTS::Dcohesive* object = new DRT::ELEMENTS::Dcohesive(-1,-1);

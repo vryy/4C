@@ -20,6 +20,11 @@ Maintainer: Matthias Mayr
 
 DRT::ELEMENTS::Ale2LineType DRT::ELEMENTS::Ale2LineType::instance_;
 
+DRT::ELEMENTS::Ale2LineType & DRT::ELEMENTS::Ale2LineType::Instance()
+{
+  return instance_;
+}
+
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 DRT::ELEMENTS::Ale2Line::Ale2Line(int id, int owner, int nnode,

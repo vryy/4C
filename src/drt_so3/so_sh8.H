@@ -31,7 +31,7 @@ public:
 
   std::string Name() const { return "So_sh8Type"; }
 
-  static So_sh8Type & Instance() { return instance_; };
+  static So_sh8Type & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 

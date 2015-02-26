@@ -637,7 +637,7 @@ public:
 
   std::string Name() const { return "Shell8LineType"; }
 
-  static Shell8LineType & Instance() { return instance_; };
+  static Shell8LineType & Instance();
 
   virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
 

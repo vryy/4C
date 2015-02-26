@@ -40,7 +40,7 @@ public:
 
   std::string Name() const { return ("RigidsphereType"); }
 
-  static RigidsphereType & Instance() { return (instance_); };
+  static RigidsphereType & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 

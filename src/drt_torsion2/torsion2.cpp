@@ -19,6 +19,11 @@ Maintainer: Christian Cyron
 
 DRT::ELEMENTS::Torsion2Type DRT::ELEMENTS::Torsion2Type::instance_;
 
+DRT::ELEMENTS::Torsion2Type& DRT::ELEMENTS::Torsion2Type::Instance()
+{
+  return instance_;
+}
+
 DRT::ParObject* DRT::ELEMENTS::Torsion2Type::Create( const std::vector<char> & data )
 {
   DRT::ELEMENTS::Torsion2* object = new DRT::ELEMENTS::Torsion2(-1,-1);

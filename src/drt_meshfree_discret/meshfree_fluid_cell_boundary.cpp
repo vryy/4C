@@ -28,6 +28,10 @@ Maintainer: Keijo Nissen
  *--------------------------------------------------------------------------*/
 DRT::ELEMENTS::MeshfreeFluidBoundaryType DRT::ELEMENTS::MeshfreeFluidBoundaryType::instance_;
 
+DRT::ELEMENTS::MeshfreeFluidBoundaryType& DRT::ELEMENTS::MeshfreeFluidBoundaryType::Instance()
+{
+  return instance_;
+}
 
 /*--------------------------------------------------------------------------*
  |  create object of MeshfreeFluidBoundaryType           (public) nis Jan13 |

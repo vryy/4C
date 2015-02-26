@@ -41,7 +41,7 @@ public:
 
   std::string Name() const { return "Wall1NurbsType"; }
 
-  static Wall1NurbsType & Instance() { return instance_; };
+  static Wall1NurbsType & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 

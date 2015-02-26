@@ -19,6 +19,11 @@ Maintainer: Ursula Mayer
 
 DRT::ELEMENTS::Vele3SurfaceType DRT::ELEMENTS::Vele3SurfaceType::instance_;
 
+DRT::ELEMENTS::Vele3SurfaceType& DRT::ELEMENTS::Vele3SurfaceType::Instance()
+{
+  return instance_;
+}
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 05/09|

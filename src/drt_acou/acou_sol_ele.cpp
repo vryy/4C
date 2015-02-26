@@ -21,6 +21,21 @@ DRT::ELEMENTS::AcouSolType DRT::ELEMENTS::AcouSolType::instance_;
 DRT::ELEMENTS::AcouSolBoundaryType DRT::ELEMENTS::AcouSolBoundaryType::instance_;
 DRT::ELEMENTS::AcouSolIntFaceType DRT::ELEMENTS::AcouSolIntFaceType::instance_;
 
+DRT::ELEMENTS::AcouSolType& DRT::ELEMENTS::AcouSolType::Instance()
+{
+  return instance_;
+}
+
+DRT::ELEMENTS::AcouSolBoundaryType& DRT::ELEMENTS::AcouSolBoundaryType::Instance()
+{
+  return instance_;
+}
+
+DRT::ELEMENTS::AcouSolIntFaceType& DRT::ELEMENTS::AcouSolIntFaceType::Instance()
+{
+  return instance_;
+}
+
 /*----------------------------------------------------------------------*
  |                                                        schoeder 02/14|
  *----------------------------------------------------------------------*/

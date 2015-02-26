@@ -54,7 +54,7 @@ public:
 
   std::string Name() const { return "FluidType"; }
 
-  static FluidType & Instance() { return instance_; };
+  static FluidType & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
@@ -440,7 +440,7 @@ public:
 
   std::string Name() const { return "FluidBoundaryType"; }
 
-  static FluidBoundaryType & Instance() { return instance_; };
+  static FluidBoundaryType & Instance();
 
   virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
 
@@ -743,7 +743,7 @@ public:
 
   std::string Name() const { return "FluidIntFaceType"; }
 
-  static FluidIntFaceType & Instance() { return instance_; };
+  static FluidIntFaceType & Instance();
 
   virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
 

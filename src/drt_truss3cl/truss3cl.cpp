@@ -24,6 +24,10 @@ Maintainer: Dhrubajyoti Mukherjee
 
 DRT::ELEMENTS::Truss3CLType DRT::ELEMENTS::Truss3CLType::instance_;
 
+DRT::ELEMENTS::Truss3CLType& DRT::ELEMENTS::Truss3CLType::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::Truss3CLType::Create( const std::vector<char> & data )
 {

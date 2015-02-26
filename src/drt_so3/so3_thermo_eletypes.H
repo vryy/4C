@@ -70,7 +70,7 @@ namespace ELEMENTS
 
     std::string Name() const { return "So_hex8fbarThermoType"; }
 
-    static So_hex8fbarThermoType & Instance() { return instance_; };
+    static So_hex8fbarThermoType & Instance();
 
     virtual DRT::ParObject* Create( const std::vector<char> & data );
 
@@ -105,7 +105,7 @@ namespace ELEMENTS
 
     std::string Name() const { return "So_tet4ThermoType"; }
 
-    static So_tet4ThermoType & Instance() { return instance_; };
+    static So_tet4ThermoType & Instance();
 
     virtual DRT::ParObject* Create( const std::vector<char> & data );
 
@@ -139,7 +139,7 @@ namespace ELEMENTS
 
       std::string Name() const { return "So_tet10ThermoType"; }
 
-      static So_tet10ThermoType & Instance() { return instance_; };
+      static So_tet10ThermoType & Instance();
 
       virtual DRT::ParObject* Create( const std::vector<char> & data );
 
@@ -173,7 +173,7 @@ namespace ELEMENTS
 
     std::string Name() const { return "So_hex27ThermoType"; }
 
-    static So_hex27ThermoType & Instance() { return instance_; };
+    static So_hex27ThermoType & Instance();
 
     virtual DRT::ParObject* Create( const std::vector<char> & data );
 
@@ -207,7 +207,7 @@ namespace ELEMENTS
 
     std::string Name() const { return "So_hex20ThermoType"; }
 
-    static So_hex20ThermoType & Instance() { return instance_; };
+    static So_hex20ThermoType & Instance();
 
     virtual DRT::ParObject* Create( const std::vector<char> & data );
 

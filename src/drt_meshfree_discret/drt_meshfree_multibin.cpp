@@ -16,6 +16,11 @@ Maintainer: Georg Hammerl
 /// class MeshfreeMultiBinType
 DRT::MESHFREE::MeshfreeMultiBinType DRT::MESHFREE::MeshfreeMultiBinType::instance_;
 
+DRT::MESHFREE::MeshfreeMultiBinType& DRT::MESHFREE::MeshfreeMultiBinType::Instance()
+{
+  return instance_;
+}
+
 DRT::ParObject* DRT::MESHFREE::MeshfreeMultiBinType::Create( const std::vector<char> & data )
 {
   DRT::MESHFREE::MeshfreeMultiBin* object =

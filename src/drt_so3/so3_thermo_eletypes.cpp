@@ -154,6 +154,10 @@ int DRT::ELEMENTS::So_hex8ThermoType::Initialize(DRT::Discretization& dis)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_hex8fbarThermoType DRT::ELEMENTS::So_hex8fbarThermoType::instance_;
 
+DRT::ELEMENTS::So_hex8fbarThermoType& DRT::ELEMENTS::So_hex8fbarThermoType::Instance()
+{
+  return instance_;
+}
 
 /*----------------------------------------------------------------------*
  | create the new element type (public)                      dano 05/13 |
@@ -279,6 +283,10 @@ int DRT::ELEMENTS::So_hex8fbarThermoType::Initialize(DRT::Discretization& dis)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_tet4ThermoType DRT::ELEMENTS::So_tet4ThermoType::instance_;
 
+DRT::ELEMENTS::So_tet4ThermoType& DRT::ELEMENTS::So_tet4ThermoType::Instance()
+{
+  return instance_;
+}
 
 /*----------------------------------------------------------------------*
  | create the new element type (public)                      dano 08/12 |
@@ -397,6 +405,10 @@ int DRT::ELEMENTS::So_tet4ThermoType::Initialize(DRT::Discretization& dis)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_tet10ThermoType DRT::ELEMENTS::So_tet10ThermoType::instance_;
 
+DRT::ELEMENTS::So_tet10ThermoType& DRT::ELEMENTS::So_tet10ThermoType::Instance()
+{
+  return instance_;
+}
 
 /*----------------------------------------------------------------------*
  | create the new element type (public)                     farah 05/14 |
@@ -515,6 +527,10 @@ int DRT::ELEMENTS::So_tet10ThermoType::Initialize(DRT::Discretization& dis)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_hex27ThermoType DRT::ELEMENTS::So_hex27ThermoType::instance_;
 
+DRT::ELEMENTS::So_hex27ThermoType& DRT::ELEMENTS::So_hex27ThermoType::Instance()
+{
+  return instance_;
+}
 
 /*----------------------------------------------------------------------*
  | create the new element type (public)                      dano 10/13 |
@@ -634,6 +650,10 @@ int DRT::ELEMENTS::So_hex27ThermoType::Initialize(DRT::Discretization& dis)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_hex20ThermoType DRT::ELEMENTS::So_hex20ThermoType::instance_;
 
+DRT::ELEMENTS::So_hex20ThermoType& DRT::ELEMENTS::So_hex20ThermoType::Instance()
+{
+  return instance_;
+}
 
 /*----------------------------------------------------------------------*
  | create the new element type (public)                     farah 05/14 |

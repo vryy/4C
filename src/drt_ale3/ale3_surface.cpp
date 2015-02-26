@@ -18,6 +18,11 @@ Maintainer: Matthias Mayr
 
 DRT::ELEMENTS::Ale3SurfaceType DRT::ELEMENTS::Ale3SurfaceType::instance_;
 
+DRT::ELEMENTS::Ale3SurfaceType & DRT::ELEMENTS::Ale3SurfaceType::Instance()
+{
+  return instance_;
+}
+
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 DRT::ELEMENTS::Ale3Surface::Ale3Surface(int id, int owner, int nnode,

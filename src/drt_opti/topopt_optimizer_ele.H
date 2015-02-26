@@ -39,7 +39,7 @@ public:
 
   std::string Name() const { return "TopOptType"; }
 
-  static TopOptType & Instance() { return instance_; };
+  static TopOptType & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
@@ -353,7 +353,7 @@ public:
 
   std::string Name() const { return "TopOptBoundaryType"; }
 
-  static TopOptBoundaryType & Instance() { return instance_; };
+  static TopOptBoundaryType & Instance();
 
   virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
 

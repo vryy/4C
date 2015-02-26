@@ -25,6 +25,10 @@
 
 DRT::ELEMENTS::WallQuad4PoroP2Type DRT::ELEMENTS::WallQuad4PoroP2Type::instance_;
 
+DRT::ELEMENTS::WallQuad4PoroP2Type& DRT::ELEMENTS::WallQuad4PoroP2Type::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::WallQuad4PoroP2Type::Create( const std::vector<char> & data )
 {
@@ -98,6 +102,10 @@ int DRT::ELEMENTS::WallQuad4PoroP2Type::Initialize(DRT::Discretization& dis)
 
 DRT::ELEMENTS::WallQuad9PoroP2Type DRT::ELEMENTS::WallQuad9PoroP2Type::instance_;
 
+DRT::ELEMENTS::WallQuad9PoroP2Type& DRT::ELEMENTS::WallQuad9PoroP2Type::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::WallQuad9PoroP2Type::Create( const std::vector<char> & data )
 {

@@ -21,6 +21,10 @@ Maintainer: Markus Gitterle
 
 DRT::ELEMENTS::Wall1Type DRT::ELEMENTS::Wall1Type::instance_;
 
+DRT::ELEMENTS::Wall1Type& DRT::ELEMENTS::Wall1Type::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::Wall1Type::Create( const std::vector<char> & data )
 {

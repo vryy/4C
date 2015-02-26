@@ -18,6 +18,10 @@ Maintainer: Christian Cyron
 
 DRT::ELEMENTS::Torsion3Type DRT::ELEMENTS::Torsion3Type::instance_;
 
+DRT::ELEMENTS::Torsion3Type& DRT::ELEMENTS::Torsion3Type::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::Torsion3Type::Create( const std::vector<char> & data )
 {

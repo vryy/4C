@@ -32,6 +32,10 @@ Maintainer: Michael Gee
 
 DRT::ELEMENTS::So_tet4Type DRT::ELEMENTS::So_tet4Type::instance_;
 
+DRT::ELEMENTS::So_tet4Type& DRT::ELEMENTS::So_tet4Type::Instance()
+{
+  return instance_;
+}
 
 //------------------------------------------------------------------------
 DRT::ParObject* DRT::ELEMENTS::So_tet4Type::Create( const std::vector<char> & data )

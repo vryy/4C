@@ -63,7 +63,7 @@ public:
 
   std::string Name() const { return "NStetType"; }
 
-  static NStetType & Instance() { return instance_; };
+  static NStetType & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 

@@ -23,6 +23,10 @@
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_hex8PoroP1Type DRT::ELEMENTS::So_hex8PoroP1Type::instance_;
 
+DRT::ELEMENTS::So_hex8PoroP1Type& DRT::ELEMENTS::So_hex8PoroP1Type::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::So_hex8PoroP1Type::Create( const std::vector<char> & data )
 {

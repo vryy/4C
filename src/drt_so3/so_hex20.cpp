@@ -29,6 +29,10 @@ Maintainer: Thomas Kloeppel
 
 DRT::ELEMENTS::So_hex20Type DRT::ELEMENTS::So_hex20Type::instance_;
 
+DRT::ELEMENTS::So_hex20Type& DRT::ELEMENTS::So_hex20Type::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::So_hex20Type::Create( const std::vector<char> & data )
 {

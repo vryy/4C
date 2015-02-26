@@ -22,6 +22,10 @@
 
 DRT::ELEMENTS::NURBS::So_nurbs27Type DRT::ELEMENTS::NURBS::So_nurbs27Type::instance_;
 
+DRT::ELEMENTS::NURBS::So_nurbs27Type& DRT::ELEMENTS::NURBS::So_nurbs27Type::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::NURBS::So_nurbs27Type::Create( const std::vector<char> & data )
 {

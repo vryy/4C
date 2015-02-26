@@ -46,7 +46,7 @@ public:
 
   std::string Name() const { return "So_tet4Type"; }
 
-  static So_tet4Type & Instance() { return instance_; };
+  static So_tet4Type & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 

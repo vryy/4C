@@ -21,6 +21,12 @@ Maintainer: Christoph Meier
 
 DRT::ELEMENTS::Beam2rType DRT::ELEMENTS::Beam2rType::instance_;
 
+DRT::ELEMENTS::Beam2rType & DRT::ELEMENTS::Beam2rType::Instance()
+{
+  return instance_;
+}
+
+
 DRT::ParObject* DRT::ELEMENTS::Beam2rType::Create( const std::vector<char> & data )
 {
   DRT::ELEMENTS::Beam2r* object = new DRT::ELEMENTS::Beam2r(-1,-1);
@@ -260,7 +266,7 @@ void DRT::ELEMENTS::Beam2r::Pack(DRT::PackBuffer& data) const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam2r::Unpack(const std::vector<char>& data)
 {
-	std::vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);

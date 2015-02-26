@@ -16,6 +16,11 @@ Maintainer: Ursula Rasthofer
 
 DRT::ELEMENTS::Combust3LineType DRT::ELEMENTS::Combust3LineType::instance_;
 
+DRT::ELEMENTS::Combust3LineType& DRT::ELEMENTS::Combust3LineType::Instance()
+{
+  return instance_;
+}
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 01/07|

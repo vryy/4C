@@ -20,6 +20,10 @@ Maintainer: Ursula Mayer
 
 DRT::ELEMENTS::Vele3LineType DRT::ELEMENTS::Vele3LineType::instance_;
 
+DRT::ELEMENTS::Vele3LineType& DRT::ELEMENTS::Vele3LineType::Instance()
+{
+  return instance_;
+}
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            gammi 04/07|

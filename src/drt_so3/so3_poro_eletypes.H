@@ -34,7 +34,7 @@ public:
 
   std::string Name() const { return "So_hex8PoroType"; }
 
-  static So_hex8PoroType & Instance() { return instance_; };
+  static So_hex8PoroType & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
@@ -63,7 +63,7 @@ public:
 
   std::string Name() const { return "So_tet4PoroType"; }
 
-  static So_tet4PoroType & Instance() { return instance_; };
+  static So_tet4PoroType & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
@@ -93,7 +93,7 @@ public:
 
   std::string Name() const { return "So_hex27PoroType"; }
 
-  static So_hex27PoroType & Instance() { return instance_; };
+  static So_hex27PoroType & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
@@ -122,7 +122,7 @@ public:
 
   std::string Name() const { return "So_tet10PoroType"; }
 
-  static So_tet10PoroType & Instance() { return instance_; };
+  static So_tet10PoroType & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
@@ -151,7 +151,7 @@ public:
 
   std::string Name() const { return "So_nurbs27PoroType"; }
 
-  static So_nurbs27PoroType & Instance() { return instance_; };
+  static So_nurbs27PoroType & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 

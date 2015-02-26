@@ -16,6 +16,10 @@
 
 DRT::ELEMENTS::NURBS::Wall1NurbsType DRT::ELEMENTS::NURBS::Wall1NurbsType::instance_;
 
+DRT::ELEMENTS::NURBS::Wall1NurbsType& DRT::ELEMENTS::NURBS::Wall1NurbsType::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::NURBS::Wall1NurbsType::Create( const std::vector<char> & data )
 {

@@ -18,6 +18,10 @@ Maintainer: Christian Cyron
 
 DRT::ELEMENTS::Truss2Type DRT::ELEMENTS::Truss2Type::instance_;
 
+DRT::ELEMENTS::Truss2Type& DRT::ELEMENTS::Truss2Type::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::Truss2Type::Create( const std::vector<char> & data )
 {

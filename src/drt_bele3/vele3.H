@@ -39,7 +39,7 @@ public:
 
   std::string Name() const { return "Vele3Type"; }
 
-  static Vele3Type & Instance() { return instance_; };
+  static Vele3Type & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
@@ -300,7 +300,7 @@ public:
 
   std::string Name() const { return "Vele3SurfaceType"; }
 
-  static Vele3SurfaceType & Instance() { return instance_; };
+  static Vele3SurfaceType & Instance();
 
   virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
 
@@ -454,7 +454,7 @@ public:
 
   std::string Name() const { return "Vele3LineType"; }
 
-  static Vele3LineType & Instance() { return instance_; };
+  static Vele3LineType & Instance();
 
   virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
 

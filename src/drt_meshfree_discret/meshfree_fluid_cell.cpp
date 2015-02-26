@@ -31,6 +31,10 @@ Maintainer: Keijo Nissen
  *--------------------------------------------------------------------------*/
 DRT::ELEMENTS::MeshfreeFluidType DRT::ELEMENTS::MeshfreeFluidType::instance_;
 
+DRT::ELEMENTS::MeshfreeFluidType& DRT::ELEMENTS::MeshfreeFluidType::Instance()
+{
+  return instance_;
+}
 
 /*--------------------------------------------------------------------------*
  |  create parallel object of MeshfreeFluid cell         (public) nis Jan13 |

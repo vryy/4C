@@ -19,6 +19,11 @@ Maintainer: Raffaela Kruse
 
 DRT::ELEMENTS::Bele3LineType DRT::ELEMENTS::Bele3LineType::instance_;
 
+DRT::ELEMENTS::Bele3LineType& DRT::ELEMENTS::Bele3LineType::Instance()
+{
+  return instance_;
+}
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            gammi 04/07|

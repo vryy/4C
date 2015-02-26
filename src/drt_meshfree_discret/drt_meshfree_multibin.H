@@ -38,7 +38,7 @@ public:
   std::string Name() const { return "MeshfreeMultiBinType"; }
 
   //!< returning instance of specific element type
-  static MeshfreeMultiBinType & Instance() { return instance_; };
+  static MeshfreeMultiBinType & Instance();
 
   //!< create parallel object of this element type
   virtual DRT::ParObject* Create( const std::vector<char> & data );

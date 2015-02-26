@@ -50,7 +50,7 @@ public:
   std::string Name() const { return "MeshfreeTransportType"; }
 
   //!< returning instance of specific element type
-  static MeshfreeTransportType & Instance() { return instance_; };
+  static MeshfreeTransportType & Instance();
 
   //!< create parallel object of this element type
   virtual DRT::ParObject* Create( const std::vector<char> & data );
@@ -489,7 +489,7 @@ public:
   std::string Name() const { return "MeshfreeTransportBoundaryType"; }
 
   //!< returning instance of specific parallel object type
-  static MeshfreeTransportBoundaryType & Instance() { return instance_; };
+  static MeshfreeTransportBoundaryType & Instance();
 
   //!< create parallel object of this parallel object type
   virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );

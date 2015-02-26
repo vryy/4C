@@ -32,7 +32,7 @@ namespace ELEMENTS
 
     std::string Name() const { return "So_hex8PlastType"; }
 
-    static So_hex8PlastType & Instance() { return instance_; };
+    static So_hex8PlastType & Instance();
 
     virtual DRT::ParObject* Create( const std::vector<char> & data );
 
@@ -69,7 +69,7 @@ namespace ELEMENTS
 
     std::string Name() const { return "So_hex18PlastType"; }
 
-    static So_hex18PlastType & Instance() { return instance_; };
+    static So_hex18PlastType & Instance();
 
     virtual DRT::ParObject* Create( const std::vector<char> & data );
 
@@ -106,7 +106,7 @@ namespace ELEMENTS
 
     std::string Name() const { return "So_hex27PlastType"; }
 
-    static So_hex27PlastType & Instance() { return instance_; };
+    static So_hex27PlastType & Instance();
 
     virtual DRT::ParObject* Create( const std::vector<char> & data );
 

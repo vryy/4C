@@ -35,7 +35,7 @@ public:
 
   std::string Name() const { return "So_hex8ScatraType"; }
 
-  static So_hex8ScatraType & Instance() { return instance_; };
+  static So_hex8ScatraType & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
@@ -65,7 +65,7 @@ public:
 
   std::string Name() const { return "So_hex8fbarScatraType"; }
 
-  static So_hex8fbarScatraType & Instance() { return instance_; };
+  static So_hex8fbarScatraType & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
@@ -95,7 +95,7 @@ public:
 
   std::string Name() const { return "So_tet4ScatraType"; }
 
-  static So_tet4ScatraType & Instance() { return instance_; };
+  static So_tet4ScatraType & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
@@ -124,7 +124,7 @@ public:
 
   std::string Name() const { return "So_tet10ScatraType"; }
 
-  static So_tet10ScatraType & Instance() { return instance_; };
+  static So_tet10ScatraType & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
@@ -153,7 +153,7 @@ public:
 
   std::string Name() const { return "So_weg6ScatraType"; }
 
-  static So_weg6ScatraType & Instance() { return instance_; };
+  static So_weg6ScatraType & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 

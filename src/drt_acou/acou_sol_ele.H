@@ -33,7 +33,7 @@ public:
 
   std::string Name() const { return "AcouSolType"; }
 
-  static AcouSolType & Instance() { return instance_; };
+  static AcouSolType & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
@@ -308,7 +308,7 @@ public:
 
   std::string Name() const { return "AcouSolBoundaryType"; }
 
-  static AcouSolBoundaryType & Instance() { return instance_; };
+  static AcouSolBoundaryType & Instance();
 
   virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
 
@@ -504,7 +504,7 @@ public:
 
   std::string Name() const { return "AcouSolIntFaceType"; }
 
-  static AcouSolIntFaceType & Instance() { return instance_; };
+  static AcouSolIntFaceType & Instance();
 
   virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
 

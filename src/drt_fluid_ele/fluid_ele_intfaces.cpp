@@ -21,6 +21,11 @@ Maintainer: Benedikt Schott
 
 DRT::ELEMENTS::FluidIntFaceType DRT::ELEMENTS::FluidIntFaceType::instance_;
 
+DRT::ELEMENTS::FluidIntFaceType& DRT::ELEMENTS::FluidIntFaceType::Instance()
+{
+  return instance_;
+}
+
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidIntFaceType::Create( const int id, const int owner )
 {
@@ -360,7 +365,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
   const int dofset = 0; // assume dofset 0
 
   int patchnode_count = 0;
-  
+
 
     // fill patch lm with master's nodes
   for (int k=0; k<m_numnode; ++k)
@@ -393,7 +398,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
 
     patchnode_count++;
   }
-  
+
 
   // ---------------------------------------------------
   // fill patch lm with missing slave's nodes and extract slave's lm from patch_lm

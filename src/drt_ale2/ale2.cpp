@@ -22,6 +22,11 @@ Maintainer: Matthias Mayr
 
 DRT::ELEMENTS::Ale2Type DRT::ELEMENTS::Ale2Type::instance_;
 
+DRT::ELEMENTS::Ale2Type & DRT::ELEMENTS::Ale2Type::Instance()
+{
+  return instance_;
+}
+
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 DRT::ParObject* DRT::ELEMENTS::Ale2Type::Create(const std::vector<char> & data)

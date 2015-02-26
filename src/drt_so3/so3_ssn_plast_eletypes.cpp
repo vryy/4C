@@ -24,6 +24,11 @@
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_hex8PlastType DRT::ELEMENTS::So_hex8PlastType::instance_;
 
+DRT::ELEMENTS::So_hex8PlastType& DRT::ELEMENTS::So_hex8PlastType::Instance()
+{
+  return instance_;
+}
+
 
 /*----------------------------------------------------------------------*
  | create the new element type (public)                     seitz 07/13 |
@@ -147,6 +152,10 @@ int DRT::ELEMENTS::So_hex8PlastType::Initialize(DRT::Discretization& dis)
 *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_hex18PlastType DRT::ELEMENTS::So_hex18PlastType::instance_;
 
+DRT::ELEMENTS::So_hex18PlastType& DRT::ELEMENTS::So_hex18PlastType::Instance()
+{
+  return instance_;
+}
 
 /*----------------------------------------------------------------------*
 | create the new element type (public)                     seitz 07/13 |
@@ -267,6 +276,10 @@ int DRT::ELEMENTS::So_hex18PlastType::Initialize(DRT::Discretization& dis)
 *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_hex27PlastType DRT::ELEMENTS::So_hex27PlastType::instance_;
 
+DRT::ELEMENTS::So_hex27PlastType& DRT::ELEMENTS::So_hex27PlastType::Instance()
+{
+  return instance_;
+}
 
 /*----------------------------------------------------------------------*
 | create the new element type (public)                     seitz 07/13 |

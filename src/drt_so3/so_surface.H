@@ -29,7 +29,7 @@ public:
 
   std::string Name() const { return "StructuralSurfaceType"; }
 
-  static StructuralSurfaceType & Instance() { return instance_; };
+  static StructuralSurfaceType & Instance();
 
   virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
 

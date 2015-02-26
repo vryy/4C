@@ -16,6 +16,11 @@
 
 DRT::ELEMENTS::FluidPoroBoundaryType DRT::ELEMENTS::FluidPoroBoundaryType::instance_;
 
+DRT::ELEMENTS::FluidPoroBoundaryType& DRT::ELEMENTS::FluidPoroBoundaryType::Instance()
+{
+  return instance_;
+}
+
 /*----------------------------------------------------------------------*
 *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidPoroBoundaryType::Create( const int id, const int owner )

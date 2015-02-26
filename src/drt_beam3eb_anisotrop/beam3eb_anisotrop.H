@@ -98,7 +98,7 @@ public:
 
   std::string Name() const { return "Beam3ebanisotropType"; }
 
-  static Beam3ebanisotropType & Instance() { return instance_; };
+  static Beam3ebanisotropType & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 

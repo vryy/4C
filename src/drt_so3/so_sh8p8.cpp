@@ -26,6 +26,10 @@ last Maintainer:  Burkhard Bornemann
 
 DRT::ELEMENTS::So_sh8p8Type DRT::ELEMENTS::So_sh8p8Type::instance_;
 
+DRT::ELEMENTS::So_sh8p8Type& DRT::ELEMENTS::So_sh8p8Type::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::So_sh8p8Type::Create( const std::vector<char> & data )
 {

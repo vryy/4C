@@ -35,7 +35,7 @@ namespace ELEMENTS
 
     std::string Name() const { return "WallQuad4PoroP1Type"; }
 
-    static WallQuad4PoroP1Type & Instance() { return instance_; };
+    static WallQuad4PoroP1Type & Instance();
 
     virtual DRT::ParObject* Create( const std::vector<char> & data );
 
@@ -64,7 +64,7 @@ namespace ELEMENTS
 
     std::string Name() const { return "WallQuad9PoroP1Type"; }
 
-    static WallQuad9PoroP1Type & Instance() { return instance_; };
+    static WallQuad9PoroP1Type & Instance();
 
     virtual DRT::ParObject* Create( const std::vector<char> & data );
 

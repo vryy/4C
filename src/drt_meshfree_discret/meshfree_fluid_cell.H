@@ -61,10 +61,7 @@ public:
   }
 
   //!< returning instance of specific element type
-  static MeshfreeFluidType & Instance()
-  {
-    return instance_;
-  }
+  static MeshfreeFluidType & Instance();
 
   //!< create parallel object of this element type
   virtual DRT::ParObject* Create( const std::vector<char> & data );
@@ -455,7 +452,7 @@ public:
   std::string Name() const { return "MeshfreeFluidBoundaryType"; }
 
   //!< returning instance of specific parallel object type
-  static MeshfreeFluidBoundaryType & Instance() { return instance_; };
+  static MeshfreeFluidBoundaryType & Instance();
 
   //!< create parallel object of this parallel object type
   virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );

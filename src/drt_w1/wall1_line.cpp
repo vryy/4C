@@ -19,6 +19,10 @@ Maintainer: Markus Gitterle
 
 DRT::ELEMENTS::Wall1LineType DRT::ELEMENTS::Wall1LineType::instance_;
 
+DRT::ELEMENTS::Wall1LineType& DRT::ELEMENTS::Wall1LineType::Instance()
+{
+  return instance_;
+}
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mgit 03/07|

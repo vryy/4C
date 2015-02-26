@@ -52,7 +52,7 @@ public:
 
   std::string Name() const { return "Beam3iiType"; }
 
-  static Beam3iiType & Instance() { return instance_; };
+  static Beam3iiType & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 

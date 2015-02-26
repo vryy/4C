@@ -42,7 +42,7 @@ public:
 
   std::string Name() const { return "Ale2Type"; }
 
-  static Ale2Type & Instance() { return instance_; };
+  static Ale2Type & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
@@ -435,7 +435,7 @@ public:
 
   std::string Name() const { return "Ale2LineType"; }
 
-  static Ale2LineType & Instance() { return instance_; };
+  static Ale2LineType & Instance();
 
   virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
 

@@ -51,7 +51,7 @@ namespace ELEMENTS
 
     std::string Name() const { return "ThermoType"; }
 
-    static ThermoType & Instance() { return instance_; };
+    static ThermoType & Instance();
 
     virtual DRT::ParObject* Create( const std::vector<char> & data );
 
@@ -406,7 +406,7 @@ namespace ELEMENTS
 
     std::string Name() const { return "ThermoBoundaryType"; }
 
-    static ThermoBoundaryType & Instance() { return instance_; };
+    static ThermoBoundaryType & Instance();
 
     virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
 

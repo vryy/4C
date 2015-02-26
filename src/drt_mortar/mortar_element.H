@@ -43,7 +43,7 @@ public:
 
   std::string Name() const { return "MortarElementType"; }
 
-  static MortarElementType & Instance() { return instance_; };
+  static MortarElementType & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 

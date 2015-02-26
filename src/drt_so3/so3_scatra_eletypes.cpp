@@ -20,6 +20,10 @@
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_hex8ScatraType DRT::ELEMENTS::So_hex8ScatraType::instance_;
 
+DRT::ELEMENTS::So_hex8ScatraType& DRT::ELEMENTS::So_hex8ScatraType::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::So_hex8ScatraType::Create( const std::vector<char> & data )
 {
@@ -81,6 +85,10 @@ int DRT::ELEMENTS::So_hex8ScatraType::Initialize(DRT::Discretization& dis)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_hex8fbarScatraType DRT::ELEMENTS::So_hex8fbarScatraType::instance_;
 
+DRT::ELEMENTS::So_hex8fbarScatraType& DRT::ELEMENTS::So_hex8fbarScatraType::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::So_hex8fbarScatraType::Create( const std::vector<char> & data )
 {
@@ -146,6 +154,10 @@ int DRT::ELEMENTS::So_hex8fbarScatraType::Initialize(DRT::Discretization& dis)
 
 DRT::ELEMENTS::So_tet4ScatraType DRT::ELEMENTS::So_tet4ScatraType::instance_;
 
+DRT::ELEMENTS::So_tet4ScatraType& DRT::ELEMENTS::So_tet4ScatraType::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::So_tet4ScatraType::Create( const std::vector<char> & data )
 {
@@ -207,6 +219,10 @@ int DRT::ELEMENTS::So_tet4ScatraType::Initialize(DRT::Discretization& dis)
 
 DRT::ELEMENTS::So_tet10ScatraType DRT::ELEMENTS::So_tet10ScatraType::instance_;
 
+DRT::ELEMENTS::So_tet10ScatraType& DRT::ELEMENTS::So_tet10ScatraType::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::So_tet10ScatraType::Create( const std::vector<char> & data )
 {
@@ -268,6 +284,10 @@ int DRT::ELEMENTS::So_tet10ScatraType::Initialize(DRT::Discretization& dis)
 
 DRT::ELEMENTS::So_weg6ScatraType DRT::ELEMENTS::So_weg6ScatraType::instance_;
 
+DRT::ELEMENTS::So_weg6ScatraType& DRT::ELEMENTS::So_weg6ScatraType::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::So_weg6ScatraType::Create( const std::vector<char> & data )
 {

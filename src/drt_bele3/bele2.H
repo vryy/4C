@@ -41,7 +41,7 @@ public:
 
   std::string Name() const { return "Bele2Type"; }
 
-  static Bele2Type & Instance() { return instance_; };
+  static Bele2Type & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 

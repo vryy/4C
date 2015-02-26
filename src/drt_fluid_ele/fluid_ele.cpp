@@ -24,6 +24,10 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 
 DRT::ELEMENTS::FluidType DRT::ELEMENTS::FluidType::instance_;
 
+DRT::ELEMENTS::FluidType& DRT::ELEMENTS::FluidType::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::FluidType::Create( const std::vector<char> & data )
 {

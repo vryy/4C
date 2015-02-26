@@ -28,6 +28,10 @@ Maintainer: Andreas Ehrl
 
 DRT::ELEMENTS::TransportType DRT::ELEMENTS::TransportType::instance_;
 
+DRT::ELEMENTS::TransportType& DRT::ELEMENTS::TransportType::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::TransportType::Create( const std::vector<char> & data )
 {
@@ -235,6 +239,11 @@ void DRT::ELEMENTS::TransportType::SetupElementDefinition( std::map<std::string,
 
 
 DRT::ELEMENTS::TransportBoundaryType DRT::ELEMENTS::TransportBoundaryType::instance_;
+
+DRT::ELEMENTS::TransportBoundaryType& DRT::ELEMENTS::TransportBoundaryType::Instance()
+{
+  return instance_;
+}
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::TransportBoundaryType::Create( const int id, const int owner )
 {

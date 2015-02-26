@@ -24,6 +24,11 @@ Maintainer: Alexander Seitz
 
 DRT::ELEMENTS::So_hex18Type DRT::ELEMENTS::So_hex18Type::instance_;
 
+DRT::ELEMENTS::So_hex18Type& DRT::ELEMENTS::So_hex18Type::Instance()
+{
+  return instance_;
+}
+
 DRT::ParObject* DRT::ELEMENTS::So_hex18Type::Create( const std::vector<char> & data )
 {
   DRT::ELEMENTS::So_hex18* object = new DRT::ELEMENTS::So_hex18(-1,-1);

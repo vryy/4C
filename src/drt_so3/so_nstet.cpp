@@ -23,6 +23,11 @@ Maintainer: Michael Gee
 
 DRT::ELEMENTS::NStetType DRT::ELEMENTS::NStetType::instance_;
 
+DRT::ELEMENTS::NStetType& DRT::ELEMENTS::NStetType::Instance()
+{
+  return instance_;
+}
+
 
 //-----------------------------------------------------------------------
 //-----------------------------------------------------------------------

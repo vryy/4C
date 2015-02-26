@@ -19,6 +19,11 @@ Maintainer: Alexander Seitz
 #include "../drt_mat/so3_material.H"
 
 DRT::ELEMENTS::So_sh18Type DRT::ELEMENTS::So_sh18Type::instance_;
+
+DRT::ELEMENTS::So_sh18Type& DRT::ELEMENTS::So_sh18Type::Instance()
+{
+  return instance_;
+}
 namespace {
   const std::string name = DRT::ELEMENTS::So_sh18Type::Instance().Name();
 }

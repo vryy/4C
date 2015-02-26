@@ -34,7 +34,7 @@ class So_sh18PlastType : public So_sh18Type
 public:
   std::string Name() const { return "So_sh18PlastType"; }
 
-  static So_sh18PlastType & Instance() { return instance_; };
+  static So_sh18PlastType & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 

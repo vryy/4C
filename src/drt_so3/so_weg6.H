@@ -46,7 +46,7 @@ public:
 
   std::string Name() const { return "So_weg6Type"; }
 
-  static So_weg6Type & Instance() { return instance_; };
+  static So_weg6Type & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 

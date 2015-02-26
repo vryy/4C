@@ -27,6 +27,11 @@ Maintainer: Benjamin Krank
 
 DRT::ELEMENTS::FluidXWallType DRT::ELEMENTS::FluidXWallType::instance_;
 
+DRT::ELEMENTS::FluidXWallType& DRT::ELEMENTS::FluidXWallType::Instance()
+{
+  return instance_;
+}
+
 DRT::ParObject* DRT::ELEMENTS::FluidXWallType::Create( const std::vector<char> & data )
 {
   DRT::ELEMENTS::FluidXWall* object = new DRT::ELEMENTS::FluidXWall(-1,-1);

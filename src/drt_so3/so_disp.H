@@ -41,7 +41,7 @@ public:
 
   std::string Name() const { return "SoDispType"; }
 
-  static SoDispType & Instance() { return instance_; };
+  static SoDispType & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 

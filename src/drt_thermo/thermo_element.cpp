@@ -32,6 +32,11 @@ Maintainer: Caroline Danowski
 
 DRT::ELEMENTS::ThermoType DRT::ELEMENTS::ThermoType::instance_;
 
+DRT::ELEMENTS::ThermoType& DRT::ELEMENTS::ThermoType::Instance()
+{
+  return instance_;
+}
+
 /*----------------------------------------------------------------------*
  | create the new element type (public)                      dano 09/09 |
  | is called in ElementRegisterType                                     |
@@ -222,6 +227,10 @@ void DRT::ELEMENTS::ThermoType::SetupElementDefinition(
 
 DRT::ELEMENTS::ThermoBoundaryType DRT::ELEMENTS::ThermoBoundaryType::instance_;
 
+DRT::ELEMENTS::ThermoBoundaryType& DRT::ELEMENTS::ThermoBoundaryType::Instance()
+{
+  return instance_;
+}
 
 /*----------------------------------------------------------------------*
  | ctor (public)                                             dano 09/09 |

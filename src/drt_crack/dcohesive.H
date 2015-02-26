@@ -34,7 +34,7 @@ public:
 
   std::string Name() const { return "DcohesiveType"; }
 
-  static DcohesiveType & Instance() { return instance_; };
+  static DcohesiveType & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 

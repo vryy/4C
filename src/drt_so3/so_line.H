@@ -32,7 +32,7 @@ public:
 
   std::string Name() const { return "StructuralLineType"; }
 
-  static StructuralLineType & Instance() { return instance_; };
+  static StructuralLineType & Instance();
 
   virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
 

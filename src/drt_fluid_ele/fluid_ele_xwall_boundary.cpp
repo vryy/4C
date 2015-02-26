@@ -23,6 +23,11 @@ Maintainer: Benjamin Krank
 
 DRT::ELEMENTS::FluidXWallBoundaryType DRT::ELEMENTS::FluidXWallBoundaryType::instance_;
 
+DRT::ELEMENTS::FluidXWallBoundaryType& DRT::ELEMENTS::FluidXWallBoundaryType::Instance()
+{
+  return instance_;
+}
+
 /*----------------------------------------------------------------------*
 *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidXWallBoundaryType::Create( const int id, const int owner )

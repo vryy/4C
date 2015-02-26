@@ -217,7 +217,7 @@ public:
 
   Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
 
-  static FluidPoroBoundaryType & Instance() { return instance_; };
+  static FluidPoroBoundaryType & Instance();
 
 private:
 

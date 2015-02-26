@@ -23,7 +23,6 @@
 
 DRT::ELEMENTS::FluidPoroEleType DRT::ELEMENTS::FluidPoroEleType::instance_;
 
-
 /*----------------------------------------------------------------------*
  *   return instance (public,static)                                    |
  *----------------------------------------------------------------------*/

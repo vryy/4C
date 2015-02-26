@@ -7,6 +7,10 @@
 
 DRT::ELEMENTS::So_Hex8P1J1Type DRT::ELEMENTS::So_Hex8P1J1Type::instance_;
 
+DRT::ELEMENTS::So_Hex8P1J1Type& DRT::ELEMENTS::So_Hex8P1J1Type::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::So_Hex8P1J1Type::Create( const std::vector<char> & data )
 {

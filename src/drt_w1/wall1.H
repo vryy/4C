@@ -48,7 +48,7 @@ public:
 
   std::string Name() const { return "Wall1Type"; }
 
-  static Wall1Type & Instance() { return instance_; };
+  static Wall1Type & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
@@ -808,7 +808,7 @@ public:
 
   std::string Name() const { return "Wall1LineType"; }
 
-  static Wall1LineType & Instance() { return instance_; };
+  static Wall1LineType & Instance();
 
   virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
 

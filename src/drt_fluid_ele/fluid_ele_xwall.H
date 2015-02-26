@@ -32,7 +32,7 @@ public:
 
   std::string Name() const { return "FluidXWallType"; }
 
-  static FluidXWallType & Instance() { return instance_; };
+  static FluidXWallType & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
@@ -170,7 +170,7 @@ public:
 
   Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
 
-  static FluidXWallBoundaryType & Instance() { return instance_; };
+  static FluidXWallBoundaryType & Instance();
 
 private:
 

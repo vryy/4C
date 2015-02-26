@@ -21,6 +21,10 @@ Maintainer: Alexander Popp
 
 MORTAR::MortarElementType MORTAR::MortarElementType::instance_;
 
+MORTAR::MortarElementType& MORTAR::MortarElementType::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* MORTAR::MortarElementType::Create( const std::vector<char> & data )
 {

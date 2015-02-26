@@ -20,6 +20,10 @@ Maintainer: Alexander Popp
 
 DRT::ELEMENTS::So_hex8fbarType DRT::ELEMENTS::So_hex8fbarType::instance_;
 
+DRT::ELEMENTS::So_hex8fbarType& DRT::ELEMENTS::So_hex8fbarType::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::So_hex8fbarType::Create( const std::vector<char> & data )
 {

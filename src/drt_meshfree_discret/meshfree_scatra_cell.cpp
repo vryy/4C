@@ -31,6 +31,11 @@ Maintainer: Keijo Nissen
  *--------------------------------------------------------------------------*/
 DRT::ELEMENTS::MeshfreeTransportType DRT::ELEMENTS::MeshfreeTransportType::instance_;
 
+DRT::ELEMENTS::MeshfreeTransportType& DRT::ELEMENTS::MeshfreeTransportType::Instance()
+{
+  return instance_;
+}
+
 /*--------------------------------------------------------------------------*
  |  create parallel object of MeshfreeTransport cell     (public) nis Dec13 |
  *--------------------------------------------------------------------------*/
@@ -525,6 +530,11 @@ bool DRT::ELEMENTS::MeshfreeTransport::ReadElement(
  | self-instantiation as parallel object type                     nis Mar12 |
  *--------------------------------------------------------------------------*/
 DRT::ELEMENTS::MeshfreeTransportBoundaryType DRT::ELEMENTS::MeshfreeTransportBoundaryType::instance_;
+
+DRT::ELEMENTS::MeshfreeTransportBoundaryType& DRT::ELEMENTS::MeshfreeTransportBoundaryType::Instance()
+{
+  return instance_;
+}
 
 /*--------------------------------------------------------------------------*
  | creates meshfree node                                 (public) nis Mar12 |

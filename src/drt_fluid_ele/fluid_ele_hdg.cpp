@@ -19,6 +19,11 @@
 // initialize static variable
 DRT::ELEMENTS::FluidHDGType DRT::ELEMENTS::FluidHDGType::instance_;
 
+DRT::ELEMENTS::FluidHDGType& DRT::ELEMENTS::FluidHDGType::Instance()
+{
+  return instance_;
+}
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ParObject* DRT::ELEMENTS::FluidHDGType::Create( const std::vector<char> & data )
