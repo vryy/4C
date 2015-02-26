@@ -192,6 +192,10 @@ void LINALG::SOLVER::AMGNXN::MergeAndSolve::Setup(BlockedMatrix  matrix)
 {
 
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::AMGNXN::MergeAndSolve::Setup");
+
+  if (matrix.GetMatrix(0,0)->Comm().MyPID()==0)
+    std::cout << "Warning!!!: We are going to build a LINALG::BlockSparseMatrix. If this is a coarse level matrix, make sure that you have fixed the coarse maps of your AMG hierarchies (for all the blocks). Otherwise expect problems." << std::endl;
+
   //Set matrix
   block_sparse_matrix_ = matrix.GetBlockSparseMatrix(View);
   sparse_matrix_ = block_sparse_matrix_->Merge();

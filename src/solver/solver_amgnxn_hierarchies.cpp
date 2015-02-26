@@ -64,7 +64,10 @@ verbosity_        (verbosity       )
 
 int LINALG::SOLVER::AMGNXN::Hierarchies::GetNumLevels(int block)
 {
-  return H_block_[block]->GetNumLevels();
+  if (H_block_[block] == Teuchos::null)
+    return NumLevelMax_;
+  else
+    return H_block_[block]->GetNumLevels();
 }
 
 /*------------------------------------------------------------------------------*/
@@ -176,6 +179,8 @@ void LINALG::SOLVER::AMGNXN::Hierarchies::Setup()
   NumLevelMin_ =  10000000;
   for(int block=0;block<NumBlocks_;block++)
   {
+    if (H_block_[block] == Teuchos::null)
+      continue;
     int NumLevel_this_block = H_block_[block]->GetNumLevels();
     if (NumLevel_this_block > NumLevelMax_)
       NumLevelMax_ = NumLevel_this_block;
@@ -191,86 +196,123 @@ void LINALG::SOLVER::AMGNXN::Hierarchies::Setup()
   for(int block=0;block<NumBlocks_;block++)
   {
 
-    int NumLevel_this_block = H_block_[block]->GetNumLevels();
-    std::vector<Teuchos::RCP<SparseMatrix> > A_level(NumLevel_this_block,Teuchos::null);
-    std::vector<Teuchos::RCP<SparseMatrix> > P_level(NumLevel_this_block-1,Teuchos::null);
-    std::vector<Teuchos::RCP<SparseMatrix> > R_level(NumLevel_this_block-1,Teuchos::null);
-    std::vector<Teuchos::RCP<AMGNXN::MueluSmootherWrapper> > SPre_level(NumLevel_this_block,Teuchos::null);
-    std::vector<Teuchos::RCP<AMGNXN::MueluSmootherWrapper> > SPos_level(NumLevel_this_block,Teuchos::null);
-
-    Teuchos::RCP<Matrix>              myA = Teuchos::null;
-    Teuchos::RCP<Epetra_CrsMatrix> myAcrs = Teuchos::null;
-    Teuchos::RCP<SparseMatrix>     myAspa = Teuchos::null;
-    Teuchos::RCP<SmootherBase>        myS = Teuchos::null;
-    Teuchos::RCP<LINALG::SOLVER::AMGNXN::MueluSmootherWrapper> mySWrap = Teuchos::null;
-
-    bool explicitdirichlet = A_->GetMatrix(0,0)->ExplicitDirichlet();
-    bool savegraph         = A_->GetMatrix(0,0)->SaveGraph();
-
-    for(int level=0;level<NumLevel_this_block;level++)
+    // create a dummy hierarchy by repeating the same matrix
+    if (H_block_[block] == Teuchos::null)
     {
-      Teuchos::RCP<Level> this_level = H_block_[block]->GetLevel(level);
-      if (this_level->IsAvailable("A"))
-      {
-        myA    = this_level->Get< Teuchos::RCP<Matrix> >("A");
-        myAcrs = MueLu::Utils<double,int,int,Node>::Op2NonConstEpetraCrs(myA);
-        myAspa = Teuchos::rcp(new SparseMatrix(myAcrs,Copy,explicitdirichlet,savegraph));
-        A_level[level] = myAspa;
-      }
-      else
-        dserror("Error in extracting A");
 
-      if (this_level->IsAvailable("PreSmoother"))
-      {
-        myS     = this_level->Get< Teuchos::RCP<SmootherBase> >("PreSmoother");
-        mySWrap = Teuchos::rcp(new LINALG::SOLVER::AMGNXN::MueluSmootherWrapper(myS));
-        SPre_level[level]=mySWrap;
-      }
-      else
-        dserror("Error in extracting PreSmoother");
+      std::vector<Teuchos::RCP<SparseMatrix> > A_level(NumLevelMax_,Teuchos::null);
+      std::vector<Teuchos::RCP<SparseMatrix> > P_level(NumLevelMax_-1,Teuchos::null);
+      std::vector<Teuchos::RCP<SparseMatrix> > R_level(NumLevelMax_-1,Teuchos::null);
+      std::vector<Teuchos::RCP<AMGNXN::MueluSmootherWrapper> > SPre_level(NumLevelMax_,Teuchos::null);
+      std::vector<Teuchos::RCP<AMGNXN::MueluSmootherWrapper> > SPos_level(NumLevelMax_-1,Teuchos::null);
 
-      if(level<NumLevel_this_block-1)
+      Teuchos::RCP<SparseMatrix> Abb = A_->GetMatrix(block,block);
+      Teuchos::RCP<SparseMatrix> Peye = LINALG::Eye(Abb->DomainMap());
+      Teuchos::RCP<SparseMatrix> Reye = LINALG::Eye(Abb->RangeMap());
+
+      for(int level=0;level<NumLevelMax_;level++)
+        A_level[level] = Abb;
+
+      for(int level=0;level<NumLevelMax_-1;level++)
       {
-        if (this_level->IsAvailable("PostSmoother"))
+        P_level[level] = Peye;
+        R_level[level] = Reye;
+      }
+
+      A_block_level_.push_back(A_level);
+      P_block_level_.push_back(P_level);
+      R_block_level_.push_back(R_level);
+      SPre_block_level_.push_back(SPre_level);
+      SPos_block_level_.push_back(SPos_level);
+
+    }
+    else // Recover objects created by muelu
+    {
+
+      int NumLevel_this_block = H_block_[block]->GetNumLevels();
+      std::vector<Teuchos::RCP<SparseMatrix> > A_level(NumLevel_this_block,Teuchos::null);
+      std::vector<Teuchos::RCP<SparseMatrix> > P_level(NumLevel_this_block-1,Teuchos::null);
+      std::vector<Teuchos::RCP<SparseMatrix> > R_level(NumLevel_this_block-1,Teuchos::null);
+      std::vector<Teuchos::RCP<AMGNXN::MueluSmootherWrapper> > SPre_level(NumLevel_this_block,Teuchos::null);
+      std::vector<Teuchos::RCP<AMGNXN::MueluSmootherWrapper> > SPos_level(NumLevel_this_block,Teuchos::null);
+
+      Teuchos::RCP<Matrix>              myA = Teuchos::null;
+      Teuchos::RCP<Epetra_CrsMatrix> myAcrs = Teuchos::null;
+      Teuchos::RCP<SparseMatrix>     myAspa = Teuchos::null;
+      Teuchos::RCP<SmootherBase>        myS = Teuchos::null;
+      Teuchos::RCP<LINALG::SOLVER::AMGNXN::MueluSmootherWrapper> mySWrap = Teuchos::null;
+
+      bool explicitdirichlet = A_->GetMatrix(0,0)->ExplicitDirichlet();
+      bool savegraph         = A_->GetMatrix(0,0)->SaveGraph();
+
+      for(int level=0;level<NumLevel_this_block;level++)
+      {
+        Teuchos::RCP<Level> this_level = H_block_[block]->GetLevel(level);
+        if (this_level->IsAvailable("A"))
         {
-          myS     = this_level->Get< Teuchos::RCP<SmootherBase> >("PostSmoother");
-          mySWrap = Teuchos::rcp(new LINALG::SOLVER::AMGNXN::MueluSmootherWrapper(myS));
-          SPos_level[level]=mySWrap;
-        }
-        else
-          dserror("Error in extracting PostSmoother");
-      }
-
-      if(level!=0)
-      {
-
-        if (this_level->IsAvailable("P"))
-        {
-          myA    = this_level->Get< Teuchos::RCP<Matrix> >("P");
+          myA    = this_level->Get< Teuchos::RCP<Matrix> >("A");
           myAcrs = MueLu::Utils<double,int,int,Node>::Op2NonConstEpetraCrs(myA);
           myAspa = Teuchos::rcp(new SparseMatrix(myAcrs,Copy,explicitdirichlet,savegraph));
-          P_level[level-1]=myAspa;
+          A_level[level] = myAspa;
         }
         else
-          dserror("Error in extracting P");
+          dserror("Error in extracting A");
 
-        if (this_level->IsAvailable("R"))
+        if (this_level->IsAvailable("PreSmoother"))
         {
-          myA = this_level->Get< Teuchos::RCP<Matrix> >("R");
-          myAcrs =MueLu::Utils<double,int,int,Node>::Op2NonConstEpetraCrs(myA);
-          myAspa = Teuchos::rcp(new SparseMatrix(myAcrs,Copy,explicitdirichlet,savegraph));
-          R_level[level-1]=myAspa;
+          myS     = this_level->Get< Teuchos::RCP<SmootherBase> >("PreSmoother");
+          mySWrap = Teuchos::rcp(new LINALG::SOLVER::AMGNXN::MueluSmootherWrapper(myS));
+          SPre_level[level]=mySWrap;
         }
         else
-          dserror("Error in extracting R");
-      }
+          dserror("Error in extracting PreSmoother");
 
-    } // loop in levels
-    A_block_level_.push_back(A_level);
-    P_block_level_.push_back(P_level);
-    R_block_level_.push_back(R_level);
-    SPre_block_level_.push_back(SPre_level);
-    SPos_block_level_.push_back(SPos_level);
+        if(level<NumLevel_this_block-1)
+        {
+          if (this_level->IsAvailable("PostSmoother"))
+          {
+            myS     = this_level->Get< Teuchos::RCP<SmootherBase> >("PostSmoother");
+            mySWrap = Teuchos::rcp(new LINALG::SOLVER::AMGNXN::MueluSmootherWrapper(myS));
+            SPos_level[level]=mySWrap;
+          }
+          else
+            dserror("Error in extracting PostSmoother");
+        }
+
+        if(level!=0)
+        {
+
+          if (this_level->IsAvailable("P"))
+          {
+            myA    = this_level->Get< Teuchos::RCP<Matrix> >("P");
+            myAcrs = MueLu::Utils<double,int,int,Node>::Op2NonConstEpetraCrs(myA);
+            myAspa = Teuchos::rcp(new SparseMatrix(myAcrs,Copy,explicitdirichlet,savegraph));
+            P_level[level-1]=myAspa;
+          }
+          else
+            dserror("Error in extracting P");
+
+          if (this_level->IsAvailable("R"))
+          {
+            myA = this_level->Get< Teuchos::RCP<Matrix> >("R");
+            myAcrs =MueLu::Utils<double,int,int,Node>::Op2NonConstEpetraCrs(myA);
+            myAspa = Teuchos::rcp(new SparseMatrix(myAcrs,Copy,explicitdirichlet,savegraph));
+            R_level[level-1]=myAspa;
+          }
+          else
+            dserror("Error in extracting R");
+        }
+
+      } // loop in levels
+
+      A_block_level_.push_back(A_level);
+      P_block_level_.push_back(P_level);
+      R_block_level_.push_back(R_level);
+      SPre_block_level_.push_back(SPre_level);
+      SPos_block_level_.push_back(SPos_level);
+
+    } // else
+
 
   } // loop in blocks
 
@@ -297,96 +339,122 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::AMGNXN::Hierarchies::BuildMueLuHierarchy
   Epetra_Time timer(A_eop->Comm());
   timer.ResetStartTime();
 
-  //Some cheks
-  if(numdf<1 or dimns<1)
-    dserror("Error: PDE equations or null space dimension wrong.");
-  if(nsdata==Teuchos::null)
-    dserror("Error: null space data is empty");
-
-  //Prepare operator for MueLu
-  Teuchos::RCP<Epetra_CrsMatrix> A_crs = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(A_eop);
-  if(A_crs==Teuchos::null)
-    dserror("Make sure that the input matrix is a Epetra_CrsMatrix (or derived)");
-  Teuchos::RCP<CrsMatrix> mueluA = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A_crs));
-  Teuchos::RCP<CrsMatrixWrap> mueluA_wrap = Teuchos::rcp(new CrsMatrixWrap(mueluA));
-  Teuchos::RCP<Matrix> mueluOp = Teuchos::rcp_dynamic_cast<Matrix>(mueluA_wrap);
-  mueluOp->SetFixedBlockSize(numdf,offsetFineLevel);
-
-  // Prepare null space vector for MueLu
-  Teuchos::RCP<const Xpetra::Map<LO,GO,NO> > rowMap = mueluA->getRowMap();
-  Teuchos::RCP<MultiVector> nspVector =
-    Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(rowMap,dimns,true);
-  for ( size_t i=0; i < Teuchos::as<size_t>(dimns); i++) {
-    Teuchos::ArrayRCP<Scalar> nspVectori = nspVector->getDataNonConst(i);
-    const size_t myLength = nspVector->getLocalLength();
-    for(size_t j=0; j<myLength; j++) {
-      nspVectori[j] = (*nsdata)[i*myLength+j];
-    }
-  }
-
-  // Build up hierarchy
   Teuchos::RCP<Hierarchy> H = Teuchos::null;
+  bool create_uncoarsened_hierarchy = paramListFromXml.get<bool>("create un-coarsened hierarchy",false);
+  bool fix_coarse_maps = paramListFromXml.get<bool>("fix coarse maps",false); // this is required in all the fields if we want to merge and solve a coarse level block matrix
 
-
-  // Add information about maps offsets
-  std::string offsets_str("{");
-  for(int i=0;i<(int)offsets.size();i++)
+  if (not create_uncoarsened_hierarchy)
   {
-    offsets_str= offsets_str + ConvertInt(offsets[i]);
-    if(i<(int)offsets.size()-1)
-      offsets_str= offsets_str + ", ";
-  }
-  offsets_str= offsets_str + "}";
-  if(paramListFromXml.sublist("Factories",true).isSublist("myCoarseMapFactory123"))
-    dserror("We are going to overwrite the factory 'myCoarseMapFactory123'. Please use an other name");
-  Teuchos::ParameterList& myCoarseMapFactoryList =
-    paramListFromXml.sublist("Factories",true).sublist("myCoarseMapFactory123");
-  myCoarseMapFactoryList.set("factory","CoarseMapFactory");
-  myCoarseMapFactoryList.set("Domain GID offsets",offsets_str);
-  if(paramListFromXml.sublist("Hierarchy",true).sublist("All").isParameter("CoarseMap"))
-    dserror("We are going to overwrite 'CoarseMap'. Don't use 'CoarseMap' here.");
-  Teuchos::ParameterList& AllList =
-    paramListFromXml.sublist("Hierarchy").sublist("All");
-  AllList.set("CoarseMap","myCoarseMapFactory123");
 
-  // Add offset for the finest level
-  Teuchos::ParameterList& MatrixList = paramListFromXml.sublist("Matrix");
-  MatrixList.set<int>("DOF offset",offsetFineLevel);
-  MatrixList.set<int>("number of equations",numdf);
 
- if(A_eop->Comm().MyPID()==0)
- {
-  std::cout << "offsetFineLevel " << offsetFineLevel << std::endl;
-  std::cout << "offsets_str " << offsets_str << std::endl;
- }
+    //Some cheks
+    if(numdf<1 or dimns<1)
+      dserror("Error: PDE equations or null space dimension wrong.");
+    if(nsdata==Teuchos::null)
+      dserror("Error: null space data is empty");
 
-  // Build up hierarchy
-  ParameterListInterpreter mueLuFactory(paramListFromXml);
-  H = mueLuFactory.CreateHierarchy();
-  H->SetDefaultVerbLevel(MueLu::Extreme); // TODO sure?
-  H->GetLevel(0)->Set("A", mueluOp);
-  H->GetLevel(0)->Set("Nullspace", nspVector);
-  H->GetLevel(0)->setlib(Xpetra::UseEpetra);
-  H->setlib(Xpetra::UseEpetra);
-  mueLuFactory.SetupHierarchy(*H);
+    //Prepare operator for MueLu
+    Teuchos::RCP<Epetra_CrsMatrix> A_crs = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(A_eop);
+    if(A_crs==Teuchos::null)
+      dserror("Make sure that the input matrix is a Epetra_CrsMatrix (or derived)");
+    Teuchos::RCP<CrsMatrix> mueluA = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A_crs));
+    Teuchos::RCP<CrsMatrixWrap> mueluA_wrap = Teuchos::rcp(new CrsMatrixWrap(mueluA));
+    Teuchos::RCP<Matrix> mueluOp = Teuchos::rcp_dynamic_cast<Matrix>(mueluA_wrap);
+    mueluOp->SetFixedBlockSize(numdf,offsetFineLevel);
 
-  // Recover information about the maps
-  int NumLevel_block = H->GetNumLevels();
-  Teuchos::RCP<Level>        this_level = Teuchos::null;
-  Teuchos::RCP<Matrix>              myA = Teuchos::null;
-  Teuchos::RCP<Epetra_CrsMatrix> myAcrs = Teuchos::null;
-  for(int level=1;(level<NumLevel_block) and (level<(int)offsets.size()+1);level++)
-  {
-    this_level=H->GetLevel(level);
-    if (this_level->IsAvailable("A"))
-    {
-      myA    = this_level->Get< Teuchos::RCP<Matrix> >("A"); //Matrix
-      myAcrs = MueLu::Utils<double,int,int,Node>::Op2NonConstEpetraCrs(myA);
+    // Prepare null space vector for MueLu
+    Teuchos::RCP<const Xpetra::Map<LO,GO,NO> > rowMap = mueluA->getRowMap();
+    Teuchos::RCP<MultiVector> nspVector =
+      Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(rowMap,dimns,true);
+    for ( size_t i=0; i < Teuchos::as<size_t>(dimns); i++) {
+      Teuchos::ArrayRCP<Scalar> nspVectori = nspVector->getDataNonConst(i);
+      const size_t myLength = nspVector->getLocalLength();
+      for(size_t j=0; j<myLength; j++) {
+        nspVectori[j] = (*nsdata)[i*myLength+j];
+      }
     }
-    else
-      dserror("Error in extracting A");
 
-    offsets[level-1] =  offsets[level-1] + myAcrs->RangeMap().MaxAllGID() + 1;
+
+
+    if (fix_coarse_maps)
+    {
+      // Add information about maps offsets
+      std::string offsets_str("{");
+      for(int i=0;i<(int)offsets.size();i++)
+      {
+        offsets_str= offsets_str + ConvertInt(offsets[i]);
+        if(i<(int)offsets.size()-1)
+          offsets_str= offsets_str + ", ";
+      }
+      offsets_str= offsets_str + "}";
+      if(paramListFromXml.sublist("Factories",true).isSublist("myCoarseMapFactory123"))
+        dserror("We are going to overwrite the factory 'myCoarseMapFactory123'. Please use an other name");
+      Teuchos::ParameterList& myCoarseMapFactoryList =
+        paramListFromXml.sublist("Factories",true).sublist("myCoarseMapFactory123");
+      myCoarseMapFactoryList.set("factory","CoarseMapFactory");
+      myCoarseMapFactoryList.set("Domain GID offsets",offsets_str);
+      if(paramListFromXml.sublist("Hierarchy",true).sublist("All").isParameter("CoarseMap"))
+        dserror("We are going to overwrite 'CoarseMap'. Don't use 'CoarseMap' here.");
+      Teuchos::ParameterList& AllList =
+        paramListFromXml.sublist("Hierarchy").sublist("All");
+      AllList.set("CoarseMap","myCoarseMapFactory123");
+
+      if(A_eop->Comm().MyPID()==0)
+        std::cout << "offsets_str " << offsets_str << std::endl;
+
+    }
+
+    // Add offset for the finest level
+    Teuchos::ParameterList& MatrixList = paramListFromXml.sublist("Matrix");
+    MatrixList.set<int>("DOF offset",offsetFineLevel);
+    MatrixList.set<int>("number of equations",numdf);
+
+    if(A_eop->Comm().MyPID()==0)
+    {
+      std::cout << "offsetFineLevel " << offsetFineLevel << std::endl;
+    }
+
+    // Build up hierarchy
+    ParameterListInterpreter mueLuFactory(paramListFromXml);
+    H = mueLuFactory.CreateHierarchy();
+    H->SetDefaultVerbLevel(MueLu::Extreme); // TODO sure?
+    H->GetLevel(0)->Set("A", mueluOp);
+    H->GetLevel(0)->Set("Nullspace", nspVector);
+    H->GetLevel(0)->setlib(Xpetra::UseEpetra);
+    H->setlib(Xpetra::UseEpetra);
+    mueLuFactory.SetupHierarchy(*H);
+
+    // Recover information about the maps
+    if (fix_coarse_maps)
+    {
+      int NumLevel_block = H->GetNumLevels();
+      Teuchos::RCP<Level>        this_level = Teuchos::null;
+      Teuchos::RCP<Matrix>              myA = Teuchos::null;
+      Teuchos::RCP<Epetra_CrsMatrix> myAcrs = Teuchos::null;
+      for(int level=1;(level<NumLevel_block) and (level<(int)offsets.size()+1);level++)
+      {
+        this_level=H->GetLevel(level);
+        if (this_level->IsAvailable("A"))
+        {
+          myA    = this_level->Get< Teuchos::RCP<Matrix> >("A"); //Matrix
+          myAcrs = MueLu::Utils<double,int,int,Node>::Op2NonConstEpetraCrs(myA);
+        }
+        else
+          dserror("Error in extracting A");
+
+        offsets[level-1] =  offsets[level-1] + myAcrs->RangeMap().MaxAllGID() + 1; // TODO I think we don't have to overwrite previous result
+      }
+    }
+
+
+  }
+  else // when we use a dummy hierarchy we sill have to compute the offsets
+  {
+    if (fix_coarse_maps)
+    {
+      for(int level=0; level<(int)offsets.size();level++)
+        offsets[level] =  offsets[level] + A_eop->OperatorRangeMap().MaxAllGID() + 1; // TODO I think we don't have to overwrite previous result
+    }
   }
 
   double elaptime =  timer.ElapsedTime();
@@ -585,7 +653,7 @@ void LINALG::SOLVER::AMGNXN::MonolithicHierarchy::Setup()
     std::cout << "number of levels = " << NumLevels_ << std::endl;
     for(int i=0;i<NumBlocks_;i++)
       std::cout << "block " << i << ": number of levels = "
-        << GetHierarchies()->GetH(i)->GetNumLevels() << std::endl;
+        << GetHierarchies()->GetNumLevels(i) << std::endl;
   }
 
 
