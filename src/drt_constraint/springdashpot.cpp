@@ -288,8 +288,8 @@ void SPRINGDASHPOT::EvaluateSpringDashpot(Teuchos::RCP<DRT::Discretization> disc
         if (!node) dserror("Cannot find global node %d",gid);
 
 
-        int numdof = discret->NumDof(node);
-        std::vector<int> dofs = discret->Dof(node);
+        int numdof = discret->NumDof(0,node);
+        std::vector<int> dofs = discret->Dof(0,node);
 
         assert (numdof==3);
 
