@@ -60,7 +60,6 @@ FS3I::FS3I_Base::FS3I_Base()
   timemax_ = fs3idyn.get<double>("MAXTIME");
 
   infperm_ = DRT::INPUT::IntegralValue<int>(fs3idyn,"INF_PERM");
-  wssdependperm_ = false;
 
 
   //---------------------------------------------------------------------
@@ -255,7 +254,7 @@ void FS3I::FS3I_Base::CheckFS3IInputs()
         if ( (bool)params->at(3) ) //if we have WSS depended interface permeabiliy
         {
           if (not (bool)DRT::INPUT::IntegralValue<int>(ioparams,"FLUID_WALL_SHEAR_STRESS"))
-            dserror("If you have a WSS dependent interface permeablity you need FLUID_WALL_SHEAR_STRESS in section IO to be YES. Otherwise the WSSManager will not be initialisied!");
+            dserror("If you have a WSS dependent interface permeablity you need FLUID_WALL_SHEAR_STRESS in section IO to be YES. Otherwise the WSSManager will not be initialized!");
 
           std::vector<DRT::Condition*> FSCCond;
           problem->GetDis("fluid")->GetCondition("FluidStressCalc",FSCCond);
@@ -305,11 +304,6 @@ void FS3I::FS3I_Base::CheckFS3IInputs()
       if ( fluid_permcoeffs->at(7) != structure_permcoeffs->at(7) )
         dserror("Number of scalars NUMSCAL of ScaTra couplings with COUPID %i needs to be the same!",ID);
 
-      //TODO: (Thon) find a better place to do this
-      if ( fluid_permcoeffs->at(3) == 1 ) //iff we have WSS dependency
-      {
-        wssdependperm_ = true; //we assume here that
-      }
     }
   }
 }

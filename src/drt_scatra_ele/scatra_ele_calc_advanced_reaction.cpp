@@ -143,12 +143,17 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::GetMaterialParams(
 
   if (material->MaterialType() == INPAR::MAT::m_matlist)
   {
-
     const Teuchos::RCP<const MAT::MatList>& actmat = Teuchos::rcp_dynamic_cast<const MAT::MatList>(material);
     if (actmat->NumMat() < my::numscal_) dserror("Not enough materials in MatList.");
 
     for (int k = 0;k<my::numscal_;++k)
     {
+      // We may have some reactive and some non-reactive elements in one discretisation.
+      // But since the elements are singleton we have to reset all reactive stuff in case
+      // of non-reactive elements:
+      ClearAdvancedReactionTerms(k); //Note: order is important here, since Biofilm does set the reaction terms inside the Materials() call
+
+
       int matid = actmat->MatID(k);
       Teuchos::RCP< MAT::Material> singlemat = actmat->MaterialById(matid);
 
@@ -875,18 +880,16 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::GetAdvancedReactionCoefficien
 {
   const Teuchos::RCP<const MAT::MatListReactions>& actmat = Teuchos::rcp_dynamic_cast<const MAT::MatListReactions>(material);
 
-  if (numcond_ == -1) //if not yet initialisied
-  {
     if(actmat==Teuchos::null)
       dserror("cast to MatListReactions failed");
 
     numcond_= actmat->NumReac();
 
+    //We always have to reinitialize these vectors since our elements are singleton
     stoich_.resize(numcond_);
     couplingtype_.resize(numcond_);
     reaccoeff_.resize(numcond_);
     reacstart_.resize(numcond_);
-  }
 
   for (int i=0;i<numcond_;i++)
   {
@@ -901,12 +904,12 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::GetAdvancedReactionCoefficien
 }
 
 /*-------------------------------------------------------------------------------*
- |  set body force, reaction coefficient and derivatives              thon 09/14 |
+ |  set reac. body force, reaction coefficient and derivatives        thon 09/14 |
  *-------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::SetAdvancedReactionTerms(
-    const int                               k,
-    const double                            scale
+    const int                               k,      //!< index of current scalar
+    const double                            scale   //!< scale factor
                                     )
 {
   ReaManager()->SetReaBodyForce( CalcReaBodyForceTerm(k)*scale ,k);
@@ -919,6 +922,41 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::SetAdvancedReactionTerms(
 
     my::reamanager_->SetReaCoeffDerivMatrix( CalcReaCoeffDerivMatrix(k,j)*scale ,k,j );
   }
+
+}
+
+/*-------------------------------------------------------------------------------*
+ |  clear reac. body force, reaction coefficient and derivatives      thon 02/15 |
+ *-------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::ClearAdvancedReactionTerms(
+    const int                               k   //!< index of current scalar
+                                    )
+{
+  // We may have some reactive and some non-reactive elements in one discretisation.
+  // But since the elements are singleton we have to reset all reactive stuff in case
+  // of non-reactive elements
+
+  ReaManager()->SetReaBodyForce( 0 ,k);
+
+  ReaManager()->SetReaCoeff( 0 ,k);
+
+  for (int j=0; j<my::numscal_ ;j++)
+  {
+    ReaManager()->SetReaBodyForceDerivMatrix( 0 ,k,j );
+
+    my::reamanager_->SetReaCoeffDerivMatrix( 0 ,k,j );
+  }
+
+  //For safety reasons we better do this as well..
+
+  numcond_= 0;
+
+  //We always have to reinitialize these vectors since our elements are singleton
+  stoich_.resize(numcond_);
+  couplingtype_.resize(numcond_);
+  reaccoeff_.resize(numcond_);
+  reacstart_.resize(numcond_);
 
 }
 

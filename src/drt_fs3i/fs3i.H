@@ -171,9 +171,6 @@ namespace FS3I
     /// flag for infinite surface permeability
     bool infperm_;
 
-    /// flag for wallshearstress depended surface permeability
-    bool wssdependperm_;
-
     /// scatra solver
     Teuchos::RCP<LINALG::Solver> scatrasolver_;
 

@@ -94,12 +94,20 @@ void FS3I::ACFSI::ReadRestart()
     }
     else //we do not want to read the scatras values and the lagrange multiplyers, since we start from a partitioned FSI
     {
+      //restart FSI problem
       fsi_->StructureField()->ReadRestart(restart*fsiperssisteps_);
       fsi_->FluidField()->ReadRestart(restart*fsiperssisteps_);
 
       fsi_->AleField()->ReadRestart(restart*fsiperssisteps_);
 
       fsi_->SetTimeStep(fsi_->FluidField()->Time(),fsi_->FluidField()->Step());
+
+      //we need to set time and step in scatra to have it matching with the fsi ones
+      for (unsigned i=0; i<scatravec_.size(); ++i)
+      {
+        Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> currscatra = scatravec_[i];
+        currscatra->ScaTraField()->SetTimeStep(fsi_->FluidField()->Time(),fsi_->FluidField()->Step()/fsiperssisteps_);
+      }
     }
 
     time_ = fsi_->FluidField()->Time();

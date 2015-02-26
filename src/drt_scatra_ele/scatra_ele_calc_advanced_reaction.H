@@ -211,14 +211,20 @@ protected:
     const LINALG::Matrix<my::nen_,1>&      diff         //!< laplace term
   );
 
+  //! Get numcond, stoich list, reaction coefficient, couplingtpye from material
   void GetAdvancedReactionCoefficients(
       const Teuchos::RCP<const MAT::Material> material //!< pointer to current material
   );
 
-
+  //! Set reac. body force, reaction coefficient and derivatives
   void SetAdvancedReactionTerms(
-      const int                               k,
-      const double                            scale=1.0
+      const int                               k,            //!< index of current scalar
+      const double                            scale=1.0     //!< scale factor
+  );
+
+  //! Clear reac. body force, reaction coefficient and derivatives (i.e. set them to zero)
+  void ClearAdvancedReactionTerms(
+      const int                               k //!< index of current scalar
   );
 
   //! evaluate shape functions and their derivatives at element center

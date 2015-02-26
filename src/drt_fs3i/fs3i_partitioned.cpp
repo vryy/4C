@@ -433,7 +433,7 @@ void FS3I::PartFS3I::SetFSISolution()
 {
   SetMeshDisp();
   SetVelocityFields();
-  if (!infperm_ and wssdependperm_)
+  if (!infperm_) //needed for WSS dependent permeability
     SetWallShearStresses();
 }
 
