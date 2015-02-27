@@ -232,6 +232,10 @@ private:
                                                  bool                              errormaps,
                                                  bool                              updateonly);
 
+  /// projects field to new polynomial space
+  void ProjectPadapField(DRT::ELEMENTS::Acou *             ele,
+                         int                               newdeg);
+
   /// calls local solver to compute matrices: internal and face
   void ComputeMatrices(const Teuchos::RCP<MAT::Material> &mat,
                        DRT::ELEMENTS::Acou &             ele,
@@ -263,6 +267,9 @@ private:
   void VectorHandling(DRT::ELEMENTS::Acou*     ele,
                           Teuchos::ParameterList&       params,
                           double dt);
+
+  /// calculate error maps with local postprocessing
+  double EstimateError(DRT::ELEMENTS::AcouSol & ele, Epetra_SerialDenseVector & L);
 
   void EvaluateAll(const int start_func,
                    const double (&xyz)[nsd_],

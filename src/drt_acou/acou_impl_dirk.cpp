@@ -215,6 +215,7 @@ void ACOU::TimIntImplDIRK::UpdateInteriorVariablesAndAssemebleRHS(int stage)
   eleparams.set<int>("step",step_);
   bool resonly_ = true;
   eleparams.set<bool>("resonly",resonly_);
+  eleparams.set<bool>("allelesequal",allelesequal_);
 
   discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,residual_,Teuchos::null,Teuchos::null);
 

@@ -7755,6 +7755,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("STARTFUNCNO",-1,"Function for Initial Starting Field",&acousticdyn);
   IntParameter("SOURCETERMFUNCNO",-1,"Function for source term in volume",&acousticdyn);
 
+  BoolParameter("ALLELESEQUAL","No","Yes, if all elements have same shape and material",&acousticdyn);
+
   // distinguish viscous and lossless flows
   setStringToIntegralParameter<int>("PHYSICAL_TYPE","lossless",
                     "fluid properties",

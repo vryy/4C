@@ -294,8 +294,8 @@ namespace ELEMENTS
                         Teuchos::ParameterList&       params,
                         double& dt);
 
-    /// calculate error maps
-    double CalculateError(DRT::ELEMENTS::Acou & ele,Epetra_SerialDenseMatrix & h, Epetra_SerialDenseVector & rhs, Epetra_SerialDenseVector & p);
+    /// calculate error maps with local postprocessing
+    double EstimateError(DRT::ELEMENTS::Acou & ele, Epetra_SerialDenseVector & p);
 
     /// local data object
     Teuchos::RCP<DRT::UTILS::ShapeValues<distype> > shapes_;

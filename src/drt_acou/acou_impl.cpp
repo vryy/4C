@@ -59,6 +59,7 @@ ACOU::AcouImplicitTimeInt::AcouImplicitTimeInt(
   padaptivity_    (DRT::INPUT::IntegralValue<bool>(*params_,"P_ADAPTIVITY")),
   padapttol_      (params_->get<double>("P_ADAPT_TOL")),
   calcerr_        (false),
+  allelesequal_   (DRT::INPUT::IntegralValue<bool>(*params_,"ALLELESEQUAL")),
   adjoint_rhs_    (Teuchos::null)
 {
   if(dtp_ == 0.0)  dserror("Can't work with time step size == 0.0");
@@ -937,6 +938,7 @@ void ACOU::AcouImplicitTimeInt::UpdateInteriorVariablesAndAssemebleRHS()
   eleparams.set<bool>("padaptivity",padaptivity_);
   eleparams.set<double>("padaptivitytol",padapttol_);
   eleparams.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
+  eleparams.set<bool>("allelesequal",allelesequal_);
 
   Teuchos::RCP<std::vector<double> > elevals;
   if(errormaps_)

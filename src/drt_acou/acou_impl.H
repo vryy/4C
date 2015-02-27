@@ -193,6 +193,7 @@ protected:
   bool padaptivity_;                    /// p-adaptivity flag
   double padapttol_;                    /// p-adaptivity error tolerance
   bool calcerr_;                        /// flag for error calculation
+  bool allelesequal_;                   /// flag true if all elements have same shape and same material (for faster evaluation for uniform meshes)
 
   /// (standard) system matrix
   Teuchos::RCP<LINALG::SparseOperator> sysmat_;

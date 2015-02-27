@@ -236,13 +236,15 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
     bool adjoint = params.get<bool>("adjoint");
     bool errormaps = params.get<bool>("errormaps");
     const bool padapty = params.get<bool>("padaptivity");
+    const bool allelesequal = params.get<bool>("allelesequal");
     double dt = params.get<double>("dt");
     dyna_ = params.get<INPAR::ACOU::DynamicType>("dynamic type");
 
     ReadGlobalVectors(ele, discretization, lm, padapty);
 
     zeroMatrix(elevec1);
-    localSolver_->ComputeMatrices(mat, *ele, dt, dyna_, adjoint);
+    if(!allelesequal)
+      localSolver_->ComputeMatrices(mat, *ele, dt, dyna_, adjoint);
 
     // this happens for DIRK time integration and is disadvantageous, since history variables are shaped according to elevec size in UpdateInteriorVariablesAndComputeResidual
     if (unsigned(elevec1.M()) != lm.size())
@@ -1589,14 +1591,8 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::UpdateInteriorVariablesAndComputeResid
     Epetra_SerialDenseVector p(shapes_->ndofs_ * nsd_);
     p.Multiply('N', 'N', rho / dt, localSolver_->invAmat, temp, 0.0);
 
-    // second step: postprocess the pressure field: therefore we need some additional matrices!
-    unsigned int ndofspost = 1;
-    for (unsigned int i = 0; i < nsd_; ++i)
-      ndofspost *= (ele.Degree() + 2);
-
-    Epetra_SerialDenseMatrix H(ndofspost, ndofspost);
-    Epetra_SerialDenseVector R(ndofspost);
-    double err_p = CalculateError(ele, H, R, p);
+    // second step: postprocess the pressure field
+    double err_p = EstimateError(ele, p);
 
     Teuchos::RCP<std::vector<double> > values = params.get<Teuchos::RCP<std::vector<double> > >("elevals");
 
@@ -1909,15 +1905,17 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::ProjectPadapField(
  * CalculateError
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
-double DRT::ELEMENTS::AcouEleCalc<distype>::CalculateError(
-    DRT::ELEMENTS::Acou & ele, Epetra_SerialDenseMatrix & h,
-    Epetra_SerialDenseVector & rhs, Epetra_SerialDenseVector & p)
+double DRT::ELEMENTS::AcouEleCalc<distype>::EstimateError(
+    DRT::ELEMENTS::Acou & ele, Epetra_SerialDenseVector & p)
 {
   DRT::UTILS::PolynomialSpace<nsd_> postpoly(distype, ele.Degree() + 1, ele.UsesCompletePolynomialSpace());
   LINALG::Matrix<nsd_, 1> xsi;
   int ndofspost = 1;
   for (unsigned int i = 0; i < nsd_; ++i)
     ndofspost *= (ele.Degree() + 2);
+
+  Epetra_SerialDenseMatrix h(ndofspost, ndofspost);
+  Epetra_SerialDenseVector rhs(ndofspost);
 
   Epetra_SerialDenseMatrix derivs(nsd_, ndofspost);
   Epetra_SerialDenseVector myvalues(shapes_->ndofs_);
@@ -1977,9 +1975,8 @@ double DRT::ELEMENTS::AcouEleCalc<distype>::CalculateError(
         h(i, j) += t * jfac;
       }
     }
-    double ugrad[nsd_];
-    for (unsigned int d = 0; d < nsd_; ++d)
-      ugrad[d] = 0.0;
+    double ugrad[nsd_]= {0.0};
+
     for (unsigned int d = 0; d < nsd_; ++d)
       for (unsigned int j = 0; j < shapes_->ndofs_; ++j)
         ugrad[d] += myvalues(j) * p(j + d * shapes_->ndofs_);
