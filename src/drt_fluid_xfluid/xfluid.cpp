@@ -220,10 +220,6 @@ void FLD::XFluid::Init()
     dispnm_  = LINALG::CreateVector(*xdiscret_->InitialDofRowMap(),true);
     gridvnp_ = LINALG::CreateVector(*xdiscret_->InitialDofRowMap(),true);
     gridvn_  = LINALG::CreateVector(*xdiscret_->InitialDofRowMap(),true);
-
-
-    //TODO:
-    if(restart) dserror("restart for alefluid not supported yet! Read the vectors before the initial state class is created!");
   }
 
 
@@ -4712,11 +4708,20 @@ void FLD::XFluid::ReadRestart(int step)
   reader.ReadVector(state_->accnp_,"accnp_res");
   reader.ReadVector(state_->accn_ ,"accn_res" );
 
+  if (alefluid_)
+  {
+    reader.ReadVector(state_->dispnp_,"dispnp_res");
+    reader.ReadVector(state_->gridvnp_,"gridv_res");
+  }
+
+
 #if(0)
   std::cout << "velnp_ " << *(state_->velnp_) << endl;
   std::cout << "veln_ "  << *(state_->veln_)  << endl;
   std::cout << "accnp_ " << *(state_->accnp_) << endl;
   std::cout << "accn_ "  << *(state_->accn_)  << endl;
+  std::cout << "dispnp_" << *(state_->dispnp_)<< endl;
+  std::cout << "gridv_" << *(state_->gridvnp_)<< endl;
 #endif
 
   // set element time parameter after restart:

@@ -239,19 +239,6 @@ void runEnsightVtuFilter(PostProblem    &problem)
         break;
     }
     case prb_fluid_fluid:
-    {
-      std::string basename = problem.outname();
-
-      PostField* embfluidfield = problem.get_discretization(0);
-      FluidFilter embfluidwriter(embfluidfield, basename);
-      embfluidwriter.WriteFiles();
-
-      PostField* fluidfield = problem.get_discretization(1);
-      FluidFilter fluidwriter(fluidfield, basename);
-      fluidwriter.WriteFiles();
-
-      break;
-    }
     case prb_fluid_fluid_ale:
     {
       std::string basename = problem.outname();

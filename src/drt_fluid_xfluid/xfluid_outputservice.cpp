@@ -221,7 +221,11 @@ void FLD::XFluidOutputService::Output(
     //TODO:
     if (dispnp != Teuchos::null)
     {
-      std::cout << " WARNING: implement the write restart for alefluid!!!" << std::endl;
+      //write ale displacement for t^{n+1}
+      discret_->Writer()->WriteVector("dispnp_res", state->dispnp_);
+
+      //write grid velocity for t^{n+1}
+      discret_->Writer()->WriteVector("gridv_res", state->gridvnp_);
     }
   }
 
