@@ -173,6 +173,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::GetMaterialParams(
       int matid = actmat->MatID(k);
       Teuchos::RCP< MAT::Material> singlemat = actmat->MaterialById(matid);
 
+      //Note: order is important here!!
       Materials(singlemat,k,densn,densnp,densam,visc,iquad);
 
       SetAdvancedReactionTerms(k,1.0); //every reaction calculation stuff happens in here!!
@@ -181,6 +182,11 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::GetMaterialParams(
   }
   else
   {
+    // We may have some reactive and some non-reactive elements in one discretisation.
+    // But since the elements are singleton we have to reset all reactive stuff in case
+    // of non-reactive elements:
+    ClearAdvancedReactionTerms(0); //Note: order is important here, since Biofilm does set the reaction terms inside the Materials() call
+
     Materials(material,0,densn,densnp,densam,visc,iquad);
   }
   return;
@@ -240,12 +246,14 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::MatBioFilm(
   my::diffmanager_->SetIsotropicDiff(actmat->Diffusivity(),k);
 
   // get substrate concentration at n+1 or n+alpha_F at integration point
-  const double csnp = my::funct_.Dot(my::ephinp_[k]);
+  const double csnp = my::scatravarmanager_->Phinp(k);
+  const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = ReaManager();
 
   // set reaction coefficient
-  my::reamanager_->SetReaCoeff(actmat->ComputeReactionCoeff(csnp),k);
+  remanager->SetReaCoeff(actmat->ComputeReactionCoeff(csnp),k);
+
   // set derivative of reaction coefficient
-  my::reamanager_->SetReaCoeffDerivMatrix(actmat->ComputeReactionCoeffDeriv(csnp),k,k);
+  remanager->SetReaCoeffDerivMatrix(actmat->ComputeReactionCoeffDeriv(csnp),k,k);
 
   // set density at various time steps and density gradient factor to 1.0/0.0
   densn      = 1.0;
@@ -304,12 +312,13 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::MatGrowthScd(
     const double detFe    = structmat->GetdetFe_atgp(iquad);
 
     // get substrate concentration at n+1 or n+alpha_F at integration point
-    const double csnp = my::funct_.Dot(my::ephinp_[k]);
+    const double csnp = my::scatravarmanager_->Phinp(k);
+    const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = ReaManager();
 
     // set reaction coefficient
-    my::reamanager_->SetReaCoeff(actmat->ComputeReactionCoeff(csnp,theta,dtheta,detFe),k);
+    remanager->SetReaCoeff(actmat->ComputeReactionCoeff(csnp,theta,dtheta,detFe),k);
     // set derivative of reaction coefficient
-    my::reamanager_->SetReaCoeffDerivMatrix(actmat->ComputeReactionCoeffDeriv(csnp,theta,thetaold,1.0),k,k);
+    remanager->SetReaCoeffDerivMatrix(actmat->ComputeReactionCoeffDeriv(csnp,theta,thetaold,1.0),k,k);
 
     // set density at various time steps and density gradient factor to 1.0/0.0
     densn      = 1.0;
@@ -401,7 +410,7 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeffFac(
         switch (couplingtype)
         {
         case MAT::PAR::reac_coup_simple_multiplicative:
-          rcfac *=my::funct_.Dot(my::ephinp_[ii]);
+          rcfac *=my::scatravarmanager_->Phinp(ii);
           break;
         //case ... :  //insert new Couplings here
         case MAT::PAR::reac_coup_none:
@@ -474,7 +483,7 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeffDerivFac(
         {
         case MAT::PAR::reac_coup_simple_multiplicative:
           if (ii!=k and ii!= toderive)
-            rcdmfac *= my::funct_.Dot(my::ephinp_[ii]);
+            rcdmfac *= my::scatravarmanager_->Phinp(ii);
           break;
         //case ... :  //insert new Couplings here
         case MAT::PAR::reac_coup_none:
@@ -543,7 +552,7 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaBodyForceTermFac(
       switch (couplingtype)
       {
       case MAT::PAR::reac_coup_simple_multiplicative:
-        bftfac *=my::funct_.Dot(my::ephinp_[ii]);
+        bftfac *=my::scatravarmanager_->Phinp(ii);
         break;
       //case ... :  //insert new Couplings here
       case MAT::PAR::reac_coup_none:
@@ -644,10 +653,10 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::ReacStartForReaCoeff(
   double&                                 value         //!< current reaction value
   )
 {
-  double prod = value * my::funct_.Dot(my::ephinp_[k]); //for simple multiplikative only!
+  double prod = value * my::scatravarmanager_->Phinp(k); //for simple multiplikative only!
 
     if (prod > reacstart )
-      value = value - reacstart/my::funct_.Dot(my::ephinp_[k]);
+      value = value - reacstart/my::scatravarmanager_->Phinp(k);
     else
       value = 0;
 
@@ -673,7 +682,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::ReacStartForReaCoeffDeriv(
   if ( prod > reacstart)
   {
     if (k==toderive)
-      value= value - (-reacstart / pow(my::funct_.Dot(my::ephinp_[k]),2) );
+      value= value - (-reacstart / pow(my::scatravarmanager_->Phinp(k),2) );
   }
   else
     value = 0;
@@ -747,14 +756,16 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcMatReact(
 
   // -----------------second care for Term (\partial_c K(c)) .* c - (\partial_c f_{reabody}(c))------------
 
+  const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = ReaManager();
+
   LINALG::Matrix<my::nen_,1> functint = my::funct_;
   if (not my::scatrapara_->MatGP())
     functint = funct_elementcenter_;
 
   for (int j=0; j<my::numscal_ ;j++)
   {
-    const double fac_reac        = timefacfac*densnp*( my::reamanager_->GetReaCoeffDerivMatrix(k,j)*phinp - ReaManager()->GetReaBodyForceDerivMatrix(k,j) );
-    const double timetaufac_reac = timetaufac*densnp*( my::reamanager_->GetReaCoeffDerivMatrix(k,j)*phinp - ReaManager()->GetReaBodyForceDerivMatrix(k,j) );
+    const double fac_reac        = timefacfac*densnp*( remanager->GetReaCoeffDerivMatrix(k,j)*phinp - remanager->GetReaBodyForceDerivMatrix(k,j) );
+    const double timetaufac_reac = timetaufac*densnp*( remanager->GetReaCoeffDerivMatrix(k,j)*phinp - remanager->GetReaBodyForceDerivMatrix(k,j) );
 
     //----------------------------------------------------------------
     // standard Galerkin reactive term
@@ -824,7 +835,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcMatReact(
         {
           const int fui = ui*my::numdofpernode_+j;
 
-          emat(fvi,fui) += v*(conv(ui)+my::reamanager_->GetReaCoeff(k)*my::funct_(ui));
+          emat(fvi,fui) += v*(conv(ui)+remanager->GetReaCoeff(k)*my::funct_(ui));
         }
       }
 
@@ -851,7 +862,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcMatReact(
         // reactive stabilization of transient term
         for (int vi=0; vi<my::nen_; ++vi)
         {
-          const double v = my::scatrapara_->USFEMGLSFac()*taufac*densnp*my::reamanager_->GetReaCoeff(k)*densnp*functint(vi);
+          const double v = my::scatrapara_->USFEMGLSFac()*taufac*densnp*remanager->GetReaCoeff(k)*densnp*functint(vi);
           const int fvi = vi*my::numdofpernode_+k;
 
           for (int ui=0; ui<my::nen_; ++ui)
@@ -862,7 +873,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcMatReact(
           }
         }
 
-        if (my::use2ndderiv_ and my::reamanager_->GetReaCoeff(k)!=0.0)
+        if (my::use2ndderiv_ and remanager->GetReaCoeff(k)!=0.0)
           dserror("Second order reactive stabilization is not fully implemented!! ");
       }
     }
@@ -912,15 +923,17 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::SetAdvancedReactionTerms(
     const double                            scale   //!< scale factor
                                     )
 {
-  ReaManager()->SetReaBodyForce( CalcReaBodyForceTerm(k)*scale ,k);
+  const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = ReaManager();
 
-  ReaManager()->SetReaCoeff( CalcReaCoeff(k)*scale ,k);
+  remanager->SetReaBodyForce( CalcReaBodyForceTerm(k)*scale ,k);
+
+  remanager->SetReaCoeff( CalcReaCoeff(k)*scale ,k);
 
   for (int j=0; j<my::numscal_ ;j++)
   {
-    ReaManager()->SetReaBodyForceDerivMatrix( CalcReaBodyForceDerivMatrix(k,j)*scale ,k,j );
+    remanager->SetReaBodyForceDerivMatrix( CalcReaBodyForceDerivMatrix(k,j)*scale ,k,j );
 
-    my::reamanager_->SetReaCoeffDerivMatrix( CalcReaCoeffDerivMatrix(k,j)*scale ,k,j );
+    remanager->SetReaCoeffDerivMatrix( CalcReaCoeffDerivMatrix(k,j)*scale ,k,j );
   }
 
 }
@@ -933,19 +946,21 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::ClearAdvancedReactionTerms(
     const int                               k   //!< index of current scalar
                                     )
 {
+  const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = ReaManager();
+
   // We may have some reactive and some non-reactive elements in one discretisation.
   // But since the elements are singleton we have to reset all reactive stuff in case
   // of non-reactive elements
 
-  ReaManager()->SetReaBodyForce( 0 ,k);
+  remanager->SetReaBodyForce( 0 ,k);
 
-  ReaManager()->SetReaCoeff( 0 ,k);
+  remanager->SetReaCoeff( 0 ,k);
 
   for (int j=0; j<my::numscal_ ;j++)
   {
-    ReaManager()->SetReaBodyForceDerivMatrix( 0 ,k,j );
+    remanager->SetReaBodyForceDerivMatrix( 0 ,k,j );
 
-    my::reamanager_->SetReaCoeffDerivMatrix( 0 ,k,j );
+    remanager->SetReaCoeffDerivMatrix( 0 ,k,j );
   }
 
   //For safety reasons we better do this as well..

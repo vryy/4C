@@ -386,7 +386,12 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::Sysmat(
   // material parameter at the element center are also necessary
   // even if the stabilization parameter is evaluated at the element center
   if (not scatrapara_->MatGP())
+  {
+    //set gauss point variables needed for evaluation of mat and rhs
+    SetInternalVariablesForMatAndRHS();
+
     GetMaterialParams(ele,densn,densnp,densam,visc);
+  }
 
   //----------------------------------------------------------------------
   // calculation of subgrid diffusivity and stabilization parameter(s)
@@ -460,14 +465,14 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::Sysmat(
   {
     const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
 
+    //set gauss point variables needed for evaluation of mat and rhs
+    SetInternalVariablesForMatAndRHS();
+
     //----------------------------------------------------------------------
     // get material parameters (evaluation at integration point)
     //----------------------------------------------------------------------
     if (scatrapara_->MatGP())
       GetMaterialParams(ele,densn,densnp,densam,visc,iquad);
-
-    //set gauss point variables needed for evaluation of mat and rhs
-    SetInternalVariablesForMatAndRHS();
 
     // velocity divergence required for conservative form
     double vdiv(0.0);
