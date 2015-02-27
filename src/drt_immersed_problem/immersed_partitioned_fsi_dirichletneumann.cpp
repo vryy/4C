@@ -207,30 +207,30 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::FSIOp(const Epetra_Vector
     Teuchos::RCP<Epetra_Vector> idispnp =
     StructOp(struct_bdry_traction_, fillFlag);
 
-#ifdef DEBUG
-    //////////////////////////////
-    // DEBUG (dummy zero residual)
-    /////////////////////////////
-    int steptowrite = 2;
-
-    if ((FSI::Partitioned::IterationCounter())[0] == steptowrite)
-    {
-      Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(F.Map(),true));
-      F.Update(1.0,*zeros,0.0);
-    }
-    else
-    {
-      Teuchos::RCP<Epetra_Vector> ones = Teuchos::rcp(new Epetra_Vector(F.Map(),true));
-      ones->PutScalar(1.0);
-      F.Update(1.0,*ones,0.0);
-    }
-#else
+//#ifdef DEBUG
+//    //////////////////////////////
+//    // DEBUG (dummy zero residual)
+//    /////////////////////////////
+//    int steptowrite = 2;
+//
+//    if ((FSI::Partitioned::IterationCounter())[0] == steptowrite)
+//    {
+//      Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(F.Map(),true));
+//      F.Update(1.0,*zeros,0.0);
+//    }
+//    else
+//    {
+//      Teuchos::RCP<Epetra_Vector> ones = Teuchos::rcp(new Epetra_Vector(F.Map(),true));
+//      ones->PutScalar(1.0);
+//      F.Update(1.0,*ones,0.0);
+//    }
+//#else
   int err = F.Update(1.0, *idispnp, -1.0, *idispn, 0.0);
 
   if(err != 0)
     dserror("Vector update of FSI-residual returned err=%d",err);
-
-#endif
+//
+//#endif
 
 //    double norm;
 //    F.Norm2(&norm);
