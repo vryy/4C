@@ -576,35 +576,23 @@ void FLD::XFluidFluid::SetXFluidStateVectors(Teuchos::RCP<const Epetra_Vector> d
     // export the vectors to the column distribution map
     Teuchos::RCP<Epetra_Vector> velnpcol = LINALG::CreateVector(*embedded_fluid_->Discretization()->DofColMap(),true);
     Teuchos::RCP<Epetra_Vector> velncol  = LINALG::CreateVector(*embedded_fluid_->Discretization()->DofColMap(),true);
-    Teuchos::RCP<Epetra_Vector> accnpcol = LINALG::CreateVector(*embedded_fluid_->Discretization()->DofColMap(),true);
-    Teuchos::RCP<Epetra_Vector> velnmcol = LINALG::CreateVector(*embedded_fluid_->Discretization()->DofColMap(),true);
     Teuchos::RCP<Epetra_Vector> accncol  = LINALG::CreateVector(*embedded_fluid_->Discretization()->DofColMap(),true);
     Teuchos::RCP<Epetra_Vector> dispcol  = LINALG::CreateVector(*embedded_fluid_->Discretization()->DofColMap(),true);
 
     LINALG::Export(*embedded_fluid_->Velnp(),*velnpcol);
     LINALG::Export(*embedded_fluid_->Veln(), *velncol);
-    LINALG::Export(*embedded_fluid_->Velnm(), *velnmcol);
-    LINALG::Export(*embedded_fluid_->Accnp(),*accnpcol);
     LINALG::Export(*embedded_fluid_->Accn(),*accncol);
     LINALG::Export(*disp,  *dispcol);
-
-    // Todo: we export far more than we need...
 
     // we have five state vectors, which need values from the last time step
     xfluidfluid_timeint_->SetNewBgStateVectors(xff_state_->velnp_,
                                                xff_state_->veln_,
-                                               xff_state_->velnm_,
-                                               xff_state_->accnp_,
                                                xff_state_->accn_,
                                                xff_staten_->velnp_,
                                                xff_staten_->veln_,
-                                               xff_staten_->velnm_,
-                                               xff_staten_->accnp_,
                                                xff_staten_->accn_,
                                                velnpcol,
                                                velncol,
-                                               velnmcol,
-                                               accnpcol,
                                                accncol,
                                                dispcol);
 
@@ -616,7 +604,6 @@ void FLD::XFluidFluid::SetXFluidStateVectors(Teuchos::RCP<const Epetra_Vector> d
           xff_staten_->Wizard(),
           xff_state_->velnp_,
           xff_state_->veln_,
-          xff_state_->velnm_,
           xff_state_->dbcmaps_);
 
     }
@@ -629,9 +616,7 @@ void FLD::XFluidFluid::SetXFluidStateVectors(Teuchos::RCP<const Epetra_Vector> d
     // we use the old velocity as start value
     xff_state_->velnp_->Update(1.0,*xff_staten_->velnp_,0.0);
     xff_state_->veln_-> Update(1.0,*xff_staten_->veln_, 0.0);
-    xff_state_->velnm_->Update(1.0,*xff_staten_->velnm_,0.0);
     xff_state_->accn_-> Update(1.0,*xff_staten_->accn_, 0.0);
-    xff_state_->accnp_->Update(1.0,*xff_staten_->accnp_,0.0);
   }
 }
 
@@ -644,38 +629,26 @@ void FLD::XFluidFluid::SetEmbFluidStateVectors(Teuchos::RCP<Epetra_Vector> disp)
   // export the vectors to the column distribution map
   Teuchos::RCP<Epetra_Vector> embvelnpcol  = LINALG::CreateVector(*embedded_fluid_->Discretization()->DofColMap(),true);
   Teuchos::RCP<Epetra_Vector> embvelncol   = LINALG::CreateVector(*embedded_fluid_->Discretization()->DofColMap(),true);
-  Teuchos::RCP<Epetra_Vector> embaccnpcol  = LINALG::CreateVector(*embedded_fluid_->Discretization()->DofColMap(),true);
-  Teuchos::RCP<Epetra_Vector> embvelnmcol  = LINALG::CreateVector(*embedded_fluid_->Discretization()->DofColMap(),true);
   Teuchos::RCP<Epetra_Vector> embaccncol   = LINALG::CreateVector(*embedded_fluid_->Discretization()->DofColMap(),true);
   Teuchos::RCP<Epetra_Vector> embdispcol   = LINALG::CreateVector(*embedded_fluid_->Discretization()->DofColMap(),true);
   Teuchos::RCP<Epetra_Vector> embdispnpcol = LINALG::CreateVector(*embedded_fluid_->Discretization()->DofColMap(),true);
 
   LINALG::Export(*embedded_fluid_->Velnp(), *embvelnpcol);
   LINALG::Export(*embedded_fluid_->Veln(),  *embvelncol);
-  if (embedded_fluid_->Velnm() != Teuchos::null)
-    LINALG::Export(*embedded_fluid_->Velnm(), *embvelnmcol);
-  LINALG::Export(*embedded_fluid_->Accnp(), *embaccnpcol);
   LINALG::Export(*embedded_fluid_->Accn(),  *embaccncol);
   LINALG::Export(*disp,                     *embdispcol);
-  if (embedded_fluid_->Dispnp() != Teuchos::null)
-    LINALG::Export(*embedded_fluid_->Dispnp(),*embdispnpcol);
+  LINALG::Export(*embedded_fluid_->Dispnp(),*embdispnpcol);
 
   // TODO: currently no history projection (no write access)
   xfluidfluid_timeint_->SetNewEmbStateVectors(
     embedded_fluid_->WriteAccessVelnp(),
     Teuchos::null,
     Teuchos::null,
-    Teuchos::null,
-    Teuchos::null,
     embvelnpcol,
     embvelncol,
-    embvelnmcol,
-    embaccnpcol,
     embaccncol,
     xff_staten_->velnp_,
     xff_staten_->veln_,
-    xff_staten_->velnm_,
-    xff_staten_->accnp_,
     xff_staten_->accn_,
     embdispnpcol,
     embdispcol);

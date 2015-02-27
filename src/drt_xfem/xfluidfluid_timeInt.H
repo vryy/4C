@@ -108,18 +108,12 @@ public:
   void SetNewBgStateVectors(
     const Teuchos::RCP<Epetra_Vector>        bgstate_velnp,
     const Teuchos::RCP<Epetra_Vector>        bgstate_veln,
-    const Teuchos::RCP<Epetra_Vector>        bgstate_velnm,
-    const Teuchos::RCP<Epetra_Vector>        bgstate_accnp,
     const Teuchos::RCP<Epetra_Vector>        bgstate_accn,
     const Teuchos::RCP<const Epetra_Vector>  bgstaten_velnp,
     const Teuchos::RCP<const Epetra_Vector>  bgstaten_veln,
-    const Teuchos::RCP<const Epetra_Vector>  bgstaten_velnm,
-    const Teuchos::RCP<const Epetra_Vector>  bgstaten_accnp,
     const Teuchos::RCP<const Epetra_Vector>  bgstaten_accn,
     const Teuchos::RCP<const Epetra_Vector>  embstate_velnp,
     const Teuchos::RCP<const Epetra_Vector>  embstate_veln,
-    const Teuchos::RCP<const Epetra_Vector>  embstate_velnm,
-    const Teuchos::RCP<const Epetra_Vector>  embstate_accnp,
     const Teuchos::RCP<const Epetra_Vector>  embstate_accn,
     const Teuchos::RCP<const Epetra_Vector>  aledispn);
 
@@ -129,18 +123,12 @@ public:
   void SetNewEmbStateVectors(
       const Teuchos::RCP<Epetra_Vector>        embstate_velnp,
       const Teuchos::RCP<Epetra_Vector>        embstate_veln,
-      const Teuchos::RCP<Epetra_Vector>        embstate_velnm,
-      const Teuchos::RCP<Epetra_Vector>        embstate_accnp,
       const Teuchos::RCP<Epetra_Vector>        embstate_accn,
       const Teuchos::RCP<const Epetra_Vector>  embstaten_velnp,
       const Teuchos::RCP<const Epetra_Vector>  embstaten_veln,
-      const Teuchos::RCP<const Epetra_Vector>  embstaten_velnm,
-      const Teuchos::RCP<const Epetra_Vector>  embstaten_accnp,
       const Teuchos::RCP<const Epetra_Vector>  embstaten_accn,
       const Teuchos::RCP<const Epetra_Vector>  bgstaten_velnp,
       const Teuchos::RCP<const Epetra_Vector>  bgstaten_veln,
-      const Teuchos::RCP<const Epetra_Vector>  bgstaten_velnm,
-      const Teuchos::RCP<const Epetra_Vector>  bgstaten_accnp,
       const Teuchos::RCP<const Epetra_Vector>  bgstaten_accn,
       const Teuchos::RCP<const Epetra_Vector>  aledispnp,
       const Teuchos::RCP<const Epetra_Vector>  aledispn);
@@ -154,7 +142,6 @@ public:
       Teuchos::RCP<GEO::CutWizard>                      wizard_n,       ///< cut wizard from timestep n
       Teuchos::RCP<Epetra_Vector> &                     bgstate_velnp,  ///< background fluid velocity at timestep n+1
       Teuchos::RCP<Epetra_Vector> &                     bgstate_veln,   ///< background fluid velocity at timestep n
-      Teuchos::RCP<Epetra_Vector> &                     bgstate_velnm,  ///< background fluid velocity at timestep n-1
       const Teuchos::RCP<const LINALG::MapExtractor> &  dbcmaps         ///< background fluid dirichlet map extractor
       );
 
@@ -180,14 +167,10 @@ private:
     SourceState(
       Teuchos::RCP<const Epetra_Vector> velnp,
       Teuchos::RCP<const Epetra_Vector> veln  = Teuchos::null,
-      Teuchos::RCP<const Epetra_Vector> velnm = Teuchos::null,
-      Teuchos::RCP<const Epetra_Vector> accnp = Teuchos::null,
       Teuchos::RCP<const Epetra_Vector> accn  = Teuchos::null
     ) :
       velnp_(velnp),
       veln_(veln),
-      velnm_(velnm),
-      accnp_(accnp),
       accn_(accn)
     {
     }
@@ -196,8 +179,6 @@ private:
     //@{
     Teuchos::RCP<const Epetra_Vector> velnp_;
     Teuchos::RCP<const Epetra_Vector> veln_;
-    Teuchos::RCP<const Epetra_Vector> velnm_;
-    Teuchos::RCP<const Epetra_Vector> accnp_;
     Teuchos::RCP<const Epetra_Vector> accn_;
     //@}
 
@@ -215,14 +196,10 @@ private:
     TargetState(
       Teuchos::RCP<Epetra_Vector> velnp,
       Teuchos::RCP<Epetra_Vector> veln  = Teuchos::null,
-      Teuchos::RCP<Epetra_Vector> velnm = Teuchos::null,
-      Teuchos::RCP<Epetra_Vector> accnp = Teuchos::null,
       Teuchos::RCP<Epetra_Vector> accn  = Teuchos::null
     ) :
       velnp_(velnp),
       veln_(veln),
-      velnm_(velnm),
-      accnp_(accnp),
       accn_(accn)
     {
     }
@@ -231,8 +208,6 @@ private:
     //@{
     Teuchos::RCP<Epetra_Vector> velnp_;
     Teuchos::RCP<Epetra_Vector> veln_;
-    Teuchos::RCP<Epetra_Vector> velnm_;
-    Teuchos::RCP<Epetra_Vector> accnp_;
     Teuchos::RCP<Epetra_Vector> accn_;
     //@}
 
@@ -277,7 +252,7 @@ private:
 
   /// Transfer data in the round robin communication pattern
   void CommunicateNodes(std::vector<LINALG::Matrix<3,1> >  &      bgnodes_xyz,
-                        std::vector<LINALG::Matrix<20,1> > &      interpolated_vecs,
+                        std::vector<LINALG::Matrix<12,1> > &      interpolated_vecs,
                         std::vector<int>  &                       bgnodes_nohistory,
                         const Teuchos::RCP<const Epetra_Vector> & aledispn,
                         const TargetState &                       bgfluid_state,
@@ -297,7 +272,7 @@ private:
 
   /// pack values in the round robin communication pattern
   void PackValues(std::vector<LINALG::Matrix<3,1> >  & bgnodes_xyz,
-                  std::vector<LINALG::Matrix<20,1> > & interpolatedvec,
+                  std::vector<LINALG::Matrix<12,1> > & interpolatedvec,
                   std::vector<int>                   & bgnodes_nohistory,
                   std::vector<int>                   & have_values,
                   std::vector<char>                  & sblock);
@@ -305,7 +280,7 @@ private:
   /// determine the embedded element, that previously covered the nodes and interpolate values
   void FindEmbEleAndInterpolateValues(
     std::vector<LINALG::Matrix<3,1> >        & nodes_xyz,
-    std::vector<LINALG::Matrix<20,1> >       & interpolated_vecs,
+    std::vector<LINALG::Matrix<12,1> >       & interpolated_vecs,
     std::vector<int>                         & have_values,
     const Teuchos::RCP<const Epetra_Vector>  & aledispn,
     const SourceState                        & embfluid_state);
@@ -343,7 +318,7 @@ private:
     const Teuchos::RCP<const Epetra_Vector> & src_disp,
     const DRT::Discretization &               src_dis,
     const LINALG::Matrix<3,1> &               bgnode_xyz,
-    LINALG::Matrix<20,1> &                    interpolatedvec
+    LINALG::Matrix<12,1> &                    interpolatedvec
   );
 
   //! @name Methods for subsequent enforcement of incompressibility on background element patch after projection

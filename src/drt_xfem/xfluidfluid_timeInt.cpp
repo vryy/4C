@@ -283,30 +283,24 @@ void  XFEM::XFluidFluidTimeIntegration::CreateBgNodeMapsForRestart(Teuchos::RCP<
 void  XFEM::XFluidFluidTimeIntegration::SetNewBgStateVectors(
   const Teuchos::RCP<Epetra_Vector>        bgstate_velnp,
   const Teuchos::RCP<Epetra_Vector>        bgstate_veln,
-  const Teuchos::RCP<Epetra_Vector>        bgstate_velnm,
-  const Teuchos::RCP<Epetra_Vector>        bgstate_accnp,
   const Teuchos::RCP<Epetra_Vector>        bgstate_accn,
   const Teuchos::RCP<const Epetra_Vector>  bgstaten_velnp,
   const Teuchos::RCP<const Epetra_Vector>  bgstaten_veln,
-  const Teuchos::RCP<const Epetra_Vector>  bgstaten_velnm,
-  const Teuchos::RCP<const Epetra_Vector>  bgstaten_accnp,
   const Teuchos::RCP<const Epetra_Vector>  bgstaten_accn,
   const Teuchos::RCP<const Epetra_Vector>  embstate_velnp,
   const Teuchos::RCP<const Epetra_Vector>  embstate_veln,
-  const Teuchos::RCP<const Epetra_Vector>  embstate_velnm,
-  const Teuchos::RCP<const Epetra_Vector>  embstate_accnp,
   const Teuchos::RCP<const Epetra_Vector>  embstate_accn,
   const Teuchos::RCP<const Epetra_Vector>  aledispn)
 {
   // form state containers
   const TargetState bgfluid_state(
-      bgstate_velnp,bgstate_veln,bgstate_velnm,bgstate_accnp,bgstate_accn
+      bgstate_velnp,bgstate_veln,bgstate_accn
       );
   const SourceState bgfluid_staten(
-      bgstaten_velnp,bgstaten_veln,bgstaten_velnm,bgstaten_accnp,bgstaten_accn
+      bgstaten_velnp,bgstaten_veln,bgstaten_accn
       );
   const SourceState emb_state(
-      embstate_velnp,embstate_veln,embstate_velnm,embstate_accnp,embstate_accn
+      embstate_velnp,embstate_veln,embstate_accn
       );
   // REMARK: this method can write to the target Epetra_Vectors, but the pointers are const,
   // as the TargetState is const (const pointer to non-const pointee)
@@ -357,7 +351,7 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStateVectorKeepGhostValues(
   // coordinates of bg-nodes which need the projection from embedded dis
   std::vector<LINALG::Matrix<3,1> > bgnodes_xyz;
   // the vector containing interpolated values for each state vector from embedded dis. For each node one interpolated value..
-  std::vector<LINALG::Matrix<20,1> > interpolated_vecs;
+  std::vector<LINALG::Matrix<12,1> > interpolated_vecs;
   // bg-node ids which have no history and need a projection
   std::vector<int> bgnodes_nohistory;
 
@@ -385,8 +379,6 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStateVectorKeepGhostValues(
 
       WriteValuesToBgStateVector(bgnode,gdofsn,bgfluid_state.velnp_,bgfluid_state_n.velnp_);
       WriteValuesToBgStateVector(bgnode,gdofsn,bgfluid_state.veln_, bgfluid_state_n.veln_);
-      WriteValuesToBgStateVector(bgnode,gdofsn,bgfluid_state.velnm_,bgfluid_state_n.velnm_);
-      WriteValuesToBgStateVector(bgnode,gdofsn,bgfluid_state.accnp_,bgfluid_state_n.accnp_);
       WriteValuesToBgStateVector(bgnode,gdofsn,bgfluid_state.accn_, bgfluid_state_n.accn_);
 
     }
@@ -407,7 +399,7 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStateVectorKeepGhostValues(
       bgnodes_nohistory.push_back(bgnode->Id());
 
       // the vector of interpolated values
-      LINALG::Matrix<20,1>    interpolatedvec(true);
+      LINALG::Matrix<12,1>    interpolatedvec(true);
       interpolated_vecs.push_back(interpolatedvec);
     }
 
@@ -423,8 +415,6 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStateVectorKeepGhostValues(
       std::vector<int> gdofsn = iteren->second;
       WriteValuesToBgStateVector(bgnode,gdofsn,bgfluid_state.velnp_,bgfluid_state_n.velnp_);
       WriteValuesToBgStateVector(bgnode,gdofsn,bgfluid_state.veln_, bgfluid_state_n.veln_);
-      WriteValuesToBgStateVector(bgnode,gdofsn,bgfluid_state.velnm_,bgfluid_state_n.velnm_);
-      WriteValuesToBgStateVector(bgnode,gdofsn,bgfluid_state.accnp_,bgfluid_state_n.accnp_);
       WriteValuesToBgStateVector(bgnode,gdofsn,bgfluid_state.accn_, bgfluid_state_n.accn_);
 
     }
@@ -466,7 +456,7 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStateVectorFullProjection(
   std::vector<LINALG::Matrix<3,1> > bgnodes_xyz;
   // the vector containing interpolated values for each state vector from embedded dis. For each node one interpolated value..
   // Entries 0 to 3: velnp_, Entries 4 to 7: veln_,  Entries 8 to 11: velnm_, Entries 12 to 15: accn_, Entries 16 to 19: accnp_
-  std::vector<LINALG::Matrix<20,1> > interpolated_vecs;
+  std::vector<LINALG::Matrix<12,1> > interpolated_vecs;
   // bg-node ids which have no history and need a projection
   std::vector<int> bgnodes_nohistory;
 
@@ -494,8 +484,6 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStateVectorFullProjection(
 #endif
       WriteValuesToBgStateVector(bgnode,gdofsn,bgfluid_state.velnp_,bgfluid_state_n.velnp_);
       WriteValuesToBgStateVector(bgnode,gdofsn,bgfluid_state.veln_, bgfluid_state_n.veln_);
-      WriteValuesToBgStateVector(bgnode,gdofsn,bgfluid_state.velnm_,bgfluid_state_n.velnm_);
-      WriteValuesToBgStateVector(bgnode,gdofsn,bgfluid_state.accnp_,bgfluid_state_n.accnp_);
       WriteValuesToBgStateVector(bgnode,gdofsn,bgfluid_state.accn_, bgfluid_state_n.accn_);
 
     }
@@ -519,7 +507,7 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStateVectorFullProjection(
       bgnodes_nohistory.push_back(bgnode->Id());
 
       // the vector of interpolated values of all state vector (max five state vectors) for every node
-      LINALG::Matrix<20,1> interpolatedvec(true);
+      LINALG::Matrix<12,1> interpolatedvec(true);
       interpolated_vecs.push_back(interpolatedvec);
 
     }
@@ -553,7 +541,7 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStateVectorFullProjection(
 //-----------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 void XFEM::XFluidFluidTimeIntegration::CommunicateNodes(std::vector<LINALG::Matrix<3,1> >  &      nodes_xyz,
-                                                        std::vector<LINALG::Matrix<20,1> > &      interpolated_vecs,
+                                                        std::vector<LINALG::Matrix<12,1> > &      interpolated_vecs,
                                                         std::vector<int>  &                       nodes_nohistory,
                                                         const Teuchos::RCP<const Epetra_Vector> & aledispn,
                                                         const TargetState &                       target_state,
@@ -640,16 +628,6 @@ void XFEM::XFluidFluidTimeIntegration::CommunicateNodes(std::vector<LINALG::Matr
             countvecs += 4;
             (*target_state.veln_) [target_state.veln_->Map().LID(discret->Dof(node)[offset+isd])]  = interpolated_vecs.at(i)(isd+countvecs);
           }
-          if (target_state.velnm_ != Teuchos::null)
-          {
-            countvecs += 4;
-            (*target_state.velnm_)[target_state.velnm_->Map().LID(discret->Dof(node)[offset+isd])] = interpolated_vecs.at(i)(isd+countvecs);
-          }
-          if (target_state.accnp_ != Teuchos::null)
-          {
-           countvecs += 4;
-           (*target_state.accnp_)[target_state.accnp_->Map().LID(discret->Dof(node)[offset+isd])] = interpolated_vecs.at(i)(isd+countvecs);
-          }
           if (target_state.accn_ != Teuchos::null)
           {
             countvecs += 4;
@@ -675,8 +653,6 @@ void XFEM::XFluidFluidTimeIntegration::CommunicateNodes(std::vector<LINALG::Matr
 
         WriteValuesToBgStateVector(node,gdofsn,target_state.velnp_,bgfluid_state_n.velnp_);
         WriteValuesToBgStateVector(node,gdofsn,target_state.veln_, bgfluid_state_n.veln_);
-        WriteValuesToBgStateVector(node,gdofsn,target_state.velnm_,bgfluid_state_n.velnm_);
-        WriteValuesToBgStateVector(node,gdofsn,target_state.accnp_,bgfluid_state_n.accnp_);
         WriteValuesToBgStateVector(node,gdofsn,target_state.accn_, bgfluid_state_n.accn_);
       }
       else
@@ -772,7 +748,7 @@ void XFEM::XFluidFluidTimeIntegration::SendBlock(std::vector<char>  & sblock  ,
 // pack values in the round robin communication pattern
 //---------------------------------------------------------
 void XFEM::XFluidFluidTimeIntegration::PackValues(std::vector<LINALG::Matrix<3,1> >  & nodes_xyz,
-                                                  std::vector<LINALG::Matrix<20,1> > & interpolatedvec,
+                                                  std::vector<LINALG::Matrix<12,1> > & interpolatedvec,
                                                   std::vector<int>                   & nodes_nohistory,
                                                   std::vector<int>                   & have_values,
                                                   std::vector<char>                  & sblock)
@@ -797,7 +773,7 @@ void XFEM::XFluidFluidTimeIntegration::PackValues(std::vector<LINALG::Matrix<3,1
 //
 //--------------------------------------------------------
 void XFEM::XFluidFluidTimeIntegration::FindEmbEleAndInterpolateValues(std::vector<LINALG::Matrix<3,1> >        & nodes_xyz,
-                                                                      std::vector<LINALG::Matrix<20,1> >       & interpolated_vecs,
+                                                                      std::vector<LINALG::Matrix<12,1> >       & interpolated_vecs,
                                                                       std::vector<int>                         & have_values,
                                                                       const Teuchos::RCP<const Epetra_Vector>  & aledispn,
                                                                       const SourceState &                        embfluid_state)
@@ -812,7 +788,7 @@ void XFEM::XFluidFluidTimeIntegration::FindEmbEleAndInterpolateValues(std::vecto
     // node coordinate
     const LINALG::Matrix<3,1> & node_xyz = nodes_xyz.at(i);
     // interpolated vector which is zero at the beginning
-    LINALG::Matrix<20,1> interpolatedvec = interpolated_vecs.at(i);
+    LINALG::Matrix<12,1> interpolatedvec = interpolated_vecs.at(i);
 
     //search for near elements
     std::map<int,std::set<int> > closeeles =
@@ -858,7 +834,7 @@ void XFEM::XFluidFluidTimeIntegration::FindEmbEleAndInterpolateValues(std::vecto
         {
           // mark the node id, if the embedded-element is found
           have_values.at(i) = 1;
-          for (size_t j=0; j<20; ++j)
+          for (size_t j=0; j<12; ++j)
           {
             //set the interpolated values
             interpolated_vecs.at(i)(j) = interpolatedvec(j);
@@ -938,7 +914,7 @@ bool XFEM::XFluidFluidTimeIntegration::ComputeSpatialToElementCoordAndProject(
   const Teuchos::RCP<const Epetra_Vector> & src_disp,
   const DRT::Discretization &               src_dis,
   const LINALG::Matrix<3,1> &               node_xyz,
-  LINALG::Matrix<20,1> &                    interpolatedvec
+  LINALG::Matrix<12,1> &                    interpolatedvec
 )
 {
   // problem dimension
@@ -1020,28 +996,6 @@ bool XFEM::XFluidFluidTimeIntegration::ComputeSpatialToElementCoordAndProject(
       }
 
       offset += numdofpernode;
-      if (src_state.velnm_ != Teuchos::null)
-      {
-        DRT::UTILS::ExtractMyValues(*src_state.velnm_,myval,src_dofs[inode]);
-        for (unsigned int isd = 0; isd < numdofpernode; ++isd)
-        {
-          interpolatedvec(isd+offset) += myval[isd]*shp(inode);
-        }
-        myval.clear();
-      }
-
-      offset += numdofpernode;
-      if (src_state.accnp_ != Teuchos::null)
-      {
-        DRT::UTILS::ExtractMyValues(*src_state.accnp_,myval,src_dofs[inode]);
-        for (unsigned int isd = 0; isd < numdofpernode; ++isd)
-        {
-          interpolatedvec(isd+offset) += myval[isd]*shp(inode);
-        }
-        myval.clear();
-      }
-
-      offset += numdofpernode;
       if (src_state.accn_ != Teuchos::null)
       {
         DRT::UTILS::ExtractMyValues(*src_state.accn_,myval,src_dofs[inode]);
@@ -1061,18 +1015,12 @@ bool XFEM::XFluidFluidTimeIntegration::ComputeSpatialToElementCoordAndProject(
 void XFEM::XFluidFluidTimeIntegration::SetNewEmbStateVectors(
   const Teuchos::RCP<Epetra_Vector>        embstate_velnp,
   const Teuchos::RCP<Epetra_Vector>        embstate_veln,
-  const Teuchos::RCP<Epetra_Vector>        embstate_velnm,
-  const Teuchos::RCP<Epetra_Vector>        embstate_accnp,
   const Teuchos::RCP<Epetra_Vector>        embstate_accn,
   const Teuchos::RCP<const Epetra_Vector>  embstaten_velnp,
   const Teuchos::RCP<const Epetra_Vector>  embstaten_veln,
-  const Teuchos::RCP<const Epetra_Vector>  embstaten_velnm,
-  const Teuchos::RCP<const Epetra_Vector>  embstaten_accnp,
   const Teuchos::RCP<const Epetra_Vector>  embstaten_accn,
   const Teuchos::RCP<const Epetra_Vector>  bgstaten_velnp,
   const Teuchos::RCP<const Epetra_Vector>  bgstaten_veln,
-  const Teuchos::RCP<const Epetra_Vector>  bgstaten_velnm,
-  const Teuchos::RCP<const Epetra_Vector>  bgstaten_accnp,
   const Teuchos::RCP<const Epetra_Vector>  bgstaten_accn,
   const Teuchos::RCP<const Epetra_Vector>  aledispnp,
   const Teuchos::RCP<const Epetra_Vector>  aledispn)
@@ -1084,13 +1032,13 @@ void XFEM::XFluidFluidTimeIntegration::SetNewEmbStateVectors(
   // we then interpolate from it's values
   // form state containers
   const TargetState embfluid_state(
-      embstate_velnp,embstate_veln,embstate_velnm,embstate_accnp,embstate_accn
+      embstate_velnp,embstate_veln,embstate_accn
       );
   const SourceState embfluid_staten(
-      embstaten_velnp,embstaten_veln,embstaten_velnm,embstaten_accnp,embstaten_accn
+      embstaten_velnp,embstaten_veln,embstaten_accn
       );
   const SourceState bgfluid_staten(
-      bgstaten_velnp,bgstaten_veln,bgstaten_velnm,bgstaten_accnp,bgstaten_accn
+      bgstaten_velnp,bgstaten_veln,bgstaten_accn
       );
 
   // this method can write to the target Epetra_Vectors, but the pointers are const,
@@ -1113,8 +1061,8 @@ void XFEM::XFluidFluidTimeIntegration::SetNewEmbStateVectors(
   std::vector<LINALG::Matrix<3,1> > embnodes_xyz;
   // the vector containing interpolated values for each state vector from embedded dis. For each node one interpolated value..
   // Entries 0 to 3: velnp_, Entries 4 to 7: veln_,  Entries 8 to 11: velnm_, Entries 12 to 15: accn_, Entries 16 to 19: accnp_
-  std::vector<LINALG::Matrix<20,1> > interpolated_vecs;
-  LINALG::Matrix<20,1> interpolatedvec(true);
+  std::vector<LINALG::Matrix<12,1> > interpolated_vecs;
+  LINALG::Matrix<12,1> interpolatedvec(true);
 
   // ids of embedded nodes, that need a projection (currently, we take all)
   std::vector<int> embnodes_nohistory;
@@ -1406,7 +1354,6 @@ void XFEM::XFluidFluidTimeIntegration::EnforceIncompAfterProjection(
   Teuchos::RCP<GEO::CutWizard>                      wizard_n,       ///< cut wizard from timestep n
   Teuchos::RCP<Epetra_Vector> &                     bgstate_velnp,  ///< background fluid velocity at timestep n+1
   Teuchos::RCP<Epetra_Vector> &                     bgstate_veln,   ///< background fluid velocity at timestep n
-  Teuchos::RCP<Epetra_Vector> &                     bgstate_velnm,  ///< background fluid velocity at timestep n-1
   const Teuchos::RCP<const LINALG::MapExtractor> &  dbcmaps         ///< background fluid dirichlet map extractor
 )
 {
@@ -1421,7 +1368,6 @@ void XFEM::XFluidFluidTimeIntegration::EnforceIncompAfterProjection(
   //solve the optimization problem for the state vectors
   SolveIncompOptProblem(bgstate_velnp);
   SolveIncompOptProblem(bgstate_veln);
-  SolveIncompOptProblem(bgstate_velnm);
 }
 // -----------------------------------------------------------------------
 // all cut elements at tn with full dofs are included in incompressibility
