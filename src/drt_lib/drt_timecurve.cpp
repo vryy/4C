@@ -29,6 +29,7 @@ Maintainer: Martin Kronbichler
 #include "drt_linedefinition.H"
 
 #include "drt_globalproblem.H"
+#include "../drt_io/io_control.H"
 #include "standardtypes_cpp.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/matpar_bundle.H"
@@ -417,6 +418,14 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::TimeCurveManager::ValidTimeCurveLine
     .AddNamedDouble("t2")
     ;
 
+  DRT::INPUT::LineDefinition curvefromfile;
+  curvefromfile
+    .AddNamedInt("CURVE")
+    .AddTag("on")
+    .AddTag("File")
+    .AddNamedString("PathToFile")
+    ;
+
   Teuchos::RCP<DRT::INPUT::Lines> lines = Teuchos::rcp(new DRT::INPUT::Lines("CURVE"));
   lines->Add(polygonal);
   lines->Add(smallpolygonal);
@@ -425,6 +434,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::TimeCurveManager::ValidTimeCurveLine
   lines->Add(lungsinus);
   lines->Add(physiologicalwaveform);
   lines->Add(periodicrepetition);
+  lines->Add(curvefromfile);
   return lines;
 }
 
@@ -555,6 +565,110 @@ void DRT::UTILS::TimeCurveManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         curves[j]->ExtractDouble("t2",end);
 
         curve.AddSlice(Teuchos::rcp(new PeriodicTimeSlice(begin,end,period,curve)));
+      }
+      else if (curves[j]->HaveNamed("File"))
+      {
+        std::string path;
+        curves[j]->ExtractString("PathToFile",path);
+
+        // check existence of filename
+        if (path.size() <= 0)
+          dserror("path to time curve file invalid");
+
+        std::string contents;
+        std::vector<char> data;
+        // read file from disk on proc 0 and broadcast it to all other procs
+        if(reader.Comm()->MyPID() == 0)
+        {
+          // make path relative to input file path
+          if (path[0]!='/')
+          {
+            std::string filename = DRT::Problem::Instance()->OutputControlFile()->InputFileName();
+            std::string::size_type pos = filename.rfind('/');
+            if (pos!=std::string::npos)
+            {
+              std::string tmp = filename.substr(0,pos+1);
+              path.insert(path.begin(), tmp.begin(), tmp.end());
+            }
+          }
+
+          {
+            std::ifstream infile(path.c_str());
+            if(not infile.is_open())
+              dserror("time curve file could not be opened");
+
+            infile.seekg(0, std::ios::end);
+            contents.resize(infile.tellg());
+            infile.seekg(0, std::ios::beg);
+            infile.read(&contents[0], contents.size());
+            infile.close();
+          }
+
+          // broadcast
+          if (reader.Comm()->NumProc() > 1)
+          {
+          DRT::PackBuffer buffer;
+          DRT::ParObject::AddtoPack(buffer, contents);
+          buffer.StartPacking();
+          DRT::ParObject::AddtoPack(buffer, contents);
+          std::swap(data, buffer());
+          }
+        }
+
+        // broadcast
+        if (reader.Comm()->NumProc() > 1)
+        {
+          ssize_t data_size = data.size();
+          reader.Comm()->Broadcast(&data_size,1,0);
+          if (reader.Comm()->MyPID() != 0)
+            data.resize(data_size,0);
+          reader.Comm()->Broadcast(&(data[0]), data.size(), 0);
+
+          if (reader.Comm()->MyPID() != 0)
+          {
+            size_t pos = 0;
+            DRT::ParObject::ExtractfromPack(pos, data, contents);
+          }
+        }
+        data.clear();
+
+        // start processing the input file
+        double t0;
+        double t1;
+        double val0;
+        double val1;
+
+        std::string line;
+        std::istringstream iss(contents);
+        // read until first valid line
+        while(getline(iss, line))
+        {
+          std::stringstream ss0(line);
+          ss0 >> t0 >> val0;
+          if(not ss0.fail())
+            break;
+        }
+
+        if(iss.eof())
+          dserror("could not find at least two valid lines in file of CURVE%d", i);
+
+        // read out file
+        while(getline(iss, line))
+        {
+          std::stringstream ss1(line);
+          ss1 >> t1 >> val1;
+
+          // skip invalid lines (hopefully comments)
+          if(ss1.fail())
+            continue;
+
+          // add polygonial time slice
+          curve.AddSlice(Teuchos::rcp(new PolygonalTimeSlice(t0,t1,val0,val1)));
+
+          t0 = t1;
+          val0 = val1;
+        }
+
       }
       else
         dserror("unknown type of time curve in CURVE%d", i);

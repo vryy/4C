@@ -1,0 +1,7 @@
+# time curve for sohex8_disp_patchtest_varytimecurve.dat nightly test case
+0.0 0.0
+10.0 20.0
+20.0 30.0
+50.0 35.0
+70.0 10.0
+100.0 15.0
