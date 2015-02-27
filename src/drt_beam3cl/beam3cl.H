@@ -1,9 +1,10 @@
 /*!----------------------------------------------------------------------
  \file beam3cl.H
 
- \brief 3D nonlinear Reissner beam element of type II (according to "The
- interpolation of rotations and its application to finite element models
- of geometrically exact rods", Romero 2004) with interpolated node positions.
+ \brief 3D nonlinear Reissner beam element of type II with interpolated node positions.
+
+The implementation follows: "The interpolation of rotations and its
+application to finite element models of geometrically exact rods", Romero 2004
 
  <pre>
  Maintainer: Kei Müller
@@ -38,7 +39,6 @@ namespace DRT
 
   namespace ELEMENTS
   {
-
     class BeamCLType: public DRT::ElementType
     {
       public:
