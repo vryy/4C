@@ -43,14 +43,14 @@ TOLRES                          1.0E-07
 MAXITER                         50
 TIMESTEP                        0.01
 RESULTSEVRY                     1
-RESTARTEVRY                     3
+RESTARTEVRY                     1
 NLNSOL                          fullnewton
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   2
 TIMEINTEGR                      One_Step_Theta
-TIMESTEP            0.01
+TIMESTEP                        0.01
 NONLINITER                      Newton
 ITEMAX                          10
 CONVCHECK                       L_2_norm
@@ -81,17 +81,17 @@ DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
 EVALUATION_TAU                  integration_point
 EVALUATION_MAT                  integration_point
 -----------------------------------------------------------------FSI DYNAMIC
-MAXTIME                         0.05
+MAXTIME                         0.02
 TIMESTEP                        0.01
-NUMSTEP                         5
+NUMSTEP                         2
 UPRES                           1
-RESTARTEVRY                     3
+RESTARTEVRY                     1
 COUPALGO                        iter_stagg_fixed_rel_param
 DIVPROJECTION                   no
 -------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 PREDICTOR                       d(n)
 COUPVARIABLE                    Force
-PARTITIONED      DirichletNeumann
+PARTITIONED                     DirichletNeumann
 COUPMETHOD                      immersed
 BASETOL                         0.001
 CONVTOL                         1e-10
@@ -137,18 +137,18 @@ FUNCT1 EXPR 0.0 0.0 0.0 FUNCTION ((-(y-1.0)*(y-1.0))+1.0)
 -------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
 // nodes 11917 and 11918 are at the obstacle upstream tip and should yield same results
-STRUCTURE DIS structure NODE 11917 QUANTITY dispx VALUE 2.68524802695212263e-02 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 11918 QUANTITY dispx VALUE 2.68524802695212263e-02 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 11917 QUANTITY dispy VALUE 3.28859606794466991e-02 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 11918 QUANTITY dispy VALUE 3.28859606794466991e-02 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 12229 QUANTITY dispx VALUE -7.79030524685005860e-02 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 11917 QUANTITY dispx VALUE 5.00569736055681089e-03 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 11918 QUANTITY dispx VALUE 5.00569736055648303e-03 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 11917 QUANTITY dispy VALUE 5.60744471158709529e-03 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 11918 QUANTITY dispy VALUE 5.60744471158702677e-03 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 12229 QUANTITY dispx VALUE -1.05960786414708123e-02 TOLERANCE 1e-10
 // nodes 11329 and 11330 should yield same results
-FLUID DIS fluid NODE 11329 QUANTITY velx VALUE 2.95154750296613333e+00 TOLERANCE 1e-10
-FLUID DIS fluid NODE 11330 QUANTITY velx VALUE 2.95154750296613333e+00 TOLERANCE 1e-10
-FLUID DIS fluid NODE 11329 QUANTITY vely VALUE 1.33588817809800031e+00 TOLERANCE 1e-10
-FLUID DIS fluid NODE 11330 QUANTITY vely VALUE 1.33588817809800031e+00 TOLERANCE 1e-10
-FLUID DIS fluid NODE 4355 QUANTITY velx VALUE 1.60625974663727716e-01 TOLERANCE 1e-10
-FLUID DIS fluid NODE 4355 QUANTITY vely VALUE 2.60964654849509392e+00 TOLERANCE 1e-10
+FLUID DIS fluid NODE 11329 QUANTITY velx VALUE 1.43429116509153198e+00 TOLERANCE 1e-10
+FLUID DIS fluid NODE 11330 QUANTITY velx VALUE 1.43429116509153176e+00 TOLERANCE 1e-10
+FLUID DIS fluid NODE 11329 QUANTITY vely VALUE 6.43480619518317365e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 11330 QUANTITY vely VALUE 6.43480619518316588e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 4355 QUANTITY velx VALUE 1.95195757396722736e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 4355 QUANTITY vely VALUE 1.31275564139137035e+00 TOLERANCE 1e-10
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 5
 NDLINE  0
