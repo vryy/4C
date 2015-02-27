@@ -358,12 +358,12 @@ void FLD::XFluidFluid::AssembleMatAndRHS(
     // set velocity and displacement state for embedded fluid
     embedded_fluid_->SetStateTimInt();
     mc_xff_->GetCouplingDis()->SetState("veln",embedded_fluid_->Veln());
-  }
 
-  if (ale_embfluid_)
-  {
-    mc_xff_->GetCouplingDis()->SetState(
-      "dispnp",embedded_fluid_->Dispnp());
+    if (ale_embfluid_)
+    {
+      mc_xff_->GetCouplingDis()->SetState(
+        "dispnp",embedded_fluid_->Dispnp());
+    }
   }
 
   // export interface velocities
