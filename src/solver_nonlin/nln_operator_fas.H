@@ -71,14 +71,17 @@ namespace NLNSOL
    *
    *  <h3>References:</h3>
    *  <ul>
-   *  <li>[1] Briggs, W. L., Van Henson, E. and McCormick, S. F: A Multigrid
-   *          Tutorial, SIAM, ed. 2, 2000 </li>
-   *  <li>[2] Gee, M. W and Tuminaro, R. S.: Nonlinear algebraic multigrid for
+   *  <li>[1] Briggs WL, Van Henson E and McCormick SF: A Multigrid Tutorial,
+   *          SIAM, ed. 2, 2000 </li>
+   *  <li>[2] Gee MW and Tuminaro RS: Nonlinear algebraic multigrid for
    *          constrained solid mechanics problems, Sandia National
    *          Laboratories, Technical Report Nr. SAND2006-2256, 2006 </li>
-   *  <li>[3] Wiesner, T. A., Gee, M. W, Prokopenko, A. and Hu, J.: The MueLu
-   *          Tutorial, Sandia National Laboratories, Technical Report, 2014
+   *  <li>[3] Wiesner TA, Gee MW, Prokopenko A and Hu JJ: The MueLu Tutorial,
+   *          Sandia National Laboratories, Technical Report, 2014
    *          </li>
+   *  <li>[4] Prokopenko A, Hu JJ, Wiesner TA, Siefert CM and Tuminaro RS:
+   *          MueLu User's Guide 1.0, Sandia National Laboratories, Technical
+   *          Report Nr. SAND2014-18874, 2014 </li>
    *  </ul>
    *
    *  \sa NlnOperatorBase
@@ -139,12 +142,14 @@ namespace NLNSOL
   private:
 
     //! Compute step length, i.e. line search parameter
-    virtual const double ComputeStepLength(
+    virtual void ComputeStepLength(
         const Epetra_MultiVector& x, ///< current solution
         const Epetra_MultiVector& f, ///< residual at current solution
         const Epetra_MultiVector& inc, ///< search direction
-        double fnorm2 ///< current L2-norm of residual
-        ) const { dserror("There is no line search in FAS."); return 0.0; }
+        const double fnorm2, ///< current L2-norm of residual
+        double& lsparam, ///< line search parameter (to be determined)
+        bool& suffdecr ///< achieved sufficient decrease? (to be determined)
+        ) const { dserror("There is no line search in FAS."); return; }
 
     //! @name Multigrid cycles
     //@{

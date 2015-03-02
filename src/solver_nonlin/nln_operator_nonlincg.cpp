@@ -130,6 +130,7 @@ int NLNSOL::NlnOperatorNonlinCG::ApplyInverse(const Epetra_MultiVector& f,
   double beta = 0.0; // parameter for update of search direction
   double fnorm2 = 1.0e+12; // L2-norm of residual
   int iter = 0; // iteration counter
+  bool suffdecr = false; // flag for sufficient decrease of line search
 
   // ---------------------------------------------------------------------------
   // compute initial residual and apply the preconditioner once
@@ -138,6 +139,10 @@ int NLNSOL::NlnOperatorNonlinCG::ApplyInverse(const Epetra_MultiVector& f,
   Teuchos::RCP<Epetra_MultiVector> fnew =
       Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
   NlnProblem()->ComputeF(x, *fnew);
+
+  // do an initial convergence check
+  bool converged = NlnProblem()->ConvergenceCheck(*fnew, fnorm2);
+  PrintIterSummary(-1, fnorm2);
 
   // prepare vector for residual from previous iteration (needed for beta)
   Teuchos::RCP<Epetra_MultiVector> fold =
@@ -159,7 +164,7 @@ int NLNSOL::NlnOperatorNonlinCG::ApplyInverse(const Epetra_MultiVector& f,
       Teuchos::rcp(new Epetra_MultiVector(s->Map(), 1, true));
 
   // do an initial convergence check
-  bool converged = NlnProblem()->ConvergenceCheck(*fnew, fnorm2);
+  converged = NlnProblem()->ConvergenceCheck(*fnew, fnorm2);
   PrintIterSummary(iter, fnorm2);
 
   // ---------------------------------------------------------------------------
@@ -171,7 +176,7 @@ int NLNSOL::NlnOperatorNonlinCG::ApplyInverse(const Epetra_MultiVector& f,
     p->Update(1.0, *s, beta);
 
     // compute line search parameter alpha
-    alpha = ComputeStepLength(x, *fnew, *p, fnorm2);
+    ComputeStepLength(x, *fnew, *p, fnorm2, alpha, suffdecr);
 
     // update solution
     err = x.Update(alpha, *p, 1.0);
@@ -317,12 +322,14 @@ void NLNSOL::NlnOperatorNonlinCG::ComputeBetaHestenesStiefel(double& beta) const
 }
 
 /*----------------------------------------------------------------------------*/
-const double NLNSOL::NlnOperatorNonlinCG::ComputeStepLength(
-    const Epetra_MultiVector& x, const Epetra_MultiVector& f,
-    const Epetra_MultiVector& inc, double fnorm2) const
+void NLNSOL::NlnOperatorNonlinCG::ComputeStepLength(const Epetra_MultiVector& x,
+    const Epetra_MultiVector& f, const Epetra_MultiVector& inc, double fnorm2,
+    double& lsparam, bool& suffdecr) const
 {
   linesearch_->Init(NlnProblem(),
       Params().sublist("Nonlinear Operator: Line Search"), x, f, inc, fnorm2);
   linesearch_->Setup();
-  return linesearch_->ComputeLSParam();
+  linesearch_->ComputeLSParam(lsparam, suffdecr);
+
+  return;
 }

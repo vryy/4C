@@ -23,6 +23,8 @@ Maintainer: Matthias Mayr
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_VerboseObject.hpp>
 
+#include "../drt_inpar/inpar_solver_nonlin.H"
+
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
 
@@ -51,8 +53,7 @@ namespace NLNSOL
    * ComputeLSParam() has to be implemented by derived classes since there are
    * the main differences between all line search strategies.
    *
-   * \author mayr.mt
-   * \date 05/2014
+   * \author mayr.mt \date 05/2014
    */
   class LineSearchBase : public Teuchos::VerboseObject<LineSearchBase>
   {
@@ -90,7 +91,15 @@ namespace NLNSOL
     //@{
 
     //! Compute the step length / line search parameter
-    virtual const double ComputeLSParam() const = 0;
+    virtual void ComputeLSParam(
+        double& lsparam, ///< line search parameter (to be determined)
+        bool& suffdecr ///< achieved sufficient decreas? (to be determined)
+        ) const = 0;
+
+    //! Compute the step length / line search parameter
+    virtual void ComputeLSParam(
+        double& lsparam ///< line search parameter (to be determined)
+        ) const;
 
     //@}
 
@@ -121,9 +130,10 @@ namespace NLNSOL
     /*! \brief Check sufficient decrease condition
      *
      *  <h3> References </h3>
-     *
-     *  - Kelley CT: Solving Nonlinear Euqations with Newton's
-     *  method, SIAM, p. 12 (2003)
+     *  <ul>
+     *  <li>[1] Kelley CT: Solving Nonlinear Equations with Newton's method,
+     *          SIAM, p. 12 (2003) </li>
+     *  </ul>
      *
      *  \author mayr.mt \date 11/2013
      */
@@ -137,9 +147,10 @@ namespace NLNSOL
      *  parameters based on heuristic formulas.
      *
      *  <h3> References </h3>
-     *
-     *  - Kelley CT: Solving Nonlinear Euqations with Newton's
-     *  method, SIAM, p. 12 (2003)
+     *  <ul>
+     *  <li>[1] Kelley CT: Solving Nonlinear Equations with Newton's
+     *          method, SIAM, p. 12 (2003) </li>
+     *  </ul>
      *
      *  \author mayr.mt \date 11/2013
      */
@@ -204,23 +215,76 @@ namespace NLNSOL
 
   private:
 
+    /*! \brief Test for sufficient decrease using Armijo's rule
+     *
+     *  <h3> References </h3>
+     *  <ul>
+     *  <li>[1] Kelley CT: Iterative Methods for Linear and Nonlinear
+     *          Equations, SIAM, Philadelphia (1995) </li>
+     *  <li>[2] Kelley CT: Solving Nonlinear Equations with Newton's method,
+     *          SIAM, Philadelphia, p. 12 (2003)
+     *  </ul>
+     *
+     *  \note This is also known as Goldstein conditions
+     *
+     *  \author mayr.mt \date 02/2015
+     */
+    virtual bool SufficientDecreaseArmijo(
+        const double fnorm2, ///< L2-norm of residual at trial solution
+        const double lsparam ///< current line search parameter
+        ) const;
+
+    /*! \brief Test for sufficient decrease using actual and predicted reductions
+     *
+     *  ToDo (mayr) include forcing term parameter
+     *
+     *  <h3> References </h3>
+     *  <ul>
+     *  <li>[1] Shadid JN, Tuminaro RS and Walter HF: An Inexact Newton Method
+     *          for Fully Coupled Solution of the Navier-Stokes Equations with
+     *          Heat and Mass Transport, Journal of Computational Physics,
+     *          Vol. 137(1), pp. 155--185 (1997)</li>
+     *  <li>[2] Eisenstat S and Walker H: Globally Convergent Inexact Newton
+     *          Methods, SIAM J. Optim., Vol. 4(2), pp. 393--422 (1994)</li>
+     *  <li>[3] Eisenstat S and Walker H: Choosing the Forcing Terms in an
+     *          Inexact Newton Method, SIAM J. Sci. Comput., Vol. 17(1),
+     *          pp. 16--32 (1996)</li>
+     *  </ul>
+     *
+     *  \author mayr.mt \date 02/2015
+     */
+    virtual bool SufficientDecreaseARedPRed(
+        const double fnorm2 ///< L2-norm of residual at trial solution
+        ) const;
+
+    /*! \brief Test for sufficient decrease very loosely
+     *
+     *  \author mayr.mt \date 02/2015
+     */
+    virtual bool SufficientDecreaseLoose(
+        const double fnorm2 ///< L2-norm of residual at trial solution
+        ) const;
+
     //! nonlinear operator that has initiated this line search
     Teuchos::RCP<const NLNSOL::NlnProblem> nlnproblem_;
 
     //! parameter list
     Teuchos::RCP<const Teuchos::ParameterList> params_;
 
-    //!< last iterate
+    //! last iterate
     Teuchos::RCP<const Epetra_MultiVector> xold_;
 
-    //!< residual at the last iterate
+    //! residual at the last iterate
     Teuchos::RCP<const Epetra_MultiVector> fold_;
 
-    //!< search direction
+    //! search direction
     Teuchos::RCP<const Epetra_MultiVector> inc_;
 
-    //!< residual norm of last iterate
+    //! residual norm of last iterate
     double resnormold_;
+
+    //! type of sufficient decrease condition
+    INPAR::NLNSOL::LINESEARCH::SufficientDeacreaseType suffdecrtype_;
 
     //! @name Setup / Initialization
     //@{

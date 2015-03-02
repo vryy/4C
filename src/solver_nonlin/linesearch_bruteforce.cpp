@@ -64,7 +64,8 @@ void NLNSOL::LineSearchBruteForce::Setup()
 }
 
 /*----------------------------------------------------------------------------*/
-const double NLNSOL::LineSearchBruteForce::ComputeLSParam() const
+void NLNSOL::LineSearchBruteForce::ComputeLSParam(double& lsparam,
+    bool& suffdecr) const
 {
   // time measurements
   Teuchos::RCP<Teuchos::Time> time = Teuchos::TimeMonitor::getNewCounter(
@@ -80,10 +81,10 @@ const double NLNSOL::LineSearchBruteForce::ComputeLSParam() const
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
   if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
 
-  // the line search parameter
-  double lsparam = 1.0;
-
-  // take a full step
+  // ---------------------------------------------------------------------------
+  // start with a full step
+  // ---------------------------------------------------------------------------
+  lsparam = 1.0;
   Teuchos::RCP<Epetra_MultiVector> xnew =
       Teuchos::rcp(new Epetra_MultiVector(GetXOld().Map(), true));
   xnew->Update(1.0, GetXOld(), lsparam, GetXInc(), 0.0);
@@ -94,8 +95,12 @@ const double NLNSOL::LineSearchBruteForce::ComputeLSParam() const
 
   double fnorm2 = 1.0e+12;
   ConvergenceCheck(*fnew, fnorm2);
+  suffdecr = IsSufficientDecrease(fnorm2, lsparam);
 
-  while (not IsSufficientDecrease(fnorm2, lsparam) && lsparam > 0.0)
+  // ---------------------------------------------------------------------------
+  // reduce step length in increments of #trialstepsize_
+  // ---------------------------------------------------------------------------
+  while (not suffdecr && lsparam > 0.0)
   {
     // reduce trial line search parameter
     lsparam -= trialstepsize_;
@@ -106,8 +111,9 @@ const double NLNSOL::LineSearchBruteForce::ComputeLSParam() const
     xnew->Update(1.0, GetXOld(), lsparam, GetXInc(), 0.0);
     ComputeF(*xnew, *fnew);
 
-    // evaluate and compute L2-norm of residual
+    // check for sufficient decrease
     ConvergenceCheck(*fnew, fnorm2);
+    suffdecr = IsSufficientDecrease(fnorm2, lsparam);
 
     *out << "\tfnorm2 = " << fnorm2
          << "\tinitnorm = " << GetFNormOld()
@@ -115,14 +121,14 @@ const double NLNSOL::LineSearchBruteForce::ComputeLSParam() const
   }
 
   // check for successful line search
-  if (not IsSufficientDecrease(fnorm2, lsparam))
+  if (not suffdecr)
   {
     dserror("Sufficient decrease condition could not be satisfied.");
 
     lsparam = 0.0;
   }
 
-  return lsparam;
+  return;
 }
 
 

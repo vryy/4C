@@ -59,7 +59,8 @@ void NLNSOL::LineSearchFullStep::Setup()
 }
 
 /*----------------------------------------------------------------------------*/
-const double NLNSOL::LineSearchFullStep::ComputeLSParam() const
+void NLNSOL::LineSearchFullStep::ComputeLSParam(double& lsparam,
+    bool& suffdecr) const
 {
   // time measurements
   Teuchos::RCP<Teuchos::Time> time = Teuchos::TimeMonitor::getNewCounter(
@@ -70,5 +71,39 @@ const double NLNSOL::LineSearchFullStep::ComputeLSParam() const
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
   if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
 
-  return 1.0;
+  // full step without caring for sufficient decrease
+  ComputeLSParam(lsparam);
+
+  // take the full step
+  Teuchos::RCP<Epetra_MultiVector> xnew =
+      Teuchos::rcp(new Epetra_MultiVector(GetXOld().Map(), true));
+  xnew->Update(1.0, GetXOld(), lsparam, GetXInc(), 0.0);
+
+  // check for sufficient decrease
+  Teuchos::RCP<Epetra_MultiVector> fnew =
+      Teuchos::rcp(new Epetra_MultiVector(xnew->Map(), true));
+  ComputeF(*xnew, *fnew);
+  double fnorm2 = 0.0;
+  ConvergenceCheck(*fnew, fnorm2);
+  suffdecr = IsSufficientDecrease(fnorm2, lsparam);
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*/
+void NLNSOL::LineSearchFullStep::ComputeLSParam(double& lsparam) const
+{
+  // time measurements
+  Teuchos::RCP<Teuchos::Time> time = Teuchos::TimeMonitor::getNewCounter(
+      "NLNSOL::LineSearchFullStep::ComputeLSParam");
+  Teuchos::TimeMonitor monitor(*time);
+
+  // make sure that Init() and Setup() has been called
+  if (not IsInit()) { dserror("Init() has not been called, yet."); }
+  if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
+
+  // full step
+  lsparam = 1.0;
+
+  return;
 }

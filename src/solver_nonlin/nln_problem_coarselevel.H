@@ -100,6 +100,15 @@ namespace NLNSOL
         Epetra_MultiVector& fc ///< current residual on coarse level (to be filled)
         ) const;
 
+    /*! \brief Evaluate Jacobian (linearization of residual)
+     *
+     *  Updating the solution variables in the marching time integrator hase
+     *  already been done during computeF().
+     *
+     *  \author mayr.mt \date 06/2014
+     */
+    virtual void ComputeJacobian() const;
+
     //@}
 
     //! @name Utilities

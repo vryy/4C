@@ -49,7 +49,39 @@ void NLNSOL::LineSearchLinear::Setup()
 }
 
 /*----------------------------------------------------------------------------*/
-const double NLNSOL::LineSearchLinear::ComputeLSParam() const
+void NLNSOL::LineSearchLinear::ComputeLSParam(double& lsparam,
+    bool& suffdecr) const
+{
+  // time measurements
+  Teuchos::RCP<Teuchos::Time> time = Teuchos::TimeMonitor::getNewCounter(
+      "NLNSOL::LineSearchLinear::ComputeLSParam");
+  Teuchos::TimeMonitor monitor(*time);
+
+  // make sure that Init() and Setup() has been called
+  if (not IsInit()) { dserror("Init() has not been called, yet."); }
+  if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
+
+  // compute lsparam without caring for sufficient decrease
+  ComputeLSParam(lsparam);
+
+  // take the full step
+  Teuchos::RCP<Epetra_MultiVector> xnew =
+      Teuchos::rcp(new Epetra_MultiVector(GetXOld().Map(), true));
+  xnew->Update(1.0, GetXOld(), lsparam, GetXInc(), 0.0);
+
+  // check for sufficient decrease
+  Teuchos::RCP<Epetra_MultiVector> fnew =
+      Teuchos::rcp(new Epetra_MultiVector(xnew->Map(), true));
+  ComputeF(*xnew, *fnew);
+  double fnorm2 = 0.0;
+  ConvergenceCheck(*fnew, fnorm2);
+  suffdecr = IsSufficientDecrease(fnorm2, lsparam);
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*/
+void NLNSOL::LineSearchLinear::ComputeLSParam(double& lsparam) const
 {
   // time measurements
   Teuchos::RCP<Teuchos::Time> time = Teuchos::TimeMonitor::getNewCounter(
@@ -77,8 +109,10 @@ const double NLNSOL::LineSearchLinear::ComputeLSParam() const
   fnew->Dot(GetXInc(), &denominator);
   denominator -= nominator;
 
-  /* return line search parameter with negative sign to account for ComputeF()
+  /* compute line search parameter with negative sign to account for ComputeF()
    * delivering a descending residual
    */
-  return -nominator / denominator;
+  lsparam = -nominator / denominator;
+
+  return;
 }

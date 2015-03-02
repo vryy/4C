@@ -56,7 +56,7 @@ void NLNSOL::NlnOperatorFas::Setup()
   // Make sure that Init() has been called
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
 
-  // create the multigrid level hierachy
+  // create the multigrid level hierarchy
   hierarchy_ = Teuchos::rcp(new NLNSOL::FAS::AMGHierarchy());
   hierarchy_->Init(Comm(), Params(), NlnProblem());
   hierarchy_->Setup();
@@ -102,7 +102,7 @@ int NLNSOL::NlnOperatorFas::ApplyInverse(const Epetra_MultiVector& f,
 
     //ToDo (mayr) switch between different cycles based on params_
     // choose type of multigrid cycle
-    VCycle(f, x, 0);
+    VCycle(*ftmp, x, 0);
 
     // Evaluate and check for convergence
     NlnProblem()->ComputeF(x, *ftmp);
@@ -145,7 +145,7 @@ void NLNSOL::NlnOperatorFas::VCycle(const Epetra_MultiVector& f,
       Teuchos::rcp(new Epetra_MultiVector(f.Map(), 1, true));
 
   /* Leave 'x' untouched on the level since it is needed to approximate the
-   * error after the postsmoothing. Use 'xtemp' instead for all operations on
+   * error after the post-smoothing. Use 'xtemp' instead for all operations on
    * this level.
    */
   Teuchos::RCP<Epetra_MultiVector> xtemp =
@@ -205,7 +205,7 @@ void NLNSOL::NlnOperatorFas::VCycle(const Epetra_MultiVector& f,
         Teuchos::rcp(new Epetra_MultiVector(xtemp->Map(), true));
     Hierarchy()->NlnLevel(level)->NlnProblem()->ComputeF(*xtemp, *fsmoothed);
 
-    // presmoothing
+    // pre-smoothing
     Hierarchy()->NlnLevel(level)->DoPreSmoothing(*fsmoothed, *xtemp);
 
     // evaluate current residual
@@ -217,7 +217,7 @@ void NLNSOL::NlnOperatorFas::VCycle(const Epetra_MultiVector& f,
     // evaluate current residual
     Hierarchy()->NlnLevel(level)->NlnProblem()->ComputeF(*xtemp, *fsmoothed);
 
-    // postsmoothing
+    // post-smoothing
     Hierarchy()->NlnLevel(level)->DoPostSmoothing(*fsmoothed, *xtemp);
   }
   else // coarse level solve

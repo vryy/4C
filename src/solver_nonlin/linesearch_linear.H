@@ -69,7 +69,23 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 10/2014
      */
-    virtual const double ComputeLSParam() const;
+    virtual void ComputeLSParam(
+        double& lsparam, ///< line search parameter (to be determined)
+        bool& suffdecr ///< achieved sufficient decrease? (to be determined)
+        ) const;
+
+    /*! \brief Compute the step length / line search parameter
+     *
+     *  We use the analytical formula to compute the exact and optimal line
+     *  search parameter for the case of a linear problem:
+     *
+     *  \[\alpha = \frac{F_k^Ts_k}{F(x_k+s_k)^Ts_k - F_k^Ts_k}\]
+     *
+     *  \author mayr.mt \date 10/2014
+     */
+    virtual void ComputeLSParam(
+        double& lsparam ///< line search parameter (to be determined)
+        ) const;
 
     //@}
 

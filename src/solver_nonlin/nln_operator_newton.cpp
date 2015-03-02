@@ -47,9 +47,9 @@ Maintainer: Matthias Mayr
 
 /*----------------------------------------------------------------------------*/
 NLNSOL::NlnOperatorNewton::NlnOperatorNewton()
-: linsolver_(Teuchos::null),
-  linesearch_(Teuchos::null),
-  jac_(Teuchos::null)
+: jacevery_(1),
+  linsolver_(Teuchos::null),
+  linesearch_(Teuchos::null)
 {
   return;
 }
@@ -62,11 +62,41 @@ void NLNSOL::NlnOperatorNewton::Setup()
       "NLNSOL::NlnOperatorNewton::Setup");
   Teuchos::TimeMonitor monitor(*time);
 
+  // create formatted output stream
+  Teuchos::RCP<Teuchos::FancyOStream> out =
+      Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
+  out->setOutputToRootOnly(0);
+  Teuchos::OSTab tab(out, Indentation());
+
   // Make sure that Init() has been called
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
 
-  if (FixedJacobian())
-    jac_ = NlnProblem()->GetJacobianOperator();
+  {
+    if (Params().isParameter("Newton: update jacobian every"))
+      jacevery_ = Params().get<int>("Newton: update jacobian every");
+
+    switch (jacevery_)
+    {
+      case 0:
+      {
+        *out << LabelShort() << " with fixed Jacobian: Chord's method"
+             << std::endl;
+        break;
+      }
+      case 1:
+      {
+        *out << LabelShort() << " with updated Jacobian: Full Newton"
+             << std::endl;
+        break;
+      }
+      default:
+      {
+        dserror("Updating the Jacobian every %i iterations is not allowed. "
+          "Choose '0' for Chord's method and '1' for Full Newton.", jacevery_);
+        break;
+      }
+    }
+  }
 
   SetupLinearSolver();
   SetupLineSearch();
@@ -127,16 +157,19 @@ int NLNSOL::NlnOperatorNewton::ApplyInverse(const Epetra_MultiVector& f,
       Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
 
   // residual vector already including negative sign
-  Teuchos::RCP<Epetra_MultiVector> rhs =
+  Teuchos::RCP<Epetra_MultiVector> fnew =
       Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
-  NlnProblem()->ComputeF(x, *rhs);
+  NlnProblem()->ComputeF(x, *fnew);
 
-  // some scalars
+  // some initializations
   int iter = 0; // iteration counter
   double steplength = 1.0; // line search parameter
   double fnorm2 = 1.0e+12; // residual L2 norm
-  bool converged = NlnProblem()->ConvergenceCheck(*rhs, fnorm2); // convergence flag
+  bool converged = NlnProblem()->ConvergenceCheck(*fnew, fnorm2); // convergence flag
+  bool suffdecr = false; // flag for sufficient decrease of line search
+  bool refactor = false; // Do we need to re-factor the Jacobian?
 
+  // print initial state
   PrintIterSummary(iter, fnorm2);
 
   // ---------------------------------------------------------------------------
@@ -146,23 +179,24 @@ int NLNSOL::NlnOperatorNewton::ApplyInverse(const Epetra_MultiVector& f,
   {
     ++iter;
 
-    // prepare linear solve
-    NlnProblem()->ComputeJacobian();
-    inc->PutScalar(0.0);
+    UpdateJacobian(refactor);
 
-    // compute the Newton increment
-    ComputeSearchDirection(rhs, inc, iter);
-
-    // compute line search parameter
-    steplength = ComputeStepLength(x, *rhs, *inc, fnorm2);
+    ComputeSearchDirection(fnew, inc, refactor);
+    ComputeStepLength(x, *fnew, *inc, fnorm2, steplength, suffdecr);
 
     // Iterative update
     err = x.Update(steplength, *inc, 1.0);
     if (err != 0) { dserror("Failed."); }
 
     // evaluate and check for convergence
-    NlnProblem()->ComputeF(x, *rhs);
-    converged = NlnProblem()->ConvergenceCheck(*rhs, fnorm2);
+    NlnProblem()->ComputeF(x, *fnew);
+    converged = NlnProblem()->ConvergenceCheck(*fnew, fnorm2);
+
+    if (converged)
+    {
+      PrintIterSummary(iter, fnorm2);
+      break;
+    }
 
     PrintIterSummary(iter, fnorm2);
   }
@@ -174,50 +208,54 @@ int NLNSOL::NlnOperatorNewton::ApplyInverse(const Epetra_MultiVector& f,
 /*----------------------------------------------------------------------------*/
 const int NLNSOL::NlnOperatorNewton::ComputeSearchDirection(
     Teuchos::RCP<Epetra_MultiVector>& rhs,
-    Teuchos::RCP<Epetra_MultiVector>& inc, const int iter) const
+    Teuchos::RCP<Epetra_MultiVector>& inc, const bool refactor) const
 {
-  // error code for linear solver
-  int linsolve_error = 0;
-
   // compute search direction with either fixed or most recent, updated jacobian
-  if (FixedJacobian())
-  {
-    // do not refactor or reset since we want to reuse the LU decomposition
-    linsolve_error = linsolver_->Solve(jac_, inc, rhs, false, false,
-        Teuchos::null);
-  }
-  else
-  {
-    linsolve_error = linsolver_->Solve(NlnProblem()->GetJacobianOperator(), inc,
-        rhs, true, iter == 1, Teuchos::null);
-  }
+  int linsolve_error = linsolver_->Solve(NlnProblem()->GetJacobianOperator(),
+      inc, rhs, refactor, refactor, Teuchos::null);
 
   // test for failure of linear solver
-  if (linsolve_error != 0) { dserror("Linear solver failed."); }
-
-  // Is 'inc' a descent direction?
-  double dotproduct = 0.0;
-  inc->Dot(*rhs, &dotproduct);
-  if (dotproduct <= 0.0) // ascent direction
-    dserror("Search direction in %s is not a descent direction anymore.",
-        Label());
+  if (IsSolver() and linsolve_error != 0) { dserror("Linear solver failed."); }
 
   return linsolve_error;
 }
 
 /*----------------------------------------------------------------------------*/
-const bool NLNSOL::NlnOperatorNewton::FixedJacobian() const
-{
-  return Params().get<bool>("Newton: Fixed Jacobian");
-}
-
-/*----------------------------------------------------------------------------*/
-const double NLNSOL::NlnOperatorNewton::ComputeStepLength(
-    const Epetra_MultiVector& x, const Epetra_MultiVector& f,
-    const Epetra_MultiVector& inc, double fnorm2) const
+void NLNSOL::NlnOperatorNewton::ComputeStepLength(const Epetra_MultiVector& x,
+    const Epetra_MultiVector& f, const Epetra_MultiVector& inc, double fnorm2,
+    double& lsparam, bool& suffdecr) const
 {
   linesearch_->Init(NlnProblem(),
       Params().sublist("Nonlinear Operator: Line Search"), x, f, inc, fnorm2);
   linesearch_->Setup();
-  return linesearch_->ComputeLSParam();
+  linesearch_->ComputeLSParam(lsparam, suffdecr);
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*/
+void NLNSOL::NlnOperatorNewton::UpdateJacobian(bool& refactor) const
+{
+  switch (jacevery_)
+  {
+    case 0:
+    {
+      refactor = false;
+      break;
+    }
+    case 1:
+    {
+      NlnProblem()->ComputeJacobian();
+      refactor = true;
+      break;
+    }
+    default:
+    {
+      dserror("Updating the Jacobian every %i iterations is not allowed. "
+          "Choose '0' for Chord's method and '1' for Full Newton.", jacevery_);
+      break;
+    }
+  }
+
+  return;
 }

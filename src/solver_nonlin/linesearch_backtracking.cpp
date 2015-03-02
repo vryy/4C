@@ -42,7 +42,9 @@ Maintainer: Matthias Mayr
 
 /*----------------------------------------------------------------------------*/
 NLNSOL::LineSearchBacktracking::LineSearchBacktracking()
- : NLNSOL::LineSearchBase()
+ : NLNSOL::LineSearchBase(),
+   itermax_(4),
+   backtrackfac_(0.5)
 {
   return;
 }
@@ -55,6 +57,7 @@ void NLNSOL::LineSearchBacktracking::Setup()
 
   // fill member variables
   itermax_ = Params().sublist("Backtracking").get<int>("max number of backtracking steps");
+  backtrackfac_ = Params().sublist("Backtracking").get<double>("factor for step size reduction");
 
   // SetupLineSearch() has been called
   SetIsSetup();
@@ -63,7 +66,8 @@ void NLNSOL::LineSearchBacktracking::Setup()
 }
 
 /*----------------------------------------------------------------------------*/
-const double NLNSOL::LineSearchBacktracking::ComputeLSParam() const
+void NLNSOL::LineSearchBacktracking::ComputeLSParam(double& lsparam,
+    bool& suffdecr) const
 {
   // time measurements
   Teuchos::RCP<Teuchos::Time> time = Teuchos::TimeMonitor::getNewCounter(
@@ -79,57 +83,50 @@ const double NLNSOL::LineSearchBacktracking::ComputeLSParam() const
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
   if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
 
-  // the line search parameter
-  double lsparam = 1.0;
+  // start backtracking with full step
+  lsparam = 1.0;
 
   // take a full step
   Teuchos::RCP<Epetra_MultiVector> xnew =
       Teuchos::rcp(new Epetra_MultiVector(GetXOld().Map(), true));
   xnew->Update(1.0, GetXOld(), lsparam, GetXInc(), 0.0);
 
+  // check for sufficient decrease
   Teuchos::RCP<Epetra_MultiVector> fnew =
       Teuchos::rcp(new Epetra_MultiVector(xnew->Map(), true));
   ComputeF(*xnew, *fnew);
-
   double fnorm2 = 1.0e+12;
   bool converged = ConvergenceCheck(*fnew, fnorm2);
+  suffdecr = IsSufficientDecrease(fnorm2, lsparam);
 
   int iter = 0; // iteration index for multiple backtracking steps
 
-  while (not converged and not IsSufficientDecrease(fnorm2, lsparam)
-      and iter < itermax_)
+  while (not converged and not suffdecr and iter < itermax_)
   {
     ++iter;
 
-    // reduce trial line search parameter
-    lsparam /= 2.0;
+    // halve trial line search parameter
+    lsparam *= backtrackfac_;
 
-    *out << "lsparam = " << lsparam;// << std::endl;
+//    *out << "lsparam = " << lsparam;// << std::endl;
 
     // take a reduced step
     xnew->Update(1.0, GetXOld(), lsparam, GetXInc(), 0.0);
+
+    // check for sufficient decrease
     ComputeF(*xnew, *fnew);
-
-    // evaluate and compute L2-norm of residual
     converged = ConvergenceCheck(*fnew, fnorm2);
+    suffdecr = IsSufficientDecrease(fnorm2, lsparam);
 
-    *out << "\tfnorm2 = " << fnorm2
-         << "\tinitnorm = " << GetFNormOld()
-         << std::endl;
+//    *out << "\tfnorm2 = " << fnorm2
+//         << "\tinitnorm = " << GetFNormOld()
+//         << std::endl;
   }
 
-  // check if the sufficient decrease condition could be satisfied at all
-  if (not converged
-      and (not IsSufficientDecrease(fnorm2, lsparam) or iter > itermax_))
-  {
-    dserror("Sufficient decrease condition could not be satisfied withing %d "
-        "iterations.", itermax_);
+  *out << LabelShort()
+       << ": lsparam = " << lsparam
+       << " after " << iter
+       << " iterations." << std::endl;
 
-    lsparam = 0.0;
-  }
-
-  return lsparam;
+  return;
 }
-
-
-

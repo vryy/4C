@@ -37,7 +37,7 @@ namespace NLNSOL
    *
    * <h3> References </h3>
    * <ul>
-   * <li>[1] Kelley, C.T.: Iterative Methods for Linear and Nonlinear Equations,
+   * <li>[1] Kelley CT: Iterative Methods for Linear and Nonlinear Equations,
    *         SIAM, Philadelphia (1995)
    * </ul>
    *
@@ -80,10 +80,12 @@ namespace NLNSOL
      *
      *  \sa NLNSOL::LineSearchBase::IsSufficientDecrease()
      *
-     *  \author mayr.mt
-     *  \date 01/2015
+     *  \author mayr.mt \date 01/2015
      */
-    virtual const double ComputeLSParam() const;
+    virtual void ComputeLSParam(
+        double& lsparam, ///< line search parameter (to be determined)
+        bool& suffdecr ///< achieved sufficient decrease? (to be determined)
+        ) const;
 
     //@}
 
@@ -104,6 +106,9 @@ namespace NLNSOL
 
     //! maximum number of backtracking steps
     int itermax_;
+
+    //! factor for step size reduction per iteration
+    double backtrackfac_;
 
   }; // class LineSearchBacktracking
 } // namespace NLNSOL

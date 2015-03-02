@@ -56,10 +56,20 @@ namespace NLNSOL
 {
   /*! \brief Newton-type algorithm as nonlinear preconditioner
    *
-   *  This Newton-type algorithm enables a version with a Jacobian, that is
-   *  updated at every iteration, such that one can expect quadratic
-   *  convergence, and a version with a fixed Jacobian, such that factorization
-   *  has to be performed only once.
+   *  This Newton-type algorithm enables several versions that differ in the
+   *  frequency of updating the Jacobian. This update frequency is controlled
+   *  via #jacevery_. The following methods can be represented
+   *  (c.f. [Kelley (1995), chaps. 5.3 and 5.4]):
+   *  <ul>
+   *  <li> Full Newton with exact linearization </li>
+   *  <li> Chord's method (keeps the Jacobian fixed) </li>
+   *  </ul>
+   *
+   *  <h3> References </h3>
+   *  <ul>
+   *  <li>[1] Kelley CT: Iterative Methods for Linear and Nonlinear Equations,
+   *          SIAM, Philadelphia (1995)
+   *  </ul>
    *
    *  \sa NlnOperatorBase
    *
@@ -93,9 +103,19 @@ namespace NLNSOL
 
     /*! \brief Apply the preconditioner
      *
-     * \return Integer error code, set to 0 if successful.
+     *  Implementation of Newton-type algorithm follows
+     *  [Kelley (1995), p. 86, Algorithm 5.6.1].
      *
-     * \author mayr.mt \date 03/2014
+     *  The algorithmic parameter #jacevery_ controls, whether the Jacobian
+     *  needs to be updated or not. We allow for
+     *  <ul>
+     *  <li> Chord's method: #jacevery_ = 0 </li>
+     *  <li> Full Newton: #jacevery_ = 1 </li>
+     *  </ul>
+     *
+     *  \return Integer error code, set to 0 if successful.
+     *
+     *  \author mayr.mt \date 03/2014
      */
     virtual int ApplyInverse(
         const Epetra_MultiVector& f, ///< residual (dummy vector to satisfy inheritance from Epetra_Operator)
@@ -117,7 +137,7 @@ namespace NLNSOL
 
   private:
 
-    //! @name Setup
+    //! @name Setup of internal objects/sub-algorithms
     //@{
 
     //! Setup of linear solver
@@ -128,26 +148,65 @@ namespace NLNSOL
 
     //@}
 
-    //! @name Search direction
+    //! @name Search direction and step length
     //@{
 
-    //! Compute the search direction
+    /*! \brief Compute the search direction
+     *
+     *  Compute search direction \f$p\f$ by solving \f$Jp=f\f$ with the Jacobian
+     *  matrix \f$J\f$ and the residual \f$f\f$.
+     *
+     *  \Note We test for success of the linear solver only, if Newton is
+     *  applied as the outer nonlinear solver. If Newton is used as
+     *  preconditioner, we allow incomplete linear solves (e.g. with limited
+     *  Krylov subspace) to save computational time.
+     *
+     *  \sa ComputeStepLength
+     *
+     *  \author mayr \date 02/2015
+     */
     virtual const int ComputeSearchDirection(
         Teuchos::RCP<Epetra_MultiVector>& rhs, ///< residual
         Teuchos::RCP<Epetra_MultiVector>& inc, ///< increment (to be filled)
-        const int iter ///< current Newton iteration
+        const bool refactor ///< re-factor Jacobian?
         ) const;
 
-    //! Compute line search parameter (=step length)
-    virtual const double ComputeStepLength(
+    //! Compute line search parameter / step length
+    virtual void ComputeStepLength(
         const Epetra_MultiVector& x, ///< current solution
         const Epetra_MultiVector& f, ///< residual at current solution
         const Epetra_MultiVector& inc, ///< search direction
-        double fnorm2 ///< current L2-norm of residual
+        const double fnorm2, ///< current L2-norm of residual
+        double& lsparam, ///< line search parameter (to be determined)
+        bool& suffdecr ///< achieved sufficient decrease? (to be determined)
         ) const;
 
-    //! Use a fixed Jacobian (true) or update it in every iteration (false)?
-    virtual const bool FixedJacobian() const;
+    //@}
+
+    //! @name Jacobian update strategy
+    //@{
+
+    /*! \brief Update Jacobian matrix
+     *
+     *  Updating the Jacobian matrix if desired by the user. The update strategy
+     *  is controlled via #jacevery_.
+     *
+     *  \author mayr.mt \date 02/2015
+     */
+    virtual void UpdateJacobian(
+        bool& refactor ///< Do we need to re-factor the Jacobian?
+        ) const;
+
+    /*! \brief Recompute Jacobian every #jacevery_ iterations
+     *
+     *  This number specifies the exact Newton-type algorithm. There are several
+     *  options (c.f. [Kelley (1995), chaps. 5.3 and 5.4]):
+     *  <ul>
+     *  <li> Full Newton with exact linearization: set to 1 </li>
+     *  <li> Chord's method keeps the Jacobian fixed: set to 0 </li>
+     *  </ul>
+     */
+    int jacevery_;
 
     //@}
 
@@ -161,9 +220,6 @@ namespace NLNSOL
     Teuchos::RCP<NLNSOL::LineSearchBase> linesearch_;
 
     //@}
-
-    //! Fixed Jacobian matrix
-    Teuchos::RCP<Epetra_Operator> jac_;
 
   }; // class NlnOperatorNewton
 } // namespace NLNSOL

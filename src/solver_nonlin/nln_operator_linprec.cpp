@@ -137,18 +137,18 @@ int NLNSOL::NlnOperatorLinPrec::ApplyInverse(const Epetra_MultiVector& f,
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
   if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
 
+  // initialize to zero since IFPACK requires a zero initial guess
   Teuchos::RCP<Epetra_MultiVector> inc =
       Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
 
   // applying the linear preconditioner
   int errorcode = linprec_->ApplyInverse(f, *inc);
 
-  /* Update solution by preconditioned increment. Use negative sign due to the
-   * type of residual, that has been handed in.
-   */
+  // update solution
   err = x.Update(1.0, *inc, 1.0);
   if (err != 0) { dserror("Update failed."); }
 
+  // evaluate at the new solution
   Teuchos::RCP<Epetra_MultiVector> fnew =
       Teuchos::rcp(new Epetra_MultiVector(f.Map(), true));
   NlnProblem()->ComputeF(x, *fnew);
@@ -161,13 +161,12 @@ int NLNSOL::NlnOperatorLinPrec::ApplyInverse(const Epetra_MultiVector& f,
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-const double NLNSOL::NlnOperatorLinPrec::ComputeStepLength(
-    const Epetra_MultiVector& x, const Epetra_MultiVector& f,
-    const Epetra_MultiVector& inc, double fnorm2) const
+void NLNSOL::NlnOperatorLinPrec::ComputeStepLength(const Epetra_MultiVector& x,
+    const Epetra_MultiVector& f, const Epetra_MultiVector& inc, double fnorm2,
+    double& lsparam, bool& suffdecr) const
 {
   dserror("There is no line search algorithm available for a linear "
       "preconditioner object.");
 
-  // just for the compiler
-  return 0.0;
+  return;
 }

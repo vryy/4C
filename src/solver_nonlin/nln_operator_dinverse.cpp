@@ -116,6 +116,7 @@ int NLNSOL::NlnOperatorDInverse::ApplyInverse(const Epetra_MultiVector& f,
   double steplength = 1.0; // line search parameter
   double fnorm2 = 1.0e+12; // residual L2 norm
   bool converged = NlnProblem()->ConvergenceCheck(*rhs, fnorm2); // convergence flag
+  bool suffdecr = false; // flag for sufficient decrease of line search
 
   PrintIterSummary(iter, fnorm2);
 
@@ -130,7 +131,7 @@ int NLNSOL::NlnOperatorDInverse::ApplyInverse(const Epetra_MultiVector& f,
     ComputeSearchDirection(*rhs, *inc);
 
     // line search
-    steplength = ComputeStepLength(x, *rhs, *inc, fnorm2);
+    ComputeStepLength(x, *rhs, *inc, fnorm2, steplength, suffdecr);
 
     // Iterative update
     err = x.Update(steplength, *inc, 1.0);
@@ -166,18 +167,20 @@ const int NLNSOL::NlnOperatorDInverse::ComputeSearchDirection(
   if (err != 0) { dserror("RepalceDiagonalValues failed."); }
 
   err = stiffdiag->ApplyInverse(rhs, inc);
-  if (err != 0) { dserror("Update failed."); }
+  if (err != 0) { dserror("ApplyInverse failed."); }
 
   return err;
 }
 
 /*----------------------------------------------------------------------------*/
-const double NLNSOL::NlnOperatorDInverse::ComputeStepLength(
-    const Epetra_MultiVector& x, const Epetra_MultiVector& f,
-    const Epetra_MultiVector& inc, double fnorm2) const
+void NLNSOL::NlnOperatorDInverse::ComputeStepLength(const Epetra_MultiVector& x,
+    const Epetra_MultiVector& f, const Epetra_MultiVector& inc, double fnorm2,
+    double& lsparam, bool& suffdecr) const
 {
   linesearch_->Init(NlnProblem(),
       Params().sublist("Nonlinear Operator: Line Search"), x, f, inc, fnorm2);
   linesearch_->Setup();
-  return linesearch_->ComputeLSParam();
+  linesearch_->ComputeLSParam(lsparam, suffdecr);
+
+  return;
 }

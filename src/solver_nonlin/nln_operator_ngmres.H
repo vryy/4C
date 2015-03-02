@@ -25,17 +25,10 @@ Maintainer: Matthias Mayr
 // baci
 #include "nln_operator_base.H"
 
-#include "../drt_lib/drt_dserror.H"
-
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
 
 class Epetra_Comm;
-
-namespace LINALG
-{
-  class Solver;
-} // namespace LINALG
 
 namespace NLNSOL
 {
@@ -74,7 +67,7 @@ namespace NLNSOL
    *
    *  <h3> References </h3>
    *  <ul>
-   *  <li>[1] Washio, T. and Oosterlee, C. W.: Krylov subspace acceleration for
+   *  <li>[1] Washio T and Oosterlee CW: Krylov subspace acceleration for
    *          nonlinear multigrid schemes, Electronic Transactions on Numerical
    *          Analysis, Vol. 6, pp. 271 - 290, 1997 </li>
    *  <li>[2] Sterck, Hans De: A Nonlinear GMRES Optimization Algorithm for
@@ -82,7 +75,11 @@ namespace NLNSOL
    *          pp. A1351-1379, 2012 </li>
    *  </ul>
    *
-   * \sa NlnOperatorBase
+   *  \Note Both references, [Washio (1997)] and [Sterck (2012)], describe the
+   *        same algorithm. However, some signs are different at certain places.
+   *        The present implementation follows the notation in [Sterck (2012)].
+   *
+   *  \sa NlnOperatorBase
    *
    *  \author mayr.mt \date 03/2014
    */
@@ -122,13 +119,11 @@ namespace NLNSOL
      *    Step 3: Line search between tentative solution (cf. step 1) and the
      *            one obtained by linear combination (cf. step 2).
      *
-     *  Implementation follows this publication: Sterck, Hans De: A Nonlinear
-     *  GMRES Optimization Algorithm for Canonical Tensor Decomposition,
-     *  SIAM J. Sci. Comput., Vol. 34, pp. A1351-1379, 2012
+     *  The implementation follows [Sterck (2012)].
      *
-     * \return Integer error code, set to 0 if successful.
+     *  \return Integer error code, set to 0 if successful.
      *
-     * \author mayr.mt \date 03/2014
+     *  \author mayr.mt \date 03/2014
      */
     virtual int ApplyInverse(const Epetra_MultiVector& f, ///< residual
         Epetra_MultiVector& x ///< solution
@@ -152,18 +147,17 @@ namespace NLNSOL
   private:
 
     //! Compute line search parameter (=step length)
-    virtual const double ComputeStepLength(
+    virtual void ComputeStepLength(
         const Epetra_MultiVector& x, ///< current solution
-        const Epetra_MultiVector& f, ///< residual current solution
+        const Epetra_MultiVector& f, ///< residual at current solution
         const Epetra_MultiVector& inc, ///< search direction
-        double fnorm2 ///< current L2-norm of residual
+        const double fnorm2, ///< current L2-norm of residual
+        double& lsparam, ///< line search parameter (to be determined)
+        bool& suffdecr ///< achieved sufficient decrease? (to be determined)
         ) const;
 
     //! @name Setup
     //@{
-
-    //! Setup linear solver
-    virtual void SetupLinearSolver();
 
     //! Setup line search
     virtual void SetupLineSearch();
@@ -193,23 +187,31 @@ namespace NLNSOL
 
     /*! \brief Compute the accelerated iterate
      *
-     *  Generate tan accelerated iterate by nonlinear GMRES step. This requires
+     *  Generate an accelerated iterate by nonlinear GMRES step. This requires
      *  solving a least squares problem for the coefficients alpha_j that are
      *  needed to compute the accelerated iterate as linear combination of
      *  previous iterates.
      *
-     *  Implementation follows this publication: Sterck, Hans De: A Nonlinear
-     *  GMRES Optimization Algorithm for Canonical Tensor Decomposition,
-     *  SIAM J. Sci. Comput., Vol. 34, pp. A1351-1379, 2012
+     *  The least squares problem is solved using normal equations where the
+     *  corresponding system is build purely on information from previous and
+     *  current residuals. The system size equals the window size and, thus, is
+     *  rather small, such that it can be solved with a direct solver
+     *  efficiently.
+     *
+     *  The implementation follows [Sterck (2012)].
+     *
+     *  \return Boolean error code (set to true if everything is ok, false
+     *          otherwise)
      *
      *  \author mayr.mt \date 03/2014
      */
-    virtual Teuchos::RCP<Epetra_MultiVector> ComputeAcceleratedIterate
+    virtual bool ComputeAcceleratedIterate
     (
       const Teuchos::RCP<const Epetra_MultiVector> xbar, ///< tentative iterate / current solution
       const Teuchos::RCP<const Epetra_MultiVector> fbar, ///< residual based on tentative iterate / current solution
       const std::vector<Teuchos::RCP<Epetra_MultiVector> >& sol, ///< collection of previous solution iterates
-      const std::vector<Teuchos::RCP<Epetra_MultiVector> >& res ///< collection of previous residuals
+      const std::vector<Teuchos::RCP<Epetra_MultiVector> >& res, ///< collection of previous residuals
+      Teuchos::RCP<Epetra_MultiVector> xhat ///< accelerated iterate (to be determined)
     ) const;
 
     //@}
@@ -224,9 +226,6 @@ namespace NLNSOL
 
     //! @name Necessary sub-algorithms
     //@{
-
-    //! linear solver from baci
-    Teuchos::RCP<LINALG::Solver> linsolver_;
 
     //! Line search algorithm
     Teuchos::RCP<NLNSOL::LineSearchBase> linesearch_;

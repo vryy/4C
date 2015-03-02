@@ -128,11 +128,13 @@ namespace NLNSOL
   private:
 
     //! Compute line search parameter (=step length)
-    virtual const double ComputeStepLength(
+    virtual void ComputeStepLength(
         const Epetra_MultiVector& x, ///< current solution
         const Epetra_MultiVector& f, ///< residual at current solution
         const Epetra_MultiVector& inc, ///< search direction
-        double fnorm2 ///< current L2-norm of residual
+        const double fnorm2, ///< current L2-norm of residual
+        double& lsparam, ///< line search parameter (to be determined)
+        bool& suffdecr ///< achieved sufficient decrease? (to be determined)
         ) const;
 
     //! @name Setup

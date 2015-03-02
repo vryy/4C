@@ -38,11 +38,11 @@ namespace NLNSOL
    *
    *  <h3> References </h3>
    *  <ul>
-   *  <li>[1] Kelley, C.T.: Iterative Methods for Linear and Nonlinear Equations,
+   *  <li>[1] Kelley CT: Iterative Methods for Linear and Nonlinear Equations,
    *          SIAM, Philadelphia (1995)
-   *  <li>[2] Kelley, C.T.: Iterative Methods for Optimization, SIAM,
+   *  <li>[2] Kelley CT: Iterative Methods for Optimization, SIAM,
    *          Philadelphia (1999)
-   *  <li>[3] Kelley, C.T.: Solving Nonlinear Equations with Newton's Method,
+   *  <li>[3] Kelley CT: Solving Nonlinear Equations with Newton's Method,
    *          SIAM, Philadelphia (2003)
    *  </ul>
    *
@@ -135,7 +135,10 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 06/2014
      */
-    virtual const double ComputeLSParam() const;
+    virtual void ComputeLSParam(
+        double& lsparam, ///< line search parameter (to be determined)
+        bool& suffdecr ///< achieved sufficient decrease? (to be determined)
+        ) const;
 
     //@}
 

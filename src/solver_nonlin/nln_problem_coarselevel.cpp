@@ -104,6 +104,16 @@ void NLNSOL::NlnProblemCoarseLevel::ComputeF(const Epetra_MultiVector& xc,
 }
 
 /*----------------------------------------------------------------------------*/
+void NLNSOL::NlnProblemCoarseLevel::ComputeJacobian() const
+{
+  dserror("This is algebraic multigrid. We cannot update the Jacobian on a "
+      "coarse level. \nYou should re-build the RAPs with a updated fine level "
+      "Jacobian.");
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*/
 const NLNSOL::FAS::AMGHierarchy&
 NLNSOL::NlnProblemCoarseLevel::Hierarchy() const
 {

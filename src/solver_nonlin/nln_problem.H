@@ -147,14 +147,8 @@ namespace NLNSOL
 
     /*! \brief Evaluate Jacobian (linearization of residual)
      *
-     *  Set the most recent solution 'x' in the NOX group #noxgrp_. Afterwards,
-     *  the marching time integrator is asked to evaluate the residual via the
-     *  computeF()-call.
-     *
-     *  Updating the solution variables in the marching time integrator is done
-     *  during computeF().
-     *
-     *  Return the most recent residual in 'f'.
+     *  Updating the solution variables in the marching time integrator has
+     *  already been done during computeF().
      *
      *  \author mayr.mt \date 06/2014
      */

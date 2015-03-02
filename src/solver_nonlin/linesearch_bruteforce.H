@@ -83,10 +83,12 @@ namespace NLNSOL
      *
      *  \sa NLNSOL::LineSearchBase::IsSufficientDecrease()
      *
-     *  \author mayr.mt
-     *  \date 11/2013
+     *  \author mayr.mt \date 11/2013
      */
-    virtual const double ComputeLSParam() const;
+    virtual void ComputeLSParam(
+        double& lsparam, ///< line search parameter (to be determined)
+        bool& suffdecr ///< achieved sufficient decrease? (to be determined)
+        ) const;
 
     //@}
 

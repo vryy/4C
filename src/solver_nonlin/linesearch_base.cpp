@@ -37,6 +37,7 @@ NLNSOL::LineSearchBase::LineSearchBase()
    fold_(Teuchos::null),
    inc_(Teuchos::null),
    resnormold_(0.0),
+   suffdecrtype_(INPAR::NLNSOL::LINESEARCH::suffdecr_none),
    isinit_(false),
    issetup_(false)
 {
@@ -63,6 +64,10 @@ void NLNSOL::LineSearchBase::Init(
   inc_ = Teuchos::rcp(&inc, false);
   resnormold_ = resnormold;
 
+  suffdecrtype_ = INPAR::NLNSOL::LINESEARCH::suffdecr_armijo;
+//  suffdecrtype_ = INPAR::NLNSOL::LINESEARCH::suffdecr_aredpred;
+//  suffdecrtype_ = INPAR::NLNSOL::LINESEARCH::suffdecr_loose;
+
   // some sanity checks
   if (GetFNormOld() < 0.0)
     dserror("Old residual norm 'resnormold_' = %f, but has to be greater than "
@@ -76,14 +81,79 @@ void NLNSOL::LineSearchBase::Init(
 
 /*----------------------------------------------------------------------------*/
 bool NLNSOL::LineSearchBase::IsSufficientDecrease(const double fnorm2,
-    const double lsparam
-    ) const
+    const double lsparam) const
+{
+  bool issufficientdecrease = false;
+
+  switch(suffdecrtype_)
+  {
+    case INPAR::NLNSOL::LINESEARCH::suffdecr_armijo:
+    {
+      issufficientdecrease = SufficientDecreaseArmijo(fnorm2, lsparam);
+      break;
+    }
+    case INPAR::NLNSOL::LINESEARCH::suffdecr_aredpred:
+    {
+      issufficientdecrease = SufficientDecreaseARedPRed(fnorm2);
+      break;
+    }
+    case INPAR::NLNSOL::LINESEARCH::suffdecr_loose:
+    {
+      issufficientdecrease = SufficientDecreaseLoose(fnorm2);
+      break;
+    }
+    case INPAR::NLNSOL::LINESEARCH::suffdecr_none:
+    {
+      dserror("Type of sufficient decrease condition hasn't been set.");
+      break;
+    }
+    default:
+    {
+      dserror("Unknown type of sufficient decrease condition.");
+      break;
+    }
+  }
+
+  return issufficientdecrease;
+}
+
+/*----------------------------------------------------------------------------*/
+bool NLNSOL::LineSearchBase::SufficientDecreaseArmijo(const double fnorm2,
+    const double lsparam) const
 {
   bool issufficientdecrease = false;
 
   const double alpha = 1.0e-4; // as recommended in literature
 
   if (fnorm2 < (1.0 - alpha * lsparam) * resnormold_)
+    issufficientdecrease = true;
+
+  return issufficientdecrease;
+}
+
+/*----------------------------------------------------------------------------*/
+bool NLNSOL::LineSearchBase::SufficientDecreaseARedPRed(
+    const double fnorm2) const
+{
+  bool issufficientdecrease = false;
+
+  const double alpha = 1.0e-4; // as recommended in [Eisenstat (1996)]
+  const double eta = 0.95; // forcing term parameter
+
+  if (fnorm2 < (1.0 - alpha * (1.0 - eta)) * resnormold_)
+    issufficientdecrease = true;
+
+  return issufficientdecrease;
+}
+
+/*----------------------------------------------------------------------------*/
+bool NLNSOL::LineSearchBase::SufficientDecreaseLoose(const double fnorm2) const
+{
+  bool issufficientdecrease = false;
+
+  const double kappa = 1.0;
+
+  if (fnorm2 <= kappa * resnormold_)
     issufficientdecrease = true;
 
   return issufficientdecrease;
@@ -128,4 +198,13 @@ const Teuchos::ParameterList& NLNSOL::LineSearchBase::Params() const
     dserror("Parameter list 'params_' has not been initialized, yet.");
 
   return *params_;
+}
+
+/*----------------------------------------------------------------------------*/
+void NLNSOL::LineSearchBase::ComputeLSParam(double& lsparam) const
+{
+  bool suffdecr = false;
+  ComputeLSParam(lsparam, suffdecr);
+
+  return;
 }

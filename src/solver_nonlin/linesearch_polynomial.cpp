@@ -58,7 +58,8 @@ void NLNSOL::LineSearchPolynomial::Setup()
 }
 
 /*----------------------------------------------------------------------------*/
-const double NLNSOL::LineSearchPolynomial::ComputeLSParam() const
+void NLNSOL::LineSearchPolynomial::ComputeLSParam(double& lsparam,
+    bool& suffdecr) const
 {
   // time measurements
   Teuchos::RCP<Teuchos::Time> time = Teuchos::TimeMonitor::getNewCounter(
@@ -78,7 +79,7 @@ const double NLNSOL::LineSearchPolynomial::ComputeLSParam() const
   if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
 
   // the line search parameter
-  double lsparam = 1.0;
+  lsparam = 1.0;
   double lsparamold = 1.0;
 
   // try a full step first
@@ -87,38 +88,41 @@ const double NLNSOL::LineSearchPolynomial::ComputeLSParam() const
   err = xnew->Update(1.0, GetXOld(), lsparam, GetXInc(), 0.0);
   if (err != 0) { dserror("Failed."); }
 
+  // check for sufficient decrease
   Teuchos::RCP<Epetra_MultiVector> residual =
       Teuchos::rcp(new Epetra_MultiVector(GetXOld().Map(), true));
   ComputeF(*xnew, *residual);
-
   double fnorm2fullstep = 1.0e+12;
   bool converged = ConvergenceCheck(*residual, fnorm2fullstep);
+  suffdecr = IsSufficientDecrease(fnorm2fullstep, lsparam);
 
-  if (IsSufficientDecrease(fnorm2fullstep, lsparam))
+  if (suffdecr)
   {
-    *out << LabelShort() << ": lsparam = " << lsparam << " after full step"
-         << std::endl;
-    return lsparam;
+//    *out << LabelShort()
+//         << ": lsparam = " << lsparam
+//         << " after full step"
+//         << std::endl;
+    return;
   }
   else
   {
     // try half step
     lsparamold = lsparam;
     lsparam = 0.5;
-
     err = xnew->Update(1.0, GetXOld(), lsparam, GetXInc(), 0.0);
     if (err != 0) { dserror("Failed."); }
 
+    // check for sufficient decrease
     ComputeF(*xnew, *residual);
-
     double fnorm2halfstep = 1.0e+12;
     converged = ConvergenceCheck(*residual, fnorm2halfstep);
+    suffdecr = IsSufficientDecrease(fnorm2halfstep, lsparam);
 
-    if (converged or IsSufficientDecrease(fnorm2halfstep, lsparam))
+    if (converged or suffdecr)
     {
       *out << LabelShort() << ": lsparam = " << lsparam << " after half step"
            << std::endl;
-      return lsparam;
+      return;
     }
     else
     {
@@ -128,7 +132,7 @@ const double NLNSOL::LineSearchPolynomial::ComputeLSParam() const
       // define three data points for a quadratic model
       double l1 = 0.0;
       double l2 = 1.0;
-      double l3 = 0.5;
+      double l3 = lsparam;
 
       double y1 = GetFNormOld(); // value at l1
       double y2 = fnorm2fullstep; // value at l2
@@ -143,8 +147,7 @@ const double NLNSOL::LineSearchPolynomial::ComputeLSParam() const
       double a = 0.0;
       double b = 0.0;
 
-      while (not converged and not IsSufficientDecrease(fnorm2, lsparam)
-          and iter < itermax_)
+      while (not converged and not suffdecr and iter < itermax_)
       {
         ++iter;
 
@@ -169,11 +172,14 @@ const double NLNSOL::LineSearchPolynomial::ComputeLSParam() const
         // safeguard strategy
         Safeguard(lsparam, lsparamold);
 
+        // take trial step
         err = xnew->Update(1.0, GetXOld(), lsparam, GetXInc(), 0.0);
         if (err != 0) { dserror("Failed."); }
-        ComputeF(*xnew, *residual);
 
+        // check for sufficient decrease
+        ComputeF(*xnew, *residual);
         converged = ConvergenceCheck(*residual, fnorm2);
+        suffdecr = IsSufficientDecrease(fnorm2, lsparam);
 
         /* update interpolation points
          *
@@ -187,11 +193,6 @@ const double NLNSOL::LineSearchPolynomial::ComputeLSParam() const
         y3 = fnorm2;
       }
 
-      if (not converged
-          and (not IsSufficientDecrease(fnorm2, lsparam) or iter > itermax_))
-        dserror("Polynomial line search cannot satisfy sufficient decrease "
-            "condition within %d iterations.", itermax_);
-
       *out << LabelShort()
            << ": lsparam = " << lsparam
            << " after " << iter
@@ -199,5 +200,5 @@ const double NLNSOL::LineSearchPolynomial::ComputeLSParam() const
     }
   }
 
-  return lsparam;
+  return;
 }

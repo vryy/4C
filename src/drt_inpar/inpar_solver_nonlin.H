@@ -23,6 +23,18 @@ namespace INPAR
 namespace NLNSOL
 {
 
+namespace LINESEARCH
+{
+  //! type of sufficient decrease condition
+  enum SufficientDeacreaseType
+  {
+    suffdecr_none, ///< no type chosen
+    suffdecr_armijo, ///< Armijo's rule involving gradient information
+    suffdecr_aredpred, ///< ration of actual reduction to predicted reduction
+    suffdecr_loose ///< loose conditione: \f$||F(x_k+\lambda p)|| \leq \kappa||F(x_k)||\f$ with \f$\kappa\geq0\f$
+  };
+} // namespace LINESARCH
+
 namespace NONLINCG
 {
   //! possible formulas to compute beta within a nonlinear CG
