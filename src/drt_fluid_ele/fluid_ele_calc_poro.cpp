@@ -6662,7 +6662,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeError(
     // Compute analytical solution
     switch(calcerr)
     {
-    case INPAR::FLUID::byfunct1:
+    case INPAR::FLUID::byfunct:
     {
       const int func_no = 1;
 

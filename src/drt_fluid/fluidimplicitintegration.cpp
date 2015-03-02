@@ -4816,7 +4816,7 @@ Teuchos::RCP<std::vector<double> > FLD::FluidImplicitTimeInt::EvaluateErrorCompa
   case INPAR::FLUID::gravitation:
   case INPAR::FLUID::shear_flow:
   case INPAR::FLUID::fsi_fluid_pusher:
-  case INPAR::FLUID::byfunct1:
+  case INPAR::FLUID::byfunct:
   {
     // std::vector containing
     // [0]: relative L2 velocity error
@@ -4830,6 +4830,9 @@ Teuchos::RCP<std::vector<double> > FLD::FluidImplicitTimeInt::EvaluateErrorCompa
     // action for elements
     eleparams.set<int>("action",FLD::calc_fluid_error);
     eleparams.set<int>("calculate error",calcerr);
+
+    const int errorfunctno = params_->get<int>("error function number",-1);
+    eleparams.set<int>("error function number",errorfunctno);
 
     // set scheme-specific element parameters and vector values
     SetStateTimInt();
@@ -4857,7 +4860,8 @@ Teuchos::RCP<std::vector<double> > FLD::FluidImplicitTimeInt::EvaluateErrorCompa
     (*relerror)[1] = sqrt((*errors)[1])/sqrt((*errors)[4]);
 
     if ((calcerr==INPAR::FLUID::beltrami_flow) or
-        (calcerr==INPAR::FLUID::topoptchannel))
+        (calcerr==INPAR::FLUID::topoptchannel) or
+        (calcerr==INPAR::FLUID::byfunct))
       (*relerror)[2] = sqrt((*errors)[2])/sqrt((*errors)[5]);
     else
     {

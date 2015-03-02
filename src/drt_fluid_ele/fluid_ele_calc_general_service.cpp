@@ -975,6 +975,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::ComputeError(
   LINALG::Matrix<nsd_,nsd_> dervelint(true);
 
   const INPAR::FLUID::CalcError calcerr = DRT::INPUT::get<INPAR::FLUID::CalcError>(params,"calculate error");
+  const int calcerrfunctno = DRT::INPUT::get<INPAR::FLUID::CalcError>(params,"error function number");
 
   //----------------------------------------------------------------------------
   //   Extract velocity/pressure from global vectors
@@ -1059,7 +1060,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::ComputeError(
     //  n+alpha_F for generalized-alpha scheme
     //  value at n+alpha_F for generalized-alpha-NP schemen, n+1 otherwise)
 
-    EvaluateAnalyticSolutionPoint(xyzint, fldparatimint_->Time(), calcerr, mat, u, p, dervel, fldparatimint_->IsFullImplPressureAndCont(), fldparatimint_->Dt());
+    EvaluateAnalyticSolutionPoint(xyzint, fldparatimint_->Time(), calcerr, calcerrfunctno, mat, u, p, dervel, fldparatimint_->IsFullImplPressureAndCont(), fldparatimint_->Dt());
 
     if (calcerr == INPAR::FLUID::topoptchannel &&
         !(xyzint(1)>-0.2-1.0e-014 && xyzint(1)<0.2+1.0e-014))
@@ -1112,8 +1113,9 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::ComputeError(
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::EvaluateAnalyticSolutionPoint (
       const LINALG::Matrix<nsd_,1>      &xyzint,
-      const double                       t,
-      const INPAR::FLUID::CalcError      calcerr,
+      const double                      t,
+      const INPAR::FLUID::CalcError     calcerr,
+      const int                         calcerrfunctno,
       const Teuchos::RCP<MAT::Material> &mat,
       LINALG::Matrix<nsd_,1>            &u,
       double                            &p,
@@ -1320,11 +1322,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::EvaluateAnalyticSolutionPoint
 
   }
   break;
-  case INPAR::FLUID::byfunct1:
+  case INPAR::FLUID::byfunct:
   {
-    const int func_no = 1;
-
-
     // function evaluation requires a 3D position vector!!
     double position[3];
 
@@ -1345,25 +1344,67 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::EvaluateAnalyticSolutionPoint
 
     if(nsd_ == 2)
     {
-      const double u_exact_x = DRT::Problem::Instance()->Funct(func_no-1).Evaluate(0,position,t,NULL);
-      const double u_exact_y = DRT::Problem::Instance()->Funct(func_no-1).Evaluate(1,position,t,NULL);
-      const double p_exact   = DRT::Problem::Instance()->Funct(func_no-1).Evaluate(2,position,t,NULL);
+      const double u_exact_x = DRT::Problem::Instance()->Funct(calcerrfunctno-1).Evaluate(0,position,t,NULL);
+      const double u_exact_y = DRT::Problem::Instance()->Funct(calcerrfunctno-1).Evaluate(1,position,t,NULL);
+      const double p_exact   = DRT::Problem::Instance()->Funct(calcerrfunctno-1).Evaluate(2,position,t,NULL);
 
       u(0) = u_exact_x;
       u(1) = u_exact_y;
       p    = p_exact;
+
+      std::vector<std::vector<double> > uder_exact_x = DRT::Problem::Instance()->Funct(calcerrfunctno-1).FctDer(0,position,t,NULL);
+      std::vector<std::vector<double> > uder_exact_y = DRT::Problem::Instance()->Funct(calcerrfunctno-1).FctDer(1,position,t,NULL);
+      //std::vector<std::vector<double> > pder_exact   = DRT::Problem::Instance()->Funct(func_no-1).FctDer(2,position,t,1,NULL);
+
+      if(uder_exact_x.size())
+      {
+        dervel(0,0)=uder_exact_x[0][0];
+        dervel(0,1)=uder_exact_x[0][1];
+      }
+
+      if(uder_exact_y.size())
+      {
+        dervel(1,0)=uder_exact_y[0][0];
+        dervel(1,1)=uder_exact_y[0][1];
+      }
     }
     else if(nsd_==3)
     {
-      const double u_exact_x = DRT::Problem::Instance()->Funct(func_no-1).Evaluate(0,position,t,NULL);
-      const double u_exact_y = DRT::Problem::Instance()->Funct(func_no-1).Evaluate(1,position,t,NULL);
-      const double u_exact_z = DRT::Problem::Instance()->Funct(func_no-1).Evaluate(2,position,t,NULL);
-      const double p_exact   = DRT::Problem::Instance()->Funct(func_no-1).Evaluate(3,position,t,NULL);
+      const double u_exact_x = DRT::Problem::Instance()->Funct(calcerrfunctno-1).Evaluate(0,position,t,NULL);
+      const double u_exact_y = DRT::Problem::Instance()->Funct(calcerrfunctno-1).Evaluate(1,position,t,NULL);
+      const double u_exact_z = DRT::Problem::Instance()->Funct(calcerrfunctno-1).Evaluate(2,position,t,NULL);
+      const double p_exact   = DRT::Problem::Instance()->Funct(calcerrfunctno-1).Evaluate(3,position,t,NULL);
 
       u(0) = u_exact_x;
       u(1) = u_exact_y;
       u(2) = u_exact_z;
       p    = p_exact;
+
+      std::vector<std::vector<double> > uder_exact_x = DRT::Problem::Instance()->Funct(calcerrfunctno-1).FctDer(0,position,t,NULL);
+      std::vector<std::vector<double> > uder_exact_y = DRT::Problem::Instance()->Funct(calcerrfunctno-1).FctDer(1,position,t,NULL);
+      std::vector<std::vector<double> > uder_exact_z = DRT::Problem::Instance()->Funct(calcerrfunctno-1).FctDer(2,position,t,NULL);
+
+      if(uder_exact_x.size())
+      {
+        dervel(0,0)=uder_exact_x[0][0];
+        dervel(0,1)=uder_exact_x[0][1];
+        dervel(0,2)=uder_exact_x[0][2];
+      }
+
+      if(uder_exact_y.size())
+      {
+        dervel(1,0)=uder_exact_y[0][0];
+        dervel(1,1)=uder_exact_y[0][1];
+        dervel(1,2)=uder_exact_y[0][2];
+      }
+
+      if(uder_exact_z.size())
+      {
+        dervel(2,0)=uder_exact_z[0][0];
+        dervel(2,1)=uder_exact_z[0][1];
+        dervel(2,2)=uder_exact_z[0][2];
+      }
+
     }
     else dserror("invalid dimension");
 

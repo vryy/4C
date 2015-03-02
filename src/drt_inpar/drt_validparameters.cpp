@@ -3729,7 +3729,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
    name[ 3] = "gravitation";                    label[ 3] = INPAR::FLUID::gravitation;
    name[ 4] = "shear_flow";                     label[ 4] = INPAR::FLUID::shear_flow;
    name[ 5] = "jeffery_hamel_flow";             label[ 5] = INPAR::FLUID::jeffery_hamel_flow;
-   name[ 6] = "byfunct1";                       label[ 6] = INPAR::FLUID::byfunct1;
+   name[ 6] = "byfunct";                        label[ 6] = INPAR::FLUID::byfunct;
    name[ 7] = "beltrami_stat_stokes";           label[ 7] = INPAR::FLUID::beltrami_stat_stokes;
    name[ 8] = "beltrami_stat_navier_stokes";    label[ 8] = INPAR::FLUID::beltrami_stat_navier_stokes;
    name[ 9] = "beltrami_instat_stokes";         label[ 9] = INPAR::FLUID::beltrami_instat_stokes;
@@ -3747,6 +3747,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                      label,
                                      &fdyn);
   }
+  IntParameter("CALCERRORFUNCNO",-1,"Function for Error Calculation",&fdyn);
 
   setStringToIntegralParameter<int>("SIMPLER","no",
                                "Switch on SIMPLE family of solvers, only works with block preconditioners like CheapSIMPLE!",

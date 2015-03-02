@@ -323,6 +323,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ComputeError(
   LINALG::Matrix<nsd_,1> xyz(true);
 
   const INPAR::FLUID::CalcError calcerr = DRT::INPUT::get<INPAR::FLUID::CalcError>(params,"calculate error");
+  const int calcerrfunctno = DRT::INPUT::get<INPAR::FLUID::CalcError>(params,"error function number");
 
   double err_u = 0., err_p = 0., err_h = 0., norm_u = 0., norm_p = 0., norm_h = 0.;
   for (unsigned int q=0; q<shapes_->nqpoints_; ++q)
@@ -344,7 +345,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ComputeError(
     for (unsigned int d=0; d<nsd_; ++d)
       xyz(d) = shapes_->xyzreal(d,q);
 
-    FluidEleCalc<distype>::EvaluateAnalyticSolutionPoint(xyz, time, calcerr, mat, u, p, dervel);
+    FluidEleCalc<distype>::EvaluateAnalyticSolutionPoint(xyz, time, calcerr, calcerrfunctno, mat, u, p, dervel);
 
     for (unsigned int d=0; d<nsd_; ++d)
       err_u += (u(d) - numerical[d]) * (u(d) - numerical[d]) * jfac;

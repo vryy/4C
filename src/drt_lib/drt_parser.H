@@ -151,7 +151,7 @@ public:
   //! evaluate function in time (Curve)
   T EvaluateCurve(T t);
   //! evaluate function in space (Function)
-  T EvaluateFunct(double x, double y, double z, double t);  // could be templated x,y,z for spatial gradients
+  T EvaluateFunct(T x, T y, T z, T t);  // could be templated x,y,z for spatial gradients
 
 private:
 
@@ -230,7 +230,7 @@ T Parser<T>::EvaluateCurve(T t)
 \date 12/05
 */
 template <class T>
-T Parser<T>::EvaluateFunct(double x, double y, double z, double t)
+T Parser<T>::EvaluateFunct(T x, T y, T z, T t)
 {
   // set spatial variables as requested
   parse_x_ = x;

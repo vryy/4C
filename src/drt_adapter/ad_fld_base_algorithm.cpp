@@ -1367,6 +1367,7 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
   //--------------------------------------analytical error evaluation
   fluidtimeparams->set<int>("calculate error",
       Teuchos::getIntegralValue<int>(fdyn,"CALCERROR"));
+  fluidtimeparams->set<int>("error function number", fdyn.get<int>("CALCERRORFUNCNO"));
 
   // -----------------------sublist containing stabilization parameters
   fluidtimeparams->sublist("RESIDUAL-BASED STABILIZATION") =fdyn.sublist("RESIDUAL-BASED STABILIZATION");

@@ -350,15 +350,16 @@ public:
    \brief Evaluates the analytic solution in the given point
    */
   static void EvaluateAnalyticSolutionPoint (
-      const LINALG::Matrix<nsd_,1> &xyzint,
-      const double                  t,
-      const INPAR::FLUID::CalcError calcerr,
+      const LINALG::Matrix<nsd_,1> &    xyzint,
+      const double                      t,
+      const INPAR::FLUID::CalcError     calcerr,
+      const int                         calcerrfunctno,
       const Teuchos::RCP<MAT::Material> &mat,
       LINALG::Matrix<nsd_,1>            &u,
       double                            &p,
       LINALG::Matrix<nsd_,nsd_>         &dervel,
-      bool                        isFullImplPressure = false,
-      double                      deltat = 0.0
+      bool                              isFullImplPressure = false,
+      double                            deltat = 0.0
       );
 
   /// Evaluate the element

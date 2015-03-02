@@ -410,7 +410,7 @@ FLD::TimIntHDG::EvaluateErrorComparedToAnalyticalSol()
   case INPAR::FLUID::gravitation:
   case INPAR::FLUID::shear_flow:
   case INPAR::FLUID::fsi_fluid_pusher:
-  case INPAR::FLUID::byfunct1:
+  case INPAR::FLUID::byfunct:
     discret_->SetState(1, "intvelnp",intvelnp_);
     break;
   default:

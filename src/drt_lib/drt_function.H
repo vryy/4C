@@ -80,6 +80,25 @@ namespace UTILS {
 
     /*!
 
+    \brief evaluate derivatives function at given position in space
+
+    \param index (i) For vector-valued functions, index defines the
+                     function-component which should be evaluated
+                     For scalar functionsb, index is always set to 0
+    \param x     (i) The point in 3-dimensional space in which the
+                     function will be evaluated
+    \param t     (i) Absolut time in which the
+                     function will be evaluated
+    \param dis   (i) discretization
+
+    */
+    virtual std::vector<std::vector<double> > FctDer(int index, const double* x, const double t, DRT::Discretization* dis)
+      {
+        return std::vector<std::vector<double> >(0);
+      };
+
+    /*!
+
     \brief Return the number of components of this spatial function
     (1 for scalar functions, dim for vector-valued functions)
 

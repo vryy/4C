@@ -632,7 +632,7 @@ void FluidEleCalcXFEM<distype>::AnalyticalReference(
   }
   break;
 
-  case INPAR::FLUID::byfunct1:
+  case INPAR::FLUID::byfunct:
   {
     const int func_no = 1;
 

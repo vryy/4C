@@ -44,7 +44,8 @@ CONVTOL                         1.0E-10
 NUMSTASTEPS                     0
 START_THETA                     0.80
 INITIALFIELD                    BELTRAMI-FLOW
-CALCERROR                       beltrami_flow
+CALCERROR                       byfunct
+CALCERRORFUNCNO                 2
 STARTFUNCNO                     8
 CONVFORM                        conservative
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
@@ -5868,6 +5869,10 @@ CURVE2 on Explicit FUNC BELTRAMI c1 2.0 c2 1.0
 ----------------------------------------------------------------------FUNCT1
 FUNCT1                          BELTRAMI
 ----------------------------------------------------------------------FUNCT2
+FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION -pi/4.0*(exp(pi/4.0*x)*sin(pi/4.0*y+pi/2.0*z)+exp(pi/4.0*z)*cos(pi/4.0*x+pi/2.0*y))*exp(-0.001*pi*pi/4.0*t)
+FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION -pi/4.0*(exp(pi/4.0*y)*sin(pi/4.0*z+pi/2.0*x)+exp(pi/4.0*x)*cos(pi/4.0*y+pi/2.0*z))*exp(-0.001*pi*pi/4.0*t)
+FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION -pi/4.0*(exp(pi/4.0*z)*sin(pi/4.0*x+pi/2.0*y)+exp(pi/4.0*y)*cos(pi/4.0*z+pi/2.0*x))*exp(-0.001*pi*pi/4.0*t)
+FUNCT2 COMPONENT 3 EXPR 0 0.0 0 FUNCTION -pi*pi/32.0*1.0*(exp(2*pi/4.0*x)+exp(2*pi/4.0*y)+exp(2*pi/4.0*z)+2*sin(pi/4.0*x+pi/2.0*y)*cos(pi/4.0*z+pi/2.0*x)*exp(pi/4.0*(y+z))+2*sin(pi/4.0*y+pi/2.0*z)*cos(pi/4.0*x+pi/2.0*y)*exp(pi/4.0*(z+x))+2*sin(pi/4.0*z+pi/2.0*x)*cos(pi/4.0*y+pi/2.0*z)*exp(pi/4.0*(x+y)))*exp(-2.0*0.001*pi*pi/4.0*t)
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------------------FUNCT5

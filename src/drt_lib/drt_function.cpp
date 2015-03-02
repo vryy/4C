@@ -14,7 +14,7 @@ Maintainer: Martin Kronbichler
 /*----------------------------------------------------------------------*/
 
 
-
+#include <Sacado.hpp>
 #include "drt_discret.H"
 #include "drt_function.H"
 #include "drt_globalproblem.H"
@@ -86,6 +86,22 @@ public:
 
   /*!
 
+  \brief evaluate derivatives function at given position in space
+
+  \param index (i) For vector-valued functions, index defines the
+                   function-component which should be evaluated
+                   For scalar functionsb, index is always set to 0
+  \param x     (i) The point in 3-dimensional space in which the
+                   function will be evaluated
+  \param t     (i) Absolut time in which the
+                   function will be evaluated
+  \param dis   (i) discretization
+
+  */
+  virtual std::vector<std::vector<double> > FctDer(int index, const double* x, const double t, DRT::Discretization* dis);
+
+  /*!
+
   \brief add expression to an existing ExprFunction in order to extend
          it to a vector-valued spatial function.
 
@@ -151,6 +167,7 @@ private:
   std::vector<double> z_; //! origin(s) of spatial function, z-component
 
   std::vector<Teuchos::RCP<DRT::PARSER::Parser<double> > > expr_; //! expression syntax tree(s)
+  std::vector<Teuchos::RCP<DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double> > > > > exprd_;
 };
 
 
@@ -1570,6 +1587,7 @@ DRT::UTILS::ExprFunction::ExprFunction()
   z_.clear();
 
   expr_.clear();
+  exprd_.clear();
 
   return;
 }
@@ -1589,6 +1607,7 @@ DRT::UTILS::ExprFunction::ExprFunction(char* buf,
   z_.push_back(z);
 
   expr_.push_back(Teuchos::rcp(new DRT::PARSER::Parser<double>(buf)));
+  exprd_.push_back(Teuchos::rcp(new DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double> > >(buf)));
 
   return;
 }
@@ -1610,6 +1629,7 @@ void DRT::UTILS::ExprFunction::AddExpr(std::string buf,
   )
 {
   expr_.push_back(Teuchos::rcp(new DRT::PARSER::Parser<double>(buf)));
+  exprd_.push_back(Teuchos::rcp(new DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double> > >(buf)));
 
   x_.push_back(x);
   y_.push_back(y);
@@ -1641,6 +1661,56 @@ double DRT::UTILS::ExprFunction::Evaluate(int index, const double* x, double t, 
   return 0.0;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::vector<std::vector<double> > DRT::UTILS::ExprFunction::FctDer(int index, const double* x, const double t, DRT::Discretization* dis)
+{
+  // single expression for all components. Reset index to 0!
+  if(expr_.size()==1)
+    index=0;
+
+  const unsigned deg =1;
+  // resulting vector holding
+  std::vector<std::vector<double> > res(deg);
+  for(unsigned i=0;i<deg;i++)
+    res[i]= std::vector<double> (4,0.0);
+
+  // derivatives
+
+  // Fad object for evaluation
+  // sacado data type replaces "double"
+  typedef Sacado::Fad::DFad<Sacado::Fad::DFad<double> >  FAD;
+
+  // for 1st order derivatives
+  FAD xfad(4, 0, x[0]);
+  FAD yfad(4, 1, x[1]);
+  FAD zfad(4, 2, x[2]);
+  FAD tfad(4, 3, t);
+
+  // for 2nd order derivatives
+  xfad.val() = Sacado::Fad::DFad<double>(4, 0, x[0]);
+  yfad.val() = Sacado::Fad::DFad<double>(4, 1, x[1]);
+  zfad.val() = Sacado::Fad::DFad<double>(4, 2, x[2]);
+  tfad.val() = Sacado::Fad::DFad<double>(4, 3, t);
+
+  // derivatives of function
+  FAD fdfad;
+  switch(dim_)
+  {
+  case 3: fdfad =  exprd_[index]->EvaluateFunct(xfad-x_[index], yfad-y_[index], zfad-z_[index], tfad); break;
+  case 2: fdfad =  exprd_[index]->EvaluateFunct(xfad-x_[index], yfad-y_[index], 0, tfad); break;
+  case 1: fdfad =  exprd_[index]->EvaluateFunct(xfad-x_[index], 0, 0, tfad); break;
+  default: dserror("Problem dimension has to be 1, 2, or 3."); break;
+  }
+
+  res[0][0]=fdfad.dx(0).val();
+  res[0][1]=fdfad.dx(1).val();
+  res[0][2]=fdfad.dx(2).val();
+  res[0][3]=fdfad.dx(3).val();
+
+  // return function (and its derivatives)
+  return res;
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
