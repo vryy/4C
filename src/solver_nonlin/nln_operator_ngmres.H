@@ -179,7 +179,7 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 03/2014
      */
-    virtual int ComputeTentativeIterate
+    virtual const int ComputeTentativeIterate
     (
       const Epetra_MultiVector& fbar, ///< current residual
       Epetra_MultiVector& xbar ///< current solution
@@ -205,7 +205,7 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 03/2014
      */
-    virtual bool ComputeAcceleratedIterate
+    virtual const bool ComputeAcceleratedIterate
     (
       const Teuchos::RCP<const Epetra_MultiVector> xbar, ///< tentative iterate / current solution
       const Teuchos::RCP<const Epetra_MultiVector> fbar, ///< residual based on tentative iterate / current solution
@@ -213,6 +213,39 @@ namespace NLNSOL
       const std::vector<Teuchos::RCP<Epetra_MultiVector> >& res, ///< collection of previous residuals
       Teuchos::RCP<Epetra_MultiVector> xhat ///< accelerated iterate (to be determined)
     ) const;
+
+    /*! \brief Perform line search
+     *
+     *  We perform a line search along the search direction betweeen #xbar and
+     *  #xhat. For storage and algorithmic reasons, the result is written in
+     *  #xbar on output.
+     *
+     *  The implementation follows [Sterck (2012)].
+     *
+     *  \return Boolean error code (set to true if everything is ok, false
+     *          otherwise)
+     *
+     *  \author mayr.mt \date 03/2015
+     */
+    virtual void PerformLineSearchStep(
+        Teuchos::RCP<Epetra_MultiVector> xbar, ///< previous iterate (input), next iterate (output)
+        Teuchos::RCP<const Epetra_MultiVector> xhat, ///< accelerated solution
+        Teuchos::RCP<Epetra_MultiVector> fbar ///< residual at previous iterate
+        ) const;
+
+    //@}
+
+    //! @name Utilities
+    //@{
+
+    /*! \brief Add iterate and residual vectors to window history
+     *
+     *  \author mayr.mt \date 03/2015
+     */
+    virtual void AddToWindow(
+        Teuchos::RCP<const Epetra_MultiVector> vec, ///< vector to add to history
+        std::vector<Teuchos::RCP<Epetra_MultiVector> >& history ///< collection of history vectors
+        ) const;
 
     //@}
 

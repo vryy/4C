@@ -136,19 +136,20 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
   if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
 
+  //----------------------------------------------------------------------------
   // prepare storage for solution iterates, corresponding residuals and norms
-  std::vector<Teuchos::RCP<Epetra_MultiVector> > sol;
-  std::vector<Teuchos::RCP<Epetra_MultiVector> > res;
+  //----------------------------------------------------------------------------
+  std::vector<Teuchos::RCP<Epetra_MultiVector> > sol; // previous iterates
+  std::vector<Teuchos::RCP<Epetra_MultiVector> > res; // previous residuals
 
+  //----------------------------------------------------------------------------
   // some variables needed during the NGmres iteration loop
+  //----------------------------------------------------------------------------
   unsigned int iter = 0; // iteration index
-  double steplength = 1.0; // line search parameter
-  double resnormold = 1.0e+12; // residual L2 norm
   bool restart = false; // Perform a restart?
   double fnorm2 = 1.0e+12; // L2-norm of residual
   double fbarnorm2 = 0.0; // L2-norm of residual after tentative step
-  bool suffdecr = false; // flag for sufficient decrease of line search
-  bool success = false;
+  bool success = false; // flag for success of acceleration step
 
   //----------------------------------------------------------------------------
   // criteria for acceptance of iterates and for restart decision
@@ -172,56 +173,59 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
   *out << "Begin with Krylov acceleration, now. "
        << "Starting iteration count is " << iter << "." << std::endl;
 
-  // get local copies of solution and residual
+  //----------------------------------------------------------------------------
+  // global solution and residual vectors
+  //----------------------------------------------------------------------------
+  // current iterate
   Teuchos::RCP<Epetra_MultiVector> xbar =
       Teuchos::rcp(new Epetra_MultiVector(x));
+
+  // residual at current iterate
   Teuchos::RCP<Epetra_MultiVector> fbar =
       Teuchos::rcp(new Epetra_MultiVector(f.Map(), true));
   NlnProblem()->ComputeF(*xbar, *fbar);
+
+  // accelerated iterate
+  Teuchos::RCP<Epetra_MultiVector> xhat =
+      Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
+
+  // residual at accelerated iterate
+  Teuchos::RCP<Epetra_MultiVector> fhat =
+      Teuchos::rcp(new Epetra_MultiVector(f.Map(), true));
+  //----------------------------------------------------------------------------
 
   bool converged = NlnProblem()->ConvergenceCheck(*fbar, fnorm2);
 
   // print initial state of convergence
   PrintIterSummary(iter, fnorm2);
 
+  //----------------------------------------------------------------------------
   // outer iteration loop
+  //----------------------------------------------------------------------------
   while (ContinueIterations(iter, converged))
   {
     // reset the restart flag
     restart = false;
 
+    //--------------------------------------------------------------------------
     // window iteration loop
+    //--------------------------------------------------------------------------
     while (not restart)
     {
       ++iter;
 
       // add most recent iterate and residual to the history
-      {
-        Teuchos::RCP<Epetra_MultiVector> xcopy =
-            Teuchos::rcp(new Epetra_MultiVector(*xbar));
-        Teuchos::RCP<Epetra_MultiVector> fcopy =
-            Teuchos::rcp(new Epetra_MultiVector(*fbar));
-        sol.push_back(xcopy);
-        res.push_back(fcopy);
-      }
+      AddToWindow(xbar, sol);
+      AddToWindow(fbar, res);
 
       //------------------------------------------------------------------------
       // Step 1: Generate a new tentative iterate
       //------------------------------------------------------------------------
       {
-        err = xbar->Update(1.0, *(sol.back()), 0.0);
-        if (err != 0) { dserror("Update failed."); }
-        err = fbar->Update(1.0, *(res.back()), 0.0);
-        if (err != 0) { dserror("Update failed."); }
-
         // compute a tentative iterate by applying the preconditioner once
-        err = ComputeTentativeIterate(*fbar, *xbar);
-        if (err != 0) { dserror("Failed."); }
+        ComputeTentativeIterate(*fbar, *xbar);
 
-        // evaluate the residual based on the new tentative solution
         NlnProblem()->ComputeF(*xbar, *fbar);
-//        NlnProblem()->ComputeJacobian();
-
         converged = NlnProblem()->ConvergenceCheck(*fbar, fbarnorm2);
         if (converged)
           break;
@@ -231,10 +235,7 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
       //------------------------------------------------------------------------
       // Step 2: Generate accelerated iterate
       //------------------------------------------------------------------------
-      Teuchos::RCP<Epetra_MultiVector> xhat = Teuchos::null;
-      Teuchos::RCP<Epetra_MultiVector> fhat = Teuchos::null;
       {
-        xhat = Teuchos::rcp(new Epetra_MultiVector(xbar->Map(), true));
         success = ComputeAcceleratedIterate(xbar, fbar, sol, res, xhat);
         if (not success)
         {
@@ -242,8 +243,6 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
           *out << "*** Acceleration failed. *** in iteration     " << iter
                << std::endl;
         }
-
-        fhat = Teuchos::rcp(new Epetra_MultiVector(xhat->Map(), true));
 
         // evaluate the residual based on the accelerated solution
         NlnProblem()->ComputeF(*xhat, *fhat);
@@ -253,7 +252,7 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
       //------------------------------------------------------------------------
       // Evaluate criteria A, B, C, and D as in [Washio (1997)]
       //------------------------------------------------------------------------
-      { // ToDo (mayr) Compute criteria A-D distributed to avoid repeated looping over vectors
+      {
         // update
         criterionCprev = criterionC;
         criterionDprev = criterionD;
@@ -265,14 +264,10 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
         //----------------------------------------------------------------------
         // Criterion A
         double fnormhat = 0.0;
-        double fnormmin = 1.0e+12;
         double fnorm = 0.0;
         NlnProblem()->ConvergenceCheck(*fhat, fnormhat);
-        for (unsigned int i = 0; i < res.size(); ++i)
-        {
-          NlnProblem()->ConvergenceCheck(*(res[i]), fnorm);
-          fnormmin = std::min(fnormmin, fnorm);
-        }
+        NlnProblem()->ConvergenceCheck(*(res.back()), fnorm);
+        double fnormmin = std::min(1.0e+12, fnorm);
         if (fnormhat < gammaA * fnormmin)
           criterionA = true;
 
@@ -285,14 +280,9 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
         NlnProblem()->ConvergenceCheck(*vec, xnormleft);
 
         double xnorm = 0.0;
-        double xnormmin = 1.0e+12;
-        for (std::vector<Teuchos::RCP<Epetra_MultiVector> >::const_iterator it =
-            sol.begin(); it < sol.end(); ++it)
-        {
-          vec->Update(1.0, *xhat, -1.0, *(*it), 0.0);
-          NlnProblem()->ConvergenceCheck(*vec, xnorm);
-          xnormmin = std::min(xnorm, xnormmin);
-        }
+        vec->Update(1.0, *xhat, -1.0, *(sol.back()), 0.0);
+        NlnProblem()->ConvergenceCheck(*vec, xnorm);
+        double xnormmin = std::min(xnorm, 1.0e+12);
         if (epsB * xnormleft < xnormmin or fnormhat < deltaB * fnormmin)
           criterionB = true;
 
@@ -301,7 +291,6 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
           xbar->Update(1.0, *xhat, 0.0);
           NlnProblem()->ComputeF(*xbar, *fbar);
         }
-
         //----------------------------------------------------------------------
 
         //----------------------------------------------------------------------
@@ -322,46 +311,24 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
                << ": Perform restart in iteration      " << iter
                << std::endl;
         }
-
         //----------------------------------------------------------------------
 
       }
       //------------------------------------------------------------------------
 
-
       //------------------------------------------------------------------------
       // Step 3: Perform line search as in [Sterck (2012)]
       //------------------------------------------------------------------------
       {
-        // build vector of search direction
-        Teuchos::RCP<Epetra_MultiVector> inc =
-            Teuchos::rcp(new Epetra_MultiVector(*xhat));
-        err = inc->Update(-1.0, *xbar, 1.0);
-        if (err != 0) { dserror("Update failed."); }
-
         if (not success
             or (criterionC and criterionD and criterionCprev and criterionDprev))
         {
           restart = true;
         }
-        else // descent direction
+        else // accepted iterate and, thus, perform a line search step
         {
-          // line search
-          NlnProblem()->ConvergenceCheck(*fbar, resnormold);
-          ComputeStepLength(*xbar, *fbar, *inc, resnormold, steplength, suffdecr);
-
-          /* update solution using the line search parameter
-           * (called 'xstar' in [Sterck (2012), eq. (2.9)]) */
-          Teuchos::RCP<Epetra_MultiVector> xstar =
-              Teuchos::rcp(new Epetra_MultiVector(*xbar));
-          err = xstar->Update(steplength, *xhat, 1.0-steplength);
-          if (err != 0) { dserror("Update failed."); }
-
-          // evaluate the residual based on the new solution
-          NlnProblem()->ComputeF(*xstar, *fbar);
-
-          err = xbar->Update(1.0, *xstar, 0.0);
-          if (err != 0) { dserror("Update failed."); }
+          PerformLineSearchStep(xbar, xhat, fbar);
+          NlnProblem()->ComputeF(*xbar, *fbar);
         }
       }
       //------------------------------------------------------------------------
@@ -406,17 +373,16 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
 }
 
 /*----------------------------------------------------------------------------*/
-int NLNSOL::NlnOperatorNGmres::ComputeTentativeIterate(
+const int NLNSOL::NlnOperatorNGmres::ComputeTentativeIterate(
     const Epetra_MultiVector& fbar, Epetra_MultiVector& xbar) const
 {
-  if (not xbar.Map().PointSameAs(fbar.Map()))
-    dserror("Maps do not match.");
+  dsassert(xbar.Map().PointSameAs(fbar.Map()), "Maps do not match.");
 
   return nlnprec_->ApplyInverse(fbar, xbar);
 }
 
 /*----------------------------------------------------------------------------*/
-bool NLNSOL::NlnOperatorNGmres::ComputeAcceleratedIterate(
+const bool NLNSOL::NlnOperatorNGmres::ComputeAcceleratedIterate(
     const Teuchos::RCP<const Epetra_MultiVector> xbar,
     const Teuchos::RCP<const Epetra_MultiVector> fbar,
     const std::vector<Teuchos::RCP<Epetra_MultiVector> >& sol,
@@ -424,8 +390,7 @@ bool NLNSOL::NlnOperatorNGmres::ComputeAcceleratedIterate(
     Teuchos::RCP<Epetra_MultiVector> xhat
     ) const
 {
-  int err = 0;
-  bool success = true; // suppose success
+  bool success = true; // suppose success of acceleration step
 
   if (sol.size() != res.size() or sol.size() < 1 or res. size() < 1)
     dserror("Size of history vectors 'sol' or 'res' is not admissible.");
@@ -459,8 +424,7 @@ bool NLNSOL::NlnOperatorNGmres::ComputeAcceleratedIterate(
 
       /* difference between most recent residual and the one from the 'it'
        * previous iteration */
-      err = p->Update(1.0, *fbar, -1.0, *(*it), 0.0);
-      if (err != 0) { dserror("Update failed."); }
+      p->Update(1.0, *fbar, -1.0, *(*it), 0.0);
 
       // insert this as last column into matrix 'P'
       P.push_back(p);
@@ -475,16 +439,14 @@ bool NLNSOL::NlnOperatorNGmres::ComputeAcceleratedIterate(
     for (unsigned int i = 0; i < P.size(); ++i)
     {
       // right hand side product -P^T * g
-      err = P[i]->Dot(*fbar, &rhsentry);
-      if (err != 0) { dserror("Failed."); }
+      P[i]->Dot(*fbar, &rhsentry);
       Ptg[i] = -rhsentry;
 
       // matrix-matrix product P^T * P
       for (unsigned int j = 0; j <= i; ++j)
       {
         // compute single entry of target matrix PtP
-        err = P[i]->Dot(*(P[j]), &matrixentry);
-        if (err != 0) { dserror("Failed."); }
+        P[i]->Dot(*(P[j]), &matrixentry);
 
         // put matrix entry at its positions (symmetric matrix)
         if (i != j) // off-diagonal entries (symmetry!)
@@ -547,20 +509,42 @@ bool NLNSOL::NlnOperatorNGmres::ComputeAcceleratedIterate(
   // ---------------------------------------------------------------------------
 
   // sum up last iterates to new solution, i.e. do the linear combination
-  if (xhat.is_null()) { dserror("Allocation failed."); }
-  err = xhat->Update(1.0, *xbar, 0.0);
-  if (err != 0) { dserror("Update failed."); }
-
+  xhat->Update(1.0, *xbar, 0.0);
   if (success)
   {
     for (int i = 0; i < alpha.Length(); ++i)
     {
-      err = xhat->Update(alpha[i], *xbar, -alpha[i], *(sol[i]), 1.0);
-      if (err != 0) { dserror("Update failed."); }
+      xhat->Update(alpha[i], *xbar, -alpha[i], *(sol[i]), 1.0);
     }
   }
 
   return success;
+}
+
+/*----------------------------------------------------------------------------*/
+void NLNSOL::NlnOperatorNGmres::PerformLineSearchStep(
+    Teuchos::RCP<Epetra_MultiVector> xbar,
+    Teuchos::RCP<const Epetra_MultiVector> xhat,
+    Teuchos::RCP<Epetra_MultiVector> fbar) const
+{
+  // some initializations
+  double resnormold = 0.0; // residual norm at current iterate
+  double steplength = 1.0; // line search parameter
+  bool suffdecr = false; // flag for sufficient decrease of line search
+
+  // build vector of search direction
+  Teuchos::RCP<Epetra_MultiVector> inc =
+      Teuchos::rcp(new Epetra_MultiVector(*xhat));
+  inc->Update(-1.0, *xbar, 1.0);
+
+  // line search
+  NlnProblem()->ConvergenceCheck(*fbar, resnormold);
+  ComputeStepLength(*xbar, *fbar, *inc, resnormold, steplength, suffdecr);
+
+  // update solution using the line search parameter
+  xbar->Update(steplength, *xhat, 1.0-steplength);
+
+  return;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -578,6 +562,18 @@ void NLNSOL::NlnOperatorNGmres::ComputeStepLength(const Epetra_MultiVector& x,
       Params().sublist("Nonlinear Operator: Line Search"), x, f, inc, fnorm2);
   linesearch_->Setup();
   linesearch_->ComputeLSParam(lsparam, suffdecr);
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*/
+void NLNSOL::NlnOperatorNGmres::AddToWindow(
+    Teuchos::RCP<const Epetra_MultiVector> vec,
+    std::vector<Teuchos::RCP<Epetra_MultiVector> >& history) const
+{
+  Teuchos::RCP<Epetra_MultiVector> veccopy =
+      Teuchos::rcp(new Epetra_MultiVector(*vec));
+  history.push_back(veccopy);
 
   return;
 }
