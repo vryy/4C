@@ -151,7 +151,7 @@ namespace ELEMENTS
 
     std::string Name() const { return "WallTri3PoroType"; }
 
-    static WallTri3PoroType & Instance() { return instance_; };
+    static WallTri3PoroType & Instance();
 
     virtual DRT::ParObject* Create( const std::vector<char> & data );
 

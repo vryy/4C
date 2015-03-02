@@ -320,6 +320,10 @@ int DRT::ELEMENTS::WallNurbs9PoroType::Initialize(DRT::Discretization& dis)
 
 DRT::ELEMENTS::WallTri3PoroType DRT::ELEMENTS::WallTri3PoroType::instance_;
 
+DRT::ELEMENTS::WallTri3PoroType& DRT::ELEMENTS::WallTri3PoroType::Instance()
+{
+  return instance_;
+}
 
 DRT::ParObject* DRT::ELEMENTS::WallTri3PoroType::Create( const std::vector<char> & data )
 {
