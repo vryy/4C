@@ -37,6 +37,8 @@ NUMSTEP                         5 //2000
 RESTARTEVRY                     2
 TIMESTEP                        0.02  //0.2
 UPRES                           1
+---------------------------------------------------TWO PHASE FLOW/SMEARED
+ENHANCED_GAUSSRULE              No
 INTERFACE_THICKNESS             0.09375  //0.03125  //3eps=0.09375
 -----------------------------------LEVEL-SET CONTROL/REINITIALIZATION
 REINITIALIZATION                Signed_Distance_Function

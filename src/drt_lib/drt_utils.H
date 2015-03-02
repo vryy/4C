@@ -45,6 +45,8 @@ namespace UTILS
 
   void ExtractMyValues(const Epetra_Vector& global, Epetra_SerialDenseVector& local, const std::vector<int>& lm);
 
+  void ExtractMyValues(const Epetra_MultiVector& global, std::vector<double>& local, const std::vector<int>& lm);
+
   /// Locally extract a subset of values from a (column)-nodemap-based Epetra_MultiVector
   /*  \author henke
    *  \date 06/09

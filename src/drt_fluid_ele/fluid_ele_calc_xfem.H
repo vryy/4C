@@ -266,7 +266,8 @@ private:
       LINALG::Matrix<my::nsd_,1>& itraction_jump,                              ///< prescribed interface jump vector for traction
       const LINALG::Matrix<my::nsd_,1>& x,                                     ///< global coordinates of Gaussian point
       const LINALG::Matrix<my::nsd_,1>& normal,                                ///< normal vector at Gaussian point
-      Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype> > si  ///< side implementation for cutter element
+      Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype> > si, ///< side implementation for cutter element
+      LINALG::Matrix<3,1>& rst                                                 ///< local coordinates of GP for bg element
   );
 
   //! build the patch coupling matrix Cuiui containing Cuiui for all cutting sides

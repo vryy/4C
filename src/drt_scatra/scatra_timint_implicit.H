@@ -224,7 +224,7 @@ public:
   virtual void EvaluateErrorComparedToAnalyticalSol(){return;};
 
   //! calculate the reconstructed nodal gradient of phi
-  Teuchos::RCP<Epetra_MultiVector> GetGradientAtNodes(const Teuchos::RCP<const Epetra_Vector> phi);
+  Teuchos::RCP<Epetra_MultiVector> GetSmoothedGradientAtNodes(const Teuchos::RCP<const Epetra_Vector> phi);
 
   //! finite difference check for scalar transport system matrix
   void FDCheck();

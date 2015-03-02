@@ -35,6 +35,10 @@ Maintainer: Benedikt Schott
 
 //Needed for material check.
 #include "../drt_xfem/xfem_utils.H"
+//Needed for safety check.
+#include "../drt_mat/material.H"
+#include "../drt_mat/matlist.H"
+#include "../drt_mat/newtonianfluid.H"
 
 #include "xfem_edgestab.H"
 
@@ -148,6 +152,9 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
   if( p_master_handle == NULL and p_slave_handle == NULL)
   {
     num_edgestab++;
+
+    if(matptr_m->MaterialType() == INPAR::MAT::m_matlist)
+      dserror("The edgebased algo can not handle matlist at the moment, for this entry!");
 
     face_type = INPAR::XFEM::face_type_std;
 

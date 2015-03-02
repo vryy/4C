@@ -627,7 +627,8 @@ void PostProblem::read_meshes()
           or currfield.problem()->Problemtype()==prb_cavitation
           or currfield.problem()->Problemtype()==prb_level_set
           or currfield.problem()->Problemtype()==prb_combust
-          or currfield.problem()->Problemtype()==prb_two_phase_flow)
+          or currfield.problem()->Problemtype()==prb_two_phase_flow
+          or currfield.problem()->Problemtype()==prb_fluid_xfem_ls)
           and currfield.discretization()->Name() == "particle")
       {
         Teuchos::RCP<DRT::Discretization> particledis = currfield.discretization();

@@ -65,6 +65,35 @@ void DRT::UTILS::ExtractMyValues(const Epetra_Vector&      global,
 
 
 /*----------------------------------------------------------------------*
+ |  locally extract a subset of values  (public)            winter 14/02|
+ *----------------------------------------------------------------------*/
+void DRT::UTILS::ExtractMyValues(const Epetra_MultiVector&      global,
+                                 std::vector<double>&           local,
+                                 const std::vector<int>&        lm)
+{
+  const int numcol = global.NumVectors();
+  const size_t ldim = lm.size();
+
+  local.resize(ldim*numcol);
+
+  // loop over element nodes
+  for (size_t i=0; i<ldim; ++i)
+  {
+    const int lid = global.Map().LID(lm[i]);
+    if (lid<0) dserror("Proc %d: Cannot find gid=%d in Epetra_MultiVector",global.Comm().MyPID(),lm[i]);
+
+    // loop over multi vector columns (numcol=1 for Epetra_Vector)
+    for (int col=0; col<numcol; col++)
+    {
+      double* globalcolumn = (global)[col];
+      local[col+(numcol*i)] = globalcolumn[lid];
+    }
+  }
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  | extract local values from global node-based (multi) vector           |
  |                                                          henke 06/09 |
  *----------------------------------------------------------------------*/

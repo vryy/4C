@@ -1013,9 +1013,8 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
     else
     {
 
-      Teuchos::RCP<MAT::Material> mat = actele->Material(); //NOT COMPLIANT WITH XTPF!!!!
+      Teuchos::RCP<MAT::Material> mat = actele->Material();
 
-      //XTPF_MAGNUS
       if(mat->MaterialType()==INPAR::MAT::m_matlist)
         dserror("No matlists allowed here!!");
 
@@ -4385,10 +4384,12 @@ void FLD::XFluid::SetInitialFlowField(
 
 void FLD::XFluid::SetLevelSetField(
    Teuchos::RCP<const Epetra_Vector> scalaraf,
+   Teuchos::RCP<const Epetra_Vector> curvatureaf,
+   Teuchos::RCP<Epetra_MultiVector>  smoothed_gradphiaf,
    Teuchos::RCP<DRT::Discretization> scatradis
    )
 {
-  condition_manager_->SetLevelSetField(scalaraf, scatradis);
+  condition_manager_->SetLevelSetField(scalaraf, curvatureaf, smoothed_gradphiaf, scatradis);
 }
 
 
@@ -4694,13 +4695,12 @@ void FLD::XFluid::UpdateIterIncrementally(
 void FLD::XFluid::ReadRestart(int step)
 {
 
-  if(myrank_ == 0) IO::cout << "ReadRestart for fluid dis " << IO::endl;
-
-
   //-------- fluid discretization
   IO::DiscretizationReader reader(discret_,step);
   time_ = reader.ReadDouble("time");
   step_ = reader.ReadInt("step");
+
+  if(myrank_ == 0) IO::cout << "ReadRestart for fluid dis (time="<<time_<<" ; step="<<step_<<")" << IO::endl;
 
   reader.ReadVector(state_->velnp_,"velnp_res");
   reader.ReadVector(state_->velnm_,"velnm_res");

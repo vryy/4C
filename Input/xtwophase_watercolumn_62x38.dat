@@ -20,7 +20,7 @@ PROBLEMTYP                      Fluid_XFEM_LevelSet
 RESTART                         0
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
-OUTPUT_GMSH                     yes
+OUTPUT_GMSH                     no
 STRUCT_DISP                     No
 STRUCT_STRESS                   No
 STRUCT_STRAIN                   No
@@ -33,13 +33,11 @@ FILESTEPS                       1000
 -------------------------------------------------TWO PHASE FLOW
 CONVTOL                         1e-05
 MAXTIME                         2.0
-ITEMAX                          1
+ITEMAX                          2
 NUMSTEP                         5 //50 //10
 RESTARTEVRY                     1
 TIMESTEP                        8.0e-04  //6.0e-04 XFEM
 UPRES                           30
-//INTERFACE_THICKNESS  0.028258064516129035  //0.03767741935483871 //(4eps) //0.05651612903225807 //(6eps) //0.04709677419354839 //(5eps)  //0.042387096774193556  //(4.5eps) //0.028258064516129035 (3eps) //0.018838709677419355 //(2eps)  //0.009419354838709678
-//RESTART_SCATRA_INPUT  no
 ------------------------------------------------------FLUID DYNAMIC
 CONVCHECK                       L_2_norm
 CONVFORM                        convective
@@ -76,12 +74,12 @@ EOS_PRES                        xfem_gp //xfem_gp //std_eos //xfem_gp //std_eos 
 EOS_CONV_STREAM                 xfem_gp //xfem_gp //std_eos //xfem_gp //xfem_gp //none
 EOS_CONV_CROSS                  none //xfem_gp, none
 EOS_DIV                         vel_jump_xfem_gp //vel_jump_xfem_gp //none
-EOS_DEFINITION_TAU              Burman_Hansbo_DAngelo_Zunino_wo_dt
+EOS_DEFINITION_TAU              Burman_Hansbo_DAngelo_Zunino
 EOS_H_DEFINITION                EOS_he_max_diameter_to_opp_surf
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  No //Yes
 GMSH_DEBUG_OUT_SCREEN           No
-GMSH_SOL_OUT                    yes
+GMSH_SOL_OUT                    no
 GMSH_EOS_OUT                    no
 GMSH_DISCRET_OUT                no// yes
 GMSH_CUT_OUT                    no //yes
@@ -190,20 +188,20 @@ FUNCT1                  COLLAPSINGWATERCOLUMN
 // nodes 1250, 1251: outside of water column, close to bottom
 // nodes 1232, 1233: inside of water column, upper right corner
 
-FLUID DIS fluid NODE 549 QUANTITY velx VALUE 1.91016052325665604e-02 TOLERANCE 1e-7
-FLUID DIS fluid NODE 549 QUANTITY vely VALUE -3.22501492836007285e-03 TOLERANCE 1e-7
-FLUID DIS fluid NODE 549 QUANTITY pressure VALUE 8.26898792868085138e+02 TOLERANCE 1e-6
-SCATRA DIS scatra NODE 549 QUANTITY phi VALUE -8.02129445729347218e-02 TOLERANCE 1e-7
+FLUID DIS fluid NODE 549 QUANTITY velx VALUE 1.91034473991609673e-02 TOLERANCE 1e-7
+FLUID DIS fluid NODE 549 QUANTITY vely VALUE -3.22444679225092345e-03 TOLERANCE 1e-7
+FLUID DIS fluid NODE 549 QUANTITY pressure VALUE 8.26986058988455738e+02 TOLERANCE 1e-6
+SCATRA DIS scatra NODE 549 QUANTITY phi VALUE -8.02158621471108918e-02 TOLERANCE 1e-7
 
-FLUID DIS fluid NODE 1251 QUANTITY velx VALUE 8.03386013041021974e-02 TOLERANCE 1e-7
-FLUID DIS fluid NODE 1251 QUANTITY vely VALUE 1.43030535871562850e-02 TOLERANCE 1e-7
-FLUID DIS fluid NODE 1251 QUANTITY pressure VALUE 5.54634726806877776e+00 TOLERANCE 1e-6
-SCATRA DIS scatra NODE 1251 QUANTITY phi VALUE 4.56071093108368492e-03 TOLERANCE 1e-7
+FLUID DIS fluid NODE 1251 QUANTITY velx VALUE 8.24951411543825425e-02 TOLERANCE 1e-7
+FLUID DIS fluid NODE 1251 QUANTITY vely VALUE 1.60851843799974838e-02 TOLERANCE 1e-7
+FLUID DIS fluid NODE 1251 QUANTITY pressure VALUE 5.56151920691410862e+00 TOLERANCE 1e-6
+SCATRA DIS scatra NODE 1251 QUANTITY phi VALUE 4.55763803109381603e-03 TOLERANCE 1e-7
 
-FLUID DIS fluid NODE 1233 QUANTITY velx VALUE 2.20267905469952527e-04 TOLERANCE 1e-7
-FLUID DIS fluid NODE 1233 QUANTITY vely VALUE -3.88689120267762603e-02 TOLERANCE 1e-7
-FLUID DIS fluid NODE 1233 QUANTITY pressure VALUE 8.94614784343655711e-01 TOLERANCE 1e-6
-SCATRA DIS scatra NODE 1233 QUANTITY phi VALUE -3.57482578703038900e-03 TOLERANCE 1e-7
+FLUID DIS fluid NODE 1233 QUANTITY velx VALUE 1.97355156438569615e-04 TOLERANCE 1e-7
+FLUID DIS fluid NODE 1233 QUANTITY vely VALUE -3.88525051279956443e-02 TOLERANCE 1e-7
+FLUID DIS fluid NODE 1233 QUANTITY pressure VALUE 8.92782604566406679e-01 TOLERANCE 1e-6
+SCATRA DIS scatra NODE 1233 QUANTITY phi VALUE -3.57194266186581242e-03 TOLERANCE 1e-7
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 4
 NDLINE  7

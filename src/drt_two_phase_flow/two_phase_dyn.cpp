@@ -191,7 +191,7 @@ void two_phase_dyn(int restart)
 } // two_phase_dyn()
 
 
-void fluid_xfem_ls_drt()
+void fluid_xfem_ls_drt(int restart)
 {
   // create a communicator
 #ifdef PARALLEL
@@ -282,6 +282,16 @@ void fluid_xfem_ls_drt()
 
    // Test replacing fdyn in Algorithm with prbdyn
    Teuchos::RCP<XFLUIDLEVELSET::Algorithm>  xfluid_levelset = Teuchos::rcp(new XFLUIDLEVELSET::Algorithm(comm,twophasedyn,DRT::Problem::Instance()->SolverParams(linsolvernumber)));
+
+
+   // read restart information
+   // in case an inflow generation in the inflow section has been performed, there are not any
+   // scatra results available and the initial field is used
+   // FOR NOW ONLY RESTART WITH FLUID AND SCATRA FROM OUTPUT!!!!
+   if (restart)
+   {
+     xfluid_levelset->Restart(restart);
+   }
 
    INPAR::FLUID::TimeIntegrationScheme timeintscheme = DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(scatradyn,"TIMEINTEGR");
 

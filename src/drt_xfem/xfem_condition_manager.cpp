@@ -1685,6 +1685,10 @@ XFEM::LevelSetCoupling::LevelSetCoupling(
 
   // read initial level-set field
   SetLevelSetField(time_);
+
+  //For output:
+  ls_output_ = cutter_dis_->Writer();
+
 }
 
 
@@ -1698,20 +1702,71 @@ void XFEM::LevelSetCoupling::SetConditionsToCopy()
 }
 
 
+void XFEM::LevelSetCoupling::Output(
+    const int step,
+    const double time,
+    const bool write_restart_data
+)
+{
+  // output for interface
+  //ls_output_->NewStep(step,time);
+
+//  ls_output_->WriteVector("phinp_", phinp_);  //This one is not set at the beginning (Output initial field)
+//
+//  ls_output_->WriteElementData(firstoutputofrun_);  //NEEDED?!?!
+//  firstoutputofrun_ = false;
+
+  // write restart
+
+  if (write_restart_data)
+  {
+    ls_output_->WriteVector("phinp_res", phinp_);
+  }
+}
+
+// -------------------------------------------------------------------
+// Read Restart data for cutter discretization
+// -------------------------------------------------------------------
+void XFEM::LevelSetCoupling::ReadRestart(
+    const int step
+)
+{
+
+  dserror("Not tested Level Set restart from file. Should most likely work though if this dserror is removed.");
+
+  //-------- boundary discretization
+  IO::DiscretizationReader boundaryreader(cutter_dis_, step);
+
+  const double time = boundaryreader.ReadDouble("time");
+
+  if(myrank_ == 0)
+  {
+    IO::cout << "            RESTART IS PERFORMED FROM FUNCTION IN INPUT FILE!                  " << IO::endl;
+    IO::cout << "ReadRestart for Level Set Cut in Xfluid (time="<< time <<" ; step="<< step <<")" << IO::endl;
+  }
+
+  SetLevelSetField(time);
+
+}
+
 /*----------------------------------------------------------------------*
  | ... |
  *----------------------------------------------------------------------*/
 void XFEM::LevelSetCoupling::SetLevelSetField(
    Teuchos::RCP<const Epetra_Vector> scalaraf,
+   Teuchos::RCP<const Epetra_Vector> curvatureaf,
+   Teuchos::RCP<Epetra_MultiVector>  smoothed_gradphiaf,
    Teuchos::RCP<DRT::Discretization> scatradis
    )
 {
+
   // initializations
   int err(0);
   double value(0.0);
   std::vector<int> nodedofs;
 
 
+// CUT INFORMATION FROM LEVEL SET
   // loop all nodes on the processor
   for(int lnodeid=0;lnodeid<cutter_dis_->NumMyRowNodes();lnodeid++)
   {
@@ -1729,12 +1784,97 @@ void XFEM::LevelSetCoupling::SetLevelSetField(
     value = (*scalaraf)[localscatradofid];
     err = phinp_->ReplaceMyValue(lnodeid,0,value);
     if (err != 0) dserror("error while inserting value into phinp_");
-
   }
+
+// NODAL CURVATURE!!!!!!
+//----------------------------------------------
+  //Transfer the vectors onto the NodeColMap.
+  if(curvatureaf!=Teuchos::null)
+  {
+  Teuchos::RCP<Epetra_Vector> curvaturenp_rownode = Teuchos::rcp(new Epetra_Vector(*cutter_dis_->NodeRowMap()));
+
+  // loop all column nodes on the processor
+  for(int lnodeid=0;lnodeid<cutter_dis_->NumMyRowNodes();lnodeid++)
+  {
+    // get the processor's local scatra node
+    DRT::Node* lscatranode = scatradis->lRowNode(lnodeid);
+
+    // find out the global dof id of the last(!) dof at the scatra node
+    const int numscatradof = scatradis->NumDof(0,lscatranode);
+    const int globalscatradofid = scatradis->Dof(0,lscatranode,numscatradof-1);
+
+    const int localscatradofid = curvatureaf->Map().LID(globalscatradofid);
+    if (localscatradofid < 0)
+      dserror("localdofid not found in map for given globaldofid");
+
+    // now copy the values
+    value = (*curvatureaf)[localscatradofid];
+    err = curvaturenp_rownode->ReplaceMyValue(lnodeid,0,value);
+    if (err != 0) dserror("error while inserting value into curvaturenp_rownode");
+  }
+
+  curvaturenp_node_ = Teuchos::rcp(new Epetra_Vector(*cutter_dis_->NodeColMap()));
+  LINALG::Export(*curvaturenp_rownode,*curvaturenp_node_);
+  }
+//---------------------------------------------- // NODAL CURVATURE END
+
+
+// SMOOTHED GRAD PHI!!!!!!
+//----------------------------------------------
+  if(smoothed_gradphiaf!=Teuchos::null)
+  {
+    Teuchos::RCP<Epetra_MultiVector> gradphinp_smoothed_rownode = Teuchos::rcp(new Epetra_MultiVector(*cutter_dis_->NodeRowMap(),smoothed_gradphiaf->NumVectors()));
+    int numvec = smoothed_gradphiaf->NumVectors();
+
+    // loop all column nodes on the processor
+    for(int lnodeid=0;lnodeid<cutter_dis_->NumMyRowNodes();lnodeid++)
+    {
+      // get the processor's local scatra node
+      DRT::Node* lscatranode = scatradis->lRowNode(lnodeid);
+
+      // find out the global dof id of the last(!) dof at the scatra node
+      const int numscatradof = scatradis->NumDof(0,lscatranode);
+      const int globalscatradofid = scatradis->Dof(0,lscatranode,numscatradof-1);
+
+      const int localscatradofid = smoothed_gradphiaf->Map().LID(globalscatradofid);
+      if (localscatradofid < 0)
+        dserror("localdofid not found in map for given globaldofid");
+
+      // now copy the values
+      for(int i=0; i<numvec; i++)
+      {
+        value = smoothed_gradphiaf->Pointers()[i][localscatradofid]; //Somehow it is turned around?
+        err = gradphinp_smoothed_rownode->ReplaceMyValue(lnodeid,i,value);
+        if (err != 0) dserror("error while inserting value into gradphinp_smoothed_rownode");
+      }
+    }
+
+    gradphinp_smoothed_node_ = Teuchos::rcp(new Epetra_MultiVector(*cutter_dis_->NodeColMap(),smoothed_gradphiaf->NumVectors()));
+    LINALG::Export(*gradphinp_smoothed_rownode,*gradphinp_smoothed_node_);
+  }
+//---------------------------------------------- // SMOOTHED GRAD PHI END
+  //SAFETY CHECK.
+  if (curvatureaf!=Teuchos::null and smoothed_gradphiaf!=Teuchos::null)
+    dserror("You can not both have a nodal curvature and a smoothed_gradphinp prescribed at once.");
+
+
+//  //Transfer the vectors onto the DofColMap.
+//  if(curvatureaf!=Teuchos::null)
+//  {
+//    curvaturenp_ = Teuchos::rcp(new Epetra_Vector(*scatradis->DofColMap()));
+//    LINALG::Export(*curvatureaf,*curvaturenp_);
+//  }
+//  if(smoothed_gradphiaf!=Teuchos::null)
+//  {
+//    gradphinp_smoothed_ = Teuchos::rcp(new Epetra_MultiVector(*scatradis->DofColMap(),smoothed_gradphiaf->NumVectors()));
+//    LINALG::Export(*smoothed_gradphiaf,*gradphinp_smoothed_);
+//  }
+//  if (curvaturenp_!=Teuchos::null and gradphinp_smoothed_!=Teuchos::null)
+//    dserror("You can not have both a nodal curvature and a gradphinp prescribed at once.");
+
 
   return;
 }
-
 
 /*----------------------------------------------------------------------*
  | ... |
@@ -1787,17 +1927,6 @@ void XFEM::LevelSetCoupling::SetLevelSetField(const double time)
 }
 
 
-// -------------------------------------------------------------------
-// Read Restart data for cutter discretization
-// -------------------------------------------------------------------
-void XFEM::LevelSetCoupling::ReadRestart(
-    const int step
-)
-{
-  dserror("read restart for Level-set coupling objects not implemented yet");
-}
-
-
 /*----------------------------------------------------------------------*
  | set interface level set field at current time           schott 02/15 |
  *----------------------------------------------------------------------*/
@@ -1847,6 +1976,33 @@ void XFEM::LevelSetCouplingTwoPhase::GetInterfaceSlaveMaterial(
 )
 {
   XFEM::UTILS::GetVolumeCellMaterial(actele,mat,GEO::CUT::Point::inside);
+}
+
+
+// -------------------------------------------------------------------
+// Read Restart data for ScaTra coupled level set
+// -------------------------------------------------------------------
+void XFEM::LevelSetCouplingTwoPhase::ReadRestart(
+    const int step
+)
+{
+
+  //-------- boundary discretization
+  IO::DiscretizationReader boundaryreader(cutter_dis_, step);
+
+  const double time = boundaryreader.ReadDouble("time");
+
+  if(myrank_ == 0)
+  {
+    IO::cout << "           RESTART IS PERFORMED FROM STORED VALUES!                            " << IO::endl;
+    IO::cout << "ReadRestart for Level Set Cut in Xfluid (time="<< time <<" ; step="<< step <<")" << IO::endl;
+  }
+
+  boundaryreader.ReadVector(phinp_,   "phinp_res");
+
+  if (not (cutter_dis_->NodeRowMap())->SameAs(phinp_->Map()))
+    dserror("Global node numbering in maps does not match");
+
 }
 
 
@@ -2080,6 +2236,8 @@ void XFEM::ConditionManager::SetLevelSetField( const double time )
 
 void XFEM::ConditionManager::SetLevelSetField(
    Teuchos::RCP<const Epetra_Vector> scalaraf,
+   Teuchos::RCP<const Epetra_Vector> curvatureaf,
+   Teuchos::RCP<Epetra_MultiVector>  smoothed_gradphiaf,
    Teuchos::RCP<DRT::Discretization> scatradis
    )
 {
@@ -2089,7 +2247,7 @@ void XFEM::ConditionManager::SetLevelSetField(
   is_levelset_uptodate_ = false;
 
   // update the unique level-set field
-  levelset_coupl_[0]->SetLevelSetField(scalaraf, scatradis);
+  levelset_coupl_[0]->SetLevelSetField(scalaraf, curvatureaf, smoothed_gradphiaf, scatradis);
 }
 
 
@@ -2196,6 +2354,12 @@ void XFEM::ConditionManager::Output(
   for(int mc=0; mc<(int)mesh_coupl_.size(); mc++)
   {
     mesh_coupl_[mc]->Output(step, time, write_restart_data);
+  }
+
+  // loop all level set coupling objects
+  for(int lc=0; lc<(int)levelset_coupl_.size(); lc++)
+  {
+    levelset_coupl_[lc]->Output(step, time, write_restart_data);
   }
 }
 

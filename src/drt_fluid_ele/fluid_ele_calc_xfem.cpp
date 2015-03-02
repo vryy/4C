@@ -2043,7 +2043,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
             itraction_jump,
             x_gp_lin,
             normal,
-            si
+            si,
+            rst
         );
 
         if(cond_type == INPAR::XFEM::CouplingCond_LEVELSET_NEUMANN or
@@ -3370,6 +3371,12 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
   if(mat_slave != Teuchos::null)
   {
     GetMaterialParametersVolumeCell(mat_slave,densaf_slave_,viscaf_slave_,gamma_s_);
+    //Security check:
+    if(gamma_s_!=gamma_m_)
+    {
+      std::cout << "Surface tension for master side: "<< gamma_m_ << ", is not equal to surface tension on slave side:" << gamma_s_ << std::endl;
+      dserror("Non-matching surface tension provided for Master and Slave side.");
+    }
   }
 
   //-----------------------------------------------------------------------------------
@@ -3736,7 +3743,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
             itraction_jump,
             x_gp_lin,
             normal,
-            si
+            si,
+            rst
         );
 
         if(cond_type == INPAR::XFEM::CouplingCond_LEVELSET_NEUMANN or
@@ -3855,7 +3863,8 @@ void FluidEleCalcXFEM<distype>::GetInterfaceJumpVectors(
     LINALG::Matrix<my::nsd_,1>& itraction_jump,                              ///< prescribed interface jump vector for traction
     const LINALG::Matrix<my::nsd_,1>& x,                                     ///< global coordinates of Gaussian point
     const LINALG::Matrix<my::nsd_,1>& normal,                                ///< normal vector at Gaussian point
-    Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype> > si  ///< side implementation for cutter element
+    Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype> > si, ///< side implementation for cutter element
+    LINALG::Matrix<3,1>& rst                                                 ///< local coordinates of GP for bg element
 )
 {
 
@@ -3912,9 +3921,15 @@ void FluidEleCalcXFEM<distype>::GetInterfaceJumpVectors(
     // n = n^m = n^+
     // [sigma*n] = gamma * curv * n   with curv = div(grad(phi)/||grad(phi)||)
 
-    //TODO: implement surf_coeff and curvature_int
-    double surf_coeff    = 0.0;
+    double surf_coeff    = gamma_m_;
     double curvature_int = 0.0;
+
+    //Is this dynamic_cast efficient here? Should maybe change structure of Coupling manager.
+    if(gamma_m_ != 0.0)
+    {
+      Teuchos::rcp_dynamic_cast<XFEM::LevelSetCouplingTwoPhase>(coupling)->EvaluateCurvature<distype>(curvature_int,my::eid_,rst,my::funct_,my::derxy_);
+    }
+
     itraction_jump.Update(curvature_int * surf_coeff, normal, 0.0);
     break;
   }

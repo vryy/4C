@@ -28,6 +28,7 @@ Maintainer: Martin Kronbichler
 #include "inpar_fluid.H"
 #include "inpar_cut.H"
 #include "inpar_combust.H"
+#include "inpar_twophase.H"
 #include "inpar_mortar.H"
 #include "inpar_contact.H"
 #include "inpar_statmech.H"
@@ -5133,7 +5134,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
    /*----------------------------------------------------------------------*/
    Teuchos::ParameterList& twophasedyn = list->sublist("TWO PHASE FLOW",false,"");
-   DoubleParameter("INTERFACE_THICKNESS",0.0,"Thickness of interface for multiphase flow",&twophasedyn);
    IntParameter("NUMSTEP",10,"Number of Time Steps",&twophasedyn);
    DoubleParameter("TIMESTEP",0.01,"Time increment dt",&twophasedyn);
    DoubleParameter("MAXTIME",0.0,"Total simulation time",&twophasedyn);
@@ -5142,8 +5142,64 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
    IntParameter("RESTARTEVRY",1,"Increment for writing restart",&twophasedyn);
    IntParameter("ITEMAX",1,"Maximum number of iterations in levelset-fluid loop",&twophasedyn);
    BoolParameter("WRITE_CENTER_OF_MASS","No","Write center of mass to file",&twophasedyn);
+   //TODO: Is this parameter even used?
    BoolParameter("RESTART_SCATRA_INPUT","No","Use ScaTra field from .dat-file instead",&twophasedyn);
-   BoolParameter("ENHANCED_GAUSSRULE","No","Set higher order gaussrule within the interface layer.",&twophasedyn);
+
+   Teuchos::ParameterList& twophasedyn_smeared = twophasedyn.sublist("SMEARED",false,"");
+   DoubleParameter("INTERFACE_THICKNESS",0.0,"Thickness of interface for multiphase flow",&twophasedyn_smeared);
+   BoolParameter("ENHANCED_GAUSSRULE","No","Set higher order gaussrule within the interface layer.",&twophasedyn_smeared);
+
+
+   Teuchos::ParameterList& twophase_surftens = twophasedyn.sublist("SURFACE TENSION",false,"");
+   setStringToIntegralParameter<int>("SURFTENSAPPROX","surface_tension_approx_none","Type of surface tension approximation",
+       tuple<std::string>(
+           "surface_tension_approx_none",                         //none
+           //"surface_tension_approx_fixed_curvature",              //prescribed curvature
+           //"surface_tension_approx_divgrad",                      //calcs curvature at GP using the smoothed grad_phi and smoothed grad_phi for normal  //Do Not Migrate.
+           "surface_tension_approx_divgrad_normal",               //calcs curvature at GP using the smoothed grad_phi and normal on Boundary Cell for normal
+           "surface_tension_approx_nodal_curvature"),              //calcs curvature at nodes and normal on Boundary Cell for normal
+           //"surface_tension_approx_laplacebeltrami",              //standard Laplace-Beltrami (see e.g. Fries 2009)
+           //"surface_tension_approx_laplacebeltrami_smoothed"),    //         Laplace-Beltrami, includes additional projection based on the smoothed normal (see e.g. Gross, Reusken 2009)
+           tuple<int>(
+               INPAR::TWOPHASE::surface_tension_approx_none,
+               //INPAR::TWOPHASE::surface_tension_approx_fixed_curvature,
+               //INPAR::TWOPHASE::surface_tension_approx_divgrad,
+               INPAR::TWOPHASE::surface_tension_approx_divgrad_normal,
+               INPAR::TWOPHASE::surface_tension_approx_nodal_curvature),
+//               INPAR::TWOPHASE::surface_tension_approx_laplacebeltrami,
+//               INPAR::TWOPHASE::surface_tension_approx_laplacebeltrami_smoothed),
+               &twophase_surftens);
+
+   setStringToIntegralParameter<int>("SMOOTHGRADPHI","smooth_grad_phi_l2_projection","Type of smoothing for grad(phi)",
+       tuple<std::string>(
+           //"smooth_grad_phi_none",
+           "smooth_grad_phi_meanvalue",
+           "smooth_grad_phi_leastsquares_3D",
+           "smooth_grad_phi_leastsquares_2Dx",
+           "smooth_grad_phi_leastsquares_2Dy",
+           "smooth_grad_phi_leastsquares_2Dz",
+           "smooth_grad_phi_l2_projection"),
+           tuple<int>(
+               //INPAR::TWOPHASE::smooth_grad_phi_none,
+               INPAR::TWOPHASE::smooth_grad_phi_meanvalue,
+               INPAR::TWOPHASE::smooth_grad_phi_leastsquares_3D,
+               INPAR::TWOPHASE::smooth_grad_phi_leastsquares_2Dx,
+               INPAR::TWOPHASE::smooth_grad_phi_leastsquares_2Dy,
+               INPAR::TWOPHASE::smooth_grad_phi_leastsquares_2Dz,
+               INPAR::TWOPHASE::smooth_grad_phi_l2_projection),
+               &twophase_surftens);
+   BoolParameter("L2_PROJECTION_SECOND_DERIVATIVES","No","L2 Projection Second Derivatives of Level Set",&twophase_surftens);
+
+   setStringToIntegralParameter<int>("NODAL_CURVATURE","l2_projected","Type of calculation of nodal curvature value",
+       tuple<std::string>(
+           "l2_projected",
+           "averaged"),
+           tuple<int>(
+               INPAR::TWOPHASE::l2_projected,
+               INPAR::TWOPHASE::averaged),
+               &twophase_surftens);
+   DoubleParameter("SMOOTHING_PARAMETER",0.0,"Diffusion Coefficient for Smoothing",&twophase_surftens); //Added diffusion for L2_projection
+
 
    /*----------------------------------------------------------------------*/
     Teuchos::ParameterList& andyn = list->sublist("ARTERIAL DYNAMIC",false,"");
@@ -6407,11 +6463,17 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&combustcontrol);
   IntParameter("UPRES",1,"Increment for writing solution",&combustcontrol);
 
+  //Redistribution parameter, redistributes according to "expensive" XFEM elements to processors.
+  // Currently out of use!
   DoubleParameter("PARALLEL_REDIST_RATIO_FAC",0.0,"Factor by which the max to min element evaluation time has to increase to trigger a redistribution",&combustcontrol);
 
+  //Parameter to switch off G-function field.
+  // Used to precompute a single phase flow solution, e.g. for turbulent problems.
   BoolParameter("GENERATE_FLOW_FIELD","No","Do not solve g-function, since we merely want to set up a fluid field",&combustcontrol);
 
+  //Read no ScaTra restart, as none is existent.
   BoolParameter("RESTART_FROM_FLUID","No","Restart from a standard fluid problem (no scalar transport field). No XFEM dofs allowed!",&combustcontrol);
+  //Overwrites ScaTra restart by initial field given in input file.
   BoolParameter("RESTART_SCATRA_INPUT","No","Use ScaTra field from .dat-file instead",&combustcontrol);
 
   BoolParameter("WRITE_CENTER_OF_MASS","No","write center of mass to file",&combustcontrol);
@@ -6423,10 +6485,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("COMBUSTTYPE","Premixed_Combustion",
       "Type of combustion problem",
       tuple<std::string>(
-          "Premixed_Combustion",
-          "Two_Phase_Flow",
-          "Two_Phase_Flow_Surf",
-          "Two_Phase_Flow_Jumps"),
+          "Premixed_Combustion",         //jump-enr vel and press,         with combustion interface cond
+          "Two_Phase_Flow",              //kink-enr vel and press
+          "Two_Phase_Flow_Surf",         //kink-enr vel and jump-enr press
+          "Two_Phase_Flow_Jumps"),       //jump-enr vel and press
           tuple<int>(
               INPAR::COMBUST::combusttype_premixedcombustion,
               INPAR::COMBUST::combusttype_twophaseflow,
@@ -6434,14 +6496,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
               INPAR::COMBUST::combusttype_twophaseflowjump),
               &combustcontrolfluid);
 
+  //Face-oriented GP and fluid stab terms for Cut elements.
+  // See paper Rasthofer, Schott....
   BoolParameter("XFEMSTABILIZATION","Yes","Switch on/off face integrals based on edge-based stabilization, i.e., ghost penalty terms",&combustcontrolfluid);
 
   setStringToIntegralParameter<int>("XFEMINTEGRATION","Cut",
       "Type of integration strategy for intersected elements",
       tuple<std::string>(
-          "Cut",
-          "Tetrahedra",
-          "Hexahedra"),
+          "Cut",                 //standard Cut
+          "Tetrahedra",          //construct of integration cells on predefined of a hexahedra element (impl by a Student not carefully tested)
+          "Hexahedra"),          //subdivides the Cut element (by refinement) into hexahedras to approximate the volumecells (Turned out to be insufficient.)
           tuple<int>(
               INPAR::COMBUST::xfemintegration_cut,
               INPAR::COMBUST::xfemintegration_tetrahedra,
@@ -6451,9 +6515,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("XFEMTIMEINT","DoNothing",
       "Type of time integration strategy for standard degrees of freedom",
       tuple<std::string>(
-          "DoNothing",
+          "DoNothing",                                //no standard DoF change
           "SemiLagrange",
-          "ExtrapolationOld",
+          "ExtrapolationOld",                         //@Martin W. ?
           "ExtrapolationNew",
           "MixedSemiLagrangeExtrapolation",
           "MixedSemiLagrangeExtrapolationNew",
@@ -6476,7 +6540,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       "Type of time integration strategy for enrichment degrees of freedom",
       tuple<std::string>(
           "DoNothing",
-          "QuasiStatic",
+          "QuasiStatic",                          //Keep only the std DoFs
           "Projection",
           "ProjectionScalar",
           "Extrapolation",
@@ -6493,7 +6557,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("XFEMTIMEINT_ENR_COMP","Standard",
       "Type of time integration strategy for enrichment computation",
       tuple<std::string>(
-          "Standard",
+          "Standard",   //@Martin W.
           "Full",
           "Minimal"),
           tuple<int>(
@@ -6543,13 +6607,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   setStringToIntegralParameter<int>("SURFTENSAPPROX","surface_tension_approx_none","Type of surface tension approximation",
       tuple<std::string>(
-          "surface_tension_approx_none",
-          "surface_tension_approx_fixed_curvature",
-          "surface_tension_approx_divgrad",
-          "surface_tension_approx_divgrad_normal",
-          "surface_tension_approx_nodal_curvature",
-          "surface_tension_approx_laplacebeltrami",
-          "surface_tension_approx_laplacebeltrami_smoothed"),
+          "surface_tension_approx_none",                         //none
+          "surface_tension_approx_fixed_curvature",              //prescribed curvature
+          "surface_tension_approx_divgrad",                      //calcs curvature at GP using the smoothed grad_phi and smoothed grad_phi for normal  //Do Not Migrate.
+          "surface_tension_approx_divgrad_normal",               //calcs curvature at GP using the smoothed grad_phi and normal on Boundary Cell for normal
+          "surface_tension_approx_nodal_curvature",              //calcs curvature at nodes and normal on Boundary Cell for normal
+          "surface_tension_approx_laplacebeltrami",              //standard Laplace-Beltrami (see e.g. Fries 2009)
+          "surface_tension_approx_laplacebeltrami_smoothed"),    //         Laplace-Beltrami, includes additional projection based on the smoothed normal (see e.g. Gross, Reusken 2009)
           tuple<int>(
               INPAR::COMBUST::surface_tension_approx_none,
               INPAR::COMBUST::surface_tension_approx_fixed_curvature,
@@ -6605,12 +6669,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
               &combustcontrolfluid);
   IntParameter("INITFUNCNO",-1,"Function for initial field",&combustcontrolfluid);
 
+  //params @Martin W.
   IntParameter("ITE_MAX_FRS",1,"The maximal number of iterations between fluid and recomputation of reference solution",&combustcontrolfluid);
   DoubleParameter("LAMINAR_FLAMESPEED",1.0,"The laminar flamespeed incorporates all chemical kinetics into the problem for now",&combustcontrolfluid);
   DoubleParameter("MOL_DIFFUSIVITY",0.0,"Molecular diffusivity",&combustcontrolfluid);
   DoubleParameter("MARKSTEIN_LENGTH",0.0,"The Markstein length takes flame curvature into account",&combustcontrolfluid);
   DoubleParameter("NITSCHE_VELOCITY",100.0,"Nitsche parameter to stabilize/penalize the velocity jump",&combustcontrolfluid);
+  //Not used anymore...
   DoubleParameter("NITSCHE_PRESSURE",0.0,"Nitsche parameter to stabilize/penalize the pressure jump",&combustcontrolfluid);
+  //@ Ursula when back
   setStringToIntegralParameter<int>("NITSCHE_CONVFLUX","Yes","(De)activate Nitsche convective flux term",
                                      yesnotuple,yesnovalue,&combustcontrolfluid);
   setStringToIntegralParameter<int>("NITSCHE_CONVSTAB","Yes","(De)activate Nitsche convective stabilization term",
@@ -6618,7 +6685,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("NITSCHE_CONVPENALTY","No","(De)activate Nitsche convective penalty term",
                                      yesnotuple,yesnovalue,&combustcontrolfluid);
   setStringToIntegralParameter<int>("NITSCHE_MASS","No","(De)activate Nitsche mass conservation term",
-                                     yesnotuple,yesnovalue,&combustcontrolfluid);
+                                     yesnotuple,yesnovalue,&combustcontrolfluid); //
   setStringToIntegralParameter<int>("NITSCHE_WEIGHT","intersection_visc_based_harmonic","Definition of weighting",
                                     tuple<std::string>(
                                     "visc_based_harmonic",
@@ -6643,7 +6710,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
               INPAR::COMBUST::l2_projected,
               INPAR::COMBUST::averaged),
               &combustcontrolfluid);
-  DoubleParameter("SMOOTHING_PARAMETER",0.0,"Diffusion Coefficient for Smoothing",&combustcontrolfluid);
+  DoubleParameter("SMOOTHING_PARAMETER",0.0,"Diffusion Coefficient for Smoothing",&combustcontrolfluid); //Added diffusion for L2_projection
 
   // for selection of enriched fields (velocity, pressure, velocity+pressure)
   setStringToIntegralParameter<int>("SELECTED_ENRICHMENT","both",

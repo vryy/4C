@@ -91,7 +91,10 @@ namespace SCATRA
       bool init=false);
 
     /// access routine for nodal curvature
-    const Teuchos::RCP<const Epetra_Vector> GetNodalCurvature(const Teuchos::RCP<const Epetra_Vector> phi);
+    Teuchos::RCP<Epetra_Vector> GetNodalCurvature(const Teuchos::RCP<const Epetra_Vector> phi);
+    Teuchos::RCP<Epetra_Vector> GetNodalCurvature(const Teuchos::RCP<const Epetra_Vector> phi,
+                                                  const Teuchos::RCP<const Epetra_MultiVector> gradphi);
+
 
     // output position of center of mass assuming a smoothed interfaces
     void MassCenterUsingSmoothing();
@@ -148,7 +151,8 @@ namespace SCATRA
     // -----------------------------------------------------------------
     void ReconstructedNodalCurvature(
       Teuchos::RCP<Epetra_Vector> curvature,
-      const Teuchos::RCP<const Epetra_Vector> phi);
+      const Teuchos::RCP<const Epetra_Vector> phi,
+      const Teuchos::RCP<const Epetra_MultiVector> gradphi);
 
     // -----------------------------------------------------------------
     // members

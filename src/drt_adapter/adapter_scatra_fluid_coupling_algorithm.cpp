@@ -21,7 +21,9 @@ Maintainer: Andreas Ehrl
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 
+// XFEM-specific coupling.
 #include "../drt_fluid_xfluid/xfluid.H"
+#include "../drt_lib/drt_discret_xfem.H"
 
 #include "../drt_levelset/levelset_algorithm.H"
 
@@ -50,10 +52,19 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
         std::cout << "----- adaption of fluid ghosting to scatra ghosting ------" << std::endl;
 
       // adapt fluid ghosting to scatra ghosting
-      if (DRT::Problem::Instance()->ProblemType() != prb_combust)
+      if (DRT::Problem::Instance()->ProblemType() != prb_combust
+          and DRT::Problem::Instance()->ProblemType() != prb_fluid_xfem_ls)
         FluidField()->Discretization()->ExtendedGhosting(*scatraelecolmap,true,true,true,false);
       else
+      {
         FluidField()->Discretization()->ExtendedGhosting(*scatraelecolmap,false,false,false,false);
+        if(DRT::Problem::Instance()->ProblemType() == prb_fluid_xfem_ls)
+        {
+          Teuchos::rcp_dynamic_cast<FLD::XFluid>(FluidField())->DiscretisationXFEM()->ExtendedGhosting(*scatraelecolmap,false,false,false,false);
+          //Need to call InitialFillComplete again to get the correct Map after the Extended Ghosting.
+          Teuchos::rcp_dynamic_cast<FLD::XFluid>(FluidField())->DiscretisationXFEM()->InitialFillComplete();
+        }
+      }
     }
   }
 

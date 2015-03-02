@@ -186,7 +186,7 @@ SOLVER                          UMFPACK
 NAME                            Fluid_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0 GAMMA 1.0 // Re=6.62
+MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0 GAMMA 0.0 // Re=6.62
 MAT 2 MAT_scatra DIFFUSIVITY 0.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2

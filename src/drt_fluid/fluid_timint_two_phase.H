@@ -86,8 +86,6 @@ protected:
 private:
 
   ///Curvature of phi and gradient of phi at node points.
-  //Teuchos::RCP<const Epetra_Vector>       curvatureaf_;
-  //Teuchos::RCP<const Epetra_MultiVector>  gradphiaf_;
   Teuchos::RCP<Epetra_Vector>              tpf_gradphi_curvaf_;
 
 

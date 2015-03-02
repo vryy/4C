@@ -19,6 +19,10 @@ Maintainer: Magnus Winter
 #include "../drt_adapter/adapter_scatra_fluid_coupling_algorithm.H"
 #include "../linalg/linalg_mapextractor.H"
 
+//Needed for input parameter
+#include "../drt_inpar/inpar_twophase.H"
+
+
 namespace XFLUIDLEVELSET
 {
 
@@ -55,6 +59,9 @@ namespace XFLUIDLEVELSET
     /// Test the results aquired
     void TestResults();
 
+    /// Restart
+    void Restart(int restart);
+
   protected:
 
     /// convergence Check for present iteration step
@@ -90,6 +97,10 @@ namespace XFLUIDLEVELSET
     void OutputInitialField();
 
 
+    /// set problem specific parameters
+    void SetProblemSpecificParameters(const Teuchos::ParameterList& prbdyn);
+
+
   private:
 
     /// time-step length, maximum time and maximum number of steps
@@ -106,6 +117,9 @@ namespace XFLUIDLEVELSET
 
     /// masscenter output
     bool    write_center_of_mass_;
+
+    /// Two Phase Specific parameter
+    INPAR::TWOPHASE::SurfaceTensionApprox surftensapprox_;
 
     /// Outer-loop convergence variables:
     Teuchos::RCP<Epetra_Vector> velnpi_;

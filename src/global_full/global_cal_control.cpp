@@ -185,7 +185,7 @@ void ntacal()
       two_phase_dyn(restart);
       break;
     case prb_fluid_xfem_ls:
-      fluid_xfem_ls_drt(); //Exists in drt_two_phase_flow subfolder
+      fluid_xfem_ls_drt(restart); //Exists in drt_two_phase_flow subfolder
       break;
 
     case prb_uq:

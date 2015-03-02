@@ -28,7 +28,7 @@ PROBLEMTYP                      Fluid_XFEM_LevelSet
 RESTART                         0
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
-OUTPUT_GMSH                     yes
+OUTPUT_GMSH                     no
 STRUCT_DISP                     No
 STRUCT_STRESS                   No
 STRUCT_STRAIN                   No
@@ -43,7 +43,7 @@ CONVTOL                         1e-5
 ITEMAX                          1
 MAXTIME                         1000.0
 NUMSTEP                         5 //1
-RESTARTEVRY                     20
+RESTARTEVRY                     1
 TIMESTEP                        0.05 //3.0
 UPRES                           1
 //INTERFACE_THICKNESS             0.0 //0.04  //Initial: 0.04, h=0.02
@@ -97,7 +97,7 @@ EOS_PRES                        xfem_gp //xfem_gp //std_eos //xfem_gp //std_eos 
 EOS_CONV_STREAM                 xfem_gp //xfem_gp //std_eos //xfem_gp //xfem_gp //none
 EOS_CONV_CROSS                  none //xfem_gp, none
 EOS_DIV                         none //vel_jump_xfem_gp //none
-EOS_DEFINITION_TAU              Burman_Hansbo_DAngelo_Zunino_wo_dt
+EOS_DEFINITION_TAU              Burman_Hansbo_DAngelo_Zunino
 EOS_H_DEFINITION                EOS_he_max_diameter_to_opp_surf
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  No //Yes
@@ -149,7 +149,7 @@ CALCERROR                       No
 CONVFORM                        convective
 GAMMA                           0.5
 MATID                           2
-OUTPUT_GMSH                     yes
+OUTPUT_GMSH                     no
 FDCHECK                         global
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        SUPG //SUPG

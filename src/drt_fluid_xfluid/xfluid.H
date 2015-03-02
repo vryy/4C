@@ -280,6 +280,8 @@ namespace FLD
 
     void SetLevelSetField(
        Teuchos::RCP<const Epetra_Vector> scalaraf,
+       Teuchos::RCP<const Epetra_Vector> curvatureaf,
+       Teuchos::RCP<Epetra_MultiVector>  smoothed_gradphiaf,
        Teuchos::RCP<DRT::Discretization> scatradis
        );
 

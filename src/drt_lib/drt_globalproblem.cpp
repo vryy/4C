@@ -259,6 +259,8 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--FLUID DYNAMIC/MULTIFRACTAL SUBGRID SCALES", *list);
   reader.ReadGidSection("--FLUID DYNAMIC/TURBULENT INFLOW", *list);
   reader.ReadGidSection("--TWO PHASE FLOW", *list);
+  reader.ReadGidSection("--TWO PHASE FLOW/SURFACE TENSION", *list);
+  reader.ReadGidSection("--TWO PHASE FLOW/SMEARED", *list);
   reader.ReadGidSection("--COMBUSTION CONTROL", *list);
   reader.ReadGidSection("--COMBUSTION CONTROL/COMBUSTION FLUID", *list);
   reader.ReadGidSection("--COMBUSTION CONTROL/COMBUSTION GFUNCTION", *list);
@@ -1440,7 +1442,10 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     {
 
       // create empty discretizations
-      fluiddis  = Teuchos::rcp(new DRT::DiscretizationXFEM("fluid",reader.Comm()));
+      if(ProblemType()==prb_fluid_xfem_ls)
+        fluiddis  = Teuchos::rcp(new DRT::DiscretizationXFEM("fluid",reader.Comm()));
+      else
+        fluiddis  = Teuchos::rcp(new DRT::Discretization("fluid",reader.Comm()));
       scatradis = Teuchos::rcp(new DRT::Discretization("scatra",reader.Comm()));
       particledis = Teuchos::rcp(new DRT::Discretization("particle",reader.Comm()));
 

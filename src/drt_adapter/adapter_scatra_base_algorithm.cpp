@@ -300,7 +300,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
       if (probtype == prb_two_phase_flow)
       {
         //Give access to smoothing parameter for levelset calculations.
-        lsparams->set<double> ("INTERFACE_THICKNESS_TPF",prbdyn.get<double>("INTERFACE_THICKNESS"));
+        lsparams->set<double> ("INTERFACE_THICKNESS_TPF",prbdyn.sublist("SMEARED").get<double>("INTERFACE_THICKNESS"));
       }
     }
 

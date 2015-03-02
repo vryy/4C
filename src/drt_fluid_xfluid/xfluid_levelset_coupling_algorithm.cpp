@@ -40,7 +40,7 @@ XFLUIDLEVELSET::Algorithm::Algorithm(
 :  ScaTraFluidCouplingAlgorithm(comm,prbdyn,false,"scatra",solverparams)
 {
 
-  //TODO: Combine TWOPHASE and XFLUIDLEVELSET. Create a Parent class, FLUIDSCATRACOUPLING or use the existing ScaTraFluidCouplingAlgorithm.
+  //TODO: Combine TWOPHASE and XFLUIDLEVELSET. Create a Parent class, TWOFLUIDCOUPLING or use the existing ScaTraFluidCouplingAlgorithm.
   //        Derived classes will be FLUIDLEVELSET and XFLUIDLEVELSET.
   //        This could also incorporate ELCH and other FLUID-ScaTra coupling schemes.
 
@@ -61,9 +61,10 @@ XFLUIDLEVELSET::Algorithm::Algorithm(
 
   upres_ = prbdyn.get<int>("UPRES");
 
+  SetProblemSpecificParameters(prbdyn);
+
   //Values of velocity field are transferred to ScaTra field. This function overwrites the previous initialization in the constructor
   //of ScaTraFluidCouplingAlgorithm(). This is necessary to correctly initialize a particle algorithm.
-  //XTPF_Magnus: Uncomment when implemented!
   SetFluidValuesInScaTra(true);
 
   //  // flag for special flow and start of sampling period from fluid parameter list
@@ -144,6 +145,10 @@ void XFLUIDLEVELSET::Algorithm::SolveStationaryProblem()
 
   // write Scatra output (fluid output has been already called in FluidField()->Integrate();
   ScaTraField()->Output();
+
+  //Give Scatra Values to fluid.
+  //Needed for curvature etc..
+  SetScaTraValuesInFluid();
 
   // run the simulation, calls the xfluid-"integrate()" routine
   FluidField()->Integrate();
@@ -299,7 +304,22 @@ void XFLUIDLEVELSET::Algorithm::SetScaTraValuesInFluid()
     // set the new level set value to the fluid
     Teuchos::RCP<FLD::XFluid> xfluid = Teuchos::rcp_dynamic_cast<FLD::XFluid>(FluidField(), true);
 
-    xfluid->SetLevelSetField(ScaTraField()->Phinp(), ScaTraField()->Discretization());
+    Teuchos::RCP<Epetra_MultiVector>  smoothedgradphi;
+    Teuchos::RCP<Epetra_Vector> nodalcurvature;
+
+    if(surftensapprox_==INPAR::TWOPHASE::surface_tension_approx_divgrad_normal)
+    {
+      smoothedgradphi = ScaTraField()->GetSmoothedGradientAtNodes(ScaTraField()->Phinp());
+    }
+    else if(surftensapprox_==INPAR::TWOPHASE::surface_tension_approx_nodal_curvature)
+    {
+      nodalcurvature = Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField())->GetNodalCurvature(ScaTraField()->Phinp());
+    }
+
+    xfluid->SetLevelSetField(ScaTraField()->Phinp(),
+                             nodalcurvature,
+                             smoothedgradphi,
+                             ScaTraField()->Discretization());
 
   }
   break;
@@ -452,33 +472,34 @@ bool XFLUIDLEVELSET::Algorithm::ConvergenceCheck(int itnum)
       } // end if processor 0 for output
     }
   }
-  printf("\n|+---------------------------------------------------------------------------------+|\n");
+  if (Comm().MyPID()==0)
+    printf("\n|+---------------------------------------------------------------------------------+|\n");
 
 
-  // In combust the velocity and pressure component are not separated. To compare values the following output is made.
-  bool compare_with_combust = true;
-  if(compare_with_combust)
-  {
-    double velnormL2 = 1.0;
-    velnpip->Norm2(&velnormL2);
-    if (velnormL2 < 1e-5) velnormL2 = 1.0;
-
-    double fgvelnormL2 = 1.0;
-
-    // compute increment and L2-norm of increment
-    Teuchos::RCP<Epetra_Vector> incvel = Teuchos::rcp(new Epetra_Vector(velnpip->Map()),true);
-    incvel->Update(1.0,*velnpip,-1.0,*velnpi_,0.0);
-    incvel->Norm2(&fgvelnormL2);
-
-    if (Comm().MyPID()==0)
-    {
-      printf("\n|+------------------------ FGI ------------------------+|");
-      printf("\n|iter/itermax|----tol-[Norm]--|-fluid inc--|-g-func inc (i+1)-|");
-      printf("\n|   %2d/%2d    | %10.3E[L2] | %10.3E | %10.3E |",
-          itnum,itmax_,ittol_,fgvelnormL2/fgvelnormL2,fsphinormL2/phinormL2);
-      printf("\n|+-----------------------------------------------------+|\n");
-    } // end if processor 0 for output
-  }
+//  // In combust the velocity and pressure component are not separated. To compare values the following output is made.
+//  bool compare_with_combust = true;
+//  if(compare_with_combust)
+//  {
+//    double velnormL2 = 1.0;
+//    velnpip->Norm2(&velnormL2);
+//    if (velnormL2 < 1e-5) velnormL2 = 1.0;
+//
+//    double fgvelnormL2 = 1.0;
+//
+//    // compute increment and L2-norm of increment
+//    Teuchos::RCP<Epetra_Vector> incvel = Teuchos::rcp(new Epetra_Vector(velnpip->Map()),true);
+//    incvel->Update(1.0,*velnpip,-1.0,*velnpi_,0.0);
+//    incvel->Norm2(&fgvelnormL2);
+//
+//    if (Comm().MyPID()==0)
+//    {
+//      printf("\n|+------------------------ FGI ------------------------+|");
+//      printf("\n|iter/itermax|----tol-[Norm]--|-fluid inc--|-g-func inc (i+1)-|");
+//      printf("\n|   %2d/%2d    | %10.3E[L2] | %10.3E | %10.3E |",
+//          itnum,itmax_,ittol_,fgvelnormL2/velnormL2,fsphinormL2/phinormL2);
+//      printf("\n|+-----------------------------------------------------+|\n");
+//    } // end if processor 0 for output
+//  }
 
 #if DEBUG
 //-------------------------
@@ -582,9 +603,69 @@ void XFLUIDLEVELSET::Algorithm::TestResults()
   else
   {
     dserror("Unknown time integration for Level Set field in Two Phase Flow problems.");
-//    DRT::Problem::Instance()->AddFieldTest(CreateScaTraFieldTest());
-//    DRT::Problem::Instance()->TestAll(Comm());
   }
 
   return;
 }
+
+/* -------------------------------------------------------------------------------*
+ | Restart a X-two phase problem                                              winter|
+ * -------------------------------------------------------------------------------*/
+void XFLUIDLEVELSET::Algorithm::Restart(int step)
+{
+  if (Comm().MyPID()==0)
+  {
+    std::cout << "##################################################" << std::endl;
+    std::cout << "#                                                #" << std::endl;
+    std::cout << "#     Restart of T(wo) P(hase) F(low) problem    #" << std::endl;
+//    if (restartscatrainput)
+//    {
+//      std::cout << "#                                                #" << std::endl;
+//      std::cout << "#   -Restart with scalar field from input file   #" << std::endl;
+//    }
+    std::cout << "#                                                #" << std::endl;
+    std::cout << "##################################################" << std::endl;
+
+    std::cout << "##########################################################################" << std::endl;
+    std::cout << "#                                                                        #" << std::endl;
+    std::cout << "#     WARNING: ONLY RESTART FROM XFLUID AND SCATRA ALLOWED FOR NOW!!!    #" << std::endl;
+    std::cout << "#                                                                        #" << std::endl;
+    std::cout << "##########################################################################" << std::endl;
+  }
+
+
+
+  FluidField()->ReadRestart(step);
+  ScaTraField()->ReadRestart(step);
+  SetTimeStep(FluidField()->Time(),step);
+
+  //Needed for particle restart
+  SetFluidValuesInScaTra(true);
+
+  return;
+}
+
+/* -------------------------------------------------------------------------------*
+ | Set Problem Specific Parameters                                          winter|
+ * -------------------------------------------------------------------------------*/
+void XFLUIDLEVELSET::Algorithm::SetProblemSpecificParameters(const Teuchos::ParameterList& prbdyn)
+{
+    surftensapprox_ = DRT::INPUT::IntegralValue<INPAR::TWOPHASE::SurfaceTensionApprox>(prbdyn.sublist("SURFACE TENSION"),"SURFTENSAPPROX");
+
+    //SAFETY-CHECKS
+    if(DRT::INPUT::IntegralValue<bool>(prbdyn.sublist("SURFACE TENSION"),"L2_PROJECTION_SECOND_DERIVATIVES"))
+      dserror("Second L2-projected derivatives can not be calculated as of now for the Level Set.");
+
+    if(DRT::INPUT::IntegralValue<INPAR::TWOPHASE::SmoothGradPhi>(prbdyn.sublist("SURFACE TENSION"),"SMOOTHGRADPHI")!=INPAR::TWOPHASE::smooth_grad_phi_l2_projection)
+      dserror("No other smoothing for the gradient of the level set other than L2 is allowed for now.");
+
+    if(DRT::INPUT::IntegralValue<INPAR::TWOPHASE::NodalCurvatureCalc>(prbdyn.sublist("SURFACE TENSION"),"NODAL_CURVATURE")!=INPAR::TWOPHASE::l2_projected)
+      dserror("No other way to calculate the nodal curvature than L2.");
+
+    if(prbdyn.sublist("SURFACE TENSION").get<double>("SMOOTHING_PARAMETER")!=0.0)
+     dserror("No smoothing available for now.");
+
+  return;
+}
+
+

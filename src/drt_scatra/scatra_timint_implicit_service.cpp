@@ -1673,12 +1673,12 @@ void SCATRA::ScaTraTimIntImpl::SetScStrGrDisp(Teuchos::RCP<Epetra_MultiVector> s
 // Reconstruct gradients
 /*==========================================================================*/
 //! Calculate the reconstructed nodal gradient of phi
-Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::GetGradientAtNodes(const Teuchos::RCP<const Epetra_Vector> phi)
+Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::GetSmoothedGradientAtNodes(const Teuchos::RCP<const Epetra_Vector> phi)
 {
-  Teuchos::RCP<Epetra_MultiVector> gradPhi = Teuchos::rcp(new Epetra_MultiVector(*(discret_->DofRowMap()), 3, true));
+  Teuchos::RCP<Epetra_MultiVector> gradphi = Teuchos::rcp(new Epetra_MultiVector(*(discret_->DofRowMap()), 3, true));
 
-  ReconstructGradientAtNodes(gradPhi,phi);
-  return gradPhi;
+  ReconstructGradientAtNodes(gradphi,phi);
+  return gradphi;
 }
 
 

@@ -1,6 +1,6 @@
 //
-// Maintainer: Ursula Rasthofer
-// rasthofer@lnm.mw.tum.de
+// Maintainer: Magnus Winter
+// winter@lnm.mw.tum.de
 // http://www.lnm.mw.tum.de
 // 089 - 289-15236
 //
@@ -10,10 +10,10 @@
 General Data File CCARAT
 ==================================================================
 -----------------------------------------------------------------------TITLE
-two_phase_beltrami_hex8_8x8x8_ost_tpf-fluid
+f3_two_phase_flow_beltrami_8x8x8_smoothed
 
 -results must be identical with results from test case 'f3_beltrami_8x8x8_ost_conv.dat'
--One-Step-Theta time integration scheme of combustion and standard fluid have to compute identical results
+-One-Step-Theta time integration scheme of smeard two phase flow and standard fluid have to compute identical results
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        320
 NODES                           125
@@ -36,6 +36,8 @@ NUMSTEP                         8
 RESTARTEVRY                     10
 TIMESTEP                        0.05
 UPRES                           1
+---------------------------------------------------TWO PHASE FLOW/SMEARED
+ENHANCED_GAUSSRULE              No
 INTERFACE_THICKNESS             0.0
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   2
