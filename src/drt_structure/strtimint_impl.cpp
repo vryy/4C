@@ -4327,6 +4327,16 @@ void STR::TimIntImpl::UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtracto
     p.set("total time", (*time_)[0]);
     p.set("delta time", (*dt_)[0]);
 
+    Teuchos::RCP<Epetra_Vector> finert = Teuchos::null;
+    if ( HaveNonlinearMass() )
+    {
+      finert = LINALG::CreateVector(*DofRowMapView(), true); // intertial force
+      // Note: the following parameters are just dummies, since they are only needed to calculate finert which we
+      // will not use anyway
+      p.set("timintfac_dis", 0); //dummy!
+      p.set("timintfac_vel", 0); //dummy!
+    }
+
     // compute new inner radius
     discret_->ClearState();
     discret_->SetState("displacement", (*dis_)(0));
@@ -4341,7 +4351,7 @@ void STR::TimIntImpl::UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtracto
     discret_->SetState(0,"acceleration", (*acc_)(0));
     if (damping_ == INPAR::STR::damp_material) discret_->SetState("velocity", (*vel_)(0));
 
-    discret_->Evaluate(p, stiff_, mass_, fint, Teuchos::null, Teuchos::null);
+    discret_->Evaluate(p, stiff_, mass_, fint, finert, Teuchos::null);
     discret_->ClearState();
   }
 
