@@ -173,6 +173,7 @@ std::string DRT::ParObjectList()
     << DRT::ELEMENTS::Torsion2Type::Instance().Name() << " "
     << DRT::ELEMENTS::Shell8Type::Instance().Name() << " "
     << DRT::ELEMENTS::Wall1Type::Instance().Name() << " "
+    << DRT::ELEMENTS::WallTri3PoroType::Instance().Name() << " "
     << DRT::ELEMENTS::WallQuad4PoroType::Instance().Name() << " "
     << DRT::ELEMENTS::WallQuad4PoroP1Type::Instance().Name() << " "
     << DRT::ELEMENTS::WallQuad4PoroP2Type::Instance().Name() << " "

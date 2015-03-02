@@ -60,11 +60,13 @@ bool secondDerivativesZero()
   case DRT::Element::nurbs27:
     hoele = true;
     break;
+  case DRT::Element::tri3:
   case DRT::Element::tet4:
     hoele = false;
     break;
   default:
     dserror("DISTYPE unknown!");
+    break;
   }
   return hoele;
 }

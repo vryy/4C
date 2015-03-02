@@ -313,3 +313,73 @@ int DRT::ELEMENTS::WallNurbs9PoroType::Initialize(DRT::Discretization& dis)
   }
   return 0;
 }
+
+/*----------------------------------------------------------------------*
+ |  TRI 3 Element                                       |
+ *----------------------------------------------------------------------*/
+
+DRT::ELEMENTS::WallTri3PoroType DRT::ELEMENTS::WallTri3PoroType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::WallTri3PoroType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::Wall1_Poro<DRT::Element::tri3>* object = new DRT::ELEMENTS::Wall1_Poro<DRT::Element::tri3>(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallTri3PoroType::Create( const std::string eletype,
+                                                            const std::string eledistype,
+                                                            const int id,
+                                                            const int owner )
+{
+  if ( eletype=="WALLT3PORO" )
+  {
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Wall1_Poro<DRT::Element::tri3>(id,owner));
+    return ele;
+  }
+  return Teuchos::null;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::WallTri3PoroType::Create( const int id, const int owner )
+{
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Wall1_Poro<DRT::Element::tri3>(id,owner));
+  return ele;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::WallTri3PoroType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+{
+
+  std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> >  definitions_wall;
+  Wall1Type::SetupElementDefinition(definitions_wall);
+
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs_wall =
+      definitions_wall["WALL"];
+
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs =
+      definitions["WALLT3PORO"];
+
+  defs["TRI3"]=defs_wall["TRI3"];
+}
+
+/*----------------------------------------------------------------------*
+ |  init the element (public)                                           |
+ *----------------------------------------------------------------------*/
+int DRT::ELEMENTS::WallTri3PoroType::Initialize(DRT::Discretization& dis)
+{
+  DRT::ELEMENTS::Wall1Type::Initialize(dis);
+  for (int i=0; i<dis.NumMyColElements(); ++i)
+  {
+    if (dis.lColElement(i)->ElementType() != *this) continue;
+    DRT::ELEMENTS::Wall1_Poro<DRT::Element::tri3>* actele = dynamic_cast<DRT::ELEMENTS::Wall1_Poro<DRT::Element::tri3>*>(dis.lColElement(i));
+    if (!actele) dserror("cast to Wall1_Poro* failed");
+    actele->InitElement();
+  }
+  return 0;
+}

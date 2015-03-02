@@ -71,8 +71,8 @@ DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype> * DRT::ELEMENTS::FluidEleBounda
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::Done()
 {
-  // delete ele1 pointer! Afterwards we have to go! But since ele1 is a
-  // cleanup call, we can do it ele1 way.
+  // delete this pointer! Afterwards we have to go! But since ele1 is a
+  // cleanup call, we can do it this way.
     Instance( false );
 }
 
@@ -1686,6 +1686,23 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
     }
     break;
   }
+  case DRT::Element::nurbs3:
+  {
+    if(ele->ParentElement()->Shape()==DRT::Element::nurbs9)
+    {
+      this->ComputeFlowRate<DRT::Element::nurbs9>(
+          ele,
+          params,
+          discretization,
+          plm,
+          elevec1);
+    }
+    else
+    {
+      dserror("expected combination nurbs3/nurbs9 for line/parent pair");
+    }
+    break;
+  }
   // 3D:
   case DRT::Element::quad4:
   {
@@ -1893,13 +1910,15 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
   std::vector<Epetra_SerialDenseVector> mypknots(my::nsd_);
   std::vector<Epetra_SerialDenseVector> myknots (my::bdrynsd_);
   Epetra_SerialDenseVector weights(my::bdrynen_);
+  Epetra_SerialDenseVector pweights(pele->NumNode());
 
   // for isogeometric elements --- get knotvectors for parent
   // element and surface element, get weights
   if(IsNurbs<distype>::isnurbs)
   {
-    bool zero_size = DRT::NURBS::GetKnotVectorAndWeightsForNurbsBoundary(
-        ele, ele->SurfaceNumber(), ele->ParentElement()->Id(), discretization, mypknots, myknots, weights, normalfac);
+    bool zero_size = DRT::NURBS::GetKnotVectorAndWeightsForNurbsBoundaryAndParent(
+        pele,ele, ele->SurfaceNumber(), discretization, mypknots, myknots, pweights, weights, normalfac);
+
      if(zero_size)
      {
        return;
@@ -1923,8 +1942,24 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
     for (int idim=0;idim<my::nsd_ ;idim++)
       pxsi(idim) = pqxg(gpid,idim);
 
-    DRT::UTILS::shape_function       <pdistype>(pxsi,pfunct);
-    DRT::UTILS::shape_function_deriv1<pdistype>(pxsi,pderiv_loc);
+    // get shape functions and derivatives of the parent element
+    if(not IsNurbs<distype>::isnurbs)
+    {
+      // shape functions and their first derivatives of parent element
+      DRT::UTILS::shape_function<pdistype>(pxsi,pfunct);
+      DRT::UTILS::shape_function_deriv1<pdistype>(pxsi,pderiv_loc);
+    }
+    // only for NURBS!!!
+    else
+    {
+      DRT::NURBS::UTILS::nurbs_get_funct_deriv
+         (pfunct  ,
+          pderiv_loc  ,
+          pxsi     ,
+          mypknots,
+          pweights,
+          pdistype);
+    }
 
     // get Jacobian matrix and determinant w.r.t. spatial configuration
     // transposed jacobian "dx/ds"
@@ -2079,6 +2114,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetration(
   Epetra_SerialDenseVector        normal;
   normal.Size(lm.size());
 
+  //gauss point loop
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
   {
     // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
@@ -2245,7 +2281,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetration(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationIDs(
-                                                 DRT::ELEMENTS::FluidBoundary*   ele,
+                                                 DRT::ELEMENTS::FluidBoundary*    ele,
                                                  Teuchos::ParameterList&          params,
                                                  DRT::Discretization&             discretization,
                                                  Epetra_SerialDenseVector&        elevec1,
@@ -2359,9 +2395,19 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
           elemat1,
           elevec1);
     }
+    else if(ele->ParentElement()->Shape()==DRT::Element::tri3)
+    {
+      PoroBoundary<DRT::Element::tri3>(
+          ele,
+          params,
+          discretization,
+          plm,
+          elemat1,
+          elevec1);
+    }
     else
     {
-      dserror("expected combination line2/quad4 for line/parent pair");
+      dserror("expected combination line2/quad4 or line2/tri3 for line/parent pair");
     }
     break;
   }
@@ -2990,7 +3036,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PressureCoupling(
       my::unitnormal_.Scale(normalfac);
 
     //  derivatives of surface normals wrt mesh displacements
-    LINALG::Matrix<3,my::bdrynen_*3> normalderiv(true);
+    LINALG::Matrix<my::nsd_,my::bdrynen_*my::nsd_> normalderiv(true);
 
     // The integration factor is not multiplied with drs
     // since it is the same as the scaling factor for the unit normal derivatives
@@ -3407,6 +3453,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
   }
   // --------------------------------------------------
 
+  // --------------------------------------------------
+
   //! array for shape functions for boundary element
   //LINALG::Matrix<my::bdrynen_,1> dualfunct(true);
 
@@ -3415,17 +3463,16 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
 
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
   {
-    // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
-    // Computation of the unit normal vector at the Gauss points
-    // Computation of nurb specific stuff is not activated here
-    DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(my::funct_,my::deriv_,my::fac_,my::unitnormal_,my::drs_,my::xsi_,my::xyze_,
-                                                    intpoints,gpid,&myknots,&weights,
-                                                    IsNurbs<distype>::isnurbs);
+   // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
+   // Computation of the unit normal vector at the Gauss points
+   // Computation of nurb specific stuff is not activated here
+   DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(my::funct_,my::deriv_,my::fac_,my::unitnormal_,my::drs_,my::xsi_,my::xyze_,
+                                                   intpoints,gpid,&myknots,&weights,
+                                                   IsNurbs<distype>::isnurbs);
 
     // --------------------------------------------------
     // parent element
     // --------------------------------------------------
-
     // get shape functions and derivatives in the plane of the element
     LINALG::Matrix<nenparent,1> pfunct(true);
     LINALG::Matrix<my::nsd_,nenparent> pderiv_loc;
@@ -3495,15 +3542,14 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
     if (IsNurbs<distype>::isnurbs)
       my::unitnormal_.Scale(normalfac);
 
-
     convvel.Multiply(econvvel,my::funct_);
 
-    //fill element matrix
+    //fill element matrix and rhs
     for (int inode=0;inode<my::bdrynen_;inode++)
     {
       for (int idof=0;idof<my::nsd_;idof++)
       {
-        //residual for normal direction. Tangential directions are equal to zero.
+        //residual for normal direction
         rhs(inode*my::nsd_) -=
             my::funct_(inode) * porosity_gp * my::unitnormal_(idof) * convvel(idof) * my::fac_;
       }
@@ -3675,7 +3721,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
 }
 
 /*-----------------------------------------------------------------------------------------------*
- * evaluate no penetration condition off diagonal (lagrange multiplier)    (protected) vuong 06/11||
+ * evaluate no penetration condition off diagonal (lagrange multiplier)    (protected) vuong 06/11|
  *------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 template <DRT::Element::DiscretizationType pdistype>
@@ -3766,7 +3812,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
 
   LINALG::Matrix<my::nsd_,my::bdrynen_> elambda(true);
 
-  // split velocity and pressure, insert into element arrays
+  // copy lagrange multiplier values into matrix
   for (int inode=0;inode<my::bdrynen_;inode++)
     for (int idim=0; idim< my::nsd_; idim++)
     {

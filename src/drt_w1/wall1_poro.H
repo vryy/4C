@@ -109,6 +109,9 @@ namespace ELEMENTS
     {
       switch(distype)
       {
+      case DRT::Element::tri3:
+        return DRT::ELEMENTS::WallTri3PoroType::Instance().UniqueParObjectId();
+        break;
       case DRT::Element::quad4:
         return DRT::ELEMENTS::WallQuad4PoroType::Instance().UniqueParObjectId();
         break;
@@ -161,6 +164,9 @@ namespace ELEMENTS
     {
       switch(distype)
       {
+      case DRT::Element::tri3:
+        return DRT::ELEMENTS::WallTri3PoroType::Instance();
+        break;
       case DRT::Element::quad4:
         return DRT::ELEMENTS::WallQuad4PoroType::Instance();
         break;

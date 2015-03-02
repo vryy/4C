@@ -4829,6 +4829,7 @@ Teuchos::RCP<std::vector<double> > FLD::FluidImplicitTimeInt::EvaluateErrorCompa
 
     // action for elements
     eleparams.set<int>("action",FLD::calc_fluid_error);
+    eleparams.set<int>("Physical Type",physicaltype_);
     eleparams.set<int>("calculate error",calcerr);
 
     const int errorfunctno = params_->get<int>("error function number",-1);

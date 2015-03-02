@@ -142,6 +142,35 @@ namespace ELEMENTS
     static WallNurbs9PoroType instance_;
   };
 
+  /*----------------------------------------------------------------------*
+   |  TRI 3 Element                                       |
+   *----------------------------------------------------------------------*/
+  class WallTri3PoroType : public DRT::ELEMENTS::Wall1Type
+  {
+  public:
+
+    std::string Name() const { return "WallTri3PoroType"; }
+
+    static WallTri3PoroType & Instance() { return instance_; };
+
+    virtual DRT::ParObject* Create( const std::vector<char> & data );
+
+    virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
+                                               const std::string eledistype,
+                                               const int id,
+                                               const int owner );
+
+    virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+
+    virtual int Initialize(DRT::Discretization& dis);
+
+    virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
+
+  private:
+
+    static WallTri3PoroType instance_;
+  };
+
 }
 }
 

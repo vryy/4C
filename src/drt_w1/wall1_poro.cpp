@@ -299,6 +299,7 @@ bool DRT::ELEMENTS::Wall1_Poro<distype>::VisData(const std::string& name, std::v
 /*----------------------------------------------------------------------*
  *                                                            vuong 12/12|
  *----------------------------------------------------------------------*/
+template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::tri3>;
 template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad4>;
 template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad9>;
 template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::nurbs4>;
