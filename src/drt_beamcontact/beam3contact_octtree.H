@@ -95,7 +95,7 @@ class Beam3ContactOctTree
     /*! \brief create spherical bounding boxes for crosslinker
      * \param coord      (in)  coordinates of the element's nodes
      * \param elecolid   (in)  element column map Id*/
-    void CreateSPBB(Epetra_SerialDenseMatrix& coord, const int& elecolid);
+    void CreateSPBB(Epetra_SerialDenseMatrix& coord, const int& elecolid,Teuchos::RCP<Epetra_SerialDenseMatrix> bboxlimits=Teuchos::null);
 
 
     //!\brief base call for octree build. Returns false if no bounding boxes exist
@@ -104,14 +104,42 @@ class Beam3ContactOctTree
     /*!\brief recursively locates bounding boxes and maps them to the octant(s) they lie in
      * \param allbboxesstdvec   (in)     std::vector holding all bounding box limits
      * \param lim               (in)     limits of the root octant
-     * \param OctreeLimits      (in/out) vector holding the limits of all octants
+     * \param octreelimits      (in/out) vector holding the limits of all octants
      * \param bboxesinoctants   (in/out) vector mapping bounding boxes to octants
+     * \param bbox2octant       (in/out) vector mapping bounding boxes to octants they lie in
      * \param treedepth         (in) current tree depth*/
     void locateBox(std::vector<std::vector<double> >& allbboxesstdvec,
                    LINALG::Matrix<6,1>&               lim,
-                   std::vector<LINALG::Matrix<6,1> >& OctreeLimits,
+                   std::vector<LINALG::Matrix<6,1> >& octreelimits,
                    std::vector<std::vector<int> >&    bboxesinoctants,
+                   std::vector<std::vector<int> >&    bbox2octant,
                    int&                               treedepth);
+
+    /*! \brief Subdivide given octant
+     *  \param parentoctlimits  (in)  limits of the parent octant
+     *  \param suboctedgelength (out) edge length of the sub octants
+     *  \param suboctlimits     (out) limits of the 8 sub octants*/
+    void CreateSubOctants(LINALG::Matrix<6,1>&               parentoctlimits,
+                          LINALG::Matrix<3,1>&               suboctedgelength,
+                          std::vector<LINALG::Matrix<6,1> >& suboctlimits);
+
+    //! \brief Check if axis aligned bounding box is in the current octant
+    bool AABBIsInThisOctant(LINALG::Matrix<6,1>& suboctlimits,
+                            std::vector<double>& bboxcoords,
+                            int &                shift);
+    //! \brief Check if cylindrical oriented bounding box is in the current octant
+    bool COBBIsInThisOctant(LINALG::Matrix<3,1>& octcenter,
+                            LINALG::Matrix<3,1>& newedgelength,
+                            std::vector<double>& bboxcoords,
+                            double&              extrusionvalue,
+                            int&                 lid,
+                            int &                shift);
+    //! \brief Check if spherical bounding box is in the current octant
+    bool SPBBIsInThisOctant(LINALG::Matrix<3,1>& octcenter,
+                            LINALG::Matrix<3,1>& newedgelength,
+                            std::vector<double>& bboxcoords,
+                            int &                lid,
+                            int &                shift);
 
     /*!\brief Manages the intersection of bounding boxes of an octant
      * \param currentpositions  (in)  node positions in column map format (fully overlapping)
@@ -133,13 +161,13 @@ class Beam3ContactOctTree
      *  \param bboxlimits (in) limits of the bounding box */
     bool IntersectionSPBB(const std::vector<int>& bboxIDs, Teuchos::RCP<Epetra_SerialDenseMatrix> bboxlimits=Teuchos::null);
 
-    /*! \brief comunicate Vector to all participating processors
+    /*! \brief communicate Vector to all participating processors
      *  \param InVec    (in) Source/Input vector
      *  \param OutVec   (in) Target/Output vector
      *  \param doexport (in) export flag
      *  \param doimport (in) import flag */
     void CommunicateVector(Epetra_Vector& InVec, Epetra_Vector& OutVec, bool zerofy=false, bool doexport=true, bool doimport=true);
-    /*! \brief comunicate MultiVector to all participating processors
+    /*! \brief communicate MultiVector to all participating processors
      *  \param InVec    (in) Source/Input vector
      *  \param OutVec   (in) Target/Output vector
      *  \param doexport (in) export flag
@@ -150,6 +178,49 @@ class Beam3ContactOctTree
     void CalcCornerPos(DRT::Element* element,
                        std::map<int, LINALG::Matrix<3,1> >&  currentpositions,
                        LINALG::SerialDenseMatrix& coord);
+
+    /*! \brief Undo the shifts due periodic BCs and make coord continuous */
+    void UndoEffectOfPeriodicBoundaryCondition(Epetra_SerialDenseMatrix& coord,
+                                               std::vector<int>&         cut,
+                                               int&                      numshifts);
+
+    /*! \brief Retrieve bounding box specific extrusion value*/
+    double GetBoundingBoxExtrusionValue();
+
+    //! \brief translate std::vec<std::vec<type> > > to Epetra_MultiVector
+    template<class TYPE> void StdVecToEpetraMultiVec(std::vector<std::vector<TYPE> >& stdvec,
+                                                  Epetra_MultiVector&                 epetravec)
+    {
+        if(std::strcmp(typeid(TYPE).name(),"i")!=0 && std::strcmp(typeid(TYPE).name(),"f")!=0 && std::strcmp(typeid(TYPE).name(),"d")!=0)
+          dserror("Template of wrong type %s! Only int, float, and double are permitted!", typeid(TYPE).name());
+        if(epetravec.MyLength()!=(int)stdvec.size())
+          dserror("Sizes differ!");
+        for(int i=0; i<(int)stdvec.size(); i++)
+        {
+          if((int)stdvec[i].size()>epetravec.NumVectors())
+            dserror("stdvec[%i].size() = %i is larger than epetravec.NumVectors() = %i", i,(int)stdvec[i].size(),epetravec.NumVectors());
+          for(int j=0; j<(int)stdvec[i].size(); j++)
+            epetravec[j][i] = (TYPE)stdvec[i][j];
+        }
+        return;
+    }
+    //! \brief translate Epetra_MultiVector to std::vec<std::vec<type> > >
+    template<class TYPE> void EpetraMultiVecToStdVec(Epetra_MultiVector&              epetravec,
+                                                     std::vector<std::vector<TYPE> >& stdvec)
+    {
+        if(std::strcmp(typeid(TYPE).name(),"i")!=0 && std::strcmp(typeid(TYPE).name(),"f")!=0 && std::strcmp(typeid(TYPE).name(),"d")!=0)
+          dserror("Template of wrong type %s! Only int, float, and double are permitted!", typeid(TYPE).name());
+        if(epetravec.MyLength()!=(int)stdvec.size())
+          dserror("Sizes differ!");
+        for(int i=0; i<epetravec.NumVectors(); i++)
+        {
+          if((int)stdvec[i].size()<epetravec.NumVectors())
+            dserror("stdvec[%i].size() = %i is larger than epetravec.NumVectors() = %i", i,(int)stdvec[i].size(),epetravec.NumVectors());
+          for(int j=0; j < epetravec.MyLength(); j++)
+            stdvec[j][i] = epetravec[i][j];
+        }
+        return;
+    }
 
     //!\brief flag indicating the use of periodic boundary conditions
     bool periodicBC_;
@@ -213,6 +284,9 @@ class Beam3ContactOctTree
 
     //!\brief Bounding Box type
     Beam3ContactOctTree::BboxType boundingbox_;
+
+    int numcrit1_;
+    int numcrit2_;
 };
 
 #endif  // #ifndef BEAM3OCTTREE_H

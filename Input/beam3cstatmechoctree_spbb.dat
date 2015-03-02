@@ -40,7 +40,7 @@ FILESTEPS                       1000
 LINEAR_SOLVER                   1
 DYNAMICTYP                      StatMech
 RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESTARTEVRY                     0
 NLNSOL                          ptc                           // fullnewton modnewton nlncg ptc
 TIMESTEP                        0.01
 NUMSTEP                         85
@@ -75,7 +75,7 @@ BEAMS_NEWGAP                    Yes
 BEAMS_SMOOTHING                 None
 BEAMS_OCTREE                    octree_spherical
 BEAMS_ADDITEXT                  Yes
-BEAMS_EXTVAL                    3.0
+BEAMS_EXTVAL                    0.25
 BEAMS_TREEDEPTH                 4
 BEAMS_BOXESINOCT                4
 -------------------------------------------------------STATISTICAL MECHANICS

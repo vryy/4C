@@ -69,7 +69,7 @@ BEAMS_PENREGPARAM_G0    0.001
 BEAMS_PENREGPARAM_F0    0.0
 BEAMS_PENREGPARAM_C0    0.0
 BEAMS_BASICSTIFFGAP     0.001
-BEAMS_OCTREE            octree_axisaligned
+BEAMS_OCTREE            octree_spherical
 BEAMS_ADDITEXT          Yes
 BEAMS_EXTVAL            0.1
 BEAMS_TREEDEPTH         5
@@ -92,9 +92,9 @@ MAXRANDFORCE        2.0                   // cutoff for random numbers as multip
 GMSHOUTPUT          No                   // visualization via Gmsh
 GMSHNETSTRUCT       No                    // visualize structure detection
 PlotFactorThick     0                     // 0 = gmsh line output, >0 = gmsh wedge output (c * (real thickness))
-SPECIAL_OUTPUT      none                  // structanaly viscoelasticity
-GMSHOUTINTERVALS    0                  // gmsh output interval
-OUTPUTINTERVALS     0                  // specialoutput interval
+SPECIAL_OUTPUT      none                 // structanaly viscoelasticity
+GMSHOUTINTERVALS    1                  // gmsh output interval
+OUTPUTINTERVALS     1                 // specialoutput interval
 //============== EVENT TRIGGERS =============
 STARTTIMEOUT        0                     // start writing output
 //ACTIONTIME          0 0 10000              // start actions equilibration time, kt switch time,...,starttimeact

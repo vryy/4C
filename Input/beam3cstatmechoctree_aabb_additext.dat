@@ -75,9 +75,9 @@ BEAMS_NEWGAP                    Yes
 BEAMS_SMOOTHING                 None
 BEAMS_OCTREE                    octree_axisaligned
 BEAMS_ADDITEXT                  Yes
-BEAMS_EXTVAL                    0.1
-BEAMS_TREEDEPTH                 5
-BEAMS_BOXESINOCT                2
+BEAMS_EXTVAL                    1.1
+BEAMS_TREEDEPTH                 4
+BEAMS_BOXESINOCT                4
 -------------------------------------------------------STATISTICAL MECHANICS
 THERMALBATH                     uniform
 DBCTYPE                         std

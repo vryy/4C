@@ -71,14 +71,14 @@ BEAMS_STRATEGY                  Uzawa
 BEAMS_BTBPENALTYPARAM           1e+06
 BEAMS_BTBUZAWACONSTRTOL         1e-08
 BEAMS_BTBUZAWAMAXSTEPS          25
-BEAMS_NEWGAP                    Yes
+BEAMS_NEWGAP                    No
 BEAMS_SMOOTHING                 None
 BEAMS_PENALTYLAW                LinPen//LinPen(default), QuadPen, LinNegQuadPen, LinPosQuadPen, LinPosCubPen, LinPosDoubleQuadPen, LinPosExpPen"
 BEAMS_OCTREE                    octree_axisaligned
-BEAMS_ADDITEXT                  Yes
-BEAMS_EXTVAL                    0.04
+BEAMS_ADDITEXT                  No
+BEAMS_EXTVAL                    1.9
 BEAMS_TREEDEPTH                 5
-BEAMS_BOXESINOCT                2
+BEAMS_BOXESINOCT                4
 -------------------------------------------------------STATISTICAL MECHANICS
 THERMALBATH                     uniform
 DBCTYPE                         std
@@ -89,8 +89,10 @@ KT                              0.0
 CTRANSPTC0                      0.0
 CROTPTC0                        0.145
 ALPHAPTC                        6.0
-OUTPUTINTERVALS                 1000
+OUTPUTINTERVALS                 1
 GMSHOUTINTERVALS                1
+PlotFactorThick                 1
+SPECIAL_OUTPUT                  none
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          Amesos_KLU_nonsym
