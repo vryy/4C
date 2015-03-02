@@ -113,16 +113,6 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
       << std::endl << std::endl;
   }
 
-  // set flag for type of linearization (fixed-point-like or Newton)
-  //  fix-point like for Oseen or Stokes problems
-  if (DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(params, "Linearisation")==INPAR::FLUID::Newton)
-  {
-    if ((DRT::INPUT::get<INPAR::FLUID::PhysicalType>(params, "Physical Type")==INPAR::FLUID::oseen)
-        or (DRT::INPUT::get<INPAR::FLUID::PhysicalType>(params, "Physical Type")==INPAR::FLUID::stokes))
-      dserror("Full Newton-linearization does not make sense for Oseen or Stokes problems.\nThey are already linear problems. Fix input file!");
-    is_newton_ = true;
-  }
-
   // set flags for formulation of the convective velocity term (conservative or convective)
   std::string convformstr = params.get<std::string>("form of convective term");
   if (convformstr =="conservative")
@@ -141,6 +131,16 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
   if (((physicaltype_ == INPAR::FLUID::loma) or (physicaltype_ == INPAR::FLUID::varying_density))
        and (fldparatimint_->IsStationary() == true))
      dserror("physical type is not supported in stationary FLUID implementation.");
+
+  // set flag for type of linearization (fixed-point-like or Newton)
+  //  fix-point like for Oseen or Stokes problems
+  if (DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(params, "Linearisation")==INPAR::FLUID::Newton)
+  {
+    if ((physicaltype_==INPAR::FLUID::oseen)
+        or (physicaltype_==INPAR::FLUID::stokes))
+      dserror("Full Newton-linearization does not make sense for Oseen or Stokes problems.\nThey are already linear problems. Fix input file!");
+    is_newton_ = true;
+  }
 
   if (fldparatimint_->IsGenalphaNP() and physicaltype_ == INPAR::FLUID::loma)
     dserror("the combination Np_Gen_Alpha and loma is not supported");

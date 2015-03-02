@@ -32,7 +32,8 @@ namespace ADAPTER
 
 namespace POROELAST
 {
-  /// monolithic split for condensing DOFs, when using the brinkman-equation
+  /// base class for monolithic approaches, when the system is splitted for some reason
+  /// (most of the time this means some dofs are condensed)
   class MonolithicSplit: public Monolithic
   {
   public:
@@ -83,7 +84,7 @@ namespace POROELAST
     Teuchos::RCP<Epetra_Map> FSIDBCMap();
 
     //! setup of coupling object and systemmatrixes
-    virtual void SetupCouplingAndMatrixes();
+    virtual void SetupCouplingAndMatrices();
 
     //! coupling of fluid and structure (interface only), only needed by algorithms, who perform a split, i.e.
     //! structure or fluid split.

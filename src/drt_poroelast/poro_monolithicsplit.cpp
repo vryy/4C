@@ -181,7 +181,7 @@ Teuchos::RCP<Epetra_Map> POROELAST::MonolithicSplit::FSIDBCMap()
 /*----------------------------------------------------------------------*
  |                                                         vuong 11/12  |
  *----------------------------------------------------------------------*/
-void POROELAST::MonolithicSplit::SetupCouplingAndMatrixes()
+void POROELAST::MonolithicSplit::SetupCouplingAndMatrices()
 {
   const int ndim = DRT::Problem::Instance()->NDim();
   icoupfs_->SetupConditionCoupling( *StructureField()->Discretization(),
@@ -214,7 +214,7 @@ void POROELAST::MonolithicSplit::SetupCouplingAndMatrixes()
                               false,
                               true));
 
-  // initialize coupling matrixes
+  // initialize coupling matrices
   k_fs_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<
             LINALG::DefaultBlockMatrixStrategy>(*(StructureField()->Interface()),
                                                 *(FluidField()->Interface()),

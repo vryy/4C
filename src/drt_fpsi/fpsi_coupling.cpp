@@ -213,7 +213,7 @@ void FPSI::FPSICoupling::EvaluateCouplingMatrixesRHS()
   fparams.set("timescale",PoroField()->FluidField()->ResidualScaling());
 
   fparams.set("dt",fpsidynparams.get<double>("TIMESTEP"));
-  fparams.set<int>("physical type", PoroField()->FluidField()->PhysicalType());
+  fparams.set<int>("Physical Type", PoroField()->FluidField()->PhysicalType());
 
 
   if (method == INPAR::FPSI::monolithic)

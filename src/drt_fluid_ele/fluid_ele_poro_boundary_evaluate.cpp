@@ -38,7 +38,7 @@ int DRT::ELEMENTS::FluidPoroBoundary::Evaluate(
 
   // switch between different physical types as used below
   std::string impltype = "poro";
-  switch(params.get<int>("physical type",INPAR::FLUID::poro))
+  switch(params.get<int>("Physical Type",INPAR::FLUID::poro))
   {
   case INPAR::FLUID::poro:              impltype = "poro";                break;
   case INPAR::FLUID::poro_p1:           impltype = "poro_p1";             break;

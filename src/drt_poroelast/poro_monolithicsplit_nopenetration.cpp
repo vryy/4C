@@ -44,6 +44,8 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 
+#include "../drt_contact/contact_interface.H"
+
 /*----------------------------------------------------------------------*
  |                                                         vuong 09/14  |
  *----------------------------------------------------------------------*/
@@ -74,6 +76,17 @@ POROELAST::MonolithicSplitNoPenetration::MonolithicSplitNoPenetration(const Epet
  *----------------------------------------------------------------------*/
 void POROELAST::MonolithicSplitNoPenetration::SetupSystem()
 {
+  {
+    const int ndim = DRT::Problem::Instance()->NDim();
+    std::vector<int> coupleddof (ndim+1,1);
+    coupleddof[ndim]=0;
+
+    mortar_adapter_->Setup(StructureField()->Discretization(),
+                           FluidField()->Discretization(),
+                           coupleddof,
+                           "FSICoupling");
+  }
+
   //use full maps of both fields. Only Lagrange multipliers are condensed
   {
     // create combined map
@@ -96,22 +109,11 @@ void POROELAST::MonolithicSplitNoPenetration::SetupSystem()
   // Switch fluid to interface split block matrix
   FluidField()->UseBlockMatrix(true);
 
-  //setup coupling objects, system and coupling matrixes
-  SetupCouplingAndMatrixes();
+  //setup coupling objects, system and coupling matrices
+  SetupCouplingAndMatrices();
 
   // build map of dofs subjected to a DBC of whole problem
   BuildCombinedDBCMap();
-
-  {
-    const int ndim = DRT::Problem::Instance()->NDim();
-    std::vector<int> coupleddof (ndim+1,1);
-    coupleddof[ndim]=0;
-
-    mortar_adapter_->Setup(StructureField()->Discretization(),
-                           FluidField()->Discretization(),
-                           coupleddof,
-                           "FSICoupling");
-  }
 } // SetupSystem()
 
 /*----------------------------------------------------------------------*
@@ -399,7 +401,7 @@ void POROELAST::MonolithicSplitNoPenetration::ApplyFluidCouplMatrix(
     params.set("total time", Time());
     params.set("delta time", Dt());
     params.set("timescale",FluidField()->ResidualScaling());
-    params.set<int>("physical type", FluidField()->PhysicalType());
+    params.set<int>("Physical Type", FluidField()->PhysicalType());
 
     FluidField()->Discretization()->ClearState();
     FluidField()->Discretization()->SetState(0,"dispnp",FluidField()->Dispnp());
@@ -442,7 +444,7 @@ void POROELAST::MonolithicSplitNoPenetration::ApplyFluidCouplMatrix(
     params.set("total time", Time());
     params.set("delta time", Dt());
     params.set("timescale",FluidField()->ResidualScaling());
-    params.set<int>("physical type", FluidField()->PhysicalType());
+    params.set<int>("Physical Type", FluidField()->PhysicalType());
 
     FluidField()->Discretization()->ClearState();
     FluidField()->Discretization()->SetState(0,"dispnp",FluidField()->Dispnp());
@@ -479,7 +481,7 @@ void POROELAST::MonolithicSplitNoPenetration::ApplyFluidCouplMatrix(
     params.set("total time", Time());
     params.set("delta time", Dt());
     params.set("timescale",FluidField()->ResidualScaling());
-    params.set<int>("physical type", FluidField()->PhysicalType());
+    params.set<int>("Physical Type", FluidField()->PhysicalType());
 
     FluidField()->Discretization()->ClearState();
     FluidField()->Discretization()->SetState(0,"dispnp",FluidField()->Dispnp());
@@ -513,7 +515,7 @@ void POROELAST::MonolithicSplitNoPenetration::ApplyFluidCouplMatrix(
     params.set("total time", Time());
     params.set("delta time", Dt());
     params.set("timescale",FluidField()->ResidualScaling());
-    params.set<int>("physical type", FluidField()->PhysicalType());
+    params.set<int>("Physical Type", FluidField()->PhysicalType());
 
     FluidField()->Discretization()->ClearState();
     FluidField()->Discretization()->SetState(0,"dispnp",FluidField()->Dispnp());
@@ -538,7 +540,7 @@ void POROELAST::MonolithicSplitNoPenetration::ApplyFluidCouplMatrix(
     FluidField()->Discretization()->ClearState();
   }
 
-  //Complete Coupling Matrixes which should be *.Add later!
+  //Complete Coupling matrices which should be *.Add later!
   k_struct_->Complete(*StructureField()->Interface()->FSICondMap(),*FluidField()->Interface()->FSICondMap());
   k_fluid_->Complete();
   k_porofluid_->Complete();
@@ -594,7 +596,7 @@ void POROELAST::MonolithicSplitNoPenetration::ApplyFluidCouplMatrix(
 
   //Transform also column map of D-Matrix
   (*k_DLin_transform_)(*FluidField()->Interface()->FSICondMap(),
-                    FluidField()->BlockSystemMatrix()->Matrix(1,1).ColMap(),
+                      FluidField()->BlockSystemMatrix()->Matrix(1,1).ColMap(),
                       *tmp_k_DLin,
                       1.0-stiparam, // *= b
                       ADAPTER::CouplingSlaveConverter(*icoupfs_),
@@ -667,7 +669,7 @@ void POROELAST::MonolithicSplitNoPenetration::Output(bool forced_writerestart)
 /*----------------------------------------------------------------------*
  | RecoverLagrangeMultiplier (protected)              vuong 09/14        |
  *----------------------------------------------------------------------*/
-void POROELAST::MonolithicSplitNoPenetration::SetupCouplingAndMatrixes()
+void POROELAST::MonolithicSplitNoPenetration::SetupCouplingAndMatrices()
 {
   const int ndim = DRT::Problem::Instance()->NDim();
   icoupfs_->SetupConditionCoupling( *StructureField()->Discretization(),
@@ -687,7 +689,7 @@ void POROELAST::MonolithicSplitNoPenetration::SetupCouplingAndMatrixes()
                               false,
                               true));
 
-  // initialize coupling matrixes
+  // initialize coupling matrices
   k_fs_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<
             LINALG::DefaultBlockMatrixStrategy>(*(StructureField()->Interface()),
                                                 *(FluidField()->Interface()),
@@ -702,7 +704,7 @@ void POROELAST::MonolithicSplitNoPenetration::SetupCouplingAndMatrixes()
                                                 false,
                                                 true));
 
-  // initialize no penetration coupling matrixes
+  // initialize no penetration coupling matrices
   k_struct_ = Teuchos::rcp(new LINALG::SparseMatrix(
                       *(FluidField()->Interface()->FSICondMap()), 81, true, true));
 
@@ -763,6 +765,7 @@ void POROELAST::MonolithicSplitNoPenetration::ReadRestart(const int step)
 
     //extract lambda on fsi interface vector
     lambda_ = StructureField()->Interface()->ExtractFSICondVector(fulllambda);
+    lambdanp_->Update(1.0,*lambda_,0.0);
 
     //call an additional evaluate to get the old D matrix
     SetupSystem();

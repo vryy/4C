@@ -2657,6 +2657,16 @@ void CONTACT::CoIntegrator::IntegrateD(MORTAR::MortarElement& sele,
     linsize += cnode->GetLinsize();
   }
 
+  // decide whether boundary modification has to be considered or not
+  // this is element-specific (is there a boundary node in this element?)
+  bool bound = false;
+  for (int k=0;k<nrow;++k)
+  {
+    MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
+    if (!mymrtrnode) dserror("ERROR: IntegrateDerivSegment2D: Null pointer!");
+    bound += mymrtrnode->IsOnBound();
+  }
+
   // prepare directional derivative of dual shape functions
   // this is necessary for all slave element types except tri3
   bool duallin = false;
@@ -2707,35 +2717,80 @@ void CONTACT::CoIntegrator::IntegrateD(MORTAR::MortarElement& sele,
     {
       CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(mynodes[j]);
 
-      // integrate dseg
-      for (int k=0; k<nrow; ++k)
+      // integrate dseg (boundary modification)
+      if (bound)
       {
-        CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(mynodes[k]);
+        bool j_boundnode = cnode->IsOnBound();
 
-        // multiply the two shape functions
-        double prod = lmval[j]*sval[k]*dxdsxi*wgt;
-
-        //loop over slave dofs
-        for (int jdof=0;jdof<ndof;++jdof)
+        for (int k=0;k<nrow;++k)
         {
-          int col = snode->Dofs()[jdof];
+          CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(mynodes[k]);
+          bool k_boundnode = mnode->IsOnBound();
 
-          if(sele.IsSlave())
+          // do not assemble off-diagonal terms if j,k are both non-boundary nodes
+          if (!j_boundnode && !k_boundnode && (j!=k)) continue;
+
+          // multiply the two shape functions
+          double prod = lmval[j]*sval[k]*dxdsxi*wgt;
+
+          // isolate the dseg entries to be filled
+          // (both the main diagonal and every other secondary diagonal)
+          // and add current Gauss point's contribution to dseg
+          // loop over slave dofs
+          for (int jdof=0;jdof<ndof;++jdof)
           {
-            if(abs(prod)>MORTARINTTOL)
-              cnode->AddDValue(jdof,col,prod);
-          }
-          else
-          {
-            if (sele.Owner() == comm.MyPID())
+            int col = mnode->Dofs()[jdof];
+
+            if (mnode->IsOnBound())
             {
-              if(abs(prod)>MORTARINTTOL)
-                dynamic_cast<CONTACT::FriNode*>(cnode)->AddD2Value(jdof,col,prod);
+              double minusval = -prod;
+              if(abs(prod)>MORTARINTTOL) cnode->AddMValue(jdof,col,minusval);
+              if(abs(prod)>MORTARINTTOL) cnode->AddMNode(mnode->Id()); // only for friction!
+            }
+            else
+            {
+              if(abs(prod)>MORTARINTTOL) cnode->AddDValue(jdof,col,prod);
+              if(abs(prod)>MORTARINTTOL) cnode->AddSNode(mnode->Id()); // only for friction!
             }
           }
         }
       }
+      else
+      {
+        // integrate dseg
+        for (int k=0; k<nrow; ++k)
+        {
+          CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(mynodes[k]);
+
+          // multiply the two shape functions
+          double prod = lmval[j]*sval[k]*dxdsxi*wgt;
+
+          //loop over slave dofs
+          for (int jdof=0;jdof<ndof;++jdof)
+          {
+            int col = snode->Dofs()[jdof];
+
+            if(sele.IsSlave())
+            {
+              if(abs(prod)>MORTARINTTOL)
+                cnode->AddDValue(jdof,col,prod);
+            }
+            else
+            {
+              if (sele.Owner() == comm.MyPID())
+              {
+                if(abs(prod)>MORTARINTTOL)
+                  dynamic_cast<CONTACT::FriNode*>(cnode)->AddD2Value(jdof,col,prod);
+              }
+            }
+          }
+        }
+      }
+
+
     }
+
+
 
     if(lin)
     {

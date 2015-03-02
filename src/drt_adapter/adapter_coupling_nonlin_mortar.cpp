@@ -26,6 +26,10 @@ Maintainer: Philipp Farah
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_sparsematrix.H"
 
+#include "../drt_nurbs_discret/drt_control_point.H"
+#include "../drt_nurbs_discret/drt_nurbs_discret.H"
+#include "../drt_nurbs_discret/drt_knotvector.H"
+
 #include "../drt_inpar/inpar_contact.H"
 
 #include <Epetra_Vector.h>
@@ -124,16 +128,14 @@ void ADAPTER::CouplingNonLinMortar::Setup(
 
   input.set<int>("PROBTYPE", INPAR::CONTACT::other);
 
+  bool isnurbs=false;
   // is this a nurbs problem?
   std::string distype = DRT::Problem::Instance()->SpatialApproximation();
   if(distype=="Nurbs")
   {
-    // ***
-    dserror("nurbs for fsi mortar not supported!");
-    input.set<bool>("NURBS",true);
+    isnurbs=true;
   }
-  else
-    input.set<bool>("NURBS",false);
+  input.set<bool>("NURBS",isnurbs);
 
   // check for invalid parameter values
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"LM_SHAPEFCN") != INPAR::MORTAR::shape_dual)
@@ -210,6 +212,14 @@ void ADAPTER::CouplingNonLinMortar::Setup(
                 new CONTACT::CoNode(node->Id(), node->X(), node->Owner(),
                     numcoupleddof, dofids, false,false));
 
+    if(isnurbs)
+    {
+      DRT::NURBS::ControlPoint* cp =
+          dynamic_cast<DRT::NURBS::ControlPoint*>(node);
+
+      cnode->NurbsW() = cp->W();
+    }
+
     interface->AddCoNode(cnode);
   }
 
@@ -234,6 +244,14 @@ void ADAPTER::CouplingNonLinMortar::Setup(
     Teuchos::RCP<CONTACT::CoNode> cnode = Teuchos::rcp(
                 new CONTACT::CoNode(node->Id(), node->X(), node->Owner(),
                     numcoupleddof, dofids, true,true));
+
+    if(isnurbs)
+    {
+      DRT::NURBS::ControlPoint* cp =
+          dynamic_cast<DRT::NURBS::ControlPoint*>(node);
+
+      cnode->NurbsW() = cp->W();
+    }
 
     interface->AddCoNode(cnode);
   }
@@ -262,7 +280,31 @@ void ADAPTER::CouplingNonLinMortar::Setup(
     Teuchos::RCP<DRT::Element> ele = elemiter->second;
     Teuchos::RCP<CONTACT::CoElement> cele = Teuchos::rcp(
                 new CONTACT::CoElement(ele->Id(), ele->Owner(), ele->Shape(),
-                    ele->NumNode(), ele->NodeIds(), false));
+                    ele->NumNode(), ele->NodeIds(), false,isnurbs));
+
+    if(isnurbs)
+    {
+      Teuchos::RCP<DRT::NURBS::NurbsDiscretization> nurbsdis =
+          Teuchos::rcp_dynamic_cast<DRT::NURBS::NurbsDiscretization>(masterdis);
+
+      Teuchos::RCP<DRT::NURBS::Knotvector> knots =
+          (*nurbsdis).GetKnotVector();
+      std::vector<Epetra_SerialDenseVector> parentknots(dim);
+      std::vector<Epetra_SerialDenseVector> mortarknots(dim - 1);
+
+      double normalfac = 0.0;
+      bool zero_size = knots->GetBoundaryEleAndParentKnots(
+          parentknots,
+          mortarknots,
+          normalfac,
+          ele->ParentMasterElement()->Id(),
+          ele->FaceMasterNumber());
+
+      // store nurbs specific data to node
+      cele->ZeroSized() = zero_size;
+      cele->Knots()     = mortarknots;
+      cele->NormalFac() = normalfac;
+    }
 
     interface->AddCoElement(cele);
   }
@@ -279,7 +321,31 @@ void ADAPTER::CouplingNonLinMortar::Setup(
     {
       Teuchos::RCP<CONTACT::CoElement> cele = Teuchos::rcp(
                   new CONTACT::CoElement(ele->Id(), ele->Owner(), ele->Shape(),
-                      ele->NumNode(), ele->NodeIds(), true));
+                      ele->NumNode(), ele->NodeIds(), true,isnurbs));
+
+      if(isnurbs)
+      {
+        Teuchos::RCP<DRT::NURBS::NurbsDiscretization> nurbsdis =
+            Teuchos::rcp_dynamic_cast<DRT::NURBS::NurbsDiscretization>(slavedis);
+
+        Teuchos::RCP<DRT::NURBS::Knotvector> knots =
+            (*nurbsdis).GetKnotVector();
+        std::vector<Epetra_SerialDenseVector> parentknots(dim);
+        std::vector<Epetra_SerialDenseVector> mortarknots(dim - 1);
+
+        double normalfac = 0.0;
+        bool zero_size = knots->GetBoundaryEleAndParentKnots(
+            parentknots,
+            mortarknots,
+            normalfac,
+            ele->ParentMasterElement()->Id(),
+            ele->FaceMasterNumber());
+
+        // store nurbs specific data to node
+        cele->ZeroSized() = zero_size;
+        cele->Knots()     = mortarknots;
+        cele->NormalFac() = normalfac;
+      }
 
       interface->AddCoElement(cele);
     }
@@ -352,7 +418,7 @@ void ADAPTER::CouplingNonLinMortar::Evaluate(const std::string& statename,
 
 
 /*----------------------------------------------------------------------*
- |  setup for nonlinear mortar framework                     farah 10/14|
+ |  print interface                                         farah 10/14|
  *----------------------------------------------------------------------*/
 void ADAPTER::CouplingNonLinMortar::PrintInterface(std::ostream& os)
 {
@@ -392,7 +458,6 @@ void ADAPTER::CouplingNonLinMortar::IntegrateD(const std::string& statename,
   }
 
   interface_->AssembleDM(*D_,*M_,true);
-
   interface_->AssembleLinDM(*DLin_,*MLin_,false,true);
 
   return;

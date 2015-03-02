@@ -90,7 +90,7 @@ namespace POROELAST
           );
 
     /// recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each iteration step
-    /// (i.e. condensed forces onto the structure) needed for rhs in next time step
+    /// (i.e. condensed forces onto the structure) needed for rhs in next newton step
     virtual void RecoverLagrangeMultiplierAfterNewtonStep(Teuchos::RCP<const Epetra_Vector> x);
 
     /// recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each time step
@@ -100,8 +100,8 @@ namespace POROELAST
     //! output
     virtual void Output(bool forced_writerestart = false);
 
-    //! setup of coupling object and systemmatrixes
-    virtual void SetupCouplingAndMatrixes();
+    //! setup of coupling object and system matrices
+    virtual void SetupCouplingAndMatrices();
 
     //! start a new time step
     virtual void PrepareTimeStep();
@@ -118,7 +118,7 @@ namespace POROELAST
         Teuchos::RCP<const Epetra_Vector> fv //!< vector containing only fluid dofs
         );
 
-    //! @name Global matrixes and vectors
+    //! @name Global matrices and vectors
 
     Teuchos::RCP<LINALG::SparseOperator> k_struct_;
     Teuchos::RCP<LINALG::SparseOperator> k_fluid_;

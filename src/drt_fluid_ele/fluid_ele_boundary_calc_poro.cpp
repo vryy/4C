@@ -2474,6 +2474,24 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
     }
     break;
   }
+  case DRT::Element::nurbs9:
+  {
+    if(ele->ParentElement()->Shape()==DRT::Element::nurbs27)
+    {
+      PoroBoundary<DRT::Element::nurbs27>(
+          ele,
+          params,
+          discretization,
+          plm,
+          elemat1,
+          elevec1);
+    }
+    else
+    {
+      dserror("expected combination nurbs9/nurbs27 for line/parent pair");
+    }
+    break;
+  }
   default:
   {
     dserror("surface/parent element pair not yet implemented. Just do it.\n");

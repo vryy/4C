@@ -198,6 +198,7 @@ void FLD::TimIntOneStepTheta::SetElementTimeParameter()
   Teuchos::ParameterList eleparams;
 
   eleparams.set<int>("action",FLD::set_time_parameter);
+  eleparams.set<int>("Physical Type",physicaltype_);
 
   //set time integration scheme
   eleparams.set<int>("TimeIntegrationScheme", timealgo_);

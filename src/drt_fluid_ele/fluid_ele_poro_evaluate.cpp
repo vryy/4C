@@ -72,7 +72,7 @@ int DRT::ELEMENTS::FluidPoro::Evaluate( Teuchos::ParameterList&   params,
 
   // switch between different physical types as used below
   std::string impltype = "poro";
-  switch(params.get<int>("physical type",INPAR::FLUID::poro))
+  switch(params.get<int>("Physical Type",INPAR::FLUID::physicaltype_undefined))
   {
   case INPAR::FLUID::poro:              impltype = "poro";                break;
   case INPAR::FLUID::poro_p1:           impltype = "poro_p1";             break;
@@ -131,7 +131,7 @@ int DRT::ELEMENTS::FluidPoro::Evaluate( Teuchos::ParameterList&   params,
     //-----------------------------------------------------------------------
     case FLD::calc_poroscatra_mono_odblock:
     {
-      switch(params.get<int>("physical type",INPAR::FLUID::incompressible))
+      switch(params.get<int>("Physical Type",INPAR::FLUID::physicaltype_undefined))
       {
       case INPAR::FLUID::poro:
       {

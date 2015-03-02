@@ -1123,7 +1123,7 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
 
   // set action type
   eleparams.set<int>("action",FLD::calc_fluid_systemmat_and_residual);
-  eleparams.set<int>("physical type",physicaltype_);
+  eleparams.set<int>("Physical Type",physicaltype_);
 
   //set parameters for turbulence models
   TreatTurbulenceModels(eleparams);
@@ -3991,7 +3991,7 @@ void FLD::FluidImplicitTimeInt::AVM3AssembleMatAndRHS(Teuchos::ParameterList& el
 
   // set action type
   eleparams.set<int>("action",FLD::calc_fluid_systemmat_and_residual);
-  eleparams.set<int>("physical type",physicaltype_);
+  eleparams.set<int>("Physical Type",physicaltype_);
 
   // parameters for turbulence approach
   eleparams.sublist("TURBULENCE MODEL") = params_->sublist("TURBULENCE MODEL");
@@ -5160,8 +5160,8 @@ void FLD::FluidImplicitTimeInt::ComputeFlowRates() const
 
   if (alefluid_)
   {
-    const std::map<int,double> flowrates = FLD::UTILS::ComputeFlowRates(*discret_, velnp_,gridv_,dispnp_, condstring);
-    //const std::map<int,double> volume = FLD::UTILS::ComputeVolume(*discret_, velnp_,gridv_,dispnp_);
+    const std::map<int,double> flowrates = FLD::UTILS::ComputeFlowRates(*discret_, velnp_,gridv_,dispnp_, condstring,physicaltype_);
+    //const std::map<int,double> volume = FLD::UTILS::ComputeVolume(*discret_, velnp_,gridv_,dispnp_,physicaltype_);
 
     // write to file
     if(discret_->Comm().MyPID() == 0)
@@ -5172,7 +5172,7 @@ void FLD::FluidImplicitTimeInt::ComputeFlowRates() const
   }
   else
   {
-    const std::map<int,double> flowrates = FLD::UTILS::ComputeFlowRates(*discret_, velnp_, condstring);
+    const std::map<int,double> flowrates = FLD::UTILS::ComputeFlowRates(*discret_, velnp_, condstring,physicaltype_);
 
     // write to file
     if(discret_->Comm().MyPID() == 0)
@@ -5323,7 +5323,7 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
     discret_->SetState("gridv", zeros_);
 
     eleparams.set<int>("action",FLD::calc_fluid_systemmat_and_residual);
-    eleparams.set<int>("physical type",physicaltype_);
+    eleparams.set<int>("Physical Type",physicaltype_);
     // set scheme-specific element parameters and vector values
     SetStateTimInt();
 
@@ -5510,6 +5510,7 @@ void FLD::FluidImplicitTimeInt::SetElementTurbulenceParameters()
   Teuchos::ParameterList eleparams;
 
   eleparams.set<int>("action",FLD::set_turbulence_parameter);
+  eleparams.set<int>("Physical Type", physicaltype_);
 
   // set general parameters for turbulent flow
   eleparams.sublist("TURBULENCE MODEL") = params_->sublist("TURBULENCE MODEL");
@@ -6050,7 +6051,7 @@ void FLD::FluidImplicitTimeInt::RecomputeMeanCsgsB()
     Teuchos::ParameterList myparams;
     // action for elements
     myparams.set<int>("action",FLD::calc_mean_Cai);
-    myparams.set<int>("physical type",physicaltype_);
+    myparams.set<int>("Physical Type",physicaltype_);
 
     // set state vector to pass distributed vector to the element
     // set velocity

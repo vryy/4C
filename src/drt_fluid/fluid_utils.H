@@ -23,6 +23,7 @@ Maintainer: Ursula Rasthofer
 
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_blocksparsematrix.H"
+#include "../drt_inpar/inpar_fluid.H"
 #include <Teuchos_TimeMonitor.hpp>
 
 namespace LINALG
@@ -541,24 +542,27 @@ void WriteLiftDragToFile(
   \date 10/08
  */
 std::map<int,double> ComputeFlowRates(
-    DRT::Discretization&           dis  ,         ///< the discretisation (node distribution, conditions)
-    const Teuchos::RCP<Epetra_Vector>       velnp,         ///< solution vector with velocities (and pressure)
-    const std::string                         condstring     ///< name of the condition (LineFlowRate or SurfaceFlowRate)
+    DRT::Discretization&                dis,           ///< the discretisation (node distribution, conditions)
+    const Teuchos::RCP<Epetra_Vector>&  velnp,         ///< solution vector with velocities (and pressure)
+    const std::string&                  condstring,    ///< name of the condition (LineFlowRate or SurfaceFlowRate)
+    const INPAR::FLUID::PhysicalType    physicaltype   ///< physical type of flow
     );
 
 std::map<int,double> ComputeFlowRates(
-    DRT::Discretization&           dis  ,         ///< the discretisation (node distribution, conditions)
-    const Teuchos::RCP<Epetra_Vector>       velnp,         ///< solution vector with velocities (and pressure)
-    const Teuchos::RCP<Epetra_Vector>       gridvel,         ///< solution vector with velocities (and pressure)
-    const Teuchos::RCP<Epetra_Vector>       dispnp,         ///< solution vector with velocities (and pressure)
-    const std::string                         condstring     ///< name of the condition (LineFlowRate or SurfaceFlowRate)
+    DRT::Discretization&                    dis,           ///< the discretisation (node distribution, conditions)
+    const Teuchos::RCP<Epetra_Vector>&      velnp,         ///< solution vector with velocities (and pressure)
+    const Teuchos::RCP<Epetra_Vector>&      gridvel,       ///< solution vector with grid velocities (ALE)
+    const Teuchos::RCP<Epetra_Vector>&      dispnp,        ///< solution vector with mesh displacements (ALE)
+    const std::string&                      condstring,    ///< name of the condition (LineFlowRate or SurfaceFlowRate)
+    const INPAR::FLUID::PhysicalType        physicaltype   ///< physical type of flow
     );
 
 std::map<int,double> ComputeVolume(
-    DRT::Discretization&           dis  ,         ///< the discretisation (node distribution, conditions)
-    const Teuchos::RCP<Epetra_Vector>       velnp,         ///< solution vector with velocities (and pressure)
-    const Teuchos::RCP<Epetra_Vector>       gridvel,         ///< solution vector with velocities (and pressure)
-    const Teuchos::RCP<Epetra_Vector>       dispnp         ///< solution vector with velocities (and pressure)
+    DRT::Discretization&                     dis,           ///< the discretisation (node distribution, conditions)
+    const Teuchos::RCP<Epetra_Vector>&       velnp,         ///< solution vector with velocities (and pressure)
+    const Teuchos::RCP<Epetra_Vector>&       gridvel,       ///< solution vector with grid velocities (ALE)
+    const Teuchos::RCP<Epetra_Vector>&       dispnp,        ///< solution vector with mesh displacements (ALE)
+    const INPAR::FLUID::PhysicalType         physicaltype   ///< physical type of flow
     );
 
 /*!
@@ -571,7 +575,7 @@ void WriteDoublesToFile(
     const double                     time,
     const int                        step,
     const std::map<int,double>&      data,
-    const std::string                name
+    const std::string&                name
   );
 
 

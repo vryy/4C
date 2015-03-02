@@ -83,7 +83,7 @@ int DRT::ELEMENTS::MeshfreeFluid::Evaluate(Teuchos::ParameterList&            pa
     //-----------------------------------------------------------------------
     case FLD::calc_fluid_systemmat_and_residual:
     {
-      switch(params.get<int>("physical type",INPAR::FLUID::incompressible))
+      switch(params.get<int>("Physical Type",INPAR::FLUID::incompressible))
       {
       default:
         return DRT::ELEMENTS::FluidFactory::ProvideImplMeshfree(Shape(), "std_meshfree")->Evaluate(

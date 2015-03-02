@@ -313,6 +313,7 @@ void DRT::UTILS::LineGPToParentGP(
     }
     default:
       dserror("invalid number of lines, unable to determine intpoint in parent");
+      break;
     }
 
   }
@@ -347,14 +348,14 @@ void DRT::UTILS::LineGPToParentGP(
       /*
                 parent               surface
 
-                 s|                        r|
-                  |                         |
-                      +                     +
-                     8|                    2|
-                      +                     +
-                     5|                    1|
-                      +                     +
-                     2                     0
+                 s|                    r|
+                  |                     |
+                  +                     +
+                 8|                    2|
+                  +                     +
+                 5|                    1|
+                  +                     +
+                 2                     0
       */
       for (int iquad=0;iquad<pqxg.M();++iquad)
       {
@@ -413,6 +414,7 @@ void DRT::UTILS::LineGPToParentGP(
     }
     default:
       dserror("invalid number of lines, unable to determine intpoint in parent");
+      break;
     }
   }
   else if( (distype==DRT::Element::line2 && pdistype==DRT::Element::tri3) or
@@ -466,6 +468,7 @@ void DRT::UTILS::LineGPToParentGP(
     }
     default:
       dserror("invalid number of surfaces, unable to determine intpoint in parent");
+      break;
     }
   }
   else

@@ -85,7 +85,7 @@ void POROELAST::MonolithicFluidSplit::SetupSystem()
   // Switch fluid to interface split block matrix
   FluidField()->UseBlockMatrix(true);
 
-  SetupCouplingAndMatrixes();
+  SetupCouplingAndMatrices();
 
   BuildCombinedDBCMap();
 } // SetupSystem()

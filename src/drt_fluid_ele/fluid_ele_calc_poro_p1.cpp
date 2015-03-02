@@ -18,6 +18,9 @@
 #include "fluid_ele_parameter_poro.H"
 #include "../drt_lib/drt_element_integration_select.H"
 
+#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
+#include "../drt_nurbs_discret/drt_nurbs_utils.H"
+
 #include "../drt_mat/fluidporo.H"
 #include "../drt_mat/structporo.H"
 
@@ -89,6 +92,19 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::Evaluate(
     Epetra_SerialDenseVector&                   elevec3_epetra,
     const DRT::UTILS::GaussIntegration &        intpoints)
 {
+  //----------------------------------------------------------------
+  // Now do the nurbs specific stuff (for isogeometric elements)
+  //----------------------------------------------------------------
+  if(my::isNurbs_)
+  {
+    // access knots and weights for this element
+    bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(discretization,ele,my::myknots_,my::weights_);
+
+    // if we have a zero sized element due to a interpolated point -> exit here
+    if(zero_size)
+      return(0);
+  } // Nurbs specific stuff
+
   // set element id
   my::eid_ = ele->Id();
   //get structure material
@@ -364,6 +380,19 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluateOD(
     Epetra_SerialDenseVector&             elevec3_epetra,
     const DRT::UTILS::GaussIntegration &  intpoints)
 {
+  //----------------------------------------------------------------
+  // Now do the nurbs specific stuff (for isogeometric elements)
+  //----------------------------------------------------------------
+  if(my::isNurbs_)
+  {
+    // access knots and weights for this element
+    bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(discretization,ele,my::myknots_,my::weights_);
+
+    // if we have a zero sized element due to a interpolated point -> exit here
+    if(zero_size)
+      return(0);
+  } // Nurbs specific stuff
+
   // set element id
   my::eid_ = ele->Id();
 
@@ -946,6 +975,10 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
                         lin_resM_Dus,
                         ecoupl_p);
 
+    //*************************************************************************************************************
+    // 3) additionale terms due to p1 approach (derivatives w.r.t. porosity)
+    // 3.1) Momentum equation
+
     /*  reaction */
     /*
       /                           \
@@ -969,13 +1002,13 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
 
     if (not my::fldparatimint_->IsStationary())
     //transient terms
-    /*  reaction  and time derivative*/
+    /*  reaction  */
     /*
-      /                           \     /                           \
-     |                             |    |                             |
-  -  |    sigma * v_s D(phi), v    | +  |    D(phi), v                |
-     |                             |    |                             |
-      \                           /     \                           /
+      /                           \
+     |                             |
+  -  |    sigma * v_s D(phi), v    |
+     |                             |
+      \                           /
      */
     {
       const double porosity_inv = 1.0/my::porosity_;
@@ -986,10 +1019,6 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
           lin_resM_Dphi(idim,ui) += timefacfac * porosity_inv * (-my::reagridvel_(idim)) * my::funct_(ui);
         } // end for (idim)
       } // ui
-
-      for (int ui=0; ui<my::nen_; ++ui)
-        for (int vi=0; vi<my::nen_; ++vi)
-          ecouplp1_p(vi,ui) +=   my::fac_ * my::funct_(vi) * my::funct_(ui);
     }
 
     //viscous terms (brinkman terms)
@@ -1038,7 +1067,23 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
     } // ui
 
     //*************************************************************************************************************
-    //Continuity equation
+    //3.2) Continuity equation
+
+    //transient terms
+    /* time derivative*/
+    /*
+      /                           \
+     |                             |
+  -  |    D(phi), v                |
+     |                             |
+      \                           /
+     */
+    {
+      for (int ui=0; ui<my::nen_; ++ui)
+        for (int vi=0; vi<my::nen_; ++vi)
+          ecouplp1_p(vi,ui) +=   my::fac_ * my::funct_(vi) * my::funct_(ui);
+    }
+
     static LINALG::Matrix<my::nen_,1>    derxy_convel(false);
     derxy_convel.Clear();
 
@@ -1405,11 +1450,9 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ComputeVolume(
   LINALG::Matrix<my::nen_, 1> eporositynp(true);
   my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &edispnp, &eporositynp,"dispnp");
 
-  LINALG::Matrix<my::nsd_,my::nen_> evelnp(true);
-  LINALG::Matrix<my::nen_,1> epressnp(true);
-  my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &evelnp, &epressnp,"velnp");
+  LINALG::Matrix<my::nsd_,my::nen_> egridvnp(true);
+  my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, &egridvnp, NULL,"gridv");
 
-  my::xyze0_ = my::xyze_;
   // get new node positions of ALE mesh
   my::xyze_ += edispnp;
 
@@ -1419,40 +1462,17 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ComputeVolume(
     // evaluate shape functions and derivatives at integration point
     my::EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(),iquad.Weight());
 
-    //------------------------get determinant of Jacobian dX / ds
-    // transposed jacobian "dX/ds"
-    LINALG::Matrix<my::nsd_,my::nsd_> xjm0;
-    xjm0.MultiplyNT(my::deriv_,my::xyze0_);
-
-    // inverse of transposed jacobian "ds/dX"
-    const double det0= xjm0.Determinant();
-
-    // determinant of deformationgradient det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds) )^-1
-    my::J_ = my::det_/det0;
-
-    //pressure at integration point
-    my::press_ = my::funct_.Dot(epressnp);
-
     //-----------------------------------computing the porosity
-    my::porosity_=0.0;
+    my::porosity_=my::funct_.Dot(eporositynp);
 
-    // compute scalar at n+alpha_F or n+1
-    //const double scalaraf = my::funct_.Dot(escaaf);
-    //params.set<double>("scalar",scalaraf);
+    // get structure velocity derivatives at integration point
+    // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+    LINALG::Matrix<my::nsd_,my::nsd_>              gridvelderxy;
+    gridvelderxy.MultiplyNT(egridvnp,my::derxy_);
 
-    ComputePorosity(  params,
-                      my::press_,
-                      my::J_,
-                      *(iquad),
-                      my::funct_,
-                      &eporositynp,
-                      my::porosity_,
-                      NULL,
-                      NULL,
-                      NULL,
-                      NULL,
-                      NULL,
-                      false);
+    my::gridvdiv_ = 0.0;
+    for (int idim = 0; idim <my::nsd_; ++idim)
+      my::gridvdiv_ += gridvelderxy(idim,idim);
 
     elevec1(0) += my::porosity_* my::fac_;
   } // end of integration loop

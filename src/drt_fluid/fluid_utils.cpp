@@ -905,25 +905,28 @@ void FLD::UTILS::WriteLiftDragToFile(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 std::map<int,double> FLD::UTILS::ComputeFlowRates(
-    DRT::Discretization&           dis  ,
-    const Teuchos::RCP<Epetra_Vector>       velnp,
-    const std::string              condstring)
+    DRT::Discretization&                dis  ,
+    const Teuchos::RCP<Epetra_Vector>&  velnp,
+    const std::string&                  condstring,
+    const INPAR::FLUID::PhysicalType    physicaltype)
 {
-  return ComputeFlowRates(dis,velnp,Teuchos::null,Teuchos::null,condstring);
+  return ComputeFlowRates(dis,velnp,Teuchos::null,Teuchos::null,condstring,physicaltype);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 std::map<int,double> FLD::UTILS::ComputeFlowRates(
-    DRT::Discretization&           dis  ,
-    const Teuchos::RCP<Epetra_Vector>       velnp,
-    const Teuchos::RCP<Epetra_Vector>       gridv,
-    const Teuchos::RCP<Epetra_Vector>       dispnp,
-    const std::string              condstring)
+    DRT::Discretization&                     dis,
+    const Teuchos::RCP<Epetra_Vector>&       velnp,
+    const Teuchos::RCP<Epetra_Vector>&       gridv,
+    const Teuchos::RCP<Epetra_Vector>&       dispnp,
+    const std::string&                       condstring,
+    const INPAR::FLUID::PhysicalType         physicaltype)
 {
   Teuchos::ParameterList eleparams;
   // set action for elements
   eleparams.set<int>("action",FLD::calc_flowrate);
+  eleparams.set<int>("Physical Type",physicaltype);
 
   // note that the flowrate is not yet divided by the area
   std::map<int,double> volumeflowrateperline;
@@ -978,14 +981,16 @@ std::map<int,double> FLD::UTILS::ComputeFlowRates(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 std::map<int,double> FLD::UTILS::ComputeVolume(
-    DRT::Discretization&           dis  ,
-    const Teuchos::RCP<Epetra_Vector>       velnp,
-    const Teuchos::RCP<Epetra_Vector>       gridv,
-    const Teuchos::RCP<Epetra_Vector>       dispnp)
+    DRT::Discretization&                     dis,
+    const Teuchos::RCP<Epetra_Vector>&       velnp,
+    const Teuchos::RCP<Epetra_Vector>&       gridv,
+    const Teuchos::RCP<Epetra_Vector>&       dispnp,
+    const INPAR::FLUID::PhysicalType         physicaltype)
 {
   Teuchos::ParameterList eleparams;
   // set action for elements
   eleparams.set<int>("action",FLD::calc_volume);
+  eleparams.set<int>("Physical Type",physicaltype);
 
   std::map<int,double> volumeperline;
 
@@ -1082,7 +1087,7 @@ void FLD::UTILS::WriteDoublesToFile(
   const double                     time,
   const int                        step,
   const std::map<int,double>&      data,
-  const std::string                name
+  const std::string&               name
   )
 {
   if (data.empty())

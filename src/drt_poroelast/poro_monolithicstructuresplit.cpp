@@ -85,7 +85,7 @@ void POROELAST::MonolithicStructureSplit::SetupSystem()
   // Use splitted structure matrix
   StructureField()->UseBlockMatrix();
 
-  SetupCouplingAndMatrixes();
+  SetupCouplingAndMatrices();
 
   BuildCombinedDBCMap();
 } // SetupSystem()

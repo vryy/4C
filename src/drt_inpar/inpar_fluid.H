@@ -26,6 +26,7 @@ namespace INPAR
     //! physical type of the fluid flow (incompressible, Boussinesq approximation, varying density, loma)
     enum PhysicalType
     {
+      physicaltype_undefined,
       incompressible,
       artcomp,
       boussinesq,

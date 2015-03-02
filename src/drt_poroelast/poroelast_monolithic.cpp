@@ -210,15 +210,33 @@ void POROELAST::Monolithic::Solve()
     PrintNewtonIter();
 
     //Aitken();
-    // increment equilibrium loop index
 
     //Recover Lagrangean Multiplier in Newton Iteration (for contact & contact no penetration!)
     RecoverLagrangeMultiplierAfterNewtonStep(iterinc_);
 
+    // increment equilibrium loop index
     iter_ += 1;
   } // end equilibrium loop
 
-  //---------------------------------------------- iteration loop
+  //---------------------------------------------- output of number of iterations
+//  {
+//    std::ostringstream s;
+//    s << std::right << std::setw(16) << std::scientific << Time()
+//      << std::right << std::setw(10) << std::scientific << Step()
+//      << std::right << std::setw(10) << std::scientific << iter_-1;
+//
+//    std::ofstream f;
+//    const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
+//                            + "_numiter.txt";
+//
+//    if (Step() <= 1)
+//      f.open(fname.c_str(),std::fstream::trunc); //f << header.str() << std::endl;
+//    else
+//      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+//
+//    f << s.str() << "\n";
+//    f.close();
+//  }
 
   // correct iteration counter
   iter_ -= 1;
@@ -272,6 +290,7 @@ void POROELAST::Monolithic::Evaluate(
   // (builds tangent, residual and applies DBC and recent coupling values)
   //Epetra_Time timerfluid(Comm());
 
+  //set structure displacements onto the fluid
   SetStructSolution();
 
   // monolithic Poroelasticity accesses the linearised fluid problem
@@ -597,7 +616,6 @@ void POROELAST::Monolithic::LinearSolve()
         zeros_,
         *CombinedDBCMap()
         );
-    //  if ( Comm().MyPID()==0 ) { cout << " DBC applied to system" << std::endl; }
 
     // standard solver call
     solver_->Solve( sparse->EpetraOperator(),
@@ -605,7 +623,6 @@ void POROELAST::Monolithic::LinearSolve()
                     true,
                     iter_ == 1
                     );
-    //  if ( Comm().MyPID()==0 ) { cout << " Solved" << std::endl; }
   }
   else // use bgs2x2_operator
   {
@@ -1199,7 +1216,7 @@ void POROELAST::Monolithic::ApplyFluidCouplMatrix(
   // action for elements
   fparams.set<int>("action", FLD::calc_porousflow_fluid_coupling);
   // physical type
-  fparams.set<int>("physical type", FluidField()->PhysicalType());
+  fparams.set<int>("Physical Type", FluidField()->PhysicalType());
   // other parameters that might be needed by the elements
   fparams.set("delta time", Dt());
   fparams.set("total time", Time());
@@ -1255,7 +1272,7 @@ void POROELAST::Monolithic::ApplyFluidCouplMatrix(
     params.set("delta time", Dt());
     params.set<POROELAST::coupltype>("coupling",POROELAST::fluidstructure);
     params.set("timescale",FluidField()->ResidualScaling());
-    params.set<int>("physical type", FluidField()->PhysicalType());
+    params.set<int>("Physical Type", FluidField()->PhysicalType());
 
     FluidField()->Discretization()->ClearState();
     FluidField()->Discretization()->SetState(0,"dispnp",FluidField()->Dispnp());
@@ -1274,7 +1291,7 @@ void POROELAST::Monolithic::ApplyFluidCouplMatrix(
     // action for elements
     params.set<int>("action", FLD::poro_prescoupl);
     params.set<POROELAST::coupltype>("coupling",POROELAST::fluidstructure);
-    params.set<int>("physical type", FluidField()->PhysicalType());
+    params.set<int>("Physical Type", FluidField()->PhysicalType());
 
     FluidField()->Discretization()->ClearState();
     FluidField()->Discretization()->SetState(0,"dispnp",FluidField()->Dispnp());
@@ -1571,7 +1588,7 @@ void POROELAST::Monolithic::EvaluateCondition(Teuchos::RCP<LINALG::SparseOperato
   Teuchos::RCP<LINALG::SparseMatrix> ConstraintMatrix = noPenHandle_->ConstraintMatrix(coupltype);
   Teuchos::RCP<LINALG::SparseMatrix> StructVelConstraintMatrix = noPenHandle_->StructVelConstraintMatrix(coupltype);
 
-  //evaluate condition on elements and assemble matrixes
+  //evaluate condition on elements and assemble matrices
   FluidField()->EvaluateNoPenetrationCond( noPenHandle_->RHS(),
                                         ConstraintMatrix,
                                         StructVelConstraintMatrix,
@@ -1676,12 +1693,12 @@ void POROELAST::Monolithic::SetupNewton()
   normincporo_ = 0.0;
 
   // incremental solution vector with length of all dofs
-  iterinc_ = LINALG::CreateVector(*DofRowMap(), true);
-  iterinc_->PutScalar(0.0);
+  if(iterinc_==Teuchos::null) iterinc_ = LINALG::CreateVector(*DofRowMap(), true);
+  else iterinc_->PutScalar(0.0);
 
   // a zero vector of full length
-  zeros_ = LINALG::CreateVector(*DofRowMap(), true);
-  zeros_->PutScalar(0.0);
+  if(zeros_==Teuchos::null) zeros_ = LINALG::CreateVector(*DofRowMap(), true);
+  else zeros_->PutScalar(0.0);
 
   //AitkenReset();
 
@@ -1805,7 +1822,8 @@ bool POROELAST::Monolithic::SetupSolver()
     solverparams, "SOLVER");
 
   directsolve_ = (   solvertype == INPAR::SOLVER::umfpack
-                  or solvertype == INPAR::SOLVER::superlu);
+                  or solvertype == INPAR::SOLVER::superlu
+                  or solvertype == INPAR::SOLVER::amesos_klu_nonsym);
 
   if (directsolve_)
   {

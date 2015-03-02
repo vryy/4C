@@ -136,7 +136,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
 
   // switch between different physical types as used below
   std::string impltype = "std";
-  switch(params.get<int>("physical type",INPAR::FLUID::incompressible))
+  switch(params.get<int>("Physical Type",INPAR::FLUID::incompressible))
   {
   case INPAR::FLUID::loma:    impltype = "loma";    break;
   }

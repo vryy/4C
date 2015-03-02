@@ -2082,6 +2082,20 @@ int main(int argc, char** argv)
       }
       break;
     }
+    case prb_poroelast:
+    {
+      if(infieldtype == "fluid")
+      {
+        FluidMonWriter mymonwriter(problem,infieldtype,node);
+        mymonwriter.WriteMonFile(problem,infieldtype,node);
+      }
+      else if(infieldtype == "structure")
+      {
+        StructMonWriter mymonwriter(problem,infieldtype,node);
+        mymonwriter.WriteMonFile(problem,infieldtype,node);
+      }
+      break;
+    }
     default:
     {
       dserror("problem type %d not yet supported", problem.Problemtype());

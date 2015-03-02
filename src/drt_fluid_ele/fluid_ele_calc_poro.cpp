@@ -242,7 +242,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(
 
     // if we have a zero sized element due to a interpolated point -> exit here
     if(zero_size)
-    return(0);
+      return(0);
   } // Nurbs specific stuff
 
   // set element id
@@ -6466,6 +6466,19 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeVolume(
     std::vector<int>&               lm,
     Epetra_SerialDenseVector&       elevec1)
 {
+  //----------------------------------------------------------------
+  // Now do the nurbs specific stuff (for isogeometric elements)
+  //----------------------------------------------------------------
+  if(my::isNurbs_)
+  {
+    // access knots and weights for this element
+    bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(discretization,ele,my::myknots_,my::weights_);
+
+    // if we have a zero sized element due to a interpolated point -> exit here
+    if(zero_size)
+    return(0);
+  } // Nurbs specific stuff
+
   // get node coordinates
   GEO::fillInitialPositionArray<distype,my::nsd_, LINALG::Matrix<my::nsd_,my::nen_> >(ele,my::xyze_);
   // set element id

@@ -237,7 +237,7 @@ void FLD::TimIntPoro::Output()
 *----------------------------------------------------------------------*/
 void FLD::TimIntPoro::SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams)
 {
-  eleparams.set<int>("physical type",physicaltype_);
+  eleparams.set<int>("Physical Type",physicaltype_);
 
   //just for poroelasticity
   discret_->SetState("dispn", dispn_);
@@ -270,7 +270,7 @@ void FLD::TimIntPoro::PoroIntUpdate()
     eleparams.set("total time", time_);
     eleparams.set("delta time", dta_);
     eleparams.set<POROELAST::coupltype>("coupling",POROELAST::fluidfluid);
-    eleparams.set<int>("physical type",physicaltype_);
+    eleparams.set<int>("Physical Type",physicaltype_);
 
     discret_->ClearState();
     discret_->SetState("dispnp", dispnp_);
@@ -291,7 +291,7 @@ void FLD::TimIntPoro::PoroIntUpdate()
     // set action for elements
     eleparams.set<int>("action",FLD::poro_prescoupl);
     eleparams.set<POROELAST::coupltype>("coupling",POROELAST::fluidfluid);
-    eleparams.set<int>("physical type",physicaltype_);
+    eleparams.set<int>("Physical Type",physicaltype_);
 
     discret_->ClearState();
     discret_->SetState("dispnp", dispnp_);
