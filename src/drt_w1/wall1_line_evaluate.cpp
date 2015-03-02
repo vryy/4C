@@ -76,6 +76,19 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
   const double time = params.get("total time", -1.0);
   if (time < 0.0) usetime = false;
 
+  // ensure that at least as many curves/functs as dofs are available
+  if (int(onoff->size()) < Wall1::noddof_)
+    dserror("Fewer functions or curves defined than the element has dofs.");
+
+  // factor given by time curves
+  std::vector<double> curvefacs(Wall1::noddof_, 1.0);
+  for (int i=0; i < Wall1::noddof_; ++i)
+  {
+    const int curvenum = (curve) ? (*curve)[i] : -1;
+    if (curvenum >= 0 && usetime)
+      curvefacs[i] = DRT::Problem::Instance()->Curve(curvenum).f(time);
+  }
+
   // set number of nodes
   const int numnod = NumNode();
   const DiscretizationType distype = Shape();
@@ -203,7 +216,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
       std::vector<double> ar(Wall1::noddof_);
 
       // loop the dofs of a node
-      // ar[i] = ar[i] * facr * ds * onoff[i] * val[i] * curvefac * functfac
+      // ar[i] = ar[i] * facr * ds * onoff[i] * val[i] * curvefacs[i] * functfac
       for (int i = 0; i < Wall1::noddof_; ++i)
       {
         // factor given by spatial function
@@ -229,13 +242,8 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
           functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(i,coordgpref,time,NULL);
         }
 
-        // factor given by time curve
-        const int curvenum = (curve) ? (*curve)[i] : -1;
-        double curvefac = 1.0;
-        if (curvenum >= 0 && usetime)
-          curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
 
-        ar[i] = intpoints.qwgt[gpid] * dr * (*onoff)[i] * (*val)[i] * curvefac * functfac;
+        ar[i] = intpoints.qwgt[gpid] * dr * (*onoff)[i] * (*val)[i] * curvefacs[i] * functfac;
       }
 
       // add load components
@@ -290,14 +298,8 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
         functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(0,coordgpref, time, NULL);
       }
 
-      // factor given by time curve
-      const int curvenum = (curve) ? (*curve)[0] : -1;
-      double curvefac = 1.0;
-      if (curvenum >= 0 && usetime)
-        curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
-
       // constant factor for integration
-      const double fac = intpoints.qwgt[gpid] * ortho_value * curvefac * functfac;
+      const double fac = intpoints.qwgt[gpid] * ortho_value * curvefacs[0] * functfac;
 
       // add load components
       for (int node = 0; node < numnod; ++node)

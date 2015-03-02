@@ -70,13 +70,25 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(Teuchos::ParameterList&   par
   const double time = params.get("total time",-1.0);
   if (time<0.0) usetime = false;
 
-  // find out whether we will use a time curve and get the factor
+  // ensure that at least as many curves/functs as dofs are available
+  if (int(onoff->size()) < 3)
+    dserror("Fewer functions or curves defined than the element has dofs.");
+
+  for (int checkdof = 3; checkdof < int(onoff->size()); ++checkdof)
+  {
+    if ((*onoff)[checkdof] != 0)
+      dserror("Number of Dimensions in Neumann_Evalutaion is 3. Further DoFs are not considered.");
+  }
+
+  // find out whether we will use time curves and get the factors
   const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
-  int curvenum = -1;
-  if (curve) curvenum = (*curve)[0];
-  double curvefac = 1.0;
-  if (curvenum>=0 && usetime)
-    curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+  std::vector<double> curvefacs(3, 1.0);
+  for (int i=0; i < 3; ++i)
+  {
+    const int curvenum = (curve) ? (*curve)[i] : -1;
+    if (curvenum>=0 && usetime)
+      curvefacs[i] = DRT::Problem::Instance()->Curve(curvenum).f(time);
+  }
 
   // element geometry update - currently only material configuration
   const int numnode = NumNode();
@@ -104,11 +116,11 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(Teuchos::ParameterList&   par
     {            // uniform load on reference configuration
       double dL;
       LineIntegration(dL,x,deriv);
-      double fac = wgt * dL * curvefac;   // integration factor
+      double fac = wgt * dL;   // integration factor
       // distribute over element load vector
       for (int nodid=0; nodid < numnode; ++nodid)
         for(int dim=0; dim < 3; ++dim)
-          elevec1[nodid*3 + dim] += funct[nodid] * (*onoff)[dim] * (*val)[dim] * fac;
+          elevec1[nodid*3 + dim] += funct[nodid] * (*onoff)[dim] * (*val)[dim] * fac * curvefacs[dim];
     }
     break;
     default:

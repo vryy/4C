@@ -646,14 +646,26 @@ int DRT::ELEMENTS::So3_Plast<distype>::EvaluateNeumann(Teuchos::ParameterList&  
   const double time = params.get("total time",-1.0);
   if (time<0.0) usetime = false;
 
-  // find out whether we will use a time curve and get the factor
-  const std::vector<int>* curve = condition.Get<std::vector<int> >("curve");
-  int curvenum = -1;
-  if (curve) curvenum = (*curve)[0];
-  double curvefac = 1.0;
-  if (curvenum>=0 && usetime)
-    curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
-  // **
+  // ensure that at least as many curves/functs as dofs are available
+  if (int(onoff->size()) < nsd_)
+    dserror("Fewer functions or curves defined than the element has dofs.");
+
+  for (int checkdof = nsd_; checkdof < int(onoff->size()); ++checkdof)
+  {
+    if ((*onoff)[checkdof] != 0)
+      dserror("Number of Dimensions in Neumann_Evalutaion is 3. Further DoFs are not considered.");
+  }
+
+  // find out whether we will use time curves and get the factors
+  const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
+  std::vector<double> curvefacs(nsd_, 1.0);
+  for (int i=0; i < nsd_; ++i)
+  {
+    const int curvenum = (curve) ? (*curve)[i] : -1;
+    if (curvenum>=0 && usetime)
+      curvefacs[i] = DRT::Problem::Instance()->Curve(curvenum).f(time);
+  }
+
 
   // (SPATIAL) FUNCTION BUSINESS
   const std::vector<int>* funct = condition.Get<std::vector<int> >("funct");
@@ -701,7 +713,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::EvaluateNeumann(Teuchos::ParameterList&  
     }
 
     // integration factor
-    const double fac = wgt_[gp] * curvefac * detJ;
+    const double fac = wgt_[gp] * detJ;
     // distribute/add over element load vector
     for(int dim=0; dim<nsd_; dim++) {
       // function evaluation
@@ -710,7 +722,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::EvaluateNeumann(Teuchos::ParameterList&  
         = (functnum>0)
         ? DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dim,xrefegp.A(),time,NULL)
         : 1.0;
-      const double dim_fac = (*onoff)[dim] * (*val)[dim] * fac * functfac;
+      const double dim_fac = (*onoff)[dim] * (*val)[dim] * fac * curvefacs[dim] * functfac;
       for (int nodid=0; nodid<nen_; ++nodid) {
         elevec1[nodid*nsd_+dim] += shapefunct(nodid) * dim_fac;
       }

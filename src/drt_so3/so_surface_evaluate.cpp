@@ -121,13 +121,21 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList&  p
   const double time = params.get("total time",-1.0);
   if (time<0.0) usetime = false;
 
-  // find out whether we will use a time curve and get the factor
+  const int numdim = 3;
+
+  // ensure that at least as many curves/functs as dofs are available
+  if (int(onoff->size()) < numdim)
+    dserror("Fewer functions or curves defined than the element has dofs.");
+
+  // find out whether we will use time curves and get the factors
   const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
-  int curvenum = -1;
-  if (curve) curvenum = (*curve)[0];
-  double curvefac = 1.0;
-  if (curvenum>=0 && usetime)
-    curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+  std::vector<double> curvefacs(numdim, 1.0);
+  for (int i=0; i < numdim; ++i)
+  {
+    const int curvenum = (curve) ? (*curve)[i] : -1;
+    if (curvenum>=0 && usetime)
+      curvefacs[i] = DRT::Problem::Instance()->Curve(curvenum).f(time);
+  }
 
   // element geometry update
   const int numnode = NumNode();
@@ -285,13 +293,20 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList&  p
     }
 
     //Stuff to get spatial Neumann
-    const int numdim = 3;
     LINALG::SerialDenseMatrix gp_coord(1,numdim);
 
     switch(ltype)
     {
     case neum_live:
     {
+
+      //check for correct input
+      for (int checkdof = numdim; checkdof < int(onoff->size()); ++checkdof)
+      {
+        if ((*onoff)[checkdof] != 0)
+          dserror("Number of Dimensions in Neumann_Evalutaion is 3. Further DoFs are not considered.");
+      }
+
       LINALG::SerialDenseMatrix dxyzdrs(2,3);
       dxyzdrs.Multiply('N','N',1.0,deriv,x,0.0);
       LINALG::SerialDenseMatrix  metrictensor(2,2);
@@ -330,7 +345,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList&  p
           else
             functfac = 1.0;
 
-          val_curvefac_functfac = functfac*curvefac;
+          val_curvefac_functfac = functfac*curvefacs[dof];
           const double fac = intpoints.qwgt[gp] * detA * (*val)[dof] * val_curvefac_functfac;
           for (int node=0; node < numnode; ++node)
           {
@@ -377,7 +392,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList&  p
         functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(0,coordgpref,time,NULL);
       }
 
-      val_curvefac_functfac = curvefac*functfac;
+      val_curvefac_functfac = curvefacs[0]*functfac;
 
       const double fac = intpoints.qwgt[gp] * val_curvefac_functfac * ortho_value * normalfac;
       for (int node=0; node < numnode; ++node)
@@ -453,7 +468,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList&  p
         }
         else functfac = 1.0;
       }
-      val_curvefac_functfac = curvefac*functfac;
+      val_curvefac_functfac = curvefacs[0]*functfac;
 
       const double fac = intpoints.qwgt[gp] * val_curvefac_functfac * torque_value;
       for (int node=0; node < numnode; ++node)

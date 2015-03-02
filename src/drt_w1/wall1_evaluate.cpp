@@ -881,6 +881,19 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList&   params,
   const double time = params.get("total time",-1.0);
   if (time<0.0) usetime = false;
 
+  // ensure that at least as many curves/functs as dofs are available
+  if (int(onoff->size()) < noddof_)
+    dserror("Fewer functions or curves defined than the element has dofs.");
+
+  // factor given by time curves
+  std::vector<double> curvefacs(noddof_, 1.0);
+  for (int i = 0; i < noddof_; ++i)
+  {
+    const int curvenum = (curve) ? (*curve)[i] : -1;
+    if (curvenum >= 0 && usetime)
+      curvefacs[i] = DRT::Problem::Instance()->Curve(curvenum).f(time);
+  }
+
   // no. of nodes on this surface
   const int iel = NumNode();
 
@@ -1007,13 +1020,7 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList&   params,
         functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(i,coordgpref,time,NULL);
       }
 
-      // factor given by time curve
-      const int curvenum = (curve) ? (*curve)[i] : -1;
-      double curvefac = 1.0;
-      if (curvenum >= 0 && usetime)
-        curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
-
-      ar[i] = fac * (*onoff)[i] * (*val)[i] * curvefac * functfac;
+      ar[i] = fac * (*onoff)[i] * (*val)[i] * curvefacs[i] * functfac;
     }
 
     // add load components
