@@ -522,6 +522,15 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
         // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
         LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd(true);
 
+        if (pstype_==INPAR::STR::prestress_id && pstime_ < time_)
+        {
+          dserror("Calc Energy not implemented for prestress id");
+        }
+
+        // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
+        // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
+        LINALG::Matrix<MAT::NUM_STRESS_3D,1> glstrain(true);
+
         if (pstype_==INPAR::STR::prestress_mulf)
         {
           // get Jacobian mapping wrt to the stored configuration
@@ -545,29 +554,73 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
           LINALG::Matrix<3,3> Fnew;
           Fnew.Multiply(defgrd,Fhist);
           defgrd = Fnew;
+
+          // right Cauchy-Green tensor = F^T * F
+          LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> cauchygreen;
+          cauchygreen.MultiplyTN(defgrd,defgrd);
+
+          glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
+          glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
+          glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
+          glstrain(3) = cauchygreen(0,1);
+          glstrain(4) = cauchygreen(1,2);
+          glstrain(5) = cauchygreen(2,0);
         }
-        else
+        else if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
+        {
           // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
           defgrd.MultiplyTT(xcurr,N_XYZ);
 
-        if (pstype_==INPAR::STR::prestress_id && pstime_ < time_)
-        {
-          dserror("Calc Energy not implemented for prestress id");
+          // right Cauchy-Green tensor = F^T * F
+          LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> cauchygreen;
+          cauchygreen.MultiplyTN(defgrd,defgrd);
+
+          glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
+          glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
+          glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
+          glstrain(3) = cauchygreen(0,1);
+          glstrain(4) = cauchygreen(1,2);
+          glstrain(5) = cauchygreen(2,0);
         }
+        else if (kintype_ == INPAR::STR::kinem_linear)
+        {
+          // in kinematically linear analysis the deformation gradient is equal to identity
+          // no difference between reference and current state
+          for (int i=0; i<3; ++i) defgrd(i,i) = 1.0;
 
-        // right Cauchy-Green tensor = F^T * F
-        LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> cauchygreen;
-        cauchygreen.MultiplyTN(defgrd,defgrd);
+          // nodal displacement vector
+          LINALG::Matrix<NUMDOF_SOH8,1> nodaldisp;
+          for (int i=0; i<NUMDOF_SOH8; ++i) nodaldisp(i,0) = mydisp[i];
+          // compute linear B-operator
+          LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDOF_SOH8> bop;
+          for (int i=0; i<NUMNOD_SOH8; ++i)
+          {
+            bop(0,NODDOF_SOH8*i+0) = N_XYZ(0,i);
+            bop(0,NODDOF_SOH8*i+1) = 0.0;
+            bop(0,NODDOF_SOH8*i+2) = 0.0;
+            bop(1,NODDOF_SOH8*i+0) = 0.0;
+            bop(1,NODDOF_SOH8*i+1) = N_XYZ(1,i);
+            bop(1,NODDOF_SOH8*i+2) = 0.0;
+            bop(2,NODDOF_SOH8*i+0) = 0.0;
+            bop(2,NODDOF_SOH8*i+1) = 0.0;
+            bop(2,NODDOF_SOH8*i+2) = N_XYZ(2,i);
 
-        // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
-        // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-        LINALG::Matrix<MAT::NUM_STRESS_3D,1> glstrain;
-        glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
-        glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
-        glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
-        glstrain(3) = cauchygreen(0,1);
-        glstrain(4) = cauchygreen(1,2);
-        glstrain(5) = cauchygreen(2,0);
+            bop(3,NODDOF_SOH8*i+0) = N_XYZ(1,i);
+            bop(3,NODDOF_SOH8*i+1) = N_XYZ(0,i);
+            bop(3,NODDOF_SOH8*i+2) = 0.0;
+            bop(4,NODDOF_SOH8*i+0) = 0.0;
+            bop(4,NODDOF_SOH8*i+1) = N_XYZ(2,i);
+            bop(4,NODDOF_SOH8*i+2) = N_XYZ(1,i);
+            bop(5,NODDOF_SOH8*i+0) = N_XYZ(2,i);
+            bop(5,NODDOF_SOH8*i+1) = 0.0;
+            bop(5,NODDOF_SOH8*i+2) = N_XYZ(0,i);
+          }
+
+          // compute linear strain at GP
+          glstrain.Multiply(bop,nodaldisp);
+        }
+        else
+          dserror("unknown kinematic type for energy calculation");
 
         // call material for evaluation of strain energy function
         double psi = 0.0;
