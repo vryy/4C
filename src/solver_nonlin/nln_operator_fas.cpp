@@ -40,7 +40,8 @@ Maintainer: Matthias Mayr
 
 /*----------------------------------------------------------------------------*/
 NLNSOL::NlnOperatorFas::NlnOperatorFas()
-: hierarchy_(Teuchos::null)
+: hierarchy_(Teuchos::null),
+  cycletype_(INPAR::NLNSOL::FAS::cycle_none)
 {
   return;
 }
@@ -60,6 +61,14 @@ void NLNSOL::NlnOperatorFas::Setup()
   hierarchy_ = Teuchos::rcp(new NLNSOL::FAS::AMGHierarchy());
   hierarchy_->Init(Comm(), Params(), NlnProblem());
   hierarchy_->Setup();
+
+  std::string cycletype = Params().sublist("FAS: MueLu Parameters").get<std::string>("cycle type");
+  if (cycletype == "V")
+    cycletype_ = INPAR::NLNSOL::FAS::cycle_v;
+  else if (cycletype == "W")
+    cycletype_ = INPAR::NLNSOL::FAS::cycle_w;
+  else
+    dserror("Unknown multigrid cycle type '%s'", cycletype.c_str());
 
   // Setup() has been called
   SetIsSetup();
@@ -98,11 +107,10 @@ int NLNSOL::NlnOperatorFas::ApplyInverse(const Epetra_MultiVector& f,
   {
     ++iter;
 
-    *out << "Start V-cycle for the " << iter << ". time." << std::endl;
+    *out << "Start multigrid cycle for the " << iter << ". time." << std::endl;
 
-    //ToDo (mayr) switch between different cycles based on params_
-    // choose type of multigrid cycle
-    VCycle(*ftmp, x, 0);
+    // call generic cycling routine
+    Cycle(*ftmp, x, 0);
 
     // Evaluate and check for convergence
     NlnProblem()->ComputeF(x, *ftmp);
@@ -113,6 +121,40 @@ int NLNSOL::NlnOperatorFas::ApplyInverse(const Epetra_MultiVector& f,
 
   // return error code
   return (not CheckSuccessfulConvergence(iter, converged));
+}
+
+/*----------------------------------------------------------------------------*/
+void NLNSOL::NlnOperatorFas::Cycle(const Epetra_MultiVector& f,
+    Epetra_MultiVector& x,
+    const int level
+    ) const
+{
+  // chose multigrid cycle type based on user input
+  switch (cycletype_)
+  {
+  case INPAR::NLNSOL::FAS::cycle_none:
+  {
+    dserror("No multigrid cycle type chose.");
+    break;
+  }
+  case INPAR::NLNSOL::FAS::cycle_v:
+  {
+    VCycle(f, x, level);
+    break;
+  }
+  case INPAR::NLNSOL::FAS::cycle_w:
+  {
+    WCycle();
+    break;
+  }
+  default:
+  {
+    dserror("Unknown multigrid cycle type.");
+    break;
+  }
+  }
+
+  return;
 }
 
 /*----------------------------------------------------------------------------*/

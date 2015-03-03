@@ -22,8 +22,10 @@ Maintainer: Matthias Mayr
 
 // MueLu
 #include <MueLu_Hierarchy.hpp>
+#include <MueLu_HierarchyManager.hpp>
 #include <MueLu_MapTransferFactory_fwd.hpp>
-#include <MueLu_MLParameterListInterpreter.hpp>
+#include <MueLu_MLParameterListInterpreter.hpp> // ToDo (mayr) To be removed
+#include <MueLu_ParameterListInterpreter.hpp>
 #include <MueLu_Utilities.hpp>
 
 /* MueLu typedefs: header files for default types, must be included after all
@@ -126,11 +128,17 @@ void NLNSOL::FAS::AMGHierarchy::Setup()
   Teuchos::RCP<Epetra_CrsMatrix> mymatrix = Teuchos::rcp(A, false);
 
   // wrap Epetra_CrsMatrix to Xpetra::Matrix
-  Teuchos::RCP<Xpetra::CrsMatrix<double,int,int,Node> > mueluA = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(mymatrix));
-  Teuchos::RCP<Xpetra::Matrix<double,int,int,Node> > mueluOp = Teuchos::rcp(new Xpetra::CrsMatrixWrap<double,int,int,Node>(mueluA));
+  Teuchos::RCP<Xpetra::CrsMatrix<double,int,int,Node> > mueluA =
+      Teuchos::rcp(new Xpetra::EpetraCrsMatrix(mymatrix));
+  Teuchos::RCP<Xpetra::Matrix<double,int,int,Node> > mueluOp =
+      Teuchos::rcp(new Xpetra::CrsMatrixWrap<double,int,int,Node>(mueluA));
+
+/* MueLu input via ML Parameter List
+
+  // ToDo (mayr) delete this as soon as we have enough confidence in the MueLu input
 
   // ---------------------------------------------------------------------------
-  // Setup MueLue Hierarchy based on user specified parameters
+  // Setup MueLu Hierarchy based on user specified parameters
   // ---------------------------------------------------------------------------
   // extract local copy of ML parameter list that is needed for an
   // easy-to-handle setup of the MueLu hierarchy
@@ -141,6 +149,24 @@ void NLNSOL::FAS::AMGHierarchy::Setup()
   Teuchos::RCP<Hierarchy> H = mueLuFactory.CreateHierarchy();
   H->GetLevel(0)->Set("A", mueluOp);
   mueLuFactory.SetupHierarchy(*H);
+
+  */
+
+  // ---------------------------------------------------------------------------
+  // Setup MueLu Hierarchy based on user-provided parameters from xml-file
+  // ---------------------------------------------------------------------------
+  /* extract local copy of MueLu parameter list that is needed for an
+  / easy-to-handle setup of the MueLu hierarchy */
+  Teuchos::ParameterList mueluparams = Params().sublist("FAS: MueLu Parameters");
+
+  // create the MueLu Factory via a MueLu ParameterList interpreter
+  Teuchos::RCP<HierarchyManager> mueLuFactory =
+      Teuchos::rcp(new ParameterListInterpreter(mueluparams));
+
+  // Setup MueLu Hierarchy
+  Teuchos::RCP<Hierarchy> H = mueLuFactory->CreateHierarchy();
+  H->GetLevel(0)->Set("A", mueluOp);
+  mueLuFactory->SetupHierarchy(*H);
 
   // ---------------------------------------------------------------------------
   // Create NLNSOL::FAS::NlnLevel instances and feed MueLu data to them

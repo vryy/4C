@@ -2,6 +2,8 @@
 /*!
 \file inpar_solver_nonlin.H
 
+\brief input stuff specific for the nonlinear solver tool box NLNSOL
+
 <pre>
 Maintainer: Matthias Mayr
             mayr@mhpc.mw.tum.de
@@ -10,10 +12,9 @@ Maintainer: Matthias Mayr
 */
 
 /*----------------------------------------------------------------------*/
+
 #ifndef INPAR_SOLVER_NONLIN_H
 #define INPAR_SOLVER_NONLIN_H
-
-#include "inpar_parameterlist_utils.H"
 
 /*----------------------------------------------------------------------*/
 namespace INPAR
@@ -22,6 +23,17 @@ namespace INPAR
 //! Input parameters for nonlinear solver package
 namespace NLNSOL
 {
+
+namespace FAS
+{
+  //! type of multigrid cycle
+  enum CycleType
+  {
+    cycle_none, ///< no type chosen
+    cycle_v, ///< V-cycle
+    cycle_w ///< W-cycle
+  };
+} // namespace FAS
 
 namespace LINESEARCH
 {

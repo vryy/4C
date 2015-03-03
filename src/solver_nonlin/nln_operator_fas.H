@@ -29,6 +29,8 @@ Maintainer: Matthias Mayr
 // baci
 #include "nln_operator_base.H"
 
+#include "../drt_inpar/inpar_solver_nonlin.H"
+
 #include "../drt_lib/drt_dserror.H"
 
 /*----------------------------------------------------------------------------*/
@@ -121,8 +123,8 @@ namespace NLNSOL
      * \author mayr.mt \date 03/2014
      */
     virtual int ApplyInverse(const Epetra_MultiVector& f, ///< residual
-        Epetra_MultiVector& x ///< solution
-        )  const;
+      Epetra_MultiVector& x ///< solution
+      ) const;
 
     //@}
 
@@ -142,26 +144,31 @@ namespace NLNSOL
   private:
 
     //! Compute step length, i.e. line search parameter
-    virtual void ComputeStepLength(
-        const Epetra_MultiVector& x, ///< current solution
-        const Epetra_MultiVector& f, ///< residual at current solution
-        const Epetra_MultiVector& inc, ///< search direction
-        const double fnorm2, ///< current L2-norm of residual
-        double& lsparam, ///< line search parameter (to be determined)
-        bool& suffdecr ///< achieved sufficient decrease? (to be determined)
-        ) const { dserror("There is no line search in FAS."); return; }
+    virtual void ComputeStepLength(const Epetra_MultiVector& x, ///< current solution
+      const Epetra_MultiVector& f, ///< residual at current solution
+      const Epetra_MultiVector& inc, ///< search direction
+      const double fnorm2, ///< current L2-norm of residual
+      double& lsparam, ///< line search parameter (to be determined)
+      bool& suffdecr ///< achieved sufficient decrease? (to be determined)
+      ) const { dserror("There is no line search in FAS."); return; }
 
     //! @name Multigrid cycles
     //@{
 
+    //! Entry to all kind of multigrid cycles
+    virtual void Cycle(const Epetra_MultiVector& f, ///< residual
+      Epetra_MultiVector& x, ///< solution
+      const int level ///< level ID
+      ) const;
+
     //! V-Cycle (recursive definition)
     virtual void VCycle(const Epetra_MultiVector& f, ///< residual
-                        Epetra_MultiVector& x, ///< solution
-                        const int level ///< level ID
-                        ) const;
+      Epetra_MultiVector& x, ///< solution
+      const int level ///< level ID
+      ) const;
 
     //! W-Cycle
-    virtual void WCycle() const { dserror("Not implemented, yet."); }
+    virtual void WCycle() const { dserror("W-Cycle not implemented, yet."); }
 
     //@}
 
@@ -170,6 +177,9 @@ namespace NLNSOL
 
     //! Hierarchy of multigrid levels
     Teuchos::RCP<NLNSOL::FAS::AMGHierarchy> hierarchy_;
+
+    //! Type of multigrid cycle
+    INPAR::NLNSOL::FAS::CycleType cycletype_;
 
   }; // class NlnOperatorFas
 } // namespace NLNSOL
