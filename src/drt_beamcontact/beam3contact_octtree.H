@@ -214,10 +214,12 @@ class Beam3ContactOctTree
           dserror("Sizes differ!");
         for(int i=0; i<epetravec.NumVectors(); i++)
         {
-          if((int)stdvec[i].size()<epetravec.NumVectors())
-            dserror("stdvec[%i].size() = %i is larger than epetravec.NumVectors() = %i", i,(int)stdvec[i].size(),epetravec.NumVectors());
           for(int j=0; j < epetravec.MyLength(); j++)
+          {
+            if((int)stdvec[j].size()<epetravec.NumVectors())
+              dserror("stdvec[%i].size() = %i is larger than epetravec.NumVectors() = %i", j,(int)stdvec[j].size(),epetravec.NumVectors());
             stdvec[j][i] = epetravec[i][j];
+          }
         }
         return;
     }

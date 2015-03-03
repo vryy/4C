@@ -523,7 +523,7 @@ void Beam3ContactOctTree::InitializeOctreeSearch()
           (*diameter_)[i] = 2.0 * (dynamic_cast<DRT::ELEMENTS::Rigidsphere*>(element))->Radius();
         //If we have a solid element, we don't need its diameter and can it set to zero:
         else if (!BEAMCONTACT::BeamElement(*element) and !BEAMCONTACT::RigidsphereElement(*element))
-          (*diameter_)[i] = 0;
+          (*diameter_)[i] = 0.0;
         // feasibility check
         if ((*diameter_)[i] < 0.0) dserror("ERROR: Did not receive feasible element radius.");
       }
@@ -987,6 +987,7 @@ bool Beam3ContactOctTree::locateAll()
   numcrit2_ = 0;
 
   // Convert Epetra_MultiVector allbboxes_ to vector(std::vector<double>)
+  std::cout<<allbboxes_->MyLength()<<", "<<allbboxes_->NumVectors()<<std::endl;
   std::vector<std::vector<double> > allbboxesstdvec(allbboxes_->MyLength(), std::vector<double>(allbboxes_->NumVectors(),0.0));
   EpetraMultiVecToStdVec(*allbboxes_,allbboxesstdvec);
 
