@@ -357,6 +357,13 @@ namespace THR
 
   //@}
 
+  //! error calculation
+  enum CalcError
+  {
+    no_error_calculation,
+    calcerror_byfunct
+  };
+
 }  // namespace THR
 
 }  // namespace INPAR

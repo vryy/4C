@@ -975,7 +975,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::ComputeError(
   LINALG::Matrix<nsd_,nsd_> dervelint(true);
 
   const INPAR::FLUID::CalcError calcerr = DRT::INPUT::get<INPAR::FLUID::CalcError>(params,"calculate error");
-  const int calcerrfunctno = DRT::INPUT::get<INPAR::FLUID::CalcError>(params,"error function number");
+  const int calcerrfunctno = DRT::INPUT::get<int>(params,"error function number");
 
   //----------------------------------------------------------------------------
   //   Extract velocity/pressure from global vectors

@@ -218,6 +218,15 @@ namespace ELEMENTS
     //! calculate characteristic element length
     double CalculateCharEleLength();
 
+    /// Evaluate element ERROR
+    /*!
+        general function to compute the error (analytical solution from input file)
+     */
+    virtual void ComputeError(
+        DRT::Element*                          ele,      //!< current element whose terms are calculated
+        LINALG::Matrix<nen_*numdofpernode_,1>& evector,  //!< element vectorr
+        Teuchos::ParameterList&                params    //!< parameter list, containing e.g., dt,theta
+        );
     //@}
 
     //! @name geometrically linear TSI

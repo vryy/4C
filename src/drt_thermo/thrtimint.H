@@ -530,6 +530,9 @@ namespace THR
 
   protected:
 
+    //! evaluate error compared to analytical solution
+    Teuchos::RCP<std::vector<double> > EvaluateErrorComparedToAnalyticalSol();
+
     //! @name General purpose algorithm members
     //@{
 
@@ -566,7 +569,8 @@ namespace THR
     INPAR::THR::TempGradType writetempgrad_;
     int writeenergyevery_;  //!< write system energy every given step
     std::ofstream* energyfile_;  //!< outputfile for energy
-
+    INPAR::THR::CalcError calcerror_;  //!< evaluate error compared to analytical solution
+    int errorfunctno_;//!< function number of analytical solution for error evaluation
     //@}
 
     //! @name General control parameters

@@ -75,6 +75,8 @@ THR::TimInt::TimInt(
   writetempgrad_(DRT::INPUT::IntegralValue<INPAR::THR::TempGradType>(ioparams,"THERM_TEMPGRAD")),
   writeenergyevery_(tdynparams.get<int>("RESEVRYERGY")),
   energyfile_(NULL),
+  calcerror_(DRT::INPUT::IntegralValue<INPAR::THR::CalcError>(tdynparams,"CALCERROR")),
+  errorfunctno_(tdynparams.get<int>("CALCERRORFUNCNO")),
   time_(Teuchos::null),
   timen_(0.0),
   dt_(Teuchos::null),
@@ -1019,5 +1021,120 @@ void THR::TimInt::SetForceInterface(Teuchos::RCP<Epetra_Vector> ithermoload)
   fifc_->Update(1.0, *ithermoload, 0.0);
 }  // SetForceInterface()
 
+/*-----------------------------------------------------------------------------*
+ *   evaluate error compared to analytical solution                vuong 03/15 |
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<std::vector<double> > THR::TimInt::EvaluateErrorComparedToAnalyticalSol()
+{
 
+  switch(calcerror_)
+  {
+  case INPAR::THR::no_error_calculation:
+  {
+    // do nothing --- no analytical solution available
+    return Teuchos::null;
+    break;
+  }
+  case INPAR::THR::calcerror_byfunct:
+  {
+    // std::vector containing
+    // [0]: relative L2 temperature error
+    // [1]: relative H1 temperature error
+    Teuchos::RCP<std::vector<double> > relerror = Teuchos::rcp(new std::vector<double>(32));
+
+    // create the parameters for the discretization
+    Teuchos::ParameterList eleparams;
+
+    // action for elements
+    eleparams.set("total time", timen_);
+    eleparams.set<int>("action",THR::calc_thermo_error);
+    eleparams.set<int>("calculate error",calcerror_);
+    eleparams.set<int>("error function number",errorfunctno_);
+
+    discret_->SetState("temperature", tempn_);
+
+    // get (squared) error values
+    // 0: delta temperature for L2-error norm
+    // 1: delta temperature for H1-error norm
+    // 2: analytical temperature for L2 norm
+    // 3: analytical temperature for H1 norm
+    Teuchos::RCP<Epetra_SerialDenseVector> errors
+      = Teuchos::rcp(new Epetra_SerialDenseVector(4));
+
+    // vector for output
+    Teuchos::RCP<Epetra_MultiVector> normvec = Teuchos::rcp(new Epetra_MultiVector(*discret_->ElementRowMap(),7));
+
+    // call loop over elements (assemble nothing)
+    discret_->EvaluateScalars(eleparams, errors);
+    discret_->EvaluateScalars(eleparams, normvec);
+    discret_->ClearState();
+
+    (*relerror)[0] = sqrt((*errors)[0])/sqrt((*errors)[2]);
+    (*relerror)[1] = sqrt((*errors)[1])/sqrt((*errors)[3]);
+
+    if (myrank_ == 0)
+    {
+      {
+        std::cout.precision(8);
+        std::cout << std::endl << "---- error norm for analytical solution type " <<
+            calcerror_ << " ----------" << std::endl;
+        std::cout << "| relative L_2 temperature error norm:     " << (*relerror)[0] << std::endl;
+        std::cout << "| absolute H_1 temperature error norm:     " << (*relerror)[1] << std::endl;
+        std::cout << "--------------------------------------------------------------------" << std::endl << std::endl;
+        std::cout << "H1 temperature scaling  " << sqrt((*errors)[3]) << std::endl;
+      }
+
+      // print last error in a seperate file
+
+      // append error of the last time step to the error file
+      if ((step_==stepmax_) or ((*time_)[0]==timemax_))// write results to file
+      {
+        std::ostringstream temp;
+        const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
+        const std::string fname = simulation+"_thermo.relerror";
+
+        std::ofstream f;
+        f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+        f << "#| " << simulation << "\n";
+        f << "#| Step | Time | rel. L2-error temperature  |  rel. H1-error temperature  |\n";
+        f << step_ << " " << (*time_)[0] << " " << (*relerror)[0] << " " << (*relerror)[1] << "\n";
+        f.flush();
+        f.close();
+      }
+
+      const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
+      const std::string fname = simulation+"_thermo_time.relerror";
+
+      if(step_==1)
+      {
+        std::ofstream f;
+        f.open(fname.c_str());
+        f << "#| Step | Time | rel. L2-error temperature  |  rel. H1-error temperature  |\n";
+        f << std::setprecision(10) << step_ << " " << std::setw(1)<< std::setprecision(5)
+          << (*time_)[0] << std::setw(1) << std::setprecision(6) << " "
+          << (*relerror)[0] << std::setw(1) << std::setprecision(6) << " "<< (*relerror)[1] <<"\n";
+
+        f.flush();
+        f.close();
+      }
+      else
+      {
+        std::ofstream f;
+        f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+        f << std::setprecision(10) << step_ << " " << std::setw(3)<< std::setprecision(5)
+        << (*time_)[0] << std::setw(1) << std::setprecision(6) << " "
+        << (*relerror)[0] << std::setw(1) << std::setprecision(6) << " "<< (*relerror)[1] <<"\n";
+
+        f.flush();
+        f.close();
+      }
+    }
+
+    return relerror;
+  }
+  default:
+    dserror("unknown type of error calculation!");
+    return Teuchos::null;
+  }
+} // end EvaluateErrorComparedToAnalyticalSol
 /*----------------------------------------------------------------------*/

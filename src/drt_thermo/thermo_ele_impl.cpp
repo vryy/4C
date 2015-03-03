@@ -1188,7 +1188,17 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     }  // la.Size>1
 
   }  // action == "calc_thermo_coupltang"
+  //============================================================================
+  else if (action == THR::calc_thermo_error)
+  {
+    LINALG::Matrix<nen_*numdofpernode_,1> evector(elevec1_epetra.A(),true);  // view only!
 
+    ComputeError(
+        ele,
+        evector,
+        params
+      );
+  }
   //============================================================================
   else
   {
@@ -3804,6 +3814,127 @@ Teuchos::RCP<MAT::Material> DRT::ELEMENTS::TemperImpl<distype>::GetSTRMaterial(
   return structmat;
 
 }  // GetSTRMaterial()
+
+/*----------------------------------------------------------------------*
+ | compute error compared to analytical solution              vuong 03/15 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::TemperImpl<distype>::ComputeError(
+  DRT::Element*                          ele,  // the element whose matrix is calculated
+  LINALG::Matrix<nen_*numdofpernode_,1>& elevec1,
+  Teuchos::ParameterList&                params  // parameter list
+  )
+{
+  // get node coordinates
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+
+  // get scalar-valued element temperature
+  // build the product of the shapefunctions and element temperatures T = N . T
+  LINALG::Matrix<1,1> NT(false);
+
+  // analytical solution
+  LINALG::Matrix<1,1>  T_analytical(true);
+  LINALG::Matrix<1,1>  deltaT(true);
+  // ------------------------------- integration loop for one element
+
+  // integrations points and weights
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
+//  if (intpoints.IP().nquad != nquad_)
+//    dserror("Trouble with number of Gauss points");
+
+  const INPAR::THR::CalcError calcerr = DRT::INPUT::get<INPAR::THR::CalcError>(params,"calculate error");
+  const int errorfunctno = params.get<int>("error function number");
+  const double t = params.get<double>("total time");
+
+  // ----------------------------------------- loop over Gauss Points
+  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+  {
+    // compute inverse Jacobian matrix and derivatives
+    EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+
+    // ------------------------------------------------ thermal terms
+
+    // gradient of current temperature value
+    // grad T = d T_j / d x_i = L . N . T = B_ij T_j
+    gradtemp_.MultiplyNN(derxy_,etemp_);
+
+    // current element temperatures
+    // N_T . T (funct_ defined as <nen,1>)
+    NT.MultiplyTN(funct_,etemp_);  // (1x8)(8x1)
+
+    // H1 -error norm
+    // compute first derivative of the displacement
+    LINALG::Matrix<nsd_,1> derT(true);
+    LINALG::Matrix<nsd_,1> deltaderT(true);
+
+    // Compute analytical solution
+    switch(calcerr)
+    {
+    case INPAR::THR::calcerror_byfunct:
+    {
+
+      // get coordinates at integration point
+      // gp reference coordinates
+      LINALG::Matrix<nsd_,1> xyzint(true);
+      xyzint.Multiply(xyze_,funct_);
+
+      // function evaluation requires a 3D position vector!!
+      double position[3]={0.0,0.0,0.0};
+
+      for (int dim=0; dim<nsd_; ++dim)
+        position[dim] = xyzint(dim);
+
+      const double T_exact = DRT::Problem::Instance()->Funct(errorfunctno-1).Evaluate(0,position,t,NULL);
+
+      T_analytical(0,0) = T_exact;
+
+      std::vector<std::vector<double> > Tder_exact = DRT::Problem::Instance()->Funct(errorfunctno-1).FctDer(0,position,t,NULL);
+
+      if(Tder_exact.size())
+      {
+        for (int dim=0; dim<nsd_; ++dim)
+          derT(dim)=Tder_exact[0][dim];
+
+      }
+
+    }
+    break;
+    default:
+      dserror("analytical solution is not defined");
+      break;
+    }
+
+    // compute difference between analytical solution and numerical solution
+    deltaT.Update(1.0, NT, -1.0, T_analytical);
+
+    // H1 -error norm
+    // compute error for first velocity derivative
+    deltaderT.Update(1.0, gradtemp_, -1.0, derT);
+
+    // 0: delta temperature for L2-error norm
+    // 1: delta temperature for H1-error norm
+    // 2: analytical temperature for L2 norm
+    // 3: analytical temperature for H1 norm
+
+    // the error for the L2 and H1 norms are evaluated at the Gauss point
+
+    // integrate delta velocity for L2-error norm
+    elevec1(0) += deltaT(0,0)*deltaT(0,0)*fac_;
+    // integrate delta velocity for H1-error norm
+    elevec1(1) += deltaT(0,0)*deltaT(0,0)*fac_;
+    // integrate analytical velocity for L2 norm
+    elevec1(2) += T_analytical(0,0)*T_analytical(0,0)*fac_;
+    // integrate analytical velocity for H1 norm
+    elevec1(3) += T_analytical(0,0)*T_analytical(0,0)*fac_;
+
+    // integrate delta velocity derivative for H1-error norm
+    elevec1(1) += deltaderT.Dot(deltaderT)*fac_;
+    // integrate analytical velocity for H1 norm
+    elevec1(3) += derT.Dot(derT)*fac_;
+
+  }
+
+}
 
 
 #ifdef CALCSTABILOFREACTTERM

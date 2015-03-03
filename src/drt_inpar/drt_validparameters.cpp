@@ -2872,6 +2872,19 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       INPAR::geometry_file),
     &tdyn);
 
+  setStringToIntegralParameter<int>("CALCERROR","No",
+                               "compute error compared to analytical solution",
+                               tuple<std::string>(
+                                 "No",
+                                 "byfunct"
+                                 ),
+                               tuple<int>(
+                                   INPAR::THR::no_error_calculation,
+                                   INPAR::THR::calcerror_byfunct
+                                   ),
+                                   &tdyn);
+  IntParameter("CALCERRORFUNCNO",-1,"Function for Error Calculation",&tdyn);
+
   /*----------------------------------------------------------------------*/
   /* parameters for generalised-alpha thermal integrator */
   Teuchos::ParameterList& tgenalpha = tdyn.sublist("GENALPHA",false,"");

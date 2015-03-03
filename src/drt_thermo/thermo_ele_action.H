@@ -35,7 +35,8 @@ enum Action {
     calc_thermo_energy,
     calc_thermo_coupltang,
     calc_thermo_fintcond,
-    calc_thermo_fext
+    calc_thermo_fext,
+    calc_thermo_error
 }; // enum Action
 
 /*--------------------------------------------------------------------------
