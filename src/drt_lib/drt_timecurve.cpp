@@ -29,7 +29,6 @@ Maintainer: Martin Kronbichler
 #include "drt_linedefinition.H"
 
 #include "drt_globalproblem.H"
-#include "../drt_io/io_control.H"
 #include "standardtypes_cpp.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/matpar_bundle.H"
@@ -583,7 +582,7 @@ void DRT::UTILS::TimeCurveManager::ReadInput(DRT::INPUT::DatFileReader& reader)
           // make path relative to input file path
           if (path[0]!='/')
           {
-            std::string filename = DRT::Problem::Instance()->OutputControlFile()->InputFileName();
+            std::string filename = reader.MyInputfileName();
             std::string::size_type pos = filename.rfind('/');
             if (pos!=std::string::npos)
             {
