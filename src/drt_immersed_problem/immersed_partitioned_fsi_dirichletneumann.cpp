@@ -613,21 +613,22 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::PrepareFluidOp()
 
   double structsearchradiusfac = DRT::Problem::Instance()->ImmersedMethodParams().get<double>("STRCT_SRCHRADIUS_FAC");
 
-  // mark elements in which structural boundary is immersed
-  Teuchos::ParameterList params;
-  params.set<std::string>("action","mark_immersed_elements");
-
-  DRT::AssembleStrategy dummy_strategy(
-      0,              // struct dofset for row
-      0,              // struct dofset for column
-      Teuchos::null,  // matrix 1
-      Teuchos::null,  //
-      Teuchos::null,  // vector 1
-      Teuchos::null,  //
-      Teuchos::null   //
-  );
-
-  EvaluateInterpolationCondition( StructureField()->Discretization(), params, dummy_strategy,"FSICoupling", -1 );
+//  // DEBUG purposes:
+//  // mark elements in which structural boundary is immersed
+//  Teuchos::ParameterList params;
+//  params.set<std::string>("action","mark_immersed_elements");
+//
+//  DRT::AssembleStrategy dummy_strategy(
+//      0,              // struct dofset for row
+//      0,              // struct dofset for column
+//      Teuchos::null,  // matrix 1
+//      Teuchos::null,  //
+//      Teuchos::null,  // vector 1
+//      Teuchos::null,  //
+//      Teuchos::null   //
+//  );
+//
+//  EvaluateInterpolationCondition( StructureField()->Discretization(), params, dummy_strategy,"FSICoupling", -1 );
 
   // determine subset of fluid discretization which is potentially underlying the structural discretization
   Teuchos::RCP<const Epetra_Vector> displacements = StructureField()->Dispnp();
