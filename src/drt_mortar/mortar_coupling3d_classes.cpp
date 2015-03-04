@@ -24,8 +24,6 @@ Maintainer: Alexander Popp
 #include "../drt_lib/drt_node.H"
 #include "mortar_element.H"
 
-#define SIMPLEMAP
-
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 03/09|
  *----------------------------------------------------------------------*/
@@ -40,8 +38,8 @@ MORTAR::IntElement::IntElement(int lid, int id, int owner,
 DRT::Element(id,owner),  // necessary due to virtual inheritance from DRT::Element
 MORTAR::MortarElement(id,owner,shape,numnode,nodeids,isslave),
 lid_(lid),
-parele_(parele),
-rewind_(rewind)
+rewind_(rewind),
+parele_(parele)
 {
   if ((int)nodes.size()!=numnode)
     dserror("some inconsistency");
