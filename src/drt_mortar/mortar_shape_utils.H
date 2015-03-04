@@ -94,6 +94,15 @@ void mortar_nurbs_shape_function_1D(
   );
 
 template<class V>
+void mortar_nurbs_shape_function_2D(
+  V&                                       funct,   ///< to be filled with shape function values
+  MORTAR::MortarElement&                   ele,
+  const double&                            xi0,     ///< xi0 coordinate
+  const double&                            xi1,     ///< xi0 coordinate
+  const DRT::Element::DiscretizationType&  shape    ///< distinguish between shape
+  );
+
+template<class V>
 void mortar_nurbs_dualshape_function_1D(
   V&                                       funct,   ///< to be filled with shape function values
   MORTAR::MortarElement&                   ele,
