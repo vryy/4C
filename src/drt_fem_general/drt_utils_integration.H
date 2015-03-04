@@ -139,6 +139,8 @@ enum GaussRule2D
     intrule_tri_6point,              ///< degree of precision: 4  (open)   (Hughes, The Finite Element Method)
     intrule_tri_7point,              ///< degree of precision: 5  (open)   (Gilbert Strang, George Fix, An Analysis of the Finite Element Method, Cambridge, 1973,ISBN: 096140888X,LC: TA335.S77.)
     intrule_tri_12point,             ///< degree of precision: 6  (open)   (Hughes, The Finite Element Method)
+    intrule_tri_16point,             ///< degree of precision: 8  (open)   (Linbo Zhang, Tao Cui and Hui Liu: A SET OF SYMMETRIC QUADRATURE RULES ON TRIANGLES
+                                     ///<                                   AND TETRAHEDRA, Journal of Computational Mathematics, Vol.27, No.1, 2009, 89–96.)
     intrule_tri_37point,             ///< degree of precision: 13 (open)   (rule from ACM TOMS algorithm #706)
     intrule_tri_64point              ///< degree of precision: 15 (open)   (essentially a product of two 8 point 1D Gauss-Legendre rules)
 };

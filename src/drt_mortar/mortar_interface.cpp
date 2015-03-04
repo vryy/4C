@@ -2517,9 +2517,9 @@ bool MORTAR::MortarInterface::IntegrateCoupling(MORTAR::MortarElement* sele,
     // neither quadratic interpolation nor mixed linear and quadratic
     // interpolation need any special treatment in the 2d case
 
-    // create Coupling2dManager
-    MORTAR::Coupling2dManager coup(Discret(), Dim(), quadratic, IParams(), sele,
-        mele);
+    // create Coupling2dManager and evaluate
+    MORTAR::Coupling2dManager(Discret(), Dim(), quadratic, IParams(), sele,mele)
+                             .EvaluateCoupling();
   }
   // ************************************************************** 3D ***
   else if (Dim() == 3)
@@ -2527,17 +2527,17 @@ bool MORTAR::MortarInterface::IntegrateCoupling(MORTAR::MortarElement* sele,
     // *************************************************** linear 3D ***
     if (!quadratic)
     {
-      // create Coupling3dManager
-      MORTAR::Coupling3dManager coup(Discret(), Dim(), false, IParams(), sele,
-          mele);
+      // create Coupling3dManager and evaluate
+      MORTAR::Coupling3dManager(Discret(), Dim(), false, IParams(), sele,mele)
+                               .EvaluateCoupling();
     }
 
     // ************************************************** quadratic 3D ***
     else
     {
-      //create Coupling3dQuadManager
-      MORTAR::Coupling3dQuadManager coup(Discret(), Dim(), false, IParams(),
-          sele, mele);
+      //create Coupling3dQuadManager and evaluate
+      MORTAR::Coupling3dQuadManager(Discret(), Dim(), false, IParams(),sele, mele)
+                                   .EvaluateCoupling();
     } // quadratic
   } // 3D
   else
@@ -2581,8 +2581,8 @@ bool MORTAR::MortarInterface::SplitIntElements(MORTAR::MortarElement& ele,
 
     auxele.push_back(
         Teuchos::rcp(
-            new IntElement(0, ele.Id(), ele.Owner(), ele.Shape(), dt, numnode,
-                nodeids, nodes, ele.IsSlave())));
+            new IntElement(0, ele.Id(), ele.Owner(), &ele, dt, numnode,
+                nodeids, nodes, ele.IsSlave(), false)));
 
     // second integration element
     // containing parent nodes 4,1,5,8
@@ -2598,8 +2598,8 @@ bool MORTAR::MortarInterface::SplitIntElements(MORTAR::MortarElement& ele,
 
     auxele.push_back(
         Teuchos::rcp(
-            new IntElement(1, ele.Id(), ele.Owner(), ele.Shape(), dt, numnode,
-                nodeids, nodes, ele.IsSlave())));
+            new IntElement(1, ele.Id(), ele.Owner(), &ele, dt, numnode,
+                nodeids, nodes, ele.IsSlave(), false)));
 
     // third integration element
     // containing parent nodes 8,5,2,6
@@ -2615,8 +2615,8 @@ bool MORTAR::MortarInterface::SplitIntElements(MORTAR::MortarElement& ele,
 
     auxele.push_back(
         Teuchos::rcp(
-            new IntElement(2, ele.Id(), ele.Owner(), ele.Shape(), dt, numnode,
-                nodeids, nodes, ele.IsSlave())));
+            new IntElement(2, ele.Id(), ele.Owner(), &ele, dt, numnode,
+                nodeids, nodes, ele.IsSlave(), false)));
 
     // fourth integration element
     // containing parent nodes 7,8,6,3
@@ -2632,8 +2632,8 @@ bool MORTAR::MortarInterface::SplitIntElements(MORTAR::MortarElement& ele,
 
     auxele.push_back(
         Teuchos::rcp(
-            new IntElement(3, ele.Id(), ele.Owner(), ele.Shape(), dt, numnode,
-                nodeids, nodes, ele.IsSlave())));
+            new IntElement(3, ele.Id(), ele.Owner(), &ele, dt, numnode,
+                nodeids, nodes, ele.IsSlave(), false)));
   }
 
   // *********************************************************** quad8 ***
@@ -2662,8 +2662,8 @@ bool MORTAR::MortarInterface::SplitIntElements(MORTAR::MortarElement& ele,
 
     auxele.push_back(
         Teuchos::rcp(
-            new IntElement(0, ele.Id(), ele.Owner(), ele.Shape(), dttri,
-                numnodetri, nodeids, nodes, ele.IsSlave())));
+            new IntElement(0, ele.Id(), ele.Owner(), &ele, dttri,
+                numnodetri, nodeids, nodes, ele.IsSlave(), false)));
 
     // second integration element
     // containing parent nodes 1,5,4
@@ -2677,8 +2677,8 @@ bool MORTAR::MortarInterface::SplitIntElements(MORTAR::MortarElement& ele,
 
     auxele.push_back(
         Teuchos::rcp(
-            new IntElement(1, ele.Id(), ele.Owner(), ele.Shape(), dttri,
-                numnodetri, nodeids, nodes, ele.IsSlave())));
+            new IntElement(1, ele.Id(), ele.Owner(), &ele, dttri,
+                numnodetri, nodeids, nodes, ele.IsSlave(), false)));
 
     // third integration element
     // containing parent nodes 2,6,5
@@ -2692,8 +2692,8 @@ bool MORTAR::MortarInterface::SplitIntElements(MORTAR::MortarElement& ele,
 
     auxele.push_back(
         Teuchos::rcp(
-            new IntElement(2, ele.Id(), ele.Owner(), ele.Shape(), dttri,
-                numnodetri, nodeids, nodes, ele.IsSlave())));
+            new IntElement(2, ele.Id(), ele.Owner(), &ele, dttri,
+                numnodetri, nodeids, nodes, ele.IsSlave(), false)));
 
     // fourth integration element
     // containing parent nodes 3,7,6
@@ -2707,8 +2707,8 @@ bool MORTAR::MortarInterface::SplitIntElements(MORTAR::MortarElement& ele,
 
     auxele.push_back(
         Teuchos::rcp(
-            new IntElement(3, ele.Id(), ele.Owner(), ele.Shape(), dttri,
-                numnodetri, nodeids, nodes, ele.IsSlave())));
+            new IntElement(3, ele.Id(), ele.Owner(), &ele, dttri,
+                numnodetri, nodeids, nodes, ele.IsSlave(), false)));
 
     // fifth integration element
     // containing parent nodes 4,5,6,7
@@ -2727,8 +2727,8 @@ bool MORTAR::MortarInterface::SplitIntElements(MORTAR::MortarElement& ele,
 
     auxele.push_back(
         Teuchos::rcp(
-            new IntElement(4, ele.Id(), ele.Owner(), ele.Shape(), dtquad,
-                numnodequad, nodeidsquad, nodesquad, ele.IsSlave())));
+            new IntElement(4, ele.Id(), ele.Owner(), &ele, dtquad,
+                numnodequad, nodeidsquad, nodesquad, ele.IsSlave(), false)));
   }
 
   // ************************************************************ tri6 ***
@@ -2755,8 +2755,8 @@ bool MORTAR::MortarInterface::SplitIntElements(MORTAR::MortarElement& ele,
 
     auxele.push_back(
         Teuchos::rcp(
-            new IntElement(0, ele.Id(), ele.Owner(), ele.Shape(), dt, numnode,
-                nodeids, nodes, ele.IsSlave())));
+            new IntElement(0, ele.Id(), ele.Owner(), &ele, dt, numnode,
+                nodeids, nodes, ele.IsSlave(), false)));
 
     // second integration element
     // containing parent nodes 3,1,4
@@ -2770,8 +2770,8 @@ bool MORTAR::MortarInterface::SplitIntElements(MORTAR::MortarElement& ele,
 
     auxele.push_back(
         Teuchos::rcp(
-            new IntElement(1, ele.Id(), ele.Owner(), ele.Shape(), dt, numnode,
-                nodeids, nodes, ele.IsSlave())));
+            new IntElement(1, ele.Id(), ele.Owner(), &ele, dt, numnode,
+                nodeids, nodes, ele.IsSlave(), false)));
 
     // third integration element
     // containing parent nodes 5,4,2
@@ -2785,8 +2785,8 @@ bool MORTAR::MortarInterface::SplitIntElements(MORTAR::MortarElement& ele,
 
     auxele.push_back(
         Teuchos::rcp(
-            new IntElement(2, ele.Id(), ele.Owner(), ele.Shape(), dt, numnode,
-                nodeids, nodes, ele.IsSlave())));
+            new IntElement(2, ele.Id(), ele.Owner(), &ele, dt, numnode,
+                nodeids, nodes, ele.IsSlave(), false)));
 
     // fourth integration element
     // containing parent nodes 4,5,3
@@ -2800,8 +2800,8 @@ bool MORTAR::MortarInterface::SplitIntElements(MORTAR::MortarElement& ele,
 
     auxele.push_back(
         Teuchos::rcp(
-            new IntElement(3, ele.Id(), ele.Owner(), ele.Shape(), dt, numnode,
-                nodeids, nodes, ele.IsSlave())));
+            new IntElement(3, ele.Id(), ele.Owner(), &ele, dt, numnode,
+                nodeids, nodes, ele.IsSlave(), false)));
   }
 
   // *********************************************************** quad4 ***
@@ -2816,8 +2816,8 @@ bool MORTAR::MortarInterface::SplitIntElements(MORTAR::MortarElement& ele,
 
     auxele.push_back(
         Teuchos::rcp(
-            new IntElement(0, ele.Id(), ele.Owner(), ele.Shape(), ele.Shape(),
-                ele.NumNode(), ele.NodeIds(), nodes, ele.IsSlave())));
+            new IntElement(0, ele.Id(), ele.Owner(), &ele, ele.Shape(),
+                ele.NumNode(), ele.NodeIds(), nodes, ele.IsSlave(), false)));
   }
 
   // ************************************************************ tri3 ***
@@ -2831,8 +2831,8 @@ bool MORTAR::MortarInterface::SplitIntElements(MORTAR::MortarElement& ele,
 
     auxele.push_back(
         Teuchos::rcp(
-            new IntElement(0, ele.Id(), ele.Owner(), ele.Shape(), ele.Shape(),
-                ele.NumNode(), ele.NodeIds(), nodes, ele.IsSlave())));
+            new IntElement(0, ele.Id(), ele.Owner(), &ele, ele.Shape(),
+                ele.NumNode(), ele.NodeIds(), nodes, ele.IsSlave(), false)));
   }
 
   // ********************************************************* invalid ***
@@ -2915,8 +2915,7 @@ void MORTAR::MortarInterface::AssembleDM(LINALG::SparseMatrix& dglobal,
         if ((int) dmap[j].size() != (int) dmap[j + 1].size())
           dserror("ERROR: AssembleDM: Column dim. of nodal D-map is inconsistent!");
 
-          GEN::pairedvector<int, double
->      ::const_iterator colcurr;
+      GEN::pairedvector<int, double>::const_iterator colcurr;
 
       for (int j = 0; j < rowsize; ++j)
       {
@@ -2979,8 +2978,7 @@ void MORTAR::MortarInterface::AssembleDM(LINALG::SparseMatrix& dglobal,
         if ((int) mmap[j].size() != (int) mmap[j + 1].size())
           dserror("ERROR: AssembleDM: Column dim. of nodal M-map is inconsistent!");
 
-          std::map<int, double
->      ::const_iterator colcurr;
+          std::map<int, double>::const_iterator colcurr;
 
       for (int j = 0; j < rowsize; ++j)
       {

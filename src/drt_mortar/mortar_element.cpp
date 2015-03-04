@@ -617,9 +617,6 @@ void MORTAR::MortarElement::DerivUnitNormalAtXi(double* xi,
   std::vector<double> gxi(3);
   std::vector<double> geta(3);
 
-  // resize derivn
-  if ((int)derivn.size()!=3) derivn.resize(3,nnodes*3); // assume that each node has 3 dofs...
-
   // get shape function values and derivatives at xi
   EvaluateShape(xi, val, deriv, nnodes);
 
@@ -637,8 +634,20 @@ void MORTAR::MortarElement::DerivUnitNormalAtXi(double* xi,
   if (length==0.0) dserror("ERROR: Normal of length zero!");
   for (int i=0;i<3;++i) n[i] /= length;
 
+  // check if this mortar ele is an IntEle
+  std::vector<std::vector<GEN::pairedvector<int, double> > > nodelin(0);
+  NodeLinearization(nodelin);
+
+  int nderiv=nnodes*3;
+  // to be safe if it is a IntEle for a nurbs9
+  if (Shape()==DRT::Element::quad4)
+    nderiv=9*3;
+
+  // resize derivn
+  derivn.resize(3,nderiv);
+
   // non-unit normal derivative
-  std::vector<GEN::pairedvector<int,double> > derivnnu(3,nnodes*3); // assume that each node has 3 dofs...
+  std::vector<GEN::pairedvector<int,double> > derivnnu(3,nderiv); // assume that each node has 3 dofs...
   typedef GEN::pairedvector<int,double>::const_iterator CI;
 
   // now the derivative
@@ -660,10 +669,11 @@ void MORTAR::MortarElement::DerivUnitNormalAtXi(double* xi,
     F(2,0) = geta[1] * deriv(n,0) - gxi[1]  * deriv(n,1);
     F(2,1) = gxi[0]  * deriv(n,1) - geta[0] * deriv(n,0);
 
-    //create directional derivatives
+    // create directional derivatives
     for (int j=0;j<3;++j)
-      for (int k=0;k<ndof;++k)
-        (derivnnu[j])[mymrtrnode->Dofs()[k]] += F(j,k);
+          for (int k=0;k<ndof;++k)
+            for (CI p=nodelin[n][k].begin(); p!=nodelin[n][k].end(); ++p)
+              (derivnnu[j])[p->first] += F(j,k)*p->second;
   }
 
   const double ll     = length*length;
@@ -1762,3 +1772,19 @@ void MORTAR::MortarElement::ReSetParentMasterElement(DRT::Element* master,
     }
 }
 
+/*----------------------------------------------------------------------*
+ |  Derivatives of nodal spatial coords                      seitz 03/15|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarElement::NodeLinearization(std::vector<std::vector<GEN::pairedvector<int, double> > >& nodelin)
+{
+  // resize the linearizations
+  nodelin.resize(NumNode(),std::vector<GEN::pairedvector<int,double> >(3,1));
+
+  // loop over all intEle nodes
+  for (int in=0; in<NumNode(); ++in)
+  {
+    MORTAR::MortarNode* mrtrnode = dynamic_cast<MORTAR::MortarNode*>(Nodes()[in]);
+    for (int dim=0; dim<3; ++dim)
+      nodelin[in][dim][mrtrnode->Dofs()[dim]]+=1.;
+  }
+}

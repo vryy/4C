@@ -152,6 +152,11 @@ public:
   virtual bool LMNodalScale() { return lmnodalscale_; } ;
 
   /*!
+  \brief Get flag indicating nurbs shape functions
+  */
+  virtual bool IsNurbs() { return nurbs_; } ;
+
+  /*!
   \brief Get redundant storage flag
 
   Returns status of redundancy in interface storage (nodes, elements).

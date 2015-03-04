@@ -123,8 +123,7 @@ public:
 
    */
   virtual bool SlaveVertexLinearization(
-      std::vector<GEN::pairedvector<int, double> >& currlin,
-      int sid);
+      std::vector<std::vector<GEN::pairedvector<int, double> > >& currlin);
 
   /*!
    \brief Linearization of clip vertex coordinates (3D)
@@ -133,8 +132,7 @@ public:
 
    */
   virtual bool MasterVertexLinearization(
-      std::vector<GEN::pairedvector<int, double> >& currlin,
-      int mid);
+      std::vector<std::vector<GEN::pairedvector<int, double> > >& currlin);
 
   /*!
    \brief Linearization of clip vertex coordinates (3D)
@@ -427,8 +425,20 @@ protected:
 };
 // class CoCoupling3dManager
 
-class CoCoupling3dQuadManager: public MORTAR::Coupling3dQuadManager
+class CoCoupling3dQuadManager : public MORTAR::Coupling3dQuadManager,
+                                public CoCoupling3dManager
 {
+  // resolve ambiguity of multiple inheritance
+  using MORTAR::Coupling3dQuadManager::MasterElements;
+  using MORTAR::Coupling3dQuadManager::SlaveElement;
+  using MORTAR::Coupling3dQuadManager::IntType;
+  using MORTAR::Coupling3dQuadManager::LagMultQuad;
+  using MORTAR::Coupling3dQuadManager::Comm;
+  using MORTAR::Coupling3dQuadManager::ShapeFcn;
+  using CoCoupling3dManager::ConsistDualShape;
+  using CoCoupling3dManager::Coupling;
+
+
 
 public:
   /*!
@@ -458,15 +468,6 @@ public:
   virtual const int& IntegrationCells() { return intcells_; }
 
   /*!
-   \brief Return the LM shape fcn type
-
-   */
-  INPAR::MORTAR::ShapeFcn ShapeFcn()
-  {
-    return DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(imortar_,"LM_SHAPEFCN");
-  }
-
-  /*!
    \brief Evaluate coupling pairs
 
    */
@@ -483,6 +484,26 @@ public:
 
    */
   virtual void EvaluateNTS();
+
+  /*!
+   \brief spatial dimension
+
+   */
+  virtual int Dim() {return MORTAR::Coupling3dQuadManager::dim_;};
+
+  /*!
+   \brief contact discretization
+
+   */
+  virtual DRT::Discretization& Discret() {return MORTAR::Coupling3dQuadManager::idiscret_;};
+
+  /*!
+   \brief input params
+
+   */
+  virtual Teuchos::ParameterList& Params() {return MORTAR::Coupling3dQuadManager::imortar_;};
+
+
 
   // @
 

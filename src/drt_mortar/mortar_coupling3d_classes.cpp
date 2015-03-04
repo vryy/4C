@@ -22,26 +22,45 @@ Maintainer: Alexander Popp
 #include "../linalg/linalg_serialdensevector.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../drt_lib/drt_node.H"
+#include "mortar_element.H"
+
+#define SIMPLEMAP
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 03/09|
  *----------------------------------------------------------------------*/
 MORTAR::IntElement::IntElement(int lid, int id, int owner,
-                               const DRT::Element::DiscretizationType& parshape,
+                               MORTAR::MortarElement* parele,
                                const DRT::Element::DiscretizationType& shape,
                                const int numnode,
                                const int* nodeids,
                                std::vector<DRT::Node*> nodes,
-                               const bool isslave) :
+                               const bool isslave,
+                               const bool rewind) :
 DRT::Element(id,owner),  // necessary due to virtual inheritance from DRT::Element
 MORTAR::MortarElement(id,owner,shape,numnode,nodeids,isslave),
 lid_(lid),
-parshape_(parshape)
+parele_(parele),
+rewind_(rewind)
 {
+  if ((int)nodes.size()!=numnode)
+    dserror("some inconsistency");
+
   // check for consistency of nodeids and nodes
-  for (int i=0;i<NumNode();++i)
-    if (nodes[i]->Id()!=nodeids[i])
-      dserror("ERROR: IntElement: Inconsistency Nodes and NodeIds!");
+  // for nurbs, the nodes are not actual nodes in the
+  // discretization, so just skip that part.
+  if (ParShape()!=DRT::Element::nurbs9)
+    for (int i=0;i<numnode;++i)
+      if (nodes[i]->Id()!=nodeids[i])
+        dserror("ERROR: IntElement: Inconsistency Nodes and NodeIds!");
+
+  nodes_.clear();nodes_ptr_.clear();
+  std::vector<int> empty_dofs(3,-2);
+
+  for (int i=0; i<numnode; ++i)
+    nodes_.push_back(MortarNode(nodeids[i],nodes[i]->X(),nodes[i]->Owner(),3,empty_dofs,isslave));
+  for (int i=0; i<numnode; ++i)
+    nodes_ptr_.push_back(&(nodes_[i]));
 
   if (numnode > 0)
     BuildNodalPointers(&nodes[0]);
@@ -216,6 +235,30 @@ bool MORTAR::IntElement::MapToParent(const double* xi, double* parxi)
     }
     }
   }
+  // ************************************************************ nurbs9 ***
+  else if (ParShape()==DRT::Element::nurbs9)
+  {
+    if (Lid()!=0) dserror("nurbs9 should only have one integration element");
+    // TODO: There is not necessarily a constant mapping from the IntEle
+    // to the parent ele. Actually, we want to have the GP at a certain
+    // spatial location, which is determined by the integration element.
+    // However, for higher order Elements, the projection from the (bi-)
+    // linear IntEle to a distorted higher order (e.g. NURBS) ele
+    // might be more complicated. It is still to be seen, if this has
+    // a notable effect.
+    if (!rewind_)
+    {
+      parxi[0]=xi[0];
+      parxi[1]=xi[1];
+    }
+    else
+    {
+      parxi[0]=xi[1];
+      parxi[1]=xi[0];
+    }
+  }
+  // ************************************************************ nurbs9 ***
+
   // ********************************************************* invalid ***
   else
     dserror("ERROR: MapToParent called for invalid parent element type!");
@@ -426,6 +469,27 @@ bool MORTAR::IntElement::MapToParent(const std::vector<GEN::pairedvector<int,dou
     }
     }
   }
+  // ************************************************************ nurbs9 ***
+  else if (ParShape()==DRT::Element::nurbs9)
+  {
+    if (Lid()!=0) dserror("nurbs9 should only have one integration element");
+    if (!rewind_)
+    {
+      for (CI p=dxi[0].begin();p!=dxi[0].end();++p)
+        dparxi[0][p->first] = (p->second);
+      for (CI p=dxi[1].begin();p!=dxi[1].end();++p)
+        dparxi[1][p->first] = (p->second);
+    }
+    else
+    {
+      for (CI p=dxi[1].begin();p!=dxi[1].end();++p)
+        dparxi[0][p->first] = (p->second);
+      for (CI p=dxi[0].begin();p!=dxi[0].end();++p)
+        dparxi[1][p->first] = (p->second);
+    }
+  }
+  // ************************************************************ nurbs9 ***
+
   // ********************************************************* invalid ***
   else
     dserror("ERROR: MapToParent called for invalid parent element type!");
@@ -433,6 +497,85 @@ bool MORTAR::IntElement::MapToParent(const std::vector<GEN::pairedvector<int,dou
 
   return true;
 }
+
+void MORTAR::IntElement::NodeLinearization(std::vector<std::vector<GEN::pairedvector<int, double> > >& nodelin)
+{
+
+  switch (parele_->Shape())
+  {
+  // for all Lagrange Finite elements we can associate them directly with
+  // the interpolatory nodes of the parent element
+  case quad4:
+  case quad8:
+  case quad9:
+  case tri3:
+  case tri6:
+  {
+    // resize the linearizations
+    nodelin.resize(NumNode(),std::vector<GEN::pairedvector<int,double> >(3,1));
+
+    // loop over all intEle nodes
+    for (int in=0; in<NumNode(); ++in)
+    {
+      MORTAR::MortarNode* mrtrnode = dynamic_cast<MORTAR::MortarNode*>(Nodes()[in]);
+      for (int dim=0; dim<3; ++dim)
+        nodelin[in][dim][mrtrnode->Dofs()[dim]]+=1.;
+    }
+    break;
+  }
+  case nurbs9:
+  {
+    // resize the linearizations
+    nodelin.resize(NumNode(),std::vector<GEN::pairedvector<int,double> >(3,3*(parele_->NumNode())));
+
+    // parameter space coords of pseudo nodes
+    double pseudo_nodes_param_coords[4][2];
+
+    if (rewind_)
+    {
+      pseudo_nodes_param_coords[0][0] = -1.; pseudo_nodes_param_coords[0][1] = -1.;
+      pseudo_nodes_param_coords[1][0] = -1.; pseudo_nodes_param_coords[1][1] = +1.;
+      pseudo_nodes_param_coords[2][0] = +1.; pseudo_nodes_param_coords[2][1] = +1.;
+      pseudo_nodes_param_coords[3][0] = +1.; pseudo_nodes_param_coords[3][1] = -1.;
+    }
+    else
+    {
+      pseudo_nodes_param_coords[0][0] = -1.; pseudo_nodes_param_coords[0][1] = -1.;
+      pseudo_nodes_param_coords[1][0] = +1.; pseudo_nodes_param_coords[1][1] = -1.;
+      pseudo_nodes_param_coords[2][0] = +1.; pseudo_nodes_param_coords[2][1] = +1.;
+      pseudo_nodes_param_coords[3][0] = -1.; pseudo_nodes_param_coords[3][1] = +1.;
+    }
+
+    // loop over all pseudo-nodes
+    for (int pn=0; pn<NumNode(); ++pn)
+    {
+      double xi[2] = {pseudo_nodes_param_coords[pn][0],pseudo_nodes_param_coords[pn][1]};
+
+      // evaluate shape functions at pseudo node param coords
+      LINALG::SerialDenseVector sval(9);
+      LINALG::SerialDenseMatrix sderiv(9,2);
+      parele_->EvaluateShape(xi,sval,sderiv,9,true);
+
+      // loop over all parent element control points
+      for (int cp=0; cp<parele_->NumNode(); ++cp)
+      {
+        MORTAR::MortarNode* mrtrcp = dynamic_cast<MORTAR::MortarNode*>(parele_->Nodes()[cp]);
+
+        // loop over all dimensions
+        for (int dim=0; dim<3; ++dim)
+          nodelin.at(pn).at(dim)[mrtrcp->Dofs()[dim]] += sval(cp);
+      }
+    }
+    break;
+  }
+  default:
+  {
+    dserror("unknown type of parent element shape");
+    break;
+  }
+  }
+}
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 11/08|

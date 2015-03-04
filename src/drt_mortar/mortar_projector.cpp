@@ -127,6 +127,11 @@ MORTAR::MortarProjector* MORTAR::MortarProjector::Impl(MortarElement& sele,
       return MortarProjectorCalc_EleBased<DRT::Element::quad4,
           DRT::Element::tri6>::Instance();
     }
+    case DRT::Element::nurbs9:
+    {
+      return MortarProjectorCalc_EleBased<DRT::Element::quad4,
+          DRT::Element::nurbs9>::Instance();
+    }
     default:
       dserror("Element shape not supported!");
       break;

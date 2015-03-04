@@ -129,13 +129,13 @@ bool MORTAR::Coupling3d::EvaluateCoupling()
  *----------------------------------------------------------------------*/
 bool MORTAR::Coupling3d::RoughCheckCenters()
 {
-  double sme = SlaveElement().MaxEdgeSize();
-  double mme = MasterElement().MaxEdgeSize();
+  double sme = SlaveIntElement().MaxEdgeSize();
+  double mme = MasterIntElement().MaxEdgeSize();
   double near = 2.0 * std::max(sme, mme);
 
   double loccs[2] =
   { 0.0, 0.0 };
-  DRT::Element::DiscretizationType dts = SlaveElement().Shape();
+  DRT::Element::DiscretizationType dts = SlaveIntElement().Shape();
   if (dts == MortarElement::tri3 || dts == MortarElement::tri6)
   {
     loccs[0] = 1.0 / 3.0;
@@ -143,7 +143,7 @@ bool MORTAR::Coupling3d::RoughCheckCenters()
   }
   double loccm[2] =
   { 0.0, 0.0 };
-  DRT::Element::DiscretizationType dtm = MasterElement().Shape();
+  DRT::Element::DiscretizationType dtm = MasterIntElement().Shape();
   if (dtm == MortarElement::tri3 || dtm == MortarElement::tri6)
   {
     loccm[0] = 1.0 / 3.0;
@@ -154,8 +154,8 @@ bool MORTAR::Coupling3d::RoughCheckCenters()
   { 0.0, 0.0, 0.0 };
   double mc[3] =
   { 0.0, 0.0, 0.0 };
-  SlaveElement().LocalToGlobal(loccs, sc, 0);
-  MasterElement().LocalToGlobal(loccm, mc, 0);
+  SlaveIntElement().LocalToGlobal(loccs, sc, 0);
+  MasterIntElement().LocalToGlobal(loccm, mc, 0);
 
   double cdist = sqrt(
       (mc[0] - sc[0]) * (mc[0] - sc[0]) + (mc[1] - sc[1]) * (mc[1] - sc[1])
@@ -180,8 +180,8 @@ bool MORTAR::Coupling3d::RoughCheckNodes()
 
   // prepare check
   bool near = false;
-  double sme = SlaveElement().MaxEdgeSize();
-  double mme = MasterElement().MaxEdgeSize();
+  double sme = SlaveIntElement().MaxEdgeSize();
+  double mme = MasterIntElement().MaxEdgeSize();
   double limit = 0.3 * std::max(sme, mme);
 
   for (int i = 0; i < nnodes; ++i)
@@ -2837,30 +2837,45 @@ bool MORTAR::Coupling3d::HasProjStatus()
 bool MORTAR::Coupling3d::Triangulation(std::map<int, double>& projpar, double tol)
 {
   // number of nodes
-  const int nsrows = SlaveIntElement().NumNode();
-  const int nmrows = MasterIntElement().NumNode();
+  const int nsrows = SlaveElement().NumNode();
+  const int nmrows = MasterElement().NumNode();
 
   // preparations
   int clipsize = (int) (Clip().size());
   std::vector<std::vector<GEN::pairedvector<int, double> > > linvertex(clipsize,
       std::vector<GEN::pairedvector<int, double> >(3, 3 * nsrows + 3 * nmrows));
 
+  // get integration type
+  INPAR::MORTAR::Triangulation tri_type =
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::Triangulation>(imortar_,"TRIANGULATION");
+
   //**********************************************************************
   // (1) Linearization of clip vertex coordinates (only for contact)
   //**********************************************************************
   VertexLinearization(linvertex, projpar);
 
+  switch (tri_type)
+  {
   //**********************************************************************
   // (2) Triangulation of clip polygon (DELAUNAY-based (new))
   //**********************************************************************
-  bool success = DelaunayTriangulation(linvertex, tol);
+  case INPAR::MORTAR::triangulation_delaunay:
+    if (!DelaunayTriangulation(linvertex, tol))
+      // (3) Backup triangulation of clip polygon (CENTER-based (old))
+      CenterTriangulation(linvertex, tol);
+    break;
 
   //**********************************************************************
   // (3) Backup triangulation of clip polygon (CENTER-based (old))
   //**********************************************************************
-  if (!success)
+  case INPAR::MORTAR::triangulation_center:
     CenterTriangulation(linvertex, tol);
+    break;
 
+  default:
+    dserror("unknown triangulation type");
+    break;
+  }
   return true;
 }
 
@@ -3414,7 +3429,7 @@ bool MORTAR::Coupling3d::CenterTriangulation(
   // preparations
   Cells().resize(0);
   int clipsize = (int) (Clip().size());
-  std::vector<GEN::pairedvector<int, double> > lincenter(3, 100);
+  std::vector<GEN::pairedvector<int, double> > lincenter(3, (MasterElement().NumNode()+SlaveElement().NumNode())*3);
 
   //**********************************************************************
   // (1) Trivial clipping polygon -> IntCells
@@ -3822,8 +3837,8 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(MORTAR::MortarElement& ele,
 
     auxele.push_back(
         Teuchos::rcp(
-            new IntElement(0, ele.Id(), ele.Owner(), ele.Shape(), dt, numnode,
-                nodeids, nodes, ele.IsSlave())));
+            new IntElement(0, ele.Id(), ele.Owner(), &ele, dt, numnode,
+                nodeids, nodes, ele.IsSlave(), false)));
 
     // second integration element
     // containing parent nodes 4,1,5,8
@@ -3839,8 +3854,8 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(MORTAR::MortarElement& ele,
 
     auxele.push_back(
         Teuchos::rcp(
-            new IntElement(1, ele.Id(), ele.Owner(), ele.Shape(), dt, numnode,
-                nodeids, nodes, ele.IsSlave())));
+            new IntElement(1, ele.Id(), ele.Owner(), &ele, dt, numnode,
+                nodeids, nodes, ele.IsSlave(), false)));
 
     // third integration element
     // containing parent nodes 8,5,2,6
@@ -3856,8 +3871,8 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(MORTAR::MortarElement& ele,
 
     auxele.push_back(
         Teuchos::rcp(
-            new IntElement(2, ele.Id(), ele.Owner(), ele.Shape(), dt, numnode,
-                nodeids, nodes, ele.IsSlave())));
+            new IntElement(2, ele.Id(), ele.Owner(), &ele, dt, numnode,
+                nodeids, nodes, ele.IsSlave(), false)));
 
     // fourth integration element
     // containing parent nodes 7,8,6,3
@@ -3873,8 +3888,8 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(MORTAR::MortarElement& ele,
 
     auxele.push_back(
         Teuchos::rcp(
-            new IntElement(3, ele.Id(), ele.Owner(), ele.Shape(), dt, numnode,
-                nodeids, nodes, ele.IsSlave())));
+            new IntElement(3, ele.Id(), ele.Owner(), &ele, dt, numnode,
+                nodeids, nodes, ele.IsSlave(), false)));
   }
 
   // *********************************************************** quad8 ***
@@ -3901,8 +3916,8 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(MORTAR::MortarElement& ele,
 
     auxele.push_back(
         Teuchos::rcp(
-            new IntElement(0, ele.Id(), ele.Owner(), ele.Shape(), dttri,
-                numnodetri, nodeids, nodes, ele.IsSlave())));
+            new IntElement(0, ele.Id(),ele.Owner(), &ele, dttri,
+                numnodetri, nodeids, nodes, ele.IsSlave(), false)));
 
     // second integration element
     // containing parent nodes 1,5,4
@@ -3916,8 +3931,8 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(MORTAR::MortarElement& ele,
 
     auxele.push_back(
         Teuchos::rcp(
-            new IntElement(1, ele.Id(), ele.Owner(), ele.Shape(), dttri,
-                numnodetri, nodeids, nodes, ele.IsSlave())));
+            new IntElement(1, ele.Id(), ele.Owner(), &ele, dttri,
+                numnodetri, nodeids, nodes, ele.IsSlave(), false)));
 
     // third integration element
     // containing parent nodes 2,6,5
@@ -3931,8 +3946,8 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(MORTAR::MortarElement& ele,
 
     auxele.push_back(
         Teuchos::rcp(
-            new IntElement(2, ele.Id(), ele.Owner(), ele.Shape(), dttri,
-                numnodetri, nodeids, nodes, ele.IsSlave())));
+            new IntElement(2, ele.Id(), ele.Owner(), &ele, dttri,
+                numnodetri, nodeids, nodes, ele.IsSlave(), false)));
 
     // fourth integration element
     // containing parent nodes 3,7,6
@@ -3946,8 +3961,8 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(MORTAR::MortarElement& ele,
 
     auxele.push_back(
         Teuchos::rcp(
-            new IntElement(3, ele.Id(), ele.Owner(), ele.Shape(), dttri,
-                numnodetri, nodeids, nodes, ele.IsSlave())));
+            new IntElement(3, ele.Id(), ele.Owner(), &ele, dttri,
+                numnodetri, nodeids, nodes, ele.IsSlave(), false)));
 
     // fifth integration element
     // containing parent nodes 4,5,6,7
@@ -3966,8 +3981,8 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(MORTAR::MortarElement& ele,
 
     auxele.push_back(
         Teuchos::rcp(
-            new IntElement(4, ele.Id(), ele.Owner(), ele.Shape(), dtquad,
-                numnodequad, nodeidsquad, nodesquad, ele.IsSlave())));
+            new IntElement(4, ele.Id(), ele.Owner(), &ele, dtquad,
+                numnodequad, nodeidsquad, nodesquad, ele.IsSlave(), false)));
   }
 
   // ************************************************************ tri6 ***
@@ -3992,8 +4007,8 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(MORTAR::MortarElement& ele,
 
     auxele.push_back(
         Teuchos::rcp(
-            new IntElement(0, ele.Id(), ele.Owner(), ele.Shape(), dt, numnode,
-                nodeids, nodes, ele.IsSlave())));
+            new IntElement(0, ele.Id(), ele.Owner(), &ele, dt, numnode,
+                nodeids, nodes, ele.IsSlave(), false)));
 
     // second integration element
     // containing parent nodes 3,1,4
@@ -4007,8 +4022,8 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(MORTAR::MortarElement& ele,
 
     auxele.push_back(
         Teuchos::rcp(
-            new IntElement(1, ele.Id(), ele.Owner(), ele.Shape(), dt, numnode,
-                nodeids, nodes, ele.IsSlave())));
+            new IntElement(1, ele.Id(), ele.Owner(), &ele, dt, numnode,
+                nodeids, nodes, ele.IsSlave(), false)));
 
     // third integration element
     // containing parent nodes 5,4,2
@@ -4022,8 +4037,8 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(MORTAR::MortarElement& ele,
 
     auxele.push_back(
         Teuchos::rcp(
-            new IntElement(2, ele.Id(), ele.Owner(), ele.Shape(), dt, numnode,
-                nodeids, nodes, ele.IsSlave())));
+            new IntElement(2, ele.Id(), ele.Owner(), &ele, dt, numnode,
+                nodeids, nodes, ele.IsSlave(), false)));
 
     // fourth integration element
     // containing parent nodes 4,5,3
@@ -4037,8 +4052,8 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(MORTAR::MortarElement& ele,
 
     auxele.push_back(
         Teuchos::rcp(
-            new IntElement(3, ele.Id(), ele.Owner(), ele.Shape(), dt, numnode,
-                nodeids, nodes, ele.IsSlave())));
+            new IntElement(3, ele.Id(), ele.Owner(), &ele, dt, numnode,
+                nodeids, nodes, ele.IsSlave(), false)));
   }
 
   // *********************************************************** quad4 ***
@@ -4053,8 +4068,8 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(MORTAR::MortarElement& ele,
 
     auxele.push_back(
         Teuchos::rcp(
-            new IntElement(0, ele.Id(), ele.Owner(), ele.Shape(), ele.Shape(),
-                ele.NumNode(), ele.NodeIds(), nodes, ele.IsSlave())));
+            new IntElement(0, ele.Id(), ele.Owner(), &ele, ele.Shape(),
+                ele.NumNode(), ele.NodeIds(), nodes, ele.IsSlave(), false)));
   }
 
   // ************************************************************ tri3 ***
@@ -4068,8 +4083,70 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(MORTAR::MortarElement& ele,
 
     auxele.push_back(
         Teuchos::rcp(
-            new IntElement(0, ele.Id(), ele.Owner(), ele.Shape(), ele.Shape(),
-                ele.NumNode(), ele.NodeIds(), nodes, ele.IsSlave())));
+            new IntElement(0, ele.Id(), ele.Owner(), &ele, ele.Shape(),
+                ele.NumNode(), ele.NodeIds(), nodes, ele.IsSlave(), false)));
+  }
+
+  // ************************************************************ tri3 ***
+  else if (ele.Shape() == DRT::Element::nurbs9)
+  {
+    // create one IntElement from one nurbs9 element
+    // new nodes are created as the images of the corners of the parameter
+    // space on the actual surface.
+    // nodes are ordered anti-clockwise using the info of the normal-fac
+    // of the nurbs element
+
+    // create pseudo-nodes
+    std::vector<DRT::Node> pseudo_nodes; pseudo_nodes.clear();
+    std::vector<DRT::Node*> pseudo_nodes_ptr(0);
+
+    // parameter space coords of pseudo nodes
+    double pseudo_nodes_param_coords[4][2];
+    int id[4]={0,0,0,0};
+    bool rewind=false;
+
+    if (ele.NormalFac()==1.)
+    {
+      rewind=false;
+      pseudo_nodes_param_coords[0][0] = -1.; pseudo_nodes_param_coords[0][1] = -1.; id[0]=ele.NodeIds()[0];
+      pseudo_nodes_param_coords[1][0] = +1.; pseudo_nodes_param_coords[1][1] = -1.; id[1]=ele.NodeIds()[2];
+      pseudo_nodes_param_coords[2][0] = +1.; pseudo_nodes_param_coords[2][1] = +1.; id[2]=ele.NodeIds()[8];
+      pseudo_nodes_param_coords[3][0] = -1.; pseudo_nodes_param_coords[3][1] = +1.; id[3]=ele.NodeIds()[6];
+    }
+    else if (ele.NormalFac()==-1.)
+    {
+      rewind=true;
+      pseudo_nodes_param_coords[0][0] = -1.; pseudo_nodes_param_coords[0][1] = -1.; id[0]=ele.NodeIds()[0];
+      pseudo_nodes_param_coords[1][0] = -1.; pseudo_nodes_param_coords[1][1] = +1.; id[1]=ele.NodeIds()[6];
+      pseudo_nodes_param_coords[2][0] = +1.; pseudo_nodes_param_coords[2][1] = +1.; id[2]=ele.NodeIds()[8];
+      pseudo_nodes_param_coords[3][0] = +1.; pseudo_nodes_param_coords[3][1] = -1.; id[3]=ele.NodeIds()[2];
+    }
+    else
+      dserror("don't know what to do with this ele.NormalFac()");
+
+
+    LINALG::SerialDenseVector sval(9);
+    LINALG::SerialDenseMatrix sderiv(9,2);
+    std::vector<int> empty_dofs(3,-1);
+
+    for (int i=0; i<4; ++i)
+    {
+      double xi[2] = {pseudo_nodes_param_coords[i][0],pseudo_nodes_param_coords[i][1]};
+      double xspatial[3] = {0.,0.,0.};
+      ele.EvaluateShape(xi,sval,sderiv,9,true);
+      for (int dim=0; dim<dim_; ++dim)
+        for (int n=0; n<ele.NumNode(); ++n)
+          xspatial[dim]+=sval(n)*dynamic_cast<MORTAR::MortarNode*>(ele.Nodes()[n])->xspatial()[dim];
+      pseudo_nodes.push_back(MORTAR::MortarNode(-1,xspatial,ele.Owner(),3,empty_dofs,ele.IsSlave()));
+    }
+
+    for (int i=0; i<4; ++i)
+      pseudo_nodes_ptr.push_back(&(pseudo_nodes[i]));
+
+    auxele.push_back(
+        Teuchos::rcp(
+            new IntElement(0,ele.Id(),ele.Owner(),&ele,DRT::Element::quad4,
+                4,&(id[0]),pseudo_nodes_ptr,ele.IsSlave(),rewind)));
   }
 
   // ********************************************************* invalid ***
@@ -4089,8 +4166,9 @@ MORTAR::Coupling3dQuad::Coupling3dQuad(DRT::Discretization& idiscret, int dim,
     bool quad, Teuchos::ParameterList& params, MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele, MORTAR::IntElement& sintele,
     MORTAR::IntElement& mintele) :
-    MORTAR::Coupling3d(idiscret, dim, quad, params, sele, mele), sintele_(
-        sintele), mintele_(mintele)
+    MORTAR::Coupling3d(idiscret, dim, quad, params, sele, mele),
+    sintele_(sintele),
+    mintele_(mintele)
 {
   //  3D quadratic coupling only for quadratic ansatz type
   if (!Quad())
@@ -4135,9 +4213,6 @@ MORTAR::Coupling3dManager::Coupling3dManager(DRT::Discretization& idiscret,
     sele_(sele),
     mele_(mele)
 {
-  // evaluate coupling
-  EvaluateCoupling();
-
   return;
 }
 
@@ -4148,25 +4223,9 @@ MORTAR::Coupling3dManager::Coupling3dManager(DRT::Discretization& idiscret,
 MORTAR::Coupling3dQuadManager::Coupling3dQuadManager(
     DRT::Discretization& idiscret, int dim, bool quad,
     Teuchos::ParameterList& params, MORTAR::MortarElement* sele,
-    std::vector<MORTAR::MortarElement*> mele, bool empty) :
-    idiscret_(idiscret),
-    dim_(dim),
-    integrationtype_(DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(params, "INTTYPE")),
-    quad_(quad),
-    imortar_(params),
-    sele_(sele),
-    mele_(mele)
+    std::vector<MORTAR::MortarElement*> mele) :
+    Coupling3dManager(idiscret,dim,quad,params,sele,mele)
 {
-  if (empty == false)
-  {
-    // evaluate coupling
-    EvaluateCoupling();
-  }
-  else
-  {
-    // do nothing
-  }
-
   return;
 }
 
@@ -4403,32 +4462,41 @@ void MORTAR::Coupling3dQuadManager::EvaluateMortar()
   //**********************************************************************
   if (IntType() == INPAR::MORTAR::inttype_segments)
   {
+    // build linear integration elements from quadratic MortarElements
+    std::vector<Teuchos::RCP<MORTAR::IntElement> > sauxelements(0);
+    std::vector<std::vector<Teuchos::RCP<MORTAR::IntElement> > >mauxelements(MasterElements().size());
+    SplitIntElements(SlaveElement(), sauxelements);
+
     // loop over all master elements associated with this slave element
     for (int m = 0; m < (int) MasterElements().size(); ++m)
     {
       // build linear integration elements from quadratic MortarElements
-      std::vector<Teuchos::RCP<MORTAR::IntElement> > sauxelements(0);
-      std::vector<Teuchos::RCP<MORTAR::IntElement> > mauxelements(0);
-      SplitIntElements(SlaveElement(), sauxelements);
-      SplitIntElements(*MasterElements()[m], mauxelements);
+      mauxelements[m].resize(0);
+      SplitIntElements(*MasterElements()[m], mauxelements[m]);
 
       // loop over all IntElement pairs for coupling
       for (int i = 0; i < (int) sauxelements.size(); ++i)
       {
-        for (int j = 0; j < (int) mauxelements.size(); ++j)
+        for (int j = 0; j < (int) mauxelements[m].size(); ++j)
         {
           // create instance of coupling class
-          MORTAR::Coupling3dQuad coup(idiscret_, dim_, true, imortar_,
-              SlaveElement(), *MasterElements()[m], *sauxelements[i],
-              *mauxelements[j]);
-          // do coupling
-          coup.EvaluateCoupling();
+          Coupling().push_back(
+              Teuchos::rcp(new
+                Coupling3dQuad(idiscret_, dim_, true, imortar_,
+                    SlaveElement(), *MasterElements()[m], *sauxelements[i],
+                    *mauxelements[m][j])));
 
-          // integrate cells
-          coup.IntegrateCells();
+          // do coupling
+          Coupling()[Coupling().size()-1]->EvaluateCoupling();
         } // for maux
       } // for saux
     } // for m
+
+    ConsistDualShape();
+
+    // do integration
+    for (int i=0; i<(int)Coupling().size(); ++i)
+      Coupling()[i]->IntegrateCells();
   }
   //**********************************************************************
   // FAST INTEGRATION (ELEMENTS)

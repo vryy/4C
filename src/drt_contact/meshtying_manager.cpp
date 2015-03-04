@@ -525,11 +525,6 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
   // *********************************************************************
   INPAR::MORTAR::IntType inttype = DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar, "INTTYPE");
 
-  if (inttype == INPAR::MORTAR::inttype_segments && mortar.get<int>("NUMGP_PER_DIM") != 0)
-    dserror("ERROR: It is not possible to choose a Gauss rule with NUMGP_PER_DIM for segment-based integration."
-            "\nSegment-based integration always uses pre-defined default values (5 GP per segment in 2D "
-            "\nand 7 GP per triangular cell in 3D). Ask a 'contact person' if you want to change this.");
-
   if (inttype == INPAR::MORTAR::inttype_elements && mortar.get<int>("NUMGP_PER_DIM") <= 0)
     dserror("ERROR: Invalid Gauss point number NUMGP_PER_DIM for element-based integration.");
 

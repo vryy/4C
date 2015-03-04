@@ -16,6 +16,7 @@ Maintainer: Alexander Popp
 #define MORTAR_COUPLING3D_CLASSES_H
 
 #include "mortar_element.H"
+#include "mortar_node.H"
 
 
 /*!
@@ -62,12 +63,13 @@ public:
   \param isslave (in):  flag indicating whether element is slave or master side
   */
   IntElement(int lid, int id, int owner,
-             const DRT::Element::DiscretizationType& parshape,
-             const DRT::Element::DiscretizationType& shape,
-             const int numnode,
-             const int* nodeids,
-             std::vector<DRT::Node*> nodes,
-             const bool isslave);
+      MORTAR::MortarElement* parele,
+      const DRT::Element::DiscretizationType& shape,
+      const int numnode,
+      const int* nodeids,
+      std::vector<DRT::Node*> nodes,
+      const bool isslave,
+      const bool rewind);
 
   /*!
   \brief Destructor
@@ -85,7 +87,13 @@ public:
   \brief Get shape type of parent element
 
   */
-  virtual DiscretizationType ParShape() const { return parshape_;}
+  virtual DiscretizationType ParShape() const { return parele_->Shape();}
+
+  /*!
+  \brief Get shape type of parent element
+
+  */
+  virtual MORTAR::MortarElement* ParEle() const { return parele_;}
 
   /*!
   \brief Affine map of IntElement coordinates to parent element
@@ -100,6 +108,25 @@ public:
   virtual bool MapToParent(const std::vector<GEN::pairedvector<int,double> >& dxi,
                            std::vector<GEN::pairedvector<int,double> >& dparxi);
 
+  virtual DRT::Node** Nodes()
+  {
+    if (parele_->Shape()!=DRT::Element::nurbs9) return DRT::Element::Nodes();
+    else return &(nodes_ptr_[0]);
+  }
+
+  /*!
+  \brief Get the linearization of the spatial position of the Nodes for this IntEle.
+         For Lagrange finite elements, this is trivial, since the nodes are interpolatory.
+         For NURBS elements, we generated pseudo-nodes as the corners of the parameter
+         space onto the actual surface. Those nodes now depend on all CPs and shape functions
+         of the parent NURBS element.
+
+         Returns a vector of vector of maps. Outer vector for the (pseudo-)nodes,
+         inner vector for the spatial dimensions, map for the derivatives.
+  */
+  virtual void NodeLinearization(
+      std::vector<std::vector<GEN::pairedvector<int, double> > >& nodelin);
+
 protected:
 
   // don't want = operator and cctor
@@ -107,7 +134,22 @@ protected:
   IntElement(const IntElement& old);
 
   int                               lid_;        // local IntElement id
-  DRT::Element::DiscretizationType  parshape_;   // shape of parent element
+
+  // the integration element has its own vector of nodes
+  // for Lagrange elements, those are copies of the original mortar nodes
+  // for NURBS elements, those are newly created pseudo-nodes, which are
+  // located on the physical surface. The "nodes" in IGA are already used
+  // with control points
+  // Be careful here: the pseudo-nodes need an Id!
+  // They are given the Id of the closest control point. However, be aware
+  // that this Id is now used twice: once for the control point (as a part
+  // of the discretization) and once for the pseudo-node, which is only
+  // stored here temporarily.
+  std::vector<MORTAR::MortarNode> nodes_;
+  std::vector<DRT::Node*> nodes_ptr_;
+  const bool rewind_; // if the parameter space of the int element has been rewinded
+
+  MORTAR::MortarElement* parele_;
 
 }; //class IntElement
 

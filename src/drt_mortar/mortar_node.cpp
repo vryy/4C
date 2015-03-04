@@ -142,9 +142,6 @@ detected_(false)
     dbcdofs_[i]=false;
   }
 
-  // not yet used and thus not necessarily consistent
-  dserror("ERROR: MortarNode copy-ctor not yet implemented");
-
   return;
 }
 

@@ -746,7 +746,7 @@ public:
    \brief Return the LM shape fcn type
 
    */
-  INPAR::MORTAR::ShapeFcn ShapeFcn()
+  virtual INPAR::MORTAR::ShapeFcn ShapeFcn()
   {
     return shapefcn_;
   }
@@ -789,18 +789,16 @@ protected:
  \author popp (popp@lnm.mw.tum.de)
 */
 
-class Coupling3dQuadManager
+class Coupling3dQuadManager : public Coupling3dManager
 {
 
 public:
   /*!
    \brief Constructor
-   bool empty = true does not evaluate coupling.
-   This option is needed for inheritance of the CoCoupling3dQuadManager
    */
   Coupling3dQuadManager(DRT::Discretization& idiscret, int dim, bool quad,
       Teuchos::ParameterList& params, MORTAR::MortarElement* sele,
-      std::vector<MORTAR::MortarElement*> mele, bool empty = false);
+      std::vector<MORTAR::MortarElement*> mele);
 
   /*!
    \brief Destructor
@@ -867,7 +865,6 @@ public:
   {
     return quad_;
   }
-  ;
 
   /*!
    \brief Get communicator
@@ -898,14 +895,6 @@ protected:
   // don't want = operator and cctor
   Coupling3dQuadManager operator =(const Coupling3dQuadManager& old);
   Coupling3dQuadManager(const Coupling3dQuadManager& old);
-
-  DRT::Discretization& idiscret_;            // discretization of the contact interface
-  int dim_;                                  // problem dimension (here: 3D)
-  INPAR::MORTAR::IntType integrationtype_;   // integration type
-  bool quad_;                                // flag indicating coupling type (true = quadratic)
-  Teuchos::ParameterList& imortar_;          // containing contact input parameters
-  MORTAR::MortarElement* sele_;              // slave element
-  std::vector<MORTAR::MortarElement*> mele_; // master elements
 
 };
 

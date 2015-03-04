@@ -101,6 +101,15 @@ void mortar_nurbs_dualshape_function_1D(
   const DRT::Element::DiscretizationType&  shape    ///< distinguish between shape
   );
 
+template<class V>
+void mortar_nurbs_dualshape_function_2D(
+  V&                                       funct,   ///< to be filled with shape function values
+  MORTAR::MortarElement&                   ele,
+  const double&                            xi0,     ///< xi0 coordinate
+  const double&                            xi1,     ///< xi1 coordinate
+  const DRT::Element::DiscretizationType&  shape    ///< distinguish between shape
+  );
+
 // ----------------------------------------------------------------------
 // function definitions
 // ----------------------------------------------------------------------
@@ -209,6 +218,14 @@ void EvaluateShape_Displ(const double* xi, V& val,
   {
     if (nnode!=3) dserror("ERROR: Inconsistency in EvaluateShape");
     mortar_nurbs_shape_function_1D(val, ele, xi[0], DRT::Element::nurbs3);
+    break;
+  }
+
+  // 2D -- nurbs9
+  case DRT::Element::nurbs9:
+  {
+    if (nnode!=9) dserror("ERROR: Inconsistency in EvaluateShape");
+    mortar_nurbs_shape_function_2D(val, ele, xi[0],xi[1], DRT::Element::nurbs9);
     break;
   }
   // unknown case
@@ -391,6 +408,17 @@ void EvaluateShape_LM(const INPAR::MORTAR::ShapeFcn& lmtype,
 
     if(dual) mortar_nurbs_dualshape_function_1D(val, ele, xi[0], DRT::Element::nurbs3);
     else     mortar_nurbs_shape_function_1D(val, ele, xi[0], DRT::Element::nurbs3);
+
+    break;
+  }
+
+  // 2D -- nurbs9
+  case DRT::Element::nurbs9:
+  {
+    if (valdim!=9) dserror("ERROR: Inconsistency in EvaluateShape");
+
+    if(dual) mortar_nurbs_dualshape_function_2D(val, ele, xi[0],xi[1], DRT::Element::nurbs9);
+    else     mortar_nurbs_shape_function_2D(val, ele, xi[0],xi[1], DRT::Element::nurbs9);
 
     break;
   }
@@ -1878,6 +1906,58 @@ void mortar_nurbs_shape_function_1D(
   return;
 }
 
+
+/*----------------------------------------------------------------------*
+ |  evaluate std. nurbs shape 2D                             seitz 02/15|
+ *----------------------------------------------------------------------*/
+template<class V>
+void mortar_nurbs_shape_function_2D(
+  V&                                       funct,   ///< to be filled with shape function values
+  MORTAR::MortarElement&                   ele,
+  const double&                            xi0,     ///< xi0 coordinate
+  const double&                            xi1,     ///< xi0 coordinate
+  const DRT::Element::DiscretizationType&  shape    ///< distinguish between shape
+  )
+{
+  switch (shape)
+  {
+  //*********************************************
+  // 1D -- nurbs2
+  //*********************************************
+  case DRT::Element::nurbs4:
+  {
+    dserror("stop");
+    break;
+  }
+  //*********************************************
+  // 1D -- nurbs3
+  //*********************************************
+  case DRT::Element::nurbs9:
+  {
+    Epetra_SerialDenseVector weights(ele.NumNode());
+    for (int inode = 0; inode < ele.NumNode(); ++inode)
+      weights(inode) = dynamic_cast<MORTAR::MortarNode*>(ele.Nodes()[inode])->NurbsW();
+
+    LINALG::SerialDenseVector uv(2);
+    uv(0) = xi0;
+    uv(1) = xi1;
+
+    LINALG::SerialDenseMatrix auxderiv(2, ele.NumNode());
+    DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(funct, auxderiv, uv, ele.Knots(),
+        weights, DRT::Element::nurbs9);
+    break;
+  }
+  default:
+  {
+    std::cout << "shape: " << shape << std::endl;
+    dserror("shape unknown\n");
+    break;
+  }
+  }
+
+  return;
+}
+
 /*----------------------------------------------------------------------*
  |  evaluate dual nurbs shape 1D                             farah 05/14|
  *----------------------------------------------------------------------*/
@@ -1948,6 +2028,75 @@ void mortar_nurbs_dualshape_function_1D(
   }
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |  evaluate dual nurbs shape 2D                             seitz 02/15|
+ *----------------------------------------------------------------------*/
+template<class V>
+void mortar_nurbs_dualshape_function_2D(
+  V&                                       funct,   ///< to be filled with shape function values
+  MORTAR::MortarElement&                   ele,
+  const double&                            xi0,     ///< xi0 coordinate
+  const double&                            xi1,     ///< xi1 coordinate
+  const DRT::Element::DiscretizationType&  shape    ///< distinguish between shape
+  )
+{
+
+  switch (shape)
+  {
+  case DRT::Element::nurbs9:
+  {
+    // establish fundamental data
+    double detg = 0.0;
+    const int nnodes = 9;
+
+    // compute entries to bi-ortho matrices me/de with Gauss quadrature
+    MORTAR::ElementIntegrator integrator(shape);
+
+    LINALG::Matrix<nnodes, nnodes> me(true);
+    LINALG::Matrix<nnodes, nnodes> de(true);
+    LINALG::Matrix<nnodes, nnodes> ae;
+
+    for (int i = 0; i < integrator.nGP(); ++i)
+    {
+      double gpc[2] =
+      { integrator.Coordinate(i, 0), integrator.Coordinate(i, 1) };
+      mortar_nurbs_shape_function_2D(funct, ele,gpc[0],gpc[1],shape);
+      detg = ele.Jacobian(gpc);
+
+      for (int j=0;j<nnodes;++j)
+      {
+        for (int k=0;k<nnodes;++k)
+        {
+          me(j,k)+=integrator.Weight(i)*funct(j)*funct(k)*detg;
+          de(j,k)+=(j==k)*integrator.Weight(i)*funct(j)*detg;
+        }
+      }
+    }
+
+    // get solution matrix with dual parameters
+    LINALG::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
+
+    // evaluate dual shape functions
+    LINALG::Matrix<nnodes,1> valtemp(true);
+
+    // evaluate dual shape functions at loc. coord. xi
+    // need standard shape functions at xi first
+    mortar_nurbs_shape_function_2D(funct, ele, xi0,xi1, DRT::Element::nurbs9);
+
+    for (int i=0;i<nnodes;++i)
+      for (int j=0;j<nnodes;++j)
+        valtemp(i)+=ae(i,j)*funct(j);
+
+    for (int i=0; i<nnodes; ++i)
+      funct(i)=valtemp(i);
+
+    break;
+  }
+  default: dserror("unknown shape");
+  break;
+  }
 }
 
 }//namespace UTILS

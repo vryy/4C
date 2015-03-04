@@ -686,9 +686,6 @@ MORTAR::Coupling2dManager::Coupling2dManager(DRT::Discretization& idiscret,
     idiscret_(idiscret), dim_(dim), quad_(quad), imortar_(params), sele_(sele), mele_(
         mele)
 {
-  // evaluate coupling
-  EvaluateCoupling();
-
   return;
 }
 

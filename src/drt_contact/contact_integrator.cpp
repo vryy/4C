@@ -337,6 +337,17 @@ void CONTACT::CoIntegrator::InitializeGP(DRT::Element::DiscretizationType eletyp
 
     // set default value for segment-based version first
     DRT::UTILS::GaussRule2D mygaussrule=DRT::UTILS::intrule_tri_7point;
+    if(integrationtype==INPAR::MORTAR::inttype_segments)
+    {
+      if (numgp>0)
+      switch(numgp)
+      {
+      case 7 : mygaussrule=DRT::UTILS::intrule_tri_7point;  break;
+      case 16: mygaussrule=DRT::UTILS::intrule_tri_16point; break;
+      case 37: mygaussrule=DRT::UTILS::intrule_tri_37point; break;
+      default: dserror("unknown tri gauss rule");           break;
+      }
+    }
 
     // GP switch if element-based version and non-zero value provided by user
     if(integrationtype==INPAR::MORTAR::inttype_elements || integrationtype==INPAR::MORTAR::inttype_elements_BS)
@@ -2013,7 +2024,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
     dserror("ERROR: IntegrateDerivCell3DAuxPlane called without specific shape function defined!");
 
   // Petrov-Galerkin approach for LM not yet implemented
-  if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
+  if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin && sele.Shape()!=DRT::Element::nurbs9)
     dserror("ERROR: Petrov-Galerkin approach not yet implemented for quadratic FE interpolation");
 
   //check for problem dimension
@@ -3776,14 +3787,28 @@ void CONTACT::CoIntegrator::DerivXiGP3DAuxPlane(MORTAR::MortarElement& ele,
   // start to fill linearization maps for element GP
   typedef GEN::pairedvector<int,double>::const_iterator _CI;
 
+  // see if this is an IntEle
+  MORTAR::IntElement* ie=dynamic_cast<MORTAR::IntElement*>(&ele);
+
   // (1) all nodes coordinates part
-  for (int z=0;z<numnode;++z)
+  if (!ie)
+    for (int z=0;z<numnode;++z)
+      for (int k=0;k<3;++k)
+      {
+        derivxi[0][mrtrnodes[z]->Dofs()[k]] -= valxigp[z] * lmatrix(0,k);
+        derivxi[1][mrtrnodes[z]->Dofs()[k]] -= valxigp[z] * lmatrix(1,k);
+      }
+  else
   {
-    for (int k=0;k<3;++k)
-    {
-      derivxi[0][mrtrnodes[z]->Dofs()[k]] -= valxigp[z] * lmatrix(0,k);
-      derivxi[1][mrtrnodes[z]->Dofs()[k]] -= valxigp[z] * lmatrix(1,k);
-    }
+    std::vector<std::vector<GEN::pairedvector<int, double> > > nodelin(0);
+    ie->NodeLinearization(nodelin);
+    for (int z=0;z<numnode;++z)
+      for (int k=0;k<3;++k)
+        for (_CI p=nodelin[z][k].begin(); p!=nodelin[z][k].end();++p)
+      {
+        derivxi[0][p->first] -= valxigp[z] * lmatrix(0,k) * p->second;
+        derivxi[1][p->first] -= valxigp[z] * lmatrix(1,k) * p->second;
+      }
   }
 
   // (2) Gauss point coordinates part
@@ -4146,7 +4171,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad(
   }
 
   // CASE 4: Dual LM shape functions and quadratic interpolation
-  else if (ShapeFcn() == INPAR::MORTAR::shape_dual &&
+  else if ((ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
       LagMultQuad() == INPAR::MORTAR::lagmult_quad)
   {
     // compute all mseg and dseg matrix entries
@@ -4630,7 +4655,12 @@ void inline CONTACT::CoIntegrator::GP_3D_G(
         CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(snodes[j]);
 
         double prod = 0.0;
-        prod = lmval[j]*gap[0]*jac*wgt;
+        // Petrov-Galerkin approach (dual LM for D/M but standard LM for gap)
+        if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
+          prod = sval[j]*gap[0]*jac*wgt;
+        // usual standard or dual LM approach
+        else
+          prod = lmval[j]*gap[0]*jac*wgt;
 
         // add current Gauss point's contribution to gseg
         cnode->AddgValue(prod);
@@ -5507,35 +5537,61 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_Lin(
     // get the corresponding map as a reference
     std::map<int,double>& dgmap = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivG();
 
-    // (1) Lin(Phi) - dual shape functions
-    if (duallin)
-      for (int m=0;m<nrow;++m)
-      {
-        if (dualquad3d) fac = wgt*svalmod[m]*gap*jac;
-        else            fac = wgt*sval[m]*gap*jac;
+    if (ShapeFcn() == INPAR::MORTAR::shape_dual)
+    {
+      // (1) Lin(Phi) - dual shape functions
+      if (duallin)
+        for (int m=0;m<nrow;++m)
+        {
+          if (dualquad3d) fac = wgt*svalmod[m]*gap*jac;
+          else            fac = wgt*sval[m]*gap*jac;
 
-        for (_CI p=dualmap[iter][m].begin();p!=dualmap[iter][m].end();++p)
-          dgmap[p->first] += fac*(p->second);
-      }
+          for (_CI p=dualmap[iter][m].begin();p!=dualmap[iter][m].end();++p)
+            dgmap[p->first] += fac*(p->second);
+        }
 
-    // (2) Lin(Phi) - slave GP coordinates
-    fac = wgt*lmderiv(iter,0)*gap*jac;
-    for (_CI p=dpsxigp[0].begin();p!=dpsxigp[0].end();++p)
-      dgmap[p->first] += fac*(p->second);
+      // (2) Lin(Phi) - slave GP coordinates
+      fac = wgt*lmderiv(iter,0)*gap*jac;
+      for (_CI p=dpsxigp[0].begin();p!=dpsxigp[0].end();++p)
+        dgmap[p->first] += fac*(p->second);
 
-    fac = wgt*lmderiv(iter,1)*gap*jac;
-    for (_CI p=dpsxigp[1].begin();p!=dpsxigp[1].end();++p)
-      dgmap[p->first] += fac*(p->second);
+      fac = wgt*lmderiv(iter,1)*gap*jac;
+      for (_CI p=dpsxigp[1].begin();p!=dpsxigp[1].end();++p)
+        dgmap[p->first] += fac*(p->second);
 
-    // (3) Lin(g) - gap function
-    fac = wgt*lmval[iter]*jac;
-    for (_CI p=dgapgp.begin();p!=dgapgp.end();++p)
-      dgmap[p->first] += fac*(p->second);
+      // (3) Lin(g) - gap function
+      fac = wgt*lmval[iter]*jac;
+      for (_CI p=dgapgp.begin();p!=dgapgp.end();++p)
+        dgmap[p->first] += fac*(p->second);
 
-    // (4) Lin(dsxideta) - intcell GP Jacobian
-    fac = wgt*lmval[iter]*gap;
-    for (_CI p=jacintcellmap.begin();p!=jacintcellmap.end();++p)
-      dgmap[p->first] += fac*(p->second);
+      // (4) Lin(dsxideta) - intcell GP Jacobian
+      fac = wgt*lmval[iter]*gap;
+      for (_CI p=jacintcellmap.begin();p!=jacintcellmap.end();++p)
+        dgmap[p->first] += fac*(p->second);
+    }
+    else if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
+    {
+      // (1) Lin(Phi) - dual shape functions
+
+      // (2) Lin(Phi) - slave GP coordinates
+      fac = wgt*sderiv(iter,0)*gap*jac;
+      for (_CI p=dpsxigp[0].begin();p!=dpsxigp[0].end();++p)
+        dgmap[p->first] += fac*(p->second);
+
+      fac = wgt*sderiv(iter,1)*gap*jac;
+      for (_CI p=dpsxigp[1].begin();p!=dpsxigp[1].end();++p)
+        dgmap[p->first] += fac*(p->second);
+
+      // (3) Lin(g) - gap function
+      fac = wgt*sval[iter]*jac;
+      for (_CI p=dgapgp.begin();p!=dgapgp.end();++p)
+        dgmap[p->first] += fac*(p->second);
+
+      // (4) Lin(dsxideta) - intcell GP Jacobian
+      fac = wgt*sval[iter]*gap;
+      for (_CI p=jacintcellmap.begin();p!=jacintcellmap.end();++p)
+        dgmap[p->first] += fac*(p->second);
+    }
   }
 
   return;
@@ -5696,7 +5752,6 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Lin(
   {
     // (1) Lin(Phi) - does not exist here for Petrov-Galerkin approach
 
-    // (2) Lin(N) - slave GP coordinates
     // (2) Lin(N) - slave GP coordinates
     fac = wgt*sderiv(iter,0)*gap*jac;
     for (_CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)

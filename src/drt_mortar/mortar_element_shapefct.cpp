@@ -2155,6 +2155,10 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi,
     DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(val, auxderiv, uv, Knots(),
         weights, nurbs9);
 
+#ifdef DEBUG
+    if (deriv.N()!=2 || deriv.M()!=NumNode())
+      dserror("ERROR: Inconsistency in EvaluateShape");
+#endif
 
     // copy entries for to be conform with the mortar code!
     for (int d = 0; d < 2; ++d)
@@ -2499,33 +2503,41 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(
       // establish fundamental data
       double detg = 0.0;
       const int nnodes = 9;
+      LINALG::SerialDenseMatrix ae(nnodes, nnodes);
 
-      // compute entries to bi-ortho matrices me/de with Gauss quadrature
-      MORTAR::ElementIntegrator integrator(Shape());
-
-      LINALG::Matrix<nnodes, nnodes> me(true);
-      LINALG::Matrix<nnodes, nnodes> de(true);
-      LINALG::Matrix<nnodes, nnodes> ae;
-
-      for (int i = 0; i < integrator.nGP(); ++i)
+      if (MoData().DualShape() == Teuchos::null)
       {
-        double gpc[2] =
-        { integrator.Coordinate(i, 0), integrator.Coordinate(i, 1) };
-        EvaluateShape(gpc, val, deriv, nnodes);
-        detg = Jacobian(gpc);
+        // compute entries to bi-ortho matrices me/de with Gauss quadrature
+        MORTAR::ElementIntegrator integrator(Shape());
 
-        for (int j = 0; j < nnodes; ++j)
+        LINALG::Matrix<nnodes, nnodes> me(true);
+        LINALG::Matrix<nnodes, nnodes> de(true);
+
+        for (int i = 0; i < integrator.nGP(); ++i)
         {
-          for (int k = 0; k < nnodes; ++k)
+          double gpc[2] =
+          { integrator.Coordinate(i, 0), integrator.Coordinate(i, 1) };
+          EvaluateShape(gpc, val, deriv, nnodes);
+          detg = Jacobian(gpc);
+
+          for (int j = 0; j < nnodes; ++j)
           {
-            me(j, k) += integrator.Weight(i) * val[j] * val[k] * detg;
-            de(j, k) += (j == k) * integrator.Weight(i) * val[j] * detg;
+            for (int k = 0; k < nnodes; ++k)
+            {
+              me(j, k) += integrator.Weight(i) * val[j] * val[k] * detg;
+              de(j, k) += (j == k) * integrator.Weight(i) * val[j] * detg;
+            }
           }
         }
-      }
 
-      // get solution matrix with dual parameters
-      LINALG::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
+        // get solution matrix with dual parameters
+        LINALG::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
+
+        // store coefficient matrix
+        MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
+      }
+      else
+        ae = *(MoData().DualShape());
 
       // evaluate dual shape functions at loc. coord. xi
       // need standard shape functions at xi first
@@ -2542,6 +2554,7 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(
         {
           valtemp[i] += ae(i, j) * val[j];
           derivtemp(i, 0) += ae(i, j) * deriv(j, 0);
+          derivtemp(i, 1) += ae(i, j) * deriv(j, 1);
         }
       }
 
@@ -4471,7 +4484,7 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(const double* xi,
     // copy entries for to be conform with the mortar code!
     for (int d = 0; d < 3; ++d)
       for (int i = 0; i < NumNode(); ++i)
-        secderiv(i, d) = auxderiv(d, i);
+        secderiv(i, d) = auxderiv2(d, i);
 
     break;
   }
@@ -4501,7 +4514,7 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(const double* xi,
     // copy entries for to be conform with the mortar code!
     for (int d = 0; d < 3; ++d)
       for (int i = 0; i < NumNode(); ++i)
-        secderiv(i, d) = auxderiv(d, i);
+        secderiv(i, d) = auxderiv2(d, i);
 
     break;
   }
@@ -4531,7 +4544,7 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(const double* xi,
     // copy entries for to be conform with the mortar code!
     for (int d = 0; d < 3; ++d)
       for (int i = 0; i < NumNode(); ++i)
-        secderiv(i, d) = auxderiv(d, i);
+        secderiv(i, d) = auxderiv2(d, i);
 
     break;
   }

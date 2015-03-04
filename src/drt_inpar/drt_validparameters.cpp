@@ -1824,6 +1824,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   IntParameter("NUMGP_PER_DIM",0,"Number of employed integration points per dimension",&mortar);
 
+  setStringToIntegralParameter<int>("TRIANGULATION","Delaunay","Type of triangulation for segment-based integration",
+    tuple<std::string>("Delaunay","delaunay",
+             "Center","center"),
+    tuple<int>(
+        INPAR::MORTAR::triangulation_delaunay, INPAR::MORTAR::triangulation_delaunay,
+        INPAR::MORTAR::triangulation_center, INPAR::MORTAR::triangulation_center),
+    &mortar);
+
   /*----------------------------------------------------------------------*/
   /* parameters for structural meshtying and contact */
   Teuchos::ParameterList& scontact = list->sublist("CONTACT DYNAMIC",false,"");

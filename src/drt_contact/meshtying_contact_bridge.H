@@ -17,6 +17,7 @@ Maintainer: Philipp Farah
 #include "../drt_inpar/inpar_contact.H"
 #include "Epetra_Comm.h"
 #include "../drt_mortar/mortar_manager_base.H" // TODO forward declaration!!!
+#include "../drt_lib/drt_dserror.H"
 //#include "Epetra_Map.h"
 
 
@@ -71,7 +72,12 @@ public:
   \brief Get Epetra communicator
 
   */
-  const Epetra_Comm& Comm() const { return cman_->Comm();}
+  const Epetra_Comm& Comm() const
+  { if (cman_!=Teuchos::null)  return cman_ ->Comm();
+    if (mtman_!=Teuchos::null) return mtman_->Comm();
+    dserror("can't get comm()");
+    return cman_ ->Comm();
+  }
 
   /*!
   \brief Get contact manager

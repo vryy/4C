@@ -103,6 +103,14 @@ namespace INPAR
       inttype_elements,    ///< fast, elementwise integration
       inttype_elements_BS  ///< fast, elementwise intgration with boundary segmentation
     };
+
+    /// Type of triangulation for segment-base d integration
+    /// (this enum represents the input file parameter TRIANGULATION)
+    enum Triangulation
+    {
+      triangulation_center,   ///< simpler center-based triangulation (see e.g. Popp et al. 2010)
+      triangulation_delaunay  ///< delaunay triangulation
+    };
   }  // namespace MORTAR
 
 }  // namespace INPAR

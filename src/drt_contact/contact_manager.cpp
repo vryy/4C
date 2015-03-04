@@ -923,8 +923,9 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
       dserror("ERROR: For initialization of init contact with gap, the INITCONTACTGAPVALUE is needed.");
 
     if (DRT::INPUT::IntegralValue<int>(mortar, "LM_DUAL_CONSISTENT") == true
-        && DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,"LM_QUAD") != INPAR::MORTAR::lagmult_undefined)
-      dserror("ERROR: Consistent dual shape functions in boundary elements only for linear shape functions.");
+        && DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,"LM_QUAD") != INPAR::MORTAR::lagmult_undefined
+        && distype!="Nurbs")
+      dserror("ERROR: Consistent dual shape functions in boundary elements only for linear shape functions or NURBS.");
 
     if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") != INPAR::WEAR::wear_none
         && DRT::INPUT::IntegralValue<int>(contact, "FRLESS_FIRST") == true)
@@ -932,8 +933,9 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
 
     if ((DRT::INPUT::IntegralValue<int>(contact, "MESH_ADAPTIVE_CN") == true
         || DRT::INPUT::IntegralValue<int>(contact, "MESH_ADAPTIVE_CT") == true)
-        && DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,"LM_QUAD") != INPAR::MORTAR::lagmult_undefined)
-      dserror("ERROR: Mesh adaptive cn and ct only for first order elements");
+        && DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,"LM_QUAD") != INPAR::MORTAR::lagmult_undefined
+        && distype!="Nurbs")
+      dserror("ERROR: Mesh adaptive cn and ct only for first order elements or NURBS.");
 
     if ((DRT::INPUT::IntegralValue<int>(contact, "MESH_ADAPTIVE_CN") == true
         || DRT::INPUT::IntegralValue<int>(contact, "MESH_ADAPTIVE_CT") == true)
@@ -1066,12 +1068,6 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
     // element-based vs. segment-based mortar integration
     // *********************************************************************
     INPAR::MORTAR::IntType inttype = DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar, "INTTYPE");
-
-    if (inttype == INPAR::MORTAR::inttype_segments
-        && mortar.get<int>("NUMGP_PER_DIM") != 0)
-      dserror("ERROR: It is not possible to choose a Gauss rule with NUMGP_PER_DIM for segment-based integration."
-              "\nSegment-based integration always uses pre-defined default values (5 GP per segment in 2D "
-              "\nand 7 GP per triangular cell in 3D). Ask a 'contact person' if you want to change this.");
 
     if ( inttype == INPAR::MORTAR::inttype_elements
         && mortar.get<int>("NUMGP_PER_DIM") <= 0)

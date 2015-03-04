@@ -241,7 +241,7 @@ void CONTACT::MtAbstractStrategy::Setup(bool redistributed)
   INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"LM_SHAPEFCN");
   if (shapefcn == INPAR::MORTAR::shape_dual && Dim()==3)
     for (int i=0; i<(int)interface_.size(); ++i)
-      dualquadslave3d_ += interface_[i]->Quadslave();
+      dualquadslave3d_ += (interface_[i]->Quadslave() && !(interface_[i]->IsNurbs())) ;
 
   //----------------------------------------------------------------------
   // COMPUTE TRAFO MATRIX AND ITS INVERSE

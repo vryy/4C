@@ -290,6 +290,25 @@ MORTAR::MortarIntegrator* MORTAR::MortarIntegrator::Impl(MortarElement& sele,
     }
     break;
   }
+  case DRT::Element::nurbs9:
+  {
+    switch (mele.Shape())
+    {
+    case DRT::Element::nurbs9:
+    {
+      return MortarIntegratorCalc<DRT::Element::nurbs9, DRT::Element::nurbs9>::Instance(
+          true, params);
+    }
+    case DRT::Element::nurbs4:
+    {
+      return MortarIntegratorCalc<DRT::Element::nurbs9, DRT::Element::nurbs4>::Instance(
+          true, params);
+    }
+    default:
+      dserror("ERROR: Element combination not allowed!");
+    }
+    break;
+  }
   default:
     dserror("Error...");
     break;

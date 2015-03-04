@@ -450,6 +450,12 @@ public:
   }
 
   /*!
+  \brief Return nurbs (true) or not-nurbs (false) status
+
+  */
+  virtual bool IsNurbs() { return nurbs_; }
+
+  /*!
   \brief Return data container of this element
 
   This method returns the data container of this mortar element where additional
@@ -783,6 +789,16 @@ public:
   virtual void ReSetParentMasterElement(DRT::Element* master,
                               const int     lface_master);
 
+  /*!
+  \brief Get the linearization of the spatial position of the Nodes for this Ele.
+
+         Returns a vector of vector of maps. Outer vector for the nodes,
+         inner vector for the spatial dimensions, map for the derivatives.
+
+         Needed to be overloaded by IntElement
+  */
+  virtual void NodeLinearization(
+      std::vector<std::vector<GEN::pairedvector<int, double> > >& nodelin);
 
   //@}
 
