@@ -1339,14 +1339,16 @@ int DRT::ELEMENTS::So_hex8::EvaluateNeumann(Teuchos::ParameterList&   params,
   // update element geometry
   LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;  // material coord. of element
   DRT::Node** nodes = Nodes();
-  for (int i=0; i<NUMNOD_SOH8; ++i){
+  for (int i=0; i<NUMNOD_SOH8; ++i)
+  {
     const double* x = nodes[i]->X();
     xrefe(i,0) = x[0];
     xrefe(i,1) = x[1];
     xrefe(i,2) = x[2];
   }
   /* ================================================= Loop over Gauss Points */
-  for (int gp=0; gp<NUMGPT_SOH8; ++gp) {
+  for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+  {
 
     // compute the Jacobian matrix
     LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> jac;
@@ -1358,8 +1360,10 @@ int DRT::ELEMENTS::So_hex8::EvaluateNeumann(Teuchos::ParameterList&   params,
     else if (detJ < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
 
     // material/reference co-ordinates of Gauss point
-    if (havefunct) {
-      for (int dim=0; dim<NUMDIM_SOH8; dim++) {
+    if (havefunct)
+    {
+      for (int dim=0; dim<NUMDIM_SOH8; dim++)
+      {
         xrefegp(dim) = 0.0;
         for (int nodid=0; nodid<NUMNOD_SOH8; ++nodid)
           xrefegp(dim) += shapefcts[gp](nodid) * xrefe(nodid,dim);
@@ -1369,16 +1373,21 @@ int DRT::ELEMENTS::So_hex8::EvaluateNeumann(Teuchos::ParameterList&   params,
     // integration factor
     const double fac = gpweights[gp] * detJ;
     // distribute/add over element load vector
-    for(int dim=0; dim<NUMDIM_SOH8; dim++) {
-      // function evaluation
-      const int functnum = (funct) ? (*funct)[dim] : -1;
-      const double functfac
-        = (functnum>0)
-        ? DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dim,xrefegp.A(),time,NULL)
-        : 1.0;
-      const double dim_fac = (*onoff)[dim] * (*val)[dim] * fac * curvefacs[dim] * functfac;
-      for (int nodid=0; nodid<NUMNOD_SOH8; ++nodid) {
-        elevec1[nodid*NUMDIM_SOH8+dim] += shapefcts[gp](nodid) * dim_fac;
+    for(int dim=0; dim<NUMDIM_SOH8; dim++)
+    {
+      if ((*onoff)[dim])
+      {
+        // function evaluation
+        const int functnum = (funct) ? (*funct)[dim] : -1;
+        const double functfac
+          = (functnum>0)
+          ? DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dim,xrefegp.A(),time,NULL)
+          : 1.0;
+        const double dim_fac = (*val)[dim] * fac * curvefacs[dim] * functfac;
+        for (int nodid=0; nodid<NUMNOD_SOH8; ++nodid)
+        {
+          elevec1[nodid*NUMDIM_SOH8+dim] += shapefcts[gp](nodid) * dim_fac;
+        }
       }
     }
 

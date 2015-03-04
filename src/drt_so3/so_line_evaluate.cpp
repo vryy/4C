@@ -61,6 +61,7 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(Teuchos::ParameterList&   par
   // get values and switches from the condition
   const std::vector<int>*    onoff = condition.Get<std::vector<int> >   ("onoff");
   const std::vector<double>* val   = condition.Get<std::vector<double> >("val"  );
+  const std::vector<int>*    spa_func = condition.Get<std::vector<int> >("funct");
 
   /*
   **    TIME CURVE BUSINESS
@@ -70,11 +71,13 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(Teuchos::ParameterList&   par
   const double time = params.get("total time",-1.0);
   if (time<0.0) usetime = false;
 
+  const int numdim = 3;
+
   // ensure that at least as many curves/functs as dofs are available
-  if (int(onoff->size()) < 3)
+  if (int(onoff->size()) < numdim)
     dserror("Fewer functions or curves defined than the element has dofs.");
 
-  for (int checkdof = 3; checkdof < int(onoff->size()); ++checkdof)
+  for (int checkdof = numdim; checkdof < int(onoff->size()); ++checkdof)
   {
     if ((*onoff)[checkdof] != 0)
       dserror("Number of Dimensions in Neumann_Evalutaion is 3. Further DoFs are not considered.");
@@ -82,8 +85,8 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(Teuchos::ParameterList&   par
 
   // find out whether we will use time curves and get the factors
   const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
-  std::vector<double> curvefacs(3, 1.0);
-  for (int i=0; i < 3; ++i)
+  std::vector<double> curvefacs(numdim, 1.0);
+  for (int i=0; i < numdim; ++i)
   {
     const int curvenum = (curve) ? (*curve)[i] : -1;
     if (curvenum>=0 && usetime)
@@ -92,37 +95,72 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(Teuchos::ParameterList&   par
 
   // element geometry update - currently only material configuration
   const int numnode = NumNode();
-  LINALG::SerialDenseMatrix x(numnode,3);
+  LINALG::SerialDenseMatrix x(numnode,numdim);
   MaterialConfiguration(x);
 
   // integration parameters
   const DRT::UTILS::IntegrationPoints1D  intpoints(gaussrule_);
-  const int ngp = intpoints.nquad;
-  LINALG::SerialDenseVector funct(numnode);
+  LINALG::SerialDenseVector shapefcts(numnode);
   LINALG::SerialDenseMatrix deriv(1,numnode);
   const DRT::Element::DiscretizationType shape = Shape();
 
   // integration
-  for (int gp = 0; gp < ngp; ++gp)
+  for (int gp = 0; gp < intpoints.nquad; ++gp)
   {
     // get shape functions and derivatives of element surface
     const double e   = intpoints.qxg[gp][0];
-    const double wgt = intpoints.qwgt[gp];
-    DRT::UTILS::shape_function_1D(funct,e,shape);
+    DRT::UTILS::shape_function_1D(shapefcts,e,shape);
     DRT::UTILS::shape_function_1D_deriv1(deriv,e,shape);
     switch(ltype)
     {
     case neum_live:
     {            // uniform load on reference configuration
+
       double dL;
       LineIntegration(dL,x,deriv);
-      double fac = wgt * dL;   // integration factor
-      // distribute over element load vector
-      for (int nodid=0; nodid < numnode; ++nodid)
-        for(int dim=0; dim < 3; ++dim)
-          elevec1[nodid*3 + dim] += funct[nodid] * (*onoff)[dim] * (*val)[dim] * fac * curvefacs[dim];
+
+      double functfac = 1.0;
+      double val_curvefac_functfac;
+
+      // loop the dofs of a node
+      for (int i = 0; i < numdim; ++i)
+      {
+        if ((*onoff)[i]) // is this dof activated?
+        {
+          // factor given by spatial function
+          const int functnum = (spa_func) ? (*spa_func)[i] : -1;
+
+          if (functnum > 0)
+          {
+            // calculate reference position of GP
+            LINALG::SerialDenseMatrix gp_coord(1, numdim);
+            gp_coord.Multiply('T', 'N', 1.0, shapefcts, x, 0.0);
+
+            // write coordinates in another datatype
+            double gp_coord2[numdim];
+            for (int k = 0; k < numdim; k++)
+              gp_coord2[k] = gp_coord(0, k);
+            const double* coordgpref = &gp_coord2[0]; // needed for function evaluation
+
+            // evaluate function at current gauss point
+            functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(i,coordgpref,time,NULL);
+          }
+          else
+            functfac = 1.0;
+
+          val_curvefac_functfac = functfac * curvefacs[i];
+          const double fac = intpoints.qwgt[gp] * dL * (*val)[i] * val_curvefac_functfac;
+          for (int node=0; node < numnode; ++node)
+          {
+            elevec1[node*numdim+i]+= shapefcts[node] * fac;
+          }
+
+        }
+      }
+
+      break;
     }
-    break;
+
     default:
       dserror("Unknown type of LineNeumann load");
     break;

@@ -212,47 +212,52 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
       // compute infinitesimal line element dr for integration along the line
       const double dr = w1_substitution(xye, deriv, NULL, numnod);
 
-      // load vector ar
-      std::vector<double> ar(Wall1::noddof_);
+      double functfac = 1.0;
+      double val_curvefac_functfac;
+
 
       // loop the dofs of a node
-      // ar[i] = ar[i] * facr * ds * onoff[i] * val[i] * curvefacs[i] * functfac
       for (int i = 0; i < Wall1::noddof_; ++i)
       {
-        // factor given by spatial function
-        const int functnum = (funct) ? (*funct)[i] : -1;
-        double functfac = 1.0;
-
-        if (functnum > 0)
+        if ((*onoff)[i]) // is this dof activated?
         {
-          // calculate reference position of GP
-          LINALG::SerialDenseMatrix gp_coord(1, Wall1::numdim_);
-          gp_coord.Multiply('T', 'T', 1.0, shapefcts, xye, 0.0);
+          // factor given by spatial function
+          const int functnum = (funct) ? (*funct)[i] : -1;
 
-          // write coordinates in another datatype
-          double gp_coord2[3]; // the position vector has to be given in 3D!!!
-          const int numdim = 2;
-          for (int k = 0; k < numdim; k++)
-            gp_coord2[k] = gp_coord(0, k);
-          for (int k = numdim; k < 3; k++) // set a zero value for the remaining spatial directions
-            gp_coord2[k] = 0.0;
-          const double* coordgpref = &gp_coord2[0]; // needed for function evaluation
+          if (functnum > 0)
+          {
+            // calculate reference position of GP
+            LINALG::SerialDenseMatrix gp_coord(1, Wall1::numdim_);
+            gp_coord.Multiply('T', 'T', 1.0, shapefcts, xye, 0.0);
 
-          // evaluate function at current gauss point
-          functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(i,coordgpref,time,NULL);
+            // write coordinates in another datatype
+            double gp_coord2[3]; // the position vector has to be given in 3D!!!
+            const int numdim = 2;
+            for (int k = 0; k < numdim; k++)
+              gp_coord2[k] = gp_coord(0, k);
+            for (int k = numdim; k < 3; k++) // set a zero value for the remaining spatial directions
+              gp_coord2[k] = 0.0;
+            const double* coordgpref = &gp_coord2[0]; // needed for function evaluation
+
+            // evaluate function at current gauss point
+            functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(i,coordgpref,time,NULL);
+          }
+          else
+            functfac = 1.0;
+
+          val_curvefac_functfac = functfac * curvefacs[i];
+          const double fac = intpoints.qwgt[gpid] * dr * (*val)[i] * val_curvefac_functfac;
+          for (int node=0; node < numnod; ++node)
+          {
+            elevec1[node*Wall1::numdim_+i]+= shapefcts[node] * fac;
+          }
+
         }
 
-
-        ar[i] = intpoints.qwgt[gpid] * dr * (*onoff)[i] * (*val)[i] * curvefacs[i] * functfac;
       }
-
-      // add load components
-      for (int node = 0; node < numnod; ++node)
-        for (int j = 0; j < Wall1::noddof_; ++j)
-          elevec1[node * Wall1::noddof_ + j] += shapefcts[node] * ar[j];
-
       break;
     }
+
 
     case neum_pseudo_orthopressure: // pseudo-orthogonal pressure on last converged config.
     case neum_orthopressure:

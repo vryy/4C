@@ -29,6 +29,7 @@ written by : Alexander Volf
 #include "../drt_lib/drt_globalproblem.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+#include <boost/static_assert.hpp>
 
 // inverse design object
 #include "inversedesign.H"
@@ -898,8 +899,6 @@ int DRT::ELEMENTS::So_tet4::EvaluateNeumann(Teuchos::ParameterList& params,
                                            Epetra_SerialDenseVector& elevec1,
                                            Epetra_SerialDenseMatrix* elemat1)
 {
-  dserror("DRT::ELEMENTS::So_tet4::EvaluateNeumann not implemented");
-#if 0
   // get values and switches from the condition
   const std::vector<int>*    onoff = condition.Get<std::vector<int> >   ("onoff");
   const std::vector<double>* val   = condition.Get<std::vector<double> >("val"  );
@@ -912,14 +911,40 @@ int DRT::ELEMENTS::So_tet4::EvaluateNeumann(Teuchos::ParameterList& params,
   const double time = params.get("total time",-1.0);
   if (time<0.0) usetime = false;
 
-  // find out whether we will use a time curve and get the factor
+  // ensure that at least as many curves/functs as dofs are available
+  if (int(onoff->size()) < NUMDIM_SOTET4)
+    dserror("Fewer functions or curves defined than the element has dofs.");
+
+  for (int checkdof = NUMDIM_SOTET4; checkdof < int(onoff->size()); ++checkdof)
+  {
+    if ((*onoff)[checkdof] != 0)
+      dserror("Number of Dimensions in Neumann_Evalutaion is 3. Further DoFs are not considered.");
+  }
+
+  // find out whether we will use time curves and get the factors
   const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
-  int curvenum = -1;
-  if (curve) curvenum = (*curve)[0];
-  double curvefac = 1.0;
-  if (curvenum>=0 && usetime)
-    curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
-  // **
+  std::vector<double> curvefacs(NUMDIM_SOTET4, 1.0);
+  for (int i=0; i < NUMDIM_SOTET4; ++i)
+  {
+    const int curvenum = (curve) ? (*curve)[i] : -1;
+    if (curvenum>=0 && usetime)
+      curvefacs[i] = DRT::Problem::Instance()->Curve(curvenum).f(time);
+  }
+
+
+  // (SPATIAL) FUNCTION BUSINESS
+  BOOST_STATIC_ASSERT((NUMGPT_SOTET4 == 1)) __attribute__((unused));
+  const std::vector<int>* funct = condition.Get<std::vector<int> >("funct");
+  LINALG::Matrix<NUMDIM_SOTET4,1> xrefegp(false);
+  bool havefunct = false;
+  if (funct)
+    for (int dim=0; dim<NUMDIM_SOTET4; dim++)
+      if ((*funct)[dim] > 0)
+      {
+        havefunct = true;
+        break;
+      }
+
 
 /* =============================================================================*
  * CONST SHAPE FUNCTIONS and WEIGHTS for TET_4 with 1 GAUSS POINTS              *
@@ -928,44 +953,80 @@ int DRT::ELEMENTS::So_tet4::EvaluateNeumann(Teuchos::ParameterList& params,
   const static std::vector<double> gpweights = so_tet4_1gp_weights();
 /* ============================================================================*/
 
+  //update element geometry
+  LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4> xrefe;
+  DRT::Node** nodes = Nodes();
+  for (int i=0; i<NUMNOD_SOTET4; ++i)
+  {
+    const double* x = nodes[i]->X();
+    xrefe(i,0) = x[0];
+    xrefe(i,1) = x[1];
+    xrefe(i,2) = x[2];
+  }
+
+
 /* ================================================= Loop over Gauss Points */
   for (int gp=0; gp<NUMGPT_SOTET4; gp++)
   {
-    /* get the matrix of the coordinates of edges needed to compute the volume,
+
+    /* get the matrix of the coordinates of nodes needed to compute the volume,
     ** which is used here as detJ in the quadrature rule.
-    ** ("Jacobian matrix") for the quadrarture rule:
+    ** ("Jacobian matrix") for the quadrature rule:
     **             [  1    1    1    1  ]
-    ** jac_coord = [ x_1  x_2  x_3  x_4 ]
-    **             [ y_1  y_2  y_3  y_4 ]
-    **             [ z_1  z_2  z_3  z_4 ]
+    **         J = [ X_1  X_2  X_3  X_4 ]
+    **             [ Y_1  Y_2  Y_3  Y_4 ]
+    **             [ Z_1  Z_2  Z_3  Z_4 ]
     */
-    LINALG::Matrix<NUMCOORD_SOTET4,NUMCOORD_SOTET4> jac_coord;
-    for (int i=0; i<4; i++) jac_coord(0,i)=1;
-    DRT::Node** nodes = Nodes();
-    for (int col=0;col<4;col++)
+    LINALG::Matrix<NUMCOORD_SOTET4,NUMCOORD_SOTET4> jac;
+    for (int i=0; i<4; i++)
+      jac(0,i)=1;
+    for (int row=0;row<3;row++)
+      for (int col=0;col<4;col++)
+        jac(row+1,col)= xrefe(col,row);
+
+
+    // compute determinant of Jacobian
+    double detJ=jac.Determinant();
+    if (detJ == 0.0)
+      dserror("ZERO JACOBIAN DETERMINANT");
+    else if (detJ < 0.0)
+      dserror("NEGATIVE JACOBIAN DETERMINANT");
+
+    // material/reference co-ordinates of Gauss point
+    if (havefunct)
     {
-      const double* x = nodes[col]->X();
-      for (int row=0;row<3;row++)
-        jac_coord(row+1,col) = x[row];
-    }
-
-    // compute determinant of Jacobian with own algorithm
-    // !!warning detJ is not the actual determinant of the jacobian (here needed for the quadrature rule)
-    // but rather the volume of the tetrahedara
-    double detJ=jac_coord.Determinant();
-    if (detJ == 0.0) dserror("ZERO JACOBIAN DETERMINANT");
-    else if (detJ < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
-
-    double fac = gpweights[gp] * curvefac * detJ;          // integration factor
-    // distribute/add over element load vector
-    for(int dim=0; dim<NUMDIM_SOTET4; dim++) {
-      double dim_fac = (*onoff)[dim] * (*val)[dim] * fac;
-      for (int nodid=0; nodid<NUMNOD_SOTET4; ++nodid) {
-        elevec1(nodid*NUMDIM_SOTET4+dim) += shapefcts[gp](nodid) * dim_fac;
+      for (int dim=0; dim<NUMDIM_SOTET4; dim++)
+      {
+        xrefegp(dim) = 0.0;
+        for (int nodid=0; nodid<NUMNOD_SOTET4; ++nodid)
+          xrefegp(dim) += shapefcts[gp](nodid) * xrefe(nodid,dim);
       }
     }
+
+    // integration factor
+    double fac = gpweights[gp] * detJ;
+    // distribute/add over element load vector
+    for(int dim=0; dim<NUMDIM_SOTET4; dim++)
+    {
+      if ((*onoff)[dim])
+      {
+        // function evaluation
+        const int functnum = (funct) ? (*funct)[dim] : -1;
+        const double functfac
+          = (functnum>0)
+          ? DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dim,xrefegp.A(),time,NULL)
+          : 1.0;
+        const double dim_fac = (*val)[dim] * fac * curvefacs[dim] * functfac;
+        for (int nodid=0; nodid<NUMNOD_SOTET4; ++nodid)
+        {
+          elevec1[nodid*NUMDIM_SOTET4+dim] += shapefcts[gp](nodid) * dim_fac;
+        }
+      }
+    }
+
+
   }/* ==================================================== end of Loop over GP */
-#endif
+
   return 0;
 } // DRT::ELEMENTS::So_tet4::EvaluateNeumann
 

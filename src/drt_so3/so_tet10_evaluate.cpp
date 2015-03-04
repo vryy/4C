@@ -795,6 +795,14 @@ int DRT::ELEMENTS::So_tet10::EvaluateNeumann(Teuchos::ParameterList& params,
       curvefacs[i] = DRT::Problem::Instance()->Curve(curvenum).f(time);
   }
 
+  // (SPATIAL) FUNCTION BUSINESS
+  const std::vector<int>* funct = condition.Get<std::vector<int> >("funct");
+  LINALG::Matrix<NUMDIM_SOTET10,1> xrefegp(false);
+  bool havefunct = false;
+  if (funct)
+    for (int dim=0; dim<NUMDIM_SOTET10; dim++)
+      if ((*funct)[dim] > 0)
+        havefunct = havefunct or true;
 
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for TET_10 with 4 GAUSS POINTS*
@@ -805,9 +813,10 @@ int DRT::ELEMENTS::So_tet10::EvaluateNeumann(Teuchos::ParameterList& params,
 /* ============================================================================*/
 
   // update element geometry
-   LINALG::Matrix<NUMNOD_SOTET10,NUMDIM_SOTET10> xrefe;  // material coord. of element
+  LINALG::Matrix<NUMNOD_SOTET10,NUMDIM_SOTET10> xrefe;  // material coord. of element
   DRT::Node** nodes = Nodes();
-  for (int i=0; i<NUMNOD_SOTET10; ++i){
+  for (int i=0; i<NUMNOD_SOTET10; ++i)
+  {
     const double* x = nodes[i]->X();
     xrefe(i,0) = x[0];
     xrefe(i,1) = x[1];
@@ -815,7 +824,8 @@ int DRT::ELEMENTS::So_tet10::EvaluateNeumann(Teuchos::ParameterList& params,
   }
 
   /* ================================================= Loop over Gauss Points */
-  for (int gp=0; gp<NUMGPT_SOTET10; ++gp) {
+  for (int gp=0; gp<NUMGPT_SOTET10; ++gp)
+  {
 
     // compute the Jacobian matrix
     LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10> jac;
@@ -826,12 +836,35 @@ int DRT::ELEMENTS::So_tet10::EvaluateNeumann(Teuchos::ParameterList& params,
     if (detJ == 0.0) dserror("ZERO JACOBIAN DETERMINANT");
     else if (detJ < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
 
-    double fac = gpweights[gp] * detJ;          // integration factor
+    // material/reference co-ordinates of Gauss point
+    if (havefunct)
+    {
+      for (int dim=0; dim<NUMDIM_SOTET10; dim++)
+      {
+        xrefegp(dim) = 0.0;
+        for (int nodid=0; nodid<NUMNOD_SOTET10; ++nodid)
+          xrefegp(dim) += shapefcts[gp](nodid) * xrefe(nodid,dim);
+      }
+    }
+
+    // integration factor
+    double fac = gpweights[gp] * detJ;
     // distribute/add over element load vector
-      for(int dim=0; dim<NUMDIM_SOTET10; dim++) {
-      double dim_fac = (*onoff)[dim] * (*val)[dim] * fac * curvefacs[dim];
-      for (int nodid=0; nodid<NUMNOD_SOTET10; ++nodid) {
-        elevec1[nodid*NUMDIM_SOTET10+dim] += shapefcts[gp](nodid) * dim_fac;
+    for(int dim=0; dim<NUMDIM_SOTET10; dim++)
+    {
+      if ((*onoff)[dim])
+      {
+        // function evaluation
+        const int functnum = (funct) ? (*funct)[dim] : -1;
+        const double functfac
+          = (functnum>0)
+          ? DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dim,xrefegp.A(),time,NULL)
+          : 1.0;
+        const double dim_fac = (*val)[dim] * fac * curvefacs[dim] * functfac;
+        for (int nodid=0; nodid<NUMNOD_SOTET10; ++nodid)
+        {
+          elevec1[nodid*NUMDIM_SOTET10+dim] += shapefcts[gp](nodid) * dim_fac;
+        }
       }
     }
 
