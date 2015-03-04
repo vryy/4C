@@ -130,7 +130,7 @@ DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 // inner wall
-E 3 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -16000.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 pseudo_orthopressure
+E 3 - NUMDOF 3 ONOFF 1 0 0 VAL -16000.0 0.0 0.0 CURVE 1 none none FUNCT 0 0 0 pseudo_orthopressure
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            0
 -----------------------------------DESIGN POINT TRANSPORT NEUMANN CONDITIONS

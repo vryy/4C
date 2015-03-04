@@ -81,7 +81,7 @@ DPOINT                          0
 DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
-E 2 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.03 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
+E 2 - NUMDOF 3 ONOFF 1 0 0 VAL 0.03 0.0 0.0 CURVE 1 none none FUNCT 0 0 0 Live Mid
 -------------------------------------------------------SURFACTANT CONDITIONS
 DSURF                           2
 E 6 - 2 k1xCbulk 1.0e-02 k2 0.8333e-04 m1 48.0e-03 m2 140.0e-03 gamma_0 70.0e-03 gamma_min 1.0e-03

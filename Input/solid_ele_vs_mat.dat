@@ -164,16 +164,16 @@ DPOINT                          1
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 ---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT                          1
-E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.13 1.12 1.31 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 1.13 1.12 1.31 CURVE 1 1 1 FUNCT 0 0 0 Live Mid
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
-E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.37 1.21 -1.5 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 1.37 1.21 -1.5 CURVE 1 1 1 FUNCT 0 0 0 Live Mid
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           1
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 ----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
 DLINE                           1
-E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.93 1.74 1.58 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 1.93 1.74 1.58 CURVE 1 1 1 FUNCT 0 0 0 Live Mid
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
 NODE 7 DNODE 2
