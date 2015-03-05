@@ -30,7 +30,6 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(
   )
   :
   discret_            (actdis             ),
-  alefluid_           (alefluid           ),
   dispnp_             (dispnp             ),
   params_             (params             ),
   withscatra_         (withscatra         ),
@@ -130,16 +129,16 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(
       std::vector<double>::iterator coord;
 
       for (coord  = (*nodeshells_).begin();
-	   coord != (*nodeshells_).end()  ;
-	   ++coord)
+           coord != (*nodeshells_).end()  ;
+           ++coord)
       {
-	*coord=0;
+        *coord=0;
       }
       for (coord  = shellcoordinates_->begin();
-	   coord != shellcoordinates_->end()  ;
-	   ++coord)
+           coord != shellcoordinates_->end()  ;
+           ++coord)
       {
-	*coord=0;
+        *coord=0;
       }
     }
 
@@ -203,113 +202,113 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(
       case DRT::Element::nurbs8:
       case DRT::Element::nurbs27:
       {
-	// element local point position
-	Epetra_SerialDenseVector uv(3);
+        // element local point position
+        Epetra_SerialDenseVector uv(3);
 
-	{
-	  // standard
+        {
+          // standard
 
-	  //               v
-	  //              /
+          //               v
+          //              /
           //  w  7       /   8
-	  //  ^   +---------+
-	  //  |  /         /|
-	  //  | /         / |
-	  // 5|/        6/  |
-	  //  +---------+   |
-	  //  |         |   |
-	  //  |         |   +
-	  //  |         |  / 4
-	  //  |         | /
-	  //  |         |/
-	  //  +---------+ ----->u
-	  // 1           2
-	  // use r-coordinate of point 2 and 4
-	  // temporary x vector
-	  std::vector<double> x(3);
+          //  ^   +---------+
+          //  |  /         /|
+          //  | /         / |
+          // 5|/        6/  |
+          //  +---------+   |
+          //  |         |   |
+          //  |         |   +
+          //  |         |  / 4
+          //  |         | /
+          //  |         |/
+          //  +---------+ ----->u
+          // 1           2
+          // use r-coordinate of point 2 and 4
+          // temporary x vector
+          std::vector<double> x(3);
 
-	  // point 1
-	  uv(0)=  1.0;
-	  uv(1)= -1.0;
-	  uv(2)= -1.0;
-	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
-						uv               ,
-						knots            ,
-						weights          ,
-						actele->Shape()  );
-	  for (int isd=0; isd<3; ++isd)
-	  {
-	    double val = 0;
-	    for (int inode=0; inode<numnp; ++inode)
-	    {
-	      val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
-	    }
-	    x[isd]=val;
-	  }
+          // point 1
+          uv(0)=  1.0;
+          uv(1)= -1.0;
+          uv(2)= -1.0;
+          DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+                                                uv               ,
+                                                knots            ,
+                                                weights          ,
+                                                actele->Shape()  );
+          for (int isd=0; isd<3; ++isd)
+          {
+            double val = 0;
+            for (int inode=0; inode<numnp; ++inode)
+            {
+              val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+            }
+            x[isd]=val;
+          }
 
-	  (*nodeshells_      )[ele_cart_id[1]]                    +=sqrt(x[0]*x[0]+x[1]*x[1]);
-	  (*shellcoordinates_)[ele_cart_id[1]*(numsubdivisions-1)]+=sqrt(x[0]*x[0]+x[1]*x[1]);
+          (*nodeshells_      )[ele_cart_id[1]]                    +=sqrt(x[0]*x[0]+x[1]*x[1]);
+          (*shellcoordinates_)[ele_cart_id[1]*(numsubdivisions-1)]+=sqrt(x[0]*x[0]+x[1]*x[1]);
 
           nodeshells_numnodes      [ele_cart_id[1]                    ]+=1;
           shellcoordinates_numnodes[ele_cart_id[1]*(numsubdivisions-1)]+=1;
 
 
-	  for(int rr=1;rr<numsubdivisions-1;++rr)
-	  {
-	    uv(1) += 2.0/(numsubdivisions-1);
+          for(int rr=1;rr<numsubdivisions-1;++rr)
+          {
+            uv(1) += 2.0/(numsubdivisions-1);
 
-	    DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
-						  uv               ,
-						  knots            ,
-						  weights          ,
-						  actele->Shape()  );
-	    for (int isd=0; isd<3; ++isd)
-	    {
-	      double val = 0;
-	      for (int inode=0; inode<numnp; ++inode)
-	      {
-		val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
-	      }
-	      x[isd]=val;
-	    }
-	    (*shellcoordinates_)[ele_cart_id[1]*(numsubdivisions-1)+rr]+=sqrt(x[0]*x[0]+x[1]*x[1]);
+            DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+                                                  uv               ,
+                                                  knots            ,
+                                                  weights          ,
+                                                  actele->Shape()  );
+            for (int isd=0; isd<3; ++isd)
+            {
+              double val = 0;
+              for (int inode=0; inode<numnp; ++inode)
+              {
+                val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+              }
+              x[isd]=val;
+            }
+            (*shellcoordinates_)[ele_cart_id[1]*(numsubdivisions-1)+rr]+=sqrt(x[0]*x[0]+x[1]*x[1]);
             ++(shellcoordinates_numnodes[ele_cart_id[1]*(numsubdivisions-1)+rr]);
-	  }
+          }
 
 
-	  // set upper point of element, too (only for last layer)
-	  if(ele_cart_id[1]+1 == nele_x_mele_x_lele[1])
-	  {
-	    // point 8
-	    uv(0)=  1.0;
-	    uv(1)=  1.0;
-	    uv(2)= -1.0;
-	    DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
-						  uv               ,
-						  knots            ,
-						  weights          ,
-						  actele->Shape()  );
-	    for (int isd=0; isd<3; ++isd)
-	    {
-	      double val = 0;
-	      for (int inode=0; inode<numnp; ++inode)
-	      {
-		val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
-	      }
-	      x[isd]=val;
-	    }
+          // set upper point of element, too (only for last layer)
+          if(ele_cart_id[1]+1 == nele_x_mele_x_lele[1])
+          {
+            // point 8
+            uv(0)=  1.0;
+            uv(1)=  1.0;
+            uv(2)= -1.0;
+            DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+                                                  uv               ,
+                                                  knots            ,
+                                                  weights          ,
+                                                  actele->Shape()  );
+            for (int isd=0; isd<3; ++isd)
+            {
+              double val = 0;
+              for (int inode=0; inode<numnp; ++inode)
+              {
+                val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+              }
+              x[isd]=val;
+            }
 
-	    (*nodeshells_)      [ele_cart_id[1]                      +1]+=sqrt(x[0]*x[0]+x[1]*x[1]);
-	    (*shellcoordinates_)[(ele_cart_id[1]+1)*(numsubdivisions-1)]+=sqrt(x[0]*x[0]+x[1]*x[1]);
+            (*nodeshells_)      [ele_cart_id[1]                      +1]+=sqrt(x[0]*x[0]+x[1]*x[1]);
+            (*shellcoordinates_)[(ele_cart_id[1]+1)*(numsubdivisions-1)]+=sqrt(x[0]*x[0]+x[1]*x[1]);
             ++(nodeshells_numnodes      [ele_cart_id[1]                      +1]);
             ++(shellcoordinates_numnodes[(ele_cart_id[1]+1)*(numsubdivisions-1)]);
-	  }
+          }
 
-	}
-	break;
+        }
+        break;
       }
       default:
-	dserror("Unknown element shape for a nurbs element or nurbs type not valid for turbulence calculation\n");
+        dserror("Unknown element shape for a nurbs element or nurbs type not valid for turbulence calculation\n");
       }
     }
 
@@ -667,7 +666,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
         =
         dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
 
-	weights(inode) = cp->W();
+        weights(inode) = cp->W();
     }
     // get gid, location in the patch
     int gid = actele->Id();

@@ -47,7 +47,6 @@ DRT::CRACK::PropagateTip::PropagateTip( Teuchos::RCP<DRT::Discretization> discre
  segment_id_(segment_id),
  disp_col_(Teuchos::null),
  comm_( discret_->Comm() ),
- clearCondns_( false ),
  myrank_( comm_.MyPID() )
 {
   PI_ = 22.0 / 7.0;

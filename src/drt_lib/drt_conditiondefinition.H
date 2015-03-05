@@ -145,7 +145,6 @@ namespace INPUT
     Teuchos::Array<std::string> stringcondvalues_;
     Teuchos::Array<int> intcondvalues_;
     const bool stringtostring_;
-    bool optional_;
 
   };
 
@@ -361,9 +360,6 @@ namespace INPUT
                                                  Teuchos::RCP<DRT::Condition> condition);
 
   private:
-    //Todo: Are these variable used?
-    int numintvectcomp_;
-    int numrealvectcomp_;
     Teuchos::RCP<IntConditionComponent> intcomp_;
     std::vector<Teuchos::RCP<SeparatorConditionComponent> > intvectsepcomp_;
     std::vector<Teuchos::RCP<IntVectorConditionComponent> > intvectcomp_;

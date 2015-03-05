@@ -146,9 +146,9 @@ namespace UTILS {
   {
   public:
 
-    BeltramiUP(int mat_id, bool is_stationary);
+    BeltramiUP(int mat_id);
 
-    BeltramiUP( Teuchos::RCP<MAT::Material> & mat, bool is_stationary );
+    BeltramiUP( Teuchos::RCP<MAT::Material> & mat );
 
 
     /*!
@@ -179,7 +179,6 @@ namespace UTILS {
   private:
     double density_;
     double kinviscosity_;
-    bool   is_stationary_;
   };
 
 
@@ -189,9 +188,9 @@ namespace UTILS {
   {
   public:
 
-    BeltramiGradU(int mat_id, bool is_stationary );
+    BeltramiGradU(int mat_id );
 
-    BeltramiGradU( Teuchos::RCP<MAT::Material> & mat, bool is_stationary );
+    BeltramiGradU( Teuchos::RCP<MAT::Material> & mat );
 
 
     /*!
@@ -221,7 +220,6 @@ namespace UTILS {
 
   private:
     double kinviscosity_;
-    bool is_stationary_;
   };
 
 
@@ -306,7 +304,7 @@ namespace UTILS {
 
   private:
     double kinviscosity_;
-    bool is_stationary_;
+    bool   is_stationary_;
   };
 
 

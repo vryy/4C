@@ -99,8 +99,6 @@ namespace FPSI
     Teuchos::RCP<POROELAST::PoroBase>             poroelast_subproblem_;
     Teuchos::RCP< ::ADAPTER::FluidMovingBoundary> fluid_subproblem_;
 
-    double  ittol_;
-
     bool matchingnodes_;
     Teuchos::RCP<ADAPTER::Coupling>  coupsf_;
 

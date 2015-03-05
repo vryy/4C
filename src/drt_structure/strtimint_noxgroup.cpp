@@ -28,8 +28,7 @@ NOX::STR::Group::Group
   const NOX::Epetra::Vector& x,
   const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys
 )
-: NOX::Epetra::Group(printParams, i, x, linSys),
-  sti_(sti)
+: NOX::Epetra::Group(printParams, i, x, linSys)
 {
 }
 

@@ -44,7 +44,6 @@ FSI::LagrangianBlockMatrix::LagrangianBlockMatrix(const LINALG::MultiMapExtracto
                                aomega,
                                aiterations,
                                err),
-    maps_(maps),
     structure_(structure)
 {
 }

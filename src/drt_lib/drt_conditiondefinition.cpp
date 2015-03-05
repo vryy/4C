@@ -57,8 +57,7 @@ DRT::INPUT::StringConditionComponent::StringConditionComponent(std::string name,
     datfilevalues_(datfilevalues),
     stringcondvalues_(stringcondvalues),
     intcondvalues_(Teuchos::tuple<int>(-1)),
-    stringtostring_(true),
-    optional_(optional)
+    stringtostring_(true)
 {
   if (std::find(datfilevalues_.begin(),datfilevalues_.end(),defaultvalue_)==datfilevalues_.end())
   {
@@ -84,8 +83,7 @@ DRT::INPUT::StringConditionComponent::StringConditionComponent(std::string name,
    datfilevalues_(datfilevalues),
    stringcondvalues_(Teuchos::tuple<std::string>("notdefined")),
    intcondvalues_(intcondvalues),
-   stringtostring_(false),
-   optional_(optional)
+   stringtostring_(false)
 {
  if (std::find(datfilevalues_.begin(),datfilevalues_.end(),defaultvalue_)==datfilevalues_.end())
  {

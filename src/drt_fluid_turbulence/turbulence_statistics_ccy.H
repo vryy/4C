@@ -179,9 +179,6 @@ private:
   //! direction normal to homogenous plane
   int                              dim_;
 
-  //! number of elements in sample plane
-  int                              numele_;
-
   //! number of samples taken
   int                              numsamp_;
 
@@ -193,9 +190,6 @@ private:
 
   //! the scatra discretization
   Teuchos::RCP<DRT::Discretization> scatradis_;
-
-  //! flag for ale discretisation
-  bool                             alefluid_;
 
   //! node displacements due to mesh motion
   Teuchos::RCP<Epetra_Vector>       dispnp_;

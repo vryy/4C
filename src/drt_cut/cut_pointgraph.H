@@ -104,8 +104,6 @@ private:
   /// Graph is filled wihl all edges of the selfcut: uncutted edges, selfcutedges and new splitted edges; but no the cutted edges
   void FillGraph( Side * side, Cycle & cycle );
 
-  Element * element_;
-  Side * side_;
   Graph graph_;
 };
 

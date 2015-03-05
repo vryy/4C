@@ -135,9 +135,6 @@ namespace FSI
     //! Scaling to use
     ScaleType scaleType_;
 
-    //! Tolerance type (i.e., relative or absolute)
-    ToleranceType toleranceType_;
-
     //! Tolerance required for convergence.
     double specifiedTolerance_;
 

@@ -242,6 +242,8 @@ ART::UTILS::ArtWriteGnuplot:: ArtWriteGnuplot(int ArteryNum):
   fout_ = Teuchos::rcp(new std::ofstream(cstr));
   delete [] cstr;
 
+  // Avoid warning on unused variable
+  (void)ArteryNum_;
 }
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

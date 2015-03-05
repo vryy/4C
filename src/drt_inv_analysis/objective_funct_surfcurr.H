@@ -120,7 +120,7 @@ private:
   DRT::Condition* targetcond_;
 
   //! dofrowmap of the source discretization
-  const Epetra_Map* dofrowmap_;
+  // const Epetra_Map* dofrowmap_;
 
   //! distributed map of source surfaces facets global ids
   Teuchos::RCP<Epetra_Map> sourcemap_;

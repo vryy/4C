@@ -26,9 +26,9 @@ namespace DRT
 namespace UTILS
 {
 // forward declarations
-class IntegrationPoints1D;
-class IntegrationPoints2D;
-class IntegrationPoints3D;
+struct IntegrationPoints1D;
+struct IntegrationPoints2D;
+struct IntegrationPoints3D;
 
 
 //! supported 3d integration rules

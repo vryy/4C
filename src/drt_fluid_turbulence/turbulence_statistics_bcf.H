@@ -264,9 +264,6 @@ private:
   //! number of records written
   int                                        countrecord_;
 
-  /// flag for physical type of fluid flow (standard: incompressible) // only one required? can you combine different types in multiphase?
-  INPAR::FLUID::PhysicalType                 physicaltype_;
-
   //! The discretisation (required for nodes, etc; dofs are in a separate dofset)
   Teuchos::RCP<DRT::Discretization>           discret_;
 

@@ -132,19 +132,19 @@ private:
 
   //! number of locations in x1- and x2-direction for statistical evaluation
   int  numx1statlocations_;
-  int  numx2statlocations_;
-  int  numx1sampdudy_;
+//  int  numx2statlocations_;
+//  int  numx1sampdudy_;
 //  int  numx1supplocations_;
 
 
   //! half of the element length in x1-direction
-  double x1elemlengthhalf;
+//  double x1elemlengthhalf;
 
   //! distance between x1-coordinates and x1setstatlocations
-  double dist;
+//  double dist;
 
   //! allowed minimum distance between x1-coordinates and x1setstatlocations = x1elemlengthhalf_
-  double mindist;
+//  double mindist;
 
 
   //! The discretisation (required for nodes, dofs etc;)

@@ -37,8 +37,7 @@ Maintainer: Benedikt Schott
  * constructor
  *-------------------------------------------------------------------------------------*/
 GEO::CUT::Mesh::Mesh( Options & options, double norm, Teuchos::RCP<PointPool> pp, bool cutmesh )
-  : setup_( true ),
-    options_( options ),
+  : options_( options ),
     norm_( norm ),
     pp_( pp ),
     cutmesh_( cutmesh )

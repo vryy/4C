@@ -387,23 +387,11 @@ void FluidEleCalcXFEM<distype>::AnalyticalReference(
     // evaluate the velocity gradient
     Teuchos::RCP<DRT::UTILS::Function> function_grad = Teuchos::null;
 
-    bool is_stationary = false;
-
     // evaluate velocity and pressure
     // evaluate the velocity gradient
-    if(calcerr == INPAR::FLUID::beltrami_stat_stokes or
-       calcerr == INPAR::FLUID::beltrami_stat_navier_stokes)
-    {
-      is_stationary = true;
-    }
-    else if(calcerr == INPAR::FLUID::beltrami_instat_stokes or
-            calcerr == INPAR::FLUID::beltrami_instat_navier_stokes)
-    {
-      is_stationary = false;
-    }
 
-    function      = Teuchos::rcp(new DRT::UTILS::BeltramiUP( mat, is_stationary));
-    function_grad = Teuchos::rcp(new DRT::UTILS::BeltramiGradU( mat, is_stationary));
+    function      = Teuchos::rcp(new DRT::UTILS::BeltramiUP( mat));
+    function_grad = Teuchos::rcp(new DRT::UTILS::BeltramiGradU( mat));
 
     if(my::nsd_==3)
     {

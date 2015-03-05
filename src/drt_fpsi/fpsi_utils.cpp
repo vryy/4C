@@ -562,7 +562,7 @@ for(int proc=0; proc<comm.NumProc(); ++proc)
 {
   mapcurr=interfacefacingelementmap.begin();
 
-  int done;
+  int done = 0;
 
   if(mapsizearray[proc] > 0)
     done = 0;

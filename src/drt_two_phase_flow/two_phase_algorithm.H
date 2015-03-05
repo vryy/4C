@@ -110,9 +110,6 @@ namespace TWOPHASEFLOW
     ///Masscenter
     bool    write_center_of_mass_;
 
-    /// start of sampling period
-    int     samstart_;
-
     /// flag for turbulent inflow
     bool    turbinflow_;
 

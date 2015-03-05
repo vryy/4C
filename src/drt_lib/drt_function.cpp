@@ -306,7 +306,7 @@ class BeltramiRHS : public Function
 public:
 
 
-  BeltramiRHS(int mat_id, bool is_stationary, bool is_stokes);
+  BeltramiRHS(int mat_id, bool is_stokes);
 
   /*!
 
@@ -335,7 +335,6 @@ public:
 
 private:
   double kinviscosity_;
-  bool is_stationary_;
   bool is_stokes_;
 
 };
@@ -501,8 +500,6 @@ private:
   DRT::UTILS::TimeCurve& tc_;
   // number of the material in the input file
   int                    mat_;
-  // time curve number
-  int                    curve_;
   double                 viscosity_;
   // FSI switch
   bool                   fsi_;
@@ -1257,42 +1254,36 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
       {
         // read material
         int mat_id = -1;
-        int is_stationary = 0;
 
         function->ExtractInt("MAT",mat_id);
-        function->ExtractInt("ISSTAT",is_stationary);
 
         if(mat_id<=0) dserror("Please give a (reasonable) 'MAT'/material in BELTRAMI-UP");
 
-        functions_.push_back(Teuchos::rcp(new BeltramiUP(mat_id, (bool)is_stationary)));
+        functions_.push_back(Teuchos::rcp(new BeltramiUP(mat_id)));
       }
       else if (function->HaveNamed("BELTRAMI-GRADU"))
       {
         // read material
         int mat_id = -1;
-        int is_stationary = 0;
 
         function->ExtractInt("MAT",mat_id);
-        function->ExtractInt("ISSTAT",is_stationary);
 
         if(mat_id<=0) dserror("Please give a (reasonable) 'MAT'/material in BELTRAMI-GRADU");
 
-        functions_.push_back(Teuchos::rcp(new BeltramiGradU(mat_id, (bool)is_stationary)));
+        functions_.push_back(Teuchos::rcp(new BeltramiGradU(mat_id)));
       }
       else if (function->HaveNamed("BELTRAMI-RHS"))
       {
         // read material
         int mat_id = -1;
-        int is_stationary = 0;
         int is_stokes     = 0;
 
         function->ExtractInt("MAT",mat_id);
-        function->ExtractInt("ISSTAT",is_stationary);
         function->ExtractInt("ISSTOKES",is_stokes);
 
         if(mat_id<=0) dserror("Please give a (reasonable) 'MAT'/material in BELTRAMI-GRADU");
 
-        functions_.push_back(Teuchos::rcp(new BeltramiRHS(mat_id, (bool)is_stationary, (bool)is_stokes)));
+        functions_.push_back(Teuchos::rcp(new BeltramiRHS(mat_id, (bool)is_stokes)));
       }
       else if (function->HaveNamed("KIMMOIN-UP"))
       {
@@ -1803,11 +1794,10 @@ double DRT::UTILS::BochevRHSFunction::Evaluate(int index, const double* xp, doub
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::UTILS::BeltramiUP::BeltramiUP(int mat_id, bool is_stationary) :
+DRT::UTILS::BeltramiUP::BeltramiUP(int mat_id) :
 Function(),
 density_(-999.0e99),
-kinviscosity_(-999.0e99),
-is_stationary_(is_stationary)
+kinviscosity_(-999.0e99)
 {
 
   // get material parameters for fluid
@@ -1829,11 +1819,10 @@ is_stationary_(is_stationary)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::UTILS::BeltramiUP::BeltramiUP( Teuchos::RCP<MAT::Material> & mat, bool is_stationary) :
+DRT::UTILS::BeltramiUP::BeltramiUP( Teuchos::RCP<MAT::Material> & mat) :
 Function(),
 density_(-999.0e99),
-kinviscosity_(-999.0e99),
-is_stationary_(is_stationary)
+kinviscosity_(-999.0e99)
 {
 
   if (mat->MaterialType() != INPAR::MAT::m_fluid)
@@ -1891,10 +1880,9 @@ double DRT::UTILS::BeltramiUP::Evaluate(int index, const double* xp, double t, D
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::UTILS::BeltramiGradU::BeltramiGradU(int mat_id, bool is_stationary ) :
+DRT::UTILS::BeltramiGradU::BeltramiGradU(int mat_id ) :
 Function(),
-kinviscosity_(-999.0e99),
-is_stationary_(is_stationary)
+kinviscosity_(-999.0e99)
 {
 
   // get material parameters for fluid
@@ -1914,10 +1902,9 @@ is_stationary_(is_stationary)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::UTILS::BeltramiGradU::BeltramiGradU(Teuchos::RCP<MAT::Material> & mat, bool is_stationary ) :
+DRT::UTILS::BeltramiGradU::BeltramiGradU(Teuchos::RCP<MAT::Material> & mat ) :
 Function(),
-kinviscosity_(-999.0e99),
-is_stationary_(is_stationary)
+kinviscosity_(-999.0e99)
 {
 
   if (mat->MaterialType() != INPAR::MAT::m_fluid)
@@ -1981,10 +1968,9 @@ double DRT::UTILS::BeltramiGradU::Evaluate(int index, const double* xp, double t
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::UTILS::BeltramiRHS::BeltramiRHS(int mat_id, bool is_stationary, bool is_stokes) :
+DRT::UTILS::BeltramiRHS::BeltramiRHS(int mat_id, bool is_stokes) :
 Function(),
 kinviscosity_(-999.0e99),
-is_stationary_(is_stationary),
 is_stokes_(is_stokes)
 {
 
@@ -2688,7 +2674,6 @@ locsysid_(e),
 radius_(-999.0e99),
 tc_(DRT::Problem::Instance()->Curve(curve)),
 mat_(mat),
-curve_(curve),
 viscosity_(-999.0e99),
 fsi_(fsi),
 locsyscond_(NULL)

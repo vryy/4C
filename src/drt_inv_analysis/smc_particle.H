@@ -159,10 +159,6 @@ namespace INVANA
   //! brief current position of particle in random space
   std::vector<double> position_;
 
-
-
-    //seed for random variable generation
-    unsigned int prior_seed_;
   }; //EOF class
 
 } // EOF INVANA

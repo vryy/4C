@@ -67,8 +67,6 @@ private:
   // flags
   const bool leftscale_momentum_;
   const bool leftscale_continuity_;
-  const bool rightscale_vel_;
-  const bool rightscale_pre_;
 
 }; // class FluidInfNormScaling
 

@@ -53,7 +53,6 @@ namespace FSI
 
     void SGS(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
 
-    const LINALG::MultiMapExtractor& maps_;
     ::ADAPTER::FSIStructureWrapper& structure_;
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocks_;
   };

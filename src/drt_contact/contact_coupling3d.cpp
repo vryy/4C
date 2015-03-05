@@ -245,9 +245,6 @@ bool CONTACT::CoCoupling3d::VertexLinearization(
   std::vector<std::vector<GEN::pairedvector<int, double> > > linmnodes(nmrows,
       std::vector<GEN::pairedvector<int, double> >(3, 3 * SlaveElement().NumNode() + 3 * MasterElement().NumNode()));
 
-
-  typedef GEN::pairedvector<int, double>  :: const_iterator _CI;    // linearization of element center Auxc()
-
   // compute slave linearizations (nsrows)
   SlaveVertexLinearization(linsnodes);
 

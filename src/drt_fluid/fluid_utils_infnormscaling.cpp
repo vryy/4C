@@ -26,9 +26,7 @@ FLD::UTILS::FluidInfNormScaling::FluidInfNormScaling(LINALG::MapExtractor& mapex
   myrank_(mapextractor.Map(0)->Comm().MyPID()),
   velpressplitter_(mapextractor),
   leftscale_momentum_(true),
-  leftscale_continuity_(false),
-  rightscale_vel_(false),
-  rightscale_pre_(false)
+  leftscale_continuity_(false)
   {
     return;
   };

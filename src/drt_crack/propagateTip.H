@@ -226,9 +226,6 @@ private:
   //! communicator
   const Epetra_Comm& comm_;
 
-  //! Whether Dirichlet BC set at the crack tip nodes should be cleared
-  bool clearCondns_;
-
   //! processor rank
   int myrank_;
 

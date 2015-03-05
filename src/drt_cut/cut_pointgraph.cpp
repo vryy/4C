@@ -16,7 +16,6 @@
  * Constructor for the selfcut                                              wirtz 05/13
  *-------------------------------------------------------------------------------------*/
 GEO::CUT::IMPL::PointGraph::PointGraph(Side * side )
-  : side_( side )
 {
 
   Cycle cycle;
@@ -30,8 +29,6 @@ GEO::CUT::IMPL::PointGraph::PointGraph(Side * side )
 }
 
 GEO::CUT::IMPL::PointGraph::PointGraph( Mesh & mesh, Element * element, Side * side, Location location, Strategy strategy )
-  : element_( element ),
-    side_( side )
 {
   Cycle cycle;
   FillGraph( element, side, cycle, strategy );

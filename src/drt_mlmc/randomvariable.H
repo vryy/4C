@@ -136,9 +136,6 @@ private:
   Teuchos::RCP<
       boost::variate_generator<randnumgen&, boost::normal_distribution<> > > normalgen_;
 
-  //! \brief seed for random number generator
-  unsigned int  seed_;
-
   //! \brief current value of random variable
   double value_;
 

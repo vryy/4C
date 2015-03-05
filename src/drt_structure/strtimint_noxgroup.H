@@ -69,7 +69,7 @@ namespace NOX
 
       //! structural time integrator
       //! HINT: Currently this variable is unused within the group
-      ::STR::TimIntImpl& sti_;
+      //::STR::TimIntImpl& sti_;
     };
 
   }  // namespace STR

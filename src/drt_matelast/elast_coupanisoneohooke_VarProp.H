@@ -184,8 +184,6 @@ namespace ELASTIC
     LINALG::Matrix<3,1>  a_;
     /// structural tensors in voigt notation for anisotropy
     LINALG::Matrix<6,1>  A_;
-    /// material coefficient depending on the position
-    double stress_coeff_;
 
   };
 

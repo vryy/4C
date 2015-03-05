@@ -503,9 +503,6 @@ private:
   //! @name private member variables
   /*========================================================================*/
 
-  /// setup phase flag
-  bool setup_;
-
   /// options container
   Options & options_;
 

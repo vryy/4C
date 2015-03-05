@@ -425,10 +425,10 @@ IO::InputControl::InputControl(std::string filename, const Epetra_Comm& comm)
 
   // works for parallel, as well as serial applications because we only
   // have an Epetra_MpiComm
-  const Epetra_MpiComm& epetrampicomm = dynamic_cast<const Epetra_MpiComm&>(comm);
-  if (!&epetrampicomm)
+  const Epetra_MpiComm* epetrampicomm = dynamic_cast<const Epetra_MpiComm*>(&comm);
+  if (!epetrampicomm)
     dserror("ERROR: casting Epetra_Comm -> Epetra_MpiComm failed");
-  const MPI_Comm lcomm = epetrampicomm.GetMpiComm();
+  const MPI_Comm lcomm = epetrampicomm->GetMpiComm();
 
   parse_control_file(&table_, name.str().c_str(), lcomm);
 }
