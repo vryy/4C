@@ -163,13 +163,15 @@ int DRT::ELEMENTS::AcouBoundaryImpl<distype>::Absorbing(
    */
 
   const int* nodeids = ele->NodeIds();
+
   DRT::Element* parent = ele->ParentElement();
   DRT::Element** faces = parent->Faces();
   bool same = false;
   for(int i=0; i<parent->NumFace(); ++i)
   {
     const int* nodeidsfaces = faces[i]->NodeIds();
-    if( faces[i]->NumNode() != ele->NumNode() ) break; //dserror("error");
+
+    if( faces[i]->NumNode() != ele->NumNode() ) break;
 
     for(int j=0; j<ele->NumNode(); ++j)
     {
@@ -185,7 +187,8 @@ int DRT::ELEMENTS::AcouBoundaryImpl<distype>::Absorbing(
     {
       // i is the number we were searching for!!!!
       params.set<int>("face",i);
-      break;
+      ele->ParentElement()->Evaluate(params,discretization,lm,elemat1_epetra,elemat2_epetra,elevec1_epetra,elevec2_epetra,elevec3_epetra);
+      //break;
     }
   }
   if(same == false && ( faces[0]->NumNode() != ele->NumNode() ) )
@@ -200,6 +203,7 @@ int DRT::ELEMENTS::AcouBoundaryImpl<distype>::Absorbing(
     for(int i=0; i<parent->NumFace(); ++i)
     {
       const int* nodeidsfaces = faces[i]->NodeIds();
+
       int count = 0;
       for(int j=0; j<faces[i]->NumNode(); ++j)
       {
@@ -213,7 +217,16 @@ int DRT::ELEMENTS::AcouBoundaryImpl<distype>::Absorbing(
         same = true;
         face = i;
         params.set<int>("face",i);
-        break;
+
+        const int* nodeidsface = faces[face]->NodeIds();
+        Teuchos::RCP<std::vector<int> > indices = Teuchos::rcp(new std::vector<int> (elenode));
+        for(int j=0; j<faces[face]->NumNode(); ++j)
+        {
+          for(int n=0; n<elenode; ++n)
+            if(nodeids[n] == nodeidsface[j]) (*indices)[n] = j;
+        }
+        params.set<Teuchos::RCP<std::vector<int> > >("nodeindices",indices);
+        ele->ParentElement()->Evaluate(params,discretization,lm,elemat1_epetra,elemat2_epetra,elevec1_epetra,elevec2_epetra,elevec3_epetra);
       }
     }
     if (same == false) dserror("no face contains absorbing line");
@@ -221,19 +234,11 @@ int DRT::ELEMENTS::AcouBoundaryImpl<distype>::Absorbing(
     // are talking about! therefore, we create a vector of ints and this vector stores the
     // relevant nodes, for example: the line has two nodes, we store which position these nodes
     // have in the face element
-    const int* nodeidsface = faces[face]->NodeIds();
-    Teuchos::RCP<std::vector<int> > indices = Teuchos::rcp(new std::vector<int> (elenode));
-    for(int j=0; j<faces[face]->NumNode(); ++j)
-    {
-      for(int n=0; n<elenode; ++n)
-        if(nodeids[n] == nodeidsface[j]) (*indices)[n] = j;
-    }
-    params.set<Teuchos::RCP<std::vector<int> > >("nodeindices",indices);
-  }
-  if (same == false)
-    dserror("either nodeids are sorted differently or a boundary element does not know to whom it belongs");
 
-  ele->ParentElement()->Evaluate(params,discretization,lm,elemat1_epetra,elemat2_epetra,elevec1_epetra,elevec2_epetra,elevec3_epetra);
+  }
+  //if (same == false)
+  //  dserror("either nodeids are sorted differently or a boundary element does not know to whom it belongs");
+
 
   return 0;
 }

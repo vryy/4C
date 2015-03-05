@@ -184,7 +184,6 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
       int nfdofs = DRT::UTILS::PolynomialSpaceCache<nsd_ - 1>::Instance().Create(params)->Size();
       sumindex += nfdofs;
     }
-
     if (!params.isParameter("nodeindices"))
       localSolver_->ComputeSourcePressureMonitor(ele, params, mat, face, elemat1, elevec1, sumindex);
     else
@@ -1264,6 +1263,7 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::NodeBasedValues(
 
     for (unsigned int i = 0; i < nen_; ++i)
       elevec1((nsd_ + 1) * nen_ + i) /= touchcount(i);
+
   }
   else
     for (unsigned int i = 0; i < nen_; ++i)
@@ -2291,14 +2291,16 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ComputeSourcePressureMoni
 
   elevec.Scale(0.0);
 
+  shapesface_->EvaluateFace(*ele,face);
+
   if (step < stepmax)
   {
     Teuchos::RCP<std::vector<int> > indices = params.get<Teuchos::RCP<std::vector<int> > >("nodeindices");
-    int numlinenode = indices->size();
-    double linevalues[numlinenode];
-
-    for (int i = 0; i < numlinenode; ++i)
+    if(indices->size()!=2)dserror("a line should have two nodes"); // always 2 (except you have higher order geometry approximation)
+    double linevalues[2];
+    for (int i = 0; i < 2; ++i)
     {
+
       int nodeid = ele->Faces()[face]->NodeIds()[(*indices)[i]];
       int lnodeid = adjointrhs->Map().LID(nodeid);
       if (lnodeid >= 0)
@@ -2306,53 +2308,117 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ComputeSourcePressureMoni
       else
         dserror("could not get value from node %d of element %d on proc %d ",nodeid, ele->Id(), ele->Owner());
     }
-    // transform line values to face values, then we can do the standard procedure
-    int numfnode = ele->Faces()[face]->NumNode();
-    double fnodexyz[numfnode][nsd_];
-    double values[numfnode];
+    // calculate the distance between each basis function point and the line connecting the two monitored nodes
+    // if the distance is small enough, the dof is on the line and we can assign a value
 
-    for (int i = 0; i < numfnode; ++i)
+    // the two vectors describing the line
+    double r1[3], r2[3];
+    int nodeid = ele->Faces()[face]->NodeIds()[(*indices)[0]];
+    for(int i=0; i<ele->NumNode(); ++i)
     {
-      values[i] = 0.0;
-      for (unsigned int d = 0; d < nsd_; ++d)
-        fnodexyz[i][d] = shapesface_->xyze(d, i);
-    }
-    for (int i = 0; i < numlinenode; ++i)
-      values[(*indices)[i]] = linevalues[i];
-
-    // now get the nodevalues to the dof values just as in ProjectOpticalField function
-    Epetra_SerialDenseMatrix mass(shapesface_->nfdofs_, shapesface_->nfdofs_);
-    Epetra_SerialDenseVector trVec(shapesface_->nfdofs_);
-
-    for (unsigned int q = 0; q < shapesface_->nqpoints_; ++q)
-    {
-      const double fac = shapesface_->jfac(q);
-      double xyz[nsd_];
-      for (unsigned int d = 0; d < nsd_; ++d)
-        xyz[d] = shapesface_->xyzreal(d, q);
-      double val = 0.0;
-
-      EvaluateFaceAdjoint(fnodexyz, values, numfnode, xyz, val);
-
-      for (unsigned int i = 0; i < shapesface_->nfdofs_; ++i)
+      if(ele->NodeIds()[i]==nodeid)
       {
-        // mass matrix
-        for (unsigned int j = 0; j < shapesface_->nfdofs_; ++j)
-          mass(i, j) += shapesface_->shfunct(i, q) * shapesface_->shfunct(j, q) * fac;
-        trVec(i, 0) += shapesface_->shfunct(i, q) * val * fac * double(numfnode) / double(shapesface_->nfdofs_);
+        for(int d=0; d<3; ++d)
+          r1[d] = ele->Nodes()[i]->X()[d];
+        break;
       }
-    } // for(unsigned int q=0; q<nfdofs_; ++q)
-    {
-      Epetra_SerialDenseSolver inverseMass;
-      inverseMass.SetMatrix(mass);
-      inverseMass.SetVectors(trVec, trVec);
-      int err = inverseMass.Solve();
-      if (err != 0)
-        dserror("Inversion of matrix in source line 3D failed with errorcode %d",err);
     }
-    for (unsigned int i = 0; i < shapesface_->nfdofs_; ++i)
-      elevec(indexstart + i) = trVec(i);
-    elevec.Scale(-1.0);
+    nodeid = ele->Faces()[face]->NodeIds()[(*indices)[1]];
+    for(int d=0; d<3; ++d)
+    {
+      for(int i=0; i<ele->NumNode(); ++i)
+      {
+        if(ele->NodeIds()[i]==nodeid)
+        {
+          r2[d] = r1[d]-ele->Nodes()[i]->X()[d];
+          break;
+        }
+      }
+    }
+
+    double connectdist = sqrt( r2[0]*r2[0] + r2[1]*r2[1] + r2[2]*r2[2]);
+
+    for(unsigned int i=0; i<shapesface_->nfdofs_; ++i)
+    {
+      double q[3];
+      for(int d=0; d<3; ++d)
+        q[d] = shapesface_->nodexyzreal(d,i); // the point
+
+      double v[3];
+      v[0] = r2[1]*(q[2]-r1[2])-r2[2]*(q[1]-r1[1]);
+      v[1] = r2[2]*(q[0]-r1[0])-r2[0]*(q[2]-r1[2]);
+      v[2] = r2[0]*(q[1]-r1[1])-r2[1]*(q[0]-r1[0]);
+
+      double linedist = sqrt( v[0]*v[0] + v[1]*v[1] + v[2]*v[2] ) / connectdist;
+
+      if(linedist<1.0e-8)
+      {
+        // in this case: do a linear interpolation between the two given linepoints and this one!
+        double dist = sqrt( (r1[0]-q[0])*(r1[0]-q[0]) + (r1[1]-q[1])*(r1[1]-q[1]) + (r1[2]-q[2])*(r1[2]-q[2]) );
+        elevec(indexstart + i) = linevalues[0] * (connectdist-dist)/connectdist +linevalues[1] * dist/connectdist;
+      }
+    }
+
+//    Teuchos::RCP<std::vector<int> > indices = params.get<Teuchos::RCP<std::vector<int> > >("nodeindices");
+//    int numlinenode = indices->size();
+//    double linevalues[numlinenode];
+//
+//    for (int i = 0; i < numlinenode; ++i)
+//    {
+//      int nodeid = ele->Faces()[face]->NodeIds()[(*indices)[i]];
+//      int lnodeid = adjointrhs->Map().LID(nodeid);
+//      if (lnodeid >= 0)
+//        linevalues[i] = adjointrhs->operator ()(stepmax - step - 1)->operator [](lnodeid);
+//      else
+//        dserror("could not get value from node %d of element %d on proc %d ",nodeid, ele->Id(), ele->Owner());
+//    }
+//    // transform line values to face values, then we can do the standard procedure
+//    int numfnode = ele->Faces()[face]->NumNode();
+//    double fnodexyz[numfnode][nsd_];
+//    double values[numfnode];
+//
+//    for (int i = 0; i < numfnode; ++i)
+//    {
+//      values[i] = 0.0;
+//      for (unsigned int d = 0; d < nsd_; ++d)
+//        fnodexyz[i][d] = shapesface_->xyze(d, i);
+//    }
+//    for (int i = 0; i < numlinenode; ++i)
+//      values[(*indices)[i]] = linevalues[i];
+//
+//    // now get the nodevalues to the dof values just as in ProjectOpticalField function
+//    Epetra_SerialDenseMatrix mass(shapesface_->nfdofs_, shapesface_->nfdofs_);
+//    Epetra_SerialDenseVector trVec(shapesface_->nfdofs_);
+//
+//    for (unsigned int q = 0; q < shapesface_->nqpoints_; ++q)
+//    {
+//      const double fac = shapesface_->jfac(q);
+//      double xyz[nsd_];
+//      for (unsigned int d = 0; d < nsd_; ++d)
+//        xyz[d] = shapesface_->xyzreal(d, q);
+//      double val = 0.0;
+//
+//      EvaluateFaceAdjoint(fnodexyz, values, numfnode, xyz, val);
+//
+//      for (unsigned int i = 0; i < shapesface_->nfdofs_; ++i)
+//      {
+//        // mass matrix
+//        for (unsigned int j = 0; j < shapesface_->nfdofs_; ++j)
+//          mass(i, j) += shapesface_->shfunct(i, q) * shapesface_->shfunct(j, q) * fac;
+//        trVec(i, 0) += shapesface_->shfunct(i, q) * val * fac * double(numfnode) / double(shapesface_->nfdofs_);
+//      }
+//    } // for(unsigned int q=0; q<nfdofs_; ++q)
+//    {
+//      Epetra_SerialDenseSolver inverseMass;
+//      inverseMass.SetMatrix(mass);
+//      inverseMass.SetVectors(trVec, trVec);
+//      int err = inverseMass.Solve();
+//      if (err != 0)
+//        dserror("Inversion of matrix in source line 3D failed with errorcode %d",err);
+//    }
+//    for (unsigned int i = 0; i < shapesface_->nfdofs_; ++i)
+//      elevec(indexstart + i) = trVec(i);
+//    elevec.Scale(-1.0);
   }
 
   return;
@@ -2382,33 +2448,36 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::EvaluateFaceAdjoint(
   }
   else if (facedis == DRT::Element::quad4)
   {
+    // this does NOT necessarily work TODO
     if (numfnode != 4)
       dserror("number of nodes per face should be 4 for face discretization = quad4");
-      LINALG::Matrix<4, 4> mat(true);
-      for(int i=0; i<4; ++i)
-      {
-        mat(i,0) = 1.0;
-        mat(i,1) = fnodexyz[i][0];
-        mat(i,2) = fnodexyz[i][1];
-        mat(i,3) = fnodexyz[i][2];
-      }
-      LINALG::FixedSizeSerialDenseSolver<4,4> inversemat;
-      inversemat.SetMatrix(mat);
-      int err = inversemat.Invert();
-      if(err != 0) dserror("Inversion of 4x4 matrix failed with errorcode %d",err);
-
-      val = 0.0;
-      for(int i=0; i<4; ++i)
-      {
-        LINALG::Matrix<4,1> lvec(true);
-        LINALG::Matrix<4,1> rvec(true);
-        rvec.PutScalar(0.0);
-        rvec(i) = 1.0;
-        lvec.Multiply(mat,rvec);
-        val += ( lvec(0) + lvec(1) * xyz[0] + lvec(2) * xyz[1] + lvec(3) * xyz[2] ) * values[i];
-      }
+    LINALG::Matrix<4, 4> mat(true);
+    for(int i=0; i<4; ++i)
+    {
+      mat(i,0) = 1.0;
+      mat(i,1) = fnodexyz[i][0];
+      mat(i,2) = fnodexyz[i][1];
+      mat(i,3) = fnodexyz[i][2];
     }
-    else
+
+    LINALG::FixedSizeSerialDenseSolver<4,4> inversemat;
+    inversemat.SetMatrix(mat);
+    int err = inversemat.Invert();
+    if(err != 0)
+      dserror("Inversion of 4x4 matrix failed with errorcode %d",err);
+
+    val = 0.0;
+    for(int i=0; i<4; ++i)
+    {
+      LINALG::Matrix<4,1> lvec(true);
+      LINALG::Matrix<4,1> rvec(true);
+      rvec.PutScalar(0.0);
+      rvec(i) = 1.0;
+      lvec.Multiply(mat,rvec);
+      val += ( lvec(0) + lvec(1) * xyz[0] + lvec(2) * xyz[1] + lvec(3) * xyz[2] ) * values[i];
+    }
+  }
+  else
     dserror("not yet implemented");
 
   return;
