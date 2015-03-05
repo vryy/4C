@@ -293,17 +293,17 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(
   x2statlocations.reshape(numx1statlocations_,numx2coor_);
 
 #ifndef SAMP_ALL
-  x1elemlengthhalf = (x1max_ - x1min_)/(numx1coor_-1);
+  x1elemlengthhalf_ = (x1max_ - x1min_)/(numx1coor_-1);
   for (int x1line =0 ; x1line < numx1statlocations_; ++x1line)
   {
     int pos = 0;
-    mindist = x1elemlengthhalf;
+    mindist_ = x1elemlengthhalf_;
     for (int x1linecoords = 0; x1linecoords < numx1coor_; ++x1linecoords)
     {
-      dist = abs(x1setstatlocations_->at(x1line) - x1coordinates_->at(x1linecoords));
-      if (dist < mindist)
+      dist_ = abs(x1setstatlocations_->at(x1line) - x1coordinates_->at(x1linecoords));
+      if (dist_ < mindist_)
       {
-        mindist = dist;
+        mindist_ = dist_;
         pos = x1linecoords;
       }
     }

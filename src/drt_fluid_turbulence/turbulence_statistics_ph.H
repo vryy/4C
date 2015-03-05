@@ -132,19 +132,19 @@ private:
 
   //! number of locations in x1- and x2-direction for statistical evaluation
   int  numx1statlocations_;
-//  int  numx2statlocations_;
-//  int  numx1sampdudy_;
-//  int  numx1supplocations_;
-
 
   //! half of the element length in x1-direction
-//  double x1elemlengthhalf;
+
+  double x1elemlengthhalf_;
 
   //! distance between x1-coordinates and x1setstatlocations
-//  double dist;
+  double dist_;
 
   //! allowed minimum distance between x1-coordinates and x1setstatlocations = x1elemlengthhalf_
-//  double mindist;
+  double mindist_;
+
+  double x1max_;
+  double x1min_;
 
 
   //! The discretisation (required for nodes, dofs etc;)
@@ -168,19 +168,14 @@ private:
 
   //! coordinates of locations in x1- and x2-direction for statistical evaluation
   Teuchos::SerialDenseMatrix<int,double> x1statlocations;
-  //  LINALG::Matrix<9,1> x1statlocations_;
 
   //! matrix for r-coordinates (columns are evaluation planes
   Teuchos::SerialDenseMatrix<int,double> x2statlocations;
-//  LINALG::Matrix<4,17> x2statlocations;
-
 
   //! set coordinates of locations in x1-direction for statistical evaluation
   Teuchos::RCP<std::vector<double> > x1setstatlocations_;
 
   //! coordinates in x1-direction for sampling velocity gradient at the middle bottom
-//  Teuchos::SerialDenseMatrix<int,double> x1sampdudy_;
-
 
   //! matrices containing values
   Teuchos::RCP<Epetra_SerialDenseMatrix>     x1sumu_;
