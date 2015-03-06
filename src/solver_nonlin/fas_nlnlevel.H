@@ -92,6 +92,11 @@ namespace FAS
     //! Setup
     virtual void Setup();
 
+    //! Update matrix
+    virtual void UpdateMatrix(
+        Teuchos::RCP<const Epetra_CrsMatrix> A ///< matrix
+        );
+
     //@}
 
     //! @name VCycle-related stuff

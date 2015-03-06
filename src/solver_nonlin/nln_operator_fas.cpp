@@ -77,6 +77,14 @@ void NLNSOL::NlnOperatorFas::Setup()
 }
 
 /*----------------------------------------------------------------------------*/
+void NLNSOL::NlnOperatorFas::RefreshRAPs()
+{
+  hierarchy_->RefreshRAPs();
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*/
 int NLNSOL::NlnOperatorFas::ApplyInverse(const Epetra_MultiVector& f,
     Epetra_MultiVector& x) const
 {

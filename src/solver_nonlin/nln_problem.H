@@ -177,6 +177,16 @@ namespace NLNSOL
     //! NOX group
     virtual NOX::Abstract::Group& NOXGroup() const;
 
+    /*! \brief Level ID of level where this nonlinear problem lives on
+     *
+     *  Since this is the fine level problem, the level ID is always 0.
+     *
+     *  \author mayr.mt \date 03/2015
+     */
+    virtual const int LevelID() const { return 0; }
+
+    //@}
+
     //@}
 
     //! @name Access to underlying NOX group elements

@@ -21,7 +21,7 @@ Maintainer: Matthias Mayr
 #include <Xpetra_EpetraCrsMatrix.hpp>
 
 // MueLu
-#include <MueLu_Hierarchy.hpp>
+//#include <MueLu_Hierarchy.hpp>
 #include <MueLu_HierarchyManager.hpp>
 #include <MueLu_MapTransferFactory_fwd.hpp>
 #include <MueLu_MLParameterListInterpreter.hpp> // ToDo (mayr) To be removed
@@ -52,6 +52,7 @@ Maintainer: Matthias Mayr
 
 // Teuchos
 #include <Teuchos_Array.hpp>
+#include <Teuchos_FancyOStream.hpp>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_TimeMonitor.hpp>
@@ -82,7 +83,9 @@ NLNSOL::FAS::AMGHierarchy::AMGHierarchy()
   comm_(Teuchos::null),
   params_(Teuchos::null),
   nlnproblem_(Teuchos::null),
-  nlnlevels_(0)
+  nlnlevels_(0),
+  mueLuFactory_(Teuchos::null),
+  mueLuHierarchy_(Teuchos::null)
 {
   return;
 }
@@ -116,22 +119,9 @@ void NLNSOL::FAS::AMGHierarchy::Setup()
   // Make sure that Init() has been called
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
 
-  // ToDo (mayr) Use MueLu-Utils to transform Epetra to Xpetra
-  // ---------------------------------------------------------------------------
-  // First, convert Epetra to Xpetra (needed for MueLu)
-  // ---------------------------------------------------------------------------
-  Teuchos::RCP<Epetra_Operator> matrix = NlnProblem()->GetJacobianOperator();
-  Epetra_CrsMatrix* A = dynamic_cast<Epetra_CrsMatrix*>(&*matrix);
-  if (A == NULL)
-    dserror("Expected an Epetra_CrsMatrix.");
-
-  Teuchos::RCP<Epetra_CrsMatrix> mymatrix = Teuchos::rcp(A, false);
-
-  // wrap Epetra_CrsMatrix to Xpetra::Matrix
-  Teuchos::RCP<Xpetra::CrsMatrix<double,int,int,Node> > mueluA =
-      Teuchos::rcp(new Xpetra::EpetraCrsMatrix(mymatrix));
-  Teuchos::RCP<Xpetra::Matrix<double,int,int,Node> > mueluOp =
-      Teuchos::rcp(new Xpetra::CrsMatrixWrap<double,int,int,Node>(mueluA));
+  // fine level matrix
+  Teuchos::RCP<Xpetra::Matrix<double,int,int,Node> > mueLuOp =
+      GetXpetraFineLevelMatrix();
 
 /* MueLu input via ML Parameter List
 
@@ -160,21 +150,27 @@ void NLNSOL::FAS::AMGHierarchy::Setup()
   Teuchos::ParameterList mueluparams = Params().sublist("FAS: MueLu Parameters");
 
   // create the MueLu Factory via a MueLu ParameterList interpreter
-  Teuchos::RCP<HierarchyManager> mueLuFactory =
-      Teuchos::rcp(new ParameterListInterpreter(mueluparams));
+  mueLuFactory_ = Teuchos::rcp(new ParameterListInterpreter(mueluparams));
 
-  // Setup MueLu Hierarchy
-  Teuchos::RCP<Hierarchy> H = mueLuFactory->CreateHierarchy();
-  H->GetLevel(0)->Set("A", mueluOp);
-  mueLuFactory->SetupHierarchy(*H);
+  // create MueLu Hierarchy
+  mueLuHierarchy_ = mueLuFactory_->CreateHierarchy();
+
+  // configure MueLu Hierarchy
+  mueLuHierarchy_->GetLevel(0)->Set("A", mueLuOp); // set fine level matrix
+  mueLuHierarchy_->Keep("R"); // keep R for faster RAPs later
+  mueLuHierarchy_->Keep("P"); // keep P for faster RAPs later
+  mueLuHierarchy_->Keep("RAP Pattern"); // keep sparsity pattern for faster RAPs later
+
+  // setup the MueLu Hierarchy
+  mueLuFactory_->SetupHierarchy(*mueLuHierarchy_);
 
   // ---------------------------------------------------------------------------
   // Create NLNSOL::FAS::NlnLevel instances and feed MueLu data to them
   // ---------------------------------------------------------------------------
-  for (int level = 0; level < H->GetNumLevels(); ++level)
+  for (int level = 0; level < mueLuHierarchy_->GetNumLevels(); ++level)
   {
     // get the MueLu level
-    Teuchos::RCP<Level>& muelulevel = H->GetLevel(level);
+    Teuchos::RCP<Level>& muelulevel = mueLuHierarchy_->GetLevel(level);
 
     // print the MueLu level
     if (Params().sublist("Printing").get<bool>("print MueLu levels"))
@@ -230,7 +226,8 @@ void NLNSOL::FAS::AMGHierarchy::Setup()
     // create a single level and initialize
     Teuchos::RCP<NLNSOL::FAS::NlnLevel> newlevel =
         Teuchos::rcp(new NLNSOL::FAS::NlnLevel());
-    newlevel->Init(muelulevel->GetLevelID(), H->GetNumLevels(), myAcrs, myR, myP, Comm(), levelparams, nlnproblem);
+    newlevel->Init(muelulevel->GetLevelID(), mueLuHierarchy_->GetNumLevels(),
+        myAcrs, myR, myP, Comm(), levelparams, nlnproblem);
     newlevel->Setup();
     // -------------------------------------------------------------------------
 
@@ -250,6 +247,47 @@ void NLNSOL::FAS::AMGHierarchy::Setup()
 
 #else
   dserror("Setup of an AMG hierarchy requires MueLu.");
+#endif
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*/
+void NLNSOL::FAS::AMGHierarchy::RefreshRAPs()
+{
+  // time measurements
+  Teuchos::RCP<Teuchos::Time> time = Teuchos::TimeMonitor::getNewCounter(
+      "NLNSOL::FAS::AMGHierarchy::ResfreshRAPs");
+  Teuchos::TimeMonitor monitor(*time);
+
+#ifdef HAVE_MueLu
+  // fine level matrix
+  Teuchos::RCP<Xpetra::Matrix<double,int,int,Node> > mueLuOp =
+      GetXpetraFineLevelMatrix();
+
+  // set new matrix and rebuild hierarchy
+  mueLuHierarchy_->GetLevel(0)->Set("A", mueLuOp);
+  mueLuFactory_->SetupHierarchy(*mueLuHierarchy_);
+
+  // ---------------------------------------------------------------------------
+  // Update NLNSOL::FAS::NlnLevel instances and feed MueLu data to them
+  // ---------------------------------------------------------------------------
+  for (int level = 0; level < mueLuHierarchy_->GetNumLevels(); ++level)
+  {
+    // get the MueLu level
+    Teuchos::RCP<Level>& muelulevel = mueLuHierarchy_->GetLevel(level);
+
+    // extract matrix
+    Teuchos::RCP<Matrix> myMatrix = muelulevel->Get<Teuchos::RCP<Matrix> >("A");
+    Teuchos::RCP<Epetra_CrsMatrix> myAcrs =
+        MueLu::Utils<double,int,int,Node>::Op2NonConstEpetraCrs(myMatrix);
+
+    // update matrix in NLNSOL::FAS::Level
+    NlnLevel(level)->UpdateMatrix(myAcrs);
+  }
+
+#else
+  dserror("Refreshing RAPs of an AMG hierarchy requires MueLu.");
 #endif
 
   return;
@@ -450,4 +488,26 @@ Teuchos::RCP<NLNSOL::NlnProblem> NLNSOL::FAS::AMGHierarchy::NlnProblem() const
     dserror("The nonlinear problem 'nlnproblem_' has not been initialized, yet.");
 
   return nlnproblem_;
+}
+
+/*----------------------------------------------------------------------------*/
+Teuchos::RCP<Xpetra::Matrix<double,int,int,Node> >
+NLNSOL::FAS::AMGHierarchy::GetXpetraFineLevelMatrix() const
+{
+  // ToDo (mayr) Use MueLu-Utils to transform Epetra to Xpetra
+
+  Teuchos::RCP<Epetra_Operator> matrix = NlnProblem()->GetJacobianOperator();
+  Epetra_CrsMatrix* A = dynamic_cast<Epetra_CrsMatrix*>(&*matrix);
+  if (A == NULL)
+    dserror("Expected an Epetra_CrsMatrix.");
+
+  Teuchos::RCP<Epetra_CrsMatrix> mymatrix = Teuchos::rcp(A, false);
+
+  // wrap Epetra_CrsMatrix to Xpetra::Matrix
+  Teuchos::RCP<Xpetra::CrsMatrix<double,int,int,Node> > mueluA =
+      Teuchos::rcp(new Xpetra::EpetraCrsMatrix(mymatrix));
+  Teuchos::RCP<Xpetra::Matrix<double,int,int,Node> > mueLuOp =
+      Teuchos::rcp(new Xpetra::CrsMatrixWrap<double,int,int,Node>(mueluA));
+
+  return mueLuOp;
 }

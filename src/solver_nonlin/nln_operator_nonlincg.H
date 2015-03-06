@@ -222,7 +222,7 @@ namespace NLNSOL
     Teuchos::RCP<NLNSOL::LineSearchBase> linesearch_;
 
     //! Nonlinear preconditioner
-    Teuchos::RCP<NLNSOL::NlnOperatorBase> nlnprec_;
+    mutable Teuchos::RCP<NLNSOL::NlnOperatorBase> nlnprec_;
 
     //@}
 

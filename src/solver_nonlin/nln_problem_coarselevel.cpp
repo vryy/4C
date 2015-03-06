@@ -28,6 +28,7 @@ Maintainer: Matthias Mayr
 
 // baci
 #include "fas_hierarchy.H"
+#include "fas_nlnlevel.H"
 #include "nln_operator_fas.H"
 #include "nln_problem_coarselevel.H"
 
@@ -132,4 +133,20 @@ void NLNSOL::NlnProblemCoarseLevel::SetFHatFBar(
   fbar_ = fbar;
 
   return;
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Operator>
+NLNSOL::NlnProblemCoarseLevel::GetJacobianOperator() const
+{
+  // extract coarse level Jacobian operator from multigrid hierarchy
+  Teuchos::RCP<const Epetra_Operator> jacop =
+      Hierarchy().NlnLevel(LevelID())->GetMatrix();
+
+  // check if Jacobian operator has already been set
+  if (jacop.is_null())
+    dserror("Jacobian operator 'jac_' has not been initialized, yet.");
+
+  return Teuchos::rcp_const_cast<Epetra_Operator>(jacop);
 }

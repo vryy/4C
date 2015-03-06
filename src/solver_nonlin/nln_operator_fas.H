@@ -111,6 +111,12 @@ namespace NLNSOL
     //! Setup of the preconditioner object
     virtual void Setup();
 
+    /*! \brief Recompute RAPs in case of multigrid algorithm
+     *
+     *  \author mayr.mt \date 03/2015
+     */
+    virtual void RefreshRAPs();
+
     //@}
 
     //! @name Mathematical functions

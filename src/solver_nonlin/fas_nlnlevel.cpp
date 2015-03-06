@@ -124,6 +124,15 @@ void NLNSOL::FAS::NlnLevel::Setup()
 
   return;
 }
+
+/*----------------------------------------------------------------------------*/
+void NLNSOL::FAS::NlnLevel::UpdateMatrix(Teuchos::RCP<const Epetra_CrsMatrix> A)
+{
+  SetMatrix(A);
+
+  return;
+}
+
 /*----------------------------------------------------------------------------*/
 void NLNSOL::FAS::NlnLevel::SetMatrix(Teuchos::RCP<const Epetra_CrsMatrix> myA)
 {

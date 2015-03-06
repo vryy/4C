@@ -22,6 +22,27 @@ Maintainer: Matthias Mayr
 // standard
 #include <vector>
 
+//Xpetra
+#include <Xpetra_CrsMatrix.hpp>
+#include <Xpetra_CrsMatrixWrap.hpp>
+#include <Xpetra_EpetraCrsMatrix.hpp>
+
+#ifdef HAVE_MueLu
+// MueLu
+//#include <MueLu_Hierarchy.hpp>
+#include <MueLu_HierarchyManager.hpp>
+#include <MueLu_MapTransferFactory_fwd.hpp>
+#include <MueLu_MLParameterListInterpreter.hpp> // ToDo (mayr) To be removed
+#include <MueLu_ParameterListInterpreter.hpp>
+#include <MueLu_Utilities.hpp>
+
+/* MueLu typedefs: header files for default types, must be included after all
+ * other MueLu/Xpetra headers */
+#include <MueLu_UseDefaultTypes.hpp> // => Scalar = double, LocalOrdinal = GlobalOrdinal = int
+#include <MueLu_UseShortNames.hpp>
+
+#endif
+
 // Teuchos
 #include <Teuchos_Array.hpp>
 #include <Teuchos_RCP.hpp>
@@ -97,6 +118,9 @@ namespace NLNSOL
 
       //! Setup of multigrid hierarchy
       virtual void Setup();
+
+      //! Refresh RAPs
+      virtual void RefreshRAPs();
 
       //@}
 
@@ -190,6 +214,16 @@ namespace NLNSOL
       //! Setup() has been called
       virtual void SetIsSetup() { issetup_ = true; return; }
 
+      /*! \brief Access to fine level matrix as Xpetra::Matrix
+       *
+       *  Ask the #nlnproblem_ for the fine level Epetra_Operator and wrap it
+       *  into Xpetra::Matrix.
+       *
+       *  \author mayr.mt \date 03/2015
+       */
+      Teuchos::RCP<Xpetra::Matrix<double,int,int,Node> >
+      GetXpetraFineLevelMatrix() const;
+
       //@}
 
       //! Access to communicator
@@ -229,6 +263,12 @@ namespace NLNSOL
 
       //! vector containing all nonlinear levels
       Teuchos::Array<Teuchos::RCP<NLNSOL::FAS::NlnLevel> > nlnlevels_;
+
+      //! MueLu Hierarchy Factory to create #mueLuHierarchy_
+      Teuchos::RCP<HierarchyManager> mueLuFactory_;
+
+      //! MueLu Hierarchy
+      Teuchos::RCP<Hierarchy> mueLuHierarchy_;
 
     }; // class AMGHierarchy
   } // namespace FAS

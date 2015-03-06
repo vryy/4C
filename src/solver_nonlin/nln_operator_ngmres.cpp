@@ -354,6 +354,9 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
       // print stuff
       PrintIterSummary(iter, fnorm2);
 
+//      NlnProblem()->ComputeJacobian();
+//      nlnprec_->RefreshRAPs();
+
       if (iter > (unsigned int)GetMaxIter() or converged)
         break;
     } // end of while for window

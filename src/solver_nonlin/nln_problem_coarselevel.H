@@ -111,6 +111,27 @@ namespace NLNSOL
 
     //@}
 
+    //! @name Attribute access routines
+    //@{
+
+    /*! \brief Level ID of level where this nonlinear problem lives on
+     *
+     *  Since this is the coarse level problem, the level ID is #levelid_ > 0.
+     *
+     *  \author mayr.mt \date 03/2015
+     */
+    virtual const int LevelID() const { return levelid_; }
+
+    //@}
+
+    //! @name Access to underlying NOX group elements
+    //@{
+
+    //! get Jacobian as Epetra_Operator
+    virtual Teuchos::RCP<Epetra_Operator> GetJacobianOperator() const;
+
+    //@}
+
     //! @name Utilities
     //@{
 

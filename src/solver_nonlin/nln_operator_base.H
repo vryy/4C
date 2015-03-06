@@ -108,6 +108,12 @@ namespace NLNSOL
       //! Setup the specific nonlinear operator
       virtual void Setup() = 0;
 
+      /*! \brief Recompute RAPs in case of multigrid algorithm
+       *
+       *  \author mayr.mt \date 03/2015
+       */
+      virtual void RefreshRAPs(){};
+
       //@}
 
       //! @name Mathematical functions
