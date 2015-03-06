@@ -170,11 +170,17 @@ namespace UTILS
       Teuchos::ParameterList& params ///< parameter list to be filled
       );
 
-  //! Status of ApplyInverse()
+  /*! Status of ApplyInverse()
+   *
+   *  'opstatus_converged' on position 0 to be consistent with error code of
+   *  Epetra::Operator::ApplyInverse()
+   *
+   *  \author mayr.mt \date 03/2015
+   */
   enum OperatorStatus
   {
-    opstatus_undefined, ///< undefined status
     opstatus_converged, ///< converged successfully
+    opstatus_undefined, ///< undefined status
     opstatus_unconverged, ///< did not converge in given number of iterations
     opstatus_stagnation, ///< reached stagnation during iterations
     opstatus_failed ///< failure due to non-specified error

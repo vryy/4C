@@ -153,10 +153,10 @@ int NLNSOL::NlnOperatorLinPrec::ApplyInverse(const Epetra_MultiVector& f,
       Teuchos::rcp(new Epetra_MultiVector(f.Map(), true));
   NlnProblem()->ComputeF(x, *fnew);
   double fnorm2 = 1.0e+12;
-  NlnProblem()->ConvergenceCheck(*fnew, fnorm2);
+  bool converged = NlnProblem()->ConvergenceCheck(*fnew, fnorm2);
   PrintIterSummary(-1, fnorm2);
 
-  return errorcode;
+  return ErrorCode(-1, converged, errorcode);
 }
 
 /*----------------------------------------------------------------------------*/

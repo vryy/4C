@@ -156,7 +156,7 @@ const bool NLNSOL::NlnOperatorBase::CheckSuccessfulConvergence(
       return true;
     else // convergence failed
     {
-      dserror("%s did not converge in %d iterations.", Label(), iter);
+//      dserror("%s did not converge in %d iterations.", Label(), iter);
       return false;
     }
   }
@@ -180,4 +180,29 @@ const bool NLNSOL::NlnOperatorBase::IsSolver() const
 const int NLNSOL::NlnOperatorBase::GetMaxIter() const
 {
   return Params().get<int>("Nonlinear Operator: Max Iter");
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+const NLNSOL::UTILS::OperatorStatus NLNSOL::NlnOperatorBase::ErrorCode(
+    const int iter, const bool converged, const bool error,
+    const bool stagnation) const
+{
+  // initialize error code
+  NLNSOL::UTILS::OperatorStatus errorcode = NLNSOL::UTILS::opstatus_undefined;
+
+  // determine error code (order of if-statements is important here!!!)
+  if (error)
+    errorcode = NLNSOL::UTILS::opstatus_failed;
+  else if (stagnation)
+    errorcode = NLNSOL::UTILS::opstatus_stagnation;
+  else if (CheckSuccessfulConvergence(iter, converged))
+    errorcode = NLNSOL::UTILS::opstatus_converged;
+  else if (not CheckSuccessfulConvergence(iter, converged))
+    errorcode = NLNSOL::UTILS::opstatus_unconverged;
+  else
+    dserror("Cannot determine error code.");
+
+  // return error code
+  return errorcode;
 }

@@ -34,6 +34,7 @@ Maintainer: Matthias Mayr
 #include "linesearch_factory.H"
 #include "nln_operator_newton.H"
 #include "nln_problem.H"
+#include "nln_utils.H"
 
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_pstream.H"
@@ -169,6 +170,11 @@ int NLNSOL::NlnOperatorNewton::ApplyInverse(const Epetra_MultiVector& f,
   bool suffdecr = false; // flag for sufficient decrease of line search
   bool refactor = false; // Do we need to re-factor the Jacobian?
 
+  // check for stagnation of iterations
+  Teuchos::RCP<NLNSOL::UTILS::StagnationDetection> stagdetect =
+      Teuchos::rcp(new NLNSOL::UTILS::StagnationDetection());
+  stagdetect->Init(fnorm2);
+
   // print initial state
   PrintIterSummary(iter, fnorm2);
 
@@ -192,7 +198,10 @@ int NLNSOL::NlnOperatorNewton::ApplyInverse(const Epetra_MultiVector& f,
     NlnProblem()->ComputeF(x, *fnew);
     converged = NlnProblem()->ConvergenceCheck(*fnew, fnorm2);
 
-    if (converged)
+    // check for stagnation
+    stagdetect->Check(fnorm2);
+
+    if (converged or stagdetect->Status())
     {
       PrintIterSummary(iter, fnorm2);
       break;
@@ -202,7 +211,7 @@ int NLNSOL::NlnOperatorNewton::ApplyInverse(const Epetra_MultiVector& f,
   }
 
   // return error code
-  return (not CheckSuccessfulConvergence(iter, converged));
+  return ErrorCode(iter, converged, err, stagdetect->Status());
 }
 
 /*----------------------------------------------------------------------------*/

@@ -221,7 +221,7 @@ int NLNSOL::NlnOperatorNonlinCG::ApplyInverse(const Epetra_MultiVector& f,
   CheckSuccessfulConvergence(iter, converged);
 
   // return error code
-  return (not CheckSuccessfulConvergence(iter, converged));
+  return ErrorCode(iter, converged, err);
 }
 
 /*----------------------------------------------------------------------------*/

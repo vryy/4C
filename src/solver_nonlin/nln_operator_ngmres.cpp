@@ -372,7 +372,7 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
   PrintIterSummary(iter, fnorm2);
 
   // return error code
-  return (not CheckSuccessfulConvergence(iter, converged));
+  return ErrorCode(iter, converged, err);
 }
 
 /*----------------------------------------------------------------------------*/

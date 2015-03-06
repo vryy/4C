@@ -23,6 +23,9 @@ Maintainer: Matthias Mayr
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_VerboseObject.hpp>
 
+// baci
+#include "nln_utils.H"
+
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
 
@@ -246,6 +249,21 @@ namespace NLNSOL
       //! Print summary of current iteration
       virtual void PrintIterSummary(const int iter, ///< iteration counter
           const double fnorm2 ///< L2-norm of residual
+          ) const;
+
+      /*! \brief Determine error code for ApplyInverse()
+       *
+       *  \note Here, we care for stagnation of iterative process.
+       *
+       *  \return error code of type NLNSOL::UTILS::OperatorStatus
+       *
+       *  \author mayr.mt \date 03/2015
+       */
+      virtual const NLNSOL::UTILS::OperatorStatus ErrorCode(
+          const int iter, ///< current iteration counter
+          const bool converged, ///< convergence status
+          const bool error = false, ///< any unspecified error
+          const bool stagnation = false ///< stagnation status
           ) const;
 
       //@}
