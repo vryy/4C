@@ -214,6 +214,7 @@ namespace NLNSOL
       //! Setup() has been called
       virtual void SetIsSetup() { issetup_ = true; return; }
 
+#ifdef HAVE_MueLu
       /*! \brief Access to fine level matrix as Xpetra::Matrix
        *
        *  Ask the #nlnproblem_ for the fine level Epetra_Operator and wrap it
@@ -223,7 +224,7 @@ namespace NLNSOL
        */
       Teuchos::RCP<Xpetra::Matrix<double,int,int,Node> >
       GetXpetraFineLevelMatrix() const;
-
+#endif
       //@}
 
       //! Access to communicator
@@ -264,11 +265,13 @@ namespace NLNSOL
       //! vector containing all nonlinear levels
       Teuchos::Array<Teuchos::RCP<NLNSOL::FAS::NlnLevel> > nlnlevels_;
 
+#ifdef HAVE_MueLu
       //! MueLu Hierarchy Factory to create #mueLuHierarchy_
       Teuchos::RCP<HierarchyManager> mueLuFactory_;
 
       //! MueLu Hierarchy
       Teuchos::RCP<Hierarchy> mueLuHierarchy_;
+#endif
 
     }; // class AMGHierarchy
   } // namespace FAS

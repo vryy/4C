@@ -83,9 +83,12 @@ NLNSOL::FAS::AMGHierarchy::AMGHierarchy()
   comm_(Teuchos::null),
   params_(Teuchos::null),
   nlnproblem_(Teuchos::null),
-  nlnlevels_(0),
+  nlnlevels_(0)
+#ifdef HAVE_MueLu
+  ,
   mueLuFactory_(Teuchos::null),
   mueLuHierarchy_(Teuchos::null)
+#endif
 {
   return;
 }
@@ -490,6 +493,7 @@ Teuchos::RCP<NLNSOL::NlnProblem> NLNSOL::FAS::AMGHierarchy::NlnProblem() const
   return nlnproblem_;
 }
 
+#ifdef HAVE_MueLu
 /*----------------------------------------------------------------------------*/
 Teuchos::RCP<Xpetra::Matrix<double,int,int,Node> >
 NLNSOL::FAS::AMGHierarchy::GetXpetraFineLevelMatrix() const
@@ -511,3 +515,4 @@ NLNSOL::FAS::AMGHierarchy::GetXpetraFineLevelMatrix() const
 
   return mueLuOp;
 }
+#endif
