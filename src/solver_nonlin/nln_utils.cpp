@@ -34,6 +34,75 @@ Maintainer: Matthias Mayr
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
+NLNSOL::UTILS::StagnationDetection::StagnationDetection()
+: isinit_(false),
+  stagiter_(1),
+  stagitermax_(0),
+  stagthreshold_(1.0),
+  normprev_(1.0e+12)
+{
+  return;
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void NLNSOL::UTILS::StagnationDetection::Init(const double norminitial)
+{
+  // Init() may be called only once
+  if (IsInit())
+    dserror("Init() has already been called. Don't call it again!");
+
+  // initialize
+  stagiter_ = 1;
+  stagitermax_ = 3;
+  stagthreshold_ = 0.95;
+  normprev_ = norminitial;
+
+  // Init() has been called
+  isinit_ = true;
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+const bool NLNSOL::UTILS::StagnationDetection::Check(const double norm)
+{
+  if (not IsInit()) { dserror("Init() has not been called, yet."); }
+
+  // ratio of residual norms of two subsequent iterations
+  double ratio = norm / normprev_;
+
+  // udpate
+  normprev_ = norm;
+
+  // ---------------------------------------------------------------------------
+  // decide whether this is considered as stagnation
+  // ---------------------------------------------------------------------------
+  if (ratio > stagthreshold_)
+    ++stagiter_;
+  else
+    stagiter_ = 0;
+
+  std::cout << "StagnationCheck: stagiter = " << stagiter_ << " / " << stagitermax_
+      << ", ratio = " << ratio << std::endl;
+
+  return Status();
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+const bool NLNSOL::UTILS::StagnationDetection::Status() const
+{
+  bool stagnation = false;
+  if (stagiter_ >= stagitermax_)
+    stagnation = true;
+
+  return stagnation;
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 Teuchos::RCP<Teuchos::ParameterList>
 NLNSOL::UTILS::CreateParamListFromXML()
 {
