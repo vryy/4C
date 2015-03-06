@@ -140,8 +140,6 @@ private:
   /// control file entry of this step
   MAP *restart_step_;
 
-  bool binio_;
-
 
   Teuchos::RCP<HDFReader> reader_;
   Teuchos::RCP<HDFReader> meshreader_;
