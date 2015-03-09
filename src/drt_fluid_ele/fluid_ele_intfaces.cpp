@@ -48,11 +48,11 @@ DRT::ELEMENTS::FluidIntFace::FluidIntFace(int id,                               
                                           const int lsurface_slave,              ///< local surface index with respect to slave parent element
                                           const std::vector<int> localtrafomap   ///< get the transformation map between the local coordinate systems of the face w.r.t the master parent element's face's coordinate system and the slave element's face's coordinate system
 ):
-DRT::FaceElement(id,owner),
-localtrafomap_(localtrafomap)
+DRT::FaceElement(id,owner)
 {
   SetParentMasterElement(parent_master,lsurface_master);
   SetParentSlaveElement(parent_slave,lsurface_slave);
+  SetLocalTrafoMap(localtrafomap);
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
   return;
@@ -62,8 +62,7 @@ localtrafomap_(localtrafomap)
  |  copy-ctor (public)                                      schott 03/12|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidIntFace::FluidIntFace(const DRT::ELEMENTS::FluidIntFace& old) :
-DRT::FaceElement(old),
-localtrafomap_(old.localtrafomap_)
+DRT::FaceElement(old)
 {
   return;
 }

@@ -970,5 +970,17 @@ DRT::FaceElement::FaceElement(const DRT::FaceElement &old)
   parent_master_(old.parent_master_),
   parent_slave_(old.parent_slave_),
   lface_master_(old.lface_master_),
-  lface_slave_(old.lface_slave_)
+  lface_slave_(old.lface_slave_),
+  localtrafomap_(old.localtrafomap_)
 {}
+
+
+
+/*----------------------------------------------------------------------*
+ |  set the local trafo map (protected)                kronbichler 03/15|
+ *----------------------------------------------------------------------*/
+void
+DRT::FaceElement::SetLocalTrafoMap(const std::vector<int> &trafo)
+{
+  localtrafomap_ = trafo;
+  }

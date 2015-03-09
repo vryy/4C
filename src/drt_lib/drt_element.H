@@ -1210,11 +1210,9 @@ private:
 /*!
 \brief A virtual class all face elements that are used in DRT have to implement
 
-This is the pure virtual base class for all face elements to be used with
-the DRT::Discretization. Every element (and boundary condition) to be used
-with the discretization management module has to implement this class.
-It implements various basic element methods and
-stores basic information such as element to node connectivity.
+This is the base class for all face elements. Every element that is attached to another
+(parent) element needs to implement this class, in particular boundary elements used for
+boundary conditions.
 
 A face element can be attached to one (for boundary faces) or two
 elements (for interior faces). In the latter case, we distinguish between the so-called
@@ -1310,6 +1308,18 @@ public:
     return lface_slave_;
   }
 
+  /*!
+  \brief return a tranformation for the face's nodes between the local coordinate systems of the
+         face w.r.t the master parent element's face's coordinate system and the slave element's
+         face's coordinate system
+
+  Only filled for interior faces, otherwise zero length-vector (empty).
+  */
+  const std::vector<int>& GetLocalTrafoMap() const
+  {
+    return localtrafomap_;
+  }
+
 protected:
   /*!
   \brief Set the master element this face element is connected to
@@ -1346,6 +1356,9 @@ protected:
     lface_slave_  = lface_slave;
   }
 
+  //! \brief Sets the local trafo map
+  void SetLocalTrafoMap(const std::vector<int> &trafo);
+
 private:
   //! \brief The master parent element of face element. NULL for usual elements
   DRT::Element* parent_master_;
@@ -1358,6 +1371,12 @@ private:
 
   //! The local surface number of this surface w.r.t to the parent_slave_ element
   int lface_slave_;
+
+  /*!
+   \brief map for the face's nodes between the local coordinate systems of the face w.r.t the master parent element's face's coordinate system
+          and the slave element's face's coordinate system
+   */
+  std::vector<int> localtrafomap_;
 };
 
 

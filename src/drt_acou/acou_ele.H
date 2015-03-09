@@ -991,26 +991,12 @@ public:
     return static_cast<DRT::ELEMENTS::Acou*>(parent);
   }
 
-  /*!
-  \brief return the local trafo map between the face's master numbering and the face's slave numbering
-  */
-  virtual std::vector<int> GetLocalTrafoMap()
-  {
-    return localtrafomap_;
-  }
-
   //@}
 
 private:
 
   // don't want = operator
   AcouIntFace& operator = (const AcouIntFace& old);
-
-  /*!
-   \brief map for the face's nodes between the local coordinate systems of the face w.r.t the master parent element's face's coordinate system
-          and the slave element's face's coordinate system
-   */
-  std::vector<int> localtrafomap_;
 
   // degree of this face element
   int degree_;

@@ -1018,14 +1018,6 @@ private:
         return static_cast<DRT::ELEMENTS::Combust3*>(parent);
       }
 
-      /*!
-      \brief return the local trafo map between the face's master numbering and the face's slave numbering
-      */
-      std::vector<int> GetLocalTrafoMap() const
-      {
-        return localtrafomap_;
-      }
-
       //@}
 
     private:
@@ -1042,12 +1034,6 @@ private:
 
       //! convert string to desired action
       ActionType convertStringToActionType(const std::string& action) const;
-
-      /*!
-       \brief map for the face's nodes between the local coordinate systems of the face w.r.t the master parent element's face's coordinate system
-              and the slave element's face's coordinate system
-       */
-      std::vector<int> localtrafomap_;
 
     }; // class Combust3IntFace
 

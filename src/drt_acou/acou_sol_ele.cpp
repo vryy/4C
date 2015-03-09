@@ -545,12 +545,11 @@ DRT::ELEMENTS::AcouSolIntFace::AcouSolIntFace(int id,                           
                                           const int lsurface_slave,              ///< local surface index with respect to slave parent element
                                           const std::vector<int> localtrafomap   ///< get the transformation map between the local coordinate systems of the face w.r.t the master parent element's face's coordinate system and the slave element's face's coordinate system
 ):
-AcouIntFace(id,owner,nnode,nodeids,nodes,parent_master,parent_slave,lsurface_master,lsurface_slave,localtrafomap),
-localtrafomap_(localtrafomap)
+AcouIntFace(id,owner,nnode,nodeids,nodes,parent_master,parent_slave,lsurface_master,lsurface_slave,localtrafomap)
 {
-
   SetParentMasterElement(parent_master,lsurface_master);
   SetParentSlaveElement(parent_slave,lsurface_slave);
+  SetLocalTrafoMap(localtrafomap);
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
   return;
@@ -560,8 +559,7 @@ localtrafomap_(localtrafomap)
  |  copy-ctor (public)                                    schoeder 01/14|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::AcouSolIntFace::AcouSolIntFace(const DRT::ELEMENTS::AcouSolIntFace& old) :
-AcouIntFace(old),
-localtrafomap_(old.localtrafomap_)
+AcouIntFace(old)
 {
   return;
 }

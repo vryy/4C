@@ -626,8 +626,7 @@ DRT::ELEMENTS::AcouIntFace::AcouIntFace(int id,                                /
                                           const int lsurface_slave,              ///< local surface index with respect to slave parent element
                                           const std::vector<int> localtrafomap   ///< get the transformation map between the local coordinate systems of the face w.r.t the master parent element's face's coordinate system and the slave element's face's coordinate system
 ):
-DRT::FaceElement(id,owner),
-localtrafomap_(localtrafomap)
+DRT::FaceElement(id,owner)
 {
   SetParentMasterElement(parent_master,lsurface_master);
   SetParentSlaveElement(parent_slave,lsurface_slave);
@@ -636,6 +635,8 @@ localtrafomap_(localtrafomap)
     degree_ = std::max(parent_master->Degree(),parent_slave->Degree());
   else
     degree_ = parent_master->Degree();
+
+  SetLocalTrafoMap(localtrafomap);
 
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
@@ -647,7 +648,6 @@ localtrafomap_(localtrafomap)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::AcouIntFace::AcouIntFace(const DRT::ELEMENTS::AcouIntFace& old) :
 DRT::FaceElement(old),
-localtrafomap_(old.localtrafomap_),
 degree_(old.degree_)
 {
   return;
