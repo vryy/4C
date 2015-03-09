@@ -730,7 +730,8 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
   LINALG::Matrix<my::nsd_, my::nen_> egridv(true);
 
   if (ele->IsAle()) my::GetGridDispVelALE(dis, lm, edispnp, egridv);
-
+  // add displacement when fluid nodes move in the ALE case
+  if (ele->IsAle()) my::xyze_ += edispnp;
 
 
   // ---------------------------------------------------------------------
@@ -825,10 +826,25 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
     // pointer to boundary element
     DRT::Element * side = NULL;
 
+    // location array of element to couple with (only used for embedded fluid problems)
+    DRT::Element::LocationArray coupl_la( 1 );
+
     // coordinates of boundary element
     Epetra_SerialDenseMatrix side_xyze;
 
+    //-----------------------------------------------------------------------------------
+    // only used for couplings:
 
+    // coupling object between background element and each coupling element (side for xfluid-sided coupling, element for other couplings)
+    Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype> > ci;
+
+    // pointer to coupling element
+    DRT::Element * coupl_ele = NULL;
+
+    // coupling element coordinates
+    Epetra_SerialDenseMatrix coupl_xyze;
+
+    //-----------------------------------------------------------------------------------
 
     //-----------------------------------------------------------------------------------
 
@@ -877,11 +893,32 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
       side->LocationVector(*cutter_dis,cutla,false);
       si->AddSlaveEleDisp(*cutter_dis,cutla[0].lm_);
 
-      if(cond_type == INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET or
+      if( cond_type == INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET or
           cond_type == INPAR::XFEM::CouplingCond_SURF_FSI_PART or
           cond_type == INPAR::XFEM::CouplingCond_SURF_CRACK_FSI_PART)
       {
         si->SetInterfaceJumpState(*cutter_dis, "ivelnp", cutla[0].lm_);
+      }
+
+      if (cond_type == INPAR::XFEM::CouplingCond_SURF_FLUIDFLUID)
+      {
+
+        // force to get the embedded element, even if background-sided coupling is active
+        // TODO: there are nicer ways...
+        const int coup_idx = cond_manager->GetCouplingIndex(coup_sid, my::eid_);
+        Teuchos::RCP<XFEM::CouplingBase> coupling = cond_manager->GetCouplingByIdx(coup_idx);
+
+        Teuchos::RCP<XFEM::MeshCouplingFluidFluid> mc_ff =
+            Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFluidFluid>(coupling);
+        coupl_ele = mc_ff->GetCondDis()->gElement( mc_ff->GetEmbeddedElementId(coup_sid) );
+
+        GEO::InitialPositionArray(coupl_xyze,coupl_ele);
+
+        ci = DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype>::CreateSlaveElementRepresentation(coupl_ele,coupl_xyze);
+
+        // set velocity (and pressure) of coupling/slave element at current time step
+        coupl_ele->LocationVector(*mc_ff->GetCondDis(),coupl_la,false);
+        ci->SetSlaveState(*mc_ff->GetCondDis(),coupl_la[0].lm_);
       }
     }
 
@@ -949,11 +986,8 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
           // project on boundary element
           si->ProjectOnSide(x_gp_lin, x_side, xi_side);
 
-          // TODO: do we need this here?
-          //          if (non_xfluid_coupling)
-          //            ci->Evaluate( x_side ); // evaluate embedded element's shape functions at gauss-point coordinates
-          //          else
-          //            ci->Evaluate2D( xi_side ); // evaluate side's shape functions at gauss-point coordinates
+          if (cond_type == INPAR::XFEM::CouplingCond_SURF_FLUIDFLUID)
+            ci->Evaluate( x_side ); // evaluate embedded element's shape functions at gauss-point coordinates
         }
         else if (is_ls_coupling_side)
         {
@@ -1011,12 +1045,34 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
             mat
         );
 
+        LINALG::Matrix<my::nsd_,1> velint_s;
+        if (is_mesh_coupling_side)
+        {
+          si->GetInterfaceVelnp(velint_s);
+        }
 
-        u_err.Update(1.0, my::velint_, -1.0, u_analyt, 0.0);
+        if (cond_type == INPAR::XFEM::CouplingCond_SURF_FLUIDFLUID)
+        {
+          u_err.Update(1.0, my::velint_, -1.0, velint_s, 0.0);
+
+          LINALG::Matrix<my::nsd_,my::nsd_> grad_u_side(true);
+          ci->GetInterfaceVelGradnp(grad_u_side);
+
+          grad_u_err.Update(1.0, my::vderxy_, -1.0, grad_u_side, 0.0);
+
+          double press_coupl = 0.0;
+          ci->GetInterfacePresnp(press_coupl);
+          //p_err = p_background - p_emb;
+          p_err = press - press_coupl;
+        }
+        else
+        {
+          u_err.Update(1.0, my::velint_, -1.0, u_analyt, 0.0);
 
 
-        grad_u_err.Update(1.0, my::vderxy_, -1.0, grad_u_analyt, 0.0);
-        p_err = press - p_analyt;
+          grad_u_err.Update(1.0, my::vderxy_, -1.0, grad_u_analyt, 0.0);
+          p_err = press - p_analyt;
+        }
 
         flux_u_err.Multiply(grad_u_err,normal);
         flux_p_err.Update(p_err,normal,0.0);
@@ -1048,11 +1104,7 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
 
         // interface errors
         double nit_stabfac = 0.0;
-        LINALG::Matrix<my::nsd_,1> velint_s;
-        if (is_mesh_coupling_side)
-        {
-          si->GetInterfaceVelnp(velint_s);
-        }
+
         //Needs coupling condition to get kappas!
         const double kappa_m = 1.0;
         const double kappa_s = 0.0;
@@ -1068,363 +1120,7 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
 
   return 0;
 }
-/*--------------------------------------------------------------------------------
- * compute interface error norms for XFF-problems
- *--------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-int FluidEleCalcXFEM<distype>::ComputeErrorInterfaceXFluidFluid(
-    DRT::ELEMENTS::Fluid *                                              ele,               ///< fluid element
-    DRT::Discretization &                                               dis,               ///< background discretization
-    const std::vector<int> &                                            lm,                ///< element local map
-    Teuchos::RCP<MAT::Material>&                                        mat,               ///< material
-    Epetra_SerialDenseVector&                                           ele_interf_norms,  /// squared element interface norms
-    DRT::Discretization &                                               cutdis,            ///< cut discretization
-    DRT::Discretization &                                               embdis,            ///< embedded discretization
-    const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,            ///< boundary cells
-    const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
-    Teuchos::ParameterList&                                             params,            ///< parameter list
-    const GEO::CUT::plain_volumecell_set&                               vcSet,              ///< volumecell sets in this element
-    const Teuchos::RCP<XFEM::MeshCouplingFluidFluid>&                   mc_ff              ///< specialized mesh coupling
-)
-{
-  const int calcerr = DRT::INPUT::get<INPAR::FLUID::CalcError>(params,"calculate error");
 
-  const double t = my::fldparatimint_->Time();
-
-  //----------------------------------------------------------------------------
-  //                         ELEMENT GEOMETRY
-  //----------------------------------------------------------------------------
-
-  // ---------------------------------------------------------------------
-  // get initial node coordinates for element
-  // ---------------------------------------------------------------------
-  // get node coordinates
-  GEO::fillInitialPositionArray< distype, my::nsd_, LINALG::Matrix<my::nsd_,my::nen_> >( ele, my::xyze_ );
-
-  // ---------------------------------------------------------------------
-  // get additional state vectors for ALE case: grid displacement and vel.
-  // ---------------------------------------------------------------------
-
-  LINALG::Matrix<my::nsd_, my::nen_> edispnp(true);
-  LINALG::Matrix<my::nsd_, my::nen_> egridv(true);
-
-  if (ele->IsAle()) my::GetGridDispVelALE(dis, lm, edispnp, egridv);
-
-
-  // ---------------------------------------------------------------------
-
-  /// element coordinates in EpetraMatrix
-  Epetra_SerialDenseMatrix ele_xyze(my::nsd_,my::nen_);
-  for ( int i=0; i<my::nen_; ++i )
-  {
-    for(int j=0; j<my::nsd_; j++)
-      ele_xyze(j,i) = my::xyze_( j, i );
-  }
-
-  // ---------------------------------------------------------------------
-  // get velocity state vectors
-  // ---------------------------------------------------------------------
-
-  // get element-wise velocity/pressure field
-  LINALG::Matrix<my::nsd_,my::nen_> evelaf(true);
-  LINALG::Matrix<my::nen_,1> epreaf(true);
-  my::ExtractValuesFromGlobalVector(dis, lm, *my::rotsymmpbc_, &evelaf, &epreaf, "u and p at time n+1 (converged)");
-
-
-  // ---------------------------------------------------------------------
-  // set element advective field for Oseen problems
-  // ---------------------------------------------------------------------
-  if (my::fldpara_->PhysicalType()==INPAR::FLUID::oseen) my::SetAdvectiveVelOseen(ele);
-
-
-  // ---------------------------------------------------------------------
-  // get the element volume
-  // ---------------------------------------------------------------------
-
-  // evaluate shape functions and derivatives at element center
-  my::EvalShapeFuncAndDerivsAtEleCenter();
-  // set element area or volume
-  const double vol = my::fac_;
-
-
-
-  //----------------------------------------------------------------------------
-  //      surface integral --- build Cuiui, Cuui, Cuiu and Cuu matrix and rhs
-  //----------------------------------------------------------------------------
-
-  DRT::Element::LocationArray alela( 1 );
-  DRT::Element::LocationArray cutla( 1 );
-
-  LINALG::Matrix<3,1> normal;
-  LINALG::Matrix<3,1> x_side;
-
-  // interface for coupling between background element and cutting embedded element
-  Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype> > emb;
-  // auxiliary 2D coupling interface (side)
-  Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype> > si;
-
-  // find all the intersecting elements of actele
-  std::set<int> begids;
-  for (std::map<int,  std::vector<GEO::CUT::BoundaryCell*> >::const_iterator bc=bcells.begin();
-       bc!=bcells.end(); ++bc )
-  {
-    int sid = bc->first;
-    begids.insert(sid);
-  }
-
-  //-----------------------------------------------------------------------------------
-  //         evaluate element length, stabilization factors and average weights
-  //-----------------------------------------------------------------------------------
-
-  // element length
-  double h_k = 0.0;
-
-  // take a volume based element length
-  h_k = ComputeVolEqDiameter(vol);
-
-  // evaluate shape function derivatives
-  bool eval_deriv = true;
-
-  //-----------------------------------------------------------------------------------
-  //         initialize analytical solution vectors and error variables
-  //-----------------------------------------------------------------------------------
-
-  // analytical solution
-  LINALG::Matrix<my::nsd_,1>         u_analyt(true);
-  LINALG::Matrix<my::nsd_,my::nsd_>  grad_u_analyt(true);
-  double p_analyt = 0.0;
-
-  // error
-  LINALG::Matrix<my::nsd_,1>        u_err(true);
-  LINALG::Matrix<my::nsd_,my::nsd_> grad_u_err(true);
-  double p_err = 0.0;
-
-  LINALG::Matrix<my::nsd_,1> flux_u_err(true);
-  LINALG::Matrix<my::nsd_,1> flux_p_err(true);
-
-
-  //--------------------------------------------
-  // loop intersecting sides
-  //--------------------------------------------
-  // map of side-element id and Gauss points
-  for ( std::map<int, std::vector<DRT::UTILS::GaussIntegration> >::const_iterator i=bintpoints.begin();
-        i!=bintpoints.end();
-        ++i )
-  {
-    int sid = i->first;
-    const std::vector<DRT::UTILS::GaussIntegration> & cutintpoints = i->second;
-
-    // get side's boundary cells
-    std::map<int, std::vector<GEO::CUT::BoundaryCell*> >::const_iterator j = bcells.find( sid );
-    if ( j==bcells.end() )
-      dserror( "missing boundary cell" );
-
-    const std::vector<GEO::CUT::BoundaryCell*> & bcs = j->second;
-    if ( bcs.size()!=cutintpoints.size() )
-      dserror( "boundary cell integration rules mismatch" );
-
-    // side and location vector
-    DRT::Element * side = cutdis.gElement( sid );
-    side->LocationVector(cutdis,cutla,false);
-    // the corresponding embedded element
-    DRT::Element * emb_ele = embdis.gElement( mc_ff->GetEmbeddedElementId(sid));
-    emb_ele->LocationVector(embdis,alela,false);
-
-    // embedded geometry
-    const int emb_numnodes = emb_ele->NumNode();
-    DRT::Node ** emb_nodes = emb_ele->Nodes();
-    Epetra_SerialDenseMatrix emb_xyze( 3, emb_numnodes );
-    for ( int i=0; i<emb_numnodes; ++i )
-    {
-      const double * x = emb_nodes[i]->X();
-      std::copy( x, x+3, &emb_xyze( 0, i ) );
-    }
-
-    // side geometry
-    const int numnodes = side->NumNode();
-    DRT::Node ** nodes = side->Nodes();
-    Epetra_SerialDenseMatrix side_xyze( 3, numnodes );
-    for ( int i=0; i<numnodes; ++i )
-    {
-      const double * x = nodes[i]->X();
-      std::copy( x, x+3, &side_xyze( 0, i ) );
-    }
-
-    // create coupling interface class
-    emb = DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype>::CreateSlaveElementRepresentation(emb_ele,emb_xyze);
-    si = DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype>::CreateSlaveElementRepresentation(side,side_xyze);
-
-    // set side element velocity at integration point of boundary dis
-    si->SetSlaveState(cutdis,cutla[0].lm_);
-    // set embedded element velocity at integration point
-    emb->SetSlaveState(embdis,alela[0].lm_);
-
-    // set displacement of side
-    si->AddSlaveEleDisp(cutdis,cutla[0].lm_);
-
-    //--------------------------------------------
-    // loop boundary cells w.r.t current cut side
-    //--------------------------------------------
-    for ( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=cutintpoints.begin();
-          i!=cutintpoints.end();
-          ++i )
-    {
-      const DRT::UTILS::GaussIntegration & gi = *i;
-      GEO::CUT::BoundaryCell * bc = bcs[i - cutintpoints.begin()]; // get the corresponding boundary cell
-
-      //--------------------------------------------
-      // loop gausspoints w.r.t current boundary cell
-      //--------------------------------------------
-      for ( DRT::UTILS::GaussIntegration::iterator iquad=gi.begin(); iquad!=gi.end(); ++iquad )
-      {
-        double drs = 0.0; // transformation factor between reference cell and linearized boundary cell
-
-        const LINALG::Matrix<2,1> eta( iquad.Point() ); // xi-coordinates with respect to side
-
-        LINALG::Matrix<3,1> rst(true); // local coordinates w.r.t background element
-
-        LINALG::Matrix<3,1> x_gp_lin(true); // gp in xyz-system on linearized interface
-
-        // compute transformation factor, normal vector and global Gauss point coordiantes
-        if (bc->Shape() != DRT::Element::dis_none) // Tessellation approach
-        {
-          ComputeSurfaceTransformation(drs, x_gp_lin, normal, bc, eta);
-        }
-        else // MomentFitting approach
-        {
-          drs = 1.0;
-          normal = bc->GetNormalVector();
-          const double* gpcord = iquad.Point();
-          for (int idim=0;idim<3;idim++)
-          {
-            x_gp_lin(idim,0) = gpcord[idim];
-          }
-        }
-
-        // find element local position of gauss point
-        GEO::CUT::Position<distype> pos( my::xyze_, x_gp_lin );
-        pos.Compute();
-        rst = pos.LocalCoordinates();
-
-        // project gaussian point from linearized interface to warped side (get/set local side coordinates in SideImpl)
-        LINALG::Matrix<2,1> xi_side(true);
-        si->ProjectOnSide(x_gp_lin, x_side, xi_side);
-
-
-        const double surf_fac = drs*iquad.Weight();
-
-        // -----------------------------------------
-        // evaluate embedded element shape functions
-        emb->Evaluate( x_side );
-
-        //--------------------------------------------
-        // evaluate shape functions (and derivatives)
-
-        if(eval_deriv)
-        {
-          EvalFuncAndDeriv( rst );
-        }
-        else
-        {
-          DRT::UTILS::shape_function<distype>( rst, my::funct_ );
-        }
-
-
-        // get velocity at integration point
-        // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-        my::velint_.Multiply(evelaf,my::funct_);
-
-        // get velocity derivatives at integration point
-        // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-        my::vderxy_.MultiplyNT(evelaf,my::derxy_);
-
-        // get pressure at integration point
-        // (value at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-        double press = my::funct_.Dot(epreaf);
-
-        //----------------------------------------------
-        // get convective velocity at integration point
-        my::SetConvectiveVelint(ele->IsAle());
-
-        //--------------------------------------------
-        // compute errors
-
-        LINALG::Matrix<my::nsd_,1>        u_analyt(true);      // boundary condition to enforce (xfsi), interfacial jump to enforce (fluidfluid)
-        LINALG::Matrix<my::nsd_,my::nsd_> grad_u_analyt(true);
-        p_analyt = 0.0;
-
-
-        AnalyticalReference(
-                     calcerr,          ///< which reference solution
-                     u_analyt,         ///< exact velocity (onesided), exact jump vector (coupled)
-                     grad_u_analyt,    ///< exact velocity gradient
-                     p_analyt,         ///< exact pressure
-                     x_side,           ///< xyz position of gaussian point which lies on the real side, projected from linearized interface
-                     t,                ///< time t
-                     mat);
-
-        //--------------------------------------------
-
-        // from side element (not embedded!)
-        LINALG::Matrix<my::nsd_,1> ivelint(true);
-        si->GetInterfaceVelnp(ivelint);
-
-        u_err.Update(1.0, my::velint_, -1.0, ivelint, 0.0); // u_backgr - u_emb
-
-        LINALG::Matrix<my::nsd_,my::nsd_> grad_u_side(true);
-        emb->GetInterfaceVelGradnp(grad_u_side);
-
-        grad_u_err.Update(1.0, my::vderxy_, -1.0, grad_u_side, 0.0);
-
-        double press_emb = 0.0;
-        emb->GetInterfacePresnp(press_emb);
-        //p_err = p_background - p_emb;
-        p_err = press - press_emb;
-
-        flux_u_err.Multiply(grad_u_err,normal);
-        flux_p_err.Update(p_err,normal,0.0);
-
-        /*
-         * Scaling of interface error norms:
-         *
-         *                       (1)           (2)          (3)
-         *                    /  \mu    \rho             h * \rho         \
-         *  NIT :=  \gamma * |    --  +  -- * |u|_inf  + ----------------- |
-         *                    \   h      6               12 * \theta * dt /
-         *
-         *                             interface errors
-         *  1.   || NIT * (u_b - u_e - u_jump) ||_L_2(Gamma)        =  broken H1/2 Sobolev norm for boundary/coupling condition
-         *  2.   || nu^(+1/2) grad( u_b - u_e )*n ||_H-1/2(Gamma)   =  standard H-1/2 Sobolev norm for normal flux (velocity part)
-         *  3.   || (p_b - p_e)*n ||_H-1/2(Gamma)         =  standard H-1/2 Sobolev norm for normal flux (pressure part)
-         */
-
-        double u_err_squared      = 0.0;
-        double flux_u_err_squared = 0.0;
-        double flux_p_err_squared = 0.0;
-
-        // evaluate squared errors at gaussian point
-        for (int isd=0;isd<my::nsd_;isd++)
-        {
-          u_err_squared += u_err(isd)*u_err(isd)*surf_fac;
-          flux_u_err_squared += flux_u_err(isd)*flux_u_err(isd)*surf_fac;
-          flux_p_err_squared += flux_p_err(isd)*flux_p_err(isd)*surf_fac;
-        }
-
-        // interface errors
-        double nit_stabfac = 0.0;
-        //Needs coupling condition to get kappas!
-        const double kappa_m = 1.0;
-        const double kappa_s = 0.0;
-        NIT_Compute_FullPenalty_Stabfac(nit_stabfac,normal,h_k,kappa_m,kappa_s,ivelint,NIT_Compute_ViscPenalty_Stabfac(distype,1/h_k,1.0,0.0),true);
-        ele_interf_norms[0] += nit_stabfac * u_err_squared;
-        ele_interf_norms[1] += h_k     * my::visc_ * flux_u_err_squared;
-        ele_interf_norms[2] += h_k     * flux_p_err_squared;
-      } // end loop gauss points of boundary cell
-    } // end loop boundary cells of side
-  } // end loop cut sides
-
-  return 0;
-}
 
 /*--------------------------------------------------------------------------------
  * add mixed/hybrid stress-based LM interface condition to element matrix and rhs
@@ -4726,7 +4422,7 @@ double FluidEleCalcXFEM<distype>::ComputeCharEleLength(
     //         here is space for improvement
 
     Teuchos::RCP<XFEM::MeshCouplingFluidFluid> mc_ff =
-        Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFluidFluid>(cond_manager->GetMeshCoupling(0));
+        Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFluidFluid>(cond_manager->GetMeshCoupling("XFEMSurfFluidFluid"));;
     const int lid = mc_ff->GetFaceLidOfEmbeddedElement(face->Id());
     //---------------------------------------------------
 

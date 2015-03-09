@@ -148,7 +148,7 @@ namespace FLD
     Teuchos::RCP<LINALG::Solver>  LinearSolver() { return solver_; };
 
     /// evaluate errors compared to implemented analytical solutions
-    void EvaluateErrorComparedToAnalyticalSol();
+    virtual void EvaluateErrorComparedToAnalyticalSol();
 
     /// build linear system matrix and rhs
     /// Monolithic FSI needs to access the linear fluid problem.
@@ -506,6 +506,11 @@ namespace FLD
     void UpdateIterIncrementally(
       Teuchos::RCP<const Epetra_Vector> vel
       );
+
+    void ComputeErrorNorms(
+      Teuchos::RCP<Epetra_SerialDenseVector> glob_dom_norms,
+      Teuchos::RCP<Epetra_SerialDenseVector> glob_interf_norms,
+      Teuchos::RCP<Epetra_SerialDenseVector> glob_stab_norms);
 
     /*!
       \brief compute values at intermediate time steps for gen.-alpha

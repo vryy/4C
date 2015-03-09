@@ -174,22 +174,6 @@ public:
       Teuchos::ParameterList&                                             params             ///< parameter list
   );
 
-  virtual int ComputeErrorInterfaceXFluidFluid(
-      DRT::ELEMENTS::Fluid *                                              ele,               ///< fluid element
-      DRT::Discretization &                                               dis,               ///< background discretization
-      const std::vector<int> &                                            lm,                ///< element local map
-      Teuchos::RCP<MAT::Material>&                                        mat,               ///< material
-      Epetra_SerialDenseVector&                                           ele_interf_norms,  /// squared element interface norms
-      DRT::Discretization &                                               cutdis,            ///< cut discretization
-      DRT::Discretization &                                               embdis,            ///< embedded discretization
-      const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,            ///< boundary cells
-      const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
-      Teuchos::ParameterList&                                             params,            ///< parameter list
-      const GEO::CUT::plain_volumecell_set&                               vcSet,             ///< volumecell sets in this element
-      const Teuchos::RCP<XFEM::MeshCouplingFluidFluid>&                   mc_ff              ///< specialized mesh coupling
-  );
-
-
   /// add terms from mixed/hybrid Lagrange multiplier coupling approach to element matrix and rhs
   virtual void ElementXfemInterfaceHybridLM(
       DRT::ELEMENTS::Fluid *                                            ele,                      ///< fluid element

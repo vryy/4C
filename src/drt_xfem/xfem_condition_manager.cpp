@@ -2444,6 +2444,16 @@ void XFEM::ConditionManager::GetInterfaceMasterMaterial(
   XFEM::UTILS::GetVolumeCellMaterial(actele,mat);
 }
 
+void XFEM::ConditionManager::GetInterfaceSlaveMaterial(
+  DRT::Element* actele,
+  Teuchos::RCP<MAT::Material> & mat,
+  int coup_sid
+)
+{
+  int mc = GetMeshCouplingIndex(coup_sid);
+  mesh_coupl_[mc]->GetInterfaceSlaveMaterial(actele,mat);
+}
+
 void XFEM::ConditionManager::GetCouplingEleLocationVector(
     const int coup_sid,
     std::vector<int> & patchlm)

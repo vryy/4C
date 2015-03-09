@@ -830,7 +830,6 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
 
               std::vector<int> & patchlm = patchcouplm[coup_sid]; // []-operator creates new vector, dofs of current coupling side
 
-              //TODO: shift the following statements to GetCouplingLocationVector
               // get dofs for coupling side or coupling element
               if(condition_manager_->IsMeshCoupling(coup_sid))
               {
@@ -838,7 +837,7 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
                 condition_manager_->GetCouplingEleLocationVector(coup_sid,patchlm);
 
                 // set material for coupling element
-                condition_manager_->GetMeshCoupling(mc_idx_)->GetInterfaceSlaveMaterial(actele,matptr_s);
+                condition_manager_->GetInterfaceSlaveMaterial(actele,matptr_s,coup_sid);
               }
               else if(condition_manager_->IsLevelSetCoupling(coup_sid))
               {
@@ -1434,188 +1433,11 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
     const int num_dom_norms    = 8;
     const int num_interf_norms = 8;
     const int num_stab_norms   = 3;
-
-    Epetra_SerialDenseVector cpu_dom_norms(num_dom_norms);
-    Epetra_SerialDenseVector cpu_interf_norms(num_interf_norms);
-    Epetra_SerialDenseVector cpu_stab_norms(num_stab_norms);
-
     Teuchos::RCP<Epetra_SerialDenseVector> glob_dom_norms    = Teuchos::rcp(new Epetra_SerialDenseVector(num_dom_norms));
     Teuchos::RCP<Epetra_SerialDenseVector> glob_interf_norms = Teuchos::rcp(new Epetra_SerialDenseVector(num_interf_norms));
     Teuchos::RCP<Epetra_SerialDenseVector> glob_stab_norms   = Teuchos::rcp(new Epetra_SerialDenseVector(num_stab_norms));
 
-
-    // set vector values needed by elements
-    discret_->ClearState();
-    discret_->SetState("u and p at time n+1 (converged)", state_->velnp_);
-
-    // evaluate domain error norms and interface/boundary error norms at XFEM-interface
-    // loop row elements
-    const int numrowele = discret_->NumMyRowElements();
-    for (int i=0; i<numrowele; ++i)
-    {
-
-      // local element-wise squared error norms
-      Epetra_SerialDenseVector ele_dom_norms(num_dom_norms);
-      Epetra_SerialDenseVector ele_interf_norms(num_interf_norms);
-
-
-      // pointer to current element
-      DRT::Element* actele = discret_->lRowElement(i);
-
-      Teuchos::RCP<MAT::Material> mat = actele->Material();
-
-      DRT::ELEMENTS::Fluid * ele = dynamic_cast<DRT::ELEMENTS::Fluid *>( actele );
-
-      GEO::CUT::ElementHandle * e = state_->Wizard()()->GetElement( actele );
-
-      DRT::Element::LocationArray la( 1 );
-
-      DRT::ELEMENTS::FluidEleInterface * impl = DRT::ELEMENTS::FluidFactory::ProvideImplXFEM( actele->Shape(), "xfem");
-
-      // xfem element
-      if ( e!=NULL )
-      {
-
-        std::vector< GEO::CUT::plain_volumecell_set > cell_sets;
-        std::vector< std::vector<int> > nds_sets;
-        std::vector<std::vector< DRT::UTILS::GaussIntegration > >intpoints_sets;
-
-        bool has_xfem_integration_rule =
-            e->GetCellSets_DofSets_GaussPoints( cell_sets, nds_sets, intpoints_sets, false); //(include_inner=false)
-
-        if(cell_sets.size() != nds_sets.size()) dserror("number of cell_sets and nds_sets not equal!");
-
-        // loop over volume cells
-        for( std::vector< GEO::CUT::plain_volumecell_set>::iterator s=cell_sets.begin();
-            s!=cell_sets.end();
-            s++)
-        {
-          GEO::CUT::plain_volumecell_set & cells = *s;
-          const int set_counter = s - cell_sets.begin();
-          const std::vector<int> & nds = nds_sets[set_counter];
-
-          // get element location vector, dirichlet flags and ownerships
-          actele->LocationVector(*discret_,nds,la,false);
-
-          //------------------------------------------------------------
-          // Evaluate interface integral errors
-          // do cut interface condition
-
-          // maps of sid and corresponding boundary cells ( for quadratic elements: collected via volumecells of subelements)
-          std::map<int, std::vector<GEO::CUT::BoundaryCell*> > bcells;
-          std::map<int, std::vector<DRT::UTILS::GaussIntegration> > bintpoints;
-
-          for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
-          {
-            GEO::CUT::VolumeCell * vc = *i;
-            if ( vc->Position()==GEO::CUT::Point::outside )
-            {
-                vc->GetBoundaryCells( bcells );
-            }
-
-            const int cellcount = i - cells.begin();
-
-            if(!has_xfem_integration_rule) // use standard integration!!!
-            {
-              // get element location vector, dirichlet flags and ownerships
-              actele->LocationVector(*discret_,la,false);
-
-              Epetra_SerialDenseMatrix elemat1;
-              Epetra_SerialDenseMatrix elemat2;
-              Epetra_SerialDenseVector elevec2;
-              Epetra_SerialDenseVector elevec3;
-              params_->set<int>("action",FLD::calc_fluid_error);
-              impl->EvaluateService(ele,
-                  *params_,
-                  mat,
-                  *discret_,
-                  la[0].lm_,
-                  elemat1,
-                  elemat2,
-                  ele_dom_norms,
-                  elevec2,
-                  elevec3);
-            }
-            else
-            {
-              if(cell_sets.size() != intpoints_sets.size()) dserror("number of cell_sets and intpoints_sets not equal!");
-
-              //------------------------------------------------------------
-              // Evaluate domain integral errors
-              impl->ComputeError(ele,
-                  *params_,
-                  mat,
-                  *discret_,
-                  la[0].lm_,
-                  ele_dom_norms,
-                  intpoints_sets[set_counter][cellcount]
-              );
-            }
-          }
-
-          if ( bcells.size() > 0 )
-          {
-            // get boundary cell Gaussian points
-            e->BoundaryCellGaussPointsLin( bcells, bintpoints);
-
-            if(CouplingMethod() == INPAR::XFEM::Hybrid_LM_Cauchy_stress or
-               CouplingMethod() == INPAR::XFEM::Hybrid_LM_viscous_stress or
-               CouplingMethod() == INPAR::XFEM::Nitsche)
-            {
-              impl->ComputeErrorInterface(
-                  ele,
-                  *discret_,
-                  la[0].lm_,
-                  condition_manager_,
-                  mat,
-                  ele_interf_norms,
-                  bcells,
-                  bintpoints,
-                  *params_
-              );
-            }
-          } // bcells
-        } // end of loop over volume-cell sets
-      }
-      // standard (no xfem) element
-      else
-      {
-        // get element location vector, dirichlet flags and ownerships
-        actele->LocationVector(*discret_,la,false);
-
-        Epetra_SerialDenseMatrix elemat1;
-        Epetra_SerialDenseMatrix elemat2;
-        Epetra_SerialDenseVector elevec2;
-        Epetra_SerialDenseVector elevec3;
-        params_->set<int>("action",FLD::calc_fluid_error);
-        impl->EvaluateService(ele,
-            *params_,
-            mat,
-            *discret_,
-            la[0].lm_,
-            elemat1,
-            elemat2,
-            ele_dom_norms,
-            elevec2,
-            elevec3);
-      }
-
-      // sum up (on each processor)
-      cpu_interf_norms += ele_interf_norms;
-
-      // sum up (on each processor)
-      cpu_dom_norms += ele_dom_norms;
-
-    }//end loop over fluid elements
-
-    //--------------------------------------------------------
-    // reduce and sum over all procs
-    for (int i=0; i<num_dom_norms; ++i) (*glob_dom_norms)(i) = 0.0;
-    discret_->Comm().SumAll(cpu_dom_norms.Values(), glob_dom_norms->Values(), num_dom_norms);
-
-    for (int i=0; i<num_interf_norms; ++i) (*glob_interf_norms)(i) = 0.0;
-    discret_->Comm().SumAll(cpu_interf_norms.Values(), glob_interf_norms->Values(), num_interf_norms);
-
+    ComputeErrorNorms(glob_dom_norms,glob_interf_norms,glob_stab_norms);
 
     // standard domain errors
     double dom_err_vel_L2      = 0.0;            //  || u - u_h ||_L2(Omega)              =   standard L2-norm for velocity
@@ -1776,6 +1598,194 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
 
   return;
 }
+
+void FLD::XFluid::ComputeErrorNorms(
+  Teuchos::RCP<Epetra_SerialDenseVector> glob_dom_norms,
+  Teuchos::RCP<Epetra_SerialDenseVector> glob_interf_norms,
+  Teuchos::RCP<Epetra_SerialDenseVector> glob_stab_norms)
+{
+  // number of norms that have to be calculated
+  const int num_dom_norms    = glob_dom_norms->Length();
+  const int num_interf_norms = glob_interf_norms->Length();
+  const int num_stab_norms   = glob_stab_norms->Length();
+
+  Epetra_SerialDenseVector cpu_dom_norms(num_dom_norms);
+  Epetra_SerialDenseVector cpu_interf_norms(num_interf_norms);
+  Epetra_SerialDenseVector cpu_stab_norms(num_stab_norms);
+
+  // set vector values needed by elements
+  discret_->ClearState();
+  discret_->SetState("u and p at time n+1 (converged)", state_->velnp_);
+
+  // evaluate domain error norms and interface/boundary error norms at XFEM-interface
+  // loop row elements
+  const int numrowele = discret_->NumMyRowElements();
+  for (int i=0; i<numrowele; ++i)
+  {
+
+    // local element-wise squared error norms
+    Epetra_SerialDenseVector ele_dom_norms(num_dom_norms);
+    Epetra_SerialDenseVector ele_interf_norms(num_interf_norms);
+
+
+    // pointer to current element
+    DRT::Element* actele = discret_->lRowElement(i);
+
+    Teuchos::RCP<MAT::Material> mat = actele->Material();
+
+    DRT::ELEMENTS::Fluid * ele = dynamic_cast<DRT::ELEMENTS::Fluid *>( actele );
+
+    GEO::CUT::ElementHandle * e = state_->Wizard()()->GetElement( actele );
+
+    DRT::Element::LocationArray la( 1 );
+
+    DRT::ELEMENTS::FluidEleInterface * impl = DRT::ELEMENTS::FluidFactory::ProvideImplXFEM( actele->Shape(), "xfem");
+
+    // xfem element
+    if ( e!=NULL )
+    {
+
+      std::vector< GEO::CUT::plain_volumecell_set > cell_sets;
+      std::vector< std::vector<int> > nds_sets;
+      std::vector<std::vector< DRT::UTILS::GaussIntegration > >intpoints_sets;
+
+      bool has_xfem_integration_rule =
+          e->GetCellSets_DofSets_GaussPoints( cell_sets, nds_sets, intpoints_sets, false); //(include_inner=false)
+
+      if(cell_sets.size() != nds_sets.size()) dserror("number of cell_sets and nds_sets not equal!");
+
+      // loop over volume cells
+      for( std::vector< GEO::CUT::plain_volumecell_set>::iterator s=cell_sets.begin();
+          s!=cell_sets.end();
+          s++)
+      {
+        GEO::CUT::plain_volumecell_set & cells = *s;
+        const int set_counter = s - cell_sets.begin();
+        const std::vector<int> & nds = nds_sets[set_counter];
+
+        // get element location vector, dirichlet flags and ownerships
+        actele->LocationVector(*discret_,nds,la,false);
+
+        //------------------------------------------------------------
+        // Evaluate interface integral errors
+        // do cut interface condition
+
+        // maps of sid and corresponding boundary cells ( for quadratic elements: collected via volumecells of subelements)
+        std::map<int, std::vector<GEO::CUT::BoundaryCell*> > bcells;
+        std::map<int, std::vector<DRT::UTILS::GaussIntegration> > bintpoints;
+
+        for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
+        {
+          GEO::CUT::VolumeCell * vc = *i;
+          if ( vc->Position()==GEO::CUT::Point::outside )
+          {
+              vc->GetBoundaryCells( bcells );
+          }
+
+          const int cellcount = i - cells.begin();
+
+          if(!has_xfem_integration_rule) // use standard integration!!!
+          {
+            // get element location vector, dirichlet flags and ownerships
+            actele->LocationVector(*discret_,la,false);
+
+            Epetra_SerialDenseMatrix elemat1;
+            Epetra_SerialDenseMatrix elemat2;
+            Epetra_SerialDenseVector elevec2;
+            Epetra_SerialDenseVector elevec3;
+            params_->set<int>("action",FLD::calc_fluid_error);
+            impl->EvaluateService(ele,
+                *params_,
+                mat,
+                *discret_,
+                la[0].lm_,
+                elemat1,
+                elemat2,
+                ele_dom_norms,
+                elevec2,
+                elevec3);
+          }
+          else
+          {
+            if(cell_sets.size() != intpoints_sets.size()) dserror("number of cell_sets and intpoints_sets not equal!");
+
+            //------------------------------------------------------------
+            // Evaluate domain integral errors
+            impl->ComputeError(ele,
+                *params_,
+                mat,
+                *discret_,
+                la[0].lm_,
+                ele_dom_norms,
+                intpoints_sets[set_counter][cellcount]
+            );
+          }
+        }
+
+        if ( bcells.size() > 0 )
+        {
+          // get boundary cell Gaussian points
+          e->BoundaryCellGaussPointsLin( bcells, bintpoints);
+
+          if(CouplingMethod() == INPAR::XFEM::Hybrid_LM_Cauchy_stress or
+             CouplingMethod() == INPAR::XFEM::Hybrid_LM_viscous_stress or
+             CouplingMethod() == INPAR::XFEM::Nitsche)
+          {
+            impl->ComputeErrorInterface(
+                ele,
+                *discret_,
+                la[0].lm_,
+                condition_manager_,
+                mat,
+                ele_interf_norms,
+                bcells,
+                bintpoints,
+                *params_
+            );
+          }
+        } // bcells
+      } // end of loop over volume-cell sets
+    }
+    // standard (no xfem) element
+    else
+    {
+      // get element location vector, dirichlet flags and ownerships
+      actele->LocationVector(*discret_,la,false);
+
+      Epetra_SerialDenseMatrix elemat1;
+      Epetra_SerialDenseMatrix elemat2;
+      Epetra_SerialDenseVector elevec2;
+      Epetra_SerialDenseVector elevec3;
+      params_->set<int>("action",FLD::calc_fluid_error);
+      impl->EvaluateService(ele,
+          *params_,
+          mat,
+          *discret_,
+          la[0].lm_,
+          elemat1,
+          elemat2,
+          ele_dom_norms,
+          elevec2,
+          elevec3);
+    }
+
+    // sum up (on each processor)
+    cpu_interf_norms += ele_interf_norms;
+
+    // sum up (on each processor)
+    cpu_dom_norms += ele_dom_norms;
+
+  }//end loop over fluid elements
+
+  //--------------------------------------------------------
+  // reduce and sum over all procs
+  for (int i=0; i<num_dom_norms; ++i) (*glob_dom_norms)(i) = 0.0;
+  discret_->Comm().SumAll(cpu_dom_norms.Values(), glob_dom_norms->Values(), num_dom_norms);
+
+  for (int i=0; i<num_interf_norms; ++i) (*glob_interf_norms)(i) = 0.0;
+  discret_->Comm().SumAll(cpu_interf_norms.Values(), glob_interf_norms->Values(), num_interf_norms);
+}
+
 
 /*----------------------------------------------------------------------*
  |  check xfluid input parameters/ safety checks           schott 05/12 |

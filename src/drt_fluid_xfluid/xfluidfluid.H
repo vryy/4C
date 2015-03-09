@@ -191,6 +191,9 @@ public:
   /// write output for both fluid discretizations
   void Output();
 
+  /// evaluate errors compared to implemented analytical solutions
+  void EvaluateErrorComparedToAnalyticalSol();
+
 private:
 
   //! create a new merged state container
@@ -268,6 +271,9 @@ private:
 
   //! no change in dof-maps compared to previous cut
   bool samemaps_;
+
+  //! name of fluid-fluid condition for access from condition manager
+  const std::string cond_name_;
 
 };
 

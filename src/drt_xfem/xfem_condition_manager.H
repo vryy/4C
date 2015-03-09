@@ -1488,7 +1488,6 @@ public:
   }
 
 
-
   int NumMeshCoupling(){return mesh_coupl_.size();}
 
   int NumLevelSetCoupling(){return levelset_coupl_.size();}
@@ -1700,6 +1699,13 @@ public:
   void GetInterfaceMasterMaterial(
     DRT::Element* actele,
     Teuchos::RCP<MAT::Material> & mat
+  );
+
+  /// set material pointer for coupling slave side
+  void GetInterfaceSlaveMaterial(
+    DRT::Element* actele,
+    Teuchos::RCP<MAT::Material> & mat,
+    int coup_sid
   );
 
 private:
