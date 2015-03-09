@@ -406,7 +406,10 @@ void DRT::ELEMENTS::Wall1_PoroP2<distype>::coupling_poroelast(
 
   //get structure material
   if(my::Material()==Teuchos::null) dserror("no structure material available!");
-  if(not POROELAST::UTILS::CheckPoroMaterial(my::Material()))
+  my::structmat_ = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(my::Material());
+  if( my::structmat_->MaterialType() != INPAR::MAT::m_structporo and
+      my::structmat_->MaterialType() != INPAR::MAT::m_structpororeaction and
+      my::structmat_->MaterialType() != INPAR::MAT::m_structpororeactionECM)
     dserror("invalid structure material for poroelasticity");
   my::structmat_ = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(my::Material());
 
@@ -475,7 +478,9 @@ void DRT::ELEMENTS::Wall1_PoroP2<distype>::coupling_poroscatra(
 
   //get structure material
   if(my::Material()==Teuchos::null) dserror("no structure material available!");
-  if(not POROELAST::UTILS::CheckPoroMaterial(my::Material()))
+    if( my::structmat_->MaterialType() != INPAR::MAT::m_structporo and
+        my::structmat_->MaterialType() != INPAR::MAT::m_structpororeaction and
+        my::structmat_->MaterialType() != INPAR::MAT::m_structpororeactionECM)
     dserror("invalid structure material for poroelasticity");
   my::structmat_ = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(my::Material());
 

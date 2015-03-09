@@ -44,8 +44,8 @@ isNurbs_(false),
 weights_(true),
 myknots_(numdim_),
 fluidmat_(Teuchos::null),
-structmat_(Teuchos::null),
-numscal_(0)
+structmat_(Teuchos::null)
+//numscal_(0)
 {
   numgpt_ = intpoints_.NumPoints();
   //ishigherorder_ = DRT::UTILS::secondDerivativesZero<distype>();
@@ -77,8 +77,8 @@ isNurbs_(old.isNurbs_),
 weights_(old.weights_),
 myknots_(old.myknots_),
 fluidmat_(old.fluidmat_),
-structmat_(old.structmat_),
-numscal_(old.numscal_)
+structmat_(old.structmat_)
+//numscal_(old.numscal_)
 {
   numgpt_ = intpoints_.NumPoints();
   return;
@@ -134,7 +134,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::Pack(DRT::PackBuffer& data) const
   // isNurbs_
   so3_ele::AddtoPack(data,isNurbs_);
 
-  so3_ele::AddtoPack(data,numscal_);
+  //so3_ele::AddtoPack(data,numscal_);
 
   // add base class Element
   so3_ele::Pack(data);
@@ -183,7 +183,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::Unpack(const std::vector<char>& d
   // isNurbs_
   isNurbs_ = (bool)( so3_ele::ExtractInt(position,data) );
 
-  numscal_ = so3_ele::ExtractInt(position,data);
+  //numscal_ = so3_ele::ExtractInt(position,data);
 
   // extract base class Element
   std::vector<char> basedata(0);

@@ -258,7 +258,9 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::GetMaterials( )
     if(structmat_==Teuchos::null)
       dserror("cast to poro material failed");
 
-    if(not POROELAST::UTILS::CheckPoroMaterial(Material()))
+    if(structmat_->MaterialType() != INPAR::MAT::m_structporo and
+       structmat_->MaterialType() != INPAR::MAT::m_structpororeaction and
+       structmat_->MaterialType() != INPAR::MAT::m_structpororeactionECM)
       dserror("invalid structure material for poroelasticity");
   }
 

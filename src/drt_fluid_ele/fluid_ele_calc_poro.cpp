@@ -16,7 +16,6 @@
 #include "fluid_ele.H"
 #include "../drt_lib/drt_element_integration_select.H"
 #include "fluid_ele_action.H"
-#include "fluid_ele_calc_poro.H"
 #include "fluid_ele_parameter_poro.H"
 
 #include "../drt_fluid/fluid_rotsym_periodicbc.H"
@@ -41,6 +40,8 @@
 #include "../drt_nurbs_discret/drt_nurbs_utils.H"
 
 #include "../drt_poroelast/poroelast_utils.H"
+
+#include "fluid_ele_calc_poro.H"
 
 
 /*----------------------------------------------------------------------*
@@ -5350,7 +5351,9 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GetStructMaterial(DRT::ELEMENTS::
     if (ele->NumMaterial() > 1)
     {
       structmat_ = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(ele->Material(1));
-      if(not POROELAST::UTILS::CheckPoroMaterial(ele->Material(1)))
+      if(structmat_->MaterialType() != INPAR::MAT::m_structporo and
+         structmat_->MaterialType() != INPAR::MAT::m_structpororeaction and
+         structmat_->MaterialType() != INPAR::MAT::m_structpororeactionECM)
         dserror("invalid structure material for poroelasticity");
     }
     else

@@ -53,7 +53,9 @@ void DRT::ELEMENTS::Wall1::w1_call_matgeononl(
 )
 {
 
-  if(POROELAST::UTILS::CheckPoroMaterial(material))
+  if(material->MaterialType() == INPAR::MAT::m_structporo or
+     material->MaterialType() == INPAR::MAT::m_structpororeaction or
+     material->MaterialType() == INPAR::MAT::m_structpororeactionECM)
   {
     Teuchos::RCP<const MAT::StructPoro> actmat = Teuchos::rcp_static_cast<const MAT::StructPoro>(material);
     //setup is done in so3_poro

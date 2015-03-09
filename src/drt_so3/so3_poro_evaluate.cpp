@@ -1302,7 +1302,9 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GetMaterials( )
   if(structmat_==Teuchos::null)
   {
     structmat_ = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(Material());
-    if(not POROELAST::UTILS::CheckPoroMaterial(structmat_))
+    if(structmat_->MaterialType() != INPAR::MAT::m_structporo and
+       structmat_->MaterialType() != INPAR::MAT::m_structpororeaction and
+       structmat_->MaterialType() != INPAR::MAT::m_structpororeactionECM)
       dserror("invalid structure material for poroelasticity");
   }
 
