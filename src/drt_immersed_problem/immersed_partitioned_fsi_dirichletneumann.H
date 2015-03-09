@@ -43,6 +43,9 @@ public:
   /// setup partitioned ImmersedFSI algorithm
   explicit ImmersedPartitionedFSIDirichletNeumann(const Epetra_Comm& comm);
 
+  /// initialize search tree for structure discretization and ghost structure redundantly
+  void SetupStructuralDiscretization();
+
 protected:
 
   /// composed FSI operator
@@ -63,9 +66,6 @@ protected:
 
   /// add immersed dirichlet values from immersed dis to systemvector of background dis
   void DoImmersedDirichletCond(Teuchos::RCP<Epetra_Vector> statevector, Teuchos::RCP<Epetra_Vector> dirichvals, Teuchos::RCP<Epetra_Map> dbcmap);
-
-  /// setup
-  void SetupStructuralDiscretization(Teuchos::RCP<DRT::Discretization> structdis);
 
   /// determine elements cut by the boundary
   void PrepareFluidOp();

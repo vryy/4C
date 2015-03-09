@@ -31,6 +31,8 @@ Maintainers: Andreas Rauch
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_immersed.H"
 
+#include "../linalg/linalg_utils.H"
+
 // search tree related
 #include "../drt_geometry/searchtree.H"
 #include "../drt_geometry/searchtree_geometry_service.H"
@@ -47,12 +49,10 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::ImmersedPartitionedFSIDirichle
   : ImmersedPartitionedFSI(comm),
     FSI::PartitionedImmersed(comm)
 {
-  if(comm.NumProc()>1)
-    dserror("The current version of immersed guarantees reasonable results only for serial simulations!\n"
-            "Parallelity needs further testing and efficiency improvements.");
+  int myrank = comm.MyPID();
 
   double fsirelax = DRT::Problem::Instance()->FSIDynamicParams().sublist("PARTITIONED SOLVER").get<double>("RELAX");
-  if (fsirelax != 1.0)
+  if (fsirelax != 1.0 and myrank==0)
   {
     std::cout<<"!!!! WARNING !!! \n"
                "Relaxation parameter set in FSI DYNAMIC/PARTITIONED SOLVER section is not equal 1.0.\n"
@@ -62,6 +62,7 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::ImmersedPartitionedFSIDirichle
     dserror("Invalid parameter");
   }
 
+  // initialize some relaxation related member variables
   relaxforceglobally_ = DRT::Problem::Instance()->ImmersedMethodParams().get<std::string>("APPLY_FORCE_RELAX") == "globally";
   relaxvelglobally_   = DRT::Problem::Instance()->ImmersedMethodParams().get<std::string>("APPLY_VEL_RELAX")   == "globally";
   forcerelax_ = DRT::Problem::Instance()->ImmersedMethodParams().get<double>("FORCE_RELAX");
@@ -70,25 +71,26 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::ImmersedPartitionedFSIDirichle
   if(DRT::Problem::Instance()->FSIDynamicParams().get<std::string>("COUPALGO") == "iter_stagg_fixed_rel_param")
   {
     coupalgo_= INPAR::IMMERSED::fixed;
-    std::cout<<"\n"
+    if(myrank==0)
+      std::cout<<"\n"
                " Relax Force globally = "<<relaxforceglobally_<<" with relaxation parameter = "<<forcerelax_<<"\n"
                " Relax Vel   globally = "<<relaxvelglobally_  <<" with relaxation parameter = "<<velrelax_<<"\n"<<std::endl;
   }
   else if(DRT::Problem::Instance()->FSIDynamicParams().get<std::string>("COUPALGO") == "iter_stagg_AITKEN_rel_param")
   {
     coupalgo_ = INPAR::IMMERSED::aitken;
-    std::cout<<"\n Using AITKEN relaxation parameter. "<<std::endl;
+    if(myrank==0)
+      std::cout<<"\n Using AITKEN relaxation parameter. "<<std::endl;
   }
   else
     dserror("Unknown definition of COUPALGO in FSI DYNAMIC section for Immersed FSI.");
 
 
-
   // get coupling variable
   displacementcoupling_ = DRT::Problem::Instance()->FSIDynamicParams().sublist("PARTITIONED SOLVER").get<std::string>("COUPVARIABLE") == "Displacement";
-  if(displacementcoupling_)
+  if(displacementcoupling_ and myrank==0)
     std::cout<<" Coupling variable for partitioned FSI scheme :  Displacements "<<std::endl;
-  else
+  else if (!displacementcoupling_ and myrank==0)
     std::cout<<" Coupling variable for partitioned FSI scheme :  Force "<<std::endl;
 
   // get pointer to discretizations
@@ -100,7 +102,8 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::ImmersedPartitionedFSIDirichle
   structdis_->GetCondition("ImmersedSearchbox",conditions);
   if((int)conditions.size()>0)
   {
-    std::cout<<" MULTIBODY SIMULATION   Number of bodies: "<<(int)conditions.size()<<std::endl;
+    if(myrank==0)
+      std::cout<<" MULTIBODY SIMULATION   Number of bodies: "<<(int)conditions.size()<<std::endl;
     multibodysimulation_ = true;
   }
   else
@@ -112,20 +115,11 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::ImmersedPartitionedFSIDirichle
   // vector with fluid velocities interpolated from structure
   fluid_artificial_velocity_ = Teuchos::rcp(new Epetra_Vector(*(MBFluidField()->FluidField()->DofRowMap()),true));
 
-  // ghost structure on each proc (for search algorithm)
-  if(StructureField()->Discretization()->Comm().NumProc() > 1)
-  {
-    CreateGhosting(DRT::Problem::Instance()->GetDis("structure"));
-  }
-
-  // fill complete to incorporate changes due to ghosting and build geometries
-  StructureField()->Discretization()->FillComplete();
 
   // build 3D search tree for fluid domain
   fluid_SearchTree_ = Teuchos::rcp(new GEO::SearchTree(5));
 
   // find positions of the background fluid discretization
-
   for (int lid = 0; lid < fluiddis_->NumMyColNodes(); ++lid)
   {
     const DRT::Node* node = fluiddis_->lColNode(lid);
@@ -142,30 +136,13 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::ImmersedPartitionedFSIDirichle
   const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofDis(*fluiddis_,currpositions_fluid_);
   fluid_SearchTree_->initializeTree(rootBox,*fluiddis_,GEO::TreeType(GEO::OCTTREE));
 
-  std::cout<<"\n Build Fluid SearchTree ... "<<std::endl;
+  if(myrank==0)
+    std::cout<<"\n Build Fluid SearchTree ... "<<std::endl;
 
 
-  // build 3D search tree for structural domain
+  // construct 3D search tree for structural domain
+  // initialized in SetupStructuralDiscretization()
   structure_SearchTree_ = Teuchos::rcp(new GEO::SearchTree(5));
-
-  // find positions of the immersed structural discretization
-  for (int lid = 0; lid < structdis_->NumMyColNodes(); ++lid)
-  {
-    const DRT::Node* node = structdis_->lColNode(lid);
-    LINALG::Matrix<3,1> currpos;
-
-    currpos(0) = node->X()[0];
-    currpos(1) = node->X()[1];
-    currpos(2) = node->X()[2];
-
-    currpositions_struct_[node->Id()] = currpos;
-  }
-
-  // find the bounding box of the elements and initialize the search tree
-  const LINALG::Matrix<3,2> rootBox2 = GEO::getXAABBofDis(*structdis_,currpositions_struct_);
-  structure_SearchTree_->initializeTree(rootBox2,*structdis_,GEO::TreeType(GEO::OCTTREE));
-
-  std::cout<<"\n Build Structure SearchTree ... "<<std::endl;
 
 
   comm.Barrier();
@@ -207,6 +184,9 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::FSIOp(const Epetra_Vector
     Teuchos::RCP<Epetra_Vector> idispnp =
     StructOp(struct_bdry_traction_, fillFlag);
 
+// DEBUG option:
+// Allows to write a certain nonlinear iteration step
+// no matter if it is really converged or not.
 //#ifdef DEBUG
 //    //////////////////////////////
 //    // DEBUG (dummy zero residual)
@@ -353,7 +333,9 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::FluidOp(Teuchos::RCP<Epetra_Ve
       std::cout<<"################################################################################################"<<std::endl;
       std::cout<<"###   Interpolate Dirichlet Values from immersed elements which overlap the "<<MBFluidField()->Discretization()->Name()<<" nodes ..."<<std::endl;
     }
-    EvaluateWithInternalCommunication(MBFluidField()->Discretization(),&fluid_vol_strategy, curr_subset_of_fluiddis_, structure_SearchTree_, currpositions_struct_);
+
+    if(curr_subset_of_fluiddis_.empty()==false)
+      EvaluateWithInternalCommunication(MBFluidField()->Discretization(),&fluid_vol_strategy, curr_subset_of_fluiddis_, structure_SearchTree_, currpositions_struct_);
 
     BuildImmersedDirichMap(MBFluidField()->Discretization(), dbcmap_immersed_, MBFluidField()->FluidField()->GetDBCMapExtractor()->CondMap());
     Teuchos::rcp_dynamic_cast<ADAPTER::FluidImmersed >(MBFluidField())->AddDirichCond(dbcmap_immersed_);
@@ -584,17 +566,50 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::DoImmersedDirichletCond(T
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::SetupStructuralDiscretization(Teuchos::RCP<DRT::Discretization> structdis)
+void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::SetupStructuralDiscretization()
 {
-  DRT::Condition* fsicouplingsurface = structdis->GetCondition("FSICoupling");
-  std::map<int,Teuchos::RCP<DRT::Element> > fsigeometry = fsicouplingsurface -> Geometry();
-  std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
+  int numproc = Comm().NumProc();
 
-  for (curr=fsigeometry.begin(); curr!=fsigeometry.end(); ++curr)
+  // ghost structure on each proc (for search algorithm)
+  if(numproc > 1)
   {
-    Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(curr->second,true);
-    faceele->ParentElement()->SetFace(0,faceele.get());
+    // fill complete inside
+    CreateGhosting(structdis_);
   }
+  else
+  {
+    // fill complete to incorporate changes due to ghosting and build geometries
+    structdis_->FillComplete();
+  }
+
+  // find positions of the immersed structural discretization
+  std::map<int,LINALG::Matrix<3,1> > my_currpositions_struct;
+  for (int lid = 0; lid < structdis_->NumMyRowNodes(); ++lid)
+  {
+    const DRT::Node* node = structdis_->lRowNode(lid);
+    LINALG::Matrix<3,1> currpos;
+
+    currpos(0) = node->X()[0];
+    currpos(1) = node->X()[1];
+    currpos(2) = node->X()[2];
+
+    my_currpositions_struct[node->Id()] = currpos;
+  }
+  // Communicate local currpositions:
+  // map with current structural positions should be same on all procs
+  // to make use of the advantages of ghosting the structure redundantly
+  // on all procs.
+  int procs[numproc];
+  for(int i=0;i<numproc;i++)
+    procs[i]=i;
+  LINALG::Gather<int,LINALG::Matrix<3,1> >(my_currpositions_struct,currpositions_struct_,numproc,&procs[0],Comm());
+
+  // find the bounding box of the elements and initialize the search tree
+  const LINALG::Matrix<3,2> rootBox2 = GEO::getXAABBofDis(*structdis_,currpositions_struct_);
+  structure_SearchTree_->initializeTree(rootBox2,*structdis_,GEO::TreeType(GEO::OCTTREE));
+
+  if(Comm().MyPID()==0)
+    std::cout<<"\n Build Structure SearchTree ... "<<std::endl;
 
   return;
 }
@@ -609,12 +624,13 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::PrepareFluidOp()
   structdis_->SetState(0,"displacement_old",StructureField()->Dispn());
   structdis_->SetState(0,"velocity_old",StructureField()->Veln());
   structdis_->SetState(0,"velocity",StructureField()->Velnp());
-  fluiddis_->SetState(0,"veln",Teuchos::rcp_dynamic_cast<ADAPTER::FluidImmersed >(MBFluidField())->FluidField()->Veln());
+  fluiddis_ ->SetState(0,"veln",Teuchos::rcp_dynamic_cast<ADAPTER::FluidImmersed >(MBFluidField())->FluidField()->Veln());
 
   double structsearchradiusfac = DRT::Problem::Instance()->ImmersedMethodParams().get<double>("STRCT_SRCHRADIUS_FAC");
 
-//  // DEBUG purposes:
-//  // mark elements in which structural boundary is immersed
+// DEBUG option:
+// mark elements in which structural boundary is immersed
+#ifdef DEBUG
 //  Teuchos::ParameterList params;
 //  params.set<std::string>("action","mark_immersed_elements");
 //
@@ -629,14 +645,19 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::PrepareFluidOp()
 //  );
 //
 //  EvaluateInterpolationCondition( StructureField()->Discretization(), params, dummy_strategy,"FSICoupling", -1 );
+# endif
 
+  //
   // determine subset of fluid discretization which is potentially underlying the structural discretization
+  //
+  // get state
   Teuchos::RCP<const Epetra_Vector> displacements = StructureField()->Dispnp();
-
+  //std::cout<<*displacements<<std::endl;
   // find current positions for immersed structural discretization
-  for (int lid = 0; lid < structdis_->NumMyColNodes(); ++lid)
+  std::map<int,LINALG::Matrix<3,1> > my_currpositions_struct;
+  for (int lid = 0; lid < structdis_->NumMyRowNodes(); ++lid)
   {
-    const DRT::Node* node = structdis_->lColNode(lid);
+    const DRT::Node* node = structdis_->lRowNode(lid);
     LINALG::Matrix<3,1> currpos;
     std::vector<int> dofstoextract(3);
     std::vector<double> mydisp(3);
@@ -649,8 +670,20 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::PrepareFluidOp()
     currpos(1) = node->X()[1]+mydisp.at(1);
     currpos(2) = node->X()[2]+mydisp.at(2);
 
-    currpositions_struct_[node->Id()] = currpos;
+    my_currpositions_struct[node->Id()] = currpos;
   }
+  // Communicate local currpositions:
+  // map with current structural positions should be same on all procs
+  // to make use of the advantages of ghosting the structure redundantly
+  // on all procs.
+  int procs[Comm().NumProc()];
+  for(int i=0;i<Comm().NumProc();i++)
+    procs[i]=i;
+  LINALG::Gather<int,LINALG::Matrix<3,1> >(my_currpositions_struct,currpositions_struct_,Comm().NumProc(),&procs[0],Comm());
+
+//  DEBUG output
+//  std::cout<<"Proc "<<Comm().MyPID()<<": my_curr_pos.size()="<<my_currpositions_struct.size()<<std::endl;
+//  std::cout<<"Proc "<<Comm().MyPID()<<":    curr_pos.size()="<<currpositions_struct_.size()<<std::endl;
 
   if (multibodysimulation_ == false)
   {
@@ -663,9 +696,20 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::PrepareFluidOp()
     boundingboxcenter(1) = structBox(1,0)+(structBox(1,1)-structBox(1,0))*0.5;
     boundingboxcenter(2) = structBox(2,0)+(structBox(2,1)-structBox(2,0))*0.5;
 
+# ifdef DEBUG
+    std::cout<<"Bounding Box of Structure: "<<structBox<<" on PROC "<<Comm().MyPID()<<std::endl;
+    std::cout<<"Bounding Box Center of Structure: "<<boundingboxcenter<<" on PROC "<<Comm().MyPID()<<std::endl;
+    std::cout<<"Search Radius Around Center: "<<structsearchradiusfac*max_radius<<" on PROC "<<Comm().MyPID()<<std::endl;
+    std::cout<<"Length of Dispnp()="<<displacements->MyLength()<<" on PROC "<<Comm().MyPID()<<std::endl;
+    std::cout<<"Size of currpositions_struct_="<<currpositions_struct_.size()<<" on PROC "<<Comm().MyPID()<<std::endl;
+    std::cout<<"My DofRowMap Size="<<structdis_->DofRowMap()->NumMyElements()<<"  My DofColMap Size="<<structdis_->DofColMap()->NumMyElements()<<" on PROC "<<Comm().MyPID()<<std::endl;
+    std::cout<<"Dis Structure NumColEles: "<<structdis_->NumMyColElements()<<" on PROC "<<Comm().MyPID()<<std::endl;
+# endif
+
     curr_subset_of_fluiddis_ = fluid_SearchTree_->searchElementsInRadius(*fluiddis_,currpositions_fluid_,boundingboxcenter,structsearchradiusfac*max_radius,0);
 
-    std::cout<<"\nPrepareFluidOp returns "<<curr_subset_of_fluiddis_.begin()->second.size()<<" background elements"<<std::endl;
+    if(curr_subset_of_fluiddis_.empty() == false)
+      std::cout<<"\nPrepareFluidOp returns "<<curr_subset_of_fluiddis_.begin()->second.size()<<" background elements on Proc "<<Comm().MyPID()<<std::endl;
   }
   else
   {
@@ -710,9 +754,9 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::PrepareFluidOp()
       std::cout<<"\nPrepareFluidOp returns "<<curr_subset_of_fluiddis_.at(i).size()<<" background elements for body "<<i<<std::endl;
   }
 
-
-//  // debug
-//  // output of set
+//  // DEBUG option:
+//  // output of sets:
+//
 //  std::cout<<"\n Structural bounding box diagonal = "<<max_radius<<std::endl;
 //  std::cout<<"\n bounding box center coordinate = "<<boundingboxcenter<<std::endl;
 //  if(curr_subset_of_fluiddis_.empty() == false)
@@ -723,12 +767,25 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::PrepareFluidOp()
 //      for(std::set<int>::const_iterator eleIter = (closele->second).begin(); eleIter != (closele->second).end(); eleIter++)
 //      {
 //        counter ++;
-//        std::cout<<"eleIter "<<counter<<" : "<<*eleIter<<std::endl;
+//        std::cout<<"PROC"<<Comm().MyPID()<<" key "<<closele->first<<" eleIter "<<counter<<" : "<<*eleIter<<std::endl;
 //      }
 //    }
 //  }
 //  else
-//    dserror("!!!!!!!!!!!!");
+//    std::cout<<"curr_subset_of_fluiddis_ empty on PROC "<<Comm().MyPID()<<std::endl;
+//
+//  //___________________________
+//
+//  if(currpositions_struct_.empty() == false)
+//  {
+//    int counter = 0;
+//    for(std::map<int,LINALG::Matrix<3,1> >::const_iterator closele = currpositions_struct_.begin(); closele != currpositions_struct_.end(); closele++)
+//    {
+//      counter ++;
+//      if(Comm().MyPID()==1)
+//      std::cout<<"PROC"<<Comm().MyPID()<<" key: "<<closele->first<<"  position: "<<counter<<closele->second(0)<<" "<<closele->second(1)<<" "<<closele->second(2)<<std::endl;
+//    }
+//  }
 
   return;
 }

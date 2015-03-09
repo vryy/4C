@@ -58,7 +58,7 @@ public:
                                                     const Teuchos::RCP<std::map<int,Teuchos::RCP<std::map<int,Teuchos::RCP<std::vector<double> > > > > >& gpmap = Teuchos::null
                                                     );
 
-  void CreateGhosting(Teuchos::RCP<DRT::Discretization> distobeghosted);
+  void CreateGhosting(const Teuchos::RCP<DRT::Discretization> distobeghosted);
 
   void CreateVolumeCondition(Teuchos::RCP<DRT::Discretization> dis, std::vector<int> dvol_fenode, DRT::Condition::ConditionType condtype, std::string condname);
 
@@ -369,7 +369,7 @@ public:
       }// enter loop only if point not yet matched
       /////////////////////////////////////////////////////////////////////
 
-      if(comm.NumProc()>1)
+      if(numproc>1)
       {
         // ---- pack data for sending -----
         {
@@ -706,7 +706,7 @@ public:
       }// enter loop only if point not yet matched
       /////////////////////////////////////////////////////////////////////
 
-      if(comm.NumProc()>1)
+      if(numproc>1)
       {
         // ---- pack data for sending -----
         {
@@ -983,13 +983,13 @@ public:
               {
                 std::cout<<"scalarproduct = "<<scalarproduct<<std::endl;
                 dserror("normal vec and vec from point to node perpendicular.\n"
-                    "no robust determination of outward lying src ele possible");
+                        "no robust determination of outward lying src ele possible");
               }
               if(abs(scalarproduct) < -1e-12 and validsource)
               {
                 std::cout<<"scalarproduct = "<<scalarproduct<<std::endl;
                 dserror("normal vec and vec from point to node have no sharp angle.\n"
-                    "no robust determination of outward laying src ele possible");
+                        "no robust determination of outward laying src ele possible");
               }
 #endif
 
@@ -1017,58 +1017,60 @@ public:
       /////////////////////////////////////////////////////////////////////
 
 
-      // ---- pack data for sending -----
+      if(numproc>1)
       {
-        DRT::PackBuffer data;
-        data.StartPacking();
+        // ---- pack data for sending -----
         {
-          data.AddtoPack(matched);
-          data.AddtoPack(owner);
-
-          // point coordinate
-          for(int dim=0;dim<globdim;++dim)
+          DRT::PackBuffer data;
+          data.StartPacking();
           {
-            data.AddtoPack(xvec[dim]);
-          }
+            data.AddtoPack(matched);
+            data.AddtoPack(owner);
 
-          // normal vector
-          for(int dim=0;dim<globdim;++dim)
-          {
-            data.AddtoPack(normal_vec[dim]);
-          }
+            // point coordinate
+            for(int dim=0;dim<globdim;++dim)
+            {
+              data.AddtoPack(xvec[dim]);
+            }
 
-          std::swap(sdata, data());
+            // normal vector
+            for(int dim=0;dim<globdim;++dim)
+            {
+              data.AddtoPack(normal_vec[dim]);
+            }
+
+            std::swap(sdata, data());
+          }
         }
-      }
-      //---------------------------------
+        //---------------------------------
 
-      // ---- send ----
-      MPI_Request request;
-      exporter.ISend(myrank, torank, &(sdata[0]), (int)sdata.size(), 1234, request);
+        // ---- send ----
+        MPI_Request request;
+        exporter.ISend(myrank, torank, &(sdata[0]), (int)sdata.size(), 1234, request);
 
-      // ---- receive ----
-      int length = rdata.size();
-      int tag = -1;
-      int from = -1;
-      exporter.ReceiveAny(from,tag,rdata,length);
-      if (tag != 1234 or from != fromrank)
-        dserror("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank, myrank, from, myrank);
+        // ---- receive ----
+        int length = rdata.size();
+        int tag = -1;
+        int from = -1;
+        exporter.ReceiveAny(from,tag,rdata,length);
+        if (tag != 1234 or from != fromrank)
+          dserror("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank, myrank, from, myrank);
 
-      // ---- unpack data -----
-      std::vector<char>::size_type position = 0;
-      matched    = DRT::ParObject::ExtractInt(position,rdata);
-      owner      = DRT::ParObject::ExtractInt(position,rdata);
+        // ---- unpack data -----
+        std::vector<char>::size_type position = 0;
+        matched    = DRT::ParObject::ExtractInt(position,rdata);
+        owner      = DRT::ParObject::ExtractInt(position,rdata);
 
-      for(int i=0;i<globdim;++i)
-        xvec[i] = DRT::ParObject::ExtractDouble(position,rdata);
+        for(int i=0;i<globdim;++i)
+          xvec[i] = DRT::ParObject::ExtractDouble(position,rdata);
 
-      for(int i=0;i<globdim;++i)
-        normal_vec[i] = DRT::ParObject::ExtractDouble(position,rdata);
+        for(int i=0;i<globdim;++i)
+          normal_vec[i] = DRT::ParObject::ExtractDouble(position,rdata);
 
-      // wait for all communication to finish
-      exporter.Wait(request);
-      comm.Barrier();
-
+        // wait for all communication to finish
+        exporter.Wait(request);
+        comm.Barrier();
+      } // only if parallel simulation (numproc > 1)
     } // end for irobin
 
 #ifdef DEBUG
@@ -1093,7 +1095,8 @@ public:
       const std::vector<double>& targetedisp,
       const std::string action,
       std::vector<double>& targetdata,
-      bool& match
+      bool& match,
+      bool doCommunication = true
   )
   {
     //////////////////////////////////////////////////////////////////////////////////
@@ -1110,7 +1113,7 @@ public:
 
     // get communicator
     const Epetra_Comm& comm = sourcedis->Comm();
-    //std::cout<<"PROC "<<comm.MyPID()<<std::endl;
+
     // get the global problem
     DRT::Problem* problem = DRT::Problem::Instance();
 
@@ -1127,12 +1130,16 @@ public:
     static const int source_dim = DRT::UTILS::DisTypeToDim<sourcedistype>::dim;
 
     // declarations and definitions for round robin loop
-    const int numproc  = comm.NumProc();
+          int numproc  = comm.NumProc();
     const int myrank   = comm.MyPID();                     // myrank
     const int torank   = (myrank + 1) % numproc;           // sends to
     const int fromrank = (myrank + numproc - 1) % numproc; // recieves from
 
-    DRT::Exporter exporter(comm);
+    if(numproc == 1)
+      doCommunication=false;
+
+    if(doCommunication==false)
+      numproc=1;
 
     Teuchos::RCP<const Epetra_Vector> dispnp = sourcedis->GetState("displacement");
     DRT::Element::LocationArray la(sourcedis->NumDofSets());
@@ -1144,13 +1151,14 @@ public:
     xvec[1]=x[1];
     xvec[2]=x[2];
 
-    // vector to fill by sourcedis->Evaluate (needs to be resized in calc class)
+    // vector to be filled in sourcedis->Evaluate (needs to be resized in calc class)
     Teuchos::RCP<Epetra_SerialDenseVector> vectofill = Teuchos::rcp(new Epetra_SerialDenseVector(4));
     (*vectofill)(0)=-1234.0;
     if(match) // was already matched, add no contribution
     {(*vectofill)(0)=0.0;
-    (*vectofill)(1)=0.0;
-    (*vectofill)(2)=0.0;}
+     (*vectofill)(1)=0.0;
+     (*vectofill)(2)=0.0;
+     (*vectofill)(3)=0.0; }
 
     // save parameter space coordinate in serial dense vector
     Teuchos::RCP<Epetra_SerialDenseVector> xi_dense = Teuchos::rcp(new Epetra_SerialDenseVector(source_dim));
@@ -1313,8 +1321,10 @@ public:
       }// enter loop only if point not yet matched
       /////////////////////////////////////////////////////////////////////
 
-      if(comm.NumProc()>1)
+      if(doCommunication)
       {
+        DRT::Exporter exporter(comm);
+
         // ---- pack data for sending -----
         {
           DRT::PackBuffer data;

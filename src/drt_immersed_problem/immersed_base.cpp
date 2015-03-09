@@ -789,7 +789,7 @@ std::vector<int> IMMERSED::ImmersedBase::DetermineImmersionBoundaryDomain(Teucho
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IMMERSED::ImmersedBase::CreateGhosting(Teuchos::RCP<DRT::Discretization> distobeghosted)
+void IMMERSED::ImmersedBase::CreateGhosting(const Teuchos::RCP<DRT::Discretization> distobeghosted)
 {
   if(distobeghosted->Comm().MyPID() == 0)
   {
@@ -851,9 +851,14 @@ void IMMERSED::ImmersedBase::CreateGhosting(Teuchos::RCP<DRT::Discretization> di
 
 #ifdef DEBUG
   int nummycolnodes = newnodecolmap->NumMyElements();
+  int nummycolelements = newelecolmap->NumMyElements();
   int sizelist[distobeghosted->Comm().NumProc()];
   distobeghosted->Comm().GatherAll(&nummycolnodes,&sizelist[0],1);
   std::cout<<"PROC "<<distobeghosted->Comm().MyPID()<<" : "<<nummycolnodes<<" colnodes"<<std::endl;
+  distobeghosted->Comm().Barrier();
+  std::cout<<"PROC "<<distobeghosted->Comm().MyPID()<<" : "<<nummycolelements<<" colelements"<<std::endl;
+  distobeghosted->Comm().Barrier();
+  std::cout<<"PROC "<<distobeghosted->Comm().MyPID()<<" : "<<distobeghosted->lColElement(0)->Nodes()[0]->Id()<<" first ID of first node of first colele"<<std::endl;
   distobeghosted->Comm().Barrier(); // wait for procs
   for(int k=1;k<distobeghosted->Comm().NumProc();++k)
   {
@@ -908,7 +913,6 @@ void IMMERSED::ImmersedBase::UpdateVolumeCondition(Teuchos::RCP<DRT::Discretizat
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedBase::EvaluateWithInternalCommunication(Teuchos::RCP<DRT::Discretization> dis, DRT::AssembleStrategy* strategy, std::map<int,std::set<int> >& elementstoeval, Teuchos::RCP<GEO::SearchTree> structsearchtree, std::map<int,LINALG::Matrix<3,1> >& currpositions_struct)
 {
-
   // pointer to element
   DRT::Element* ele;
 
@@ -940,57 +944,17 @@ void IMMERSED::ImmersedBase::EvaluateWithInternalCommunication(Teuchos::RCP<DRT:
       strategy->AssembleVector1( la[row].lm_, la[row].lmowner_ );
     }
   }
+} // EvaluateWithInternalCommunication
 
-//  // element row map of dis
-//  const Epetra_Map* elementrowmap = dis->ElementRowMap();
-//  int myglobalrowelementsize = elementrowmap->NumMyElements();
-//  int maxcolmapsize;
-//  dis->Comm().MaxAll(&myglobalrowelementsize,&maxcolmapsize,1);
-//
-//  // counter
-//  int rowele=0;
-//  int loopcount=0;
-//
-//  // evaluate all elements and do a dummy call on the rank's last element until proc with most
-//  // elements has evaluated all elements.
-//  while (loopcount<maxcolmapsize)
-//  {
-//    //std::cout<<"PROC "<<dis->Comm().MyPID()<<" : "<<rowele<<std::endl;
-//    ele = dis->gElement(elementrowmap->GID(rowele));
-//
-//    // evaluate this element and fill vector with immersed dirichlets
-//    int row = strategy->FirstDofSet();
-//    int col = strategy->SecondDofSet();
-//
-//    Teuchos::ParameterList params;
-//    params.set<int>("action",FLD::interpolate_velocity_to_given_point);
-//    DRT::Element::LocationArray la(1);
-//    dynamic_cast<DRT::ELEMENTS::FluidImmersed*>(ele)->LocationVector(*dis,la,false);
-//    strategy->ClearElementStorage( la[row].Size(), la[col].Size() );
-//
-//    dynamic_cast<DRT::ELEMENTS::FluidImmersed*>(ele)->Evaluate(params,*dis,la[0].lm_,
-//        strategy->Elematrix1(),
-//        strategy->Elematrix2(),
-//        strategy->Elevector1(),
-//        strategy->Elevector2(),
-//        strategy->Elevector3());
-//
-//    if(rowele<(myglobalrowelementsize-1) )
-//      strategy->AssembleVector1( la[row].lm_, la[row].lmowner_ );
-//
-//
-//    loopcount++;
-//    if(rowele<myglobalrowelementsize-2)
-//      rowele++;
-//  }
-
-}
-
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 /// !! Only for parallel calculations !!
 /// Reduces to standard EvaluateCondition on one proc.
 /// Evaluate a specific condition using assemble strategy allowing communication at element level
 /// until every conditioned element is evaluated. Needed especially during interpolation from an
-/// other discretization to the conditioned elements (e.g. in immersed method). rauch 05/14
+/// other discretization to the conditioned elements (e.g. in immersed method).
+/// The integration point of a conditiond element requesting a quantity may be owned by the same
+/// proc as the interpolating element providing this quantity.  rauch 05/14
 void IMMERSED::ImmersedBase::EvaluateInterpolationCondition
 (
     Teuchos::RCP<DRT::Discretization> evaldis,
@@ -1000,8 +964,10 @@ void IMMERSED::ImmersedBase::EvaluateInterpolationCondition
     const int condid
 )
 {
+# ifdef DEBUG
   if (!(evaldis->Filled()) ) dserror("FillComplete() was not called");
   if (!(evaldis->HaveDofs())) dserror("AssignDegreesOfFreedom() was not called");
+# endif
 
   int row = strategy.FirstDofSet();
   int col = strategy.SecondDofSet();
@@ -1027,10 +993,8 @@ void IMMERSED::ImmersedBase::EvaluateInterpolationCondition
       if (condid == -1 || condid ==cond.GetInt("ConditionID"))
       {
         std::map<int,Teuchos::RCP<DRT::Element> >& geom = cond.Geometry();
-        // if (geom.empty()) dserror("evaluation of condition with empty geometry");
-        // no check for empty geometry here since in parallel computations
-        // can exist processors which do not own a portion of the elements belonging
-        // to the condition geometry
+        if (geom.empty()) dserror("evaluation of condition with empty geometry on proc %d",evaldis->Comm().MyPID());
+
         std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
 
         // Evaluate Loadcurve if defined. Put current load factor in parameterlist
@@ -1056,7 +1020,11 @@ void IMMERSED::ImmersedBase::EvaluateInterpolationCondition
         }
         params.set<Teuchos::RCP<DRT::Condition> >("condition", fool->second);
 
-        int mygeometrysize=geom.size();
+        int mygeometrysize;
+        if(geom.empty()==true)
+          mygeometrysize=0;
+        else
+          mygeometrysize=geom.size();
         int maxgeometrysize;
         evaldis->Comm().MaxAll(&mygeometrysize,&maxgeometrysize,1);
         curr=geom.begin();
@@ -1064,7 +1032,7 @@ void IMMERSED::ImmersedBase::EvaluateInterpolationCondition
         // enter loop on every proc until the last proc evaluated his last geometry element
         // because there is communication happening inside
         for (int i=0;i<maxgeometrysize;++i)
-        { //std::cout<<"PROC "<<comm_->MyPID()<<" : i = "<<i<<std::endl;
+        {
           // get element location vector and ownerships
           // the LocationVector method will return the the location vector
           // of the dofs this condition is meant to assemble into.
@@ -1087,7 +1055,7 @@ void IMMERSED::ImmersedBase::EvaluateInterpolationCondition
               strategy.Elevector3());
           if (err) dserror("error while evaluating elements");
 
-          if(i<(mygeometrysize-1))
+          if(i<mygeometrysize)
           {
             // assembly
             int eid = curr->second->Id();
@@ -1101,6 +1069,7 @@ void IMMERSED::ImmersedBase::EvaluateInterpolationCondition
           // go to next element
           if (i<(mygeometrysize-1))
             ++curr;
+
         }
       }
     }

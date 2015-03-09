@@ -3346,8 +3346,9 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityToNode(
                                                         targeteledisp,
                                                         action,
                                                         vel, // result
-                                                        match
-                                                       );
+                                                        match,
+                                                        false // do no communication. immerseddis is ghosted. every proc finds an immersed element to
+                                                       );     // interpolate to its backgrd nodes.
 
   if(match)
   {
@@ -3366,7 +3367,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityToNode(
       elevec1_epetra((node*numdofpernode_)+i) += vel[i];
     }
 
-    // also set pressure to zero // coment probably outdated
+    // set a pressure value (affects fluid only if pressure dof is included in dirichlet map)
     elevec1_epetra((node*numdofpernode_)+nsd_) = vel[nsd_];
 
     // only elements who really interpolate are set as IsImmersed
@@ -4256,14 +4257,12 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcMassFlowPeriodicHill(
 //  }
 
 
-//#ifdef DEBUG
   if(reset_isimmersed)
   {
     immersedele->SetIsImmersed(0);
   }
 
   immersedele->SetIsImmersedBoundary(0);
-//#endif
 
   if(reset_hasprojecteddirichlet)
   {

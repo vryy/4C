@@ -1417,15 +1417,15 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
     //
     // InterpolateToImmersedIntPoint(...)
     //
-    // this is a generally applicable method for this purpose returning
+    // which is a generally applicable method for this purpose returning
     // the desired quantitiy from another field interpolated to the current
     // integration point belonging to THIS field.
     //
     // fluiddis  = backgrddis
     // structdis = immerseddis
     //
-    // if discretizations named differently are to be dealt with, hand
-    // them in via the parameter list.
+    // if discretizations named differently are to be dealt with, provide
+    // their names via the parameter list.
     //
     // CALC:   /
     //        /
@@ -1597,7 +1597,9 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
       const double norm2 = unitnormal.Norm2();
       unitnormal.Scale(1/norm2);
 
-//      // DEBUG
+      //         //////////////////
+      //        // Debug output //
+      //       //////////////////
 //      std::cout<<"_________________________________________________________________________________"<<std::endl;
 //      std::cout<<unitnormal<<std::endl;
 
@@ -1616,7 +1618,9 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
       cauchystress(2,1)=cauchystress(1,2);
       cauchystress(2,0)=cauchystress(0,2);
 
-//      // DEBUG
+//        //////////////////
+//       // Debug output //
+//      //////////////////
 //      std::cout<<"[ "<<cauchystress(0,0)<<" "<<cauchystress(0,1)<<" "<<cauchystress(0,2)<<" ]"<<std::endl;
 //      std::cout<<"[ "<<cauchystress(1,0)<<" "<<cauchystress(1,1)<<" "<<cauchystress(1,2)<<" ]"<<std::endl;
 //      std::cout<<"[ "<<cauchystress(2,0)<<" "<<cauchystress(2,1)<<" "<<cauchystress(2,2)<<" ]"<<std::endl;
@@ -1650,7 +1654,9 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
       LINALG::Matrix<3,3> tempmat;
       tempmat.MultiplyNT(cauchystress,defgrd_inv);
 
-//      // DEBUG
+//        //////////////////
+//       // Debug output //
+//      //////////////////
 //      std::cout<<"[ "<<tempmat(0,0)<<" "<<tempmat(0,1)<<" "<<tempmat(0,2)<<" ]"<<std::endl;
 //      std::cout<<"[ "<<tempmat(1,0)<<" "<<tempmat(1,1)<<" "<<tempmat(1,2)<<" ]"<<std::endl;
 //      std::cout<<"[ "<<tempmat(2,0)<<" "<<tempmat(2,1)<<" "<<tempmat(2,2)<<" ]"<<std::endl;

@@ -128,7 +128,8 @@ void FSI::Partitioned::SetupCoupling(const Teuchos::ParameterList& fsidyn ,const
   }
   else
   {
-    std::cout<<"\n No setup for fsi interface treatment needed.\n Performing IMMERSED FSI ALGORITHM ... \n"<<std::endl;
+    if(comm.MyPID()==0)
+      std::cout<<"\n No setup for fsi interface treatment needed.\n Performing IMMERSED FSI ALGORITHM ... \n"<<std::endl;
   }
 
     // enable debugging

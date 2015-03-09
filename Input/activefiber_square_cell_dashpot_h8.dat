@@ -39,8 +39,8 @@ DYNAMICTYP                      OneStepTheta
 RESULTSEVRY                     1
 RESTARTEVRY                     1000
 TIMESTEP                        20.0
-NUMSTEP                         3
-MAXTIME                         60.0
+NUMSTEP                         400
+MAXTIME                         8000.0
 TOLDISP                         1e-06
 NORM_DISP                       Abs
 TOLRES                          1e-06
@@ -64,7 +64,7 @@ SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_ACTIVEFIBER DENS 1.0 DECAY 720.0 IDMATPASSIVE 2 KFOR 10.0 KBACK 1.0 KVAR 10.0 SIGMAX 3.9E+03 EPSNULL 2.8E-04
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 1.0
-MAT 3 ELAST_CoupNeoHooke YOUNG 77.0 NUE 0.3
+MAT 3 ELAST_CoupNeoHooke YOUNG 77.0 NUE 0.0
 -----------------------------------------------CLONING MATERIAL MAP
 -------------------------------------------------------------CURVE1
 -------------------------------------------------------------CURVE2

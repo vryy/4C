@@ -53,9 +53,10 @@ LINALG::Matrix<3, 2> GEO::getXAABBofDis(const DRT::Discretization& dis,
   {
     const DRT::Element* element = dis.lColElement(j);
     const LINALG::SerialDenseMatrix xyze_element(
-        GEO::getCurrentNodalPositions(element, currentpositions));
+    GEO::getCurrentNodalPositions(element, currentpositions));
     GEO::EleGeoType eleGeoType(GEO::HIGHERORDER);
     GEO::checkRoughGeoType(element, xyze_element, eleGeoType);
+
     const LINALG::Matrix<3, 2> xaabbEle = GEO::computeFastXAABB(
         element->Shape(), xyze_element, eleGeoType);
     XAABB = mergeAABB(XAABB, xaabbEle);

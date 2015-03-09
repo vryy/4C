@@ -59,6 +59,7 @@ void immersed_problem_drt()
         algo->ReadRestart(restart);
       }
 
+      algo->SetupStructuralDiscretization();
       algo->Timeloop(algo);
 
       // create result tests for single fields
