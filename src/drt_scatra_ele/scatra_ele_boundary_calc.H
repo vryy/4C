@@ -304,6 +304,17 @@ public:
       Epetra_SerialDenseVector&          elevec_epetra         //!< ele rhs
       );
 
+  //! evaluate Robin boundary condition
+  virtual void CalcRobinBoundary(
+      DRT::ELEMENTS::TransportBoundary* ele,
+      Teuchos::ParameterList&           params,
+      DRT::Discretization&              discretization,
+      std::vector<int>&                 lm,
+      Epetra_SerialDenseMatrix&         elemat1_epetra,
+      Epetra_SerialDenseVector&         elevec1_epetra,
+      const double                      scalar
+  );
+
   //! pointer to parameter list for time integration
   DRT::ELEMENTS::ScaTraEleParameterTimInt* scatraparamstimint_;
   //! pointer to parameter list

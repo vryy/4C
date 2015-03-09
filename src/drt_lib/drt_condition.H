@@ -262,7 +262,8 @@ public:
     ImmersedSearchbox,
     ParticlePeriodic,
     RedAirwayVolDependentPleuralPressureCond,
-    RedAirwayEvalLungVolCond
+    RedAirwayEvalLungVolCond,
+    TransportRobin
   };
 
   /*!

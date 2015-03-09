@@ -4945,6 +4945,39 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(pressmon_surface);
 
   /*--------------------------------------------------------------------*/
+
+  /*--------------------------------------------------------------------*/
+  // Robin boundary condition for scalar transport problems
+  // line
+  Teuchos::RCP<ConditionDefinition> scatrarobinline =
+    Teuchos::rcp(new ConditionDefinition("SCATRA ROBIN LINE CONDITIONS",
+                                         "ScatraRobin",
+                                         "Scalar Transport Robin Boundary Condition",
+                                         DRT::Condition::TransportRobin,
+                                         true,
+                                         DRT::Condition::Line));
+  // surface
+  Teuchos::RCP<ConditionDefinition> scatrarobinsurf =
+    Teuchos::rcp(new ConditionDefinition("SCATRA ROBIN SURF CONDITIONS",
+                                         "ScatraRobin",
+                                         "Scalar Transport Robin Boundary Condition",
+                                         DRT::Condition::TransportRobin,
+                                         true,
+                                         DRT::Condition::Surface));
+  std::vector<Teuchos::RCP<ConditionComponent> > prefac;
+  prefac.push_back(Teuchos::rcp(new SeparatorConditionComponent("Prefactor",true)));
+  prefac.push_back(Teuchos::rcp(new RealConditionComponent("Prefactor")));
+
+  for(unsigned i=0; i<prefac.size(); ++i)
+  {
+    scatrarobinline->AddComponent(prefac[i]);
+    scatrarobinsurf->AddComponent(prefac[i]);
+  }
+  condlist.push_back(scatrarobinline);
+  condlist.push_back(scatrarobinsurf);
+
+  /*--------------------------------------------------------------------*/
+
   return vc;
 
 }

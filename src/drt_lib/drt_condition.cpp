@@ -247,6 +247,7 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==ImmersedSearchbox)             os << "Box for search algorithm in immersed method";
   else if (Type()==RedAirwayVolDependentPleuralPressureCond) os <<"Reduced D airways evaluate lungs volume-dependent peural pressure condition";
   else if (Type()==RedAirwayEvalLungVolCond)      os <<"Reduced D airways evaluate lung volume condition";
+  else if (Type()==TransportRobin)                os << "Scalar transport Robin boundary condition";
   else dserror("no output std::string for condition defined in DRT::Condition::Print");
 
   Container::Print(os);

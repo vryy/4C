@@ -2377,9 +2377,38 @@ void SCATRA::ScaTraTimIntImpl::EvaluateSolutionDependingConditions(
   // evaluate meshtying
   strategy_->EvaluateMeshtying();
 
+  // evaluate Robin type boundary condition (needed for photacoustic simulations)
+  EvaluateRobinBoundaryConditions(systemmatrix,rhs);
+
   return;
 } // ScaTraTimIntImpl::EvaluateSolutionDependingConditions
 
+
+/*----------------------------------------------------------------------------*
+ | evaluate Robin boundary conditions                          schoeder 03/15 |
+ *----------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::EvaluateRobinBoundaryConditions(
+    Teuchos::RCP<LINALG::SparseOperator> matrix,      //!< system matrix
+    Teuchos::RCP<Epetra_Vector>          rhs                //!< rhs vector
+)
+{
+  discret_->ClearState();
+
+  // create parameter list
+  Teuchos::ParameterList condparams;
+
+  // action for elements
+  condparams.set<int>("action",SCATRA::bd_calc_Robin);
+
+  // add element parameters and set state vectors according to time-integration scheme
+  AddTimeIntegrationSpecificVectors();
+
+  // evaluate ElchBoundaryKinetics conditions at time t_{n+1} or t_{n+alpha_F}
+  discret_->EvaluateCondition(condparams,matrix,Teuchos::null,rhs,Teuchos::null,Teuchos::null,"ScatraRobin");
+  discret_->ClearState();
+
+  return;
+} // ScaTraTimIntImpl::EvaluateRobinBoundaryConditions
 
 /*----------------------------------------------------------------------*
  | contains the assembly process for matrix and rhs            vg 08/09 |

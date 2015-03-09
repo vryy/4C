@@ -455,6 +455,19 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
 
     break;
   }
+  case SCATRA::bd_calc_Robin:
+  {
+    CalcRobinBoundary(
+        ele,
+        params,
+        discretization,
+        lm,
+        elemat1_epetra,
+        elevec1_epetra,
+        1.
+        );
+    break;
+  }
   default:
   {
     dserror("Not acting on this boundary action. Forgot implementation?");
@@ -1160,6 +1173,54 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICoupling(
   return;
 }
 
+/*----------------------------------------------------------------------*
+ | evaluate Robin boundary condition                    schoeder 03/15  |
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcRobinBoundary(
+    DRT::ELEMENTS::TransportBoundary* ele,
+    Teuchos::ParameterList&           params,
+    DRT::Discretization&              discretization,
+    std::vector<int>&                 lm,
+    Epetra_SerialDenseMatrix&         elemat1_epetra,
+    Epetra_SerialDenseVector&         elevec1_epetra,
+    const double                      scalar
+    )
+{
+  // get current condition
+  Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition> >("condition");
+  if(cond == Teuchos::null)
+    dserror("Cannot access condition 'ScatraRobin'");
+
+  double prefac = cond->GetDouble("Prefactor");
+
+  // integration points and weights
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  // loop over all scalars
+  for(int k=0; k<numscal_; ++k)
+  {
+    for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
+    {
+      const double fac = DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
+      // evaluate overall integration factors
+      const double timefac = scatraparamstimint_->TimeFac()*fac;
+      const double timefacprefac = timefac * prefac;
+
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const int fvi = vi*numscal_+k;
+
+        for (int ui=0; ui<nen_; ++ui)
+        {
+          elemat1_epetra(fvi,ui*numscal_+k) += funct_(vi)*funct_(ui)* timefacprefac;
+        }
+      }
+    }
+  }
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
  |  Evaluate surface/interface permeability                  Thon 11/14 |

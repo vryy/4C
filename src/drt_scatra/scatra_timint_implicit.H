@@ -651,6 +651,12 @@ protected:
     Teuchos::RCP<Epetra_Vector>          rhs                //!< rhs vector
   );
 
+  //! compute contribution of Robin boundary condition to eq. system
+  void EvaluateRobinBoundaryConditions(
+    Teuchos::RCP<LINALG::SparseOperator> matrix, //!< system matrix
+    Teuchos::RCP<Epetra_Vector>          rhs     //!< rhs vector
+  );
+
   /*--- query and output ---------------------------------------------------*/
 
   //! helper function to get algorithm title
