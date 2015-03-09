@@ -394,10 +394,12 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(
 
   // get function
   const int *initfield = params.getPtr<int>("initfield");
-  const int *start_func = params.getPtr<int>("startfuncno");
+  const int *startfunc = params.getPtr<int>("startfuncno");
+  double *time = params.getPtr<double>("time");
 
   double avgpre = 0., vol = 0.;
-  if (elevec2.M() > 0) {
+  if (elevec2.M() > 0)
+  {
     Epetra_SerialDenseMatrix localMat(View, elevec2.A(), shapes_->ndofs_, shapes_->ndofs_, nsd_*nsd_+nsd_+1, false);
     zeroMatrix(localMat);
 
@@ -411,9 +413,9 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(
       LINALG::Matrix<nsd_,1>    u(false);
       LINALG::Matrix<nsd_,nsd_> grad(false);
       double p;
-      dsassert(initfield != NULL && start_func != NULL,
+      dsassert(initfield != NULL && startfunc != NULL,
                "initfield or startfuncno not set for initial value");
-      EvaluateAll(*start_func, INPAR::FLUID::InitialField(*initfield), xyz, u, grad, p);
+      EvaluateAll(*startfunc, INPAR::FLUID::InitialField(*initfield), xyz, u, grad, p);
 
       // now fill the components in the one-sided mass matrix and the right hand side
       for (unsigned int i=0; i<shapes_->ndofs_; ++i) {
@@ -449,9 +451,9 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(
   const unsigned int *faceConsider = params.getPtr<unsigned int>("faceconsider");
   Teuchos::Array<int> *functno = params.getPtr<Teuchos::Array<int> >("funct");
   Teuchos::Array<int> *onoff = params.getPtr<Teuchos::Array<int> >("onoff");
-  double *time = params.getPtr<double>("time");
 
-  for (unsigned int face=0; face<nfaces_; ++face) {
+  for (unsigned int face=0; face<nfaces_; ++face)
+  {
     // check whether we are in the project phase for all faces or for boundary values
     if (initfield == NULL) {
       dsassert(faceConsider != NULL, "Unsupported operation");
@@ -469,8 +471,9 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(
         xyz(d) = shapesface_->xyzreal(d,q);
       LINALG::Matrix<nsd_,1> u(false);
       if (initfield != NULL)
-        EvaluateVelocity(*start_func, INPAR::FLUID::InitialField(*initfield), xyz, u);
-      else {
+        EvaluateVelocity(*startfunc, INPAR::FLUID::InitialField(*initfield), xyz, u);
+      else
+      {
         dsassert(functno != NULL && time != NULL && onoff != NULL,
                  "No array with functions given");
         for (unsigned int d=0; d<nsd_; ++d) {
@@ -484,7 +487,8 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(
       }
 
       // now fill the components in the mass matrix and the right hand side
-      for (unsigned int i=0; i<shapesface_->nfdofs_; ++i) {
+      for (unsigned int i=0; i<shapesface_->nfdofs_; ++i)
+      {
         // mass matrix
         for (unsigned int j=0; j<shapesface_->nfdofs_; ++j)
           mass(i,j) += shapesface_->shfunct(i,q) * shapesface_->shfunct(j,q) * fac;
@@ -588,7 +592,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionToNodes(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateVelocity(const int start_func,
+void DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateVelocity(const int startfunc,
     const INPAR::FLUID::InitialField initfield,
     const LINALG::Matrix<nsd_,1>  &xyz,
     LINALG::Matrix<nsd_,1>        &u) const
@@ -596,14 +600,14 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateVelocity(const int start_f
   // pass on dummy entries (costs a little but will not be significant)
   LINALG::Matrix<nsd_,nsd_> grad(true);
   double p;
-  EvaluateAll(start_func, initfield, xyz, u, grad, p);
+  EvaluateAll(startfunc, initfield, xyz, u, grad, p);
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateAll(const int start_func,
+void DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateAll(const int startfunc,
     const INPAR::FLUID::InitialField initfield,
     const LINALG::Matrix<nsd_,1>    &xyz,
     LINALG::Matrix<nsd_,1>          &u,
@@ -654,6 +658,15 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateAll(const int start_func,
         + 2.0 * std::sin(a*xyz(1) + d*xyz(2)) * std::cos(a*xyz(0) + d*xyz(1)) * std::exp(a*(xyz(2)+xyz(0)))
         + 2.0 * std::sin(a*xyz(2) + d*xyz(0)) * std::cos(a*xyz(1) + d*xyz(2)) * std::exp(a*(xyz(0)+xyz(1)))
         );
+  }
+  break;
+
+  case INPAR::FLUID::initfield_field_by_function:
+  case INPAR::FLUID::initfield_disturbed_field_from_function:
+  {
+    for(unsigned int index=0; index<nsd_; ++index)
+      u(index) = DRT::Problem::Instance()->Funct(startfunc-1).Evaluate(index,xyz.A(),0,NULL);
+    p = DRT::Problem::Instance()->Funct(startfunc-1).Evaluate(nsd_,xyz.A(),0,NULL);
   }
   break;
 
