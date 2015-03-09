@@ -392,7 +392,7 @@ private:
      *
      * \author rasthofer (rasthofer@lnm.mw.tum.de)
      */
-    class Combust3Surface : public DRT::Element
+    class Combust3Surface : public DRT::FaceElement
     {
       public:
 
@@ -458,7 +458,7 @@ private:
          */
         virtual DRT::ELEMENTS::Combust3* ParentElement() const
         {
-          DRT::Element* parent = this->DRT::Element::ParentElement();
+          DRT::Element* parent = this->DRT::FaceElement::ParentElement();
           // make sure the static cast below is really valid
           dsassert(dynamic_cast<DRT::ELEMENTS::Combust3*>(parent) != NULL, "Parent element is no combust element");
           return static_cast<DRT::ELEMENTS::Combust3*>(parent);
@@ -596,7 +596,7 @@ private:
      *
      * \author gerstenberger (gerstenberger@lnm.mw.tum.de)
      */
-    class Combust3Line : public DRT::Element
+    class Combust3Line : public DRT::FaceElement
     {
       public:
 
@@ -764,7 +764,7 @@ private:
 
     // class Combust3IntFace
 
-    class Combust3IntFace : public DRT::Element
+    class Combust3IntFace : public DRT::FaceElement
     {
     public:
 
@@ -1001,7 +1001,7 @@ private:
       */
       DRT::ELEMENTS::Combust3* ParentMasterElement() const
       {
-        DRT::Element* parent = this->DRT::Element::ParentMasterElement();
+        DRT::Element* parent = this->DRT::FaceElement::ParentMasterElement();
         // make sure the static cast below is really valid
         dsassert(dynamic_cast<DRT::ELEMENTS::Combust3*>(parent) != NULL, "Master element is no combust element");
         return static_cast<DRT::ELEMENTS::Combust3*>(parent);
@@ -1012,7 +1012,7 @@ private:
       */
       DRT::ELEMENTS::Combust3* ParentSlaveElement() const
       {
-        DRT::Element* parent = this->DRT::Element::ParentSlaveElement();
+        DRT::Element* parent = this->DRT::FaceElement::ParentSlaveElement();
         // make sure the static cast below is really valid
         dsassert(dynamic_cast<DRT::ELEMENTS::Combust3*>(parent) != NULL, "Master element is no combust element");
         return static_cast<DRT::ELEMENTS::Combust3*>(parent);

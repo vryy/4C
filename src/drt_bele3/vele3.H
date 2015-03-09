@@ -317,7 +317,7 @@ private:
 //=======================================================================
 //=======================================================================
 //=======================================================================
-class Vele3Surface : public DRT::Element
+class Vele3Surface : public DRT::FaceElement
 {
 
 public:
@@ -473,7 +473,7 @@ private:
 
 \author mayer (mayer@lnm.mw.tum.de)
 */
-class Vele3Line : public DRT::Element
+class Vele3Line : public DRT::FaceElement
 {
 public:
 

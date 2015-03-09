@@ -456,7 +456,7 @@ private:
 
 // class FluidBoundary
 
-class FluidBoundary : public DRT::Element
+class FluidBoundary : public DRT::FaceElement
 {
 public:
 
@@ -660,7 +660,7 @@ public:
 
   DRT::ELEMENTS::Fluid* ParentElement() const
   {
-    DRT::Element* parent = this->DRT::Element::ParentElement();
+    DRT::Element* parent = this->DRT::FaceElement::ParentElement();
     // make sure the static cast below is really valid
     dsassert(dynamic_cast<DRT::ELEMENTS::Fluid*>(parent) != NULL, "Master element is no fluid element");
     return static_cast<DRT::ELEMENTS::Fluid*>(parent);
@@ -768,7 +768,7 @@ private:
 
 // class FluidIntFace
 
-class FluidIntFace : public DRT::Element
+class FluidIntFace : public DRT::FaceElement
 {
 public:
 
@@ -1019,7 +1019,7 @@ public:
   */
   DRT::ELEMENTS::Fluid* ParentMasterElement() const
   {
-    DRT::Element* parent = this->DRT::Element::ParentMasterElement();
+    DRT::Element* parent = this->DRT::FaceElement::ParentMasterElement();
     // make sure the static cast below is really valid
     dsassert(dynamic_cast<DRT::ELEMENTS::Fluid*>(parent) != NULL, "Master element is no fluid element");
     return static_cast<DRT::ELEMENTS::Fluid*>(parent);
@@ -1030,7 +1030,7 @@ public:
   */
   DRT::ELEMENTS::Fluid* ParentSlaveElement() const
   {
-    DRT::Element* parent = this->DRT::Element::ParentSlaveElement();
+    DRT::Element* parent = this->DRT::FaceElement::ParentSlaveElement();
     // make sure the static cast below is really valid
     dsassert(dynamic_cast<DRT::ELEMENTS::Fluid*>(parent) != NULL, "Slave element is no fluid element");
     return static_cast<DRT::ELEMENTS::Fluid*>(parent);

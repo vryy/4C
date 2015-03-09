@@ -164,8 +164,7 @@ void DRT::ELEMENTS::MeshfreeTransportType::SetupElementDefinition(
  |  ctor                                                 (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
 DRT::ELEMENTS::MeshfreeTransport::MeshfreeTransport(int id, int owner) :
-DRT::Element(id,owner),  // necessary due to virtual inheritance from DRT::Element
-DRT::MESHFREE::Cell(id,owner),
+DRT::MESHFREE::Cell<DRT::Element>(id,owner),
 data_(),
 numdofpernode_(-1),
 distype_(DRT::Element::dis_none),
@@ -178,8 +177,7 @@ impltype_(INPAR::SCATRA::impltype_undefined)
  |  copy-ctor                                            (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
 DRT::ELEMENTS::MeshfreeTransport::MeshfreeTransport(const DRT::ELEMENTS::MeshfreeTransport& old) :
-DRT::Element(old),  // necessary due to virtual inheritance from DRT::Element
-DRT::MESHFREE::Cell(old),
+DRT::MESHFREE::Cell<DRT::Element>(old),
 data_(old.data_),
 numdofpernode_(old.numdofpernode_),
 distype_(old.distype_)
@@ -385,7 +383,7 @@ void DRT::ELEMENTS::MeshfreeTransport::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,type);
 
   // add base class Cell
-  DRT::MESHFREE::Cell::Pack(data);
+  DRT::MESHFREE::Cell<DRT::Element>::Pack(data);
 
   // add internal data
   AddtoPack(data,data_);
@@ -411,7 +409,7 @@ void DRT::ELEMENTS::MeshfreeTransport::Unpack(const std::vector<char>& data)
   // extract base class Cell
   std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
-  DRT::MESHFREE::Cell::Unpack(basedata);
+  DRT::MESHFREE::Cell<DRT::Element>::Unpack(basedata);
 
   // extract internal data
   std::vector<char> tmp(0);
@@ -561,8 +559,7 @@ DRT::ELEMENTS::MeshfreeTransportBoundary::MeshfreeTransportBoundary(
   DRT::Node** points,
   MeshfreeTransport* parent,
   const int lbeleid) :
-  DRT::Element(id,owner),  // necessary due to virtual inheritance from DRT::Element
-  DRT::MESHFREE::Cell(id,owner)
+  DRT::MESHFREE::Cell<DRT::FaceElement>(id,owner)
 {
   SetPointIds(npoint,pointids);
   BuildPointPointers(points);
@@ -579,8 +576,7 @@ DRT::ELEMENTS::MeshfreeTransportBoundary::MeshfreeTransportBoundary(
  |  copy-ctor                                             (public) nis Jan12 |
  *---------------------------------------------------------------------------*/
 DRT::ELEMENTS::MeshfreeTransportBoundary::MeshfreeTransportBoundary(const DRT::ELEMENTS::MeshfreeTransportBoundary& old) :
-DRT::Element(old),  // necessary due to virtual inheritance from DRT::Element
-DRT::MESHFREE::Cell(old)
+DRT::MESHFREE::Cell<DRT::FaceElement>(old)
 {
   return;
 }

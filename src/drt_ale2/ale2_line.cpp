@@ -30,7 +30,7 @@ DRT::ELEMENTS::Ale2LineType & DRT::ELEMENTS::Ale2LineType::Instance()
 DRT::ELEMENTS::Ale2Line::Ale2Line(int id, int owner, int nnode,
     const int* nodeids, DRT::Node** nodes, DRT::ELEMENTS::Ale2* parent,
     const int lline)
-  : DRT::Element(id,owner)
+  : DRT::FaceElement(id,owner)
 {
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
@@ -41,7 +41,7 @@ DRT::ELEMENTS::Ale2Line::Ale2Line(int id, int owner, int nnode,
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 DRT::ELEMENTS::Ale2Line::Ale2Line(const DRT::ELEMENTS::Ale2Line& old)
-  : DRT::Element(old)
+  : DRT::FaceElement(old)
 {
   return;
 }

@@ -170,9 +170,10 @@ void DRT::DiscretizationHDG::DoDirichletCondition(DRT::Condition&             co
 
     for (int i=0; i<NumMyRowFaces(); ++i)
     {
-      const unsigned int dofperface = lRowFace(i)->ParentMasterElement()->NumDofPerFace(lRowFace(i)->FaceMasterNumber());
+      const DRT::FaceElement* faceele = dynamic_cast<const DRT::FaceElement*>(lRowFace(i));
+      const unsigned int dofperface = faceele->ParentMasterElement()->NumDofPerFace(faceele->FaceMasterNumber());
       // const unsigned int dimension = DRT::UTILS::getDimension(lRowFace(i)->ParentMasterElement()->Shape());
-      const unsigned int dofpercomponent = lRowFace(i)->ParentMasterElement()->NumDofPerComponent(lRowFace(i)->FaceMasterNumber());
+      const unsigned int dofpercomponent = faceele->ParentMasterElement()->NumDofPerComponent(faceele->FaceMasterNumber());
       const unsigned int component = dofperface / dofpercomponent;
 
       if (onoff->size() <= component || (*onoff)[component] == 0)
@@ -213,7 +214,7 @@ void DRT::DiscretizationHDG::DoDirichletCondition(DRT::Condition&             co
       if (!faceRelevant) continue;
 
       initParams.set<unsigned int>("faceconsider",
-          static_cast<unsigned int>(lRowFace(i)->FaceMasterNumber()));
+          static_cast<unsigned int>(faceele->FaceMasterNumber()));
       if (static_cast<unsigned int>(elevec1.M()) != dofperface)
         elevec1.Shape(dofperface, 1);
       std::vector<int> dofs = this->Dof(0,lRowFace(i));
@@ -225,7 +226,7 @@ void DRT::DiscretizationHDG::DoDirichletCondition(DRT::Condition&             co
             do_evaluate = true;
 
       if (do_evaluate)
-        lRowFace(i)->ParentMasterElement()->Evaluate(initParams,*this,dummy,elemat1,elemat2,elevec1,elevec2,elevec3);
+        faceele->ParentMasterElement()->Evaluate(initParams,*this,dummy,elemat1,elemat2,elevec1,elevec2,elevec3);
       else
         for (unsigned int i=0; i<dofperface; ++i)
           elevec1(i) = 1.;

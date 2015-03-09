@@ -73,7 +73,7 @@ private:
  * \date April, 2013
  */
 /*--------------------------------------------------------------------------*/
-class MeshfreeMultiBin : public MeshfreeBin
+class MeshfreeMultiBin : public MeshfreeBin<DRT::Element>
 {
 public:
 

@@ -150,8 +150,7 @@ void DRT::ELEMENTS::MeshfreeFluidType::SetupElementDefinition(
  |  ctor                                                 (public) nis Jan13 |
  *--------------------------------------------------------------------------*/
 DRT::ELEMENTS::MeshfreeFluid::MeshfreeFluid(int id, int owner) :
-  DRT::Element(id,owner),  // necessary due to virtual inheritance from DRT::Element
-  DRT::MESHFREE::Cell(id,owner),
+  DRT::MESHFREE::Cell<DRT::Element>(id,owner),
   distype_(DRT::Element::dis_none),
   is_ale_(false)
 {
@@ -162,8 +161,7 @@ DRT::ELEMENTS::MeshfreeFluid::MeshfreeFluid(int id, int owner) :
  |  copy-ctor                                            (public) nis Jan13 |
  *--------------------------------------------------------------------------*/
 DRT::ELEMENTS::MeshfreeFluid::MeshfreeFluid(const DRT::ELEMENTS::MeshfreeFluid& old) :
-  DRT::Element(old),  // necessary due to virtual inheritance from DRT::Element
-  DRT::MESHFREE::Cell(old),
+  DRT::MESHFREE::Cell<DRT::Element>(old),
   distype_    (old.distype_),
   is_ale_     (old.is_ale_)
 {
@@ -316,7 +314,7 @@ void DRT::ELEMENTS::MeshfreeFluid::Pack(DRT::PackBuffer& data) const
   int type = UniqueParObjectId();
   AddtoPack(data,type);
   // add base class Element
-  DRT::MESHFREE::Cell::Pack(data);
+  DRT::MESHFREE::Cell<DRT::Element>::Pack(data);
   // is_ale_
   AddtoPack(data,is_ale_);
   // Discretisation type
@@ -338,7 +336,7 @@ void DRT::ELEMENTS::MeshfreeFluid::Unpack(const std::vector<char>& data)
   dsassert(type == UniqueParObjectId(), "wrong instance type data");
   // extract base class Element
   std::vector<char> basedata(0);  ExtractfromPack(position,data,basedata);
-  DRT::MESHFREE::Cell::Unpack(basedata);
+  DRT::MESHFREE::Cell<DRT::Element>::Unpack(basedata);
   // is_ale_
   is_ale_ = ExtractInt(position,data);
   // distype
@@ -384,7 +382,7 @@ int DRT::ELEMENTS::MeshfreeFluid::NumDofPerNode(const DRT::Node& node) const
 void DRT::ELEMENTS::MeshfreeFluid::Print(std::ostream& os) const
 {
   os << "MeshfreeFluid ";
-  DRT::MESHFREE::Cell::Print(os);
+  DRT::MESHFREE::Cell<DRT::Element>::Print(os);
   return;
 }
 

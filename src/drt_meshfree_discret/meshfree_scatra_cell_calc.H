@@ -47,7 +47,7 @@ namespace DRT
 namespace MESHFREE
 {
   class MeshfreeDiscretization;
-  class Cell;
+  template <typename> class Cell;
 }
 
 namespace ELEMENTS
@@ -167,7 +167,7 @@ protected:
    *///                                                  (private) nis Mar12
   /*------------------------------------------------------------------------*/
   virtual void Sysmat(
-    const DRT::MESHFREE::Cell*            cell,    //!< the element to which sysmat belongs
+    const DRT::MESHFREE::Cell<DRT::Element>* cell,    //!< the element to which sysmat belongs
     Epetra_SerialDenseMatrix&             sys_mat, //!< element matrix to calculate
     Epetra_SerialDenseVector&             residual
     );
@@ -178,7 +178,7 @@ protected:
    *///                                                  (private) nis Mar12
   /*------------------------------------------------------------------------*/
   virtual void BodyForce(
-    const DRT::MESHFREE::Cell* cell, //!< the element we are dealing with
+    const DRT::MESHFREE::Cell<DRT::Element>* cell, //!< the element we are dealing with
     const double               time //!< current simulation time
     );
 
@@ -188,7 +188,7 @@ protected:
    *///                                                  (private) nis Mar12
   /*------------------------------------------------------------------------*/
   virtual void GetMaterialParams(
-    const DRT::MESHFREE::Cell*            ele       //!< the element we are dealing with
+    const DRT::MESHFREE::Cell<DRT::Element>* ele       //!< the element we are dealing with
     );
 
   /*------------------------------------------------------------------------*/

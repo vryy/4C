@@ -592,8 +592,8 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::SetupStructuralDiscretiza
 
   for (curr=fsigeometry.begin(); curr!=fsigeometry.end(); ++curr)
   {
-    DRT::Element* faceele = curr->second.getRawPtr();
-    curr->second->ParentElement()->SetFace(0,faceele);
+    Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(curr->second,true);
+    faceele->ParentElement()->SetFace(0,faceele.get());
   }
 
   return;

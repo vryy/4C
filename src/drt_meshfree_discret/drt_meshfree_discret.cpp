@@ -303,7 +303,7 @@ bool DRT::MESHFREE::MeshfreeDiscretization::InitAssignSingleNode(const double * 
   for (int c=0; c<numcell; c++)
   {
     // get pointer to current cell
-    DRT::MESHFREE::Cell* cellcurr = dynamic_cast<DRT::MESHFREE::Cell*>(cells[c]);
+    DRT::MESHFREE::Cell<DRT::Element>* cellcurr = dynamic_cast<DRT::MESHFREE::Cell<DRT::Element>*>(cells[c]);
 
     // if not yet having dealt with this cell, add to set of cellgids and...
     if ((cellgid.insert(cellcurr->Id())).second)
@@ -364,7 +364,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::AssignSingleNode(const double* const
   for (int c=0; c<numcell; c++)
   {
     // get pointer to current cell
-    DRT::MESHFREE::Cell* cellcurr = dynamic_cast<DRT::MESHFREE::Cell*>(cells[c]);
+    DRT::MESHFREE::Cell<DRT::Element>* cellcurr = dynamic_cast<DRT::MESHFREE::Cell<DRT::Element>*>(cells[c]);
 
     // if not yet having dealt with this cell, add to set of cellgids and...
     if ((cellgid.insert(cellcurr->Id())).second)

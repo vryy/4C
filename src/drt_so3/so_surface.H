@@ -50,7 +50,7 @@ common types of loads currently demanded in baci
 
 \author gee (gee@lnm.mw.tum.de)
 */
-class StructuralSurface : public DRT::Element
+class StructuralSurface : public DRT::FaceElement
 {
 public:
 

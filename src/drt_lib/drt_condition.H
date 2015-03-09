@@ -300,7 +300,7 @@ public:
   \param type (in): type of the condition
   \param buildgeometry (in): flag indicating whether explicit condition geometry
                              (elements) have to be build
-  \param gtype (in): ype of geometric entity this condition lives on
+  \param gtype (in): type of geometric entity this condition lives on
 
   */
   Condition(const int id, const ConditionType type, const bool buildgeometry,

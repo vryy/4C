@@ -165,7 +165,7 @@ int DRT::ELEMENTS::AcouBoundaryImpl<distype>::Absorbing(
   const int* nodeids = ele->NodeIds();
 
   DRT::Element* parent = ele->ParentElement();
-  DRT::Element** faces = parent->Faces();
+  DRT::FaceElement** faces = parent->Faces();
   bool same = false;
   for(int i=0; i<parent->NumFace(); ++i)
   {

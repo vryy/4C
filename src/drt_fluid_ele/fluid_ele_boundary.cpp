@@ -36,7 +36,7 @@ DRT::ELEMENTS::FluidBoundary::FluidBoundary(int id, int owner,
                               DRT::Node** nodes,
                               DRT::ELEMENTS::Fluid* parent,
                               const int lsurface) :
-DRT::Element(id,owner)
+DRT::FaceElement(id,owner)
 {
   SetParentMasterElement(parent,lsurface);
   SetNodeIds(nnode,nodeids);
@@ -48,7 +48,7 @@ DRT::Element(id,owner)
  |  copy-ctor (public)                                       mwgee 01/07|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidBoundary::FluidBoundary(const DRT::ELEMENTS::FluidBoundary& old) :
-DRT::Element(old)
+DRT::FaceElement(old)
 {
   return;
 }

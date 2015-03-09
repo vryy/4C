@@ -55,8 +55,7 @@ Teuchos::RCP<DRT::Element> DRT::MESHFREE::MeshfreeMultiBinType::Create( const in
  |  ctor                                               (public) ghamm 04/13 |
  *--------------------------------------------------------------------------*/
 DRT::MESHFREE::MeshfreeMultiBin::MeshfreeMultiBin(int id, int owner)
-:   DRT::Element(id,owner),  // necessary due to virtual inheritance from DRT::Element
-    DRT::MESHFREE::MeshfreeBin(id,owner)
+:   DRT::MESHFREE::MeshfreeBin<DRT::Element>(id,owner)
 {
   return;
 }
@@ -65,8 +64,7 @@ DRT::MESHFREE::MeshfreeMultiBin::MeshfreeMultiBin(int id, int owner)
  |  copy-ctor                                          (public) ghamm 04/13 |
  *--------------------------------------------------------------------------*/
 DRT::MESHFREE::MeshfreeMultiBin::MeshfreeMultiBin(const DRT::MESHFREE::MeshfreeMultiBin& old)
-:   DRT::Element(old),  // necessary due to virtual inheritance from DRT::Element
-    DRT::MESHFREE::MeshfreeBin(old),
+:   DRT::MESHFREE::MeshfreeBin<DRT::Element>(old),
     associatedwalleleid_(old.associatedwalleleid_),
     associatedwallele_(old.associatedwallele_),
     associatedfluideleid_(old.associatedfluideleid_),

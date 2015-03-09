@@ -46,7 +46,7 @@ DRT::ELEMENTS::Combust3IntFace::Combust3IntFace(int id,                         
                                           const int lsurface_slave,              ///< local surface index with respect to slave parent element
                                           const std::vector<int> localtrafomap   ///< get the transformation map between the local coordinate systems of the face w.r.t the master parent element's face's coordinate system and the slave element's face's coordinate system
 ):
-DRT::Element(id,owner),
+DRT::FaceElement(id,owner),
 localtrafomap_(localtrafomap)
 {
   SetNodeIds(nnode,nodeids);
@@ -60,7 +60,7 @@ localtrafomap_(localtrafomap)
  |  copy-ctor (public)                                   rasthofer 02/13|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Combust3IntFace::Combust3IntFace(const DRT::ELEMENTS::Combust3IntFace& old) :
-DRT::Element(old),
+DRT::FaceElement(old),
 localtrafomap_(old.localtrafomap_)
 {
   return;

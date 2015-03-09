@@ -434,7 +434,7 @@ private:
       purpose is to evaluate certain boundary conditions that might be
       adjacent to a parent Transport element.
 */
-class TransportBoundary : public DRT::Element
+class TransportBoundary : public DRT::FaceElement
 {
 public:
 
@@ -554,7 +554,7 @@ public:
   //! Return a pointer to the parent element of this boundary element
   virtual DRT::ELEMENTS::Transport* ParentElement() const
   {
-    DRT::Element* parent = DRT::Element::ParentElement();
+    DRT::Element* parent = DRT::FaceElement::ParentElement();
     // make sure the static cast below is really valid
     dsassert(dynamic_cast<DRT::ELEMENTS::Transport*>(parent) != NULL, "Master element is no fluid element");
     return static_cast<DRT::ELEMENTS::Transport*>(parent);

@@ -34,7 +34,7 @@ DRT::ELEMENTS::Vele3Line::Vele3Line(int id, int owner,
                               DRT::Node** nodes,
                               DRT::Element* parent,
                               const int lline) :
-DRT::Element(id,owner)
+DRT::FaceElement(id,owner)
 {
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
@@ -47,7 +47,7 @@ DRT::Element(id,owner)
  |  copy-ctor (public)                                       mwgee 01/07|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Vele3Line::Vele3Line(const DRT::ELEMENTS::Vele3Line& old) :
-DRT::Element(old)
+DRT::FaceElement(old)
 {
   return;
 }

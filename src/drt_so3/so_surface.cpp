@@ -38,7 +38,7 @@ DRT::ELEMENTS::StructuralSurface::StructuralSurface(int id, int owner,
                                                     DRT::Node** nodes,
                                                     DRT::Element* parent,
                                                     const int lsurface) :
-DRT::Element(id,owner),
+DRT::FaceElement(id,owner),
 gaussrule_(DRT::UTILS::intrule2D_undefined)
 {
   SetNodeIds(nnode,nodeids);
@@ -79,7 +79,7 @@ gaussrule_(DRT::UTILS::intrule2D_undefined)
  |  copy-ctor (public)                                         gee 04/08|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::StructuralSurface::StructuralSurface(const DRT::ELEMENTS::StructuralSurface& old) :
-DRT::Element(old),
+DRT::FaceElement(old),
 gaussrule_(old.gaussrule_)
 {
   return;

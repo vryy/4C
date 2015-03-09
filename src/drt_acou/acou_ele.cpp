@@ -401,7 +401,7 @@ DRT::ELEMENTS::AcouBoundary::AcouBoundary(int id, int owner,
                                           DRT::Node** nodes,
                                           DRT::ELEMENTS::Acou* parent,
                                           const int lsurface) :
-DRT::Element(id,owner)
+DRT::FaceElement(id,owner)
 {
   SetParentMasterElement(parent,lsurface);
   SetNodeIds(nnode,nodeids);
@@ -414,7 +414,7 @@ DRT::Element(id,owner)
  |  copy-ctor (public)                                   schoeder 07/13 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::AcouBoundary::AcouBoundary(const DRT::ELEMENTS::AcouBoundary& old) :
-DRT::Element(old)
+DRT::FaceElement(old)
 {
   return;
 }
@@ -626,7 +626,7 @@ DRT::ELEMENTS::AcouIntFace::AcouIntFace(int id,                                /
                                           const int lsurface_slave,              ///< local surface index with respect to slave parent element
                                           const std::vector<int> localtrafomap   ///< get the transformation map between the local coordinate systems of the face w.r.t the master parent element's face's coordinate system and the slave element's face's coordinate system
 ):
-DRT::Element(id,owner),
+DRT::FaceElement(id,owner),
 localtrafomap_(localtrafomap)
 {
   SetParentMasterElement(parent_master,lsurface_master);
@@ -646,7 +646,7 @@ localtrafomap_(localtrafomap)
  |  copy-ctor (public)                                    schoeder 01/14|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::AcouIntFace::AcouIntFace(const DRT::ELEMENTS::AcouIntFace& old) :
-DRT::Element(old),
+DRT::FaceElement(old),
 localtrafomap_(old.localtrafomap_),
 degree_(old.degree_)
 {

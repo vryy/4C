@@ -35,7 +35,7 @@ DRT::ELEMENTS::Combust3Surface::Combust3Surface(
     DRT::Node** nodes,
     DRT::ELEMENTS::Combust3* parent,
     const int lsurface) :
-DRT::Element(id,owner)
+DRT::FaceElement(id,owner)
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
@@ -47,7 +47,7 @@ DRT::Element(id,owner)
  |  copy-ctor (public)                                       mwgee 01/07|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Combust3Surface::Combust3Surface(const DRT::ELEMENTS::Combust3Surface& old) :
-DRT::Element(old)
+DRT::FaceElement(old)
 {
   return;
 }

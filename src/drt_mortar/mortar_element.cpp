@@ -106,7 +106,7 @@ MORTAR::MortarElement::MortarElement(int id, int owner,
                            const int* nodeids,
                            const bool isslave,
                            bool isnurbs) :
-DRT::Element(id,owner),
+DRT::FaceElement(id,owner),
 shape_(shape),
 isslave_(isslave),
 attached_(false),
@@ -120,10 +120,25 @@ zero_sized_(false)  // information for nurbs integration
 }
 
 /*----------------------------------------------------------------------*
+ |  ctor (protected)                                   kronbichler 03/15|
+ *----------------------------------------------------------------------*/
+MORTAR::MortarElement::MortarElement(int id, int owner) :
+DRT::FaceElement(id,owner),
+shape_(DRT::Element::dis_none),
+isslave_(false),
+attached_(false),
+hermite_(false),
+nurbs_(false),
+normalfac_(1.0),    // normal factor for nurbs
+zero_sized_(false)  // information for nurbs integration
+{
+}
+
+/*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 10/07|
  *----------------------------------------------------------------------*/
 MORTAR::MortarElement::MortarElement(const MORTAR::MortarElement& old) :
-DRT::Element(old),
+DRT::FaceElement(old),
 shape_(old.shape_),
 isslave_(old.isslave_)
 {

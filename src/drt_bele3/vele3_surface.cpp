@@ -34,7 +34,7 @@ DRT::ELEMENTS::Vele3Surface::Vele3Surface(int id, int owner,
                               DRT::Node** nodes,
                               DRT::ELEMENTS::Vele3* parent,
                               const int lsurface) :
-DRT::Element(id,owner)
+DRT::FaceElement(id,owner)
 {
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
@@ -48,7 +48,7 @@ DRT::Element(id,owner)
  |  copy-ctor (public)                                       mwgee 01/07|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Vele3Surface::Vele3Surface(const DRT::ELEMENTS::Vele3Surface& old) :
-DRT::Element(old)
+DRT::FaceElement(old)
 {
   return;
 }

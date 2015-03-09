@@ -453,7 +453,7 @@ private:
 
 // class AcouBoundary
 
-class AcouBoundary : public DRT::Element
+class AcouBoundary : public DRT::FaceElement
 {
 public:
 
@@ -727,7 +727,7 @@ private:
 
 // class AcouIntFace
 
-class AcouIntFace : public DRT::Element
+class AcouIntFace : public DRT::FaceElement
 {
 public:
 
@@ -974,7 +974,7 @@ public:
   */
   DRT::ELEMENTS::Acou* ParentMasterElement() const
   {
-    DRT::Element* parent = this->DRT::Element::ParentMasterElement();
+    DRT::Element* parent = this->DRT::FaceElement::ParentMasterElement();
     // make sure the static cast below is really valid
     dsassert(dynamic_cast<DRT::ELEMENTS::Acou*>(parent) != NULL, "Master element is no acou element");
     return static_cast<DRT::ELEMENTS::Acou*>(parent);
@@ -985,7 +985,7 @@ public:
   */
   DRT::ELEMENTS::Acou* ParentSlaveElement() const
   {
-    DRT::Element* parent = this->DRT::Element::ParentSlaveElement();
+    DRT::Element* parent = this->DRT::FaceElement::ParentSlaveElement();
     // make sure the static cast below is really valid
     dsassert(dynamic_cast<DRT::ELEMENTS::Acou*>(parent) != NULL, "Slave element is no acou element");
     return static_cast<DRT::ELEMENTS::Acou*>(parent);

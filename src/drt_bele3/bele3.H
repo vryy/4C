@@ -253,7 +253,7 @@ private:
 
 \author gerstenberger (gerstenberger@lnm.mw.tum.de)
 */
-class Bele3Line : public DRT::Element
+class Bele3Line : public DRT::FaceElement
 {
 public:
 

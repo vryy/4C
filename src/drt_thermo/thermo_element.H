@@ -424,7 +424,7 @@ namespace ELEMENTS
   //! \note This is a pure boundary condition element. It's only
   //!       purpose is to evaluate certain boundary conditions that might be
   //!       adjacent to a parent Thermo element.
-  class ThermoBoundary : public DRT::Element
+  class ThermoBoundary : public DRT::FaceElement
   {
 
   public:

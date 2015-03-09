@@ -323,7 +323,7 @@ void ElementReader::Partition()
 
               ele->SetNodeIds(distype,linedef);
               ele->ReadElement(eletype,distype,linedef);
-              Teuchos::RCP<DRT::MESHFREE::Cell> cell = Teuchos::rcp_dynamic_cast<DRT::MESHFREE::Cell>(ele);
+              Teuchos::RCP<DRT::MESHFREE::Cell<DRT::Element> > cell = Teuchos::rcp_dynamic_cast<DRT::MESHFREE::Cell<DRT::Element> >(ele);
               if (cell!=Teuchos::null)
               {
                 // we have a meshfree shadow or dummy element

@@ -53,7 +53,6 @@ void CONTACT::CoElementType::ComputeNullSpace(DRT::Discretization & dis,
 CONTACT::CoElement::CoElement(int id, int owner,
     const DRT::Element::DiscretizationType& shape, const int numnode,
     const int* nodeids, const bool isslave, bool isnurbs) :
-    DRT::Element(id,owner),  // necessary due to virtual inheritance from DRT::Element
     MORTAR::MortarElement(id, owner, shape, numnode, nodeids, isslave, isnurbs)
 {
   // empty constructor
@@ -65,7 +64,6 @@ CONTACT::CoElement::CoElement(int id, int owner,
  |  copy-ctor (public)                                        mwgee 10/07|
  *----------------------------------------------------------------------*/
 CONTACT::CoElement::CoElement(const CONTACT::CoElement& old) :
-    DRT::Element(old),  // necessary due to virtual inheritance from DRT::Element
     MORTAR::MortarElement(old)
 {
   // empty copy-constructor

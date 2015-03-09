@@ -376,7 +376,7 @@ private:
 
 \author Martin Winklmaier (winklmaier@lnm.mw.tum.de)
 */
-class TopOptBoundary : public DRT::Element
+class TopOptBoundary : public DRT::FaceElement
 {
 public:
 

@@ -272,7 +272,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateS2ICoupl
     )
 {
   // get material of parent element
-  Teuchos::RCP<MAT::Material> material = ele->ParentElement()->Material();
+  const DRT::FaceElement* faceele = dynamic_cast<const DRT::FaceElement*>(ele);
+  if (faceele == 0)
+    dserror("Invalid element type, expected face element");
+  Teuchos::RCP<MAT::Material> material = faceele->ParentElement()->Material();
 
   // get global and interface state vectors
   Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");

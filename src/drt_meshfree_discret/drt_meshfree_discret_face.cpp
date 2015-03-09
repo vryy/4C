@@ -251,7 +251,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::Face::AssignNodesToCells()
         std::vector<DRT::Node*> condnodes(0);
 
         // get cell center and maximum radius
-        DRT::MESHFREE::Cell* ccell = dynamic_cast<DRT::MESHFREE::Cell*>(it->second.get());
+        DRT::MESHFREE::Cell<DRT::FaceElement>* ccell = dynamic_cast<DRT::MESHFREE::Cell<DRT::FaceElement>*>(it->second.get());
         if (ccell==NULL)
           dserror("Something went wrong when casting element to meshfree cell.");
         ccell->CenterAndMaxRadius(center, maxcellradius);
@@ -300,7 +300,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::Face::AssignNodesToCells()
         if (it->second->Owner()!=myrank) continue;
 
         // get cell center and maximum radius
-        DRT::MESHFREE::Cell* ccell = dynamic_cast<DRT::MESHFREE::Cell*>(it->second.get());
+        DRT::MESHFREE::Cell<DRT::FaceElement>* ccell = dynamic_cast<DRT::MESHFREE::Cell<DRT::FaceElement>*>(it->second.get());
         if (ccell==NULL)
           dserror("Something went wrong when casting element to meshfree cell.");
         // find neighbours of current row node

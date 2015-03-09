@@ -527,7 +527,7 @@ private:
 
 \author gee (gee@lnm.mw.tum.de)
 */
-class Ale3Surface : public DRT::Element
+class Ale3Surface : public DRT::FaceElement
 {
 public:
 

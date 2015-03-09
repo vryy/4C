@@ -57,7 +57,7 @@ private:
 
 \author gee (gee@lnm.mw.tum.de), popp (popp@lnm.mw.tum.de)
 */
-class MortarElementGeoDecoupl : public MORTAR::MortarElement, public DRT::MESHFREE::Cell
+class MortarElementGeoDecoupl : public DRT::MESHFREE::Cell<MORTAR::MortarElement>
 {
 public:
 

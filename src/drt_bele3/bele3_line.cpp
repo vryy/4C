@@ -34,7 +34,7 @@ DRT::ELEMENTS::Bele3Line::Bele3Line(int id, int owner,
                               DRT::Node** nodes,
                               DRT::ELEMENTS::Bele3* parent,
                               const int lline) :
-DRT::Element(id,owner)
+DRT::FaceElement(id,owner)
 {
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
@@ -47,7 +47,7 @@ DRT::Element(id,owner)
  |  copy-ctor (public)                                       mwgee 01/07|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Bele3Line::Bele3Line(const DRT::ELEMENTS::Bele3Line& old) :
-DRT::Element(old),
+DRT::FaceElement(old),
 numdofpernode_(old.numdofpernode_)
 {
   return;

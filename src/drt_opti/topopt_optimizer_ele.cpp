@@ -399,7 +399,7 @@ DRT::ELEMENTS::TopOptBoundary::TopOptBoundary(int id, int owner,
                               DRT::Node** nodes,
                               DRT::ELEMENTS::TopOpt* parent,
                               const int lbeleid) :
-DRT::Element(id,owner)
+DRT::FaceElement(id,owner)
 {
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
@@ -411,7 +411,7 @@ DRT::Element(id,owner)
  |  copy-ctor (public)                                        gjb 01/09 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::TopOptBoundary::TopOptBoundary(const DRT::ELEMENTS::TopOptBoundary& old) :
-DRT::Element(old)
+DRT::FaceElement(old)
 {
   return;
 }

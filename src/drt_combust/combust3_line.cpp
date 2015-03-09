@@ -33,7 +33,7 @@ DRT::ELEMENTS::Combust3Line::Combust3Line(
     DRT::Node** nodes,
     DRT::Element* parent,
     const int lline) :
-DRT::Element(id,owner)
+DRT::FaceElement(id,owner)
 {
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
@@ -46,7 +46,7 @@ DRT::Element(id,owner)
  |  copy-ctor (public)                                       mwgee 01/07|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Combust3Line::Combust3Line(const DRT::ELEMENTS::Combust3Line& old) :
-DRT::Element(old)
+DRT::FaceElement(old)
 {
   return;
 }

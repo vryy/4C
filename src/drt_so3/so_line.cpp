@@ -38,7 +38,7 @@ DRT::ELEMENTS::StructuralLine::StructuralLine(int id, int owner,
                                               DRT::Node** nodes,
                                               DRT::Element* parent,
                                               const int lline) :
-DRT::Element(id,owner)
+DRT::FaceElement(id,owner)
 {
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
@@ -62,7 +62,7 @@ DRT::Element(id,owner)
  |  copy-ctor (public)                                         gee 04/08|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::StructuralLine::StructuralLine(const DRT::ELEMENTS::StructuralLine& old) :
-DRT::Element(old),
+DRT::FaceElement(old),
 gaussrule_(old.gaussrule_)
 {
   return;

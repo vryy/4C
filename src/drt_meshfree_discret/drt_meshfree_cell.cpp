@@ -15,13 +15,14 @@ Maintainer: Keijo Nissen
 #include "drt_meshfree_node.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_node.H"
+#include "../drt_mortar/mortar_element.H"
 
 /*--------------------------------------------------------------------------*
  |  ctor                                                 (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
-DRT::MESHFREE::Cell::Cell(int id, int owner)
-  : DRT::Element(id,owner),  // necessary due to virtual inheritance from DRT::Element
-    DRT::MESHFREE::MeshfreeBin(id,owner)
+template <typename ELEMENT>
+DRT::MESHFREE::Cell<ELEMENT>::Cell(int id, int owner)
+  : DRT::MESHFREE::MeshfreeBin<ELEMENT>(id,owner)
 {
   return;
 }
@@ -29,9 +30,9 @@ DRT::MESHFREE::Cell::Cell(int id, int owner)
 /*--------------------------------------------------------------------------*
  |  copy-ctor                                            (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
-DRT::MESHFREE::Cell::Cell(const DRT::MESHFREE::Cell& old)
-  : DRT::Element(old),  // necessary due to virtual inheritance from DRT::Element
-    DRT::MESHFREE::MeshfreeBin(old),
+template <typename ELEMENT>
+DRT::MESHFREE::Cell<ELEMENT>::Cell(const DRT::MESHFREE::Cell<ELEMENT>& old)
+  : DRT::MESHFREE::MeshfreeBin<ELEMENT>(old),
     pointid_(old.pointid_),
     point_(old.point_)
 {
@@ -41,7 +42,8 @@ DRT::MESHFREE::Cell::Cell(const DRT::MESHFREE::Cell& old)
 /*--------------------------------------------------------------------------*
  |  dtor                                                 (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
-DRT::MESHFREE::Cell::~Cell()
+template <typename ELEMENT>
+DRT::MESHFREE::Cell<ELEMENT>::~Cell()
 {
   return;
 }
@@ -50,7 +52,18 @@ DRT::MESHFREE::Cell::~Cell()
 /*--------------------------------------------------------------------------*
  |  << operator                                                   nis Jan12 |
  *--------------------------------------------------------------------------*/
-std::ostream& operator << (std::ostream& os, const DRT::MESHFREE::Cell& cell)
+template <>
+std::ostream& operator << (std::ostream& os, const DRT::MESHFREE::Cell<DRT::Element>& cell)
+{
+  cell.Print(os);
+  return os;
+}
+
+/*--------------------------------------------------------------------------*
+ |  << operator                                                   nis Jan12 |
+ *--------------------------------------------------------------------------*/
+template <>
+std::ostream& operator << (std::ostream& os, const DRT::MESHFREE::Cell<DRT::FaceElement>& cell)
 {
   cell.Print(os);
   return os;
@@ -59,9 +72,10 @@ std::ostream& operator << (std::ostream& os, const DRT::MESHFREE::Cell& cell)
 /*--------------------------------------------------------------------------*
  |  print element                                        (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
-void DRT::MESHFREE::Cell::Print(std::ostream& os) const
+template <typename ELEMENT>
+void DRT::MESHFREE::Cell<ELEMENT>::Print(std::ostream& os) const
 {
-  os << std::setw(6) << Id() << " Owner " << std::setw(3) << Owner() << " ";
+  os << std::setw(6) << this->Id() << " Owner " << std::setw(3) << this->Owner() << " ";
 
   const int npoint = NumPoint();
   const int* pointids = PointIds();
@@ -71,8 +85,8 @@ void DRT::MESHFREE::Cell::Print(std::ostream& os) const
     for (int i=0; i<npoint; ++i) os << std::setw(6) << pointids[i] << " ";
   }
 
-  const int nnode = NumNode();
-  const int* nodeids = NodeIds();
+  const int nnode = this->NumNode();
+  const int* nodeids = this->NodeIds();
   if (nnode > 0)
   {
     os << " Nodes ";
@@ -85,7 +99,8 @@ void DRT::MESHFREE::Cell::Print(std::ostream& os) const
 /*--------------------------------------------------------------------------*
  |  set point numbers to element                          (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
-void DRT::MESHFREE::Cell::SetPointIds(const int npoint, const int* points)
+template <typename ELEMENT>
+void DRT::MESHFREE::Cell<ELEMENT>::SetPointIds(const int npoint, const int* points)
 {
   pointid_.resize(npoint);
   for (int i=0; i<npoint; ++i) pointid_[i] = points[i];
@@ -96,8 +111,8 @@ void DRT::MESHFREE::Cell::SetPointIds(const int npoint, const int* points)
 /*--------------------------------------------------------------------------*
  |  set point numbers to element                          (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
-
-void DRT::MESHFREE::Cell::SetPointIds(const std::string& distype, DRT::INPUT::LineDefinition* linedef)
+template <typename ELEMENT>
+void DRT::MESHFREE::Cell<ELEMENT>::SetPointIds(const std::string& distype, DRT::INPUT::LineDefinition* linedef)
 {
   linedef->ExtractIntVector(distype,pointid_);
   for (unsigned i=0; i<pointid_.size(); ++i)
@@ -108,7 +123,8 @@ void DRT::MESHFREE::Cell::SetPointIds(const std::string& distype, DRT::INPUT::Li
 /*----------------------------------------------------------------------*
  |  Build point pointers (protected)                           nis Jan12 |
  *----------------------------------------------------------------------*/
-bool DRT::MESHFREE::Cell::BuildPointPointers(std::map<int,Teuchos::RCP<DRT::Node> >& points)
+template <typename ELEMENT>
+bool DRT::MESHFREE::Cell<ELEMENT>::BuildPointPointers(std::map<int,Teuchos::RCP<DRT::Node> >& points)
 {
   int        npoint   = NumPoint();
   const int* pointids = PointIds();
@@ -117,7 +133,7 @@ bool DRT::MESHFREE::Cell::BuildPointPointers(std::map<int,Teuchos::RCP<DRT::Node
   {
     std::map<int,Teuchos::RCP<DRT::Node> >::const_iterator curr = points.find(pointids[i]);
     // this point is not on this proc
-    if (curr==points.end()) dserror("Meshfree cell %d cannot find point %d",Id(),pointids[i]);
+    if (curr==points.end()) dserror("Meshfree cell %d cannot find point %d",this->Id(),pointids[i]);
     else
       point_[i] = curr->second.get();
   }
@@ -127,46 +143,50 @@ bool DRT::MESHFREE::Cell::BuildPointPointers(std::map<int,Teuchos::RCP<DRT::Node
 /*----------------------------------------------------------------------*
  |  Build point pointers (protected)                           nis Jan12 |
  *----------------------------------------------------------------------*/
-bool DRT::MESHFREE::Cell::BuildPointPointers(DRT::Node** points)
+template <typename ELEMENT>
+bool DRT::MESHFREE::Cell<ELEMENT>::BuildPointPointers(DRT::Node** points)
 {
   point_.resize(NumPoint());
   for (int i=0; i<NumPoint(); ++i) point_[i] = points[i];
   return true;
 }
+
 /*----------------------------------------------------------------------*
  |  Pack data  (public)                                       nis Jan12 |
  *----------------------------------------------------------------------*/
-void DRT::MESHFREE::Cell::Pack(DRT::PackBuffer& data) const
+template <typename ELEMENT>
+void DRT::MESHFREE::Cell<ELEMENT>::Pack(DRT::PackBuffer& data) const
 {
   DRT::PackBuffer::SizeMarker sm( data );
   sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data,type);
+  this->AddtoPack(data,type);
   // add base class DRT::MESHFREE::MeshfreeBin
-  DRT::MESHFREE::MeshfreeBin::Pack(data);
+  DRT::MESHFREE::MeshfreeBin<ELEMENT>::Pack(data);
   // add vector pointid_
-  AddtoPack(data,pointid_);
+  this->AddtoPack(data,pointid_);
   return;
 }
 
 /*----------------------------------------------------------------------*
  |  Unpack data  (public)                                     nis Jan12 |
  *----------------------------------------------------------------------*/
-void DRT::MESHFREE::Cell::Unpack(const std::vector<char>& data)
+template <typename ELEMENT>
+void DRT::MESHFREE::Cell<ELEMENT>::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
-  ExtractfromPack(position,data,type);
+  this->ExtractfromPack(position,data,type);
   dsassert(type == UniqueParObjectId(), "wrong instance type data");
   // extract base class DRT::MESHFREE::MeshfreeBin
   std::vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
-  DRT::MESHFREE::MeshfreeBin::Unpack(basedata);
+  this->ExtractfromPack(position,data,basedata);
+  DRT::MESHFREE::MeshfreeBin<ELEMENT>::Unpack(basedata);
   // extract pointid_
-  ExtractfromPack(position,data,pointid_);
+  this->ExtractfromPack(position,data,pointid_);
   // point_ is NOT communicated
   point_.resize(0);
   return;
@@ -175,7 +195,8 @@ void DRT::MESHFREE::Cell::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  Coordinates of cell center computed by point position      nis Jan14 |
  *----------------------------------------------------------------------*/
-void DRT::MESHFREE::Cell::CenterAndMaxRadius(
+template <typename ELEMENT>
+void DRT::MESHFREE::Cell<ELEMENT>::CenterAndMaxRadius(
   LINALG::Matrix<3,1>&  center,
   double& max_radius)
 {
@@ -205,3 +226,11 @@ void DRT::MESHFREE::Cell::CenterAndMaxRadius(
 
   return;
 }
+
+
+/*--------------------------------------------------------------------------*
+ | Explicit instantiations                                kronbichler 03/15 |
+ *--------------------------------------------------------------------------*/
+template class DRT::MESHFREE::Cell<DRT::Element>;
+template class DRT::MESHFREE::Cell<DRT::FaceElement>;
+template class DRT::MESHFREE::Cell<MORTAR::MortarElement>;

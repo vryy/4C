@@ -25,12 +25,20 @@ namespace MESHFREE
  * \brief A meshfree bin adds the possibility to add and delete nodes
  *        from elements dynamically
  *
+ * Rather than deriving this class directly from DRT::Element, we set the base
+ * element as a template argument in order to allow for both standard elements
+ * and face elements, i.e., elements that have a parent element. In
+ * particular, it allows for a clean interface to the meshfree types with
+ * single inheritance for making the meshfree boundary elements aware of the
+ * parent relations.
+ *
  * \author Georg Hammerl (hammerl@lnm.mw.tum.de)
  *
  * \date November, 2012
  */
 /*--------------------------------------------------------------------------*/
-class MeshfreeBin : public virtual DRT::Element
+template <typename ELEMENT>
+class MeshfreeBin : public ELEMENT
 {
 public:
 
@@ -54,7 +62,7 @@ public:
    * Makes a deep copy of a meshfree bin
    *///                                                  (public) ghamm 11/12
   /*------------------------------------------------------------------------*/
-  MeshfreeBin(const DRT::MESHFREE::MeshfreeBin& old);
+  MeshfreeBin(const DRT::MESHFREE::MeshfreeBin<ELEMENT>& old);
 
   /*------------------------------------------------------------------------*/
   /*!
@@ -103,8 +111,8 @@ public:
     DRT::Node* nodeptr //!< (in): pointer to node to be added
   )
   {
-    nodeid_.push_back(nodeptr->Id());
-    node_.push_back(nodeptr);
+    ELEMENT::nodeid_.push_back(nodeptr->Id());
+    ELEMENT::node_.push_back(nodeptr);
     return;
   }
 
@@ -123,8 +131,8 @@ public:
     DRT::Node* nodeptr //!< (in): pointer to node to be added
   )
   {
-    nodeid_.push_back(gid);
-    node_.push_back(nodeptr);
+    ELEMENT::nodeid_.push_back(gid);
+    ELEMENT::node_.push_back(nodeptr);
     return;
   }
 
@@ -146,8 +154,8 @@ public:
   /*------------------------------------------------------------------------*/
   virtual inline void DeleteNodes()
   {
-    nodeid_.clear();
-    node_.clear();
+    ELEMENT::nodeid_.clear();
+    ELEMENT::node_.clear();
   }
 
 private:

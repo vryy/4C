@@ -99,7 +99,7 @@ int DRT::ELEMENTS::MeshfreeScaTraCellCalc<distype>::Evaluate(
     dserror("dynamic_cast of discretization to meshfree discretization failed!");
 
   // cast element pointer to cell pointer to get access to point information
-  DRT::MESHFREE::Cell const * cell = dynamic_cast<DRT::MESHFREE::Cell const *>(ele);
+  DRT::MESHFREE::Cell<DRT::Element> const * cell = dynamic_cast<DRT::MESHFREE::Cell<DRT::Element> const *>(ele);
   if (cell==NULL)
     dserror("dynamic_cast of element to meshfree cell failed!");
 
@@ -214,7 +214,7 @@ int DRT::ELEMENTS::MeshfreeScaTraCellCalc<distype>::Evaluate(
  *--------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::MeshfreeScaTraCellCalc<distype>::Sysmat(
-  const DRT::MESHFREE::Cell*            cell,
+  const DRT::MESHFREE::Cell<DRT::Element>* cell,
   Epetra_SerialDenseMatrix&             emat,
   Epetra_SerialDenseVector&             erhs
   )
@@ -564,7 +564,7 @@ void DRT::ELEMENTS::MeshfreeScaTraCellCalc<distype>::Sysmat(
  *--------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::MeshfreeScaTraCellCalc<distype>::BodyForce(
-  DRT::MESHFREE::Cell const *  ele,
+  DRT::MESHFREE::Cell<DRT::Element> const * ele,
   const double                 time
   )
 {
@@ -632,7 +632,7 @@ void DRT::ELEMENTS::MeshfreeScaTraCellCalc<distype>::BodyForce(
  *--------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::MeshfreeScaTraCellCalc<distype>::GetMaterialParams(
-  const DRT::MESHFREE::Cell*  ele
+  const DRT::MESHFREE::Cell<DRT::Element>* ele
   )
 {
 // get the material

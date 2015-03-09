@@ -28,7 +28,7 @@ DRT::ELEMENTS::Ale3SurfaceType & DRT::ELEMENTS::Ale3SurfaceType::Instance()
 DRT::ELEMENTS::Ale3Surface::Ale3Surface(int id, int owner, int nnode,
     const int* nodeids, DRT::Node** nodes, DRT::ELEMENTS::Ale3* parent,
     const int lsurface)
-  : DRT::Element(id,owner)
+  : DRT::FaceElement(id,owner)
 {
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
@@ -38,7 +38,7 @@ DRT::ELEMENTS::Ale3Surface::Ale3Surface(int id, int owner, int nnode,
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 DRT::ELEMENTS::Ale3Surface::Ale3Surface(const DRT::ELEMENTS::Ale3Surface& old)
-  : DRT::Element(old)
+  : DRT::FaceElement(old)
 {
 }
 

@@ -552,7 +552,8 @@ CONTACT::CoManager::CoManager(
         {
           if (isslave[j]) //Parent just required for Slave Elements --> onesided poro contact!
           {
-            std::pair<DRT::Element*,int> pairval = std::make_pair(ele->ParentElement(), ele->FaceParentNumber());
+            Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele,true);
+            std::pair<DRT::Element*,int> pairval = std::make_pair(faceele->ParentElement(), faceele->FaceParentNumber());
             interface->ParentElementMap()[cele->Id()] = pairval;
           }
         }

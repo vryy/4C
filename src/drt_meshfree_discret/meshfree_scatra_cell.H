@@ -96,7 +96,7 @@ private:
  * \date February, 2012
  */
 /*--------------------------------------------------------------------------*/
-class MeshfreeTransport : public DRT::MESHFREE::Cell
+class MeshfreeTransport : public DRT::MESHFREE::Cell<DRT::Element>
 {
 public:
 
@@ -518,7 +518,7 @@ private:
  * \date February, 2012
  */
 /*--------------------------------------------------------------------------*/
-class MeshfreeTransportBoundary : public DRT::MESHFREE::Cell
+class MeshfreeTransportBoundary : public DRT::MESHFREE::Cell<DRT::FaceElement>
 {
 public:
 

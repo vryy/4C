@@ -186,7 +186,7 @@ protected:
 
 \author gee (gee@lnm.mw.tum.de), popp (popp@lnm.mw.tum.de)
 */
-class MortarElement : public virtual DRT::Element
+class MortarElement : public DRT::FaceElement
 {
 public:
 
@@ -818,6 +818,15 @@ protected:
   std::vector<Epetra_SerialDenseVector>         mortarknots_;  // mortar element knot vector
   double                                        normalfac_;    // factor for normal orientation
   bool                                          zero_sized_;   // zero-sized element: if true: no integration for this element
+
+
+  /*!
+  \brief Protected constructor for use in derived classes that expect standard element constructors
+
+  \param id    (in): A globally unique element id
+  \param owner (in): owner processor of the element
+  */
+  MortarElement(int id, int owner);
 
 }; // class MortarElement
 

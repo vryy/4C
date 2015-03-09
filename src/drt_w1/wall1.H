@@ -833,7 +833,7 @@ private:
  *
  * \author gitterle (gitterle@lnm.mw.tum.de)
  */
-class Wall1Line : public DRT::Element
+class Wall1Line : public DRT::FaceElement
 {
 public:
 

@@ -45,7 +45,7 @@ namespace MESHFREE
 /*==========================================================================*/
 // forward declaration
 /*==========================================================================*/
-  class Cell;
+  template <typename> class Cell;
   class MeshfreeNode;
   class MeshfreeApprox;
 

@@ -59,8 +59,7 @@ DRT::ELEMENTS::MeshfreeFluidBoundary::MeshfreeFluidBoundary(
   DRT::Node** points,
   MeshfreeFluid* parent,
   const int lsurface) :
-  DRT::Element(id,owner),  // necessary due to virtual inheritance from DRT::Element
-  DRT::MESHFREE::Cell(id,owner)
+  DRT::MESHFREE::Cell<DRT::FaceElement>(id,owner)
 {
   SetPointIds(npoint,pointids);
   BuildPointPointers(points);
@@ -77,8 +76,7 @@ DRT::ELEMENTS::MeshfreeFluidBoundary::MeshfreeFluidBoundary(
  |  copy-ctor                                            (public) nis Jan13 |
  *--------------------------------------------------------------------------*/
 DRT::ELEMENTS::MeshfreeFluidBoundary::MeshfreeFluidBoundary(const DRT::ELEMENTS::MeshfreeFluidBoundary& old) :
-  DRT::Element(old),  // necessary due to virtual inheritance from DRT::Element
-  DRT::MESHFREE::Cell(old)
+  DRT::MESHFREE::Cell<DRT::FaceElement>(old)
 {
   return;
 }

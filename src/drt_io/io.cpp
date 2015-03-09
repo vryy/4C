@@ -1376,7 +1376,7 @@ void IO::MeshfreeDiscretizationWriter::WriteMesh(
       for (int i=0; i<numrowele; ++i)
       {
         // get geometry information of cell
-        DRT::MESHFREE::Cell* oldcell = dynamic_cast<DRT::MESHFREE::Cell*>(dis_->lRowElement(i));
+        DRT::MESHFREE::Cell<DRT::Element>* oldcell = dynamic_cast<DRT::MESHFREE::Cell<DRT::Element>*>(dis_->lRowElement(i));
         if (oldcell==NULL) dserror("Could not cast element to meshfree Cell.");
         const int numpseudonodes = oldcell->NumPoint();
         const int* pseudonodeids = oldcell->PointIds();

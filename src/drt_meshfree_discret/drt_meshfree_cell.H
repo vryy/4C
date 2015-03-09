@@ -42,7 +42,8 @@ class MeshfreeNode;
  * \date January, 2012
  */
 /*--------------------------------------------------------------------------*/
-class Cell : public DRT::MESHFREE::MeshfreeBin
+template <typename ELEMENT>
+class Cell : public DRT::MESHFREE::MeshfreeBin<ELEMENT>
 {
 public:
 
@@ -70,7 +71,7 @@ public:
    * Makes a deep copy of a Cell
    *///                                                   (public) nis Jan12
   /*------------------------------------------------------------------------*/
-  Cell(const DRT::MESHFREE::Cell& old);
+  Cell(const DRT::MESHFREE::Cell<ELEMENT>& old);
 
   /*------------------------------------------------------------------------*/
   /*!
@@ -294,6 +295,7 @@ private:
 } // namespace DRT
 
 //! << operator
-std::ostream& operator << (std::ostream& os, const DRT::MESHFREE::Cell& ele);
+template <typename ELEMENT>
+std::ostream& operator << (std::ostream& os, const DRT::MESHFREE::Cell<ELEMENT>& ele);
 
 #endif  // #ifndef DRT_MESHFREE_CELL_H

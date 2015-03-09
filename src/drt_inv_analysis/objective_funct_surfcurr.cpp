@@ -214,10 +214,11 @@ const Epetra_Map INVANA::ObjectiveFunctSurfCurr::SetupConditionMap(DRT::Conditio
   std::map<int,Teuchos::RCP<DRT::Element> >::iterator ele;
   for (ele=geom.begin(); ele != geom.end(); ++ele)
   {
-    DRT::Element* element = ele->second.get();
+    Teuchos::RCP<DRT::Element> element = ele->second;
 
     // only proceed in case this element has a row element parent:
-    if ( dis->ElementRowMap()->LID( element->ParentElement()->Id() ) == -1 )
+    Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(element,true);
+    if ( dis->ElementRowMap()->LID( faceele->ParentElement()->Id() ) == -1 )
       continue;
 
     switch(element->NumNode())

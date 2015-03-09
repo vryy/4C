@@ -16,6 +16,7 @@
 #include "drt_meshfree_node.H"
 #include "drt_meshfree_cell.H"
 #include "../drt_fem_general/drt_utils_maxent_basisfunctions.H"
+#include "../drt_mortar/mortar_element.H"
 
 /*--------------------------------------------------------------------------*
  | unassigns all node information in all cells           (public) nis Apr12 |
@@ -23,7 +24,7 @@
 void DRT::MESHFREE::MeshfreeDiscretization::Unassign()
 {
   for (size_t i=0; i<elecolptr_.size(); i++)
-    dynamic_cast<DRT::MESHFREE::Cell*>(elecolptr_[i])->DeleteNodes();
+    dynamic_cast<DRT::MESHFREE::Cell<DRT::Element>*>(elecolptr_[i])->DeleteNodes();
 
   return;
 }
@@ -146,15 +147,38 @@ void DRT::MESHFREE::MeshfreeDiscretization::BuildElementToPointPointers()
   std::map<int,Teuchos::RCP<DRT::Element> >::iterator elecurr;
   for (elecurr=element_.begin(); elecurr != element_.end(); ++elecurr)
   {
-    // only process MESHFREE::Cell and derived classes here
+    // only process MESHFREE::Cell types and derived classes here
     // all other elements do not separate between nodes and points and are already processed
     // in DRT::Discretization::BuildElementToNodePointers
-    Teuchos::RCP<DRT::MESHFREE::Cell> cell = Teuchos::rcp_dynamic_cast<DRT::MESHFREE::Cell>(elecurr->second, false);
-    if(cell != Teuchos::null)
     {
-      bool success = cell->BuildPointPointers(point_);
-      if (!success)
-        dserror("Building element <-> point topology failed");
+      Teuchos::RCP<DRT::MESHFREE::Cell<DRT::Element> > cell =
+          Teuchos::rcp_dynamic_cast<DRT::MESHFREE::Cell<DRT::Element> >(elecurr->second, false);
+      if(cell != Teuchos::null)
+      {
+        bool success = cell->BuildPointPointers(point_);
+        if (!success)
+          dserror("Building element <-> point topology failed");
+      }
+    }
+    {
+      Teuchos::RCP<DRT::MESHFREE::Cell<DRT::FaceElement> > cell =
+          Teuchos::rcp_dynamic_cast<DRT::MESHFREE::Cell<DRT::FaceElement> >(elecurr->second, false);
+      if(cell != Teuchos::null)
+      {
+        bool success = cell->BuildPointPointers(point_);
+        if (!success)
+          dserror("Building element <-> point topology failed");
+      }
+    }
+    {
+      Teuchos::RCP<DRT::MESHFREE::Cell<MORTAR::MortarElement> > cell =
+          Teuchos::rcp_dynamic_cast<DRT::MESHFREE::Cell<MORTAR::MortarElement> >(elecurr->second, false);
+      if(cell != Teuchos::null)
+      {
+        bool success = cell->BuildPointPointers(point_);
+        if (!success)
+          dserror("Building element <-> point topology failed");
+      }
     }
   }
   return;
@@ -175,7 +199,11 @@ void DRT::MESHFREE::MeshfreeDiscretization::BuildPointToElementPointers()
     // only process MESHFREE::Cell and derived classes here
     // all other elements do not separate between nodes and points and are already processed
     // in DRT::Discretization::BuildNodeToElementPointers
-    if(Teuchos::rcp_dynamic_cast<DRT::MESHFREE::Cell>(elecurr->second, false) != Teuchos::null)
+    if(Teuchos::rcp_dynamic_cast<DRT::MESHFREE::Cell<DRT::Element> >(elecurr->second, false) != Teuchos::null
+       ||
+       Teuchos::rcp_dynamic_cast<DRT::MESHFREE::Cell<DRT::FaceElement> >(elecurr->second, false) != Teuchos::null
+       ||
+       Teuchos::rcp_dynamic_cast<DRT::MESHFREE::Cell<MORTAR::MortarElement> >(elecurr->second, false) != Teuchos::null)
     {
       const int  npoint = elecurr->second->NumPoint();
       const int* points = elecurr->second->PointIds();

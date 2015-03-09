@@ -1010,18 +1010,21 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
       std::transform( nodes.begin(), nodes.end(), nodeids.begin(), std::mem_fun( &DRT::Node::Id ) );
 
       // create the internal face element
-      Teuchos::RCP<DRT::Element> surf = parent_master->CreateFaceElement(parent_slave,
-                                                                         nodeids.size(),
-                                                                         &nodeids[0],
-                                                                         &nodes[0],
-                                                                         face_it->second.GetLSurfaceMaster(),
-                                                                         face_it->second.GetLSurfaceSlave(),
-                                                                         face_it->second.GetLocalNumberingMap()
-      );
+      Teuchos::RCP<DRT::FaceElement> surf = Teuchos::rcp_dynamic_cast<DRT::FaceElement>
+        (parent_master->CreateFaceElement(parent_slave,
+                                          nodeids.size(),
+                                          &nodeids[0],
+                                          &nodes[0],
+                                          face_it->second.GetLSurfaceMaster(),
+                                          face_it->second.GetLSurfaceSlave(),
+                                          face_it->second.GetLocalNumberingMap()),
+         true);
       dsassert(surf != Teuchos::null, "Creating a face element failed. Check overloading of CreateFaceElement");
 
       // create a clone (the internally created element does not exist anymore when all Teuchos::RCP's finished)
-      Teuchos::RCP<DRT::Element> surf_clone = Teuchos::rcp( surf->Clone() );
+      Teuchos::RCP<DRT::FaceElement> surf_clone = Teuchos::rcp( dynamic_cast<DRT::FaceElement*>(surf->Clone()) );
+      if (surf_clone.get() == NULL)
+        dserror("Invalid element detected. Expected face element");
 
       // Set owning process of surface to node with smallest gid
       // REMARK: see below

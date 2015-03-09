@@ -36,12 +36,13 @@ void MORTAR::ManagerBase::PrepareNURBSElement(
   std::vector<Epetra_SerialDenseVector> mortarknots(dim - 1);
 
   double normalfac = 0.0;
+  Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele,true);
   bool zero_size = knots->GetBoundaryEleAndParentKnots(
       parentknots,
       mortarknots,
       normalfac,
-      ele->ParentMasterElement()->Id(),
-      ele->FaceMasterNumber());
+      faceele->ParentMasterElement()->Id(),
+      faceele->FaceMasterNumber());
 
   // store nurbs specific data to node
   cele->ZeroSized() = zero_size;

@@ -51,7 +51,7 @@ private:
 
 \author gee (gee@lnm.mw.tum.de)
 */
-class StructuralLine : public DRT::Element
+class StructuralLine : public DRT::FaceElement
 {
 public:
 

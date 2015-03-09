@@ -12,12 +12,14 @@ Maintainer: Georg Hammerl
 *--------------------------------------------------------------------------*/
 
 #include "drt_meshfree_bin.H"
+#include "../drt_mortar/mortar_element.H"
 
 /*--------------------------------------------------------------------------*
  |  ctor                                               (public) ghamm 11/12 |
  *--------------------------------------------------------------------------*/
-DRT::MESHFREE::MeshfreeBin::MeshfreeBin(int id, int owner)
-  : DRT::Element::Element(id,owner)
+template <typename ELEMENT>
+DRT::MESHFREE::MeshfreeBin<ELEMENT>::MeshfreeBin(int id, int owner)
+  : ELEMENT(id,owner)
 {
   return;
 }
@@ -25,8 +27,9 @@ DRT::MESHFREE::MeshfreeBin::MeshfreeBin(int id, int owner)
 /*--------------------------------------------------------------------------*
  |  copy-ctor                                          (public) ghamm 11/12 |
  *--------------------------------------------------------------------------*/
-DRT::MESHFREE::MeshfreeBin::MeshfreeBin(const DRT::MESHFREE::MeshfreeBin& old)
-  : DRT::Element::Element(old)
+template <typename ELEMENT>
+DRT::MESHFREE::MeshfreeBin<ELEMENT>::MeshfreeBin(const DRT::MESHFREE::MeshfreeBin<ELEMENT>& old)
+  : ELEMENT(old)
 {
   return;
 }
@@ -34,7 +37,8 @@ DRT::MESHFREE::MeshfreeBin::MeshfreeBin(const DRT::MESHFREE::MeshfreeBin& old)
 /*--------------------------------------------------------------------------*
  |  dtor                                               (public) ghamm 11/12 |
  *--------------------------------------------------------------------------*/
-DRT::MESHFREE::MeshfreeBin::~MeshfreeBin()
+template <typename ELEMENT>
+DRT::MESHFREE::MeshfreeBin<ELEMENT>::~MeshfreeBin()
 {
   return;
 }
@@ -42,15 +46,23 @@ DRT::MESHFREE::MeshfreeBin::~MeshfreeBin()
 /*--------------------------------------------------------------------------*
  | Delete a single node from the element               (public) ghamm 11/12 |
  *--------------------------------------------------------------------------*/
-void DRT::MESHFREE::MeshfreeBin::DeleteNode(int gid)
+template <typename ELEMENT>
+void DRT::MESHFREE::MeshfreeBin<ELEMENT>::DeleteNode(int gid)
 {
-  for (unsigned int i = 0; i<nodeid_.size(); i++){
-    if (nodeid_[i]==gid){
-      nodeid_.erase(nodeid_.begin()+i);
-      node_.erase(node_.begin()+i);
+  for (unsigned int i = 0; i<ELEMENT::nodeid_.size(); i++){
+    if (ELEMENT::nodeid_[i]==gid){
+      ELEMENT::nodeid_.erase(ELEMENT::nodeid_.begin()+i);
+      ELEMENT::node_.erase(ELEMENT::node_.begin()+i);
       return;
     }
   }
   dserror("Connectivity issues: No node with specified gid to delete in element. ");
   return;
 }
+
+/*--------------------------------------------------------------------------*
+ | Explicit instantiations                                kronbichler 03/15 |
+ *--------------------------------------------------------------------------*/
+template class DRT::MESHFREE::MeshfreeBin<DRT::Element>;
+template class DRT::MESHFREE::MeshfreeBin<DRT::FaceElement>;
+template class DRT::MESHFREE::MeshfreeBin<MORTAR::MortarElement>;

@@ -58,10 +58,12 @@ MORTAR::MortarElementGeoDecoupl::MortarElementGeoDecoupl(int id, int owner,
                            const int* pointids,
                            const bool isslave,
                            bool isnurbs) :
-DRT::Element(id,owner),  // necessary due to virtual inheritance from DRT::Element
-MORTAR::MortarElement(id,owner,shape,numnode,nodeids,isslave,isnurbs),
-DRT::MESHFREE::Cell(id,owner)
+DRT::MESHFREE::Cell<MORTAR::MortarElement>(id,owner)
 {
+  shape_ = shape;
+  isslave_ = isslave;
+  nurbs_ = isnurbs;
+  SetNodeIds(numnode,nodeids);
   SetPointIds(numpoint,pointids);
   return;
 }
@@ -70,9 +72,7 @@ DRT::MESHFREE::Cell(id,owner)
  |  copy-ctor (public)                                       ghamm 09/14|
  *----------------------------------------------------------------------*/
 MORTAR::MortarElementGeoDecoupl::MortarElementGeoDecoupl(const MORTAR::MortarElementGeoDecoupl& old) :
-DRT::Element(old),  // necessary due to virtual inheritance from DRT::Element
-MORTAR::MortarElement(old),
-DRT::MESHFREE::Cell(old)
+DRT::MESHFREE::Cell<MORTAR::MortarElement>(old)
 {
   // not yet used and thus not necessarily consistent
   dserror("ERROR: MortarElement copy-ctor not yet implemented");
@@ -106,8 +106,8 @@ void MORTAR::MortarElementGeoDecoupl::Print(std::ostream& os) const
   os << "Mortar Element Geo Decoupl ";
   DRT::Element::Print(os);
 
-  const int npoint = DRT::MESHFREE::Cell::NumPoint();
-  const int* pointids = DRT::MESHFREE::Cell::PointIds();
+  const int npoint = NumPoint();
+  const int* pointids = PointIds();
   if (npoint > 0)
   {
     os << " Points ";
@@ -132,10 +132,8 @@ void MORTAR::MortarElementGeoDecoupl::Pack(DRT::PackBuffer& data) const
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
-  // add base class MortarElement
-  MORTAR::MortarElement::Pack(data);
   // add base class Cell
-  DRT::MESHFREE::Cell::Pack(data);
+  DRT::MESHFREE::Cell<MORTAR::MortarElement>::Pack(data);
 
   return;
 }
@@ -154,10 +152,8 @@ void MORTAR::MortarElementGeoDecoupl::Unpack(const std::vector<char>& data)
   // extract base class DRT::Element
   std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
-  // extract base class MortarElement
-  MORTAR::MortarElement::Unpack(basedata);
   // extract base class Cell
-  DRT::MESHFREE::Cell::Unpack(basedata);
+  DRT::MESHFREE::Cell<MORTAR::MortarElement>::Unpack(basedata);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);

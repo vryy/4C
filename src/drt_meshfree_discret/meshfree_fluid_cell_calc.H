@@ -34,7 +34,7 @@ namespace DRT
 namespace MESHFREE
 {
   class MeshfreeDiscretization;
-  class Cell;
+  template <typename> class Cell;
 }
 
 namespace ELEMENTS

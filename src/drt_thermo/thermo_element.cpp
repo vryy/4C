@@ -491,7 +491,7 @@ DRT::ELEMENTS::ThermoBoundary::ThermoBoundary(
   DRT::ELEMENTS::Thermo* parent,
   const int lbeleid
   )
-: DRT::Element(id,owner)
+: DRT::FaceElement(id,owner)
 {
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
@@ -506,7 +506,7 @@ DRT::ELEMENTS::ThermoBoundary::ThermoBoundary(
 DRT::ELEMENTS::ThermoBoundary::ThermoBoundary(
   const DRT::ELEMENTS::ThermoBoundary& old
   )
-: DRT::Element(old)
+: DRT::FaceElement(old)
 {
   return;
 }  // copy-ctor

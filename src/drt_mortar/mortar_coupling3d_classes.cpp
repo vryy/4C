@@ -35,7 +35,6 @@ MORTAR::IntElement::IntElement(int lid, int id, int owner,
                                std::vector<DRT::Node*> nodes,
                                const bool isslave,
                                const bool rewind) :
-DRT::Element(id,owner),  // necessary due to virtual inheritance from DRT::Element
 MORTAR::MortarElement(id,owner,shape,numnode,nodeids,isslave),
 lid_(lid),
 rewind_(rewind),

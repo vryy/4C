@@ -34,7 +34,7 @@ DRT::ELEMENTS::Shell8Line::Shell8Line(int id, int owner,
                               DRT::Node** nodes,
                               DRT::ELEMENTS::Shell8* parent,
                               const int lline) :
-DRT::Element(id,owner)
+DRT::FaceElement(id,owner)
 {
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
@@ -46,7 +46,7 @@ DRT::Element(id,owner)
  |  copy-ctor (public)                                       mwgee 01/07|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Shell8Line::Shell8Line(const DRT::ELEMENTS::Shell8Line& old) :
-DRT::Element(old)
+DRT::FaceElement(old)
 {
   return;
 }

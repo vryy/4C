@@ -472,10 +472,11 @@ void DRT::NURBS::NurbsDiscretization::DoNurbsLSDirichletCondition(
       bool zero_size = false;
       if(isboundary)
       {
+        Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(actele,true);
         double normalfac = 0.0;
         std::vector<Epetra_SerialDenseVector> pknots(probdim);
         zero_size = DRT::NURBS::GetKnotVectorAndWeightsForNurbsBoundary(
-            actele.get(), actele->FaceMasterNumber(), actele->ParentElement()->Id(), *this, pknots, eleknots, weights, normalfac);
+            actele.get(), faceele->FaceMasterNumber(), faceele->ParentElement()->Id(), *this, pknots, eleknots, weights, normalfac);
       }
       else
         zero_size =DRT::NURBS::GetMyNurbsKnotsAndWeights(*this,actele.get(),eleknots,weights);

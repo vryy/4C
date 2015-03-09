@@ -661,7 +661,7 @@ private:
 
 \author gee (gee@lnm.mw.tum.de)
 */
-class Shell8Line : public DRT::Element
+class Shell8Line : public DRT::FaceElement
 {
 public:
 
@@ -767,7 +767,7 @@ public:
   */
   virtual DRT::ELEMENTS::Shell8* ParentElement() const
   {
-    DRT::Element* parent = this->DRT::Element::ParentElement();
+    DRT::Element* parent = this->DRT::FaceElement::ParentElement();
     // make sure the static cast below is really valid
     dsassert(dynamic_cast<DRT::ELEMENTS::Shell8*>(parent) != NULL, "Parent element is no shell element");
     return static_cast<DRT::ELEMENTS::Shell8*>(parent);

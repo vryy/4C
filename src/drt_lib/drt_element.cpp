@@ -71,10 +71,6 @@ ParObject(),
 id_(id),
 lid_(-1),
 owner_(owner),
-parent_master_(NULL),
-parent_slave_(NULL),
-lface_master_(-1),
-lface_slave_(-1),
 mat_(1,Teuchos::null)
 {}
 
@@ -89,10 +85,6 @@ owner_(old.owner_),
 nodeid_(old.nodeid_),
 node_(old.node_),
 face_(old.face_),
-parent_master_(old.parent_master_),
-parent_slave_(old.parent_slave_),
-lface_master_(old.lface_master_),
-lface_slave_(old.lface_slave_),
 mat_(1,Teuchos::null)
 {
   // we do NOT want a deep copy of the condition_ as the condition
@@ -294,13 +286,9 @@ void DRT::Element::Unpack(const std::vector<char>& data)
   node_.resize(0);
   if ( !face_.empty() )
   {
-    std::vector<DRT::Element*> empty;
+    std::vector<DRT::FaceElement*> empty;
     std::swap(face_, empty);
   }
-  parent_master_ = NULL;
-  parent_slave_  = NULL;
-  lface_master_ = -1;
-  lface_slave_  = -1;
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -847,22 +835,19 @@ DRT::Element* DRT::Element::Neighbor(const int face) const
   if (face_.empty())
     return NULL;
   dsassert(face < NumFace(), "there is no face with the given index");
-  DRT::Element* faceelement = face_[face];
-  if (faceelement->parent_master_ == this)
-  {
-    if (faceelement->parent_slave_ != NULL)
-      return faceelement->parent_slave_;
-  }
-  else if (faceelement->parent_slave_ == this)
-    return faceelement->parent_master_;
+  DRT::FaceElement* faceelement = face_[face];
+  if (faceelement->ParentMasterElement() == this)
+    return faceelement->ParentSlaveElement();
+  else if (faceelement->ParentSlaveElement() == this)
+    return faceelement->ParentMasterElement();
   return NULL;
 }
 
 /*----------------------------------------------------------------------*
  |  set faces (public)                                 kronbichler 05/13|
  *----------------------------------------------------------------------*/
-void DRT::Element::SetFace(const int     faceindex,
-                           DRT::Element* faceelement)
+void DRT::Element::SetFace(const int         faceindex,
+                           DRT::FaceElement* faceelement)
 {
   const int nface = NumFace();
   if (face_.empty())
@@ -959,3 +944,31 @@ bool DRT::Element::HasOnlyGhostNodes(const int mypid) const
   }
   return allghostnodes;
 }
+
+
+
+/*----------------------------------------------------------------------*
+ |  Constructor (public)                               kronbichler 03/15|
+ *----------------------------------------------------------------------*/
+DRT::FaceElement::FaceElement(const int id, const int owner)
+  :
+  DRT::Element(id, owner),
+  parent_master_(NULL),
+  parent_slave_(NULL),
+  lface_master_(-1),
+  lface_slave_(-1)
+{}
+
+
+
+/*----------------------------------------------------------------------*
+ |  Copy constructor (public)                          kronbichler 03/15|
+ *----------------------------------------------------------------------*/
+DRT::FaceElement::FaceElement(const DRT::FaceElement &old)
+  :
+  DRT::Element(old),
+  parent_master_(old.parent_master_),
+  parent_slave_(old.parent_slave_),
+  lface_master_(old.lface_master_),
+  lface_slave_(old.lface_slave_)
+{}

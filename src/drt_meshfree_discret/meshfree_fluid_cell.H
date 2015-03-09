@@ -105,7 +105,7 @@ private:
  * \date January, 2013
  */
 /*--------------------------------------------------------------------------*/
-class MeshfreeFluid : public DRT::MESHFREE::Cell
+class MeshfreeFluid : public DRT::MESHFREE::Cell<DRT::Element>
 {
 public:
 
@@ -482,7 +482,7 @@ private:
  * \date January, 2013
  */
 /*--------------------------------------------------------------------------*/
-class MeshfreeFluidBoundary : public DRT::MESHFREE::Cell
+class MeshfreeFluidBoundary : public DRT::MESHFREE::Cell<DRT::FaceElement>
 {
 public:
 
@@ -631,7 +631,7 @@ public:
   /*------------------------------------------------------------------------*/
   virtual DRT::ELEMENTS::MeshfreeFluid* ParentElement() const
   {
-    DRT::Element* parent = this->DRT::Element::ParentElement();
+    DRT::Element* parent = this->DRT::FaceElement::ParentElement();
     // make sure the static cast below is really valid
     dsassert(dynamic_cast<DRT::ELEMENTS::MeshfreeFluid*>(parent) != NULL, "Parent element is no fluid element");
     return dynamic_cast<DRT::ELEMENTS::MeshfreeFluid*>(parent);

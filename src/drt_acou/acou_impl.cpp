@@ -1321,7 +1321,8 @@ void ACOU::AcouImplicitTimeInt::Output(Teuchos::RCP<Epetra_MultiVector> history,
       for (curr=geom.begin(); curr!=geom.end(); ++curr)
       {
         interpolVec.Resize(curr->second->NumNode());
-        curr->second->ParentElement()->LocationVector(*discret_,la,false);
+        Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(curr->second,true);
+        faceele->ParentElement()->LocationVector(*discret_,la,false);
         curr->second->Evaluate(eleparams,*discret_,la[0].lm_,dummyMat,dummyMat,interpolVec,dummyVec,dummyVec);
 
         for(int j=0; j<curr->second->NumNode(); ++j)

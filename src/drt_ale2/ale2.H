@@ -452,7 +452,7 @@ private:
 /*!
 \brief An element representing a line of a ale2 element
 */
-class Ale2Line : public DRT::Element
+class Ale2Line : public DRT::FaceElement
 {
 public:
 
