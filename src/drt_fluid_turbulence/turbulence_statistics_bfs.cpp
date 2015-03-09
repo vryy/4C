@@ -54,7 +54,8 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
     std::cout << "This is the turbulence statistics manager of backward-facing step problems:" << std::endl;
     std::cout << "It can deal with the following two geometries:" << std::endl;
     std::cout << "- geometry of DNS by Le,Moin,Kim (expansion ratio 1.2) and" << std::endl;
-    std::cout << "- geometry of experiment by Kasagi,Matsunaga (expansion ratio 1.5)." << std::endl;
+    std::cout << "- geometry of experiment by Kasagi,Matsunaga (expansion ratio 1.5) and" << std::endl;
+    std::cout << "- geometry of experiment by Vogel, Eaton (expansion ratio 1.25) at Re 28,000." << std::endl;
     std::cout << "If additional output in front of the step is required, it has to be set manually (look for numx1supplocations_)." << std::endl;
   }
 
@@ -361,33 +362,67 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
   double h = 0.0;
   if (geotype_ == TurbulenceStatisticsBfs::geometry_LES_flow_with_heating)
   {
-    h = (x2max_ - x2min_)/3;
+    h = (x2max_ - x2min_)/3.0;
   }
   else if (geotype_ == TurbulenceStatisticsBfs::geometry_DNS_incomp_flow)
   {
-    h = (x2max_ - x2min_)/6;
+    h = (x2max_ - x2min_)/6.0;
+  }
+  else if (geotype_ == TurbulenceStatisticsBfs::geometry_EXP_vogel_eaton)
+  {
+    h = (x2max_ - x2min_)/5.0;
+    numx1statlocations_ = 10;
   }
 
-  //find locations x/h=0 ... x/h=20
-  for (int rr = 0; rr < numx1statlocations_; rr++)
+  if (geotype_ == TurbulenceStatisticsBfs::geometry_EXP_vogel_eaton)
   {
-    int actpos = rr;
-    double dist = 30 * h;
-    double mindist = 30.0 * h;
-    int pos = 0;
-
-    for (int ll = 0; ll < numx1coor_; ll++)
+    //locactions given by Vogel&Eaton
+    double givenpos[10]={2.2, 3.0, 3.73, 4.47, 5.2, 5.93, 6.67, 7.4, 8.13, 8.87};
+    if(numx1statlocations_!=10)
+      dserror("wrong number of numx1statlocations_");
+    //find locations
+    for (int rr = 0; rr < numx1statlocations_; rr++)
     {
-      dist = abs(actpos*h - x1coordinates_->at(ll));
-      if (dist < mindist)
-      {
-        mindist = dist;
-        pos = ll;
-      }
-    }
+      double actpos = givenpos[rr];
+      double dist = 30.0 * h;
+      double mindist = 30.0 * h;
+      int pos = 0;
 
-    x1statlocations_(rr) = x1coordinates_->at(pos);
-    //std::cout << x1statlocations_(rr) << std::endl;
+      for (int ll = 0; ll < numx1coor_; ll++)
+      {
+        dist = abs(actpos*h - x1coordinates_->at(ll));
+        if (dist < mindist)
+        {
+          mindist = dist;
+          pos = ll;
+        }
+      }
+
+      x1statlocations_(rr) = x1coordinates_->at(pos);
+    }
+  }
+  else
+  {
+    //find locations x/h=0 ... x/h=20
+    for (int rr = 0; rr < numx1statlocations_; rr++)
+    {
+      int actpos = rr;
+      double dist = 30 * h;
+      double mindist = 30.0 * h;
+      int pos = 0;
+
+      for (int ll = 0; ll < numx1coor_; ll++)
+      {
+        dist = abs(actpos*h - x1coordinates_->at(ll));
+        if (dist < mindist)
+        {
+          mindist = dist;
+          pos = ll;
+        }
+      }
+
+      x1statlocations_(rr) = x1coordinates_->at(pos);
+    }
   }
 
   //find supplementary locations x/h=-2 and -1
@@ -421,7 +456,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
   // define locations in x2-direction for statistical evaluation
   // (lower and upper wall)
   //----------------------------------------------------------------------
-  if (geotype_ == TurbulenceStatisticsBfs::geometry_LES_flow_with_heating)
+  if (geotype_ == TurbulenceStatisticsBfs::geometry_LES_flow_with_heating || geotype_ == TurbulenceStatisticsBfs::geometry_EXP_vogel_eaton)
   {
     // num2statlocations_ also defines number of supplocations
     numx2statlocations_ = 2;
@@ -470,6 +505,9 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
 
   x1sumT_ =  Teuchos::rcp(new Epetra_SerialDenseMatrix);
   x1sumT_->Reshape(numx2statlocations_,numx1coor_);
+
+  x1sumtauw_ =  Teuchos::rcp(new Epetra_SerialDenseMatrix);
+  x1sumtauw_->Reshape(numx2statlocations_,numx1coor_);
 
   // x2-direction
   // first-order moments
@@ -592,7 +630,8 @@ FLD::TurbulenceStatisticsBfs::~TurbulenceStatisticsBfs()
 // sampling of velocity/pressure values
 //----------------------------------------------------------------------
 void FLD::TurbulenceStatisticsBfs::DoTimeSample(
-Teuchos::RCP<Epetra_Vector> velnp
+Teuchos::RCP<Epetra_Vector> velnp,
+Teuchos::RCP<Epetra_Vector> stresses
 )
 {
   // compute squared values of velocity
@@ -625,6 +664,8 @@ Teuchos::RCP<Epetra_Vector> velnp
       // else 0
       toggleu_->PutScalar(0.0);
       togglep_->PutScalar(0.0);
+      //misuse togglev for stresses in u direction
+      togglev_->PutScalar(0.0);
 
       // count the number of nodes in x3-direction contributing to this nodal value
       int countnodes=0;
@@ -641,6 +682,8 @@ Teuchos::RCP<Epetra_Vector> velnp
           double           one = 1.0;
 
           togglep_->ReplaceGlobalValues(1,&one,&(dof[3]));
+          //stresses
+          togglev_->ReplaceGlobalValues(1,&one,&(dof[0]));
 
           countnodes++;
         }
@@ -671,18 +714,23 @@ Teuchos::RCP<Epetra_Vector> velnp
         velnp->Dot(*toggleu_,&u);
         double p;
         velnp->Dot(*togglep_,&p);
+        // stresses
+        double tauw;
+        stresses->Dot(*togglev_,&tauw);
 
         //----------------------------------------------------------------------
         // calculate spatial means
         //----------------------------------------------------------------------
         double usm=u/countnodesonallprocs;
         double psm=p/countnodesonallprocs;
+        double tauwsm=tauw/countnodesonallprocs;
 
         //----------------------------------------------------------------------
         // add spatial mean values to statistical sample
         //----------------------------------------------------------------------
         (*x1sumu_)(x2nodnum,x1nodnum)+=usm;
         (*x1sump_)(x2nodnum,x1nodnum)+=psm;
+        (*x1sumtauw_)(x2nodnum,x1nodnum)+=tauwsm;
       }
     }
   }
@@ -1424,7 +1472,7 @@ void FLD::TurbulenceStatisticsBfs::DumpStatistics(int step)
     (*log) << "\n\n\n";
     (*log) << "# lower wall behind step\n";
     (*log) << "#     x1";
-    (*log) << "           duxdy         pmean\n";
+    (*log) << "           duxdy         pmean         tauw\n";
 
     // distance from wall to first node off wall
     double dist = x2supplocations_(0) - x2statlocations_(0);
@@ -1436,15 +1484,17 @@ void FLD::TurbulenceStatisticsBfs::DumpStatistics(int step)
         double lwx1u     = (*x1sumu_)(0,i)/numsamp_;
         double lwx1duxdy = lwx1u/dist;
         double lwx1p     = (*x1sump_)(0,i)/numsamp_;
+        double lwx1tauw     = (*x1sumtauw_)(0,i)/numsamp_;
 
         (*log) <<  " "  << std::setw(11) << std::setprecision(4) << (*x1coordinates_)[i];
         (*log) << "   " << std::setw(11) << std::setprecision(4) << lwx1duxdy;
         (*log) << "   " << std::setw(11) << std::setprecision(4) << lwx1p;
+        (*log) << "   " << std::setw(11) << std::setprecision(4) << lwx1tauw;
         (*log) << "\n";
       }
     }
 
-    if (geotype_ == TurbulenceStatisticsBfs::geometry_LES_flow_with_heating)
+    if (geotype_ == TurbulenceStatisticsBfs::geometry_LES_flow_with_heating || geotype_ == TurbulenceStatisticsBfs::geometry_EXP_vogel_eaton)
     {
       (*log) << "\n\n\n";
       (*log) << "# upper wall\n";
@@ -1621,6 +1671,8 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step)
         (*log) << "\n";
       }
     }
+    else if(geotype_ == TurbulenceStatisticsBfs::geometry_EXP_vogel_eaton)
+      dserror("geometry not implemented for loma yet");
 
     for (int i=0; i<numx1statlocations_; ++i)
     {
@@ -1831,6 +1883,8 @@ void FLD::TurbulenceStatisticsBfs::DumpScatraStatistics(int          step)
         (*log) << "\n";
       }
     }
+    else if(geotype_ == TurbulenceStatisticsBfs::geometry_EXP_vogel_eaton)
+      dserror("geometry not implemented for scatra yet");
 
     for (int i=0; i<numx1statlocations_; ++i)
     {
@@ -1935,8 +1989,10 @@ void FLD::TurbulenceStatisticsBfs::convertStringToGeoType(
     geotype_ = TurbulenceStatisticsBfs::geometry_DNS_incomp_flow;
   else if (geotype == "geometry_LES_flow_with_heating")
     geotype_ = TurbulenceStatisticsBfs::geometry_LES_flow_with_heating;
+  else if(geotype == "geometry_EXP_vogel_eaton")
+    geotype_ = TurbulenceStatisticsBfs::geometry_EXP_vogel_eaton;
   else
-  dserror("(%s) geometry for backward facing step",geotype.c_str());
+    dserror("(%s) geometry for backward facing step",geotype.c_str());
   return;
 }
 

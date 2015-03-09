@@ -92,7 +92,7 @@ public:
   global vectors. This method allows to do the time average of the
   nodal values after a certain amount of timesteps.
   */
-  void DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp);
+  void DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp, Teuchos::RCP<Epetra_Vector> stresses);
 
   /*!
   \brief The values of velocity, pressure, temperature and its squared
@@ -167,7 +167,8 @@ private:
   enum GeoType{
    none,
    geometry_DNS_incomp_flow,
-   geometry_LES_flow_with_heating
+   geometry_LES_flow_with_heating,
+   geometry_EXP_vogel_eaton
   };
 
   //! number of samples taken
@@ -240,6 +241,8 @@ private:
 
   Teuchos::RCP<Epetra_SerialDenseMatrix>     x1sumrho_;
   Teuchos::RCP<Epetra_SerialDenseMatrix>     x1sumT_;
+
+  Teuchos::RCP<Epetra_SerialDenseMatrix>     x1sumtauw_;
 
   Teuchos::RCP<Epetra_SerialDenseMatrix>     x2sumu_;
   Teuchos::RCP<Epetra_SerialDenseMatrix>     x2sumv_;

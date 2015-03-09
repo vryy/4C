@@ -35,10 +35,11 @@ parameter list given on input.
 In addition the multiple phase version needs information about which
 phase the velocity dofs belong to.
 
-Maintainer: Ursula Rasthofer
-            rasthofer@lnm.mw.tum.de
+<pre>
+Maintainer: Benjamin Krank
+            krank@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15236
+            089 - 289-15252
 </pre>
 
 *----------------------------------------------------------------------*/

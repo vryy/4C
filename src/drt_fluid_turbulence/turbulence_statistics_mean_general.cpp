@@ -2,12 +2,10 @@
          Computation of mean values of nodal/cp quantities.
 
 <pre>
-
-Maintainer: Ursula Rasthofer
-            rasthofer@lnm.mw.tum.de
+Maintainer: Benjamin Krank
+            krank@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15236
-
+            089 - 289-15252
 </pre>
 
 */
@@ -249,6 +247,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
       odim[1]=-1;
 
       dserror("dimension to average not in 0-2\n",dim);
+      break;
     }
     }
   }
@@ -938,52 +937,52 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
 
       if(x_and_y!=xtoy.end())
       {
-	xodim[1]= (lnode->X())[odim[1]];
+  xodim[1]= (lnode->X())[odim[1]];
 
-	y_and_i=(x_and_y->second).find(xodim[1]);
+  y_and_i=(x_and_y->second).find(xodim[1]);
 
-	if(y_and_i!=(x_and_y->second).end())
-	{
-	  int pos = y_and_i->second;
+  if(y_and_i!=(x_and_y->second).end())
+  {
+    int pos = y_and_i->second;
 
-	  // get dofs of vector to average
-	  int gid;
-	  int lid;
+    // get dofs of vector to average
+    int gid;
+    int lid;
 
-	  // the set of degrees of freedom associated with the node
-	  std::vector<int> nodedofset = discret_->Dof(lnode);
+    // the set of degrees of freedom associated with the node
+    std::vector<int> nodedofset = discret_->Dof(lnode);
 
-	  int err=0;
+    int err=0;
 
-	  // u velocity
-	  gid = nodedofset[0];
-	  lid = dofrowmap->LID(gid);
+    // u velocity
+    gid = nodedofset[0];
+    lid = dofrowmap->LID(gid);
 
-	  err += curr_avg_->ReplaceMyValues(1,&(avg_u[pos]),&lid);
+    err += curr_avg_->ReplaceMyValues(1,&(avg_u[pos]),&lid);
 
-	  // v velocity
-	  gid = nodedofset[1];
-	  lid = dofrowmap->LID(gid);
+    // v velocity
+    gid = nodedofset[1];
+    lid = dofrowmap->LID(gid);
 
-	  err += curr_avg_->ReplaceMyValues(1,&(avg_v[pos]),&lid);
+    err += curr_avg_->ReplaceMyValues(1,&(avg_v[pos]),&lid);
 
-	  // w velocity
-	  gid = nodedofset[2];
-	  lid = dofrowmap->LID(gid);
+    // w velocity
+    gid = nodedofset[2];
+    lid = dofrowmap->LID(gid);
 
-	  err += curr_avg_->ReplaceMyValues(1,&(avg_w[pos]),&lid);
+    err += curr_avg_->ReplaceMyValues(1,&(avg_w[pos]),&lid);
 
-	  // pressure p
-	  gid = nodedofset[3];
-	  lid = dofrowmap->LID(gid);
+    // pressure p
+    gid = nodedofset[3];
+    lid = dofrowmap->LID(gid);
 
-	  err += curr_avg_->ReplaceMyValues(1,&(avg_p[pos]),&lid);
+    err += curr_avg_->ReplaceMyValues(1,&(avg_p[pos]),&lid);
 
           if(err>0)
           {
             dserror("lid was not on proc %d\n",myrank);
           }
-	}
+  }
       }
     }
 

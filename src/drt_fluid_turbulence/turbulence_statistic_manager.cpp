@@ -7,10 +7,12 @@ cylinder, flow in a lid driven cavity, flow over a backward-facing step etc.
 The manager is intended to remove as much of the averaging
 overhead as possible from the time integration method.
 
-Maintainer: Ursula Rasthofer
-            rasthofer@lnm.mw.tum.de
+<pre>
+Maintainer: Benjamin Krank
+            krank@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15236
+            089 - 289-15252
+</pre>
 
 */
 
@@ -241,6 +243,36 @@ namespace FLD
       // allocate one instance of the averaging procedure for
       // the flow under consideration
       statistics_bfs_ = Teuchos::rcp(new TurbulenceStatisticsBfs(discret_,*params_,"geometry_LES_flow_with_heating"));
+
+      // build statistics manager for inflow channel flow
+      if (inflow_)
+      {
+        if(params_->sublist("TURBULENT INFLOW").get<std::string>("CANONICAL_INFLOW")=="channel_flow_of_height_2"
+         or params_->sublist("TURBULENT INFLOW").get<std::string>("CANONICAL_INFLOW")=="loma_channel_flow_of_height_2"
+         or params_->sublist("TURBULENT INFLOW").get<std::string>("CANONICAL_INFLOW")=="scatra_channel_flow_of_height_2")
+        {
+          // do not write any dissipation rates for inflow channels
+          subgrid_dissipation_ = false;
+          // allocate one instance of the averaging procedure for the flow under consideration
+          statistics_channel_=Teuchos::rcp(new TurbulenceStatisticsCha(discret_,
+                                                              alefluid_,
+                                                              mydispnp_,
+                                                              *params_,
+                                                              subgrid_dissipation_,
+                                                              Teuchos::null));
+        }
+      }
+    }
+    else if(fluid.special_flow_=="backward_facing_step2")
+    {
+      flow_=backward_facing_step2;
+
+      // do the time integration independent setup
+      Setup();
+
+      // allocate one instance of the averaging procedure for
+      // the flow under consideration
+      statistics_bfs_ = Teuchos::rcp(new TurbulenceStatisticsBfs(discret_,*params_,"geometry_EXP_vogel_eaton"));
 
       // build statistics manager for inflow channel flow
       if (inflow_)
@@ -847,11 +879,12 @@ namespace FLD
         break;
       }
       case backward_facing_step:
+      case backward_facing_step2:
       {
         if(statistics_bfs_==Teuchos::null)
           dserror("need statistics_bfs_ to do a time sample for a flow over a backward-facing step");
 
-        statistics_bfs_->DoTimeSample(myvelnp_);
+        statistics_bfs_->DoTimeSample(myvelnp_,mystressmanager_->GetStressesWOAgg(myforce_));
         break;
       }
       case periodic_hill:
@@ -872,7 +905,7 @@ namespace FLD
 
           if (not withscatra_)
           {
-            statistics_bfs_->DoTimeSample(myvelnp_);
+            statistics_bfs_->DoTimeSample(myvelnp_,mystressmanager_->GetStressesWOAgg(myforce_));
 
             // do time sample for inflow channel flow
             if (inflow_)
@@ -1481,6 +1514,7 @@ namespace FLD
         break;
       }
       case backward_facing_step:
+      case backward_facing_step2:
       {
         if(statistics_bfs_==Teuchos::null)
           dserror("need statistics_bfs_ to do a time sample for a flow over a backward-facing step");

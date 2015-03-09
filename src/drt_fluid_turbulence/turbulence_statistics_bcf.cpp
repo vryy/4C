@@ -4,6 +4,12 @@
 \brief calculate mean values and fluctuations for turbulent channel
 flows.
 
+<pre>
+Maintainer: Benjamin Krank
+            krank@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15252
+</pre>
 
 *----------------------------------------------------------------------*/
 

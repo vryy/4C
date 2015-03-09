@@ -47,12 +47,11 @@ parameter list given on input.
 This method is intended to be called every upres_ steps during fluid
 output.
 
-Maintainer: Ursula Rasthofer
-            rasthofer@lnm.mw.tum.de
+Maintainer: Benjamin Krank
+            krank@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15236
+            089 - 289-15252
 </pre>
-
 *----------------------------------------------------------------------*/
 
 #ifndef TURBULENCE_STATISTICS_H

@@ -4641,8 +4641,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   {
     // a standard Teuchos::tuple can have at maximum 10 entries! We have to circumvent this here.
     // Otherwise BACI DEBUG version will crash during runtime!
-    Teuchos::Tuple<std::string,21> name;
-    Teuchos::Tuple<int,21> label;
+    Teuchos::Tuple<std::string,22> name;
+    Teuchos::Tuple<int,22> label;
     name[ 0] = "no";                                             label[ 0] = 0;
     name[ 1] = "time_averaging";                                 label[ 1] = 1;
     name[ 2] = "channel_flow_of_height_2";                       label[ 2] = 2;
@@ -4664,8 +4664,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     name[18] = "taylor_green_vortex";                            label[18] = 18;
     name[19] = "periodic_hill";                                  label[19] = 18;
     name[20] = "blood_fda_flow";                                 label[20] = 20;
+    name[21] = "backward_facing_step2";                          label[21] = 21;
 
-    Teuchos::Tuple<std::string,21> description;
+    Teuchos::Tuple<std::string,22> description;
     description[0]="The flow is not further specified, so spatial averaging \nand hence the standard sampling procedure is not possible";
     description[1]="The flow is not further specified, but time averaging of velocity and pressure field is performed";
     description[2]="For this flow, all statistical data could be averaged in \nthe homogenous planes --- it is essentially a statistically one dimensional flow.";
@@ -4687,6 +4688,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     description[18]="For this flow, dissipation rate could be averaged in \nthe in all homogeneous directions  --- it is essentially a statistically zero dimensional flow.";
     description[19]="For this flow, statistical data is evaluated on various lines, averaged over time and z.";
     description[20]="For this flow, statistical data is evaluated on various planes.";
+    description[21]="For this flow, statistical data is evaluated on various planes.";
 
     setStringToIntegralParameter<int>(
         "CANONICAL_FLOW",

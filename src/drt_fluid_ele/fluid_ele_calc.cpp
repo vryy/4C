@@ -3945,7 +3945,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcDivEps(
   {
     prefac = 1.0/3.0;
     derxy2_.Scale(prefac);
- }
+  }
   else prefac = 1.0;
 
   if (nsd_==3)

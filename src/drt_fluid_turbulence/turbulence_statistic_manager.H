@@ -9,13 +9,12 @@ The manager is intended to remove as much of the averaging
 overhead as possible from the time integration method.
 
 <pre>
-
-Maintainer: Ursula Rasthofer
-            rasthofer@lnm.mw.tum.de
+Maintainer: Benjamin Krank
+            krank@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15236
-
+            089 - 289-15252
 </pre>
+
 */
 #ifndef TURBULENCE_STATISTIC_MANAGER_H
 #define TURBULENCE_STATISTIC_MANAGER_H
@@ -304,6 +303,7 @@ private:
     loma_lid_driven_cavity          ,
     backward_facing_step            ,
     loma_backward_facing_step       ,
+    backward_facing_step2           ,
     combust_oracles                 ,
     square_cylinder                 ,
     square_cylinder_nurbs           ,

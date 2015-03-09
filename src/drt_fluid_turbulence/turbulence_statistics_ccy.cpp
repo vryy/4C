@@ -5,6 +5,13 @@
        around a rotating cylinder and write them to files.
 
 
+<pre>
+Maintainer: Benjamin Krank
+            krank@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15252
+</pre>
+
 *----------------------------------------------------------------------*/
 
 #include "turbulence_statistics_ccy.H"
