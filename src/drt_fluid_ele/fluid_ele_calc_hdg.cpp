@@ -568,7 +568,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionToNodes(
       // evaluate shape polynomials in node
       for (unsigned int idim=0;idim<nsd_-1;idim++)
         shapesface_->xsi(idim) = locations(idim,i);
-      shapesface_->polySpace_->Evaluate(shapesface_->xsi,fvalues); // TODO: fix face orientation here
+      shapesface_->polySpace_->Evaluate(shapesface_->xsi,fvalues);
 
       // compute values for velocity and pressure by summing over all basis functions
       for (unsigned int d=0; d<nsd_; ++d) {

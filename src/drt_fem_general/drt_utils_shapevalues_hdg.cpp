@@ -14,6 +14,7 @@ Maintainer: Martin Kronbichler
 #include "drt_utils_shapevalues_hdg.H"
 #include "drt_utils_boundary_integration.H"
 #include "../drt_geometry/position_array.H"
+#include "../drt_fluid_ele/fluid_ele.H"
 
 
 /*----------------------------------------------------------------------*
@@ -260,17 +261,31 @@ void
 DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation (const DRT::Element &ele,
                                                              const unsigned int  face)
 {
-  // figure out how to permute face indices by checking permutation of nodes.
-  // In case there is some permutation, we need to change the order of quadrature
-  // points in the shape functions of the trace in order to get the correct
-  // contributions to the matrix.
-  const int * nodeIds = ele.NodeIds();
-  const int * fnodeIds = ele.Faces()[face]->NodeIds();
+  // For the shape values on faces, we need to figure out how the master element of
+  // a face walks over the face and how the current face element wants to walk over
+  // it. The local trafo map of the face element holds that information for the slave
+  // side, whereas the master side always uses the correct mapping. Thus, we need not
+  // do anything in that case.
+  if (ele.Faces()[face]->ParentMasterElement() == &ele)
+  {
+    for (unsigned int q=0; q<nqpoints_; ++q)
+      for (unsigned int i=0; i<nfdofs_; ++i)
+        shfunct(i,q) = shfunctNoPermute(i,q);
+    return;
+  }
+
+  // For the adjusted slave slide, we need to change the order of quadrature
+  // points in the shape functions of the trace to match the orientation in the
+  // transformation.
+  const std::vector<int> &trafomap = ele.Faces()[face]->GetLocalTrafoMap();
+  dsassert(trafomap.size() == nfn_,
+           "Transformation map from slave face coordinate system to master coordinates has not been filled.");
+
   const int nqpoints1d = std::pow(nqpoints_+0.001,1./(nsd_-1));
   // easy case: standard orientation
   bool standard = true;
-  for (unsigned int i=0; i<nfn_; ++i)
-    if (nodeIds[faceNodeOrder[face][i]] != fnodeIds[i])
+  for (int i=0; i<static_cast<int>(nfn_); ++i)
+    if (trafomap[i] != i)
       standard = false;
   if (standard)
   {
@@ -284,8 +299,7 @@ DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation (const DRT::Element 
   case 2:
     // face flipped is the only case
     {
-      dsassert(nodeIds[faceNodeOrder[face][1]] == fnodeIds[0] &&
-               nodeIds[faceNodeOrder[face][0]] == fnodeIds[1], "Unknown face orientation in 2D");
+      dsassert(trafomap[1] == 0 && trafomap[0] == 1, "Unknown face orientation in 2D");
       for (unsigned int q=0; q<nqpoints_; ++q)
       {
         for (unsigned int i=0; i<nfdofs_; ++i)
@@ -300,10 +314,10 @@ DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation (const DRT::Element 
         distype == DRT::Element::nurbs8 ||
         distype == DRT::Element::nurbs27)
     {
-      if (nodeIds[faceNodeOrder[face][0]] == fnodeIds[1] &&
-          nodeIds[faceNodeOrder[face][1]] == fnodeIds[0] &&
-          nodeIds[faceNodeOrder[face][2]] == fnodeIds[3] &&
-          nodeIds[faceNodeOrder[face][3]] == fnodeIds[2])    // x-direction mirrored
+      if (trafomap[0] == 1 &&
+          trafomap[1] == 0 &&
+          trafomap[2] == 3 &&
+          trafomap[3] == 2)    // x-direction mirrored
       {
         for (unsigned int q=0; q<nqpoints_; ++q)
         {
@@ -314,10 +328,10 @@ DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation (const DRT::Element 
             shfunct(i,q) = shfunctNoPermute(i,permute);
         }
       }
-      else if (nodeIds[faceNodeOrder[face][0]] == fnodeIds[0] &&
-               nodeIds[faceNodeOrder[face][1]] == fnodeIds[3] &&
-               nodeIds[faceNodeOrder[face][2]] == fnodeIds[2] &&
-               nodeIds[faceNodeOrder[face][3]] == fnodeIds[1])    // permute x and y
+      else if (trafomap[0] == 0 &&
+               trafomap[1] == 3 &&
+               trafomap[2] == 2 &&
+               trafomap[3] == 1)    // permute x and y
       {
         for (unsigned int q=0; q<nqpoints_; ++q)
         {
@@ -328,10 +342,10 @@ DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation (const DRT::Element 
             shfunct(i,q) = shfunctNoPermute(i,permute);
         }
       }
-      else if (nodeIds[faceNodeOrder[face][0]] == fnodeIds[3] &&
-               nodeIds[faceNodeOrder[face][1]] == fnodeIds[2] &&
-               nodeIds[faceNodeOrder[face][2]] == fnodeIds[1] &&
-               nodeIds[faceNodeOrder[face][3]] == fnodeIds[0])    // y mirrored
+      else if (trafomap[0] == 3 &&
+               trafomap[1] == 2 &&
+               trafomap[2] == 1 &&
+               trafomap[3] == 0)    // y mirrored
       {
         for (unsigned int q=0; q<nqpoints_; ++q)
         {
@@ -342,10 +356,10 @@ DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation (const DRT::Element 
             shfunct(i,q) = shfunctNoPermute(i,permute);
         }
       }
-      else if (nodeIds[faceNodeOrder[face][0]] == fnodeIds[2] &&
-               nodeIds[faceNodeOrder[face][1]] == fnodeIds[3] &&
-               nodeIds[faceNodeOrder[face][2]] == fnodeIds[0] &&
-               nodeIds[faceNodeOrder[face][3]] == fnodeIds[1])    // x and y mirrored
+      else if (trafomap[0] == 2 &&
+               trafomap[1] == 3 &&
+               trafomap[2] == 0 &&
+               trafomap[3] == 1)    // x and y mirrored
       {
         for (unsigned int q=0; q<nqpoints_; ++q)
         {
@@ -356,10 +370,10 @@ DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation (const DRT::Element 
             shfunct(i,q) = shfunctNoPermute(i,permute);
         }
       }
-      else if (nodeIds[faceNodeOrder[face][0]] == fnodeIds[2] &&
-               nodeIds[faceNodeOrder[face][1]] == fnodeIds[1] &&
-               nodeIds[faceNodeOrder[face][2]] == fnodeIds[0] &&
-               nodeIds[faceNodeOrder[face][3]] == fnodeIds[3])    // x and y mirrored and permuted
+      else if (trafomap[0] == 2 &&
+               trafomap[1] == 1 &&
+               trafomap[2] == 0 &&
+               trafomap[3] == 3)    // x and y mirrored and permuted
       {
         for (unsigned int q=0; q<nqpoints_; ++q)
         {
@@ -372,8 +386,16 @@ DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation (const DRT::Element 
       }
       else
       {
+        std::cout << "element id: " << ele.Id() << " " << ele.Neighbor(face)->Id() << std::endl;
+        const DRT::ELEMENTS::FluidIntFace* faceel = dynamic_cast<const DRT::ELEMENTS::FluidIntFace*>(ele.Faces()[face]);
+        if (faceel != NULL)
+        {
+          std::vector<int> trafo = const_cast<DRT::ELEMENTS::FluidIntFace*>(faceel)->GetLocalTrafoMap();
+          for (unsigned int i=0; i<4; ++i)
+            std::cout << trafo[i] << " ";
+        }
         for (unsigned int i=0; i<4; ++i)
-          std::cout << nodeIds[faceNodeOrder[face][i]] << " " << fnodeIds[i] << "   ";
+          std::cout << trafomap[i] << " ";
         std::cout << std::endl << std::flush;
         dserror("Unknown HEX face orientation in 3D");
       }
@@ -381,9 +403,9 @@ DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation (const DRT::Element 
     else if (distype == DRT::Element::tet4 ||
              distype == DRT::Element::tet10)
     {
-      if (nodeIds[faceNodeOrder[face][0]] == fnodeIds[1] &&
-          nodeIds[faceNodeOrder[face][1]] == fnodeIds[0] &&
-          nodeIds[faceNodeOrder[face][2]] == fnodeIds[2])
+      if (trafomap[0] == 1 &&
+          trafomap[1] == 0 &&
+          trafomap[2] == 2)
       {
         // zeroth and first node permuted; the search is a bit stupid right now
         // (one could cache the permutation coefficients r of the quadrature formula
@@ -402,9 +424,9 @@ DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation (const DRT::Element 
             shfunct(i,q) = shfunctNoPermute(i,r);
         }
       }
-      else if (nodeIds[faceNodeOrder[face][0]] == fnodeIds[2] &&
-               nodeIds[faceNodeOrder[face][1]] == fnodeIds[1] &&
-               nodeIds[faceNodeOrder[face][2]] == fnodeIds[0])
+      else if (trafomap[0] == 2 &&
+               trafomap[1] == 1 &&
+               trafomap[2] == 0)
       {
         // zeroth and second node permuted
         for (unsigned int q=0; q<nqpoints_; ++q)
@@ -421,9 +443,9 @@ DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation (const DRT::Element 
             shfunct(i,q) = shfunctNoPermute(i,r);
         }
       }
-      else if (nodeIds[faceNodeOrder[face][0]] == fnodeIds[0] &&
-               nodeIds[faceNodeOrder[face][1]] == fnodeIds[2] &&
-               nodeIds[faceNodeOrder[face][2]] == fnodeIds[1])
+      else if (trafomap[0] == 0 &&
+               trafomap[1] == 2 &&
+               trafomap[2] == 1)
       {
         // first and second node permuted
         for (unsigned int q=0; q<nqpoints_; ++q)
@@ -442,7 +464,7 @@ DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation (const DRT::Element 
       else
       {
         for (unsigned int i=0; i<3; ++i)
-          std::cout << nodeIds[faceNodeOrder[face][i]] << " " << fnodeIds[i] << "   ";
+          std::cout << trafomap[i] << " ";
         std::cout << std::endl << std::flush;
         // need to transform quadrature point coordinate 0 into 1-p[0]-p[1]
         dserror("Unknown TET face orientation in 3D");

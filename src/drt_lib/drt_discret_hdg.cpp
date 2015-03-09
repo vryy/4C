@@ -50,28 +50,34 @@ int DRT::DiscretizationHDG::FillComplete(bool assigndegreesoffreedom,
   // get the correct face orientation from the owner. since the elements in general do not allow
   // packing, extract the node ids, communicate them, and change the node ids in the element
   Exporter nodeexporter( *facerowmap_, *facecolmap_, Comm() );
-  std::map<int, std::vector<int> > nodeIds;
-  for (std::map<int, Teuchos::RCP<DRT::Element> >::const_iterator f=faces_.begin();
-       f!= faces_.end(); ++f) {
+  std::map<int, std::vector<int> > nodeIds, trafoMap;
+  for (std::map<int, Teuchos::RCP<DRT::FaceElement> >::const_iterator f=faces_.begin();
+       f!= faces_.end(); ++f)
+  {
     std::vector<int> ids(f->second->NumNode());
     for (int i=0; i<f->second->NumNode(); ++i)
       ids[i] = f->second->NodeIds()[i];
     nodeIds[f->first] = ids;
+    trafoMap[f->first] = f->second->GetLocalTrafoMap();
   }
 
   nodeexporter.Export( nodeIds );
+  nodeexporter.Export( trafoMap );
 
-  for (std::map<int, Teuchos::RCP<DRT::Element> >::iterator f=faces_.begin();
-       f!= faces_.end(); ++f) {
+  for (std::map<int, Teuchos::RCP<DRT::FaceElement> >::iterator f=faces_.begin();
+       f!= faces_.end(); ++f)
+  {
     if ( f->second->Owner() == Comm().MyPID() )
       continue;
     std::vector<int> &ids = nodeIds[f->first];
     dsassert(ids.size() > 0, "Lost a face during communication");
     f->second->SetNodeIds(ids.size(), &ids[0]);
+    f->second->SetLocalTrafoMap(trafoMap[f->first]);
 
     // refresh node pointers if they have been set up
     DRT::Node** oldnodes = f->second->Nodes();
-    if (oldnodes != 0) {
+    if (oldnodes != 0)
+    {
       std::vector<DRT::Node*> nodes(ids.size(), 0);
 
       for (unsigned int i=0; i<ids.size(); ++i) {
@@ -82,6 +88,33 @@ int DRT::DiscretizationHDG::FillComplete(bool assigndegreesoffreedom,
         dsassert(nodes[i] != 0, "Could not find node.");
       }
       f->second->BuildNodalPointers(&nodes[0]);
+    }
+
+    // check master/slave relation of current face in terms of the local trafo map
+    dsassert(f->second->ParentMasterElement() != NULL, "Unexpected topology between face and parent");
+    const int * nodeIdsMaster = f->second->ParentMasterElement()->NodeIds();
+    const int * nodeIds = f->second->NodeIds();
+
+    std::vector<std::vector<int> > faceNodeOrder =
+        DRT::UTILS::getEleNodeNumberingFaces(f->second->ParentMasterElement()->Shape());
+
+    bool exchangeMasterAndSlave = false;
+    for (int i=0; i<f->second->NumNode(); ++i)
+    {
+      // TODO (MK): check that this is enough also on periodic B.C. where the
+      // node ids are different in any case...
+      if (nodeIdsMaster[faceNodeOrder[f->second->FaceMasterNumber()][i]] != nodeIds[i])
+        exchangeMasterAndSlave = true;
+    }
+    if (exchangeMasterAndSlave)
+    {
+      DRT::Element* faceMaster = f->second->ParentMasterElement();
+      const int faceMasterNo = f->second->FaceMasterNumber();
+      // new master element might be NULL on MPI computations
+      f->second->SetParentMasterElement(f->second->ParentSlaveElement(),
+                                        f->second->ParentSlaveElement() != NULL ?
+                                        f->second->FaceSlaveNumber() : -1);
+      f->second->SetParentSlaveElement(faceMaster, faceMasterNo);
     }
   }
 

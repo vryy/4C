@@ -238,6 +238,8 @@ void DRT::DiscretizationFaces::EvaluateEdgeBased(
  *----------------------------------------------------------------------*/
 void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
 {
+  faces_.clear();
+
   if (verbose and comm_->MyPID()==0)
   {
    std::cout << "Create internal faces ..." << std::endl;
@@ -1049,8 +1051,11 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
   // if the discretization has been redistributed (combustion module), we have to
   // rebuild the faces and therefore we have to be sure that the map faces_ is clear
   // therefore, the old faces are deleted and repaced by new ones
-  faces_.clear();
-  AssignGlobalIDs( Comm(), faces, faces_ );
+  std::map<int, Teuchos::RCP<DRT::Element> > finalFaces;
+  AssignGlobalIDs( Comm(), faces, finalFaces );
+  for (std::map<int, Teuchos::RCP<DRT::Element> >::iterator faceit
+       = finalFaces.begin(); faceit != finalFaces.end(); ++faceit)
+    faces_[faceit->first] = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(faceit->second,true);
 
   if (verbose and comm_->MyPID()==0)
   {
@@ -1069,7 +1074,7 @@ void DRT::DiscretizationFaces::BuildFaceRowMap()
 {
   const int myrank = Comm().MyPID();
   int nummyeles = 0;
-  std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
+  std::map<int,Teuchos::RCP<DRT::FaceElement> >::iterator curr;
   for (curr=faces_.begin(); curr != faces_.end(); ++curr)
     if (curr->second->Owner()==myrank)
       nummyeles++;
@@ -1097,7 +1102,7 @@ void DRT::DiscretizationFaces::BuildFaceColMap()
   int nummyeles = (int)faces_.size();
   std::vector<int> eleids(nummyeles);
   facecolptr_.resize(nummyeles);
-  std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
+  std::map<int,Teuchos::RCP<DRT::FaceElement> >::iterator curr;
   int count=0;
   for (curr=faces_.begin(); curr != faces_.end(); ++curr)
   {
@@ -1166,7 +1171,7 @@ int DRT::DiscretizationFaces::NumMyColFaces() const
  *----------------------------------------------------------------------*/
 bool DRT::DiscretizationFaces::HaveGlobalFace(int gid) const
 {
-  std::map<int,Teuchos::RCP<DRT::Element> >:: const_iterator curr = faces_.find(gid);
+  std::map<int,Teuchos::RCP<DRT::FaceElement> >:: const_iterator curr = faces_.find(gid);
   if (curr == faces_.end()) return false;
   else                      return true;
 }
@@ -1174,9 +1179,9 @@ bool DRT::DiscretizationFaces::HaveGlobalFace(int gid) const
 /*----------------------------------------------------------------------*
  |  get element with global id (public)                kronbichler 05/13|
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::DiscretizationFaces::gFace(int gid) const
+DRT::FaceElement* DRT::DiscretizationFaces::gFace(int gid) const
 {
-  std::map<int,Teuchos::RCP<DRT::Element> >:: const_iterator curr = faces_.find(gid);
+  std::map<int,Teuchos::RCP<DRT::FaceElement> >:: const_iterator curr = faces_.find(gid);
 #ifdef DEBUG
   if (curr == faces_.end())
     dserror("Face with gobal id gid=%d not stored on this proc", gid);
@@ -1212,7 +1217,7 @@ void DRT::DiscretizationFaces::PrintFaces(std::ostream& os) const
   else
   {
     int nummyfaces   = 0;
-    std::map<int,Teuchos::RCP<DRT::Element> >::const_iterator ecurr;
+    std::map<int,Teuchos::RCP<DRT::FaceElement> >::const_iterator ecurr;
     for (ecurr=faces_.begin(); ecurr != faces_.end(); ++ecurr)
       if (ecurr->second->Owner() == Comm().MyPID()) nummyfaces++;
 
@@ -1240,7 +1245,7 @@ void DRT::DiscretizationFaces::PrintFaces(std::ostream& os) const
     {
       if ((int)faces_.size())
         os << "-------------------------- Proc " << proc << " :\n";
-      std::map<int,Teuchos::RCP<DRT::Element> >:: const_iterator curr;
+      std::map<int,Teuchos::RCP<DRT::FaceElement> >:: const_iterator curr;
       for (curr = faces_.begin(); curr != faces_.end(); ++curr)
       {
         os << *(curr->second);

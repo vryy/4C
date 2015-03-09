@@ -42,6 +42,7 @@ namespace MESHFREE
 
 // forward declarations
   class Discretization;
+  class DiscretizationHDG;
   class Node;
   class ElementType;
 
@@ -1256,7 +1257,6 @@ public:
   */
   DRT::Element* ParentElement() const
   {
-    dsassert(parent_master_ != NULL, "Parent element has not been set or this is not a face element");
     return parent_master_;
   }
 
@@ -1267,7 +1267,6 @@ public:
   */
   DRT::Element* ParentMasterElement() const
   {
-    dsassert(parent_master_ != NULL, "Parent master element has not been set or this is not a face element");
     return parent_master_;
   }
 
@@ -1356,7 +1355,16 @@ protected:
     lface_slave_  = lface_slave;
   }
 
-  //! \brief Sets the local trafo map
+  /*!
+  \brief Set the slave element this face element is connected to
+
+  Sets the pointers of the second parent element adjacent to the current face.
+  This method is used in the construction phase of a discretization.
+  It allows that elements and faces are created separately and be combined later
+  on the way.
+
+  \param trace: transformation between
+  */
   void SetLocalTrafoMap(const std::vector<int> &trafo);
 
 private:
@@ -1377,6 +1385,9 @@ private:
           and the slave element's face's coordinate system
    */
   std::vector<int> localtrafomap_;
+
+  //! Friend declaration
+  friend class DRT::DiscretizationHDG;
 };
 
 
