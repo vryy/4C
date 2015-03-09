@@ -13,9 +13,6 @@
  *----------------------------------------------------------------------*/
 
 
-#include "wall1_poro_p2.H"
-#include "wall1_poro_p2_eletypes.H"
-
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_discret.H"
 
@@ -24,7 +21,13 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_fem_general/drt_utils_gder2.H"
+
+#include "../drt_poroelast/poroelast_utils.H"
+
+#include "wall1_poro_p2_eletypes.H"
+#include "wall1_poro_p2.H"
 
 /*----------------------------------------------------------------------*
  *                                                            vuong 08/13|
@@ -403,10 +406,9 @@ void DRT::ELEMENTS::Wall1_PoroP2<distype>::coupling_poroelast(
 
   //get structure material
   if(my::Material()==Teuchos::null) dserror("no structure material available!");
-  my::structmat_ = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(my::Material());
-  if(my::structmat_->MaterialType() != INPAR::MAT::m_structporo and
-      my::structmat_->MaterialType() != INPAR::MAT::m_structpororeaction)
+  if(not POROELAST::UTILS::CheckPoroMaterial(my::Material()))
     dserror("invalid structure material for poroelasticity");
+  my::structmat_ = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(my::Material());
 
   //=======================================================================
 
@@ -473,10 +475,9 @@ void DRT::ELEMENTS::Wall1_PoroP2<distype>::coupling_poroscatra(
 
   //get structure material
   if(my::Material()==Teuchos::null) dserror("no structure material available!");
-  my::structmat_ = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(my::Material());
-  if(my::structmat_->MaterialType() != INPAR::MAT::m_structporo and
-      my::structmat_->MaterialType() != INPAR::MAT::m_structpororeaction)
+  if(not POROELAST::UTILS::CheckPoroMaterial(my::Material()))
     dserror("invalid structure material for poroelasticity");
+  my::structmat_ = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(my::Material());
 
   //=======================================================================
 

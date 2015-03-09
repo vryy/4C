@@ -215,7 +215,7 @@ namespace MAT
 
     protected:
 
-      void Reaction(double cnp, Teuchos::ParameterList& params);
+      virtual void Reaction(double cnp, double porosity, Teuchos::ParameterList& params);
 
       /// my material parameters
       MAT::PAR::StructPoroReaction* params_;

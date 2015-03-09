@@ -36,6 +36,7 @@ Maintainer: Lena Wiechert
 #include "aaaraghavanvorp_damage.H"
 #include "aaa_mixedeffects.H"
 #include "scatra_mat.H"
+#include "scatra_mat_poro_ecm.H"
 #include "scatra_mat_aniso.H"
 #include "myocard.H"
 #include "mixfrac.H"
@@ -75,6 +76,7 @@ Maintainer: Lena Wiechert
 #include "fluidporo.H"
 #include "structporo.H"
 #include "structporo_reaction.H"
+#include "structporo_reaction_ecm.H"
 #include "spring.H"
 #include "maxwell_0d_acinus.H"
 #include "maxwell_0d_acinus_NeoHookean.H"
@@ -241,6 +243,13 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::ScatraMat(curmat));
     MAT::PAR::ScatraMat* params = static_cast<MAT::PAR::ScatraMat*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_scatra_poroECM:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::ScatraMatPoroECM(curmat));
+    MAT::PAR::ScatraMatPoroECM* params = static_cast<MAT::PAR::ScatraMatPoroECM*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_scatra_reaction:
@@ -444,6 +453,13 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
         curmat->SetParameter(new MAT::PAR::StructPoroReaction(curmat));
     MAT::PAR::StructPoroReaction* params = static_cast<MAT::PAR::StructPoroReaction*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_structpororeactionECM:
+  {
+    if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::StructPoroReactionECM(curmat));
+    MAT::PAR::StructPoroReactionECM* params = static_cast<MAT::PAR::StructPoroReactionECM*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::mes_couplogneohooke:

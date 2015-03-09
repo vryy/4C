@@ -590,6 +590,8 @@ protected:
   //!own poro structure material
   Teuchos::RCP< MAT::StructPoro > structmat_;
 
+  int numscal_;
+
   //! get nodes of element
   DRT::Node** Nodes();
 

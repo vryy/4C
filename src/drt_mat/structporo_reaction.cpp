@@ -149,7 +149,7 @@ void MAT::StructPoroReaction::ComputePorosity( Teuchos::ParameterList& params,
 {
   //evaluate change of reference porosity due to reaction
   double cnp = params.get<double>("scalar");
-  Reaction(cnp,params);
+  Reaction(cnp,porosity,params);
 
   //call base class to compute porosity
   StructPoro::ComputePorosity(
@@ -184,7 +184,7 @@ void MAT::StructPoroReaction::ConsitutiveDerivatives(Teuchos::ParameterList& par
 
   //evaluate change of reference porosity due to reaction
   double cnp = params.get<double>("scalar");
-  Reaction(cnp,params);
+  Reaction(cnp,porosity,params);
 
   //call base class
   StructPoro::ConsitutiveDerivatives(params,
@@ -202,7 +202,9 @@ void MAT::StructPoroReaction::ConsitutiveDerivatives(Teuchos::ParameterList& par
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::StructPoroReaction::Reaction(double cnp, Teuchos::ParameterList& params)
+void MAT::StructPoroReaction::Reaction(double cnp,
+                                       double porosity,
+                                       Teuchos::ParameterList& params)
 {
   //double dt = params.get<double>("delta time",-1.0);
   double time = params.get<double>("total time",-1.0);
@@ -212,8 +214,8 @@ void MAT::StructPoroReaction::Reaction(double cnp, Teuchos::ParameterList& param
 //    dserror("time step or total time not available");
 
  // double k = 1.0;
-  double tau = 200.0*cnp;///(cnp+k);
-  double limitporosity = 0.45;
+  double tau = 200.0*cnp;///(cnp+k); 20.0/(20*cnp+1.0)
+  double limitporosity = 0.45; //0.8;
 
   refporosity_= limitporosity - (limitporosity - params_->initporosity_)* exp(-1.0*time/tau);
   refporositydot_= (limitporosity - params_->initporosity_)/tau * exp(-1.0*time/tau);
@@ -238,7 +240,7 @@ void MAT::StructPoroReaction::Evaluate(const LINALG::Matrix<3,3>* defgrd,    ///
 
   //evaluate change of reference porosity due to reaction
   double cnp = params.get<double>("scalar");
-  Reaction(cnp,params);
+  Reaction(cnp,-1.0,params);
 
   //scale stresses and cmat
   stress->Scale((1.0-refporosity_)/(1.0-params_->initporosity_));

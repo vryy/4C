@@ -132,7 +132,7 @@ public:
   \brief return scheme-specific time integration parameter
 
   */
-  const double TimIntParam() const;
+  virtual const double TimIntParam() const;
 
   /*!
   \brief return scaling factor for the residual

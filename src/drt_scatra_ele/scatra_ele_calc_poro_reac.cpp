@@ -16,6 +16,7 @@
 #include "../drt_lib/drt_element.H"
 
 #include "../drt_mat/structporo.H"
+#include "../drt_mat/structporo_reaction_ecm.H"
 #include "../drt_mat/scatra_mat.H"
 
 #include "scatra_ele_parameter.H"
@@ -95,6 +96,37 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::GetMaterialParams(
 }
 
 /*----------------------------------------------------------------------*
+ |  evaluate single material  (protected)                    thon 02/14 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::Materials(
+  const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
+  const int                               k,        //!< id of current scalar
+  double&                                 densn,    //!< density at t_(n)
+  double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
+  double&                                 densam,   //!< density at t_(n+alpha_M)
+  Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
+  Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
+  double&                                 visc,         //!< fluid viscosity
+  const int                               iquad         //!< id of current gauss point
+  )
+{
+  switch(material->MaterialType())
+  {
+  case INPAR::MAT::m_scatra:
+    MatScaTra(material,k,densn,densnp,densam,visc,iquad);
+    break;
+  case INPAR::MAT::m_scatra_poroECM:
+    MatPoroECM(material,k,densn,densnp,densam,visc,iquad);
+    break;
+  default:
+    dserror("Material type %i is not supported",material->MaterialType());
+   break;
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  Material ScaTra                                          thon 02/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
@@ -116,8 +148,19 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::MatScaTra(
   const Teuchos::RCP<const MAT::ScatraMat>& actmat
     = Teuchos::rcp_dynamic_cast<const MAT::ScatraMat>(material);
 
+  if(actmat == Teuchos::null)
+    dserror("cast to ScatraMat failed");
+
   // set diffusivity (scaled with porosity)
   poro::SetDiffusivity(actmat,k,porosity);
+
+  // set/calculate reaction coefficient
+  // do not (!) scale with porosity, as reactive term is scaled with density (=porosity) before assembly
+  //Todo
+//  if (not advreac::iscoupled_)
+//    poro::SetReaCoefficient(actmat,k,1.0);
+//  else
+    SetReactionTermsMatScatra(k,1.0);
 
   // set densities (scaled with porosity)
   poro::SetDensities(porosity,densn,densnp,densam);
@@ -125,6 +168,352 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::MatScaTra(
   //NOTE: The reaction stuff happens in function SetAdvancedReactionTerms(...)
   return;
 } // ScaTraEleCalcPoroReac<distype>::MatScaTra
+
+/*----------------------------------------------------------------------*
+ |  Material ScaTra                                          thon 02/14 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::MatPoroECM(
+  const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
+  const int                               k,        //!< id of current scalar
+  double&                                 densn,    //!< density at t_(n)
+  double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
+  double&                                 densam,   //!< density at t_(n+alpha_M)
+  double&                                 visc,     //!< fluid viscosity
+  const int                               iquad     //!< id of current gauss point
+  )
+{
+  MatScaTra(material,k,densn,densnp,densam,visc,iquad);
+
+  //Todo: clean up
+  //access structure discretization
+  Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
+  structdis = DRT::Problem::Instance()->GetDis("structure");
+  //get corresponding fluid element (it has the same global ID as the scatra element)
+  DRT::Element* structele = structdis->gElement(my::eid_);
+  if (structele == NULL)
+    dserror("Structure element %i not on local processor", my::eid_);
+
+  const Teuchos::RCP<const MAT::StructPoroReactionECM>& structmat
+            = Teuchos::rcp_dynamic_cast<const MAT::StructPoroReactionECM>(structele->Material());
+  if(structmat == Teuchos::null)
+    dserror("invalid structure material for poroelasticity");
+
+  // dynamic cast to Advanced_Reaction-specific reaction manager
+  Teuchos::RCP<ScaTraEleReaManagerAdvReac> reamanageradvreac = advreac::ReaManager();
+
+  const double porosity = poro::DiffManager()->GetPorosity();
+  const double bodyforce = structmat->BodyForceTerm(porosity);
+  const double bodyforce_old = reamanageradvreac->GetReaBodyForce(k);
+  reamanageradvreac->SetReaBodyForce(bodyforce_old+bodyforce,k);
+
+  return;
+} // ScaTraEleCalcPoroReac<distype>::MatScaTra
+
+/*-------------------------------------------------------------------------------*
+ |  set body force, reaction coefficient and derivatives          vuong 06/14 |
+ *-------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::SetReactionTermsMatScatra(
+    const int                               k,
+    const double                            porosity
+                                    )
+{
+  // dynamic cast to Advanced_Reaction-specific reaction manager
+  Teuchos::RCP<ScaTraEleReaManagerAdvReac> reamanageradvreac = advreac::ReaManager();
+  if(reamanageradvreac==Teuchos::null) dserror("cast to ScaTraEleReaManagerAdvReac failed");
+
+  reamanageradvreac->SetReaBodyForce( CalcReaBodyForceTerm(k,porosity) ,k);
+  reamanageradvreac->SetReaCoeff( CalcReaCoeff(k,porosity) ,k);
+  for (int j=0; j<my::numscal_ ;j++)
+  {
+    reamanageradvreac->SetReaBodyForceDerivMatrix( CalcReaBodyForceDerivMatrix(k,j,porosity) ,k,j );
+    reamanageradvreac->SetReaCoeffDerivMatrix( CalcReaCoeffDerivMatrix(k,j,porosity) ,k,j );
+  }
+}
+
+/*----------------------------------------------------------------------*
+ |  Calculate K(c)                                           thon 02/14 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+double DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::CalcReaCoeff(
+    const int                        k,                       //!< id of current scalar
+    const double                     porosity                 //!< current porosity
+)
+{
+  double reactermK=0;
+
+  for (int condnum = 0; condnum < advreac::numcond_ ; condnum++)
+  {
+    const std::vector<int>& stoich = advreac::stoich_[condnum]; //get stoichometrie
+    const MAT::PAR::reaction_coupling couplingtype = advreac::couplingtype_[condnum]; //get coupling type
+    const double& reaccoeff = advreac::reaccoeff_[condnum]; //get reaction coefficient
+    const double& reacstart = advreac::reacstart_[condnum]; //get reactionstart coefficient
+
+    if (stoich[k] < 0)
+    {
+      double rcfac= CalcReaCoeffFac(stoich,couplingtype,k,porosity);
+
+      if (advreac::reacstart_[condnum]>0 and rcfac>0)
+        advreac::ReacStartForReaCoeff(k,condnum,reacstart,rcfac);
+
+      reactermK += -reaccoeff*stoich[k]*rcfac; // scalar at integration point np
+    }
+  }
+  return reactermK;
+}
+
+/*----------------------------------------------------------------------*
+ |  helper for calculating K(c)                              thon 02/14 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+double DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::CalcReaCoeffFac(
+          const std::vector<int>                    stoich,                  //!<stoichometrie of current condition
+          const MAT::PAR::reaction_coupling    couplingtype,            //!<type of coupling the stoichometry coefficients
+          const int                                 k,                       //!< id of current scalar
+          const double                              porosity                //!< current porosity
+)
+{
+  double rcfac=1.0;
+  bool allpositive = true;
+
+  for (int ii=0; ii < my::numscal_; ii++)
+  {
+    if (stoich[ii]<0)
+    {
+      allpositive = false;
+      if (ii!=k)
+      {
+        switch (couplingtype)
+        {
+        case MAT::PAR::reac_coup_simple_multiplicative:
+          rcfac *=my::funct_.Dot(my::ephinp_[ii])*porosity;
+          break;
+        //case ... :  //insert new Couplings here
+        default:
+          dserror("invalid reaction_coupling type");
+          break;
+        }
+      }
+//      //TODO: HACK!!!!!
+//      else if(k==0)
+//        rcfac *=10.1*(1-porosity)*porosity*porosity;
+    }
+  }
+  if (allpositive)
+    dserror("there must be at least one negative entry in each stoich list");
+
+  return rcfac;
+}
+
+/*----------------------------------------------------------------------*
+ |  calculate \frac{partial}{\partial c} K(c)                thon 02/14 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+double DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::CalcReaCoeffDerivMatrix(
+    const int                 k,                  //!< id of current scalar
+    const int                 j,                   //!< concentration to be derived to
+    const double              porosity                //!< current porosity
+)
+{
+  double reacoeffderivmatrixKJ=0;
+
+  for (int condnum = 0; condnum < advreac::numcond_; condnum++)
+  {
+    const std::vector<int>& stoich = advreac::stoich_[condnum]; //get stoichometrie
+    const MAT::PAR::reaction_coupling& couplingtype = advreac::couplingtype_[condnum]; //get coupling type
+    const double& reaccoeff = advreac::reaccoeff_[condnum]; //get reactioncoefficient
+    const double& reacstart = advreac::reacstart_[condnum]; //get reactionstart coefficient
+
+    if (stoich[k] < 0)
+    {
+      double rcdmfac = CalcReaCoeffDerivFac(stoich,couplingtype,j,k,porosity);
+
+      if (advreac::reacstart_[condnum]>0)
+        advreac::ReacStartForReaCoeffDeriv(k,j,condnum,reacstart,rcdmfac,stoich,couplingtype);
+
+      reacoeffderivmatrixKJ += -reaccoeff*stoich[k]*rcdmfac;
+    } //end if(stoich[k] != 0)
+  }
+  return reacoeffderivmatrixKJ;
+}
+
+/*----------------------------------------------------------------------*
+ |  helper for calculating \frac{partial}{\partial c} K(c)   thon 02/14 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+double DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::CalcReaCoeffDerivFac(
+          const std::vector<int>                  stoich,                  //!<stoichometrie of current condition
+          const MAT::PAR::reaction_coupling  couplingtype,            //!<type of coupling the stoichometry coefficients
+          const int                               toderive,                //!<concentration to be derived to
+          const int                               k,                       //!< id of current scalar
+          const double                            porosity                //!< current porosity
+)
+{
+  double rcdmfac=1;
+
+  if (stoich[toderive]<0 and toderive!=k)
+  {
+    for (int ii=0; ii < my::numscal_; ii++)
+    {
+      if (stoich[ii]<0)
+      {
+        switch (couplingtype)
+        {
+        case MAT::PAR::reac_coup_simple_multiplicative:
+          if (ii!=k and ii!= toderive)
+            rcdmfac *= my::funct_.Dot(my::ephinp_[ii])*porosity;
+          break;
+        //case ... :  //insert new Couplings here
+        default:
+          dserror("invalid reaction_coupling type");
+          break;
+        }
+      }
+    }
+  }
+  else
+    rcdmfac = 0;
+
+  return rcdmfac;
+}
+
+/*----------------------------------------------------------------------*
+ |  calculate f(c)                                           thon 02/14 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+double DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::CalcReaBodyForceTerm(
+    const int                                 k,                       //!< id of current scalar
+    const double                              porosity                //!< current porosity
+)
+{
+  double bodyforcetermK=0.0;
+
+  for (int condnum = 0; condnum < advreac::numcond_; condnum++)
+  {
+    const std::vector<int>& stoich = advreac::stoich_[condnum]; //get stoichometrie
+    const MAT::PAR::reaction_coupling couplingtype = advreac::couplingtype_[condnum]; //get coupling type
+    const double reaccoeff = advreac::reaccoeff_[condnum]; //get reactioncoefficient
+    const double& reacstart = advreac::reacstart_[condnum]; //get reactionstart coefficient
+
+    if (stoich[k] > 0)
+    {
+      double bftfac = CalcReaBodyForceTermFac(stoich,couplingtype,porosity);// scalar at integration point np
+
+      if (advreac::reacstart_[condnum]>0 and bftfac>0)
+        advreac::ReacStartForReaBF(k,condnum,reacstart,bftfac);
+
+      bodyforcetermK += reaccoeff*stoich[k]*bftfac;
+    }
+  }
+  return bodyforcetermK;
+}
+
+/*----------------------------------------------------------------------*
+ |  helper for calculating                                   thon 02/14 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+double DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::CalcReaBodyForceTermFac(
+          const std::vector<int>                      stoich,                 //!<stoichometrie of current condition
+          const MAT::PAR::reaction_coupling      couplingtype,            //!<type of coupling the stoichometry coefficients
+          const double                                porosity                //!< current porosity
+)
+{
+  double bftfac=1.0;
+  bool allpositive = true;
+
+  for (int ii=0; ii < my::numscal_; ii++)
+  {
+    if (stoich[ii]<0)
+    {
+      allpositive = false;
+      switch (couplingtype)
+      {
+      case MAT::PAR::reac_coup_simple_multiplicative:
+        bftfac *=my::funct_.Dot(my::ephinp_[ii])*porosity;
+        break;
+      //case ... :  //insert new Couplings here
+      default:
+        dserror("invalid reaction_coupling type");
+        break;
+      }
+    }
+  }
+  if (allpositive)
+    dserror("there must be at least one negative entry in each stoich list");
+
+  return bftfac;
+}
+
+/*----------------------------------------------------------------------*
+ |  calculate \frac{partial}{\partial c} f(c)                thon 02/14 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+double DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::CalcReaBodyForceDerivMatrix(
+    const int                 k,                  //!< id of current scalar
+    const int                 j,                   //!< concentration to be derived to
+    const double              porosity                //!< current porosity
+)
+{
+  double reabodyforcederivmatrixKJ=0;
+  for (int condnum = 0; condnum < advreac::numcond_; condnum++)
+  {
+    //reading of conditions here, because of future implemantion of nonhomogeneous couplings
+    const std::vector<int>& stoich = advreac::stoich_[condnum]; //get stoichometrie
+    const MAT::PAR::reaction_coupling couplingtype = advreac::couplingtype_[condnum]; //get coupling type
+    const double& reaccoeff = advreac::reaccoeff_[condnum]; //get reaction coefficient
+    const double& reacstart = advreac::reacstart_[condnum]; //get reactionstart coefficient
+
+    if (stoich[k] > 0)
+    {
+      double bfdmfac = CalcReaBodyForceDerivFac(stoich,couplingtype,j,porosity);
+
+      if (advreac::reacstart_[condnum]>0 and bfdmfac>0)
+        advreac::ReacStartForReaBFDeriv(k,j,condnum,reacstart,bfdmfac,stoich,couplingtype);
+
+      reabodyforcederivmatrixKJ += reaccoeff*stoich[k]*bfdmfac;
+    }
+  }
+  return reabodyforcederivmatrixKJ;
+}
+
+/*-------------------------------------------------------------------------------*
+ |  helper for calculating calculate \frac{partial}{\partial c} f(c)  thon 02/14 |
+ *-------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+double DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::CalcReaBodyForceDerivFac(
+        const std::vector<int>                    stoich,                  //!<stoichometrie of current condition
+        const MAT::PAR::reaction_coupling    couplingtype,            //!<type of coupling the stoichometry coefficients
+        const int                                 toderive,                 //!<concentration to be derived to
+        const double                              porosity                //!< current porosity
+)
+{
+  double bfdmfac=1.0;
+  if (stoich[toderive]<0)
+  {
+    for (int ii=0; ii < my::numscal_; ii++)
+    {
+      if (stoich[ii]<0)
+      {
+        switch (couplingtype)
+        {
+        case MAT::PAR::reac_coup_simple_multiplicative:
+          if (ii!=toderive)
+            bfdmfac *= my::funct_.Dot(my::ephinp_[ii])*porosity;
+          break;
+        //case ... :  //insert new Couplings here
+        default:
+          dserror("invalid reaction_coupling type");
+          break;
+        }
+      }
+    }
+  }
+  else
+    bfdmfac = 0.0;
+
+  return bfdmfac;
+}
 
 
 

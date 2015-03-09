@@ -52,6 +52,7 @@ namespace INPAR
       m_permeable_fluid,       ///< permeable fluid
       m_cavitation,   ///< fluid with varying density
       m_scatra,   ///< scalar transport material
+      m_scatra_poroECM,   ///< scalar transport material
       m_scatra_aniso,   ///< anisotropic scalar transport material
       m_myocard,   ///< anisotropic electrophysical model of heart tissue
       m_scatra_growth_scd,   ///< scalar transport material for coupling with growth model
@@ -124,6 +125,7 @@ namespace INPAR
       m_fluidporo,       ///< darcy fluid for poroelasticity problems
       m_structporo,   //< wrapper material for poroelasticity (structure)
       m_structpororeaction,   //< wrapper material for poroelasticity (structure)
+      m_structpororeactionECM,   //< wrapper material for poroelasticity (structure)
       m_spring,       ///< elastic spring (translational or rotational)
       m_opti_dens,    ///< density field for topology optimization
       m_0d_maxwell_acinus, ///< 0D acinar Maxwell material

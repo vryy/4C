@@ -39,6 +39,11 @@ namespace LINALG
   class MapExtractor;
 }
 
+namespace MAT
+{
+  class Material;
+}
+
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
@@ -63,10 +68,13 @@ namespace POROELAST
     void SetupPoro();
 
     ///check if element is a poro-element
-    bool CheckPoro(DRT::Element* actele);
+    bool CheckPoro(const DRT::Element* actele);
 
     ///check if element is a poro-p1-element
-    bool CheckPoroP1(DRT::Element* actele);
+    bool CheckPoroP1(const DRT::Element* actele);
+
+    ///check if element is a poro-material
+    bool CheckPoroMaterial(Teuchos::RCP<const MAT::Material> material);
 
     Teuchos::RCP<LINALG::MapExtractor> BuildPoroSplitter(Teuchos::RCP<DRT::Discretization> dis);
 

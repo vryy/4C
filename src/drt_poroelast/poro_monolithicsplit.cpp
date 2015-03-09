@@ -87,13 +87,21 @@ void POROELAST::MonolithicSplit::PrepareTimeStep()
     ddi_->Update(1.0,*idispnp,-1.0,*idispn,0.0);
     ddi_->Update(-1.0,*ifveln,timescale);
 
-    Teuchos::RCP<Epetra_Vector> ibcveln = fsibcextractor_->ExtractCondVector(StructureToFluidAtInterface(ivelnp));
-    Teuchos::RCP<Epetra_Vector> inobcveln = fsibcextractor_->ExtractOtherVector(StructureToFluidAtInterface(ddi_));
+    if(fsibcmap_->NumGlobalElements())
+    {
+      //if there are DBCs on FSI conditioned nodes, they have to be treated seperately
 
-    //DBCs at FSI-Interface
-    fsibcextractor_->InsertCondVector(ibcveln,ifvelnp);
-    //any preconditioned values at the FSI-Interface
-    fsibcextractor_->InsertOtherVector(inobcveln,ifvelnp);
+      Teuchos::RCP<Epetra_Vector> ibcveln = fsibcextractor_->ExtractCondVector(StructureToFluidAtInterface(ivelnp));
+      Teuchos::RCP<Epetra_Vector> inobcveln = fsibcextractor_->ExtractOtherVector(StructureToFluidAtInterface(ddi_));
+
+      //DBCs at FSI-Interface
+      fsibcextractor_->InsertCondVector(ibcveln,ifvelnp);
+      //any preconditioned values at the FSI-Interface
+      fsibcextractor_->InsertOtherVector(inobcveln,ifvelnp);
+    }
+    else
+      //no DBCs on FSI interface -> just make preconditioners consistent (structure decides)
+      ifvelnp = StructureToFluidAtInterface(ddi_);
 
     FluidField()->ApplyInterfaceVelocities(ifvelnp);
   }
@@ -195,12 +203,15 @@ void POROELAST::MonolithicSplit::SetupCouplingAndMatrices()
 
   evaluateinterface_=StructureField()->Interface()->FSICondRelevant();
 
-  if(fsibcmap_->NumGlobalElements())
+  if(evaluateinterface_)
   {
-    const Teuchos::RCP<ADAPTER::FluidPoro>& fluidfield = Teuchos::rcp_dynamic_cast<ADAPTER::FluidPoro>(FluidField());
-    fluidfield->AddDirichCond(fsibcmap_);
+    if(fsibcmap_->NumGlobalElements())
+    {
+      const Teuchos::RCP<ADAPTER::FluidPoro>& fluidfield = Teuchos::rcp_dynamic_cast<ADAPTER::FluidPoro>(FluidField());
+      fluidfield->AddDirichCond(fsibcmap_);
 
-    fsibcextractor_ = Teuchos::rcp(new LINALG::MapExtractor(*FluidField()->Interface()->FSICondMap(), fsibcmap_));
+      fsibcextractor_ = Teuchos::rcp(new LINALG::MapExtractor(*FluidField()->Interface()->FSICondMap(), fsibcmap_));
+    }
 
     Teuchos::RCP<const Epetra_Vector> idispnp = StructureField()->Interface()->ExtractFSICondVector(StructureField()->Dispnp());
     ddi_=Teuchos::rcp(new Epetra_Vector(idispnp->Map(),true));

@@ -40,6 +40,8 @@
 
 #include "../drt_nurbs_discret/drt_nurbs_utils.H"
 
+#include "../drt_poroelast/poroelast_utils.H"
+
 
 /*----------------------------------------------------------------------*
  * create/delete instance (public)                            vuong 06/11|
@@ -5348,8 +5350,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GetStructMaterial(DRT::ELEMENTS::
     if (ele->NumMaterial() > 1)
     {
       structmat_ = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(ele->Material(1));
-      if(structmat_->MaterialType() != INPAR::MAT::m_structporo and
-         structmat_->MaterialType() != INPAR::MAT::m_structpororeaction)
+      if(not POROELAST::UTILS::CheckPoroMaterial(ele->Material(1)))
         dserror("invalid structure material for poroelasticity");
     }
     else

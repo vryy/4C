@@ -44,8 +44,12 @@ public:
   virtual void Init();
 
   /*!
-  \brief read restart data
+  \brief return scheme-specific time integration parameter
+  */
+  virtual const double TimIntParam() const{return 0.0;};
 
+  /*!
+  \brief read restart data
   */
   virtual void ReadRestart(int step);
 

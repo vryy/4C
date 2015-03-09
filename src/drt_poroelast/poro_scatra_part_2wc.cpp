@@ -103,6 +103,8 @@ void POROELAST::PORO_SCATRA_Part_2WC::ReadRestart(int restart)
                                                       ScaTraField()->Discretization());
     POROELAST::UTILS::SetMaterialPointersMatchingGrid(PoroField()->FluidField()->Discretization(),
                                                       ScaTraField()->Discretization());
+    POROELAST::UTILS::SetMaterialPointersMatchingGrid(PoroField()->StructureField()->Discretization(),
+                                                      ScaTraField()->Discretization());
   }
 }
 

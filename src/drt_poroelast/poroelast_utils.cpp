@@ -57,7 +57,7 @@
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
 bool POROELAST::UTILS::CheckPoro(
-    DRT::Element* actele)
+    const DRT::Element* actele)
 {
   //all poro elements need to be listed here
   if( actele->ElementType() == DRT::ELEMENTS::So_hex8PoroType::Instance()    or
@@ -82,7 +82,7 @@ bool POROELAST::UTILS::CheckPoro(
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
 bool POROELAST::UTILS::CheckPoroP1(
-    DRT::Element* actele)
+    const DRT::Element* actele)
 {
   //all poro-p1 elements need to be listed here
   if(
@@ -90,6 +90,22 @@ bool POROELAST::UTILS::CheckPoroP1(
       actele->ElementType() == DRT::ELEMENTS::WallQuad4PoroP1Type::Instance() or
       actele->ElementType() == DRT::ELEMENTS::WallQuad9PoroP1Type::Instance()
      )
+    return true;
+
+  return false;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool POROELAST::UTILS::CheckPoroMaterial(
+    Teuchos::RCP<const MAT::Material> material)
+{
+  //all poro materials need to be listed here
+  if(
+      material->MaterialType() == INPAR::MAT::m_structporo or
+      material->MaterialType() == INPAR::MAT::m_structpororeaction or
+      material->MaterialType() == INPAR::MAT::m_structpororeactionECM
+    )
     return true;
 
   return false;

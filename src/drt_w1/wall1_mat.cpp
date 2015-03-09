@@ -17,7 +17,6 @@ Maintainer: Markus Gitterle
 
 /*----------------------------------------------------------------------*/
 // headers
-#include "wall1.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
@@ -35,6 +34,10 @@ Maintainer: Markus Gitterle
 #include "../drt_mat/elasthyper.H"
 #include "../drt_mat/structporo.H"
 
+#include "../drt_poroelast/poroelast_utils.H"
+
+#include "wall1.H"
+
 /*----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
@@ -50,10 +53,9 @@ void DRT::ELEMENTS::Wall1::w1_call_matgeononl(
 )
 {
 
-  if(material->MaterialType() == INPAR::MAT::m_structporo or
-    material->MaterialType() == INPAR::MAT::m_structpororeaction)
+  if(POROELAST::UTILS::CheckPoroMaterial(material))
   {
-    const MAT::StructPoro* actmat = static_cast<const MAT::StructPoro*>(material.get());
+    Teuchos::RCP<const MAT::StructPoro> actmat = Teuchos::rcp_static_cast<const MAT::StructPoro>(material);
     //setup is done in so3_poro
     //actmat->Setup(NUMGPT_SOH8);
     material = actmat->GetMaterial();

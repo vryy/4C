@@ -27,6 +27,8 @@
 
 #include "../drt_fem_general/drt_utils_gausspoints.H"
 
+#include "../drt_poroelast/poroelast_utils.H"
+
 /*----------------------------------------------------------------------*
  *                                                            vuong 12/12|
  *----------------------------------------------------------------------*/
@@ -35,6 +37,7 @@ DRT::ELEMENTS::Wall1_Poro<distype>::Wall1_Poro(int id, int owner) :
 DRT::ELEMENTS::Wall1(id,owner),
 data_(),
 intpoints_(distype),
+//numscal_(3),
 weights_(true),
 myknots_(numdim_)
 {
@@ -67,6 +70,7 @@ intpoints_(distype),
 ishigherorder_(old.ishigherorder_),
 init_(old.init_),
 scatracoupling_(old.scatracoupling_),
+//numscal_(3),
 weights_(old.weights_),
 myknots_(old.myknots_)
 {
@@ -118,6 +122,8 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::Pack(DRT::PackBuffer& data) const
   // scatracoupling_
   AddtoPack(data,scatracoupling_);
 
+//  AddtoPack(data,numscal_);
+
   // add base class Element
   DRT::ELEMENTS::Wall1::Pack(data);
 
@@ -160,6 +166,8 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::Unpack(const std::vector<char>& data)
 
   // scatracoupling_
   scatracoupling_ = (bool)( ExtractInt(position,data) );
+
+//  numscal_ = ExtractInt(position,data);
 
   // extract base class Element
   std::vector<char> basedata(0);
@@ -247,8 +255,10 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::GetMaterials( )
   if(structmat_==Teuchos::null)
   {
     structmat_ = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(Material());
-    if(structmat_->MaterialType() != INPAR::MAT::m_structporo and
-       structmat_->MaterialType() != INPAR::MAT::m_structpororeaction)
+    if(structmat_==Teuchos::null)
+      dserror("cast to poro material failed");
+
+    if(not POROELAST::UTILS::CheckPoroMaterial(Material()))
       dserror("invalid structure material for poroelasticity");
   }
 

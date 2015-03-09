@@ -60,7 +60,10 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::PreEvaluate(Teuchos::ParameterList& par
 
         double scalar = 0.0;
         for(unsigned int i=0; i<myscalar->size(); i++)
-          scalar += myscalar->at(i)/myscalar->size();
+           scalar += myscalar->at(i)/myscalar->size();
+//        const int dof = 0;
+//        for(int i=0; i<numnod_; i++)
+//          scalar += myscalar->at(i*numscal_+dof)/numnod_;
         //params.set<Teuchos::RCP<std::vector<double> > >("scalar",mytemp);
         params.set<double>("scalar",scalar);
       }

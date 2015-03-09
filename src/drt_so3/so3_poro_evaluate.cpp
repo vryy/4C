@@ -35,6 +35,8 @@
 #include "../drt_nurbs_discret/drt_nurbs_utils.H"
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 
+#include "../drt_poroelast/poroelast_utils.H"
+
 //#include "Sacado.hpp"
 
 /*----------------------------------------------------------------------*
@@ -1300,8 +1302,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GetMaterials( )
   if(structmat_==Teuchos::null)
   {
     structmat_ = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(Material());
-    if(structmat_->MaterialType() != INPAR::MAT::m_structporo and
-       structmat_->MaterialType() != INPAR::MAT::m_structpororeaction)
+    if(not POROELAST::UTILS::CheckPoroMaterial(structmat_))
       dserror("invalid structure material for poroelasticity");
   }
 

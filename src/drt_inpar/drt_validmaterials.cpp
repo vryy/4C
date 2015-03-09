@@ -216,6 +216,21 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
 
   /*----------------------------------------------------------------------*/
+  // scalar transport material (with potential reaction coefficient)
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_scatraPoroECM",
+                                            "scalar transport material",
+                                            INPAR::MAT::m_scatra_poroECM));
+
+    AddNamedReal(m,"DIFFUSIVITY","kinematic diffusivity");
+    AddNamedReal(m,"REACOEFF","reaction coefficient",true);
+    AddNamedReal(m,"SCNUM","schmidt number",true);
+    AddNamedReal(m,"FLDDENSITY","fluid density",true);
+
+    AppendMaterialDefinition(matlist,m);
+  }
+  /*----------------------------------------------------------------------*/
   // anisotropic scalar transport material (with potential reaction coefficient)
   {
     Teuchos::RCP<MaterialDefinition> m
@@ -1745,6 +1760,21 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
       = Teuchos::rcp(new MaterialDefinition("MAT_StructPoroReaction",
                                             "wrapper for structure porelastic material with reaction",
                                             INPAR::MAT::m_structpororeaction));
+
+    AddNamedInt(m,"MATID","ID of structure material");
+    AddNamedReal(m,"INITPOROSITY","initial porosity of porous medium");
+    AddNamedReal(m,"BULKMODULUS","bulk modulus of porous medium");
+    AddNamedReal(m,"PENALTYPARAMETER","penalty paramter of porous medium");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+  /*----------------------------------------------------------------------*/
+  // hyperelastic material for poroelasticity with reaction
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_StructPoroReactionECM",
+                                            "wrapper for structure porelastic material with reaction",
+                                            INPAR::MAT::m_structpororeactionECM));
 
     AddNamedInt(m,"MATID","ID of structure material");
     AddNamedReal(m,"INITPOROSITY","initial porosity of porous medium");

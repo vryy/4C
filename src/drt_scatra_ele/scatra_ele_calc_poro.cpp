@@ -31,6 +31,7 @@
 //#include "scatra_ele.H"
 
 #include "scatra_ele.H"
+#include "scatra_ele_parameter_timint.H"
 
 #include "scatra_ele_calc_poro.H"
 
@@ -266,6 +267,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::MatScaTra(
   SetDiffusivity(actmat,k,porosity);
 
   // set reaction coefficient
+  // TODO: ??? do not (!) scale with porosity, as reactive term is scaled with density (=porosity) before assembly ???
   SetReaCoefficient(actmat,k,porosity);
 
   // set densities (scaled with porosity)
@@ -367,6 +369,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ComputePorosity(
   //TODO: extend to multiple scalars
   const double phinp = my::ephinp_[0].Dot(my::funct_);
   params.set<double>("scalar",phinp);
+  params.set<double>("delta time",my::scatraparatimint_->Dt());
 
   //use structure material to evaluate porosity
   double porosity=0.0;
