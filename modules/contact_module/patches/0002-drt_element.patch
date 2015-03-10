@@ -130,7 +130,7 @@ diff --git a/src/drt_lib/drt_element.cpp b/src/drt_lib/drt_element.cpp
 index 65aa905..088898f 100644
 --- a/src/drt_lib/drt_element.cpp
 +++ b/src/drt_lib/drt_element.cpp
-@@ -17,10 +17,6 @@ Maintainer: Michael Gee
+@@ -17,10 +17,6 @@
  #include "drt_dserror.H"
  #include "drt_condition.H"
  #include "../drt_lib/drt_utils_factory.H"
@@ -141,27 +141,27 @@ index 65aa905..088898f 100644
  
  /*----------------------------------------------------------------------*/
  /*----------------------------------------------------------------------*/
-@@ -74,8 +70,7 @@ owner_(owner),
- parent_master_(NULL),
- parent_slave_(NULL),
- lface_master_(-1),
--lface_slave_(-1),
+@@ -70,8 +66,7 @@
+ ParObject(),
+ id_(id),
+ lid_(-1),
+-owner_(owner),
 -mat_(1,Teuchos::null)
-+lface_slave_(-1)
++owner_(owner)
  {}
  
  /*----------------------------------------------------------------------*
-@@ -92,8 +87,7 @@ face_(old.face_),
- parent_master_(old.parent_master_),
- parent_slave_(old.parent_slave_),
- lface_master_(old.lface_master_),
--lface_slave_(old.lface_slave_),
+@@ -84,8 +79,7 @@
+ owner_(old.owner_),
+ nodeid_(old.nodeid_),
+ node_(old.node_),
+-face_(old.face_),
 -mat_(1,Teuchos::null)
-+lface_slave_(old.lface_slave_)
++face_(old.face_)
  {
    // we do NOT want a deep copy of the condition_ as the condition
    // is only a reference in the elements anyway
-@@ -101,16 +95,6 @@ mat_(1,Teuchos::null)
+@@ -93,16 +87,6 @@
    for (fool=old.condition_.begin(); fool!=old.condition_.end(); ++fool)
      SetCondition(fool->first,fool->second);
  
@@ -178,7 +178,7 @@ index 65aa905..088898f 100644
    return;
  }
  
-@@ -163,17 +147,6 @@ void DRT::Element::Print(std::ostream& os) const
+@@ -155,17 +139,6 @@
    return;
  }
  
@@ -196,7 +196,7 @@ index 65aa905..088898f 100644
  /*----------------------------------------------------------------------*
   |  set node numbers to element (public)                     mwgee 11/06|
   *----------------------------------------------------------------------*/
-@@ -185,43 +158,6 @@ void DRT::Element::SetNodeIds(const int nnode, const int* nodes)
+@@ -177,43 +150,6 @@
    return;
  }
  
@@ -240,7 +240,7 @@ index 65aa905..088898f 100644
  /*----------------------------------------------------------------------*
   |  Pack data                                                  (public) |
   |                                                            gee 02/07 |
-@@ -240,17 +176,9 @@ void DRT::Element::Pack(DRT::PackBuffer& data) const
+@@ -232,17 +168,9 @@
    AddtoPack(data,owner_);
    // add vector nodeid_
    AddtoPack(data,nodeid_);
@@ -261,7 +261,7 @@ index 65aa905..088898f 100644
  
    return;
  }
-@@ -273,22 +201,9 @@ void DRT::Element::Unpack(const std::vector<char>& data)
+@@ -265,22 +193,9 @@
    ExtractfromPack(position,data,owner_);
    // nodeid_
    ExtractfromPack(position,data,nodeid_);
@@ -285,6 +285,4 @@ index 65aa905..088898f 100644
  
    // node_, face_, parent_master_, parent_slave_ are NOT communicated
    node_.resize(0);
--- 
-1.7.7.6
 
