@@ -424,6 +424,11 @@ public:
   */
   virtual void TimeUpdate();
 
+  /*!
+  \ time update of stresses
+  */
+  virtual void TimeUpdateStresses();
+
   virtual void TimeUpdateNonlinearBC();
 
   /*!

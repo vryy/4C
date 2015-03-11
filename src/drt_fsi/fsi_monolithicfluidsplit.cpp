@@ -1312,17 +1312,8 @@ void FSI::MonolithicFluidSplit::Output()
   FluidField()->    Output();
 
   // output Lagrange multiplier
-  {
-    /* 'lambda_' is only defined on the interface. So, insert 'lambda_' into
-     * 'lambdafull' that is defined on the entire fluid field. Then, write
-     * output or restart data.
-     */
-    Teuchos::RCP<Epetra_Vector> lambdafull = FluidField()->Interface()->InsertFSICondVector(lambda_);
-    const int uprestart = timeparams_.get<int>("RESTARTEVRY");
-    const int upres = timeparams_.get<int>("UPRES");
-    if ((uprestart != 0 && FluidField()->Step() % uprestart == 0) || FluidField()->Step() % upres == 0)
-      FluidField()->DiscWriter()->WriteVector("fsilambda", lambdafull);
-  }
+  OutputLambda();
+
   AleField()->Output();
   FluidField()->LiftDrag();
 
@@ -1332,6 +1323,21 @@ void FSI::MonolithicFluidSplit::Output()
     if(Comm().MyPID() == 0)
       StructureField()->GetConstraintManager()->PrintMonitorValues();
   }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::MonolithicFluidSplit::OutputLambda()
+{
+  /* 'lambda_' is only defined on the interface. So, insert 'lambda_' into
+   * 'lambdafull' that is defined on the entire fluid field. Then, write
+   * output or restart data.
+   */
+  Teuchos::RCP<Epetra_Vector> lambdafull = FluidField()->Interface()->InsertFSICondVector(lambda_);
+  const int uprestart = timeparams_.get<int>("RESTARTEVRY");
+  const int upres = timeparams_.get<int>("UPRES");
+  if ((uprestart != 0 && FluidField()->Step() % uprestart == 0) || FluidField()->Step() % upres == 0)
+    FluidField()->DiscWriter()->WriteVector("fsilambda", lambdafull);
 }
 
 /*----------------------------------------------------------------------*/
@@ -1348,6 +1354,7 @@ void FSI::MonolithicFluidSplit::ReadRestart(int step)
     reader.ReadVector(lambdafull, "fsilambda");
     lambda_ = FluidField()->Interface()->ExtractFSICondVector(lambdafull);
   }
+
   AleField()->ReadRestart(step);
 
   SetTimeStep(FluidField()->Time(),FluidField()->Step());

@@ -42,16 +42,21 @@ FLD::TimIntAC::~TimIntAC()
  *----------------------------------------------------------------------*/
 void FLD::TimIntAC::ReadRestart(int step)
 {
-  const Teuchos::ParameterList& fs3idynac = DRT::Problem::Instance()->FS3IDynamicParams().sublist("AC");
-  const bool restartfromfsi = DRT::INPUT::IntegralValue<int>(fs3idynac,"RESTART_FROM_PART_FSI"); //fs3idynac.get<int>("RESTART_FROM_PART_FSI");
-
-  if (not restartfromfsi) //standard restart
+  //AC-FSI specific output
+  if ( DRT::INPUT::IntegralValue<INPAR::FLUID::WSSType>(DRT::Problem::Instance()->FluidDynamicParams() ,"WSS_TYPE") == INPAR::FLUID::wss_mean )
   {
     IO::DiscretizationReader reader(discret_,step);
 
-    reader.ReadVector(trueresidual_,"residual");
+    Teuchos::RCP<Epetra_Vector> SumWss =Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(0),true));
+    reader.ReadVector(SumWss,"wss_fluid");
+
+    double SumDt = 0.0;
+    SumDt = reader.ReadDouble("wss_time");
+
+    SumWss->Scale(SumDt);
+    StressManager()->RestartStressManager(SumWss,SumDt);
+
   }
-  //else //nothing to do in this case since we start from a partitioned Fsi problem where the trueresidual has not been written!
 
   return;
 }
@@ -63,9 +68,14 @@ void FLD::TimIntAC::Output()
 {
   FluidImplicitTimeInt::Output();
 
-  if ( uprestart_ > 0 and step_%uprestart_ == 0 ) //iff we write an restartable output
+  //AC-FSI specific output
+  if ( DRT::INPUT::IntegralValue<INPAR::FLUID::WSSType>(DRT::Problem::Instance()->FluidDynamicParams() ,"WSS_TYPE") == INPAR::FLUID::wss_mean )
   {
-    output_->WriteVector("residual", trueresidual_); //we need this to be able to calculate WSS when restarting
+    if ( uprestart_ > 0 and step_%uprestart_ == 0 ) //iff we write an restartable output
+    {
+      output_->WriteVector("wss_fluid",stressmanager_->GetPreCalcWallShearStresses(trueresidual_)); //we need WSS when restarting an AC FSI simulation
+      output_->WriteDouble("wss_time",stressmanager_->GetSumDt()); //we need WSS when restarting an AC FSI simulation
+    }
   }
   return;
 }

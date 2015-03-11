@@ -522,8 +522,7 @@ void FLD::FluidImplicitTimeInt::Init()
     residual_->PutScalar(0.0);
 
     AVM3AssembleMatAndRHS(eleparams);
-
-    stressmanager_->Init(sysmat_);
+    stressmanager_->InitAggr(sysmat_);
   }
 
   return;
@@ -3051,6 +3050,10 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
     gridvn_ ->Update(1.0,*gridv_,0.0);
   }
 
+  // update stresses and wss
+  if (writestresses_)
+    TimeUpdateStresses();
+
   // update flow-rate, flow-volume and impedance vectors in case of flow-dependent pressure boundary conditions,
   if (nonlinearbc_)
     TimeUpdateNonlinearBC();
@@ -3070,6 +3073,18 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
   return;
 }// FluidImplicitTimeInt::TimeUpdate
 
+
+/*----------------------------------------------------------------------*
+ | Update of stresses                                        thon 03/15 |
+ *----------------------------------------------------------------------*/
+void FLD::FluidImplicitTimeInt::TimeUpdateStresses()
+{
+  stressmanager_->GetStresses(trueresidual_,dta_);
+  if (write_wall_shear_stresses_)
+    stressmanager_->GetWallShearStresses(trueresidual_,dta_);
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
  | Update NonlinearBCs                                       thon 09/14 |
@@ -3420,13 +3435,15 @@ void FLD::FluidImplicitTimeInt::Output()
     //only perform stress calculation when output is needed
     if (writestresses_)
     {
-      Teuchos::RCP<Epetra_Vector> traction = stressmanager_->GetStresses(trueresidual_);
+      Teuchos::RCP<Epetra_Vector> traction = stressmanager_->GetPreCalcStresses(trueresidual_);
       output_->WriteVector("traction",traction);
       if (myrank_==0)
         std::cout<<"Writing stresses"<<std::endl;
       //only perform wall shear stress calculation when output is needed
       if (write_wall_shear_stresses_)
-        output_->WriteVector("wss",stressmanager_->GetWallShearStresses(trueresidual_));
+      {
+        output_->WriteVector("wss",stressmanager_->GetPreCalcWallShearStresses(trueresidual_));
+      }
     }
 
     //biofilm growth
@@ -3504,7 +3521,9 @@ void FLD::FluidImplicitTimeInt::Output()
       if(xwall_!=Teuchos::null)
       {
         if (not write_wall_shear_stresses_)
-          output_->WriteVector("wss",stressmanager_->GetWallShearStresses(trueresidual_));
+        {
+          output_->WriteVector("wss",stressmanager_->GetPreCalcWallShearStresses(trueresidual_));
+        }
       }
 
       // flow rate, flow volume and impedance in case of flow-dependent pressure bc
@@ -3555,11 +3574,13 @@ void FLD::FluidImplicitTimeInt::Output()
     //only perform stress calculation when output is needed
     if (writestresses_)
     {
-      Teuchos::RCP<Epetra_Vector> traction = stressmanager_->GetStresses(trueresidual_);
+      Teuchos::RCP<Epetra_Vector> traction = stressmanager_->GetPreCalcStresses(trueresidual_);
       output_->WriteVector("traction",traction);
       //only perform wall shear stress calculation when output is needed
       if (write_wall_shear_stresses_)
-        output_->WriteVector("wss",stressmanager_->GetWallShearStresses(trueresidual_));
+      {
+        output_->WriteVector("wss",stressmanager_->GetPreCalcWallShearStresses(trueresidual_));
+      }
     }
 
     // acceleration vector at time n+1 and n, velocity/pressure vector at time n and n-1
@@ -3572,7 +3593,7 @@ void FLD::FluidImplicitTimeInt::Output()
     {
       output_->WriteVector("xwall_tauw",xwall_->GetTauwVector());
       if (not write_wall_shear_stresses_)
-        output_->WriteVector("wss",stressmanager_->GetWallShearStresses(trueresidual_));
+        output_->WriteVector("wss",stressmanager_->GetPreCalcWallShearStresses(trueresidual_));
     }
 
     // flow rate, flow volume and impedance in case of flow-dependent pressure bc

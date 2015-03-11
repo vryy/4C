@@ -201,6 +201,9 @@ namespace FSI
 
     virtual void Output();
 
+    /// Write Lagrange multiplier
+    virtual void OutputLambda();
+
     /// setup solver for global block system
     Teuchos::RCP<NOX::Epetra::LinearSystem>
     CreateLinearSystem(Teuchos::ParameterList& nlParams, ///< parameter list

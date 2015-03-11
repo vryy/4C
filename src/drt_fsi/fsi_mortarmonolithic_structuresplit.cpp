@@ -1423,17 +1423,7 @@ void FSI::MortarMonolithicStructureSplit::Output()
   StructureField()->Output();
 
   // output Lagrange multiplier
-  {
-    /* 'lambda_' is only defined on the interface. So, insert 'lambda_' into
-     * 'lambdafull' that is defined on the entire structure field. Then, write
-     * output or restart data.
-     */
-    Teuchos::RCP<Epetra_Vector> lambdafull = StructureField()->Interface()->InsertFSICondVector(lambda_);
-    const int uprestart = timeparams_.get<int>("RESTARTEVRY");
-    const int upres = timeparams_.get<int>("UPRES");
-    if ((uprestart != 0 && FluidField()->Step() % uprestart == 0) || FluidField()->Step() % upres == 0)
-      StructureField()->DiscWriter()->WriteVector("fsilambda", lambdafull);
-  }
+  OutputLambda();
 
   FluidField()->    Output();
 
@@ -1457,6 +1447,21 @@ void FSI::MortarMonolithicStructureSplit::Output()
       StructureField()->GetConstraintManager()->PrintMonitorValues();
   }
 
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::MortarMonolithicStructureSplit::OutputLambda()
+{
+  /* 'lambda_' is only defined on the interface. So, insert 'lambda_' into
+
+   * output or restart data.
+   */
+  Teuchos::RCP<Epetra_Vector> lambdafull = StructureField()->Interface()->InsertFSICondVector(lambda_);
+  const int uprestart = timeparams_.get<int>("RESTARTEVRY");
+  const int upres = timeparams_.get<int>("UPRES");
+  if ((uprestart != 0 && FluidField()->Step() % uprestart == 0) || FluidField()->Step() % upres == 0)
+    StructureField()->DiscWriter()->WriteVector("fsilambda", lambdafull);
 }
 
 /*----------------------------------------------------------------------------*/

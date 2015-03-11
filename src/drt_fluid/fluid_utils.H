@@ -331,19 +331,49 @@ namespace UTILS
   );
 
     ///initialize smoothing of stresses
-    void Init(Teuchos::RCP<LINALG::SparseOperator> sysmat);
+    void InitAggr(Teuchos::RCP<LINALG::SparseOperator> sysmat);
 
-    ///return WSS vector
-    Teuchos::RCP<Epetra_Vector> GetWallShearStresses( Teuchos::RCP<const Epetra_Vector> trueresidual );
+    ///update and return WSS vector
+    Teuchos::RCP<Epetra_Vector> GetWallShearStresses(
+        Teuchos::RCP<const Epetra_Vector> trueresidual,
+        const double dt );
+
+    ///return WSS vector (without updating the mean wss vector)
+    Teuchos::RCP<Epetra_Vector> GetPreCalcWallShearStresses(
+        Teuchos::RCP<const Epetra_Vector> trueresidual );
+
     ///return WSS vector always without aggregation, even if scale separation matrix exists
     Teuchos::RCP<Epetra_Vector> GetWallShearStressesWOAgg( Teuchos::RCP<const Epetra_Vector> trueresidual );
 
-    ///return stress vector
-    Teuchos::RCP<Epetra_Vector> GetStresses(Teuchos::RCP<const Epetra_Vector> trueresidual);
+    ///update and return stress vector
+    Teuchos::RCP<Epetra_Vector> GetStresses(
+        Teuchos::RCP<const Epetra_Vector> trueresidual,
+        const double dt );
+
+    ///return stress vector (without updating the mean stress vector)
+    Teuchos::RCP<Epetra_Vector> GetPreCalcStresses(
+        Teuchos::RCP<const Epetra_Vector> trueresidual );
+
     ///return stress vector always without aggregation, even if scale separation matrix exists
     Teuchos::RCP<Epetra_Vector> GetStressesWOAgg(Teuchos::RCP<const Epetra_Vector> trueresidual);
 
-    bool IsInit(){return isinit_;}
+    /// return flag if StressManager has already been initialized
+    bool IsInit() {return isinit_;};
+
+    ///reset history vectors for mean stresses and wss
+    void ResetHistoryVectors()
+    {
+      SumStresses_ = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()),true)),
+      SumWss_ = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()),true)),
+      SumDt_=0.0;
+    };
+
+    ///Set SumWss
+    const double GetSumDt() { return SumDt_;};
+
+    ///Set SumWss
+    void RestartStressManager( Teuchos::RCP<Epetra_Vector> sumwss, double sumdt ) { SumWss_ = sumwss; SumDt_ = sumdt; };
+
 private:
 
     ///return stress vector
@@ -358,14 +388,20 @@ private:
     /// smooth stress/wss via ML-aggregation
     Teuchos::RCP<Epetra_Vector> AggreagteStresses( Teuchos::RCP<Epetra_Vector> wss );
 
+    ///time average stresses
+    Teuchos::RCP<Epetra_Vector> TimeAverageStresses(
+          Teuchos::RCP<const Epetra_Vector> stresses,
+          double dt );
+
+    ///time average wss
+    Teuchos::RCP<Epetra_Vector> TimeAverageWss(
+          Teuchos::RCP<const Epetra_Vector> stresses,
+          double dt );
+
     ///Calculate Aggregation Matrix
     void CalcSepEnr(
         Teuchos::RCP<LINALG::SparseOperator> sysmat
     );
-
-
-    ///number of ML solver to build aggreagtion matrix, also flag if WSS are aggregated (!= -1) or not (==-1)
-    const int ML_solver_;
 
     /// fluid discretization
     const Teuchos::RCP<DRT::Discretization> discret_;
@@ -381,6 +417,18 @@ private:
 
     ///filtering matrix for wall shear stress
     Teuchos::RCP<LINALG::SparseMatrix> SepEnr_;
+
+    ///wss calculation type
+    const INPAR::FLUID::WSSType WssType_;
+
+    /// weighted sum of all prior stresses
+    Teuchos::RCP<Epetra_Vector> SumStresses_;
+
+    ///weighted sum of all prior wss
+    Teuchos::RCP<Epetra_Vector> SumWss_;
+
+    ///time the stresses and wss are averaged for
+    double SumDt_;
 
     bool isinit_;
   };

@@ -916,7 +916,7 @@ void FLD::XWall::SetupL2Projection()
   {
     if(mystressmanager_==Teuchos::null)
       dserror("wssmanager not available in xwall");
-    wss=mystressmanager_->GetWallShearStresses(trueresidual);
+    wss=mystressmanager_->GetPreCalcWallShearStresses(trueresidual); //The time variables are just dummies, hence the mean WSS functionality does not work!!!
   }
   switch (tauwtype_)
   {

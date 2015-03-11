@@ -345,6 +345,13 @@ namespace INPAR
       between_steps
     };
 
+    enum WSSType //! wss calculation type
+    {
+      wss_standard, //! calculate 'normal' wss
+      wss_aggregation, //! calculate aggregated wss
+      wss_mean //! calculate mean wss
+    };
+
     enum XWallTauwCalcType
     {
       residual,

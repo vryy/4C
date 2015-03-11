@@ -3570,6 +3570,26 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   // number of linear solver used for fluid problem (former fluid pressure solver for SIMPLER preconditioning with fluid)
   IntParameter("SIMPLER_SOLVER",-1,"number of linear solver used for fluid dynamics (ONLY NECESSARY FOR BlockGaussSeidel solver block within fluid mehstying case any more!!!!)",&fdyn);
 
+  // Flag to define the way of calculating stresses and wss
+  setStringToIntegralParameter<int>("WSS_TYPE","Standard",
+                               "which type of stresses and wss",
+                               tuple<std::string>(
+                                 "Standard",
+                                 "Aggregation",
+                                 "Mean"
+                                 ),
+                               tuple<std::string>(
+                                 "calculate 'normal' wss",
+                                 "calculate aggregated wss",
+                                 "calculate mean wss"
+                                 ),
+                               tuple<int>(
+                                 INPAR::FLUID::wss_standard,
+                                 INPAR::FLUID::wss_aggregation,
+                                 INPAR::FLUID::wss_mean
+                                 ),
+                               &fdyn);
+
   // Set ML-solver number for smooting of residual-based calculated wallshearstress via plain aggregation.
   IntParameter("WSS_ML_AGR_SOLVER",-1,"Set ML-solver number for smoothing of residual-based calculated wallshearstress via plain aggregation.",&fdyn);
 

@@ -133,6 +133,9 @@ namespace FSI
     /// Output routine accounting for Lagrange multiplier at the interface
     virtual void Output();
 
+    /// Write Lagrange multiplier
+    virtual void OutputLambda();
+
     /// read restart data
     virtual void ReadRestart(int step);
 

@@ -626,12 +626,12 @@ void ADAPTER::FluidFSI::IndicateErrorNorms(double& err,
 }
 
 /*----------------------------------------------------------------------*
- | Calculate WSS vector                                      Thon 11/14 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFSI::CalculateWallShearStresses()
 {
-  //Calculate stresses
+  //get inputs
   Teuchos::RCP<const Epetra_Vector> trueresidual = fluidimpl_->TrueResidual();
+  double dt = fluidimpl_->Dt();
 
   //Get WSSManager
   Teuchos::RCP<FLD::UTILS::StressManager> stressmanager = fluidimpl_->StressManager();
@@ -639,12 +639,19 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFSI::CalculateWallShearStresses()
   //Since the WSS Manager cannot be initialized in the FluidImplicitTimeInt::Init()
   //it is not so sure if the WSSManager is jet initialized. So let's be safe here..
   if ( stressmanager == Teuchos::null)
-    dserror("WSSManager has not been initialized jet!");
+    dserror("Call of StressManager failed!");
+  if ( not stressmanager->IsInit() )
+    dserror("StressManager has not been initialized jet!");
 
-  //Call StressManager to calculate WSS from stresses
-  Teuchos::RCP<Epetra_Vector> wss = stressmanager->GetWallShearStresses( trueresidual );
+  //Call StressManager to calculate WSS from residual
+  Teuchos::RCP<Epetra_Vector> wss = stressmanager->GetWallShearStresses( trueresidual,dt );
 
   return wss;
+}
+
+void ADAPTER::FluidFSI::ResetHistoryVectors( )
+{
+  fluidimpl_->StressManager()->ResetHistoryVectors( );
 }
 
 /*----------------------------------------------------------------------*

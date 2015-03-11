@@ -118,7 +118,7 @@ namespace FS3I
     void SetWallShearStresses();
 
     /// extract Wall Shear Stresses at the interface
-    void ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector> >& wss);
+    virtual void ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector> >& wss);
 
     Teuchos::ParameterList& ManipulateDt(const Teuchos::ParameterList& fs3idyn);
 

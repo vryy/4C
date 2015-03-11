@@ -77,11 +77,17 @@ namespace FS3I
     ///Update and output everything
     void UpdateAndOutput();
 
+    ///Write FSI output
+    void FsiOutput();
+
     ///check convergence of scatra fields
     bool ScatraConvergenceCheck(int itnum);
 
     ///Convergence check for iterative staggered FS3I scheme
     bool PartFs3iConvergenceCkeck( const int itnum);
+
+    /// extract Wall Shear Stresses at the interface
+    void ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector> >& wss);
 
   private:
 
@@ -91,6 +97,8 @@ namespace FS3I
     Teuchos::RCP<Epetra_Vector> fluidincrement_;
     /// scatra increment vector
     Teuchos::RCP<Epetra_Vector> aleincrement_;
+    ///WSS vector
+    Teuchos::RCP<Epetra_Vector> WallShearStress_;
 
     ///do how many fsi time steps in comparison to the scalars time steps
     int fsiperssisteps_;

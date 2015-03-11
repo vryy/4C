@@ -38,7 +38,7 @@ STRUCT_PLASTIC_STRAIN           No
 STRUCT_SURFACTANT               No
 FLUID_SOL                       Yes
 FLUID_STRESS                    Yes //yes ,needed for WWS output
-FLUID_WALL_SHEAR_STRESS         Yes //yes for WSS output
+FLUID_WALL_SHEAR_STRESS         No //yes for WSS output
 FLUID_VIS                       No
 FILESTEPS                       1000
 //STDOUTEVRY                      0 //25
@@ -51,7 +51,7 @@ MAXTIME                         10000.0
 TIMESTEP                        0.01 //0.01
 NUMSTEP                         3
 RESTARTEVRY                     2
-UPRES                           2
+UPRES                           1
 INF_PERM                        No
 SCATRA_SOLVERTYPE               nonlinear //linear
 COUPLED_LINEAR_SOLVER           4                             // FS3I problem
@@ -64,7 +64,7 @@ CONVTOL                         1e-03
 ITEMAX                          20
 ----------------------------------------------------------------FS3I DYNAMIC/AC
 FSI_STEPS_PER_SCATRA_STEP       2
-//PERIODICITY                     1.0
+PERIODICITY                     0.02
 //PERIODSTOSTEADYSTATE            2
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 CALCERROR                       No
@@ -162,10 +162,10 @@ ALPHA_F                         0.0
 -----------------------------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.666666
 ----------------------------------------------------------------FLUID DYNAMIC
+WSS_TYPE                        Mean // Standard // Aggregation //
 PHYSICAL_TYPE                   Incompressible
 LINEAR_SOLVER                   1
 SIMPLER_SOLVER                  -1
-WSS_ML_AGR_SOLVER               -1
 TIMEINTEGR                      One_Step_Theta
 NONLINITER                      Newton //fixed_point_like
 PREDICTOR                       steady_state
@@ -525,18 +525,21 @@ FUNCT1 EXPR 0 0 0 FUNCTION ((1-(((x)^2+(y)^2)^4)/(18^8)))
 -------------------------------------------------------------FUNCT3
 -------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra2 NODE 4146 QUANTITY phi VALUE 2.20095516384966397e-03 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 4146 QUANTITY dispx VALUE -7.93266281749764185e-02 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 4146 QUANTITY dispy VALUE -3.15727290669682442e-02 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 4146 QUANTITY dispz VALUE 6.06406569819204766e-02 TOLERANCE 1e-6
-SCATRA DIS scatra1 NODE 39 QUANTITY phi VALUE  1.86130617180513165e-02 TOLERANCE 1e-6
-FLUID DIS fluid NODE 39 QUANTITY velx VALUE 8.90957952888049576e-02 TOLERANCE 1e-6
-FLUID DIS fluid NODE 39 QUANTITY vely VALUE -4.45965518273359951e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 39 QUANTITY velz VALUE 2.85747910652773385e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 39 QUANTITY pressure VALUE -1.20904269023557518e+02 TOLERANCE 1e-6
-ALE DIS ale NODE 39 QUANTITY dispx VALUE 3.78992532101477854e-03 TOLERANCE 1e-6
-ALE DIS ale NODE 39 QUANTITY dispy VALUE -1.94855964946305318e-02 TOLERANCE 1e-6
-ALE DIS ale NODE 39 QUANTITY dispz VALUE 1.61682665643129081e-01 TOLERANCE 1e-6
+SCATRA DIS scatra2 NODE 4146 QUANTITY phi VALUE 8.84202365715494728e-04 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 4146 QUANTITY dispx VALUE -3.33141838375134169e-02 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 4146 QUANTITY dispy VALUE -1.40963970746917581e-02 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 4146 QUANTITY dispz VALUE 2.36892726786350587e-02 TOLERANCE 1e-6
+SCATRA DIS scatra1 NODE 39 QUANTITY phi VALUE 2.34053983765325942e-02 TOLERANCE 1e-6
+FLUID DIS fluid NODE 39 QUANTITY velx VALUE 4.09092586765470445e-02 TOLERANCE 1e-6
+FLUID DIS fluid NODE 39 QUANTITY vely VALUE -2.05092783111124888e-01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 39 QUANTITY velz VALUE 1.07747174845718163e-01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 39 QUANTITY pressure VALUE -6.00350951451447585e+01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 39 QUANTITY wssx VALUE -3.28169140404810378e-03 TOLERANCE 1e-6
+FLUID DIS fluid NODE 39 QUANTITY wssy VALUE 8.71833627533646904e-03 TOLERANCE 1e-6
+FLUID DIS fluid NODE 39 QUANTITY wssz VALUE 1.12283778104759313e+00 TOLERANCE 1e-6
+ALE DIS ale NODE 39 QUANTITY dispx VALUE 1.49884194197267488e-03 TOLERANCE 1e-6
+ALE DIS ale NODE 39 QUANTITY dispy VALUE -6.97258281640960632e-03 TOLERANCE 1e-6
+ALE DIS ale NODE 39 QUANTITY dispz VALUE 6.01404579540629064e-02 TOLERANCE 1e-6
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  4

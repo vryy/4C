@@ -36,28 +36,48 @@ FLD::UTILS::StressManager::StressManager(
       Teuchos::RCP<Epetra_Vector> dispnp,
       const bool alefluid,
       const int numdim
-): ML_solver_((DRT::Problem::Instance()->FluidDynamicParams()).get<int>("WSS_ML_AGR_SOLVER")),
-   discret_(discret),
+): discret_(discret),
    dispnp_(dispnp),
    alefluid_(alefluid),
    numdim_(numdim),
    SepEnr_(Teuchos::null),
+   WssType_( DRT::INPUT::IntegralValue<INPAR::FLUID::WSSType>( DRT::Problem::Instance()->FluidDynamicParams() ,"WSS_TYPE") ),
+   SumStresses_(Teuchos::null),
+   SumWss_(Teuchos::null),
+   SumDt_(0.0),
    isinit_(false)
 {
-  //nothing has to be done!
-  if(ML_solver_ == -1)
+
+switch (WssType_)
+  {
+  case INPAR::FLUID::wss_standard:
+    isinit_ = true;  //in this cases nothing has to be initialized
+    break;
+  case INPAR::FLUID::wss_aggregation:
+    isinit_=false; //we do this in InitAggr()
+    break;
+  case INPAR::FLUID::wss_mean:
+    SumStresses_ = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()),true)),
+    SumWss_ = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()),true)),
     isinit_ = true;
+    break;
+  default:
+    dserror("There are only the wss calculation types 'standard', 'aggregation' and 'mean'!!");
+    break;
+  }
 }
 
 /*----------------------------------------------------------------------*
  | constructor                                         Thon/Krank 11/14 |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::StressManager::Init(Teuchos::RCP<LINALG::SparseOperator> sysmat)
+void FLD::UTILS::StressManager::InitAggr(Teuchos::RCP<LINALG::SparseOperator> sysmat)
 {
-  CalcSepEnr(sysmat);
+  if (WssType_ != INPAR::FLUID::wss_aggregation )
+    dserror("One should end up here just in case of aggregated stresses!");
 
-  if (ML_solver_ != -1 and SepEnr_== Teuchos::null)
-    dserror("If a WSS_ML_AGR_SOLVER is specified one should already have set SepEnr_.");
+  CalcSepEnr(sysmat);
+  if (SepEnr_== Teuchos::null)
+    dserror("SepEnr matrix has not been build correctly. Strange...");
 
   isinit_=true;
 
@@ -65,18 +85,61 @@ void FLD::UTILS::StressManager::Init(Teuchos::RCP<LINALG::SparseOperator> sysmat
 }
 
 /*----------------------------------------------------------------------*
- | return WSS vector                                   Thon/Krank 11/14 |
+ | update and return WSS vector                        Thon/Krank 11/14 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetWallShearStresses(
-    Teuchos::RCP<const Epetra_Vector> trueresidual
+    Teuchos::RCP<const Epetra_Vector> trueresidual,
+    const double dt
 )
 {
   Teuchos::RCP<Epetra_Vector> wss = GetWallShearStressesWOAgg(trueresidual);
 
-  if (ML_solver_ != -1) //iff we have a ML solver we aggregate the WSS
-    return AggreagteStresses(wss);
-  else
-    return wss;
+  switch ( WssType_ )
+  {
+  case INPAR::FLUID::wss_standard:
+    //nothing to do
+    break;
+  case INPAR::FLUID::wss_aggregation:
+    wss = AggreagteStresses(wss);
+    break;
+  case INPAR::FLUID::wss_mean:
+    wss = TimeAverageWss(wss,dt);
+    break;
+  default:
+    dserror("There are only the wss calculation types 'standard', 'aggregation' and 'mean'!!");
+    break;
+  }
+
+  return wss;
+}
+
+/*--------------------------------------------------------------------------*
+ | return wss vector (without updating the mean stress vector)   Thon 11/14 |
+ *--------------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetPreCalcWallShearStresses(
+    Teuchos::RCP<const Epetra_Vector> trueresidual
+)
+{
+  Teuchos::RCP<Epetra_Vector> wss = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()),true));
+
+  switch ( WssType_ )
+  {
+  case INPAR::FLUID::wss_standard:
+    wss = GetWallShearStressesWOAgg(trueresidual);
+    break;
+  case INPAR::FLUID::wss_aggregation:
+    wss = GetWallShearStressesWOAgg(trueresidual);
+    wss = AggreagteStresses(wss);
+    break;
+  case INPAR::FLUID::wss_mean:
+    wss->Update(1.0/SumDt_, *SumWss_, 0.0); //weighted sum of all prior stresses
+    break;
+  default:
+    dserror("There are only the wss calculation types 'standard', 'aggregation' and 'mean'!!");
+    break;
+  }
+
+  return wss;
 }
 
 /*----------------------------------------------------------------------*
@@ -87,7 +150,8 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetWallShearStressesWOAgg
 )
 {
   if(not isinit_)
-    dserror("not initialized");
+    dserror("StressManager not initialized");
+
   Teuchos::RCP<Epetra_Vector> stresses = CalcStresses(trueresidual);
   //calculate wss from stresses
   Teuchos::RCP<Epetra_Vector> wss = CalcWallShearStresses(stresses);
@@ -106,18 +170,61 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetStressesWOAgg(Teuchos:
 } // FLD::UTILS::StressManager::GetStressesWOAgg()
 
 /*-----------------------------------------------------------------------------*
- |  calculate traction vector at (Dirichlet) boundary (public) Thon/Krank 07/07|
+ |  update and return stress vector                            Thon/Krank 07/07|
  *-----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetStresses(Teuchos::RCP<const Epetra_Vector> trueresidual)
+Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetStresses(
+        Teuchos::RCP<const Epetra_Vector> trueresidual,
+        const double dt
+)
 {
   Teuchos::RCP<Epetra_Vector> stresses = GetStressesWOAgg(trueresidual);
 
-  if (ML_solver_ != -1) //iff we have a ML solver we aggregate the WSS
-    return AggreagteStresses(stresses);
-  else
-    return stresses;
+  switch ( WssType_ )
+  {
+  case INPAR::FLUID::wss_standard:
+    //nothing to do
+    break;
+  case INPAR::FLUID::wss_aggregation:
+    stresses = AggreagteStresses(stresses);
+    break;
+  case INPAR::FLUID::wss_mean:
+    stresses = TimeAverageStresses(stresses,dt);
+    break;
+  default:
+    dserror("There are only the wss calculation types 'standard', 'aggregation' and 'mean'!!");
+    break;
+  }
 
+  return stresses;
 } // FLD::UTILS::StressManager::GetStresses()
+
+/*-----------------------------------------------------------------------------*
+ | return stress vector (without updating the mean stress vector)   Thon 03/15 |
+ *-----------------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetPreCalcStresses(
+        Teuchos::RCP<const Epetra_Vector> trueresidual
+)
+{
+  Teuchos::RCP<Epetra_Vector> stresses = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()),true));
+
+  switch ( WssType_ )
+  {
+  case INPAR::FLUID::wss_standard:
+    stresses = GetStressesWOAgg(trueresidual);
+    break;
+  case INPAR::FLUID::wss_aggregation:
+    stresses = GetStressesWOAgg(trueresidual);
+    stresses = AggreagteStresses(stresses);
+    break;
+  case INPAR::FLUID::wss_mean:
+    stresses->Update(1.0/SumDt_, *SumStresses_, 0.0); //weighted sum of all prior stresses
+    break;
+  default:
+    dserror("There are only the wss calculation types 'standard', 'aggregation' and 'mean'!!");
+    break;
+  }
+  return stresses;
+}
 
 /*-----------------------------------------------------------------------------*
  |  calculate traction vector at (Dirichlet) boundary (public) Thon/Krank 07/07|
@@ -125,7 +232,7 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetStresses(Teuchos::RCP<
 Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::CalcStresses(Teuchos::RCP<const Epetra_Vector> trueresidual)
 {
   if(not isinit_)
-    dserror("not initialized");
+    dserror("StressManager not initialized");
   std::string condstring("FluidStressCalc");
   Teuchos::RCP<Epetra_Vector> integratedshapefunc = IntegrateInterfaceShape(condstring);
 
@@ -174,7 +281,7 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::IntegrateInterfaceShape(s
 
 /*----------------------------------------------------------------------*
  |  calculate wall sheer stress from stresses at dirichlet boundary     |
- |                                                      Thon/Krank 11/14|
+ |                                                     Thon/Krank 11/14 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::CalcWallShearStresses(
     Teuchos::RCP<Epetra_Vector> stresses
@@ -280,6 +387,41 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::AggreagteStresses(
 }
 
 /*----------------------------------------------------------------------*
+ | time average stresses                                     Thon 03/15 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::TimeAverageStresses(
+    Teuchos::RCP<const Epetra_Vector> stresses,
+    const double dt
+)
+{
+  SumStresses_->Update(dt, *stresses, 1.0); //weighted sum of all prior stresses
+  SumDt_+=dt;
+
+  Teuchos::RCP<Epetra_Vector> mean_stresses = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()),true));
+  mean_stresses->Update(1.0/SumDt_,*SumStresses_,0.0);
+
+  return mean_stresses;
+}
+
+/*----------------------------------------------------------------------*
+ | time average wss                                          Thon 03/15 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::TimeAverageWss(
+    Teuchos::RCP<const Epetra_Vector> wss,
+    const double dt
+)
+{
+
+  SumWss_->Update(dt, *wss, 1.0); //weighted sum of all prior stresses
+  SumDt_+=dt;
+
+  Teuchos::RCP<Epetra_Vector> mean_wss = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()),true));
+  mean_wss->Update(1.0/SumDt_,*SumWss_,0.0);
+
+  return mean_wss;
+}
+
+/*----------------------------------------------------------------------*
  | Calculate Aggregation Matrix and set is as member variable SepEnr_   |
  |                                                     Thon/Krank 11/14 |
  *------------------------------------------------- --------------------*/
@@ -287,8 +429,7 @@ void FLD::UTILS::StressManager::CalcSepEnr(
     Teuchos::RCP<LINALG::SparseOperator> sysmat
 )
 {
-
-  if (ML_solver_ != -1 ) //iff we have not specified a ML-solver one does not want to smooth the wss
+  if ( WssType_==INPAR::FLUID::wss_aggregation ) //iff we have not specified a ML-solver one does not want to smooth the wss
   {
     Teuchos::RCP<LINALG::SparseMatrix> sysmat2;
 
@@ -305,7 +446,12 @@ void FLD::UTILS::StressManager::CalcSepEnr(
 
     MLAPI::Init();
 
-    Teuchos::RCP<LINALG::Solver> solver = Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(ML_solver_),
+    int ML_solver = (DRT::Problem::Instance()->FluidDynamicParams()).get<int>("WSS_ML_AGR_SOLVER");
+
+    if (ML_solver == -1)
+      dserror("If you want to aggregate your stresses you need to specify a WSS_ML_AGR_SOLVER!");
+
+    Teuchos::RCP<LINALG::Solver> solver = Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(ML_solver),
                                           discret_->Comm(),
                                           DRT::Problem::Instance()->ErrorFile()->Handle()));
 

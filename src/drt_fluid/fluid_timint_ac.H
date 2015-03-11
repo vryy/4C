@@ -39,6 +39,8 @@ public:
   /// write output
   virtual void Output();
 
+  /// time update of stresses
+  virtual void TimeUpdateStresses(){;}; //we do the time update of stresses and wss from inside the ac-fsi framework..
 
 protected:
 

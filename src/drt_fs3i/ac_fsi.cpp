@@ -18,6 +18,7 @@ Maintainers: Moritz Thon
 #include "../drt_io/io_control.H"
 
 #include "../drt_fsi/fsi_monolithic.H"
+#include "../drt_inpar/inpar_fsi.H"
 #include "../drt_scatra/scatra_algorithm.H"
 #include "../drt_inpar/inpar_scatra.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -26,6 +27,10 @@ Maintainers: Moritz Thon
 #include "../drt_adapter/ad_fld_fluid_fsi.H"
 #include "../drt_adapter/ad_ale_fsi.H"
 #include "../linalg/linalg_utils.H"
+
+//FOR WSS CALCULATIONS
+#include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "../drt_structure/stru_aux.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                               Thon 12/14 |
@@ -53,10 +58,18 @@ FS3I::ACFSI::ACFSI(const Epetra_Comm& comm)
       dserror("If you want the fsi problem to be periodically repeated from some point, you have to have RESTARTEVRY set to 1!");
   }
 
+  //Some AC FSI specific testing
+  if ( (bool)DRT::INPUT::IntegralValue<int>( DRT::Problem::Instance()->IOParams(),"FLUID_WALL_SHEAR_STRESS") )
+    dserror("You need FLUID_WALL_SHEAR_STRESS in section IO to be NO,"
+            " otherwise GetWallShearStresses() will be called twice, which is bad if you use WSS_TYPE Mean."
+            " Nevertheless we do write the wss output!");
+
   /// initialize increment vectors
   structureincrement_ = LINALG::CreateVector(*fsi_->StructureField()->DofRowMap(0),true);
   fluidincrement_ = LINALG::CreateVector(*fsi_->FluidField()->DofRowMap(0),true);
   aleincrement_ = LINALG::CreateVector(*fsi_->AleField()->DofRowMap(),true);
+  WallShearStress_ = LINALG::CreateVector(*fsi_->FluidField()->DofRowMap(0),true);
+  //updatedwss_=false;
 
   // build a proxy of the scatra discretization for the structure field
   Teuchos::RCP<DRT::DofSet> scatradofset
@@ -80,7 +93,7 @@ void FS3I::ACFSI::ReadRestart()
   {
     const Teuchos::ParameterList& fs3idynac = DRT::Problem::Instance()->FS3IDynamicParams().sublist("AC");
 
-    const bool restartfromfsi = DRT::INPUT::IntegralValue<int>(fs3idynac,"RESTART_FROM_PART_FSI"); //fs3idynac.get<int>("RESTART_FROM_PART_FSI");
+    const bool restartfromfsi = DRT::INPUT::IntegralValue<int>(fs3idynac,"RESTART_FROM_PART_FSI");
 
     if (not restartfromfsi) //standard restart
     {
@@ -92,7 +105,7 @@ void FS3I::ACFSI::ReadRestart()
         currscatra->ScaTraField()->ReadRestart(restart);
       }
     }
-    else //we do not want to read the scatras values and the lagrange multiplyers, since we start from a partitioned FSI
+    else //we do not want to read the scatras values and the lagrange multiplyer, since we start from a partitioned FSI
     {
       //restart FSI problem
       fsi_->StructureField()->ReadRestart(restart*fsiperssisteps_);
@@ -112,6 +125,13 @@ void FS3I::ACFSI::ReadRestart()
 
     time_ = fsi_->FluidField()->Time();
     step_ = fsi_->FluidField()->Step()/fsiperssisteps_;
+
+
+    //AC-FSI specific input
+    IO::DiscretizationReader reader = IO::DiscretizationReader(fsi_->FluidField()->Discretization(),restart*fsiperssisteps_);
+
+    reader.ReadVector(WallShearStress_, "wss");
+
   }
 }
 
@@ -447,12 +467,51 @@ void FS3I::ACFSI::DoScatraStep()
  *----------------------------------------------------------------------*/
 void FS3I::ACFSI::UpdateAndOutput()
 {
+  //FSI update and output
   fsi_->PrepareOutput();
   fsi_->Update();
-  fsi_->Output();
+  FsiOutput();
 
+  //Scatra update and output
   UpdateScatraFields();
   ScatraOutput();
+}
+
+/*----------------------------------------------------------------------*
+ | Write FSI output                                          Thon 03/15 |
+ *----------------------------------------------------------------------*/
+void FS3I::ACFSI::FsiOutput()
+{
+  int coupling = Teuchos::getIntegralValue<int>(  DRT::Problem::Instance()->FSIDynamicParams() ,"COUPALGO");
+
+  const Teuchos::ParameterList& fs3idyn = DRT::Problem::Instance()->FS3IDynamicParams();
+  const int uprestart = fs3idyn.get<int>("RESTARTEVRY");
+  const int upres = fs3idyn.get<int>("UPRES");
+
+  //    /* Note: The order is important here! In here control file entries are
+  //     * written. And these entries define the order in which the filters handle
+  //     * the Discretizations, which in turn defines the dof number ordering of the
+  //     * Discretizations.
+
+  //structure output
+  fsi_->StructureField()->Output();
+  if (coupling == fsi_iter_monolithicstructuresplit)
+    fsi_->OutputLambda();
+
+  //fluid output
+  fsi_->FluidField()->    Output();
+  if (coupling == fsi_iter_monolithicfluidsplit)
+    fsi_->OutputLambda();
+  //AC specific fluid output
+  if ((uprestart != 0 && step_ % uprestart == 0) || step_ % upres == 0)
+  {
+    fsi_->FluidField()->DiscWriter()->WriteVector("wss", WallShearStress_);
+  }
+
+  //ale output
+  fsi_->AleField()->Output();
+
+  fsi_->FluidField()->LiftDrag();
 }
 
 /*----------------------------------------------------------------------*
@@ -501,7 +560,7 @@ bool FS3I::ACFSI::ScatraConvergenceCheck(const int itnum)
     if (Comm().MyPID()==0)
     {
       // print 'finish line'
-      printf("+------------+-------------------+--------------+--------------+\n");
+      printf("+------------+-------------------+--------------+--------------+\n\n");
     }
     return true;
   }
@@ -512,7 +571,7 @@ bool FS3I::ACFSI::ScatraConvergenceCheck(const int itnum)
     // print 'finish line'
     if (Comm().MyPID()==0)
     {
-      printf("+------------+-------------------+--------------+--------------+\n");
+      printf("+------------+-------------------+--------------+--------------+\n\n");
     }
     return true;
   }
@@ -615,4 +674,57 @@ bool FS3I::ACFSI::PartFs3iConvergenceCkeck( const int itnum)
   }
 
   return stopnonliniter;
+}
+
+/*----------------------------------------------------------------------*
+ |  Extract wall shear stresses                              Thon 03/15 |
+ *----------------------------------------------------------------------*/
+void FS3I::ACFSI::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector> >& wss)
+{
+  //############ Fluid Field ###############
+
+  Teuchos::RCP<ADAPTER::FluidFSI> fluid = Teuchos::rcp_dynamic_cast<ADAPTER::FluidFSI>( fsi_->FluidField() );
+  if (fluid == Teuchos::null)
+    dserror("Dynamic cast to ADAPTER::FluidFSI failed!");
+
+  if ( (fmod(time_ - dt_ + 1e-10,fsiperiod_)-1e-10) <= dt_-1e-12 ) //iff WallShearStress_ has been updated last step
+    {
+      fluid->ResetHistoryVectors( ); //Reset StressManager
+    }
+
+  Teuchos::RCP<Epetra_Vector> WallShearStress = fluid->CalculateWallShearStresses();
+
+  switch ( DRT::INPUT::IntegralValue<INPAR::FLUID::WSSType>( DRT::Problem::Instance()->FluidDynamicParams() ,"WSS_TYPE") )
+  {
+  case INPAR::FLUID::wss_standard: //we simply use the instantaneous WSS
+    WallShearStress_->Update(1.0,*WallShearStress,0.0); //Update
+    break;
+  case INPAR::FLUID::wss_mean: //we use the mean WSS from the last period..
+    if ( (fmod(time_+ 1e-10,fsiperiod_)-1e-10) <= dt_-1e-12 ) //..and update the mean wss vector iff a new period has started
+    {
+      WallShearStress_->Update(1.0,*WallShearStress,0.0); //Update
+      //updatedwss_=true;
+    }
+    break;
+  default:
+    dserror("WSS_TYPE not supported for AC-FS3I!");
+    break;
+  }
+
+  wss.push_back(WallShearStress_);
+
+  //############ Structure Field ###############
+
+  // extract FSI-Interface from fluid field
+  WallShearStress = fsi_->FluidField()->Interface()->ExtractFSICondVector(WallShearStress);
+
+  // replace global fluid interface dofs through structure interface dofs
+  WallShearStress = fsi_->FluidToStruct(WallShearStress);
+
+  // insert structure interface entries into vector with full structure length
+  Teuchos::RCP<Epetra_Vector> structure = LINALG::CreateVector(*(fsi_->StructureField()->Interface()->FullMap()),true);
+
+  //Parameter int block of function InsertVector: (0: inner dofs of structure, 1: interface dofs of structure, 2: inner dofs of porofluid, 3: interface dofs of porofluid )
+  fsi_->StructureField()->Interface()->InsertVector(WallShearStress,1,structure);
+  wss.push_back(structure);
 }

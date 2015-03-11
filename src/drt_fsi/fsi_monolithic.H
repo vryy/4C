@@ -122,6 +122,9 @@ namespace FSI
     /// write output
     virtual void Output();
 
+    /// Write Lagrange multiplier
+    virtual void OutputLambda() { dserror("This function must be implemented in a derived class!"); };
+
     /// access to structural field
     const Teuchos::RCP<ADAPTER::FSIStructureWrapper>& StructureField() { return structure_; }
 

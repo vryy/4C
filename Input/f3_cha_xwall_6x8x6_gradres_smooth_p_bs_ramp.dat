@@ -47,6 +47,7 @@ ALPHA_M                         0.83333333333333
 ALPHA_F                         0.66666666666666
 GAMMA                           0.66666666666666
 CONVTOL                         1e-6
+WSS_TYPE                        Aggregation
 WSS_ML_AGR_SOLVER               2
 -------------------------------------FLUID DYNAMIC/TIMEADAPTIVITY
 ADAPTIVE_TIME_STEP_ESTIMATOR    cfl_number

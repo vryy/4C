@@ -51,7 +51,6 @@ Maintainers: Lena Yoshihara & Volker Gravemeier
 #include "../drt_scatra/scatra_utils_clonestrategy.H"
 #include "../drt_scatra_ele/scatra_ele.H"
 //FOR WSS CALCULATIONS
-#include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_structure/stru_aux.H"
 
@@ -433,8 +432,7 @@ void FS3I::PartFS3I::SetFSISolution()
 {
   SetMeshDisp();
   SetVelocityFields();
-  if (!infperm_) //needed for WSS dependent permeability
-    SetWallShearStresses();
+  SetWallShearStresses();
 }
 
 /*----------------------------------------------------------------------*/
@@ -540,6 +538,9 @@ void FS3I::PartFS3I::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector> >&
     dserror("Dynamic cast to ADAPTER::FluidFSI failed!");
 
   Teuchos::RCP<Epetra_Vector> WallShearStress = fluid->CalculateWallShearStresses();
+
+  if ( DRT::INPUT::IntegralValue<INPAR::FLUID::WSSType>(DRT::Problem::Instance()->FluidDynamicParams() ,"WSS_TYPE") != INPAR::FLUID::wss_standard)
+    dserror("WSS_TYPE not supported for FS3I!");
 
   wss.push_back(WallShearStress);
 
