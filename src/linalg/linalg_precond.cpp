@@ -153,10 +153,6 @@ void LINALG::Preconditioner::Setup(Teuchos::RCP<Epetra_Operator>      matrix,
 #endif
   }
 
-  double elaptime =  timer.ElapsedTime();
-  if(matrix->Comm().MyPID()==0)
-    std::cout <<  "       Calling LINALG::Preconditioner::Setup takes " << std::setw(16) << std::setprecision(6) << elaptime << " s" << std::endl ;
-
 }
 
 
