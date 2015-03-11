@@ -123,6 +123,15 @@ macro(codetesting arg)
 
 endmacro(codetesting)
 
+# DOXYGEN TEST
+macro (doc_test)
+  add_test(NAME doctest
+    COMMAND sh -c "pushd ${PROJECT_SOURCE_DIR}/doc && make clean && make; popd")
+  set_tests_properties ( doctest PROPERTIES TIMEOUT 1000 )
+  set_tests_properties ( doctest PROPERTIES WARNING_REGULAR_EXPRESSION "WARNING:;Warning:;warning:" )
+  set_tests_properties ( doctest PROPERTIES FAIL_REGULAR_EXPRESSION "ERROR: ;Error: ;error: " )
+endmacro (doc_test)
+
 ###------------------------------------------------------------------ List of tests
 baci_test(acou_1d_dirk23 1 "")
 baci_test(acou_pat_1d_impl 1 "")

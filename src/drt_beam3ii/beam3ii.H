@@ -1,9 +1,11 @@
 /*!----------------------------------------------------------------------
 \file beam3ii.H
 
-\brief 3D nonlinear Reissner beam element oy type II (according to "The
- interpolation of rotations and its application to finite element models
-  of geometrically exact rods", Romero 2004)
+\brief 3D nonlinear Reissner beam element oy type II
+
+3D nonlinear Reissner beam element oy type II (according to "The
+interpolation of rotations and its application to finite element models
+of geometrically exact rods", Romero 2004)
 
 <pre>
 Maintainer: Christoph Meier
