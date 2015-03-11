@@ -3559,6 +3559,21 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcChannelStatistics(
      ||
      distype == DRT::Element::hex20)
   {
+    //decide first, if this element is taken into account!
+    double inflowmax = params.get<double>("INFLOW_CHA_SIDE");
+    // get the minimum x coordinate of this element and compare with the maximum of the inflow channel
+    double minx = 9998.0;
+    for(int inode=0;inode<nen_;inode++)
+    {
+      if(minx > xyze_(0,inode))
+      {
+        minx = xyze_(0,inode);
+      }
+    }
+    if(inflowmax < minx)
+      return 0;
+
+
     double min = xyze_(normdirect,0);
     double max = xyze_(normdirect,0);
 

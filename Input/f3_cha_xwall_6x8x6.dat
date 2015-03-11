@@ -61,6 +61,13 @@ EVALUATION_MAT                  element_center
 -------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 TURBULENCE_APPROACH             DNS_OR_RESVMM_LES
 PHYSICAL_MODEL                  no_model
+SAMPLING_START                  1
+SAMPLING_STOP                   10
+DUMPING_PERIOD                  0
+HOMDIR                          xz
+CHA_NUMSUBDIVISIONS             200
+CANONICAL_FLOW                  channel_flow_of_height_2
+SUBGRID_DISSIPATION             yes
 ------------------------------------FLUID DYNAMIC/WALL MODEL
 X_WALL                          Yes
 Tauw_Type                       constant

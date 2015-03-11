@@ -229,9 +229,6 @@ namespace FLD
       // the flow under consideration
       statistics_ph_ = Teuchos::rcp(new TurbulenceStatisticsPh(discret_,*params_));
 
-      // statistics manager for turbulent boundary layer not available
-//      if (inflow_)
-//       dserror("The backward-facing step based on the geometry the DNS requires a turbulent boundary layer inflow profile which is not supported, yet!");
     }
     else if(fluid.special_flow_=="loma_backward_facing_step")
     {
@@ -259,7 +256,7 @@ namespace FLD
                                                               mydispnp_,
                                                               *params_,
                                                               subgrid_dissipation_,
-                                                              Teuchos::null));
+                                                              myxwall_));
         }
       }
     }
@@ -289,7 +286,7 @@ namespace FLD
                                                               mydispnp_,
                                                               *params_,
                                                               subgrid_dissipation_,
-                                                              Teuchos::null));
+                                                              myxwall_));
         }
       }
     }
@@ -885,6 +882,15 @@ namespace FLD
           dserror("need statistics_bfs_ to do a time sample for a flow over a backward-facing step");
 
         statistics_bfs_->DoTimeSample(myvelnp_,mystressmanager_->GetStressesWOAgg(myforce_));
+
+        // do time sample for inflow channel flow
+        if (inflow_)
+        {
+          if(params_->sublist("TURBULENT INFLOW").get<std::string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
+            statistics_channel_->DoTimeSample(myvelnp_,myforce_);
+          else
+           dserror("channel_flow_of_height_2 expected!");
+        }
         break;
       }
       case periodic_hill:
