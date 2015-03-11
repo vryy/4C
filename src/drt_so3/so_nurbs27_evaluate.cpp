@@ -583,7 +583,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::EvaluateNeumann(
   // get values and switches from the condition
   const std::vector<int>*    onoff = condition.Get<std::vector<int> >   ("onoff");
   const std::vector<double>* val   = condition.Get<std::vector<double> >("val"  );
-
+  const std::vector<int>*    spa_funct = condition.Get<std::vector<int> >   ("funct");
   // --------------------------------------------------
   // Initialisation of nurbs specific stuff
   std::vector<Epetra_SerialDenseVector> myknots(3);
@@ -662,6 +662,15 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::EvaluateNeumann(
       curvefacs[i] = DRT::Problem::Instance()->Curve(curvenum).f(time);
   }
 
+  /*------------------------------------------------------------------*/
+  /*                 SPATIAL FUNCTION BUSINESS                        */
+  /*------------------------------------------------------------------*/
+
+  for (int dim=0; dim<3; dim++)
+    {
+      if ((*spa_funct)[dim] > 0)
+        dserror("Evaluation of spatial functions not implemented!");
+    }
 
   /*------------------------------------------------------------------*/
   /*                    Loop over Gauss Points                        */

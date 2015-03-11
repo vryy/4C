@@ -119,9 +119,6 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(Teuchos::ParameterList&   par
       double dL;
       LineIntegration(dL,x,deriv);
 
-      double functfac = 1.0;
-      double val_curvefac_functfac;
-
       // loop the dofs of a node
       for (int i = 0; i < numdim; ++i)
       {
@@ -129,6 +126,7 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(Teuchos::ParameterList&   par
         {
           // factor given by spatial function
           const int functnum = (spa_func) ? (*spa_func)[i] : -1;
+          double functfac = 1.0;
 
           if (functnum > 0)
           {
@@ -145,11 +143,8 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(Teuchos::ParameterList&   par
             // evaluate function at current gauss point
             functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(i,coordgpref,time,NULL);
           }
-          else
-            functfac = 1.0;
 
-          val_curvefac_functfac = functfac * curvefacs[i];
-          const double fac = intpoints.qwgt[gp] * dL * (*val)[i] * val_curvefac_functfac;
+          const double fac = (*val)[i] * intpoints.qwgt[gp] * dL * functfac * curvefacs[i];
           for (int node=0; node < numnode; ++node)
           {
             elevec1[node*numdim+i]+= shapefcts[node] * fac;
