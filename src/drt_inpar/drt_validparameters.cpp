@@ -7946,22 +7946,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("INV_LS_MAX_RUN",10,"Maximal run number for line search in inverse pat analysis",&acou_inv);
   DoubleParameter("LS_DECREASECOND",0.0,"coefficient for calculation of sufficient decrease condition",&acou_inv);
   DoubleParameter("LS_STEPLENGTHRED",0.5,"step length is multiplied by this value if line search not yet sufficient",&acou_inv);
-  DoubleParameter("ALPHA_MUA",0.0,"Regularization parameter for absorption coefficient",&acou_inv);
-  DoubleParameter("BETA_MUA",0.0,"Regularization parameter for gradient of absorption coefficient",&acou_inv);
-  IntParameter("SIZESTORAGE",10,"number of vectors to keep in storage; defaults to 10 (lbfgs usage only)",&acou_inv);
-
-  // decide which parametrization of material parameters to use
-  setStringToIntegralParameter<int>("PARAMETRIZATION","none",
-                                      "how to parametrize the parameter field",
-                                    tuple<std::string>(
-                                      "none",
-                                      "elementwise",
-                                      "uniform"),
-                                    tuple<int>(
-                                      INPAR::ACOU::inv_mat_none,
-                                      INPAR::ACOU::inv_mat_elementwise,
-                                      INPAR::ACOU::inv_mat_uniform),
-                                    &acou_inv);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& nlnsol = list->sublist("NONLINEAR SOLVER", false, "Configuration of nonlinear solver package");

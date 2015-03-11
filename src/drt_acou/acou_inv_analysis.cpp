@@ -34,6 +34,10 @@ Maintainer: Svenja Schoeder
 #include "../drt_mat/scatra_mat.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_inv_analysis/invana_utils.H"
+#include "../drt_inv_analysis/regularization_base.H"
+#include "../drt_inv_analysis/regularization_tikhonov.H"
+#include "../drt_inv_analysis/regularization_totalvariation.H"
+#include "../drt_inpar/inpar_statinvanalysis.H"
 #include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_solver.H"
@@ -74,13 +78,10 @@ ACOU::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> scatradis,
     ls_c_(acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<double>("LS_DECREASECOND")),
     ls_rho_(acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<double>("LS_STEPLENGTHRED")),
     ls_gd_scal_(1.0),
-    alpha_(acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<double>("ALPHA_MUA")),
-    beta_(acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<double>("BETA_MUA")),
     calcacougrad_(DRT::INPUT::IntegralValue<bool>(acouparams_->sublist("PA IMAGE RECONSTRUCTION"),("INV_TOL_GRAD_YN"))),
     scalegradele_(DRT::INPUT::IntegralValue<bool>(acouparams_->sublist("PA IMAGE RECONSTRUCTION"),("ELE_SCALING"))),
     normgrad_(1.0e6),
     normgrad0_(1.0e6),
-    ssize_(acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<int>("SIZESTORAGE")),
     dtacou_(acouparams_->get<double>("TIMESTEP")),
     J_(0.0),
     normdiffp_(0.0),
@@ -115,15 +116,16 @@ ACOU::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> scatradis,
   ComputeNodeBasedVectors();
 
   // create material manager
-  switch(DRT::INPUT::IntegralValue<INPAR::ACOU::InvAnalysisMatParametrization>(acouparams_->sublist("PA IMAGE RECONSTRUCTION"),"PARAMETRIZATION"))
+  const Teuchos::ParameterList& invp = DRT::Problem::Instance()->StatInverseAnalysisParams();
+  switch(DRT::INPUT::IntegralValue<INPAR::INVANA::StatInvMatParametrization>(invp,"PARAMETRIZATION"))
   {
-    case INPAR::ACOU::inv_mat_elementwise:
+    case INPAR::INVANA::stat_inv_mp_elementwise:
     {
       //matman_ = Teuchos::rcp(new STR::INVANA::MatParManagerPerElement(scatra_discret_));
       matman_ = Teuchos::rcp(new ACOU::PatMatParManagerPerElement(scatra_discret_,scalegradele_));
     }
     break;
-    case INPAR::ACOU::inv_mat_uniform:
+    case INPAR::INVANA::stat_inv_mp_uniform:
     {
       //matman_ = Teuchos::rcp(new STR::INVANA::MatParManagerUniform(scatra_discret_));
       matman_ = Teuchos::rcp(new ACOU::PatMatParManagerUniform(scatra_discret_));
@@ -134,8 +136,35 @@ ACOU::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> scatradis,
     break;
   }
   matman_->Setup();
+
+  // create regularization manager
+  switch(DRT::INPUT::IntegralValue<INPAR::INVANA::StatInvRegularization>(invp,"REGULARIZATION"))
+  {
+  case INPAR::INVANA::stat_inv_reg_none:
+    break;
+  case INPAR::INVANA::stat_inv_reg_tikhonov:
+  {
+    regman_ = Teuchos::rcp(new INVANA::RegularizationTikhonov(invp));
+    break;
+  }
+  case INPAR::INVANA::stat_inv_reg_totalvariation:
+  {
+    regman_ = Teuchos::rcp(new INVANA::RegularizationTotalVariation(invp));
+    break;
+  }
+  default:
+    dserror("no valid regularization type provided");
+    break;
+  }
+  if (regman_!=Teuchos::null)
+  {
+    regman_->Init(scatra_discret_,matman_->GetConnectivityData());
+    regman_->Setup();
+  }
+
+  ssize_ =  invp.get<int>("SIZESTORAGE");
   ssize_ *= matman_->NumVectors();
-  actsize_=0;
+  actsize_ = 0;
 
   sstore_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(-ssize_+1, 0, matman_->ParamLayoutMap().get(), true));
   ystore_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(-ssize_+1, 0, matman_->ParamLayoutMap().get(), true));
@@ -628,14 +657,6 @@ void ACOU::InvAnalysis::CalculateObjectiveFunctionValue()
 {
   J_ = 0.0;
 
-  // contribution from regularization
-  if(alpha_ != 0.0)
-  {
-    double val = 0.0;
-    INVANA::MVNorm(*(matman_->GetParams()),*(matman_->ParamLayoutMapUnique()),2,&val);
-    J_ += 0.5*alpha_*val*val;
-  }
-
   // contribution from difference between measured and simulated values
   Epetra_MultiVector tempvec = Epetra_MultiVector(*abcnodes_map_,acou_rhsm_->NumVectors());
   tempvec.Update(1.0,*acou_rhsm_,0.0);
@@ -648,6 +669,10 @@ void ACOU::InvAnalysis::CalculateObjectiveFunctionValue()
   tempvec.Norm1(normvec.Values());
 
   J_ += error_ = 0.5 * normvec.Norm1();
+
+  // contribution from regularization
+  if(regman_ != Teuchos::null)
+    regman_->Evaluate(*(matman_->GetParams()),&J_);
 
   if(!myrank_)
   {
@@ -1045,8 +1070,11 @@ void ACOU::InvAnalysis::CalculateGradient()
 
   //zero out gradient vector initially
   objgrad_->Scale(0.0);
-  if(alpha_ != 0.0)
-    objgrad_->Update(alpha_,*(matman_->GetParams()),1.0);
+
+  // contribution from regularization
+  if(regman_ != Teuchos::null)
+    regman_->EvaluateGradient(*(matman_->GetParams()),objgrad_);
+
   scatra_discret_->SetState("dual phi",adjoint_w_);
   scatra_discret_->SetState("phi",phi_);
 
@@ -1095,9 +1123,6 @@ void ACOU::InvAnalysis::CalculateGradient()
 
   scatra_discret_->SetState("psi",psi);
   matman_->Evaluate(0.0,objgrad_,true);
-
-  if(alpha_ != 0.0)
-    objgrad_->Update(alpha_,*(matman_->GetParams()),1.0);
 
   INVANA::MVNorm(*objgrad_,*matman_->ParamLayoutMapUnique(),2,&normgrad_);
   if( iter_ == 0)

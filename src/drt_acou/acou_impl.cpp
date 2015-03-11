@@ -189,6 +189,16 @@ void ACOU::AcouImplicitTimeInt::SetInitialZeroField()
   velnp_->PutScalar(0.0);
   veln_->PutScalar(0.0);
   velnm_->PutScalar(0.0);
+
+  // we have to call an init for the elements (for inverse analysis, otherwise adjoint run starts from values of previous forward run)
+  Teuchos::ParameterList initParams;
+  initParams.set<int>("action",ACOU::ele_init);
+  initParams.set<bool>("padaptivity",padaptivity_);
+  initParams.set<INPAR::ACOU::DynamicType>("dynamic type",dyna_);
+  initParams.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
+  discret_->Evaluate(initParams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+
+  return;
 } // SetInitialZeroField()
 
 /*----------------------------------------------------------------------*

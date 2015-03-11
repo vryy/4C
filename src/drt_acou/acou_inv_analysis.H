@@ -53,6 +53,7 @@ namespace IO
 namespace INVANA
 {
   class MatParManager;
+  class RegularizationBase;
 }
 
 
@@ -142,10 +143,6 @@ private:
   double ls_rho_;      //! step length reduction given by this parameter
   double ls_gd_scal_;  //! factor for line search step length scaling
 
-  //! regularization coefficient for absorption coefficient
-  double alpha_;
-  double beta_;
-
   //! flag whether we want to do check for the gradient as convergence criteria
   bool calcacougrad_;
 
@@ -172,6 +169,9 @@ private:
 
   //! material handling done by the MatParManager from Sebastian Kehl
   Teuchos::RCP<INVANA::MatParManager> matman_;
+
+  //!regularization done by the RegularizationBase from Sebastian Kehl
+  Teuchos::RCP<INVANA::RegularizationBase> regman_;
 
   //! gradient of the objective function
   Teuchos::RCP<Epetra_MultiVector> objgrad_;

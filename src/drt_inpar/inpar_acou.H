@@ -56,14 +56,6 @@ namespace INPAR
       inv_gd            // gradient descent
     };
 
-    /// Paramterization of material parameters
-    enum InvAnalysisMatParametrization
-    {
-      inv_mat_none,        // nothing defined
-      inv_mat_elementwise, // parameters per element
-      inv_mat_uniform      // uniform i.e. spatially constant parameters
-    };
-
   } // namespace ACOU
 } // namespace INPAR
 

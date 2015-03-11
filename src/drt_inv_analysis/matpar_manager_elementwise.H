@@ -55,15 +55,15 @@ protected:
   //! nothing to be done in case of elementwise parameters
   virtual void Consolidate(Teuchos::RCP<Epetra_MultiVector> dfint){return;}
 
-private:
-
-  //! build a graph of elements in the optimization parameter vector
-  void FillAdjacencyMatrix(const Epetra_Map& paramrowmap, Teuchos::RCP<Epetra_CrsMatrix> graph);
-
   //! the two following 'maps' are processor specific: each proc has its own
   //! map keeping correspondence between params in the parameter vector (parameter LID in optparams_) and
   //! eleids (i.e gids of the discretizations ele layout)
   std::vector<int> paramsLIDtoeleGID_;
+
+private:
+
+  //! build a graph of elements in the optimization parameter vector
+  virtual void FillAdjacencyMatrix(const Epetra_Map& paramrowmap, Teuchos::RCP<Epetra_CrsMatrix> graph);
 
   //! map keeping correspondence between eleid (GID) + parameter block id and parameter LID
   std::map< int, std::vector<int> > eleGIDtoparamsLID_;
