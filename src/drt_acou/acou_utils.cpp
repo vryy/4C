@@ -72,7 +72,7 @@ void ACOU::FillDIRKValues(INPAR::ACOU::DynamicType scheme,
     q = 3;
     break;
   }
-  case INPAR::ACOU::acou_dirk54:
+  case INPAR::ACOU::acou_dirk54: // from "Diagonally Implicit Runge-Kutta Formulae with Error Estimates", J.R. Cash, J. Inst. MAths Applics, 1979, 24, pp. 293-301, Equation (2.3)
   {
     a[0][0] = 0.4358665215;   a[0][1] = 0.0;             a[0][2] = 0.0;              a[0][3] = 0.0;             a[0][4] = 0.0;
     a[1][0] = -1.13586652150; a[1][1] = 0.4358665215;    a[1][2] = 0.0;              a[1][3] = 0.0;             a[1][4] = 0.0;
@@ -80,7 +80,7 @@ void ACOU::FillDIRKValues(INPAR::ACOU::DynamicType scheme,
     a[3][0] = 0.416349501547; a[3][1] = 0.190984004184;  a[3][2] = -0.118643265417;  a[3][3] = 0.4358665215;    a[3][4] = 0.0;
     a[4][0] = 0.896869652944; a[4][1] = 0.0182725272734; a[4][2] = -0.0845900310706; a[4][3] = -0.266418670647; a[4][4] = 0.4358665215;
     b[0]    = 0.896869652944; b[1]    = 0.0182725272734; b[2]    = -0.0845900310706; b[3]    = -0.266418670647; b[4]    = 0.4358665215;
-    dserror("please fill in values for c and you can delete this error message!");
+    c[0]    = 0.4358665215;   c[1]    = -0.7;            c[2]    = 0.8;              c[3]    = 0.924556761814;  c[4]    = 1.0;
     q = 5;
     break;
   }
