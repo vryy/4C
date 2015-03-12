@@ -26,6 +26,8 @@ Maintainer: Matthias Mayr
 // baci
 #include "nln_utils.H"
 
+#include "../drt_lib/drt_dserror.H"
+
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
 
@@ -70,16 +72,25 @@ namespace NLNSOL
    *  preconditioning algorithms. The central method is ApplyInverse(), where
    *  the actual work is done.
    *
-   *  The operator is fed with:
+   *  Init() is the main initialization routine, that handles all base class
+   *  initializations. The operator is fed with:
    *  <ul>
    *  <li> an Epetra_Comm </li>
    *  <li> a Teuchos::ParameterList for configuration </li>
-   *  <li> a Teuchos::RCP to the nonlinear problem interface class (connection to
-   *    time integration) </li>
+   *  <li> a Teuchos::RCP to the nonlinear problem interface class (connection
+   *       to time integration) </li>
+   *  <li> a parameter that reflects how deep the operator is nested in the
+   *       overall algorithm </li>
    *  </ul>
    *
    *  Setup() constructs the actual algorithm and has to be implemented by every
    *  specific algorithm itself.
+   *
+   *  ApplyInverse() is the central routine. It needs to implement the actual
+   *  solution algorithm and iterative process.
+   *
+   *  After finishing iterations, output information is provided via an output
+   *  parameter list #outparams_ which can be accessed via GetOutParams().
    *
    *  \author mayr.mt \date 05/2014
    */
@@ -143,6 +154,9 @@ namespace NLNSOL
 
       //! Returns a character string describing the operator briefly
       virtual const char* LabelShort() const = 0;
+
+      //! Output parameter list
+      virtual Teuchos::RCP<const Teuchos::ParameterList> GetOutParams() const;
 
       //@}
 
@@ -229,23 +243,6 @@ namespace NLNSOL
           const bool converged ///< convergence flag
           ) const;
 
-      /*! \brief Check successful convergence within max number of iterations
-       *
-       *  Use this after exiting the iteration loop to check whether it
-       *  converged successfully or not. The routine takes care of the decision
-       *  whether the current nonlinear operator is used as a solver or just as
-       *  a smoother.
-       *
-       *  \return Bool that indicates whether iteration loop converged
-       *  successfully within the given number of maximally allowed iterations
-       *
-       *  \author mayr.mt \date 09/2014
-       */
-      virtual const bool CheckSuccessfulConvergence(
-          const int iter, ///< number of performed iterations
-          const bool converged ///< convergence flag
-          ) const;
-
       //! Print summary of current iteration
       virtual void PrintIterSummary(const int iter, ///< iteration counter
           const double fnorm2 ///< L2-norm of residual
@@ -266,6 +263,20 @@ namespace NLNSOL
           const bool stagnation = false ///< stagnation status
           ) const;
 
+      //! Write number of iterations to output parameter list
+      virtual void SetOutParameterIter(const int iter) const;
+
+      //! Write status of convergence to output parameter list
+      virtual void SetOutParameterConverged(const bool converged) const;
+
+      //! Write residual norm to output parameter list
+      virtual void SetOutParameterResidualNorm(const double norm) const;
+
+      //! Write operator status / error code to output parameter list
+      virtual void SetOutParameterErrorCode(
+          const NLNSOL::UTILS::OperatorStatus errorcode ///< error code
+          ) const;
+
       //@}
 
     private:
@@ -279,6 +290,36 @@ namespace NLNSOL
           double& lsparam, ///< line search parameter (to be determined)
           bool& suffdecr ///< achieved sufficient decrease? (to be determined)
           ) const = 0;
+
+      /*! \brief Check successful convergence within max number of iterations
+       *
+       *  Use this after exiting the iteration loop to check whether it
+       *  converged successfully or not. The routine takes care of the decision
+       *  whether the current nonlinear operator is used as a solver or just as
+       *  a smoother.
+       *
+       *  \return Bool that indicates whether iteration loop converged
+       *  successfully within the given number of maximally allowed iterations
+       *
+       *  \author mayr.mt \date 09/2014
+       */
+      virtual const bool CheckSuccessfulConvergence(
+          const int iter, ///< number of performed iterations
+          const bool converged ///< convergence flag
+          ) const;
+
+      //! Set entry in output parameter list (templated on data type of entry)
+      template<typename T> void SetOutParameter(
+          const std::string param, ///< name of parameter entry
+          T value ///< value of parameter entry
+          ) const
+      {
+        if (outparams_.is_null())
+          dserror("Output parameter list has not been created, yet.\n"
+              "Create and initialize it before writing to it!");
+        outparams_->set<T>(param, value);
+        return;
+      }
 
       //! Init() has been called
       bool isinit_;
@@ -294,6 +335,15 @@ namespace NLNSOL
 
       //! Nonlinear problem to be evaluated and solved
       Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem_;
+
+      /*! \brief Parameter list for output purposes
+       *
+       *  \note Needs to be mutable to allow for writing access during
+       *  Epeta_Operator::ApplyInverse()
+       *
+       *  \author mayr.mt \date 03/2015
+       */
+      mutable Teuchos::RCP<Teuchos::ParameterList> outparams_;
 
       //! How nested is this algorithm? 0 = outer algorithm
       int nested_;

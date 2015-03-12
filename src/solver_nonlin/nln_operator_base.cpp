@@ -46,6 +46,7 @@ NLNSOL::NlnOperatorBase::NlnOperatorBase()
   comm_(Teuchos::null),
   params_(Teuchos::null),
   nlnproblem_(Teuchos::null),
+  outparams_(Teuchos::null),
   nested_(0)
 {
   return;
@@ -62,11 +63,14 @@ void NLNSOL::NlnOperatorBase::Init(const Epetra_Comm& comm,
   // We need to call Setup() after Init()
   issetup_ = false;
 
-  // fill member variables
+  // fill member variables with given values
   comm_ = Teuchos::rcp(&comm, false);
   params_ = Teuchos::rcp(&params, false);
   nlnproblem_ = nlnproblem;
   nested_ = nested;
+
+  // initialize member variables
+  outparams_ = Teuchos::rcp(new Teuchos::ParameterList());
 
   // Init() has been called
   SetIsInit();
@@ -203,6 +207,52 @@ const NLNSOL::UTILS::OperatorStatus NLNSOL::NlnOperatorBase::ErrorCode(
   else
     dserror("Cannot determine error code.");
 
+  // set error code to output parameter list as well
+  SetOutParameter("Error Code", errorcode);
+
   // return error code
   return errorcode;
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+Teuchos::RCP<const Teuchos::ParameterList>
+NLNSOL::NlnOperatorBase::GetOutParams() const
+{
+  if (outparams_.is_null())
+    dserror("Output parameter list has not been initialized, yet.\n "
+        "It is still Teuchos::null.");
+
+  return outparams_;
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void NLNSOL::NlnOperatorBase::SetOutParameterIter(const int iter) const
+{
+  SetOutParameter("Iterations", iter);
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void NLNSOL::NlnOperatorBase::SetOutParameterConverged(
+    const bool converged) const
+{
+  SetOutParameter("Converged", converged);
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void NLNSOL::NlnOperatorBase::SetOutParameterResidualNorm(
+    const double norm) const
+{
+  SetOutParameter("Residual Norm", norm);
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void NLNSOL::NlnOperatorBase::SetOutParameterErrorCode(
+    const NLNSOL::UTILS::OperatorStatus errorcode) const
+{
+  SetOutParameter("Error Code", errorcode);
 }

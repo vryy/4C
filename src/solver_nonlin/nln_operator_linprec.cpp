@@ -131,8 +131,6 @@ int NLNSOL::NlnOperatorLinPrec::ApplyInverse(const Epetra_MultiVector& f,
       "NLNSOL::NlnOperatorLinPrec::ApplyInverse");
   Teuchos::TimeMonitor monitor(*time);
 
-  int err = 0;
-
   // Make sure that Init() and Setup() have been called
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
   if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
@@ -142,11 +140,10 @@ int NLNSOL::NlnOperatorLinPrec::ApplyInverse(const Epetra_MultiVector& f,
       Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
 
   // applying the linear preconditioner
-  int errorcode = linprec_->ApplyInverse(f, *inc);
+  int err = linprec_->ApplyInverse(f, *inc);
 
   // update solution
-  err = x.Update(1.0, *inc, 1.0);
-  if (err != 0) { dserror("Update failed."); }
+  x.Update(1.0, *inc, 1.0);
 
   // evaluate at the new solution
   Teuchos::RCP<Epetra_MultiVector> fnew =
@@ -156,7 +153,21 @@ int NLNSOL::NlnOperatorLinPrec::ApplyInverse(const Epetra_MultiVector& f,
   bool converged = NlnProblem()->ConvergenceCheck(*fnew, fnorm2);
   PrintIterSummary(-1, fnorm2);
 
-  return ErrorCode(-1, converged, errorcode);
+  // ---------------------------------------------------------------------------
+  // Finish ApplyInverse()
+  // ---------------------------------------------------------------------------
+  // determine error code
+  NLNSOL::UTILS::OperatorStatus errorcode =
+      ErrorCode(-1, converged, err);
+
+  // write to output parameter list
+  SetOutParameterIter(-1);
+  SetOutParameterResidualNorm(fnorm2);
+  SetOutParameterConverged(converged);
+  SetOutParameterErrorCode(errorcode);
+
+  // return error code
+  return errorcode;
 }
 
 /*----------------------------------------------------------------------------*/

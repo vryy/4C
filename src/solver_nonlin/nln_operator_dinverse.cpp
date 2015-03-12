@@ -145,8 +145,21 @@ int NLNSOL::NlnOperatorDInverse::ApplyInverse(const Epetra_MultiVector& f,
     PrintIterSummary(iter, fnorm2);
   }
 
+  // ---------------------------------------------------------------------------
+  // Finish ApplyInverse()
+  // ---------------------------------------------------------------------------
+  // determine error code
+  NLNSOL::UTILS::OperatorStatus errorcode =
+      ErrorCode(iter, converged, (bool)err);
+
+  // write to output parameter list
+  SetOutParameterIter(iter);
+  SetOutParameterResidualNorm(fnorm2);
+  SetOutParameterConverged(converged);
+  SetOutParameterErrorCode(errorcode);
+
   // return error code
-  return ErrorCode(iter, converged, (bool)err);
+  return errorcode;
 }
 
 /*----------------------------------------------------------------------------*/

@@ -371,8 +371,21 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
   NlnProblem()->ConvergenceCheck(*fbar, fnorm2);
   PrintIterSummary(iter, fnorm2);
 
+  // ---------------------------------------------------------------------------
+  // Finish ApplyInverse()
+  // ---------------------------------------------------------------------------
+  // determine error code
+  NLNSOL::UTILS::OperatorStatus errorcode =
+      ErrorCode(iter, converged, err);
+
+  // write to output parameter list
+  SetOutParameterIter(iter);
+  SetOutParameterResidualNorm(fnorm2);
+  SetOutParameterConverged(converged);
+  SetOutParameterErrorCode(errorcode);
+
   // return error code
-  return ErrorCode(iter, converged, err);
+  return errorcode;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -381,7 +394,16 @@ const int NLNSOL::NlnOperatorNGmres::ComputeTentativeIterate(
 {
   dsassert(xbar.Map().PointSameAs(fbar.Map()), "Maps do not match.");
 
-  return nlnprec_->ApplyInverse(fbar, xbar);
+  int errorcode = nlnprec_->ApplyInverse(fbar, xbar);
+
+  if (GetOutParams().is_null())
+    dserror("Outparams are null-pointer.");
+
+  // process parameters from output parameter list of preconditioner
+  if (not nlnprec_->GetOutParams()->get<bool>("Converged"))
+    dserror("No convergence.");
+
+  return errorcode;
 }
 
 /*----------------------------------------------------------------------------*/
