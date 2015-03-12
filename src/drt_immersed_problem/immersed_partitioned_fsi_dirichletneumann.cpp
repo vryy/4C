@@ -46,7 +46,7 @@ Maintainers: Andreas Rauch
 
 
 IMMERSED::ImmersedPartitionedFSIDirichletNeumann::ImmersedPartitionedFSIDirichletNeumann(const Epetra_Comm& comm)
-  : ImmersedPartitionedFSI(comm),
+  : ImmersedBase(),
     FSI::PartitionedImmersed(comm)
 {
   int myrank = comm.MyPID();
@@ -259,7 +259,8 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::FSIOp(const Epetra_Vector
   int  itemax = DRT::Problem::Instance()->FSIDynamicParams().sublist("PARTITIONED SOLVER").get<int>("ITEMAX");
   if((FSI::Partitioned::IterationCounter())[0] == itemax and nlnsolver_continue)
   {
-    std::cout<<"\n  Continue with next time step after "<<(FSI::Partitioned::IterationCounter())[0]<<" iterations. \n"<<std::endl;
+    if(Comm().MyPID()==0)
+      std::cout<<"\n  Continue with next time step after "<<(FSI::Partitioned::IterationCounter())[0]<<" iterations. \n"<<std::endl;
 
     // !!! EXPERIMENTAL !!!
     // set F to zero to tell NOX that this timestep is converged

@@ -967,6 +967,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
     case prb_fpsi:
     case prb_fps3i:
     case prb_fpsi_xfem:
+    case prb_immersed_cell:
     {
       Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid;
       if(disname == "porofluid")

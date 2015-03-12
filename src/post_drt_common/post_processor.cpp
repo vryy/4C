@@ -604,6 +604,24 @@ void runEnsightVtuFilter(PostProblem    &problem)
 
       break;
     }
+    case prb_immersed_cell:
+    {
+      std::string basename = problem.outname();
+
+      PostField* structfield = problem.get_discretization(0);
+      StructureFilter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
+      structwriter.WriteFiles();
+
+      PostField* porofluidfield = problem.get_discretization(1);
+      FluidFilter porofluidwriter(porofluidfield, basename);
+      porofluidwriter.WriteFiles();
+
+      PostField* cellfield = problem.get_discretization(2);
+      FluidFilter cellwriter(cellfield, basename);
+      cellwriter.WriteFiles();
+
+      break;
+    }
     case prb_fps3i:
     {
       std::string basename = problem.outname();

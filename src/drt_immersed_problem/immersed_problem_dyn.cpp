@@ -14,11 +14,17 @@ Maintainers: Andreas Rauch
 #include "immersed_base.H"
 #include "immersed_partitioned.H"
 #include "immersed_partitioned_fsi.H"
+#include "immersed_partitioned_cellmigration.H"
 #include "immersed_partitioned_fsi_dirichletneumann.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_immersed.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
+
+#include "../drt_lib/drt_utils_createdis.H"
+#include "../drt_poroelast/poroelast_utils.H"
+#include "../drt_poroelast/poro_utils_clonestrategy.H"
+
 
 void immersed_problem_drt()
 {
@@ -26,9 +32,7 @@ void immersed_problem_drt()
   DRT::Problem* problem = DRT::Problem::Instance();
   // get communicator
   const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
-  // fill discretizations
-  problem->GetDis("structure")->FillComplete();
-  problem->GetDis("fluid")    ->FillComplete();
+
   // get parameterlist for immersed method
   const Teuchos::ParameterList& immersedmethodparams = problem->ImmersedMethodParams();
   // choose algorithm
@@ -42,6 +46,10 @@ void immersed_problem_drt()
     {
     case prb_immersed_fsi:
     {
+      // fill discretizations
+      problem->GetDis("structure")->FillComplete();
+      problem->GetDis("fluid")    ->FillComplete();
+
       Teuchos::RCP<IMMERSED::ImmersedPartitionedFSIDirichletNeumann> algo = Teuchos::null;
       if(scheme == INPAR::IMMERSED::dirichletneumann)
         algo = Teuchos::rcp(new IMMERSED::ImmersedPartitionedFSIDirichletNeumann(comm));
@@ -71,6 +79,38 @@ void immersed_problem_drt()
 
       break;
     }// case prb_immersed_fsi
+    case prb_immersed_cell:
+    {
+      // fill discretizations
+      problem->GetDis("structure")->FillComplete(true,true,true);
+
+      problem->GetDis("porofluid")->FillComplete(true,true,true);
+
+      if (problem->GetDis("porofluid")->NumGlobalNodes() == 0)
+      {
+        // Create the fluid discretization within the porous medium
+        DRT::UTILS::CloneDiscretization<POROELAST::UTILS::PoroelastCloneStrategy>(problem->GetDis("structure"),problem->GetDis("porofluid"));
+
+        //set material pointers
+        POROELAST::UTILS::SetMaterialPointersMatchingGrid(problem->GetDis("structure"),problem->GetDis("porofluid"));
+      }
+      else
+      {
+        dserror("Porofluiddis already exists! That's quite impossible!");
+      }
+
+      problem->GetDis("cell")->FillComplete(true,true,true);
+
+      Teuchos::RCP<IMMERSED::ImmersedPartitionedCellMigration> algo =
+          Teuchos::rcp(new IMMERSED::ImmersedPartitionedCellMigration(comm));
+
+      algo->SetupImmersedDiscretization();
+      algo->SetupBackgroundDiscretization();
+
+      algo->Timeloop(algo);
+
+      break;
+    }// case prb_cell_migration
     default:
     {
       dserror("no valid problem type specified");

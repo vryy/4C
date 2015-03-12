@@ -13,7 +13,7 @@ Maintainers: Andreas Rauch
 #ifndef IMMERSED_PARTITIONED_FSI_DIRICHLETNEUMANN_H
 #define IMMERSED_PARTITIONED_FSI_DIRICHLETNEUMANN_H
 
-#include "immersed_partitioned_fsi.H"
+#include "immersed_base.H"
 #include "fsi_partitioned_immersed.H"
 
 
@@ -35,7 +35,7 @@ namespace Teuchos
 
 namespace IMMERSED {
 
-class ImmersedPartitionedFSIDirichletNeumann : public ImmersedPartitionedFSI, public FSI::PartitionedImmersed
+class ImmersedPartitionedFSIDirichletNeumann : public ImmersedBase, public FSI::PartitionedImmersed
 {
 
 public:

@@ -50,6 +50,7 @@ Maintainer: Martin Kronbichler
 #include "inpar_poroelast.H"
 #include "inpar_poroscatra.H"
 #include "inpar_immersed.H"
+#include "inpar_cell.H"
 #include "inpar_fpsi.H"
 #include "inpar_ssi.H"
 #include "inpar_fs3i.H"
@@ -7274,6 +7275,91 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     DoubleParameter("VEL_RELAX"  ,1.0,"Velocity Relaxation Parameter",&immersedmethod);
     DoubleParameter("FLD_SRCHRADIUS_FAC",1.0,"fac times fluid ele. diag. length",&immersedmethod);
     DoubleParameter("STRCT_SRCHRADIUS_FAC",0.5,"fac times structure bounding box diagonal",&immersedmethod);
+
+    /*----------------------------------------------------------------------*/
+    /* parameters for paritioned immersed solvers */
+    Teuchos::ParameterList& immersedpart = immersedmethod.sublist("PARTITIONED SOLVER",false,"");
+
+    setStringToIntegralParameter<int>(
+                                   "PARTITIONED","DirichletNeumann",
+                                   "Coupling strategies for partitioned FSI solvers.",
+                                   tuple<std::string>(
+                                     "DirichletNeumann",
+                                     "DirichletNeumannSlideALE"
+                                     ),
+                                   tuple<int>(
+                                     INPAR::FSI::DirichletNeumann,
+                                     INPAR::FSI::DirichletNeumannSlideale
+                                     ),
+                                   &immersedpart);
+
+    setStringToIntegralParameter<int>("PREDICTOR","d(n)",
+                                   "Predictor for interface displacements",
+                                   tuple<std::string>(
+                                     "d(n)",
+                                     "d(n)+dt*(1.5*v(n)-0.5*v(n-1))",
+                                     "d(n)+dt*v(n)",
+                                     "d(n)+dt*v(n)+0.5*dt^2*a(n)"
+                                     ),
+                                   tuple<int>(1,2,3,4),
+                                   &immersedpart);
+
+      setStringToIntegralParameter<int>("COUPVARIABLE","Displacement",
+                                   "Coupling variable at the interface",
+                                   tuple<std::string>("Displacement","Force"),
+                                   tuple<int>(0,1),
+                                   &immersedpart);
+
+      setStringToIntegralParameter<int>("COUPMETHOD","conforming",
+                                   "Coupling Method Mortar (mtr) or conforming nodes at interface",
+                                   tuple<std::string>(
+                                     "MTR",
+                                     "Mtr",
+                                     "mtr",
+                                     "conforming",
+                                     "immersed"
+                                     ),
+                                   tuple<int>(0,0,0,1,2),
+                                   &immersedpart);
+
+      DoubleParameter("BASETOL",1e-3,
+                      "Basic tolerance for adaptive convergence check in monolithic FSI.\n"
+                      "This tolerance will be used for the linear solve of the FSI block system.\n"
+                      "The linear convergence test will always use the relative residual norm (AZ_r0).\n"
+                      "Not to be confused with the Newton tolerance (CONVTOL) that applies\n"
+                      "to the nonlinear convergence test using a absolute residual norm.",
+                      &immersedpart);
+
+      DoubleParameter("CONVTOL",1e-6,"Tolerance for iteration over fields in case of partitioned scheme",&immersedpart);
+      DoubleParameter("RELAX",1.0,"fixed relaxation parameter for partitioned FSI solvers",&immersedpart);
+      DoubleParameter("MAXOMEGA",0.0,"largest omega allowed for Aitken relaxation (0.0 means no constraint)",&immersedpart);
+      IntParameter("ITEMAX",100,"Maximum number of iterations over fields",&immersedpart);
+
+      /*----------------------------------------------------------------------*/
+      Teuchos::ParameterList& celldyn = list->sublist(
+        "CELL DYNAMIC",false,
+        "Cell Migration Simulation"
+        );
+
+      Teuchos::Tuple<std::string,3> coupname;
+      Teuchos::Tuple<int,3> couplabel;
+
+      coupname[ 0] = "basic_sequ_stagg";                              couplabel[ 0] = cell_basic_sequ_stagg;
+      coupname[ 1] = "iter_stagg_fixed_rel_param";                    couplabel[ 1] = cell_iter_stagg_fixed_rel_param;
+      coupname[ 2] = "iter_stagg_AITKEN_rel_param";                   couplabel[ 2] = cell_iter_stagg_AITKEN_rel_param;
+
+      setStringToIntegralParameter<int>("COUPALGO","iter_stagg_AITKEN_rel_param",
+                                        "Iteration Scheme over the fields",
+                                        coupname,
+                                        couplabel,
+                                        &celldyn);
+
+      IntParameter("NUMSTEP",200,"Total number of Timesteps",&celldyn);
+      IntParameter("UPRES",1,"Increment for writing solution",&celldyn);
+      IntParameter("RESTARTEVRY",1,"Increment for writing restart",&celldyn);
+
+      DoubleParameter("TIMESTEP",0.1,"Time increment dt",&celldyn);
+      DoubleParameter("MAXTIME",1000.0,"Total simulation time",&celldyn);
 
   /*----------------------------------------------------------------------*/
     Teuchos::ParameterList& fpsidyn = list->sublist(

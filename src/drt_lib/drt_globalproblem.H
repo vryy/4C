@@ -313,6 +313,7 @@ public:
   const Teuchos::ParameterList& FSIDynamicParams() const { return getParameterList()->sublist("FSI DYNAMIC"); }
   const Teuchos::ParameterList& FPSIDynamicParams() const { return getParameterList()->sublist("FPSI DYNAMIC"); }
   const Teuchos::ParameterList& ImmersedMethodParams() const { return getParameterList()->sublist("IMMERSED METHOD"); }
+  const Teuchos::ParameterList& CellMigrationParams() const { return getParameterList()->sublist("CELL DYNAMIC"); }
   const Teuchos::ParameterList& XFEMGeneralParams() const { return getParameterList()->sublist("XFEM GENERAL"); }
   const Teuchos::ParameterList& XFluidDynamicParams() const { return getParameterList()->sublist("XFLUID DYNAMIC"); }
   const Teuchos::ParameterList& LOMAControlParams() const { return getParameterList()->sublist("LOMA CONTROL"); }

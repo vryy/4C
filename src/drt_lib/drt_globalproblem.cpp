@@ -277,6 +277,8 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--FSI DYNAMIC/PARTITIONED SOLVER", *list);
   reader.ReadGidSection("--FSI DYNAMIC/TIMEADAPTIVITY", *list);
   reader.ReadGidSection("--IMMERSED METHOD", *list);
+  reader.ReadGidSection("--IMMERSED METHOD/PARTITIONED SOLVER", *list);
+  reader.ReadGidSection("--CELL DYNAMIC", *list);
   reader.ReadGidSection("--FPSI DYNAMIC", *list);
   reader.ReadGidSection("--ARTERIAL DYNAMIC", *list);
   reader.ReadGidSection("--REDUCED DIMENSIONAL AIRWAYS DYNAMIC", *list);
@@ -930,6 +932,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   Teuchos::RCP<DRT::Discretization> particledis     = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> porofluiddis    = Teuchos::null; // fpsi, poroelast
   Teuchos::RCP<DRT::Discretization> acoudis         = Teuchos::null;
+  Teuchos::RCP<DRT::Discretization> celldis         = Teuchos::null;
 
   // decide which kind of spatial representation is required
   std::string distype = SpatialApproximation();
@@ -1653,6 +1656,31 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis,  reader, "--FLUID ELEMENTS",fluidelementtypes)));
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+
+    break;
+  }
+  case prb_immersed_cell:
+  {
+    // create empty discretizations
+    structdis    = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
+    porofluiddis = Teuchos::rcp(new DRT::Discretization("porofluid"   ,reader.Comm()));
+    celldis      = Teuchos::rcp(new DRT::Discretization("cell",reader.Comm()));
+
+    // create discretization writer - in constructor set into and owned by corresponding discret
+    structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
+    porofluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(porofluiddis)));
+    celldis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(celldis)));
+
+    AddDis("structure", structdis);
+    AddDis("porofluid", porofluiddis);
+    AddDis("cell", celldis);
+
+    std::set<std::string> fluidelementtypes;
+    fluidelementtypes.insert("FLUIDIMMERSED");
+
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(porofluiddis, reader, "--FLUID ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(celldis, reader, "--CELL ELEMENTS")));
 
     break;
   }

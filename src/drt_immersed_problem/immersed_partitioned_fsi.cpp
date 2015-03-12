@@ -15,7 +15,7 @@ Maintainers: Andreas Rauch
 #include "../drt_lib/drt_discret.H"
 
 IMMERSED::ImmersedPartitionedFSI::ImmersedPartitionedFSI(const Epetra_Comm& comm)
-  : ImmersedPartitioned()
+  : ImmersedPartitioned(comm)
 {
 
 }
