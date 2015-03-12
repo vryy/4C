@@ -1884,6 +1884,13 @@ void FLD::TurbulenceStatisticsCha::EvaluateIntegralMeanValuesInPlanes()
   eleparams.set("normal direction to homogeneous plane",dim_);
   eleparams.set("coordinate vector for hom. planes",planecoordinates_);
 
+  // in case of simultaneous assembly with inflow channel we have to decide on element level,
+  // if this element is taken into account or not
+  const double dummy = 99999.0;
+  if(inflowchannel_)
+    eleparams.set("INFLOW_CHA_SIDE",inflowmax_);
+  else
+    eleparams.set("INFLOW_CHA_SIDE",dummy);
   // set size of vectors
   int size = sumu_->size();
 
@@ -2438,9 +2445,6 @@ void FLD::TurbulenceStatisticsCha::EvaluateScatraIntegralMeanValuesInPlanes()
   int locprocessedeles=0;
 
   eleparams.set("count processed elements",&locprocessedeles);
-
-  // factor for equation of state
-//  eleparams.set("eos factor",eosfac);
 
   // set vector values needed by elements
   discret_->ClearState();
