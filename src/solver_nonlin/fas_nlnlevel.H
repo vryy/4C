@@ -92,7 +92,14 @@ namespace FAS
     //! Setup
     virtual void Setup();
 
-    //! Update matrix
+    /*! \brief Update matrix and rebuild preconditioners
+     *
+     *  Update the coarse level matrix by the recently computes RAP. Rebuild
+     *  possible preconditioners of #presmoother_, #poststmoother_, and
+     *  #coarsesolver_.
+     *
+     *  \author mayr.mt \date 03/2015
+     */
     virtual void UpdateMatrix(
         Teuchos::RCP<const Epetra_CrsMatrix> A ///< matrix
         );

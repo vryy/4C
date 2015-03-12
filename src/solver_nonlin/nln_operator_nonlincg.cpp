@@ -344,3 +344,11 @@ void NLNSOL::NlnOperatorNonlinCG::ComputeStepLength(const Epetra_MultiVector& x,
 
   return;
 }
+
+/*----------------------------------------------------------------------------*/
+void NLNSOL::NlnOperatorNonlinCG::RebuildPrec()
+{
+  nlnprec_->RebuildPrec();
+
+  return;
+}

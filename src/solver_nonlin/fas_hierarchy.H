@@ -22,12 +22,13 @@ Maintainer: Matthias Mayr
 // standard
 #include <vector>
 
+// MueLu
+#ifdef HAVE_MueLu
 //Xpetra
 #include <Xpetra_CrsMatrix.hpp>
 #include <Xpetra_CrsMatrixWrap.hpp>
 #include <Xpetra_EpetraCrsMatrix.hpp>
 
-#ifdef HAVE_MueLu
 // MueLu
 //#include <MueLu_Hierarchy.hpp>
 #include <MueLu_HierarchyManager.hpp>

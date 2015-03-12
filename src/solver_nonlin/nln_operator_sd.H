@@ -77,6 +77,14 @@ namespace NLNSOL
     //! Setup of the preconditioner object
     virtual void Setup();
 
+    /*! \brief Rebuild preconditioner
+     *
+     *  No action required.
+     *
+     *  \author mayr.mt \date 03/2015
+     */
+    virtual void RebuildPrec(){ /* no action required */ };
+
     //@}
 
     //! @name Mathematical functions

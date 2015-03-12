@@ -30,6 +30,7 @@ Maintainer: Matthias Mayr
 #include "nln_operator_fas.H"
 #include "nln_problem.H"
 #include "nln_problem_coarselevel.H"
+#include "nln_utils.H"
 
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_pstream.H"
@@ -77,14 +78,6 @@ void NLNSOL::NlnOperatorFas::Setup()
 }
 
 /*----------------------------------------------------------------------------*/
-void NLNSOL::NlnOperatorFas::RefreshRAPs()
-{
-  hierarchy_->RefreshRAPs();
-
-  return;
-}
-
-/*----------------------------------------------------------------------------*/
 int NLNSOL::NlnOperatorFas::ApplyInverse(const Epetra_MultiVector& f,
     Epetra_MultiVector& x) const
 {
@@ -109,6 +102,11 @@ int NLNSOL::NlnOperatorFas::ApplyInverse(const Epetra_MultiVector& f,
 
   bool converged = false;
   double fnorm2 = 1.0e+12;
+  NlnProblem()->ConvergenceCheck(f, fnorm2);
+
+  Teuchos::RCP<NLNSOL::UTILS::StagnationDetection> stagdetection =
+      Teuchos::rcp(new NLNSOL::UTILS::StagnationDetection());
+  stagdetection->Init(fnorm2);
 
   int iter = 0;
   while (ContinueIterations(iter, converged))
@@ -124,6 +122,8 @@ int NLNSOL::NlnOperatorFas::ApplyInverse(const Epetra_MultiVector& f,
     NlnProblem()->ComputeF(x, *ftmp);
     converged = NlnProblem()->ConvergenceCheck(*ftmp, fnorm2);
 
+    stagdetection->Check(fnorm2);
+
     PrintIterSummary(iter, fnorm2);
   }
 
@@ -132,7 +132,7 @@ int NLNSOL::NlnOperatorFas::ApplyInverse(const Epetra_MultiVector& f,
   // ---------------------------------------------------------------------------
   // determine error code
   NLNSOL::UTILS::OperatorStatus errorcode =
-      ErrorCode(iter, converged);
+      ErrorCode(iter, converged, stagdetection->Status());
 
   // write to output parameter list
   SetOutParameterIter(iter);
@@ -337,4 +337,16 @@ NLNSOL::NlnOperatorFas::Hierarchy() const
     dserror("Hierarchy of multigrid levels 'hierarchy_' is not set, yet.");
 
   return hierarchy_;
+}
+
+/*----------------------------------------------------------------------------*/
+void NLNSOL::NlnOperatorFas::RebuildPrec()
+{
+  if (hierarchy_.is_null())
+    dserror("Hierarchy of multigrid levels 'hierarchy_' is not set, yet.");
+
+  NlnProblem()->ComputeJacobian();
+  hierarchy_->RefreshRAPs();
+
+  return;
 }

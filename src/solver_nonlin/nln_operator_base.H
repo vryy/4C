@@ -122,11 +122,14 @@ namespace NLNSOL
       //! Setup the specific nonlinear operator
       virtual void Setup() = 0;
 
-      /*! \brief Recompute RAPs in case of multigrid algorithm
+      /*! \brief Rebuild preconditioner
+       *
+       *  Rebuild the nonlinear operator in case it is used as a nonlinear
+       *  preconditioner. Some Operator do not require any action, some do.
        *
        *  \author mayr.mt \date 03/2015
        */
-      virtual void RefreshRAPs(){};
+      virtual void RebuildPrec() = 0;
 
       //@}
 

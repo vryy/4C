@@ -101,6 +101,14 @@ namespace NLNSOL
     //! Setup of nonlinear GMRES algorithm
     virtual void Setup();
 
+    /*! \brief Rebuild preconditioner
+     *
+     *  No action required.
+     *
+     *  \author mayr.mt \date 03/2015
+     */
+    virtual void RebuildPrec();
+
     //@}
 
     //! @name Mathematical functions

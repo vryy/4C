@@ -354,9 +354,6 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
       // print stuff
       PrintIterSummary(iter, fnorm2);
 
-//      NlnProblem()->ComputeJacobian();
-//      nlnprec_->RefreshRAPs();
-
       if (iter > (unsigned int)GetMaxIter() or converged)
         break;
     } // end of while for window
@@ -396,12 +393,18 @@ const int NLNSOL::NlnOperatorNGmres::ComputeTentativeIterate(
 
   int errorcode = nlnprec_->ApplyInverse(fbar, xbar);
 
-  if (GetOutParams().is_null())
-    dserror("Outparams are null-pointer.");
+  // Do we need to rebuild the preconditioner?
+  if (nlnprec_->GetOutParams()->get<NLNSOL::UTILS::OperatorStatus>("Error Code")
+      == NLNSOL::UTILS::opstatus_stagnation)
+  {
+      // create formatted output stream
+      Teuchos::RCP<Teuchos::FancyOStream> out =
+          Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
+      out->setOutputToRootOnly(0);
+      Teuchos::OSTab tab(out, Indentation());
 
-  // process parameters from output parameter list of preconditioner
-  if (not nlnprec_->GetOutParams()->get<bool>("Converged"))
-    dserror("No convergence.");
+    nlnprec_->RebuildPrec();
+  }
 
   return errorcode;
 }
@@ -599,6 +602,14 @@ void NLNSOL::NlnOperatorNGmres::AddToWindow(
   Teuchos::RCP<Epetra_MultiVector> veccopy =
       Teuchos::rcp(new Epetra_MultiVector(*vec));
   history.push_back(veccopy);
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*/
+void NLNSOL::NlnOperatorNGmres::RebuildPrec()
+{
+  nlnprec_->RebuildPrec();
 
   return;
 }

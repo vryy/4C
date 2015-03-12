@@ -263,6 +263,12 @@ void NLNSOL::FAS::AMGHierarchy::RefreshRAPs()
       "NLNSOL::FAS::AMGHierarchy::ResfreshRAPs");
   Teuchos::TimeMonitor monitor(*time);
 
+  // create formatted output stream
+  Teuchos::RCP<Teuchos::FancyOStream> out =
+      Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
+  out->setOutputToRootOnly(0);
+  Teuchos::OSTab tab(out, 0);
+
 #ifdef HAVE_MueLu
   // fine level matrix
   Teuchos::RCP<Xpetra::Matrix<double,int,int,Node> > mueLuOp =
@@ -287,6 +293,8 @@ void NLNSOL::FAS::AMGHierarchy::RefreshRAPs()
 
     // update matrix in NLNSOL::FAS::Level
     NlnLevel(level)->UpdateMatrix(myAcrs);
+
+    *out << "Refreshed RAP on level " << level << "." << std::endl;
   }
 
 #else

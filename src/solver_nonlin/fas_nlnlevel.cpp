@@ -130,6 +130,10 @@ void NLNSOL::FAS::NlnLevel::UpdateMatrix(Teuchos::RCP<const Epetra_CrsMatrix> A)
 {
   SetMatrix(A);
 
+  if (not presmoother_.is_null()) { presmoother_->RebuildPrec(); }
+  if (not postsmoother_.is_null()) { postsmoother_->RebuildPrec(); }
+  if (not coarsesolver_.is_null()) { coarsesolver_->RebuildPrec(); }
+
   return;
 }
 
@@ -467,7 +471,7 @@ Teuchos::RCP<const Epetra_CrsMatrix> NLNSOL::FAS::NlnLevel::GetPOp() const
 Teuchos::RCP<NLNSOL::NlnOperatorBase>
 NLNSOL::FAS::NlnLevel::GetPreSmoother() const
 {
-  dsassert(not presmoother_.is_null(), "Presmoother has not been set, yet.");
+  dsassert(not presmoother_.is_null(), "Pre-smoother has not been set, yet.");
 
   return presmoother_;
 }
@@ -476,7 +480,7 @@ NLNSOL::FAS::NlnLevel::GetPreSmoother() const
 Teuchos::RCP<NLNSOL::NlnOperatorBase>
 NLNSOL::FAS::NlnLevel::GetPostSmoother() const
 {
-  dsassert(not postsmoother_.is_null(), "Postsmoother has not been set, yet.");
+  dsassert(not postsmoother_.is_null(), "Post-smoother has not been set, yet.");
 
   return postsmoother_;
 }

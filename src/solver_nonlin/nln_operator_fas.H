@@ -111,11 +111,14 @@ namespace NLNSOL
     //! Setup of the preconditioner object
     virtual void Setup();
 
-    /*! \brief Recompute RAPs in case of multigrid algorithm
+    /*! \brief Rebuild preconditioner
+     *
+     *  To rebuild the FAS preconditioner, we basically need to refresh the
+     *  coarse level operators and, thus, need to recompute the RAPs.
      *
      *  \author mayr.mt \date 03/2015
      */
-    virtual void RefreshRAPs();
+    virtual void RebuildPrec();
 
     //@}
 
