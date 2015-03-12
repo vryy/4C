@@ -73,7 +73,7 @@ const bool NLNSOL::UTILS::StagnationDetection::Check(const double norm)
   // ratio of residual norms of two subsequent iterations
   double ratio = norm / normprev_;
 
-  // udpate
+  // update
   normprev_ = norm;
 
   // ---------------------------------------------------------------------------
@@ -103,8 +103,7 @@ const bool NLNSOL::UTILS::StagnationDetection::Status() const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Teuchos::ParameterList>
-NLNSOL::UTILS::CreateParamListFromXML()
+Teuchos::RCP<Teuchos::ParameterList> NLNSOL::UTILS::CreateParamListFromXML()
 {
   std::string filename =
       DRT::Problem::Instance()->NonlinearSolverParams().get<std::string>(
@@ -120,8 +119,8 @@ NLNSOL::UTILS::CreateParamListFromXML()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Teuchos::ParameterList>
-NLNSOL::UTILS::CreateParamListFromXML(const std::string filename)
+Teuchos::RCP<Teuchos::ParameterList> NLNSOL::UTILS::CreateParamListFromXML(
+    const std::string filename)
 {
   // create a new parameter list to be filled
   Teuchos::RCP<Teuchos::ParameterList> params =

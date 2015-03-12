@@ -129,6 +129,9 @@ namespace UTILS
 
   // ---------------------------------------------------------------------------
 
+  //! @name Input from XML-File
+  //@{
+
   /*! \brief Create Teuchos::ParameterList from XML-File
    *
    *  The parameter list is read from a file that is specified in the input file
@@ -140,7 +143,7 @@ namespace UTILS
 
   /*! \brief Create Teuchos::ParameterList from XML-File
    *
-   *  The parameter list is read from a file whoose filename is given as input
+   *  The parameter list is read from a file whose filename is given as input
    *  to this routine.
    *
    *  \author mayr.mt \date 06/2014
@@ -152,7 +155,7 @@ namespace UTILS
   /*! \brief Create Teuchos::ParameterList from XML-File
    *
    *  The parameter list is read into parameters list 'params' from a file
-   *  whoose filename is given as input to this routine.
+   *  whose filename is given as input to this routine.
    *
    *  We allow that sublists are read from separate xml-files. So, we need to
    *  loop over the read parameter list and check, whether we need to read
@@ -170,7 +173,9 @@ namespace UTILS
       Teuchos::ParameterList& params ///< parameter list to be filled
       );
 
-  /*! Status of ApplyInverse()
+  //@}
+
+  /*! \brief Status of ApplyInverse()
    *
    *  'opstatus_converged' on position 0 to be consistent with error code of
    *  Epetra::Operator::ApplyInverse()
