@@ -203,6 +203,12 @@ bool SSI::SSI_Part2WC::ConvergenceCheck(int itnum)
   //    | scalar increment |_2
   //  -------------------------------- < Tolerance
   //     | scalar+1 |_2
+  //
+  // AND
+  //
+  //    | scalar increment |_2
+  //  -------------------------------- < Tolerance
+  //             dt * n
 
   // variables to save different L2 - Norms
   // define L2-norm of incremental scalar and scalar
@@ -233,35 +239,35 @@ bool SSI::SSI_Part2WC::ConvergenceCheck(int itnum)
     std::cout<<"***********************************************************************************\n";
     std::cout<<"    OUTER ITERATION STEP    \n";
     std::cout<<"***********************************************************************************\n";
-    printf("+--------------+------------------------+--------------------+--------------------+\n");
-    printf("|-  step/max  -|-  tol      [norm]     -|--  scalar-inc      --|--  disp-inc      --|\n");
-    printf("|   %3d/%3d    |  %10.3E[L_2 ]      | %10.3E         | %10.3E         |",
-         itnum,itmax_,ittol_,scaincnorm_L2/scanorm_L2,dispincnorm_L2/dispnorm_L2);
+    printf("+--------------+---------------------+----------------+------------------+--------------------+------------------+\n");
+    printf("|-  step/max  -|-  tol      [norm]  -|-  scalar-inc  -|-  disp-inc      -|-  scalar-rel-inc  -|-  disp-rel-inc  -|\n");
+    printf("|   %3d/%3d    |  %10.3E[L_2 ]   |  %10.3E    |  %10.3E      |  %10.3E        |  %10.3E      |",
+         itnum,itmax_,ittol_,scaincnorm_L2/Dt()/scaincnp_->GlobalLength(),dispincnorm_L2/Dt()/dispincnp_->GlobalLength(),scaincnorm_L2/scanorm_L2,dispincnorm_L2/dispnorm_L2);
     printf("\n");
-    printf("+--------------+------------------------+--------------------+--------------------+\n");
+    printf("+--------------+---------------------+----------------+------------------+--------------------+------------------+\n");
   }
 
   // converged
-  if ( (scaincnorm_L2/scanorm_L2 <= ittol_) and (dispincnorm_L2/dispnorm_L2 <= ittol_) )
+  if ( (scaincnorm_L2/scanorm_L2 <= ittol_) and (dispincnorm_L2/dispnorm_L2 <= ittol_) and (dispincnorm_L2/Dt()<=ittol_) and (scaincnorm_L2/Dt()<=ittol_) )
   {
     stopnonliniter = true;
     if (Comm().MyPID()==0 )
     {
       printf("\n");
-      printf("|  Outer Iteration loop converged after iteration %3d/%3d !                       |\n", itnum,itmax_);
-      printf("+--------------+------------------------+--------------------+--------------------+\n");
+      printf("|  Outer Iteration loop converged after iteration %3d/%3d !                                                      |\n", itnum,itmax_);
+      printf("+--------------+---------------------+----------------+------------------+--------------------+------------------+\n");
     }
   }
 
   // stop if itemax is reached without convergence
   // timestep
-  if ( (itnum==itmax_) and ((scaincnorm_L2/scanorm_L2 > ittol_) or (dispincnorm_L2/dispnorm_L2 > ittol_)) )
+  if ( (itnum==itmax_) and ((scaincnorm_L2/scanorm_L2 > ittol_) or (dispincnorm_L2/dispnorm_L2 > ittol_) or (dispincnorm_L2/Dt()>ittol_) or (scaincnorm_L2/Dt())>ittol_ ) )
   {
     stopnonliniter = true;
     if ((Comm().MyPID()==0) )
     {
-      printf("|     >>>>>> not converged in itemax steps!                                       |\n");
-      printf("+--------------+------------------------+--------------------+--------------------+\n");
+      printf("|     >>>>>> not converged in itemax steps!                                                                      |\n");
+      printf("+--------------+---------------------+----------------+------------------+--------------------+------------------+\n");
       printf("\n");
       printf("\n");
     }
