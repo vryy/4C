@@ -18,7 +18,9 @@ Maintainer: Matthias Mayr
 
 // Epetra
 #include <Epetra_Comm.h>
+#include <Epetra_CrsMatrix.h>
 #include <Epetra_MultiVector.h>
+#include <Epetra_Operator.h>
 #include <Epetra_Vector.h>
 
 // Teuchos
