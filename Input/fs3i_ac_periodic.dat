@@ -38,7 +38,7 @@ STRUCT_PLASTIC_STRAIN           No
 STRUCT_SURFACTANT               No
 FLUID_SOL                       Yes
 FLUID_STRESS                    Yes //yes ,needed for WWS output
-FLUID_WALL_SHEAR_STRESS         Yes //yes for WSS output
+FLUID_WALL_SHEAR_STRESS         No //yes for WSS output
 FLUID_VIS                       No
 FILESTEPS                       1000
 //STDOUTEVRY                      0 //25

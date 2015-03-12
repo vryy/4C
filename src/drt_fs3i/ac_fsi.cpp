@@ -372,6 +372,10 @@ void FS3I::ACFSI::DoFSIStepPeriodic()
   //do the reading
   fsi_->ReadRestart(previousperiodstep*fsiperssisteps_ ); //ReadRestartfromTime()
 
+  //AC-FSI specific input
+  IO::DiscretizationReader reader = IO::DiscretizationReader(fsi_->FluidField()->Discretization(),previousperiodstep*fsiperssisteps_);
+  reader.ReadVector(WallShearStress_, "wss");
+
   //we first fix the grid velocity of the fluid. This calculation is normally done
   //in ADAPTER::FluidFSI::ApplyMeshDisplacement(), but since we never call this function
   //we have to call it yourself
@@ -681,42 +685,47 @@ bool FS3I::ACFSI::PartFs3iConvergenceCkeck( const int itnum)
  *----------------------------------------------------------------------*/
 void FS3I::ACFSI::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector> >& wss)
 {
+  Teuchos::RCP<Epetra_Vector> WallShearStress;
+
   //############ Fluid Field ###############
-
-  Teuchos::RCP<ADAPTER::FluidFSI> fluid = Teuchos::rcp_dynamic_cast<ADAPTER::FluidFSI>( fsi_->FluidField() );
-  if (fluid == Teuchos::null)
-    dserror("Dynamic cast to ADAPTER::FluidFSI failed!");
-
-  if ( (fmod(time_ - dt_ + 1e-10,fsiperiod_)-1e-10) <= dt_-1e-12 ) //iff WallShearStress_ has been updated last step
-    {
-      fluid->ResetHistoryVectors( ); //Reset StressManager
-    }
-
-  Teuchos::RCP<Epetra_Vector> WallShearStress = fluid->CalculateWallShearStresses();
-
-  switch ( DRT::INPUT::IntegralValue<INPAR::FLUID::WSSType>( DRT::Problem::Instance()->FluidDynamicParams() ,"WSS_TYPE") )
+  if ( not IsFsiPeriodic() )
   {
-  case INPAR::FLUID::wss_standard: //we simply use the instantaneous WSS
-    WallShearStress_->Update(1.0,*WallShearStress,0.0); //Update
-    break;
-  case INPAR::FLUID::wss_mean: //we use the mean WSS from the last period..
-    if ( (fmod(time_+ 1e-10,fsiperiod_)-1e-10) <= dt_-1e-12 ) //..and update the mean wss vector iff a new period has started
+    Teuchos::RCP<ADAPTER::FluidFSI> fluid = Teuchos::rcp_dynamic_cast<ADAPTER::FluidFSI>( fsi_->FluidField() );
+    if (fluid == Teuchos::null)
+      dserror("Dynamic cast to ADAPTER::FluidFSI failed!");
+
+    if ( (fmod(time_ - dt_ + 1e-10,fsiperiod_)-1e-10) <= dt_-1e-12 ) //iff WallShearStress_ has been updated last step
+      {
+        fluid->ResetHistoryVectors( ); //Reset StressManager
+      }
+
+    WallShearStress = fluid->CalculateWallShearStresses(); //Instantaneous wss vector
+
+    switch ( DRT::INPUT::IntegralValue<INPAR::FLUID::WSSType>( DRT::Problem::Instance()->FluidDynamicParams() ,"WSS_TYPE") )
     {
+    case INPAR::FLUID::wss_standard: //we simply use the instantaneous WSS
       WallShearStress_->Update(1.0,*WallShearStress,0.0); //Update
-      //updatedwss_=true;
+      break;
+    case INPAR::FLUID::wss_mean: //we use the mean WSS from the last period..
+      if ( (fmod(time_+ 1e-10,fsiperiod_)-1e-10) <= dt_-1e-12 ) //..and update the mean wss vector iff a new period has started
+      {
+        WallShearStress_->Update(1.0,*WallShearStress,0.0); //Update
+        //updatedwss_=true;
+      }
+      break;
+    default:
+      dserror("WSS_TYPE not supported for AC-FS3I!");
+      break;
     }
-    break;
-  default:
-    dserror("WSS_TYPE not supported for AC-FS3I!");
-    break;
   }
+  //else //nothing to do in this case since the WallShearStress_ vector has been read from on period before
 
   wss.push_back(WallShearStress_);
 
   //############ Structure Field ###############
 
   // extract FSI-Interface from fluid field
-  WallShearStress = fsi_->FluidField()->Interface()->ExtractFSICondVector(WallShearStress);
+  WallShearStress = fsi_->FluidField()->Interface()->ExtractFSICondVector(WallShearStress_);
 
   // replace global fluid interface dofs through structure interface dofs
   WallShearStress = fsi_->FluidToStruct(WallShearStress);
