@@ -4236,19 +4236,7 @@ bool CONTACT::Beam3cmanager::CloseMidpointDistance(const DRT::Element* ele1, con
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::ReadRestart(IO::DiscretizationReader& reader)
 {
-//  std::cout << "test1: " << std::endl;
-//
-//  fcold_->Print(std::cout);
-//
-//  std::cout << "test2: " << std::endl;
-
   reader.ReadVector(fcold_, "fcold");
-
-//  std::cout << "test3: " << std::endl;
-//
-//  fcold_->Print(std::cout);
-//
-//  std::cout << "test4: " << std::endl;
 
   return;
 }
@@ -4258,8 +4246,6 @@ void CONTACT::Beam3cmanager::ReadRestart(IO::DiscretizationReader& reader)
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::WriteRestart(Teuchos::RCP<IO::DiscretizationWriter> output)
 {
-
-  //fcold_->Print(std::cout);
 
   output->WriteVector("fcold", fcold_);
 

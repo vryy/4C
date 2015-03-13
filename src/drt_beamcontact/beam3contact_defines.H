@@ -112,7 +112,6 @@ Maintainer: Christoph Meier
 
 //#define CONSISTENTTRANSITION
 //#define ENDPOINTSEGMENTATION                       //build integration segments at the physical beam endpoints
-#define ENDPOINTPENALTY                          //treat beam endpoints as additional contact points
 #define RELSEGMENTTOL 0.0000000001            //default:0.0000000001              //minimal (relative) size of a cut integration interval
 //#define CONVERGENCECONTROLE                      //check, if all local Newton loops converge
 

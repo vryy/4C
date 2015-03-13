@@ -89,7 +89,16 @@ boundarynode2_(std::make_pair(0,0))
 
   //In case we want to apply a segment-based integration at the endpoints of the physical beam (in order to avoid
   //strong discontinuities in the integrand) we have to check, if a master beam element node coincides with a beams endpoint!
-  #if defined(ENDPOINTSEGMENTATION) or defined(ENDPOINTPENALTY)
+  bool determine_neighbors=false;
+  bool endpointpenalty = DRT::INPUT::IntegralValue<int>(bcparams_,"BEAMS_ENDPOINTPENALTY");
+  if(endpointpenalty) determine_neighbors=true;
+
+  #ifdef ENDPOINTSEGMENTATION
+    determine_neighbors=true;
+  #endif
+
+  if(determine_neighbors)
+  {
     neighbors1_ = CONTACT::B3TANGENTSMOOTHING::DetermineNeigbors(element1);
     neighbors2_ = CONTACT::B3TANGENTSMOOTHING::DetermineNeigbors(element2);
 
@@ -114,7 +123,7 @@ boundarynode2_(std::make_pair(0,0))
       rightboundarynode2=true;
 
     boundarynode2_=std::make_pair(leftboundarynode2,rightboundarynode2);
-  #endif
+  }
 
   //TODO: calculate the real length for initially curved elements (e.g. beam3eb_anisotrop)
   //Calculate initial length of beam elements (approximation for initially curved elements!)
@@ -246,8 +255,6 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::Evaluate( LINALG::SparseMa
   //     -> only if the flag BEAMCONTACTFDCHECKS is defined
   //***************Get some parameters in the beginning*******************
 
-  std::cout << "test" << std::endl;
-
 #ifdef FDCHECK
   if(fdcheck==false)
     FDCheck(stiffmatrix,fint,pp,contactpairmap,timeintparams,fdcheck);
@@ -317,7 +324,10 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::Evaluate( LINALG::SparseMa
     #endif
   }
 
-  #ifdef ENDPOINTPENALTY
+  bool endpoint_penalty=DRT::INPUT::IntegralValue<int>(bcparams_,"BEAMS_ENDPOINTPENALTY");
+
+  if(endpoint_penalty)
+  {
     //Treat endpoint contact pairs if existing
     if(closeendpointsegments.size()>0)
     {
@@ -327,7 +337,7 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::Evaluate( LINALG::SparseMa
       //Evaluate contact contribution of endpoint-contact (residual and stiffness) for all closest points found before
       EvaluateActiveEndPointPairs(stiffmatrix,fint);
     }
-  #endif
+  }
 
   return (true);
 }
@@ -1713,6 +1723,8 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetCloseSegments( const st
   LINALG::TMatrix<double,3,1> r2_b(true);
   double angle(0.0);
 
+  bool endpoint_penalty=DRT::INPUT::IntegralValue<int>(bcparams_,"BEAMS_ENDPOINTPENALTY");
+
   //Safety factor for determination of close segments
   double safetyfac = 1.1;
   //Distance at which intersection happens
@@ -1763,10 +1775,11 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetCloseSegments( const st
           closesmallanglesegments[std::make_pair(i,j)]=segmentdata;
 
           //If the element lies on the boundary of a physical beam, we sort out the corresponding boundary segments
-          #ifdef ENDPOINTPENALTY
+          if(endpoint_penalty)
+          {
             if((i==0 and boundarynode1_.first) or (i==numseg1-1 and boundarynode1_.second) or (j==0 and boundarynode2_.first) or (j==numseg2-1 and boundarynode2_.second))
               closeendpointsegments.push_back(std::make_pair(i,j));
-          #endif
+          }
         }
 
       }
@@ -1797,10 +1810,11 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetCloseSegments( const st
             closelargeanglesegments[std::make_pair(i,j)]=segmentdata;
 
           //If the element lies on the boundary of a physical beam, we sort out the corresponding boundary segments
-          #ifdef ENDPOINTPENALTY
+          if(endpoint_penalty)
+          {
             if((i==0 and boundarynode1_.first) or (i==numseg1-1 and boundarynode1_.second) or (j==0 and boundarynode2_.first) or (j==numseg2-1 and boundarynode2_.second))
               closeendpointsegments.push_back(std::make_pair(i,j));
-          #endif
+          }
         }
       }
     }
@@ -2236,7 +2250,16 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::PointToLineProjection(doub
       N1_xixi.Clear();
       N2_xixi.Clear();
 
-      #if defined(ENDPOINTSEGMENTATION) or defined(ENDPOINTPENALTY)
+      bool inversion_possible=false;
+      bool endpointpenalty = DRT::INPUT::IntegralValue<int>(bcparams_,"BEAMS_ENDPOINTPENALTY");
+      if(endpointpenalty) inversion_possible=true;
+
+      #ifdef ENDPOINTSEGMENTATION
+      inversion_possible=true;
+      #endif
+
+      if(inversion_possible)
+      {
         //In the case of ENDPOINTSEGMENTATION or ENDPOINTPENALTY it can be necessary to make an invere projection (from the master beam onto the slave beam). In this
         //case, the local variables (e.g. r1, r1_xi...) inside PointToLineProjection() with index 1 represent the master beam which has the global index 2. In order
         //to get the right nodal positions ele2pos_ for the local variables r1, r1_xi, r1_xixi, we have to invert the arguments of the function call ComputeCoordsAndDerivs()!
@@ -2254,12 +2277,14 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::PointToLineProjection(doub
           //update coordinates and derivatives of contact points
           ComputeCoordsAndDerivs(r2, r1, r2_xi, r1_xi, r2_xixi, r1_xixi, N2, N1, N2_xi, N1_xi, N2_xixi, N1_xixi);
         }
-      #else
+      }
+      else
+      {
         // update shape functions and their derivatives
         GetShapeFunctions(N1, N2, N1_xi, N2_xi, N1_xixi, N2_xixi, eta1, eta2);
         // update coordinates and derivatives of contact points
         ComputeCoordsAndDerivs(r1, r2, r1_xi, r2_xi, r1_xixi, r2_xixi, N1, N2, N1_xi, N2_xi, N1_xixi, N2_xixi);
-      #endif
+      }
 
       // use delta_r = r1-r2 as auxiliary quantity
       delta_r=BEAMCONTACT::DiffVector(r1,r2);
