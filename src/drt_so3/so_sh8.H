@@ -197,6 +197,7 @@ public:
   //! definition of shell-thickness direction
   enum ThicknessDirection
   {
+    undefined,///< no clear direction identified
     globx,    ///< global x
     globy,    ///< global y
     globz,    ///< global z
@@ -207,7 +208,6 @@ public:
     enfor,    ///< read-in r-direction is rearranged to t-dir
     enfos,    ///< read-in s-direction is rearranged to t-dir
     enfot,    ///< read-in t-direction stays t-dir
-    undefined,///< no clear direction identified
     none      ///< no rearrangement
   };
 

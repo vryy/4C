@@ -980,6 +980,13 @@ void COMM_UTILS::CompareVectors(
     for (int i=0; i<mylength ; ++i)
     {
       double difference = std::abs(fullvec->Values()[i] - receivebuf[i]);
+      if (difference > tol)
+      {
+        std::stringstream diff;
+        diff << std::scientific << std::setprecision(16) << maxdiff;
+        std::cout << "vectors " << name << " do not match, difference in row " << fullvec->Map().GID(i)
+            << " between entries is: " << diff.str().c_str() << std::endl;
+      }
       maxdiff = std::max(maxdiff, difference);
     }
     if (maxdiff > tol)
@@ -1065,7 +1072,7 @@ void COMM_UTILS::CompareSparseMatrices(
 
   // fill data of matrices to container which can be easily communicated via MPI
   std::vector<int> data_indices;
-  data_indices.reserve(serialCrsMatrix->NumMyNonzeros());
+  data_indices.reserve(serialCrsMatrix->NumMyNonzeros()*2);
   std::vector<double> data_values;
   data_values.reserve(serialCrsMatrix->NumMyNonzeros());
   if(myglobalrank == 0 || myglobalrank == gcomm->NumProc()-1)
@@ -1082,8 +1089,9 @@ void COMM_UTILS::CompareSparseMatrices(
 
       for(int j=0; j<NumEntries; ++j)
       {
-        // in order to check row and col gid both are combined by summing them up (other calculations are also possible)
-        data_indices.push_back(rowgid+Indices[j]);
+        // store row and col gid in order to compare them on proc 0 and for detailed error output information
+        data_indices.push_back(rowgid);
+        data_indices.push_back(Indices[j]);
         data_values.push_back(Values[j]);
       }
     }
@@ -1134,7 +1142,10 @@ void COMM_UTILS::CompareSparseMatrices(
     for (int i=0; i<mylength ; ++i)
     {
       if(data_indices[i] != receivebuf_indices[i])
-        dserror("index of matrix %s does not match: group 0 (%i) and group 1 (%i)", name, data_indices[i], receivebuf_indices[i]);
+      {
+        bool iscolindex = data_indices[i]%2;
+        dserror("%s index of matrix %s does not match: group 0 (%i) and group 1 (%i)", iscolindex==0 ? "row" : "col", name, data_indices[i], receivebuf_indices[i]);
+      }
     }
     IO::cout << "indices of compared matrices " << name << " of length: " << mylength << " are identical." << IO::endl;
 
@@ -1145,7 +1156,7 @@ void COMM_UTILS::CompareSparseMatrices(
     tag = 1338;
     MPI_Recv(&lengthRecv, 1, MPI_INT, gcomm->NumProc()-1, tag, mpi_gcomm, &status);
     if(lengthRecv == 0)
-      dserror("Length of data received from second run is incorrect.");
+      dserror("Length of data received from second run is zero. It seems as if matrices are empty.");
 
     //second: receive data
     tag = 2676;
@@ -1161,13 +1172,20 @@ void COMM_UTILS::CompareSparseMatrices(
     for (int i=0; i<mylength ; ++i)
     {
       double difference = std::abs(data_values[i] - receivebuf_values[i]);
+      if (difference > tol)
+      {
+        std::stringstream diff;
+        diff << std::scientific << std::setprecision(16) << maxdiff;
+        std::cout << "matrices " << name << " do not match, difference in row " << data_indices[2*i] <<
+            " , col: " << data_indices[2*i+1] << " between entries is: " << diff.str().c_str() << std::endl;
+      }
       maxdiff = std::max(maxdiff, difference);
     }
     if (maxdiff > tol)
     {
       std::stringstream diff;
       diff << std::scientific << std::setprecision(16) << maxdiff;
-      dserror("matrices %s do not match, maximum difference between entries is: %s", name, diff.str().c_str());
+      dserror("matrices %s do not match, maximum difference between entries is: %s in row", name, diff.str().c_str());
     }
     else
     {

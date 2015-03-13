@@ -94,12 +94,12 @@ void DRT::ELEMENTS::So_sh8Type::SetupElementDefinition( std::map<std::string,std
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_sh8::So_sh8(int id, int owner) :
-DRT::ELEMENTS::So_hex8(id,owner)
+  DRT::ELEMENTS::So_hex8(id,owner),
+  thickdir_(undefined),
+  anstype_(ansnone),
+  nodes_rearranged_(false),
+  thickvec_(3, 0.0)
 {
-  thickdir_ = globx;
-  nodes_rearranged_ = false;
-  thickvec_.resize(3, 0.0);
-
   return;
 }
 
@@ -108,7 +108,11 @@ DRT::ELEMENTS::So_hex8(id,owner)
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_sh8::So_sh8(const DRT::ELEMENTS::So_sh8& old) :
-DRT::ELEMENTS::So_hex8(old)
+  DRT::ELEMENTS::So_hex8(old),
+  thickdir_(old.thickdir_),
+  anstype_(old.anstype_),
+  nodes_rearranged_(old.nodes_rearranged_),
+  thickvec_(old.thickvec_)
 {
   return;
 }

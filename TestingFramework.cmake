@@ -28,19 +28,19 @@ macro (baci_test_Nested_Par arg1 arg2 restart)
   set_tests_properties ( ${arg1}-nestedPar PROPERTIES TIMEOUT 200 )
 endmacro (baci_test_Nested_Par)
 
-# Run test case for nested parallelism with copydatfile and test mlmc framework in npar setting
+# Run test case for nested parallelism with copydatfile
 # arg1 is the inputfile
 # arg2 is the number of procs
 # arg3 is the number of groups
-macro (baci_test_Nested_Par_MC arg1 arg2 arg3)
-  add_test(NAME ${arg1}-nestedPar_MC-p${arg2}
+macro (baci_test_Nested_Par_CopyDat arg1 arg2 arg3)
+  add_test(NAME ${arg1}-nestedPar_CopyDat-p${arg2}
     COMMAND ${MPI_DIR}/bin/mpirun -np ${arg2} $<TARGET_FILE:${baciname}> -ngroup=${arg3} -nptype=copyDatFile ${PROJECT_SOURCE_DIR}/Input/${arg1}.dat xxx )
     if( "${ARGN}" STREQUAL "minimal")
-      set_tests_properties ( ${arg1}-nestedPar_MC-p${arg2} PROPERTIES TIMEOUT 200 LABELS minimal)
+      set_tests_properties ( ${arg1}-nestedPar_CopyDat-p${arg2} PROPERTIES TIMEOUT 200 LABELS minimal)
     else ()
-      set_tests_properties ( ${arg1}-nestedPar_MC-p${arg2} PROPERTIES TIMEOUT 200)
+      set_tests_properties ( ${arg1}-nestedPar_CopyDat-p${arg2} PROPERTIES TIMEOUT 200)
     endif ()
-endmacro (baci_test_Nested_Par_MC)
+endmacro (baci_test_Nested_Par_CopyDat)
 
 
 # FRAMEWORK TESTS
@@ -1236,6 +1236,7 @@ baci_test(sohex8fbar_cooks_nl 2 "")
 baci_test(sohex8p1j1_cooks_nln_drt 1 "")
 baci_test(sohex8p1j1_cooks_nln_drt 2 "")
 baci_test(solid_ele_vs_mat 2 "")
+baci_test_Nested_Par_CopyDat(solid_ele_vs_mat 4 2)
 baci_test(solidh8_mat_neohooke_drt 1 "")
 baci_test(solidh8_mat_neohooke_drt 2 "")
 baci_test(solidh8_mat_neohooke_gemm_drt 1 "")
@@ -1877,11 +1878,11 @@ baci_test(xffsi_monolithic_fs_rotating_beam 4 "")
 baci_test_Nested_Par(tsi_heatconvection_monolithic tsi_heatconvection_monolithic "")
 baci_test_Nested_Par(sohex8_multiscale_macro sohex8_multiscale_npsupport "1")
 baci_test_Nested_Par(sohex8_multiscale_macro_2micro sohex8_multiscale_npsupport "1")
-baci_test_Nested_Par_MC(nestedpar_copydatfile 2 2 minimal)
-baci_test_Nested_Par_MC(mlmc_framework 2 2)
-baci_test_Nested_Par_MC(mlmc_framework 4 2)
-baci_test_Nested_Par_MC(mlmc_framework_paracont 2 2)
-baci_test_Nested_Par_MC(mlmc_framework_paracont 4 2)
+baci_test_Nested_Par_CopyDat(nestedpar_copydatfile 2 2 minimal)
+baci_test_Nested_Par_CopyDat(mlmc_framework 2 2)
+baci_test_Nested_Par_CopyDat(mlmc_framework 4 2)
+baci_test_Nested_Par_CopyDat(mlmc_framework_paracont 2 2)
+baci_test_Nested_Par_CopyDat(mlmc_framework_paracont 4 2)
 baci_test(immersed_bending_struct_part_dispcoup_h8 3 2)
 baci_test(immersed_bending_struct_part_forcecoup_AITKEN_h8 3 "")
 baci_test(immersed_oscillating_struct_part_forcecoup_h8 3 1)

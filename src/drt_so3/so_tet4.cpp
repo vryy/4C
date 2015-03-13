@@ -141,6 +141,7 @@ DRT::ELEMENTS::So_tet4::So_tet4(const DRT::ELEMENTS::So_tet4& old) :
 DRT::Element(old),
 //material_(old.material_),
 //data_(old.data_),
+kintype_(old.kintype_),
 V_(old.V_),
 pstype_(old.pstype_),
 pstime_(old.pstime_),
