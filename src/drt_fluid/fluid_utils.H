@@ -365,14 +365,15 @@ namespace UTILS
     {
       SumStresses_ = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()),true)),
       SumWss_ = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()),true)),
-      SumDt_=0.0;
+      SumDtStresses_=0.0;
+      SumDtWss_=0.0;
     };
 
     ///Set SumWss
-    const double GetSumDt() { return SumDt_;};
+    const double GetSumDtWss() { return SumDtWss_;};
 
-    ///Set SumWss
-    void RestartStressManager( Teuchos::RCP<Epetra_Vector> sumwss, double sumdt ) { SumWss_ = sumwss; SumDt_ = sumdt; };
+    ///Set SumWss and SumDtWss
+    void RestartWss( Teuchos::RCP<Epetra_Vector> sumwss, double sumdtwss ) { SumWss_ = sumwss; SumDtWss_ = sumdtwss; };
 
 private:
 
@@ -427,8 +428,11 @@ private:
     ///weighted sum of all prior wss
     Teuchos::RCP<Epetra_Vector> SumWss_;
 
-    ///time the stresses and wss are averaged for
-    double SumDt_;
+    ///time the stresses are averaged for
+    double SumDtStresses_;
+
+    ///time the wss are averaged for
+    double SumDtWss_;
 
     bool isinit_;
   };

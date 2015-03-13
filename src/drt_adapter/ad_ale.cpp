@@ -270,6 +270,22 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn,
     {
       ale_ = Teuchos::rcp(new ADAPTER::AleFsiWrapper(ale));
     }
+    else if (coupling == fsi_iter_stagg_AITKEN_rel_force
+             or coupling == fsi_iter_stagg_AITKEN_rel_param
+             or coupling == fsi_iter_stagg_CHEB_rel_param
+             or coupling == fsi_iter_stagg_MFNK_FD
+             or coupling == fsi_iter_stagg_MFNK_FSI
+             or coupling == fsi_iter_stagg_MPE
+             or coupling == fsi_iter_stagg_NLCG
+             or coupling == fsi_iter_stagg_Newton_FD
+             or coupling == fsi_iter_stagg_Newton_I
+             or coupling == fsi_iter_stagg_RRE
+             or coupling == fsi_iter_stagg_fixed_rel_param
+             or coupling == fsi_iter_stagg_steep_desc
+             or coupling == fsi_iter_stagg_steep_desc_force)
+    {
+      ale_ = Teuchos::rcp(new ADAPTER::AleFluidWrapper(ale));
+    }
     else
     {
       dserror("No ALE adapter available yet for your chosen FSI coupling "

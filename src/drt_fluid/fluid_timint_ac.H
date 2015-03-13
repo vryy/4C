@@ -40,7 +40,7 @@ public:
   virtual void Output();
 
   /// time update of stresses
-  virtual void TimeUpdateStresses(){;}; //we do the time update of stresses and wss from inside the ac-fsi framework..
+  virtual void TimeUpdateStresses(){ stressmanager_->GetStresses(trueresidual_,dta_); }; //we do the time update of wss from inside the ac-fsi framework!
 
 protected:
 

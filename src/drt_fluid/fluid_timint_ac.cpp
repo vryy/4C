@@ -50,11 +50,11 @@ void FLD::TimIntAC::ReadRestart(int step)
     Teuchos::RCP<Epetra_Vector> SumWss =Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(0),true));
     reader.ReadVector(SumWss,"wss_fluid");
 
-    double SumDt = 0.0;
-    SumDt = reader.ReadDouble("wss_time");
+    double SumDtWss = 0.0;
+    SumDtWss = reader.ReadDouble("wss_time");
 
-    SumWss->Scale(SumDt);
-    StressManager()->RestartStressManager(SumWss,SumDt);
+    SumWss->Scale(SumDtWss);
+    StressManager()->RestartWss(SumWss,SumDtWss);
 
   }
 
@@ -74,7 +74,7 @@ void FLD::TimIntAC::Output()
     if ( uprestart_ > 0 and step_%uprestart_ == 0 ) //iff we write an restartable output
     {
       output_->WriteVector("wss_fluid",stressmanager_->GetPreCalcWallShearStresses(trueresidual_)); //we need WSS when restarting an AC FSI simulation
-      output_->WriteDouble("wss_time",stressmanager_->GetSumDt()); //we need WSS when restarting an AC FSI simulation
+      output_->WriteDouble("wss_time",stressmanager_->GetSumDtWss()); //we need WSS when restarting an AC FSI simulation
     }
   }
   return;

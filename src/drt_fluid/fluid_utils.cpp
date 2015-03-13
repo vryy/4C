@@ -44,7 +44,8 @@ FLD::UTILS::StressManager::StressManager(
    WssType_( DRT::INPUT::IntegralValue<INPAR::FLUID::WSSType>( DRT::Problem::Instance()->FluidDynamicParams() ,"WSS_TYPE") ),
    SumStresses_(Teuchos::null),
    SumWss_(Teuchos::null),
-   SumDt_(0.0),
+   SumDtStresses_(0.0),
+   SumDtWss_(0.0),
    isinit_(false)
 {
 
@@ -132,7 +133,8 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetPreCalcWallShearStress
     wss = AggreagteStresses(wss);
     break;
   case INPAR::FLUID::wss_mean:
-    wss->Update(1.0/SumDt_, *SumWss_, 0.0); //weighted sum of all prior stresses
+    if (SumDtWss_ > 0.0) //iff we have actually calculated some mean wss
+      wss->Update(1.0/SumDtWss_, *SumWss_, 0.0); //weighted sum of all prior stresses
     break;
   default:
     dserror("There are only the wss calculation types 'standard', 'aggregation' and 'mean'!!");
@@ -217,7 +219,8 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::GetPreCalcStresses(
     stresses = AggreagteStresses(stresses);
     break;
   case INPAR::FLUID::wss_mean:
-    stresses->Update(1.0/SumDt_, *SumStresses_, 0.0); //weighted sum of all prior stresses
+    if (SumDtStresses_ > 0.0) //iff we have actually calculated some mean stresses
+      stresses->Update(1.0/SumDtStresses_, *SumStresses_, 0.0); //weighted sum of all prior stresses
     break;
   default:
     dserror("There are only the wss calculation types 'standard', 'aggregation' and 'mean'!!");
@@ -395,10 +398,10 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::TimeAverageStresses(
 )
 {
   SumStresses_->Update(dt, *stresses, 1.0); //weighted sum of all prior stresses
-  SumDt_+=dt;
+  SumDtStresses_+=dt;
 
   Teuchos::RCP<Epetra_Vector> mean_stresses = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()),true));
-  mean_stresses->Update(1.0/SumDt_,*SumStresses_,0.0);
+  mean_stresses->Update(1.0/SumDtStresses_,*SumStresses_,0.0);
 
   return mean_stresses;
 }
@@ -413,10 +416,10 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::TimeAverageWss(
 {
 
   SumWss_->Update(dt, *wss, 1.0); //weighted sum of all prior stresses
-  SumDt_+=dt;
+  SumDtWss_+=dt;
 
   Teuchos::RCP<Epetra_Vector> mean_wss = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()),true));
-  mean_wss->Update(1.0/SumDt_,*SumWss_,0.0);
+  mean_wss->Update(1.0/SumDtWss_,*SumWss_,0.0);
 
   return mean_wss;
 }
