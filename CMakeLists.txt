@@ -1620,6 +1620,7 @@ set(OBJS_DRT_FLUID_ELE_LIB
   src/drt_fluid_ele/fluid_ele_poro_boundary_evaluate.cpp
   src/drt_fluid_ele/fluid_ele_calc.cpp
   src/drt_fluid_ele/fluid_ele_calc_newOST.cpp
+  src/drt_fluid_ele/fluid_ele_calc_xwall_quadrature_service.cpp
   src/drt_fluid_ele/fluid_ele_calc_xwall.cpp
   src/drt_fluid_ele/fluid_ele_xwall.cpp
   src/drt_fluid_ele/fluid_ele_xwall_boundary.cpp

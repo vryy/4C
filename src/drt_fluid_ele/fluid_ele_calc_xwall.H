@@ -194,6 +194,11 @@ private:
                                         double gpweight     ///< actual integration point (weight)
                                         );
 
+  //! brief evaluate shape functions and their derivatives at integration point
+  virtual void EvalStdShapeFuncAndDerivsAtIntPoint(const double* gpcoords,      ///< actual integration point (coords)
+                                        double gpweight     ///< actual integration point (weight)
+                                        );
+
   //! prepare special Gauss rule for quadrature
   virtual void PrepareGaussRule();
 
