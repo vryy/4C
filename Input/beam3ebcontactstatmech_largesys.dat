@@ -78,7 +78,7 @@ BEAMS_BOXESINOCT        7
 //==== GENERAL STATMECH SIMULATION FLAGS ====
 THERMALBATH         uniform
 FRICTION_MODEL      anisotropicconsistent // isotropicconsistent isotropiclumped
-DBCTYPE             none                   // none shearfixed sheartrans pinnodes,  choose DBC type
+DBCTYPE             none                  // none shearfixed sheartrans pinnodes,  choose DBC type
 NBCTYPE             std                   // constcreep, choose NBC type
 NETWORKTYPE         std                   // specify network / simulation type
 BINDINGSITESEARCH   volpart                    // search routine: volpart, binning, octree

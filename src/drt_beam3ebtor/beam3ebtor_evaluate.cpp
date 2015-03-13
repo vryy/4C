@@ -198,18 +198,19 @@ int DRT::ELEMENTS::Beam3ebtor::EvaluateNeumann(Teuchos::ParameterList& params,
   if (time<0.0) usetime = false;
 
   // find out whether we will use a time curve and get the factor
-  const std::vector<int>* curve = condition.Get<std::vector<int> >("curve");
-
-  int curvenum = -1;
-
-  // number of the load curve related with a specific line Neumann condition called
-  if (curve) curvenum = (*curve)[0];
-
+  const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
   // amplitude of load curve at current time called
-  double curvefac = 1.0;
+  std::vector<double> curvefac(6,1.0);
 
-  if (curvenum>=0 && usetime)
-    curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+  for (int i=0; i<6; ++i)
+  {
+    int curvenum = -1;
+    // number of the load curve related with a specific line Neumann condition called
+    if (curve) curvenum = (*curve)[i];
+
+    if (curvenum>=0 && usetime)
+      curvefac[i] = DRT::Problem::Instance()->Curve(curvenum).f(time);
+  }
 
   // get values and switches from the condition:
   // onoff is related to the first 6 flags of a line Neumann condition in the input file;
@@ -245,7 +246,7 @@ int DRT::ELEMENTS::Beam3ebtor::EvaluateNeumann(Teuchos::ParameterList& params,
     //add forces to Res_external according to (5.56). There is a factor (-1) needed, as fext is multiplied by (-1) in BACI
     for(int i = 0; i < 3 ; i++)
     {
-      elevec1(insert*(dofpn+1) + i) += (*onoff)[i]*(*val)[i]*curvefac*ScaleFactorLinetor;
+      elevec1(insert*(dofpn+1) + i) += (*onoff)[i]*(*val)[i]*curvefac[i]*ScaleFactorLinetor;
     }
 
     //matrix for current tangent, moment at node and crossproduct
@@ -270,7 +271,7 @@ int DRT::ELEMENTS::Beam3ebtor::EvaluateNeumann(Teuchos::ParameterList& params,
     {
       //get current tangent at nodes
       tangent(dof-3) = Tref_[insert](dof-3) + mydisp[insert*(dofpn+1) + dof];
-      moment(dof-3) = (*onoff)[dof]*(*val)[dof]*curvefac;
+      moment(dof-3) = (*onoff)[dof]*(*val)[dof]*curvefac[dof];
     }
 
     double abs_tangent = 0.0;
@@ -396,7 +397,7 @@ int DRT::ELEMENTS::Beam3ebtor::EvaluateNeumann(Teuchos::ParameterList& params,
 
         // loop the dofs of a node
         for (int dof=0; dof<6; ++dof)
-          ar[dof] = fac * (*onoff)[dof]*(*val)[dof]*curvefac;
+          ar[dof] = fac * (*onoff)[dof]*(*val)[dof]*curvefac[dof];
         double functionfac = 1.0;
         int functnum = -1;
 
@@ -1748,18 +1749,19 @@ void DRT::ELEMENTS::Beam3ebtor::FADCheckNeumann(Teuchos::ParameterList& params,
 //  if (time<0.0) usetime = false;
 //
 //  // find out whether we will use a time curve and get the factor
-//  const std::vector<int>* curve = condition.Get<std::vector<int> >("curve");
-//
-//  int curvenum = -1;
-//
-//  // number of the load curve related with a specific line Neumann condition called
-//  if (curve) curvenum = (*curve)[0];
-//
+//  const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
 //  // amplitude of load curve at current time called
-//  double curvefac = 1.0;
+//  std::vector<double> curvefac(6,1.0);
 //
-//  if (curvenum>=0 && usetime)
-//    curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+//  for (int i=0; i<6; ++i)
+//  {
+//    int curvenum = -1;
+//    // number of the load curve related with a specific line Neumann condition called
+//    if (curve) curvenum = (*curve)[i];
+//
+//    if (curvenum>=0 && usetime)
+//      curvefac[i] = DRT::Problem::Instance()->Curve(curvenum).f(time);
+//  }
 //
 //  // get values and switches from the condition
 //
@@ -1792,7 +1794,7 @@ void DRT::ELEMENTS::Beam3ebtor::FADCheckNeumann(Teuchos::ParameterList& params,
 //    //add forces to Res_external according to (5.56)
 //    for(int i = 0; i < 3 ; i++)
 //    {
-//      force_check(insert*(dofpn+1) + i) += (*onoff)[i]*(*val)[i]*curvefac;
+//      force_check(insert*(dofpn+1) + i) += (*onoff)[i]*(*val)[i]*curvefac[i];
 //    }
 //
 //    //matrix for current tangent, moment at node and crossproduct
@@ -1817,7 +1819,7 @@ void DRT::ELEMENTS::Beam3ebtor::FADCheckNeumann(Teuchos::ParameterList& params,
 //    {
 //      //get current tangent at nodes
 //      tangent(dof-3) = Tref_[insert](dof-3) + disp_totlag[insert*(dofpn+1) + dof];
-//      moment(dof-3) = (*onoff)[dof]*(*val)[dof]*curvefac;
+//      moment(dof-3) = (*onoff)[dof]*(*val)[dof]*curvefac[dof];
 //    }
 //
 //    FAD abs_tangent = 0.0;

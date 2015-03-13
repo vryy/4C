@@ -1002,6 +1002,8 @@ void STR::TimIntStatMech::NewtonFull()
     PrintNewtonIter();
   }
 
+  std::cout << "iterges_: " << iterges_ << std::endl;
+
   return;
 
 } // STR::TimIntStatMech::FullNewton()

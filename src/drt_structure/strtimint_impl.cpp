@@ -276,6 +276,10 @@ void STR::TimIntImpl::Predict()
   // things that need to be done before Predict
   PrePredict();
 
+  // Update locals systems (which may be time dependent)
+  if (locsysman_ != Teuchos::null)
+    locsysman_->Setup(timen_);
+
   // set iteration step to 0 (predictor)
   iter_ = 0;
 
@@ -327,10 +331,6 @@ void STR::TimIntImpl::Predict()
     pressure_->InsertCondVector(pressure_->ExtractCondVector(zeros_), veln_);
     pressure_->InsertCondVector(pressure_->ExtractCondVector(zeros_), accn_);
   }
-
-  // Update locals systems (which may be time dependent)
-  if (locsysman_ != Teuchos::null)
-    locsysman_->Setup(timen_);
 
   // apply Dirichlet BCs
   ApplyDirichletBC(timen_, disn_, veln_, accn_, false);
@@ -1179,7 +1179,7 @@ void STR::TimIntImpl::ApplyForceStiffBeamContact
     // (set boolean flag 'newsti' to true, which activates
     // sclaing of contact stiffness with appropriate scaling
     // factor, e.g. (1.0-alphaf), internally)
-    beamcman_->Evaluate(*SystemMatrix(),*fresm,*dis,beamcontactparams,true);
+    beamcman_->Evaluate(*SystemMatrix(),*fresm,*dis,beamcontactparams,true,timen_);
 
     // scaling back
     fresm->Scale(-1.0);

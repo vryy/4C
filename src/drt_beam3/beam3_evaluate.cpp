@@ -486,20 +486,25 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(Teuchos::ParameterList& params,
   const double time = params.get("total time",-1.0);
   if (time<0.0) usetime = false;
 
-  // find out whether we will use a time curve and get the factor
-  const std::vector<int>* curve = condition.Get<std::vector<int> >("curve");
-  int curvenum = -1;
-  // number of the load curve related with a specific line Neumann condition called
-  if (curve) curvenum = (*curve)[0];
-  // amplitude of load curve at current time called
-  double curvefac = 1.0;
-  if (curvenum>=0 && usetime)//notation for this function similar to Crisfield, Volume 1;
-  curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
-
   // no. of nodes on this element; the following line is only valid for elements with constant number of
   // degrees of freedom per node
   const int numdf = 6;
   const DiscretizationType distype = this->Shape();
+
+  // find out whether we will use a time curve and get the factor
+  const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
+  // amplitude of load curve at current time called
+  std::vector<double> curvefac(numdf,1.0);
+
+  for (int i=0; i<numdf; ++i)
+  {
+    int curvenum = -1;
+    // number of the load curve related with a specific line Neumann condition called
+    if (curve) curvenum = (*curve)[i];
+
+    if (curvenum>=0 && usetime)
+      curvefac[i] = DRT::Problem::Instance()->Curve(curvenum).f(time);
+  }
 
   // gaussian points
   const DRT::UTILS::IntegrationPoints1D intpoints(MyGaussRule(NumNode(),gaussunderintegration));
@@ -547,7 +552,7 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(Teuchos::ParameterList& params,
 
     // loop the dofs of a node
     for (int dof=0; dof<numdf; ++dof)
-      ar[dof] = fac * (*onoff)[dof]*(*val)[dof]*curvefac;
+      ar[dof] = fac * (*onoff)[dof]*(*val)[dof]*curvefac[dof];
     double functionfac = 1.0;
     int functnum = -1;
 

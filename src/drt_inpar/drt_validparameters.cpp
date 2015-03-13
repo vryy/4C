@@ -2190,6 +2190,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("BEAMS_PERPSHIFTANGLE2",-1.0,"Upper shift angle (in degrees) for penalty scaling of large-angle-contact",&beamcontact);
   DoubleParameter("BEAMS_PARSHIFTANGLE1",-1.0,"Lower shift angle (in degrees) for penalty scaling of small-angle-contact",&beamcontact);
   DoubleParameter("BEAMS_PARSHIFTANGLE2",-1.0,"Upper shift angle (in degrees) for penalty scaling of small-angle-contact",&beamcontact);
+  DoubleParameter("BEAMS_SEGANGLE",-1.0,"Maximal angle deviation allowed for contact search segmentation",&beamcontact);
   IntParameter("BEAMS_NUMINTEGRATIONINTERVAL",1,"Number of integration intervals per element",&beamcontact);
 
   setStringToIntegralParameter<int>("BEAMS_PENALTYLAW","LinPen","Applied Penalty Law",
@@ -2213,6 +2214,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("BEAMS_PENREGPARAM_G0",-1.0,"First penalty regularization parameter G0 >=0: For gap<G0 contact is active!",&beamcontact);
   DoubleParameter("BEAMS_PENREGPARAM_F0",-1.0,"Second penalty regularization parameter F0 >=0: F0 represents the force at the transition point between regularized and linear force law!",&beamcontact);
   DoubleParameter("BEAMS_PENREGPARAM_C0",-1.0,"Third penalty regularization parameter C0 >=0: C0 has different physical meanings for the different penalty laws!",&beamcontact);
+  DoubleParameter("BEAMS_GAPSHIFTPARAM",0.0,"Parameter to shift penalty law!",&beamcontact);
   DoubleParameter("BEAMS_BASICSTIFFGAP",-1.0,"For gaps > -BEAMS_BASICSTIFFGAP, only the basic part of the contact linearization is applied!",&beamcontact);
 
   // enable octree search and determine type of bounding box (aabb = axis aligned, cobb = cylindrical oriented)

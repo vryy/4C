@@ -1095,7 +1095,7 @@ void STR::TimInt::DetermineMassDampConsistAccel()
   }
 
   // We need to reset the stiffness matrix because its graph (topology)
-  // is not finished yet in case of constraints and posssibly other side
+  // is not finished yet in case of constraints and possibly other side
   // effects (basically managers).
   stiff_->Reset();
 
@@ -1706,9 +1706,11 @@ void STR::TimInt::ReadRestart
   timen_ = (*time_)[0] + (*dt_)[0];
 
   ReadRestartState();
+
   ReadRestartConstraint();
   ReadRestartWindkessel();
   ReadRestartContactMeshtying();
+  ReadRestartBeamContact();
   ReadRestartStatMech();
   ReadRestartSurfstress();
   ReadRestartMultiScale();
@@ -1756,6 +1758,10 @@ void STR::TimInt::SetRestart
   // contact / meshtying
   if (HaveContactMeshtying())
     dserror("Set restart not implemented for contact / meshtying");
+
+  // beam contact
+  if (HaveBeamContact())
+    dserror("Set restart not implemented for beam contact");
 
   // statistical mechanics
   if (HaveStatMech())
@@ -1867,6 +1873,17 @@ void STR::TimInt::ReadRestartContactMeshtying()
 
   if (HaveContactMeshtying())
     cmtbridge_->ReadRestart(reader,(*dis_)(0),zeros_);
+}
+
+/*----------------------------------------------------------------------*/
+/* Read and set restart values for beam contact */
+void STR::TimInt::ReadRestartBeamContact()
+{
+  if(HaveBeamContact())
+  {
+    IO::DiscretizationReader reader(discret_,step_);
+    beamcman_->ReadRestart(reader);
+  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -2121,6 +2138,10 @@ void STR::TimInt::GetRestartData
   if (HaveContactMeshtying())
     dserror("Get restart data not implemented for contact / meshtying");
 
+  // beam contact
+  if (HaveBeamContact())
+    dserror("Get restart data not implemented for beam contact");
+
   // statistical mechanics
   if (HaveStatMech())
     dserror("Get restart data not implemented for statistical mechanics");
@@ -2197,6 +2218,12 @@ void STR::TimInt::OutputRestart
   {
     cmtbridge_->WriteRestart(output_);
     cmtbridge_->PostprocessTractions(output_);
+  }
+
+  // beam contact
+  if(HaveBeamContact())
+  {
+    beamcman_->WriteRestart(output_);
   }
 
   // statistical mechanics
@@ -2325,6 +2352,10 @@ void STR::TimInt::AddRestartToOutputState()
     cmtbridge_->WriteRestart(output_,true);
 
   // TODO: add missing restart data for surface stress, contact/meshtying and StatMech here
+
+  // beam contact
+  if(HaveBeamContact())
+    beamcman_->WriteRestart(output_);
 
 
   // finally add the missing mesh information, order is important here
@@ -3160,7 +3191,7 @@ INPAR::STR::ConvergenceStatus STR::TimInt::PerformErrorAction(INPAR::STR::Conver
     break;
     case INPAR::STR::divcont_halve_step:
     {
-      IO::cout << "Nonlinear solver failed to converge divide timestep in half"
+      IO::cout << "Nonlinear solver failed to converge at time t= "<< timen_ << ". Divide timestep in half"
                << IO::endl;
       // halve the time step size
       (*dt_)[0]=(*dt_)[0]*0.5;

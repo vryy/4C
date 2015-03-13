@@ -100,7 +100,6 @@ Maintainer: Christoph Meier
 //#define BEAMCONTACTPTCROT    0.0
 
 
-#define SEGANGLE 1.0/180.0*M_PI    //default: 2.0  //maximal tangent angle deviation of a segment point from straight line approximation
 #define MAXNUMSEG  256      //default: 256         //maximal number of segments
 #define ANGLETOL 0.1/180*M_PI                      //within the search algorithm, for angles<ANGLETOL two segments are assumed to be parallel
 #define UNIQUECPPANGLE 1.0/180.0*M_PI              //angle above which it is assumed that a unique cpp can be found by the local Newton
@@ -109,17 +108,19 @@ Maintainer: Christoph Meier
 //#define DELTASMALLANGLE   35.0/180.0*M_PI          //bound for search of small angle contact segment pairs
 
 #define BEAMCONTACTGAUSSRULE intrule_line_5point   //Gauss rule applied in each segment
+//default: 5 GP
 
 //#define CONSISTENTTRANSITION
-//#define ENDPOINTSEGMENTATION                     //build integration segments at the physical beam endpoints
-#define ENDPOINTPENALTY                            //treat beam endpoints as additional contact points
-#define RELSEGMENTTOL 0.001                        //minimal (relative) size of a cut integration interval
+//#define ENDPOINTSEGMENTATION                       //build integration segments at the physical beam endpoints
+#define ENDPOINTPENALTY                          //treat beam endpoints as additional contact points
+#define RELSEGMENTTOL 0.0000000001            //default:0.0000000001              //minimal (relative) size of a cut integration interval
+//#define CONVERGENCECONTROLE                      //check, if all local Newton loops converge
 
 #define INITSEG1 1                                 //minimal number of segments of element1 (necessary for debugging)
 #define INITSEG2 1                                 //minimal number of segments of element2 (necessary for debugging)
 
 //TODO: Change back to default
-#define MAXPENETRATIONSAFETYFAC 0.8                //maximal allowed penetration is MAXPENETRATIONSAFETYFAC*(R1_+R2_)
+#define MAXPENETRATIONSAFETYFAC 0.8       //0.8         //maximal allowed penetration is MAXPENETRATIONSAFETYFAC*(R1_+R2_)
 //default: 0.4
 
 #if defined(ENDPOINTPENALTY) and defined(CONSISTENTTRANSITION)
@@ -127,7 +128,7 @@ Maintainer: Christoph Meier
 #endif
 
 #if defined(ENDPOINTSEGMENTATION) and !defined(AUTOMATICDIFF)
-  dserror("ENDPOINTSEGMENTATION only works in combination with AUTOMATICDIFF!")
+  dserror("ENDPOINTSEGMENTATION only works in combination with AUTOMATICDIFF!");
 #endif
 
 #if defined(CONSISTENTTRANSITION) and !defined(AUTOMATICDIFF)
@@ -148,12 +149,18 @@ Maintainer: Christoph Meier
 #define N_CIRCUMFERENTIAL 10      /* number of gmsh visualization devisions of beam element in circumferential direction*/
 #define N_Axial 10                /* number of gmsh visualization devisions of beam element in axial direction*/
 
-#define OUTPUTEVERY 1          //Write output only every OUTPUTEVERY^th step
+//#define DISTINGUOSHCONTACTCOLOR
+//#define CONTACTPAIRSPECIFICOUTPUT
+//#define OUTPUTALLPROCS
+#define OUTPUTEVERY 0.0001          //Write gmsh output in time intervals of size OUTPUTEVERY
 //#define OUTPUTEVERYNEWTONSTEP  //Write output also after each Newton step
 //#define GMSHTIMESTEPS          /* write gmsh output in each time step */
 //#define GMSHNEWTONSTEPS      /* write gmsh and console output in each Newton step */
 //#define REACTIONFORCES          /* output of reaction forces and moments */
 //#define BEAMCONTACTFDCHECKS     /* perform finite difference checks */
+
+//#define PRINTGAPFILE //print file with gap/gap error
+//#define PRINTNUMCONTACTSFILE //print number of active contact points over time
 
 //#define FDCHECK                //perform finite difference check of contact linearization
 

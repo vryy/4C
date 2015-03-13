@@ -45,7 +45,9 @@ STR::TimIntStatics::TimIntStatics
     contactsolver,
     output
   ),
+  fint_(Teuchos::null),
   fintn_(Teuchos::null),
+  fext_(Teuchos::null),
   fextn_(Teuchos::null)
 {
 
@@ -73,6 +75,12 @@ STR::TimIntStatics::TimIntStatics
 
   // external force vector F_{n+1} at new time
   fextn_ = LINALG::CreateVector(*DofRowMapView(), true);
+
+  // internal force vector F_{int;n} at new time
+  fint_ = LINALG::CreateVector(*DofRowMapView(), true);
+
+  // external force vector F_{n} at new time
+  fext_ = LINALG::CreateVector(*DofRowMapView(), true);
 
   // have a nice day
   return;
@@ -397,6 +405,14 @@ void STR::TimIntStatics::UpdateStepState()
   // update beam contact
   UpdateStepBeamContact();
 
+  // update new external force
+  //    F_{ext;n} := F_{ext;n+1}
+  fext_->Update(1.0, *fextn_, 0.0);
+
+  // update new internal force
+  //    F_{int;n} := F_{int;n+1}
+  fint_->Update(1.0, *fintn_, 0.0);
+
   // look out
   return;
 }
@@ -437,6 +453,13 @@ void STR::TimIntStatics::ReadRestartForce()
 /* write internal and external forces for restart */
 void STR::TimIntStatics::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output)
 {
+  output->WriteVector("fexternal", fext_);
+  output->WriteVector("fint",fint_);
+
+  //This restart output is needed in case of a static pre-simulation has to be restartet with dynamic time integration
+  Teuchos::RCP<Epetra_Vector> finert= LINALG::CreateVector(*DofRowMapView(), true);  //!< inertia force at \f$t_{n}\f$
+  finert->PutScalar(0.0);
+  output->WriteVector("finert",finert);
   return;
 }
 

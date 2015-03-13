@@ -300,14 +300,16 @@ namespace BEAMCONTACT
     //The necessary shifting procedure depends on the fact, whether we are searching for the left bound
     if(leftbound)
     {
+
       if(fabs(1+interval_id-unrounded_id)<segmenttol)
-        interval_id++;
+        dserror("Such small segmented integration intervals are not possible so far!");
     }
     //or for the right bound of the integration interval
     else
     {
+
       if(fabs(interval_id-unrounded_id)<segmenttol)
-        interval_id--;
+        dserror("Such small segmented integration intervals are not possible so far!");
     }
 
     if(interval_id<0)

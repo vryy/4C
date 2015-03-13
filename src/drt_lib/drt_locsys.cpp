@@ -132,7 +132,7 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
       const std::vector<int>*    nodes = currlocsys->Nodes();
 
       //Check, if we have time dependent locsys conditions (through curves or functions)
-      if (((*curve)[0]>0 or (*curve)[1]>0 or (*curve)[2]>0) or
+      if (((*curve)[0]>=0 or (*curve)[1]>=0 or (*curve)[2]>=0) or
           ((*funct)[0]>0 or (*funct)[1]>0 or (*funct)[2]>0))
         locsyscurvefunct_=true;
 
@@ -165,7 +165,7 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
           // factor given by time curve
           std::vector<double> curvefac(1,1.0);
           int curvenum = (*curve)[j];
-          if (curvenum>=0 && time>=0.0)
+          if (curvenum>=0)
           {
             curvefac = DRT::Problem::Instance()->Curve(curvenum).FctDer(time,0);
           }
@@ -239,7 +239,7 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
       const std::vector<int>*    nodes = currlocsys->Nodes();
 
       //Check, if we have time dependent locsys conditions (through curves or functions)
-      if (((*curve)[0]>0 or (*curve)[1]>0 or (*curve)[2]>0) or
+      if (((*curve)[0]>=0 or (*curve)[1]>=0 or (*curve)[2]>=0) or
           ((*funct)[0]>0 or (*funct)[1]>0 or (*funct)[2]>0) or
           (((*useConsistentNodeNormal)[0] == 1) and ((*useUpdatedNodePos)[0] == 1)))
         locsyscurvefunct_=true;
@@ -276,7 +276,7 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
             // factor given by time curve
             std::vector<double> curvefac(1,1.0);
             int curvenum = (*curve)[j];
-            if (curvenum>=0 && time>=0.0)
+            if (curvenum>=0)
             {
               curvefac = DRT::Problem::Instance()->Curve(curvenum).FctDer(time,0);
             }
@@ -352,7 +352,7 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
       const std::vector<int>*    nodes = currlocsys->Nodes();
 
       //Check, if we have time dependent locsys conditions (through curves or functions)
-      if (((*curve)[0]>0 or (*curve)[1]>0 or (*curve)[2]>0) or
+      if (((*curve)[0]>=0 or (*curve)[1]>=0 or (*curve)[2]>=0) or
           ((*funct)[0]>0 or (*funct)[1]>0 or (*funct)[2]>0) or
           (((*useConsistentNodeNormal)[0] == 1) and ((*useUpdatedNodePos)[0] == 1)))
         locsyscurvefunct_=true;
@@ -389,7 +389,7 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
             // factor given by time curve
             std::vector<double> curvefac(1,1.0);
             int curvenum = (*curve)[j];
-            if (curvenum>=0 && time>=0.0)
+            if (curvenum>=0)
             {
               curvefac = DRT::Problem::Instance()->Curve(curvenum).FctDer(time,0);
             }
@@ -464,7 +464,7 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
       const std::vector<int>*    nodes = currlocsys->Nodes();
 
       //Check, if we have time dependent locsys conditions (through curves or functions)
-      if (((*curve)[0]>0 or (*curve)[1]>0 or (*curve)[2]>0) or
+      if (((*curve)[0]>=0 or (*curve)[1]>=0 or (*curve)[2]>=0) or
           ((*funct)[0]>0 or (*funct)[1]>0 or (*funct)[2]>0))
         locsyscurvefunct_=true;
 
@@ -483,8 +483,7 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
       //Each component j of the pseudo rotation vector that rotates the global xyz system onto the local system
       //assigned to each node consists of a constant, a time dependent and spatially variable part:
       //currotangle_j(x,t) = rotangle_j * curve_j(t) * funct_j(x)
-      LINALG::Matrix<3,1> currotangle;
-      currotangle.Clear();
+      LINALG::Matrix<3,1> currotangle(true);
 
       for (int k=0;k<(int)nodes->size();++k)
       {
@@ -497,7 +496,7 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
           // factor given by time curve
           std::vector<double> curvefac(1,1.0);
           int curvenum = (*curve)[j];
-          if (curvenum>=0 && time>=0.0)
+          if (curvenum>=0)
           {
             curvefac = DRT::Problem::Instance()->Curve(curvenum).FctDer(time,0);
           }

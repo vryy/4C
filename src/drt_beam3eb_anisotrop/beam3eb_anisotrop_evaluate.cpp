@@ -1452,18 +1452,19 @@ int DRT::ELEMENTS::Beam3ebanisotrop::EvaluateNeumann(Teuchos::ParameterList& par
   if (time<0.0) usetime = false;
 
   // find out whether we will use a time curve and get the factor
-  const std::vector<int>* curve = condition.Get<std::vector<int> >("curve");
-
-  int curvenum = -1;
-
-  // number of the load curve related with a specific line Neumann condition called
-  if (curve) curvenum = (*curve)[0];
-
+  const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
   // amplitude of load curve at current time called
-  double curvefac = 1.0;
+  std::vector<double> curvefac(6,1.0);
 
-  if (curvenum>=0 && usetime)
-    curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+  for (int i=0; i<6; ++i)
+  {
+    int curvenum = -1;
+    // number of the load curve related with a specific line Neumann condition called
+    if (curve) curvenum = (*curve)[i];
+
+    if (curvenum>=0 && usetime)
+      curvefac[i] = DRT::Problem::Instance()->Curve(curvenum).f(time);
+  }
 
   // get values and switches from the condition:
   // onoff is related to the first 6 flags of a line Neumann condition in the input file;
@@ -1518,7 +1519,7 @@ int DRT::ELEMENTS::Beam3ebanisotrop::EvaluateNeumann(Teuchos::ParameterList& par
     {
       //get current tangent at nodes
       tangent(i)=Tref_[node](i)+mydisp[node*7+3+i];
-      moment(i)=(*onoff)[i+3]*(*val)[i+3]*curvefac;
+      moment(i)=(*onoff)[i+3]*(*val)[i+3]*curvefac[i+3];
     }
 
     //calculate |t|=|r'| at the boundary
@@ -1542,7 +1543,7 @@ int DRT::ELEMENTS::Beam3ebanisotrop::EvaluateNeumann(Teuchos::ParameterList& par
     //Term - N^T F: add forces to the dofs d1 d2 d3 of the external force vector, fext is multiplied by (-1) in BACI
     for(int i = 0; i < 3 ; i++)
     {
-      elevec1(node*7+i)+=-(*onoff)[i]*(*val)[i]*curvefac;
+      elevec1(node*7+i)+=-(*onoff)[i]*(*val)[i]*curvefac[i];
     }
 
 
@@ -1628,7 +1629,7 @@ int DRT::ELEMENTS::Beam3ebanisotrop::EvaluateNeumann(Teuchos::ParameterList& par
 
         // loop the dofs of a node
         for (int dof=0; dof<6; ++dof)
-          ar[dof] = fac * (*onoff)[dof]*(*val)[dof]*curvefac;
+          ar[dof] = fac * (*onoff)[dof]*(*val)[dof]*curvefac[dof];
         double functionfac = 1.0;
         int functnum = -1;
 

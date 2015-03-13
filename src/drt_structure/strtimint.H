@@ -660,6 +660,9 @@ namespace STR
     //! Read and set restart values for contact / meshtying
     void ReadRestartContactMeshtying();
 
+    //! Read and set restart values for beam contact
+    void ReadRestartBeamContact();
+
     //! Read and set restart values for statmech
     void ReadRestartStatMech();
 

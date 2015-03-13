@@ -194,6 +194,9 @@ radius2_(0.0)
       dserror("Damping force chosen in input-file, but no damping (regularization) parameter!");
   }
 
+  if(beamcontactparams.get<double>("BEAMS_GAPSHIFTPARAM",0.0)!=0.0)
+    dserror("BEAMS_GAPSHIFTPARAM not implemented for beam3contactnew (input parameter BEAMS_SEGCON==No)!");
+
   return;
 }
 /*----------------------------------------------------------------------*

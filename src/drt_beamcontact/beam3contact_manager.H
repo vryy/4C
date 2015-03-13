@@ -28,6 +28,7 @@ Maintainer: Christoph Meier
 #include "beam3tospherepotential.H"
 #include "../drt_contact/contact_element.H"
 #include "../drt_contact/contact_node.H"
+#include "../drt_io/io.H"
 
 namespace LINALG
 {
@@ -163,7 +164,7 @@ public:
 
   */
   void Evaluate(LINALG::SparseMatrix& stiffmatrix, Epetra_Vector& fres,
-                const Epetra_Vector& disrow, Teuchos::ParameterList beamcontactparams, bool newsti = false);
+                const Epetra_Vector& disrow, Teuchos::ParameterList beamcontactparams, bool newsti = false, double time = 0.0);
 
   /*!
   \brief Update beam contact
@@ -293,6 +294,16 @@ public:
   \brief Get total potential energy of penalty approach
   */
   double GetTotEnergy() {return totpenaltyenergy_; };
+
+  /*!
+  \brief Read restart
+  */
+  void ReadRestart(IO::DiscretizationReader& reader);
+
+  /*!
+  \brief Write restart
+  */
+  void WriteRestart(Teuchos::RCP<IO::DiscretizationWriter> output);
 
   //@}
 
@@ -478,6 +489,18 @@ private:
   //! map of (NodeID,DLINE) pairs
   std::map<int,int> dlinenodemap_;
 
+  // bool indicating if we are in the first time step of a simulation
+  bool firststep_;
+
+  // counts the number of gmsh-output files already written
+  int outputcounter_;
+
+  // end time of current time step
+  double timen_;
+
+  // accumulated evaluation time of all contact pairs of total simulation time
+  double contactevaluationtime_;
+
   //@}
 
   //! @name Private evaluation methods
@@ -648,7 +671,7 @@ private:
   \brief Compute coordinates for GMSH-Output for N-noded-elements
   */
   void GMSH_N_noded(const int& n,
-                    const int& n_axial,
+                    int& n_axial,
                     const Epetra_SerialDenseMatrix& allcoord,
                     const DRT::Element* thisele,
                     std::stringstream& gmshfilecontent);

@@ -33,6 +33,7 @@ Maintainer: Christoph Meier
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_contact/contact_element.H"
 #include "../drt_contact/contact_node.H"
+#include "../drt_io/io.H"
 
 /*----------------------------------------------------------------------*
  |  constructor (public)                                      popp 04/10|
@@ -54,7 +55,11 @@ mintotalsimgap_(0.0),
 mintotalsimrelgap_(0.0),
 mintotalsimunconvgap_(0.0),
 totpenaltyenergy_(0.0),
-maxdeltadisp_(0.0)
+maxdeltadisp_(0.0),
+firststep_(true),
+outputcounter_(0),
+timen_(0.0),
+contactevaluationtime_(0.0)
 {
   // create new (basically copied) discretization for contact
   // (to ease our search algorithms we afford the luxury of
@@ -66,6 +71,12 @@ maxdeltadisp_(0.0)
   // Then, within all beam contact specific routines we will
   // NEVER use the underlying problem discretization but always
   // the copied beam contact discretization.
+
+  // Initialize vectors of contact forces
+  fc_ = LINALG::CreateVector(*discret.DofRowMap(), false);
+  fcold_ = LINALG::CreateVector(*discret.DofRowMap(), false);
+  fc_->PutScalar(0.0);
+  fcold_->PutScalar(0.0);
 
   contactpairmap_.clear();
   oldcontactpairmap_.clear();
@@ -446,7 +457,8 @@ maxdeltadisp_(0.0)
     {
       std::cout << "Regularization Params    BEAMS_PENREGPARAM_G0 = " << sbeamcontact_.get<double>("BEAMS_PENREGPARAM_G0",-1.0)\
       << ",  BEAMS_PENREGPARAM_F0 = " << sbeamcontact_.get<double>("BEAMS_PENREGPARAM_F0",-1.0)\
-      << ",  BEAMS_PENREGPARAM_C0 = " << sbeamcontact_.get<double>("BEAMS_PENREGPARAM_C0",-1.0) << std::endl;
+      << ",  BEAMS_PENREGPARAM_C0 = " << sbeamcontact_.get<double>("BEAMS_PENREGPARAM_C0",-1.0)\
+      << ",  BEAMS_GAPSHIFTPARAM = " << sbeamcontact_.get<double>("BEAMS_GAPSHIFTPARAM",0.0) << std::endl;
     }
 
     if (DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Damping>(sbeamcontact_,"BEAMS_DAMPING") == INPAR::BEAMCONTACT::bd_no )
@@ -603,8 +615,13 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
                                       Epetra_Vector& fres,
                                       const Epetra_Vector& disrow,
                                       Teuchos::ParameterList timeintparams,
-                                      bool newsti)
+                                      bool newsti,
+                                      double time)
 {
+
+  //set time
+  timen_=time;
+
   //Set class variable
   dis_->Update(1.0,disrow,0.0);
 
@@ -618,6 +635,9 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   // update currentpositions
   SetCurrentPositions(currentpositions,disccol);
 
+  double t_start = 0.0;
+  double t_end = 0.0;
+
   //**********************************************************************
   // SEARCH
   //**********************************************************************
@@ -629,10 +649,10 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   //**********************************************************************
   if(tree_ != Teuchos::null)
   {
-     double t_start = Teuchos::Time::wallTime();
+     t_start = Teuchos::Time::wallTime();
      elementpairs = tree_->OctTreeSearch(currentpositions);
 
-     double t_end = Teuchos::Time::wallTime() - t_start;
+     t_end = Teuchos::Time::wallTime() - t_start;
      Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
      if(!pdiscret_.Comm().MyPID() && ioparams.get<int>("STDOUTEVRY",0))
        std::cout << "      OctTree Search (Contact): " << t_end << " seconds, found pairs: "<<elementpairs.size()<< std::endl;
@@ -642,14 +662,16 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   //**********************************************************************
   else
   {
-    double t_start = Teuchos::Time::wallTime();
+    t_start = Teuchos::Time::wallTime();
 
     elementpairs = BruteForceSearch(currentpositions,searchradius_,sphericalsearchradius_);
-    double t_end = Teuchos::Time::wallTime() - t_start;
+    t_end = Teuchos::Time::wallTime() - t_start;
     Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
     if(!pdiscret_.Comm().MyPID() && ioparams.get<int>("STDOUTEVRY",0))
       std::cout << "      Brute Force Search (Contact): " << t_end << " seconds" << std::endl;
   }
+
+  t_start = Teuchos::Time::wallTime();
 
   // process the found element pairs and fill the BTB, BTSOL, BTSPH interaction pair vectors
   FillContactPairsVectors(elementpairs);
@@ -706,15 +728,24 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   // integration class.
   //**********************************************************************
   // initialize global contact force vectors
-  fc_ = Teuchos::rcp(new Epetra_Vector(fres.Map()));
-  if (fcold_==Teuchos::null) fcold_ = Teuchos::rcp(new Epetra_Vector(fres.Map()));
+  fc_->PutScalar(0.0);
 
   // initialize contact stiffness and uncomplete global stiffness
   stiffc_ = Teuchos::rcp(new LINALG::SparseMatrix(stiffmatrix.RangeMap(),100));
   stiffmatrix.UnComplete();
 
+
+  t_end = Teuchos::Time::wallTime() - t_start;
+  std::cout << "      Pair management: " << t_end << " seconds. "<< std::endl;
+  t_start = Teuchos::Time::wallTime();
+
   // evaluate all element pairs (BTB, BTSOL, BTSPH; Contact and Potential)
   EvaluateAllPairs(timeintparams);
+
+  t_end = Teuchos::Time::wallTime() - t_start;
+  std::cout << "      Evaluate Contact Pairs: " << t_end << " seconds. "<< std::endl;
+  contactevaluationtime_+=t_end;
+  t_start = Teuchos::Time::wallTime();
 
   if (DRT::INPUT::IntegralValue<INPAR::STR::MassLin>(sstructdynamic_,"MASSLIN") != INPAR::STR::ml_rotations)
   {
@@ -750,6 +781,9 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   #ifdef OUTPUTEVERYNEWTONSTEP
     ConsoleOutput();
   #endif
+
+  t_end = Teuchos::Time::wallTime() - t_start;
+  std::cout << "      Post-manage Pairs: " << t_end << " seconds. "<< std::endl;
 
   return;
 }
@@ -1974,19 +2008,33 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
   //**********************************************************************
   // create filename for ASCII-file for output
   //**********************************************************************
-  //Only write out put every OUTPUTEVERY^th step
-  if (timestep%OUTPUTEVERY!=0)
-    return;
+
+  #if defined(CONTACTPAIRSPECIFICOUTPUT) or defined(DISTINGUOSHCONTACTCOLOR)
+    //Since all the gmsh-output is written by proc0 (this is necessary in order to keep the correct
+    //order of the nodes and intermediate points when visualizing Bezier curves with Blender) the pairs_
+    //vector would have to be communicated before writing the output
+    if(btsoldiscret_->Comm().NumProc()>1)
+      dserror("Contact pair specific gmsh output is not implemented in parallel so far.");
+  #endif
 
 //  if (btsol_)
 //    dserror("GmshOutput not implemented for beam-to-solid contact so far!");
+
+  if(fabs(timen_-(outputcounter_+1)*OUTPUTEVERY)<1.0e-8)
+  {
+    outputcounter_++;
+  }
+  else
+  {
+    return;
+  }
 
   // STEP 1: OUTPUT OF TIME STEP INDEX
   std::ostringstream filename;
   filename << "../o/gmsh_output/";
 
   if (timestep<1000000)
-    filename << "beams_t" << std::setw(6) << std::setfill('0') << timestep;
+    filename << "beams_t" << std::setw(6) << std::setfill('0') << outputcounter_;
   else /*(timestep>=1000000)*/
     dserror("ERROR: Gmsh output implemented for max 999.999 time steps");
 
@@ -2077,14 +2125,70 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
 //    gmshfileheader <<"View.ColormapSwap = 0;\n";
 //    gmshfileheader <<"View.ColorTable = {Black,Yellow,Blue,Orange,Red,Cyan,Purple,Brown,Green};\n";
 
+    //general stuff
     gmshfileheader <<"View.Axes = 0;\n";
     gmshfileheader <<"View.LineType = 1;\n";
     gmshfileheader <<"View.LineWidth = 1.5;\n";
-
     gmshfileheader <<"General.RotationCenterGravity=0;\n";
-//    gmshfileheader <<"General.RotationCenterX=11;\n";
-//    gmshfileheader <<"General.RotationCenterY=11;\n";
-//    gmshfileheader <<"General.RotationCenterZ=11;\n";
+
+//    gmshfileheader <<"General.BackgroundGradient = 0;\n";
+//    gmshfileheader <<"View.ShowScale = 0;\n";
+//    gmshfileheader <<"General.SmallAxes = 0;\n";
+
+    //output: patch test (y-plane view)
+//    gmshfileheader <<"General.TrackballQuaternion0 = 4.329637285359677e-17;\n";
+//    gmshfileheader <<"General.TrackballQuaternion1 = -0.7071067811865475;\n";
+//    gmshfileheader <<"General.TrackballQuaternion2 = -0.7071067811865476;\n";
+//    gmshfileheader <<"General.TrackballQuaternion3 = 4.329637285359678e-17;\n";
+
+
+    //output: beam rotating on arc
+    //gmshfileheader <<"View.MaxX = 1.00;\n";
+    //gmshfileheader <<"View.MaxY = 0.9;\n";
+    //gmshfileheader <<"View.MaxZ = 1.6;\n";
+    //gmshfileheader <<"View.MinX = -1.0;\n";
+    //gmshfileheader <<"View.MinY = -0.9;\n";
+    //gmshfileheader <<"View.MinZ =  0.0;\n";
+    //gmshfileheader <<"General.TranslationY = -1.0;\n";
+
+
+    //output: two straight beams rotating
+//    gmshfileheader <<"General.ScaleX = 1.518637403204836;\n";
+//    gmshfileheader <<"General.ScaleY = 1.518637403204836;\n";
+//    gmshfileheader <<"General.ScaleZ = 1.518637403204836;\n";
+//    gmshfileheader <<"General.TrackballQuaternion0 = -0.6055997025224867;\n";
+//    gmshfileheader <<"General.TrackballQuaternion1 = -0.7452668955647411;\n";
+//    gmshfileheader <<"General.TrackballQuaternion2 = 0.04875456702342353;\n";
+//    gmshfileheader <<"General.TrackballQuaternion3 = -0.274680262986493;\n";
+//    gmshfileheader <<"General.TranslationX = 0.4366289952435975;\n";
+//    gmshfileheader <<"General.TranslationY = -0.9107124357404688;\n";
+
+    //output energy conservation
+//    gmshfileheader <<"General.ScaleX = 2.106015884264052;\n";
+//    gmshfileheader <<"General.ScaleY = 2.106015884264052;\n";
+//    gmshfileheader <<"General.ScaleZ = 2.106015884264052;\n";
+//    gmshfileheader <<"General.TrackballQuaternion0 = 0.5237725213884583;\n";
+//    gmshfileheader <<"General.TrackballQuaternion1 = -0.3413733097709274;\n";
+//    gmshfileheader <<"General.TrackballQuaternion2 = -0.350946206992174;\n";
+//    gmshfileheader <<"General.TrackballQuaternion3 = 0.6971107293767856;\n";
+//    gmshfileheader <<"General.TranslationX = -0.008622353150367048;\n";
+//    gmshfileheader <<"General.TranslationY = -0.01368488040624668;\n";
+
+    //output two beams twisting
+//    gmshfileheader <<"General.ScaleX = 0.04642018729706283;\n";
+//    gmshfileheader <<"General.ScaleY = 0.04642018729706283;\n";
+//    gmshfileheader <<"General.ScaleZ = 0.04642018729706283;\n";
+//    gmshfileheader <<"General.TrackballQuaternion0 = 0.108433898949273;\n";
+//    gmshfileheader <<"General.TrackballQuaternion1 = -0.003546806330406991;\n";
+//    gmshfileheader <<"General.TrackballQuaternion2 = -0.8535041687531515;\n";
+//    gmshfileheader <<"General.TrackballQuaternion3 = -0.5096666985830173;\n";
+//    gmshfileheader <<"General.TranslationX = 0.5325452732071692;\n";
+//    gmshfileheader <<"General.TranslationY = 0.2738989770477544;\n";
+
+    //gmshfileheader <<"View.PointSize = 5;\n";
+
+    //no shadow
+    //gmshfileheader <<"View.Light = 0;\n";
 
     //write content into file and close it
     fprintf(fp, gmshfileheader.str().c_str());
@@ -2108,8 +2212,14 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
     fclose(fp);
   }
 
+#ifdef OUTPUTALLPROCS
+  int numoutputloops=btsoldiscret_->Comm().NumProc()
+#else
+  int numoutputloops=1;
+#endif
+
   // loop over the participating processors each of which appends its part of the output to one output file
-  for(int i=0;i<btsoldiscret_->Comm().NumProc();i++)
+  for(int i=0;i<numoutputloops;i++)
   {
     if (btsoldiscret_->Comm().MyPID() == i)
     {
@@ -2295,31 +2405,7 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
         }
       }//loop over elements
 
-  //    //loop over pairs vector in order to print normal vector
-  //    for (int i=0;i<pairs_.size();++i)
-  //    {
-  //      if(pairs_[i]->Element1()->Id()==191 and pairs_[i]->Element2()->Id()==752)
-  //      {
-  //        Epetra_SerialDenseVector r1 = pairs_[i]->GetX1();
-  //        Epetra_SerialDenseVector r2 = pairs_[i]->GetX2();
-  //        Epetra_SerialDenseVector normal = pairs_[i]->GetNormal();
-  //        double color = 0.5;
-  //
-  //        gmshfilecontent << "VP("<< std::scientific;
-  //        gmshfilecontent << r2(0) << "," << r2(1) << "," << r2(2);
-  //        gmshfilecontent << "){" << std::scientific;
-  //        gmshfilecontent << normal(0) << "," << normal(1) << "," << normal(2);
-  //        gmshfilecontent << "};"<< std::endl << std::endl;
-  //
-  //        gmshfilecontent << "SL("<< std::scientific;
-  //        gmshfilecontent << r1(0) << "," << r1(1) << "," << r1(2) << ",";
-  //        gmshfilecontent << r2(0) << "," << r2(1) << "," << r2(2);
-  //        gmshfilecontent << "){" << std::scientific;
-  //        gmshfilecontent << color << "," << color << "};"<< std::endl << std::endl;
-  //      }
-  //
-  //    }//loop over pairs
-
+      #ifdef CONTACTPAIRSPECIFICOUTPUT
       //loop over pairs vector in order to print normal vector
       for (int i=0;i<(int)pairs_.size();++i)
       {
@@ -2337,14 +2423,17 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
           LINALG::Matrix<3,1> r2(true);
 
           double fac=1.0;
+          double color = 1.0;
 
           if(j<numcps)
           {
-            fac=0.1;
+            fac=0.01;
+            color = 0.9;
           }
           else
           {
-            fac=0.05;
+            fac=0.3;
+            color = 0.5;
           }
 
           for (int k=0;k<3;k++)
@@ -2354,12 +2443,6 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
             r2(k)=r1_vec[j](k)+normal(k);
           }
 
-          int color = 0.0;
-
-          if(j<numcps)
-            color = 1.0;
-          else
-            color = 0.5;
 
           gmshfilecontent << "SL("<< std::scientific;
           gmshfilecontent << r1(0) << "," << r1(1) << "," << r1(2) << ",";
@@ -2368,6 +2451,7 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
           gmshfilecontent << color << "," << color << "};"<< std::endl << std::endl;
         }
       }//loop over pairs
+      #endif
 
       // write content into file and close
       fprintf(fp,gmshfilecontent.str().c_str());
@@ -2835,6 +2919,20 @@ void CONTACT::Beam3cmanager::ConsoleOutput()
     }
     Comm().Barrier();
 
+    int totcontactpairs=0;
+
+    double maxangle=0.0;
+    double mingap=0.0;
+    int numperpc=0;
+    int numparc=0;
+    int numepc=0;
+
+    #ifdef PRINTGAPFILE
+      double error=0.0;
+      int gapsize=0;
+      double refgap=-0.002;
+     #endif
+
     // loop over all pairs
     for (int i=0;i<(int)pairs_.size();++i)
     {
@@ -2862,12 +2960,98 @@ void CONTACT::Beam3cmanager::ConsoleOutput()
         {
           for(int j=0;j<(int)gaps.size();j++)
           {
-            printf("      %-6d (%2d/%-2d) %-6d (%2d/%-2d)   %-1d  %-6.2f %-6.2f %-7.2f %-11.2e %-11.2e \n",id1,segmentids[j].first+1,numsegments.first,id2,segmentids[j].second+1,numsegments.second,types[j],closestpoints[j].first,closestpoints[j].second,angles[j]/M_PI*180.0,gaps[j],forces[j]);
+
+            #ifdef PRINTGAPFILE
+              double gap=gaps[j];
+              error+=fabs((gap-refgap)/refgap);
+              gapsize++;
+            #endif
+
+            if(fabs(angles[j]/M_PI*180.0)>maxangle)
+              maxangle=fabs(angles[j]/M_PI*180.0);
+
+            if(gaps[j]<mingap)
+              mingap=gaps[j];
+
+            if(types[j]==0)
+              numperpc++;
+
+            if(types[j]==1)
+              numparc++;
+
+            if(types[j]==2)
+              numepc++;
+
+            printf("      %-6d (%2d/%-2d) %-6d (%2d/%-2d)   %-1d  %-6.2f %-6.2f %-7.2f %-11.8e %-11.2e \n",id1,segmentids[j].first+1,numsegments.first,id2,segmentids[j].second+1,numsegments.second,types[j],closestpoints[j].first,closestpoints[j].second,angles[j]/M_PI*180.0,gaps[j],forces[j]);
             fflush(stdout);
+            totcontactpairs++;
           }
         }
       }
     }
+
+    #ifdef PRINTNUMCONTACTSFILE
+    std::ostringstream filename;
+    filename << "activecontacts2.txt";
+
+    // do output to file in c-style
+    FILE* fp = NULL;
+    std::stringstream filecontent;
+
+    if(firststep_)
+    {
+      // open file to write output data into
+      fp = fopen(filename.str().c_str(), "w");
+      filecontent << "perpcontacts parcontacts epcontacts\n";
+      firststep_=false;
+    }
+    else
+    {
+      // open file to write output data into
+      fp = fopen(filename.str().c_str(), "a");
+    }
+
+    filecontent << numperpc << " " << numparc << " " << numepc <<"\n";
+
+    //write content into file and close it
+    fprintf(fp, filecontent.str().c_str());
+    fclose(fp);
+    #endif
+
+    #ifdef PRINTGAPFILE
+      error=error/gapsize;
+      std::cout << "error: " << error << std::endl;
+
+      std::ostringstream filename;
+      filename << "gaps.txt";
+
+      // do output to file in c-style
+      FILE* fp = NULL;
+      std::stringstream filecontent;
+
+      if(firststep_)
+      {
+        // open file to write output data into
+        fp = fopen(filename.str().c_str(), "w");
+        filecontent << "gaperrors\n";
+        firststep_=false;
+      }
+      else
+      {
+        // open file to write output data into
+        fp = fopen(filename.str().c_str(), "a");
+      }
+
+      filecontent << error << "\n";
+
+      //write content into file and close it
+      fprintf(fp, filecontent.str().c_str());
+      fclose(fp);
+    #endif
+
+    std::cout << "Total Number of Contact Pairs: " << totcontactpairs << std::endl;
+    std::cout << "Maximal contact angle: " << maxangle << std::endl;
+    std::cout << "Minimal gap: " << mingap << std::endl;
 
         // loop over all btsph pairs
     for (int i=0;i<(int)btsphpairs_.size();++i)
@@ -2980,6 +3164,7 @@ void CONTACT::Beam3cmanager::GMSH_2_noded(const int& n,
 
   // declaring variable for color of elements
   double color = 1.0;
+#ifdef DISTINGUOSHCONTACTCOLOR
   for (int i=0;i<(int)pairs_.size();++i)
   {
     // abbreviations
@@ -3000,6 +3185,7 @@ void CONTACT::Beam3cmanager::GMSH_2_noded(const int& n,
     // if element is memeber of an active contact pair, choose different color
     if ( (thisele->Id()==id1 || thisele->Id()==id2) && active) color = 0.875;
   }
+#endif
 
   // compute three dimensional angle theta
   for (int j=0;j<theta.Length();++j)
@@ -3147,6 +3333,7 @@ void CONTACT::Beam3cmanager::GMSH_3_noded(const int& n,
 
   // declaring variable for color of elements
   double color = 1.0;
+#ifdef DISTINGUOSHCONTACTCOLOR
   for (int i=0;i<(int)pairs_.size();++i)
   {
     // abbreviations
@@ -3167,6 +3354,7 @@ void CONTACT::Beam3cmanager::GMSH_3_noded(const int& n,
     // if element is memeber of an active contact pair, choose different color
     if ( (thisele->Id()==id1 || thisele->Id()==id2) && active) color = 0.875;
   }
+#endif
 
   // computation of coordinates starts here
   // first, the prisms between node 1 and 3 will be computed.
@@ -3344,6 +3532,7 @@ void CONTACT::Beam3cmanager::GMSH_4_noded(const int& n,
 
   // declaring variable for color of elements
   double color = 1.0;
+#ifdef DISTINGUOSHCONTACTCOLOR
   for (int i=0;i<(int)pairs_.size();++i)
   {
     // abbreviations
@@ -3364,6 +3553,7 @@ void CONTACT::Beam3cmanager::GMSH_4_noded(const int& n,
     // if element is memeber of an active contact pair, choose different color
     if ( (thisele->Id()==id1 || thisele->Id()==id2) && active) color = 0.875;
   }
+#endif
 
   // computation of coordinates starts here
   // first, the prisms between node 1 and 3 will be computed.
@@ -3519,7 +3709,7 @@ void CONTACT::Beam3cmanager::GMSH_4_noded(const int& n,
  |  Compute gmsh output for N-noded elements (private)       meier 02/14|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::GMSH_N_noded(const int& n,
-                                          const int& n_axial,
+                                          int& n_axial,
                                           const Epetra_SerialDenseMatrix& allcoord,
                                           const DRT::Element* thisele,
                                           std::stringstream& gmshfilecontent)
@@ -3549,8 +3739,12 @@ void CONTACT::Beam3cmanager::GMSH_N_noded(const int& n,
     eleradius = MANIPULATERADIUSVIS*sqrt(sqrt(4 * (thisbeam->Iyy()) / M_PI));
   }
 
+
   // declaring variable for color of elements
   double color = 1.0;
+
+
+#ifdef DISTINGUOSHCONTACTCOLOR
   for (int i=0;i<(int)pairs_.size();++i)
   {
     // abbreviations
@@ -3571,10 +3765,13 @@ void CONTACT::Beam3cmanager::GMSH_N_noded(const int& n,
     // if element is memeber of an active contact pair, choose different color
     if ( (thisele->Id()==id1 || thisele->Id()==id2) && active) color = 0.875;
   }
+#endif
 
   // computation of coordinates starts here
   for (int i=0;i<n_axial-1;++i)
   {
+
+
     // prisms between node i and node i+1
     for (int j=0;j<3;++j)
     {
@@ -3582,12 +3779,25 @@ void CONTACT::Beam3cmanager::GMSH_N_noded(const int& n,
       coord(j,1) = allcoord(j,i+1);
     }
 
-    //Output of element IDs
-    if (i==n_axial/2)
-    {
-      gmshfilecontent << "T3(" << std::scientific << coord(0,0) << "," << coord(1,0) << "," << coord(2,0) << "," << 17 << ")";
-      gmshfilecontent << "{\"" << thisele->Id() << "\"};" << std::endl;
-    }
+//    //Output of element IDs
+//    if (i==n_axial/2)
+//    {
+//      gmshfilecontent << "T3(" << std::scientific << coord(0,0) << "," << coord(1,0) << "," << coord(2,0) << "," << 17 << ")";
+//      gmshfilecontent << "{\"" << thisele->Id() << "\"};" << std::endl;
+//    }
+
+//separate elements by black dots
+//    if(i==0)
+//    {
+//      gmshfilecontent <<"SP(" << coord(0,0) <<  "," << coord(1,0) << "," << coord(2,0)+0.012 << "){0.0,0.0};"<<std::endl;
+//      gmshfilecontent <<"SP(" << coord(0,0) <<  "," << coord(1,0) << "," << coord(2,0)-0.012 << "){0.0,0.0};"<<std::endl;
+//    }
+//
+//    if(i==n_axial-2)
+//    {
+//      gmshfilecontent <<"SP(" << coord(0,1) <<  "," << coord(1,1) << "," << coord(2,1)+0.012 << "){0.0,0.0};"<<std::endl;
+//      gmshfilecontent <<"SP(" << coord(0,1) <<  "," << coord(1,1) << "," << coord(2,1)-0.012 << "){0.0,0.0};"<<std::endl;
+//    }
 
     // compute three dimensional angle theta
     for (int j=0;j<3;++j)
@@ -3717,26 +3927,29 @@ void CONTACT::Beam3cmanager::GMSH_N_nodedLine(const int& n,
 
   // declaring variable for color of elements
   double color = 1.0;
-  for (int i=0;i<(int)pairs_.size();++i)
-  {
-    // abbreviations
-    int id1 = (pairs_[i]->Element1())->Id();
-    int id2 = (pairs_[i]->Element2())->Id();
-    bool active = pairs_[i]->GetContactFlag();
 
-    // if element is memeber of an active contact pair, choose different color
-    if ( (thisele->Id()==id1 || thisele->Id()==id2) && active) color = 0.0;
-  }
-  for (int i=0;i<(int)btsphpairs_.size();++i)
-  {
-    // abbreviations
-    int id1 = (btsphpairs_[i]->Element1())->Id();
-    int id2 = (btsphpairs_[i]->Element2())->Id();
-    bool active = btsphpairs_[i]->GetContactFlag();
+  #ifdef DISTINGUOSHCONTACTCOLOR
+    for (int i=0;i<(int)pairs_.size();++i)
+    {
+      // abbreviations
+      int id1 = (pairs_[i]->Element1())->Id();
+      int id2 = (pairs_[i]->Element2())->Id();
+      bool active = pairs_[i]->GetContactFlag();
 
-    // if element is memeber of an active contact pair, choose different color
-    if ( (thisele->Id()==id1 || thisele->Id()==id2) && active) color = 0.875;
-  }
+      // if element is memeber of an active contact pair, choose different color
+      if ( (thisele->Id()==id1 || thisele->Id()==id2) && active) color = 0.0;
+    }
+    for (int i=0;i<(int)btsphpairs_.size();++i)
+    {
+      // abbreviations
+      int id1 = (btsphpairs_[i]->Element1())->Id();
+      int id2 = (btsphpairs_[i]->Element2())->Id();
+      bool active = btsphpairs_[i]->GetContactFlag();
+
+      // if element is memeber of an active contact pair, choose different color
+      if ( (thisele->Id()==id1 || thisele->Id()==id2) && active) color = 0.875;
+    }
+  #endif
 
 
   for (int i=0;i<n_axial-1;i++)
@@ -4016,4 +4229,39 @@ bool CONTACT::Beam3cmanager::CloseMidpointDistance(const DRT::Element* ele1, con
     return true;
   else
     return false;
+}
+
+/*----------------------------------------------------------------------*
+ | read contact force for restart  meier 02/15|
+ *----------------------------------------------------------------------*/
+void CONTACT::Beam3cmanager::ReadRestart(IO::DiscretizationReader& reader)
+{
+//  std::cout << "test1: " << std::endl;
+//
+//  fcold_->Print(std::cout);
+//
+//  std::cout << "test2: " << std::endl;
+
+  reader.ReadVector(fcold_, "fcold");
+
+//  std::cout << "test3: " << std::endl;
+//
+//  fcold_->Print(std::cout);
+//
+//  std::cout << "test4: " << std::endl;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | write contact force for restart  meier 02/15|
+ *----------------------------------------------------------------------*/
+void CONTACT::Beam3cmanager::WriteRestart(Teuchos::RCP<IO::DiscretizationWriter> output)
+{
+
+  //fcold_->Print(std::cout);
+
+  output->WriteVector("fcold", fcold_);
+
+  return;
 }

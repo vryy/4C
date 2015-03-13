@@ -227,10 +227,13 @@ namespace STR
     //! @name Global force vectors
     //! Residual \c fres_ exists already in base class
     //@{
+    Teuchos::RCP<Epetra_Vector> fint_;  //!< internal force at \f$t_n\f$
+
     Teuchos::RCP<Epetra_Vector> fintn_;  //!< internal force at \f$t_{n+1}\f$
 
-    Teuchos::RCP<Epetra_Vector> fextn_;  //!< external force at \f$t_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> fext_;  //!< internal force at \f$t_n\f$
 
+    Teuchos::RCP<Epetra_Vector> fextn_;  //!< external force at \f$t_{n+1}\f$
     //@}
 
   };  // class TimIntStatics

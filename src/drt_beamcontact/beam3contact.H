@@ -984,7 +984,8 @@ private:
                       LINALG::TMatrix<TYPE, 3, 1>& r2,
                       LINALG::TMatrix<TYPE, 3, 1>& r1_xi,
                       LINALG::TMatrix<TYPE, 3, 1>& r2_xi,
-                      Teuchos::RCP<Beam3contactvariables<numnodes, numnodalvalues> > variables);
+                      Teuchos::RCP<Beam3contactvariables<numnodes, numnodalvalues> > variables,
+                      int contacttype);
 
   /*!
   \brief Check, if we have contact or not (e.g. gap < gmax [e.g. gmax=0]?)
