@@ -24,6 +24,7 @@ Maintainer: Matthias Mayr
 // baci
 #include "linesearch_base.H"
 #include "nln_problem.H"
+#include "nln_utils.H"
 
 #include "../drt_lib/drt_dserror.H"
 
@@ -72,6 +73,25 @@ void NLNSOL::LineSearchBase::Init(
   if (GetFNormOld() < 0.0)
     dserror("Old residual norm 'resnormold_' = %f, but has to be greater than "
         "0.0!", resnormold_);
+
+  // set verbosity level
+  if (Params().isParameter("Line Search: Verbosity Level"))
+  {
+    const std::string verblevel =
+        Params().get<std::string>("Line Search: Verbosity");
+    setVerbLevel(NLNSOL::UTILS::TranslateVerbosityLevel(verblevel));
+  }
+  else
+  {
+    setDefaultVerbLevel(Teuchos::VERB_MEDIUM);
+  }
+
+  if (getVerbLevel() > Teuchos::VERB_HIGH)
+  {
+    *getOStream() << "Parameter list passed to Line Search algorithm:"
+        << std::endl;
+    Params().print(*getOStream());
+  }
 
   // Init() has been called
   SetIsInit();

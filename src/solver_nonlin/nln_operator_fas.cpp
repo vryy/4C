@@ -86,12 +86,6 @@ int NLNSOL::NlnOperatorFas::ApplyInverse(const Epetra_MultiVector& f,
       "NLNSOL::NlnOperatorFas::ApplyInverse");
   Teuchos::TimeMonitor monitor(*time);
 
-  // create formatted output stream
-  Teuchos::RCP<Teuchos::FancyOStream> out =
-      Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
-  out->setOutputToRootOnly(0);
-  Teuchos::OSTab tab(out, Indentation());
-
   // Make sure that Init() and Setup() have been called
   if (not IsInit())  { dserror("Init() has not been called, yet."); }
   if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
@@ -106,14 +100,19 @@ int NLNSOL::NlnOperatorFas::ApplyInverse(const Epetra_MultiVector& f,
 
   Teuchos::RCP<NLNSOL::UTILS::StagnationDetection> stagdetection =
       Teuchos::rcp(new NLNSOL::UTILS::StagnationDetection());
-  stagdetection->Init(fnorm2);
+  stagdetection->Init(
+      Params().sublist("Nonlinear Operator: Stagnation Detection"), fnorm2);
 
   int iter = 0;
   while (ContinueIterations(iter, converged))
   {
     ++iter;
 
-    *out << "Start multigrid cycle for the " << iter << ". time." << std::endl;
+    if (getVerbLevel() > Teuchos::VERB_NONE)
+    {
+      *getOStream() << "Start multigrid cycle for the " << iter << ". time."
+          << std::endl;
+    }
 
     // call generic cycling routine
     Cycle(*ftmp, x, 0);
@@ -184,17 +183,12 @@ void NLNSOL::NlnOperatorFas::VCycle(const Epetra_MultiVector& f,
     const int level
     ) const
 {
-  // create formatted output stream
-  Teuchos::RCP<Teuchos::FancyOStream> out =
-      Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
-  out->setOutputToRootOnly(0);
-  Teuchos::OSTab tab(out, Indentation());
-
   int err = 0;
 
   Hierarchy()->CheckLevelID(level);
 
-  *out << "WELCOME to VCycle on level " << level << "." << std::endl;
+  if (getVerbLevel() > Teuchos::VERB_NONE)
+    *getOStream() << "WELCOME to VCycle on level " << level << "." << std::endl;
 
   // we need at least zeroed vectors, especially on the fine level
   // restriction of fine-level residual
@@ -285,11 +279,14 @@ void NLNSOL::NlnOperatorFas::VCycle(const Epetra_MultiVector& f,
   }
   else // coarse level solve
   {
-    *out << std::endl
-         << "**************************" << std::endl
-         << "*** COARSE LEVEL SOLVE ***" << std::endl
-         << "**************************" << std::endl
-         << std::endl;
+    if (getVerbLevel() > Teuchos::VERB_NONE)
+    {
+        *getOStream() << std::endl
+            << "**************************" << std::endl
+            << "*** COARSE LEVEL SOLVE ***" << std::endl
+            << "**************************" << std::endl
+            << std::endl;
+    }
 
     // evaluate current residual // ToDo Do we really need to ComputeF() here?
     Teuchos::RCP<Epetra_MultiVector> fsmoothed =
@@ -324,7 +321,11 @@ void NLNSOL::NlnOperatorFas::VCycle(const Epetra_MultiVector& f,
     dserror("Map failure during recursive calls of V-cycle!");
 #endif
 
-  *out << "GOOD BYE from VCycle on level " << level << "." <<  std::endl;
+  if (getVerbLevel() > Teuchos::VERB_NONE)
+  {
+      *getOStream() << "GOOD BYE from VCycle on level " << level << "."
+          <<  std::endl;
+  }
 
   return;
 }

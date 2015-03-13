@@ -98,10 +98,13 @@ void NLNSOL::LineSearchPolynomial::ComputeLSParam(double& lsparam,
 
   if (suffdecr)
   {
-//    *out << LabelShort()
-//         << ": lsparam = " << lsparam
-//         << " after full step"
-//         << std::endl;
+    if (getVerbLevel() > Teuchos::VERB_HIGH)
+    {
+      *getOStream() << LabelShort()
+          << ": lsparam = " << lsparam
+          << " after full step"
+          << std::endl;
+    }
     return;
   }
   else
@@ -120,8 +123,13 @@ void NLNSOL::LineSearchPolynomial::ComputeLSParam(double& lsparam,
 
     if (converged or suffdecr)
     {
-      *out << LabelShort() << ": lsparam = " << lsparam << " after half step"
-           << std::endl;
+      if (getVerbLevel() > Teuchos::VERB_LOW)
+      {
+        *getOStream() << LabelShort()
+            << ": lsparam = " << lsparam
+            << " after half step"
+            << std::endl;
+      }
       return;
     }
     else
@@ -193,10 +201,13 @@ void NLNSOL::LineSearchPolynomial::ComputeLSParam(double& lsparam,
         y3 = fnorm2;
       }
 
-      *out << LabelShort()
-           << ": lsparam = " << lsparam
-           << " after " << iter
-           << " iterations" << std::endl;
+      if (getVerbLevel() > Teuchos::VERB_LOW)
+      {
+        *getOStream() << LabelShort()
+            << ": lsparam = " << lsparam
+            << " after " << iter
+            << " iterations" << std::endl;
+      }
     }
   }
 

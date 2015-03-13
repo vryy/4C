@@ -278,14 +278,6 @@ namespace NLNSOL
 
     //@}
 
-    //! @name Configuration flags for printing
-    //@{
-
-    //! Print the convergence check? (yes / no)
-    bool printconvcheck_;
-
-    //@}
-
   }; // class NlnProblem
 } // namespace NLNSOL
 

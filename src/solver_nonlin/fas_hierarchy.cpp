@@ -104,6 +104,11 @@ void NLNSOL::FAS::AMGHierarchy::Init(const Epetra_Comm& comm,
   params_ = Teuchos::rcp(&params, false);
   nlnproblem_ = nlnproblem;
 
+  setVerbLevel(
+      NLNSOL::UTILS::TranslateVerbosityLevel(
+          Params().sublist("FAS: MueLu Parameters").get<std::string>(
+              "verbosity")));
+
   // Init() has been called.
   SetIsInit();
 
@@ -226,9 +231,17 @@ void NLNSOL::FAS::AMGHierarchy::Setup()
       nlnproblem->Setup();
     }
 
-    // create a single level and initialize
+    // -------------------------------------------------------------------------
+    // create and fill a single level
+    // -------------------------------------------------------------------------
+    // create
     Teuchos::RCP<NLNSOL::FAS::NlnLevel> newlevel =
         Teuchos::rcp(new NLNSOL::FAS::NlnLevel());
+
+    // set same verbosity as in hierarchy
+    newlevel->setVerbLevel(getVerbLevel());
+
+    // initialize and setup
     newlevel->Init(muelulevel->GetLevelID(), mueLuHierarchy_->GetNumLevels(),
         myAcrs, myR, myP, Comm(), levelparams, nlnproblem);
     newlevel->Setup();
@@ -242,8 +255,11 @@ void NLNSOL::FAS::AMGHierarchy::Setup()
   CheckValidity();
 
   // Print all levels
-  if (Params().sublist("Printing").get<bool>("print Nln levels"))
+  if (getVerbLevel() > Teuchos::VERB_NONE
+      and Params().sublist("Printing").get<bool>("print Nln levels"))
+  {
     PrintNlnLevels(std::cout);
+  }
 
   // Setup() has been called
   SetIsSetup();
@@ -262,12 +278,6 @@ void NLNSOL::FAS::AMGHierarchy::RefreshRAPs()
   Teuchos::RCP<Teuchos::Time> time = Teuchos::TimeMonitor::getNewCounter(
       "NLNSOL::FAS::AMGHierarchy::ResfreshRAPs");
   Teuchos::TimeMonitor monitor(*time);
-
-  // create formatted output stream
-  Teuchos::RCP<Teuchos::FancyOStream> out =
-      Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
-  out->setOutputToRootOnly(0);
-  Teuchos::OSTab tab(out, 0);
 
 #ifdef HAVE_MueLu
   // fine level matrix
@@ -294,7 +304,8 @@ void NLNSOL::FAS::AMGHierarchy::RefreshRAPs()
     // update matrix in NLNSOL::FAS::Level
     NlnLevel(level)->UpdateMatrix(myAcrs);
 
-    *out << "Refreshed RAP on level " << level << "." << std::endl;
+    if (getVerbLevel() > Teuchos::VERB_NONE)
+      *getOStream() << "Refreshed RAP on level " << level << "." << std::endl;
   }
 
 #else

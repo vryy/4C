@@ -205,11 +205,11 @@ int NLNSOL::NlnOperatorNonlinCG::ApplyInverse(const Epetra_MultiVector& f,
     {
       beta = 0.0;
 
-      if (Comm().MyPID() == 0)
+      if (getVerbLevel() > Teuchos::VERB_NONE)
       {
-        IO::cout << "   Restart " << Label()
-                 << " in iteration " << iter
-                 << IO::endl;
+        *getOStream() << "   Restart " << Label()
+            << " in iteration " << iter
+            << std::endl;
       }
     }
 

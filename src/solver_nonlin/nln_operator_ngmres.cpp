@@ -67,12 +67,6 @@ void NLNSOL::NlnOperatorNGmres::Setup()
       "NLNSOL::NlnOperatorNGmres::Setup");
   Teuchos::TimeMonitor monitor(*time);
 
-  // create formatted output stream
-  Teuchos::RCP<Teuchos::FancyOStream> out =
-      Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
-  out->setOutputToRootOnly(0);
-  Teuchos::OSTab tab(out, Indentation());
-
   // Make sure that Init() has been called
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
 
@@ -80,9 +74,12 @@ void NLNSOL::NlnOperatorNGmres::Setup()
   SetupLineSearch();
   SetupPreconditioner();
 
-  *out << LabelShort()
-       << ": Max window size has been set to " << GetMaxWindowSize()
-       << "." << std::endl;
+  if (getVerbLevel() > Teuchos::VERB_LOW)
+  {
+    *getOStream() << LabelShort()
+        << ": Max window size has been set to " << GetMaxWindowSize()
+        << "." << std::endl;
+  }
 
   // Setup() has been called
   SetIsSetup();
@@ -124,12 +121,6 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
       "NLNSOL::NlnOperatorNGmres::ApplyInverse");
   Teuchos::TimeMonitor monitor(*time);
 
-  // create formatted output stream
-  Teuchos::RCP<Teuchos::FancyOStream> out =
-      Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
-  out->setOutputToRootOnly(0);
-  Teuchos::OSTab tab(out, Indentation());
-
   int err = 0;
 
   // Make sure that Init() and Setup() have been called
@@ -170,8 +161,11 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
   const double gammaC = std::max(2.0, gammaA);
   //----------------------------------------------------------------------------
 
-  *out << "Begin with Krylov acceleration, now. "
-       << "Starting iteration count is " << iter << "." << std::endl;
+  if (getVerbLevel() > Teuchos::VERB_LOW)
+  {
+    *getOStream() << "Begin with Krylov acceleration, now. "
+        << "Starting iteration count is " << iter << "." << std::endl;
+  }
 
   //----------------------------------------------------------------------------
   // global solution and residual vectors
@@ -240,8 +234,9 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
         if (not success)
         {
           restart = true;
-          *out << "*** Acceleration failed. *** in iteration     " << iter
-               << std::endl;
+
+          if (getVerbLevel() > Teuchos::VERB_NONE)
+            *getOStream() << "*** Acceleration failed in iteration    " << iter;
         }
 
         // evaluate the residual based on the accelerated solution
@@ -307,9 +302,13 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
         if (not success or (criterionC and criterionD and criterionCprev and criterionDprev))
         {
           restart = true;
-          *out << LabelShort()
+
+          if (getVerbLevel() > Teuchos::VERB_NONE)
+          {
+            *getOStream() << LabelShort()
                << ": Perform restart in iteration      " << iter
                << std::endl;
+          }
         }
         //----------------------------------------------------------------------
 
@@ -342,12 +341,18 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
 
       if (restart)
       {
-        *out << "Perform restart in iteration        " << iter << std::endl;
+        if (getVerbLevel() > Teuchos::VERB_NONE)
+        {
+          *getOStream() << "Perform restart in iteration        " << iter
+              << std::endl;
+        }
+
         sol.clear();
         res.clear();
       }
 
-      *out << "Current window size:   " << sol.size() << std::endl;
+      if (getVerbLevel() > Teuchos::VERB_NONE)
+        *getOStream() << "Current window size:   " << sol.size() << std::endl;
 
       converged = NlnProblem()->ConvergenceCheck(*fbar, fnorm2);
 

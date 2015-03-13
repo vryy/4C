@@ -35,9 +35,8 @@ Maintainer: Matthias Mayr
 
 // baci
 #include "nln_problem.H"
+#include "nln_utils.H"
 
-#include "../drt_io/io_control.H"
-#include "../drt_io/io_pstream.H"
 #include "../drt_lib/drt_dserror.H"
 
 #include "../linalg/linalg_sparseoperator.H"
@@ -54,8 +53,7 @@ NLNSOL::NlnProblem::NlnProblem()
   noxgrp_(Teuchos::null),
   jac_(Teuchos::null),
   tolresl2_(0.0),
-  lengthscaling_(true),
-  printconvcheck_(false)
+  lengthscaling_(true)
 {
   return;
 }
@@ -78,8 +76,11 @@ void NLNSOL::NlnProblem::Init(const Epetra_Comm& comm,
   // read some parameters from parameter list and store them separately
   tolresl2_ = Params().get<double>("Nonlinear Problem: Tol Res L2");
   lengthscaling_ = Params().get<bool>("Nonlinear Problem: Length Scaled Norms");
-  printconvcheck_ =
-      Params().get<bool>("Nonlinear Problem: Print Convergence Check");
+
+  // set the verbosity level
+  setVerbLevel(
+      NLNSOL::UTILS::TranslateVerbosityLevel(
+          Params().get<std::string>("Nonlinear Problem: Verbosity")));
 
   // Init() has been called
   SetIsInit();
@@ -221,14 +222,14 @@ bool NLNSOL::NlnProblem::ConvergenceCheck(const Epetra_MultiVector& f,
   // ---------------------------------------------------------------------------
   // Print to screen
   // ---------------------------------------------------------------------------
-  if (printconvcheck_ and Comm().MyPID() == 0)
+  if (getVerbLevel() > Teuchos::VERB_MEDIUM)
   {
-    IO::cout << "     *** " << Label() << " residual norm = " << fnorm2;
+    *getOStream() << "     *** " << Label() << " residual norm = " << fnorm2;
 
     if (converged)
-      IO::cout << "  --> Converged!" << IO::endl;
+      *getOStream() << "  --> Converged!" << std::endl;
     else
-      IO::cout << "  --> Failed to converge!" << IO::endl;
+      *getOStream() << "  --> Failed to converge!" << std::endl;
   }
   // ---------------------------------------------------------------------------
 

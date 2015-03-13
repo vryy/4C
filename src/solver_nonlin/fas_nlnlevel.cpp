@@ -354,11 +354,11 @@ int NLNSOL::FAS::NlnLevel::DoPreSmoothing(const Epetra_MultiVector& fhatbar,
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
   if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
 
-  if (Comm().MyPID() == 0)
+  if (getVerbLevel() > Teuchos::VERB_NONE)
   {
-    IO::cout << IO::endl
-             << "Do presmoothing on level " << LevelID() << ", now."
-             << IO::endl;
+    *getOStream() << std::endl
+             << "Do pre-smoothing on level " << LevelID() << ", now."
+             << std::endl;
   }
 
   return presmoother_->ApplyInverse(fhatbar, x);
@@ -372,11 +372,11 @@ int NLNSOL::FAS::NlnLevel::DoPostSmoothing(const Epetra_MultiVector& fhatbar,
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
   if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
 
-  if (Comm().MyPID() == 0)
+  if (getVerbLevel() > Teuchos::VERB_NONE)
   {
-    IO::cout << IO::endl
-             << "Do postsmoothing on level " << LevelID() << ", now."
-             << IO::endl;
+    *getOStream() << std::endl
+             << "Do post-smoothing on level " << LevelID() << ", now."
+             << std::endl;
   }
 
   return postsmoother_->ApplyInverse(fhatbar,x);
@@ -394,9 +394,12 @@ int NLNSOL::FAS::NlnLevel::DoCoarseLevelSolve(const Epetra_MultiVector& fhatbar,
     dserror("There is no coarse level solver on level %d. "
         "Perhaps this is not the coarsest level.", LevelID());
 
-  if (Comm().MyPID() == 0)
-    IO::cout << "*** Do coarse level solve on level " << LevelID() << ", now."
-             << IO::endl;
+  if (getVerbLevel() > Teuchos::VERB_NONE)
+  {
+    *getOStream() << "*** Do coarse level solve on level " << LevelID()
+        << ", now."
+        << std::endl;
+  }
 
   return coarsesolver_->ApplyInverse(fhatbar,x);
 }

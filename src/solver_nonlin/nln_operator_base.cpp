@@ -72,6 +72,17 @@ void NLNSOL::NlnOperatorBase::Init(const Epetra_Comm& comm,
   // initialize member variables
   outparams_ = Teuchos::rcp(new Teuchos::ParameterList());
 
+  if (Params().isParameter("Nonlinear Operator: Verbosity"))
+  {
+    setVerbLevel(
+        NLNSOL::UTILS::TranslateVerbosityLevel(
+            Params().get<std::string>("Nonlinear Operator: Verbosity")));
+  }
+  else
+  {
+    setDefaultVerbLevel(Teuchos::VERB_MEDIUM);
+  }
+
   // Init() has been called
   SetIsInit();
 
@@ -116,16 +127,12 @@ Teuchos::RCP<NLNSOL::NlnProblem> NLNSOL::NlnOperatorBase::NlnProblem() const
 void NLNSOL::NlnOperatorBase::PrintIterSummary(const int iter,
     const double fnorm2) const
 {
-  if (Params().get<bool>("Nonlinear Operator: Print Iterations"))
+  if (getVerbLevel() > Teuchos::VERB_NONE
+      and Params().get<bool>("Nonlinear Operator: Print Iterations"))
   {
-    Teuchos::RCP<Teuchos::FancyOStream> out =
-        Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
-    out->setOutputToRootOnly(0);
-    Teuchos::OSTab tab(out, Indentation());
-
-    *out << LabelShort() << " iteration " << iter
-         << ": |f| = " << fnorm2
-         << std::endl;
+      *getOStream() << LabelShort() << " iteration " << iter
+          << ": |f| = " << fnorm2
+          << std::endl;
   }
 }
 

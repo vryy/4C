@@ -63,12 +63,6 @@ void NLNSOL::NlnOperatorNewton::Setup()
       "NLNSOL::NlnOperatorNewton::Setup");
   Teuchos::TimeMonitor monitor(*time);
 
-  // create formatted output stream
-  Teuchos::RCP<Teuchos::FancyOStream> out =
-      Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
-  out->setOutputToRootOnly(0);
-  Teuchos::OSTab tab(out, Indentation());
-
   // Make sure that Init() has been called
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
 
@@ -80,14 +74,22 @@ void NLNSOL::NlnOperatorNewton::Setup()
     {
       case 0:
       {
-        *out << LabelShort() << " with fixed Jacobian: Chord's method"
-             << std::endl;
+        if (getVerbLevel() > Teuchos::VERB_NONE)
+        {
+          *getOStream() << LabelShort()
+              << " with fixed Jacobian: Chord's method"
+              << std::endl;
+        }
         break;
       }
       case 1:
       {
-        *out << LabelShort() << " with updated Jacobian: Full Newton"
-             << std::endl;
+        if (getVerbLevel() > Teuchos::VERB_NONE)
+        {
+          *getOStream() << LabelShort()
+              << " with updated Jacobian: Full Newton"
+              << std::endl;
+        }
         break;
       }
       default:
@@ -173,7 +175,8 @@ int NLNSOL::NlnOperatorNewton::ApplyInverse(const Epetra_MultiVector& f,
   // check for stagnation of iterations
   Teuchos::RCP<NLNSOL::UTILS::StagnationDetection> stagdetect =
       Teuchos::rcp(new NLNSOL::UTILS::StagnationDetection());
-  stagdetect->Init(fnorm2);
+  stagdetect->Init(
+        Params().sublist("Nonlinear Operator: Stagnation Detection"), fnorm2);
 
   // print initial state
   PrintIterSummary(iter, fnorm2);

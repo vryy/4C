@@ -22,6 +22,7 @@ Maintainer: Matthias Mayr
 
 // Teuchos
 #include <Teuchos_RCP.hpp>
+#include <Teuchos_VerboseObject.hpp>
 
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
@@ -59,7 +60,7 @@ namespace FAS
    *
    * \author mayr.mt \date 06/2014
    */
-  class NlnLevel
+  class NlnLevel : public Teuchos::VerboseObject<NlnLevel>
   {
 
   public:

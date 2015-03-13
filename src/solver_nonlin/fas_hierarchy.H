@@ -47,6 +47,7 @@ Maintainer: Matthias Mayr
 // Teuchos
 #include <Teuchos_Array.hpp>
 #include <Teuchos_RCP.hpp>
+#include <Teuchos_VerboseObject.hpp>
 
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
@@ -92,7 +93,7 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 06/2014
      */
-    class AMGHierarchy
+    class AMGHierarchy : public Teuchos::VerboseObject<AMGHierarchy>
     {
 
     public:

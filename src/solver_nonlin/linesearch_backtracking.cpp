@@ -74,11 +74,6 @@ void NLNSOL::LineSearchBacktracking::ComputeLSParam(double& lsparam,
       "NLNSOL::LineSearchBacktracking::ComputeLSParam");
   Teuchos::TimeMonitor monitor(*time);
 
-  // create formatted output stream
-  Teuchos::RCP<Teuchos::FancyOStream> out =
-      Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
-  out->setOutputToRootOnly(0);
-
   // make sure that Init() and Setup() has been called
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
   if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
@@ -123,10 +118,13 @@ void NLNSOL::LineSearchBacktracking::ComputeLSParam(double& lsparam,
 //         << std::endl;
   }
 
-  *out << LabelShort()
-       << ": lsparam = " << lsparam
-       << " after " << iter
-       << " iterations." << std::endl;
+  if (getVerbLevel() > Teuchos::VERB_LOW)
+  {
+    *getOStream() << LabelShort()
+        << ": lsparam = " << lsparam
+        << " after " << iter
+        << " iterations." << std::endl;
+  }
 
   return;
 }

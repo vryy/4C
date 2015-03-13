@@ -72,11 +72,6 @@ void NLNSOL::LineSearchBruteForce::ComputeLSParam(double& lsparam,
       "NLNSOL::LineSearchBruteForce::ComputeLSParam");
   Teuchos::TimeMonitor monitor(*time);
 
-  // create formatted output stream
-  Teuchos::RCP<Teuchos::FancyOStream> out =
-      Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
-  out->setOutputToRootOnly(0);
-
   // make sure that Init() and Setup() has been called
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
   if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
@@ -105,7 +100,8 @@ void NLNSOL::LineSearchBruteForce::ComputeLSParam(double& lsparam,
     // reduce trial line search parameter
     lsparam -= trialstepsize_;
 
-    *out << "lsparam = " << lsparam;// << std::endl;
+    if (getVerbLevel() > Teuchos::VERB_MEDIUM)
+      *getOStream() << "Trying lsparam = " << lsparam << std::endl;
 
     // take a reduced step
     xnew->Update(1.0, GetXOld(), lsparam, GetXInc(), 0.0);
@@ -115,10 +111,12 @@ void NLNSOL::LineSearchBruteForce::ComputeLSParam(double& lsparam,
     ConvergenceCheck(*fnew, fnorm2);
     suffdecr = IsSufficientDecrease(fnorm2, lsparam);
 
-    *out << "\tfnorm2 = " << fnorm2
-         << "\tinitnorm = " << GetFNormOld()
-         << std::endl;
+    if (getVerbLevel() > Teuchos::VERB_HIGH)
+      *getOStream() << LabelShort() << ": lsparam = " << lsparam << std::endl;
   }
+
+  if (getVerbLevel() > Teuchos::VERB_LOW)
+    *getOStream() << LabelShort() << ": lsparam = " << lsparam << std::endl;
 
   // check for successful line search
   if (not suffdecr)

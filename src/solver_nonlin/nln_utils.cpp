@@ -18,6 +18,7 @@ Maintainer: Matthias Mayr
 #include <string>
 
 // Teuchos
+#include <Teuchos_FancyOStream.hpp>
 #include <Teuchos_ParameterEntry.hpp>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
@@ -36,27 +37,63 @@ Maintainer: Matthias Mayr
 /*----------------------------------------------------------------------------*/
 NLNSOL::UTILS::StagnationDetection::StagnationDetection()
 : isinit_(false),
+  params_(Teuchos::null),
   stagiter_(1),
   stagitermax_(0),
   stagthreshold_(1.0),
-  normprev_(1.0e+12)
+  normprev_(1.0e+12),
+  active_(false)
 {
   return;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void NLNSOL::UTILS::StagnationDetection::Init(const double norminitial)
+void NLNSOL::UTILS::StagnationDetection::Init(
+    const Teuchos::ParameterList& params,
+    const double norminitial)
 {
   // Init() may be called only once
   if (IsInit())
     dserror("Init() has already been called. Don't call it again!");
 
   // initialize
-  stagiter_ = 1;
-  stagitermax_ = 3;
-  stagthreshold_ = 0.95;
-  normprev_ = norminitial;
+  params_ = Teuchos::rcp(&params, false);
+
+  if (Params()->get<bool>("Stagnation Detection: on off"))
+  {
+    active_ = true;
+    stagiter_ = 0;
+    stagitermax_ = Params()->get<int>("Stagnation Detection: max iterations");
+    stagthreshold_ = Params()->get<double>("Stagnation Detection: reduction threshold");
+    normprev_ = norminitial;
+  }
+  else
+    active_ = false;
+
+  // configure output to screen
+  setVerbLevel(
+      NLNSOL::UTILS::TranslateVerbosityLevel(
+          Params()->get<std::string>("Stagnation Detection: Verbosity")));
+
+  if (getVerbLevel() > Teuchos::VERB_HIGH)
+  {
+    *getOStream() << "Parmeter List passed to Stagnation Detection: "
+        << std::endl;
+    Params()->print(*getOStream());
+  }
+
+  if (getVerbLevel() > Teuchos::VERB_MEDIUM)
+  {
+    *getOStream() << "Initialized Stagnation Detection with " << std::endl
+        << "  Stagnation Detection: on off = " << IsActive() << std::endl
+        << "  Stagnation Detection: max iterations = " << stagiter_ << std::endl
+        << "  Stagnation Detection: reduction threshold = " << stagthreshold_
+        << std::endl
+        << "  Stagnation Detection: Verbosity = "
+        << Params()->get<std::string>("Stagnation Detection: Verbosity")
+        << std::endl;
+  }
 
   // Init() has been called
   isinit_ = true;
@@ -70,22 +107,28 @@ const bool NLNSOL::UTILS::StagnationDetection::Check(const double norm)
 {
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
 
-  // ratio of residual norms of two subsequent iterations
-  double ratio = norm / normprev_;
+  if (IsActive())
+  {
+    // ratio of residual norms of two subsequent iterations
+    double ratio = norm / normprev_;
 
-  // update
-  normprev_ = norm;
+    // update
+    normprev_ = norm;
 
-  // ---------------------------------------------------------------------------
-  // decide whether this is considered as stagnation
-  // ---------------------------------------------------------------------------
-  if (ratio > stagthreshold_)
-    ++stagiter_;
-  else
-    stagiter_ = 0;
+    // ---------------------------------------------------------------------------
+    // decide whether this is considered as stagnation
+    // ---------------------------------------------------------------------------
+    if (ratio > stagthreshold_)
+      ++stagiter_;
+    else
+      stagiter_ = 0;
 
-  std::cout << "StagnationCheck: stagiter = " << stagiter_ << " / " << stagitermax_
-      << ", ratio = " << ratio << std::endl;
+    if (getVerbLevel() > Teuchos::VERB_LOW)
+    {
+      *getOStream() << "StagnationCheck: stagiter = " << stagiter_ << "/"
+          << stagitermax_ << ", ratio = " << ratio << std::endl;
+    }
+  }
 
   return Status();
 }
@@ -95,11 +138,29 @@ const bool NLNSOL::UTILS::StagnationDetection::Check(const double norm)
 const bool NLNSOL::UTILS::StagnationDetection::Status() const
 {
   bool stagnation = false;
-  if (stagiter_ >= stagitermax_)
+
+  if (IsActive() and stagiter_ >= stagitermax_)
     stagnation = true;
 
   return stagnation;
 }
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+Teuchos::RCP<const Teuchos::ParameterList>
+NLNSOL::UTILS::StagnationDetection::Params() const
+{
+  if (params_.is_null())
+    dserror("Parameter list 'params_' has not been set, yet.");
+
+  return params_;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////// END OF CLASS //////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -194,4 +255,29 @@ void NLNSOL::UTILS::CreateParamListFromXML(const std::string filename,
   }
 
   return;
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+const Teuchos::EVerbosityLevel NLNSOL::UTILS::TranslateVerbosityLevel(
+    const std::string verblevelstring)
+{
+  Teuchos::EVerbosityLevel verblevel = Teuchos::VERB_DEFAULT;
+
+  if (verblevelstring == "default")
+    verblevel = Teuchos::VERB_DEFAULT;
+  else if (verblevelstring == "none")
+    verblevel = Teuchos::VERB_NONE;
+  else if (verblevelstring == "low")
+    verblevel = Teuchos::VERB_LOW;
+  else if (verblevelstring == "medium")
+    verblevel = Teuchos::VERB_MEDIUM;
+  else if (verblevelstring == "high")
+    verblevel = Teuchos::VERB_HIGH;
+  else if (verblevelstring == "extreme")
+    verblevel = Teuchos::VERB_EXTREME;
+  else
+    dserror("Unknown verbosity level '%s'.", verblevelstring.c_str());
+
+  return verblevel;
 }

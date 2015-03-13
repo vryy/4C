@@ -21,6 +21,7 @@ Maintainer: Matthias Mayr
 
 // Teuchos
 #include <Teuchos_RCP.hpp>
+#include <Teuchos_VerboseObject.hpp>
 
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
@@ -46,7 +47,7 @@ namespace UTILS
    *
    *  \author mayr.mt \date 03/2015
    */
-  class StagnationDetection
+  class StagnationDetection : public Teuchos::VerboseObject<StagnationDetection>
   {
   public:
 
@@ -66,6 +67,7 @@ namespace UTILS
 
     //! Initialization
     virtual void Init(
+        const Teuchos::ParameterList& params,
         const double norminitial ///< initial residual norm
         );
 
@@ -97,6 +99,17 @@ namespace UTILS
 
     //@}
 
+    //! @name Access routines
+    //@{
+
+    //! Access to parameter list
+    virtual Teuchos::RCP<const Teuchos::ParameterList> Params() const;
+
+    //! Has stagnation detection been activated?
+    virtual const bool IsActive() const { return active_; }
+
+    //@}
+
   protected:
 
   private:
@@ -112,6 +125,9 @@ namespace UTILS
     //! Has Init() been called?
     bool isinit_;
 
+    //! Teuchos::ParameterList for configuration
+    Teuchos::RCP<const Teuchos::ParameterList> params_;
+
     //! number of subsequent iterations with stagnation
     int stagiter_;
 
@@ -124,6 +140,8 @@ namespace UTILS
     //! residual norm of previous iteration
     double normprev_;
 
+    //! Has stagation detection been activated by the user?
+    bool active_;
 
   }; // class StagnationDetection
 
@@ -174,6 +192,22 @@ namespace UTILS
       );
 
   //@}
+
+  /*! \brief Translate verbosity level from std::string to
+   *  Teuchos::EVerbosityLevel
+   *
+   *  Verbosity level is given as std::string in xml-input. We need to translate
+   *  this to Teuchos::EVerbosityLevel to feed it to the Teuchos::VerboseObject.
+   *
+   *  Basically, we allow for all verbosity levels that are known in
+   *  Teuchos::VerboseObject, thoug we use the std::string notation used in
+   *  MueLu.
+   *
+   *  \author mayr.mt \date 03/2015
+   */
+  const Teuchos::EVerbosityLevel TranslateVerbosityLevel(
+      const std::string verblevel = "default" ///< std::string describing the verosity level
+      );
 
   /*! \brief Status of ApplyInverse()
    *
