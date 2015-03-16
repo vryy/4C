@@ -411,7 +411,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(
       for (unsigned int d=0; d<nsd_; ++d)
         xyz(d) = shapes_->xyzreal(d,q);
       LINALG::Matrix<nsd_,1>    u(false);
-      LINALG::Matrix<nsd_,nsd_> grad(false);
+      LINALG::Matrix<nsd_,nsd_> grad(true); //is not necessarily set in EvaluateAll
       double p;
       dsassert(initfield != NULL && startfunc != NULL,
                "initfield or startfuncno not set for initial value");
@@ -463,6 +463,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(
     shapesface_->EvaluateFace(*ele,face);
     zeroMatrix(mass);
     zeroMatrix(trVec);
+
 
     for (unsigned int q=0; q<shapesface_->nqpoints_; ++q) {
       const double fac = shapesface_->jfac(q);
@@ -535,6 +536,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionToNodes(
   Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1,"intvelnp");
   std::vector<int> localDofs = discretization.Dof(1, ele);
   std::vector<double> solvalues (localDofs.size());
+
   for (unsigned int i=0; i<solvalues.size(); ++i) {
     const int lid = matrix_state->Map().LID(localDofs[i]);
     solvalues[i] = (*matrix_state)[lid];
@@ -559,8 +561,13 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionToNodes(
   locations = DRT::UTILS::getEleNodeNumbering_nodes_paramspace
                 (DRT::UTILS::DisTypeToFaceShapeType<distype>::shape);
   matrix_state = discretization.GetState(0,"velnp");
-  localDofs = discretization.Dof(0, ele);
+
+  //we have always two dofsets
+  Element::LocationArray la(2);
+  ele->LocationVector(discretization,la,false);
+  localDofs = la[0].lm_;
   solvalues.resize (localDofs.size());
+
   for (unsigned int i=0; i<solvalues.size(); ++i) {
     const int lid = matrix_state->Map().LID(localDofs[i]);
     solvalues[i] = (*matrix_state)[lid];
@@ -568,10 +575,26 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionToNodes(
 
   Epetra_SerialDenseVector fvalues(shapesface_->nfdofs_);
   for (unsigned int f=0; f<nfaces_; ++f)
-    for (int i=0; i<DRT::UTILS::DisTypeToNumNodePerFace<distype>::numNodePerFace; ++i) {
+  {
+    LINALG::Matrix<nsd_-1,DRT::UTILS::DisTypeToNumNodePerFace<distype>::numNodePerFace>   xsishuffle(true);
+
+    for (int i=0; i<DRT::UTILS::DisTypeToNumNodePerFace<distype>::numNodePerFace; ++i)
+    {
+           // evaluate shape polynomials in node
+      for (unsigned int idim=0;idim<nsd_-1;idim++)
+      {
+        if(ele->Faces()[f]->ParentMasterElement() == ele)
+          xsishuffle(idim,i) = locations(idim,i);
+        else
+          xsishuffle(idim,ele->Faces()[f]->GetLocalTrafoMap()[i]) = locations(idim,i);
+      }
+    }
+
+    for (int i=0; i<DRT::UTILS::DisTypeToNumNodePerFace<distype>::numNodePerFace; ++i)
+    {
       // evaluate shape polynomials in node
       for (unsigned int idim=0;idim<nsd_-1;idim++)
-        shapesface_->xsi(idim) = locations(idim,i);
+        shapesface_->xsi(idim) = xsishuffle(idim,i);
       shapesface_->polySpace_->Evaluate(shapesface_->xsi,fvalues);
 
       // compute values for velocity and pressure by summing over all basis functions
@@ -581,7 +604,9 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionToNodes(
           sum += fvalues(k) * solvalues[1+f*nsd_*shapesface_->nfdofs_+d*shapesface_->nfdofs_+k];
         elevec1((nsd_+1+d)*nen_+shapesface_->faceNodeOrder[f][i]) = sum;
       }
+    }
   }
+
   elevec1((2*nsd_+1)*nen_) = solvalues[0];
 
 
