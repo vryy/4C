@@ -61,6 +61,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(
   else if (action=="calc_stc_matrix"           ) act = So_nurbs27::calc_stc_matrix           ;
   else if (action=="calc_stc_matrix_inverse"   ) act = So_nurbs27::calc_stc_matrix_inverse   ;
   else if (action=="calc_struct_reset_istep"   ) act = So_nurbs27::calc_struct_reset_istep   ;
+  else if (action=="calc_struct_energy"        ) act = So_nurbs27::calc_struct_energy        ;
   else dserror("Unknown type of action '%s' for So_nurbs27",action.c_str());
   // what should the element do
   switch(act)
@@ -217,6 +218,19 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(
       }
     }
     break;
+
+    case calc_struct_energy:
+    {
+      if (elevec1_epetra.Length() < 1) dserror("The given result vector is too short.");
+
+      // need current displacement
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      std::vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+
+      elevec1_epetra(0) = CalcIntEnergy(discretization,mydisp,params);
+      break;
+    }
 
   default:
       dserror("Unknown type of action for So_nurbs27");
@@ -1159,4 +1173,138 @@ int DRT::ELEMENTS::NURBS::So_nurbs27Type::Initialize(DRT::Discretization& dis)
 }
 
 
+/*----------------------------------------------------------------------*
+ |  calculate internal energy of the element (private)                  |
+ *----------------------------------------------------------------------*/
+double DRT::ELEMENTS::NURBS::So_nurbs27::CalcIntEnergy(
+  DRT::Discretization&   discretization, // discretisation to extract knot vector
+  std::vector<double>&   disp          , // current displacements
+  Teuchos::ParameterList&         params        ) // strain output option
+{
+  double energy=0.;
+
+  // --------------------------------------------------
+  // Initialisation of nurbs specific stuff
+  std::vector<Epetra_SerialDenseVector> myknots(3);
+
+  // for isogeometric elements:
+  //     o get knots
+  //     o get weights
+  DRT::NURBS::NurbsDiscretization* nurbsdis =
+    dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+  if(nurbsdis==NULL)
+    dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
+
+  bool zero_ele=(*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
+
+  // there is nothing to be done for zero sized elements in knotspan
+  if(zero_ele)
+    return 0.;
+
+  LINALG::Matrix<27,1> weights;
+  DRT::Node** nodes = Nodes();
+  for (int inode=0; inode<27; inode++)
+  {
+    DRT::NURBS::ControlPoint* cp
+      =
+      dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
+
+    weights(inode) = cp->W();
+  }
+
+  // update element geometry
+  LINALG::Matrix<27,3> xrefe;  // material coord. of element
+  LINALG::Matrix<27,3> xcurr;  // current  coord. of element
+  for (int i=0; i<27; ++i)
+  {
+    const double* x = nodes[i]->X();
+    xrefe(i,0) = x[0];
+    xrefe(i,1) = x[1];
+    xrefe(i,2) = x[2];
+
+    xcurr(i,0) = xrefe(i,0) + disp[i*3  ];
+    xcurr(i,1) = xrefe(i,1) + disp[i*3+1];
+    xcurr(i,2) = xrefe(i,2) + disp[i*3+2];
+  }
+  /*------------------------------------------------------------------*/
+  /*                    Loop over Gauss Points                        */
+  /*------------------------------------------------------------------*/
+  const int numgp=27;
+
+  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_hex_27point;
+  const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+
+  invJ_.resize(numgp);
+  detJ_.resize(numgp);
+
+  LINALG::Matrix<27,1> funct;
+  LINALG::Matrix<3,27> deriv;
+
+  LINALG::Matrix<3,27> N_XYZ;
+  // build deformation gradient wrt to material configuration
+  // in case of prestressing, build defgrd wrt to last stored configuration
+  LINALG::Matrix<3,3> defgrd(true);
+  for (int gp=0; gp<numgp; ++gp)
+  {
+
+    LINALG::Matrix<3,1> gpa;
+    gpa(0)=intpoints.qxg[gp][0];
+    gpa(1)=intpoints.qxg[gp][1];
+    gpa(2)=intpoints.qxg[gp][2];
+
+    DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv
+      (funct                 ,
+       deriv                 ,
+       gpa                   ,
+       myknots               ,
+       weights               ,
+       DRT::Element::nurbs27);
+
+    /* get the inverse of the Jacobian matrix which looks like:
+    **            [ x_,r  y_,r  z_,r ]^-1
+    **     J^-1 = [ x_,s  y_,s  z_,s ]
+    **            [ x_,t  y_,t  z_,t ]
+    */
+    LINALG::Matrix<3,3> invJac(true);
+
+    invJac.Multiply(deriv,xrefe);
+    double detJ=invJac.Invert();
+
+    if (detJ == 0.0)
+      dserror("ZERO JACOBIAN DETERMINANT");
+    else if (detJ < 0.0)
+      dserror("NEGATIVE JACOBIAN DETERMINANT %12.5e IN ELEMENT ID %d, gauss point %d",detJ_[gp],Id(),gp);
+
+    // compute derivatives N_XYZ at gp w.r.t. material coordinates
+    // by N_XYZ = J^-1 * N_rst
+    N_XYZ.Multiply(invJac,deriv);
+
+    // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
+    defgrd.MultiplyTT(xcurr,N_XYZ);
+
+    // Right Cauchy-Green tensor = F^T * F
+    LINALG::Matrix<3,3> cauchygreen;
+    cauchygreen.MultiplyTN(defgrd,defgrd);
+
+    // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
+    // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
+    Epetra_SerialDenseVector glstrain_epetra(6);
+    LINALG::Matrix<6,1> glstrain(glstrain_epetra.A(),true);
+    glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
+    glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
+    glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
+    glstrain(3) = cauchygreen(0,1);
+    glstrain(4) = cauchygreen(1,2);
+    glstrain(5) = cauchygreen(2,0);
+
+    double psi = 0.0;
+    Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+    so3mat->StrainEnergy(glstrain,psi,Id());
+
+    double detJ_w = detJ*intpoints.qwgt[gp];
+    energy += detJ_w*psi;
+  }
+
+  return energy;
+}
 

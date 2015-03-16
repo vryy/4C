@@ -327,7 +327,8 @@ protected:
     calc_struct_update_istep  ,
     calc_stc_matrix           , //! calculate scaled director matrix for thin shell-like structures
     calc_stc_matrix_inverse   , //! calculate inverse scaled director matrix for thin shell-like structures
-    calc_struct_reset_istep
+    calc_struct_reset_istep   ,
+    calc_struct_energy
   };
 
    //! kinematic type
@@ -373,6 +374,11 @@ protected:
   //! Evaluate Nurbs27 Weights to keep them static
   const std::vector<double> sonurbs27_gpweights();
 
+  //! calculate internal energy
+  double CalcIntEnergy(
+      DRT::Discretization&   discretization,
+      std::vector<double>&   disp,
+      Teuchos::ParameterList&         params);
 
 }; // class So_nurbs27
 
