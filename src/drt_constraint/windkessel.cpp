@@ -1847,10 +1847,10 @@ void UTILS::Windkessel::EvaluateHeartValveCardiovascularFullWindkessel(
       y_at_n = DRT::Problem::Instance()->Curve(curvenum).f(tim);
     }
 
-    double R_qvout_max = windkesselcond_[condID]->GetDouble("R_qvout_max");
-    double R_qvout_min = windkesselcond_[condID]->GetDouble("R_qvout_min");
-    double R_qvin_max = windkesselcond_[condID]->GetDouble("R_qvin_max");
-    double R_qvin_min = windkesselcond_[condID]->GetDouble("R_qvin_min");
+    double R_arvalve_max = windkesselcond_[condID]->GetDouble("R_arvalve_max");
+    double R_arvalve_min = windkesselcond_[condID]->GetDouble("R_arvalve_min");
+    double R_atvalve_max = windkesselcond_[condID]->GetDouble("R_atvalve_max");
+    double R_atvalve_min = windkesselcond_[condID]->GetDouble("R_atvalve_min");
 
     double E_at_max = windkesselcond_[condID]->GetDouble("E_at_max");
     double E_at_min = windkesselcond_[condID]->GetDouble("E_at_min");
@@ -1932,12 +1932,12 @@ void UTILS::Windkessel::EvaluateHeartValveCardiovascularFullWindkessel(
       else dserror("Do not choose more than 2 conditions / do not id them different than 0 and 1!");
 
       // fill multipliers for rhs vector
-      if (p_v_m < p_ar_m) factor_wkdof[0] = 1./R_qvout_max;
-      if (p_v_m >= p_ar_m) factor_wkdof[0] = 1./R_qvout_min;
+      if (p_v_m < p_ar_m) factor_wkdof[0] = 1./R_arvalve_max;
+      if (p_v_m >= p_ar_m) factor_wkdof[0] = 1./R_arvalve_min;
       factor_dwkdof[0] = 0.;
       factor_Q[0] = 0.;
-      if (p_v_m < p_ar_m) factor_1[0] = -p_ar_m/R_qvout_max - q_vout_m;
-      if (p_v_m >= p_ar_m) factor_1[0] = -p_ar_m/R_qvout_min - q_vout_m;
+      if (p_v_m < p_ar_m) factor_1[0] = -p_ar_m/R_arvalve_max - q_vout_m;
+      if (p_v_m >= p_ar_m) factor_1[0] = -p_ar_m/R_arvalve_min - q_vout_m;
 
       factor_wkdof[1] = 0.;
       factor_dwkdof[1] = 0.;
@@ -1957,8 +1957,8 @@ void UTILS::Windkessel::EvaluateHeartValveCardiovascularFullWindkessel(
       factor_wkdof[4] = -1.;
       factor_dwkdof[4] = 0.;
       factor_Q[4] = 0.;
-      if (p_v_m < p_at_m) factor_1[4] = (p_at_m-p_v_m)/R_qvin_min;
-      if (p_v_m >= p_at_m) factor_1[4] = (p_at_m-p_v_m)/R_qvin_max;
+      if (p_v_m < p_at_m) factor_1[4] = (p_at_m-p_v_m)/R_atvalve_min;
+      if (p_v_m >= p_at_m) factor_1[4] = (p_at_m-p_v_m)/R_atvalve_max;
 
       factor_wkdof[5] = 1.;
       factor_dwkdof[5] = 0.;
@@ -2015,10 +2015,10 @@ void UTILS::Windkessel::EvaluateHeartValveCardiovascularFullWindkessel(
     if (assmat1)
     {
 
-      if (p_v_m < p_ar_m) wkstiff(0,0) = theta/R_qvout_max;
-      if (p_v_m >= p_ar_m) wkstiff(0,0) = theta/R_qvout_min;
-      if (p_v_m < p_ar_m) wkstiff(0,2) = -theta/R_qvout_max;
-      if (p_v_m >= p_ar_m) wkstiff(0,2) = -theta/R_qvout_min;
+      if (p_v_m < p_ar_m) wkstiff(0,0) = theta/R_arvalve_max;
+      if (p_v_m >= p_ar_m) wkstiff(0,0) = theta/R_arvalve_min;
+      if (p_v_m < p_ar_m) wkstiff(0,2) = -theta/R_arvalve_max;
+      if (p_v_m >= p_ar_m) wkstiff(0,2) = -theta/R_arvalve_min;
       wkstiff(0,5) = -theta;
 
       wkstiff(1,1) = 1./(E_at_n*ts_size);
@@ -2032,10 +2032,10 @@ void UTILS::Windkessel::EvaluateHeartValveCardiovascularFullWindkessel(
       wkstiff(3,6) = -theta;
       wkstiff(3,7) = theta;
 
-      if (p_v_m < p_at_m) wkstiff(4,0) = -theta/R_qvin_min;
-      if (p_v_m >= p_at_m) wkstiff(4,0) = -theta/R_qvin_max;
-      if (p_v_m < p_at_m) wkstiff(4,1) = theta/R_qvin_min;
-      if (p_v_m >= p_at_m) wkstiff(4,1) = theta/R_qvin_max;
+      if (p_v_m < p_at_m) wkstiff(4,0) = -theta/R_atvalve_min;
+      if (p_v_m >= p_at_m) wkstiff(4,0) = -theta/R_atvalve_max;
+      if (p_v_m < p_at_m) wkstiff(4,1) = theta/R_atvalve_min;
+      if (p_v_m >= p_at_m) wkstiff(4,1) = theta/R_atvalve_max;
       wkstiff(4,4) = -theta;
 
       wkstiff(5,4) = -theta;

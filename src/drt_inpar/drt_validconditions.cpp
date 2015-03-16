@@ -4021,10 +4021,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          DRT::Condition::Surface));
 
   AddNamedInt(windkesselheartvalvecardiovascularfullcond,"id");
-  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"R_qvout_max"); // maximal arterial valve resistance
-  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"R_qvout_min"); // minimal arterial valve resistance
-  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"R_qvin_max"); // maximal atrial valve resistance
-  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"R_qvin_min"); // minimal atrial valve resistance
+  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"R_arvalve_max"); // maximal arterial valve resistance
+  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"R_arvalve_min"); // minimal arterial valve resistance
+  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"R_atvalve_max"); // maximal atrial valve resistance
+  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"R_atvalve_min"); // minimal atrial valve resistance
   AddNamedReal(windkesselheartvalvecardiovascularfullcond,"E_at_max"); // maximum atrial elastance
   AddNamedReal(windkesselheartvalvecardiovascularfullcond,"E_at_min"); // baseline atrial elastance
   windkesselheartvalvecardiovascularfullcond->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("at_act_curve"))); // atrial activation curve
