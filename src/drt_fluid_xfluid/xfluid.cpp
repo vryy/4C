@@ -246,6 +246,7 @@ void FLD::XFluid::SetXFluidParams()
 
   theta_        = params_->get<double>("theta");
   omtheta_      = 1.0 - theta_;
+  numstasteps_  = params_->get<int> ("number of start steps");
   newton_       = DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(*params_, "Linearisation");
   predictor_    = params_->get<std::string>("predictor","steady_state_predictor");
   convform_     = params_->get<string>("form of convective term","convective");
@@ -2135,13 +2136,23 @@ void FLD::XFluid::SetTheta()
   }
   else
   {
-    // do a backward Euler step for the first timestep
-    if (step_==1)
+    // safety
+    if (step_ < 1)
+      dserror("number of time step is wrong");
+
+    // do a backward Euler step for a user-defined number of starting steps
+    if (step_<=numstasteps_)
     {
-      theta_ = params_->get<double>("start theta");
+      if (myrank_==0)
+      {
+        std::cout << "Starting algorithm for OST active. "
+            << "Performing step "<< step_ <<" of "<< numstasteps_
+            << " Backward Euler starting steps"<<std::endl;
+      }
+      theta_   = 1.0;
       omtheta_ = 1.0-theta_;
     }
-    else if (step_ > 1)
+    else
     {
       // for OST
       if(timealgo_ == INPAR::FLUID::timeint_one_step_theta)
@@ -2157,7 +2168,6 @@ void FLD::XFluid::SetTheta()
         omtheta_ = 0.0;
       }
     }
-    else dserror("number of time step is wrong");
   }
 }
 

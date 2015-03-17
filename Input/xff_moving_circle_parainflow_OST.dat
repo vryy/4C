@@ -48,14 +48,13 @@ ITEMAX                          10
 LIFTDRAG                        No
 MAXTIME                         8.0
 NONLINITER                      Newton
-NUMSTASTEPS                     0
+NUMSTASTEPS                     1
 NUMSTEP                         8
 RESTARTEVRY                     1
 SIMPLER                         no
 STARTFUNCNO                     1
-START_THETA                     1
 THETA                           1.0
-TIMEINTEGR                      One_Step_Theta //BDF2
+TIMEINTEGR                      One_Step_Theta                //BDF2
 TIMESTEP                        1.0
 UPRES                           1
 NONLINEARBC                     no
@@ -104,70 +103,70 @@ FUNCT2 EXPR 0 0 0 FUNCTION (1/0.4)*(1/0.4)*(0.8-2.0*y)
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         2
-NDLINE                          0
-NDSURF                          3
-NDVOL                           4
+NDPOINT 2
+NDLINE 0
+NDSURF 3
+NDVOL 4
 ---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
-DPOINT                          0
+DPOINT 0
 ----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-DLINE                           0
+DLINE 0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-DSURF                           1
+DSURF 1
 // xFluid outflow
 E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 1.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 2 0 0 0 0 Live Mid
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-DVOL                            0
+DVOL 0
 -----------------------------------DESIGN POINT TRANSPORT NEUMANN CONDITIONS
-DPOINT                          0
+DPOINT 0
 ------------------------------------DESIGN LINE TRANSPORT NEUMANN CONDITIONS
-DLINE                           0
+DLINE 0
 ------------------------------------DESIGN SURF TRANSPORT NEUMANN CONDITIONS
-DSURF                           0
+DSURF 0
 --------------------------------------DESIGN POINT THERMO NEUMANN CONDITIONS
-DPOINT                          0
+DPOINT 0
 ---------------------------------------DESIGN LINE THERMO NEUMANN CONDITIONS
-DLINE                           0
+DLINE 0
 ---------------------------------------DESIGN SURF THERMO NEUMANN CONDITIONS
-DSURF                           0
+DSURF 0
 ----------------------------------------DESIGN VOL THERMO NEUMANN CONDITIONS
-DVOL                            0
+DVOL 0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT                          2
+DPOINT 2
 // xFluid inflow
 E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 1 0 0 0
 // xFluid upper and lower surface
 E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE                           0
+DLINE 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF                           0
+DSURF 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-DVOL                            2
+DVOL 2
 // XFluid volume
 E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // Fluid volume
 E 2 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 ------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS
-DPOINT                          0
+DPOINT 0
 -------------------------------------------DESIGN LINE ALE DIRICH CONDITIONS
-DLINE                           0
+DLINE 0
 -------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
-DSURF                           1
+DSURF 1
 // Fluid xfem
 E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.2 0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
 --------------------------------------------DESIGN VOL ALE DIRICH CONDITIONS
-DVOL                            1
+DVOL 1
 // Fluid volume
 E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.2 0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
 --------------------------------------DESIGN XFEM FLUIDFLUID SURF CONDITIONS
-DSURF                           1
+DSURF 1
 // Fluid xfem
 E 2 - 1 xfluid
 ---------------------------------DESIGN FLUID FLUID COUPLING SURF CONDITIONS
-DSURF                           0
+DSURF 0
 ------------------------------------------DESIGN MOVING FLUID VOL CONDITIONS
-DVOL                            1
+DVOL 1
 // Fluid volume
 E 2 - 1
 ---------------------------------------------------------DNODE-NODE TOPOLOGY

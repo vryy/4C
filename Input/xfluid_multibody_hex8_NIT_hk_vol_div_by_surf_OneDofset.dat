@@ -40,7 +40,7 @@ LINEAR_SOLVER                   1
 INITIALFIELD                    zero_field
 STARTFUNCNO                     2
 TIMEINTEGR                      Stationary
-NONLINITER Newton //fixed_point_like
+NONLINITER                      Newton                        //fixed_point_like
 ITEMAX                          10
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-13
@@ -51,7 +51,6 @@ NUMSTASTEPS                     0
 MAXTIME                         1000.0
 TIMESTEP                        1.0
 THETA                           0.66
-START_THETA                     0.67
 ALPHA_F                         1.00
 ALPHA_M                         1.00
 LIFTDRAG                        no
@@ -60,13 +59,13 @@ ADAPTCONV_BETTER                0.1
 SIMPLER                         No
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
-DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt  //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            yes
 SUPG                            yes//yes
 VSTAB                           no_vstab
-GRAD_DIV yes //yes
+GRAD_DIV                        yes                           //yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 ----------------------------------------------------------------XFEM GENERAL
@@ -81,10 +80,10 @@ MAX_NUM_DOFSETS                 1
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche                       // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
-NIT_STAB_FAC                   31.38594035                   // = 50.0/CT(3D) with former 50 in [10;100]
+NIT_STAB_FAC                    31.38594035                   // = 50.0/CT(3D) with former 50 in [10;100]
 VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk                  // eigenvalue
-VISC_STAB_HK                    cut_vol_div_by_cut_surf                // vol_div_by_surf // longest_ele_length
-CONV_STAB_SCALING               none //abs_normal_vel  // inflow // const // none
+VISC_STAB_HK                    cut_vol_div_by_cut_surf       // vol_div_by_surf // longest_ele_length
+CONV_STAB_SCALING               none                          //abs_normal_vel // inflow // const // none
 GHOST_PENALTY_STAB              no
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
@@ -92,9 +91,9 @@ SOLVER                          UMFPACK                       // Aztec_MSR SPOOL
 //SOLVER                        Aztec_MSR                     // // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 //AZOUTPUT                      1
 -------------------------------------------------------------------MATERIALS
-//                              MAT_fluid
+// MAT_fluid
 MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0 GAMMA 1.0
-//                              MAT_Struct_StVenantKirchhoff
+// MAT_Struct_StVenantKirchhoff
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 100000000000.0 NUE 0.0 DENS 0.0 THEXPANS 0.0
 ----------------------------------------------------------------------CURVE1
 ----------------------------------------------------------------------CURVE2
@@ -121,13 +120,13 @@ FLUID DIS fluid NODE 803 QUANTITY vely VALUE 2.84219522155397530e-01 TOLERANCE 1
 FLUID DIS fluid NODE 803 QUANTITY velz VALUE 0.00000000000000000e+00 TOLERANCE 1e-9
 FLUID DIS fluid NODE 803 QUANTITY pressure VALUE 1.58931977198353493e+01 TOLERANCE 1e-8
 ----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         34
-NDLINE                          57
-NDSURF                          32
-NDVOL                           6
+NDPOINT 34
+NDLINE 57
+NDSURF 32
+NDVOL 6
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DPOINT                          6
+DPOINT 6
 E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 E 4 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 E 5 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
@@ -136,7 +135,7 @@ E 19 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none no
 E 20 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 1 0 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DLINE                           15
+DLINE 15
 E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 E 4 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 E 9 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
@@ -154,7 +153,7 @@ E 27 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none no
 E 32 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 1 0 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DSURF                           18
+DSURF 18
 E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 E 3 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 1 0 0 0 0 0
@@ -182,7 +181,7 @@ E 3 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 10.0 0.0 0.0 0.0 0.0 0.0 CURVE none none no
 E 4 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 10.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
 ----------------------------------DESIGN XFEM WEAK DIRICHLET SURF CONDITIONS
 // DOBJECT COUPLINGID EVALTYPE
-DSURF                           8
+DSURF 8
 E 22 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 E 23 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 E 24 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
@@ -192,7 +191,7 @@ E 29 - COUPLINGID 2 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE non
 E 30 - COUPLINGID 2 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 E 31 - COUPLINGID 2 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 ------------------------------------DESIGN XFEM DISPLACEMENT SURF CONDITIONS
-DSURF                           8
+DSURF 8
 // DOBJECT COUPLINGID EVALTYPE
 E 22 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 E 23 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0

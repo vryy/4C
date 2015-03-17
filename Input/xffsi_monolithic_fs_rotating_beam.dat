@@ -26,31 +26,30 @@ ALPHA_F                         1.00
 ALPHA_M                         1.00
 CONVCHECK                       L_2_norm
 CONVTOL                         1e-8
-INITIALFIELD zero_field //field_by_function
+INITIALFIELD                    zero_field                    //field_by_function
 ITEMAX                          25
 LIFTDRAG                        No
 MAXTIME                         3
 NONLINITER                      Newton
-NUMSTASTEPS                     0
+NUMSTASTEPS                     1
 NUMSTEP                         1
 RESTARTEVRY                     5
 SIMPLER                         no
-START_THETA                     1
 STEADYSTEP                      -1
 STEADYTOL                       1e-06
 THETA                           1//0.66
-TIMEINTEGR One_Step_Theta //Stationary
-TIMESTEP 0.01//0.003125 //0.00625
+TIMEINTEGR                      One_Step_Theta                //Stationary
+TIMESTEP                        0.01//0.003125                //0.00625
 NONLINEARBC                     no
 LINEAR_SOLVER                   1
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based                    // residual_based //
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG no //yes
-SUPG no //yes
+PSPG                            no                            //yes
+SUPG                            no                            //yes
 VSTAB                           no_vstab
-GRAD_DIV no //yes
+GRAD_DIV                        no                            //yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
@@ -110,10 +109,10 @@ GMSH_DISCRET_OUT                no//yes
 GMSH_CUT_OUT                    no
 GMSH_EOS_OUT                    no
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-COUPLING_METHOD                 Nitsche //BoundaryTypeSigma "BoundaryTypeTauPressure" "" "BoundaryTypeNeumann"  // Which Boundary method shall be used to enforce interface conditions?
+COUPLING_METHOD                 Nitsche                       //BoundaryTypeSigma "BoundaryTypeTauPressure" "" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
 COUPLING_STRATEGY               embedded_sided_coupling
 IS_PSEUDO_2D                    yes
-NIT_STAB_FAC                   24.40282794                   // 35/CT(2D)
+NIT_STAB_FAC                    24.40282794                   // 35/CT(2D)
 VISC_STAB_HK                    vol_equivalent
 XFF_CONV_STAB_SCALING           none
 GHOST_PENALTY_STAB              yes
@@ -154,54 +153,54 @@ FUNCT2 COMPONENT 3 EXPR 0 0.0 0 FUNCTION (1/0.4)*(1/0.4)*(0.8-2*y)
 FUNCT3 EXPR 0 0.0 0 FUNCTION (1/0.4)*(1/0.4)*(0.8-2*y)
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         2
-NDLINE                          0
-NDSURF                          7
-NDVOL                           5
+NDPOINT 2
+NDLINE 0
+NDSURF 7
+NDVOL 5
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT                          2
-//                              xFluid__upper_surface
+DPOINT 2
+// xFluid__upper_surface
 E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0
-//                              xFluid__lower_surface
+// xFluid__lower_surface
 E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL -1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF                           4
+DSURF 4
 E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE 0 none none none none none FUNCT 0 0 0 0 0 0
-//                              xFluid__outflow
+// xFluid__outflow
 E 2 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 // fluid fsi
 E 3 - NUMDOF 6 ONOFF 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 // structure fsi
 E 5 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-DVOL                            3
-//                              bgFluid_volume
+DVOL 3
+// bgFluid_volume
 E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-//                              embFluid_volume
+// embFluid_volume
 E 2 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-//                              structure_volume
+// structure_volume
 E 3 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 --------------------------------------------DESIGN VOL ALE DIRICH CONDITIONS
-DVOL                            1
-//                              embFluid_volume
+DVOL 1
+// embFluid_volume
 E 2 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
-DSURF                           2
+DSURF 2
 // fluid fsi
 E 3 - 1
 // structure fsi
 E 5 - 1
 --------------------------------------DESIGN XFEM FLUIDFLUID SURF CONDITIONS
-DSURF                           1
-//                              xfem
+DSURF 1
+// xfem
 E 4 - 1 embedded
 ---------------------------------DESIGN FLUID FLUID COUPLING SURF CONDITIONS
-DSURF                           1
-//                              fluid-fluid
+DSURF 1
+// fluid-fluid
 E 4 - 1
 ------------------------------------------DESIGN MOVING FLUID VOL CONDITIONS
-DVOL                            1
-//                              embFluid_volume
+DVOL 1
+// embFluid_volume
 E 2 - 1
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 193 DNODE 1

@@ -35,7 +35,7 @@ THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
-INITIALFIELD                    zero_field //field_by_function  //
+INITIALFIELD                    zero_field                    //field_by_function //
 //STARTFUNCNO                   2
 TIMEINTEGR                      Stationary
 NONLINITER                      Newton
@@ -48,8 +48,7 @@ NUMSTEP                         1//2
 NUMSTASTEPS                     0
 MAXTIME                         1000.0
 TIMESTEP                        1.0//0.1
-THETA                           1.0 //0.5 //0.67
-START_THETA                     1.0
+THETA                           1.0                           //0.5 //0.67
 ALPHA_F                         1.00
 ALPHA_M                         1.00
 LIFTDRAG                        no
@@ -58,13 +57,13 @@ ADAPTCONV_BETTER                0.1
 SIMPLER                         No
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
-DEFINITION_TAU Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt //Barrenechea_Franca_Valentin_Wall
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt  //Barrenechea_Franca_Valentin_Wall
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            yes
 SUPG                            yes//yes
 VSTAB                           no_vstab
-GRAD_DIV yes //yes
+GRAD_DIV                        yes                           //yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 ----------------------------------------------------------------XFEM GENERAL
@@ -76,14 +75,14 @@ VOLUME_GAUSS_POINTS_BY          Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-COUPLING_METHOD                 Hybrid_LM_Cauchy_stress //BoundaryTypeSigma //BoundaryTypeSigma //BoundaryTypeNeumann  // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
+COUPLING_METHOD                 Hybrid_LM_Cauchy_stress       //BoundaryTypeSigma //BoundaryTypeSigma //BoundaryTypeNeumann // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          UMFPACK                       // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 -------------------------------------------------------------------MATERIALS
-//                              MAT_fluid
+// MAT_fluid
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
-//                              MAT_Struct_StVenantKirchhoff
+// MAT_Struct_StVenantKirchhoff
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 1.0 THEXPANS 0.0
 ----------------------------------------------------------------------CURVE1
 ----------------------------------------------------------------------CURVE2
@@ -96,8 +95,8 @@ FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0 //0.01*x // 0.0100051*x
 FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
 FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 3.0 // pressure
 --------------------------------------------FUNCT2 // initial solid velocity
-FUNCT2                          COMPONENT 0 EXPR 0 0.0 0 FUNCTION 5.0// -1.0 //101.0 //0.01*(-y)  // 0.0100051*(-y)
-FUNCT2                          COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0 //0.01*x  // 0.0100051*x
+FUNCT2                          COMPONENT 0 EXPR 0 0.0 0 FUNCTION 5.0// -1.0  //101.0 //0.01*(-y) // 0.0100051*(-y)
+FUNCT2                          COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0  //0.01*x // 0.0100051*x
 FUNCT2                          COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
 FUNCT2                          COMPONENT 3 EXPR 0 0.0 0 FUNCTION 8.0+10.0*x  // pressure
 ----------------------------------------------------------------------FUNCT3
@@ -105,28 +104,28 @@ FUNCT2                          COMPONENT 3 EXPR 0 0.0 0 FUNCTION 8.0+10.0*x  //
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         2
-NDLINE                          12
-NDSURF                          12
-NDVOL                           2
+NDPOINT 2
+NDLINE 12
+NDSURF 12
+NDVOL 2
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-DSURF                           1
+DSURF 1
 // surface outflow
 //E 4 - none 1 1 1 0 0 0 -3.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
 // surface inflow
 E 3 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL +3.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 // fluid volume
-DVOL                            1
+DVOL 1
 E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 10.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT                          0
+DPOINT 0
 // inflow points
 //E 1 - 6 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 1 0 0 0 0 0
 // outflow points
 //E 2 - 6 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE                           1
+DLINE 1
 // line inflow top
 //E 1 - 6 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 1 0 0 0 0 0
 // line inflow front
@@ -142,7 +141,7 @@ DLINE                           1
 // edges side walls
 E 11 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 1 0 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF                           4
+DSURF 4
 // surface top
 E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 1 0 0 0 0 0
 // surface bottom
@@ -168,14 +167,14 @@ E 6 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none non
 // surface back structure
 //E 12 - 6 0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-DVOL                            0
+DVOL 0
 // volume fluid
 //E 1 - 6 0 0 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 // volume structure
 //E 2 - 6 0 0 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 ----------------------------------DESIGN XFEM WEAK DIRICHLET SURF CONDITIONS
 // DOBJECT COUPLINGID EVALTYPE
-DSURF                           6
+DSURF 6
 E 7 - COUPLINGID 1 EVALTYPE funct_gausspoint NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 CURVE none none none FUNCT 2 2 2
 E 8 - COUPLINGID 1 EVALTYPE funct_gausspoint NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 CURVE none none none FUNCT 2 2 2
 E 9 - COUPLINGID 1 EVALTYPE funct_gausspoint NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 CURVE none none none FUNCT 2 2 2
@@ -183,7 +182,7 @@ E 10 - COUPLINGID 1 EVALTYPE funct_gausspoint NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1
 E 11 - COUPLINGID 1 EVALTYPE funct_gausspoint NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 CURVE none none none FUNCT 2 2 2
 E 12 - COUPLINGID 1 EVALTYPE funct_gausspoint NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 CURVE none none none FUNCT 2 2 2
 ------------------------------------DESIGN XFEM DISPLACEMENT SURF CONDITIONS
-DSURF                           6
+DSURF 6
 // DOBJECT COUPLINGID EVALTYPE
 E 7 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 E 8 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0

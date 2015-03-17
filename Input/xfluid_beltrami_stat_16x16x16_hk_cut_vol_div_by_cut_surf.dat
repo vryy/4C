@@ -47,7 +47,6 @@ NUMSTASTEPS                     0
 MAXTIME                         1.0
 TIMESTEP                        1.0
 THETA                           1.0
-START_THETA                     1.0
 ALPHA_F                         1.00
 ALPHA_M                         1.00
 LIFTDRAG                        no
@@ -57,7 +56,7 @@ SIMPLER                         No
 CALCERROR                       beltrami_stat_navier_stokes
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based
-DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt  //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            no
@@ -85,7 +84,7 @@ BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche                       // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
-NIT_STAB_FAC                   33.89681558
+NIT_STAB_FAC                    33.89681558
 VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk                  // eigenvalue
 VISC_STAB_HK                    cut_vol_div_by_cut_surf       // vol_div_by_surf // longest_ele_length
 CONV_STAB_SCALING               none
@@ -98,7 +97,6 @@ AZOUTPUT                        50                            // output every so
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
 //AZPREC                        ILU                           // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
 //IFPACKGFILL                   0                             // (3 for edgebased stabilization pattern) graph fill for ILU
-
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 100000000000.0 NUE 0.0 DENS 0.0 THEXPANS 0.0
@@ -128,35 +126,35 @@ FLUID DIS fluid NODE 17616 QUANTITY vely VALUE 4.15928705668061838e-01 TOLERANCE
 FLUID DIS fluid NODE 17616 QUANTITY velz VALUE -6.06095632850724875e-01 TOLERANCE 1e-12
 FLUID DIS fluid NODE 17616 QUANTITY pressure VALUE 5.80998598820474932e+00 TOLERANCE 1e-10
 ----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         1
-NDLINE                          0
-NDSURF                          2
-NDVOL                           2
+NDPOINT 1
+NDLINE 0
+NDSURF 2
+NDVOL 2
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-DVOL                            1
-//                              fluid_volume
+DVOL 1
+// fluid_volume
 E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 1.0 1.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 1 1 1 0 0 0 Live Mid
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT                          1
-//                              corner_nodes
+DPOINT 1
+// corner_nodes
 E 1 - NUMDOF 6 ONOFF 1 1 1 1 0 0 VAL 1.0 1.0 1.0 1.0 0.0 0.0 CURVE none none none none none none FUNCT 2 2 2 2 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF                           1
-//                              fluid_walls
+DSURF 1
+// fluid_walls
 E 1 - NUMDOF 6 ONOFF 1 1 1 1 0 0 VAL 1.0 1.0 1.0 1.0 0.0 0.0 CURVE none none none none none none FUNCT 2 2 2 2 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-DVOL                            1
-//                              fluid_volume
+DVOL 1
+// fluid_volume
 E 1 - NUMDOF 6 ONOFF 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 ----------------------------------DESIGN XFEM WEAK DIRICHLET SURF CONDITIONS
 // DOBJECT COUPLINGID EVALTYPE
-DSURF                           1
-//                              surface_outer
+DSURF 1
+// surface_outer
 E 2 - COUPLINGID 1 EVALTYPE funct_interpolated NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 CURVE none none none FUNCT 2 2 2
 ------------------------------------DESIGN XFEM DISPLACEMENT SURF CONDITIONS
 // DOBJECT COUPLINGID EVALTYPE
-DSURF                           1
-//                              surface_outer
+DSURF 1
+// surface_outer
 E 2 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 17723 DNODE 1

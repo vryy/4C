@@ -47,7 +47,6 @@ NUMSTASTEPS                     0
 MAXTIME                         1.0
 TIMESTEP                        1.0
 THETA                           1.0
-START_THETA                     1.0
 ALPHA_F                         1.00
 ALPHA_M                         1.00
 LIFTDRAG                        no
@@ -57,7 +56,7 @@ SIMPLER                         No
 CALCERROR                       kimmoin_stat_navier_stokes
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based                    // residual_based //
-DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt  //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            no// yes                      //
@@ -72,30 +71,30 @@ EOS_CONV_STREAM                 std_eos                       // none, std_eos, 
 EOS_CONV_CROSS                  none                          // none, std_eos, xfem_gp
 EOS_DIV                         vel_jump_std_eos              // none, vel_jump_std_eos, vel_jump_xfem_gp, div_jump_std_eos, div_jump_xfem_gp
 EOS_DEFINITION_TAU              Burman_Fernandez
-EOS_H_DEFINITION EOS_he_max_dist_to_opp_surf //EOS_he_surf_with_max_diameter
+EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf   //EOS_he_surf_with_max_diameter
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  no
 GMSH_SOL_OUT                    no
 GMSH_DISCRET_OUT                No
 GMSH_CUT_OUT                    No
-VOLUME_GAUSS_POINTS_BY          Tessellation //MomentFitting //Tessellation //MomentFitting //Tessellation
-BOUNDARY_GAUSS_POINTS_BY        Tessellation //MomentFitting //Tessellation
+VOLUME_GAUSS_POINTS_BY          Tessellation                  //MomentFitting //Tessellation //MomentFitting //Tessellation
+BOUNDARY_GAUSS_POINTS_BY        Tessellation                  //MomentFitting //Tessellation
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Hybrid_LM_Cauchy_stress       // BoundaryTypeNitsche // "BoundaryTypeTauPressure"BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
 COUPLING_STRATEGY               xfluid_sided_coupling
-NIT_STAB_FAC                   35                            // in [10;100]
+NIT_STAB_FAC                    35                            // in [10;100]
 VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk                  // eigenvalue
 VISC_STAB_HK                    vol_equivalent                // vol_div_by_surf // longest_ele_length
 XFF_CONV_STAB_SCALING           none
-GHOST_PENALTY_STAB              yes //
+GHOST_PENALTY_STAB              yes                           //
 GHOST_PENALTY_FAC               0.003                         // in [0.1;0.5]
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER                          Aztec_MSR //Aztec_MSR         // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          Aztec_MSR                     //Aztec_MSR // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        50                            // output every so often, 0 no output
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          ILU //MLFLUID2                // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
+AZPREC                          ILU                           //MLFLUID2 // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
 AZREUSE                         1                             // how often to recompute some preconditioners
 IFPACKGFILL                     3                             // (3 for edgebased stabilization pattern) graph fill for ILU
 AZTOL                           1.0E-08                       // tolerance in unscaled residual
@@ -103,7 +102,7 @@ AZCONV                          AZ_r0                         // scale residual 
 AZITER                          1000                          // max iterations
 AZSUB                           1000                          // size of krylov space for gmres
 IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
-ML_MAXCOARSESIZE                1 //2500                      // ML stop coarsening when coarse ndof smaller then this (1: each level has to be used)
+ML_MAXCOARSESIZE                1                             //2500 // ML stop coarsening when coarse ndof smaller then this (1: each level has to be used)
 ML_MAXLEVEL                     3                             // ML max number of levels
 ML_COARSEN                      UC                            // UC MIS METIS VBMETIS
 ML_AGG_SIZE                     27                            // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
@@ -136,37 +135,37 @@ FUNCT2                          KIMMOIN-UP MAT 1 ISSTAT 1
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         1
-NDLINE                          0
-NDSURF                          2
-NDVOL                           5
+NDPOINT 1
+NDLINE 0
+NDSURF 2
+NDVOL 5
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-DVOL                            2
-//                              fluid_1_volume
+DVOL 2
+// fluid_1_volume
 E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 1.0 1.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 1 1 1 0 0 0 Live Mid
-//                              fluid_2_volume
+// fluid_2_volume
 E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 1.0 1.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 1 1 1 0 0 0 Live Mid
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT                          1
-//                              pressure_point
+DPOINT 1
+// pressure_point
 E 1 - NUMDOF 4 ONOFF 0 0 1 1 VAL 0.0 0.0 0.0 1.0 CURVE none none none none FUNCT 0 0 0 2
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF                           1
-//                              Fluid_1_wall
+DSURF 1
+// Fluid_1_wall
 E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 1.0 1.0 0.0 CURVE none none none none FUNCT 2 2 2 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-DVOL                            2
-//                              fluid_2_volume
+DVOL 2
+// fluid_2_volume
 E 2 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-//                              fluid_1_volume
+// fluid_1_volume
 E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 --------------------------------------DESIGN XFEM FLUIDFLUID SURF CONDITIONS
-DSURF                           1
-//                              xfem
+DSURF 1
+// xfem
 E 2 - 1 xfluid
 ------------------------------------------DESIGN MOVING FLUID VOL CONDITIONS
-DVOL                            1
-//                              fluid_2_volume
+DVOL 1
+// fluid_2_volume
 E 2 - 1
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 2319 DNODE 1

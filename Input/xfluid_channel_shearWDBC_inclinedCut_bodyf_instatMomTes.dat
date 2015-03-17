@@ -36,7 +36,7 @@ THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
-INITIALFIELD field_by_function //zero_field
+INITIALFIELD                    field_by_function             //zero_field
 STARTFUNCNO                     1
 TIMEINTEGR                      One_Step_Theta
 NONLINITER                      Newton
@@ -46,11 +46,10 @@ CONVTOL                         1.0E-11
 UPRES                           1
 RESTARTEVRY                     5
 NUMSTEP                         8
-NUMSTASTEPS                     0
+NUMSTASTEPS                     1
 MAXTIME                         1000.0
 TIMESTEP                        0.1//0.1
-THETA                           0.5 //0.5 //0.67
-START_THETA                     1.0
+THETA                           0.5                           //0.5 //0.67
 ALPHA_F                         1.00
 ALPHA_M                         1.00
 LIFTDRAG                        no
@@ -59,13 +58,13 @@ ADAPTCONV_BETTER                0.1
 SIMPLER                         No
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
-DEFINITION_TAU Taylor_Hughes_Zarins_Whiting_Jansen //Barrenechea_Franca_Valentin_Wall
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen  //Barrenechea_Franca_Valentin_Wall
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            yes
 SUPG                            yes//yes
 VSTAB                           no_vstab
-GRAD_DIV yes //yes
+GRAD_DIV                        yes                           //yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 ----------------------------------------------------------------XFEM GENERAL
@@ -82,9 +81,9 @@ COUPLING_METHOD                 Hybrid_LM_Cauchy_stress       // "BoundaryTypeTa
 NAME                            Fluid_Solver
 SOLVER                          UMFPACK                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 -------------------------------------------------------------------MATERIALS
-//                              MAT_fluid
+// MAT_fluid
 MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0 GAMMA 1.0
-//                              MAT_Struct_StVenantKirchhoff
+// MAT_Struct_StVenantKirchhoff
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 1.0 THEXPANS 0.0
 ----------------------------------------------------------------------CURVE1
 ----------------------------------------------------------------------CURVE2
@@ -110,19 +109,19 @@ FUNCT3                          COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0  // pressu
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         4
-NDLINE                          10
-NDSURF                          12
-NDVOL                           2
+NDPOINT 4
+NDLINE 10
+NDSURF 12
+NDVOL 2
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-DSURF                           1
+DSURF 1
 // surface outflow
 E 4 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL -4.0 3.0 6.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-DVOL                            1
+DVOL 1
 E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 10.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT                          0
+DPOINT 0
 // top inflow points
 //E 1 - 6 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 1 0 0 0 0 0
 //E 1 - 6 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
@@ -134,7 +133,7 @@ DPOINT                          0
 // bottom outflow points
 //E 4 - 6 0 1 1 0 0 0 7.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE                           2
+DLINE 2
 // line inflow top
 //E 1 - 6 1 1 0 0 0 2.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 //E 1 - 6 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 1 0 0 0 0 0
@@ -160,7 +159,7 @@ E 9 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none non
 // bottom edges side walls
 E 10 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 1 0 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF                           4
+DSURF 4
 // surface top
 E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 1 0 0 0 0 0
 //E 1 - 6 0 1 1 0 0 0 2.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
@@ -179,10 +178,10 @@ E 5 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none non
 E 6 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 1 0 0 0 0 0
 //E 6 - 6 1 0 1 0 0 0 2.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-DVOL                            0
+DVOL 0
 ----------------------------------DESIGN XFEM WEAK DIRICHLET SURF CONDITIONS
 // DOBJECT COUPLINGID EVALTYPE
-DSURF                           6
+DSURF 6
 E 7 - COUPLINGID 1 EVALTYPE funct_interpolated NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 CURVE none none none FUNCT 2 2 2
 E 8 - COUPLINGID 1 EVALTYPE funct_interpolated NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 CURVE none none none FUNCT 2 2 2
 E 9 - COUPLINGID 1 EVALTYPE funct_interpolated NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 CURVE none none none FUNCT 2 2 2
@@ -190,7 +189,7 @@ E 10 - COUPLINGID 1 EVALTYPE funct_interpolated NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0
 E 11 - COUPLINGID 1 EVALTYPE funct_interpolated NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 CURVE none none none FUNCT 2 2 2
 E 12 - COUPLINGID 1 EVALTYPE funct_interpolated NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 CURVE none none none FUNCT 2 2 2
 ------------------------------------DESIGN XFEM DISPLACEMENT SURF CONDITIONS
-DSURF                           6
+DSURF 6
 // DOBJECT COUPLINGID EVALTYPE
 E 7 - COUPLINGID 1 EVALTYPE funct NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 CURVE none none none FUNCT 3 3 3
 E 8 - COUPLINGID 1 EVALTYPE funct NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 CURVE none none none FUNCT 3 3 3

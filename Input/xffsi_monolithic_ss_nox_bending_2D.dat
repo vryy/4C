@@ -20,7 +20,7 @@ RESTART                         0//215//
 --------------------------------------------------------------------------IO
 -----------------------------------------------------------------FSI DYNAMIC
 MAXTIME                         8
-TIMESTEP                        0.003 //0.00625
+TIMESTEP                        0.003                         //0.00625
 NUMSTEP                         4//400
 RESTARTEVRY                     2
 COUPALGO                        iter_fluidfluid_monolithicstructuresplit_nox
@@ -38,37 +38,36 @@ ALPHA_F                         1.00
 ALPHA_M                         1.00
 CONVCHECK                       L_2_norm
 CONVTOL                         1e-8
-INITIALFIELD                    zero_field //field_by_function
+INITIALFIELD                    zero_field                    //field_by_function
 ITEMAX                          25
 LIFTDRAG                        No
 MAXTIME                         3
 NONLINITER                      Newton
-NUMSTASTEPS                     0
+NUMSTASTEPS                     1
 NUMSTEP                         1
 RESTARTEVRY                     5
 SIMPLER                         no
 STARTFUNCNO                     2
-START_THETA                     1
 STEADYSTEP                      -1
 STEADYTOL                       1e-06
 THETA                           1.0//0.66
-TIMEINTEGR                      One_Step_Theta //Stationary
-TIMESTEP                        0.003//0.003125 //0.00625
+TIMEINTEGR                      One_Step_Theta                //Stationary
+TIMESTEP                        0.003//0.003125               //0.00625
 LINEAR_SOLVER                   1
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
-STABTYPE                        residual_based //
+STABTYPE                        residual_based                //
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG                            yes //no
-SUPG                            yes //no
+PSPG                            yes                           //no
+SUPG                            yes                           //no
 VSTAB                           no_vstab
-GRAD_DIV                        no //yes
+GRAD_DIV                        no                            //yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 CHARELELENGTH_PC                volume_equivalent_diameter
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        xfem_gp //none, std_eos, xfem_gp
+EOS_PRES                        xfem_gp                       //none, std_eos, xfem_gp
 EOS_CONV_STREAM                 xfem_gp                       // none, std_eos, xfem_gp
 EOS_CONV_CROSS                  none                          // none, std_eos, xfem_gp
 EOS_DIV                         none                          // none, vel_jump_std_eos, vel_jump_xfem_gp
@@ -151,7 +150,7 @@ GMSH_EOS_OUT                    no
 VOLUME_GAUSS_POINTS_BY          DirectDivergence
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche                       // Which Boundary method shall be used to enforce interface conditions?
-COUPLING_STRATEGY               embedded_sided_coupling //xfluid_sided_mortaring
+COUPLING_STRATEGY               embedded_sided_coupling       //xfluid_sided_mortaring
 IS_PSEUDO_2D                    yes
 NIT_STAB_FAC                    24.40282794                   // 35/CT(2d)
 VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk                  // eigenvalue
@@ -187,63 +186,63 @@ FUNCT2 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0
 ----------------------------------------------------------------------FUNCT3
 FUNCT3 EXPR 0 0.0 0 FUNCTION (1/0.4)*(1/0.4)*(0.8-2*y)
 ----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         2
-NDLINE                          0
-NDSURF                          9
-NDVOL                           5
+NDPOINT 2
+NDLINE 0
+NDSURF 9
+NDVOL 5
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-DSURF                           1
-//                              xFluid__outflow
+DSURF 1
+// xFluid__outflow
 E 1 - NUMDOF 6 ONOFF 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT                          2
-//                              xFluid__inflow
+DPOINT 2
+// xFluid__inflow
 E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.3 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 2 0 0 0 0 0
-//                              no_bc
+// no_bc
 E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF                           4
+DSURF 4
 // fluid FSI
 E 2 - NUMDOF 6 ONOFF 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-//                              structure_unten_dir
+// structure_unten_dir
 E 4 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-//                              xFluid__upper_and_lower_surface
+// xFluid__upper_and_lower_surface
 E 5 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-//                              unten_dirichlet_fluid
+// unten_dirichlet_fluid
 E 6 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-DVOL                            3
-//                              embFluid_volume
+DVOL 3
+// embFluid_volume
 E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-//                              bgFluid_volume
+// bgFluid_volume
 E 2 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-//                              structure_volume
+// structure_volume
 E 3 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 -------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
-DSURF                           1
-//                              bottom_dirichlet_fluid
+DSURF 1
+// bottom_dirichlet_fluid
 E 6 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 --------------------------------------------DESIGN VOL ALE DIRICH CONDITIONS
-DVOL                            1
-//                              embFluid_volume
+DVOL 1
+// embFluid_volume
 E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
-DSURF                           2
+DSURF 2
 // fluid fsi
 E 2 - 1
 // structure fsi
 E 7 - 1
 --------------------------------------DESIGN XFEM FLUIDFLUID SURF CONDITIONS
-DSURF                           1
-//                              xfem
+DSURF 1
+// xfem
 E 3 - 1 embedded
 ---------------------------------DESIGN FLUID FLUID COUPLING SURF CONDITIONS
-DSURF                           1
-//                              fluid-fluid
+DSURF 1
+// fluid-fluid
 E 3 - 1
 ------------------------------------------DESIGN MOVING FLUID VOL CONDITIONS
-DVOL                            1
-//                              embFluid_volume
+DVOL 1
+// embFluid_volume
 E 1 - 1
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1

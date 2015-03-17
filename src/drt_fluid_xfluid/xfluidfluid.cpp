@@ -189,7 +189,7 @@ void FLD::XFluidFluid::PrepareSolve()
   {
     if (ale_embfluid_)
       mc_xff_->EstimateNitscheTraceMaxEigenvalue(embedded_fluid_->Dispnp());
-    else
+    else if (step_ == 1)
     {
       Teuchos::RCP<Epetra_Vector> zeros = LINALG::CreateVector(*embedded_fluid_->DofRowMap(),true);
       mc_xff_->EstimateNitscheTraceMaxEigenvalue(zeros);

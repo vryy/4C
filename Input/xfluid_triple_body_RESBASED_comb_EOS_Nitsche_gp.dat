@@ -47,7 +47,6 @@ NUMSTASTEPS                     0
 MAXTIME                         1.0
 TIMESTEP                        1.0
 THETA                           1.0
-START_THETA                     1.0
 ALPHA_F                         1.00
 ALPHA_M                         1.00
 LIFTDRAG                        no
@@ -56,7 +55,7 @@ ADAPTCONV_BETTER                0.1
 SIMPLER                         No
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
-DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt  //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            yes
@@ -85,10 +84,10 @@ BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche
 IS_PSEUDO_2D                    yes
-NIT_STAB_FAC                   24.40282794                   // = 35.0/CT(2D) with former 35 in [10;100]
+NIT_STAB_FAC                    24.40282794                   // = 35.0/CT(2D) with former 35 in [10;100]
 VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk                  // eigenvalue
 VISC_STAB_HK                    vol_equivalent                // vol_div_by_surf // longest_ele_length
-CONV_STAB_SCALING               abs_inflow //abs_normal_vel   // inflow // const // none
+CONV_STAB_SCALING               abs_inflow                    //abs_normal_vel // inflow // const // none
 GHOST_PENALTY_STAB              yes
 GHOST_PENALTY_FAC               0.05                          // in [0.1;0.5]
 --------------------------------------------------------------------SOLVER 1
@@ -120,39 +119,39 @@ FLUID DIS fluid NODE 103 QUANTITY vely VALUE 1.60132990318717583e-01 TOLERANCE 1
 FLUID DIS fluid NODE 103 QUANTITY velz VALUE 0.00000000000000000e+00 TOLERANCE 1e-10
 FLUID DIS fluid NODE 103 QUANTITY pressure VALUE 3.68286126948227877e-01 TOLERANCE 1e-10
 ----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
-NDLINE                          1
-NDSURF                          5
-NDVOL                           2
+NDPOINT 0
+NDLINE 1
+NDSURF 5
+NDVOL 2
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE                           1
-//                              fluid_wall_lines
+DLINE 1
+// fluid_wall_lines
 E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF                           4
-//                              fluid_front_back_surfaces
+DSURF 4
+// fluid_front_back_surfaces
 E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-//                              fluid_bottom_top_walls
+// fluid_bottom_top_walls
 E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-//                              fluid_inflow
+// fluid_inflow
 E 3 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 1 0 0 0 0 0
-//                              fluid_outflow
+// fluid_outflow
 E 4 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-DVOL                            2
-//                              fluid_volume
+DVOL 2
+// fluid_volume
 E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-//                              structure_volume
+// structure_volume
 E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 ----------------------------------DESIGN XFEM WEAK DIRICHLET SURF CONDITIONS
 // DOBJECT COUPLINGID EVALTYPE
-DSURF                           1
-//                              structure_shell
+DSURF 1
+// structure_shell
 E 5 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 ------------------------------------DESIGN XFEM DISPLACEMENT SURF CONDITIONS
 // DOBJECT COUPLINGID EVALTYPE
-DSURF                           1
-//                              structure_shell
+DSURF 1
+// structure_shell
 E 5 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 ---------------------------------------------------------DLINE-NODE TOPOLOGY

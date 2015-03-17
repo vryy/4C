@@ -79,8 +79,8 @@ TIMESTEP                        0.01//0.02
 NUMSTEP                         4
 UPRES                           1
 RESTARTEVRY                     2
-COUPALGO                        iter_xfem_monolithic //iter_stagg_AITKEN_rel_param  // iter_stagg_MFNK_FSI ////iter_stagg_fixed_rel_param // //iter_stagg_fixed_rel_param //
-SECONDORDER No //No
+COUPALGO                        iter_xfem_monolithic          //iter_stagg_AITKEN_rel_param // iter_stagg_MFNK_FSI ////iter_stagg_fixed_rel_param // //iter_stagg_fixed_rel_param //
+SECONDORDER                     No                            //No
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 ITEMAX                          4
 INFNORMSCALING                  no
@@ -108,7 +108,7 @@ COUPVARIABLE                    Displacement
 ITEMAX                          20
 MAXOMEGA                        0.5                           // largest omega allowed for Aitken relaxation (0.0 means no constraint)
 PARTITIONED                     DirichletNeumann
-PREDICTOR                       d(n)+dt*v(n) //d(n) //d(n)+dt*v(n)+0.5*dt^2*a(n) //"d(n)","d(n)+dt*(1.5*v(n)-0.5*v(n-1))","d(n)+dt*v(n)","d(n)+dt*v(n)+0.5*dt^2*a(n)
+PREDICTOR                       d(n)+dt*v(n)                  //d(n) //d(n)+dt*v(n)+0.5*dt^2*a(n) //"d(n)","d(n)+dt*(1.5*v(n)-0.5*v(n-1))","d(n)+dt*v(n)","d(n)+dt*v(n)+0.5*dt^2*a(n)
 RELAX                           0.825
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   3
@@ -123,10 +123,9 @@ ITEMAX                          10
 LIFTDRAG                        Yes
 MAXTIME                         20.0
 NONLINITER                      Newton
-NUMSTASTEPS                     0
+NUMSTASTEPS                     1
 NUMSTEP                         1000
 SIMPLER                         no
-START_THETA                     1.0
 STEADYSTEP                      -1
 STEADYTOL                       1e-06
 THETA                           1.0
@@ -136,20 +135,20 @@ INFNORMSCALING                  no
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall_wo_dt// Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt// Franca_Barrenechea_Valentin_Frey_Wall_wo_dt  //
-CHARELELENGTH_PC                volume_equivalent_diameter //volume_equivalent_diameter //abc  // volume_equivalent_diameter
+CHARELELENGTH_PC                volume_equivalent_diameter    //volume_equivalent_diameter //abc // volume_equivalent_diameter
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG                            yes //yes //yes_pspg//yes_pspg
-SUPG                            yes //yes //yes_supg//yes_supg
+PSPG                            yes                           //yes //yes_pspg//yes_pspg
+SUPG                            yes                           //yes //yes_supg//yes_supg
 VSTAB                           no_vstab
 GRAD_DIV                        no
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        xfem_gp //none //xfem_gp      // none, std_eos, xfem_gp
-EOS_CONV_STREAM                 xfem_gp //xfem_gp             // std_eos, xfem_gp
+EOS_PRES                        xfem_gp                       //none //xfem_gp // none, std_eos, xfem_gp
+EOS_CONV_STREAM                 xfem_gp                       //xfem_gp // std_eos, xfem_gp
 EOS_CONV_CROSS                  none                          // none, std_eos, xfem_gp
-EOS_DIV                         none //vel_jump_xfem_gp //vel_jump_xfem_gp  // vel_jump_std_eos, vel_jump_xfem_gp, div_jump_std_eos, div_jump_xfem_gp
+EOS_DIV                         none                          //vel_jump_xfem_gp //vel_jump_xfem_gp // vel_jump_std_eos, vel_jump_xfem_gp, div_jump_std_eos, div_jump_xfem_gp
 EOS_DEFINITION_TAU              Burman_Hansbo_DAngelo_Zunino
 EOS_H_DEFINITION                EOS_he_max_diameter_to_opp_surf
 --------------------------------------------------------------------SOLVER 1
@@ -163,19 +162,19 @@ BGS2X2_GLOBAL_DAMPING           1.0
 BGS2X2_BLOCK1_DAMPING           1.0
 BGS2X2_BLOCK2_DAMPING           1.0
 AZBDIAG                         0
-AZCONV                          AZ_r0  // AZ_r0,AZ_rhs,AZ_Anorm,AZ_noscaled,AZ_sol,AZ_weighted,AZ_expected_values,AZTECOO_conv_test,AZ_inf_noscaled
+AZCONV                          AZ_r0                         // AZ_r0,AZ_rhs,AZ_Anorm,AZ_noscaled,AZ_sol,AZ_weighted,AZ_expected_values,AZTECOO_conv_test,AZ_inf_noscaled
 AZDROP                          0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        50
 AZPOLY                          3
-AZSCAL                          none  // none,sym,infnorm
+AZSCAL                          none                          // none,sym,infnorm
 AZSUB                           300
 AZTOL                           1e-08
 --------------------------------------------------------------------SOLVER 2
 NAME                            STRUCTURAL_SOLVER
-SOLVER                          Aztec_MSR  // UMFPACK
+SOLVER                          Aztec_MSR                     // UMFPACK
 AZBDIAG                         0
 AZCONV                          AZ_r0
 AZDROP                          0
@@ -184,7 +183,7 @@ AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
 AZPOLY                          3
-AZPREC                          MLFLUID2  // ML,ILU
+AZPREC                          MLFLUID2                      // ML,ILU
 AZREUSE                         0
 AZSCAL                          none
 AZSOLVE                         GMRES
@@ -200,10 +199,10 @@ ML_COARSEN                      UC
 ML_DAMPCOARSE                   1
 ML_DAMPFINE                     1
 ML_DAMPMED                      1
-ML_MAXCOARSESIZE                1000  // 5000
+ML_MAXCOARSESIZE                1000                          // 5000
 ML_MAXLEVEL                     5
 ML_PRINT                        0
-ML_PROLONG_SMO                  1.33333 // 0
+ML_PROLONG_SMO                  1.33333                       // 0
 ML_PROLONG_THRES                0
 ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
@@ -223,14 +222,14 @@ AZCONV                          AZ_r0                         // scale residual 
 AZITER                          1000                          // max iterations
 AZSUB                           1000                          // size of krylov space for gmres
 IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
-ML_MAXCOARSESIZE                1 //2500                      // ML stop coarsening when coarse ndof smaller then this (1: each level has to be used)
+ML_MAXCOARSESIZE                1                             //2500 // ML stop coarsening when coarse ndof smaller then this (1: each level has to be used)
 ML_MAXLEVEL                     2                             // ML max number of levels
 ML_COARSEN                      UC                            // UC MIS METIS VBMETIS
 ML_AGG_SIZE                     27                            // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
 ML_PROLONG_SMO                  0.0                           // damping factor for prolongator smoother (usually 0.0 or 1.33)
 ML_PROLONG_THRES                0.0                           // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE                 SGS //ILU                     // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED                  SGS //ILU                     // SGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERFINE                 SGS                           //ILU // SGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERMED                  SGS                           //ILU // SGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERCOARSE               Umfpack                       // SGS Jacobi Chebychev MLS KLU Superlu
 ML_SMOTIMES                     3 3 1                         // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
 ML_DAMPFINE                     0.66                          // damping fine grid
@@ -242,18 +241,18 @@ GMSH_SOL_OUT                    yes
 GMSH_EOS_OUT                    No
 GMSH_DISCRET_OUT                no
 GMSH_CUT_OUT                    no
-VOLUME_GAUSS_POINTS_BY          Tessellation //Tessellation //DirectDivergence
+VOLUME_GAUSS_POINTS_BY          Tessellation                  //Tessellation //DirectDivergence
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche
 COUPLING_STRATEGY               xfluid_sided_coupling
 VISC_ADJOINT_SYMMETRY           yes
-NIT_STAB_FAC                   50.0
+NIT_STAB_FAC                    50.0
 VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk
-VISC_STAB_HK                    ele_vol_div_by_max_ele_surf //vol_div_by_surf //vol_equivalent //vol_div_by_surf //vol_equivalent //vol_div_by_surf//vol_equivalent  // vol_div_by_surf // longest_ele_length
+VISC_STAB_HK                    ele_vol_div_by_max_ele_surf   //vol_div_by_surf //vol_equivalent //vol_div_by_surf //vol_equivalent //vol_div_by_surf//vol_equivalent // vol_div_by_surf // longest_ele_length
 IS_PSEUDO_2D                    yes
-CONV_STAB_SCALING               abs_inflow //abs_normal_vel   // inflow // const // none
+CONV_STAB_SCALING               abs_inflow                    //abs_normal_vel // inflow // const // none
 GHOST_PENALTY_STAB              Yes
 GHOST_PENALTY_FAC               0.05                          // in [0.1;0.5]
 GHOST_PENALTY_TRANSIENT_STAB    no
@@ -281,41 +280,41 @@ FUNCT2 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0
 FUNCT3 EXPR 0 0.0 0 FUNCTION -(y-1.8)
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
-NDLINE                          0
-NDSURF                          6
-NDVOL                           2
+NDPOINT 0
+NDLINE 0
+NDSURF 6
+NDVOL 2
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-DSURF                           0
-//                              Fluid_left
+DSURF 0
+// Fluid_left
 //E 1 - none 0 0 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
-//                              Fluid_right
+// Fluid_right
 //E 2 - none 0 0 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF                           2
-//                              Fluid_front_and_back
+DSURF 2
+// Fluid_front_and_back
 E 3 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-//                              Fluid_top
+// Fluid_top
 //E 4 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 0.0 -1.0 0.0 0.0 0.0 0.0 CURVE none 1 none none none none FUNCT 0 0 0 0 0 0
-//                              Fluid_bottom
+// Fluid_bottom
 E 5 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 0.0 1.0 0.0 0.0 0.0 0.0 CURVE none 1 none none none none FUNCT 0 0 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-DVOL                            2
-//                              Fluid_volume
+DVOL 2
+// Fluid_volume
 E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-//                              structure_volume
+// structure_volume
 E 2 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
-DSURF                           1
-//                              FSI
+DSURF 1
+// FSI
 E 6 - 1 structure conforming
 ----------------------------------DESIGN XFEM FSI MONOLITHIC SURF CONDITIONS
-DSURF                           1
-//                              FSI
+DSURF 1
+// FSI
 E 6 - 1
 --------------------------DESIGN XFEM LEVELSET WEAK DIRICHLET VOL CONDITIONS
-DVOL                           1
-//                              fluid_volume
+DVOL 1
+// fluid_volume
 E 1 - LEVELSETFIELDNO 3 LEVELSETCURVE none NUMDOF 3 ONOFF 0 1 0 VAL 1.0 -1.0 1.0 CURVE none 1 none FUNCT 0 0 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 ---------------------------------------------------------DLINE-NODE TOPOLOGY

@@ -41,7 +41,7 @@ NUMSTEP                         80
 UPRES                           1
 RESTARTEVRY                     5
 COUPALGO                        iter_stagg_AITKEN_rel_param
-SECONDORDER No //No
+SECONDORDER                     No                            //No
 ----------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 CONVTOL                         1.0E-8
 COUPMETHOD                      conforming
@@ -60,11 +60,10 @@ CONVTOL                         1.0E-13
 UPRES                           1
 RESTARTEVRY                     5
 NUMSTEP                         80
-NUMSTASTEPS                     0
+NUMSTASTEPS                     1
 MAXTIME                         2.0
 TIMESTEP                        0.025
 THETA                           1.0
-START_THETA                     1.0
 ALPHA_F                         1.00
 ALPHA_M                         1.00
 LIFTDRAG                        no
@@ -94,13 +93,13 @@ MAXITER                         100
 LINEAR_SOLVER                   1
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based
-DEFINITION_TAU Taylor_Hughes_Zarins_Whiting_Jansen //Barrenechea_Franca_Valentin_Wall
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen  //Barrenechea_Franca_Valentin_Wall
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            no
 SUPG                            no//yes
 VSTAB                           no_vstab
-GRAD_DIV no //yes
+GRAD_DIV                        no                            //yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
@@ -111,10 +110,10 @@ EOS_DIV                         vel_jump_std_eos              // none, vel_jump_
 EOS_DEFINITION_TAU              Burman_Fernandez
 EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf   // EOS_he_surf_with_max_diameter
 --------------------------------------------------------------------SOLVER 1
-NAME Fluid Solver
+NAME                            Fluid Solver
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
-NAME Struct Solver
+NAME                            Struct Solver
 SOLVER                          UMFPACK
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT_SCREEN           No
@@ -131,13 +130,13 @@ COUPLING_METHOD                 Nitsche                       // "BoundaryTypeTa
 NIT_STAB_FAC                    21.97015825                   // 35/CT(3d)
 VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk                  // eigenvalue
 VISC_STAB_HK                    vol_equivalent                // vol_div_by_surf // longest_ele_length
-CONV_STAB_SCALING               abs_inflow //abs_normal_vel   // inflow // const // none
+CONV_STAB_SCALING               abs_inflow                    //abs_normal_vel // inflow // const // none
 GHOST_PENALTY_STAB              Yes
 GHOST_PENALTY_FAC               0.05                          // in [0.1;0.5]
 -------------------------------------------------------------------MATERIALS
-//                              MAT_fluid
+// MAT_fluid
 MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0 GAMMA 1.0
-//                              MAT_Struct_StVenantKirchhoff
+// MAT_Struct_StVenantKirchhoff
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 250
 MAT 3 ELAST_CoupNeoHooke YOUNG 100000 NUE 0.0
 ----------------------------------------------------------------------CURVE1
@@ -156,24 +155,24 @@ FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.75*0.5*4.0*pi*pi*(x+0.5) // pressure
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         4
-NDLINE                          10
-NDSURF                          12
-NDVOL                           2
+NDPOINT 4
+NDLINE 10
+NDSURF 12
+NDVOL 2
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-DSURF                           1
+DSURF 1
 // surface inflow
 E 3 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-DVOL                            0
+DVOL 0
 -----------------------------------DESIGN POINT TRANSPORT NEUMANN CONDITIONS
-DPOINT                          0
+DPOINT 0
 ------------------------------------DESIGN LINE TRANSPORT NEUMANN CONDITIONS
-DLINE                           0
+DLINE 0
 ------------------------------------DESIGN SURF TRANSPORT NEUMANN CONDITIONS
-DSURF                           0
+DSURF 0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT                          0
+DPOINT 0
 // top inflow points
 //E 1 - 6 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 1 0 0 0 0 0
 //E 1 - 6 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
@@ -185,7 +184,7 @@ DPOINT                          0
 // bottom outflow points
 //E 4 - 6 0 1 1 0 0 0 7.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE                           2
+DLINE 2
 // line inflow top
 //E 1 - 6 1 1 0 0 0 2.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 //E 1 - 6 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 1 0 0 0 0 0
@@ -211,7 +210,7 @@ E 9 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none non
 // bottom edges side walls
 E 10 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF                           5
+DSURF 5
 // surface top
 E 1 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 //E 1 - 6 0 1 1 0 0 0 2.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
@@ -232,57 +231,57 @@ E 6 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none non
 // right side of structure
 E 9 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL -0.70 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-DVOL                            1
+DVOL 1
 E 2 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 ------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS
-DPOINT                          0
+DPOINT 0
 -------------------------------------------DESIGN LINE ALE DIRICH CONDITIONS
-DLINE                           0
+DLINE 0
 -------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
-DSURF                           0
+DSURF 0
 --------------------------------------------DESIGN VOL ALE DIRICH CONDITIONS
-DVOL                            0
+DVOL 0
 ------------------------------------DESIGN POINT TRANSPORT DIRICH CONDITIONS
-DPOINT                          0
+DPOINT 0
 -------------------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
-DLINE                           0
+DLINE 0
 -------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
-DSURF                           0
+DSURF 0
 -----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
-DLINE                           0
+DLINE 0
 -----------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
-DSURF                           0
+DSURF 0
 ----------------------------------------------DESIGN POINT LOCSYS CONDITIONS
-DPOINT                          0
+DPOINT 0
 -----------------------------------------------DESIGN LINE LOCSYS CONDITIONS
-DLINE                           0
+DLINE 0
 -----------------------------------------------DESIGN SURF LOCSYS CONDITIONS
-DSURF                           0
+DSURF 0
 ------------------------------------------------DESIGN VOL LOCSYS CONDITIONS
-DVOL                            0
+DVOL 0
 ------------------------------------DESIGN LINE PERIODIC BOUNDARY CONDITIONS
-DLINE                           0
+DLINE 0
 ------------------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
-DSURF                           0
+DSURF 0
 ---------------------------------------DESIGN LINE WEAK DIRICHLET CONDITIONS
-DLINE                           0
+DLINE 0
 ------------------------------------DESIGN SURFACE WEAK DIRICHLET CONDITIONS
-DSURF                           0
+DSURF 0
 -----------------------------DESIGN SURFACE CONSERVATIVE OUTFLOW CONSISTENCY
-DSURF                           0
+DSURF 0
 ----------------------------------------FLUID NEUMANN INFLOW LINE CONDITIONS
-DLINE                           0
+DLINE 0
 ----------------------------------------FLUID NEUMANN INFLOW SURF CONDITIONS
-DSURF                           0
+DSURF 0
 ------------------------------------TRANSPORT NEUMANN INFLOW LINE CONDITIONS
-DLINE                           0
+DLINE 0
 ------------------------------------TRANSPORT NEUMANN INFLOW SURF CONDITIONS
-DSURF                           0
+DSURF 0
 -----------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
-DLINE                           0
+DLINE 0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 // DOBJECT FSI_ID FIELD MESH
-DSURF                           6
+DSURF 6
 E 7 - 1 structure conforming
 E 8 - 1 structure conforming
 E 9 - 1 structure conforming
@@ -291,7 +290,7 @@ E 11 - 1 structure conforming
 E 12 - 1 structure conforming
 ---------------------------------DESIGN XFEM FSI PARTITIONED SURF CONDITIONS
 // DOBJECT COUPLING BCFLUID
-DSURF                           6
+DSURF 6
 E 7 - 1
 E 8 - 1
 E 9 - 1

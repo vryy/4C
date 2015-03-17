@@ -42,11 +42,10 @@ CONVTOL                         1.0E-12
 UPRES                           1
 RESTARTEVRY                     0
 NUMSTEP                         3
-NUMSTASTEPS                     0
+NUMSTASTEPS                     1
 MAXTIME                         0.03
 TIMESTEP                        0.01
 THETA                           1.0
-START_THETA                     1.0
 ALPHA_F                         1.00
 ALPHA_M                         1.00
 LIFTDRAG                        no
@@ -56,7 +55,7 @@ SIMPLER                         No
 CALCERROR                       kimmoin_instat_navier_stokes
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based
-DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt  //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            no
@@ -79,15 +78,15 @@ GMSH_DEBUG_OUT                  No
 GMSH_SOL_OUT                    No
 GMSH_DISCRET_OUT                No
 GMSH_CUT_OUT                    No
-VOLUME_GAUSS_POINTS_BY          DirectDivergence //Tessellation //Tessellation //MomentFitting //Tessellation //MomentFitting //Tessellation
-BOUNDARY_GAUSS_POINTS_BY        Tessellation //MomentFitting //Tessellation
+VOLUME_GAUSS_POINTS_BY          DirectDivergence              //Tessellation //Tessellation //MomentFitting //Tessellation //MomentFitting //Tessellation
+BOUNDARY_GAUSS_POINTS_BY        Tessellation                  //MomentFitting //Tessellation
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche
-NIT_STAB_FAC                   24.40282794                   // = 35.0/CT(2D) with former 35 in [10;100]
+NIT_STAB_FAC                    24.40282794                   // = 35.0/CT(2D) with former 35 in [10;100]
 VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk                  // eigenvalue
 VISC_STAB_HK                    vol_equivalent                // vol_div_by_surf // longest_ele_length
-CONV_STAB_SCALING               abs_inflow //max_abs_normal_vel //abs_normal_vel //inflow //abs_normal_vel //abs_normal_vel //abs_normal_vel //abs_normal_vel  // inflow // const // none
+CONV_STAB_SCALING               abs_inflow                    //max_abs_normal_vel //abs_normal_vel //inflow //abs_normal_vel //abs_normal_vel //abs_normal_vel //abs_normal_vel // inflow // const // none
 GHOST_PENALTY_STAB              yes
 GHOST_PENALTY_FAC               0.01                          // in [0.01;0.05]
 GHOST_PENALTY_TRANSIENT_STAB    yes
@@ -130,35 +129,35 @@ FLUID DIS fluid NODE 1451 QUANTITY vely VALUE 3.43435243474208673e-01 TOLERANCE 
 FLUID DIS fluid NODE 1451 QUANTITY velz VALUE 0.0e00 TOLERANCE 1e-12
 FLUID DIS fluid NODE 1451 QUANTITY pressure VALUE 3.47654146768379968e-01 TOLERANCE 1e-10
 ----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         1
-NDLINE                          0
-NDSURF                          2
-NDVOL                           2
+NDPOINT 1
+NDLINE 0
+NDSURF 2
+NDVOL 2
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-DVOL                            1
-//                              fluid_volume
+DVOL 1
+// fluid_volume
 E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 1.0 1.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 1 1 1 0 0 0 Live Mid
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT                          1
-//                              pressure_middle_nodes
+DPOINT 1
+// pressure_middle_nodes
 E 1 - NUMDOF 6 ONOFF 0 0 1 1 0 0 VAL 0.0 0.0 0.0 1.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 2 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-DVOL                            1
-//                              fluid_volume
+DVOL 1
+// fluid_volume
 E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 1.0 1.0 1.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 2 2 2 0 0 0
 ----------------------------------DESIGN XFEM WEAK DIRICHLET SURF CONDITIONS
 // DOBJECT COUPLINGID EVALTYPE
-DSURF                           2
-//                              surface_inner_structure
+DSURF 2
+// surface_inner_structure
 E 1 - COUPLINGID 1 EVALTYPE funct_interpolated NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 CURVE none none none FUNCT 2 2 2
-//                              surface_outer_structure
+// surface_outer_structure
 E 2 - COUPLINGID 1 EVALTYPE funct_interpolated NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 CURVE none none none FUNCT 2 2 2
 ------------------------------------DESIGN XFEM DISPLACEMENT SURF CONDITIONS
 // DOBJECT COUPLINGID EVALTYPE
-DSURF                           2
-//                              surface_inner_structure
+DSURF 2
+// surface_inner_structure
 E 1 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-//                              surface_outer_structure
+// surface_outer_structure
 E 2 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1141 DNODE 1

@@ -35,33 +35,32 @@ ALPHA_F                         1.00
 ALPHA_M                         1.00
 CONVCHECK                       L_2_norm
 CONVTOL                         1e-06
-INITIALFIELD                    zero_field //field_by_function
+INITIALFIELD                    zero_field                    //field_by_function
 ITEMAX                          50
 LIFTDRAG                        No
 MAXTIME                         50
 NONLINITER                      Newton
-NUMSTASTEPS                     0
+NUMSTASTEPS                     1
 NUMSTEP                         1
 RESTARTEVRY                     30
 SIMPLER                         no
 STARTFUNCNO                     2
-START_THETA                     1
 STEADYSTEP                      -1
 STEADYTOL                       1e-06
 THETA                           1.0
-TIMEINTEGR                      One_Step_Theta //BDF2
+TIMEINTEGR                      One_Step_Theta                //BDF2
 TIMESTEP                        0.01
 NONLINEARBC                     no
 LINEAR_SOLVER                   1
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based                    // residual_based //
-DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
+DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall_wo_dt  //Barrenechea_Franca_Valentin_Wall
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG                            no //yes
-SUPG                            no //yes//yes
+PSPG                            no                            //yes
+SUPG                            no                            //yes//yes
 VSTAB                           no_vstab
-GRAD_DIV                        no //yes
+GRAD_DIV                        no                            //yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
@@ -82,10 +81,10 @@ NUMSTEP                         3
 RESTARTEVRY                     0
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
-SOLVER                          Aztec_MSR //Aztec_MSR         // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          Aztec_MSR                     //Aztec_MSR // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        50                            // output every so often, 0 no output
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          ILU //MLFLUID2                // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
+AZPREC                          ILU                           //MLFLUID2 // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
 AZREUSE                         1                             // how often to recompute some preconditioners
 IFPACKGFILL                     3                             // (3 for edgebased stabilization pattern) graph fill for ILU
 AZTOL                           1.0E-08                       // tolerance in unscaled residual
@@ -93,7 +92,7 @@ AZCONV                          AZ_r0                         // scale residual 
 AZITER                          1000                          // max iterations
 AZSUB                           1000                          // size of krylov space for gmres
 IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
-ML_MAXCOARSESIZE                1 //2500                      // ML stop coarsening when coarse ndof smaller then this (1: each level has to be used)
+ML_MAXCOARSESIZE                1                             //2500 // ML stop coarsening when coarse ndof smaller then this (1: each level has to be used)
 ML_MAXLEVEL                     3                             // ML max number of levels
 ML_COARSEN                      UC                            // UC MIS METIS VBMETIS
 ML_AGG_SIZE                     27                            // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
@@ -110,7 +109,7 @@ ML_DAMPCOARSE                   1.0                           // damping coarse 
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Hybrid_LM_Cauchy_stress       // BoundaryTypeNitsche // BoundaryTypeNeumann
 COUPLING_STRATEGY               xfluid_sided_coupling
-NIT_STAB_FAC                   1.0
+NIT_STAB_FAC                    1.0
 XFF_CONV_STAB_SCALING           none
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 RELAXING_ALE                    Yes
@@ -142,38 +141,38 @@ FUNCT2 COMPONENT 3 EXPR 0 0.0 0 FUNCTION (1/0.4)*(1/0.4)*(0.8-2*y)
 FUNCT3 EXPR 0 0.0 0 FUNCTION (1/0.4)*(1/0.4)*(0.8-2*y)
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         2
-NDLINE                          0
-NDSURF                          3
-NDVOL                           4
+NDPOINT 2
+NDLINE 0
+NDSURF 3
+NDVOL 4
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT                          2
+DPOINT 2
 // Fluid 1 inflow
 E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.01 0.0 0.0 0.0 CURVE none none none none FUNCT 1 0 0 0
 // Fluid 2 dirichlet
 E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF                           2
+DSURF 2
 // xFluid upper surface
 E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // xFluid lower surface
 E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-DVOL                            2
+DVOL 2
 // bgFluid volume
 E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // Fluid 2 volume
 E 2 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 --------------------------------------------DESIGN VOL ALE DIRICH CONDITIONS
-DVOL                            1
+DVOL 1
 // Fluid 2 volume
 E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 --------------------------------------DESIGN XFEM FLUIDFLUID SURF CONDITIONS
-DSURF                           1
+DSURF 1
 // Fluid 2 xfem
 E 3 - 1 xfluid
 ------------------------------------------DESIGN MOVING FLUID VOL CONDITIONS
-DVOL                            1
+DVOL 1
 // Fluid 2 volume
 E 2 - 1
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
