@@ -1865,12 +1865,7 @@ void FLD::XFluid::PrintStabilizationParams() const
             def_tau != "Franca_Madureira_Valentin_Badia_Codina_wo_dt" and
             def_tau != "Hughes_Franca_Balestra_wo_dt")
         {
-          // TODO: comment in line below - just for compatibility with new XFF
-          // (XFF cases are not checked for this)
-          //dserror("not a valid tau definition (DEFINITION_TAU) for stationary problems");
-          IO::cout << RED_LIGHT
-              << "Not a valid tau definition (DEFINITION_TAU) for stationary problems"
-              << END_COLOR << IO::endl;
+          dserror("not a valid tau definition (DEFINITION_TAU) for stationary problems");
         }
       }
       IO::cout << "\n";

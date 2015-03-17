@@ -55,6 +55,8 @@ THETA                           1.00
 TIMEINTEGR                      Stationary                    //One_Step_Theta
 TIMESTEP                        1.0
 LINEAR_SOLVER                   1
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 AZCONV                          AZ_r0
