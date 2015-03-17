@@ -1,0 +1,20 @@
+#
+# Build routine/test for doxygen documentation
+
+#
+### General Setup
+
+cmake_minimum_required(VERSION 2.8)
+project(documentation CXX C Fortran)
+
+# generates documentation in build folder
+# Dependencies: html/index.html <- Doxyfile <- Doxyfile.defs <- gen_doxygen_defs.py
+add_custom_command ( OUTPUT html/index.html COMMAND doxygen Doxyfile MAIN_DEPENDENCY ${PROJECT_BINARY_DIR}/Doxyfile )
+add_custom_command ( OUTPUT Doxyfile COMMAND cat ${CMAKE_SOURCE_DIR}/doc/Doxyfile.tmpl Doxyfile.defs > Doxyfile && sed -i -e "s/####REVISION####/${baci_WC_REVISION}/" -e "s:####SOURCE####:${CMAKE_SOURCE_DIR}:" Doxyfile MAIN_DEPENDENCY ${PROJECT_BINARY_DIR}/Doxyfile.defs )
+add_custom_command ( OUTPUT Doxyfile.defs COMMAND ${CMAKE_SOURCE_DIR}/gen_doxygen_defs.py "${PROJECT_BINARY_DIR}/../" "${PROJECT_BINARY_DIR}" )
+
+
+# start build with "make documentation"
+add_custom_target( documentation ALL echo DEPENDS html/index.html )
+
+

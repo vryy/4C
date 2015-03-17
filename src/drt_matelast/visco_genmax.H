@@ -77,43 +77,45 @@ namespace ELASTIC
   }  // namespace PAR
 
 
-  /*----------------------------------------------------------------------*/
-  /// Material Viscogenmax
-  ///
-  /// This material offers a viscous and hyperelastic part. The model consists
-  /// of one spring in parallel to one sequential branch of a spring and a dashpot.
-  ///
-  /// The hyperelasic part is possibly any hyperelastic law of the Hyperelastic
-  /// toolbox. The materials of the hyperelastic toolbox are composed
-  /// of (Helmholtz free energy density) potentials.  Effectively, we want
-  ///\f[
-  ///  \Psi(\boldsymbol{C}) = \sum_i \Psi_i(\boldsymbol{C})
-  ///\f]
-  ///
-  /// in which the individual \f$\Psi_i\f$ is implemented as #MAT::ELASTIC::Summand.
-  ///
-  ///
-  /// The stress tensor of the viscous part is calculated from the evolution equation
-  ///\f[
-  ///  \dot{\boldsymbol{Q}} = 1 / \tau \boldsymbol{Q} = \beta \dot{\boldsymbol{S}}
-  ///\f]
-  /// with elastic stress tensor S. S contains isochoric and volumetric contribution,
-  /// so Q is also isochoric and volumetric.
-  /// The viscous elasicity tensor is calculated from \f$\boldsymbol{Q}$ with
-  /// derivation to \f$\boldsymbol{C}\f$.
-  /// The viscous effect can be applied to any part of the SEF (isotropic coupled,
-  /// isotropic isochoric, isotropic volumetric, anisotropic).
-  ///
-  /// <h3>References</h3>
-  /// <ul>
-  /// <li> [1] GA Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
-  /// <li> [2] Bul-Brunon et.al., "Numerical identification method for the non-linear
-  ///         viscoelastic compressible behavior of soft tissue using uniaxial tensile
-  ///         tests and image registration - Application to rat lung parenchyma, 2013
-  /// </ul>
-  ///
-  /// \author bel, birzle
-  /// \date 09/14
+/*----------------------------------------------------------------------*/
+/*!
+ *  Material Viscogenmax
+ *
+ *  This material offers a viscous and hyperelastic part. The model consists
+ *  of one spring in parallel to one sequential branch of a spring and a dashpot.
+ *
+ *  The hyperelasic part is possibly any hyperelastic law of the Hyperelastic
+ *  toolbox. The materials of the hyperelastic toolbox are composed
+ *  of (Helmholtz free energy density) potentials.  Effectively, we want
+ * \f[
+ *   \Psi(\boldsymbol{C}) = \sum_i \Psi_i(\boldsymbol{C})
+ * \f]
+ *
+ *  in which the individual \f$\Psi_i\f$ is implemented as #MAT::ELASTIC::Summand.
+ *
+ *
+ *  The stress tensor of the viscous part is calculated from the evolution equation
+ * \f[
+ *   \dot{\boldsymbol{Q}} = 1 / \tau \boldsymbol{Q} = \beta \dot{\boldsymbol{S}}
+ * \f]
+ *  with elastic stress tensor S. S contains isochoric and volumetric contribution,
+ *  so Q is also isochoric and volumetric.
+ *  The viscous elasicity tensor is calculated from \f$\boldsymbol{Q}\f$ with
+ *  derivation to \f$\boldsymbol{C}\f$.
+ *  The viscous effect can be applied to any part of the SEF (isotropic coupled,
+ *  isotropic isochoric, isotropic volumetric, anisotropic).
+ *
+ *  <h3>References</h3>
+ *  <ul>
+ *  <li> [1] GA Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
+ *  <li> [2] Bul-Brunon et.al., "Numerical identification method for the non-linear
+ *          viscoelastic compressible behavior of soft tissue using uniaxial tensile
+ *          tests and image registration - Application to rat lung parenchyma, 2013
+ *  </ul>
+ *
+ *  \author bel, birzle
+ *  \date 09/14
+ */
 
   class GenMax : public Summand
   {

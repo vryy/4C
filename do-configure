@@ -242,4 +242,3 @@ $CMAKE_COMMAND \
 cd "$BACI_HOME"
 
 if [ -f .cproject ]; then ./adapt_cproject.py "`basename $0`" "$BUILD_FOLDER" "$BUILD_TYPE"; fi
-./gen_doxygen_defs.py "$BUILD_FOLDER"

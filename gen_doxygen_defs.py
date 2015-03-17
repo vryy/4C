@@ -15,7 +15,7 @@ def getDefineValue(build_folder):
     
     return list(definevalueset)
     
-def adapt(build_folder):
+def adapt(build_folder, output_folder):
     """update Doxyfile.defs file"""
 
     definevalues = getDefineValue(build_folder)
@@ -25,10 +25,10 @@ def adapt(build_folder):
       line += str(d)+" "
     line += "\n"
 
-    with open("doc/Doxyfile.defs", "w") as ff:
+    with open(output_folder+"/Doxyfile.defs", "w") as ff:
       ff.write(line)
 
     print "++ created Doxyfile definitions"
 
 if __name__=='__main__':
-    adapt(sys.argv[1])
+    adapt(sys.argv[1], sys.argv[2])
