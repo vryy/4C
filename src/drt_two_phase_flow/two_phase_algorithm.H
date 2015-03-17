@@ -56,7 +56,7 @@ namespace TWOPHASEFLOW
     /// Two phase flow time loop
     void TimeLoop();
 
-    ///Two phase flow stationary problem
+    /// Two phase flow stationary problem
     void SolveStationaryProblem();
 
     /// Restart TPF problem
@@ -70,29 +70,36 @@ namespace TWOPHASEFLOW
 
   protected:
 
-    /// prepare time step
-    void PrepareTimeStep();
 
     /// do (partitioned) outer iteration loop
     void OuterLoop();
-
-    /// set scatra values required in fluid
-    void SetScaTraValuesInFluid();
+    /// set values from ScaTra and solve the fluid field
+    void DoFluidField();
+    /// set values from Fluid and solve the scatra field
+    void DoScaTraField();
 
     /// convergence Check for present iteration step
     bool ConvergenceCheck(int itnum);
+    /// get increment of Fluid solution between time step i and i+1
+    void GetOuterLoopIncFluid(double& fsvelincnorm, double& fspressincnorm, int itnum);
+    /// get increment of ScaTra solution between time step i and i+1
+    void GetOuterLoopIncScaTra(double& fsphiincnorm, int itnum);
 
     /// update for next time step
     void TimeUpdate();
+    /// prepare time step
+    void PrepareTimeStep();
 
     /// write output
     void Output();
+    ///Write Output for initial fields
+    void OutputInitialField();
 
     /// get convective velocity at correct time
     void SetFluidValuesInScaTra(bool init);
+    /// set scatra values required in fluid
+    void SetScaTraValuesInFluid();
 
-    ///Write Output for initial fields
-    void OutputInitialField();
 
   private:
 
@@ -115,6 +122,15 @@ namespace TWOPHASEFLOW
 
     /// number of inflow steps
     int     numinflowsteps_;
+
+
+    /// Outer-loop convergence variables:
+    Teuchos::RCP<Epetra_Vector> velnpi_;
+    Teuchos::RCP<Epetra_Vector> phinpi_;
+    /// vectors for visualization of outerloop iteration progress.
+    std::vector<double> fsvelincnorm_;
+    std::vector<double> fspressincnorm_;
+    std::vector<double> fsphiincnorm_;
 
   };
 

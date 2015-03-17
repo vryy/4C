@@ -311,7 +311,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Evaluate(DRT::ELEMENTS::Fluid*
       for(int i=0; i<nen_; i++)
       {
         //      if(escaaf(i,1) < epsilon && escaaf(i,1) > -epsilon)
-        if(abs(escaaf(i,1)) <= epsilon)
+        if(abs(escaaf(i,0)) <= epsilon)
         {
           //Intpoints are changed. For sine and cosine, this new rule is utilized for error computation compared to analytical solution.
           DRT::UTILS::GaussIntegration intpoints_tmp(distype, ele->Degree()*2+3);

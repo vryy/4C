@@ -66,7 +66,10 @@ namespace XFLUIDLEVELSET
 
     /// convergence Check for present iteration step
     bool ConvergenceCheck(int itnum);
-
+    /// get increment of Fluid solution between time step i and i+1
+    void GetOuterLoopIncFluid(double& fsvelincnorm, double& fspressincnorm, int itnum);
+    /// get increment of ScaTra solution between time step i and i+1
+    void GetOuterLoopIncScaTra(double& fsphiincnorm, int itnum);
 
     /// fluid-level set loop
     void OuterLoop();

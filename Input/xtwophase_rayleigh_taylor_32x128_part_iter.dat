@@ -33,7 +33,7 @@ OUTPUT_GMSH                     No
 FILESTEPS                       1000
 ----------------------------------------------------------TWO PHASE FLOW
 CONVTOL                         1e-5
-ITEMAX                          3
+ITEMAX                          4
 MAXTIME                         1000.0
 NUMSTEP                         5
 RESTARTEVRY                     1 //20

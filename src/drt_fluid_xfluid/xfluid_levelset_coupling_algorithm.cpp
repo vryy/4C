@@ -76,7 +76,7 @@ XFLUIDLEVELSET::Algorithm::Algorithm(
 //  numinflowsteps_ = fluiddyn.sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP");
 
 
-  // Fluid Scatra Iteration vectors are initialized
+  // Fluid-Scatra Iteration vectors are initialized
   velnpi_ = Teuchos::rcp(new Epetra_Vector(FluidField()->StdVelnp()->Map()),true);//*fluiddis->DofRowMap()),true);
   velnpi_->Update(1.0,*FluidField()->StdVelnp(),0.0);
   phinpi_ = Teuchos::rcp(new Epetra_Vector(ScaTraField()->Phinp()->Map()),true);
@@ -120,7 +120,7 @@ void XFLUIDLEVELSET::Algorithm::TimeLoop()
     // update for next time step
     TimeUpdate();
 
-    // write output to screen and files
+    // write output to files
     Output();
 
   } // time loop
@@ -383,7 +383,7 @@ void XFLUIDLEVELSET::Algorithm::SetFluidValuesInScaTra(bool init)
  *------------------------------------------------------------------------------------------------*/
 bool XFLUIDLEVELSET::Algorithm::ConvergenceCheck(int itnum)
 {
-  // define flags for fluid and scatra convergence check
+  // define flags for Fluid and ScaTra convergence check
    bool fluidstopnonliniter  = false;
    bool scatrastopnonliniter = false;
 
@@ -392,66 +392,22 @@ bool XFLUIDLEVELSET::Algorithm::ConvergenceCheck(int itnum)
   if (itmax_ <= 0)
     dserror("Set iterations to something reasonable!!!");
 
-  Teuchos::RCP<Epetra_Vector> velnpip = FluidField()->StdVelnp(); //Contains Fluid and Pressure
-  Teuchos::RCP<Epetra_Vector> phinpip = ScaTraField()->Phinp();
+  double fsvelincnorm   = 1.0;
+  double fspressincnorm = 1.0;
+  double fsphiincnorm   = 1.0;
+  //Get increment for outer loop of Fluid and ScaTra
+  GetOuterLoopIncFluid(fsvelincnorm,fspressincnorm,itnum);
+  GetOuterLoopIncScaTra(fsphiincnorm,itnum);
 
-  //Extract velocity and pressure components.
-  Teuchos::RCP<LINALG::MapExtractor> velpresspliter = Teuchos::rcp_dynamic_cast<FLD::XFluid>(FluidField())->VelPresSplitterStd();
-
-  Teuchos::RCP<Epetra_Vector> onlyvel   = velpresspliter->ExtractOtherVector(velnpip);
-  Teuchos::RCP<Epetra_Vector> onlypress = velpresspliter->ExtractCondVector(velnpip);
-
-  Teuchos::RCP<Epetra_Vector> onlyveli = Teuchos::rcp(new Epetra_Vector(onlyvel->Map()),true);
-  Teuchos::RCP<Epetra_Vector> onlypressi = Teuchos::rcp(new Epetra_Vector(onlypress->Map()),true);
-
-  if(itnum>1)
-  {
-    onlyveli   = velpresspliter->ExtractOtherVector(velnpi_);
-    onlypressi = velpresspliter->ExtractCondVector(velnpi_);
-  }
-
-  double velnormL2   = 1.0;
-  double pressnormL2 = 1.0;
-  double phinormL2   = 1.0;
-
-  onlyvel->Norm2(&velnormL2);
-  onlypress->Norm2(&pressnormL2);
-  phinpip->Norm2(&phinormL2);
-
-  if (velnormL2 < 1e-5) velnormL2 = 1.0;
-  if (pressnormL2 < 1e-5) pressnormL2 = 1.0;
-  if (phinormL2 < 1e-5) phinormL2 = 1.0;
-
-  double fsvelnormL2   = 1.0;
-  double fspressnormL2 = 1.0;
-  double fsphinormL2   = 1.0;
-
-  // compute increment and L2-norm of increment
-  //-----------------------------------------------------
-  Teuchos::RCP<Epetra_Vector> incvel = Teuchos::rcp(new Epetra_Vector(onlyvel->Map()),true);
-  incvel->Update(1.0,*onlyvel,-1.0,*onlyveli,0.0);
-  incvel->Norm2(&fsvelnormL2);
-
-  Teuchos::RCP<Epetra_Vector> incpress = Teuchos::rcp(new Epetra_Vector(onlypress->Map()),true);
-  incpress->Update(1.0,*onlypress,-1.0,*onlypressi,0.0);
-  incpress->Norm2(&fspressnormL2);
-
-  Teuchos::RCP<Epetra_Vector> incphi = Teuchos::rcp(new Epetra_Vector(phinpip->Map(),true));
-  incphi->Update(1.0,*phinpip,-1.0,*phinpi_,0.0);
-  incphi->Norm2(&fsphinormL2);
-  //-----------------------------------------------------
-
-
+  fsvelincnorm_[itnum-1]=fsvelincnorm;
+  fspressincnorm_[itnum-1]=fspressincnorm;
+  fsphiincnorm_[itnum-1]=fsphiincnorm;
 
   if (Comm().MyPID()==0)
   {
     printf("\n|+------ TWO PHASE FLOW CONVERGENCE CHECK:  time step %2d, outer iteration %2d ------+|", Step(), itnum);
     printf("\n|- iter/itermax -|----tol-[Norm]---|-- fluid-inc --|-- press inc --|-- levset inc --|");
   }
-
-  fsvelincnorm_[itnum-1]=fsvelnormL2/velnormL2;
-  fspressincnorm_[itnum-1]=fspressnormL2/pressnormL2;
-  fsphiincnorm_[itnum-1]=fsphinormL2/phinormL2;
 
   for(int k_itnum=0;k_itnum < itnum; k_itnum++)
   {
@@ -481,6 +437,7 @@ bool XFLUIDLEVELSET::Algorithm::ConvergenceCheck(int itnum)
 //  if(compare_with_combust)
 //  {
 //    double velnormL2 = 1.0;
+//    Teuchos::RCP<Epetra_Vector> velnpip = FluidField()->StdVelnp(); //Contains Fluid and Pressure
 //    velnpip->Norm2(&velnormL2);
 //    if (velnormL2 < 1e-5) velnormL2 = 1.0;
 //
@@ -501,23 +458,10 @@ bool XFLUIDLEVELSET::Algorithm::ConvergenceCheck(int itnum)
 //    } // end if processor 0 for output
 //  }
 
-#if DEBUG
-//-------------------------
-  std::cout << "fsvelnormL2: " << fsvelnormL2 << std::endl;
-  std::cout << "velnormL2: " << velnormL2 << std::endl << std::endl;
-
-  std::cout << "fspressnormL2: " << fspressnormL2 << std::endl;
-  std::cout << "pressnormL2: " << pressnormL2 << std::endl<< std::endl;
-
-  std::cout << "fsphinormL2: " << fsphinormL2 << std::endl;
-  std::cout << "phinormL2: " << phinormL2 << std::endl<< std::endl;
-//-------------------------
-#endif
-
-  if ((fsvelnormL2/velnormL2 <= ittol_) and (fspressnormL2/pressnormL2 <= ittol_) and itnum > 1)
+  if ((fsvelincnorm <= ittol_) and (fspressincnorm <= ittol_) and itnum > 1)
     fluidstopnonliniter = true;
 
-  if ((fsphinormL2/phinormL2 <= ittol_))
+  if ((fsphiincnorm <= ittol_))
     scatrastopnonliniter = true;
 
 
@@ -535,10 +479,6 @@ bool XFLUIDLEVELSET::Algorithm::ConvergenceCheck(int itnum)
       printf("\n|+-----------------------------------------------------+|\n");
     }
   }
-
-  // update fluid-scatra-iter-vectors
-  velnpi_->Update(1.0,*velnpip,0.0);
-  phinpi_->Update(1.0,*phinpip,0.0);
 
   return notconverged;
 }
@@ -668,4 +608,92 @@ void XFLUIDLEVELSET::Algorithm::SetProblemSpecificParameters(const Teuchos::Para
   return;
 }
 
+void XFLUIDLEVELSET::Algorithm::GetOuterLoopIncFluid(double& fsvelincnorm, double& fspressincnorm, int itnum)
+{
+  Teuchos::RCP<const Epetra_Vector> velnpip = FluidField()->StdVelnp(); //Contains Fluid and Pressure
 
+  //Extract velocity and pressure components.
+  Teuchos::RCP<const LINALG::MapExtractor> velpresspliter = Teuchos::rcp_dynamic_cast<FLD::XFluid>(FluidField())->VelPresSplitterStd();
+
+  Teuchos::RCP<const Epetra_Vector> onlyvel   = velpresspliter->ExtractOtherVector(velnpip);
+  Teuchos::RCP<const Epetra_Vector> onlypress = velpresspliter->ExtractCondVector(velnpip);
+
+  Teuchos::RCP<Epetra_Vector> onlyveli = Teuchos::rcp(new Epetra_Vector(onlyvel->Map()),true);
+  Teuchos::RCP<Epetra_Vector> onlypressi = Teuchos::rcp(new Epetra_Vector(onlypress->Map()),true);
+
+  if(itnum>1)
+  {
+    onlyveli   = velpresspliter->ExtractOtherVector(velnpi_);
+    onlypressi = velpresspliter->ExtractCondVector(velnpi_);
+  }
+
+  double velnormL2   = 1.0;
+  double pressnormL2 = 1.0;
+
+  onlyvel->Norm2(&velnormL2);
+  onlypress->Norm2(&pressnormL2);
+
+  if (velnormL2 < 1e-5) velnormL2 = 1.0;
+  if (pressnormL2 < 1e-5) pressnormL2 = 1.0;
+
+  double fsvelnormL2   = 1.0;
+  double fspressnormL2 = 1.0;
+
+  // compute increment and L2-norm of increment
+  //-----------------------------------------------------
+  Teuchos::RCP<Epetra_Vector> incvel = Teuchos::rcp(new Epetra_Vector(onlyvel->Map()),true);
+  incvel->Update(1.0,*onlyvel,-1.0,*onlyveli,0.0);
+  incvel->Norm2(&fsvelnormL2);
+
+  Teuchos::RCP<Epetra_Vector> incpress = Teuchos::rcp(new Epetra_Vector(onlypress->Map()),true);
+  incpress->Update(1.0,*onlypress,-1.0,*onlypressi,0.0);
+  incpress->Norm2(&fspressnormL2);
+  //-----------------------------------------------------
+
+  fsvelincnorm  =fsvelnormL2/velnormL2;
+  fspressincnorm=fspressnormL2/pressnormL2;
+
+#if DEBUG
+//-------------------------
+  std::cout << "fsvelnormL2: " << fsvelnormL2 << std::endl;
+  std::cout << "velnormL2: " << velnormL2 << std::endl << std::endl;
+
+  std::cout << "fspressnormL2: " << fspressnormL2 << std::endl;
+  std::cout << "pressnormL2: " << pressnormL2 << std::endl<< std::endl;
+//-------------------------
+#endif
+
+  velnpi_->Update(1.0,*velnpip,0.0);
+
+}
+
+void XFLUIDLEVELSET::Algorithm::GetOuterLoopIncScaTra(double& fsphiincnorm, int itnum)
+{
+  Teuchos::RCP<const Epetra_Vector> phinpip = ScaTraField()->Phinp();
+
+  double phinormL2   = 1.0;
+
+  phinpip->Norm2(&phinormL2);
+  if (phinormL2 < 1e-5) phinormL2 = 1.0;
+  double fsphinormL2   = 1.0;
+
+  // compute increment and L2-norm of increment
+  //-----------------------------------------------------
+  Teuchos::RCP<Epetra_Vector> incphi = Teuchos::rcp(new Epetra_Vector(phinpip->Map(),true));
+  incphi->Update(1.0,*phinpip,-1.0,*phinpi_,0.0);
+  incphi->Norm2(&fsphinormL2);
+  //-----------------------------------------------------
+
+  fsphiincnorm = fsphinormL2/phinormL2;
+
+#if DEBUG
+//-------------------------
+  std::cout << "fsphinormL2: " << fsphinormL2 << std::endl;
+  std::cout << "phinormL2: " << phinormL2 << std::endl<< std::endl;
+//-------------------------
+#endif
+
+
+  phinpi_->Update(1.0,*phinpip,0.0);
+
+}

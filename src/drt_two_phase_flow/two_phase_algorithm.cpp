@@ -57,6 +57,18 @@ TWOPHASEFLOW::Algorithm::Algorithm(
   // number of inflow steps
   numinflowsteps_ = fluiddyn.sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP");
 
+
+  // Fluid-Scatra Iteration vectors are initialized
+  velnpi_ = Teuchos::rcp(new Epetra_Vector(FluidField()->Velnp()->Map()),true);//*fluiddis->DofRowMap()),true);
+  velnpi_->Update(1.0,*FluidField()->Velnp(),0.0);
+  phinpi_ = Teuchos::rcp(new Epetra_Vector(ScaTraField()->Phinp()->Map()),true);
+  phinpi_->Update(1.0,*ScaTraField()->Phinp(),0.0);
+
+  //Instantiate vectors contatining outer loop increment data
+  fsvelincnorm_.reserve(itmax_);
+  fspressincnorm_.reserve(itmax_);
+  fsphiincnorm_.reserve(itmax_);
+
   return;
 }
 
@@ -176,31 +188,17 @@ void TWOPHASEFLOW::Algorithm::OuterLoop()
            Time(),maxtime_,dt_,ScaTraField()->MethodTitle().c_str(),Step(),stepmax_);
   }
 
-  // set fluid values required in scatra
-  SetFluidValuesInScaTra(false);
-
   // initially solve scalar transport equation
-  // (values for intermediate time steps were calculated at the end of PrepareTimeStep)
-  if (Comm().MyPID()==0) std::cout<<"\n****************************************\n        SCALAR TRANSPORT SOLVER\n****************************************\n";
-  ScaTraField()->Solve();
+  // (values for intermediate time steps were calculated at the end of PerpareTimeStep)
+  DoScaTraField();
 
   while (stopnonliniter==false)
   {
     itnum++;
 
-    // set scatra values required in fluid
-    SetScaTraValuesInFluid();
+    DoFluidField();
 
-    // solve low-Mach-number flow equations
-    if (Comm().MyPID()==0) std::cout<<"\n****************************************\n              FLUID SOLVER\n****************************************\n";
-    FluidField()->Solve();
-
-    // set fluid values required in scatra
-    SetFluidValuesInScaTra(false);
-
-    // solve scalar transport equation
-    if (Comm().MyPID()==0) std::cout<<"\n****************************************\n        SCALAR TRANSPORT SOLVER\n****************************************\n";
-    ScaTraField()->Solve();
+    DoScaTraField();
 
     // check convergence and stop iteration loop if convergence is achieved
     stopnonliniter = ConvergenceCheck(itnum);
@@ -208,6 +206,43 @@ void TWOPHASEFLOW::Algorithm::OuterLoop()
 
   return;
 }
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void TWOPHASEFLOW::Algorithm::DoFluidField()
+{
+
+  if (Comm().MyPID()==0)
+    std::cout<<"\n****************************************\n              FLUID SOLVER\n****************************************\n";
+
+
+  //Set relevant ScaTra values in Fluid field.
+  SetScaTraValuesInFluid();
+
+  //Solve the Fluid field.
+  FluidField()->Solve();
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void TWOPHASEFLOW::Algorithm::DoScaTraField()
+{
+
+  if (Comm().MyPID()==0)
+    std::cout<<"\n****************************************\n        SCALAR TRANSPORT SOLVER\n****************************************\n";
+
+
+  //Set relevant Fluid values in ScaTra field.
+  SetFluidValuesInScaTra(false);
+
+  //Solve the ScaTra field.
+  ScaTraField()->Solve();
+
+  return;
+}
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -295,24 +330,78 @@ void TWOPHASEFLOW::Algorithm::SetScaTraValuesInFluid()
 /*----------------------------------------------------------------------*/
 bool TWOPHASEFLOW::Algorithm::ConvergenceCheck(int itnum)
 {
-  // define flags for fluid and scatra convergence check
-  bool fluidstopnonliniter  = false;
-  bool scatrastopnonliniter = false;
+  // define flags for Fluid and ScaTra convergence check
+   bool fluidstopnonliniter  = false;
+   bool scatrastopnonliniter = false;
 
-  // fluid convergence check
+   bool notconverged = false;
+
+  if (itmax_ <= 0)
+    dserror("Set iterations to something reasonable!!!");
+
+  double fsvelincnorm   = 1.0;
+  double fspressincnorm = 1.0;
+  double fsphiincnorm   = 1.0;
+  //Get increment for outer loop of Fluid and ScaTra
+  GetOuterLoopIncFluid(fsvelincnorm,fspressincnorm,itnum);
+  GetOuterLoopIncScaTra(fsphiincnorm,itnum);
+
+  fsvelincnorm_[itnum-1]=fsvelincnorm;
+  fspressincnorm_[itnum-1]=fspressincnorm;
+  fsphiincnorm_[itnum-1]=fsphiincnorm;
+
   if (Comm().MyPID()==0)
   {
-    std::cout<<"\n****************************************\n  CONVERGENCE CHECK FOR ITERATION STEP\n****************************************\n";
-    std::cout<<"\n****************************************\n              FLUID CHECK\n****************************************\n";
+    printf("\n|+------ TWO PHASE FLOW CONVERGENCE CHECK:  time step %2d, outer iteration %2d ------+|", Step(), itnum);
+    printf("\n|- iter/itermax -|----tol-[Norm]---|-- fluid-inc --|-- press inc --|-- levset inc --|");
   }
-  fluidstopnonliniter  = FluidField()->ConvergenceCheck(itnum,itmax_,ittol_);
 
-  //Levelset/ScaTra convergence check.
-  if (Comm().MyPID()==0) std::cout<<"\n****************************************\n         SCALAR TRANSPORT CHECK\n****************************************\n";
-  scatrastopnonliniter = ScaTraField()->ConvergenceCheck(itnum,itmax_,ittol_);
+  for(int k_itnum=0;k_itnum < itnum; k_itnum++)
+  {
+    if(k_itnum==0)
+    {
+      if (Comm().MyPID()==0)
+      {
+        printf("\n|     %2d/%2d      | %10.3E [L2] |       -       |       -       |   %10.3E   |",
+            (k_itnum+1),itmax_,ittol_,fsphiincnorm_[k_itnum]);
+      } // end if processor 0 for output
+    }
+    else
+    {
+      if (Comm().MyPID()==0)
+      {
+        printf("\n|     %2d/%2d      | %10.3E [L2] |  %10.3E   |  %10.3E   |   %10.3E   |",
+            (k_itnum+1),itmax_,ittol_,fsvelincnorm_[k_itnum],fspressincnorm_[k_itnum],fsphiincnorm_[k_itnum]);
+      } // end if processor 0 for output
+    }
+  }
+  if (Comm().MyPID()==0)
+    printf("\n|+---------------------------------------------------------------------------------+|\n");
 
-  if (fluidstopnonliniter == true and scatrastopnonliniter == true) return true;
-  else                                                              return false;
+  if ((fsvelincnorm <= ittol_) and (fspressincnorm <= ittol_) and itnum > 1)
+    fluidstopnonliniter = true;
+
+  if ((fsphiincnorm <= ittol_))
+    scatrastopnonliniter = true;
+
+
+  //If tolerance or number of maximum iterations are reached
+  if((fluidstopnonliniter and scatrastopnonliniter) or (itnum>=itmax_))
+  {
+    notconverged=true;
+  }
+
+  if (Comm().MyPID()==0)
+  {
+    if ((itnum == stepmax_) and (notconverged == true))
+    {
+      printf("|+---------------- not converged ----------------------+|");
+      printf("\n|+-----------------------------------------------------+|\n");
+    }
+  }
+
+  return notconverged;
+
 }
 
 
@@ -565,4 +654,94 @@ void TWOPHASEFLOW::Algorithm::TestResults()
   }
 
   return;
+}
+
+void TWOPHASEFLOW::Algorithm::GetOuterLoopIncFluid(double& fsvelincnorm, double& fspressincnorm, int itnum)
+{
+  Teuchos::RCP<const Epetra_Vector> velnpip = FluidField()->Velnp(); //Contains Fluid and Pressure
+
+  Teuchos::RCP<const Epetra_Vector> onlyvel   = FluidField()->ExtractVelocityPart(velnpip);
+  Teuchos::RCP<const Epetra_Vector> onlypress = FluidField()->ExtractPressurePart(velnpip);
+
+  Teuchos::RCP<Epetra_Vector> onlyveli = Teuchos::rcp(new Epetra_Vector(onlyvel->Map()),true);
+  Teuchos::RCP<Epetra_Vector> onlypressi = Teuchos::rcp(new Epetra_Vector(onlypress->Map()),true);
+
+  if(itnum>1)
+  {
+
+    onlyveli->Update(1.0,*(FluidField()->ExtractVelocityPart(velnpi_)),0.0);
+    onlypressi->Update(1.0,*(FluidField()->ExtractPressurePart(velnpi_)),0.0);
+//    onlyveli   = FluidField()->ExtractVelocityPart(velnpi_);
+//    onlypressi = FluidField()->ExtractPressurePart(velnpi_);
+  }
+
+  double velnormL2   = 1.0;
+  double pressnormL2 = 1.0;
+
+  onlyvel->Norm2(&velnormL2);
+  onlypress->Norm2(&pressnormL2);
+
+  if (velnormL2 < 1e-5) velnormL2 = 1.0;
+  if (pressnormL2 < 1e-5) pressnormL2 = 1.0;
+
+  double fsvelnormL2   = 1.0;
+  double fspressnormL2 = 1.0;
+
+  // compute increment and L2-norm of increment
+  //-----------------------------------------------------
+  Teuchos::RCP<Epetra_Vector> incvel = Teuchos::rcp(new Epetra_Vector(onlyvel->Map()),true);
+  incvel->Update(1.0,*onlyvel,-1.0,*onlyveli,0.0);
+  incvel->Norm2(&fsvelnormL2);
+
+  Teuchos::RCP<Epetra_Vector> incpress = Teuchos::rcp(new Epetra_Vector(onlypress->Map()),true);
+  incpress->Update(1.0,*onlypress,-1.0,*onlypressi,0.0);
+  incpress->Norm2(&fspressnormL2);
+  //-----------------------------------------------------
+
+  fsvelincnorm  =fsvelnormL2/velnormL2;
+  fspressincnorm=fspressnormL2/pressnormL2;
+
+#if DEBUG
+//-------------------------
+  std::cout << "fsvelnormL2: " << fsvelnormL2 << std::endl;
+  std::cout << "velnormL2: " << velnormL2 << std::endl << std::endl;
+
+  std::cout << "fspressnormL2: " << fspressnormL2 << std::endl;
+  std::cout << "pressnormL2: " << pressnormL2 << std::endl<< std::endl;
+//-------------------------
+#endif
+
+  velnpi_->Update(1.0,*velnpip,0.0);
+
+}
+
+void TWOPHASEFLOW::Algorithm::GetOuterLoopIncScaTra(double& fsphiincnorm, int itnum)
+{
+  Teuchos::RCP<const Epetra_Vector> phinpip = ScaTraField()->Phinp();
+
+  double phinormL2   = 1.0;
+
+  phinpip->Norm2(&phinormL2);
+  if (phinormL2 < 1e-5) phinormL2 = 1.0;
+  double fsphinormL2   = 1.0;
+
+  // compute increment and L2-norm of increment
+  //-----------------------------------------------------
+  Teuchos::RCP<Epetra_Vector> incphi = Teuchos::rcp(new Epetra_Vector(phinpip->Map(),true));
+  incphi->Update(1.0,*phinpip,-1.0,*phinpi_,0.0);
+  incphi->Norm2(&fsphinormL2);
+  //-----------------------------------------------------
+
+  fsphiincnorm = fsphinormL2/phinormL2;
+
+#if DEBUG
+//-------------------------
+  std::cout << "fsphinormL2: " << fsphinormL2 << std::endl;
+  std::cout << "phinormL2: " << phinormL2 << std::endl<< std::endl;
+//-------------------------
+#endif
+
+
+  phinpi_->Update(1.0,*phinpip,0.0);
+
 }
