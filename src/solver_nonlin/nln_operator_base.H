@@ -34,6 +34,11 @@ Maintainer: Matthias Mayr
 class Epetra_Comm;
 class Epetra_MultiVector;
 
+namespace LINALG
+{
+  class Solver;
+}
+
 namespace NLNSOL
 {
   class NlnProblem;
@@ -116,6 +121,7 @@ namespace NLNSOL
       virtual void Init(const Epetra_Comm& comm, ///< communicator
           const Teuchos::ParameterList& params, ///< parameter list for configuration
           Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem, ///< nonlinear problem to solve
+          Teuchos::RCP<LINALG::Solver> bacisolver = Teuchos::null, ///< linear solver from Baci
           const int nested = 0 ///< How nested is this algorithm?
           );
 
@@ -193,6 +199,9 @@ namespace NLNSOL
 
       //! Access to the nonlinear problem
       virtual Teuchos::RCP<NLNSOL::NlnProblem> NlnProblem() const;
+
+      //! Access to Baci linear sovler
+      virtual Teuchos::RCP<LINALG::Solver> BaciLinearSolver() const;
 
       /*! \brief Is this nonlinear operator a solver or a smoother?
        *
@@ -343,6 +352,18 @@ namespace NLNSOL
 
       //! Nonlinear problem to be evaluated and solved
       Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem_;
+
+      /*! \brief Linear solver from Baci
+       *
+       *  A linear solver from Baci can be passed in. These solvers provide
+       *  additional features like AMG using ML. To use the linear solver
+       *  created by Baci, choose '0' as linear solver number in xml input and
+       *  set the desired linear solver number in the single field input block
+       *  via the LINEAR_SOVLER input flag.
+       *
+       *  \author mayr.mt \date 03/2015
+       */
+      Teuchos::RCP<LINALG::Solver> bacisolver_;
 
       /*! \brief Parameter list for output purposes
        *

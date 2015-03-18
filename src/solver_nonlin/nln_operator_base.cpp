@@ -36,6 +36,8 @@ Maintainer: Matthias Mayr
 
 #include "../drt_lib/drt_dserror.H"
 
+#include "../linalg/linalg_solver.H"
+
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
@@ -57,8 +59,7 @@ NLNSOL::NlnOperatorBase::NlnOperatorBase()
 void NLNSOL::NlnOperatorBase::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& params,
     Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem,
-    const int nested
-    )
+    Teuchos::RCP<LINALG::Solver> bacisolver, const int nested)
 {
   // We need to call Setup() after Init()
   issetup_ = false;
@@ -67,6 +68,7 @@ void NLNSOL::NlnOperatorBase::Init(const Epetra_Comm& comm,
   comm_ = Teuchos::rcp(&comm, false);
   params_ = Teuchos::rcp(&params, false);
   nlnproblem_ = nlnproblem;
+  bacisolver_ = bacisolver;
   nested_ = nested;
 
   // initialize member variables
@@ -281,4 +283,14 @@ void NLNSOL::NlnOperatorBase::SetOutParameterStagnation(
   }
 
   return;
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::Solver> NLNSOL::NlnOperatorBase::BaciLinearSolver() const
+{
+  if (bacisolver_.is_null())
+    dserror("No valid Baci linear solver set, yet.");
+
+  return bacisolver_;
 }

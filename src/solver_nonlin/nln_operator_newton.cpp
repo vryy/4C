@@ -116,13 +116,35 @@ void NLNSOL::NlnOperatorNewton::SetupLinearSolver()
   // get the solver number used for structural problems
   const int linsolvernumber = Params().get<int>("Newton: Linear Solver");
 
-  // check if the solver ID is valid
-  if (linsolvernumber == (-1))
-    dserror("No valid linear solver defined!");
-
-  linsolver_ = Teuchos::rcp(new LINALG::Solver(
-      DRT::Problem::Instance()->SolverParams(linsolvernumber), Comm(),
-      DRT::Problem::Instance()->ErrorFile()->Handle()));
+  switch (linsolvernumber)
+  {
+  case 0: // use solver passed in from Baci
+  {
+    linsolver_ = BaciLinearSolver();
+    break;
+  }
+  case 1:
+  case 2:
+  case 3:
+  case 4:
+  case 5:
+  case 6:
+  case 7:
+  case 8:
+  case 9:
+  {
+    linsolver_ = Teuchos::rcp(new LINALG::Solver(
+          DRT::Problem::Instance()->SolverParams(linsolvernumber), Comm(),
+          DRT::Problem::Instance()->ErrorFile()->Handle()));
+    break;
+  }
+  default:
+  {
+    dserror("No valid linear solver defined! Possible solver block IDs range "
+        "from 1-9.");
+    break;
+  }
+  }
 
   return;
 }

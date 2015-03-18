@@ -102,7 +102,7 @@ void NLNSOL::NlnOperatorNonlinCG::SetupPreconditioner()
 
   NlnOperatorFactory nlnopfactory;
   nlnprec_ = nlnopfactory.Create(precparams);
-  nlnprec_->Init(Comm(), precparams, NlnProblem(), Nested()+1);
+  nlnprec_->Init(Comm(), precparams, NlnProblem(), BaciLinearSolver(), Nested()+1);
   nlnprec_->Setup();
 
   return;
