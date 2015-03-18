@@ -23,6 +23,7 @@ Maintainer: Martin Kronbichler
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_elementtype.H"
+#include "../drt_geometry/position_array.H"
 
 #include "../drt_mat/newtonianfluid.H"
 
@@ -266,6 +267,14 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateService(
   case FLD::interpolate_hdg_to_node:
   {
     return InterpolateSolutionToNodes(
+        ele,
+        discretization,
+        elevec1);
+    break;
+  }
+  case FLD::interpolate_hdg_for_hit:
+  {
+    InterpolateSolutionForHIT(
         ele,
         discretization,
         elevec1);
@@ -609,6 +618,77 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionToNodes(
 
   elevec1((2*nsd_+1)*nen_) = solvalues[0];
 
+
+  return 0;
+}
+
+/*----------------------------------------------------------------------*
+ * interpolate solution for postprocessing of hit              bk 03/15 |
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionForHIT(
+    DRT::ELEMENTS::Fluid*                ele,
+    DRT::Discretization&                 discretization,
+    Epetra_SerialDenseVector&            elevec1)
+{
+  InitializeShapes(ele);
+  //get coordinates of hex 8
+  LINALG::Matrix<nsd_,nen_> xyze(true);
+
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze);
+
+  const int numsamppoints = 5;
+  dsassert(elevec1.M() == numsamppoints*numsamppoints*numsamppoints*6, "Vector does not have correct size");
+  //sampling locations in 1D in parent domain
+  double loc1D[numsamppoints] = {-0.8, -0.4, 0.0, 0.4, 0.8};
+  Epetra_SerialDenseMatrix locations(3,125);
+  Epetra_SerialDenseVector values(shapes_->ndofs_);
+
+  int l=0;
+  for (int i=0;i<numsamppoints;i++)
+    for (int j=0;j<numsamppoints;j++)
+      for (int k=0;k<numsamppoints;k++)
+      {
+        locations(0,l)=loc1D[i];
+        locations(1,l)=loc1D[j];
+        locations(2,l)=loc1D[k];
+        l++;
+      }
+  // get local solution values
+  Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1,"intvelnp");
+  std::vector<int> localDofs = discretization.Dof(1, ele);
+  std::vector<double> solvalues (localDofs.size());
+
+  for (unsigned int i=0; i<solvalues.size(); ++i) {
+    const int lid = matrix_state->Map().LID(localDofs[i]);
+    solvalues[i] = (*matrix_state)[lid];
+  }
+
+  for (unsigned int i=0; i<numsamppoints*numsamppoints*numsamppoints; ++i)
+  {
+    // evaluate shape polynomials in node
+    for (unsigned int idim=0;idim<nsd_;idim++)
+      shapes_->xsi(idim) = locations(idim,i);
+    shapes_->polySpace_->Evaluate(shapes_->xsi,values);
+
+    // compute values for velocity and pressure by summing over all basis functions
+    for (unsigned int d=0; d<=nsd_; ++d) {
+      double sum = 0;
+      for (unsigned int k=0; k<shapes_->ndofs_; ++k)
+        sum += values(k) * solvalues[(nsd_*nsd_+d)*shapes_->ndofs_+k];
+      elevec1(6*i+d) = sum;
+    }
+
+    //also save coordinates
+    LINALG::Matrix<nen_,1> myfunct;
+    DRT::UTILS::shape_function<distype>(shapes_->xsi,myfunct);
+
+    LINALG::Matrix<nsd_,1> mypoint(true);
+    mypoint.MultiplyNN(xyze,myfunct);
+
+    for (unsigned int d=0; d<=nsd_; ++d)
+      elevec1(6*i+d+3) = mypoint(d);
+  }
 
   return 0;
 }

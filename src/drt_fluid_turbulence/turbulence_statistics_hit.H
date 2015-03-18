@@ -44,28 +44,28 @@ public:
   virtual ~TurbulenceStatisticsHit();
 
   //! store scatra discretization if passive scalar is included
-  void StoreScatraDiscret(Teuchos::RCP<DRT::Discretization> scatradis)
+  virtual void StoreScatraDiscret(Teuchos::RCP<DRT::Discretization> scatradis)
   { scatradiscret_ = scatradis; return; };
 
   //! space and time (only forced but not decaying case) averaging
   //! get energy spectrum
-  void DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp);
+  virtual void DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp);
   //! version with scalar field
-  void DoScatraTimeSample(Teuchos::RCP<Epetra_Vector> velnp,
+  virtual void DoScatraTimeSample(Teuchos::RCP<Epetra_Vector> velnp,
                           Teuchos::RCP<Epetra_Vector> phinp);
 
   // evaluation of dissipation rate and rbvmm-related quantities
-  void EvaluateResiduals(std::map<std::string,Teuchos::RCP<Epetra_Vector> > statevecs);
+  virtual void EvaluateResiduals(std::map<std::string,Teuchos::RCP<Epetra_Vector> > statevecs);
 
   //! dump the result to file
-  void DumpStatistics(int step, bool multiple_records = false);
+  virtual void DumpStatistics(int step, bool multiple_records = false);
   //! version with scalar field
-  void DumpScatraStatistics(int step, bool multiple_records = false);
+  virtual void DumpScatraStatistics(int step, bool multiple_records = false);
 
   //! reset sums and number of samples to zero
-  void ClearStatistics();
+  virtual void ClearStatistics();
   //! version with scalar field
-  void ClearScatraStatistics();
+  virtual void ClearScatraStatistics();
 
 
 protected:
@@ -85,11 +85,9 @@ protected:
 
   };
 
-private:
-
   //! calculate the resolved energy for the given discretization
   //! and write to statistics file
-  void CalculateResolvedEnergyDecayingTurbulence();
+  virtual void CalculateResolvedEnergyDecayingTurbulence();
 
   //! numerical integration via trapezoidal rule
   static double IntegrateTrapezoidalRule(
@@ -168,6 +166,51 @@ private:
   Teuchos::RCP<Epetra_Vector>       toggleu_;
   Teuchos::RCP<Epetra_Vector>       togglev_;
   Teuchos::RCP<Epetra_Vector>       togglew_;
+
+};
+
+class TurbulenceStatisticsHitHDG: public TurbulenceStatisticsHit
+{
+
+public:
+
+  //! constructor: set-up sampling
+  TurbulenceStatisticsHitHDG(Teuchos::RCP<DRT::Discretization> actdis,
+                          Teuchos::ParameterList& params,
+                          const bool forced);
+
+  //! destructor
+  virtual ~TurbulenceStatisticsHitHDG();
+
+  //! store scatra discretization if passive scalar is included
+  void StoreScatraDiscret(Teuchos::RCP<DRT::Discretization> scatradis)
+  {dserror("not implemented for hdg"); return;};
+
+  //! space and time (only forced but not decaying case) averaging
+  //! get energy spectrum
+  void DoTimeSample(Teuchos::RCP<Epetra_Vector> velnp);
+  //! version with scalar field
+  void DoScatraTimeSample(Teuchos::RCP<Epetra_Vector> velnp,
+                          Teuchos::RCP<Epetra_Vector> phinp){dserror("not implemented for hdg"); return;}
+
+  // evaluation of dissipation rate and rbvmm-related quantities
+  void EvaluateResiduals(std::map<std::string,Teuchos::RCP<Epetra_Vector> > statevecs){dserror("not implemented for hdg"); return;};
+
+  //! dump the result to file
+  void DumpStatistics(int step, bool multiple_records = false);
+  //! version with scalar field
+  void DumpScatraStatistics(int step, bool multiple_records = false){dserror("not implemented for hdg"); return;};
+
+  //! reset sums and number of samples to zero
+  void ClearStatistics(){dserror("not implemented for hdg"); return;};
+  //! version with scalar field
+  void ClearScatraStatistics(){dserror("not implemented for hdg"); return;};
+
+
+protected:
+  //! calculate the resolved energy for the given discretization
+  //! and write to statistics file
+  void CalculateResolvedEnergyDecayingTurbulence(){dserror("not implemented for hdg"); return;}
 
 };
 

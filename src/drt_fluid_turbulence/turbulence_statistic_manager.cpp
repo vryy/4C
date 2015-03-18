@@ -18,6 +18,7 @@ Maintainer: Benjamin Krank
 
 #include "turbulence_statistic_manager.H"
 #include "../drt_fluid/fluidimplicitintegration.H"
+#include "../drt_fluid/fluid_timint_hdg.H"
 #include "../drt_fluid/fluid_xwall.H"
 #include "../drt_combust/combust_fluidimplicitintegration.H"
 #include "../drt_scatra/scatra_timint_implicit.H"
@@ -36,6 +37,7 @@ Maintainer: Benjamin Krank
 #include "../drt_fluid_turbulence/turbulence_statistics_hit.H"
 #include "../drt_fluid_turbulence/turbulence_statistics_tgv.H"
 #include "../drt_fluid_turbulence/turbulence_statistics_ph.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 namespace FLD
 {
@@ -161,14 +163,36 @@ namespace FLD
 
       // do the time integration independent setup
       Setup();
+      if(DRT::Problem::Instance()->SpatialApproximation()=="HDG")
+      {
+        TimIntHDG* hdgfluid = dynamic_cast<TimIntHDG*> (&fluid);
+        if(hdgfluid == NULL)
+          dserror("this should be a hdg time integer");
 
-      // allocate one instance of the averaging procedure for
-      // the flow under consideration
-      if (flow_==forced_homogeneous_isotropic_turbulence
-          or flow_==scatra_forced_homogeneous_isotropic_turbulence)
-        statistics_hit_    =Teuchos::rcp(new TurbulenceStatisticsHit(discret_,*params_,true));
+        //we want to use the interior velocity here
+        myvelnp_ = hdgfluid->ReturnIntVelnp();
+
+        // allocate one instance of the averaging procedure for
+        // the flow under consideration
+        if (flow_==forced_homogeneous_isotropic_turbulence
+            or flow_==scatra_forced_homogeneous_isotropic_turbulence)
+          statistics_hit_    =Teuchos::rcp(new TurbulenceStatisticsHitHDG(discret_,*params_,true));
+        else
+        {
+          statistics_hit_ = Teuchos::null;
+          dserror("decaying hit currently not implemented for HDG");
+        }
+      }
       else
-        statistics_hit_    =Teuchos::rcp(new TurbulenceStatisticsHit(discret_,*params_,false));
+      {
+        // allocate one instance of the averaging procedure for
+        // the flow under consideration
+        if (flow_==forced_homogeneous_isotropic_turbulence
+            or flow_==scatra_forced_homogeneous_isotropic_turbulence)
+          statistics_hit_    =Teuchos::rcp(new TurbulenceStatisticsHit(discret_,*params_,true));
+        else
+          statistics_hit_    =Teuchos::rcp(new TurbulenceStatisticsHit(discret_,*params_,false));
+      }
     }
     else if(fluid.special_flow_=="taylor_green_vortex")
     {

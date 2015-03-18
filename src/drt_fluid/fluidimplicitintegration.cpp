@@ -626,7 +626,12 @@ void FLD::FluidImplicitTimeInt::CompleteGeneralInit()
     if (special_flow_ == "forced_homogeneous_isotropic_turbulence"
         or special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence"
         or special_flow_ == "decaying_homogeneous_isotropic_turbulence")
-      forcing_interface_ = Teuchos::rcp(new FLD::HomIsoTurbForcing(*this));
+    {
+      if(DRT::Problem::Instance()->SpatialApproximation()=="HDG")
+        forcing_interface_ = Teuchos::rcp(new FLD::HomIsoTurbForcingHDG(*this));
+      else
+        forcing_interface_ = Teuchos::rcp(new FLD::HomIsoTurbForcing(*this));
+    }
     else
       forcing_interface_ = Teuchos::rcp(new FLD::PeriodicHillForcing(*this));
   }

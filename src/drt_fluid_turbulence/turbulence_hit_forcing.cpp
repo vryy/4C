@@ -1250,6 +1250,37 @@ void HomIsoTurbForcing::TimeUpdateForcing()
   return;
 }
 
+
+/*--------------------------------------------------------------*
+ | constructor                                  rasthofer 04/13 |
+ *--------------------------------------------------------------*/
+HomIsoTurbForcingHDG::HomIsoTurbForcingHDG(
+        FluidImplicitTimeInt& timeint)
+        :
+        HomIsoTurbForcing(timeint)
+{
+
+  return;
+}
+
+/*--------------------------------------------------------------*
+ | calculate volume force                              bk 03/15 |
+ *--------------------------------------------------------------*/
+void HomIsoTurbForcingHDG::CalculateForcing(const int step)
+{
+  std::cout << "CalculateForcing not implemented yet for HDG" << std::endl;
+  return;
+}
+
+/*--------------------------------------------------------------*
+ | get forcing                                         bk 03/15 |
+ *--------------------------------------------------------------*/
+void HomIsoTurbForcingHDG::UpdateForcing(const int step)
+{
+  std::cout << "UpdateForcing not implemented yet for HDG" << std::endl;
+  return;
+}
+
 /*--------------------------------------------------------------*
  | constructor                                  bk        12/14 |
  *--------------------------------------------------------------*/

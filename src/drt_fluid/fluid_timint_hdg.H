@@ -135,6 +135,12 @@ public:
   */
   virtual void Output();
 
+  /*!
+  \brief accessor to interior velocity
+
+  */
+  virtual Teuchos::RCP<Epetra_Vector>  ReturnIntVelnp(){return intvelnp_;}
+
 
 protected:
 

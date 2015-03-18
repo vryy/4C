@@ -71,6 +71,7 @@ enum Action {
     set_two_phase_parameter,
     project_fluid_field,
     interpolate_hdg_to_node,
+    interpolate_hdg_for_hit,
     velgradient_projection,
     calc_dt_via_cfl,
     calc_mass_flow_periodic_hill,

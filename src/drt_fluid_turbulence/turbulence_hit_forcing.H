@@ -84,10 +84,10 @@ class HomIsoTurbForcing: public ForcingInterface
     void ActivateForcing(const bool activate);
 
     //! calculate power input
-    void CalculateForcing(const int step);
+    virtual void CalculateForcing(const int step);
 
     //! get forcing
-    void UpdateForcing(const int step);
+    virtual void UpdateForcing(const int step);
 
     //! time update of energy spectrum
     void TimeUpdateForcing();
@@ -179,6 +179,26 @@ class HomIsoTurbForcing: public ForcingInterface
       const double value = y_1 + (y_2 - y_1) / (x_2 - x_1) * (x - x_1);
       return value;
     }
+};
+
+//there are quite some differences for the HDG case
+//author: bk 03/15
+class HomIsoTurbForcingHDG: public HomIsoTurbForcing
+{
+  public:
+
+    //! constructor
+    HomIsoTurbForcingHDG(FluidImplicitTimeInt& timeint);
+
+    //! destructor
+    virtual ~HomIsoTurbForcingHDG(){}
+
+    //! calculate power input
+    void CalculateForcing(const int step);
+
+    //! get forcing
+    void UpdateForcing(const int step);
+
 };
 
 //this is an adaptive body force for the periodic hill benchmark such

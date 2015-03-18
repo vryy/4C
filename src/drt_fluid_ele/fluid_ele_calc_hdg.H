@@ -130,6 +130,12 @@ namespace ELEMENTS
                                            DRT::Discretization&                 discretization,
                                            Epetra_SerialDenseVector&            elevec1);
 
+    /*! \brief Interpolates an HDG solution for homogeneous isotropic turbulence postprocessing
+     */
+    virtual int InterpolateSolutionForHIT(DRT::ELEMENTS::Fluid*                ele,
+                                           DRT::Discretization&                 discretization,
+                                           Epetra_SerialDenseVector&            elevec1);
+
     /*!
     \brief Initialize the shape functions and solver to the given element (degree is runtime parameter)
      */
