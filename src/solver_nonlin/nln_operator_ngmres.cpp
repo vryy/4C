@@ -190,6 +190,12 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
 
   bool converged = NlnProblem()->ConvergenceCheck(*fbar, fnorm2);
 
+  // setup stagnation detection mechanism
+  Teuchos::RCP<NLNSOL::UTILS::StagnationDetection> stagdetect =
+      Teuchos::rcp(new NLNSOL::UTILS::StagnationDetection());
+  stagdetect->Init(Params().sublist("Nonlinear Operator: Stagnation Detection"),
+      fnorm2);
+
   // print initial state of convergence
   PrintIterSummary(iter, fnorm2);
 
@@ -356,6 +362,10 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
 
       converged = NlnProblem()->ConvergenceCheck(*fbar, fnorm2);
 
+      // check for stagnation
+      if (stagdetect->Check(fnorm2))
+        nlnprec_->RebuildPrec();
+
       // print stuff
       PrintIterSummary(iter, fnorm2);
 
@@ -385,6 +395,7 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
   SetOutParameterResidualNorm(fnorm2);
   SetOutParameterConverged(converged);
   SetOutParameterErrorCode(errorcode);
+  SetOutParameterStagnation(stagdetect->StatusParams());
 
   // return error code
   return errorcode;

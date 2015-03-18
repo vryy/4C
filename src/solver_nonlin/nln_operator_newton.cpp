@@ -177,6 +177,8 @@ int NLNSOL::NlnOperatorNewton::ApplyInverse(const Epetra_MultiVector& f,
       Teuchos::rcp(new NLNSOL::UTILS::StagnationDetection());
   stagdetect->Init(
         Params().sublist("Nonlinear Operator: Stagnation Detection"), fnorm2);
+  Teuchos::RCP<Teuchos::ParameterList> statusparams =
+      Teuchos::rcp(new Teuchos::ParameterList());
 
   // print initial state
   PrintIterSummary(iter, fnorm2);
@@ -204,7 +206,20 @@ int NLNSOL::NlnOperatorNewton::ApplyInverse(const Epetra_MultiVector& f,
     // check for stagnation
     stagdetect->Check(fnorm2);
 
-    if (converged)// or stagdetect->Status())
+    stagdetect->Status(statusparams);
+
+//    if (statusparams->get<double>("Stagnation Detection: ratio") >= 0.9999999999)
+//    {
+//      // revert previous iteraton step
+//      err = x.Update(-steplength, *inc, 1.0);
+//      if (err != 0) { dserror("Failed."); }
+//
+//      // evaluate and check for convergence
+//      NlnProblem()->ComputeF(x, *fnew);
+//      converged = NlnProblem()->ConvergenceCheck(*fnew, fnorm2);
+//    }
+
+    if (converged)// or stagdetect->Status() or oparams->get<double>("Stagnation Detection: ratio") >= 0.9999999999)
     {
       PrintIterSummary(iter, fnorm2);
       break;
@@ -213,18 +228,31 @@ int NLNSOL::NlnOperatorNewton::ApplyInverse(const Epetra_MultiVector& f,
     PrintIterSummary(iter, fnorm2);
   }
 
+  bool stagnation = false;
+  stagdetect->Status(statusparams);
+
+  if (statusparams->get<bool>("Stagnation Detection: status") == true)
+//      or statusparams->get<double>("Stagnation Detection: ratio") >= 0.9999999999)
+  {
+    stagnation = true;
+  }
+
   // ---------------------------------------------------------------------------
   // Finish ApplyInverse()
   // ---------------------------------------------------------------------------
   // determine error code
   NLNSOL::UTILS::OperatorStatus errorcode =
-      ErrorCode(iter, converged, err, stagdetect->Status());
+      ErrorCode(iter, converged, err, stagnation);
+
+  if (stagnation)
+    errorcode = NLNSOL::UTILS::opstatus_stagnation;
 
   // write to output parameter list
   SetOutParameterIter(iter);
   SetOutParameterResidualNorm(fnorm2);
   SetOutParameterConverged(converged);
   SetOutParameterErrorCode(errorcode);
+  SetOutParameterStagnation(statusparams);
 
   // return error code
   return errorcode;

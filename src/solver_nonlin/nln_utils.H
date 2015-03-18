@@ -78,8 +78,11 @@ namespace UTILS
 
     /*! \brief Check for stagnation
      *
-     *  Compute ration of two subsequent residual norms and decide whether this
+     *  Compute ratio of two subsequent residual norms and decide whether this
      *  decrease is considered as acceptable or as stagnation.
+     *
+     *  Update #normprev_ with current residual norm to make it available for
+     *  the stagnation test in the next iteration.
      *
      *  \return Bool that indicates stagnation (true) or sufficient residual
      *  norm decrease (false)
@@ -95,14 +98,27 @@ namespace UTILS
      *
      *  \author mayr.mt \date 03/2015
      */
-    virtual const bool Status() const;
+    virtual const bool Status(
+        Teuchos::RCP<Teuchos::ParameterList> oparams = Teuchos::null ///< parameter list to provide detailed output
+        ) const;
+
+    /*! \brief Get parameter list with status of stagnation test
+     *
+     *  Create new Teuchos::RCP<const Teuchos::ParameterList> and pass it to
+     *  Status() to be filled. Then return.
+     *
+     *  \return Parameter list describing the status of the stagnation test
+     *
+     *  \author mayr.mt \date 03/2015
+     */
+    virtual Teuchos::RCP<const Teuchos::ParameterList> StatusParams() const;
 
     //@}
 
     //! @name Access routines
     //@{
 
-    //! Access to parameter list
+    //! Access to configuring parameter list
     virtual Teuchos::RCP<const Teuchos::ParameterList> Params() const;
 
     //! Has stagnation detection been activated?
@@ -133,6 +149,9 @@ namespace UTILS
 
     //! maximally allowed number of subsequent iterations with stagnation
     int stagitermax_;
+
+    //! ratio of residual norms of subsequent iterations
+    double stagratio_;
 
     //! threshold to declare stagnation
     double stagthreshold_;

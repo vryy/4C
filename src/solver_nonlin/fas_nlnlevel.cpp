@@ -487,3 +487,29 @@ NLNSOL::FAS::NlnLevel::GetPostSmoother() const
 
   return postsmoother_;
 }
+
+/*----------------------------------------------------------------------------*/
+const bool NLNSOL::FAS::NlnLevel::CheckStagnation() const
+{
+  bool stagnation = false;
+
+  if (stagnation == false and not postsmoother_.is_null())
+  {
+    if (postsmoother_->GetOutParams()->get<NLNSOL::UTILS::OperatorStatus>(
+        "Error Code") == NLNSOL::UTILS::opstatus_stagnation)
+    {
+      stagnation = true;
+    }
+  }
+
+  if (stagnation == false and not coarsesolver_.is_null())
+  {
+    if (coarsesolver_->GetOutParams()->get<NLNSOL::UTILS::OperatorStatus>(
+        "Error Code") == NLNSOL::UTILS::opstatus_stagnation)
+    {
+      stagnation = true;
+    }
+  }
+
+  return stagnation;
+}

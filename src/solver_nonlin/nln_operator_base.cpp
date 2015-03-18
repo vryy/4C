@@ -263,3 +263,22 @@ void NLNSOL::NlnOperatorBase::SetOutParameterErrorCode(
 {
   SetOutParameter("Error Code", errorcode);
 }
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void NLNSOL::NlnOperatorBase::SetOutParameterStagnation(
+    Teuchos::RCP<const Teuchos::ParameterList> stagparams) const
+{
+  if (not stagparams.is_null())
+  {
+    // copy entries from stagnation sublist to operator output list
+    SetOutParameter("Stagnation Detection: status",
+        stagparams->get<bool>("Stagnation Detection: status"));
+    SetOutParameter("Stagnation Detection: ratio",
+        stagparams->get<double>("Stagnation Detection: ratio"));
+    SetOutParameter("Stagnation Detection: iterations",
+        stagparams->get<int>("Stagnation Detection: iterations"));
+  }
+
+  return;
+}

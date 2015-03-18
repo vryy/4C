@@ -191,6 +191,15 @@ namespace NLNSOL
        */
       virtual const bool CheckLevelID(const int level) const;
 
+      /*! \brief Check for stagnation of level smoothers
+       *
+       *  Loop over all levels and check, whether at least one level smoother
+       *  got stuck in stagnation.
+       *
+       *  \author mayr.mt \date 03/2015
+       */
+      virtual const bool CheckAllLevelStagnation() const;
+
       //@}
 
     protected:

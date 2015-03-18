@@ -98,9 +98,9 @@ int NLNSOL::NlnOperatorFas::ApplyInverse(const Epetra_MultiVector& f,
   double fnorm2 = 1.0e+12;
   NlnProblem()->ConvergenceCheck(f, fnorm2);
 
-  Teuchos::RCP<NLNSOL::UTILS::StagnationDetection> stagdetection =
+  Teuchos::RCP<NLNSOL::UTILS::StagnationDetection> stagdetect =
       Teuchos::rcp(new NLNSOL::UTILS::StagnationDetection());
-  stagdetection->Init(
+  stagdetect->Init(
       Params().sublist("Nonlinear Operator: Stagnation Detection"), fnorm2);
 
   int iter = 0;
@@ -121,23 +121,28 @@ int NLNSOL::NlnOperatorFas::ApplyInverse(const Epetra_MultiVector& f,
     NlnProblem()->ComputeF(x, *ftmp);
     converged = NlnProblem()->ConvergenceCheck(*ftmp, fnorm2);
 
-    stagdetection->Check(fnorm2);
+    stagdetect->Check(fnorm2);
 
     PrintIterSummary(iter, fnorm2);
   }
+
+  bool stagnation = false;
+  if (stagdetect->Status() or Hierarchy()->CheckAllLevelStagnation())
+    stagnation = true;
 
   // ---------------------------------------------------------------------------
   // Finish ApplyInverse()
   // ---------------------------------------------------------------------------
   // determine error code
   NLNSOL::UTILS::OperatorStatus errorcode =
-      ErrorCode(iter, converged, stagdetection->Status());
+      ErrorCode(iter, converged, stagnation);
 
   // write to output parameter list
   SetOutParameterIter(iter);
   SetOutParameterResidualNorm(fnorm2);
   SetOutParameterConverged(converged);
   SetOutParameterErrorCode(errorcode);
+  SetOutParameterStagnation(stagdetect->StatusParams());
 
   // return error code
   return errorcode;

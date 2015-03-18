@@ -535,3 +535,25 @@ NLNSOL::FAS::AMGHierarchy::GetXpetraFineLevelMatrix() const
   return mueLuOp;
 }
 #endif
+
+/*----------------------------------------------------------------------------*/
+const bool NLNSOL::FAS::AMGHierarchy::CheckAllLevelStagnation() const
+{
+  int stagcount = 0;
+  bool stagnation = false;
+
+  // ---------------------------------------------------------------------------
+  // Check each level smoother for stagnation
+  // ---------------------------------------------------------------------------
+  for (Teuchos::Array<Teuchos::RCP<NLNSOL::FAS::NlnLevel> >::const_iterator it = nlnlevels_.begin();
+      it < nlnlevels_.end(); ++it)
+  {
+    if ((*it)->CheckStagnation() > 0)
+      ++stagcount;
+  }
+
+  if (stagcount > 0)
+    stagnation = true;
+
+  return stagnation;
+}

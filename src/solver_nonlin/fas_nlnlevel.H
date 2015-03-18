@@ -249,8 +249,17 @@ namespace FAS
 
     //@}
 
-    //! Access to Level where the smoother acts on
+    //! Access to problem where the smoother acts on
     virtual Teuchos::RCP<NLNSOL::NlnProblem> NlnProblem() const;
+
+    /*! \brief Check for stagnation of level smoother
+     *
+     *  We currently just check post-smooting and coarse level solve, since pre-
+     *  smoothing stagnation might be cured by coarser levels.
+     *
+     *  \author mayr.mt \date 03/2015
+     */
+    virtual const bool CheckStagnation() const;
 
   protected:
 

@@ -280,6 +280,11 @@ namespace NLNSOL
           const NLNSOL::UTILS::OperatorStatus errorcode ///< error code
           ) const;
 
+      //! Write stagnation status to output parameter list
+      virtual void SetOutParameterStagnation(
+          Teuchos::RCP<const Teuchos::ParameterList> stagparams ///< parameter list from stagnation detection
+          ) const;
+
       //@}
 
     private:

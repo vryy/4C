@@ -40,6 +40,7 @@ NLNSOL::UTILS::StagnationDetection::StagnationDetection()
   params_(Teuchos::null),
   stagiter_(1),
   stagitermax_(0),
+  stagratio_(0.0),
   stagthreshold_(1.0),
   normprev_(1.0e+12),
   active_(false)
@@ -63,7 +64,6 @@ void NLNSOL::UTILS::StagnationDetection::Init(
   if (Params()->get<bool>("Stagnation Detection: on off"))
   {
     active_ = true;
-    stagiter_ = 0;
     stagitermax_ = Params()->get<int>("Stagnation Detection: max iterations");
     stagthreshold_ = Params()->get<double>("Stagnation Detection: reduction threshold");
     normprev_ = norminitial;
@@ -109,16 +109,13 @@ const bool NLNSOL::UTILS::StagnationDetection::Check(const double norm)
 
   if (IsActive())
   {
-    // ratio of residual norms of two subsequent iterations
-    double ratio = norm / normprev_;
-
-    // update
+    stagratio_ = norm / normprev_;
     normprev_ = norm;
 
     // ---------------------------------------------------------------------------
     // decide whether this is considered as stagnation
     // ---------------------------------------------------------------------------
-    if (ratio > stagthreshold_)
+    if (stagratio_ > stagthreshold_)
       ++stagiter_;
     else
       stagiter_ = 0;
@@ -126,7 +123,12 @@ const bool NLNSOL::UTILS::StagnationDetection::Check(const double norm)
     if (getVerbLevel() > Teuchos::VERB_LOW)
     {
       *getOStream() << "StagnationCheck: stagiter = " << stagiter_ << "/"
-          << stagitermax_ << ", ratio = " << ratio << std::endl;
+          << stagitermax_ << ", ratio = " << stagratio_ << std::endl;
+    }
+    else if (getVerbLevel() == Teuchos::VERB_LOW and stagiter_ > 0)
+    {
+      *getOStream() << "StagnationCheck: stagiter = " << stagiter_ << "/"
+          << stagitermax_ << ", ratio = " << stagratio_ << std::endl;
     }
   }
 
@@ -135,14 +137,36 @@ const bool NLNSOL::UTILS::StagnationDetection::Check(const double norm)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-const bool NLNSOL::UTILS::StagnationDetection::Status() const
+const bool NLNSOL::UTILS::StagnationDetection::Status(
+    Teuchos::RCP<Teuchos::ParameterList> oparams) const
 {
   bool stagnation = false;
 
   if (IsActive() and stagiter_ >= stagitermax_)
     stagnation = true;
 
+  // fill output parameter list
+  if (not oparams.is_null())
+  {
+    oparams->set<bool>("Stagnation Detection: status", stagnation);
+    oparams->set<double>("Stagnation Detection: ratio", stagratio_);
+    oparams->set<int>("Stagnation Detection: iterations", stagiter_);
+  }
+
   return stagnation;
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+Teuchos::RCP<const Teuchos::ParameterList>
+NLNSOL::UTILS::StagnationDetection::StatusParams() const
+{
+  Teuchos::RCP<Teuchos::ParameterList> oparams =
+      Teuchos::rcp(new Teuchos::ParameterList());
+
+  Status(oparams);
+
+  return oparams;
 }
 
 /*----------------------------------------------------------------------------*/

@@ -75,7 +75,7 @@ void NLNSOL::LineSearchBase::Init(
         "0.0!", resnormold_);
 
   // set verbosity level
-  if (Params().isParameter("Line Search: Verbosity Level"))
+  if (Params().isParameter("Line Search: Verbosity"))
   {
     const std::string verblevel =
         Params().get<std::string>("Line Search: Verbosity");
