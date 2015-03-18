@@ -49,7 +49,7 @@ DRT::ELEMENTS::ScaTraEleCalcElch<distype>::ScaTraEleCalcElch(const int numdofper
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Evaluate(
-  DRT::ELEMENTS::Transport*  ele,
+  DRT::Element*              ele,
   Teuchos::ParameterList&    params,
   DRT::Discretization&       discretization,
   const std::vector<int>&    lm,
@@ -85,7 +85,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Evaluate(
  *-----------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 const std::vector<double>  DRT::ELEMENTS::ScaTraEleCalcElch<distype>::ExtractElementAndNodeValues(
-  DRT::ELEMENTS::Transport*  ele,
+  DRT::Element*              ele,
   Teuchos::ParameterList&    params,
   DRT::Discretization&       discretization,
   const std::vector<int>&    lm

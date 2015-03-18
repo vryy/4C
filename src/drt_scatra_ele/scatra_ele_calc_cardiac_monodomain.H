@@ -25,8 +25,8 @@ namespace DRT
   namespace ELEMENTS
   {
 
-    template<DRT::Element::DiscretizationType distype>
-    class ScaTraEleCalcCardiacMonodomain : public ScaTraEleCalcAniso<distype>, public ScaTraEleCalcAdvReac<distype>
+    template<DRT::Element::DiscretizationType distype,int probdim>
+    class ScaTraEleCalcCardiacMonodomain : public ScaTraEleCalcAniso<distype,probdim>, public ScaTraEleCalcAdvReac<distype,probdim>
     {
     protected:
 
@@ -37,9 +37,9 @@ namespace DRT
       /// -> therefore, it has to be protected instead of private
       ScaTraEleCalcCardiacMonodomain(const int numdofpernode,const int numscal);
 
-      typedef ScaTraEleCalc<distype> my;
-      typedef ScaTraEleCalcAniso<distype> aniso;
-      typedef ScaTraEleCalcAdvReac<distype> advreac;
+      typedef ScaTraEleCalc<distype,probdim> my;
+      typedef ScaTraEleCalcAniso<distype,probdim> aniso;
+      typedef ScaTraEleCalcAdvReac<distype,probdim> advreac;
 
     public:
 
@@ -47,7 +47,7 @@ namespace DRT
 
 
       /// Singleton access method
-      static ScaTraEleCalcCardiacMonodomain<distype> * Instance(
+      static ScaTraEleCalcCardiacMonodomain<distype,probdim> * Instance(
         const int numdofpernode,
         const int numscal,
         bool create=true );
@@ -56,7 +56,7 @@ namespace DRT
       virtual void Done();
 
       //! evaluate the element
-      int EvaluateAction(DRT::ELEMENTS::Transport*     ele,
+      int EvaluateAction(DRT::Element*                 ele,
                          Teuchos::ParameterList&       params,
                          DRT::Discretization &         discretization,
                          const SCATRA::Action&         action,

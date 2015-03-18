@@ -32,8 +32,8 @@ Maintainer: Ursula Rasthofer
 /*-----------------------------------------------------------------------------*
  | calculate filtered quantities for dynamic Smagorinsky model  rasthofer 08/12|
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::scatra_apply_box_filter(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::scatra_apply_box_filter(
     double&                                            dens_hat,
     double&                                            temp_hat,
     double&                                            dens_temp_hat,
@@ -168,8 +168,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::scatra_apply_box_filter(
 /*-----------------------------------------------------------------------------*
  | get density at integration point                                 fang 02/15 |
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-const double DRT::ELEMENTS::ScaTraEleCalc<distype>::GetDensity(
+template <DRT::Element::DiscretizationType distype,int probdim>
+const double DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::GetDensity(
     const DRT::Element*                 ele,
     Teuchos::RCP<const MAT::Material>   material,
     Teuchos::ParameterList&             params,
@@ -202,14 +202,14 @@ const double DRT::ELEMENTS::ScaTraEleCalc<distype>::GetDensity(
     dserror("Invalid material type!");
 
   return density;
-} // DRT::ELEMENTS::ScaTraEleCalc<distype>::GetDensity
+} // DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::GetDensity
 
 
 /*----------------------------------------------------------------------------------*
  | calculate turbulent Prandtl number for dynamic Smagorinsky model  rasthofer 08/12|
  *----------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::scatra_calc_smag_const_LkMk_and_MkMk(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::scatra_calc_smag_const_LkMk_and_MkMk(
         Teuchos::RCP<Epetra_MultiVector>&  col_filtered_vel,
         Teuchos::RCP<Epetra_MultiVector>&  col_filtered_dens_vel,
         Teuchos::RCP<Epetra_MultiVector>&  col_filtered_dens_vel_temp,
@@ -257,7 +257,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::scatra_calc_smag_const_LkMk_and_MkMk
   zcenter/=nen_;
 
   // use one-point Gauss rule to do calculations at the element center
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToStabGaussRule<distype>::rule);
+  DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToStabGaussRule<distype>::rule);
 
   EvalShapeFuncAndDerivsAtIntPoint(intpoints,0);
 
@@ -363,8 +363,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::scatra_calc_smag_const_LkMk_and_MkMk
 /*----------------------------------------------------------------------------------*
  | calculate vreman constant                                             krank 08/13|
  *----------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::scatra_calc_vreman_dt(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::scatra_calc_vreman_dt(
   Teuchos::RCP<Epetra_MultiVector>& col_filtered_phi,
   Teuchos::RCP<Epetra_Vector>& col_filtered_phi2              ,
   Teuchos::RCP<Epetra_Vector>&   col_filtered_phiexpression         ,
@@ -389,7 +389,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::scatra_calc_vreman_dt(
   DRT::UTILS::ExtractMyNodeBasedValues(ele,ephiexpression_hat,col_filtered_phiexpression,1);
   DRT::UTILS::ExtractMyNodeBasedValues(ele,ealphaijsc_hat,col_filtered_alphaijsc,nsd_*nsd_);
   // use one-point Gauss rule to do calculations at the element center
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToStabGaussRule<distype>::rule);
+  DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToStabGaussRule<distype>::rule);
   double volume = EvalShapeFuncAndDerivsAtIntPoint(intpoints,0);
 
   phi_hat.Multiply(ephi_hat,funct_);
@@ -468,8 +468,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::scatra_calc_vreman_dt(
 /*----------------------------------------------------------------------------------*
  | calculate mean turbulent Prandtl number                           rasthofer 08/12|
  *----------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::GetMeanPrtOfHomogenousDirection(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::GetMeanPrtOfHomogenousDirection(
   Teuchos::ParameterList&    turbmodelparams,
   int&                       nlayer
 )
@@ -617,8 +617,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::GetMeanPrtOfHomogenousDirection(
 /*----------------------------------------------------------------------*
   |  calculate all-scale art. subgrid diffusivity (private)     vg 10/09 |
   *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcSubgrDiff(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcSubgrDiff(
   double&                               visc,
   const double                          vol,
   const int                             k,
@@ -764,8 +764,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcSubgrDiff(
 /*----------------------------------------------------------------------*
   |  calculate fine-scale art. subgrid diffusivity (private)    vg 10/09 |
   *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcFineScaleSubgrDiff(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcFineScaleSubgrDiff(
   double&                               sgdiff,
   Epetra_SerialDenseVector&             subgrdiff,
   DRT::Element*                         ele,
@@ -869,8 +869,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcFineScaleSubgrDiff(
  | calculation of coefficients B and D for multifractal subgrid-scales  |
  |                                                      rasthofer 12/11 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcBAndDForMultifracSubgridScales(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcBAndDForMultifracSubgridScales(
     LINALG::Matrix<nsd_,1>&                     B_mfs, ///< coefficient for fine-scale velocity (will be filled)
     double &                                    D_mfs, ///< coefficient for fine-scale scalar (will be filled)
     const double                                vol, ///< volume of element
@@ -1175,8 +1175,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcBAndDForMultifracSubgridScales(
  | calculate reference length for multifractal subgrid-scales           |
  |                                                      rasthofer 09/12 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-double DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcRefLength(
+template <DRT::Element::DiscretizationType distype,int probdim>
+double DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcRefLength(
         const double                       vol,
         const LINALG::Matrix<nsd_,1>       convelint
   )
@@ -1337,8 +1337,8 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcRefLength(
 /*----------------------------------------------------------------------*
  | output of model parameters                           rasthofer 09/12 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::StoreModelParametersForOutput(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::StoreModelParametersForOutput(
   const DRT::Element*                   ele,
   const bool                            isowned,
   Teuchos::ParameterList&               turbulencelist,
@@ -1407,10 +1407,10 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::StoreModelParametersForOutput(
  | additional output for turbulent channel flow         rasthofer 11/12 |
  | dissipation introduced by stabilization and turbulence models        |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcDissipation(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDissipation(
      Teuchos::ParameterList&               params,
-     DRT::ELEMENTS::Transport*             ele,
+     DRT::Element*                         ele,
      DRT::Discretization&                  discretization,
      const std::vector<int>&               lm)
 {
@@ -1670,7 +1670,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcDissipation(
   //                       INTEGRATION LOOP
   //----------------------------------------------------------------------
   // integration points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
@@ -2027,24 +2027,4 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcDissipation(
 
 // template classes
 
-// 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::line2>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::line3>;
-
-// 2D elements
-//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tri3>;
-//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tri6>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::quad4>;
-//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::quad9>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::nurbs9>;
-
-// 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::hex8>;
-//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::hex27>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tet4>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tet10>;
-//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::pyramid5>;
-//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::nurbs27>;
+#include "scatra_ele_calc_fwd.hpp"

@@ -327,7 +327,7 @@ private:
 
   //! extract element based or nodal values and return extracted values of phinp
   const std::vector<double> ExtractElementAndNodeValues(
-    DRT::ELEMENTS::Transport*  ele,
+    DRT::Element*              ele,
     Teuchos::ParameterList&    params,
     DRT::Discretization&       discretization,
     const std::vector<int>&    lm
@@ -336,7 +336,7 @@ private:
   //! validity check for all elements with respect to
   //! formulation-specific parameter, degree's of freedom, number of scalars, ...
   void CheckElchElementParameter(
-    DRT::ELEMENTS::Transport*  ele  //!< the element we are dealing with
+      DRT::Element*              ele  //!< the element we are dealing with
   );
 
   //! Solving for initial time derivative: finish preparation of matrix and rhs

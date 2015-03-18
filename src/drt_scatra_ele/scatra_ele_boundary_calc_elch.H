@@ -47,7 +47,7 @@ namespace DRT
 
       //! evaluate action
       int EvaluateAction(
-          DRT::ELEMENTS::TransportBoundary*   ele,
+          DRT::FaceElement*                   ele,
           Teuchos::ParameterList&             params,
           DRT::Discretization&                discretization,
           SCATRA::BoundaryAction              action,
@@ -79,7 +79,7 @@ namespace DRT
 
       //! evaluate electrode kinetics boundary condition
       virtual void CalcElchBoundaryKinetics(
-          DRT::ELEMENTS::TransportBoundary* ele,
+          DRT::FaceElement*                 ele,
           Teuchos::ParameterList&           params,
           DRT::Discretization&              discretization,
           std::vector<int>&                 lm,
@@ -107,7 +107,7 @@ namespace DRT
 
       //! evaluate linearization of nernst equation
       void CalcNernstLinearization(
-          DRT::ELEMENTS::TransportBoundary* ele,
+          DRT::FaceElement*                 ele,
           Teuchos::ParameterList&           params,
           DRT::Discretization&              discretization,
           std::vector<int>&                 lm,

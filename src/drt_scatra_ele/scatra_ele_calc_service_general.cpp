@@ -27,14 +27,15 @@ Maintainer: Andreas Ehrl
 #include "../drt_geometry/position_array.H"
 
 #include "../drt_lib/standardtypes_cpp.H"  // for EPS13 and so on
+#include "../drt_lib/drt_globalproblem.H"
 
 
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::ScaTraEleCalc<distype>::EvaluateAction(
-    DRT::ELEMENTS::Transport*   ele,
+template <DRT::Element::DiscretizationType distype,int probdim>
+int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
+    DRT::Element*               ele,
     Teuchos::ParameterList&     params,
     DRT::Discretization&        discretization,
     const SCATRA::Action&       action,
@@ -328,13 +329,13 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype>::EvaluateAction(
     if (scatrapara_->AdaptCsgsPhi() and scatrapara_->Nwl() and (not SCATRA::InflowElement(ele)))
     {
       // use one-point Gauss rule to do calculations at the element center
-      DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToStabGaussRule<distype>::rule);
+      DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToStabGaussRule<distype>::rule);
       vol = EvalShapeFuncAndDerivsAtIntPoint(intpoints,0);
 
       // adopt integration points and weights for gauss point evaluation of B
       if (scatrapara_->BD_Gp())
       {
-        const DRT::UTILS::IntPointsAndWeights<nsd_> gauss_intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+        const DRT::UTILS::IntPointsAndWeights<nsd_ele_> gauss_intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
         intpoints = gauss_intpoints;
       }
 
@@ -417,7 +418,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype>::EvaluateAction(
     // compute mass matrix
     Epetra_SerialDenseMatrix massmat;
     massmat.Shape(nen_,nen_);
-    const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+    const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
     double area = 0.0;
     for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
     {
@@ -559,7 +560,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype>::EvaluateAction(
       rhs(i) = myrhsvec[i];
 
     Epetra_SerialDenseMatrix mass(nen_,nen_);
-    const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+    const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
     for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
     {
       double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
@@ -578,6 +579,36 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype>::EvaluateAction(
 
     break;
   }
+  case SCATRA::calc_error:
+  {
+    // check if length suffices
+    if (elevec1_epetra.Length() < 1) dserror("Result vector too short");
+
+    // need current solution
+    Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+    if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
+
+    // extract local values from the global vector
+    std::vector<double> myphinp(lm.size());
+    DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
+
+    // fill element arrays
+    for (int i=0;i<nen_;++i)
+    {
+      // split for each transported scalar, insert into element arrays
+      for (int k = 0; k< numscal_; ++k)
+      {
+        ephinp_[k](i) = myphinp[k+(i*numdofpernode_)];
+      }
+    } // for i
+
+    CalErrorComparedToAnalytSolution(
+      ele,
+      params,
+      elevec1_epetra);
+
+    break;
+  }
   default:
   {
     dserror("Not acting on this action. Forgot implementation?");
@@ -592,9 +623,9 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype>::EvaluateAction(
 /*----------------------------------------------------------------------*
  | evaluate service routine                                  fang 02/15 |
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::ScaTraEleCalc<distype>::EvaluateService(
-    DRT::ELEMENTS::Transport*   ele,
+template<DRT::Element::DiscretizationType distype,int probdim>
+int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateService(
+    DRT::Element*               ele,
     Teuchos::ParameterList&     params,
     DRT::Discretization&        discretization,
     const std::vector<int>&     lm,
@@ -643,8 +674,8 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype>::EvaluateService(
 /*-------------------------------------------------------------------------*
  | Element reconstruct grad phi, one deg of freedom (for now) winter 04/14 |
  *-------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcGradientAtNodes(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcGradientAtNodes(
   const DRT::Element*             ele,
   Epetra_SerialDenseMatrix&       elemat1,
   Epetra_SerialDenseVector&       elevec1,
@@ -653,7 +684,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcGradientAtNodes(
   )
 {
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // Loop over integration points
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
@@ -698,8 +729,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcGradientAtNodes(
 /*-------------------------------------------------------------------------*
  | Element reconstructed curvature                            winter 04/14 |
  *-------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcCurvatureAtNodes(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcCurvatureAtNodes(
   const DRT::Element*                       ele,
   Epetra_SerialDenseMatrix&                 elemat1,
   Epetra_SerialDenseVector&                 elevec1,
@@ -707,7 +738,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcCurvatureAtNodes(
   )
 {
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // Loop over integration points
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
@@ -810,9 +841,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcCurvatureAtNodes(
 /*---------------------------------------------------------------------*
  | calculate filtered fields for turbulent Prandtl number   fang 02/15 |
  *---------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcBoxFilter(
-    DRT::ELEMENTS::Transport*   ele,
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcBoxFilter(
+    DRT::Element*               ele,
     Teuchos::ParameterList&     params,
     DRT::Discretization&        discretization,
     const std::vector<int>&     lm
@@ -888,15 +919,15 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcBoxFilter(
   params.set<double>("phiexpression_hat",phiexpression_hat);
 
   return;
-} // DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcBoxFilter
+} // DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcBoxFilter
 
 
 /*----------------------------------------------------------------------------*
  | calculate mass matrix + rhs for initial time derivative calc.     gjb 03/12|
  *----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcInitialTimeDerivative(
-  DRT::ELEMENTS::Transport*             ele,
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcInitialTimeDerivative(
+  DRT::Element*                         ele,
   Epetra_SerialDenseMatrix&             emat,
   Epetra_SerialDenseVector&             erhs,
   Teuchos::ParameterList&               params,
@@ -928,7 +959,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcInitialTimeDerivative(
   // calculation of element volume both for tau at ele. cent. and int. pt.
   //----------------------------------------------------------------------
   // use one-point Gauss rule to do calculations at the element center
-  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
 
   // volume of the element (2D: element surface area; 1D: element length)
   // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
@@ -971,7 +1002,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcInitialTimeDerivative(
   }
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   /*----------------------------------------------------------------------*/
   // element integration loop
@@ -1067,8 +1098,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcInitialTimeDerivative(
 /*----------------------------------------------------------------------*
  |  CorrectRHSFromCalcRHSLinMass                             ehrl 06/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CorrectRHSFromCalcRHSLinMass(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CorrectRHSFromCalcRHSLinMass(
     Epetra_SerialDenseVector&     erhs,
     const int                     k,
     const double                  fac,
@@ -1089,15 +1120,15 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CorrectRHSFromCalcRHSLinMass(
 /*----------------------------------------------------------------------*
  |  Integrate shape functions over domain (private)           gjb 07/09 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::IntegrateShapeFunctions(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::IntegrateShapeFunctions(
   const DRT::Element*             ele,
   Epetra_SerialDenseVector&       elevec1,
   const Epetra_IntSerialDenseVector& dofids
   )
 {
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // safety check
   if (dofids.M() < numdofpernode_)
@@ -1131,8 +1162,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::IntegrateShapeFunctions(
 /*----------------------------------------------------------------------*
   |  calculate weighted mass flux (no reactive flux so far)     gjb 06/08|
   *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalculateFlux(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalculateFlux(
 LINALG::Matrix<3,nen_>&         flux,
 const DRT::Element*             ele,
 const INPAR::SCATRA::FluxType   fluxtype,
@@ -1165,7 +1196,7 @@ const int                       k
   if (not scatrapara_->MatGP()) GetMaterialParams(ele,densn,densnp,densam,visc);
 
   // integration rule
-  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop
   for (int iquad=0; iquad< intpoints.IP().nquad; ++iquad)
@@ -1237,15 +1268,15 @@ const int                       k
 /*----------------------------------------------------------------------*
 |  calculate scalar(s) and domain integral                     vg 09/08|
 *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalculateScalars(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalculateScalars(
 const DRT::Element*             ele,
 Epetra_SerialDenseVector&       scalars,
 const bool                      inverting
   )
 {
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
@@ -1291,8 +1322,8 @@ const bool                      inverting
 /*----------------------------------------------------------------------*
 |  calculate momentum vector and minus domain integral          mw 06/14|
 *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalculateMomentumAndVolume(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalculateMomentumAndVolume(
 const DRT::Element*             ele,
 Epetra_SerialDenseVector&       momandvol,
 const double                    interface_thickness
@@ -1300,7 +1331,7 @@ const double                    interface_thickness
 {
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
@@ -1359,8 +1390,8 @@ return;
 /*----------------------------------------------------------------------*
  | calculate normalized subgrid-diffusivity matrix              vg 10/08|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcSubgrDiffMatrix(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcSubgrDiffMatrix(
   const DRT::Element*           ele,
   Epetra_SerialDenseMatrix&     emat
   )
@@ -1369,7 +1400,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcSubgrDiffMatrix(
   // integration loop for one element
   /*----------------------------------------------------------------------*/
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // integration loop
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
@@ -1397,8 +1428,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcSubgrDiffMatrix(
 /*----------------------------------------------------------------------------------------*
  | finite difference check on element level (for debugging only) (protected)   fang 10/14 |
  *----------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::FDCheck(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::FDCheck(
   DRT::Element*                              ele,
   Epetra_SerialDenseMatrix&                  emat,
   Epetra_SerialDenseVector&                  erhs,
@@ -1578,26 +1609,114 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::FDCheck(
   return;
 }
 
+/*---------------------------------------------------------------------*
+  |  calculate error compared to analytical solution           gjb 10/08|
+  *---------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalErrorComparedToAnalytSolution(
+  const DRT::Element*                   ele,
+  Teuchos::ParameterList&               params,
+  Epetra_SerialDenseVector&             errors
+  )
+{
+  if (DRT::INPUT::get<SCATRA::Action>(params,"action") != SCATRA::calc_error)
+    dserror("How did you get here?");
+
+  // -------------- prepare common things first ! -----------------------
+  // set constants for analytical solution
+  const double t = scatraparatimint_->Time();
+
+  // integration points and weights
+  // more GP than usual due to (possible) cos/exp fcts in analytical solutions
+  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToGaussRuleForExactSol<distype>::rule);
+
+  const INPAR::SCATRA::CalcError errortype = DRT::INPUT::get<INPAR::SCATRA::CalcError>(params, "calcerrorflag");
+  switch(errortype)
+  {
+
+  case INPAR::SCATRA::calcerror_byfunction:
+  {
+    const int errorfunctno = params.get<int>("error function number");
+
+    // analytical solution
+    double  phi_exact(0.0);
+    double  deltaphi(0.0);
+    //! spatial gradient of current scalar value
+    LINALG::Matrix<nsd_,1>  gradphi(true);
+    LINALG::Matrix<nsd_,1>  gradphi_exact(true);
+    LINALG::Matrix<nsd_,1>  deltagradphi(true);
+
+    // start loop over integration points
+    for (int iquad=0;iquad<intpoints.IP().nquad;iquad++)
+    {
+      const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+
+      // get coordinates at integration point
+      // gp reference coordinates
+      LINALG::Matrix<nsd_,1> xyzint(true);
+      xyzint.Multiply(xyze_,funct_);
+
+      // function evaluation requires a 3D position vector!!
+      double position[3]={0.0,0.0,0.0};
+
+      for (int dim=0; dim<nsd_; ++dim)
+        position[dim] = xyzint(dim);
+
+      for(int k=0;k<numscal_;k++)
+      {
+        // scalar at integration point at time step n+1
+        const double phinp = funct_.Dot(ephinp_[k]);
+        // spatial gradient of current scalar value
+        gradphi.Multiply(derxy_,ephinp_[k]);
+
+        phi_exact = DRT::Problem::Instance()->Funct(errorfunctno-1).Evaluate(0,position,t,NULL);
+
+        std::vector<std::vector<double> > gradphi_exact_vec = DRT::Problem::Instance()->Funct(errorfunctno-1).FctDer(0,position,t,NULL);
+
+        if(gradphi_exact_vec.size())
+        {
+          for (int dim=0; dim<nsd_; ++dim)
+            gradphi_exact(dim)=gradphi_exact_vec[0][dim];
+        }
+        else
+          gradphi_exact.Clear();
+
+        // error at gauss point
+        deltaphi = phinp - phi_exact;
+        deltagradphi.Update(1.0,gradphi,-1.0,gradphi_exact);
+
+        // 0: delta scalar for L2-error norm
+        // 1: delta scalar for H1-error norm
+        // 2: analytical scalar for L2 norm
+        // 3: analytical scalar for H1 norm
+
+        // the error for the L2 and H1 norms are evaluated at the Gauss point
+
+        // integrate delta scalar for L2-error norm
+        errors(k*numscal_+0) += deltaphi*deltaphi*fac;
+        // integrate delta scalar for H1-error norm
+        errors(k*numscal_+1) += deltaphi*deltaphi*fac;
+        // integrate analytical scalar for L2 norm
+        errors(k*numscal_+2) += phi_exact*phi_exact*fac;
+        // integrate analytical scalar for H1 norm
+        errors(k*numscal_+3) += phi_exact*phi_exact*fac;
+
+        // integrate delta scalar derivative for H1-error norm
+        errors(k*numscal_+1) += deltagradphi.Dot(deltagradphi)*fac;
+        // integrate analytical scalar for H1 norm
+        errors(k*numscal_+3) += deltaphi*deltaphi*fac;
+      }
+    } // loop over integration points
+
+  }
+  break;
+  default: dserror("Unknown analytical solution!"); break;
+  } //switch(errortype)
+
+  return;
+} // DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalErrorComparedToAnalytSolution
+
 
 // template classes
-// 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::line2>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::line3>;
 
-// 2D elements
-//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tri3>;
-//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tri6>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::quad4>;
-//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::quad9>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::nurbs9>;
-
-// 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::hex8>;
-//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::hex27>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tet4>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tet10>;
-//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::pyramid5>;
-//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::nurbs27>;
+#include "scatra_ele_calc_fwd.hpp"

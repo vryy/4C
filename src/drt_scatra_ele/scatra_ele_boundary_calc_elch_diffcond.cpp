@@ -87,7 +87,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::ScaTraEleBoundaryCalc
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateNeumann(
-    DRT::ELEMENTS::TransportBoundary*   ele,
+    DRT::FaceElement*                   ele,
     Teuchos::ParameterList&             params,
     DRT::Discretization&                discretization,
     DRT::Condition&                     condition,
@@ -157,7 +157,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateNeumann(
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::CalcElchBoundaryKinetics(
-    DRT::ELEMENTS::TransportBoundary* ele,
+    DRT::FaceElement*                 ele,
     Teuchos::ParameterList&           params,
     DRT::Discretization&              discretization,
     std::vector<int>&                 lm,

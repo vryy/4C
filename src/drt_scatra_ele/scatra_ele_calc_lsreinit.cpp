@@ -99,7 +99,7 @@ DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::ScaTraEleCalcLsReinit(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Evaluate(
-  DRT::ELEMENTS::Transport*  ele,
+  DRT::Element*              ele,
   Teuchos::ParameterList&    params,
   DRT::Discretization&       discretization,
   const std::vector<int>&    lm,
@@ -1406,6 +1406,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::CalcPenaltyTerm(
 
 // template classes
 
+#include "scatra_ele_calc_fwd.hpp"
 // 1D elements
 template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::line2>;
 template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::line3>;

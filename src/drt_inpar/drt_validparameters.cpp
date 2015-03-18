@@ -3508,10 +3508,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "Type of scalar transport problem",
                                tuple<std::string>(
                                  "Undefined",
+                                 "ConvectionDiffusion",
                                  "Advanced_Reaction",
                                  "Cardiac_Monodomain"),
                                tuple<int>(
                                  INPAR::SCATRA::impltype_undefined,
+                                 INPAR::SCATRA::impltype_std,
                                  INPAR::SCATRA::impltype_advreac,
                                  INPAR::SCATRA::impltype_cardiac_monodomain),
                                  &ssidyn);
@@ -5488,15 +5490,19 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "No",
                                  "Kwok_Wu",
                                  "ConcentricCylinders",
-                                 "Electroneutrality"
+                                 "Electroneutrality",
+                                 "error_by_function"
                                  ),
                                tuple<int>(
                                    INPAR::SCATRA::calcerror_no,
                                    INPAR::SCATRA::calcerror_Kwok_Wu,
                                    INPAR::SCATRA::calcerror_cylinder,
-                                   INPAR::SCATRA::calcerror_electroneutrality
+                                   INPAR::SCATRA::calcerror_electroneutrality,
+                                   INPAR::SCATRA::calcerror_byfunction
                                    ),
                                &scatradyn);
+
+  IntParameter("CALCERRORNO",-1,"function number for scalar transport error computation",&scatradyn);
 
   setStringToIntegralParameter<int>("WRITEFLUX","No","output of diffusive/total flux vectors",
                                tuple<std::string>(

@@ -22,7 +22,8 @@ namespace DRT
   namespace ELEMENTS
   {
     // class implementation
-    template<DRT::Element::DiscretizationType distype> class ScaTraEleCalcStd : public ScaTraEleCalc<distype>
+    template<DRT::Element::DiscretizationType distype,int probdim>
+    class ScaTraEleCalcStd : public ScaTraEleCalc<distype,probdim>
     {
       public:
 
@@ -33,7 +34,7 @@ namespace DRT
         virtual ~ScaTraEleCalcStd(){return;};
 
         //! singleton access method
-        static ScaTraEleCalcStd<distype> * Instance(
+        static ScaTraEleCalcStd<distype,probdim> * Instance(
             const int numdofpernode,
             const int numscal,
             bool create=true

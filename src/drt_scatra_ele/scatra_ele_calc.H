@@ -68,7 +68,7 @@ namespace ELEMENTS
     Scatra object.
   */
 
-  template<DRT::Element::DiscretizationType distype>
+  template<DRT::Element::DiscretizationType distype,int probdim=DRT::UTILS::DisTypeToDim<distype>::dim>
   class ScaTraEleCalc : public ScaTraEleInterface
   {
   protected:
@@ -90,7 +90,7 @@ namespace ELEMENTS
 
     /// Setup element evaluation
     virtual int SetupCalc(
-        DRT::ELEMENTS::Transport*   ele,
+        DRT::Element*               ele,
         DRT::Discretization&        discretization
         );
 
@@ -98,7 +98,7 @@ namespace ELEMENTS
      /*!
        Generic virtual interface function. Called via base pointer.
       */
-     virtual int Evaluate(DRT::ELEMENTS::Transport*     ele,
+     virtual int Evaluate(DRT::Element*                 ele,
                           Teuchos::ParameterList&       params,
                           DRT::Discretization &         discretization,
                           const std::vector<int> &      lm,
@@ -110,7 +110,7 @@ namespace ELEMENTS
 
      //! evaluate action
      virtual int EvaluateAction(
-         DRT::ELEMENTS::Transport*   ele,
+         DRT::Element*               ele,
          Teuchos::ParameterList&     params,
          DRT::Discretization&        discretization,
          const SCATRA::Action&       action,
@@ -124,7 +124,7 @@ namespace ELEMENTS
 
      //! evaluate service routine
      int EvaluateService(
-         DRT::ELEMENTS::Transport*   ele,
+         DRT::Element*               ele,
          Teuchos::ParameterList&     params,
          DRT::Discretization &       discretization,
          const std::vector<int> &    lm,
@@ -135,7 +135,7 @@ namespace ELEMENTS
          Epetra_SerialDenseVector&   elevec3_epetra
          );
 
-     virtual int EvaluateOD(DRT::ELEMENTS::Transport*     ele,
+     virtual int EvaluateOD(DRT::Element*               ele,
                           Teuchos::ParameterList&       params,
                           DRT::Discretization &         discretization,
                           const std::vector<int> &      lm,
@@ -153,7 +153,8 @@ namespace ELEMENTS
      static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
      //! number of space dimensions
-     static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
+     static const int nsd_ = probdim;
+     static const int nsd_ele_ = DRT::UTILS::DisTypeToDim<distype>::dim;
 
      //! element-type specific flag if second derivatives are needed
      static const bool use2ndderiv_ = SCATRA::Use2ndDerivs<distype>::use;
@@ -175,7 +176,7 @@ namespace ELEMENTS
     //! extract element based or nodal values
     //  return extracted values of phinp
     virtual const std::vector<double> ExtractElementAndNodeValues(
-      DRT::ELEMENTS::Transport*  ele,
+      DRT::Element*              ele,
       Teuchos::ParameterList&    params,
       DRT::Discretization&       discretization,
       const std::vector<int>&    lm
@@ -183,7 +184,7 @@ namespace ELEMENTS
 
     //! extract turbulence approach
     void ExtractTurbulenceApproach(
-      DRT::ELEMENTS::Transport*  ele,
+      DRT::Element*              ele,
       Teuchos::ParameterList&    params,
       DRT::Discretization&       discretization,
       const std::vector<int>&    lm,
@@ -224,9 +225,9 @@ namespace ELEMENTS
       Teuchos::ParameterList&    params             //!< parameterlist
     );
 
-    //! read element coordinates, assuming they are all 3D and then project to the respective lower dimensional space
-    virtual void ReadElementCoordinatesAndProject(
-        const DRT::ELEMENTS::Transport*     ele
+    //! read element coordinates
+    virtual void ReadElementCoordinates(
+        const DRT::Element*     ele
     );
 
     //! evaluate shape functions and their derivatives at element center
@@ -234,9 +235,12 @@ namespace ELEMENTS
 
     //! evaluate shape functions and their derivatives at current integration point
     double EvalShapeFuncAndDerivsAtIntPoint(
-      const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints, //!< integration points
-      const int                                    iquad      //!< id of current Gauss point
+      const DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints, //!< integration points
+      const int                                        iquad      //!< id of current Gauss point
     );
+
+    //! evaluate shape functions and their derivatives at current integration point
+    double EvalShapeFuncAndDerivsInParameterSpace();
 
     //! set internal variables
     virtual void SetInternalVariablesForMatAndRHS();
@@ -255,7 +259,7 @@ namespace ELEMENTS
 
     //! calculate mass matrix and rhs for determining initial time derivative
     virtual void CalcInitialTimeDerivative(
-      DRT::ELEMENTS::Transport*             ele,       //!< the element we are dealing with
+      DRT::Element*                         ele,       //!< the element we are dealing with
       Epetra_SerialDenseMatrix&             emat,      //!< element matrix to calculate
       Epetra_SerialDenseVector&             erhs,      //!< element rhs to calculate
       Teuchos::ParameterList&               params,         //!< the parameter list
@@ -319,11 +323,19 @@ namespace ELEMENTS
 
     //! calculate filtered fields for turbulent Prandtl number
     void CalcBoxFilter(
-        DRT::ELEMENTS::Transport*   ele,
+        DRT::Element*               ele,
         Teuchos::ParameterList&     params,
         DRT::Discretization&        discretization,
         const std::vector<int>&     lm
         );
+
+    //! calculate error of numerical solution with respect to analytical solution
+    void CalErrorComparedToAnalytSolution(
+      const DRT::Element*                   ele,        //!< the element we are dealing with
+      Teuchos::ParameterList&               params,     //!< parameter list
+      Epetra_SerialDenseVector&             errors      //!< vector containing L2-error norm
+    );
+
 
     /*========================================================================*/
     //! @name material and related functions
@@ -600,7 +612,7 @@ namespace ELEMENTS
     //! calculate dissipation introduced by stabilization and turbulence models
     void CalcDissipation(
       Teuchos::ParameterList&               params,          //!< parameter list
-      DRT::ELEMENTS::Transport*             ele,             //!< pointer to element
+      DRT::Element*                         ele,             //!< pointer to element
       DRT::Discretization&                  discretization,  //!< scatra discretization
       const std::vector<int>&               lm               //!< location matrix
     );
@@ -1051,7 +1063,7 @@ namespace ELEMENTS
     /*========================================================================*/
 
     //! coordinates of current integration point in reference coordinates
-    LINALG::Matrix<nsd_,1> xsi_;
+    LINALG::Matrix<nsd_ele_,1> xsi_;
     //! node coordinates
     LINALG::Matrix<nsd_,nen_> xyze_;
     //! array for shape functions

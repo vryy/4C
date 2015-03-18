@@ -26,6 +26,7 @@ namespace DRT
 {
   class Discretization;
   class Condition;
+  class FaceElement;
 
 namespace ELEMENTS
 {
@@ -48,7 +49,7 @@ class TransportBoundary;
     virtual ~ScaTraBoundaryInterface(){return;};
 
     virtual int Evaluate(
-      DRT::ELEMENTS::TransportBoundary*   ele1,
+      DRT::FaceElement*                   ele,
       Teuchos::ParameterList&             params,
       DRT::Discretization&                discretization,
       std::vector<int>&                   lm,
@@ -60,7 +61,7 @@ class TransportBoundary;
     ) = 0;
 
     virtual int EvaluateNeumann(
-        DRT::ELEMENTS::TransportBoundary*   ele,
+        DRT::FaceElement*                   ele,
         Teuchos::ParameterList&             params,
         DRT::Discretization&                discretization,
         DRT::Condition&                     condition,

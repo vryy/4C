@@ -80,7 +80,8 @@ namespace INPAR
       calcerror_no,
       calcerror_Kwok_Wu,
       calcerror_cylinder,
-      calcerror_electroneutrality
+      calcerror_electroneutrality,
+      calcerror_byfunction
     };
 
     /// possible types of stabilization

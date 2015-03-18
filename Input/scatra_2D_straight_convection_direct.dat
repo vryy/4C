@@ -12,7 +12,7 @@ Straight                        Convection
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        361
 NODES                           400
-DIM                             2
+DIM                             3
 MATERIALS                       1
 NUMDF                           3
 -----------------------------------------------------------------PROBLEM TYP

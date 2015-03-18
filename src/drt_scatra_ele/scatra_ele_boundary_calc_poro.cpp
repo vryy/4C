@@ -76,7 +76,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::ScaTraEleBoundaryCalcPoro(con
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::EvaluateAction(
-    DRT::ELEMENTS::TransportBoundary*   ele,
+    DRT::FaceElement*                   ele,
     Teuchos::ParameterList&             params,
     DRT::Discretization&                discretization,
     SCATRA::BoundaryAction              action,

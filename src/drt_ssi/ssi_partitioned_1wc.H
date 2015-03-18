@@ -35,7 +35,7 @@ namespace SSI
 
   protected:
     //! prepare time step for single fields
-    void PrepareTimeStep();
+    void PrepareTimeStep()=0;
 
     //! perform one time step of structure field
     void DoStructStep();
@@ -63,6 +63,9 @@ namespace SSI
     //! actual time loop
     void Timeloop();
 
+    //! prepare time step for single fields
+    void PrepareTimeStep();
+
   };
 
   class SSI_Part1WC_ScatraToSolid : public SSI_Part1WC
@@ -72,7 +75,7 @@ namespace SSI
     explicit SSI_Part1WC_ScatraToSolid(const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
-        const Teuchos::ParameterList& structparams);
+        const Teuchos::ParameterList& structparams) ;
 
     //! virtual destructor
     virtual ~SSI_Part1WC_ScatraToSolid(){};
@@ -80,6 +83,8 @@ namespace SSI
     //! actual time loop
     void Timeloop();
 
+    //! prepare time step for single fields
+    void PrepareTimeStep();
   };
 
 }

@@ -89,7 +89,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::ScaTraEleBoundaryCalcLoma(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::EvaluateAction(
-    DRT::ELEMENTS::TransportBoundary*   ele,
+    DRT::FaceElement*                   ele,
     Teuchos::ParameterList&             params,
     DRT::Discretization&                discretization,
     SCATRA::BoundaryAction              action,
@@ -144,13 +144,13 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::EvaluateAction(
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::CalcLomaThermPress(
-    DRT::ELEMENTS::TransportBoundary* ele,
+    DRT::FaceElement*                 ele,
     Teuchos::ParameterList&           params,
     DRT::Discretization&              discretization,
     std::vector<int>&                 lm
     )
 {
-  DRT::ELEMENTS::Transport* parentele = ele->ParentElement();
+  DRT::Element* parentele = ele->ParentElement();
   // we dont know the parent element's lm vector; so we have to build it here
   const int nenparent = parentele->NumNode();
   std::vector<int> lmparent(nenparent);
@@ -223,7 +223,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::CalcLomaThermPress(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::NeumannInflow(
-    const DRT::ELEMENTS::TransportBoundary*   ele,
+    const  DRT::FaceElement*                  ele,
     Teuchos::ParameterList&                   params,
     DRT::Discretization&                      discretization,
     std::vector<int>&                         lm,

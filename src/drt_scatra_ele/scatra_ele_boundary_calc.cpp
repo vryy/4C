@@ -66,7 +66,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ScaTraEleBoundaryCalc(const int n
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::SetupCalc(DRT::ELEMENTS::TransportBoundary* ele,
+int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::SetupCalc(DRT::FaceElement*              ele,
                                                           Teuchos::ParameterList&           params,
                                                           DRT::Discretization&              discretization)
 {
@@ -105,7 +105,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::SetupCalc(DRT::ELEMENTS::Tran
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::Evaluate(
-    DRT::ELEMENTS::TransportBoundary*   ele,
+    DRT::FaceElement*                   ele,
     Teuchos::ParameterList&             params,
     DRT::Discretization&                discretization,
     std::vector<int>&                   lm,
@@ -145,7 +145,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::Evaluate(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
-    DRT::ELEMENTS::TransportBoundary* ele,
+    DRT::FaceElement*                 ele,
     Teuchos::ParameterList&           params,
     DRT::Discretization&              discretization,
     SCATRA::BoundaryAction            action,
@@ -198,7 +198,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
   case SCATRA::bd_calc_convective_heat_transfer:
   {
     // get the parent element including its material
-    DRT::ELEMENTS::Transport* parentele = ele->ParentElement();
+    DRT::Element* parentele = ele->ParentElement();
     Teuchos::RCP<MAT::Material> mat = parentele->Material();
 
     // get values of scalar
@@ -233,7 +233,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
   case SCATRA::bd_calc_weak_Dirichlet:
   {
     // get the parent element including its material
-    DRT::ELEMENTS::Transport* parentele = ele->ParentElement();
+    DRT::Element* parentele = ele->ParentElement();
     Teuchos::RCP<MAT::Material> mat = parentele->Material();
 
     switch (distype)
@@ -485,7 +485,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateNeumann(
-    DRT::ELEMENTS::TransportBoundary*   ele,
+    DRT::FaceElement*                   ele,
     Teuchos::ParameterList&             params,
     DRT::Discretization&                discretization,
     DRT::Condition&                     condition,
@@ -583,9 +583,10 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateNeumann(
  | calculate normals vectors                                   vg 03/09 |
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcNormalVectors(Teuchos::ParameterList&           params,
-                                                                   DRT::ELEMENTS::TransportBoundary* ele
-                                                                  )
+void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcNormalVectors(
+    Teuchos::ParameterList&             params,
+    DRT::FaceElement*                   ele
+    )
 {
   // access the global vector
   const Teuchos::RCP<Epetra_MultiVector> normals = params.get< Teuchos::RCP<Epetra_MultiVector> >("normal vectors",Teuchos::null);
@@ -621,7 +622,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcNormalVectors(Teuchos::P
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::NeumannInflow(
-    const DRT::ELEMENTS::TransportBoundary*   ele,
+    const DRT::FaceElement*                   ele,
     Teuchos::ParameterList&                   params,
     DRT::Discretization&                      discretization,
     std::vector<int>&                         lm,
@@ -630,7 +631,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::NeumannInflow(
     )
 {
   // get parent element
-  DRT::ELEMENTS::Transport* parentele = ele->ParentElement();
+  DRT::Element* parentele = ele->ParentElement();
 
   // get material of parent element
   Teuchos::RCP<MAT::Material> material = parentele->Material();
@@ -1178,7 +1179,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICoupling(
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcRobinBoundary(
-    DRT::ELEMENTS::TransportBoundary* ele,
+    DRT::FaceElement*                 ele,
     Teuchos::ParameterList&           params,
     DRT::Discretization&              discretization,
     std::vector<int>&                 lm,
@@ -1490,7 +1491,7 @@ template <DRT::Element::DiscretizationType distype>
 template <DRT::Element::DiscretizationType bdistype,
           DRT::Element::DiscretizationType pdistype>
    void  DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::WeakDirichlet(
-     DRT::ELEMENTS::TransportBoundary*  ele,
+     DRT::FaceElement*                  ele,
      Teuchos::ParameterList&            params,
      DRT::Discretization&               discretization,
      Teuchos::RCP<const MAT::Material>  material,
@@ -1532,7 +1533,7 @@ template <DRT::Element::DiscretizationType bdistype,
   // element nodes
   //------------------------------------------------------------------------
   // get the parent element
-  DRT::ELEMENTS::Transport* pele = ele->ParentElement();
+  DRT::Element* pele = ele->ParentElement();
 
   // number of spatial dimensions regarding (boundary) element
   static const int bnsd = DRT::UTILS::DisTypeToDim<bdistype>::dim;
@@ -2210,7 +2211,7 @@ template <DRT::Element::DiscretizationType distype>
 template <DRT::Element::DiscretizationType bdistype,
           DRT::Element::DiscretizationType pdistype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ReinitCharacteristicGalerkinBoundary(
-    DRT::ELEMENTS::TransportBoundary*  ele,                  //!< transport element
+    DRT::FaceElement*                  ele,                  //!< transport element
     Teuchos::ParameterList&            params,               //!< parameter list
     DRT::Discretization&               discretization,       //!< discretization
     Teuchos::RCP<const MAT::Material>  material,             //!< material
@@ -2225,7 +2226,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ReinitCharacteristicGalerkin
   // element nodes
   //------------------------------------------------------------------------
   // get the parent element
-  DRT::ELEMENTS::Transport* pele = ele->ParentElement();
+  DRT::Element* pele = ele->ParentElement();
 
   // number of spatial dimensions regarding (boundary) element
   static const int bnsd = DRT::UTILS::DisTypeToDim<bdistype>::dim;

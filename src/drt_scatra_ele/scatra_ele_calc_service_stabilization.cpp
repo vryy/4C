@@ -29,8 +29,8 @@ Maintainer: Andreas Ehrl
 /*----------------------------------------------------------------------*
  |  calculate stabilization parameter  (private)              gjb 06/08 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcTau(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcTau(
   double&                         tau,         //!< the stabilisation parameters (one per transported scalar)
   const double                    diffus,      //!< diffusivity or viscosity
   const double                    reacoeff,    //!< reaction coefficient
@@ -98,8 +98,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcTau(
 /*----------------------------------------------------------------------*
  |  calculation of tau according to Taylor, Hughes and Zarins  vg 01/11 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcTauTaylorHughesZarins(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcTauTaylorHughesZarins(
   double&                      tau,       //!< the stabilisation parameters (one per transported scalar)
   const double                 diffus,    //!< diffusivity or viscosity
   const double                 reacoeff,  //!< reaction coefficient
@@ -208,8 +208,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcTauTaylorHughesZarins(
 /*----------------------------------------------------------------------*
  |  calculation of tau according to Franca and Valentin        vg 01/11 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcTauFrancaValentin(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcTauFrancaValentin(
   double&                      tau,       //!< the stabilisation parameters (one per transported scalar)
   const double                 diffus,    //!< diffusivity or viscosity
   const double                 reacoeff,  //!< reaction coefficient
@@ -276,8 +276,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcTauFrancaValentin(
 /*----------------------------------------------------------------------*
  |  calculation of tau according to Franca, Shakib and Codina  vg 01/11 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcTauFrancaShakibCodina(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcTauFrancaShakibCodina(
   double&                      tau,       //!< the stabilisation parameters (one per transported scalar)
   const double                 diffus,    //!< diffusivity or viscosity
   const double                 reacoeff,  //!< reaction coefficient
@@ -348,8 +348,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcTauFrancaShakibCodina(
 /*----------------------------------------------------------------------*
  |  calculation of tau according to Codina                     vg 01/11 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcTauCodina(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcTauCodina(
   double&                      tau,       //!< the stabilisation parameters (one per transported scalar)
   const double                 diffus,    //!< diffusivity or viscosity
   const double                 reacoeff,  //!< reaction coefficient
@@ -403,8 +403,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcTauCodina(
 /*---------------------------------------------------------------------------*
  |  calculation of tau according to Franca, Madureira and Valentin  vg 01/11 |
  *---------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcTauFrancaMadureiraValentin(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcTauFrancaMadureiraValentin(
   double&                      tau,       //!< the stabilisation parameters (one per transported scalar)
   const double                 diffus,    //!< diffusivity or viscosity
   const double                 reacoeff,  //!< reaction coefficient
@@ -466,8 +466,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcTauFrancaMadureiraValentin(
 /*----------------------------------------------------------------------*
  |  exact calculation of tau for 1D                            vg 01/11 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcTau1DExact(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcTau1DExact(
   double&                      tau,       //!< the stabilisation parameters (one per transported scalar)
   const double                 diffus,    //!< diffusivity or viscosity
   const double                 reacoeff,  //!< reaction coefficient
@@ -510,8 +510,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcTau1DExact(
 /*----------------------------------------------------------------------*
  |  calculation of characteristic element length               vg 01/11 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-double DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcCharEleLength(
+template <DRT::Element::DiscretizationType distype,int probdim>
+double DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcCharEleLength(
   const double                  vol,        //!< element volume
   const double                  vel_norm,   //!< norm of velocity
   const LINALG::Matrix<nsd_,1>& convelint   //!< convective velocity at integration point
@@ -572,8 +572,8 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcCharEleLength(
 /*----------------------------------------------------------------------*
  |  calculate artificial diffusivity                           vg 10/09 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcArtificialDiff(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcArtificialDiff(
   const double                  vol,        //!< element volume
   const int                     k,          //!< id of current scalar
   const double                  densnp,     //!< density at t_(n+1)
@@ -830,8 +830,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcArtificialDiff(
  |  subgrid-scale part of scalar (depending on respective               |
  |  stationary or time-integration scheme)                     vg 10/11 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcResidualAndSubgrScalar(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcResidualAndSubgrScalar(
   const int                   k,          //!< index of current scalar
   double&                     scatrares,  //!< residual of convection-diffusion-reaction eq
   double&                     sgphi,      //!< residual-based subgrid-scale scalar
@@ -879,8 +879,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcResidualAndSubgrScalar(
 /*----------------------------------------------------------------------*
  |  calculate subgrid-scale velocity                           vg 10/09 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcSubgrVelocity(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcSubgrVelocity(
   const DRT::Element*  ele,        //!< the element we are dealing with
   LINALG::Matrix<nsd_,1>& sgvelint, //!< subgrid velocity at integration point
   const double   densam,     //!< density at t_(n+am)
@@ -1054,8 +1054,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcSubgrVelocity(
 /*---------------------------------------------------------------*
  | calculate viscous part of subgrid-scale velocity   fang 02/15 |
  *---------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcSubgrVelocityVisc(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcSubgrVelocityVisc(
     LINALG::Matrix<nsd_,1>&   epsilonvel
     )
 {
@@ -1086,29 +1086,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcSubgrVelocityVisc(
    dserror("Epsilon(u) is not implemented for the 1D case!");
 
   return;
-} // DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcSubgrVelocityVisc
+} // DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcSubgrVelocityVisc
 
 
 // template classes
 
-// 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::line2>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::line3>;
-
-// 2D elements
-//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tri3>;
-//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tri6>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::quad4>;
-//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::quad9>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::nurbs9>;
-
-// 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::hex8>;
-//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::hex27>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tet4>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tet10>;
-//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::pyramid5>;
-//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::nurbs27>;
+#include "scatra_ele_calc_fwd.hpp"

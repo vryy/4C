@@ -28,29 +28,29 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype>::ScaTraEleCalcCardiacMonodomain(const int numdofpernode,const int numscal)
-  : DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode,numscal),
-    DRT::ELEMENTS::ScaTraEleCalcAniso<distype>::ScaTraEleCalcAniso(numdofpernode,numscal),
-    DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::ScaTraEleCalcAdvReac(numdofpernode,numscal)
+template <DRT::Element::DiscretizationType distype,int probdim>
+DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype,probdim>::ScaTraEleCalcCardiacMonodomain(const int numdofpernode,const int numscal)
+  : DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ScaTraEleCalc(numdofpernode,numscal),
+    DRT::ELEMENTS::ScaTraEleCalcAniso<distype,probdim>::ScaTraEleCalcAniso(numdofpernode,numscal),
+    DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::ScaTraEleCalcAdvReac(numdofpernode,numscal)
 {
 
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype> * DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype>::Instance(
+template<DRT::Element::DiscretizationType distype,int probdim>
+DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype,probdim> * DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype,probdim>::Instance(
   const int numdofpernode,
   const int numscal,
   bool create )
 {
-  static ScaTraEleCalcCardiacMonodomain<distype> * instance;
+  static ScaTraEleCalcCardiacMonodomain<distype,probdim> * instance;
   if ( create )
   {
     if ( instance==NULL )
     {
-      instance = new ScaTraEleCalcCardiacMonodomain<distype>(numdofpernode,numscal);
+      instance = new ScaTraEleCalcCardiacMonodomain<distype,probdim>(numdofpernode,numscal);
     }
   }
   else
@@ -65,8 +65,8 @@ DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype> * DRT::ELEMENTS::ScaTraEl
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype>::Done()
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype,probdim>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
@@ -77,8 +77,8 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype>::Done()
 /*----------------------------------------------------------------------*
  |  evaluate single material  (protected)                    ljag 06/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype>::Materials(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype,probdim>::Materials(
   const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
   const int                               k,        //!< id of current scalar
   double&                                 densn,    //!< density at t_(n)
@@ -100,8 +100,8 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype>::Materials(
 /*----------------------------------------------------------------------*
  |  Material ScaTra                                          ljag 06/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype>::MatMyocard(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype,probdim>::MatMyocard(
   const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
   const int                               k,        //!< id of current scalar
   double&                                 densn,    //!< density at t_(n)
@@ -144,23 +144,26 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype>::MatMyocard(
 
 // template classes
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::line2>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::line3>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::line2,1>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::line2,2>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::line2,3>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::line3,1>;
 
 // 2D elements
 //template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::tri3>;
 //template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::tri6>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::quad4>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::quad4,2>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::quad4,3>;
 //template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::quad9>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::quad9,2>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::nurbs9,2>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::hex8>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::hex8,3>;
 //template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::hex27>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::tet4>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::tet10>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::hex27,3>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::tet4,3>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::tet10,3>;
 //template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::pyramid5>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::nurbs9>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::pyramid5,3>;
 //template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::nurbs27>;

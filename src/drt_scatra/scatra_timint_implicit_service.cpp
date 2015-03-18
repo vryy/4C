@@ -1967,3 +1967,118 @@ void SCATRA::ScaTraTimIntImpl::FDCheck()
 
   return;
 }
+
+/*----------------------------------------------------------------------*
+ |  calculate error compared to analytical solution            gjb 10/08|
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
+{
+  const INPAR::SCATRA::CalcError calcerr
+    = DRT::INPUT::IntegralValue<INPAR::SCATRA::CalcError>(*params_,"CALCERROR");
+
+  switch (calcerr)
+  {
+  case INPAR::SCATRA::calcerror_no: // do nothing (the usual case)
+    break;
+  case INPAR::SCATRA::calcerror_byfunction:
+  {
+    const int errorfunctnumber = params_->get<int>("CALCERRORNO");
+    if(errorfunctnumber<1)
+      dserror("invalid value of paramter CALCERRORNO for error function evaluation!");
+
+    // create the parameters for the error calculation
+    Teuchos::ParameterList eleparams;
+    eleparams.set<int>("action",SCATRA::calc_error);
+    eleparams.set("total time",time_);
+    eleparams.set<int>("calcerrorflag",calcerr);
+    eleparams.set<int>("error function number",errorfunctnumber);
+    //provide displacement field in case of ALE
+    if (isale_)
+      discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+
+    // set vector values needed by elements
+    discret_->ClearState();
+    discret_->SetState("phinp",phinp_);
+
+    // get (squared) error values
+    Teuchos::RCP<Epetra_SerialDenseVector> errors
+      = Teuchos::rcp(new Epetra_SerialDenseVector(4*numscal_));
+    discret_->EvaluateScalars(eleparams, errors);
+    discret_->ClearState();
+
+    // std::vector containing
+    // [0]: relative L2 scalar error
+    // [1]: relative H1 scalar error
+    Teuchos::RCP<std::vector<double> > relerror = Teuchos::rcp(new std::vector<double>(2*numscal_));
+
+    for(int k=0;k<numscal_;k++)
+    {
+      if( std::abs((*errors)[k*numscal_+2])>1e-14 )
+        (*relerror)[k*numscal_+0] = sqrt((*errors)[k*numscal_+0])/sqrt((*errors)[k*numscal_+2]);
+      else
+        (*relerror)[k*numscal_+0] = sqrt((*errors)[k*numscal_+0]);
+      if( std::abs((*errors)[k*numscal_+2])>1e-14 )
+        (*relerror)[k*numscal_+1] = sqrt((*errors)[k*numscal_+1])/sqrt((*errors)[k*numscal_+3]);
+      else
+        (*relerror)[k*numscal_+1] = sqrt((*errors)[k*numscal_+1]);
+
+      if (myrank_ == 0)
+      {
+
+        // print last error in a separate file
+
+        // append error of the last time step to the error file
+//        if ((step_==stepmax_) or (time_==maxtime_))// write results to file
+//        {
+//          std::ostringstream temp;
+//          temp << k;
+//          const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
+//          const std::string fname = simulation+"_c"+temp.str()+".relerror";
+//
+//          std::ofstream f;
+//          f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+//          f << "#| " << simulation << "\n";
+//          f << "#| Step | Time | rel. L2-error scalar | rel. H1-error scalar  |\n";
+//          f << step_ << " " << time_ << " " << (*relerror)[k*numscal_+0] << " " << (*relerror)[k*numscal_+1] << "\n";
+//          f.flush();
+//          f.close();
+//        }
+
+
+        std::ostringstream temp;
+        temp << k;
+        const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
+        const std::string fname = simulation+"_c"+temp.str()+"_time.relerror";
+
+        if(step_==1)
+        {
+          std::ofstream f;
+          f.open(fname.c_str());
+          f << "#| Step | Time | rel. L2-error  | rel. H1-error  |\n";
+          f << std::setprecision(10) << step_ << " " << std::setw(1)<< std::setprecision(5)
+            << time_ << std::setw(1) << std::setprecision(6) << " "
+            << (*relerror)[k*numscal_+0] << std::setw(1) << std::setprecision(6) << " " << (*relerror)[k*numscal_+1] << "\n";
+
+          f.flush();
+          f.close();
+        }
+        else
+        {
+          std::ofstream f;
+          f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+          f << std::setprecision(10) << step_ << " " << std::setw(3)<< std::setprecision(5)
+          << time_ << std::setw(1) << std::setprecision(6) << " "
+          << (*relerror)[k*numscal_+0] << std::setw(1) << std::setprecision(6) << " " << (*relerror)[k*numscal_+1] <<"\n";
+
+          f.flush();
+          f.close();
+        }
+      }
+    }
+  break;
+  }
+  default:
+    dserror("Cannot calculate error. Unknown type of analytical test problem"); break;
+  }
+  return;
+} // SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol

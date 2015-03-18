@@ -51,7 +51,7 @@ public:
   /// since only derived child classes are free to be allocated!!
 
   //! evaluate the element
-  int Evaluate(DRT::ELEMENTS::Transport*     ele,
+  int Evaluate(DRT::Element*                 ele,
                Teuchos::ParameterList&       params,
                DRT::Discretization &         discretization,
                const std::vector<int> &      lm,
@@ -63,7 +63,7 @@ public:
 
   //! evaluate action
   virtual int EvaluateAction(
-      DRT::ELEMENTS::Transport*   ele,
+      DRT::Element*               ele,
       Teuchos::ParameterList&     params,
       DRT::Discretization&        discretization,
       const SCATRA::Action&       action,
@@ -83,7 +83,7 @@ protected:
 
   //! extract element based or nodal values and return extracted values of phinp
   virtual const std::vector<double> ExtractElementAndNodeValues(
-    DRT::ELEMENTS::Transport*  ele,
+    DRT::Element*              ele,
     Teuchos::ParameterList&    params,
     DRT::Discretization&       discretization,
     const std::vector<int>&    lm
@@ -191,7 +191,7 @@ protected:
 
   //! validity check with respect to input parameters, degrees of freedom, number of scalars etc.
   virtual void CheckElchElementParameter(
-    DRT::ELEMENTS::Transport*   ele   //!< current element
+      DRT::Element*              ele   //!< current element
   ) = 0;
 
   //!  calculate weighted mass flux (no reactive flux so far) -> elch-specific implementation

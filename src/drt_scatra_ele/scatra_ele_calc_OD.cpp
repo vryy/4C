@@ -28,9 +28,9 @@
 /*----------------------------------------------------------------------*
  * Action type: Evaluate
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::ScaTraEleCalc<distype>::EvaluateOD(
-  DRT::ELEMENTS::Transport*  ele,
+template <DRT::Element::DiscretizationType distype,int probdim>
+int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateOD(
+  DRT::Element*              ele,
   Teuchos::ParameterList&    params,
   DRT::Discretization&       discretization,
   const std::vector<int>&    lm,
@@ -96,8 +96,8 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype>::EvaluateOD(
 /*----------------------------------------------------------------------*
 |  calculate system matrix and rhs (public)                 vuong 08/14|
 *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::SysmatODMesh(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::SysmatODMesh(
   DRT::Element*                         ele, ///< the element those matrix is calculated
   Epetra_SerialDenseMatrix&             emat,///< element matrix to calculate
   const int                             ndofpernodemesh ///< number of DOF of mesh displacement field
@@ -138,7 +138,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::SysmatODMesh(
   // integration loop for one element
   //----------------------------------------------------------------------
   // integration points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
@@ -287,8 +287,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::SysmatODMesh(
 /*----------------------------------------------------------------------*
 |  calculate system matrix and rhs (public)                 vuong 08/14|
 *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::SysmatODFluid(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::SysmatODFluid(
   DRT::Element*                         ele, ///< the element those matrix is calculated
   Epetra_SerialDenseMatrix&             emat,///< element matrix to calculate
   const int                             numdofpernode_fluid ///< number of DOF of fluid field
@@ -329,7 +329,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::SysmatODFluid(
   // integration loop for one element
   //----------------------------------------------------------------------
   // integration points and weights
-  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
@@ -398,8 +398,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::SysmatODFluid(
  |  calculation of convective element matrix                                    |
  |  in convective form (OD fluid)                                   vuong 08/14 |
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcMatConvODFluid(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcMatConvODFluid(
     Epetra_SerialDenseMatrix&     emat,
     const int                     k,
     const int                     ndofpernodefluid,
@@ -430,8 +430,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcMatConvODFluid(
  |   calculation of convective element matrix: add conservative                 |
  |   contributions (OD fluid)                                       vuong 08/14 |
  *------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcMatConvAddConsODFluid(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcMatConvAddConsODFluid(
     Epetra_SerialDenseMatrix&     emat,
     const int                     k,
     const int                     ndofpernodefluid,
@@ -460,8 +460,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcMatConvAddConsODFluid(
 /*------------------------------------------------------------------- *
  |  calculation of linearized mass (OD mesh)             vuong 08/14 |
  *--------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcLinMassODMesh(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcLinMassODMesh(
   Epetra_SerialDenseMatrix&          emat,
   const int                          k,
   const int                          ndofpernodemesh,
@@ -506,8 +506,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcLinMassODMesh(
 /*-------------------------------------------------------------------------------------- *
  |  standard Galerkin transient, old part of rhs and source term  (OD mesh)   vuong 08/14 |
  *---------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcHistAndSourceODMesh(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcHistAndSourceODMesh(
     Epetra_SerialDenseMatrix&          emat,
     const int                          k,
     const int                          ndofpernodemesh,
@@ -536,8 +536,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcHistAndSourceODMesh(
 /*-------------------------------------------------------------------- *
  |  standard Galerkin convective term (OD mesh)            vuong 08/14 |
  *---------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcConvODMesh(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcConvODMesh(
   Epetra_SerialDenseMatrix&       emat,
   const int                       k,
   const int                       ndofpernodemesh,
@@ -691,8 +691,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcConvODMesh(
 /*-------------------------------------------------------------------- *
  |  standard Galerkin diffusive term (OD mesh)   vuong 08/14 |
  *---------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcDiffODMesh(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDiffODMesh(
     Epetra_SerialDenseMatrix&           emat,
     const int                           k,
     const int                           ndofpernodemesh,
@@ -921,8 +921,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcDiffODMesh(
 /*-------------------------------------------------------------------- *
  |  standard Galerkin reactive term (OD mesh)              vuong 08/14 |
  *---------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcReactODMesh(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcReactODMesh(
     Epetra_SerialDenseMatrix&           emat,
     const int                           k,
     const int                           ndofpernodemesh,
@@ -969,24 +969,4 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcReactODMesh(
  *----------------------------------------------------------------------*/
 // template classes
 
-// 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::line2>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::line3>;
-
-// 2D elements
-//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tri3>;
-//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tri6>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::quad4>;
-//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::quad9>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::nurbs9>;
-
-// 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::hex8>;
-//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::hex27>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tet4>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tet10>;
-//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::pyramid5>;
-//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::nurbs27>;
+#include "scatra_ele_calc_fwd.hpp"

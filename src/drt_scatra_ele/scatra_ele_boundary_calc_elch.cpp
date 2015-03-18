@@ -70,7 +70,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ScaTraEleBoundaryCalcElch(con
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateAction(
-    DRT::ELEMENTS::TransportBoundary*   ele,
+    DRT::FaceElement*                   ele,
     Teuchos::ParameterList&             params,
     DRT::Discretization&                discretization,
     SCATRA::BoundaryAction              action,
@@ -147,7 +147,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateAction(
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcElchBoundaryKinetics(
-    DRT::ELEMENTS::TransportBoundary* ele,
+    DRT::FaceElement*                 ele,
     Teuchos::ParameterList&           params,
     DRT::Discretization&              discretization,
     std::vector<int>&                 lm,
@@ -313,7 +313,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcElchBoundaryKinetics
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcNernstLinearization(
-    DRT::ELEMENTS::TransportBoundary* ele,
+    DRT::FaceElement*                 ele,
     Teuchos::ParameterList&           params,
     DRT::Discretization&              discretization,
     std::vector<int>&                 lm,

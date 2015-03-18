@@ -221,7 +221,7 @@ public:
   );
 
   //! calculate error compared to analytical solution
-  virtual void EvaluateErrorComparedToAnalyticalSol(){return;};
+  virtual void EvaluateErrorComparedToAnalyticalSol();
 
   //! calculate the reconstructed nodal gradient of phi
   Teuchos::RCP<Epetra_MultiVector> GetSmoothedGradientAtNodes(const Teuchos::RCP<const Epetra_Vector> phi);

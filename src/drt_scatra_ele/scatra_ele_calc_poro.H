@@ -58,7 +58,7 @@ public:
    /*!
      Generic virtual interface function. Called via base pointer.
     */
-//   virtual int Evaluate(DRT::ELEMENTS::Transport*     ele,
+//   virtual int Evaluate(DRT::Element*                 ele,
 //                        Teuchos::ParameterList&       params,
 //                        DRT::Discretization &         discretization,
 //                        const std::vector<int> &      lm,
@@ -70,7 +70,7 @@ public:
 
 protected:
 
-//   int EvaluateODMesh(DRT::ELEMENTS::Transport*     ele,
+//   int EvaluateODMesh(  DRT::Element*                 ele,
 //                        Teuchos::ParameterList&       params,
 //                        DRT::Discretization &         discretization,
 //                        const std::vector<int> &      lm,
@@ -80,7 +80,7 @@ protected:
 //                        Epetra_SerialDenseVector&     elevec2_epetra,
 //                        Epetra_SerialDenseVector&     elevec3_epetra);
 //
-//   int EvaluateODFluid(DRT::ELEMENTS::Transport*     ele,
+//   int EvaluateODFluid(  DRT::Element*                 ele,
 //                        Teuchos::ParameterList&       params,
 //                        DRT::Discretization &         discretization,
 //                        const std::vector<int> &      lm,
@@ -104,15 +104,15 @@ protected:
 //     const int                     numdofpernode
 //   );
 
-  //! read element coordinates, assuming they are all 3D and then project to the respective lower dimensional space
-  virtual void ReadElementCoordinatesAndProject(
-      const DRT::ELEMENTS::Transport*     ele
+  //! read element coordinates
+  virtual void ReadElementCoordinates(
+      const DRT::Element*                 ele
   );
 
   //! extract element based or nodal values
   //  return extracted values of phinp
   virtual const std::vector<double> ExtractElementAndNodeValues(
-    DRT::ELEMENTS::Transport*  ele,
+    DRT::Element*              ele,
     Teuchos::ParameterList&    params,
     DRT::Discretization&       discretization,
     const std::vector<int>&    lm

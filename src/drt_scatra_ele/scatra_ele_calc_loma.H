@@ -61,7 +61,7 @@ public:
     /// called upon destruction
     virtual void Done();
 
-    int EvaluateAction(DRT::ELEMENTS::Transport*     ele,
+    int EvaluateAction(DRT::Element*                 ele,
                        Teuchos::ParameterList&       params,
                        DRT::Discretization &         discretization,
                        const SCATRA::Action&         action,
@@ -207,7 +207,7 @@ private:
 
     //! extract element based or nodal values and return extracted values of phinp
     const std::vector<double> ExtractElementAndNodeValues(
-      DRT::ELEMENTS::Transport*  ele,
+      DRT::Element*              ele,
       Teuchos::ParameterList&    params,
       DRT::Discretization&       discretization,
       const std::vector<int>&    lm

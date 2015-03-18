@@ -25,8 +25,8 @@ namespace DRT
     template <int NSD>
     class ScaTraEleDiffManagerAniso;
 
-    template<DRT::Element::DiscretizationType distype>
-    class ScaTraEleCalcAniso : public virtual ScaTraEleCalc<distype>
+    template<DRT::Element::DiscretizationType distype,int probdim=DRT::UTILS::DisTypeToDim<distype>::dim>
+    class ScaTraEleCalcAniso : public virtual ScaTraEleCalc<distype,probdim>
     {
     protected:
 
@@ -37,7 +37,7 @@ namespace DRT
 
     private:
 
-      typedef ScaTraEleCalc<distype> my;
+      typedef ScaTraEleCalc<distype,probdim> my;
       typedef ScaTraEleInternalVariableManager<my::nsd_,my::nen_> varmanager;
 
     public:
@@ -46,7 +46,7 @@ namespace DRT
 
 
       /// Singleton access method
-      static ScaTraEleCalcAniso<distype> * Instance(
+      static ScaTraEleCalcAniso<distype,probdim> * Instance(
         const int numdofpernode,
         const int numscal,
         bool create=true );

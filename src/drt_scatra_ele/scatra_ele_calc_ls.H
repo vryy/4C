@@ -47,7 +47,7 @@ public:
     /// called upon destruction
     virtual void Done();
 
-    int EvaluateAction(DRT::ELEMENTS::Transport*     ele,
+    int EvaluateAction(  DRT::Element*                 ele,
                          Teuchos::ParameterList&       params,
                          DRT::Discretization &         discretization,
                          const SCATRA::Action&         action,

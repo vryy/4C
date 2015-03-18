@@ -43,7 +43,7 @@ namespace DRT
 
       //! evaluate action
       int EvaluateAction(
-          DRT::ELEMENTS::TransportBoundary*   ele,
+          DRT::FaceElement*                   ele,
           Teuchos::ParameterList&             params,
           DRT::Discretization&                discretization,
           SCATRA::BoundaryAction              action,
@@ -65,7 +65,7 @@ namespace DRT
 
       //! evaluate loma thermal press
       void CalcLomaThermPress(
-          DRT::ELEMENTS::TransportBoundary* ele,
+          DRT::FaceElement*                 ele,
           Teuchos::ParameterList&           params,
           DRT::Discretization&              discretization,
           std::vector<int>&                 lm
@@ -73,7 +73,7 @@ namespace DRT
 
       //! calculate Neumann inflow boundary conditions
       void NeumannInflow(
-          const DRT::ELEMENTS::TransportBoundary*   ele,
+          const DRT::FaceElement*                   ele,
           Teuchos::ParameterList&                   params,
           DRT::Discretization&                      discretization,
           std::vector<int>&                         lm,

@@ -30,7 +30,7 @@ Maintainer: Ursula Rasthofer / Volker Gravemeier
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::EvaluateAction(
-    DRT::ELEMENTS::Transport*   ele,
+    DRT::Element*               ele,
     Teuchos::ParameterList&     params,
     DRT::Discretization&        discretization,
     const SCATRA::Action&       action,
@@ -149,7 +149,7 @@ const DRT::Element*        ele
  *-----------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 const std::vector<double>  DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::ExtractElementAndNodeValues(
-  DRT::ELEMENTS::Transport*  ele,
+  DRT::Element*              ele,
   Teuchos::ParameterList&    params,
   DRT::Discretization&       discretization,
   const std::vector<int>&    lm

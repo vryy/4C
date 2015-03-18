@@ -124,13 +124,13 @@ public:
   }
 
   //! setup element evaluation
-  int SetupCalc(DRT::ELEMENTS::TransportBoundary* ele,
+  int SetupCalc( DRT::FaceElement*                 ele,
                  Teuchos::ParameterList&           params,
                  DRT::Discretization&              discretization);
 
   //! evaluate element
   int Evaluate(
-      DRT::ELEMENTS::TransportBoundary*   ele,
+      DRT::FaceElement*                   ele,
       Teuchos::ParameterList&             params,
       DRT::Discretization&                discretization,
       std::vector<int>&                   lm,
@@ -143,7 +143,7 @@ public:
 
   //! evaluate action
   virtual int EvaluateAction(
-      DRT::ELEMENTS::TransportBoundary*   ele,
+      DRT::FaceElement*                   ele,
       Teuchos::ParameterList&             params,
       DRT::Discretization&                discretization,
       SCATRA::BoundaryAction              action,
@@ -157,7 +157,7 @@ public:
 
   //! evaluate Neumann boundary condition
   virtual int EvaluateNeumann(
-      DRT::ELEMENTS::TransportBoundary*   ele,
+      DRT::FaceElement*                   ele,
       Teuchos::ParameterList&             params,
       DRT::Discretization&                discretization,
       DRT::Condition&                     condition,
@@ -177,7 +177,7 @@ public:
   //! calculate normal vectors
   void CalcNormalVectors(
       Teuchos::ParameterList&            params,
-      DRT::ELEMENTS::TransportBoundary*  ele
+      DRT::FaceElement*                  ele
       );
 
   //! evaluate shape functions and derivatives at int. point
@@ -248,7 +248,7 @@ public:
 
   //! calculate potential Neumann inflow terms
   virtual void NeumannInflow(
-      const DRT::ELEMENTS::TransportBoundary*   ele,
+      const DRT::FaceElement*                   ele,
       Teuchos::ParameterList&                   params,
       DRT::Discretization&                      discretization,
       std::vector<int>&                         lm,
@@ -285,7 +285,7 @@ public:
 
   */
   template <DRT::Element::DiscretizationType bdistype,DRT::Element::DiscretizationType pdistype>
-  void WeakDirichlet(DRT::ELEMENTS::TransportBoundary*  ele,
+  void WeakDirichlet(DRT::FaceElement*                  ele,
                      Teuchos::ParameterList&            params,
                      DRT::Discretization&               discretization,
                      Teuchos::RCP<const MAT::Material>  material,
@@ -296,7 +296,7 @@ public:
   //! calculate boundary conditions for impl. Characteristic Galerkin time integration, just for the reinitialization equation
   template <DRT::Element::DiscretizationType bdistype,DRT::Element::DiscretizationType pdistype>
   void ReinitCharacteristicGalerkinBoundary(
-      DRT::ELEMENTS::TransportBoundary*  ele,                  //!< transport element
+      DRT::FaceElement*                  ele,                  //!< transport element
       Teuchos::ParameterList&            params,               //!< parameter list
       DRT::Discretization&               discretization,       //!< discretization
       Teuchos::RCP<const MAT::Material>  material,             //!< material
@@ -306,7 +306,7 @@ public:
 
   //! evaluate Robin boundary condition
   virtual void CalcRobinBoundary(
-      DRT::ELEMENTS::TransportBoundary* ele,
+      DRT::FaceElement*                 ele,
       Teuchos::ParameterList&           params,
       DRT::Discretization&              discretization,
       std::vector<int>&                 lm,

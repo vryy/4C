@@ -43,7 +43,7 @@ namespace DRT
 
         //! evaluate action
         int EvaluateAction(
-            DRT::ELEMENTS::Transport*   ele,
+            DRT::Element*               ele,
             Teuchos::ParameterList&     params,
             DRT::Discretization&        discretization,
             const SCATRA::Action&       action,
@@ -160,7 +160,7 @@ namespace DRT
 
         //! validity check with respect to input parameters, degrees of freedom, number of scalars etc.
         virtual void CheckElchElementParameter(
-          DRT::ELEMENTS::Transport*   ele   //!< current element
+            DRT::Element*              ele  //!< current element
         );
 
         //! get conductivity

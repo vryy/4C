@@ -26,7 +26,7 @@ Maintainer: Rui Fang
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::EvaluateAction(
-    DRT::ELEMENTS::Transport*   ele,
+    DRT::Element*               ele,
     Teuchos::ParameterList&     params,
     DRT::Discretization&        discretization,
     const SCATRA::Action&       action,
@@ -75,7 +75,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::EvaluateAction(
  *----------------------------------------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CheckElchElementParameter(
-    DRT::ELEMENTS::Transport*   ele   //!< current element
+    DRT::Element*               ele   //!< current element
     )
 {
   // safety checks

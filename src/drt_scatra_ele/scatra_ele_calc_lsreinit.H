@@ -60,12 +60,12 @@ public:
 
   //! setup element evaluation
   int SetupCalc(
-      DRT::ELEMENTS::Transport*   ele,
+      DRT::Element*               ele,
       DRT::Discretization&        discretization
       );
 
   //! evaluate the element
-  int Evaluate(DRT::ELEMENTS::Transport*     ele,
+  int Evaluate(DRT::Element*                 ele,
                Teuchos::ParameterList&       params,
                DRT::Discretization &         discretization,
                const std::vector<int> &      lm,
@@ -75,7 +75,7 @@ public:
                Epetra_SerialDenseVector&     elevec2_epetra,
                Epetra_SerialDenseVector&     elevec3_epetra);
 
-  int EvaluateAction(DRT::ELEMENTS::Transport*     ele,
+  int EvaluateAction(DRT::Element*                 ele,
                      Teuchos::ParameterList&       params,
                      DRT::Discretization &         discretization,
                      const SCATRA::Action&         action,

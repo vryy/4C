@@ -25,10 +25,10 @@ Maintainer: Andreas Ehrl
 namespace DRT
 {
   class Discretization;
+  class Element;
 
 namespace ELEMENTS
 {
-  class Transport;
 
   /// Interface base class for ScaTraEleCalc
   /*!
@@ -44,7 +44,7 @@ namespace ELEMENTS
 
     /// Setup element evaluation
     virtual int SetupCalc(
-        DRT::ELEMENTS::Transport*   ele,
+        DRT::Element*               ele,
         DRT::Discretization&        discretization
         ) = 0;
 
@@ -53,7 +53,7 @@ namespace ELEMENTS
       This class does not provide a definition for this function; it
       must be defined in ScatraEleCalc.
      */
-    virtual int Evaluate(DRT::ELEMENTS::Transport*     ele,
+    virtual int Evaluate(DRT::Element*                 ele,
                          Teuchos::ParameterList&       params,
                          DRT::Discretization&          discretization,
                          const std::vector<int> &      lm,
@@ -63,7 +63,7 @@ namespace ELEMENTS
                          Epetra_SerialDenseVector&     elevec2_epetra,
                          Epetra_SerialDenseVector&     elevec3_epetra) = 0;
 
-    virtual int EvaluateService(DRT::ELEMENTS::Transport*     ele,
+    virtual int EvaluateService(DRT::Element*                 ele,
                                 Teuchos::ParameterList&       params,
                                 DRT::Discretization&          discretization,
                                 const std::vector<int> &      lm,
@@ -73,7 +73,7 @@ namespace ELEMENTS
                                 Epetra_SerialDenseVector&     elevec2_epetra,
                                 Epetra_SerialDenseVector&     elevec3_epetra) = 0;
 
-    virtual int EvaluateOD(DRT::ELEMENTS::Transport*     ele,
+    virtual int EvaluateOD(DRT::Element*                 ele,
                            Teuchos::ParameterList&       params,
                            DRT::Discretization&          discretization,
                            const std::vector<int> &      lm,

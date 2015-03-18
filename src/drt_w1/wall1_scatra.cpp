@@ -116,7 +116,7 @@ void DRT::ELEMENTS::Wall1_Scatra::Pack(DRT::PackBuffer& data) const
   int type = UniqueParObjectId();
   AddtoPack(data,type);
   // add base class Element
-  Element::Pack(data);
+  Wall1::Pack(data);
 
   return;
 }

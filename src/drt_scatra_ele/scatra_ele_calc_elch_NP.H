@@ -282,7 +282,7 @@ private:
 
   //! validity check with respect to input parameters, degrees of freedom, number of scalars etc.
   void CheckElchElementParameter(
-    DRT::ELEMENTS::Transport*   ele   //!< current element
+      DRT::Element*              ele   //!< current element
   );
 
   // Get conductivity from material

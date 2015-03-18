@@ -23,7 +23,7 @@ Maintainer: Andreas Ehrl
  *----------------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CheckElchElementParameter(
-    DRT::ELEMENTS::Transport*   ele   //!< current element
+    DRT::Element*              ele   //!< current element
 )
 {
   // safety checks

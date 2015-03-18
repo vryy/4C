@@ -1040,7 +1040,7 @@ Teuchos::RCP<std::vector<double> > THR::TimInt::EvaluateErrorComparedToAnalytica
     // std::vector containing
     // [0]: relative L2 temperature error
     // [1]: relative H1 temperature error
-    Teuchos::RCP<std::vector<double> > relerror = Teuchos::rcp(new std::vector<double>(32));
+    Teuchos::RCP<std::vector<double> > relerror = Teuchos::rcp(new std::vector<double>(2));
 
     // create the parameters for the discretization
     Teuchos::ParameterList eleparams;

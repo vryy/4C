@@ -27,8 +27,8 @@ namespace ELEMENTS
 // forward declaration
 class ScaTraEleReaManagerAdvReac;
 
-template<DRT::Element::DiscretizationType distype>
-class ScaTraEleCalcAdvReac : public virtual ScaTraEleCalc<distype>
+template<DRT::Element::DiscretizationType distype,int probdim=DRT::UTILS::DisTypeToDim<distype>::dim>
+class ScaTraEleCalcAdvReac : public virtual ScaTraEleCalc<distype,probdim>
 {
 protected:
     /// (private) protected constructor, since we are a Singleton.
@@ -36,14 +36,14 @@ protected:
 
 private:
 
-  typedef ScaTraEleCalc<distype> my;
+  typedef ScaTraEleCalc<distype,probdim> my;
   typedef ScaTraEleInternalVariableManager<my::nsd_,my::nen_> varmanager;
 
 public:
   virtual ~ScaTraEleCalcAdvReac(){return;};
 
   /// Singleton access method
-  static ScaTraEleCalcAdvReac<distype> * Instance(
+  static ScaTraEleCalcAdvReac<distype,probdim> * Instance(
     const int numdofpernode,
     const int numscal,
     bool create=true );

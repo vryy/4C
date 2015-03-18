@@ -22,7 +22,8 @@ SSI::SSI_Part1WC::SSI_Part1WC(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams)
-  : SSI_Part(comm, globaltimeparams,scatraparams,structparams)
+  : SSI_Part(comm, globaltimeparams,scatraparams,structparams),
+    isscatrafromfile_(false)
 {
 
 }
@@ -38,8 +39,6 @@ void SSI::SSI_Part1WC::DoStructStep()
         << "\n***********************\n STRUCTURE SOLVER \n***********************\n";
   }
 
-  // solve the step problem
-  structure_-> PrepareTimeStep();
   // Newton-Raphson iteration
   structure_-> Solve();
   // calculate stresses, strains, energies
@@ -50,6 +49,8 @@ void SSI::SSI_Part1WC::DoStructStep()
   structure_-> Output();
   // write output to screen
   structure_->PrintStep();
+  // clean up
+  structure_->Discretization()->ClearState(true);
 }
 
 /*----------------------------------------------------------------------*/
@@ -66,12 +67,8 @@ void SSI::SSI_Part1WC::DoScatraStep()
   // -------------------------------------------------------------------
   //                  solve nonlinear / linear equation
   // -------------------------------------------------------------------
-  scatra_->ScaTraField()->PrepareTimeStep();
-
-  // -------------------------------------------------------------------
-  //                  solve nonlinear / linear equation
-  // -------------------------------------------------------------------
-  if(isscatrafromfile_){
+  if(isscatrafromfile_)
+  {
     int diffsteps = structure_->Dt()/scatra_->ScaTraField()->Dt();
     if (scatra_->ScaTraField()->Step() % diffsteps ==0){
       scatra_->ScaTraField()->ReadRestart(scatra_->ScaTraField()->Step()); // read results from restart file
@@ -95,17 +92,28 @@ void SSI::SSI_Part1WC::DoScatraStep()
   //                         output of solution
   // -------------------------------------------------------------------
   scatra_->ScaTraField()->Output();
+
+  //cleanup
+  scatra_->ScaTraField()->Discretization()->ClearState(true);
 }
 
 /*----------------------------------------------------------------------*/
 //prepare time step
 /*----------------------------------------------------------------------*/
-void SSI::SSI_Part1WC::PrepareTimeStep()
+void SSI::SSI_Part1WC_SolidToScatra::PrepareTimeStep()
 {
   IncrementTimeAndStep();
   //PrintHeader();
 
-  //PrepareTimeStep of single fields is called in DoStructStep and DoScatraStep
+  structure_-> PrepareTimeStep();
+
+  const int diffsteps = scatra_->ScaTraField()->Dt()/structure_->Dt();
+
+  if (structure_->Step() % diffsteps == 0)
+  {
+    SetStructSolution(structure_->Dispn(),structure_->Veln());
+    scatra_->ScaTraField()->PrepareTimeStep();
+  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -141,17 +149,17 @@ void SSI::SSI_Part1WC_SolidToScatra::Timeloop()
   //InitialCalculations();
 
   if (structure_->Dt() > scatra_->ScaTraField()->Dt())
-  {
     dserror("Timestepsize of scatra should be equal or bigger than solid timestep in solid to scatra interaction");
-  }
-  int diffsteps = scatra_->ScaTraField()->Dt()/structure_->Dt();
+
+  const int diffsteps = scatra_->ScaTraField()->Dt()/structure_->Dt();
+
   while (NotFinished())
   {
     PrepareTimeStep();
     DoStructStep();  // It has its own time and timestep variables, and it increments them by itself.
     if (structure_->Step() % diffsteps == 0)
     {
-      SetStructSolution(structure_->Dispn(),structure_->Velnp());
+      SetStructSolution(structure_->Dispnp(),structure_->Velnp());
       DoScatraStep();  // It has its own time and timestep variables, and it increments them by itself.
     }
   }
@@ -175,7 +183,6 @@ SSI::SSI_Part1WC_ScatraToSolid::SSI_Part1WC_ScatraToSolid(const Epetra_Comm& com
     dserror("unexpected dof sets in structure field");
 
   // Flag for reading scatra result from restart file instead of computing it
-  //DRT::Problem* problem = DRT::Problem::Instance();
   isscatrafromfile_ = DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->SSIControlParams(),"SCATRA_FROM_RESTART_FILE");
 
 }
@@ -189,7 +196,8 @@ void SSI::SSI_Part1WC_ScatraToSolid::Timeloop()
   {
     dserror("Timestepsize of solid should be equal or bigger than scatra timestep in scatra to solid interaction");
   }
-  int diffsteps = structure_->Dt()/scatra_->ScaTraField()->Dt();
+
+  const int diffsteps = structure_->Dt()/scatra_->ScaTraField()->Dt();
   while (NotFinished())
   {
     PrepareTimeStep();
@@ -197,8 +205,23 @@ void SSI::SSI_Part1WC_ScatraToSolid::Timeloop()
     if (scatra_->ScaTraField()->Step()  % diffsteps ==0)
     {
       SetScatraSolution(scatra_->ScaTraField()->Phinp());
+      // PrepareTimeStep() is called after solving the scalar transport, because then the predictor will include the
+      // new scalar solution
+      structure_-> PrepareTimeStep();
       DoStructStep();  // It has its own time and timestep variables, and it increments them by itself.
     }
   }
 
+}
+
+/*----------------------------------------------------------------------*/
+//prepare time step
+/*----------------------------------------------------------------------*/
+void SSI::SSI_Part1WC_ScatraToSolid::PrepareTimeStep()
+{
+  IncrementTimeAndStep();
+  //PrintHeader();
+
+  scatra_->ScaTraField()->PrepareTimeStep();
+  //PrepareTimeStep of structure field is called later
 }

@@ -70,18 +70,18 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype> * DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::Instance(
+template<DRT::Element::DiscretizationType distype,int probdim>
+DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim> * DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::Instance(
   const int numdofpernode,
   const int numscal,
   bool create )
 {
-  static ScaTraEleCalcAdvReac<distype> * instance;
+  static ScaTraEleCalcAdvReac<distype,probdim> * instance;
   if ( create )
   {
     if ( instance==NULL )
     {
-      instance = new ScaTraEleCalcAdvReac<distype>(numdofpernode,numscal);
+      instance = new ScaTraEleCalcAdvReac<distype,probdim>(numdofpernode,numscal);
     }
   }
   else
@@ -96,8 +96,8 @@ DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype> * DRT::ELEMENTS::ScaTraEleCalcAdvRe
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::Done()
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
@@ -108,9 +108,9 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::Done()
 /*----------------------------------------------------------------------*
  *  constructor---------------------------                   thon 02/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::ScaTraEleCalcAdvReac(const int numdofpernode,const int numscal)
-  : DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode,numscal),
+template <DRT::Element::DiscretizationType distype, int probdim>
+DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::ScaTraEleCalcAdvReac(const int numdofpernode,const int numscal)
+  : DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ScaTraEleCalc(numdofpernode,numscal),
     numcond_(-1),
     stoich_(0),
     reaccoeff_(0),
@@ -127,8 +127,8 @@ DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::ScaTraEleCalcAdvReac(const int num
 /*----------------------------------------------------------------------*
  |  get the material constants  (private)                      thon 09/14|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::GetMaterialParams(
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::GetMaterialParams(
   const DRT::Element* ele,       //!< the element we are dealing with
   double&             densn,     //!< density at t_(n)
   double&             densnp,    //!< density at t_(n+1) or t_(n+alpha_F)
@@ -195,8 +195,8 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::GetMaterialParams(
 /*----------------------------------------------------------------------*
  |  evaluate single material  (protected)                    thon 02/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::Materials(
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::Materials(
   const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
   const int                               k,        //!< id of current scalar
   double&                                 densn,    //!< density at t_(n)
@@ -228,8 +228,8 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::Materials(
 /*----------------------------------------------------------------------*
  |  Material BioFilm                                         thon 02/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::MatBioFilm(
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::MatBioFilm(
     const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
     const int                               k,        //!< id of current scalar
     double&                                 densn,    //!< density at t_(n)
@@ -266,8 +266,8 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::MatBioFilm(
 /*----------------------------------------------------------------------*
  |  Material GrowthScd                                       vuong 01/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::MatGrowthScd(
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::MatGrowthScd(
     const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
     const int                               k,        //!< id of current scalar
     double&                                 densn,    //!< density at t_(n)
@@ -343,8 +343,8 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::MatGrowthScd(
 /*----------------------------------------------------------------------*
  |  Get right hand side including reaction bodyforce term    thon 02/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::GetRhsInt(
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::GetRhsInt(
   double&      rhsint,   //!< rhs containing bodyforce at Gauss point
   const double densnp,  //!< density at t_(n+1)
   const int    k        //!< index of current scalar
@@ -360,8 +360,8 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::GetRhsInt(
 /*----------------------------------------------------------------------*
  |  Calculate K(c)                                           thon 02/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeff(
+template <DRT::Element::DiscretizationType distype, int probdim>
+double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaCoeff(
     const int                        k                       //!< id of current scalar
 )
 {
@@ -391,8 +391,8 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeff(
 /*----------------------------------------------------------------------*
  |  helper for calculating K(c)                              thon 02/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeffFac(
+template <DRT::Element::DiscretizationType distype, int probdim>
+double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaCoeffFac(
           const std::vector<int>                    stoich,                  //!<stoichometrie of current condition
           const MAT::PAR::reaction_coupling         couplingtype,            //!<type of coupling the stoichiometry coefficients
           const int                                 k                       //!< id of current scalar
@@ -432,8 +432,8 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeffFac(
 /*----------------------------------------------------------------------*
  |  calculate \frac{partial}{\partial c} K(c)                thon 02/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeffDerivMatrix(
+template <DRT::Element::DiscretizationType distype, int probdim>
+double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaCoeffDerivMatrix(
     const int                 k,                  //!< id of current scalar
     const int                 j                   //!< concentration to be derived to
 )
@@ -463,8 +463,8 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeffDerivMatrix(
 /*----------------------------------------------------------------------*
  |  helper for calculating \frac{partial}{\partial c} K(c)   thon 02/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeffDerivFac(
+template <DRT::Element::DiscretizationType distype, int probdim>
+double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaCoeffDerivFac(
           const std::vector<int>                  stoich,                  //!<stoichometrie of current condition
           const MAT::PAR::reaction_coupling       couplingtype,            //!<type of coupling the stoichiometry coefficients
           const int                               toderive,                //!<concentration to be derived to
@@ -505,8 +505,8 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaCoeffDerivFac(
 /*----------------------------------------------------------------------*
  |  calculate f(c)                                           thon 02/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaBodyForceTerm(
+template <DRT::Element::DiscretizationType distype, int probdim>
+double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaBodyForceTerm(
     const int                                 k                       //!< id of current scalar
 )
 {
@@ -536,8 +536,8 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaBodyForceTerm(
 /*----------------------------------------------------------------------*
  |  helper for calculating                                   thon 02/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaBodyForceTermFac(
+template <DRT::Element::DiscretizationType distype, int probdim>
+double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaBodyForceTermFac(
           const std::vector<int>                      stoich,                 //!<stoichometrie of current condition
           const MAT::PAR::reaction_coupling           couplingtype            //!<type of coupling the stoichiometry coefficients
 )
@@ -573,8 +573,8 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaBodyForceTermFac(
 /*----------------------------------------------------------------------*
  |  calculate \frac{partial}{\partial c} f(c)                thon 02/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaBodyForceDerivMatrix(
+template <DRT::Element::DiscretizationType distype, int probdim>
+double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaBodyForceDerivMatrix(
 
     const int                 k,                  //!< id of current scalar
     const int                 j                   //!< concentration to be derived to
@@ -605,8 +605,8 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaBodyForceDerivMatrix
 /*-------------------------------------------------------------------------------*
  |  helper for calculating calculate \frac{partial}{\partial c} f(c)  thon 02/14 |
  *-------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaBodyForceDerivFac(
+template <DRT::Element::DiscretizationType distype, int probdim>
+double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaBodyForceDerivFac(
         const std::vector<int>                    stoich,                  //!<stoichometrie of current condition
         const MAT::PAR::reaction_coupling         couplingtype,            //!<type of coupling the stoichiometry coefficients
         const int                                 toderive                 //!<concentration to be derived to
@@ -645,8 +645,8 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcReaBodyForceDerivFac(
 /*-------------------------------------------------------------------------------*
  |  calculate reaction coefficient for "delayed" reactions            thon 03/14 |
  *-------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::ReacStartForReaCoeff(
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::ReacStartForReaCoeff(
   const int                               k,            //!< id of current scalar
   const int                               condnum,      //!< id of current condition
   const double                            reacstart,      //!< value for reaction starting
@@ -666,8 +666,8 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::ReacStartForReaCoeff(
 ///*----------------------------------------------------------------------------------*
 // |  calculate reaction coefficient derivative for "delayed" reactions    thon 03/14 |
 // *----------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::ReacStartForReaCoeffDeriv(
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::ReacStartForReaCoeffDeriv(
         const int                               k,              //!< id of current scalar
         const int                               toderive,       //!<concentration to be derived to
         const int                               condnum,        //!< id of current condition
@@ -692,8 +692,8 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::ReacStartForReaCoeffDeriv(
 /*-------------------------------------------------------------------------------*
  |  calculate reactions body force term for "delayed" reactions       thon 03/14 |
  *-------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::ReacStartForReaBF(
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::ReacStartForReaBF(
   const int                               k,            //!< id of current scalar
   const int                               condnum,      //!< id of current condition
   const double                            reacstart,      //!< value for reaction starting
@@ -711,8 +711,8 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::ReacStartForReaBF(
 /*-----------------------------------------------------------------------------------------*
  |  calculate reactions body force term derivative for "delayed" reactions      thon 03/14 |
  *-----------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::ReacStartForReaBFDeriv(
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::ReacStartForReaBFDeriv(
         const int                               k,              //!< id of current scalar
         const int                               toderive,       //!<concentration to be derived to
         const int                               condnum,        //!< id of current condition
@@ -735,8 +735,8 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::ReacStartForReaBFDeriv(
 /*--------------------------------------------------------------------------- *
  |  calculation of reactive element matrix for coupled reactions  thon 02/14  |
  *----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcMatReact(
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcMatReact(
   Epetra_SerialDenseMatrix&          emat,
   const int                          k,
   const double                       timefacfac,
@@ -884,8 +884,8 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::CalcMatReact(
 /*-----------------------------------------------------------------------------------------*
  |  get numcond, stoich list, reaction coefficient, couplingtpye from material  thon 09/14 |
  *----------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::GetAdvancedReactionCoefficients(
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::GetAdvancedReactionCoefficients(
     const Teuchos::RCP<const MAT::Material> material //!< pointer to current material
   )
 {
@@ -917,8 +917,8 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::GetAdvancedReactionCoefficien
 /*-------------------------------------------------------------------------------*
  |  set reac. body force, reaction coefficient and derivatives        thon 09/14 |
  *-------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::SetAdvancedReactionTerms(
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::SetAdvancedReactionTerms(
     const int                               k,      //!< index of current scalar
     const double                            scale   //!< scale factor
                                     )
@@ -941,8 +941,8 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::SetAdvancedReactionTerms(
 /*-------------------------------------------------------------------------------*
  |  clear reac. body force, reaction coefficient and derivatives      thon 02/15 |
  *-------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::ClearAdvancedReactionTerms(
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::ClearAdvancedReactionTerms(
     const int                               k   //!< index of current scalar
                                     )
 {
@@ -978,8 +978,8 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::ClearAdvancedReactionTerms(
 /*----------------------------------------------------------------------*
  | evaluate shape functions and derivatives at ele. center   jhoer 11/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-const double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::EvalShapeFuncAndDerivsAtEleCenter()
+template <DRT::Element::DiscretizationType distype, int probdim>
+const double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::EvalShapeFuncAndDerivsAtEleCenter()
 {
   const double vol = my::EvalShapeFuncAndDerivsAtEleCenter();
 
@@ -994,23 +994,26 @@ const double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::EvalShapeFuncAndDeriv
 // template classes
 
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::line2>;
-template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::line3>;
+template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::line2,1>;
+template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::line2,2>;
+template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::line2,3>;
+template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::line3,1>;
 
 // 2D elements
 //template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::tri3>;
 //template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::tri6>;
-template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::quad4>;
+template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::quad4,2>;
+template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::quad4,3>;
 //template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::quad9>;
-template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::nurbs9>;
+template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::quad9,2>;
+template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::nurbs9,2>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::hex8>;
+template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::hex8,3>;
 //template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::hex27>;
-template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::tet4>;
-template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::tet10>;
+template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::hex27,3>;
+template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::tet4,3>;
+template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::tet10,3>;
 //template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::pyramid5>;
+template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::pyramid5,3>;
 //template class DRT::ELEMENTS::ScaTraEleCalcAdvReac<DRT::Element::nurbs27>;

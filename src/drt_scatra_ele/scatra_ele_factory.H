@@ -54,7 +54,7 @@ public:
 
 private:
   //! define ScatraEle instances dependent on problem
-  template<DRT::Element::DiscretizationType distype>
+  template<DRT::Element::DiscretizationType distype,int probdim>
   static ScaTraEleInterface* DefineProblemType(
     INPAR::SCATRA::ImplType problem,
     const int numdofpernode,

@@ -31,9 +31,9 @@ Maintainer: Lasse Jagschies
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype>::EvaluateAction(
-    DRT::ELEMENTS::Transport*   ele,
+template <DRT::Element::DiscretizationType distype,int probdim>
+int DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype,probdim>::EvaluateAction(
+    DRT::Element*               ele,
     Teuchos::ParameterList&     params,
     DRT::Discretization&        discretization,
     const SCATRA::Action&       action,
@@ -209,23 +209,26 @@ int DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype>::EvaluateAction(
 
 // template classes
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::line2>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::line3>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::line2,1>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::line2,2>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::line2,3>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::line3,1>;
 
 // 2D elements
 //template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::tri3>;
 //template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::tri6>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::quad4>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::quad4,2>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::quad4,3>;
 //template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::quad9>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::nurbs9>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::quad9,2>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::nurbs9,2>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::hex8>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::hex8,3>;
 //template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::hex27>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::tet4>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::tet10>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::hex27,3>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::tet4,3>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::tet10,3>;
 //template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::pyramid5>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::pyramid5,3>;
 //template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::nurbs27>;

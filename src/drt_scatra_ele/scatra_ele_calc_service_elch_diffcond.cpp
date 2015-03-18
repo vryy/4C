@@ -28,7 +28,7 @@ Maintainer: Andreas Ehrl
   *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CheckElchElementParameter(
-  DRT::ELEMENTS::Transport*  ele
+    DRT::Element*              ele
   )
 {
   // get the material
@@ -209,7 +209,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CorrectRHSFromCalcRHSLin
  *-----------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 const std::vector<double> DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::ExtractElementAndNodeValues(
-    DRT::ELEMENTS::Transport*  ele,
+    DRT::Element*              ele,
     Teuchos::ParameterList&    params,
     DRT::Discretization&       discretization,
     const std::vector<int>&    lm

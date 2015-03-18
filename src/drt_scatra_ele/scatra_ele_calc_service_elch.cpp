@@ -38,7 +38,7 @@ Maintainer: Andreas Ehrl
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateAction(
-    DRT::ELEMENTS::Transport*   ele,
+    DRT::Element*               ele,
     Teuchos::ParameterList&     params,
     DRT::Discretization&        discretization,
     const SCATRA::Action&       action,

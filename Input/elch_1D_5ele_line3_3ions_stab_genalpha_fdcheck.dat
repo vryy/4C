@@ -12,7 +12,7 @@ created by pre_exodus
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        5
 NODES                           11
-//DIM                             1
+DIM                             1
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Electrochemistry
 RESTART                         0

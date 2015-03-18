@@ -18,19 +18,19 @@ Maintainer: Rui Fang
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 02/15 |
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ScaTraEleCalcStd<distype>* DRT::ELEMENTS::ScaTraEleCalcStd<distype>::Instance(
+template<DRT::Element::DiscretizationType distype,int probdim>
+DRT::ELEMENTS::ScaTraEleCalcStd<distype,probdim>* DRT::ELEMENTS::ScaTraEleCalcStd<distype,probdim>::Instance(
     const int numdofpernode,
     const int numscal,
     bool create
     )
 {
-  static ScaTraEleCalcStd<distype>* instance;
+  static ScaTraEleCalcStd<distype,probdim>* instance;
 
   if(create)
   {
     if(instance == NULL)
-      instance = new ScaTraEleCalcStd<distype>(numdofpernode,numscal);
+      instance = new ScaTraEleCalcStd<distype,probdim>(numdofpernode,numscal);
   }
 
   else if(instance != NULL)
@@ -46,8 +46,8 @@ DRT::ELEMENTS::ScaTraEleCalcStd<distype>* DRT::ELEMENTS::ScaTraEleCalcStd<distyp
 /*----------------------------------------------------------------------*
  | singleton destruction                                     fang 02/15 |
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcStd<distype>::Done()
+template<DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcStd<distype,probdim>::Done()
 {
   // delete instance
   Instance(0,0,false);
@@ -59,33 +59,41 @@ void DRT::ELEMENTS::ScaTraEleCalcStd<distype>::Done()
 /*----------------------------------------------------------------------*
  | private constructor for singletons                        fang 02/15 |
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ScaTraEleCalcStd<distype>::ScaTraEleCalcStd(const int numdofpernode,const int numscal)
-  : DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode,numscal)
+template<DRT::Element::DiscretizationType distype,int probdim>
+DRT::ELEMENTS::ScaTraEleCalcStd<distype,probdim>::ScaTraEleCalcStd(const int numdofpernode,const int numscal)
+  : DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ScaTraEleCalc(numdofpernode,numscal)
 {
   return;
 }
 
 
 // template classes
+
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::line2>;
-template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::line3>;
+template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::line2,1>;
+template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::line2,2>;
+template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::line2,3>;
+template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::line3,1>;
+//template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::line3,2>;
+//template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::line3,3>;
 
 // 2D elements
 //template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::tri3>;
 //template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::tri6>;
-template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::quad4>;
+template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::quad4,2>;
+template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::quad4,3>;
 //template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::quad9>;
-template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::nurbs9>;
+template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::quad9,2>;
+//template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::quad9,3>;
+template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::nurbs9,2>;
+//template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::nurbs9,3>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::hex8>;
+template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::hex8,3>;
 //template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::hex27>;
-template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::tet4>;
-template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::tet10>;
+template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::hex27,3>;
+template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::tet4,3>;
+template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::tet10,3>;
 //template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::pyramid5>;
+template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::pyramid5,3>;
 //template class DRT::ELEMENTS::ScaTraEleCalcStd<DRT::Element::nurbs27>;

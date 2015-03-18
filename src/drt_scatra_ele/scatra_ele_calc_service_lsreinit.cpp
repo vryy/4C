@@ -31,7 +31,7 @@ Maintainer: Ursula Rasthofer
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::EvaluateAction(
-    DRT::ELEMENTS::Transport*   ele,
+    DRT::Element*               ele,
     Teuchos::ParameterList&     params,
     DRT::Discretization&        discretization,
     const SCATRA::Action&       action,
@@ -158,7 +158,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::EvaluateAction(
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SetupCalc(
-    DRT::ELEMENTS::Transport*   ele,
+    DRT::Element*               ele,
     DRT::Discretization&        discretization
     )
 {

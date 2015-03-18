@@ -92,7 +92,7 @@ DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ScaTraEleCalcPoro(const int numdofper
 // *----------------------------------------------------------------------*/
 //template <DRT::Element::DiscretizationType distype>
 //int DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::Evaluate(
-//  DRT::ELEMENTS::Transport*  ele,
+//  DRT::Element*              ele,
 //  Teuchos::ParameterList&    params,
 //  DRT::Discretization&       discretization,
 //  const std::vector<int>&    lm,
@@ -159,16 +159,15 @@ DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ScaTraEleCalcPoro(const int numdofper
 //}
 
 /*----------------------------------------------------------------------*
- | read element coordinates, assuming they are all 3D and then project to
- | the respective lower dimensional space                vuong 10/14 |
+ | read element coordinates                                 vuong 10/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ReadElementCoordinatesAndProject(
-    const DRT::ELEMENTS::Transport*  ele
+void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ReadElementCoordinates(
+    const DRT::Element*                 ele
     )
 {
   //call base class
-  my::ReadElementCoordinatesAndProject(ele);
+  my::ReadElementCoordinates(ele);
 
   //copy initial node position
   xyze0_= my::xyze_;
@@ -181,7 +180,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ReadElementCoordinatesAndProject
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 const std::vector<double> DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ExtractElementAndNodeValues(
-  DRT::ELEMENTS::Transport*  ele,
+  DRT::Element*              ele,
   Teuchos::ParameterList&    params,
   DRT::Discretization&       discretization,
   const std::vector<int>&    lm

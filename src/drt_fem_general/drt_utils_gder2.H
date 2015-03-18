@@ -59,19 +59,19 @@ namespace UTILS
  *----------------------------------------------------------------------*/
  //for enriched elements (e.g. xwall), NumNode may be larger than the number of element nodes
  //for all other elements, NumNode==numnode
-template<DRT::Element::DiscretizationType DISTYPE, int NumNode>
+template<DRT::Element::DiscretizationType DISTYPE, int NumNode,int ProbDim>
 void gder2(
-    const LINALG::Matrix<DRT::UTILS::DisTypeToDim<DISTYPE>::dim,            DRT::UTILS::DisTypeToDim<DISTYPE>::dim>&                          xjm,
-    const LINALG::Matrix<DRT::UTILS::DisTypeToDim<DISTYPE>::dim,            NumNode>&  derxy,
+    const LINALG::Matrix<ProbDim,                                           ProbDim>&  xjm,
+    const LINALG::Matrix<ProbDim,                                           NumNode>&  derxy,
     const LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<DISTYPE>::numderiv2,NumNode>&  deriv2,
-    const LINALG::Matrix<DRT::UTILS::DisTypeToDim<DISTYPE>::dim,            NumNode>&  xyze,
-    LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<DISTYPE>::numderiv2,      NumNode>&  derxy2
+    const LINALG::Matrix<ProbDim,                                           NumNode>&  xyze,
+          LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<DISTYPE>::numderiv2,NumNode>&  derxy2
 )
 {
   // some numbers already known during compilation
   const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
   dsassert(numnode <= NumNode, "Expect at least numNodePerElement matrix columns");
-  const int nsd = DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
+  const int nsd = ProbDim;
   const int numderiv2 = DRT::UTILS::DisTypeToNumDeriv2<DISTYPE>::numderiv2;
 
   // compute d^2x/dr^2
@@ -133,6 +133,24 @@ void gder2(
   return;
 
 } // DRT::UTILS::gder2
+
+template<DRT::Element::DiscretizationType DISTYPE, int NumNode>
+void gder2(
+    const LINALG::Matrix<DRT::UTILS::DisTypeToDim<DISTYPE>::dim,            DRT::UTILS::DisTypeToDim<DISTYPE>::dim>&                          xjm,
+    const LINALG::Matrix<DRT::UTILS::DisTypeToDim<DISTYPE>::dim,            NumNode>&  derxy,
+    const LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<DISTYPE>::numderiv2,NumNode>&  deriv2,
+    const LINALG::Matrix<DRT::UTILS::DisTypeToDim<DISTYPE>::dim,            NumNode>&  xyze,
+    LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<DISTYPE>::numderiv2,      NumNode>&  derxy2
+)
+{
+  gder2<DISTYPE,NumNode,DRT::UTILS::DisTypeToDim<DISTYPE>::dim>(
+      xjm,
+      derxy,
+      deriv2,
+      xyze,
+      derxy2
+      );
+}
 
 
 } // namespace UTILS

@@ -46,7 +46,7 @@ private:
 
   //! evaluate action
   int EvaluateAction(
-      DRT::ELEMENTS::TransportBoundary*   ele,
+      DRT::FaceElement*                   ele,
       Teuchos::ParameterList&             params,
       DRT::Discretization&                discretization,
       SCATRA::BoundaryAction              action,

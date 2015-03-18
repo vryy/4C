@@ -49,7 +49,7 @@ namespace DRT
 
       //! evaluate Neumann boundary condition
       int EvaluateNeumann(
-          DRT::ELEMENTS::TransportBoundary*   ele,
+          DRT::FaceElement*                   ele,
           Teuchos::ParameterList&             params,
           DRT::Discretization&                discretization,
           DRT::Condition&                     condition,

@@ -77,7 +77,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype>::ScaTraEleBoundaryCalcElchNP
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype>::EvaluateNeumann(
-    DRT::ELEMENTS::TransportBoundary*   ele,
+    DRT::FaceElement*                   ele,
     Teuchos::ParameterList&             params,
     DRT::Discretization&                discretization,
     DRT::Condition&                     condition,

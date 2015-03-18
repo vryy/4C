@@ -54,7 +54,7 @@ namespace DRT
 
       //! evaluate Neumann boundary condition
       int EvaluateNeumann(
-          DRT::ELEMENTS::TransportBoundary*   ele,
+          DRT::FaceElement*                   ele,
           Teuchos::ParameterList&             params,
           DRT::Discretization&                discretization,
           DRT::Condition&                     condition,
@@ -94,7 +94,7 @@ namespace DRT
 
       //! evaluate electrode kinetics boundary condition
       void CalcElchBoundaryKinetics(
-          DRT::ELEMENTS::TransportBoundary* ele,
+          DRT::FaceElement*                 ele,
           Teuchos::ParameterList&           params,
           DRT::Discretization&              discretization,
           std::vector<int>&                 lm,

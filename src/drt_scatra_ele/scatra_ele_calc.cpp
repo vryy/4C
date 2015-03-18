@@ -13,13 +13,13 @@ Maintainer: Andreas Ehrl
 *----------------------------------------------------------------------*/
 
 
-#include "scatra_ele_calc.H"
-
 #include "scatra_ele.H"
 
 #include "scatra_ele_parameter.H"
 #include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
+
+#include "../drt_fem_general/drt_utils_boundary_integration.H"
 
 #include "../drt_lib/drt_globalproblem.H"  // for time curve in body force
 #include "../drt_lib/standardtypes_cpp.H"  // for EPS13 and so on
@@ -35,12 +35,16 @@ Maintainer: Andreas Ehrl
 #include "../drt_mat/matlist.H"
 #include "../drt_mat/newtonianfluid.H"
 
+#include "../linalg/linalg_utils.H"
+
+#include "scatra_ele_calc.H"
+
 
 /*----------------------------------------------------------------------*
  * Constructor
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(const int numdofpernode, const int numscal)
+template <DRT::Element::DiscretizationType distype,int probdim>
+DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ScaTraEleCalc(const int numdofpernode, const int numscal)
   : numdofpernode_(numdofpernode),
     numscal_(numscal),
     scatrapara_(DRT::ELEMENTS::ScaTraEleParameterStd::Instance()),            // standard parameter list
@@ -74,6 +78,7 @@ DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(const int numdofpernode, co
     eid_(0),
     scatravarmanager_(Teuchos::rcp(new ScaTraEleInternalVariableManager<nsd_,nen_>(numscal_)))   // internal variable manager
 {
+  dsassert(nsd_ >= nsd_ele_,"problem dimension has to be equal or larger than the element dimension!");
   return;
 }
 
@@ -81,14 +86,14 @@ DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(const int numdofpernode, co
 /*----------------------------------------------------------------------*
  | setup element evaluation                                  fang 02/15 |
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::ScaTraEleCalc<distype>::SetupCalc(
-    DRT::ELEMENTS::Transport*   ele,
+template<DRT::Element::DiscretizationType distype,int probdim>
+int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::SetupCalc(
+    DRT::Element*               ele,
     DRT::Discretization&        discretization
     )
 {
   // get element coordinates
-  ReadElementCoordinatesAndProject(ele);
+  ReadElementCoordinates(ele);
 
   // Now do the nurbs specific stuff (for isogeometric elements)
   if(DRT::NURBS::IsNurbs(distype))
@@ -111,9 +116,9 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype>::SetupCalc(
 /*----------------------------------------------------------------------*
  * Action type: Evaluate
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::ScaTraEleCalc<distype>::Evaluate(
-  DRT::ELEMENTS::Transport*  ele,
+template <DRT::Element::DiscretizationType distype,int probdim>
+int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Evaluate(
+  DRT::Element*              ele,
   Teuchos::ParameterList&    params,
   DRT::Discretization&       discretization,
   const std::vector<int>&    lm,
@@ -171,9 +176,9 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype>::Evaluate(
 /*----------------------------------------------------------------------*
  | extract element based or nodal values                     ehrl 12/13 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-const std::vector<double>  DRT::ELEMENTS::ScaTraEleCalc<distype>::ExtractElementAndNodeValues(
-  DRT::ELEMENTS::Transport*  ele,
+template <DRT::Element::DiscretizationType distype,int probdim>
+const std::vector<double>  DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ExtractElementAndNodeValues(
+  DRT::Element*              ele,
   Teuchos::ParameterList&    params,
   DRT::Discretization&       discretization,
   const std::vector<int>&    lm
@@ -288,9 +293,9 @@ const std::vector<double>  DRT::ELEMENTS::ScaTraEleCalc<distype>::ExtractElement
 /*----------------------------------------------------------------------*
  | extract turbulence approach                          rasthofer 12/13 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::ExtractTurbulenceApproach(
-  DRT::ELEMENTS::Transport*  ele,
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ExtractTurbulenceApproach(
+  DRT::Element*              ele,
   Teuchos::ParameterList&    params,
   DRT::Discretization&       discretization,
   const std::vector<int>&    lm,
@@ -357,8 +362,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::ExtractTurbulenceApproach(
 /*----------------------------------------------------------------------*
 |  calculate system matrix and rhs (public)                 g.bau 08/08|
 *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::Sysmat(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
   DRT::Element*                         ele,        ///< the element whose matrix is calculated
   Epetra_SerialDenseMatrix&             emat,       ///< element matrix to calculate
   Epetra_SerialDenseVector&             erhs,       ///< element rhs to calculate
@@ -459,7 +464,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::Sysmat(
   // integration loop for one element
   //----------------------------------------------------------------------
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
@@ -771,15 +776,15 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::Sysmat(
 /*----------------------------------------------------------------------*
   |  get the body force  (private)                              gjb 06/08|
   *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::BodyForce(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::BodyForce(
   const DRT::Element*    ele
   )
 {
   std::vector<DRT::Condition*> myneumcond;
 
   // check whether all nodes have a unique Neumann condition
-  switch(nsd_)
+  switch(nsd_ele_)
   {
   case 3:
     DRT::UTILS::FindElementConditions(ele, "VolumeNeumann", myneumcond);
@@ -791,7 +796,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::BodyForce(
     DRT::UTILS::FindElementConditions(ele, "LineNeumann", myneumcond);
     break;
   default:
-    dserror("Illegal number of spatial dimensions: %d",nsd_);
+    dserror("Illegal number of spatial dimensions: %d",nsd_ele_);
     break;
   }
 
@@ -849,8 +854,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::BodyForce(
  | further node-based source terms not given via Neumann volume condition |
  |                                                        rasthofer 12/13 |
  *------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::OtherNodeBasedSourceTerms(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::OtherNodeBasedSourceTerms(
   const std::vector<int>&    lm,
   DRT::Discretization&       discretization,
   Teuchos::ParameterList&    params
@@ -896,47 +901,27 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::OtherNodeBasedSourceTerms(
 }
 
 /*----------------------------------------------------------------------*
- | read element coordinates, assuming they are all 3D and then project to
- | the respective lower dimensional space   bertoglio 08/14 |
+ | read element coordinates                             bertoglio 08/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::ReadElementCoordinatesAndProject(
-    const DRT::ELEMENTS::Transport*  ele
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ReadElementCoordinates(
+    const DRT::Element*     ele
     )
 {
-  // projection only works for line2 elements at the moment
-  if(nsd_ == 1 and nen_ == 2){
-    double lengthLine3D;
-    LINALG::Matrix<3,nen_> xyze3D;
-    GEO::fillInitialPositionArray<distype,3,LINALG::Matrix<3,nen_> >(ele,xyze3D);
-    xyze_(0,0)=0.0;
-    for(int i=1;i<nen_;i++){
-      lengthLine3D = sqrt( (xyze3D(0,i-1)-xyze3D(0,i))*(xyze3D(0,i-1)-xyze3D(0,i)) +
-                              (xyze3D(1,i-1)-xyze3D(1,i))*(xyze3D(1,i-1)-xyze3D(1,i)) +
-                              (xyze3D(2,i-1)-xyze3D(2,i))*(xyze3D(2,i-1)-xyze3D(2,i)));
-      xyze_(0,i)=xyze_(0,i-1)+lengthLine3D;
-    }
-  }
- // else if(nsd_ == 2)
- // {
-    // TO DO
-//  }
-  else
-  {
-    // Directly copy the coordinates since in 3D the transformation is just the identity
-    GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
-  }
+  // Directly copy the coordinates since in 3D the transformation is just the identity
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+
   return;
-} //ScaTraEleCalc::ReadElementCoordinatesAndProject
+} //ScaTraEleCalc::ReadElementCoordinates
 
 /*----------------------------------------------------------------------*
  | evaluate shape functions and derivatives at ele. center   ehrl 12/13 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-const double DRT::ELEMENTS::ScaTraEleCalc<distype>::EvalShapeFuncAndDerivsAtEleCenter()
+template <DRT::Element::DiscretizationType distype,int probdim>
+const double DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvalShapeFuncAndDerivsAtEleCenter()
 {
   // use one-point Gauss rule to do calculations at the element center
-  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
 
   // volume of the element (2D: element surface area; 1D: element length)
   // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
@@ -950,88 +935,33 @@ const double DRT::ELEMENTS::ScaTraEleCalc<distype>::EvalShapeFuncAndDerivsAtEleC
 /*----------------------------------------------------------------------*
  | evaluate shape functions and derivatives at int. point     gjb 08/08 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-double DRT::ELEMENTS::ScaTraEleCalc<distype>::EvalShapeFuncAndDerivsAtIntPoint(
-  const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
-  const int                                    iquad       ///< id of current Gauss point
+template <DRT::Element::DiscretizationType distype,int probdim>
+double DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvalShapeFuncAndDerivsAtIntPoint(
+  const DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints,  ///< integration points
+  const int                                           iquad       ///< id of current Gauss point
   )
 {
   // coordinates of the current integration point
   const double* gpcoord = (intpoints.IP().qxg)[iquad];
-  for (int idim=0;idim<nsd_;idim++)
-  {xsi_(idim) = gpcoord[idim];}
+  for (int idim=0;idim<nsd_ele_;idim++)
+    xsi_(idim) = gpcoord[idim];
 
-  if (not DRT::NURBS::IsNurbs(distype))
-  {
-    // shape functions and their first derivatives
-    DRT::UTILS::shape_function<distype>(xsi_,funct_);
-    DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
-    if (use2ndderiv_)
-    {
-      // get the second derivatives of standard element at current GP
-      DRT::UTILS::shape_function_deriv2<distype>(xsi_,deriv2_);
-    }
-  }
-  else // nurbs elements are always somewhat special...
-  {
-    if (use2ndderiv_)
-    {
-      DRT::NURBS::UTILS::nurbs_get_funct_deriv_deriv2
-        (funct_  ,
-         deriv_  ,
-         deriv2_ ,
-         xsi_    ,
-         myknots_,
-         weights_,
-         distype );
-    }
-    else
-    {
-      DRT::NURBS::UTILS::nurbs_get_funct_deriv
-        (funct_  ,
-         deriv_  ,
-         xsi_    ,
-         myknots_,
-         weights_,
-         distype );
-    }
-  } // IsNurbs()
-
-  // compute Jacobian matrix and determinant
-  // actually compute its transpose....
-  /*
-    +-            -+ T      +-            -+
-    | dx   dx   dx |        | dx   dy   dz |
-    | --   --   -- |        | --   --   -- |
-    | dr   ds   dt |        | dr   dr   dr |
-    |              |        |              |
-    | dy   dy   dy |        | dx   dy   dz |
-    | --   --   -- |   =    | --   --   -- |
-    | dr   ds   dt |        | ds   ds   ds |
-    |              |        |              |
-    | dz   dz   dz |        | dx   dy   dz |
-    | --   --   -- |        | --   --   -- |
-    | dr   ds   dt |        | dt   dt   dt |
-    +-            -+        +-            -+
-  */
-
-  xjm_.MultiplyNT(deriv_,xyze_);
-  const double det = xij_.Invert(xjm_);
+  const double det = EvalShapeFuncAndDerivsInParameterSpace();
 
   if (det < 1E-16)
     dserror("GLOBAL ELEMENT NO. %d \nZERO OR NEGATIVE JACOBIAN DETERMINANT: %lf", eid_, det);
 
+  // compute global spatial derivatives
+  derxy_.Multiply(xij_,deriv_);
+
   // set integration factor: fac = Gauss weight * det(J)
   const double fac = intpoints.IP().qwgt[iquad]*det;
-
-  // compute global derivatives
-  derxy_.Multiply(xij_,deriv_);
 
   // compute second global derivatives (if needed)
   if (use2ndderiv_)
   {
     // get global second derivatives
-    DRT::UTILS::gder2<distype,nen_>(xjm_,derxy_,deriv2_,xyze_,derxy2_);
+    DRT::UTILS::gder2<distype,nen_,probdim>(xjm_,derxy_,deriv2_,xyze_,derxy2_);
   }
   else
     derxy2_.Clear();
@@ -1041,12 +971,172 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype>::EvalShapeFuncAndDerivsAtIntPoint(
 
 } //ScaTraImpl::EvalShapeFuncAndDerivsAtIntPoint
 
+/*----------------------------------------------------------------------*
+ | evaluate shape functions and derivatives in parameter space   vuong 03/15 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype,int probdim>
+double DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvalShapeFuncAndDerivsInParameterSpace()
+{
+  double det=0.0;
+
+  if(nsd_==nsd_ele_) //standard case
+  {
+    if (not DRT::NURBS::IsNurbs(distype))
+    {
+      // shape functions and their first derivatives
+      DRT::UTILS::shape_function<distype>(xsi_,funct_);
+      DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
+      if (use2ndderiv_)
+      {
+        // get the second derivatives of standard element at current GP
+        DRT::UTILS::shape_function_deriv2<distype>(xsi_,deriv2_);
+      }
+    }
+    else // nurbs elements are always somewhat special...
+    {
+      if (use2ndderiv_)
+      {
+        DRT::NURBS::UTILS::nurbs_get_funct_deriv_deriv2
+          (funct_  ,
+           deriv_  ,
+           deriv2_ ,
+           xsi_    ,
+           myknots_,
+           weights_,
+           distype );
+      }
+      else
+      {
+        DRT::NURBS::UTILS::nurbs_get_funct_deriv
+          (funct_  ,
+           deriv_  ,
+           xsi_    ,
+           myknots_,
+           weights_,
+           distype );
+      }
+    } // IsNurbs()
+
+    // compute Jacobian matrix and determinant
+    // actually compute its transpose....
+    /*
+      +-            -+ T      +-            -+
+      | dx   dx   dx |        | dx   dy   dz |
+      | --   --   -- |        | --   --   -- |
+      | dr   ds   dt |        | dr   dr   dr |
+      |              |        |              |
+      | dy   dy   dy |        | dx   dy   dz |
+      | --   --   -- |   =    | --   --   -- |
+      | dr   ds   dt |        | ds   ds   ds |
+      |              |        |              |
+      | dz   dz   dz |        | dx   dy   dz |
+      | --   --   -- |        | --   --   -- |
+      | dr   ds   dt |        | dt   dt   dt |
+      +-            -+        +-            -+
+    */
+
+    xjm_.MultiplyNT(deriv_,xyze_);
+    det = xij_.Invert(xjm_);
+  }
+  else //element dimension is smaller than problem dimension -> mannifold
+  {
+    static LINALG::Matrix<nsd_ele_,nen_> deriv_red;
+
+    if (not DRT::NURBS::IsNurbs(distype))
+    {
+      // shape functions and their first derivatives
+      DRT::UTILS::shape_function<distype>(xsi_,funct_);
+      DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_red);
+      if (use2ndderiv_)
+      {
+        // get the second derivatives of standard element at current GP
+        DRT::UTILS::shape_function_deriv2<distype>(xsi_,deriv2_);
+      }
+    }
+    else // nurbs elements are always somewhat special...
+    {
+      if (use2ndderiv_)
+      {
+        DRT::NURBS::UTILS::nurbs_get_funct_deriv_deriv2
+          (funct_  ,
+           deriv_red  ,
+           deriv2_ ,
+           xsi_    ,
+           myknots_,
+           weights_,
+           distype );
+      }
+      else
+      {
+        DRT::NURBS::UTILS::nurbs_get_funct_deriv
+          (funct_  ,
+           deriv_red  ,
+           xsi_    ,
+           myknots_,
+           weights_,
+           distype );
+      }
+    } // IsNurbs()
+
+    //! metric tensor at integration point
+    static LINALG::Matrix<nsd_ele_,nsd_ele_>  metrictensor;
+    static LINALG::Matrix<nsd_,        1> normalvec;
+
+    // the metric tensor and the area of an infinitesimal surface/line element
+    // optional: get unit normal at integration point as well
+    DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype,nsd_>(xyze_,deriv_red,metrictensor,det,&normalvec);
+
+    if (det < 1E-16)
+      dserror("GLOBAL ELEMENT NO. %d \nZERO OR NEGATIVE JACOBIAN DETERMINANT: %lf", eid_, det);
+
+    //transform the derivatives and Jacobians to the higher dimensional coordinates(problem dimension)
+    static LINALG::Matrix<nsd_ele_,nsd_> xjm_red;
+    xjm_red.MultiplyNT(deriv_red,xyze_);
+
+    for(int i=0;i<nsd_;i++)
+    {
+      for(int j=0;j<nsd_ele_;j++)
+        xjm_(j,i)=xjm_red(j,i);
+      xjm_(nsd_ele_,i)=normalvec(i,0);
+    }
+
+    for(int i=0;i<nen_;i++)
+    {
+      for(int j=0;j<nsd_ele_;j++)
+        deriv_(j,i)=deriv_red(j,i);
+      deriv_(nsd_ele_,i)=0.0;
+    }
+
+    //special case: 1D element embedded in 3D problem
+    if ( nsd_ele_ == 1 and nsd_ == 3 )
+    {
+      // compute second unit normal
+      const double normalvec2_0 = xjm_red(0,1)*normalvec(2,0)-normalvec(1,0)*xjm_red(0,2);
+      const double normalvec2_1 = xjm_red(0,2)*normalvec(0,0)-normalvec(2,0)*xjm_red(0,0);
+      const double normalvec2_2 = xjm_red(0,0)*normalvec(1,0)-normalvec(0,0)*xjm_red(0,1);
+
+      // norm
+      const double norm2 = std::sqrt(normalvec2_0*normalvec2_0+normalvec2_1*normalvec2_1+normalvec2_2*normalvec2_2);
+
+      xjm_(2,0) = normalvec2_0/norm2;
+      xjm_(2,1) = normalvec2_1/norm2;
+      xjm_(2,2) = normalvec2_2/norm2;
+
+      for(int i=0;i<nen_;i++)
+        deriv_(2,i)=0.0;
+    }
+
+    xij_.Invert(xjm_);
+  }
+
+  return det;
+}
 
 /*----------------------------------------------------------------------*
  |  get the material constants  (private)                      gjb 10/08|
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::GetMaterialParams(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::GetMaterialParams(
   const DRT::Element* ele,       //!< the element we are dealing with
   double&             densn,     //!< density at t_(n)
   double&             densnp,    //!< density at t_(n+1) or t_(n+alpha_F)
@@ -1083,8 +1173,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::GetMaterialParams(
 /*----------------------------------------------------------------------*
  |  evaluate single material  (protected)                    ehrl 11/13 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::Materials(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Materials(
   const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
   const int                               k,        //!< id of current scalar
   double&                                 densn,    //!< density at t_(n)
@@ -1106,8 +1196,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::Materials(
 /*----------------------------------------------------------------------*
  |  Material ScaTra                                          ehrl 11/13 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::MatScaTra(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::MatScaTra(
   const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
   const int                               k,        //!< id of current scalar
   double&                                 densn,    //!< density at t_(n)
@@ -1169,8 +1259,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::MatScaTra(
 /*---------------------------------------------------------------------------------------*
  |  calculate the Laplacian in strong form for all shape functions (private)   gjb 04/10 |
  *---------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::GetLaplacianStrongForm(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::GetLaplacianStrongForm(
   LINALG::Matrix<nen_,1>& diff
   )
 {
@@ -1190,8 +1280,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::GetLaplacianStrongForm(
 /*-----------------------------------------------------------------------------*
  |  calculate divergence of vector field (e.g., velocity)  (private) gjb 04/10 |
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::GetDivergence(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::GetDivergence(
   double&                          vdiv,
   const LINALG::Matrix<nsd_,nen_>& evel)
 {
@@ -1211,8 +1301,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::GetDivergence(
 /*-----------------------------------------------------------------------------*
  | compute rhs containing bodyforce                                 ehrl 11/13 |
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::GetRhsInt(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::GetRhsInt(
   double&      rhsint,  //!< rhs containing bodyforce at Gauss point
   const double densnp,  //!< density at t_(n+1)
   const int    k        //!< index of current scalar
@@ -1231,8 +1321,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::GetRhsInt(
 /*-----------------------------------------------------------------------------*
  |  calculation of convective element matrix in convective form     ehrl 11/13 |
  *-----------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcMatConv(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcMatConv(
   Epetra_SerialDenseMatrix&     emat,
   const int                     k,
   const double                  timefacfac,
@@ -1263,8 +1353,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcMatConv(
 /*------------------------------------------------------------------------------------------*
  |  calculation of convective element matrix: add conservative contributions     ehrl 11/13 |
  *------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcMatConvAddCons(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcMatConvAddCons(
   Epetra_SerialDenseMatrix&     emat,
   const int                     k,
   const double                  timefacfac,
@@ -1293,8 +1383,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcMatConvAddCons(
 /*------------------------------------------------------------------- *
  |  calculation of diffusive element matrix                ehrl 11/13 |
  *--------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcMatDiff(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcMatDiff(
   Epetra_SerialDenseMatrix&     emat,
   const int                     k,
   const double                  timefacfac
@@ -1321,8 +1411,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcMatDiff(
 /*------------------------------------------------------------------- *
  |  calculation of stabilization element matrix            ehrl 11/13 |
  *--------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcMatTransConvDiffStab(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcMatTransConvDiffStab(
   Epetra_SerialDenseMatrix&     emat,
   const int                     k,
   const double                  timetaufac,
@@ -1405,8 +1495,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcMatTransConvDiffStab(
 /*------------------------------------------------------------------- *
  |  calculation of mass element matrix                    ehrl 11/13  |
  *--------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcMatMass(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcMatMass(
   Epetra_SerialDenseMatrix&     emat,
   const int                     k,
   const double                  fac,
@@ -1436,8 +1526,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcMatMass(
 /*------------------------------------------------------------------- *
  |  calculation of stabilization mass element matrix      ehrl 11/13  |
  *--------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcMatMassStab(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcMatMassStab(
   Epetra_SerialDenseMatrix&     emat,
   const int                     k,
   const double                  taufac,
@@ -1490,8 +1580,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcMatMassStab(
 /*------------------------------------------------------------------- *
  |  calculation of reactive element matrix                ehrl 11/13  |
  *--------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcMatReact(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcMatReact(
   Epetra_SerialDenseMatrix&          emat,
   const int                          k,
   const double                       timefacfac,
@@ -1626,8 +1716,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcMatReact(
 /*------------------------------------------------------------------- *
  |  calculation of linearized mass rhs vector              ehrl 11/13 |
  *--------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcRHSLinMass(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcRHSLinMass(
   Epetra_SerialDenseVector&     erhs,
   const int                     k,
   const double                  rhsfac,
@@ -1663,8 +1753,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcRHSLinMass(
 /*------------------------------------------------------------------- *
  | adaption of rhs with respect to time integration        ehrl 11/13 |
  *--------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::ComputeRhsInt(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ComputeRhsInt(
   double&                       rhsint,
   const double                  densam,
   const double                  densnp,
@@ -1694,8 +1784,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::ComputeRhsInt(
 /*------------------------------------------------------------------- *
  | adaption of residual with respect to time integration   ehrl 11/13 |
  *--------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::RecomputeScatraResForRhs(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::RecomputeScatraResForRhs(
   double&                       scatrares,
   const int                     k,
   const LINALG::Matrix<nen_,1>& diff,
@@ -1754,8 +1844,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::RecomputeScatraResForRhs(
 /*------------------------------------------------------------------- *
  | adaption of convective term for rhs                     ehrl 11/13 |
  *--------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::RecomputeConvPhiForRhs(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::RecomputeConvPhiForRhs(
   const int                     k,
   const LINALG::Matrix<nsd_,1>& sgvelint,
   const double                  densnp,
@@ -1825,8 +1915,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::RecomputeConvPhiForRhs(
 /*-------------------------------------------------------------------------------------- *
  |  standard Galerkin transient, old part of rhs and source term              ehrl 11/13 |
  *---------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcRHSHistAndSource(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcRHSHistAndSource(
   Epetra_SerialDenseVector&     erhs,
   const int                     k,
   const double                  fac,
@@ -1848,8 +1938,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcRHSHistAndSource(
 /*-------------------------------------------------------------------- *
  |  standard Galerkin convective term on right hand side    ehrl 11/13 |
  *---------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcRHSConv(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcRHSConv(
   Epetra_SerialDenseVector&     erhs,
   const int                     k,
   const double                  rhsfac
@@ -1872,8 +1962,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcRHSConv(
 /*-------------------------------------------------------------------- *
  |  standard Galerkin diffusive term on right hand side     ehrl 11/13 |
  *---------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcRHSDiff(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcRHSDiff(
   Epetra_SerialDenseVector&     erhs,
   const int                     k,
   const double                  rhsfac
@@ -1899,8 +1989,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcRHSDiff(
 /*--------------------------------------------------------------------------------------------*
  |  transient, convective and diffusive stabilization terms on right hand side     ehrl 11/13 |
  *--------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcRHSTransConvDiffStab(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcRHSTransConvDiffStab(
   Epetra_SerialDenseVector&     erhs,
   const int                     k,
   const double                  rhstaufac,
@@ -1942,8 +2032,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcRHSTransConvDiffStab(
 /*---------------------------------------------------------------------------*
  | reactive terms (standard Galerkin and stabilization) on rhs   ehrl 11/13  |
  *--------------------------------------------------------------------       */
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcRHSReact(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcRHSReact(
   Epetra_SerialDenseVector&     erhs,
   const int                     k,
   const double                  rhsfac,
@@ -1983,8 +2073,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcRHSReact(
 /*---------------------------------------------------------------------------*
  | fine-scale subgrid-diffusivity term on right hand side          vg 11/13  |
  *--------------------------------------------------------------------       */
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcRHSFSSGD(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcRHSFSSGD(
   Epetra_SerialDenseVector&     erhs,
   const int                     k,
   const double                  rhsfac,
@@ -2009,8 +2099,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcRHSFSSGD(
 /*------------------------------------------------------------------------------*
  | multifractal subgrid-scale modeling on right hand side only rasthofer 11/13  |
  *------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcRHSMFS(
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcRHSMFS(
   Epetra_SerialDenseVector&     erhs,
   const int                     k,
   const double                  rhsfac,
@@ -2059,8 +2149,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::CalcRHSMFS(
 /*------------------------------------------------------------------------------*
  | set internal variables                                          vuong 11/14  |
  *------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalc<distype>::SetInternalVariablesForMatAndRHS()
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::SetInternalVariablesForMatAndRHS()
 {
   scatravarmanager_->SetInternalVariables(funct_,derxy_,ephinp_,ephin_,econvelnp_,ehist_);
   return;
@@ -2071,26 +2161,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype>::SetInternalVariablesForMatAndRHS()
  *----------------------------------------------------------------------*/
 // template classes
 
-// 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::line2>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::line3>;
-
-// 2D elements
-//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tri3>;
-//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tri6>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::quad4>;
-//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::quad9>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::nurbs9>;
-
-// 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::hex8>;
-//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::hex27>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tet4>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tet10>;
-//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::pyramid5>;
-//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::nurbs27>;
+#include "scatra_ele_calc_fwd.hpp"
 
 

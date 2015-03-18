@@ -33,7 +33,6 @@ namespace ELEMENTS
 class ScaTraEleParameter;
 class ScaTraEleParameterStd;
 class ScaTraEleParameterTimInt;
-template<DRT::Element::DiscretizationType distype> class ScaTraEleCalc;
 class TransportBoundary;
 
 
