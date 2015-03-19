@@ -2377,7 +2377,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateSolutionDependingConditions(
   // evaluate meshtying
   strategy_->EvaluateMeshtying();
 
-  // evaluate Robin type boundary condition (needed for photacoustic simulations)
+  // evaluate Robin type boundary condition (needed for photoacoustic simulations)
   EvaluateRobinBoundaryConditions(systemmatrix,rhs);
 
   return;
@@ -2410,6 +2410,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateRobinBoundaryConditions(
   return;
 } // ScaTraTimIntImpl::EvaluateRobinBoundaryConditions
 
+
 /*----------------------------------------------------------------------*
  | contains the assembly process for matrix and rhs            vg 08/09 |
  *----------------------------------------------------------------------*/
@@ -2427,7 +2428,7 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   // reset the residual vector
   residual_->PutScalar(0.0);
 
-  // create the parameters for the discretization
+  // create parameter list for elements
   Teuchos::ParameterList eleparams;
 
   // action for elements
@@ -2460,11 +2461,12 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   discret_->AddMultiVectorToParameterList(eleparams,"acceleration field",acc_);
   discret_->AddMultiVectorToParameterList(eleparams,"pressure field",pre_);
   // and provide fine-scale velocity for multifractal subgrid-scale modeling only
-  if (turbmodel_==INPAR::FLUID::multifractal_subgrid_scales or fssgd_ == INPAR::SCATRA::fssugrdiff_smagorinsky_small)
+  if(turbmodel_==INPAR::FLUID::multifractal_subgrid_scales or fssgd_ == INPAR::SCATRA::fssugrdiff_smagorinsky_small)
     discret_->AddMultiVectorToParameterList(eleparams,"fine-scale velocity field",fsvel_);
 
   // provide displacement field in case of ALE
-  if (isale_) discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+  if(isale_)
+    discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
   // set vector values needed by elements
   discret_->ClearState();
@@ -2650,7 +2652,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
   PrintConvergenceHeader();
 
   // ---------------------------------------------- nonlinear iteration
-  //stop nonlinear iteration when both increment-norms are below this bound
+  // stop nonlinear iteration when increment-norm is below this bound
   const double  ittol = params_->sublist("NONLINEAR").get<double>("CONVTOL");
 
   //------------------------------ turn adaptive solver tolerance on/off
@@ -2659,18 +2661,18 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
   const double abstolres = params_->sublist("NONLINEAR").get<double>("ABSTOLRES");
   double       actresidual(0.0);
 
-  iternum_=0;
-  int   itemax = params_->sublist("NONLINEAR").get<int>("ITEMAX");
-  bool  stopnonliniter = false;
+  // prepare Newton-Raphson iteration
+  iternum_ = 0;
+  int itemax = params_->sublist("NONLINEAR").get<int>("ITEMAX");
 
   // perform explicit predictor step (-> better starting point for nonlinear solver)
   const bool explpredictor = (DRT::INPUT::IntegralValue<int>(params_->sublist("NONLINEAR"),"EXPLPREDICT") == 1);
   if (explpredictor)
     ExplicitPredictor();
 
-  while (stopnonliniter==false)
+  // start Newton-Raphson iteration
+  while(true)
   {
-
     iternum_++;
 
     // check for negative/zero concentration values (in case of ELCH only)
@@ -2683,23 +2685,9 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
     if(fdcheck_ == INPAR::SCATRA::fdcheck_global)
       FDCheck();
 
-    // blank residual DOFs which are on Dirichlet BC
-    // We can do this because the values at the Dirichlet positions
-    // are not used anyway.
-    // We could avoid this though, if the dofrowmap would not include
-    // the Dirichlet values as well. But it is expensive to avoid that.
-    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), residual_);
-
     // project residual such that only part orthogonal to nullspace is considered
     if (projector_!=Teuchos::null)
       projector_->ApplyPT(*residual_);
-
-    // abort nonlinear iteration if desired
-    if (AbortNonlinIter(iternum_,itemax,ittol,abstolres,actresidual))
-      break;
-
-    // initialize increment vector
-    increment_->PutScalar(0.0);
 
     // Apply Dirichlet boundary conditions to system of equations
     // residual values are supposed to be zero at Dirichlet boundaries
@@ -2709,6 +2697,13 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
 
       LINALG::ApplyDirichlettoSystem(sysmat_,increment_,residual_,zeros_,*(dbcmaps_->CondMap()));
     }
+
+    // abort nonlinear iteration if desired
+    if (AbortNonlinIter(iternum_,itemax,ittol,abstolres,actresidual))
+      break;
+
+    // initialize increment vector
+    increment_->PutScalar(0.0);
 
     {
       // get cpu time

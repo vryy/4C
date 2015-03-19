@@ -179,15 +179,6 @@ namespace DRT
             Epetra_SerialDenseVector&         scalars           //!< result vector for scalar integrals to be computed
         );
 
-        //! compute element matrix and residual for initial electric potential field
-        virtual void CalcMatAndRhsElectricPotentialField(
-            const enum INPAR::ELCH::EquPot   equpot,   //!< type of closing equation for electric potential
-            Epetra_SerialDenseMatrix&        emat,     //!< element matrix
-            Epetra_SerialDenseVector&        erhs,     //!< element rhs
-            const double                     fac,      //!< integration factor
-            const double                     scalar    //!< scaling factor for element matrix and residual contributions
-        );
-
         //! calculate weighted mass flux (no reactive flux so far)
         virtual void CalculateFlux(
             LINALG::Matrix<my::nsd_,1>&     q,          //!< flux of species k

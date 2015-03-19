@@ -47,7 +47,6 @@ enum Action {
   calc_mean_scalars,               // calc_mean_scalars,
   calc_error,                      // calc_error,
   calc_elch_conductivity,          // calc_elch_conductivity,
-  calc_elch_initial_potential,     // calc_initial_potential_field,
   calc_elch_electrode_soc,         // calculate electrode state of charge
   calc_scatra_box_filter,          // calc_scatra_box_filter,
   calc_turbulent_prandtl_number,   // calc_turbulent_prandtl_number

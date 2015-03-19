@@ -236,7 +236,6 @@ int DRT::ELEMENTS::Transport::Evaluate(
     case SCATRA::calc_node_based_reinit_velocity:
     case SCATRA::calc_error:
     case SCATRA::calc_elch_conductivity:
-    case SCATRA::calc_elch_initial_potential:
     case SCATRA::calc_elch_electrode_soc:
     case SCATRA::calc_integr_grad_reac:
     case SCATRA::recon_gradients_at_nodes:

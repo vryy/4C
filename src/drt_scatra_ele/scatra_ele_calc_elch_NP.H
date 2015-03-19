@@ -292,15 +292,6 @@ private:
     Epetra_SerialDenseVector&         sigma       //!< conductivity of a single ion + overall electrolyte solution
   );
 
-  // Solving for electric potential field : Calculate Matrix and Rhs
-  void CalcMatAndRhsElectricPotentialField(
-      const enum INPAR::ELCH::EquPot   equpot,   //!< type of closing equation for electric potential
-      Epetra_SerialDenseMatrix&        emat,     //!< element matrix
-      Epetra_SerialDenseVector&        erhs,     //!< element rhs
-      const double                     fac,      //!< integration factor
-      const double                     scalar    //!< scaling factor for element matrix and residual contributions
-  );
-
   //!  calculate weighted mass flux (no reactive flux so far) -> elch-specific implementation
   void CalculateFlux(
     LINALG::Matrix<my::nsd_,1>&     q,          //!< flux of species k

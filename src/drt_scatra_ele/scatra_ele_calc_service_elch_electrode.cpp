@@ -171,59 +171,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalculateElectrodeSOC(
 } // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalculateElectrodeSOC
 
 
-/*---------------------------------------------------------------------------------------*
- | compute element matrix and residual for initial electric potential field   fang 02/15 |
- *---------------------------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalcMatAndRhsElectricPotentialField(
-    const enum INPAR::ELCH::EquPot   equpot,   //!< type of closing equation for electric potential
-    Epetra_SerialDenseMatrix&        emat,     //!< element matrix
-    Epetra_SerialDenseVector&        erhs,     //!< element rhs
-    const double                     fac,      //!< integration factor
-    const double                     scalar    //!< scaling factor for element matrix and residual contributions
-    )
-{
-  // provide standard mass matrix for degrees of freedom associated with concentration
-  for (int k=0; k<my::numscal_; ++k)
-  {
-    for (int vi=0; vi<my::nen_; ++vi)
-    {
-      const int fvi = vi*my::numdofpernode_+k;
-
-      for (int ui=0; ui<my::nen_; ++ui)
-      {
-        const int fui = ui*my::numdofpernode_+k;
-
-        emat(fvi,fui) += fac*my::funct_(vi)*my::funct_(ui);
-      }
-    }
-  }
-
-  // provide standard Galerkin terms for degrees of freedom associated with electric potential
-  for (int vi=0; vi<my::nen_; ++vi)
-  {
-    const int fvi = vi*my::numdofpernode_+my::numscal_;
-
-    for (int ui=0; ui<my::nen_; ++ui)
-    {
-      const int fui = ui*my::numdofpernode_+my::numscal_;
-
-      double laplawf(0.);
-      my::GetLaplacianWeakForm(laplawf,ui,vi);
-
-      emat(fvi,fui) += scalar*fac*VarManager()->InvF()*DiffManager()->GetCond()*laplawf;
-    }
-
-    double laplawf(0.);
-    my::GetLaplacianWeakFormRHS(laplawf,VarManager()->GradPot(),vi);
-
-    erhs[fvi] -= scalar*fac*VarManager()->InvF()*DiffManager()->GetCond()*laplawf;
-  }
-
-  return;
-} // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalcMatAndRhsElectricPotentialField
-
-
 /*---------------------------------------------------------------------*
  | calculate weighted mass flux (no reactive flux so far)   fang 02/15 |
  *---------------------------------------------------------------------*/

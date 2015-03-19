@@ -259,12 +259,12 @@ namespace ELEMENTS
 
     //! calculate mass matrix and rhs for determining initial time derivative
     virtual void CalcInitialTimeDerivative(
-      DRT::Element*                         ele,       //!< the element we are dealing with
-      Epetra_SerialDenseMatrix&             emat,      //!< element matrix to calculate
-      Epetra_SerialDenseVector&             erhs,      //!< element rhs to calculate
-      Teuchos::ParameterList&               params,         //!< the parameter list
-      DRT::Discretization&                  discretization, //!< the discretization the element is part of
-      const std::vector<int>&               lm              //!< location matrix
+      DRT::Element*               ele,              //!< current element
+      Epetra_SerialDenseMatrix&   emat,             //!< element matrix
+      Epetra_SerialDenseVector&   erhs,             //!< element residual
+      Teuchos::ParameterList&     params,           //!< parameter list
+      DRT::Discretization&        discretization,   //!< discretization
+      const std::vector<int>&     lm                //!< location vector
     );
 
     //! Correct RHS calculated from CalcRHSLinMass() for the linearized mass term

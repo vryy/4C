@@ -94,45 +94,41 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CheckElchElementParamete
 }
 
 
-/*----------------------------------------------------------------------*
- * Add dummy mass matrix to sysmat
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------------------------*
+ | calculate element mass matrix and element residual for initial time derivative   fang 03/15 |
+ *---------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::PrepMatAndRhsInitialTimeDerivative(
-  Epetra_SerialDenseMatrix&  elemat1_epetra,
-  Epetra_SerialDenseVector&  elevec1_epetra
-  )
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcInitialTimeDerivative(
+    DRT::Element*               ele,              //!< current element
+    Epetra_SerialDenseMatrix&   emat,             //!< element matrix
+    Epetra_SerialDenseVector&   erhs,             //!< element residual
+    Teuchos::ParameterList&     params,           //!< parameter list
+    DRT::Discretization&        discretization,   //!< discretization
+    const std::vector<int>&     lm                //!< location vector
+    )
 {
-  // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  // call base class routine
+  myelch::CalcInitialTimeDerivative(
+      ele,
+      emat,
+      erhs,
+      params,
+      discretization,
+      lm
+      );
 
-  /*----------------------------------------------------------------------*/
-  // element integration loop                                  ehrl 02/14 |
-  /*----------------------------------------------------------------------*/
-  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+  // dummy mass matrix and zero residual entries for the electric current dofs
+  if(ElchPara()->CurSolVar())
   {
-    const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+    // integration points and weights
+    const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
-    // loop starts at k=numscal_ !!
-    for (int vi=0; vi<my::nen_; ++vi)
+    for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
     {
-      const double v = fac*my::funct_(vi); // no density required here
-      const int fvi = vi*my::numdofpernode_+my::numscal_;
+      const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
 
-      for (int ui=0; ui<my::nen_; ++ui)
-      {
-        const int fui = ui*my::numdofpernode_+my::numscal_;
-
-        elemat1_epetra(fvi,fui) += v*my::funct_(ui);
-      }
-    }
-
-    // current as a solution variable
-    if(ElchPara()->CurSolVar())
-    {
       for(int idim=0;idim<my::nsd_;++idim)
       {
-        // loop starts at k=numscal_ !!
         for (int vi=0; vi<my::nen_; ++vi)
         {
           const double v = fac*my::funct_(vi); // no density required here
@@ -142,29 +138,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::PrepMatAndRhsInitialTime
           {
             const int fui = ui*my::numdofpernode_+my::numscal_+1+idim;
 
-            elemat1_epetra(fvi,fui) += v*my::funct_(ui);
+            emat(fvi,fui) += v*my::funct_(ui);
           }
+
+          erhs[vi*my::numdofpernode_+my::numscal_+1+idim]=0.0;
         }
-      }
-    }
-  }
-
-  // set zero for the rhs of the potential
-  for (int vi=0; vi<my::nen_; ++vi)
-  {
-    const int fvi = vi*my::numdofpernode_+my::numscal_;
-
-    elevec1_epetra[fvi] = 0.0; // zero out!
-  }
-
-  if(ElchPara()->CurSolVar())
-  {
-    for(int idim=0;idim<my::nsd_;++idim)
-    {
-      // loop starts at k=numscal_ !!
-      for (int vi=0; vi<my::nen_; ++vi)
-      {
-        elevec1_epetra[vi*my::numdofpernode_+my::numscal_+1+idim]=0.0;
       }
     }
   }
@@ -176,7 +154,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::PrepMatAndRhsInitialTime
   // The solution variable is the initial time derivative
   // Therefore, we have to correct rhs by the initial porosity
   // attention: this procedure is only valid for a constant porosity in the beginning
-  elevec1_epetra.Scale(1.0/DiffManager()->GetPhasePoro(0));
+  erhs.Scale(1.0/DiffManager()->GetPhasePoro(0));
 
   return;
 }
@@ -235,52 +213,6 @@ const std::vector<double> DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::Ext
     ecurnp_.Clear();
 
   return myphinp;
-}
-
-
-/*----------------------------------------------------------------------*
- * Calculate Mat and Rhs for electric potential field        ehrl 02/14 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhsElectricPotentialField(
-    const enum INPAR::ELCH::EquPot   equpot,   //!< type of closing equation for electric potential
-    Epetra_SerialDenseMatrix&        emat,     //!< element matrix
-    Epetra_SerialDenseVector&        erhs,     //!< element rhs
-    const double                     fac,      //!< integration factor
-    const double                     scalar    //!< scaling factor for element matrix and residual contributions
-)
-{
-  // specific constants for the Newman-material:
-  // switch between a dilute solution theory like formulation and the classical concentrated solution theory
-  double newman_const_a = ElchPara()->NewmanConstA();
-  double newman_const_b = ElchPara()->NewmanConstB();
-
-  // safety checks
-  if(diffcondmat_==INPAR::ELCH::diffcondmat_ion)
-    dserror("The function CalcInitialPotential is only implemented for Newman materials");
-  if(ElchPara()->CurSolVar())
-    dserror("The function CalcInitialPotential is only implemented for Newman materials without the current as solution variable");
-
-  // call base class routine
-  myelectrode::CalcMatAndRhsElectricPotentialField(equpot,emat,erhs,fac,DiffManager()->GetPhasePoroTort(0));
-
-  // additional contributions
-  for (int k=0; k<my::numscal_; ++k)
-  {
-    for (int vi=0; vi<my::nen_; ++vi)
-    {
-      const int fvi = vi*my::numdofpernode_+my::numscal_;
-      double laplawf(0.0);
-      my::GetLaplacianWeakFormRHS(laplawf,VarManager()->GradPhi(k),vi);
-
-      for (int iscal=0; iscal < my::numscal_; ++iscal)
-      {
-        erhs[fvi] -= DiffManager()->GetPhasePoroTort(0)*fac*VarManager()->RTFFC()*DiffManager()->GetCond()*(DiffManager()->GetThermFac())*(newman_const_a+(newman_const_b*DiffManager()->GetTransNum(iscal)))*VarManager()->ConIntInv(iscal)*laplawf;
-      }
-    }
-  } // for k
-
-  return;
 }
 
 

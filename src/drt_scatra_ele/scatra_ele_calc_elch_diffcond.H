@@ -339,11 +339,15 @@ private:
       DRT::Element*              ele  //!< the element we are dealing with
   );
 
-  //! Solving for initial time derivative: finish preparation of matrix and rhs
-  void PrepMatAndRhsInitialTimeDerivative(
-    Epetra_SerialDenseMatrix&  elemat1_epetra,  //!< element matrix
-    Epetra_SerialDenseVector&  elevec1_epetra   //!< element rhs
-  );
+  //! calculate element mass matrix and element residual for initial time derivative
+  void CalcInitialTimeDerivative(
+      DRT::Element*               ele,              //!< current element
+      Epetra_SerialDenseMatrix&   emat,             //!< element matrix
+      Epetra_SerialDenseVector&   erhs,             //!< element residual
+      Teuchos::ParameterList&     params,           //!< parameter list
+      DRT::Discretization&        discretization,   //!< discretization
+      const std::vector<int>&     lm                //!< location vector
+      );
 
   //! Correct RHS calculated from CalcRHSLinMass() for the linearized mass term
   void CorrectRHSFromCalcRHSLinMass(
@@ -352,15 +356,6 @@ private:
     const double                  fac,         //!< domain-integration factor
     const double                  densnp,      //!< density at time_(n+1)
     const double                  phinp        //!< scalar at time_(n+1)
-  );
-
-  // Solving for electric potential field : Calculate Matrix and Rhs
-  void CalcMatAndRhsElectricPotentialField(
-      const enum INPAR::ELCH::EquPot   equpot,   //!< type of closing equation for electric potential
-      Epetra_SerialDenseMatrix&        emat,     //!< element matrix
-      Epetra_SerialDenseVector&        erhs,     //!< element rhs
-      const double                     fac,      //!< integration factor
-      const double                     scalar    //!< scaling factor for element matrix and residual contributions
   );
 
   //!  calculate weighted mass flux (no reactive flux so far) -> elch-specific implementation

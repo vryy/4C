@@ -378,8 +378,8 @@ void SCATRA::TimIntOneStepTheta::PrepareFirstTimeStep()
   //ApplyDirichletBC(time_,phin_,phidtn_);
   ApplyDirichletBC(time_,phin_,Teuchos::null);
 
-  // compute initial field for electric potential (ELCH)
-  CalcInitialPotentialField();
+  // evaluate Neumann boundary conditions at time t = 0
+  ApplyNeumannBC(neumann_loads_);
 
   // standard general element parameter without stabilization
   SetElementGeneralParameters(true);
@@ -393,6 +393,9 @@ void SCATRA::TimIntOneStepTheta::PrepareFirstTimeStep()
   // deactivate turbulence settings
   SetElementTurbulenceParameters(true);
 
+  // compute initial field for electric potential (ELCH)
+  CalcInitialPotentialField();
+
   // compute time derivative of phi at time t=0
   CalcInitialPhidt();
 
@@ -403,7 +406,3 @@ void SCATRA::TimIntOneStepTheta::PrepareFirstTimeStep()
 
   return;
 }
-
-
-
-

@@ -569,15 +569,6 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtAssemble()
   sysmat_->Zero();
   residual_->PutScalar(0.0);
 
-  // evaluate Dirichlet boundary conditions at time t=0
-  // the values should match your initial field at the boundary!
-  //ApplyDirichletBC(time_,phin_,phidtn_);
-  ApplyDirichletBC(time_,phin_,Teuchos::null);
-
-  // evaluate Neumann boundary conditions at time t = 0
-  // TODO: Neumann boundary conditions on additional degrees of freedom (e.g. electric potential) must actually not be considered here!
-  ApplyNeumannBC(neumann_loads_);
-
   // zero out residual vector and add Neumann loads
   residual_->Update(1.0,*neumann_loads_,0.0);
 

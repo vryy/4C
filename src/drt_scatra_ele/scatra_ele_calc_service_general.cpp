@@ -922,18 +922,18 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcBoxFilter(
 } // DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcBoxFilter
 
 
-/*----------------------------------------------------------------------------*
- | calculate mass matrix + rhs for initial time derivative calc.     gjb 03/12|
- *----------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------*
+ | calculate mass matrix + rhs for initial time derivative calc.     gjb 03/12 |
+ *-----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcInitialTimeDerivative(
-  DRT::Element*                         ele,
-  Epetra_SerialDenseMatrix&             emat,
-  Epetra_SerialDenseVector&             erhs,
-  Teuchos::ParameterList&               params,
-  DRT::Discretization&                  discretization,
-  const std::vector<int>&               lm
-  )
+    DRT::Element*               ele,              //!< current element
+    Epetra_SerialDenseMatrix&   emat,             //!< element matrix
+    Epetra_SerialDenseVector&   erhs,             //!< element residual
+    Teuchos::ParameterList&     params,           //!< parameter list
+    DRT::Discretization&        discretization,   //!< discretization
+    const std::vector<int>&     lm                //!< location vector
+    )
 {
   // dummy matrix + vectors required for Evaluate() call (zero size)
   Epetra_SerialDenseMatrix  elemat2_epetra=Teuchos::null;

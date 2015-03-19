@@ -540,7 +540,7 @@ private:
     //@{
     static const int VOIGT6ROW_[];  ///< 6-Voigt row index of corresponding 2-tensor
     static const int VOIGT6COL_[];  ///< 6-Voigt column index of corresponding 2-tensor
-    static const int VOIGT3X3SYM_[]; ///< go from symmtric 2-tensor index pair to 6-Voigt index
+    static const int VOIGT3X3SYM_[]; ///< go from symmetric 2-tensor index pair to 6-Voigt index
                                      ///< by [3*i+j] for any i,j=0,1,2
     //@}
 

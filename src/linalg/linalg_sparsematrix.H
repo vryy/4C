@@ -281,7 +281,7 @@ class SparseMatrix : public SparseMatrixBase
     ///  and puts a 1.0 at the diagonal entry if diagonlblock==true.
     ///  Only the rows are blanked, the columns are not touched.
     ///  We are left with a non-symmetric matrix, if the original
-    ///  matrix was symmtric. However, the blanking of columns is computionally
+    ///  matrix was symmetric. However, the blanking of columns is computationally
     ///  quite expensive, because the matrix is stored in a sparse and distributed
     ///  manner.
     void ApplyDirichlet(const Epetra_Map& dbctoggle, bool diagonalblock=true);

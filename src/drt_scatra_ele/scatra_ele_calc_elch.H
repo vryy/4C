@@ -223,34 +223,21 @@ protected:
     Epetra_SerialDenseVector&         sigma       //!< conductivity of all single ions + overall electrolyte solution
   );
 
-  //! Solving for electrical potenial field: Evaluate system matrix and rhs
-  void CalculateElectricPotentialField(
-    const DRT::Element*               ele,        //!< the element we are dealing with
-    const enum INPAR::ELCH::EquPot    equpot,     //!< type of closing equation for electric potential
-    Epetra_SerialDenseMatrix&         emat,       //!< element matrix
-    Epetra_SerialDenseVector&         erhs        //!< element rhs
-  );
-
-  //! Solving for initial time derivative: finish preparation of matrix and rhs
-  virtual void PrepMatAndRhsInitialTimeDerivative(
-    Epetra_SerialDenseMatrix&  elemat1_epetra,  //!< element matrix
-    Epetra_SerialDenseVector&  elevec1_epetra   //!< element rhs
-  );
+  //! calculate element mass matrix and element residual for initial time derivative
+  virtual void CalcInitialTimeDerivative(
+      DRT::Element*               ele,              //!< current element
+      Epetra_SerialDenseMatrix&   emat,             //!< element matrix
+      Epetra_SerialDenseVector&   erhs,             //!< element residual
+      Teuchos::ParameterList&     params,           //!< parameter list
+      DRT::Discretization&        discretization,   //!< discretization
+      const std::vector<int>&     lm                //!< location vector
+      );
 
   // Get conductivity from material
   virtual void GetConductivity(
     const enum INPAR::ELCH::EquPot    equpot,     //!< type of closing equation for electric potential
     double&                           sigma_all,  //!< conductivity of electrolyte solution
     Epetra_SerialDenseVector&         sigma       //!< conductivity of all single ions + overall electrolyte solution
-  ) = 0;
-
-  //! Solving for electric potential field : Calculate Matrix and Rhs
-  virtual void CalcMatAndRhsElectricPotentialField(
-      const enum INPAR::ELCH::EquPot   equpot,   //!< type of closing equation for electric potential
-      Epetra_SerialDenseMatrix&        emat,     //!< element matrix
-      Epetra_SerialDenseVector&        erhs,     //!< element rhs
-      const double                     fac,      //!< integration factor
-      const double                     scalar    //!< scaling factor for element matrix and residual contributions
   ) = 0;
 
   //! set internal variables

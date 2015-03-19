@@ -45,7 +45,7 @@ public:
   void ComputeTimeDerivative(){return;};
 
   ///  compute scalar time derivate parameters of the input voltage
-  virtual void ComputeTimeDerivPot0(const bool init){return;};
+  void ComputeTimeDerivPot0(const bool init){return;};
 
   /// Update the solution after convergence of the nonlinear iteration.
   /// Current solution becomes old solution of next timestep.
@@ -67,7 +67,7 @@ public:
   Teuchos::RCP<Epetra_Vector> Phidtam(){return Teuchos::null;}
 
   /// routine to return fine-scale scalar field fsphi
-  virtual Teuchos::RCP<Epetra_Vector> FsPhi() {
+  Teuchos::RCP<Epetra_Vector> FsPhi() {
     if (Sep_ != Teuchos::null)
     Sep_->Multiply(false,*phinp_,*fsphinp_);
     return fsphinp_; };
@@ -86,20 +86,16 @@ protected:
   TimIntStationary (const TimIntStationary& old);
 
   /// set time parameter for element evaluation
-  virtual void SetElementTimeParameter(bool forcedincrementalsolver=false);
+  void SetElementTimeParameter(bool forcedincrementalsolver=false);
 
   //! set time for evaluation of Neumann boundary conditions
-  virtual void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params);
+  void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params);
 
-  /// Initialization procedure before the first time step is done
-  void PrepareFirstTimeStep(){
-    // compute initial field for electric potential (ELCH)
-    CalcInitialPotentialField();
-    return;
-    };
+  //! initialization procedure before first time step
+  void PrepareFirstTimeStep();
 
   /// Set the part of the righthandside belonging to the last timestep.
-  virtual void SetOldPartOfRighthandside();
+  void SetOldPartOfRighthandside();
 
   /// do explicit predictor step (nothing to predict for stationary problems!)
   void ExplicitPredictor(){return;};

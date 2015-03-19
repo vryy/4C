@@ -185,7 +185,7 @@ public:
   static const int VOIGT9COL_[];  ///< 9-Voigt column index of corresponding 2-tensor
   static const int VOIGT3X3_[];  ///< go from 2-tensor index pair to 9-Voigt index
                                  ///< by [NUMDIM_*i+j] for any i,j=0,1,2
-  static const int VOIGT3X3SYM_[]; ///< go from symmtric 2-tensor index pair to 6-Voigt index
+  static const int VOIGT3X3SYM_[]; ///< go from symmetric 2-tensor index pair to 6-Voigt index
                                    ///< by [NUMDIM_*i+j] for any i,j=0,1,2
 
   // Ordering of element displacement and pressure DOFs

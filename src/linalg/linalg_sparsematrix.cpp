@@ -1579,7 +1579,7 @@ void LINALG::SparseMatrix::Split2x2(BlockSparseMatrixBase& Abase) const
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::SparseMatrix::Split2x2");
 
   if (Abase.Rows() != 2 || Abase.Cols() != 2) dserror("Can only split in 2x2 system");
-  if (!Filled()) dserror("SparsMatrix must be filled");
+  if (!Filled()) dserror("SparseMatrix must be filled");
   Teuchos::RCP<Epetra_CrsMatrix> A   = EpetraMatrix();
   Teuchos::RCP<Epetra_CrsMatrix> A11 = Abase(0,0).EpetraMatrix();
   Teuchos::RCP<Epetra_CrsMatrix> A12 = Abase(0,1).EpetraMatrix();

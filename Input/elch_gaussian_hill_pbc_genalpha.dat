@@ -65,7 +65,6 @@ ITEMAX                          7
 ABSTOLRES                       5.0e-13
 ----------------------------------------------------------------ELCH CONTROL
 EQUPOT                          ENC_PDE_ELIM
-INITPOTCALC                     yes
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          Aztec_MSR                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

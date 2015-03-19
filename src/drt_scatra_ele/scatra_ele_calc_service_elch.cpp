@@ -58,31 +58,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateAction(
     CheckElchElementParameter(ele);
     break;
   }
-  case SCATRA::calc_initial_time_deriv:
-  {
-    // calculate matrix and rhs
-    my::CalcInitialTimeDerivative(
-      ele,
-      elemat1_epetra,
-      elevec1_epetra,
-      params,
-      discretization,
-      lm
-      );
 
-    // do another loop over the integration points for the potential:
-    // At this point time is not so critical since the CalcInitialTimeDerivative()
-    // is called once in the beginning of the simulation!
-
-    // we put a dummy mass matrix here in order to have a regular
-    // matrix in the lower right block of the whole system-matrix
-    // A identity matrix would cause problems with ML solver in the SIMPLE
-    // schemes since ML needs to have off-diagonal entries for the aggregation!
-
-    PrepMatAndRhsInitialTimeDerivative(elemat1_epetra,elevec1_epetra);
-
-    break;
-  }
   case SCATRA::integrate_shape_functions:
   {
     // calculate integral of shape functions
@@ -91,6 +67,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateAction(
 
     break;
   }
+
   case SCATRA::calc_flux_domain:
   {
     //--------------------------------------------------------------------------------
@@ -239,6 +216,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateAction(
 
     break;
   }
+
   case SCATRA::calc_elch_conductivity:
   {
     // extract local values from the global vector
@@ -263,30 +241,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateAction(
     CalculateConductivity(ele,ElchPara()->EquPot(),elevec1_epetra);
     break;
   }
-  case SCATRA::calc_elch_initial_potential:
-  {
-    // need initial field -> extract local values from the global vector
-    Teuchos::RCP<const Epetra_Vector> phi0 = discretization.GetState("phi0");
-    if (phi0==Teuchos::null) dserror("Cannot get state vector 'phi0'");
-    std::vector<double> myphi0(lm.size());
-    DRT::UTILS::ExtractMyValues(*phi0,myphi0,lm);
 
-    // fill element arrays
-    for (int i=0;i<my::nen_;++i)
-    {
-      for (int k = 0; k< my::numscal_; ++k)
-      {
-        // split for each transported scalar, insert into element arrays
-        my::ephinp_[k](i,0) = myphi0[k+(i*my::numdofpernode_)];
-      }
-      // get values for el. potential at element nodes
-      epotnp_(i) = myphi0[i*my::numdofpernode_+my::numscal_];
-    } // for i
-
-    CalculateElectricPotentialField(ele,ElchPara()->EquPot(),elemat1_epetra,elevec1_epetra);
-
-    break;
-  }
   default:
   {
     my::EvaluateAction(ele,
@@ -591,61 +546,38 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateConductivity(
 } //ScaTraEleCalcElch()
 
 
-/*----------------------------------------------------------------------*
- | CalculateElectricPotentialField (protected)                gjb 04/10 |
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------------------------*
+ | calculate element mass matrix and element residual for initial time derivative   fang 03/15 |
+ *---------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateElectricPotentialField(
-    const DRT::Element*               ele,
-    const enum INPAR::ELCH::EquPot    equpot,
-    Epetra_SerialDenseMatrix&         emat,
-    Epetra_SerialDenseVector&         erhs
-  )
+void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalcInitialTimeDerivative(
+    DRT::Element*               ele,              //!< current element
+    Epetra_SerialDenseMatrix&   emat,             //!< element matrix
+    Epetra_SerialDenseVector&   erhs,             //!< element residual
+    Teuchos::ParameterList&     params,           //!< parameter list
+    DRT::Discretization&        discretization,   //!< discretization
+    const std::vector<int>&     lm                //!< location vector
+    )
 {
-  // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  // call base class routine
+  my::CalcInitialTimeDerivative(
+      ele,
+      emat,
+      erhs,
+      params,
+      discretization,
+      lm
+      );
 
-  // integration loop
-  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
-  {
-    const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+  // do another loop over the integration points for the potential:
+  // At this point time is not so critical since the CalcInitialTimeDerivative()
+  // is called once in the beginning of the simulation!
 
-    //----------------------------------------------------------------------
-    // get material and stabilization parameters (evaluation at gauss point)
-    //----------------------------------------------------------------------
-    // density at t_(n)
-    double densn(1.0);
-    // density at t_(n+1) or t_(n+alpha_F)
-    double densnp(1.0);
-    // density at t_(n+alpha_M)
-    double densam(1.0);
+  // we put a dummy mass matrix and zero residual entries for the electric potential dofs
+  // here in order to have a regular matrix in the lower right block of the whole system-matrix
+  // An identity matrix would cause problems with ML solver in the SIMPLE
+  // schemes since ML needs to have off-diagonal entries for the aggregation!
 
-    // fluid viscosity
-    double visc(0.0);
-
-    // material parameter at the element center
-    this->GetMaterialParams(ele,densn,densnp,densam,visc,iquad);
-
-    // set internal variables
-    SetInternalVariablesForMatAndRHS();
-
-    CalcMatAndRhsElectricPotentialField(equpot,emat,erhs,fac,1.);
-  } // integration loop
-
-  return;
-
-} //ScaTraImpl<distype>::CalculateElectricPotentialField
-
-
-/*--------------------------------------------------------------------------------------------*
- | compute dummy element matrix and residual entries for electric potential dofs   fang 02/15 |
- *--------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::PrepMatAndRhsInitialTimeDerivative(
-  Epetra_SerialDenseMatrix&  elemat1_epetra,
-  Epetra_SerialDenseVector&  elevec1_epetra
-)
-{
   // integration points and weights
   const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
@@ -663,14 +595,14 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::PrepMatAndRhsInitialTimeDerivati
       {
         const int fui = ui*my::numdofpernode_+my::numscal_;
 
-        elemat1_epetra(fvi,fui) += v*my::funct_(ui);
+        emat(fvi,fui) += v*my::funct_(ui);
       }
     }
   }
 
   // set zero for the rhs entries associated with the electric potential
   for (int vi=0; vi<my::nen_; ++vi)
-    elevec1_epetra[vi*my::numdofpernode_+my::numscal_] = 0.;
+    erhs[vi*my::numdofpernode_+my::numscal_] = 0.;
 
   return;
 }

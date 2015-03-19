@@ -1142,97 +1142,179 @@ void SCATRA::ScaTraTimIntElch::AdaptNumScal()
 
 
 /*----------------------------------------------------------------------*
- | calculate initial electric potential field at t=t_0         gjb 04/10|
+ | calculate initial electric potential field                fang 03/15 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
 {
   if(DRT::INPUT::IntegralValue<int>(*elchparams_,"INITPOTCALC"))
   {
-    // time measurement:
+    // time measurement
     TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + calc initial potential field");
+
+    // safety checks
+    dsassert(step_ == 0, "Step counter is not zero!");
+    switch(equpot_)
+    {
+    case INPAR::ELCH::equpot_divi:
+    case INPAR::ELCH::equpot_enc_pde:
+    case INPAR::ELCH::equpot_enc_pde_elim:
+    {
+      // These stationary closing equations for the electric potential are OK, since they explicitly contain the
+      // electric potential as variable and therefore can be solved for the initial electric potential.
+      break;
+    }
+    default:
+    {
+      // If the stationary closing equation for the electric potential does not explicitly contain the electric
+      // potential as variable, we obtain a zero block associated with the electric potential on the main diagonal
+      // of the global system matrix used below. This zero block makes the entire global system matrix singular!
+      // In this case, it would be possible to temporarily change the type of closing equation used, e.g., from
+      // INPAR::ELCH::equpot_enc to INPAR::ELCH::equpot_enc_pde. This should work, but has not been implemented yet.
+      dserror("Initial potential field cannot be computed for chosen closing equation for electric potential!");
+      break;
+    }
+    }
+
+    // screen output
     if (myrank_ == 0)
-      std::cout<<"SCATRA: calculating initial field for electric potential"<<std::endl;
+    {
+      std::cout << "SCATRA: calculating initial field for electric potential" << std::endl;
+      PrintTimeStepInfo();
+      std::cout << "+------------+-------------------+--------------+--------------+" << std::endl;
+      std::cout << "|- step/max -|- tol      [norm] -|-- pot-res ---|-- pot-inc ---|" << std::endl;
+    }
 
-    // are we really at step 0?
-    dsassert(step_==0,"Step counter is not 0");
+    // prepare Newton-Raphson iteration
+    iternum_ = 0;
+    const int    itermax = params_->sublist("NONLINEAR").get<int>("ITEMAX");
+    const double itertol = params_->sublist("NONLINEAR").get<double>("CONVTOL");
+    const double restol  = params_->sublist("NONLINEAR").get<double>("ABSTOLRES");
 
-    // construct intermediate vectors
-    const Epetra_Map* dofrowmap = discret_->DofRowMap();
-    Teuchos::RCP<Epetra_Vector> rhs = LINALG::CreateVector(*dofrowmap,true);
-    Teuchos::RCP<Epetra_Vector> phi0 = LINALG::CreateVector(*dofrowmap,true);
-    phi0->Update(1.0,*phinp_,0.0);
-    Teuchos::RCP<Epetra_Vector> inc = LINALG::CreateVector(*dofrowmap,true);
+    // start Newton-Raphson iteration
+    while(true)
+    {
+      // update iteration counter
+      iternum_++;
 
-    // zero out matrix entries
-    sysmat_->Zero();
+      // check for non-positive concentration values
+      CheckConcentrationValues(phinp_);
 
-    // evaluate Dirichlet boundary conditions at time t=0
-    // the values should match your initial field at the boundary!
-    ApplyDirichletBC(time_,phin_,Teuchos::null);
+      // assemble global system matrix and residual vector
+      AssembleMatAndRHS();
 
-    // contributions due to Neumann b.c. or ElchBoundaryKinetics b.c.
-    // have to be summed up here, and applied
-    // as a current flux condition at the potential field!
+      // project residual, such that only part orthogonal to nullspace is considered
+      if (projector_!=Teuchos::null)
+        projector_->ApplyPT(*residual_);
 
-    // so far: fluxes resulting from Neumann and electrochemical boundary conditions are not considered in the framework!
+      // apply actual Dirichlet boundary conditions to system of equations
+      LINALG::ApplyDirichlettoSystem(sysmat_,increment_,residual_,zeros_,*(dbcmaps_->CondMap()));
 
-    // Electrode kinetics:
-    // If, e.g., the initial field does not match the applied boundary conditions
-    // (e.g. relaxation process of a stationary concentration field),
-    // the aforementioned strategy cannot be applied to our system
-    // but nevertheless the potential level has to be fixed.
+      // apply artificial Dirichlet boundary conditions to system of equations
+      // to hold initial concentrations constant when solving for initial potential field
+      LINALG::ApplyDirichlettoSystem(sysmat_,increment_,residual_,zeros_,*(splitter_->OtherMap()));
 
-    // create the parameters for the discretization
-    Teuchos::ParameterList eleparams;
+      // calculate vector norms
+      // vector norms associated with concentration are not used, but still computed to avoid code redundancy
+      double dummy(0.);
+      double incpotnorm_L2(0.);
+      double potnorm_L2(0.);
+      double potresnorm(0.);
+      CalcProblemSpecificNorm(dummy,dummy,dummy,incpotnorm_L2,potnorm_L2,potresnorm,dummy);
 
-    // action for elements
-    eleparams.set<int>("action",SCATRA::calc_elch_initial_potential);
+      // care for the case that nothing really happens in the potential field
+      if (potnorm_L2 < 1e-5)
+        potnorm_L2 = 1.0;
 
-    // provide displacement field in case of ALE
-    if (isale_)
-      discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+      // first iteration step: solution increment is not yet available
+      if (iternum_ == 1)
+      {
+        // print first line of convergence table to screen
+        if (myrank_ == 0)
+          std::cout << "|  " << std::setw(3) << iternum_ << "/" << std::setw(3) << itermax << "   | "
+                    << std::setw(10) << std::setprecision(3) << std::scientific << itertol << "[L_2 ]  | "
+                    << std::setw(10) << std::setprecision(3) << std::scientific << potresnorm << "   |      --      |" << std::endl;
 
-    // set vector values needed by elements
-    discret_->ClearState();
-    discret_->SetState("phi0",phin_);
+        // absolute tolerance for deciding if residual is already zero
+        // prevents additional solver calls that will not improve the residual anymore
+        if(potresnorm < restol)
+        {
+          // print finish line of convergence table to screen
+          if (myrank_ == 0)
+            std::cout << "+------------+-------------------+--------------+--------------+" << std::endl;
 
-    // call loop over elements
-    discret_->Evaluate(eleparams,sysmat_,rhs);
-    discret_->ClearState();
+          // abort Newton-Raphson iteration
+          break;
+        }
+      }
 
-    // finalize the complete matrix
-    sysmat_->Complete();
+      // later iteration steps: solution increment can be printed
+      else
+      {
+        // print current line of convergence table to screen
+        if (myrank_ == 0)
+          std::cout << "|  " << std::setw(3) << iternum_ << "/" << std::setw(3) << itermax << "   | "
+                    << std::setw(10) << std::setprecision(3) << std::scientific << itertol << "[L_2 ]  | "
+                    << std::setw(10) << std::setprecision(3) << std::scientific << potresnorm << "   | "
+                    << std::setw(10) << std::setprecision(3) << std::scientific << incpotnorm_L2/potnorm_L2 << "   |" << std::endl;
 
-    // project residual such that only part orthogonal to nullspace is considered
-    if (projector_!=Teuchos::null)
-      projector_->ApplyPT(*residual_);
+        // convergence check
+        if((potresnorm <= itertol and incpotnorm_L2/potnorm_L2 <= itertol) or potresnorm < restol)
+        {
+          // print finish line of convergence table to screen
+          if (myrank_ == 0)
+            std::cout << "+------------+-------------------+--------------+--------------+" << std::endl;
 
-    // apply Dirichlet boundary conditions to system matrix
-    LINALG::ApplyDirichlettoSystem(sysmat_,phi0,rhs,phi0,*(dbcmaps_->CondMap()));
+          // abort Newton-Raphson iteration
+          break;
+        }
+      }
 
-    // solve the system linear incrementally:
-    // the system is linear and therefore it converges in a single step, but
-    // an incremental solution procedure allows the solution for the potential field
-    // to converge to an "defined" potential level due to initial conditions!
-    solver_->Solve(sysmat_->EpetraOperator(),inc,rhs,true,true,projector_);
+      // warn if maximum number of iterations is reached without convergence
+      if(iternum_ == itermax)
+      {
+        if(myrank_ == 0)
+        {
+          printf("+---------------------------------------------------------------+\n");
+          printf("|            >>>>>> not converged!                              |\n");
+          printf("+---------------------------------------------------------------+\n");
+        }
 
-    // update the original initial field
-    phi0->Update(1.0,*inc,1.0);
+        // abort Newton-Raphson iteration
+        break;
+      }
 
-    // copy solution of initial potential field to the solution vectors
-    Teuchos::RCP<Epetra_Vector> onlypot = splitter_->ExtractCondVector(phi0);
-    // insert values into the whole solution vectors
-    splitter_->InsertCondVector(onlypot,phinp_);
-    splitter_->InsertCondVector(onlypot,phin_);
+      // safety checks
+      if(std::isnan(incpotnorm_L2) or std::isnan(potnorm_L2) or std::isnan(potresnorm))
+        dserror("calculated vector norm is NaN.");
+      if(abs(std::isinf(incpotnorm_L2)) or abs(std::isinf(potnorm_L2)) or abs(std::isinf(potresnorm)))
+        dserror("calculated vector norm is INF.");
 
-    // reset the matrix (and its graph!) since we solved
-    // a very special problem here that has a different sparsity pattern
+      // zero out increment vector
+      increment_->PutScalar(0.);
+
+      // reprepare Krylov projection if required
+      if (updateprojection_)
+        UpdateKrylovSpaceProjection();
+
+      // solve final system of equations incrementally
+      solver_->Solve(sysmat_->EpetraOperator(),increment_,residual_,true,true,projector_);
+
+      // update electric potential degrees of freedom in initial state vector
+      splitter_->AddCondVector(splitter_->ExtractCondVector(increment_),phinp_);
+
+      // update state vectors for intermediate time steps (only for generalized alpha)
+      ComputeIntermediateValues();
+    } // Newton-Raphson iteration
+
+    // copy initial state vector
+    phin_->Update(1.,*phinp_,0.);
+
+    // reset global system matrix and its graph, since we solved a very special problem with a special sparsity pattern
     sysmat_->Reset();
-  }
+  } // if(DRT::INPUT::IntegralValue<int>(*elchparams_,"INITPOTCALC"))
 
-  // go on!
   return;
-} // ScaTraTimIntImpl::CalcInitialPotentialField
+} // SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
 
 
 /*----------------------------------------------------------------------*
