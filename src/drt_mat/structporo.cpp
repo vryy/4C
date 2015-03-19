@@ -14,12 +14,14 @@
 
 
 #include <vector>
-#include "structporo.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/so3_material.H"
 
 #include "../drt_lib/drt_utils_factory.H"  // for function Factory in Unpack
+
+#include "poro_law.H"
+#include "structporo.H"
 
 /*----------------------------------------------------------------------*
                                                               vuong 06/11|
@@ -27,10 +29,49 @@
 MAT::PAR::StructPoro::StructPoro(Teuchos::RCP<MAT::PAR::Material> matdata) :
   Parameter(matdata),
   matid_(matdata->GetInt("MATID")),
-  bulkmodulus_(matdata->GetDouble("BULKMODULUS")),
-  penaltyparameter_(matdata->GetDouble("PENALTYPARAMETER")),
+  porolawID_(matdata->GetInt("POROLAWID")),
   initporosity_(matdata->GetDouble("INITPOROSITY"))
 {
+  // retrieve problem instance to read from
+  const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+
+  // for the sake of safety
+  if (DRT::Problem::Instance(probinst)->Materials() == Teuchos::null)
+    dserror("Sorry dude, cannot work out problem instance.");
+  // yet another safety check
+  if (DRT::Problem::Instance(probinst)->Materials()->Num() == 0)
+    dserror("Sorry dude, no materials defined.");
+
+  // retrieve validated input line of material ID in question
+  Teuchos::RCP<MAT::PAR::Material> curmat = DRT::Problem::Instance(probinst)->Materials()->ById(porolawID_);
+
+  switch (curmat->Type())
+  {
+  case INPAR::MAT::m_poro_law_linear:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::PoroLawLinear(curmat));
+    porolaw_ = static_cast<MAT::PAR::PoroLaw*>(curmat->Parameter());
+    break;
+  }
+  case INPAR::MAT::m_poro_law_constant:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::PoroLawConstant(curmat));
+    porolaw_ = static_cast<MAT::PAR::PoroLaw*>(curmat->Parameter());
+    break;
+  }
+  case INPAR::MAT::m_poro_law_logNeoHooke_Penalty:
+    {
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::PoroLawNeoHooke(curmat));
+      porolaw_ = static_cast<MAT::PAR::PoroLaw*>(curmat->Parameter());
+      break;
+    }
+  default:
+    dserror("invalid material for porosity law %d", curmat->Type());
+    break;
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -233,67 +274,22 @@ void MAT::StructPoro::ComputePorosity( const double& refporosity,
     return;
   }
 
-  const double & bulkmodulus  = params_->bulkmodulus_;
-  const double & penalty      = params_->penaltyparameter_;
-
-  const double a = (bulkmodulus / (1 - refporosity) + press - penalty / refporosity) * J;
-  const double b = -a + bulkmodulus + penalty;
-  const double c = b * b  + 4.0 * penalty * a;
-  double d = sqrt(c);
-
-
-  double test = 1 / (2.0 * a) * (-b + d);
-  double sign = 1.0;
-  if (test >= 1.0 or test < 0.0)
-  {
-    sign = -1.0;
-    d = sign * d;
-  }
-
-  const double a_inv = 1.0/a;
-  const double d_inv = 1.0/d;
-  const double J_inv = 1.0/J;
-
-  const double phi = 1 / (2 * a) * (-b + d);
-
-  if (phi >= 1.0 or phi < 0.0)
-    dserror("invalid porosity: %f", porosity);
-
-  const double d_p = J * (-b+2.0*penalty) * d_inv;
-  const double d_p_p = ( d * J + d_p * (b - 2.0*penalty) ) * d_inv * d_inv * J;
-  const double d_J = a * J_inv * ( -b + 2.0*penalty ) * d_inv;
-  const double d_J_p = (d_p * J_inv + ( 1-d_p*d_p*J_inv*J_inv ) *d_inv *a);
-  const double d_J_J = ( a*a*J_inv*J_inv-d_J*d_J )* d_inv;
-
-  //d(porosity) / d(p)
-  if(dphi_dp) *dphi_dp = (- J * phi + 0.5*(J+d_p))*a_inv;
-
-  //d(porosity) / d(J)
-  if(dphi_dJ) *dphi_dJ= (-phi+ 0.5) * J_inv + 0.5*d_J * a_inv;
-
-  //d(porosity) / d(J)d(pressure)
-  if(dphi_dJdp) *dphi_dJdp= -J_inv* (*dphi_dp)+ 0.5 * d_J_p * a_inv - 0.5 * d_J*J* a_inv* a_inv ;
-
-  //d^2(porosity) / d(J)^2
-  if(dphi_dJJ) *dphi_dJJ= phi*J_inv*J_inv - (*dphi_dJ)*J_inv - 0.5*J_inv*J_inv - 0.5*d_J*J_inv*a_inv + 0.5*d_J_J*a_inv;
-
-  //d^2(porosity) / d(pressure)^2
-  if(dphi_dpp) *dphi_dpp= -J*a_inv* (*dphi_dp) + phi*J*J*a_inv*a_inv - 0.5*J*a_inv*a_inv*(J+d_p) + 0.5*d_p_p*a_inv;
-
-  porosity= phi;
+  params_->porolaw_->ComputePorosity(
+      refporosity,
+      press,
+      J,
+      gp,
+      porosity,
+      dphi_dp,
+      dphi_dJ,
+      dphi_dJdp,
+      dphi_dJJ,
+      dphi_dpp,
+      dphi_dphiref);
 
   //save porosity
   if(save)
-    porosity_->at(gp) = phi;
-
-  if(dphi_dphiref)
-  {
-    const double dadphiref = J*(bulkmodulus / ((1 - refporosity)*(1 - refporosity)) + penalty / (refporosity*refporosity));
-    const double tmp = 2*dadphiref*a_inv * (-b*(a+b)*a_inv - 2*penalty);
-    const double dddphiref = sign*(dadphiref * sqrt(c)*a_inv + tmp);
-
-    *dphi_dphiref = ( a * (dadphiref+dddphiref) - dadphiref * (-b + d) )*0.5*a_inv*a_inv;
-  }
+    porosity_->at(gp) = porosity;
 
   return;
 }
@@ -511,7 +507,7 @@ void MAT::StructPoro::CouplStress(  const LINALG::Matrix<2,2>& defgrd,
 /*----------------------------------------------------------------------*
                                                               vuong 06/11|
 *----------------------------------------------------------------------*/
-void MAT::StructPoro::ConsitutiveDerivatives(Teuchos::ParameterList& params,
+void MAT::StructPoro::ConstitutiveDerivatives(Teuchos::ParameterList& params,
                                               double     press,
                                               double     J,
                                               double     porosity,
@@ -523,7 +519,7 @@ void MAT::StructPoro::ConsitutiveDerivatives(Teuchos::ParameterList& params,
   if(porosity == 0.0)
     dserror("porosity equals zero!! Wrong initial porosity?");
 
-  ConsitutiveDerivatives(params,
+  ConstitutiveDerivatives(params,
                          press,
                          J,
                          porosity,
@@ -539,7 +535,7 @@ void MAT::StructPoro::ConsitutiveDerivatives(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
                                                               vuong 06/11|
 *----------------------------------------------------------------------*/
-void MAT::StructPoro::ConsitutiveDerivatives(Teuchos::ParameterList& params,
+void MAT::StructPoro::ConstitutiveDerivatives(Teuchos::ParameterList& params,
                                               double     press,
                                               double     J,
                                               double     porosity,
@@ -549,20 +545,16 @@ void MAT::StructPoro::ConsitutiveDerivatives(Teuchos::ParameterList& params,
                                               double*    dW_dJ,
                                               double*    W)
 {
-  const double & bulkmodulus  = params_->bulkmodulus_;
-  const double & penalty      = params_->penaltyparameter_;
-
-  //some intermediate values
-  const double a = bulkmodulus / (1 - refporosity) + press - penalty / refporosity;
-  const double b = -1.0*J*a+bulkmodulus+penalty;
-
-  const double scale = 1.0/bulkmodulus;
-
-  //scale everything with 1/bulkmodulus (I hope this will help the solver...)
-  if(W)       *W       = (J*a*porosity*porosity + porosity* b - penalty) * scale;
-  if(dW_dp)   *dW_dp   = (-1.0*J*porosity *(1.0-porosity)) * scale;
-  if(dW_dphi) *dW_dphi = (2.0*J*a*porosity + b) * scale;
-  if(dW_dJ)   *dW_dJ   = (a*porosity*porosity - porosity*a) * scale;
+  params_->porolaw_->ConstitutiveDerivatives(
+    params,
+    press,
+    J,
+    porosity,
+    refporosity,
+    dW_dp,
+    dW_dphi,
+    dW_dJ,
+    W);
 
   return;
 }

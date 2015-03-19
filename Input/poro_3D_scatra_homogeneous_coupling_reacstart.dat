@@ -146,7 +146,8 @@ NAME                            fluid_solver
 SOLVER                          UMFPACK
 NAME                            scatra_solver
 ----------------------------------------------------------MATERIALS
-MAT 1 MAT_StructPoro MATID 2 INITPOROSITY 0.5 BULKMODULUS 2.0e6 PENALTYPARAMETER 0.001
+MAT 1 MAT_StructPoro MATID 2 POROLAWID 20 INITPOROSITY 0.5
+MAT 20 MAT_PoroLawNeoHooke BULKMODULUS 2.0e6 PENALTYPARAMETER 0.001
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 1.0
 MAT 3 ELAST_CoupNeoHooke YOUNG 2.0e6 NUE 0.3
 MAT 4 MAT_FluidPoro DYNVISCOSITY 0.05 DENSITY 1.0 PERMEABILITY 0.2e-1 TYPE Darcy

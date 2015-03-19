@@ -610,7 +610,7 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::GaussPointLoopP1(
     double    dW_dJ   = 0.0;
     double    dW_dp   = 0.0;
     double    W       = 0.0;
-    my::structmat_->ConsitutiveDerivatives(params,
+    my::structmat_->ConstitutiveDerivatives(params,
                                       press,
                                       J,
                                       porosity,
@@ -928,7 +928,7 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::GaussPointLoopP1OD(
     }//darcy-brinkman
 
     double    dW_dp   = 0.0;
-    my::structmat_->ConsitutiveDerivatives(params,
+    my::structmat_->ConstitutiveDerivatives(params,
                                       press,
                                       J,
                                       porosity,

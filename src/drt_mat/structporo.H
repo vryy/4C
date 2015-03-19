@@ -29,6 +29,7 @@ namespace MAT
 
   namespace PAR
   {
+    class PoroLaw;
 
     class StructPoro: public Parameter
     {
@@ -55,16 +56,16 @@ namespace MAT
         /// material ID of sub-material
         int matid_;
 
-        /// bulk modulus of skeleton phase
-        double bulkmodulus_;
-
-        /// penalty parameter for porosity
-        double penaltyparameter_;
+        /// initial porosity
+        int porolawID_;
 
         /// initial porosity
         double initporosity_;
 
         //@}
+
+        //implementation of porosity law
+        PoroLaw* porolaw_;
 
     }; // class StructPoro
 
@@ -197,18 +198,6 @@ namespace MAT
       /// return porosity average (for post processing only!)
       double PorosityAv() const;
 
-      /// return bulk modulus
-      double Bulkmodulus() const
-      {
-        return params_->bulkmodulus_;
-      }
-
-      /// return prenalty parameter
-      double Penaltyparameter() const
-      {
-        return params_->penaltyparameter_;
-      }
-
       /// return initial porosity
       double Initporosity() const
       {
@@ -297,7 +286,7 @@ namespace MAT
                         ) const;
 
       //! evaluate constitutive relation for porosity and compute derivatives
-     virtual void ConsitutiveDerivatives(Teuchos::ParameterList& params,       ///< (i) parameter list
+     virtual void ConstitutiveDerivatives(Teuchos::ParameterList& params,       ///< (i) parameter list
                                                     double     press,   ///< (i) fluid pressure at gauss point
                                                     double     J,       ///< (i) Jacobian determinant at gauss point
                                                     double     porosity,///< (i) porosity at gauss point
@@ -398,7 +387,7 @@ namespace MAT
                              ) ;
 
       //! evaluate constitutive relation for porosity and compute derivatives using reference porosity
-      void ConsitutiveDerivatives(Teuchos::ParameterList& params,       ///< (i) parameter list
+      void ConstitutiveDerivatives(Teuchos::ParameterList& params,       ///< (i) parameter list
                                                     double     press,   ///< (i) fluid pressure at gauss point
                                                     double     J,       ///< (i) Jacobian determinant at gauss point
                                                     double     porosity,///< (i) porosity at gauss point

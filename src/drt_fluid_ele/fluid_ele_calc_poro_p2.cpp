@@ -606,7 +606,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::EvaluatePressureEquation(
     )
 {
   double    dW_dp   = 0.0;
-  my::structmat_->ConsitutiveDerivatives(params,
+  my::structmat_->ConstitutiveDerivatives(params,
                                     my::press_,
                                     my::J_,
                                     my::porosity_,

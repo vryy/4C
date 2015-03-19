@@ -453,6 +453,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/permeablefluid.cpp
   src/drt_mat/plasticnlnlogneohooke.cpp
   src/drt_mat/plasticlinelast.cpp
+  src/drt_mat/poro_law.cpp
   src/drt_mat/damage.cpp
   src/drt_mat/scatra_mat.cpp
   src/drt_mat/scatra_mat_poro_ecm.cpp

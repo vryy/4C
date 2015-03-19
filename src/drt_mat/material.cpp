@@ -501,6 +501,9 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
   case INPAR::MAT::m_growth_ac:
   case INPAR::MAT::m_growth_ac_radial:
   case INPAR::MAT::mes_coupSVK:
+  case INPAR::MAT::m_poro_law_linear:
+  case INPAR::MAT::m_poro_law_constant:
+  case INPAR::MAT::m_poro_law_logNeoHooke_Penalty:
   {
     return Teuchos::null;
   }

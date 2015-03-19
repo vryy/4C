@@ -106,7 +106,8 @@ THETA                           0.66
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD porofluid TAR_MAT 3
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_StructPoro MATID 2 INITPOROSITY 0.2 BULKMODULUS 2.0e6 PENALTYPARAMETER 0.001
+MAT 1 MAT_StructPoro MATID 2 POROLAWID 10 INITPOROSITY 0.2
+MAT 10 MAT_PoroLawNeoHooke BULKMODULUS 2.0e6 PENALTYPARAMETER 0.001
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 2.0
 MAT 4 ELAST_CoupNeoHooke YOUNG 2.0e6 NUE 0.3
 MAT 3 MAT_FluidPoro DYNVISCOSITY 0.01 DENSITY 1.0 PERMEABILITY 1.0e-2 TYPE Darcy

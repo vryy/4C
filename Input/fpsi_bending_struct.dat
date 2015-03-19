@@ -302,7 +302,8 @@ GENAVG                          ImrLike
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.9
 ----------------------------------------------------------MATERIALS
-MAT 1 MAT_StructPoro MATID 2 INITPOROSITY 0.2 BULKMODULUS 2.0e6 PENALTYPARAMETER 0.001
+MAT 1 MAT_StructPoro MATID 2 POROLAWID 10 INITPOROSITY 0.2
+MAT 10 MAT_PoroLawNeoHooke BULKMODULUS 2.0e6 PENALTYPARAMETER 0.001
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 1.1
 MAT 4 ELAST_CoupNeoHooke YOUNG 2.0e2 NUE 0.3
 MAT 3 MAT_FluidPoro DYNVISCOSITY 0.01 DENSITY 1.0 PERMEABILITY 1.0e-2 TYPE Darcy

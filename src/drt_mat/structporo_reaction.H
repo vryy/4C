@@ -159,7 +159,7 @@ namespace MAT
                              ) ;
 
       //! evaluate constitutive relation for porosity and compute derivatives
-     virtual void ConsitutiveDerivatives(Teuchos::ParameterList& params,       ///< (i) parameter list
+     virtual void ConstitutiveDerivatives(Teuchos::ParameterList& params,       ///< (i) parameter list
                                                     double     press,   ///< (i) fluid pressure at gauss point
                                                     double     J,       ///< (i) Jacobian determinant at gauss point
                                                     double     porosity,///< (i) porosity at gauss point

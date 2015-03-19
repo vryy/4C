@@ -170,7 +170,7 @@ void MAT::StructPoroReaction::ComputePorosity( Teuchos::ParameterList& params,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::StructPoroReaction::ConsitutiveDerivatives(Teuchos::ParameterList& params,
+void MAT::StructPoroReaction::ConstitutiveDerivatives(Teuchos::ParameterList& params,
                                               double     press,
                                               double     J,
                                               double     porosity,
@@ -187,7 +187,7 @@ void MAT::StructPoroReaction::ConsitutiveDerivatives(Teuchos::ParameterList& par
   Reaction(cnp,porosity,params);
 
   //call base class
-  StructPoro::ConsitutiveDerivatives(params,
+  StructPoro::ConstitutiveDerivatives(params,
                          press,
                          J,
                          porosity,

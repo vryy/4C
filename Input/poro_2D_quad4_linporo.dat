@@ -9,33 +9,35 @@
 General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
-2D poro structure interaction problem testing
-- quad 9 elements
-- brinkman flow
-- structure split
-- dirichlet boundary condition on fsi interface
+testing framework for 2D porus medium with quad4 elements
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      4
 //NODES                         9
 DIM                             2
 --------------------------------------------------------------DISCRETISATION
+NUMAIRWAYSDIS                   0
+NUMALEDIS                       0
+NUMARTNETDIS                    0
+NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1
+NUMTHERMDIS                     0
 ---------------------------------------------------------------FLUID DYNAMIC
-CALCERROR                       no
+CONVCHECK                       L_2_norm
 CONVFORM                        convective
 GRIDVEL                         BE
 INITIALFIELD                    zero_field
-PREDICTOR                       steady_state                  // steady_state explicit_second_order_midpoint
+PREDICTOR                       steady_state
 THETA                           0.66
-TIMEINTEGR                      One_Step_Theta
+TIMEINTEGR                      One_Step_Theta //One_Step_Theta Stationary
+UPRES                           1
 LINEAR_SOLVER                   3
--------------------------------------FLUID DYNAMIC/POROUS-FLOW STABILIZATION
+----------------------------------FLUID DYNAMIC/POROUS-FLOW STABILIZATION
 CROSS-STRESS                    no_cross
 GRAD_DIV                        no
 DEFINITION_TAU                  Franca_Madureira_Valentin_Badia_Codina
 EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
-PSPG                            yes //yes no_pspg
+PSPG                            yes //yes no
 REYNOLDS-STRESS                 no_reynolds
 RSTAB                           rstab_gls //rstab_gls no_rstab
 STABTYPE                        residual_based //residual_based no_stabilization
@@ -43,21 +45,40 @@ SUPG                            no
 TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           no_vstab
+--------------------------------------------------------------------------IO
+FILESTEPS                       1000
+FLUID_SOL                       Yes
+FLUID_STRESS                    No
+FLUID_VIS                       No
+FLUID_WALL_SHEAR_STRESS         No
+OUTPUT_BIN                      Yes
+STRUCT_DISP                     Yes
+STRUCT_SE                       No
+STRUCT_STRAIN                   No
+STRUCT_STRESS                   No
+STRUCT_COUPLING_STRESS          Cauchy
+STRUCT_SURFACTANT               No
+THERM_HEATFLUX                  None
+THERM_TEMPERATURE               No
+THERM_TEMPGRAD                  None
 ------------------------------------------------------POROELASTICITY DYNAMIC
-COUPALGO                        poro_monolithicstructuresplit
+COUPALGO                        poro_monolithic //poro_monolithic poro_monolithicstructuresplit poro_monolithicfluidsplit
 PHYSICAL_TYPE                   Poro
 ITEMAX                          20
 ITEMIN                          1
-MAXTIME                         8
+MAXTIME                         800
 NORMCOMBI_RESFINC               And
-NUMSTEP                         50
-RESTARTEVRY                     40
-TOLRES_GLOBAL                   1e-08
-TOLINC_GLOBAL                   1e-06
 NORM_INC                        AbsGlobal
-NORM_RESF                       AbsGlobal
-VECTORNORM_RESF                 L2
-VECTORNORM_INC                  L2
+NORM_RESF                       AbsSingleFields
+NUMSTEP                         100
+RESTARTEVRY                     100
+TOLINC_GLOBAL                   1e-06
+TOLRES_DISP                     1e-08
+TOLRES_VEL                      1e-08
+TOLRES_PRES                     1e-08
+TOLRES_PORO                     1e-08
+VECTORNORM_RESF                 Inf
+VECTORNORM_INC                  L1_Scaled
 TIMESTEP                        0.01
 UPRES                           1
 LINEAR_SOLVER                   1
@@ -66,7 +87,6 @@ CONTIPARTINT                    yes
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Poroelasticity
 RESTART                         0
-//!RESTART                      40
 SHAPEFCT                        Polynomial
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
@@ -76,7 +96,8 @@ SOLVER                          UMFPACK
 SOLVER                          UMFPACK                       // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         Material
-DYNAMICTYP                      OneStepTheta
+DIVERCONT                       stop
+DYNAMICTYP                      OneStepTheta //OneStepTheta Statics
 PREDICT                         ConstDis
 LINEAR_SOLVER                   1
 --------------------------------------------------------CLONING MATERIAL MAP
@@ -84,14 +105,15 @@ SRC_FIELD structure SRC_MAT 1 TAR_FIELD porofluid TAR_MAT 3
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.66
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_StructPoro MATID 2 POROLAWID 10 INITPOROSITY 0.4
-MAT 10 MAT_PoroLawNeoHooke BULKMODULUS 2.0e8 PENALTYPARAMETER 0.001
+MAT 1 MAT_StructPoro MATID 2 POROLAWID 5 INITPOROSITY 0.4
+MAT 5 MAT_PoroLawLinear BULKMODULUS 2.0e8
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 0.5
 MAT 4 ELAST_CoupNeoHooke YOUNG 2.0e4 NUE 0.3
-MAT 3 MAT_FluidPoro DYNVISCOSITY 0.01 DENSITY 1.0 PERMEABILITY 1.0e-2 TYPE Darcy-Brinkman
+MAT 3 MAT_FluidPoro DYNVISCOSITY 0.01 DENSITY 1.0 PERMEABILITY 1.0e-2 TYPE Darcy
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC -1.0*0.5*(1-cos((t*pi/2.0))) t1 0.0 t2 2.0 // Tmax=4
 CURVE1 on EXPR FUNC -1.0 t1 2.0 t2 2000.0 // Tmax=4
+//CURVE1 on EXPR FUNC 1-exp(-t^2/0.5) t1 0.0 t2 200000.0 // Tmax=4
 ----------------------------------------------------------------------CURVE2
 ----------------------------------------------------------------------CURVE3
 ----------------------------------------------------------------------CURVE4
@@ -100,42 +122,48 @@ CURVE1 on EXPR FUNC -1.0 t1 2.0 t2 2000.0 // Tmax=4
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS porofluid NODE 4 QUANTITY velx VALUE -2.68902163012234741e-04 TOLERANCE 1e-9
-FLUID DIS porofluid NODE 5 QUANTITY pressure VALUE 1.46870788817364900e-01 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 2 QUANTITY dispx VALUE -4.89188924420986705e-05 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE -4.83501920248290308e-05 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 4 QUANTITY dispx VALUE -8.80139012242946807e-05 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 4 QUANTITY velx VALUE -5.34587208527327780e-04 TOLERANCE 1e-8
+FLUID DIS porofluid NODE 4 QUANTITY velx VALUE -7.85398163397448279e-01 TOLERANCE 1e-8
+FLUID DIS porofluid NODE 5 QUANTITY pressure VALUE -5.37600171850208686e-03 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 2 QUANTITY dispx VALUE -2.50028445501940477e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE -2.50061265659034582e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 4 QUANTITY dispx VALUE -5.00000000000000555e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 4 QUANTITY velx VALUE -7.85398163397448279e-01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE 0 TOLERANCE 1e-14
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         5
 NDLINE                          6
 NDSURF                          1
 NDVOL                           0
-----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-DLINE                           1
-// Surface x+
-E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0 Live Mid
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          4
 // Point x+y+
-E 1 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 1 - NUMDOF 2 ONOFF 1 1 VAL 1.0 0.0 CURVE 1 none FUNCT 0 0
 // Point x-y+
 E 2 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
 // Point x-y-
 E 3 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
 // Point x+y-
-E 4 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 4 - NUMDOF 2 ONOFF 1 1 VAL 1.0 0.0 CURVE 1 none FUNCT 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           4
 //                              Line_x+
-E 1 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 1 - NUMDOF 2 ONOFF 1 1 VAL 1.0 0.0 CURVE 1 none FUNCT 0 0
 //                              Line_x-
 E 2 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
 //                              Line_y+
 E 3 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
 //                              Line_y-
 E 4 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+---------------------------------DESIGN LINE NORMAL NO PENETRATION CONDITION
+DLINE                           2
+//                              Line_x+
+E 1 -
+//                              Line_x-
+E 2 -
+//                              Line_y+
+//E 3 -
+//                              Line_y-
+//E 4 -
 ----------------------------------------DESIGN LINE PORO PARTIAL INTEGRATION
 DLINE                           2
 //                              Line_x+
@@ -150,10 +178,6 @@ E 4 -
 DSURF                           1
 //                              Surface
 E 1 -
------------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
-DLINE                           2
-E 1 - 1 fluid conforming
-E 2 - 2 fluid conforming
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
 NODE 5 DNODE 2

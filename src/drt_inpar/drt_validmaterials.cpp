@@ -1746,10 +1746,43 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             INPAR::MAT::m_structporo));
 
     AddNamedInt(m,"MATID","ID of structure material");
+    AddNamedInt(m,"POROLAWID","ID of porosity law");
     AddNamedReal(m,"INITPOROSITY","initial porosity of porous medium");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+  /*----------------------------------------------------------------------*/
+  // hyperelastic material for poroelasticity
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_PoroLawLinear",
+                                            "linear consitutive law for porosity",
+                                            INPAR::MAT::m_poro_law_linear));
+
+    AddNamedReal(m,"BULKMODULUS","bulk modulus of porous medium");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+  /*----------------------------------------------------------------------*/
+  // hyperelastic material for poroelasticity
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_PoroLawConstant",
+                                            "constant consitutive law for porosity",
+                                            INPAR::MAT::m_poro_law_constant));
+
+    AppendMaterialDefinition(matlist,m);
+  }
+  /*----------------------------------------------------------------------*/
+  // hyperelastic material for poroelasticity
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_PoroLawNeoHooke",
+                                            "NeoHookean-like consitutive law for porosity",
+                                            INPAR::MAT::m_poro_law_logNeoHooke_Penalty));
+
     AddNamedReal(m,"BULKMODULUS","bulk modulus of porous medium");
     AddNamedReal(m,"PENALTYPARAMETER","penalty paramter of porous medium");
-  //  AddNamedBool(m,"REACTION","switch for reaction in porous medium");
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -1762,9 +1795,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             INPAR::MAT::m_structpororeaction));
 
     AddNamedInt(m,"MATID","ID of structure material");
+    AddNamedInt(m,"POROLAWID","ID of porosity law");
     AddNamedReal(m,"INITPOROSITY","initial porosity of porous medium");
-    AddNamedReal(m,"BULKMODULUS","bulk modulus of porous medium");
-    AddNamedReal(m,"PENALTYPARAMETER","penalty paramter of porous medium");
 
     AppendMaterialDefinition(matlist,m);
   }

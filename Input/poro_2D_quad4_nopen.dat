@@ -103,7 +103,8 @@ EVALUATION_MAT                  integration_point
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_StructPoro MATID 2 INITPOROSITY 0.8 BULKMODULUS 5.0e2 PENALTYPARAMETER 0.0
+MAT 1 MAT_StructPoro MATID 2 POROLAWID 10 INITPOROSITY 0.8
+MAT 10 MAT_PoroLawNeoHooke BULKMODULUS 5.0e2 PENALTYPARAMETER 0.0
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 0.01
 MAT 4 ELAST_CoupNeoHooke YOUNG 2500.0 NUE 0.3
 MAT 5 MAT_FluidPoro DYNVISCOSITY 0.01 DENSITY 1.0 PERMEABILITY 10.1 TYPE Darcy
