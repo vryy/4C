@@ -17,7 +17,7 @@ fluid-fluid interface not fixed during Newton iteration
 ----------------------------------------------------------------PROBLEM SIZE
 DIM                             3
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_Fluid_FSI
+PROBLEMTYP                      Fluid_Structure_Interaction
 RESTART                         0
 ---------------------------------------------------------------FLUID DYNAMIC
 CONVFORM                        convective
@@ -53,7 +53,7 @@ LINEAR_SOLVER                   1
 TIMESTEP                        0.4
 NUMSTEP                         4
 RESTARTEVRY                     1
-COUPALGO                        iter_fluidfluid_monolithicstructuresplit
+COUPALGO                        iter_fluidfluid_monolithicstructuresplit_nonox
 SECONDORDER                     No
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 ITEMAX                          15
@@ -63,6 +63,7 @@ SOLVER                          UMFPACK
 ----------------------------------------------------------------XFEM GENERAL
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 MONOLITHIC_XFFSI_APPROACH       xffsi_full_newton
+XFLUIDFLUID                     yes
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Hybrid_LM_Cauchy_stress
 COUPLING_STRATEGY               xfluid_sided_coupling
@@ -75,12 +76,12 @@ SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC t*t t1 0.0 t2 20
 ----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         3
-NDLINE                          0
-NDSURF                          6
-NDVOL                           4
+NDPOINT 3
+NDLINE 0
+NDSURF 6
+NDVOL 4
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT                          3
+DPOINT 3
 // bgFluid inflow
 E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.1 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
 // fluid fsi
@@ -88,11 +89,11 @@ E 2 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT
 // str fsi
 E 3 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF                           1
+DSURF 1
 // str dirichlet
 E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-DVOL                            3
+DVOL 3
 // bgfluid volume
 E 1 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // embedded volume
@@ -100,23 +101,23 @@ E 2 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT
 // structure volume
 E 3 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 --------------------------------------------DESIGN VOL ALE DIRICH CONDITIONS
-DVOL                            1
+DVOL 1
 // embedded volume
 E 2 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
-DSURF                           2
+DSURF 2
 // fluid fsi
 E 1 - 1
 // structure fsi
 E 5 - 1
 --------------------------------------DESIGN XFEM FLUIDFLUID SURF CONDITIONS
-DSURF                           1
-//                              xfem
+DSURF 1
+// xfem
 E 2 - 1 xfluid
 ---------------------------------DESIGN FLUID FLUID COUPLING SURF CONDITIONS
-DSURF                           0
+DSURF 0
 ------------------------------------------DESIGN MOVING FLUID VOL CONDITIONS
-DVOL                            1
+DVOL 1
 // embedded volume
 E 2 - 1
 ---------------------------------------------------------DNODE-NODE TOPOLOGY

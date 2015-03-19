@@ -170,8 +170,7 @@ Teuchos::RCP<STR::TimIntExpl> STR::TimIntExplCreate
       probtype == prb_gas_fsi or
       probtype == prb_ac_fsi or
       probtype == prb_biofilm_fsi or
-      probtype == prb_thermo_fsi or
-      probtype == prb_fluid_fluid_fsi)
+      probtype == prb_thermo_fsi)
   {
     dserror("no explicit time integration with fsi");
   }

@@ -4,7 +4,7 @@ created by pre_exodus
 DIM                             3
 NODES                           630
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_Fluid_FSI
+PROBLEMTYP                      Fluid_Structure_Interaction
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMALEDIS                       0
@@ -31,7 +31,7 @@ ALPHA_F                         1.00
 ALPHA_M                         1.00
 CONVCHECK                       L_2_norm
 CONVTOL                         1e-06
-INITIALFIELD                    zero_field //field_by_function
+INITIALFIELD                    zero_field                    //field_by_function
 ITEMAX                          10
 LIFTDRAG                        No
 MAXTIME                         50
@@ -50,13 +50,13 @@ NONLINEARBC                     no
 LINEAR_SOLVER                   1
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based                // edge_based //
-DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
+DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall_wo_dt  //Barrenechea_Franca_Valentin_Wall
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG                            yes //no                      //
-SUPG                            yes//no //
+PSPG                            yes                           //no //
+SUPG                            yes//no                       //
 VSTAB                           no_vstab
-GRAD_DIV                        no //yes
+GRAD_DIV                        no                            //yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
@@ -74,16 +74,17 @@ BOUNDARY_GAUSS_POINTS_BY        Tessellation
 XFLUIDFLUID_TIMEINT             Xff_TimeInt_ProjIfMoved       // Xff_TimeInt_FullProj// //Xff_TimeInt_KeepGhostValues //// //
 MONOLITHIC_XFFSI_APPROACH       xffsi_fixedALE_partitioned// xffsi_full_newton  // xffsi_fixedALE_interpolation
 RELAXING_ALE                    Yes
+XFLUIDFLUID                     yes
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Hybrid_LM_Cauchy_stress       // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
 COUPLING_STRATEGY               xfluid_sided_coupling
-NIT_STAB_FAC                   100.0                         // (relevant for nitsche)
+NIT_STAB_FAC                    100.0                         // (relevant for nitsche)
 VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk                  // eigenvalue
 VISC_STAB_HK                    vol_equivalent                // vol_div_by_surf // longest_ele_length (relevant for nitsche)
 XFF_CONV_STAB_SCALING           none
 GHOST_PENALTY_STAB              Yes
 GHOST_PENALTY_FAC               0.1
-HYBRID_LM_L2_PROJ               part_ele_proj //full_ele_proj (K_ss whole element or just partial)
+HYBRID_LM_L2_PROJ               part_ele_proj                 //full_ele_proj (K_ss whole element or just partial)
 -----------------------------------------------------------------ALE DYNAMIC
 ALE_TYPE                        solid
 TIMESTEP                        0.005
@@ -109,7 +110,7 @@ MAXTIME                         1000.0
 TIMESTEP                        1
 NUMSTEP                         1
 RESTARTEVRY                     1
-COUPALGO                        iter_fluidfluid_monolithicstructuresplit
+COUPALGO                        iter_fluidfluid_monolithicstructuresplit_nonox
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 ITEMAX                          10
 LINEARBLOCKSOLVER               PreconditionedKrylov          // FSIAMG PreconditionedKrylov
@@ -169,10 +170,10 @@ CURVE4 on EXPR FUNC 0 t1 0.0 t2 0.01
 CURVE4 on EXPR FUNC t*0.08 t1 0.02 t2 30 //x-bewegung ale
 ----------------------------------------------------------------------CURVE5
 CURVE5                          on EXPR FUNC 0 t1 0.0 t2 0.01
-CURVE5                          on EXPR FUNC t*0.08 t1 0.02 t2 30 //x-bewegung str
+CURVE5                          on EXPR FUNC t*0.08 t1 0.02 t2 30  //x-bewegung str
 ----------------------------------------------------------------------CURVE6
-CURVE6                          on EXPR FUNC 0 t1 0.0 t2 0.01 //y-bewegung str
-CURVE6                          on EXPR FUNC 0.15*(sin(2.0*pi*t/3.0))+0.03*(sin(2.0*pi*t/0.1)) t1 0.02 t2 30 //y-bewegung str
+CURVE6                          on EXPR FUNC 0 t1 0.0 t2 0.01  //y-bewegung str
+CURVE6                          on EXPR FUNC 0.15*(sin(2.0*pi*t/3.0))+0.03*(sin(2.0*pi*t/0.1)) t1 0.02 t2 30  //y-bewegung str
 ----------------------------------------------------------------------FUNCT1
 FUNCT1 EXPR 0 0 0 FUNCTION (-1/0.25)*(1/0.25)*(-0.25-y)*(0.25-y)
 ----------------------------------------------------------------------FUNCT2
@@ -184,12 +185,12 @@ FUNCT2 COMPONENT 3 EXPR 0 0.0 0 FUNCTION (1/0.4)*(1/0.4)*(0.8-2*y)
 FUNCT3 EXPR 0 0 0 FUNCTION (1/0.25)*(-1/0.25)*(0.25-y)*(-0.25-y)
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         6
-NDLINE                          0
-NDSURF                          3
-NDVOL                           5
+NDPOINT 6
+NDLINE 0
+NDSURF 3
+NDVOL 5
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT                          6
+DPOINT 6
 E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 E 3 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 3 0 0 0 0 0
@@ -198,27 +199,27 @@ E 5 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none non
 // slave Dirichlet at FSI interface
 E 6 - NUMDOF 6 ONOFF 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-DVOL                            3
+DVOL 3
 E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 E 3 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 --------------------------------------------DESIGN VOL ALE DIRICH CONDITIONS
-DVOL                            1
+DVOL 1
 E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
-DSURF                           2
+DSURF 2
 // FSI fluid
 E 1 - 1
 // FSI structure
 E 3 - 1
 --------------------------------------DESIGN XFEM FLUIDFLUID SURF CONDITIONS
-DSURF                           1
+DSURF 1
 E 2 - 1 xfluid
 ---------------------------------DESIGN FLUID FLUID COUPLING SURF CONDITIONS
-DSURF                           1
+DSURF 1
 E 2 - 1
 ------------------------------------------DESIGN MOVING FLUID VOL CONDITIONS
-DVOL                            1
+DVOL 1
 E 1 - 1
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 33 DNODE 1

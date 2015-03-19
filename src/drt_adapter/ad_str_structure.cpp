@@ -446,7 +446,6 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
     case prb_biofilm_fsi:
     case prb_thermo_fsi:
     case prb_fsi_xfem:
-    case prb_fluid_fluid_fsi:
     {
       const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
       const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");

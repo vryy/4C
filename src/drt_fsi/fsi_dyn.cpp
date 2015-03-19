@@ -228,192 +228,6 @@ void fluid_xfem_drt()
 }
 
 /*----------------------------------------------------------------------*/
-// entry point for fluid-fluid-fsi based on XFEM
-/*----------------------------------------------------------------------*/
-void fluid_fluid_fsi_drt()
-{
-  /* |--str dofs--|--embfluid dofs--|--bgfluid dofs--|--ale dofs--|-> */
-
-  // create a communicator
-  Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(DRT::Problem::Instance()->GetDis("fluid")->Comm().Clone());
-
-  DRT::Problem* problem = DRT::Problem::Instance();
-
-  Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis("structure");
-  structdis->FillComplete();
-
-  FLD::XFluid::SetupFluidDiscretization();
-
-  //-------------------------------------------------------------------------
-
-  // create ale elements if the ale discretization is empty
-  Teuchos::RCP<DRT::Discretization> aledis = DRT::Problem::Instance()->GetDis("ale");
-  if (aledis->NumGlobalNodes()==0)
-  {
-    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(DRT::Problem::Instance()->GetDis("fluid"),aledis);
-    // setup material in every ALE element
-    Teuchos::ParameterList params;
-    params.set<std::string>("action", "setup_material");
-    aledis->Evaluate(params);
-  }
-  else  // ale discretization in input file
-    dserror("Providing an ALE mesh is not supported for problemtype Fluid_Fluid_FSI.");
-
-  aledis->FillComplete();
-
-  // print all dofsets
-  structdis->GetDofSetProxy()->PrintAllDofsets(*comm);
-
-  const Teuchos::ParameterList& fsidyn   = problem->FSIDynamicParams();
-  int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
-  switch (coupling)
-  {
-    case fsi_iter_fluidfluid_monolithicstructuresplit:
-    {
-      Teuchos::RCP<FSI::MonolithicNoNOX> fsi = Teuchos::rcp(new FSI::FluidFluidMonolithicStructureSplitNoNOX(*comm,fsidyn));
-
-       // now do the coupling setup an create the combined dofmap
-      fsi->SetupSystem();
-
-      const int restart = DRT::Problem::Instance()->Restart();
-      if (restart)
-      {
-        // read the restart information, set vectors and variables
-        fsi->ReadRestart(restart);
-      }
-
-      // here we go...
-      fsi->Timeloop();
-
-      DRT::Problem::Instance()->AddFieldTest(fsi->FluidField()->CreateFieldTest());
-      DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
-
-      // create fsi specific result test
-      Teuchos::RCP<FSI::FSIResultTest> fsitest = Teuchos::rcp(new FSI::FSIResultTest(fsi,fsidyn));
-      DRT::Problem::Instance()->AddFieldTest(fsitest);
-
-      // do the actual testing
-      DRT::Problem::Instance()->TestAll(*comm);
-
-      break;
-    }
-    case fsi_iter_fluidfluid_monolithicfluidsplit:
-    {
-      Teuchos::RCP<FSI::MonolithicNoNOX> fsi = Teuchos::rcp(new FSI::FluidFluidMonolithicFluidSplitNoNOX(*comm,fsidyn));
-
-       //Setup the coupling, create the combined dofmap
-      fsi->SetupSystem();
-
-      const int restart = DRT::Problem::Instance()->Restart();
-      if (restart)
-      {
-        // Read the restart information, set vectors and variables
-        fsi->ReadRestart(restart);
-      }
-
-      fsi->Timeloop();
-
-      DRT::Problem::Instance()->AddFieldTest(fsi->FluidField()->CreateFieldTest());
-      DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
-
-      // create fsi specific result test
-      Teuchos::RCP<FSI::FSIResultTest> fsitest = Teuchos::rcp(new FSI::FSIResultTest(fsi,fsidyn));
-      DRT::Problem::Instance()->AddFieldTest(fsitest);
-
-      // do the actual testing
-      DRT::Problem::Instance()->TestAll(*comm);
-
-      break;
-    }
-    case fsi_iter_fluidfluid_monolithicstructuresplit_nox:
-    {
-      Teuchos::RCP<FSI::Monolithic> fsi = Teuchos::rcp(new FSI::FluidFluidMonolithicStructureSplit(*comm,fsidyn));
-
-      // now do the coupling setup an create the combined dofmap
-      fsi->SetupSystem();
-
-      const int restart = DRT::Problem::Instance()->Restart();
-      if (restart)
-      {
-        // read the restart information, set vectors and variables
-        fsi->ReadRestart(restart);
-      }
-
-      // here we go...
-      fsi->Timeloop(fsi);
-
-      DRT::Problem::Instance()->AddFieldTest(fsi->FluidField()->CreateFieldTest());
-      DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
-      // create fsi specific result test
-      Teuchos::RCP<FSI::FSIResultTest> fsitest = Teuchos::rcp(new FSI::FSIResultTest(fsi,fsidyn));
-      DRT::Problem::Instance()->AddFieldTest(fsitest);
-      // do the actual testing
-      DRT::Problem::Instance()->TestAll(*comm);
-
-      break;
-    }
-    case fsi_iter_fluidfluid_monolithicfluidsplit_nox:
-    {
-      Teuchos::RCP<FSI::Monolithic> fsi = Teuchos::rcp(new FSI::FluidFluidMonolithicFluidSplit(*comm,fsidyn));
-
-      // now do the coupling setup an create the combined dofmap
-      fsi->SetupSystem();
-
-      const int restart = DRT::Problem::Instance()->Restart();
-      if (restart)
-      {
-        // read the restart information, set vectors and variables
-        fsi->ReadRestart(restart);
-      }
-
-      // here we go...
-      fsi->Timeloop(fsi);
-
-      DRT::Problem::Instance()->AddFieldTest(fsi->FluidField()->CreateFieldTest());
-      DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
-      // create fsi specific result test
-      Teuchos::RCP<FSI::FSIResultTest> fsitest = Teuchos::rcp(new FSI::FSIResultTest(fsi,fsidyn));
-      DRT::Problem::Instance()->AddFieldTest(fsitest);
-      // do the actual testing
-      DRT::Problem::Instance()->TestAll(*comm);
-
-      break;
-    }
-    default:
-    {
-      // Any partitioned algorithm
-      Teuchos::RCP<FSI::Partitioned> fsi;
-
-      INPAR::FSI::PartitionedCouplingMethod method =
-        DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn.sublist("PARTITIONED SOLVER"),"PARTITIONED");
-
-      if (method==INPAR::FSI::DirichletNeumannSlideale)
-          fsi = Teuchos::rcp(new FSI::DirichletNeumannSlideale(*comm));
-      else if (method==INPAR::FSI::DirichletNeumann)
-        fsi = Teuchos::rcp(new FSI::DirichletNeumann(*comm));
-      else
-        dserror("unsupported partitioned FSI scheme");
-
-      const int restart = DRT::Problem::Instance()->Restart();
-      if (restart)
-      {
-        // read the restart information, set vectors and variables
-        fsi->ReadRestart(restart);
-      }
-
-      fsi->Timeloop(fsi);
-      DRT::Problem::Instance()->AddFieldTest(fsi->MBFluidField()->CreateFieldTest());
-      DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
-
-      // do the actual testing
-      DRT::Problem::Instance()->TestAll(*comm);
-
-      break;
-    }
-  }
-}
-
-/*----------------------------------------------------------------------*/
 // entry point for (pure) free surface in DRT
 /*----------------------------------------------------------------------*/
 void fluid_freesurf_drt()
@@ -521,7 +335,14 @@ void fsi_ale_drt()
   // We rely on this ordering in certain non-intuitive places!
 
   problem->GetDis("structure")->FillComplete();
-  problem->GetDis("fluid")->FillComplete();
+
+  if (DRT::INPUT::IntegralValue<bool>((problem->XFluidDynamicParams().sublist("GENERAL")),"XFLUIDFLUID"))
+  {
+    FLD::XFluid::SetupFluidDiscretization();
+  }
+  else
+    problem->GetDis("fluid")->FillComplete();
+
   problem->GetDis("ale")->FillComplete();
 
   // get discretizations
@@ -577,6 +398,8 @@ void fsi_ale_drt()
     case fsi_iter_constr_monolithicstructuresplit:
     case fsi_iter_mortar_monolithicstructuresplit:
     case fsi_iter_mortar_monolithicfluidsplit:
+    case fsi_iter_fluidfluid_monolithicfluidsplit:
+    case fsi_iter_fluidfluid_monolithicstructuresplit:
     {
       // monolithic solver settings
       const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
@@ -619,6 +442,14 @@ void fsi_ale_drt()
       {
         fsi = Teuchos::rcp(new FSI::MortarMonolithicFluidSplit(comm, fsidyn));
       }
+      else if ( coupling==fsi_iter_fluidfluid_monolithicfluidsplit)
+      {
+        fsi = Teuchos::rcp(new FSI::FluidFluidMonolithicFluidSplit(comm,fsidyn));
+      }
+      else if ( coupling==fsi_iter_fluidfluid_monolithicstructuresplit)
+      {
+        fsi = Teuchos::rcp(new FSI::FluidFluidMonolithicStructureSplit(comm,fsidyn));
+      }
       else
       {
         dserror("Cannot find appropriate monolithic solver for coupling %d and linear strategy %d", coupling, linearsolverstrategy);
@@ -643,6 +474,51 @@ void fsi_ale_drt()
 
       // create result tests for single fields
       DRT::Problem::Instance()->AddFieldTest(fsi->AleField()->CreateFieldTest());
+      DRT::Problem::Instance()->AddFieldTest(fsi->FluidField()->CreateFieldTest());
+      DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
+
+      // create fsi specific result test
+      Teuchos::RCP<FSI::FSIResultTest> fsitest = Teuchos::rcp(new FSI::FSIResultTest(fsi,fsidyn));
+      DRT::Problem::Instance()->AddFieldTest(fsitest);
+
+      // do the actual testing
+      DRT::Problem::Instance()->TestAll(comm);
+
+      break;
+    }
+    case fsi_iter_fluidfluid_monolithicfluidsplit_nonox:
+    case fsi_iter_fluidfluid_monolithicstructuresplit_nonox:
+    {
+      Teuchos::RCP<FSI::MonolithicNoNOX> fsi;
+      if ( coupling==fsi_iter_fluidfluid_monolithicfluidsplit_nonox)
+      {
+        fsi = Teuchos::rcp(new FSI::FluidFluidMonolithicFluidSplitNoNOX(comm,fsidyn));
+      }
+      else if ( coupling==fsi_iter_fluidfluid_monolithicstructuresplit_nonox)
+      {
+        fsi = Teuchos::rcp(new FSI::FluidFluidMonolithicStructureSplitNoNOX(comm,fsidyn));
+      }
+      else
+        dserror("Unsupported monolithic XFFSI scheme");
+
+      // read the restart information, set vectors and variables ---
+      // be careful, dofmaps might be changed here in a Redistribute call
+      const int restart = DRT::Problem::Instance()->Restart();
+      if (restart)
+      {
+        fsi->ReadRestart(restart);
+      }
+
+      // now do the coupling setup and create the combined dofmap
+      fsi->SetupSystem();
+
+      // here we go...
+      fsi->Timeloop();
+
+      // calculate errors in comparison to analytical solution
+      fsi->FluidField()->CalculateError();
+
+      // create result tests for single fields
       DRT::Problem::Instance()->AddFieldTest(fsi->FluidField()->CreateFieldTest());
       DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
 

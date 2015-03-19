@@ -37,7 +37,7 @@ FSI::FSIResultTest::FSIResultTest(Teuchos::RCP<FSI::Monolithic>& fsi,
   switch (coupling)
   {
     case fsi_iter_monolithicfluidsplit:
-    case fsi_iter_fluidfluid_monolithicfluidsplit_nox:
+    case fsi_iter_fluidfluid_monolithicfluidsplit:
     {
       const Teuchos::RCP<FSI::MonolithicFluidSplit>& fsiobject
         = Teuchos::rcp_dynamic_cast<FSI::MonolithicFluidSplit>(fsi);
@@ -52,7 +52,7 @@ FSI::FSIResultTest::FSIResultTest(Teuchos::RCP<FSI::Monolithic>& fsi,
       break;
     }
     case fsi_iter_monolithicstructuresplit:
-    case fsi_iter_fluidfluid_monolithicstructuresplit_nox:
+    case fsi_iter_fluidfluid_monolithicstructuresplit:
     {
       const Teuchos::RCP<FSI::MonolithicStructureSplit>& fsiobject
         = Teuchos::rcp_dynamic_cast<FSI::MonolithicStructureSplit>(fsi);
@@ -115,7 +115,7 @@ FSI::FSIResultTest::FSIResultTest(Teuchos::RCP<FSI::MonolithicNoNOX> fsi,
   int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
   switch (coupling)
   {
-    case fsi_iter_fluidfluid_monolithicstructuresplit:
+    case fsi_iter_fluidfluid_monolithicstructuresplit_nonox:
     {
       // Lagrange multipliers live on the slave field
       slavedisc_ = fsi->StructureField()->Discretization();
@@ -129,7 +129,7 @@ FSI::FSIResultTest::FSIResultTest(Teuchos::RCP<FSI::MonolithicNoNOX> fsi,
 
       break;
     }
-   case fsi_iter_fluidfluid_monolithicfluidsplit:
+   case fsi_iter_fluidfluid_monolithicfluidsplit_nonox:
     {
       // Lagrange multiplier lives on the slave field (fluid in this case!)
       slavedisc_ = fsi->FluidField()->Discretization();

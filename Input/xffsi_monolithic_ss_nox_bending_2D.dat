@@ -15,7 +15,7 @@ Stabilization: face-oriented on intersected elements, residual based elsewhere
 DIM                             3
 NODES                           3198
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_Fluid_FSI
+PROBLEMTYP                      Fluid_Structure_Interaction
 RESTART                         0//215//
 --------------------------------------------------------------------------IO
 -----------------------------------------------------------------FSI DYNAMIC
@@ -23,7 +23,7 @@ MAXTIME                         8
 TIMESTEP                        0.003                         //0.00625
 NUMSTEP                         4//400
 RESTARTEVRY                     2
-COUPALGO                        iter_fluidfluid_monolithicstructuresplit_nox
+COUPALGO                        iter_fluidfluid_monolithicstructuresplit
 SECONDORDER                     no
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 LINEARBLOCKSOLVER               PreconditionedKrylov          // FSIAMG PreconditionedKrylov
@@ -164,6 +164,7 @@ XFLUIDFLUID_TIMEINT             Xff_TimeInt_FullProj//Xff_TimeInt_IncompProj Xff
 MONOLITHIC_XFFSI_APPROACH       xffsi_fixedALE_partitioned
 RELAXING_ALE                    yes
 RELAXING_ALE_EVERY              1
+XFLUIDFLUID                     yes
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1000 NUE 0.3 DENS 1 THEXPANS 0

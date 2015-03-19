@@ -6826,8 +6826,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   name[18] = "iter_mortar_monolithicfluidsplit";              label[18] = fsi_iter_mortar_monolithicfluidsplit;
   name[19] = "iter_fluidfluid_monolithicstructuresplit";      label[19] = fsi_iter_fluidfluid_monolithicstructuresplit;
   name[20] = "iter_fluidfluid_monolithicfluidsplit";          label[20] = fsi_iter_fluidfluid_monolithicfluidsplit;
-  name[21] = "iter_fluidfluid_monolithicstructuresplit_nox";  label[21] = fsi_iter_fluidfluid_monolithicstructuresplit_nox;
-  name[22] = "iter_fluidfluid_monolithicfluidsplit_nox";      label[22] = fsi_iter_fluidfluid_monolithicfluidsplit_nox;
+  name[21] = "iter_fluidfluid_monolithicstructuresplit_nonox";  label[21] = fsi_iter_fluidfluid_monolithicstructuresplit_nonox;
+  name[22] = "iter_fluidfluid_monolithicfluidsplit_nonox";      label[22] = fsi_iter_fluidfluid_monolithicfluidsplit_nonox;
 
   setStringToIntegralParameter<int>("COUPALGO","iter_stagg_AITKEN_rel_param",
                                     "Iteration Scheme over the fields",

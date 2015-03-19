@@ -12,7 +12,7 @@ created by pre_exodus
 DIM                             3
 NODES                           6336
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_Fluid_FSI
+PROBLEMTYP                      Fluid_Structure_Interaction
 --------------------------------------------------------------DISCRETISATION
 NUMALEDIS                       0
 NUMFLUIDDIS                     1
@@ -91,7 +91,7 @@ MAXTIME                         10000.0
 TIMESTEP                        0.03
 NUMSTEP                         2
 RESTARTEVRY                     5
-COUPALGO                        iter_fluidfluid_monolithicstructuresplit
+COUPALGO                        iter_fluidfluid_monolithicstructuresplit_nonox
 SECONDORDER                     no
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 LINEARBLOCKSOLVER               PreconditionedKrylov          // FSIAMG PreconditionedKrylov
@@ -123,6 +123,7 @@ XFLUIDFLUID_TIMEINT             Xff_TimeInt_FullProj//Xff_TimeInt_IncompProj Xff
 MONOLITHIC_XFFSI_APPROACH       xffsi_fixedALE_partitioned
 RELAXING_ALE                    yes
 RELAXING_ALE_EVERY              1
+XFLUIDFLUID                     yes
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1 DENSITY 1
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 10000 NUE 0.0 DENS 1
