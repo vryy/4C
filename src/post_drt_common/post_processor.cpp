@@ -291,8 +291,19 @@ void runEnsightVtuFilter(PostProblem    &problem)
       FluidFilter fluidwriter(fluidfield, basename);
       fluidwriter.WriteFiles();
 
+      // start index for interface discretizations
+      int idx_int = 2;
+      if (numfield > 1 && problem.get_discretization(2)->name()=="xfluid")
+      {
+        std::cout << "  XFluid Field" << std::endl;
+        PostField* xfluidfield = problem.get_discretization(2);
+        FluidFilter xfluidwriter(xfluidfield, basename);
+        xfluidwriter.WriteFiles();
+        idx_int += 1;
+      }
+
       // all other fields are interface fields
-      for(int i=2; i<numfield;i++)
+      for(int i=idx_int; i<numfield;i++)
       {
         std::cout << "  Interface Field ( "<< problem.get_discretization(i)->name() << " )" << std::endl;
         PostField* ifacefield = problem.get_discretization(i);
@@ -356,7 +367,7 @@ void runEnsightVtuFilter(PostProblem    &problem)
       fluidwriter.WriteFiles();
 
       // start index for interface discretizations
-      int int_idx = 1;
+      int idx_int = 1;
       if (problem.num_discr()>1 and problem.get_discretization(1)->name()=="xfluid")
       {
         // XFluid for XFF
@@ -364,11 +375,11 @@ void runEnsightVtuFilter(PostProblem    &problem)
         PostField* xfluidfield = problem.get_discretization(1);
         FluidFilter xfluidwriter(xfluidfield, basename);
         xfluidwriter.WriteFiles();
-        int_idx += 1;
+        idx_int += 1;
       }
 
       // all other fields are interface fields
-      for(int i=int_idx; i<numfield;i++)
+      for(int i=idx_int; i<numfield;i++)
       {
         std::cout << "  Interface Field ( "<< problem.get_discretization(i)->name() << " )" << std::endl;
         PostField* ifacefield = problem.get_discretization(i);
