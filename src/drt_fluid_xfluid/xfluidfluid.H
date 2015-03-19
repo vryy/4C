@@ -54,6 +54,17 @@ public:
     bool                                            ale_fluid  = false  ///< embedded fluid in ALE-formulation
   );
 
+  //! ctor for multiple mesh coupling
+  XFluidFluid(
+    const Teuchos::RCP<FLD::FluidImplicitTimeInt> & embedded_fluid,     ///< embedded fluid
+    const Teuchos::RCP<DRT::Discretization>&        xfluiddis,          ///< background fluid discretization
+    const Teuchos::RCP<DRT::Discretization>&        soliddis,           ///< structure discretization to couple with
+    const Teuchos::RCP<LINALG::Solver>&             solver,             ///< fluid solver
+    const Teuchos::RCP<Teuchos::ParameterList>&     params,             ///< xfluid params
+    bool                                            ale_xfluid = false, ///< background (XFEM) fluid in ALE-formulation
+    bool                                            ale_fluid  = false  ///< embedded fluid in ALE-formulation
+  );
+
   virtual ~XFluidFluid();
 
   /// initialization
@@ -176,8 +187,7 @@ public:
   bool XTimint_DoIncrementStepTransfer(
       const bool screen_out,
       const bool firstcall_in_timestep
-  )
-  { return true; }
+  );
 
   /// update grid velocity of embedded fluid
   void UpdateGridv(){ embedded_fluid_->UpdateGridv(); }

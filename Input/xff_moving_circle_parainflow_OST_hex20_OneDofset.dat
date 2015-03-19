@@ -11,7 +11,7 @@ created by pre_exodus
 //NODES                         867
 DIM                             3
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_Fluid_Ale
+PROBLEMTYP                      Fluid_Ale
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMALEDIS                       0
@@ -101,6 +101,7 @@ IS_PSEUDO_2D                    yes
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 XFLUIDFLUID_TIMEINT             Xff_TimeInt_FullProj
 MONOLITHIC_XFFSI_APPROACH       xffsi_full_newton
+XFLUIDFLUID                     yes
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2

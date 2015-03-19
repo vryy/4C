@@ -38,8 +38,6 @@ typedef enum _PROBLEM_TYP
      prb_struct_ale,         // structural problem, ale formulation
      prb_fluid,              // fluid problem
      prb_fluid_xfem,         // fluid problem including XFEM interfaces
-     prb_fluid_fluid_ale,    //fluid_fluid_ale problem
-     prb_fluid_fluid,        // fluid_fluid problem
      prb_fluid_fluid_fsi,    // fluid_fluid fsi problem
      prb_fluid_ale,          // fluid on an ale mesh (no structure)
      prb_fluid_redmodels,    // fluid_redairways problem

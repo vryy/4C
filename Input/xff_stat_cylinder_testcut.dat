@@ -8,7 +8,7 @@ created by pre_exodus
 //NODES                         1592
 DIM                             3
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_Fluid_Ale
+PROBLEMTYP                      Fluid_Ale
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMALEDIS                       0
@@ -115,6 +115,7 @@ XFF_CONV_STAB_SCALING           none
 RELAXING_ALE                    Yes
 XFLUIDFLUID_TIMEINT             Xff_TimeInt_ProjIfMoved       // Xff_TimeInt_FullProj// //Xff_TimeInt_KeepGhostValues //// //
 MONOLITHIC_XFFSI_APPROACH       xffsi_fixedALE_partitioned// xffsi_full_newton  // xffsi_fixedALE_interpolation
+XFLUIDFLUID                     yes
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1000000 NUE 0.3 DENS 1 THEXPANS 0

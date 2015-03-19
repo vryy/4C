@@ -902,23 +902,17 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
 
       if (cond_type == INPAR::XFEM::CouplingCond_SURF_FLUIDFLUID)
       {
-
         // force to get the embedded element, even if background-sided coupling is active
-        // TODO: there are nicer ways...
-        const int coup_idx = cond_manager->GetCouplingIndex(coup_sid, my::eid_);
-        Teuchos::RCP<XFEM::CouplingBase> coupling = cond_manager->GetCouplingByIdx(coup_idx);
-
-        Teuchos::RCP<XFEM::MeshCouplingFluidFluid> mc_ff =
-            Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFluidFluid>(coupling);
-        coupl_ele = mc_ff->GetCondDis()->gElement( mc_ff->GetEmbeddedElementId(coup_sid) );
+        coupl_ele = cond_manager->GetCondElement(coup_sid);
 
         GEO::InitialPositionArray(coupl_xyze,coupl_ele);
 
         ci = DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype>::CreateSlaveElementRepresentation(coupl_ele,coupl_xyze);
 
         // set velocity (and pressure) of coupling/slave element at current time step
-        coupl_ele->LocationVector(*mc_ff->GetCondDis(),coupl_la,false);
-        ci->SetSlaveState(*mc_ff->GetCondDis(),coupl_la[0].lm_);
+        const int coup_idx = cond_manager->GetCouplingIndex(coup_sid,my::eid_);
+        coupl_ele->LocationVector(*cond_manager->GetCouplingByIdx(coup_idx)->GetCondDis(),coupl_la,false);
+        ci->SetSlaveState(*cond_manager->GetCouplingByIdx(coup_idx)->GetCondDis(),coupl_la[0].lm_);
       }
     }
 
@@ -3180,25 +3174,10 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
 
     if(!(is_ls_coupling_side and !cond_manager->IsCoupling( coup_sid, my::eid_ ))) // not level-set-WDBC case
     {
-      if (non_xfluid_coupling)
-      {
-        if(cond_type == INPAR::XFEM::CouplingCond_LEVELSET_TWOPHASE)
-          coupl_ele = ele;
-        else if(cond_type == INPAR::XFEM::CouplingCond_SURF_FLUIDFLUID)
-        {
-          Teuchos::RCP<XFEM::MeshCouplingFluidFluid> mc_ff =
-              Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFluidFluid>(coupling);
-          coupl_ele = coupl_dis_->gElement( mc_ff->GetEmbeddedElementId(coup_sid) );
-        }
-      }
-      else
-      {
-        // TODO get the coupling element / the coupling side!!!
-        coupl_ele = cond_manager->GetSide(coup_sid);
-      }
-
+      coupl_ele = cond_manager->GetCouplingElement(coup_sid, ele);
+      if (coupl_ele == NULL)
+        dserror("Failed to obtain coupling element for global coup_sid %d", coup_sid);
       GEO::InitialPositionArray(coupl_xyze,coupl_ele);
-
     }
 
     if(!cond_manager->IsCoupling( coup_sid, my::eid_ ))

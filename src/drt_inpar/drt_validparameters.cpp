@@ -7552,6 +7552,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& xfluid_general = xfluid_dyn.sublist("GENERAL",false,"");
 
+  // Do we use more than one fluid discretization?
+  BoolParameter("XFLUIDFLUID","no","Use an embedded fluid patch.", &xfluid_general);
+
   // How many monolithic steps we keep the fluidfluid-boundary fixed
   IntParameter("RELAXING_ALE_EVERY",1,"Relaxing Ale after how many monolithic steps",&xfluid_general);
 

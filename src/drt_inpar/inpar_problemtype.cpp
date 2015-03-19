@@ -27,8 +27,6 @@ std::map<std::string,PROBLEM_TYP> DRT::StringToProblemTypeMap()
     string2prbtype["Fluid"] =                                     prb_fluid;
     string2prbtype["Fluid_XFEM"] =                                prb_fluid_xfem;
     string2prbtype["Fluid_XFEM_LevelSet"] =                       prb_fluid_xfem_ls;
-    string2prbtype["Fluid_Fluid_Ale"] =                           prb_fluid_fluid_ale;
-    string2prbtype["Fluid_Fluid"] =                               prb_fluid_fluid;
     string2prbtype["Fluid_Fluid_FSI"] =                           prb_fluid_fluid_fsi;
     string2prbtype["Fluid_Ale"] =                                 prb_fluid_ale;
     string2prbtype["Fluid_RedModels"] =                           prb_fluid_redmodels;

@@ -467,10 +467,8 @@ void XFEM::MeshCouplingFluidFluid::GetCouplingEleLocationVector(
   std::vector<int> & patchlm)
 {
   std::vector<int> patchlmstride, patchlmowner; // dummy
-  int ele_gid = sid;
-  if (GetAveragingStrategy() == INPAR::XFEM::Embedded_Sided)
-    ele_gid = GetEmbeddedElementId(sid);
-  return coupl_dis_->gElement(ele_gid)->LocationVector(*coupl_dis_, patchlm, patchlmowner, patchlmstride);
+  DRT::Element * coupl_ele = GetCouplingElement(sid);
+  return coupl_ele->LocationVector(*coupl_dis_, patchlm, patchlmowner, patchlmstride);
 }
 
 /*--------------------------------------------------------------------------*
@@ -2452,6 +2450,31 @@ void XFEM::ConditionManager::GetInterfaceSlaveMaterial(
 {
   int mc = GetMeshCouplingIndex(coup_sid);
   mesh_coupl_[mc]->GetInterfaceSlaveMaterial(actele,mat);
+}
+
+DRT::Element* XFEM::ConditionManager::GetCouplingElement(
+    const int coup_sid, ///< the overall global coupling side id
+    DRT::Element * ele
+)
+{
+  if (IsMeshCoupling(coup_sid))
+  {
+    // get the mesh coupling object index
+    const int mc_idx =  GetMeshCouplingIndex(coup_sid);
+
+    // compute the side id w.r.t the cutter discretization the side belongs to
+    const int cutterdis_sid = GetCutterDisEleId(coup_sid, mc_idx);
+
+    // get the boundary discretization, the side belongs to
+    return mesh_coupl_[mc_idx]->GetCouplingElement(cutterdis_sid);
+  }
+  else
+  {
+    if (GetCouplingCondition(coup_sid, ele->Id()).first == INPAR::XFEM::CouplingCond_LEVELSET_TWOPHASE)
+      return ele;
+  }
+
+  return NULL;
 }
 
 void XFEM::ConditionManager::GetCouplingEleLocationVector(

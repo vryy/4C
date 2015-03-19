@@ -13,7 +13,7 @@ created by pre_exodus
 //NODES                         474
 DIM                             3
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_Fluid_Ale
+PROBLEMTYP                      Fluid_Ale
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMALEDIS                       0
@@ -106,6 +106,8 @@ NAME                            Ale_Solver
 SOLVER                          UMFPACK
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  No
+------------------------------------------------XFLUID DYNAMIC/GENERAL
+XFLUIDFLUID                     yes
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Hybrid_LM_Cauchy_stress       // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
 COUPLING_STRATEGY               xfluid_sided_coupling

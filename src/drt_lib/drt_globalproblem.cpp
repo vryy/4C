@@ -986,27 +986,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     break;
   }
-  case prb_fluid_fluid_ale:
-  {
-    fluiddis  = Teuchos::rcp(new DRT::DiscretizationFaces("fluid"    ,reader.Comm()));
-    xfluiddis = Teuchos::rcp(new DRT::DiscretizationXFEM("xfluid"   ,reader.Comm()));
-    aledis    = Teuchos::rcp(new DRT::Discretization("ale"      ,reader.Comm()));
-
-    // create discretization writer - in constructor set into and owned by corresponding discret
-    fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
-    xfluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(xfluiddis)));
-    aledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(aledis)));
-
-    AddDis("fluid", fluiddis);
-    AddDis("xfluid", xfluiddis);
-    AddDis("ale", aledis);
-
-    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", "FLUID3")));
-    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "FLUID3")));
-    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
-
-    break;
-  }
   case prb_fluid_fluid_fsi:
   {
     structdis = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
@@ -1029,23 +1008,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", "FLUID3")));
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "FLUID3")));
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
-
-    break;
-  }
-  case prb_fluid_fluid:
-  {
-    fluiddis  = Teuchos::rcp(new DRT::DiscretizationFaces("fluid"    ,reader.Comm()));
-    xfluiddis = Teuchos::rcp(new DRT::DiscretizationXFEM("xfluid"   ,reader.Comm()));
-
-    // create discretization writer - in constructor set into and owned by corresponding discret
-    fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
-    xfluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(xfluiddis)));
-
-    AddDis("fluid", fluiddis);
-    AddDis("xfluid", xfluiddis);
-
-    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", "FLUID3")));
-    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "FLUID3")));
 
     break;
   }
@@ -1100,7 +1062,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     break;
   }
-
   case prb_biofilm_fsi:
   {
       if(distype == "Nurbs")
@@ -1158,22 +1119,35 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   case prb_fsi_crack:
   {
     structdis = Teuchos::rcp(new DRT::Discretization("structure" ,reader.Comm()));
-    fluiddis  = Teuchos::rcp(new DRT::DiscretizationXFEM("fluid",reader.Comm()));
-    aledis    = Teuchos::rcp(new DRT::Discretization("ale"       ,reader.Comm()));
-
     // create discretization writer - in constructor set into and owned by corresponding discret
     structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
-    fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
-    aledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(aledis)));
-
     AddDis("structure", structdis);
-    AddDis("fluid", fluiddis);
-    AddDis("ale", aledis);
-
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
-    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
-    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
 
+    if(DRT::INPUT::IntegralValue<int>(XFluidDynamicParams().sublist("GENERAL"),"XFLUIDFLUID"))
+    {
+      fluiddis  = Teuchos::rcp(new DRT::DiscretizationFaces("fluid",reader.Comm()));
+      fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
+      AddDis("fluid", fluiddis);
+      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", "FLUID3")));
+
+      xfluiddis  = Teuchos::rcp(new DRT::DiscretizationXFEM("xfluid",reader.Comm()));
+      xfluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(xfluiddis)));
+      AddDis("xfluid", xfluiddis);
+      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "FLUID3")));
+    }
+    else
+    {
+      fluiddis  = Teuchos::rcp(new DRT::DiscretizationXFEM("fluid",reader.Comm()));
+      fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
+      AddDis("fluid", fluiddis);
+      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
+    }
+
+    aledis    = Teuchos::rcp(new DRT::Discretization("ale"       ,reader.Comm()));
+    aledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(aledis)));
+    AddDis("ale", aledis);
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
     break;
   }
   case prb_fpsi_xfem:
@@ -1330,21 +1304,19 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     else
     {
       fluiddis  = Teuchos::rcp(new DRT::DiscretizationFaces("fluid" ,reader.Comm()));
-      xfluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("xfluid",reader.Comm()));
+      if (DRT::INPUT::IntegralValue<bool>(XFluidDynamicParams().sublist("GENERAL"),"XFLUIDFLUID"))
+        xfluiddis = Teuchos::rcp(new DRT::DiscretizationXFEM("xfluid", reader.Comm()));
       aledis    = Teuchos::rcp(new DRT::Discretization("ale"        ,reader.Comm()));
     }
 
+
     // create discretization writer - in constructor set into and owned by corresponding discret
     fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
-    aledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(aledis)));
-
-    AddDis("fluid", fluiddis);
     if (xfluiddis!=Teuchos::null)
     {
       xfluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(xfluiddis)));
-      AddDis("xfluid", xfluiddis); // xfem discretization on slot 1
     }
-    AddDis("ale", aledis);
+    aledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(aledis)));
 
     std::set<std::string> fluidelementtypes;
     fluidelementtypes.insert("FLUID");
@@ -1352,8 +1324,18 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     fluidelementtypes.insert("FLUID3");
     fluidelementtypes.insert("FLUID3XW");
 
+    AddDis("fluid", fluiddis);
+    if (xfluiddis!=Teuchos::null)
+    {
+      AddDis("xfluid", xfluiddis); // xfem discretization on slot 1
+    }
+    AddDis("ale", aledis);
 
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS",fluidelementtypes)));
+    if (xfluiddis!=Teuchos::null)
+    {
+      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS",fluidelementtypes)));
+    }
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
 
     break;

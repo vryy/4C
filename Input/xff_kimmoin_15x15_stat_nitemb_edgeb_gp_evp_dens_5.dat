@@ -14,7 +14,7 @@ created by pre_exodus
 //NODES                         3509
 DIM                             3
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_Fluid
+PROBLEMTYP                      Fluid_XFEM
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -81,6 +81,7 @@ GMSH_CUT_OUT                    No
 VOLUME_GAUSS_POINTS_BY          Tessellation                  //MomentFitting //Tessellation //MomentFitting //Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation                  //MomentFitting //Tessellation
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
+XFLUIDFLUID                     yes
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche                       /// BoundaryTypeSigma // "BoundaryTypeTauPressure"BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
 COUPLING_STRATEGY               embedded_sided_coupling

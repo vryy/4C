@@ -18,7 +18,7 @@ DIM                             3
 MATERIALS                       1
 NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_Fluid
+PROBLEMTYP                      Fluid_XFEM
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMALEDIS                       0
@@ -100,6 +100,7 @@ GMSH_DEBUG_OUT                  No
 VOLUME_GAUSS_POINTS_BY          MomentFitting
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
+XFLUIDFLUID                     yes
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche                       // BoundaryTypeNitsche // BoundaryTypeNeumann
 COUPLING_STRATEGY               xfluid_sided_coupling

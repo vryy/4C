@@ -103,6 +103,8 @@ namespace FLD
         bool                                          alefluid = false ///< flag for alefluid
       );
 
+    static void SetupFluidDiscretization();
+
     /// initialization
     virtual void Init();
 

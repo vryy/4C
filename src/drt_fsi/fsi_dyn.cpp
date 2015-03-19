@@ -94,8 +94,17 @@ void fluid_ale_drt()
   // We rely on this ordering in certain non-intuitive places!
 
   Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis("fluid");
+  //check for xfem discretization
+  if (DRT::INPUT::IntegralValue<bool>((problem->XFluidDynamicParams().sublist("GENERAL")),"XFLUIDFLUID"))
+  {
+    FLD::XFluid::SetupFluidDiscretization();
+  }
+  else
+  {
+    fluiddis->FillComplete();
+  }
+
   Teuchos::RCP<DRT::Discretization> aledis   = problem->GetDis("ale");
-  fluiddis->FillComplete();
   aledis->FillComplete();
 
   // create ale elements if the ale discretization is empty
@@ -141,20 +150,7 @@ void fluid_xfem_drt()
   Teuchos::RCP<DRT::Discretization> soliddis = problem->GetDis("structure");
   soliddis->FillComplete();
 
-  Teuchos::RCP<DRT::DiscretizationXFEM> actdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(problem->GetDis("fluid"), true);
-  actdis->FillComplete();
-
-
-  const Teuchos::ParameterList xdyn = problem->XFEMGeneralParams();
-
-  // now we can reserve dofs for background fluid
-  int numglobalnodes = actdis->NumGlobalNodes();
-  int maxNumMyReservedDofsperNode = (xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
-    Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofsperNode,numglobalnodes));
-  actdis->ReplaceDofSet(maxdofset,true);
-  actdis->InitialFillComplete();
-
-  actdis->GetDofSetProxy()->PrintAllDofsets(actdis->Comm());
+  FLD::XFluid::SetupFluidDiscretization();
 
   const Teuchos::ParameterList xfluid = problem->XFluidDynamicParams();
   bool alefluid = DRT::INPUT::IntegralValue<bool>((xfluid.sublist("GENERAL")),"ALE_XFluid");
@@ -167,7 +163,7 @@ void fluid_xfem_drt()
     // create ale elements if the ale discretization is empty
     if (aledis->NumGlobalNodes()==0)
     {
-      DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(actdis,aledis);
+      DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(problem->GetDis("fluid"),aledis);
       // setup material in every ALE element
       Teuchos::ParameterList params;
       params.set<std::string>("action", "setup_material");
@@ -175,7 +171,7 @@ void fluid_xfem_drt()
     }
     else  // filled ale discretization
     {
-      if (!FSI::UTILS::FluidAleNodesDisjoint(actdis,aledis))
+      if (!FSI::UTILS::FluidAleNodesDisjoint(problem->GetDis("fluid"),aledis))
         dserror("Fluid and ALE nodes have the same node numbers. "
             "This it not allowed since it causes problems with Dirichlet BCs. "
             "Use either the ALE cloning functionality or ensure non-overlapping node numbering!");
@@ -227,225 +223,7 @@ void fluid_xfem_drt()
     // perform result tests if required
     problem->AddFieldTest(fluidalgo->FluidField()->CreateFieldTest());
     problem->TestAll(comm);
-
   }
-
-}
-
-
-
-/*----------------------------------------------------------------------*/
-// entry point for Fluid-Fluid based  on XFEM in DRT
-/*----------------------------------------------------------------------*/
-void fluid_fluid_ale_drt()
-{
-  DRT::Problem* problem = DRT::Problem::Instance();
-
-  // create a communicator
-  Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(problem->GetDis("fluid")->Comm().Clone());
-
-  Teuchos::RCP<DRT::Discretization> embfluiddis = problem->GetDis("fluid");
-  embfluiddis->FillComplete();
-
-  Teuchos::RCP<DRT::DiscretizationXFEM> bgfluiddis =  Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(problem->GetDis("xfluid"));
-  bgfluiddis->FillComplete();
-
-  const Teuchos::ParameterList xdyn = problem->XFEMGeneralParams();
-
-  // -------------------------------------------------------------------
-  // ---------------- find MovingFluid's elements and nodes
-  std::map<int, DRT::Node*> MovingFluidNodemap;
-  std::map<int, Teuchos::RCP< DRT::Element> > MovingFluidelemap;
-  DRT::UTILS::FindConditionObjects(*bgfluiddis, MovingFluidNodemap, MovingFluidelemap, "MovingFluid");
-
-  // local vectors of nodes and elements of moving dis
-  std::vector<int> MovingFluidNodeGIDs;
-  std::vector<int> MovingFluideleGIDs;
-
-  for( std::map<int, DRT::Node*>::iterator it = MovingFluidNodemap.begin(); it != MovingFluidNodemap.end(); ++it )
-    MovingFluidNodeGIDs.push_back( it->first);
-
-  for( std::map<int, Teuchos::RCP< DRT::Element> >::iterator it = MovingFluidelemap.begin(); it != MovingFluidelemap.end(); ++it )
-    MovingFluideleGIDs.push_back( it->first);
-
-  // --------------------------------------------------------------------------
-  // ------------------ gather information for moving fluid  -------------------
-
-  //information how many processors work at all
-  std::vector<int> allproc(embfluiddis->Comm().NumProc());
-
-  // Gather all informations from all processors
-  std::vector<int> MovingFluideleGIDsall;
-  std::vector<int> MovingFluidNodeGIDsall;
-
-  //in case of n processors allproc becomes a vector with entries (0,1,...,n-1)
-  for (int i=0; i<embfluiddis->Comm().NumProc(); ++i) allproc[i] = i;
-
-  //gathers information of MovingFluideleGIDs of all processors
-  LINALG::Gather<int>(MovingFluideleGIDs,MovingFluideleGIDsall,(int)embfluiddis->Comm().NumProc(),&allproc[0],embfluiddis->Comm());
-
-  //gathers information of MovingFluidNodeGIDs of all processors
-  LINALG::Gather<int>(MovingFluidNodeGIDs,MovingFluidNodeGIDsall,(int)embfluiddis->Comm().NumProc(),&allproc[0],embfluiddis->Comm());
-
-  //information how many processors work at all
-  std::vector<int> allprocbg(bgfluiddis->Comm().NumProc());
-
-  // -------------------------------------------------------------------------------
-  // -------------- now build the nonmoving vectors from the gathered moving vectors
-  std::vector<int> NonMovingFluideleGIDs;
-  std::vector<int> NonMovingFluidNodeGIDs;
-  for (int iele=0; iele< bgfluiddis->NumMyColElements(); ++iele)
-  {
-    DRT::Element* bgele = bgfluiddis->lColElement(iele);
-    std::vector<int>::iterator eleiter = find(MovingFluideleGIDsall.begin(), MovingFluideleGIDsall.end(),bgele->Id() );
-    if (eleiter == MovingFluideleGIDsall.end())
-    {
-      NonMovingFluideleGIDs.push_back(bgele->Id());
-      int numnode = bgele->NumNode();
-      for (int inode=0; inode <numnode; ++inode)
-        NonMovingFluidNodeGIDs.push_back(bgele->Nodes()[inode]->Id());
-    }
-  }
-
-  // --------------------------------------------------------------------------
-  // ------------------ gather information for non moving fluid ---------------
-  std::vector<int> NonMovingFluideleGIDsall;
-  std::vector<int> NonMovingFluidNodeGIDsall;
-
-  //in case of n processors allproc becomes a vector with entries (0,1,...,n-1)
-  for (int i=0; i<bgfluiddis->Comm().NumProc(); ++i) allprocbg[i] = i;
-
-  //gathers information of NonMovingFluideleGIDs of all processors
-  LINALG::Gather<int>(NonMovingFluideleGIDs,NonMovingFluideleGIDsall,(int)bgfluiddis->Comm().NumProc(),&allprocbg[0],bgfluiddis->Comm());
-
-  //gathers information of NonMovingFluidNodeGIDs of all processors
-  LINALG::Gather<int>(NonMovingFluidNodeGIDs,NonMovingFluidNodeGIDsall,(int)bgfluiddis->Comm().NumProc(),&allprocbg[0],bgfluiddis->Comm());
-
-  // ----------------------------------------------------------------------------
-  // preparing the embedded fluid discretization...
-
-  // delete elements and nodes
-  for(size_t nmv=0; nmv<NonMovingFluideleGIDsall.size(); ++nmv)
-    embfluiddis->DeleteElement(NonMovingFluideleGIDsall.at(nmv));
-
-  for(size_t nmv=0; nmv<NonMovingFluidNodeGIDsall.size(); ++nmv)
-    embfluiddis->DeleteNode(NonMovingFluidNodeGIDsall.at(nmv));
-
-  embfluiddis->CheckFilledGlobally();
-
-  // new dofset for embfluiddis which begins after bgfluiddis dofs
-  Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::DofSet());
-  embfluiddis->ReplaceDofSet(newdofset,true);
-  embfluiddis->FillComplete();
-
-  std::vector<int> eleids;          // ele ids
-  for (int i=0; i<embfluiddis->NumMyRowElements(); ++i)
-  {
-    DRT::Element* ele = embfluiddis->lRowElement(i);
-    int gid = ele->Id();
-    eleids.push_back(gid);
-  }
-
-  // Embedded discretization redistribution..
-  Teuchos::RCP<Epetra_Map> embroweles =  Teuchos::rcp(new Epetra_Map(-1,(int)eleids.size(),&eleids[0],0,embfluiddis->Comm()));
-  Teuchos::RCP<Epetra_Map> embrownodes = Teuchos::null;
-  Teuchos::RCP<Epetra_Map> embcolnodes = Teuchos::null;
-
-  DRT::UTILS::PartUsingParMetis(embfluiddis,embroweles,embrownodes,embcolnodes,comm,false);
-
-  Teuchos::RCP<Epetra_Map> embnewroweles  = Teuchos::null;
-  Teuchos::RCP<Epetra_Map> embnewcoleles  = Teuchos::null;
-  embfluiddis->BuildElementRowColumn(*embrownodes,*embcolnodes,embnewroweles,embnewcoleles);
-
-  // export nodes and elements to the row map
-  embfluiddis->ExportRowNodes(*embrownodes);
-  embfluiddis->ExportRowElements(*embnewroweles);
-
-  // export nodes and elements to the column map (create ghosting)
-  embfluiddis->ExportColumnNodes(*embcolnodes);
-  embfluiddis->ExportColumnElements(*embnewcoleles);
-
-  embfluiddis->FillComplete();
-
-  // ----------------------------------------------------------------------------
-  // preparing the background fluid discretization...
-
-  // delete elements and nodes
-  for(size_t mv=0; mv<MovingFluideleGIDsall.size(); ++mv)
-    bgfluiddis->DeleteElement(MovingFluideleGIDsall.at(mv));
-
-  for(size_t mv=0; mv<MovingFluidNodeGIDsall.size(); ++mv)
-    bgfluiddis->DeleteNode(MovingFluidNodeGIDsall.at(mv));
-
-  bgfluiddis->FillComplete();
-
-  // now we can reserve dofs for background fluid
-  int numglobalnodes = bgfluiddis->NumGlobalNodes();
-  int maxNumMyReservedDofsperNode = (xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
-    Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofsperNode,numglobalnodes));
-  bgfluiddis->ReplaceDofSet(maxdofset,true);
-  bgfluiddis->FillComplete();
-
-  std::vector<int> bgeleids;          // ele ids
-  for (int i=0; i<bgfluiddis->NumMyRowElements(); ++i)
-  {
-    DRT::Element* bgele = bgfluiddis->lRowElement(i);
-    int gid = bgele->Id();
-    bgeleids.push_back(gid);
-  }
-
-  // Background discretization redistribution..
-  Teuchos::RCP<Epetra_Map> bgroweles =  Teuchos::rcp(new Epetra_Map(-1,(int)bgeleids.size(),&bgeleids[0],0,bgfluiddis->Comm()));
-  Teuchos::RCP<Epetra_Map> bgrownodes = Teuchos::null;
-  Teuchos::RCP<Epetra_Map> bgcolnodes = Teuchos::null;
-
-  DRT::UTILS::PartUsingParMetis(bgfluiddis,bgroweles,bgrownodes,bgcolnodes,comm,false);
-
-  Teuchos::RCP<Epetra_Map> bgnewroweles  = Teuchos::null;
-  Teuchos::RCP<Epetra_Map> bgnewcoleles  = Teuchos::null;
-  bgfluiddis->BuildElementRowColumn(*bgrownodes,*bgcolnodes,bgnewroweles,bgnewcoleles);
-
-  // export nodes and elements to the row map
-  bgfluiddis->ExportRowNodes(*bgrownodes);
-  bgfluiddis->ExportRowElements(*bgnewroweles);
-
-  // export nodes and elements to the column map (create ghosting)
-  bgfluiddis->ExportColumnNodes(*bgcolnodes);
-  bgfluiddis->ExportColumnElements(*bgnewcoleles);
-
-  bgfluiddis->InitialFillComplete();
-
-  bgfluiddis->GetDofSetProxy()->PrintAllDofsets(bgfluiddis->Comm());
-
-  //------------------------------------------------------------------------------
-
-  Teuchos::RCP<DRT::Discretization> aledis = problem->GetDis("ale");
-
-  // create ale elements if the ale discretization is empty
-  if (aledis->NumGlobalNodes()==0)
-  {
-    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(embfluiddis,aledis);
-    // setup material in every ALE element
-    Teuchos::ParameterList params;
-    params.set<std::string>("action", "setup_material");
-    aledis->Evaluate(params);
-  }
-  else  // ale discretization in input file
-    dserror("Providing an ALE mesh is not supported for this problemtype.");
-
-  aledis->FillComplete();
-
-  Teuchos::RCP<FSI::FluidAleAlgorithm> alefluid = Teuchos::rcp(new FSI::FluidAleAlgorithm(*comm));
-  const int restart = DRT::Problem::Instance()->Restart();
-  if (restart)
-  {
-    // read the restart information, set vectors and variables
-    alefluid->ReadRestart(restart);
-  }
-  alefluid->Timeloop();
-
-  problem->AddFieldTest(alefluid->MBFluidField()->CreateFieldTest());
-  problem->TestAll(*comm);
 
 }
 
@@ -454,194 +232,25 @@ void fluid_fluid_ale_drt()
 /*----------------------------------------------------------------------*/
 void fluid_fluid_fsi_drt()
 {
-  // create a communicator
-  Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(DRT::Problem::Instance()->GetDis("xfluid")->Comm().Clone());
-
   /* |--str dofs--|--embfluid dofs--|--bgfluid dofs--|--ale dofs--|-> */
+
+  // create a communicator
+  Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(DRT::Problem::Instance()->GetDis("fluid")->Comm().Clone());
 
   DRT::Problem* problem = DRT::Problem::Instance();
 
   Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis("structure");
   structdis->FillComplete();
 
-  Teuchos::RCP<DRT::Discretization> embfluiddis = problem->GetDis("fluid");
-  embfluiddis->FillComplete();
-
-  Teuchos::RCP<DRT::DiscretizationXFEM> bgfluiddis =  Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(problem->GetDis("xfluid"));
-  bgfluiddis->FillComplete();
-
-  // reserve max size of dofs for the background fluid
-  const Teuchos::ParameterList xdyn = DRT::Problem::Instance()->XFEMGeneralParams();
-
-  // -------------------------------------------------------------------
-  // ---------------- find MovingFluid's elements and nodes
-  std::map<int, DRT::Node*> MovingFluidNodemap;
-  std::map<int, Teuchos::RCP< DRT::Element> > MovingFluidelemap;
-  DRT::UTILS::FindConditionObjects(*embfluiddis, MovingFluidNodemap, MovingFluidelemap, "MovingFluid");
-
-  // local vectors of nodes and elements of moving dis
-  std::vector<int> MovingFluidNodeGIDs;
-  std::vector<int> MovingFluideleGIDs;
-
-  for( std::map<int, DRT::Node*>::iterator it = MovingFluidNodemap.begin(); it != MovingFluidNodemap.end(); ++it )
-    MovingFluidNodeGIDs.push_back( it->first);
-
-  for( std::map<int, Teuchos::RCP< DRT::Element> >::iterator it = MovingFluidelemap.begin(); it != MovingFluidelemap.end(); ++it )
-    MovingFluideleGIDs.push_back( it->first);
-
-  // --------------------------------------------------------------------------
-  // ------------------ gather information for moving fluid -------------------
-  //information how many processors work at all
-  std::vector<int> allproc(embfluiddis->Comm().NumProc());
-
-  // Gather all informations from all processors
-  std::vector<int> MovingFluideleGIDsall;
-  std::vector<int> MovingFluidNodeGIDsall;
-
-  //in case of n processors allproc becomes a vector with entries (0,1,...,n-1)
-  for (int i=0; i<embfluiddis->Comm().NumProc(); ++i) allproc[i] = i;
-
-  //gathers information of MovingFluideleGIDs of all processors
-  LINALG::Gather<int>(MovingFluideleGIDs,MovingFluideleGIDsall,(int)embfluiddis->Comm().NumProc(),&allproc[0],embfluiddis->Comm());
-
-  //gathers information of MovingFluidNodeGIDs of all processors
-  LINALG::Gather<int>(MovingFluidNodeGIDs,MovingFluidNodeGIDsall,(int)embfluiddis->Comm().NumProc(),&allproc[0],embfluiddis->Comm());
-
-  // -------------------------------------------------------------------------------
-  // -------------- now build the nonmoving vectors from the gathered moving vectors
-  std::vector<int> NonMovingFluideleGIDs;
-  std::vector<int> NonMovingFluidNodeGIDs;
-  for (int iele=0; iele< bgfluiddis->NumMyColElements(); ++iele)
-  {
-    DRT::Element* bgele = bgfluiddis->lColElement(iele);
-    std::vector<int>::iterator eleiter = find(MovingFluideleGIDsall.begin(), MovingFluideleGIDsall.end(),bgele->Id() );
-    if (eleiter == MovingFluideleGIDsall.end())
-    {
-      NonMovingFluideleGIDs.push_back(bgele->Id());
-      int numnode = bgele->NumNode();
-      for (int inode=0; inode <numnode; ++inode)
-        NonMovingFluidNodeGIDs.push_back(bgele->Nodes()[inode]->Id());
-    }
-  }
-
-  // --------------------------------------------------------------------------
-  // ------------------ gather information for non moving fluid ---------------
-  //information how many processors work at all
-  std::vector<int> allprocbg(bgfluiddis->Comm().NumProc());
-
-  std::vector<int> NonMovingFluideleGIDsall;
-  std::vector<int> NonMovingFluidNodeGIDsall;
-
-  //in case of n processors allproc becomes a vector with entries (0,1,...,n-1)
-  for (int i=0; i<bgfluiddis->Comm().NumProc(); ++i) allprocbg[i] = i;
-
-  //gathers information of NonMovingFluideleGIDs of all processors
-  LINALG::Gather<int>(NonMovingFluideleGIDs,NonMovingFluideleGIDsall,(int)bgfluiddis->Comm().NumProc(),&allprocbg[0],bgfluiddis->Comm());
-
-  //gathers information of NonMovingFluidNodeGIDs of all processors
-  LINALG::Gather<int>(NonMovingFluidNodeGIDs,NonMovingFluidNodeGIDsall,(int)bgfluiddis->Comm().NumProc(),&allprocbg[0],bgfluiddis->Comm());
-
-  // ----------------------------------------------------------------------------
-  // preparing the embedded fluid discretization...
-
-  // delete elements and nodes
-  for(size_t nmv=0; nmv<NonMovingFluideleGIDsall.size(); ++nmv)
-    embfluiddis->DeleteElement(NonMovingFluideleGIDsall.at(nmv));
-
-  for(size_t nmv=0; nmv<NonMovingFluidNodeGIDsall.size(); ++nmv)
-    embfluiddis->DeleteNode(NonMovingFluidNodeGIDsall.at(nmv));
-
-  embfluiddis->CheckFilledGlobally();
-
-  // new dofset for embfluiddis which begins after bgfluiddis dofs
-  Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::DofSet());
-  embfluiddis->ReplaceDofSet(newdofset,true);
-  embfluiddis->FillComplete();
-
-  std::vector<int> eleids;          // ele ids
-  for (int i=0; i<embfluiddis->NumMyRowElements(); ++i)
-  {
-    DRT::Element* ele = embfluiddis->lRowElement(i);
-    int gid = ele->Id();
-    eleids.push_back(gid);
-  }
-
-  // Embedded discretization redistribution..
-  Teuchos::RCP<Epetra_Map> embroweles =  Teuchos::rcp(new Epetra_Map(-1,(int)eleids.size(),&eleids[0],0,embfluiddis->Comm()));
-  Teuchos::RCP<Epetra_Map> embrownodes = Teuchos::null;
-  Teuchos::RCP<Epetra_Map> embcolnodes = Teuchos::null;
-
-  DRT::UTILS::PartUsingParMetis(embfluiddis,embroweles,embrownodes,embcolnodes,comm,false);
-
-  Teuchos::RCP<Epetra_Map> embnewroweles  = Teuchos::null;
-  Teuchos::RCP<Epetra_Map> embnewcoleles  = Teuchos::null;
-  embfluiddis->BuildElementRowColumn(*embrownodes,*embcolnodes,embnewroweles,embnewcoleles);
-
-  // export nodes and elements to the row map
-  embfluiddis->ExportRowNodes(*embrownodes);
-  embfluiddis->ExportRowElements(*embnewroweles);
-
-  // export nodes and elements to the column map (create ghosting)
-  embfluiddis->ExportColumnNodes(*embcolnodes);
-  embfluiddis->ExportColumnElements(*embnewcoleles);
-  embfluiddis->FillComplete();
-
-  // ----------------------------------------------------------------------------
-  // preparing the background fluid discretization...
-
-  // delete elements and nodes
-  for(size_t mv=0; mv<MovingFluideleGIDsall.size(); ++mv)
-    bgfluiddis->DeleteElement(MovingFluideleGIDsall.at(mv));
-
-  for(size_t mv=0; mv<MovingFluidNodeGIDsall.size(); ++mv)
-    bgfluiddis->DeleteNode(MovingFluidNodeGIDsall.at(mv));
-  bgfluiddis->FillComplete();
-
-  // now we can reserve dofs for background fluid
-  int numglobalnodes = bgfluiddis->NumGlobalNodes();
-  int maxNumMyReservedDofsperNode = (xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
-    Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofsperNode,numglobalnodes));
-  bgfluiddis->ReplaceDofSet(maxdofset,true);
-  bgfluiddis->FillComplete();
-
-  std::vector<int> bgeleids;          // ele ids
-  for (int i=0; i<bgfluiddis->NumMyRowElements(); ++i)
-  {
-    DRT::Element* bgele = bgfluiddis->lRowElement(i);
-    int gid = bgele->Id();
-    bgeleids.push_back(gid);
-  }
-
-  // Background discretization redistribution..
-  Teuchos::RCP<Epetra_Map> bgroweles =  Teuchos::rcp(new Epetra_Map(-1,(int)bgeleids.size(),&bgeleids[0],0,bgfluiddis->Comm()));
-  Teuchos::RCP<Epetra_Map> bgrownodes = Teuchos::null;
-  Teuchos::RCP<Epetra_Map> bgcolnodes = Teuchos::null;
-
-  DRT::UTILS::PartUsingParMetis(bgfluiddis,bgroweles,bgrownodes,bgcolnodes,comm,false);
-
-  Teuchos::RCP<Epetra_Map> bgnewroweles  = Teuchos::null;
-  Teuchos::RCP<Epetra_Map> bgnewcoleles  = Teuchos::null;
-  bgfluiddis->BuildElementRowColumn(*bgrownodes,*bgcolnodes,bgnewroweles,bgnewcoleles);
-
-  // export nodes and elements to the row map
-  bgfluiddis->ExportRowNodes(*bgrownodes);
-  bgfluiddis->ExportRowElements(*bgnewroweles);
-
-  // export nodes and elements to the column map (create ghosting)
-  bgfluiddis->ExportColumnNodes(*bgcolnodes);
-  bgfluiddis->ExportColumnElements(*bgnewcoleles);
-
-  bgfluiddis->InitialFillComplete();
-
-  bgfluiddis->GetDofSetProxy()->PrintAllDofsets(bgfluiddis->Comm());
+  FLD::XFluid::SetupFluidDiscretization();
 
   //-------------------------------------------------------------------------
 
   // create ale elements if the ale discretization is empty
-  Teuchos::RCP<DRT::Discretization> aledis = problem->GetDis("ale");
+  Teuchos::RCP<DRT::Discretization> aledis = DRT::Problem::Instance()->GetDis("ale");
   if (aledis->NumGlobalNodes()==0)
   {
-    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(embfluiddis,aledis);
+    DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(DRT::Problem::Instance()->GetDis("fluid"),aledis);
     // setup material in every ALE element
     Teuchos::ParameterList params;
     params.set<std::string>("action", "setup_material");
@@ -1111,22 +720,7 @@ void xfsi_drt()
   Teuchos::RCP<DRT::Discretization> soliddis = problem->GetDis("structure");
   soliddis->FillComplete();
 
-  Teuchos::RCP<DRT::DiscretizationXFEM> fluiddis =
-      Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(problem->GetDis("fluid"), true);
-  fluiddis->FillComplete();
-
-
-  const Teuchos::ParameterList xdyn = problem->XFEMGeneralParams();
-
-  // now we can reserve dofs for background fluid
-  int numglobalnodes = fluiddis->NumGlobalNodes();
-  int maxNumMyReservedDofsperNode = (xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
-    Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofsperNode,numglobalnodes));
-  fluiddis->ReplaceDofSet(maxdofset,true);
-  fluiddis->InitialFillComplete();
-
-  // print all dofsets
-  fluiddis->GetDofSetProxy()->PrintAllDofsets(fluiddis->Comm());
+  FLD::XFluid::SetupFluidDiscretization();
 
   int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
   switch (coupling)

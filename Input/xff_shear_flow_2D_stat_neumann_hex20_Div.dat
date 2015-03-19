@@ -13,7 +13,7 @@ created by pre_exodus
 //NODES                         526
 DIM                             3
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_Fluid
+PROBLEMTYP                      Fluid_XFEM
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMALEDIS                       0
@@ -94,6 +94,8 @@ ML_SMOTIMES                     2 0 0 0 1                     // no. smoothing s
 GMSH_DEBUG_OUT                  no
 VOLUME_GAUSS_POINTS_BY          DirectDivergence
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
+------------------------------------------------------XFLUID DYNAMIC/GENERAL
+XFLUIDFLUID                     yes
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Hybrid_LM_Cauchy_stress       // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
 COUPLING_STRATEGY               xfluid_sided_coupling

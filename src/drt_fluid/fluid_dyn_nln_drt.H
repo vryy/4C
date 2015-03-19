@@ -27,6 +27,4 @@ Maintainer: Ursula Rasthofer
 
 void dyn_fluid_drt(const int restart);
 
-void fluid_fluid_drt(const int restart);
-
 #endif  /* #ifndef FLUID_DYN_NLN_DRT_H */

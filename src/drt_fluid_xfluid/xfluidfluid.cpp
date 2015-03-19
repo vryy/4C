@@ -41,13 +41,15 @@ Maintainer:  Raffaela Kruse
 #include "../drt_xfem/xfem_condition_manager.H"
 #include "../drt_xfem/xfluidfluid_timeInt.H"
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 FLD::XFluidFluid::XFluidFluid(
-  const Teuchos::RCP<FLD::FluidImplicitTimeInt> & embedded_fluid,     ///< embedded fluid
-  const Teuchos::RCP<DRT::Discretization>&        xfluiddis,          ///< background fluid discretization
-  const Teuchos::RCP<LINALG::Solver>&             solver,             ///< fluid solver
-  const Teuchos::RCP<Teuchos::ParameterList>&     params,             ///< xfluid params
-  bool                                            ale_xfluid,         ///< background (XFEM) fluid in ALE-formulation
-  bool                                            ale_fluid           ///< embedded fluid in ALE-formulation
+  const Teuchos::RCP<FLD::FluidImplicitTimeInt> & embedded_fluid,
+  const Teuchos::RCP<DRT::Discretization>&        xfluiddis,
+  const Teuchos::RCP<LINALG::Solver>&             solver,
+  const Teuchos::RCP<Teuchos::ParameterList>&     params,
+  bool                                            ale_xfluid,
+  bool                                            ale_fluid
 ) : XFluid(
   xfluiddis,
   embedded_fluid->Discretization(),
@@ -62,10 +64,39 @@ FLD::XFluidFluid::XFluidFluid(
   xfluiddis->Writer()->WriteMesh(0,0.0);
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+FLD::XFluidFluid::XFluidFluid(
+  const Teuchos::RCP<FLD::FluidImplicitTimeInt> & embedded_fluid,
+  const Teuchos::RCP<DRT::Discretization>&        xfluiddis,
+  const Teuchos::RCP<DRT::Discretization>&        soliddis,
+  const Teuchos::RCP<LINALG::Solver>&             solver,
+  const Teuchos::RCP<Teuchos::ParameterList>&     params,
+  bool                                            ale_xfluid,
+  bool                                            ale_fluid
+) : XFluid(
+  xfluiddis,
+  soliddis,
+  solver,
+  params,
+  xfluiddis->Writer(),
+  ale_xfluid),
+  embedded_fluid_(embedded_fluid),
+  ale_embfluid_(ale_fluid),
+  cond_name_("XFEMSurfFluidFluid")
+{
+  xfluiddis->Writer()->WriteMesh(0,0.0);
+  meshcoupl_dis_.push_back(embedded_fluid->Discretization());
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 FLD::XFluidFluid::~XFluidFluid()
 {
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void FLD::XFluidFluid::Init()
 {
   // set parameters specific for fluid-fluid coupling
@@ -76,8 +107,6 @@ void FLD::XFluidFluid::Init()
 
   // base class init
   XFluid::Init();
-
-  if (meshcoupl_dis_.size() != 1) dserror("we expect exactly one mesh coupling discretization for Xfluidfluid at the moment!");
 
   if (DRT::INPUT::get<INPAR::FLUID::CalcError>(*params_,"calculate error") != INPAR::FLUID::no_error_calculation)
   {
@@ -517,6 +546,12 @@ void FLD::XFluidFluid::AddEosPresStabToEmbLayer()
  *----------------------------------------------------------------------*/
 void FLD::XFluidFluid::XTimint_StoreOldStateData(const bool firstcall_in_timestep)
 {
+  if (!mc_xff_->HasMovingInterface())
+  {
+    XFluid::XTimint_StoreOldStateData(firstcall_in_timestep);
+    return;
+  }
+
   // save the old state
   xff_staten_ = xff_state_;
 
@@ -541,6 +576,12 @@ void FLD::XFluidFluid::XTimint_DoTimeStepTransfer(const bool screen_out)
 
   if (!condition_manager_->HasMovingInterface()) return;
 
+  if (!mc_xff_->HasMovingInterface())
+  {
+    XFluid::XTimint_DoTimeStepTransfer(screen_out);
+    return;
+  }
+
   switch (monolithic_approach_)
   {
   case INPAR::XFEM::XFFSI_Full_Newton:
@@ -557,6 +598,19 @@ void FLD::XFluidFluid::XTimint_DoTimeStepTransfer(const bool screen_out)
   }
 
   embedded_fluid_->SetDirichletNeumannBC();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool FLD::XFluidFluid::XTimint_DoIncrementStepTransfer(
+    const bool screen_out,
+    const bool firstcall_in_timestep
+)
+{
+  if (meshcoupl_dis_.size() > 1 && !mc_xff_->HasMovingInterface())
+    return XFluid::XTimint_DoIncrementStepTransfer(screen_out,firstcall_in_timestep);
+  else
+    return true;
 }
 
 /*----------------------------------------------------------------------*

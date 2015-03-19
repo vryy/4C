@@ -301,8 +301,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
       probtype != prb_fluid_xfem and
       probtype != prb_fluid_xfem_ls and
       probtype != prb_combust and
-      probtype != prb_fluid_fluid and
-      probtype != prb_fluid_fluid_ale and
       probtype != prb_fluid_fluid_fsi and
       probtype != prb_fsi_crack )
   {
@@ -400,8 +398,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
   if (   probtype == prb_fluid_xfem
       or probtype == prb_fsi_xfem
       or (probtype == prb_fpsi_xfem and disname == "fluid")
-      or probtype == prb_fluid_fluid
-      or probtype == prb_fluid_fluid_ale
+      or (probtype == prb_fluid_ale and
+          DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->XFluidDynamicParams().sublist("GENERAL"),"XFLUIDFLUID"))
       or probtype == prb_fluid_fluid_fsi
       or probtype == prb_fsi_crack
       or probtype == prb_fluid_xfem_ls)
@@ -756,6 +754,28 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
     break;
     case prb_fluid_xfem:
     {
+      if (DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->XFluidDynamicParams().sublist("GENERAL"),"XFLUIDFLUID"))
+      {
+        // actdis is the embedded fluid discretization
+        Teuchos::RCP<DRT::Discretization> xfluiddis  =  DRT::Problem::Instance()->GetDis("xfluid");
+
+        Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid;
+        if(timeint == INPAR::FLUID::timeint_stationary)
+          tmpfluid = Teuchos::rcp(new FLD::TimIntStationary(actdis, solver, fluidtimeparams, output, isale));
+        else if(timeint == INPAR::FLUID::timeint_one_step_theta)
+          tmpfluid = Teuchos::rcp(new FLD::TimIntOneStepTheta(actdis, solver, fluidtimeparams, output, isale));
+        else if(timeint == INPAR::FLUID::timeint_bdf2)
+          tmpfluid = Teuchos::rcp(new FLD::TimIntBDF2(actdis, solver, fluidtimeparams, output, isale));
+        else if(timeint == INPAR::FLUID::timeint_afgenalpha or
+            timeint == INPAR::FLUID::timeint_npgenalpha)
+          tmpfluid = Teuchos::rcp(new FLD::TimIntGenAlpha(actdis, solver, fluidtimeparams, output, isale));
+        else
+          dserror("Unknown time integration for this fluid problem type\n");
+
+        fluid_ = Teuchos::rcp(new FLD::XFluidFluid(tmpfluid,xfluiddis,solver,fluidtimeparams,isale));
+        break;
+      }
+
       Teuchos::RCP<DRT::Discretization> soliddis = DRT::Problem::Instance()->GetDis("structure");
       Teuchos::RCP<FLD::XFluid> tmpfluid = Teuchos::rcp( new FLD::XFluid( actdis, soliddis, solver, fluidtimeparams, output, isale));
 
@@ -800,8 +820,33 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
       else dserror("non supported COUPALGO for FSI");
 
       Teuchos::RCP<DRT::Discretization> soliddis = DRT::Problem::Instance()->GetDis("structure");
-      Teuchos::RCP<FLD::XFluid> tmpfluid = Teuchos::rcp( new FLD::XFluid( actdis, soliddis, solver, fluidtimeparams, output, isale));
-      fluid_ = Teuchos::rcp(new XFluidFSI(tmpfluid, actdis, condition_name , solver, fluidtimeparams, output));
+
+      Teuchos::RCP<FLD::XFluid> tmpfluid;
+      if (DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->XFluidDynamicParams().sublist("GENERAL"),"XFLUIDFLUID"))
+      {
+        // actdis is the embedded fluid discretization
+        Teuchos::RCP<DRT::Discretization> xfluiddis  =  DRT::Problem::Instance()->GetDis("xfluid");
+
+        Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid_emb;
+        if(timeint == INPAR::FLUID::timeint_stationary)
+          tmpfluid_emb = Teuchos::rcp(new FLD::TimIntStationary(actdis, solver, fluidtimeparams, output, isale));
+        else if(timeint == INPAR::FLUID::timeint_one_step_theta)
+          tmpfluid_emb = Teuchos::rcp(new FLD::TimIntOneStepTheta(actdis, solver, fluidtimeparams, output, isale));
+        else if(timeint == INPAR::FLUID::timeint_bdf2)
+          tmpfluid_emb = Teuchos::rcp(new FLD::TimIntBDF2(actdis, solver, fluidtimeparams, output, isale));
+        else if(timeint == INPAR::FLUID::timeint_afgenalpha or
+            timeint == INPAR::FLUID::timeint_npgenalpha)
+          tmpfluid_emb = Teuchos::rcp(new FLD::TimIntGenAlpha(actdis, solver, fluidtimeparams, output, isale));
+        else
+          dserror("Unknown time integration for this fluid problem type\n");
+
+        tmpfluid = Teuchos::rcp(new FLD::XFluidFluid(
+            tmpfluid_emb,xfluiddis,soliddis,solver,fluidtimeparams,isale));
+      }
+      else
+        tmpfluid = Teuchos::rcp( new FLD::XFluid( actdis, soliddis, solver, fluidtimeparams, output, isale));
+
+      fluid_ = Teuchos::rcp(new XFluidFSI(tmpfluid, tmpfluid->Discretization(), condition_name , solver, fluidtimeparams, output));
     }
     break;
     case prb_fsi_crack:
@@ -822,47 +867,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
     case prb_combust:
     {
       fluid_ = Teuchos::rcp(new FLD::CombustFluidImplicitTimeInt(actdis, solver, fluidtimeparams, output));
-    }
-    break;
-    case prb_fluid_fluid:
-    {
-      // actdis is the embedded fluid discretization
-      Teuchos::RCP<DRT::Discretization> xfluiddis  =  DRT::Problem::Instance()->GetDis("xfluid");
-
-      Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid;
-      if(timeint == INPAR::FLUID::timeint_stationary)
-        tmpfluid = Teuchos::rcp(new FLD::TimIntStationary(actdis, solver, fluidtimeparams, output, isale));
-      else if(timeint == INPAR::FLUID::timeint_one_step_theta)
-        tmpfluid = Teuchos::rcp(new FLD::TimIntOneStepTheta(actdis, solver, fluidtimeparams, output, isale));
-      else if(timeint == INPAR::FLUID::timeint_bdf2)
-        tmpfluid = Teuchos::rcp(new FLD::TimIntBDF2(actdis, solver, fluidtimeparams, output, isale));
-      else if(timeint == INPAR::FLUID::timeint_afgenalpha or
-          timeint == INPAR::FLUID::timeint_npgenalpha)
-        tmpfluid = Teuchos::rcp(new FLD::TimIntGenAlpha(actdis, solver, fluidtimeparams, output, isale));
-      else
-        dserror("Unknown time integration for this fluid problem type\n");
-
-      fluid_ = Teuchos::rcp(new FLD::XFluidFluid(
-          tmpfluid,xfluiddis,solver,fluidtimeparams,isale));
-      break;
-    }
-    case prb_fluid_fluid_ale:
-    {
-      fluidtimeparams->set<bool>("shape derivatives",false);
-      // actdis is the embedded fluid discretization
-      Teuchos::RCP<DRT::Discretization> xfluiddis  =  DRT::Problem::Instance()->GetDis("xfluid");
-
-      Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid;
-      if(timeint == INPAR::FLUID::timeint_stationary)
-        tmpfluid = Teuchos::rcp(new FLD::TimIntStationary(actdis, solver, fluidtimeparams, output, isale));
-      else if(timeint == INPAR::FLUID::timeint_one_step_theta)
-        tmpfluid = Teuchos::rcp(new FLD::TimIntOneStepTheta(actdis, solver, fluidtimeparams, output, isale));
-      else
-        dserror("Unknown time integration for this fluid problem type\n");
-
-      Teuchos::RCP<FLD::XFluidFluid> xffluid = Teuchos::rcp(new FLD::XFluidFluid(
-          tmpfluid,xfluiddis,solver,fluidtimeparams,false,isale));
-      fluid_ = Teuchos::rcp(new FluidFluidFSI(xffluid,tmpfluid,solver,fluidtimeparams,isale,dirichletcond));
     }
     break;
     case prb_fluid_fluid_fsi:
@@ -910,7 +914,17 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
       else
         dserror("Unknown time integration for this fluid problem type\n");
 
-      fluid_ = Teuchos::rcp(new FluidFSI(tmpfluid,actdis,solver,fluidtimeparams,output,isale,dirichletcond));
+      if (DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->XFluidDynamicParams().sublist("GENERAL"),"XFLUIDFLUID"))
+      {
+        fluidtimeparams->set<bool>("shape derivatives",false);
+        // actdis is the embedded fluid discretization
+        Teuchos::RCP<DRT::Discretization> xfluiddis  =  DRT::Problem::Instance()->GetDis("xfluid");
+        Teuchos::RCP<FLD::XFluidFluid> xffluid = Teuchos::rcp(new FLD::XFluidFluid(
+            tmpfluid,xfluiddis,solver,fluidtimeparams,false,isale));
+        fluid_ = Teuchos::rcp(new FluidFluidFSI(xffluid,tmpfluid,solver,fluidtimeparams,isale,dirichletcond));
+      }
+      else
+        fluid_ = Teuchos::rcp(new FluidFSI(tmpfluid,actdis,solver,fluidtimeparams,output,isale,dirichletcond));
     }
     break;
     case prb_ac_fsi:

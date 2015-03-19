@@ -166,17 +166,17 @@ void runEnsightVtuFilter(PostProblem    &problem)
     case prb_fluid_ale:
     case prb_freesurf:
     {
-        PostField* field = problem.get_discretization(0);
-        FluidFilter writer(field, problem.outname());
-        writer.WriteFiles();
-        if (problem.num_discr()>1 and problem.get_discretization(1)->name()=="xfluid")
-        {
-          std::string basename = problem.outname();
-          PostField* fluidfield = problem.get_discretization(1);
-          XFluidFilter xfluidwriter(fluidfield, basename);
-          xfluidwriter.WriteFiles();
-        }
-        break;
+      PostField* field = problem.get_discretization(0);
+      FluidFilter writer(field, problem.outname());
+      writer.WriteFiles();
+      if (problem.num_discr()>1 and problem.get_discretization(1)->name()=="xfluid")
+      {
+        std::string basename = problem.outname();
+        PostField* fluidfield = problem.get_discretization(1);
+        FluidFilter xfluidwriter(fluidfield, basename);
+        xfluidwriter.WriteFiles();
+      }
+      break;
     }
     case prb_particle:
     {
@@ -237,21 +237,6 @@ void runEnsightVtuFilter(PostProblem    &problem)
         StructureFilter fluidwriter(fluidfield, problem.outname(), problem.stresstype(), problem.straintype());
         fluidwriter.WriteFiles();
         break;
-    }
-    case prb_fluid_fluid:
-    case prb_fluid_fluid_ale:
-    {
-      std::string basename = problem.outname();
-
-      PostField* embfluidfield = problem.get_discretization(0);
-      FluidFilter embfluidwriter(embfluidfield, basename);
-      embfluidwriter.WriteFiles();
-
-      PostField* fluidfield = problem.get_discretization(1);
-      FluidFilter fluidwriter(fluidfield, basename);
-      fluidwriter.WriteFiles();
-
-      break;
     }
     case prb_fluid_fluid_fsi:
     {
@@ -382,13 +367,26 @@ void runEnsightVtuFilter(PostProblem    &problem)
         dserror("we expect at least a fluid field, numfield=%i",numfield);
       std::string basename = problem.outname();
 
+      // XFluid in the standard case, embedded fluid for XFF
       std::cout << "  Fluid Field" << std::endl;
       PostField* fluidfield = problem.get_discretization(0);
       FluidFilter fluidwriter(fluidfield, basename);
       fluidwriter.WriteFiles();
 
+      // start index for interface discretizations
+      int int_idx = 1;
+      if (problem.num_discr()>1 and problem.get_discretization(1)->name()=="xfluid")
+      {
+        // XFluid for XFF
+        std::cout << "  XFluid Field" << std::endl;
+        PostField* xfluidfield = problem.get_discretization(1);
+        FluidFilter xfluidwriter(xfluidfield, basename);
+        xfluidwriter.WriteFiles();
+        int_idx += 1;
+      }
+
       // all other fields are interface fields
-      for(int i=1; i<numfield;i++)
+      for(int i=int_idx; i<numfield;i++)
       {
         std::cout << "  Interface Field ( "<< problem.get_discretization(i)->name() << " )" << std::endl;
         PostField* ifacefield = problem.get_discretization(i);

@@ -12,7 +12,7 @@ shear flow with moving circular embedded fluid
 //NODES                         474
 DIM                             3
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_Fluid_Ale
+PROBLEMTYP                      Fluid_Ale
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -77,6 +77,7 @@ GHOST_PENALTY_FAC               0.05
 NIT_STAB_FAC                    35
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 XFLUIDFLUID_TIMEINT             Xff_TimeInt_FullProj
+XFLUIDFLUID                     yes
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 10000000.0 NUE 0.4 DENS 2.0 THEXPANS 0.0

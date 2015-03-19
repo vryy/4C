@@ -318,7 +318,6 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn,
   }
   case prb_freesurf:
   case prb_fluid_ale:
-  case prb_fluid_fluid_ale:
   case prb_elch:
   case prb_fluid_xfem:
   {

@@ -317,6 +317,14 @@ public:
     return;
   }
 
+  //! get the coupling element (equal to the side for xfluid-sided, mesh-based coupling)
+  virtual DRT::Element* GetCouplingElement(
+      const int sid///< global side element id w.r.t cutter discretization
+  )
+  {
+    return coupl_dis_->gElement(sid);
+  }
+
   /// get the side element of the respective boundary discretization
   DRT::Element* GetSide(
       const int sid ///< global side element id w.r.t cutter discretization
@@ -757,15 +765,25 @@ public:
     return aux_coup_dis_;
   }
 
-  //! Access to map from cutting surface element id to embedded element id
-  int GetEmbeddedElementId(int cutting_id)
+  //! get the coupling element for a local coupling side element id
+  DRT::Element* GetCouplingElement(
+    const int sid ///< global side element id w.r.t cutter discretization
+  )
   {
-    std::map<int,int>::iterator it = cutting_emb_gid_map_.find(cutting_id);
+    if (averaging_strategy_ == INPAR::XFEM::Xfluid_Sided)
+    {
+      return MeshCoupling::GetCouplingElement(sid);
+    }
 
-    if (it == cutting_emb_gid_map_.end())
-      dserror("Could not find parent element ID for side %d.", cutting_id);
+    return coupl_dis_->gElement(GetEmbeddedElementId(sid));
+  }
 
-    return it->second;
+  //! get the element from the conditioned dis for a local coupling side element id
+  DRT::Element* GetCondElement(
+    const int sid ///< global side element id w.r.t cutter discretization
+  )
+  {
+    return cond_dis_->gElement(GetEmbeddedElementId(sid));
   }
 
   /// set material pointer for coupling slave side
@@ -802,12 +820,23 @@ public:
   //! of xfluid-sided coupling)
   void RedistributeForErrorCalculation();
 
-private:
-
   //! determine whether interface is fixed
   bool HasMovingInterface()
   {
     return moving_interface_;
+  }
+
+private:
+
+  //! Access to map from cutting surface element id to embedded element id
+  int GetEmbeddedElementId(int sid)
+  {
+    std::map<int,int>::iterator it = cutting_emb_gid_map_.find(sid);
+
+    if (it == cutting_emb_gid_map_.end())
+      dserror("Could not find parent element ID for side %d.", sid);
+
+    return it->second;
   }
 
   //! ghost embedded elements, that contribute to the cutting interface discretization on all procs
@@ -1522,6 +1551,33 @@ public:
 
     // get the boundary discretization, the side belongs to
     return mesh_coupl_[mc_idx]->GetSide(cutterdis_sid);
+  }
+
+  /// get the coupling element (the side for xfluid-sided averaging) for a given global coupl. side id
+  DRT::Element* GetCouplingElement(
+      const int coup_sid, ///< the overall global coupling side id
+      DRT::Element * ele
+  );
+
+  //! get the element from the conditioned dis for a local coupling side element id
+  DRT::Element* GetCondElement(
+    const int coup_sid ///< global side element id w.r.t cutter discretization
+  )
+  {
+    if (!IsMeshCoupling(coup_sid))
+      dserror("No cond. element available for non-mesh coupling!");
+
+    // get the mesh coupling object index
+    const int mc_idx =  GetMeshCouplingIndex(coup_sid);
+
+    // a map between cond. elements and side ids of the cutter dis is only available
+    // for fluidfluid conditions; otherwise this is a bad request
+    Teuchos::RCP<MeshCouplingFluidFluid> mc_xff =
+        Teuchos::rcp_dynamic_cast<MeshCouplingFluidFluid>(mesh_coupl_[mc_idx]);
+    if (mc_xff == Teuchos::null)
+      dserror("Can't access cond dis elements for a given side id in non-xff cases!");
+    const int cutterdis_sid = GetCutterDisEleId(coup_sid, mc_idx);
+    return mc_xff->GetCondElement(cutterdis_sid);
   }
 
   // the cutwizard should add elements via the manager!!!

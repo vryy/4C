@@ -13,7 +13,7 @@ created by pre_exodus
 //NODES                         474
 DIM                             3
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_Fluid
+PROBLEMTYP                      Fluid_XFEM
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMALEDIS                       0
@@ -71,6 +71,7 @@ XFF_CONV_STAB_SCALING           none
 GHOST_PENALTY_STAB              yes
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 XFLUIDFLUID_TIMEINT             Xff_TimeInt_FullProj
+XFLUIDFLUID                     yes
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 ----------------------------------------------------------------------CURVE1
