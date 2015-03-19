@@ -381,6 +381,8 @@ public:
       const bool write_restart_data
   ){};
 
+  virtual void PrepareCutterOutput();
+
   virtual void LiftDrag(
       const int step,
       const double time
@@ -445,6 +447,9 @@ protected:
   Teuchos::RCP<Epetra_Vector>    idispnp_;
   Teuchos::RCP<Epetra_Vector>    idispn_;
   //@}
+
+  //! @name output discretization writers
+  Teuchos::RCP<IO::DiscretizationWriter> cutter_output_;
 };
 
 
@@ -652,8 +657,6 @@ public:
 
 private:
 
-  void PrepareCutterOutput();
-
   void Output(
       const int step,
       const double time,
@@ -675,9 +678,6 @@ protected:
 
 
   //---------------------------------output----------------------------
-
-  //! @name output discretization writers
-  Teuchos::RCP<IO::DiscretizationWriter> cutter_output_;
 
   bool firstoutputofrun_;
   //@}

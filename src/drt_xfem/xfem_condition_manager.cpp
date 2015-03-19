@@ -438,6 +438,19 @@ void XFEM::MeshCoupling::GmshOutputDiscretization(
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
+void XFEM::MeshCoupling::PrepareCutterOutput()
+{
+  // -------------------------------------------------------------------
+  // prepare output
+  // -------------------------------------------------------------------
+
+  cutter_dis_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(cutter_dis_)));
+  cutter_output_ = cutter_dis_->Writer();
+  cutter_output_->WriteMesh(0,0.0);
+}
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
 XFEM::MeshCouplingFluidFluid::MeshCouplingFluidFluid(
     Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
     const std::string &                 cond_name,///< name of the condition, by which the derived cutter discretization is identified
@@ -564,9 +577,6 @@ void XFEM::MeshCouplingFluidFluid::RedistributeEmbeddedDiscretization()
   // store in vector full_{nodes;eles}, which will be appended by the standard
   // column elements/nodes of the discretization we couple with
 
-  LINALG::GatherAll(adj_ele_nodes_row,cond_dis_->Comm());
-  LINALG::GatherAll(adj_eles_row,cond_dis_->Comm());
-
   std::set<int> full_ele_nodes_col(adj_ele_nodes_row);
   std::set<int> full_eles_col(adj_eles_row);
 
@@ -581,6 +591,9 @@ void XFEM::MeshCouplingFluidFluid::RedistributeEmbeddedDiscretization()
 
   // create the final column maps
   {
+    LINALG::GatherAll(full_ele_nodes_col,cond_dis_->Comm());
+    LINALG::GatherAll(full_eles_col,cond_dis_->Comm());
+
     std::vector<int> full_nodes(full_ele_nodes_col.begin(),full_ele_nodes_col.end());
     std::vector<int> full_eles(full_eles_col.begin(),full_eles_col.end());
 
@@ -591,7 +604,7 @@ void XFEM::MeshCouplingFluidFluid::RedistributeEmbeddedDiscretization()
     cond_dis_->ExportColumnNodes(*full_nodecolmap);
     cond_dis_->ExportColumnElements(*full_elecolmap);
 
-    cond_dis_->FillComplete(true,true, true);
+    cond_dis_->FillComplete(true,true,true);
   }
 }
 
@@ -1424,17 +1437,6 @@ void XFEM::MeshCouplingFSI::GmshOutputDiscretization(
 
   XFEM::UTILS::PrintDiscretizationToStream(cond_dis_,
       cond_dis_->Name(), true, false, true, false, false, false, gmshfilecontent, &currsolidpositions);
-}
-
-void XFEM::MeshCouplingFSI::PrepareCutterOutput()
-{
-  // -------------------------------------------------------------------
-  // prepare output
-  // -------------------------------------------------------------------
-
-  cutter_dis_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(cutter_dis_)));
-  cutter_output_ = cutter_dis_->Writer();
-  cutter_output_->WriteMesh(0,0.0);
 }
 
 void XFEM::MeshCouplingFSI::Output(
