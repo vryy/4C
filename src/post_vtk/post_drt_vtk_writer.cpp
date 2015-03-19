@@ -270,7 +270,8 @@ VtkWriter::WriteVtkHeader ()
     currentmasterout_ << ">\n";
     currentmasterout_ << "  " << this->WriterPOpeningTag() << "\n";
   }
-  return;
+
+  currentPhase_ = INIT;
 }
 
 

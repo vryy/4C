@@ -166,7 +166,8 @@ VtuWriter::WriteGeo()
 
   // loop over my elements and write the data
   int outNodeId = 0;
-  for (int e=0; e<dis->NumMyRowElements(); ++e) {
+  for (int e=0; e<dis->NumMyRowElements(); ++e)
+  {
     const DRT::Element* ele = dis->lRowElement(e);
     celltypes.push_back(vtk_element_types[ele->Shape()].first);
     const std::vector<int> &numbering = vtk_element_types[ele->Shape()].second;
@@ -281,17 +282,38 @@ VtuWriter::WriteDofResultStep(
 
   const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
 
-  // Here is the only thing we need to do for parallel computations: We need read access to all dofs
-  // on the row elements, so need to get the DofColMap to have this access
-  const Epetra_Map* colmap = dis->DofColMap(0);
+  // For parallel computations, we need to access all dofs on the elements, including the
+  // nodes owned by other processors. Therefore, we need to import that data here.
   const Epetra_BlockMap& vecmap = data->Map();
+  const Epetra_Map* colmap = dis->DofColMap(0);
+
+  int offset = vecmap.MinAllGID() - dis->DofRowMap()->MinAllGID();
+  if(fillzeros)
+    offset=0;
 
   Teuchos::RCP<Epetra_Vector> ghostedData;
   if (colmap->SameAs(vecmap))
     ghostedData = data;
-  else {
-    ghostedData = LINALG::CreateVector(*colmap,false);
-    LINALG::Export(*data,*ghostedData);
+  else
+  {
+    // There is one more complication: The map of the vector and the map governed by the
+    // degrees of freedom in the discretization might be offset (e.g. pressure for fluid).
+    // Therefore, we need to adjust the numbering in the vector to the numbering in the
+    // discretization by the variable 'offset'.
+    std::vector<int> gids(vecmap.NumMyElements());
+    for (int i=0; i<vecmap.NumMyElements(); ++i)
+      gids[i] = vecmap.MyGlobalElements()[i] - offset;
+    Teuchos::RCP<Epetra_Map> rowmap = Teuchos::rcp(new Epetra_Map(vecmap.NumGlobalElements(),
+                                       vecmap.NumMyElements(),
+                                       &gids[0],
+                                       0,
+                                       vecmap.Comm()));
+    Teuchos::RCP<Epetra_Vector> dofvec = LINALG::CreateVector(*rowmap, false);
+    for (int i=0; i<vecmap.NumMyElements(); ++i)
+      (*dofvec)[i] = (*data)[i];
+
+    ghostedData = LINALG::CreateVector(*colmap,true);
+    LINALG::Export(*dofvec,*ghostedData);
   }
 
   int ncomponents = numdf;
@@ -307,20 +329,24 @@ VtuWriter::WriteDofResultStep(
   solution.reserve(ncomponents*nnodes);
 
   std::vector<int> nodedofs;
-  for (int e=0; e<dis->NumMyRowElements(); ++e) {
+  for (int e=0; e<dis->NumMyRowElements(); ++e)
+  {
     const DRT::Element* ele = dis->lRowElement(e);
     const std::vector<int> &numbering = vtk_element_types[ele->Shape()].second;
-    for (int n=0; n<ele->NumNode(); ++n) {
+    for (int n=0; n<ele->NumNode(); ++n)
+    {
       nodedofs.clear();
 
       // local storage position of desired dof gid
       dis->Dof(ele->Nodes()[numbering[n]], nodedofs);
 
-      for (int d=0; d<numdf; ++d) {
+      for (int d=0; d<numdf; ++d)
+      {
         const int lid = ghostedData->Map().LID(nodedofs[d+from]);
         if (lid > -1)
           solution.push_back((*ghostedData)[lid]);
-        else {
+        else
+        {
           if(fillzeros)
             solution.push_back(0.);
           else
@@ -334,9 +360,11 @@ VtuWriter::WriteDofResultStep(
   dsassert((int)solution.size() == ncomponents*nnodes, "internal error");
 
   // start the scalar fields that will later be written
-  if (currentPhase_ == INIT) {
+  if (currentPhase_ == INIT)
+  {
     currentout_ << "  <PointData>\n"; // Scalars=\"scalars\">\n";
-    if (myrank_ == 0) {
+    if (myrank_ == 0)
+    {
       currentmasterout_ << "    <PPointData>\n"; // Scalars=\"scalars\">\n";
     }
     currentPhase_ = POINTS;
@@ -376,7 +404,8 @@ VtuWriter::WriteNodalResultStep(
   Teuchos::RCP<Epetra_MultiVector> ghostedData;
   if (colmap->SameAs(vecmap))
     ghostedData = data;
-  else {
+  else
+  {
     ghostedData = Teuchos::rcp(new Epetra_MultiVector(*colmap,data->NumVectors(),
                                                       false));
     LINALG::Export(*data,*ghostedData);
@@ -394,11 +423,12 @@ VtuWriter::WriteNodalResultStep(
   std::vector<double> solution;
   solution.reserve(ncomponents*nnodes);
 
-  for (int e=0; e<dis->NumMyRowElements(); ++e) {
+  for (int e=0; e<dis->NumMyRowElements(); ++e)
+  {
     const DRT::Element* ele = dis->lRowElement(e);
     const std::vector<int> &numbering = vtk_element_types[ele->Shape()].second;
-    for (int n=0; n<ele->NumNode(); ++n) {
-
+    for (int n=0; n<ele->NumNode(); ++n)
+    {
       for (int idf=0; idf<numdf; ++idf)
         {
           Epetra_Vector* column = (*ghostedData)(idf);
@@ -418,9 +448,11 @@ VtuWriter::WriteNodalResultStep(
   dsassert((int)solution.size() == ncomponents*nnodes, "internal error");
 
   // start the scalar fields that will later be written
-  if (currentPhase_ == INIT) {
+  if (currentPhase_ == INIT)
+  {
     currentout_ << "  <PointData>\n"; // Scalars=\"scalars\">\n";
-    if (myrank_ == 0) {
+    if (myrank_ == 0)
+    {
       currentmasterout_ << "    <PPointData>\n"; // Scalars=\"scalars\">\n";
     }
     currentPhase_ = POINTS;
@@ -475,9 +507,11 @@ VtuWriter::WriteElementResultStep(
     LINALG::Export(*data,*importedData);
   }
 
-  for (int e=0; e<dis->NumMyRowElements(); ++e) {
+  for (int e=0; e<dis->NumMyRowElements(); ++e)
+  {
     const DRT::Element* ele = dis->lRowElement(e);
-    for (int n=0; n<ele->NumNode(); ++n) {
+    for (int n=0; n<ele->NumNode(); ++n)
+    {
       for (int d=0; d<numdf; ++d) {
         Epetra_Vector* column = (*importedData)(d+from);
         solution.push_back((*column)[e]);
@@ -489,17 +523,21 @@ VtuWriter::WriteElementResultStep(
   dsassert((int)solution.size() == ncomponents*nnodes, "internal error");
 
   // start the scalar fields that will later be written
-  if (currentPhase_ == POINTS) {
+  if (currentPhase_ == POINTS)
+  {
     // end the scalar fields
     currentout_ << "  </PointData>\n";
-    if (myrank_ == 0) {
+    if (myrank_ == 0)
+    {
       currentmasterout_ << "    </PPointData>\n";
     }
   }
 
-  if (currentPhase_ == INIT || currentPhase_ == POINTS) {
+  if (currentPhase_ == INIT || currentPhase_ == POINTS)
+  {
     currentout_ << "  <CellData>\n"; // Scalars=\"scalars\">\n";
-    if (myrank_ == 0) {
+    if (myrank_ == 0)
+    {
       currentmasterout_ << "    <PCellData>\n"; // Scalars=\"scalars\">\n";
     }
     currentPhase_ = CELLS;
