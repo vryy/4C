@@ -255,7 +255,8 @@ void SCATRA::ScaTraTimIntImpl::Init()
   if(msht_ != INPAR::FLUID::no_meshtying and s2icoupling_)
     dserror("Fluid-fluid meshtying in combination with scatra-scatra interface coupling is not implemented yet!");
   if(s2icoupling_ and !incremental_)
-    dserror("Scatra-scatra interface coupling only working for incremental solve so far!");
+    dserror("Scatra-scatra interface coupling only working for incremental solve so far!\n"
+        "Set the parameter SOLVERTYPE in SCALAR TRANSPORT DYNAMIC section to 'nonlinear' or 'linear_incremental'!");
 
   CreateMeshtyingStrategy();
 
