@@ -111,7 +111,8 @@ SOLVER                          UMFPACK
 -----------------------------------------------------------SOLVER 3
 SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS
-MAT 1 MAT_StructPoro MATID 2 INITPOROSITY 0.4 BULKMODULUS 1.0e6 PENALTYPARAMETER 0.1
+MAT 1 MAT_StructPoro MATID 2 POROLAWID 10 INITPOROSITY 0.4
+MAT 10 MAT_PoroLawNeoHooke BULKMODULUS 1.0e6 PENALTYPARAMETER 0.1
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 2.0
 MAT 4 ELAST_CoupNeoHooke YOUNG 4.0e4 NUE 0.4
 MAT 3 MAT_FluidPoro DYNVISCOSITY 0.01 DENSITY 1.0 PERMEABILITY 1.0e-2 TYPE Darcy
