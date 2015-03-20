@@ -82,7 +82,7 @@ ML_SMOTIMES 2 3 1 // no. smoothing steps or polynomial order on each level (at l
 ML_DAMPFINE                     0.89                            // damping fine grid
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
-STRATIMIKOS_XMLFILE             Input/f2_drivencavity20x20_muelu_xml_PGAMG.xml
+STRATIMIKOS_XMLFILE             f2_drivencavity20x20_muelu_xml_PGAMG.xml
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         4
 NDLINE                          4

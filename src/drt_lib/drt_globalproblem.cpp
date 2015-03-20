@@ -331,6 +331,25 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
     std::stringstream ss;
     ss << "--SOLVER " << i;
     reader.ReadGidSection(ss.str(), *list);
+
+    // adapt path of XML file if necessary
+    Teuchos::ParameterList& sublist = list->sublist(ss.str().substr(2));
+
+    std::string* xmlfile = sublist.getPtr<std::string>("STRATIMIKOS_XMLFILE");
+    if (xmlfile != NULL)
+    {
+      // make path relative to input file path if it is not an absolute path
+      if ((*xmlfile)[0]!='/')
+      {
+        std::string filename = reader.MyInputfileName();
+        std::string::size_type pos = filename.rfind('/');
+        if (pos!=std::string::npos)
+        {
+          std::string tmp = filename.substr(0,pos+1);
+          xmlfile->insert(xmlfile->begin(), tmp.begin(), tmp.end());
+        }
+      }
+    }
   }
 
   reader.ReadGidSection("--UMFPACK SOLVER",*list);
