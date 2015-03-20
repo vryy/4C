@@ -581,7 +581,12 @@ void COMM_UTILS::BroadcastDiscretizations()
         if (bgroup==group->GroupId() || tgroup==group->GroupId())
         {
           Teuchos::RCP<Epetra_MpiComm> icomm = Teuchos::rcp(new Epetra_MpiComm(intercomm));
-          NPDuplicateDiscretization(bgroup,tgroup,group,dis,icomm);
+          // if group have same size use simpler broadcasting approach to ensure same
+          // parallel distribution across all groups
+          if(lcomm->NumProc()*2==icomm->NumProc())
+            NPDuplicateDiscretizationEqualGroupSize(bgroup,tgroup,group,dis,icomm);
+          else
+            NPDuplicateDiscretization(bgroup,tgroup,group,dis,icomm);
           icomm = Teuchos::null;
           MPI_Comm_free(&intercomm);
         }
@@ -873,6 +878,243 @@ void COMM_UTILS::NPDuplicateDiscretization(
     dis->ExportColumnNodes(*colnodes);
     dis->ExportColumnElements(*coleles);
     dis->FillComplete(true,true,true);
+    dis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(dis)));
+  }
+  icomm->Barrier();
+  return;
+}
+
+
+
+/*-----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void COMM_UTILS::NPDuplicateDiscretizationEqualGroupSize(
+                                 const int sgroup,
+                                 const int rgroup,
+                                 Teuchos::RCP<NestedParGroup> group,
+                                 Teuchos::RCP<DRT::Discretization> dis,
+                                 Teuchos::RCP<Epetra_MpiComm> icomm)
+{
+  Teuchos::RCP<Epetra_Comm> lcomm = group->LocalComm();
+
+  std::vector<int> sbcaster(2,-1);
+  std::vector<int> bcaster(2,-1);
+  std::vector<int> sgsize(2,-1);
+  std::vector<int> gsize(2,-1);
+  if (group->GroupId()==sgroup && lcomm->MyPID()==0)
+  {
+    sbcaster[0] = icomm->MyPID();
+    sgsize[0] = group->GroupSize();
+  }
+  if (group->GroupId()==rgroup && lcomm->MyPID()==0)
+  {
+    sbcaster[1] = icomm->MyPID();
+    sgsize[1] = group->GroupSize();
+  }
+  icomm->MaxAll(&sbcaster[0],&bcaster[0],2);
+  icomm->MaxAll(&sgsize[0],&gsize[0],2);
+
+  // create a common discretization that we then fill with all stuff from sender group
+  std::string name = dis->Name();
+  std::string type = DRT::Problem::Instance()->SpatialApproximation();
+  Teuchos::RCP<DRT::Discretization> commondis;
+  if (type=="Nurbs")
+  {
+    commondis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization(name,icomm));
+    dserror("For Nurbs this method needs additional features!");
+  }
+  else
+    commondis = Teuchos::rcp(new DRT::Discretization(name,icomm));
+
+
+  // --------------------------------------
+  // sender group fills commondis with elements and nodes and conditions
+  // note that conditions are fully redundant
+  std::map<int,std::vector<char> >            condmap;
+  std::map<int,Teuchos::RCP<DRT::Container> > condnamemap;
+  std::vector<int>                            myrowelements;
+  if (group->GroupId()==sgroup)
+  {
+    if (!dis->Filled()) dis->FillComplete(false,false,false);
+
+    myrowelements.resize(dis->ElementRowMap()->NumMyElements(),-1);
+
+    // loop all my elements
+    for (int i=0; i<dis->ElementRowMap()->NumMyElements(); ++i)
+    {
+      myrowelements[i] = dis->ElementRowMap()->GID(i);
+      DRT::Element* ele = dis->lRowElement(i);
+      if (myrowelements[i] != ele->Id()) dserror("Element global id mismatch");
+      Teuchos::RCP<DRT::Element> newele = Teuchos::rcp(ele->Clone());
+      newele->SetOwner(icomm->MyPID());
+      commondis->AddElement(newele);
+    }
+    // loop all my nodes
+    for (int i=0; i<dis->NodeRowMap()->NumMyElements(); ++i)
+    {
+      DRT::Node* node = dis->lRowNode(i);
+      Teuchos::RCP<DRT::Node> newnode = Teuchos::rcp(node->Clone());
+      newnode->SetOwner(icomm->MyPID());
+      commondis->AddNode(newnode);
+    }
+    // loop conditions
+    std::vector<std::string> condnames;
+    dis->GetConditionNames(condnames);
+    for (int i=0; i<(int)condnames.size(); ++i)
+    {
+      std::vector<DRT::Condition*> conds;
+      dis->GetCondition(condnames[i],conds);
+      Teuchos::RCP<std::vector<char> > data = dis->PackCondition(condnames[i]);
+      if (lcomm->MyPID()==0)
+      {
+        condmap[i] = *data;
+        condnamemap[i] = Teuchos::rcp(new DRT::Container());
+        condnamemap[i]->Add("condname",condnames[i]);
+      }
+      commondis->UnPackCondition(data,condnames[i]);
+    }
+  } // if (group->GroupId()==sgroup)
+
+  // --------------------------------------
+  // conditions have to be fully redundant, need to copy to all procs in intercomm
+  {
+    int nummyelements = (int)condmap.size();
+    std::vector<int> myelements(nummyelements,-1);
+    for (int i=0; i<nummyelements; ++i) myelements[i] = i;
+    Epetra_Map smap(-1,nummyelements,&myelements[0],0,*icomm);
+    nummyelements = smap.NumGlobalElements();
+    myelements.resize(nummyelements);
+    for (int i=0; i<nummyelements; ++i) myelements[i] = i;
+    Epetra_Map rmap(-1,nummyelements,&myelements[0],0,*icomm);
+    DRT::Exporter exporter(smap,rmap,*icomm);
+    exporter.Export<char>(condmap);
+    exporter.Export<DRT::Container>(condnamemap);
+  }
+  // all rgroup procs loop and add condition to their dis and to the commondis
+  if (group->GroupId()==rgroup)
+  {
+    std::map<int,std::vector<char> >::iterator fool1 = condmap.begin();
+    std::map<int,Teuchos::RCP<DRT::Container> >::iterator fool2 = condnamemap.begin();
+    for ( ; fool1 != condmap.end(); ++fool1)
+    {
+      const std::string* name = fool2->second->Get<std::string>("condname");
+      commondis->UnPackCondition(Teuchos::rcp(&(fool1->second),false),*name);
+      dis->UnPackCondition(Teuchos::rcp(&(fool1->second),false),*name);
+      ++fool2;
+    }
+  }
+  commondis->SetupGhosting(true,true,true);
+  commondis->FillComplete(false,false,false);
+  //-------------------------------------- build a target rowmap for elements
+  std::vector<int> targetgids(0);
+  MPI_Comm mpi_icomm = Teuchos::rcp_dynamic_cast<Epetra_MpiComm>(icomm)->GetMpiComm();
+  {
+    const Epetra_Map* elerowmap = commondis->ElementRowMap();
+    int nummyelements = elerowmap->NumMyElements();
+    int* myglobalelements = elerowmap->MyGlobalElements();
+    // each proc of sender group broadcast its gids
+    // They are then distributed equally in the receiver group
+    int tag;
+    for (int proc=0; proc<icomm->NumProc(); ++proc)
+    {
+      if (icomm->MyPID()==proc && group->GroupId()==sgroup)
+      {
+        tag = 1337;
+        // compare data
+        int lengthSend = nummyelements;
+        //first: send length of data
+        MPI_Send(&lengthSend, 1, MPI_INT, (proc+icomm->NumProc()/2)%icomm->NumProc(), tag, mpi_icomm);
+        //second: send data
+        tag = 2674;
+        MPI_Send(&myglobalelements[0], lengthSend, MPI_INT, (proc+icomm->NumProc()/2)%icomm->NumProc(), tag, mpi_icomm);
+
+      }
+      if (icomm->MyPID()==proc && group->GroupId()==rgroup)
+      {
+        //first: receive length of data
+        int lengthRecv = 0;
+        MPI_Status status;
+         tag = 1337;
+        MPI_Recv(&lengthRecv, 1, MPI_INT, (proc+icomm->NumProc()/2)%icomm->NumProc(), tag, mpi_icomm, &status);
+        if(lengthRecv == 0)
+          dserror("Length of data received from second run is zero.");
+        //second: receive data
+        tag = 2674;
+        targetgids.resize(lengthRecv);
+        MPI_Recv(&targetgids[0], lengthRecv, MPI_INT, (proc+icomm->NumProc()/2)%icomm->NumProc(), tag, mpi_icomm, &status);
+      }
+    } // for (int proc=0; proc<icomm->NumProc(); ++proc)
+  }
+  Epetra_Map targetrowele(-1,(int)targetgids.size(),&targetgids[0],0,*icomm);
+  // -------------------------------------- build target row map for nodes
+  {
+    const Epetra_Map* noderowmap = commondis->NodeRowMap();
+    int nummyelements = noderowmap->NumMyElements();
+    //targetgids.resize(nummyelements);
+    targetgids.resize(0);
+    int* myglobalelements = noderowmap->MyGlobalElements();
+
+    for (int proc=0; proc<icomm->NumProc(); ++proc)
+    {
+      if (icomm->MyPID()==proc && group->GroupId()==sgroup)
+      {
+        int tag = 1337;
+        // compare data
+        int lengthSend = nummyelements;
+        //first: send length of data
+        tag = 1337;
+        MPI_Send(&lengthSend, 1, MPI_INT, (proc+icomm->NumProc()/2)%icomm->NumProc(), tag, mpi_icomm);
+
+        //second: send data
+        tag = 2674;
+        MPI_Send(&myglobalelements[0], lengthSend, MPI_INT, (proc+icomm->NumProc()/2)%icomm->NumProc(), tag, mpi_icomm);
+      }
+      if (icomm->MyPID()==proc && group->GroupId()==rgroup)
+      {
+        //first: receive length of data
+        int lengthRecv = 0;
+
+        MPI_Status status;
+        int tag = 1337;
+        MPI_Recv(&lengthRecv, 1, MPI_INT, (proc+icomm->NumProc()/2)%icomm->NumProc(), tag, mpi_icomm, &status);
+        if(lengthRecv == 0)
+          dserror("Length of data received from second run is zero.");
+        //second: receive data
+        tag = 2674;
+        targetgids.resize(lengthRecv);
+        MPI_Recv(&targetgids[0], lengthRecv, MPI_INT, (proc+icomm->NumProc()/2)%icomm->NumProc(), tag, mpi_icomm, &status);
+      }
+    } // for (int proc=0; proc<icomm->NumProc(); ++proc)
+
+  }
+  Epetra_Map targetrownode(-1,(int)targetgids.size(),&targetgids[0],0,*icomm);
+  // -------------- perform export of elements and nodes
+  commondis->ExportRowElements(targetrowele);
+  commondis->ExportRowNodes(targetrownode);
+
+
+  //---------------loop elements and nodes and copy them to the rgroup discretization
+  if (group->GroupId()==rgroup)
+  {
+    for (int i=0; i<targetrowele.NumMyElements(); ++i)
+    {
+      DRT::Element* ele = commondis->gElement(targetrowele.GID(i));
+      Teuchos::RCP<DRT::Element> newele = Teuchos::rcp(ele->Clone());
+      newele->SetOwner(lcomm->MyPID());
+      dis->AddElement(newele);
+    }
+    for (int i=0; i<targetrownode.NumMyElements(); ++i)
+    {
+      DRT::Node* node = commondis->gNode(targetrownode.GID(i));
+      Teuchos::RCP<DRT::Node> newnode = Teuchos::rcp(node->Clone());
+      newnode->SetOwner(lcomm->MyPID());
+      dis->AddNode(newnode);
+    }
+  }
+  //-------------------------------- complete the discretization on the rgroup
+  if (group->GroupId()==rgroup)
+  {
+    dis->SetupGhosting(true,true,true);
     dis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(dis)));
   }
   icomm->Barrier();

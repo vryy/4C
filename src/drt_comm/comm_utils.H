@@ -63,6 +63,16 @@ namespace COMM_UTILS
                                  Teuchos::RCP<DRT::Discretization> dis,
                                  Teuchos::RCP<Epetra_MpiComm> icomm);
 
+  //! distribute a discretization from one group to one other
+  //! if the groups have the same size. In this special case it is desirable
+  //! that the parallel distribution is the same for all groups. Hence,
+  //! a different braodcasting scheme is used
+  void NPDuplicateDiscretizationEqualGroupSize(const int sgroup,
+                                 const int rgroup,
+                                 Teuchos::RCP<NestedParGroup> group,
+                                 Teuchos::RCP<DRT::Discretization> dis,
+                                 Teuchos::RCP<Epetra_MpiComm> icomm);
+
   //! comparison of two vectors from parallel baci runs for debugging reason using the given tolerance for each entry
   void CompareVectors(Teuchos::RCP<const Epetra_MultiVector> vec, const char* name, double tol = 1.0e-14);
 

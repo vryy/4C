@@ -1050,6 +1050,12 @@ public:
                                 bool doboundaryconditions   = true,
                                 bool checkghosting          = true);
 
+  // Setup ghosting if you have a proper distribution of rownodes and elements
+  // only use this if you are sure that the parallel distribution is ok!
+  virtual void SetupGhosting( bool assigndegreesoffreedom,
+                              bool initelements,
+                              bool doboundaryconditions);
+
 //-----------------------------------------------------------------------------------
 // this is temporary to hide away this method SetupGhosting and only give access to the
 // class PostProblem. It is supposed to go away and PostProblem currently is the only place
