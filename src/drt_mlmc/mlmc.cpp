@@ -668,7 +668,7 @@ void UQ::MLMC::IntegrateScaleByThickness()
           CalcVonMises(my_output_elements_c_strains,vonMisesStrain);
           for(unsigned int i=0; i<my_wall_elements_.size();i++)
           {
-            double scaling = my_thickness_manager_->InitialThickness()/(my_thickness_manager_->EvalThicknessAtLocation(my_wall_elements_.at(i),1.0)+my_thickness_manager_->InitialThickness() );
+            double scaling = my_thickness_manager_->InitialThickness()/(my_thickness_manager_->EvalThicknessAtLocation(my_wall_elements_.at(i),1.0));
              //IO::cout << "InitialThickness " << my_thickness_manager_->InitialThickness() << IO::endl;
              //IO::cout << "my_thickness_manager_->EvalThicknessAtLocation " << my_thickness_manager_->EvalThicknessAtLocation(my_loc,1.0) << IO::endl;
              //IO::cout << "scaling " << scaling << IO::endl;
@@ -684,8 +684,6 @@ void UQ::MLMC::IntegrateScaleByThickness()
             DispMag->push_back(sqrt( pow(my_output_elements_c_disp->at(i).at(0),2)+pow(my_output_elements_c_disp->at(i).at(1),2)+pow(my_output_elements_c_disp->at(i).at(2),2) ));
             // since my_output_elements_mat_params is the same size we use the same for loop here
             Beta->push_back(my_output_elements_mat_params->at(i).at(1));
-            // store von mises stress in Beta
-            //Beta->push_back(vonMisesStress_scaled->at(i));
             Youngs->push_back(my_output_elements_mat_params->at(i).at(0));
           }
 
