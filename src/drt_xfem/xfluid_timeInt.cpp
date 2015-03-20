@@ -1611,6 +1611,11 @@ bool XFEM::XFluidTimeInt::SpecialCheck_InterfaceTips_SpaceTime(
       successful_check = WithinSpaceTimeSide<DRT::Element::quad4,DRT::Element::hex8>(node_within_Space_Time_Side,side_old, side_new, n_coord);
       break;
     }
+    case DRT::Element::quad9:
+    {
+      successful_check = WithinSpaceTimeSide<DRT::Element::quad9,DRT::Element::hex18>(node_within_Space_Time_Side,side_old, side_new, n_coord);
+      break;
+    }
     default: dserror("side-distype %s not handled", DRT::DistypeToString(side_distype).c_str()); break;
   }
 
@@ -1680,7 +1685,7 @@ bool XFEM::XFluidTimeInt::WithinSpaceTimeSide(
       xi_side(0) = 0.3333333333333333;
       xi_side(1) = 0.3333333333333333;
     }
-    else if(numnode_side == 4)
+    else if(numnode_side == 4 or numnode_side == 9)
     {
       xi_side(0) = 0.0;
       xi_side(1) = 0.0;
