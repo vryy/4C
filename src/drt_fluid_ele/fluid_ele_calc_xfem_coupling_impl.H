@@ -107,15 +107,27 @@ namespace DRT
           ) const;
 
         //! set state for interface velocity jump
-        void SetInterfaceJumpState(
+        void SetInterfaceJumpStatenp(
             const DRT::Discretization &  cutterdis,      ///< cutter discretization
             const std::string            state,          ///< state
             const std::vector<int>&      lm              ///< local map
         );
 
+        //! set state for interface velocity jump for previous time step
+        void SetInterfaceJumpStaten(
+          const DRT::Discretization &  cutterdis,      ///< cutter discretization
+          const std::string            state,          ///< state
+          const std::vector<int>&      lm              ///< local map
+        );
+
         //! get interface velocity jump at Gaussian point
-        void GetInterfaceJumpVel(
+        void GetInterfaceJumpVelnp(
             LINALG::Matrix<nsd_,1> & ivelint_jump ///< cutter element interface velocity jump or prescribed DBC at Gaussian point
+        ) const;
+
+        //! get interface velocity jump for previous time step at Gaussian point
+        void GetInterfaceJumpVeln(
+            LINALG::Matrix<nsd_,1> & ivelintn_jump ///< cutter element interface velocity jump or prescribed DBC at Gaussian point
         ) const;
 
         //@}
@@ -186,7 +198,9 @@ namespace DRT
         std::string veln_statename_;   ///< name of previous velocity state (for access from discretization)
 
         //TODO: shift this vector to the same class as ProjectOnSide which is based on the cutter discretization
-        LINALG::Matrix<nsd_, slave_nen_> interface_vel_jump_; ///< cutter element's prescribed velocity jump height or prescribed DBC values
+        LINALG::Matrix<nsd_, slave_nen_> interface_velnp_jump_; ///< cutter element's prescribed velocity jump height or prescribed DBC values
+        LINALG::Matrix<nsd_, slave_nen_> interface_veln_jump_; ///< cutter element's prescribed velocity jump height or prescribed DBC values
+
       };
 
       /*!
@@ -339,17 +353,22 @@ namespace DRT
 
         //! add rhs contributions from old time step in Nitsche's (NIT) method
         void NIT_evaluateCouplingOldState(
-          const LINALG::Matrix<nsd_,1> &    normal,                  ///< outward pointing normal (defined by the coupling partner, that determines the interface traction)
-          const double &                    timefacfacn,             ///< dt*(1-theta)*fac
-          const double &                    visceff_m,               ///< viscosity in coupling master fluid
-          const double &                    visceff_s,               ///< viscosity in coupling slave fluid
-          const double &                    kappa_m,                 ///< mortaring weight for coupling master
-          const double &                    kappa_s,                 ///< mortaring weight for coupling slave
-          const LINALG::Matrix<nen_,1> &    funct_m,                 ///< coupling master shape functions
-          const LINALG::Matrix<nsd_,nen_> & derxy_m,                 ///< spatial derivatives of coupling master shape functions
-          const LINALG::Matrix<nsd_,nsd_> & vderxyn_m,               ///< coupling master spatial velocity derivatives
-          const double &                    presn_m,                 ///< coupling master pressure
-          const LINALG::Matrix<nsd_,1> &    velintn_m                ///< coupling master interface velocity
+          const LINALG::Matrix<nsd_,1> &           normal,                  ///< outward pointing normal (defined by the coupling partner, that determines the interface traction)
+          const double &                           timefacfacn,             ///< dt*(1-theta)*fac
+          const double &                           visceff_m,               ///< viscosity in coupling master fluid
+          const double &                           visceff_s,               ///< viscosity in coupling slave fluid
+          const double &                           kappa_m,                 ///< mortaring weight for coupling master
+          const double &                           kappa_s,                 ///< mortaring weight for coupling slave
+          const double &                           density_m,               ///< fluid density (master) USED IN XFF
+          const LINALG::Matrix<nen_,1> &           funct_m,                 ///< coupling master shape functions
+          const LINALG::Matrix<nsd_,nen_> &        derxy_m,                 ///< spatial derivatives of coupling master shape functions
+          const LINALG::Matrix<nsd_,nsd_> &        vderxyn_m,               ///< coupling master spatial velocity derivatives
+          const double &                           presn_m,                 ///< coupling master pressure
+          const LINALG::Matrix<nsd_,1> &           velintn_m,               ///< coupling master interface velocity
+          const LINALG::Matrix<nsd_,1> &           ivelintn_jump,           ///< prescribed interface velocity, Dirichlet values or jump height for coupled problems
+          INPAR::XFEM::InterfaceTermsPreviousState prev_state = INPAR::XFEM::PreviousState_only_consistency, ///< evaluate all terms or only consistency term at previous state
+          const double                             NIT_full_stab_facn = 0.0, ///< full Nitsche's penalty term scaling (viscous+convective part)
+          INPAR::XFEM::XFF_ConvStabScaling         xff_conv_stab = INPAR::XFEM::XFF_ConvStabScaling_none ///< type of convective stabilization in XFF-problems
         );
 
       private:
@@ -523,6 +542,22 @@ namespace DRT
           const double &                                stabfac
         );
 
+        //!  evaluate master side's part of rhs contribution from Nitsche's penalty term
+        void NIT_Stab_Penalty_MasterRHS(
+          const LINALG::Matrix<nsd_,1>&                 velint_m,                     ///< velocity at integration point
+          const LINALG::Matrix<nsd_,1>&                 velint_s,                     ///< interface velocity at integration point
+          const LINALG::Matrix<nen_,1>&           funct_m_timefacfac,           ///< funct_m^T * timefacfac
+          const double &                                stabfac                       ///< stabilization factor
+        );
+
+        //!  evaluate slave side's part of rhs contribution from Nitsche's penalty term
+        void NIT_Stab_Penalty_SlaveRHS(
+          const LINALG::Matrix<nsd_,1>&                 velint_m,                     ///< velocity at integration point
+          const LINALG::Matrix<nsd_,1>&                 velint_s,                     ///< interface velocity at integration point
+          const LINALG::Matrix<slave_nen_,1>&           funct_s_timefacfac,           ///< funct_s^T * timefacfac
+          const double &                                stabfac                      ///< stabilization factor
+        );
+
         //! add stabilizing terms due to cross-interface convective mass transport (fluid-fluid only)
         void NIT_Stab_Inflow_AveragedTerm(
           const LINALG::Matrix<nsd_,1>&                 velint_m,                     ///< velocity at integration point
@@ -532,6 +567,16 @@ namespace DRT
           const LINALG::Matrix<slave_nen_,1>&           funct_s_timefacfac,           ///< funct_s^T * timefacfac
           const LINALG::Matrix<slave_nen_,nen_>&        funct_s_m_dyad_timefacfac,    ///< (funct_s^T * funct) * timefacfac
           const LINALG::Matrix<slave_nen_,slave_nen_> & funct_s_s_dyad_timefacfac,    ///< (funct_s^T * funct_s) * timefacfac
+          const LINALG::Matrix<nsd_,1>&                 normal,                       ///< normal vector n^m
+          const double &                                density                       ///< fluid density
+        );
+
+        //! add stabilizing terms due to cross-interface convective mass transport (fluid-fluid only, RHS)
+        void NIT_Stab_Inflow_AveragedTermRHS(
+          const LINALG::Matrix<nsd_,1>&                 velint_m,                     ///< velocity at integration point
+          const LINALG::Matrix<nsd_,1>&                 velint_s,                     ///< interface velocity at integration point
+          const LINALG::Matrix<nen_,1>&                 funct_m_timefacfac,           ///< funct * timefacfac
+          const LINALG::Matrix<slave_nen_,1>&           funct_s_timefacfac,           ///< funct_s^T * timefacfac
           const LINALG::Matrix<nsd_,1>&                 normal,                       ///< normal vector n^m
           const double &                                density                       ///< fluid density
         );

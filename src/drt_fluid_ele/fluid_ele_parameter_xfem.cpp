@@ -118,6 +118,31 @@ void DRT::ELEMENTS::FluidEleParameterXFEM::CheckParameterConsistency(int myrank)
     if (myrank == 0)
       IO::cout << "Be warned: the chosen characteristic element length definition ViscStabHK can become critical for xfluid-sided Nitsche method as the current definition either can not guarantee a sufficient estimate of the inverse inequality or can lead to cut position dependent error behaviour!" << IO::endl;
   }
+
+#ifdef DEBUG
+  switch (intterms_prev_state_)
+  {
+  case INPAR::XFEM::PreviousState_only_consistency:
+  {
+    if (myrank == 0)
+      IO::cout << "Treatment of interface terms in case of new OST: ONLY CONSISTENCY \n"
+        << "only standard consistency terms at t_n!\n"
+        << "Be careful in cases of non-stationary XFEM interfaces." << IO::endl;
+    break;
+  }
+  case INPAR::XFEM::PreviousState_full:
+  {
+    if (myrank == 0)
+      IO::cout << "Treatment of interface terms in case of new OST: FULL \n" << "all interface terms at t_n (standard + adjoint + penalty)!\n"
+        << "Be careful in cases of non-stationary XFEM interfaces." << IO::endl;
+    break;
+  }
+  default:
+    dserror("Treatment of interface terms for new OST not specified.");
+    break;
+  }
+#endif
+
 }
 
 
@@ -137,7 +162,7 @@ void DRT::ELEMENTS::FluidEleParameterXFEM::SetElementXFEMParameter(
   bcellgausspts_  = DRT::INPUT::IntegralValue<INPAR::CUT::BCellGaussPts>(params_xfem, "BOUNDARY_GAUSS_POINTS_BY");
 
   //----------------------------------------------------------------
-  //Teuchos::ParameterList&   params_xf_gen  = params.sublist("XFLUID DYNAMIC/GENERAL");
+  Teuchos::ParameterList&   params_xf_gen  = params.sublist("XFLUID DYNAMIC/GENERAL");
 
   //----------------------------------------------------------------
   Teuchos::ParameterList&   params_xf_stab = params.sublist("XFLUID DYNAMIC/STABILIZATION");
@@ -184,6 +209,8 @@ void DRT::ELEMENTS::FluidEleParameterXFEM::SetElementXFEMParameter(
 
   mass_conservation_combo_ = DRT::INPUT::IntegralValue<INPAR::XFEM::MassConservationCombination>(params_xf_stab,"MASS_CONSERVATION_COMBO");
   mass_conservation_scaling_ = DRT::INPUT::IntegralValue<INPAR::XFEM::MassConservationScaling>(params_xf_stab,"MASS_CONSERVATION_SCALING");
+
+  intterms_prev_state_ = DRT::INPUT::IntegralValue<INPAR::XFEM::InterfaceTermsPreviousState>(params_xf_gen,"INTERFACE_TERMS_PREVIOUS_STATE");
 
   //--------------------------------------------
   // CONSISTENCY CHECKS for PARAMETERS

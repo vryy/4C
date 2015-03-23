@@ -106,6 +106,13 @@ namespace INPAR
       MassConservationScaling_only_visc      /// use only the viscous scaling
     };
 
+    /// Add interface terms from previous time step (new OST)
+    enum InterfaceTermsPreviousState
+    {
+      PreviousState_only_consistency,        /// evaluate only consistency terms
+      PreviousState_full                     /// evaluate consistency, adjoint consistency and penalty terms
+    };
+
     /// xfluidfluid-fsi-monolithic approach
     enum Monolithic_xffsi_Approach
     {

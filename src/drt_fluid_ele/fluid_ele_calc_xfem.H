@@ -254,6 +254,18 @@ private:
       LINALG::Matrix<3,1>& rst                                                 ///< local coordinates of GP for bg element
   );
 
+  //! get the interface jump vectors for velocity and traction at the Gaussian point for previous time step
+  void GetInterfaceJumpVectorsOldState(
+      const XFEM::EleCoupCond & coupcond,                                      ///< coupling condition for given interface side
+      Teuchos::RCP<XFEM::CouplingBase> coupling,                               ///< coupling object
+      LINALG::Matrix<my::nsd_,1>& ivelintn_jump,                               ///< prescribed interface jump vector for velocity
+      LINALG::Matrix<my::nsd_,1>& itractionn_jump,                             ///< prescribed interface jump vector for traction
+      const LINALG::Matrix<my::nsd_,1>& x,                                     ///< global coordinates of Gaussian point
+      const LINALG::Matrix<my::nsd_,1>& normal,                                ///< normal vector at Gaussian point
+      Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype> > si, ///< side implementation for cutter element
+      LINALG::Matrix<3,1>& rst                                                 ///< local coordinates of GP for bg element
+  );
+
   //! build the patch coupling matrix Cuiui containing Cuiui for all cutting sides
   void NIT_BuildPatchCuiui(
       Epetra_SerialDenseMatrix &                              Cuiui,            ///< ui-ui patch coupling matrix containing Cuiui for all cutting sides
@@ -278,6 +290,7 @@ private:
           const double                       h_k,                           ///< characteristic element length
           const double                       kappa1,                        ///< Weight parameter (parameter +/master side)
           const double                       kappa2,                        ///< Weight parameter (parameter -/slave  side)
+          const LINALG::Matrix<my::nsd_,1>&  velint_m,                      ///< Master side velocity at gauss-point
           const LINALG::Matrix<my::nsd_,1>&  velint_s,                      ///< Slave side velocity at gauss-point
           const double                       NIT_visc_stab_fac,             ///< Nitsche's viscous scaling part of penalty term
           bool                               error_calc = false             ///< when called in error calculation, don't add the inflow terms

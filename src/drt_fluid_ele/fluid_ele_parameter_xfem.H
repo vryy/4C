@@ -129,6 +129,9 @@ public:
 
   //@}
 
+  //! for new OST-implementation: which interface terms to be evaluated for previous time step
+  INPAR::XFEM::InterfaceTermsPreviousState InterfaceTermsPreviousState() const{ return intterms_prev_state_; }
+
 private:
 
   //! assure a valid combination of input parameters
@@ -226,6 +229,9 @@ private:
   INPAR::XFEM::MassConservationScaling mass_conservation_scaling_;
 
   //@}
+
+  //! which interface terms to be evaluated for previous time step (new OST)
+  INPAR::XFEM::InterfaceTermsPreviousState intterms_prev_state_;
 
 protected:
 

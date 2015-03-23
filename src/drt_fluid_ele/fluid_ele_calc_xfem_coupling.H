@@ -151,7 +151,15 @@ namespace DRT
         { dserror("There is no concrete slave element available."); };
 
         //! set state for interface velocity jump
-        virtual void SetInterfaceJumpState(
+        virtual void SetInterfaceJumpStatenp(
+            const DRT::Discretization &  cutterdis,      ///< cutter discretization
+            const std::string            state,          ///< state
+            const std::vector<int>&      lm              ///< local map
+        )
+        { dserror("There is no concrete slave element available."); };
+
+        //! set state for interface velocity jump for previous time step
+        virtual void SetInterfaceJumpStaten(
             const DRT::Discretization &  cutterdis,      ///< cutter discretization
             const std::string            state,          ///< state
             const std::vector<int>&      lm              ///< local map
@@ -159,8 +167,14 @@ namespace DRT
         { dserror("There is no concrete slave element available."); };
 
         //! get interface velocity jump at Gaussian point
-        virtual void GetInterfaceJumpVel(
+        virtual void GetInterfaceJumpVelnp(
             LINALG::Matrix<nsd_,1> & ivelint_jump ///< cutter element interface velocity jump or prescribed DBC at Gaussian point
+        ) const
+        { dserror("There is no concrete slave element available."); };
+
+        //! get interface velocity jump at Gaussian point for previous time step
+        virtual void GetInterfaceJumpVeln(
+            LINALG::Matrix<nsd_,1> & ivelintn_jump ///< cutter element interface velocity jump or prescribed DBC at Gaussian point
         ) const
         { dserror("There is no concrete slave element available."); };
 
@@ -297,17 +311,22 @@ namespace DRT
 
         //! add rhs contributions from old time step in Nitsche's (NIT) method
         virtual void NIT_evaluateCouplingOldState(
-          const LINALG::Matrix<nsd_,1> &    normal,                  ///< outward pointing normal (defined by the coupling partner, that determines the interface traction)
-          const double &                    timefacfacn,             ///< dt*(1-theta)*fac
-          const double &                    visceff_m,               ///< viscosity in coupling master fluid
-          const double &                    visceff_s,               ///< viscosity in coupling slave fluid
-          const double &                    kappa_m,                 ///< mortaring weight for coupling master
-          const double &                    kappa_s,                 ///< mortaring weight for coupling slave
-          const LINALG::Matrix<nen_,1> &    funct_m,                 ///< coupling master shape functions
-          const LINALG::Matrix<nsd_,nen_> & derxy_m,                 ///< spatial derivatives of coupling master shape functions
-          const LINALG::Matrix<nsd_,nsd_> & vderxyn_m,               ///< coupling master spatial velocity derivatives
-          const double &                    presn_m,                 ///< coupling master pressure
-          const LINALG::Matrix<nsd_,1> &    velintn_m                ///< coupling master interface velocity
+          const LINALG::Matrix<nsd_,1> &           normal,                  ///< outward pointing normal (defined by the coupling partner, that determines the interface traction)
+          const double &                           timefacfacn,             ///< dt*(1-theta)*fac
+          const double &                           visceff_m,               ///< viscosity in coupling master fluid
+          const double &                           visceff_s,               ///< viscosity in coupling slave fluid
+          const double &                           kappa_m,                 ///< mortaring weight for coupling master
+          const double &                           kappa_s,                 ///< mortaring weight for coupling slave
+          const double &                           density_m,              ///< fluid density (master) USED IN XFF
+          const LINALG::Matrix<nen_,1> &           funct_m,                 ///< coupling master shape functions
+          const LINALG::Matrix<nsd_,nen_> &        derxy_m,                 ///< spatial derivatives of coupling master shape functions
+          const LINALG::Matrix<nsd_,nsd_> &        vderxyn_m,               ///< coupling master spatial velocity derivatives
+          const double &                           presn_m,                 ///< coupling master pressure
+          const LINALG::Matrix<nsd_,1> &           velintn_m,               ///< coupling master interface velocity
+          const LINALG::Matrix<nsd_,1> &           ivelintn_jump,           ///< prescribed interface velocity, Dirichlet values or jump height for coupled problems
+          INPAR::XFEM::InterfaceTermsPreviousState prev_state = INPAR::XFEM::PreviousState_only_consistency, ///< evaluate all terms or only consistency term at previous state
+          const double                             NIT_full_stab_facn = 0.0, ///< full Nitsche's penalty term scaling (viscous+convective part)
+          INPAR::XFEM::XFF_ConvStabScaling         xff_conv_stab = INPAR::XFEM::XFF_ConvStabScaling_none ///< type of convective stabilization in XFF-problems
         ) = 0;
 
       };

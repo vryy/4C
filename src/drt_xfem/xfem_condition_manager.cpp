@@ -235,12 +235,13 @@ void XFEM::CouplingBase::SetCouplingDiscretization()
 void XFEM::CouplingBase::EvaluateDirichletFunction(
     LINALG::Matrix<3,1>& ivel,
     const LINALG::Matrix<3,1>& x,
-    const DRT::Condition* cond
+    const DRT::Condition* cond,
+    double time
 )
 {
   std::vector<double> final_values(3,0.0);
 
-  EvaluateFunction(final_values, x.A(), cond, time_);
+  EvaluateFunction(final_values, x.A(), cond, time);
 
   ivel(0,0) = final_values[0];
   ivel(1,0) = final_values[1];
@@ -250,7 +251,8 @@ void XFEM::CouplingBase::EvaluateDirichletFunction(
 void XFEM::CouplingBase::EvaluateNeumannFunction(
     LINALG::Matrix<3,1>& itraction,
     const LINALG::Matrix<3,1>& x,
-    const DRT::Condition* cond
+    const DRT::Condition* cond,
+    double time
 )
 {
   std::vector<double> final_values(3,0.0);
@@ -263,7 +265,7 @@ void XFEM::CouplingBase::EvaluateNeumannFunction(
     dserror("Unknown Neumann condition");
   //---------------------------------------
 
-  EvaluateFunction(final_values, x.A(), cond, time_);
+  EvaluateFunction(final_values, x.A(), cond, time);
 
   itraction(0,0) = final_values[0];
   itraction(1,0) = final_values[1];
@@ -1244,7 +1246,21 @@ void XFEM::MeshCouplingWeakDirichlet::EvaluateCouplingConditions(
 )
 {
   // evaluate interface velocity (given by weak Dirichlet condition)
-  EvaluateDirichletFunction(ivel, x, cond);
+  EvaluateDirichletFunction(ivel, x, cond, time_);
+
+  // no interface traction to be evaluated
+  itraction.Clear();
+}
+
+void XFEM::MeshCouplingWeakDirichlet::EvaluateCouplingConditionsOldState(
+    LINALG::Matrix<3,1>& ivel,
+    LINALG::Matrix<3,1>& itraction,
+    const LINALG::Matrix<3,1>& x,
+    const DRT::Condition* cond
+)
+{
+  // evaluate interface velocity (given by weak Dirichlet condition)
+  EvaluateDirichletFunction(ivel, x, cond, time_-dt_);
 
   // no interface traction to be evaluated
   itraction.Clear();
@@ -1270,7 +1286,21 @@ void XFEM::MeshCouplingNeumann::EvaluateCouplingConditions(
   ivel.Clear();
 
   // evaluate interface traction (given by Neumann condition)
-  EvaluateNeumannFunction(itraction, x, cond);
+  EvaluateNeumannFunction(itraction, x, cond, time_);
+}
+
+void XFEM::MeshCouplingNeumann::EvaluateCouplingConditionsOldState(
+    LINALG::Matrix<3,1>& ivel,
+    LINALG::Matrix<3,1>& itraction,
+    const LINALG::Matrix<3,1>& x,
+    const DRT::Condition* cond
+)
+{
+  // no interface velocity to be evaluated
+  ivel.Clear();
+
+  // evaluate interface traction (given by Neumann condition)
+  EvaluateNeumannFunction(itraction, x, cond, time_-dt_);
 }
 
 void XFEM::MeshCouplingNeumann::PrepareSolve()
@@ -1948,7 +1978,21 @@ void XFEM::LevelSetCouplingWeakDirichlet::EvaluateCouplingConditions(
 )
 {
   // evaluate interface velocity (given by weak Dirichlet condition)
-  EvaluateDirichletFunction(ivel, x, cond);
+  EvaluateDirichletFunction(ivel, x, cond, time_);
+
+  // no interface traction to be evaluated
+  itraction.Clear();
+}
+
+void XFEM::LevelSetCouplingWeakDirichlet::EvaluateCouplingConditionsOldState(
+    LINALG::Matrix<3,1>& ivel,
+    LINALG::Matrix<3,1>& itraction,
+    const LINALG::Matrix<3,1>& x,
+    const DRT::Condition* cond
+)
+{
+  // evaluate interface velocity (given by weak Dirichlet condition)
+  EvaluateDirichletFunction(ivel, x, cond, time_-dt_);
 
   // no interface traction to be evaluated
   itraction.Clear();
@@ -1965,7 +2009,21 @@ void XFEM::LevelSetCouplingNeumann::EvaluateCouplingConditions(
   ivel.Clear();
 
   // evaluate interface traction (given by Neumann condition)
-  EvaluateNeumannFunction(itraction, x, cond);
+  EvaluateNeumannFunction(itraction, x, cond, time_);
+}
+
+void XFEM::LevelSetCouplingNeumann::EvaluateCouplingConditionsOldState(
+    LINALG::Matrix<3,1>& ivel,
+    LINALG::Matrix<3,1>& itraction,
+    const LINALG::Matrix<3,1>& x,
+    const DRT::Condition* cond
+)
+{
+  // no interface velocity to be evaluated
+  ivel.Clear();
+
+  // evaluate interface traction (given by Neumann condition)
+  EvaluateNeumannFunction(itraction, x, cond, time_-dt_);
 }
 
 /*--------------------------------------------------------------------------*

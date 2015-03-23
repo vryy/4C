@@ -215,6 +215,13 @@ public:
       const DRT::Condition* cond
   ){dserror("EvaluateCouplingConditions should be implemented by derived class");};
 
+  virtual void EvaluateCouplingConditionsOldState(
+      LINALG::Matrix<3,1>& ivel,
+      LINALG::Matrix<3,1>& itraction,
+      const LINALG::Matrix<3,1>& x,
+      const DRT::Condition* cond
+  ){dserror("EvaluateCouplingConditionsOldState should be implemented by derived class");};
+
   /// set material pointer for coupling slave side
   virtual void GetInterfaceSlaveMaterial(
     DRT::Element* actele,
@@ -235,13 +242,15 @@ protected:
   void EvaluateDirichletFunction(
       LINALG::Matrix<3,1>& ivel,
       const LINALG::Matrix<3,1>& x,
-      const DRT::Condition* cond
+      const DRT::Condition* cond,
+      double time
   );
 
   void EvaluateNeumannFunction(
       LINALG::Matrix<3,1>& itraction,
       const LINALG::Matrix<3,1>& x,
-      const DRT::Condition* cond
+      const DRT::Condition* cond,
+      double time
   );
 
   void EvaluateFunction(
@@ -559,6 +568,13 @@ public:
       const DRT::Condition* cond
   );
 
+  void EvaluateCouplingConditionsOldState(
+      LINALG::Matrix<3,1>& ivel,
+      LINALG::Matrix<3,1>& itraction,
+      const LINALG::Matrix<3,1>& x,
+      const DRT::Condition* cond
+  );
+
   virtual void PrepareSolve();
 
 };
@@ -589,6 +605,13 @@ public:
 public:
 
   void EvaluateCouplingConditions(
+      LINALG::Matrix<3,1>& ivel,
+      LINALG::Matrix<3,1>& itraction,
+      const LINALG::Matrix<3,1>& x,
+      const DRT::Condition* cond
+  );
+
+  void EvaluateCouplingConditionsOldState(
       LINALG::Matrix<3,1>& ivel,
       LINALG::Matrix<3,1>& itraction,
       const LINALG::Matrix<3,1>& x,
@@ -1001,6 +1024,13 @@ public:
       const DRT::Condition* cond
   );
 
+  void EvaluateCouplingConditionsOldState(
+      LINALG::Matrix<3,1>& ivel,
+      LINALG::Matrix<3,1>& itraction,
+      const LINALG::Matrix<3,1>& x,
+      const DRT::Condition* cond
+  );
+
 };
 
 
@@ -1030,6 +1060,13 @@ public:
 public:
 
   void EvaluateCouplingConditions(
+      LINALG::Matrix<3,1>& ivel,
+      LINALG::Matrix<3,1>& itraction,
+      const LINALG::Matrix<3,1>& x,
+      const DRT::Condition* cond
+  );
+
+  void EvaluateCouplingConditionsOldState(
       LINALG::Matrix<3,1>& ivel,
       LINALG::Matrix<3,1>& itraction,
       const LINALG::Matrix<3,1>& x,

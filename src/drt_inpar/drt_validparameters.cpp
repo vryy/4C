@@ -7596,6 +7596,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   BoolParameter("ALE_XFluid","no","XFluid is Ale Fluid?",&xfluid_general);
 
+  // for new OST-implementation: which interface terms to be evaluated for previous time step
+  setStringToIntegralParameter<int>("INTERFACE_TERMS_PREVIOUS_STATE","PreviousState_only_consistency","how to treat interface terms from previous time step (new OST)",
+                               tuple<std::string>("PreviousState_only_consistency", "PreviousState_full"),
+                               tuple<int>(
+                                   INPAR::XFEM::PreviousState_only_consistency, /// evaluate only consistency terms for previous time step
+                                   INPAR::XFEM::PreviousState_full             /// evaluate consistency, adjoint consistency and penalty terms or previous time step
+                                   ),
+                               &xfluid_general);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& xfluid_stab = xfluid_dyn.sublist("STABILIZATION",false,"");
 
