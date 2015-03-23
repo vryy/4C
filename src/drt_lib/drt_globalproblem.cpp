@@ -336,7 +336,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
     Teuchos::ParameterList& sublist = list->sublist(ss.str().substr(2));
 
     std::string* xmlfile = sublist.getPtr<std::string>("STRATIMIKOS_XMLFILE");
-    if (xmlfile != NULL)
+    if (xmlfile != NULL and *xmlfile != "none")
     {
       // make path relative to input file path if it is not an absolute path
       if ((*xmlfile)[0]!='/')
