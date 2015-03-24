@@ -131,8 +131,8 @@ public:
 
   /*! \brief Create Systemmatrix
    *
-   * We allocate the LINALG object just once, the result is an empty LINALG object.
-   * Evaluate has to be called separately.
+   * We allocate the LINALG object just once, the result is an empty
+   * LINALG object. Evaluate has to be called separately.
    *
    */
   void CreateSystemMatrix(
@@ -151,7 +151,7 @@ public:
           ALE::UTILS::MapExtractor::dbc_set_std ///< application-specific type of Dirichlet set
       );
 
-  /// solve this time step with currently applied interface displacements
+  /// linear solve
   virtual int Solve();
 
   /// get the linear solver object used for this field
@@ -171,12 +171,14 @@ public:
 
   virtual void EvaluateElements();
 
-  const std::string ElementActionString(const enum INPAR::ALE::AleDynamic name ///< enum to convert
+  const std::string ElementActionString(
+      const enum INPAR::ALE::AleDynamic name ///< enum to convert
       );
 
   Teuchos::RCP<LINALG::Preconditioner> ConstPreconditioner();
 
-  virtual void CreatePreconditioner(bool full = true ///< Sparsematrix (true) or Blocksparsematrix (false)
+  virtual void CreatePreconditioner(
+      bool full = true ///< Sparsematrix (true) or Blocksparsematrix (false)
       );
 
   //! @name Time step helpers
@@ -187,7 +189,9 @@ public:
   /// start a new time step
   virtual void PrepareTimeStep();
 
-  virtual void TimeStep(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type = ALE::UTILS::MapExtractor::dbc_set_std);
+  virtual void TimeStep(
+      ALE::UTILS::MapExtractor::AleDBCSetType dbc_type = ALE::UTILS::MapExtractor::dbc_set_std
+      );
 
   /// write output
   virtual void Output();
@@ -289,16 +293,18 @@ public:
     return discret_;
   }
 
-  /*!
-   * \brief setup Dirichlet boundary condition map extractor.
-   * generally, all application-specific information belongs to the subsequent adapter class -
-   * this routine is an exception.
-   * this method creates application-specific Dirichlet maps and stores them in a map,
-   * together with an application key; by passing this key to routines like evaluate,
-   * an adapter classes can assure, that its very own Dirichlet map extractor is used.
+  /*! \brief setup Dirichlet boundary condition map extractor.
+   *
+   *  Generally, all application-specific information belongs to the subsequent
+   *  adapter class - this routine is an exception.
+   *  This method creates application-specific Dirichlet maps and stores them in
+   *  a map, together with an application key; by passing this key to routines
+   *  like evaluate, an adapter classes can assure, that its very own Dirichlet
+   *  map extractor is used.
    */
-  void SetupDBCMapEx(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type =
-      ALE::UTILS::MapExtractor::dbc_set_std, //!< application-specific type of Dirichlet set
+  void SetupDBCMapEx(
+      ALE::UTILS::MapExtractor::AleDBCSetType dbc_type =
+          ALE::UTILS::MapExtractor::dbc_set_std, //!< application-specific type of Dirichlet set
       Teuchos::RCP<const ALE::UTILS::MapExtractor> interface = Teuchos::null, //!< interface for creation of additional, application-specific Dirichlet map extractors
       Teuchos::RCP<const ALE::UTILS::XFluidFluidMapExtractor> xff_interface =
           Teuchos::null //!< interface for creation of a Dirichlet map extractor, taylored to XFFSI
@@ -403,22 +409,21 @@ private:
    */
   Teuchos::RCP<Epetra_Vector> rhs_;
 
-  Teuchos::RCP<Epetra_Vector>    dispnp_; ///< unknown solution at \f$t_{n+1}\f$
-  Teuchos::RCP<Epetra_Vector>    dispn_;  ///< known solution at \f$t_{n}\f$
-  Teuchos::RCP<Epetra_Vector>    disi_;  ///< iterative displacement increment
-  double                         normdisi_;///< norm of iterative displacement increment
-  Teuchos::RCP<const Epetra_Vector>    zeros_;  ///< zero vector for dbc handling
+  Teuchos::RCP<Epetra_Vector> dispnp_; ///< unknown solution at \f$t_{n+1}\f$
+  Teuchos::RCP<Epetra_Vector> dispn_; ///< known solution at \f$t_{n}\f$
+  Teuchos::RCP<Epetra_Vector> disi_; ///< iterative displacement increment
+  double normdisi_; ///< norm of iterative displacement increment
+  Teuchos::RCP<const Epetra_Vector> zeros_; ///< zero vector for dbc handling
 
   //@}
 
   //! @name map extractors
   //@{
 
-  /*!
-   * \brief map with application-specific Dirichlet map extractors
+  /*! \brief map with application-specific Dirichlet map extractors
    *
-   * each adapter class can extract its map extractor via
-   * an application-specific key
+   *  Each adapter class can extract its map extractor via
+   *  an application-specific key
    */
   std::map<int, Teuchos::RCP<LINALG::MapExtractor> > dbcmaps_;
 

@@ -42,9 +42,9 @@ Maintainer: Matthias Mayr
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 ALE::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis,
-              Teuchos::RCP<LINALG::Solver> solver,
-              Teuchos::RCP<Teuchos::ParameterList> params,
-              Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<LINALG::Solver> solver,
+    Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<IO::DiscretizationWriter> output)
   : discret_(actdis),
     solver_(solver),
     params_(params),
@@ -106,8 +106,7 @@ ALE::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis,
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void ALE::Ale::CreateSystemMatrix(
-  Teuchos::RCP<const ALE::UTILS::MapExtractor> interface
-)
+    Teuchos::RCP<const ALE::UTILS::MapExtractor> interface)
 {
   if (interface == Teuchos::null)
   {
@@ -124,10 +123,8 @@ void ALE::Ale::CreateSystemMatrix(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALE::Ale::Evaluate(
-  Teuchos::RCP<const Epetra_Vector> stepinc,
-  ALE::UTILS::MapExtractor::AleDBCSetType dbc_type
-)
+void ALE::Ale::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc,
+    ALE::UTILS::MapExtractor::AleDBCSetType dbc_type)
 {
   // We save the current solution here. This will not change the
   // result of our element call, but the next time somebody asks us we
@@ -252,7 +249,8 @@ void ALE::Ale::EvaluateElements()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-const std::string ALE::Ale::ElementActionString(const enum INPAR::ALE::AleDynamic name)
+const std::string ALE::Ale::ElementActionString(
+    const enum INPAR::ALE::AleDynamic name)
 {
   switch (name)
   {
@@ -275,9 +273,8 @@ const std::string ALE::Ale::ElementActionString(const enum INPAR::ALE::AleDynami
 /*----------------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::Preconditioner> ALE::Ale::ConstPreconditioner()
 {
-  /*if(incremental_==true)
-    dserror("Do not use constant preconditioner in an incremental formulation");
-* TODO (mayr) fix const preconditioner stuff */
+  // TODO (mayr) fix const preconditioner stuff
+
   return precond_;
 }
 
@@ -348,7 +345,8 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> ALE::Ale::BlockSystemMatrix()
 /*----------------------------------------------------------------------------*/
 int ALE::Ale::Integrate()
 {
-  const double eps = 1.0e-12; // add eps to prevent stopping one step too early due to memory trash on last digits
+  // add eps to prevent stopping one step too early due to memory trash on last digits
+  const double eps = 1.0e-12;
   while (step_ < numstep_ and time_ <= maxtime_ + eps)
   {
     PrepareTimeStep();
@@ -380,7 +378,8 @@ void ALE::Ale::Output()
   }
 
   // write output data if necessary
-  if (not datawritten and writeresultsevery_ != 0 and step_ % writeresultsevery_ == 0)
+  if (not datawritten and writeresultsevery_ != 0
+      and step_ % writeresultsevery_ == 0)
   {
     OutputState(datawritten);
   }
@@ -461,7 +460,8 @@ void ALE::Ale::PrepareTimeStep()
   eleparams.set("delta time", dt_);
 
   // Apply Dirichlet boundary conditions on provided state vector
-  ALE::Ale::ApplyDirichletBC(eleparams, dispnp_, Teuchos::null, Teuchos::null, false);
+  ALE::Ale::ApplyDirichletBC(eleparams, dispnp_, Teuchos::null, Teuchos::null,
+      false);
 
   return;
 }
@@ -472,6 +472,8 @@ void ALE::Ale::TimeStep(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type)
 {
   bool converged = false;
   int iter = 0;
+
+  // Newton loop to deal with possible non-linearities
   while(!converged && iter < maxiter_)
   {
     Evaluate(Teuchos::null,dbc_type);
@@ -495,7 +497,10 @@ void ALE::Ale::TimeStep(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type)
       break;
     case INPAR::ALE::divcont_continue:
       if(discret_->Comm().MyPID()==0)
-        IO::cout<< "ALE newton not converged in " << maxiter_ << " iterations. Continue"<< IO::endl;
+      {
+        IO::cout << "ALE newton not converged in " << maxiter_
+            << " iterations. Continue" << IO::endl;
+      }
       break;
     default:
       dserror("Unknown divercont action! ");
@@ -517,11 +522,9 @@ void ALE::Ale::PrintTimeStepHeader() const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALE::Ale::SetupDBCMapEx(
-  ALE::UTILS::MapExtractor::AleDBCSetType      dbc_type,
-  Teuchos::RCP<const ALE::UTILS::MapExtractor> interface,
-  Teuchos::RCP<const ALE::UTILS::XFluidFluidMapExtractor> xff_interface
-)
+void ALE::Ale::SetupDBCMapEx(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type,
+    Teuchos::RCP<const ALE::UTILS::MapExtractor> interface,
+    Teuchos::RCP<const ALE::UTILS::XFluidFluidMapExtractor> xff_interface)
 {
   // set fixed nodes (conditions != 0 are not supported right now). hahn: Why?!
   Teuchos::ParameterList eleparams;
@@ -595,17 +598,13 @@ Teuchos::RCP<DRT::ResultTest> ALE::Ale::CreateFieldTest()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALE::Ale::ApplyDirichletBC
-(
-  Teuchos::ParameterList& params,
-  Teuchos::RCP<Epetra_Vector> systemvector,   //!< (may be Teuchos::null)
-  Teuchos::RCP<Epetra_Vector> systemvectord,  //!< (may be Teuchos::null)
-  Teuchos::RCP<Epetra_Vector> systemvectordd, //!< (may be Teuchos::null)
-  bool recreatemap  //!< recreate mapextractor/toggle-vector
-)
+void ALE::Ale::ApplyDirichletBC(Teuchos::ParameterList& params,
+    Teuchos::RCP<Epetra_Vector> systemvector,
+    Teuchos::RCP<Epetra_Vector> systemvectord,
+    Teuchos::RCP<Epetra_Vector> systemvectordd, bool recreatemap)
 {
   // In the case of local coordinate systems, we have to rotate forward ...
-  // --------------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
   if (locsysman_ != Teuchos::null)
   {
     if (systemvector != Teuchos::null)
@@ -617,22 +616,23 @@ void ALE::Ale::ApplyDirichletBC
   }
 
   // Apply DBCs
-  // --------------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
   discret_->ClearState();
   if (recreatemap)
   {
-    discret_->EvaluateDirichlet(params, systemvector, systemvectord, systemvectordd,
-                                Teuchos::null, dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_std]);
+    discret_->EvaluateDirichlet(params, systemvector, systemvectord,
+        systemvectordd, Teuchos::null,
+        dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_std]);
   }
   else
   {
-    discret_->EvaluateDirichlet(params, systemvector, systemvectord, systemvectordd,
-                               Teuchos::null, Teuchos::null);
+    discret_->EvaluateDirichlet(params, systemvector, systemvectord,
+        systemvectordd, Teuchos::null, Teuchos::null);
   }
   discret_->ClearState();
 
   // In the case of local coordinate systems, we have to rotate back into global Cartesian frame
-  // --------------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
   if (locsysman_ != Teuchos::null)
   {
     if (systemvector != Teuchos::null)

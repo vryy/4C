@@ -3,9 +3,9 @@
 \file inpar_ale.H
 
 <pre>
-Maintainer: Georg Bauer
-            bauer@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
+ Maintainer: Matthias Mayr
+             mayr@mhpc.mw.tum.de
+             089 - 289-10362
 </pre>
 */
 
@@ -27,16 +27,16 @@ namespace INPAR
   enum AleDynamic
   {
     // old types
-    none,
-    laplace,
-    springs,
-    solid,
+    none, ///< default
+    laplace, ///< Laplacian smoothing
+    springs, ///< use a spring analogy
+    solid, ///< pseudo-structure approach
   };
   /// Handling of non-converged nonlinear solver
   enum DivContAct
   {
-    divcont_stop,               ///< abort simulation
-    divcont_continue           ///< continue nevertheless
+    divcont_stop, ///< abort simulation
+    divcont_continue ///< continue nevertheless
   };
 
 
