@@ -346,10 +346,10 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcMatDerivAndRotU(
   Epetra_SerialDenseVector& elevec3)
 {
   // fill the local element vector/matrix with the global values
-  LINALG::Matrix<nsd_,nen_> eveln(true);
-  ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &eveln, NULL,"veln");
-  LINALG::Matrix<nsd_,nen_> evelnm(true);
-  ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &evelnm, NULL,"velnm");
+  LINALG::Matrix<nsd_,nen_> evel(true);
+  ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &evel, NULL,"vel");
+  LINALG::Matrix<nsd_,nen_> eacc(true);
+  ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &eacc, NULL,"acc");
 
   // coordinates of the current integration point
   xsi_.Update(1.0, params.get<LINALG::Matrix<nsd_,1> >("elecoords"));
@@ -359,9 +359,9 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcMatDerivAndRotU(
   DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
 
   // get velocities u_n and u_nm at integration point
-  velint_.Multiply(eveln,funct_);
-  LINALG::Matrix<nsd_,1> velintnm(true);
-  velintnm.Multiply(evelnm,funct_);
+  velint_.Multiply(evel,funct_);
+  LINALG::Matrix<nsd_,1> accint(true);
+  accint.Multiply(eacc,funct_);
 
   for (int isd=0;isd<nsd_;isd++)
   {
@@ -369,15 +369,13 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcMatDerivAndRotU(
   }
 
   // get gradient of velocity at integration point
-  vderxy_.MultiplyNT(eveln,deriv_);
+  vderxy_.MultiplyNT(evel,deriv_);
 
   // calculate (u_n * nabla) u_n
   conv_old_.Multiply(vderxy_,velint_);
 
-  double invdt = 1.0 / params.get<double>("timestep");
-
   // calculate (u_n - u_nm)/dt + (u_n * nabla) u_n
-  conv_old_.Update(invdt, velint_, -invdt, velintnm, 1.0);
+  conv_old_.Update(1.0, accint, 1.0);
 
   for (int isd=0;isd<nsd_;isd++)
   {
@@ -456,7 +454,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcPressGradAndDivEps(
 
   // fill the local element vector with the global values
   LINALG::Matrix<nen_,1>    epre(true);
-  ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, NULL, &epre,"veln");
+  ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, NULL, &epre,"vel");
 
   // coordinates of the current integration point
   LINALG::Matrix<nsd_,1> elecoords = params.get<LINALG::Matrix<nsd_,1> >("elecoords");

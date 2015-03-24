@@ -409,6 +409,14 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
   fluiddis_->ClearState();
   particledis_->ClearState();
 
+  Teuchos::RCP<Epetra_Vector> veln = Teuchos::rcp(new Epetra_Vector(*fluid_->Veln()));
+  Teuchos::RCP<Epetra_Vector> velnm = Teuchos::rcp(new Epetra_Vector(*fluid_->Velnm()));
+  // compute acceleration
+  Teuchos::RCP<Epetra_Vector> acc = Teuchos::rcp(new Epetra_Vector(*veln));
+  acc->Update(-1.0/Dt(), *velnm, 1.0/Dt());
+
+  Teuchos::RCP<Epetra_Vector> vel = Teuchos::rcp(new Epetra_Vector(*veln));
+
   Teuchos::ParameterList p;
   if(!simplebubbleforce_)
   {
@@ -420,15 +428,15 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     const int solvernumber = DRT::Problem::Instance()->FluidDynamicParams().get<int>("VELGRAD_PROJ_SOLVER");
 
     Teuchos::RCP<Epetra_MultiVector> projected_velgrad =
-        DRT::UTILS::ComputeNodalL2Projection(fluiddis_, fluid_->Veln(), "vel", numvec, params, solvernumber);
+        DRT::UTILS::ComputeNodalL2Projection(fluiddis_, vel, "vel", numvec, params, solvernumber);
 
     // store projected velocity gradient (ux,x  ux,y  ux,z  uy,x  uy,y  uy,z  uz,x  uz,y  uz,z)
     fluiddis_->AddMultiVectorToParameterList(p, "velgradient", projected_velgrad);
   }
 
   // at the beginning of the coupling step: veln = velnp(previous step) and current velnp contains fluid predictor
-  fluiddis_->SetState("veln",fluid_->Veln());
-  fluiddis_->SetState("velnm",fluid_->Velnm());
+  fluiddis_->SetState("vel",vel);
+  fluiddis_->SetState("acc",acc);
 
   // state at n+1 contains already dbc values due to PrepareTimeStep(), otherwise n = n+1
   Teuchos::RCP<const Epetra_Vector> bubblepos = particles_->Dispnp();
@@ -588,7 +596,6 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     // set action in order to calculate the velocity and material derivative of the velocity
     Teuchos::ParameterList params;
     params.set<int>("action",FLD::calc_mat_deriv_u_and_rot_u);
-    params.set<double>("timestep",Dt());
     params.set<LINALG::Matrix<3,1> >("elecoords", elecoord);
 
     // call the element specific evaluate method (elevec1 = fluid vel u; elevec2 = mat deriv of fluid vel, elevec3 = rot of fluid vel)
