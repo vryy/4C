@@ -30,12 +30,10 @@ DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::So3_Thermo(
   int owner
   )
 : so3_ele(id,owner),
-  So3_Base(),
   intpoints_(distype)
 {
   numgpt_ = intpoints_.NumPoints();
   ishigherorder_ = DRT::UTILS::secondDerivativesZero<distype>();
-  kintype_ = geo_nonlinear;
   return;
 }
 
@@ -48,7 +46,6 @@ DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::So3_Thermo(
   const DRT::ELEMENTS::So3_Thermo<so3_ele,distype>& old
   )
 : so3_ele(old),
-  So3_Base(),
   intpoints_(distype),
   ishigherorder_(old.ishigherorder_)
 {
@@ -87,8 +84,6 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Pack(
   so3_ele::AddtoPack(data,type);
   // data_
   so3_ele::AddtoPack(data,data_);
-  // kintype_
-  so3_ele::AddtoPack(data,kintype_);
   // detJ_
   so3_ele::AddtoPack(data,detJ_);
 
@@ -124,8 +119,6 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Unpack(
   std::vector<char> tmp(0);
   so3_ele::ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
-  // kintype_
-  kintype_ = static_cast<GenKinematicType>( so3_ele::ExtractInt(position,data) );
   // detJ_
   so3_ele::ExtractfromPack(position,data,detJ_);
   // invJ_
@@ -173,15 +166,6 @@ bool DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::ReadElement(
 
   std::string buffer;
   linedef->ExtractString("KINEM",buffer);
-
-  // geometrically linear
-  if (buffer == "linear")
-    kintype_ = geo_linear;
-  // geometrically non-linear with Total Lagrangean approach
-  else if (buffer == "nonlinear")
-    kintype_ = geo_nonlinear;
-  else
-    dserror("Reading of SO3_THERMO element failed! KINEM unknown");
 
   return true;
 

@@ -99,7 +99,7 @@ void DRT::ELEMENTS::So_sh18PlastType::SetupElementDefinition(
  | ctor (public)                                            seitz 11/14 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_sh18Plast::So_sh18Plast(int id, int owner):
-DRT::Element(id,owner),
+So_base(id,owner),
 DRT::ELEMENTS::So3_Plast<DRT::Element::hex18>(id,owner),
 DRT::ELEMENTS::So_hex18(id,owner),
 DRT::ELEMENTS::So_sh18(id,owner)
@@ -111,7 +111,7 @@ DRT::ELEMENTS::So_sh18(id,owner)
  | copy-ctor (public)                                       seitz 11/14 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_sh18Plast::So_sh18Plast(const DRT::ELEMENTS::So_sh18Plast& old):
-DRT::Element(old),
+So_base(old),
 DRT::ELEMENTS::So3_Plast<DRT::Element::hex18>(old),
 DRT::ELEMENTS::So_hex18(old),
 DRT::ELEMENTS::So_sh18(old)

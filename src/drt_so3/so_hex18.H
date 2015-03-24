@@ -16,6 +16,8 @@ Maintainer: Alexander Seitz
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_inpar/inpar_structure.H"
 
+#include "so_base.H"
+
 #include "../drt_mat/material.H"
 
 // Several parameters which are fixed for Solid Hex18
@@ -63,7 +65,7 @@ private:
   static So_hex18Type instance_;
 };// class So_hex18Type
 
-class So_hex18 : public virtual DRT::Element
+class So_hex18 : public virtual So_base
 {
 public:
 

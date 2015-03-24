@@ -210,8 +210,7 @@ void DRT::ELEMENTS::SoDispType::SetupElementDefinition( std::map<std::string,std
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::SoDisp::SoDisp(int id, int owner) :
-DRT::Element(id,owner),
-kintype_(INPAR::STR::kinem_vague),
+So_base(id,owner),
 stresstype_(sodisp_stress_none),
 gaussrule_(DRT::UTILS::intrule3D_undefined),
 numnod_disp_(-1),
@@ -226,8 +225,7 @@ numgpt_disp_(-1)
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::SoDisp::SoDisp(const DRT::ELEMENTS::SoDisp& old) :
-DRT::Element(old),
-kintype_(old.kintype_),
+So_base(old),
 stresstype_(old.stresstype_),
 gaussrule_(old.gaussrule_),
 numnod_disp_(old.numnod_disp_),
@@ -283,10 +281,9 @@ void DRT::ELEMENTS::SoDisp::Pack(DRT::PackBuffer& data) const
   int type = UniqueParObjectId();
   AddtoPack(data,type);
   // add base class Element
-  Element::Pack(data);
+  So_base::Pack(data);
 
   AddtoPack(data,stresstype_);
-  AddtoPack(data,kintype_);
   AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
   AddtoPack(data,numnod_disp_);
   AddtoPack(data,numdof_disp_);
@@ -310,10 +307,9 @@ void DRT::ELEMENTS::SoDisp::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
-  Element::Unpack(basedata);
+  So_base::Unpack(basedata);
 
   stresstype_ = static_cast<StressType>( ExtractInt(position,data) );
-  kintype_ = static_cast<INPAR::STR::KinemType>( ExtractInt(position,data) );
 
   int gausrule_integer;
   ExtractfromPack(position,data,gausrule_integer);

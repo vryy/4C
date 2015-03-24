@@ -90,7 +90,7 @@ void DRT::ELEMENTS::So_hex18Type::SetupElementDefinition( std::map<std::string,s
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_hex18::So_hex18(int id, int owner) :
-DRT::Element(id,owner)
+So_base(id,owner)
 {
   invJ_.resize(NUMGPT_SOH18, LINALG::Matrix<NUMDIM_SOH18,NUMDIM_SOH18>(true));
   detJ_.resize(NUMGPT_SOH18, 0.0);
@@ -104,7 +104,7 @@ DRT::Element(id,owner)
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_hex18::So_hex18(const DRT::ELEMENTS::So_hex18& old) :
-DRT::Element(old),
+So_base(old),
 detJ_(old.detJ_)
 {
   invJ_.resize(old.invJ_.size());
@@ -137,7 +137,7 @@ void DRT::ELEMENTS::So_hex18::Pack(DRT::PackBuffer& data) const
   int type = UniqueParObjectId();
   AddtoPack(data,type);
   // add base class Element
-  Element::Pack(data);
+  So_base::Pack(data);
 
   // detJ_
   AddtoPack(data,detJ_);
@@ -164,7 +164,7 @@ void DRT::ELEMENTS::So_hex18::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
-  Element::Unpack(basedata);
+  So_base::Unpack(basedata);
 
   // detJ_
   ExtractfromPack(position,data,detJ_);

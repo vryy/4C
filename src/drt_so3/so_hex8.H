@@ -17,6 +17,7 @@ Maintainer: Michael Gee
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_mat/material.H"
 
+#include "so_base.H"
 
 #include "../drt_lib/drt_discret.H"
 
@@ -85,7 +86,7 @@ There are 2 sets of EAS enhancements for GL-strains to alleviate locking
 
 \author frenzel (frenzel@lnm.mw.tum.de)
 */
-class So_hex8 : public DRT::Element
+class So_hex8 : public So_base
 {
 public:
 
@@ -436,8 +437,6 @@ protected:
     soh8_easa = 1000  //!< A-type EAS for sosh8p8
                       //!< NOTE: not the actual number of EAS parameters
   };
-  //! kinematic type
-  INPAR::STR::KinemType                                                 kintype_;
   //! type of EAS technology
   EASType                                                               eastype_;
   //! number of EAS parameters (alphas), defined by 'EASType'

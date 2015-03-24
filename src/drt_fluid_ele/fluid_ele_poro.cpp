@@ -107,7 +107,8 @@ void DRT::ELEMENTS::FluidPoroEleType::SetupElementDefinition( std::map<std::stri
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidPoro::FluidPoro(int id, int owner) :
-Fluid(id,owner)
+Fluid(id,owner),
+kintype_(INPAR::STR::kinem_vague)
 {
   return;
 }
@@ -116,7 +117,8 @@ Fluid(id,owner)
  |  copy-ctor (public)                                     vuong 06/13   |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidPoro::FluidPoro(const DRT::ELEMENTS::FluidPoro& old) :
-Fluid(old)
+Fluid(old),
+kintype_(old.kintype_)
 {
   return;
 }
@@ -144,6 +146,9 @@ void DRT::ELEMENTS::FluidPoro::Pack(DRT::PackBuffer& data) const
   int type = UniqueParObjectId();
   AddtoPack(data,type);
 
+  // kinemtics type
+  AddtoPack(data,kintype_);
+
   // add base class Element
   Fluid::Pack(data);
 
@@ -162,6 +167,9 @@ void DRT::ELEMENTS::FluidPoro::Unpack(const std::vector<char>& data)
   int type = 0;
   ExtractfromPack(position,data,type);
   dsassert(type == UniqueParObjectId(), "wrong instance type data");
+
+  // kintype_
+  kintype_ = static_cast<INPAR::STR::KinemType>( ExtractInt(position,data) );
 
   // extract base class Element
   std::vector<char> basedata(0);

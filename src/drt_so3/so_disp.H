@@ -15,8 +15,8 @@ Maintainer: Axel Gerstenberger
 #define SO_DISP_H
 
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementtype.H"
+#include "so_base.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_mat/material.H"
 #include "../drt_inpar/inpar_structure.H"
@@ -68,7 +68,7 @@ private:
 
 \author frenzel (frenzel@lnm.mw.tum.de)
 */
-class SoDisp : public DRT::Element
+class SoDisp : public So_base
 {
 public:
   //! @name Friends
@@ -313,7 +313,6 @@ protected:
     sodisp_stress_nd123
   };
 
-  INPAR::STR::KinemType      kintype_;    ///< kinematic type
   StressType                 stresstype_; ///< type of stress evaluation
   DRT::UTILS::GaussRule3D    gaussrule_;  ///< Gaussrule
 

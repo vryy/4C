@@ -13,7 +13,7 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "fluid_ele.H"
+#include "fluid_ele_poro.H"
 #include "../drt_lib/drt_element_integration_select.H"
 #include "fluid_ele_action.H"
 #include "fluid_ele_parameter_poro.H"
@@ -111,7 +111,10 @@ DRT::ELEMENTS::FluidEleCalcPoro<distype>::FluidEleCalcPoro()
     reavel_(true),
     reagridvel_(true),
     reaconvel_(true),
-    dtaudphi_(true)
+    dtaudphi_(true),
+    structmat_(Teuchos::null),
+    const_permeability_(true),
+    kintype_(INPAR::STR::kinem_vague)
 //    so_interface_(NULL)
 {
   //change pointer to parameter list in base class to poro parameters
@@ -190,6 +193,11 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(DRT::ELEMENTS::Fluid*    
 {
   Teuchos::RCP<const MAT::FluidPoro> actmat = Teuchos::rcp_static_cast<const MAT::FluidPoro>(mat);
   const_permeability_ = (actmat->PermeabilityFunction() == MAT::PAR::const_);
+
+  DRT::ELEMENTS::FluidPoro* poroele = dynamic_cast<DRT::ELEMENTS::FluidPoro*>(ele);
+
+  if(poroele)
+    kintype_ = poroele->KinematicType();
 
   if (not offdiag) //evaluate diagonal block (pure fluid block)
     return Evaluate(  ele,
@@ -1516,7 +1524,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(
 
      // -------------------------(material) deformation gradient F = d xyze_ / d XYZE = xyze_ * N_XYZ_^T
      static LINALG::Matrix<my::nsd_,my::nsd_>          defgrd(false);
-     defgrd.MultiplyNT(my::xyze_,N_XYZ_);
+     ComputeDefGradient(defgrd,N_XYZ_,my::xyze_);
 
      // inverse deformation gradient F^-1
      static LINALG::Matrix<my::nsd_,my::nsd_>          defgrd_inv(false);
@@ -2168,7 +2176,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoopOD(
 
     // -------------------------(material) deformation gradient F = d my::xyze_ / d XYZE = my::xyze_ * N_XYZ_^T
     LINALG::Matrix<my::nsd_,my::nsd_> defgrd(false);
-    defgrd.MultiplyNT(my::xyze_,N_XYZ_);
+    ComputeDefGradient(defgrd,N_XYZ_,my::xyze_);
 
     // inverse deformation gradient F^-1
     LINALG::Matrix<my::nsd_,my::nsd_> defgrd_inv(false);
@@ -5070,11 +5078,12 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeFDerivative(
 {
   F_X.Clear();
 
-  for(int i=0; i<my::nsd_; i++)
-    for(int j=0; j<my::nsd_; j++)
-      for(int k=0; k<my::nsd_; k++)
-        for(int n=0; n<my::nen_; n++)
-          F_X(i*my::nsd_+j, k) += N_XYZ2full_(j*my::nsd_+k,n)*edispnp(i,n);
+  if(my::is_higher_order_ele_)
+    for(int i=0; i<my::nsd_; i++)
+      for(int j=0; j<my::nsd_; j++)
+        for(int k=0; k<my::nsd_; k++)
+          for(int n=0; n<my::nen_; n++)
+            F_X(i*my::nsd_+j, k) += N_XYZ2full_(j*my::nsd_+k,n)*edispnp(i,n);
 
   F_x.Multiply(F_X,defgrd_inv);
 }
@@ -5099,7 +5108,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeGradients(
   gradJ.MultiplyTN(J, F_x,defgrd_IT_vec );
 
   //if(grad_porosity or refgrad_porosity)
-   ComputePorosityGradient(dphidp,dphidJ,gradJ,gradp,eporositynp,grad_porosity,refgrad_porosity);
+  ComputePorosityGradient(dphidp,dphidJ,gradJ,gradp,eporositynp,grad_porosity,refgrad_porosity);
 
   return;
 }
@@ -5200,28 +5209,29 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinearizationOD(
     static LINALG::Matrix<my::nsd_,my::nsd_*my::nen_>        FinvT_dFx_dus(false);
     FinvT_dFx_dus.Clear();
 
-    for (int n =0; n<my::nen_; n++)
-      for(int j=0; j<my::nsd_; j++)
-      {
-        const int gid = my::nsd_ * n +j;
-        for(int p=0; p<my::nsd_; p++)
+    if(my::is_higher_order_ele_)
+      for (int n =0; n<my::nen_; n++)
+        for(int j=0; j<my::nsd_; j++)
         {
-          double val = 0.0;
-          const double derxy_p_n = my::derxy_(p,n);
-          for(int k=0; k<my::nsd_; k++)
+          const int gid = my::nsd_ * n +j;
+          for(int p=0; p<my::nsd_; p++)
           {
-            const double defgrd_inv_kj = defgrd_inv(k,j);
-            const double defgrd_inv_kp = defgrd_inv(k,p);
-            for(int i=0; i<my::nsd_; i++)
+            double val = 0.0;
+            const double derxy_p_n = my::derxy_(p,n);
+            for(int k=0; k<my::nsd_; k++)
             {
-              val +=   defgrd_inv(i,j) * N_XYZ2full_(i*my::nsd_+k,n) * defgrd_inv_kp ;
-              for(int l=0; l<my::nsd_; l++)
-                val += - defgrd_inv(i,l) * F_X(i*my::nsd_+l,k) * defgrd_inv_kj * derxy_p_n ;
+              const double defgrd_inv_kj = defgrd_inv(k,j);
+              const double defgrd_inv_kp = defgrd_inv(k,p);
+              for(int i=0; i<my::nsd_; i++)
+              {
+                val +=   defgrd_inv(i,j) * N_XYZ2full_(i*my::nsd_+k,n) * defgrd_inv_kp ;
+                for(int l=0; l<my::nsd_; l++)
+                  val += - defgrd_inv(i,l) * F_X(i*my::nsd_+l,k) * defgrd_inv_kj * derxy_p_n ;
+              }
             }
+            FinvT_dFx_dus(p, gid) += val;
           }
-          FinvT_dFx_dus(p, gid) += val;
         }
-      }
 
     //----d(gradJ)/dus =  dJ/dus * F^-T . : dF/dx + J * dF^-T/dus : dF/dx + J * F^-T : N_X_x
     static LINALG::Matrix<1,my::nsd_> temp;
@@ -6546,6 +6556,32 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeVolume(
   return 0;
 }
 
+/*----------------------------------------------------------------------*
+ * Action type: Compute Deformation Gradient                 vuong 03/15 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeDefGradient(
+    LINALG::Matrix<my::nsd_,my::nsd_>&       defgrd,   ///<<    (i) deformation gradient at gausspoint
+    const LINALG::Matrix<my::nsd_,my::nen_>& N_XYZ,    ///<<    (i) derivatives of shape functions w.r.t. reference coordinates
+    const LINALG::Matrix<my::nsd_,my::nen_>& xcurr     ///<<    (i) current position of gausspoint
+    )
+{
+  if(kintype_==INPAR::STR::kinem_nonlinearTotLag) //total lagrange (nonlinear)
+  {
+    // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
+    defgrd.MultiplyNT(xcurr,N_XYZ); //  (6.17)
+  }
+  else if(kintype_==INPAR::STR::kinem_linear) //linear kinmatics
+  {
+    defgrd.Clear();
+    for(int i=0;i<my::nsd_;i++)
+      defgrd(i,i) = 1.0;
+  }
+  else
+    dserror("invalid kinematic type!");
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
  * Action type: Compute Error                                 vuong 06/11 |

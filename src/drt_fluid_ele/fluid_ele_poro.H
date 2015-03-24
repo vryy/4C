@@ -20,6 +20,7 @@ Pack, Unpack, NumDofPerNode etc.
 #ifndef FLUID_ELE_PORO_H_
 #define FLUID_ELE_PORO_H_
 
+#include "../drt_inpar/inpar_structure.H"
 #include "fluid_ele.H"
 
 namespace DRT
@@ -154,6 +155,11 @@ public:
   virtual DRT::ElementType & ElementType() const
   { return FluidPoroEleType::Instance(); }
 
+
+  void SetKinematicType(INPAR::STR::KinemType kintype) {kintype_=kintype;};
+
+  INPAR::STR::KinemType KinematicType() const {return kintype_;};
+
   //@}
 
   //! @name Evaluation
@@ -194,8 +200,11 @@ public:
 
 private:
 
-  // don't want = operator
+  //! don't want = operator
   FluidPoro& operator = (const FluidPoro& old);
+
+  //! kinematic type
+  INPAR::STR::KinemType kintype_;
 };
 
 //=======================================================================

@@ -448,7 +448,7 @@ void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterialBToA(
   DRT::Element* Bele = disB->gElement(Bids[0]);
 
   // if Bele is a fluid element
-  DRT::ELEMENTS::Fluid* fluid = dynamic_cast<DRT::ELEMENTS::Fluid*>(Bele);
+  DRT::ELEMENTS::FluidPoro* fluid = dynamic_cast<DRT::ELEMENTS::FluidPoro*>(Bele);
   if (fluid!=NULL)
   {
     //Copy Initial Porosity from StructPoro Material to FluidPoro Material
@@ -477,6 +477,28 @@ void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterialAToB(
 {
   //call default assignment
   VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterialAToB(volmortar,Bele,Aids,disA,disB);
+
+  //default strategy: take only material of first element found
+  DRT::Element* Aele = disA->gElement(Aids[0]);
+
+  // if Aele is a so3_base element
+  DRT::ELEMENTS::So_base*  so_base  = dynamic_cast<DRT::ELEMENTS::So_base*>(Aele);
+
+  // if Bele is a fluid element
+  DRT::ELEMENTS::FluidPoro* fluid = dynamic_cast<DRT::ELEMENTS::FluidPoro*>(Bele);
+  if (fluid!=NULL)
+  {
+    if(so_base)
+    {
+      fluid->SetKinematicType(so_base->KinematicType());
+    }
+    else
+      dserror("Aele is not a solid element");
+  }
+  else
+  {
+    dserror("unsupported element type '%s'", typeid(*Bele).name());
+  }
 
   //done
   return;

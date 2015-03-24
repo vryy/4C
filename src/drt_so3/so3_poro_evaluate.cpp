@@ -621,7 +621,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoop(
     Gradp.Multiply(N_XYZ,epreaf);
 
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
-    defgrd.MultiplyNT(xcurr,N_XYZ); //  (6.17)
+    ComputeDefGradient(defgrd,N_XYZ,xcurr);
 
     // non-linear B-operator
     LINALG::Matrix<numstr_,numdof_> bop;
@@ -810,7 +810,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoopOD(
     const double J = ComputeJacobianDeterminant(gp,xcurr,deriv);
 
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
-    defgrd.MultiplyNT(xcurr,N_XYZ); //  (6.17)
+    ComputeDefGradient(defgrd,N_XYZ,xcurr);
 
     // non-linear B-operator
     LINALG::Matrix<numstr_,numdof_> bop;
@@ -979,7 +979,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::couplstress_poroelast(
     N_XYZ.Multiply(invJ,deriv); // (6.21)
 
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
-    defgrd.MultiplyNT(xcurr,N_XYZ); //  (6.17)
+    ComputeDefGradient(defgrd,N_XYZ,xcurr);
 
     //----------------------------------------------------
     // pressure at integration point
@@ -1533,28 +1533,32 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>:: ComputeAuxiliaryValues(const LIN
     LINALG::Matrix<numdim_,numdof_>& dFinvdus_gradp,
     LINALG::Matrix<numstr_,numdof_>& dCinv_dus)
 {
-  //dF^-T/dus
-  for (int i=0; i<numdim_; i++)
-    for (int n =0; n<numnod_; n++)
-      for(int j=0; j<numdim_; j++)
-      {
-        const int gid = numdim_ * n +j;
-        for (int k=0; k<numdim_; k++)
-          for(int l=0; l<numdim_; l++)
-            dFinvTdus(i*numdim_+l, gid) += -defgrd_inv(l,j) * N_XYZ(k,n) * defgrd_inv(k,i);
-      }
-
   //F^-T * Grad p
   Finvgradp.MultiplyTN(defgrd_inv, Gradp);
 
-  for (int i=0; i<numdim_; i++)
-    for (int n =0; n<numnod_; n++)
-      for(int j=0; j<numdim_; j++)
-      {
-        const int gid = numdim_ * n +j;
-        for(int l=0; l<numdim_; l++)
-          dFinvdus_gradp(i, gid) += dFinvTdus(i*numdim_+l, gid)  * Gradp(l);
-      }
+  if(so3_ele::kintype_!=INPAR::STR::kinem_linear)
+  {
+    //dF^-T/dus
+    for (int i=0; i<numdim_; i++)
+      for (int n =0; n<numnod_; n++)
+        for(int j=0; j<numdim_; j++)
+        {
+          const int gid = numdim_ * n +j;
+          for (int k=0; k<numdim_; k++)
+            for(int l=0; l<numdim_; l++)
+              dFinvTdus(i*numdim_+l, gid) += -defgrd_inv(l,j) * N_XYZ(k,n) * defgrd_inv(k,i);
+        }
+
+    //dF^-T/dus * Grad p
+    for (int i=0; i<numdim_; i++)
+      for (int n =0; n<numnod_; n++)
+        for(int j=0; j<numdim_; j++)
+        {
+          const int gid = numdim_ * n +j;
+          for(int l=0; l<numdim_; l++)
+            dFinvdus_gradp(i, gid) += dFinvTdus(i*numdim_+l, gid)  * Gradp(l);
+        }
+  }
 
   for (int n=0; n<numnod_; ++n)
     for (int k=0; k<numdim_; ++k)
@@ -2377,6 +2381,34 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::FillMatrixAndVectorsBrinkmanOD(
     }
   }
 }
+
+/*-----------------------------------------------------------------------------*
+ * compute deformation gradient                                     vuong 03/15|
+ *----------------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputeDefGradient(
+    LINALG::Matrix<numdim_,numdim_>&       defgrd,   ///<<    (i) deformation gradient at gausspoint
+    const LINALG::Matrix<numdim_,numnod_>& N_XYZ,    ///<<    (i) derivatives of shape functions w.r.t. reference coordinates
+    const LINALG::Matrix<numdim_,numnod_>& xcurr     ///<<    (i) current position of gausspoint
+  )
+{
+  if(so3_ele::kintype_==INPAR::STR::kinem_nonlinearTotLag) //total lagrange (nonlinear)
+  {
+    // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
+    defgrd.MultiplyNT(xcurr,N_XYZ); //  (6.17)
+  }
+  else if(so3_ele::kintype_==INPAR::STR::kinem_linear) //linear kinematics
+  {
+    defgrd.Clear();
+    for(int i=0;i<numdim_;i++)
+      defgrd(i,i) = 1.0;
+  }
+  else
+    dserror("invalid kinematic type!");
+
+  return;
+
+}  // ComputeDefGradient
 
 /*----------------------------------------------------------------------*
  |                                                           vuong 03/12|

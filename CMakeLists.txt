@@ -712,6 +712,7 @@ set(OBJS_SOH8_LIB
   src/drt_so3/inversedesign.cpp
   src/drt_so3/inversedesign_evaluate.cpp
   src/drt_so3/prestress.cpp
+  src/drt_so3/so_base.cpp
   src/drt_so3/so_disp.cpp
   src/drt_so3/so_disp_evaluate.cpp
   src/drt_so3/so_disp_input.cpp

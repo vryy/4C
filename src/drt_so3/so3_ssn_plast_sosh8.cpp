@@ -263,7 +263,7 @@ void DRT::ELEMENTS::So_sh8PlastType::SetupElementDefinition(
  | ctor (public)                                            seitz 05/14 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_sh8Plast::So_sh8Plast(int id, int owner):
-DRT::Element(id,owner),
+So_base(id,owner),
 DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>(id,owner)
 {
   thickdir_=globx;
@@ -276,7 +276,7 @@ DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>(id,owner)
  | copy-ctor (public)                                       seitz 05/14 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_sh8Plast::So_sh8Plast(const DRT::ELEMENTS::So_sh8Plast& old):
-DRT::Element(old),
+So_base(old),
 DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>(old)
 {
   return;

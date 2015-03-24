@@ -21,7 +21,6 @@
  | headers                                                   dano 11/12 |
  *----------------------------------------------------------------------*/
 #include "so3_thermo_eletypes.H"
-#include "../drt_tsi/kinematictype.H"
 
 // include thermal header because number of Gauss points are determined
 // dependent on distype
@@ -37,31 +36,6 @@ class Discretization;
 
 namespace ELEMENTS
 {
-  //! A wrapper for 3-dimensional structural elements
-  class So3_Base
-  {
-
-  public:
-
-    //! @name Constructors and destructors and related methods
-
-    //! Destructor
-    virtual ~So3_Base(){};
-
-    //@}
-
-    //! kinematic type
-    GenKinematicType kintype_;
-
-    // get the kinematic type from the corresponding cloned element
-    // function is called in clone strategy in tsi_utils.cpp
-    GenKinematicType GetKinematicType()
-    {
-      return kintype_;
-    }
-
-  };  // class So3_Base
-
 
   //! A C++ version of a 3 dimensional solid element with modifications for
   //! thermomechanics
@@ -69,8 +43,7 @@ namespace ELEMENTS
   //! A structural 3 dimensional solid displacement element for large deformations
   //! and with small and large strains
   template<class so3_ele, DRT::Element::DiscretizationType distype>
-  class So3_Thermo : public so3_ele,
-                     public So3_Base
+  class So3_Thermo : public so3_ele
   {
     //! @name Friends
     friend class So_hex8ThermoType;

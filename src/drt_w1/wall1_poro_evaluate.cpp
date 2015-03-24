@@ -613,8 +613,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::GaussPointLoop(
 
     const double J = ComputeJacobianDeterminant(gp,xcurr,deriv);
 
-    // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
-    defgrd.MultiplyNT(xcurr,N_XYZ); //  (6.17)
+    ComputeDefGradient(defgrd,N_XYZ,xcurr);
 
     // non-linear B-operator
     LINALG::Matrix<numstr_,numdof_> bop;
@@ -1111,7 +1110,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::GaussPointLoopOD(
     const double J = ComputeJacobianDeterminant(gp,xcurr,deriv);
 
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
-    defgrd.MultiplyNT(xcurr,N_XYZ); //  (6.17)
+    ComputeDefGradient(defgrd,N_XYZ,xcurr);
 
     // non-linear B-operator (may so be called, meaning
     LINALG::Matrix<numstr_,numdof_> bop;
@@ -1471,10 +1470,10 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::couplstress_poroelast(
     // by N_XYZ = J^-1 * N_rst
     N_XYZ.Multiply(invJ,deriv); // (6.21)
 
-    // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
-    defgrd.MultiplyNT(xcurr,N_XYZ); //  (6.17)
+    const double J = ComputeJacobianDeterminant(gp,xcurr,deriv);
 
-    double J = defgrd.Determinant();
+    // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
+    ComputeDefGradient(defgrd,N_XYZ,xcurr);
 
     //----------------------------------------------------
     // pressure at integration point
@@ -1585,9 +1584,9 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::InitElement()
   return;
 }
 
-/*----------------------------------------------------------------------*
- *                                                            vuong 12/12|
- *----------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------*
+ *  transform of 2. Piola Kirchhoff stresses to cauchy stresses     vuong 12/12|
+ *----------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_Poro<distype>::PK2toCauchy(
   LINALG::Matrix<Wall1::numstr_,1>& stress,
@@ -1610,6 +1609,35 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::PK2toCauchy(
   (cauchystress).MultiplyNT(temp,(defgrd));
 
 }  // PK2toCauchy()
+
+/*-----------------------------------------------------------------------------*
+ * compute deformation gradient                                     vuong 03/15|
+ *----------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Wall1_Poro<distype>::ComputeDefGradient(
+    LINALG::Matrix<numdim_,numdim_>&       defgrd,   ///<<    (i) deformation gradient at gausspoint
+    const LINALG::Matrix<numdim_,numnod_>& N_XYZ,    ///<<    (i) derivatives of shape functions w.r.t. reference coordinates
+    const LINALG::Matrix<numdim_,numnod_>& xcurr     ///<<    (i) current position of gausspoint
+  )
+{
+  if(kintype_==INPAR::STR::kinem_nonlinearTotLag) //total lagrange (nonlinear)
+  {
+    // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
+    defgrd.MultiplyNT(xcurr,N_XYZ); //  (6.17)
+  }
+  else if(kintype_==INPAR::STR::kinem_linear) //linear kinmatics
+  {
+    defgrd.Clear();
+    for(int i=0;i<numdim_;i++)
+      defgrd(i,i) = 1.0;
+  }
+  else
+    dserror("invalid kinematic type!");
+
+  return;
+
+}  // ComputeDefGradient
+
 
 /*----------------------------------------------------------------------*
  *                                                            vuong 12/12|
@@ -1780,28 +1808,32 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::ComputeAuxiliaryValues(const LINALG::Ma
     LINALG::Matrix<numdim_,numdof_>& dFinvdus_gradp,
     LINALG::Matrix<numstr_,numdof_>& dCinv_dus)
 {
-  //dF^-T/dus
-  for (int i=0; i<numdim_; i++)
-    for (int n =0; n<numnod_; n++)
-      for(int j=0; j<numdim_; j++)
-      {
-        const int gid = numdim_ * n +j;
-        for (int k=0; k<numdim_; k++)
-          for(int l=0; l<numdim_; l++)
-            dFinvTdus(i*numdim_+l, gid) += -defgrd_inv(l,j) * N_XYZ(k,n) * defgrd_inv(k,i);
-      }
-
   //F^-T * Grad p
   Finvgradp.MultiplyTN(defgrd_inv, Gradp);
 
-  for (int i=0; i<numdim_; i++)
-    for (int n =0; n<numnod_; n++)
-      for(int j=0; j<numdim_; j++)
-      {
-        const int gid = numdim_ * n +j;
-        for(int l=0; l<numdim_; l++)
-          dFinvdus_gradp(i, gid) += dFinvTdus(i*numdim_+l, gid)  * Gradp(l);
-      }
+  if(kintype_!=INPAR::STR::kinem_linear)
+  {
+    //dF^-T/dus
+    for (int i=0; i<numdim_; i++)
+      for (int n =0; n<numnod_; n++)
+        for(int j=0; j<numdim_; j++)
+        {
+          const int gid = numdim_ * n +j;
+          for (int k=0; k<numdim_; k++)
+            for(int l=0; l<numdim_; l++)
+              dFinvTdus(i*numdim_+l, gid) += -defgrd_inv(l,j) * N_XYZ(k,n) * defgrd_inv(k,i);
+        }
+
+    //dF^-T/dus * Grad p
+    for (int i=0; i<numdim_; i++)
+      for (int n =0; n<numnod_; n++)
+        for(int j=0; j<numdim_; j++)
+        {
+          const int gid = numdim_ * n +j;
+          for(int l=0; l<numdim_; l++)
+            dFinvdus_gradp(i, gid) += dFinvTdus(i*numdim_+l, gid)  * Gradp(l);
+        }
+  }
 
   for (int n=0; n<numnod_; ++n)
     for (int k=0; k<numdim_; ++k)

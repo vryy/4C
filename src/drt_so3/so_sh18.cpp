@@ -85,7 +85,7 @@ void DRT::ELEMENTS::So_sh18Type::SetupElementDefinition( std::map<std::string,st
  |  ctor (public)                                           seitz 11/14 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_sh18::So_sh18(int id, int owner) :
-DRT::Element(id,owner),
+So_base(id,owner),
 So_hex18(id,owner)
 {
   return;
@@ -95,7 +95,7 @@ So_hex18(id,owner)
  |  copy-ctor (public)                                      seitz 11/14 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_sh18::So_sh18(const DRT::ELEMENTS::So_sh18& old) :
-DRT::Element(old),
+So_base(old),
 So_hex18(old),
 dsg_shear_(old.dsg_shear_),
 dsg_membrane_(old.dsg_membrane_),
@@ -129,7 +129,7 @@ void DRT::ELEMENTS::So_sh18::Pack(DRT::PackBuffer& data) const
   int type = UniqueParObjectId();
   AddtoPack(data,type);
   // add base class Element
-  Element::Pack(data);
+  So_base::Pack(data);
 
   // detJ_
   AddtoPack(data,detJ_);
@@ -163,7 +163,7 @@ void DRT::ELEMENTS::So_sh18::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
-  Element::Unpack(basedata);
+  So_base::Unpack(basedata);
 
   // detJ_
   ExtractfromPack(position,data,detJ_);

@@ -20,6 +20,8 @@ Maintainer: Jonas Biehler
 #include "../drt_mat/material.H"
 #include "../drt_inpar/inpar_structure.H"
 
+#include "so_base.H"
+
 // gee: note that these are also defined in so_integrator.H
 #define NUMNOD_SOTET10      10      ///< number of nodes
 #define NODDOF_SOTET10       3      ///< number of dofs per node
@@ -79,7 +81,7 @@ a structural 10-node tetrahedral solid displacement element
 \author biehler
 */
 
-class So_tet10 : public DRT::Element
+class So_tet10 : public So_base
 {
 public:
 
@@ -353,8 +355,6 @@ protected:
   };
 
 
-  //! kinematic type
-  INPAR::STR::KinemType                         kintype_;
    //! container containing all kind of solid3 thisandthat
   DRT::Container                                data_;
   //! vector of inverses of the jacobian in material frame

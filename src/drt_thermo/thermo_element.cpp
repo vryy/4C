@@ -240,7 +240,7 @@ DRT::ELEMENTS::Thermo::Thermo(int id, int owner)
   distype_(dis_none)
 {
   // default: geometrically linear, also including purely thermal probelm
-  kintype_ = geo_linear;
+  kintype_ = INPAR::STR::kinem_linear;
   return;
 }  // ctor
 
@@ -317,7 +317,7 @@ void DRT::ELEMENTS::Thermo::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
   // kintype_
-  kintype_ = static_cast<GenKinematicType>( ExtractInt(position,data) );
+  kintype_ = static_cast<INPAR::STR::KinemType>( ExtractInt(position,data) );
   // distype
   distype_ = static_cast<DiscretizationType>( ExtractInt(position,data) );
 

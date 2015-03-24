@@ -99,7 +99,7 @@ void DRT::ELEMENTS::So_hex27Type::SetupElementDefinition( std::map<std::string,s
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_hex27::So_hex27(int id, int owner) :
-DRT::Element(id,owner),
+So_base(id,owner),
 data_(),
 pstype_(INPAR::STR::prestress_none),
 pstime_(0.0),
@@ -127,8 +127,7 @@ time_(0.0)
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_hex27::So_hex27(const DRT::ELEMENTS::So_hex27& old) :
-DRT::Element(old),
-kintype_(old.kintype_),
+So_base(old),
 data_(old.data_),
 detJ_(old.detJ_),
 pstype_(old.pstype_),
@@ -177,9 +176,7 @@ void DRT::ELEMENTS::So_hex27::Pack(DRT::PackBuffer& data) const
   int type = UniqueParObjectId();
   AddtoPack(data,type);
   // add base class Element
-  Element::Pack(data);
-  // kintype_
-  AddtoPack(data,kintype_);
+  So_base::Pack(data);
   // data_
   AddtoPack(data,data_);
 
@@ -218,9 +215,7 @@ void DRT::ELEMENTS::So_hex27::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
-  Element::Unpack(basedata);
-  // kintype_
-  kintype_ = static_cast<INPAR::STR::KinemType>( ExtractInt(position,data) );
+  So_base::Unpack(basedata);
   // data_
   std::vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);

@@ -564,6 +564,13 @@ protected:
       const LINALG::Matrix<numdim_,numnod_>& N_XYZ
       );
 
+  //! Compute deformation gradient
+  void ComputeDefGradient(
+    LINALG::Matrix<numdim_,numdim_>&       defgrd,   ///<<    (i) deformation gradient at gausspoint
+    const LINALG::Matrix<numdim_,numnod_>& N_XYZ,    ///<<    (i) derivatives of shape functions w.r.t. reference coordinates
+    const LINALG::Matrix<numdim_,numnod_>& xcurr     ///<<    (i) current position of gausspoint
+    );
+
   //!Gauss integration rule
   DRT::UTILS::GaussIntegration intpoints_;
 

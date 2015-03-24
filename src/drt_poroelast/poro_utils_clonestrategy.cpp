@@ -27,6 +27,8 @@
 #include "../drt_mat/fluidporo.H"
 #include "../drt_mat/structporo.H"
 
+#include"../drt_w1/wall1_poro.H"
+
 #include "poro_utils_clonestrategy.H"
 
 /*----------------------------------------------------------------------*
@@ -93,7 +95,7 @@ void POROELAST::UTILS::PoroelastCloneStrategy::SetElementData(
   // This is again really ugly as we have to extract the actual
   // element type in order to access the material property
 
-  Teuchos::RCP<DRT::ELEMENTS::Fluid> fluid = Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::Fluid>(newele);
+  Teuchos::RCP<DRT::ELEMENTS::FluidPoro> fluid = Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::FluidPoro>(newele);
   if (fluid!=Teuchos::null)
   {
     fluid->SetMaterial(matid);
@@ -102,6 +104,9 @@ void POROELAST::UTILS::PoroelastCloneStrategy::SetElementData(
               Teuchos::rcp_static_cast<MAT::StructPoro>(oldele->Material())->Initporosity());
     fluid->SetDisType(oldele->Shape()); // set distype as well!
     fluid->SetIsAle(true);
+    DRT::ELEMENTS::So_base*  so_base  = dynamic_cast<DRT::ELEMENTS::So_base*>(oldele);
+    if(so_base)
+      fluid->SetKinematicType(so_base->KinematicType());
   }
   else
   {

@@ -19,6 +19,8 @@ Maintainer: Michael Gee
 
 #include "../drt_inpar/inpar_structure.H"
 
+#include "so_base.H"
+
 
 #define NUMNOD_SOTET4       4      ///< number of nodes
 #define NODDOF_SOTET4       3      ///< number of dofs per node
@@ -75,7 +77,7 @@ private:
 
 */
 
-class So_tet4 : public DRT::Element
+class So_tet4 : public So_base
 {
 public:
 
@@ -383,8 +385,6 @@ protected:
     multi_readrestart
   };
 
-  //! kinematic type
-  INPAR::STR::KinemType                                                     kintype_;
   //! number of the material law
   //int                                                                      material_;
 

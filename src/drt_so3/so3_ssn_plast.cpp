@@ -38,7 +38,7 @@ DRT::ELEMENTS::So3_Plast<distype>::So3_Plast(
   int id,
   int owner
   )
-: DRT::Element(id,owner),
+: So_base(id,owner),
   fbar_(false),
   data_(Teuchos::null),
   KbbInv_(std::vector<Epetra_SerialDenseMatrix>(0)),
@@ -72,7 +72,7 @@ template<DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::So3_Plast<distype>::So3_Plast(
   const DRT::ELEMENTS::So3_Plast<distype>& old
   ):
-   DRT::Element(old)
+  So_base(old)
 {
   return;
 }
@@ -217,7 +217,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::Pack(
   AddtoPack(data,type);
 
   // add base class Element
-  Element::Pack(data);
+  So_base::Pack(data);
 
   // detJ_
   AddtoPack(data,detJ_);
@@ -293,7 +293,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::Unpack(
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
-  Element::Unpack(basedata);
+  So_base::Unpack(basedata);
 
   // detJ_
   ExtractfromPack(position,data,detJ_);

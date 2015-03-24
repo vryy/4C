@@ -261,11 +261,11 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
 
   // if ele is a thermo element --> the THR element method KinType() exists
   DRT::ELEMENTS::Thermo* therm = dynamic_cast<DRT::ELEMENTS::Thermo*>(ele);
-  // kintype = 0: geo_linear or purely thermal problem
-  // kintype = 1: geo_nonlinear
-  const GenKinematicType kintype = therm->KinType();
+  // kintype = 0: INPAR::STR::kinem_linear or purely thermal problem
+  // kintype = 1: INPAR::STR::kinem_nonlinearTotLag
+  const INPAR::STR::KinemType kintype = therm->KinType();
   //Todo: fix this for volmortar
-  //const GenKinematicType kintype=geo_linear;
+  //const GenKinematicType kintype=INPAR::STR::kinem_linear;
   //============================================================================
   // calculate tangent K and internal force F_int = K * Theta
   // --> for static case
@@ -280,7 +280,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     // --> If dynamic analysis, i.e. T' != 0 --> etang consists of econd AND ecapa
 
     // default: purely thermal / geometrically linear TSI problem
-    if (kintype == geo_linear)
+    if (kintype == INPAR::STR::kinem_linear)
     {
       CalculateFintCondCapa(
         ele,
@@ -333,7 +333,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     }  // la.Size>1
 
     // geometrically linear TSI problem
-    if ( (kintype == geo_linear) and (la.Size() > 1) )
+    if ( (kintype == INPAR::STR::kinem_linear) and (la.Size() > 1) )
     {
       CalculateCouplFintCond(
         ele,
@@ -356,10 +356,10 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
           &efint,
           params
           );
-    }  // TSI: (kintype_ == geo_linear)
+    }  // TSI: (kintype_ == INPAR::STR::kinem_linear)
 
     // geometrically nonlinear TSI problem
-    else if (kintype == geo_nonlinear)
+    else if (kintype == INPAR::STR::kinem_nonlinearTotLag)
     {
       CalculateCouplNlnFintCondCapa(
         ele,
@@ -384,7 +384,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
           &efint,
           params
           );
-    }  // TSI: (kintype_ == geo_nonlinear)
+    }  // TSI: (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
 #endif // MonTSIwithoutSTR
 
   }  // action == "calc_thermo_fintcond"
@@ -398,7 +398,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     // etang, ecapa, efext, efcap not needed for this action
 
     // purely thermal / geometrically linear TSI problem
-    if (kintype == geo_linear)
+    if (kintype == INPAR::STR::kinem_linear)
     {
       CalculateFintCondCapa(
         ele,
@@ -452,7 +452,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     }  // end la.Size>1
 
     // geometrically linear TSI problem
-    if ( (kintype == geo_linear) and (la.Size() > 1) )
+    if ( (kintype == INPAR::STR::kinem_linear) and (la.Size() > 1) )
     {
       CalculateCouplFintCond(
         ele,
@@ -473,10 +473,10 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
           &efint,
           params
           );
-    }  // TSI: (kintype_ == geo_linear)
+    }  // TSI: (kintype_ == INPAR::STR::kinem_linear)
 
     // geometrically nonlinear TSI problem
-    else if (kintype == geo_nonlinear)
+    else if (kintype == INPAR::STR::kinem_nonlinearTotLag)
     {
       CalculateCouplNlnFintCondCapa(
         ele,  // current element
@@ -501,7 +501,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
           &efint,
           params
           );
-    }  // TSI: (kintype_ == geo_nonlinear)
+    }  // TSI: (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
 
 #endif // MonTSIwithoutSTR
 
@@ -518,7 +518,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     // etang, efext, efcap not needed for this action
 
     // default: purely thermal / geometrically linear TSI problem
-    if (kintype == geo_linear)
+    if (kintype == INPAR::STR::kinem_linear)
     {
       CalculateFintCondCapa(
         ele,
@@ -572,7 +572,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     }  // (la.Size > 1)
 
     // geometrically linear TSI problem
-    if ( (kintype == geo_linear) and (la.Size() > 1) )
+    if ( (kintype == INPAR::STR::kinem_linear) and (la.Size() > 1) )
     {
       CalculateCouplFintCond(
         ele,
@@ -595,10 +595,10 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
           params
           );
       }
-    }  // TSI: (kintype_ == geo_linear)
+    }  // TSI: (kintype_ == INPAR::STR::kinem_linear)
 
     // geometrically nonlinear TSI problem
-    else if (kintype == geo_nonlinear)
+    else if (kintype == INPAR::STR::kinem_nonlinearTotLag)
     {
       CalculateCouplNlnFintCondCapa(
         ele,
@@ -623,7 +623,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
           &efint,
           params
           );
-    }  // TSI: (kintype_ == geo_nonlinear)
+    }  // TSI: (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
 
     // lumping
     if (params.get<bool>("lump capa matrix"))
@@ -676,7 +676,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     // --> If dynamic analysis, i.e. T' != 0 --> etang consists of econd AND ecapa
 
     // purely thermal / geometrically linear TSI problem
-    if (kintype == geo_linear)
+    if (kintype == INPAR::STR::kinem_linear)
     {
       CalculateFintCondCapa(
         ele,
@@ -729,7 +729,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     }  // la.Size>1
 
     // geometrically linear TSI problem
-    if ( (kintype == geo_linear) and (la.Size() > 1) )
+    if ( (kintype == INPAR::STR::kinem_linear) and (la.Size() > 1) )
     {
       CalculateCouplFintCond(
         ele,
@@ -750,10 +750,10 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
           &efint,
           params
           );
-    }  // TSI: (kintype_ == geo_linear)
+    }  // TSI: (kintype_ == INPAR::STR::kinem_linear)
 
     // geometrically nonlinear TSI problem
-    else if (kintype == geo_nonlinear)
+    else if (kintype == INPAR::STR::kinem_nonlinearTotLag)
     {
       CalculateCouplNlnFintCondCapa(
         ele,  // current element
@@ -778,7 +778,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
           &efint,
           params
           );
-    }  // TSI: (kintype_ == geo_nonlinear)
+    }  // TSI: (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
 
 #endif // MonTSIwithoutSTR
 
@@ -878,7 +878,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     LINALG::Matrix<nquad_,nsd_> etempgrad(false);
 
     // thermal problem or geometrically linear TSI problem
-    if (kintype == geo_linear)
+    if (kintype == INPAR::STR::kinem_linear)
     {
       CalculateFintCondCapa(
         ele,
@@ -890,10 +890,10 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
         &eheatflux,
         &etempgrad
         );
-    }  // TSI: (kintype_ == geo_linear)
+    }  // TSI: (kintype_ == INPAR::STR::kinem_linear)
 
     // geometrically nonlinear TSI problem
-    if (kintype == geo_nonlinear)
+    if (kintype == INPAR::STR::kinem_nonlinearTotLag)
     {
       // specific choice of heat flux / temperature gradient
       const INPAR::THR::HeatFluxType ioheatflux
@@ -942,7 +942,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
             );
         }  // disp!=0 & vel!=0
       }  // la.Size>1
-    }  // TSI: (kintype_ == geo_nonlinear)
+    }  // TSI: (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
 
     // scale the heatflux with (-1)
     // for the calculation the heatflux enters as positive value, but
@@ -1142,7 +1142,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
         // --> calculate coupling stiffness term in case of monolithic TSI
 
         // geometrically linear TSI problem
-        if (kintype == geo_linear)
+        if (kintype == INPAR::STR::kinem_linear)
         {
           CalculateCouplCond(
             ele,
@@ -1161,10 +1161,10 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
               );
           // --> be careful: so far only implicit Euler for time integration
           //                 of the evolution equation available!!!
-        }  // TSI: (kintype_ == geo_linear)
+        }  // TSI: (kintype_ == INPAR::STR::kinem_linear)
 
         // geometrically nonlinear TSI problem
-        if (kintype == geo_nonlinear)
+        if (kintype == INPAR::STR::kinem_nonlinearTotLag)
         {
           CalculateCouplNlnCond(
             ele,
@@ -1183,7 +1183,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
               &etangcoupl,
               params
               );
-        }  // TSI: (kintype_ == geo_nonlinear)
+        }  // TSI: (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
       }   // disp!=0 & vel!=0
     }  // la.Size>1
 

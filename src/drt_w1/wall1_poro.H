@@ -524,11 +524,18 @@ namespace ELEMENTS
         LINALG::Matrix<numdim_,numdof_>&          dFinvdus_gradp,
         LINALG::Matrix<numstr_,numdof_>&          dCinv_dus);
 
-    //! push forward of material stresses to the current, spatial configuration
+    //! push forward of material stresses to the current, spatial configuration (for output only)
     void PK2toCauchy(
       LINALG::Matrix<Wall1::numstr_,1>& stress,
       LINALG::Matrix<numdim_,numdim_>& defgrd,
       LINALG::Matrix<numdim_,numdim_>& cauchystress
+      );
+
+    //! Compute deformation gradient
+    void ComputeDefGradient(
+      LINALG::Matrix<numdim_,numdim_>&       defgrd,   ///<<    (i) deformation gradient at gausspoint
+      const LINALG::Matrix<numdim_,numnod_>& N_XYZ,    ///<<    (i) derivatives of shape functions w.r.t. reference coordinates
+      const LINALG::Matrix<numdim_,numnod_>& xcurr     ///<<    (i) current position of gausspoint
       );
 
     //! helper functions to get element vectors from global vector

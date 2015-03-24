@@ -19,6 +19,8 @@ Maintainer: Thomas Kloeppel
 
 #include "../drt_mat/material.H"
 
+#include "so_base.H"
+
 /// Several parameters which are fixed for Solid Hex20
 const int NUMNOD_SOH20 = 20;      ///< number of nodes
 const int NODDOF_SOH20 = 3;      ///< number of dofs per node
@@ -78,7 +80,7 @@ on their performance.
 
 \author kloeppel
 */
-class So_hex20 : public DRT::Element
+class So_hex20 : public So_base
 {
 public:
 

@@ -23,6 +23,8 @@
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
 
+#include "so_base.H"
+
 //@=
 #include "../drt_inpar/inpar_structure.H"
 
@@ -93,7 +95,7 @@ for performance.
 
 \author gammi
 */
-class So_nurbs27 : public DRT::Element
+class So_nurbs27 : public So_base
 {
 public:
 
@@ -331,8 +333,6 @@ protected:
     calc_struct_energy
   };
 
-   //! kinematic type
-  INPAR::STR::KinemType         kintype_;
   //! container containing all kind of solid3 thisandthat
   DRT::Container                data_;
   //! vector of inverses of the jacobian in material frame

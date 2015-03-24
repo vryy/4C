@@ -31,7 +31,8 @@ Maintainer: Caroline Danowski
 
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
-#include "../drt_tsi/kinematictype.H"
+//#include "../drt_tsi/kinematictype.H"
+#include "../drt_inpar/inpar_structure.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -367,15 +368,15 @@ namespace ELEMENTS
     //@}
 
     //! kinematic type passed from structural element
-    virtual void SetKinematicType(GenKinematicType kintype)
+    virtual void SetKinematicType(INPAR::STR::KinemType kintype)
     {
       kintype_ = kintype;
       return;
     };
     //! kinematic type
-    GenKinematicType kintype_;
+    INPAR::STR::KinemType kintype_;
 
-    GenKinematicType KinType() const
+    INPAR::STR::KinemType KinType() const
     {
       return kintype_;
     }

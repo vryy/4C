@@ -156,7 +156,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Wall1LineType::Create( const int id, c
  |  ctor (public)                                            mgit 01/08/|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Wall1::Wall1(int id, int owner) :
-DRT::Element(id,owner),
+So_base(id,owner),
 data_(),
 material_(0),
 thickness_(0.0),
@@ -165,7 +165,6 @@ wtype_(plane_none),
 stresstype_(w1_none),
 iseas_(false),
 eastype_(eas_vague),
-kintype_(w1_totlag),
 structale_(false),
 distype_(dis_none)
 {
@@ -178,7 +177,7 @@ distype_(dis_none)
  |  copy-ctor (public)                                       mgit 01/08|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Wall1::Wall1(const DRT::ELEMENTS::Wall1& old) :
-DRT::Element(old),
+So_base(old),
 data_(old.data_),
 material_(old.material_),
 thickness_(old.thickness_),
@@ -187,7 +186,6 @@ wtype_(old.wtype_),
 stresstype_(old.stresstype_),
 iseas_(old.iseas_),
 eastype_(old.eas_vague),
-kintype_(old.kintype_),
 structale_ (old.structale_),
 distype_ (old.distype_)
 // tsi_couptyp_(old.tsi_couptyp_)
@@ -229,7 +227,7 @@ void DRT::ELEMENTS::Wall1::Pack(DRT::PackBuffer& data) const
   int type = UniqueParObjectId();
   AddtoPack(data,type);
   // add base class Element
-  Element::Pack(data);
+  So_base::Pack(data);
   // material_
   AddtoPack(data,material_);
   //thickness
@@ -244,8 +242,6 @@ void DRT::ELEMENTS::Wall1::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,iseas_);
   // eas type
   AddtoPack(data,eastype_);
-  // kinemtics type
-  AddtoPack(data,kintype_);
   // structale
   AddtoPack(data,structale_);
   // distype
@@ -271,7 +267,7 @@ void DRT::ELEMENTS::Wall1::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
-  Element::Unpack(basedata);
+  So_base::Unpack(basedata);
   // material_
   ExtractfromPack(position,data,material_);
   // thickness_
@@ -288,8 +284,6 @@ void DRT::ELEMENTS::Wall1::Unpack(const std::vector<char>& data)
   iseas_ = ExtractInt(position,data);
   // eastype_
   eastype_ = static_cast<EasType>( ExtractInt(position,data) );
-  // kintype_
-  kintype_ = static_cast<KinematicType>( ExtractInt(position,data) );
   // structale_
   structale_ = ExtractInt(position,data);
   // distype_

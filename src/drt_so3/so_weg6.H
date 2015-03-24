@@ -21,6 +21,7 @@ Maintainer: Michael Gee
 #include "../drt_mat/material.H"
 #include "../drt_inpar/inpar_structure.H"
 
+#include "so_base.H"
 
 // Several parameters which are fixed for Solid Wedge6
 const int NUMNOD_WEG6 = 6;      ///< number of nodes
@@ -75,7 +76,7 @@ private:
 
 \author frenzel (frenzel@lnm.mw.tum.de)
 */
-class So_weg6 : public DRT::Element
+class So_weg6 : public So_base
 {
 public:
   //! @name Friends
@@ -369,8 +370,6 @@ protected:
 
   };
 
-  //! kinematic type
-  INPAR::STR::KinemType                                    kintype_;
   //! container containing all kind of solid3 thisandthat
   DRT::Container                                           data_;
   //! vector of inverses of the jacobian in material frame

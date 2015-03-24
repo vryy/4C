@@ -107,7 +107,7 @@ void DRT::ELEMENTS::So_tet4Type::SetupElementDefinition( std::map<std::string,st
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_tet4::So_tet4(int id, int owner) :
-DRT::Element(id,owner),
+So_base(id,owner),
 //material_(0),
 //data_(),
 V_(-1.0),
@@ -138,10 +138,9 @@ time_(0.0)
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_tet4::So_tet4(const DRT::ELEMENTS::So_tet4& old) :
-DRT::Element(old),
+So_base(old),
 //material_(old.material_),
 //data_(old.data_),
-kintype_(old.kintype_),
 V_(old.V_),
 pstype_(old.pstype_),
 pstime_(old.pstime_),
@@ -189,13 +188,11 @@ void DRT::ELEMENTS::So_tet4::Pack(DRT::PackBuffer& data) const
   int type = UniqueParObjectId();
   AddtoPack(data,type);
   // add base class Element
-  Element::Pack(data);
+  So_base::Pack(data);
   // ngp_
   //AddtoPack(data,ngp_,3*sizeof(int));
   // material_
   //AddtoPack(data,material_);
-  // kintype_
-  AddtoPack(data,kintype_);
 
   //vector<char> tmp(0);
   //data_.Pack(tmp);
@@ -237,13 +234,11 @@ void DRT::ELEMENTS::So_tet4::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
-  Element::Unpack(basedata);
+  So_base::Unpack(basedata);
   // ngp_
   //ExtractfromPack(position,data,ngp_,3*sizeof(int));
   // material_
   //ExtractfromPack(position,data,material_);
-  // kintype_
-  kintype_ = static_cast<INPAR::STR::KinemType>( ExtractInt(position,data) );
   // data_
   //vector<char> tmp(0);
   //ExtractfromPack(position,data,tmp);

@@ -97,17 +97,17 @@ void TSI::UTILS::ThermoStructureCloneStrategy::SetElementData(
 
   // initialise kinematic type to geo_linear.
   // kintype is passed to the cloned thermo element
-  GenKinematicType kintype = geo_linear;
+  INPAR::STR::KinemType kintype = INPAR::STR::kinem_linear;
   // if oldele is a so3_base element or a so3_Plast element
-  DRT::ELEMENTS::So3_Base*  so3_base  = dynamic_cast<DRT::ELEMENTS::So3_Base*>(oldele);
+  DRT::ELEMENTS::So_base*  so_base  = dynamic_cast<DRT::ELEMENTS::So_base*>(oldele);
   DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>* so3_plast_h8 =
       dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::hex8> * >(oldele);
   DRT::ELEMENTS::So3_Plast<DRT::Element::hex27>* so3_plast_h27 =
       dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::hex27> * >(oldele);
-  if (so3_base != NULL)
-    kintype = so3_base->GetKinematicType();
+  if (so_base != NULL)
+    kintype = so_base->KinematicType();
   else if (so3_plast_h8 != NULL || so3_plast_h27!=NULL)
-    kintype = geo_nonlinear; // So3_Plast only with nonlinear kinematics
+    kintype = INPAR::STR::kinem_nonlinearTotLag; // So3_Plast only with nonlinear kinematics
   else
     dserror("oldele is neither a so3_thermo nor a So3_Plast element!");
 
@@ -312,16 +312,16 @@ void TSI::UTILS::TSIMaterialStrategy::AssignMaterialAToB(
 
   // initialise kinematic type to geo_linear.
   // kintype is passed to the corresponding thermo element
-  GenKinematicType kintype = geo_linear;
+  INPAR::STR::KinemType kintype = INPAR::STR::kinem_linear;
 
   //default strategy: take only material of first element found
   DRT::Element* Aele = disA->gElement(Aids[0]);
 
   // if Aele is a so3_base element
-  DRT::ELEMENTS::So3_Base* so3_base =
-      dynamic_cast<DRT::ELEMENTS::So3_Base*>(Aele);
-  if (so3_base != NULL)
-    kintype = so3_base->GetKinematicType();
+  DRT::ELEMENTS::So_base* so_base =
+      dynamic_cast<DRT::ELEMENTS::So_base*>(Aele);
+  if (so_base != NULL)
+    kintype = so_base->KinematicType();
   else
     dserror("Aele is not a so3_thermo element!");
 

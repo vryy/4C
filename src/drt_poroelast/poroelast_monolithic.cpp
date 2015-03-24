@@ -1321,8 +1321,8 @@ void POROELAST::Monolithic::PoroFDCheck()
 {
   std::cout << "\n******************finite difference check***************" << std::endl;
 
-  int dof_struct = (StructureField()->Discretization()->NumGlobalNodes()) * 3;
-  int dof_fluid = (FluidField()->Discretization()->NumGlobalNodes()) * 4;
+  int dof_struct = (DofRowMapStructure()->NumGlobalElements());
+  int dof_fluid = (DofRowMapFluid()->NumGlobalElements());
 
   std::cout << "structure field has " << dof_struct << " DOFs" << std::endl;
   std::cout << "fluid field has " << dof_fluid << " DOFs" << std::endl;

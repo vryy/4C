@@ -537,6 +537,9 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::GaussPointLoopP1(
     //jacobian determinant of transformation between spatial and material space "|dx/dX|"
     const double J = my::ComputeJacobianDeterminant(gp,xcurr,deriv);
 
+    // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
+    my::ComputeDefGradient(defgrd,N_XYZ,xcurr);
+
     //----------------------------------------------------
     // pressure at integration point
     double press = shapefct.Dot(epreaf);
@@ -559,9 +562,6 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::GaussPointLoopP1(
     // pressure gradient at integration point
     LINALG::Matrix<my::numdim_,1> Gradp;
     Gradp.Multiply(N_XYZ,epreaf);
-
-    // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
-    defgrd.MultiplyNT(xcurr,N_XYZ); //  (6.17)
 
     // non-linear B-operator
     LINALG::Matrix<my::numstr_,my::numdof_> bop;
@@ -842,7 +842,7 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::GaussPointLoopP1OD(
     const double J = my::ComputeJacobianDeterminant(gp,xcurr,deriv);
 
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
-    defgrd.MultiplyNT(xcurr,N_XYZ); //  (6.17)
+    my::ComputeDefGradient(defgrd,N_XYZ,xcurr);
 
     // non-linear B-operator
     LINALG::Matrix<my::numstr_,my::numdof_> bop;

@@ -18,6 +18,8 @@
 /*---------------------------------------------------------------------*
  | headers                                                              |
  *---------------------------------------------------------------------*/
+#include "../drt_inpar/inpar_structure.H"
+
 #include "fluid_ele_calc.H"
 
 /*---------------------------------------------------------------------*
@@ -987,6 +989,13 @@ protected:
       Epetra_SerialDenseVector&       elevec1           //< reference to element vector to be filled
   );
 
+  //! Compute deformation gradient
+  void ComputeDefGradient(
+      LINALG::Matrix<my::nsd_,my::nsd_>&       defgrd,   ///<<    (i) deformation gradient at gausspoint
+      const LINALG::Matrix<my::nsd_,my::nen_>& N_XYZ,    ///<<    (i) derivatives of shape functions w.r.t. reference coordinates
+      const LINALG::Matrix<my::nsd_,my::nen_>& xcurr     ///<<    (i) current position of gausspoint
+    );
+
   /// Evaluate element ERROR
   /*!
       general function to compute the error (analytical solution) for particular problem type
@@ -1108,6 +1117,9 @@ protected:
 
   //! state if reaction/permeability tensor is constant
   bool const_permeability_;
+
+  //! kinematic type
+  INPAR::STR::KinemType kintype_;
 
   //! pointer to parameter lists
   DRT::ELEMENTS::FluidEleParameterPoro* porofldpara_;

@@ -127,7 +127,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
       for (int i=0; i<(int)mydispmat.size(); ++i) mydispmat[i] = 0.0;
 
       // special case: geometrically linear
-      if (kintype_ == DRT::ELEMENTS::Wall1::w1_geolin)
+      if (kintype_ == INPAR::STR::kinem_linear)
       {
         w1_linstiffmass(lm,mydisp,myres,mydispmat,myknots,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat,params,
                         INPAR::STR::stress_none,INPAR::STR::strain_none);
@@ -159,7 +159,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
       }
 
       // special case: geometrically linear
-      if (kintype_ == DRT::ELEMENTS::Wall1::w1_geolin)
+      if (kintype_ == INPAR::STR::kinem_linear)
       {
         w1_linstiffmass(lm,mydisp,mydispmat,myres,myknots,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat,params,
                         INPAR::STR::stress_none,INPAR::STR::strain_none);
@@ -193,7 +193,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
       }
 
       // special case: geometrically linear
-      if (kintype_ == DRT::ELEMENTS::Wall1::w1_geolin)
+      if (kintype_ == INPAR::STR::kinem_linear)
       {
         w1_linstiffmass(lm,mydisp,myres,mydispmat,myknots,&elemat1,NULL,&elevec1,NULL,NULL,actmat,params,
                         INPAR::STR::stress_none,INPAR::STR::strain_none);
@@ -228,7 +228,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
       }
 
       // special case: geometrically linear
-      if (kintype_ == DRT::ELEMENTS::Wall1::w1_geolin)
+      if (kintype_ == INPAR::STR::kinem_linear)
       {
         w1_linstiffmass(lm,mydisp,myres,mydispmat,myknots,&myemat,NULL,&elevec1,NULL,NULL,actmat,params,
                         INPAR::STR::stress_none,INPAR::STR::strain_none);
@@ -312,7 +312,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
         INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
 
         // special case: geometrically linear
-        if (kintype_ == DRT::ELEMENTS::Wall1::w1_geolin)
+        if (kintype_ == INPAR::STR::kinem_linear)
         {
           w1_linstiffmass(lm,mydisp,myres,mydispmat,myknots,NULL,NULL,NULL,&stress,&strain,actmat,params,iostress,iostrain);
         }

@@ -19,6 +19,8 @@ Maintainer: Thomas Kloeppel
 
 #include "../drt_mat/material.H"
 
+#include "so_base.H"
+
 /// Several parameters which are fixed for Solid Hex27
 const int NUMNOD_SOH27 = 27;      ///< number of nodes
 const int NODDOF_SOH27 = 3;      ///< number of dofs per node
@@ -78,7 +80,7 @@ on their performance.
 
 \author kloeppel
 */
-class So_hex27 : public DRT::Element
+class So_hex27 : public So_base
 {
 public:
 
@@ -361,8 +363,6 @@ protected:
     multi_calc_dens           //!< multi-scale: calculate homogenized density
   };
 
-   //! kinematic type
-  INPAR::STR::KinemType                                                 kintype_;
   //! container containing all kind of solid3 thisandthat
   DRT::Container                                                        data_;
   //! vector of inverses of the jacobian in material frame

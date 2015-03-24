@@ -32,6 +32,8 @@ Maintainer: Markus Gitterle
 
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 
+#include "../drt_so3/so_base.H"
+
 namespace DRT
 {
 // forward declarations
@@ -103,7 +105,7 @@ private:
  * - [4] WA Wall and B Bornemann, Nichtlineare Finite-Element-Methoden,
  *   Vorlesungsskript, Lehrstuhl fuer Numerische Mechanik, SS 2007.
  */
-class Wall1 : public DRT::Element
+class Wall1 : public So_base
 {
 public:
 
@@ -336,14 +338,6 @@ protected:
     eas_q1et4  ///< Q1ET4 formulation due to Glaser and Armero [2]
   };
 
-  /// kinematics type
-  enum KinematicType
-  {
-    w1_geolin,
-    w1_totlag,
-    w1_updlag
-  };
-
   /// container containing all kind of wall1 thisandthat
   DRT::Container data_;
 
@@ -361,8 +355,6 @@ protected:
   bool iseas_;
   /// EAS type
   enum EasType eastype_;
-  //! kinematics type
-  enum KinematicType kintype_;
   //! struct_ale
   bool structale_;
 

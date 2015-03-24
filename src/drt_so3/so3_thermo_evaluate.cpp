@@ -256,7 +256,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
     }
 
     // default: geometrically non-linear analysis with Total Lagrangean approach
-    if (kintype_ == geo_nonlinear)
+    if (so3_ele::KinematicType() == INPAR::STR::kinem_nonlinearTotLag)
     {
       LINALG::Matrix<numdofperelement_,numdofperelement_> elemat1(elemat1_epetra.A(),true);
 
@@ -294,10 +294,10 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
           INPAR::STR::stress_none  // stress output option
           );
       }  // Hex8Fbar
-    }  // (kintype_ == geo_nonlinear)
+    }  // (so3_ele::KinematicType() == INPAR::STR::kinem_nonlinearTotLag)
 
-    // geometric geo_linear
-    else if (kintype_ == geo_linear)
+    // geometric INPAR::STR::kinem_linear
+    else if (so3_ele::KinematicType() == INPAR::STR::kinem_linear)
     {
       // calculate the THERMOmechanical term for fint
       lin_fint_tsi(
@@ -310,7 +310,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
         params,
         INPAR::STR::stress_none
         );
-    }  // (kintype_ == geo_linear)
+    }  // (so3_ele::KinematicType() == INPAR::STR::kinem_linear)
     break;
   }  // calc_struct_internalforce
 
@@ -363,7 +363,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
       DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,la[1].lm_);
 
       // default: geometrically non-linear analysis with Total Lagrangean approach
-      if (kintype_ == geo_nonlinear)
+      if (so3_ele::KinematicType() == INPAR::STR::kinem_nonlinearTotLag)
       {
         // stiffness
         LINALG::Matrix<numdofperelement_,numdofperelement_> elemat1(elemat1_epetra.A(),true);
@@ -405,10 +405,10 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
             INPAR::STR::stress_none  // stress output option
             );
         }  // Hex8Fbar
-      }  // (kintype_ == geo_nonlinear)
+      }  // (so3_ele::KinematicType() == INPAR::STR::kinem_nonlinearTotLag)
 
       // geometric linear
-      else if (kintype_ == geo_linear)
+      else if (so3_ele::KinematicType() == INPAR::STR::kinem_linear)
       {
         // calculate the THERMOmechanical term for fint
         lin_fint_tsi(
@@ -421,7 +421,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
           params,
           INPAR::STR::stress_none
           );
-      }  // (kintype_ == geo_linear)
+      }  // (so3_ele::KinematicType() == INPAR::STR::kinem_linear)
     }
 
     break;
@@ -478,7 +478,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
       DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,la[1].lm_);
 
       // default: geometrically non-linear analysis with Total Lagrangean approach
-      if (kintype_ == geo_nonlinear)
+      if (so3_ele::KinematicType() == INPAR::STR::kinem_nonlinearTotLag)
       {
         // stiffness
         LINALG::Matrix<numdofperelement_,numdofperelement_> elemat1(elemat1_epetra.A(),true);
@@ -518,10 +518,10 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
             );
         }  // Hex8Fbar
 
-      }  // (kintype_ == geo_nonlinear)
+      }  // (so3_ele::KinematicType() == INPAR::STR::kinem_nonlinearTotLag)
 
       // geometric linear
-      else if (kintype_ == geo_linear)
+      else if (so3_ele::KinematicType() == INPAR::STR::kinem_linear)
       {
         // build the current temperature vector
         LINALG::Matrix<nen_*numdofpernode_,1> etemp(&(mytempnp[1]),true);  // view only!
@@ -536,7 +536,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
           params,
           INPAR::STR::stress_none
           );
-      }  // (kintype_ == geo_linear)
+      }  // (so3_ele::KinematicType() == INPAR::STR::kinem_linear)
     }
 
     break;
@@ -601,7 +601,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
         DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,la[1].lm_);
 
         // default: geometrically non-linear analysis with Total Lagrangean approach
-        if (kintype_ == geo_nonlinear)
+        if (so3_ele::KinematicType() == INPAR::STR::kinem_nonlinearTotLag)
         {
           // in case we have a finite strain thermoplastic material use hex8fbar element
           // to cirucumvent volumetric locking
@@ -648,10 +648,10 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
         std::cout << "thermal stress" << couplstress << std::endl;
 #endif
 
-        }  // (kintype_ == geo_nonlinear)
+        }  // (so3_ele::KinematicType() == INPAR::STR::kinem_nonlinearTotLag)
 
         // geometric linear
-        else if (kintype_ == geo_linear)
+        else if (so3_ele::KinematicType() == INPAR::STR::kinem_linear)
         {
           // purely structural method, this is the coupled routine, i.e., a 2nd
           // discretisation exists, i.e., --> we always have a temperature state
@@ -667,7 +667,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
             params,
             iocouplstress
             );
-        }  // (kintype_ == geo_linear)
+        }  // (so3_ele::KinematicType() == INPAR::STR::kinem_linear)
 
 #ifdef TSIASOUTPUT
         std::cout << "thermal stress" << couplstress << std::endl;
@@ -761,7 +761,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
       DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,la[1].lm_);
     }
     // default: geometrically non-linear analysis with Total Lagrangean approach
-    if (kintype_ == geo_nonlinear)
+    if (so3_ele::KinematicType() == INPAR::STR::kinem_nonlinearTotLag)
     {
       // in case we have a finite strain thermoplastic material use hex8fbar element
       // to cirucumvent volumetric locking
@@ -778,14 +778,14 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
       {
         nln_kdT_tsi_fbar(la,mydisp,mytempnp,&stiffmatrix_kdT,params);
       }  // Hex8Fbar
-    }  // (kintype_ == nonlinear)
+    }  // (so3_ele::KinematicType() == nonlinear)
 
     // geometric linear
-    else if (kintype_ == geo_linear)
+    else if (so3_ele::KinematicType() == INPAR::STR::kinem_linear)
     {
       // calculate the mechanical-thermal sub matrix k_dT of K_TSI
       lin_kdT_tsi(la,mydisp,mytempnp,&stiffmatrix_kdT,params);
-    }  // (kintype_ == geo_linear)
+    }  // (so3_ele::KinematicType() == INPAR::STR::kinem_linear)
 
     break;
   }  // calc_struct_stifftemp

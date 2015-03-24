@@ -45,7 +45,7 @@ namespace ELEMENTS
   //! A C++ version of a 3 dimensional solid element with modifications von Mises
   //! plasticity using a semi-smooth Newton method
   template<DRT::Element::DiscretizationType distype>
-  class So3_Plast : public virtual DRT::Element
+  class So3_Plast : public virtual So_base
   {
     //! @name Friends
     friend class So_hex8PlastType;
