@@ -430,252 +430,255 @@ void CONTACT::CoCoupling2dManager::EvaluateMortar()
  *----------------------------------------------------------------------*/
 void CONTACT::CoCoupling2dManager::ConsistDualShape()
 {
-  bool consistent=DRT::INPUT::IntegralValue<int>(imortar_,"LM_DUAL_CONSISTENT");
 
   // For standard shape functions no modification is necessary
   // A switch earlier in the process improves computational efficiency
-  if (ShapeFcn() == INPAR::MORTAR::shape_standard || consistent==false)
+  if (ShapeFcn() == INPAR::MORTAR::shape_standard)
     return;
 
-    // Consistent modification only for linear LM interpolation
-    if (Quad()==true && consistent==true)
+  bool consistent=DRT::INPUT::IntegralValue<int>(imortar_,"LM_DUAL_CONSISTENT");
+  if (consistent==false)
+    return;
+
+  // Consistent modification only for linear LM interpolation or NURBS
+  if (Quad()==true && consistent==true && !SlaveElement().IsNurbs())
     dserror("Consistent dual shape functions in boundary elements only for linear LM interpolation");
 
-    // do nothing if there are no coupling pairs
-    if (Coupling().size()==0)
+  // do nothing if there are no coupling pairs
+  if (Coupling().size()==0)
     return;
 
-    const int nnodes = SlaveElement().NumNode();
-    const int ndof = 2;
+  const int nnodes = SlaveElement().NumNode();
+  const int ndof = 2;
 
-    int linsize = 0;
-    for (int i=0;i<nnodes;++i)
-    {
-      CoNode* cnode = dynamic_cast<CoNode*> (SlaveElement().Nodes()[i]);
-      linsize += cnode->GetLinsize();
-    }
-
-    int mnodes = 0;
-    for (int m=0;m<(int)Coupling().size();++m)
-    mnodes += MasterElements()[m]->NumNode();
-
-    // detect entire overlap
-    double ximin = 1.0;
-    double ximax = -1.0;
-    GEN::pairedvector<int, double> dximin(linsize + ndof*mnodes);
-    GEN::pairedvector<int,double> dximax(linsize + ndof*mnodes);
-
-    // loop over all master elements associated with this slave element
-    for (int m=0;m<(int)Coupling().size();++m)
-    {
-      double sxia = Coupling()[m]->XiProj()[0];
-      double sxib = Coupling()[m]->XiProj()[1];
-      double mxia = Coupling()[m]->XiProj()[2];
-      double mxib = Coupling()[m]->XiProj()[3];
-
-      // no overlap for this slave-master pair --> continue with next pair
-      if (sxia==0.0 && sxib==0.0) continue;
-
-      // for contact we need the derivatives as well
-      bool startslave = false;
-      bool endslave = false;
-
-      if (sxia==-1.0) startslave = true;
-      else startslave = false;
-      if (sxib==1.0) endslave = true;
-      else endslave = false;
-
-      // create an integrator for this segment
-      CONTACT::CoIntegrator integrator(imortar_,SlaveElement().Shape(),Comm());
-
-      std::vector<GEN::pairedvector<int,double> > ximaps(4,linsize + ndof*mnodes);
-      // get directional derivatives of sxia, sxib, mxia, mxib
-      integrator.DerivXiAB2D(SlaveElement(),sxia,sxib,MasterElement(m),mxia,mxib,ximaps,startslave,endslave,linsize);
-
-      // get element contact integration area
-      // and for contact derivatives of beginning and end
-      if ((sxia!=0.0 || sxib!=0.0) && (sxia>=-1.0 && sxia<=1.0) && (sxib>=-1.0 && sxib<=1.0))
-      {
-        if (sxia<ximin && sxia>=-1. && sxia<=1.)
-        {
-          ximin=sxia;
-          dximin=ximaps[0];
-        }
-        if (sxib>ximax && sxib>=-1. && sxib<=1.)
-        {
-          ximax=sxib;
-          dximax=ximaps[1];
-        }
-      }
-    }
-
-    // map iterator
-    typedef GEN::pairedvector<int,double>::const_iterator _CI;
-
-    // no overlap: the applied dual shape functions don't matter, as the integration domain is void
-    if ((ximax==-1.0 && ximin==1.0) || (ximin==ximax))
-    return;
-
-    // fully projecting element: no modification necessary
-    if (ximin==-1.0 && ximax==1.0)
-    return;
-
-    // calculate consistent dual schape functions (see e.g. Cichosz et.al.:
-    // Consistent treatment of boundaries with mortar contact formulations, CMAME 2010
-
-    // Dual shape functions coefficient matrix
-    LINALG::SerialDenseMatrix ae(nnodes,nnodes,true);
-    std::vector<std::vector<GEN::pairedvector<int,double> > > derivae(nnodes,std::vector<GEN::pairedvector<int,double> >(nnodes,linsize + ndof*mnodes));
-
-    // compute entries to bi-ortho matrices me/de with Gauss quadrature
-    MORTAR::ElementIntegrator integrator(SlaveElement().Shape());
-
-    // prepare for calculation of dual shape functions
-    LINALG::SerialDenseMatrix me(nnodes,nnodes,true);
-    LINALG::SerialDenseMatrix de(nnodes,nnodes,true);
-    // two-dim arrays of maps for linearization of me/de
-    std::vector<std::vector<GEN::pairedvector<int,double> > > derivme(nnodes,std::vector<GEN::pairedvector<int,double> >(nnodes,linsize + ndof*mnodes));
-    std::vector<std::vector<GEN::pairedvector<int,double> > > derivde(nnodes,std::vector<GEN::pairedvector<int,double> >(nnodes,linsize + ndof*mnodes));
-
-    for (int gp=0;gp<integrator.nGP();++gp)
-    {
-      LINALG::SerialDenseVector sval(nnodes);
-      LINALG::SerialDenseMatrix sderiv(nnodes,1,true);
-      LINALG::SerialDenseMatrix ssecderiv(nnodes,1);
-
-      // coordinates and weight
-      double eta[2] =
-      { integrator.Coordinate(gp,0), 0.0};
-      double wgt = integrator.Weight(gp);
-
-      // coordinate transformation sxi->eta (slave MortarElement->Overlap)
-      double sxi[2] =
-      { 0.0, 0.0};
-      sxi[0] = 0.5*(1.0-eta[0])*ximin + 0.5*(1.0+eta[0])*ximax;
-
-      // evaluate trace space shape functions
-      SlaveElement().EvaluateShape(sxi,sval,sderiv,nnodes);
-
-      // evaluate the two slave side Jacobians
-      double dxdsxi = SlaveElement().Jacobian(sxi);
-      double dsxideta = -0.5*ximin + 0.5*ximax;
-
-      // evaluate linearizations *******************************************
-      // evaluate the derivative dxdsxidsxi = Jac,xi
-      double djacdxi[2] =
-      { 0.0, 0.0};
-      dynamic_cast<CONTACT::CoElement&> (SlaveElement()).DJacDXi(djacdxi,sxi,ssecderiv);
-      double dxdsxidsxi=djacdxi[0]; // only 2D here
-
-      // evalute the GP slave coordinate derivatives
-      GEN::pairedvector<int,double> dsxigp(linsize + ndof*mnodes);
-      for (_CI p=dximin.begin();p!=dximin.end();++p)
-      dsxigp[p->first] += 0.5*(1-eta[0])*(p->second);
-      for (_CI p=dximax.begin();p!=dximax.end();++p)
-      dsxigp[p->first] += 0.5*(1+eta[0])*(p->second);
-
-      // evaluate the Jacobian derivative
-      GEN::pairedvector<int,double> derivjac(SlaveElement().NumNode()*Dim());
-      SlaveElement().DerivJacobian(sxi,derivjac);
-
-      // integrate dual shape matrices de, me and their linearizations
-      for (int j=0; j<nnodes; ++j)
-      {
-        double fac;
-        // de and linearization
-        de(j,j) += wgt * sval[j] * dxdsxi*dsxideta;
-
-        // (1) linearization of slave gp coordinates in ansatz function j for derivative of de
-        fac=wgt * sderiv(j,0) * dxdsxi*dsxideta;
-        for (_CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
-        derivde[j][j][p->first] += fac*(p->second);
-
-        // (2) linearization dsxideta - segment end coordinates
-        fac=0.5*wgt*sval[j]*dxdsxi;
-        for (_CI p=dximin.begin();p!=dximin.end();++p)
-        derivde[j][j][p->first] -= fac*(p->second);
-        fac=0.5*wgt*sval[j]*dxdsxi;
-        for (_CI p=dximax.begin();p!=dximax.end();++p)
-        derivde[j][j][p->first] += fac*(p->second);
-
-        // (3) linearization dxdsxi - slave GP jacobian
-        fac=wgt*sval[j]*dsxideta;
-        for (_CI p=derivjac.begin();p!=derivjac.end();++p)
-        derivde[j][j][p->first] += fac*(p->second);
-
-        // (4) linearization dxdsxi - slave GP coordinates
-        fac=wgt*sval[j]*dsxideta*dxdsxidsxi;
-        for (_CI p=dsxigp.begin();p!=dsxigp.end();++p)
-        derivde[j][j][p->first] += fac*(p->second);
-
-        // me and linearization
-        for (int k=0; k<nnodes; ++k)
-        {
-          me(j,k) += wgt * sval[j] * sval[k] *dxdsxi*dsxideta;
-
-          // (1) linearization of slave gp coordinates in ansatz function for derivative of me
-          fac=wgt * sval [k] * dxdsxi*dsxideta * sderiv(j,0);
-          for (_CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
-          {
-            derivme[j][k][p->first] += fac*(p->second);
-            derivme[k][j][p->first] += fac*(p->second);
-          }
-
-          // (2) linearization dsxideta - segment end coordinates
-          fac=0.5*wgt*sval[j]*sval[k]*dxdsxi;
-          for (_CI p=dximin.begin();p!=dximin.end();++p)
-          derivme[j][k][p->first] -= fac*(p->second);
-          fac=0.5*wgt*sval[j]*sval[k]*dxdsxi;
-          for (_CI p=dximax.begin();p!=dximax.end();++p)
-          derivme[j][k][p->first] += fac*(p->second);
-
-          // (3) linearization dxdsxi - slave GP jacobian
-          fac=wgt*sval[j]*sval[k]*dsxideta;
-          for (_CI p=derivjac.begin();p!=derivjac.end();++p)
-          derivme[j][k][p->first] += fac*(p->second);
-
-          // (4) linearization dxdsxi - slave GP coordinates
-          fac=wgt*sval[j]*sval[k]*dsxideta*dxdsxidsxi;
-          for (_CI p=dsxigp.begin();p!=dsxigp.end();++p)
-          derivme[j][k][p->first] += fac*(p->second);
-        }
-      }
-    }
-    // build ae matrix
-    // invert bi-ortho matrix me
-    LINALG::SerialDenseMatrix meinv = LINALG::InvertAndMultiplyByCholesky(me,de,ae);
-
-    // build linearization of ae and store in derivdual
-    // (this is done according to a quite complex formula, which
-    // we get from the linearization of the biorthogonality condition:
-    // Lin (Me * Ae = De) -> Lin(Ae)=Lin(De)*Inv(Me)-Ae*Lin(Me)*Inv(Me) )
-
-    // loop over all entries of ae (index i,j)
-    for (int i=0;i<nnodes;++i)
-    {
-      for (int j=0;j<nnodes;++j)
-      {
-        // compute Lin(Ae) according to formula above
-        for (int l=0;l<nnodes;++l)// loop over sum l
-        {
-          // part1: Lin(De)*Inv(Me)
-          for (_CI p=derivde[i][l].begin();p!=derivde[i][l].end();++p)
-          derivae[i][j][p->first] += meinv(l,j)*(p->second);
-
-          // part2: Ae*Lin(Me)*Inv(Me)
-          for (int k=0;k<nnodes;++k)// loop over sum k
-          for (_CI p=derivme[k][l].begin();p!=derivme[k][l].end();++p)
-          derivae[i][j][p->first] -= ae(i,k)*meinv(l,j)*(p->second);
-        }
-      }
-    }
-
-    // store ae matrix in slave element data container
-    SlaveElement().MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
-
-    // store derivae into element
-    SlaveElement().MoData().DerivDualShape() = Teuchos::rcp(new std::vector<std::vector<GEN::pairedvector<int,double> > >(derivae));
-
-    return;
+  int linsize = 0;
+  for (int i=0;i<nnodes;++i)
+  {
+    CoNode* cnode = dynamic_cast<CoNode*> (SlaveElement().Nodes()[i]);
+    linsize += cnode->GetLinsize();
   }
 
+  int mnodes = 0;
+  for (int m=0;m<(int)Coupling().size();++m)
+    mnodes += MasterElements()[m]->NumNode();
+
+  // detect entire overlap
+  double ximin = 1.0;
+  double ximax = -1.0;
+  GEN::pairedvector<int, double> dximin(linsize + ndof*mnodes);
+  GEN::pairedvector<int,double> dximax(linsize + ndof*mnodes);
+
+  // loop over all master elements associated with this slave element
+  for (int m=0;m<(int)Coupling().size();++m)
+  {
+    double sxia = Coupling()[m]->XiProj()[0];
+    double sxib = Coupling()[m]->XiProj()[1];
+    double mxia = Coupling()[m]->XiProj()[2];
+    double mxib = Coupling()[m]->XiProj()[3];
+
+    // no overlap for this slave-master pair --> continue with next pair
+    if (sxia==0.0 && sxib==0.0) continue;
+
+    // for contact we need the derivatives as well
+    bool startslave = false;
+    bool endslave = false;
+
+    if (sxia==-1.0) startslave = true;
+    else startslave = false;
+    if (sxib==1.0) endslave = true;
+    else endslave = false;
+
+    // create an integrator for this segment
+    CONTACT::CoIntegrator integrator(imortar_,SlaveElement().Shape(),Comm());
+
+    std::vector<GEN::pairedvector<int,double> > ximaps(4,linsize + ndof*mnodes);
+    // get directional derivatives of sxia, sxib, mxia, mxib
+    integrator.DerivXiAB2D(SlaveElement(),sxia,sxib,MasterElement(m),mxia,mxib,ximaps,startslave,endslave,linsize);
+
+    // get element contact integration area
+    // and for contact derivatives of beginning and end
+    if ((sxia!=0.0 || sxib!=0.0) && (sxia>=-1.0 && sxia<=1.0) && (sxib>=-1.0 && sxib<=1.0))
+    {
+      if (sxia<ximin && sxia>=-1. && sxia<=1.)
+      {
+        ximin=sxia;
+        dximin=ximaps[0];
+      }
+      if (sxib>ximax && sxib>=-1. && sxib<=1.)
+      {
+        ximax=sxib;
+        dximax=ximaps[1];
+      }
+    }
+  }
+
+  // map iterator
+  typedef GEN::pairedvector<int,double>::const_iterator _CI;
+
+  // no overlap: the applied dual shape functions don't matter, as the integration domain is void
+  if ((ximax==-1.0 && ximin==1.0) || (ximax-ximin<4.*MORTARINTLIM))
+    return;
+
+  // fully projecting element: no modification necessary
+  if (ximin==-1.0 && ximax==1.0)
+    return;
+
+  // calculate consistent dual schape functions (see e.g. Cichosz et.al.:
+  // Consistent treatment of boundaries with mortar contact formulations, CMAME 2010
+
+  // Dual shape functions coefficient matrix
+  LINALG::SerialDenseMatrix ae(nnodes,nnodes,true);
+
+  // store derivae into element
+  SlaveElement().MoData().DerivDualShape() = Teuchos::rcp(new std::vector<std::vector<GEN::pairedvector<int,double> > >(nnodes,std::vector<GEN::pairedvector<int,double> >(nnodes,linsize + 2*ndof*mnodes)));
+  std::vector<std::vector<GEN::pairedvector<int,double> > >& derivae=*(SlaveElement().MoData().DerivDualShape());
+
+  // compute entries to bi-ortho matrices me/de with Gauss quadrature
+  MORTAR::ElementIntegrator integrator(SlaveElement().Shape());
+
+  // prepare for calculation of dual shape functions
+  LINALG::SerialDenseMatrix me(nnodes,nnodes,true);
+  LINALG::SerialDenseMatrix de(nnodes,nnodes,true);
+  // two-dim arrays of maps for linearization of me/de
+  std::vector<std::vector<GEN::pairedvector<int,double> > > derivme(nnodes,std::vector<GEN::pairedvector<int,double> >(nnodes,linsize + 2*ndof*mnodes));
+  std::vector<std::vector<GEN::pairedvector<int,double> > > derivde(nnodes,std::vector<GEN::pairedvector<int,double> >(nnodes,linsize + 2*ndof*mnodes));
+
+  LINALG::SerialDenseVector sval(nnodes);
+  LINALG::SerialDenseMatrix sderiv(nnodes,1,true);
+  LINALG::SerialDenseMatrix ssecderiv(nnodes,1);
+
+  for (int gp=0;gp<integrator.nGP();++gp)
+  {
+    // coordinates and weight
+    double eta[2] =
+    { integrator.Coordinate(gp,0), 0.0};
+    double wgt = integrator.Weight(gp);
+
+    // coordinate transformation sxi->eta (slave MortarElement->Overlap)
+    double sxi[2] =
+    { 0.0, 0.0};
+    sxi[0] = 0.5*(1.0-eta[0])*ximin + 0.5*(1.0+eta[0])*ximax;
+
+    // evaluate trace space shape functions
+    SlaveElement().EvaluateShape(sxi,sval,sderiv,nnodes);
+    SlaveElement().Evaluate2ndDerivShape(sxi,ssecderiv,nnodes);
+
+    // evaluate the two slave side Jacobians
+    double dxdsxi = SlaveElement().Jacobian(sxi);
+    double dsxideta = -0.5*ximin + 0.5*ximax;
+
+    // evaluate linearizations *******************************************
+    // evaluate the derivative dxdsxidsxi = Jac,xi
+    double djacdxi[2] =
+    { 0.0, 0.0};
+    dynamic_cast<CONTACT::CoElement&> (SlaveElement()).DJacDXi(djacdxi,sxi,ssecderiv);
+    double dxdsxidsxi=djacdxi[0]; // only 2D here
+
+    // evalute the GP slave coordinate derivatives
+    GEN::pairedvector<int,double> dsxigp(linsize + ndof*mnodes);
+    for (_CI p=dximin.begin();p!=dximin.end();++p)
+      dsxigp[p->first] += 0.5*(1-eta[0])*(p->second);
+    for (_CI p=dximax.begin();p!=dximax.end();++p)
+      dsxigp[p->first] += 0.5*(1+eta[0])*(p->second);
+
+    // evaluate the Jacobian derivative
+    GEN::pairedvector<int,double> derivjac(SlaveElement().NumNode()*Dim());
+    SlaveElement().DerivJacobian(sxi,derivjac);
+
+    // integrate dual shape matrices de, me and their linearizations
+    for (int j=0; j<nnodes; ++j)
+    {
+      double fac;
+      // de and linearization
+      de(j,j) += wgt * sval[j] * dxdsxi*dsxideta;
+
+      // (1) linearization of slave gp coordinates in ansatz function j for derivative of de
+      fac=wgt * sderiv(j,0) * dxdsxi*dsxideta;
+      for (_CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
+        derivde[j][j][p->first] += fac*(p->second);
+
+      // (2) linearization dsxideta - segment end coordinates
+      fac=0.5*wgt*sval[j]*dxdsxi;
+      for (_CI p=dximin.begin();p!=dximin.end();++p)
+        derivde[j][j][p->first] -= fac*(p->second);
+      fac=0.5*wgt*sval[j]*dxdsxi;
+      for (_CI p=dximax.begin();p!=dximax.end();++p)
+        derivde[j][j][p->first] += fac*(p->second);
+
+      // (3) linearization dxdsxi - slave GP jacobian
+      fac=wgt*sval[j]*dsxideta;
+      for (_CI p=derivjac.begin();p!=derivjac.end();++p)
+        derivde[j][j][p->first] += fac*(p->second);
+
+      // (4) linearization dxdsxi - slave GP coordinates
+      fac=wgt*sval[j]*dsxideta*dxdsxidsxi;
+      for (_CI p=dsxigp.begin();p!=dsxigp.end();++p)
+        derivde[j][j][p->first] += fac*(p->second);
+
+      // me and linearization
+      for (int k=0; k<nnodes; ++k)
+      {
+        me(j,k) += wgt * sval[j] * sval[k] *dxdsxi*dsxideta;
+
+        // (1) linearization of slave gp coordinates in ansatz function for derivative of me
+        fac=wgt * sval [k] * dxdsxi*dsxideta * sderiv(j,0);
+        for (_CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
+        {
+          derivme[j][k][p->first] += fac*(p->second);
+          derivme[k][j][p->first] += fac*(p->second);
+        }
+
+        // (2) linearization dsxideta - segment end coordinates
+        fac=0.5*wgt*sval[j]*sval[k]*dxdsxi;
+        for (_CI p=dximin.begin();p!=dximin.end();++p)
+          derivme[j][k][p->first] -= fac*(p->second);
+        fac=0.5*wgt*sval[j]*sval[k]*dxdsxi;
+        for (_CI p=dximax.begin();p!=dximax.end();++p)
+          derivme[j][k][p->first] += fac*(p->second);
+
+        // (3) linearization dxdsxi - slave GP jacobian
+        fac=wgt*sval[j]*sval[k]*dsxideta;
+        for (_CI p=derivjac.begin();p!=derivjac.end();++p)
+          derivme[j][k][p->first] += fac*(p->second);
+
+        // (4) linearization dxdsxi - slave GP coordinates
+        fac=wgt*sval[j]*sval[k]*dsxideta*dxdsxidsxi;
+        for (_CI p=dsxigp.begin();p!=dsxigp.end();++p)
+          derivme[j][k][p->first] += fac*(p->second);
+      }
+    }
+  }
+  // build ae matrix
+  // invert bi-ortho matrix me
+  LINALG::SerialDenseMatrix meinv = LINALG::InvertAndMultiplyByCholesky(me,de,ae);
+
+  // build linearization of ae and store in derivdual
+  // (this is done according to a quite complex formula, which
+  // we get from the linearization of the biorthogonality condition:
+  // Lin (Me * Ae = De) -> Lin(Ae)=Lin(De)*Inv(Me)-Ae*Lin(Me)*Inv(Me) )
+
+  // loop over all entries of ae (index i,j)
+  for (int i=0;i<nnodes;++i)
+  {
+    for (int j=0;j<nnodes;++j)
+    {
+      // compute Lin(Ae) according to formula above
+      for (int l=0;l<nnodes;++l)// loop over sum l
+      {
+        // part1: Lin(De)*Inv(Me)
+        for (_CI p=derivde[i][l].begin();p!=derivde[i][l].end();++p)
+          derivae[i][j][p->first] += meinv(l,j)*(p->second);
+
+        // part2: Ae*Lin(Me)*Inv(Me)
+        for (int k=0;k<nnodes;++k)// loop over sum k
+          for (_CI p=derivme[k][l].begin();p!=derivme[k][l].end();++p)
+            derivae[i][j][p->first] -= ae(i,k)*meinv(l,j)*(p->second);
+      }
+    }
+  }
+
+  // store ae matrix in slave element data container
+  SlaveElement().MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
+
+  return;
+}

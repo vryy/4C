@@ -561,6 +561,10 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
      MORTAR::MortarElement& mele, double& mxia, double& mxib,
      const Epetra_Comm& comm)
 {
+  // skip this segment, if too small
+  if (sxib-sxia<4.*MORTARINTLIM)
+    return;
+
   // *********************************************************************
   // Check integrator input for non-reasonable quantities
   // *********************************************************************
@@ -627,8 +631,11 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
   // this is only necessary for quadratic dual shape functions in 2D
   bool duallin = false;
   std::vector<std::vector<GEN::pairedvector<int,double> > > dualmap(nrow,std::vector<GEN::pairedvector<int,double> >(nrow,2*nrow));
-  if ((ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
-      (sele.Shape()==MORTAR::MortarElement::line3 || sele.MoData().DerivDualShape()!=Teuchos::null))
+  if ((ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
+      && (   sele.Shape()==MORTAR::MortarElement::line3
+          || sele.Shape()==MORTAR::MortarElement::nurbs3
+          || sele.MoData().DerivDualShape()!=Teuchos::null
+          ))
   {
     duallin=true;
     sele.DerivShapeDual(dualmap);
@@ -699,11 +706,20 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
   bool startslave = false;
   bool endslave = false;
 
-  if (sxia!=-1.0 && mxib!=1.0)
-    dserror("ERROR: First outer node is neither slave nor master node");
-  if (sxib!=1.0 && mxia!=-1.0)
+  if (sele.NormalFac()*mele.NormalFac()>0.)
+  {
+    if (sxia!=-1.0 && mxib!=1.0)
+      dserror("ERROR: First outer node is neither slave nor master node");
+    if (sxib!=1.0 && mxia!=-1.0)
       dserror("ERROR: Second outer node is neither slave nor master node");
-
+  }
+  else
+  {
+    if (sxia!=-1. && mxia!=-1.)
+      dserror("ERROR: First outer node is neither slave nor master node");
+    if (sxib!=1. && mxib!=1.)
+      dserror("ERROR: Second outer node is neither slave nor master node");
+  }
   if (sxia==-1.0) startslave = true;
   else            startslave = false;
   if (sxib==1.0)  endslave   = true;
@@ -3081,77 +3097,184 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele,
   mele.EvaluateShape(pmxia,valmxia,derivmxia,nummnode,false);
   mele.EvaluateShape(pmxib,valmxib,derivmxib,nummnode,false);
 
-  // compute factors and leading constants for master
-  double cmxia = 0.0;
-  double cmxib = 0.0;
-  double fac_dxm_a = 0.0;
-  double fac_dym_a = 0.0;
-  double fac_xmsl_a = 0.0;
-  double fac_ymsl_a = 0.0;
-  double fac_dxm_b = 0.0;
-  double fac_dym_b = 0.0;
-  double fac_xmsl_b = 0.0;
-  double fac_ymsl_b = 0.0;
+  // prepare linearizations
+  typedef GEN::pairedvector<int,double>::const_iterator _CI;
 
   // compute leading constant for DerivXiBMaster if start node = slave node
   if (startslave==true)
   {
-    for (int i=0;i<nummnode;++i)
+    // compute factors and leading constants for master
+    double cmxib = 0.0;
+    double fac_dxm_b = 0.0;
+    double fac_dym_b = 0.0;
+    double fac_xmsl_b = 0.0;
+    double fac_ymsl_b = 0.0;
+
+    double normal[2]={0.,0.};
+    sele.ComputeUnitNormalAtXi(psxia,normal);
+    std::vector<GEN::pairedvector<int,double> > derivN;
+    dynamic_cast<CONTACT::CoElement*>(&sele)->DerivUnitNormalAtXi(psxia,derivN);
+
+    LINALG::SerialDenseVector* mval=NULL;
+    LINALG::SerialDenseMatrix* mderiv=NULL;
+    if (sele.NormalFac()*mele.NormalFac()>0.)
     {
-      fac_dxm_b  += derivmxib(i,0)*(mmrtrnodes[i]->xspatial()[0]);
-      fac_dym_b  += derivmxib(i,0)*(mmrtrnodes[i]->xspatial()[1]);
-      fac_xmsl_b += valmxib[i]*(mmrtrnodes[i]->xspatial()[0]);
-      fac_ymsl_b += valmxib[i]*(mmrtrnodes[i]->xspatial()[1]);
+      mval=&valmxib;
+      mderiv=&derivmxib;
+    }
+    else
+    {
+      mval=&valmxia;
+      mderiv=&derivmxia;
     }
 
-    cmxib = -1/(fac_dxm_b*(smrtrnodes[0]->MoData().n()[1])-fac_dym_b*(smrtrnodes[0]->MoData().n()[0]));
+    for (int i=0;i<nummnode;++i)
+    {
+      fac_dxm_b  += (*mderiv)(i,0)*(mmrtrnodes[i]->xspatial()[0]);
+      fac_dym_b  += (*mderiv)(i,0)*(mmrtrnodes[i]->xspatial()[1]);
+      fac_xmsl_b += (*mval)[i]*(mmrtrnodes[i]->xspatial()[0]);
+      fac_ymsl_b += (*mval)[i]*(mmrtrnodes[i]->xspatial()[1]);
+    }
+
+    cmxib = -1/(fac_dxm_b*(normal[1])-fac_dym_b*(normal[0]));
     //std::cout << "cmxib: " << cmxib << std::endl;
 
-    fac_xmsl_b -= smrtrnodes[0]->xspatial()[0];
-    fac_ymsl_b -= smrtrnodes[0]->xspatial()[1];
+    for (int i=0; i<numsnode; ++i)
+    {
+      fac_xmsl_b -= valsxia[i]*(smrtrnodes[i]->xspatial()[0]);
+      fac_ymsl_b -= valsxia[i]*(smrtrnodes[i]->xspatial()[1]);
+    }
+
+    GEN::pairedvector<int,double> dmap_mxib(nummnode*ndof+linsize);
+
+    // add derivative of slave node coordinates
+    for (int i=0; i<numsnode; ++i)
+    {
+      dmap_mxib[smrtrnodes[i]->Dofs()[0]] -= valsxia[i]*normal[1];
+      dmap_mxib[smrtrnodes[i]->Dofs()[1]] += valsxia[i]*normal[0];
+    }
+    // add derivatives of master node coordinates
+    for (int i=0;i<nummnode;++i)
+    {
+      dmap_mxib[mmrtrnodes[i]->Dofs()[0]] += (*mval)[i]*(normal[1]);
+      dmap_mxib[mmrtrnodes[i]->Dofs()[1]] -= (*mval)[i]*(normal[0]);
+    }
+
+    // add derivative of slave node normal
+    for (_CI p=derivN[0].begin();p!=derivN[0].end();++p)
+      dmap_mxib[p->first] -= fac_ymsl_b*(p->second);
+    for (_CI p=derivN[1].begin();p!=derivN[1].end();++p)
+      dmap_mxib[p->first] += fac_xmsl_b*(p->second);
+
+    // multiply all entries with cmxib
+    for (_CI p=dmap_mxib.begin();p!=dmap_mxib.end();++p)
+      dmap_mxib[p->first] = cmxib*(p->second);
+
+    // return map to DerivM() method
+    if (sele.NormalFac()*mele.NormalFac()>0.)
+      derivxi[3] = dmap_mxib;
+    else
+      derivxi[2] = dmap_mxib;
   }
 
   // compute leading constant for DerivXiAMaster if end node = slave node
   if (endslave==true)
   {
+    // compute factors and leading constants for master
+    double cmxia = 0.0;
+    double fac_dxm_a = 0.0;
+    double fac_dym_a = 0.0;
+    double fac_xmsl_a = 0.0;
+    double fac_ymsl_a = 0.0;
+
+    double normal[2]={0.,0.};
+    sele.ComputeUnitNormalAtXi(psxib,normal);
+    std::vector<GEN::pairedvector<int,double> > derivN;
+    dynamic_cast<CONTACT::CoElement*>(&sele)->DerivUnitNormalAtXi(psxib,derivN);
+
+    LINALG::SerialDenseVector* mval=NULL;
+    LINALG::SerialDenseMatrix* mderiv=NULL;
+    if (sele.NormalFac()*mele.NormalFac()>0.)
+    {
+      mval=&valmxia;
+      mderiv=&derivmxia;
+    }
+    else
+    {
+      mval=&valmxib;
+      mderiv=&derivmxib;
+    }
+
     for (int i=0;i<nummnode;++i)
     {
-      fac_dxm_a  += derivmxia(i,0)*(mmrtrnodes[i]->xspatial()[0]);
-      fac_dym_a  += derivmxia(i,0)*(mmrtrnodes[i]->xspatial()[1]);
-      fac_xmsl_a += valmxia[i]*(mmrtrnodes[i]->xspatial()[0]);
-      fac_ymsl_a += valmxia[i]*(mmrtrnodes[i]->xspatial()[1]);
+      fac_dxm_a  += (*mderiv)(i,0)*(mmrtrnodes[i]->xspatial()[0]);
+      fac_dym_a  += (*mderiv)(i,0)*(mmrtrnodes[i]->xspatial()[1]);
+      fac_xmsl_a += (*mval)[i]*(mmrtrnodes[i]->xspatial()[0]);
+      fac_ymsl_a += (*mval)[i]*(mmrtrnodes[i]->xspatial()[1]);
     }
 
     cmxia = -1/(fac_dxm_a*(smrtrnodes[1]->MoData().n()[1])-fac_dym_a*(smrtrnodes[1]->MoData().n()[0]));
     //std::cout << "cmxia: " << cmxia << std::endl;
 
-    fac_xmsl_a -= smrtrnodes[1]->xspatial()[0];
-    fac_ymsl_a -= smrtrnodes[1]->xspatial()[1];
-  }
+    for (int i=0; i<numsnode; ++i)
+    {
+      fac_xmsl_a -= valsxib[i]*(smrtrnodes[i]->xspatial()[0]);
+      fac_ymsl_a -= valsxib[i]*(smrtrnodes[i]->xspatial()[1]);
+    }
 
-  // compute factors and leading constants for slave
-  double csxia = 0.0;
-  double csxib = 0.0;
-  double fac_dxsl_a = 0.0;
-  double fac_dysl_a = 0.0;
-  double fac_xslm_a = 0.0;
-  double fac_yslm_a = 0.0;
-  double fac_dnx_a = 0.0;
-  double fac_dny_a = 0.0;
-  double fac_nx_a = 0.0;
-  double fac_ny_a = 0.0;
-  double fac_dxsl_b = 0.0;
-  double fac_dysl_b = 0.0;
-  double fac_xslm_b = 0.0;
-  double fac_yslm_b = 0.0;
-  double fac_dnx_b = 0.0;
-  double fac_dny_b = 0.0;
-  double fac_nx_b = 0.0;
-  double fac_ny_b = 0.0;
+    GEN::pairedvector<int,double> dmap_mxia(nummnode*ndof+linsize);
+
+    // add derivative of slave node coordinates
+    for (int i=0; i<numsnode; ++i)
+    {
+      dmap_mxia[smrtrnodes[i]->Dofs()[0]] -= valsxib[i]*normal[1];
+      dmap_mxia[smrtrnodes[i]->Dofs()[1]] += valsxib[i]*normal[0];
+    }
+
+    // add derivatives of master node coordinates
+    for (int i=0;i<nummnode;++i)
+    {
+      dmap_mxia[mmrtrnodes[i]->Dofs()[0]] += (*mval)[i]*(normal[1]);
+      dmap_mxia[mmrtrnodes[i]->Dofs()[1]] -= (*mval)[i]*(normal[0]);
+    }
+
+    // add derivative of slave node normal
+    for (_CI p=derivN[0].begin();p!=derivN[0].end();++p)
+      dmap_mxia[p->first] -= fac_ymsl_a*(p->second);
+    for (_CI p=derivN[1].begin();p!=derivN[1].end();++p)
+      dmap_mxia[p->first] += fac_xmsl_a*(p->second);
+
+    // multiply all entries with cmxia
+    for (_CI p=dmap_mxia.begin();p!=dmap_mxia.end();++p)
+      dmap_mxia[p->first] = cmxia*(p->second);
+
+    // return map to DerivM() method
+    if (sele.NormalFac()*mele.NormalFac()>0.)
+      derivxi[2] = dmap_mxia;
+    else
+      derivxi[3] = dmap_mxia;
+  }
 
   // compute leading constant for DerivXiASlave if start node = master node
   if (startslave==false)
   {
+    // compute factors and leading constants for slave
+    double csxia = 0.0;
+    double fac_dxsl_a = 0.0;
+    double fac_dysl_a = 0.0;
+    double fac_xslm_a = 0.0;
+    double fac_yslm_a = 0.0;
+    double fac_dnx_a = 0.0;
+    double fac_dny_a = 0.0;
+    double fac_nx_a = 0.0;
+    double fac_ny_a = 0.0;
+
+    LINALG::SerialDenseVector* mval=NULL;
+    if (sele.NormalFac()*mele.NormalFac()>0.)
+      mval=&valmxib;
+    else
+      mval=&valmxia;
+
     for (int i=0;i<numsnode;++i)
     {
       fac_dxsl_a += derivsxia(i,0)*(smrtrnodes[i]->xspatial()[0]);
@@ -3164,116 +3287,24 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele,
       fac_ny_a   += valsxia[i]*(smrtrnodes[i]->MoData().n()[1]);
     }
 
-    fac_xslm_a -= mmrtrnodes[1]->xspatial()[0];
-    fac_yslm_a -= mmrtrnodes[1]->xspatial()[1];
+    for (int i=0; i<nummnode; ++i)
+    {
+      fac_xslm_a -= (*mval)[i]*(mmrtrnodes[i]->xspatial()[0]);
+      fac_yslm_a -= (*mval)[i]*(mmrtrnodes[i]->xspatial()[1]);
+    }
 
-    csxia = -1/(fac_dxsl_a*fac_ny_a - fac_dysl_a*fac_nx_a + fac_xslm_a*fac_dny_a - fac_yslm_a*fac_dnx_a);
+    csxia = -1./(fac_dxsl_a*fac_ny_a - fac_dysl_a*fac_nx_a + fac_xslm_a*fac_dny_a - fac_yslm_a*fac_dnx_a);
     //std::cout << "csxia: " << csxia << std::endl;
-  }
 
-  // compute leading constant for DerivXiBSlave if end node = master node
-  if (endslave==false)
-  {
-    for (int i=0;i<numsnode;++i)
-    {
-      fac_dxsl_b += derivsxib(i,0)*(smrtrnodes[i]->xspatial()[0]);
-      fac_dysl_b += derivsxib(i,0)*(smrtrnodes[i]->xspatial()[1]);
-      fac_xslm_b += valsxib[i]*(smrtrnodes[i]->xspatial()[0]);
-      fac_yslm_b += valsxib[i]*(smrtrnodes[i]->xspatial()[1]);
-      fac_dnx_b  += derivsxib(i,0)*(smrtrnodes[i]->MoData().n()[0]);
-      fac_dny_b  += derivsxib(i,0)*(smrtrnodes[i]->MoData().n()[1]);
-      fac_nx_b   += valsxib[i]*(smrtrnodes[i]->MoData().n()[0]);
-      fac_ny_b   += valsxib[i]*(smrtrnodes[i]->MoData().n()[1]);
-    }
 
-    fac_xslm_b -= mmrtrnodes[0]->xspatial()[0];
-    fac_yslm_b -= mmrtrnodes[0]->xspatial()[1];
-
-    csxib = -1/(fac_dxsl_b*fac_ny_b - fac_dysl_b*fac_nx_b + fac_xslm_b*fac_dny_b - fac_yslm_b*fac_dnx_b);
-    //std::cout << "csxib: " << csxib << std::endl;
-  }
-
-  // prepare linearizations
-  typedef GEN::pairedvector<int,double>::const_iterator _CI;
-
-  // *********************************************************************
-  // finally compute Lin(XiAB_master)
-  // *********************************************************************
-  // build DerivXiBMaster if start node = slave node
-  if (startslave==true)
-  {
-    GEN::pairedvector<int,double> dmap_mxib(nummnode*ndof+linsize);
-    GEN::pairedvector<int,double>& nxmap_b = dynamic_cast<CONTACT::CoNode*>(smrtrnodes[0])->CoData().GetDerivN()[0];
-    GEN::pairedvector<int,double>& nymap_b = dynamic_cast<CONTACT::CoNode*>(smrtrnodes[0])->CoData().GetDerivN()[1];
-
-    // add derivative of slave node coordinates
-    dmap_mxib[smrtrnodes[0]->Dofs()[0]] -= smrtrnodes[0]->MoData().n()[1];
-    dmap_mxib[smrtrnodes[0]->Dofs()[1]] += smrtrnodes[0]->MoData().n()[0];
-
-    // add derivatives of master node coordinates
-    for (int i=0;i<nummnode;++i)
-    {
-      dmap_mxib[mmrtrnodes[i]->Dofs()[0]] += valmxib[i]*(smrtrnodes[0]->MoData().n()[1]);
-      dmap_mxib[mmrtrnodes[i]->Dofs()[1]] -= valmxib[i]*(smrtrnodes[0]->MoData().n()[0]);
-    }
-
-    // add derivative of slave node normal
-    for (_CI p=nxmap_b.begin();p!=nxmap_b.end();++p)
-      dmap_mxib[p->first] -= fac_ymsl_b*(p->second);
-    for (_CI p=nymap_b.begin();p!=nymap_b.end();++p)
-      dmap_mxib[p->first] += fac_xmsl_b*(p->second);
-
-    // multiply all entries with cmxib
-    for (_CI p=dmap_mxib.begin();p!=dmap_mxib.end();++p)
-      dmap_mxib[p->first] = cmxib*(p->second);
-
-    // return map to DerivM() method
-    derivxi[3] = dmap_mxib;
-  }
-
-  // build DerivXiAMaster if end node = slave node
-  if (endslave==true)
-  {
-    GEN::pairedvector<int,double> dmap_mxia(nummnode*ndof+linsize);
-    GEN::pairedvector<int,double>& nxmap_a = dynamic_cast<CONTACT::CoNode*>(smrtrnodes[1])->CoData().GetDerivN()[0];
-    GEN::pairedvector<int,double>& nymap_a = dynamic_cast<CONTACT::CoNode*>(smrtrnodes[1])->CoData().GetDerivN()[1];
-
-    // add derivative of slave node coordinates
-    dmap_mxia[smrtrnodes[1]->Dofs()[0]] -= smrtrnodes[1]->MoData().n()[1];
-    dmap_mxia[smrtrnodes[1]->Dofs()[1]] += smrtrnodes[1]->MoData().n()[0];
-
-    // add derivatives of master node coordinates
-    for (int i=0;i<nummnode;++i)
-    {
-      dmap_mxia[mmrtrnodes[i]->Dofs()[0]] += valmxia[i]*(smrtrnodes[1]->MoData().n()[1]);
-      dmap_mxia[mmrtrnodes[i]->Dofs()[1]] -= valmxia[i]*(smrtrnodes[1]->MoData().n()[0]);
-    }
-
-    // add derivative of slave node normal
-    for (_CI p=nxmap_a.begin();p!=nxmap_a.end();++p)
-      dmap_mxia[p->first] -= fac_ymsl_a*(p->second);
-    for (_CI p=nymap_a.begin();p!=nymap_a.end();++p)
-      dmap_mxia[p->first] += fac_xmsl_a*(p->second);
-
-    // multiply all entries with cmxia
-    for (_CI p=dmap_mxia.begin();p!=dmap_mxia.end();++p)
-      dmap_mxia[p->first] = cmxia*(p->second);
-
-    // return map to DerivM() method
-    derivxi[2] = dmap_mxia;
-  }
-
-  // *********************************************************************
-  // finally compute Lin(XiAB_slave)
-  // *********************************************************************
-  // build DerivXiASlave if start node = master node
-  if (startslave==false)
-  {
     GEN::pairedvector<int,double> dmap_sxia(nummnode*ndof+linsize);
 
     // add derivative of master node coordinates
-    dmap_sxia[mmrtrnodes[1]->Dofs()[0]] -= fac_ny_a;
-    dmap_sxia[mmrtrnodes[1]->Dofs()[1]] += fac_nx_a;
+    for (int i=0; i<nummnode; ++i)
+    {
+      dmap_sxia[mmrtrnodes[i]->Dofs()[0]] -= (*mval)[i]*fac_ny_a;
+      dmap_sxia[mmrtrnodes[i]->Dofs()[1]] += (*mval)[i]*fac_nx_a;
+    }
 
     // add derivatives of slave node coordinates
     for (int i=0;i<numsnode;++i)
@@ -3300,16 +3331,58 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele,
 
     // return map to DerivM() method
     derivxi[0] = dmap_sxia;
+
   }
 
-  // build DerivXiBSlave if end node = master node
+  // compute leading constant for DerivXiBSlave if end node = master node
   if (endslave==false)
   {
+    // compute factors and leading constants for slave
+    double csxib = 0.0;
+    double fac_dxsl_b = 0.0;
+    double fac_dysl_b = 0.0;
+    double fac_xslm_b = 0.0;
+    double fac_yslm_b = 0.0;
+    double fac_dnx_b = 0.0;
+    double fac_dny_b = 0.0;
+    double fac_nx_b = 0.0;
+    double fac_ny_b = 0.0;
+
+    LINALG::SerialDenseVector* mval=NULL;
+    if (sele.NormalFac()*mele.NormalFac()>0.)
+      mval=&valmxia;
+    else
+      mval=&valmxib;
+
+    for (int i=0;i<numsnode;++i)
+    {
+      fac_dxsl_b += derivsxib(i,0)*(smrtrnodes[i]->xspatial()[0]);
+      fac_dysl_b += derivsxib(i,0)*(smrtrnodes[i]->xspatial()[1]);
+      fac_xslm_b += valsxib[i]*(smrtrnodes[i]->xspatial()[0]);
+      fac_yslm_b += valsxib[i]*(smrtrnodes[i]->xspatial()[1]);
+      fac_dnx_b  += derivsxib(i,0)*(smrtrnodes[i]->MoData().n()[0]);
+      fac_dny_b  += derivsxib(i,0)*(smrtrnodes[i]->MoData().n()[1]);
+      fac_nx_b   += valsxib[i]*(smrtrnodes[i]->MoData().n()[0]);
+      fac_ny_b   += valsxib[i]*(smrtrnodes[i]->MoData().n()[1]);
+    }
+
+    for (int i=0; i<nummnode; ++i)
+    {
+      fac_xslm_b -= (*mval)[i]*(mmrtrnodes[i]->xspatial()[0]);
+      fac_yslm_b -= (*mval)[i]*(mmrtrnodes[i]->xspatial()[1]);
+    }
+
+    csxib = -1/(fac_dxsl_b*fac_ny_b - fac_dysl_b*fac_nx_b + fac_xslm_b*fac_dny_b - fac_yslm_b*fac_dnx_b);
+    //std::cout << "csxib: " << csxib << std::endl;
+
     GEN::pairedvector<int,double> dmap_sxib(nummnode*ndof+linsize);
 
     // add derivative of master node coordinates
-    dmap_sxib[mmrtrnodes[0]->Dofs()[0]] -= fac_ny_b;
-    dmap_sxib[mmrtrnodes[0]->Dofs()[1]] += fac_nx_b;
+    for (int i=0; i<nummnode; ++i)
+    {
+      dmap_sxib[mmrtrnodes[i]->Dofs()[0]] -= (*mval)[i]*fac_ny_b;
+      dmap_sxib[mmrtrnodes[i]->Dofs()[1]] += (*mval)[i]*fac_nx_b;
+    }
 
     // add derivatives of slave node coordinates
     for (int i=0;i<numsnode;++i)

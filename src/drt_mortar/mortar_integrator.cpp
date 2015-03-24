@@ -877,10 +877,6 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(
   // get LMtype
   INPAR::MORTAR::LagMultQuad lmtype = lmquadtype_;
 
-  bool scaling = false;
-  if (scale_)
-    scaling = true;
-
   // explicitly defined shape function type needed
   if (shapefcn_ == INPAR::MORTAR::shape_undefined)
     dserror("ERROR: IntegrateDerivSegment2D called without specific shape function defined!");
@@ -980,7 +976,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(
         comm);
 
     // compute nodal scaling factor **************************************
-    if (scaling)
+    if (scale_)
       GP_2D_Scaling(sele, sval, dsxideta, wgt);
   }
 

@@ -113,9 +113,22 @@ bool MORTAR::Coupling2d::Project()
     double xi[2] =
     { 0.0, 0.0 };
 
+    if (SlaveElement().Shape()==DRT::Element::nurbs3)
+    {
+      double xinode[2]={0.,0.};
+      if (i==0) {xinode[0]=-1.;}
+      if (i==1) {xinode[0]=+1.;}
+
+      // for nurbs we need to use the Gauss point projector, since the actual spatial coords
+      // of the point to be projected is calculated by N*X using shape functions N and CP coords X
+      MORTAR::MortarProjector::Impl(SlaveElement(),mele_)->ProjectGaussPoint(SlaveElement(),xinode,mele_,xi);
+    }
+    else
+    {
     //TODO random?
-    MORTAR::MortarProjector::Impl(SlaveElement())->ProjectNodalNormal(*snode,
-        MasterElement(), xi);
+      MORTAR::MortarProjector::Impl(SlaveElement())->ProjectNodalNormal(*snode,
+          MasterElement(), xi);
+    }
 
     // save projection if it is feasible
     // we need an expanded feasible domain in order to check pathological
@@ -140,9 +153,38 @@ bool MORTAR::Coupling2d::Project()
     double xi[2] =
     { 0.0, 0.0 };
 
-    //TODO random?
-    MORTAR::MortarProjector::Impl(SlaveElement())->ProjectElementNormal(*mnode,
-        SlaveElement(), xi);
+    if (MasterElement().Shape()==DRT::Element::nurbs3)
+    {
+      double xinode[2]={0.,0.};
+      if (i==0) {xinode[0]=-1.;}
+      if (i==1) {xinode[0]=+1.;}
+
+      // for nurbs, we introduce a dummy mortar node at the actual spatial position
+      // of the master side element boundary.
+      // Hence, we need that location
+      double xm[2]={0.,0.};
+      LINALG::SerialDenseVector mval(mele_.NumNode());
+      LINALG::SerialDenseMatrix deriv(mele_.NumNode(), 1);
+      mele_.EvaluateShape(xinode, mval, deriv, mele_.NumNode());
+
+      for (int mn=0; mn<MasterElement().NumNode(); mn++)
+      {
+        MORTAR::MortarNode* mnode2 = dynamic_cast<MORTAR::MortarNode*>(mymnodes[mn]);
+        for (int dim=0; dim<2; ++dim)
+          xm[dim]+=mval(mn)*mnode2->xspatial()[dim];
+      }
+      std::vector<int> mdofs(2);
+      MORTAR::MortarNode tmp_node(mnode->Id(),&(xm[0]),mnode->Owner(),2,mdofs,false);
+      MORTAR::MortarProjector::Impl(SlaveElement())->ProjectElementNormal(tmp_node,
+              SlaveElement(), xi);
+
+    }
+    else
+    {
+      //TODO random?
+      MORTAR::MortarProjector::Impl(SlaveElement())->ProjectElementNormal(*mnode,
+          SlaveElement(), xi);
+    }
 
     // save projection if it is feasible
     // we need an expanded feasible domain in order to check pathological
@@ -300,68 +342,124 @@ bool MORTAR::Coupling2d::DetectOverlap()
   {
     overlap = true;
 
-    // internal case 1 for global CASE 6
-    // (equivalent to global CASE 7, slave fully projects onto master)
-    if ((sprojxi[0] < 1.0) && (sprojxi[1] > -1.0))
+    // switch, since nurbs might not be ordered anti-clockwise!!!
+    if (SlaveElement().NormalFac()*MasterElement().NormalFac()>0.)
     {
-      sxia = -1.0;
-      sxib = 1.0;
-      mxia = sprojxi[1]; // local node numbering always anti-clockwise!!!
-      mxib = sprojxi[0];
-      //std::cout << "Problem solved with internal case 1!" << std::endl;
+      // internal case 1 for global CASE 6
+      // (equivalent to global CASE 7, slave fully projects onto master)
+      if ((sprojxi[0] < 1.0) && (sprojxi[1] > -1.0))
+      {
+        sxia = -1.0;
+        sxib = 1.0;
+        mxia = sprojxi[1]; // local node numbering always anti-clockwise!!!
+        mxib = sprojxi[0];
+        //std::cout << "Problem solved with internal case 1!" << std::endl;
+      }
+
+      // internal case 2 for global CASE 6
+      // (equivalent to global CASE 8, master fully projects onto slave)
+      else if ((mprojxi[0] < 1.0) && (mprojxi[1] > -1.0))
+      {
+        mxia = -1.0;
+        mxib = 1.0;
+        sxia = mprojxi[1]; // local node numbering always anti-clockwise!!!
+        sxib = mprojxi[0];
+        //std::cout << "Problem solved with internal case 2!" << std::endl;
+      }
+
+      // internal case 3 for global CASE 6
+      // (equivalent to global CASE 9, both nodes no. 0 project successfully)
+      else if ((sprojxi[0] < 1.0 + MORTARPROJLIM)
+          && (mprojxi[0] < 1.0 + MORTARPROJLIM))
+      {
+        sxia = -1.0;
+        sxib = mprojxi[0]; // local node numbering always anti-clockwise!!!
+        mxia = -1.0;
+        mxib = sprojxi[0];
+        //std::cout << "Problem solved with internal case 3!" << std::endl;
+      }
+
+      // internal case 4 for global CASE 6
+      // (equivalent to global CASE 10, both nodes no. 1 project successfully)
+      else if ((sprojxi[1] > -1.0 - MORTARPROJLIM)
+          && (mprojxi[1] > -1.0 - MORTARPROJLIM))
+      {
+        sxia = mprojxi[1];
+        sxib = 1.0; // local node numbering always anti-clockwise!!!
+        mxia = sprojxi[1];
+        mxib = 1.0;
+        //std::cout << "Problem solved with internal case 4!" << std::endl;
+      }
+
+      // unknown internal case for global CASE 6
+      else
+      {
+        std::cout << "MORTAR::Coupling2d::DetectOverlap " << std::endl
+            << "has detected '4 projections'-case for Sl./Ma. pair "
+            << SlaveElement().Id() << "/" << MasterElement().Id() << std::endl;
+        std::cout << "SElement Node IDs: " << (SlaveElement().Nodes()[0])->Id()
+              << " " << (SlaveElement().Nodes()[1])->Id() << std::endl;
+        std::cout << "MElement Node IDs: " << (MasterElement().Nodes()[0])->Id()
+              << " " << (MasterElement().Nodes()[1])->Id() << std::endl;
+        std::cout << "SPROJXI_0: " << sprojxi[0] << " SPROJXI_1: " << sprojxi[1]
+                                                                              << std::endl;
+        std::cout << "MPROJXI_0: " << mprojxi[0] << " MPROJXI_1: " << mprojxi[1]
+                                                                              << std::endl;
+        dserror(
+            "ERROR: DetectOverlap: Unknown overlap case found in global case 6!");
+      }
     }
 
-    // internal case 2 for global CASE 6
-    // (equivalent to global CASE 8, master fully projects onto slave)
-    else if ((mprojxi[0] < 1.0) && (mprojxi[1] > -1.0))
-    {
-      mxia = -1.0;
-      mxib = 1.0;
-      sxia = mprojxi[1]; // local node numbering always anti-clockwise!!!
-      sxib = mprojxi[0];
-      //std::cout << "Problem solved with internal case 2!" << std::endl;
-    }
-
-    // internal case 3 for global CASE 6
-    // (equivalent to global CASE 9, both nodes no. 0 project successfully)
-    else if ((sprojxi[0] < 1.0 + MORTARPROJLIM)
-        && (mprojxi[0] < 1.0 + MORTARPROJLIM))
-    {
-      sxia = -1.0;
-      sxib = mprojxi[0]; // local node numbering always anti-clockwise!!!
-      mxia = -1.0;
-      mxib = sprojxi[0];
-      //std::cout << "Problem solved with internal case 3!" << std::endl;
-    }
-
-    // internal case 4 for global CASE 6
-    // (equivalent to global CASE 10, both nodes no. 1 project successfully)
-    else if ((sprojxi[1] > -1.0 - MORTARPROJLIM)
-        && (mprojxi[1] > -1.0 - MORTARPROJLIM))
-    {
-      sxia = mprojxi[1];
-      sxib = 1.0; // local node numbering always anti-clockwise!!!
-      mxia = sprojxi[1];
-      mxib = 1.0;
-      //std::cout << "Problem solved with internal case 4!" << std::endl;
-    }
-
-    // unknown internal case for global CASE 6
     else
     {
-      std::cout << "MORTAR::Coupling2d::DetectOverlap " << std::endl
-          << "has detected '4 projections'-case for Sl./Ma. pair "
-          << SlaveElement().Id() << "/" << MasterElement().Id() << std::endl;
-      std::cout << "SElement Node IDs: " << (SlaveElement().Nodes()[0])->Id()
-          << " " << (SlaveElement().Nodes()[1])->Id() << std::endl;
-      std::cout << "MElement Node IDs: " << (MasterElement().Nodes()[0])->Id()
-          << " " << (MasterElement().Nodes()[1])->Id() << std::endl;
-      std::cout << "SPROJXI_0: " << sprojxi[0] << " SPROJXI_1: " << sprojxi[1]
-          << std::endl;
-      std::cout << "MPROJXI_0: " << mprojxi[0] << " MPROJXI_1: " << mprojxi[1]
-          << std::endl;
-      dserror(
-          "ERROR: DetectOverlap: Unknown overlap case found in global case 6!");
+      // fully projecting slave element: equivalent to global case 7
+      if ((sprojxi[0]>-1.) && (sprojxi[1]<1.))
+      {
+        sxia = -1.0;
+        sxib = 1.0;
+        mxia = sprojxi[0];
+        mxib = sprojxi[1];
+      }
+      // fully projecting master element: equivalent to global case 8
+      else if ((mprojxi[0]>-1.) && (mprojxi[1]<1.))
+      {
+        mxia = -1.0;
+        mxib = 1.0;
+        sxia=mprojxi[0];
+        sxib=mprojxi[1];
+      }
+      // equivalent to global case 15
+      else if ((sprojxi[1] < 1.0 + MORTARPROJLIM) && (mprojxi[0] < 1.0 + MORTARPROJLIM))
+      {
+        sxia=mprojxi[0];
+        sxib=1.;
+        mxia=-1.;
+        mxib=sprojxi[1];
+      }
+      // equivalent to global case 16
+      else if ((sprojxi[0] > -1.0 - MORTARPROJLIM) && (mprojxi[1] > -1.0 - MORTARPROJLIM))
+      {
+        sxia=-1.;
+        sxib=mprojxi[1];
+        mxia=sprojxi[0];
+        mxib=1.;
+      }
+      else
+      {
+        std::cout << "MORTAR::Coupling2d::DetectOverlap " << std::endl
+            << "has detected '4 projections'-case for Sl./Ma. pair "
+            << SlaveElement().Id() << "/" << MasterElement().Id() << std::endl;
+        std::cout << "SElement Node IDs: " << (SlaveElement().Nodes()[0])->Id()
+              << " " << (SlaveElement().Nodes()[1])->Id() << std::endl;
+        std::cout << "MElement Node IDs: " << (MasterElement().Nodes()[0])->Id()
+              << " " << (MasterElement().Nodes()[1])->Id() << std::endl;
+        std::cout << "SPROJXI_0: " << sprojxi[0] << " SPROJXI_1: " << sprojxi[1]
+                                                                              << std::endl;
+        std::cout << "MPROJXI_0: " << mprojxi[0] << " MPROJXI_1: " << mprojxi[1]
+                                                                              << std::endl;
+        dserror(
+            "ERROR: DetectOverlap: Unknown overlap case found in global case 6!");
+      }
     }
   }
 
@@ -374,8 +472,17 @@ bool MORTAR::Coupling2d::DetectOverlap()
     overlap = true;
     sxia = -1.0;
     sxib = 1.0;
-    mxia = sprojxi[1]; // local node numbering always anti-clockwise!!!
-    mxib = sprojxi[0];
+    // nurbs may not be numbered anti-clockwise
+    if (SlaveElement().NormalFac()*MasterElement().NormalFac()>0.)
+    {
+      mxia = sprojxi[1]; // local node numbering always anti-clockwise!!!
+      mxib = sprojxi[0];
+    }
+    else
+    {
+      mxia = sprojxi[0];
+      mxib = sprojxi[1];
+    }
   }
 
   else if (!s0hasproj && !s1hasproj && m0hasproj && m1hasproj)
@@ -383,8 +490,17 @@ bool MORTAR::Coupling2d::DetectOverlap()
     overlap = true;
     mxia = -1.0;
     mxib = 1.0;
-    sxia = mprojxi[1]; // local node numbering always anti-clockwise!!!
-    sxib = mprojxi[0];
+    // nurbs may not be numbered anti-clockwise
+    if (SlaveElement().NormalFac()*MasterElement().NormalFac()>0.)
+    {
+      sxia = mprojxi[1]; // local node numbering always anti-clockwise!!!
+      sxib = mprojxi[0];
+    }
+    else
+    {
+      sxia=mprojxi[0];
+      sxib=mprojxi[1];
+    }
   }
 
   /* CASES 9-10 (OVERLAP):
@@ -403,6 +519,16 @@ bool MORTAR::Coupling2d::DetectOverlap()
       mxia = -1.0;
       mxib = sprojxi[0];
     }
+    if (SlaveElement().NormalFac()*MasterElement().NormalFac()<0.)
+    {
+      std::cout << "SElement: " << SlaveElement().NodeIds()[0] << " "
+          << SlaveElement().NodeIds()[1] << std::endl;
+      std::cout << "MElement: " << MasterElement().NodeIds()[0] << " "
+          << MasterElement().NodeIds()[1] << std::endl;
+      std::cout << "s0: " << s0hasproj << " s1: " << s1hasproj << std::endl;
+      std::cout << "m0: " << m0hasproj << " m1: " << m1hasproj << std::endl;
+      dserror("ERROR: IntegrateOverlap: Unknown overlap case found!");
+    }
   }
 
   else if (!s0hasproj && s1hasproj && !m0hasproj && m1hasproj)
@@ -417,6 +543,16 @@ bool MORTAR::Coupling2d::DetectOverlap()
       mxia = sprojxi[1];
       mxib = 1.0;
     }
+    if (SlaveElement().NormalFac()*MasterElement().NormalFac()<0.)
+    {
+      std::cout << "SElement: " << SlaveElement().NodeIds()[0] << " "
+          << SlaveElement().NodeIds()[1] << std::endl;
+      std::cout << "MElement: " << MasterElement().NodeIds()[0] << " "
+          << MasterElement().NodeIds()[1] << std::endl;
+      std::cout << "s0: " << s0hasproj << " s1: " << s1hasproj << std::endl;
+      std::cout << "m0: " << m0hasproj << " m1: " << m1hasproj << std::endl;
+      dserror("ERROR: IntegrateOverlap: Unknown overlap case found!");
+    }
   }
 
   /* CASES 11-14 (OVERLAP):
@@ -425,84 +561,235 @@ bool MORTAR::Coupling2d::DetectOverlap()
   else if (s0hasproj && s1hasproj && m0hasproj && !m1hasproj)
   {
     overlap = true;
-    // equivalent to global case 7
-    if (mprojxi[0] > 1.0)
+
+    // switch, since nurbs might not be ordered anti-clockwise!!!
+    if (SlaveElement().NormalFac()*MasterElement().NormalFac()>0.)
     {
-      sxia = -1.0;
-      sxib = 1.0;
-      mxia = sprojxi[1]; // local node numbering always anti-clockwise!!!
-      mxib = sprojxi[0];
+      // equivalent to global case 7
+      if (mprojxi[0] > 1.0)
+      {
+        sxia = -1.0;
+        sxib = 1.0;
+        mxia = sprojxi[1]; // local node numbering always anti-clockwise!!!
+        mxib = sprojxi[0];
+      }
+      // equivalent to global case 9
+      else
+      {
+        sxia = -1.0;
+        sxib = mprojxi[0]; // local node numbering always anti-clockwise!!!
+        mxia = -1.0;
+        mxib = sprojxi[0];
+      }
     }
-    // equivalent to global case 9
     else
     {
-      sxia = -1.0;
-      sxib = mprojxi[0]; // local node numbering always anti-clockwise!!!
-      mxia = -1.0;
-      mxib = sprojxi[0];
+      // equivalent to global case 7
+      if (mprojxi[0]<-1.)
+      {
+        sxia = -1.0;
+        sxib = 1.0;
+        mxia = sprojxi[0];
+        mxib = sprojxi[1];
+      }
+      // equivalent to global case 15
+      else
+      {
+        sxia=mprojxi[0];
+        sxib=1.;
+        mxia=-1.;
+        mxib=sprojxi[1];
+      }
     }
   }
 
   else if (s0hasproj && s1hasproj && !m0hasproj && m1hasproj)
   {
     overlap = true;
-    // equivalent to global case 7
-    if (mprojxi[1] < -1.0)
+
+    // switch, since nurbs might not be ordered anti-clockwise!!!
+    if (SlaveElement().NormalFac()*MasterElement().NormalFac()>0.)
     {
-      sxia = -1.0;
-      sxib = 1.0;
-      mxia = sprojxi[1]; // local node numbering always anti-clockwise!!!
-      mxib = sprojxi[0];
+      // equivalent to global case 7
+      if (mprojxi[1] < -1.0)
+      {
+        sxia = -1.0;
+        sxib = 1.0;
+        mxia = sprojxi[1]; // local node numbering always anti-clockwise!!!
+        mxib = sprojxi[0];
+      }
+      // equivalent to global case 10
+      else
+      {
+        sxia = mprojxi[1];
+        sxib = 1.0; // local node numbering always anti-clockwise!!!
+        mxia = sprojxi[1];
+        mxib = 1.0;
+      }
     }
-    // equivalent to global case 10
+
     else
     {
-      sxia = mprojxi[1];
-      sxib = 1.0; // local node numbering always anti-clockwise!!!
-      mxia = sprojxi[1];
-      mxib = 1.0;
+      // equivalent to global case 7
+      if (mprojxi[1]>1.)
+      {
+        sxia=-1.;
+        sxib= 1.;
+        mxia=sprojxi[0];
+        mxib=sprojxi[1];
+      }
+      // equivalent to global case 16
+      else
+      {
+        sxia=-1.;
+        sxib=mprojxi[1];
+        mxia=sprojxi[0];
+        mxib=1.;
+      }
     }
   }
 
   else if (s0hasproj && !s1hasproj && m0hasproj && m1hasproj)
   {
     overlap = true;
-    // equivalent to global case 8
-    if (sprojxi[0] > 1.0)
+
+    // switch, since nurbs might not be ordered anti-clockwise!!!
+    if (SlaveElement().NormalFac()*MasterElement().NormalFac()>0.)
     {
-      mxia = -1.0;
-      mxib = 1.0;
-      sxia = mprojxi[1]; // local node numbering always anti-clockwise!!!
-      sxib = mprojxi[0];
+      // equivalent to global case 8
+      if (sprojxi[0] > 1.0)
+      {
+        mxia = -1.0;
+        mxib = 1.0;
+        sxia = mprojxi[1]; // local node numbering always anti-clockwise!!!
+        sxib = mprojxi[0];
+      }
+      // equivalent to global case 9
+      else
+      {
+        sxia = -1.0;
+        sxib = mprojxi[0]; // local node numbering always anti-clockwise!!!
+        mxia = -1.0;
+        mxib = sprojxi[0];
+      }
     }
-    // equivalent to global case 9
     else
     {
-      sxia = -1.0;
-      sxib = mprojxi[0]; // local node numbering always anti-clockwise!!!
-      mxia = -1.0;
-      mxib = sprojxi[0];
+      // equivalent to global case 8
+      if (sprojxi[0]<-1.)
+      {
+        mxia = -1.0;
+        mxib = 1.0;
+        sxia = mprojxi[0];
+        sxib = mprojxi[1];
+      }
+      // equivalent to global case 16
+      else
+      {
+        sxia=-1.;
+        sxib=mprojxi[1];
+        mxia=sprojxi[0];
+        mxib=1.;
+      }
     }
   }
 
   else if (!s0hasproj && s1hasproj && m0hasproj && m1hasproj)
   {
     overlap = true;
-    // equivalent to global case 8
-    if (sprojxi[1] < -1.0)
+
+    // switch, since nurbs might not be ordered anti-clockwise!!!
+    if (SlaveElement().NormalFac()*MasterElement().NormalFac()>0.)
     {
-      mxia = -1.0;
-      mxib = 1.0;
-      sxia = mprojxi[1]; // local node numbering always anti-clockwise!!!
-      sxib = mprojxi[0];
+      // equivalent to global case 8
+      if (sprojxi[1] < -1.0)
+      {
+        mxia = -1.0;
+        mxib = 1.0;
+        sxia = mprojxi[1]; // local node numbering always anti-clockwise!!!
+        sxib = mprojxi[0];
+      }
+      // equivalent to global case 10
+      else
+      {
+        sxia = mprojxi[1];
+        sxib = 1.0; // local node numbering always anti-clockwise!!!
+        mxia = sprojxi[1];
+        mxib = 1.0;
+      }
     }
-    // equivalent to global case 10
     else
     {
-      sxia = mprojxi[1];
-      sxib = 1.0; // local node numbering always anti-clockwise!!!
-      mxia = sprojxi[1];
-      mxib = 1.0;
+      // equivalent to global case 8
+      if (sprojxi[1]>1.)
+      {
+        mxia=-1.;
+        mxib=1.;
+        sxia=mprojxi[0];
+        sxib=mprojxi[1];
+      }
+      // equivalent to global case 15
+      else
+      {
+        sxia=mprojxi[0];
+        sxib=1.;
+        mxia=-1.;
+        mxib=sprojxi[1];
+      }
+    }
+  }
+
+  /* CASES 15-16 (OVERLAP):
+   feasible projections found for one node of each element, due to
+   node numbering opposite local node ID pairs possible only for nurbs! */
+
+  else if (!s0hasproj && s1hasproj && m0hasproj && !m1hasproj)
+  {
+    // only possible, if slave and master side have opposite normal-fac
+    if (SlaveElement().NormalFac()*MasterElement().NormalFac()>0.)
+    {
+      std::cout << "SElement: " << SlaveElement().NodeIds()[0] << " "
+          << SlaveElement().NodeIds()[1] << std::endl;
+      std::cout << "MElement: " << MasterElement().NodeIds()[0] << " "
+          << MasterElement().NodeIds()[1] << std::endl;
+      std::cout << "s0: " << s0hasproj << " s1: " << s1hasproj << std::endl;
+      std::cout << "m0: " << m0hasproj << " m1: " << m1hasproj << std::endl;
+      dserror("ERROR: IntegrateOverlap: Unknown overlap case found!");
+    }
+    if (sprojxi[0]<-1. || mprojxi[0]>1.)
+      overlap=false;
+    else
+    {
+      overlap = true;
+      sxia=mprojxi[0];
+      sxib=1.;
+      mxia=-1.;
+      mxib=sprojxi[1];
+    }
+  }
+
+  else if (s0hasproj && !s1hasproj && !m0hasproj && m1hasproj)
+  {
+    // only possible, if slave and master side have opposite normal-fac
+    if (SlaveElement().NormalFac()*MasterElement().NormalFac()>0.)
+    {
+      std::cout << "SElement: " << SlaveElement().NodeIds()[0] << " "
+          << SlaveElement().NodeIds()[1] << std::endl;
+      std::cout << "MElement: " << MasterElement().NodeIds()[0] << " "
+          << MasterElement().NodeIds()[1] << std::endl;
+      std::cout << "s0: " << s0hasproj << " s1: " << s1hasproj << std::endl;
+      std::cout << "m0: " << m0hasproj << " m1: " << m1hasproj << std::endl;
+      dserror("ERROR: IntegrateOverlap: Unknown overlap case found!");
+    }
+    if (sprojxi[0]>1.)
+      overlap=false;
+    else
+    {
+      overlap=true;
+      sxia=-1.;
+      sxib=mprojxi[1];
+      mxia=sprojxi[0];
+      mxib=1.;
     }
   }
 
@@ -899,9 +1186,13 @@ void MORTAR::Coupling2dManager::ConsistDualShape()
   if (ShapeFcn() == INPAR::MORTAR::shape_standard || consistent==false)
     return;
 
-  // Consistent modification only for linear LM interpolation
-  if (Quad()==true && consistent==true)
+  // Consistent modification only for linear LM interpolation or NURBS
+  if (Quad()==true && consistent==true && !SlaveElement().IsNurbs())
     dserror("Consistent dual shape functions in boundary elements only for linear LM interpolation");
+
+  // not implemented for nurbs yet
+  if (SlaveElement().Shape()==DRT::Element::nurbs3)
+    dserror("Consistent dual shape functions not yet implmented for nurbs");
 
   // do nothing if there are no coupling pairs
   if (Coupling().size()==0)
@@ -927,7 +1218,7 @@ void MORTAR::Coupling2dManager::ConsistDualShape()
   }
 
   // no overlap: the applied dual shape functions don't matter, as the integration domain is void
-  if ((ximax==-1.0 && ximin==1.0) || (ximin==ximax))
+  if ((ximax==-1.0 && ximin==1.0) || (ximax-ximin<4.*MORTARINTLIM))
     return;
 
   // fully projecting element: no modification necessary

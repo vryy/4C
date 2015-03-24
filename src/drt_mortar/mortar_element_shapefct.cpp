@@ -2417,33 +2417,40 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(
       // establish fundamental data
       double detg = 0.0;
       const int nnodes = 3;
-
-      // compute entries to bi-ortho matrices me/de with Gauss quadrature
-      MORTAR::ElementIntegrator integrator(Shape());
-
-      LINALG::Matrix<nnodes, nnodes> me(true);
-      LINALG::Matrix<nnodes, nnodes> de(true);
-      LINALG::Matrix<nnodes, nnodes> ae;
-
-      for (int i = 0; i < integrator.nGP(); ++i)
+      LINALG::SerialDenseMatrix ae(nnodes, nnodes);
+      if (MoData().DualShape()==Teuchos::null)
       {
-        double gpc[2] =
-        { integrator.Coordinate(i, 0), integrator.Coordinate(i, 1) };
-        EvaluateShape(gpc, val, deriv, nnodes);
-        detg = Jacobian(gpc);
+        // compute entries to bi-ortho matrices me/de with Gauss quadrature
+        MORTAR::ElementIntegrator integrator(Shape());
 
-        for (int j = 0; j < nnodes; ++j)
+        LINALG::Matrix<nnodes, nnodes> me(true);
+        LINALG::Matrix<nnodes, nnodes> de(true);
+
+        for (int i = 0; i < integrator.nGP(); ++i)
         {
-          for (int k = 0; k < nnodes; ++k)
+          double gpc[2] =
+          { integrator.Coordinate(i, 0), integrator.Coordinate(i, 1) };
+          EvaluateShape(gpc, val, deriv, nnodes);
+          detg = Jacobian(gpc);
+
+          for (int j = 0; j < nnodes; ++j)
           {
-            me(j, k) += integrator.Weight(i) * val[j] * val[k] * detg;
-            de(j, k) += (j == k) * integrator.Weight(i) * val[j] * detg;
+            for (int k = 0; k < nnodes; ++k)
+            {
+              me(j, k) += integrator.Weight(i) * val[j] * val[k] * detg;
+              de(j, k) += (j == k) * integrator.Weight(i) * val[j] * detg;
+            }
           }
         }
-      }
 
-      // get solution matrix with dual parameters
-      LINALG::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
+        // get solution matrix with dual parameters
+        LINALG::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
+
+        // store coefficient matrix
+        MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
+      }
+      else
+        ae = *(MoData().DualShape());
 
       // evaluate dual shape functions at loc. coord. xi
       // need standard shape functions at xi first
