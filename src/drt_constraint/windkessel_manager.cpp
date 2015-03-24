@@ -390,7 +390,7 @@ void UTILS::WindkesselManager::StiffnessAndInternalForces(
 
   // import into compartment vol vector at mid-point
   compvolm_->PutScalar(0.0);
-  compvolm_->Export(*compvolmred,*windkimpo_,Add);
+  compvolm_->Export(*compvolmred,*windkimpo_,Insert);
 
   windk_rhs_wkdof_->PutScalar(0.0);
   windk_rhs_wkdof_->Export(*windk_rhs_wkdof_red,*windkimpo_,Insert);
