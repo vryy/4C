@@ -216,10 +216,21 @@ namespace UTILS
     Teuchos::ParameterList& WkParams() { return wkparams_; }
 
     /// Reset reference base values for restart computations
-    void SetRefBaseValues
+    void SetRefVolValue
     (
-      Teuchos::RCP<Epetra_Vector> newrefvals,  ///< new reference base values
-      const double& time   ///< current time
+      Teuchos::RCP<Epetra_Vector> newrefval  ///< new reference base values
+    );
+    void SetRefFluxValue
+    (
+      Teuchos::RCP<Epetra_Vector> newrefval  ///< new reference base values
+    );
+    void SetRefDFluxValue
+    (
+      Teuchos::RCP<Epetra_Vector> newrefval  ///< new reference base values
+    );
+    void SetRefDDFluxValue
+    (
+      Teuchos::RCP<Epetra_Vector> newrefval  ///< new reference base values
     );
 
     /// Reset dofs
@@ -239,6 +250,18 @@ namespace UTILS
     Teuchos::RCP<Epetra_Vector> GetRefVolValue() const
     {
       return v_;
+    }
+    Teuchos::RCP<Epetra_Vector> GetRefFluxValue() const
+    {
+      return Q_;
+    }
+    Teuchos::RCP<Epetra_Vector> GetRefDFluxValue() const
+    {
+      return dQ_;
+    }
+    Teuchos::RCP<Epetra_Vector> GetRefDDFluxValue() const
+    {
+      return ddQ_;
     }
 
     //! switch Windkessel matrix to block matrix

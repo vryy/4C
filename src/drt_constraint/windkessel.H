@@ -120,12 +120,6 @@ namespace UTILS
       Teuchos::RCP<Epetra_Vector>    sysvec
     );
 
-    /// initialization routine called at restart to activate the right conditions
-    void Initialize
-    (
-      const double& time  ///< current time
-    );
-
     //! Evaluate routine to call from outside. In here the right action is determined and the #EvaluateWindkessel routine is called
     void Evaluate
     (

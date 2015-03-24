@@ -2209,8 +2209,14 @@ void STR::TimInt::OutputRestart
   {
     output_->WriteVector("wkdof",
                           windkman_->GetWkDofVector());
-    output_->WriteVector("refwindkval",
+    output_->WriteVector("refvolval",
                           windkman_->GetRefVolValue());
+    output_->WriteVector("reffluxval",
+                          windkman_->GetRefFluxValue());
+    output_->WriteVector("refdfluxval",
+                          windkman_->GetRefDFluxValue());
+    output_->WriteVector("refddfluxval",
+                          windkman_->GetRefDDFluxValue());
   }
 
   // contact and meshtying
@@ -2343,8 +2349,14 @@ void STR::TimInt::AddRestartToOutputState()
   {
     output_->WriteVector("wkdof",
                           windkman_->GetWkDofVector());
-    output_->WriteVector("refwindkval",
+    output_->WriteVector("refvolval",
                           windkman_->GetRefVolValue());
+    output_->WriteVector("reffluxval",
+                          windkman_->GetRefFluxValue());
+    output_->WriteVector("refdfluxval",
+                          windkman_->GetRefDFluxValue());
+    output_->WriteVector("refddfluxval",
+                          windkman_->GetRefDDFluxValue());
   }
 
   // contact/meshtying

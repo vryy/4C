@@ -3951,10 +3951,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          DRT::Condition::Surface));
 
   AddNamedInt(windkesselheartvalvearterialcond,"id");
-  AddNamedReal(windkesselheartvalvearterialcond,"R_av_max");
-  AddNamedReal(windkesselheartvalvearterialcond,"R_av_min");
-  AddNamedReal(windkesselheartvalvearterialcond,"R_mv_max");
-  AddNamedReal(windkesselheartvalvearterialcond,"R_mv_min");
+  AddNamedReal(windkesselheartvalvearterialcond,"R_arvalve_max");
+  AddNamedReal(windkesselheartvalvearterialcond,"R_arvalve_min");
+  AddNamedReal(windkesselheartvalvearterialcond,"R_atvalve_max");
+  AddNamedReal(windkesselheartvalvearterialcond,"R_atvalve_min");
   AddNamedReal(windkesselheartvalvearterialcond,"k_p");
   AddNamedReal(windkesselheartvalvearterialcond,"C");
   AddNamedReal(windkesselheartvalvearterialcond,"R_p");
@@ -3987,10 +3987,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          DRT::Condition::Surface));
 
   AddNamedInt(windkesselheartvalvearterialproxdistcond,"id");
-  AddNamedReal(windkesselheartvalvearterialproxdistcond,"R_av_max");
-  AddNamedReal(windkesselheartvalvearterialproxdistcond,"R_av_min");
-  AddNamedReal(windkesselheartvalvearterialproxdistcond,"R_mv_max");
-  AddNamedReal(windkesselheartvalvearterialproxdistcond,"R_mv_min");
+  AddNamedReal(windkesselheartvalvearterialproxdistcond,"R_arvalve_max");
+  AddNamedReal(windkesselheartvalvearterialproxdistcond,"R_arvalve_min");
+  AddNamedReal(windkesselheartvalvearterialproxdistcond,"R_atvalve_max");
+  AddNamedReal(windkesselheartvalvearterialproxdistcond,"R_atvalve_min");
   AddNamedReal(windkesselheartvalvearterialproxdistcond,"k_p");
   AddNamedReal(windkesselheartvalvearterialproxdistcond,"L_arp");
   AddNamedReal(windkesselheartvalvearterialproxdistcond,"C_arp");

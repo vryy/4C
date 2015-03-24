@@ -495,7 +495,7 @@ void UTILS::WindkesselManager::UpdateWkDof(Teuchos::RCP<Epetra_Vector> wkdofincr
 }
 
 /*----------------------------------------------------------------------*
-|(public)                                                  pfaller 06/14|
+|(public)                                                      mhv 03/15|
 |Read restart information                                               |
  *-----------------------------------------------------------------------*/
 void UTILS::WindkesselManager::ReadRestart(IO::DiscretizationReader& reader,const double& time)
@@ -510,8 +510,14 @@ void UTILS::WindkesselManager::ReadRestart(IO::DiscretizationReader& reader,cons
 
     reader.ReadVector(tempvec, "wkdof");
     SetWkDofVector(tempvec);
-    reader.ReadVector(tempvec, "refwindkval");
-    SetRefBaseValues(tempvec, time);
+    reader.ReadVector(tempvec, "refvolval");
+    SetRefVolValue(tempvec);
+    reader.ReadVector(tempvec, "reffluxval");
+    SetRefFluxValue(tempvec);
+    reader.ReadVector(tempvec, "refdfluxval");
+    SetRefDFluxValue(tempvec);
+    reader.ReadVector(tempvec, "refddfluxval");
+    SetRefDDFluxValue(tempvec);
   }
 
   return;
@@ -521,14 +527,32 @@ void UTILS::WindkesselManager::ReadRestart(IO::DiscretizationReader& reader,cons
 |(public)                                                      mhv 12/13|
 |Reset reference base values for restart                                |
  *-----------------------------------------------------------------------*/
-void UTILS::WindkesselManager::SetRefBaseValues(Teuchos::RCP<Epetra_Vector> newrefval,const double& time)
+void UTILS::WindkesselManager::SetRefVolValue(Teuchos::RCP<Epetra_Vector> newrefval)
 {
-  wk_std_->Initialize(time);
-  wk_heartvalvearterial_->Initialize(time);
-  wk_heartvalvearterial_proxdist_->Initialize(time);
-  wk_heartvalvecardiovascular_full_->Initialize(time);
 
-  v_->Update(1.0, *newrefval,0.0);
+  v_->Update(1.0,*newrefval,0.0);
+
+  return;
+}
+void UTILS::WindkesselManager::SetRefFluxValue(Teuchos::RCP<Epetra_Vector> newrefval)
+{
+
+  Q_->Update(1.0,*newrefval,0.0);
+
+  return;
+}
+void UTILS::WindkesselManager::SetRefDFluxValue(Teuchos::RCP<Epetra_Vector> newrefval)
+{
+
+  dQ_->Update(1.0,*newrefval,0.0);
+
+  return;
+}
+void UTILS::WindkesselManager::SetRefDDFluxValue(Teuchos::RCP<Epetra_Vector> newrefval)
+{
+
+  ddQ_->Update(1.0,*newrefval,0.0);
+
   return;
 }
 

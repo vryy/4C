@@ -163,33 +163,6 @@ UTILS::Windkessel::Windkessel(Teuchos::RCP<DRT::Discretization> discr,
 }
 
 
-/*----------------------------------------------------------------------*
- |  ctor (public)                                              mhv 10/13|
- *----------------------------------------------------------------------*/
-UTILS::Windkessel::Windkessel(Teuchos::RCP<DRT::Discretization> discr,
-    const std::string& conditionname):
-    actdisc_(discr)
-{
-  actdisc_->GetCondition(conditionname,windkesselcond_);
-
-  if (windkesselcond_.size())
-  {
-    windkesseltype_=GetWindkesselType(conditionname);
-    for (unsigned int i=0; i<windkesselcond_.size();i++)
-    {
-
-      int condID=windkesselcond_[i]->GetInt("id");
-      inittimes_.insert(std::pair<int,double>(condID,0.0));
-      activecons_.insert(std::pair<int,bool>(condID,false));
-
-    }
-  }
-  else
-  {
-    windkesseltype_=none;
-  }
-}
-
 /*-----------------------------------------------------------------------*
 |(private)                                                      mhv 10/13|
  *-----------------------------------------------------------------------*/
@@ -244,33 +217,6 @@ void UTILS::Windkessel::Initialize(
   return;
 }
 
-/*------------------------------------------------------------------------*
-|(public)                                                      mhv 12/13  |
-|Initialization routine activates conditions (restart)                    |
- *------------------------------------------------------------------------*/
-void UTILS::Windkessel::Initialize
-(
-    const double& time
-)
-{
-  for (unsigned int i = 0; i < windkesselcond_.size(); ++i)
-  {
-    DRT::Condition& cond = *(windkesselcond_[i]);
-
-    // Get ConditionID of current condition if defined and write value in parameterlist
-    int condID=cond.GetInt("id");
-
-    // if current time (at) is larger than activation time of the condition, activate it
-    if((inittimes_.find(condID)->second<=time) && (activecons_.find(condID)->second==false))
-    {
-      activecons_.find(condID)->second=true;
-      if (actdisc_->Comm().MyPID()==0)
-      {
-        std::cout << "Encountered another active condition (Id = " << condID << ")  for restart time t = "<< time << std::endl;
-      }
-    }
-  }
-}
 
 /*-----------------------------------------------------------------------*
 |(public)                                                       mhv 10/13|
@@ -811,10 +757,10 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
     int condID=cond.GetInt("id");
     params.set("id",condID);
 
-    double R_av_max = windkesselcond_[condID]->GetDouble("R_av_max");
-    double R_av_min = windkesselcond_[condID]->GetDouble("R_av_min");
-    double R_mv_max = windkesselcond_[condID]->GetDouble("R_mv_max");
-    double R_mv_min = windkesselcond_[condID]->GetDouble("R_mv_min");
+    double R_arvalve_max = windkesselcond_[condID]->GetDouble("R_arvalve_max");
+    double R_arvalve_min = windkesselcond_[condID]->GetDouble("R_arvalve_min");
+    double R_atvalve_max = windkesselcond_[condID]->GetDouble("R_atvalve_max");
+    double R_atvalve_min = windkesselcond_[condID]->GetDouble("R_atvalve_min");
     double k_p = windkesselcond_[condID]->GetDouble("k_p");
 
     double C = windkesselcond_[condID]->GetDouble("C");
@@ -852,12 +798,12 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
 
     double p_at = 0.;
 
-    double Rav = 0.;
-    double Rmv = 0.;
+    double Rarvlv = 0.;
+    double Ratvlv = 0.;
 
-    double dRavdpv = 0.;
-    double dRmvdpv = 0.;
-    double dRavdpar = 0.;
+    double dRarvlvdpv = 0.;
+    double dRatvlvdpv = 0.;
+    double dRarvlvdpar = 0.;
 
     //for piecewise linear law - not used anymore!
     double K_at = 0.;
@@ -876,27 +822,27 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
       p_at = p_at_fac * curvefac;
 
       //nonlinear aortic and mitral valve resistances
-      Rav = 0.5*(R_av_max - R_av_min)*(tanh((p_ar-p_v)/k_p) + 1.) + R_av_min;
-      Rmv = 0.5*(R_mv_max - R_mv_min)*(tanh((p_v-p_at)/k_p) + 1.) + R_mv_min;
+      Rarvlv = 0.5*(R_arvalve_max - R_arvalve_min)*(tanh((p_ar-p_v)/k_p) + 1.) + R_arvalve_min;
+      Ratvlv = 0.5*(R_atvalve_max - R_atvalve_min)*(tanh((p_v-p_at)/k_p) + 1.) + R_atvalve_min;
 
-      dRavdpv = (R_av_max - R_av_min)*(1.-tanh((p_ar-p_v)/k_p)*tanh((p_ar-p_v)/k_p)) / (-2.*k_p);
-      dRmvdpv = (R_mv_max - R_mv_min)*(1.-tanh((p_v-p_at)/k_p)*tanh((p_v-p_at)/k_p)) / (2.*k_p);
-      dRavdpar = (R_av_max - R_av_min)*(1.-tanh((p_ar-p_v)/k_p)*tanh((p_ar-p_v)/k_p)) / (2.*k_p);
+      dRarvlvdpv = (R_arvalve_max - R_arvalve_min)*(1.-tanh((p_ar-p_v)/k_p)*tanh((p_ar-p_v)/k_p)) / (-2.*k_p);
+      dRatvlvdpv = (R_atvalve_max - R_atvalve_min)*(1.-tanh((p_v-p_at)/k_p)*tanh((p_v-p_at)/k_p)) / (2.*k_p);
+      dRarvlvdpar = (R_arvalve_max - R_arvalve_min)*(1.-tanh((p_ar-p_v)/k_p)*tanh((p_ar-p_v)/k_p)) / (2.*k_p);
 
-      K_at = 1./R_mv_min;
-      K_p = 1./R_av_max;
-      K_ar = 1./R_av_min;
+      K_at = 1./R_atvalve_min;
+      K_p = 1./R_arvalve_max;
+      K_ar = 1./R_arvalve_min;
 
       // fill multipliers for rhs vector
       // smooth nonlinear valve law
       if (*valvelaw == "smooth")
       {
-        factor_wkdof[0] = 1./Rav + 1./Rmv;
+        factor_wkdof[0] = 1./Rarvlv + 1./Ratvlv;
         factor_dwkdof[0] = 0.;
         factor_Q[0] = -1.;
         factor_dQ[0] = 0.;
         factor_ddQ[0] = 0.;
-        factor_1[0] = -p_at/Rmv - p_ar/Rav;
+        factor_1[0] = -p_at/Ratvlv - p_ar/Rarvlv;
       }
       // piecewise linear valve law
       if (*valvelaw == "pwlin")
@@ -976,8 +922,8 @@ void UTILS::Windkessel::EvaluateHeartValveArterialWindkessel(
       // stiffness entries for smooth nonlinear valve law
       if (*valvelaw == "smooth")
       {
-        wkstiff(0,0) = theta * ((p_v-p_at)*dRmvdpv/(-Rmv*Rmv) + 1./Rmv + (p_v-p_ar)*dRavdpv/(-Rav*Rav) + 1./Rav);
-        wkstiff(0,1) = theta * ((p_v-p_ar)*dRavdpar/(-Rav*Rav) - 1./Rav);
+        wkstiff(0,0) = theta * ((p_v-p_at)*dRatvlvdpv/(-Ratvlv*Ratvlv) + 1./Ratvlv + (p_v-p_ar)*dRarvlvdpv/(-Rarvlv*Rarvlv) + 1./Rarvlv);
+        wkstiff(0,1) = theta * ((p_v-p_ar)*dRarvlvdpar/(-Rarvlv*Rarvlv) - 1./Rarvlv);
       }
       // stiffness entries for piecewise linear valve law
       if (*valvelaw == "pwlin")
@@ -1355,10 +1301,10 @@ void UTILS::Windkessel::EvaluateHeartValveArterialProxDistWindkessel(
     int condID=cond.GetInt("id");
     params.set("id",condID);
 
-    double R_av_max = windkesselcond_[condID]->GetDouble("R_av_max");
-    double R_av_min = windkesselcond_[condID]->GetDouble("R_av_min");
-    double R_mv_max = windkesselcond_[condID]->GetDouble("R_mv_max");
-    double R_mv_min = windkesselcond_[condID]->GetDouble("R_mv_min");
+    double R_arvalve_max = windkesselcond_[condID]->GetDouble("R_arvalve_max");
+    double R_arvalve_min = windkesselcond_[condID]->GetDouble("R_arvalve_min");
+    double R_atvalve_max = windkesselcond_[condID]->GetDouble("R_atvalve_max");
+    double R_atvalve_min = windkesselcond_[condID]->GetDouble("R_atvalve_min");
     double k_p = windkesselcond_[condID]->GetDouble("k_p");
 
     double L_arp = windkesselcond_[condID]->GetDouble("L_arp");
@@ -1395,12 +1341,12 @@ void UTILS::Windkessel::EvaluateHeartValveArterialProxDistWindkessel(
 
     double p_at = 0.;
 
-    double Rav = 0.;
-    double Rmv = 0.;
+    double Rarvlv = 0.;
+    double Ratvlv = 0.;
 
-    double dRavdpv = 0.;
-    double dRmvdpv = 0.;
-    double dRavdparp = 0.;
+    double dRarvlvdpv = 0.;
+    double dRatvlvdpv = 0.;
+    double dRarvlvdparp = 0.;
 
     if (assvec1 or assvec2 or assvec3 or assvec4 or assvec6)
     {
@@ -1414,23 +1360,23 @@ void UTILS::Windkessel::EvaluateHeartValveArterialProxDistWindkessel(
       p_at = p_at_fac * curvefac;
 
       //nonlinear aortic and mitral valve resistances
-      Rav = 0.5*(R_av_max - R_av_min)*(tanh((p_arp-p_v)/k_p) + 1.) + R_av_min;
-      Rmv = 0.5*(R_mv_max - R_mv_min)*(tanh((p_v-p_at)/k_p) + 1.) + R_mv_min;
+      Rarvlv = 0.5*(R_arvalve_max - R_arvalve_min)*(tanh((p_arp-p_v)/k_p) + 1.) + R_arvalve_min;
+      Ratvlv = 0.5*(R_atvalve_max - R_atvalve_min)*(tanh((p_v-p_at)/k_p) + 1.) + R_atvalve_min;
 
-      dRavdpv = (R_av_max - R_av_min)*(1.-tanh((p_arp-p_v)/k_p)*tanh((p_arp-p_v)/k_p)) / (-2.*k_p);
-      dRmvdpv = (R_mv_max - R_mv_min)*(1.-tanh((p_v-p_at)/k_p)*tanh((p_v-p_at)/k_p)) / (2.*k_p);
-      dRavdparp = (R_av_max - R_av_min)*(1.-tanh((p_arp-p_v)/k_p)*tanh((p_arp-p_v)/k_p)) / (2.*k_p);
+      dRarvlvdpv = (R_arvalve_max - R_arvalve_min)*(1.-tanh((p_arp-p_v)/k_p)*tanh((p_arp-p_v)/k_p)) / (-2.*k_p);
+      dRatvlvdpv = (R_atvalve_max - R_atvalve_min)*(1.-tanh((p_v-p_at)/k_p)*tanh((p_v-p_at)/k_p)) / (2.*k_p);
+      dRarvlvdparp = (R_arvalve_max - R_arvalve_min)*(1.-tanh((p_arp-p_v)/k_p)*tanh((p_arp-p_v)/k_p)) / (2.*k_p);
 
       // fill multipliers for rhs vector
-      factor_wkdof[0] = 1./Rav + 1./Rmv;
+      factor_wkdof[0] = 1./Rarvlv + 1./Ratvlv;
       factor_dwkdof[0] = 0.;
       factor_Q[0] = -1.;
-      factor_1[0] = -p_at/Rmv - p_arp/Rav;
+      factor_1[0] = -p_at/Ratvlv - p_arp/Rarvlv;
 
-      factor_wkdof[1] = 1./Rav;
+      factor_wkdof[1] = 1./Rarvlv;
       factor_dwkdof[1] = C_arp;
       factor_Q[1] = 0.;
-      factor_1[1] = -p_v/Rav + y_arp;
+      factor_1[1] = -p_v/Rarvlv + y_arp;
 
       factor_wkdof[2] = 1.;
       factor_dwkdof[2] = L_arp/R_arp;
@@ -1468,13 +1414,13 @@ void UTILS::Windkessel::EvaluateHeartValveArterialProxDistWindkessel(
     if (assmat1)
     {
 
-      wkstiff(0,0) = theta * ((p_v-p_at)*dRmvdpv/(-Rmv*Rmv) + 1./Rmv + (p_v-p_arp)*dRavdpv/(-Rav*Rav) + 1./Rav);
-      wkstiff(0,1) = theta * ((p_v-p_arp)*dRavdparp/(-Rav*Rav) - 1./Rav);
+      wkstiff(0,0) = theta * ((p_v-p_at)*dRatvlvdpv/(-Ratvlv*Ratvlv) + 1./Ratvlv + (p_v-p_arp)*dRarvlvdpv/(-Rarvlv*Rarvlv) + 1./Rarvlv);
+      wkstiff(0,1) = theta * ((p_v-p_arp)*dRarvlvdparp/(-Rarvlv*Rarvlv) - 1./Rarvlv);
       wkstiff(0,2) = 0.;
       wkstiff(0,3) = 0.;
 
-      wkstiff(1,0) = theta * (-(p_v-p_arp)*dRavdpv/(-Rav*Rav) - 1./Rav);
-      wkstiff(1,1) = theta * (C_arp/(theta*ts_size) - (p_v-p_arp)*dRavdparp/(-Rav*Rav) + 1./Rav);
+      wkstiff(1,0) = theta * (-(p_v-p_arp)*dRarvlvdpv/(-Rarvlv*Rarvlv) - 1./Rarvlv);
+      wkstiff(1,1) = theta * (C_arp/(theta*ts_size) - (p_v-p_arp)*dRarvlvdparp/(-Rarvlv*Rarvlv) + 1./Rarvlv);
       wkstiff(1,2) = theta * (1.);
       wkstiff(1,3) = 0.;
 
