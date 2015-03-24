@@ -128,16 +128,6 @@ void SCATRA::LevelSetAlgorithm::AddProblemSpecificParametersAndVectors(Teuchos::
 
 
 /*----------------------------------------------------------------------*
- | add problem depended params for CalcInitalPhiDt      rasthofer 09/13 |
- *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::AddProblemSpecificParametersAndVectorsForCalcInitialPhiDt(Teuchos::ParameterList& params)
-{
-    AddProblemSpecificParametersAndVectors(params);
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
  | capture interface                                    rasthofer 09/13 |
  *----------------------------------------------------------------------*/
 void SCATRA::LevelSetAlgorithm::CaptureInterface(

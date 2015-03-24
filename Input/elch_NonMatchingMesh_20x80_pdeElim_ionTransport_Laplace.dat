@@ -41,6 +41,7 @@ CALCERROR                       No
 MATID                           2
 MESHTYING                       Condensed_Smat
 OUTMEAN                         yes
+SKIPINITDER                     yes
 --------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-09
 ITEMAX                          3

@@ -535,124 +535,79 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
 } // SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary
 
 
-/*----------------------------------------------------------------------*
- | calculate initial time derivative of phi at t=t_0           gjb 08/08|
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::CalcInitialPhidt()
+/*--------------------------------------------------------------------*
+ | calculate initial time derivatives of state variables   fang 03/15 |
+ *--------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::CalcInitialTimeDerivative()
 {
-  // assemble system: M phidt^0 = f^n - K\phi^n - C(u_n)\phi^n
-  CalcInitialPhidtAssemble();
+  // time measurement
+  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + calculate initial time derivative");
 
-  // solve for phidt_0
-  CalcInitialPhidtSolve();
+  // initial screen output
+  if(myrank_ == 0)
+    std::cout << "SCATRA: calculating initial time derivative of state variables (step " << Step() <<", time " << Time() << ") ... ... ";
 
-  return;
-} // SCATRA::ScaTraTimIntImpl::CalcInitialPhidt
+  // In most cases, the history vector is entirely zero at this point, since this routine is called before the first time step.
+  // However, in levelset simulations with reinitialization, this routine might be called before every single time step.
+  // For this reason, the history vector needs to be manually set to zero here and restored at the end of this routine.
+  Teuchos::RCP<Epetra_Vector> hist = hist_;
+  hist_ = zeros_;
 
+  // In a first step, we assemble the standard global system of equations.
+  AssembleMatAndRHS();
 
-/*----------------------------------------------------------------------*
- | calculate initial time derivative of phi at t=t_0 (assembly)gjb 08/08|
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtAssemble()
-{
-  // time measurement:
-  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + calc initial phidt");
+  // In a second step, we need to modify the assembled system of equations, since we want to solve
+  // M phidt^0 = f^n - K\phi^n - C(u_n)\phi^n
+  // In particular, we need to replace the global system matrix by a global mass matrix,
+  // and we need to remove all transient contributions associated with time discretization from the global residual vector.
 
-  double initialtime = Time();
-  if (myrank_ == 0)
-  {
-    IO::cout<<"SCATRA: calculating initial time derivative of phi (step "
-    << Step() <<","<<" time "<<initialtime<<")"<< IO::endl;
-  }
-
-  // zero out matrix and rhs entries !
+  // reset global system matrix
   sysmat_->Zero();
-  residual_->PutScalar(0.0);
 
-  // zero out residual vector and add Neumann loads
-  residual_->Update(1.0,*neumann_loads_,0.0);
+  // create and fill parameter list for elements
+  Teuchos::ParameterList eleparams;
+  eleparams.set<int>("action",SCATRA::calc_initial_time_deriv);
+  discret_->AddMultiVectorToParameterList(eleparams,"convective velocity field",convel_);
+  discret_->AddMultiVectorToParameterList(eleparams,"velocity field",vel_);
+  if(isale_)
+    discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+  AddProblemSpecificParametersAndVectors(eleparams);
 
-  // call elements to calculate matrix and right-hand-side
-  {
-    // create the parameters for the discretization
-    Teuchos::ParameterList eleparams;
+  // add state vectors according to time integration scheme
+  discret_->ClearState();
+  AddTimeIntegrationSpecificVectors();
 
-    // action for elements
-    eleparams.set<int>("action",SCATRA::calc_initial_time_deriv);
+  // modify global system of equations as explained above
+  discret_->Evaluate(eleparams,sysmat_,residual_);
+  discret_->ClearState();
 
-    // add additional parameters
-    AddTimeIntegrationSpecificVectors();
+  // finalize assembly of global mass matrix
+  sysmat_->Complete();
 
-    // provide velocity field and potentially acceleration/pressure field
-    // (export to column map necessary for parallel evaluation)
-    discret_->AddMultiVectorToParameterList(eleparams,"convective velocity field",convel_);
-    discret_->AddMultiVectorToParameterList(eleparams,"velocity field",vel_);
-    discret_->AddMultiVectorToParameterList(eleparams,"acceleration field",acc_);
-    discret_->AddMultiVectorToParameterList(eleparams,"pressure field",pre_);
+  // solve global system of equations for initial time derivative of state variables
+  solver_->Solve(sysmat_->EpetraOperator(),phidtnp_,residual_,true,true);
 
-    //provide displacement field in case of ALE
-    if (isale_)
-      discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+  // copy solution
+  phidtn_->Update(1.0,*phidtnp_,0.0);
 
-    // set vector values needed by elements
-    discret_->ClearState();
-    discret_->SetState("hist",zeros_); // we need a zero vector here!!!!
-    discret_->SetState("phinp",phin_); // that's the initial field phi0
-
-    // set external volume force (required, e.g., for forced homogeneous isotropic turbulence)
-    if (forcing_!=Teuchos::null)
-    {
-      eleparams.set("forcing",true);
-      discret_->SetState("forcing",forcing_);
-    }
-
-    // add problem specific time-integration parameters
-    AddProblemSpecificParametersAndVectorsForCalcInitialPhiDt(eleparams);
-
-    // call loop over elements
-    discret_->Evaluate(eleparams,sysmat_,residual_);
-    discret_->ClearState();
-
-    // evaluate solution-depending boundary and interface conditions
-    // TODO: include this with correct scaling (divide out time factor)
-    // EvaluateSolutionDependingConditions(sysmat_,residual_);
-
-    // finalize the complete matrix
-    sysmat_->Complete();
-  }
-
-  return;
-} // SCATRA::ScaTraTimIntImpl::CalcInitialPhidtAssemble
-
-/*----------------------------------------------------------------------*
- | calculate initial time derivative of phi at t=t_0 (solver) gjb 08/08 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtSolve()
-{
-  // are we really at step 0?
-  //dsassert(step_==0,"Step counter is not 0");
-
-  // We determine phidtn at every node (including boundaries)
-  // To be consistent with time integration scheme we do not prescribe
-  // any values at Dirichlet boundaries for phidtn !!!
-  // apply Dirichlet boundary conditions to system matrix
-  // LINALG::ApplyDirichlettoSystem(sysmat_,phidtn_,residual_,phidtn_,*(dbcmaps_->CondMap()));
-
-  // solve for phidtn
-  solver_->Solve(sysmat_->EpetraOperator(),phidtn_,residual_,true,true);
-
-  // copy solution also to phidtnp
-  phidtnp_->Update(1.0,*phidtn_,0.0);
-
-  // reset the matrix (and its graph!) since we solved
-  // a very special problem here that has a different sparsity pattern
+  // reset global system matrix and its graph, since we solved a very special problem with a special sparsity pattern
   sysmat_->Reset();
 
-  // reset the solver as well
+  // reset solver
   solver_->Reset();
 
+  // reset true residual vector computed during assembly of the standard global system of equations, since not yet needed
+  trueresidual_->Scale(0.);
+
+  // restore history vector as explained above
+  hist_ = hist;
+
+  // final screen output
+  if(myrank_ == 0)
+    std::cout << "done!" << std::endl;
+
   return;
-} // SCATRA::ScaTraTimIntImpl::CalcInitialPhidtSolve
+} // SCATRA::ScaTraTimIntImpl::CalcInitialTimeDerivative
 
 
 /*---------------------------------------------------------------------------*

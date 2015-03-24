@@ -34,7 +34,6 @@ PHYSICAL_TYPE                   solid
 ERRORMAPS                       No
 TIMEINT                         bdf2
 INV_ANALYSIS                    none
-----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Acoustic_Solver
 SOLVER                          Aztec_MSR

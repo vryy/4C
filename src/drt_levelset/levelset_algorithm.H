@@ -190,12 +190,6 @@ namespace SCATRA
     /// add parameters depending of the problem, i.e., loma, level-set, ...
     void AddProblemSpecificParametersAndVectors(Teuchos::ParameterList& params);
 
-    /// add parameters depending on the problem, i.e., loma, level-set, ... with special modifications for
-    /// calculation fo initial phidt
-    void AddProblemSpecificParametersAndVectorsForCalcInitialPhiDt(
-      Teuchos::ParameterList& params //!< parameter list
-    );
-
     /// manipulate velocity field away from the interface
     void ManipulateFluidFieldForGfunc();
 

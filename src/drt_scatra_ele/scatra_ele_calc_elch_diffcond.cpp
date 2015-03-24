@@ -830,7 +830,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCurEquConc(
                 += timefacfac*DiffManager()->GetPhasePoroTort(0)*my::funct_(vi)*DiffManager()->GetValence(k)*DiffManager()->GetIsotropicDiff(k)*my::derxy_(idim,ui);
             else
             {
-              // linarization wrt nabla c_k
+              // linearization wrt nabla c_k
               emat(vi*my::numdofpernode_+(my::numscal_+1)+idim,ui*my::numdofpernode_+k)
                 += timefacfac*DiffManager()->GetPhasePoroTort(0)*invfval[k]*rtf*my::funct_(vi)*DiffManager()->GetCond()*DiffManager()->GetTransNum(k)*conintinv[k]*my::derxy_(idim,ui);
 

@@ -62,7 +62,7 @@ NUMSTEP                         18
 OUTMEAN                         yes
 OUTPUT_GMSH                     No
 RESTARTEVRY                     1
-SKIPINITDER                     no
+SKIPINITDER                     yes
 SOLVERTYPE                      nonlinear
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta

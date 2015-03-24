@@ -117,7 +117,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcInitialTimeDerivativ
       lm
       );
 
-  // dummy mass matrix and zero residual entries for the electric current dofs
+  // dummy mass matrix for the electric current dofs
   if(ElchPara()->CurSolVar())
   {
     // integration points and weights
@@ -140,21 +140,16 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcInitialTimeDerivativ
 
             emat(fvi,fui) += v*my::funct_(ui);
           }
-
-          erhs[vi*my::numdofpernode_+my::numscal_+1+idim]=0.0;
         }
       }
     }
   }
 
   // In the moment the diffusion manager contains the porosity at the last Gauss point (previous call my::CalcInitialTimeDerivative())
-  // Since the whole approach is valid only for constant porosities
-  // we do not fill the diffusion manager again at the element center
-
-  // The solution variable is the initial time derivative
-  // Therefore, we have to correct rhs by the initial porosity
-  // attention: this procedure is only valid for a constant porosity in the beginning
-  erhs.Scale(1.0/DiffManager()->GetPhasePoro(0));
+  // Since the whole approach is valid only for constant porosities, we do not fill the diffusion manager again at the element center
+  // The solution variable is the initial time derivative. Therefore, we have to correct emat by the initial porosity
+  // Attention: this procedure is only valid for a constant porosity in the beginning
+  emat.Scale(DiffManager()->GetPhasePoro(0));
 
   return;
 }

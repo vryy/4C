@@ -142,7 +142,7 @@ void SCATRA::LevelSetTimIntOneStepTheta::PrepareFirstTimeStep()
             &eleparams.sublist("REINITIALIZATION"));
 
     // parameters for finite difference check
-    eleparams.set<int>("fdcheck",fdcheck_);
+    eleparams.set<int>("fdcheck",INPAR::SCATRA::fdcheck_none);
     eleparams.set<double>("fdcheckeps",fdcheckeps_);
     eleparams.set<double>("fdchecktol",fdchecktol_);
 
@@ -153,7 +153,7 @@ void SCATRA::LevelSetTimIntOneStepTheta::PrepareFirstTimeStep()
     //       as already set in PrepareTimeLoopReinit()
 
     // compute time derivative of phi at pseudo-time tau=0
-    CalcInitialPhidt();
+    CalcInitialTimeDerivative();
 
     // eventually, undo changes in general parameter list
     SetReinitializationElementParameters();
@@ -237,28 +237,12 @@ void SCATRA::LevelSetTimIntOneStepTheta::UpdateState()
     if (switchreinit_ == true)
       switchreinit_ = false;
 
+    // we also have reset the time-integration parameter list, since incremental solver has to be overwritten if used
+    SetElementTimeParameter(true);
+
     // compute time derivative at time n (and n+1)
+    CalcInitialTimeDerivative();
 
-    // we also have reset the time-integration parameter list for two reasons
-    // 1: use of reinitialization equation overwrites time-integration parameter list (this is corrected afterwards)
-    // 2: incremental solver has to be overwritten if used
-    Teuchos::ParameterList eletimeparams;
-
-    eletimeparams.set<int>("action",SCATRA::set_time_parameter);
-
-    eletimeparams.set<bool>("using generalized-alpha time integration",false);
-    eletimeparams.set<bool>("using stationary formulation",false);
-    eletimeparams.set<bool>("incremental solver",true); // this is important to have here
-
-    eletimeparams.set<double>("time-step length",dta_);
-    eletimeparams.set<double>("total time",time_);
-    eletimeparams.set<double>("time factor",theta_*dta_);
-    eletimeparams.set<double>("alpha_F",1.0);
-
-    // call standard loop over elements
-    discret_->Evaluate(eletimeparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-
-    CalcInitialPhidt();
     // reset element time-integration parameters
     SetElementTimeParameter();
   }

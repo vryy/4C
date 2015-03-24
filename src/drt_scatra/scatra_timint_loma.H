@@ -106,12 +106,6 @@ namespace SCATRA
       Teuchos::ParameterList& params //!< parameter list
     );
 
-    //! add parameters depending on the problem, i.e., loma, level-set, ... with special modifications for
-    //! calculation fo initial phidt
-    void AddProblemSpecificParametersAndVectorsForCalcInitialPhiDt(
-      Teuchos::ParameterList& params //!< parameter list
-    );
-
     virtual void AddThermPressToParameterList(
       Teuchos::ParameterList& params //!< parameter list
     ) = 0;

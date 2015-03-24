@@ -88,18 +88,19 @@ void ELCH::MovingBoundaryAlgorithm::TimeLoop()
     ScaTraField()->EvaluateErrorComparedToAnalyticalSol();
   }
 
-if (not pseudotransient_)
-{
-  // transfer convective velocity = fluid velocity - grid velocity
-  ScaTraField()->SetVelocityField(
-      FluidField()->ConvectiveVel(), // = velnp - grid velocity
-      FluidField()->Hist(),
-      Teuchos::null,
-      Teuchos::null,
-      Teuchos::null,
-      FluidField()->Discretization()
-  );
-}
+  if (not pseudotransient_)
+  {
+    // transfer convective velocity = fluid velocity - grid velocity
+    ScaTraField()->SetVelocityField(
+        FluidField()->ConvectiveVel(), // = velnp - grid velocity
+        FluidField()->Hist(),
+        Teuchos::null,
+        Teuchos::null,
+        Teuchos::null,
+        FluidField()->Discretization()
+    );
+  }
+
   // transfer moving mesh data
   ScaTraField()->ApplyMeshMovement(
       FluidField()->Dispnp(),

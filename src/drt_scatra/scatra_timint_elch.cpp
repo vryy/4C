@@ -181,19 +181,6 @@ void SCATRA::ScaTraTimIntElch::AddProblemSpecificParametersAndVectors(
 }
 
 
-/*--------------------------------------------------------------------------*
- | add parameters depending on the problem for inital phidt rasthofer 12/13 |
- *--------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElch::AddProblemSpecificParametersAndVectorsForCalcInitialPhiDt(
-  Teuchos::ParameterList& params //!< parameter list
-)
-{
-  discret_->SetState("dctoggle",dctoggle_);
-
-  return;
-}
-
-
 /*----------------------------------------------------------------------*
  | contains the elch-specific nonlinear iteration loop       ehrl 01/14 |
  *----------------------------------------------------------------------*/
@@ -1302,12 +1289,12 @@ void SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
       // update electric potential degrees of freedom in initial state vector
       splitter_->AddCondVector(splitter_->ExtractCondVector(increment_),phinp_);
 
+      // copy initial state vector
+      phin_->Update(1.,*phinp_,0.);
+
       // update state vectors for intermediate time steps (only for generalized alpha)
       ComputeIntermediateValues();
     } // Newton-Raphson iteration
-
-    // copy initial state vector
-    phin_->Update(1.,*phinp_,0.);
 
     // reset global system matrix and its graph, since we solved a very special problem with a special sparsity pattern
     sysmat_->Reset();
@@ -1423,7 +1410,7 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
       double resistance = 0.0;
 
       if(cond.size()>2)
-        dserror("The framework may not work for geometrical setups containing more than two electrodes! \n"
+        dserror("The framework may not work for geometric setups containing more than two electrodes! \n"
                 "If you need it, check the framework exactly!!");
 
       // loop over all BV
@@ -1484,7 +1471,7 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
       else
         meanelectrodesurface=(*electrodesurface)[condid_cathode];
 
-      // The linarization of potential increment is always based on the cathode side!!
+      // The linearization of potential increment is always based on the cathode side!!
 
       // Assumption: Residual at BV1 is the negative of the value at BV2, therefore only the first residual is calculated
       // residual := (I - timefacrhs *I_target)

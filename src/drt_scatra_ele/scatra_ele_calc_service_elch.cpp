@@ -573,7 +573,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalcInitialTimeDerivative(
   // At this point time is not so critical since the CalcInitialTimeDerivative()
   // is called once in the beginning of the simulation!
 
-  // we put a dummy mass matrix and zero residual entries for the electric potential dofs
+  // we put a dummy mass matrix for the electric potential dofs
   // here in order to have a regular matrix in the lower right block of the whole system-matrix
   // An identity matrix would cause problems with ML solver in the SIMPLE
   // schemes since ML needs to have off-diagonal entries for the aggregation!
@@ -599,10 +599,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalcInitialTimeDerivative(
       }
     }
   }
-
-  // set zero for the rhs entries associated with the electric potential
-  for (int vi=0; vi<my::nen_; ++vi)
-    erhs[vi*my::numdofpernode_+my::numscal_] = 0.;
 
   return;
 }

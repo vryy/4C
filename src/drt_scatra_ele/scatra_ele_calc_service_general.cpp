@@ -935,25 +935,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcInitialTimeDerivative(
     const std::vector<int>&     lm                //!< location vector
     )
 {
-  // dummy matrix + vectors required for Evaluate() call (zero size)
-  Epetra_SerialDenseMatrix  elemat2_epetra=Teuchos::null;
-  Epetra_SerialDenseVector  elevec2_epetra=Teuchos::null;
-  Epetra_SerialDenseVector  elevec3_epetra=Teuchos::null;
-
-  Evaluate(
-      ele,
-      params,
-      discretization,
-      lm,
-      emat,
-      elemat2_epetra,
-      erhs,
-      elevec2_epetra,
-      elevec3_epetra
-  );
-
-  // undo the matrix from the standard call, only a mass matrix is needed here created below
-  emat.Scale(0.0);
+  // extract relevant quantities from discretization and parameter list
+  ExtractElementAndNodeValues(ele,params,discretization,lm);
 
   //----------------------------------------------------------------------
   // calculation of element volume both for tau at ele. cent. and int. pt.
@@ -1088,8 +1071,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcInitialTimeDerivative(
     } // loop over each scalar k
   } // integration loop
 
-  // correct scaling of rhs (after subtraction!!!!)
-  erhs.Scale(1.0/scatraparatimint_->TimeFac());
+  // scale element matrix appropriately to be consistent with scaling of global residual vector computed by AssembleMatAndRHS() routine
+  // (see CalcInitialTimeDerivative() routine on time integrator level)
+  emat.Scale(scatraparatimint_->TimeFacRhs());
 
   return;
 } // ScaTraEleCalc::CalcInitialTimeDerivative()

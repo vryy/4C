@@ -52,7 +52,7 @@ UPRES                           1
 MATID                           1
 WRITEFLUX                       totalflux_boundary
 OUTMEAN                         Yes
-SKIPINITDER                     No
+SKIPINITDER                     yes
 MAXTIME                         0.1
 NUMSTEP                         10
 RESTARTEVRY                     50

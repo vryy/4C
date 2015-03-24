@@ -350,14 +350,8 @@ public:
 
   /*--- calculate and update -----------------------------------------------*/
 
-  //! calculate initial value for phidtn_ (only necessary for OnestepTheta and GenAlpha)
-  void CalcInitialPhidt();
-
-  //! calculate initial value for phidtn_ (assembly of system)
-  void CalcInitialPhidtAssemble();
-
-  //! calculate initial value for phidtn_ (solver part)
-  void CalcInitialPhidtSolve();
+  //! calculate initial time derivatives of state variables (only necessary for one step theta and generalized alpha)
+  void CalcInitialTimeDerivative();
 
   //! compute time derivative
   virtual void ComputeTimeDerivative() = 0;
@@ -523,13 +517,13 @@ protected:
   virtual void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params) = 0;
 
   //! Set general element parameters
-  void SetElementGeneralParameters(bool calcinitialtimederiv = false);
+  void SetElementGeneralParameters(bool calcinitialtimederivative = false);
 
   //! Set additional problem-specific parameters for non-standard scalar transport problems (electrochemistry etc.)
   virtual void SetElementSpecificScaTraParameters(Teuchos::ParameterList& eleparams){return;};
 
   //! Set element parameter specific for turbulence
-  void SetElementTurbulenceParameters(bool calcinitialtimederiv = false);
+  void SetElementTurbulenceParameters(bool calcinitialtimederivative = false);
 
   //! Deactivate element parameter specific for turbulence
   void SetElementTurbulenceParametersDeactivated();
@@ -602,12 +596,6 @@ protected:
 
   //! add parameters depending on the problem, i.e., loma, level-set, ...
   virtual void AddProblemSpecificParametersAndVectors(
-    Teuchos::ParameterList& params //!< parameter list
-  ){return;};
-
-  //! add parameters depending on the problem, i.e., loma, level-set, ... with special modifications for
-  //! calculation fo initial phidt
-  virtual void AddProblemSpecificParametersAndVectorsForCalcInitialPhiDt(
     Teuchos::ParameterList& params //!< parameter list
   ){return;};
 

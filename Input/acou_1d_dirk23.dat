@@ -32,7 +32,6 @@ PHOTOACOU                       No
 ERRORMAPS                       No
 TIMEINT                         dirk23
 INV_ANALYSIS                    none
-----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Acoustic_Solver
 SOLVER                          Aztec_MSR

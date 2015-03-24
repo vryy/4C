@@ -522,12 +522,12 @@ void TWOPHASEFLOW::Algorithm::Restart(int step, const bool restartscatrainput)
     }
     else if (ScaTraField()->MethodName() == INPAR::SCATRA::timeint_one_step_theta)
     {
-      ScaTraField()->Phidtn()->PutScalar(0.0);
-      // calls CalcInitialPhidt()
+      ScaTraField()->Phidtnp()->PutScalar(0.0);
+      // calls CalcInitialTimeDerivative()
       // ApplyDirichletBC() called within this function doesn't pose any problem since we
       // don't have any DBCs for level-set problems
       ScaTraField()->PrepareFirstTimeStep();
-      // CalcInitialPhidt() copies phidtn to phidtnp
+      // CalcInitialTimeDerivative() copies phidtnp to phidtn
     }
     else
       dserror("Unknown time-integration scheme!");

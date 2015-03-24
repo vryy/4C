@@ -39,6 +39,7 @@ OUTMEAN                         Yes
 MAXTIME                         10
 NUMSTEP                         20
 RESTARTEVRY                     10
+SKIPINITDER                     yes
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-09
 ABSTOLRES                       1e-15

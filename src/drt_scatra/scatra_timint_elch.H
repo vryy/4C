@@ -135,12 +135,6 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
     Teuchos::ParameterList& params //!< parameter list
   );
 
-  //! add parameters depending on the problem, i.e., loma, level-set, ... with special modifications for
-  //! calculation fo initial phidt
-  void AddProblemSpecificParametersAndVectorsForCalcInitialPhiDt(
-    Teuchos::ParameterList& params //!< parameter list
-  );
-
   /*========================================================================*/
   //! @name general framework
   /*========================================================================*/

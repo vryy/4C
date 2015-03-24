@@ -298,19 +298,6 @@ void SCATRA::ScaTraTimIntLoma::AddProblemSpecificParametersAndVectors(
 }
 
 
-/*--------------------------------------------------------------------------*
- | add parameters depending on the problem for inital phidt rasthofer 12/13 |
- *--------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntLoma::AddProblemSpecificParametersAndVectorsForCalcInitialPhiDt(
-  Teuchos::ParameterList& params //!< parameter list
-)
-{
-  params.set("thermodynamic pressure",thermpressn_);
-  params.set("time derivative of thermodynamic pressure",thermpressdtn_);
-  return;
-}
-
-
 /*----------------------------------------------------------------------*
  | output mean values of scalar(s)                           fang 02/15 |
  *----------------------------------------------------------------------*/

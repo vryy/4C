@@ -734,7 +734,7 @@ SCATRA::ScaTraTimIntImpl::~ScaTraTimIntImpl()
 /*--------------------------------------------------------------------------------*
  | set all general parameters for element                              fang 10/14 |
  *--------------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::SetElementGeneralParameters(bool calcinitialtimederiv)
+void SCATRA::ScaTraTimIntImpl::SetElementGeneralParameters(bool calcinitialtimederivative)
 {
   Teuchos::ParameterList eleparams;
 
@@ -751,7 +751,7 @@ void SCATRA::ScaTraTimIntImpl::SetElementGeneralParameters(bool calcinitialtimed
 
   // parameters for stabilization
   eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
-  if(calcinitialtimederiv)      // deactivate stabilization when calculating initial time derivative
+  if(calcinitialtimederivative)      // deactivate stabilization when calculating initial time derivative
   {
     Teuchos::setStringToIntegralParameter<int>("STABTYPE",
         "no_stabilization",
@@ -766,7 +766,7 @@ void SCATRA::ScaTraTimIntImpl::SetElementGeneralParameters(bool calcinitialtimed
   }
 
   // parameters for finite difference check
-  if(calcinitialtimederiv)      // deactivate finite difference check when calculating initial time derivative
+  if(calcinitialtimederivative)      // deactivate finite difference check when calculating initial time derivative
     eleparams.set<int>("fdcheck",INPAR::SCATRA::fdcheck_none);
   else
     eleparams.set<int>("fdcheck",fdcheck_);
@@ -786,14 +786,14 @@ void SCATRA::ScaTraTimIntImpl::SetElementGeneralParameters(bool calcinitialtimed
 /*----------------------------------------------------------------------*
  | set turbulence parameters for element                rasthofer 11/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::SetElementTurbulenceParameters(bool calcinitialtimederiv)
+void SCATRA::ScaTraTimIntImpl::SetElementTurbulenceParameters(bool calcinitialtimederivative)
 {
   Teuchos::ParameterList eleparams;
 
   eleparams.set<int>("action",SCATRA::set_turbulence_scatra_parameter);
 
   eleparams.sublist("TURBULENCE MODEL") = extraparams_->sublist("TURBULENCE MODEL");
-  if(calcinitialtimederiv)      // deactivate turbulence model when calculating initial time derivative
+  if(calcinitialtimederivative)      // deactivate turbulence model when calculating initial time derivative
     Teuchos::setStringToIntegralParameter<int>(
       "PHYSICAL_MODEL",
       "no_model",
@@ -802,14 +802,16 @@ void SCATRA::ScaTraTimIntImpl::SetElementTurbulenceParameters(bool calcinitialti
       Teuchos::tuple<std::string>("If classical LES is our turbulence approach, this is a contradiction and should cause a dserror."),
       Teuchos::tuple<int>(INPAR::FLUID::no_model),
       &eleparams.sublist("TURBULENCE MODEL"));
+
   // set model-dependent parameters
   eleparams.sublist("SUBGRID VISCOSITY") = extraparams_->sublist("SUBGRID VISCOSITY");
-  // and set parameters for multifractal subgrid-scale modeling
+
+  // set parameters for multifractal subgrid-scale modeling
   eleparams.sublist("MULTIFRACTAL SUBGRID SCALES") = extraparams_->sublist("MULTIFRACTAL SUBGRID SCALES");
 
   eleparams.set<bool>("turbulent inflow",turbinflow_);
 
-  if(calcinitialtimederiv)
+  if(calcinitialtimederivative)
     eleparams.set<int>("fs subgrid diffusivity",INPAR::SCATRA::fssugrdiff_no);
   else
     eleparams.set<int>("fs subgrid diffusivity",fssgd_);
@@ -2473,9 +2475,8 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   discret_->ClearState();
 
   // AVM3 separation for incremental solver: get fine-scale part of scalar
-  if (incremental_ and
-      (fssgd_ != INPAR::SCATRA::fssugrdiff_no or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales))
-   AVM3Separation();
+  if(incremental_ and step_ > 0 and (fssgd_ != INPAR::SCATRA::fssugrdiff_no or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales))
+    AVM3Separation();
 
   // add state vectors according to time-integration scheme
   AddTimeIntegrationSpecificVectors();
@@ -2494,7 +2495,7 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no)
     discret_->Evaluate(eleparams,sysmat_,Teuchos::null,residual_,subgrdiff_,Teuchos::null);
   else
-    discret_->Evaluate(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null);
+    discret_->Evaluate(eleparams,sysmat_,residual_);
 
 //  (SystemMatrix()->EpetraMatrix())->Print(std::cout); // kn nis
 
