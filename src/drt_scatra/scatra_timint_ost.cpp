@@ -375,8 +375,8 @@ void SCATRA::TimIntOneStepTheta::PrepareFirstTimeStep()
 {
   // evaluate Dirichlet boundary conditions at time t=0
   // the values should match your initial field at the boundary!
-  ApplyDirichletBC(time_,phin_,phidtn_);
-  ApplyDirichletBC(time_,phinp_,phidtnp_);
+  ApplyDirichletBC(time_,phin_,Teuchos::null);
+  ApplyDirichletBC(time_,phinp_,Teuchos::null);
   ComputeIntermediateValues();
 
   // evaluate Neumann boundary conditions at time t = 0
