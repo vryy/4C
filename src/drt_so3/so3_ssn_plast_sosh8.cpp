@@ -370,6 +370,7 @@ bool DRT::ELEMENTS::So_sh8Plast::ReadElement(const std::string& eletype,
   // geometrically non-linear with Total Lagrangean approach
   else if (buffer == "nonlinear")
   {
+    kintype_ = INPAR::STR::kinem_nonlinearTotLag;
     // everything ok
   }
   else

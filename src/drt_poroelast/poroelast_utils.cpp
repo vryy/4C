@@ -478,6 +478,10 @@ void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterialAToB(
   //call default assignment
   VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterialAToB(volmortar,Bele,Aids,disA,disB);
 
+  //if no corresponding element found -> leave
+  if(Aids.empty())
+    return;
+
   //default strategy: take only material of first element found
   DRT::Element* Aele = disA->gElement(Aids[0]);
 

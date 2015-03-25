@@ -363,8 +363,6 @@ protected:
     multi_calc_dens           //!< multi-scale: calculate homogenized density
   };
 
-   //! kinematic type
-  INPAR::STR::KinemType                                                 kintype_;
   //! container containing all kind of solid3 thisandthat
   DRT::Container                                                        data_;
   //! vector of inverses of the jacobian in material frame

@@ -105,7 +105,6 @@ pstype_(INPAR::STR::prestress_none),
 pstime_(0.0),
 time_(0.0)
 {
-  kintype_ = INPAR::STR::kinem_nonlinearTotLag;
   invJ_.resize(NUMGPT_SOH20, LINALG::Matrix<NUMDIM_SOH20,NUMDIM_SOH20>(true));
   detJ_.resize(NUMGPT_SOH20, 0.0);
 

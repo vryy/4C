@@ -42,6 +42,8 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(
   Epetra_SerialDenseVector& elevec3_epetra
   )
 {
+  dsassert(kintype_==INPAR::STR::kinem_nonlinearTotLag,"only geometricallly nonlinear formluation for plasticity!");
+
   // start with "none"
   ActionType act = none;
 

@@ -298,11 +298,11 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
 #endif // THRASOUTPUT
 
     // get kinematic type from parent element
-    int kintype = parentele->kintype_;
+    INPAR::STR::KinemType kintype = parentele->kintype_;
 
     // ------------------------------------------------------ default
     // ------------ purely thermal / geometrically linear TSI problem
-    if (kintype == 0)  // geo_linear
+    if (kintype == INPAR::STR::kinem_linear)  // geo_linear
     {
       // and now check if there is a convection heat transfer boundary condition
       CalculateConvectionFintCond(
@@ -324,7 +324,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
     // -------------------------- geometrically nonlinear TSI problem
 
     // if it's a TSI problem with displacementcoupling_ --> go on here!
-    if ( (kintype == 1) and (la.Size() > 1) )  // geo_nonlinear
+    if ( (kintype == INPAR::STR::kinem_nonlinearTotLag) and (la.Size() > 1) )  // geo_nonlinear
     {
       // set views, here we assemble on the boundary dofs only!
       LINALG::Matrix<nen_,(nsd_+1)*nen_> etangcoupl(elemat2_epetra.A(),true);  // view only!
@@ -353,7 +353,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
           );
 
       }  // disp!=0
-    }  // (la.Size() > 1) and (kintype == geo_nonlinear)
+    }  // (la.Size() > 1) and (kintype == INPAR::STR::kinem_nonlinearTotLag)
 
     // BUILD EFFECTIVE TANGENT AND RESIDUAL ACC TO TIME INTEGRATOR
     // check the time integrator
@@ -403,7 +403,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
     // -------------------------- geometrically nonlinear TSI problem
 
     // get kinematic type from parent element
-    int kintype = parentele->kintype_;
+    INPAR::STR::KinemType kintype = parentele->kintype_;
 
     // initialise the vectors
     // Evaluate() is called the first time in ThermoBaseAlgorithm: at this stage
@@ -414,7 +414,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
     // -------------------------- geometrically nonlinear TSI problem
 
     // if it's a TSI problem with displacementcoupling_ --> go on here!
-    if ( (kintype == 1) and (la.Size() > 1) )  // geo_nonlinear
+    if ( (kintype == INPAR::STR::kinem_nonlinearTotLag) and (la.Size() > 1) )  // geo_nonlinear
     {
       // and now get the current displacements/velocities
       if ( discretization.HasState(1,"displacement") )
@@ -580,7 +580,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
         }  // end of switch(timint)
 
       }  // disp!=0
-    }  // if ( (kintype == 1) and (la.Size()>1) )
+    }  // if ( (kintype == INPAR::STR::kinem_nonlinearTotLag) and (la.Size()>1) )
   }  // calc_thermo_fextconvection_coupltang
 
   else

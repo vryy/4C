@@ -244,7 +244,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
   // ---------------------------------------------------------------- TSI
 
   // if it's a TSI problem with displacementcoupling_ --> go on here!
-  //todo: fix for volmortar
+  //todo: fix for volmortar (not working with plasticity)
   if (la.Size() > 1)
   {
     // ------------------------------------------------ structural material
@@ -264,8 +264,6 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
   // kintype = 0: INPAR::STR::kinem_linear or purely thermal problem
   // kintype = 1: INPAR::STR::kinem_nonlinearTotLag
   const INPAR::STR::KinemType kintype = therm->KinType();
-  //Todo: fix this for volmortar
-  //const GenKinematicType kintype=INPAR::STR::kinem_linear;
   //============================================================================
   // calculate tangent K and internal force F_int = K * Theta
   // --> for static case

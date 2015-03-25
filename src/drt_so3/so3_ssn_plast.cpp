@@ -430,6 +430,7 @@ bool DRT::ELEMENTS::So3_Plast<distype>::ReadElement(
   // geometrically non-linear with Total Lagrangean approach
   else if (buffer == "nonlinear")
   {
+    kintype_ = INPAR::STR::kinem_nonlinearTotLag;
     // everything ok
   }
   else

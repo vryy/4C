@@ -100,16 +100,10 @@ void TSI::UTILS::ThermoStructureCloneStrategy::SetElementData(
   INPAR::STR::KinemType kintype = INPAR::STR::kinem_linear;
   // if oldele is a so3_base element or a so3_Plast element
   DRT::ELEMENTS::So_base*  so_base  = dynamic_cast<DRT::ELEMENTS::So_base*>(oldele);
-  DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>* so3_plast_h8 =
-      dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::hex8> * >(oldele);
-  DRT::ELEMENTS::So3_Plast<DRT::Element::hex27>* so3_plast_h27 =
-      dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::hex27> * >(oldele);
   if (so_base != NULL)
     kintype = so_base->KinematicType();
-  else if (so3_plast_h8 != NULL || so3_plast_h27!=NULL)
-    kintype = INPAR::STR::kinem_nonlinearTotLag; // So3_Plast only with nonlinear kinematics
   else
-    dserror("oldele is neither a so3_thermo nor a So3_Plast element!");
+    dserror("oldele is neither a So_base element!");
 
   // note: SetMaterial() was reimplemented by the thermo element!
 #if defined(D_THERMO)

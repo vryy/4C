@@ -164,9 +164,6 @@ bool DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::ReadElement(
 {
   so3_ele::ReadElement(eletype,eledistype,linedef);
 
-  std::string buffer;
-  linedef->ExtractString("KINEM",buffer);
-
   return true;
 
 }  // ReadElement()
