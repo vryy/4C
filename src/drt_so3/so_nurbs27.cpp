@@ -89,8 +89,6 @@ DRT::ELEMENTS::NURBS::So_nurbs27::So_nurbs27(int id, int owner) :
 So_base(id,owner),
 data_()
 {
-  kintype_ = INPAR::STR::kinem_vague;
-
   invJ_.resize(NUMGPT_SONURBS27, LINALG::Matrix<NUMDIM_SONURBS27,NUMDIM_SONURBS27>(true));
   detJ_.resize(NUMGPT_SONURBS27, 0.0);
   return;

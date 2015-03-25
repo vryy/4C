@@ -117,7 +117,6 @@ pstype_(INPAR::STR::prestress_none),
 pstime_(0.0),
 time_(0.0)
 {
-  kintype_ = INPAR::STR::kinem_nonlinearTotLag;
   eastype_ = soh8_easnone;
   neas_ = 0;
   invJ_.resize(NUMGPT_SOH8, LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>(true));

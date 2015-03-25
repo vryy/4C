@@ -47,9 +47,6 @@ bool DRT::ELEMENTS::So_sh8::ReadElement(const std::string& eletype,
   }
   else dserror ("Reading SO_HEX8p1j1 element failed KINEM unknown");
 
-  // we expect kintype to be total lagrangian
-  kintype_ = INPAR::STR::kinem_nonlinearTotLag;
-
   // check if material kinematics is compatible to element kinematics
   SolidMaterial()->ValidKinematics(kintype_);
 

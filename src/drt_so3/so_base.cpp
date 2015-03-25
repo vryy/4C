@@ -18,7 +18,7 @@
 
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                            vuong 03/12|
+ |  ctor (public)                                            vuong 03/15|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_base::So_base(int id, int owner) :
@@ -29,7 +29,7 @@ kintype_(INPAR::STR::kinem_vague)
 }
 
 /*----------------------------------------------------------------------*
- |  copy-ctor (public)                                       vuong 03/12|
+ |  copy-ctor (public)                                       vuong 03/15|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_base::So_base(const DRT::ELEMENTS::So_base& old) :
@@ -41,7 +41,7 @@ kintype_(old.kintype_)
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
- |                                                           vuong 03/12|
+ |                                                           vuong 03/15|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_base::Pack(DRT::PackBuffer& data) const
 {
@@ -62,7 +62,7 @@ void DRT::ELEMENTS::So_base::Pack(DRT::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
- |                                                           vuong 03/12|
+ |                                                           vuong 03/15|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_base::Unpack(const std::vector<char>& data)
 {

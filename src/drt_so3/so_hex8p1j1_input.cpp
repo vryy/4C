@@ -42,7 +42,7 @@ bool DRT::ELEMENTS::So_Hex8P1J1::ReadElement(const std::string& eletype,
   }
   else if (buffer=="nonlinear")
   {
-    // kintype_ = soh8_nonlinear;
+    kintype_ = INPAR::STR::kinem_nonlinearTotLag;
   }
    else dserror ("Reading SO_HEX8p1j1 element failed KINEM unknown");
 

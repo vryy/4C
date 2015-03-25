@@ -107,7 +107,6 @@ pstype_(INPAR::STR::prestress_none),
 pstime_(0.0),
 time_(0.0)
 {
-  kintype_ = INPAR::STR::kinem_vague;
   invJ_.resize(NUMGPT_SOTET10, LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10>(true));
   detJ_.resize(NUMGPT_SOTET10, 0.0);
   invJ_mass_.resize(NUMGPT_MASS_SOTET10, LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10>(true));

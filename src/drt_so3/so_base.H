@@ -18,7 +18,12 @@
 
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_lib/drt_element.H"
-#include "../drt_mat/so3_material.H"
+
+namespace MAT
+{
+  class So3Material;
+}
+
 
 namespace DRT
 {

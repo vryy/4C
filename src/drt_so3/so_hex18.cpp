@@ -252,7 +252,7 @@ bool DRT::ELEMENTS::So_hex18::VisData(const std::string& name, std::vector<doubl
  if (DRT::Element::VisData(name,data))
    return true;
 
- SolidMaterial()->VisData(name, data, NUMGPT_SOH18, this->Id());
+ return SolidMaterial()->VisData(name, data, NUMGPT_SOH18, this->Id());
 }
 
 
@@ -285,11 +285,13 @@ bool DRT::ELEMENTS::So_hex18::ReadElement(const std::string& eletype,
    dserror ("Only nonlinear kinematics for SO_SH8 implemented!");
   }
   else if (buffer=="nonlinear")
-  { /* everything ok */ }
+  {
+    kintype_ = INPAR::STR::kinem_nonlinearTotLag;
+  }
   else dserror ("Reading SO_HEX18 element failed KINEM unknown");
 
   // check if material kinematics is compatible to element kinematics
-  SolidMaterial()->ValidKinematics(INPAR::STR::kinem_nonlinearTotLag);
+  SolidMaterial()->ValidKinematics(kintype_);
 
   return true;
 }

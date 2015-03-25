@@ -45,7 +45,9 @@ bool DRT::ELEMENTS::So_sh18::ReadElement(const std::string& eletype,
    dserror ("Only nonlinear kinematics for SO_SH8 implemented!");
   }
   else if (buffer=="nonlinear")
-  { /* everything ok */ }
+  {
+    kintype_ = INPAR::STR::kinem_nonlinearTotLag;
+  }
   else dserror ("Reading SO_HEX18 element failed KINEM unknown");
 
   // check if material kinematics is compatible to element kinematics
