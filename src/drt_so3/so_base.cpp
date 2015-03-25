@@ -87,6 +87,5 @@ void DRT::ELEMENTS::So_base::Unpack(const std::vector<char>& data)
  *----------------------------------------------------------------------*/
 Teuchos::RCP<MAT::So3Material> DRT::ELEMENTS::So_base::SolidMaterial(int nummat) const
 {
-  dsassert(nummat<(int)mat_.size(),"invalid material number");
   return Teuchos::rcp_dynamic_cast<MAT::So3Material>(DRT::Element::Material(nummat),true);
 }
