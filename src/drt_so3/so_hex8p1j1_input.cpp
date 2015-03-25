@@ -28,8 +28,7 @@ bool DRT::ELEMENTS::So_Hex8P1J1::ReadElement(const std::string& eletype,
   SetMaterial(material);
 
   // set up of materials with GP data (e.g., history variables)
-  Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-  so3mat->Setup(NUMGPT_SOH8, linedef);
+  SolidMaterial()->Setup(NUMGPT_SOH8, linedef);
 
   // temporary variable for read-in
     std::string buffer;
@@ -48,7 +47,7 @@ bool DRT::ELEMENTS::So_Hex8P1J1::ReadElement(const std::string& eletype,
    else dserror ("Reading SO_HEX8p1j1 element failed KINEM unknown");
 
   // check if material kinematics is compatible to element kinematics
-  so3mat->ValidKinematics(kintype_);
+  SolidMaterial()->ValidKinematics(kintype_);
 
   return true;
 }

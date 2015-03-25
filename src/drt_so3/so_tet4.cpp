@@ -441,8 +441,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::So_tet4::Lines()
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_tet4::VisNames(std::map<std::string,int>& names)
 {
-  Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-  so3mat->VisNames(names);
+  SolidMaterial()->VisNames(names);
 
   return;
 }
@@ -456,7 +455,6 @@ bool DRT::ELEMENTS::So_tet4::VisData(const std::string& name, std::vector<double
   if (DRT::Element::VisData(name,data))
     return true;
 
-  Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-  return so3mat->VisData(name, data, NUMGPT_SOTET4,this->Id());
+  return SolidMaterial()->VisData(name, data, NUMGPT_SOTET4,this->Id());
 }
 

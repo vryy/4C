@@ -34,8 +34,7 @@ bool DRT::ELEMENTS::So_sh8p8::ReadElement(const std::string& eletype,
   linedef->ExtractInt("MAT",material);
   SetMaterial(material);
 
-  Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-  so3mat->Setup(NUMGPT_SOH8, linedef);
+  SolidMaterial()->Setup(NUMGPT_SOH8, linedef);
 
   // a temprorary variable for read-in
   std::string buffer;
@@ -55,7 +54,7 @@ bool DRT::ELEMENTS::So_sh8p8::ReadElement(const std::string& eletype,
   kintype_ = INPAR::STR::kinem_nonlinearTotLag;
 
   // check if material kinematics is compatible to element kinematics
-  so3mat->ValidKinematics(kintype_);
+  SolidMaterial()->ValidKinematics(kintype_);
 
 
   // read EAS technology flag

@@ -26,8 +26,7 @@ bool DRT::ELEMENTS::NURBS::So_nurbs27::ReadElement(const std::string& eletype,
   SetMaterial(material);
 
   const int numgp=27;
-  Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-  so3mat->Setup(numgp, linedef);
+  SolidMaterial()->Setup(numgp, linedef);
 
   // read possible gaussian points, obsolete for computation
   std::vector<int> ngp;
@@ -40,7 +39,7 @@ bool DRT::ELEMENTS::NURBS::So_nurbs27::ReadElement(const std::string& eletype,
   kintype_ = INPAR::STR::kinem_nonlinearTotLag;
 
   // check if material kinematics is compatible to element kinematics
-  so3mat->ValidKinematics(kintype_);
+  SolidMaterial()->ValidKinematics(kintype_);
 
   return true;
 }

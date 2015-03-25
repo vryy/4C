@@ -311,8 +311,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList&  params,
       // Update constraintmixture material
       if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture)
       {
-        Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-        so3mat->Update();
+        SolidMaterial()->Update();
       }
     }
     break;
@@ -462,8 +461,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList&  params,
 
       // call material for evaluation of strain energy function
        double psi = 0.0;
-       Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-       so3mat->StrainEnergy(glstrain,psi,Id());
+       SolidMaterial()->StrainEnergy(glstrain,psi,Id());
 
        // sum up GP contribution to internal energy
        intenergy += fac*psi;
@@ -534,8 +532,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList&  params,
         so_tet4_remodel(lm,mydisp,params,Material());
       }
       // Update of history for materials
-      Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-      so3mat->Update();
+      SolidMaterial()->Update();
     }
     break;
 
@@ -543,8 +540,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList&  params,
     case calc_struct_reset_istep:
     {
       // Reset of history (if needed)
-      Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-      so3mat->ResetStep();
+      SolidMaterial()->ResetStep();
     }
     break;
 
@@ -552,8 +548,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList&  params,
     case calc_struct_reset_all:
     {
       // Reset of history for materials
-      Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-      so3mat->ResetAll(NUMGPT_SOTET4);
+      SolidMaterial()->ResetAll(NUMGPT_SOTET4);
 
       // Reset prestress
       if (pstype_==INPAR::STR::prestress_mulf)
@@ -745,8 +740,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList&  params,
           LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D> cmat(true);
           LINALG::Matrix<MAT::NUM_STRESS_3D,1> stress(true);
           params.set<int>("gp",gp);
-          Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-          so3mat->Evaluate(&defgrd,&strainerror,params,&stress,&cmat,Id());
+          SolidMaterial()->Evaluate(&defgrd,&strainerror,params,&stress,&cmat,Id());
 
           // compute GP contribution to energy error norm
           energynorm += fac * stress.Dot(strainerror);
@@ -1510,8 +1504,7 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(
     }
 
     params.set<int>("gp",gp);
-    Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-    so3mat->Evaluate(&defgrd,&glstrain,params,&stress,&cmat,Id());
+    SolidMaterial()->Evaluate(&defgrd,&glstrain,params,&stress,&cmat,Id());
 
     // return gp stresses
     switch (iostress)
@@ -1997,8 +1990,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_remodel(
       LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D> cmat(true);
       LINALG::Matrix<MAT::NUM_STRESS_3D,1> stress(true);
       params.set<int>("gp",gp);
-      Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-      so3mat->Evaluate(&defgrd,&glstrain,params,&stress,&cmat,Id());
+      SolidMaterial()->Evaluate(&defgrd,&glstrain,params,&stress,&cmat,Id());
       // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
       // Cauchy stress

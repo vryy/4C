@@ -240,16 +240,14 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(
       t_o_(0,0)= t_(0,0);
 
       // Update of history for materials
-      Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-      so3mat->Update();
+      SolidMaterial()->Update();
     }
     break;
 
     case calc_struct_reset_istep:
     {
       // Reset of history (if needed)
-      Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-      so3mat->ResetStep();
+      SolidMaterial()->ResetStep();
     }
     break;
 
@@ -483,8 +481,7 @@ void DRT::ELEMENTS::So_Hex8P1J1::ForceStiffMass(
     LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D> cmat(true);
     LINALG::Matrix<MAT::NUM_STRESS_3D,1> stress(true);
     params.set<int>("gp",gp);
-    Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-    so3mat->Evaluate(&mod_defgrd,&mod_glstrain,params,&stress,&cmat,Id());
+    SolidMaterial()->Evaluate(&mod_defgrd,&mod_glstrain,params,&stress,&cmat,Id());
 
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
@@ -1191,8 +1188,7 @@ void DRT::ELEMENTS::So_Hex8P1J1::test_stiffmat(
       LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D> cmat(true);
       LINALG::Matrix<MAT::NUM_STRESS_3D,1> stress(true);
       params.set<int>("gp",gp);
-      Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-      so3mat->Evaluate(&defgrd,&mod_glstrain,params,&stress,&cmat,Id());
+      SolidMaterial()->Evaluate(&defgrd,&mod_glstrain,params,&stress,&cmat,Id());
 
       // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 

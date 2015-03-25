@@ -132,11 +132,10 @@ bool DRT::ELEMENTS::SoDisp::ReadElement(const std::string& eletype,
   numgpt_disp_ = intpoints.nquad;      // total gauss points per element
 
   // set up of materials with GP data (e.g., history variables)
-  Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-  so3mat->Setup(numgpt_disp_, linedef);
+  SolidMaterial()->Setup(numgpt_disp_, linedef);
 
   // check if material kinematics is compatible to element kinematics
-  so3mat->ValidKinematics(kintype_);
+  SolidMaterial()->ValidKinematics(kintype_);
 
   return true;
 }

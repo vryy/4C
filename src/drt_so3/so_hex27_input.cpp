@@ -29,8 +29,7 @@ bool DRT::ELEMENTS::So_hex27::ReadElement(const std::string& eletype,
 
   Teuchos::RCP<MAT::Material> mat = Material();
 
-  Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-  so3mat->Setup(NUMGPT_SOH27, linedef);
+  SolidMaterial()->Setup(NUMGPT_SOH27, linedef);
 
   std::string buffer;
   linedef->ExtractString("KINEM",buffer);
@@ -46,7 +45,7 @@ bool DRT::ELEMENTS::So_hex27::ReadElement(const std::string& eletype,
   else dserror ("Reading SO_HEX27 element failed KINEM unknown");
 
   // check if material kinematics is compatible to element kinematics
-  so3mat->ValidKinematics(kintype_);
+  SolidMaterial()->ValidKinematics(kintype_);
 
   return true;
 }

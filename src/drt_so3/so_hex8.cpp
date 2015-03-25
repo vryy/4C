@@ -541,8 +541,7 @@ std::vector<double> DRT::ELEMENTS::So_hex8::ElementCenterRefeCoords()
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8::VisNames(std::map<std::string,int>& names)
 {
-  Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-  so3mat->VisNames(names);
+  SolidMaterial()->VisNames(names);
 
   return;
 }
@@ -556,9 +555,7 @@ bool DRT::ELEMENTS::So_hex8::VisData(const std::string& name, std::vector<double
   if (DRT::Element::VisData(name,data))
     return true;
 
-  Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-
-  return so3mat->VisData(name, data, NUMGPT_SOH8, this->Id());
+  return SolidMaterial()->VisData(name, data, NUMGPT_SOH8, this->Id());
 }
 
 

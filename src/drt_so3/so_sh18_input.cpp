@@ -32,8 +32,7 @@ bool DRT::ELEMENTS::So_sh18::ReadElement(const std::string& eletype,
 
   Teuchos::RCP<MAT::Material> mat = Material();
 
-  Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-  so3mat->Setup(NUMGPT_SOH18, linedef);
+  SolidMaterial()->Setup(NUMGPT_SOH18, linedef);
 
   // temporary variable for read-in
   std::string buffer;
@@ -50,7 +49,7 @@ bool DRT::ELEMENTS::So_sh18::ReadElement(const std::string& eletype,
   else dserror ("Reading SO_HEX18 element failed KINEM unknown");
 
   // check if material kinematics is compatible to element kinematics
-  so3mat->ValidKinematics(INPAR::STR::kinem_nonlinearTotLag);
+  SolidMaterial()->ValidKinematics(INPAR::STR::kinem_nonlinearTotLag);
 
   // transverse shear locking
   linedef->ExtractString("TSL",buffer);

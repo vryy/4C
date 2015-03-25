@@ -238,8 +238,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::So_hex18::Lines()
 *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex18::VisNames(std::map<std::string,int>& names)
 {
- Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
- so3mat->VisNames(names);
+ SolidMaterial()->VisNames(names);
 
  return;
 }
@@ -253,9 +252,7 @@ bool DRT::ELEMENTS::So_hex18::VisData(const std::string& name, std::vector<doubl
  if (DRT::Element::VisData(name,data))
    return true;
 
- Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-
- return so3mat->VisData(name, data, NUMGPT_SOH18, this->Id());
+ SolidMaterial()->VisData(name, data, NUMGPT_SOH18, this->Id());
 }
 
 
@@ -275,8 +272,7 @@ bool DRT::ELEMENTS::So_hex18::ReadElement(const std::string& eletype,
 
   Teuchos::RCP<MAT::Material> mat = Material();
 
-  Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-  so3mat->Setup(NUMGPT_SOH18, linedef);
+  SolidMaterial()->Setup(NUMGPT_SOH18, linedef);
 
   // temporary variable for read-in
   std::string buffer;
@@ -293,7 +289,7 @@ bool DRT::ELEMENTS::So_hex18::ReadElement(const std::string& eletype,
   else dserror ("Reading SO_HEX18 element failed KINEM unknown");
 
   // check if material kinematics is compatible to element kinematics
-  so3mat->ValidKinematics(INPAR::STR::kinem_nonlinearTotLag);
+  SolidMaterial()->ValidKinematics(INPAR::STR::kinem_nonlinearTotLag);
 
   return true;
 }
@@ -520,8 +516,7 @@ int DRT::ELEMENTS::So_hex18::Evaluate(Teuchos::ParameterList&  params,
     //==================================================================================
     case calc_struct_update_istep:
     {
-      Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-      so3mat->Update();
+      SolidMaterial()->Update();
       Update();
     }
     break;
@@ -530,8 +525,7 @@ int DRT::ELEMENTS::So_hex18::Evaluate(Teuchos::ParameterList&  params,
     case calc_struct_reset_istep:
     {
       // Reset of history (if needed)
-      Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-      so3mat->ResetStep();
+      SolidMaterial()->ResetStep();
     }
     break;
 
@@ -539,8 +533,7 @@ int DRT::ELEMENTS::So_hex18::Evaluate(Teuchos::ParameterList&  params,
     case calc_struct_reset_all:
     {
       // Reset of history for materials
-      Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-      so3mat->ResetAll(NUMGPT_SOH18);
+      SolidMaterial()->ResetAll(NUMGPT_SOH18);
     }
     break;
 
@@ -805,8 +798,7 @@ void DRT::ELEMENTS::So_hex18::nlnstiffmass(
     LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D> cmat(true);
     LINALG::Matrix<MAT::NUM_STRESS_3D,1> stress(true);
     params.set<int>("gp",gp);
-    Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-    so3mat->Evaluate(&defgrd,&glstrain,params,&stress,&cmat,Id());
+    SolidMaterial()->Evaluate(&defgrd,&glstrain,params,&stress,&cmat,Id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     double detJ_w = detJ*wgt_[gp];

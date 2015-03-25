@@ -14,6 +14,7 @@
 
 
 #include "so_base.H"
+#include "../drt_mat/so3_material.H"
 
 
 /*----------------------------------------------------------------------*
@@ -78,4 +79,14 @@ void DRT::ELEMENTS::So_base::Unpack(const std::vector<char>& data)
   kintype_ = static_cast<INPAR::STR::KinemType>( ExtractInt(position,data) );
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |  return solid material                                      (public) |
+ |                                                           seitz 03/15|
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<MAT::So3Material> DRT::ELEMENTS::So_base::SolidMaterial(int nummat) const
+{
+  dsassert(nummat<(int)mat_.size(),"invalid material number");
+  return Teuchos::rcp_dynamic_cast<MAT::So3Material>(DRT::Element::Material(nummat),true);
 }

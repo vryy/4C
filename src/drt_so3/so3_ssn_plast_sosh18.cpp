@@ -484,8 +484,7 @@ void DRT::ELEMENTS::So_sh18Plast::nln_stiffmass(
       else
       {
         params.set<int>("gp",gp);
-        Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-        so3mat->Evaluate(&defgrd,&glstrain,params,&pk2,&cmat,Id());
+        SolidMaterial()->Evaluate(&defgrd,&glstrain,params,&pk2,&cmat,Id());
       }
       // material call *********************************************
 

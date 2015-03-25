@@ -537,7 +537,7 @@ bool DRT::ELEMENTS::So3_Plast<distype>::ReadElement(
 
   SetMaterial(material);
 
-  Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+  Teuchos::RCP<MAT::So3Material> so3mat = SolidMaterial();
   so3mat->Setup(numgpt_, linedef);
   so3mat->ValidKinematics(INPAR::STR::kinem_nonlinearTotLag);
   if (so3mat->MaterialType()!=INPAR::MAT::m_plelasthyper)
@@ -643,8 +643,7 @@ template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::VisNames(std::map<std::string,int>& names)
 {
   DRT::Element::VisNames(names);
-  Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-  so3mat->VisNames(names);
+  SolidMaterial()->VisNames(names);
 
   return;
 }  // VisNames()
@@ -659,11 +658,7 @@ bool DRT::ELEMENTS::So3_Plast<distype>::VisData(const std::string& name, std::ve
   if (DRT::Element::VisData(name,data))
     return true;
 
-  Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-  if(so3mat->VisData(name,data,numgpt_,Id()))
-    return true;
-
-  return false;
+  return SolidMaterial()->VisData(name,data,numgpt_,Id());
 
 }  // VisData()
 

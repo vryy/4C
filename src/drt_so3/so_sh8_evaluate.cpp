@@ -333,15 +333,13 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
         LINALG::DENSEFUNCTIONS::update<double,soh8_eassosh8,1>(*alphao,*alpha);
       }
       // Update of history for materials
-      Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-      so3mat->Update();
+      SolidMaterial()->Update();
     }
     break;
 
     case calc_struct_reset_istep: {
       // Reset of history (if needed)
-      Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-      so3mat->ResetStep();
+      SolidMaterial()->ResetStep();
     }
     break;
 
@@ -858,8 +856,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
     LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D> cmat(true);
     LINALG::Matrix<MAT::NUM_STRESS_3D,1> stress(true);
     params.set<int>("gp",gp);
-    Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-    so3mat->Evaluate(&defgrd_mod,&glstrain,params,&stress,&cmat,Id());
+    SolidMaterial()->Evaluate(&defgrd_mod,&glstrain,params,&stress,&cmat,Id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp stresses if necessary

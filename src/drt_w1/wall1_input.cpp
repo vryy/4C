@@ -46,12 +46,9 @@ bool DRT::ELEMENTS::Wall1::ReadElement(const std::string& eletype,
   Teuchos::RCP<MAT::Material> mat = Material();
 
   {
-    Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(mat);
-    if(so3mat == Teuchos::null)
-      dserror("material is not a So3Material");
     const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
     const int numgp = intpoints.nquad;
-    so3mat->Setup(numgp,linedef);
+    SolidMaterial()->Setup(numgp,linedef);
   }
 
   std::string buffer;
@@ -127,6 +124,9 @@ bool DRT::ELEMENTS::Wall1::ReadElement(const std::string& eletype,
   // check for invalid combinations
   if (kintype_==INPAR::STR::kinem_linear && iseas_==true)
     dserror("ERROR: No EAS for geometrically linear WALL element");
+
+  // validate kinematics of solid material
+  SolidMaterial()->ValidKinematics(kintype_);
 
   return true;
 }

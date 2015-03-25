@@ -272,16 +272,14 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
     case calc_struct_update_istep:
     {
       // Update of history for materials
-      Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-      so3mat->Update();
+      SolidMaterial()->Update();
     }
     break;
 
     case calc_struct_reset_istep:
     {
       // Reset of history (if needed)
-      Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-      so3mat->ResetStep();
+      SolidMaterial()->ResetStep();
     }
     break;
 
@@ -289,8 +287,7 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
     case calc_struct_reset_all:
     {
       // Reset of history for materials
-      Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-      so3mat->ResetAll(NUMGPT_SOH8);
+      SolidMaterial()->ResetAll(NUMGPT_SOH8);
 
       // Reset prestress
       if (pstype_==INPAR::STR::prestress_mulf)
@@ -360,8 +357,7 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
       // Update constraintmixture material
       if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture)
       {
-        Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-        so3mat->Update();
+        SolidMaterial()->Update();
       }
     }
     break;
@@ -959,8 +955,7 @@ void DRT::ELEMENTS::So_hex8fbar::nlnstiffmass(
     }
 
     params.set<int>("gp",gp);
-    Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-    so3mat->Evaluate(&defgrd_bar,&glstrain_bar,params,&stress_bar,&cmat,Id());
+    SolidMaterial()->Evaluate(&defgrd_bar,&glstrain_bar,params,&stress_bar,&cmat,Id());
     // end of call material law
 
     // print plastic strains
@@ -1144,7 +1139,7 @@ void DRT::ELEMENTS::So_hex8fbar::nlnstiffmass(
       }
 
       //check for non constant mass matrix
-      if(so3mat->VaryingDensity())
+      if(SolidMaterial()->VaryingDensity())
       {
         /*
          If the density, i.e. the mass matrix, is not constant, a linearization is neccessary.
@@ -1181,7 +1176,7 @@ void DRT::ELEMENTS::So_hex8fbar::nlnstiffmass(
           glstrain(5) = cauchygreen(2,0);
         //}
 
-        so3mat->EvaluateNonLinMass(&defgrd,&glstrain,params,&linmass_disp,&linmass_vel,Id());
+          SolidMaterial()->EvaluateNonLinMass(&defgrd,&glstrain,params,&linmass_disp,&linmass_vel,Id());
 
 
         //multiply by 2.0 to get derivative w.r.t green lagrange strains and multiply by time integration factor

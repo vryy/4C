@@ -18,6 +18,7 @@
 
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_lib/drt_element.H"
+#include "../drt_mat/so3_material.H"
 
 namespace DRT
 {
@@ -81,6 +82,17 @@ public:
   {
     kintype_=kintype;
   }
+
+  /*!
+  \brief Return the material of this element
+
+  Note: The input parameter nummat is not the material number from input file
+        as in SetMaterial(int matnum), but the number of the material within
+        the vector of materials the element holds
+
+  \param nummat (in): number of requested material
+  */
+  virtual Teuchos::RCP<MAT::So3Material> SolidMaterial(int nummat=0) const;
 
 protected:
   //! kinematic type

@@ -1231,8 +1231,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
       total_glstrain(4) = total_cauchygreen(1,2);
       total_glstrain(5) = total_cauchygreen(2,0);
       params.set<int>("gp",gp);
-      Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-      so3mat->Evaluate(&defgrd_mod,&total_glstrain,params,&pk2,&cmat,Id());
+      SolidMaterial()->Evaluate(&defgrd_mod,&total_glstrain,params,&pk2,&cmat,Id());
     }
     // material call *********************************************
 
@@ -2330,8 +2329,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::UpdatePlasticDeformation_nln(PlSpinType 
   }
   else
   {
-    Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
-    so3mat->Update();
+    SolidMaterial()->Update();
   }
 
   if (eastype_!=soh8p_easnone)
