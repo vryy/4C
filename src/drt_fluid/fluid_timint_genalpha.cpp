@@ -87,12 +87,12 @@ void FLD::TimIntGenAlpha::PrintTimeStepInfo()
     switch (timealgo_)
     {
     case INPAR::FLUID::timeint_afgenalpha:
-      printf("TIME: %11.4E/%11.4E  DT = %11.4E  Af-Generalized-Alpha  STEP = %4d/%4d \n",
-             time_,maxtime_,dta_,step_,stepmax_);
+      printf("TIME: %11.4E/%11.4E  DT = %11.4E  Af-Generalized-Alpha (gamma = %0.2f, alphaF = %0.2f, alphaM = %0.2f) STEP = %4d/%4d \n",
+             time_,maxtime_,dta_,gamma_,alphaF_,alphaM_,step_,stepmax_);
       break;
     case INPAR::FLUID::timeint_npgenalpha:
-      printf("TIME: %11.4E/%11.4E  DT = %11.4E  Np-Generalized-Alpha  STEP = %4d/%4d \n",
-             time_,maxtime_,dta_,step_,stepmax_);
+      printf("TIME: %11.4E/%11.4E  DT = %11.4E  Np-Generalized-Alpha (gamma = %0.2f, alphaF = %0.2f, alphaM = %0.2f) STEP = %4d/%4d \n",
+             time_,maxtime_,dta_,gamma_,alphaF_,alphaM_,step_,stepmax_);
       break;
     default:
       dserror("parameter out of range: IOP\n");

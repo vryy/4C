@@ -557,8 +557,8 @@ protected:
                        const LINALG::Matrix<nsd_,nen_> &             evel_hat,
                        const LINALG::Matrix<nsd_*nsd_,nen_> &        ereynoldsstress_hat,
                        const LINALG::Matrix<nen_,1> &                eporo,
-                       const LINALG::Matrix<nsd_,nen_> &             egradphi,
-                       const LINALG::Matrix<nen_,1> &                ecurvature,
+                       const LINALG::Matrix<nsd_,2*nen_> &             egradphi,
+                       const LINALG::Matrix<nen_,2*1> &                ecurvature,
                        Teuchos::RCP<MAT::Material>                   mat,
                        bool                                          isale,
                        bool                                          isowned,
@@ -633,8 +633,8 @@ protected:
                       LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&  emesh,
                       LINALG::Matrix<(nsd_+1)*nen_,    1>&          eforce,
                       const LINALG::Matrix<nen_,1> &                eporo,
-                      const LINALG::Matrix<nsd_,nen_> &             egradphi,
-                      const LINALG::Matrix<nen_,1> &                ecurvature,
+                      const LINALG::Matrix<nsd_,2*nen_> &             egradphi,
+                      const LINALG::Matrix<nen_,2*1> &                ecurvature,
                       const double                                  thermpressaf,
                       const double                                  thermpressam,
                       const double                                  thermpressdtaf,
@@ -677,8 +677,8 @@ protected:
                       LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&  emesh,
                       LINALG::Matrix<(nsd_+1)*nen_,    1>&          eforce,
                       const LINALG::Matrix<nen_,1> &                eporo,
-                      const LINALG::Matrix<nsd_,nen_> &             egradphi,
-                      const LINALG::Matrix<nen_,1> &                ecurvature,
+                      const LINALG::Matrix<nsd_,2*nen_> &             egradphi,
+                      const LINALG::Matrix<nen_,2*1> &                ecurvature,
                       const double                                  thermpressaf,
                       const double                                  thermpressam,
                       const double                                  thermpressdtaf,
@@ -716,8 +716,8 @@ protected:
   //! calculate body force contribution from surface tension
   void AddSurfaceTensionForce(const LINALG::Matrix<nen_,1>&                 escaaf,     ///< scalar at time n+alpha_f / n+1
                               const LINALG::Matrix<nen_,1>&                 escaam,     ///< scalar at time n+alpha_m / n
-                              const LINALG::Matrix<nsd_,nen_> &             egradphi,   //<gradient of scalar function at nodes
-                              const LINALG::Matrix<nen_,1> &                ecurvature  //<curvature of scalar function at nodes
+                              const LINALG::Matrix<nsd_,2*nen_> &           egradphi,   //<gradient of scalar function at nodes
+                              const LINALG::Matrix<nen_,2*1> &              ecurvature  //<curvature of scalar function at nodes
                               );
 
 

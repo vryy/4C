@@ -89,6 +89,8 @@ namespace TWOPHASEFLOW
     void TimeUpdate();
     /// prepare time step
     void PrepareTimeStep();
+    /// prepare outer iteration
+    void PrepareOuterIteration();
 
     /// write output
     void Output();

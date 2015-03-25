@@ -54,7 +54,6 @@ public:
                          Teuchos::RCP<const Epetra_MultiVector> gradphiaf,
                          Teuchos::RCP<DRT::Discretization> scatradis);
 
-
   /*!
   \brief set scalar fields
 
@@ -78,15 +77,15 @@ public:
     \brief Add problem dependent vector.
 
     */
-  void AddProblemDependentVectors();
+  virtual void AddProblemDependentVectors();
 
 
 protected:
 
-private:
-
   ///Curvature of phi and gradient of phi at node points.
   Teuchos::RCP<Epetra_Vector>              tpf_gradphi_curvaf_;
+
+private:
 
 
 }; // class TimIntTwoPhase

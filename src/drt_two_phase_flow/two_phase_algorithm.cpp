@@ -19,6 +19,7 @@ Maintainer: Magnus Winter
 #include "../drt_levelset/levelset_timint_ost.H"
 #include "../drt_fluid/fluid_timint_two_phase.H"
 #include "../drt_fluid/fluid_timint_two_phase_genalpha.H"
+#include "../drt_fluid/fluid_timint_two_phase_ost.H"
 #include "../drt_scatra/scatra_timint_ost.H"
 
 #include "two_phase_algorithm.H"
@@ -149,6 +150,23 @@ void TWOPHASEFLOW::Algorithm::SolveStationaryProblem()
 }
 
 
+/*---------------------------------------------------------------------------------------*
+| Prepares values and variables needed in the outer iteration                            |
+*----------------------------------------------------------------------------------------*/
+void TWOPHASEFLOW::Algorithm::PrepareOuterIteration()
+{
+  //Update phi for outer loop convergence check
+  phinpi_->Update(1.0,*ScaTraField()->Phinp(),0.0);
+  velnpi_->Update(1.0,*FluidField()->Velnp(),0.0);
+
+  //Clear the vectors containing the data for the partitioned increments
+  fsvelincnorm_.clear();
+  fspressincnorm_.clear();
+  fsphiincnorm_.clear();
+
+  return;
+}
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void TWOPHASEFLOW::Algorithm::PrepareTimeStep()
@@ -192,6 +210,9 @@ void TWOPHASEFLOW::Algorithm::OuterLoop()
   // (values for intermediate time steps were calculated at the end of PerpareTimeStep)
   DoScaTraField();
 
+  //Prepare variables for convergence check.
+  PrepareOuterIteration();
+
   while (stopnonliniter==false)
   {
     itnum++;
@@ -218,6 +239,9 @@ void TWOPHASEFLOW::Algorithm::DoFluidField()
 
   //Set relevant ScaTra values in Fluid field.
   SetScaTraValuesInFluid();
+
+  //Print time step information
+  Teuchos::rcp_dynamic_cast<FLD::TimIntTwoPhase>(FluidField())->PrintTimeStepInfo();
 
   //Solve the Fluid field.
   FluidField()->Solve();
@@ -317,6 +341,11 @@ void TWOPHASEFLOW::Algorithm::SetScaTraValuesInFluid()
                                    Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField())->GetNodalCurvature(ScaTraField()->Phinp()),
                                    ScaTraField()->GetSmoothedGradientAtNodes(ScaTraField()->Phinp()),
                                    ScaTraField()->Discretization());
+
+    Teuchos::rcp_dynamic_cast<FLD::TimIntTwoPhaseOst>(FluidField())->SetIterScalarFieldsn(
+                                       Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField())->GetNodalCurvature(ScaTraField()->Phin()),
+                                       ScaTraField()->GetSmoothedGradientAtNodes(ScaTraField()->Phin()),
+                                       ScaTraField()->Discretization());
   }
   break;
   default:

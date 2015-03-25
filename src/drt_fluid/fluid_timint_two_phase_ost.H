@@ -43,7 +43,23 @@ public:
   virtual void Init();
 
 
+  /*!
+  \brief set scalar fields at previous time step within outer iteration loop (needed for new OST)
+
+  */
+  void SetIterScalarFieldsn(Teuchos::RCP<const Epetra_Vector> curvaturen,
+                            Teuchos::RCP<const Epetra_MultiVector> gradphin,
+                            Teuchos::RCP<DRT::Discretization> scatradis);
+
+  /*!
+    \brief Add problem dependent vector.
+
+    */
+  virtual void AddProblemDependentVectors();
+
 protected:
+
+  Teuchos::RCP<Epetra_Vector>              tpf_gradphi_curvn_;
 
 private:
 

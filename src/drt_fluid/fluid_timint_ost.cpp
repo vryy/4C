@@ -75,7 +75,7 @@ void FLD::TimIntOneStepTheta::PrintTimeStepInfo()
 {
   if (myrank_==0)
   {
-    printf("TIME: %11.4E/%11.4E  DT = %11.4E   One-Step-Theta (%0.2f)   STEP = %4d/%4d \n",
+    printf("TIME: %11.4E/%11.4E  DT = %11.4E   One-Step-Theta (theta = %0.2f)   STEP = %4d/%4d \n",
           time_,maxtime_,dta_,theta_,step_,stepmax_);
   }
   return;

@@ -298,12 +298,41 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Evaluate(DRT::ELEMENTS::Fluid*
   if (fldpara_->PhysicalType()==INPAR::FLUID::oseen) SetAdvectiveVelOseen(ele);
 
 
-
   LINALG::Matrix<nsd_,nen_> gradphiele(true);
   LINALG::Matrix<nen_,1>    curvatureele(true);
+  LINALG::Matrix<nsd_,nen_> gradphielen(true);
+  LINALG::Matrix<nen_,1>    curvatureelen(true);
+
+  LINALG::Matrix<nsd_,2*nen_> gradphieletot(true);
+  LINALG::Matrix<nen_,2>      curvatureeletot(true);
+
   if (fldpara_->GetIncludeSurfaceTension())
   {
     ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &gradphiele, &curvatureele,"tpf_gradphi_curvaf");
+
+    if(fldparatimint_->IsNewOSTImplementation())
+    {
+      ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &gradphielen, &curvatureelen,"tpf_gradphi_curvn");
+    }
+
+//    //TPF_Magnus
+//    gradphiele.Print(std::cout);
+//    gradphielen.Print(std::cout);
+//
+//    curvatureele.Print(std::cout);
+//    curvatureelen.Print(std::cout);
+
+    for(int i=0; i<nen_; i++)
+    {
+      for(int idim=0; idim<nsd_; idim++ )
+      {
+        gradphieletot(idim,i)      = gradphiele(idim,i);
+        gradphieletot(idim,i+nen_) = gradphielen(idim,i);
+      }
+      curvatureeletot(i,0) = curvatureele(i,0);
+      curvatureeletot(i,1) = curvatureelen(i,0);
+    }
+
     double epsilon = fldpara_->GetInterfaceThickness();
 
     if(fldpara_->GetEnhancedGaussRuleInInterface())
@@ -320,7 +349,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Evaluate(DRT::ELEMENTS::Fluid*
         }
       }
     }
-  }
+  } //fldpara_->GetIncludeSurfaceTension()
 
   LINALG::Matrix<nen_,1> eporo(true);
   if ((params.getEntryPtr("topopt_density") != NULL) and // parameter exists and ...
@@ -473,8 +502,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Evaluate(DRT::ELEMENTS::Fluid*
     evel_hat,
     ereynoldsstress_hat,
     eporo,
-    gradphiele,
-    curvatureele,
+    gradphieletot, //gradphiele,
+    curvatureeletot,  //curvatureele,
     mat,
     ele->IsAle(),
     ele->Owner()==discretization.Comm().MyPID(),
@@ -525,8 +554,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Evaluate(
   const LINALG::Matrix<nsd_,nen_> &             evel_hat,
   const LINALG::Matrix<nsd_*nsd_,nen_> &        ereynoldsstress_hat,
   const LINALG::Matrix<nen_,1> &                eporo,
-  const LINALG::Matrix<nsd_,nen_> &             egradphi,
-  const LINALG::Matrix<nen_,1> &                ecurvature,
+  const LINALG::Matrix<nsd_,2*nen_> &           egradphi,
+  const LINALG::Matrix<nen_,2*1> &              ecurvature,
   Teuchos::RCP<MAT::Material>                   mat,
   bool                                          isale,
   bool                                          isowned,
@@ -719,8 +748,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Sysmat(
     LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&  emesh,
     LINALG::Matrix<(nsd_+1)*nen_,1>&              eforce,
     const LINALG::Matrix<nen_,1> &                eporo,
-    const LINALG::Matrix<nsd_,nen_> &             egradphi,
-    const LINALG::Matrix<nen_,1> &                ecurvature,
+    const LINALG::Matrix<nsd_,2*nen_> &           egradphi,
+    const LINALG::Matrix<nen_,2*1> &              ecurvature,
     const double                                  thermpressaf,
     const double                                  thermpressam,
     const double                                  thermpressdtaf,
@@ -1798,8 +1827,8 @@ template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::Enrich
 void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::AddSurfaceTensionForce(
     const LINALG::Matrix<nen_,1>&                 escaaf,
     const LINALG::Matrix<nen_,1>&                 escaam,
-    const LINALG::Matrix<nsd_,nen_> &             egradphi,
-    const LINALG::Matrix<nen_,1> &                ecurvature
+    const LINALG::Matrix<nsd_,2*nen_> &           egradphitot,
+    const LINALG::Matrix<nen_,2*1> &              ecurvaturetot
     )
 {
 
@@ -1811,35 +1840,69 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::AddSurfaceTensionForce(
   //Add surface force if inside interface thickness, otherwise do not.
   if(abs(gaussescaaf) <= epsilon)
   {
+
+    LINALG::Matrix<nsd_,nen_> egradphi(true);
+    LINALG::Matrix<nsd_,nen_> egradphin(true);
+
+    LINALG::Matrix<nen_,1>    ecurvature(true);
+    LINALG::Matrix<nen_,1>    ecurvaturen(true);
+
+    // Extract values from gradient and curvature vectors (who been compressed to not use too many unneccessary variables)
+    //==================================================
+    for(int i=0; i<nen_; i++)
+    {
+      for(int idim=0; idim<nsd_; idim++ )
+      {
+        egradphi(idim,i)  = egradphitot(idim,i);
+        egradphin(idim,i) = egradphitot(idim,i+nen_);
+      }
+      ecurvature(i,0)  = ecurvaturetot(i,0);
+      ecurvaturen(i,0) = ecurvaturetot(i,1);
+    }
+    //==================================================
+
     LINALG::Matrix<nsd_,1> gradphi;
     double                 gausscurvature;
-
 
     gausscurvature=funct_.Dot(ecurvature);
     double Dheavyside_epsilon = 1.0/(2.0 * epsilon)*(1.0+cos(PI*gaussescaaf/epsilon));
 
-
     // NON-smoothed gradient!!! Should be correct
     gradphi.Multiply(derxy_,escaaf);
-    const double normgradphi=gradphi.Norm2();
-    if(normgradphi>1e-9) //1e-9 is set to create a reasonable scaling.
-      gradphi.Scale(1.0/normgradphi);
-    else
-      gradphi.Scale(0.0); //This to catch the cases when gradphi \approx 0
+    // Normalizing the gradient shouldn't be done according to the paper
+    // of Rodriguez 2013.
 
-
-//    //Smoothed gradient (egradphi, should not be used!!!)
-//    gradphi.Multiply(egradphi,funct_);
-//    const double normsmoothgradphi=gradphi.Norm2();
-//    if(normsmoothgradphi>1e-9) //1e-9 is set to create a reasonable scaling.
-//      gradphi.Scale(1.0/normsmoothgradphi);
+//    const double normgradphi=gradphi.Norm2();
+//    if(normgradphi>1e-9) //1e-9 is set to create a reasonable scaling.
+//      gradphi.Scale(1.0/normgradphi);
 //    else
-//      gradphi.Scale(0.0);
-
+//      gradphi.Scale(0.0); //This to catch the cases when gradphi \approx 0
 
     //Smoothed gradient (egradphi, should not be used!!!)
     double scalar_fac = Dheavyside_epsilon*gamma_*gausscurvature;
     generalbodyforce_.Update(scalar_fac,gradphi,1.0);
+
+    if(fldparatimint_->IsNewOSTImplementation())
+    {
+      double                 gaussescan;
+      gaussescan =    funct_.Dot(escaam);
+
+      LINALG::Matrix<nsd_,1> gradphin;
+      double                 gausscurvaturen;
+
+      gausscurvaturen=funct_.Dot(ecurvaturen);
+      gradphin.Multiply(derxy_,escaam);
+      //    const double normgradphin=gradphin.Norm2();
+      //    if(normgradphin>1e-9) //1e-9 is set to create a reasonable scaling.
+      //      gradphin.Scale(1.0/normgradphin);
+      //    else
+      //      gradphin.Scale(0.0); //This to catch the cases when gradphi \approx 0
+
+      Dheavyside_epsilon = 1.0/(2.0 * epsilon)*(1.0+cos(PI*gaussescan/epsilon));
+      scalar_fac = Dheavyside_epsilon*gamma_*gausscurvaturen;
+      generalbodyforcen_.Update(scalar_fac,gradphi,1.0);
+
+    }
 
   }
 
