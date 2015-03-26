@@ -86,7 +86,8 @@ void DRT::ELEMENTS::So_sh18Type::SetupElementDefinition( std::map<std::string,st
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_sh18::So_sh18(int id, int owner) :
 So_base(id,owner),
-So_hex18(id,owner)
+So_hex18(id,owner),
+eas_is_init_(false)
 {
   return;
 }
@@ -100,7 +101,8 @@ So_hex18(old),
 dsg_shear_(old.dsg_shear_),
 dsg_membrane_(old.dsg_membrane_),
 dsg_ctl_(old.dsg_ctl_),
-eas_(old.eas_)
+eas_(old.eas_),
+eas_is_init_(old.eas_is_init_)
 {
   SetupDSG();
   return;
@@ -179,6 +181,7 @@ void DRT::ELEMENTS::So_sh18::Unpack(const std::vector<char>& data)
   dsg_membrane_ = ExtractInt(position,data);
   dsg_ctl_      = ExtractInt(position,data);
   eas_          = ExtractInt(position,data);
+  eas_is_init_=false;
   SetupDSG();
 
   if (position != data.size())

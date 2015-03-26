@@ -1411,8 +1411,7 @@ void DRT::ELEMENTS::So_sh18::EasSetup(
   // build EAS interpolation matrix M, evaluated at the GPs
   static std::vector<LINALG::Matrix<6,num_eas> > M(NUMGPT_SOH18);
   static LINALG::Matrix<3,1> G3_c;
-  static bool eval;
-  if (!eval)
+  if (!eas_is_init_)
   {
     for (int gp=0; gp<NUMGPT_SOH18; ++gp)
     {
@@ -1450,7 +1449,7 @@ void DRT::ELEMENTS::So_sh18::EasSetup(
   for (int dim=0;dim<3; ++dim)
     G3_c(dim) = jac0inv(2,dim);
 
-    eval=true;
+    eas_is_init_=true;
   }
   G3_contra=G3_c;
   M_gp = M;
