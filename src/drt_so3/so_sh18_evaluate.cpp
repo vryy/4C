@@ -1411,7 +1411,8 @@ void DRT::ELEMENTS::So_sh18::EasSetup(
   // build EAS interpolation matrix M, evaluated at the GPs
   static std::vector<LINALG::Matrix<6,num_eas> > M(NUMGPT_SOH18);
   static LINALG::Matrix<3,1> G3_c;
-  if (!eas_is_init_)
+  static bool eval=false;
+  if (!eval)
   {
     for (int gp=0; gp<NUMGPT_SOH18; ++gp)
     {
@@ -1430,6 +1431,8 @@ void DRT::ELEMENTS::So_sh18::EasSetup(
 
       M[gp].Scale(t);
     }
+    eval=true;
+  }
   // compute Jacobian, evaluated at element origin (r=s=t=0.0)
   LINALG::Matrix<NUMDIM_SOH18,NUMDIM_SOH18> jac0inv;
   LINALG::Matrix<2,1> xsi_center(true);
@@ -1449,8 +1452,6 @@ void DRT::ELEMENTS::So_sh18::EasSetup(
   for (int dim=0;dim<3; ++dim)
     G3_c(dim) = jac0inv(2,dim);
 
-    eas_is_init_=true;
-  }
   G3_contra=G3_c;
   M_gp = M;
 

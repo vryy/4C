@@ -181,7 +181,7 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
   if (eastype_ == soh8_easmild) {
     //static Epetra_SerialDenseMatrix M_mild(MAT::NUM_STRESS_3D*NUMGPT_SOH8,neas_);
     static std::vector<Epetra_SerialDenseMatrix> M_mild(NUMGPT_SOH8);
-    static bool M_mild_eval;
+    static bool M_mild_eval = false;
     /* easmild is the EAS interpolation of 9 modes, based on
     **            r 0 0   0 0 0 0 0 0
     **            0 s 0   0 0 0 0 0 0
@@ -214,7 +214,7 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
     *M_GP = &M_mild;       // return adress of static object to target of pointer
   } else if (eastype_ == soh8_easfull) {
     static std::vector<Epetra_SerialDenseMatrix> M_full(NUMGPT_SOH8);
-    static bool M_full_eval;
+    static bool M_full_eval = false;
     /* easfull is the EAS interpolation of 21 modes, based on
     **            r 0 0   0 0 0 0 0 0   0  0  0  0  0  0   rs rt 0  0  0  0
     **            0 s 0   0 0 0 0 0 0   0  0  0  0  0  0   0  0  rs st 0  0
@@ -246,7 +246,7 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
       *M_GP = &M_full;            // return adress of static object to target of pointer
     } else if (eastype_ == soh8_eassosh8) {
       static std::vector<Epetra_SerialDenseMatrix> M_sosh8(NUMGPT_SOH8);
-      static bool M_sosh8_eval;
+      static bool M_sosh8_eval = false;
       /* eassosh8 is the EAS interpolation for the Solid-Shell with t=thickness dir.
       ** consisting of 7 modes, based on
       **            r 0 0   0 0 0  0
@@ -277,7 +277,7 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
       *M_GP = &M_sosh8;            // return adress of static object to target of pointer
     } else if (eastype_ == soh8_easa) {
       static std::vector<Epetra_SerialDenseMatrix> M_sosh8(NUMGPT_SOH8);
-      static bool M_sosh8_eval;
+      static bool M_sosh8_eval = false;
       /* eassosh8 is the EAS interpolation for the Solid-Shell with t=thickness dir.
       ** consisting of 7 modes, based on
       **            r 0 0   0 0 0  0             // E_rr

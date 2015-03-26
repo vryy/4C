@@ -171,9 +171,6 @@ protected:
   bool dsg_ctl_;
   //! use EAS
   bool eas_;
-  //! EAS has been initialized
-  bool eas_is_init_;
-
 
   // EAS stuff *****************************************************
   LINALG::Matrix<num_eas,num_eas> KaaInv_;
