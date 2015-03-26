@@ -56,7 +56,6 @@ void DRT::INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& 
   PrintElementLines(stream,"NSTET5");
   //PrintElementLines(stream,"NSTET5SCATRA");
   PrintElementLines(stream,"SHELL8");
-  PrintElementLines(stream,"SOLID3");
   PrintElementLines(stream,"SOLIDH18");
   PrintElementLines(stream,"SOLIDH20");
   PrintElementLines(stream,"SOLIDH27");
