@@ -21,7 +21,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_meshfree_discret/drt_meshfree_discret.H"
 #include "../drt_meshfree_discret/drt_meshfree_cell.H"
-#include "../drt_fluid_ele/fluid_ele_immersed.H"
+#include "../drt_fluid_ele/fluid_ele_immersed_base.H"
 
 #include "../pss_full/pss_cpp.h" // access to legacy parser module
 
@@ -1160,22 +1160,22 @@ void IO::DiscretizationWriter::WriteElementData(bool writeowner)
       }
     }
 
-#ifdef DEBUG // rauch 07/14
+//#ifdef DEBUG // rauch 07/14
     // for debugging purposes of immersed method; recognized background elements and boundary elements
     // become visible in post processing
     if ((int)elerowmap->NumMyElements() >= 1)
     {
-      if(dynamic_cast<DRT::ELEMENTS::FluidImmersed*>(dis_->lRowElement(0)) != NULL)
+      if(dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(dis_->lRowElement(0)) != NULL)
       { // if dynamic cast is successful write those data
         for (int i=0; i<elerowmap->NumMyElements(); ++i)
         {
           // write information fo immersed method
-          dynamic_cast<DRT::ELEMENTS::FluidImmersed*>(dis_->lRowElement(i))->VisIsImmersed(names);
-          dynamic_cast<DRT::ELEMENTS::FluidImmersed*>(dis_->lRowElement(i))->VisIsImmersedBoundary(names);
+          dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(dis_->lRowElement(i))->VisIsImmersed(names);
+          dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(dis_->lRowElement(i))->VisIsImmersedBoundary(names);
         }
       }
     }
-#endif
+//#endif
 
     for (int i=0; i<elerowmap->NumMyElements(); ++i)
     {

@@ -1,19 +1,20 @@
 /*!----------------------------------------------------------------------
-\file fluid_ele_immersed.H
+\file fluid_ele_poro_immersed.H
 
-\brief specialized immersed element used in immersed fsi
+\brief specialized immersed element extending poro fluid element
 
 <pre>
 Maintainer:  Andreas Rauch
              rauch@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
-             089 - 289--15240 / 15264
+             089 - 289 - 15240
 </pre>
 *----------------------------------------------------------------------*/
+#include "fluid_ele_poro.H"
 #include "fluid_ele_immersed_base.H"
 
-#ifndef FLUID_ELE_IMMERSED_H
-#define FLUID_ELE_IMMERSED_H
+#ifndef FLUID_ELE_PORO_IMMERSED_H
+#define FLUID_ELE_PORO_IMMERSED_H
 
 namespace DRT
 {
@@ -21,20 +22,15 @@ namespace DRT
 namespace ELEMENTS
 {
 
-class FluidTypeImmersed : public FluidTypeImmersedBase
+class FluidTypePoroImmersed : public FluidTypeImmersedBase
 {
 public:
 
-  std::string Name() const { return "FluidTypeImmersed"; }
+  std::string Name() const { return "FluidTypePoroImmersed"; }
 
-  static FluidTypeImmersed & Instance();
+  static FluidTypePoroImmersed & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data);
-
-//  virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
-//                                             const std::string eledistype,
-//                                             const int id,
-//                                             const int owner );
 
   virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
 
@@ -43,11 +39,11 @@ public:
 
 private:
 
-  static FluidTypeImmersed instance_;
+  static FluidTypePoroImmersed instance_;
 
-}; //class FluidTypeImmersed
+}; //class FluidTypePoroImmersed
 
-class FluidImmersed : public FluidImmersedBase
+class FluidPoroImmersed : public FluidPoro, public FluidImmersedBase
 {
 public:
 
@@ -57,7 +53,7 @@ public:
   /*!
   \brief standard constructor
   */
-  FluidImmersed(
+  FluidPoroImmersed(
     int id,    ///< A unique global id
     int owner  ///< ???
     );
@@ -68,7 +64,7 @@ public:
   Makes a deep copy of a Element
 
   */
-  FluidImmersed(const FluidImmersed& old);
+  FluidPoroImmersed(const FluidPoroImmersed& old);
 
   /*!
   \brief Deep copy this instance of fluid and return pointer to the copy
@@ -85,7 +81,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return FluidTypeImmersed::Instance().UniqueParObjectId(); }
+  virtual int UniqueParObjectId() const { return FluidTypePoroImmersed::Instance().UniqueParObjectId(); }
 
   virtual void SetIsImmersed(int isimmersed){is_immersed_ = isimmersed;};
 
@@ -172,7 +168,7 @@ public:
   \brief Destructor
 
   */
-  ~FluidImmersed()
+  ~FluidPoroImmersed()
   {
     return;
   }

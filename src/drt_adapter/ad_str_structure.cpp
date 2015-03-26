@@ -438,7 +438,6 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
     {
     case prb_fsi:
     case prb_immersed_fsi:
-    case prb_immersed_cell:
     case prb_fsi_redmodels:
     case prb_fsi_lung:
     case prb_gas_fsi:
@@ -485,6 +484,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
     case prb_fpsi:
     case prb_fps3i:
     case prb_fpsi_xfem:
+    case prb_immersed_cell:
     {
       const Teuchos::ParameterList& porodyn = problem->PoroelastDynamicParams();
       const INPAR::POROELAST::SolutionSchemeOverFields coupling =

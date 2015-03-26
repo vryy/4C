@@ -235,6 +235,10 @@ public:
       DRT::ELEMENTS::Fluid*                ele,
       Teuchos::ParameterList&              params
       );
+  int ResetImmersedPoroEle(
+      DRT::ELEMENTS::Fluid*                ele,
+      Teuchos::ParameterList&              params
+      );
 
   /*! \brief Calculate properties for adaptive time step based on CFL number
    *

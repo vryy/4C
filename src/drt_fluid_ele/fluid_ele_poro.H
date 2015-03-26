@@ -67,7 +67,7 @@ private:
 /*!
 \brief A C++ wrapper for the fluid element
 */
-class FluidPoro : public Fluid
+class FluidPoro : public virtual Fluid
 {
 public:
 

@@ -65,6 +65,8 @@ std::map<std::string, std::string> POROELAST::UTILS::PoroelastCloneStrategy::Con
       "SurfFlowRate"));
   conditions_to_copy.insert(std::pair<std::string, std::string> ("LineFlowRate",
       "LineFlowRate"));
+  conditions_to_copy.insert(std::pair<std::string, std::string> ("ImmersedSearchbox",
+      "ImmersedSearchbox"));
 
   return conditions_to_copy;
 }
@@ -164,4 +166,19 @@ std::map<std::string, std::string> POROELAST::UTILS::PoroScatraCloneStrategy::Co
 }
 
 
+/*----------------------------------------------------------------------*
+ |                                                         rauch 03/15  |
+ *----------------------------------------------------------------------*/
+bool POROELAST::UTILS::PoroelastImmersedCloneStrategy::DetermineEleType(
+    DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
+{
+  //clone the element only if it is a poro element (we support submeshes here)
+  if (CheckPoro(actele))
+  {
+    // we only support transport elements here
+    eletype.push_back("FLUIDPOROIMMERSED");
+    return true;
+  }
 
+  return false;
+}

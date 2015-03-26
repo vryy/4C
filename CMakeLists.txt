@@ -1612,6 +1612,8 @@ set(OBJS_DRT_B3_LIB
 set(OBJS_DRT_FLUID_ELE_LIB
   src/drt_fluid_ele/fluid_ele.cpp
   src/drt_fluid_ele/fluid_ele_immersed.cpp
+  src/drt_fluid_ele/fluid_ele_poro_immersed.cpp
+  src/drt_fluid_ele/fluid_ele_immersed_base.cpp
   src/drt_fluid_ele/fluid_ele_boundary_calc.cpp
   src/drt_fluid_ele/fluid_ele_boundary_calc_std.cpp
   src/drt_fluid_ele/fluid_ele_boundary_calc_poro.cpp

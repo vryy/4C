@@ -420,13 +420,7 @@ void POROELAST::Monolithic::SetupSystem()
   // -------------------------------------------------------------
 
   //-----------------------------------build map of global dofs with DBC
-  {
-    const Teuchos::RCP<const Epetra_Map> scondmap =
-        StructureField()->GetDBCMapExtractor()->CondMap();
-    const Teuchos::RCP<const Epetra_Map> fcondmap =
-        FluidField()->GetDBCMapExtractor()->CondMap();
-    combinedDBCMap_= LINALG::MergeMap(scondmap, fcondmap, false);
-  }
+  BuildCombinedDBCMap();
   // -------------------------------------------------------------
 
   // initialize Poroelasticity-systemmatrix_
@@ -2129,4 +2123,19 @@ void POROELAST::Monolithic::EvalPoroContact()
         }
      }
   }
+}
+
+//
+/*-----------------------------------------------------------------------/
+|  build the combined dbcmap                          rauch/vuong 03/15  |
+/-----------------------------------------------------------------------*/
+void POROELAST::Monolithic::BuildCombinedDBCMap()
+{
+  const Teuchos::RCP<const Epetra_Map> scondmap =
+      StructureField()->GetDBCMapExtractor()->CondMap();
+  const Teuchos::RCP<const Epetra_Map> fcondmap =
+      FluidField()->GetDBCMapExtractor()->CondMap();
+  combinedDBCMap_= LINALG::MergeMap(scondmap, fcondmap, false);
+
+  return;
 }

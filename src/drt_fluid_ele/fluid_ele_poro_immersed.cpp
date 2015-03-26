@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
-\file fluid_ele_immersed.cpp
+\file fluid_ele_poro_immersed.cpp
 
-\brief specialized immersed element used in immersed fsi
+\brief specialized immersed element extending poro fluid element
 
 <pre>
 Maintainer:  Andreas Rauch
@@ -11,72 +11,65 @@ Maintainer:  Andreas Rauch
 </pre>
 *----------------------------------------------------------------------*/
 
-#include "fluid_ele_immersed.H"
+#include "fluid_ele_poro_immersed.H"
 #include "../drt_lib/drt_linedefinition.H"
 
-DRT::ELEMENTS::FluidTypeImmersed DRT::ELEMENTS::FluidTypeImmersed::instance_;
+DRT::ELEMENTS::FluidTypePoroImmersed DRT::ELEMENTS::FluidTypePoroImmersed::instance_;
 
-DRT::ELEMENTS::FluidTypeImmersed& DRT::ELEMENTS::FluidTypeImmersed::Instance()
+DRT::ELEMENTS::FluidTypePoroImmersed& DRT::ELEMENTS::FluidTypePoroImmersed::Instance()
 {
   return instance_;
 }
 
-DRT::ParObject* DRT::ELEMENTS::FluidTypeImmersed::Create( const std::vector<char> & data)
+DRT::ParObject* DRT::ELEMENTS::FluidTypePoroImmersed::Create( const std::vector<char> & data)
 {
-    DRT::ELEMENTS::FluidImmersed* object = new DRT::ELEMENTS::FluidImmersed(-1,-1);
+    DRT::ELEMENTS::FluidPoroImmersed* object = new DRT::ELEMENTS::FluidPoroImmersed(-1,-1);
     object->Unpack(data);
     return object;
 }
 
 
-//Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidTypeImmersed::Create(const std::string  eletype,
-//                                                             const std::string  eledistype,
-//                                                             const int     id,
-//                                                             const int     owner)
-//{
-//  if (eletype == "FLUIDIMMERSED")
-//    return Teuchos::rcp(new DRT::ELEMENTS::FluidImmersed(id,owner));
-//
-//  return Teuchos::null;
-//}
-
-
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidTypeImmersed::Create( const int id, const int owner )
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidTypePoroImmersed::Create( const int id, const int owner )
 {
 
-  return Teuchos::rcp(new DRT::ELEMENTS::FluidImmersed(id,owner));
+  return Teuchos::rcp(new DRT::ELEMENTS::FluidPoroImmersed(id,owner));
 
 }
 
-void DRT::ELEMENTS::FluidTypeImmersed::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+void DRT::ELEMENTS::FluidTypePoroImmersed::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
 {
-  std::map<std::string,DRT::INPUT::LineDefinition>& defsimmersed = definitions["FLUIDIMMERSED"];
+  std::map<std::string,DRT::INPUT::LineDefinition>& defsporoimmersed= definitions["FLUIDPOROIMMERSED"];
 
-    defsimmersed["HEX8"]
-      .AddIntVector("HEX8",8)
-      .AddNamedInt("MAT")
-      .AddNamedString("NA")
-      ;
+  defsporoimmersed["HEX8"]
+                   .AddIntVector("HEX8",8)
+                   .AddNamedInt("MAT")
+                   .AddNamedString("NA")
+                   ;
 }
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            rauch 03/14|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidImmersed::FluidImmersed(int id, int owner) :
+DRT::ELEMENTS::FluidPoroImmersed::FluidPoroImmersed(int id, int owner) :
 Fluid(id,owner),
+FluidPoro(id,owner),
 FluidImmersedBase(id,owner),
 is_immersed_(0),
 is_immersed_bdry_(0),
 has_projected_dirichletvalues_(0)
+
 {
+  return;
 }
 
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       rauch 03/14|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidImmersed::FluidImmersed(const DRT::ELEMENTS::FluidImmersed& old) :
+DRT::ELEMENTS::FluidPoroImmersed::FluidPoroImmersed(const DRT::ELEMENTS::FluidPoroImmersed& old) :
 Fluid(old),
+FluidPoro(old),
 FluidImmersedBase(old),
 is_immersed_       (old.is_immersed_     ),
 is_immersed_bdry_  (old.is_immersed_bdry_),
@@ -88,19 +81,19 @@ has_projected_dirichletvalues_ (old.has_projected_dirichletvalues_)
 
 /*----------------------------------------------------------------------*
  |  Deep copy this instance of Fluid and return pointer to it (public)  |
- |                                                          rauch 03/14 |
+ |                                                          rauch 03/15 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::FluidImmersed::Clone() const
+DRT::Element* DRT::ELEMENTS::FluidPoroImmersed::Clone() const
 {
-  DRT::ELEMENTS::FluidImmersed* newelement = new DRT::ELEMENTS::FluidImmersed(*this);
+  DRT::ELEMENTS::FluidPoroImmersed* newelement = new DRT::ELEMENTS::FluidPoroImmersed(*this);
   return newelement;
 }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
- |                                                          rauch 03/14 |
+ |                                                          rauch 03/15 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidImmersed::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::FluidPoroImmersed::Pack(DRT::PackBuffer& data) const
 {
   DRT::PackBuffer::SizeMarker sm( data );
   sm.Insert();
@@ -123,9 +116,9 @@ void DRT::ELEMENTS::FluidImmersed::Pack(DRT::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
- |                                                          rauch 03/14 |
+ |                                                          rauch 03/15 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidImmersed::Unpack(const std::vector<char>& data)
+void DRT::ELEMENTS::FluidPoroImmersed::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
   // extract type

@@ -49,35 +49,73 @@ public:
 protected:
 
   /// composed FSI operator
-  void CouplingOp();
+  void CouplingOp(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag);
 
   /// background operator
-  Teuchos::RCP<Epetra_Vector> BackgroundOp();
+  void BackgroundOp(Teuchos::RCP<Epetra_Vector> backgrd_dirichlet_values,
+                    const FillType fillFlag);
 
   /// immersed operator
-  Teuchos::RCP<Epetra_Vector> ImmersedOp();
+  Teuchos::RCP<Epetra_Vector> ImmersedOp(Teuchos::RCP<Epetra_Vector> bdry_traction,
+                                         const FillType fillFlag);
   /// initial guess
   virtual Teuchos::RCP<Epetra_Vector> InitialGuess();
 
   /// get immersed nodes and determine their dofs
-  void BuildImmersedDirichMap();
+  void BuildImmersedDirichMap(Teuchos::RCP<DRT::Discretization> dis,
+                              Teuchos::RCP<Epetra_Map>& dirichmap,
+                              const Teuchos::RCP<const Epetra_Map>& dirichmap_original,
+                              int dofsetnum);
 
   /// add immersed dirichlet values from immersed dis to systemvector of background dis
-  void DoImmersedDirichletCond();
+  void DoImmersedDirichletCond(Teuchos::RCP<Epetra_Vector> statevector, Teuchos::RCP<Epetra_Vector> dirichvals, Teuchos::RCP<Epetra_Map> dbcmap);
 
-  /// determine elements cut by the boundary
+  /// prepare the immersed solve
   void PrepareImmersedOp();
+
+  /// prepare the background solve
+  void PrepareBackgroundOp();
 
   /// dummy read restart
   virtual void ReadRestart(int step){dserror("NOT PROPERLY IMPLEMENTED YET!!"); return;};
 
+  /// prepare output of data to HD
   virtual void PrepareOutput();
+
+  /// output of data to HD
+  virtual void Output();
+
+  /// update fields
+  virtual void Update();
+
+  /// initialize the relaxation parameters and print output
+  void SetupRelaxation();
+
+  /// setup poro algorithm (coupling, combined dofmaps, etc.)
+  void SetupPoroAlgorithm();
+
+  //! @name Various global vectors
+  //@{
+  Teuchos::RCP<Epetra_Vector> porofluid_artificial_velocity_;//!< background velocity interpolated from immersed dis
+  Teuchos::RCP<Epetra_Vector> cell_bdry_traction_;           //!< boundary traction rhs on immersed cell
+  Teuchos::RCP<Epetra_Vector> cell_bdry_traction_old_;       //!< old boundary traction rhs on immersed cell
+  //@}
 
   //! @name Pointers to Discretizations
     //@{
   Teuchos::RCP<DRT::Discretization> backgroundfluiddis_;
   Teuchos::RCP<DRT::Discretization> backgroundstructuredis_;
   Teuchos::RCP<DRT::Discretization> immerseddis_;
+  //@}
+
+  //! @name parameters and variables for relaxation
+    //@{
+  Teuchos::RCP<NOX::LineSearch::UserDefinedFactory> aitkenfactory_;
+  bool relaxforceglobally_;
+  bool relaxvelglobally_;
+  double forcerelax_;
+  double velrelax_;
+  int coupalgo_;
   //@}
 
   /// cell structure of the immersed problem
@@ -106,6 +144,16 @@ protected:
     std::map<int,LINALG::Matrix<3,1> > currpositions_ECM_;  //!< map of vectors for search tree containing current fluid positions
    //@}
 
+    //! @name current subsets of discretizations
+      //@{
+    std::map<int,std::set<int> > curr_subset_of_backgrounddis_;    //!< backgrd elements to evaluate the dirichlet interpolation
+    //@}
+
+    //! @name current subsets of discretizations
+      //@{
+    Teuchos::RCP<const Epetra_Map> dbcmap_ordinary_;       //!< dirichlet bc map before consideration of immersed values
+    Teuchos::RCP<Epetra_Map> dbcmap_immersed_;             //!< dirichlet bc map of immersed values
+    //@}
 
 };// class ImmersedFSI
 } // namspace IMMERSED

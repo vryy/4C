@@ -85,6 +85,10 @@ namespace POROELAST
       //! setup newton solver
       virtual void SetupNewton();
 
+
+      //! build the combined dirichletbcmap
+      void BuildCombinedDBCMap();
+
       //! @name Access methods for subclasses
 
       //! extractor to communicate between full monolithic map and block maps
@@ -118,6 +122,9 @@ namespace POROELAST
 
       //! unique map of all dofs that should be constrained with DBC
       Teuchos::RCP<const Epetra_Map> CombinedDBCMap() const {return combinedDBCMap_;};
+
+      //! unique map of all dofs that should be constrained with DBC (write access)
+      Teuchos::RCP<Epetra_Map> CombinedDBCMapWriteAccess() {return combinedDBCMap_;};
 
       //! right hand side vector
       Teuchos::RCP<const Epetra_Vector> RHS()

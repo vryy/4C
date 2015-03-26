@@ -1639,8 +1639,11 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     std::set<std::string> fluidelementtypes;
     fluidelementtypes.insert("FLUIDIMMERSED");
 
+    std::set<std::string> structelementtypes;
+    fluidelementtypes.insert("SOLIDH8");
+
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS",structelementtypes)));
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis,  reader, "--FLUID ELEMENTS",fluidelementtypes)));
-    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
 
     break;
   }
@@ -1661,7 +1664,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     AddDis("cell", celldis);
 
     std::set<std::string> fluidelementtypes;
-    fluidelementtypes.insert("FLUIDIMMERSED");
+    fluidelementtypes.insert("FLUIDIMMERSEDPORO");
 
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(porofluiddis, reader, "--FLUID ELEMENTS")));

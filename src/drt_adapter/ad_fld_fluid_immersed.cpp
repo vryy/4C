@@ -16,11 +16,7 @@ Maintainer:  Andreas Rauch
 #include "../drt_inpar/drt_validparameters.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-#include "adapter_coupling.H"
 #include "ad_fld_fluid_immersed.H"
-#include "../drt_fluid/fluid_utils_mapextractor.H"
-#include "../drt_fluid/fluidimplicitintegration.H"
-#include "../drt_adapter/ad_fld_fluid_fsi.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -30,7 +26,7 @@ ADAPTER::FluidImmersed::FluidImmersed(
 {
   fluid_=Teuchos::rcp(new FluidBaseAlgorithm(prbdyn,DRT::Problem::Instance()->FluidDynamicParams(),"fluid",false));
   fluidadapter_=fluid_->FluidField();
-  icoupsf_ = Teuchos::rcp(new Coupling());
+
   return;
 }
 

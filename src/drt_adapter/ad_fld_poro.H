@@ -61,6 +61,8 @@ namespace ADAPTER {
 
     virtual void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd);
 
+    virtual void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove);
+
     virtual LINALG::MapExtractor&  VelPresSplitter();
 
   private:

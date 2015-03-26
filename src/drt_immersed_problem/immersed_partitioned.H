@@ -67,6 +67,18 @@ protected:
 
   virtual void PrepareOutput();
 
+  /// background operator
+  void BackgroundOp(Teuchos::RCP<Epetra_Vector> backgrd_dirichlet_values,
+                    const FillType fillFlag);
+
+  /// immersed operator
+  Teuchos::RCP<Epetra_Vector>
+       ImmersedOp(Teuchos::RCP<Epetra_Vector> bdry_traction,
+                  const FillType fillFlag);
+
+  /// access to iteration counter
+  std::vector<int> IterationCounter(){return counter_;};
+
   /// parameters handed in to NOX
   Teuchos::ParameterList noxparameterlist_;
 

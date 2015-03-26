@@ -83,13 +83,12 @@ void immersed_problem_drt()
     {
       // fill discretizations
       problem->GetDis("structure")->FillComplete(true,true,true);
-
       problem->GetDis("porofluid")->FillComplete(true,true,true);
 
       if (problem->GetDis("porofluid")->NumGlobalNodes() == 0)
       {
         // Create the fluid discretization within the porous medium
-        DRT::UTILS::CloneDiscretization<POROELAST::UTILS::PoroelastCloneStrategy>(problem->GetDis("structure"),problem->GetDis("porofluid"));
+        DRT::UTILS::CloneDiscretization<POROELAST::UTILS::PoroelastImmersedCloneStrategy>(problem->GetDis("structure"),problem->GetDis("porofluid"));
 
         //set material pointers
         POROELAST::UTILS::SetMaterialPointersMatchingGrid(problem->GetDis("structure"),problem->GetDis("porofluid"));

@@ -104,6 +104,7 @@ namespace ADAPTER
 
     //! For simplified FD MFNK solve we want to temporally limit the
     /// number of Newton steps inside the fluid solver
+    /// Not used for IMMERSED yet !
 
     /// get the maximum number of iterations from the fluid field
     virtual int Itemax() const { return fluidadapter_->Itemax(); }
@@ -135,9 +136,6 @@ namespace ADAPTER
     /// fluid base algorithm object
     Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid_;
     Teuchos::RCP<ADAPTER::Fluid> fluidadapter_;
-
-    /// coupling of interface in to parallel distributions
-    Teuchos::RCP<Coupling> icoupsf_;
 
   };
 

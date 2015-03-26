@@ -366,7 +366,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
         or probtype == prb_poroscatra
         or probtype == prb_fpsi
         or probtype == prb_fps3i
-        or probtype == prb_fpsi_xfem)
+        or probtype == prb_fpsi_xfem
+        or probtype == prb_immersed_cell)
         and disname == "porofluid")
       {
         const Teuchos::ParameterList& pedyn    = DRT::Problem::Instance()->PoroelastDynamicParams();
@@ -385,7 +386,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
    // and, finally, add problem specific parameters
 
   // for poro problems, use POROUS-FLOW STABILIZATION
-  if ((probtype == prb_poroelast or probtype == prb_poroscatra or probtype == prb_fpsi or probtype == prb_fps3i or probtype == prb_fpsi_xfem) and disname == "porofluid")
+  if ((probtype == prb_poroelast or probtype == prb_poroscatra or probtype == prb_fpsi or probtype == prb_fps3i or probtype == prb_fpsi_xfem or probtype == prb_immersed_cell) and disname == "porofluid")
     fluidtimeparams->sublist("RESIDUAL-BASED STABILIZATION")    = fdyn.sublist("POROUS-FLOW STABILIZATION");
 
   // add some loma specific parameters
@@ -549,6 +550,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
 
   if ( probtype == prb_poroelast or
        probtype == prb_poroscatra or
+       probtype == prb_immersed_cell or
       (probtype == prb_fpsi and disname == "porofluid") or
       (probtype == prb_fps3i and disname == "porofluid") or
       (probtype == prb_fpsi_xfem and disname == "porofluid")
@@ -658,7 +660,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
       }
     }
 
-    if (probtype == prb_poroelast or probtype == prb_poroscatra or probtype == prb_fpsi or probtype == prb_fps3i or (probtype == prb_fpsi_xfem and disname == "porofluid"))
+    if (probtype == prb_poroelast or probtype == prb_poroscatra or probtype == prb_fpsi or probtype == prb_fps3i or (probtype == prb_fpsi_xfem and disname == "porofluid") or probtype == prb_immersed_cell)
       dirichletcond = false;
 
     //------------------------------------------------------------------

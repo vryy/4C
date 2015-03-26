@@ -26,7 +26,8 @@ Maintainers: Andreas Rauch
 
 IMMERSED::ImmersedPartitioned::ImmersedPartitioned(const Epetra_Comm& comm)
   : ImmersedBase(),
-    ADAPTER::AlgorithmBase(comm,DRT::Problem::Instance()->CellMigrationParams())
+    ADAPTER::AlgorithmBase(comm,DRT::Problem::Instance()->CellMigrationParams()),
+    counter_(7)
 {
   const Teuchos::ParameterList& immerseddyn   = DRT::Problem::Instance()->ImmersedMethodParams();
   SetDefaultParameters(immerseddyn,noxparameterlist_);
@@ -447,4 +448,26 @@ void IMMERSED::ImmersedPartitioned::SetDefaultParameters(const Teuchos::Paramete
 
   Teuchos::ParameterList& solverOptions = nlParams.sublist("Solver Options");
   solverOptions.set<std::string>("Status Test Check Type","Complete");
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedPartitioned::BackgroundOp(Teuchos::RCP<Epetra_Vector> backgrd_dirichlet_values,
+                                                 const FillType fillFlag)
+{
+  if (Comm().MyPID()==0 and utils_->isPrintType(NOX::Utils::OuterIteration))
+    utils_->out() << std::endl << "Background operator" << std::endl;
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitioned::ImmersedOp(Teuchos::RCP<Epetra_Vector> bdry_traction,
+                                                                      const FillType fillFlag)
+{
+  if (Comm().MyPID()==0 and utils_->isPrintType(NOX::Utils::OuterIteration))
+    utils_->out() << std::endl << "Immersed operator" << std::endl;
+  return Teuchos::null;
 }

@@ -1406,8 +1406,8 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
   case calc_fluid_traction:
   {
     DRT::Problem* globalproblem = DRT::Problem::Instance();
-    std::string backgrddisname("fluid");
-    std::string immerseddisname("structure");
+    std::string backgrddisname(params.get<std::string>("backgrddisname"));
+    std::string immerseddisname(params.get<std::string>("immerseddisname"));
     ////////////////////////////////////////////////////////////////////////////
     // rauch 05/14 originally for immersed method
     //
@@ -1449,6 +1449,13 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
 
     const Teuchos::RCP<DRT::Discretization> backgrddis  = globalproblem->GetDis(backgrddisname);
     const Teuchos::RCP<DRT::Discretization> immerseddis = globalproblem->GetDis(immerseddisname);
+
+#ifdef DEBUG
+    if(backgrddis == Teuchos::null)
+      dserror("Pointer to background dis empty. Correct disname in parameter list 'params'?");
+    if(immerseddis == Teuchos::null)
+      dserror("Pointer to immersed dis empty. Correct disname in parameter list 'params'?");
+#endif
 
     const int nen = NumNode();
     const int parent_nen = this->ParentElement()->NumNode();

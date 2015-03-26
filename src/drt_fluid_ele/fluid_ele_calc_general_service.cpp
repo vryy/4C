@@ -31,6 +31,7 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 #include "../drt_lib/drt_utils.H"
 
 #include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/fluidporo.H"
 
 #include "../drt_nurbs_discret/drt_nurbs_utils.H"
 #include "Sacado.hpp"
@@ -3093,7 +3094,13 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityGradientAnd
   // get dynamic viscosity
   Teuchos::RCP<MAT::Material> currentmaterial;
   currentmaterial = ele->Material(0);
-  double fluiddynamicviscosity = Teuchos::rcp_dynamic_cast<MAT::NewtonianFluid>(currentmaterial)->Viscosity();
+  double fluiddynamicviscosity=-1234;
+  if(discretization.Name()=="fluid")
+    fluiddynamicviscosity = Teuchos::rcp_dynamic_cast<MAT::NewtonianFluid>(currentmaterial)->Viscosity();
+  else if(discretization.Name()=="porofluid")
+    fluiddynamicviscosity = Teuchos::rcp_dynamic_cast<MAT::FluidPoro>(currentmaterial)->Viscosity();
+  else
+    dserror("no support for discretization guaranteed. check for valid material.");
 
   // resize vector to the size of the nsd_ times nsd_ independent entries of the velocity gradient du/dx and the pressure
   // causes seg fault -> therefore commented; needs to be investigated. elevec1 is directly build with a size of 10 for now
@@ -3114,8 +3121,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityGradientAnd
 #ifdef DEBUG
   if(state == Teuchos::null)
     dserror("Cannot get state vector %s", "velnp");
-  if(ele->IsAle() )
-    dserror("Ale not supported, yet. Make sure to add displacements to xrefe.");
+  //if(ele->IsAle() )
+    //dserror("Ale not supported, yet. Make sure to add displacements to xrefe.");
 #endif
 
   // update element geometry (for now xrefe=X and no xcurr present)
@@ -3244,11 +3251,11 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityToNode(
     Epetra_SerialDenseVector&            elevec2_epetra  // given point in parameter space coordinates
     )
 {
-  DRT::ELEMENTS::FluidImmersed* immersedele = static_cast<DRT::ELEMENTS::FluidImmersed*>(ele);
+  DRT::ELEMENTS::FluidImmersedBase* immersedele = dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(ele);
 
   DRT::Problem* globalproblem = DRT::Problem::Instance();
-  std::string backgrddisname("fluid");
-  std::string immerseddisname("structure");
+  std::string backgrddisname(discretization.Name());
+  std::string immerseddisname(params.get<std::string>("immerseddisname"));
 
   static double fsiconvtol = globalproblem->FSIDynamicParams().sublist("PARTITIONED SOLVER").get<double>("CONVTOL");
   static double timestepsize = globalproblem->FSIDynamicParams().get<double>("TIMESTEP");
@@ -4255,7 +4262,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcMassFlowPeriodicHill(
   {
   //  // DEBUG
   //  static int firstelelid = ele->LID();
-  DRT::ELEMENTS::FluidImmersed* immersedele = dynamic_cast<DRT::ELEMENTS::FluidImmersed*>(ele);
+  DRT::ELEMENTS::FluidImmersedBase* immersedele = dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(ele);
+
   int reset_isimmersed = params.get("reset_isimmersed",1);
   int reset_hasprojecteddirichlet = params.get("reset_hasprojecteddirichlet",1);
 
@@ -4268,7 +4276,6 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcMassFlowPeriodicHill(
 //  {
 //      std::cout<<"\n Reset all information in fluid elements EXCEPT 'IsImmersed' ... \n"<<std::endl;
 //  }
-
 
   if(reset_isimmersed)
   {
@@ -4291,6 +4298,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcMassFlowPeriodicHill(
 
   return 0;
 }
+
 
 // template classes
 template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex8,DRT::ELEMENTS::Fluid::none>;

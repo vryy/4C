@@ -38,7 +38,6 @@ Maintainers: Andreas Rauch
 #include "../drt_geometry/searchtree_geometry_service.H"
 
 // time monitoring
-#include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
 // relaxation
@@ -260,7 +259,7 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::FSIOp(const Epetra_Vector
   if((FSI::Partitioned::IterationCounter())[0] == itemax and nlnsolver_continue)
   {
     if(Comm().MyPID()==0)
-      std::cout<<"\n  Continue with next time step after "<<(FSI::Partitioned::IterationCounter())[0]<<" iterations. \n"<<std::endl;
+      std::cout<<"\n  Continue with next time step after ITEMAX = "<<(FSI::Partitioned::IterationCounter())[0]<<" iterations. \n"<<std::endl;
 
     // !!! EXPERIMENTAL !!!
     // set F to zero to tell NOX that this timestep is converged
@@ -295,10 +294,7 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::FluidOp(Teuchos::RCP<Epetra_Ve
   {
     // normal fluid solve
 
-    // A rather simple hack. We need something better!
     const int itemax = MBFluidField()->Itemax();
-    if (fillFlag==MF_Res and mfresitemax_ > 0)
-      MBFluidField()->SetItemax(mfresitemax_ + 1);
 
     // calc the fluid velocity from the structural displacements
     DRT::AssembleStrategy fluid_vol_strategy(
@@ -342,7 +338,8 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::FluidOp(Teuchos::RCP<Epetra_Ve
     Teuchos::rcp_dynamic_cast<ADAPTER::FluidImmersed >(MBFluidField())->AddDirichCond(dbcmap_immersed_);
 
     // apply immersed dirichlets
-    DoImmersedDirichletCond(MBFluidField()->FluidField()->WriteAccessVelnp(),fluid_artificial_velocity_, dbcmap_immersed_);
+    DoImmersedDirichletCond(MBFluidField()->FluidField()->WriteAccessVelnp(),fluid_artificial_velocity, dbcmap_immersed_);
+
     double normofvelocities;
     MBFluidField()->FluidField()->ExtractVelocityPart(fluid_artificial_velocity)->Norm2(&normofvelocities);
 
@@ -377,7 +374,7 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::FluidOp(Teuchos::RCP<Epetra_Ve
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector>
 IMMERSED::ImmersedPartitionedFSIDirichletNeumann::StructOp(Teuchos::RCP<Epetra_Vector> struct_bdry_traction,
-                                const FillType fillFlag)
+                                                           const FillType fillFlag)
 {
   FSI::Partitioned::StructOp(struct_bdry_traction,fillFlag);
 
@@ -385,6 +382,8 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::StructOp(Teuchos::RCP<Epetra_V
   {
     Teuchos::ParameterList params;
     params.set<std::string>("action","calc_fluid_traction");
+    params.set<std::string>("backgrddisname","fluid");
+    params.set<std::string>("immerseddisname","structure");
 
     MBFluidField()->Discretization()->SetState(0,"velnp",Teuchos::rcp_dynamic_cast<ADAPTER::FluidImmersed >(MBFluidField())->FluidField()->Velnp());
     MBFluidField()->Discretization()->SetState(0,"veln",Teuchos::rcp_dynamic_cast<ADAPTER::FluidImmersed >(MBFluidField())->FluidField()->Veln());
@@ -420,6 +419,8 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::StructOp(Teuchos::RCP<Epetra_V
   {
     Teuchos::ParameterList params;
     params.set<std::string>("action","calc_fluid_traction");
+    params.set<std::string>("backgrddisname","fluid");
+    params.set<std::string>("immerseddisname","structure");
 
     MBFluidField()->Discretization()->SetState(0,"velnp",Teuchos::rcp_dynamic_cast<ADAPTER::FluidImmersed >(MBFluidField())->FluidField()->Velnp());
     MBFluidField()->Discretization()->SetState(0,"veln",Teuchos::rcp_dynamic_cast<ADAPTER::FluidImmersed >(MBFluidField())->FluidField()->Veln());
@@ -504,7 +505,8 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::BuildImmersedDirichMap(Te
 
   for(int i=0; i<elerowmap->NumMyElements(); ++i)
   {
-    DRT::ELEMENTS::FluidImmersed* immersedele = static_cast<DRT::ELEMENTS::FluidImmersed*>(dis->gElement(elerowmap->GID(i)));
+    // dynamic_cast necessary because virtual inheritance needs runtime information
+    DRT::ELEMENTS::FluidImmersedBase* immersedele = dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(dis->gElement(elerowmap->GID(i)));
     if(immersedele->HasProjectedDirichlet())
     {
       DRT::Node** nodes = immersedele->Nodes();

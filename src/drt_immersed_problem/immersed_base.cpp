@@ -172,7 +172,7 @@ std::vector<int> IMMERSED::ImmersedBase::DetermineImmersionDomain(Teuchos::RCP<D
       if ((abs(xi[0])-1.0)<1e-12 and (abs(xi[1])-1.0)<1e-12 and (abs(xi[2])-1.0)<1e-12)
       {
         // -> node i lies in element background element
-        Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::FluidImmersed>(ele)->SetIsImmersed(1);
+        Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::FluidImmersedBase>(ele)->SetIsImmersed(1);
 
         // fill nodeset with node ids of background eles
         const int* nodes;
@@ -364,7 +364,7 @@ std::vector<int> IMMERSED::ImmersedBase::DetermineImmersionBoundaryDomain(Teucho
 
         if ((abs(xi[0])-1.0)<1e-12 and (abs(xi[1])-1.0)<1e-12 and (abs(xi[2])-1.0)<1e-12)
         {// node i lies in element curr
-          Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::FluidImmersed>(curr->second)->SetIsImmersedBoundary(1);
+          Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::FluidImmersedBase>(curr->second)->SetIsImmersedBoundary(1);
           const int* nodes;
           nodes = curr->second->NodeIds();
           for(int k=0;k<curr->second->NumNode();++k)
@@ -640,7 +640,7 @@ std::vector<int> IMMERSED::ImmersedBase::DetermineImmersionBoundaryDomain(Teucho
 //=======
 //      if ((abs(xi[0])-1.0)<1e-12 and (abs(xi[1])-1.0)<1e-12 and (abs(xi[2])-1.0)<1e-12)
 //      {// node i lies in element curr
-//        Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::FluidImmersed>(curr->second)->SetIsImmersedBoundary(1);
+//        Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::FluidImmersedBase>(curr->second)->SetIsImmersedBoundary(1);
 //        const int* nodes;
 //        nodes = curr->second->NodeIds();
 //        for(int k=0;k<curr->second->NumNode();++k)
@@ -687,9 +687,9 @@ std::vector<int> IMMERSED::ImmersedBase::DetermineImmersionBoundaryDomain(Teucho
 
             if ((abs(xi[0])-1.0)<1e-12 and (abs(xi[1])-1.0)<1e-12 and (abs(xi[2])-1.0)<1e-12)
             {// gp lies in element curr
-              if (Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::FluidImmersed>(curr->second)->IsImmersedBoundary()==0)
+              if (Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::FluidImmersedBase>(curr->second)->IsImmersedBoundary()==0)
               {
-                Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::FluidImmersed>(curr->second)->SetIsImmersedBoundary(1);
+                Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::FluidImmersedBase>(curr->second)->SetIsImmersedBoundary(1);
                 const int* nodes;
                 nodes = curr->second->NodeIds();
                 for(int k=0;k<curr->second->NumNode();++k)
@@ -930,11 +930,19 @@ void IMMERSED::ImmersedBase::EvaluateWithInternalCommunication(Teuchos::RCP<DRT:
       params.set<int>("action",FLD::interpolate_velocity_to_given_point);
       params.set<Teuchos::RCP<GEO::SearchTree> >("structsearchtree_rcp",structsearchtree);
       params.set<std::map<int,LINALG::Matrix<3,1> >* >("currpositions_struct",&currpositions_struct);
+      params.set<int>("Physical Type",INPAR::FLUID::poro_p1);
+      if(dis->Name()=="fluid")
+        params.set<std::string>("immerseddisname","structure");
+      else if (dis->Name()=="porofluid")
+        params.set<std::string>("immerseddisname","cell");
+      else
+        dserror("no corresponding immerseddisname set for this type of backgrounddis!");
+
       DRT::Element::LocationArray la(1);
-      dynamic_cast<DRT::ELEMENTS::FluidImmersed*>(ele)->LocationVector(*dis,la,false);
+      dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(ele)->LocationVector(*dis,la,false);
       strategy->ClearElementStorage( la[row].Size(), la[col].Size() );
 
-      dynamic_cast<DRT::ELEMENTS::FluidImmersed*>(ele)->Evaluate(params,*dis,la[0].lm_,
+      dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(ele)->Evaluate(params,*dis,la[0].lm_,
           strategy->Elematrix1(),
           strategy->Elematrix2(),
           strategy->Elevector1(),

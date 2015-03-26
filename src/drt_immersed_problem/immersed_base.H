@@ -16,7 +16,7 @@ Maintainers: Andreas Rauch
 #include "../drt_lib/drt_condition.H"
 #include "../drt_lib/drt_element.H" // todo remove when moving interpolatetoimmersedintpoint to drt_lib
 #include "../drt_so3/so_hex8.H"
-#include "../drt_fluid_ele/fluid_ele_immersed.H"
+#include "../drt_fluid_ele/fluid_ele_immersed_base.H"
 #include "../drt_immersed_problem/immersed_node.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "../drt_mortar/mortar_element.H"
@@ -30,6 +30,8 @@ Maintainers: Andreas Rauch
 
 #include "../drt_geometry/searchtree.H"
 #include "../drt_geometry/searchtree_geometry_service.H"
+
+#include "../drt_inpar/inpar_fluid.H"
 
 namespace DRT{
   class Discretization;
@@ -341,6 +343,7 @@ public:
 
             // evaluate and perform action handed in to this function
             params.set<int>("action", action);
+            params.set<int>("Physical Type",INPAR::FLUID::poro_p1);
             if(validsource)
             {
 //              std::cout<<"\n ---------- \n PROC "<<comm.MyPID()<<" ; sourcele : "<<sourceele->Id()<<std::endl;
@@ -351,7 +354,7 @@ public:
               sourceele->Evaluate(params,*sourcedis,sourcela,dummy1,dummy2,*vectofill ,*xi_dense,dummy3);
               matched = 1;
 
-              Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::FluidImmersed>(curr->second)->SetIsImmersedBoundary(1);
+              Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::FluidImmersedBase>(curr->second)->SetIsImmersedBoundary(1);
 
               //std::cout<<"Tgt. Ele: "<<targetele.Id()<<" lies in src. ele: "<<curr->second->Id()<<" at  pos. ["<<std::setprecision(5)<<xvec[0]<<" "<<xvec[1]<<" "<<xvec[2]<<"]"<<std::endl;
 
@@ -1000,7 +1003,7 @@ public:
             {
               matched = 1;
 
-              Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::FluidImmersed>(curr->second)->SetIsImmersedBoundary(1);
+              Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::FluidImmersedBase>(curr->second)->SetIsImmersedBoundary(1);
 
               DRT::Node** nodes = curr->second->Nodes();
               for(int node=0;node<curr->second->NumNode();++node)
