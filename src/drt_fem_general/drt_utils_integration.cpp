@@ -3329,6 +3329,7 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
     qxg[5][0] = 0.50661630334979;
     qxg[6][0] = 0.26318405556971;
     qxg[7][0] = 0.50661630334979;
+
     qxg[0][1] = -0.26318405556971;
     qxg[1][1] = -0.50661630334979;
     qxg[2][1] = 0.26318405556971;
@@ -3337,6 +3338,7 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
     qxg[5][1] = -0.50661630334979;
     qxg[6][1] = 0.26318405556971;
     qxg[7][1] = 0.50661630334979;
+
     qxg[0][2] = 0.54415184401122;
     qxg[1][2] = 0.12251482265544;
     qxg[2][2] = 0.54415184401122;
@@ -3346,7 +3348,6 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
     qxg[6][2] = 0.54415184401122;
     qxg[7][2] = 0.12251482265544;
 
-
     qwgt[0] = 0.10078588207983;
     qwgt[1] = 0.23254745125351;
     qwgt[2] = 0.10078588207983;
@@ -3355,6 +3356,7 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
     qwgt[5] = 0.23254745125351;
     qwgt[6] = 0.10078588207983;
     qwgt[7] = 0.23254745125351;
+
     break;
   }
 
@@ -3363,6 +3365,7 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
     break;
   }
   dsassert(max_nquad >= nquad,"increase size of double array in IntegationPoints class");
+
 }
 
 

@@ -89,6 +89,8 @@ void DRT::INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& 
   PrintElementLines(stream,"SOLIDT4SCATRA");
   PrintElementLines(stream,"SOLIDT10SCATRA");
   PrintElementLines(stream,"SOLIDW6");
+  PrintElementLines(stream,"SOLIDP5");
+  PrintElementLines(stream,"SOLIDP5FBAR");
   PrintElementLines(stream,"SOLIDW6SCATRA");
   PrintElementLines(stream,"TORSION2");
   PrintElementLines(stream,"TORSION3");

@@ -781,6 +781,14 @@ set(OBJS_SOH8_LIB
   src/drt_so3/so_weg6.cpp
   src/drt_so3/so_weg6_evaluate.cpp
   src/drt_so3/so_weg6_input.cpp
+  src/drt_so3/so_pyramid5.cpp
+  src/drt_so3/so_pyramid5_evaluate.cpp
+  src/drt_so3/so_pyramid5_input.cpp
+  src/drt_so3/so_pyramid5_service.cpp
+  src/drt_so3/so_pyramid5_multiscale.cpp
+  src/drt_so3/so_pyramid5fbar.cpp
+  src/drt_so3/so_pyramid5fbar_evaluate.cpp
+  src/drt_so3/so_pyramid5fbar_input.cpp
   src/drt_so3/so3_poro.cpp
   src/drt_so3/so3_poro_evaluate.cpp
   src/drt_so3/so3_poro_eletypes.cpp

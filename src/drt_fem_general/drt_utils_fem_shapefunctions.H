@@ -21,6 +21,7 @@ Maintainer: Martin Kronbichler
 #include <boost/static_assert.hpp>
 #include <boost/type_traits.hpp>
 
+#define PY5TOL 1.0e-14
 
 namespace DRT
 {
@@ -271,13 +272,26 @@ void shape_function_3D(
   }
   case DRT::Element::pyramid5:
   {
-    const T ration=(r*s*t)/(1-t);
 
-    funct(0)=Q14*((1-r)*(1-s)-t+ration);
-    funct(1)=Q14*((1+r)*(1-s)-t-ration);
-    funct(2)=Q14*((1+r)*(1+s)-t+ration);
-    funct(3)=Q14*((1-r)*(1+s)-t-ration);
-    funct(4)=t;
+    if(fabs(t-1.0) > PY5TOL)
+    {
+      const T ration=(r*s*t)/(1-t);
+      funct(0)=Q14*((1.0-r)*(1.0-s)-t+ration);
+      funct(1)=Q14*((1.0+r)*(1.0-s)-t-ration);
+      funct(2)=Q14*((1.0+r)*(1.0+s)-t+ration);
+      funct(3)=Q14*((1.0-r)*(1.0+s)-t-ration);
+      funct(4)=t;
+    }
+    else
+    {
+      dserror("pyramid shape function not defined for t=1.0");
+      // We thought the value at the node shall be inserted here,
+      // but we could not find any theoretical foundation
+      // due to the nonlinear character of the shape functions
+      // such that we leave it open here --> testing necessary
+      // funct(0...3) = 0 and funct(4)=1.0
+    }
+
     break;
   }
   default:
@@ -801,27 +815,38 @@ void shape_function_3D_deriv1(
   case DRT::Element::pyramid5:
   {
 
-    const T rationdr = s * t / (1 - t);
-    const T rationds = r * t / (1 - t);
-    const T rationdt = r * s * (1 - 2.0 * t) / ((1 - t) * (1 - t));
+    if(fabs(t-1.0) > PY5TOL)
+    {
+      const T rationdr = s * t / (1.0 - t);
+      const T rationds = r * t / (1.0 - t);
+      const T rationdt = r * s * (1.0 - 2.0 * t) / ((1.0 - t) * (1.0 - t));
 
-    deriv1(0, 0) = Q14 * (-1 + rationdr);
-    deriv1(0, 1) = Q14 * (1 - rationdr);
-    deriv1(0, 2) = Q14 * (1 + rationdr);
-    deriv1(0, 3) = Q14 * (-1 - rationdr);
-    deriv1(0, 4) = 0;
+      deriv1(0, 0) = Q14 * (-1.0 + rationdr);
+      deriv1(0, 1) = Q14 * (1.0 - rationdr);
+      deriv1(0, 2) = Q14 * (1.0 + rationdr);
+      deriv1(0, 3) = Q14 * (-1.0 - rationdr);
+      deriv1(0, 4) = 0;
 
-    deriv1(1, 0) = Q14 * (-1 + rationds);
-    deriv1(1, 1) = Q14 * (-1 - rationds);
-    deriv1(1, 2) = Q14 * (1 + rationds);
-    deriv1(1, 3) = Q14 * (1 - rationds);
-    deriv1(1, 4) = 0;
+      deriv1(1, 0) = Q14 * (-1.0 + rationds);
+      deriv1(1, 1) = Q14 * (-1.0 - rationds);
+      deriv1(1, 2) = Q14 * (1.0 + rationds);
+      deriv1(1, 3) = Q14 * (1.0 - rationds);
+      deriv1(1, 4) = 0;
 
-    deriv1(2, 0) = Q14 * (rationdt - 1);
-    deriv1(2, 1) = Q14 * (-1 * rationdt - 1);
-    deriv1(2, 2) = Q14 * (rationdt - 1);
-    deriv1(2, 3) = Q14 * (-1 * rationdt - 1);
-    deriv1(2, 4) = 1;
+      deriv1(2, 0) = Q14 * (rationdt - 1.0);
+      deriv1(2, 1) = Q14 * (-1.0 * rationdt - 1.0);
+      deriv1(2, 2) = Q14 * (rationdt - 1.0);
+      deriv1(2, 3) = Q14 * (-1.0 * rationdt - 1.0);
+      deriv1(2, 4) = 1.0;
+    }
+    else
+    {
+      dserror("pyramid shape function not defined for t=1.0");
+      // We thought the value at the node shall be inserted here,
+      // but we could not find any theoretical foundation
+      // due to the nonlinear character of the shape functions
+      // such that we leave it open here --> testing necessary
+    }
     break;
   }
   default:
