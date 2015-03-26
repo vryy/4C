@@ -121,13 +121,34 @@ void FSI::MonolithicBase::ReadRestart(int step)
 /*----------------------------------------------------------------------------*/
 void FSI::MonolithicBase::PrepareTimeStep()
 {
-  IncrementTimeAndStep();
+  std::cout << "FSI::MonolithicBase::PrepareTimeStep()" << std::endl;
 
+  PrepareTimeStepFSI();
+  PrepareTimeStepPreconditioner();
+  PrepareTimeStepFields();
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void FSI::MonolithicBase::PrepareTimeStepFSI()
+{
+  IncrementTimeAndStep();
   PrintHeader();
 
+  return;
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void FSI::MonolithicBase::PrepareTimeStepFields()
+{
   StructureField()->PrepareTimeStep();
   FluidField()->PrepareTimeStep();
   AleField()->PrepareTimeStep();
+
+  return;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1028,6 +1049,8 @@ bool FSI::BlockMonolithic::computePreconditioner(const Epetra_Vector &x,
 
   if (precondreusecount_ <= 0)
   {
+    std::cout << "Recompute the preconditioner" << std::endl;
+
     // Create preconditioner operator. The blocks are already there. This is
     // the perfect place to initialize the block preconditioners.
     SystemMatrix()->SetupPreconditioner();
@@ -1051,8 +1074,16 @@ bool FSI::BlockMonolithic::computePreconditioner(const Epetra_Vector &x,
 /*----------------------------------------------------------------------------*/
 void FSI::BlockMonolithic::PrepareTimeStep()
 {
-  FSI::Monolithic::PrepareTimeStep();
+  std::cout << "FSI::BlockMonolithic::PrepareTimeStep()" << std::endl;
 
+  FSI::MonolithicBase::PrepareTimeStep();
+  PrepareTimeStepPreconditioner();
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void FSI::BlockMonolithic::PrepareTimeStepPreconditioner()
+{
   // new time step, rebuild preconditioner
   precondreusecount_ = 0;
 }

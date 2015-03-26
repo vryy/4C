@@ -6969,7 +6969,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("SYMMETRICPRECOND","No","Symmetric block GS preconditioner or ordinary GS",
                                     yesnotuple,yesnovalue,&fsimono);
 
-  IntParameter("PRECONDREUSE", 0, "Number of preconditioner reused in monolithic FSI", &fsimono);
+  IntParameter("PRECONDREUSE", 0,
+      "Number of iterations in one time step reusing the preconditioner before rebuilding it", &fsimono);
 
   setStringToIntegralParameter<int>(
                                "LINEARBLOCKSOLVER","PreconditionedKrylov",

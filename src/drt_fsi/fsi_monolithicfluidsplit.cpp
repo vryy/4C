@@ -1364,15 +1364,15 @@ void FSI::MonolithicFluidSplit::ReadRestart(int step)
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicFluidSplit::PrepareTimeStep()
 {
-  IncrementTimeAndStep();
-
-  PrintHeader();
+  PrepareTimeStepFSI();
+  PrepareTimeStepPreconditioner();
 
   if (StructureField()->GetSTCAlgo() != INPAR::STR::stc_none)
     StructureField()->SystemMatrix()->Reset();
-  StructureField()->PrepareTimeStep();
-  FluidField()->PrepareTimeStep();
-  AleField()->PrepareTimeStep();
+
+  PrepareTimeStepFields();
+
+  return;
 }
 
 /*----------------------------------------------------------------------*/

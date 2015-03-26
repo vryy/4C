@@ -83,6 +83,9 @@ namespace FSI
     /// start a new time step
     void PrepareTimeStep();
 
+    /// Prepare preconditioner for a new time step
+    virtual void PrepareTimeStepPreconditioner(){};
+
     /// output of fluid, structure & ALE-quantities and Lagrange multiplier
     virtual void Output() = 0;
 

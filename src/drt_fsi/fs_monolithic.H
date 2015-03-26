@@ -453,7 +453,13 @@ namespace FSI
 
   private:
 
-    /// counter to reuse the block matrix preconditioner
+    /*! \brief Counter of iterations to reuse the block matrix preconditioner
+     *
+     *  Rebuild preconditioner as soon as this counter is zero.
+     *
+     *  \Note We enforce rebuilding the preconditioner at the beginning of
+     *  every time step.
+     */
     int precondreusecount_;
 
   };

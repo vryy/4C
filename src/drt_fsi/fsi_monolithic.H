@@ -144,6 +144,15 @@ namespace FSI
 
   protected:
 
+    //! Prepare FSI algorithm for new time step
+    virtual void PrepareTimeStepFSI();
+
+    //! Prepare preconditioner for new time step
+    virtual void PrepareTimeStepPreconditioner() = 0;
+
+    //! Prepare fields for new time step
+    virtual void PrepareTimeStepFields();
+
     /// underlying structure of the FSI problem
     Teuchos::RCP< ::ADAPTER::FSIStructureWrapper> structure_;
 
@@ -336,18 +345,22 @@ namespace FSI
 
   protected:
 
+    //! Prepare preconditioner for new time step
+    virtual void PrepareTimeStepPreconditioner() = 0;
+
     //! @name Apply current field state to system
 
-    //! setup composed right hand side from field solvers
-    //!
-    //! The RHS consists of three contributions from:
-    //! 1) the single fields residuals
-    //! 2) the Lagrange multiplier field lambda_
-    //! 3) terms in the first nonlinear iteration
-    //!
-    //! \sa SetupRHSResidual()
-    //! \sa SetupRHSLambda()
-    //! \sa SetupRHSFirstiter()
+    /*! \brief Setup composed right hand side from field solvers
+     *
+     *  The RHS consists of three contributions from:
+     *  1) the single fields residuals
+     *  2) the Lagrange multiplier field lambda_
+     *  3) terms in the first nonlinear iteration
+     *
+     *  \sa SetupRHSResidual()
+     *  \sa SetupRHSLambda()
+     *  \sa SetupRHSFirstiter()
+     */
     virtual void SetupRHS(
         Epetra_Vector& f,     ///< empty rhs vector (to be filled)
         bool firstcall=false  ///< indicates whether this is the first nonlinear iteration or not
@@ -956,6 +969,9 @@ namespace FSI
 
   protected:
 
+    //! Prepare preconditioner for new time step
+    virtual void PrepareTimeStepPreconditioner();
+
     /// create the composed system matrix
     void CreateSystemMatrix(Teuchos::RCP<FSI::OverlappingBlockMatrix>& mat,
                             bool structuresplit);
@@ -982,7 +998,13 @@ namespace FSI
     /// debug writer to be used inside preconditioner
     Teuchos::RCP<UTILS::MonolithicDebugWriter> pcdbg_;
 
-    /// counter to reuse the block matrix preconditioner
+    /*! \brief Counter of iterations to reuse the block matrix preconditioner
+     *
+     *  Rebuild preconditioner as soon as this counter is zero.
+     *
+     *  \Note We enforce rebuilding the preconditioner at the beginning of
+     *  every time step.
+     */
     int precondreusecount_;
 
     const Teuchos::ParameterList& timeparams_;
