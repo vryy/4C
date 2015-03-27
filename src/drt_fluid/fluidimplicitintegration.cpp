@@ -583,13 +583,12 @@ void FLD::FluidImplicitTimeInt::InitNonlinearBC()
   // check number of impedance boundary conditions
   if (impedancecond.size() > 0)
   {
-    #ifdef D_ALE_BFLOW
-      if (alefluid_)
-      {
-        discret_->ClearState();
-        discret_->SetState("dispnp", dispnp_);
-      }
-    #endif // D_ALE_BFLOW
+
+    if (alefluid_)
+    {
+      discret_->ClearState();
+      discret_->SetState("dispnp", dispnp_);
+    }
 
     impedancebc_ = Teuchos::rcp(new UTILS::FluidImpedanceWrapper(discret_, *output_, dta_) );
     impedancebc_optimization_ = Teuchos::rcp(new UTILS::FluidWkOptimizationWrapper(discret_, *output_, impedancebc_, dta_) );
@@ -1457,10 +1456,11 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
       // create vector and initialize with zeros
       Teuchos::RCP<Epetra_Vector> flowrates = LINALG::CreateVector(*dofrowmap,true);
 
-      // set required state vectors (no ALE so far)
+      // set required state vectors
       discret_->ClearState();
       SetStateTimInt();
-      //if (alefluid_) discret_->SetState("dispnp",dispnp_);
+      if (alefluid_)
+        discret_->SetState("dispnp",dispnp_);
 
       // evaluate flow rate
       discret_->EvaluateCondition(flowdeppressureparams,flowrates,fdpcondname,fdpcondid);
@@ -1506,8 +1506,9 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
       flowdeppressureparams.set<int>("action",FLD::calc_area);
       flowdeppressureparams.set<double>("area",0.0);
 
-      // set required state vectors (no ALE so far)
-      //if (alefluid_) discret_->SetState("dispnp",dispnp_);
+      // set required state vectors
+      if (alefluid_)
+        discret_->SetState("dispnp",dispnp_);
 
       // evaluate surface area
       discret_->EvaluateCondition(flowdeppressureparams,fdpcondname,fdpcondid);
@@ -1529,10 +1530,10 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
       flowdeppressureparams.set<int>("action",FLD::calc_pressure_bou_int);
       flowdeppressureparams.set<double>("pressure boundary integral",0.0);
 
-      // set required state vectors (no ALE so far)
+      // set required state vectors
       discret_->ClearState();
       SetStateTimInt();
-      //if (alefluid_) discret_->SetState("dispnp",dispnp_);
+      if (alefluid_) discret_->SetState("dispnp",dispnp_);
 
       // evaluate pressure integral
       discret_->EvaluateCondition(flowdeppressureparams,fdpcondname,fdpcondid);
@@ -1590,9 +1591,10 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
       // set action for elements
       flowdeppressureparams.set<int>("action",FLD::flow_dep_pressure_bc);
 
-      // set required state vectors (no ALE so far)
+      // set required state vectors
       SetStateTimInt();
-      if (alefluid_) discret_->SetState("dispnp",dispnp_);
+      if (alefluid_)
+        discret_->SetState("dispnp",dispnp_);
 
       // set values for elements
       flowdeppressureparams.set<LINALG::Matrix<4,1> >("flow rate",flowraterel);
@@ -3137,12 +3139,8 @@ void FLD::FluidImplicitTimeInt::TimeUpdateNonlinearBC()
     discret_->SetState("velaf",velnp_);
     discret_->SetState("hist",hist_);
 
-    #ifdef D_ALE_BFLOW
-      if (alefluid_)
-      {
-        discret_->SetState("dispnp", dispn_);
-      }
-    #endif //D_ALE_BFLOW
+    if (alefluid_)
+      discret_->SetState("dispnp", dispn_);
 
     //Do actual calculations
     impedancebc_->FlowRateCalculation(time_,dta_);

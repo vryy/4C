@@ -1446,7 +1446,6 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::AreaCalculation(
   // get node coordinates (nsd_: dimension of boundary element!)
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze_);
 
-#ifdef D_ALE_BFLOW
   // add potential ALE displacements
   Teuchos::RCP<const Epetra_Vector>  dispnp;
   std::vector<double>                mydispnp;
@@ -1458,7 +1457,6 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::AreaCalculation(
       mydispnp.resize(lm.size());
       DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
     }
-
     dsassert(mydispnp.size()!=0,"paranoid");
     for (int inode=0;inode<bdrynen_;++inode)
     {
@@ -1468,7 +1466,6 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::AreaCalculation(
       }
     }
   }
-#endif // D_ALE_BFLOW
 
   // get initial value for area
   double area = params.get<double>("area");
@@ -1524,7 +1521,6 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PressureBoundaryIntegral(
   // get node coordinates (nsd_: dimension of boundary element!)
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze_);
 
-#ifdef D_ALE_BFLOW
   // add potential ALE displacements
   Teuchos::RCP<const Epetra_Vector>  dispnp;
   std::vector<double>                mydispnp;
@@ -1545,7 +1541,6 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PressureBoundaryIntegral(
       }
     }
   }
-#endif // D_ALE_BFLOW
 
   // get initial value for pressure boundary integral
   double press_int = params.get<double>("pressure boundary integral");
@@ -1597,7 +1592,6 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CenterOfMassCalculation(
   //GEO::fillInitialPositionArray<distype,nsd_,Epetra_SerialDenseMatrix>(ele,xyze_);
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze_);
 
-#ifdef D_ALE_BFLOW
   // Add the deformation of the ALE mesh to the nodes coordinates
   // displacements
   Teuchos::RCP<const Epetra_Vector>      dispnp;
@@ -1620,7 +1614,6 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CenterOfMassCalculation(
       }
     }
   }
-#endif // D_ALE_BFLOW
 
   // first evaluate the area of the surface element
   params.set<double>("area",0.0);
@@ -1718,7 +1711,6 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ComputeFlowRate(
   //GEO::fillInitialPositionArray<distype,nsd_,Epetra_SerialDenseMatrix>(ele,xyze_);
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze_);
 
-#ifdef D_ALE_BFLOW
   // Add the deformation of the ALE mesh to the nodes coordinates
   // displacements
   Teuchos::RCP<const Epetra_Vector>      dispnp;
@@ -1741,8 +1733,6 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ComputeFlowRate(
       }
     }
   }
-#endif // D_ALE_BFLOW
-
 
   //const IntegrationPoints2D  intpoints(gaussrule);
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
@@ -2088,7 +2078,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ImpedanceIntegration(
                   Epetra_SerialDenseVector&         elevec1)
 {
   //  const double thsl = params.get("thsl",0.0);
-  const double thsl = fldparatimint_->TimeFacRhs();
+  const double tfac = fldparatimint_->TimeFacRhs();
 
   double pressure = params.get<double>("ConvolutedPressure");
 
@@ -2099,7 +2089,6 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ImpedanceIntegration(
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary element!)
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze_);
 
-#ifdef D_ALE_BFLOW
   // Add the deformation of the ALE mesh to the nodes coordinates
   // displacements
   Teuchos::RCP<const Epetra_Vector>  dispnp;
@@ -2122,7 +2111,6 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ImpedanceIntegration(
       }
     }
   }
-#endif // D_ALE_BFLOW
 
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
   {
@@ -2133,7 +2121,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ImpedanceIntegration(
                                                     intpoints,gpid,NULL,NULL,
                                                     IsNurbs<distype>::isnurbs);
 
-    const double fac_thsl_pres_inve = fac_ * thsl * pressure;
+    const double fac_thsl_pres_inve = fac_ * tfac * pressure;
 
     for (int inode=0;inode<bdrynen_;++inode)
       for(int idim=0;idim<nsd_;++idim)
@@ -2382,7 +2370,6 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CalcTractionVelocityComponent(
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary element!)
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze_);
 
-#ifdef D_ALE_BFLOW
   // Add the deformation of the ALE mesh to the nodes coordinates
   // displacements
   Teuchos::RCP<const Epetra_Vector>      dispnp;
@@ -2405,7 +2392,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CalcTractionVelocityComponent(
       }
     }
   }
-#endif // D_ALE_BFLOW
+
   const double timefac = fldparatimint_->TimeFacRhs();
 
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)

@@ -42,21 +42,27 @@ FLD::TimIntAC::~TimIntAC()
  *----------------------------------------------------------------------*/
 void FLD::TimIntAC::ReadRestart(int step)
 {
-  //AC-FSI specific output
-  if ( DRT::INPUT::IntegralValue<INPAR::FLUID::WSSType>(DRT::Problem::Instance()->FluidDynamicParams() ,"WSS_TYPE") == INPAR::FLUID::wss_mean )
+  const Teuchos::ParameterList& fs3idynac = DRT::Problem::Instance()->FS3IDynamicParams().sublist("AC");
+  const bool restartfromfsi = DRT::INPUT::IntegralValue<int>(fs3idynac,"RESTART_FROM_PART_FSI"); //fs3idynac.get<int>("RESTART_FROM_PART_FSI");
+
+  if (not restartfromfsi) //standard restart
   {
-    IO::DiscretizationReader reader(discret_,step);
+    //AC-FSI specific output
+    if ( DRT::INPUT::IntegralValue<INPAR::FLUID::WSSType>(DRT::Problem::Instance()->FluidDynamicParams() ,"WSS_TYPE") == INPAR::FLUID::wss_mean )
+    {
+      IO::DiscretizationReader reader(discret_,step);
 
-    Teuchos::RCP<Epetra_Vector> SumWss =Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(0),true));
-    reader.ReadVector(SumWss,"wss_fluid");
+      Teuchos::RCP<Epetra_Vector> SumWss =Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(0),true));
+      reader.ReadVector(SumWss,"wss_fluid");
 
-    double SumDtWss = 0.0;
-    SumDtWss = reader.ReadDouble("wss_time");
+      double SumDtWss = 0.0;
+      SumDtWss = reader.ReadDouble("wss_time");
 
-    SumWss->Scale(SumDtWss);
-    StressManager()->RestartWss(SumWss,SumDtWss);
-
+      SumWss->Scale(SumDtWss);
+      StressManager()->RestartWss(SumWss,SumDtWss);
+    }
   }
+  //else //nothing to do here
 
   return;
 }

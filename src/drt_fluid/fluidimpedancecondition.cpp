@@ -442,7 +442,7 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(Teuchos::RCP<DRT::Discretization>
     // calculate impedance values and fill vector 'impvalues_'
     // -------------------------------------------------------------------
     impvalues_.resize(cyclesteps_);
-    Impedances(area,density,viscosity);
+    Impedances(area,density,viscosity); //initial calculations happen in here
   }
 
   // ---------------------------------------------------------------------
@@ -1155,15 +1155,14 @@ this method is an alternative to the impedance calculation from arterial trees
  */
 std::complex<double> FLD::UTILS::FluidImpedanceBc::WindkesselImpedance(double k)
 {
-  double pr = R1_;  // proximal resistance
-  double dr = R2_;  // distal resistance
-  double ct = C_;  // capacitance
-
+  double R1 = R1_;  // proximal resistance
+  double R2 = R2_;  // distal resistance
+  double C = C_;  // capacitance
   std::complex<double> imag(0,1), imp;
 
   double omega = 2.0*PI*k/period_; // circular frequency
 
-  imp = ( pr+dr + imag*omega*ct*pr*dr ) / ( 1.0 + imag*omega*ct*dr );
+  imp = ( R1+R2 + imag*omega*C*R1*R2 ) / ( 1.0 + imag*omega*C*R2 );
 
   return imp;
 }

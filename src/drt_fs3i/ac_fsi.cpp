@@ -697,6 +697,10 @@ void FS3I::ACFSI::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector> >& ws
     if ( (fmod(time_ - dt_ + 1e-10,fsiperiod_)-1e-10) <= dt_-1e-12 ) //iff WallShearStress_ has been updated last step
       {
         fluid->ResetHistoryVectors( ); //Reset StressManager
+        if (Comm().MyPID()==0)
+        {
+        std::cout<<"Reseting stress manager"<<std::endl;
+        }
       }
 
     WallShearStress = fluid->CalculateWallShearStresses(); //Instantaneous wss vector
@@ -710,6 +714,10 @@ void FS3I::ACFSI::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector> >& ws
       if ( (fmod(time_+ 1e-10,fsiperiod_)-1e-10) <= dt_-1e-12 ) //..and update the mean wss vector iff a new period has started
       {
         WallShearStress_->Update(1.0,*WallShearStress,0.0); //Update
+        if (Comm().MyPID()==0)
+        {
+          std::cout<<"Updating mean wss vector in ac-fs3i"<<std::endl;
+        }
         //updatedwss_=true;
       }
       break;

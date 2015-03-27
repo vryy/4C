@@ -55,12 +55,10 @@ void FLD::TimIntRedModels::Init()
   // -----------------------------------------
 
   // create the volumetric-surface-flow condition
-#ifdef D_ALE_BFLOW
   if (alefluid_)
   {
     discret_->SetState("dispnp", dispn_);
   }
-#endif
 
   vol_surf_flow_bc_     = Teuchos::rcp(new UTILS::FluidVolumetricSurfaceFlowWrapper(discret_, *output_, dta_) );
 
@@ -156,12 +154,10 @@ FLD::TimIntRedModels::~TimIntRedModels()
 void FLD::TimIntRedModels::DoProblemSpecificBoundaryConditions()
 {
 
-#ifdef D_ALE_BFLOW
-    if (alefluid_)
-    {
-      discret_->SetState("dispnp", dispnp_);
-    }
-#endif // D_ALE_BFLOW
+  if (alefluid_)
+  {
+    discret_->SetState("dispnp", dispnp_);
+  }
 
   // Check if one-dimensional artery network problem exist
   if (ART_exp_timeInt_ != Teuchos::null)
@@ -192,12 +188,10 @@ void FLD::TimIntRedModels::Update3DToReducedMatAndRHS()
   discret_->SetState("velaf",velnp_);
   discret_->SetState("hist",hist_);
 
-#ifdef D_ALE_BFLOW
   if (alefluid_)
   {
     discret_->SetState("dispnp", dispnp_);
   }
-#endif // D_ALE_BFLOW
 
   // Check if one-dimensional artery network problem exist
   if (ART_exp_timeInt_ != Teuchos::null)
@@ -510,12 +504,9 @@ void FLD::TimIntRedModels::PrepareTimeStep()
   discret_->ClearState();
   discret_->SetState("velaf",velnp_);
   discret_->SetState("hist",hist_);
-#ifdef D_ALE_BFLOW
+
   if (alefluid_)
-  {
     discret_->SetState("dispnp", dispnp_);
-  }
-#endif // D_ALE_BFLOW
 
   // Check if one-dimensional artery network problem exist
   if (ART_exp_timeInt_ != Teuchos::null)

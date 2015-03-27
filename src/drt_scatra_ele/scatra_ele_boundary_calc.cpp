@@ -2520,9 +2520,6 @@ std::vector<double> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::WSSinfluence(
       f_wss[i] =((*coeffs)[0])*log10(1+((*coeffs)[1])/(ewss[i]+(*coeffs)[2])); //empirical function (log law) to account for influence of WSS;
     else //no WSS influence
       f_wss[i] = 1.0;
-
-    if(f_wss[i] > 1.0 or f_wss[i] < 0.0) //f_wss must be \in [0,1] !!!
-      dserror("The influence of your WSS to the interface permeability must be in [0;1]. Looks like you have to choose different parameters for the log law!");
   }
 
   return f_wss;

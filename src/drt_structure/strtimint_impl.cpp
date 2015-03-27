@@ -4333,8 +4333,8 @@ void STR::TimIntImpl::UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtracto
       finert = LINALG::CreateVector(*DofRowMapView(), true); // intertial force
       // Note: the following parameters are just dummies, since they are only needed to calculate finert which we
       // will not use anyway
-      p.set("timintfac_dis", 0); //dummy!
-      p.set("timintfac_vel", 0); //dummy!
+      p.set("timintfac_dis", 0.0); //dummy!
+      p.set("timintfac_vel", 0.0); //dummy!
     }
 
     // compute new inner radius

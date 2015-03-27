@@ -197,7 +197,7 @@ bool FS3I::PartFPS3I_1WC::ScatraConvergenceCheck(const int itnum)
     // print the screen info
     if (Comm().MyPID()==0)
     {
-      printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |",
+      printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |\n",
              itnum,itemax,ittol,conresnorm,incconnorm/connorm);
     }
 
