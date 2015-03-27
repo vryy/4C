@@ -969,7 +969,17 @@ namespace FSI
 
   protected:
 
-    //! Prepare preconditioner for new time step
+    /*! \brief Prepare preconditioner for new time step
+     *
+     *  It is recommended to rebuild the preconditioner at the beginning of
+     *  every time step, since this is helpful due to possible changes in
+     *  physics. However, we allow to suppress rebuilding the preconditioner via
+     *  the input file parameter 'REBUILDPRECEVERYSTEP = No' to account for
+     *  cases where the setup of the preconditioner is very expensive, though
+     *  results in a very good preconditioner, that can be reused very often.
+     *
+     *  \author mayr.mt \date 03/2015
+     */
     virtual void PrepareTimeStepPreconditioner();
 
     /// create the composed system matrix

@@ -1078,8 +1078,11 @@ void FSI::BlockMonolithic::PrepareTimeStep()
 /*----------------------------------------------------------------------------*/
 void FSI::BlockMonolithic::PrepareTimeStepPreconditioner()
 {
-  // new time step, rebuild preconditioner
-  precondreusecount_ = 0;
+  const Teuchos::ParameterList& fsimono =
+      DRT::Problem::Instance()->FSIDynamicParams().sublist("MONOLITHIC SOLVER");
+
+  if (DRT::INPUT::IntegralValue<int>(fsimono, "REBUILDPRECEVERYSTEP"))
+    precondreusecount_ = 0;
 }
 
 /*----------------------------------------------------------------------------*/

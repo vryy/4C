@@ -6947,9 +6947,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                         INPAR::FSI::divcont_revert_dt),
                                     &fsiadapt);
 
-  /*----------------------------------------------------------------------*/
+  /*--------------------------------------------------------------------------*/
 
-  /*----------------------------------------------------------------------*/
+  /*--------------------------------------------------------------------------*/
   /* parameters for monolithic FSI solvers */
   Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER",false,"");
 
@@ -6971,6 +6971,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   IntParameter("PRECONDREUSE", 0,
       "Number of iterations in one time step reusing the preconditioner before rebuilding it", &fsimono);
+
+  BoolParameter("REBUILDPRECEVERYSTEP", "Yes",
+      "Enforce rebuilding the preconditioner at the beginning of every time step",
+      &fsimono);
 
   setStringToIntegralParameter<int>(
                                "LINEARBLOCKSOLVER","PreconditionedKrylov",
