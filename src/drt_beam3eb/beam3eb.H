@@ -113,8 +113,10 @@ using namespace cln;
 //#define BEAM3EBROTPTC          //switch from standard PTC scheme to angular velocity based PTC for tangential DoFs
 //Default: off
 //#define CONSTSTOCHFORCE       //Flag in order to hold stochastic forces constant over the element length
-                                //(needed in order to compare with Reissner beams)
-//Default: off
+//Default: off                  //(needed in order to compare with Reissner beams)
+
+//#define BEAM3EBDISCRETELINENEUMANN 0.0 //Flag in order to interpret line Neumann condition as discrete force at given element parameter position DISCRETELINENEUMANN
+//Default: off                  //for all elements contained in the corresponding design line!
 
 #if (defined(CONSISTENTANSBEAM3EB) or defined(INEXTENSIBLE) or defined(ORTHOPRESSURE)) and !defined(BEAM3EBAUTOMATICDIFF)
   dserror("CONSISTENTANSBEAM3EB, INEXTENSIBLE and ORTHOPRESSURE only work in combination with BEAM3EBAUTOMATICDIFF!");

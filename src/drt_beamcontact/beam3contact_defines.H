@@ -151,16 +151,55 @@ Maintainer: Christoph Meier
 //#define DISTINGUOSHCONTACTCOLOR
 //#define CONTACTPAIRSPECIFICOUTPUT
 //#define OUTPUTALLPROCS
-#define OUTPUTEVERY 0.0001          //Write gmsh output in time intervals of size OUTPUTEVERY
-//#define OUTPUTEVERYNEWTONSTEP  //Write output also after each Newton step
-//#define GMSHTIMESTEPS          /* write gmsh output in each time step */
-//#define GMSHNEWTONSTEPS      /* write gmsh and console output in each Newton step */
-//#define REACTIONFORCES          /* output of reaction forces and moments */
-//#define BEAMCONTACTFDCHECKS     /* perform finite difference checks */
+//#define OUTPUTEVERY 0.001          //Write gmsh output in time intervals of size OUTPUTEVERY
+//#define OUTPUTEVERYNEWTONSTEP      //Write output also after each Newton step
+//#define GMSHTIMESTEPS              /*write gmsh output in each time step */
+//#define GMSHNEWTONSTEPS            /*write gmsh and console output in each Newton step */
+//#define REACTIONFORCES             /* output of reaction forces and moments */
+//#define BEAMCONTACTFDCHECKS        /* perform finite difference checks */
 
 //#define PRINTGAPFILE //print file with gap/gap error
 //#define PRINTNUMCONTACTSFILE //print number of active contact points over time
+//#define PRINTGAPSOVERLENGTHFILE //print all GP gaps and forces over element length (only implemented for one element so far...)
 
 //#define FDCHECK                //perform finite difference check of contact linearization
+
+/************************************************************************/
+/* Beam to solid contact options                                        */
+/************************************************************************/
+
+#define LINPENALTY
+//#define QUADPENALTY
+//#define ARBITPENALTY 2
+#ifdef ARBITPENALTY
+  #define G0 3.0e-2 // G0 > 0
+#endif
+//#define GAP0 // GAP0 > 0                        // Decide if complete stiffness is used
+#define GAUSSRULE intrule_line_6point           // Define gauss rule for integrating residual and stiffness terms
+
+//#define AUTOMATICDIFFBTS                        // Decide if automatic differentiation via Sacado is used
+//default: Off
+#ifdef AUTOMATICDIFFBTS
+  typedef Sacado::Fad::DFad<double> TYPEBTS;
+//  #define FADCHECKSTIFFNESS                     // Decide if FAD checks for contact stiffness are printed as output
+  #ifndef FADCHECKSTIFFNESS
+//    #define FADCHECKLINCONTACTINTERVALBORDER    // Decide if FAD checks for linearization of contact interval borders are printed as output
+//    #define FADCHECKLINORTHOGONALITYCONDITION   // Decide if FAD checks for linearization of orthogonality conditions are printed as output
+//    #define FADCHECKLINGAUSSPOINT               // Decide if FAD checks for linearizations at gauss points are printed as output
+  #endif
+#else
+  typedef double TYPEBTS;
+#endif
+
+//#define FDCHECKSTIFFNESS                        // Decide if differentiation via finite difference for calculating contact stiffness is used
+//default: Off
+
+#ifndef AUTOMATICDIFFBTS
+  //#define BTSOLGMSH                           // gmsh output of solids
+  #define GMSHDEBUG                             // Draw gap as 3D text at each Gauss point in Gmsh
+  #define GMSHFORCE                             // Create extra Gmsh file with contact forces acting on solid element
+  #define SAVEFORCE                             // Create text file with contact forces at all contact interval borders and Gauss points
+#endif
+// -----------------------------------------------------------------
 
 #endif /* BEAM3CONTACT_DEFINES_H */

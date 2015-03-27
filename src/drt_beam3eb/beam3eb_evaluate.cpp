@@ -248,9 +248,11 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
   // in the input file; val gives the values of the force as a multiple of the prescribed load curve
   const std::vector<double>* val = condition.Get<std::vector<double> >("val");
 
+  #ifndef BEAM3EBDISCRETELINENEUMANN
   // funct is related to the 6 "funct" fields after the val field of the Neumann condition
   // in the input file; funct gives the number of the function defined in the section FUNCT
   const std::vector<int>* functions = condition.Get<std::vector<int> >("funct");
+  #endif
 
   //find out which node is correct
   const std::vector< int > * nodeids = condition.Nodes();
@@ -363,14 +365,18 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
   //if a line neumann condition needs to be linearized
   else if(condition.Type() == DRT::Condition::LineNeumann)
   {
-
     #ifdef SIMPLECALC
       dserror("SIMPLECALC not implemented for LineNeumann conditions so far!!!");
     #endif
-    // gaussian points
-    DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleeb);
+
+    #ifndef BEAM3EBDISCRETELINENEUMANN
+      // gaussian points
+      DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleeb);
+    #endif
+
     LINALG::Matrix<1,NODALDOFS*nnodes> N_i;
 
+    #ifndef BEAM3EBDISCRETELINENEUMANN
     //integration loops
     for (int numgp=0; numgp<gausspoints.nquad; ++numgp)
     {
@@ -469,7 +475,65 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
         }
       }
     } // for (int numgp=0; numgp<intpoints.nquad; ++numgp)
-  }
+    #else
+    //hack in order to realize a discrete point force at position xi=0.0
+    {
+      //integration points in parameter space and weights
+      const double xi = BEAM3EBDISCRETELINENEUMANN;
+
+      //Get DiscretizationType of beam element
+      const DRT::Element::DiscretizationType distype = Shape();
+
+      //Clear matrix for shape functions
+      N_i.Clear();
+
+      //evaluation of shape funcitons at Gauss points
+      #if (NODALDOFS == 2)
+      //Get hermite derivatives N'xi and N''xi (jacobi_*2.0 is length of the element)
+      DRT::UTILS::shape_function_hermite_1D(N_i,xi,jacobi_*2.0,distype);
+      //end--------------------------------------------------------
+      #elif (NODALDOFS == 3)
+      //specific-for----------------------------------Frenet Serret
+      //Get hermite derivatives N'xi, N''xi and N'''xi
+      DRT::UTILS::shape_function_hermite_1D_order5(N_i,xi,jacobi_*2.0,distype);
+      //end--------------------------------------------------------
+      #else
+      dserror("Only the values NODALDOFS = 2 and NODALDOFS = 3 are valid!");
+      #endif
+
+      // load vector ar
+      double ar[6];
+
+      // loop the dofs of a node
+      for (int dof=0; dof<6; ++dof)
+        ar[dof] = (*onoff)[dof]*(*val)[dof]*curvefac[dof];
+
+      for(int dof=0;dof<3;++dof)
+      {
+        if(ar[dof+3]!=0)
+          dserror("No discrete moment loads in the elements interior implemented so far!");
+      }
+
+      //sum up load components
+      for (int dof=0; dof<3; ++dof)
+      {
+        for (int node=0; node<2*NODALDOFS; ++node)
+        {
+          #ifndef INEXTENSIBLE
+            elevec1[node*3 + dof] += N_i(node) *ar[dof];
+          #else
+            if(node<2)
+              elevec1[node*3 + dof] += N_i(node) *ar[dof];
+            else
+              elevec1[node*3 + dof + 1] += N_i(node) *ar[dof];
+          #endif
+        }
+      }
+    }
+  #endif
+  }//else if(condition.Type() == DRT::Condition::LineNeumann)
+
+  elevec1.Print(std::cout);
 
   //Uncomment the next line if the implementation of the Neumann part of the analytical stiffness matrix should be checked by Forward Automatic Differentiation (FAD)
   //FADCheckNeumann(params, discretization, condition, lm, elevec1, elemat1);

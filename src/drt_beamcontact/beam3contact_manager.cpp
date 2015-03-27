@@ -57,6 +57,7 @@ mintotalsimunconvgap_(0.0),
 totpenaltyenergy_(0.0),
 maxdeltadisp_(0.0),
 firststep_(true),
+elementtypeset_(false),
 outputcounter_(0),
 timen_(0.0),
 contactevaluationtime_(0.0)
@@ -80,6 +81,8 @@ contactevaluationtime_(0.0)
 
   contactpairmap_.clear();
   oldcontactpairmap_.clear();
+  btsolpairmap_.clear();
+  oldbtsolpairmap_.clear();
   btsphpairmap_.clear();
   btsolpairmap_.clear();
   // read parameter lists from DRT::Problem
@@ -339,6 +342,7 @@ contactevaluationtime_(0.0)
   pairs_.resize(0);
   oldpairs_.resize(0);
   btsolpairs_.resize(0);
+  oldbtsolpairs_.resize(0);
   btsphpairs_.resize(0);
 
   // initialize potential-based interaction pairs
@@ -1295,8 +1299,11 @@ void CONTACT::Beam3cmanager::FillContactPairsVectors(const std::vector<std::vect
   //Determine type of applied beam elements and set the corresponding values for the member variables
   //numnodes_ and numnodaldofs_. This has only to be done once in the beginning, since beam contact
   //simulations are only possible when using beam elements of one type!
-  if (oldpairs_.size()==0 and formattedelementpairs.size()>0)
+  if (!elementtypeset_ and formattedelementpairs.size()>0)
+  {
     SetElementTypeAndDistype((formattedelementpairs[0])[0]);
+    elementtypeset_=true;
+  }
 
   //So far, all beam elements occurring in the pairs_ vector have to be of the same type.
   //This will be checked in the following lines.
@@ -1375,10 +1382,35 @@ void CONTACT::Beam3cmanager::FillContactPairsVectors(const std::vector<std::vect
     // beam-to-solid pair
     else
     {
-      if(btsolpairmap_.find(std::make_pair(currid1,currid2))==btsolpairmap_.end())
+      bool foundlasttimestep = false;
+      bool isalreadyinpairs = false;
+
+      if(btsolpairmap_.find(std::make_pair(currid1,currid2))!=btsolpairmap_.end())
+        isalreadyinpairs = true;
+
+      if(oldbtsolpairmap_.find(std::make_pair(currid1,currid2))!=oldbtsolpairmap_.end())
+        foundlasttimestep = true;
+
+      if(!isalreadyinpairs and foundlasttimestep)
       {
+        btsolpairs_.push_back(oldbtsolpairmap_[std::make_pair(currid1,currid2)]);
+        if (currid1<currid2)
+          btsolpairmap_[std::make_pair(currid1,currid2)] = btsolpairs_[btsolpairs_.size()-1];
+        else
+          dserror("Element 1 has to have the smaller element-ID. Adapt your contact search!");
+
+        isalreadyinpairs = true;
+      }
+
+      if(!isalreadyinpairs)
+      {
+        //Add new contact pair object: The auxiliary_instance of the abstract class Beam3contactinterface is only needed here in order to call
+        //the function Impl() which creates an instance of the templated class Beam3contactnew<numnodes, numnodalvalues> !
         btsolpairs_.push_back(CONTACT::Beam3tosolidcontactinterface::Impl((formattedelementpairs[k])[1]->NumNode(),numnodes_,numnodalvalues_,ProblemDiscret(),BTSolDiscret(),dofoffsetmap_,ele1,ele2, sbeamcontact_));
-        btsolpairmap_[std::make_pair(currid1,currid2)] = btsolpairs_[btsolpairs_.size()-1];
+        if (currid1<=currid2)
+          btsolpairmap_[std::make_pair(currid1,currid2)] = btsolpairs_[btsolpairs_.size()-1];
+        else
+          dserror("Element 1 has to have the smaller element-ID. Adapt your contact search!");
       }
     }
   }
@@ -1974,16 +2006,22 @@ void CONTACT::Beam3cmanager::Update(const Epetra_Vector& disrow, const int& time
 
   oldcontactpairmap_.clear();
   oldcontactpairmap_ = contactpairmap_;
-  // clear potential contact pairs
-  pairs_.clear();
-  pairs_.resize(0);
 
+  oldbtsolpairs_.clear();
+  oldbtsolpairs_.resize(0);
+  oldbtsolpairs_ = btsolpairs_;
+
+  oldbtsolpairmap_.clear();
+  oldbtsolpairmap_ = btsolpairmap_;
+
+  // clear potential contact pairs
   contactpairmap_.clear();
   btsphpairmap_.clear();
   btsolpairmap_.clear();
 
-  // clear potential beam-to-solid contact pairs
-  // since no history information is needed for this case, we don't have to store these pairs
+  pairs_.clear();
+  pairs_.resize(0);
+
   btsolpairs_.clear();
   btsolpairs_.resize(0);
 
@@ -2020,23 +2058,32 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
 //  if (btsol_)
 //    dserror("GmshOutput not implemented for beam-to-solid contact so far!");
 
-  if(fabs(timen_-(outputcounter_+1)*OUTPUTEVERY)<1.0e-8)
-  {
-    outputcounter_++;
-  }
-  else
-  {
-    return;
-  }
+  #ifdef OUTPUTEVERY
+    if(fabs(timen_-(outputcounter_+1)*OUTPUTEVERY)<1.0e-8)
+    {
+      outputcounter_++;
+    }
+    else
+    {
+      return;
+    }
+  #endif
 
   // STEP 1: OUTPUT OF TIME STEP INDEX
   std::ostringstream filename;
   filename << "../o/gmsh_output/";
 
-  if (timestep<1000000)
-    filename << "beams_t" << std::setw(6) << std::setfill('0') << outputcounter_;
-  else /*(timestep>=1000000)*/
-    dserror("ERROR: Gmsh output implemented for max 999.999 time steps");
+  #ifdef OUTPUTEVERY
+    if (timestep<1000000)
+      filename << "beams_t" << std::setw(6) << std::setfill('0') << outputcounter_;
+    else /*(timestep>=1000000)*/
+      dserror("ERROR: Gmsh output implemented for max 999.999 time steps");
+  #else
+    if (timestep<1000000)
+      filename << "beams_t" << std::setw(6) << std::setfill('0') << timestep;
+    else /*(timestep>=1000000)*/
+      dserror("ERROR: Gmsh output implemented for max 999.999 time steps");
+  #endif
 
   // STEPS 2/3: OUTPUT OF UZAWA AND NEWTON STEP INDEX
   // (for the end of time step output, omit this)
@@ -2184,6 +2231,14 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
 //    gmshfileheader <<"General.TrackballQuaternion3 = -0.5096666985830173;\n";
 //    gmshfileheader <<"General.TranslationX = 0.5325452732071692;\n";
 //    gmshfileheader <<"General.TranslationY = 0.2738989770477544;\n";
+
+//    // General view settings for color table: Set predefined color range (for contact status display with discrete colors)
+//    gmshfileheader << "View.RangeType=2;" << std::endl;         // Custom value scale range type
+//    gmshfileheader << "View.CustomMin=0;" << std::endl;         // Minimum value to be displayed
+//    gmshfileheader << "View.CustomMax=1;" << std::endl;         // Maximum value to be displayed
+//    gmshfileheader << "View.IntervalsType=3;" << std::endl;     // Use discrete interval type
+//    gmshfileheader << "View.NbIso=3;" << std::endl;             // Use three color ranges
+//    gmshfileheader << "View.ColorTable={{0,140,255},{142,255,120},{206,0,0}};" << std::endl; // Define three colors
 
     //gmshfileheader <<"View.PointSize = 5;\n";
 
@@ -2432,17 +2487,21 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
           }
           else
           {
-            fac=0.3;
+            fac=0.1;
             color = 0.5;
           }
 
           for (int k=0;k<3;k++)
           {
-            normal(k)=contactforce[j]*fac*(r2_vec[j](k)-r1_vec[j](k));
-            r1(k)=r1_vec[j](k);
-            r2(k)=r1_vec[j](k)+normal(k);
+            normal(k)=(r2_vec[j](k)-r1_vec[j](k));
           }
+          normal.Scale(1.0/normal.Norm2());
 
+          for (int k=0;k<3;k++)
+          {
+            r1(k)=r1_vec[j](k);
+            r2(k)=r1_vec[j](k)+contactforce[j]*fac*normal(k);
+          }
 
           gmshfilecontent << "SL("<< std::scientific;
           gmshfilecontent << r1(0) << "," << r1(1) << "," << r1(2) << ",";
@@ -2452,6 +2511,175 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
         }
       }//loop over pairs
       #endif
+
+      // Draw solid surface elements with different colors for contact status
+
+      //****************************begin: solid visualization
+      #ifdef BTSOLGMSH
+      // Loop over all column elements on this processor
+      for (int i = 0; i < ProblemDiscret().NumMyColElements(); ++i)
+      {
+        // Get pointer onto current beam element
+        DRT::Element* element = ProblemDiscret().lColElement(i);
+
+        if (!BEAMCONTACT::BeamElement(*element))
+        {
+          GMSH_Solid(element, disrow, gmshfilecontent);
+        }
+      }
+      #endif
+
+      #if defined(GMSHDEBUG) || defined(SAVEFORCE)
+      // Get information about current problem settings for rendering 2D text in Gmsh and
+      // for creating an unique filename if contact forces should be written in a text file
+
+      // Get number of Gauss points used for one contact interval
+      const int numgp = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GAUSSRULE).nquad;
+
+      // Get moment of inertia
+      //double Iyy1 = 0.0;
+      //if ((int)btsolpairs_.size() > 0)
+      //{
+      //  DRT::Element* element1 = const_cast<DRT::Element*>(btsolpairs_[0]->Element1());
+      //  Iyy1 = (dynamic_cast<DRT::ELEMENTS::Beam3eb*>(element1))->Iyy();
+      //}
+
+      // Get number of beam elements and surface elements on contact surface
+      int numele1 = 0;
+      int numele2 = 0;
+      for (int i = 0; i < ColElements()->NumMyElements(); ++i)
+      {
+        DRT::Element* element = BTSolDiscret().lColElement(i);
+        if(BEAMCONTACT::BeamElement(*element))
+          numele1++;
+        else
+          numele2++;
+      }
+
+      // Get element type of surface elements
+      std::string shape2 = "unknown";
+      if ((int)btsolpairs_.size() > 0)
+      {
+        DRT::Element* element2 = const_cast<DRT::Element*>(btsolpairs_[0]->Element2());
+
+        switch(element2->Shape())
+        {
+          case DRT::Element::tri3:
+            shape2 = "tri3";
+            break;
+          case DRT::Element::tri6:
+            shape2 = "tri6";
+            break;
+          case DRT::Element::quad4:
+            shape2 = "quad4";
+            break;
+          case DRT::Element::quad8:
+            shape2 = "quad8";
+            break;
+          case DRT::Element::quad9:
+            shape2 = "quad9";
+            break;
+          default:
+            shape2 = "unknown";
+        }
+      }
+      #endif
+
+      #ifdef GMSHDEBUG
+      // Draw distance vector rD as line and value of gap as 3D text at each Gauss point
+
+      // Initialize variables
+      double r1[3];           // Position on beam element centerline
+      double r2[3];           // Position on surface element
+      double n2[3];           // Surface unit normal vector
+      double gap;             // Gap function
+      double rt[3];           // Position for text
+      int total_numgp = 0;    // Total number of Gauss points
+      int total_numgpc = 0;   // Number of Gauss points in contact
+
+      // Loop over all beam to solid contact pairs
+      for (int i_pair = 0; i_pair < (int)btsolpairs_.size(); i_pair++)
+      {
+        std::vector<Beam3tosolidcontactinterface::gmshDebugPoint> gmshDebugPoints = btsolpairs_[i_pair]->GetGmshDebugPoints();
+
+        // Loop over all Gauss points
+        for (int i = 0; i < (int)gmshDebugPoints.size(); i++)
+        {
+          // Declaring variable for color of lines
+          double color = 0.5; // Inactive contact
+
+          Beam3tosolidcontactinterface::gmshDebugPoint gmshDebugPoint = gmshDebugPoints[i];
+
+          // Draw only information at Gauss points
+          if (gmshDebugPoint.type == 0) // 0: Gauss point
+          {
+            total_numgp++;
+            gap = gmshDebugPoint.gap;
+
+            // Check if current Gauss point has contact
+            if (gap < 0)
+            {
+              // Increase number of Gauss points in contact and change color of line
+              total_numgpc++;
+              color = 1.0; // Active contact
+            }
+
+            // Get positions from gmshDebugPoint and calculate 3D text position
+            for (int j = 0; j < 3; j++)
+            {
+              r1[j] = gmshDebugPoint.r1(j);
+              r2[j] = gmshDebugPoint.x2(j);
+              n2[j] = gmshDebugPoint.n2(j);
+              rt[j] = r1[j] + 0.3 * n2[j];
+            }
+
+            // Draw line between beam element centerline and surface element
+            gmshfilecontent << "SL(" << std::scientific << r1[0] << "," << r1[1] << "," << r1[2] << "," << r2[0] << "," << r2[1] << "," << r2[2] << ")";
+            gmshfilecontent << "{" << std::scientific << color << "," << color << "};" << std::endl;
+
+            // Draw line from Gauss point on beam element centerline in surface unit normal vector direction
+            gmshfilecontent << "SL(" << std::scientific << r1[0] << "," << r1[1] << "," << r1[2] << "," << rt[0] << "," << rt[1] << "," << rt[2] << ")";
+            gmshfilecontent << "{" << std::scientific << color << "," << color << "};" << std::endl;
+
+            // Draw gap as 3D text
+            gmshfilecontent << "T3(" << std::scientific << rt[0] << "," << rt[1] << "," << rt[2] << "," << 17 << ")";
+            if (gap < 0)
+              gmshfilecontent << "{\"" << " gap = " << gap << "\"};" << std::endl;
+            else
+              gmshfilecontent << "{\"" << " gap > 0" << "\"};" << std::endl;
+          }
+        }
+      }
+
+      // Plot 2D text with information about current problem settings
+      int xpos = 15;
+      int ypos = 5;
+      const int yspace = 15;
+      int textsize = 17;
+      gmshfilecontent << "T2(" << std::scientific << xpos << "," << (ypos += yspace) << "," << textsize << ")";
+      gmshfilecontent << "{\"" << "Number of Gauss points in contact intervall: " << numgp << "\"};" << std::endl;
+
+      gmshfilecontent << "T2(" << std::scientific << xpos << "," << (ypos += yspace) << "," << textsize << ")";
+      gmshfilecontent << "{\"" << "Number of beam elements:                     " << numele1 << "\"};" << std::endl;
+
+      gmshfilecontent << "T2(" << std::scientific << xpos << "," << (ypos += yspace) << "," << textsize << ")";
+      gmshfilecontent << "{\"" << "Number of solid elements:                    " << numele2 << "\"};" << std::endl;
+
+      gmshfilecontent << "T2(" << std::scientific << xpos << "," << (ypos += yspace) << "," << textsize << ")";
+      gmshfilecontent << "{\"" << "Solid element shape:                         " << shape2.c_str() << "\"};" << std::endl;
+
+      //gmshfilecontent << "T2(" << std::scientific << 15 << "," << 80 << "," << 17 << ")";
+      //gmshfilecontent << "{\"" << "Beam moment of inertia:                      " << Iyy1 << "\"};" << std::endl;
+
+      ypos += 5;
+
+      gmshfilecontent << "T2(" << std::scientific << xpos << "," << (ypos += yspace) << "," << textsize << ")";
+      gmshfilecontent << "{\"" << "Total number of Gauss points                 " << total_numgp << "\"};" << std::endl;
+
+      gmshfilecontent << "T2(" << std::scientific << xpos << "," << (ypos += yspace) << "," << textsize << ")";
+      gmshfilecontent << "{\"" << "Total number of Gauss points in contact:     " << total_numgpc << "\"};" << std::endl;
+      #endif
+      //***************************end: solid visualization*************************************************************
 
       // write content into file and close
       fprintf(fp,gmshfilecontent.str().c_str());
@@ -2477,6 +2705,113 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
     fclose(fp);
   }
   Comm().Barrier();
+
+  //*************************begin: gmsh output of contact forces for solids************************************
+  #ifdef GMSHFORCE
+  // Draw contact forces acting on solid element using an extra Gmsh output file
+  FILE* fp_fc2 = NULL;
+
+  // Create filename
+  std::ostringstream filename_fc2;
+  filename_fc2 << "o/gmsh_output/";
+  if (timestep < 1000000)
+    filename_fc2 << "fc2_t" << std::setw(6) << std::setfill('0') << timestep;
+  else
+    dserror("ERROR: Gmsh output implemented for max 999.999 time steps");
+
+  if (!endoftimestep)
+  {
+     // Newton index is always needed, of course
+     if (newtonstep < 10)
+       filename_fc2 << "_n0";
+     else if (newtonstep < 100)
+       filename_fc2 << "_n";
+     else
+       dserror("ERROR: Gmsh output implemented for max 99 Newton steps");
+     filename_fc2 << newtonstep;
+  }
+
+  // Finish filename
+  filename_fc2 << ".pos";
+
+  fp_fc2 = fopen(filename_fc2.str().c_str(), "w");
+
+  std::stringstream fc2filecontent;
+
+  // General settings for 3D vector visualization
+  fc2filecontent << "General.ArrowHeadRadius=0.08;" << std::endl; // Arrow head radius
+  fc2filecontent << "General.ArrowStemLength=0.6;" << std::endl;  // Arrow stem length
+  fc2filecontent << "View.CenterGlyphs=2;" << std::endl;          // Locate with position of arrow head
+  fc2filecontent << "View.ArrowSizeMax=100;" << std::endl;        // Arrow maximal size
+
+  // Draw solid surface elements with different colors for contact status
+  fc2filecontent << "View \"StepT" << timestep << "_Solid\"{" << std::endl;
+
+  // Loop over all column elements on this processor
+  for (int i = 0; i < ProblemDiscret().NumMyColElements(); ++i)
+  {
+    // Get pointer onto current beam element
+    DRT::Element* element = ProblemDiscret().lColElement(i);
+
+    if (!BEAMCONTACT::BeamElement(*element))
+    {
+      GMSH_Solid(element, disrow, fc2filecontent);
+    }
+  }
+  fc2filecontent << "};" << std::endl;
+
+  // General view settings for color table: Set predefined color range (for contact status)
+  fc2filecontent << "View.RangeType=2;" << std::endl;                // Custom value scale range type
+  fc2filecontent << "View.CustomMin=0;" << std::endl;                // Minimum value to be displayed
+  fc2filecontent << "View.CustomMax=1;" << std::endl;                // Maximum value to be displayed
+  fc2filecontent << "View.IntervalsType=3;" << std::endl;            // Use discrete interval type
+  fc2filecontent << "View.NbIso=1;" << std::endl;                    // Use one color range
+  fc2filecontent << "View.ColorTable={{180,180,180}};" << std::endl; // Define color
+
+  // Draw contact forces acting on solid element
+  fc2filecontent << "View \"StepT" << timestep << "_fc2\"{" << std::endl;
+
+  // Loop over all beam to solid contact pairs
+  for (int i_pair = 0; i_pair < (int)btsolpairs_.size(); i_pair++)
+  {
+    std::vector<Beam3tosolidcontactinterface::gmshDebugPoint> gmshDebugPoints = btsolpairs_[i_pair]->GetGmshDebugPoints();
+
+    // Loop over all Gauss points
+    for (int i = 0; i < (int)gmshDebugPoints.size(); i++)
+    {
+      Beam3tosolidcontactinterface::gmshDebugPoint gmshDebugPoint = gmshDebugPoints[i];
+
+      // Draw only information at Gauss points
+      if (gmshDebugPoint.type == 0) // 0: Gauss point
+      {
+        double gap = gmshDebugPoint.gap;
+        if (gap < 0)
+        {
+          double r2[3];
+          double n2[3];
+          double fc2[3];
+          for (int j = 0; j < 3; j++)
+          {
+            r2[j] = gmshDebugPoint.x2(j);
+            n2[j] = gmshDebugPoint.n2(j);
+            fc2[j] = -gmshDebugPoint.fp * n2[j];
+          }
+
+          // Draw 3D vector for contact force
+          fc2filecontent << "VP(" << std::scientific
+              << r2[0] << "," << r2[1] << "," << r2[2] << "){"
+              << fc2[0] << "," << fc2[1] << "," << fc2[2] << "};" << std::endl;
+        }
+      }
+    }
+  }
+  fc2filecontent << "};" << std::endl;
+
+  // Write content into file and close
+  fprintf(fp_fc2, fc2filecontent.str().c_str());
+  fclose(fp_fc2);
+  #endif
+  //*************************end: gmsh output of contact forces for solids************************************
 
   return;
 }
@@ -2831,6 +3166,10 @@ void CONTACT::Beam3cmanager::UpdateAllPairs()
    // loop over all potential contact pairs
     for (int i=0;i<(int)pairs_.size();++i)
       pairs_[i]->UpdateClassVariablesStep();
+
+    // loop over all potential beam to solid contact pairs
+    for (int i = 0; i < (int)btsolpairs_.size(); ++i)
+      btsolpairs_[i]->UpdateClassVariablesStep();
 }
 
 /*----------------------------------------------------------------------*
@@ -2981,6 +3320,33 @@ void CONTACT::Beam3cmanager::ConsoleOutput()
 
             if(types[j]==2)
               numepc++;
+
+            #ifdef PRINTGAPSOVERLENGTHFILE
+              std::ostringstream filename;
+              filename << "gp_gapsandforces.txt";
+
+              // do output to file in c-style
+              FILE* fp = NULL;
+              std::stringstream filecontent;
+
+              if(firststep_)
+              {
+                // open file to write output data into
+                fp = fopen(filename.str().c_str(), "w");
+                filecontent << "xi gap force\n";
+                firststep_=false;
+              }
+              else
+              {
+                // open file to write output data into
+                fp = fopen(filename.str().c_str(), "a");
+              }
+              if(numsegments.second,types[j]==1)
+                filecontent << closestpoints[j].first << " " << gaps[j] << " " << forces[j] <<"\n";
+              //write content into file and close it
+              fprintf(fp, filecontent.str().c_str());
+              fclose(fp);
+            #endif
 
             printf("      %-6d (%2d/%-2d) %-6d (%2d/%-2d)   %-1d  %-6.2f %-6.2f %-7.2f %-11.8e %-11.2e \n",id1,segmentids[j].first+1,numsegments.first,id2,segmentids[j].second+1,numsegments.second,types[j],closestpoints[j].first,closestpoints[j].second,angles[j]/M_PI*180.0,gaps[j],forces[j]);
             fflush(stdout);
@@ -3741,10 +4107,9 @@ void CONTACT::Beam3cmanager::GMSH_N_noded(const int& n,
 
 
   // declaring variable for color of elements
-  double color = 1.0;
+  double color = 0.0;
 
-
-#ifdef DISTINGUOSHCONTACTCOLOR
+  #ifdef DISTINGUOSHCONTACTCOLOR
   for (int i=0;i<(int)pairs_.size();++i)
   {
     // abbreviations
@@ -3753,7 +4118,7 @@ void CONTACT::Beam3cmanager::GMSH_N_noded(const int& n,
     bool active = pairs_[i]->GetContactFlag();
 
     // if element is memeber of an active contact pair, choose different color
-    if ( (thisele->Id()==id1 || thisele->Id()==id2) && active) color = 0.0;
+    if ( (thisele->Id()==id1 || thisele->Id()==id2) && active) color = 1.0;
   }
   for (int i=0;i<(int)btsphpairs_.size();++i)
   {
@@ -3765,7 +4130,28 @@ void CONTACT::Beam3cmanager::GMSH_N_noded(const int& n,
     // if element is memeber of an active contact pair, choose different color
     if ( (thisele->Id()==id1 || thisele->Id()==id2) && active) color = 0.875;
   }
-#endif
+  for (int i_pair = 0; i_pair < (int)btsolpairs_.size(); ++i_pair)
+  {
+    // Id of beam element
+    int id1 = (btsolpairs_[i_pair]->Element1())->Id();
+
+    // If beam element is memeber of an active beam to solid contact pair, choose different color
+    if (thisele->Id() == id1)
+    {
+      if (btsolpairs_[i_pair]->GetContactFlag())
+      {
+        // Beam to solid pair is in active contact (color red)
+        color = 1.0;
+        break;
+      }
+      else
+      {
+        // Beam to solid pair might come into active contact (color green)
+        color = 0.5;
+      }
+    }
+  }
+  #endif
 
   // computation of coordinates starts here
   for (int i=0;i<n_axial-1;++i)
@@ -3789,8 +4175,8 @@ void CONTACT::Beam3cmanager::GMSH_N_noded(const int& n,
 //separate elements by black dots
 //    if(i==0)
 //    {
-//      gmshfilecontent <<"SP(" << coord(0,0) <<  "," << coord(1,0) << "," << coord(2,0)+0.012 << "){0.0,0.0};"<<std::endl;
-//      gmshfilecontent <<"SP(" << coord(0,0) <<  "," << coord(1,0) << "," << coord(2,0)-0.012 << "){0.0,0.0};"<<std::endl;
+//      gmshfilecontent <<"SP(" << coord(0,0) <<  "," << coord(1,0)+0.05 << "," << coord(2,0) << "){0.0,0.0};"<<std::endl;
+//      gmshfilecontent <<"SP(" << coord(0,0) <<  "," << coord(1,0)-0.05 << "," << coord(2,0)<< "){0.0,0.0};"<<std::endl;
 //    }
 //
 //    if(i==n_axial-2)
@@ -4151,6 +4537,242 @@ void CONTACT::Beam3cmanager::GmshRefineIcosphere(std::vector< std::vector<double
   facelist.erase(facelist.begin(), facelist.begin()+num_faces_old);
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ | Compute Gmsh output for solid elements                               |
+ *----------------------------------------------------------------------*/
+void CONTACT::Beam3cmanager::GMSH_Solid(
+    const DRT::Element* element,
+    const Epetra_Vector& disrow,
+    std::stringstream& gmshfilecontent)
+{
+  // Prepare storage for nodal coordinates
+  int nnodes = element->NumNode();
+  LINALG::SerialDenseMatrix coord(3, nnodes);
+
+  // Compute current nodal positions
+  for (int i_dim = 0; i_dim < 3; i_dim++)
+  {
+    for (int i_node = 0; i_node < element->NumNode(); i_node++)
+    {
+      double referenceposition = ((element->Nodes())[i_node])->X()[i_dim];
+      std::vector<int> dofnode = ProblemDiscret().Dof((element->Nodes())[i_node]);
+      double displacement = disrow[ProblemDiscret().DofColMap()->LID(dofnode[i_dim])];
+      coord(i_dim,i_node) = referenceposition + displacement;
+    }
+  }
+
+  // Declaring variable for standard color of solid elements
+  double color = 0.2;
+
+  // BACI surface pattern of hexahedral elements hex8, hex20, hex27
+  const int surfNodes[6][9] = {{0,3,2,1,11,10,9,8,20}, {0,1,5,4,8,13,16,12,21},
+      {1,2,6,5,9,14,17,13,22}, {2,3,7,6,10,15,18,14,23}, {0,4,7,3,12,19,15,11,24}, {4,5,6,7,16,17,18,19,15}};
+  double surfColor[6] = {color, color, color, color, color, color};
+
+  switch (element->Shape())
+  {
+    // 8-noded hexahedron
+    case DRT::Element::hex8:
+    {
+      const int n_surfNodes = 4;
+      GMSH_GetSurfColor(element, n_surfNodes, surfNodes, surfColor);
+
+      // 4-noded quadrangle
+      for (int i_surf = 0; i_surf < 6; i_surf++)
+      {
+        double coordsSQ[3][4];
+        double colorsSQ[4];
+        for (int i_nodeSQ = 0; i_nodeSQ < n_surfNodes; i_nodeSQ++)
+        {
+          for (int i_dim = 0; i_dim < 3; i_dim++)
+          {
+            coordsSQ[i_dim][i_nodeSQ] = coord(i_dim,surfNodes[i_surf][i_nodeSQ]);
+            colorsSQ[i_nodeSQ] = surfColor[i_surf];
+          }
+        }
+        GMSH_SQ(coordsSQ, colorsSQ, gmshfilecontent);
+      }
+      break;
+    }
+    // 20-noded hexahedron
+    case DRT::Element::hex20:
+    {
+      const int n_surfNodes = 8;
+      GMSH_GetSurfColor(element, n_surfNodes, surfNodes, surfColor);
+
+      // 8-noded quadrangle (one 4-noded quadrangle and four 3-noded triangles)
+      for (int i_surf = 0; i_surf < 6; i_surf++)
+      {
+        // 4-noded quadrangle
+        int nodesSQ[4] = {4,5,6,7};
+        double coordsSQ[3][4];
+        double colorsSQ[4];
+        for (int i_nodeSQ = 0; i_nodeSQ < 4; i_nodeSQ++)
+        {
+          for (int i_dim = 0; i_dim < 3; i_dim++)
+          {
+            coordsSQ[i_dim][i_nodeSQ] = coord(i_dim,surfNodes[i_surf][nodesSQ[i_nodeSQ]]);
+            colorsSQ[i_nodeSQ] = surfColor[i_surf];
+          }
+        }
+        GMSH_SQ(coordsSQ, colorsSQ, gmshfilecontent);
+
+        // 3-noded triangles
+        int nodesST[4][3] = {{0,4,7}, {1,5,4}, {2,6,5}, {3,7,6}};
+        double coordsST[3][3];
+        double colorsST[3];
+        for (int i_ST = 0; i_ST < 4; i_ST++)
+        {
+          for (int i_nodeST = 0; i_nodeST < 3; i_nodeST++)
+          {
+            for (int i_dim = 0; i_dim < 3; i_dim++)
+            {
+              coordsST[i_dim][i_nodeST] = coord(i_dim,surfNodes[i_surf][nodesST[i_ST][i_nodeST]]);
+              colorsST[i_nodeST] = surfColor[i_surf];
+            }
+          }
+          GMSH_ST(coordsST, colorsST, gmshfilecontent);
+        }
+      }
+      break;
+    }
+    default:
+      dserror("Gsmh-output: element shape not implemented");
+  }
+}
+
+/*----------------------------------------------------------------------*
+ | Get color of solid element surfaces for GMSH-Output                  |
+ *----------------------------------------------------------------------*/
+void CONTACT::Beam3cmanager::GMSH_GetSurfColor(
+    const DRT::Element* element,
+    const int& n_surfNodes,
+    const int surfNodes[6][9],
+    double surfColor[6])
+{
+  // Loop over all surfaces to get their colors
+  for (int i_surf = 0; i_surf < 6; i_surf++)
+  {
+    // Loop over all beam to solid contact pairs
+    for (int i_pair = 0; i_pair < (int)btsolpairs_.size(); i_pair++)
+    {
+      int found = 0;
+
+      // Get surface element
+      DRT::Element* bts_element2 = const_cast<DRT::Element*>(btsolpairs_[i_pair]->Element2());
+
+      // Loop over all nodes of bts surface element
+      for (int j = 0; j < bts_element2->NumNode(); j++)
+      {
+        // Loop over all nodes of solid element surfaces
+        for (int k = 0; k < n_surfNodes; k++)
+        {
+          if ((element->Nodes())[surfNodes[i_surf][k]]->Id() == (bts_element2->Nodes())[j]->Id())
+          {
+            found++;
+          }
+        }
+      }
+      // If the solid element contains all surface element nodes, the surface element is part the solid element
+      if (found == bts_element2->NumNode())
+      {
+        // Get contact flag of beam to solid contact pair
+        if (btsolpairs_[i_pair]->GetContactFlag())
+        {
+          // Beam to solid pair is in active contact
+          surfColor[i_surf] = 1.0;
+
+          // Go to the next surface
+          break;
+        }
+        else
+        {
+          // Beam to solid pair might come into active contact
+          surfColor[i_surf] = 0.5;
+        }
+      }
+    }
+  }
+}
+
+/*----------------------------------------------------------------------*
+ | GMSH-Surface-Output for 4-noded quadrangle (SQ)                      |
+ *----------------------------------------------------------------------*/
+void CONTACT::Beam3cmanager::GMSH_SQ(
+    const double coords[3][4],
+    const double color[4],
+    std::stringstream& gmshfilecontent)
+{
+  gmshfilecontent << "SQ(" << std::scientific;
+  for (int i_node = 0; i_node < 4; i_node++)
+  {
+    for (int i_dim = 0; i_dim < 3; i_dim++)
+    {
+      gmshfilecontent << coords[i_dim][i_node];
+      if (i_dim < 2)
+      {
+        // Coordinate x, y, z seperator
+        gmshfilecontent << ",";
+      }
+    }
+    if (i_node < 3)
+    {
+      // Node separator
+      gmshfilecontent << ",";
+    }
+  }
+  gmshfilecontent << "){" << std::scientific;
+  for (int i_node = 0; i_node < 4; i_node++)
+  {
+    gmshfilecontent << color[i_node];
+    if (i_node < 3)
+    {
+      // Node separator
+      gmshfilecontent << ",";
+    }
+  }
+  gmshfilecontent << "};" << std::endl;
+}
+
+/*----------------------------------------------------------------------*
+ | GMSH-Surface-Output for 3-noded triangle (ST)                        |
+ *----------------------------------------------------------------------*/
+void CONTACT::Beam3cmanager::GMSH_ST(
+    const double coords[3][3],
+    const double color[3],
+    std::stringstream& gmshfilecontent)
+{
+  gmshfilecontent << "ST(" << std::scientific;
+  for (int i_node = 0; i_node < 3; i_node++)
+  {
+    for (int i_dim = 0; i_dim < 3; i_dim++)
+    {
+      gmshfilecontent << coords[i_dim][i_node];
+      if (i_dim < 2)
+      {
+        // Coordinate x, y, z seperator
+        gmshfilecontent << ",";
+      }
+    }
+    if (i_node < 2)
+    {
+      // Node separator
+      gmshfilecontent << ",";
+    }
+  }
+  gmshfilecontent << "){" << std::scientific;
+  for (int i_node = 0; i_node < 3; i_node++)
+  {
+    gmshfilecontent << color[i_node];
+    if (i_node < 2)
+    {
+      // Node separator
+      gmshfilecontent << ",";
+    }
+  }
+  gmshfilecontent << "};" << std::endl;
 }
 
 /*----------------------------------------------------------------------*

@@ -76,6 +76,7 @@ BEAMS_BTBLINEPENALTYPARAM       4.6845279809533553e+04 //Penalty parameter for s
 BEAMS_NEWGAP                    No //Modified gap function definition (detection of crossings)
 BEAMS_SEGCON                    Yes //Apply segment-based contact (beam3contact.cpp) or element-based contact (beam3contactnew.cpp)
 BEAMS_DEBUG                     Yes
+BEAMS_ENDPOINTPENALTY           No
 BEAMS_PERPSHIFTANGLE1           89 //Lower shift angle (in degrees) for penalty scaling of large-angle-contact
 BEAMS_PERPSHIFTANGLE2           90 //Upper shift angle (in degrees) for penalty scaling of large-angle-contact
 BEAMS_PARSHIFTANGLE1            89 //Lower shift angle (in degrees) for penalty scaling of small-angle-contact

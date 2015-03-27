@@ -366,6 +366,9 @@ private:
   std::vector<Teuchos::RCP<Beam3contactinterface > > oldpairs_;
   //! vector of close beam to solid contact pairs (pairs of elements, which might get in contact)
   std::vector<Teuchos::RCP<Beam3tosolidcontactinterface > > btsolpairs_;
+  //! vector of beam to solid contact pairs of last time step. After Update() oldpairs_ is identical with btsolpairs_ until a
+  // new time step starts. Therefore oldbtsolpairs_ can be used for output at the end of a time step after Upadte() is called.
+  std::vector<Teuchos::RCP<Beam3tosolidcontactinterface > > oldbtsolpairs_;
   //! total vector of solid contact elements
   std::vector<Teuchos::RCP<CONTACT::CoElement> > solcontacteles_;
   //! total vector of solid contact elements
@@ -391,6 +394,9 @@ private:
 
   //beam-to-solid pair map
   std::map<std::pair<int,int>, Teuchos::RCP<Beam3tosolidcontactinterface > > btsolpairmap_;
+
+  //beam-to-solid pair map of last time step
+  std::map<std::pair<int,int>, Teuchos::RCP<Beam3tosolidcontactinterface > > oldbtsolpairmap_;
 
   //! parameter list for beam contact options
   Teuchos::ParameterList sbeamcontact_;
@@ -491,6 +497,9 @@ private:
 
   // bool indicating if we are in the first time step of a simulation
   bool firststep_;
+
+  // bool indicating if the element type has already been set (only necessary in the first time step with contact)
+  bool elementtypeset_;
 
   // counts the number of gmsh-output files already written
   int outputcounter_;
@@ -708,6 +717,41 @@ private:
   void GmshRefineIcosphere(std::vector< std::vector<double> > &vertexlist,
                                                     std::vector< std::vector<int> > &facelist,
                                                     double radius);
+
+  //**********************Begin: Output-Methods for BTS-Contact****************************
+  /*!
+  \brief GMSH-Surface-Output for solid elements
+  */
+  void GMSH_Solid(
+      const DRT::Element* element,
+      const Epetra_Vector& disrow,
+      std::stringstream& gmshfilecontent);
+
+  /*!
+  \brief Get color of solid element surfaces for GMSH-Output
+  */
+  void GMSH_GetSurfColor(
+      const DRT::Element* element,
+      const int& n_surfNodes,
+      const int surfNodes[6][9],
+      double surfColor[6]);
+
+  /*!
+  \brief GMSH-Surface-Output for 4-noded quadrangle (SQ)
+  */
+  void GMSH_SQ(
+      const double coords[3][4],
+      const double color[4],
+      std::stringstream& gmshfilecontent);
+
+  /*!
+  \brief GMSH-Surface-Output for 3-noded triangle (ST)
+  */
+  void GMSH_ST(
+      const double coords[3][3],
+      const double color[3],
+      std::stringstream& gmshfilecontent);
+  //**********************End: Output-Methods for BTS-Contact****************************
 
   //@}
 

@@ -190,6 +190,21 @@ namespace BEAMCONTACT
     return;
   }
 
+    /*!
+  \brief BTS-Contact: Set primary displacement DoFs for automatic differentiation with Sacado
+  */
+  template<int numnodessol, int numnodes, int numnodalvalues>
+  void SetFADDispDofs(LINALG::TMatrix<FAD, 3*numnodes*numnodalvalues, 1>& ele1pos, LINALG::TMatrix<FAD, 3*numnodessol, 1>& ele2pos, const int& numvar)
+  {
+    for (int i = 0; i < 3*numnodes*numnodalvalues; i++)
+      ele1pos(i).diff(i, 3*numnodes*numnodalvalues+3*numnodessol+numvar);
+
+    for (int i = 0; i < 3*numnodessol; i++)
+      ele2pos(i).diff(3*numnodes*numnodalvalues+i, 3*numnodes*numnodalvalues+3*numnodessol+numvar);
+
+    return;
+  }
+
   /*!
   \brief Set primary parameter coordinate DoFs for automatic differentiation with Sacado
   */
@@ -200,6 +215,33 @@ namespace BEAMCONTACT
     // degrees of freedom represent the dependency on the parameter coordinates xi and eta, which is necessary in beam contact.
     xi.diff((2*3*numnodes*numnodalvalues+1)-1,2*3*numnodes*numnodalvalues+2);
     eta.diff((2*3*numnodes*numnodalvalues+2)-1,2*3*numnodes*numnodalvalues+2);
+
+    return;
+  }
+
+  /*!
+  \brief BTS-Contact: Set primary parameter coordinate DoFs for automatic differentiation with Sacado
+  */
+  template<int numnodessol, int numnodes, int numnodalvalues>
+  void SetFADParCoordDofs(FAD& xi1, FAD& xi2, FAD& eta)
+  {
+    xi1.diff(3*numnodes*numnodalvalues+3*numnodessol, 3*numnodes*numnodalvalues+3*numnodessol+3);
+    xi2.diff(3*numnodes*numnodalvalues+3*numnodessol+1, 3*numnodes*numnodalvalues+3*numnodessol+3);
+    eta.diff(3*numnodes*numnodalvalues+3*numnodessol+2, 3*numnodes*numnodalvalues+3*numnodessol+3);
+
+    return;
+  }
+
+  /*!
+  \brief BTS-Contact: Set primary parameter coordinate DoFs for automatic differentiation with Sacado
+  */
+  template<int numnodessol, int numnodes, int numnodalvalues>
+  void SetFADParCoordDofs(FAD& xi1, FAD& xi2, FAD& eta_a, FAD& eta_b)
+  {
+    xi1.diff(3*numnodes*numnodalvalues+3*numnodessol, 3*numnodes*numnodalvalues+3*numnodessol+4);
+    xi2.diff(3*numnodes*numnodalvalues+3*numnodessol+1, 3*numnodes*numnodalvalues+3*numnodessol+4);
+    eta_a.diff(3*numnodes*numnodalvalues+3*numnodessol+2, 3*numnodes*numnodalvalues+3*numnodessol+4);
+    eta_b.diff(3*numnodes*numnodalvalues+3*numnodessol+3, 3*numnodes*numnodalvalues+3*numnodessol+4);
 
     return;
   }

@@ -524,6 +524,7 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(Teuchos::ParameterList& params,
   // in the input file; funct gives the number of the function defined in the section FUNCT
   const std::vector<int>* functions = condition.Get<std::vector<int> >("funct");
 
+  #ifndef BEAM3DISCRETELINENEUMANN
   //integration loops
   for (int numgp=0; numgp<intpoints.nquad; ++numgp)
   {
@@ -575,6 +576,30 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(Teuchos::ParameterList& params,
       }
     }
   } // for (int numgp=0; numgp<intpoints.nquad; ++numgp)
+  #else
+  {
+    //integration points in parameter space and weights
+    const double xi = BEAM3DISCRETELINENEUMANN;
+    //evaluation of shape funcitons at Gauss points
+    DRT::UTILS::shape_function_1D(funct,xi,distype);
+
+    // load vector ar
+    double ar[numdf];
+
+    // loop the dofs of a node
+    for (int dof=0; dof<numdf; ++dof)
+      ar[dof] = (*onoff)[dof]*(*val)[dof]*curvefac[dof];
+
+    //sum up load components
+    for (int dof=0; dof<6; ++dof)
+    {
+      for (int node=0; node<NumNode(); ++node)
+      {
+        elevec1[node*numdf+dof] += funct[node] *ar[dof];
+      }
+    }
+  }
+  #endif
   return 0;
 }
 

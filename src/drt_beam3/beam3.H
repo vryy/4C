@@ -29,6 +29,9 @@ Maintainer: Christoph Meier
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 
+//#define BEAM3DISCRETELINENEUMANN 0.0 //Flag in order to interpret line Neumann condition as discrete force at given element parameter position DISCRETELINENEUMANN
+//Default: off                  //for all elements contained in the corresponding design line!
+
 //! \brief DRT: namespace of the ccarat discretization module
 namespace DRT
 {

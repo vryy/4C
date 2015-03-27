@@ -214,7 +214,7 @@ boundarynode2_(std::make_pair(0,0))
 
   double deltal1=1.5*l1/(intintervals*gausspoints.nquad);
 
-  if(l2<l1/intintervals)
+  if(l2+1.0e-8<l1/intintervals)
     dserror("Length of second (master) beam has to be larger than length of one integration interval on first (slave) beam!");
 
   if(gausspoints.nquad>10)
@@ -1228,6 +1228,9 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::CalcPenaltyLaw(Teuchos::RC
     double pp=variables->GetPP();
     TYPE gap=variables->GetGap();
 
+    if(!CheckContactStatus(BEAMCONTACT::CastToDouble(gap)))
+      return;
+
     switch (DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(bcparams_,"BEAMS_PENALTYLAW"))
     {
       case INPAR::BEAMCONTACT::pl_lp:               //linear penalty force law
@@ -1430,19 +1433,27 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::CalcPerpPenaltyScaleFac(Te
   TYPE ppfac = 1.0;
   TYPE dppfac = 0.0;
 
-  TYPE s = fabs(BEAMCONTACT::ScalarProduct(r1_xi,r2_xi)/(BEAMCONTACT::VectorNorm<3>(r1_xi)*BEAMCONTACT::VectorNorm<3>(r2_xi)));
-  double s1 = cos(shiftangle1);
-  double s2 = cos(shiftangle2);
-
-  if(shiftangle1<0.0 or shiftangle1>M_PI/2.0 or shiftangle2<0.0 or shiftangle2>M_PI/2.0 or shiftangle1>=shiftangle2)
-    dserror("Invalid choice of shift angles!");
-
-  if(BEAMCONTACT::CastToDouble(s)>s1)
-    ppfac=0.0;
-  else if(BEAMCONTACT::CastToDouble(s)>s2)
+  if(shiftangle1>M_PI/2.0 and shiftangle2>M_PI/2.0)
   {
-    ppfac=0.5*(cos(M_PI*(s-s2)/(s1-s2))+1.0);
-    dppfac=-0.5*M_PI/(s1-s2)*sin(M_PI*(s-s2)/(s1-s2));
+    ppfac = 0.0;
+    dppfac = 0.0;
+  }
+  else
+  {
+    TYPE s = fabs(BEAMCONTACT::ScalarProduct(r1_xi,r2_xi)/(BEAMCONTACT::VectorNorm<3>(r1_xi)*BEAMCONTACT::VectorNorm<3>(r2_xi)));
+    double s1 = cos(shiftangle1);
+    double s2 = cos(shiftangle2);
+
+    if(shiftangle1<0.0 or shiftangle1>M_PI/2.0 or shiftangle2<0.0 or shiftangle2>M_PI/2.0 or shiftangle1>=shiftangle2)
+      dserror("Invalid choice of shift angles!");
+
+    if(BEAMCONTACT::CastToDouble(s)>s1)
+      ppfac=0.0;
+    else if(BEAMCONTACT::CastToDouble(s)>s2)
+    {
+      ppfac=0.5*(cos(M_PI*(s-s2)/(s1-s2))+1.0);
+      dppfac=-0.5*M_PI/(s1-s2)*sin(M_PI*(s-s2)/(s1-s2));
+    }
   }
 
   //set class variable
@@ -1469,22 +1480,30 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::CalcParPenaltyScaleFac(Teu
   TYPE ppfac = 1.0;
   TYPE dppfac = 0.0;
 
-  TYPE s = fabs(BEAMCONTACT::ScalarProduct(r1_xi,r2_xi)/(BEAMCONTACT::VectorNorm<3>(r1_xi)*BEAMCONTACT::VectorNorm<3>(r2_xi)));
-  double s1 = cos(shiftangle1);
-  double s2 = cos(shiftangle2);
-
-  if(shiftangle1<0.0 or shiftangle1>M_PI/2.0 or shiftangle2<0.0 or shiftangle2>M_PI/2.0 or shiftangle1>=shiftangle2)
-    dserror("Invalid choice of shift angles!");
-
-  if(BEAMCONTACT::CastToDouble(s)>s1)
-    ppfac=1.0;
-  else if(BEAMCONTACT::CastToDouble(s)>s2)
+  if(shiftangle1>M_PI/2.0 and shiftangle2>M_PI/2.0)
   {
-    ppfac=0.5*(-cos(M_PI*(s-s2)/(s1-s2))+1.0);
-    dppfac=0.5*M_PI/(s1-s2)*sin(M_PI*(s-s2)/(s1-s2));
+    ppfac = 1.0;
+    dppfac = 0.0;
   }
   else
-    ppfac=0.0;
+  {
+    TYPE s = fabs(BEAMCONTACT::ScalarProduct(r1_xi,r2_xi)/(BEAMCONTACT::VectorNorm<3>(r1_xi)*BEAMCONTACT::VectorNorm<3>(r2_xi)));
+    double s1 = cos(shiftangle1);
+    double s2 = cos(shiftangle2);
+
+    if(shiftangle1<0.0 or shiftangle1>M_PI/2.0 or shiftangle2<0.0 or shiftangle2>M_PI/2.0 or shiftangle1>=shiftangle2)
+      dserror("Invalid choice of shift angles!");
+
+    if(BEAMCONTACT::CastToDouble(s)>s1)
+      ppfac=1.0;
+    else if(BEAMCONTACT::CastToDouble(s)>s2)
+    {
+      ppfac=0.5*(-cos(M_PI*(s-s2)/(s1-s2))+1.0);
+      dppfac=0.5*M_PI/(s1-s2)*sin(M_PI*(s-s2)/(s1-s2));
+    }
+    else
+      ppfac=0.0;
+  }
 
   //set class variable
   gpvariables->SetPPfac(ppfac);
@@ -2138,13 +2157,8 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::ClosestPointProjection( do
       //eta2 \in [eta_left2;eta_right2], we can finish here and don't have to apply more starting points
       if( eta_left1 - XIETAITERATIVEDISPTOL <= eta1 and eta1 <= eta_right1 + XIETAITERATIVEDISPTOL and eta_left2 - XIETAITERATIVEDISPTOL <= eta2 and eta2 <= eta_right2 + XIETAITERATIVEDISPTOL)
       {
-        bool beamsdebug = DRT::INPUT::IntegralValue<int>(bcparams_,"BEAMS_DEBUG");
-        //TODO: Later we also want to have this functionality in debug mode
-        if(!beamsdebug)
-        {
-          if(fabs(eta1-1.0)<1.1*XIETAITERATIVEDISPTOL or fabs(eta1+1.0)<1.1*XIETAITERATIVEDISPTOL or fabs(eta2-1.0)<1.1*XIETAITERATIVEDISPTOL or fabs(eta2+1.0)<1.1*XIETAITERATIVEDISPTOL)
-              dserror("|eta1|=1 or |eta2|=1, danger of multiple gauss point evaluation!");
-        }
+        if(fabs(eta1-1.0)<1.1*XIETAITERATIVEDISPTOL or fabs(eta1+1.0)<1.1*XIETAITERATIVEDISPTOL or fabs(eta2-1.0)<1.1*XIETAITERATIVEDISPTOL or fabs(eta2+1.0)<1.1*XIETAITERATIVEDISPTOL)
+            dserror("|eta1|=1 or |eta2|=1, danger of multiple gauss point evaluation!");
 
         if(BEAMCONTACT::CastToDouble(BEAMCONTACT::VectorNorm<3>(r1_xi))<1.0e-8 or BEAMCONTACT::CastToDouble(BEAMCONTACT::VectorNorm<3>(r2_xi))<1.0e-8)
           dserror("Tangent vector of zero length, choose smaller time step!");
@@ -2423,16 +2437,9 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::PointToLineProjection(doub
       //if we have already found a converged solution with valid closest point eta2 \in [eta_left2;eta_right2], we can finish here and don't have to apply more starting points
       if(eta_left2 - XIETAITERATIVEDISPTOL <= eta2 and eta2 <= eta_right2 + XIETAITERATIVEDISPTOL)
       {
-        bool beamsdebug = DRT::INPUT::IntegralValue<int>(bcparams_,"BEAMS_DEBUG");
-        //TODO: Later we also want to have this functionality in debug mode
-        if(!beamsdebug)
-        {
-          if(fabs(eta2-1.0)<1.1*XIETAITERATIVEDISPTOL or fabs(eta2+1.0)<1.1*XIETAITERATIVEDISPTOL)
-            dserror("|eta2|=1, danger of multiple gauss point evaluation!");
 
-//          if(fabs(eta2-1.0)<1.1*XIETAITERATIVEDISPTOL or fabs(eta2+1.0)<1.1*XIETAITERATIVEDISPTOL)
-//            std::cout << "Warning: |eta2|=1, danger of multiple gauss point evaluation!" << std::endl;
-        }
+        if(fabs(eta2-1.0)<1.1*XIETAITERATIVEDISPTOL or fabs(eta2+1.0)<1.1*XIETAITERATIVEDISPTOL)
+          dserror("|eta2|=1, danger of multiple gauss point evaluation!");
 
         if(BEAMCONTACT::CastToDouble(BEAMCONTACT::VectorNorm<3>(r1_xi))<1.0e-8 or BEAMCONTACT::CastToDouble(BEAMCONTACT::VectorNorm<3>(r2_xi))<1.0e-8)
           dserror("Tangent vector of zero length, choose smaller time step!");
