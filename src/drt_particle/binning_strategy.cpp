@@ -197,15 +197,17 @@ void BINSTRATEGY::BinningStrategy::DistributeElesToBins(
  *----------------------------------------------------------------------*/
 void BINSTRATEGY::BinningStrategy::DistributeElesToBins(
   Teuchos::RCP<DRT::Discretization> underlyingdis,
-  std::map<int, std::set<int> >& elesinbin
+  std::map<int, std::set<int> >& rowelesinbin,
+  std::map<int, std::set<int> >& ghostelesinbin
   )
 {
   // exploit bounding box idea for elements in underlying discretization and bins
   {
-    // loop over row elements is enough, extended ghosting always includes standard ghosting
-    for (int lid = 0; lid < underlyingdis->NumMyRowElements(); ++lid)
+    // loop over all elements and separate into row and ghost elements
+    // will be needed later on for setup of proper extended ghosting
+    for (int lid = 0; lid < underlyingdis->NumMyColElements(); ++lid)
     {
-      DRT::Element* fluidele = underlyingdis->lRowElement(lid);
+      DRT::Element* fluidele = underlyingdis->lColElement(lid);
       DRT::Node** fluidnodes = fluidele->Nodes();
       const int numnode = fluidele->NumNode();
 
@@ -242,8 +244,18 @@ void BINSTRATEGY::BinningStrategy::DistributeElesToBins(
       GidsInijkRange(&ijk_range[0], binIds, false);
 
       // assign fluid element to bins
-      for(std::set<int>::const_iterator biniter=binIds.begin(); biniter!=binIds.end(); ++biniter)
-        elesinbin[*biniter].insert(fluidele->Id());
+      if(fluidele->Owner() == myrank_)
+      {
+        // only row elements go in here
+        for(std::set<int>::const_iterator biniter=binIds.begin(); biniter!=binIds.end(); ++biniter)
+          rowelesinbin[*biniter].insert(fluidele->Id());
+      }
+      else
+      {
+        // only ghost elements go in here
+        for(std::set<int>::const_iterator biniter=binIds.begin(); biniter!=binIds.end(); ++biniter)
+          ghostelesinbin[*biniter].insert(fluidele->Id());
+      }
     }
   }
 
@@ -460,7 +472,8 @@ void BINSTRATEGY::BinningStrategy::WeightedRepartitioning(
     //----------------------------
     // fill elements into bins
     std::map<int, std::set<int> > binelemap;
-    DistributeElesToBins(dis[i], binelemap);
+    std::map<int, std::set<int> > dummy;
+    DistributeElesToBins(dis[i], binelemap, dummy);
 
     // ghosting is extended
     Teuchos::RCP<Epetra_Map> extendedelecolmap = ExtendGhosting(dis[i]->ElementColMap(), binelemap);
@@ -716,7 +729,8 @@ void BINSTRATEGY::BinningStrategy::ExtendGhosting(
     //----------------------------
     // fill elements into bins
     std::map<int, std::set<int> > binelemap;
-    DistributeElesToBins(dis[i], binelemap);
+    std::map<int, std::set<int> > dummy;
+    DistributeElesToBins(dis[i], binelemap, dummy);
 
     // ghosting is extended
     Teuchos::RCP<Epetra_Map> extendedelecolmap = ExtendGhosting(dis[i]->ElementColMap(), binelemap);

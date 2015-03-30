@@ -83,7 +83,8 @@ namespace BINSTRATEGY
     /// elements from the underlying discretization are assigned to bins
     virtual void DistributeElesToBins(
       Teuchos::RCP<DRT::Discretization> underlyingdis,   ///< discret of which the elements are distributed to bins
-      std::map<int, std::set<int> >& elesinbin   ///< map of bins and assigned elements
+      std::map<int, std::set<int> >& rowelesinbin,   ///< map of bins and assigned row elements
+      std::map<int, std::set<int> >& ghostelesinbin   ///< map of bins and assigned ghost elements
       );
 
     /// nodes are assigned to bins

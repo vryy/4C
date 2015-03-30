@@ -92,7 +92,7 @@ namespace PARTICLE
       const Epetra_Comm& comm  ///< local epetra communicator
       );
 
-    /// get wall discretization 
+    /// get wall discretization
     Teuchos::RCP<DRT::Discretization> WallDiscret() { return particlewalldis_; }
 
     /// get underlyling structural problem
@@ -167,7 +167,8 @@ namespace PARTICLE
     /// bins are distributed to the processors
     virtual Teuchos::RCP<Epetra_Map> DistributeBinsToProcsBasedOnUnderlyingDiscret(
       Teuchos::RCP<DRT::Discretization> underlyingdis,  ///< underlying discretization on which distribution depends on
-      std::map<int, std::set<int> >& fluideles  ///< map from bin id to fluid elements in this bin
+      std::map<int, std::set<int> >& fluideles,  ///< map from bin id to row fluid elements in this bin
+      std::map<int, std::set<int> >& ghostelesinbin    ///< map from bin id to ghost fluid elements in this bin
       );
 
     /// assign wall elements to bins

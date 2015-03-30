@@ -215,8 +215,9 @@ void CAVITATION::Algorithm::InitCavitation()
   CreateBins(fluiddis_);
 
   // gather all fluid coleles in each bin for proper extended ghosting
-  std::map<int, std::set<int> > fluideles;
-  Teuchos::RCP<Epetra_Map> binrowmap = DistributeBinsToProcsBasedOnUnderlyingDiscret(fluiddis_, fluideles);
+  std::map<int, std::set<int> > rowfluideles;
+  std::map<int, std::set<int> > ghostfluideles;
+  Teuchos::RCP<Epetra_Map> binrowmap = DistributeBinsToProcsBasedOnUnderlyingDiscret(fluiddis_, rowfluideles, ghostfluideles);
 
   // read out bubble inflow condition and set bubble inflows in corresponding bins
   // assumption: only row bins are available up to here
@@ -237,7 +238,7 @@ void CAVITATION::Algorithm::InitCavitation()
   FillParticlesIntoBins(homelessparticles);
 
   // ghost bins, particles and fluid elements according to the bins
-  SetupGhosting(binrowmap, fluideles);
+  SetupGhosting(binrowmap, rowfluideles, ghostfluideles);
 
   // check whether extended ghosting includes standard ghosting
   for(int i=0; i<fluidelecolmapold->NumMyElements(); ++i)
@@ -1089,7 +1090,11 @@ void CAVITATION::Algorithm::ReadRestart(int restart)
 /*----------------------------------------------------------------------*
 | setup ghosting of bins, particles & underlying fluid      ghamm 11/12 |
  *----------------------------------------------------------------------*/
-void CAVITATION::Algorithm::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap, std::map<int, std::set<int> >& fluideles)
+void CAVITATION::Algorithm::SetupGhosting(
+  Teuchos::RCP<Epetra_Map> binrowmap,
+  std::map<int, std::set<int> >& rowfluideles,
+  std::map<int, std::set<int> >& ghostfluideles
+  )
 {
   //--------------------------------------------------------------------
   // 1st and 2nd step
@@ -1127,7 +1132,8 @@ void CAVITATION::Algorithm::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap, st
 
       for(int i=0; i<numbin; ++i)
       {
-        sdata[binid[i]].insert(fluideles[binid[i]].begin(),fluideles[binid[i]].end());
+        if(rowfluideles[binid[i]].size() != 0)
+          sdata[binid[i]].insert(rowfluideles[binid[i]].begin(),rowfluideles[binid[i]].end());
       }
 
       LINALG::Gather<int>(sdata, rdata, 1, &iproc, fluiddis_->Comm());
@@ -1139,22 +1145,33 @@ void CAVITATION::Algorithm::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap, st
       }
     }
 
-    //reduce map of sets to one set and copy to a vector to create fluidcolmap
+    // reduce map of sets to one set and copy to a vector to create extended fluid ele colmap
     std::set<int> redufluideleset;
     std::map<int, std::set<int> >::iterator iter;
     for(iter=extendedfluidghosting.begin(); iter!= extendedfluidghosting.end(); ++iter)
     {
       redufluideleset.insert(iter->second.begin(),iter->second.end());
     }
-    std::vector<int> fluidcolgids(redufluideleset.begin(),redufluideleset.end());
-    Teuchos::RCP<Epetra_Map> fluidcolmap = Teuchos::rcp(new Epetra_Map(-1,(int)fluidcolgids.size(),&fluidcolgids[0],0,Comm()));
 
-    fluiddis_->ExtendedGhosting(*fluidcolmap,true,true,true,false);
+    // add fluid elements from standard ghosting
+    // -> this is necessary to recover standard ghosting in case bins are smaller than fluid elements
+    // this leads to ghost elements which are essential for evaluating the fluid and not for coupling with particles
+    std::map<int, std::set<int> >::const_iterator ghostiter;
+    for(ghostiter=ghostfluideles.begin(); ghostiter!= ghostfluideles.end(); ++ghostiter)
+    {
+      redufluideleset.insert(ghostiter->second.begin(), ghostiter->second.end());
+    }
+
+    std::vector<int> fluidcolgids(redufluideleset.begin(),redufluideleset.end());
+    Teuchos::RCP<Epetra_Map> fluidelecolmap = Teuchos::rcp(new Epetra_Map(-1,(int)fluidcolgids.size(),&fluidcolgids[0],0,Comm()));
+
+    fluiddis_->ExtendedGhosting(*fluidelecolmap,true,true,true,false);
 
   }
 
   //--------------------------------------------------------------------
-  // 4th step: assign fluid elements to bins
+  // 4th step: assign fluid elements to bins which are necessary for the coupling to particles
+  // not necessarily all ghost fluid elements are inserted here
   //--------------------------------------------------------------------
   {
     for(std::map<int, std::set<int> >::const_iterator biniter=extendedfluidghosting.begin(); biniter!=extendedfluidghosting.end(); ++biniter)

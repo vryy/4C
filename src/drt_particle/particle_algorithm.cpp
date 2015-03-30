@@ -1303,14 +1303,15 @@ void PARTICLE::Algorithm::BuildElementToBinPointers(bool wallpointer)
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> PARTICLE::Algorithm::DistributeBinsToProcsBasedOnUnderlyingDiscret(
   Teuchos::RCP<DRT::Discretization> underlyingdis,
-  std::map<int, std::set<int> >& elesinbin)
+  std::map<int, std::set<int> >& rowelesinbin,
+  std::map<int, std::set<int> >& ghostelesinbin)
 {
 
   //--------------------------------------------------------------------
   // 1st step: exploiting bounding box idea for scatra elements and bins
   //--------------------------------------------------------------------
 
-  DistributeElesToBins(underlyingdis, elesinbin);
+  DistributeElesToBins(underlyingdis, rowelesinbin, ghostelesinbin);
 
   //--------------------------------------------------------------------
   // 2nd step: decide which proc will be owner of each bin
@@ -1326,7 +1327,7 @@ Teuchos::RCP<Epetra_Map> PARTICLE::Algorithm::DistributeBinsToProcsBasedOnUnderl
     std::vector<int> mynumeles_per_bin(numbins,0);
 
     std::map<int, std::set<int> >::const_iterator iter;
-    for(iter=elesinbin.begin(); iter!=elesinbin.end(); ++ iter)
+    for(iter=rowelesinbin.begin(); iter!=rowelesinbin.end(); ++ iter)
     {
       mynumeles_per_bin[iter->first] = iter->second.size();
     }
