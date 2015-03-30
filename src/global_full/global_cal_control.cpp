@@ -139,6 +139,7 @@ void ntacal()
 
     case prb_immersed_fsi:
     case prb_immersed_cell:
+    case prb_immersed_ale_fsi:
       immersed_problem_drt();
       break;
 

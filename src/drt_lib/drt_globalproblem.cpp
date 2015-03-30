@@ -1624,6 +1624,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     break;
   }
   case prb_immersed_fsi:
+  case prb_immersed_ale_fsi:
   {
     // create empty discretizations
     structdis     = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));

@@ -46,7 +46,8 @@ void DRT::UTILS::DiscretizationCreatorBase::CreateNodes(
     Teuchos::RCP<DRT::Discretization> targetdis,
     std::set<int>& rownodeset,
     std::set<int>& colnodeset,
-    const bool isnurbsdis
+    const bool isnurbsdis,
+    const bool buildimmersednode
     )
 {
   // prepare some variables we need
@@ -62,7 +63,10 @@ void DRT::UTILS::DiscretizationCreatorBase::CreateNodes(
       if (rownodeset.find(gid)!=rownodeset.end())
       {
         DRT::Node* fluidnode = sourcedis->lRowNode(i);
-        targetdis->AddNode(Teuchos::rcp(new DRT::Node(gid, fluidnode->X(), myrank)));
+        if(!buildimmersednode)
+          targetdis->AddNode(Teuchos::rcp(new DRT::Node(gid, fluidnode->X(), myrank)));
+        else
+          targetdis->AddNode(Teuchos::rcp(new IMMERSED::ImmersedNode(gid, fluidnode->X(), myrank)));
       }
     }
   }

@@ -67,6 +67,9 @@ protected:
                               const Teuchos::RCP<const Epetra_Map>& dirichmap_original,
                               int dofsetnum);
 
+  /// prepare time step of single fields and print header
+  virtual void PrepareTimeStep();
+
   /// add immersed dirichlet values from immersed dis to systemvector of background dis
   void DoImmersedDirichletCond(Teuchos::RCP<Epetra_Vector> statevector, Teuchos::RCP<Epetra_Vector> dirichvals, Teuchos::RCP<Epetra_Map> dbcmap);
 

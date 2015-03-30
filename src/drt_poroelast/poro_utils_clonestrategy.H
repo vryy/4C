@@ -47,7 +47,7 @@ namespace POROELAST
           const bool                ismyele,
           std::vector<std::string>& eletype);
       /// set element-specific data (material etc.)
-      void SetElementData(
+      virtual void SetElementData(
           Teuchos::RCP<DRT::Element> newele,
           DRT::Element*              oldele,
           const int                  matid,
@@ -99,6 +99,13 @@ namespace POROELAST
           DRT::Element* actele,
           const bool ismyele,
           std::vector<std::string>& eletype);
+
+      /// set element-specific data (material etc.)
+      virtual void SetElementData(
+          Teuchos::RCP<DRT::Element> newele,
+          DRT::Element*              oldele,
+          const int                  matid,
+          const bool                 isnurbs);
 
     }; // class PoroElastImmersedCloneStrategy
 

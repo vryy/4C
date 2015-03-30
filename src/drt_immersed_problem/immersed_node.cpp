@@ -36,7 +36,6 @@ DRT::Node(id,coords,owner),
 ismatched_(false),
 isimmersedboundary_(false)
 {
-
 }
 
 /*----------------------------------------------------------------------*

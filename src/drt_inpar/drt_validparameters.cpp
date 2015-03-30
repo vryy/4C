@@ -7287,6 +7287,17 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    0),
                                    &immersedmethod);
 
+    setStringToIntegralParameter<int>(
+                                 "TIMESTATS","everyiter",
+                                 "summarize time monitor every nln iteration",
+                                 tuple<std::string>(
+                                   "everyiter",
+                                   "endofsim"),
+                                   tuple<int>(
+                                   1,
+                                   0),
+                                   &immersedmethod);
+
     DoubleParameter("FORCE_RELAX",1.0,"Force Relaxaton Parameter"    ,&immersedmethod);
     DoubleParameter("VEL_RELAX"  ,1.0,"Velocity Relaxation Parameter",&immersedmethod);
     DoubleParameter("FLD_SRCHRADIUS_FAC",1.0,"fac times fluid ele. diag. length",&immersedmethod);

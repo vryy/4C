@@ -46,6 +46,8 @@ public:
 
 protected:
 
+    virtual void PrepareTimeStep(){};
+
   virtual Teuchos::RCP<Epetra_Vector> InitialGuess()
   {dserror("not implemented in this class. may be overriden in derived class."); return Teuchos::null;};
 

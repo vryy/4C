@@ -54,6 +54,7 @@ typedef enum _PROBLEM_TYP
      prb_red_airways,        // reduced dimensional airways
      prb_immersed_fsi,       // immersed fsi
      prb_immersed_cell,      // immersed cell migration process (poroelast-structure interaction)
+     prb_immersed_ale_fsi,   // immersed fsi coupled with ale fsi
      prb_poroelast,          // poroelasticity
      prb_fluid_topopt,       // fluid topology optimization
      prb_np_support,         // supporting procs for nested parallelism

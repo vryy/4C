@@ -16,6 +16,7 @@ Maintainers: Andreas Rauch
 #include "immersed_partitioned_fsi.H"
 #include "immersed_partitioned_cellmigration.H"
 #include "immersed_partitioned_fsi_dirichletneumann.H"
+#include "immersed_partitioned_fsi_dirichletneumann_ale.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_immersed.H"
@@ -24,6 +25,8 @@ Maintainers: Andreas Rauch
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_poroelast/poroelast_utils.H"
 #include "../drt_poroelast/poro_utils_clonestrategy.H"
+
+#include <Teuchos_TimeMonitor.hpp>
 
 
 void immersed_problem_drt()
@@ -69,6 +72,53 @@ void immersed_problem_drt()
 
       algo->SetupStructuralDiscretization();
       algo->Timeloop(algo);
+
+      if(immersedmethodparams.get<std::string>("TIMESTATS")=="endofsim")
+      {
+        Teuchos::TimeMonitor::summarize();
+        Teuchos::TimeMonitor::zeroOutTimers();
+      }
+
+      // create result tests for single fields
+      DRT::Problem::Instance()->AddFieldTest(algo->MBFluidField()->CreateFieldTest());
+      DRT::Problem::Instance()->AddFieldTest(algo->StructureField()->CreateFieldTest());
+
+      // do the actual testing
+      DRT::Problem::Instance()->TestAll(comm);
+
+      break;
+    }// case prb_immersed_fsi
+    case prb_immersed_ale_fsi:
+    {
+      // fill discretizations
+      problem->GetDis("structure")->FillComplete();
+      problem->GetDis("fluid")    ->FillComplete();
+
+      Teuchos::RCP<IMMERSED::ImmersedPartitionedFSIDirichletNeumann> algo = Teuchos::null;
+      if(scheme == INPAR::IMMERSED::dirichletneumann)
+        algo = Teuchos::rcp(new IMMERSED::ImmersedPartitionedFSIDirichletNeumannALE(comm));
+      else
+      {
+        algo = Teuchos::null;
+        dserror("unknown coupling scheme");
+      }
+
+      // PARTITIONED FSI ALGORITHM
+      const int restart = DRT::Problem::Instance()->Restart();
+      if (restart)
+      {
+        // read the restart information, set vectors and variables
+        algo->ReadRestart(restart);
+      }
+
+      algo->SetupStructuralDiscretization();
+      algo->Timeloop(algo);
+
+      if(immersedmethodparams.get<std::string>("TIMESTATS")=="endofsim")
+      {
+        Teuchos::TimeMonitor::summarize();
+        Teuchos::TimeMonitor::zeroOutTimers();
+      }
 
       // create result tests for single fields
       DRT::Problem::Instance()->AddFieldTest(algo->MBFluidField()->CreateFieldTest());

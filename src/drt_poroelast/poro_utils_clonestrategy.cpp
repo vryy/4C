@@ -23,6 +23,7 @@
 #include "../drt_mat/matpar_bundle.H"
 
 #include "../drt_fluid_ele/fluid_ele_poro.H"
+#include "../drt_fluid_ele/fluid_ele_poro_immersed.H"
 
 #include "../drt_mat/fluidporo.H"
 #include "../drt_mat/structporo.H"
@@ -181,4 +182,37 @@ bool POROELAST::UTILS::PoroelastImmersedCloneStrategy::DetermineEleType(
   }
 
   return false;
+}
+
+/*----------------------------------------------------------------------*
+ |                                                         rauch 03/15  |
+ *----------------------------------------------------------------------*/
+void POROELAST::UTILS::PoroelastImmersedCloneStrategy::SetElementData(
+    Teuchos::RCP<DRT::Element> newele,
+    DRT::Element*              oldele,
+    const int                  matid,
+    const bool                 isnurbs)
+{
+  // We need to set material and possibly other things to complete element setup.
+  // This is again really ugly as we have to extract the actual
+  // element type in order to access the material property
+
+  Teuchos::RCP<DRT::ELEMENTS::FluidPoroImmersed> fluid = Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::FluidPoroImmersed>(newele);
+  if (fluid!=Teuchos::null)
+  {
+    fluid->SetMaterial(matid);
+    //Copy Initial Porosity from StructPoro Material to FluidPoro Material
+    static_cast<MAT::PAR::FluidPoro*>(fluid->Material()->Parameter())->SetInitialPorosity(
+              Teuchos::rcp_static_cast<MAT::StructPoro>(oldele->Material())->Initporosity());
+    fluid->SetDisType(oldele->Shape()); // set distype as well!
+    fluid->SetIsAle(true);
+    DRT::ELEMENTS::So_base*  so_base  = dynamic_cast<DRT::ELEMENTS::So_base*>(oldele);
+    if(so_base)
+      fluid->SetKinematicType(so_base->KinematicType());
+  }
+  else
+  {
+    dserror("unsupported element type '%s'", typeid(*newele).name());
+  }
+  return;
 }

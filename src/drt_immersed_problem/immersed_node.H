@@ -24,7 +24,7 @@ class Node;
 namespace IMMERSED
 {
 
-class ImmersedNodeType : public DRT::NodeType
+class ImmersedNodeType : public DRT::ParObjectType
 {
 public:
 

@@ -208,7 +208,6 @@ bool IMMERSED::ImmersedPartitioned::computeF(const Epetra_Vector &x, Epetra_Vect
 }
 
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<NOX::Epetra::LinearSystem>

@@ -128,6 +128,7 @@ public:
     FPSICoupling,
     FSICouplingNoSlide,
     FSICouplingCenterDisp,
+    IMMERSEDFSICoupling,
     FREESURFCoupling,
     ALEUPDATECoupling,
     SurfaceTension,

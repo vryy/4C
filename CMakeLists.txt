@@ -1922,6 +1922,7 @@ src/drt_immersed_problem/immersed_partitioned.cpp
 src/drt_immersed_problem/immersed_partitioned_fsi.cpp
 src/drt_immersed_problem/immersed_partitioned_cellmigration.cpp
 src/drt_immersed_problem/immersed_partitioned_fsi_dirichletneumann.cpp
+src/drt_immersed_problem/immersed_partitioned_fsi_dirichletneumann_ale.cpp
 src/drt_immersed_problem/fsi_partitioned_immersed.cpp
 src/drt_immersed_problem/immersed_field_exchange_manager.cpp
 )

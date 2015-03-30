@@ -1792,6 +1792,14 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          true,
                                          DRT::Condition::Surface));
 
+  Teuchos::RCP<ConditionDefinition> surfimmersedfsi =
+    Teuchos::rcp(new ConditionDefinition("DESIGN IMMERSED FSI COUPLING SURF CONDITIONS",
+                                         "IMMERSEDFSICoupling",
+                                         "IMMERSED FSI Coupling",
+                                         DRT::Condition::IMMERSEDFSICoupling,
+                                         true,
+                                         DRT::Condition::Surface));
+
   for (unsigned i=0; i<fsicomponents.size(); ++i)
   {
     linefsi->AddComponent(fsicomponents[i]);

@@ -271,9 +271,11 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::FSIOp(const Epetra_Vector
     MBFluidField()->Discretization()->ClearState();
   }
 
-  Teuchos::TimeMonitor::summarize();
-  Teuchos::TimeMonitor::zeroOutTimers();
-
+  if(DRT::Problem::Instance()->ImmersedMethodParams().get<std::string>("TIMESTATS")=="everyiter")
+  {
+    Teuchos::TimeMonitor::summarize();
+    Teuchos::TimeMonitor::zeroOutTimers();
+  }
 }
 
 

@@ -21,6 +21,7 @@ Maintainer: Martin Kronbichler
 #include "drt_condition_utils.H"
 #include "drt_utils_factory.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
+#include "../drt_immersed_problem/immersed_node.H"
 #include "../drt_mat/material.H"
 #include "../drt_mat/matpar_parameter.H"
 #include "../drt_io/io_pstream.H"
@@ -36,6 +37,7 @@ namespace INPUT
 {
   class LineDefinition;
 }
+
 
 namespace UTILS
 {
@@ -65,7 +67,8 @@ protected:
       Teuchos::RCP<DRT::Discretization> targetdis,
       std::set<int>& rownodeset,
       std::set<int>& colnodeset,
-      const bool isnurbsdis);
+      const bool isnurbsdis,
+      const bool buildimmersednode);
 
   Teuchos::RCP<Epetra_Map> CreateNodeRowMap(
       std::set<int>& rownodeset,Teuchos::RCP<DRT::Discretization> targetdis);
@@ -155,12 +158,17 @@ public:
       dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*(sourcedis)));
     bool isnurbsdis(nurbsdis!=NULL);
 
+    // try to cast source node to immersed node
+    IMMERSED::ImmersedNode* inode =
+      dynamic_cast<IMMERSED::ImmersedNode*>(sourcedis->gNode(sourcedis->NodeRowMap()->GID(0)));
+    bool buildimmersednode(inode!=NULL);
+
     // check and analyze source discretization
     InitialChecks(sourcedis,targetdis);
     AnalyzeSourceDis(sourcedis,eletype_,egid_,rownodeset_,colnodeset_);
 
     // do the node business
-    CreateNodes(sourcedis,targetdis,rownodeset_,colnodeset_,isnurbsdis);
+    CreateNodes(sourcedis,targetdis,rownodeset_,colnodeset_,isnurbsdis,buildimmersednode);
     targetnoderowmap_ = CreateNodeRowMap(rownodeset_,targetdis);
     targetnodecolmap_ = CreateNodeColMap(colnodeset_,targetdis);
 

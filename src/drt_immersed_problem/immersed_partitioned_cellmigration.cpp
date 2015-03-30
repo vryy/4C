@@ -399,6 +399,23 @@ IMMERSED::ImmersedPartitionedCellMigration::ImmersedOp(Teuchos::RCP<Epetra_Vecto
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedPartitionedCellMigration::PrepareTimeStep()
+{
+  IncrementTimeAndStep();
+
+  PrintHeader();
+
+  if(myrank_==0)
+    std::cout<<"Cell Predictor: "<<std::endl;
+  cellstructure_->PrepareTimeStep();
+  if(myrank_==0)
+    std::cout<<"Poro Predictor: "<<std::endl;
+  poroelast_subproblem_->PrepareTimeStep();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector>
 IMMERSED::ImmersedPartitionedCellMigration::InitialGuess()
 {
@@ -682,6 +699,7 @@ void IMMERSED::ImmersedPartitionedCellMigration::PrepareOutput()
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedPartitionedCellMigration::Output()
 {
+  cellstructure_->Output();
   poroelast_subproblem_->Output();
   return;
 }
@@ -691,6 +709,7 @@ void IMMERSED::ImmersedPartitionedCellMigration::Output()
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedPartitionedCellMigration::Update()
 {
+  cellstructure_->Update();
   poroelast_subproblem_->Update();
   return;
 }
