@@ -309,7 +309,12 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
       if(n_new == NULL)
         pos_new = GEO::CUT::Point::outside; // by default for nodes outside the cut-boundingbox
       else
-        pos_new = n_new->Position();
+      {
+        if (n_new->NodalDofSets().size() == 1)
+          pos_new = n_new->NodalDofSets()[0]->Position();
+        else
+          dserror("XFEM::XFluidTimeInt::TransferDofsToNewMap() - Case B: n_new->NodalDofSets().size() != 1");
+      }
 
       if(pos_new != GEO::CUT::Point::outside and pos_new != GEO::CUT::Point::inside)
         dserror("position of unique std-dofset is not inside and not outside, can this happen?");
