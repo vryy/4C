@@ -145,8 +145,8 @@ E 2 - NUMDOF 7 ONOFF 1 1 1 1 1 1 1 VAL 9.95 0.1 5.0 5.0 1000 985 0.0 CURVE none 
 ------------------------------------------ELECTRODE KINETICS LINE CONDITIONS
 DLINE                           2
 //                              left_electrode
-E 1 - pot -1.0 curve 1 numscal 6 stoich -1 1 0 0 0 0 e- 1 zero_cur 0 Butler-Volmer-Bard e0 -1.1813e-1 k0 1.0338e-2 beta 0.500 c_c0 0.00995 c_a0 0.0001 dl_spec_cap 0.0 END
-E 1 - pot -1.0 curve 1 numscal 6 stoich 0 0 -1 1 0 0 e- 1 zero_cur 0 Butler-Volmer-Bard e0 4.6740e-1 k0 2.0390e-1 beta 0.463 c_c0 0.005 c_a0 0.005 dl_spec_cap 0.0 END
+E 1 - ID 0 pot -1.0 curve 1 numscal 6 stoich -1 1 0 0 0 0 e- 1 zero_cur 0 Butler-Volmer-Bard e0 -1.1813e-1 k0 1.0338e-2 beta 0.500 c_c0 0.00995 c_a0 0.0001 dl_spec_cap 0.0 END
+E 1 - ID 1 pot -1.0 curve 1 numscal 6 stoich 0 0 -1 1 0 0 e- 1 zero_cur 0 Butler-Volmer-Bard e0 4.6740e-1 k0 2.0390e-1 beta 0.463 c_c0 0.005 c_a0 0.005 dl_spec_cap 0.0 END
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 NODE 1 DLINE 1

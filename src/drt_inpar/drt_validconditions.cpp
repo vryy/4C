@@ -1093,6 +1093,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     std::vector<Teuchos::RCP<ConditionComponent> > electrodesoccomponents;
 
     {
+      electrodesoccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("ID")));
       electrodesoccomponents.push_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
       electrodesoccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("c_0%")));
       electrodesoccomponents.push_back(Teuchos::rcp(new RealConditionComponent("c_0%")));
@@ -1122,7 +1123,16 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                              DRT::Condition::Surface));
 
     // equip condition definition with input file line components
-    cellvoltagesurf->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+    std::vector<Teuchos::RCP<ConditionComponent> > cellvoltagecomponents;
+
+    {
+      cellvoltagecomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("ID")));
+      cellvoltagecomponents.push_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+    }
+
+    // insert input file line components into condition definition
+    for (unsigned i=0; i<cellvoltagecomponents.size(); ++i)
+      cellvoltagesurf->AddComponent(cellvoltagecomponents[i]);
 
     // insert condition definition into global list of valid condition definitions
     condlist.push_back(cellvoltagesurf);
@@ -3366,6 +3376,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
 
     std::vector<Teuchos::RCP<ConditionComponent> > elechemcomponents;
+    elechemcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("ID")));
+    elechemcomponents.push_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
     elechemcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("pot")));
     elechemcomponents.push_back(Teuchos::rcp(new RealConditionComponent("pot")));
     elechemcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("curve")));

@@ -19,6 +19,8 @@ Maintainer: Andreas Ehrl
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_createdis.H"
 
+#include "../drt_scatra/scatra_resulttest_elch.H"
+#include "../drt_scatra/scatra_timint_elch.H"
 #include "../drt_scatra/scatra_utils_clonestrategy.H"
 #include "../drt_scatra_ele/scatra_ele.H"
 
@@ -103,7 +105,10 @@ void elch_dyn(int restart)
     (scatraonly->ScaTraField())->TimeLoop();
 
     // perform the result test if required
-    DRT::Problem::Instance()->AddFieldTest(scatraonly->CreateScaTraFieldTest());
+    Teuchos::RCP<SCATRA::ScaTraTimIntElch> elchtimint = Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(scatraonly->ScaTraField());
+    if(elchtimint == Teuchos::null)
+      dserror("Time integrator is not of electrochemistry type!");
+    DRT::Problem::Instance()->AddFieldTest(Teuchos::rcp(new SCATRA::ElchResultTest(elchtimint)));
     DRT::Problem::Instance()->TestAll(comm);
 
     break;
@@ -186,7 +191,10 @@ void elch_dyn(int restart)
       // perform the result test
       problem->AddFieldTest(elch->FluidField()->CreateFieldTest());
       problem->AddFieldTest(elch->AleField()->CreateFieldTest());
-      problem->AddFieldTest(elch->CreateScaTraFieldTest());
+      Teuchos::RCP<SCATRA::ScaTraTimIntElch> elchtimint = Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(elch->ScaTraField());
+      if(elchtimint == Teuchos::null)
+        dserror("Time integrator is not of electrochemistry type!");
+      problem->AddFieldTest(Teuchos::rcp(new SCATRA::ElchResultTest(elchtimint)));
       problem->TestAll(comm);
     }
     else
@@ -210,7 +218,10 @@ void elch_dyn(int restart)
 
       // perform the result test
       problem->AddFieldTest(elch->FluidField()->CreateFieldTest());
-      problem->AddFieldTest(elch->CreateScaTraFieldTest());
+      Teuchos::RCP<SCATRA::ScaTraTimIntElch> elchtimint = Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(elch->ScaTraField());
+      if(elchtimint == Teuchos::null)
+        dserror("Time integrator is not of electrochemistry type!");
+      problem->AddFieldTest(Teuchos::rcp(new SCATRA::ElchResultTest(elchtimint)));
       problem->TestAll(comm);
     }
 

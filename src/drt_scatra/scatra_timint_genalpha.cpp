@@ -94,16 +94,10 @@ void SCATRA::TimIntGenAlpha::Init()
   SetElementGeneralParameters();
   SetElementTurbulenceParameters();
 
-  // for initializing phiaf_, phiam based on the initial field that was
-  // set for phinp_, phin_ in the TimInt base class constructor
-  // this method has to be called before method OutputElectrodeInfoBoundary() is called
-  // otherwise phi_af is initialized with zeros instead of the initial field
+  // for initializing phiaf_, phiam_ based on the initial field that was
+  // set for phinp_, phin_ in the TimInt base class constructor;
+  // otherwise phiaf_ is initialized with zeros instead of the initial field
   ComputeIntermediateValues();
-
-  // Important: this adds the required ConditionID's to the single conditions.
-  // It is necessary to do this BEFORE ReadRestart() is called!
-  // Output to screen and file is suppressed
-  //OutputElectrodeInfoBoundary(false,false);
 
   // setup krylov
   PrepareKrylovProjection();

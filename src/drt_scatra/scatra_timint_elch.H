@@ -89,18 +89,14 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   //! problem-specific outputs
   void OutputProblemSpecific();
 
-  //! output of all electrode boundary status information to screen and/or file (default: 2x true)
-  Teuchos::RCP< std::vector<double> > OutputElectrodeInfoBoundary(
-    bool printtoscreen = true,  //!< flag for printing information to screen
-    bool printtofile = true     //!< flag for printing information to file
-  );
+  //! output of all electrode boundary status information to screen and file
+  void OutputElectrodeInfoBoundary();
 
   //! output of electrode information for a single boundary condition
-  Teuchos::RCP< std::vector<double> > OutputSingleElectrodeInfoBoundary(
+  void OutputSingleElectrodeInfoBoundary(
     DRT::Condition* condition, //!< pointer to the condition
     const int  condid,         //!< condition id
-    const bool printtoscreen,  //!< flag for output to screen
-    const bool printtofile,    //!< flag for output to file
+    const bool print,          //!< flag for output to screen and file
     double& currentsum,        //!< net current over all boundaries (out)
     double& pottangent,        //!< tangent of current w.r.t. electrode potential (out)
     double& currresidual,      //!< neg. residual of current equation (out)
@@ -123,6 +119,15 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
 
   //! return elch parameter list
   Teuchos::RCP<Teuchos::ParameterList> ElchParameterList() { return elchparams_;}
+
+  //! return mean reactant concentrations at electrode boundaries
+  const Teuchos::RCP<std::vector<double> >& ElectrodeConc() const {return electrodeconc_;};
+
+  //! return mean electric overpotentials at electrode boundaries
+  const Teuchos::RCP<std::vector<double> >& ElectrodeEta() const {return electrodeeta_;};
+
+  //! return total electric currents at electrode boundaries
+  const Teuchos::RCP<std::vector<double> >& ElectrodeCurr() const {return electrodecurr_;};
 
   protected:
 
@@ -269,10 +274,17 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   //! Toggle which defines dof's with a Dirichlet condition
   Teuchos::RCP<Epetra_Vector> dctoggle_;
 
-  //! electrode state of charge
+  //! states of charge of resolved electrodes
   Teuchos::RCP<std::vector<double> > electrodesoc_;
-};
 
-};
+  //! mean reactant concentrations at electrode boundaries
+  Teuchos::RCP<std::vector<double> > electrodeconc_;
 
+  //! mean electric overpotentials at electrode boundaries
+  Teuchos::RCP<std::vector<double> > electrodeeta_;
+
+  //! total electric currents at electrode boundaries
+  Teuchos::RCP<std::vector<double> > electrodecurr_;
+};
+};
 #endif

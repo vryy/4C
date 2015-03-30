@@ -877,6 +877,7 @@ set(OBJS_DRT_SCATRA
   src/drt_levelset/levelset_algorithm_reinit.cpp
   src/drt_levelset/levelset_dyn.cpp
   src/drt_scatra/scatra_resulttest.cpp
+  src/drt_scatra/scatra_resulttest_elch.cpp
   src/drt_scatra/scatra_timint_bdf2.cpp
   src/drt_scatra/scatra_timint_cardiac_monodomain_scheme.cpp
   src/drt_scatra/scatra_timint_cardiac_monodomain.cpp

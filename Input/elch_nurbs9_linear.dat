@@ -95,9 +95,9 @@ E 2 - OUTPUT standard
 ------------------------------------------ELECTRODE KINETICS LINE CONDITIONS
 DLINE                           2
 // anodic reaction
-E 1 - pot  0.0    curve none numscal 3 stoich -1 0 0 e- 2 zero_cur 0 linear alpha 1.5 i0 4.0 gamma 0.0 refcon 0.1 dl_spec_cap 0.0 END
+E 1 - ID 0 pot  0.0    curve none numscal 3 stoich -1 0 0 e- 2 zero_cur 0 linear alpha 1.5 i0 4.0 gamma 0.0 refcon 0.1 dl_spec_cap 0.0 END
 // cathodic reaction
-E 2 - pot -0.0125 curve none numscal 3 stoich -1 0 0 e- 2 zero_cur 0 linear alpha 0.5 i0 4.0 gamma 0.0 refcon 0.1 dl_spec_cap 0.0 END
+E 2 - ID 1 pot -0.0125 curve none numscal 3 stoich -1 0 0 e- 2 zero_cur 0 linear alpha 0.5 i0 4.0 gamma 0.0 refcon 0.1 dl_spec_cap 0.0 END
 -----------------------------------------------------------FLUID KNOTVECTORS
 -------------------------------------------------------------ALE KNOTVECTORS
 -------------------------------------------------------TRANSPORT KNOTVECTORS

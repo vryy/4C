@@ -53,7 +53,10 @@ SCATRA::ScaTraTimIntElch::ScaTraTimIntElch(
     dlcapexists_    (false),
     ektoggle_       (Teuchos::null),
     dctoggle_       (Teuchos::null),
-    electrodesoc_   (Teuchos::null)
+    electrodesoc_   (Teuchos::null),
+    electrodeconc_  (Teuchos::null),
+    electrodeeta_   (Teuchos::null),
+    electrodecurr_  (Teuchos::null)
 {
   return;
 }
@@ -75,11 +78,6 @@ void SCATRA::ScaTraTimIntElch::Init()
 
   // initialize time-dependent electrode kinetics variables (galvanostatic mode or double layer contribution)
   ComputeTimeDerivPot0(true);
-
-  // Important: this adds the required ConditionID's to the single conditions.
-  // It is necessary to do this BEFORE ReadRestart() is called!
-  // Output to screen and file is suppressed
-  OutputElectrodeInfoBoundary(false,false);
 
   // initialize dirichlet toggle:
   // for certain ELCH problem formulations we have to provide
@@ -131,13 +129,26 @@ void SCATRA::ScaTraTimIntElch::Init()
     std::cout<<"Electrolyte conductivity (all species)  = "<<(*sigma_)[numscal_]<<std::endl<<std::endl;
   }
 
-  // initialize electrode state of charge vector
+  // initialize vector for states of charge of resolved electrodes
   std::vector<DRT::Condition*> electrodesocconditions;
   discret_->GetCondition("ElectrodeSOC",electrodesocconditions);
   if(electrodesocconditions.size() > 0)
   {
     electrodesoc_ = Teuchos::rcp(new std::vector<double>);
     electrodesoc_->resize(electrodesocconditions.size(),-1.);
+  }
+
+  // initialize vectors for mean reactant concentrations, mean electric overpotentials, and total electric currents at electrode boundaries
+  std::vector<DRT::Condition*> electrodeboundaryconditions;
+  discret_->GetCondition("ElchBoundaryKinetics",electrodeboundaryconditions);
+  if(electrodeboundaryconditions.size() > 0)
+  {
+    electrodeconc_ = Teuchos::rcp(new std::vector<double>);
+    electrodeconc_->resize(electrodeboundaryconditions.size(),-1.);
+    electrodeeta_ = Teuchos::rcp(new std::vector<double>);
+    electrodeeta_->resize(electrodeboundaryconditions.size(),-1.);
+    electrodecurr_ = Teuchos::rcp(new std::vector<double>);
+    electrodecurr_->resize(electrodeboundaryconditions.size(),-1.);
   }
 
   return;
@@ -460,47 +471,27 @@ void SCATRA::ScaTraTimIntElch::OutputProblemSpecific()
 /*-------------------------------------------------------------------------*
  | output electrode boundary status information to screen       gjb  01/09 |
  *-------------------------------------------------------------------------*/
-Teuchos::RCP< std::vector<double> > SCATRA::ScaTraTimIntElch::OutputElectrodeInfoBoundary(
-    bool printtoscreen,
-    bool printtofile)
+void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoBoundary()
 {
-  // results of the first electrode kinetics BC
-  Teuchos::RCP< std::vector<double> > firstelectkin = Teuchos::rcp(new std::vector<double>(3, 0.0));
-
   // evaluate the following type of boundary conditions:
   std::string condname("ElchBoundaryKinetics");
   std::vector<DRT::Condition*> cond;
   discret_->GetCondition(condname,cond);
 
-  // leave method, if there's nothing to do!
-  if (!cond.size()) return firstelectkin;
+  // leave method if there's nothing to do!
+  if(!cond.size())
+    return;
 
   double sum(0.0);
 
-  if ((myrank_ == 0) and printtoscreen)
+  if(myrank_ == 0)
   {
     std::cout<<"Status of '"<<condname<<"':\n"
     <<"++----+---------------------+------------------+----------------------+--------------------+----------------+----------------+"<<std::endl;
     printf("|| ID |    Total current    | Area of boundary | Mean current density | Mean overpotential | Electrode pot. | Mean Concentr. |\n");
   }
 
-  // first, add to all conditions of interest a ConditionID
-  for (int condid = 0; condid < (int) cond.size(); condid++)
-  {
-    // is there already a ConditionID?
-    const std::vector<int>*    CondIDVec  = cond[condid]->Get<std::vector<int> >("ConditionID");
-    if (CondIDVec)
-    {
-      if ((*CondIDVec)[0] != condid)
-        dserror("Condition %s has non-matching ConditionID",condname.c_str());
-    }
-    else
-    {
-      // let's add a ConditionID
-      cond[condid]->Add("ConditionID",condid);
-    }
-  }
-  // now we evaluate the conditions and separate via ConditionID
+  // evaluate the conditions and separate via ConditionID
   for (int condid = 0; condid < (int) cond.size(); condid++)
   {
     double currtangent(0.0); // this value remains unused here!
@@ -509,24 +500,19 @@ Teuchos::RCP< std::vector<double> > SCATRA::ScaTraTimIntElch::OutputElectrodeInf
     double electrodepot(0.0); // this value remains unused here!
     double meanoverpot(0.0); // this value remains unused here!
 
-    Teuchos::RCP< std::vector<double> > electkin = OutputSingleElectrodeInfoBoundary(
+    OutputSingleElectrodeInfoBoundary(
         cond[condid],
         condid,
-        printtoscreen,
-        printtofile,
+        true,
         sum,
         currtangent,
         currresidual,
         electrodesurface,
         electrodepot,
         meanoverpot);
-
-    // only the first condition is tested
-    if(condid==0)
-      firstelectkin = electkin;
   } // loop over condid
 
-  if ((myrank_==0) and printtoscreen)
+  if(myrank_ == 0)
   {
     std::cout<<"++----+---------------------+------------------+----------------------+--------------------+----------------+----------------+"<<std::endl;
     // print out the net total current for all indicated boundaries
@@ -536,18 +522,17 @@ Teuchos::RCP< std::vector<double> > SCATRA::ScaTraTimIntElch::OutputElectrodeInf
   // clean up
   discret_->ClearState();
 
-  return firstelectkin;
-} // SCATRA::ScaTraTimIntElch::OutputElectrodeInfoBoundary
+  return;
+} // SCATRA::ScaTraTimIntElch::OutputElectrodeInfoBoundary()
 
 
 /*----------------------------------------------------------------------*
  |  get electrode status for single boundary condition       gjb  11/09 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP< std::vector<double> > SCATRA::ScaTraTimIntElch::OutputSingleElectrodeInfoBoundary(
+void SCATRA::ScaTraTimIntElch::OutputSingleElectrodeInfoBoundary(
     DRT::Condition* condition,
     const int condid,
-    const bool printtoscreen,
-    const bool printtofile,
+    const bool print,
     double& currentsum,
     double& currtangent,
     double& currresidual,
@@ -555,13 +540,6 @@ Teuchos::RCP< std::vector<double> > SCATRA::ScaTraTimIntElch::OutputSingleElectr
     double& electrodepot,
     double& meanoverpot)
 {
-  // return vector for nightly test cases
-  Teuchos::RCP< std::vector<double> > singleelectkin = Teuchos::rcp(new std::vector<double>(3, 0.0));
-
-  // safety check: is there already a ConditionID?
-  const std::vector<int>* CondIDVec  = condition->Get<std::vector<int> >("ConditionID");
-  if (not CondIDVec) dserror("Condition has not yet a ConditionID");
-
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState("phinp",phinp_);
@@ -637,49 +615,46 @@ Teuchos::RCP< std::vector<double> > SCATRA::ScaTraTimIntElch::OutputSingleElectr
   discret_->ClearState();
 
   // print out results to screen/file if desired
-  if (myrank_ == 0)
+  if(myrank_ == 0 and print)
   {
-    if (printtoscreen) // print out results to screen
+    // print out results to screen
+    printf("|| %2d |     %10.3E      |    %10.3E    |      %10.3E      |     %10.3E     |   %10.3E   |   %10.3E   |\n",
+        condid,currentintegral+currentdlintegral,boundaryint,currentintegral/boundaryint+currentdlintegral/boundaryint,overpotentialint/boundaryint, electrodepot, cint/boundaryint);
+
+    // write results to file
+    std::ostringstream temp;
+    temp << condid;
+    const std::string fname
+    = DRT::Problem::Instance()->OutputControlFile()->FileName()+".electrode_status_"+temp.str()+".txt";
+
+    std::ofstream f;
+    if (Step() == 0)
     {
-      printf("|| %2d |     %10.3E      |    %10.3E    |      %10.3E      |     %10.3E     |   %10.3E   |   %10.3E   |\n",
-          condid,currentintegral+currentdlintegral,boundaryint,currentintegral/boundaryint+currentdlintegral/boundaryint,overpotentialint/boundaryint, electrodepot, cint/boundaryint);
+      f.open(fname.c_str(),std::fstream::trunc);
+      f << "#ID,Step,Time,Total_current,Area_of_boundary,Mean_current_density_electrode_kinetics,Mean_current_density_dl,Mean_overpotential,Mean_electrode_pot_diff,Mean_opencircuit_pot,Electrode_pot,Mean_concentration\n";
     }
+    else
+      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
 
-    if (printtofile)// write results to file
-    {
-      std::ostringstream temp;
-      temp << condid;
-      const std::string fname
-      = DRT::Problem::Instance()->OutputControlFile()->FileName()+".electrode_status_"+temp.str()+".txt";
-
-      std::ofstream f;
-      if (Step() == 0)
-      {
-        f.open(fname.c_str(),std::fstream::trunc);
-        f << "#ID,Step,Time,Total_current,Area_of_boundary,Mean_current_density_electrode_kinetics,Mean_current_density_dl,Mean_overpotential,Mean_electrode_pot_diff,Mean_opencircuit_pot,Electrode_pot,Mean_concentration\n";
-      }
-      else
-        f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
-
-      f << condid << "," << Step() << "," << Time() << "," << currentintegral+currentdlintegral  << "," << boundaryint
-      << "," << currentintegral/boundaryint << "," << currentdlintegral/boundaryint
-      << "," << overpotentialint/boundaryint << "," <<
-      epdint/boundaryint << "," << ocpint/boundaryint << "," << electrodepot << ","
-      << cint/boundaryint << "\n";
-      f.flush();
-      f.close();
-    }
-
-    (*singleelectkin)[0]= cint/boundaryint;
-    (*singleelectkin)[1]= overpotentialint/boundaryint;
+    f << condid << "," << Step() << "," << Time() << "," << currentintegral+currentdlintegral  << "," << boundaryint
+    << "," << currentintegral/boundaryint << "," << currentdlintegral/boundaryint
+    << "," << overpotentialint/boundaryint << "," <<
+    epdint/boundaryint << "," << ocpint/boundaryint << "," << electrodepot << ","
+    << cint/boundaryint << "\n";
+    f.flush();
+    f.close();
   } // if (myrank_ == 0)
 
   // galvanostatic simulations:
   // add the double layer current to the Butler-Volmer current
   currentsum += currentdlintegral;
-  (*singleelectkin)[2] = currentsum;
 
-  return singleelectkin;
+  // update vectors
+  (*electrodeconc_)[condid] = cint/boundaryint;
+  (*electrodeeta_)[condid] = overpotentialint/boundaryint;
+  (*electrodecurr_)[condid] = currentsum;
+
+  return;
 } // SCATRA::ScaTraTimIntElch::OutputSingleElectrodeInfoBoundary
 
 
@@ -1421,7 +1396,6 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
         OutputSingleElectrodeInfoBoundary(
             cond[icond],
             icond,
-            false,
             false,
             (*actualcurrent)[icond],
             (*currtangent)[icond],

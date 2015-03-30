@@ -2,7 +2,7 @@
 /*!
 \file scatra_resulttest.H
 
-\brief tesing of scalar transport calculation results
+\brief testing of scalar transport calculation results
 
 <pre>
 Maintainer: Andreas Ehrl
@@ -25,6 +25,7 @@ Maintainer: Andreas Ehrl
 namespace DRT
 {
   class Discretization;
+  class Node;
 }
 
 namespace SCATRA{
@@ -56,6 +57,14 @@ public:
 
   virtual void TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
+protected:
+
+  //! get result to be tested
+  virtual const double GetResult(
+      const std::string   quantity,   //! name of quantity to be tested
+      DRT::Node*          node        //! node carrying the result to be tested
+      ) const;
+
 private:
 
   /// Teuchos::RCP to scalar transport discretization
@@ -66,8 +75,6 @@ private:
   Teuchos::RCP<Epetra_Vector>       myvan_;
   /// Teuchos::RCP to mass/heat flux vector
   Teuchos::RCP<Epetra_MultiVector>  myflux_;
-  /// Teuchos::RCP to electrode kinetics vector
-  Teuchos::RCP<std::vector<double> >  myelectkin_;
   /// Teuchos::RCP to scatra structure biofilm growth vector
   Teuchos::RCP<Epetra_MultiVector>  mystrgrowth_;
   /// Teuchos::RCP to scatra fluid biofilm growth vector
@@ -75,7 +82,5 @@ private:
   /// number of iterations in last newton iteration
   int mynumiter_;
 };
-
 } // namespace SCATRA
-
 #endif

@@ -23,20 +23,17 @@ Maintainer: Andreas Ehrl
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-SCATRA::ScaTraResultTest::ScaTraResultTest(Teuchos::RCP<ScaTraTimIntImpl> scatra)
-  : DRT::ResultTest("SCATRA")
+SCATRA::ScaTraResultTest::ScaTraResultTest(Teuchos::RCP<ScaTraTimIntImpl> scatra) :
+DRT::ResultTest("SCATRA"),
+dis_(scatra->Discretization()),
+mysol_(scatra->Phinp()),
+myvan_(scatra->Phiatmeshfreenodes()),
+myflux_(scatra->Flux()),
+mystrgrowth_(scatra->StrGrowth()),
+myfldgrowth_(scatra->FldGrowth()),
+mynumiter_(scatra->IterNum())
 {
-  dis_    = scatra->Discretization();
-  mysol_  = scatra->Phinp();
-  myvan_  = scatra->Phiatmeshfreenodes();
-  myflux_ = scatra->Flux();
-  if(Teuchos::rcp_dynamic_cast<ScaTraTimIntElch>(scatra) == Teuchos::null)
-    myelectkin_ = Teuchos::null;
-  else
-    myelectkin_ = Teuchos::rcp_dynamic_cast<ScaTraTimIntElch>(scatra)->OutputElectrodeInfoBoundary(false,false);
-  mystrgrowth_ = scatra->StrGrowth();
-  myfldgrowth_ = scatra->FldGrowth();
-  mynumiter_ =scatra->IterNum();
+  return;
 }
 
 
@@ -72,77 +69,95 @@ void SCATRA::ScaTraResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& ne
       if (actnode->Owner() != dis_->Comm().MyPID())
         return;
 
-      double result = 0.;
-      const Epetra_BlockMap& phinpmap = mysol_->Map();
-      std::string position;
-      res.ExtractString("QUANTITY",position);
+      // extract name of quantity to be tested
+      std::string quantity;
+      res.ExtractString("QUANTITY",quantity);
 
-      // test result value of single scalar field
-      if (position=="phi")
-        result = (*mysol_)[phinpmap.LID(dis_->Dof(0,actnode,0))];
-      // test result values for a system of scalars
-      else if (position=="phi1")
-        result = (*mysol_)[phinpmap.LID(dis_->Dof(0,actnode,0))];
-      else if (position=="phi2")
-        result = (*mysol_)[phinpmap.LID(dis_->Dof(0,actnode,1))];
-      else if (position=="phi3")
-        result = (*mysol_)[phinpmap.LID(dis_->Dof(0,actnode,2))];
-      else if (position=="phi4")
-        result = (*mysol_)[phinpmap.LID(dis_->Dof(0,actnode,3))];
-      else if (position=="phi5")
-        result = (*mysol_)[phinpmap.LID(dis_->Dof(0,actnode,4))];
-      else if (position=="phi6")
-        result = (*mysol_)[phinpmap.LID(dis_->Dof(0,actnode,5))];
-      else if (position=="phi7")
-        result = (*mysol_)[phinpmap.LID(dis_->Dof(0,actnode,6))];
-      else if (position=="phi8")
-        result = (*mysol_)[phinpmap.LID(dis_->Dof(0,actnode,7))];
-      else if (position=="phi9")
-        result = (*mysol_)[phinpmap.LID(dis_->Dof(0,actnode,8))];
-      else if (position=="phi10")
-        result = (*mysol_)[phinpmap.LID(dis_->Dof(0,actnode,9))];
-      else if (position=="phi11")
-        result = (*mysol_)[phinpmap.LID(dis_->Dof(0,actnode,10))];
-      else if (position=="phi12")
-        result = (*mysol_)[phinpmap.LID(dis_->Dof(0,actnode,11))];
-      else if (position=="van_phi")
-        result = (*myvan_)[phinpmap.LID(dis_->Dof(0,actnode,0))];
-      // we support only testing of fluxes for the first scalar
-      else if (position=="fluxx")
-        result = ((*myflux_)[0])[phinpmap.LID(dis_->Dof(0,actnode,0))];
-      else if (position=="fluxy")
-        result = ((*myflux_)[1])[phinpmap.LID(dis_->Dof(0,actnode,0))];
-      else if (position=="fluxz")
-        result = ((*myflux_)[2])[phinpmap.LID(dis_->Dof(0,actnode,0))];
-      else if (position=="meanc")
-        result = (*myelectkin_)[0];
-      else if (position=="meaneta")
-        result = (*myelectkin_)[1];
-      else if (position=="meancur")
-        result = (*myelectkin_)[2];
-      // test result values for biofilm growth (scatra structure and scatra fluid)
-      else if (position=="scstr_growth_displx")
-        result = ((*mystrgrowth_)[0])[phinpmap.LID(dis_->Dof(0,actnode,0))];
-      else if (position=="scstr_growth_disply")
-        result = ((*mystrgrowth_)[1])[phinpmap.LID(dis_->Dof(0,actnode,0))];
-      else if (position=="scstr_growth_displz")
-        result = ((*mystrgrowth_)[2])[phinpmap.LID(dis_->Dof(0,actnode,0))];
-      else if (position=="scfld_growth_displx")
-        result = ((*myfldgrowth_)[0])[phinpmap.LID(dis_->Dof(0,actnode,0))];
-      else if (position=="scfld_growth_disply")
-        result = ((*myfldgrowth_)[1])[phinpmap.LID(dis_->Dof(0,actnode,0))];
-      else if (position=="scfld_growth_displz")
-        result = ((*myfldgrowth_)[2])[phinpmap.LID(dis_->Dof(0,actnode,0))];
-      else
-      {
-        dserror("Quantity '%s' not supported in result-test of scalar transport problems", position.c_str());
-      }
+      // get result to be tested
+      const double result = GetResult(quantity,actnode);
 
       nerr += CompareValues(result, "NODE", res);
       test_count++;
     }
   }
+
+  return;
 }
+
+
+/*----------------------------------------------------------------------*
+ | get result to be tested                                   fang 03/15 |
+ *----------------------------------------------------------------------*/
+const double SCATRA::ScaTraResultTest::GetResult(
+    const std::string   quantity,   //! name of quantity to be tested
+    DRT::Node*          node        //! node carrying the result to be tested
+    ) const
+{
+  // initialize variable for result
+  double result(0.);
+
+  // extract row map from solution vector
+  const Epetra_BlockMap& phinpmap = mysol_->Map();
+
+  // test result value of single scalar field
+  if (quantity=="phi")
+    result = (*mysol_)[phinpmap.LID(dis_->Dof(0,node,0))];
+
+  // test result values for a system of scalars
+  else if (quantity=="phi1")
+    result = (*mysol_)[phinpmap.LID(dis_->Dof(0,node,0))];
+  else if (quantity=="phi2")
+    result = (*mysol_)[phinpmap.LID(dis_->Dof(0,node,1))];
+  else if (quantity=="phi3")
+    result = (*mysol_)[phinpmap.LID(dis_->Dof(0,node,2))];
+  else if (quantity=="phi4")
+    result = (*mysol_)[phinpmap.LID(dis_->Dof(0,node,3))];
+  else if (quantity=="phi5")
+    result = (*mysol_)[phinpmap.LID(dis_->Dof(0,node,4))];
+  else if (quantity=="phi6")
+    result = (*mysol_)[phinpmap.LID(dis_->Dof(0,node,5))];
+  else if (quantity=="phi7")
+    result = (*mysol_)[phinpmap.LID(dis_->Dof(0,node,6))];
+  else if (quantity=="phi8")
+    result = (*mysol_)[phinpmap.LID(dis_->Dof(0,node,7))];
+  else if (quantity=="phi9")
+    result = (*mysol_)[phinpmap.LID(dis_->Dof(0,node,8))];
+  else if (quantity=="phi10")
+    result = (*mysol_)[phinpmap.LID(dis_->Dof(0,node,9))];
+  else if (quantity=="phi11")
+    result = (*mysol_)[phinpmap.LID(dis_->Dof(0,node,10))];
+  else if (quantity=="phi12")
+    result = (*mysol_)[phinpmap.LID(dis_->Dof(0,node,11))];
+  else if (quantity=="van_phi")
+    result = (*myvan_)[phinpmap.LID(dis_->Dof(0,node,0))];
+
+  // we support only testing of fluxes for the first scalar
+  else if (quantity=="fluxx")
+    result = ((*myflux_)[0])[phinpmap.LID(dis_->Dof(0,node,0))];
+  else if (quantity=="fluxy")
+    result = ((*myflux_)[1])[phinpmap.LID(dis_->Dof(0,node,0))];
+  else if (quantity=="fluxz")
+    result = ((*myflux_)[2])[phinpmap.LID(dis_->Dof(0,node,0))];
+
+  // test result values for biofilm growth (scatra structure and scatra fluid)
+  else if (quantity=="scstr_growth_displx")
+    result = ((*mystrgrowth_)[0])[phinpmap.LID(dis_->Dof(0,node,0))];
+  else if (quantity=="scstr_growth_disply")
+    result = ((*mystrgrowth_)[1])[phinpmap.LID(dis_->Dof(0,node,0))];
+  else if (quantity=="scstr_growth_displz")
+    result = ((*mystrgrowth_)[2])[phinpmap.LID(dis_->Dof(0,node,0))];
+  else if (quantity=="scfld_growth_displx")
+    result = ((*myfldgrowth_)[0])[phinpmap.LID(dis_->Dof(0,node,0))];
+  else if (quantity=="scfld_growth_disply")
+    result = ((*myfldgrowth_)[1])[phinpmap.LID(dis_->Dof(0,node,0))];
+  else if (quantity=="scfld_growth_displz")
+    result = ((*myfldgrowth_)[2])[phinpmap.LID(dis_->Dof(0,node,0))];
+  else
+    dserror("Quantity '%s' not supported in result test!", quantity.c_str());
+
+  return result;
+} // SCATRA::ScaTraResultTest::GetResult
+
 
 void SCATRA::ScaTraResultTest::TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
