@@ -186,6 +186,7 @@ void FLD::UTILS::FluidImpedanceWrapper::OutflowBoundary(double time, double dta,
   {
     mapiter->second->FluidImpedanceBc::OutflowBoundary(time,dta,theta,mapiter->first);
   }
+  discret_->ClearState();
   return;
 }
 
@@ -313,6 +314,7 @@ void FLD::UTILS::FluidImpedanceWrapper::ReadRestart( IO::DiscretizationReader& r
   for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++ )
     mapiter->second->FluidImpedanceBc::ReadRestart(reader,mapiter->first);
 
+  discret_->ClearState();
   return;
 }
 
@@ -651,7 +653,6 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
 
     // old number of flowrates in vector
 
-#if 1
     if (dta_ == odta)
     {
       if (!myrank_)
@@ -660,7 +661,7 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
       OutflowBoundary(t,ndta,0.66,condnum);
       return;
     }
-#endif
+    //else ??
 
     // evaluate the new flow rate vector
     int nfr_pos = 0;
@@ -1101,9 +1102,6 @@ void FLD::UTILS::FluidImpedanceBc::OutflowBoundary(double time, double dta, doub
 
     (*pressures_)[pos] = pressure;
   }
-
-  discret_->ClearState();
-
   return;
 } //FluidImplicitTimeInt::OutflowBoundary
 

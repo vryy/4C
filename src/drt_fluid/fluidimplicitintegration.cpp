@@ -3851,6 +3851,9 @@ void FLD::FluidImplicitTimeInt::ReadRestart(int step)
 
     if (isimpedancebc_)
     {
+      if (alefluid_)
+            discret_->SetState("dispnp", dispn_);
+
       // also read impedance bc information if required
       // Note: this method acts only if there is an impedance BC
       impedancebc_->ReadRestart(reader);

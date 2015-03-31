@@ -694,7 +694,7 @@ void FS3I::ACFSI::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector> >& ws
     if (fluid == Teuchos::null)
       dserror("Dynamic cast to ADAPTER::FluidFSI failed!");
 
-    if ( (fmod(time_ - dt_ + 1e-10,fsiperiod_)-1e-10) <= dt_-1e-12 ) //iff WallShearStress_ has been updated last step
+    if ( step_>1 and (fmod(time_ - dt_ + 1e-10,fsiperiod_)-1e-10) <= dt_-1e-12 ) //iff WallShearStress_ has been updated last step
       {
         fluid->ResetHistoryVectors( ); //Reset StressManager
         if (Comm().MyPID()==0)
@@ -718,7 +718,6 @@ void FS3I::ACFSI::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector> >& ws
         {
           std::cout<<"Updating mean wss vector in ac-fs3i"<<std::endl;
         }
-        //updatedwss_=true;
       }
       break;
     default:
