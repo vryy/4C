@@ -246,11 +246,11 @@ NODE 36 COORD 1.3500000000000001e+00 2.9999999999999999e-01 2.9999999999999999e-
 ----------------------------------------------------------STRUCTURE ELEMENTS
 1 SOLIDH8 HEX8 33 34 35 36 29 30 31 32 MAT 2 KINEM nonlinear EAS mild
 --------------------------------------------------------------FLUID ELEMENTS
-2 FLUID3 HEX8 1 2 3 4 5 6 7 8 MAT 1 NA Euler GP 3 3 3 CA No
-3 FLUID3 HEX8 5 6 7 8 9 10 11 12 MAT 1 NA Euler GP 3 3 3 CA No
-4 FLUID3 HEX8 9 10 11 12 13 14 15 16 MAT 1 NA Euler GP 3 3 3 CA No
-5 FLUID3 HEX8 17 18 19 20 21 22 23 24 MAT 1 NA Ale GP 3 3 3 CA No
-6 FLUID3 HEX8 21 22 23 24 25 26 27 28 MAT 1 NA Ale GP 3 3 3 CA No
+2 FLUID HEX8 1 2 3 4 5 6 7 8 MAT 1 NA Euler GP 3 3 3 CA No
+3 FLUID HEX8 5 6 7 8 9 10 11 12 MAT 1 NA Euler GP 3 3 3 CA No
+4 FLUID HEX8 9 10 11 12 13 14 15 16 MAT 1 NA Euler GP 3 3 3 CA No
+5 FLUID HEX8 17 18 19 20 21 22 23 24 MAT 1 NA Ale GP 3 3 3 CA No
+6 FLUID HEX8 21 22 23 24 25 26 27 28 MAT 1 NA Ale GP 3 3 3 CA No
 ----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS

@@ -45,7 +45,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidXWallType::Create(const std::stri
                                                              const int     owner)
 {
 
-  if ( eletype=="FLUID3XW" )
+  if ( eletype=="FLUIDXW" )
   {
     return Teuchos::rcp(new DRT::ELEMENTS::FluidXWall(id,owner));
   }
@@ -74,7 +74,7 @@ void DRT::ELEMENTS::FluidXWallType::ComputeNullSpace( DRT::Discretization & dis,
 
 void DRT::ELEMENTS::FluidXWallType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
 {
-  std::map<std::string,DRT::INPUT::LineDefinition>& defsxwall = definitions["FLUID3XW"];
+  std::map<std::string,DRT::INPUT::LineDefinition>& defsxwall = definitions["FLUIDXW"];
 
   defsxwall["HEX8"]
     .AddIntVector("HEX8",8)

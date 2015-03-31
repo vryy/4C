@@ -999,17 +999,17 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       AddDis("xfluid", xfluiddis);
     AddDis("ale", aledis);
 
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+
     std::set<std::string> fluidelementtypes;
     fluidelementtypes.insert("FLUID");
-    fluidelementtypes.insert("FLUID2");
-    fluidelementtypes.insert("FLUID3");
-    fluidelementtypes.insert("FLUID3XW");
-
-    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", fluidelementtypes)));
-    if (xfluiddis != Teuchos::null)
-      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", fluidelementtypes)));
 
+    if (xfluiddis != Teuchos::null)
+    {
+      // Todo:  "FLUID_BACKGROUND"
+      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", fluidelementtypes)));
+    }
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
 
     break;
@@ -1040,8 +1040,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     std::set<std::string> fluidelementtypes;
     fluidelementtypes.insert("FLUID");
-    fluidelementtypes.insert("FLUID2");
-    fluidelementtypes.insert("FLUID3");
 
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", fluidelementtypes)));
@@ -1092,8 +1090,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       std::set<std::string> fluidelementtypes;
       fluidelementtypes.insert("FLUID");
-      fluidelementtypes.insert("FLUID2");
-      fluidelementtypes.insert("FLUID3");
 
       nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
       nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", fluidelementtypes)));
@@ -1132,12 +1128,12 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       fluiddis  = Teuchos::rcp(new DRT::DiscretizationFaces("fluid",reader.Comm()));
       fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
       AddDis("fluid", fluiddis);
-      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", "FLUID3")));
+      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", "FLUID")));
 
       xfluiddis  = Teuchos::rcp(new DRT::DiscretizationXFEM("xfluid",reader.Comm()));
       xfluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(xfluiddis)));
       AddDis("xfluid", xfluiddis);
-      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "FLUID3")));
+      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "FLUID")));
     }
     else
     {
@@ -1241,9 +1237,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     std::set<std::string> fluidelementtypes;
     fluidelementtypes.insert("FLUID");
-    fluidelementtypes.insert("FLUID2");
-    fluidelementtypes.insert("FLUID3");
-    fluidelementtypes.insert("FLUID3XW");
+    fluidelementtypes.insert("FLUIDXW");
     fluidelementtypes.insert("MEFLUID");
     fluidelementtypes.insert("FLUIDHDG");
 
@@ -1323,9 +1317,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     std::set<std::string> fluidelementtypes;
     fluidelementtypes.insert("FLUID");
-    fluidelementtypes.insert("FLUID2");
-    fluidelementtypes.insert("FLUID3");
-    fluidelementtypes.insert("FLUID3XW");
+    fluidelementtypes.insert("FLUIDXW");
 
     AddDis("fluid", fluiddis);
     if (xfluiddis!=Teuchos::null)
@@ -1618,8 +1610,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     std::set<std::string> fluidelementtypes;
     fluidelementtypes.insert("FLUID");
-    fluidelementtypes.insert("FLUID2");
-    fluidelementtypes.insert("FLUID3");
 
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis,  reader, "--FLUID ELEMENTS",fluidelementtypes)));
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
@@ -1697,8 +1687,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     std::set<std::string> fluidelementtypes;
     fluidelementtypes.insert("FLUID");
-    fluidelementtypes.insert("FLUID2");
-    fluidelementtypes.insert("FLUID3");
 
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis,  reader, "--FLUID ELEMENTS",fluidelementtypes)));
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));

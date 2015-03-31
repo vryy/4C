@@ -336,4 +336,4 @@ private:
 
 
 
-#endif  // #ifndef FLUID3XWall_H
+#endif  // #ifndef FLUIDXWall_H

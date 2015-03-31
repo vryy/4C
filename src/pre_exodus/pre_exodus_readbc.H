@@ -40,7 +40,7 @@ struct elem_def{
   mesh_entity me;             ///< refering to underlying mesh entity
   std::string sec;            ///< FLUID,STRUCTURE,ALE,etc.
   std::string desc;           ///< like "MAT 1 EAS full"
-  std::string ename;          ///< FLUID3,SOLIDSH8,etc
+  std::string ename;          ///< FLUID,SOLIDSH8,etc
 };
 
 //! this is what fully defines a baci condition
