@@ -136,7 +136,7 @@ void IMMERSED::ImmersedPartitionedCellMigration::CouplingOp(const Epetra_Vector 
 
     int err = F.Update(1.0, *idispnp, -1.0, *idispn, 0.0);
     if(err != 0)
-      dserror("Vector update of FSI-residual returned err=%d",err);
+      dserror("Vector update of Coupling-residual returned err=%d",err);
 
   }
   else if(!displacementcoupling_) // FORCE COUPLING
@@ -178,7 +178,7 @@ void IMMERSED::ImmersedPartitionedCellMigration::CouplingOp(const Epetra_Vector 
 
   // perform n steps max; then set converged
   bool nlnsolver_continue = globalproblem_->ImmersedMethodParams().get<std::string>("DIVERCONT") == "continue";
-  int  itemax = globalproblem_->FSIDynamicParams().sublist("PARTITIONED SOLVER").get<int>("ITEMAX");
+  int  itemax = globalproblem_->ImmersedMethodParams().sublist("PARTITIONED SOLVER").get<int>("ITEMAX");
   if((IterationCounter())[0] == itemax and nlnsolver_continue)
   {
     if(Comm().MyPID()==0)
@@ -194,8 +194,11 @@ void IMMERSED::ImmersedPartitionedCellMigration::CouplingOp(const Epetra_Vector 
     backgroundfluiddis_->ClearState();
   }
 
-  Teuchos::TimeMonitor::summarize();
-  Teuchos::TimeMonitor::zeroOutTimers();
+  if(DRT::Problem::Instance()->ImmersedMethodParams().get<std::string>("TIMESTATS")=="everyiter")
+  {
+    Teuchos::TimeMonitor::summarize();
+    Teuchos::TimeMonitor::zeroOutTimers();
+  }
 
   return;
 }
@@ -255,12 +258,18 @@ void IMMERSED::ImmersedPartitionedCellMigration::BackgroundOp(Teuchos::RCP<Epetr
 
     // dofsetnum of backgroundfluid is 0 for backgroundfluiddis in poroelast_subproblem_
     BuildImmersedDirichMap(backgroundfluiddis_, dbcmap_immersed_, poroelast_subproblem_->FluidField()->GetDBCMapExtractor()->CondMap(),0);
+//    std::cout<<"dbcmp_immersed:"<<std::endl;
+//    std::cout<<*dbcmap_immersed_<<std::endl;
+//    std::cout<<"FluidField()->CondMap():"<<std::endl;
+//    std::cout<<*(poroelast_subproblem_->FluidField()->GetDBCMapExtractor()->CondMap())<<std::endl;
     poroelast_subproblem_->FluidField()->AddDirichCond(dbcmap_immersed_);
 
     // apply immersed dirichlets to porofluid field
     DoImmersedDirichletCond(poroelast_subproblem_->FluidField()->WriteAccessVelnp(),backgrd_dirichlet_values, dbcmap_immersed_);
     // rebuild the combined dbcmap
     poroelast_subproblem_->BuildCombinedDBCMap();
+//    std::cout<<"CombinedDBCMap()"<<std::endl;
+//    std::cout<<*poroelast_subproblem_->CombinedDBCMap()<<std::endl;
 
     double normofvelocities;
     poroelast_subproblem_->FluidField()->ExtractVelocityPart(backgrd_dirichlet_values)->Norm2(&normofvelocities);
@@ -323,7 +332,7 @@ IMMERSED::ImmersedPartitionedCellMigration::ImmersedOp(Teuchos::RCP<Epetra_Vecto
     if(myrank_ == 0)
     {
       std::cout<<"################################################################################################"<<std::endl;
-      std::cout<<"###   Calculate Boundary Tractions on Structure for Initial Guess or Convergence Check ...      "<<std::endl;
+      std::cout<<"###   Calculate Boundary Tractions on Cell for Initial Guess or Convergence Check ...      "<<std::endl;
 
     }
     EvaluateInterpolationCondition( immerseddis_, params, struct_bdry_strategy,"FSICoupling", -1 );

@@ -46,6 +46,12 @@ public:
   /// initialize search tree for poro discretization
   void SetupBackgroundDiscretization();
 
+  /// access to field cell
+  Teuchos::RCP< ::ADAPTER::FSIStructureWrapper> CellField(){return cellstructure_;};
+
+  /// access to field Poro
+  Teuchos::RCP<POROELAST::Monolithic> PoroField(){return poroelast_subproblem_;};
+
 protected:
 
   /// composed FSI operator

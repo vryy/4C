@@ -20,10 +20,12 @@ Maintainers: Andreas Rauch
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_immersed.H"
-#include "../drt_adapter/ad_str_fsiwrapper.H"
+#include "../drt_adapter/ad_fld_poro.H"
+#include "../drt_adapter/ad_str_fpsiwrapper.H"
 
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_poroelast/poroelast_utils.H"
+#include "../drt_poroelast/poroelast_monolithic.H"
 #include "../drt_poroelast/poro_utils_clonestrategy.H"
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -157,6 +159,20 @@ void immersed_problem_drt()
       algo->SetupBackgroundDiscretization();
 
       algo->Timeloop(algo);
+
+      if(immersedmethodparams.get<std::string>("TIMESTATS")=="endofsim")
+      {
+        Teuchos::TimeMonitor::summarize();
+        Teuchos::TimeMonitor::zeroOutTimers();
+      }
+
+      // create result tests for single fields
+      DRT::Problem::Instance()->AddFieldTest(algo->CellField()->CreateFieldTest());
+      DRT::Problem::Instance()->AddFieldTest(algo->PoroField()->FluidField()->CreateFieldTest());
+      DRT::Problem::Instance()->AddFieldTest(algo->PoroField()->StructureField()->CreateFieldTest());
+
+      // do the actual testing
+      DRT::Problem::Instance()->TestAll(comm);
 
       break;
     }// case prb_cell_migration
