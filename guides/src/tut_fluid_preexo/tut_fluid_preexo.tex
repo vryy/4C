@@ -29,14 +29,14 @@ W.A. Wall, PhD thesis, 1999
 \section{\baci{} Setup}
 
 In order to use \baci{} for your special purposes (here: Fluid Flow), you have
-to do a kind of setup first. 
+to do a kind of setup first.
 \begin{itemize}
 \item Execute the following commands in the console (in any directory):\\
 \texttt{mkdir -p \textasciitilde{}/workspace/build-release}\\
 \texttt{cd \textasciitilde{}/workspace/build-release}\\
 \texttt{\textasciitilde{}/workspace/baci/do-configure}\\
 
-This creates the \texttt{Makefile} needed for compiling the code in the following steps. 
+This creates the \texttt{Makefile} needed for compiling the code in the following steps.
 \item Now simply run \texttt{make -j 2}. You can also pick an integer larger than 2 if your computer has more than 2 cores available.
 \item It will take about twenty minutes to compile Baci.
 \end{itemize}
@@ -51,14 +51,14 @@ Editor}), paste the text below and press \emph{play}. If the geometry couldn't b
 
 \begin{small} \begin{verbatim}
 $***********************
-$  preliminaries     
+$  preliminaries
 $***********************
 
 reset
 set geometry engine acis
 
 $***********************
-$  create geometry     
+$  create geometry
 $***********************
 
 $ define geometric parameters
@@ -71,7 +71,7 @@ $ in cm
 # {cyl_offset = 1.0}
 
 
-$ create domain 
+$ create domain
 create vertex {-cyl_offset} {fluid_width/2.0} 0
 create vertex {-cyl_offset} {-fluid_width/2.0} 0
 create vertex {fluid_length-cyl_offset} {fluid_width/2.0} 0
@@ -117,7 +117,7 @@ imprint volume all
 merge volume all
 
 $***********************
-$ create mesh         
+$ create mesh
 $***********************
 
 # {numele_past_x = 37}
@@ -153,7 +153,7 @@ mesh surface all
 
 
 $***********************
-$ boundary conditions 
+$ boundary conditions
 $***********************
 
 reset block
@@ -175,14 +175,14 @@ nodeset 5 vertex 1 2
 nodeset 5 name "corners"
 \end{verbatim} \end{small}
 
-When Cubit version 11.0 (\texttt{/lnm/programs/cubit.11.0/cubit}) is used for 
+When Cubit version 11.0 (\texttt{/lnm/programs/cubit.11.0/cubit}) is used for
 creating geometry and mesh, you have to adapt some of the previous commands,
 since numbering of entities changed between Cubit versions!
 
 The generated mesh should look like this:
 \begin{figure}[H]
  \begin{center}
-  \includegraphics[width=0.95\textwidth]{pics/tut_fluid_mesh}   
+  \includegraphics[width=0.95\textwidth]{pics/tut_fluid_mesh}
   \caption{Mesh for a flow past a circular cylinder.}
   \label{fig:domainDecomposition}
 \end{center}
@@ -227,9 +227,7 @@ Open the previously created \head 'default.head' and edit the following entries 
  \item \verb|PROBLEM TYP|
 
  \verb|PROBLEMTYP Fluid|
- 
- \item Delete the section \verb|XFLUID DYNAMIC| including sub-sections
- 
+
  \item \verb|FLUID DYNAMIC|
 
  \verb|LINEAR_SOLVER 1|
@@ -239,7 +237,7 @@ Open the previously created \head 'default.head' and edit the following entries 
  \verb|TIMESTEP 0.01|
 
  \item \verb|SOLVER 1|
- 
+
  \verb|NAME Fluid solver|
 
  \verb|SOLVER UMFPACK|
@@ -253,7 +251,7 @@ Open the previously created \head 'default.head' and edit the following entries 
 
  insert the following line after \verb|------CURVE 1| in order to define a time curve: \\
  \verb|CURVE 1 on EXPR FUNC 0.5*(sin((t*pi/0.1)-(pi/2)))+0.5  t1 0.0 t2 0.1|
- 
+
 \end{itemize}
 Save the file under a different name of your choice.
 
@@ -262,13 +260,13 @@ Open the previously created \bc 'default.bc' and edit your boundary conditions a
 
 
  \begin{small} \begin{verbatim}
-Element Block, named: 
+Element Block, named:
 of Shape: SHELL4
 has 7058 Elements
 *eb1="ELEMENT"
 sectionname="FLUID"
 description="MAT 1 NA Euler"
-elementname="FLUID2"
+elementname="FLUID"
 
 Node Set, named: inflow
 Property Name: none
@@ -308,8 +306,8 @@ description="NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 CURVE none none none FUNCT 0 0
 Save the file under a different name of your choice.
 
 \subsection{Creating a \baci{} input file with \prexo}
-The previously created files have to be merged to a \baci{} input file in oder 
-to solve the problem. We will use \prexo for this purpose. Open a terminal 
+The previously created files have to be merged to a \baci{} input file in oder
+to solve the problem. We will use \prexo for this purpose. Open a terminal
 and execute the following command in the \texttt{build-release} folder:
 \begin{center}
   \verb|./pre_exodus --exo=/meshpath/yourmesh.e --head=/headpath/headerfile.head|
@@ -321,22 +319,22 @@ Where the filenames and their paths have to be replaced according to how you hav
 
 \subsection{Running a Simulation with \baci{}}
 \label{tut_fluid_preexo:baci}
-To start the solver use the call 
+To start the solver use the call
 \begin{center}
 	\verb|./baci-release [inputdirectory]/datfile.dat [outputdirectory]/outputprefix|
 \end{center}
-in the \texttt{build-release} folder. You may have to adapt the name of the executable 
-in this command. The prefix that you have chosen before will 
+in the \texttt{build-release} folder. You may have to adapt the name of the executable
+in this command. The prefix that you have chosen before will
 be applied to all output files that \baci{} generates.
 
 
 \section{Postprocessing}
 
-You can postprocess your results with any vizualization software you like. In this tutorial, we choose \emph{Paraview}. 
+You can postprocess your results with any vizualization software you like. In this tutorial, we choose \emph{Paraview}.
 
 \subsection{Filtering result data}
 \begin{itemize}
-\item Before you can admire your results, you have to generate a filter 
+\item Before you can admire your results, you have to generate a filter
 which converts the generic binary \baci{} output to the desired format.
 Starting from the \texttt{build-release} directory, execute \texttt{make post\_drt\_ensight}.
 \item The filter should now be available in the \texttt{build-release} folder. Filter your results with the following call inside the \texttt{build-release} folder:
@@ -371,7 +369,7 @@ for 64-bit systems that should have installed Paraview locally.
 
 \begin{figure}[H]
  \begin{center}
-  \includegraphics[width=0.95\textwidth]{pics/tut_fluid_xvel.png}   
+  \includegraphics[width=0.95\textwidth]{pics/tut_fluid_xvel.png}
   \caption{$X$-velocity for a flow past a circular cylinder}
   \label{fig:FlowPastCylinder_x-velocity}
 \end{center}

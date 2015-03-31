@@ -11,7 +11,7 @@ has 9417816 Elements
 '*eb0="ELEMENT"'
 sectionname="FLUID"
 description="MAT 1 NA Euler GP_TET 4 GP_ALT standard"
-elementname="FLUID3" 
+elementname="FLUID" 
 
 Element Block, named: 
 of Shape: HEX8
@@ -38,7 +38,7 @@ has 7058 Elements
 *eb1="ELEMENT"
 sectionname="FLUID"
 description="MAT 1 NA Euler"
-elementname="FLUID2"
+elementname="FLUID"
 
 Node Set, named: inflow
 Property Name: none

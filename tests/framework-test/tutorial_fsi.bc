@@ -14,7 +14,7 @@ has 1152 Elements
 *eb2="ELEMENT"
 sectionname="FLUID"
 description="MAT 1 NA ALE"
-elementname="FLUID2"
+elementname="FLUID"
 
 Node Set, named: structure_clamping_curves
 Property Name: none
