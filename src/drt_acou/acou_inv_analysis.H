@@ -142,6 +142,7 @@ private:
   double ls_c_;        //! parameter for calculation of sufficient decrease condition
   double ls_rho_;      //! step length reduction given by this parameter
   double ls_gd_scal_;  //! factor for line search step length scaling
+  bool backprojection_;//! flag if material should be estimated with backprojection
 
   //! flag whether we want to do check for the gradient as convergence criteria
   bool calcacougrad_;
@@ -159,6 +160,11 @@ private:
 
   //! list of observed node gids
   std::vector<int>     nodes_;
+  std::vector<std::vector<double> >     meascoords_;
+  Epetra_SerialDenseVector mcurve_;
+  Epetra_SerialDenseVector nod_curve_interpol_;
+  std::vector<double>  timesteps_;
+  int count_;
 
   //! solution of the acoustical adjoint problem at initial step (so to say last step of the backward time integration)
   Teuchos::RCP<Epetra_Vector> adjoint_phi_0_;
@@ -224,13 +230,29 @@ private:
   //! Read in measured values from the monitor file
   void ReadMonitor(std::string monitorfilename);
 
+  //! Calculate the distance between mics and nods in x,y,z
+  double Delta(double coord_M_x,double coord_M_y, double coord_M_z, double coord_N_x,double coord_N_y, double coord_N_z);
+
+  //! Write the interpolated data
+  void Interpol(const double nod_coords[3],std::vector<std::vector<double> > mic_coords, unsigned int mic_1, unsigned int mic_2, int nmic, unsigned int nod, int timesteps, Epetra_SerialDenseVector& curve, Epetra_SerialDenseVector& inter_curve);
+
+  //! Calculate epsilon individually
+  double GetEpsilon(int nnodes);
+
+  //! Estimate the mu values of each element via back-projection
+  void EstimateMua();
+
   //! Compute node based vectors
   void ComputeNodeBasedVectors();
 
   //! The underlying subproblems
   //@{
-  //! Solve the standard problem
-  void SolveStandardProblem();
+
+  //! optical forward problem
+  void SolveStandardProblemScatra();
+
+  //! acoustical forward problem
+  void SolveStandardProblemAcou();
 
   //! Calculate the value of the objective function (after solving the forward problem)
   void CalculateObjectiveFunctionValue();

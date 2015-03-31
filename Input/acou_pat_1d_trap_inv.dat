@@ -46,6 +46,7 @@ INV_TOL_GRAD_YN                 No
 INV_LS_MAX_RUN                  3
 OPTIMIZATION                    LBFGS
 ELE_SCALING                     No
+BACKPROJECTION                  No
 LS_STEPLENGTHRED                0.5
 -------------------------------------------------------STAT INVERSE ANALYSIS
 PARAMLIST                       2 REAC

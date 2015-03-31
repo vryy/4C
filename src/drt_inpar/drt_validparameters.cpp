@@ -8071,6 +8071,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("INV_LS_MAX_RUN",10,"Maximal run number for line search in inverse pat analysis",&acou_inv);
   DoubleParameter("LS_DECREASECOND",0.0,"coefficient for calculation of sufficient decrease condition",&acou_inv);
   DoubleParameter("LS_STEPLENGTHRED",0.5,"step length is multiplied by this value if line search not yet sufficient",&acou_inv);
+  DoubleParameter("EPSILON",-1.0,"tolerated distance in which measured curve=nod curve",&acou_inv);
+  BoolParameter("BACKPROJECTION","No","PreEstimation of material parameters with back projection",&acou_inv);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& nlnsol = list->sublist("NONLINEAR SOLVER", false, "Configuration of nonlinear solver package");

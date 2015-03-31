@@ -78,6 +78,7 @@ ACOU::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> scatradis,
     ls_c_(acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<double>("LS_DECREASECOND")),
     ls_rho_(acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<double>("LS_STEPLENGTHRED")),
     ls_gd_scal_(1.0),
+    backprojection_(DRT::INPUT::IntegralValue<bool>(acouparams_->sublist("PA IMAGE RECONSTRUCTION"),("BACKPROJECTION"))),
     calcacougrad_(DRT::INPUT::IntegralValue<bool>(acouparams_->sublist("PA IMAGE RECONSTRUCTION"),("INV_TOL_GRAD_YN"))),
     scalegradele_(DRT::INPUT::IntegralValue<bool>(acouparams_->sublist("PA IMAGE RECONSTRUCTION"),("ELE_SCALING"))),
     normgrad_(1.0e6),
@@ -190,8 +191,13 @@ void ACOU::InvAnalysis::ReadMonitor(std::string monitorfilename)
   acou_discret_->GetCondition(condname,pressuremon);
   if(pressuremon.size()==0)
     dserror("you have to use pressure monitor conditions for inverse analysis!");
-  const std::vector<int> pressuremonnodes = *(pressuremon[0]->Nodes());
-  std::vector<int> pressuremonnodesunique;
+  const std::vector<int> pressuremonmics = *(pressuremon[0]->Nodes());
+  std::vector<int> pressuremonmicsunique;
+
+  nodes_.resize(pressuremonmics.size());
+  for(unsigned int i=0; i<pressuremonmics.size(); ++i)
+    nodes_[i] = pressuremonmics[i];
+
 
   // create unique map
   acou_discret_->Comm().Barrier();
@@ -199,12 +205,12 @@ void ACOU::InvAnalysis::ReadMonitor(std::string monitorfilename)
   {
     if(acou_discret_->Comm().MyPID() == i)
     {
-      for(unsigned int j=0; j<pressuremonnodes.size(); ++j)
+      for(unsigned int j=0; j<pressuremonmics.size(); ++j)
       {
-        if(acou_discret_->HaveGlobalNode(pressuremonnodes[j]))
+        if(acou_discret_->HaveGlobalNode(pressuremonmics[j]))
         {
-          if(acou_discret_->gNode(pressuremonnodes[j])->Owner()==int(i))
-            pressuremonnodesunique.push_back(pressuremonnodes[j]);
+          if(acou_discret_->gNode(pressuremonmics[j])->Owner()==int(i))
+            pressuremonmicsunique.push_back(pressuremonmics[j]);
         }
       }
     }
@@ -212,9 +218,8 @@ void ACOU::InvAnalysis::ReadMonitor(std::string monitorfilename)
   }
   acou_discret_->Comm().Barrier();
 
-
-//abcnodes_map_ = Teuchos::rcp(new Epetra_Map(-1, abcnodes.size(), &abcnodes[0], 0, acou_discret_->Comm()));
-  abcnodes_map_ = Teuchos::rcp(new Epetra_Map(-1, pressuremonnodesunique.size(), &pressuremonnodesunique[0], 0, acou_discret_->Comm()));
+  //abcnodes_map_ = Teuchos::rcp(new Epetra_Map(-1, abcnodes.size(), &abcnodes[0], 0, acou_discret_->Comm()));
+  abcnodes_map_ = Teuchos::rcp(new Epetra_Map(-1, pressuremonmicsunique.size(), &pressuremonmicsunique[0], 0, acou_discret_->Comm()));
   abcnodes_mapex_ = Teuchos::rcp(new LINALG::MapExtractor(*(acou_discret_->NodeRowMap()),abcnodes_map_,true));
 
   // determine the number of vectors for monitoring
@@ -229,12 +234,10 @@ void ACOU::InvAnalysis::ReadMonitor(std::string monitorfilename)
   acou_rhsm_ = Teuchos::rcp(new Epetra_MultiVector(*abcnodes_map_,numvec+1,true));
 
   unsigned int nsteps = 0;
-  Epetra_SerialDenseVector mcurve;
-  std::vector<double>  timesteps;
 
   // get measured values
   // open monitor file and read it
-  unsigned int nnodes = 0;
+  unsigned int nmics = 0;
   {
     char* foundit = NULL;
 
@@ -256,29 +259,30 @@ void ACOU::InvAnalysis::ReadMonitor(std::string monitorfilename)
 
     char buffer[150000];
     fgets(buffer,150000,file);
+
     // read steps
     foundit = strstr(buffer,"steps"); foundit += strlen("steps");
     nsteps = strtol(foundit,&foundit,10);
-    timesteps.resize(nsteps);
-    // read nnodes
-    foundit = strstr(buffer,"nnodes"); foundit += strlen("nnodes");
-    nnodes = strtol(foundit,&foundit,10);
-    // read nodes
-    nodes_.resize(nnodes);
-    for (unsigned int i=0; i<nnodes; ++i)
+    timesteps_.resize(nsteps);
+
+    // read mics
+    foundit = strstr(buffer,"mics"); foundit += strlen("mics");
+    nmics = strtol(foundit,&foundit,10);
+
+    // read measurement coordinates for every microphone
+    meascoords_.resize(nmics);
+    for (unsigned int i=0; i<nmics; ++i)
     {
+      meascoords_[i].resize(3);
       fgets(buffer,150000,file);
       foundit = buffer;
-      nodes_[i] = strtol(foundit,&foundit,10) - 1;
-
-      //if (!myrank_) printf("Monitored node %d ",nodes_[i]);
-      //if (!myrank_) printf("\n");
+      for(int j=0; j<3; ++j)
+        meascoords_[i][j] = strtod(foundit,&foundit);
     }
+
     // read in measured curve
     {
-      mcurve = Epetra_SerialDenseVector(nnodes*nsteps);
-
-      //if (!myrank_) printf("nsteps %d nnode %d\n",nsteps_,nnodes);
+      mcurve_ = Epetra_SerialDenseVector(nmics*nsteps);
 
       // read comment lines
       foundit = buffer;
@@ -291,57 +295,113 @@ void ACOU::InvAnalysis::ReadMonitor(std::string monitorfilename)
       for (unsigned int i=0; i<nsteps; ++i)
       {
         // read the time step
-        timesteps[i] = strtod(foundit,&foundit);
-        for (unsigned int j=0; j<nnodes; ++j)
-          mcurve[count++] = strtod(foundit,&foundit);
+        timesteps_[i] = strtod(foundit,&foundit);
+        for (unsigned int j=0; j<nmics; ++j)
+          mcurve_[count++] = strtod(foundit,&foundit);
         fgets(buffer,150000,file);
         foundit = buffer;
       }
-      if (count != nnodes*nsteps) dserror("Number of measured pressure values wrong on input");
+      if (count != nmics*nsteps) dserror("Number of measured pressure values wrong on input");
+    }
+  }
+
+  // Interpolation
+  // vector for the interpolated data
+  nod_curve_interpol_=Epetra_SerialDenseVector(pressuremonmicsunique.size()*nsteps);
+
+  if((pressuremonmicsunique.size())!=0)
+  {
+    unsigned int i=0, j=0, l=0;
+    unsigned int must_set_curve=1;
+    double help;
+    double distance[nmics];
+    double epsilon = acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<double>("EPSILON");
+
+    //if the user doesn't want to give an espilon as input, we'll calculate it individually
+    if(epsilon==-1.0)
+      epsilon=GetEpsilon(pressuremonmicsunique.size());
+
+    //interpolation-loop for every single nod
+    for (i=0; i<pressuremonmicsunique.size(); ++i)
+    {
+      const double* nod_coords = acou_discret_->gNode(pressuremonmicsunique[i])->X();
+      unsigned int M_1=0, M_2=0;
+
+      for(j=0;j<nmics;j++)
+      {
+        distance[j] = Delta(meascoords_[j][0],meascoords_[j][1],meascoords_[j][2],nod_coords[0],nod_coords[1],nod_coords[2]);
+        // if the nod is in an epsilon bubble of any of the microphones, the measured curve of this microphone and the nod's curve should be equal
+        if(distance[j]<=epsilon)
+        {
+          for(l=0;l<nsteps;l++)
+            nod_curve_interpol_[i*nsteps+l]=mcurve_[j+l*nmics];
+          must_set_curve=0;
+        }
+      }
+
+      // finds those two microphones, that are the nearest ones to the actual nod
+      if(must_set_curve)
+      {
+        help=distance[0];
+        for(j=0;j<nmics;j++)
+        {
+          if(distance[j]<help)
+          {
+            help=distance[j];
+            M_1=j;
+          }
+        }
+        if((M_1+1)==nmics)
+        {
+          help=distance[M_1-1];
+          M_2=M_1-1;
+        }
+        else
+        {
+          help=distance[M_1+1];
+          M_2=M_1+1;
+        }
+        for(j=0;j<nmics;j++)
+        {
+          if(j==M_1)
+            ++j;
+          if(distance[j]<help&&j<nmics)
+          {
+            help=distance[j];
+            M_2=j;
+          }
+        }
+        Interpol(nod_coords,meascoords_, M_1,M_2, nmics,i, nsteps, mcurve_,nod_curve_interpol_);
+      }
     }
   }
 
   double eps = dtacou_/1000.0;
-  if((numvec-1)*dtacou_>timesteps[nsteps-1]+eps) dserror("You want to simulate till %.15f but your monitor file only provides values till %.15f! Fix it!",(numvec-1)*dtacou_,timesteps[nsteps-1]);
-  if (nnodes != pressuremonnodes.size()) dserror("Given number of nodes in boundary condition and monitor file don't match!");
-  if (nodes_ != pressuremonnodes) dserror("And please provide the correct order (feel free to reimplement)");
+  if((numvec-1)*dtacou_>timesteps_[nsteps-1]+eps) dserror("You want to simulate till %.15f but your monitor file only provides values till %.15f! Fix it!",(numvec-1)*dtacou_,timesteps_[nsteps-1]);
 
-//  for(int i=0; i<acou_discret_->Comm().NumProc(); ++i)
-//  {
-//    acou_discret_->Comm().Barrier();
-//    if(i == acou_discret_->Comm().MyPID())
-//    {
-//      std::cout<<"mypid "<<acou_discret_->Comm().MyPID()<<std::endl;
-//      mcurve.Print(std::cout);std::cout<<std::endl;
-//    }
-//    acou_discret_->Comm().Barrier();
-//  }
 
   // every proc knows mcurve, now, we want to write mcurve to a Epetra_MultiVector in the same form as acou_rhs_
   // with the same parallel distribution!
   // and we want to interpolate measured values in case the monitored time step size is not the same as the one for the simulation
   acou_rhsm_->PutScalar(0.0);
-  if( timesteps[0] != 0.0 )
+  if( timesteps_[0] != 0.0 )
     dserror("your measured values have to start at time 0.0");
-  else if( timesteps[0] == 0.0 && timesteps[1] == dtacou_ ) // the standard case
-    for(unsigned int i=0; i<nnodes; ++i)
-    {
-      if( acou_discret_->HaveGlobalNode(nodes_[i]) )
+  else if( timesteps_[0] == 0.0 && timesteps_[1] == dtacou_ ) // the standard case
+    for(unsigned int i=0; i<pressuremonmicsunique.size(); ++i)
+      if( acou_discret_->HaveGlobalNode(pressuremonmicsunique[i]) )
         for(unsigned int j=0; j<nsteps; ++j)
-          acou_rhsm_->ReplaceGlobalValue(nodes_[i],j,mcurve(i+j*nnodes)); // the proc who has this row, writes the value
-    }
+          acou_rhsm_->ReplaceGlobalValue(pressuremonmicsunique[i],j,nod_curve_interpol_(i*nsteps+j)); // the proc who has this row, writes the value
   else // we have to interpolate!
   {
     if( numvec < int(nsteps) )
     {
-      dserror("set your time step size smaller, at least to %14f or implement here",timesteps[1]-timesteps[0]);
+      dserror("set your time step size smaller, at least to %14f or implement here",timesteps_[1]-timesteps_[0]);
     }
     else
     {
-
-      for(unsigned int i=0; i<nnodes; ++i)
+      for(unsigned int i=0; i<pressuremonmicsunique.size(); ++i)
       {
-        if( acou_discret_->HaveGlobalNode(nodes_[i]) )
+        if( acou_discret_->HaveGlobalNode(pressuremonmicsunique[i]) )
         {
           for(int j=0; j<numvec; ++j)
           {
@@ -349,7 +409,7 @@ void ACOU::InvAnalysis::ReadMonitor(std::string monitorfilename)
             int timeval = 0;
 
             // find next higher and next lower value
-            while(actualt>timesteps[timeval]-eps)
+            while(actualt>timesteps_[timeval]-eps)
             {
               timeval++;
             }
@@ -358,15 +418,15 @@ void ACOU::InvAnalysis::ReadMonitor(std::string monitorfilename)
             // now interpolate from this and the value before
             if(timeval == 0)
             {
-              acou_rhsm_->ReplaceGlobalValue(nodes_[i],j,0.0);
+              acou_rhsm_->ReplaceGlobalValue(pressuremonmicsunique[i],j,0.0);
             }
-            else if(actualt<timesteps[timeval]+eps && actualt>timesteps[timeval]-eps) // then this is more or less it
+            else if(actualt<timesteps_[timeval]+eps && actualt>timesteps_[timeval]-eps) // then this is more or less it
             {
-              acou_rhsm_->ReplaceGlobalValue(nodes_[i],j,mcurve(i+timeval*nnodes));
+              acou_rhsm_->ReplaceGlobalValue(pressuremonmicsunique[i],j,nod_curve_interpol_(i*nsteps+timeval));
             }
             else
             {
-              double value = mcurve(i+(timeval-1)*nnodes) + (mcurve(i+(timeval)*nnodes)-mcurve(i+(timeval-1)*nnodes)) * (actualt - timesteps[timeval-1]) / (timesteps[timeval]-timesteps[timeval-1]);
+              double value = nod_curve_interpol_(i*nsteps+(timeval-1)) + (nod_curve_interpol_(i+(timeval)*nmics)-nod_curve_interpol_(i*nsteps+(timeval-1))) * (actualt - timesteps_[timeval-1]) / (timesteps_[timeval]-timesteps_[timeval-1]);
               acou_rhsm_->ReplaceGlobalValue(nodes_[i],j,value);
             }
           } // for(int j=0; j<numvec; ++j)
@@ -378,6 +438,73 @@ void ACOU::InvAnalysis::ReadMonitor(std::string monitorfilename)
 
   return;
 } // void ACOU::InvAnalysis::ReadMonitor(...)
+
+/*----------------------------------------------------------------------*/
+double ACOU::InvAnalysis::Delta(double coord_M_x,double coord_M_y, double coord_M_z, double coord_N_x,double coord_N_y, double coord_N_z)
+{
+  double distance = sqrt((coord_M_x-coord_N_x)*(coord_M_x-coord_N_x)+(coord_M_y-coord_N_y)*(coord_M_y-coord_N_y)+(coord_M_z-coord_N_z)*(coord_M_z-coord_N_z));
+  return distance;
+}
+
+/*----------------------------------------------------------------------*/
+void ACOU::InvAnalysis::Interpol(const double nod_coords[3],std::vector<std::vector<double> > mic_coords, unsigned int mic_1, unsigned int mic_2, int nmic, unsigned int nod, int timesteps_, Epetra_SerialDenseVector& curve, Epetra_SerialDenseVector& inter_curve)
+{
+  double d1;
+  double D1;
+  double d2;
+  double D2;
+
+  d1=Delta(mic_coords[mic_1][0],mic_coords[mic_1][1],mic_coords[mic_1][2],nod_coords[0],nod_coords[1],nod_coords[2]);
+  d2=Delta(mic_coords[mic_2][0],mic_coords[mic_2][1],mic_coords[mic_2][2],nod_coords[0],nod_coords[1],nod_coords[2]);
+  D2=d2/(d1+d2);
+  D1=d1/(d1+d2);
+
+  for(int i=0;i<timesteps_;i++)
+  {
+  inter_curve[nod*timesteps_+i]=D2*curve[mic_1+i*nmic]+D1*curve[mic_2+i*nmic];
+  }
+}
+
+/*----------------------------------------------------------------------*/
+double ACOU::InvAnalysis::GetEpsilon(int nnodes)
+{
+  double min_dis[nnodes];
+  double dist;
+  double min_abs;
+  double eps;
+
+  //creates a vector which contains the distance of every nod to its nearest neighbor
+  for(int i=0;i<abcnodes_map_->NumMyElements();i++)
+  {
+    const double* nc= acou_discret_->gNode(abcnodes_map_->GID(i))->X();//acou_discret_->gNode(nodes_[i])->X();
+    int iter=0;
+    for(int j=0; j<nnodes; j++)
+    {
+      if(j==i)
+        j++;
+      if(j==nnodes)
+        break;
+      const double* ncc=acou_discret_->gNode(abcnodes_map_->GID(j))->X();
+      dist = sqrt((nc[0]-ncc[0])*(nc[0]-ncc[0])+(nc[1]-ncc[1])*(nc[1]-ncc[1])+(nc[2]-ncc[2])*(nc[2]-ncc[2]));
+      if(iter==0)
+        min_dis[i]=dist;
+      else if(dist<min_dis[i])
+        min_dis[i]=dist;
+      ++iter;
+    }
+  }
+
+  //searches for the (absolute) smallest distance
+  min_abs = min_dis[0];
+  for(int i=0; i<nnodes; i++)
+    if(min_abs>min_dis[i])
+      min_abs=min_dis[i];
+
+
+  eps = min_abs/100.0;
+
+  return eps;
+}
 
 /*----------------------------------------------------------------------*/
 void ACOU::InvAnalysis::ComputeNodeBasedVectors()
@@ -438,7 +565,20 @@ void ACOU::InvAnalysis::ComputeNodeBasedVectors()
 void ACOU::InvAnalysis::Integrate()
 {
   // Solve the standard problem
-  SolveStandardProblem();
+  count_=0;
+  // Estimate values for mu_a
+  if(backprojection_)
+    EstimateMua();
+
+  // Solve the standard problem
+  SolveStandardProblemScatra();
+
+  if(backprojection_)
+  {
+    EstimateMua();
+    SolveStandardProblemScatra(); //to output the actual distribution
+  }
+  SolveStandardProblemAcou();
 
   bool success = true;
 
@@ -520,7 +660,7 @@ void ACOU::InvAnalysis::Integrate()
 } // void ACOU::InvAnalysis::Integrate()
 
 /*----------------------------------------------------------------------*/
-void ACOU::InvAnalysis::SolveStandardProblem()
+void ACOU::InvAnalysis::SolveStandardProblemScatra()
 {
   // create scatra algorithm
   const INPAR::SCATRA::VelocityField veltype = DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(scatraparams_,"VELOCITYFIELD");
@@ -586,6 +726,11 @@ void ACOU::InvAnalysis::SolveStandardProblem()
       dserror("unknown velocity field type for transport of passive scalar in problem type Acoustics");
       break;
   }
+  return;
+}
+
+void ACOU::InvAnalysis::SolveStandardProblemAcou()
+{
   bool meshconform = DRT::INPUT::IntegralValue<bool>(*acouparams_,"MESHCONFORM");
 
   acouparams_->set<bool>("adjoint",false);
@@ -633,19 +778,43 @@ void ACOU::InvAnalysis::SolveStandardProblem()
 
   double norminf = 0.0;
   matman_->GetMatParams()->NormInf(&norminf);
-  if(norminf>1.0e-5) // we do not have to solve when the maximum reaction coefficient is zero, just a waste of time!
+  if(norminf>1.0e-9) // we do not have to solve when the maximum reaction coefficient is zero, just a waste of time!
     acoualgo_->Integrate(acou_rhs_,abcnodes_mapex_);
 
-//    if(iter_==0 && output_count_<3) // do you want this output?
+    //if(iter_==0 && output_count_<3) // do you want this output?
 //    {
-//      std::cout<<"measured values"<<std::endl;
+//      //std::cout<<"measured values"<<std::endl;
 //      std::cout.precision(15);
 //      for(int j=0; j<acou_rhs_->NumVectors(); ++j)
 //      {
-//        std::cout<<dtacou_*double(j)<<" ";
+//        //std::cout<<"j "<<j<<" myrank "<<myrank_<<std::endl;
+//        acou_discret_->Comm().Barrier();
+//        if(myrank_==0)
+//        {
+//          std::cout<<dtacou_*double(j)<<" ";
+//          std::cout<<flush;
+//        }
+//        //std::cout<<"j "<<j<<" myrank "<<myrank_<<" numglobalelements "<<acou_rhs_->Map().NumGlobalElements()<<std::endl;
 //        for(int i=0; i<acou_rhs_->Map().NumGlobalElements(); ++i)
-//          std::cout<<" "<<acou_rhs_->operator ()(j)->operator [](i);
-//        std::cout<<std::endl;
+//        {
+//          //std::cout<<"j "<<j<<" i "<<i<<" myrank "<<myrank_<<" lid "<<acou_rhs_->Map().LID(nodes_[i])<<std::endl;
+//          acou_discret_->Comm().Barrier();
+//          usleep(500);
+//          if(acou_rhs_->Map().LID(nodes_[i])>=0)
+//          {
+//            std::cout<<" "<<acou_rhs_->operator ()(j)->operator [](i);
+//            std::cout<<flush;
+//          }
+//        }
+//        acou_discret_->Comm().Barrier();
+//        usleep(500);
+//        if(myrank_==0)
+//        {
+//          std::cout<<std::endl;
+//          std::cout<<flush;
+//        }
+//        acou_discret_->Comm().Barrier();
+//        usleep(500);
 //      }
 //    }
 
@@ -1186,7 +1355,9 @@ void ACOU::InvAnalysis::FD_GradientCheck()
       perturb->Print(std::cout);
       matman_->ReplaceParams(*perturb);
 
-      SolveStandardProblem();
+      SolveStandardProblemScatra();
+      SolveStandardProblemAcou();
+
       perturb->Update(1.0,*pcurr,0.0);
 
       CalculateObjectiveFunctionValue();
@@ -1225,7 +1396,11 @@ bool ACOU::InvAnalysis::UpdateParameters()
   if(iter_==0 || opti_ == INPAR::ACOU::inv_gd) // in the first iteration the lbfgs does not know how long the step should be, gradient descent should always do scaled step length
     d_->Scale(1.0/normgrad0_*double(objgrad_->Map().NumGlobalElements()));
 
-  std::cout<<"search direction "<<std::endl;d_->Print(std::cout);
+  if(d_->GlobalLength()<30)
+  {
+    std::cout<<"search direction "<<std::endl;
+    d_->Print(std::cout);
+  }
   bool success = LineSearch();
 
   if (success == false && opti_ == INPAR::ACOU::inv_lbfgs && iter_ != 0)
@@ -1368,7 +1543,9 @@ bool ACOU::InvAnalysis::LineSearch()
     step_->Update(alpha,*d_,0.0);
     matman_->UpdateParams(step_);
 
-    SolveStandardProblem();
+    SolveStandardProblemScatra();
+    SolveStandardProblemAcou();
+
     CalculateObjectiveFunctionValue();
     if( J_ < condition )
     {
@@ -1422,7 +1599,8 @@ void ACOU::InvAnalysis::OutputStats()
     std::cout<<"*** simulation time since start           "<<Teuchos::Time::wallTime()-tstart_<<std::endl;
     std::cout<<"*** parameters:                           "<<std::endl;
   }
-  matman_->GetParams()->Print(std::cout);
+  if(matman_->GetParams()->GlobalLength()<30)
+    matman_->GetParams()->Print(std::cout);
 
   return;
 } // void ACOU::InvAnalysis::OutputStats()
@@ -1455,3 +1633,284 @@ Teuchos::RCP<DRT::ResultTest> ACOU::InvAnalysis::CreateFieldTest()
 {
   return Teuchos::rcp(new AcouInvResultTest(*this));
 } // Teuchos::RCP<DRT::ResultTest> ACOU::InvAnalysis::CreateFieldTest()
+
+/*----------------------------------------------------------------------*/
+void ACOU::InvAnalysis::EstimateMua()
+{
+  // backprojection-algorithm
+
+  // create unique map
+  std::vector<int> pressuremonmicsunique;
+  acou_discret_->Comm().Barrier();
+  for(int i=0; i<acou_discret_->Comm().NumProc(); ++i)
+  {
+    if(acou_discret_->Comm().MyPID() == i)
+    {
+      for(unsigned int j=0; j<nodes_.size(); ++j)
+      {
+        if(acou_discret_->HaveGlobalNode(nodes_[j]))
+        {
+          if(acou_discret_->gNode(nodes_[j])->Owner()==int(i))
+            pressuremonmicsunique.push_back(nodes_[j]);
+        }
+      }
+    }
+    acou_discret_->Comm().Barrier();
+  }
+  acou_discret_->Comm().Barrier();
+
+  //*************************************************************************
+  // Calculate middle point of monitor line
+
+  // load number of nods in the circle around the measurement geometry
+  int N=0;
+  N=pressuremonmicsunique.size();
+  double middlepoint[3];
+  double nod_coords[N][3];
+  for(int nd=0;nd<N;++nd)
+  {
+    const double* nod_coords_help = acou_discret_->gNode(pressuremonmicsunique[nd])->X();
+    nod_coords[nd][0]=nod_coords_help[0];
+    nod_coords[nd][1]=nod_coords_help[1];
+    nod_coords[nd][2]=nod_coords_help[2];
+  }
+
+
+  LINALG::FixedSizeSerialDenseSolver<3,3,1> inverseCoeff;
+  LINALG::Matrix<3,1> RHS(true);
+  LINALG::Matrix<3,3> LHS(true);
+
+  if(N>3)
+  {
+    for(unsigned int i=0;i<3;++i)
+    {
+      int m=abs((N/3)*(i+1)-1);
+      LHS(i,0)=1;
+      LHS(i,1)= -nod_coords[m][0];
+      LHS(i,2)= -nod_coords[m][1];
+      RHS(i,0)=-(nod_coords[m][0]*nod_coords[m][0]+nod_coords[m][1]*nod_coords[m][1]);
+    }
+    inverseCoeff.SetMatrix(LHS);
+    inverseCoeff.SetVectors(RHS,RHS);
+    int err = inverseCoeff.Solve();
+    if(err != 0) dserror("Inversion of matrix in light evaluation failed with error-code %d",err);
+    //std::cout<<"Der Mittelpunkt liegt bei x= "<<RHS(1,0)/2<<" und bei y= "<<RHS(2,0)/2<<std::endl;
+
+    middlepoint[0]=RHS(1,0)/2;
+    middlepoint[1]=RHS(2,0)/2;
+    middlepoint[2]=0.0;
+  }
+
+  double gmiddlepoint[3];
+  int procnum =acou_discret_->Comm().NumProc();
+  scatra_discret_->Comm().SumAll(&middlepoint[0],&gmiddlepoint[0],1);
+  scatra_discret_->Comm().SumAll(&middlepoint[1],&gmiddlepoint[1],1);
+  gmiddlepoint[0]=gmiddlepoint[0]/procnum;
+  gmiddlepoint[1]=gmiddlepoint[1]/procnum;
+  gmiddlepoint[2]=0;
+  for(int check=0;check<1;check++)
+  {
+    if(fabs(gmiddlepoint[check]-middlepoint[check])>(1e-10))
+      dserror("Error: Your monitor-line-geometry is not a circle, backprojection only works with circles in 2D");
+  }
+
+  //***********************************************************************
+
+  // occupied area of a detector
+  double deltaS=1.0;
+  // speed of sound in water
+  double c=1484.0;
+  // Grueneisen-parameter
+  double gamma=1.0;
+  double phi[scatra_discret_->NumMyRowElements()];
+
+  //***********************************************************************
+  // phi-correction:
+
+  if(count_)
+  {
+    for(int a=0;a<scatra_discret_->NumMyRowElements();a++)
+    {
+      DRT::Element* myElement=scatra_discret_->lRowElement(a);
+      std::vector<int> eledofs(myElement->NumNode());
+      DRT::Node** nodes = myElement->Nodes();
+
+      for(int nd=0; nd<myElement->NumNode();++nd)
+        eledofs[nd]=scatra_discret_->DofRowMap()->LID(scatra_discret_->Dof(nodes[nd])[0]);
+
+      double phiK[myElement->NumNode()];
+      int c=0;
+      for(unsigned int i=0;i<eledofs.size();i++)
+      {
+        if(eledofs[i]<0)
+        {
+          c++;
+          phiK[i]=0;
+        }
+        if(eledofs[i]>=0)
+          phiK[i]=phi_->operator[](eledofs[i]);
+      }
+      double help=0.0;
+      for(int j=0;j<myElement->NumNode();j++)
+        help=help+phiK[j];
+
+      phi[a]=help/(myElement->NumNode()-c);
+    }
+  }
+  else
+  {
+    for(int j=0;j<scatra_discret_->NumMyRowElements();j++)
+      phi[j]=1.0;
+  }
+  //******************************************************************
+
+  double r_e[3]={0.0,0.0,0.0};
+  int mingid=scatra_discret_->ElementRowMap()->MinAllGID();
+  for(int e=0; e<scatra_discret_->NumGlobalElements(); ++e)
+  {
+    DRT::Element* optele = NULL;
+    int myopteleowner = -1;
+    int opteleowner = -1;
+    if(scatra_discret_->HaveGlobalElement(e+mingid))
+    {
+      double x_sum=0.0;
+      double y_sum=0.0;
+      double z_sum=0.0;
+      myopteleowner = scatra_discret_->Comm().MyPID();
+      optele = scatra_discret_->gElement(e+mingid);
+      //load r_e (element middle-pointing vector)
+      //load the nod IDs of the analyzed element
+      const int* nodeids = optele->NodeIds();
+      int numnode = optele->NumNode();
+
+      //load the coordinates of every nod for the current element
+      for(int loc_pos=0;loc_pos<numnode;loc_pos++)
+      {
+        const double* nodcoords = scatra_discret_->gNode(nodeids[loc_pos])->X();
+        x_sum=x_sum+nodcoords[0];
+        y_sum=y_sum+nodcoords[1];
+        z_sum=z_sum+nodcoords[2];
+      }
+
+      //create the element's middle-pointing vector by building an average of coord's sums
+      r_e[0]=x_sum/numnode;
+      r_e[1]=y_sum/numnode;
+      r_e[2]=z_sum/numnode;
+    }
+    scatra_discret_->Comm().MaxAll(&myopteleowner,&opteleowner,1);
+    scatra_discret_->Comm().Broadcast(r_e,3,opteleowner);
+
+
+    // every proc calculates its contribution to the sums
+    //----------------------------------------------------------------------------------------------
+    // build normal on measurement surface
+    double normal[N][3];
+    for(int i=0;i<N;++i)
+    {
+      double f=nod_coords[i][0]-gmiddlepoint[0];
+      double s=nod_coords[i][1]-gmiddlepoint[1];
+      double t=nod_coords[i][2]-gmiddlepoint[2];
+
+      double a=1/sqrt(f*f+s*s+t*t);
+      normal[i][0]=a*f;
+      normal[i][1]=a*s;
+      normal[i][2]=a*t;
+    }
+
+    //----------------------------------------------------------------------------------------------
+    // build norm and quadratic norm of (d_i-r)
+    double norm[N];
+    double quadnorm[N];
+    for(int i=0;i<N;i++)
+      norm[i]=sqrt((nod_coords[i][0]-r_e[0])*(nod_coords[i][0]-r_e[0])+(nod_coords[i][1]-r_e[1])*(nod_coords[i][1]-r_e[1])+(nod_coords[i][2]-r_e[2])*(nod_coords[i][2]-r_e[2]));
+
+    for(int i=0;i<N;i++)
+      quadnorm[i]=(nod_coords[i][0]-r_e[0])*(nod_coords[i][0]-r_e[0])+(nod_coords[i][1]-r_e[1])*(nod_coords[i][1]-r_e[1])+(nod_coords[i][2]-r_e[2])*(nod_coords[i][2]-r_e[2]);
+
+    // build scalar product of the normal and (r_e-d_i)
+    double scalar[N];
+    double difference[N][3];
+    for(int i=0;i<N;i++)
+    {
+      difference[i][0]=(-nod_coords[i][0]+r_e[0]);
+      difference[i][1]=(-nod_coords[i][1]+r_e[1]);
+      difference[i][2]=(-nod_coords[i][2]+r_e[2]);
+    }
+    for(int i=0;i<N;i++)
+      scalar[i]=difference[i][0]*normal[i][0]+difference[i][1]*normal[i][1]+difference[i][2]*normal[i][2];
+
+    //build omega_i
+    double omega[N];
+    for(int i=0;i<N;i++)
+      omega[i]=(deltaS/quadnorm[i])*(scalar[i]/norm[i]);
+
+    //build b_i
+    double b[N];
+    double p[N];
+    double tol;
+    unsigned int ts[N];
+    double calc_ts[N];
+    double derivp[N];
+
+    for(int i=0;i<N;i++)
+      calc_ts[i]=norm[i]/c;
+    int z=timesteps_.size();
+
+    // search for the corresponding time-step and pressure in the measured curve
+    for(int i=0;i<N;i++)
+    {
+      double lastone=1.0;
+      tol=timesteps_[1]-timesteps_[0];
+      for(unsigned int j=0;j<timesteps_.size();j++)
+      {
+        if((abs(timesteps_[j]-calc_ts[i])<tol)&&(abs(timesteps_[j]-calc_ts[i])<lastone))
+        {
+          p[i]=nod_curve_interpol_[z*i+j];
+          ts[i]=j;
+          lastone=abs(timesteps_[j]-calc_ts[i]);
+        }
+      }
+    }
+
+    // calculate the derivative of p via a finite difference approach
+    for(int i=0;i<N;i++)
+      derivp[i]=(-1/60*nod_curve_interpol_[(ts[i]-3)+z*i]+3/20*nod_curve_interpol_[(ts[i]-2)+z*i]-3/4*nod_curve_interpol_[(ts[i]-1)+z*i]+1/60*nod_curve_interpol_[(ts[i]+3)+z*i]-3/20*nod_curve_interpol_[(ts[i]+2)+z*i]+3/4*nod_curve_interpol_[(ts[i]+1)+z*i])/(c*(timesteps_[ts[i]]-timesteps_[ts[i]-1]));
+
+    // calculate b_i as difference of 2*p-2*t_queer*derivative(p)
+    for(int i=0;i<N;i++)
+      b[i]=2*p[i]-2*norm[i]*derivp[i];
+
+    //build sums
+    double enumerator_sum=0.0;
+    double denominator_sum=0.0;
+    for(int i=0;i<N;i++)
+    {
+      enumerator_sum=enumerator_sum+(omega[i]*b[i]);
+      denominator_sum=denominator_sum+omega[i];
+    }
+
+    double genumerator_sum=0.0;
+    double gdenominator_sum=0.0;
+
+    // sum over all processors
+    scatra_discret_->Comm().SumAll(&enumerator_sum,&genumerator_sum,1);
+    scatra_discret_->Comm().SumAll(&denominator_sum,&gdenominator_sum,1);
+
+    double mu_estimated = 0.0;
+    if(scatra_discret_->HaveGlobalElement(e+mingid))
+    {
+      int a=scatra_discret_->ElementRowMap()->LID(e+mingid);
+      if(a>=0)
+      {
+        mu_estimated=(-1.0/(gamma*phi[a]))*(genumerator_sum/gdenominator_sum);
+        step_->operator ()(0)->operator [](a) = mu_estimated;
+      }
+    }
+  }
+  matman_->ReplaceParams(*step_);
+  count_++;
+
+  return;
+}
+
+
