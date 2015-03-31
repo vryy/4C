@@ -120,6 +120,9 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   //! return elch parameter list
   Teuchos::RCP<Teuchos::ParameterList> ElchParameterList() { return elchparams_;}
 
+  //! return states of charge of resolved electrodes
+  const Teuchos::RCP<std::vector<double> >& ElectrodeSOC() const {return electrodesoc_;};
+
   //! return mean reactant concentrations at electrode boundaries
   const Teuchos::RCP<std::vector<double> >& ElectrodeConc() const {return electrodeconc_;};
 
@@ -128,6 +131,9 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
 
   //! return total electric currents at electrode boundaries
   const Teuchos::RCP<std::vector<double> >& ElectrodeCurr() const {return electrodecurr_;};
+
+  //! return cell voltage
+  const double& CellVoltage() const {return cellvoltage_;};
 
   protected:
 
@@ -285,6 +291,9 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
 
   //! total electric currents at electrode boundaries
   Teuchos::RCP<std::vector<double> > electrodecurr_;
+
+  //! cell voltage
+  double cellvoltage_;
 };
 };
 #endif

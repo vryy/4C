@@ -55,14 +55,20 @@ public:
    */
   virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
+  //! test special quantity not associated with a particular element or node
   virtual void TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
 protected:
 
-  //! get result to be tested
-  virtual const double GetResult(
+  //! get nodal result to be tested
+  const double ResultNode(
       const std::string   quantity,   //! name of quantity to be tested
       DRT::Node*          node        //! node carrying the result to be tested
+      ) const;
+
+  //! get special result to be tested
+  virtual const double ResultSpecial(
+      const std::string   quantity   //! name of quantity to be tested
       ) const;
 
 private:

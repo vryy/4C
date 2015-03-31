@@ -46,9 +46,9 @@ SCATRA::ScaTraTimIntElch::ScaTraTimIntElch(
   : ScaTraTimIntImpl(dis,solver,sctratimintparams,extraparams,output),
     elchparams_     (params),
     equpot_         (DRT::INPUT::IntegralValue<INPAR::ELCH::EquPot>(*elchparams_,"EQUPOT")),
-    frt_            (0.0),
+    frt_            (0.),
     gstatnumite_    (0),
-    gstatincrement_ (0.0),
+    gstatincrement_ (0.),
     sigma_          (Teuchos::null),
     dlcapexists_    (false),
     ektoggle_       (Teuchos::null),
@@ -56,7 +56,8 @@ SCATRA::ScaTraTimIntElch::ScaTraTimIntElch(
     electrodesoc_   (Teuchos::null),
     electrodeconc_  (Teuchos::null),
     electrodeeta_   (Teuchos::null),
-    electrodecurr_  (Teuchos::null)
+    electrodecurr_  (Teuchos::null),
+    cellvoltage_    (0.)
 {
   return;
 }
@@ -514,7 +515,7 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoBoundary()
 
   if(myrank_ == 0)
   {
-    std::cout<<"++----+---------------------+------------------+----------------------+--------------------+----------------+----------------+"<<std::endl;
+    std::cout << "++----+---------------------+------------------+----------------------+--------------------+----------------+----------------+" << std::endl << std::endl;
     // print out the net total current for all indicated boundaries
     printf("Net total current over boundary: %10.3E\n\n",sum);
   }
@@ -749,7 +750,7 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
           file.open(filename.c_str(),std::fstream::app);
 
         // write results for current electrode to file
-        file << Step() << "," << Time() << "," << std::setprecision(6) << std::fixed << soc << "," << c_rate << std::endl;
+        file << Step() << "," << Time() << "," << std::setprecision(16) << std::fixed << soc << "," << c_rate << std::endl;
 
         // close file
         file.close();
@@ -758,7 +759,7 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
 
     // print finish line to screen
     if(myrank_ == 0)
-      std::cout << "+----+-----------------+----------------+----------------+" << std::endl;
+      std::cout << "+----+-----------------+----------------+----------------+" << std::endl << std::endl;
   }
 
   return;
@@ -826,15 +827,15 @@ void SCATRA::ScaTraTimIntElch::OutputCellVoltage()
     } // loop over conditions
 
     // compute cell voltage
-    const double cellvoltage = std::abs(potentials[0]-potentials[1]);
+    cellvoltage_ = std::abs(potentials[0]-potentials[1]);
 
     // print cell voltage to screen and file
     if(myrank_ == 0)
     {
       // print cell voltage to screen
       std::cout << "+----+-------------------------+" << std::endl;
-      std::cout << "| cell voltage: " << std::setw(6) << cellvoltage << "         |" << std::endl;
-      std::cout << "+----+-------------------------+" << std::endl;
+      std::cout << "| cell voltage: " << std::setw(6) << cellvoltage_ << "         |" << std::endl;
+      std::cout << "+----+-------------------------+" << std::endl << std::endl;
 
       // set file name
       const std::string filename(DRT::Problem::Instance()->OutputControlFile()->FileName()+".cell_voltage.txt");
@@ -850,7 +851,7 @@ void SCATRA::ScaTraTimIntElch::OutputCellVoltage()
         file.open(filename.c_str(),std::fstream::app);
 
       // write results for current electrode to file
-      file << Step() << "," << Time() << "," << std::setprecision(6) << std::fixed << cellvoltage << std::endl;
+      file << Step() << "," << Time() << "," << std::setprecision(16) << std::fixed << cellvoltage_ << std::endl;
 
       // close file
       file.close();
@@ -1202,7 +1203,7 @@ void SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
         {
           // print finish line of convergence table to screen
           if (myrank_ == 0)
-            std::cout << "+------------+-------------------+--------------+--------------+" << std::endl;
+            std::cout << "+------------+-------------------+--------------+--------------+" << std::endl << std::endl;
 
           // abort Newton-Raphson iteration
           break;
@@ -1224,7 +1225,7 @@ void SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
         {
           // print finish line of convergence table to screen
           if (myrank_ == 0)
-            std::cout << "+------------+-------------------+--------------+--------------+" << std::endl;
+            std::cout << "+------------+-------------------+--------------+--------------+" << std::endl << std::endl;
 
           // abort Newton-Raphson iteration
           break;
@@ -1236,9 +1237,9 @@ void SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
       {
         if(myrank_ == 0)
         {
-          printf("+---------------------------------------------------------------+\n");
-          printf("|            >>>>>> not converged!                              |\n");
-          printf("+---------------------------------------------------------------+\n");
+          std::cout << "+---------------------------------------------------------------+" << std::endl;
+          std::cout << "|            >>>>>> not converged!                              |" << std::endl;
+          std::cout << "+---------------------------------------------------------------+" << std::endl << std::endl;
         }
 
         // abort Newton-Raphson iteration
@@ -1908,7 +1909,7 @@ inline void SCATRA::ScaTraTimIntElch::PrintConvergenceValues(
 inline void SCATRA::ScaTraTimIntElch::PrintConvergenceFinishLine()
 {
   if (myrank_ == 0)
-    std::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+------------------+" << std::endl;
+    std::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+------------------+" << std::endl << std::endl;
 
   return;
 } // SCATRA::ScaTraTimIntImpl::PrintConvergenceFinishLine

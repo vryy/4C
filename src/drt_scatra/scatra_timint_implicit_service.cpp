@@ -285,10 +285,12 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
   if((writeflux_==INPAR::SCATRA::flux_total_boundary)
       or (writeflux_==INPAR::SCATRA::flux_convective_boundary))
   {
-    if (myrank_==0)
-      std::cout<<"Convective flux contribution is added to trueresidual_ vector.\n"
-      "Be sure not to address the same boundary part twice!\n Two flux calculation boundaries "
-      "should also not share a common node!"<<std::endl;
+    if(myrank_ == 0)
+    {
+      std::cout << "Convective flux contribution is added to trueresidual_ vector." << std::endl;
+      std::cout << "Be sure not to address the same boundary part twice!" << std::endl;
+      std::cout << "Two flux calculation boundaries should also not share a common node!" << std::endl;
+    }
 
     // now we evaluate the conditions and separate via ConditionID
     for (unsigned int i=0; i < condnames.size(); i++)
@@ -333,9 +335,9 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
 
     if (myrank_ == 0)
     {
-      std::cout<<"Normal fluxes at boundary '"<<condnames[i]<<"':\n"
-      <<"+----+-----+-------------------------+------------------+--------------------------+"<<std::endl;
-      printf("| ID | DOF | Integral of normal flux | Area of boundary | Mean normal flux density |\n");
+      std::cout << "Normal fluxes at boundary '" << condnames[i] << "':" << std::endl;
+      std::cout <<"+----+-----+-------------------------+------------------+--------------------------+" << std::endl;
+      std::cout << "| ID | DOF | Integral of normal flux | Area of boundary | Mean normal flux density |" << std::endl;
     }
 
     // first, add to all conditions of interest a ConditionID
@@ -514,7 +516,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
     } // loop over condid
 
     if (myrank_==0)
-      std::cout<<"+----+-----+-------------------------+------------------+--------------------------+"<<std::endl;
+      std::cout << "+----+-----+-------------------------+------------------+--------------------------+" << std::endl;
   }
 
   // print out the accumulated normal flux over all indicated boundaries
@@ -526,7 +528,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       printf("| Sum of all normal flux boundary integrals for scalar %d: %+10.5E             |\n"
           ,idof,normfluxsum[idof]);
     }
-    std::cout<<"+----------------------------------------------------------------------------------+"<<std::endl;
+    std::cout << "+----------------------------------------------------------------------------------+" << std::endl << std::endl;
   }
   // clean up
   discret_->ClearState();
@@ -604,7 +606,7 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialTimeDerivative()
 
   // final screen output
   if(myrank_ == 0)
-    std::cout << "done!" << std::endl;
+    std::cout << "done!" << std::endl << std::endl;
 
   return;
 } // SCATRA::ScaTraTimIntImpl::CalcInitialTimeDerivative

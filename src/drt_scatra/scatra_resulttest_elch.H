@@ -32,10 +32,9 @@ namespace SCATRA
 
     private:
 
-      //! get result to be tested
-      const double GetResult(
-          const std::string   quantity,   //! name of quantity to be tested
-          DRT::Node*          node        //! node carrying the result to be tested
+      //! get special result to be tested
+      const double ResultSpecial(
+          const std::string   quantity   //! name of quantity to be tested
           ) const;
 
       //! time integrator

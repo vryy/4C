@@ -27,11 +27,10 @@ elchtimint_(elchtimint)
 
 
 /*----------------------------------------------------------------------*
- | get result to be tested                                   fang 03/15 |
+ | get special result to be tested                           fang 03/15 |
  *----------------------------------------------------------------------*/
-const double SCATRA::ElchResultTest::GetResult(
-    const std::string   quantity,   //! name of quantity to be tested
-    DRT::Node*          node        //! node carrying the result to be tested
+const double SCATRA::ElchResultTest::ResultSpecial(
+    const std::string   quantity   //! name of quantity to be tested
     ) const
 {
   // initialize variable for result
@@ -41,16 +40,22 @@ const double SCATRA::ElchResultTest::GetResult(
     result = (*elchtimint_->ElectrodeConc())[0];
   else if(quantity == "meanc2")
     result = (*elchtimint_->ElectrodeConc())[1];
-  else if (quantity == "meaneta" or quantity == "meaneta1")
+  else if(quantity == "meaneta" or quantity == "meaneta1")
     result = (*elchtimint_->ElectrodeEta())[0];
-  else if (quantity == "meaneta2")
+  else if(quantity == "meaneta2")
     result = (*elchtimint_->ElectrodeEta())[1];
-  else if (quantity == "meancur" or quantity == "meancur1")
+  else if(quantity == "meancur" or quantity == "meancur1")
     result = (*elchtimint_->ElectrodeCurr())[0];
-  else if (quantity == "meancur2")
+  else if(quantity == "meancur2")
     result = (*elchtimint_->ElectrodeCurr())[1];
+  else if(quantity == "soc" or quantity == "soc1")
+    result = (*elchtimint_->ElectrodeSOC())[0];
+  else if(quantity == "soc2")
+    result = (*elchtimint_->ElectrodeSOC())[1];
+  else if(quantity == "cellvoltage")
+    result = elchtimint_->CellVoltage();
   else
-    result = ScaTraResultTest::GetResult(quantity,node);
+    result = ScaTraResultTest::ResultSpecial(quantity);
 
   return result;
-} // SCATRA::ScaTraResultTest::GetResult
+} // SCATRA::ElchResultTest::ResultSpecial

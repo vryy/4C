@@ -2846,9 +2846,9 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
   {
     if (myrank_ == 0)
     {
-      printf("+---------------------------------------------------------------+\n");
-      printf("|            >>>>>> not converged in itemax steps!              |\n");
-      printf("+---------------------------------------------------------------+\n");
+      std::cout << "+---------------------------------------------------------------+" << std::endl;
+      std::cout << "|            >>>>>> not converged in itemax steps!              |" << std::endl;
+      std::cout << "+---------------------------------------------------------------+" << std::endl << std::endl;
 
       if (errfile_!=NULL)
       {
@@ -2979,7 +2979,7 @@ inline void SCATRA::ScaTraTimIntImpl::PrintConvergenceValues(
 inline void SCATRA::ScaTraTimIntImpl::PrintConvergenceFinishLine()
 {
   if (myrank_ == 0)
-    std::cout << "+------------+-------------------+--------------+--------------+------------------+" << std::endl;
+    std::cout << "+------------+-------------------+--------------+--------------+------------------+" << std::endl << std::endl;
 
   return;
 } // SCATRA::ScaTraTimIntImpl::PrintConvergenceFinishLine
