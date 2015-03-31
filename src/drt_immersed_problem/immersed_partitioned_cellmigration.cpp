@@ -70,7 +70,8 @@ IMMERSED::ImmersedPartitionedCellMigration::ImmersedPartitionedCellMigration(con
   poroelast_subproblem_ = Teuchos::rcp(new POROELAST::Monolithic(comm, globalproblem_->PoroelastDynamicParams()));
   // setup of poro monolithic algorithm
   SetupPoroAlgorithm();
-  std::cout<<"Created Field Poroelast ..."<<std::endl;
+  if(myrank_==0)
+    std::cout<<"Created Field Poroelast ..."<<std::endl;
 
   // vector of fluid stresses interpolated to cell bdry int points and integrated over cell surface
   cell_bdry_traction_ = Teuchos::rcp(new Epetra_Vector(*(cellstructure_->DofRowMap()),true));
@@ -118,6 +119,8 @@ void IMMERSED::ImmersedPartitionedCellMigration::CouplingOp(const Epetra_Vector 
     ////////////////////
     PrepareBackgroundOp();
     BackgroundOp(porofluid_artificial_velocity_, fillFlag);
+
+
 
     // reset element and node information about immersed method
     params.set<int>("action",FLD::reset_immersed_ele);

@@ -102,7 +102,7 @@ void DRT::ELEMENTS::FluidPoroImmersed::Pack(DRT::PackBuffer& data) const
   int type = UniqueParObjectId();
   AddtoPack(data,type);
   // add base class Element
-  DRT::ELEMENTS::Fluid::Pack(data);
+  DRT::ELEMENTS::FluidPoro::Pack(data);
   // Part of immersion domain?
   AddtoPack(data,is_immersed_);
   // Part of immersion domain for immersed boundary?
@@ -128,7 +128,7 @@ void DRT::ELEMENTS::FluidPoroImmersed::Unpack(const std::vector<char>& data)
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
-  DRT::ELEMENTS::Fluid::Unpack(basedata);
+  DRT::ELEMENTS::FluidPoro::Unpack(basedata);
   // Part of immersion domain?
   is_immersed_ = ExtractInt(position,data);
   // Part of immersion domain for immersed boundary?

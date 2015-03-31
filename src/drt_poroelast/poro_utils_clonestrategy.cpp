@@ -22,7 +22,6 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
 
-#include "../drt_fluid_ele/fluid_ele_poro.H"
 #include "../drt_fluid_ele/fluid_ele_poro_immersed.H"
 
 #include "../drt_mat/fluidporo.H"
@@ -110,6 +109,8 @@ void POROELAST::UTILS::PoroelastCloneStrategy::SetElementData(
     DRT::ELEMENTS::So_base*  so_base  = dynamic_cast<DRT::ELEMENTS::So_base*>(oldele);
     if(so_base)
       fluid->SetKinematicType(so_base->KinematicType());
+    else
+      dserror(" dynamic cast from DRT::Element* to DRT::ELEMENTS::So_base* failed ");
   }
   else
   {
@@ -208,7 +209,13 @@ void POROELAST::UTILS::PoroelastImmersedCloneStrategy::SetElementData(
     fluid->SetIsAle(true);
     DRT::ELEMENTS::So_base*  so_base  = dynamic_cast<DRT::ELEMENTS::So_base*>(oldele);
     if(so_base)
+    {
       fluid->SetKinematicType(so_base->KinematicType());
+      if(so_base->KinematicType()==0)
+        dserror("undefined kinematic type");
+    }
+    else
+      dserror(" dynamic cast from DRT::Element* to DRT::ELEMENTS::So_base* failed ");
   }
   else
   {

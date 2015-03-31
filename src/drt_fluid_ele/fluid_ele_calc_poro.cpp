@@ -6578,7 +6578,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeDefGradient(
       defgrd(i,i) = 1.0;
   }
   else
-    dserror("invalid kinematic type!");
+    dserror("invalid kinematic type! %d",kintype_);
 
   return;
 }
