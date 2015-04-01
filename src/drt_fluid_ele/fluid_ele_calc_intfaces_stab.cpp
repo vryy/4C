@@ -264,6 +264,27 @@ DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype,ndistype>::FluidInterna
   // create intpoints with computed degree
   intpoints_ = DRT::UTILS::GaussPointCache::Instance().Create(distype, patch_degree);
 
+  if(nsd_==3)
+  {
+    // numbering of master's surfaces/lines w.r.t parent element
+    m_connectivity_ = DRT::UTILS::getEleNodeNumberingSurfaces(pdistype);
+    s_connectivity_ = DRT::UTILS::getEleNodeNumberingSurfaces(ndistype);
+
+    // just for 3D
+    if(pdistype != DRT::Element::wedge6 and pdistype != DRT::Element::wedge15)
+      connectivity_line_surf_  = DRT::UTILS::getEleNodeNumbering_lines_surfaces(pdistype);
+  }
+  else if(nsd_==2)
+  {
+    // numbering of master's surfaces/lines w.r.t parent element
+    m_connectivity_ = DRT::UTILS::getEleNodeNumberingLines(pdistype);
+    s_connectivity_ = DRT::UTILS::getEleNodeNumberingLines(ndistype);
+  }
+  else dserror("not valid nsd %i", nsd_);
+
+  // get the connectivity between lines and surfaces of an parent element
+  connectivity_line_nodes_ = DRT::UTILS::getEleNodeNumberingLines(pdistype);
+
   return;
 }
 
@@ -461,8 +482,8 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
   int slave_numdof  = lm_slaveToPatch.size();
   int face_numdof   = lm_faceToPatch.size();
 
-  if(master_numdof != numdofpernode_*piel) dserror("wrong number of master dofs");
-  if(slave_numdof  != numdofpernode_*niel) dserror("wrong number of slave dofs");
+  if(master_numdof != numdofpernode_*piel) dserror("wrong number of master dofs %i", master_numdof);
+  if(slave_numdof  != numdofpernode_*niel) dserror("wrong number of slave dofs %i", slave_numdof);
   if(master_numdof != slave_numdof) dserror("Different element typs?");
 
   //---------------------------------------------------
@@ -744,7 +765,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
   // local coordinates of the face nodes w.r.t slave side
   LINALG::Matrix<facensd_, iel> local_slave_coordiantes_trafo(true);
 
-  std::vector<int> localtrafomap = intface->GetLocalTrafoMap();
+  const std::vector<int> & localtrafomap = intface->GetLocalTrafoMap();
 
 
   for(int i=0; i< iel; i++)
@@ -2776,30 +2797,26 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::comp
 
   if(nsd_==3)
   {
-    // numbering of master's surfaces/lines w.r.t parent element
-    std::vector< std::vector<int> > m_connectivity = DRT::UTILS::getEleNodeNumberingSurfaces(pdistype);
-    std::vector< std::vector<int> > s_connectivity = DRT::UTILS::getEleNodeNumberingSurfaces(ndistype);
-
     //----------------------------------------------
     // loop surface of master element
     for(int p_surf=0; p_surf<master->NumSurface(); p_surf++)
     {
-      unsigned int nnode_psurf = m_connectivity[p_surf].size(); // this number changes for pyramids or wedges
+      unsigned int nnode_psurf = m_connectivity_[p_surf].size(); // this number changes for pyramids or wedges
 
       double h_e = 0.0;
 
       switch (nnode_psurf)
       {
       case 3: //tri3 surface
-        diameter2D<3>(true, m_connectivity[p_surf], h_e); break;
+        diameter2D<3>(true, m_connectivity_[p_surf], h_e); break;
       case 6: //tri6 surface
-        diameter2D<6>(true, m_connectivity[p_surf], h_e); break;
+        diameter2D<6>(true, m_connectivity_[p_surf], h_e); break;
       case 4: // quad4 surface
-        diameter2D<4>(true, m_connectivity[p_surf], h_e); break;
+        diameter2D<4>(true, m_connectivity_[p_surf], h_e); break;
       case 8: // quad8 surface
-        diameter2D<8>(true, m_connectivity[p_surf], h_e); break;
+        diameter2D<8>(true, m_connectivity_[p_surf], h_e); break;
       case 9: // quad9 surface
-        diameter2D<9>(true, m_connectivity[p_surf], h_e); break;
+        diameter2D<9>(true, m_connectivity_[p_surf], h_e); break;
       default:
         dserror("unknown number of nodes for surface of parent element"); break;
       };
@@ -2812,22 +2829,22 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::comp
     // loop surfaces of slave element
     for(int p_surf=0; p_surf<slave->NumSurface(); p_surf++)
     {
-      unsigned int nnode_psurf = s_connectivity[p_surf].size(); // this number changes for pyramids or wedges
+      unsigned int nnode_psurf = s_connectivity_[p_surf].size(); // this number changes for pyramids or wedges
 
       double h_e = 0.0;
 
       switch (nnode_psurf)
       {
       case 3: // tri3 surface
-        diameter2D<3>(false, s_connectivity[p_surf], h_e); break;
+        diameter2D<3>(false, s_connectivity_[p_surf], h_e); break;
       case 6: // tri6 surface
-        diameter2D<6>(false, s_connectivity[p_surf], h_e); break;
+        diameter2D<6>(false, s_connectivity_[p_surf], h_e); break;
       case 4: // quad4 surface
-        diameter2D<4>(false, s_connectivity[p_surf], h_e); break;
+        diameter2D<4>(false, s_connectivity_[p_surf], h_e); break;
       case 8: // quad8 surface
-        diameter2D<8>(false, s_connectivity[p_surf], h_e); break;
+        diameter2D<8>(false, s_connectivity_[p_surf], h_e); break;
       case 9: // quad9 surface
-        diameter2D<9>(false, s_connectivity[p_surf], h_e); break;
+        diameter2D<9>(false, s_connectivity_[p_surf], h_e); break;
       default:
         dserror("unknown number of nodes for surface of parent element"); break;
       };
@@ -2839,23 +2856,21 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::comp
   }
   else if(nsd_==2)
   {
-    std::vector< std::vector<int> > m_connectivity = DRT::UTILS::getEleNodeNumberingLines(pdistype);
-    std::vector< std::vector<int> > s_connectivity = DRT::UTILS::getEleNodeNumberingLines(ndistype);
 
     //----------------------------------------------
     // loop lines of master element
     for(int p_line=0; p_line<master->NumLine(); p_line++)
     {
-      unsigned int nnode_pline = m_connectivity[p_line].size(); // this number changes for pyramids or wedges
+      unsigned int nnode_pline = m_connectivity_[p_line].size(); // this number changes for pyramids or wedges
 
       double h_e = 0.0;
 
       switch (nnode_pline)
       {
       case 2: //line2 face
-        diameter1D<2>(true, m_connectivity[p_line], h_e); break;
+        diameter1D<2>(true, m_connectivity_[p_line], h_e); break;
       case 3: //line3 face
-        diameter1D<3>(true, m_connectivity[p_line], h_e); break;
+        diameter1D<3>(true, m_connectivity_[p_line], h_e); break;
       default:
         dserror("unknown number of nodes for line of parent element"); break;
       };
@@ -2868,16 +2883,16 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::comp
     // loop lines of slave element
     for(int p_line=0; p_line<slave->NumLine(); p_line++)
     {
-      unsigned int nnode_pline = s_connectivity[p_line].size(); // this number changes for pyramids or wedges
+      unsigned int nnode_pline = s_connectivity_[p_line].size(); // this number changes for pyramids or wedges
 
       double h_e = 0.0;
 
       switch (nnode_pline)
       {
       case 2: // line2 face
-        diameter1D<2>(false, s_connectivity[p_line], h_e); break;
+        diameter1D<2>(false, s_connectivity_[p_line], h_e); break;
       case 3: // line3 face
-        diameter1D<3>(false, s_connectivity[p_line], h_e); break;
+        diameter1D<3>(false, s_connectivity_[p_line], h_e); break;
       default:
         dserror("unknown number of nodes for line of parent element"); break;
       };
@@ -2915,10 +2930,6 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::comp
 
   if(nsd_==3)
   {
-    // numbering of master's surfaces/lines w.r.t parent element
-    std::vector< std::vector<int> > m_connectivity = DRT::UTILS::getEleNodeNumberingSurfaces(pdistype);
-    std::vector< std::vector<int> > s_connectivity = DRT::UTILS::getEleNodeNumberingSurfaces(ndistype);
-
     //----------------------------------------------
 
     // determine the opposite side/line to the internal face for master and slave parent element
@@ -2934,22 +2945,22 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::comp
       // exclude the faces/lines itself as well as its opposite sides (for hexahedral elements)
       if(p_surf == side_id_master or p_surf == opposite_side_id_master) continue;
 
-      unsigned int nnode_psurf = m_connectivity[p_surf].size(); // this number changes for pyramids or wedges
+      unsigned int nnode_psurf = m_connectivity_[p_surf].size(); // this number changes for pyramids or wedges
 
       double h_e = 0.0;
 
       switch (nnode_psurf)
       {
       case 3: //tri3 surface
-        diameter2D<3>(true, m_connectivity[p_surf], h_e); break;
+        diameter2D<3>(true, m_connectivity_[p_surf], h_e); break;
       case 6: //tri6 surface
-        diameter2D<6>(true, m_connectivity[p_surf], h_e); break;
+        diameter2D<6>(true, m_connectivity_[p_surf], h_e); break;
       case 4: // quad4 surface
-        diameter2D<4>(true, m_connectivity[p_surf], h_e); break;
+        diameter2D<4>(true, m_connectivity_[p_surf], h_e); break;
       case 8: // quad8 surface
-        diameter2D<8>(true, m_connectivity[p_surf], h_e); break;
+        diameter2D<8>(true, m_connectivity_[p_surf], h_e); break;
       case 9: // quad9 surface
-        diameter2D<9>(true, m_connectivity[p_surf], h_e); break;
+        diameter2D<9>(true, m_connectivity_[p_surf], h_e); break;
       default:
         dserror("unknown number of nodes for surface of parent element"); break;
       };
@@ -2965,22 +2976,22 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::comp
       // exclude the faces/lines itself as well as its opposite sides (for hexahedral elements)
       if(p_surf == side_id_slave or p_surf == opposite_side_id_slave) continue;
 
-      unsigned int nnode_psurf = s_connectivity[p_surf].size(); // this number changes for pyramids or wedges
+      unsigned int nnode_psurf = s_connectivity_[p_surf].size(); // this number changes for pyramids or wedges
 
       double h_e = 0.0;
 
       switch (nnode_psurf)
       {
       case 3: // tri3 surface
-        diameter2D<3>(false, s_connectivity[p_surf], h_e); break;
+        diameter2D<3>(false, s_connectivity_[p_surf], h_e); break;
       case 6: // tri6 surface
-        diameter2D<6>(false, s_connectivity[p_surf], h_e); break;
+        diameter2D<6>(false, s_connectivity_[p_surf], h_e); break;
       case 4: // quad4 surface
-        diameter2D<4>(false, s_connectivity[p_surf], h_e); break;
+        diameter2D<4>(false, s_connectivity_[p_surf], h_e); break;
       case 8: // quad8 surface
-        diameter2D<8>(false, s_connectivity[p_surf], h_e); break;
+        diameter2D<8>(false, s_connectivity_[p_surf], h_e); break;
       case 9: // quad9 surface
-        diameter2D<9>(false, s_connectivity[p_surf], h_e); break;
+        diameter2D<9>(false, s_connectivity_[p_surf], h_e); break;
       default:
         dserror("unknown number of nodes for surface of parent element"); break;
       };
@@ -2993,11 +3004,6 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::comp
   }
   else if(nsd_==2)
   {
-
-
-    std::vector< std::vector<int> > m_connectivity = DRT::UTILS::getEleNodeNumberingLines(pdistype);
-    std::vector< std::vector<int> > s_connectivity = DRT::UTILS::getEleNodeNumberingLines(ndistype);
-
     //----------------------------------------------
 
     // determine the opposite side/line to the internal face for master and slave parent element
@@ -3013,16 +3019,16 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::comp
       // exclude the faces/lines itself as well as its opposite sides (for quadrilateral elements)
       if(p_line == side_id_master or p_line == opposite_line_id_master) continue;
 
-      unsigned int nnode_pline = m_connectivity[p_line].size(); // this number changes for pyramids or wedges
+      unsigned int nnode_pline = m_connectivity_[p_line].size(); // this number changes for pyramids or wedges
 
       double h_e = 0.0;
 
       switch (nnode_pline)
       {
       case 2: //line2 face
-        diameter1D<2>(true, m_connectivity[p_line], h_e); break;
+        diameter1D<2>(true, m_connectivity_[p_line], h_e); break;
       case 3: //line3 face
-        diameter1D<3>(true, m_connectivity[p_line], h_e); break;
+        diameter1D<3>(true, m_connectivity_[p_line], h_e); break;
       default:
         dserror("unknown number of nodes for line of parent element"); break;
       };
@@ -3038,16 +3044,16 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::comp
       // exclude the faces/lines itself as well as its opposite sides (for quadrilateral elements)
       if(p_line == side_id_slave or p_line == opposite_line_id_slave) continue;
 
-      unsigned int nnode_pline = s_connectivity[p_line].size(); // this number changes for pyramids or wedges
+      unsigned int nnode_pline = s_connectivity_[p_line].size(); // this number changes for pyramids or wedges
 
       double h_e = 0.0;
 
       switch (nnode_pline)
       {
       case 2: // line2 face
-        diameter1D<2>(false, s_connectivity[p_line], h_e); break;
+        diameter1D<2>(false, s_connectivity_[p_line], h_e); break;
       case 3: // line3 face
-        diameter1D<3>(false, s_connectivity[p_line], h_e); break;
+        diameter1D<3>(false, s_connectivity_[p_line], h_e); break;
       default:
         dserror("unknown number of nodes for line of parent element"); break;
       };
@@ -3076,26 +3082,24 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::comp
 {
   if(nsd_==3)
   {
-    std::vector< std::vector<int> > m_connectivity = DRT::UTILS::getEleNodeNumberingSurfaces(pdistype);
-
     const int side_id_master = intface->FaceMasterNumber();
 
-    unsigned int nnode_psurf = m_connectivity[side_id_master].size(); // this number changes for pyramids or wedges
+    unsigned int nnode_psurf = m_connectivity_[side_id_master].size(); // this number changes for pyramids or wedges
 
     double h_e = 0.0;
 
     switch (nnode_psurf)
     {
     case 3: //tri3 surface
-      diameter2D<3>(true, m_connectivity[side_id_master], h_e); break;
+      diameter2D<3>(true, m_connectivity_[side_id_master], h_e); break;
     case 6: //tri6 surface
-      diameter2D<6>(true, m_connectivity[side_id_master], h_e); break;
+      diameter2D<6>(true, m_connectivity_[side_id_master], h_e); break;
     case 4: // quad4 surface
-      diameter2D<4>(true, m_connectivity[side_id_master], h_e); break;
+      diameter2D<4>(true, m_connectivity_[side_id_master], h_e); break;
     case 8: // quad8 surface
-      diameter2D<8>(true, m_connectivity[side_id_master], h_e); break;
+      diameter2D<8>(true, m_connectivity_[side_id_master], h_e); break;
     case 9: // quad9 surface
-      diameter2D<9>(true, m_connectivity[side_id_master], h_e); break;
+      diameter2D<9>(true, m_connectivity_[side_id_master], h_e); break;
     default:
       dserror("unknown number of nodes for surface of parent element"); break;
     };
@@ -3104,20 +3108,18 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::comp
   }
   else if(nsd_==2)
   {
-    std::vector< std::vector<int> > m_connectivity = DRT::UTILS::getEleNodeNumberingLines(pdistype);
-
     const int line_id_master = intface->FaceMasterNumber();
 
-    unsigned int nnode_pline = m_connectivity[line_id_master].size(); // this number changes for pyramids or wedges
+    unsigned int nnode_pline = m_connectivity_[line_id_master].size(); // this number changes for pyramids or wedges
 
     double h_e = 0.0;
 
     switch (nnode_pline)
     {
     case 2: //line2 face
-      diameter1D<2>(true, m_connectivity[line_id_master], h_e); break;
+      diameter1D<2>(true, m_connectivity_[line_id_master], h_e); break;
     case 3: //line3 face
-      diameter1D<3>(true, m_connectivity[line_id_master], h_e); break;
+      diameter1D<3>(true, m_connectivity_[line_id_master], h_e); break;
     default:
       dserror("unknown number of nodes for line of parent element"); break;
     };
@@ -3157,15 +3159,11 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::comp
   // with this element length computation
   if(pdistype != ndistype) dserror("this type of element lenght is not reasonable for different types of neighboring elements");
 
-  // get the connectivity between lines and surfaces of an parent element
-  std::vector< std::vector<int> > connectivity_line_nodes = DRT::UTILS::getEleNodeNumberingLines(pdistype);
-
   int numnode_intface = intface->NumNode();
 
   if(nsd_ == 3)
   {
-    std::vector< std::vector<int> > connectivity_line_surf  = DRT::UTILS::getEleNodeNumbering_lines_surfaces(pdistype);
-    FindHEXConnectingLines2D(numnode_intface, connectivity_line_surf, side_id_master, side_id_slave, p_lines_master, p_lines_slave, opposite_side_id_master, opposite_side_id_slave);
+    FindHEXConnectingLines2D(numnode_intface, connectivity_line_surf_, side_id_master, side_id_slave, p_lines_master, p_lines_slave, opposite_side_id_master, opposite_side_id_slave);
   }
   else if(nsd_ ==2 )
     FindQUADConnectingLines1D(numnode_intface, side_id_master, side_id_slave, p_lines_master, p_lines_slave,opposite_side_id_master, opposite_side_id_slave);
@@ -3176,10 +3174,10 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::comp
   std::map< int,std::vector<int> > p_lines_nodes_s;
 
   for(std::set<int>::iterator iter = p_lines_master.begin(); iter!= p_lines_master.end(); iter++)
-    p_lines_nodes_m[*iter] = connectivity_line_nodes.at(*iter);
+    p_lines_nodes_m[*iter] = connectivity_line_nodes_.at(*iter);
 
   for(std::set<int>::iterator iter = p_lines_slave.begin(); iter!= p_lines_slave.end(); iter++)
-    p_lines_nodes_s[*iter] = connectivity_line_nodes.at(*iter);
+    p_lines_nodes_s[*iter] = connectivity_line_nodes_.at(*iter);
 
   //---------------------------------------------
   // find the distance for master and slave element

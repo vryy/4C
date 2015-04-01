@@ -135,6 +135,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
   // *this FluidIntFace element only once (no duplicates)
   TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: PatchLocationVector" );
 
+
   //-----------------------------------------------------------------------
   const int m_numnode = ParentMasterElement()->NumNode();
   DRT::Node** m_nodes = ParentMasterElement()->Nodes();
@@ -157,18 +158,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
   const int f_numnode = NumNode();
   DRT::Node** f_nodes = Nodes();
 
-  //-----------------------------------------------------------------------
-  // create the patch local map and additional local maps between elements lm and patch lm
 
-  patchlm.clear();
-
-  lm_masterToPatch.clear();
-  lm_slaveToPatch.clear();
-  lm_faceToPatch.clear();
-
-  // maps between master/slave nodes and nodes in patch
-  lm_masterNodeToPatch.clear();
-  lm_slaveNodeToPatch.clear();
 
   // for each master node, the offset for node's dofs in master_lm
   std::map<int, int> m_node_lm_offset;

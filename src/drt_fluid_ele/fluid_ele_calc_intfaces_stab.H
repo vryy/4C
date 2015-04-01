@@ -705,7 +705,7 @@ namespace DRT
           for(std::map<int,std::vector<int> >::iterator iter = p_lines_nodes.begin(); iter!= p_lines_nodes.end();
               iter++)
           {
-            std::vector<int> nodesofline = iter->second;
+            std::vector<int> & nodesofline = iter->second;
             for(int isd=0; isd<nsd_; isd++)
             {
               // extract just start and end point of the line
@@ -722,7 +722,7 @@ namespace DRT
           for(std::map<int,std::vector<int> >::iterator iter = p_lines_nodes.begin(); iter!= p_lines_nodes.end();
               iter++)
           {
-            std::vector<int> nodesofline = iter->second;
+            std::vector<int> & nodesofline = iter->second;
             for(int isd=0; isd<nsd_; isd++)
             {
               // extract just start and end point of the line
@@ -1073,6 +1073,21 @@ namespace DRT
       Teuchos::RCP<DRT::UTILS::GaussPoints> intpoints_;
 
     private:
+
+      // element, side, line connectivity
+      // ---------------------------------------------------
+      //! numbering of master's surfaces/lines w.r.t parent element
+      std::vector<std::vector<int> > m_connectivity_;
+
+      // numbering of slave's surfaces/lines w.r.t parent element
+      std::vector<std::vector<int> > s_connectivity_;
+
+      //! numbering of master's lines w.r.t parent element
+      std::vector<std::vector<int> > connectivity_line_surf_;
+
+      //! numbering of master's lines and nodes
+      std::vector< std::vector<int> > connectivity_line_nodes_;
+
 
       // material parameters
       // ---------------------------------------------------

@@ -158,22 +158,30 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
 
   //----------------------- create patchlm -----------------
 
+  const int numnode_master = intface->ParentMasterElement()->NumNode();
+  const int numnode_slave  = intface->ParentSlaveElement()->NumNode();
+  const int numnode_face   = intface->NumNode();
+
+  const int numnodeinpatch = numnode_master + numnode_slave - numnode_face;
+
   // local maps for patch dofs
   std::vector<int> lm_patch;
-
-//  // local maps for master/slave/face dofs
-//  std::vector<int> lm_master;
-//  std::vector<int> lm_slave;
-//  std::vector<int> lm_face;
+  lm_patch.reserve(numnodeinpatch*numdofpernode);
 
   // local maps between master/slave dofs and position in patch dofs (lm_patch)
   std::vector<int> lm_masterToPatch;
+  lm_masterToPatch.reserve(numnode_master*numdofpernode);
   std::vector<int> lm_slaveToPatch;
+  lm_slaveToPatch.reserve(numnode_slave*numdofpernode);
   std::vector<int> lm_faceToPatch;
+  lm_faceToPatch.reserve(numnode_face*numdofpernode);
 
   // local maps between master/slave nodes and position in patch nodes
   std::vector<int> lm_masterNodeToPatch;
+  lm_masterNodeToPatch.reserve(numnode_master);
   std::vector<int> lm_slaveNodeToPatch;
+  lm_slaveNodeToPatch.reserve(numnode_slave);
+
 
   // create patch location vector combining master element, slave element and face element
   intface->PatchLocationVector(   discretization,
@@ -189,20 +197,25 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
   std::vector<std::vector<int> >patch_components_lm(numdofpernode);
   std::vector<std::vector<int> >patch_components_lmowner(numdofpernode);
 
+
+  for(int i=0; i<numdofpernode; i++)
+  {
+    patch_components_lm[i].reserve(numnodeinpatch);
+    patch_components_lmowner[i].reserve(numnodeinpatch);
+  }
+
   // modify the patch owner to the owner of the internal face element
-  std::vector<int> patchlm_owner;
-  int owner = intface->Owner();
+  const int owner = intface->Owner();
+  std::vector<int> patchlm_owner(lm_patch.size(), owner);
 
   for(unsigned i=0; i<lm_patch.size(); i++)
   {
+    const int field = i%numdofpernode;
+
     // i%4 yields the Velx,Vely,Velz,Pres field
-    patch_components_lm[(i%numdofpernode)].push_back(lm_patch[i]);
-    patch_components_lmowner[(i%numdofpernode)].push_back(owner);
-
-    patchlm_owner.push_back(owner);
+    patch_components_lm[field].push_back(lm_patch[i]);
+    patch_components_lmowner[field].push_back(owner);
   }
-
-  int numnodeinpatch = patch_components_lm[0].size();
 
 #ifdef DEBUG
   for(int isd=0; isd < numdofpernode; isd++)
@@ -211,10 +224,6 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
 #endif
 
   //------------- create and evaluate block element matrics -----------------
-
-  // define element matrices and vectors
-  std::vector<Epetra_SerialDenseMatrix> elemat_blocks;
-  std::vector<Epetra_SerialDenseVector> elevec_blocks;
 
   //------------------------------------------------------------------------------------
   // decide which pattern
@@ -249,7 +258,10 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
   else dserror("unknown matrix pattern");
 
 
-  elemat_blocks.resize(numblocks);
+  // define element matrices and vectors
+  std::vector<Epetra_SerialDenseMatrix> elemat_blocks(numblocks);
+  std::vector<Epetra_SerialDenseVector> elevec_blocks(numdofpernode); // 3D: 4 vectors for u,v,w,p components, 2D: 3 vectors for u,v,p
+
 
   for(int b=0; b<numblocks; b++)
   {
@@ -257,8 +269,6 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
 
     if(err != 0) dserror("element matrix Shape not successful");
   }
-
-  elevec_blocks.resize(numdofpernode); // 3D: 4 vectors for u,v,w,p components, 2D: 3 vectors for u,v,p
 
   for(int b=0; b<numdofpernode; b++)
   {
