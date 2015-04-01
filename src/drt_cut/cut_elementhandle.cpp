@@ -201,6 +201,10 @@ void GEO::CUT::ElementHandle::AppendVolumeCellGaussPoints_DirectDivergence(Teuch
    // 2. Internal Gauss pts can be obtained only if we have correctly mapped main Gauss points
    //-------------------
   Teuchos::RCP<DRT::UTILS::GaussPoints> gp = vc->GetGaussRule();
+
+  // volume cell gausspoints are identified to be negligible in GEO::CUT::VolumeCell::DirectDivergenceGaussRule
+  if(gp == Teuchos::null) return;
+
   gpc->Append(gp);
 }
 
