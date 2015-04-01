@@ -1463,7 +1463,10 @@ void XFEM::MeshCouplingFSI::GmshOutputDiscretization(
   // compute the current solid and boundary position
   std::map<int,LINALG::Matrix<3,1> > currsolidpositions;
 
-  XFEM::UTILS::ExtractNodeVectors(cond_dis_, currsolidpositions, idispnp_);
+  // write dis with zero solid displacements here!
+  Teuchos::RCP<Epetra_Vector> solid_dispnp = LINALG::CreateVector(*cond_dis_->DofRowMap(), true);
+
+  XFEM::UTILS::ExtractNodeVectors(cond_dis_, currsolidpositions, solid_dispnp);
 
   XFEM::UTILS::PrintDiscretizationToStream(cond_dis_,
       cond_dis_->Name(), true, false, true, false, false, false, gmshfilecontent, &currsolidpositions);
