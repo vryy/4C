@@ -52,10 +52,15 @@ public:
   \brief Basic CUT parallel constructor
    */
   explicit Parallel(
-      const DRT::Discretization & discret,
+      const Teuchos::RCP<DRT::Discretization>& discret,
       GEO::CUT::Mesh & mesh,
       GEO::CUT::ParentIntersection & parentintersection
   );
+
+  /*!
+  \brief Destructor
+  */
+  virtual ~Parallel(){};
 
   /*!
   \brief Communicates the node positions
@@ -160,7 +165,7 @@ public:
   // data accessing
 
   //! discretization
-  const DRT::Discretization & discret_;
+  Teuchos::RCP<DRT::Discretization> discret_;
 
   //! current processor id
   const int myrank_;
@@ -181,7 +186,7 @@ public:
    */
   std::map<plain_int_set, int> curr_undecidedNodePos_shadow_;
 
-  Teuchos::RCP<std::vector<GEO::CUT::MeshIntersection::DofSetData> > dofSetData_;
+  std::vector<Teuchos::RCP<GEO::CUT::MeshIntersection::DofSetData> > dofSetData_;
 
 
 }; // class PARALLEL

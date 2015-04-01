@@ -608,9 +608,15 @@ void GEO::CutWizard::FindPositionDofSets(bool include_inner)
 
     GEO::CUT::Mesh & m = intersection_->NormalMesh();
 
-    // create a parallel Cut object for the current background mesh to communicate missing data
-    Teuchos::RCP<GEO::CUT::Parallel> cut_parallel = Teuchos::rcp( new GEO::CUT::Parallel( *backdis_, m, *intersection_ ) );
+    bool communicate = (backdis_->Comm().NumProc() > 1);
 
+    // create a parallel Cut object for the current background mesh to communicate missing data
+    Teuchos::RCP<GEO::CUT::Parallel> cut_parallel = Teuchos::null;
+
+    if (communicate)
+    {
+      cut_parallel = Teuchos::rcp( new GEO::CUT::Parallel( backdis_, m, *intersection_ ) );
+    }
 
     // find inside and outside positions of nodes
     // first for mesh cut and distribute data in parallel, after that do the same for the level-set cut
@@ -621,7 +627,7 @@ void GEO::CutWizard::FindPositionDofSets(bool include_inner)
     {
       m.FindNodePositions();
 
-      cut_parallel->CommunicateNodePositions();
+      if (communicate) cut_parallel->CommunicateNodePositions();
 
     }
 
@@ -633,15 +639,16 @@ void GEO::CutWizard::FindPositionDofSets(bool include_inner)
     }
 
     if(do_mesh_intersection_)
-    m.FindFacetPositions();
-
+    {
+      m.FindFacetPositions();
+    }
 
     //--------------------------------------------
 
     // find number and connection of dofsets at nodes from cut volumes
     intersection_->CreateNodalDofSet( include_inner, *backdis_);
 
-    cut_parallel->CommunicateNodeDofSetNumbers(include_inner);
+    if (communicate) cut_parallel->CommunicateNodeDofSetNumbers(include_inner);
 
   }
 }

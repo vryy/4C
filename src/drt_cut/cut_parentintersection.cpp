@@ -229,9 +229,11 @@ void GEO::CUT::ParentIntersection::CreateNodalDofSet( bool include_inner, const 
 /*--------------------------------------------------------------------------------------*
  | fill parallel DofSetData with information that has to be communicated   schott 03/12 |
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::ParentIntersection::FillParallelDofSetData(Teuchos::RCP<std::vector<DofSetData> > parallel_dofSetData,
-                                                        const DRT::Discretization& dis,
-                                                        bool include_inner)
+void GEO::CUT::ParentIntersection::FillParallelDofSetData(
+    std::vector<Teuchos::RCP<DofSetData> >& parallel_dofSetData,
+    const DRT::Discretization& dis,
+    bool include_inner
+)
 {
 
   // find volumecell sets and non-row nodes for that dofset numbers has to be communicated parallel
@@ -321,12 +323,14 @@ void GEO::CUT::ParentIntersection::FillParallelDofSetData(Teuchos::RCP<std::vect
 /*--------------------------------------------------------------------------------------*
  | create parallel DofSetData for a volumecell that has to be communicated schott 03/12 |
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::ParentIntersection::CreateParallelDofSetDataVC( Teuchos::RCP<std::vector<DofSetData> > parallel_dofSetData,
-                                                             int                           eid,
-                                                             int                           set_index,
-                                                             bool                          inside,
-                                                             VolumeCell *                  cell,
-                                                             std::map<int,int>&            node_dofset_map)
+void GEO::CUT::ParentIntersection::CreateParallelDofSetDataVC(
+    std::vector<Teuchos::RCP<DofSetData> >& parallel_dofSetData,
+    int                           eid,
+    int                           set_index,
+    bool                          inside,
+    VolumeCell *                  cell,
+    std::map<int,int>&            node_dofset_map
+    )
 {
 
     if(node_dofset_map.size() > 0)
@@ -371,7 +375,7 @@ void GEO::CUT::ParentIntersection::CreateParallelDofSetDataVC( Teuchos::RCP<std:
       int peid = eid;
 
       // create dofset data for this volumecell for Communication
-      parallel_dofSetData->push_back( DofSetData( set_index, inside, cut_points_coords_, peid, node_dofset_map) );
+      parallel_dofSetData.push_back( Teuchos::rcp(new DofSetData( set_index, inside, cut_points_coords_, peid, node_dofset_map) ) );
 
     }
     else dserror("communication for empty node-dofset map not necessary!");

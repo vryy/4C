@@ -74,6 +74,11 @@ namespace GEO
       {
       }
 
+      /*!
+      \brief Destructor
+      */
+      ~CutterMesh(){};
+
 
 
       //---------------------------------discretization-----------------------------
@@ -113,15 +118,6 @@ namespace GEO
     */
     CutWizard( Teuchos::RCP<DRT::Discretization> dis);
 
-//    /*!
-//    \brief Constructor when a condition manager is available
-//    */
-//    CutWizard(
-//        Teuchos::RCP<DRT::Discretization> dis,                  //!< background discretization
-//        Teuchos::RCP<const Epetra_Vector> back_disp_col
-////        ,        //!< col vector holding background ALE displacements for backdis
-////        Teuchos::RCP<XFEM::ConditionManager> condition_manager  //!< coupling condition manager holding data about coupling sides
-//    );
 
     /*!
     \brief Destructor

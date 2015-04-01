@@ -52,11 +52,11 @@ public:
 
       //! constructor for creating volumecells dofset data for communication between processors (constructor during the Robin round)
       DofSetData(
-          int                               set_index,            ///< set index for Volumecell
-          bool                              inside_cell,          ///< cell inside or outside
-          std::vector<LINALG::Matrix<3,1> > cut_points_coords,    ///< coordinates of cut_points
-          int                               peid,                 ///< parent element id
-          std::map<int,int> &               node_dofsetnumber_map ///< for the current volumecell in a parent element, for each node (nid) the current dofset number
+          int                                set_index,            ///< set index for Volumecell
+          bool                               inside_cell,          ///< cell inside or outside
+          std::vector<LINALG::Matrix<3,1> >& cut_points_coords,    ///< coordinates of cut_points
+          int                                peid,                 ///< parent element id
+          std::map<int,int> &                node_dofsetnumber_map ///< for the current volumecell in a parent element, for each node (nid) the current dofset number
       ) :
         set_index_(set_index),
         inside_cell_(inside_cell),
@@ -175,10 +175,21 @@ public:
   void CreateNodalDofSet ( bool include_inner, const DRT::Discretization & dis);
 
   /// fill parallel DofSetData with information that has to be communicated
-  void FillParallelDofSetData(Teuchos::RCP<std::vector<DofSetData> > parallel_dofSetData, const DRT::Discretization& dis, bool include_inner);
+  void FillParallelDofSetData(
+      std::vector<Teuchos::RCP<DofSetData> > & parallel_dofSetData,
+      const DRT::Discretization& dis,
+      bool include_inner
+      );
 
   /// create parallel DofSetData for a volumecell that has to be communicated
-  void CreateParallelDofSetDataVC(Teuchos::RCP<std::vector<DofSetData> > parallel_dofSetData , int eid, int set_index, bool inside, VolumeCell * cell, std::map<int,int>& node_dofset_map);
+  void CreateParallelDofSetDataVC(
+      std::vector<Teuchos::RCP<DofSetData> >& parallel_dofSetData,
+      int eid,
+      int set_index,
+      bool inside,
+      VolumeCell * cell,
+      std::map<int,int>& node_dofset_map
+  );
 
   /// find cell sets around each node (especially for quadratic elements)
   void FindNodalCellSets( bool include_inner,
