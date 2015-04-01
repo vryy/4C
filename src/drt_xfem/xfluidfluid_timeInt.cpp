@@ -129,7 +129,7 @@ void XFEM::XFluidFluidTimeIntegration::CreateBgNodeMaps(Teuchos::RCP<GEO::CutWiz
       // the vector index corresponds to a dofset, with which the set of volume-cell sets are associated.
       // (for hex20 we have sets of volumecells, otherwise for linear
       // elements the size of the set is one, so 1 dofset --> 1 volume-cell set!)
-      const std::vector<GEO::CUT::NodalDofSet* > & vcs_vec = n->NodalDofSets();
+      const std::vector<Teuchos::RCP<GEO::CUT::NodalDofSet> > & vcs_vec = n->NodalDofSets();
 
 
       // get the id from the parent node's parent element for every dofset

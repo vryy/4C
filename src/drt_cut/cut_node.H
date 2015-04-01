@@ -96,7 +96,7 @@ public:
   };
 
   /// add a nodal dofset to the composite of nodal dofsets
-  void add(NodalDofSet *nds)
+  void add(Teuchos::RCP<NodalDofSet> nds)
   {
     if( is_std_dofset_ != nds->Is_Standard_DofSet() or position_ != nds->Position() )
       dserror("NodalDofSet you want to combine to a CompositeNodalDofSet do not have the same properties! Invalid!");
@@ -123,7 +123,7 @@ public:
 
 private:
 
-  std::vector< NodalDofSet* > nodal_dofsets_; ///< a collection of NodalDofSet objects combined to one composite
+  std::vector< Teuchos::RCP<NodalDofSet> > nodal_dofsets_; ///< a collection of NodalDofSet objects combined to one composite
 
 };
 
@@ -253,10 +253,10 @@ public:
   int NumDofSets() const;
 
   /// return a vector of all nodal dofsets
-  const std::vector<NodalDofSet* > & NodalDofSets() const { return nodaldofsets_; }
+  const std::vector<Teuchos::RCP<NodalDofSet> > & NodalDofSets() const { return nodaldofsets_; }
 
   /// return a vector of all nodal dofsets
-  NodalDofSet* GetNodalDofSet(const int nds) const { return nodaldofsets_[nds]; }
+  NodalDofSet* GetNodalDofSet(const int nds) const { return &*nodaldofsets_[nds]; }
 
   /// get the unique standard NodalDofSet for a given nodal dofset position
   int GetStandardNodalDofSet( Point::PointPosition pos );
@@ -306,7 +306,7 @@ private:
 
   std::vector<plain_volumecell_set> dofsets_; ///< set of Volumecells (unused old version)
 
-  std::vector<NodalDofSet*> nodaldofsets_;    ///< nodal dofsets
+  std::vector<Teuchos::RCP<NodalDofSet> > nodaldofsets_;    ///< nodal dofsets
 
   Point::PointPosition selfcutposition_;      ///< every cutsidenode knows its selfcutposition
 };
@@ -321,7 +321,7 @@ class NodalDofSetCmp
 {
 public:
 
-  bool operator()(NodalDofSet* nodaldofset1, NodalDofSet* nodaldofset2);
+  bool operator()(Teuchos::RCP<NodalDofSet> nodaldofset1, Teuchos::RCP<NodalDofSet> nodaldofset2);
 };
 
 }

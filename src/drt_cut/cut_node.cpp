@@ -475,7 +475,7 @@ void GEO::CUT::Node::SortNodalDofSets()
 
   if(nodaldofsets_.size() > 1)
   {
-    std::vector<NodalDofSet* >::iterator it_start = nodaldofsets_.begin();
+    std::vector<Teuchos::RCP<GEO::CUT::NodalDofSet> >::iterator it_start = nodaldofsets_.begin();
 
     if(nodaldofsets_[0]->Is_Standard_DofSet())
     {
@@ -514,22 +514,22 @@ void GEO::CUT::Node::CollectNodalDofSets()
   // assume that the nodal dofsets have been sorted in a step before,
   // such that ghost sets to be combined are stored consecutively in the vector of sorted nodal dofsets
 
-  std::vector<CompositeNodalDofSet* > collected_nodaldofsets;
+  std::vector<Teuchos::RCP<CompositeNodalDofSet> > collected_nodaldofsets;
 
-  for(std::vector<NodalDofSet*>::iterator it=nodaldofsets_.begin();
+  for(std::vector<Teuchos::RCP<NodalDofSet> >::iterator it=nodaldofsets_.begin();
       it!=nodaldofsets_.end();
       it++)
   {
-    NodalDofSet* nds = *it;
+    Teuchos::RCP<NodalDofSet> nds = *it;
     bool is_std_dofset = nds->Is_Standard_DofSet();
     GEO::CUT::Point::PointPosition pos = nds->Position();
 
     // already an appropriate composite of nodal dofsets found, the current nodal dofset can be combined with?
-    CompositeNodalDofSet* cnds = NULL;
+    Teuchos::RCP<CompositeNodalDofSet> cnds = Teuchos::null;
 
     if(is_std_dofset) // do not combine standard dofsets as they are unique for each phase
     {
-      cnds = new GEO::CUT::CompositeNodalDofSet(is_std_dofset, pos);
+      cnds = Teuchos::rcp(new GEO::CUT::CompositeNodalDofSet(is_std_dofset, pos));
       collected_nodaldofsets.push_back(cnds);
     }
     else // ghost set -> create new collected set or append to an already existing one
@@ -537,21 +537,21 @@ void GEO::CUT::Node::CollectNodalDofSets()
 
       if( collected_nodaldofsets.size() == 0 ) // no composite added yet
       {
-        cnds = new GEO::CUT::CompositeNodalDofSet(is_std_dofset, pos); // if first, then create a new composite
+        cnds = Teuchos::rcp(new GEO::CUT::CompositeNodalDofSet(is_std_dofset, pos)); // if first, then create a new composite
         collected_nodaldofsets.push_back(cnds);
       }
       else
       {
         // assume that the nodal dofsets have been sorted in a step before
         // then we potentially combine the current nodal dofset with the last CompositeNodalDofSet at most
-        CompositeNodalDofSet * cnds_last = collected_nodaldofsets.back();
+        Teuchos::RCP<CompositeNodalDofSet> cnds_last = collected_nodaldofsets.back();
 
         if(cnds_last->Is_Standard_DofSet() == is_std_dofset and
             cnds_last->Position() == pos) // same position (phase) and also ghost
           cnds = cnds_last;
         else
         {
-          cnds = new GEO::CUT::CompositeNodalDofSet(is_std_dofset, pos); // if first, then create a new composite
+          cnds = Teuchos::rcp(new GEO::CUT::CompositeNodalDofSet(is_std_dofset, pos)); // if first, then create a new composite
           collected_nodaldofsets.push_back(cnds);
         }
       }
@@ -643,7 +643,7 @@ void GEO::CUT::Node::BuildDOFCellSets(
           }
 
           // set if this set is a std set
-          nodaldofsets_.push_back(new NodalDofSet(connected_sets, isnodalcellset));
+          nodaldofsets_.push_back(Teuchos::rcp(new NodalDofSet(connected_sets, isnodalcellset)));
 
           std::copy( connected.begin(), connected.end(), std::inserter( done, done.begin() ) );
         } // connected.size() > 0
@@ -749,7 +749,7 @@ int GEO::CUT::Node::GetStandardNodalDofSet( Point::PointPosition pos)
 {
   for(int i=0; i< NumDofSets(); i++)
   {
-    NodalDofSet * nodaldofset = nodaldofsets_[i];
+    Teuchos::RCP<NodalDofSet> nodaldofset = nodaldofsets_[i];
     if( nodaldofset->Is_Standard_DofSet() )
     {
       if( nodaldofset->Position() == pos)
@@ -764,8 +764,8 @@ int GEO::CUT::Node::GetStandardNodalDofSet( Point::PointPosition pos)
 /*-----------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------*/
 bool GEO::CUT::NodalDofSetCmp::operator()(
-    NodalDofSet* nodaldofset1,
-    NodalDofSet* nodaldofset2
+    Teuchos::RCP<NodalDofSet> nodaldofset1,
+    Teuchos::RCP<NodalDofSet> nodaldofset2
 )
 {
   //==============================================

@@ -98,7 +98,7 @@ public:
       const std::vector<Teuchos::RCP<Epetra_Vector> >&         newRowStateVectors,  /// row map based vectors w.r.t new interface position
       std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >& reconstr_method,     /// reconstruction map for nodes and its dofsets
       const Teuchos::RCP<std::set<int> >                       dbcgids              /// set of dof gids that must not be changed by ghost penalty reconstruction
-      );
+  );
 
 
   /// get for each type of reconstruction method the number of nodes for that this method has to be applied on this proc
@@ -166,7 +166,7 @@ public:
   int IdentifyOldSets(
       const GEO::CUT::Node *                                         n_old,               /// node w.r.t to old wizard
       const GEO::CUT::Node *                                         n_new,               /// node w.r.t to new wizard
-      const std::vector<GEO::CUT::NodalDofSet*> &                    dof_cellsets_old,    /// all dofcellsets at t^n
+      const std::vector<Teuchos::RCP<GEO::CUT::NodalDofSet> > &      dof_cellsets_old,    /// all dofcellsets at t^n
       const GEO::CUT::NodalDofSet*                                   cell_set_new         /// dofcellset at t^(n+1) which has to be identified
   );
 

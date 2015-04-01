@@ -453,7 +453,7 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
 
       //-------------------------------
       // t^(n+1)
-      const std::vector<GEO::CUT::NodalDofSet*> & dof_cellsets_new = n_new->NodalDofSets();
+      const std::vector<Teuchos::RCP<GEO::CUT::NodalDofSet> > & dof_cellsets_new = n_new->NodalDofSets();
 
 
 
@@ -469,7 +469,7 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
         const int nds_new = 0;
 
         // get the unique cellset
-        const GEO::CUT::NodalDofSet* nodaldofset = dof_cellsets_new[nds_new];
+        const GEO::CUT::NodalDofSet* nodaldofset = &*(dof_cellsets_new[nds_new]);
 
         if(nodaldofset->Is_Standard_DofSet()) // case b)
         {
@@ -500,11 +500,11 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
         //------------------------------------------
 
         // loop new dofsets
-        for(std::vector<GEO::CUT::NodalDofSet* >::const_iterator sets=dof_cellsets_new.begin();
+        for(std::vector<Teuchos::RCP<GEO::CUT::NodalDofSet> >::const_iterator sets=dof_cellsets_new.begin();
             sets!=dof_cellsets_new.end();
             sets ++)
         {
-          GEO::CUT::NodalDofSet* nodaldofset_new = *sets;
+          Teuchos::RCP<GEO::CUT::NodalDofSet> nodaldofset_new = *sets;
           int nds_new = sets-dof_cellsets_new.begin();
 
           if(nodaldofset_new->Is_Standard_DofSet()) // first dofset (has been checked to be a std-dofset)
@@ -558,20 +558,20 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
 
       //-------------------------------
       // t^n
-      const std::vector<GEO::CUT::NodalDofSet*> & dof_cellsets_old = n_old->NodalDofSets();
+      const std::vector<Teuchos::RCP<GEO::CUT::NodalDofSet> > & dof_cellsets_old = n_old->NodalDofSets();
 
 
       //-------------------------------
       // t^(n+1)
-      const std::vector<GEO::CUT::NodalDofSet*> & dof_cellsets_new = n_new->NodalDofSets();
+      const std::vector<Teuchos::RCP<GEO::CUT::NodalDofSet> > & dof_cellsets_new = n_new->NodalDofSets();
 
       // loop new dofsets
-      for(std::vector<GEO::CUT::NodalDofSet* >::const_iterator sets=dof_cellsets_new.begin();
+      for(std::vector<Teuchos::RCP<GEO::CUT::NodalDofSet> >::const_iterator sets=dof_cellsets_new.begin();
                 sets!=dof_cellsets_new.end();
                 sets ++)
       {
 
-        const GEO::CUT::NodalDofSet* cell_set = *sets;
+        const GEO::CUT::NodalDofSet* cell_set = &**sets;
 
         int nds_new = sets-dof_cellsets_new.begin(); // nodal dofset counter
 
@@ -591,7 +591,7 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
           if(is_std_set_np) // std at t^(n+1)
           {
             if(timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_AND_GHOST_by_Copy_or_GP)
-              dserror("no correspoinding dofset at t^n, choose a SL-based-approach for node %d", n_new->Id());
+              dserror("no corresponding dofset at t^n, choose a SL-based-approach for node %d", n_new->Id());
             else if( timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_or_SL_AND_GHOST_by_Copy_or_GP or
                      timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_SL_cut_zone_AND_GHOST_by_GP)
             {
@@ -744,7 +744,7 @@ void XFEM::XFluidTimeInt::FindSurroundingGhostDofsets(
     return;
   }
 
-  const std::vector<GEO::CUT::NodalDofSet*> & dof_cellsets = n->NodalDofSets();
+  const std::vector<Teuchos::RCP<GEO::CUT::NodalDofSet> > & dof_cellsets = n->NodalDofSets();
 
 
   // get the corresponding cellset
@@ -1080,7 +1080,7 @@ bool XFEM::XFluidTimeInt::SetReconstrMethod(
 int XFEM::XFluidTimeInt::IdentifyOldSets(
     const GEO::CUT::Node *                                         n_old,               /// node w.r.t to old wizard
     const GEO::CUT::Node *                                         n_new,               /// node w.r.t to new wizard
-    const std::vector<GEO::CUT::NodalDofSet*> &                    dof_cellsets_old,    /// all dofcellsets at t^n
+    const std::vector<Teuchos::RCP<GEO::CUT::NodalDofSet> > &      dof_cellsets_old,    /// all dofcellsets at t^n
     const GEO::CUT::NodalDofSet*                                   cell_set_new         /// dofcellset at t^(n+1) which has to be identified
 )
 {
@@ -1121,7 +1121,7 @@ int XFEM::XFluidTimeInt::IdentifyOldSets(
   // PRESELECTION via common cutting sides (for level-sets all sets have the same level-set side and are possible sets)
   //--------------------------------------------------------
   //check each old dofset for identification with new dofset
-  for(std::vector<GEO::CUT::NodalDofSet* >::const_iterator old_sets=dof_cellsets_old.begin();
+  for(std::vector<Teuchos::RCP<GEO::CUT::NodalDofSet> >::const_iterator old_sets=dof_cellsets_old.begin();
       old_sets!=dof_cellsets_old.end();
       old_sets++)
   {

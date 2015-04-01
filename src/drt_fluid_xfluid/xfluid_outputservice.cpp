@@ -134,13 +134,13 @@ void FLD::XFluidOutputService::Output(
       // if there are multiple dofsets we write output for the standard dofset
       GEO::CUT::Node* node = state->Wizard()->GetNode(xfemnode->Id());
 
-      const std::vector<GEO::CUT::NodalDofSet*> & dofcellsets = node->NodalDofSets();
+      const std::vector<Teuchos::RCP<GEO::CUT::NodalDofSet> > & dofcellsets = node->NodalDofSets();
 
       int nds = 0;
       bool is_std_set = false;
 
       // find the standard dofset
-      for(std::vector<GEO::CUT::NodalDofSet*>::const_iterator cellsets= dofcellsets.begin();
+      for(std::vector<Teuchos::RCP<GEO::CUT::NodalDofSet> >::const_iterator cellsets= dofcellsets.begin();
           cellsets!=dofcellsets.end();
           cellsets++)
       {
