@@ -1050,7 +1050,7 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
   // this clear is important to have here
   // if the discretization has been redistributed (combustion module), we have to
   // rebuild the faces and therefore we have to be sure that the map faces_ is clear
-  // therefore, the old faces are deleted and repaced by new ones
+  // therefore, the old faces are deleted and replaced by new ones
   std::map<int, Teuchos::RCP<DRT::Element> > finalFaces;
   AssignGlobalIDs( Comm(), faces, finalFaces );
   for (std::map<int, Teuchos::RCP<DRT::Element> >::iterator faceit
