@@ -209,7 +209,7 @@ void FLD::XFluidStateCreator::CreateNewCutState(
   int maxNumMyReservedDofsperNode = (maxnumdofsets_)*4;
 
   // create a new XFEM-dofset
-  dofset = Teuchos::rcp( new XFEM::XFEMDofSet( wizard , maxNumMyReservedDofsperNode, xdiscret ) );
+  dofset = Teuchos::rcp( new XFEM::XFEMDofSet( *wizard , maxNumMyReservedDofsperNode, *xdiscret ) );
 
   const int restart = DRT::Problem::Instance()->Restart();
   if ((step < 1) or restart)

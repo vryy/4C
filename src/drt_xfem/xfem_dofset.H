@@ -38,8 +38,8 @@ namespace XFEM
   public:
 
     /// constructor
-    XFEMDofSet( const Teuchos::RCP<GEO::CutWizard>& wizard , int numMyReservedDofsperNode, const Teuchos::RCP<DRT::Discretization>& dis)
-      : FixedSizeDofSet(numMyReservedDofsperNode,dis->NumGlobalNodes()),
+    XFEMDofSet( GEO::CutWizard& wizard, int numMyReservedDofsperNode, DRT::Discretization& dis)
+      : FixedSizeDofSet(numMyReservedDofsperNode,dis.NumGlobalNodes()),
         wizard_( wizard ),
         dis_(dis)
     {
@@ -48,11 +48,11 @@ namespace XFEM
     /// equality relational operator for two XFEM::DofSets based on the number of nodal dofsets for all nodes
     bool operator==(XFEMDofSet const& other)
     {
-      const int numnode = dis_->NumMyRowNodes();
+      const int numnode = dis_.NumMyRowNodes();
       for(int lid=0; lid<numnode; lid++)
       {
-        int gid = dis_->NodeRowMap()->GID(lid);
-        DRT::Node* node = dis_->gNode(gid);
+        int gid = dis_.NodeRowMap()->GID(lid);
+        DRT::Node* node = dis_.gNode(gid);
         if(NumDofPerNode( *node ) != other.NumDofPerNode( *node ))
             return false; // dofsets not equal if at least one node has a different number of nodal dofsets
       }
@@ -92,10 +92,10 @@ namespace XFEM
   private:
 
     /// the cut wizard, holds information about the number of XFEM dofsets per node
-    Teuchos::RCP<GEO::CutWizard> wizard_;
+    GEO::CutWizard& wizard_;
 
     /// background discretization
-    Teuchos::RCP<DRT::Discretization> dis_;
+    DRT::Discretization& dis_; ///< use reference instead of RCP to avoid Ringschluss in discretization
   };
 }
 
