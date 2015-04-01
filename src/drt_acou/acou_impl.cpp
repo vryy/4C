@@ -18,6 +18,7 @@ Maintainer: Svenja Schoeder
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
 #include "../drt_io/io.H"
+#include "../drt_io/io_control.H"
 #include "../drt_lib/drt_discret_hdg.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_function.H"
@@ -55,6 +56,7 @@ ACOU::AcouImplicitTimeInt::AcouImplicitTimeInt(
   dtele_          (0.0),
   dtsolve_        (0.0),
   invana_         (params_->get<bool>("invana")),
+  writemonitor_   (DRT::INPUT::IntegralValue<bool>(*params_,"WRITEMONITOR")),
   errormaps_      (DRT::INPUT::IntegralValue<bool>(*params_,"ERRORMAPS")),
   padaptivity_    (DRT::INPUT::IntegralValue<bool>(*params_,"P_ADAPTIVITY")),
   padapttol_      (params_->get<double>("P_ADAPT_TOL")),
@@ -750,6 +752,9 @@ void ACOU::AcouImplicitTimeInt::Integrate(Teuchos::RCP<Epetra_MultiVector> histo
   // time measurement: integration
   TEUCHOS_FUNC_TIME_MONITOR("ACOU::AcouImplicitTimeInt::Integrate");
 
+  // if necessary, write a monitor file
+  InitMonitorFile();
+
   // write some information for the curious user
   PrintInformationToScreen();
 
@@ -1299,6 +1304,8 @@ void ACOU::AcouImplicitTimeInt::Output(Teuchos::RCP<Epetra_MultiVector> history,
         interpolatedVelocityGradient,interpolatedVelocity,interpolatedPressure,
         traceVelocity,cellPres,phys_);
   }
+  // fill in pressure values into monitor file, if required
+  FillMonitorFile(interpolatedPressure);
 
   if( history != Teuchos::null )
   {
@@ -1602,6 +1609,129 @@ void ACOU::AcouImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
         std::cout<<"time "<<time_<<" relative L2 velocity error "<<(*relerror)[1]<<" absolute L2 velocity error "<<sqrt((*errors)[2])<< " L2 velocity norm "<<sqrt((*errors)[3])<<std::endl;
         std::cout<<"time "<<time_<<" relative L2 velgradi error "<<(*relerror)[2]<<" absolute L2 velgradi error "<<sqrt((*errors)[4])<< " L2 velgradi norm "<<sqrt((*errors)[5])<<std::endl;
       }
+    }
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  InitMonitorFile                                      schoeder 04/14 |
+ *----------------------------------------------------------------------*/
+void ACOU::AcouImplicitTimeInt::InitMonitorFile()
+{
+  if(writemonitor_)
+  {
+    FILE *fp = NULL;
+    if(myrank_==0)
+    {
+      std::string name = DRT::Problem::Instance()->OutputControlFile()->FileName();
+      name.append(".monitor");
+      fp = fopen(name.c_str(), "w");
+      if(fp == NULL)
+        dserror("Couldn't open file.");
+    }
+
+    //get condition
+    std::string condname="PressureMonitor";
+    std::vector<DRT::Condition*>pressuremon;
+    discret_->GetCondition(condname,pressuremon);
+    if(pressuremon.size()>1) dserror("write of monitor file only implemented for one pressure monitor condition");
+    const std::vector<int> pressuremonmics = *(pressuremon[0]->Nodes());
+
+    int mics=pressuremonmics.size();
+    int steps=0;
+    if(dtp_*stepmax_<maxtime_)
+      steps=stepmax_;
+    else
+      steps=maxtime_/dtp_+3; // first, last and int cut off
+
+    if(myrank_ == 0)
+    {
+      fprintf(fp,"steps %d ",steps);
+      fprintf(fp,"mics %d\n",mics);
+    }
+
+    int speakingproc=-1;
+    int helptospeak=-1;
+    const double* nod_coords;
+    double coords[3];
+
+    for(unsigned int n=0;n<pressuremonmics.size();++n)
+    {
+
+      if(discret_->HaveGlobalNode(pressuremonmics[n]))
+      {
+        helptospeak = myrank_;
+        nod_coords = discret_->gNode(pressuremonmics[n])->X();
+        coords[0]=nod_coords[0];
+        coords[1]=nod_coords[1];
+        coords[2]=nod_coords[2];
+      }
+      else
+        helptospeak = 0;
+      discret_->Comm().MaxAll(&helptospeak,&speakingproc,1);
+      discret_->Comm().Broadcast(coords,3,speakingproc);
+
+      if(myrank_==0)
+        fprintf(fp,"%e %e %e\n",coords[0],coords[1],coords[2]);
+    }
+    if(myrank_ == 0)
+    {
+      fprintf(fp,"#\n#\n#\n");
+      fclose(fp);
+    }
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  FillMonitorFile                                      schoeder 04/14 |
+ *----------------------------------------------------------------------*/
+void ACOU::AcouImplicitTimeInt::FillMonitorFile(Teuchos::RCP<Epetra_Vector> ip)
+{
+  if(writemonitor_)
+  {
+    FILE *fp = NULL;
+    if(myrank_==0)
+    {
+     std::string name = DRT::Problem::Instance()->OutputControlFile()->FileName();
+     name.append(".monitor");
+     fp = fopen(name.c_str(), "a");
+    }
+
+    // get condition
+    std::string condname="PressureMonitor";
+    std::vector<DRT::Condition*>pressuremon;
+    discret_->GetCondition(condname,pressuremon);
+    const std::vector<int> pressuremonmics = *(pressuremon[0]->Nodes());
+    int mics=pressuremonmics.size();
+
+    if(myrank_==0) fprintf(fp,"%e ",time_);
+    int helptospeak=-1;
+    int speakingproc=-1;
+    double pressure = 0.0;
+
+    for(int n=0;n<mics;n++)
+    {
+      if(discret_->HaveGlobalNode(pressuremonmics[n]))
+      {
+        if(ip->Map().LID(pressuremonmics[n])>=0)
+        {
+          helptospeak=myrank_;
+          pressure=ip->operator [](ip->Map().LID(pressuremonmics[n]));
+        }
+      }
+      else
+        helptospeak = -1;
+      discret_->Comm().MaxAll(&helptospeak,&speakingproc,1);
+      discret_->Comm().Broadcast(&pressure,1,speakingproc);
+
+      if(myrank_==0) fprintf(fp,"%e ", pressure);
+    }
+    if(myrank_==0)
+    {
+      fprintf(fp,"\n");
+      fclose(fp);
     }
   }
   return;

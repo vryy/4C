@@ -146,6 +146,11 @@ public:
   Teuchos::RCP<DRT::Discretization> Discretization();
   Teuchos::RCP<Epetra_Vector> Velnp()   { return velnp_; }
 
+  /// init a monitor file
+  void InitMonitorFile();
+
+  /// fill monitor file
+  void FillMonitorFile(Teuchos::RCP<Epetra_Vector> ip);
 
   /// create result test for encapsulated structure algorithm
   virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
@@ -189,6 +194,7 @@ protected:
   double  dtsolve_;                     /// solver time
 
   bool invana_;                         /// flag indicating whether inverse analysis is performed
+  bool writemonitor_;                   /// flag indicating if a monitor file is written
   bool errormaps_;                      /// flag indicating whether error maps are calculated
   bool padaptivity_;                    /// p-adaptivity flag
   double padapttol_;                    /// p-adaptivity error tolerance

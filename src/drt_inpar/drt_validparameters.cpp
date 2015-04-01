@@ -8038,6 +8038,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                     INPAR::ACOU::acou_bdf4),
                     &acousticdyn);
 
+  BoolParameter("WRITEMONITOR","No","Write a monitor file for Pressure Monitor Condition",&acousticdyn);
   setStringToIntegralParameter<int>("INV_ANALYSIS","none",
                  "Types of inverse analysis and on/off switch",
                  tuple<std::string>(
