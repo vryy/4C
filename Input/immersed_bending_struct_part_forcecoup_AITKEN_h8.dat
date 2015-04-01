@@ -110,6 +110,7 @@ FORCE_RELAX                     1
 VEL_RELAX                       1
 FLD_SRCHRADIUS_FAC              1
 STRCT_SRCHRADIUS_FAC            0.5
+TIMESTATS                       endofsim // everyiter
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

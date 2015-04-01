@@ -97,6 +97,13 @@ protected:
   //!Teuchos::RCP<Epetra_Map> bdry_gp_columnmap_;
   //@}
 
+  /// basic information for parallelism
+  int myrank_;
+  int numproc_;
+
+  /// pointer to global problem
+  DRT::Problem* globalproblem_;
+
   bool displacementcoupling_;
   bool multibodysimulation_;
   double forcerelax_;

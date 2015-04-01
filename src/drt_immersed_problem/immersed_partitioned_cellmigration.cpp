@@ -462,7 +462,7 @@ void IMMERSED::ImmersedPartitionedCellMigration::BuildImmersedDirichMap(Teuchos:
       DRT::Node** nodes = immersedele->Nodes();
       for (int inode=0; inode<(immersedele->NumNode()); inode++)
       {
-        if(static_cast<IMMERSED::ImmersedNode* >(nodes[inode])->IsMatched())
+        if(static_cast<IMMERSED::ImmersedNode* >(nodes[inode])->IsMatched() and nodes[inode]->Owner()==myrank_)
         {
           std::vector<int> dofs = dis->Dof(dofsetnum,nodes[inode]);
 

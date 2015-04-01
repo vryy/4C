@@ -3103,7 +3103,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityGradientAnd
     dserror("no support for discretization guaranteed. check for valid material.");
 
   // resize vector to the size of the nsd_ times nsd_ independent entries of the velocity gradient du/dx and the pressure
-  // causes seg fault -> therefore commented; needs to be investigated. elevec1 is directly build with a size of 10 for now
+  // causes seg fault -> therefore commented; needs to be investigated. elevec1 is directly built with a size of 10 for now
   //elevec1_epetra.Resize(nsd_*nsd_+1);
 
   // save point anew for safety -> check later if elevec2_epetra can be use directly

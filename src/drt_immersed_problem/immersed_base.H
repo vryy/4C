@@ -236,10 +236,13 @@ public:
         // every proc that has searchboxgeom elements
         for (curr=searchboxgeom.begin(); curr!=searchboxgeom.end(); ++curr)
         {
-          bool converged = false;
+          // only proc who owns background searchbox ele is supposed to interpolate and is set IsImmersedBoundary(true)
+          if(curr->second->Owner()==myrank)
+          {
+            bool converged = false;
 
-          // get parameter space coords xi in source element
-          MORTAR::UTILS::GlobalToLocal<sourcedistype>(*(curr->second),&xvec[0],&xi(0),converged);
+            // get parameter space coords xi in source element
+            MORTAR::UTILS::GlobalToLocal<sourcedistype>(*(curr->second),&xvec[0],&xi(0),converged);
 
 //  # ifdef DEBUG
 //          if(!converged)
@@ -247,98 +250,99 @@ public:
 //            dserror("MAPPING FROM SOURCE POINT TO TARGET DID NOT CONVERGE");
 //          }
 //  # endif
-          /////////////////////////////////////////////////
-          ////
-          ////     MATCH
-          ////
-          /////////////////////////////////////////////////
-          double tol = 1e-12;
-          if ((abs(xi(0))-1.0)<tol and (abs(xi(1))-1.0)<tol and (abs(xi(2))-1.0)<tol)
-          { // given point lies in element curr
 
-            bool validsource = true;
-            double scalarproduct= 0.0;
-            Teuchos::RCP<Epetra_SerialDenseVector> vector;
+            /////////////////////////////////////////////////
+            ////
+            ////     MATCH
+            ////
+            /////////////////////////////////////////////////
+            double tol = 1e-12;
+            if ((abs(xi(0))-1.0)<tol and (abs(xi(1))-1.0)<tol and (abs(xi(2))-1.0)<tol)
+            { // given point lies in element curr
 
-            sourceele = curr->second.getRawPtr();
+              bool validsource = true;
+              double scalarproduct= 0.0;
+              Teuchos::RCP<Epetra_SerialDenseVector> vector;
 
-            // parameter list
-            params.set<int>("action", action);
-            // fill locationarray
-            DRT::Element::LocationArray sourcela(1);
-            sourceele->LocationVector(*sourcedis,sourcela,false);
+              sourceele = curr->second.getRawPtr();
 
-            (*xi_dense)(0)=xi(0);
-            (*xi_dense)(1)=xi(1);
-            (*xi_dense)(2)=xi(2);
+              // parameter list
+              params.set<int>("action", action);
+              // fill locationarray
+              DRT::Element::LocationArray sourcela(1);
+              sourceele->LocationVector(*sourcedis,sourcela,false);
 
-            // does targetpoint lie on an element edge?
-            // only the sourceele located outward from the boundary should interpolate
-            if( (abs(xi(0))<(1.0+tol) and abs(xi(0))>(1.0-tol)) or (abs(xi(1))<(1.0+tol) and abs(xi(1))>(1.0-tol)) or (abs(xi(2))<(1.0+tol) and abs(xi(2))>(1.0-tol)))
-            {
-//              // calc sourcele diagonal length
-//              const double* X0 = sourceele->Nodes()[0]->X();
-//              const double* X6 = sourceele->Nodes()[1]->X();
-//              double srcelediaglength = sqrt(pow(X0[0]-X6[0],2)+pow(X0[1]-X6[1],2)+pow(X0[2]-X6[2],2));
+              (*xi_dense)(0)=xi(0);
+              (*xi_dense)(1)=xi(1);
+              (*xi_dense)(2)=xi(2);
 
-              // get nodal coords of source ele
-              vector = Teuchos::rcp(new Epetra_SerialDenseVector(3));
-              std::vector<double> distances(sourceele->NumNode());
-              for(int sourcenode=0; sourcenode<sourceele->NumNode(); sourcenode++)
+              // does targetpoint lie on an element edge?
+              // only the sourceele located outward from the boundary should interpolate
+              if( (abs(xi(0))<(1.0+tol) and abs(xi(0))>(1.0-tol)) or (abs(xi(1))<(1.0+tol) and abs(xi(1))>(1.0-tol)) or (abs(xi(2))<(1.0+tol) and abs(xi(2))>(1.0-tol)))
               {
-                const double* X;
-                X = sourceele->Nodes()[sourcenode]->X();
+                //              // calc sourcele diagonal length
+                //              const double* X0 = sourceele->Nodes()[0]->X();
+                //              const double* X6 = sourceele->Nodes()[1]->X();
+                //              double srcelediaglength = sqrt(pow(X0[0]-X6[0],2)+pow(X0[1]-X6[1],2)+pow(X0[2]-X6[2],2));
 
-                distances[sourcenode] = sqrt(pow(xvec[0]-X[0],2)+pow(xvec[1]-X[1],2)+pow(xvec[2]-X[2],2));
-
-              }
-
-              // get max. distance and corresponding index of src node
-              int maxdistanceindex = -1;
-              double maxvalue = 0.0;
-              for(int i=0; i<(int)distances.size();++i)
-              {
-                if(distances[i]>maxvalue)
+                // get nodal coords of source ele
+                vector = Teuchos::rcp(new Epetra_SerialDenseVector(3));
+                std::vector<double> distances(sourceele->NumNode());
+                for(int sourcenode=0; sourcenode<sourceele->NumNode(); sourcenode++)
                 {
-                  maxvalue = distances[i];
-                  maxdistanceindex = i;
+                  const double* X;
+                  X = sourceele->Nodes()[sourcenode]->X();
+
+                  distances[sourcenode] = sqrt(pow(xvec[0]-X[0],2)+pow(xvec[1]-X[1],2)+pow(xvec[2]-X[2],2));
+
                 }
-              }
 
-              const double* X;
-              X = sourceele->Nodes()[maxdistanceindex]->X();
-              // build vector directed from targetele point (xvec) to sourceel node (X)
-              // xvec should not lie at same ele surface as sourcenode
-              (*vector)(0) = X[0]-xvec[0];
-              (*vector)(1) = X[1]-xvec[1];
-              (*vector)(2) = X[2]-xvec[2];
-              vector->Scale(vector->Norm2());
+                // get max. distance and corresponding index of src node
+                int maxdistanceindex = -1;
+                double maxvalue = 0.0;
+                for(int i=0; i<(int)distances.size();++i)
+                {
+                  if(distances[i]>maxvalue)
+                  {
+                    maxvalue = distances[i];
+                    maxdistanceindex = i;
+                  }
+                }
 
-              // build scalar product between normal and vector
-              scalarproduct = (*vector)(0) * normal_vec[0] + (*vector)(1) * normal_vec[1] + (*vector)(2) * normal_vec[2];
+                const double* X;
+                X = sourceele->Nodes()[maxdistanceindex]->X();
+                // build vector directed from targetele point (xvec) to sourceel node (X)
+                // xvec should not lie at same ele surface as sourcenode
+                (*vector)(0) = X[0]-xvec[0];
+                (*vector)(1) = X[1]-xvec[1];
+                (*vector)(2) = X[2]-xvec[2];
+                vector->Scale(vector->Norm2());
 
-              if(scalarproduct > 0.0)
-                validsource = true;
-              else
-                validsource = false;
+                // build scalar product between normal and vector
+                scalarproduct = (*vector)(0) * normal_vec[0] + (*vector)(1) * normal_vec[1] + (*vector)(2) * normal_vec[2];
+
+                if(scalarproduct > 0.0)
+                  validsource = true;
+                else
+                  validsource = false;
 
 #ifdef DEBUG
-              if(abs(scalarproduct) < 1e-13 and validsource)
-              {
-                std::cout<<"scalarproduct = "<<scalarproduct<<std::endl;
-                dserror("normal vec and vec from point to node perpendicular.\n"
-                        "no robust determination of outward lying src ele possible");
-              }
-              if(abs(scalarproduct) < -1e-12 and validsource)
-              {
-                std::cout<<"scalarproduct = "<<scalarproduct<<std::endl;
-                dserror("normal vec and vec from point to node have no sharp angle.\n"
-                        "no robust determination of outward laying src ele possible");
-              }
+                if(abs(scalarproduct) < 1e-13 and validsource)
+                {
+                  std::cout<<"scalarproduct = "<<scalarproduct<<std::endl;
+                  dserror("normal vec and vec from point to node perpendicular.\n"
+                      "no robust determination of outward lying src ele possible");
+                }
+                if(abs(scalarproduct) < -1e-12 and validsource)
+                {
+                  std::cout<<"scalarproduct = "<<scalarproduct<<std::endl;
+                  dserror("normal vec and vec from point to node have no sharp angle.\n"
+                      "no robust determination of outward laying src ele possible");
+                }
 #endif
 
-              //count++;
-            } // if on element edge
+                //count++;
+              } // if on element edge
 
 
             // evaluate and perform action handed in to this function
@@ -367,6 +371,7 @@ public:
             else
               matched = 0;
 
+          } // if myrank == owner of searchbox ele
           }// if match
         }// loop over all seachbox elements
       }// enter loop only if point not yet matched

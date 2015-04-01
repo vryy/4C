@@ -133,9 +133,11 @@ protected:
   /// poroelast subproblem
   Teuchos::RCP<POROELAST::Monolithic>       poroelast_subproblem_;
 
+  /// basic information for parallelism
   int myrank_;
   int numproc_;
 
+  /// pointer to global problem
   DRT::Problem* globalproblem_;
 
   bool displacementcoupling_;
