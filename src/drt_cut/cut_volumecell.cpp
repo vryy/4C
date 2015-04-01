@@ -1193,13 +1193,13 @@ void GEO::CUT::VolumeCell::DirectDivergenceGaussRule( Element *elem,
     isNegligibleSmall_ = true;
   }
 
-#if 0 // integrate a predefined function
-  dd.IntegrateSpecificFuntions( gpi, RefEqnPlane_, intGP_ );
-#endif
-
-#ifdef DEBUGCUTLIBRARY  // write volumecell, main and internal Gauss points
-  dd.DivengenceCellsGMSH( gpi, intGP_ );
-#endif
+//#if 0 // integrate a predefined function
+//  dd.IntegrateSpecificFuntions( gpi, RefEqnPlane_, intGP_ );
+//#endif
+//
+//#ifdef DEBUGCUTLIBRARY  // write volumecell, main and internal Gauss points
+//  dd.DivengenceCellsGMSH( gpi, intGP_ );
+//#endif
 
   // generate boundary cells -- when using tessellation this is automatically done
   GenerateBoundaryCells( mesh, posi, elem, 0, INPAR::CUT::BCellGaussPts_Tessellation );
