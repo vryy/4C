@@ -774,6 +774,34 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     }
     /*------------------------------------------------------------------*/
 
+    // rough safety check whether chosen time step is within stability criterion
+    // of explicit time integration scheme: acc * \Delta t < v_rel (*safety factor 0.5)
+    const double invmass = 1.0 / (vol_b * rho_b);
+    for(int d=0; d<dim; ++d)
+    {
+      // ignore case with v_rel close to zero
+      const double acc = bubbleforce(d) *invmass;
+      const double deltav = acc*particles_->Dt();
+      if(v_rel(d) > 1.0e-12)
+      {
+        if(deltav > 0.5*v_rel(d))
+        {
+          std::cout << "in v_rel > 0: deltav from acceleration: " << deltav << " vs v_rel: " << v_rel(d) << std::endl;
+          std::cout << "WARNING: Time step for particle " << currparticle->Id() << " is too large ! "
+              "Maximum time step should be smaller than:" << fabs(v_rel(d)/(2*acc)) << std::endl;
+        }
+      }
+      else if(v_rel(d) < -1.0e-12)
+      {
+        if(deltav < 0.5*v_rel(d))
+        {
+          std::cout << "in v_rel < 0: deltav from acceleration: " << deltav << " vs v_rel: " << v_rel(d) << std::endl;
+          std::cout << "WARNING: Time step for particle " << currparticle->Id() << " is too large ! "
+              "Maximum time step should be smaller than:" << fabs(v_rel(d)/(2*acc)) << std::endl;
+        }
+      }
+    }
+
     //--------------------------------------------------------------------
     // 3rd step: assemble bubble/fluid forces
     //--------------------------------------------------------------------

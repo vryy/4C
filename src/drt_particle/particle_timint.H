@@ -312,6 +312,9 @@ namespace PARTICLE
       return;
     }
 
+    //! Get time step size \f$\Delta t_n\f$
+    virtual double Dt() const { return (*dt_)[0]; }
+
     //@}
 
   protected:

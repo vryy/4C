@@ -187,6 +187,9 @@ namespace ADAPTER
     /// Set time and step
     virtual void SetTimeStep(const double time, const int step) = 0;
 
+    /// Get time step size \f$\Delta t_n\f$
+    virtual double Dt() const = 0;
+
     //@}
 
   };  // class Particle
