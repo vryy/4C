@@ -1663,8 +1663,7 @@ void ACOU::InvAnalysis::EstimateMua()
   // Calculate middle point of monitor line
 
   // load number of nods in the circle around the measurement geometry
-  int N=0;
-  N=pressuremonmicsunique.size();
+  int N=pressuremonmicsunique.size();
   double middlepoint[3];
   double nod_coords[N][3];
   for(int nd=0;nd<N;++nd)
@@ -1684,7 +1683,7 @@ void ACOU::InvAnalysis::EstimateMua()
   {
     for(unsigned int i=0;i<3;++i)
     {
-      int m=abs((N/3)*(i+1)-1);
+      int m= int(N/3)*(i+1)-1;
       LHS(i,0)=1;
       LHS(i,1)= -nod_coords[m][0];
       LHS(i,2)= -nod_coords[m][1];
