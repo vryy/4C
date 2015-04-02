@@ -52,7 +52,7 @@ void POROELAST::PORO_SCATRA_Part_2WC::Timeloop()
   {
     PrepareTimeStep();
 
-    OuterLoop();
+    Solve();
 
     UpdateAndOutput();
 
@@ -180,7 +180,7 @@ void POROELAST::PORO_SCATRA_Part_2WC::UpdateAndOutput()
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
-void POROELAST::PORO_SCATRA_Part_2WC::OuterLoop()
+void POROELAST::PORO_SCATRA_Part_2WC::Solve()
 {
   int  itnum = 0;
   bool stopnonliniter = false;

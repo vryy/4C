@@ -211,7 +211,7 @@ void POROELAST::UTILS::PoroelastImmersedCloneStrategy::SetElementData(
     if(so_base)
     {
       fluid->SetKinematicType(so_base->KinematicType());
-      if(so_base->KinematicType()==0)
+      if(so_base->KinematicType()==INPAR::STR::kinem_vague)
         dserror("undefined kinematic type");
     }
     else

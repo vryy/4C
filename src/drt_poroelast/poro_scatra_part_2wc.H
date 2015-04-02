@@ -50,7 +50,7 @@ namespace POROELAST
     void DoScatraStep();
 
     //! perform iteration loop between fields
-    void OuterLoop();
+    void Solve();
 
     //! update time step and print to screen
     void UpdateAndOutput();
