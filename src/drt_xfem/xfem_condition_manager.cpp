@@ -18,6 +18,7 @@ Maintainer: Benedikt Schott
 
 #include "xfem_condition_manager.H"
 #include "xfem_utils.H"
+#include "xfem_discretization_utils.H"
 
 #include "../drt_inpar/inpar_xfem.H"
 

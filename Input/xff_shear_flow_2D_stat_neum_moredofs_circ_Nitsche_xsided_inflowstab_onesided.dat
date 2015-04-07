@@ -144,7 +144,7 @@ E 2 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT
 DSURF 1
 // xfem surfaces
 E 3 - 1 xfluid
-------------------------------------------DESIGN MOVING FLUID VOL CONDITIONS
+------------------------------------------DESIGN FLUID MESH VOL CONDITIONS
 DVOL 1
 // Fluid 2 volume
 E 2 - 1

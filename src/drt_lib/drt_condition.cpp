@@ -134,7 +134,7 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==XFEM_Surf_Neumann)             os << "XFEM Surface Neumann boundary condition: ";
   else if (Type()==FluidFluidCoupling)            os << "Fluid Fluid Coupling condition: ";
   else if (Type()==ALEFluidCoupling)              os << "ALE Fluid Coupling condition: ";
-  else if (Type()==MovingFluid)                   os << "Moving Fluid Vol condition: ";
+  else if (Type()==FluidMesh)                     os << "Create standalone fluid mesh from condition: ";
   else if (Type()==LineLIFTDRAG)                  os << "Line LIFTDRAG condition: ";
   else if (Type()==SurfLIFTDRAG)                  os << "Surf LIFTDRAG condition: ";
   else if (Type()==FREESURFCoupling)              os << "Free surface condition: ";

@@ -126,7 +126,7 @@ E 5 - 1
 DSURF 1
 // xfem
 E 2 - 1 xfluid
-------------------------------------------DESIGN MOVING FLUID VOL CONDITIONS
+------------------------------------------DESIGN FLUID MESH VOL CONDITIONS
 DVOL 1
 // embedded volume
 E 2 - 1

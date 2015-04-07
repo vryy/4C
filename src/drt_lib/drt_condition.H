@@ -146,7 +146,7 @@ public:
     XFEM_Surf_Weak_Dirichlet,
     XFEM_Surf_Neumann,
     FluidFluidCoupling,
-    MovingFluid,
+    FluidMesh,
     ALEFluidCoupling,
     FluidStressCalc,
     LineLIFTDRAG,

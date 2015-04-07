@@ -21,18 +21,6 @@ namespace XFEM
 {
   namespace UTILS
   {
-    void PrintDiscretizationToStream(
-      Teuchos::RCP<DRT::Discretization> dis,
-      const std::string& disname,
-      bool elements,
-      bool elecol,
-      bool nodes,
-      bool nodecol,
-      bool faces,
-      bool facecol,
-      std::ostream& s,
-      std::map<int, LINALG::Matrix<3,1> >* curr_pos = NULL
-    );
 
     //! extract the nodal vectors and store them in node-vector-map
     //! \author schott \date 01/13

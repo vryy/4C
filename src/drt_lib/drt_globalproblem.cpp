@@ -1004,13 +1004,14 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     std::set<std::string> fluidelementtypes;
     fluidelementtypes.insert("FLUID");
     fluidelementtypes.insert("FLUIDXW");
-    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", fluidelementtypes)));
 
     if (xfluiddis != Teuchos::null)
     {
-      // Todo:  "FLUID_BACKGROUND"
       nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", fluidelementtypes)));
     }
+    else
+      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", fluidelementtypes)));
+
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
 
     break;
@@ -1129,7 +1130,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       fluiddis  = Teuchos::rcp(new DRT::DiscretizationFaces("fluid",reader.Comm()));
       fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
       AddDis("fluid", fluiddis);
-      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", "FLUID")));
 
       xfluiddis  = Teuchos::rcp(new DRT::DiscretizationXFEM("xfluid",reader.Comm()));
       xfluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(xfluiddis)));
@@ -1327,11 +1327,13 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     }
     AddDis("ale", aledis);
 
-    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS",fluidelementtypes)));
     if (xfluiddis!=Teuchos::null)
     {
       nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS",fluidelementtypes)));
     }
+    else
+      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS",fluidelementtypes)));
+
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
 
     break;

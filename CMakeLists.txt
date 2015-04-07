@@ -651,6 +651,7 @@ set(OBJS_DRT_XFEM_COMBUST
 
 set(OBJS_DRT_XFEM
   src/drt_xfem/xfem_edgestab.cpp
+  src/drt_xfem/xfem_discretization_utils.cpp
   src/drt_xfem/xfem_dofset_transparent_independent.cpp
   src/drt_xfem/xfem_dofset.cpp
   src/drt_xfem/xfem_neumann.cpp

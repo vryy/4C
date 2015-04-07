@@ -133,7 +133,7 @@ E 2 - 1 xfluid
 DSURF 1
 // fluidfluid
 E 4 - 1
-------------------------------------------DESIGN MOVING FLUID VOL CONDITIONS
+------------------------------------------DESIGN FLUID MESH VOL CONDITIONS
 DVOL 1
 // embedded volume
 E 2 - 1

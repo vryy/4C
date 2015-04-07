@@ -142,7 +142,7 @@ E 2 - 1 embedded
 DSURF 1
 // fluid fluid
 E 5 - 1
-------------------------------------------DESIGN MOVING FLUID VOL CONDITIONS
+------------------------------------------DESIGN FLUID MESH VOL CONDITIONS
 DVOL 1
 // embedded volume
 E 2 - 1

@@ -2103,10 +2103,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   xfemcomponents.push_back(Teuchos::rcp(new IntConditionComponent("label")));
 
   Teuchos::RCP<ConditionDefinition> movingfluid =
-        Teuchos::rcp(new ConditionDefinition("DESIGN MOVING FLUID VOL CONDITIONS",
-                                             "MovingFluid",
-                                             "Moving Fluid",
-                                             DRT::Condition::MovingFluid,
+        Teuchos::rcp(new ConditionDefinition("DESIGN FLUID MESH VOL CONDITIONS",
+                                             "FluidMesh",
+                                             "Fluid Mesh",
+                                             DRT::Condition::FluidMesh,
                                              true,
                                              DRT::Condition::Volume));
   Teuchos::RCP<ConditionDefinition> fluidfluidcoupling =

@@ -125,7 +125,7 @@ DSURF 1
 E 4 - 1 xfluid
 ---------------------------------DESIGN FLUID FLUID COUPLING SURF CONDITIONS
 DSURF 0
-------------------------------------------DESIGN MOVING FLUID VOL CONDITIONS
+------------------------------------------DESIGN FLUID MESH VOL CONDITIONS
 DVOL 1
 // Fluid volume
 E 1 - 1

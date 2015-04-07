@@ -22,7 +22,7 @@ Maintainer:  Raffaela Kruse
 #include "../linalg/linalg_utils.H"
 
 #include "../drt_xfem/xfem_condition_manager.H"
-#include "../drt_xfem/xfem_utils.H"
+#include "../drt_xfem/xfem_discretization_utils.H"
 #include "../drt_xfem/xfem_edgestab.H"
 
 #include "../drt_cut/cut_elementhandle.H"

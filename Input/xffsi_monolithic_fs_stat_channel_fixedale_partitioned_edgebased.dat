@@ -189,7 +189,7 @@ E 2 - 1 xfluid
 ---------------------------------DESIGN FLUID FLUID COUPLING SURF CONDITIONS
 DSURF 1
 E 2 - 1
-------------------------------------------DESIGN MOVING FLUID VOL CONDITIONS
+------------------------------------------DESIGN FLUID MESH VOL CONDITIONS
 DVOL 1
 E 1 - 1
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
