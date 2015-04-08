@@ -104,6 +104,10 @@ void FS3I::ACFSI::ReadRestart()
         Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> currscatra = scatravec_[i];
         currscatra->ScaTraField()->ReadRestart(restart);
       }
+
+      //AC-FSI specific input
+      IO::DiscretizationReader reader = IO::DiscretizationReader(fsi_->FluidField()->Discretization(),restart*fsiperssisteps_);
+      reader.ReadVector(WallShearStress_, "wss");
     }
     else //we do not want to read the scatras values and the lagrange multiplyer, since we start from a partitioned FSI
     {
@@ -114,6 +118,29 @@ void FS3I::ACFSI::ReadRestart()
       fsi_->AleField()->ReadRestart(restart*fsiperssisteps_);
 
       fsi_->SetTimeStep(fsi_->FluidField()->Time(),fsi_->FluidField()->Step());
+
+      //AC-FSI specific input
+      IO::DiscretizationReader reader = IO::DiscretizationReader(fsi_->FluidField()->Discretization(),restart*fsiperssisteps_);
+      reader.ReadVector(WallShearStress_, "wss");
+
+      // We may want to calculate the initial time deriv, since the scatra field is new.
+      // This has to be done before setting the step in the scatra fields, because step_ it needs to be zero.
+      const Teuchos::ParameterList& scatradynparams = DRT::Problem::Instance()->ScalarTransportDynamicParams();
+      const bool skiptimederiv = DRT::INPUT::IntegralValue<int>(scatradynparams,"SKIPINITDER");
+      std::cout<<__FILE__<<__LINE__<<std::endl;
+      if (not skiptimederiv)
+      {
+        std::cout<<__FILE__<<__LINE__<<std::endl;
+        SetMeshDisp();
+        SetVelocityFields();
+        //SetFSISolution(); //Before we have to set the velocity fields
+
+        for (unsigned i=0; i<scatravec_.size(); ++i)
+          {
+            Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> currscatra = scatravec_[i];
+            currscatra->ScaTraField()->PrepareFirstTimeStep();
+          }
+      }
 
       //we need to set time and step in scatra to have it matching with the fsi ones
       for (unsigned i=0; i<scatravec_.size(); ++i)
@@ -711,7 +738,7 @@ void FS3I::ACFSI::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector> >& ws
       WallShearStress_->Update(1.0,*WallShearStress,0.0); //Update
       break;
     case INPAR::FLUID::wss_mean: //we use the mean WSS from the last period..
-      if ( (fmod(time_+ 1e-10,fsiperiod_)-1e-10) <= dt_-1e-12 ) //..and update the mean wss vector iff a new period has started
+      if ( step_>1 and (fmod(time_+ 1e-10,fsiperiod_)-1e-10) <= dt_-1e-12 ) //..and update the mean wss vector iff a new period has started
       {
         WallShearStress_->Update(1.0,*WallShearStress,0.0); //Update
         if (Comm().MyPID()==0)
