@@ -93,7 +93,6 @@ BOUNDARY_GAUSS_POINTS_BY        Tessellation                  //MomentFitting //
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche
-COUPLING_STRATEGY               xfluid_sided_weak_DBC
 VISC_ADJOINT_SYMMETRY           yes
 NIT_STAB_FAC                    35.0
 VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk

@@ -133,7 +133,6 @@ XFLUIDFLUID_TIMEINT             Xff_TimeInt_FullProj
 XFLUID_TIMEINT                  STD=COPY/SL_and_GHOST=COPY/GP
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Hybrid_LM_viscous_stress
-COUPLING_STRATEGY               xfluid_sided_weak_DBC
 CONV_STAB_SCALING               abs_inflow
 GHOST_PENALTY_STAB              yes                           //yes
 GHOST_PENALTY_2nd_STAB          yes

@@ -135,9 +135,6 @@ namespace DRT
         //!  evaluate shape function, derivatives and transformation w.r.t coupling slave element at gaussian point
         void Evaluate( LINALG::Matrix<nsd_,1> & xside );
 
-        //!  evaluate shape function w.r.t coupling slave element at gaussian point
-        void Evaluate2D( LINALG::Matrix<2,1> & xside );
-
         //! compute coupling slave element's characteristic element length (for 3D-elements)
         void ComputeCharElementLength( double & h_k );
 
@@ -150,9 +147,9 @@ namespace DRT
 
         //! project gaussian point from linearized interface in normal direction onto corresponding side
         void ProjectOnSide(
-          LINALG::Matrix<nsd_,1> & x_gp_lin,       ///< global coordinates of gaussian point w.r.t linearized interface
-          LINALG::Matrix<nsd_,1> & x_side,         ///< projected gaussian point on side
-          LINALG::Matrix<nsd_-1,1> & xi_side       ///< local coordinates of projected gaussian point w.r.t side
+          LINALG::Matrix<nsd_,1> & x_gp_lin,     ///< global coordinates of gaussian point w.r.t linearized interface
+          LINALG::Matrix<nsd_,1> & x_side,       ///< projected gaussian point on side
+          LINALG::Matrix<nsd_,1> & xi_side       ///< local coordinates of projected gaussian point w.r.t side
         );
 
         //! evaluate shape functions and derivatives at element center

@@ -224,12 +224,6 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::SetupXFEMDiscretization(
   std::vector<DRT::Condition*> conditions;
   xdis->GetCondition("FluidMesh",conditions);
 
-  // if only one fluid mesh condition is set, this is the embedded discretization
-#ifndef DEBUG
-  if (conditions.size() == 1)
-    std::cout << "Received only one Fluid Mesh condition. Creating single embedded fluid discretization from it." << std::endl;
-#endif
-
   std::vector<std::string> conditions_to_copy;
   xdis->GetConditionNames(conditions_to_copy);
 

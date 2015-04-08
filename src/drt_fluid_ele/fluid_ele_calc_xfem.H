@@ -341,7 +341,6 @@ private:
   //! build matrices from volume-based terms for Cauchy & viscous stress-based mixed/hybrid LM-coupling
   //! \author kruse \date 06/14
   void HybridLM_Build_VolBased(
-      const INPAR::XFEM::Hybrid_LM_L2_Proj                                                        hybrid_lm_l2_proj,
       const std::vector<DRT::UTILS::GaussIntegration> &                                           intpoints,
       const GEO::CUT::plain_volumecell_set&                                                       cells,
       const LINALG::Matrix<my::nsd_, my::nen_> &                                                  evelaf,            ///< element velocity

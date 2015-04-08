@@ -114,7 +114,6 @@ GMSH_DEBUG_OUT                  No
 XFLUIDFLUID                     yes
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche                       // BoundaryTypeNitsche // BoundaryTypeNeumann
-COUPLING_STRATEGY               embedded_sided_coupling
 IS_PSEUDO_2D                    yes
 NIT_STAB_FAC                    20.0
 VISC_STAB_HK                    vol_equivalent

@@ -115,7 +115,6 @@ BOUNDARY_GAUSS_POINTS_BY        Tessellation //Tessellation
 //XFLUID_TIMEINT
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche
-COUPLING_STRATEGY               two_sided_coupling
 VISC_ADJOINT_SYMMETRY           yes
 NIT_STAB_FAC                    75.0
 VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk

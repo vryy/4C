@@ -976,7 +976,7 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
         if (is_mesh_coupling_side)
         {
           // project gaussian point from linearized interface to warped side (get/set local side coordinates in SideImpl)
-          LINALG::Matrix<2,1> xi_side(true);
+          LINALG::Matrix<3,1> xi_side(true);
           // project on boundary element
           si->ProjectOnSide(x_gp_lin, x_side, xi_side);
 
@@ -1266,9 +1266,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
   // build matrices K (based on volume terms)
   //--------------------------------------------------------
 
-  // L2-projection between stress fields on whole or on physical element volume?
-  INPAR::XFEM::Hybrid_LM_L2_Proj hybrid_lm_l2_proj = fldparaxfem_->HybridLM_L2Proj();
-
   // in case of MHVS we have a stabilizing parameter!
   double mhvs_param = 1.0;
   if (is_MHVS)
@@ -1286,7 +1283,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
 
   // build volumetric coupling matrices
   HybridLM_Build_VolBased(
-      hybrid_lm_l2_proj,
       intpoints, vcSet,
       evelaf, epreaf,
       bK_ss, invbK_ss, K_su, rhs_s, K_us, K_uu, rhs_uu,
@@ -1666,7 +1662,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
         if (is_mesh_coupling_side)
         {
           // project gaussian point from linearized interface to warped side (get/set local side coordinates in SideImpl)
-          LINALG::Matrix<2,1> xi_side(true);
+          LINALG::Matrix<3,1> xi_side(true);
           // project on boundary element
           si->ProjectOnSide(x_gp_lin, x_side, xi_side);
 
@@ -1675,9 +1671,9 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
             dserror("embedded or two-sided weighting not supported"); // evaluate embedded element's shape functions at gauss-point coordinates
           else
           {
-            ci.at(coup_sid)->Evaluate2D( xi_side ); // evaluate side's shape functions at gauss-point coordinates
+            ci.at(coup_sid)->Evaluate( xi_side ); // evaluate side's shape functions at gauss-point coordinates
             if(add_conv_stab || my::fldparatimint_->IsNewOSTImplementation())
-              si_nit.at(coup_sid)->Evaluate2D( xi_side ); // evaluate side's shape functions at gauss-point coordinates
+              si_nit.at(coup_sid)->Evaluate( xi_side ); // evaluate side's shape functions at gauss-point coordinates
           }
         }
         else if (is_ls_coupling_side)
@@ -2404,7 +2400,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
  *-------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void FluidEleCalcXFEM<distype>::HybridLM_Build_VolBased(
-    const INPAR::XFEM::Hybrid_LM_L2_Proj                                                        hybrid_lm_l2_proj,
     const std::vector<DRT::UTILS::GaussIntegration> &                                           intpoints,
     const GEO::CUT::plain_volumecell_set&                                                       cells,
     const LINALG::Matrix<my::nsd_, my::nen_> &                                                  evelaf,            ///< element velocity
@@ -2422,7 +2417,7 @@ void FluidEleCalcXFEM<distype>::HybridLM_Build_VolBased(
 {
   // full L2-projection means integration over the full background element,
   // not only the physical part
-  if (hybrid_lm_l2_proj == INPAR::XFEM::Hybrid_LM_L2_Proj_full)
+  if (fldparaxfem_->HybridLM_L2Proj() == INPAR::XFEM::Hybrid_LM_L2_Proj_full)
   {
     // get the standard set of gauss-points from the intersected element
     for (DRT::UTILS::GaussIntegration::const_iterator iquad = my::intpoints_.begin();
@@ -2997,13 +2992,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
   //                     application-specific flags & parameters
   //-----------------------------------------------------------------------------------
 
-  // get the coupling strategy for coupling of two fields
-  //TODO: remove this flag, get via condition manager
-  const INPAR::XFEM::CouplingStrategy coupling_strategy = fldparaxfem_->GetCouplingStrategy();
-
   // map of boundary element gids, to coupling matrices Cuiui
   std::map<int, std::vector<Epetra_SerialDenseMatrix> > Cuiui_coupling;
-
 
   //-----------------------------------------------------------------------------------
   //            preparation of Cuiui-coupling matrices for each side
@@ -3044,9 +3034,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
   //-----------------------------------------------------------------------------------
   // compute characteristic element length for background element in case of background-sided coupling
 
-
-  if (coupling_strategy == INPAR::XFEM::Xfluid_Sided_Coupling ||
-      coupling_strategy == INPAR::XFEM::Xfluid_Sided_weak_DBC)
+  if (cond_manager->HasAveragingStrategy(INPAR::XFEM::Xfluid_Sided))
   {
     h_k = ComputeCharEleLength(ele, ele_xyze, cond_manager, vcSet, bcells, bintpoints);
     inv_hk = 1.0 / h_k;
@@ -3347,14 +3335,14 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
         if (is_mesh_coupling_side)
         {
           // project gaussian point from linearized interface to warped side (get/set local side coordinates in SideImpl)
-          LINALG::Matrix<2,1> xi_side(true);
+          LINALG::Matrix<3,1> xi_side(true);
           // project on boundary element
           si->ProjectOnSide(x_gp_lin, x_side, xi_side);
 
           if (non_xfluid_coupling)
             ci->Evaluate( x_side ); // evaluate embedded element's shape functions at gauss-point coordinates
           else
-            ci->Evaluate2D( xi_side ); // evaluate side's shape functions at gauss-point coordinates
+            ci->Evaluate( xi_side ); // evaluate side's shape functions at gauss-point coordinates
         }
         else if (is_ls_coupling_side)
         {
@@ -4439,10 +4427,10 @@ double FluidEleCalcXFEM<distype>::ComputeCharEleLength(
 {
   const INPAR::XFEM::ViscStab_hk visc_stab_hk = fldparaxfem_->ViscStabHK();
 
-  //const INPAR::XFEM::CouplingStrategy coupling_strategy = cond_manager->GetCouplingStrategy(face->Id(),ele->Id());
-  const INPAR::XFEM::CouplingStrategy coupling_strategy = fldparaxfem_->GetCouplingStrategy();
-  if (emb == Teuchos::null and coupling_strategy == INPAR::XFEM::Embedded_Sided_Coupling)
-    dserror("no EmbCoupling available, however Embedded_Sided_Coupling is activated!");
+  const int coup_sid = bintpoints.begin()->first;
+  const INPAR::XFEM::AveragingStrategy averaging_strategy = cond_manager->GetAveragingStrategy(coup_sid,ele->Id());
+  if (emb == Teuchos::null and averaging_strategy == INPAR::XFEM::Embedded_Sided)
+    dserror("no coupling interface available, however Embedded_Sided coupling is activated!");
 
   // characteristic element length to be computed
   double h_k = 0.0;
@@ -4461,7 +4449,7 @@ double FluidEleCalcXFEM<distype>::ComputeCharEleLength(
   case INPAR::XFEM::ViscStab_hk_vol_equivalent:
   {
     // evaluate shape functions and derivatives at element center
-    if(coupling_strategy == INPAR::XFEM::Embedded_Sided_Coupling)
+    if(averaging_strategy == INPAR::XFEM::Embedded_Sided)
     {
       // evaluate shape functions and derivatives at element center w.r.t embedded element
       meas_vol = emb->EvalShapeFuncAndDerivsAtEleCenter();
@@ -4484,7 +4472,7 @@ double FluidEleCalcXFEM<distype>::ComputeCharEleLength(
   //---------------------------------------------------
   case INPAR::XFEM::ViscStab_hk_cut_vol_div_by_cut_surf:
   {
-    if(coupling_strategy == INPAR::XFEM::Embedded_Sided_Coupling)
+    if(averaging_strategy == INPAR::XFEM::Embedded_Sided)
       dserror("ViscStab_hk_cut_vol_div_by_cut_surf not reasonable for Embedded_Sided_Coupling!");
 
     // compute the cut surface measure
@@ -4508,7 +4496,7 @@ double FluidEleCalcXFEM<distype>::ComputeCharEleLength(
   //---------------------------------------------------
   case INPAR::XFEM::ViscStab_hk_ele_vol_div_by_cut_surf:
   {
-    if(coupling_strategy == INPAR::XFEM::Embedded_Sided_Coupling)
+    if(averaging_strategy == INPAR::XFEM::Embedded_Sided)
       dserror("ViscStab_hk_ele_vol_div_by_cut_surf not reasonable for Embedded_Sided_Coupling!");
 
     // compute the cut surface measure
@@ -4526,7 +4514,7 @@ double FluidEleCalcXFEM<distype>::ComputeCharEleLength(
   //---------------------------------------------------
   case INPAR::XFEM::ViscStab_hk_ele_vol_div_by_ele_surf:
   {
-    if(coupling_strategy != INPAR::XFEM::Embedded_Sided_Coupling)
+    if(averaging_strategy != INPAR::XFEM::Embedded_Sided)
       dserror("ViscStab_hk_ele_vol_div_by_ele_surf just reasonable for Embedded_Sided_Coupling!");
 
     //---------------------------------------------------
@@ -4552,7 +4540,7 @@ double FluidEleCalcXFEM<distype>::ComputeCharEleLength(
   case INPAR::XFEM::ViscStab_hk_ele_vol_div_by_max_ele_surf:
   //---------------------------------------------------
   {
-    if(coupling_strategy == INPAR::XFEM::Embedded_Sided_Coupling)
+    if(averaging_strategy == INPAR::XFEM::Embedded_Sided)
       dserror("ViscStab_hk_ele_vol_div_by_max_ele_surf not reasonable for Embedded_Sided_Coupling!");
 
     // compute the uncut element's surface measure

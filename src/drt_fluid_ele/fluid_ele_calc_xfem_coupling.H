@@ -184,10 +184,6 @@ namespace DRT
         virtual void Evaluate( LINALG::Matrix<nsd_,1> & xside )
         { dserror("There is no concrete slave element available."); }
 
-        //!  evaluate shape function w.r.t coupling slave element at gaussian point
-        virtual void Evaluate2D( LINALG::Matrix<2,1> & xside )
-        { dserror("There is no concrete slave element available."); }
-
         //! compute coupling slave element's characteristic element length (diameter for side element)
         virtual void ComputeCharElementLength( double & h_k )
         { dserror("There is no concrete slave element available."); }
@@ -205,7 +201,7 @@ namespace DRT
         virtual void ProjectOnSide(
           LINALG::Matrix<nsd_,1> & x_gp_lin,         ///< global coordinates of gaussian point w.r.t linearized interface
           LINALG::Matrix<nsd_,1> & x_side,           ///< projected gaussian point on side
-          LINALG::Matrix<nsd_-1,1> & xi_side         ///< local coordinates of projected gaussian point w.r.t side
+          LINALG::Matrix<nsd_,1> & xi_side         ///< local coordinates of projected gaussian point w.r.t side
         )
         { dserror("There is no concrete slave element available."); }
 

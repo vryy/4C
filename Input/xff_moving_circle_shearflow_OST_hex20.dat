@@ -67,7 +67,6 @@ EOS_PRES                        xfem_gp
 EOS_CONV_STREAM                 xfem_gp
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche                       // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
-COUPLING_STRATEGY               xfluid_sided_coupling
 XFF_CONV_STAB_SCALING           none
 VISC_ADJOINT_SYMMETRY           yes
 NIT_STAB_FAC                    35

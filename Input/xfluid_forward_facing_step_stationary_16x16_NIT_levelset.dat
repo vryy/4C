@@ -133,7 +133,6 @@ XFLUIDFLUID_TIMEINT             Xff_TimeInt_FullProj
 XFLUID_TIMEINT                  STD=COPY/SL_and_GHOST=COPY/GP
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 //EMBEDDED_BOUNDARY             BoundaryTypeSigma
-COUPLING_STRATEGY               xfluid_sided_weak_DBC
 //MSH_L2_PROJ                   part_ele_proj
 NIT_STAB_FAC                    30
 //VISC_STAB_SCALING             visc_div_by_hk

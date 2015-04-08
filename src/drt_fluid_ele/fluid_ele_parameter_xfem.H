@@ -66,9 +66,6 @@ public:
   //! coupling approach (Nitsche or hybrid stress-based LM)
   INPAR::XFEM::CouplingMethod GetCouplingMethod() const{ return coupling_method_; }
 
-  //! coupling strategy
-  INPAR::XFEM::CouplingStrategy GetCouplingStrategy() const{ return coupling_strategy_; }
-
   //! get information, whether L2-projection between stress fields is accomplished on whole cut element
   //! or on physical volume
   INPAR::XFEM::Hybrid_LM_L2_Proj HybridLM_L2Proj() const{ return hybrid_lm_l2_proj_; }
@@ -132,6 +129,11 @@ public:
   //! for new OST-implementation: which interface terms to be evaluated for previous time step
   INPAR::XFEM::InterfaceTermsPreviousState InterfaceTermsPreviousState() const{ return intterms_prev_state_; }
 
+  //! assure a valid combination of input parameters for certain weighting
+  void CheckParameterConsistencyForAveragingStrategy(
+    int myrank,
+    INPAR::XFEM::AveragingStrategy averaging_strategy) const;
+
 private:
 
   //! assure a valid combination of input parameters
@@ -158,9 +160,6 @@ private:
 
   //! coupling approach (Nitsche or hybrid stress-based LM)
   INPAR::XFEM::CouplingMethod coupling_method_;
-
-  //! coupling strategy
-  INPAR::XFEM::CouplingStrategy coupling_strategy_;
 
   //! for coupling using stress-based LM: L2-projection between stress fields on whole cut element
   //! or on physical volume

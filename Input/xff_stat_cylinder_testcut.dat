@@ -108,7 +108,6 @@ ML_DAMPCOARSE                   1.0                           // damping coarse 
 ----------------------------------------------------------------XFEM GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Hybrid_LM_Cauchy_stress       // BoundaryTypeNitsche // BoundaryTypeNeumann
-COUPLING_STRATEGY               xfluid_sided_coupling
 NIT_STAB_FAC                    1.0
 XFF_CONV_STAB_SCALING           none
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL

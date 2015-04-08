@@ -287,9 +287,12 @@ void SlaveElementRepresentation<distype,slave_distype,slave_numdof>::GetInterfac
 template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
 void SlaveElementRepresentation<distype,slave_distype,slave_numdof>::Evaluate( LINALG::Matrix<nsd_,1> & xslave )
 {
-  if (slave_nsd_ != nsd_)
+  // coupling with a 2D element
+  if (slave_nsd_ == nsd_ - 1)
   {
-    dserror("You called 3D evaluation routine when coupling with a 2D element.");
+    // evaluate shape function at solution
+    DRT::UTILS::shape_function_2D( slave_funct_, xslave( 0 ), xslave( 1 ), slave_distype );
+//    dserror("You called 3D evaluation routine when coupling with a 2D element.");
     return;
   }
 
@@ -319,20 +322,6 @@ void SlaveElementRepresentation<distype,slave_distype,slave_numdof>::Evaluate( L
 
   return;
 }
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
-void SlaveElementRepresentation<distype,slave_distype,slave_numdof>::Evaluate2D(
-    LINALG::Matrix<2,1> & xi )
-{
-  // evaluate shape function at solution
-  DRT::UTILS::shape_function_2D( slave_funct_, xi( 0 ), xi( 1 ), slave_distype );
-
-  return;
-}
-
 
 
 /*----------------------------------------------------------------------*
@@ -427,7 +416,7 @@ template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationT
 void SlaveElementRepresentation<distype,slave_distype,slave_numdof>::ProjectOnSide(
   LINALG::Matrix<nsd_,1> & x_gp_lin,       ///< global coordinates of gaussian point w.r.t linearized interface
   LINALG::Matrix<nsd_,1> & x_side,         ///< projected gaussian point on side
-  LINALG::Matrix<nsd_-1,1> & xi_side       ///< local coordinates of projected gaussian point w.r.t side
+  LINALG::Matrix<nsd_,1> & xi_side         ///< local coordinates of projected gaussian point w.r.t side
 )
 {
   // check, if called on a 3D-element
@@ -620,6 +609,7 @@ void SlaveElementRepresentation<distype,slave_distype,slave_numdof>::ProjectOnSi
   // set local coordinates w.r.t side
   xi_side(0) = sol(0);
   xi_side(1) = sol(1);
+  xi_side(2) = 0.0; // actually 2D coordinates
 }
 
 /*----------------------------------------------------------------------*

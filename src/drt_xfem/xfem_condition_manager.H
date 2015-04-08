@@ -1778,6 +1778,8 @@ public:
 
   bool HasMovingInterface();
 
+  bool HasAveragingStrategy(INPAR::XFEM::AveragingStrategy strategy);
+
   void GetCouplingEleLocationVector(const int coup_sid,
                                     std::vector<int> & patchlm);
 

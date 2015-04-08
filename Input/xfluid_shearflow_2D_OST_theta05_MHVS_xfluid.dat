@@ -68,7 +68,6 @@ BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Hybrid_LM_Cauchy_stress
 HYBRID_LM_L2_PROJ               part_ele_proj
-COUPLING_STRATEGY               xfluid_sided_weak_DBC
 GHOST_PENALTY_STAB              yes
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 -------------------------------------------------------------------MATERIALS

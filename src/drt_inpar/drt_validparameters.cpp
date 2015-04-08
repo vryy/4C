@@ -7634,17 +7634,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    ),
                                &xfluid_stab);
 
-
-  setStringToIntegralParameter<int>("COUPLING_STRATEGY","xfluid_sided_weak_DBC","enforce weak DBC or coupling conditions with average w.r.t which side?",
-                               tuple<std::string>("xfluid_sided_weak_DBC", "xfluid_sided_coupling", "embedded_sided_coupling", "two_sided_coupling"),
-                               tuple<int>(
-                                   INPAR::XFEM::Xfluid_Sided_weak_DBC,     // one sided weak DBC at the interface w.r.t background mesh
-                                   INPAR::XFEM::Xfluid_Sided_Coupling,     // coupling with average w.r.t background mesh
-                                   INPAR::XFEM::Embedded_Sided_Coupling,   // coupling with average w.r.t embedded mesh
-                                   INPAR::XFEM::Two_Sided_Coupling         // coupling with mean average between background and embedded mesh
-                                   ),
-                               &xfluid_stab);
-
   setStringToIntegralParameter<int>("HYBRID_LM_L2_PROJ","part_ele_proj","perform the L2 projection between stress fields on whole element or on fluid part?",
                                tuple<std::string>("full_ele_proj", "part_ele_proj"),
                                tuple<int>(

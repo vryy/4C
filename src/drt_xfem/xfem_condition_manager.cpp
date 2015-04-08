@@ -474,6 +474,9 @@ XFEM::MeshCouplingFluidFluid::MeshCouplingFluidFluid(
     // Todo: create only for Nitsche+EVP & EOS on outer embedded elements
     CreateAuxiliaryDiscretization();
   }
+
+  DRT::ELEMENTS::FluidEleParameterXFEM::Instance()->CheckParameterConsistencyForAveragingStrategy(bg_dis->Comm().MyPID(),
+    GetAveragingStrategy());
 }
 
 /*--------------------------------------------------------------------------*
@@ -2484,6 +2487,30 @@ bool XFEM::ConditionManager::HasMovingInterface()
   for(int lsc=0; lsc<(int)levelset_coupl_.size(); lsc++)
   {
     if(levelset_coupl_[lsc]->HasMovingInterface()) return true;
+  }
+
+  return false;
+}
+
+bool XFEM::ConditionManager::HasAveragingStrategy(
+  INPAR::XFEM::AveragingStrategy strategy)
+{
+  if(HasLevelSetCoupling())
+  {
+    for (size_t il = 0; il < levelset_coupl_.size(); ++il)
+    {
+      if (levelset_coupl_[il]->GetAveragingStrategy() == strategy)
+        return true;
+    }
+  }
+
+  if(HasMeshCoupling())
+  {
+    for (size_t im = 0; im < mesh_coupl_.size(); ++im)
+    {
+      if (mesh_coupl_[im]->GetAveragingStrategy() == strategy)
+        return true;
+    }
   }
 
   return false;

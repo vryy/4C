@@ -103,7 +103,6 @@ BOUNDARY_GAUSS_POINTS_BY        MomentFitting
 XFLUIDFLUID                     yes
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche                       // BoundaryTypeNitsche // BoundaryTypeNeumann
-COUPLING_STRATEGY               xfluid_sided_coupling
 IS_PSEUDO_2D                    yes
 NIT_STAB_FAC                    20.0
 XFF_CONV_STAB_SCALING           none
