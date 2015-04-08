@@ -182,8 +182,8 @@ void PARTICLE::ParticleCollisionHandlerBase::ReadContactParameters(double densit
     mu_ = particleparams.get<double>("FRICT_COEFF");
     tension_cutoff_ = (DRT::INPUT::IntegralValue<int>(particleparams,"TENSION_CUTOFF") == 1);
 
-    if(r_min_<0.0 or r_max_<0.0 or v_max_<0.0 or c_<0.0)
-      dserror("Invalid input parameter (MIN_RADIUS,MAX_RADIUS,MAX_VELOCITY,REL_PENETRATION have to be larger than zero)");
+    if(r_min_<0.0 or r_max_<0.0 or v_max_<0.0 or c_<0.0 or young_<0.0)
+      dserror("Invalid input parameter (MIN_RADIUS,MAX_RADIUS,MAX_VELOCITY,REL_PENETRATION, YOUNG's modulus have to be larger than zero)");
 
     if((e_<0.0 or e_wall_<0.0) and (normal_contact_ == INPAR::PARTICLE::LinSpringDamp or contact_strategy_==INPAR::PARTICLE::Normal_MD))
       dserror("Invalid input parameter COEFF_RESTITUTION for this kind of contact law");
@@ -193,8 +193,7 @@ void PARTICLE::ParticleCollisionHandlerBase::ReadContactParameters(double densit
       return;
 
     // data for critical time step computation for DEM like contact
-    double mass_min = 0.0;
-    mass_min = density * 4.0/3.0 * M_PI * pow( r_min_ ,3.0 );
+    const double mass_min = density * 4.0/3.0 * M_PI * pow( r_min_ ,3.0 );
 
     double k_tkrit = 0.0;
 
@@ -204,10 +203,12 @@ void PARTICLE::ParticleCollisionHandlerBase::ReadContactParameters(double densit
       dserror("Could not find wall material which is assumed to be the first St. Venant Kirchhoff material");
     Teuchos::RCP<MAT::StVenantKirchhoff> wallmat = Teuchos::rcp_dynamic_cast<MAT::StVenantKirchhoff>(MAT::Material::Factory(id));
 
-    double G_wall = wallmat->ShearMod();
-    double nue_wall = wallmat->PoissonRatio();
+    const double G_wall = wallmat->ShearMod();
+    const double nue_wall = wallmat->PoissonRatio();
+    if(G_wall<0.0)
+      dserror("Wall shear modulus hasto be larger than zero");
 
-    double G = young_ / (2.0*(1.0+nue_));
+    const double G = young_ / (2.0*(1.0+nue_));
 
     // kappa - tangential to normal stiffness ratio
     kappa_ = (1.0-nue_)/(1.0-0.5*nue_);
@@ -261,7 +262,7 @@ void PARTICLE::ParticleCollisionHandlerBase::ReadContactParameters(double densit
         k_normal_ = user_normal_stiffness;
         // for tangential contact the user specified (nonlinear) normal stiffness which has to be transformed into a linear normal
         // stiffness with the same relative penetration which is used as (linear) tangential stiffness afterwards
-        double value = 2048.0/1875.0 * density * v_max_ * v_max_ * M_PI * pow(r_max_,3.0) * pow(k_normal_,4.0);
+        const double value = 2048.0/1875.0 * density * v_max_ * v_max_ * M_PI * pow(r_max_,3.0) * pow(k_normal_,4.0);
         // stiffness used for calculation of critical time step (linear spring stiffness needed!)
         k_tkrit = pow(value,0.2);
 
