@@ -192,7 +192,7 @@ namespace GEO
       /*!
       \brief Return true if the points of the polygon are ordered clockwise
        */
-      bool IsClockwiseOrderedPolygon( std::vector<Point*>polyPoints, std::string& projType, bool DeleteInlinePts = false );
+      bool IsClockwiseOrderedPolygon( std::vector<Point*>polyPoints, std::string& projType );
 
       /*!
       \brief If more than two points are on a line, all points except the end points are deleted
@@ -575,6 +575,8 @@ namespace GEO
           {
             if(checklimits_ and not SurfaceWithinLimits<sidetype>( xsi_ ) )
             {
+              //TODO: This is not right. During Newton iteration, the point can be
+              // outside and does not mean iteration is finished (Sudhakar)
               // if we are outside our side, just go
               return true;
             }

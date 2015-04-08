@@ -595,12 +595,14 @@ void GEO::CUT::SelfCut::FindSelfCutTriangulation()
     // find the equation of plane of this SIDE
     // this eqn is used to make sure that the axillary sides that resulting from
     // the triangulation preserve the normal direction of SIDE
-    std::vector<Point*> cutsidepoints(3);
+    std::vector<Point*> cutsidepoints(cutsidenodes.size());
+    for( unsigned ic=0; ic<cutsidenodes.size(); ic++ )
+      cutsidepoints[ic] = cutsidenodes[ic]->point();
+
     cutsidepoints[0] = cutsidenodes[0]->point();
     cutsidepoints[1] = cutsidenodes[1]->point();
     cutsidepoints[2] = cutsidenodes[2]->point();
-    std::vector<double> cutsideplane = KERNEL::EqnPlane(cutsidepoints[0],
-        cutsidepoints[1], cutsidepoints[2]);
+    std::vector<double> cutsideplane = KERNEL::EqnPlaneOfPolygon( cutsidepoints );
 
     // -----
     // STEP 1 : Create facets on cut side by taking into account the self-cut points

@@ -216,7 +216,7 @@ std::vector<int> GEO::CUT::KERNEL::CheckConvexity( const std::vector<Point*>& pt
     }
   }
 
-  bool isClockwise = IsClockwiseOrderedPolygon( ptlist, projPlane, DeleteInlinePts );
+  bool isClockwise = IsClockwiseOrderedPolygon( ptlist, projPlane );
 
   int ind1=0,ind2=0;
   if( projPlane=="x" )
@@ -595,22 +595,14 @@ bool GEO::CUT::KERNEL::PtInsideQuad( std::vector<Point*> quad, Point* check )
            Returns true if the points of the polygon are ordered clockwise                        sudhakar 05/12
    Polygon in 3D space is first projected into 2D plane, and the plane of projection is returned in projType
 *-------------------------------------------------------------------------------------------------------------*/
-bool GEO::CUT::KERNEL::IsClockwiseOrderedPolygon( std::vector<Point*>polyPoints, std::string& projPlane, bool DeleteInlinePts )
+bool GEO::CUT::KERNEL::IsClockwiseOrderedPolygon( std::vector<Point*>polyPoints, std::string& projPlane )
 {
   if( polyPoints.size()<3 )
     dserror( "polygon with less than 3 corner points" );
 
   std::vector<double> eqn;
 
-  if ( DeleteInlinePts )
-  {
-    eqn = EqnPlane( polyPoints[0], polyPoints[1], polyPoints[2] );
-  }
-  else
-  {
-    std::vector<Point*> preparedPoints = Get3NoncollinearPts( polyPoints );
-    eqn = EqnPlane( preparedPoints[0], preparedPoints[1], preparedPoints[2] );
-  }
+  eqn = EqnPlaneOfPolygon( polyPoints );
 
   // projection on the plane which has max normal component - reduce round off error
   FindProjectionPlane( projPlane, eqn );
