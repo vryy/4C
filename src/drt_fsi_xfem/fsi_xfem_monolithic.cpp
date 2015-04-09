@@ -13,7 +13,7 @@ Maintainer:  Benedikt Schott
 
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
-#include "../drt_adapter/ad_fld_xfluid_fsi.H"
+#include "../drt_adapter/ad_fld_fluid_xfsi.H"
 
 #include "../drt_fsi/fsi_debugwriter.H"
 

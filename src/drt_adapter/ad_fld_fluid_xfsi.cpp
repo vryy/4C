@@ -1,8 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ad_fld_xfluid_fsi.cpp
+\file ad_fld_fluid_xfsi.cpp
 
-\brief Fluid field adapter for fsi
+\brief Fluid field adapter for XFSI
 
 Can only be used in conjunction with XFluid!
 
@@ -15,10 +15,11 @@ Maintainer:  Benedikt Schott
 */
 /*----------------------------------------------------------------------*/
 
-#include "ad_fld_xfluid_fsi.H"
+#include "ad_fld_fluid_xfsi.H"
 
 #include "../drt_adapter/ad_fld_fluid.H"
 #include "../drt_fluid_xfluid/xfluid.H"
+#include "../drt_fluid_xfluid/xfluidfluid.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_lib/drt_discret_xfem.H"
 #include "../linalg/linalg_mapextractor.H"
@@ -32,15 +33,14 @@ Maintainer:  Benedikt Schott
 #include <set>
 /*======================================================================*/
 /* constructor */
-ADAPTER::XFluidFSI::XFluidFSI(Teuchos::RCP< Fluid> fluid,   // the XFluid object
-    Teuchos::RCP<DRT::Discretization> xfluiddis,
+ADAPTER::XFluidFSI::XFluidFSI(
+    Teuchos::RCP< Fluid> fluid,   // the XFluid object
     const std::string                 coupling_name, // name of the FSI coupling condition
     Teuchos::RCP<LINALG::Solver>      solver,
     Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<IO::DiscretizationWriter> output )
 : FluidWrapper(fluid),                                      // the XFluid object is set as fluid_ in the FluidWrapper
   fpsiinterface_(Teuchos::rcp(new FLD::UTILS::MapExtractor())),
-  xfluiddis_(xfluiddis),
   coupling_name_(coupling_name),
   solver_(solver),
   params_(params)
@@ -81,9 +81,9 @@ void ADAPTER::XFluidFSI::Init()
 
   interface_ = Teuchos::rcp(new FLD::UTILS::MapExtractor());
 
-  interface_->Setup(*xfluiddis_,false, true); //Always Create overlapping FSI/FPSI Interface
+  interface_->Setup(*xfluid_->Discretization(),false, true); //Always Create overlapping FSI/FPSI Interface
 
-  fpsiinterface_->Setup(*xfluiddis_,true, true); //Always Create overlapping FSI/FPSI Interface
+  fpsiinterface_->Setup(*xfluid_->Discretization(),true, true); //Always Create overlapping FSI/FPSI Interface
 
   meshmap_   = Teuchos::rcp(new LINALG::MapExtractor());
 }
@@ -240,7 +240,7 @@ void ADAPTER::XFluidFSI::GmshOutput(
     Teuchos::RCP<Epetra_Vector> acc      ///< vector holding accelerations
 )
 {
-  // Todo(kruse): find a substitute!
+  // TODO (kruse): find a substitute!
   //xfluid_->GmshOutput(name, step, count, vel, acc);
   dserror("Gmsh output for XFSI during Newton currently not available.");
 

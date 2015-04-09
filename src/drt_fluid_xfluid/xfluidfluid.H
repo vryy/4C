@@ -70,6 +70,9 @@ public:
   /// initialization
   virtual void Init();
 
+  /// don't keep a sparse matrix underneath
+  void UseBlockMatrix(bool splitmatrix = true);
+
   /// set fluid-fluid coupling specific parameters
   void SetXFluidFluidParams();
 
@@ -156,12 +159,18 @@ public:
   Teuchos::RCP<const Epetra_Map> PressureRowMap();
   Teuchos::RCP<const Epetra_Map> VelocityRowMap();
 
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> ShapeDerivatives(){ return extended_shapederivatives_; }
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> ExtendedShapeDerivatives(){ return extended_shapederivatives_; }
 
   /// get the combined fluid-fluid system matrix
   Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix()
   {
     return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(xff_state_->xffluidsysmat_);
+  }
+
+  /// get the combined fluid-fluid system matrix in block form (embedded and background fluid blocks)
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix()
+  {
+    return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(xff_state_->xffluidsysmat_);
   }
 
   /// get map extractor for background/embedded fluid

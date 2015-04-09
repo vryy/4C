@@ -8,7 +8,7 @@
 
 #include "../drt_adapter/ad_fld_fluid_xfem.H"
 #include "../drt_adapter/ad_fld_fluid.H"
-#include "../drt_adapter/ad_fld_xfluid_fsi.H"
+#include "../drt_adapter/ad_fld_fluid_xfsi.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

@@ -131,6 +131,8 @@ namespace ADAPTER {
       return monolithic_approach_;
     }
 
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> ShapeDerivatives();
+
   private:
 
     /// setup of map extractor to distinguish between FSI DOF-map and

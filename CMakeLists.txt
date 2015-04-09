@@ -559,7 +559,8 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/ad_fld_fluid_xfem.cpp
   src/drt_adapter/ad_fld_fluid_immersed.cpp
   src/drt_adapter/ad_fld_fluid_ale_xfem.cpp
-  src/drt_adapter/ad_fld_xfluid_fsi.cpp
+  src/drt_adapter/ad_fld_fluid_xfsi.cpp
+  src/drt_adapter/ad_fld_fluid_fluid_xfsi.cpp
   src/drt_adapter/ad_opt.cpp
   src/drt_adapter/ad_opt_fluid_adjoint_base.cpp
   src/drt_adapter/ad_opt_fluid_algo.cpp

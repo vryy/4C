@@ -148,6 +148,13 @@ void FLD::XFluidFluid::Init()
     dispnpoldstate_ = Teuchos::rcp(new Epetra_Vector(*embedded_fluid_->Dispnp()));
 }
 
+void FLD::XFluidFluid::UseBlockMatrix(bool splitmatrix)
+{
+  if (splitmatrix)
+    xff_state_->xffluidsysmat_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+        *XFluidFluidMapExtractor(),*XFluidFluidMapExtractor(),108,false,true));
+}
+
 void FLD::XFluidFluid::SetXFluidFluidParams()
 {
   Teuchos::ParameterList&   params_xf_stab = params_->sublist("XFLUID DYNAMIC/STABILIZATION");
@@ -439,12 +446,27 @@ void FLD::XFluidFluid::AssembleMatAndRHS(
       xff_state_->xffluidresidual_);
 
   // assemble XFluid and embedded fluid system matrices into one
-  xff_state_->xffluidsysmat_->Zero();
-  xff_state_->xffluidsysmat_->Add(*xff_state_->sysmat_,false,1.0,0.0);
-  xff_state_->xffluidsysmat_->Add(*embedded_fluid_->SystemMatrix(),false,1.0,1.0);
-  xff_state_->xffluidsysmat_->Add(*coup_state->C_xs_,false,1.0,1.0);
-  xff_state_->xffluidsysmat_->Add(*coup_state->C_sx_,false,1.0,1.0);
-  xff_state_->xffluidsysmat_->Add(*coup_state->C_ss_,false,1.0,1.0);
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat_block = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(xff_state_->xffluidsysmat_,false);
+  if (sysmat_block != Teuchos::null)
+  {
+    sysmat_block->Assign(1,1,View,*xff_state_->sysmat_);
+    sysmat_block->Assign(1,0,View,*coup_state->C_xs_);
+    sysmat_block->Assign(0,1,View,*coup_state->C_sx_);
+    embedded_fluid_->SystemMatrix()->UnComplete();
+    embedded_fluid_->SystemMatrix()->Add(*coup_state->C_ss_,false,1.0,1.0);
+    Teuchos::RCP<LINALG::SparseMatrix> alesysmat_sparse = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(embedded_fluid_->SystemMatrix());
+    sysmat_block->Assign(0,0,View,*alesysmat_sparse);
+  }
+  else
+  {
+    xff_state_->xffluidsysmat_->Zero();
+    xff_state_->xffluidsysmat_->Add(*xff_state_->sysmat_,false,1.0,0.0);
+    xff_state_->xffluidsysmat_->Add(*embedded_fluid_->SystemMatrix(),false,1.0,1.0);
+    xff_state_->xffluidsysmat_->Add(*coup_state->C_xs_,false,1.0,1.0);
+    xff_state_->xffluidsysmat_->Add(*coup_state->C_sx_,false,1.0,1.0);
+    xff_state_->xffluidsysmat_->Add(*coup_state->C_ss_,false,1.0,1.0);
+  }
+
   xff_state_->xffluidsysmat_->Complete();
 }
 

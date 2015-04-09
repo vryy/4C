@@ -20,7 +20,7 @@ Maintainer: Ager
 #include "adapter_coupling.H"
 #include "ad_fld_fluid_ale_xfem.H"
 #include "ad_ale_fluid.H"
-#include "ad_fld_xfluid_fsi.H"
+#include "ad_fld_fluid_xfsi.H"
 
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_inpar/inpar_fsi.H"

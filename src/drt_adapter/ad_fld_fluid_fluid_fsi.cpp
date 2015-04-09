@@ -235,6 +235,13 @@ bool ADAPTER::FluidFluidFSI::IsAleRelaxationStep(int step) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::BlockSparseMatrixBase> ADAPTER::FluidFluidFSI::ShapeDerivatives()
+{
+  return xfluidfluid_->ExtendedShapeDerivatives();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void ADAPTER::FluidFluidFSI::SetupInterface()
 {
   if (mergedfluidinterface_ == Teuchos::null)

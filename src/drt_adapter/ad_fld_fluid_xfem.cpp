@@ -20,7 +20,7 @@ Maintainer:  Benedikt Schott
 #include "ad_fld_fluid_xfem.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 
-#include "../drt_adapter/ad_fld_xfluid_fsi.H"
+#include "../drt_adapter/ad_fld_fluid_xfsi.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

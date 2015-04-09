@@ -21,7 +21,7 @@ Maintainer: Matthias Mayr
 #include "../drt_adapter/adapter_coupling_mortar.H"
 #include "../drt_adapter/ad_fld_fluid_xfem.H"
 #include "../drt_adapter/ad_fld_fluid.H"
-#include "../drt_adapter/ad_fld_xfluid_fsi.H"
+#include "../drt_adapter/ad_fld_fluid_xfsi.H"
 #include "../drt_adapter/ad_ale_fluid.H"
 
 #include "../drt_fluid_xfluid/xfluid.H"

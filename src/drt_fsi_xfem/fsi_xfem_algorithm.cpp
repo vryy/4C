@@ -16,7 +16,7 @@ Maintainer: Benedikt Schott
 
 #include "../drt_adapter/ad_fld_base_algorithm.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
-#include "../drt_adapter/ad_fld_xfluid_fsi.H"
+#include "../drt_adapter/ad_fld_fluid_xfsi.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"

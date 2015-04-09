@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ad_fld_xfluid_fsi.H
+\file ad_fld_fluid_xfsi.H
 
 \brief Fluid field adapter for fsi
 
@@ -14,8 +14,8 @@ Maintainer:  Benedikt Schott
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#ifndef ADAPTER_FLUID_XFLUID_FSI_H
-#define ADAPTER_FLUID_XFLUID_FSI_H
+#ifndef AD_FLD_FLUID_XFSI_H
+#define AD_FLD_FLUID_XFSI_H
 
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
@@ -67,7 +67,6 @@ namespace ADAPTER {
 
     /// Constructor
     XFluidFSI(Teuchos::RCP<Fluid>              fluid,
-        Teuchos::RCP<DRT::Discretization>      xfluiddis,
         const std::string                      coupling_name, // name of the FSI coupling condition
         Teuchos::RCP<LINALG::Solver>           solver,
         Teuchos::RCP<Teuchos::ParameterList>   params,
@@ -141,7 +140,6 @@ namespace ADAPTER {
         Teuchos::RCP<Epetra_Vector> acc = Teuchos::null ///< vector holding accelerations
     );
 
-
   protected:
     /// A casted pointer to the fluid itself
     Teuchos::RCP<FLD::XFluid>              xfluid_;
@@ -161,7 +159,6 @@ namespace ADAPTER {
     Teuchos::RCP<Epetra_Map> fullfluidmap_;
 
     //! @name local copies of input parameters
-    Teuchos::RCP<DRT::Discretization>      xfluiddis_;
     std::string coupling_name_;              /// the name of the XFEM::MeshCoupling object
     Teuchos::RCP<XFEM::MeshCouplingFSI>    mesh_coupling_fsi_;
     Teuchos::RCP<LINALG::Solver>           solver_;

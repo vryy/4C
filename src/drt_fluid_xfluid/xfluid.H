@@ -221,7 +221,7 @@ namespace FLD
     // @}
 
 
-    Teuchos::RCP<const Epetra_Map> DofRowMap(){return state_->xfluiddofrowmap_;}
+    virtual Teuchos::RCP<const Epetra_Map> DofRowMap(){return state_->xfluiddofrowmap_;}
 
     Teuchos::RCP<LINALG::MapExtractor> VelPresSplitter() { return state_->velpressplitter_; }
     Teuchos::RCP<const Epetra_Map>     VelocityRowMap()  { return state_->velpressplitter_->OtherMap(); }
@@ -229,8 +229,8 @@ namespace FLD
 
     Teuchos::RCP<LINALG::MapExtractor> VelPresSplitterStd() { return velpressplitter_std_; }
 
-    Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(state_->sysmat_); }
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(state_->sysmat_); }
+    virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(state_->sysmat_); }
+    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(state_->sysmat_,false); }
 
     /// return coupling matrix between fluid and structure as sparse matrices
     Teuchos::RCP<LINALG::SparseMatrix> C_sx_Matrix(const std::string & cond_name);
