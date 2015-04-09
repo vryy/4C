@@ -320,6 +320,7 @@ namespace DRT
           const double &                           presn_m,                 ///< coupling master pressure
           const LINALG::Matrix<nsd_,1> &           velintn_m,               ///< coupling master interface velocity
           const LINALG::Matrix<nsd_,1> &           ivelintn_jump,           ///< prescribed interface velocity, Dirichlet values or jump height for coupled problems
+          const LINALG::Matrix<nsd_,1> &           itractionn_jump,         ///< prescribed interface traction, jump height for coupled problems
           INPAR::XFEM::InterfaceTermsPreviousState prev_state = INPAR::XFEM::PreviousState_only_consistency, ///< evaluate all terms or only consistency term at previous state
           const double                             NIT_full_stab_facn = 0.0, ///< full Nitsche's penalty term scaling (viscous+convective part)
           INPAR::XFEM::XFF_ConvStabScaling         xff_conv_stab = INPAR::XFEM::XFF_ConvStabScaling_none ///< type of convective stabilization in XFF-problems

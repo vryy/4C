@@ -263,6 +263,7 @@ private:
       const LINALG::Matrix<my::nsd_,1>& x,                                     ///< global coordinates of Gaussian point
       const LINALG::Matrix<my::nsd_,1>& normal,                                ///< normal vector at Gaussian point
       Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype> > si, ///< side implementation for cutter element
+      const double &                           presn_m,                        ///< coupling master pressure
       LINALG::Matrix<3,1>& rst                                                 ///< local coordinates of GP for bg element
   );
 

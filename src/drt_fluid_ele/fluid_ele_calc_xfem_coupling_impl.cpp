@@ -1221,6 +1221,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOl
   const double &                           presn_m,                 ///< coupling master pressure
   const LINALG::Matrix<nsd_,1> &           velintn_m,               ///< coupling master interface velocity
   const LINALG::Matrix<nsd_,1> &           ivelintn_jump,           ///< prescribed interface velocity, Dirichlet values or jump height for coupled problems
+  const LINALG::Matrix<nsd_,1> &           itractionn_jump,         ///< prescribed interface traction, jump height for coupled problems
   INPAR::XFEM::InterfaceTermsPreviousState prev_state,              ///< evaluate all terms or only consistency term at previous state
   const double                             NIT_full_stab_facn,      ///< full Nitsche's penalty term scaling (viscous+convective part)
   INPAR::XFEM::XFF_ConvStabScaling         xff_conv_stab            ///< type of convective stabilization in XFF-problems
@@ -1447,6 +1448,20 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOl
   funct_s_viscs_timefacfacn_ks.Scale(ks_viscs_facn);
 
   //-----------------------------------------------------------------
+  // standard consistency traction jump term
+  if( eval_coupling_ )
+  {
+    NIT_Traction_Consistency_Term(
+        funct_m_timefacfacn_ks,
+        funct_s_timefacfacn_km,
+        itractionn_jump
+        );
+  }
+
+ //-----------------------------------------------------------------
+
+
+  //-----------------------------------------------------------------
   // pressure consistency term
 
   double presn_s = 0.0;
@@ -1537,6 +1552,20 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Traction_Consisten
         /*            \
      - |  < v >,   t   |   with t = [sigma * n]
         \             /     */
+
+  // Two-Phase Flow:
+  //
+  //     t_{n+1}          [| sigma*n |] =      gamma * curv * n
+  //                                                             with curv = div(grad(phi)/||grad(phi)||)
+  //
+  //      t_{n}           [| sigma*n |] = [|  -pI + \mu*[\nabla u + (\nabla u)^T]  |] * n
+  //
+
+  // Combustion:        TO BE IMPLEMENTED.
+  //
+
+  // All else:            [| sigma*n |] = 0
+
 
   // loop over velocity components
   for (unsigned ivel = 0; ivel < nsd_; ++ ivel)

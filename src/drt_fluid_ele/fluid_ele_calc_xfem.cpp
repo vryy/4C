@@ -1888,6 +1888,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
             // REMARK: do not add adjoint and penalty terms at t_n for hybrid LM approach!
             // (these are Nitsche-terms! find best settings for Nitsche's method first!)
             LINALG::Matrix<my::nsd_,1> ivelintn_jump (true);
+            LINALG::Matrix<my::nsd_,1> itractionn_jump(true);
             si_nit.at(coup_sid)->NIT_evaluateCouplingOldState(
               normal,
               surf_fac * (my::fldparatimint_->Dt()-my::fldparatimint_->TimeFac()), // scaling of rhs depending on time discretization scheme
@@ -1902,6 +1903,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
               my::funct_.Dot(epren),       // bg p^n
               my::velintn_,                // bg u^n
               ivelintn_jump,
+              itractionn_jump,
               INPAR::XFEM::PreviousState_only_consistency
             );
           }
@@ -3466,16 +3468,35 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
             LINALG::Matrix<my::nsd_,1> ivelintn_jump (true);
             LINALG::Matrix<my::nsd_,1> itractionn_jump (true);
 
-            GetInterfaceJumpVectorsOldState(
-                coupcond,
-                coupling,
-                ivelintn_jump,
-                itractionn_jump,
-                x_gp_lin,
-                normal,
-                si,
-                rst
-            );
+            if(cond_type != INPAR::XFEM::CouplingCond_LEVELSET_TWOPHASE and
+                cond_type != INPAR::XFEM::CouplingCond_LEVELSET_COMBUSTION)
+            {
+              GetInterfaceJumpVectorsOldState(
+                  coupcond,
+                  coupling,
+                  ivelintn_jump,
+                  itractionn_jump,
+                  x_gp_lin,
+                  normal,
+                  si,
+                  my::funct_.Dot(epren),       // bg p^n
+                  rst
+              );
+            }
+            else
+            {
+              GetInterfaceJumpVectorsOldState(
+                  coupcond,
+                  coupling,
+                  ivelintn_jump,
+                  itractionn_jump,
+                  x_gp_lin,
+                  normal,
+                  ci,
+                  my::funct_.Dot(epren),       // bg p^n
+                  rst
+              );
+            }
 
             //-----------------------------------------------------------------------------
             // evaluate the coupling terms for coupling with current side
@@ -3505,7 +3526,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
 
             ci->NIT_evaluateCouplingOldState(
               normal,                      // normal vector
-              surf_fac * (my::fldparatimint_->Dt()-my::fldparatimint_->TimeFac()), // scaling of rhs depending on time discretization scheme
+              surf_fac * (my::fldparatimint_->Dt()-my::fldparatimint_->TimeFac()), // scaling of rhs depending on time discretization scheme dt*(1-theta)
               viscaf_master_,              // dynvisc viscosity in background fluid
               viscaf_slave_,               // dynvisc viscosity in embedded fluid
               kappa_m,                     // mortaring weighting
@@ -3516,7 +3537,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
               my::vderxyn_,                // bg grad u^n
               my::funct_.Dot(epren),       // bg p^n
               my::velintn_,                // bg u^n
-              ivelintn_jump,                // velocity jump at interface (i.e. 0)
+              ivelintn_jump,               // velocity jump at interface (i.e. [| u |])
+              itractionn_jump,             // traction jump at interface (i.e. [| -pI + \mu*[\nabla u + (\nabla u)^T]  |] \cdot n)
               fldparaxfem_->InterfaceTermsPreviousState(), // only consistency terms or also adjoint and penalty?
               NIT_full_stab_fac_n,                         // penalty parameter at n
               fldparaxfem_->XffConvStabScaling()           // XFF inflow terms
@@ -3620,8 +3642,6 @@ void FluidEleCalcXFEM<distype>::GetInterfaceJumpVectors(
   }
   case INPAR::XFEM::CouplingCond_LEVELSET_TWOPHASE:
   {
-    // TODO: evaluate the surface tension force
-    //TODO compute the curvature at the integration point
     // where [*] = (*)^m - (*)^s = (*)^+ - (*)^-
     // n = n^m = n^+
     // [sigma*n] = gamma * curv * n   with curv = div(grad(phi)/||grad(phi)||)
@@ -3663,6 +3683,7 @@ void FluidEleCalcXFEM<distype>::GetInterfaceJumpVectorsOldState(
     const LINALG::Matrix<my::nsd_,1>& x,                                     ///< global coordinates of Gaussian point
     const LINALG::Matrix<my::nsd_,1>& normal,                                ///< normal vector at Gaussian point
     Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype> > si, ///< side implementation for cutter element
+    const double &                           presn_m,                        ///< coupling master pressure
     LINALG::Matrix<3,1>& rst                                                 ///< local coordinates of GP for bg element
 )
 {
@@ -3714,7 +3735,40 @@ void FluidEleCalcXFEM<distype>::GetInterfaceJumpVectorsOldState(
   }
   case INPAR::XFEM::CouplingCond_LEVELSET_TWOPHASE:
   {
-    dserror("Evaluation of traction jump for previous time step not implemented yet.");
+
+    // Spatial velocity gradient for slave side
+    LINALG::Matrix<my::nsd_,my::nsd_> vderxyn_s(true);
+    si->GetInterfaceVelGradn(vderxyn_s);
+
+
+    //Calculate the old jump using the reconstructed values of p and u for the new interface position.
+    // i.e.
+
+    // itractionn_jump = [|  -pI + \mu*[\nabla u + (\nabla u)^T]  |] \cdot n
+
+    // Pressure part
+    double presn_s = 0.0;
+    si->GetInterfacePresn(presn_s);
+
+    itractionn_jump.Update(-(presn_m - presn_s),normal,0.0);
+
+    // Shear tensor part
+    //===================
+    LINALG::Matrix<my::nsd_,my::nsd_> tmp_matrix(true);
+    tmp_matrix.Update(viscaf_master_,my::vderxyn_,-viscaf_slave_,vderxyn_s);
+
+    //Initialize dummy variable
+    LINALG::Matrix<my::nsd_,1> tmp_vector(true);
+
+    //Normal
+    tmp_vector.Multiply(tmp_matrix,normal);
+    itractionn_jump.Update(1.0,tmp_vector,1.0);
+
+    //Transposed
+    tmp_vector.MultiplyTN(tmp_matrix,normal);
+    itractionn_jump.Update(1.0,tmp_vector,1.0);
+    //===================
+
     break;
   }
   case INPAR::XFEM::CouplingCond_LEVELSET_COMBUSTION:
