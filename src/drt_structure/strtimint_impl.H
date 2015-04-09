@@ -1055,9 +1055,6 @@ namespace STR
     double dti_;   //!< scaling factor for PTC (initially 1/ptcdt_, then adapted)
     //@}
 
-    Teuchos::RCP<Epetra_Vector> b_; ///< right hand side for linearized problem
-    Teuchos::RCP<LINALG::SparseOperator> A_; ///< linearized stiffness matrix
-
   };  // class TimIntImpl
 
 }  // namespace STR
