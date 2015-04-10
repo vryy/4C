@@ -46,7 +46,7 @@ NUMSTEP                         10
 MAXTIME                         1000.0
 ALE_TYPE                        solid
 NUM_INITSTEP                    0
-RESTARTEVRY                     1
+RESTARTEVRY                     2
 RESULTSEVRY                     0
 LINEAR_SOLVER                   2
 ---------------------------------------------------------------FLUID DYNAMIC
@@ -60,7 +60,7 @@ ITEMAX                          2
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-13
 UPRES                           1
-RESTARTEVRY                     5
+RESTARTEVRY                     2
 NUMSTEP                         10
 NUMSTASTEPS                     0
 MAXTIME                         1000.0
