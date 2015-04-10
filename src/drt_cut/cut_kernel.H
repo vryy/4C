@@ -573,12 +573,9 @@ namespace GEO
 
           if ( iter > 0 )
           {
-            if(checklimits_ and not SurfaceWithinLimits<sidetype>( xsi_ ) )
+            if( checklimits_ and (not SurfaceWithinLimits<sidetype>( xsi_ )) )
             {
-              //TODO: This is not right. During Newton iteration, the point can be
-              // outside and does not mean iteration is finished (Sudhakar)
-              // if we are outside our side, just go
-              return true;
+              return false;
             }
           }
 

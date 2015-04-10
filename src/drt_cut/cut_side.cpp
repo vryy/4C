@@ -938,7 +938,7 @@ void GEO::CUT::ConcreteSide<DRT::Element::quad4>::SideCenter( LINALG::Matrix<3,1
 bool GEO::CUT::ConcreteSide<DRT::Element::tri3>::WithinSide( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<2,1> & rs, double & dist, const double & Tol)
 {
   Position2d<DRT::Element::tri3> pos( *this, xyz );
-  bool success = pos.ComputeDistance();
+  bool success = pos.IsGivenPointWithinSide();
   if ( not success )
   {
     throw std::runtime_error( "ComputeDistance w.r.t tri3 side not successful" );
@@ -964,7 +964,7 @@ bool GEO::CUT::ConcreteSide<DRT::Element::tri3>::WithinSide( const LINALG::Matri
 bool GEO::CUT::ConcreteSide<DRT::Element::quad4>::WithinSide( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<2,1> & rs, double & dist, const double & Tol)
 {
   Position2d<DRT::Element::quad4> pos( *this, xyz );
-  bool success = pos.ComputeDistance();
+  bool success = pos.IsGivenPointWithinSide();
   if ( not success )
   {
     throw std::runtime_error( "ComputeDistance w.r.t quad4 side not successful" );

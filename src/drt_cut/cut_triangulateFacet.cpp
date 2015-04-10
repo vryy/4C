@@ -775,8 +775,8 @@ void GEO::CUT::TriangulateFacet::EarClippingWithHoles( Side * parentside )
         int reflexmaincyclepointid = * i;
         LINALG::Matrix<3,1> reflexmaincyclepoint = localmaincyclepoints[reflexmaincyclepointid];
         Position2d<DRT::Element::tri3> pos( triangle, reflexmaincyclepoint );
-        pos.Compute( false );
-        if( pos.WithinLimitsTol( 1.0e-8, false, TOLERANCE) )
+        bool within = pos.IsGivenPointWithinSide();
+        if( within )
         {
           insidemaincyclepointids.push_back( reflexmaincyclepointid );
         }

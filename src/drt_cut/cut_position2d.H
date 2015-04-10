@@ -21,51 +21,82 @@ class Position2d
 {
 public:
 
+  /*!
+  \brief Constructor
+   */
   Position2d( ConcreteSide<elementtype> & side,
               const LINALG::Matrix<3,1> & xyz )
     : px_( xyz )
   {
     side.Coordinates( xyze_ );
     Scale();
+    ConstructBoundingBoxSide();
   }
 
+  /*!
+  \brief Constructor
+   */
   Position2d( const LINALG::Matrix<3,numNodesElement> & side_xyze,
               const LINALG::Matrix<3,1> & xyz )
     : px_( xyz ),
       xyze_( side_xyze )
   {
     Scale();
+    ConstructBoundingBoxSide();
   }
 
   bool Compute(bool allow_dist = false);
 
-  bool ComputeDistance();
+  /*!
+  \brief Returns true if the given point is within the given side. Internally local coordinates of a point is also computed
+   */
+  bool IsGivenPointWithinSide();
 
+  /*!
+  \brief Returns true if the local coordinate of the given is within the limiting natural coordinate system of the given Side
+   */
   bool WithinLimits(bool allow_dist);
 
   bool WithinLimitsTol(double TOL, bool allow_dist, double dist_TOL);
 
+  /*!
+  \brief Return the local coordinates and the distance of the given point to the side
+   */
   const LINALG::Matrix<3,1> & LocalCoordinates() { return xsi_; }
 
+  /*!
+  \brief Return the local coordinates of the given point
+   */
   void LocalCoordinates( LINALG::Matrix<2,1> & rs )
   {
     rs( 0 ) = xsi_( 0 );
     rs( 1 ) = xsi_( 1 );
   }
 
+  /*!
+  \brief Return the perpendicular distance between given point to the side
+   */
   double Distance() const { return xsi_( 2, 0 ); }
 
 private:
 
+  /*!
+  \brief Compute the perpendicular distance between point p3 and the line joining p1 and p2
+   */
   bool LinePointDistance( const LINALG::Matrix<3,1> & p1,
                           const LINALG::Matrix<3,1> & p2,
                           const LINALG::Matrix<3,1> & p3,
                           double & distance );
 
+  /*!
+  \brief The corner points of the side and the location of the point are converted into the corresponding range of natural
+  coordinate system of the element. This also gives the proper initial choice for the Newton scheme to find the local coordinate system
+   */
   void Scale()
   {
     scale_ = 0;
     LINALG::Matrix<3,1> d;
+
     for ( int i=0; i<numNodesElement; ++i )
     {
       LINALG::Matrix<3,1> x1( &xyze_( 0, i ),  true );
@@ -94,23 +125,54 @@ private:
     px_.Update( -1, shift_, 1 );
   }
 
+  /*!
+  \brief Construct bounding box over the given side (after scaling)
+   */
+  void ConstructBoundingBoxSide()
+  {
+    for ( int i=0; i<numNodesElement; ++i )
+    {
+      LINALG::Matrix<3,1> x1( &xyze_( 0, i ),  true );
+      bbside_.AddPoint( x1 );
+    }
+  }
+
+  //! Coordinate of the given point (scaled immediately after construction)
   LINALG::Matrix<3,1> px_;
 
+  //! Local coordinate of the given point and the normal distance of the point with respect to side
+  // xsi_(0) and xsi_(1)  --> Local coordinate
+  // xsi_(2) --> Distance to the side
   LINALG::Matrix<3,1> xsi_;
 
+  //! Coordinate of the given Side (scaled immediately after construction)
   LINALG::Matrix<3, numNodesElement> xyze_;
 
+  //! Average length of side edges
   double scale_;
 
+  //! Each node of the sides is shifted by this amount during scaling
   LINALG::Matrix<3,1> shift_;
-};
 
+  //! Bounding box over the given side (after scaling is performed)
+  BoundingBox bbside_;
+};
 
 template <DRT::Element::DiscretizationType elementtype,
           int numNodesElement
 >
 bool Position2d<elementtype,numNodesElement>::Compute(bool allow_dist)
 {
+  // If the given point is outside the side's bounding box, no need to perform the complex calculations
+  //TODO: In several places within cut, this funciton is used without properly checking whether the point is within
+  // the side or not. Has to be checked thoroughly
+  /*if( not allow_dist )
+  {
+    if( not bbside_.Within( 1.0, &px_(0,0) ))
+      return false;
+    xsi_ = 0.0;
+  }*/
+
   // try to compute the local coordinates and the distance using the Newton scheme
   KERNEL::ComputeDistance<DRT::Element::line2, elementtype> cd( xsi_ );
   //KERNEL::DebugComputeDistance<DRT::Element::line2, elementtype> cd( xsi_ );
@@ -175,11 +237,20 @@ bool Position2d<elementtype,numNodesElement>::Compute(bool allow_dist)
   return WithinLimits(allow_dist);
  }
 
+/*-------------------------------------------------------------------------------------------------*
+ * Return true if the given point is within the given side.
+ * Internally it computes the local-coordinates of the given point with respect to
+ * the given sides
+ *-------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType elementtype,
           int numNodesElement
 >
-bool Position2d<elementtype,numNodesElement>::ComputeDistance()
+bool Position2d<elementtype,numNodesElement>::IsGivenPointWithinSide()
 {
+  // If the given point is outside the side's bounding box, no need to perform the complex calculations
+  if( not bbside_.Within( 1.0, &px_(0,0) ))
+    return false;
+
   // try to compute the local coordinates and the distance using the Newton scheme
   KERNEL::ComputeDistance<DRT::Element::line2, elementtype> cd( xsi_ );
   //KERNEL::DebugComputeDistance<DRT::Element::line2, elementtype> cd( xsi_ );
@@ -192,6 +263,9 @@ bool Position2d<elementtype,numNodesElement>::ComputeDistance()
  }
 
 
+/*-------------------------------------------------------------------------------------------------------*
+ * Perpendicular distance between the given point (p3) to the line joining p1 and p2
+ *-------------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType elementtype,
           int numNodesElement
 >
