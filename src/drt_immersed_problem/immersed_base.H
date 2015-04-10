@@ -215,6 +215,8 @@ public:
     // get possible elements being intersected by immersed structure
     DRT::Condition* searchbox = sourcedis->GetCondition("ImmersedSearchbox");
     std::map<int,Teuchos::RCP<DRT::Element> >& searchboxgeom = searchbox->Geometry();
+    int mysearchboxgeomsize = searchboxgeom.size();
+
 
     for (int irobin = 0; irobin < numproc; ++irobin)
     {
@@ -231,7 +233,7 @@ public:
       /////////////////////////////////////////////////////////////////////
       std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
       LINALG::Matrix<source_dim,1> xi(true);
-      if(!matched)
+      if(!matched and mysearchboxgeomsize>0)
       {
         // every proc that has searchboxgeom elements
         for (curr=searchboxgeom.begin(); curr!=searchboxgeom.end(); ++curr)
@@ -371,7 +373,7 @@ public:
             else
               matched = 0;
 
-          } // if myrank == owner of searchbox ele
+          } // if myrank == owner of searchbox ele and proc has searchbox ele
           }// if match
         }// loop over all seachbox elements
       }// enter loop only if point not yet matched
@@ -449,8 +451,11 @@ public:
         comm.Barrier();
       } // only if num procs > 1
 
-      if(curr==(searchboxgeom.end()--) and irobin == (numproc-1) and matched == 0)
-        dserror("could not match given point on any proc. Element(0)=%f",(*vectofill)(0));
+      if(mysearchboxgeomsize>0)
+      {
+        if(curr==(searchboxgeom.end()--) and irobin == (numproc-1) and matched == 0)
+          dserror("could not match given point on any proc. Element(0)=%f",(*vectofill)(0));
+      }
 
     } // end for irobin
 

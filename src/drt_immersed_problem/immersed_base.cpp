@@ -1028,14 +1028,18 @@ void IMMERSED::ImmersedBase::EvaluateInterpolationCondition
         }
         params.set<Teuchos::RCP<DRT::Condition> >("condition", fool->second);
 
-        int mygeometrysize;
+        int mygeometrysize=-1234;
         if(geom.empty()==true)
           mygeometrysize=0;
         else
           mygeometrysize=geom.size();
-        int maxgeometrysize;
+        int maxgeometrysize=-1234;
         evaldis->Comm().MaxAll(&mygeometrysize,&maxgeometrysize,1);
         curr=geom.begin();
+
+#ifdef DEBUG
+        std::cout<<"PROC "<<evaldis->Comm().MyPID()<<": mygeometrysize = "<<mygeometrysize<<" maxgeometrysize = "<<maxgeometrysize<<std::endl;
+#endif
 
         // enter loop on every proc until the last proc evaluated his last geometry element
         // because there is communication happening inside
@@ -1078,9 +1082,9 @@ void IMMERSED::ImmersedBase::EvaluateInterpolationCondition
           if (i<(mygeometrysize-1))
             ++curr;
 
-        }
-      }
-    }
+        } // for 0 to max. geometrysize over all procs
+      } // if check of condid successful
+    } // if condstring found
   } //for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
   return;
 }
