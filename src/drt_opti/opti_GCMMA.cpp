@@ -481,7 +481,7 @@ void OPTI::GCMMA::Asymptotes()
       if (val<0)
         fac = 0.7;
       else if (val>0)
-        fac = 2.3;
+        fac = 1.2;
 
       *asy_min = *xval - fac*(*xold-*asy_min);
       *asy_max = *xval + fac*(*asy_max-*xold);
