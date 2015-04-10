@@ -20,7 +20,8 @@ Maintainers: Andreas Rauch
  *----------------------------------------------------------------------*/
 namespace POROELAST
 {
-  class Monolithic;
+  //class Monolithic;
+  class PORO_SCATRA_Base;
 }
 
 namespace ADAPTER
@@ -50,7 +51,8 @@ public:
   Teuchos::RCP< ::ADAPTER::FSIStructureWrapper> CellField(){return cellstructure_;};
 
   /// access to field Poro
-  Teuchos::RCP<POROELAST::Monolithic> PoroField(){return poroelast_subproblem_;};
+  //Teuchos::RCP<POROELAST::Monolithic> PoroField(){return poroelast_subproblem_;};
+  Teuchos::RCP<POROELAST::PORO_SCATRA_Base> PoroField(){return poroelast_subproblem_;};
 
 protected:
 
@@ -72,6 +74,13 @@ protected:
                               Teuchos::RCP<Epetra_Map>& dirichmap,
                               const Teuchos::RCP<const Epetra_Map>& dirichmap_original,
                               int dofsetnum);
+
+  /// get immersed nodes and determine their dofs
+  void BuildImmersedScaTraDirichMap(Teuchos::RCP<DRT::Discretization> immersedinfodis, //< dis carrying information on artificial domain
+                                    Teuchos::RCP<DRT::Discretization> dis,             //< dis for which the dirichlet map is to be modified
+                                    Teuchos::RCP<Epetra_Map>& dirichmap,               //< new dirichmap to be filled
+                                    const Teuchos::RCP<const Epetra_Map>& dirichmap_original, //< original dirich
+                                    int dofsetnum);                                           //< dofsetnumber of dis node dofs to be retrieved
 
   /// prepare time step of single fields and print header
   virtual void PrepareTimeStep();
@@ -106,15 +115,17 @@ protected:
   //! @name Various global vectors
   //@{
   Teuchos::RCP<Epetra_Vector> porofluid_artificial_velocity_;//!< background velocity interpolated from immersed dis
+  Teuchos::RCP<Epetra_Vector> poroscatra_segregated_phi_;    //!< background phi interpolated from immersed dis
   Teuchos::RCP<Epetra_Vector> cell_bdry_traction_;           //!< boundary traction rhs on immersed cell
   Teuchos::RCP<Epetra_Vector> cell_bdry_traction_old_;       //!< old boundary traction rhs on immersed cell
   //@}
 
   //! @name Pointers to Discretizations
     //@{
-  Teuchos::RCP<DRT::Discretization> backgroundfluiddis_;
   Teuchos::RCP<DRT::Discretization> backgroundstructuredis_;
+  Teuchos::RCP<DRT::Discretization> backgroundfluiddis_;
   Teuchos::RCP<DRT::Discretization> immerseddis_;
+  Teuchos::RCP<DRT::Discretization> scatradis_;
   //@}
 
   //! @name parameters and variables for relaxation
@@ -131,7 +142,8 @@ protected:
   Teuchos::RCP< ::ADAPTER::FSIStructureWrapper>    cellstructure_;
 
   /// poroelast subproblem
-  Teuchos::RCP<POROELAST::Monolithic>       poroelast_subproblem_;
+  //Teuchos::RCP<POROELAST::Monolithic>       poroelast_subproblem_;
+  Teuchos::RCP<POROELAST::PORO_SCATRA_Base> poroelast_subproblem_;
 
   /// basic information for parallelism
   int myrank_;
@@ -142,6 +154,7 @@ protected:
 
   bool displacementcoupling_;
   bool multicellmigration_;
+  int migrationtype_;
 
   //! @name Search Trees
     //@{
@@ -164,6 +177,7 @@ protected:
       //@{
     Teuchos::RCP<const Epetra_Map> dbcmap_ordinary_;       //!< dirichlet bc map before consideration of immersed values
     Teuchos::RCP<Epetra_Map> dbcmap_immersed_;             //!< dirichlet bc map of immersed values
+    Teuchos::RCP<Epetra_Map> dbcmap_immersed_scatra_;      //!< dirichlet bc map of immersed scatra values
     //@}
 
 };// class ImmersedFSI

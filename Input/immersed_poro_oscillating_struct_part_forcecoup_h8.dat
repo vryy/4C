@@ -100,6 +100,7 @@ TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           no_vstab
 -----------------------------------------------------------------CELL DYNAMIC
+MIGRATIONTYPE                   ameboid
 MAXTIME                         0.02
 TIMESTEP                        0.01
 NUMSTEP                         2
@@ -129,16 +130,50 @@ CONVTOL                         1e-09
 RELAX                           1.0
 MAXOMEGA                        0
 ITEMAX                          10
+----------------------------------------------------------POROSCATRA CONTROL
+LINEAR_SOLVER                   3
+UPRES                           1
+RESTARTEVRY                     100
+NUMSTEP                         2
+MAXTIME                         0.02
+TIMESTEP                        0.01
+COUPALGO                        solid_to_scatra // monolithic scatra_to_solid solid_to_scatra two_way
+NORM_INC                        AbsGlobal
+NORM_RESF                       AbsGlobal
+TOLRES_GLOBAL                   1e-08
+TOLINC_GLOBAL                   1e-08
+VECTORNORM_RESF                 L2
+VECTORNORM_INC                  L2
+SCATRATYPE                      Poroscatra
+----------------------------------------------------SCALAR TRANSPORT DYNAMIC
+LINEAR_SOLVER                   3
+SOLVERTYPE                      linear_incremental
+TIMEINTEGR                      One_Step_Theta
+THETA                           1.0
+VELOCITYFIELD                   Navier_Stokes
+VELFUNCNO                       -1
+INITIALFIELD                    zero_field //field_by_function
+INITFUNCNO                      1
+MATID                           5
+SKIPINITDER                     yes
+--------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
+ASSUGRDIFF                      no
+CONSISTENCY                     no
+DEFINITION_ASSGD                artificial_linear
+DEFINITION_TAU                  Franca_Valentin
+EVALUATION_MAT                  integration_point
+EVALUATION_TAU                  element_center
+STABTYPE                        no_stabilization
+SUGRVEL                         no
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
 NAME                            Poro_Solver
 SOLVER                          UMFPACK //UMFPACK //Superlu //Aztec_MSR //Amesos_KLU_nonsym
-AZSOLVE                         GMRES
-AZPREC                          BGS2x2
-AZTOL                           1e-05
-AZOUTPUT                        50
+-----------------------------------------------------------SOLVER 3
+NAME                            ScaTra_Solver
+SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_StructPoro MATID 2 POROLAWID 10 INITPOROSITY 0.8
 MAT 10 MAT_PoroLawNeoHooke BULKMODULUS 2.0e6 PENALTYPARAMETER 0.001
@@ -146,8 +181,10 @@ MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 1.001
 MAT 4 ELAST_CoupNeoHooke YOUNG 2.0e6 NUE 0.3
 MAT 3 MAT_FluidPoro DYNVISCOSITY 1.8e-04 DENSITY 1.3e-03 PERMEABILITY 1.0e-1 TYPE Darcy-Brinkman
 MAT 5 MAT_Struct_StVenantKirchhoff YOUNG 15000.0 NUE 0.3 DENS 1.001
+MAT 6 MAT_scatra DIFFUSIVITY 10.0
 -----------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD porofluid TAR_MAT 3
+SRC_FIELD structure SRC_MAT 1 TAR_FIELD scatra TAR_MAT 6
 -------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC 1.0*0.5*(1.0-cos((t*pi/3.0))) t1 0.0 t2 3.0
 -------------------------------------------------------------CURVE2
@@ -241,6 +278,9 @@ E 1 -
 DVOL                            1
 //                              Volume
 E 1 - Porosity                  2 // FUNCT num
+-------------------------------------DESIGN VOL TRANSPORT DIRICH CONDITIONS
+DVOL                          1
+E 1 - NUMDOF 1 ONOFF 1 VAL 0.0 CURVE none FUNCT 0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE   12425    DNODE    1
 // channel lower left points

@@ -599,17 +599,26 @@ void runEnsightVtuFilter(PostProblem    &problem)
     {
       std::string basename = problem.outname();
 
-      PostField* structfield = problem.get_discretization(0);
+      PostField* structfield = problem.get_discretization(1);
+      std::cout<<structfield->name()<<std::endl;
       StructureFilter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
       structwriter.WriteFiles();
 
-      PostField* porofluidfield = problem.get_discretization(1);
+      PostField* porofluidfield = problem.get_discretization(2);
+      std::cout<<porofluidfield->name()<<std::endl;
       FluidFilter porofluidwriter(porofluidfield, basename);
       porofluidwriter.WriteFiles();
 
-      PostField* cellfield = problem.get_discretization(2);
-      FluidFilter cellwriter(cellfield, basename);
+      PostField* cellfield = problem.get_discretization(0);
+      std::cout<<cellfield->name()<<std::endl;
+      StructureFilter cellwriter(cellfield, basename);
       cellwriter.WriteFiles();
+
+      PostField* scatrafield = problem.get_discretization(3);
+      std::cout<<scatrafield->name()<<std::endl;
+      ScaTraFilter scatrawriter(scatrafield, basename);
+      scatrawriter.WriteFiles();
+
 
       break;
     }

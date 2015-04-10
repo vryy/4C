@@ -290,6 +290,18 @@ public:
   //! return Dirichlet map
   const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
 
+  //! add dirichlet dofs to dbcmaps_
+  void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd);
+
+  //! remove dirichlet dofs from dbcmaps_
+  void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove);
+
+  //! return pointer to const dofrowmap
+  Teuchos::RCP<const Epetra_Map> DofRowMap();
+
+  //! return pointer to const dofrowmap of specified dofset
+  Teuchos::RCP<const Epetra_Map> DofRowMap(int nds);
+
   //! return discretization
   Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
 

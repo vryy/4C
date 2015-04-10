@@ -35,14 +35,10 @@ void POROELAST::PORO_SCATRA_Part_1WC::DoPoroStep()
     std::cout
         << "\n***********************\n POROUS MEDIUM SOLVER \n***********************\n";
   }
-
   //1)  solve the step problem. Methods obtained from poroelast->TimeLoop(sdynparams); --> sdynparams
   //      CUIDADO, aqui vuelve a avanzar el paso de tiempo. Hay que corregir eso.
   //2)  Newton-Raphson iteration
-  //3)  calculate stresses, strains, energies
-  //4)  update all single field solvers
-  //5)  write output to screen and files
-  PoroField()-> DoTimeStep();
+  PoroField()-> Solve();
 }
 
 /*----------------------------------------------------------------------*
@@ -56,44 +52,58 @@ void POROELAST::PORO_SCATRA_Part_1WC::DoScatraStep()
         << "\n***********************\n TRANSPORT SOLVER \n***********************\n";
   }
   // -------------------------------------------------------------------
-  // prepare time step
-  // -------------------------------------------------------------------
-  ScaTraField()->PrepareTimeStep();
-
-  // -------------------------------------------------------------------
   //                  solve nonlinear / linear equation
   // -------------------------------------------------------------------
   ScaTraField()->Solve();
+}
 
+/*----------------------------------------------------------------------*/
+//prepare time step                                  rauch/vuong 04/15  |
+/*----------------------------------------------------------------------*/
+void POROELAST::PORO_SCATRA_Part_1WC::PrepareTimeStep()
+{
+  IncrementTimeAndStep();
+
+  ScaTraField()->PrepareTimeStep();
+  PoroField()->PrepareTimeStep();
+}
+
+/*----------------------------------------------------------------------*
+ |                                                   rauch/vuong 04/15  |
+ *----------------------------------------------------------------------*/
+void POROELAST::PORO_SCATRA_Part_1WC::PrepareOutput()
+{
+  PoroField()-> PrepareOutput();
+}
+
+/*----------------------------------------------------------------------*
+ |                                                   rauch/vuong 04/15  |
+ *----------------------------------------------------------------------*/
+void POROELAST::PORO_SCATRA_Part_1WC::Update()
+{
   // -------------------------------------------------------------------
   //                         update solution
   //        current solution becomes old solution of next timestep
   // -------------------------------------------------------------------
+  PoroField()-> Update();
   ScaTraField()->Update();
 
   // -------------------------------------------------------------------
   // evaluate error for problems with analytical solution
   // -------------------------------------------------------------------
   ScaTraField()->EvaluateErrorComparedToAnalyticalSol();
+}
 
+/*----------------------------------------------------------------------*
+ |                                                   rauch/vuong 04/15  |
+ *----------------------------------------------------------------------*/
+void POROELAST::PORO_SCATRA_Part_1WC::Output()
+{
   // -------------------------------------------------------------------
   //                         output of solution
   // -------------------------------------------------------------------
+  PoroField()-> Output();
   ScaTraField()->Output();
-}
-
-/*----------------------------------------------------------------------*/
-//prepare time step
-/*----------------------------------------------------------------------*/
-void POROELAST::PORO_SCATRA_Part_1WC::PrepareTimeStep()
-{
-  IncrementTimeAndStep();
-  //PrintHeader();
-
-  //SetScatraSolution();
-  //SetPoroSolution();
-
-  //PrepareTimeStep of single fields is called in DoPoroStep and DoScatraStep
 }
 
 /*----------------------------------------------------------------------*
@@ -103,6 +113,9 @@ POROELAST::PORO_SCATRA_Part_1WC_PoroToScatra::PORO_SCATRA_Part_1WC_PoroToScatra(
     const Teuchos::ParameterList& timeparams)
   : PORO_SCATRA_Part_1WC(comm, timeparams)
 {
+  if(comm.MyPID()==0)
+    std::cout<<"\n Create PORO_SCATRA_Part_1WC_PoroToScatra algorithm ... \n"<<std::endl;
+
   // build a proxy of the structure discretization for the scatra field
   Teuchos::RCP<DRT::DofSet> structdofset
     = PoroField()->StructureField()->Discretization()->GetDofSetProxy();
@@ -113,7 +126,7 @@ POROELAST::PORO_SCATRA_Part_1WC_PoroToScatra::PORO_SCATRA_Part_1WC_PoroToScatra(
 }
 
 /*----------------------------------------------------------------------*
- |                                                         vuong 08/13  |
+ |                                                   rauch/vuong 08/13  |
  *----------------------------------------------------------------------*/
 void POROELAST::PORO_SCATRA_Part_1WC_PoroToScatra::Timeloop()
 {
@@ -123,10 +136,24 @@ void POROELAST::PORO_SCATRA_Part_1WC_PoroToScatra::Timeloop()
   {
     PrepareTimeStep();
 
-    DoPoroStep(); // It has its own time and timestep variables, and it increments them by itself.
-    SetPoroSolution();
-    DoScatraStep(); // It has its own time and timestep variables, and it increments them by itself.
+    Solve();
+
+    PrepareOutput();
+
+    Update();
+
+    Output();
   }
+}
+
+/*----------------------------------------------------------------------*
+ |                                                         vuong 08/13  |
+ *----------------------------------------------------------------------*/
+void POROELAST::PORO_SCATRA_Part_1WC_PoroToScatra::Solve()
+{
+  DoPoroStep(); // It has its own time and timestep variables, and it increments them by itself.
+  SetPoroSolution();
+  DoScatraStep(); // It has its own time and timestep variables, and it increments them by itself.
 }
 
 /*----------------------------------------------------------------------*
@@ -165,6 +192,9 @@ POROELAST::PORO_SCATRA_Part_1WC_ScatraToPoro::PORO_SCATRA_Part_1WC_ScatraToPoro(
     const Teuchos::ParameterList& timeparams)
   : PORO_SCATRA_Part_1WC(comm, timeparams)
 {
+  if(comm.MyPID()==0)
+    std::cout<<"\n Create PORO_SCATRA_Part_1WC_ScatraToPoro algorithm ... \n"<<std::endl;
+
   // build a proxy of the scatra discretization for the structure field
   Teuchos::RCP<DRT::DofSet> scatradofset
     = ScaTraField()->Discretization()->GetDofSetProxy();
@@ -175,7 +205,7 @@ POROELAST::PORO_SCATRA_Part_1WC_ScatraToPoro::PORO_SCATRA_Part_1WC_ScatraToPoro(
 }
 
 /*----------------------------------------------------------------------*
- |                                                         vuong 08/13  |
+ |                                                   rauch/vuong 04/15  |
  *----------------------------------------------------------------------*/
 void POROELAST::PORO_SCATRA_Part_1WC_ScatraToPoro::Timeloop()
 {
@@ -185,10 +215,24 @@ void POROELAST::PORO_SCATRA_Part_1WC_ScatraToPoro::Timeloop()
   {
     PrepareTimeStep();
 
-    DoScatraStep(); // It has its own time and timestep variables, and it increments them by itself.
-    SetScatraSolution();
-    DoPoroStep(); // It has its own time and timestep variables, and it increments them by itself.
+    Solve();
+
+    PrepareOutput();
+
+    Update();
+
+    Output();
   }
+}
+
+/*----------------------------------------------------------------------*
+ |                                                   rauch/vuong 04/15  |
+ *----------------------------------------------------------------------*/
+void POROELAST::PORO_SCATRA_Part_1WC_ScatraToPoro::Solve()
+{
+  DoScatraStep(); // It has its own time and timestep variables, and it increments them by itself.
+  SetScatraSolution();
+  DoPoroStep(); // It has its own time and timestep variables, and it increments them by itself.
 }
 
 /*----------------------------------------------------------------------*

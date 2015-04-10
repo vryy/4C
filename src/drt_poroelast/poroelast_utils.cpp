@@ -32,6 +32,7 @@
 #include "poro_scatra_part_2wc.H"
 #include "poro_scatra_monolithic.H"
 #include "../drt_inpar/inpar_poroscatra.H"
+#include "../drt_scatra_ele/scatra_ele.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_createdis.H"
@@ -506,4 +507,52 @@ void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterialAToB(
 
   //done
   return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |                                                         vuong 05/13  |
+ *----------------------------------------------------------------------*/
+void POROELAST::UTILS::SetupPoroScatraDiscretizations(const Epetra_Comm& comm)
+{
+  // Scheme    : the structure discretization is received from the input. Then, an ale-fluid disc.is cloned from the struct. one.
+  //  After that, an ale-scatra disc. is cloned from the structure discretization.
+
+  DRT::Problem* problem = DRT::Problem::Instance();
+
+  //1.-Initialization.
+  Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis("structure");
+  Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis("porofluid");
+  Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis("scatra");
+
+  // setup of the discretizations, including clone strategy
+  POROELAST::UTILS::SetupPoro();
+
+  //3.-Access the scatra discretization, make sure it's empty, and fill it by cloning the structural one.
+  if (fluiddis->NumGlobalNodes()==0) dserror("Fluid discretization is empty!");
+
+  if(!scatradis->Filled())
+    scatradis->FillComplete();
+
+  if (scatradis->NumGlobalNodes()==0)
+  {
+    // fill scatra discretization by cloning structure discretization
+    DRT::UTILS::CloneDiscretization<POROELAST::UTILS::PoroScatraCloneStrategy>(structdis,scatradis);
+
+    // set implementation type
+    for(int i=0; i<scatradis->NumMyColElements(); ++i)
+    {
+      DRT::ELEMENTS::Transport* element = dynamic_cast<DRT::ELEMENTS::Transport*>(scatradis->lColElement(i));
+      if(element == NULL)
+        dserror("Invalid element type!");
+      else
+        element->SetImplType(DRT::INPUT::IntegralValue<INPAR::SCATRA::ImplType>(DRT::Problem::Instance()->PoroScatraControlParams(),"SCATRATYPE"));
+    }
+
+    // assign materials. Order is important here!
+    POROELAST::UTILS::SetMaterialPointersMatchingGrid(structdis,scatradis);
+    POROELAST::UTILS::SetMaterialPointersMatchingGrid(fluiddis,scatradis);
+  }
+  else
+  dserror("Structure AND ScaTra discretization present. This is not supported.");
 }

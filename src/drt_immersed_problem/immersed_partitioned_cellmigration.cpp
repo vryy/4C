@@ -14,7 +14,7 @@ Maintainers: Andreas Rauch
 
 #include "../linalg/linalg_utils.H"
 
-#include "../drt_poroelast/poroelast_monolithic.H"
+#include "../drt_poroelast/poro_scatra_base.H"
 
 #include "../drt_adapter/ad_fld_poro.H"
 #include "../drt_adapter/ad_str_fpsiwrapper.H" //< type of poro structure
@@ -26,6 +26,8 @@ Maintainers: Andreas Rauch
 #include "../drt_fsi/fsi_nox_aitken.H"
 
 #include "../drt_structure/stru_aux.H"
+
+#include "../drt_inpar/inpar_cell.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -44,6 +46,7 @@ IMMERSED::ImmersedPartitionedCellMigration::ImmersedPartitionedCellMigration(con
   backgroundfluiddis_     = globalproblem_->GetDis("porofluid");
   backgroundstructuredis_ = globalproblem_->GetDis("structure");
   immerseddis_            = globalproblem_->GetDis("cell");
+  scatradis_              = globalproblem_->GetDis("scatra");
 
   // decide whether multiple structural bodies or not
   std::vector<DRT::Condition*> conditions;
@@ -57,6 +60,15 @@ IMMERSED::ImmersedPartitionedCellMigration::ImmersedPartitionedCellMigration(con
   else
     multicellmigration_ = false;
 
+  // 0 undefined , 1 ameboid , 2 proteolytic
+  migrationtype_=DRT::INPUT::IntegralValue<int>(globalproblem_->CellMigrationParams(),"MIGRATIONTYPE");
+  if(migrationtype_==INPAR::CELL::cell_migration_ameboid)
+    std::cout<<"AMEBOID TYPE MIGRATION. No proteolytic reaction in ECM."<<std::endl;
+  if(migrationtype_==INPAR::CELL::cell_migration_proteolytic)
+    std::cout<<"MESENCHYMAL TYPE MIGRATION. Proteolytic reaction in ECM."<<std::endl;
+  else if(migrationtype_==INPAR::CELL::cell_migration_undefined)
+    dserror("set MIGRATIONTYPE to 'ameboid' or 'proteolytic' in --CELL DYNAMICS sectionin your .dat file.");
+
   // setup the relaxation parameters
   SetupRelaxation();
 
@@ -64,19 +76,23 @@ IMMERSED::ImmersedPartitionedCellMigration::ImmersedPartitionedCellMigration(con
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> cellstructure =
         Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(globalproblem_->CellMigrationParams(), const_cast<Teuchos::ParameterList&>(globalproblem_->StructuralDynamicParams()), immerseddis_));
     cellstructure_ = Teuchos::rcp_dynamic_cast< ::ADAPTER::FSIStructureWrapper>(cellstructure->StructureField());
-    std::cout<<"Created Field Cell Sturucture ..."<<std::endl;
+    if(myrank_==0)
+      std::cout<<"Created Field Cell Structure ..."<<std::endl;
 
   // create instance of poroelast subproblem
-  poroelast_subproblem_ = Teuchos::rcp(new POROELAST::Monolithic(comm, globalproblem_->PoroelastDynamicParams()));
+  //poroelast_subproblem_ = Teuchos::rcp(new POROELAST::Monolithic(comm, globalproblem_->PoroelastDynamicParams()));
+  poroelast_subproblem_ = POROELAST::UTILS::CreatePoroScatraAlgorithm(globalproblem_->PoroScatraControlParams(),Comm());
   // setup of poro monolithic algorithm
   SetupPoroAlgorithm();
   if(myrank_==0)
-    std::cout<<"Created Field Poroelast ..."<<std::endl;
+    std::cout<<" Created Field Poroelast ... \n"<<std::endl;
 
   // vector of fluid stresses interpolated to cell bdry int points and integrated over cell surface
   cell_bdry_traction_ = Teuchos::rcp(new Epetra_Vector(*(cellstructure_->DofRowMap()),true));
   // vector with fluid velocities interpolated from structure
   porofluid_artificial_velocity_ = Teuchos::rcp(new Epetra_Vector(*(poroelast_subproblem_->FluidField()->DofRowMap()),true));
+  // vector with fluid velocities interpolated from structure
+  poroscatra_segregated_phi_ = Teuchos::rcp(new Epetra_Vector(*(poroelast_subproblem_->ScaTraField()->DofRowMap(0)),true));
 
   // construct 3D search tree for fluid domain
   // initialized in SetupSBackgroundDiscretization()
@@ -102,6 +118,7 @@ void IMMERSED::ImmersedPartitionedCellMigration::CouplingOp(const Epetra_Vector 
   // reinitialize the transfer vectors
   porofluid_artificial_velocity_->PutScalar(0.0);
   cell_bdry_traction_->PutScalar(0.0);
+  poroscatra_segregated_phi_->PutScalar(1.0);
 
   // reset element and node information about immersed method
   Teuchos::ParameterList params;
@@ -256,24 +273,34 @@ void IMMERSED::ImmersedPartitionedCellMigration::BackgroundOp(Teuchos::RCP<Epetr
     if(curr_subset_of_backgrounddis_.empty()==false)
       EvaluateWithInternalCommunication(backgroundfluiddis_,&fluid_vol_strategy, curr_subset_of_backgrounddis_, cell_SearchTree_, currpositions_cell_);
 
+    /////////////////////////////////////////////////////////////////////////////////////
+    //  Apply Dirichlet values to background fluid
+    //
     // dofsetnum of backgroundfluid is 0 for backgroundfluiddis in poroelast_subproblem_
     BuildImmersedDirichMap(backgroundfluiddis_, dbcmap_immersed_, poroelast_subproblem_->FluidField()->GetDBCMapExtractor()->CondMap(),0);
-//    std::cout<<"dbcmp_immersed:"<<std::endl;
-//    std::cout<<*dbcmap_immersed_<<std::endl;
-//    std::cout<<"FluidField()->CondMap():"<<std::endl;
-//    std::cout<<*(poroelast_subproblem_->FluidField()->GetDBCMapExtractor()->CondMap())<<std::endl;
     poroelast_subproblem_->FluidField()->AddDirichCond(dbcmap_immersed_);
-
     // apply immersed dirichlets to porofluid field
     DoImmersedDirichletCond(poroelast_subproblem_->FluidField()->WriteAccessVelnp(),backgrd_dirichlet_values, dbcmap_immersed_);
+
+    /////////////////////////////////////////////////////////////////////////////////////
+    //  Apply Dirichlet values to background scatra field
+    //
+    if(migrationtype_==INPAR::CELL::cell_migration_proteolytic)
+    {
+      BuildImmersedScaTraDirichMap(backgroundfluiddis_, scatradis_, dbcmap_immersed_scatra_, poroelast_subproblem_->ScaTraField()->DirichMaps()->CondMap(),0);
+      poroelast_subproblem_->ScaTraField()->AddDirichCond(dbcmap_immersed_scatra_);
+      DoImmersedDirichletCond(poroelast_subproblem_->ScaTraField()->Phinp(),poroscatra_segregated_phi_, dbcmap_immersed_scatra_);
+    }
+
     // rebuild the combined dbcmap
     poroelast_subproblem_->BuildCombinedDBCMap();
-//    std::cout<<"CombinedDBCMap()"<<std::endl;
-//    std::cout<<*poroelast_subproblem_->CombinedDBCMap()<<std::endl;
 
-    double normofvelocities;
+    double normofvelocities = -1234.0;
     poroelast_subproblem_->FluidField()->ExtractVelocityPart(backgrd_dirichlet_values)->Norm2(&normofvelocities);
-//
+
+    double normofconcentrations = -1234.0;
+    poroscatra_segregated_phi_->Norm2(&normofconcentrations);
+
 //    // apply pressure neumann based on divergence of structural field above fluid nodes
 //    Teuchos::RCP<const Epetra_Vector> fluid_artificial_veldiv = MBFluidField()->FluidField()->ExtractPressurePart(fluid_artificial_velocity);
 //    double normofdivergence;
@@ -281,18 +308,24 @@ void IMMERSED::ImmersedPartitionedCellMigration::BackgroundOp(Teuchos::RCP<Epetr
 
     if(myrank_ == 0)
     {
-      std::cout<<"###   Norm of Dirichlet values:   "<<std::setprecision(7)<<normofvelocities<<std::endl;
-      std::cout<<"###   Norm of transferred divergence of cell velocity:   "<<std::setprecision(10)<<"not used"<<std::endl;
+      std::cout<<"###   Norm of Fluid Velocity Dirichlet values:           "<<std::setprecision(7)<<normofvelocities<<std::endl;
+      if(migrationtype_==INPAR::CELL::cell_migration_proteolytic)
+      {
+        std::cout<<"###   Norm of Segregated Species Dirichlet values:       "<<normofconcentrations<<std::endl;
+      }
+        std::cout<<"###   Norm of transferred divergence of cell velocity:   "<<std::setprecision(10)<<"not used"<<std::endl;
       std::cout<<"################################################################################################"<<std::endl;
     }
-
 
     // solve poro
     //MBFluidField()->FluidField()->AddContributionToNeumannLoads(fluid_artificial_veldiv);
     poroelast_subproblem_->Solve();
 
-    // remove immersed dirichlets from dbcmap of fluid (may be different in next iteration)
-    poroelast_subproblem_->FluidField()->RemoveDirichCond(dbcmap_immersed_);
+    // remove immersed dirichlets from dbcmap of fluid (and scatra) (may be different in next iteration)
+    poroelast_subproblem_->FluidField() ->RemoveDirichCond(dbcmap_immersed_);
+    if(migrationtype_==INPAR::CELL::cell_migration_proteolytic)
+      poroelast_subproblem_->ScaTraField()->RemoveDirichCond(dbcmap_immersed_scatra_);
+
     // rebuild the combined dbcmap
     poroelast_subproblem_->BuildCombinedDBCMap();
 
@@ -475,6 +508,46 @@ void IMMERSED::ImmersedPartitionedCellMigration::BuildImmersedDirichMap(Teuchos:
           // include also pressure dof if node does not belong to a boundary background element
           //if((nodes[inode]->IsImmersedBoundary())==0)
           //  mydirichdofs.push_back(dofs[3]);
+        }
+      }
+    }
+  }
+
+  int nummydirichvals = mydirichdofs.size();
+  dirichmap = Teuchos::rcp( new Epetra_Map(-1,nummydirichvals,&(mydirichdofs[0]),0,dis->Comm()) );
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedPartitionedCellMigration::BuildImmersedScaTraDirichMap(Teuchos::RCP<DRT::Discretization> immersedinfodis,
+                                                                        Teuchos::RCP<DRT::Discretization> dis,
+                                                                        Teuchos::RCP<Epetra_Map>& dirichmap,
+                                                                        const Teuchos::RCP<const Epetra_Map>& dirichmap_original,
+                                                                        int dofsetnum)
+{
+  const Epetra_Map* elerowmap = dis->ElementRowMap();
+  std::vector<int> mydirichdofs(0);
+
+  for(int i=0; i<elerowmap->NumMyElements(); ++i)
+  {
+    // dynamic_cast necessary because virtual inheritance needs runtime information
+    int gid = elerowmap->GID(i);
+    DRT::ELEMENTS::FluidImmersedBase* immersedele = dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(immersedinfodis->gElement(gid));
+    if(immersedele->HasProjectedDirichlet())
+    {
+      DRT::Node** immersednodes = immersedele->Nodes();
+      DRT::Node** nodes = dis->gElement(gid)->Nodes();
+      for (int inode=0; inode<(immersedele->NumNode()); inode++)
+      {
+        if(static_cast<IMMERSED::ImmersedNode* >(immersednodes[inode])->IsMatched() and immersednodes[inode]->Owner()==myrank_)
+        {
+          std::vector<int> dofs = dis->Dof(dofsetnum,nodes[inode]);
+
+            if(dirichmap_original->LID(dofs[0]) == -1) // if not already in original dirich map
+              mydirichdofs.push_back(dofs[0]);
+
         }
       }
     }
@@ -693,7 +766,7 @@ void IMMERSED::ImmersedPartitionedCellMigration::PrepareBackgroundOp()
 void IMMERSED::ImmersedPartitionedCellMigration::SetupPoroAlgorithm()
 {
   poroelast_subproblem_->SetupSystem();
-  poroelast_subproblem_->SetupSolver();
+  //poroelast_subproblem_->SetupSolver(); // done in CreatePoroScatraAlgorithm
   return;
 }
 

@@ -373,7 +373,7 @@ void IMMERSED::ImmersedPartitioned::SetDefaultParameters(const Teuchos::Paramete
   //
   switch (DRT::INPUT::IntegralValue<int>(celldyn,"COUPALGO"))
   {
-    case cell_iter_stagg_fixed_rel_param:
+    case INPAR::CELL::cell_iter_stagg_fixed_rel_param:
     {
       // fixed-point solver with fixed relaxation parameter
       SetMethod("ITERATIVE STAGGERED SCHEME WITH FIXED RELAXATION PARAMETER");
@@ -389,7 +389,7 @@ void IMMERSED::ImmersedPartitioned::SetDefaultParameters(const Teuchos::Paramete
       lineSearchParams.sublist("Full Step").set("Full Step", immersedpart.get<double>("RELAX"));
       break;
     }
-    case cell_iter_stagg_AITKEN_rel_param:
+    case INPAR::CELL::cell_iter_stagg_AITKEN_rel_param:
     {
       // fixed-point solver with Aitken relaxation parameter
       SetMethod("ITERATIVE STAGGERED SCHEME WITH RELAXATION PARAMETER VIA AITKEN ITERATION");
@@ -409,7 +409,7 @@ void IMMERSED::ImmersedPartitioned::SetDefaultParameters(const Teuchos::Paramete
       lineSearchParams.sublist("Aitken").set("max step size", immersedpart.get<double>("MAXOMEGA"));
       break;
     }
-    case cell_basic_sequ_stagg:
+    case INPAR::CELL::cell_basic_sequ_stagg:
     {
       // sequential coupling (no iteration!)
       SetMethod("BASIC SEQUENTIAL STAGGERED SCHEME");

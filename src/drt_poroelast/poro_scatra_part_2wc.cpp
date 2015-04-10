@@ -32,6 +32,9 @@ POROELAST::PORO_SCATRA_Part_2WC::PORO_SCATRA_Part_2WC(const Epetra_Comm& comm,
     structincnp_(Teuchos::rcp(new Epetra_Vector(*(PoroField()->StructureField()()->Dispnp())))),
     fluidincnp_(Teuchos::rcp(new Epetra_Vector(*(PoroField()->FluidField()()->Velnp()))))
 {
+  if(comm.MyPID()==0)
+    std::cout<<"\n Create PORO_SCATRA_Part_2WC algorithm ... \n"<<std::endl;
+
   // the problem is two way coupled, thus each discretization must know the other discretization
   AddDofSets();
 
@@ -54,7 +57,11 @@ void POROELAST::PORO_SCATRA_Part_2WC::Timeloop()
 
     Solve();
 
-    UpdateAndOutput();
+    PrepareOutput();
+
+    Update();
+
+    Output();
 
   }
 }
@@ -160,18 +167,31 @@ void POROELAST::PORO_SCATRA_Part_2WC::PrepareTimeStep()
  // SetScatraSolution();
 }
 
+
 /*----------------------------------------------------------------------*
- |                                                         vuong 08/13  |
+ |                                                   rauch/vuong 04/15  |
  *----------------------------------------------------------------------*/
-void POROELAST::PORO_SCATRA_Part_2WC::UpdateAndOutput()
+void POROELAST::PORO_SCATRA_Part_2WC::PrepareOutput()
 {
   PoroField()-> PrepareOutput();
+}
 
+/*----------------------------------------------------------------------*
+ |                                                   rauch/vuong 04/15  |
+ *----------------------------------------------------------------------*/
+void POROELAST::PORO_SCATRA_Part_2WC::Update()
+{
   PoroField()-> Update();
   ScaTraField()->Update();
 
   ScaTraField()->EvaluateErrorComparedToAnalyticalSol();
+}
 
+/*----------------------------------------------------------------------*
+ |                                                         vuong 08/13  |
+ *----------------------------------------------------------------------*/
+void POROELAST::PORO_SCATRA_Part_2WC::Output()
+{
   PoroField()-> Output();
   ScaTraField()->Output();
 }

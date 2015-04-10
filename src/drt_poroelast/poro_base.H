@@ -82,6 +82,9 @@ namespace POROELAST
       //! perform result tests
       virtual void TestResults(const Epetra_Comm& comm);
 
+      //! build combined dirichlet map for the monolithic problem
+      virtual void BuildCombinedDBCMap(){dserror("BuildCombinedDBCMap() not implemented in base class. must be implemented in sub classes.");};
+
       //! @name access methods
 
       //! access to structural field

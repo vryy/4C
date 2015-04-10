@@ -7371,15 +7371,56 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       Teuchos::Tuple<std::string,3> coupname;
       Teuchos::Tuple<int,3> couplabel;
 
-      coupname[ 0] = "basic_sequ_stagg";                              couplabel[ 0] = cell_basic_sequ_stagg;
-      coupname[ 1] = "iter_stagg_fixed_rel_param";                    couplabel[ 1] = cell_iter_stagg_fixed_rel_param;
-      coupname[ 2] = "iter_stagg_AITKEN_rel_param";                   couplabel[ 2] = cell_iter_stagg_AITKEN_rel_param;
+      coupname[ 0] = "basic_sequ_stagg";                              couplabel[ 0] = INPAR::CELL::cell_basic_sequ_stagg;
+      coupname[ 1] = "iter_stagg_fixed_rel_param";                    couplabel[ 1] = INPAR::CELL::cell_iter_stagg_fixed_rel_param;
+      coupname[ 2] = "iter_stagg_AITKEN_rel_param";                   couplabel[ 2] = INPAR::CELL::cell_iter_stagg_AITKEN_rel_param;
 
       setStringToIntegralParameter<int>("COUPALGO","iter_stagg_AITKEN_rel_param",
                                         "Iteration Scheme over the fields",
                                         coupname,
                                         couplabel,
                                         &celldyn);
+
+      setStringToIntegralParameter<int>(
+                                   "MIGRATIONTYPE","undefined",
+                                   "Migration with or without ScaTra.",
+                                   tuple<std::string>(
+                                     "undefined",
+                                     "ameboid",
+                                     "proteolytic"),
+                                     tuple<int>(
+                                     INPAR::CELL::cell_migration_undefined,
+                                     INPAR::CELL::cell_migration_ameboid,
+                                     INPAR::CELL::cell_migration_proteolytic),
+                                     &celldyn);
+
+      setStringToIntegralParameter<int>(
+                                   "SEGREGATION","undefined",
+                                   "Segregation of chemical species by cell in volume or on surface",
+                                   tuple<std::string>(
+                                     "undefined",
+                                     "volume",
+                                     "surface"),
+                                     tuple<int>(
+                                     INPAR::CELL::segregation_undefined,
+                                     INPAR::CELL::segregation_volumetric,
+                                     INPAR::CELL::segregation_surface),
+                                     &celldyn);
+
+      setStringToIntegralParameter<int>(
+                                   "SEGREGATION_LAW","undefined",
+                                   "Segregation of chemical species by cell in volume or on surface",
+                                   tuple<std::string>(
+                                     "undefined",
+                                     "constant",
+                                     "forcedependent"),
+                                     tuple<int>(
+                                     INPAR::CELL::segregation_law_undefined,
+                                     INPAR::CELL::segregation_law_constant,
+                                     INPAR::CELL::segregation_law_forcedependent),
+                                     &celldyn);
+
+      DoubleParameter("SEGREGATION_CONST",0.0,"basic constant for segregation equation",&celldyn);
 
       IntParameter("NUMSTEP",200,"Total number of Timesteps",&celldyn);
       IntParameter("UPRES",1,"Increment for writing solution",&celldyn);

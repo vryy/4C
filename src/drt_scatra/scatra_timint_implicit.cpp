@@ -3045,3 +3045,49 @@ inline void SCATRA::ScaTraTimIntImpl::IncrementTimeAndStep()
   step_ += 1;
   time_ += dta_;
 }
+
+
+/*----------------------------------------------------------------------*
+ |  add dirichlet dofs to dbcmaps_                         rauch   04/15|
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd)
+{
+  std::vector<Teuchos::RCP<const Epetra_Map> > condmaps;
+  condmaps.push_back(maptoadd);
+  condmaps.push_back(dbcmaps_->CondMap());
+  Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
+  *dbcmaps_ = LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged);
+  return;
+} // ScaTraTimIntImpl::AddDirichCond
+
+
+/*----------------------------------------------------------------------*
+ |  remove dirichlet dofs from dbcmaps_                    rauch   04/15|
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove)
+{
+  std::vector<Teuchos::RCP<const Epetra_Map> > othermaps;
+  othermaps.push_back(maptoremove);
+  othermaps.push_back(dbcmaps_->OtherMap());
+  Teuchos::RCP<Epetra_Map> othermerged = LINALG::MultiMapExtractor::MergeMaps(othermaps);
+  *dbcmaps_ = LINALG::MapExtractor(*(discret_->DofRowMap()), othermerged, false);
+  return;
+} // ScaTraTimIntImpl::RemoveDirichCond
+
+
+/*----------------------------------------------------------------------*
+ |  return pointer to const dofrowmap                      rauch   04/15|
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map>
+SCATRA::ScaTraTimIntImpl::DofRowMap()
+{ return DofRowMap(0); }
+
+
+/*----------------------------------------------------------------------*
+ |  return pointer to const dofrowmap of specified dofset  rauch   04/15|
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> SCATRA::ScaTraTimIntImpl::DofRowMap(int nds)
+{
+  const Epetra_Map* dofrowmap = discret_->DofRowMap(nds);
+  return Teuchos::rcp(dofrowmap, false);
+}

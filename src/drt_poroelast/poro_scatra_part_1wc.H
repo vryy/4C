@@ -35,6 +35,15 @@ namespace POROELAST
     //! increment time and step and print header
     void PrepareTimeStep();
 
+    //! prepare output
+    void PrepareOutput();
+
+    //! update time step
+    void Update();
+
+    //! write output print to screen
+    void Output();
+
   };
 
   class PORO_SCATRA_Part_1WC_PoroToScatra : public PORO_SCATRA_Part_1WC
@@ -49,6 +58,9 @@ namespace POROELAST
 
     //! actual time loop
     void Timeloop();
+
+    //! perform iteration loop between fields
+    void Solve();
 
     //! read and set fields needed for restart
     void ReadRestart(int restart);
@@ -67,6 +79,9 @@ namespace POROELAST
 
     //! actual time loop
     void Timeloop();
+
+    //! perform iteration loop between fields
+    void Solve();
 
     //! read and set fields needed for restart
     void ReadRestart(int restart);

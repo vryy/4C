@@ -15,6 +15,12 @@ Maintainers: Andreas Rauch
 
 /*----------------------------------------------------------------------*/
 
+namespace INPAR
+{
+
+namespace CELL
+{
+
 /*----------------------------------------------------------------------*/
 /* The coupling methods for Cell Migration. */
 /*----------------------------------------------------------------------*/
@@ -26,6 +32,28 @@ typedef enum _CELL_COUPLING
   cell_iter_stagg_AITKEN_rel_param=3,
 } CELL_COUPLING;
 
+typedef enum _CELL_MIGRATION_TYPE
+{
+  cell_migration_undefined=0,
+  cell_migration_ameboid=1,
+  cell_migration_proteolytic=2
+} CELL_MIGRATION_TYPE;
 
+typedef enum _SEGREGATION_TYPE
+{
+  segregation_undefined=0,
+  segregation_volumetric=1,
+  segregation_surface=2
+} SEGREGATION_TYPE;
+
+typedef enum _SEGREGATION_LAW_TYPE
+{
+  segregation_law_undefined=0,
+  segregation_law_constant=1,
+  segregation_law_forcedependent=2
+} SEGREGATION_LAW_TYPE;
+
+} // CELL
+} // INPAR
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef INPAR_FSI_H
+#endif  // #ifndef INPAR_CELL_H

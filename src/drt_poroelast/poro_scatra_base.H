@@ -18,6 +18,7 @@
 
 #include "../drt_adapter/adapter_algorithmbase.H"
 #include "../drt_scatra/scatra_algorithm.H"
+#include "../drt_poroelast/poro_base.H"
 
 /*----------------------------------------------------------------------*
  | forward declarations                                                  |
@@ -25,12 +26,14 @@
 namespace ADAPTER
 {
   class ScaTraBaseAlgorithm;
+  class FluidPoro;
+  class FPSIStructureWrapper;
 }
 
-namespace POROELAST
-{
-  class PoroBase;
-}
+//namespace POROELAST
+//{
+//  class PoroBase;
+//}
 
 /*----------------------------------------------------------------------*
  |                                                                       |
@@ -48,17 +51,32 @@ namespace POROELAST
     /// virtual destructor
     virtual ~PORO_SCATRA_Base(){};
 
-    //! setup discretization, includes cloning the structure discretization
-    void SetupDiscretizations(const Epetra_Comm& comm);
-
     //! Main time loop.
     virtual void Timeloop()=0;
+
+    //! prepare time step for single fields
+    void PrepareTimeStep(){dserror("not implemented in base class. override in subclass.");};
+
+    //! perform iteration loop between fields
+    virtual void Solve(){dserror("not implemented in base class. override in subclass.");};;
+
+    //! prepare output
+    virtual void PrepareOutput(){dserror("not implemented in base class. override in subclass.");};;
+
+    //! update time step
+    virtual void Update(){dserror("not implemented in base class. override in subclass.");};;
+
+    //! write output print to screen
+    virtual void Output(){dserror("not implemented in base class. override in subclass.");};;
 
     //! read and set fields needed for restart
     virtual void ReadRestart(int restart)=0;
 
     //! setup for single fields
     virtual void SetupSystem();
+
+    //! Build the combined dirichlet map of the monolithic poro problem
+    virtual void BuildCombinedDBCMap(){poro_->BuildCombinedDBCMap();};
 
     //! perform result test
     void TestResults(const Epetra_Comm& comm);
@@ -72,10 +90,19 @@ namespace POROELAST
     //! return pointer to porous medium problem
     const Teuchos::RCP<POROELAST::PoroBase>& PoroField(){return poro_;};
 
+    //! return pointer to interstitial fluid
+    const Teuchos::RCP<ADAPTER::FluidPoro>& FluidField(){return poro_->FluidField();};
+
+    //! return pointer to porous structure
+    const Teuchos::RCP<ADAPTER::FPSIStructureWrapper>& StructureField(){return poro_->StructureField();};
+
     //TODO: SCATRA_ELE_CLEANING
     //! return pointer to scalar transport problem
     //SCATRA::ScaTraTimIntImpl& ScatraField(){return scatra_->ScaTraField();};
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ScaTraField() { return scatra_->ScaTraField(); };
+
+    //! return pointer to scalar problem adapter base class
+    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> ScaTraFieldBase() { return scatra_; };
 
     //! setup solver (for monolithic only)
     virtual bool SetupSolver(){return false;};

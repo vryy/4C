@@ -41,6 +41,18 @@ namespace POROELAST
     //! prepare time step for single fields
     void PrepareTimeStep();
 
+    //! perform iteration loop between fields
+    void Solve();
+
+    //! prepare output
+    void PrepareOutput();
+
+    //! update time step
+    void Update();
+
+    //! write output print to screen
+    void Output();
+
   protected:
 
     //! perform iteration step of structure field
@@ -48,12 +60,6 @@ namespace POROELAST
 
     //! perform iteration step of scatra field
     void DoScatraStep();
-
-    //! perform iteration loop between fields
-    void Solve();
-
-    //! update time step and print to screen
-    void UpdateAndOutput();
 
     //! convergence check of outer loop
     bool ConvergenceCheck(int itnum);

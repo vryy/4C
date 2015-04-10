@@ -100,6 +100,9 @@ namespace POROELAST
       const Teuchos::RCP<const Epetra_Vector> vect  //!< the vector of interest
       );
 
+    //! setup discretization, includes cloning the structure discretization
+    void SetupPoroScatraDiscretizations(const Epetra_Comm& comm);
+
     //! strategy for material assignment for non matching meshes with poro
 
     /// Helper class for assigning materials for volumetric coupling of non conforming meshes (poro)
