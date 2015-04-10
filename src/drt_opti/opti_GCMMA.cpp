@@ -113,11 +113,11 @@ output_(output)
     dserror("factor for tolerance adaption shall be significant smaller than one!");
   if (fac_stepsize_>-1.0 || fac_stepsize_<-1.1)
     dserror("unsensible step size factor");
-  if (asy_fac1_<2.0 || asy_fac1_>20.0)
+  if (asy_fac1_<2.0 || asy_fac1_>2000.0)
     dserror("unsensible factor for updating asymptotes");
   if (asy_fac2_<1.0e-3 || asy_fac2_>1.0e-1)
     dserror("unsensible factor for updating asymptotes");
-  if (rho_fac1_<1.01 || rho_fac1_>1.5)
+  if (rho_fac1_<1.01 || rho_fac1_>5)
     dserror("unsensible factor for updating rho");
   if (rho_fac2_<5 || rho_fac2_>5000)
     dserror("unsensible factor for updating rho");
@@ -383,10 +383,29 @@ void OPTI::GCMMA::InitIter(
     *constr_deriv_ = *constraintsgrad;
     obj_ = objective;
     *obj_deriv_ = *objectivegrad;
+//    std::cout.precision(16);
 //    std::cout << "new obj is " << obj_ << std::endl;
 //    std::cout << "new obj deriv is " << *obj_deriv_ << std::endl;
 //    std::cout << "new constr are " << *constr_ << std::endl;
 //    std::cout << "new constr deriv are " << *constr_deriv_ << std::endl;
+//
+//    std::ostringstream filename1;
+//    std::ostringstream filename2;
+//    std::ostringstream filename3;
+//    std::ostringstream filename4;
+//    filename1 << "/home/winklmaier/workspace/output/1in2out/failing_constraint/obj_" << total_iter_ << ".mtl";
+//    filename2 << "/home/winklmaier/workspace/output/1in2out/failing_constraint/obj_der_" << total_iter_ << ".mtl";
+//    filename3 << "/home/winklmaier/workspace/output/1in2out/failing_constraint/constr_" << total_iter_ << ".mtl";
+//    filename4 << "/home/winklmaier/workspace/output/1in2out/failing_constraint/constr_der_" << total_iter_ << ".mtl";
+//    LINALG::PrintVectorInMatlabFormat(filename2.str(),*obj_deriv_);
+//    LINALG::PrintVectorInMatlabFormat(filename4.str(),*(*constr_deriv_)(0));
+//    LINALG::PrintSerialDenseMatrixInMatlabFormat(filename3.str(),*constr_);
+//
+//    std::ofstream f1;
+//    f1.precision(16);
+//    f1.open(filename1.str().c_str(),std::fstream::trunc);
+//    f1 << obj_;
+//    f1.close();
 
     // reset optimization variables
     *x_old2_ = *x_old_;
@@ -399,8 +418,21 @@ void OPTI::GCMMA::InitIter(
   }
   else // new inner iter -> new values, update rho
   {
+//    std::cout.precision(16);
 //    std::cout << "new obj is " << objective << std::endl;
 //    std::cout << "new constr are " << *constraints << std::endl;
+//
+//    std::ostringstream filename1;
+//    std::ostringstream filename2;
+//    filename1 << "/home/winklmaier/workspace/output/1in2out/failing_constraint/obj_" << total_iter_ << ".mtl";
+//    filename2 << "/home/winklmaier/workspace/output/1in2out/failing_constraint/constr_" << total_iter_ << ".mtl";
+//    LINALG::PrintSerialDenseMatrixInMatlabFormat(filename2.str(),*constraints);
+//
+//    std::ofstream f1;
+//    f1.open(filename1.str().c_str(),std::fstream::ate | std::fstream::app);
+//    f1 << objective;
+//    f1.close();
+
     UpdateRho(objective,constraints);
   }
 }
@@ -449,7 +481,7 @@ void OPTI::GCMMA::Asymptotes()
       if (val<0)
         fac = 0.7;
       else if (val>0)
-        fac = 1.2;
+        fac = 2.3;
 
       *asy_min = *xval - fac*(*xold-*asy_min);
       *asy_max = *xval + fac*(*asy_max-*xold);
@@ -766,10 +798,6 @@ bool OPTI::GCMMA::Converged(
   {
     inner_iter_ = 0;
 
-    // check if outer iteration converged
-    if (KKTCond(objective,objectivegrad,constraints,constraintsgrad))
-      converged = true;
-
     Epetra_Vector inc(*x_mma_);
     inc.Update(-1.0,*x_,1.0);
 
@@ -777,6 +805,11 @@ bool OPTI::GCMMA::Converged(
     inc.Norm2(&inc2norm);
     double incinfnorm = 0.0;
     inc.NormInf(&incinfnorm);
+
+    // check if outer iteration converged
+    if ((KKTCond(objective,objectivegrad,constraints,constraintsgrad)) and
+        (inc2norm<tol_kkt_))
+      converged = true;
 
     if (discret_->Comm().MyPID()==0)
     {

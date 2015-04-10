@@ -126,6 +126,8 @@ namespace OPTI
     Teuchos::RCP<Epetra_MultiVector> ConstrDeriv() {return constr_deriv_;}
 
     const int Iter() const {return total_iter_;}
+    const int OuterIter() const {return outer_iter_;}
+    const int InnerIter() const {return inner_iter_;}
 
 
   private:
