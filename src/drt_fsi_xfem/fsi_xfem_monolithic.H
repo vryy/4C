@@ -73,8 +73,8 @@ namespace FSI
 
     //@}
 
-  private:
 
+  protected:
     //--------------------------------------------------------------------------//
     //! @name Safety routines
 
@@ -111,17 +111,27 @@ namespace FSI
 
     //@}
 
-
     //--------------------------------------------------------------------------//
-    //! @name Recovery of the structural forces
+    //! @name Coupling methods
 
-    //! recover the Lagrange multiplier at the interface
-    //! (ie forces onto the structure, Robin-type forces consisting of fluid forces
-    //! and the Nitsche penalty term contribution)
-    virtual void RecoverLagrangeMultiplier();
+    //! add coupling on poro fluid interface! - Overloaded by MonolithicFPSI_XFEM
+    virtual void AddCouplingSysmat(Teuchos::RCP<LINALG::BlockSparseMatrixBase>& sysmat,
+        Teuchos::RCP<LINALG::SparseMatrix>& s,
+        Teuchos::RCP<LINALG::SparseMatrix>& f,
+        const double scaling_S,
+        const double scaling_F)
+    {return;}
 
+    //! add coupling on poro fluid interface! - Overloaded by MonolithicFPSI_XFEM
+    virtual void AddCouplingRHS(Teuchos::RCP<Epetra_Vector>& rhs)
+    {return;}
+
+    //!Set Ale InterfaceDisplacements -- overloaded!
+    virtual void SetAleInterfaceDisplacements() {return;}
+
+    //!Evaluate Ale Field -- overloaded!
+    virtual void EvaluateAle(Teuchos::RCP<const Epetra_Vector> ax) {return;}
     //@}
-
 
     //--------------------------------------------------------------------------//
     //! @name DofRowMap access methods
@@ -134,6 +144,17 @@ namespace FSI
 
     //@}
 
+  private:
+
+    //--------------------------------------------------------------------------//
+    //! @name Recovery of the structural forces
+
+    //! recover the Lagrange multiplier at the interface
+    //! (ie forces onto the structure, Robin-type forces consisting of fluid forces
+    //! and the Nitsche penalty term contribution)
+    virtual void RecoverLagrangeMultiplier();
+
+    //@}
 
     //--------------------------------------------------------------------------//
     //! @name Setup of SYSMAT and RHS vector
@@ -175,15 +196,17 @@ namespace FSI
     );
 
 
-    //! extract the two field vectors from a given composed vector
+    //! extract the two/three field vectors from a given composed vector
      /*!
        \param x  (i) composed vector that contains all field vectors
        \param sx (o) structural displacements
        \param fx (o) fluid velocities and pressure
+       \param ax (o) ale displacements
       */
      virtual void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
                                       Teuchos::RCP<const Epetra_Vector>& sx,
-                                      Teuchos::RCP<const Epetra_Vector>& fx);
+                                      Teuchos::RCP<const Epetra_Vector>& fx,
+                                      Teuchos::RCP<const Epetra_Vector>& ax );
 
     //@}
 
@@ -349,6 +372,9 @@ namespace FSI
 
     //! intermediate step increment for fluid based on solution from t^n mapped/transformed to current interface position and permuted to current dofset ordering
     Teuchos::RCP<Epetra_Vector> fx_sum_;
+
+    //! intermediate step increment for ale based on predictor solution from beginning of time step
+    Teuchos::RCP<const Epetra_Vector> ax_sum_;
 
     //! global Newton increment = iteration increment Delta x = x^n+1_i+1 - x^n+1_i
     Teuchos::RCP<Epetra_Vector> iterinc_;

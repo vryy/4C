@@ -14,6 +14,7 @@ Maintainer:  Benedikt Schott
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 #include "../drt_adapter/ad_fld_fluid_xfsi.H"
+#include "../drt_adapter/ad_ale_fpsi.H"
 
 #include "../drt_fsi/fsi_debugwriter.H"
 
@@ -298,11 +299,9 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
   // Coupling blocks C_sf, C_fs and C_ss
   /*----------------------------------------------------------------------*/
 
-  Teuchos::RCP<ADAPTER::XFluidFSI> xfluid = Teuchos::rcp_dynamic_cast<ADAPTER::XFluidFSI>(FluidField(), true);
-
-  Teuchos::RCP<LINALG::SparseMatrix> C_ss = xfluid->C_Struct_Struct_Matrix(); // based on the full structural dofrowmap (used for Add)
-  Teuchos::RCP<LINALG::SparseMatrix> C_sf = xfluid->C_Struct_Fluid_Matrix();  // based on the full structural dofrowmap (used for Assign)
-  Teuchos::RCP<LINALG::SparseMatrix> C_fs = xfluid->C_Fluid_Struct_Matrix();  // based on the full fluid dofrowmap (used for Assign)
+  Teuchos::RCP<LINALG::SparseMatrix> C_ss = FluidField()->C_Struct_Struct_Matrix(); // based on the full structural dofrowmap (used for Add)
+  Teuchos::RCP<LINALG::SparseMatrix> C_sf = FluidField()->C_Struct_Fluid_Matrix();  // based on the full structural dofrowmap (used for Assign)
+  Teuchos::RCP<LINALG::SparseMatrix> C_fs = FluidField()->C_Fluid_Struct_Matrix();  // based on the full fluid dofrowmap (used for Assign)
 
   // * all the coupling matrices are scaled with the weighting of the fluid w.r.t new time step np
   //    -> Unscale the blocks with (1/(theta_f*dt) = 1/weight(t^f_np))
@@ -343,6 +342,8 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
   // assign the fluid diagonal block
   systemmatrix_->Assign(1,1,View,*f);
 
+  //Add Coupling Sysmat in case of FPSI_XFEM or FSI_XFEM_ALE (Ale Matrix)!
+  AddCouplingSysmat(systemmatrix_, s, f, scaling_S, scaling_F);
 
   /*----------------------------------------------------------------------*/
   // Complete the global system matrix
@@ -372,6 +373,8 @@ void FSI::MonolithicXFEM::SetupRHS()
   // (ie forces onto the structure, Robin-type forces consisting of fluid forces and the Nitsche penalty term contribution)
   SetupRHSLambda(*rhs_);
 
+  //Add Coupling RHS in case of FPSI_XFEM or FSI_XFEM_ALE (Ale RHS)!
+  AddCouplingRHS(rhs_);
 }
 
 /*----------------------------------------------------------------------*/
@@ -544,6 +547,16 @@ void FSI::MonolithicXFEM::CreateCombinedDofRowMap()
   if (vecSpaces[1]->NumGlobalElements() == 0)
     dserror("No fluid equations. Panic.");
 
+  // Append the background fluid DOF map
+  if (HaveAle())
+  {
+   vecSpaces.push_back(AleField()->Interface()->OtherMap());
+
+   // ale maps empty??
+   if (vecSpaces[2]->NumGlobalElements() == 0)
+     dserror("No ale equations. Panic.");
+  }
+
   // The vector is complete, now fill the system's global block row map
   // with the maps previously set together!
   SetDofRowMaps(vecSpaces);
@@ -587,7 +600,8 @@ void FSI::MonolithicXFEM::CombineFieldVectors(
  ----------------------------------------------------------------------*/
 void FSI::MonolithicXFEM::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector>  x,
                                               Teuchos::RCP<const Epetra_Vector>& sx,
-                                              Teuchos::RCP<const Epetra_Vector>& fx )
+                                              Teuchos::RCP<const Epetra_Vector>& fx,
+                                              Teuchos::RCP<const Epetra_Vector>& ax)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicXFEM::ExtractFieldVectors");
 
@@ -595,14 +609,17 @@ void FSI::MonolithicXFEM::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> 
   //Process structure unknowns
   /*----------------------------------------------------------------------*/
   // Extract whole structure field vector
-  sx=Extractor().ExtractVector(x,0);
+  sx = Extractor().ExtractVector(x,structp_block_);
 
   /*----------------------------------------------------------------------*/
   //Process fluid unknowns
   /*----------------------------------------------------------------------*/
   // Extract vector of fluid unknowns from x
-  fx=Extractor().ExtractVector(x,1);
+  fx = Extractor().ExtractVector(x,fluid_block_);
 
+  // Extract vector of fluid unknowns from x
+  if (HaveAle())
+    ax = Extractor().ExtractVector(x,ale_i_block_);
 }
 
 
@@ -683,6 +700,7 @@ void FSI::MonolithicXFEM::Solve()
   // reset the single step-increments for structural and fluid field
   sx_sum_ = Teuchos::null;
   fx_sum_ = Teuchos::null;
+  ax_sum_ = Teuchos::null;
 
 
   // We want to make sure, that the outer loop is entered at least once!
@@ -801,10 +819,8 @@ void FSI::MonolithicXFEM::Output()
    // we directly store the fluid-unscaled rhs_C_s residual contribution from the fluid solver which corresponds to the actual acting forces
 
    // scaling for the structural residual is done when it is added to the global residual vector
-   Teuchos::RCP<ADAPTER::XFluidFSI> xfluid = Teuchos::rcp_dynamic_cast<ADAPTER::XFluidFSI>(FluidField(), true);
-
    // get the coupling rhs from the xfluid, this vector is based on the boundary dis which is part of the structure dis
-   Teuchos::RCP<const Epetra_Vector> rhs_C_s = xfluid->RHS_Struct_Vec();
+   Teuchos::RCP<const Epetra_Vector> rhs_C_s = FluidField()->RHS_Struct_Vec();
 
    // store the resulting structural forces vector in the lambda vector
    lambda_->Update(scaling_F,*rhs_C_s,0.0);
@@ -1001,7 +1017,7 @@ bool FSI::MonolithicXFEM::Newton()
       // and has been set at the beginning of the first outer iteration using the structural PrepareTimeStep-call
 
       // if not a new time-step, take the step-increment which has been summed up so far
-      if(sx_sum_ != Teuchos::null) Extractor().AddVector(sx_sum_, 0, x_sum_);
+      if(sx_sum_ != Teuchos::null) Extractor().AddVector(sx_sum_, structp_block_, x_sum_);
 
       //-------------------
       // initialize the fluid part of the global step-increment
@@ -1011,8 +1027,10 @@ bool FSI::MonolithicXFEM::Newton()
       //       After a restart, the interface position w.r.t which we stored fx_sum_ before the restart and
       //       the interface position for the first fluid-evaluate call are the same (then we can ensure the same dofset sorting).
       //       At the beginning of a new time step fx_sum_ and x_sum are created based on the same DofRowMap.
-      Extractor().InsertVector(fx_sum_,1, x_sum_);
+      Extractor().InsertVector(fx_sum_,fluid_block_, x_sum_);
 
+      // if not a new time-step, take the step-increment which has been summed up so far
+      if (HaveAle() && ax_sum_ != Teuchos::null) Extractor().AddVector(ax_sum_, ale_i_block_, x_sum_);
     }
 
     /*----------------------------------------------------------------------*/
@@ -1200,6 +1218,7 @@ bool FSI::MonolithicXFEM::Evaluate()
   // fx contains the current step increment w.r.t. t^n from the last Newton restart for the fluid block
   Teuchos::RCP<const Epetra_Vector> sx;
   Teuchos::RCP<const Epetra_Vector> fx;
+  Teuchos::RCP<const Epetra_Vector> ax;
 
 
   // update the whole step-increment vector
@@ -1210,17 +1229,21 @@ bool FSI::MonolithicXFEM::Evaluate()
     x_sum_->Update(1.0,*iterinc_,1.0);
 
     // extract the single field step-increments from the global step-increment
-    ExtractFieldVectors(x_sum_,sx,fx);
+    ExtractFieldVectors(x_sum_,sx,fx,ax);
   }
   else
   {
     sx = sx_sum_; // take the sx from before the restart
     fx = fx_sum_; // take the fx from before the restart
+    if (HaveAle())
+      ax = ax_sum_; // take the ax from before the restart
   }
 
   // TODO: check this update, can we place it anywhere such that it is more consistent with the fluid-specific fx_sum?
   // save the current structural step-increment
   sx_sum_ = sx;
+  if (HaveAle())
+    ax_sum_ = ax;
 
   //TODO:
   if (sdbg_!=Teuchos::null)
@@ -1249,6 +1272,9 @@ bool FSI::MonolithicXFEM::Evaluate()
     StructureField()->Evaluate(sx);
 
     IO::cout  << "structure time: " << ts.ElapsedTime() << IO::endl;
+
+    if (HaveAle())
+      EvaluateAle(ax);
   }
 
   // ------------------------------------------------------------------

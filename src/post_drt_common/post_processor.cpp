@@ -281,12 +281,12 @@ void runEnsightVtuFilter(PostProblem    &problem)
 
       std::string basename = problem.outname();
 
-      std::cout << "  Structural Field" << std::endl;
+      std::cout << "  Structural Field ( "<< problem.get_discretization(0)->name() << " )" << std::endl;
       PostField* structfield = problem.get_discretization(0);
       StructureFilter structwriter(structfield, problem.outname(), problem.stresstype(), problem.straintype());
       structwriter.WriteFiles();
 
-      std::cout << "  Fluid Field" << std::endl;
+      std::cout << "  Fluid Field ( "<< problem.get_discretization(1)->name() << " )" << std::endl;
       PostField* fluidfield = problem.get_discretization(1);
       FluidFilter fluidwriter(fluidfield, basename);
       fluidwriter.WriteFiles();
@@ -295,20 +295,30 @@ void runEnsightVtuFilter(PostProblem    &problem)
       int idx_int = 2;
       if (numfield > 1 && problem.get_discretization(2)->name()=="xfluid")
       {
-        std::cout << "  XFluid Field" << std::endl;
+        std::cout << "  XFluid Field ( "<< problem.get_discretization(2)->name() << " )" << std::endl;
         PostField* xfluidfield = problem.get_discretization(2);
         FluidFilter xfluidwriter(xfluidfield, basename);
         xfluidwriter.WriteFiles();
         idx_int += 1;
       }
 
-      // all other fields are interface fields
-      for(int i=idx_int; i<numfield;i++)
+      // all other fields are interface or ale fields
+      for(int i=2; i<numfield;i++)
       {
-        std::cout << "  Interface Field ( "<< problem.get_discretization(i)->name() << " )" << std::endl;
-        PostField* ifacefield = problem.get_discretization(i);
-        InterfaceFilter ifacewriter(ifacefield, basename);
-        ifacewriter.WriteFiles();
+        if (problem.get_discretization(i)->name() != "ale")
+        {
+          std::cout << "  Interface Field ( "<< problem.get_discretization(i)->name() << " )" << std::endl;
+          PostField* ifacefield = problem.get_discretization(i);
+          InterfaceFilter ifacewriter(ifacefield, basename);
+          ifacewriter.WriteFiles();
+        }
+        else
+        {
+          std::cout << "  Ale Field ( "<< problem.get_discretization(i)->name() << " )" << std::endl;
+          PostField* alefield = problem.get_discretization(i);
+          AleFilter alewriter(alefield, basename);
+          alewriter.WriteFiles();
+        }
       }
 
 
@@ -331,14 +341,14 @@ void runEnsightVtuFilter(PostProblem    &problem)
       porofluidwriter.WriteFiles();
 
       std::cout << "  Ale Field ( "<< problem.get_discretization(2)->name() << " )" << std::endl;
-      PostField* fluidfield = problem.get_discretization(2);
-      AleFilter fluidwriter(fluidfield, basename);
-      fluidwriter.WriteFiles();
+      PostField* alefield = problem.get_discretization(2);
+      AleFilter alewriter(alefield, basename);
+      alewriter.WriteFiles();
 
       std::cout << "  Fluid Field ( "<< problem.get_discretization(3)->name() << " )" << std::endl;
-      PostField* alefield = problem.get_discretization(3);
-      FluidFilter alewriter(alefield, basename);
-      alewriter.WriteFiles();
+      PostField* fluidfield = problem.get_discretization(3);
+      FluidFilter fluidwriter(fluidfield, basename);
+      fluidwriter.WriteFiles();
 
       // all other fields are interface fields
       for(int i=4; i<numfield;i++)

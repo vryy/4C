@@ -17,6 +17,8 @@ Maintainer: Benedikt Schott
 #include "../drt_adapter/ad_fld_base_algorithm.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 #include "../drt_adapter/ad_fld_fluid_xfsi.H"
+#include "../drt_adapter/ad_ale.H"
+#include "../drt_adapter/ad_ale_fpsi.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"
@@ -35,11 +37,16 @@ Maintainer: Benedikt Schott
  *----------------------------------------------------------------------*/
 FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm,
                                   const Teuchos::ParameterList& timeparams)
-  : AlgorithmBase(comm, timeparams)
+  : AlgorithmBase(comm, timeparams),
+    structp_block_(0),
+    fluid_block_(1),
+    ale_i_block_(2)
 {
   // access structural dynamic params list which will be possibly modified while creating the time integrator
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
   const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
+  const Teuchos::ParameterList& xfdyn = DRT::Problem::Instance()->XFluidDynamicParams();
+  bool ale = DRT::INPUT::IntegralValue<bool>((xfdyn.sublist("GENERAL")),"ALE_XFluid");
 
   //--------------------------------------------
   // ask base algorithm for the structural time integrator
@@ -51,12 +58,32 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm,
   if(structure_ == Teuchos::null)
     dserror("cast from ADAPTER::Structure to ADAPTER::FSIStructureWrapper failed");
 
+
   //--------------------------------------------
   // ask base algorithm for the fluid time integrator
-  Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(timeparams,fdyn,"fluid",false));
+  //do not init in ale case!!! (will be done in MonolithicAFSI_XFEM::Setup System())
+  Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(timeparams,fdyn,"fluid",ale,!ale));
   fluid_ = Teuchos::rcp_dynamic_cast<ADAPTER::XFluidFSI>(fluid->FluidField());
   if (fluid_ == Teuchos::null)
     dserror("Cast of Fluid to XFluidFSI failed! - Everything fine in SetupFluid()?");
+
+  if (ale)
+  {
+    // ask base algorithm for the ale time integrator
+    Teuchos::RCP<DRT::Discretization> aledis = DRT::Problem::Instance()->GetDis("ale");
+     Teuchos::RCP<ADAPTER::AleBaseAlgorithm> ale = Teuchos::rcp(new ADAPTER::AleBaseAlgorithm(timeparams, aledis));
+     ale_ =  Teuchos::rcp_dynamic_cast<ADAPTER::AleFpsiWrapper>(ale->AleField());
+     if(ale_ == Teuchos::null)
+        dserror("cast from ADAPTER::Ale to ADAPTER::AleFpsiWrapper failed");
+
+    // build a proxy of the fluid discretization for the structure field
+    Teuchos::RCP<DRT::DofSet> aledofset = ale_->WriteAccessDiscretization()->GetDofSetProxy();
+    if (fluid_->Discretization()->AddDofSet(aledofset) != 1)
+      dserror("Fluid Discretization does not have two Dofsets (Fluid/Ale)!");
+  }
+  else
+    ale_ = Teuchos::null;
+
 
   return;
 }
@@ -81,6 +108,7 @@ void FSI::AlgorithmXFEM::Update()
 
   StructureField()->Update();
   FluidField()->Update();
+  if (HaveAle()) AleField()->Update();
 
   return;
 }

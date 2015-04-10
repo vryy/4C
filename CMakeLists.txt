@@ -982,6 +982,7 @@ set(OBJS_DRT_FSI
 )
 set(OBJS_DRT_FSI_XFEM
   src/drt_fsi_xfem/fsi_xfem_fluid.cpp
+    src/drt_fsi_xfem/afsi_xfem_monolithic.cpp
   src/drt_fsi_xfem/fsi_xfem_monolithic.cpp
   src/drt_fsi_xfem/fsi_xfem_algorithm.cpp
 )

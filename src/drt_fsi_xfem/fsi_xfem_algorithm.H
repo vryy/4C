@@ -33,6 +33,7 @@ namespace ADAPTER
   class Structure;
   class FSIStructureWrapper;
   class XFluidFSI;
+  class AleFpsiWrapper;
 }
 
 
@@ -79,6 +80,11 @@ namespace FSI
     //! access to fluid field
     const Teuchos::RCP< ::ADAPTER::XFluidFSI>& FluidField(){return fluid_;}
 
+    //! access to ale field
+    const Teuchos::RCP< ::ADAPTER::AleFpsiWrapper>& AleField(){return ale_;}
+
+    const bool HaveAle() {return (AleField() != Teuchos::null);}
+
     //@}
 
   protected:
@@ -100,7 +106,6 @@ namespace FSI
 
     //@}
 
-
     //--------------------------------------------------------------------------//
     //! @name Underlying fields
 
@@ -109,6 +114,17 @@ namespace FSI
 
     //! underlying fluid of the FSI problem
     Teuchos::RCP< ::ADAPTER::XFluidFSI> fluid_;
+
+    // underlying ale of the FSI problem
+    Teuchos::RCP<ADAPTER::AleFpsiWrapper>     ale_;
+
+    //@}
+
+    //--------------------------------------------------------------------------//
+    //! @name block ids of the monolithic system
+    int structp_block_;
+    int fluid_block_;
+    int ale_i_block_;
 
     //@}
 

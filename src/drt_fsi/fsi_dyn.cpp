@@ -44,6 +44,7 @@ Maintainer: Matthias Mayr
 
 #include "../drt_fsi_xfem/fsi_xfem_fluid.H"
 #include "../drt_fsi_xfem/fsi_xfem_monolithic.H"
+#include "../drt_fsi_xfem/afsi_xfem_monolithic.H"
 
 #include "fs_monolithic.H"
 
@@ -571,7 +572,7 @@ void fsi_ale_drt()
 }
 
 /*----------------------------------------------------------------------*/
-// entry point for FSI using XFEM in DRT
+// entry point for FSI using XFEM in DRT (also for ale case)
 /*----------------------------------------------------------------------*/
 void xfsi_drt()
 {
@@ -598,6 +599,39 @@ void xfsi_drt()
 
   FLD::XFluid::SetupFluidDiscretization();
 
+  Teuchos::RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->GetDis("fluid"); //at the moment, 'fluid'-discretization is used for ale!!!
+
+  //CREATE ALE
+  const Teuchos::ParameterList& xfdyn = problem->XFluidDynamicParams();
+  bool ale = DRT::INPUT::IntegralValue<bool>((xfdyn.sublist("GENERAL")),"ALE_XFluid");
+  Teuchos::RCP<DRT::Discretization> aledis;
+  if (ale)
+  {
+    aledis = problem->GetDis("ale");
+    if(aledis == Teuchos::null)
+      dserror("XFSI DYNAMIC: ALE Discretization empty!!!");
+
+    aledis->FillComplete(true,true,true);
+
+    //Create ALE elements if the ale discretization is empty
+    if (aledis->NumGlobalNodes()==0) // ALE discretization still empty
+    {
+      DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis,aledis);
+      // setup material in every ALE element
+      Teuchos::ParameterList params;
+      params.set<std::string>("action", "setup_material");
+      aledis->Evaluate(params);
+    }
+    else  // ALE discretization already filled
+    {
+      if (!FSI::UTILS::FluidAleNodesDisjoint(fluiddis,aledis))
+        dserror("Fluid and ALE nodes have the same node numbers. "
+                "This it not allowed since it causes problems with Dirichlet BCs. "
+                "Use the ALE cloning functionality or ensure non-overlapping node numbering!"
+               );
+     }
+  }
+
   int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
   switch (coupling)
   {
@@ -612,8 +646,12 @@ void xfsi_drt()
     if (linearsolverstrategy!=INPAR::FSI::PreconditionedKrylov)
       dserror("Only Newton-Krylov scheme with XFEM fluid");
 
-    // create the MonolithicXFEM object that does the whole work
-    Teuchos::RCP<FSI::AlgorithmXFEM> fsi = Teuchos::rcp(new FSI::MonolithicXFEM(comm, fsidyn));
+    // create the MonolithicXFEM or MonolithicAFSI_XFEM object that does the whole work
+    Teuchos::RCP<FSI::AlgorithmXFEM> fsi;
+    if (!ale)
+      fsi = Teuchos::rcp(new FSI::MonolithicXFEM(comm, fsidyn));
+    else
+      fsi = Teuchos::rcp(new FSI::MonolithicAFSI_XFEM(comm, fsidyn));
 
     // setup the system (block-DOF-row maps, systemmatrix etc.) for the monolithic XFEM system
     fsi->SetupSystem();

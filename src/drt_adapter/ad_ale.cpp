@@ -279,6 +279,7 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn,
   }
   case prb_fpsi:
   case prb_fps3i:
+  case prb_fsi_xfem:
   case prb_fpsi_xfem:
   {
     ale_ = Teuchos::rcp(new ADAPTER::AleFpsiWrapper(ale));
