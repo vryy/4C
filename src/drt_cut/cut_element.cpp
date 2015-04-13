@@ -1468,6 +1468,14 @@ void GEO::CUT::Element::DebugDump()
 
   GmshFailureElementDump();
 
+  {
+    //Write Elemement Cut Test!!!
+    std::stringstream str;
+    str << "cut_test_bacigenerated_" << Id() << ".cpp";
+    std::ofstream file( str.str().c_str() );
+    GEO::CUT::OUTPUT::GmshElementCutTest(file,this);
+  }
+
 }
 
 /*------------------------------------------------------------------------------*

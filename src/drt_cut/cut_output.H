@@ -44,6 +44,10 @@ void GmshSideDump( std::ofstream & file, const Side* s );
  */
 void GmshCompleteCutElement( std::ofstream & file, Element * ele );
 
+/*!
+\brief Write cuttest for this element!
+*/
+void GmshElementCutTest( std::ofstream & file, GEO::CUT::Element* ele);
 }
 
 } /* namespace CUT */
