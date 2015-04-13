@@ -254,6 +254,76 @@ namespace LINALG
     }; // class BlockSmoother_Operator
 
 
+
+    class Merged_Operator : virtual public Epetra_Operator
+    {
+      public:
+        Merged_Operator(
+            Teuchos::RCP<BlockSparseMatrixBase> A,
+            const Teuchos::ParameterList& amgnxn_params,
+            const Teuchos::ParameterList& smoothers_params);
+
+
+        // virtual functions given by Epetra_Operator. The only one to be used is ApplyInverse()
+        virtual int   ApplyInverse (const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
+
+        virtual int   SetUseTranspose (bool UseTranspose)
+        {
+          dserror("Function not implemented");
+          return -1;
+        }
+
+        virtual int   Apply (const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
+        {
+          dserror("Function not implemented");
+          return -1;
+        }
+
+        virtual double   NormInf () const
+        {
+          dserror("Function not implemented");
+          return -1.0;
+        }
+
+        virtual const char *   Label () const
+        {
+          return "Merged matrix plus smoother";
+        }
+
+        virtual bool   UseTranspose () const
+        {
+          dserror("Function not implemented");
+          return false;
+        }
+        virtual bool   HasNormInf () const
+        {
+          dserror("Function not implemented");
+          return false;
+        }
+        // Only required to properly define an Epetra_Operator, not should be used!
+        virtual const Epetra_Comm &   Comm () const {return A_->Comm();}
+
+        // Only required to properly define an Epetra_Operator, not should be used!
+        virtual const Epetra_Map &   OperatorDomainMap () const {return A_->OperatorDomainMap();}
+
+        // Only required to properly define an Epetra_Operator, not should be used!
+        virtual const Epetra_Map &   OperatorRangeMap () const {return A_->OperatorRangeMap();}
+
+        void Setup(); //TODO
+
+      private:
+        Teuchos::RCP<BlockSparseMatrixBase> A_;
+        Teuchos::RCP<LINALG::SparseMatrix>  Asp_;
+        Teuchos::ParameterList amgnxn_params_;
+        Teuchos::ParameterList smoothers_params_;
+
+        bool is_setup_flag_;
+        Teuchos::RCP<AMGNXN::IfpackWrapper> S_;
+
+    }; // class Merged_Operator
+
+
+
     void PrintMap(const Epetra_Map& Map,std::string prefix);
 
 

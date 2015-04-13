@@ -15,6 +15,7 @@ Created on: Feb 27, 2014
 #include <iostream>
 
 #include <Teuchos_PtrDecl.hpp>
+#include <Epetra_Time.h>
 #include <Teuchos_XMLParameterListHelpers.hpp>
 #include <Xpetra_MultiVectorFactory.hpp>
 #include <MueLu_MLParameterListInterpreter_decl.hpp>
@@ -124,8 +125,15 @@ void LINALG::SOLVER::AMGnxn_Preconditioner::Setup(Teuchos::RCP<BlockSparseMatrix
           myInterface.GetPreconditionerParams(),
           myInterface.GetSmoothersParams()));
   }
+  else if (myInterface.GetPreconditionerType() == "Merge_and_Ifpack")
+  {
+    P_ = Teuchos::rcp(new Merged_Operator(
+          A_,
+          myInterface.GetPreconditionerParams(),
+          myInterface.GetSmoothersParams()));
+  }
   else
-    dserror("Unknown preconditioner type");
+    dserror("Unknown preconditioner type: %s", myInterface.GetPreconditionerType().c_str());
 
   return;
 }
@@ -161,7 +169,7 @@ LINALG::SOLVER::AMGnxn_Interface::AMGnxn_Interface(Teuchos::ParameterList& param
   // The xml file given in AMGNXN_XML_FILE should have the following format
   //<ParameterList name="dummy list which wraps everything">
   //
-  //  <!-- Here we which preconditioner we are going to use -->
+  //  <!-- Here we select which preconditioner we are going to use -->
   //  <Parameter name="Preconditioner"    type="string"  value="myPreconditioner"/>
   //
   //  <!-- Here we define our preconditioner -->
@@ -699,6 +707,143 @@ void  LINALG::SOLVER::BlockSmoother_Operator::Setup()
   is_setup_flag_=true;
   return;
 }
+
+/*------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------*/
+
+LINALG::SOLVER::Merged_Operator::Merged_Operator(
+    Teuchos::RCP<BlockSparseMatrixBase> A,
+    const Teuchos::ParameterList& amgnxn_params,
+    const Teuchos::ParameterList& smoothers_params):
+    A_                   (A               ),
+    amgnxn_params_       (amgnxn_params   ),
+    smoothers_params_    (smoothers_params),
+    is_setup_flag_       (false           )
+{
+
+  // Expected parameters in amgnxn_params (example)
+  //<ParameterList name="amgnxn_params">
+  //  <Parameter name="verbosity"        type="string"  value="on"/>
+  //  <Parameter name="smoother"         type="string"  value="mysmoother"/>
+  //</ParameterList>
+  //
+  //
+  // Expected parameters in smoothers_params (example)
+  //<ParameterList name="smoothers_params">
+  //
+  //  <ParameterList name="mysmoother">
+  //    <Parameter name="type"                           type="string"  value="point relaxation"/>
+  //    <ParameterList name="ParameterList">
+  //      <Parameter name="relaxation: type"             type="string"  value="Gauss-Seidel"/>
+  //      <Parameter name="relaxation: backward mode"    type="bool"    value="false"/>
+  //      <Parameter name="relaxation: sweeps"           type="int"     value="2"/>
+  //      <Parameter name="relaxation: damping factor"   type="double"  value="1.0"/>
+  //    </ParameterList>
+  //  </ParameterList>
+  //
+  //</ParameterList>
+  //
+  //
+  //
+  //
+
+  Setup();
+}
+
+/*------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------*/
+
+void  LINALG::SOLVER::Merged_Operator::Setup()
+{
+  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::Merged_Operator::Setup");
+
+  // Read the parameter "verbosity" in amgnxn_params
+  std::string verbosity = amgnxn_params_.get<std::string>("verbosity","off");
+  if (A_->Comm().MyPID() != 0)
+    verbosity = "off";
+
+
+  if (verbosity=="on")
+  {
+    std::cout << "===============================================" << std::endl;
+    std::cout << "LINALG::SOLVER::Merged_Operator : debug info  (begin)" << std::endl;
+    std::cout << std::endl;
+  }
+
+  // Merge the matrix
+  Epetra_Time timer(A_->Comm());
+  timer.ResetStartTime();
+
+  Asp_ = A_->Merge();
+
+  double elaptime =  timer.ElapsedTime();
+  if(A_->Comm().MyPID()==0)
+    std::cout <<  "   Merging the blocks takes " << std::setw(16) << std::setprecision(6) << elaptime << " s" << std::endl ;
+
+  // Safety check
+  Teuchos::RCP<Epetra_Operator> Aop = Teuchos::rcp_dynamic_cast<Epetra_Operator>(Asp_->EpetraMatrix());
+  Teuchos::RCP<Epetra_CrsMatrix> crsA = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(Aop);
+  if(crsA == Teuchos::null) dserror("Houston, something went wrong in merging the matrix");
+
+
+  // Read parameter called "smoother" in amgnxn_params
+  std::string mysmoother = amgnxn_params_.get<std::string>("smoother","none");
+  if (mysmoother == "none")
+    dserror("You have to set a parameter called smoother");
+
+  // Read the parameters inside "smoothers_params"
+  if(not smoothers_params_.isSublist(mysmoother))
+    dserror("Not found a sublist with name %s",mysmoother.c_str());
+  Teuchos::ParameterList myparams = smoothers_params_.sublist(mysmoother);
+
+  // Some output
+  if (verbosity=="on")
+  {
+    std::cout << std::endl;
+    std::cout << "Creating an IFPACK smoother for a merged fine-level matrix" << std::endl;
+    std::cout << "The Ifpack type is: " << myparams.get<std::string>("type") << std::endl;
+    std::cout << "The parameters are: " << std::endl;
+    std::cout << myparams.sublist("ParameterList");
+  }
+
+  // Create the smoother
+  S_ = Teuchos::rcp(new AMGNXN::IfpackWrapper(Asp_,myparams));
+
+  is_setup_flag_ = true;
+
+  if (verbosity=="on")
+  {
+    std::cout << std::endl;
+    std::cout << "LINALG::SOLVER::Merged_Operator : debug info  (end)" << std::endl;
+    std::cout << "===============================================" << std::endl;
+  }
+
+
+  return;
+}
+
+
+/*------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------*/
+
+int  LINALG::SOLVER::Merged_Operator::ApplyInverse(
+    const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
+{
+  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::Merged_Operator::ApplyInverse");
+
+  if(!is_setup_flag_)
+    dserror("ApplyInverse cannot be called without a previous set up of the preconditioner");
+
+  if (S_==Teuchos::null)
+    dserror("Null pointer. We cannot call the smoother");
+
+  Epetra_MultiVector Ybis(Y.Map(),Y.NumVectors(),false);
+  S_->Apply(X,Ybis,true);
+  Y.Update(1.,Ybis,0.);
+
+  return 0;
+}
+
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
