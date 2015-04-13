@@ -127,6 +127,8 @@ void SSI::SSI_Base::SetupDiscretizations(const Epetra_Comm& comm)
   //1.-Initialization.
   Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis("structure");
   Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis("scatra");
+  if(!structdis->Filled())
+    structdis->FillComplete();
   if(!scatradis->Filled())
     scatradis->FillComplete();
 
