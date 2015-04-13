@@ -4749,8 +4749,12 @@ void FLD::XFluid::ReadRestart(int step)
 
   if (alefluid_)
   {
-    reader.ReadVector(state_->dispnp_,"dispnp_res");
-    reader.ReadVector(state_->gridvnp_,"gridv_res");
+    reader.ReadVector(dispnp_,"full_dispnp_res");
+    reader.ReadVector(dispn_,"full_dispnp_res"); //as update() was called anyway before output...
+    reader.ReadVector(gridvnp_,"full_gridvnp_res");
+    reader.ReadVector(gridvn_,"full_gridvnp_res"); //as update() was called anyway before output...
+
+    //state-vectors in state will be set in the creation of a new state
   }
 
 
@@ -4759,8 +4763,6 @@ void FLD::XFluid::ReadRestart(int step)
   std::cout << "veln_ "  << *(state_->veln_)  << endl;
   std::cout << "accnp_ " << *(state_->accnp_) << endl;
   std::cout << "accn_ "  << *(state_->accn_)  << endl;
-  std::cout << "dispnp_" << *(state_->dispnp_)<< endl;
-  std::cout << "gridv_" << *(state_->gridvnp_)<< endl;
 #endif
 
   // set element time parameter after restart:

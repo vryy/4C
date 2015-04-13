@@ -77,8 +77,8 @@ public:
     double time,
     bool write_restart_data,
     Teuchos::RCP<const FLD::XFluidState> state,
-    Teuchos::RCP<const Epetra_Vector>    dispnp  = Teuchos::null,
-    Teuchos::RCP<const Epetra_Vector>    gridvnp = Teuchos::null);
+    Teuchos::RCP<Epetra_Vector>    dispnp = Teuchos::null,
+    Teuchos::RCP<Epetra_Vector>    gridvnp = Teuchos::null);
 
   /// Gmsh solution output
   virtual void GmshSolutionOutput(

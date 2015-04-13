@@ -77,7 +77,7 @@ FSI::MonolithicAFSI_XFEM::MonolithicAFSI_XFEM(const Epetra_Comm& comm,
   //initialize xFluid now! - Coupling required filleddofset! -- Here first cut is done!!!
   FluidField()->Init();
 
-  FluidField()->SetMeshMap(FluidAleCoupling().MasterDofMap());
+  FluidField()->SetMeshMap(FluidAleCoupling().MasterDofMap()); //based on initial maps ...
 
   //Build ale system matrix in splitted system
    AleField()->CreateSystemMatrix(AleField()->Interface());
@@ -115,7 +115,7 @@ FSI::MonolithicAFSI_XFEM::MonolithicAFSI_XFEM(const Epetra_Comm& comm,
    //  //////                                  //////
    //  //////////////////////////////////////////////
 
-   // TODO: THIS IS STILL MISSING, BUT USUALLY DOES NOT HAVE A BIG INFLUENCE INTO THE CONVERGENCE!!!
+   // TODO: THIS IS STILL MISSING, BUT USUALLY DOES NOT HAVE A BIG INFLUENCE ON THE CONVERGENCE!!!
    return;
 
  }

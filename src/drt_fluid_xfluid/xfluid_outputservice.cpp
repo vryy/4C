@@ -71,8 +71,8 @@ void FLD::XFluidOutputService::Output(
   double time,
   bool write_restart_data,
   Teuchos::RCP<const FLD::XFluidState> state,
-  Teuchos::RCP<const Epetra_Vector>    dispnp,
-  Teuchos::RCP<const Epetra_Vector>    gridvnp
+  Teuchos::RCP<Epetra_Vector>    dispnp,
+  Teuchos::RCP<Epetra_Vector>    gridvnp
 )
 {
   discret_->Writer()->NewStep(step,time);
@@ -218,14 +218,14 @@ void FLD::XFluidOutputService::Output(
     discret_->Writer()->WriteVector("accn_res", state->accn_);
     discret_->Writer()->WriteVector("veln_res", state->veln_);
     discret_->Writer()->WriteVector("velnm_res",state->velnm_);
-    //TODO:
+
     if (dispnp != Teuchos::null)
     {
-      //write ale displacement for t^{n+1}
-      discret_->Writer()->WriteVector("dispnp_res", state->dispnp_);
+      //write ale displacement for t^{n+1} on full background
+      discret_->Writer()->WriteVector("full_dispnp_res", dispnp);
 
-      //write grid velocity for t^{n+1}
-      discret_->Writer()->WriteVector("gridv_res", state->gridvnp_);
+      //write grid velocity for t^{n+1} on full background
+      discret_->Writer()->WriteVector("full_gridvnp_res", gridvnp);
     }
   }
 
