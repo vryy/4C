@@ -802,6 +802,8 @@ void  LINALG::SOLVER::Merged_Operator::Setup()
     std::cout << std::endl;
     std::cout << "Creating an IFPACK smoother for a merged fine-level matrix" << std::endl;
     std::cout << "The Ifpack type is: " << myparams.get<std::string>("type") << std::endl;
+    int overlap = myparams.get<int>("overlap",0);
+    std::cout << "The overlap is: " << overlap << std::endl;
     std::cout << "The parameters are: " << std::endl;
     std::cout << myparams.sublist("ParameterList");
   }

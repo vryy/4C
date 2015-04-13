@@ -544,6 +544,8 @@ LINALG::SOLVER::AMGNXN::IfpackWrapper::IfpackWrapper(
   if(type_=="none")
     dserror("The type of preconditioner has to be provided.");
 
+  int overlap = list.get<int>("overlap",0);
+
   // Extract list of parameters
   if(not(list.isSublist("ParameterList")))
     dserror("The parameter list has to be provided");
@@ -554,7 +556,7 @@ LINALG::SOLVER::AMGNXN::IfpackWrapper::IfpackWrapper(
   Arow_ = Teuchos::rcp_dynamic_cast<Epetra_RowMatrix>(A_->EpetraMatrix());
   if (Arow_==Teuchos::null)
     dserror("Something wrong. Be sure that the given matrix is not a block matrix");
-  prec_ = Factory.Create(type_,Arow_.get());
+  prec_ = Factory.Create(type_,Arow_.get(),overlap);
 
   // Set parameter list and setup
   prec_->SetParameters(list_);
@@ -1060,6 +1062,8 @@ LINALG::SOLVER::AMGNXN::IfpackWrapperFactory::Create()
       << " at level " << GetLevel() << std::endl;
 
     std::cout << "The Ifpack type is: " << GetParams().get<std::string>("type") << std::endl;
+    int overlap = GetParams().get<int>("overlap",0);
+    std::cout << "The overlap is: " << overlap << std::endl;
     std::cout << "The parameters are: " << std::endl;
     std::cout << GetParams().sublist("ParameterList");
     //std::cout << std::endl;
