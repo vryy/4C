@@ -5,7 +5,7 @@
 
 ************************************************************************************************************************************
 A) a four-element Windkessel (DESIGN SURF WINDKESSEL CONDITIONS):
-Res = C * dp/dt + (p - p_ref)/R_p - (1 + Z_c/R_p) q - (C R_c  + L/R_p) * dq/dt - L * C * d2q/dt2 = 0
+Res = C * dp/dt + (p - p_ref)/R_p - (1 + Z_c/R_p) * q - (C Z_c  + L/R_p) * dq/dt - L C * d2q/dt2 = 0
 The classical 3- or 2-element Windkessel models are reproduced by setting L or L and Z_c to zero, respectively
 
 B) an arterial Windkessel model governing the arterial pressure with a four-element Windkessel with an additional valve law
@@ -14,7 +14,7 @@ infront of it (DESIGN SURF HEART VALVE ARTERIAL WINDKESSEL CONDITIONS):
        {(p_v-p_at)/R_at_min - q_v}, if p_v < p_at
 Res = [{(p_v-p_at)/R_at_max - q_v}, if p_at < p_v < p_ar                                                         ] = [ 0 ]
        {(p_v-p_ar)/R_ar_min + (p_ar-p_at)/R_at_max - q_v}, if p_v > p_ar
-      [C * d(p_ar)/dt + (p_ar-p_ref)/R_p - (1 + Z_c/R_p) q_v - (C R_c  + L/R_p) * d(q_v)/dt - L * C * d2(q_v)/dt2]   [ 0 ]
+      [C * d(p_ar)/dt + (p_ar-p_ref)/R_p - (1 + Z_c/R_p) * q_v - (C Z_c  + L/R_p) * d(q_v)/dt - L C * d2(q_v)/dt2]   [ 0 ]
 
 C) an arterial Windkessel model derived from physical considerations of mass and momentum balance in the proximal and distal
 arterial part (formulation proposed by Cristobal Bertoglio) (DESIGN SURF HEART VALVE ARTERIAL PROX DIST WINDKESSEL CONDITIONS):
@@ -38,6 +38,7 @@ Res = [C_ven * d(p_ven)/dt - q_ar + q_ven              ] = [ 0 ]
       [d(V_v)/dt - q_vin + q_vout                      ]   [ 0 ]
       [L_ar/R_ar + (p_ven - p_ar)/R_ar + q_ar          ]   [ 0 ]
       [L_ven/R_ven + (p_at_other - p_ven)/R_ven + q_ven]   [ 0 ]
+************************************************************************************************************************************
 
 <pre>
 Maintainer: Marc Hirschvogel
