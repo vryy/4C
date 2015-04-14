@@ -25,6 +25,8 @@ Maintainers: Andreas Rauch
 
 #include "../drt_fsi/fsi_nox_aitken.H"
 
+#include "../drt_scatra/scatra_timint_implicit.H"
+
 #include "../drt_structure/stru_aux.H"
 
 #include "../drt_inpar/inpar_cell.H"

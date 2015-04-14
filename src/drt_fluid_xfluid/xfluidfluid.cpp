@@ -780,12 +780,12 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
   // 2.   || grad( u - u_b ) ||_L2(Omega)    =   standard H1-seminorm for velocity
   // 3.   || u - u_b ||_H1(Omega)            =   standard H1-norm for velocity
   //                                         =   sqrt( || u - u_b ||^2_L2(Omega) + || grad( u - u_b ) ||^2_L2(Omega) )
-  // 4.   || p - p_b ||_L2(Omega)            =   standard L2-norm for for pressure
+  // 4.   || p - p_b ||_L2(Omega)            =   standard L2-norm for pressure
   //
   // viscosity-scaled domain errors
   // 5.   || nu^(+1/2) grad( u - u_b ) ||_L2(Omega)   =   visc-scaled H1-seminorm for velocity
   //                                                  =   nu^(+1/2) * || grad( u - u_b ) ||_L2(Omega) (for homogeneous visc)
-  // 6.   || nu^(-1/2) ( p - p_b ) ||_L2(Omega)       =   visc-scaled L2-norm for for pressure
+  // 6.   || nu^(-1/2) ( p - p_b ) ||_L2(Omega)       =   visc-scaled L2-norm for pressure
   //                                                  =   nu^(-1/2) * || p - p_b ||_L2(Omega) (for homogeneous visc)
   //
   // Error on Functionals from solution (Sudhakar)
@@ -799,12 +799,12 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
   // 2.   || grad( u - u_e ) ||_L2(Omega)    =   standard H1-seminorm for velocity
   // 3.   || u - u_e ||_H1(Omega)            =   standard H1-norm for velocity
   //                                         =   sqrt( || u - u_e ||^2_L2(Omega) + || grad( u - u_e ) ||^2_L2(Omega) )
-  // 4.  || p - p_e ||_L2(Omega)            =   standard L2-norm for for pressure
+  // 4.  || p - p_e ||_L2(Omega)            =   standard L2-norm for pressure
   //
   // viscosity-scaled domain errors
   // 5.  || nu^(+1/2) grad( u - u_e ) ||_L2(Omega)   =   visc-scaled H1-seminorm for velocity
   //                                                  =   nu^(+1/2) * || grad( u - u_e ) ||_L2(Omega) (for homogeneous visc)
-  // 6.  || nu^(-1/2) ( p - p_e ) ||_L2(Omega)       =   visc-scaled L2-norm for for pressure
+  // 6.  || nu^(-1/2) ( p - p_e ) ||_L2(Omega)       =   visc-scaled L2-norm for pressure
   //                                                  =   nu^(-1/2) * || p - p_e ||_L2(Omega) (for homogeneous visc)
   // Error on Functionals from solution (Sudhakar)
   // 7.  | sin(x) ( u,x - u,x exact ) | (embedded)
@@ -910,21 +910,21 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
   double dom_bg_err_vel_L2      = 0.0;         //  || u - u_b ||_L2(Omega)           =   standard L2-norm for velocity
   double dom_bg_err_vel_H1_semi = 0.0;         //  || grad( u - u_b ) ||_L2(Omega)   =   standard H1-seminorm for velocity
   double dom_bg_err_vel_H1      = 0.0;         //  || u - u_b ||_H1(Omega)           =   standard H1-norm for velocity
-  double dom_bg_err_pre_L2      = 0.0;         //  || p - p_b ||_L2(Omega)           =   standard L2-norm for for pressure
+  double dom_bg_err_pre_L2      = 0.0;         //  || p - p_b ||_L2(Omega)           =   standard L2-norm for pressure
 
   // viscosity-scaled domain errors
   double dom_bg_err_vel_H1_semi_nu_scaled = 0.0;  //  || nu^(+1/2) grad( u - u_b ) ||_L2(Omega)  =   visc-scaled H1-seminorm for velocity
-  double dom_bg_err_pre_L2_nu_scaled      = 0.0;  //  || nu^(-1/2) (p - p_b) ||_L2(Omega)        =   visc-scaled L2-norm for for pressure
+  double dom_bg_err_pre_L2_nu_scaled      = 0.0;  //  || nu^(-1/2) (p - p_b) ||_L2(Omega)        =   visc-scaled L2-norm for pressure
 
   // standard domain errors bg-dis
   double dom_emb_err_vel_L2      = 0.0;         //  || u - u_e ||_L2(Omega)           =   standard L2-norm for velocity
   double dom_emb_err_vel_H1_semi = 0.0;         //  || grad( u - u_e ) ||_L2(Omega)   =   standard H1-seminorm for velocity
   double dom_emb_err_vel_H1      = 0.0;         //  || u - u_e ||_H1(Omega)           =   standard H1-norm for velocity
-  double dom_emb_err_pre_L2      = 0.0;         //  || p - p_e ||_L2(Omega)           =   standard L2-norm for for pressure
+  double dom_emb_err_pre_L2      = 0.0;         //  || p - p_e ||_L2(Omega)           =   standard L2-norm for pressure
 
   // viscosity-scaled domain errors
   double dom_emb_err_vel_H1_semi_nu_scaled = 0.0;  //  || nu^(+1/2) grad( u - u_e ) ||_L2(Omega)  =   visc-scaled H1-seminorm for velocity
-  double dom_emb_err_pre_L2_nu_scaled      = 0.0;  //  || nu^(-1/2) (p - p_e) ||_L2(Omega)        =   visc-scaled L2-norm for for pressure
+  double dom_emb_err_pre_L2_nu_scaled      = 0.0;  //  || nu^(-1/2) (p - p_e) ||_L2(Omega)        =   visc-scaled L2-norm for pressure
 
   // interface errors
   double interf_err_Honehalf    = 0.0;         //  || nu^(+1/2) (u_b - u_e) ||_H1/2(Gamma)          =  broken H1/2 Sobolev norm for boundary/coupling condition

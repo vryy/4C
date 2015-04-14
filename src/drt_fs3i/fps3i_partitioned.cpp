@@ -45,6 +45,7 @@
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 
 #include "../drt_scatra/scatra_algorithm.H"
+#include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_scatra/scatra_utils_clonestrategy.H"
 #include "../drt_scatra_ele/scatra_ele.H"
 #include "../drt_inpar/inpar_scatra.H"

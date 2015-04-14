@@ -2055,7 +2055,7 @@ void PARTICLE::ScatraParticleCoupling::Reseeding()
   // delete also particles that have escaped by more than (three times) their radius
   // in case of bubbles their rather destroy the interface than being helpful
   // in particular, if spurious velocities cause their escape
-  // for for problems with merging interfaces
+  // for problems with merging interfaces
   if (delete_more_>1.0)
   {
     for (int inode=0; inode<particledis_->NumMyRowNodes(); inode++)

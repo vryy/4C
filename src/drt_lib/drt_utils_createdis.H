@@ -97,7 +97,7 @@ private:
 
 };
 
-/// class for for cloning a new discretization from an existing one
+/// class for cloning a new discretization from an existing one
 template <class CloneStrategy>
 class DiscretizationCreator
  : DiscretizationCreatorBase, CloneStrategy

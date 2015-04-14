@@ -1433,12 +1433,12 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
     // 2.   || grad( u - u_h ) ||_L2(Omega)      =   standard H1-seminorm for velocity
     // 3.   || u - u_h ||_H1(Omega)              =   standard H1-norm for velocity
     //                                           =   sqrt( || u - u_h ||^2_L2(Omega) + || grad( u - u_h ) ||^2_L2(Omega) )
-    // 4.   || p - p_h ||_L2(Omega)              =   standard L2-norm for for pressure
+    // 4.   || p - p_h ||_L2(Omega)              =   standard L2-norm for pressure
     //
     // viscosity-scaled domain errors
     // 5.   || nu^(+1/2) grad( u - u_h ) ||_L2(Omega)      =   visc-scaled H1-seminorm for velocity
     //                                                     =   nu^(+1/2) * || grad( u - u_h ) ||_L2(Omega) (for homogeneous visc)
-    // 6.   || nu^(-1/2) (p - p_h) ||_L2(Omega)            =   visc-scaled L2-norm for for pressure
+    // 6.   || nu^(-1/2) (p - p_h) ||_L2(Omega)            =   visc-scaled L2-norm for pressure
     //                                                     =   nu^(-1/2) * || p - p_h ||_L2(Omega) (for homogeneous visc)
     //
     //-------------------------------------------------------------------------------------------------------------------
@@ -1469,11 +1469,11 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
     double dom_err_vel_L2      = 0.0;            //  || u - u_h ||_L2(Omega)              =   standard L2-norm for velocity
     double dom_err_vel_H1_semi = 0.0;            //  || grad( u - u_h ) ||_L2(Omega)      =   standard H1-seminorm for velocity
     double dom_err_vel_H1      = 0.0;            //  || u - u_h ||_H1(Omega)              =   standard H1-norm for velocity
-    double dom_err_pre_L2      = 0.0;            //  || p - p_h ||_L2(Omega)              =   standard L2-norm for for pressure
+    double dom_err_pre_L2      = 0.0;            //  || p - p_h ||_L2(Omega)              =   standard L2-norm for pressure
 
     // viscosity-scaled domain errors
     double dom_err_vel_H1_semi_nu_scaled = 0.0;  //  || nu^(+1/2) grad( u - u_h ) ||_L2(Omega)      =   visc-scaled H1-seminorm for velocity
-    double dom_err_pre_L2_nu_scaled      = 0.0;  //  || nu^(-1/2) (p - p_h) ||_L2(Omega)            =   visc-scaled L2-norm for for pressure
+    double dom_err_pre_L2_nu_scaled      = 0.0;  //  || nu^(-1/2) (p - p_h) ||_L2(Omega)            =   visc-scaled L2-norm for pressure
 
     // interface errors
     double interf_err_Honehalf    = 0.0;         //  || nu^(+1/2) (u - u*) ||_H1/2(Gamma)             =  broken H1/2 Sobolev norm for boundary/coupling condition

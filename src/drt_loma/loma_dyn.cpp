@@ -19,6 +19,7 @@ Maintainer: Volker Gravemeier
 #include "loma_dyn.H"
 #include "loma_algorithm.H"
 #include "../drt_inpar/drt_validparameters.H"
+#include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_scatra/scatra_utils_clonestrategy.H"
 #include "../drt_scatra_ele/scatra_ele.H"
 #include <Teuchos_TimeMonitor.hpp>

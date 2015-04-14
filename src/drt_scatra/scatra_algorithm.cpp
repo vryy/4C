@@ -14,6 +14,7 @@ Maintainer: Andreas Ehrl
 /*----------------------------------------------------------------------*/
 
 #include "../drt_fluid_turbulence/turbulence_statistic_manager.H"
+#include "scatra_timint_implicit.H"
 #include "scatra_algorithm.H"
 
 /*----------------------------------------------------------------------*/

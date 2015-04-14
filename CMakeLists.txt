@@ -983,7 +983,7 @@ set(OBJS_DRT_FSI
 )
 set(OBJS_DRT_FSI_XFEM
   src/drt_fsi_xfem/fsi_xfem_fluid.cpp
-    src/drt_fsi_xfem/afsi_xfem_monolithic.cpp
+  src/drt_fsi_xfem/afsi_xfem_monolithic.cpp
   src/drt_fsi_xfem/fsi_xfem_monolithic.cpp
   src/drt_fsi_xfem/fsi_xfem_algorithm.cpp
 )
@@ -1072,6 +1072,11 @@ set(OBJS_DRT_MESHFREE_SCATRA_LIB
   src/drt_meshfree_discret/meshfree_scatra_cell_boundary_evaluate.cpp
   src/drt_meshfree_discret/meshfree_scatra_cell_calc.cpp
   src/drt_meshfree_discret/meshfree_scatra_cell_calc_std.cpp
+)
+set(OBJS_DRT_STI
+  src/drt_sti/sti_algorithm.cpp
+  src/drt_sti/sti_clonestrategy.cpp
+  src/drt_sti/sti_dyn.cpp
 )
 set(OBJS_DRT_T2_LIB
   src/drt_truss2/truss2.cpp
@@ -2064,6 +2069,7 @@ add_library(alg_fsi_xfem ${OBJS_DRT_FSI_XFEM})
 add_library(alg_loma ${OBJS_DRT_LOMA})
 add_library(alg_two_phase ${OBJS_DRT_TWO_PHASE})
 add_library(alg_tsi ${OBJS_DRT_TSI})
+add_library(alg_sti ${OBJS_DRT_STI})
 add_library(alg_wear ${OBJS_DRT_WEAR})
 add_library(alg_poroelast ${OBJS_DRT_POROELAST})
 add_library(alg_fpsi ${OBJS_DRT_FPSI})
@@ -2078,6 +2084,7 @@ set(MULTIFIELD_LIBRARIES
   alg_loma
   alg_two_phase
   alg_tsi
+  alg_sti
   alg_wear
   alg_poroelast
   alg_immersed_problem

@@ -11,11 +11,14 @@
  </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#include "ssi_partitioned.H"
 #include "../linalg/linalg_utils.H"
 
 #include "../drt_adapter/ad_str_wrapper.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
+
+#include "../drt_scatra/scatra_timint_implicit.H"
+
+#include "ssi_partitioned.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

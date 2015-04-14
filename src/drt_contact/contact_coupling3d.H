@@ -119,7 +119,7 @@ public:
    \brief Linearization of clip vertex coordinates (3D)
 
    Sub-method of VertexLinearization for slave linearization.
-   ONLY necessary for for AuxPlane case!
+   ONLY necessary for AuxPlane case!
 
    */
   virtual bool SlaveVertexLinearization(

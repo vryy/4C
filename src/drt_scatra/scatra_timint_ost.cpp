@@ -370,7 +370,7 @@ void SCATRA::TimIntOneStepTheta::ReadRestart(int step)
 
 /*----------------------------------------------------------------------*
  | Initialization procedure before the first time step        gjb 08/08 |
- -----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::PrepareFirstTimeStep()
 {
   // evaluate Dirichlet boundary conditions at time t=0

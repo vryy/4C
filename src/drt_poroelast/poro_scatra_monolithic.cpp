@@ -21,6 +21,7 @@
 #include "../drt_adapter/ad_str_fpsiwrapper.H"
 
 #include "../drt_fluid_ele/fluid_ele_action.H"
+#include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_scatra_ele/scatra_ele_action.H"
 
 #include "../linalg/linalg_utils.H"

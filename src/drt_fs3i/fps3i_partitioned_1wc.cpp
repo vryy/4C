@@ -33,6 +33,7 @@
 #include "../linalg/linalg_solver.H"
 #include "../drt_adapter/adapter_coupling.H"
 
+#include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_scatra/scatra_utils_clonestrategy.H"
 
 #include "../drt_poroelast/poroelast_monolithic.H"

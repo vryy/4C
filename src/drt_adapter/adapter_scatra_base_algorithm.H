@@ -16,19 +16,22 @@ Maintainer: Andreas Ehrl
 #ifndef ADAPTER_SCATRA_BASE_ALGORITHM_H
 #define ADAPTER_SCATRA_BASE_ALGORITHM_H
 
-#include "../drt_scatra/scatra_timint_implicit.H"
-
-#include "../drt_lib/drt_dserror.H"
+#include <Teuchos_RCP.hpp>
 
 // forward declarations
 namespace DRT
 {
   class ResultTest;
-  class ScaTraResultTest;
 }
+
 namespace SCATRA
 {
   class ScaTraTimIntImpl;
+}
+
+namespace Teuchos
+{
+  class ParameterList;
 }
 
 // Algorithm adapter classes for use in multi-field problems

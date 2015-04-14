@@ -478,7 +478,7 @@ namespace TSI
 
     //! @name infnorm scaling
 
-    Teuchos::RCP<Epetra_Vector> srowsum_;  //!< sum of absolute values of the rows of the structura block
+    Teuchos::RCP<Epetra_Vector> srowsum_;  //!< sum of absolute values of the rows of the structural block
     Teuchos::RCP<Epetra_Vector> scolsum_;  //!< sum of absolute values of the column of the structural block
     Teuchos::RCP<Epetra_Vector> trowsum_;  //!< sum of absolute values of the rows of the thermal block
     Teuchos::RCP<Epetra_Vector> tcolsum_;  //!< sum of absolute values of the column of the thermal block

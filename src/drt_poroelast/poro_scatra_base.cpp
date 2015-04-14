@@ -17,6 +17,7 @@
 #include "poroelast_utils.H"
 
 #include "../drt_scatra/scatra_algorithm.H"
+#include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_scatra_ele/scatra_ele.H"
 #include "../drt_inpar/inpar_scatra.H"
 #include "poro_utils_clonestrategy.H"

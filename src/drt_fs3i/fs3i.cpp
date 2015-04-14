@@ -37,6 +37,7 @@ Maintainers: Moritz Thon & Andre Hemmler
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 
 #include "../drt_scatra/scatra_algorithm.H"
+#include "../drt_scatra/scatra_timint_implicit.H"
 
 #include "../drt_fluid/fluidimplicitintegration.H"
 #include "../drt_fluid/fluid_utils.H"

@@ -16,6 +16,8 @@ Maintainer: Volker Gravemeier
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_createdis.H"
 
+#include "../drt_scatra/scatra_timint_implicit.H"
+
 #include "../drt_scatra_ele/scatra_ele.H"
 
 #include <iostream>

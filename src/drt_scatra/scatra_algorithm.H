@@ -3,7 +3,6 @@
 \file scatra_algorithm.H
 
 \brief Transport of passive scalars in Navier-Stokes velocity field
-       (one-way coupling)
 
 <pre>
 Maintainer: Andreas Ehrl

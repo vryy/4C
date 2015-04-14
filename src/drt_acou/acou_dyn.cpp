@@ -27,6 +27,7 @@ Maintainer: Svenja Schoeder
 #include "acou_inv_analysis.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_acou.H"
+#include "../drt_inpar/inpar_scatra.H"
 #include "../drt_lib/drt_discret_hdg.H"
 #include "../drt_lib/drt_dofset_independent.H"
 #include "../linalg/linalg_solver.H"
@@ -34,6 +35,7 @@ Maintainer: Svenja Schoeder
 #include "../drt_io/io_control.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 #include "../drt_comm/comm_utils.H"
+#include "../drt_scatra/scatra_timint_implicit.H"
 
 void printacoulogo()
 {

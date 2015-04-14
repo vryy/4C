@@ -305,12 +305,12 @@ int FluidEleCalcXFEM<distype>::ComputeError(
     // 2.   || grad( u - u_h ) ||_L2(Omega)      =   standard H1-seminorm for velocity
     // 3.   || u - u_h ||_H1(Omega)              =   standard H1-norm for velocity
     //                                           =   sqrt( || u - u_h ||^2_L2(Omega) + || grad( u - u_h ) ||^2_L2(Omega) )
-    // 4.   || p - p_h ||_L2(Omega)              =   standard L2-norm for for pressure
+    // 4.   || p - p_h ||_L2(Omega)              =   standard L2-norm for pressure
     //
     // viscosity-scaled domain errors
     // 5.   || nu^(+1/2) grad( u - u_h ) ||_L2(Omega)      =   visc-scaled H1-seminorm for velocity
     //                                                     =   nu^(+1/2) * || grad( u - u_h ) ||_L2(Omega) (for homogeneous visc)
-    // 6.   || nu^(-1/2) (p - p_h) ||_L2(Omega)            =   visc-scaled L2-norm for for pressure
+    // 6.   || nu^(-1/2) (p - p_h) ||_L2(Omega)            =   visc-scaled L2-norm for pressure
     //                                                     =   nu^(-1/2) * || p - p_h ||_L2(Omega) (for homogeneous visc)
 
     double u_err_squared      = 0.0;

@@ -279,7 +279,8 @@ public:
   //! return scalar field acceleration/history of convective velocity field at time step n+1
   Teuchos::RCP<Epetra_MultiVector> ConAcc() { return acc_; }
 
-  Teuchos::RCP<Epetra_MultiVector> Pre() { return pre_; }
+  //! return pressure required for computation of subgrid-scale velocity
+  Teuchos::RCP<Epetra_Vector> Pre() { return pre_; }
 
   //! return scalar field fine-scale convective velocity at time step n+1
   Teuchos::RCP<Epetra_MultiVector> ConFsVel() { return fsvel_; }
@@ -962,8 +963,10 @@ protected:
   //! subgrid-scale velocity required for multifractal subgrid-scale modeling
   Teuchos::RCP<Epetra_MultiVector> fsvel_;
 
-  //! acceleration and pressure required for computation of subgrid-scale velocity
+  //! acceleration required for computation of subgrid-scale velocity
   Teuchos::RCP<Epetra_MultiVector> acc_;
+
+  //! pressure required for computation of subgrid-scale velocity
   Teuchos::RCP<Epetra_Vector> pre_;
 
   //! displacements at time n+1 for ALE formulation

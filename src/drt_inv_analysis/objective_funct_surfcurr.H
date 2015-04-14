@@ -66,7 +66,7 @@ private:
   std::vector<double> timesteps_;
 
   //! vector of single surface objective functions
-  //! 'std::vector wrap' to account for for measurement
+  //! 'std::vector wrap' to account for measurement
   //! for more than the last time step in the future
   std::vector< std::vector<Teuchos::RCP<INVANA::ObjectiveFunctSurfCurr> > > currents_;
 

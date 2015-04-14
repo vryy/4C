@@ -48,6 +48,7 @@ Maintainers: Lena Yoshihara & Volker Gravemeier
 #include "../drt_adapter/ad_ale_fsi.H"
 //SCATRA
 #include "../drt_scatra/scatra_algorithm.H"
+#include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_scatra/scatra_utils_clonestrategy.H"
 #include "../drt_scatra_ele/scatra_ele.H"
 //FOR WSS CALCULATIONS

@@ -52,7 +52,7 @@ class MeshtyingStrategyFluid : public MeshtyingStrategyBase
         );
 
     //! destructor
-    virtual ~MeshtyingStrategyFluid() {};
+    virtual ~MeshtyingStrategyFluid(){return;};
 
     //! compute meshtying residual terms and their linearizations
     void EvaluateMeshtying() const;

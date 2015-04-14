@@ -36,6 +36,7 @@ http://www.lnm.mw.tum.de
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 #include "../drt_adapter/ad_fld_fluid_fsi.H"
 #include "../drt_adapter/ad_ale_fsi.H"
+#include "../drt_scatra/scatra_timint_implicit.H"
 
 //#define SCATRABLOCKMATRIXMERGE
 

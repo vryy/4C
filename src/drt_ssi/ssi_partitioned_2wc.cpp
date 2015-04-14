@@ -18,6 +18,8 @@
 #include "../drt_adapter/ad_str_wrapper.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 
+#include "../drt_scatra/scatra_timint_implicit.H"
+
 /*----------------------------------------------------------------------*
  | constructor                                               Thon 12/14 |
  *----------------------------------------------------------------------*/

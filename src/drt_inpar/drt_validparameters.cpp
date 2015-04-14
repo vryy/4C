@@ -5775,6 +5775,29 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &scatradyn_stab);
 
   /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& stidyn = list->sublist(
+      "STI DYNAMIC",
+      false,
+      "general control parameters for scatra-thermo interaction problems"
+      );
+
+  // type of scalar transport
+  setStringToIntegralParameter<int>(
+      "SCATRATYPE",
+      "Undefined",
+      "type of scalar transport",
+       tuple<std::string>(
+           "Undefined",
+           "Elch"
+           ),
+       tuple<int>(
+           INPAR::SCATRA::impltype_undefined,
+           INPAR::SCATRA::impltype_elch_diffcond   // we abuse this enumeration entry here to indicate electrochemistry in general
+           ),
+       &stidyn
+       );
+
+  /*----------------------------------------------------------------------*/
   /* Control parameters for FS3I */
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fs3idyn = list->sublist(

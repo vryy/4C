@@ -27,6 +27,7 @@ Maintainer: Georg Bauer
 #include "../drt_scatra/scatra_resulttest.H"
 
 // general time integration schemes
+#include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_scatra/scatra_timint_stat.H"
 #include "../drt_scatra/scatra_timint_ost.H"
 #include "../drt_scatra/scatra_timint_bdf2.H"
@@ -215,7 +216,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   }
 
   // electrochemistry
-  else if (probtype == prb_elch)
+  else if (probtype == prb_elch or (probtype == prb_sti and disname == "scatra" and DRT::INPUT::IntegralValue<INPAR::SCATRA::ImplType>(DRT::Problem::Instance()->STIControlParams(),"SCATRATYPE") == INPAR::SCATRA::impltype_elch_diffcond))
   {
     Teuchos::RCP<Teuchos::ParameterList> elchparams = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->ELCHControlParams()));
 

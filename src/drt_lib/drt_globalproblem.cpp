@@ -1286,6 +1286,29 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     break;
   }
+  case prb_sti:
+  {
+    // safety checks
+    if(distype == "Meshfree" or distype == "Nurbs")
+      dserror("Scatra-thermo interaction does not work for meshfree or nurbs discretizations yet!");
+
+    // create empty discretizations for scalar and thermo fields
+    scatradis = Teuchos::rcp(new DRT::Discretization("scatra",reader.Comm()));
+    thermdis = Teuchos::rcp(new DRT::Discretization("thermo",reader.Comm()));
+
+    // create discretization writers
+    scatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(scatradis)));
+    thermdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(thermdis)));
+
+    // add empty discretizations to global problem
+    AddDis("scatra",scatradis);
+    AddDis("thermo",thermdis);
+
+    // add element reader to node reader
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(scatradis,reader,"--TRANSPORT ELEMENTS")));
+
+    break;
+  }
   case prb_fluid_ale:
   case prb_freesurf:
   {

@@ -17,6 +17,7 @@ Maintainers: Lena Yoshihara & Volker Gravemeier
 
 #include "../drt_fsi/fsi_monolithic.H"
 #include "../drt_scatra/scatra_algorithm.H"
+#include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_inpar/inpar_scatra.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
