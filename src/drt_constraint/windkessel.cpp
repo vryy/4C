@@ -14,15 +14,15 @@ infront of it (DESIGN SURF HEART VALVE ARTERIAL WINDKESSEL CONDITIONS):
        {(p_v-p_at)/R_at_min - q_v}, if p_v < p_at
 Res = [{(p_v-p_at)/R_at_max - q_v}, if p_at < p_v < p_ar                                                         ] = [ 0 ]
        {(p_v-p_ar)/R_ar_min + (p_ar-p_at)/R_at_max - q_v}, if p_v > p_ar
-      [C * d(p_ar)/dt + (p_ar-p_ref)/R_p - (1 + Z_c/R_p) q_v - (C R_c  + L/R_p) * d(q_v)/dt - L * C * d2(q_v)/dt2] = [ 0 ]
+      [C * d(p_ar)/dt + (p_ar-p_ref)/R_p - (1 + Z_c/R_p) q_v - (C R_c  + L/R_p) * d(q_v)/dt - L * C * d2(q_v)/dt2]   [ 0 ]
 
 C) an arterial Windkessel model derived from physical considerations of mass and momentum balance in the proximal and distal
 arterial part (formulation proposed by Cristobal Bertoglio) (DESIGN SURF HEART VALVE ARTERIAL PROX DIST WINDKESSEL CONDITIONS):
-      [dV_v/dt + (p_v - p_at)/R_atv(p_v,p_at) + (p_v - p_ar)/R_arv(p_v,p_ar)] = [ 0 ]
-      [C_arp * d(p_arp)/dt + y_arp - (p_v - p_ar)/R_arv                     ] = [ 0 ]
+      [dV_v/dt + (p_v - p_at)/R_atv(p_v,p_at) + (p_v - p_ar)/R_arv(p_v,p_ar)]   [ 0 ]
+      [C_arp * d(p_arp)/dt + y_arp - (p_v - p_ar)/R_arv                     ]   [ 0 ]
 Res = [(L_arp/R_arp) * d(y_arp)/dt + y_arp + (p_ard - p_arp)/R_arp          ] = [ 0 ]
-      [C_ard * d(p_ard)/dt + y_ard - y_arp                                  ] = [ 0 ]
-      [R_ard * y_ard - p_ard + p_ref                                        ] = [ 0 ]
+      [C_ard * d(p_ard)/dt + y_ard - y_arp                                  ]   [ 0 ]
+      [R_ard * y_ard - p_ard + p_ref                                        ]   [ 0 ]
 
 with nonlinear valve resistances R_atv(p_v,p_at), R_arv(p_v,p_ar) - caution when using this since its physical correctness is doubted by the code author!
 
@@ -30,14 +30,14 @@ D) a full closed-loop cardiovascular model with 0D elastance atria models and bi
 (DESIGN SURF HEART VALVE CARDIOVASCULAR FULL WINDKESSEL CONDITIONS)
 (based on MA thesis of Marina Basilious and Kerckhoffs et. al. 2007, Coupling of a 3D Finite Element Model of Cardiac Ventricular
 Mechanics to Lumped Systems Models of the Systemic and Pulmonic Circulations, Annals of Biomedical Engineering, Vol. 35, No. 1
-      [(p_v - p_ar)/R_arv - q_vout                     ] = [ 0 ]
-      [d(p_at/E_at)/dt - q_ven_other + q_vin           ] = [ 0 ]
-      [C_ar * d(p_ar)/dt - q_vout + q_ar               ] = [ 0 ]
+      [(p_v - p_ar)/R_arv - q_vout                     ]   [ 0 ]
+      [d(p_at/E_at)/dt - q_ven_other + q_vin           ]   [ 0 ]
+      [C_ar * d(p_ar)/dt - q_vout + q_ar               ]   [ 0 ]
 Res = [C_ven * d(p_ven)/dt - q_ar + q_ven              ] = [ 0 ]
-      [(p_at - p_v)/R_atv - q_vin                      ] = [ 0 ]
-      [d(V_v)/dt - q_vin + q_vout                      ] = [ 0 ]
-      [L_ar/R_ar + (p_ar - p_ven)/R_ar - q_ar          ] = [ 0 ]
-      [L_ven/R_ven + (p_ven - p_at_other)/R_ven - q_ven] = [ 0 ]
+      [(p_at - p_v)/R_atv - q_vin                      ]   [ 0 ]
+      [d(V_v)/dt - q_vin + q_vout                      ]   [ 0 ]
+      [L_ar/R_ar + (p_ven - p_ar)/R_ar + q_ar          ]   [ 0 ]
+      [L_ven/R_ven + (p_at_other - p_ven)/R_ven + q_ven]   [ 0 ]
 ************************************************************************************************************************************
 
 <pre>
@@ -1911,15 +1911,15 @@ void UTILS::Windkessel::EvaluateHeartValveCardiovascularFullWindkessel(
       factor_Q[5] = -1.;
       factor_1[5] = -q_vin_m;
 
-      factor_wkdof[6] = -1.;
+      factor_wkdof[6] = 1.;
       factor_dwkdof[6] = L_ar/R_ar;
       factor_Q[6] = 0.;
-      factor_1[6] = (p_ar_m-p_ven_m)/R_ar;
+      factor_1[6] = (p_ven_m-p_ar_m)/R_ar;
 
-      factor_wkdof[7] = -1.;
+      factor_wkdof[7] = 1.;
       factor_dwkdof[7] = L_ven/R_ven;
       factor_Q[7] = 0.;
-      factor_1[7] = (p_ven_m-p_at_other_m)/R_ven;
+      factor_1[7] = (p_at_other_m-p_ven_m)/R_ven;
 
     }
 
@@ -1987,16 +1987,16 @@ void UTILS::Windkessel::EvaluateHeartValveCardiovascularFullWindkessel(
       wkstiff(5,4) = -theta;
       wkstiff(5,5) = theta;
 
-      wkstiff(6,2) = theta/R_ar;
-      wkstiff(6,3) = -theta/R_ar;
-      wkstiff(6,6) = L_ar/(R_ar*ts_size) - theta;
+      wkstiff(6,2) = -theta/R_ar;
+      wkstiff(6,3) = theta/R_ar;
+      wkstiff(6,6) = L_ar/(R_ar*ts_size) + theta;
 
-      wkstiff(7,3) = theta/R_ven;
-      wkstiff(7,7) = L_ven/(R_ven*ts_size) - theta;
+      wkstiff(7,3) = -theta/R_ven;
+      wkstiff(7,7) = L_ven/(R_ven*ts_size) + theta;
 
 
       wkstiff_other(1,7) = -theta;
-      wkstiff_other(7,1) = -theta/R_ven;
+      wkstiff_other(7,1) = theta/R_ven;
 
       sysmat1->UnComplete();
 
