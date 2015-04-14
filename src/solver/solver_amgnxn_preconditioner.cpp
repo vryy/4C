@@ -85,6 +85,9 @@ void LINALG::SOLVER::AMGnxn_Preconditioner::Setup(Teuchos::RCP<BlockSparseMatrix
 
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::AMGnxn_Preconditioner::Setup");
 
+  Epetra_Time timer(A->Comm());
+  timer.ResetStartTime();
+
   // Free old matrix and preconditioner
   A_ = Teuchos::null;
   P_ = Teuchos::null;
@@ -134,6 +137,10 @@ void LINALG::SOLVER::AMGnxn_Preconditioner::Setup(Teuchos::RCP<BlockSparseMatrix
   }
   else
     dserror("Unknown preconditioner type: %s", myInterface.GetPreconditionerType().c_str());
+
+  double elaptime =  timer.ElapsedTime();
+  if(A->Comm().MyPID()==0)
+    std::cout <<  "       Calling LINALG::SOLVER::AMGnxn_Preconditioner::Setup takes " << std::setw(16) << std::setprecision(6) << elaptime << " s" << std::endl ;
 
   return;
 }

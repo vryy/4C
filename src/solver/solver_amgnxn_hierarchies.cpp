@@ -644,7 +644,7 @@ void LINALG::SOLVER::AMGNXN::MonolithicHierarchy::Setup()
   std::string verbosity = params_.get<std::string>("verbosity","off");
 
   if(H_->GetBlockMatrix()->GetMatrix(0,0)->Comm().MyPID() != 0)
-    verbosity == "off";
+    verbosity = "off";
 
   if (verbosity=="on")
   {
