@@ -111,7 +111,8 @@ namespace INPAR
       mes_coupvarga,  ///< isotropic Varga material
       mes_isovarga,  ///< isotropic isochoric Varga material
       mes_isotestmaterial, ///< material to test the elasthyper-toolbox
-      mes_isoratedep,  ///< isotropic iscochoric frequency dependent viscos potential summand
+      mes_coupmyocard,  ///< isotropic viscous contribution of myocardial matrix
+      mes_isoratedep,  ///< isotropic isochoric frequency dependent viscous potential summand
       mes_genmax,     ///< viscous contribution according to SLS-Model
       m_cnst_art,            ///< 1D_Artery constant material properties
       m_growth_volumetric_scd,   ///< integration point based growth (scalar dependent)

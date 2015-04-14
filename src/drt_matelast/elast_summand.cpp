@@ -47,6 +47,7 @@ Maintainer: Burkhard Bornemann
 #include "elast_isovarga.H"
 #include "elast_isovolHUdependentneohooke.H"
 #include "elast_isovolaaagasser.H"
+#include "visco_coupmyocard.H"
 #include "visco_isoratedep.H"
 #include "visco_genmax.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -306,6 +307,13 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
     MAT::ELASTIC::PAR::IsoVarga* params = static_cast<MAT::ELASTIC::PAR::IsoVarga*>(curmat->Parameter());
     return Teuchos::rcp(new IsoVarga(params));
   }
+  case INPAR::MAT::mes_coupmyocard:
+    {
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::ELASTIC::PAR::CoupMyocard(curmat));
+      MAT::ELASTIC::PAR::CoupMyocard* params = static_cast<MAT::ELASTIC::PAR::CoupMyocard*>(curmat->Parameter());
+      return Teuchos::rcp(new CoupMyocard(params));
+    }
   case INPAR::MAT::mes_isoratedep:
   {
     if (curmat->Parameter() == NULL)

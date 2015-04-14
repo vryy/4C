@@ -1489,11 +1489,24 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*--------------------------------------------------------------------*/
+  // isotropic viscous contribution of myocardial matrix (chapelle12)
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("VISCO_CoupMyocard",
+                                            "Isotropic viscous contribution of myocardial matrix",
+                                            INPAR::MAT::mes_coupmyocard));
+
+    AddNamedReal(m,"N","material parameter");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*--------------------------------------------------------------------*/
   // isochoric rate dependent viscos material, modified from Pioletti,1997
   {
     Teuchos::RCP<MaterialDefinition> m
       = Teuchos::rcp(new MaterialDefinition("VISCO_IsoRateDep",
-                                            "Isochoric rate dependet viscos material",
+                                            "Isochoric rate dependent viscous material",
                                             INPAR::MAT::mes_isoratedep));
 
     AddNamedReal(m,"N","material parameter");

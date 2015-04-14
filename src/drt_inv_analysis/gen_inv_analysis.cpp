@@ -52,6 +52,7 @@ Maintainer: Michael Gee
 #include "../drt_matelast/elast_vologden.H"
 #include "../drt_matelast/elast_volpenalty.H"
 #include "../drt_matelast/elast_volsussmanbathe.H"
+#include "../drt_matelast/visco_coupmyocard.H"
 #include "../drt_matelast/visco_isoratedep.H"
 #include "../drt_matelast/visco_genmax.H"
 #include "../drt_structure/strtimint_create.H"
@@ -1588,6 +1589,15 @@ void STR::GenInvAnalysis::ReadInParameters()
               coupexppol_parameter_position_ = j+1;
               break;
             }
+            case INPAR::MAT::mes_coupmyocard:
+                        {
+                          filename_=filename_+"_coupmyocard";
+                          const MAT::ELASTIC::PAR::CoupMyocard* params2 = dynamic_cast<const MAT::ELASTIC::PAR::CoupMyocard*>(actelastmat->Parameter());
+                          int j = p_.Length();
+                          p_.Resize(j+1);
+                          p_[j]   = params2->n_;
+                          break;
+                        }
             case INPAR::MAT::mes_isoratedep:
             {
               filename_=filename_+"_isoratedep";
@@ -2025,6 +2035,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
     case INPAR::MAT::mes_volsussmanbathe:
     case INPAR::MAT::mes_volpenalty:
     case INPAR::MAT::mes_vologden:
+    case INPAR::MAT::mes_coupmyocard:
     case INPAR::MAT::mes_isoratedep:
     case INPAR::MAT::mes_genmax:
     case INPAR::MAT::m_struct_multiscale:
@@ -2236,6 +2247,14 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
               dynamic_cast<MAT::ELASTIC::PAR::VolOgden*>(actelastmat->Parameter());
             params2->SetKappa(abs(p_cur(j)));
             //params2->SetBeta(abs(p_cur(j+1)));
+            j = j+1;
+            break;
+          }
+          case INPAR::MAT::mes_coupmyocard:
+          {
+            MAT::ELASTIC::PAR::CoupMyocard* params2 =
+              dynamic_cast<MAT::ELASTIC::PAR::CoupMyocard*>(actelastmat->Parameter());
+            params2->SetN(abs(p_cur(j)));
             j = j+1;
             break;
           }

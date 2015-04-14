@@ -4,7 +4,7 @@
 \brief
 This file contains the viscohyperelastic material.
 This model can be applied to any hyperelastic law of the Elasthyper toolbox.
-The viscos part is rate-dependent and summed up with the hyperelastic laws
+The viscous part is rate-dependent and summed up with the hyperelastic laws
 to build a viscohyperelastic strain energy function.
 (Description of hysteresis not added jet)
 
@@ -471,7 +471,7 @@ void MAT::ViscoElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
 }
 
 /*----------------------------------------------------------------------*/
-/* Evaluate Quantities for Viscos Part                            09/13 */
+/* Evaluate Quantities for viscous Part                           09/13 */
 /*----------------------------------------------------------------------*/
 void MAT::ViscoElastHyper::EvaluateKinQuantVis(
     LINALG::Matrix<6,1> rcg,
@@ -502,7 +502,7 @@ void MAT::ViscoElastHyper::EvaluateKinQuantVis(
   modrcgrate.Update(-1.0,modrcglast,1.0);
   modrcgrate.Scale(1/dt);
 
-  // in the first time step, set modrcgrate to zero (--> first time step is just hyperelastic, not viscos)
+  // in the first time step, set modrcgrate to zero (--> first time step is just hyperelastic, not viscous)
   const LINALG::Matrix<6,1> emptyvec(true);
   if(modrcglast == emptyvec)
     {
@@ -542,7 +542,7 @@ void MAT::ViscoElastHyper::EvaluateKinQuantVis(
 }
 
 /*----------------------------------------------------------------------*/
-/* Evaluate Factors for Viscos Quantities                         09/13 */
+/* Evaluate Factors for viscous Quantities                        09/13 */
 /*----------------------------------------------------------------------*/
 void MAT::ViscoElastHyper::EvaluateMyXi(
     LINALG::Matrix<3,1> modinv,
@@ -562,7 +562,7 @@ void MAT::ViscoElastHyper::EvaluateMyXi(
 }
 
 /*----------------------------------------------------------------------*/
-/* Calculates the stress and constitutive tensor for viscos part  09/13 */
+/* Calculates the stress and constitutive tensor for viscous part 09/13 */
 /*----------------------------------------------------------------------*/
 void MAT::ViscoElastHyper::EvaluateIsoModVisco(
     LINALG::Matrix<6,1>& stressisomodisovisco,
@@ -611,6 +611,8 @@ void MAT::ViscoElastHyper::EvaluateIsoModVisco(
   modcmat.MultiplyNT(modxi(1), modrcgrate, id2, 1.0);
   // contribution: Id4
   modcmat.Update(modxi(2), id4, 1.0);
+  // contribution: Id \otimes Id (needed for derivatives of J_1, as used in material coupmyocard)
+  modcmat.MultiplyNT(modxi(3), id2, id2, 1.0);
   //scaling
   modcmat.Scale(std::pow(modinv(2),-4./3.));
   //contribution: P:\overline{C}:P
