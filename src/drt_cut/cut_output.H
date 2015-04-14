@@ -20,6 +20,9 @@ namespace CUT {
 class Element;
 class Side;
 class Node;
+class Point;
+class Line;
+class Edge;
 
 namespace OUTPUT {
 
@@ -45,9 +48,35 @@ void GmshSideDump( std::ofstream & file, const Side* s );
 void GmshCompleteCutElement( std::ofstream & file, Element * ele );
 
 /*!
+\brief Write output of a line
+ */
+void GmshLineDump( std::ofstream & file, GEO::CUT::Line*  line);
+
+/*!
+\brief Write output of a edge
+ */
+void GmshEdgeDump( std::ofstream & file, GEO::CUT::Edge*  edge);
+
+/*!
+\brief Write output of a node
+ */
+void GmshNodeDump( std::ofstream & file, GEO::CUT::Node*  node);
+
+/*!
+\brief Write output of a point with special idx
+ */
+void GmshPointDump( std::ofstream & file, GEO::CUT::Point*  point,int idx);
+
+/*!
+\brief Write output of a point
+ */
+void GmshPointDump( std::ofstream & file, GEO::CUT::Point*  point);
+
+/*!
 \brief Write cuttest for this element!
 */
 void GmshElementCutTest( std::ofstream & file, GEO::CUT::Element* ele);
+
 }
 
 } /* namespace CUT */

@@ -84,6 +84,10 @@ public:
   /// print the tree at a given level
   void Print( int level, std::ostream & stream );
 
+  /// Get Points
+  const RCPPointSet& GetPoints()
+  { return points_;}
+
 private:
 
   /*========================================================================*/
@@ -162,6 +166,10 @@ public:
   /// print the OctTree
   void Print( std::ostream & stream )
   { tree_.Print( 0, stream ); }
+
+  /// Get Points
+  const RCPPointSet& GetPoints()
+  { return tree_.GetPoints(); }
 
 private:
 

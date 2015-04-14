@@ -36,11 +36,12 @@ Maintainer: Benedikt Schott
 /*-------------------------------------------------------------------------------------*
  * constructor
  *-------------------------------------------------------------------------------------*/
-GEO::CUT::Mesh::Mesh( Options & options, double norm, Teuchos::RCP<PointPool> pp, bool cutmesh )
+GEO::CUT::Mesh::Mesh( Options & options, double norm, Teuchos::RCP<PointPool> pp, bool cutmesh, int myrank )
   : options_( options ),
     norm_( norm ),
     pp_( pp ),
-    cutmesh_( cutmesh )
+    cutmesh_( cutmesh ),
+    myrank_( myrank )
 {
   if ( pp_ == Teuchos::null )
   {
@@ -712,7 +713,7 @@ void GEO::CUT::Mesh::Cut( LevelSetSide & side )
     }
     catch ( std::runtime_error & err )
     {
-      e.DebugDump();
+      DebugDump(&e,__FILE__,__LINE__);
       throw;
     }
   }
@@ -727,7 +728,7 @@ void GEO::CUT::Mesh::Cut( LevelSetSide & side )
     }
     catch ( std::runtime_error & err )
     {
-      e.DebugDump();
+      DebugDump(&e,__FILE__,__LINE__);
       throw;
     }
   }
@@ -811,7 +812,7 @@ void GEO::CUT::Mesh::FindCutPoints()
     }
     catch ( std::runtime_error & err )
     {
-      e.DebugDump();
+      DebugDump(&e,__FILE__,__LINE__);
       throw;
     }
   }
@@ -826,7 +827,7 @@ void GEO::CUT::Mesh::FindCutPoints()
     }
     catch ( std::runtime_error & err )
     {
-      e.DebugDump();
+      DebugDump(&e,__FILE__,__LINE__);
       throw;
     }
   }
@@ -852,7 +853,7 @@ void GEO::CUT::Mesh::MakeCutLines()
     }
     catch ( std::runtime_error & err )
     {
-      e.DebugDump();
+      DebugDump(&e,__FILE__,__LINE__);
       throw;
     }
   }
@@ -867,7 +868,7 @@ void GEO::CUT::Mesh::MakeCutLines()
     }
     catch ( std::runtime_error & err )
     {
-      e.DebugDump();
+      DebugDump(&e,__FILE__,__LINE__);
       throw;
     }
   }
@@ -894,7 +895,7 @@ void GEO::CUT::Mesh::MakeFacets()
     }
     catch ( std::runtime_error & err )
     {
-      e.DebugDump();
+      DebugDump(&e,__FILE__,__LINE__);
       throw;
     }
   }
@@ -909,7 +910,7 @@ void GEO::CUT::Mesh::MakeFacets()
     }
     catch ( std::runtime_error & err )
     {
-      e.DebugDump();
+      DebugDump(&e,__FILE__,__LINE__);
       throw;
     }
   }
@@ -934,7 +935,7 @@ void GEO::CUT::Mesh::MakeVolumeCells()
     }
     catch ( std::runtime_error & err )
     {
-      e.DebugDump();
+      DebugDump(&e,__FILE__,__LINE__);
       throw;
     }
   }
@@ -949,7 +950,7 @@ void GEO::CUT::Mesh::MakeVolumeCells()
     }
     catch ( std::runtime_error & err )
     {
-      e.DebugDump();
+      DebugDump(&e,__FILE__,__LINE__);
       throw;
     }
   }
@@ -981,7 +982,7 @@ void GEO::CUT::Mesh::FindNodePositions()
     }
     catch ( std::runtime_error & err )
     {
-      e.DebugDump();
+      DebugDump(&e,__FILE__,__LINE__);
       throw;
     }
   }
@@ -996,7 +997,7 @@ void GEO::CUT::Mesh::FindNodePositions()
     }
     catch ( std::runtime_error & err )
     {
-      e.DebugDump();
+      DebugDump(&e,__FILE__,__LINE__);
       throw;
     }
   }
@@ -1349,7 +1350,7 @@ void GEO::CUT::Mesh::CreateIntegrationCells( int count, bool tetcellsonly )
     }
     catch ( std::runtime_error & err )
     {
-      e.DebugDump();
+      DebugDump(&e,__FILE__,__LINE__);
       throw;
     }
   }
@@ -1364,7 +1365,7 @@ void GEO::CUT::Mesh::CreateIntegrationCells( int count, bool tetcellsonly )
     }
     catch ( std::runtime_error & err )
     {
-      e.DebugDump();
+      DebugDump(&e,__FILE__,__LINE__);
       throw;
     }
   }
@@ -1387,7 +1388,7 @@ void GEO::CUT::Mesh::MomentFitGaussWeights(bool include_inner, INPAR::CUT::BCell
     }
     catch ( std::runtime_error & err )
     {
-      e.DebugDump();
+      DebugDump(&e,__FILE__,__LINE__);
       throw;
     }
   }
@@ -1402,7 +1403,7 @@ void GEO::CUT::Mesh::MomentFitGaussWeights(bool include_inner, INPAR::CUT::BCell
     }
     catch ( std::runtime_error & err )
     {
-      e.DebugDump();
+      DebugDump(&e,__FILE__,__LINE__);
       throw;
     }
   }
@@ -1425,7 +1426,7 @@ void GEO::CUT::Mesh::DirectDivergenceGaussRule(bool include_inner, INPAR::CUT::B
     }
     catch ( std::runtime_error & err )
     {
-      e.DebugDump();
+      DebugDump(&e,__FILE__,__LINE__);
       throw;
     }
   }
@@ -1440,7 +1441,7 @@ void GEO::CUT::Mesh::DirectDivergenceGaussRule(bool include_inner, INPAR::CUT::B
     }
     catch ( std::runtime_error & err )
     {
-      e.DebugDump();
+      DebugDump(&e,__FILE__,__LINE__);
       throw;
     }
   }
@@ -1463,7 +1464,7 @@ void GEO::CUT::Mesh::RemoveEmptyVolumeCells()
     }
     catch ( std::runtime_error & err )
     {
-      e.DebugDump();
+      DebugDump(&e,__FILE__,__LINE__);
       throw;
     }
   }
@@ -1478,7 +1479,7 @@ void GEO::CUT::Mesh::RemoveEmptyVolumeCells()
     }
     catch ( std::runtime_error & err )
     {
-      e.DebugDump();
+      DebugDump(&e,__FILE__,__LINE__);
       throw;
     }
   }
@@ -1871,14 +1872,17 @@ void GEO::CUT::Mesh::PrintFacets()
 
 
 /*-------------------------------------------------------------------------------------*
- * ?
+ * Write full Gmsh Output
  *-------------------------------------------------------------------------------------*/
 void GEO::CUT::Mesh::DumpGmsh( std::string name )
 {
   std::ofstream file( name.c_str() );
-  file << "View \"" << name << "\" {\n";
+ // file.precision(32); //higher precicion!
+
+  //###############write all elements & shadow elements###############
   if ( elements_.size() > 0 )
   {
+  file << "View \"" << "Elements" << "\" {\n";
     for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
           i!=elements_.end();
           ++i )
@@ -1893,9 +1897,13 @@ void GEO::CUT::Mesh::DumpGmsh( std::string name )
       Element & e = *i->second;
       GEO::CUT::OUTPUT::GmshElementDump( file, &e );
     }
+  file << "};\n";
   }
-  else
+
+  //###############write all sides###############
+  if (sides_.size() > 0)
   {
+  file << "View \"" << "Sides" << "\" {\n";
     for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=sides_.begin();
           i!=sides_.end();
           ++i )
@@ -1903,8 +1911,112 @@ void GEO::CUT::Mesh::DumpGmsh( std::string name )
       Side & s = *i->second;
       GEO::CUT::OUTPUT::GmshSideDump( file, &s );
     }
+  file << "};\n";
+  }
+
+  //###############write all cutsides###############
+  if (cut_sides_.size() > 0)
+  {
+  file << "View \"" << "CutSides" << "\" {\n";
+    for ( std::map<int, std::vector<Side*> >::iterator i=cut_sides_.begin();
+          i!=cut_sides_.end();
+          ++i )
+    {
+      std::vector<Side*> & sv = i->second;
+      for (uint sid = 0; sid < sv.size(); ++sid)
+      {
+        GEO::CUT::OUTPUT::GmshSideDump( file, sv[sid] );
+      }
+    }
+  file << "};\n";
+  }
+
+  //###############write all nodes###############
+  if (sides_.size() > 0)
+  {
+    file << "View \"" << "Nodes" << "\" {\n";
+    for ( std::map<int, Teuchos::RCP<Node> >::iterator i=nodes_.begin();
+          i!=nodes_.end();
+          ++i )
+    {
+      Node & n = *i->second;
+      GEO::CUT::OUTPUT::GmshNodeDump( file, &n );
+    }
+  file << "};\n";
+  }
+
+  //###############write all points in pointpool###############
+  if (pp_->GetPoints().size() > 0)
+  {
+    file << "View \"" << "Points" << "\" {\n";
+
+    for ( uint i= 0 ; i < pp_->GetPoints().size(); ++i )
+    {
+      GEO::CUT::OUTPUT::GmshPointDump( file, &(*(pp_->GetPoints()[i])) );
+    }
+  file << "};\n";
+  }
+
+  //###############write all edges###############
+  if (edges_.size() > 0)
+  {
+    file << "View \"" << "Edges" << "\" {\n";
+    for ( std::map<plain_int_set, Teuchos::RCP<Edge> >::iterator i=edges_.begin();
+          i!=edges_.end();
+          ++i )
+    {
+      Edge & e = *i->second;
+      GEO::CUT::OUTPUT::GmshEdgeDump( file, &e );
+    }
+  file << "};\n";
+  }
+
+  //###############write all lines###############
+  if (lines_.size() > 0)
+  {
+    file << "View \"" << "Lines" << "\" {\n";
+    for ( std::list<Teuchos::RCP<Line > >::iterator i=lines_.begin();
+          i!=lines_.end();
+          ++i )
+    {
+      Line &  l = **i;
+      GEO::CUT::OUTPUT::GmshLineDump( file, &l );
+    }
+  file << "};\n";
+  }
+
+  //###############write all facets (or bacially the facet points)###############
+  if (facets_.size() > 0)
+  {
+    file << "View \"" << "Facet_Points" << "\" {\n";
+    for ( std::list<Teuchos::RCP<Facet > >::iterator i=facets_.begin();
+          i!=facets_.end();
+          ++i )
+    {
+      Facet &  f = **i;
+      for (uint pidx = 0; pidx < f.Points().size(); ++pidx)
+      {
+        GEO::CUT::OUTPUT::GmshPointDump( file, f.Points()[pidx], f.SideId());
+      }
+    }
+  file << "};\n";
+
+  //###############write all triangulated facets (or bacially the facet points)###############
+  file << "View \"" << "Facet_Triangulated" << "\" {\n";
+  for ( std::list<Teuchos::RCP<Facet > >::iterator i=facets_.begin();
+        i!=facets_.end();
+        ++i )
+  {
+    Facet &  f = **i;
+    PointSet points;
+    f.TriangulationPoints(points);
+    for (uint pidx = 0; pidx < points.size(); ++pidx)
+    {
+      GEO::CUT::OUTPUT::GmshPointDump( file, points[pidx], f.SideId());
+    }
   }
   file << "};\n";
+  }
 }
 
 
@@ -2127,7 +2239,20 @@ void GEO::CUT::Mesh::DumpGmshVolumeCells( std::string name )
   file << "};\n";
 }
 
+/*-------------------------------------------------------------------------------------*
+ * DebugDump to call before runtime error                                     ager 04/15
+ *-------------------------------------------------------------------------------------*/
+void GEO::CUT::Mesh::DebugDump(GEO::CUT::Element* ele, std::string file, int line)
+{
+  if (file != "" || line != -1)
+    std::cout << "GEO::CUT::Mesh::DebugDump called in " << file << " in line " << line << std::endl;
 
+  std::stringstream str;
+  str << "full_debug_cut_output." << myrank_ << ".pos";
+  DumpGmsh(str.str());
+
+  ele->DebugDump();
+}
 
 /*-------------------------------------------------------------------------------------*
  * ? -> used in cut_tetmeshintersection

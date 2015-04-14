@@ -108,7 +108,7 @@ public:
   /// constructur for ParentIntersecton class
   ParentIntersection( int myrank = -1)
     : pp_( Teuchos::rcp( new PointPool ) ),
-      mesh_( options_, 1, pp_, false ),
+      mesh_( options_, 1, pp_, false,myrank ),
       myrank_(myrank)
   {
   }

@@ -606,6 +606,12 @@ void GEO::CUT::ParentIntersection::Cut_Finalize( bool include_inner,
   std::cout << "\n XFEM::FluidWizard::Quadrature construction time = " << t_diff <<"\n";
 #endif
 
+
+#ifdef DEBUGCUTLIBRARY
+  std::stringstream str;
+  str << "fullfinalcutoutput." << myrank_ << ".pos";
+  NormalMesh().DumpGmsh(str.str());
+#endif
 }
 
 /*--------------------------------------------------------------------------------------*

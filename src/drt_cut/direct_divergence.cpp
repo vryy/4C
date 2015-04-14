@@ -399,7 +399,7 @@ void GEO::CUT::DirectDivergence::DebugVolume( const DRT::UTILS::GaussIntegration
       return;
     }
 
-    elem1_->DebugDump();
+    mesh_.DebugDump(elem1_,__FILE__,__LINE__);
     dserror("negative volume predicted by the DirectDivergence integration rule; volume = %0.20f",TotalInteg);
   }
 

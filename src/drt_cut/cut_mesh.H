@@ -80,7 +80,7 @@ class Mesh
 public:
 
   /// constructor
-  Mesh( Options & options, double norm=1, Teuchos::RCP<PointPool> pp=Teuchos::null, bool cutmesh=false );
+  Mesh( Options & options, double norm=1, Teuchos::RCP<PointPool> pp=Teuchos::null, bool cutmesh=false, int myrank = -1 );
 
   /*========================================================================*/
   //! @name general create-routines for elements and sides
@@ -302,7 +302,7 @@ public:
   //! @name GMSH output routines
   /*========================================================================*/
 
-  /// ?
+  /// Write full Gmsh Output
   void DumpGmsh( std::string name );
 
   /// ?
@@ -314,6 +314,8 @@ public:
   /// ?
   void DumpGmshVolumeCells( std::string name );
 
+  /// DebugDump to call before runtime error!!!
+  void DebugDump(GEO::CUT::Element* ele, std::string file = "", int line = -1);
 
 
   /*========================================================================*/
@@ -566,6 +568,9 @@ private:
 
   /// new: unique map between int ( < 0 ) and element; int is not eid and not parentid
   std::map<int, Teuchos::RCP<Element> > shadow_elements_;
+
+  ///processor id --> required just for output!
+  int myrank_;
 
   //@}
 };

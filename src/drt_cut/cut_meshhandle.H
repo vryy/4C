@@ -44,8 +44,8 @@ class MeshHandle
 public:
 
   /// constructor
-  MeshHandle( Options & options, double norm=1, Teuchos::RCP<PointPool> pp=Teuchos::null, bool cutmesh=false )
-    : mesh_( options, norm, pp, cutmesh )
+  MeshHandle( Options & options, double norm=1, Teuchos::RCP<PointPool> pp=Teuchos::null, bool cutmesh=false, int myrank = -1 )
+    : mesh_( options, norm, pp, cutmesh, myrank )
   {
   }
 
