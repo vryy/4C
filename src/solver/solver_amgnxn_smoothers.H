@@ -291,6 +291,7 @@ namespace LINALG
           IfpackWrapper(
               Teuchos::RCP<SparseMatrixBase> A,
               Teuchos::ParameterList& list);
+          ~IfpackWrapper(){delete prec_;}
           virtual void Apply(
               const Epetra_MultiVector& X,
               Epetra_MultiVector& Y,
