@@ -449,17 +449,13 @@ num_pde_          (num_pde          ),
 null_space_dim_   (null_space_dim   ),
 null_space_data_  (null_space_data  ),
 muelu_list_       (muelu_list       )
-{Setup();}
+{}
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-void LINALG::SOLVER::AMGNXN::MueluAMGWrapper::Setup()
+void LINALG::SOLVER::AMGNXN::MueluAMGWrapper::BuildHierarchy()
 {
 
-  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::MueluAMGWrapper::Setup");
-
-  Epetra_Time timer(A_->Comm());
-  timer.ResetStartTime();
 
   //Prepare operator for MueLu
   Teuchos::RCP<Epetra_CrsMatrix> A_crs
@@ -505,6 +501,23 @@ void LINALG::SOLVER::AMGNXN::MueluAMGWrapper::Setup()
   H_->setlib(Xpetra::UseEpetra);
   mueLuFactory.SetupHierarchy(*H_);
 
+  return;
+}
+
+
+/*------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------*/
+void LINALG::SOLVER::AMGNXN::MueluAMGWrapper::Setup()
+{
+
+  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::MueluAMGWrapper::Setup");
+
+  Epetra_Time timer(A_->Comm());
+  timer.ResetStartTime();
+
+  // Create the hierarchy
+  BuildHierarchy();
+
   // Create the V-cycle
   P_ = Teuchos::rcp(new MueLu::EpetraOperator(H_));
 
@@ -513,8 +526,6 @@ void LINALG::SOLVER::AMGNXN::MueluAMGWrapper::Setup()
     std::cout <<  "       Calling LINALG::SOLVER::AMGNXN::MueluAMGWrapper::Setup takes " << std::setw(16) << std::setprecision(6) << elaptime << " s" << std::endl ;
   return;
 }
-
-
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
@@ -529,6 +540,150 @@ void LINALG::SOLVER::AMGNXN::MueluAMGWrapper::Apply(
   return;
 }
 
+
+/*------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------*/
+LINALG::SOLVER::AMGNXN::SingleFieldAMG::SingleFieldAMG(
+    Teuchos::RCP<SparseMatrix> A,
+    int num_pde,
+    int null_space_dim,
+    Teuchos::RCP<std::vector<double> > null_space_data,
+    Teuchos::ParameterList muelu_list,
+    Teuchos::ParameterList fine_smoother_list):
+MueluAMGWrapper(A,num_pde,null_space_dim,null_space_data,muelu_list),
+fine_smoother_list_       (fine_smoother_list       )
+{Setup();}
+
+
+/*------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------*/
+void LINALG::SOLVER::AMGNXN::SingleFieldAMG::Setup()
+{
+
+  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::SingleFieldAMG::Setup");
+
+  Epetra_Time timer(A_->Comm());
+  timer.ResetStartTime();
+
+  // Create the hierarchy
+  BuildHierarchy();
+
+  // recover info
+
+  int NumLevels = H_->GetNumLevels();
+
+
+  bool explicitdirichlet = A_->ExplicitDirichlet();
+  bool savegraph         = A_->SaveGraph();
+
+  Teuchos::RCP<Matrix>              myA = Teuchos::null;
+  Teuchos::RCP<Epetra_CrsMatrix> myAcrs = Teuchos::null;
+  Teuchos::RCP<SparseMatrix>     myAspa = Teuchos::null;
+  Teuchos::RCP<SmootherBase>        myS = Teuchos::null;
+  Teuchos::RCP<LINALG::SOLVER::AMGNXN::MueluSmootherWrapper> mySWrap = Teuchos::null;
+
+  std::vector< Teuchos::RCP<SparseMatrix> > Avec(NumLevels,Teuchos::null);
+  std::vector< Teuchos::RCP<SparseMatrix> > Pvec(NumLevels-1,Teuchos::null);
+  std::vector< Teuchos::RCP<SparseMatrix> > Rvec(NumLevels-1,Teuchos::null);
+  std::vector< Teuchos::RCP<SingleFieldSmoother> > SvecPre(NumLevels,Teuchos::null);
+  std::vector< Teuchos::RCP<SingleFieldSmoother> > SvecPos(NumLevels-1,Teuchos::null);
+
+
+  //Get Muelu operators (except smoothers)
+  for(int level=0;level<NumLevels;level++)
+  {
+
+    Teuchos::RCP<Level> this_level = H_->GetLevel(level);
+
+
+    if (this_level->IsAvailable("A"))
+    {
+      myA    = this_level->Get< Teuchos::RCP<Matrix> >("A");
+      myAcrs = MueLu::Utils<double,int,int,Node>::Op2NonConstEpetraCrs(myA);
+      myAspa = Teuchos::rcp(new SparseMatrix(myAcrs,Copy,explicitdirichlet,savegraph));
+      Avec[level] = myAspa;
+    }
+    else
+      dserror("Error in extracting A");
+
+    if(level!=0)
+    {
+      if (this_level->IsAvailable("P"))
+      {
+        myA    = this_level->Get< Teuchos::RCP<Matrix> >("P");
+        myAcrs = MueLu::Utils<double,int,int,Node>::Op2NonConstEpetraCrs(myA);
+        myAspa = Teuchos::rcp(new SparseMatrix(myAcrs,Copy,explicitdirichlet,savegraph));
+        Pvec[level-1]=myAspa;
+      }
+      else
+        dserror("Error in extracting P");
+
+      if (this_level->IsAvailable("R"))
+      {
+        myA = this_level->Get< Teuchos::RCP<Matrix> >("R");
+        myAcrs =MueLu::Utils<double,int,int,Node>::Op2NonConstEpetraCrs(myA);
+        myAspa = Teuchos::rcp(new SparseMatrix(myAcrs,Copy,explicitdirichlet,savegraph));
+        Rvec[level-1]=myAspa;
+      }
+      else
+        dserror("Error in extracting R");
+    }
+
+
+    if(level == NumLevels-1)
+    {
+
+      if (this_level->IsAvailable("PreSmoother"))
+      {
+        myS     = this_level->Get< Teuchos::RCP<SmootherBase> >("PreSmoother");
+        mySWrap = Teuchos::rcp(new LINALG::SOLVER::AMGNXN::MueluSmootherWrapper(myS));
+        SvecPre[level]=mySWrap;
+      }
+      else
+        dserror("Error in extracting PreSmoother");
+    }
+
+  }
+
+
+  // Build smoothers
+  for(int level=0;level<NumLevels-1;level++)
+  {
+    SvecPre[level] = Teuchos::rcp(new AMGNXN::IfpackWrapper(Avec[level],fine_smoother_list_));
+    SvecPos[level] = SvecPre[level];
+  }
+
+
+  // Build vcycle
+  int NumSweeps = 1;
+  int FirstLevel = 0;
+  V_ = Teuchos::rcp(new VcycleSingle(NumLevels,NumSweeps,FirstLevel));
+  V_->SetOperators(Avec);
+  V_->SetProjectors(Pvec);
+  V_->SetRestrictors(Rvec);
+  V_->SetPreSmoothers(SvecPre);
+  V_->SetPosSmoothers(SvecPos);
+
+
+  double elaptime =  timer.ElapsedTime();
+  if(A_->Comm().MyPID()==0)
+    std::cout <<  "       Calling LINALG::SOLVER::AMGNXN::SingleFieldAMG::Setup takes " << std::setw(16) << std::setprecision(6) << elaptime << " s" << std::endl ;
+  return;
+}
+
+
+/*------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------*/
+void LINALG::SOLVER::AMGNXN::SingleFieldAMG::Apply(
+    const Epetra_MultiVector& X,
+    Epetra_MultiVector& Y,
+    bool InitialGuessIsZero) const
+{
+  if (InitialGuessIsZero)
+    Y.PutScalar(0.0); //TODO Remove when you are sure that ApplyInverse will zero out Y.
+  V_->Apply(X,Y,InitialGuessIsZero);
+  return;
+}
 
 
 /*------------------------------------------------------------------------------*/
@@ -551,12 +706,19 @@ LINALG::SOLVER::AMGNXN::IfpackWrapper::IfpackWrapper(
     dserror("The parameter list has to be provided");
   list_ = list.sublist("ParameterList");
 
+ if( list_.isParameter("relaxation: zero starting solution") )
+     std::cout << "WARNING!!!!!: don't use the parameter 'relaxation: zero starting solution' this is handled in baci appropiately" << std::endl;
+
+ if( list_.isParameter("chebyshev: zero starting solution") )
+     std::cout << "WARNING!!!!!: don't use the parameter 'chebyshev: zero starting solution' this is handled in baci appropiately" << std::endl;
+
   // Create smoother
   Ifpack Factory;
   Arow_ = Teuchos::rcp_dynamic_cast<Epetra_RowMatrix>(A_->EpetraMatrix());
   if (Arow_==Teuchos::null)
     dserror("Something wrong. Be sure that the given matrix is not a block matrix");
   prec_ = Factory.Create(type_,Arow_.get(),overlap);
+
 
   // Set parameter list and setup
   prec_->SetParameters(list_);
@@ -566,6 +728,8 @@ LINALG::SOLVER::AMGNXN::IfpackWrapper::IfpackWrapper(
   return;
 }
 
+
+
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 void LINALG::SOLVER::AMGNXN::IfpackWrapper::Apply(
@@ -573,9 +737,22 @@ void LINALG::SOLVER::AMGNXN::IfpackWrapper::Apply(
     Epetra_MultiVector& Y,
     bool InitialGuessIsZero) const
 {
+  // We assume that ifpack is always setting the initial guess to zero
+  // (This can be done using input parameters, but the default behavior is to zero out the initial guess)
   if (InitialGuessIsZero)
-    Y.PutScalar(0.0); //TODO Remove when you are sure that ApplyInverse will zero out Y.
-  prec_->ApplyInverse(X,Y);
+  {
+    prec_->ApplyInverse(X,Y);
+  }
+  else
+  {
+    Epetra_MultiVector DX(X.Map(),X.NumVectors(),false);
+    A_->Apply(Y,DX);
+    DX.Update(1.0,X,-1.0);
+    Epetra_MultiVector DY(Y.Map(),X.NumVectors(),false);
+    prec_->ApplyInverse(DX,DY);
+    Y.Update(1.0,DY,1.0);
+  }
+
   return;
 }
 
@@ -871,6 +1048,7 @@ void LINALG::SOLVER::AMGNXN::SmootherFactory::SetTypeAndParams()
   valid_types.push_back("REUSE_MUELU_SMOOTHER");
   valid_types.push_back("REUSE_MUELU_AMG");
   valid_types.push_back("NEW_MUELU_AMG");
+  valid_types.push_back("NEW_MUELU_AMG_IFPACK_SMO");
   valid_types.push_back("DIRECT_SOLVER");
   valid_types.push_back("MERGE_AND_SOLVE");
   valid_types.push_back("BLOCK_AMG");
@@ -991,6 +1169,16 @@ LINALG::SOLVER::AMGNXN::SmootherFactory::Create()
   else if (GetType() == "NEW_MUELU_AMG")
   {
     mySmootherFactory = Teuchos::rcp(new MueluAMGWrapperFactory());
+    mySmootherFactory->SetOperator(GetOperator());
+    mySmootherFactory->SetHierarchies(GetHierarchies());
+    mySmootherFactory->SetBlock(GetBlock());
+    mySmootherFactory->SetParams(GetParams());
+    mySmootherFactory->SetParamsSmoother(GetParamsSmoother());
+    mySmootherFactory->SetNullSpace(GetNullSpace());
+  }
+  else if (GetType() == "NEW_MUELU_AMG_IFPACK_SMO")
+  {
+    mySmootherFactory = Teuchos::rcp(new SingleFieldAMGFactory());
     mySmootherFactory->SetOperator(GetOperator());
     mySmootherFactory->SetHierarchies(GetHierarchies());
     mySmootherFactory->SetBlock(GetBlock());
@@ -1200,14 +1388,119 @@ LINALG::SOLVER::AMGNXN::MueluAMGWrapperFactory::Create()
   int null_space_dim = GetNullSpace().GetNullSpaceDim();
   Teuchos::RCP<std::vector<double> > null_space_data = GetNullSpace().GetNullSpaceData();
 
+  Teuchos::RCP<MueluAMGWrapper> PtrOut = Teuchos::rcp(new MueluAMGWrapper(Op2,num_pde,null_space_dim,null_space_data,myList));
+  PtrOut->Setup();
 
-  return Teuchos::rcp(new MueluAMGWrapper(Op2,num_pde,null_space_dim,null_space_data,myList));
+  return Teuchos::rcp_dynamic_cast<LINALG::SOLVER::AMGNXN::GenericSmoother>(PtrOut);
 
 }
 
 
 
+/*------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------*/
 
+Teuchos::RCP<LINALG::SOLVER::AMGNXN::GenericSmoother>
+LINALG::SOLVER::AMGNXN::SingleFieldAMGFactory::Create()
+{
+
+
+  // Expected parameters (example)
+  // <ParameterList name="parameters">
+  //   <Parameter name="xml file"          type="string"  value="myfile.xml"/>
+  //   <Parameter name="fine smoother"     type="string"  value="myfinesmoother"/>
+  // </ParameterList>
+  //
+  //
+  //
+  // <ParameterList name="myfinesmoother">
+  //   <Parameter name="type"                           type="string"  value="point relaxation"/>
+  //   <ParameterList name="ParameterList">
+  //     <Parameter name="relaxation: type"             type="string"  value="Gauss-Seidel"/>
+  //     <Parameter name="relaxation: backward mode"    type="bool"    value="false"/>
+  //     <Parameter name="relaxation: sweeps"           type="int"     value="2"/>
+  //     <Parameter name="relaxation: damping factor"   type="double"  value="1.0"/>
+  //   </ParameterList>
+  // </ParameterList>
+
+  // Check input
+  if (not IsSetLevel())
+    dserror("IsSetLevel() returns false");
+  if (not IsSetOperator())
+    dserror("IsSetOperator() returns false");
+  if (not IsSetBlock())
+    dserror("IsSetBlock() returns false");
+  if (not IsSetHierarchies())
+    dserror("IsSetHierarchies() returns false");
+  if (not IsSetParams())
+    dserror("IsSetParams() returns false");
+  if (not IsSetNullSpace())
+    dserror("IsSetNullSpace() returns false");
+  if (not IsSetParamsSmoother())
+    dserror("IsSetSmoothersParams() returns false");
+
+
+  if (GetVerbosity()=="on")
+  {
+    std::cout << std::endl;
+    std::cout << "Creating a NEW_MUELU_AMG_IFPACK_SMO smoother for block " << GetBlock() ;
+    std::cout << " at level " << GetLevel() << std::endl;
+  }
+
+  Teuchos::ParameterList myList;
+  std::string xml_filename = GetParams().get<std::string>("xml file","none");
+  if(xml_filename != "none")
+  {
+    Teuchos::updateParametersFromXmlFile(
+        xml_filename,Teuchos::Ptr<Teuchos::ParameterList>(&myList));
+    if (GetVerbosity()=="on")
+    {
+      std::cout << "The chosen parameters are:" << std::endl;
+      std::cout << "xml file = : " << xml_filename << std::endl;
+    }
+  }
+  else dserror("Not xml file name found");
+
+  std::string fine_smoother = GetParams().get<std::string>("fine smoother","none");
+  if(fine_smoother == "none")
+    dserror("You have to set: fine smoother");
+  if(not GetParamsSmoother().isSublist(fine_smoother))
+    dserror("Not found a list named %s", fine_smoother.c_str() );
+  Teuchos::ParameterList fine_smoother_list = GetParamsSmoother().sublist(fine_smoother);
+
+  //std::string coarsest_smoother = GetParams().get<std::string>("coarsest smoother","none");
+  //if(coarsest_smoother == "none")
+  //  dserror("You have to set: fine smoother");
+  //if(not GetParamsSmoother().isSublist(coarsest_smoother))
+  //  dserror("Not found a list named %s", coarsest_smoother.c_str() );
+  //Teuchos::ParameterList fine_smoother_list = GetParamsSmoother().sublist(coarsest_smoother);
+
+
+  if (GetVerbosity()=="on")
+  {
+    std::cout << "fine smoother:"     <<  std::endl;
+    std::cout << "  The Ifpack type is: " << fine_smoother_list.get<std::string>("type") << std::endl;
+    int overlap = fine_smoother_list.get<int>("overlap",0);
+    std::cout << "  The overlap is: " << overlap << std::endl;
+    std::cout << "  The parameters are: " << std::endl;
+    std::cout << fine_smoother_list.sublist("ParameterList");
+    std::cout << "coarsest smoother:" << "the one you have defined in Muelu" << std::endl;
+  }
+
+
+  // Recover info
+  if (not GetOperator()->HasOnlyOneBlock())
+    dserror("This smoother can be built only for single block matrices");
+  Teuchos::RCP<SparseMatrix> Op2 = GetOperator()->GetMatrix(0,0);
+  if(Op2==Teuchos::null)
+    dserror("I dont want a null pointer here");
+  int num_pde = GetNullSpace().GetNumPDEs();
+  int null_space_dim = GetNullSpace().GetNullSpaceDim();
+  Teuchos::RCP<std::vector<double> > null_space_data = GetNullSpace().GetNullSpaceData();
+
+  return Teuchos::rcp(new SingleFieldAMG(Op2,num_pde,null_space_dim,null_space_data,myList,fine_smoother_list));
+
+}
 
 
 /*------------------------------------------------------------------------------*/

@@ -78,6 +78,43 @@ namespace LINALG
 
       };
 
+      // This could be done better with templates
+      class VcycleSingle:  public SingleFieldSmoother
+      {
+        public:
+
+          VcycleSingle(int NumLevels, int NumSweeps, int FirstLevel);
+
+          void SetOperators  (std::vector< Teuchos::RCP<SparseMatrix> > Avec);
+          void SetProjectors (std::vector< Teuchos::RCP<SparseMatrix> > Pvec);
+          void SetRestrictors(std::vector< Teuchos::RCP<SparseMatrix> > Rvec);
+          void SetPreSmoothers (std::vector< Teuchos::RCP<SingleFieldSmoother> > SvecPre);
+          void SetPosSmoothers (std::vector< Teuchos::RCP<SingleFieldSmoother> > SvecPos);
+
+          virtual void Apply( const Epetra_MultiVector& X, Epetra_MultiVector& Y, bool InitialGuessIsZero) const;
+
+        private:
+
+          void DoVcycle ( const Epetra_MultiVector& X, Epetra_MultiVector& Y, int level, bool InitialGuessIsZero) const;
+
+          int NumLevels_;
+          int NumSweeps_;
+          int FirstLevel_;
+
+          std::vector< Teuchos::RCP<SparseMatrix> > Avec_;
+          std::vector< Teuchos::RCP<SparseMatrix> > Pvec_;
+          std::vector< Teuchos::RCP<SparseMatrix> > Rvec_;
+          std::vector< Teuchos::RCP<SingleFieldSmoother> > SvecPre_;
+          std::vector< Teuchos::RCP<SingleFieldSmoother> > SvecPos_;
+
+          bool flag_set_up_A_;
+          bool flag_set_up_P_;
+          bool flag_set_up_R_;
+          bool flag_set_up_Pre_;
+          bool flag_set_up_Pos_;
+
+      };
+
     } //namespace AMGNXN
   } //namespace LINALG
 } // namespace SOLVER

@@ -62,10 +62,8 @@ namespace LINALG
 
       class SingleFieldSmoother : public GenericSmoother
       {
-        protected:
 
-          void CheckSingleFieldVector(const BlockedVector& V) const
-          {if( not V.HasOnlyOneBlock() ) dserror("We need here a single field vector"); return;}
+        public:
 
           virtual void Solve(
               const BlockedVector& X, BlockedVector& Y, bool InitialGuessIsZero=false) const
@@ -78,6 +76,11 @@ namespace LINALG
 
           virtual void Apply(
               const Epetra_MultiVector& X, Epetra_MultiVector& Y, bool InitialGuessIsZero) const =0;
+
+        protected:
+
+          void CheckSingleFieldVector(const BlockedVector& V) const
+          {if( not V.HasOnlyOneBlock() ) dserror("We need here a single field vector"); return;}
 
       };
 
@@ -195,6 +198,7 @@ namespace LINALG
     class Hierarchies;
     class MonolithicHierarchy;
     class Vcycle;
+    class VcycleSingle;
 
     class CoupledAmg : public BlockedSmoother
       {
@@ -273,17 +277,38 @@ namespace LINALG
               const Epetra_MultiVector& X,
               Epetra_MultiVector& Y,
               bool InitialGuessIsZero=false) const;
-        private:
+          void Setup();
+        protected:
           Teuchos::RCP<SparseMatrix> A_;
           int num_pde_;
           int null_space_dim_;
           Teuchos::RCP<std::vector<double> > null_space_data_;
           Teuchos::ParameterList muelu_list_;
           Teuchos::RCP<Hierarchy> H_;
+          void BuildHierarchy();
+        private:
           Teuchos::RCP<Epetra_Operator> P_;
-          void Setup();
       };
 
+      class SingleFieldAMG : public MueluAMGWrapper
+      {
+        public:
+          SingleFieldAMG(
+              Teuchos::RCP<SparseMatrix> A,
+              int num_pde,
+              int null_space_dim,
+              Teuchos::RCP<std::vector<double> > null_space_data,
+              Teuchos::ParameterList muelu_list,
+              Teuchos::ParameterList fine_smoother_list);
+          virtual void Apply(
+              const Epetra_MultiVector& X,
+              Epetra_MultiVector& Y,
+              bool InitialGuessIsZero=false) const;
+        private:
+          Teuchos::ParameterList fine_smoother_list_;
+          Teuchos::RCP<VcycleSingle> V_;
+          void Setup();
+      };
 
       class IfpackWrapper : public SingleFieldSmoother
       {
@@ -488,6 +513,12 @@ namespace LINALG
     };
 
     class MueluAMGWrapperFactory : public SmootherFactoryBase
+    {
+      public:
+        virtual Teuchos::RCP<GenericSmoother> Create();
+    };
+
+    class SingleFieldAMGFactory : public SmootherFactoryBase
     {
       public:
         virtual Teuchos::RCP<GenericSmoother> Create();
