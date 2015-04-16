@@ -623,6 +623,7 @@ void UTILS::WindkesselManager::PrintPresFlux() const
 
   if (myrank_ == 0)
   {
+
     for (unsigned int i=0; i<currentID.size(); ++i)
     {
       if (wk_std_->HaveWindkessel())
@@ -697,6 +698,7 @@ void UTILS::WindkesselManager::PrintPresFlux() const
         }
       }
     }
+    printf("total time: %10.5e \n",totaltime_);
   }
 
   return;
