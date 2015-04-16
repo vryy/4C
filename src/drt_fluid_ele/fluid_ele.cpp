@@ -46,6 +46,10 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidType::Create(const std::string  e
   {
       return Teuchos::rcp(new DRT::ELEMENTS::Fluid(id,owner));
   }
+  else if (eletype=="FLUID2" || eletype=="FLUID3")
+  {
+    dserror("Fluid element types FLUID2 and FLUID3 are no longer in use. Switch to FLUID.");
+  }
   return Teuchos::null;
 }
 
