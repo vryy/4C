@@ -1310,9 +1310,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   // linear solver id used for structural problems
   IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for structural problems",&sdyn);
 
-  // linear solver id used for monolithic windkessel-structural problems
-  IntParameter("LINEAR_WINDK_STRUCT_SOLVER",-1,"number of linear solver used for windkessel-structural problems",&sdyn);
-
   // flag decides if young's modulus is temperature dependent, so far only available
   // for temperature-dependent St.Venant Kirchhoff material
   setStringToIntegralParameter<int>("YOUNG_IS_TEMP_DEPENDENT","No",
