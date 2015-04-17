@@ -4528,9 +4528,6 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
       // loop over the dimension
       for (int dim=0;dim<cnode->NumDof();++dim)
       {
-        // assemble zeros on main diagonal to be able to use applydirichlet
-        linstickLMglobal.Assemble(0.,cnode->Dofs()[dim],cnode->Dofs()[dim]);
-
         double valtxi = 0.0;
         double valteta = 0.0;
         int col = cnode->Dofs()[dim];
