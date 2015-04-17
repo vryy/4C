@@ -1572,8 +1572,8 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::GetCon
 
   // Temporary vector containg parsets and flags for allowed or not allowed projections
   // TODO: May this can be done in a more beautiful way without using the temporary vector parsetstmp
-  std::vector<std::pair<LINALG::TMatrix<TYPEBTS, 3, 1>, int[2]> > parsetstmp;
-  std::pair<LINALG::TMatrix<TYPEBTS, 3, 1>, int[2]> parsettmp;
+  std::vector<std::pair<LINALG::TMatrix<TYPEBTS, 3, 1>, LINALG::TMatrix<int, 2, 1> > > parsetstmp;
+  std::pair<LINALG::TMatrix<TYPEBTS, 3, 1>, LINALG::TMatrix<int, 2, 1> > parsettmp;
 
   // Initialize flags indicating if the projection of beam start and end point are necessary
   bool projbeamstart = true;
@@ -1636,8 +1636,8 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::GetCon
         parsettmp.first(0) = xi1;
         parsettmp.first(1) = xi2;
         parsettmp.first(2) = eta;
-        parsettmp.second[0] = i;
-        parsettmp.second[1] = proj_allowed;
+        parsettmp.second(0) = i;
+        parsettmp.second(1) = proj_allowed;
         parsetstmp.push_back(parsettmp);
 
         // Check if the projection of the beam start and end point is needed
@@ -1690,8 +1690,8 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::GetCon
       parsettmp.first(0) = xi1;
       parsettmp.first(1) = xi2;
       parsettmp.first(2) = eta;
-      parsettmp.second[0] = 2;
-      parsettmp.second[1] = proj_allowed;
+      parsettmp.second(0) = 2;
+      parsettmp.second(1) = proj_allowed;
       parsetstmp.insert(parsetstmp.begin(), parsettmp);
       if (output)
       {
@@ -1721,8 +1721,8 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::GetCon
       parsettmp.first(0) = xi1;
       parsettmp.first(1) = xi2;
       parsettmp.first(2) = eta;
-      parsettmp.second[0] = 2;
-      parsettmp.second[1] = proj_allowed;
+      parsettmp.second(0) = 2;
+      parsettmp.second(1) = proj_allowed;
       parsetstmp.push_back(parsettmp);
       if (output)
       {
@@ -1749,7 +1749,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::GetCon
       for (int i = 0; i < (int)parsetstmp.size(); i++)
       {
         std::cout << "  xi1: " << parsetstmp[i].first(0) << ", xi2: " << parsetstmp[i].first(1) << ", eta: " << parsetstmp[i].first(2)
-            << ", fixed par: " << parsetstmp[i].second[0] << ", proj_allowed: " << parsetstmp[i].second[1] << std::endl;
+            << ", fixed par: " << parsetstmp[i].second(0) << ", proj_allowed: " << parsetstmp[i].second(1) << std::endl;
       }
     }
   }
@@ -1775,12 +1775,12 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::GetCon
   for (int i = 0; i < (int)parsetstmp.size() - 1; i += 2)
   {
     // Check if the contact interval is allowed
-    if (parsetstmp[i].second[1] && parsetstmp[i+1].second[1])
+    if (parsetstmp[i].second(1) && parsetstmp[i+1].second(1))
     {
       for (int j = 0; j < 2; j++)
       {
         parset.first = parsetstmp[i+j].first;
-        parset.second = parsetstmp[i+j].second[0];
+        parset.second = parsetstmp[i+j].second(0);
         parsets.push_back(parset);
       }
     }

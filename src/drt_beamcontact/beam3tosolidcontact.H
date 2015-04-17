@@ -450,8 +450,8 @@ private:
   LINALG::Matrix<3*numnodes,1> nodaltangentssmooth2_;
 
   //! Comparator for comparing the beam parameter of two parameter sets
-  static bool CompareParsets(const std::pair<LINALG::TMatrix<TYPEBTS, 3, 1>, int[2]>& lhs,
-      const std::pair<LINALG::TMatrix<TYPEBTS, 3, 1>, int[2]>& rhs)
+  static bool CompareParsets(const std::pair<LINALG::TMatrix<TYPEBTS, 3, 1>, LINALG::TMatrix<int, 2, 1> >& lhs,
+      const std::pair<LINALG::TMatrix<TYPEBTS, 3, 1>, LINALG::TMatrix<int, 2, 1> >& rhs)
   {
     // Compare eta
     return lhs.first(2) < rhs.first(2);
