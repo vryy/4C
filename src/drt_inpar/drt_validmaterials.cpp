@@ -224,9 +224,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             INPAR::MAT::m_scatra_poroECM));
 
     AddNamedReal(m,"DIFFUSIVITY","kinematic diffusivity");
-    AddNamedReal(m,"REACOEFF","reaction coefficient",true);
-    AddNamedReal(m,"SCNUM","schmidt number",true);
-    AddNamedReal(m,"FLDDENSITY","fluid density",true);
+    AddNamedReal(m,"REACOEFF","reaction coefficient",0.0,true);
+    AddNamedReal(m,"SCNUM","schmidt number",0.0,true);
+    AddNamedReal(m,"FLDDENSITY","fluid density",0.0,true);
+    AddNamedReal(m,"DENSIFICATION","densification coefficient",0.0,true);
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -1822,10 +1823,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             INPAR::MAT::m_structpororeactionECM));
 
     AddNamedInt(m,"MATID","ID of structure material");
+    AddNamedInt(m,"POROLAWID","ID of porosity law");
     AddNamedReal(m,"INITPOROSITY","initial porosity of porous medium");
-    AddNamedReal(m,"BULKMODULUS","bulk modulus of porous medium");
-    AddNamedReal(m,"PENALTYPARAMETER","penalty paramter of porous medium");
-
     AppendMaterialDefinition(matlist,m);
   }
   /*----------------------------------------------------------------------*/

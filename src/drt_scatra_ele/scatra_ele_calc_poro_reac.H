@@ -96,6 +96,15 @@ protected:
     const int                               iquad=-1   //!< id of current gauss point (default = -1)
   );
 
+  //! extract element based or nodal values
+  //  return extracted values of phinp
+  virtual const std::vector<double> ExtractElementAndNodeValues(
+    DRT::Element*              ele,
+    Teuchos::ParameterList&    params,
+    DRT::Discretization&       discretization,
+    const std::vector<int>&    lm
+  );
+
 private:
 
   void SetReactionTermsMatScatra(const int                               k,

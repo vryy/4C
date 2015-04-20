@@ -100,8 +100,8 @@ namespace ELEMENTS
       */
      virtual int Evaluate(DRT::Element*                 ele,
                           Teuchos::ParameterList&       params,
-                          DRT::Discretization &         discretization,
-                          const std::vector<int> &      lm,
+                          DRT::Discretization&          discretization,
+                          DRT::Element::LocationArray&  la,
                           Epetra_SerialDenseMatrix&     elemat1_epetra,
                           Epetra_SerialDenseMatrix&     elemat2_epetra,
                           Epetra_SerialDenseVector&     elevec1_epetra,
@@ -110,35 +110,35 @@ namespace ELEMENTS
 
      //! evaluate action
      virtual int EvaluateAction(
-         DRT::Element*               ele,
-         Teuchos::ParameterList&     params,
-         DRT::Discretization&        discretization,
-         const SCATRA::Action&       action,
-         const std::vector<int> &    lm,
-         Epetra_SerialDenseMatrix&   elemat1_epetra,
-         Epetra_SerialDenseMatrix&   elemat2_epetra,
-         Epetra_SerialDenseVector&   elevec1_epetra,
-         Epetra_SerialDenseVector&   elevec2_epetra,
-         Epetra_SerialDenseVector&   elevec3_epetra
+         DRT::Element*                 ele,
+         Teuchos::ParameterList&       params,
+         DRT::Discretization&          discretization,
+         const SCATRA::Action&         action,
+         DRT::Element::LocationArray&  la,
+         Epetra_SerialDenseMatrix&     elemat1_epetra,
+         Epetra_SerialDenseMatrix&     elemat2_epetra,
+         Epetra_SerialDenseVector&     elevec1_epetra,
+         Epetra_SerialDenseVector&     elevec2_epetra,
+         Epetra_SerialDenseVector&     elevec3_epetra
          );
 
      //! evaluate service routine
      int EvaluateService(
-         DRT::Element*               ele,
-         Teuchos::ParameterList&     params,
-         DRT::Discretization &       discretization,
-         const std::vector<int> &    lm,
-         Epetra_SerialDenseMatrix&   elemat1_epetra,
-         Epetra_SerialDenseMatrix&   elemat2_epetra,
-         Epetra_SerialDenseVector&   elevec1_epetra,
-         Epetra_SerialDenseVector&   elevec2_epetra,
-         Epetra_SerialDenseVector&   elevec3_epetra
+         DRT::Element*                 ele,
+         Teuchos::ParameterList&       params,
+         DRT::Discretization &         discretization,
+         DRT::Element::LocationArray&  la,
+         Epetra_SerialDenseMatrix&     elemat1_epetra,
+         Epetra_SerialDenseMatrix&     elemat2_epetra,
+         Epetra_SerialDenseVector&     elevec1_epetra,
+         Epetra_SerialDenseVector&     elevec2_epetra,
+         Epetra_SerialDenseVector&     elevec3_epetra
          );
 
      virtual int EvaluateOD(DRT::Element*               ele,
                           Teuchos::ParameterList&       params,
                           DRT::Discretization &         discretization,
-                          const std::vector<int> &      lm,
+                          DRT::Element::LocationArray&  la,
                           Epetra_SerialDenseMatrix&     elemat1_epetra,
                           Epetra_SerialDenseMatrix&     elemat2_epetra,
                           Epetra_SerialDenseVector&     elevec1_epetra,

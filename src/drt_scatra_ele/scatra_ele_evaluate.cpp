@@ -110,7 +110,6 @@ void DRT::ELEMENTS::TransportType::PreEvaluate(DRT::Discretization&             
   return;
 }
 
-
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              gjb 01/09|
  *----------------------------------------------------------------------*/
@@ -118,6 +117,23 @@ int DRT::ELEMENTS::Transport::Evaluate(
     Teuchos::ParameterList&   params,
     DRT::Discretization&      discretization,
     std::vector<int>&         lm,
+    Epetra_SerialDenseMatrix& elemat1,
+    Epetra_SerialDenseMatrix& elemat2,
+    Epetra_SerialDenseVector& elevec1,
+    Epetra_SerialDenseVector& elevec2,
+    Epetra_SerialDenseVector& elevec3)
+{
+  dserror("not implemented");
+  return -1;
+}
+
+/*----------------------------------------------------------------------*
+ |  evaluate the element (public)                              gjb 01/09|
+ *----------------------------------------------------------------------*/
+int DRT::ELEMENTS::Transport::Evaluate(
+    Teuchos::ParameterList&   params,
+    DRT::Discretization&      discretization,
+    LocationArray&            la,
     Epetra_SerialDenseMatrix& elemat1,
     Epetra_SerialDenseMatrix& elemat2,
     Epetra_SerialDenseVector& elevec1,
@@ -194,7 +210,7 @@ int DRT::ELEMENTS::Transport::Evaluate(
               this,
               params,
               discretization,
-              lm,
+              la,
               elemat1,
               elemat2,
               elevec1,
@@ -210,7 +226,7 @@ int DRT::ELEMENTS::Transport::Evaluate(
               this,
               params,
               discretization,
-              lm,
+              la,
               elemat1,
               elemat2,
               elevec1,
@@ -251,7 +267,7 @@ int DRT::ELEMENTS::Transport::Evaluate(
                this,
                params,
                discretization,
-               lm,
+               la,
                elemat1,
                elemat2,
                elevec1,

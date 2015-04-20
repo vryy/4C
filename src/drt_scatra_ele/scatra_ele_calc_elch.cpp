@@ -49,15 +49,15 @@ DRT::ELEMENTS::ScaTraEleCalcElch<distype>::ScaTraEleCalcElch(const int numdofper
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Evaluate(
-  DRT::Element*              ele,
-  Teuchos::ParameterList&    params,
-  DRT::Discretization&       discretization,
-  const std::vector<int>&    lm,
-  Epetra_SerialDenseMatrix&  elemat1_epetra,
-  Epetra_SerialDenseMatrix&  elemat2_epetra,
-  Epetra_SerialDenseVector&  elevec1_epetra,
-  Epetra_SerialDenseVector&  elevec2_epetra,
-  Epetra_SerialDenseVector&  elevec3_epetra
+  DRT::Element*                 ele,
+  Teuchos::ParameterList&       params,
+  DRT::Discretization&          discretization,
+  DRT::Element::LocationArray&  la,
+  Epetra_SerialDenseMatrix&     elemat1_epetra,
+  Epetra_SerialDenseMatrix&     elemat2_epetra,
+  Epetra_SerialDenseVector&     elevec1_epetra,
+  Epetra_SerialDenseVector&     elevec2_epetra,
+  Epetra_SerialDenseVector&     elevec3_epetra
   )
 {
   // call base class routine
@@ -65,7 +65,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Evaluate(
       ele,
       params,
       discretization,
-      lm,
+      la,
       elemat1_epetra,
       elemat2_epetra,
       elevec1_epetra,
@@ -74,7 +74,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Evaluate(
 
   // for certain ELCH problem formulations we have to provide
   // additional flux terms / currents across Dirichlet boundaries
-  CorrectionForFluxAcrossDC(discretization,lm,elemat1_epetra,elevec1_epetra);
+  CorrectionForFluxAcrossDC(discretization,la[0].lm_,elemat1_epetra,elevec1_epetra);
 
   return 0;
 }

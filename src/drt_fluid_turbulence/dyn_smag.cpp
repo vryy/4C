@@ -828,16 +828,14 @@ void FLD::DynSmagFilter::DynSmagComputePrt(
     DRT::Element* ele = scatradiscret_->lRowElement(nele);
 
     // get element location vector, dirichlet flags and ownerships
-    std::vector<int> lm;
-    std::vector<int> lmowner;
-    std::vector<int> lmstride;
-    ele->LocationVector(*scatradiscret_,lm,lmowner,lmstride);
+    DRT::Element::LocationArray la(1);
+    ele->LocationVector(*scatradiscret_,la,false);
 
     // call the element evaluate method to integrate functions
     // against heaviside function element
     int err = ele->Evaluate(calc_turb_prandtl_params,
                             *scatradiscret_,
-                            lm,
+                            la,
                             dummym1,dummym2,
                             dummyv1,dummyv2,dummyv3);
     if (err) dserror("Proc %d: Element %d returned err=%d",

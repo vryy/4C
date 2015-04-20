@@ -352,6 +352,40 @@ public:
                Epetra_SerialDenseVector& elevec2,
                Epetra_SerialDenseVector& elevec3);
 
+  /*!
+  \brief Evaluate an element (multiple dofset version)
+
+  An element derived from this class uses the Evaluate method to receive commands
+  and parameters from some control routine in params and evaluates element matrices and
+  vectors accoring to the command in params.
+
+  \note This class implements a dummy of this method that prints a warning and
+        returns false.
+
+  \param params (in/out)    : ParameterList for communication between control routine
+                              and elements
+  \param discretization (in): A reference to the underlying discretization
+  \param la (in)            : location data for all dofsets of the discretization
+  \param elemat1 (out)      : matrix to be filled by element depending on commands
+                              given in params
+  \param elemat2 (out)      : matrix to be filled by element depending on commands
+                              given in params
+  \param elevec1 (out)      : vector to be filled by element depending on commands
+                              given in params
+  \param elevec2 (out)      : vector to be filled by element depending on commands
+                              given in params
+  \param elevec3 (out)      : vector to be filled by element depending on commands
+                              given in params
+  \return 0 if successful, negative otherwise
+  */
+  int Evaluate(Teuchos::ParameterList&   params,
+               DRT::Discretization&      discretization,
+               LocationArray&            la,
+               Epetra_SerialDenseMatrix& elemat1,
+               Epetra_SerialDenseMatrix& elemat2,
+               Epetra_SerialDenseVector& elevec1,
+               Epetra_SerialDenseVector& elevec2,
+               Epetra_SerialDenseVector& elevec3);
 
   /*!
   \brief Evaluate a Neumann boundary condition

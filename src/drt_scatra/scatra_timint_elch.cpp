@@ -1304,11 +1304,9 @@ Teuchos::RCP<Epetra_SerialDenseVector> SCATRA::ScaTraTimIntElch::ComputeConducti
   DRT::Element* actele = discret_->lRowElement(0);
 
   // get element location vector, dirichlet flags and ownerships
-  std::vector<int> lm;  // location vector
-  std::vector<int> lmowner;  // processor which owns DOFs
-  std::vector<int> lmstride;  // nodal block sizes in element matrices
+  DRT::Element::LocationArray la(1);
 
-  actele->LocationVector(*discret_,lm,lmowner,lmstride);
+  actele->LocationVector(*discret_,la,false);
 
   // define element matrices and vectors
   // -- which are empty and unused, just to satisfy element Evaluate()
@@ -1318,7 +1316,7 @@ Teuchos::RCP<Epetra_SerialDenseVector> SCATRA::ScaTraTimIntElch::ComputeConducti
   Epetra_SerialDenseVector elevector3;
 
   // call the element evaluate method of the first row element
-  int err = actele->Evaluate(eleparams,*discret_,lm,elematrix1,elematrix2,*sigma_,elevector2,elevector3);
+  int err = actele->Evaluate(eleparams,*discret_,la,elematrix1,elematrix2,*sigma_,elevector2,elevector3);
   if (err) dserror("error while computing conductivity");
   discret_->ClearState();
 

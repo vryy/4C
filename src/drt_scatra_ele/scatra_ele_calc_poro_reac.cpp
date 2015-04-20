@@ -197,7 +197,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::MatPoroECM(
   const Teuchos::RCP<const MAT::StructPoroReactionECM>& structmat
             = Teuchos::rcp_dynamic_cast<const MAT::StructPoroReactionECM>(structele->Material());
   if(structmat == Teuchos::null)
-    dserror("invalid structure material for poroelasticity");
+    dserror("invalid structure material for reactive poroelasticity model for ECM");
 
   // dynamic cast to Advanced_Reaction-specific reaction manager
   Teuchos::RCP<ScaTraEleReaManagerAdvReac> reamanageradvreac = advreac::ReaManager();
@@ -515,7 +515,31 @@ double DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::CalcReaBodyForceDerivFac(
   return bfdmfac;
 }
 
+/*----------------------------------------------------------------------*
+ | extract element based or nodal values                     vuong 04/15 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+const std::vector<double> DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::ExtractElementAndNodeValues(
+  DRT::Element*              ele,
+  Teuchos::ParameterList&    params,
+  DRT::Discretization&       discretization,
+  const std::vector<int>&    lm
+)
+{
+  const Teuchos::RCP<Epetra_MultiVector> pre = params.get< Teuchos::RCP<Epetra_MultiVector> >("pressure field");
+  LINALG::Matrix<1,my::nen_> eprenp;
+  DRT::UTILS::ExtractMyNodeBasedValues(ele,eprenp,pre,1);
 
+  //pressure values
+  for (int i=0;i<my::nen_;++i)
+  {
+    my::eprenp_(i) = eprenp(0,i);
+  }
+
+  Teuchos::RCP<const Epetra_Vector> disp= discretization.GetState(1,"displacement");
+
+  return poro::ExtractElementAndNodeValues(ele,params,discretization,lm);
+}
 
 // template classes
 

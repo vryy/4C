@@ -92,15 +92,15 @@ void MAT::StructPoroReactionECM::Pack(DRT::PackBuffer& data) const
 
   // refporosity_
   AddtoPack(data, refporosity_old_);
-  // refporosity_
+  // refporositydot_old_
   AddtoPack(data, refporositydot_old_);
-  // refporosity_
+  // conc_m2c1_
   AddtoPack(data, conc_m2c1_);
-  // refporosity_
+  // conc_m2c1_old_
   AddtoPack(data, conc_m2c1_old_);
-  // refporosity_
+  // conc_m2c1dot_
   AddtoPack(data, conc_m2c1dot_);
-  // refporosity_
+  // conc_m2c1dot_old_
   AddtoPack(data, conc_m2c1dot_old_);
 
   // add base class material
@@ -184,7 +184,7 @@ void MAT::StructPoroReactionECM::Reaction(double cnp,
                - dt*theta * ( - k_on_c1*porosity*(1.0-porosity)*cnp + k_off_c1*conc_m2c1_ )
                + dt*(1.0-theta)*refporositydot_old_
                ;
-
+  std::cout<<"refporosity_ECM Reaction: "<<refporosity_<<std::endl;
   //Todo: multiply by J!
   refporositydot_ = - k_on_c1*porosity*(1.0-porosity)*cnp + k_off_c1 *conc_m2c1_;
 

@@ -118,15 +118,15 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::SetupCalc(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
 int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Evaluate(
-  DRT::Element*              ele,
-  Teuchos::ParameterList&    params,
-  DRT::Discretization&       discretization,
-  const std::vector<int>&    lm,
-  Epetra_SerialDenseMatrix&  elemat1_epetra,
-  Epetra_SerialDenseMatrix&  elemat2_epetra,
-  Epetra_SerialDenseVector&  elevec1_epetra,
-  Epetra_SerialDenseVector&  elevec2_epetra,
-  Epetra_SerialDenseVector&  elevec3_epetra
+  DRT::Element*                 ele,
+  Teuchos::ParameterList&       params,
+  DRT::Discretization&          discretization,
+  DRT::Element::LocationArray&  la,
+  Epetra_SerialDenseMatrix&     elemat1_epetra,
+  Epetra_SerialDenseMatrix&     elemat2_epetra,
+  Epetra_SerialDenseVector&     elevec1_epetra,
+  Epetra_SerialDenseVector&     elevec2_epetra,
+  Epetra_SerialDenseVector&     elevec3_epetra
   )
 {
   //--------------------------------------------------------------------------------
@@ -140,14 +140,14 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Evaluate(
   // extract element based or nodal values
   //--------------------------------------------------------------------------------
 
-  ExtractElementAndNodeValues(ele,params,discretization,lm);
+  ExtractElementAndNodeValues(ele,params,discretization,la[0].lm_);
 
   //--------------------------------------------------------------------------------
   // prepare turbulence models
   //--------------------------------------------------------------------------------
 
   int nlayer = 0;
-  ExtractTurbulenceApproach(ele,params,discretization,lm,nlayer);
+  ExtractTurbulenceApproach(ele,params,discretization,la[0].lm_,nlayer);
 
   //--------------------------------------------------------------------------------
   // calculate element coefficient matrix and rhs
@@ -171,7 +171,6 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Evaluate(
 
   return 0;
 }
-
 
 /*----------------------------------------------------------------------*
  | extract element based or nodal values                     ehrl 12/13 |

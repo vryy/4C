@@ -99,20 +99,23 @@ DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::ScaTraEleCalcLsReinit(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Evaluate(
-  DRT::Element*              ele,
-  Teuchos::ParameterList&    params,
-  DRT::Discretization&       discretization,
-  const std::vector<int>&    lm,
-  Epetra_SerialDenseMatrix&  elemat1_epetra,
-  Epetra_SerialDenseMatrix&  elemat2_epetra,
-  Epetra_SerialDenseVector&  elevec1_epetra,
-  Epetra_SerialDenseVector&  elevec2_epetra,
-  Epetra_SerialDenseVector&  elevec3_epetra
+  DRT::Element*                 ele,
+  Teuchos::ParameterList&       params,
+  DRT::Discretization&          discretization,
+  DRT::Element::LocationArray&  la,
+  Epetra_SerialDenseMatrix&     elemat1_epetra,
+  Epetra_SerialDenseMatrix&     elemat2_epetra,
+  Epetra_SerialDenseVector&     elevec1_epetra,
+  Epetra_SerialDenseVector&     elevec2_epetra,
+  Epetra_SerialDenseVector&     elevec3_epetra
   )
 {
   // setup
   if(SetupCalc(ele,discretization) == -1)
     return 0;
+
+  //(for now) only first dof set considered
+  const std::vector<int> &    lm = la[0].lm_;
 
   Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
   if (phinp==Teuchos::null)

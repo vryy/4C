@@ -342,8 +342,10 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
       for (int ii=0; ii<numdofpernode_; ++ii)
       {
         // In the context of reactions the only valid material combination is m_matlist and m_scatra
-        if(actmat->MaterialById(actmat->MatID(ii))->MaterialType() != INPAR::MAT::m_scatra)
-          dserror("The material Mat_matlist_reaction only supports MAT_scatra as valid main Material");
+        if( actmat->MaterialById(actmat->MatID(ii))->MaterialType() != INPAR::MAT::m_scatra and
+            actmat->MaterialById(actmat->MatID(ii))->MaterialType() != INPAR::MAT::m_scatra_poroECM
+          )
+          dserror("The material Mat_matlist_reaction only supports MAT_scatra and m_scatra_poroECM as valid main Material");
       }
 
       int numreac = actmat->NumReac();

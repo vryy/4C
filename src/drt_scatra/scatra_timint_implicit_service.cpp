@@ -1485,13 +1485,11 @@ void SCATRA::ScaTraTimIntImpl::RecomputeMeanCsgsB()
       DRT::Element* ele = discret_->lRowElement(nele);
 
       // get element location vector, dirichlet flags and ownerships
-      std::vector<int> lm;
-      std::vector<int> lmowner;
-      std::vector<int> lmstride;
-      ele->LocationVector(*discret_,lm,lmowner,lmstride);
+      DRT::Element::LocationArray la(1);
+      ele->LocationVector(*discret_,la,false);
 
       // call the element evaluate method to integrate functions
-      int err = ele->Evaluate(myparams,*discret_,lm,
+      int err = ele->Evaluate(myparams,*discret_,la,
                             emat1,emat2,
                             evec1,evec2,evec2);
       if (err) dserror("Proc %d: Element %d returned err=%d",myrank_,ele->Id(),err);

@@ -26,6 +26,7 @@ namespace DRT
 {
   class Discretization;
   class Element;
+  class LocationArray;
 
 namespace ELEMENTS
 {
@@ -56,7 +57,7 @@ namespace ELEMENTS
     virtual int Evaluate(DRT::Element*                 ele,
                          Teuchos::ParameterList&       params,
                          DRT::Discretization&          discretization,
-                         const std::vector<int> &      lm,
+                         DRT::Element::LocationArray&  la,
                          Epetra_SerialDenseMatrix&     elemat1_epetra,
                          Epetra_SerialDenseMatrix&     elemat2_epetra,
                          Epetra_SerialDenseVector&     elevec1_epetra,
@@ -66,7 +67,7 @@ namespace ELEMENTS
     virtual int EvaluateService(DRT::Element*                 ele,
                                 Teuchos::ParameterList&       params,
                                 DRT::Discretization&          discretization,
-                                const std::vector<int> &      lm,
+                                DRT::Element::LocationArray&  la,
                                 Epetra_SerialDenseMatrix&     elemat1_epetra,
                                 Epetra_SerialDenseMatrix&     elemat2_epetra,
                                 Epetra_SerialDenseVector&     elevec1_epetra,
@@ -76,7 +77,7 @@ namespace ELEMENTS
     virtual int EvaluateOD(DRT::Element*                 ele,
                            Teuchos::ParameterList&       params,
                            DRT::Discretization&          discretization,
-                           const std::vector<int> &      lm,
+                           DRT::Element::LocationArray&  la,
                            Epetra_SerialDenseMatrix&     elemat1_epetra,
                            Epetra_SerialDenseMatrix&     elemat2_epetra,
                            Epetra_SerialDenseVector&     elevec1_epetra,

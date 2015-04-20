@@ -30,15 +30,15 @@
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
 int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateOD(
-  DRT::Element*              ele,
-  Teuchos::ParameterList&    params,
-  DRT::Discretization&       discretization,
-  const std::vector<int>&    lm,
-  Epetra_SerialDenseMatrix&  elemat1_epetra,
-  Epetra_SerialDenseMatrix&  elemat2_epetra,
-  Epetra_SerialDenseVector&  elevec1_epetra,
-  Epetra_SerialDenseVector&  elevec2_epetra,
-  Epetra_SerialDenseVector&  elevec3_epetra
+  DRT::Element*                 ele,
+  Teuchos::ParameterList&       params,
+  DRT::Discretization&          discretization,
+  DRT::Element::LocationArray&  la,
+  Epetra_SerialDenseMatrix&     elemat1_epetra,
+  Epetra_SerialDenseMatrix&     elemat2_epetra,
+  Epetra_SerialDenseVector&     elevec1_epetra,
+  Epetra_SerialDenseVector&     elevec2_epetra,
+  Epetra_SerialDenseVector&     elevec3_epetra
   )
 {
 
@@ -53,7 +53,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateOD(
   // extract element based or nodal values
   //--------------------------------------------------------------------------------
 
-  ExtractElementAndNodeValues(ele,params,discretization,lm);
+  ExtractElementAndNodeValues(ele,params,discretization,la[0].lm_);
 
   //--------------------------------------------------------------------------------
   // calculate element coefficient matrix

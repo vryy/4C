@@ -65,7 +65,7 @@ public:
                        Teuchos::ParameterList&       params,
                        DRT::Discretization &         discretization,
                        const SCATRA::Action&         action,
-                       const std::vector<int> &      lm,
+                       DRT::Element::LocationArray&  la,
                        Epetra_SerialDenseMatrix&     elemat1_epetra,
                        Epetra_SerialDenseMatrix&     elemat2_epetra,
                        Epetra_SerialDenseVector&     elevec1_epetra,

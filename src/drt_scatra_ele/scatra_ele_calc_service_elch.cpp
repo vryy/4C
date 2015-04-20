@@ -38,16 +38,16 @@ Maintainer: Andreas Ehrl
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateAction(
-    DRT::Element*               ele,
-    Teuchos::ParameterList&     params,
-    DRT::Discretization&        discretization,
-    const SCATRA::Action&       action,
-    const std::vector<int> &    lm,
-    Epetra_SerialDenseMatrix&   elemat1_epetra,
-    Epetra_SerialDenseMatrix&   elemat2_epetra,
-    Epetra_SerialDenseVector&   elevec1_epetra,
-    Epetra_SerialDenseVector&   elevec2_epetra,
-    Epetra_SerialDenseVector&   elevec3_epetra
+    DRT::Element*                 ele,
+    Teuchos::ParameterList&       params,
+    DRT::Discretization&          discretization,
+    const SCATRA::Action&         action,
+    DRT::Element::LocationArray&  la,
+    Epetra_SerialDenseMatrix&     elemat1_epetra,
+    Epetra_SerialDenseMatrix&     elemat2_epetra,
+    Epetra_SerialDenseVector&     elevec1_epetra,
+    Epetra_SerialDenseVector&     elevec2_epetra,
+    Epetra_SerialDenseVector&     elevec3_epetra
     )
 {
   // determine and evaluate action
@@ -84,8 +84,8 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateAction(
     // -> extract local values from global vectors
     Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
     if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
-    std::vector<double> myphinp(lm.size());
-    DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
+    std::vector<double> myphinp(la[0].lm_.size());
+    DRT::UTILS::ExtractMyValues(*phinp,myphinp,la[0].lm_);
 
     // fill all element arrays
     for (int i=0;i<my::nen_;++i)
@@ -194,8 +194,8 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateAction(
     if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
 
     // extract local values from the global vector
-    std::vector<double> myphinp(lm.size());
-    DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
+    std::vector<double> myphinp(la[0].lm_.size());
+    DRT::UTILS::ExtractMyValues(*phinp,myphinp,la[0].lm_);
 
     // fill element arrays
     for (int i=0;i<my::nen_;++i)
@@ -221,8 +221,8 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateAction(
   {
     // extract local values from the global vector
     Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-    std::vector<double> myphinp(lm.size());
-    DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
+    std::vector<double> myphinp(la[0].lm_.size());
+    DRT::UTILS::ExtractMyValues(*phinp,myphinp,la[0].lm_);
 
     // fill element arrays
     for (int i=0;i<my::nen_;++i)
@@ -248,7 +248,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateAction(
                        params,
                        discretization,
                        action,
-                       lm,
+                       la,
                        elemat1_epetra,
                        elemat2_epetra,
                        elevec1_epetra,

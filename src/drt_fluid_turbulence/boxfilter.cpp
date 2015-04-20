@@ -1142,16 +1142,14 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(
     double volume_contribution = 0.0;
 
     // get element location vector, dirichlet flags and ownerships
-    std::vector<int> lm;
-    std::vector<int> lmowner;
-    std::vector<int> lmstride;
-    ele->LocationVector(*scatradiscret_,lm,lmowner,lmstride);
+    DRT::Element::LocationArray la(1);
+    ele->LocationVector(*scatradiscret_,la,false);
 
     // call the element evaluate method to integrate functions
     // against heaviside function element
     int err = ele->Evaluate(filterparams,
                             *scatradiscret_,
-                            lm,
+                            la,
                             emat1,emat2,
                             evec1,evec2,evec2);
     if (err) dserror("Proc %d: Element %d returned err=%d",

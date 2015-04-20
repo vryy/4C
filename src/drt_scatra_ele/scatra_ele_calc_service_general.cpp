@@ -35,18 +35,20 @@ Maintainer: Andreas Ehrl
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
 int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
-    DRT::Element*               ele,
-    Teuchos::ParameterList&     params,
-    DRT::Discretization&        discretization,
-    const SCATRA::Action&       action,
-    const std::vector<int> &    lm,
-    Epetra_SerialDenseMatrix&   elemat1_epetra,
-    Epetra_SerialDenseMatrix&   elemat2_epetra,
-    Epetra_SerialDenseVector&   elevec1_epetra,
-    Epetra_SerialDenseVector&   elevec2_epetra,
-    Epetra_SerialDenseVector&   elevec3_epetra
+    DRT::Element*                 ele,
+    Teuchos::ParameterList&       params,
+    DRT::Discretization&          discretization,
+    const SCATRA::Action&         action,
+    DRT::Element::LocationArray&  la,
+    Epetra_SerialDenseMatrix&     elemat1_epetra,
+    Epetra_SerialDenseMatrix&     elemat2_epetra,
+    Epetra_SerialDenseVector&     elevec1_epetra,
+    Epetra_SerialDenseVector&     elevec2_epetra,
+    Epetra_SerialDenseVector&     elevec3_epetra
     )
 {
+  //(for now) only first dof set considered
+  const std::vector<int> &    lm = la[0].lm_;
   // determine and evaluate action
   switch(action)
   {
@@ -625,15 +627,15 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype,int probdim>
 int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateService(
-    DRT::Element*               ele,
-    Teuchos::ParameterList&     params,
-    DRT::Discretization&        discretization,
-    const std::vector<int>&     lm,
-    Epetra_SerialDenseMatrix&   elemat1_epetra,
-    Epetra_SerialDenseMatrix&   elemat2_epetra,
-    Epetra_SerialDenseVector&   elevec1_epetra,
-    Epetra_SerialDenseVector&   elevec2_epetra,
-    Epetra_SerialDenseVector&   elevec3_epetra
+    DRT::Element*                 ele,
+    Teuchos::ParameterList&       params,
+    DRT::Discretization&          discretization,
+    DRT::Element::LocationArray&  la,
+    Epetra_SerialDenseMatrix&     elemat1_epetra,
+    Epetra_SerialDenseMatrix&     elemat2_epetra,
+    Epetra_SerialDenseVector&     elevec1_epetra,
+    Epetra_SerialDenseVector&     elevec2_epetra,
+    Epetra_SerialDenseVector&     elevec3_epetra
     )
 {
   // setup
@@ -659,7 +661,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateService(
       params,
       discretization,
       action,
-      lm,
+      la,
       elemat1_epetra,
       elemat2_epetra,
       elevec1_epetra,
