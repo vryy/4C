@@ -39,6 +39,13 @@ typedef enum _CELL_MIGRATION_TYPE
   cell_migration_proteolytic=2
 } CELL_MIGRATION_TYPE;
 
+typedef enum _SEGREGATION_BY_TYPE
+{
+  segregation_by_undefined=0,
+  segregation_by_dirichlet=1,
+  segregation_by_neumann=2
+} SEGREGATION_BY_TYPE;
+
 typedef enum _SEGREGATION_TYPE
 {
   segregation_undefined=0,

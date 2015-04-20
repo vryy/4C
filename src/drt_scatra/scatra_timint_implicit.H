@@ -297,6 +297,9 @@ public:
   //! remove dirichlet dofs from dbcmaps_
   void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove);
 
+  //! add vector to rhs
+  void AddContributionToRHS(const Teuchos::RCP<const Epetra_Vector> contributing_vector);
+
   //! return pointer to const dofrowmap
   Teuchos::RCP<const Epetra_Map> DofRowMap();
 

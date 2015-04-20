@@ -68,7 +68,22 @@ public:
 
   void DetermineDirichletDofsFromNodes(const Teuchos::RCP<DRT::Discretization>& discret, const std::vector<int>& nodeids, std::vector<int>& vectofill);
 
-  void EvaluateWithInternalCommunication(Teuchos::RCP<DRT::Discretization> dis, DRT::AssembleStrategy* strategy, std::map<int,std::set<int> >& elementstoeval, Teuchos::RCP<GEO::SearchTree> structsearchtree, std::map<int,LINALG::Matrix<3,1> >& currpositions_struct);
+  void EvaluateWithInternalCommunication(Teuchos::RCP<DRT::Discretization> dis,
+                                         DRT::AssembleStrategy* strategy,
+                                         std::map<int,std::set<int> >& elementstoeval,
+                                         Teuchos::RCP<GEO::SearchTree> structsearchtree,
+                                         std::map<int,LINALG::Matrix<3,1> >& currpositions_struct,
+                                         int action,
+                                         bool evaluateonlyboundary=false);
+
+  void EvaluateScaTraWithInternalCommunication(Teuchos::RCP<DRT::Discretization> dis,
+                                               const Teuchos::RCP<const DRT::Discretization> idis,
+                                               DRT::AssembleStrategy* strategy,
+                                               std::map<int,std::set<int> >& elementstoeval,
+                                               Teuchos::RCP<GEO::SearchTree> structsearchtree,
+                                               std::map<int,LINALG::Matrix<3,1> >& currpositions_struct,
+                                               Teuchos::ParameterList& params,
+                                               bool evaluateonlyboundary=false);
 
   /*----------------------------------------------------------------------*
    * considering the need of communication inside the loop over all       |

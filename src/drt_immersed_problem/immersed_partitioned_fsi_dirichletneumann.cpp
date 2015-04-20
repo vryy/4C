@@ -339,7 +339,13 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::FluidOp(Teuchos::RCP<Epetra_Ve
     }
 
     if(curr_subset_of_fluiddis_.empty()==false)
-      EvaluateWithInternalCommunication(MBFluidField()->Discretization(),&fluid_vol_strategy, curr_subset_of_fluiddis_, structure_SearchTree_, currpositions_struct_);
+      EvaluateWithInternalCommunication(MBFluidField()->Discretization(),
+                                        &fluid_vol_strategy,
+                                        curr_subset_of_fluiddis_,
+                                        structure_SearchTree_,
+                                        currpositions_struct_,
+                                        (int)FLD::interpolate_velocity_to_given_point,
+                                        false);
 
     BuildImmersedDirichMap(MBFluidField()->Discretization(), dbcmap_immersed_, MBFluidField()->FluidField()->GetDBCMapExtractor()->CondMap());
     Teuchos::rcp_dynamic_cast<ADAPTER::FluidImmersed >(MBFluidField())->AddDirichCond(dbcmap_immersed_);

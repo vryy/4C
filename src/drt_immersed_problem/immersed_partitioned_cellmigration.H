@@ -155,6 +155,9 @@ protected:
   bool displacementcoupling_;
   bool multicellmigration_;
   int migrationtype_;
+  double segregationconstant_;
+  int segregationtype_;
+  int segregationby_;
 
   //! @name Search Trees
     //@{

@@ -262,6 +262,7 @@ int DRT::ELEMENTS::Transport::Evaluate(
     case SCATRA::get_material_ionic_currents:
     case SCATRA::time_update_material:
     case SCATRA::calc_integr_pat_rhsvec:
+    case SCATRA::calc_immersed_element_source:
     {
       return DRT::ELEMENTS::ScaTraFactory::ProvideImpl(Shape(),impltype_,numdofpernode,numscal)->EvaluateService(
                this,

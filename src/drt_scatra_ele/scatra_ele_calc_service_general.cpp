@@ -611,6 +611,21 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
 
     break;
   }
+  case SCATRA::calc_immersed_element_source:
+  {
+
+    int scalartoprovidwithsource = 0;
+    double segregationconst=params.get<double>("segregation_constant");
+
+    // assembly
+    for (int inode=0;inode<nen_;inode++)
+    {
+      const int fvi = inode*numdofpernode_ + scalartoprovidwithsource;
+      elevec1_epetra[fvi]+=segregationconst;
+    }
+
+    break;
+  }
   default:
   {
     dserror("Not acting on this action. Forgot implementation?");

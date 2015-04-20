@@ -7428,6 +7428,19 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                      &celldyn);
 
       setStringToIntegralParameter<int>(
+                                   "SEGREGATION_BY","dirichlet",
+                                   "Segregation via dirichlet or neumann condition",
+                                   tuple<std::string>(
+                                     "undefined",
+                                     "dirichlet",
+                                     "neumann"),
+                                     tuple<int>(
+                                     INPAR::CELL::segregation_by_undefined,
+                                     INPAR::CELL::segregation_by_dirichlet,
+                                     INPAR::CELL::segregation_by_neumann),
+                                     &celldyn);
+
+      setStringToIntegralParameter<int>(
                                    "SEGREGATION_LAW","undefined",
                                    "Segregation of chemical species by cell in volume or on surface",
                                    tuple<std::string>(

@@ -66,7 +66,8 @@ enum Action {
   calc_mass_center_smoothingfunct, // calculate mass center of minus domain, using the smoothing function. (Interface thickness required)
   calc_integr_pat_rhsvec,          // integrate rhs vec for adjoint pat
   calc_scatra_mono_odblock_fluid,  // calculate off diagonal matrix block for coupling with fluid
-  calc_scatra_mono_odblock_mesh    // calculate off diagonal matrix block for coupling with mesh (shape derivatives)
+  calc_scatra_mono_odblock_mesh,   // calculate off diagonal matrix block for coupling with mesh (shape derivatives)
+  calc_immersed_element_source     // calculate sink/source term due to segregation from an immersed discretizaton
 }; // enum Action
 
 /*--------------------------------------------------------------------------*/

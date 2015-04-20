@@ -15,7 +15,6 @@ Maintainers: Andreas Rauch
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_fluid_ele/fluid_ele_immersed.H"
-#include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 #include "../drt_mat/newtonianfluid.H"
@@ -911,7 +910,13 @@ void IMMERSED::ImmersedBase::UpdateVolumeCondition(Teuchos::RCP<DRT::Discretizat
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IMMERSED::ImmersedBase::EvaluateWithInternalCommunication(Teuchos::RCP<DRT::Discretization> dis, DRT::AssembleStrategy* strategy, std::map<int,std::set<int> >& elementstoeval, Teuchos::RCP<GEO::SearchTree> structsearchtree, std::map<int,LINALG::Matrix<3,1> >& currpositions_struct)
+void IMMERSED::ImmersedBase::EvaluateWithInternalCommunication(Teuchos::RCP<DRT::Discretization> dis,
+                                                               DRT::AssembleStrategy* strategy,
+                                                               std::map<int,std::set<int> >& elementstoeval,
+                                                               Teuchos::RCP<GEO::SearchTree> structsearchtree,
+                                                               std::map<int,LINALG::Matrix<3,1> >& currpositions_struct,
+                                                               int action,
+                                                               bool evaluateonlyboundary)
 {
   // pointer to element
   DRT::Element* ele;
@@ -922,12 +927,16 @@ void IMMERSED::ImmersedBase::EvaluateWithInternalCommunication(Teuchos::RCP<DRT:
     {
       ele=dis->gElement(*eleIter);
 
+      DRT::ELEMENTS::FluidImmersedBase* immersedelebase = dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(ele);
+      if(immersedelebase==NULL)
+        dserror("dynamic cast from DRT::Element* to DRT::ELEMENTS::FluidImmersedBase* failed");
+
       // evaluate this element and fill vector with immersed dirichlets
       int row = strategy->FirstDofSet();
       int col = strategy->SecondDofSet();
 
       Teuchos::ParameterList params;
-      params.set<int>("action",FLD::interpolate_velocity_to_given_point);
+      params.set<int>("action",action);
       params.set<Teuchos::RCP<GEO::SearchTree> >("structsearchtree_rcp",structsearchtree);
       params.set<std::map<int,LINALG::Matrix<3,1> >* >("currpositions_struct",&currpositions_struct);
       params.set<int>("Physical Type",INPAR::FLUID::poro_p1);
@@ -939,15 +948,87 @@ void IMMERSED::ImmersedBase::EvaluateWithInternalCommunication(Teuchos::RCP<DRT:
         dserror("no corresponding immerseddisname set for this type of backgrounddis!");
 
       DRT::Element::LocationArray la(1);
-      dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(ele)->LocationVector(*dis,la,false);
+      immersedelebase->LocationVector(*dis,la,false);
       strategy->ClearElementStorage( la[row].Size(), la[col].Size() );
 
-      dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(ele)->Evaluate(params,*dis,la[0].lm_,
-          strategy->Elematrix1(),
-          strategy->Elematrix2(),
-          strategy->Elevector1(),
-          strategy->Elevector2(),
-          strategy->Elevector3());
+      if(!evaluateonlyboundary)
+        immersedelebase->Evaluate(params,*dis,la[0].lm_,
+            strategy->Elematrix1(),
+            strategy->Elematrix2(),
+            strategy->Elevector1(),
+            strategy->Elevector2(),
+            strategy->Elevector3());
+      else
+      {
+        if(immersedelebase->IsImmersedBoundary())
+          immersedelebase->Evaluate(params,*dis,la[0].lm_,
+              strategy->Elematrix1(),
+              strategy->Elematrix2(),
+              strategy->Elevector1(),
+              strategy->Elevector2(),
+              strategy->Elevector3());
+      }
+
+      strategy->AssembleVector1( la[row].lm_, la[row].lmowner_ );
+    }
+  }
+} // EvaluateWithInternalCommunication
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedBase::EvaluateScaTraWithInternalCommunication(Teuchos::RCP<DRT::Discretization> dis,
+                                                                     const Teuchos::RCP<const DRT::Discretization> idis,
+                                                                     DRT::AssembleStrategy* strategy,
+                                                                     std::map<int,std::set<int> >& elementstoeval,
+                                                                     Teuchos::RCP<GEO::SearchTree> structsearchtree,
+                                                                     std::map<int,LINALG::Matrix<3,1> >& currpositions_struct,
+                                                                     Teuchos::ParameterList& params,
+                                                                     bool evaluateonlyboundary)
+{
+  // pointer to element
+  DRT::Element* ele;
+  DRT::Element* iele;
+
+  for(std::map<int, std::set<int> >::const_iterator closele = elementstoeval.begin(); closele != elementstoeval.end(); closele++)
+  {
+    for(std::set<int>::const_iterator eleIter = (closele->second).begin(); eleIter != (closele->second).end(); eleIter++)
+    {
+      ele=dis->gElement(*eleIter);
+      iele=idis->gElement(*eleIter);
+
+      DRT::ELEMENTS::FluidImmersedBase* immersedelebase = dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(iele);
+      if(immersedelebase==NULL)
+        dserror("dynamic cast from DRT::Element* to DRT::ELEMENTS::FluidImmersedBase* failed");
+
+      // evaluate this element and fill vector with immersed dirichlets
+      int row = strategy->FirstDofSet();
+      int col = strategy->SecondDofSet();
+
+      params.set<Teuchos::RCP<GEO::SearchTree> >("structsearchtree_rcp",structsearchtree);
+      params.set<std::map<int,LINALG::Matrix<3,1> >* >("currpositions_struct",&currpositions_struct);
+      params.set<int>("Physical Type",INPAR::FLUID::poro_p1);
+
+      DRT::Element::LocationArray la(1);
+      immersedelebase->LocationVector(*dis,la,false);
+      strategy->ClearElementStorage( la[row].Size(), la[col].Size() );
+
+      if(!evaluateonlyboundary)
+        ele->Evaluate(params,*dis,la,
+            strategy->Elematrix1(),
+            strategy->Elematrix2(),
+            strategy->Elevector1(),
+            strategy->Elevector2(),
+            strategy->Elevector3());
+      else
+      {
+        if(immersedelebase->IsImmersedBoundary())
+          ele->Evaluate(params,*dis,la,
+              strategy->Elematrix1(),
+              strategy->Elematrix2(),
+              strategy->Elevector1(),
+              strategy->Elevector2(),
+              strategy->Elevector3());
+      }
 
       strategy->AssembleVector1( la[row].lm_, la[row].lmowner_ );
     }
