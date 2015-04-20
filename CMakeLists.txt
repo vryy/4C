@@ -1566,6 +1566,7 @@ set(OBJS_SOLVER_NONLIN
   src/solver_nonlin/nln_operator_ngmres.cpp
   src/solver_nonlin/nln_operator_newton.cpp
   src/solver_nonlin/nln_operator_nonlincg.cpp
+  src/solver_nonlin/nln_operator_richardson.cpp
   src/solver_nonlin/nln_operator_sd.cpp
   src/solver_nonlin/nln_problem.cpp
   src/solver_nonlin/nln_problem_coarselevel.cpp

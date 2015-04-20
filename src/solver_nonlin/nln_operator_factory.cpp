@@ -27,6 +27,7 @@ Maintainer: Matthias Mayr
 #include "nln_operator_ngmres.H"
 #include "nln_operator_newton.H"
 #include "nln_operator_nonlincg.H"
+#include "nln_operator_richardson.H"
 #include "nln_operator_sd.H"
 
 #include "../drt_lib/drt_dserror.H"
@@ -71,6 +72,10 @@ NLNSOL::NlnOperatorFactory::Create(const Teuchos::ParameterList& params)
   else if (optype == "Linear Preconditioner")
   {
     return Teuchos::rcp(new NLNSOL::NlnOperatorLinPrec());
+  }
+  else if (optype == "Richardson")
+  {
+    return Teuchos::rcp(new NLNSOL::NlnOperatorRichardson());
   }
   else
   {
