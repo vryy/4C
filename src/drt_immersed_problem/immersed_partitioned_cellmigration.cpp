@@ -360,7 +360,10 @@ void IMMERSED::ImmersedPartitionedCellMigration::BackgroundOp(Teuchos::RCP<Epetr
 
     }
     else
-      dserror("combination of SEGREGATION parameters is not implemented. Fix your input file.");
+    {
+      if(migrationtype_==INPAR::CELL::cell_migration_proteolytic)
+        dserror("combination of SEGREGATION parameters is not implemented. Fix your input file.");
+    }
 
 
     // rebuild the combined dbcmap
