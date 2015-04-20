@@ -255,7 +255,7 @@ namespace FAS
     /*! \brief Check for stagnation of level smoother
      *
      *  We currently just check post-smooting and coarse level solve, since pre-
-     *  smoothing stagnation might be cured by coarser levels.
+     *  smoothing stagnation might be cured by coarser levels. // ToDo Fix this comment
      *
      *  \author mayr.mt \date 03/2015
      */

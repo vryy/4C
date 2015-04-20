@@ -493,6 +493,15 @@ const bool NLNSOL::FAS::NlnLevel::CheckStagnation() const
 {
   bool stagnation = false;
 
+  if (stagnation == false and not presmoother_.is_null())
+  {
+    if (presmoother_->GetOutParams()->get<NLNSOL::UTILS::OperatorStatus>(
+        "Error Code") == NLNSOL::UTILS::opstatus_stagnation)
+    {
+      stagnation = true;
+    }
+  }
+
   if (stagnation == false and not postsmoother_.is_null())
   {
     if (postsmoother_->GetOutParams()->get<NLNSOL::UTILS::OperatorStatus>(

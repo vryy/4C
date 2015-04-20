@@ -61,8 +61,8 @@ void NLNSOL::NlnOperatorBase::Init(const Epetra_Comm& comm,
     Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem,
     Teuchos::RCP<LINALG::Solver> bacisolver, const int nested)
 {
-  // We need to call Setup() after Init()
-  issetup_ = false;
+  // Enforce to call Setup() after Init()
+  SetIsSetup(false);
 
   // fill member variables with given values
   comm_ = Teuchos::rcp(&comm, false);
@@ -132,9 +132,9 @@ void NLNSOL::NlnOperatorBase::PrintIterSummary(const int iter,
   if (getVerbLevel() > Teuchos::VERB_NONE
       and Params().get<bool>("Nonlinear Operator: Print Iterations"))
   {
-      *getOStream() << LabelShort() << " iteration " << iter
-          << ": |f| = " << fnorm2
-          << std::endl;
+    *getOStream() << LabelShort() << " iteration " << iter
+        << ": |f| = " << fnorm2
+        << std::endl;
   }
 }
 

@@ -167,6 +167,12 @@ namespace NLNSOL
       //! Output parameter list
       virtual Teuchos::RCP<const Teuchos::ParameterList> GetOutParams() const;
 
+      //! Has Init() already been called?
+      virtual const bool IsInit() const { return isinit_; }
+
+      //! Has Setup() already been called?
+      virtual const bool IsSetup() const { return issetup_; }
+
       //@}
 
     protected:
@@ -178,18 +184,13 @@ namespace NLNSOL
       virtual void SetIsInit() { isinit_ = true; return; }
 
       //! Setup() has been called
-      virtual void SetIsSetup() { issetup_ = true; return; }
+      virtual void SetIsSetup(const bool issetup = true)
+      { issetup_ = issetup; return; }
 
       //@}
 
       //! @name Get attributes
       //@{
-
-      //! Has Init() already been called?
-      virtual const bool IsInit() const { return isinit_; }
-
-      //! Has Setup() already been called?
-      virtual const bool IsSetup() const { return issetup_; }
 
       //! Access to communicator
       virtual const Epetra_Comm& Comm() const;

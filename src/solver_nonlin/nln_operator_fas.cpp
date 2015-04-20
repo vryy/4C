@@ -142,7 +142,11 @@ int NLNSOL::NlnOperatorFas::ApplyInverse(const Epetra_MultiVector& f,
   SetOutParameterResidualNorm(fnorm2);
   SetOutParameterConverged(converged);
   SetOutParameterErrorCode(errorcode);
-  SetOutParameterStagnation(stagdetect->StatusParams());
+
+  Teuchos::RCP<Teuchos::ParameterList> status =
+      Teuchos::rcp(new Teuchos::ParameterList(*stagdetect->StatusParams()));
+  status->set<bool>("Stagnation Detection: status", stagnation);
+  SetOutParameterStagnation(status);
 
   // return error code
   return errorcode;

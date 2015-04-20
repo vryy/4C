@@ -190,11 +190,14 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
 
   bool converged = NlnProblem()->ConvergenceCheck(*fbar, fnorm2);
 
+  //----------------------------------------------------------------------------
   // setup stagnation detection mechanism
+  //----------------------------------------------------------------------------
   Teuchos::RCP<NLNSOL::UTILS::StagnationDetection> stagdetect =
       Teuchos::rcp(new NLNSOL::UTILS::StagnationDetection());
   stagdetect->Init(Params().sublist("Nonlinear Operator: Stagnation Detection"),
       fnorm2);
+  //----------------------------------------------------------------------------
 
   // print initial state of convergence
   PrintIterSummary(iter, fnorm2);
@@ -364,7 +367,12 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
 
       // check for stagnation
       if (stagdetect->Check(fnorm2))
+      {
+        *getOStream() << LabelShort()
+            << " detected stagnation. Rebuild preconditioner."
+            << std::endl;
         nlnprec_->RebuildPrec();
+      }
 
       // print stuff
       PrintIterSummary(iter, fnorm2);
@@ -413,11 +421,14 @@ const int NLNSOL::NlnOperatorNGmres::ComputeTentativeIterate(
   if (nlnprec_->GetOutParams()->get<NLNSOL::UTILS::OperatorStatus>("Error Code")
       == NLNSOL::UTILS::opstatus_stagnation)
   {
-      // create formatted output stream
-      Teuchos::RCP<Teuchos::FancyOStream> out =
-          Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
-      out->setOutputToRootOnly(0);
-      Teuchos::OSTab tab(out, Indentation());
+    // create formatted output stream
+    Teuchos::RCP<Teuchos::FancyOStream> out =
+        Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
+    out->setOutputToRootOnly(0);
+    Teuchos::OSTab tab(out, Indentation());
+
+    *getOStream() << "Preconditioner of " << LabelShort()
+        << " needs to be rebuild." << std::endl;
 
     nlnprec_->RebuildPrec();
   }
