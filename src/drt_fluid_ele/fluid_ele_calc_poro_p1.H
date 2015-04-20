@@ -455,6 +455,7 @@ protected:
         LINALG::Matrix<my::nen_,my::nen_> &                  ppmat,          ///< block (weighting function q x p)
         LINALG::Matrix<my::nen_,1> &                         preforce,       ///< rhs forces pressure
         const LINALG::Matrix<my::nsd_*my::nsd_,my::nen_> &   lin_resM_Du,    ///< linearisation of the stabilization residual
+        const LINALG::Matrix<my::nsd_*my::nsd_,my::nen_>&    lin_resMRea_Du,
         const LINALG::Matrix<my::nsd_,my::nen_> &            lin_resM_Dp,    ///< linearisation of the stabilization residual w.r.t. pressure
         const double &                                       dphi_dp,        ///< linearisation of porosity w.r.t. pressure
         const double &                                       fac3,           ///< factor for residual in current subgrid velocities

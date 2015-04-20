@@ -468,6 +468,22 @@ protected:
       LINALG::Matrix<my::nen_,my::nen_> &                  ppmat,          ///< block (weighting function q x p)
       LINALG::Matrix<my::nen_,1> &                         preforce,       ///< rhs forces pressure
       const LINALG::Matrix<my::nsd_*my::nsd_,my::nen_> &   lin_resM_Du,    ///< linearisation of the stabilization residual
+      const LINALG::Matrix<my::nsd_*my::nsd_,my::nen_>&    lin_resMRea_Du, ///< linearisation of the stabilization residual (reactive terms)
+      const LINALG::Matrix<my::nsd_,my::nen_> &            lin_resM_Dp,    ///< linearisation of the stabilization residual w.r.t. pressure
+      const double &                                       dphi_dp,        ///< linearisation of porosity w.r.t. pressure
+      const double &                                       fac3,           ///< factor for residual in current subgrid velocities
+      const double &                                       timefacfac,     ///< = timefac x fac
+      const double &                                       timefacfacpre,  ///< = timefacpre x fac
+      const double &                                       rhsfac          ///< right-hand-side factor for residuals
+  );
+
+  //! Compute element matrix entries: Biot
+  virtual void StabBiot(
+      LINALG::Matrix<my::nen_, my::nen_*my::nsd_> &        estif_q_u,      ///< block (weighting function q x u)
+      LINALG::Matrix<my::nen_,my::nen_> &                  ppmat,          ///< block (weighting function q x p)
+      LINALG::Matrix<my::nen_,1> &                         preforce,       ///< rhs forces pressure
+      const LINALG::Matrix<my::nsd_*my::nsd_,my::nen_> &   lin_resM_Du,    ///< linearisation of the stabilization residual
+      const LINALG::Matrix<my::nsd_*my::nsd_,my::nen_>&    lin_resMRea_Du, ///< linearisation of the stabilization residual (reactive terms)
       const LINALG::Matrix<my::nsd_,my::nen_> &            lin_resM_Dp,    ///< linearisation of the stabilization residual w.r.t. pressure
       const double &                                       dphi_dp,        ///< linearisation of porosity w.r.t. pressure
       const double &                                       fac3,           ///< factor for residual in current subgrid velocities
@@ -493,7 +509,8 @@ protected:
   //! Compute linearization of momentum residual w.r.t fluid velocities
   void ComputeLinResMDu(
       const double & timefacfac,
-      LINALG::Matrix<my::nsd_*my::nsd_,my::nen_>&  lin_resM_Du);
+      LINALG::Matrix<my::nsd_*my::nsd_,my::nen_>&  lin_resM_Du,
+      LINALG::Matrix<my::nsd_*my::nsd_,my::nen_>&  lin_resMRea_Du);
 
   //! Compute linearization of momentum residual (stabilization) w.r.t fluid velocities
   void ComputeLinResMDu_Stab(
@@ -911,6 +928,7 @@ protected:
       const LINALG::Matrix<1,my::nsd_*my::nen_>&                  dphi_dus,
       const double &                                              refporositydot,
       LINALG::Matrix<my::nsd_, my::nen_ * my::nsd_>&              lin_resM_Dus,
+      LINALG::Matrix<my::nsd_, my::nen_ * my::nsd_>&              lin_resM_Dus_gridvel,
       LINALG::Matrix<my::nen_ * my::nsd_, my::nen_ * my::nsd_>&   ecoupl_u);
 
   /*!
@@ -939,6 +957,7 @@ protected:
       const LINALG::Matrix<1,my::nsd_*my::nen_>&                  dJ_dus,
       const LINALG::Matrix<my::nsd_, my::nen_>&                   egridv,
       const LINALG::Matrix<my::nsd_, my::nen_ * my::nsd_>&        lin_resM_Dus,
+      const LINALG::Matrix<my::nsd_, my::nen_ * my::nsd_>&        lin_resM_Dus_gridvel,
       LINALG::Matrix<my::nen_, my::nen_ * my::nsd_>&              ecoupl_p);
 
   //! do some evaluation before actual element matrix assembly
@@ -981,6 +1000,14 @@ protected:
   /// get compute RHS of contiuity equation of time step n
   void ComputeOldRHSConti(double dphi_dp);
 
+  void ComputeMixtureStrongResidual(
+      Teuchos::ParameterList&                           params,
+      const LINALG::Matrix<my::nsd_,my::nsd_>&          defgrd,
+      const LINALG::Matrix<my::nsd_, my::nen_>&         edispnp,
+      const LINALG::Matrix<my::nsd_, my::nen_>&         edispn,
+      const LINALG::Matrix<my::nsd_*my::nsd_,my::nsd_>& F_X
+      );
+
   virtual int ComputeVolume(
       Teuchos::ParameterList&         params,
       DRT::ELEMENTS::Fluid*           ele,              //< current fluid element
@@ -994,6 +1021,10 @@ protected:
       LINALG::Matrix<my::nsd_,my::nsd_>&       defgrd,   ///<<    (i) deformation gradient at gausspoint
       const LINALG::Matrix<my::nsd_,my::nen_>& N_XYZ,    ///<<    (i) derivatives of shape functions w.r.t. reference coordinates
       const LINALG::Matrix<my::nsd_,my::nen_>& xcurr     ///<<    (i) current position of gausspoint
+    );
+
+  //! Compute deformation gradient
+  double ComputeEffectiveStiffness(
     );
 
   /// Evaluate element ERROR
@@ -1071,7 +1102,7 @@ protected:
   double pressn_;
   //! fluid pressure time derivative at gauss point
   double pressdot_;
-  //! fluid pressure gradient w.r.t to reference coordinates at gauss point
+  //! fluid pressure gradient w.r.t to paramter space coordinates at gauss point
   LINALG::Matrix<my::nsd_,1> refgradp_;
   //! spatial gradient of fluid pressure gauss point at time step n
   LINALG::Matrix<my::nsd_,1> gradpn_;
@@ -1111,6 +1142,12 @@ protected:
 
   //! linearization of stabilisation parameters w.r.t. porosity -> it is a (3,1) vector for 2D and 3D
   LINALG::Matrix<3,1> dtaudphi_;
+
+  //! the stabilisation parameter  for biot stabilization
+  double taustruct_;
+
+  //! reactive tensor x convective velocity
+  LINALG::Matrix<my::nsd_,1>            mixres_;
 
   //! corresponding poro structure material
   Teuchos::RCP< MAT::StructPoro > structmat_;

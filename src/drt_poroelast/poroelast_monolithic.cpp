@@ -930,14 +930,15 @@ void POROELAST::Monolithic::PrintNewtonIterHeaderStream(std::ostringstream& oss)
     case INPAR::POROELAST::convnorm_abs_global:
       oss << std::setw(15) << "abs-res"<<"("<<std::setw(5)<<std::setprecision(2) <<tolfres_<<")";
       break;
-//    case INPAR::POROELAST::convnorm_rel_global:
-//      oss << std::setw(18) << "rel-res";
-      break;
     case INPAR::POROELAST::convnorm_abs_singlefields:
-  //  case INPAR::POROELAST::convnorm_rel_singlefields:
+      oss <<std::setw(15)<< "abs-s-res"<<"("<<std::setw(5)<<std::setprecision(2) <<tolfres_struct_<<")";
+      if(porositydof_)
+        oss <<std::setw(15)<< "abs-poro-res"<<"("<<std::setw(5)<<std::setprecision(2) <<tolfres_porosity_<<")";
+      oss <<std::setw(15)<< "abs-fvel-res"<<"("<<std::setw(5)<<std::setprecision(2) <<tolfres_velocity_<<")";
+      oss <<std::setw(15)<< "abs-fpres-res"<<"("<<std::setw(5)<<std::setprecision(2) <<tolfres_pressure_<<")";
       break;
     default:
-      dserror("Unknown or undefined convergence form for global residual.");
+      dserror("Unknown or undefined convergence form for residual.");
       break;
   }
 
@@ -946,45 +947,6 @@ void POROELAST::Monolithic::PrintNewtonIterHeaderStream(std::ostringstream& oss)
     case INPAR::POROELAST::convnorm_abs_global :
       oss <<std::setw(15)<< "abs-inc"<<"("<<std::setw(5)<<std::setprecision(2) <<tolinc_<<")";
       break;
-//    case INPAR::POROELAST::convnorm_rel_global:
-//      oss << std::setw(18) << "rel-inc";
-      break;
-    case INPAR::POROELAST::convnorm_abs_singlefields:
-    //case INPAR::POROELAST::convnorm_rel_singlefields:
-      break;
-    default:
-      dserror("Unknown or undefined convergence form for global increment.");
-    break;
-  }
-
-  // --------------------------------------------------------single field test
-  switch ( normtypefres_ )
-  {
-    case INPAR::POROELAST::convnorm_abs_global :
-      break;
-    case INPAR::POROELAST::convnorm_abs_singlefields:
-      oss <<std::setw(15)<< "abs-s-res"<<"("<<std::setw(5)<<std::setprecision(2) <<tolfres_struct_<<")";
-      if(porositydof_)
-        oss <<std::setw(15)<< "abs-poro-res"<<"("<<std::setw(5)<<std::setprecision(2) <<tolfres_porosity_<<")";
-      oss <<std::setw(15)<< "abs-fvel-res"<<"("<<std::setw(5)<<std::setprecision(2) <<tolfres_velocity_<<")";
-      oss <<std::setw(15)<< "abs-fpres-res"<<"("<<std::setw(5)<<std::setprecision(2) <<tolfres_pressure_<<")";
-      break;
-//    case INPAR::POROELAST::convnorm_rel_global :
-//    case INPAR::POROELAST::convnorm_rel_singlefields:
-//      oss <<std::setw(18)<< "rel-s-res";
-//      if(porositydof_)
-//        oss <<std::setw(18)<< "rel-poro-res";
-//      oss <<std::setw(18)<< "rel-fvel-res";
-//      oss <<std::setw(18)<< "rel-fpres-res";
-//      break;
-    default:
-      dserror("Unknown or undefined convergence form for single field residual.");
-      break;
-  }
-
-  switch ( normtypeinc_ )
-  {
-    case INPAR::POROELAST::convnorm_abs_global :
       break;
     case INPAR::POROELAST::convnorm_abs_singlefields:
       oss <<std::setw(15)<< "abs-s-inc"<<"("<<std::setw(5)<<std::setprecision(2) <<tolinc_struct_<<")";
@@ -993,17 +955,9 @@ void POROELAST::Monolithic::PrintNewtonIterHeaderStream(std::ostringstream& oss)
       oss <<std::setw(15)<< "abs-fvel-inc"<<"("<<std::setw(5)<<std::setprecision(2) <<tolinc_velocity_<<")";
       oss <<std::setw(15)<< "abs-fpres-inc"<<"("<<std::setw(5)<<std::setprecision(2) <<tolinc_pressure_<<")";
       break;
-//    case INPAR::POROELAST::convnorm_rel_global :
-//    case INPAR::POROELAST::convnorm_rel_singlefields:
-//      oss <<std::setw(18)<< "rel-s-inc";
-//      if(porositydof_)
-//        oss <<std::setw(18)<< "rel-poro-inc";
-//      oss <<std::setw(18)<< "rel-fvel-inc";
-//      oss <<std::setw(18)<< "rel-fpres-inc";
-//      break;
     default:
-      dserror("Unknown or undefined convergence form for single field increment.");
-      break;
+      dserror("Unknown or undefined convergence form for increment.");
+    break;
   }
 
   return;

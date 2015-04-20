@@ -731,7 +731,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::FillMatrixAndVectors(
     const int &                                     gp,
     const LINALG::Matrix<numnod_,1>&                shapefct,
     const LINALG::Matrix<numdim_,numnod_>&          N_XYZ,
-    const double&                                  J,
+    const double&                                   J,
     const double&                                   press,
     const double&                                   porosity,
     const LINALG::Matrix<numdim_,1>&                velint,
@@ -781,12 +781,12 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::FillMatrixAndVectors(
       for(int j=0; j<numdim_; j++)
       {
         /*-------structure- velocity coupling:  RHS
-         "dracy-terms"
+         "darcy-terms"
          - reacoeff * J^2 *  phi^2 *  v^f
          */
         (*force)(fk+j) += -v * reafvel(j);
 
-        /* "reactive dracy-terms"
+        /* "reactive darcy-terms"
          reacoeff * J^2 *  phi^2 *  v^s
          */
         (*force)(fk+j) += v * reavel(j);
@@ -823,7 +823,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::FillMatrixAndVectors(
                detJ * w(gp) * 2 * ( dJ/d(us) * vs * reacoeff * phi^2 + J * reacoeff * phi * d(phi)/d(us) * vs ) * D(us)
              - detJ * w(gp) *  2 * ( J * dJ/d(us) * v^f * reacoeff * phi^2 + J * reacoeff * phi * d(phi)/d(us) * v^f ) * D(us)
              */
-            (*stiffmatrix)(fk+j,fi+l) += fac * J * porosity *  2 * ( reavel(j) - reafvel(j) ) *
+            (*stiffmatrix)(fk+j,fi+l) += fac * J * porosity *  2.0 * ( reavel(j) - reafvel(j) ) *
                                             ( porosity * dJ_dus(fi+l) + J * dphi_dus(fi+l) );
 
               for (int m=0; m<numdim_; ++m)
@@ -1435,40 +1435,11 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::couplstress_poroelast(
   LINALG::Matrix<numdim_,numnod_> N_XYZ;
   LINALG::Matrix<numdim_,numnod_> deriv ;
 
-  DRT::UTILS::GaussRule2D gaussrule = DRT::UTILS::intrule2D_undefined;
-  switch(distype)
-  {
-  case DRT::Element::quad4 :
-    gaussrule = DRT::UTILS::intrule_quad_4point;
-    break;
-  case DRT::Element::quad9 :
-    gaussrule = DRT::UTILS::intrule_quad_9point;
-    break;
-  default:
-    break;
-  }
-  const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule);
-
   for (int gp=0; gp<numgpt_; ++gp)
   {
 
-    const double e1 = intpoints.qxg[gp][0];
-    const double e2 = intpoints.qxg[gp][1];
-
-    DRT::UTILS::shape_function_2D       (shapefct,e1,e2,distype);
-    DRT::UTILS::shape_function_2D_deriv1(deriv,e1,e2,distype);
-
-    /* get the inverse of the Jacobian matrix which looks like:
-     **            [ X_,r  Y_,r  Z_,r ]^-1
-     **     J^-1 = [ X_,s  Y_,s  Z_,s ]
-     **            [ X_,t  Y_,t  Z_,t ]
-     */
-    LINALG::Matrix<numdim_,numdim_> invJ;
-    invJ.MultiplyNT(deriv,xrefe);
-
-    // compute derivatives N_XYZ at gp w.r.t. material coordinates
-    // by N_XYZ = J^-1 * N_rst
-    N_XYZ.Multiply(invJ,deriv); // (6.21)
+    //evaluate shape functions and derivatives at integration point
+    ComputeShapeFunctionsAndDerivatives(gp,shapefct,deriv,N_XYZ);
 
     const double J = ComputeJacobianDeterminant(gp,xcurr,deriv);
 

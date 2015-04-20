@@ -139,7 +139,7 @@ namespace ELEMENTS
     /*!
     \brief Evaluate an element
 
-    Evaluate So_tet4fbar element stiffness, mass, internal forces, etc.
+    Evaluate element stiffness, mass, internal forces, etc.
 
     If NULL on input, the controlling method does not expect the element
     to fill these matrices or vectors.

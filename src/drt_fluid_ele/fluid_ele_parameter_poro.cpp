@@ -57,6 +57,8 @@ DRT::ELEMENTS::FluidEleParameterPoro::FluidEleParameterPoro()
   : DRT::ELEMENTS::FluidEleParameter::FluidEleParameter(),
     set_fluid_parameter_poro_(false),
     poro_conti_partint_(false),
+    stab_biot_(false),
+    stab_biot_scaling_(0.0),
     time_distype_conti_(INPAR::POROELAST::pressure)
 {
 }
@@ -72,6 +74,21 @@ void DRT::ELEMENTS::FluidEleParameterPoro::SetElementPoroParameter( Teuchos::Par
   poro_conti_partint_ = params.get<bool>("conti partial integration",false);
   reaction_= true;
   time_distype_conti_ = DRT::INPUT::get<INPAR::POROELAST::TimeDisTypeConti>(params, "Time DisType Conti");
+
+  // ---------------------------------------------------------------------
+  // get control parameters for stabilization and higher-order elements
+  //----------------------------------------------------------------------
+  if (stabtype_ == INPAR::FLUID::stabtype_residualbased)
+  {
+    Teuchos::ParameterList& stablist = params.sublist("RESIDUAL-BASED STABILIZATION");
+    stab_biot_                       = DRT::INPUT::IntegralValue<int>(stablist,"STAB_BIOT");
+    stab_biot_scaling_               = stablist.get<double>("STAB_BIOT_SCALING");
+  }
+  else if (stabtype_ == INPAR::FLUID::stabtype_nostab)
+  {
+    stab_biot_         = false;
+    stab_biot_scaling_ = 0.0;
+  }
 }
 
 //----------------------------------------------------------------------*/

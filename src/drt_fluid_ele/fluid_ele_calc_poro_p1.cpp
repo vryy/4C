@@ -780,6 +780,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
 {
   // definition of velocity-based momentum residual vectors
   static LINALG::Matrix< my::nsd_, my::nen_ * my::nsd_>  lin_resM_Dus(true);
+  static LINALG::Matrix< my::nsd_, my::nen_ * my::nsd_>  lin_resM_Dus_gridvel(true);
   static LINALG::Matrix< my::nsd_, my::nen_>  lin_resM_Dphi(true);
 
   // set element area or volume
@@ -788,6 +789,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
   for ( DRT::UTILS::GaussIntegration::const_iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
   {
     lin_resM_Dus.Clear();
+    lin_resM_Dus_gridvel.Clear();
     lin_resM_Dphi.Clear();
 
     // evaluate shape functions and derivatives at integration point
@@ -864,50 +866,48 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
     static LINALG::Matrix<my::nsd_,my::nsd_> defgrd_inv(false);
     defgrd_inv.Invert(defgrd);
 
-    {
-      //------------------------------------ build F^-T as vector 9x1
-      static LINALG::Matrix<my::nsd_*my::nsd_,1> defgrd_IT_vec(false);
-      for(int i=0; i<my::nsd_; i++)
-        for(int j=0; j<my::nsd_; j++)
-          defgrd_IT_vec(i*my::nsd_+j) = defgrd_inv(j,i);
+    //------------------------------------ build F^-T as vector 9x1
+    static LINALG::Matrix<my::nsd_*my::nsd_,1> defgrd_IT_vec(false);
+    for(int i=0; i<my::nsd_; i++)
+      for(int j=0; j<my::nsd_; j++)
+        defgrd_IT_vec(i*my::nsd_+j) = defgrd_inv(j,i);
 
-      // dF/dx
-      static LINALG::Matrix<my::nsd_*my::nsd_,my::nsd_> F_x(false);
+    // dF/dx
+    static LINALG::Matrix<my::nsd_*my::nsd_,my::nsd_> F_x(false);
 
-      // dF/dX
-      static LINALG::Matrix<my::nsd_*my::nsd_,my::nsd_> F_X(false);
+    // dF/dX
+    static LINALG::Matrix<my::nsd_*my::nsd_,my::nsd_> F_X(false);
 
-      my::ComputeFDerivative( edispnp,
-                          defgrd_inv,
+    my::ComputeFDerivative( edispnp,
+                        defgrd_inv,
+                        F_x,
+                        F_X);
+
+    //compute gradients if needed
+    my::ComputeGradients(
+                          my::J_,
+                          dphi_dp,
+                          dphi_dJ,
+                          defgrd_IT_vec,
                           F_x,
-                          F_X);
+                          my::gradp_,
+                          eporositynp,
+                          gradJ,
+                          my::grad_porosity_,
+                          my::refgrad_porosity_);
 
-      //compute gradients if needed
-      my::ComputeGradients(
-                            my::J_,
-                            dphi_dp,
+    ComputeLinearizationOD(
                             dphi_dJ,
+                            dphi_dJJ,
+                            dphi_dJdp,
+                            defgrd_inv,
                             defgrd_IT_vec,
                             F_x,
-                            my::gradp_,
-                            eporositynp,
+                            F_X,
                             gradJ,
-                            my::grad_porosity_,
-                            my::refgrad_porosity_);
-
-      ComputeLinearizationOD(
-                              dphi_dJ,
-                              dphi_dJJ,
-                              dphi_dJdp,
-                              defgrd_inv,
-                              defgrd_IT_vec,
-                              F_x,
-                              F_X,
-                              gradJ,
-                              dJ_dus,
-                              dphi_dus,
-                              dgradphi_dus);
-    }
+                            dJ_dus,
+                            dphi_dus,
+                            dgradphi_dus);
 
     //----------------------------------------------------------------------
     // potential evaluation of material parameters and/or stabilization
@@ -937,6 +937,10 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
     // compute old RHS of continuity equation
     my::ComputeOldRHSConti(dphi_dp);
 
+    // compute strong residual of mixture (structural) equation
+    if( my::porofldpara_->StabBiot() and (not my::fldparatimint_->IsStationary()) )
+      ComputeMixtureStrongResidual(params,defgrd,edispnp,edispn,F_X);
+
     //----------------------------------------------------------------------
     // set time-integration factors for left- and right-hand side
     //----------------------------------------------------------------------
@@ -957,6 +961,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
                           dphi_dus,
                           refporositydot,
                           lin_resM_Dus,
+                          lin_resM_Dus_gridvel,
                           ecoupl_u);
 
     //*************************************************************************************************************
@@ -973,6 +978,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
                         dJ_dus,
                         egridv,
                         lin_resM_Dus,
+                        lin_resM_Dus_gridvel,
                         ecoupl_p);
 
     //*************************************************************************************************************
@@ -1383,6 +1389,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::PSPG(
     LINALG::Matrix<my::nen_,my::nen_> &                   ppmat,
     LINALG::Matrix<my::nen_,1> &                          preforce,
     const LINALG::Matrix<my::nsd_*my::nsd_,my::nen_> &    lin_resM_Du,
+    const LINALG::Matrix<my::nsd_*my::nsd_,my::nen_>&     lin_resMRea_Du,
     const LINALG::Matrix<my::nsd_,my::nen_> &             lin_resM_Dp,
     const double &                                        dphi_dp,
     const double &                                        fac3,
@@ -1394,6 +1401,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::PSPG(
             ppmat,
             preforce,
             lin_resM_Du,
+            lin_resMRea_Du,
             lin_resM_Dp,
             dphi_dp,
             fac3,

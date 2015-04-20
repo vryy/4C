@@ -4299,6 +4299,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn_porostab = fdyn.sublist("POROUS-FLOW STABILIZATION",false,"");
 
+  BoolParameter("STAB_BIOT","No","Flag to (de)activate BIOT stabilization.",&fdyn_porostab);
+  DoubleParameter(
+    "STAB_BIOT_SCALING",
+    0.0,
+    "Scaling factor for stabilization parameter for biot stabilization of porous flow.",
+    &fdyn_porostab);
+
   // this parameter defines various stabilized methods
   setStringToIntegralParameter<int>("STABTYPE",
                                "residual_based",

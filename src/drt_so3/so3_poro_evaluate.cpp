@@ -1741,19 +1741,19 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::FillMatrixAndVectors(
         const int fk = numdim_*inode;
 
         /*-------structure- fluid velocity coupling:  RHS
-         "dracy-terms"
-         - reacoeff * idim^2 *  phi^2 *  v^f
+         "darcy-terms"
+         - reacoeff * J^2 *  phi^2 *  v^f
          */
         (*force)(fk+idim) += -v * reafvel_idim;
 
-        /* "reactive dracy-terms"
-         reacoeff * idim^2 *  phi^2 *  v^s
+        /* "reactive darcy-terms"
+         reacoeff * J^2 *  phi^2 *  v^s
          */
         (*force)(fk+idim) += v * reavel_idim;
 
         /*-------structure- fluid pressure coupling: RHS
          *                        "pressure gradient terms"
-         - idim *  F^-T * Grad(p) * phi
+         - J *  F^-T * Grad(p) * phi
          */
         (*force)(fk+idim) += fac * J * Finvgradp_idim * ( - porosity);
       }
@@ -1775,7 +1775,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::FillMatrixAndVectors(
             const int fi = numdim_*jnode;
 
             /* additional "reactive darcy-term"
-             detJ * w(gp) * ( idim^2 * reacoeff * phi^2  ) * D(v_s)
+             detJ * w(gp) * ( J^2 * reacoeff * phi^2  ) * D(v_s)
              */
             erea_v(fk+idim,fi+jdim) += v * reatensor_i_j * shapefct(jnode);
           }
