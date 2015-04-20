@@ -6407,16 +6407,16 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
 #endif
               // apply nodal scaling
               if (scale && scalefac!=0.)
+                val /= scalefac;
+              // do not assemble zeros into matrix
+              if (constr_direction_==INPAR::CONTACT::constr_xyz)
               {
-                if (constr_direction_==INPAR::CONTACT::constr_xyz)
-                {
-                  for (int j=0; j<Dim(); j++)
-                    if (abs(val*txi[j])>1.e-12)
-                      linslipDISglobal.Assemble(val*txi[j],cnode->Dofs()[j],col);
-                }
-                else
-                  if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row[0],col);
+                for (int j=0; j<Dim(); j++)
+                  if (abs(val*txi[j])>1.e-12)
+                    linslipDISglobal.Assemble(val*txi[j],cnode->Dofs()[j],col);
               }
+              else
+                if (abs(val)>1.0e-12) linslipDISglobal.Assemble(val,row[0],col);
             }
 
             if(Dim()==3)
