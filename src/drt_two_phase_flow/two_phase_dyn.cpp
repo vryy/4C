@@ -233,7 +233,7 @@ void fluid_xfem_ls_drt(int restart)
    int numglobalnodes = fluiddis->NumGlobalNodes();
    int maxNumMyReservedDofsperNode = (xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
    Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofsperNode,numglobalnodes));
-   fluiddis->ReplaceDofSet(maxdofset,true);
+   fluiddis->ReplaceDofSet(0, maxdofset, true ); //fluid dofset has nds = 0
    fluiddis->InitialFillComplete();
 
    // access parameter for levelset (Not needed as of yet)

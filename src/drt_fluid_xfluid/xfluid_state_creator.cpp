@@ -216,7 +216,7 @@ void FLD::XFluidStateCreator::CreateNewCutState(
     minnumdofsets_ = xdiscret->DofRowMap()->MinAllGID();
 
   dofset->SetMinGID(minnumdofsets_); // set the minimal GID of xfem dis
-  xdiscret->ReplaceDofSet( dofset, true );
+  xdiscret->ReplaceDofSet(0, dofset, true ); //fluid dofset has nds = 0
 
   xdiscret->FillComplete(true,false,false);
 
