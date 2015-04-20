@@ -232,11 +232,14 @@ void NLNSOL::FAS::AMGHierarchy::Setup()
     }
 
     // -------------------------------------------------------------------------
-    // create and fill a single level
+    // create, add and fill a single level
     // -------------------------------------------------------------------------
     // create
     Teuchos::RCP<NLNSOL::FAS::NlnLevel> newlevel =
         Teuchos::rcp(new NLNSOL::FAS::NlnLevel());
+
+    // add level to level container
+    AddNlnLevel(newlevel);
 
     // set same verbosity as in hierarchy
     newlevel->setVerbLevel(getVerbLevel());
@@ -246,9 +249,6 @@ void NLNSOL::FAS::AMGHierarchy::Setup()
         myAcrs, myR, myP, Comm(), levelparams, nlnproblem);
     newlevel->Setup();
     // -------------------------------------------------------------------------
-
-    // add level to level container
-    AddNlnLevel(newlevel);
   }
 
   // validity check
@@ -548,7 +548,7 @@ const bool NLNSOL::FAS::AMGHierarchy::CheckAllLevelStagnation() const
   for (Teuchos::Array<Teuchos::RCP<NLNSOL::FAS::NlnLevel> >::const_iterator it = nlnlevels_.begin();
       it < nlnlevels_.end(); ++it)
   {
-    if ((*it)->CheckStagnation() > 0)
+    if ((*it)->CheckStagnation() == true)
       ++stagcount;
   }
 
