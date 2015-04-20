@@ -939,7 +939,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
 
     // compute strong residual of mixture (structural) equation
     if( my::porofldpara_->StabBiot() and (not my::fldparatimint_->IsStationary()) )
-      ComputeMixtureStrongResidual(params,defgrd,edispnp,edispn,F_X);
+      my::ComputeMixtureStrongResidual(params,defgrd,edispnp,edispn,F_X);
 
     //----------------------------------------------------------------------
     // set time-integration factors for left- and right-hand side
