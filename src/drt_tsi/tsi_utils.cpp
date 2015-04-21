@@ -272,15 +272,15 @@ void TSI::UTILS::SetMaterialPointersMatchingGrid(
 /*----------------------------------------------------------------------*
  |  assign material to discretization A                       vuong 09/14|
  *----------------------------------------------------------------------*/
-void TSI::UTILS::TSIMaterialStrategy::AssignMaterialBToA(
+void TSI::UTILS::TSIMaterialStrategy::AssignMaterial2To1(
     const VOLMORTAR::VolMortarCoupl* volmortar,
-    DRT::Element* Aele,
-    const std::vector<int>& Bids,
-    Teuchos::RCP<DRT::Discretization> disA,
-    Teuchos::RCP<DRT::Discretization> disB)
+    DRT::Element* ele1,
+    const std::vector<int>& ids_2,
+    Teuchos::RCP<DRT::Discretization> dis1,
+    Teuchos::RCP<DRT::Discretization> dis2)
 {
   //call default assignment
-  VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterialBToA(volmortar,Aele,Bids,disA,disB);
+  VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial2To1(volmortar,ele1,ids_2,dis1,dis2);
 
   //done
   return;
@@ -290,26 +290,26 @@ void TSI::UTILS::TSIMaterialStrategy::AssignMaterialBToA(
 /*----------------------------------------------------------------------*
 |  assign material to discretization B                       vuong 09/14|
  *----------------------------------------------------------------------*/
-void TSI::UTILS::TSIMaterialStrategy::AssignMaterialAToB(
+void TSI::UTILS::TSIMaterialStrategy::AssignMaterial1To2(
     const VOLMORTAR::VolMortarCoupl* volmortar,
-    DRT::Element* Bele,
-    const std::vector<int>& Aids,
-    Teuchos::RCP<DRT::Discretization> disA,
-    Teuchos::RCP<DRT::Discretization> disB)
+    DRT::Element* ele2,
+    const std::vector<int>& ids_1,
+    Teuchos::RCP<DRT::Discretization> dis1,
+    Teuchos::RCP<DRT::Discretization> dis2)
 {
   //if no corresponding element found -> leave
-  if(Aids.empty())
+  if(ids_1.empty())
     return;
 
   //call default assignment
-  VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterialAToB(volmortar,Bele,Aids,disA,disB);
+  VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial1To2(volmortar,ele2,ids_1,dis1,dis2);
 
   // initialise kinematic type to geo_linear.
   // kintype is passed to the corresponding thermo element
   INPAR::STR::KinemType kintype = INPAR::STR::kinem_linear;
 
   //default strategy: take only material of first element found
-  DRT::Element* Aele = disA->gElement(Aids[0]);
+  DRT::Element* Aele = dis1->gElement(ids_1[0]);
 
   // if Aele is a so3_base element
   DRT::ELEMENTS::So_base* so_base =
@@ -319,7 +319,7 @@ void TSI::UTILS::TSIMaterialStrategy::AssignMaterialAToB(
   else
     dserror("Aele is not a so3_thermo element!");
 
-  DRT::ELEMENTS::Thermo* therm = dynamic_cast<DRT::ELEMENTS::Thermo*>(Bele);
+  DRT::ELEMENTS::Thermo* therm = dynamic_cast<DRT::ELEMENTS::Thermo*>(ele2);
   if (therm != NULL)
   {
     therm->SetKinematicType(kintype); // set kintype in cloned thermal element

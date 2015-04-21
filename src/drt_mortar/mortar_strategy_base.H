@@ -58,21 +58,20 @@ class StrategyBase
     //! @name Enums and Friends
     enum QuantityType // can be called by StoreNodalQuantities() or StoreDMtoNodes()
     {
-      lmcurrent,
-      lmold,
-      lmupdate,
-      lmuzawa,
-      activeold,
-      slipold,
-      jump,
+      lmcurrent,   // current lagr. mult.
+      lmold,       // lagr. mult. for last converged state
+      lmupdate,    // update current lagr. mult. (same as for lmcurrent + DBC check)
+      lmuzawa,     // lagr. mutl. from last Uzawa step
+      activeold,   // contact status of last converged state
+      slipold,     // slip for last converged state
       dm,
       pentrac,
-      wear,
-      wupdate,
-      wmupdate,
-      wold,
-      wmold,
-      wupdateT
+      weightedwear,// weighted wear (internal state var. approach)
+      wupdate,     // update current pv wear for current step (slave)
+      wmupdate,    // update current pv wear for current step (master)
+      wold,        // pv wear for last converged state (slave)
+      wmold,       // pv wear for last converged state (master)
+      wupdateT     // accumulated pv wear for different time scales
     };
     //@}
 
@@ -221,7 +220,7 @@ class StrategyBase
     virtual void VisualizeGmsh(const int step, const int iter) = 0;
     virtual bool WasInContact() = 0;
     virtual bool WasInContactLastTimeStep() = 0;
-    virtual bool Wear() = 0;
+    virtual bool WeightedWear() = 0;
     virtual bool WearBothDiscrete() = 0;
     virtual const Teuchos::RCP<Epetra_Map> MasterSlipNodes() = 0;
     virtual const Teuchos::RCP<Epetra_Map> MasterActiveNodes() = 0;

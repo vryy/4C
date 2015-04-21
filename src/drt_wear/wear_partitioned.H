@@ -78,14 +78,16 @@ namespace WEAR
     // transform from ale to structure dofs
     virtual Teuchos::RCP<Epetra_Vector> AleToStructure(Teuchos::RCP<const Epetra_Vector> vec) const;
 
-    /// Application of mesh displacements (frictional contact)
-    void ApplyMeshDisplacement(bool iterated=false);
+    /// Application of mesh displacements (frictional contact) to material conf
+    void UpdateMatConf();
 
-    /// material coordinates evaluated from spatial ones
-    void AdvectionMap(double* XMat,
-                      double* XMesh,
-                      DRT::Element** ElementPtr,
-                      int numelements);
+    /// parameter space mapping between configurations
+    void AdvectionMap(
+        double* Xtarget,            // out
+        double* Xsource,            // in
+        DRT::Element** ElementPtr,  // in
+        int numelements,            // in
+        bool spatialtomaterial);    // in
 
     // check convergence
     bool ConvergenceCheck(int iter);
@@ -138,7 +140,7 @@ namespace WEAR
     void Update();
 
     // update spatial displacements due to mat. displ
-    void UpdateDispnp();
+    void UpdateSpatConf();
 
     /// pull-back operation for wear from current to material conf.
     void WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterface_s);
@@ -166,6 +168,7 @@ namespace WEAR
     Teuchos::RCP<Epetra_Vector>                      wearincr_;     // wear incr between wearnp_i_ and wearnp_ip_
 
     Teuchos::RCP<Epetra_Vector>                      delta_ale_;
+    Teuchos::RCP<Epetra_Vector>                      ale_i_;
 
     Teuchos::RCP< ::ADAPTER::Coupling>               coupalestru_;   // ale struct cpupling
     Teuchos::RCP< ::ADAPTER::Coupling>               coupstrualei_;  // ale struct coupling on ale interface

@@ -596,8 +596,7 @@ CONTACT::CoManager::CoManager(
   // create WearLagrangeStrategy for wear as non-distinct quantity
   if ( stype == INPAR::CONTACT::solution_lagmult &&
        wlaw  != INPAR::WEAR::wear_none &&
-      (wtype == INPAR::WEAR::wear_intstate_expl ||
-       wtype == INPAR::WEAR::wear_intstate_impl ||
+      (wtype == INPAR::WEAR::wear_intstate ||
        wtype == INPAR::WEAR::wear_primvar))
   {
     strategy_ = Teuchos::rcp(new WearLagrangeStrategy(
@@ -841,7 +840,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   if (mortar.get<double>("SEARCH_PARAM") == 0.0 && Comm().MyPID() == 0)
     std::cout << ("Warning: Contact search called without inflation of bounding volumes\n") << std::endl;
 
-  if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(wearlist,"BOTH_SIDED_WEAR") != INPAR::WEAR::wear_slave)
+  if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(wearlist,"WEAR_SIDE") != INPAR::WEAR::wear_slave)
     std::cout << ("\n \n Warning: Contact with both-sided wear is still experimental !") << std::endl;
 
 
@@ -976,7 +975,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
 
     if(problemtype == prb_structure and
        DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW")  != INPAR::WEAR::wear_none and
-       DRT::INPUT::IntegralValue<INPAR::WEAR::WearType>(wearlist,"WEARTYPE") != INPAR::WEAR::wear_intstate_expl)
+       DRT::INPUT::IntegralValue<INPAR::WEAR::WearTimInt>(wearlist,"WEARTIMINT") != INPAR::WEAR::wear_expl)
       dserror("ERROR: Wear calculation for pure structure problems only with explicit internal state variable approach reasonable!");
 
     if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact,"FRICTION") == INPAR::CONTACT::friction_none
@@ -1424,10 +1423,10 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
   }
 
   // *********************************************************************
-  // wear
+  // wear with internal state variable approach
   // *********************************************************************
-  bool wear = GetStrategy().Wear();
-  if (wear)
+  bool wwear = GetStrategy().WeightedWear();
+  if (wwear)
   {
     // ***************************************************************************
     // we do not compute the non-weighted wear here. we just write    farah 06/13
@@ -1437,7 +1436,7 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
     // ***************************************************************************
 
     // evaluate wear (not weighted)
-//    GetStrategy().OutputWear();
+    GetStrategy().OutputWear();
 
     // write output
     Teuchos::RCP<Epetra_Vector> wearoutput    = GetStrategy().ContactWear();

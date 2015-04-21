@@ -45,7 +45,10 @@ void wear_dyn_drt(int restart)
 
   //check if quasistatic analysis
   if(sdyn.get<std::string>("DYNAMICTYP")!= "Statics")
-    dserror ("ERROR: Structure with ale only for quasistatic analysis so in new sti so far.");
+  {
+    std::cout << "WARNING: wear without dynamic effects!!!" << std::endl;
+    //dserror ("ERROR: Structure with ale only for quasistatic analysis so in new sti so far.");
+  }
 
   // access the structure discretization, make sure it is filled
   Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;

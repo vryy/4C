@@ -160,7 +160,7 @@ public:
 
    This method assembles the weighted wear vector.
    */
-   virtual void AssembleWear(Epetra_Vector& gglobal);
+   virtual void AssembleWear(Epetra_Vector& wglobal);
 
    /*!
    \brief Build active set (nodes / dofs) of this interface
@@ -465,8 +465,8 @@ protected:
 
 
    bool wearimpl_;        //bool for implicit wear
-   bool weardiscr_;       //bool for wear with own discretization
-   bool wearbothdiscr_;   //bool for wear with own discretization
+   bool wearpv_;          //bool for wear with own discretization
+   bool wearboth_;        //bool for wear on both sides
    bool sswear_;          //bool steady state wear
 
 }; //class

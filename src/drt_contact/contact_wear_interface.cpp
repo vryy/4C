@@ -27,9 +27,7 @@ Maintainer: Philipp Farah
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_utils.H"
 
-//#include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_mortar.H"
-//#include "../drt_inpar/inpar_wear.H"
 #include <Epetra_FEVector.h>
 
 /*----------------------------------------------------------------------*
@@ -41,31 +39,31 @@ CONTACT::WearInterface::WearInterface(const int id, const Epetra_Comm& comm,
                                   bool selfcontact,
                                   INPAR::MORTAR::RedundantStorage redundant) :
 CONTACT::CoInterface(id,comm,dim,icontact,selfcontact,redundant),
+wearimpl_(false),
+wearpv_(false),
+wearboth_(false),
 sswear_(DRT::INPUT::IntegralValue<int>(icontact,"SSWEAR"))
 {
   // set wear contact status
   INPAR::WEAR::WearType wtype =
       DRT::INPUT::IntegralValue<INPAR::WEAR::WearType>(icontact,"WEARTYPE");
 
-  INPAR::WEAR::WearSide wside =
-      DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(icontact,"BOTH_SIDED_WEAR");
+  INPAR::WEAR::WearTimInt wtimint =
+      DRT::INPUT::IntegralValue<INPAR::WEAR::WearTimInt>(icontact,"WEARTIMINT");
 
-  if (wtype == INPAR::WEAR::wear_intstate_impl)
+  INPAR::WEAR::WearSide wside =
+      DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(icontact,"WEAR_SIDE");
+
+  if (wtimint == INPAR::WEAR::wear_impl)
     wearimpl_ = true;
-  else
-    wearimpl_=false;
 
   // set wear contact discretization
   if (wtype == INPAR::WEAR::wear_primvar)
-    weardiscr_ = true;
-  else
-    weardiscr_=false;
+    wearpv_ = true;
 
   // set wear contact discretization
-  if (wside == INPAR::WEAR::wear_both_discr)
-    wearbothdiscr_ = true;
-  else
-    wearbothdiscr_=false;
+  if (wside == INPAR::WEAR::wear_both)
+    wearboth_ = true;
 
   return;
 }
@@ -202,8 +200,7 @@ void CONTACT::WearInterface::AssembleTE_Master(LINALG::SparseMatrix& tglobal,
   if (!lComm())
     return;
 
-  if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(imortar_,"BOTH_SIDED_WEAR") !=
-      INPAR::WEAR::wear_both_discr)
+  if (!(wearboth_ and wearpv_))
     dserror("ERROR: AssembleTE_Master only for discr both-sided wear!");
 
   //*******************************************************
@@ -957,7 +954,8 @@ void CONTACT::WearInterface::EvaluateNodalNormals()
   }
 
   // for both-sided discrete wear
-  if(wearbothdiscr_)
+  if(wearboth_ == true and
+     wearpv_   == true)
   {
     for(int i=0; i<mnoderowmap_->NumMyElements();++i)
     {
@@ -1192,7 +1190,7 @@ void CONTACT::WearInterface::ExportNodalNormals()
   // --------------------------------------------------------------------------------------
   // for both-sided discrete wear we need the same normal information on the master side:
   // --------------------------------------------------------------------------------------
-  if(wearbothdiscr_)
+  if(wearboth_ and wearpv_)
   {
     const Teuchos::RCP<Epetra_Map> masternodes = LINALG::AllreduceEMap(*(mnoderowmap_));
 
@@ -1458,7 +1456,7 @@ void CONTACT::WearInterface::AssembleS(LINALG::SparseMatrix& sglobal)
     /*************************************************************************
      * Wear implicit linearization   --> obviously, we need a new linear.    *
      *************************************************************************/
-    if(wearimpl_)
+    if(wearimpl_ and !wearpv_)
     {
       // prepare assembly
       std::map<int,double>& dwmap = cnode->CoData().GetDerivW();
@@ -1827,7 +1825,7 @@ void CONTACT::WearInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMgl
           if (abs(valteta)>1.0e-12) linstickDISglobal.Assemble(valteta,row[1],col);
         }
       }
-      if(wearimpl_)
+      if(wearimpl_ and !wearpv_)
       {
         // linearization of weighted wear w.r.t. displacements **********************
         std::map<int,double>& dwmap = cnode->CoData().GetDerivW();
@@ -2995,7 +2993,7 @@ void CONTACT::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglob
         /*************************************************************************
          * Wear implicit linearization w.r.t. displ.                                          *
          *************************************************************************/
-        if(wearimpl_)
+        if(wearimpl_ and !wearpv_)
         {
           std::map<int,double>& dwmap = cnode->CoData().GetDerivW();
 #ifdef CONSISTENTSLIP
@@ -3323,7 +3321,7 @@ void CONTACT::WearInterface::AssembleLinWLmSl(LINALG::SparseMatrix& sglobal)
 /*----------------------------------------------------------------------*
  |  Assemble wear                                         gitterle 12/10|
  *----------------------------------------------------------------------*/
-void CONTACT::WearInterface::AssembleWear(Epetra_Vector& gglobal)
+void CONTACT::WearInterface::AssembleWear(Epetra_Vector& wglobal)
 {
   // get out of here if not participating in interface
   if (!lComm()) return;
@@ -3341,7 +3339,7 @@ void CONTACT::WearInterface::AssembleWear(Epetra_Vector& gglobal)
       dserror("ERROR: AssembleWear: Node ownership inconsistency!");
 
     /**************************************************** w-vector ******/
-    double wear = frinode->FriDataPlus().Wear();
+    double wear = frinode->FriDataPlus().WeightedWear();
 
     Epetra_SerialDenseVector wnode(1);
     std::vector<int> lm(1);
@@ -3351,7 +3349,7 @@ void CONTACT::WearInterface::AssembleWear(Epetra_Vector& gglobal)
     lm[0] = frinode->Id();
     lmowner[0] = frinode->Owner();
 
-    LINALG::Assemble(gglobal,wnode,lm,lmowner);
+    LINALG::Assemble(wglobal,wnode,lm,lmowner);
   }
 
   return;
@@ -3665,7 +3663,6 @@ bool CONTACT::WearInterface::BuildActiveSetMaster()
   slipmasternodes_  = Teuchos::rcp(new Epetra_Map(-1,(int)gs.size(),&gs[0],0,Comm()));
   slipmn_           = Teuchos::rcp(new Epetra_Map(-1,(int)gsd.size(),&gsd[0],0,Comm()));
 
-
   for (int j=0;j<SlaveColNodes()->NumMyElements();++j)
   {
     int gid = SlaveColNodes()->GID(j);
@@ -3695,9 +3692,9 @@ bool CONTACT::WearInterface::BuildActiveSetMaster()
       frinode->FriData().Slip()=false;
   }
 
-
   return true;
 }
+
 
 /*----------------------------------------------------------------------*
  |  build active set (nodes / dofs)                           popp 02/08|
@@ -3818,8 +3815,7 @@ bool CONTACT::WearInterface::BuildActiveSet(bool init)
 
   // *******************************************************
   // loop over all master nodes - both-sided wear specific
-  if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(imortar_,"BOTH_SIDED_WEAR")
-      == INPAR::WEAR::wear_both_map)
+  if (wearboth_ and !wearpv_)
   {
     // The node and dof map of involved master nodes for both-sided wear should have an
     // analog distribution as the master node row map. Therefore, we loop over
@@ -3866,8 +3862,7 @@ bool CONTACT::WearInterface::BuildActiveSet(bool init)
   activedofs_  = Teuchos::rcp(new Epetra_Map(-1,(int)mydofgids.size(),&mydofgids[0],0,Comm()));
 
   // create map for all involved master nodes -- both-sided wear specific
-  if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(imortar_,"BOTH_SIDED_WEAR")
-      == INPAR::WEAR::wear_both_map)
+  if (wearboth_ and !wearpv_)
   {
     involvednodes_ = Teuchos::rcp(new Epetra_Map(-1,(int)mymnodegids.size(),&mymnodegids[0],0,Comm()));
     involveddofs_  = Teuchos::rcp(new Epetra_Map(-1,(int)mymdofgids.size(),&mymdofgids[0],0,Comm()));
@@ -4222,8 +4217,7 @@ void CONTACT::WearInterface::FillComplete(int maxdof, bool newghosting)
   // here we need a datacontainer for the masternodes too
   // they have to know their involved nodes/dofs
   //***********************************************************
-  if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(imortar_,"BOTH_SIDED_WEAR")
-      != INPAR::WEAR::wear_slave)
+  if (wearboth_)
   {
     const Teuchos::RCP<Epetra_Map> masternodes = LINALG::AllreduceEMap(*(MasterRowNodes()));
 
@@ -4646,7 +4640,7 @@ void CONTACT::WearInterface::Initialize()
   //**************************************************
   // for both-sided wear
   //**************************************************
-  if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(imortar_,"BOTH_SIDED_WEAR") == INPAR::WEAR::wear_both_map)
+  if (wearboth_ and !wearpv_)
   {
     const Teuchos::RCP<Epetra_Map> masternodes = LINALG::AllreduceEMap(*(MasterRowNodes()));
 
@@ -4749,13 +4743,13 @@ void CONTACT::WearInterface::Initialize()
       //*************************************
       // reset weighted wear increment and derivative
       // only for implicit wear algorithm
-      if(wearimpl_)
+      if(wearimpl_ and !wearpv_)
       {
         (cnode->CoData().GetDerivW()).clear();
         (cnode->CoData().GetDerivWlm()).clear();
       }
 
-      if(weardiscr_)
+      if(wearpv_)
       {
         // reset nodal Mortar wear maps
         for (int j=0;j<(int)((frinode->FriDataPlus().GetT()).size());++j)
@@ -4774,13 +4768,14 @@ void CONTACT::WearInterface::Initialize()
       if (wear_)
       {
         // reset wear increment
-        frinode->FriDataPlus().DeltaWear() = 0.0;
+        if(!wearpv_)
+          frinode->FriDataPlus().DeltaWeightedWear() = 0.0;
 
         // reset abs. wear.
         // for impl. wear algor. the abs. wear equals the
         // delta-wear
-        if(wearimpl_)
-          frinode->FriDataPlus().Wear() = 0.0;
+        if(wearimpl_ and !wearpv_)
+          frinode->FriDataPlus().WeightedWear() = 0.0;
       }
 
       //************************************
@@ -4801,8 +4796,7 @@ void CONTACT::WearInterface::Initialize()
   }
 
   // for both-sided wear with discrete wear
-  if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(imortar_,"BOTH_SIDED_WEAR") ==
-      INPAR::WEAR::wear_both_discr)
+  if (wearboth_ and wearpv_)
   {
     const Teuchos::RCP<Epetra_Map> masternodes = LINALG::AllreduceEMap(*(MasterRowNodes()));
 
@@ -5016,7 +5010,7 @@ void CONTACT::WearInterface::SetElementAreas()
   else
   {
     // for both-sided wear we need element areas of master elements --> colelements
-    if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(imortar_,"BOTH_SIDED_WEAR") != INPAR::WEAR::wear_slave)
+    if (wearboth_)
     {
       for (int i=0;i<idiscret_->NumMyColElements();++i)
       {

@@ -147,7 +147,7 @@ void VOLMORTAR::Cell::LocalToGlobal(double* local, double* global)
     }
   }
   else
-    dserror("shape of integration cell not supported!");
+    dserror("ERROR: Shape of integration cell not supported!");
 
   return;
 }

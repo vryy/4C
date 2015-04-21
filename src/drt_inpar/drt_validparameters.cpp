@@ -2052,8 +2052,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       tuple<std::string>("material","mat",
                          "spatial","sp"),
       tuple<int>(
-                 INPAR::WEAR::wear_conf_mat, INPAR::WEAR::wear_conf_mat,
-                 INPAR::WEAR::wear_conf_sp, INPAR::WEAR::wear_conf_sp),
+                 INPAR::WEAR::wear_coeff_mat, INPAR::WEAR::wear_coeff_mat,
+                 INPAR::WEAR::wear_coeff_sp,  INPAR::WEAR::wear_coeff_sp),
+      &wear);
+
+  setStringToIntegralParameter<int>("WEAR_SHAPE_EVO","material","configuration for shape evolution step",
+      tuple<std::string>("material","mat",
+                         "spatial","sp"),
+      tuple<int>(
+                 INPAR::WEAR::wear_se_mat, INPAR::WEAR::wear_se_mat,
+                 INPAR::WEAR::wear_se_sp,  INPAR::WEAR::wear_se_sp),
       &wear);
 
   setStringToIntegralParameter<int>("WEAR_SHAPEFCN","std","Type of employed set of shape functions for wear",
@@ -2075,24 +2083,28 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("VOLMASS_OUTPUT","No","flag for output of mass/volume in ref,mat and cur. conf.",
                                yesnotuple,yesnovalue,&wear);
 
-  setStringToIntegralParameter<int>("BOTH_SIDED_WEAR","No","Definition of wear side",
-        tuple<std::string>("No","no", "none" ,
-                           "Mapping","mapping", "map",
-                           "bothdiscr","bd", "sm"),
+  setStringToIntegralParameter<int>("WEAR_SIDE","slave","Definition of wear side",
+        tuple<std::string>("s","slave", "Slave" ,
+                           "both","slave_master", "sm"),
         tuple<int>(
-                INPAR::WEAR::wear_slave, INPAR::WEAR::wear_slave, INPAR::WEAR::wear_slave,
-                INPAR::WEAR::wear_both_map, INPAR::WEAR::wear_both_map,INPAR::WEAR::wear_both_map,
-                INPAR::WEAR::wear_both_discr, INPAR::WEAR::wear_both_discr,INPAR::WEAR::wear_both_discr),
+                INPAR::WEAR::wear_slave,INPAR::WEAR::wear_slave,INPAR::WEAR::wear_slave,
+                INPAR::WEAR::wear_both, INPAR::WEAR::wear_both, INPAR::WEAR::wear_both),
         &wear);
 
-  setStringToIntegralParameter<int>("WEARTYPE","internal_state_expl","Definition of wear algorithm",
-        tuple<std::string>("intstate_impl","is_impl", "internal_state_impl" ,
-                           "intstate_expl","is_expl", "internal_state_expl",
+  setStringToIntegralParameter<int>("WEARTYPE","internal_state","Definition of wear algorithm",
+        tuple<std::string>("intstate","is", "internal_state" ,
                            "primvar","pv", "primary_variable"),
         tuple<int>(
-                INPAR::WEAR::wear_intstate_impl, INPAR::WEAR::wear_intstate_impl, INPAR::WEAR::wear_intstate_impl,
-                INPAR::WEAR::wear_intstate_expl, INPAR::WEAR::wear_intstate_expl, INPAR::WEAR::wear_intstate_expl,
-                INPAR::WEAR::wear_primvar, INPAR::WEAR::wear_primvar, INPAR::WEAR::wear_primvar),
+                INPAR::WEAR::wear_intstate, INPAR::WEAR::wear_intstate, INPAR::WEAR::wear_intstate,
+                INPAR::WEAR::wear_primvar,  INPAR::WEAR::wear_primvar,  INPAR::WEAR::wear_primvar),
+        &wear);
+
+  setStringToIntegralParameter<int>("WEARTIMINT","explicit","Definition of wear time integration",
+        tuple<std::string>("explicit","e", "expl" ,
+                           "implicit","i", "impl"),
+        tuple<int>(
+                INPAR::WEAR::wear_expl, INPAR::WEAR::wear_expl, INPAR::WEAR::wear_expl,
+                INPAR::WEAR::wear_impl, INPAR::WEAR::wear_impl, INPAR::WEAR::wear_impl),
         &wear);
 
   setStringToIntegralParameter<int>("WEAR_COUPALGO","stagg","Definition of wear (ALE) coupling algorithm",

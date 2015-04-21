@@ -28,6 +28,7 @@
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_mapextractor.H"
 
 // std. interface mortar
 #include "../drt_mortar/mortar_coupling3d.H"
@@ -52,24 +53,47 @@
  *----------------------------------------------------------------------*/
 VOLMORTAR::VolMortarCoupl::VolMortarCoupl(
     int dim,
-    Teuchos::RCP<DRT::Discretization> Adis, // should be structure
-    Teuchos::RCP<DRT::Discretization> Bdis, // other field...
+    Teuchos::RCP<DRT::Discretization> dis1, // on Omega_1
+    Teuchos::RCP<DRT::Discretization> dis2, // on Omega_2
+    std::vector<int>* coupleddof12, // 2-->1
+    std::vector<int>* coupleddof21, // 1-->2
     Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy
     ) :
     dim_(dim),
-    Adiscret_(Adis),
-    Bdiscret_(Bdis),
+    dis1_(dis1),
+    dis2_(dis2),
     materialstrategy_(materialstrategy)
 {
   //check
-  if (not Adiscret_->Filled() or not Bdiscret_->Filled())
+  if (not dis1_->Filled() or not dis2_->Filled())
     dserror("ERROR: FillComplete() has to be called on both discretizations before setup of VolMortarCoupl");
-  if ((Adiscret_->NumDofSets() == 1) or (Bdiscret_->NumDofSets() == 1))
+  if ((dis1_->NumDofSets() == 1) or (dis2_->NumDofSets() == 1))
     dserror("ERROR: Both discretizations need to own at least two dofsets for mortar coupling!");
 
   // its the same communicator for all discr.
-  comm_ = Teuchos::rcp(Adis->Comm().Clone());
+  comm_ = Teuchos::rcp(dis1->Comm().Clone());
   myrank_ = comm_->MyPID();
+
+  // define row/col map of projection operators
+  if(coupleddof12!=NULL)
+  {
+    BuildMaps(dis1, dis2, P12_dofrowmap_, P12_dofcolmap_, coupleddof12);
+  }
+  else
+  {
+    P12_dofrowmap_ = Teuchos::rcp(Discret1()->DofRowMap(1),false);
+    P12_dofcolmap_ = Teuchos::rcp(Discret2()->DofRowMap(0),false);
+  }
+
+  if(coupleddof21!=NULL)
+  {
+    BuildMaps(dis2, dis1, P21_dofrowmap_, P21_dofcolmap_, coupleddof21);
+  }
+  else
+  {
+    P21_dofrowmap_ = Teuchos::rcp(Discret2()->DofRowMap(1),false);
+    P21_dofcolmap_ = Teuchos::rcp(Discret1()->DofRowMap(0),false);
+  }
 
   // get required parameter list
   ReadAndCheckInput();
@@ -84,9 +108,80 @@ VOLMORTAR::VolMortarCoupl::VolMortarCoupl(
 
   // initialize the counter
   polygoncounter_ = 0;
-  cellcounter_ = 0;
-  inteles_ = 0;
-  volume_ = 0.0;
+  cellcounter_    = 0;
+  inteles_        = 0;
+  volume_         = 0.0;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Build maps based on coupling dofs                        farah 03/15|
+ *----------------------------------------------------------------------*/
+void VOLMORTAR::VolMortarCoupl::BuildMaps(
+    Teuchos::RCP<DRT::Discretization>& dis1,
+    Teuchos::RCP<DRT::Discretization>& dis2,
+    Teuchos::RCP<const Epetra_Map>& dofmap1,
+    Teuchos::RCP<const Epetra_Map>& dofmap2,
+    std::vector<int>* coupleddof
+    )
+{
+  std::vector<int> dofmapvec1;
+  std::vector<int> dofmapvec2;
+
+  std::map<int, std::vector<int> > dofs1;
+  std::map<int, std::vector<int> > dofs2;
+
+  const int* nodes1 = dis1->NodeColMap()->MyGlobalElements();
+  const int* nodes2 = dis2->NodeColMap()->MyGlobalElements();
+
+  const int numnode1 = dis1->NodeColMap()->NumMyElements();
+  const int numnode2 = dis2->NodeColMap()->NumMyElements();
+
+  // dis1
+  for (int i=0; i<numnode1; ++i)
+  {
+    const DRT::Node* actnode = dis1->gNode(nodes1[i]);
+
+    const std::vector<int> dof = dis1->Dof(1,actnode);
+    if (coupleddof->size() > dof.size())
+      dserror("got just %d dofs at node %d (lid=%d) but expected %d",dof.size(),nodes1[i],i,coupleddof->size());
+    //copy(&dof[0], &dof[0]+numdof, back_inserter(dofmapvec));
+    for(unsigned j=0;j<coupleddof->size();++j)
+      if((*coupleddof)[j]==1)
+        dofmapvec1.push_back(dof[j]);
+  }
+
+  // dis2
+  for (int i=0; i<numnode2; ++i)
+  {
+    const DRT::Node* actnode = dis2->gNode(nodes2[i]);
+
+    const std::vector<int> dof = dis2->Dof(0,actnode);
+    if (coupleddof->size() > dof.size())
+      dserror("got just %d dofs at node %d (lid=%d) but expected %d",dof.size(),nodes2[i],i,coupleddof->size());
+    //copy(&dof[0], &dof[0]+numdof, back_inserter(dofmapvec));
+    for(unsigned j=0;j<coupleddof->size();++j)
+      if((*coupleddof)[j]==1)
+        dofmapvec2.push_back(dof[j]);
+  }
+
+  std::vector<int>::const_iterator pos1 = std::min_element(dofmapvec1.begin(), dofmapvec1.end());
+  if (pos1!=dofmapvec1.end() and *pos1 < 0)
+    dserror("illegal dof number %d", *pos1);
+
+  std::vector<int>::const_iterator pos2 = std::min_element(dofmapvec2.begin(), dofmapvec2.end());
+  if (pos2!=dofmapvec2.end() and *pos2 < 0)
+    dserror("illegal dof number %d", *pos2);
+
+  // dof map is the original, unpermuted distribution of dofs
+  dofmap1 = Teuchos::rcp(new Epetra_Map(-1, dofmapvec1.size(), &dofmapvec1[0], 0, *comm_));
+  dofmap2 = Teuchos::rcp(new Epetra_Map(-1, dofmapvec2.size(), &dofmapvec2[0], 0, *comm_));
+
+  dofmapvec1.clear();
+  dofmapvec2.clear();
+  dofs1.clear();
+  dofs2.clear();
 
   return;
 }
@@ -112,6 +207,14 @@ void VOLMORTAR::VolMortarCoupl::EvaluateVolmortar()
   // time measurement
   comm_->Barrier();
   const double t_start = Teuchos::Time::wallTime();
+
+  /***********************************************************
+   * Check initial residuum and perform mesh init             *
+   ***********************************************************/
+  //CheckInitialResiduum();
+  // mesh initialization procedure
+  if (DRT::INPUT::IntegralValue<int>(Params(), "MESH_INIT"))
+    MeshInit();
 
   /***********************************************************
    * initialize global matrices                              *
@@ -141,14 +244,6 @@ void VOLMORTAR::VolMortarCoupl::EvaluateVolmortar()
    ***********************************************************/
   Complete();
   CreateProjectionOperator();
-
-  /***********************************************************
-   * Check initial residuum and perform mesh init             *
-   ***********************************************************/
-  //CheckInitialResiduum();
-  // mesh initialization procedure
-  if (DRT::INPUT::IntegralValue<int>(Params(), "MESH_INIT"))
-    MeshInit();
 
   /**************************************************
    * Bye                                            *
@@ -364,47 +459,47 @@ std::vector<int> VOLMORTAR::VolMortarCoupl::Search(DRT::Element& ele,
  *----------------------------------------------------------------------*/
 void VOLMORTAR::VolMortarCoupl::AssignMaterials()
 {
-  if(Adiscret_==Teuchos::null or Bdiscret_==Teuchos::null)
+  if(dis1_==Teuchos::null or dis2_==Teuchos::null)
     dserror("no discretization for assigning materials!");
 
   // init search trees
-  Teuchos::RCP<GEO::SearchTree> SearchTreeA = InitSearch(Adiscret_);
-  Teuchos::RCP<GEO::SearchTree> SearchTreeB = InitSearch(Bdiscret_);
+  Teuchos::RCP<GEO::SearchTree> SearchTreeA = InitSearch(dis1_);
+  Teuchos::RCP<GEO::SearchTree> SearchTreeB = InitSearch(dis2_);
 
   // calculate DOPs for search algorithm
-  std::map<int,LINALG::Matrix<9,2> > CurrentDOPsA = CalcBackgroundDops(Adiscret_);
-  std::map<int,LINALG::Matrix<9,2> > CurrentDOPsB = CalcBackgroundDops(Bdiscret_);
+  std::map<int,LINALG::Matrix<9,2> > CurrentDOPsA = CalcBackgroundDops(dis1_);
+  std::map<int,LINALG::Matrix<9,2> > CurrentDOPsB = CalcBackgroundDops(dis2_);
 
   /**************************************************
    * loop over all Adis elements                    *
    **************************************************/
-  for (int j = 0; j < Adiscret_->NumMyColElements(); ++j)
+  for (int j = 0; j < dis1_->NumMyColElements(); ++j)
   {
     //get master element
-    DRT::Element* Aele = Adiscret_->lColElement(j);
+    DRT::Element* Aele = dis1_->lColElement(j);
 
     std::vector<int> found = Search(*Aele, SearchTreeB, CurrentDOPsB);
 
     /***********************************************************
      * Assign materials                                        *
      ***********************************************************/
-    materialstrategy_->AssignMaterialBToA(this,Aele,found,Adiscret_,Bdiscret_);
+    materialstrategy_->AssignMaterial2To1(this,Aele,found,dis1_,dis2_);
   }
 
   /**************************************************
    * loop over all Bdis elements                    *
    **************************************************/
-  for (int j = 0; j < Bdiscret_->NumMyColElements(); ++j)
+  for (int j = 0; j < dis2_->NumMyColElements(); ++j)
   {
     //get master element
-    DRT::Element* Bele = Bdiscret_->lColElement(j);
+    DRT::Element* Bele = dis2_->lColElement(j);
 
     std::vector<int> found = Search(*Bele, SearchTreeA, CurrentDOPsA);
 
     /***********************************************************
      * Assign materials                                        *
      ***********************************************************/
-    materialstrategy_->AssignMaterialAToB(this,Bele,found,Adiscret_,Bdiscret_);
+    materialstrategy_->AssignMaterial1To2(this,Bele,found,dis1_,dis2_);
   }
 
   return;
@@ -589,9 +684,9 @@ void VOLMORTAR::VolMortarCoupl::CreateTrafoOperator(DRT::Element& ele,
         int row = searchdis->Dof(1, cnode, jdof);
 
         if (dis)
-          TA_->Assemble(1.0, row, row);
+          T1_->Assemble(1.0, row, row);
         else
-          TB_->Assemble(1.0, row, row);
+          T2_->Assemble(1.0, row, row);
       }
     }
     //************************************************
@@ -610,9 +705,9 @@ void VOLMORTAR::VolMortarCoupl::CreateTrafoOperator(DRT::Element& ele,
 
         // assemble diagonal entries
         if (dis)
-          TA_->Assemble(1.0 - 3.0 * alpha, row, row);
+          T1_->Assemble(1.0 - 3.0 * alpha, row, row);
         else
-          TB_->Assemble(1.0 - 3.0 * alpha, row, row);
+          T2_->Assemble(1.0 - 3.0 * alpha, row, row);
 
         // found ids
         for (int id = 0; id < (int) ids.size(); ++id)
@@ -628,9 +723,9 @@ void VOLMORTAR::VolMortarCoupl::CreateTrafoOperator(DRT::Element& ele,
             {
               // assemble off-diagonal entries
               if (dis)
-                TA_->Assemble(alpha, row, col);
+                T1_->Assemble(alpha, row, col);
               else
-                TB_->Assemble(alpha, row, col);
+                T2_->Assemble(alpha, row, col);
             }
           }
         }
@@ -662,29 +757,29 @@ void VOLMORTAR::VolMortarCoupl::EvaluateConsistentInterpolation()
   /***********************************************************
    * Init P-matrices                                         *
    ***********************************************************/
-  pmatrixA_ = Teuchos::rcp(
-      new LINALG::SparseMatrix(*ADiscret()->DofRowMap(1), 10));
-  pmatrixB_ = Teuchos::rcp(
-      new LINALG::SparseMatrix(*BDiscret()->DofRowMap(1), 100));
+  P12_ = Teuchos::rcp(
+      new LINALG::SparseMatrix(*Discret1()->DofRowMap(1), 10));
+  P21_ = Teuchos::rcp(
+      new LINALG::SparseMatrix(*Discret2()->DofRowMap(1), 100));
 
   /***********************************************************
    * create search tree and current dops                     *
    ***********************************************************/
-  Teuchos::RCP<GEO::SearchTree> SearchTreeA = InitSearch(Adiscret_);
-  Teuchos::RCP<GEO::SearchTree> SearchTreeB = InitSearch(Bdiscret_);
+  Teuchos::RCP<GEO::SearchTree> SearchTreeA = InitSearch(dis1_);
+  Teuchos::RCP<GEO::SearchTree> SearchTreeB = InitSearch(dis2_);
   std::map<int, LINALG::Matrix<9, 2> > CurrentDOPsA = CalcBackgroundDops(
-      Adiscret_);
+      dis1_);
   std::map<int, LINALG::Matrix<9, 2> > CurrentDOPsB = CalcBackgroundDops(
-      Bdiscret_);
+      dis2_);
 
   /***********************************************************
    * Create P operators                                      *
    ***********************************************************/
-  for (int i = 0; i < Adiscret_->NumMyColNodes(); ++i)
+  for (int i = 0; i < dis1_->NumMyColNodes(); ++i)
   {
     // 1 map node into bele
-    int gid = Adiscret_->NodeColMap()->GID(i);
-    DRT::Node* anode = Adiscret_->gNode(gid);
+    int gid = dis1_->NodeColMap()->GID(i);
+    DRT::Node* anode = dis1_->gNode(gid);
 
     // get found elements from other discr.
     std::vector<int> found =
@@ -694,11 +789,11 @@ void VOLMORTAR::VolMortarCoupl::EvaluateConsistentInterpolation()
   } // end node loop
 
   //================================================
-  for (int i = 0; i < Bdiscret_->NumMyColNodes(); ++i)
+  for (int i = 0; i < dis2_->NumMyColNodes(); ++i)
   {
     // 1 map node into bele
-    int gid = Bdiscret_->NodeColMap()->GID(i);
-    DRT::Node* bnode = Bdiscret_->gNode(gid);
+    int gid = dis2_->NodeColMap()->GID(i);
+    DRT::Node* bnode = dis2_->gNode(gid);
 
     // get found elements from other discr.
     std::vector<int> found =
@@ -710,8 +805,8 @@ void VOLMORTAR::VolMortarCoupl::EvaluateConsistentInterpolation()
   /***********************************************************
    * Complete                                                *
    ***********************************************************/
-  pmatrixA_->Complete(*BDiscret()->DofRowMap(0), *ADiscret()->DofRowMap(1));
-  pmatrixB_->Complete(*ADiscret()->DofRowMap(0), *BDiscret()->DofRowMap(1));
+  P12_->Complete(*Discret2()->DofRowMap(0), *Discret1()->DofRowMap(1));
+  P21_->Complete(*Discret1()->DofRowMap(0), *Discret2()->DofRowMap(1));
 
   return;
 }
@@ -733,30 +828,30 @@ void VOLMORTAR::VolMortarCoupl::EvaluateElements()
   }
 
   // init search trees
-  Teuchos::RCP<GEO::SearchTree> SearchTreeA = InitSearch(Adiscret_);
-  Teuchos::RCP<GEO::SearchTree> SearchTreeB = InitSearch(Bdiscret_);
+  Teuchos::RCP<GEO::SearchTree> SearchTreeA = InitSearch(dis1_);
+  Teuchos::RCP<GEO::SearchTree> SearchTreeB = InitSearch(dis2_);
 
   // calculate DOPs for search algorithm
-  std::map<int,LINALG::Matrix<9,2> > CurrentDOPsA = CalcBackgroundDops(Adiscret_);
-  std::map<int,LINALG::Matrix<9,2> > CurrentDOPsB = CalcBackgroundDops(Bdiscret_);
+  std::map<int,LINALG::Matrix<9,2> > CurrentDOPsA = CalcBackgroundDops(dis1_);
+  std::map<int,LINALG::Matrix<9,2> > CurrentDOPsB = CalcBackgroundDops(dis2_);
 
   /**************************************************
    * loop over all Adis elements                    *
    **************************************************/
   std::set<int> donebeforea;
-  for (int j = 0; j < Adiscret_->NumMyColElements(); ++j)
+  for (int j = 0; j < dis1_->NumMyColElements(); ++j)
   {
     //PrintStatus(j,false);
 
     //get master element
-    DRT::Element* Aele = Adiscret_->lColElement(j);
+    DRT::Element* Aele = dis1_->lColElement(j);
 
     std::vector<int> found = Search(*Aele, SearchTreeB, CurrentDOPsB);
     Integrate3DEleBased_ADis(*Aele, found);
 
     // create trafo operator for quadr. modification
     if (dualquad_ != INPAR::VOLMORTAR::dualquad_no_mod)
-      CreateTrafoOperator(*Aele, Adiscret_, true, donebeforea);
+      CreateTrafoOperator(*Aele, dis1_, true, donebeforea);
   }
 
   // half-time output
@@ -772,24 +867,24 @@ void VOLMORTAR::VolMortarCoupl::EvaluateElements()
    * loop over all Bdis elements                    *
    **************************************************/
   std::set<int> donebeforeb;
-  for (int j = 0; j < Bdiscret_->NumMyColElements(); ++j)
+  for (int j = 0; j < dis2_->NumMyColElements(); ++j)
   {
     //PrintStatus(j,true);
 
     //get master element
-    DRT::Element* Bele = Bdiscret_->lColElement(j);
+    DRT::Element* Bele = dis2_->lColElement(j);
 
     std::vector<int> found = Search(*Bele, SearchTreeA, CurrentDOPsA);
     Integrate3DEleBased_BDis(*Bele, found);
 
     // create trafo operator for quadr. modification
     if (dualquad_ != INPAR::VOLMORTAR::dualquad_no_mod)
-      CreateTrafoOperator(*Bele, Bdiscret_, false, donebeforeb);
+      CreateTrafoOperator(*Bele, dis2_, false, donebeforeb);
   }
 
   // stats
-  inteles_ += Adiscret_->NumGlobalElements();
-  inteles_ += Bdiscret_->NumGlobalElements();
+  inteles_ += dis1_->NumGlobalElements();
+  inteles_ += dis2_->NumGlobalElements();
 }
 
 /*----------------------------------------------------------------------*
@@ -798,20 +893,20 @@ void VOLMORTAR::VolMortarCoupl::EvaluateElements()
 void VOLMORTAR::VolMortarCoupl::EvaluateSegments()
 {
   // create search tree and current dops
-  Teuchos::RCP<GEO::SearchTree> SearchTreeB = InitSearch(Bdiscret_);
+  Teuchos::RCP<GEO::SearchTree> SearchTreeB = InitSearch(dis2_);
   std::map<int, LINALG::Matrix<9, 2> > CurrentDOPsB = CalcBackgroundDops(
-      Bdiscret_);
+      dis2_);
 
   /**************************************************
    * loop over all slave elements                   *
    **************************************************/
-  for (int i = 0; i < Adiscret_->NumMyRowElements(); ++i)
+  for (int i = 0; i < dis1_->NumMyRowElements(); ++i)
   {
     //output of coupling status
     //PrintStatus(i);
 
     //get slave element
-    DRT::Element* Aele = Adiscret_->lRowElement(i);
+    DRT::Element* Aele = dis1_->lRowElement(i);
 
     // get found elements from other discr.
     std::vector<int> found = Search(*Aele, SearchTreeB, CurrentDOPsB);
@@ -819,7 +914,7 @@ void VOLMORTAR::VolMortarCoupl::EvaluateSegments()
     /***********************************************************
      * Assign materials                                        *
      ***********************************************************/
-    materialstrategy_->AssignMaterialBToA(this,Aele,found,Adiscret_,Bdiscret_);
+    materialstrategy_->AssignMaterial2To1(this,Aele,found,dis1_,dis2_);
 
     /**************************************************
      * loop over all master elements                  *
@@ -827,12 +922,12 @@ void VOLMORTAR::VolMortarCoupl::EvaluateSegments()
     for (int foundeles = 0; foundeles < (int) found.size(); ++foundeles)
     {
       //get b element
-      DRT::Element*Bele = Bdiscret_->gElement(found[foundeles]);
+      DRT::Element*Bele = dis2_->gElement(found[foundeles]);
 
       /***********************************************************
        * Assign materials                                        *
        ***********************************************************/
-      materialstrategy_->AssignMaterialAToB(this,Bele,std::vector<int>(1,Aele->Id()),Adiscret_,Bdiscret_);
+      materialstrategy_->AssignMaterial1To2(this,Bele,std::vector<int>(1,Aele->Id()),dis1_,dis2_);
 
       /**************************************************
        *                    2D                          *
@@ -992,9 +1087,11 @@ void VOLMORTAR::VolMortarCoupl::ReadAndCheckInput()
   }
 
   if (DRT::INPUT::IntegralValue<int>(volmortar, "MESH_INIT")
-      and comm_->NumProc() != 1)
+      and
+      DRT::INPUT::IntegralValue<INPAR::VOLMORTAR::IntType>(volmortar, "INTTYPE")
+      == INPAR::VOLMORTAR::inttype_segments)
   {
-    dserror("ERROR: MeshInit only for serial calculations!!!");
+    dserror("ERROR: MeshInit only for ele-based integration!!!");
   }
 
   // merge to global parameter list
@@ -1014,29 +1111,29 @@ void VOLMORTAR::VolMortarCoupl::CheckInitialResiduum()
 {
   // create vectors of initial primary variables
   Teuchos::RCP<Epetra_Vector> var_A = LINALG::CreateVector(
-      *ADiscret()->DofRowMap(0), true);
+      *Discret1()->DofRowMap(0), true);
   Teuchos::RCP<Epetra_Vector> var_B = LINALG::CreateVector(
-      *BDiscret()->DofRowMap(1), true);
+      *Discret2()->DofRowMap(1), true);
 
   // solution
   Teuchos::RCP<Epetra_Vector> result_A = LINALG::CreateVector(
-      *BDiscret()->DofRowMap(1), true);
+      *Discret2()->DofRowMap(1), true);
   Teuchos::RCP<Epetra_Vector> result_B = LINALG::CreateVector(
-      *BDiscret()->DofRowMap(1), true);
+      *Discret2()->DofRowMap(1), true);
 
   // node positions for Discr A
-  for (int i = 0; i < ADiscret()->NumMyRowElements(); ++i)
+  for (int i = 0; i < Discret1()->NumMyRowElements(); ++i)
   {
-    DRT::Element* Aele = ADiscret()->lRowElement(i);
+    DRT::Element* Aele = Discret1()->lRowElement(i);
     for (int j = 0; j < Aele->NumNode(); ++j)
     {
       DRT::Node* cnode = Aele->Nodes()[j];
-      int nsdof = ADiscret()->NumDof(0, cnode);
+      int nsdof = Discret1()->NumDof(0, cnode);
 
       //loop over slave dofs
       for (int jdof = 0; jdof < nsdof; ++jdof)
       {
-        int id = ADiscret()->Dof(0, cnode, jdof);
+        int id = Discret1()->Dof(0, cnode, jdof);
         double val = cnode->X()[jdof];
 
         var_A->ReplaceGlobalValue(id, 0, val);
@@ -1045,18 +1142,18 @@ void VOLMORTAR::VolMortarCoupl::CheckInitialResiduum()
   }
 
   // node positions for Discr B
-  for (int i = 0; i < BDiscret()->NumMyRowElements(); ++i)
+  for (int i = 0; i < Discret2()->NumMyRowElements(); ++i)
   {
-    DRT::Element* Bele = BDiscret()->lRowElement(i);
+    DRT::Element* Bele = Discret2()->lRowElement(i);
     for (int j = 0; j < Bele->NumNode(); ++j)
     {
       DRT::Node* cnode = Bele->Nodes()[j];
-      int nsdof = BDiscret()->NumDof(1, cnode);
+      int nsdof = Discret2()->NumDof(1, cnode);
 
       //loop over slave dofs
       for (int jdof = 0; jdof < nsdof; ++jdof)
       {
-        int id = BDiscret()->Dof(1, cnode, jdof);
+        int id = Discret2()->Dof(1, cnode, jdof);
         double val = cnode->X()[jdof];
 
         var_B->ReplaceGlobalValue(id, 0, val);
@@ -1073,7 +1170,7 @@ void VOLMORTAR::VolMortarCoupl::CheckInitialResiduum()
   //if(err1!=0 or err2!=0)
   //  dserror("error");
 
-  int err = pmatrixB_->Multiply(false, *var_A, *result_A);
+  int err = P21_->Multiply(false, *var_A, *result_A);
   if (err != 0)
     dserror("error");
 
@@ -1090,64 +1187,398 @@ void VOLMORTAR::VolMortarCoupl::CheckInitialResiduum()
  *----------------------------------------------------------------------*/
 void VOLMORTAR::VolMortarCoupl::MeshInit()
 {
-  // create vectors of initial primary variables
-  Teuchos::RCP<Epetra_Vector> var_A = LINALG::CreateVector(
-      *ADiscret()->DofRowMap(0), true);
+  // create merged map:
+  int dofseta = dis1_->BuildDofSetAuxProxy(dim_,0,0,true);
+  int dofsetb = dis2_->BuildDofSetAuxProxy(dim_,0,0,true);
+  dis1_->FillComplete(true,false,false);
+  dis2_->FillComplete(true,false,false);
 
-  // solution
-  Teuchos::RCP<Epetra_Vector> result_A = LINALG::CreateVector(
-      *BDiscret()->DofRowMap(1), true);
+  double omega = 1.0;
+  double nu    = 0.0;
+  int maxiter  = 1;
 
-  // node positions for Discr A
-  for (int i = 0; i < ADiscret()->NumMyRowElements(); ++i)
+  // init zero residuum vector for old iteration
+  Teuchos::RCP<Epetra_Vector> ResoldA  = LINALG::CreateVector(*Discret1()->DofRowMap(dofseta),true);
+  Teuchos::RCP<Epetra_Vector> ResoldB  = LINALG::CreateVector(*Discret2()->DofRowMap(dofsetb),true);
+
+  // output
+  if(myrank_== 0)
   {
-    DRT::Element* Aele = ADiscret()->lRowElement(i);
-    for (int j = 0; j < Aele->NumNode(); ++j)
-    {
-      DRT::Node* cnode = Aele->Nodes()[j];
-      int nsdof = ADiscret()->NumDof(0, cnode);
-
-      //loop over slave dofs
-      for (int jdof = 0; jdof < nsdof; ++jdof)
-      {
-        int id = ADiscret()->Dof(0, cnode, jdof);
-        double val = cnode->X()[jdof];
-
-        var_A->ReplaceGlobalValue(id, 0, val);
-      }
-    }
+    std::cout << "*****       MESHINIT       *****" << std::endl;
   }
 
-  //-----------------------------------------------------
-  // mesh init
-  int err = pmatrixB_->Multiply(false, *var_A, *result_A);
-  if (err != 0)
-    dserror("error");
-
-  //std::cout << "New slave positions " << *result_A << std::endl;
-
-  // node positions for Discr B
-  for (int i = 0; i < BDiscret()->NumMyRowElements(); ++i)
+  // global mesh init loop
+  for(int mi = 0; mi<maxiter;mi++)
   {
-    DRT::Element* Bele = BDiscret()->lRowElement(i);
-    for (int j = 0; j < Bele->NumNode(); ++j)
+    // init
+    dmatrixXA_ = Teuchos::rcp(
+        new LINALG::SparseMatrix(*Discret1()->DofRowMap(dofseta), 10));
+    mmatrixXA_ = Teuchos::rcp(
+        new LINALG::SparseMatrix(*Discret1()->DofRowMap(dofseta), 100));
+
+    dmatrixXB_ = Teuchos::rcp(
+        new LINALG::SparseMatrix(*Discret2()->DofRowMap(dofsetb), 10));
+    mmatrixXB_ = Teuchos::rcp(
+        new LINALG::SparseMatrix(*Discret2()->DofRowMap(dofsetb), 100));
+
+    // output
+    if(myrank_== 0)
+      std::cout << "*****       step " << mi << std::endl;
+
+    // init search trees
+    Teuchos::RCP<GEO::SearchTree> SearchTreeA = InitSearch(dis1_);
+    Teuchos::RCP<GEO::SearchTree> SearchTreeB = InitSearch(dis2_);
+
+    // calculate DOPs for search algorithm
+    std::map<int,LINALG::Matrix<9,2> > CurrentDOPsA = CalcBackgroundDops(dis1_);
+    std::map<int,LINALG::Matrix<9,2> > CurrentDOPsB = CalcBackgroundDops(dis2_);
+
+    /**************************************************
+     * loop over all Adis elements                    *
+     **************************************************/
+    std::set<int> donebeforea;
+    for (int j = 0; j < dis1_->NumMyColElements(); ++j)
     {
-      DRT::Node* cnode = Bele->Nodes()[j];
-      int nsdof = BDiscret()->NumDof(1, cnode);
-      std::vector<double> nvector(3);
+      //get master element
+      DRT::Element* Aele = dis1_->lColElement(j);
 
-      //loop over slave dofs
-      for (int jdof = 0; jdof < nsdof; ++jdof)
-      {
-        const int lid = result_A->Map().LID(BDiscret()->Dof(1, cnode, jdof));
-        nvector[jdof] = (*result_A)[lid] - cnode->X()[jdof];
-      }
-
-      cnode->ChangePos(nvector);
+      std::vector<int> found = Search(*Aele, SearchTreeB, CurrentDOPsB);
+      Integrate3DEleBased_ADis_MeshInit(*Aele, found, dofseta,dofsetb);
     }
-  }
 
-  BDiscret()->FillComplete(false, true, true);
+    /**************************************************
+     * loop over all Bdis elements                    *
+     **************************************************/
+    std::set<int> donebeforeb;
+    for (int j = 0; j < dis2_->NumMyColElements(); ++j)
+    {
+      //get master element
+      DRT::Element* Bele = dis2_->lColElement(j);
+
+      std::vector<int> found = Search(*Bele, SearchTreeA, CurrentDOPsA);
+      Integrate3DEleBased_BDis_MeshInit(*Bele, found,dofseta,dofsetb);
+    }
+
+    //complete...
+    dmatrixXA_->Complete();
+    mmatrixXA_->Complete(*Discret2()->DofRowMap(dofsetb), *Discret1()->DofRowMap(dofseta));
+    dmatrixXB_->Complete();
+    mmatrixXB_->Complete(*Discret1()->DofRowMap(dofseta), *Discret2()->DofRowMap(dofsetb));
+
+    mergedmap_   = LINALG::MergeMap(*Discret1()->DofRowMap(dofseta),*Discret2()->DofRowMap(dofsetb),false);
+    Teuchos::RCP<Epetra_Vector> mergedsol = LINALG::CreateVector(*mergedmap_);
+    Teuchos::RCP<Epetra_Vector> mergedX   = LINALG::CreateVector(*mergedmap_);
+    Teuchos::RCP<Epetra_Vector> mergedXa  = LINALG::CreateVector(*Discret1()->DofRowMap(dofseta));
+    Teuchos::RCP<Epetra_Vector> mergedXb  = LINALG::CreateVector(*Discret2()->DofRowMap(dofsetb));
+
+    for(int n = 0; n<dis1_->NodeRowMap()->NumMyElements();++n)
+    {
+      int gid = dis1_->NodeRowMap()->GID(n);
+      DRT::Node* node = dis1_->gNode(gid);
+
+      Epetra_SerialDenseVector pos(3);
+      pos(0)=node->X()[0];
+      pos(1)=node->X()[1];
+      pos(2)=node->X()[2];
+
+      std::vector<int> id(3);
+      id[0] = dis1_->Dof(dofseta,node,0);
+      id[1] = dis1_->Dof(dofseta,node,1);
+      id[2] = dis1_->Dof(dofseta,node,2);
+
+      std::vector<int> owner(3);
+      owner[0]  = node->Owner();
+      owner[1]  = node->Owner();
+      owner[2]  = node->Owner();
+
+      LINALG::Assemble(*mergedX,pos,id,owner);
+      LINALG::Assemble(*mergedXa,pos,id,owner);
+    }
+
+    for(int n = 0; n<dis2_->NodeRowMap()->NumMyElements();++n)
+    {
+      int gid = dis2_->NodeRowMap()->GID(n);
+      DRT::Node* node = dis2_->gNode(gid);
+
+      Epetra_SerialDenseVector pos(3);
+      pos(0)=node->X()[0];
+      pos(1)=node->X()[1];
+      pos(2)=node->X()[2];
+
+      std::vector<int> id(3);
+      id[0] = dis2_->Dof(dofsetb,node,0);
+      id[1] = dis2_->Dof(dofsetb,node,1);
+      id[2] = dis2_->Dof(dofsetb,node,2);
+
+      std::vector<int> owner(3);
+      owner[0] = node->Owner();
+      owner[1] = node->Owner();
+      owner[2] = node->Owner();
+
+      LINALG::Assemble(*mergedX,pos,id,owner);
+      LINALG::Assemble(*mergedXb,pos,id,owner);
+    }
+
+    //--------------------------------------------------------------
+    //--------------------------------------------------------------
+    // Check:
+    Teuchos::RCP<Epetra_Vector> solDA  = LINALG::CreateVector(*Discret1()->DofRowMap(dofseta));
+    Teuchos::RCP<Epetra_Vector> solMA  = LINALG::CreateVector(*Discret1()->DofRowMap(dofseta));
+
+    int err = 0;
+    err = dmatrixXA_->Multiply(false,*mergedXa,*solDA);
+    if(err!=0)
+      dserror("stop");
+
+    err = mmatrixXA_->Multiply(false,*mergedXb,*solMA);
+    if(err!=0)
+      dserror("stop");
+
+    Teuchos::RCP<Epetra_Vector> solDB  = LINALG::CreateVector(*Discret2()->DofRowMap(dofsetb));
+    Teuchos::RCP<Epetra_Vector> solMB  = LINALG::CreateVector(*Discret2()->DofRowMap(dofsetb));
+
+    err = dmatrixXB_->Multiply(false,*mergedXb,*solDB);
+    if(err!=0)
+      dserror("stop");
+
+    err = mmatrixXB_->Multiply(false,*mergedXa,*solMB);
+    if(err!=0)
+      dserror("stop");
+
+    err = solDA->Update(-1.0,*solMA,1.0);
+    if(err!=0)
+      dserror("stop");
+
+    err = solDB->Update(-1.0,*solMB,1.0);
+    if(err!=0)
+      dserror("stop");
+
+    double ra[1]= {0.0};
+    double rb[1]= {0.0};
+
+    // Residuum k+1
+    solDA->Norm2(ra);
+    solDB->Norm2(rb);
+
+    std::cout << "ra= " << ra[0] << "    rb= " << rb[0] << std::endl;
+
+    if(ra[0]<1e-10 and rb[0]<1e-10)
+      return;
+
+    solDA->Scale(-1.0*omega);
+    solDB->Scale(-1.0*omega);
+
+    // Calc relaxation parameter nu:
+    if(mi>0)
+    {
+      double fac = 0.0;
+      Teuchos::RCP<Epetra_Vector> DiffA  = LINALG::CreateVector(*Discret1()->DofRowMap(dofseta),true);
+      Teuchos::RCP<Epetra_Vector> DiffB  = LINALG::CreateVector(*Discret2()->DofRowMap(dofsetb),true);
+      err = DiffA->Update(1.0,*solDA,0.0);
+      if(err!=0) dserror("stop");
+      err = DiffA->Update(-1.0,*ResoldA,1.0);
+      if(err!=0) dserror("stop");
+      err = DiffB->Update(1.0,*solDB,0.0);
+      if(err!=0) dserror("stop");
+      err = DiffB->Update(-1.0,*ResoldB,1.0);
+      if(err!=0) dserror("stop");
+
+      double topa = 0.0;
+      err = DiffA->Dot(*solDA,&topa);
+      if(err!=0) dserror("stop");
+      double topb = 0.0;
+      err = DiffB->Dot(*solDB,&topb);
+      if(err!=0) dserror("stop");
+      double top = -(topa+topb);
+
+      double downa = 0.0;
+      err = DiffA->Dot(*DiffA,&downa);
+      if(err!=0) dserror("stop");
+      double downb = 0.0;
+      err = DiffB->Dot(*DiffB,&downb);
+      if(err!=0) dserror("stop");
+      double down = (downa+downb);
+
+      fac=top/down;
+      std::cout << "fac= " << fac << std::endl;
+      nu = nu + (nu - 1.0) * fac;
+    }
+
+    err = ResoldA->Update(1.0,*solDA,0.0);
+    if(err!=0)
+      dserror("stop");
+
+    err = ResoldB->Update(1.0,*solDB,0.0);
+    if(err!=0)
+      dserror("stop");
+    //--------------------------------------------------------------
+    //--------------------------------------------------------------
+    // relaxation parameter
+//    omega = 1.0 - nu;
+    omega = 1.0;
+
+    Teuchos::RCP<LINALG::SparseMatrix> k = Teuchos::rcp(new LINALG::SparseMatrix(*mergedmap_,100,false,true));
+    k->Add(*dmatrixXA_,false,-1.0*omega,1.0);
+    k->Add(*mmatrixXA_,false, 1.0*omega,1.0);
+    k->Add(*dmatrixXB_,false,-1.0*omega,1.0);
+    k->Add(*mmatrixXB_,false, 1.0*omega,1.0);
+
+    Teuchos::RCP<Epetra_Vector> ones = Teuchos::rcp(new Epetra_Vector(*mergedmap_));
+    ones->PutScalar(1.0);
+    Teuchos::RCP<LINALG::SparseMatrix> onesdiag = Teuchos::rcp(new LINALG::SparseMatrix(*ones));
+    onesdiag->Complete();
+    k->Add(*onesdiag,false,1.0,1.0);
+    k->Complete();
+
+    // solve with default solver
+    LINALG::Solver solver(*comm_);
+    solver.Solve(k->EpetraOperator(), mergedsol, mergedX, true);
+
+    Teuchos::RCP<Epetra_Vector> sola = LINALG::CreateVector(*Discret1()->DofRowMap(dofseta));
+    Teuchos::RCP<Epetra_Vector> solb = LINALG::CreateVector(*Discret2()->DofRowMap(dofsetb));
+
+    LINALG::MapExtractor mapext(*mergedmap_,
+        Teuchos::rcp(new Epetra_Map(*(Discret1()->DofRowMap(dofseta)))),
+        Teuchos::rcp(new Epetra_Map(*(Discret2()->DofRowMap(dofsetb)))));
+    mapext.ExtractCondVector( mergedsol, sola);
+    mapext.ExtractOtherVector(mergedsol, solb);
+
+    //--------------------------------------------------------------
+    // Post Processing... Node Relocation
+    // node positions
+    for (int i = 0; i < Discret1()->NumMyRowElements(); ++i)
+    {
+      DRT::Element* Aele = Discret1()->lRowElement(i);
+      for (int j = 0; j < Aele->NumNode(); ++j)
+      {
+        DRT::Node* cnode = Aele->Nodes()[j];
+        int nsdof = Discret1()->NumDof(dofseta, cnode);
+        std::vector<double> nvector(3);
+
+        //loop over slave dofs
+        for (int jdof = 0; jdof < nsdof; ++jdof)
+        {
+          const int lid = sola->Map().LID(Discret1()->Dof(dofseta, cnode, jdof));
+          nvector[jdof] = (*sola)[lid] - cnode->X()[jdof];
+        }
+        cnode->ChangePos(nvector);
+      }
+    }
+
+    for (int i = 0; i < Discret2()->NumMyRowElements(); ++i)
+    {
+      DRT::Element* Bele = Discret2()->lRowElement(i);
+      for (int j = 0; j < Bele->NumNode(); ++j)
+      {
+        DRT::Node* cnode = Bele->Nodes()[j];
+        int nsdof = Discret2()->NumDof(dofsetb, cnode);
+        std::vector<double> nvector(3);
+
+        //loop over slave dofs
+        for (int jdof = 0; jdof < nsdof; ++jdof)
+        {
+          const int lid = solb->Map().LID(Discret2()->Dof(dofsetb, cnode, jdof));
+          nvector[jdof] = (*solb)[lid] - cnode->X()[jdof];
+        }
+        cnode->ChangePos(nvector);
+      }
+    }
+
+    dis1_->FillComplete(false, true, true);
+    dis2_->FillComplete(false, true, true);
+
+    // last check:
+    Teuchos::RCP<Epetra_Vector> checka  = LINALG::CreateVector(*Discret1()->DofRowMap(dofseta));
+    Teuchos::RCP<Epetra_Vector> checkb  = LINALG::CreateVector(*Discret2()->DofRowMap(dofsetb));
+
+    for(int n = 0; n<dis1_->NodeRowMap()->NumMyElements();++n)
+    {
+      int gid = dis1_->NodeRowMap()->GID(n);
+      DRT::Node* node = dis1_->gNode(gid);
+
+      Epetra_SerialDenseVector pos(3);
+      pos(0)=node->X()[0];
+      pos(1)=node->X()[1];
+      pos(2)=node->X()[2];
+
+      std::vector<int> id(3);
+      id[0] = dis1_->Dof(dofseta,node,0);
+      id[1] = dis1_->Dof(dofseta,node,1);
+      id[2] = dis1_->Dof(dofseta,node,2);
+
+      std::vector<int> owner(3);
+      owner[0]  = node->Owner();
+      owner[1]  = node->Owner();
+      owner[2]  = node->Owner();
+
+      LINALG::Assemble(*checka,pos,id,owner);
+    }
+
+    for(int n = 0; n<dis2_->NodeRowMap()->NumMyElements();++n)
+    {
+      int gid = dis2_->NodeRowMap()->GID(n);
+      DRT::Node* node = dis2_->gNode(gid);
+
+      Epetra_SerialDenseVector pos(3);
+      pos(0)=node->X()[0];
+      pos(1)=node->X()[1];
+      pos(2)=node->X()[2];
+
+      std::vector<int> id(3);
+      id[0] = dis2_->Dof(dofsetb,node,0);
+      id[1] = dis2_->Dof(dofsetb,node,1);
+      id[2] = dis2_->Dof(dofsetb,node,2);
+
+      std::vector<int> owner(3);
+      owner[0] = node->Owner();
+      owner[1] = node->Owner();
+      owner[2] = node->Owner();
+
+      LINALG::Assemble(*checkb,pos,id,owner);
+    }
+
+    //--------------------------------------------------------------
+    //--------------------------------------------------------------
+    // Check:
+    Teuchos::RCP<Epetra_Vector> finalDA  = LINALG::CreateVector(*Discret1()->DofRowMap(dofseta));
+    Teuchos::RCP<Epetra_Vector> finalMA  = LINALG::CreateVector(*Discret1()->DofRowMap(dofseta));
+
+    err = dmatrixXA_->Multiply(false,*checka,*finalDA);
+    if(err!=0)
+      dserror("stop");
+
+    err = mmatrixXA_->Multiply(false,*checkb,*finalMA);
+    if(err!=0)
+      dserror("stop");
+
+    Teuchos::RCP<Epetra_Vector> finalDB  = LINALG::CreateVector(*Discret2()->DofRowMap(dofsetb));
+    Teuchos::RCP<Epetra_Vector> finalMB  = LINALG::CreateVector(*Discret2()->DofRowMap(dofsetb));
+
+    err = dmatrixXB_->Multiply(false,*checkb,*finalDB);
+    if(err!=0)
+      dserror("stop");
+
+    err = mmatrixXB_->Multiply(false,*checka,*finalMB);
+    if(err!=0)
+      dserror("stop");
+
+    err = finalDA->Update(-1.0,*finalMA,1.0);
+    if(err!=0)
+      dserror("stop");
+
+    err = finalDB->Update(-1.0,*finalMB,1.0);
+    if(err!=0)
+      dserror("stop");
+
+    double finalra[1]= {0.0};
+    double finalrb[1]= {0.0};
+
+    // Residuum k+1
+    finalDA->Norm2(finalra);
+    finalDB->Norm2(finalrb);
+
+    std::cout << "final ra= " << finalra[0] << "   final rb= " << finalrb[0] << std::endl;
+  }
 
   return;
 }
@@ -1162,9 +1593,9 @@ void VOLMORTAR::VolMortarCoupl::PrintStatus(int& i, bool dis_switch)
   if (i == 0)
   {
     if (dis_switch)
-      EleSum = Bdiscret_->NumGlobalElements();
+      EleSum = dis2_->NumGlobalElements();
     else
-      EleSum = Adiscret_->NumGlobalElements();
+      EleSum = dis1_->NumGlobalElements();
 
     percent_counter = 0;
   }
@@ -1345,11 +1776,12 @@ void VOLMORTAR::VolMortarCoupl::PerformCut(
 /*----------------------------------------------------------------------*
  |  Check need for element-based integration                 farah 01/14|
  *----------------------------------------------------------------------*/
-bool VOLMORTAR::VolMortarCoupl::CheckEleIntegration(DRT::Element& sele,
+bool VOLMORTAR::VolMortarCoupl::CheckEleIntegration(
+    DRT::Element& sele,
     DRT::Element& mele)
 {
   bool integrateele = true;
-  bool converged = false;
+  bool converged    = false;
 
   double xi[3]  = { 0.0, 0.0, 0.0 };
   double xgl[3] = { 0.0, 0.0, 0.0 };
@@ -1366,15 +1798,26 @@ bool VOLMORTAR::VolMortarCoupl::CheckEleIntegration(DRT::Element& sele,
     if (mele.Shape() == DRT::Element::hex8)
       MORTAR::UTILS::GlobalToLocal<DRT::Element::hex8>(mele, xgl, xi,
           converged);
+    else if (mele.Shape() == DRT::Element::hex20)
+      MORTAR::UTILS::GlobalToLocal<DRT::Element::hex20>(mele, xgl, xi,
+          converged);
+    else if (mele.Shape() == DRT::Element::hex27)
+      MORTAR::UTILS::GlobalToLocal<DRT::Element::hex27>(mele, xgl, xi,
+          converged);
     else if (mele.Shape() == DRT::Element::tet4)
       MORTAR::UTILS::GlobalToLocal<DRT::Element::tet4>(mele, xgl, xi,
+          converged);
+    else if (mele.Shape() == DRT::Element::tet10)
+      MORTAR::UTILS::GlobalToLocal<DRT::Element::tet10>(mele, xgl, xi,
           converged);
     else
       dserror("ERROR: Shape function not supported!");
 
     if (converged == true)
     {
-      if (mele.Shape() == DRT::Element::hex8)
+      if (mele.Shape() == DRT::Element::hex8 or
+          mele.Shape() == DRT::Element::hex20 or
+          mele.Shape() == DRT::Element::hex27)
       {
         if (    xi[0] > -1.0 - VOLMORTARELETOL and xi[0] < 1.0 + VOLMORTARELETOL
             and xi[1] > -1.0 - VOLMORTARELETOL and xi[1] < 1.0 + VOLMORTARELETOL
@@ -1384,7 +1827,8 @@ bool VOLMORTAR::VolMortarCoupl::CheckEleIntegration(DRT::Element& sele,
           return false;
       }
 
-      if (mele.Shape() == DRT::Element::tet4)
+      if (mele.Shape() == DRT::Element::tet4 or
+          mele.Shape() == DRT::Element::tet10)
       {
         if (    xi[0] > 0.0 - VOLMORTARELETOL and xi[0] < 1.0 + VOLMORTARELETOL
             and xi[1] > 0.0 - VOLMORTARELETOL and xi[1] < 1.0 + VOLMORTARELETOL
@@ -1397,7 +1841,7 @@ bool VOLMORTAR::VolMortarCoupl::CheckEleIntegration(DRT::Element& sele,
     }
     else
     {
-      std::cout << "!!! GLOBAL TO LOCAL NOT CONVERGED !!!" << std::endl;
+//      std::cout << "!!! GLOBAL TO LOCAL NOT CONVERGED !!!" << std::endl;
       return false;
     }
   }
@@ -1438,15 +1882,26 @@ bool VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element& mele)
       if (sele.Shape() == DRT::Element::hex8)
         MORTAR::UTILS::GlobalToLocal<DRT::Element::hex8>(sele, xgl, xi,
             converged);
+      else if (sele.Shape() == DRT::Element::hex20)
+        MORTAR::UTILS::GlobalToLocal<DRT::Element::hex20>(sele, xgl, xi,
+            converged);
+      else if (sele.Shape() == DRT::Element::hex27)
+        MORTAR::UTILS::GlobalToLocal<DRT::Element::hex27>(sele, xgl, xi,
+            converged);
       else if (sele.Shape() == DRT::Element::tet4)
         MORTAR::UTILS::GlobalToLocal<DRT::Element::tet4>(sele, xgl, xi,
+            converged);
+      else if (sele.Shape() == DRT::Element::tet10)
+        MORTAR::UTILS::GlobalToLocal<DRT::Element::tet10>(sele, xgl, xi,
             converged);
       else
         dserror("ERROR: Shape function not supported!");
 
       if (converged == true)
       {
-        if (sele.Shape() == DRT::Element::hex8)
+        if (sele.Shape() == DRT::Element::hex8  or
+            sele.Shape() == DRT::Element::hex20 or
+            sele.Shape() == DRT::Element::hex27)
         {
           if (xi[0] > -1.0 + VOLMORTARCUTTOL)
             xi0 = true;
@@ -1462,7 +1917,8 @@ bool VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element& mele)
           if (xi[2] < 1.0 - VOLMORTARCUTTOL)
             xi2n = true;
         }
-        else if (sele.Shape() == DRT::Element::tet4)
+        else if (sele.Shape() == DRT::Element::tet4 or
+                 sele.Shape() == DRT::Element::tet10)
         {
           if (xi[0] > 0.0 + VOLMORTARCUTTOL)
             xi0 = true;
@@ -1476,12 +1932,15 @@ bool VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element& mele)
       }
     } //end node loop
 
-    if (sele.Shape() == DRT::Element::tet4)
+    if (sele.Shape() == DRT::Element::tet4 or
+        sele.Shape() == DRT::Element::tet10)
     {
       if (!xi0 or !xi1 or !xi2 or !all)
         return false;
     }
-    if (sele.Shape() == DRT::Element::hex8)
+    if (sele.Shape() == DRT::Element::hex8 or
+        sele.Shape() == DRT::Element::hex20 or
+        sele.Shape() == DRT::Element::hex27)
     {
       if (!xi0 or !xi1 or !xi2 or !xi0n or !xi1n or !xi2n)
         return false;
@@ -1511,15 +1970,26 @@ bool VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element& mele)
       if (mele.Shape() == DRT::Element::hex8)
         MORTAR::UTILS::GlobalToLocal<DRT::Element::hex8>(mele, xgl, xi,
             converged);
+      else if (mele.Shape() == DRT::Element::hex20)
+        MORTAR::UTILS::GlobalToLocal<DRT::Element::hex20>(mele, xgl, xi,
+            converged);
+      else if (mele.Shape() == DRT::Element::hex27)
+        MORTAR::UTILS::GlobalToLocal<DRT::Element::hex27>(mele, xgl, xi,
+            converged);
       else if (mele.Shape() == DRT::Element::tet4)
         MORTAR::UTILS::GlobalToLocal<DRT::Element::tet4>(mele, xgl, xi,
+            converged);
+      else if (mele.Shape() == DRT::Element::tet10)
+        MORTAR::UTILS::GlobalToLocal<DRT::Element::tet10>(mele, xgl, xi,
             converged);
       else
         dserror("ERROR: Shape function not supported!");
 
       if (converged == true)
       {
-        if (mele.Shape() == DRT::Element::hex8)
+        if (mele.Shape() == DRT::Element::hex8 or
+            mele.Shape() == DRT::Element::hex20 or
+            mele.Shape() == DRT::Element::hex27)
         {
           if (xi[0] > -1.0 + VOLMORTARCUTTOL)
             xi0 = true;
@@ -1536,7 +2006,8 @@ bool VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element& mele)
             xi2n = true;
         }
 
-        else if (mele.Shape() == DRT::Element::tet4)
+        else if (mele.Shape() == DRT::Element::tet4 or
+                 mele.Shape() == DRT::Element::tet10)
         {
           if (xi[0] > 0.0 + VOLMORTARCUTTOL)
             xi0 = true;
@@ -1550,12 +2021,15 @@ bool VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element& mele)
       }
     }
 
-    if (mele.Shape() == DRT::Element::tet4)
+    if (mele.Shape() == DRT::Element::tet4 or
+        mele.Shape() == DRT::Element::tet10)
     {
       if (!xi0 or !xi1 or !xi2 or !all)
         return false;
     }
-    if (mele.Shape() == DRT::Element::hex8)
+    if (mele.Shape() == DRT::Element::hex8 or
+        mele.Shape() == DRT::Element::hex20 or
+        mele.Shape() == DRT::Element::hex27)
     {
       if (!xi0 or !xi1 or !xi2 or !xi0n or !xi1n or !xi2n)
         return false;
@@ -1573,20 +2047,29 @@ bool VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element& mele)
     // global to local:
     if (sele.Shape() == DRT::Element::hex8)
       MORTAR::UTILS::GlobalToLocal<DRT::Element::hex8>(sele, xgl, xi, converged);
+    else if (sele.Shape() == DRT::Element::hex20)
+      MORTAR::UTILS::GlobalToLocal<DRT::Element::hex20>(sele, xgl, xi, converged);
+    else if (sele.Shape() == DRT::Element::hex27)
+      MORTAR::UTILS::GlobalToLocal<DRT::Element::hex27>(sele, xgl, xi, converged);
     else if (sele.Shape() == DRT::Element::tet4)
       MORTAR::UTILS::GlobalToLocal<DRT::Element::tet4>(sele, xgl, xi, converged);
+    else if (sele.Shape() == DRT::Element::tet10)
+      MORTAR::UTILS::GlobalToLocal<DRT::Element::tet10>(sele, xgl, xi, converged);
     else
       dserror("ERROR: Shape function not supported!");
 
     if (converged == true)
     {
-      if (sele.Shape() == DRT::Element::hex8)
+      if (sele.Shape() == DRT::Element::hex8  or
+          sele.Shape() == DRT::Element::hex20 or
+          sele.Shape() == DRT::Element::hex27)
         if (    abs(xi[0]) < 1.0 - VOLMORTARCUT2TOL
             and abs(xi[1]) < 1.0 - VOLMORTARCUT2TOL
             and abs(xi[2]) < 1.0 - VOLMORTARCUT2TOL)
           return true;
 
-      if (sele.Shape() == DRT::Element::tet4)
+      if (sele.Shape() == DRT::Element::tet4 or
+          sele.Shape() == DRT::Element::tet10)
         if (    xi[0] > 0.0 + VOLMORTARCUT2TOL
             and xi[0] < 1.0 - VOLMORTARCUT2TOL
             and xi[1] > 0.0 + VOLMORTARCUT2TOL
@@ -1610,21 +2093,33 @@ bool VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element& mele)
     if (mele.Shape() == DRT::Element::hex8)
       MORTAR::UTILS::GlobalToLocal<DRT::Element::hex8>(mele, xgl, xi,
           converged);
+    else if (mele.Shape() == DRT::Element::hex20)
+      MORTAR::UTILS::GlobalToLocal<DRT::Element::hex20>(mele, xgl, xi,
+          converged);
+    else if (mele.Shape() == DRT::Element::hex27)
+      MORTAR::UTILS::GlobalToLocal<DRT::Element::hex27>(mele, xgl, xi,
+          converged);
     else if (mele.Shape() == DRT::Element::tet4)
       MORTAR::UTILS::GlobalToLocal<DRT::Element::tet4>(mele, xgl, xi,
+          converged);
+    else if (mele.Shape() == DRT::Element::tet10)
+      MORTAR::UTILS::GlobalToLocal<DRT::Element::tet10>(mele, xgl, xi,
           converged);
     else
       dserror("ERROR: Shape function not supported!");
 
     if (converged == true)
     {
-      if (mele.Shape() == DRT::Element::hex8)
+      if (mele.Shape() == DRT::Element::hex8  or
+          mele.Shape() == DRT::Element::hex20 or
+          mele.Shape() == DRT::Element::hex27)
         if (    abs(xi[0]) < 1.0 - VOLMORTARCUT2TOL
             and abs(xi[1]) < 1.0 - VOLMORTARCUT2TOL
             and abs(xi[2]) < 1.0 - VOLMORTARCUT2TOL)
           return true;
 
-      if (mele.Shape() == DRT::Element::tet4)
+      if (mele.Shape() == DRT::Element::tet4 or
+          mele.Shape() == DRT::Element::tet10)
         if (    xi[0] > 0.0 + VOLMORTARCUT2TOL
             and xi[0] < 1.0 - VOLMORTARCUT2TOL
             and xi[1] > 0.0 + VOLMORTARCUT2TOL
@@ -1642,8 +2137,10 @@ bool VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element& mele)
 /*----------------------------------------------------------------------*
  |  Integrate2D Cells                                        farah 01/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::Integrate2D(DRT::Element& sele,
-    DRT::Element& mele, std::vector<Teuchos::RCP<MORTAR::IntCell> >& cells)
+void VOLMORTAR::VolMortarCoupl::Integrate2D(
+    DRT::Element& sele,
+    DRT::Element& mele,
+    std::vector<Teuchos::RCP<MORTAR::IntCell> >& cells)
 {
   //--------------------------------------------------------------------
   // loop over cells for A Field
@@ -1662,16 +2159,16 @@ void VOLMORTAR::VolMortarCoupl::Integrate2D(DRT::Element& sele,
       {
         static VolMortarIntegrator<DRT::Element::quad4, DRT::Element::quad4> integrator(
             Params());
-        integrator.IntegrateCells2D(sele, mele, cells[q], *dmatrixA_,
-            *mmatrixA_, Adiscret_, Bdiscret_);
+        integrator.IntegrateCells2D(sele, mele, cells[q], *D1_,
+            *M12_, dis1_, dis2_);
         break;
       }
       case DRT::Element::tri3:
       {
         static VolMortarIntegrator<DRT::Element::quad4, DRT::Element::tri3> integrator(
             Params());
-        integrator.IntegrateCells2D(sele, mele, cells[q], *dmatrixA_,
-            *mmatrixA_, Adiscret_, Bdiscret_);
+        integrator.IntegrateCells2D(sele, mele, cells[q], *D1_,
+            *M12_, dis1_, dis2_);
         break;
       }
       default:
@@ -1691,16 +2188,16 @@ void VOLMORTAR::VolMortarCoupl::Integrate2D(DRT::Element& sele,
       {
         static VolMortarIntegrator<DRT::Element::tri3, DRT::Element::quad4> integrator(
             Params());
-        integrator.IntegrateCells2D(sele, mele, cells[q], *dmatrixA_,
-            *mmatrixA_, Adiscret_, Bdiscret_);
+        integrator.IntegrateCells2D(sele, mele, cells[q], *D1_,
+            *M12_, dis1_, dis2_);
         break;
       }
       case DRT::Element::tri3:
       {
         static VolMortarIntegrator<DRT::Element::tri3, DRT::Element::tri3> integrator(
             Params());
-        integrator.IntegrateCells2D(sele, mele, cells[q], *dmatrixA_,
-            *mmatrixA_, Adiscret_, Bdiscret_);
+        integrator.IntegrateCells2D(sele, mele, cells[q], *D1_,
+            *M12_, dis1_, dis2_);
         break;
       }
       default:
@@ -1732,16 +2229,16 @@ void VOLMORTAR::VolMortarCoupl::Integrate2D(DRT::Element& sele,
       {
         static VolMortarIntegrator<DRT::Element::quad4, DRT::Element::quad4> integrator(
             Params());
-        integrator.IntegrateCells2D(mele, sele, cells[q], *dmatrixB_,
-            *mmatrixB_, Bdiscret_, Adiscret_);
+        integrator.IntegrateCells2D(mele, sele, cells[q], *D2_,
+            *M21_, dis2_, dis1_);
         break;
       }
       case DRT::Element::tri3:
       {
         static VolMortarIntegrator<DRT::Element::quad4, DRT::Element::tri3> integrator(
             Params());
-        integrator.IntegrateCells2D(mele, sele, cells[q], *dmatrixB_,
-            *mmatrixB_, Bdiscret_, Adiscret_);
+        integrator.IntegrateCells2D(mele, sele, cells[q], *D2_,
+            *M21_, dis2_, dis1_);
         break;
       }
       default:
@@ -1761,16 +2258,16 @@ void VOLMORTAR::VolMortarCoupl::Integrate2D(DRT::Element& sele,
       {
         static VolMortarIntegrator<DRT::Element::tri3, DRT::Element::quad4> integrator(
             Params());
-        integrator.IntegrateCells2D(mele, sele, cells[q], *dmatrixB_,
-            *mmatrixB_, Bdiscret_, Adiscret_);
+        integrator.IntegrateCells2D(mele, sele, cells[q], *D2_,
+            *M21_, dis2_, dis1_);
         break;
       }
       case DRT::Element::tri3:
       {
         static VolMortarIntegrator<DRT::Element::tri3, DRT::Element::tri3> integrator(
             Params());
-        integrator.IntegrateCells2D(mele, sele, cells[q], *dmatrixB_,
-            *mmatrixB_, Bdiscret_, Adiscret_);
+        integrator.IntegrateCells2D(mele, sele, cells[q], *D2_,
+            *M21_, dis2_, dis1_);
         break;
       }
       default:
@@ -1815,8 +2312,26 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(DRT::Element& sele,
         static VolMortarIntegrator<DRT::Element::hex8, DRT::Element::hex8> integrator(
             Params());
         integrator.InitializeGP(false, 0, cells[q]->Shape());
-        integrator.IntegrateCells3D(sele, mele, cells[q], *dmatrixA_,
-            *mmatrixA_, *dmatrixB_, *mmatrixB_, Adiscret_, Bdiscret_);
+        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
+            *M12_, *D2_, *M21_, dis1_, dis2_);
+        break;
+      }
+      case DRT::Element::hex20:
+      {
+        static VolMortarIntegrator<DRT::Element::hex8, DRT::Element::hex20> integrator(
+            Params());
+        integrator.InitializeGP(false, 0, cells[q]->Shape());
+        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
+            *M12_, *D2_, *M21_, dis1_, dis2_);
+        break;
+      }
+      case DRT::Element::hex27:
+      {
+        static VolMortarIntegrator<DRT::Element::hex8, DRT::Element::hex27> integrator(
+            Params());
+        integrator.InitializeGP(false, 0, cells[q]->Shape());
+        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
+            *M12_, *D2_, *M21_, dis1_, dis2_);
         break;
       }
       case DRT::Element::tet4:
@@ -1824,8 +2339,17 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(DRT::Element& sele,
         static VolMortarIntegrator<DRT::Element::hex8, DRT::Element::tet4> integrator(
             Params());
         integrator.InitializeGP(false, 0, cells[q]->Shape());
-        integrator.IntegrateCells3D(sele, mele, cells[q], *dmatrixA_,
-            *mmatrixA_, *dmatrixB_, *mmatrixB_, Adiscret_, Bdiscret_);
+        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
+            *M12_, *D2_, *M21_, dis1_, dis2_);
+        break;
+      }
+      case DRT::Element::tet10:
+      {
+        static VolMortarIntegrator<DRT::Element::hex8, DRT::Element::tet10> integrator(
+            Params());
+        integrator.InitializeGP(false, 0, cells[q]->Shape());
+        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
+            *M12_, *D2_, *M21_, dis1_, dis2_);
         break;
       }
       default:
@@ -1836,6 +2360,125 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(DRT::Element& sele,
       }
       break;
     }
+    //#######################################################
+    case DRT::Element::hex20:
+    {
+      switch (mele.Shape())
+      {
+      // 2D surface elements
+      case DRT::Element::hex8:
+      {
+        static VolMortarIntegrator<DRT::Element::hex20, DRT::Element::hex8> integrator(
+            Params());
+        integrator.InitializeGP(false, 0, cells[q]->Shape());
+        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
+            *M12_, *D2_, *M21_, dis1_, dis2_);
+        break;
+      }
+      case DRT::Element::hex20:
+      {
+        static VolMortarIntegrator<DRT::Element::hex20, DRT::Element::hex20> integrator(
+            Params());
+        integrator.InitializeGP(false, 0, cells[q]->Shape());
+        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
+            *M12_, *D2_, *M21_, dis1_, dis2_);
+        break;
+      }
+      case DRT::Element::hex27:
+      {
+        static VolMortarIntegrator<DRT::Element::hex20, DRT::Element::hex27> integrator(
+            Params());
+        integrator.InitializeGP(false, 0, cells[q]->Shape());
+        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
+            *M12_, *D2_, *M21_, dis1_, dis2_);
+        break;
+      }
+      case DRT::Element::tet4:
+      {
+        static VolMortarIntegrator<DRT::Element::hex20, DRT::Element::tet4> integrator(
+            Params());
+        integrator.InitializeGP(false, 0, cells[q]->Shape());
+        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
+            *M12_, *D2_, *M21_, dis1_, dis2_);
+        break;
+      }
+      case DRT::Element::tet10:
+      {
+        static VolMortarIntegrator<DRT::Element::hex20, DRT::Element::tet10> integrator(
+            Params());
+        integrator.InitializeGP(false, 0, cells[q]->Shape());
+        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
+            *M12_, *D2_, *M21_, dis1_, dis2_);
+        break;
+      }
+      default:
+      {
+        dserror("ERROR: unknown shape!");
+        break;
+      }
+      }
+      break;
+    }
+    //#######################################################
+    case DRT::Element::hex27:
+    {
+      switch (mele.Shape())
+      {
+      // 2D surface elements
+      case DRT::Element::hex8:
+      {
+        static VolMortarIntegrator<DRT::Element::hex27, DRT::Element::hex8> integrator(
+            Params());
+        integrator.InitializeGP(false, 0, cells[q]->Shape());
+        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
+            *M12_, *D2_, *M21_, dis1_, dis2_);
+        break;
+      }
+      case DRT::Element::hex20:
+      {
+        static VolMortarIntegrator<DRT::Element::hex27, DRT::Element::hex20> integrator(
+            Params());
+        integrator.InitializeGP(false, 0, cells[q]->Shape());
+        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
+            *M12_, *D2_, *M21_, dis1_, dis2_);
+        break;
+      }
+      case DRT::Element::hex27:
+      {
+        static VolMortarIntegrator<DRT::Element::hex27, DRT::Element::hex27> integrator(
+            Params());
+        integrator.InitializeGP(false, 0, cells[q]->Shape());
+        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
+            *M12_, *D2_, *M21_, dis1_, dis2_);
+        break;
+      }
+      case DRT::Element::tet4:
+      {
+        static VolMortarIntegrator<DRT::Element::hex27, DRT::Element::tet4> integrator(
+            Params());
+        integrator.InitializeGP(false, 0, cells[q]->Shape());
+        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
+            *M12_, *D2_, *M21_, dis1_, dis2_);
+        break;
+      }
+      case DRT::Element::tet10:
+      {
+        static VolMortarIntegrator<DRT::Element::hex27, DRT::Element::tet10> integrator(
+            Params());
+        integrator.InitializeGP(false, 0, cells[q]->Shape());
+        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
+            *M12_, *D2_, *M21_, dis1_, dis2_);
+        break;
+      }
+      default:
+      {
+        dserror("ERROR: unknown shape!");
+        break;
+      }
+      }
+      break;
+    }
+    //#######################################################
     case DRT::Element::tet4:
     {
       switch (mele.Shape())
@@ -1846,8 +2489,26 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(DRT::Element& sele,
         static VolMortarIntegrator<DRT::Element::tet4, DRT::Element::hex8> integrator(
             Params());
         integrator.InitializeGP(false, 0, cells[q]->Shape());
-        integrator.IntegrateCells3D(sele, mele, cells[q], *dmatrixA_,
-            *mmatrixA_, *dmatrixB_, *mmatrixB_, Adiscret_, Bdiscret_);
+        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
+            *M12_, *D2_, *M21_, dis1_, dis2_);
+        break;
+      }
+      case DRT::Element::hex20:
+      {
+        static VolMortarIntegrator<DRT::Element::tet4, DRT::Element::hex20> integrator(
+            Params());
+        integrator.InitializeGP(false, 0, cells[q]->Shape());
+        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
+            *M12_, *D2_, *M21_, dis1_, dis2_);
+        break;
+      }
+      case DRT::Element::hex27:
+      {
+        static VolMortarIntegrator<DRT::Element::tet4, DRT::Element::hex27> integrator(
+            Params());
+        integrator.InitializeGP(false, 0, cells[q]->Shape());
+        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
+            *M12_, *D2_, *M21_, dis1_, dis2_);
         break;
       }
       case DRT::Element::tet4:
@@ -1855,8 +2516,76 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(DRT::Element& sele,
         static VolMortarIntegrator<DRT::Element::tet4, DRT::Element::tet4> integrator(
             Params());
         integrator.InitializeGP(false, 0, cells[q]->Shape());
-        integrator.IntegrateCells3D(sele, mele, cells[q], *dmatrixA_,
-            *mmatrixA_, *dmatrixB_, *mmatrixB_, Adiscret_, Bdiscret_);
+        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
+            *M12_, *D2_, *M21_, dis1_, dis2_);
+        break;
+      }
+      case DRT::Element::tet10:
+      {
+        static VolMortarIntegrator<DRT::Element::tet4, DRT::Element::tet10> integrator(
+            Params());
+        integrator.InitializeGP(false, 0, cells[q]->Shape());
+        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
+            *M12_, *D2_, *M21_, dis1_, dis2_);
+        break;
+      }
+      default:
+      {
+        dserror("ERROR: unknown shape!");
+        break;
+      }
+      }
+      break;
+    }
+    //#######################################################
+    case DRT::Element::tet10:
+    {
+      switch (mele.Shape())
+      {
+      // 2D surface elements
+      case DRT::Element::hex8:
+      {
+        static VolMortarIntegrator<DRT::Element::tet10, DRT::Element::hex8> integrator(
+            Params());
+        integrator.InitializeGP(false, 0, cells[q]->Shape());
+        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
+            *M12_, *D2_, *M21_, dis1_, dis2_);
+        break;
+      }
+      case DRT::Element::hex20:
+      {
+        static VolMortarIntegrator<DRT::Element::tet10, DRT::Element::hex20> integrator(
+            Params());
+        integrator.InitializeGP(false, 0, cells[q]->Shape());
+        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
+            *M12_, *D2_, *M21_, dis1_, dis2_);
+        break;
+      }
+      case DRT::Element::hex27:
+      {
+        static VolMortarIntegrator<DRT::Element::tet10, DRT::Element::hex27> integrator(
+            Params());
+        integrator.InitializeGP(false, 0, cells[q]->Shape());
+        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
+            *M12_, *D2_, *M21_, dis1_, dis2_);
+        break;
+      }
+      case DRT::Element::tet4:
+      {
+        static VolMortarIntegrator<DRT::Element::tet10, DRT::Element::tet4> integrator(
+            Params());
+        integrator.InitializeGP(false, 0, cells[q]->Shape());
+        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
+            *M12_, *D2_, *M21_, dis1_, dis2_);
+        break;
+      }
+      case DRT::Element::tet10:
+      {
+        static VolMortarIntegrator<DRT::Element::tet10, DRT::Element::tet10> integrator(
+            Params());
+        integrator.InitializeGP(false, 0, cells[q]->Shape());
+        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
+            *M12_, *D2_, *M21_, dis1_, dis2_);
         break;
       }
       default:
@@ -1891,8 +2620,8 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis(DRT::Element& Aele,
     static VolMortarIntegratorEleBased<DRT::Element::hex8> integrator(
         Params());
     integrator.InitializeGP();
-    integrator.IntegrateEleBased3D(Aele, foundeles, *dmatrixA_,
-        *mmatrixA_, Adiscret_, Bdiscret_);
+    integrator.IntegrateEleBased3D(Aele, foundeles, *D1_,
+        *M12_, dis1_, dis2_,1,0);
     break;
   }
   case DRT::Element::tet4:
@@ -1900,8 +2629,8 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis(DRT::Element& Aele,
     static VolMortarIntegratorEleBased<DRT::Element::tet4> integrator(
         Params());
     integrator.InitializeGP();
-    integrator.IntegrateEleBased3D(Aele, foundeles, *dmatrixA_,
-        *mmatrixA_, Adiscret_, Bdiscret_);
+    integrator.IntegrateEleBased3D(Aele, foundeles, *D1_,
+        *M12_, dis1_, dis2_,1,0);
     break;
   }
   case DRT::Element::hex27:
@@ -1909,8 +2638,8 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis(DRT::Element& Aele,
     static VolMortarIntegratorEleBased<DRT::Element::hex27> integrator(
         Params());
     integrator.InitializeGP();
-    integrator.IntegrateEleBased3D(Aele, foundeles, *dmatrixA_,
-        *mmatrixA_, Adiscret_, Bdiscret_);
+    integrator.IntegrateEleBased3D(Aele, foundeles, *D1_,
+        *M12_, dis1_, dis2_,1,0);
     break;
   }
   case DRT::Element::hex20:
@@ -1918,8 +2647,8 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis(DRT::Element& Aele,
     static VolMortarIntegratorEleBased<DRT::Element::hex20> integrator(
         Params());
     integrator.InitializeGP();
-    integrator.IntegrateEleBased3D(Aele, foundeles, *dmatrixA_,
-        *mmatrixA_, Adiscret_, Bdiscret_);
+    integrator.IntegrateEleBased3D(Aele, foundeles, *D1_,
+        *M12_, dis1_, dis2_,1,0);
     break;
   }
   case DRT::Element::tet10:
@@ -1927,8 +2656,8 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis(DRT::Element& Aele,
     static VolMortarIntegratorEleBased<DRT::Element::tet10> integrator(
         Params());
     integrator.InitializeGP();
-    integrator.IntegrateEleBased3D(Aele, foundeles, *dmatrixA_,
-        *mmatrixA_, Adiscret_, Bdiscret_);
+    integrator.IntegrateEleBased3D(Aele, foundeles, *D1_,
+        *M12_, dis1_, dis2_,1,0);
     break;
   }
   default:
@@ -1955,8 +2684,8 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis(DRT::Element& Bele,
     static VolMortarIntegratorEleBased<DRT::Element::hex8> integrator(
         Params());
     integrator.InitializeGP();
-    integrator.IntegrateEleBased3D(Bele, foundeles, *dmatrixB_,
-        *mmatrixB_, Bdiscret_, Adiscret_);
+    integrator.IntegrateEleBased3D(Bele, foundeles, *D2_,
+        *M21_, dis2_, dis1_,1,0);
     break;
   }
   case DRT::Element::tet4:
@@ -1964,8 +2693,8 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis(DRT::Element& Bele,
     static VolMortarIntegratorEleBased<DRT::Element::tet4> integrator(
         Params());
     integrator.InitializeGP();
-    integrator.IntegrateEleBased3D(Bele, foundeles, *dmatrixB_,
-        *mmatrixB_, Bdiscret_, Adiscret_);
+    integrator.IntegrateEleBased3D(Bele, foundeles, *D2_,
+        *M21_, dis2_, dis1_,1,0);
     break;
   }
   case DRT::Element::hex27:
@@ -1973,8 +2702,8 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis(DRT::Element& Bele,
     static VolMortarIntegratorEleBased<DRT::Element::hex27> integrator(
         Params());
     integrator.InitializeGP();
-    integrator.IntegrateEleBased3D(Bele, foundeles, *dmatrixB_,
-        *mmatrixB_, Bdiscret_, Adiscret_);
+    integrator.IntegrateEleBased3D(Bele, foundeles, *D2_,
+        *M21_, dis2_, dis1_,1,0);
     break;
   }
   case DRT::Element::hex20:
@@ -1982,8 +2711,8 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis(DRT::Element& Bele,
     static VolMortarIntegratorEleBased<DRT::Element::hex20> integrator(
         Params());
     integrator.InitializeGP();
-    integrator.IntegrateEleBased3D(Bele, foundeles, *dmatrixB_,
-        *mmatrixB_, Bdiscret_, Adiscret_);
+    integrator.IntegrateEleBased3D(Bele, foundeles, *D2_,
+        *M21_, dis2_, dis1_,1,0);
     break;
   }
   case DRT::Element::tet10:
@@ -1991,8 +2720,139 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis(DRT::Element& Bele,
     static VolMortarIntegratorEleBased<DRT::Element::tet10> integrator(
         Params());
     integrator.InitializeGP();
-    integrator.IntegrateEleBased3D(Bele, foundeles, *dmatrixB_,
-        *mmatrixB_, Bdiscret_, Adiscret_);
+    integrator.IntegrateEleBased3D(Bele, foundeles, *D2_,
+        *M21_, dis2_, dis1_,1,0);
+    break;
+  }
+  default:
+  {
+    dserror("ERROR: unknown shape!");
+    break;
+  }
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Integrate3D elebased                                     farah 03/15|
+ *----------------------------------------------------------------------*/
+void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis_MeshInit(DRT::Element& Aele,
+    std::vector<int>& foundeles,
+    int dofseta,
+    int dofsetb)
+{
+  switch (Aele.Shape())
+  {
+  // 2D surface elements
+  case DRT::Element::hex8:
+  {
+    static VolMortarIntegratorEleBased<DRT::Element::hex8> integrator(
+        Params());
+    integrator.InitializeGP();
+    integrator.IntegrateEleBased3D(Aele, foundeles, *dmatrixXA_,
+        *mmatrixXA_, dis1_, dis2_,dofseta,dofsetb);
+    break;
+  }
+  case DRT::Element::tet4:
+  {
+    static VolMortarIntegratorEleBased<DRT::Element::tet4> integrator(
+        Params());
+    integrator.InitializeGP();
+    integrator.IntegrateEleBased3D(Aele, foundeles, *dmatrixXA_,
+        *mmatrixXA_, dis1_, dis2_,dofseta,dofsetb);
+    break;
+  }
+  case DRT::Element::hex27:
+  {
+    static VolMortarIntegratorEleBased<DRT::Element::hex27> integrator(
+        Params());
+    integrator.InitializeGP();
+    integrator.IntegrateEleBased3D(Aele, foundeles, *dmatrixXA_,
+        *mmatrixXA_, dis1_, dis2_,dofseta,dofsetb);
+    break;
+  }
+  case DRT::Element::hex20:
+  {
+    static VolMortarIntegratorEleBased<DRT::Element::hex20> integrator(
+        Params());
+    integrator.InitializeGP();
+    integrator.IntegrateEleBased3D(Aele, foundeles, *dmatrixXA_,
+        *mmatrixXA_, dis1_, dis2_,dofseta,dofsetb);
+    break;
+  }
+  case DRT::Element::tet10:
+  {
+    static VolMortarIntegratorEleBased<DRT::Element::tet10> integrator(
+        Params());
+    integrator.InitializeGP();
+    integrator.IntegrateEleBased3D(Aele, foundeles, *dmatrixXA_,
+        *mmatrixXA_, dis1_, dis2_,dofseta,dofsetb);
+    break;
+  }
+  default:
+  {
+    dserror("ERROR: unknown shape!");
+    break;
+  }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Integrate3D Cells                                        farah 03/15|
+ *----------------------------------------------------------------------*/
+void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis_MeshInit(DRT::Element& Bele,
+    std::vector<int>& foundeles,
+    int dofsetb,
+    int dofseta)
+{
+  switch (Bele.Shape())
+  {
+  // 2D surface elements
+  case DRT::Element::hex8:
+  {
+    static VolMortarIntegratorEleBased<DRT::Element::hex8> integrator(
+        Params());
+    integrator.InitializeGP();
+    integrator.IntegrateEleBased3D(Bele, foundeles, *dmatrixXB_,
+        *mmatrixXB_, dis2_, dis1_,dofseta,dofsetb);
+    break;
+  }
+  case DRT::Element::tet4:
+  {
+    static VolMortarIntegratorEleBased<DRT::Element::tet4> integrator(
+        Params());
+    integrator.InitializeGP();
+    integrator.IntegrateEleBased3D(Bele, foundeles, *dmatrixXB_,
+        *mmatrixXB_, dis2_, dis1_,dofseta,dofsetb);
+    break;
+  }
+  case DRT::Element::hex27:
+  {
+    static VolMortarIntegratorEleBased<DRT::Element::hex27> integrator(
+        Params());
+    integrator.InitializeGP();
+    integrator.IntegrateEleBased3D(Bele, foundeles, *dmatrixXB_,
+        *mmatrixXB_, dis2_, dis1_,dofseta,dofsetb);
+    break;
+  }
+  case DRT::Element::hex20:
+  {
+    static VolMortarIntegratorEleBased<DRT::Element::hex20> integrator(
+        Params());
+    integrator.InitializeGP();
+    integrator.IntegrateEleBased3D(Bele, foundeles, *dmatrixXB_,
+        *mmatrixXB_, dis2_, dis1_,dofseta,dofsetb);
+    break;
+  }
+  case DRT::Element::tet10:
+  {
+    static VolMortarIntegratorEleBased<DRT::Element::tet10> integrator(
+        Params());
+    integrator.InitializeGP();
+    integrator.IntegrateEleBased3D(Bele, foundeles, *dmatrixXB_,
+        *mmatrixXB_, dis2_, dis1_,dofseta,dofsetb);
     break;
   }
   default:
@@ -2012,7 +2872,7 @@ void VOLMORTAR::VolMortarCoupl::AssembleConsistentInterpolation_ADis(
     std::vector<int>& foundeles)
 {
   static ConsInterpolator interpolator;
-  interpolator.Interpolate(node, *pmatrixA_, Adiscret_, Bdiscret_,foundeles);
+  interpolator.Interpolate(node, *P12_, dis1_, dis2_,foundeles);
 
   return;
 }
@@ -2025,7 +2885,7 @@ void VOLMORTAR::VolMortarCoupl::AssembleConsistentInterpolation_BDis(
     std::vector<int>& foundeles)
 {
   static ConsInterpolator interpolator;
-  interpolator.Interpolate(node, *pmatrixB_, Bdiscret_, Adiscret_,foundeles);
+  interpolator.Interpolate(node, *P21_, dis2_, dis1_,foundeles);
 
   return;
 }
@@ -2071,8 +2931,8 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell_DirectDivergence(
         static VolMortarIntegrator<DRT::Element::hex8, DRT::Element::hex8> integrator(
             Params());
         integrator.IntegrateCells3D_DirectDiveregence(sele, mele, *vc,
-            intpoints, switched_conf, *dmatrixA_, *mmatrixA_, *dmatrixB_,
-            *mmatrixB_, Adiscret_, Bdiscret_);
+            intpoints, switched_conf, *D1_, *M12_, *D2_,
+            *M21_, dis1_, dis2_);
         break;
       }
       case DRT::Element::tet4:
@@ -2080,8 +2940,8 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell_DirectDivergence(
         static VolMortarIntegrator<DRT::Element::hex8, DRT::Element::tet4> integrator(
             Params());
         integrator.IntegrateCells3D_DirectDiveregence(sele, mele, *vc,
-            intpoints, switched_conf, *dmatrixA_, *mmatrixA_, *dmatrixB_,
-            *mmatrixB_, Adiscret_, Bdiscret_);
+            intpoints, switched_conf, *D1_, *M12_, *D2_,
+            *M21_, dis1_, dis2_);
         break;
       }
       default:
@@ -2102,8 +2962,8 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell_DirectDivergence(
         static VolMortarIntegrator<DRT::Element::tet4, DRT::Element::hex8> integrator(
             Params());
         integrator.IntegrateCells3D_DirectDiveregence(sele, mele, *vc,
-            intpoints, switched_conf, *dmatrixA_, *mmatrixA_, *dmatrixB_,
-            *mmatrixB_, Adiscret_, Bdiscret_);
+            intpoints, switched_conf, *D1_, *M12_, *D2_,
+            *M21_, dis1_, dis2_);
         break;
       }
       case DRT::Element::tet4:
@@ -2111,8 +2971,8 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell_DirectDivergence(
         static VolMortarIntegrator<DRT::Element::tet4, DRT::Element::tet4> integrator(
             Params());
         integrator.IntegrateCells3D_DirectDiveregence(sele, mele, *vc,
-            intpoints, switched_conf, *dmatrixA_, *mmatrixA_, *dmatrixB_,
-            *mmatrixB_, Adiscret_, Bdiscret_);
+            intpoints, switched_conf, *D1_, *M12_, *D2_,
+            *M21_, dis1_, dis2_);
         break;
       }
       default:
@@ -2155,8 +3015,26 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(DRT::Element& sele,
       static VolMortarIntegrator<DRT::Element::hex8, DRT::Element::hex8> integrator(
           Params());
       integrator.InitializeGP(true, domain);
-      integrator.IntegrateEle3D(domain, sele, mele, *dmatrixA_, *mmatrixA_,
-          *dmatrixB_, *mmatrixB_, Adiscret_, Bdiscret_);
+      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
+          *D2_, *M21_, dis1_, dis2_);
+      break;
+    }
+    case DRT::Element::hex20:
+    {
+      static VolMortarIntegrator<DRT::Element::hex8, DRT::Element::hex20> integrator(
+          Params());
+      integrator.InitializeGP(true, domain);
+      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
+          *D2_, *M21_, dis1_, dis2_);
+      break;
+    }
+    case DRT::Element::hex27:
+    {
+      static VolMortarIntegrator<DRT::Element::hex8, DRT::Element::hex27> integrator(
+          Params());
+      integrator.InitializeGP(true, domain);
+      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
+          *D2_, *M21_, dis1_, dis2_);
       break;
     }
     case DRT::Element::tet4:
@@ -2164,8 +3042,17 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(DRT::Element& sele,
       static VolMortarIntegrator<DRT::Element::hex8, DRT::Element::tet4> integrator(
           Params());
       integrator.InitializeGP(true, domain);
-      integrator.IntegrateEle3D(domain, sele, mele, *dmatrixA_, *mmatrixA_,
-          *dmatrixB_, *mmatrixB_, Adiscret_, Bdiscret_);
+      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
+          *D2_, *M21_, dis1_, dis2_);
+      break;
+    }
+    case DRT::Element::tet10:
+    {
+      static VolMortarIntegrator<DRT::Element::hex8, DRT::Element::tet10> integrator(
+          Params());
+      integrator.InitializeGP(true, domain);
+      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
+          *D2_, *M21_, dis1_, dis2_);
       break;
     }
     default:
@@ -2176,6 +3063,125 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(DRT::Element& sele,
     }
     break;
   }
+  //########################################################
+  case DRT::Element::hex20:
+  {
+    switch (mele.Shape())
+    {
+    // 2D surface elements
+    case DRT::Element::hex8:
+    {
+      static VolMortarIntegrator<DRT::Element::hex20, DRT::Element::hex8> integrator(
+          Params());
+      integrator.InitializeGP(true, domain);
+      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
+          *D2_, *M21_, dis1_, dis2_);
+      break;
+    }
+    case DRT::Element::hex20:
+    {
+      static VolMortarIntegrator<DRT::Element::hex20, DRT::Element::hex20> integrator(
+          Params());
+      integrator.InitializeGP(true, domain);
+      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
+          *D2_, *M21_, dis1_, dis2_);
+      break;
+    }
+    case DRT::Element::hex27:
+    {
+      static VolMortarIntegrator<DRT::Element::hex20, DRT::Element::hex27> integrator(
+          Params());
+      integrator.InitializeGP(true, domain);
+      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
+          *D2_, *M21_, dis1_, dis2_);
+      break;
+    }
+    case DRT::Element::tet4:
+    {
+      static VolMortarIntegrator<DRT::Element::hex20, DRT::Element::tet4> integrator(
+          Params());
+      integrator.InitializeGP(true, domain);
+      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
+          *D2_, *M21_, dis1_, dis2_);
+      break;
+    }
+    case DRT::Element::tet10:
+    {
+      static VolMortarIntegrator<DRT::Element::hex20, DRT::Element::tet10> integrator(
+          Params());
+      integrator.InitializeGP(true, domain);
+      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
+          *D2_, *M21_, dis1_, dis2_);
+      break;
+    }
+    default:
+    {
+      dserror("ERROR: unknown shape!");
+      break;
+    }
+    }
+    break;
+  }
+  //########################################################
+  case DRT::Element::hex27:
+  {
+    switch (mele.Shape())
+    {
+    // 2D surface elements
+    case DRT::Element::hex8:
+    {
+      static VolMortarIntegrator<DRT::Element::hex27, DRT::Element::hex8> integrator(
+          Params());
+      integrator.InitializeGP(true, domain);
+      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
+          *D2_, *M21_, dis1_, dis2_);
+      break;
+    }
+    case DRT::Element::hex20:
+    {
+      static VolMortarIntegrator<DRT::Element::hex27, DRT::Element::hex20> integrator(
+          Params());
+      integrator.InitializeGP(true, domain);
+      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
+          *D2_, *M21_, dis1_, dis2_);
+      break;
+    }
+    case DRT::Element::hex27:
+    {
+      static VolMortarIntegrator<DRT::Element::hex27, DRT::Element::hex27> integrator(
+          Params());
+      integrator.InitializeGP(true, domain);
+      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
+          *D2_, *M21_, dis1_, dis2_);
+      break;
+    }
+    case DRT::Element::tet4:
+    {
+      static VolMortarIntegrator<DRT::Element::hex27, DRT::Element::tet4> integrator(
+          Params());
+      integrator.InitializeGP(true, domain);
+      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
+          *D2_, *M21_, dis1_, dis2_);
+      break;
+    }
+    case DRT::Element::tet10:
+    {
+      static VolMortarIntegrator<DRT::Element::hex27, DRT::Element::tet10> integrator(
+          Params());
+      integrator.InitializeGP(true, domain);
+      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
+          *D2_, *M21_, dis1_, dis2_);
+      break;
+    }
+    default:
+    {
+      dserror("ERROR: unknown shape!");
+      break;
+    }
+    }
+    break;
+  }
+  //########################################################
   case DRT::Element::tet4:
   {
     switch (mele.Shape())
@@ -2186,8 +3192,26 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(DRT::Element& sele,
       static VolMortarIntegrator<DRT::Element::tet4, DRT::Element::hex8> integrator(
           Params());
       integrator.InitializeGP(true, domain);
-      integrator.IntegrateEle3D(domain, sele, mele, *dmatrixA_, *mmatrixA_,
-          *dmatrixB_, *mmatrixB_, Adiscret_, Bdiscret_);
+      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
+          *D2_, *M21_, dis1_, dis2_);
+      break;
+    }
+    case DRT::Element::hex20:
+    {
+      static VolMortarIntegrator<DRT::Element::tet4, DRT::Element::hex20> integrator(
+          Params());
+      integrator.InitializeGP(true, domain);
+      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
+          *D2_, *M21_, dis1_, dis2_);
+      break;
+    }
+    case DRT::Element::hex27:
+    {
+      static VolMortarIntegrator<DRT::Element::tet4, DRT::Element::hex27> integrator(
+          Params());
+      integrator.InitializeGP(true, domain);
+      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
+          *D2_, *M21_, dis1_, dis2_);
       break;
     }
     case DRT::Element::tet4:
@@ -2195,8 +3219,76 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(DRT::Element& sele,
       static VolMortarIntegrator<DRT::Element::tet4, DRT::Element::tet4> integrator(
           Params());
       integrator.InitializeGP(true, domain);
-      integrator.IntegrateEle3D(domain, sele, mele, *dmatrixA_, *mmatrixA_,
-          *dmatrixB_, *mmatrixB_, Adiscret_, Bdiscret_);
+      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
+          *D2_, *M21_, dis1_, dis2_);
+      break;
+    }
+    case DRT::Element::tet10:
+    {
+      static VolMortarIntegrator<DRT::Element::tet4, DRT::Element::tet10> integrator(
+          Params());
+      integrator.InitializeGP(true, domain);
+      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
+          *D2_, *M21_, dis1_, dis2_);
+      break;
+    }
+    default:
+    {
+      dserror("ERROR: unknown shape!");
+      break;
+    }
+    }
+    break;
+  }
+  //########################################################
+  case DRT::Element::tet10:
+  {
+    switch (mele.Shape())
+    {
+    // 2D surface elements
+    case DRT::Element::hex8:
+    {
+      static VolMortarIntegrator<DRT::Element::tet10, DRT::Element::hex8> integrator(
+          Params());
+      integrator.InitializeGP(true, domain);
+      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
+          *D2_, *M21_, dis1_, dis2_);
+      break;
+    }
+    case DRT::Element::hex20:
+    {
+      static VolMortarIntegrator<DRT::Element::tet10, DRT::Element::hex20> integrator(
+          Params());
+      integrator.InitializeGP(true, domain);
+      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
+          *D2_, *M21_, dis1_, dis2_);
+      break;
+    }
+    case DRT::Element::hex27:
+    {
+      static VolMortarIntegrator<DRT::Element::tet10, DRT::Element::hex27> integrator(
+          Params());
+      integrator.InitializeGP(true, domain);
+      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
+          *D2_, *M21_, dis1_, dis2_);
+      break;
+    }
+    case DRT::Element::tet4:
+    {
+      static VolMortarIntegrator<DRT::Element::tet10, DRT::Element::tet4> integrator(
+          Params());
+      integrator.InitializeGP(true, domain);
+      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
+          *D2_, *M21_, dis1_, dis2_);
+      break;
+    }
+    case DRT::Element::tet10:
+    {
+      static VolMortarIntegrator<DRT::Element::tet10, DRT::Element::tet10> integrator(
+          Params());
+      integrator.InitializeGP(true, domain);
+      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
+          *D2_, *M21_, dis1_, dis2_);
       break;
     }
     default:
@@ -2232,21 +3324,21 @@ void VOLMORTAR::VolMortarCoupl::Initialize()
    * slave side!                                                      *
    * ******************************************************************/
 
-  dmatrixA_ = Teuchos::rcp(
-      new LINALG::SparseMatrix(*ADiscret()->DofRowMap(1), 10));
-  mmatrixA_ = Teuchos::rcp(
-      new LINALG::SparseMatrix(*ADiscret()->DofRowMap(1), 100));
+  D1_ = Teuchos::rcp(
+      new LINALG::SparseMatrix(*P12_dofrowmap_, 10));
+  M12_ = Teuchos::rcp(
+      new LINALG::SparseMatrix(*P12_dofrowmap_, 100));
 
-  dmatrixB_ = Teuchos::rcp(
-      new LINALG::SparseMatrix(*BDiscret()->DofRowMap(1), 10));
-  mmatrixB_ = Teuchos::rcp(
-      new LINALG::SparseMatrix(*BDiscret()->DofRowMap(1), 100));
+  D2_ = Teuchos::rcp(
+      new LINALG::SparseMatrix(*P21_dofrowmap_, 10));
+  M21_ = Teuchos::rcp(
+      new LINALG::SparseMatrix(*P21_dofrowmap_, 100));
 
   // initialize trafo operator for quadr. modification
   if (dualquad_ != INPAR::VOLMORTAR::dualquad_no_mod)
   {
-    TA_ = Teuchos::rcp(new LINALG::SparseMatrix(*ADiscret()->DofRowMap(1), 10));
-    TB_ = Teuchos::rcp(new LINALG::SparseMatrix(*BDiscret()->DofRowMap(1), 10));
+    T1_ = Teuchos::rcp(new LINALG::SparseMatrix(*P12_dofrowmap_, 10));
+    T2_ = Teuchos::rcp(new LINALG::SparseMatrix(*P21_dofrowmap_, 10));
   }
 
   return;
@@ -2258,17 +3350,17 @@ void VOLMORTAR::VolMortarCoupl::Initialize()
 void VOLMORTAR::VolMortarCoupl::Complete()
 {
   //complete...
-  dmatrixA_->Complete(*ADiscret()->DofRowMap(1), *ADiscret()->DofRowMap(1));
-  mmatrixA_->Complete(*BDiscret()->DofRowMap(0), *ADiscret()->DofRowMap(1));
+  D1_->Complete( *P12_dofrowmap_, *P12_dofrowmap_);
+  M12_->Complete(*P12_dofcolmap_, *P12_dofrowmap_);
 
-  dmatrixB_->Complete(*BDiscret()->DofRowMap(1), *BDiscret()->DofRowMap(1));
-  mmatrixB_->Complete(*ADiscret()->DofRowMap(0), *BDiscret()->DofRowMap(1));
+  D2_->Complete( *P21_dofrowmap_, *P21_dofrowmap_);
+  M21_->Complete(*P21_dofcolmap_, *P21_dofrowmap_);
 
   // complete trafo operator for quadr. modification
   if (dualquad_ != INPAR::VOLMORTAR::dualquad_no_mod)
   {
-    TA_->Complete(*ADiscret()->DofRowMap(1), *ADiscret()->DofRowMap(1));
-    TB_->Complete(*BDiscret()->DofRowMap(1), *BDiscret()->DofRowMap(1));
+    T1_->Complete(*P12_dofrowmap_, *P12_dofrowmap_);
+    T2_->Complete(*P21_dofrowmap_, *P21_dofrowmap_);
   }
 
   return;
@@ -2282,81 +3374,73 @@ void VOLMORTAR::VolMortarCoupl::CreateProjectionOperator()
   /********************************************************************/
   /* Multiply Mortar matrices: P = inv(D) * M         A               */
   /********************************************************************/
-  Teuchos::RCP<LINALG::SparseMatrix> invdA = Teuchos::rcp(
-      new LINALG::SparseMatrix(*dmatrixA_));
-  Teuchos::RCP<Epetra_Vector> diagA = LINALG::CreateVector(
-      *ADiscret()->DofRowMap(1), true);
+  Teuchos::RCP<LINALG::SparseMatrix> invd1 = Teuchos::rcp(
+      new LINALG::SparseMatrix(*D1_));
+  Teuchos::RCP<Epetra_Vector> diag1 = LINALG::CreateVector(
+      *P12_dofrowmap_, true);
   int err = 0;
 
   // extract diagonal of invd into diag
-  invdA->ExtractDiagonalCopy(*diagA);
+  invd1->ExtractDiagonalCopy(*diag1);
 
   // set zero diagonal values to dummy 1.0
-  for (int i = 0; i < diagA->MyLength(); ++i)
-    if (abs((*diagA)[i]) < 1e-12)
-      (*diagA)[i] = 1.0;
+  for (int i = 0; i < diag1->MyLength(); ++i)
+    if (abs((*diag1)[i]) < 1e-12)
+      (*diag1)[i] = 1.0;
 
   // scalar inversion of diagonal values
-  err = diagA->Reciprocal(*diagA);
+  err = diag1->Reciprocal(*diag1);
   if (err > 0)
     dserror("ERROR: Reciprocal: Zero diagonal entry!");
 
   // re-insert inverted diagonal into invd
-  err = invdA->ReplaceDiagonalValues(*diagA);
+  err = invd1->ReplaceDiagonalValues(*diag1);
 
   // do the multiplication P = inv(D) * M
-  //pmatrixA_
-  Teuchos::RCP<LINALG::SparseMatrix> auxa = LINALG::MLMultiply(*invdA, false,
-      *mmatrixA_, false, false, false, true);
+  Teuchos::RCP<LINALG::SparseMatrix> aux12 = LINALG::MLMultiply(*invd1, false,
+      *M12_, false, false, false, true);
 
   /********************************************************************/
   /* Multiply Mortar matrices: P = inv(D) * M         B               */
   /********************************************************************/
-  Teuchos::RCP<LINALG::SparseMatrix> invdB = Teuchos::rcp(
-      new LINALG::SparseMatrix(*dmatrixB_));
-  Teuchos::RCP<Epetra_Vector> diagB = LINALG::CreateVector(
-      *BDiscret()->DofRowMap(1), true);
+  Teuchos::RCP<LINALG::SparseMatrix> invd2 = Teuchos::rcp(
+      new LINALG::SparseMatrix(*D2_));
+  Teuchos::RCP<Epetra_Vector> diag2 = LINALG::CreateVector(
+      *P21_dofrowmap_, true);
 
   // extract diagonal of invd into diag
-  invdB->ExtractDiagonalCopy(*diagB);
+  invd2->ExtractDiagonalCopy(*diag2);
 
   // set zero diagonal values to dummy 1.0
-  for (int i = 0; i < diagB->MyLength(); ++i)
-    if (abs((*diagB)[i]) < 1e-12)
-      (*diagB)[i] = 1.0;
+  for (int i = 0; i < diag2->MyLength(); ++i)
+    if (abs((*diag2)[i]) < 1e-12)
+      (*diag2)[i] = 1.0;
 
   // scalar inversion of diagonal values
-  err = diagB->Reciprocal(*diagB);
+  err = diag2->Reciprocal(*diag2);
   if (err > 0)
     dserror("ERROR: Reciprocal: Zero diagonal entry!");
 
   // re-insert inverted diagonal into invd
-  err = invdB->ReplaceDiagonalValues(*diagB);
+  err = invd2->ReplaceDiagonalValues(*diag2);
 
   // do the multiplication P = inv(D) * M
-  //pmatrixB_
-  Teuchos::RCP<LINALG::SparseMatrix> auxb = LINALG::MLMultiply(*invdB, false,
-      *mmatrixB_, false, false, false, true);
+  Teuchos::RCP<LINALG::SparseMatrix> aux21 = LINALG::MLMultiply(*invd2, false,
+      *M21_, false, false, false, true);
 
   // initialize trafo operator for quadr. modification
   if (dualquad_ != INPAR::VOLMORTAR::dualquad_no_mod)
   {
-    pmatrixA_ = LINALG::MLMultiply(*TA_, false, *auxa, false, false, false,
+    P12_ = LINALG::MLMultiply(*T1_, false, *aux12, false, false, false,
         true);
-    pmatrixB_ = LINALG::MLMultiply(*TB_, false, *auxb, false, false, false,
+    P21_ = LINALG::MLMultiply(*T2_, false, *aux21, false, false, false,
         true);
   }
   else
   {
-    pmatrixA_ = auxa;
-    pmatrixB_ = auxb;
+    P12_ = aux12;
+    P21_ = aux21;
   }
-
-//  std::cout << "auxa= " << *auxa << std::endl;
-//  std::cout << "pmatrixA_= " << *pmatrixA_ << std::endl;
-//  std::cout << "auxb= " << *auxb << std::endl;
-//  std::cout << "pmatrixB_= " << *pmatrixB_ << std::endl;
-//  std::cout << "TB_= " << *TB_ << std::endl;
 
   return;
 }

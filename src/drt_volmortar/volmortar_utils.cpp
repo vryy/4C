@@ -21,25 +21,25 @@
 /*----------------------------------------------------------------------*
  |  assign material to discretization A                       vuong 09/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterialBToA(
+void VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial2To1(
     const VOLMORTAR::VolMortarCoupl* volmortar,
-    DRT::Element* Aele,
-    const std::vector<int>& Bids,
-    Teuchos::RCP<DRT::Discretization> disA,
-    Teuchos::RCP<DRT::Discretization> disB)
+    DRT::Element* ele1,
+    const std::vector<int>& ids_2,
+    Teuchos::RCP<DRT::Discretization> dis1,
+    Teuchos::RCP<DRT::Discretization> dis2)
 {
-  if(Aele==NULL)
-    dserror("got NULL pointer for AssignMaterial for element!");
+  if(ele1==NULL)
+    dserror("ERROR: Got NULL pointer for AssignMaterial for element!");
 
   //if no corresponding element found -> leave
-  if(Bids.empty())
+  if(ids_2.empty())
     return;
 
   //default strategy: take only material of first element found
-  DRT::Element* Bele = disB->gElement(Bids[0]);
+  DRT::Element* ele2 = dis2->gElement(ids_2[0]);
 
   //assign additional material to element A
-  Aele->AddMaterial(Bele->Material());
+  ele1->AddMaterial(ele2->Material());
 
   //done
   return;
@@ -48,25 +48,25 @@ void VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterialBToA(
 /*----------------------------------------------------------------------*
  |  assign material to discretization B                       vuong 09/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterialAToB(
+void VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial1To2(
     const VOLMORTAR::VolMortarCoupl* volmortar,
-    DRT::Element* Bele,
-    const std::vector<int>& Aids,
-    Teuchos::RCP<DRT::Discretization> disA,
-    Teuchos::RCP<DRT::Discretization> disB)
+    DRT::Element* ele2,
+    const std::vector<int>& ids_1,
+    Teuchos::RCP<DRT::Discretization> dis1,
+    Teuchos::RCP<DRT::Discretization> dis2)
 {
-  if(Bele==NULL)
-    dserror("got NULL pointer for AssignMaterial for element!");
+  if(ele2==NULL)
+    dserror("ERROR: Got NULL pointer for AssignMaterial for element!");
 
   //if no corresponding element found -> leave
-  if(Aids.empty())
+  if(ids_1.empty())
     return;
 
   //default strategy: take only material of first element found
-  DRT::Element* Aele = disA->gElement(Aids[0]);
+  DRT::Element* ele1 = dis1->gElement(ids_1[0]);
 
   //assign additional material to element B
-  Bele->AddMaterial(Aele->Material());
+  ele2->AddMaterial(ele1->Material());
 
   //done
   return;

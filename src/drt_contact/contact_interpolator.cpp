@@ -35,7 +35,7 @@ pwslip_(DRT::INPUT::IntegralValue<int>(iparams_,"GP_SLIP_INCR")),
 wearlaw_(DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(iparams_,"WEARLAW")),
 wearimpl_(false),
 wearside_(INPAR::WEAR::wear_slave),
-weartype_(INPAR::WEAR::wear_intstate_expl),
+weartype_(INPAR::WEAR::wear_intstate),
 wearshapefcn_(INPAR::WEAR::wear_shape_standard),
 wearcoeff_(-1.0),
 wearcoeffm_(-1.0),
@@ -45,9 +45,9 @@ ssslip_(iparams_.get<double>("SSSLIP"))
   // wear specific
   if(wearlaw_!=INPAR::WEAR::wear_none)
   {
-    // set wear contact status
-    INPAR::WEAR::WearType wtype = DRT::INPUT::IntegralValue<INPAR::WEAR::WearType>(params,"WEARTYPE");
-    if (wtype == INPAR::WEAR::wear_intstate_impl)
+    // wear time integration
+    INPAR::WEAR::WearTimInt wtimint = DRT::INPUT::IntegralValue<INPAR::WEAR::WearTimInt>(params,"WEARTIMINT");
+    if (wtimint == INPAR::WEAR::wear_impl)
       wearimpl_ = true;
 
     // wear surface
@@ -649,7 +649,7 @@ void CONTACT::CoInterpolator::nwWear2D(CoNode& mynode,
   double prod = wearval/area;
 
   // add current node wear to w
-  dynamic_cast<CONTACT::FriNode&>(mynode).AddDeltaWearValue(prod);
+  dynamic_cast<CONTACT::FriNode&>(mynode).AddDeltaWeightedWearValue(prod);
 
   //****************************************************************
   //   linearization for implicit algorithms

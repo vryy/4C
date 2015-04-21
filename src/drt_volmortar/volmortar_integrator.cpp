@@ -173,10 +173,12 @@ template<DRT::Element::DiscretizationType distypeS>
 void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D(
     DRT::Element& sele,
     std::vector<int>& foundeles,
-    LINALG::SparseMatrix& dmatrix_A,
-    LINALG::SparseMatrix& mmatrix_A,
+    LINALG::SparseMatrix& D,
+    LINALG::SparseMatrix& M,
     Teuchos::RCP<const DRT::Discretization> Adis,
-    Teuchos::RCP<const DRT::Discretization> Bdis)
+    Teuchos::RCP<const DRT::Discretization> Bdis,
+    int dofseta,
+    int dofsetb)
 {
   //**********************************************************************
   // loop over all Gauss points for integration
@@ -230,10 +232,12 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D(
             AuxXi,
             globgp,
             dualquad_,
-            dmatrix_A,
-            mmatrix_A,
+            D,
+            M,
             Adis,
-            Bdis);
+            Bdis,
+            dofseta,
+            dofsetb);
 
         break;
       }
@@ -252,10 +256,12 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D(
             AuxXi,
             globgp,
             dualquad_,
-            dmatrix_A,
-            mmatrix_A,
+            D,
+            M,
             Adis,
-            Bdis);
+            Bdis,
+            dofseta,
+            dofsetb);
 
         break;
       }
@@ -274,10 +280,12 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D(
             AuxXi,
             globgp,
             dualquad_,
-            dmatrix_A,
-            mmatrix_A,
+            D,
+            M,
             Adis,
-            Bdis);
+            Bdis,
+            dofseta,
+            dofsetb);
 
         break;
       }
@@ -296,10 +304,12 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D(
             AuxXi,
             globgp,
             dualquad_,
-            dmatrix_A,
-            mmatrix_A,
+            D,
+            M,
             Adis,
-            Bdis);
+            Bdis,
+            dofseta,
+            dofsetb);
 
         break;
       }
@@ -318,10 +328,12 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D(
             AuxXi,
             globgp,
             dualquad_,
-            dmatrix_A,
-            mmatrix_A,
+            D,
+            M,
             Adis,
-            Bdis);
+            Bdis,
+            dofseta,
+            dofsetb);
 
         break;
       }
@@ -373,10 +385,12 @@ bool VOLMORTAR::VolMortarEleBasedGP(
     double& jac, double& wgt, double& gpdist,
     double* Axi, double* AuxXi, double* globgp,
     INPAR::VOLMORTAR::DualQuad& dq,
-    LINALG::SparseMatrix& dmatrix_A,
-    LINALG::SparseMatrix& mmatrix_A,
+    LINALG::SparseMatrix& D,
+    LINALG::SparseMatrix& M,
     Teuchos::RCP<const DRT::Discretization> Adis,
-    Teuchos::RCP<const DRT::Discretization> Bdis)
+    Teuchos::RCP<const DRT::Discretization> Bdis,
+    int dofseta,
+    int dofsetb)
 {
   //! ns_: number of slave element nodes
   static const int ns_ = DRT::UTILS::DisTypeToNumNodePerEle<distypeS>::numNodePerElement;
@@ -436,29 +450,29 @@ bool VOLMORTAR::VolMortarEleBasedGP(
     if (cnode->Owner() != Adis->Comm().MyPID())
       continue;
 
-    int nsdof=Adis->NumDof(1,cnode);
+    int nsdof=Adis->NumDof(dofseta,cnode);
 
     //loop over slave dofs
     for (int jdof=0;jdof<nsdof;++jdof)
     {
-      int row = Adis->Dof(1,cnode,jdof);
+      int row = Adis->Dof(dofseta,cnode,jdof);
 
       // integrate D
       double prod2 = lmval_A(j)*sval_A(j)*jac*wgt;
       if (abs(prod2)>VOLMORTARINTTOL)
-        dmatrix_A.Assemble(prod2, row, row);
+        D.Assemble(prod2, row, row);
 
       // integrate M
       for (int k=0; k<nm_; ++k)
       {
         DRT::Node* mnode = mele->Nodes()[k];
-        int col = Bdis->Dof(0,mnode,jdof);
+        int col = Bdis->Dof(dofsetb,mnode,jdof);
 
         // multiply the two shape functions
         double prod = lmval_A(j)*mval_A(k)*jac*wgt;
 
         if (abs(prod)>VOLMORTARINTTOL)
-          mmatrix_A.Assemble(prod, row, col);
+          M.Assemble(prod, row, col);
       }
     }
   }

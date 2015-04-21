@@ -479,7 +479,7 @@ void POROELAST::Monolithic::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat
             *(StructureField()->Discretization()->DofRowMap(0))
             );
 
-    k_sf=volcoupl_->ApplyMatrixMappingAB(k_sf);
+    k_sf=volcoupl_->ApplyMatrixMapping12(k_sf);
   }
 
   // Uncomplete mechanical-fluid matrix to be able to deal with slightly
@@ -523,7 +523,7 @@ void POROELAST::Monolithic::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat
             *(FluidField()->Discretization()->DofRowMap(0))
             );
 
-    k_fs=volcoupl_->ApplyMatrixMappingBA(k_fs);
+    k_fs=volcoupl_->ApplyMatrixMapping21(k_fs);
   }
 
   // uncomplete because the fluid interface can have more connections than the

@@ -77,10 +77,10 @@ void CONTACT::AnalyticalSolutions2D(const LINALG::Matrix<2,1>& pos,
   else if (entype==INPAR::CONTACT::errornorms_bending)
   {
     // model parameters
-    double h= 2.0;
-    double p = 100.0;
-    double nu = 0.3;
-    double E = 1000.0;
+    const double h= 2.0;
+    const double p = 100.0;
+    const double nu = 0.3;
+    const double E = 1000.0;
 
     // displacements
     uanalyt(0,0) =  ((2*p)/(E*h)) * (pos(0,0)*pos(1,0));
@@ -101,12 +101,12 @@ void CONTACT::AnalyticalSolutions2D(const LINALG::Matrix<2,1>& pos,
 
   else if (entype==INPAR::CONTACT::errornorms_infiniteplate)
   {
-    double E=100.0;
-    double nue=0.3;
-    double s_inf = 1.0; // tensile stress at infinity
-    double a=2.0; // hole radius
-    double x=-pos(0,0);
-    double y=-pos(1,0);
+    const double E=100.0;
+    const double nue=0.3;
+    const double s_inf = 1.0; // tensile stress at infinity
+    const double a=2.0; // hole radius
+    const double x=-pos(0,0);
+    const double y=-pos(1,0);
     LINALG::Matrix<3,1> stress_analytical;
 
 
@@ -238,10 +238,10 @@ void CONTACT::AnalyticalSolutions3D(const LINALG::Matrix<3,1>& pos,
   else if (entype==INPAR::CONTACT::errornorms_bending)
   {
     // model parameters
-    double h= 2.0;
-    double p = 100.0;
-    double nu = 0.3;
-    double E = 1000.0;
+    const double h= 2.0;
+    const double p = 100.0;
+    const double nu = 0.3;
+    const double E = 1000.0;
 
     // displacements
     uanalyt(0,0) =  ((2*p)/(E*h)) * (pos(0,0)*pos(1,0));
@@ -277,9 +277,9 @@ void CONTACT::AnalyticalSolutions3D(const LINALG::Matrix<3,1>& pos,
     // model parameters
     double a = 0.9;
     double b = 1.1;
-    double pi = 1.0;
-    double nu = 0.3;
-    double E = 1.0;
+    const double pi = 1.0;
+    const double nu = 0.3;
+    const double E = 1.0;
 
     // change geometry for thick version
     if (entype==INPAR::CONTACT::errornorms_thicksphere)
@@ -289,13 +289,13 @@ void CONTACT::AnalyticalSolutions3D(const LINALG::Matrix<3,1>& pos,
     }
 
     // radial coordinate r = sqrt(x^2+y^2+z^2)
-    double r = sqrt(pos(0,0)*pos(0,0)+pos(1,0)*pos(1,0)+pos(2,0)*pos(2,0));
+    const double r = sqrt(pos(0,0)*pos(0,0)+pos(1,0)*pos(1,0)+pos(2,0)*pos(2,0));
 
     // azimuthal angle phi \in [-PI,PI]
-    double phi = atan2(pos(1,0),pos(0,0));
+    const double phi = atan2(pos(1,0),pos(0,0));
 
     // polar angle theta \in [0,PI]
-    double theta = acos(pos(2,0)/r);
+    const double theta = acos(pos(2,0)/r);
 
     // transformation matrix S
     LINALG::Matrix<3,3> trafo;
@@ -322,8 +322,8 @@ void CONTACT::AnalyticalSolutions3D(const LINALG::Matrix<3,1>& pos,
     Jinv(2,2) =  0.0;
 
     // solution coefficients
-    double B = (pi*(1+nu)*(1-2*nu)*a*a*a*b*b*b) / (E*(1+nu)*a*a*a + 2*E*(1-2*nu)*b*b*b);
-    double A = -B / (b*b*b);
+    const double B = (pi*(1+nu)*(1-2*nu)*a*a*a*b*b*b) / (E*(1+nu)*a*a*a + 2*E*(1-2*nu)*b*b*b);
+    const double A = -B / (b*b*b);
 
     // displacements
     LINALG::Matrix<3,1> usphere;
@@ -377,12 +377,12 @@ void CONTACT::AnalyticalSolutions3D(const LINALG::Matrix<3,1>& pos,
 
   else if (entype==INPAR::CONTACT::errornorms_infiniteplate)
   {
-    double E=100.0;
-    double nue=0.0;
-    double s_inf = 1.0; // tensile stress at infinity
-    double a=2.0; // hole radius
-    double x=-pos(0,0);
-    double y=-pos(1,0);
+    const double E=100.0;
+    const double nue=0.0;
+    const double s_inf = 1.0; // tensile stress at infinity
+    const double a=2.0; // hole radius
+    const double x=-pos(0,0);
+    const double y=-pos(1,0);
     LINALG::Matrix<3,1> stress_analytical;
 
 

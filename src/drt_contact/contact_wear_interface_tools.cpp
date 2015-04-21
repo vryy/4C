@@ -3411,7 +3411,7 @@ void CONTACT::WearInterface::FDCheckWearDerivLm()
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     // store wear-values into refW
-    refW[i]=cnode->FriDataPlus().Wear();
+    refW[i]=cnode->FriDataPlus().WeightedWear();
   }
 
   // global loop to apply FD scheme to all slave dofs (=dim*nodes)
@@ -3462,7 +3462,7 @@ void CONTACT::WearInterface::FDCheckWearDerivLm()
       FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
       // store gap-values into newG
-      newW[k]=wcoeff*kcnode->FriDataPlus().DeltaWear();
+      newW[k]=wcoeff*kcnode->FriDataPlus().DeltaWeightedWear();
 
 //      if (abs(newW[k]-refW[k]) > 1e-12 && newW[k]!=1.0e12 && refW[k] != 1.0e12)
 //      {
@@ -3523,7 +3523,7 @@ void CONTACT::WearInterface::FDCheckWearDerivLm()
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     // store gap-values into refG
-    cnode->FriDataPlus().Wear()=refW[i];
+    cnode->FriDataPlus().WeightedWear()=refW[i];
   }
 
 
@@ -3563,7 +3563,7 @@ void CONTACT::WearInterface::FDCheckWearDeriv()
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     // store wear-values into refW
-    refW[i]=cnode->FriDataPlus().Wear();
+    refW[i]=cnode->FriDataPlus().WeightedWear();
   }
 
   // global loop to apply FD scheme to all slave dofs (=dim*nodes)
@@ -3617,7 +3617,7 @@ void CONTACT::WearInterface::FDCheckWearDeriv()
       FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
       // store gap-values into newG
-      newW[k]=wcoeff*kcnode->FriDataPlus().DeltaWear();
+      newW[k]=wcoeff*kcnode->FriDataPlus().DeltaWeightedWear();
 
       if (abs(newW[k]-refW[k]) > 1e-12 && newW[k]!=1.0e12 && refW[k] != 1.0e12)
       {
@@ -3714,7 +3714,7 @@ void CONTACT::WearInterface::FDCheckWearDeriv()
       FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
       // store gap-values into newG
-      newW[k]=wcoeff*kcnode->FriDataPlus().DeltaWear();
+      newW[k]=wcoeff*kcnode->FriDataPlus().DeltaWeightedWear();
 
       if (abs(newW[k]-refW[k]) > 1e-12 && newW[k]!=1.0e12 && refW[k] != 1.0e12)
       {
@@ -3772,7 +3772,7 @@ void CONTACT::WearInterface::FDCheckWearDeriv()
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
-    cnode->FriDataPlus().Wear()=refW[i];
+    cnode->FriDataPlus().WeightedWear()=refW[i];
   }
 
   return;

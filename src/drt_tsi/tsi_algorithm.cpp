@@ -61,7 +61,7 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
 
     Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy= Teuchos::rcp(new TSI::UTILS::TSIMaterialStrategy() );
     //setup projection matrices
-    volcoupl_->Setup(structdis, thermodis,materialstrategy);
+    volcoupl_->Setup(structdis,thermodis,NULL,NULL,materialstrategy);
   }
 
   // access structural dynamic params list which will be possibly modified while creating the time integrator
@@ -133,7 +133,7 @@ void TSI::Algorithm::Output(bool forced_writerestart)
     if(!matchinggrid_)
     {
       //************************************************************************************
-      Teuchos::RCP<const Epetra_Vector> dummy1 = volcoupl_->ApplyVectorMappingAB(ThermoField()->Tempnp());
+      Teuchos::RCP<const Epetra_Vector> dummy1 = volcoupl_->ApplyVectorMapping12(ThermoField()->Tempnp());
 
       // loop over all local nodes of thermal discretisation
       for (int lnodeid=0; lnodeid<(StructureField()->Discretization()->NumMyRowNodes()); lnodeid++)
@@ -184,7 +184,7 @@ void TSI::Algorithm::Output(bool forced_writerestart)
       }
       else
       {
-        Teuchos::RCP<const Epetra_Vector> dummy = volcoupl_->ApplyVectorMappingBA(StructureField()->Dispnp());
+        Teuchos::RCP<const Epetra_Vector> dummy = volcoupl_->ApplyVectorMapping21(StructureField()->Dispnp());
 
         // determine number of space dimensions
         const int numdim = DRT::Problem::Instance()->NDim();
@@ -327,7 +327,7 @@ void TSI::Algorithm::ApplyThermoCouplingState(Teuchos::RCP<const Epetra_Vector> 
   else
   {
     if (temp != Teuchos::null)
-      StructureField()->Discretization()->SetState(1,"temperature",volcoupl_->ApplyVectorMappingAB(temp));
+      StructureField()->Discretization()->SetState(1,"temperature",volcoupl_->ApplyVectorMapping12(temp));
   }
 }  // ApplyThermoCouplingState()
 
@@ -348,9 +348,9 @@ void TSI::Algorithm::ApplyStructCouplingState(Teuchos::RCP<const Epetra_Vector> 
   else
   {
     if (disp != Teuchos::null)
-      ThermoField()->Discretization()->SetState(1,"displacement",volcoupl_->ApplyVectorMappingBA(disp));
+      ThermoField()->Discretization()->SetState(1,"displacement",volcoupl_->ApplyVectorMapping21(disp));
     if (vel != Teuchos::null)
-      ThermoField()->Discretization()->SetState(1,"velocity",volcoupl_->ApplyVectorMappingBA(vel));
+      ThermoField()->Discretization()->SetState(1,"velocity",volcoupl_->ApplyVectorMapping21(vel));
   }
 }  // ApplyStructCouplingState()
 

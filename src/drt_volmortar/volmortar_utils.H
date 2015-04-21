@@ -58,18 +58,18 @@ namespace VOLMORTAR
       virtual ~DefaultMaterialStrategy(){};
 
       //! assign material of discretization B
-      virtual void AssignMaterialBToA(const VOLMORTAR::VolMortarCoupl* volmortar,
-                                  DRT::Element* Aele,
-                                  const std::vector<int>& Bids,
-                                  Teuchos::RCP<DRT::Discretization> disA,
-                                  Teuchos::RCP<DRT::Discretization> disB);
+      virtual void AssignMaterial2To1(const VOLMORTAR::VolMortarCoupl* volmortar,
+                                  DRT::Element* ele1,
+                                  const std::vector<int>& ids_2,
+                                  Teuchos::RCP<DRT::Discretization> dis1,
+                                  Teuchos::RCP<DRT::Discretization> dis2);
 
       //! assign material of discretization B
-      virtual void AssignMaterialAToB(const VOLMORTAR::VolMortarCoupl* volmortar,
-                                  DRT::Element* Bele,
-                                  const std::vector<int>& Aids,
-                                  Teuchos::RCP<DRT::Discretization> disA,
-                                  Teuchos::RCP<DRT::Discretization> disB);
+      virtual void AssignMaterial1To2(const VOLMORTAR::VolMortarCoupl* volmortar,
+                                  DRT::Element* ele2,
+                                  const std::vector<int>& ids_1,
+                                  Teuchos::RCP<DRT::Discretization> dis1,
+                                  Teuchos::RCP<DRT::Discretization> dis2);
     };
   }
 }

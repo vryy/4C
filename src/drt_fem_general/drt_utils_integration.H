@@ -49,6 +49,7 @@ enum GaussRule3D
     intrule_hex_343point,
     intrule_hex_512point,
     intrule_hex_729point,
+    intrule_hex_1000point,
     intrule_tet_1point,             ///< GAUSS INTEGRATION, DEG.OF PRECISION 1 (open)
     intrule_tet_4point,             ///< GAUSS INTEGRATION, DEG.OF PRECISION 2 (open)
     intrule_tet_4point_gauss_radau, ///< GAUSS INTEGRATION, DEG.OF PRECISION 2 (closed)
@@ -85,6 +86,7 @@ inline bool IntRuleIsOpen(DRT::UTILS::GaussRule3D intrule)
   case intrule_hex_343point:           return true;
   case intrule_hex_512point:           return true;
   case intrule_hex_729point:           return true;
+  case intrule_hex_1000point:          return true;
   case intrule_tet_1point:             return true;
   case intrule_tet_4point:             return true;
   case intrule_tet_4point_gauss_radau: return false;
@@ -258,7 +260,7 @@ struct IntegrationPoints3D
       const GaussRule3D intrule      ///< 3d rule
       );
 private:
-  static const int max_nquad = 729;  ///< size of c array
+  static const int max_nquad = 1000;  ///< size of c array
   DRT::UTILS::GaussRule3D intrule_;  ///< associated integration rule name
 public:
   int           nquad;               ///< number of gausspoints

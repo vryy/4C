@@ -300,17 +300,17 @@ public:
   /*!
    \brief Return the weighted wear per node (length 1)
    */
-  virtual double& Wear()
+  virtual double& WeightedWear()
   {
-    return wear_;
+    return weightedwear_;
   }
 
   /*!
    \brief Return the delta of the weighted wear per node without wear coefficient (length 1)
    */
-  virtual double& DeltaWear()
+  virtual double& DeltaWeightedWear()
   {
-    return deltawear_;
+    return deltaweightedwear_;
   }
 
   /*!
@@ -344,7 +344,7 @@ public:
   }
 
   /*!
-   \brief Return the 'D' map (vector) of this node
+   \brief Return the 'D2' map (vector) of this node
    */
   virtual std::vector<std::map<int, double> >& GetD2()
   {
@@ -387,11 +387,11 @@ protected:
   std::set<int> anodes_;                      // nodal set of according slave nodes
 
   // wear related quantities
-  double wear_;      // weighted wear
-  double deltawear_; // deltawear
-  double wcurr_[1];  // current discrete wear value (n+1)
-  double wold_[1];   // old discrete wear value (i) - for paritioned solution scheme
-  double waccu_[1];  // accumulated discrete wear value (i) - for different time scales
+  double weightedwear_;      // weighted wear
+  double deltaweightedwear_; // delta weighted wear
+  double wcurr_[1];          // current pv wear value (n+1)
+  double wold_[1];           // old pv wear value (i) - for paritioned solution scheme
+  double waccu_[1];          // accumulated pv wear value (i) - for different time scales
 
   std::vector<std::map<int, double> > trows_; // nodal rows of T matrix
   std::vector<std::map<int, double> > erows_; // nodal rows of E matrix
@@ -661,7 +661,7 @@ public:
    \brief Set deltawear to value
 
    */
-  void AddDeltaWearValue(double& val);
+  void AddDeltaWeightedWearValue(double& val);
 
   /*!
    \brief Write nodal entries of D and M to Dold and Mold

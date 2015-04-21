@@ -8,7 +8,7 @@ General Data File BACI
 ============================================================================
 -----------------------------------------------------------------------TITLE
 2D wear contact ironing
-// - structure-ale approach -- ale: incr_lin
+// - structure-ale approach -- ale: springs
 // - explicit wear algorithm
 // - first-order interpolation (quad4 elements)
 // - dual Lagrange multiplier interpolation
@@ -71,11 +71,13 @@ PARALLEL_REDIST                 dynamic
 //LM_DUAL_CONSISTENT              no
 ------------------------------------------------------------------------WEAR
 WEARLAW                         Archard
-WEARTYPE                        is_expl
-BOTH_SIDED_WEAR                 none
+WEARTYPE                        is
+WEARTIMINT                      expl
+WEAR_SIDE                       slave
 WEAR_COUPALGO                   stagg
 WEARCOEFF                       0.0003
 WEARCOEFF_CONF                  sp
+WEAR_SHAPE_EVO                  sp
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
 --------------------------------------------------------------------SOLVER 1

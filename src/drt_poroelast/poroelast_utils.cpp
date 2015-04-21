@@ -436,30 +436,30 @@ double POROELAST::UTILS::CalculateVectorNorm(
 /*----------------------------------------------------------------------*
  |  assign material to discretization A                       vuong 09/14|
  *----------------------------------------------------------------------*/
-void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterialBToA(
+void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterial2To1(
     const VOLMORTAR::VolMortarCoupl* volmortar,
-    DRT::Element* Aele,
-    const std::vector<int>& Bids,
-    Teuchos::RCP<DRT::Discretization> disA,
-    Teuchos::RCP<DRT::Discretization> disB)
+    DRT::Element* ele1,
+    const std::vector<int>& ids_2,
+    Teuchos::RCP<DRT::Discretization> dis1,
+    Teuchos::RCP<DRT::Discretization> dis2)
 {
   //call default assignment
-  VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterialBToA(volmortar,Aele,Bids,disA,disB);
+  VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial2To1(volmortar,ele1,ids_2,dis1,dis2);
 
   //default strategy: take only material of first element found
-  DRT::Element* Bele = disB->gElement(Bids[0]);
+  DRT::Element* ele2 = dis2->gElement(ids_2[0]);
 
   // if Bele is a fluid element
-  DRT::ELEMENTS::FluidPoro* fluid = dynamic_cast<DRT::ELEMENTS::FluidPoro*>(Bele);
+  DRT::ELEMENTS::FluidPoro* fluid = dynamic_cast<DRT::ELEMENTS::FluidPoro*>(ele2);
   if (fluid!=NULL)
   {
     //Copy Initial Porosity from StructPoro Material to FluidPoro Material
     static_cast<MAT::PAR::FluidPoro*>(fluid->Material()->Parameter())->SetInitialPorosity(
-              Teuchos::rcp_static_cast<MAT::StructPoro>(Aele->Material())->Initporosity());
+              Teuchos::rcp_static_cast<MAT::StructPoro>(ele1->Material())->Initporosity());
   }
   else
   {
-    dserror("unsupported element type '%s'", typeid(*Bele).name());
+    dserror("ERROR: Unsupported element type '%s'", typeid(*ele2).name());
   }
 
   //done
@@ -470,28 +470,28 @@ void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterialBToA(
 /*----------------------------------------------------------------------*
  |  assign material to discretization B                       vuong 09/14|
  *----------------------------------------------------------------------*/
-void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterialAToB(
+void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterial1To2(
     const VOLMORTAR::VolMortarCoupl* volmortar,
-    DRT::Element* Bele,
-    const std::vector<int>& Aids,
-    Teuchos::RCP<DRT::Discretization> disA,
-    Teuchos::RCP<DRT::Discretization> disB)
+    DRT::Element* ele2,
+    const std::vector<int>& ids_1,
+    Teuchos::RCP<DRT::Discretization> dis1,
+    Teuchos::RCP<DRT::Discretization> dis2)
 {
   //call default assignment
-  VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterialAToB(volmortar,Bele,Aids,disA,disB);
+  VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial1To2(volmortar,ele2,ids_1,dis1,dis2);
 
   //if no corresponding element found -> leave
-  if(Aids.empty())
+  if(ids_1.empty())
     return;
 
   //default strategy: take only material of first element found
-  DRT::Element* Aele = disA->gElement(Aids[0]);
+  DRT::Element* ele1 = dis1->gElement(ids_1[0]);
 
   // if Aele is a so3_base element
-  DRT::ELEMENTS::So_base*  so_base  = dynamic_cast<DRT::ELEMENTS::So_base*>(Aele);
+  DRT::ELEMENTS::So_base*  so_base  = dynamic_cast<DRT::ELEMENTS::So_base*>(ele1);
 
   // if Bele is a fluid element
-  DRT::ELEMENTS::FluidPoro* fluid = dynamic_cast<DRT::ELEMENTS::FluidPoro*>(Bele);
+  DRT::ELEMENTS::FluidPoro* fluid = dynamic_cast<DRT::ELEMENTS::FluidPoro*>(ele2);
   if (fluid!=NULL)
   {
     if(so_base)
@@ -499,11 +499,11 @@ void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterialAToB(
       fluid->SetKinematicType(so_base->KinematicType());
     }
     else
-      dserror("Aele is not a solid element");
+      dserror("ERROR: ele1 is not a solid element");
   }
   else
   {
-    dserror("unsupported element type '%s'", typeid(*Bele).name());
+    dserror("ERROR: Unsupported element type '%s'", typeid(*ele2).name());
   }
 
   //done

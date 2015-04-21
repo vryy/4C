@@ -46,12 +46,12 @@ namespace UTILS
 {
   //advection map for elements
   template<DRT::Element::DiscretizationType distype>
-  void av(DRT::Element* ele,
-      double* XMat,
-      double* XMesh,
-      Teuchos::RCP<const Epetra_Vector> disp, // curr spat. displ.
-      Teuchos::RCP<const Epetra_Vector> dispmat,
-      const std::vector<int>&  lm,
+  void av(DRT::Element* ele,                         //in
+      double* Xtarget,                               //out
+      double* Xsource,                               //in
+      Teuchos::RCP<const Epetra_Vector> disp_source, //in
+      Teuchos::RCP<const Epetra_Vector> disp_target, //in
+      const std::vector<int>&  lm,                   //in
       bool& found,
       double* e)
   {
@@ -64,17 +64,17 @@ namespace UTILS
      LINALG::Matrix<ndim,numnod> deriv;
 
      // spatial displacements
-     std::vector<double> mydisp(lm.size());
-     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+     std::vector<double> mydisp_source(lm.size());
+     DRT::UTILS::ExtractMyValues(*disp_source,mydisp_source,lm);
 
      // material displacements
-     std::vector<double> mydispmat(lm.size());
-     DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
+     std::vector<double> mydisp_target(lm.size());
+     DRT::UTILS::ExtractMyValues(*disp_target,mydisp_target,lm);
 
      // spatial configuration of this element!
      for (int k=0; k<numnod; ++k)
        for (int j=0;j<ndim;++j)
-         xcure(j,k) = ele->Nodes()[k]->X()[j]+ mydisp[k*ndim+j];
+         xcure(j,k) = ele->Nodes()[k]->X()[j]+ mydisp_source[k*ndim+j];
 
      // first estimation for parameter space coordinates
      for(int p=0;p<3;++p)
@@ -105,7 +105,7 @@ namespace UTILS
          DRT::UTILS::shape_function_3D_deriv1(deriv,e[0],e[1],e[2],distype);
        }
        else
-         dserror("ERROR");
+         dserror("ERROR: Wrong dimension!");
 
        for (int k=0; k<numnod; ++k)
          for(int p=0;p<ndim;++p)
@@ -117,7 +117,7 @@ namespace UTILS
          rhs[p]=0.0;
 
        for(int p=0;p<ndim;++p)
-         rhs[p] = -XMesh[p];
+         rhs[p] = -Xsource[p];
 
        for (int k=0; k<numnod; ++k)
          for(int p=0;p<ndim;++p)
@@ -155,7 +155,7 @@ namespace UTILS
      //************************************************
 
      if(!converged)
-       dserror("Evaluation of element coordinates not converged!");
+       dserror("ERROR: Evaluation of element coordinates not converged!");
 
      // if material parameters are within the element, evaluate material
      // coordinates
@@ -172,7 +172,7 @@ namespace UTILS
          found = true;
      }
      else
-       dserror("element type not supported!");
+       dserror("ERROR: Element type not supported!");
 
      double xmat[ndim];
      for(int p=0;p<ndim;++p)
@@ -185,10 +185,10 @@ namespace UTILS
 
      for (int k=0; k<numnod; ++k)
        for(int p=0;p<ndim;++p)
-         xmat[p] += funct(k) * (ele->Nodes()[k]->X()[p]+mydispmat[k*ndim+p]);
+         xmat[p] += funct(k) * (ele->Nodes()[k]->X()[p]+mydisp_target[k*ndim+p]);
 
      for(int p=0;p<ndim;++p)
-       XMat[p] = xmat[p];
+       Xtarget[p] = xmat[p];
 
      return;
  };

@@ -8,7 +8,7 @@ General Data File BACI
 ============================================================================
 -----------------------------------------------------------------------TITLE
 3D wear contact ironing
-// - structure-ale approach -- ale: incr_lin
+// - structure-ale approach -- ale: solid
 // - wear both sides discretization --> 4 field problem
 // - first-order interpolation (quad4 elements)
 // - std Lagrange multiplier interpolation
@@ -74,8 +74,10 @@ WEARLAW                         Archard
 WEARCOEFF                       0.001
 WEARCOEFF_MASTER                0.001
 WEARTYPE                        primvar
-BOTH_SIDED_WEAR                 bd
+WEARTIMINT                      impl
+WEAR_SIDE                       both
 WEARCOEFF_CONF                  sp
+WEAR_SHAPE_EVO                  sp
 ----------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
 --------------------------------------------------------------------SOLVER 1

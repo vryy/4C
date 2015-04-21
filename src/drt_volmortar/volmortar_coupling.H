@@ -85,8 +85,10 @@ public:
 
    */
   VolMortarCoupl(int dim,
-                 Teuchos::RCP<DRT::Discretization> slavedis,
-                 Teuchos::RCP<DRT::Discretization> masterdis,
+                 Teuchos::RCP<DRT::Discretization> dis1,
+                 Teuchos::RCP<DRT::Discretization> dis2,
+                 std::vector<int>* coupleddof12,
+                 std::vector<int>* coupleddof21,
                  Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy);
 
   /*!
@@ -110,22 +112,22 @@ public:
   virtual void EvaluateConsistentInterpolation();
 
   /*!
-   \brief get projection matrix A
+   \brief get projection matrix 2 --> 1
 
    */
-  Teuchos::RCP<LINALG::SparseMatrix> GetPMatrixAB()
+  Teuchos::RCP<LINALG::SparseMatrix> GetPMatrix12()
   {
-    return pmatrixA_;
+    return P12_;
   }
   ;
 
   /*!
-   \brief get projection matrix B
+   \brief get projection matrix 1 --> 2
 
    */
-  Teuchos::RCP<LINALG::SparseMatrix> GetPMatrixBA()
+  Teuchos::RCP<LINALG::SparseMatrix> GetPMatrix21()
   {
-    return pmatrixB_;
+    return P21_;
   }
   ;
 
@@ -136,15 +138,6 @@ public:
   virtual void AssignMaterials();
 
 protected:
-  /*!
-   \brief Get discretization of A-field
-
-   */
-  virtual Teuchos::RCP<const DRT::Discretization> ADiscret() const
-  {
-    return Adiscret_;
-  }
-
   /*!
    \brief Assemble p matrix for cons. interpolation approach
 
@@ -160,15 +153,6 @@ protected:
       std::vector<int>& foundeles);
 
   /*!
-   \brief Get discretization of B-field
-
-   */
-  virtual Teuchos::RCP<DRT::Discretization> BDiscret() const
-  {
-    return Bdiscret_;
-  }
-
-  /*!
    \brief get auxiliary plane normal (2D)
 
    */
@@ -176,6 +160,18 @@ protected:
   {
     return auxn_;
   }
+
+  /*!
+   \brief Build maps based n coupling dofs
+
+   */
+  virtual void BuildMaps(
+      Teuchos::RCP<DRT::Discretization>& dis1, // on Omega_1
+      Teuchos::RCP<DRT::Discretization>& dis2, // on Omega_2
+      Teuchos::RCP<const Epetra_Map>& dofmap1,
+      Teuchos::RCP<const Epetra_Map>& dofmap2,
+      std::vector<int>* coupleddof // 2-->1
+      );
 
   /*!
    \brief calc dops for background mesh
@@ -260,6 +256,24 @@ protected:
       std::vector<MORTAR::Vertex> & clip, double tol);
 
   /*!
+   \brief Get discretization of Omega_1
+
+   */
+  virtual Teuchos::RCP<const DRT::Discretization> Discret1() const
+  {
+    return dis1_;
+  }
+
+  /*!
+   \brief Get discretization of Omega_2
+
+   */
+  virtual Teuchos::RCP<DRT::Discretization> Discret2() const
+  {
+    return dis2_;
+  }
+
+  /*!
    \brief Evaluate element-based
 
    */
@@ -337,6 +351,23 @@ protected:
       std::vector<int>& foundeles);
 
   /*!
+   \brief perform 3D element-wise integration for ADis for meshinit
+
+   */
+  virtual void Integrate3DEleBased_ADis_MeshInit(DRT::Element& Aele,
+      std::vector<int>& foundeles,
+      int dofseta,
+      int dofsetb);
+
+  /*!
+   \brief perform 3D element-wise integration for BDis for meshinit
+
+   */
+  virtual void Integrate3DEleBased_BDis_MeshInit(DRT::Element& Bele,
+      std::vector<int>& foundeles,
+      int dofseta,
+      int dofsetb);
+  /*!
    \brief perform 3D integration of created cells
 
    */
@@ -409,21 +440,30 @@ protected:
   // global problem information
   const int                          dim_;             /// dimension of problem (2D or 3D)
   Teuchos::ParameterList             params_;          /// global parameter list for volmortar coupling
+
   // discretizations
-  Teuchos::RCP<DRT::Discretization>  Adiscret_;        /// the discretization of field A
-  Teuchos::RCP<DRT::Discretization>  Bdiscret_;        /// the discretization of field B
+  Teuchos::RCP<DRT::Discretization>  dis1_;            /// the discretization Omega_1
+  Teuchos::RCP<DRT::Discretization>  dis2_;            /// the discretization Omega_2
 
   // mortar matrices and projector
-  Teuchos::RCP<LINALG::SparseMatrix> dmatrixA_;        /// global Mortar matrix D for field A
-  Teuchos::RCP<LINALG::SparseMatrix> dmatrixB_;        /// global Mortar matrix D for field B
-  Teuchos::RCP<LINALG::SparseMatrix> mmatrixA_;        /// global Mortar matrix M for field A
-  Teuchos::RCP<LINALG::SparseMatrix> mmatrixB_;        /// global Mortar matrix M for field B
-  Teuchos::RCP<LINALG::SparseMatrix> pmatrixA_;        /// global Mortar projection matrix P for field A
-  Teuchos::RCP<LINALG::SparseMatrix> pmatrixB_;        /// global Mortar projection matrix P for field B
+  // s1 = D1^-1 * M12 * s2  = P12 * s2
+  // s2 = D2^-1 * M21 * s1  = P21 * s1
+  Teuchos::RCP<LINALG::SparseMatrix> D1_;              /// global Mortar matrix D1  for Omega_1
+  Teuchos::RCP<LINALG::SparseMatrix> D2_;              /// global Mortar matrix D2  for Omega_2
+  Teuchos::RCP<LINALG::SparseMatrix> M12_;             /// global Mortar matrix M12 for Omega_1
+  Teuchos::RCP<LINALG::SparseMatrix> M21_;             /// global Mortar matrix M21 for Omega_2
+  Teuchos::RCP<LINALG::SparseMatrix> P12_;             /// global Mortar projection matrix P Omega_2 -> Omega_1
+  Teuchos::RCP<LINALG::SparseMatrix> P21_;             /// global Mortar projection matrix P Omega_1 -> Omega_2
 
   // trafo matrix for quadr. elements
-  Teuchos::RCP<LINALG::SparseMatrix> TA_;              /// global trafo matrix for A dis
-  Teuchos::RCP<LINALG::SparseMatrix> TB_;              /// global trafo matrix for B dis
+  Teuchos::RCP<LINALG::SparseMatrix> T1_;              /// global trafo matrix for Omega_1
+  Teuchos::RCP<LINALG::SparseMatrix> T2_;              /// global trafo matrix for Omega_2
+
+  // maps
+  Teuchos::RCP<const Epetra_Map> P12_dofrowmap_;
+  Teuchos::RCP<const Epetra_Map> P12_dofcolmap_;
+  Teuchos::RCP<const Epetra_Map> P21_dofrowmap_;
+  Teuchos::RCP<const Epetra_Map> P21_dofcolmap_;
 
   // quantity for 2D segmentation
   double                             auxn_[3];         /// normal of auxiliary plane (2D problems)
@@ -447,8 +487,17 @@ protected:
   //input
   INPAR::VOLMORTAR::DualQuad         dualquad_;        /// type of quadratic weighting interpolation
 
+  // material
   Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy_;
 
+  // maps for mesh init
+  Teuchos::RCP<Epetra_Map> Xa_;
+  Teuchos::RCP<Epetra_Map> Xb_;
+  Teuchos::RCP<Epetra_Map> mergedmap_;
+  Teuchos::RCP<LINALG::SparseMatrix> dmatrixXA_;        /// global Mortar matrix D for field A
+  Teuchos::RCP<LINALG::SparseMatrix> dmatrixXB_;        /// global Mortar matrix D for field B
+  Teuchos::RCP<LINALG::SparseMatrix> mmatrixXA_;        /// global Mortar matrix M for field A
+  Teuchos::RCP<LINALG::SparseMatrix> mmatrixXB_;        /// global Mortar matrix M for field B
 };
 
 }//namespace...

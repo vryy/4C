@@ -1783,7 +1783,7 @@ int STR::TimIntImpl::NewtonFull()
       INPAR::WEAR::WearType wtype =
           DRT::INPUT::IntegralValue<INPAR::WEAR::WearType>(cmtbridge_->GetStrategy().Params(),"WEARTYPE");
       INPAR::WEAR::WearSide wside =
-          DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(cmtbridge_->GetStrategy().Params(),"BOTH_SIDED_WEAR");
+          DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(cmtbridge_->GetStrategy().Params(),"WEAR_SIDE");
 
       if(wtype==INPAR::WEAR::wear_primvar)
       {
@@ -1796,7 +1796,7 @@ int STR::TimIntImpl::NewtonFull()
         if(wincr!=Teuchos::null) normw_ = STR::AUX::CalculateVectorNorm(iternorm_, wincr);
         else normw_ = -1.0;
 
-        if(wside==INPAR::WEAR::wear_both_discr)
+        if(wside==INPAR::WEAR::wear_both)
         {
           Teuchos::RCP<Epetra_Vector> wmincr  = cmtbridge_->GetStrategy().WMSolveIncr();
           Teuchos::RCP<Epetra_Vector> wearmrhs = cmtbridge_->GetStrategy().WearMRhs();
@@ -3813,7 +3813,7 @@ void STR::TimIntImpl::PrintNewtonIterHeader( FILE* ofile )
     INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtbridge_->GetStrategy().Params(),"STRATEGY");
     INPAR::CONTACT::SystemType systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtbridge_->GetStrategy().Params(),"SYSTEM");
     INPAR::WEAR::WearType wtype   = DRT::INPUT::IntegralValue<INPAR::WEAR::WearType>(cmtbridge_->GetStrategy().Params(),"WEARTYPE");
-    INPAR::WEAR::WearSide wside   = DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(cmtbridge_->GetStrategy().Params(),"BOTH_SIDED_WEAR");
+    INPAR::WEAR::WearSide wside   = DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(cmtbridge_->GetStrategy().Params(),"WEAR_SIDE");
 
     if ((soltype==INPAR::CONTACT::solution_lagmult || soltype==INPAR::CONTACT::solution_augmented)
         && systype!=INPAR::CONTACT::system_condensed)
@@ -3843,7 +3843,7 @@ void STR::TimIntImpl::PrintNewtonIterHeader( FILE* ofile )
         {
           oss <<std::setw(20)<< "abs-wearincr-S-norm";
           oss <<std::setw(20)<< "abs-wearcon-S-norm";
-          if(wside == INPAR::WEAR::wear_both_discr)
+          if(wside == INPAR::WEAR::wear_both)
           {
             oss <<std::setw(20)<< "abs-wearincr-M-norm";
             oss <<std::setw(20)<< "abs-wearcon-M-norm";
@@ -4002,7 +4002,7 @@ void STR::TimIntImpl::PrintNewtonIterText( FILE* ofile )
     INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtbridge_->GetStrategy().Params(),"STRATEGY");
     INPAR::CONTACT::SystemType      systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtbridge_->GetStrategy().Params(),"SYSTEM");
     INPAR::WEAR::WearType        wtype   = DRT::INPUT::IntegralValue<INPAR::WEAR::WearType>(cmtbridge_->GetStrategy().Params(),"WEARTYPE");
-    INPAR::WEAR::WearSide        wside   = DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(cmtbridge_->GetStrategy().Params(),"BOTH_SIDED_WEAR");
+    INPAR::WEAR::WearSide        wside   = DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(cmtbridge_->GetStrategy().Params(),"WEAR_SIDE");
 
     if ((soltype==INPAR::CONTACT::solution_lagmult || soltype==INPAR::CONTACT::solution_augmented)
         && systype!=INPAR::CONTACT::system_condensed)
@@ -4015,7 +4015,7 @@ void STR::TimIntImpl::PrintNewtonIterText( FILE* ofile )
       {
         oss << std::setw(20) << std::setprecision(5) << std::scientific << normw_;       // norm wear
         oss << std::setw(20) << std::setprecision(5) << std::scientific << normwrhs_;    // norm wear rhs
-        if(wside == INPAR::WEAR::wear_both_discr)
+        if(wside == INPAR::WEAR::wear_both)
         {
           oss << std::setw(20) << std::setprecision(5) << std::scientific << normwm_;       // norm wear
           oss << std::setw(20) << std::setprecision(5) << std::scientific << normwmrhs_;    // norm wear rhs

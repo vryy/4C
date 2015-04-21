@@ -69,9 +69,11 @@ PARALLEL_REDIST                 dynamic
 WEARLAW                         Archard
 WEARCOEFF                       0.0003
 WEARCOEFF_MASTER                0.0003
-BOTH_SIDED_WEAR                 map
-WEARTYPE                        is_expl
+WEAR_SIDE                       both
+WEARTYPE                        is
+WEARTIMINT                      expl
 WEARCOEFF_CONF                  sp
+WEAR_SHAPE_EVO                  sp
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
 --------------------------------------------------------------------SOLVER 1

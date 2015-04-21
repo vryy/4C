@@ -51,8 +51,8 @@ isselfcontact_(false),
 friction_(false),
 dualquadslave3d_(false),
 tsi_(false),
-wear_(false),
-wbdiscr_(false),
+weightedwear_(false),
+wbothpv_(false),
 stype_(DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(params,"STRATEGY")),
 constr_direction_(DRT::INPUT::IntegralValue<INPAR::CONTACT::ConstraintDirection>(params,"CONSTRAINT_DIRECTIONS"))
 {
@@ -66,23 +66,28 @@ constr_direction_(DRT::INPUT::IntegralValue<INPAR::CONTACT::ConstraintDirection>
   if (selfcontact)
     isselfcontact_ = true;
 
-  // set frictional contact status
   INPAR::CONTACT::FrictionType ftype = DRT::INPUT::IntegralValue<
       INPAR::CONTACT::FrictionType>(Params(), "FRICTION");
+  INPAR::WEAR::WearLaw wlaw = DRT::INPUT::IntegralValue<
+      INPAR::WEAR::WearLaw>(Params(), "WEARLAW");
+  INPAR::WEAR::WearSide wside = DRT::INPUT::IntegralValue<
+      INPAR::WEAR::WearSide>(Params(), "WEAR_SIDE");
+  INPAR::WEAR::WearType wtype = DRT::INPUT::IntegralValue<
+      INPAR::WEAR::WearType>(Params(), "WEARTYPE");
+
+  // set frictional contact status
   if (ftype != INPAR::CONTACT::friction_none)
     friction_ = true;
 
   // set wear contact status
-  INPAR::WEAR::WearLaw wlaw = DRT::INPUT::IntegralValue<
-      INPAR::WEAR::WearLaw>(Params(), "WEARLAW");
-  if (wlaw != INPAR::WEAR::wear_none)
-    wear_ = true;
+  if (wlaw != INPAR::WEAR::wear_none and
+      wtype == INPAR::WEAR::wear_intstate)
+    weightedwear_ = true;
 
   // discrete both-sided wear for active set output
-  INPAR::WEAR::WearSide wside = DRT::INPUT::IntegralValue<
-      INPAR::WEAR::WearSide>(Params(), "BOTH_SIDED_WEAR");
-  if (wside == INPAR::WEAR::wear_both_discr)
-    wbdiscr_ = true;
+  if (wside == INPAR::WEAR::wear_both and
+      wtype == INPAR::WEAR::wear_primvar)
+    wbothpv_ = true;
 
   // set thermo-structure-interaction with contact
   if (params.get<int>("PROBTYPE") == INPAR::CONTACT::tsi)
@@ -1369,49 +1374,32 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(
   // loop over all interfaces
   for (int i = 0; i < (int) interface_.size(); ++i)
   {
-    // currently this only works safely for 1 interface
-    //if (i>0) dserror("ERROR: StoreNodalQuantities: Double active node check needed for n interfaces!");
-
     // get global quantity to be stored in nodes
     Teuchos::RCP<Epetra_Vector> vectorglobal = Teuchos::null;
+
+    // start type switch
     switch (type)
     {
-    case MORTAR::StrategyBase::lmcurrent:
-    {
-      vectorglobal = LagrMult();
-      break;
-    }
     case MORTAR::StrategyBase::lmold:
     {
       vectorglobal = LagrMultOld();
       break;
     }
+    case MORTAR::StrategyBase::lmcurrent:
     case MORTAR::StrategyBase::lmupdate:
     {
       vectorglobal = LagrMult();
       break;
     }
-    case MORTAR::StrategyBase::wupdate:
-    {
-      vectorglobal = WearVar();
-      break;
-    }
-    case MORTAR::StrategyBase::wupdateT:
-    {
-      vectorglobal = WearVar();
-      break;
-    }
     case MORTAR::StrategyBase::wmupdate:
-    {
-      vectorglobal = WearVarM();
-      break;
-    }
     case MORTAR::StrategyBase::wmold:
     {
       vectorglobal = WearVarM();
       break;
     }
+    case MORTAR::StrategyBase::wupdate:
     case MORTAR::StrategyBase::wold:
+    case MORTAR::StrategyBase::wupdateT:
     {
       vectorglobal = WearVar();
       break;
@@ -1422,14 +1410,8 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(
       break;
     }
     case MORTAR::StrategyBase::activeold:
-    {
-      break;
-    }
     case MORTAR::StrategyBase::slipold:
-    {
-      break;
-    }
-    case MORTAR::StrategyBase::wear:
+    case MORTAR::StrategyBase::weightedwear:
     {
       break;
     }
@@ -1442,28 +1424,28 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(
     // columnmap for current or updated LM
     // rowmap for remaining cases
     Teuchos::RCP<Epetra_Map> sdofmap, snodemap;
-    if (type == MORTAR::StrategyBase::lmupdate
-        or type == MORTAR::StrategyBase::lmcurrent
-        or type == MORTAR::StrategyBase::wupdate
-        or type == MORTAR::StrategyBase::wold
-        or type == MORTAR::StrategyBase::wupdateT)
+    if (type == MORTAR::StrategyBase::lmupdate  or
+        type == MORTAR::StrategyBase::lmcurrent or
+        type == MORTAR::StrategyBase::wupdate   or
+        type == MORTAR::StrategyBase::wold      or
+        type == MORTAR::StrategyBase::wupdateT)
     {
-      sdofmap = interface_[i]->SlaveColDofs();
+      sdofmap  = interface_[i]->SlaveColDofs();
       snodemap = interface_[i]->SlaveColNodes();
     }
     else
     {
-      sdofmap = interface_[i]->SlaveRowDofs();
+      sdofmap  = interface_[i]->SlaveRowDofs();
       snodemap = interface_[i]->SlaveRowNodes();
     }
 
     Teuchos::RCP<Epetra_Vector> vectorinterface = Teuchos::null;
-    if ((type == MORTAR::StrategyBase::wmupdate)
-        or (type == MORTAR::StrategyBase::wmold))
+    if (type == MORTAR::StrategyBase::wmupdate or
+        type == MORTAR::StrategyBase::wmold)
     {
       // export global quantity to current interface slave dof map (column or row)
-      const Teuchos::RCP<Epetra_Map> masterdofs = LINALG::AllreduceEMap(
-          *(interface_[i]->MasterRowDofs()));
+      const Teuchos::RCP<Epetra_Map> masterdofs =
+          LINALG::AllreduceEMap(*(interface_[i]->MasterRowDofs()));
       vectorinterface = Teuchos::rcp(new Epetra_Vector(*masterdofs));
 
       if (vectorglobal != Teuchos::null) // necessary for case "activeold" and wear
@@ -1479,8 +1461,8 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(
     }
 
     // master specific
-    const Teuchos::RCP<Epetra_Map> masternodes = LINALG::AllreduceEMap(
-        *(interface_[i]->MasterRowNodes()));
+    const Teuchos::RCP<Epetra_Map> masternodes =
+        LINALG::AllreduceEMap(*(interface_[i]->MasterRowNodes()));
     if (type == MORTAR::StrategyBase::wmupdate)
     {
       for (int j = 0; j < masternodes->NumMyElements(); ++j)
@@ -1523,8 +1505,8 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(
         CoNode* cnode = dynamic_cast<CoNode*>(node);
 
         // be aware of problem dimension
-        int dim = Dim();
-        int numdof = cnode->NumDof();
+        const int dim = Dim();
+        const int numdof = cnode->NumDof();
         if (dim != numdof)
           dserror("ERROR: Inconsisteny Dim <-> NumDof");
 
@@ -1560,13 +1542,8 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(
 #ifndef CONTACTPSEUDO2D
             // throw a dserror if node is Active and DBC
             if (cnode->IsDbc() && cnode->Active())
-              dserror("ERROR: Slave node %i is active AND carries D.B.C.s!",
-                  cnode->Id());
+              dserror("ERROR: Slave node %i is active AND carries D.B.C.s!",cnode->Id());
 #endif // #ifndef CONTACTPSEUDO2D
-            // explicity set global Lag. Mult. to zero for inactive nodes
-            // (this is what we wanted to enforce anyway before condensation)
-            //if (cnode->Active()==false)
-            //  (*vectorinterface)[locindex[dof]] = 0.0;
 
             // store updated LM into node
             cnode->MoData().lm()[dof] = (*vectorinterface)[locindex[dof]];
@@ -1576,8 +1553,8 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(
           {
             // throw a dserror if node is Active and DBC
             if (cnode->IsDbc() && cnode->Active())
-              dserror("ERROR: Slave node %i is active AND carries D.B.C.s!",
-                  cnode->Id());
+              dserror("ERROR: Slave node %i is active AND carries D.B.C.s!",cnode->Id());
+
             // explicity set global Lag. Mult. to zero for D.B.C nodes
             if (cnode->IsDbc())
               (*vectorinterface)[locindex[dof]] = 0.0;
@@ -1593,8 +1570,8 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(
           {
             // throw a dserror if node is Active and DBC
             if (cnode->IsDbc() && cnode->Active())
-              dserror("ERROR: Slave node %i is active AND carries D.B.C.s!",
-                  cnode->Id());
+              dserror("ERROR: Slave node %i is active AND carries D.B.C.s!",cnode->Id());
+
             // explicity set global Lag. Mult. to zero for D.B.C nodes
             if (cnode->IsDbc())
               (*vectorinterface)[locindex[dof]] = 0.0;
@@ -1610,8 +1587,8 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(
           {
             // throw a dserror if node is Active and DBC
             if (cnode->IsDbc() && cnode->Active())
-              dserror("ERROR: Slave node %i is active AND carries D.B.C.s!",
-                  cnode->Id());
+              dserror("ERROR: Slave node %i is active AND carries D.B.C.s!",cnode->Id());
+
             // explicity set global Lag. Mult. to zero for D.B.C nodes
             if (cnode->IsDbc())
               (*vectorinterface)[locindex[dof]] = 0.0;
@@ -1638,24 +1615,28 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(
             fnode->FriData().SlipOld() = fnode->FriData().Slip();
             break;
           }
-          case MORTAR::StrategyBase::wear:
+          // weighted wear
+          case MORTAR::StrategyBase::weightedwear:
           {
             if (!friction_)
               dserror("ERROR: This should not be called for contact without friction");
-            // update wear only once
+
+            // update wear only once per node
             if (dof == 0)
             {
               FriNode* frinode = dynamic_cast<FriNode*>(cnode);
-              double wearcoeffs = Params().get<double>("WEARCOEFF", 0.0);
-              double wearcoeffm = Params().get<double>("WEARCOEFF_MASTER", 0.0);
-              double wearcoeff = wearcoeffs + wearcoeffm;
+              const double wearcoeffs = Params().get<double>("WEARCOEFF", 0.0);
+              const double wearcoeffm = Params().get<double>("WEARCOEFF_MASTER", 0.0);
+              const double wearcoeff  = wearcoeffs + wearcoeffm;
 
+              // amount of wear
               if (Params().get<int>("PROBTYPE") != INPAR::CONTACT::structalewear)
-                frinode->FriDataPlus().Wear() += wearcoeff * frinode->FriDataPlus().DeltaWear(); // amount of wear
-              else
-                frinode->FriDataPlus().Wear()  = wearcoeff * frinode->FriDataPlus().DeltaWear(); // wear for each ale step
-            }
+                frinode->FriDataPlus().WeightedWear() += wearcoeff * frinode->FriDataPlus().DeltaWeightedWear();
 
+              // wear for each ale step
+              else
+                frinode->FriDataPlus().WeightedWear()  = wearcoeff * frinode->FriDataPlus().DeltaWeightedWear();
+            }
             break;
           }
           default:
@@ -1825,7 +1806,9 @@ void CONTACT::CoAbstractStrategy::StoreDM(const std::string& state)
 
   // unknown conversion
   else
+  {
     dserror("ERROR: StoreDM: Unknown conversion requested!");
+  }
 
   return;
 }
@@ -1839,9 +1822,6 @@ void CONTACT::CoAbstractStrategy::StoreToOld(
   // loop over all interfaces
   for (int i = 0; i < (int) interface_.size(); ++i)
   {
-    // currently this only works safely for 1 interface
-    //if (i>0) dserror("ERROR: StoreDMToNodes: Double active node check needed for n interfaces!");
-
     // loop over all slave row nodes on the current interface
     for (int j = 0; j < interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
     {
@@ -1938,9 +1918,11 @@ void CONTACT::CoAbstractStrategy::Update(Teuchos::RCP<Epetra_Vector> dis)
     StoreToOld(MORTAR::StrategyBase::pentrac);
   }
 
-  // update
-  if (wear_)
-    StoreNodalQuantities(MORTAR::StrategyBase::wear);
+  //----------------------------------------wear: store history values
+  if (weightedwear_)
+  {
+    StoreNodalQuantities(MORTAR::StrategyBase::weightedwear);
+  }
 
   return;
 }
@@ -1962,9 +1944,6 @@ void CONTACT::CoAbstractStrategy::DoWriteRestart(
   // loop over all interfaces
   for (int i = 0; i < (int) interface_.size(); ++i)
   {
-    // currently this only works safely for 1 interface
-    //if (i>0) dserror("ERROR: DoWriteRestart: Double active node check needed for n interfaces!");
-
     // loop over all slave nodes on the current interface
     for (int j = 0; j < interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
     {
@@ -2069,9 +2048,6 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(
   // into nodes, therefore first loop over all interfaces
   for (int i = 0; i < (int) interface_.size(); ++i)
   {
-    // currently this only works safely for 1 interface
-    //if (i>0) dserror("ERROR: DoReadRestart: Double active node check needed for n interfaces!");
-
     // loop over all slave nodes on the current interface
     for (int j = 0; j < (interface_[i]->SlaveRowNodes())->NumMyElements(); ++j)
     {
@@ -2635,7 +2611,7 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
         dserror("Error: Jumpteta should be zero for 2D");
 
         // compute weighted wear
-        if (wear_) wear = frinode->FriDataPlus().Wear();
+        if (weightedwear_) wear = frinode->FriDataPlus().WeightedWear();
 
         // store node id
         lnid.push_back(gid);

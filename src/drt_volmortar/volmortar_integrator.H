@@ -212,7 +212,9 @@ public:
                            LINALG::SparseMatrix& dmatrixA_,
                            LINALG::SparseMatrix& mmatrixA_,
                            Teuchos::RCP<const DRT::Discretization> Adiscret_,
-                           Teuchos::RCP<const DRT::Discretization> Bdiscret_);
+                           Teuchos::RCP<const DRT::Discretization> Bdiscret_,
+                           int dofseta,
+                           int dofsetb);
 protected:
 
   /*!
@@ -340,7 +342,9 @@ bool VolMortarEleBasedGP(
       LINALG::SparseMatrix& dmatrix_A,
       LINALG::SparseMatrix& mmatrix_A,
       Teuchos::RCP<const DRT::Discretization> Adis,
-      Teuchos::RCP<const DRT::Discretization> Bdis);
+      Teuchos::RCP<const DRT::Discretization> Bdis,
+      int dofseta,
+      int dofsetb);
 
 // evaluation of nts approach
 template<DRT::Element::DiscretizationType distype>

@@ -1180,7 +1180,7 @@ void TSI::Monolithic::SetupSystemMatrix()
           );
 
   if(!matchinggrid_)
-    k_st_=volcoupl_->ApplyMatrixMappingAB(k_st_);
+    k_st_=volcoupl_->ApplyMatrixMapping12(k_st_);
 
   if (locsysman_ != Teuchos::null)
   {
@@ -1251,7 +1251,7 @@ void TSI::Monolithic::SetupSystemMatrix()
           );
 
   if(!matchinggrid_)
-    k_ts_=volcoupl_->ApplyMatrixMappingBA(k_ts_);
+    k_ts_=volcoupl_->ApplyMatrixMapping21(k_ts_);
 
   // assign thermo part to the TSI matrix
   k_ts_->ApplyDirichlet(*ThermoField()->GetDBCMapExtractor()->CondMap(),false);

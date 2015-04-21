@@ -22,8 +22,6 @@ Maintainer: Philipp Farah
 #include "contact_lagrange_strategy.H"
 #include <Epetra_FEVector.h>
 
-
-
 namespace CONTACT
 {
 // forward declarations
@@ -223,15 +221,24 @@ public:
   */
   void UpdateActiveSetSemiSmooth();
 
-
-  void UpdateWearDiscretIterate(bool store);
-  void UpdateWearDiscretAccumulation(bool wearaccumulation);
   /*!
-  \brief Return vector of wear (t_n+1)
+  \brief Store/Reset nodal wear quantities for pv approach
 
   */
-  Teuchos::RCP<Epetra_Vector> ContactWear() { return wearoutput_; }   // for slave side
-  Teuchos::RCP<Epetra_Vector> ContactWear2() { return wearoutput2_; } // for master side
+  void UpdateWearDiscretIterate(bool store);
+
+  /*!
+  \brief Store wear for accumulation due to different pseudo time scales!
+
+  */
+  void UpdateWearDiscretAccumulation();
+
+  /*!
+  \brief Return vector of wear (t_n+1) - D^-1 \times weighted wear!
+
+  */
+  Teuchos::RCP<Epetra_Vector> ContactWear()  { return wearoutput_; } // for slave side
+  Teuchos::RCP<Epetra_Vector> ContactWear2() { return wearoutput2_;} // for master side
 
   /*!
   \brief Return wear interfaces
@@ -239,7 +246,16 @@ public:
   */
   std::vector<Teuchos::RCP<CONTACT::WearInterface> > WearInterfaces() { return interface_; }
 
+  /*!
+  \brief Return master map for both sided wear (slip), mapped from slave side
+
+  */
   const Teuchos::RCP<Epetra_Map> MasterSlipNodes() {return gmslipnodes_;};
+
+  /*!
+  \brief Return master map for both sided wear (active), mapped from slave side
+
+  */
   const Teuchos::RCP<Epetra_Map> MasterActiveNodes() {return gmactivenodes_;};
 
 protected:
@@ -280,8 +296,8 @@ protected:
   int  maxdofwear_;                                 // highest dof number in problem discretization
 
   bool wearimpl_;                                   // weartype: implicit
-  bool weardiscr_;                                  // bool for wear with own discretization
-  bool wearbothdiscr_;                              // bool for both-sided discrete wear
+  bool wearprimvar_;                                // bool for wear with own discretization
+  bool wearbothpv_;                                 // bool for both-sided discrete wear
   bool weartimescales_;                             // bool for different time scales
   bool sswear_;                                     // bool steady state wear
 
@@ -317,8 +333,6 @@ protected:
 
 }; //class
 
-
 }
-
 
 #endif /* CONTACT_WEAR_H_ */

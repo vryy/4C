@@ -210,7 +210,6 @@ class CoPenaltyStrategy : public CoAbstractStrategy
   void OutputWear() {};
   Teuchos::RCP<Epetra_Vector> ContactWear() {return Teuchos::null;};
   Teuchos::RCP<Epetra_Vector> ContactWear2() {return Teuchos::null;};
-  //std::vector<Teuchos::RCP<CONTACT::WearInterface> > WearInterfaces() {return std::vector<Teuchos::RCP<CONTACT::WearInterface> >(NULL);};
   const Teuchos::RCP<Epetra_Map> MasterSlipNodes() {return Teuchos::null;};
   const Teuchos::RCP<Epetra_Map> MasterActiveNodes() {return Teuchos::null;};
   //@}

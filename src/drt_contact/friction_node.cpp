@@ -163,7 +163,8 @@ void CONTACT::FriNodeDataContainer::Unpack(
  |  ctor (public)                                             mgit 07/11|
  *----------------------------------------------------------------------*/
 CONTACT::FriNodeDataContainerPlus::FriNodeDataContainerPlus() :
-    wear_(0.0), deltawear_(0.0)
+    weightedwear_(0.0),
+    deltaweightedwear_(0.0)
 {
   wcurr_[0] = 0.0;
   wold_[0] = 0.0;
@@ -177,8 +178,8 @@ CONTACT::FriNodeDataContainerPlus::FriNodeDataContainerPlus() :
  *----------------------------------------------------------------------*/
 void CONTACT::FriNodeDataContainerPlus::Pack(DRT::PackBuffer& data) const
 {
-  DRT::ParObject::AddtoPack(data, wear_);
-  DRT::ParObject::AddtoPack(data, deltawear_);
+  DRT::ParObject::AddtoPack(data, weightedwear_);
+  DRT::ParObject::AddtoPack(data, deltaweightedwear_);
 
   // add d2row
   int hasdata = d2rows_.size();
@@ -202,8 +203,8 @@ void CONTACT::FriNodeDataContainerPlus::Pack(DRT::PackBuffer& data) const
 void CONTACT::FriNodeDataContainerPlus::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
-  DRT::ParObject::ExtractfromPack(position, data, wear_);
-  DRT::ParObject::ExtractfromPack(position, data, deltawear_);
+  DRT::ParObject::ExtractfromPack(position, data, weightedwear_);
+  DRT::ParObject::ExtractfromPack(position, data, deltaweightedwear_);
 
   //d2rows_
   int hasdata;
@@ -226,8 +227,9 @@ void CONTACT::FriNodeDataContainerPlus::Unpack(
 CONTACT::FriNode::FriNode(int id, const double* coords, const int owner,
     const int numdof, const std::vector<int>& dofs, const bool isslave,
     const bool initactive, const bool friplus) :
-    CONTACT::CoNode(id, coords, owner, numdof, dofs, isslave, initactive), mechdiss_(
-        0.0), friplus_(friplus)
+    CONTACT::CoNode(id, coords, owner, numdof, dofs, isslave, initactive),
+    mechdiss_(0.0),
+    friplus_(friplus)
 {
 
   return;
@@ -237,7 +239,8 @@ CONTACT::FriNode::FriNode(int id, const double* coords, const int owner,
  |  copy-ctor (public)                                        mgit 02/10|
  *----------------------------------------------------------------------*/
 CONTACT::FriNode::FriNode(const CONTACT::FriNode& old) :
-    CONTACT::CoNode(old), mechdiss_(old.mechdiss_)
+    CONTACT::CoNode(old),
+    mechdiss_(old.mechdiss_)
 {
   // not yet used and thus not necessarily consistent
   dserror("ERROR: FriNode copy-ctor not yet implemented");
@@ -397,24 +400,24 @@ void CONTACT::FriNode::AddD2Value(int& row, int& col, double& val)
   if (IsSlave() == true)
     dserror("ERROR: AddD2Value: function called for slave node %i", Id());
 
-    // check if this has been called before
-    if ((int)FriDataPlus().GetD2().size()==0)
+  // check if this has been called before
+  if ((int)FriDataPlus().GetD2().size()==0)
     FriDataPlus().GetD2().resize(NumDof());
 
-    // check row index input
-    if ((int)FriDataPlus().GetD2().size()<=row)
+  // check row index input
+  if ((int)FriDataPlus().GetD2().size()<=row)
     dserror("ERROR: AddD2Value: tried to access invalid row index!");
 
-    // add the pair (col,val) to the given row
-    std::map<int, double>& d2map = FriDataPlus().GetD2()[row];
-    d2map[col] += val;
+  // add the pair (col,val) to the given row
+  std::map<int, double>& d2map = FriDataPlus().GetD2()[row];
+  d2map[col] += val;
 
-    return;
-  }
+  return;
+}
 
-    /*----------------------------------------------------------------------*
-     |  Add a value to the 'ANodes' set                       gitterle 10/10|
-     *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+|  Add a value to the 'ANodes' set                       gitterle 10/10|
+*----------------------------------------------------------------------*/
 void CONTACT::FriNode::AddANode(int node)
 {
   // check if this is a master node or slave boundary node
@@ -450,27 +453,27 @@ void CONTACT::FriNode::AddDerivJumpValue(int& row, const int& col, double val)
   // check if this is a master node or slave boundary node
   if (IsSlave() == false)
     dserror("ERROR: AddJumpValue: function called for master node %i", Id());
-    if (IsOnBound()==true)
+  if (IsOnBound()==true)
     dserror("ERROR: AddJumpValue: function called for boundary node %i", Id());
 
-    // check if this has been called before
-    if ((int)FriData().GetDerivJump().size()==0)
+  // check if this has been called before
+  if ((int)FriData().GetDerivJump().size()==0)
     FriData().GetDerivJump().resize(NumDof());
 
-    // check row index input
-    if ((int)FriData().GetDerivJump().size() <= row)
+  // check row index input
+  if ((int)FriData().GetDerivJump().size() <= row)
     dserror("ERROR: AddDerivJumpValue: tried to access invalid row index!");
 
-    // add the pair (col,val) to the given row
-    std::map<int, double>& zmap = FriData().GetDerivJump()[row];
-    zmap[col] += val;
+  // add the pair (col,val) to the given row
+  std::map<int, double>& zmap = FriData().GetDerivJump()[row];
+  zmap[col] += val;
 
-    return;
-  }
+  return;
+}
 
-    /*----------------------------------------------------------------------*
-     |  Add jump value from gp-wise integration of slip          farah 08/13|
-     *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+|  Add jump value from gp-wise integration of slip          farah 08/13|
+*----------------------------------------------------------------------*/
 void CONTACT::FriNode::AddJumpValue(double val, int k)
 {
   // check if this is a master node or slave boundary node
@@ -492,30 +495,29 @@ void CONTACT::FriNode::AddAValue(int& row, int& col, double& val)
   // check if this is a master node or slave boundary node
   if (IsSlave() == false)
     dserror("ERROR: AddAValue: function called for master node %i", Id());
-    if (IsOnBound()==true)
+  if (IsOnBound()==true)
     dserror("ERROR: AddAValue: function called for boundary node %i", Id());
 
-    // check if this has been called before
-    if ((int)FriDataPlus().GetA().size()==0)
+  // check if this has been called before
+  if ((int)FriDataPlus().GetA().size()==0)
     FriDataPlus().GetA().resize(NumDof());
 
-    // check row index input
-    if ((int)FriDataPlus().GetA().size()<=row)
+  // check row index input
+  if ((int)FriDataPlus().GetA().size()<=row)
     dserror("ERROR: AddAValue: tried to access invalid row index!");
 
-    // add the pair (col,val) to the given row
-    std::map<int, double>& amap = FriDataPlus().GetA()[row];
-    amap[col] += val;
+  // add the pair (col,val) to the given row
+  std::map<int, double>& amap = FriDataPlus().GetA()[row];
+  amap[col] += val;
 
-    return;
-  }
+  return;
+}
 
-    /*----------------------------------------------------------------------*
-     |  Add a value to the 'B' map                             gitterle 10/10|
-     *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+|  Add a value to the 'B' map                             gitterle 10/10|
+*----------------------------------------------------------------------*/
 void CONTACT::FriNode::AddBValue(int& row, int& col, double& val)
 {
-
   // check if this has been called before
   if ((int) GetB().size() == 0)
     GetB().resize(NumDof());
@@ -524,9 +526,8 @@ void CONTACT::FriNode::AddBValue(int& row, int& col, double& val)
   if ((int) GetB().size() <= row)
     dserror("ERROR: AddBValue: tried to access invalid row index!");
 
-    // add the pair (col,val) to the given row
-    std::map<int, double
->  & bmap = GetB()[row];
+  // add the pair (col,val) to the given row
+  std::map<int, double>  & bmap = GetB()[row];
   bmap[col] += val;
 
   return;
@@ -560,9 +561,8 @@ void CONTACT::FriNode::AddTValue(int& row, int& col, double& val)
   if ((int) FriDataPlus().GetT().size() <= row)
     dserror("ERROR: AddTValue: tried to access invalid row index!");
 
-    // add the pair (col,val) to the given row
-    std::map<int, double
->  & tmap = FriDataPlus().GetT()[row];
+  // add the pair (col,val) to the given row
+  std::map<int, double>  & tmap = FriDataPlus().GetT()[row];
   tmap[col] += val;
 
   return;
@@ -585,9 +585,8 @@ void CONTACT::FriNode::AddEValue(int& row, int& col, double& val)
   if ((int) FriDataPlus().GetE().size() <= row)
     dserror("ERROR: AddEValue: tried to access invalid row index!");
 
-    // add the pair (col,val) to the given row
-    std::map<int, double
->  & emap = FriDataPlus().GetE()[row];
+  // add the pair (col,val) to the given row
+  std::map<int, double>  & emap = FriDataPlus().GetE()[row];
   emap[col] += val;
 
   return;
@@ -638,10 +637,10 @@ void CONTACT::FriNode::StoreTracOld()
 /*-----------------------------------------------------------------------*
  |  Set the value of deltawear                             gitterle 12/10|
  *----------------------------------------------------------------------*/
-void CONTACT::FriNode::AddDeltaWearValue(double& val)
+void CONTACT::FriNode::AddDeltaWeightedWearValue(double& val)
 {
   // add given value to deltawear_
-  FriDataPlus().DeltaWear() += val;
+  FriDataPlus().DeltaWeightedWear() += val;
 }
 
 /*----------------------------------------------------------------------*

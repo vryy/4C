@@ -287,13 +287,13 @@ public:
    \brief Return global both sided wear status
 
    */
-  bool WearBothDiscrete() { return wbdiscr_; }
+  bool WearBothDiscrete() { return wbothpv_; }
 
   /*!
    \brief Return global wear status
 
    */
-  bool Wear() { return wear_; }
+  bool WeightedWear() { return weightedwear_; }
 
   /*!
    \brief Return contact interfaces
@@ -804,13 +804,13 @@ protected:
     Teuchos::RCP<LINALG::SparseMatrix>  amatrix_;         // global matrix A
 
     // contact with wear
-    bool wear_;                                           // flag for contact with wear
-    bool wbdiscr_;                                        // flag for both sided wear disrete
-    Teuchos::RCP<Epetra_Vector> w_;                       // current vector of discrete wear at t_n+1
+    bool weightedwear_;                                   // flag for contact with wear (is) --> weighted wear
+    bool wbothpv_;                                        // flag for both sided wear disrete
+    Teuchos::RCP<Epetra_Vector> w_;                       // current vector of pv wear at t_n+1 (slave)
     Teuchos::RCP<Epetra_Vector> wincr_;                   // Wear variables vector increment within SaddlePointSolve (this is NOT the increment of w_ between t_{n+1} and t_{n}!)
     Teuchos::RCP<Epetra_Vector> wearrhs_;
 
-    Teuchos::RCP<Epetra_Vector> wm_;                       // current vector of discrete wear at t_n+1
+    Teuchos::RCP<Epetra_Vector> wm_;                       // current vector of pv wear at t_n+1 (master)
     Teuchos::RCP<Epetra_Vector> wmincr_;                   // Wear variables vector increment within SaddlePointSolve (this is NOT the increment of w_ between t_{n+1} and t_{n}!)
     Teuchos::RCP<Epetra_Vector> wearmrhs_;
 

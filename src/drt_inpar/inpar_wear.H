@@ -30,21 +30,27 @@ namespace INPAR
     };
 
     /// Definition of contact wear surface
-    /// (this enum represents the input file parameter BOTH_SIDED_WEAR)
+    /// (this enum represents the input file parameter WEAR_SIDE)
     enum WearSide
     {
       wear_slave,     ///< wear on slave side
-      wear_both_map,  ///< map slave-side wear to master side per mortar matrices
-      wear_both_discr ///< primary variable wear approach for master and slave surface
+      wear_both      ///< slave and master wear
     };
 
     /// Definition of contact wear algorithm
     /// (this enum represents the input file parameter WEARTYPE)
     enum WearType
     {
-      wear_intstate_impl,  ///< internal state variable approach for wear (impl)
-      wear_intstate_expl,  ///< internal state variable approach for wear (expl)
-      wear_primvar         ///< primary variable approach for wear (impl)
+      wear_intstate,  ///< internal state variable approach for wear
+      wear_primvar    ///< primary variable approach for wear
+    };
+
+    /// Definition of wear time integration
+    /// (this enum represents the input file parameter WEARTIMINT)
+    enum WearTimInt
+    {
+      wear_expl,   ///< implicit time integration
+      wear_impl    ///< explicit time integration
     };
 
     /// Definition of wear shape functions (necessary for prim. var. approach)
@@ -74,10 +80,18 @@ namespace INPAR
 
     /// Definition of configuration for wear coefficient
     /// (this enum represents the input file parameter WEARCOEFF_CONF)
-    enum WearConf
+    enum WearCoeffConf
     {
-      wear_conf_mat,   ///< wear coefficient in material conf. constant
-      wear_conf_sp     ///< wear coefficient in spatial conf. constant
+      wear_coeff_mat,   ///< wear coefficient in material conf. constant
+      wear_coeff_sp     ///< wear coefficient in spatial conf. constant
+    };
+
+    /// Definition of configuration for shape evolution step
+    /// (this enum represents the input file parameter WEAR_SHAPE_EVO)
+    enum WearShapeEvo
+    {
+      wear_se_mat,   ///< shape evolution in material conf.
+      wear_se_sp     ///< shape evolution in spat. conf.
     };
   }  // namespace WEAR
 }  // namespace INPAR

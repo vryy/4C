@@ -3,7 +3,7 @@
 \file wear_partitioned.cpp
 
 \brief  Basis of all structure approaches with ale
-        (Lagrangian step followed by Eulerian step )
+        (Lagrangian step followed by Shape Evolution step )
 <pre>
 Maintainer: Philipp Farah
             farah@lnm.mw.tum.de
@@ -101,6 +101,7 @@ WEAR::Partitioned::Partitioned(const Epetra_Comm& comm) :
   wearincr_ = Teuchos::rcp(new Epetra_Vector(
           *AleField().Interface()->Map(AleField().Interface()->cond_ale_wear)), true);
   delta_ale_ = Teuchos::rcp(new Epetra_Vector(AleField().Dispnp()->Map(), true));
+  ale_i_     = Teuchos::rcp(new Epetra_Vector(AleField().Dispnp()->Map(), true));
 
   alepara_ = DRT::Problem::Instance()->AleDynamicParams();
 }
@@ -164,7 +165,6 @@ void WEAR::Partitioned::TimeLoopIterStagg()
   PrepareTimeStep();
 
   bool converged = false; // converged state?
-  bool iterated  = false; // more than 1 iteration?
   int iter = 0; // iteration counter
 
   // stactic cast of mortar strategy to contact strategy
@@ -187,9 +187,6 @@ void WEAR::Partitioned::TimeLoopIterStagg()
    *************************************************************/
   while (converged == false)
   {
-    if (iter > 0)
-      iterated = true;
-
     // 1. solution
     StructureField()->Solve();
 
@@ -211,10 +208,10 @@ void WEAR::Partitioned::TimeLoopIterStagg()
 
     // 3. application of mesh displacements to structural field,
     // update material displacements
-    ApplyMeshDisplacement(iterated);
+    UpdateMatConf();
 
     // 4. update dispnp
-    UpdateDispnp();
+    UpdateSpatConf();
 
     // 5. convergence check fot current iteration
     converged = ConvergenceCheck(iter);
@@ -281,32 +278,32 @@ void WEAR::Partitioned::TimeLoopStagg(bool alestep)
     DispCoupling(idisale_global);
 
     /********************************************************************/
-    /* EULERIAN STEP                                                    */
+    /* Shape Evolution STEP                                             */
     /* 1. mesh displacements due to wear from ALE system                */
     /* 2. mapping of results from "old" to "new" mesh                   */
     /********************************************************************/
 
-    // do all step
+    // do ale step
     AleStep(idisale_global);
 
-    // application of mesh displacements to structural field,
-    // update spatial and material displacements
-    ApplyMeshDisplacement();
+    // update material displacements
+    UpdateMatConf();
 
-    /********************************************************************/
-    /* FINISH STEP:                                                     */
-    /* Update and Write Output                                          */
-    /********************************************************************/
+    // update spatial displacements
+    UpdateSpatConf();
 
-    // update dispnp
-    UpdateDispnp();
-
+    // reset wear
     cstrategy.UpdateWearDiscretIterate(false);
   }
   else
   {
-    cstrategy.UpdateWearDiscretAccumulation(true);
+    cstrategy.UpdateWearDiscretAccumulation();
   }
+
+  /********************************************************************/
+  /* FINISH STEP:                                                     */
+  /* Update and Write Output                                          */
+  /********************************************************************/
 
   // update for structure and ale
   Update();
@@ -335,8 +332,16 @@ bool WEAR::Partitioned::ConvergenceCheck(int iter)
     std::cout << "---------------------------------------------"                        << std::endl;
   }
 
+  // TODO tolerance from input!!!
+  // check loads
   if (abs(Wincr) < 1e-8 and abs(ALEincr) < 1e-8)
+  {
+    // reset vectors
+    ale_i_->Scale(0.0);
+    delta_ale_->Scale(0.0);
+
     return true;
+  }
 
   if (iter > 50)
     dserror("Staggered solution scheme for ale-wear problem unconverged within 50 nonlinear iteration steps!");
@@ -376,9 +381,9 @@ void WEAR::Partitioned::Update()
 
 
 /*----------------------------------------------------------------------*
- | update spatial displacements                             farah 11/13 |
+ | update spatial displacements                             farah 05/14 |
  *----------------------------------------------------------------------*/
-void WEAR::Partitioned::UpdateDispnp()
+void WEAR::Partitioned::UpdateSpatConf()
 {
   // mesh displacement from solution of ALE field in structural dofs
   // first perform transformation from ale to structure dofs
@@ -389,26 +394,63 @@ void WEAR::Partitioned::UpdateDispnp()
   Teuchos::RCP<Epetra_Vector> dispnp = StructureField()->WriteAccessDispnp(); // change to ExtractDispn() for overlap
 
   // get info about wear conf
-  INPAR::WEAR::WearConf wconf = DRT::INPUT::IntegralValue<
-      INPAR::WEAR::WearConf>(DRT::Problem::Instance()->WearParams(),
-      "WEARCOEFF_CONF");
+  INPAR::WEAR::WearShapeEvo wconf = DRT::INPUT::IntegralValue<
+      INPAR::WEAR::WearShapeEvo>(DRT::Problem::Instance()->WearParams(),
+      "WEAR_SHAPE_EVO");
 
-  // for incremental lin ale --> in spatial conf.
-  if (wconf == INPAR::WEAR::wear_conf_sp)
+  // for shape evol in spat conf
+  if (wconf == INPAR::WEAR::wear_se_sp)
   {
     // update per absolute vector
     dispnp->Update(1.0, *disalenp, 0.0);
   }
-  else if (wconf == INPAR::WEAR::wear_conf_mat)
+  // for shape evol in mat conf
+  else if (wconf == INPAR::WEAR::wear_se_mat)
   {
-    // create increment between n and np
-    disalenp->Update(-1.0, *disalen, 1.0);
+    // set state
+    (StructureField()->Discretization())->SetState(0, "displacement", dispnp);
 
-    // update per increment
-    dispnp->Update(1.0, *disalenp, 1.0);
+    // set state
+    (StructureField()->Discretization())->SetState(0, "material_displacement",
+        StructureField()->DispMat());
+
+    // loop over all row nodes to fill graph
+    for (int k = 0; k < StructureField()->Discretization()->NumMyRowNodes(); ++k)
+    {
+      int gid = StructureField()->Discretization()->NodeRowMap()->GID(k);
+      DRT::Node* node = StructureField()->Discretization()->gNode(gid);
+      DRT::Element** ElementPtr = node->Elements();
+      int numelement = node->NumElement();
+
+      const int numdof = StructureField()->Discretization()->NumDof(node);
+
+      // create Xmat for 3D problems
+      double Xspatial[numdof];
+      double Xmat[numdof];
+
+      for(int dof = 0; dof < numdof; ++dof)
+      {
+        int dofgid = StructureField()->Discretization()->Dof(node,dof);
+        int doflid = (dispnp->Map()).LID(dofgid);
+        Xmat[dof] = node->X()[dof] + (*StructureField()->DispMat())[doflid];
+      }
+
+      // create updated  Xspatial --> via nonlinear interpolation between nodes (like gp projection)
+      AdvectionMap(Xspatial, Xmat, ElementPtr, numelement,false);
+
+      // store in dispmat
+      for(int dof = 0; dof < numdof; ++dof)
+      {
+        int dofgid = StructureField()->Discretization()->Dof(node,dof);
+        int doflid = (dispnp->Map()).LID(dofgid);
+        (*dispnp)[doflid] = Xspatial[dof] - node->X()[dof];
+      }
+    } // end row node loop
   }
   else
+  {
     dserror("ERROR: Unknown wear configuration!");
+  }
 
   return;
 }
@@ -498,17 +540,25 @@ void WEAR::Partitioned::InterfaceDisp(
   // get info about wear side
   INPAR::WEAR::WearSide wside = DRT::INPUT::IntegralValue<
       INPAR::WEAR::WearSide>(DRT::Problem::Instance()->WearParams(),
-      "BOTH_SIDED_WEAR");
+      "WEAR_SIDE");
 
-  // get info about wear conf
-  INPAR::WEAR::WearConf wconf = DRT::INPUT::IntegralValue<
-      INPAR::WEAR::WearConf>(DRT::Problem::Instance()->WearParams(),
+  // get info about wear type
+  INPAR::WEAR::WearType wtype = DRT::INPUT::IntegralValue<
+      INPAR::WEAR::WearType>(DRT::Problem::Instance()->WearParams(),
+      "WEARTYPE");
+
+  // get info about wear coeff conf
+  INPAR::WEAR::WearCoeffConf wcoeffconf = DRT::INPUT::IntegralValue<
+      INPAR::WEAR::WearCoeffConf>(DRT::Problem::Instance()->WearParams(),
       "WEARCOEFF_CONF");
 
   if(interfaces_.size()>1)
     dserror("ERROR: Wear algorithm not able to handle more than 1 interface yet!");
 
-  if(wconf == INPAR::WEAR::wear_conf_mat)
+  //------------------------------------------------
+  // Wear coefficient constant in material config: -
+  //------------------------------------------------
+  if(wcoeffconf == INPAR::WEAR::wear_coeff_mat)
   {
     // redistribute int. according to spatial interfaces!
     RedistributeMatInterfaces();
@@ -517,27 +567,32 @@ void WEAR::Partitioned::InterfaceDisp(
     WearPullBackSlave(disinterface_s);
 
     // 2. pull back master wear to material conf.
-    if (wside == INPAR::WEAR::wear_both_map or
-        wside == INPAR::WEAR::wear_both_discr)
+    if (wside == INPAR::WEAR::wear_both)
     {
       WearPullBackMaster(disinterface_m);
     }
     else
     {
+      // zeroes
       Teuchos::RCP<Epetra_Map> masterdofs = interfaces_[0]->MasterRowDofs();
       disinterface_m = Teuchos::rcp(new Epetra_Vector(*masterdofs, true));
     }
   }
-  else if(wconf == INPAR::WEAR::wear_conf_sp)
+  //------------------------------------------------
+  // Wear coefficient constant in spatial config:  -
+  //------------------------------------------------
+  else if(wcoeffconf == INPAR::WEAR::wear_coeff_sp)
   {
     // postproc wear for spatial conf.
     WearSpatialSlave(disinterface_s);
 
-    if(wside == INPAR::WEAR::wear_both_discr)
+    if(wside == INPAR::WEAR::wear_both and
+       wtype == INPAR::WEAR::wear_primvar)
     {
       WearSpatialMaster(disinterface_m);
     }
-    else if (wside == INPAR::WEAR::wear_both_map)
+    else if (wside == INPAR::WEAR::wear_both and
+             wtype == INPAR::WEAR::wear_intstate)
     {
       // redistribute int. according to spatial interfaces!
       RedistributeMatInterfaces();
@@ -545,10 +600,14 @@ void WEAR::Partitioned::InterfaceDisp(
     }
     else
     {
+      //zeroes
       Teuchos::RCP<Epetra_Map> masterdofs = interfaces_[0]->MasterRowDofs();
       disinterface_m = Teuchos::rcp(new Epetra_Vector(*masterdofs, true));
     }
   }
+  //------------------------------------------------
+  // ERROR                                         -
+  //------------------------------------------------
   else
   {
     dserror("ERROR: Chosen wear configuration not supported!");
@@ -656,6 +715,7 @@ void WEAR::Partitioned::WearSpatialMasterMap(Teuchos::RCP<Epetra_Vector>& disint
     disinterface_m->Scale(-fac);
   }
 
+  // bye
   return;
 }
 
@@ -723,6 +783,8 @@ void WEAR::Partitioned::WearSpatialMaster(Teuchos::RCP<Epetra_Vector>& disinterf
       }
     }
   }
+
+  // bye
   return;
 }
 
@@ -741,12 +803,17 @@ void WEAR::Partitioned::WearSpatialSlave(Teuchos::RCP<Epetra_Vector>& disinterfa
       INPAR::WEAR::WearType>(DRT::Problem::Instance()->WearParams(),
       "WEARTYPE");
 
+  INPAR::WEAR::WearTimInt wtimint = DRT::INPUT::IntegralValue<
+      INPAR::WEAR::WearTimInt>(DRT::Problem::Instance()->WearParams(),
+      "WEARTIMINT");
+
   INPAR::WEAR::WearTimeScale wtime = DRT::INPUT::IntegralValue<
       INPAR::WEAR::WearTimeScale>(DRT::Problem::Instance()->WearParams(),
       "WEAR_TIMESCALE");
 
-  if (wtype != INPAR::WEAR::wear_intstate_impl)
-    cstrategy.StoreNodalQuantities(MORTAR::StrategyBase::wear);
+  if (!(wtype == INPAR::WEAR::wear_intstate and
+      wtimint == INPAR::WEAR::wear_impl))
+    cstrategy.StoreNodalQuantities(MORTAR::StrategyBase::weightedwear);
 
   for (int i=0; i<(int)interfaces_.size(); ++i)
   {
@@ -794,10 +861,9 @@ void WEAR::Partitioned::WearSpatialSlave(Teuchos::RCP<Epetra_Vector>& disinterfa
             wear=0.0;
         }
       }
-      else if (wtype == INPAR::WEAR::wear_intstate_expl or
-               wtype == INPAR::WEAR::wear_intstate_impl)
+      else if (wtype == INPAR::WEAR::wear_intstate)
       {
-        wear = frinode->FriDataPlus().Wear();
+        wear = frinode->FriDataPlus().WeightedWear();
       }
 
       // find indices for DOFs of current node in Epetra_Vector
@@ -812,8 +878,7 @@ void WEAR::Partitioned::WearSpatialSlave(Teuchos::RCP<Epetra_Vector>& disinterfa
     }
 
     // un-weight for internal state approach
-    if (wtype == INPAR::WEAR::wear_intstate_expl or
-        wtype == INPAR::WEAR::wear_intstate_impl)
+    if (wtype == INPAR::WEAR::wear_intstate)
     {
       Teuchos::RCP<LINALG::SparseMatrix> daa,dai,dia,dii;
       Teuchos::RCP<Epetra_Map> gidofs;
@@ -843,6 +908,7 @@ void WEAR::Partitioned::WearSpatialSlave(Teuchos::RCP<Epetra_Vector>& disinterfa
     }
   }
 
+  // bye
   return;
 }
 
@@ -903,12 +969,17 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
       INPAR::WEAR::WearType>(DRT::Problem::Instance()->WearParams(),
       "WEARTYPE");
 
+  INPAR::WEAR::WearTimInt wtimint = DRT::INPUT::IntegralValue<
+      INPAR::WEAR::WearTimInt>(DRT::Problem::Instance()->WearParams(),
+      "WEARTIMINT");
+
   INPAR::WEAR::WearTimeScale wtime = DRT::INPUT::IntegralValue<
       INPAR::WEAR::WearTimeScale>(DRT::Problem::Instance()->WearParams(),
       "WEAR_TIMESCALE");
 
-  if (wtype != INPAR::WEAR::wear_intstate_impl)
-    cstrategy.StoreNodalQuantities(MORTAR::StrategyBase::wear);
+  if (!(wtype == INPAR::WEAR::wear_intstate and
+      wtimint == INPAR::WEAR::wear_impl))
+    cstrategy.StoreNodalQuantities(MORTAR::StrategyBase::weightedwear);
 
   // loop over all interfaces
   for (int m = 0; m < (int) interfaces_.size(); ++m)
@@ -960,6 +1031,7 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
       for (int j=0;j<3;++j)
         nn[j]=frinodem->MoData().n()[j];
 
+      // primary variable approach:
       if (wtype == INPAR::WEAR::wear_primvar)
       {
         if(wtime == INPAR::WEAR::wear_time_different)
@@ -977,10 +1049,10 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
             wear=0.0;
         }
       }
-      else if (wtype == INPAR::WEAR::wear_intstate_expl or
-               wtype == INPAR::WEAR::wear_intstate_impl)
+      // internal state variable approach:
+      else if (wtype == INPAR::WEAR::wear_intstate)
       {
-        wear = frinode->FriDataPlus().Wear();
+        wear = frinode->FriDataPlus().WeightedWear();
       }
 
       // find indices for DOFs of current node in Epetra_Vector
@@ -1034,8 +1106,7 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
       // store reference LM into global vector and nodes
       disinterface_s = zref;
     }
-    else if (wtype == INPAR::WEAR::wear_intstate_expl or
-             wtype == INPAR::WEAR::wear_intstate_impl)
+    else if (wtype == INPAR::WEAR::wear_intstate)
     {
       Teuchos::RCP<Epetra_Vector> zref  = Teuchos::rcp(new Epetra_Vector(*slavedofs));
 
@@ -1056,8 +1127,12 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
       disinterface_s->Scale(fac);
     }
     else
+    {
       dserror("ERROR: wrong wear type!");
+    }
   }
+
+  // bye
   return;
 }
 
@@ -1147,9 +1222,9 @@ void WEAR::Partitioned::WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinter
             wear=0.0;
         }
       }
-      else if (wtype == INPAR::WEAR::wear_intstate_expl)
+      else if (wtype == INPAR::WEAR::wear_intstate)
       {
-        wear = frinode->FriDataPlus().Wear();
+        wear = frinode->FriDataPlus().WeightedWear();
       }
 
       // find indices for DOFs of current node in Epetra_Vector
@@ -1267,8 +1342,7 @@ void WEAR::Partitioned::WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinter
       // store reference LM into global vector and nodes
       disinterface_m = zref;
     }
-    else if (wtype == INPAR::WEAR::wear_intstate_expl or
-             wtype == INPAR::WEAR::wear_intstate_impl)
+    else if (wtype == INPAR::WEAR::wear_intstate)
     {
       dserror("ERROR: not working yet!");
       Teuchos::RCP<Epetra_Vector> zref  = Teuchos::rcp(new Epetra_Vector(*masterdofs));
@@ -1281,20 +1355,21 @@ void WEAR::Partitioned::WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinter
       disinterface_m = zref;
     }
     else
+    {
       dserror("ERROR: wrong wear type!");
+    }
   }
+
+  // bye
   return;
 }
 
 
 /*----------------------------------------------------------------------*
- | Application of mesh displacement                           mgit 07/11|
+ | Application of mesh displacement to material conf         farah 04/15|
  *----------------------------------------------------------------------*/
-void WEAR::Partitioned::ApplyMeshDisplacement(bool iterated)
+void WEAR::Partitioned::UpdateMatConf()
 {
-  // get problem dimension
-  const int ndim = DRT::Problem::Instance()->NDim();
-
   // mesh displacement from solution of ALE field in structural dofs
   // first perform transformation from ale to structure dofs
   Teuchos::RCP<Epetra_Vector> disalenp = AleToStructure(AleField().Dispnp());
@@ -1315,17 +1390,21 @@ void WEAR::Partitioned::ApplyMeshDisplacement(bool iterated)
       StructureField()->DispMat());
 
   // get info about wear conf
-  INPAR::WEAR::WearConf wconf = DRT::INPUT::IntegralValue<
-      INPAR::WEAR::WearConf>(DRT::Problem::Instance()->WearParams(),
-      "WEARCOEFF_CONF");
+  INPAR::WEAR::WearShapeEvo wconf = DRT::INPUT::IntegralValue<
+      INPAR::WEAR::WearShapeEvo>(DRT::Problem::Instance()->WearParams(),
+      "WEAR_SHAPE_EVO");
 
-  // if classic lin: ale dispnp = material displ.
-  if(wconf == INPAR::WEAR::wear_conf_mat)
+  // if shape evol. in mat conf: ale dispnp = material displ.
+  if(wconf == INPAR::WEAR::wear_se_mat)
   {
+    delta_ale_->Update(-1.0, *ale_i_, 0.0);
+    delta_ale_->Update(1.0, *disalenp, 1.0);
+    ale_i_->Update(1.0, *disalenp, 0.0);
+
     dismat->Update(1.0, *disalenp, 0.0);
   }
-  // if incr lin: advection map!
-  else if (wconf == INPAR::WEAR::wear_conf_sp)
+  // if shape evol. in spat conf: advection map!
+  else if (wconf == INPAR::WEAR::wear_se_sp)
   {
     disalenp->Update(-1.0, *dispnp, 1.0);
     delta_ale_->Update(1.0, *disalenp, 0.0);
@@ -1334,51 +1413,33 @@ void WEAR::Partitioned::ApplyMeshDisplacement(bool iterated)
     for (int k = 0; k < StructureField()->Discretization()->NumMyRowNodes(); ++k)
     {
       int gid = StructureField()->Discretization()->NodeRowMap()->GID(k);
-
       DRT::Node* node = StructureField()->Discretization()->gNode(gid);
       DRT::Element** ElementPtr = node->Elements();
-
       int numelement = node->NumElement();
 
+      const int numdof = StructureField()->Discretization()->NumDof(node);
+
       // create Xmat for 3D problems
-      double XMat[3];
-      double XMesh[3];
+      double XMat[numdof];
+      double XMesh[numdof];
 
-      // local ID
-      int locid = 0;
-
-      XMat[0] = node->X()[0];
-      XMat[1] = node->X()[1];
-      if (ndim == 3)
-        XMat[2] = node->X()[2];
-
-      // get local id
-      if (ndim == 2)
+      for(int dof = 0; dof < numdof; ++dof)
       {
-        locid = (dispnp->Map()).LID(2 * gid);
-        if (locid == -1)
-          dserror("ERROR: LID not found on this proc");
+        int dofgid = StructureField()->Discretization()->Dof(node,dof);
+        int doflid = (dispnp->Map()).LID(dofgid);
+        XMesh[dof] = node->X()[dof] + (*dispnp)[doflid] + (*disalenp)[doflid];
       }
-      else
-      {
-        locid = (dispnp->Map()).LID(3 * gid);
-        if (locid == -1)
-          dserror("ERROR: LID not found on this proc");
-      }
-      // reference node position + displacement t_n + delta displacement t_n+1
-      XMesh[0] = node->X()[0] + (*dispnp)[locid]     + (*disalenp)[locid];
-      XMesh[1] = node->X()[1] + (*dispnp)[locid + 1] + (*disalenp)[locid + 1];
-      if (ndim == 3)
-        XMesh[2] = node->X()[2] + (*dispnp)[locid + 2] + (*disalenp)[locid + 2];
 
       // create updated  XMat --> via nonlinear interpolation between nodes (like gp projection)
-      AdvectionMap(XMat, XMesh, ElementPtr, numelement);
+      AdvectionMap(XMat, XMesh, ElementPtr, numelement, true);
 
-      // create delta displacement in material configuration
-      (*dismat)[locid]     = XMat[0] - node->X()[0];
-      (*dismat)[locid + 1] = XMat[1] - node->X()[1];
-      if (ndim == 3)
-        (*dismat)[locid + 2] = XMat[2] - node->X()[2];
+      // store in dispmat
+      for(int dof = 0; dof < numdof; ++dof)
+      {
+        int dofgid = StructureField()->Discretization()->Dof(node,dof);
+        int doflid = (dispnp->Map()).LID(dofgid);
+        (*dismat)[doflid] = XMat[dof] - node->X()[dof];
+      }
     } // end row node loop
   }
 
@@ -1386,6 +1447,7 @@ void WEAR::Partitioned::ApplyMeshDisplacement(bool iterated)
   // if advection map is not succesful --> use old xmat
   StructureField()->ApplyDisMat(dismat);
 
+  // bye
   return;
 }
 
@@ -1393,11 +1455,30 @@ void WEAR::Partitioned::ApplyMeshDisplacement(bool iterated)
 /*----------------------------------------------------------------------*
  | material coordinates evaluated from spatial ones         farah 12/13 |
  *----------------------------------------------------------------------*/
-void WEAR::Partitioned::AdvectionMap(double* XMat, double* XMesh,
-    DRT::Element** ElementPtr, int numelements)
+void WEAR::Partitioned::AdvectionMap(
+    double* Xtarget,            // out
+    double* Xsource,            // in
+    DRT::Element** ElementPtr,  // in
+    int numelements,            // in
+    bool spatialtomaterial)     // in
 {
   // get problem dimension
   const int ndim = DRT::Problem::Instance()->NDim();
+
+  // define source and target configuration
+  std::string sourceconf;
+  std::string targetconf;
+
+  if(spatialtomaterial)
+  {
+    sourceconf = "displacement";
+    targetconf = "material_displacement";
+  }
+  else
+  {
+    sourceconf = "material_displacement";
+    targetconf = "displacement";
+  }
 
   // found element the spatial coordinate lies in
   bool found = false;
@@ -1416,32 +1497,31 @@ void WEAR::Partitioned::AdvectionMap(double* XMat, double* XMesh,
     DRT::Element* actele = ElementPtr[jele];
 
     // get element location vector, dirichlet flags and ownerships
-    // get element location vector
     DRT::Element::LocationArray la(1);
     actele->LocationVector(*(StructureField()->Discretization()), la, false);
 
     // get state
-    Teuchos::RCP<const Epetra_Vector> disp =
-        (StructureField()->Discretization())->GetState("displacement");
-    Teuchos::RCP<const Epetra_Vector> dispmat =
-        (StructureField()->Discretization())->GetState("material_displacement");
+    Teuchos::RCP<const Epetra_Vector> dispsource =
+        (StructureField()->Discretization())->GetState(sourceconf);
+    Teuchos::RCP<const Epetra_Vector> disptarget =
+        (StructureField()->Discretization())->GetState(targetconf);
 
     if (ndim == 2)
     {
       if (actele->Shape() == DRT::Element::quad4)
-        WEAR::UTILS::av<DRT::Element::quad4>(actele, XMat, XMesh, disp, dispmat,
+        WEAR::UTILS::av<DRT::Element::quad4>(actele, Xtarget, Xsource, dispsource, disptarget,
             la[0].lm_, found, e);
       else if (actele->Shape() == DRT::Element::quad8)
-        WEAR::UTILS::av<DRT::Element::quad8>(actele, XMat, XMesh, disp, dispmat,
+        WEAR::UTILS::av<DRT::Element::quad8>(actele, Xtarget, Xsource, dispsource, disptarget,
             la[0].lm_, found, e);
       else if (actele->Shape() == DRT::Element::quad9)
-        WEAR::UTILS::av<DRT::Element::quad9>(actele, XMat, XMesh, disp, dispmat,
+        WEAR::UTILS::av<DRT::Element::quad9>(actele, Xtarget, Xsource, dispsource, disptarget,
             la[0].lm_, found, e);
       else if (actele->Shape() == DRT::Element::tri3)
-        WEAR::UTILS::av<DRT::Element::tri3>(actele, XMat, XMesh, disp, dispmat,
+        WEAR::UTILS::av<DRT::Element::tri3>(actele, Xtarget, Xsource, dispsource, disptarget,
             la[0].lm_, found, e);
       else if (actele->Shape() == DRT::Element::tri6)
-        WEAR::UTILS::av<DRT::Element::tri6>(actele, XMat, XMesh, disp, dispmat,
+        WEAR::UTILS::av<DRT::Element::tri6>(actele, Xtarget, Xsource, dispsource, disptarget,
             la[0].lm_, found, e);
       else
         dserror("ERROR: shape function not supported!");
@@ -1467,19 +1547,19 @@ void WEAR::Partitioned::AdvectionMap(double* XMat, double* XMesh,
     else
     {
       if (actele->ElementType() == DRT::ELEMENTS::So_hex8Type::Instance())
-        WEAR::UTILS::av<DRT::Element::hex8>(actele, XMat, XMesh, disp, dispmat,
+        WEAR::UTILS::av<DRT::Element::hex8>(actele, Xtarget, Xsource, dispsource, disptarget,
             la[0].lm_, found, e);
       else if (actele->ElementType() == DRT::ELEMENTS::So_hex20Type::Instance())
-        WEAR::UTILS::av<DRT::Element::hex20>(actele, XMat, XMesh, disp, dispmat,
+        WEAR::UTILS::av<DRT::Element::hex20>(actele, Xtarget, Xsource, dispsource, disptarget,
             la[0].lm_, found, e);
       else if (actele->ElementType() == DRT::ELEMENTS::So_hex27Type::Instance())
-        WEAR::UTILS::av<DRT::Element::hex27>(actele, XMat, XMesh, disp, dispmat,
+        WEAR::UTILS::av<DRT::Element::hex27>(actele, Xtarget, Xsource, dispsource, disptarget,
             la[0].lm_, found, e);
       else if (actele->ElementType() == DRT::ELEMENTS::So_tet4Type::Instance())
-        WEAR::UTILS::av<DRT::Element::tet4>(actele, XMat, XMesh, disp, dispmat,
+        WEAR::UTILS::av<DRT::Element::tet4>(actele, Xtarget, Xsource, dispsource, disptarget,
             la[0].lm_, found, e);
       else if (actele->ElementType() == DRT::ELEMENTS::So_tet10Type::Instance())
-        WEAR::UTILS::av<DRT::Element::tet10>(actele, XMat, XMesh, disp, dispmat,
+        WEAR::UTILS::av<DRT::Element::tet10>(actele, Xtarget, Xsource, dispsource, disptarget,
             la[0].lm_, found, e);
       else
         dserror("ERROR: element type not supported!");
@@ -1515,32 +1595,31 @@ void WEAR::Partitioned::AdvectionMap(double* XMat, double* XMesh,
   DRT::Element* actele = ElementPtr[gele];
 
   // get element location vector, dirichlet flags and ownerships
-  // get element location vector
   DRT::Element::LocationArray la(1);
   actele->LocationVector(*(StructureField()->Discretization()), la, false);
 
   // get state
-  Teuchos::RCP<const Epetra_Vector> disp =
-      (StructureField()->Discretization())->GetState("displacement");
-  Teuchos::RCP<const Epetra_Vector> dispmat =
-      (StructureField()->Discretization())->GetState("material_displacement");
+  Teuchos::RCP<const Epetra_Vector> dispsource =
+      (StructureField()->Discretization())->GetState(sourceconf);
+  Teuchos::RCP<const Epetra_Vector> disptarget =
+      (StructureField()->Discretization())->GetState(targetconf);
 
   if (ndim == 2)
   {
     if (actele->Shape() == DRT::Element::quad4)
-      WEAR::UTILS::av<DRT::Element::quad4>(actele, XMat, XMesh, disp, dispmat,
+      WEAR::UTILS::av<DRT::Element::quad4>(actele, Xtarget, Xsource, dispsource, disptarget,
           la[0].lm_, found, e);
     else if (actele->Shape() == DRT::Element::quad8)
-      WEAR::UTILS::av<DRT::Element::quad8>(actele, XMat, XMesh, disp, dispmat,
+      WEAR::UTILS::av<DRT::Element::quad8>(actele, Xtarget, Xsource, dispsource, disptarget,
           la[0].lm_, found, e);
     else if (actele->Shape() == DRT::Element::quad9)
-      WEAR::UTILS::av<DRT::Element::quad9>(actele, XMat, XMesh, disp, dispmat,
+      WEAR::UTILS::av<DRT::Element::quad9>(actele, Xtarget, Xsource, dispsource, disptarget,
           la[0].lm_, found, e);
     else if (actele->Shape() == DRT::Element::tri3)
-      WEAR::UTILS::av<DRT::Element::tri3>(actele, XMat, XMesh, disp, dispmat,
+      WEAR::UTILS::av<DRT::Element::tri3>(actele, Xtarget, Xsource, dispsource, disptarget,
           la[0].lm_, found, e);
     else if (actele->Shape() == DRT::Element::tri6)
-      WEAR::UTILS::av<DRT::Element::tri6>(actele, XMat, XMesh, disp, dispmat,
+      WEAR::UTILS::av<DRT::Element::tri6>(actele, Xtarget, Xsource, dispsource, disptarget,
           la[0].lm_, found, e);
     else
       dserror("ERROR: shape function not supported!");
@@ -1548,19 +1627,19 @@ void WEAR::Partitioned::AdvectionMap(double* XMat, double* XMesh,
   else
   {
     if (actele->ElementType() == DRT::ELEMENTS::So_hex8Type::Instance())
-      WEAR::UTILS::av<DRT::Element::hex8>(actele, XMat, XMesh, disp, dispmat,
+      WEAR::UTILS::av<DRT::Element::hex8>(actele, Xtarget, Xsource, dispsource, disptarget,
           la[0].lm_, found, e);
     else if (actele->ElementType() == DRT::ELEMENTS::So_hex20Type::Instance())
-      WEAR::UTILS::av<DRT::Element::hex20>(actele, XMat, XMesh, disp, dispmat,
+      WEAR::UTILS::av<DRT::Element::hex20>(actele, Xtarget, Xsource, dispsource, disptarget,
           la[0].lm_, found, e);
     else if (actele->ElementType() == DRT::ELEMENTS::So_hex27Type::Instance())
-      WEAR::UTILS::av<DRT::Element::hex27>(actele, XMat, XMesh, disp, dispmat,
+      WEAR::UTILS::av<DRT::Element::hex27>(actele, Xtarget, Xsource, dispsource, disptarget,
           la[0].lm_, found, e);
     else if (actele->ElementType() == DRT::ELEMENTS::So_tet4Type::Instance())
-      WEAR::UTILS::av<DRT::Element::tet4>(actele, XMat, XMesh, disp, dispmat,
+      WEAR::UTILS::av<DRT::Element::tet4>(actele, Xtarget, Xsource, dispsource, disptarget,
           la[0].lm_, found, e);
     else if (actele->ElementType() == DRT::ELEMENTS::So_tet10Type::Instance())
-      WEAR::UTILS::av<DRT::Element::tet10>(actele, XMat, XMesh, disp, dispmat,
+      WEAR::UTILS::av<DRT::Element::tet10>(actele, Xtarget, Xsource, dispsource, disptarget,
           la[0].lm_, found, e);
     else
       dserror("ERROR: element type not supported!");
@@ -1582,14 +1661,14 @@ void WEAR::Partitioned::AleStep(Teuchos::RCP<Epetra_Vector> idisale_global)
           "ALE_TYPE");
 
   // get info about wear conf
-  INPAR::WEAR::WearConf wconf = DRT::INPUT::IntegralValue<
-      INPAR::WEAR::WearConf>(DRT::Problem::Instance()->WearParams(),
-      "WEARCOEFF_CONF");
+  INPAR::WEAR::WearShapeEvo wconf = DRT::INPUT::IntegralValue<
+      INPAR::WEAR::WearShapeEvo>(DRT::Problem::Instance()->WearParams(),
+      "WEAR_SHAPE_EVO");
 
 //  if(aletype != INPAR::ALE::solid)
 //    dserror("ERORR: Chosen ALE type not supported!");
 
-  if (wconf == INPAR::WEAR::wear_conf_sp)
+  if (wconf == INPAR::WEAR::wear_se_sp)
   {
 //    Teuchos::RCP<Epetra_Vector> dispnpstru = StructureToAle(
 //        StructureField()->Dispnp());
@@ -1621,7 +1700,7 @@ void WEAR::Partitioned::AleStep(Teuchos::RCP<Epetra_Vector> idisale_global)
     AleField().TimeStep(ALE::UTILS::MapExtractor::dbc_set_wear);
   }
   // classical lin in mat. conf --> not correct at all
-  else if (wconf == INPAR::WEAR::wear_conf_mat)
+  else if (wconf == INPAR::WEAR::wear_se_mat)
   {
     // application of interface displacements as dirichlet conditions
     AleField().ApplyInterfaceDisplacements(idisale_global);

@@ -8,7 +8,7 @@ General Data File BACI
 ============================================================================
 -----------------------------------------------------------------------TITLE
 2D wear contact ironing
-// - structure-ale approach -- ale: incr_lin
+// - structure-ale approach -- ale: solid
 // - wear discretization --> 3 field problem
 // - high-order interpolation (quad9 elements)
 // - std Lagrange multiplier interpolation
@@ -72,7 +72,8 @@ LM_DUAL_CONSISTENT              no
 -------------------------------------------------------------WEAR
 WEARLAW                         Archard
 WEARTYPE                        primvar
-BOTH_SIDED_WEAR                 none
+WEARTIMINT                      impl
+WEAR_SIDE                       slave
 WEARCOEFF                       0.0003
 WEARCOEFF_CONF                  mat
 ----------------------------------------------CLONING MATERIAL MAP
@@ -94,10 +95,10 @@ CURVE1 on Polygonal T 0.0 BYABSTIME Yes 1.0 5.0 FACTOR 0.0 -2.2
 CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1.2
 CURVE2 on Polygonal T 0.0 BYABSTIME Yes 1.0 5.0 FACTOR 1.2 1.2
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 43 QUANTITY dispmx VALUE 1.21853683143212182e-03 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 43 QUANTITY dispmy VALUE 1.50398706310225067e-03 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 31 QUANTITY dispmx VALUE 1.67314718402393654e-03 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 31 QUANTITY dispmy VALUE 1.30666038136642007e-03 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 43 QUANTITY dispmx VALUE 1.21836634879660534e-03 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 43 QUANTITY dispmy VALUE 1.50424183320930810e-03 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 31 QUANTITY dispmx VALUE 1.67326290307784798e-03 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 31 QUANTITY dispmy VALUE 1.30717151750184453e-03 TOLERANCE 1e-8
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  12

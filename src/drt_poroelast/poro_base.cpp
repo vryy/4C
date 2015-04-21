@@ -89,7 +89,7 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm,
     Teuchos::RCP<UTILS::PoroMaterialStrategy> materialstrategy = Teuchos::rcp(new UTILS::PoroMaterialStrategy());
 
     //setup projection matrices
-    volcoupl_->Setup(structdis,fluiddis,materialstrategy);
+    volcoupl_->Setup(structdis,fluiddis,NULL,NULL,materialstrategy);
   }
 
   // access structural dynamic params list which will be possibly modified while creating the time integrator
@@ -309,7 +309,7 @@ Teuchos::RCP<Epetra_Vector> POROELAST::PoroBase::StructureToFluidField(
   }
   else
   {
-    Teuchos::RCP<const Epetra_Vector> mv = volcoupl_->ApplyVectorMappingBA(iv);
+    Teuchos::RCP<const Epetra_Vector> mv = volcoupl_->ApplyVectorMapping21(iv);
 
     Teuchos::RCP<Epetra_Vector> sv = LINALG::CreateVector(*(FluidField()->VelPresSplitter().OtherMap()));
 
@@ -373,7 +373,7 @@ void POROELAST::PoroBase::SetFluidSolution()
   }
   else
   {
-    StructureField()->Discretization()->SetState(1,"fluidvel",volcoupl_->ApplyVectorMappingAB(FluidField()->Velnp()));
+    StructureField()->Discretization()->SetState(1,"fluidvel",volcoupl_->ApplyVectorMapping12(FluidField()->Velnp()));
   }
 }
 

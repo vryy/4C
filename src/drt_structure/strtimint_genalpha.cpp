@@ -730,6 +730,11 @@ void STR::TimIntGenAlpha::UpdateStepState()
   // new displacements at t_{n+1} -> t_n
   //    D_{n} := D_{n+1}, etc
   dis_->UpdateSteps(*disn_);
+
+  // material displacements (struct ale)
+  if( (dismatn_!=Teuchos::null))
+    dismat_->UpdateSteps(*dismatn_);
+
   // new velocities at t_{n+1} -> t_n
   //    V_{n} := V_{n+1}, etc
   vel_->UpdateSteps(*veln_);
@@ -788,6 +793,10 @@ void STR::TimIntGenAlpha::UpdateStepElement()
   // go to elements
   discret_->ClearState();
   discret_->SetState("displacement",(*dis_)(0));
+
+  // Set material displacement state for ale-wear formulation
+  if( (dismat_!=Teuchos::null))
+    discret_->SetState("material_displacement",(*dismat_)(0));
 
   if (!HaveNonlinearMass())
   {

@@ -162,7 +162,7 @@ STR::TimInt::TimInt
   young_temp_(DRT::INPUT::IntegralValue<int>(sdynparams,"YOUNG_IS_TEMP_DEPENDENT") == 1),
   zeros_(Teuchos::null),
   dis_(Teuchos::null),
-  dism_(Teuchos::null),
+  dismat_(Teuchos::null),
   vel_(Teuchos::null),
   acc_(Teuchos::null),
   disn_(Teuchos::null),
@@ -215,14 +215,13 @@ STR::TimInt::TimInt
   // displacements D_{n+1} at t_{n+1}
   disn_ = LINALG::CreateVector(*DofRowMapView(), true);
 
-  if (DRT::Problem::Instance()->ProblemType() == prb_struct_ale and
-      (DRT::Problem::Instance()->WearParams()).get<double>("WEARCOEFF")>0.0)
+  if (DRT::Problem::Instance()->ProblemType() == prb_struct_ale)
   {
     // material displacements Dm_{n+1} at t_{n+1}
     dismatn_ = LINALG::CreateVector(*DofRowMapView(),true);
 
     // material_displacements D_{n}
-    dism_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+    dismat_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
   }
 
   // velocities V_{n+1} at t_{n+1}
@@ -989,6 +988,11 @@ void STR::TimInt::DetermineMassDampConsistAccel()
     // compute new inner radius
     discret_->ClearState();
     discret_->SetState(0,"displacement",(*dis_)(0));
+
+    // for structure ale
+    if( dismat_!=Teuchos::null )
+      discret_->SetState(0,"material_displacement",(*dismat_)(0));
+
     PATSPEC::ComputeEleInnerRadius(discret_);
 
     // create the parameters for the discretization
@@ -1027,6 +1031,9 @@ void STR::TimInt::DetermineMassDampConsistAccel()
     discret_->SetState(0,"acceleration", (*acc_)(0));
     if (damping_ == INPAR::STR::damp_material)
       discret_->SetState(0,"velocity", (*vel_)(0));
+    // for structure ale
+    if( dismat_!=Teuchos::null )
+      discret_->SetState(0,"material_displacement",(*dismat_)(0));
 
     discret_->Evaluate(p, stiff_, mass_, fint, Teuchos::null, fintn_str_);
     discret_->ClearState();
@@ -1666,7 +1673,7 @@ void STR::TimInt::ResetStep()
   // reset state vectors
   disn_->Update(1.0, (*dis_)[0], 0.0);
   if (dismatn_ != Teuchos::null)
-    dismatn_->Update(1.0, (*dism_)[0], 0.0);
+    dismatn_->Update(1.0, (*dismat_)[0], 0.0);
   veln_->Update(1.0, (*vel_)[0], 0.0);
   accn_->Update(1.0, (*acc_)[0], 0.0);
 
@@ -1787,7 +1794,7 @@ void STR::TimInt::ReadRestartState()
   if( (dismatn_!=Teuchos::null) )
   {
     reader.ReadVector(dismatn_, "material_displacement");
-    dism_->UpdateSteps(*dismatn_);
+    dismat_->UpdateSteps(*dismatn_);
   }
 
   reader.ReadVector(veln_, "velocity");
@@ -2176,8 +2183,8 @@ void STR::TimInt::OutputRestart
     output_->WriteMesh(step_, (*time_)[0]);
     output_->NewStep(step_, (*time_)[0]);
     output_->WriteVector("displacement", (*dis_)(0));
-    if( dism_!=Teuchos::null )
-      output_->WriteVector("material_displacement", (*dism_)(0));
+    if( dismat_!=Teuchos::null )
+      output_->WriteVector("material_displacement", (*dismat_)(0));
     output_->WriteVector("velocity", (*vel_)(0));
     output_->WriteVector("acceleration", (*acc_)(0));
     if(!HaveStatMech())
@@ -2285,7 +2292,7 @@ void STR::TimInt::OutputState
   }
 
   if( (dismatn_!=Teuchos::null))
-    output_->WriteVector("material_displacement", (*dism_)(0));
+    output_->WriteVector("material_displacement", (*dismat_)(0));
 
   // for visualization of vel and acc do not forget to comment in corresponding lines in StructureEnsightWriter
   if(writevelacc_)
@@ -3414,7 +3421,7 @@ void STR::TimInt::Reset()
   // displacements D_{n}
   dis_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
   // displacements D_{n}
-  dism_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+  dismat_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
   // velocities V_{n}
   vel_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
   // accelerations A_{n}
@@ -3534,10 +3541,10 @@ bool STR::TimInt::UpdateCrackInformation( Teuchos::RCP<const Epetra_Vector> disp
       LINALG::Export(*accn_, *(*acc_)(0));
     }
 
-    if( dism_ != Teuchos::null )
+    if( dismat_ != Teuchos::null )
     {
-      dism_->ReplaceMaps(discret_->DofRowMap());
-      LINALG::Export(*dismatn_, *(*dism_)(0));
+      dismat_->ReplaceMaps(discret_->DofRowMap());
+      LINALG::Export(*dismatn_, *(*dismat_)(0));
     }
 
     // update other field vectors related to specific integration method

@@ -80,7 +80,8 @@ SEARCH_PARAM                    0.3
 PARALLEL_REDIST                 Static
 -------------------------------------------------------------WEAR
 WEARLAW                         Archard
-WEARTYPE                        is_expl
+WEARTYPE                        is
+WEARTIMINT                      expl
 WEARCOEFF                       1e-6
 -----------------------------------------------------------------ALE DYNAMIC
 TIMESTEP                        0.1

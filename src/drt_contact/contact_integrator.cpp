@@ -48,7 +48,7 @@ gpslip_(DRT::INPUT::IntegralValue<int>(imortar_,"GP_SLIP_INCR")),
 wearlaw_(DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(imortar_,"WEARLAW")),
 wearimpl_(false),
 wearside_(INPAR::WEAR::wear_slave),
-weartype_(INPAR::WEAR::wear_intstate_expl),
+weartype_(INPAR::WEAR::wear_intstate),
 wearshapefcn_(INPAR::WEAR::wear_shape_standard),
 sswear_(DRT::INPUT::IntegralValue<int>(imortar_,"SSWEAR")),
 wearcoeff_(-1.0),
@@ -62,12 +62,12 @@ ssslip_(imortar_.get<double>("SSSLIP"))
   if(wearlaw_!=INPAR::WEAR::wear_none)
   {
     // set wear contact status
-    INPAR::WEAR::WearType wtype = DRT::INPUT::IntegralValue<INPAR::WEAR::WearType>(params,"WEARTYPE");
-    if (wtype == INPAR::WEAR::wear_intstate_impl)
+    INPAR::WEAR::WearTimInt wtimint = DRT::INPUT::IntegralValue<INPAR::WEAR::WearTimInt>(params,"WEARTIMINT");
+    if (wtimint == INPAR::WEAR::wear_impl)
       wearimpl_ = true;
 
     // wear surface
-    wearside_ = DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(imortar_,"BOTH_SIDED_WEAR");
+    wearside_ = DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(imortar_,"WEAR_SIDE");
 
     // wear algorithm
     weartype_ = DRT::INPUT::IntegralValue<INPAR::WEAR::WearType>(imortar_,"WEARTYPE");
@@ -764,26 +764,30 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
     else
     {
       sele.EvaluateShapeLagMult(ShapeFcn(),sxi,lmval,lmderiv,nrow);
-      if (WearSide() == INPAR::WEAR::wear_both_map)
+      if (WearSide() == INPAR::WEAR::wear_both and
+          WearType() == INPAR::WEAR::wear_intstate)
         mele.EvaluateShapeLagMult(ShapeFcn(),mxi2,lm2val,lm2deriv,ncol);  // evaluate lm on master side for both-sided wear
     }
 
     // evaluate trace space shape functions (on both elements)
     sele.EvaluateShape(sxi,sval,sderiv,nrow);
     mele.EvaluateShape(mxi,mval,mderiv,ncol);
-    if (WearSide() == INPAR::WEAR::wear_both_map)
+    if (WearSide() == INPAR::WEAR::wear_both and
+        WearType() == INPAR::WEAR::wear_intstate)
       mele.EvaluateShape(mxi2,m2val,m2deriv,ncol);
 
     // evaluate the two slave side Jacobians
     double dxdsxi = sele.Jacobian(sxi);
     double dxdmxi = 0.0;
-    if (WearSide() == INPAR::WEAR::wear_both_map)
+    if (WearSide() == INPAR::WEAR::wear_both and
+        WearType() == INPAR::WEAR::wear_intstate)
       dxdmxi = mele.Jacobian(mxi2);
 
     double dsxideta = -0.5*sxia + 0.5*sxib;
 
     double dmxideta = 0.0;
-    if (WearSide() == INPAR::WEAR::wear_both_map)
+    if (WearSide() == INPAR::WEAR::wear_both and
+        WearType() == INPAR::WEAR::wear_intstate)
       dmxideta = -0.5*mxia + 0.5*mxib;
 
     // evaluate linearizations *******************************************
@@ -848,7 +852,8 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
 
     // both-sided map wear specific stuff
     double jacm = dmxideta*dxdmxi;
-    if (WearSide() == INPAR::WEAR::wear_both_map)
+    if (WearSide() == INPAR::WEAR::wear_both and
+        WearType() == INPAR::WEAR::wear_intstate)
       GP_D2(sele,mele,lm2val,m2val,jacm,wgt,comm);
 
     // std. wear for all wear-algorithm types
@@ -862,7 +867,8 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
       GP_TE(sele,lmval,sval,jac,wgt,jumpval);
 
     // both-sided discr wear specific stuff
-    if (WearSide() == INPAR::WEAR::wear_both_discr)
+    if (WearSide() == INPAR::WEAR::wear_both and
+        WearType() == INPAR::WEAR::wear_primvar)
       GP_TE_Master(sele,mele,lmval,lm2val,mval,jac,wgt,jumpval,comm);
 
     //**********************************************************************
@@ -893,19 +899,22 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
             jumpvalv,dsxigp,dslipgp,ximaps,derivjac,dualmap);
 
       // Lin wear for impl. alg.
-      if(wearimpl_)
+      if(wearimpl_ == true and
+         WearType() == INPAR::WEAR::wear_intstate)
         GP_2D_Wear_Lin(iter,sele,sval,lmval,sderiv,lmderiv,dsxideta,dxdsxi,dxdsxidsxi,gpn,
              wgt, *wearval,jumpval,dsxigp,dweargp,ximaps,derivjac,dualmap);
 
       // Lin wear T and E matrix
-      if(WearType() == INPAR::WEAR::wear_primvar)
+      if(wearimpl_ == true and
+         WearType() == INPAR::WEAR::wear_primvar)
         GP_2D_TE_Lin(iter,sele,sval,lmval,sderiv,lmderiv,dsxideta,dxdsxi,dxdsxidsxi,wgt,jumpval,
              dsxigp,derivjac,dsliptmatrixgp,ximaps,dualmap);
 
     }// nrow loop
 
     // lin for master nodes
-    if (WearSide() == INPAR::WEAR::wear_both_discr)
+    if (WearSide() == INPAR::WEAR::wear_both and
+        WearType() == INPAR::WEAR::wear_primvar)
     {
       for (int iter=0;iter<ncol;++iter)
       {
@@ -1558,7 +1567,8 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(
               GP_TE(sele,lmval,sval,jacslave,wgt,jumpval);
 
             // both-sided discr wear specific stuff
-            if (WearSide() == INPAR::WEAR::wear_both_discr)
+            if (WearType() == INPAR::WEAR::wear_primvar and
+                WearSide() == INPAR::WEAR::wear_both)
               GP_TE_Master(sele,*meles[nummaster],lmval,lm2val,mval,jacslave,wgt,jumpval,comm);
           }
 
@@ -1576,23 +1586,24 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(
             GP_3D_G_Ele_Lin(j,sele,sval,svalmod,lmval,sderiv,lmderiv,*gap,jacslave,wgt,duallin,
                 dualquad3d,dgapgp,jacslavemap, dualmap);
 
-            // wear stuff
-            if(wear)
-            {
-              // Lin wear for impl. alg.
-              if(wearimpl_)
-                GP_3D_Wear_Lin(j,sele,sval,lmval,sderiv,lmderiv,jacslave,gpn,wgt,*wearval,jumpval,dweargp,
-                    jacslavemap,dsxigp,dualmap);
+            // Lin wear for impl. alg.
+            if(WearType() == INPAR::WEAR::wear_intstate and
+               wearimpl_  == true)
+              GP_3D_Wear_Lin(j,sele,sval,lmval,sderiv,lmderiv,jacslave,gpn,wgt,*wearval,jumpval,dweargp,
+                  jacslavemap,dsxigp,dualmap);
 
-              // Lin wear matrices T and E for discr. wear
-              if(WearType() == INPAR::WEAR::wear_primvar and wear)
-                GP_3D_TE_Lin(j,duallin,sele,sval,lmval,sderiv,lmderiv,jacslave,wgt,jumpval,dsxigp,jacslavemap,
-                     dsliptmatrixgp,dualmap);
-            }
+            // Lin wear matrices T and E for discr. wear
+            if(WearType() == INPAR::WEAR::wear_primvar and
+               wearimpl_  == true)
+              GP_3D_TE_Lin(j,duallin,sele,sval,lmval,sderiv,lmderiv,jacslave,wgt,jumpval,dsxigp,jacslavemap,
+                   dsliptmatrixgp,dualmap);
+
           }
 
           // lin for master nodes
-          if (WearSide() == INPAR::WEAR::wear_both_discr and wear)
+          if (WearType() == INPAR::WEAR::wear_primvar and
+              WearSide() == INPAR::WEAR::wear_both    and
+              wearimpl_  == true)
           {
             for (int iter=0;iter<nmnode;++iter)
             {
@@ -1730,7 +1741,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
     duallin = true;
     sele.DerivShapeDual(dualmap);
 
-    if(WearSide() == INPAR::WEAR::wear_both_discr)
+    if(WearSide() == INPAR::WEAR::wear_both and
+       WearType() == INPAR::WEAR::wear_primvar)
       mele.DerivShapeDual(dual2map);
   }
 
@@ -1925,11 +1937,13 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
         GP_TE(sele,lmval,sval,jac,wgt,jumpval);
 
       // both-sided discr wear specific stuff
-      if (WearSide() == INPAR::WEAR::wear_both_discr)
+      if (WearSide() == INPAR::WEAR::wear_both and
+          WearType() == INPAR::WEAR::wear_primvar)
         GP_TE_Master(sele,mele,lmval,lm2val,mval,jac,wgt,jumpval,comm);
 
       // both-sided wear specific stuff
-      if (WearSide() == INPAR::WEAR::wear_both_map)
+      if (WearSide() == INPAR::WEAR::wear_both and
+          WearType() == INPAR::WEAR::wear_intstate)
         GP_D2(sele,mele,lm2val,mval,jac,wgt,comm);
     }
 
@@ -1984,12 +1998,14 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
       if(wear)
       {
         // Lin wear for impl. alg.
-        if(wearimpl_)
+        if(wearimpl_ == true and
+           WearType() == INPAR::WEAR::wear_intstate)
           GP_3D_Wear_Lin(iter,sele,sval,lmval,sderiv,lmderiv,jac,gpn,wgt,*wearval,jumpval,dweargp,
                jacintcellmap,dsxigp,dualmap);
 
         // Lin wear matrices T and E for discr. wear
-        if(WearType() == INPAR::WEAR::wear_primvar and wear)
+        if(wearimpl_ == true and
+           WearType() == INPAR::WEAR::wear_primvar)
           GP_3D_TE_Lin(iter,duallin,sele,sval,lmval,sderiv,lmderiv,jac,wgt,jumpval,dsxigp,jacintcellmap,
                dsliptmatrixgp,dualmap);
       }
@@ -2004,7 +2020,10 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
     }// end lin
 
     // lin for master nodes
-    if (WearSide() == INPAR::WEAR::wear_both_discr and wear)
+    if (WearSide() == INPAR::WEAR::wear_both    and
+        WearType() == INPAR::WEAR::wear_primvar and
+        wearimpl_  == true and
+        wear == true)
     {
       for (int iter=0;iter<ncol;++iter)
       {
@@ -2402,6 +2421,11 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
       dserror("ERROR: IntegrateAndDerivSegment called on a wrong type of MortarElement pair!");
   }
 
+  // contact with wear
+  bool wear = false;
+  if(imortar_.get<double>("WEARCOEFF")!= 0.0)
+    wear = true;
+
   // *********************************************************************
   // Define slave quantities
   // *********************************************************************
@@ -2441,6 +2465,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
   LINALG::SerialDenseMatrix sderiv(nrow,1);
   LINALG::SerialDenseVector lmval(nrow);
   LINALG::SerialDenseMatrix lmderiv(nrow,1);
+  LINALG::SerialDenseMatrix ssecderiv(nrow,1);
 
   // get slave nodal coords for Jacobian / GP evaluation
   LINALG::SerialDenseMatrix scoord(3,nrow);
@@ -2453,6 +2478,14 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
   Teuchos::RCP<LINALG::SerialDenseMatrix> scoordold;
   Teuchos::RCP<LINALG::SerialDenseMatrix> mcoordold;
   Teuchos::RCP<LINALG::SerialDenseMatrix> lagmult;
+
+  if(wear or DRT::INPUT::IntegralValue<int>(imortar_,"GP_SLIP_INCR")==true)
+  {
+    scoordold = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,sele.NumNode()));
+    lagmult   = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,sele.NumNode()));
+    sele.GetNodalCoordsOld(*scoordold);
+    sele.GetNodalLagMult(*lagmult);
+  }
 
   // map iterator
   typedef GEN::pairedvector<int,double>::const_iterator _CI;
@@ -2584,9 +2617,24 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
           GEN::pairedvector<int,double> dmxigp(linsize+ndof*ncol);
           DerivXiGP2D(sele,*meles[nummaster],sxi[0],mxi[0],dsxigp,dmxigp,linsize);
 
+          // evaluate linearizations *******************************************
+          // evaluate 2nd deriv of trace space shape functions (on slave element)
+          sele.Evaluate2ndDerivShape(sxi,ssecderiv,nrow);
+
+          // evaluate the derivative dxdsxidsxi = Jac,xi
+          double djacdxi[2] = {0.0, 0.0};
+          dynamic_cast<CONTACT::CoElement&>(sele).DJacDXi(djacdxi,sxi,ssecderiv);
+          double dxdsxidsxi=djacdxi[0]; // only 2D here
+
           // evaluate the Jacobian derivative
           GEN::pairedvector<int,double> derivjac(nrow*ndof);
           sele.DerivJacobian(sxi,derivjac); //direct derivative if xi^1_g does not change
+
+          if(wear or DRT::INPUT::IntegralValue<int>(imortar_,"GP_SLIP_INCR")==true)
+          {
+            mcoordold = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,meles[nummaster]->NumNode()));
+            meles[nummaster]->GetNodalCoordsOld(*mcoordold);
+          }
 
           //**********************************************************************
           // frequently reused quantities
@@ -2594,7 +2642,15 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
           double gpn[3]      = {0.0,0.0,0.0};  // normalized normal at gp
           double gap[1]      = {0.0};          // gap
           double lengthn[1]  = {0.0};          // length of gp normal gpn
+          double jumpval[1]  = {0.0};          // jump for wear
+          double jumpvalv[1] = {0.0};          // jump for slipincr --> equal to jumpval
+          double wearval[1]  = {0.0};          // wear value
+
+          GEN::pairedvector<int,double> dsliptmatrixgp(linsize+ndof*ncol); // deriv. of slip for wear
           GEN::pairedvector<int,double> dgapgp(linsize+ndof*ncol);         // gap lin without weighting and jac
+          GEN::pairedvector<int,double> dslipgp(linsize+ndof*ncol);        // deriv. of slip for slipincr
+          GEN::pairedvector<int,double> dweargp(linsize+ndof*ncol);        // wear lin without weighting and jac
+
           std::vector<GEN::pairedvector<int,double> > dnmap_unit(2,(linsize+ndof*ncol)); // deriv of x and y comp. of gpn (unit)
 
           //**********************************************************************
@@ -2606,6 +2662,21 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
           // integrate and lin gp gap
           GP_2D_G(sele,*meles[nummaster],sval,mval,lmval,scoord,mcoord,sderiv,mderiv,gap,gpn,lengthn,dsxideta,
               dxdsxi,wgt,dsxigp,dmxigp,dgapgp, dnmap_unit, linsize);
+
+          // Creating the tangential relative slip increment (non-objective)
+          if (DRT::INPUT::IntegralValue<int>(imortar_,"GP_SLIP_INCR")==true)
+            GP_2D_SlipIncr(sele,*meles[nummaster],sval,mval,lmval,scoord,mcoord,scoordold,mcoordold,sderiv,
+                mderiv,dsxideta,dxdsxi,wgt,jumpvalv,dsxigp,dmxigp,dslipgp,linsize);
+
+          // std. wear for all wear-algorithm types
+          if(wear)
+            GP_2D_Wear(sele,*meles[nummaster],sval,sderiv,mval,mderiv,lmval,lmderiv,scoord,scoordold,mcoord,mcoordold,
+                   lagmult,gpn,dsxideta,dxdsxi,dxdsxidsxi,wgt,jumpval,wearval,dsxigp,dmxigp,dualmap,ximaps,
+                   dnmap_unit, dsliptmatrixgp,dweargp,linsize);
+
+          // integrate T and E matrix for discr. wear
+          if (WearType() == INPAR::WEAR::wear_primvar)
+            GP_TE(sele,lmval,sval,dxdsxi,wgt,jumpval);
 
           //**********************************************************************
           // compute LINEARIZATION
@@ -2619,6 +2690,17 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
             // lin gap
             GP_2D_G_Ele_Lin(iter,sele,sval,mval,lmval,*gap,dxdsxi,wgt,dgapgp,
                 derivjac, dualmap);
+
+            // Lin tangential relative slip increment (non-objective)
+            if (DRT::INPUT::IntegralValue<int>(imortar_,"GP_SLIP_INCR")==true)
+              GP_2D_SlipIncr_Lin(iter,sele,sval,lmval,sderiv,lmderiv,dsxideta,dxdsxi,dxdsxidsxi,wgt,
+                  jumpvalv,dsxigp,dslipgp,ximaps,derivjac,dualmap);
+
+            // Lin wear T and E matrix
+            if(wearimpl_ == true and
+               WearType() == INPAR::WEAR::wear_primvar)
+              GP_2D_TE_Lin(iter,sele,sval,lmval,sderiv,lmderiv,dsxideta,dxdsxi,dxdsxidsxi,wgt,jumpval,
+                   dsxigp,derivjac,dsliptmatrixgp,ximaps,dualmap);
           }
         }
       }//End Loop over all Master Elements
@@ -2972,9 +3054,6 @@ void CONTACT::CoIntegrator::IntegrateKappaPenalty(MORTAR::MortarElement& sele,
   LINALG::SerialDenseVector intval(nintrow);
   LINALG::SerialDenseMatrix intderiv(nintrow,2,true);
 
-  // map iterator
-  //typedef std::map<int,double>::const_iterator CI;
-
   //**********************************************************************
   // loop over all Gauss points for integration
   //**********************************************************************
@@ -3005,7 +3084,6 @@ void CONTACT::CoIntegrator::IntegrateKappaPenalty(MORTAR::MortarElement& sele,
         (*gseg)(j) += intval[j]*jac*wgt;
       }
     }
-
     else
     {
       dserror("ERROR: Invalid LM interpolation case!");
@@ -4371,7 +4449,8 @@ void inline CONTACT::CoIntegrator::GP_2D_G(
   // build interpolation of master GP coordinates
   for (int i=0;i<ncol;++i)
   {
-    if(WearSide() == INPAR::WEAR::wear_both_discr)
+    if(WearSide() == INPAR::WEAR::wear_both and
+       WearType() == INPAR::WEAR::wear_primvar)
     {
       FriNode* mymrtrnodeM = dynamic_cast<FriNode*> (mnodes[i]);
       double w = mymrtrnodeM->FriDataPlus().wcurr()[0] + mymrtrnodeM->FriDataPlus().waccu()[0];
@@ -4521,7 +4600,8 @@ void inline CONTACT::CoIntegrator::GP_2D_G(
 
   // **************************************************
   // master nodes
-  if(WearSide() == INPAR::WEAR::wear_both_discr)
+  if(WearSide() == INPAR::WEAR::wear_both and
+     WearType() == INPAR::WEAR::wear_primvar)
   {
     for (int z=0;z<ncol;++z)
     {
@@ -4623,7 +4703,8 @@ void inline CONTACT::CoIntegrator::GP_3D_G(
   // build interpolation of master GP coordinates
   for (int i=0;i<ncol;++i)
   {
-    if (WearSide() == INPAR::WEAR::wear_both_discr)
+    if (WearSide() == INPAR::WEAR::wear_both and
+        WearType() == INPAR::WEAR::wear_primvar)
     {
       FriNode* masternode = dynamic_cast<FriNode*> (mnodes[i]);
 
@@ -4885,7 +4966,8 @@ void inline CONTACT::CoIntegrator::GP_3D_G(
   }
 
   //        MASTER
-  if (WearSide() == INPAR::WEAR::wear_both_discr)
+  if (WearSide() == INPAR::WEAR::wear_both and
+      WearType() == INPAR::WEAR::wear_primvar)
   {
     for (int z=0;z<ncol;++z)
     {
@@ -4995,7 +5077,8 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin(
   // build interpolation of master GP coordinates
   for (int i=0;i<ncol;++i)
   {
-    if (WearSide() == INPAR::WEAR::wear_both_discr)
+    if (WearSide() == INPAR::WEAR::wear_both and
+        WearType() == INPAR::WEAR::wear_primvar)
     {
       FriNode* masternode = dynamic_cast<FriNode*> (mnodes[i]);
 
@@ -5187,7 +5270,8 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin(
   }
 
   //        MASTER
-  if (WearSide() == INPAR::WEAR::wear_both_discr)
+  if (WearSide() == INPAR::WEAR::wear_both and
+      WearType() == INPAR::WEAR::wear_primvar)
   {
     for (int z=0;z<ncol;++z)
     {
@@ -5462,7 +5546,7 @@ void inline CONTACT::CoIntegrator::GP_2D_G_Lin(
         dgwmmap[wearnode->Dofs()[0]] += dxdsxi*dsxideta*wgt*lmval[iter]*(gpn[z]*sval[bl]*wearnode->MoData().n()[z]);
     }
 
-    if (WearSide() == INPAR::WEAR::wear_both_discr)
+    if (WearSide() == INPAR::WEAR::wear_both)
     {
       for (int bl=0;bl<ncol;++bl)
       {
@@ -5891,7 +5975,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Lin(
         dgwmmap[wearnode->Dofs()[0]] += jac*wgt*lmval[iter]*(gpn[z]*sval[bl]*wearnode->MoData().n()[z]);
     }
 
-    if (WearSide() == INPAR::WEAR::wear_both_discr)
+    if (WearSide() == INPAR::WEAR::wear_both)
     {
       for (int bl=0;bl<ncol;++bl)
       {
@@ -7535,8 +7619,9 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear(
   for (int i=0;i<3;++i)
     jumpval[0]+=gpt[i]*jump[i];
 
+  // steady state slip
   if(sswear_)
-    jumpval[0] =ssslip_;
+    jumpval[0] = ssslip_;
 
   // no jump --> no wear
   if (abs(jumpval[0])<1e-12)
@@ -7545,7 +7630,7 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear(
   // product
   // use non-abs value for implicit-wear algorithm
   // just for simple linear. maybe we change this in future
-  if(wearimpl_)
+  if(wearimpl_ and WearType() != INPAR::WEAR::wear_primvar)
     wearval[0] =    (wearval[0])*abs(jumpval[0]);
   else
     wearval[0] = abs(wearval[0])*abs(jumpval[0]);
@@ -7563,7 +7648,7 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear(
       prod = lmval[j]*wearval[0]*dxdsxi*dsxideta*wgt;
 
     // add current Gauss point's contribution to wseg
-    cnode->AddDeltaWearValue(prod);
+    cnode->AddDeltaWeightedWearValue(prod);
   }
 
   //****************************************************************
@@ -7886,6 +7971,7 @@ void inline CONTACT::CoIntegrator::GP_3D_Wear(
   // absolute value of relative tangential jump
   jumpval[0] = sqrt(jumptan(0,0)*jumptan(0,0)+jumptan(1,0)*jumptan(1,0)+jumptan(2,0)*jumptan(2,0));
 
+  // steady state wear
   if(sswear_)
     jumpval[0] = ssslip_;
 
@@ -7930,7 +8016,7 @@ void inline CONTACT::CoIntegrator::GP_3D_Wear(
       prod = lmval[j]*wearval[0]*jac*wgt;
 
     // add current Gauss point's contribution to wseg
-    cnode->AddDeltaWearValue(prod);
+    cnode->AddDeltaWeightedWearValue(prod);
   }
 
   // linearization without lm weighting and jac.

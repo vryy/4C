@@ -59,43 +59,48 @@ namespace ADAPTER
     \brief Call parallel redistr. and evaluate volmortar coupl.
 
     */
-    void Setup(Teuchos::RCP<DRT::Discretization> slavedis,
-               Teuchos::RCP<DRT::Discretization> masterdis,
+    void Setup(Teuchos::RCP<DRT::Discretization> dis1,
+               Teuchos::RCP<DRT::Discretization> dis2,
+               std::vector<int>* coupleddof12,
+               std::vector<int>* coupleddof21,
                Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy = Teuchos::null
                );
 
     /*!
-    \brief Get coupling matrices for field A and B
+    \brief Get coupling matrices for field 1 and 2
 
     */
-    Teuchos::RCP<const LINALG::SparseMatrix> GetPMatrixAB() const {return pmatrixA_;};
-    Teuchos::RCP<const LINALG::SparseMatrix> GetPMatrixBA() const {return pmatrixB_;};
+    Teuchos::RCP<const LINALG::SparseMatrix> GetPMatrix12() const {return P12_;};
+    Teuchos::RCP<const LINALG::SparseMatrix> GetPMatrix21() const {return P21_;};
 
     /*!
-    \brief Mortar mapping for A to B and B to A - for vectors
+    \brief Mortar mapping for 1 to 2 and 2 to 1 - for vectors
 
     */
-    Teuchos::RCP<const Epetra_Vector> ApplyVectorMappingAB(Teuchos::RCP<const Epetra_Vector> vec) const ;
-    Teuchos::RCP<const Epetra_Vector> ApplyVectorMappingBA(Teuchos::RCP<const Epetra_Vector> vec) const ;
+    Teuchos::RCP<const Epetra_Vector> ApplyVectorMapping12(Teuchos::RCP<const Epetra_Vector> vec) const ;
+    Teuchos::RCP<const Epetra_Vector> ApplyVectorMapping21(Teuchos::RCP<const Epetra_Vector> vec) const ;
 
     /*!
-    \brief Mortar mapping for A to B and B to A - for matrices
+    \brief Mortar mapping for 1 to 2 and 2 to 1 - for matrices
 
     */
-    Teuchos::RCP<LINALG::SparseMatrix> ApplyMatrixMappingAB(Teuchos::RCP<const LINALG::SparseMatrix> mat) const ;
-    Teuchos::RCP<LINALG::SparseMatrix> ApplyMatrixMappingBA(Teuchos::RCP<const LINALG::SparseMatrix> mat) const ;
+    Teuchos::RCP<LINALG::SparseMatrix> ApplyMatrixMapping12(Teuchos::RCP<const LINALG::SparseMatrix> mat) const ;
+    Teuchos::RCP<LINALG::SparseMatrix> ApplyMatrixMapping21(Teuchos::RCP<const LINALG::SparseMatrix> mat) const ;
 
     //@}
 
     //! assign materials
-    void AssignMaterials(Teuchos::RCP<DRT::Discretization> slavedis,
-               Teuchos::RCP<DRT::Discretization> masterdis,
-               Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy = Teuchos::null
-               );
+    void AssignMaterials(
+        Teuchos::RCP<DRT::Discretization> dis1,
+        Teuchos::RCP<DRT::Discretization> dis2,
+        Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy = Teuchos::null);
 
   private:
-    Teuchos::RCP<LINALG::SparseMatrix> pmatrixA_;             /// P matrix for field A
-    Teuchos::RCP<LINALG::SparseMatrix> pmatrixB_;             /// P matrix for field B
+    // mortar matrices and projector
+    // s1 = P12 * s2
+    // s2 = P21 * s1
+    Teuchos::RCP<LINALG::SparseMatrix> P12_;     // global Mortar projection matrix P Omega_2 -> Omega_1
+    Teuchos::RCP<LINALG::SparseMatrix> P21_;     // global Mortar projection matrix P Omega_1 -> Omega_2
 
   };
 }

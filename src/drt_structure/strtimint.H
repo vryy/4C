@@ -710,7 +710,7 @@ namespace STR
     //@{
 
     //! Return material displacements \f$D_{n}\f$
-    Teuchos::RCP<Epetra_Vector> Dismat() { return (*dism_)(0); }
+    Teuchos::RCP<Epetra_Vector> Dismat() { return (*dismat_)(0); }
 
     //! Return displacements \f$D_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> DisNew() { return disn_; }
@@ -1161,7 +1161,7 @@ namespace STR
     Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > dis_;
 
     //! global material displacements \f${D}_{n}, D_{n-1}, ...\f$
-    Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > dism_;
+    Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > dismat_;
 
     //! global velocities \f${V}_{n}, V_{n-1}, ...\f$
     Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > vel_;

@@ -408,7 +408,7 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     bool IsInContact() { return true; }
     bool WasInContact() { return true; }
     bool WasInContactLastTimeStep() { return true; }
-    bool Wear() {return false;}
+    bool WeightedWear() {return false;}
     Teuchos::RCP<Epetra_Vector> ContactNorStress() {return Teuchos::null;}
     Teuchos::RCP<Epetra_Vector> ContactTanStress() {return Teuchos::null;}
     Teuchos::RCP<Epetra_Vector> ContactWear() {return Teuchos::null;}
