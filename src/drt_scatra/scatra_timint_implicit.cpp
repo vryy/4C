@@ -204,14 +204,6 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
  *------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::Init()
 {
-  // print problem type
-  if (myrank_ == 0)
-  {
-    std::cout << "###################################################"<< std::endl;
-    std::cout << "# YOUR PROBLEM TYPE: " << DRT::Problem::Instance()->ProblemName() << std::endl;
-    std::cout << "###################################################" << std::endl;
-  }
-
   // -------------------------------------------------------------------
   // determine whether linear incremental or nonlinear solver
   // -------------------------------------------------------------------
@@ -2781,38 +2773,19 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
     potnorm_L2 = 1.0;
   }
 
-  // absolute tolerance for deciding if residual is (already) zero
-  // prevents additional solver calls that will not improve the residual anymore
-
   //-------------------------------------------------- output to screen
-  /* special case of very first iteration step:
-      - solution increment is not yet available
-      - do not perform a solver call when the initial residuals are < EPS14*/
+  // special case of very first iteration step: solution increment is not yet available
   if (itnum == 1)
-  {
     // print first line of convergence table to screen
     PrintConvergenceValuesFirstIter(itnum,itemax,ittol,conresnorm,potresnorm,conresnorminf);
 
-    // abort iteration, when there's nothing more to do
-    if ((conresnorm < abstolres) && (potresnorm < abstolres))
-    {
-      // print finish line of convergence table to screen
-      PrintConvergenceFinishLine();
-
-      return true;
-    }
-  }
-  /* ordinary case later iteration steps:
-      - solution increment can be printed
-      - convergence check should be done*/
+  // ordinary case later iteration steps: solution increment can be printed and convergence check should be done
   else
   {
     // print current line of convergence table to screen
     PrintConvergenceValues(itnum,itemax,ittol,conresnorm,potresnorm,incconnorm_L2,connorm_L2,incpotnorm_L2,potnorm_L2,conresnorminf);
 
-    // this is the convergence check
-    // We always require at least one solve. We test the L_2-norm of the
-    // current residual. Norm of residual is just printed for information
+    // convergence check
     if (conresnorm <= ittol and potresnorm <= ittol and
         incconnorm_L2/connorm_L2 <= ittol and incpotnorm_L2/potnorm_L2 <= ittol)
     {
@@ -2828,17 +2801,17 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
 
       return true;
     }
+  }
 
-    // abort iteration, when there's nothing more to do! -> more robustness
-    if ((conresnorm < abstolres) && (potresnorm < abstolres))
-    {
-      // print finish line of convergence table to screen
-      PrintConvergenceFinishLine();
+  // abort iteration, when there's nothing more to do! -> more robustness
+  // absolute tolerance for deciding if residual is (already) zero
+  // prevents additional solver calls that will not improve the residual anymore
+  if ((conresnorm < abstolres) && (potresnorm < abstolres))
+  {
+    // print finish line of convergence table to screen
+    PrintConvergenceFinishLine();
 
-      return true;
-    }
-
-    // if not yet converged go on...
+    return true;
   }
 
   // warn if itemax is reached without convergence, but proceed to

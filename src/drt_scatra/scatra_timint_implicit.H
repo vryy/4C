@@ -262,7 +262,7 @@ public:
   Teuchos::RCP<Epetra_Vector> Increment() { return increment_; };
 
   //! return flag indicating if an incremental solution approach is used
-  bool IsIncremental() { return incremental_; }
+  const bool IsIncremental() { return incremental_; }
 
   //! return Krylov projector
   Teuchos::RCP<LINALG::KrylovProjector> Projector() { return projector_; }
@@ -441,6 +441,9 @@ public:
 
   //! problem-specific outputs
   virtual void OutputProblemSpecific(){return;};
+
+  //! return time for evaluation of elements
+  const double DtEle(){return dtele_;};
 
   /*========================================================================*/
   //! @name Elch methods

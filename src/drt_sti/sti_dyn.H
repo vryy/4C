@@ -16,6 +16,8 @@ Maintainer: Rui Fang
 #define STI_DYN_H
 
 //! entry point for simulations of scalar-thermo interaction problems
-void sti_dyn();
+void sti_dyn(
+    const int& restartstep   //! time step for restart
+    );
 
 #endif

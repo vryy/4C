@@ -5804,10 +5804,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       "type of scalar transport",
        tuple<std::string>(
            "Undefined",
+           "ConvectionDiffusion",
            "Elch"
            ),
        tuple<int>(
            INPAR::SCATRA::impltype_undefined,
+           INPAR::SCATRA::impltype_std,
            INPAR::SCATRA::impltype_elch_diffcond   // we abuse this enumeration entry here to indicate electrochemistry in general
            ),
        &stidyn

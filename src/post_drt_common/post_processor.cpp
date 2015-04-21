@@ -22,6 +22,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 
+#include "../drt_scatra_ele/scatra_ele.H"
 
 
 void runEnsightVtuFilter(PostProblem    &problem)
@@ -271,6 +272,37 @@ void runEnsightVtuFilter(PostProblem    &problem)
           dserror("number of fields does not match: got %d",numfield);
 
         break;
+    }
+    case prb_sti:
+    {
+      // extract label for output files
+      std::string basename = problem.outname();
+
+      // safety check
+      if(problem.num_discr() != 2)
+        dserror("Must have exactly two discretizations for scatra-thermo interaction problems!");
+
+      DRT::ELEMENTS::Transport* transport_element = dynamic_cast<DRT::ELEMENTS::Transport*>(problem.get_discretization(0)->discretization()->lRowElement(0));
+      if(transport_element == NULL)
+        dserror("Elements of unknown type on scalar transport discretization!");
+
+      if(transport_element->ImplType() == INPAR::SCATRA::impltype_elch_NP or
+         transport_element->ImplType() == INPAR::SCATRA::impltype_elch_electrode or
+         transport_element->ImplType() == INPAR::SCATRA::impltype_elch_diffcond)
+      {
+        ElchFilter elchwriter(problem.get_discretization(0), basename);
+        elchwriter.WriteFiles();
+      }
+      else
+      {
+        ScaTraFilter scatrawriter(problem.get_discretization(0), basename);
+        scatrawriter.WriteFiles();
+      }
+
+      ScaTraFilter thermowriter(problem.get_discretization(1), basename);
+      thermowriter.WriteFiles();
+
+      break;
     }
     case prb_fsi_xfem:
     case prb_fsi_crack:

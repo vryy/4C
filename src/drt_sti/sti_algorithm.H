@@ -17,7 +17,14 @@ Maintainer: Rui Fang
 
 #include "../drt_adapter/adapter_algorithmbase.H"
 
-// forward declaration
+// forward declarations
+namespace LINALG
+{
+  class BlockSparseMatrixBase;
+  class MapExtractor;
+  class SparseMatrix;
+}
+
 namespace SCATRA
 {
   class ScaTraTimIntImpl;
@@ -39,26 +46,103 @@ namespace STI
 
       //! read restart data
       void ReadRestart(
-          int step
-          )
-      {return;};
-
-      //! time loop
-      void TimeLoop(){return;};
+          int step   //! time step for restart
+          );
 
       //! access scatra time integrator
-      const Teuchos::RCP<SCATRA::ScaTraTimIntImpl>& Scatra() const {return scatra_;}
+      const Teuchos::RCP<SCATRA::ScaTraTimIntImpl>& Scatra() const {return scatra_;};
 
       //! access thermo time integrator
-      const Teuchos::RCP<SCATRA::ScaTraTimIntImpl>& Thermo() const {return thermo_;}
+      const Teuchos::RCP<SCATRA::ScaTraTimIntImpl>& Thermo() const {return thermo_;};
+
+      //! time loop
+      void TimeLoop();
 
     private:
+
+      //! global map of degrees of freedom
+      const Teuchos::RCP<const Epetra_Map>& DofRowMap() const;
+
+      //! pass scatra degrees of freedom to thermo discretization and vice versa
+      void ExchangeStateVectors();
+
+      //! check termination criterion for Newton-Raphson iteration
+      const bool ExitNewtonRaphson();
+
+      //! output solution to screen and files
+      void Output();
+
+      //! prepare time step
+      void PrepareTimeStep();
+
+      //! evaluate time step using Newton-Raphson iteration
+      void Solve();
+
+      //! update scatra and thermo fields after time step evaluation
+      void Update();
 
       //! scatra time integrator
       Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_;
 
       //! thermo time integrator
       Teuchos::RCP<SCATRA::ScaTraTimIntImpl> thermo_;
+
+      //! counter for Newton-Raphson iterations
+      unsigned int iter_;
+
+      //! maximum number of Newton-Raphson iterations
+      const unsigned int itermax_;
+
+      //! tolerance for Newton-Raphson iteration
+      const double itertol_;
+
+      //! absolute tolerance for residual vectors
+      const double restol_;
+
+      //! global map extractor (0: scatra, 1: thermo)
+      Teuchos::RCP<LINALG::MapExtractor> maps_;
+
+      //! global system matrix
+      Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_;
+
+      //! scatra-thermo block of global system matrix (derivatives of scatra residuals w.r.t. thermo degrees of freedom)
+      Teuchos::RCP<LINALG::SparseMatrix> scatrathermoblock_;
+
+      //! thermo-scatra block of global system matrix (derivatives of thermo residuals w.r.t. scatra degrees of freedom)
+      Teuchos::RCP<LINALG::SparseMatrix> thermoscatrablock_;
+
+      //! global increment vector for Newton-Raphson iteration
+      Teuchos::RCP<Epetra_Vector> increment_;
+
+      //! timer for Newton-Raphson iteration
+      Teuchos::RCP<Epetra_Time> timer_;
+
+      //! global residual vector on right-hand side of global system of equations
+      Teuchos::RCP<Epetra_Vector> residual_;
+
+      //! time for solution of global system of equations
+      double dtsolve_;
+
+      //! algebraic solver for global system of equations
+      Teuchos::RCP<LINALG::Solver> solver_;
+
+      //! L2 norm of scatra state vector
+      double scatradofnorm_;
+
+      //! L2 norm of scatra residual vector
+      double scatraresnorm_;
+
+      //! L2 norm of scatra increment vector
+      double scatraincnorm_;
+
+      //! L2 norm of thermo state vector
+      double thermodofnorm_;
+
+      //! L2 norm of thermo residual vector
+      double thermoresnorm_;
+
+      //! L2 norm of thermo increment vector
+      double thermoincnorm_;
   }; // class Algorithm : public ADAPTER::AlgorithmBase
 } // namespace STI
 #endif

@@ -216,7 +216,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   }
 
   // electrochemistry
-  else if (probtype == prb_elch or (probtype == prb_sti and disname == "scatra" and DRT::INPUT::IntegralValue<INPAR::SCATRA::ImplType>(DRT::Problem::Instance()->STIControlParams(),"SCATRATYPE") == INPAR::SCATRA::impltype_elch_diffcond))
+  else if (probtype == prb_elch or (probtype == prb_sti and disname == "scatra" and DRT::INPUT::IntegralValue<INPAR::SCATRA::ImplType>(DRT::Problem::Instance()->STIDynamicParams(),"SCATRATYPE") == INPAR::SCATRA::impltype_elch_diffcond))
   {
     Teuchos::RCP<Teuchos::ParameterList> elchparams = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->ELCHControlParams()));
 
@@ -416,7 +416,6 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   scatra_->Init();
 
   return;
-
 }
 
 /*----------------------------------------------------------------------*/

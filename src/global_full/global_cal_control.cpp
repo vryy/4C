@@ -13,30 +13,31 @@ Maintainer: Michael Gee
 
 #include "../drt_lib/drt_globalproblem.H"
 
-#include "../drt_structure/stru_dyn_nln_drt.H"
-#include "../drt_fluid/fluid_dyn_nln_drt.H"
-#include "../drt_scatra/scatra_dyn.H"
+#include "../drt_acou/acou_dyn.H"
 #include "../drt_ale/ale_dyn.H"
-#include "../drt_fsi/fsi_dyn.H"
+#include "../drt_art_net/art_net_dyn_drt.H"
+#include "../drt_combust/combust_dyn.H"
+#include "../drt_elch/elch_dyn.H"
+#include "../drt_fluid/fluid_dyn_nln_drt.H"
+#include "../drt_fpsi/fpsi_dyn.H"
 #include "../drt_fs3i/fs3i_dyn.H"
+#include "../drt_fsi/fsi_dyn.H"
+#include "../drt_immersed_problem/immersed_problem_dyn.H"
 #include "../drt_levelset/levelset_dyn.H"
 #include "../drt_loma/loma_dyn.H"
-#include "../drt_elch/elch_dyn.H"
-#include "../drt_combust/combust_dyn.H"
 #include "../drt_opti/topopt_dyn.H"
+#include "../drt_particle/particle_dyn.H"
+#include "../drt_poroelast/poro_dyn.H"
+#include "../drt_red_airways/red_airways_dyn_drt.H"
+#include "../drt_scatra/scatra_dyn.H"
+#include "../drt_ssi/ssi_dyn.H"
+#include "../drt_sti/sti_dyn.H"
+#include "../drt_stru_multi/microstatic_npsupport.H"
+#include "../drt_structure/stru_dyn_nln_drt.H"
 #include "../drt_thermo/thr_dyn.H"
 #include "../drt_tsi/tsi_dyn.H"
-#include "../drt_art_net/art_net_dyn_drt.H"
-#include "../drt_red_airways/red_airways_dyn_drt.H"
-#include "../drt_wear/wear_dyn.H"
-#include "../drt_poroelast/poro_dyn.H"
-#include "../drt_fpsi/fpsi_dyn.H"
-#include "../drt_immersed_problem/immersed_problem_dyn.H"
-#include "../drt_ssi/ssi_dyn.H"
-#include "../drt_particle/particle_dyn.H"
-#include "../drt_stru_multi/microstatic_npsupport.H"
-#include "../drt_acou/acou_dyn.H"
 #include "../drt_two_phase_flow/two_phase_dyn.H"
+#include "../drt_wear/wear_dyn.H"
 #ifdef HAVE_FFTW
   #include "../drt_mlmc/drt_uq_dyn.H"
 #endif
@@ -64,6 +65,9 @@ void ntacal()
     case prb_cardiac_monodomain:
     case prb_scatra:
       scatra_dyn(restart);
+      break;
+    case prb_sti:
+      sti_dyn(restart);
       break;
     case prb_fluid_xfem:
       fluid_xfem_drt();

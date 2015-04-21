@@ -326,45 +326,28 @@ void ElchFilter::WriteAllResults(PostField* field)
   int numdofpernode = field->discretization()->NumDof(field->discretization()->lRowNode(0));
 
   // write results for each transported scalar
-  if (numdofpernode == 1)
+  for(int k = 1; k < numdofpernode; k++)
   {
-    // do the single ion concentration
-    std::string name = "c_1";
-    writer_->WriteResult("phinp", name, dofbased, 1, 0);
-    // write flux vectors (always 3D)
-    writer_->WriteResult("flux", "flux", nodebased, 3);
-
-    // there is no electric potential in this special case
-
-    // temporal mean field from turbulent statistics (if present)
-    writer_->WriteResult("averaged_phinp", "averaged_"+name, dofbased, 1, 0);
-  }
-  else
-  {
-    // do the ion concentrations first
-    for(int k = 1; k < numdofpernode; k++)
-    {
-      std::ostringstream temp;
-      temp << k;
-      std::string name = "c_"+temp.str();
-      writer_->WriteResult("phinp", name, dofbased, 1,k-1);
-      // write flux vectors (always 3D)
-      writer_->WriteResult("flux_phi_"+temp.str(), "flux_"+name, nodebased, 3);
-
-      // temporal mean field from turbulent statistics (if present)
-      writer_->WriteResult("averaged_phinp", "averaged_"+name, dofbased, 1, k-1);
-    }
-    // finally, handle the electric potential
-    writer_->WriteResult("phinp", "phi", dofbased, 1,numdofpernode-1);
-
-    // write flux vectors (always 3D)
     std::ostringstream temp;
-    temp << numdofpernode;
-    writer_->WriteResult("flux_phi_"+temp.str(), "current", nodebased, 3);
+    temp << k;
+    std::string name = "c_"+temp.str();
+    writer_->WriteResult("phinp", name, dofbased, 1,k-1);
+    // write flux vectors (always 3D)
+    writer_->WriteResult("flux_phi_"+temp.str(), "flux_"+name, nodebased, 3);
 
     // temporal mean field from turbulent statistics (if present)
-    writer_->WriteResult("averaged_phinp", "averaged_phi", dofbased, 1,numdofpernode-1);
+    writer_->WriteResult("averaged_phinp", "averaged_"+name, dofbased, 1, k-1);
   }
+  // finally, handle the electric potential
+  writer_->WriteResult("phinp", "phi", dofbased, 1,numdofpernode-1);
+
+  // write flux vectors (always 3D)
+  std::ostringstream temp;
+  temp << numdofpernode;
+  writer_->WriteResult("flux_phi_"+temp.str(), "current", nodebased, 3);
+
+  // temporal mean field from turbulent statistics (if present)
+  writer_->WriteResult("averaged_phinp", "averaged_phi", dofbased, 1,numdofpernode-1);
 
   // write velocity field (always 3D)
   writer_->WriteResult("convec_velocity", "velocity", nodebased, 3);

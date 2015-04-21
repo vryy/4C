@@ -547,7 +547,7 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialTimeDerivative()
 
   // initial screen output
   if(myrank_ == 0)
-    std::cout << "SCATRA: calculating initial time derivative of state variables (step " << Step() <<", time " << Time() << ") ... ... ";
+    std::cout << "SCATRA: calculating initial time derivative of state variables on discretization \"" << discret_->Name().c_str() << "\" (step " << Step() <<", time " << Time() << ") ... ... ";
 
   // In most cases, the history vector is entirely zero at this point, since this routine is called before the first time step.
   // However, in levelset simulations with reinitialization, this routine might be called before every single time step.

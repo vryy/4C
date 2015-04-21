@@ -98,5 +98,8 @@ void STI::ScatraThermoCloneStrategy::SetElementData(
   // provide cloned element with discretization type
   newele_transport->SetDisType(oldele->Shape());
 
+  // provide cloned element with physical implementation type
+  newele_transport->SetImplType(INPAR::SCATRA::impltype_std);
+
   return;
 }

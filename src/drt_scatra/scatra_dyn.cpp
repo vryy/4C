@@ -47,6 +47,14 @@ void scatra_dyn(int restart)
   // access the communicator
   const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("fluid")->Comm();
 
+  // print problem type
+  if (comm.MyPID() == 0)
+  {
+    std::cout << "###################################################"<< std::endl;
+    std::cout << "# YOUR PROBLEM TYPE: " << DRT::Problem::Instance()->ProblemName() << std::endl;
+    std::cout << "###################################################" << std::endl;
+  }
+
   // access the problem-specific parameter list
   const Teuchos::ParameterList& scatradyn = DRT::Problem::Instance()->ScalarTransportDynamicParams();
 
