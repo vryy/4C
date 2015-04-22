@@ -2210,15 +2210,15 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoopOD(
     static LINALG::Matrix<my::nsd_,my::nen_*my::nsd_> dgradphi_dus(false);
 
     // -------------------------(material) deformation gradient F = d my::xyze_ / d XYZE = my::xyze_ * N_XYZ_^T
-    LINALG::Matrix<my::nsd_,my::nsd_> defgrd(false);
+    static LINALG::Matrix<my::nsd_,my::nsd_> defgrd(false);
     ComputeDefGradient(defgrd,N_XYZ_,my::xyze_);
 
     // inverse deformation gradient F^-1
-    LINALG::Matrix<my::nsd_,my::nsd_> defgrd_inv(false);
+    static LINALG::Matrix<my::nsd_,my::nsd_> defgrd_inv(false);
     defgrd_inv.Invert(defgrd);
 
     //------------------------------------ build F^-T as vector 9x1
-    LINALG::Matrix<my::nsd_*my::nsd_,1> defgrd_IT_vec;
+    static LINALG::Matrix<my::nsd_*my::nsd_,1> defgrd_IT_vec;
     for(int i=0; i<my::nsd_; i++)
       for(int j=0; j<my::nsd_; j++)
         defgrd_IT_vec(i*my::nsd_+j) = defgrd_inv(j,i);

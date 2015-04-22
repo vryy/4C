@@ -139,8 +139,8 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList&  p
 
   // element geometry update
   const int numnode = NumNode();
-  const int numdf=3;
-  LINALG::SerialDenseMatrix x(numnode,numdf);
+  const int numdf   = NumDofPerNode(*Nodes()[0]);
+  LINALG::SerialDenseMatrix x(numnode,numdim);
   LINALG::SerialDenseMatrix xc;
   switch (config)
   {
@@ -157,7 +157,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList&  p
   case config_lastconverged:
   {
     // initialize last converged configuration
-    xc.LightShape(numnode,numdf);
+    xc.LightShape(numnode,numdim);
 
     // in inverse design analysis the spatial configuration (i.e imaged state) is the reference for
     //which we want equilibrium. This true spatial configuration is the material configuration in BACI
@@ -189,7 +189,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList&  p
   case config_spatial:
   {
     // initialize spatial configuration
-    xc.LightShape(numnode,numdf);
+    xc.LightShape(numnode,numdim);
 
     // in inverse design analysis the spatial configuration (i.e imaged state) is the reference for
     //which we want equilibrium. This true spatial configuration is the material configuration in BACI

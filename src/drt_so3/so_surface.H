@@ -131,7 +131,7 @@ public:
   separately.
   */
   inline virtual int NumDofPerNode(const DRT::Node& node) const
-  {return 3;}
+  {return ParentMasterElement()->NumDofPerNode(node);}
 
   /*!
   \brief Get number of degrees of freedom per element

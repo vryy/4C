@@ -141,6 +141,9 @@ int DRT::ELEMENTS::Wall1_PoroP1<distype>::UniqueParObjectId() const
 {
   switch(distype)
   {
+  case DRT::Element::tri3:
+    return DRT::ELEMENTS::WallTri3PoroP1Type::Instance().UniqueParObjectId();
+    break;
   case DRT::Element::quad4:
     return DRT::ELEMENTS::WallQuad4PoroP1Type::Instance().UniqueParObjectId();
     break;
@@ -163,6 +166,9 @@ DRT::ElementType & DRT::ELEMENTS::Wall1_PoroP1<distype>::ElementType() const
   {
     switch(distype)
     {
+    case DRT::Element::tri3:
+      return DRT::ELEMENTS::WallTri3PoroP1Type::Instance();
+      break;
     case DRT::Element::quad4:
       return DRT::ELEMENTS::WallQuad4PoroP1Type::Instance();
       break;
@@ -180,5 +186,6 @@ DRT::ElementType & DRT::ELEMENTS::Wall1_PoroP1<distype>::ElementType() const
 /*----------------------------------------------------------------------*
  *                                                            vuong 07/13|
  *----------------------------------------------------------------------*/
+template class DRT::ELEMENTS::Wall1_PoroP1<DRT::Element::tri3>;
 template class DRT::ELEMENTS::Wall1_PoroP1<DRT::Element::quad4>;
 template class DRT::ELEMENTS::Wall1_PoroP1<DRT::Element::quad9>;

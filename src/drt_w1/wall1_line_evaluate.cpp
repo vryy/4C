@@ -76,13 +76,16 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
   const double time = params.get("total time", -1.0);
   if (time < 0.0) usetime = false;
 
+  // set number of dofs per node
+  const int noddof = NumDofPerNode(*Nodes()[0]);
+
   // ensure that at least as many curves/functs as dofs are available
-  if (int(onoff->size()) < Wall1::noddof_)
+  if (int(onoff->size()) < noddof)
     dserror("Fewer functions or curves defined than the element has dofs.");
 
   // factor given by time curves
-  std::vector<double> curvefacs(Wall1::noddof_, 1.0);
-  for (int i=0; i < Wall1::noddof_; ++i)
+  std::vector<double> curvefacs(noddof, 1.0);
+  for (int i=0; i < noddof; ++i)
   {
     const int curvenum = (curve) ? (*curve)[i] : -1;
     if (curvenum >= 0 && usetime)
@@ -136,8 +139,8 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
 
     for (int i = 0; i < numnod; ++i)
     {
-      xyecurr(0, i) = xye(0, i) + mydisp[i * Wall1::noddof_ + 0];
-      xyecurr(1, i) = xye(1, i) + mydisp[i * Wall1::noddof_ + 1];
+      xyecurr(0, i) = xye(0, i) + mydisp[i * noddof + 0];
+      xyecurr(1, i) = xye(1, i) + mydisp[i * noddof + 1];
     }
   }
 
@@ -157,8 +160,8 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
 
     for (int i = 0; i < numnod; ++i)
     {
-      xyecurr(0, i) = xye(0, i) + mydisp[i * Wall1::noddof_ + 0];
-      xyecurr(1, i) = xye(1, i) + mydisp[i * Wall1::noddof_ + 1];
+      xyecurr(0, i) = xye(0, i) + mydisp[i * noddof + 0];
+      xyecurr(1, i) = xye(1, i) + mydisp[i * noddof + 1];
     }
   }
 
@@ -217,7 +220,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
 
 
       // loop the dofs of a node
-      for (int i = 0; i < Wall1::noddof_; ++i)
+      for (int i = 0; i < noddof; ++i)
       {
         if ((*onoff)[i]) // is this dof activated?
         {
@@ -249,7 +252,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
           const double fac = intpoints.qwgt[gpid] * dr * (*val)[i] * val_curvefac_functfac;
           for (int node=0; node < numnod; ++node)
           {
-            elevec1[node*Wall1::numdim_+i]+= shapefcts[node] * fac;
+            elevec1[node*noddof+i]+= shapefcts[node] * fac;
           }
 
         }
@@ -266,7 +269,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
       // check for correct input
       if ((*onoff)[0] != 1)
         dserror("orthopressure on 1st dof only!");
-      for (int checkdof = 1; checkdof <= Wall1::noddof_; ++checkdof)
+      for (int checkdof = 1; checkdof <= noddof; ++checkdof)
       {
         if ((*onoff)[checkdof] != 0)
           dserror("orthopressure on 1st dof only!");
@@ -308,14 +311,14 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
 
       // add load components
       for (int node = 0; node < numnod; ++node)
-        for (int j = 0; j < Wall1::noddof_; ++j)
-          elevec1[node * Wall1::noddof_ + j] += shapefcts[node] * unrm[j] * dr * fac;
+        for (int j = 0; j < noddof; ++j)
+          elevec1[node * noddof + j] += shapefcts[node] * unrm[j] * dr * fac;
 
       // linearization if needed
       if (loadlin)
       {
         // total number of element DOFs
-        int numdof = Wall1::noddof_ * numnod;
+        int numdof = noddof * numnod;
 
         // directional derivative of surface
         Epetra_SerialDenseMatrix a_Dnormal(Wall1::numdim_, numdof);
@@ -328,7 +331,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
         Epetra_SerialDenseMatrix dg(Wall1::numdim_, numdof);
         for (int node = 0; node < numnod; ++node)
           for (int k = 0; k < Wall1::numdim_; ++k)
-            dg(k, node * Wall1::noddof_ + k) = deriv(0, node);
+            dg(k, node * noddof + k) = deriv(0, node);
 
         // linearization of local surface normal vector
         for (int dof = 0; dof < numdof; ++dof)
@@ -345,7 +348,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
         for (int node = 0; node < numnod; ++node)
           for (int dim = 0; dim < 2; dim++)
             for (int dof = 0; dof < elevec1.M(); dof++)
-              (*elemat1)(node * Wall1::noddof_ + dim, dof) -= shapefcts[node] * a_Dnormal(dim, dof) * fac;
+              (*elemat1)(node * noddof + dim, dof) -= shapefcts[node] * a_Dnormal(dim, dof) * fac;
       }
 
       break;
@@ -365,15 +368,15 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
   case neum_orthopressure:
   {
     // prepare FD check
-    Epetra_SerialDenseMatrix fd_deriv(numnod*Wall1::noddof_,numnod*Wall1::noddof_);
+    Epetra_SerialDenseMatrix fd_deriv(numnod*noddof,numnod*noddof);
     Epetra_SerialDenseMatrix an_deriv = *elemat1;
     Epetra_SerialDenseVector eleforce_ref = elevec1;
-    Epetra_SerialDenseVector eleforce_curr(numnod*Wall1::noddof_);
+    Epetra_SerialDenseVector eleforce_curr(numnod*noddof);
     double eps = 1.0e-8;
 
     // do FD step for all DOFs
     for (int node=0;node<numnod;++node)
-      for (int dof=0;dof<Wall1::noddof_;++dof)
+      for (int dof=0;dof<noddof;++dof)
       {
         // move position
         xyecurr(dof,node) += eps;
@@ -400,21 +403,21 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
 
           // add load components
           for (int k = 0; k < numnod; ++k)
-            for (int j = 0; j < Wall1::noddof_; ++j)
-              eleforce_curr[k * Wall1::noddof_ + j] += funct[k] * unrm[j] * fac;
+            for (int j = 0; j < noddof; ++j)
+              eleforce_curr[k * noddof + j] += funct[k] * unrm[j] * fac;
         }
 
         // compute FD linearization
-        for (int idx=0;idx<numnod*Wall1::noddof_;++idx)
-          fd_deriv(idx,node*Wall1::noddof_+dof) = (eleforce_curr[idx]-eleforce_ref[idx])/eps;
+        for (int idx=0;idx<numnod*noddof;++idx)
+          fd_deriv(idx,node*noddof+dof) = (eleforce_curr[idx]-eleforce_ref[idx])/eps;
 
         // unmove position
         xyecurr(dof,node) -= eps;
 
         // reset eleforce_curr
         for (int k = 0; k < numnod; ++k)
-          for (int j = 0; j < Wall1::noddof_; ++j)
-            eleforce_curr[k * Wall1::noddof_ + j] = 0.0;
+          for (int j = 0; j < noddof; ++j)
+            eleforce_curr[k * noddof + j] = 0.0;
       }
 
     // analyze results
@@ -423,8 +426,8 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
     //exit(0);
 
     // overwrite results with FD derivative
-    for (int j = 0; j < numnod*Wall1::noddof_; ++j)
-      for (int k = 0; k < numnod*Wall1::noddof_; ++k)
+    for (int j = 0; j < numnod*noddof; ++j)
+      for (int k = 0; k < numnod*noddof; ++k)
         (*elemat1)(j,k) = -fd_deriv(j,k);
   break;
   }
@@ -516,6 +519,9 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
 {
   const DiscretizationType distype = Shape();
 
+  // set number of dofs per node
+  const int noddof = NumDofPerNode(*Nodes()[0]);
+
   // start with "none"
   DRT::ELEMENTS::Wall1Line::ActionType act = Wall1Line::none;
 
@@ -563,8 +569,8 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
         xsrefe(i, 0) = Nodes()[i]->X()[0];
         xsrefe(i, 1) = Nodes()[i]->X()[1];
 
-        xscurr(i, 0) = xsrefe(i, 0) + mydisp[i * Wall1::noddof_];
-        xscurr(i, 1) = xsrefe(i, 1) + mydisp[i * Wall1::noddof_ + 1];
+        xscurr(i, 0) = xsrefe(i, 0) + mydisp[i * noddof];
+        xscurr(i, 1) = xsrefe(i, 1) + mydisp[i * noddof + 1];
       }
       //compute area between line and x-Axis
       double areaele = 0.5 * (xscurr(0, 1) + xscurr(1, 1))
@@ -594,8 +600,8 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
         xsrefe(0, i) = Nodes()[i]->X()[0];
         xsrefe(1, i) = Nodes()[i]->X()[1];
 
-        xscurr(0, i) = xsrefe(0, i) + mydisp[i * Wall1::noddof_];
-        xscurr(1, i) = xsrefe(1, i) + mydisp[i * Wall1::noddof_ + 1];
+        xscurr(0, i) = xsrefe(0, i) + mydisp[i * noddof];
+        xscurr(1, i) = xsrefe(1, i) + mydisp[i * noddof + 1];
       }
 
       //integration of the displacements over the surface
@@ -670,8 +676,8 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
       xsrefe(i, 0) = Nodes()[i]->X()[0];
       xsrefe(i, 1) = Nodes()[i]->X()[1];
 
-      xscurr(i, 0) = xsrefe(i, 0) + mydisp[i * Wall1::noddof_];
-      xscurr(i, 1) = xsrefe(i, 1) + mydisp[i * Wall1::noddof_ + 1];
+      xscurr(i, 0) = xsrefe(i, 0) + mydisp[i * noddof];
+      xscurr(i, 1) = xsrefe(i, 1) + mydisp[i * noddof + 1];
     }
     //call submethods
     ComputeAreaConstrStiff(xscurr, elematrix1);

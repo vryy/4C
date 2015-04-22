@@ -891,7 +891,8 @@ public:
   /// As this may vary along a simulation, the element can redecide the
   /// number of degrees of freedom per node along the way for each of it's nodes
   /// separately.
-  virtual int NumDofPerNode(const DRT::Node& node) const { return 2; }
+  virtual int NumDofPerNode(const DRT::Node& node) const
+  {return ParentMasterElement()->NumDofPerNode(node);}
 
   /// Get number of degrees of freedom per element
   /// (implements pure virtual DRT::Element)
