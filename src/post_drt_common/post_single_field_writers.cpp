@@ -75,6 +75,11 @@ void StructureFilter::WriteAllResults(PostField* field)
   writer_->WriteResult("normasterforceg",  "normasterforceg",  dofbased, field->problem()->num_dim());
   writer_->WriteResult("poronopen_lambda", "poronopen_lambda", dofbased, field->problem()->num_dim());
 
+  // spring dashpot
+  writer_->WriteResult("gap", "gap", nodebased,1);
+  writer_->WriteResult("curnormals", "curnormals", nodebased,3);
+  writer_->WriteResult("springstress", "springstress", nodebased,3);
+
   // error norms
   writer_->WriteResult("L2_norm", "L2_norm", elementbased, 1);
   writer_->WriteResult("H1_norm", "H1_norm", elementbased, 1);

@@ -25,9 +25,15 @@ Maintainer: Alexander Popp
 #include "mortar_dofset.H"
 #include "mortar_binarytree.H"
 #include "mortar_defines.H"
+#include "mortar_projector.H"
+#include "../drt_contact/contact_node.H"
+#include "../drt_contact/contact_element.H"
+#include "../drt_contact/contact_interpolator.H"
 
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_sparsematrix.H"
+#include "../linalg/linalg_serialdensevector.H"
+#include "../linalg/linalg_serialdensematrix.H"
 
 #include "../drt_io/io_control.H"
 #include "../drt_meshfree_discret/drt_meshfree_discret.H"
@@ -1838,6 +1844,233 @@ void MORTAR::MortarInterface::SetState(const std::string& statename,
 
   return;
 }
+
+
+/*----------------------------------------------------------------------*
+ |  calculate nodal distances (public)                     pfaller Jan15|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarInterface::EvaluateDistances(const Teuchos::RCP<Epetra_Vector> vec,
+                                                std::map<int, std::vector<double> >& mynormals,
+                                                std::map<int,std::vector<GEN::pairedvector<int,double> > >& dmynormals,
+                                                std::map<int,double>& mygap,
+                                                std::map<int,std::map<int,double> >& dmygap)
+{
+  SetState("displacement",vec);
+  Initialize();
+
+  // interface needs to be complete
+  if (!Filled() && Comm().MyPID() == 0)
+    dserror("ERROR: FillComplete() not called on interface %", id_);
+
+  //**********************************************************************
+  // search algorithm
+  //**********************************************************************
+  if (SearchAlg() == INPAR::MORTAR::search_bfele)
+    EvaluateSearchBruteForce(SearchParam());
+  else if (SearchAlg() == INPAR::MORTAR::search_binarytree)
+    EvaluateSearchBinarytree();
+  else
+    dserror("ERROR: Invalid search algorithm");
+
+  // get out of here if not participating in interface
+  if (!lComm())
+    return;
+
+  // evaluate nodal normals on slave node row map
+  // only once at the begin of the round-robin loop
+  // if no rrloop is started --> default: rriter=0
+  EvaluateNodalNormals();
+
+  // export nodal normals to slave node column map
+  // this call is very expensive and the computation
+  // time scales directly with the proc number !
+  ExportNodalNormals();
+
+  // loop over proc's slave elements of the interface for integration
+  // use standard column map to include processor's ghosted elements
+  Comm().Barrier();
+
+  for (int i = 0; i < selecolmap_->NumMyElements(); ++i)
+  {
+    int gid1 = selecolmap_->GID(i);
+    DRT::Element* ele1 = idiscret_->gElement(gid1);
+    if (!ele1)
+      dserror("ERROR: Cannot find slave element with gid %", gid1);
+    CONTACT::CoElement* selement = dynamic_cast<CONTACT::CoElement*>(ele1);
+
+    // skip zero-sized nurbs elements (slave)
+    if (selement->ZeroSized())
+      continue;
+
+    // empty vector of master element pointers
+    std::vector<CONTACT::CoElement*> melements;
+
+    // loop over the candidate master elements of sele_
+    // use slave element's candidate list SearchElements !!!
+    for (int j = 0; j < selement->MoData().NumSearchElements(); ++j)
+    {
+      int gid2 = selement->MoData().SearchElements()[j];
+      DRT::Element* ele2 = idiscret_->gElement(gid2);
+      if (!ele2)
+        dserror("ERROR: Cannot find master element with gid %", gid2);
+      CONTACT::CoElement* melement = dynamic_cast<CONTACT::CoElement*>(ele2);
+
+      // skip zero-sized nurbs elements (master)
+      if (melement->ZeroSized())
+        continue;
+
+      melements.push_back(melement);
+    }
+
+    //********************************************************************
+    // 1) perform coupling (projection + overlap detection for sl/m pairs)
+    // 2) integrate Mortar matrix M and weighted gap g
+    // 3) compute directional derivative of M and g and store into nodes
+    //********************************************************************
+    //IntegrateCoupling(selement, melements);
+
+
+    //**************************************************************
+    //                loop over all Slave nodes
+    //**************************************************************
+    for(int snodes = 0; snodes<selement->NumNode() ;++snodes)
+    {
+      CONTACT::CoNode* mynode = dynamic_cast<CONTACT::CoNode*>(selement->Nodes()[snodes]);
+
+      // TODO (pfaller): only loop over each node once
+      // skip this node if already considered
+      if (mynode->MoData().GetD().size()!=0)
+        continue;
+
+      //                store node normals
+      //**************************************************************
+//      int gid = snoderowmapbound_->GID(snodes);
+      int gid = mynode->Id();
+      DRT::Node* node = idiscret_->gNode(gid);
+        if (!node)
+          dserror("ERROR: Cannot find node with gid %", gid);
+
+      // build averaged normal at each slave node
+      mynode->BuildAveragedNormal();
+
+      int numdofs = mynode->NumDof();
+      std::vector<double> temp(numdofs, 0.0);
+      for (int i = 0; i < numdofs; i++)
+      {
+        temp[i] = mynode->MoData().n()[i];
+      }
+      mynormals.insert(std::pair<int, std::vector<double> >(gid, temp));
+      //**************************************************************
+      double sxi[2] = {0.0, 0.0};
+
+      if(selement->Shape() == DRT::Element::quad4 or
+         selement->Shape() == DRT::Element::quad8 or
+         selement->Shape() == DRT::Element::quad9)
+      {
+        // TODO (pfaller): switch case
+        if(snodes==0)       {sxi[0] = -1; sxi[1] = -1;}
+        else if(snodes==1)  {sxi[0] =  1; sxi[1] = -1;}
+        else if(snodes==2)  {sxi[0] =  1; sxi[1] =  1;}
+        else if(snodes==3)  {sxi[0] = -1; sxi[1] =  1;}
+        else if(snodes==4)  {sxi[0] =  0; sxi[1] = -1;}
+        else if(snodes==5)  {sxi[0] =  1; sxi[1] =  0;}
+        else if(snodes==6)  {sxi[0] =  0; sxi[1] =  1;}
+        else if(snodes==7)  {sxi[0] = -1; sxi[1] =  0;}
+        else if(snodes==8)  {sxi[0] =  0; sxi[1] =  0;}
+        else dserror("ERORR: wrong node LID");
+      }
+      else if (selement->Shape() == DRT::Element::tri3 or
+               selement->Shape() == DRT::Element::tri6)
+      {
+        if(snodes==0)       {sxi[0] = 0;    sxi[1] = 0;}
+        else if(snodes==1)  {sxi[0] = 1;    sxi[1] = 0;}
+        else if(snodes==2)  {sxi[0] = 0;    sxi[1] = 1;}
+        else if(snodes==3)  {sxi[0] = 0.5;  sxi[1] = 0;}
+        else if(snodes==4)  {sxi[0] = 0.5;  sxi[1] = 0.5;}
+        else if(snodes==5)  {sxi[0] = 0;    sxi[1] = 0.5;}
+        else dserror("ERORR: wrong node LID");
+      }
+      else
+      {
+        dserror("ERROR: Chosen element type not supported for NTS!");
+      }
+
+      //**************************************************************
+      //                loop over all Master Elements
+      //**************************************************************
+      for (int nummaster=0;nummaster<(int)melements.size();++nummaster)
+      {
+        // project Gauss point onto master element
+        double mxi[2]    = {0.0, 0.0};
+        double projalpha =  0.0;
+        bool is_projected = MORTAR::MortarProjector::Impl(*selement,*melements[nummaster])->ProjectGaussPoint3D(
+            *selement,sxi,*melements[nummaster],mxi,projalpha);
+
+        bool is_on_mele = true;
+
+        // check GP projection
+        DRT::Element::DiscretizationType dt = melements[nummaster]->Shape();
+        const double tol = 0.00;
+        if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9)
+        {
+          if (mxi[0]<-1.0-tol || mxi[1]<-1.0-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol)
+          {
+            is_on_mele=false;
+          }
+        }
+        else
+        {
+          if (mxi[0]<-tol || mxi[1]<-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol || mxi[0]+mxi[1]>1.0+2*tol)
+          {
+            is_on_mele=false;
+          }
+        }
+
+        // node on mele?
+        if (is_on_mele && is_projected)
+        {
+          // store gap information at GID
+          mygap.insert(std::pair<int, double>(gid, projalpha));
+
+          int ndof = 3;
+          int ncol = melements[nummaster]->NumNode();
+          LINALG::SerialDenseVector mval(ncol);
+          LINALG::SerialDenseMatrix mderiv(ncol,2);
+          melements[nummaster]->EvaluateShape(mxi,mval,mderiv,ncol,false);
+
+          int linsize    = mynode->GetLinsize();
+          double gpn[3]  = {0.0, 0.0, 0.0};
+          //**************************************************************
+
+          // evalute the GP slave coordinate derivatives --> no entries
+          std::vector<GEN::pairedvector<int,double> > dsxi(2,0);
+          std::vector<GEN::pairedvector<int,double> > dmxi(2,4*linsize+ncol*ndof);
+
+          // create an interpolator instance
+          Teuchos::RCP<CONTACT::CoInterpolator> interpolator = Teuchos::rcp(new CONTACT::CoInterpolator(imortar_));
+
+          (*interpolator).DerivXiGP3D(*selement, *melements[nummaster],sxi,mxi, dsxi, dmxi, projalpha);
+          (*interpolator).nwGap3D(*mynode, *melements[nummaster], mval, mderiv, dmxi, gpn);
+
+          // store linearization for node
+          std::map<int,double> dgap = mynode->CoData().GetDerivG(); // (dof,value)
+          std::vector<GEN::pairedvector<int,double> > dnormal = mynode->CoData().GetDerivN(); // (direction,dof,value)
+
+          // save to map
+          dmygap.insert(std::pair<int, std::map<int,double> >(gid, dgap));
+          dmynormals.insert(std::pair<int, std::vector<GEN::pairedvector<int,double> > >(gid, dnormal));
+
+          break;
+        }//End hit ele
+      }//End Loop over all Master Elements
+    }
+  }
+
+  Comm().Barrier();
+
+  return;
+}
+
 
 /*----------------------------------------------------------------------*
  |  compute element areas (public)                            popp 11/07|

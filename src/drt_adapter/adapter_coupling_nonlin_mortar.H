@@ -25,6 +25,7 @@ Maintainer: Philipp Farah
  *---------------------------------------------------------------------*/
 namespace DRT
 {
+  class Condition;
   class Discretization;
 }
 
@@ -69,6 +70,13 @@ namespace ADAPTER
                           const Teuchos::RCP<Epetra_Vector> vec,
                           bool onlyD);
 
+    virtual void SetupSpringDashpot(
+        Teuchos::RCP<DRT::Discretization> masterdis,
+        Teuchos::RCP<DRT::Discretization> slavedis,
+        Teuchos::RCP<DRT::Condition> spring,
+        const int coupling_id,
+        const Epetra_Comm& comm);
+
     virtual void IntegrateD(const std::string& statename,
                             const Teuchos::RCP<Epetra_Vector> vec,
                             const Teuchos::RCP<Epetra_Vector> veclm);
@@ -81,6 +89,8 @@ namespace ADAPTER
     virtual Teuchos::RCP<LINALG::SparseMatrix> DLinMatrix(){return DLin_;};
     virtual Teuchos::RCP<LINALG::SparseMatrix> MLinMatrix(){return MLin_;};
 
+    /// the mortar interface itself
+    Teuchos::RCP<CONTACT::CoInterface> Interface() const { return interface_;}
   private:
 
     // communicator

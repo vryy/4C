@@ -54,6 +54,7 @@ Maintainer: Alexander Popp
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/constraintsolver.H"
 #include "../drt_constraint/windkessel_manager.H"
+#include "../drt_constraint/springdashpot_manager.H"
 #include "../drt_constraint/springdashpot.H"
 #include "../drt_beamcontact/beam3contact_manager.H"
 #include "../drt_patspec/patspec.H"
@@ -139,6 +140,7 @@ STR::TimInt::TimInt
   conman_(Teuchos::null),
   consolv_(Teuchos::null),
   windkman_(Teuchos::null),
+  springman_(Teuchos::null),
   surfstressman_(Teuchos::null),
   potman_(Teuchos::null),
   cmtbridge_(Teuchos::null),
@@ -251,6 +253,9 @@ STR::TimInt::TimInt
                                                         *solver_,
                                                         dbcmaps_));
 
+  // initialize spring dashpot manager
+  springman_ = Teuchos::rcp(new UTILS::SpringDashpotManager(discret_));
+
 
   // initialize constraint solver if constraints are defined
   if (conman_->HaveConstraint())
@@ -317,17 +322,6 @@ STR::TimInt::TimInt
     if (locsysconditions.size())
     {
       locsysman_ = Teuchos::rcp(new DRT::UTILS::LocsysManager(*discret_));
-    }
-  }
-
-  {
-    // check for presence of spring dashpot bc
-    std::vector<DRT::Condition*> springdashpotcond(0);
-    discret_->GetCondition("SpringDashpot", springdashpotcond);
-    if (springdashpotcond.size())
-    {
-      //initialize spring dashpot conditions
-      SPRINGDASHPOT::SpringDashpot(discret_);
     }
   }
 
@@ -2251,6 +2245,10 @@ void STR::TimInt::OutputRestart
     output_->WriteVector("str_growth_displ", strgrdisp_);
   }
 
+  // springdashpot output
+  if (springman_->HaveSpringDashpot())
+    springman_->Output(output_, discret_, disn_);
+
   // info dedicated to user's eyes staring at standard out
   if ( (myrank_ == 0) and printscreen_ and (StepOld()%printscreen_==0))
   {
@@ -2323,6 +2321,11 @@ void STR::TimInt::OutputState
     Teuchos::RCP<Epetra_Vector> porosity = porositysplitter_->ExtractCondVector((*dis_)(0));
     output_->WriteVector("porosity_p1", porosity);
   }
+
+  // springdashpot output
+  if (springman_->HaveSpringDashpot())
+    springman_->Output(output_, discret_, disn_);
+
   // leave for good
   return;
 }

@@ -61,6 +61,7 @@ namespace CONTACT
 namespace UTILS
 {
   class ConstrManager;
+  class SpringDashpotManager;
   class WindkesselManager;
 }
 
@@ -193,11 +194,17 @@ namespace ADAPTER {
     /// are there any Windkessel bcs?
     virtual bool HaveWindkessel() = 0;
 
+    /// are there any spring dashpot bcs?
+    virtual bool HaveSpringDashpot() = 0;
+
     /// do we have semi-smooth Newton-type plasticity algorithm
     virtual bool HaveSemiSmoothPlasticity() = 0;
 
     /// get constraint manager defined in the structure
     virtual const Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager() = 0;
+
+    /// get SpringDashpot manager defined in the structure
+    virtual const Teuchos::RCP<UTILS::SpringDashpotManager> GetSpringDashpotManager() = 0;
 
     /// get Windkessel manager defined in the structure
     virtual const Teuchos::RCP<UTILS::WindkesselManager> GetWindkesselManager() = 0;

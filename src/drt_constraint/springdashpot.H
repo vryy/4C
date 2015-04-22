@@ -18,11 +18,16 @@ Maintainer: Marc Hirschvogel
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 
+#include "../headers/pairedvector.H"
+
 class Epetra_Vector;
+class Epetra_MultiVector;
 
 namespace DRT
 {
+  class Condition;
   class Discretization;
+  class Element;
 }
 
 namespace Teuchos
@@ -40,21 +45,103 @@ namespace IO
   class DiscretizationWriter;
 }
 
-namespace SPRINGDASHPOT
+namespace ADAPTER
 {
+  class CouplingNonLinMortar;
+}
 
-  void SpringDashpot(Teuchos::RCP<DRT::Discretization> dis);
+namespace UTILS
+{
+  class SpringDashpot
+  {
+    public:
 
+      // type of spring
+      enum SpringType
+      {
+        all, ///<
+        refsurfnormal,  ///<
+        cursurfnormal  ///<
+      };
 
-  void EvaluateSpringDashpot(Teuchos::RCP<DRT::Discretization> discret,
-                            Teuchos::RCP<LINALG::SparseOperator> stiff,
-                            Teuchos::RCP<Epetra_Vector> fint,
-                            Teuchos::RCP<Epetra_Vector> disn,
-                            Teuchos::RCP<Epetra_Vector> veln,
-                            Teuchos::ParameterList parlist);
+      /*!
+      \brief constructor
+       */
+      SpringDashpot(Teuchos::RCP<DRT::Discretization> dis,
+                    Teuchos::RCP<DRT::Condition> cond);
 
+      /*!
+      \brief destructor
+       */
+      ~SpringDashpot()
+      {
+        return;
+      };
 
+      //! add contribution of spring dashpot BC to residual vector and stiffness matrix
+      void Evaluate(
+          Teuchos::RCP<LINALG::SparseOperator> stiff,
+          Teuchos::RCP<Epetra_Vector> fint,
+          Teuchos::RCP<Epetra_Vector> disn,
+          Teuchos::RCP<Epetra_Vector> veln,
+          Teuchos::ParameterList parlist);
 
+      //! output of gap, normal, and nodal stiffness
+      void OutputGapNormal(
+          Teuchos::RCP<Epetra_Vector> &gap,
+          Teuchos::RCP<Epetra_MultiVector> &normals,
+          Teuchos::RCP<Epetra_MultiVector> &stress);
 
+      //! return type of spring
+      SpringType GetSpringType()
+      {
+        return springtype_;
+      }
+
+    private:
+
+      //! set type of spring during initialization
+      void SetSpringType();
+
+      //! set up MORTAR interface for direction cursurfnormal
+      void InitializeCurSurfNormal();
+
+      //! calculate nodal area
+      void GetArea(const std::map<int,Teuchos::RCP<DRT::Element> >& geom);
+
+      //! get reference normal
+      void GetRefNormals(const std::map<int,Teuchos::RCP<DRT::Element> >& geom);
+
+      //! get current normal
+      void GetCurNormals(Teuchos::RCP<Epetra_Vector> disp);
+
+      Teuchos::RCP<DRT::Discretization> actdisc_; ///< standard discretization
+      Teuchos::RCP<DRT::Condition> spring_; ///< spring dashpot condition
+      Teuchos::RCP<ADAPTER::CouplingNonLinMortar> mortar_; //< mortar interface in case of curnormal springs
+
+      // spring properties
+      const double stiff_tens_; ///< spring stiffness when spring is in tension
+      const double stiff_comp_; ///< spring stiffness when spring is in compression
+      const double offset_; ///< spring offset
+      const double viscosity_; ///< dashpot viscosity
+      const double coupling_; ///< coupling id of reference DSURFACE
+
+      // condition properties
+      const std::vector<int>* nodes_; ///< condition nodes
+      std::map<int, double> area_; ///< condition nodal area
+
+      // spring dashpot evaluation
+      std::map<int, double> gap0_; //< nodal gap in reference configuration
+      std::map<int, double> gap_; //< nodal gap in current configuration
+      std::map<int, double> gapdt_; //< nodal gap velocity in current configuration
+      std::map<int,std::map<int,double> > dgap_; //< linearization of nodal gap
+      std::map<int, std::vector<double> > normals_; //< nodal normal
+      std::map<int,std::vector<GEN::pairedvector<int,double> > > dnormals_; //< linearization of nodal normal
+      std::map<int, std::vector<double> > springstress_; //< nodal force applied by spring dashpot BC for output
+
+    private:
+      SpringType springtype_;
+
+  }; //class
 }
 #endif /* SPRINGDASHPOT_MANAGER_H */

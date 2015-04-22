@@ -418,6 +418,182 @@ void ADAPTER::CouplingNonLinMortar::Evaluate(const std::string& statename,
   return;
 }
 
+/*----------------------------------------------------------------------*
+ | setup contact elements for spring dashpot condition     pfaller Apr15|
+ *----------------------------------------------------------------------*/
+void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(
+    Teuchos::RCP<DRT::Discretization> masterdis,
+    Teuchos::RCP<DRT::Discretization> slavedis,
+    Teuchos::RCP<DRT::Condition> spring,
+    const int coupling_id,
+    const Epetra_Comm& comm)
+{
+  if ( comm.MyPID()==0 )
+    std::cout<<"Generating CONTACT interface for spring dashpot condition...\n"<< std::endl;
+
+  // initialize maps for row nodes
+  std::map<int, DRT::Node*> slavenodes;
+  std::map<int, DRT::Node*> masternodes;
+
+  // initialize maps for column nodes
+  std::map<int, DRT::Node*> slavegnodes;
+  std::map<int, DRT::Node*> mastergnodes;
+
+  // initialize maps for elements
+  std::map<int, Teuchos::RCP<DRT::Element> > slaveelements;
+  std::map<int, Teuchos::RCP<DRT::Element> > masterelements;
+
+  // get the conditions for the current evaluation we use the SpringDashpot condition as a substitute for
+  // the mortar slave surface
+  std::vector<DRT::Condition*> conds_master(0);
+  std::vector<DRT::Condition*> conds_slave(0);
+
+  // Coupling condition is defined by "DESIGN SURF SPRING DASHPOT COUPLING CONDITIONS"
+  std::vector<DRT::Condition*> coup_conds;
+  slavedis->GetCondition("SpringDashpotCoupling",coup_conds);
+
+  // number of coupling conditions
+  const int n_coup_conds = (int)coup_conds.size();
+  if (!n_coup_conds)
+    dserror("No section DESIGN SURF SPRING DASHPOT COUPLING CONDITIONS found.");
+
+  // slave surface = spring dashpot condition
+  conds_slave.push_back(&(*spring));
+
+  // find master surface: loop all coupling conditions
+  for (int i=0; i<n_coup_conds; i++)
+  {
+    // add one, since read in of COUPLING parameter in DESIGN SURF SPRING DASHPOT CONDITIONS subtracts one
+    if (coup_conds[i]->GetInt("coupling id") == (coupling_id + 1))
+      conds_master.push_back(coup_conds[i]);
+  }
+  if (!conds_master.size())
+    dserror("Coupling ID not found.");
+
+  DRT::UTILS::FindConditionObjects(*slavedis, slavenodes, slavegnodes, slaveelements, conds_slave);
+  DRT::UTILS::FindConditionObjects(*masterdis, masternodes, mastergnodes, masterelements, conds_master);
+
+  // get mortar coupling parameters
+  Teuchos::ParameterList input;
+  // set default values
+  input.setParameters(DRT::Problem::Instance()->MortarCouplingParams());
+  input.setParameters(DRT::Problem::Instance()->ContactDynamicParams());
+  input.setParameters(DRT::Problem::Instance()->WearParams());
+  input.set<int>("PROBTYPE", INPAR::CONTACT::other);
+
+  // is this a nurbs problem?
+  std::string distype = DRT::Problem::Instance()->SpatialApproximation();
+  if(distype=="Nurbs")
+  {
+    // ***
+    dserror("nurbs for fsi mortar not supported!");
+    input.set<bool>("NURBS",true);
+  }
+  else
+    input.set<bool>("NURBS",false);
+
+  // get problem dimension (2D or 3D) and create (MORTAR::MortarInterface)
+  const int dim = DRT::Problem::Instance()->NDim();
+
+  // create an empty mortar interface
+  // (To be on the safe side we still store all interface nodes and elements
+  // fully redundant here in the mortar ADAPTER. This makes applications such
+  // as SlidingALE much easier, whereas it would not be needed for others.)
+  INPAR::MORTAR::RedundantStorage redundant =DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(input,"REDUNDANT_STORAGE");
+
+  // generate contact interface
+  Teuchos::RCP<CONTACT::CoInterface> interface = Teuchos::rcp(new CONTACT::CoInterface(0, comm, dim, input, false, redundant));
+
+  // number of dofs per node based on the coupling vector coupleddof
+  int dof = 3;
+
+  // feeding nodes to the interface including ghosted nodes
+  std::map<int, DRT::Node*>::const_iterator nodeiter;
+
+  // feeding elements to the interface
+  std::map<int, Teuchos::RCP<DRT::Element> >::const_iterator elemiter;
+
+  // eleoffset is neccessary because slave and master elements are from different conditions
+  const int eleoffset = masterdis->ElementRowMap()->MaxAllGID()+1;
+
+  // MASTER NODES
+  // feeding master nodes to the interface including ghosted nodes
+  for (nodeiter = mastergnodes.begin(); nodeiter != mastergnodes.end(); ++nodeiter)
+  {
+    DRT::Node* node = nodeiter->second;
+
+    Teuchos::RCP<CONTACT::CoNode> mrtrnode = Teuchos::rcp(
+                    new CONTACT::CoNode(node->Id(), node->X(), node->Owner(),
+                        dof, masterdis->Dof(node), false,false));
+
+    interface->AddCoNode(mrtrnode);
+  }
+
+  // SLAVE NODES
+  // feeding slave nodes to the interface including ghosted nodes
+  for (nodeiter = slavegnodes.begin(); nodeiter != slavegnodes.end(); ++nodeiter)
+  {
+    DRT::Node* node = nodeiter->second;
+
+    Teuchos::RCP<CONTACT::CoNode> mrtrnode = Teuchos::rcp(
+                    new CONTACT::CoNode(node->Id(), node->X(), node->Owner(),
+                        dof, slavedis->Dof(node), true,true));
+
+    interface->AddCoNode(mrtrnode);
+  }
+
+  // MASTER ELEMENTS
+  // feeding master elements to the interface
+  for (elemiter = masterelements.begin(); elemiter != masterelements.end(); ++elemiter)
+  {
+    Teuchos::RCP<DRT::Element> ele = elemiter->second;
+
+    Teuchos::RCP<CONTACT::CoElement> mrtrele = Teuchos::rcp(
+        new CONTACT::CoElement(ele->Id(), ele->Owner(), ele->Shape(),
+            ele->NumNode(), ele->NodeIds(), false));
+
+    interface->AddCoElement(mrtrele);
+  }
+
+  // SLAVE ELEMENTS
+  // feeding slave elements to the interface
+  for (elemiter = slaveelements.begin(); elemiter != slaveelements.end(); ++elemiter)
+  {
+    Teuchos::RCP<DRT::Element> ele = elemiter->second;
+
+    Teuchos::RCP<CONTACT::CoElement> mrtrele = Teuchos::rcp(
+        new CONTACT::CoElement(ele->Id() + eleoffset, ele->Owner(), ele->Shape(),
+            ele->NumNode(), ele->NodeIds(), true));
+
+    interface->AddCoElement(mrtrele);
+  }
+
+  // finalize the contact interface construction
+  interface->FillComplete();
+
+  // store old row maps (before parallel redistribution)
+  slavedofrowmap_   = Teuchos::rcp(new Epetra_Map(*interface->SlaveRowDofs()));
+  masterdofrowmap_  = Teuchos::rcp(new Epetra_Map(*interface->MasterRowDofs()));
+
+  // store interface
+  interface_ = interface;
+
+  // create binary search tree
+  interface_->CreateSearchTree();
+
+  // interface displacement (=0) has to be merged from slave and master discretization
+  Teuchos::RCP<Epetra_Map> dofrowmap = LINALG::MergeMap(masterdofrowmap_,slavedofrowmap_, false);
+  Teuchos::RCP<Epetra_Vector> dispn = LINALG::CreateVector(*dofrowmap, true);
+
+  // set displacement state in mortar interface
+  interface_->SetState("displacement", dispn);
+
+  // in the following two steps MORTAR does all the work
+  interface_->Initialize();
+
+  return;
+}
+
 
 /*----------------------------------------------------------------------*
  |  print interface                                         farah 10/14|

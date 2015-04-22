@@ -224,6 +224,7 @@ public:
     ScaTraFluxCalc,
     ScaTraCoupling,
     SpringDashpot,
+    SpringDashpotCoupling,
     TotalTractionCorrectionCond,
     NoPenetration,
     TotalTractionCorrectionBorderNodes,

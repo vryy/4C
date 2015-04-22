@@ -39,6 +39,7 @@ Maintainer: Alexander Popp
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/constraintsolver.H"
 #include "../drt_constraint/windkessel_manager.H"
+#include "../drt_constraint/springdashpot_manager.H"
 #include "../drt_constraint/springdashpot.H"
 #include "../drt_surfstress/drt_surfstress_manager.H"
 #include "../drt_potential/drt_potential_manager.H"
@@ -1097,6 +1098,26 @@ void STR::TimIntImpl::ApplyForceStiffWindkessel
 }
 
 /*----------------------------------------------------------------------*/
+/* evaluate forces and stiffness due to spring dashpot BCs */
+void STR::TimIntImpl::ApplyForceStiffSpringDashpot
+(
+  Teuchos::RCP<LINALG::SparseOperator> stiff,
+  Teuchos::RCP<Epetra_Vector> fint,
+  Teuchos::RCP<Epetra_Vector> disn,
+  Teuchos::RCP<Epetra_Vector> veln,
+  bool predict,
+  Teuchos::ParameterList psprdash
+)
+{
+  if (springman_->HaveSpringDashpot())
+  {
+    springman_->StiffnessAndInternalForces(stiff,fint,disn,veln,psprdash);
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
 /* evaluate forces and stiffness due to contact / meshtying */
 void STR::TimIntImpl::ApplyForceStiffContactMeshtying
 (
@@ -1221,28 +1242,6 @@ void STR::TimIntImpl::LimitStepsizeBeamContact
         disi->NormInf(&disi_infnorm);
       }
     }
-  }
-
-  return;
-}
-
-/*----------------------------------------------------------------------*/
-/* evaluate forces and stiffness due to spring-dashpot-condition */
-void STR::TimIntImpl::ApplyForceStiffSpringDashpot
-(
-  Teuchos::RCP<LINALG::SparseOperator> stiff,
-  Teuchos::RCP<Epetra_Vector> fint,
-  Teuchos::RCP<Epetra_Vector> disn,
-  Teuchos::RCP<Epetra_Vector> veln,
-  bool predict,
-  Teuchos::ParameterList psprdash
-)
-{
-  std::vector<DRT::Condition*> springdashpotcond(0);
-  discret_->GetCondition("SpringDashpot", springdashpotcond);
-  if (springdashpotcond.size())
-  {
-    SPRINGDASHPOT::EvaluateSpringDashpot(discret_,stiff,fint,disn,veln,psprdash);
   }
 
   return;
@@ -2602,6 +2601,13 @@ bool STR::TimIntImpl::HaveConstraint()
 bool STR::TimIntImpl::HaveWindkessel()
 {
   return windkman_->HaveWindkessel();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool STR::TimIntImpl::HaveSpringDashpot()
+{
+  return springman_->HaveSpringDashpot();
 }
 
 /*----------------------------------------------------------------------*/

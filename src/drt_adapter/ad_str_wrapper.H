@@ -123,6 +123,10 @@ namespace ADAPTER
     virtual bool HaveWindkessel()
     { return structure_->HaveWindkessel(); }
 
+    /// are there any spring dashpot BCs?
+    virtual bool HaveSpringDashpot()
+    { return structure_->HaveSpringDashpot(); }
+
     /// do we have semi-smooth Newton type plasticity algorithm
     virtual bool HaveSemiSmoothPlasticity()
     { return structure_->HaveSemiSmoothPlasticity(); }
@@ -130,6 +134,10 @@ namespace ADAPTER
     /// get constraint manager defined in the structure
     virtual const Teuchos::RCP< UTILS::ConstrManager> GetConstraintManager()
     { return structure_->GetConstraintManager(); }
+
+    /// get constraint manager defined in the structure
+    virtual const Teuchos::RCP< UTILS::SpringDashpotManager> GetSpringDashpotManager()
+    { return structure_->GetSpringDashpotManager(); }
 
     /// get Windkessel manager defined in the structure
     virtual const Teuchos::RCP< UTILS::WindkesselManager> GetWindkesselManager()

@@ -4580,11 +4580,29 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(springdashpotcond,"DASHPOT_VISCOSITY");
   springdashpotcond->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("DIRECTION")));
   springdashpotcond->AddComponent(Teuchos::rcp(new StringConditionComponent("direction", "all",
-                                                                                       Teuchos::tuple<std::string>("all","refsurfnormal"),
-                                                                                       Teuchos::tuple<std::string>("all","refsurfnormal"),
+                                                                                       Teuchos::tuple<std::string>("all","refsurfnormal","cursurfnormal"),
+                                                                                       Teuchos::tuple<std::string>("all","refsurfnormal","cursurfnormal"),
                                                                                        true)));
+  springdashpotcond->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("COUPLING")));
+  springdashpotcond->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("coupling id", 1, true, true)));
 
   condlist.push_back(springdashpotcond);
+
+  /*--------------------------------------------------------------------*/
+  // surface coupling for spring dashpot DIRECTION cursurfnormal
+  // pfaller Apr15
+
+  Teuchos::RCP<ConditionDefinition> springdashpotcoupcond =
+        Teuchos::rcp(new ConditionDefinition("DESIGN SURF SPRING DASHPOT COUPLING CONDITIONS",
+            "SpringDashpotCoupling",
+            "Spring Dashpot Coupling",
+            DRT::Condition::SpringDashpotCoupling,
+            true,
+            DRT::Condition::Surface));
+
+    springdashpotcoupcond->AddComponent(Teuchos::rcp(new IntConditionComponent("coupling id")));
+
+    condlist.push_back(springdashpotcoupcond);
 
   /*--------------------------------------------------------------------*/
   // no penetration for darcy flow in porous media

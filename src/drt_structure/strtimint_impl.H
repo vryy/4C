@@ -707,8 +707,12 @@ namespace STR
 
     //! Return bool indicating if constraints are defined
     bool HaveConstraint();
+
     //! Return bool indicating if Windkessel bcs are defined
     bool HaveWindkessel();
+
+    //! Return bool indicating if spring dashpot BCs are defined
+    bool HaveSpringDashpot();
 
     //! Return Teuchos::rcp to ConstraintManager conman_
     const Teuchos::RCP< ::UTILS::ConstrManager> GetConstraintManager()
@@ -720,6 +724,12 @@ namespace STR
     const Teuchos::RCP< ::UTILS::WindkesselManager> GetWindkesselManager()
     {
       return windkman_;
+    }
+
+    //! Return Teuchos::rcp to SpringDashpotManager windkman_
+    const Teuchos::RCP< ::UTILS::SpringDashpotManager> GetSpringDashpotManager()
+    {
+      return springman_;
     }
 
     //! Get type of thickness scaling for thin shell structures

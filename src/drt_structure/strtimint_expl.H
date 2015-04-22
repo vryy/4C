@@ -280,6 +280,13 @@ namespace STR
       return false;
     };
 
+    /// are there any spring dashpot BCs?
+    virtual bool HaveSpringDashpot()
+    {
+      dserror("HaveSpringDashpot() has not been tested for explicit time integrators");
+      return false;
+    };
+
     //! Return Teuchos::rcp to ConstraintManager conman_
     virtual const Teuchos::RCP< ::UTILS::ConstrManager> GetConstraintManager()
     {
@@ -287,10 +294,17 @@ namespace STR
       return Teuchos::null;
     };
 
-    //! Return Teuchos::rcp to WindkesselManager conman_
+    //! Return Teuchos::rcp to WindkesselManager windkman_
     virtual const Teuchos::RCP< ::UTILS::WindkesselManager> GetWindkesselManager()
     {
       dserror("GetWindkesselManager() has not been tested for explicit time integrators");
+      return Teuchos::null;
+    };
+
+    //! Return Teuchos::rcp to SpringDashpotManager springman_
+    virtual const Teuchos::RCP< ::UTILS::SpringDashpotManager> GetSpringDashpotManager()
+    {
+      dserror("GetSpringDashpotManager() has not been tested for explicit time integrators");
       return Teuchos::null;
     };
 

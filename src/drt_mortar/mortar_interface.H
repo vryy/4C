@@ -22,6 +22,7 @@ Maintainer: Alexander Popp
 
 #include "../drt_inpar/inpar_mortar.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../headers/pairedvector.H"
 
 
 // forward declarations
@@ -544,6 +545,16 @@ public:
 
   */
   virtual void Evaluate(int rriter=0, const int step=0, const int iter=0);
+
+  /*!
+    \brief Evaluate nodal distances
+
+  */
+  virtual void EvaluateDistances(const Teuchos::RCP<Epetra_Vector> vec,
+      std::map<int, std::vector<double> >& mynormals,
+      std::map<int,std::vector<GEN::pairedvector<int,double> > >& dmynormals,
+      std::map<int,double>& mygap,
+      std::map<int,std::map<int,double> >& dmygap);
 
   /*!
   \brief Evaluate nodal normals

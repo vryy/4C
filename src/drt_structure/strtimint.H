@@ -58,6 +58,7 @@ namespace UTILS
   class ConstrManager;
   class ConstraintSolver;
   class WindkesselManager;
+  class SpringDashpotManager;
   class SurfStressManager;
 //  class GrowthDisplManager;
 }
@@ -779,8 +780,14 @@ namespace STR
     //! are there any Windkessel BCs?
     virtual bool HaveWindkessel() = 0;
 
+    //! are there any spring dashpot BCs?
+    virtual bool HaveSpringDashpot() = 0;
+
     //! get constraint manager defined in the structure
     virtual const Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager() = 0;
+
+    //! get spring dashpot manager defined in the structure
+    virtual const Teuchos::RCP<UTILS::SpringDashpotManager> GetSpringDashpotManager() = 0;
 
     //! get Windkessel manager defined in the structure
     virtual const Teuchos::RCP<UTILS::WindkesselManager> GetWindkesselManager() = 0;
@@ -1095,6 +1102,9 @@ namespace STR
 
     // for Windkessel bcs
     Teuchos::RCP<UTILS::WindkesselManager> windkman_;  //!< Windkessel manager
+
+    // spring dashpot
+    Teuchos::RCP<UTILS::SpringDashpotManager> springman_;
 
     //! surface stresses
     Teuchos::RCP<UTILS::SurfStressManager> surfstressman_;
