@@ -93,26 +93,31 @@ namespace STR
 
     //! Provide number of steps, e.g. a single-step method returns 1,
     //! a m-multistep method returns m
-    int MethodSteps() { return 1; }
+    virtual const int MethodSteps() const { return 1; }
 
     //! Give local order of accuracy of displacement part
-    int MethodOrderOfAccuracyDis() { return 1; }
+    virtual const int MethodOrderOfAccuracyDis() const { return 1; }
 
     //! Give local order of accuracy of velocity part
-    int MethodOrderOfAccuracyVel() { return 1; }
+    virtual const int MethodOrderOfAccuracyVel() const { return 1; }
 
-    //! Return linear error coefficient of displacements
-    double MethodLinErrCoeffDis()
-    {
-      dserror("has not been checked yet!");
-      return 1./2.;
-    }
+    /*! \brief Return linear error coefficient of displacements
+     *
+     *  The local discretization error reads
+     *  \f[
+     *  e \approx \frac{1}{2}\Delta t_n^2 \ddot{d_n} + HOT(\Delta t_n^3)
+     *  \f]
+     */
+    virtual const double MethodLinErrCoeffDis() const { return 0.5; }
 
-    //! Return linear error coefficient of velocities
-    double MethodLinErrCoeffVel()
-    {
-      return MethodLinErrCoeffDis();
-    }
+    /*! \brief Return linear error coefficient of velocities
+     *
+     *  The local discretization error reads
+     *  \f[
+     *  e \approx \frac{1}{2}\Delta t_n^2 \dddot{d_n} + HOT(\Delta t_n^3)
+     *  \f]
+     */
+    virtual const double MethodLinErrCoeffVel() const { return 0.5; }
 
     //@}
 

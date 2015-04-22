@@ -691,19 +691,19 @@ namespace STR
 
     //! Provide number of steps, e.g. a single-step method returns 1,
     //! a m-multistep method returns m
-    virtual int MethodSteps() = 0;
+    virtual const int MethodSteps() const = 0;
 
     //! Give local order of accuracy of displacement part
-    virtual int MethodOrderOfAccuracyDis() = 0;
+    virtual const int MethodOrderOfAccuracyDis() const = 0;
 
     //! Give local order of accuracy of velocity part
-    virtual int MethodOrderOfAccuracyVel() = 0;
+    virtual const int MethodOrderOfAccuracyVel() const = 0;
 
     //! Return linear error coefficient of displacements
-    virtual double MethodLinErrCoeffDis() = 0;
+    virtual const double MethodLinErrCoeffDis() const = 0;
 
     //! Return linear error coefficient of velocities
-    virtual double MethodLinErrCoeffVel() = 0;
+    virtual const double MethodLinErrCoeffVel() const = 0;
 
     //! Return bool indicating if constraints are defined
     bool HaveConstraint();

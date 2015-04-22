@@ -29,6 +29,19 @@ namespace STR
    * \brief Central differences: 2nd order accurate,
    *                             explicit time integrator,
    *                             1-step method
+   *
+   *  The displacement update reads
+   *  \f[
+   *  d_{n+1} = d_n + \Delta t \dot{d}_n + \frac{1}{2}\Delta t^2 \ddot{d}_n
+   *  \f]
+   *
+   *  The velocity update reads
+   *  \f[
+   *  \dot{d}_{n+1} = \dot{d}_n
+   *                + \frac{1}{2}\Delta t \ddot{d}_n
+   *                + \frac{1}{2}\Delta t \ddot{d}_{n+1}
+   *  \f]
+   *
    * \author popp
    * \date 01/12
    */
@@ -95,29 +108,31 @@ namespace STR
 
     //! Provide number of steps, e.g. a single-step method returns 1,
     //! a m-multistep method returns m
-    int MethodSteps() { return 1; }
+    virtual const int MethodSteps() const { return 1; }
 
     //! Give local order of accuracy of displacement part
-    int MethodOrderOfAccuracyDis() { return 2; }
+    virtual const int MethodOrderOfAccuracyDis() const { return 2; }
 
     //! Give local order of accuracy of velocity part
-    int MethodOrderOfAccuracyVel() { return 2; }
+    virtual const int MethodOrderOfAccuracyVel() const { return 2; }
 
-    //! Return linear error coefficient of displacements
-    double MethodLinErrCoeffDis()
-    {
-      dserror("has not been checked yet!");
-      return 1./2.;
-      //const double dt = (*dt_)[0];
-      //const double dto = (*dt_)[-1];
-      //return (2.*dt + 3.*dto)/(12.*dt);
-    }
+    /*! Return linear error coefficient of displacements
+     *
+     *  The local discretization error reads
+     *  \f[
+     *  e \approx \frac{1}{6}\Delta t_n^3 \dddot{d_n} + HOT(\Delta t_n^4)
+     *  \f]
+     */
+    virtual const double MethodLinErrCoeffDis() const { return 1./6.; }
 
-    //! Return linear error coefficient of velocities
-    double MethodLinErrCoeffVel()
-    {
-      return MethodLinErrCoeffDis();
-    }
+    /*! Return linear error coefficient of velocities
+     *
+     *  The local discretization error reads
+     *  \f[
+     *  e \approx -\frac{1}{12}\Delta t_n^3 d_n^{(4)} + HOT(\Delta t_n^4)
+     *  \f]
+     */
+    virtual const double MethodLinErrCoeffVel() const { return -1./12.; }
 
     //@}
 
