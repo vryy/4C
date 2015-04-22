@@ -46,3 +46,10 @@ void ADAPTER::FluidFPSI::Init()
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ADAPTER::FluidFPSI::SetupInterface()
+{
+  interface_->Setup(*dis_,false,true); //create overlapping maps for fpsi problem
+}
+

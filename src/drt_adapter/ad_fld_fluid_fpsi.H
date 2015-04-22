@@ -46,6 +46,8 @@ namespace ADAPTER {
     /// communication object at the interface without pressure dofs for FPSI problems
     virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& FPSIInterface() const { return fpsiinterface_; }
 
+    virtual void SetupInterface();
+
   protected:
 
     /// the interface map setup for fpsi interface

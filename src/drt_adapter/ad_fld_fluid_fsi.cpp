@@ -676,10 +676,8 @@ double ADAPTER::FluidFSI::CalculateErrorNorm(const Epetra_Vector& vec,
  *----------------------------------------------------------------------*/
 void ADAPTER::FluidFSI::SetupInterface()
 {
-  if (DRT::Problem::Instance()->ProblemType() != prb_fpsi)
-    interface_->Setup(*dis_,false);
-  else
-    interface_->Setup(*dis_,false,true); //create overlapping maps for fpsi problem
+
+  interface_->Setup(*dis_,false);
 }
 
 /*----------------------------------------------------------------------*
