@@ -51,10 +51,10 @@ class HomIsoTurbInitialField
                           const INPAR::FLUID::InitialField initfield);
 
     //! destructor
-    ~HomIsoTurbInitialField(){return;};
+    virtual ~HomIsoTurbInitialField(){return;};
 
     //! calculate initial field
-    void CalculateInitialField();
+    virtual void CalculateInitialField();
 
   protected:
 
@@ -68,8 +68,6 @@ class HomIsoTurbInitialField
       protected:
       private:
     };
-
-  private:
 
     //! non-dimensionalize and store experimental data
     void PrepareExparimentalData();
@@ -86,7 +84,7 @@ class HomIsoTurbInitialField
     //! state vectors to be initialized
     Teuchos::RCP<Epetra_Vector> velnp_;
     Teuchos::RCP<Epetra_Vector> veln_;
-
+    Teuchos::RCP<Epetra_Vector> velnm_;
     //! type of energy spectrum for initialization
     INPAR::FLUID::InitialField type_;
 
@@ -101,6 +99,28 @@ class HomIsoTurbInitialField
     //! vector containing corresponding energy
     std::vector<double> E_exp_;
 
+};
+
+// inital condition for homogeneous isotropic turbulence
+// based on the Comte-Bellot - Corrsion experiment
+class HomIsoTurbInitialFieldHDG: public HomIsoTurbInitialField
+{
+  public:
+
+    //! constructor
+    HomIsoTurbInitialFieldHDG(FluidImplicitTimeInt& timeint,
+                          const INPAR::FLUID::InitialField initfield);
+
+    //! destructor
+    ~HomIsoTurbInitialFieldHDG(){return;};
+
+    //! calculate initial field
+    void CalculateInitialField();
+
+  protected:
+    Teuchos::RCP<Epetra_Vector> intveln_;
+    Teuchos::RCP<Epetra_Vector> intvelnm_;
+    Teuchos::RCP<Epetra_Vector> intvelnp_;
 };
 
 } // end FLUID

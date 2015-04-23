@@ -78,7 +78,7 @@ class HomIsoTurbForcing: public ForcingInterface
     virtual ~HomIsoTurbForcing(){}
 
     //! initialize with initial spectrum
-    void SetInitialSpectrum(INPAR::FLUID::InitialField init_field_type);
+    virtual void SetInitialSpectrum(INPAR::FLUID::InitialField init_field_type);
 
     //! turn on forcing
     void ActivateForcing(const bool activate);
@@ -104,8 +104,6 @@ class HomIsoTurbForcing: public ForcingInterface
       protected:
       private:
     };
-
-  private:
 
     //! type of forcing
     INPAR::FLUID::ForcingType forcing_type_;
@@ -192,6 +190,9 @@ class HomIsoTurbForcingHDG: public HomIsoTurbForcing
 
     //! destructor
     virtual ~HomIsoTurbForcingHDG(){}
+
+    //! initialize with initial spectrum
+    void SetInitialSpectrum(INPAR::FLUID::InitialField init_field_type);
 
     //! calculate power input
     void CalculateForcing(const int step);

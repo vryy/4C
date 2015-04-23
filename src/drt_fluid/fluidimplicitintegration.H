@@ -990,6 +990,12 @@ protected:
    */
   virtual void AddProblemDependentVectors() {return;};
 
+  /*!
+  \brief Initialize forcing
+
+  */
+  virtual void InitForcing();
+
   //! @name general algorithm parameters
 
   //! do we move the fluid mesh and calculate the fluid on this moving mesh?

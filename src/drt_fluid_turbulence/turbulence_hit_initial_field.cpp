@@ -34,6 +34,8 @@ Maintainer: Benjamin Krank
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/standardtypes_cpp.H"
+#include "../drt_fluid/fluid_timint_hdg.H"
+#include "../drt_fluid_ele/fluid_ele_action.H"
 
 namespace FLD
 {
@@ -48,6 +50,7 @@ HomIsoTurbInitialField::HomIsoTurbInitialField(
         discret_(timeint.discret_),
         velnp_(timeint.velnp_),
         veln_(timeint.veln_),
+        velnm_(timeint.velnm_),
         type_(initfield)
 {
   // determine number of modes
@@ -59,6 +62,21 @@ HomIsoTurbInitialField::HomIsoTurbInitialField(
     case 512:
     {
       nummodes_ = 8;
+      break;
+    }
+    case 1728:
+    {
+      nummodes_ = 12;
+      break;
+    }
+    case 4096:
+    {
+      nummodes_ = 16;
+      break;
+    }
+    case 13824:
+    {
+      nummodes_ = 24;
       break;
     }
     case 32768:
@@ -270,6 +288,7 @@ void HomIsoTurbInitialField::CalculateInitialField()
 }
 #endif
 
+//also consider routine for HDG further down
 #if 1
 /*--------------------------------------------------------------*
  | calculate initial field using fft            rasthofer 04/13 |
@@ -601,6 +620,7 @@ void HomIsoTurbInitialField::CalculateInitialField()
 
   // initialize veln_ as well
   veln_->Update(1.0,*velnp_ ,0.0);
+  velnm_->Update(1.0,*velnp_ ,0.0);
 
   return;
 #else
@@ -883,5 +903,462 @@ double HomIsoTurbInitialField::CalculateEnergyFromSpectrum(double k)
   return energy;
 }
 
+/*--------------------------------------------------------------*
+ | constructor                                         bk 03/15 |
+ *--------------------------------------------------------------*/
+HomIsoTurbInitialFieldHDG::HomIsoTurbInitialFieldHDG(
+        FluidImplicitTimeInt& timeint,
+        const INPAR::FLUID::InitialField initfield)
+        :
+        HomIsoTurbInitialField(timeint, initfield)
+{
+  //here we are using the interior velocity
+  TimIntHDG* hdgfluid = dynamic_cast<TimIntHDG*> (&timeint);
+  if(hdgfluid == NULL)
+    dserror("this should be a hdg time integer");
 
+  //we want to use the interior velocity here
+  intvelnp_ = hdgfluid->ReturnIntVelnp();
+  intveln_ = hdgfluid->ReturnIntVeln();
+  intvelnm_ = hdgfluid->ReturnIntVelnm();
+
+  //-----------------------------------
+  // determine number of modes
+  //-----------------------------------
+
+  // number of modes equal to 5 times number of elements in one spatial direction
+  nummodes_*=5;
+
+  //-------------------------------------------------
+  // create set of node coordinates
+  //-------------------------------------------------
+
+  // push coordinates in vector
+  {
+    Teuchos::RCP<std::vector<double> > copycoordinates = Teuchos::rcp(new std::vector<double> );
+
+    for(std::vector<double>::iterator coord1 = coordinates_->begin();
+        coord1 != coordinates_->end();
+        ++coord1)
+    {
+      copycoordinates->push_back(*coord1);
+    }
+
+    coordinates_->clear();
+
+    double elesize = abs(copycoordinates->at(1)-copycoordinates->at(0));
+    // use 5 sampling locations in each element in each direction
+    const double localcoords[5] = {0.9, 0.7, 0.5, 0.3, 0.1};
+    for(std::vector<double>::iterator coord1 = copycoordinates->begin();
+        coord1 != copycoordinates->end();
+        ++coord1)
+    {
+      if(coord1 != copycoordinates->begin())
+        for (int i=0;i<5;i++)
+          coordinates_->push_back(*coord1-elesize*localcoords[i]);
+    }
+  }
+
+  return;
+}
+
+#if 1
+/*--------------------------------------------------------------*
+ | calculate initial field using fft                   bk 03/15 |
+ *--------------------------------------------------------------*/
+void HomIsoTurbInitialFieldHDG::CalculateInitialField()
+{
+#if HAVE_FFTW
+
+  // set and initialize working arrays
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > u1_hat = Teuchos::rcp( new Teuchos::Array<std::complex<double> >(nummodes_*nummodes_*(nummodes_/2+1)));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > u2_hat = Teuchos::rcp( new Teuchos::Array<std::complex<double> >(nummodes_*nummodes_*(nummodes_/2+1)));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > u3_hat = Teuchos::rcp( new Teuchos::Array<std::complex<double> >(nummodes_*nummodes_*(nummodes_/2+1)));
+
+  Teuchos::RCP<Teuchos::Array <double> > u1 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+  Teuchos::RCP<Teuchos::Array <double> > u2 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+  Teuchos::RCP<Teuchos::Array <double> > u3 = Teuchos::rcp( new Teuchos::Array<double>(nummodes_*nummodes_*nummodes_));
+
+  //-------------------------------------------------
+  // construction of initial field in spectral space
+  //-------------------------------------------------
+
+  // as given in the respective literature, the Fourier coefficients are
+  // evaluated in the following intervals
+  // k_1: [-nummodes_/2,(nummodes_/2-1)]
+  // k_2: [-nummodes_/2,(nummodes_/2-1)]
+  // k_3: [-nummodes_/2,0]
+  for (int k_1 = (-nummodes_/2); k_1 <= (nummodes_/2-1); k_1++)
+  {
+    for (int k_2 = (-nummodes_/2); k_2 <= (nummodes_/2-1); k_2++)
+    {
+      for (int k_3 = (-nummodes_/2); k_3 <= 0; k_3++)
+      {
+        //get position in u1_hat
+        const int pos = (k_3+nummodes_/2) + (nummodes_/2+1) * ((k_2+nummodes_/2) + nummodes_ * (k_1+nummodes_/2));
+
+        if (k_1 == (-nummodes_/2) or k_2 == (-nummodes_/2) or k_3 == (-nummodes_/2))
+        {
+          // odd-ball wave numbers are set to zero to ensure that solution is a real function
+          ((*u1_hat)[pos]).real(0.0);
+          // this is important to have here
+          ((*u1_hat)[pos]).imag(0.0);
+          // remaining analogously
+          ((*u2_hat)[pos]).real(0.0);
+          ((*u2_hat)[pos]).imag(0.0);
+          ((*u3_hat)[pos]).real(0.0);
+          ((*u3_hat)[pos]).imag(0.0);
+        }
+        else if (k_1 == 0 and k_2 == 0 and k_3 == 0)
+        {
+          // likewise set to zero since there will not be any conjugate complex
+          ((*u1_hat)[pos]).real(0.0);
+          // this is important to have here
+          ((*u1_hat)[pos]).imag(0.0);
+          // remaining analogously
+          ((*u2_hat)[pos]).real(0.0);
+          ((*u2_hat)[pos]).imag(0.0);
+          ((*u3_hat)[pos]).real(0.0);
+          ((*u3_hat)[pos]).imag(0.0);
+        }
+        else
+        {
+          bool calculate = true;
+          // check if conjugate complex has already been set
+          int pos_conj = -999;
+          if (k_3 == 0)
+          {
+            pos_conj = (-k_3+nummodes_/2) + (nummodes_/2+1) * ((-k_2+nummodes_/2) + nummodes_ * (-k_1+nummodes_/2));
+
+            if (pos_conj < pos)
+              calculate = false;
+          }
+
+          if (calculate)
+          {
+            const double k_12 = sqrt(k_1*k_1 + k_2*k_2);
+            const double k = sqrt(k_1*k_1 + k_2*k_2 + k_3*k_3);
+
+            double random_theta1 = 0.0;
+            double random_theta2 = 0.0;
+            double random_phi = 0.0;
+
+            // random numbers are created by one processor and
+            // then send to the other processors
+            // this ensures that all processors construct the same
+            // initial field, which is important to get a matching
+            // velocity field in physical space
+            if (discret_->Comm().MyPID() == 0)
+            {
+              DRT::UTILS::Random* random = DRT::Problem::Instance()->Random();
+              // set range [0;1] (default: [-1;1])
+//              random->SetRandRange(0.0,1.0);
+//              random_theta1 = random->Uni();
+//              random_theta2 = random->Uni();
+//              random_phi = random->Uni();
+              random_theta1 = 0.5*random->Uni()+0.5;
+              random_theta2 = 0.5*random->Uni()+0.5;
+              random_phi = 0.5*random->Uni()+0.5;
+            }
+            discret_->Comm().Broadcast(&random_theta1,1,0);
+            discret_->Comm().Broadcast(&random_theta2,1,0);
+            discret_->Comm().Broadcast(&random_phi,1,0);
+
+            // estimate energy at wave number from energy spectrum
+            double energy = 0.0;
+            if (type_ == INPAR::FLUID::initfield_hit_comte_bellot_corrsin)
+              energy = InterpolateEnergyFromSpectrum(k);
+            else
+              energy = CalculateEnergyFromSpectrum(k);
+
+            if (energy < 0.0)
+            {
+              std::cout << "k " << k << std::endl;
+              std::cout << "k1  " << k_1 << std::endl;
+              std::cout << "k2  " << k_2 << std::endl;
+              std::cout << "k3  " << k_3 << std::endl;
+              dserror("Negative energy!");
+            }
+
+            // remark on the literature:
+            // Collis 2002: sqrt(energy/(2*PI*k))
+            const double fac = sqrt(energy/(2*PI*k*k));
+            // Rogallo 1981: sqrt(energy/(4*PI*k*k))
+            // the missing factor 1/2 of Collis version compared to Rogallo version
+            // is related to the definition of E from u_i
+            // here, we have E = 1/2 * u_i *u_i (see statistics manager)
+
+            // real part, imaginary part
+            std::complex<double> alpha(fac * cos(2*PI*random_theta1) * cos(2*PI*random_phi),fac * sin(2*PI*random_theta1) * cos(2*PI*random_phi));
+            std::complex<double> beta(fac * cos(2*PI*random_theta2) * sin(2*PI*random_phi),fac * sin(2*PI*random_theta2) * sin(2*PI*random_phi));
+
+            // construct velocity from alpha, beta and k
+            if (k_12 > 1.0e-9)
+            {
+              (*u1_hat)[pos] = (alpha * k * ((double)k_2) + beta * ((double)k_1) * ((double)k_3)) / (k * k_12);
+              (*u2_hat)[pos] = (beta * ((double)k_2) * ((double)k_3) - alpha * k * ((double)k_1)) / (k * k_12);
+              if (k_3 == 0)
+                (*u3_hat)[pos] = -beta * k_12 / k;
+              else
+                (*u3_hat)[pos] = -(((double)k_1) * ((*u1_hat)[pos]) + ((double)k_2) * ((*u2_hat)[pos])) / ((double)k_3);
+            }
+            else
+            {
+              (*u1_hat)[pos] = alpha;
+              (*u2_hat)[pos] = beta;
+              (*u3_hat)[pos] = -(((double)k_1) * ((*u1_hat)[pos]) + ((double)k_2) * ((*u2_hat)[pos])) / ((double)k_3);
+            }
+          }
+          else
+          {
+            (*u1_hat)[pos] = conj((*u1_hat)[pos_conj]);
+            (*u2_hat)[pos] = conj((*u2_hat)[pos_conj]);
+            (*u3_hat)[pos] = conj((*u3_hat)[pos_conj]);
+          }
+        }
+      }
+    }
+  }
+
+  // transfer to FFTW structure
+  // FFTW assumes wave numbers in the following intervals
+  // k_1: [0,(nummodes_-1)]
+  // k_2: [0,(nummodes_-1)]
+  // k_3: [0,nummodes_/2]
+  // using peridocity and conjugate symmetry allows for setting
+  // the Fourier coefficients in the required interval
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > u1_hat_fftw = Teuchos::rcp( new Teuchos::Array<std::complex<double> >(nummodes_*nummodes_*(nummodes_/2+1)));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > u2_hat_fftw = Teuchos::rcp( new Teuchos::Array<std::complex<double> >(nummodes_*nummodes_*(nummodes_/2+1)));
+  Teuchos::RCP<Teuchos::Array <std::complex<double> > > u3_hat_fftw = Teuchos::rcp( new Teuchos::Array<std::complex<double> >(nummodes_*nummodes_*(nummodes_/2+1)));
+
+  for (int fftw_k_1 = 0; fftw_k_1 <= (nummodes_-1); fftw_k_1++)
+  {
+    for (int fftw_k_2 = 0; fftw_k_2 <= (nummodes_-1); fftw_k_2++)
+    {
+      for (int fftw_k_3 = 0; fftw_k_3 <= (nummodes_/2); fftw_k_3++)
+      {
+        int k_1 = -999;
+        int k_2 = -999;
+        int k_3 = -999;
+        bool conjugate = false;
+
+        if ((fftw_k_1 >= 0 and fftw_k_1 <= (nummodes_/2-1)) and
+            (fftw_k_2 >= 0 and fftw_k_2 <= (nummodes_/2-1)) and
+            fftw_k_3 == 0)
+        {
+          // wave number vector is part of construction domain
+          // and this value is taken
+          k_1 = fftw_k_1;
+          k_2 = fftw_k_2;
+          k_3 = fftw_k_3;
+        }
+        else
+        {
+          // see whether the negative wave vector is in the construction domain
+          k_1 = -fftw_k_1;
+          k_2 = -fftw_k_2;
+          k_3 = -fftw_k_3;
+          if ((k_1 >= (-nummodes_/2) and k_1 <= (nummodes_/2-1)) and
+              (k_2 >= (-nummodes_/2) and k_2 <= (nummodes_/2-1)) and
+              (k_3 >= (-nummodes_/2) and k_3 <= 0))
+          {
+            // negative wave vector is in the construction domain
+            // conjugate complex have to be used here
+            conjugate = true;
+          }
+          else
+          {
+            // if negative wave vector is not in the construction domain
+            // we have to shift it into the domain using the periodicity of the
+            // wave number field
+            // -k_3 always lies within the construction domain!
+            if (k_1 < (-nummodes_/2))
+               k_1 += nummodes_;
+            if (k_2 < (-nummodes_/2))
+              k_2 += nummodes_;
+
+            conjugate = true;
+          }
+        }
+
+        // get position in u1_hat_fftw
+        const int pos = fftw_k_3 + (nummodes_/2+1) * (fftw_k_2 + nummodes_ * fftw_k_1);
+        // and in u1_hat
+        const int pos_cond = (k_3+nummodes_/2) + (nummodes_/2+1) * ((k_2+nummodes_/2) + nummodes_ * (k_1+nummodes_/2));
+
+        // set value
+        if (not conjugate)
+        {
+          (*u1_hat_fftw)[pos] = (*u1_hat)[pos_cond];
+          (*u2_hat_fftw)[pos] = (*u2_hat)[pos_cond];
+          (*u3_hat_fftw)[pos] = (*u3_hat)[pos_cond];
+        }
+        else
+        {
+          (*u1_hat_fftw)[pos] = conj((*u1_hat)[pos_cond]);
+          (*u2_hat_fftw)[pos] = conj((*u2_hat)[pos_cond]);
+          (*u3_hat_fftw)[pos] = conj((*u3_hat)[pos_cond]);
+        }
+      }
+    }
+  }
+
+  //----------------------------------------
+  // fast Fourier transformation using FFTW
+  //----------------------------------------
+
+#ifdef HAVE_FFTW
+  // set-up
+  fftw_plan fft = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
+                                       (reinterpret_cast<fftw_complex*>(&((*u1_hat_fftw)[0]))),
+                                       &((*u1)[0]), FFTW_ESTIMATE);
+  // fft
+  fftw_execute(fft);
+  // free memory
+  fftw_destroy_plan(fft);
+
+  // similar for the remaining two directions
+  fftw_plan fft_2 = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
+                                         (reinterpret_cast<fftw_complex*>(&((*u2_hat_fftw)[0]))),
+                                         &((*u2)[0]), FFTW_ESTIMATE);
+  fftw_execute(fft_2);
+  // free memory
+  fftw_destroy_plan(fft_2);
+  fftw_plan fft_3 = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
+                                         (reinterpret_cast<fftw_complex*>(&((*u3_hat_fftw)[0]))),
+                                         &((*u3)[0]), FFTW_ESTIMATE);
+  fftw_execute(fft_3);
+  // free memory
+  fftw_destroy_plan(fft_3);
+  fftw_cleanup();
+#else
+    dserror("FFTW required for HIT!");
+#endif
+
+  //----------------------------------------
+  // set velocity field
+  //----------------------------------------
+
+    //for 1st evaluate
+    Teuchos::ParameterList params;
+    params.set<int>("action",FLD::interpolate_hdg_for_hit);
+
+    std::vector<int> dummy;
+    Epetra_SerialDenseMatrix dummyMat;
+    Epetra_SerialDenseVector dummyVec;
+    //this is a dummy, should be zero is written in the first components of interpolVec
+    intvelnp_->PutScalar(0.0);
+    //set dummy
+    discret_->SetState(1,"intvelnp",intvelnp_);
+
+    //for 2nd evaluate
+    const Epetra_Map* intdofrowmap = discret_->DofRowMap(1);
+    Epetra_SerialDenseVector elevec1, elevec3;
+    Epetra_SerialDenseMatrix elemat1, elemat2;
+    Teuchos::ParameterList initParams;
+    initParams.set<int>("action",FLD::project_hdg_initial_field_for_hit);
+
+    // loop over all elements on the processor
+    DRT::Element::LocationArray la(2);
+    double error = 0;
+    for (int el=0; el<discret_->NumMyRowElements();++el)
+    {
+      //1st evaluate
+      DRT::Element *ele = discret_->lRowElement(el);
+
+      Epetra_SerialDenseVector interpolVec;
+      interpolVec.Resize(5*5*5*6); //5*5*5 points: velx, vely, velz, x, y, z
+
+      ele->Evaluate(params,*discret_,dummy,dummyMat,dummyMat,interpolVec,dummyVec,dummyVec);
+
+      // sum values on nodes into vectors and record the touch count (build average of values)
+      for (int i=0; i<5*5*5; ++i)
+      {
+        // get coordinates
+        LINALG::Matrix<3,1> xyz(true);
+        for (int d=0; d<3; ++d)
+          xyz(d)=interpolVec(i*6+d+3);
+        // determine position
+        std::vector<int> loc(3);
+
+        for (int idim = 0; idim < 3; idim++)
+        {
+          for (std::size_t rr = 0; rr < coordinates_->size(); rr++)
+          {
+            if ((xyz(idim,0) <= ((*coordinates_)[rr]+2e-9)) and (xyz(idim,0) >= ((*coordinates_)[rr]-2e-9)))
+            {
+              // due to periodic boundary conditions,
+              // the value at the last node is equal to the one at the first node
+              // using this strategy, no special care is required for slave nodes
+              if ((int) rr < nummodes_)
+               loc[idim] = rr;
+              else
+               dserror("I think that this should not happen");
+
+              break;
+            }
+          }
+        }
+
+        // get position in velocity vectors local_u_1, local_u_2 and local_u_3
+        const int pos = loc[2] + nummodes_ * (loc[1] + nummodes_ * loc[0]);
+
+        // set value
+        interpolVec(i*6+0)=(*u1)[pos];
+        interpolVec(i*6+1)=(*u2)[pos];
+        interpolVec(i*6+2)=(*u3)[pos];
+      }
+
+      //2nd evaluate
+      ele->LocationVector(*discret_,la,false);
+      if (elevec1.M() != discret_->NumDof(1,ele))
+        elevec1.Shape(discret_->NumDof(1,ele), 1);
+      if (static_cast<std::size_t>(elevec3.M()) != la[0].lm_.size())
+        elevec3.Shape(la[0].lm_.size(), 1);
+
+      ele->Evaluate(initParams,*discret_,la[0].lm_,elemat1,elemat2,elevec1,interpolVec,elevec3);
+
+      if (ele->Owner() == discret_->Comm().MyPID())
+      {
+        std::vector<int> localDofs = discret_->Dof(1, ele);
+        dsassert(localDofs.size() == static_cast<std::size_t>(elevec1.M()), "Internal error");
+        for (unsigned int i=0; i<localDofs.size(); ++i)
+          localDofs[i] = intdofrowmap->LID(localDofs[i]);
+        intvelnp_->ReplaceMyValues(localDofs.size(), elevec1.A(), &localDofs[0]);
+      }
+
+      // now fill the ele vector into the discretization
+      for (unsigned int i=0; i<la[0].lm_.size(); ++i)
+      {
+        const int lid = discret_->DofRowMap()->LID(la[0].lm_[i]);
+        if (lid >= 0)
+        {
+          // Here we are facing a difficulty:
+          // the initial field is not continuous but the projection results in jumps at element boundaries
+          // the question is, which value should be used for the traces
+          // I am here just using the average of both elements
+          if ((*velnp_)[lid] != 0)
+          {
+            double tmp = (*velnp_)[lid];
+            (*velnp_)[lid] = 0.5* (tmp + elevec3(i));
+          }
+          else
+            (*velnp_)[lid] = elevec3(i);
+        }
+      }
+    }
+    std::cout << "the error due to projection of the solution from only one side is " << error << std::endl;
+
+  // initialize veln_ as well
+  intveln_->Update(1.0,*intvelnp_ ,0.0);
+  intvelnm_->Update(1.0,*intvelnp_ ,0.0);
+  veln_->Update(1.0,*velnp_ ,0.0);
+  velnm_->Update(1.0,*velnp_ ,0.0);
+  discret_->ClearState(true);
+  return;
+#else
+  dserror("FFTW required");
+#endif
+}
+#endif
 };

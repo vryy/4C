@@ -27,6 +27,10 @@ Maintainer: Martin Kronbichler
 
 #include "../drt_mat/newtonianfluid.H"
 
+#include "../drt_fem_general/drt_utils_polynomial.H"
+#include "../drt_fem_general/drt_utils_boundary_integration.H"
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+
 #include <Epetra_SerialDenseSolver.h>
 
 
@@ -132,11 +136,20 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
   FluidEleCalc<distype>::BodyForce(ele, localSolver_->fldparatimint_->Time(),
       localSolver_->fldpara_->PhysicalType(), ebofoaf_, eprescpgaf_, escabofoaf_);
 
+  //interior body force vector if applicable
+  interiorebofoaf_.resize(((nsd_+1)*nsd_+1)*shapes_->ndofs_,0.0);
+  if(params.get<bool>("forcing",false))
+  {
+    Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1,"forcing");
+    std::vector<int> localDofs = discretization.Dof(1, ele);
+    DRT::UTILS::ExtractMyValues(*matrix_state,interiorebofoaf_,localDofs);
+  }
+
   ReadGlobalVectors(*ele, discretization, lm, updateLocally);
 
   // solves the local problem of the nonlinear iteration before
   if (updateLocally) {
-    localSolver_->ComputeInteriorResidual(mat, interiorVal_, interiorAcc_, traceVal_[0], ebofoaf_);
+    localSolver_->ComputeInteriorResidual(mat, interiorVal_, interiorAcc_, traceVal_[0], ebofoaf_, interiorebofoaf_);
     localSolver_->ComputeInteriorMatrices(mat, false);
 
     dsassert(nfaces_ == static_cast<unsigned int>(ele->NumFace()), "Internal error");
@@ -155,7 +168,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
 
   zeroMatrix(elemat1);
   zeroMatrix(elevec1);
-  localSolver_->ComputeInteriorResidual(mat, interiorVal_, interiorAcc_, traceVal_[0], ebofoaf_);
+  localSolver_->ComputeInteriorResidual(mat, interiorVal_, interiorAcc_, traceVal_[0], ebofoaf_, interiorebofoaf_);
   localSolver_->ComputeInteriorMatrices(mat, updateLocally);
   for (unsigned int f=0; f<nfaces_; ++f) {
     shapesface_->EvaluateFace(*ele,f);
@@ -196,7 +209,6 @@ ReadGlobalVectors(const DRT::Element     & ele,
   DRT::UTILS::ExtractMyValues(*matrix_state,interiorVal_,localDofs);
 
   matrix_state = discretization.GetState(1,"intaccam");
-  localDofs = discretization.Dof(1, &ele);
   DRT::UTILS::ExtractMyValues(*matrix_state,interiorAcc_,localDofs);
 }
 
@@ -278,6 +290,25 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateService(
         ele,
         discretization,
         elevec1);
+    break;
+  }
+  case FLD::project_hdg_force_on_dof_vec_for_hit:
+  {
+    ProjectForceOnDofVecForHIT(
+        ele,
+        discretization,
+        elevec1,
+        elevec2);
+    break;
+  }
+  case FLD::project_hdg_initial_field_for_hit:
+  {
+    ProjectInitialFieldForHIT(
+        ele,
+        discretization,
+        elevec1,
+        elevec2,
+        elevec3);
     break;
   }
   case FLD::project_fluid_field:
@@ -649,9 +680,9 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionForHIT(
     for (int j=0;j<numsamppoints;j++)
       for (int k=0;k<numsamppoints;k++)
       {
-        locations(0,l)=loc1D[i];
+        locations(0,l)=loc1D[k];
         locations(1,l)=loc1D[j];
-        locations(2,l)=loc1D[k];
+        locations(2,l)=loc1D[i];
         l++;
       }
   // get local solution values
@@ -659,7 +690,8 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionForHIT(
   std::vector<int> localDofs = discretization.Dof(1, ele);
   std::vector<double> solvalues (localDofs.size());
 
-  for (unsigned int i=0; i<solvalues.size(); ++i) {
+  for (unsigned int i=0; i<solvalues.size(); ++i)
+  {
     const int lid = matrix_state->Map().LID(localDofs[i]);
     solvalues[i] = (*matrix_state)[lid];
   }
@@ -672,7 +704,8 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionForHIT(
     shapes_->polySpace_->Evaluate(shapes_->xsi,values);
 
     // compute values for velocity and pressure by summing over all basis functions
-    for (unsigned int d=0; d<=nsd_; ++d) {
+    for (unsigned int d=0; d<nsd_; ++d)
+    {
       double sum = 0;
       for (unsigned int k=0; k<shapes_->ndofs_; ++k)
         sum += values(k) * solvalues[(nsd_*nsd_+d)*shapes_->ndofs_+k];
@@ -686,9 +719,303 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionForHIT(
     LINALG::Matrix<nsd_,1> mypoint(true);
     mypoint.MultiplyNN(xyze,myfunct);
 
-    for (unsigned int d=0; d<=nsd_; ++d)
+    for (unsigned int d=0; d<nsd_; ++d)
       elevec1(6*i+d+3) = mypoint(d);
   }
+
+  return 0;
+}
+
+/*----------------------------------------------------------------------*
+ * project force for hit                                       bk 03/15 |
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectForceOnDofVecForHIT(
+    DRT::ELEMENTS::Fluid*                ele,
+    DRT::Discretization&                 discretization,
+    Epetra_SerialDenseVector&            elevec1,
+    Epetra_SerialDenseVector&            elevec2)
+{
+  const int numsamppoints = 5;
+//  dsassert(elevec1.M() == numsamppoints*numsamppoints*numsamppoints*6, "Vector does not have correct size");
+  //sampling locations in 1D in parent domain
+  double loc1D[numsamppoints] = {-0.8, -0.4, 0.0, 0.4, 0.8};
+
+  Epetra_SerialDenseMatrix locations;
+#ifdef DEBUG
+  locations.Shape(3,125);
+  int l=0;
+  for (int i=0;i<numsamppoints;i++)
+    for (int j=0;j<numsamppoints;j++)
+      for (int k=0;k<numsamppoints;k++)
+      {
+        locations(0,l)=loc1D[k];
+        locations(1,l)=loc1D[j];
+        locations(2,l)=loc1D[i];
+        l++;
+      }
+#endif
+
+  std::vector<DRT::UTILS::LagrangePolynomial> poly1d;
+  const unsigned int degree = 4;
+  std::vector<double> points(degree);
+  for (unsigned int i=0; i<=degree; ++i)
+  {
+    for (unsigned int j=0, c=0; j<=degree; ++j)
+      if (i!=j)
+      {
+        points[c] = loc1D[j];
+        ++c;
+      }
+    poly1d.push_back(DRT::UTILS::LagrangePolynomial(points, loc1D[i]));
+  }
+
+  DRT::UTILS::PolynomialSpaceTensor<nsd_,DRT::UTILS::LagrangePolynomial>
+  poly(poly1d);
+
+#ifdef DEBUG
+  //check if we have the right number of polynomials
+  if(poly.Size()!=125)
+    dserror("wrong number of polynomials");
+#endif
+
+  InitializeShapes(ele);
+  shapes_->Evaluate(*ele);
+
+
+  if (elevec1.M() > 0)
+  {
+    Epetra_SerialDenseMatrix localMat(View, elevec1.A(), shapes_->ndofs_, shapes_->ndofs_, nsd_*nsd_+nsd_+1, false);
+    zeroMatrix(localMat);
+
+    // create mass matrix for interior by looping over quadrature points
+    for (unsigned int q=0; q<shapes_->nqpoints_; ++q )
+    {
+      LINALG::Matrix<nsd_,1>    f(false);
+      const double fac = shapes_->jfac(q);
+      Epetra_SerialDenseVector values(numsamppoints*numsamppoints*numsamppoints);
+      LINALG::Matrix<nsd_,1>        xsi(false);
+      for(unsigned int sdm=0;sdm<nsd_;sdm++)
+        xsi(sdm) = shapes_->quadrature_->Point(q)[sdm];
+
+      poly.Evaluate(xsi,values);
+      // compute values for force and coordinates by summing over all basis functions
+      for (unsigned int d=0; d<nsd_; ++d)
+      {
+        double sum = 0.0;
+        for (unsigned int k=0; k<numsamppoints*numsamppoints*numsamppoints; ++k)
+          sum += values(k) * elevec2(6*k+d);
+        f(d) = sum;
+
+#ifdef DEBUG
+        //check plausibility via comparison of quadrature coordinates
+        sum = 0.0;
+        for (unsigned int k=0; k<numsamppoints*numsamppoints*numsamppoints; ++k)
+          sum += values(k) * locations(d,k);
+        if(not(sum+1e-9 > xsi(d) and sum-1e-9 < xsi(d)))
+        {
+          std::cout << "Gauss point:  " << xsi(d) << "  coordinate:  " << sum << std::endl;
+          dserror("Plausibility check failed! Problem might be sequence of polynomials");
+        }
+#endif
+      }
+
+      // now fill the components in the one-sided mass matrix and the right hand side
+      for (unsigned int i=0; i<shapes_->ndofs_; ++i) {
+        // mass matrix part
+        localSolver_->massPart(i,q)  = shapes_->shfunct(i,q);
+        localSolver_->massPartW(i,q) = shapes_->shfunct(i,q) * fac;
+
+        for (unsigned int d=0; d<nsd_; ++d)
+          localMat(i,nsd_*nsd_+d) += shapes_->shfunct(i,q) * f(d) * fac;
+      }
+    }
+    localSolver_->massMat.Multiply('N', 'T', 1., localSolver_->massPart,localSolver_->massPartW, 0.);
+
+    // solve mass matrix system, return values in localMat = elevec2 correctly ordered
+    Epetra_SerialDenseSolver inverseMass;
+    inverseMass.SetMatrix(localSolver_->massMat);
+    inverseMass.SetVectors(localMat,localMat);
+    inverseMass.Solve();
+  }
+
+  return 0;
+}
+
+/*----------------------------------------------------------------------*
+ * project force for hit                                       bk 03/15 |
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectInitialFieldForHIT(
+    DRT::ELEMENTS::Fluid*                ele,
+    DRT::Discretization&                 discretization,
+    Epetra_SerialDenseVector&            elevec1,
+    Epetra_SerialDenseVector&            elevec2,
+    Epetra_SerialDenseVector&            elevec3)
+{
+  const int numsamppoints = 5;
+//  dsassert(elevec1.M() == numsamppoints*numsamppoints*numsamppoints*6, "Vector does not have correct size");
+  //sampling locations in 1D in parent domain
+  double loc1D[numsamppoints] = {-0.8, -0.4, 0.0, 0.4, 0.8};
+
+  Epetra_SerialDenseMatrix locations;
+#ifdef DEBUG
+  locations.Shape(3,125);
+  int l=0;
+  for (int i=0;i<numsamppoints;i++)
+    for (int j=0;j<numsamppoints;j++)
+      for (int k=0;k<numsamppoints;k++)
+      {
+        locations(0,l)=loc1D[k];
+        locations(1,l)=loc1D[j];
+        locations(2,l)=loc1D[i];
+        l++;
+      }
+#endif
+
+  std::vector<DRT::UTILS::LagrangePolynomial> poly1d;
+  const unsigned int degree = 4;
+  std::vector<double> points(degree);
+  for (unsigned int i=0; i<=degree; ++i)
+  {
+    for (unsigned int j=0, c=0; j<=degree; ++j)
+      if (i!=j)
+      {
+        points[c] = loc1D[j];
+        ++c;
+      }
+    poly1d.push_back(DRT::UTILS::LagrangePolynomial(points, loc1D[i]));
+  }
+
+  DRT::UTILS::PolynomialSpaceTensor<nsd_,DRT::UTILS::LagrangePolynomial>
+  poly(poly1d);
+
+  InitializeShapes(ele);
+  shapes_->Evaluate(*ele);
+
+
+  if (elevec1.M() > 0)
+  {
+    Epetra_SerialDenseMatrix localMat(View, elevec1.A(), shapes_->ndofs_, shapes_->ndofs_, nsd_*nsd_+nsd_+1, false);
+    zeroMatrix(localMat);
+
+    // create mass matrix for interior by looping over quadrature points
+    for (unsigned int q=0; q<shapes_->nqpoints_; ++q )
+    {
+      LINALG::Matrix<nsd_,1>    f(false);
+      const double fac = shapes_->jfac(q);
+      Epetra_SerialDenseVector values(numsamppoints*numsamppoints*numsamppoints);
+      LINALG::Matrix<nsd_,1>        xsi(false);
+      for(unsigned int sdm=0;sdm<nsd_;sdm++)
+        xsi(sdm) = shapes_->quadrature_->Point(q)[sdm];
+
+      poly.Evaluate(xsi,values);
+      // compute values for force and coordinates by summing over all basis functions
+      for (unsigned int d=0; d<nsd_; ++d)
+      {
+        double sum = 0.0;
+        for (unsigned int k=0; k<numsamppoints*numsamppoints*numsamppoints; ++k)
+          sum += values(k) * elevec2(6*k+d);
+        f(d) = sum;
+
+#ifdef DEBUG
+        //check plausibility via comparison of quadrature coordinates
+        sum = 0.0;
+        for (unsigned int k=0; k<numsamppoints*numsamppoints*numsamppoints; ++k)
+          sum += values(k) * locations(d,k);
+        if(not(sum+1e-9 > xsi(d) and sum-1e-9 < xsi(d)))
+        {
+          std::cout << "Gauss point:  " << xsi(d) << "  coordinate:  " << sum << std::endl;
+          dserror("Plausibility check failed! Problem might be sequence of polynomials");
+        }
+#endif
+      }
+
+      // now fill the components in the one-sided mass matrix and the right hand side
+      for (unsigned int i=0; i<shapes_->ndofs_; ++i)
+      {
+        // mass matrix part
+        localSolver_->massPart(i,q)  = shapes_->shfunct(i,q);
+        localSolver_->massPartW(i,q) = shapes_->shfunct(i,q) * fac;
+
+        for (unsigned int d=0; d<nsd_; ++d)
+          localMat(i,nsd_*nsd_+d) += shapes_->shfunct(i,q) * f(d) * fac;
+      }
+    }
+    localSolver_->massMat.Multiply('N', 'T', 1., localSolver_->massPart,localSolver_->massPartW, 0.);
+
+    // solve mass matrix system, return values in localMat = elevec2 correctly ordered
+    Epetra_SerialDenseSolver inverseMass;
+    inverseMass.SetMatrix(localSolver_->massMat);
+    inverseMass.SetVectors(localMat,localMat);
+    inverseMass.Solve();
+  }
+
+  //traces
+  Epetra_SerialDenseMatrix mass(shapesface_->nfdofs_, shapesface_->nfdofs_);
+  Epetra_SerialDenseMatrix trVec(shapesface_->nfdofs_, nsd_);
+  dsassert(elevec3.M() == static_cast<int>(nsd_*shapesface_->nfdofs_) ||
+           elevec3.M() == 1+static_cast<int>(nfaces_*nsd_*shapesface_->nfdofs_), "Wrong size in project vector 1");
+
+  for (unsigned int face=0; face<nfaces_; ++face)
+  {
+    shapesface_->EvaluateFace(*ele,face);
+    zeroMatrix(mass);
+    zeroMatrix(trVec);
+
+    LINALG::Matrix<nsd_,nsd_> trafo;
+    LINALG::SerialDenseMatrix faceQPoints;
+    DRT::UTILS::BoundaryGPToParentGP<nsd_>(faceQPoints,trafo,*shapesface_->quadrature_,distype,
+        DRT::UTILS::getEleFaceShapeType(distype,face), face);
+
+    for (unsigned int q=0; q<shapesface_->nqpoints_; ++q)
+    {
+      const double fac = shapesface_->jfac(q);
+      LINALG::Matrix<nsd_,1>        xsi(false);
+
+      //use the location of the quadrature point in the parent element to evaluate the polynomial
+      for (unsigned int d=0; d<nsd_; ++d)
+        xsi(d) = faceQPoints(q,d);
+
+      LINALG::Matrix<nsd_,1> u(false);
+
+      Epetra_SerialDenseVector values(numsamppoints*numsamppoints*numsamppoints);
+
+      poly.Evaluate(xsi,values);
+      // compute values for force and coordinates by summing over all basis functions
+      for (unsigned int d=0; d<nsd_; ++d)
+      {
+        double sum = 0.0;
+        for (unsigned int k=0; k<numsamppoints*numsamppoints*numsamppoints; ++k)
+          sum += values(k) * elevec2(6*k+d);
+        u(d) = sum;
+      }
+
+      // now fill the components in the mass matrix and the right hand side
+      for (unsigned int i=0; i<shapesface_->nfdofs_; ++i)
+      {
+        // mass matrix
+        for (unsigned int j=0; j<shapesface_->nfdofs_; ++j)
+          mass(i,j) += shapesface_->shfunct(i,q) * shapesface_->shfunct(j,q) * fac;
+
+        for (unsigned int d=0; d<nsd_; ++d)
+          trVec(i,d) += shapesface_->shfunct(i,q) * u(d) * fac;
+      }
+    }
+
+    Epetra_SerialDenseSolver inverseMass;
+    inverseMass.SetMatrix(mass);
+    inverseMass.SetVectors(trVec,trVec);
+    inverseMass.Solve();
+
+
+    for (unsigned int d=0; d<nsd_; ++d)
+      for (unsigned int i=0; i<shapesface_->nfdofs_; ++i)
+        elevec3(1+face*shapesface_->nfdofs_*nsd_+d*shapesface_->nfdofs_+i) = trVec(i,d);
+
+  }
+
+  elevec3(0) = 0.0;
 
   return 0;
 }
@@ -884,7 +1211,8 @@ ComputeInteriorResidual(const Teuchos::RCP<MAT::Material> & mat,
                         const std::vector<double>         & val,
                         const std::vector<double>         & accel,
                         const double                        avgPressure,
-                        const LINALG::Matrix<nsd_,nen_>   & ebodyforce)
+                        const LINALG::Matrix<nsd_,nen_>   & ebodyforce,
+                        const std::vector<double>         & intebodyforce)
 {
   zeroMatrix(gRes);
   zeroMatrix(upRes);
@@ -919,7 +1247,7 @@ ComputeInteriorResidual(const Teuchos::RCP<MAT::Material> & mat,
     for (unsigned int i=0; i<ndofs_; ++i)
       pres += shapes_.shfunct(i,q) * val[(nsd_*nsd_+nsd_)*ndofs_+i];
 
-    // interpolate body force (currently only ebofoaf_)
+    // interpolate body force (currently only ebofoaf_), values from input file
     double force[nsd_];
     for (unsigned int d=0; d<nsd_; ++d) {
       force[d] = 0.;
@@ -927,6 +1255,14 @@ ComputeInteriorResidual(const Teuchos::RCP<MAT::Material> & mat,
         force[d] += shapes_.funct(i,q) * ebodyforce(d,i);
     }
 
+    // interpolate body force (currently only ebofoaf_), values from forcing vector based on interior dofs
+    for (unsigned int d=0; d<nsd_; ++d)
+    {
+      for (unsigned int i=0; i<ndofs_; ++i)
+      {
+        force[d] += shapes_.shfunct(i,q) * intebodyforce[(nsd_*nsd_+d)*ndofs_+i];
+      }
+    }
     // ---------------------------- compute interior residuals
     // residual for L_np
     for (unsigned int d=0; d<nsd_; ++d)

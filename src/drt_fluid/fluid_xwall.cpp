@@ -144,6 +144,8 @@ FLD::XWall::XWall(
 
   mfs_fs_ = DRT::INPUT::IntegralValue<int>(params_->sublist("WALL MODEL"),"Enr_MFS_Fine_Scale");
 
+  fix_residual_on_inflow_ = DRT::INPUT::IntegralValue<int>(params_->sublist("WALL MODEL"),"Treat_Tauw_on_Dirichlet_Inflow");
+
   std::string physmodel = params_->sublist("TURBULENCE MODEL").get<std::string>("PHYSICAL_MODEL","no_model");
   if(physmodel != "Multifractal_Subgrid_Scales" && mfs_fs_)
     dserror("can only include enrichment in fine scale vel if mfs is active");
@@ -171,6 +173,7 @@ FLD::XWall::XWall(
     std::cout << "Solver for tau_w smoothing:   " << (DRT::Problem::Instance()->FluidDynamicParams()).get<int>("WSS_ML_AGR_SOLVER") << std::endl;
     std::cout << "Solver for projection:        " << params_->sublist("WALL MODEL").get<int>("PROJECTION_SOLVER") << std::endl;
     std::cout << "Enrichment fine scale vel:    " << mfs_fs_ << std::endl;
+    std::cout << "Fix Dirichlet inflow:         " << fix_residual_on_inflow_ << std::endl;
     std::cout << "Tolerance of adaptive quadr.: " << quadraturetol_ << std::endl;
     std::cout << std::endl;
     std::cout << "WARNING: ramp functions are used to treat fluid Mortar coupling conditions" << std::endl;
@@ -902,7 +905,6 @@ void FLD::XWall::SetupL2Projection()
     LINALG::Export(*gpv,*gpvxw);
     LINALG::Export(*gpvxw,*gpvecparxw_);
   }
-
   TransferAndSaveTauw();
 
   Teuchos::RCP<Epetra_Vector> newtauw = Teuchos::rcp(new Epetra_Vector(*xwallrownodemap_,true));
@@ -916,6 +918,9 @@ void FLD::XWall::SetupL2Projection()
   {
     if(mystressmanager_==Teuchos::null)
       dserror("wssmanager not available in xwall");
+    //fix nodal forces on dirichlet inflow surfaces
+    if(fix_residual_on_inflow_)
+      FixDirichletInflow(trueresidual);
     wss=mystressmanager_->GetPreCalcWallShearStresses(trueresidual); //The time variables are just dummies, hence the mean WSS functionality does not work!!!
   }
   switch (tauwtype_)
@@ -1532,6 +1537,143 @@ void FLD::XWall::ReadRestart(IO::DiscretizationReader& reader)
   reader.ReadVector(restart_wss_,"wss");
   return;
 }
+
+
+
+/*----------------------------------------------------------------------*
+ |  treat Dirichlet inflow                                     bk 04/15 |
+ *----------------------------------------------------------------------*/
+void FLD::XWall::FixDirichletInflow(Teuchos::RCP<Epetra_Vector>   trueresidual)
+{
+  Teuchos::RCP<Epetra_Vector> res = Teuchos::rcp(new Epetra_Vector(*(discret_->DofColMap()),true));
+  LINALG::Export(*trueresidual,*res);
+  for (int j=0; j<xwallrownodemap_->NumMyElements();++j)
+  {
+    int xwallgid = xwallrownodemap_->GID(j);
+
+    DRT::Node* xwallnode = discret_->gNode(xwallgid);
+    if(!xwallnode) dserror("Cannot find node");
+    std::vector<DRT::Condition*> periodiccond;
+    xwallnode->GetCondition("SurfacePeriodic",periodiccond);
+
+    bool includedofs=true;
+    if (not periodiccond.empty())
+    {
+      for (unsigned numcondper=0;numcondper<periodiccond.size();++numcondper)
+      {
+        const std::string* mymasterslavetoggle
+          = periodiccond[numcondper]->Get<std::string>("Is slave periodic boundary condition");
+        if(*mymasterslavetoggle=="Slave")
+        {
+          includedofs=false;
+        }
+      }
+    }
+    if (includedofs)
+    {
+      if(discret_->NodeRowMap()->MyGID(xwallgid))
+      {
+        std::vector<DRT::Condition*> dircond;
+        xwallnode->GetCondition("Dirichlet",dircond);
+
+        std::vector<DRT::Condition*> stresscond;
+        xwallnode->GetCondition("FluidStressCalc",stresscond);
+
+        int numdf=discret_->NumDof(xwallnode);
+
+        if((not dircond.empty()) && (not stresscond.empty()) && numdf>5)
+        {
+          bool isuglydirnode = false;
+          for (unsigned numcond=0;numcond<dircond.size();++numcond)
+          {
+            const std::vector<int>* flag = dircond[numcond]->Get<std::vector<int> >("onoff");
+
+            if ((*flag)[4] or (*flag)[5] or (*flag)[6])
+              isuglydirnode = true;
+          }
+
+          if (isuglydirnode)
+          {
+            //
+            //the new node has to be on these as well
+            //  std::vector<DRT::Condition*> dircond;
+            //    discret_->GetCondition("FluidStressCalc",dircond);
+            DRT::Element** surrele = xwallnode->Elements();
+
+            //loop over all surrounding elements and find indices of node k, l which is closes while fulfilling all criteria
+            double founddist = 1e9;
+            int foundk = -1;
+            int foundl = -1;
+            for (int k=0;k<(xwallnode->NumElement());++k) // loop over elements
+            {
+              DRT::Node** test = surrele[k]->Nodes();
+              for (int l=0;l<surrele[k]->NumNode();++l) //loop over nodes of element
+              {
+                // it has to be on fluidstresscalc
+                // it may not be a dirichlet inflow node
+                //get Dirichlet conditions
+                std::vector<DRT::Condition*> stresscond;
+                test[l]->GetCondition("FluidStressCalc",stresscond);
+                int numdf=discret_->NumDof(test[l]);
+                if(not stresscond.empty() and numdf > 5)
+                {
+                  std::vector<DRT::Condition*> dircond;
+                  test[l]->GetCondition("Dirichlet",dircond);
+                  if(dircond.empty())
+                    dserror("this should be a Dirichlet node");
+                  bool isuglydirnode = false;
+                  for (unsigned numcond=0;numcond<dircond.size();++numcond)
+                  {
+                    const std::vector<int>* flag = dircond[numcond]->Get<std::vector<int> >("onoff");
+                    if ((*flag)[4] or (*flag)[5] or (*flag)[6])
+                      isuglydirnode = true;
+                  }
+
+                  if (not isuglydirnode)
+                  {
+                    const double* x=test[l]->X();
+                    double dist = abs(x[0]- xwallnode->X()[0]) + abs(x[1] - xwallnode->X()[1]) + abs(x[2] - xwallnode->X()[2]);
+                    if(founddist>dist)
+                    {
+                      founddist = dist;
+                      foundk= k;
+                      foundl= l;
+                    }
+                  }
+                }
+              }
+            }
+
+            if(foundk < 0 or foundl < 0)
+              dserror("haven't found required node");
+
+            DRT::Node** test = surrele[foundk]->Nodes();
+
+            int firstglobaldofidtoreplace=discret_->Dof(xwallnode,0);
+            int secondglobaldofidtoreplace=discret_->Dof(xwallnode,0)+1;
+            int thirdglobaldofidtoreplace=discret_->Dof(xwallnode,0)+2;
+            int firstglobaldofidnewvalue=discret_->Dof(test[foundl],0);
+
+            int firstlocaldofidnewvalue=discret_->DofColMap()->LID(firstglobaldofidnewvalue);
+            //half because the area is half on a boundary node compared to an inner node
+            double newvalue1 = 0.5*(*res)[firstlocaldofidnewvalue];
+            double newvalue2 = 0.5*(*res)[firstlocaldofidnewvalue+1];
+            double newvalue3 = 0.5*(*res)[firstlocaldofidnewvalue+2];
+
+            int err =     trueresidual->ReplaceGlobalValues(1,&newvalue1,&firstglobaldofidtoreplace);
+            err =     trueresidual->ReplaceGlobalValues(1,&newvalue2,&secondglobaldofidtoreplace);
+            err =     trueresidual->ReplaceGlobalValues(1,&newvalue3,&thirdglobaldofidtoreplace);
+            if(err!=0)
+              dserror("something wrong");
+          }
+        }
+      }
+    }
+  }
+  return;
+}
+
+
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 01/15 |

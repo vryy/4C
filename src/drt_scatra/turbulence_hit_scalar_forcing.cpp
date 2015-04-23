@@ -70,6 +70,21 @@ HomIsoTurbScalarForcing::HomIsoTurbScalarForcing(
       nummodes_ = 8;
       break;
     }
+    case 1728:
+    {
+      nummodes_ = 12;
+      break;
+    }
+    case 4096:
+    {
+      nummodes_ = 16;
+      break;
+    }
+    case 13824:
+    {
+      nummodes_ = 24;
+      break;
+    }
     case 32768:
     {
       nummodes_ = 32;

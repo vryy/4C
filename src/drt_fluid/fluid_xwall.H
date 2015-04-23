@@ -86,6 +86,10 @@ public:
 
   //read restart including wall stresses
   void ReadRestart(IO::DiscretizationReader& reader);
+
+  //fix residual at Dirichlet-inflow nodes such that the wss can be calculated
+  void FixDirichletInflow(Teuchos::RCP<Epetra_Vector>   trueresidual);
+
   //set current non-linear iteration number
   void SetIter(int iter){iter_=iter;return;}
 
@@ -276,8 +280,11 @@ protected:
   //! smoothing through aggregation of residual
   bool smooth_res_aggregation_;
 
-  //! smoothing through aggregation of residual
+  //! mfs on fine scales
   bool mfs_fs_;
+
+  //! mfs on fine scales
+  bool fix_residual_on_inflow_;
 
   //! switch from gradient-based to residual-based calculation of tauw
   int switch_step_;

@@ -82,6 +82,21 @@ TurbulenceStatisticsHit::TurbulenceStatisticsHit(
       nummodes_ = 8;
       break;
     }
+    case 1728:
+    {
+      nummodes_ = 12;
+      break;
+    }
+    case 4096:
+    {
+      nummodes_ = 16;
+      break;
+    }
+    case 13824:
+    {
+      nummodes_ = 24;
+      break;
+    }
     case 32768:
     {
       nummodes_ = 32;
@@ -2227,6 +2242,7 @@ void TurbulenceStatisticsHitHDG::DoTimeSample(
   togglev_->PutScalar(0.0);
   togglew_->PutScalar(0.0);
 
+//this is currently not supported and has to be adapted to HDG
 //  for (int nn=0; nn<discret_->NumMyRowNodes(); ++nn)
 //  {
 //    // get node
@@ -2241,7 +2257,7 @@ void TurbulenceStatisticsHitHDG::DoTimeSample(
 //    togglev_->ReplaceGlobalValues(1,&one,&(dof[1]));
 //    togglew_->ReplaceGlobalValues(1,&one,&(dof[2]));
 //  }
-
+//
 //  // compute squared values of velocity
 //  const Epetra_Map* dofrowmap = discret_->DofRowMap();
 //  Teuchos::RCP<Epetra_Vector> squaredvelnp = LINALG::CreateVector(*dofrowmap,true);
@@ -2279,6 +2295,7 @@ void TurbulenceStatisticsHitHDG::DoTimeSample(
 //  (*sumvelvel_)[1] = vv/countallnodes;
 //  (*sumvelvel_)[2] = ww/countallnodes;
 
+
   //----------------------------------------------------------------------
   // increase sample counter
   //----------------------------------------------------------------------
@@ -2287,188 +2304,12 @@ void TurbulenceStatisticsHitHDG::DoTimeSample(
   // for the decaying case (merely averaging in space)
   if (type_ == forced_homogeneous_isotropic_turbulence)
     numsamp_++;
-
+  discret_->ClearState(true);
   return;
 #else
   dserror("FFTW required");
 #endif
 }
 
-/*--------------------------------------------------------------*
- | dump statistics to file                             bk 03/15 |
- *--------------------------------------------------------------*/
-void TurbulenceStatisticsHitHDG::DumpStatistics(
-  int step,
-  bool multiple_records)
-{
-  //------------------------------
-  // compute remaining quantities
-  //------------------------------
-  // decaying homogeneous isotropic turbulence
-
-  // resolved turbulent kinetic energy from energy spectrum per unit mass
-  double q_E = 0.0;
-  // resolved turbulent kinetic energy from velocity fluctuations per unit mass
-  double q_u = 0.0;
-  // mean-flow kinetic energy  per unit mass
-  double mke = 0.0;
-  // velocity fluctuations
-  double u_prime = 0.0;
-  // Taylor scale
-  double lambda = 0.0;
-  // dissipation
-  double diss = 0.0;
-  // Taylor scale Reynolds number
-  double Re_lambda = 0.0;
-
-  if (type_ == decaying_homogeneous_isotropic_turbulence)
-  {
-    // start for k=1 not k=0, see Diss Hickel
-    for (std::size_t rr = 1; rr < energyspectrum_->size(); rr++)
-    {
-      // build sum up to cut-off wave number
-      if ((*wavenumbers_)[rr]<= ((((double)nummodes_)/2)-1))
-        q_E += (*energyspectrum_)[rr];
-    }
-
-    for (int rr = 0; rr < 3; rr++)
-      q_u += 0.5 * ((*sumvelvel_)[rr] - (*sumvel_)[rr] * (*sumvel_)[rr]);
-
-    for (int rr = 0; rr < 3; rr++)
-      mke += 0.5 * (*sumvel_)[rr] * (*sumvel_)[rr];
-  }
-
-  if (type_ == forced_homogeneous_isotropic_turbulence)
-  {
-    // start for k=1 not k=0, see Diss Hickel
-    for (std::size_t rr = 1; rr < energyspectrum_->size(); rr++)
-    {
-      if ((*wavenumbers_)[rr]<= ((((double)nummodes_)/2)-1))
-      {
-        q_E += (((*energyspectrum_)[rr])/numsamp_);
-        // is this the same? yes, it is!
-        //diss += ((*dissipationspectrum_)[rr]/numsamp_);
-        diss += ((*wavenumbers_)[rr]*(*wavenumbers_)[rr]*(((*energyspectrum_)[rr])/numsamp_));
-      }
-    }
-
-    u_prime = sqrt(2.0/3.0*q_E);
-    lambda = sqrt(5.0*q_E/diss);
-    Re_lambda = lambda*u_prime/visc_;
-  }
-
-  //------------------------------
-  // write results to file
-  //------------------------------
-
-  if (discret_->Comm().MyPID()==0)
-  {
-    Teuchos::RCP<std::ofstream> log_k;
-
-    std::string s_k = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
-    s_k.append(".energy_spectra");
-
-    if (step == 0 and type_ == decaying_homogeneous_isotropic_turbulence)
-    {
-      log_k = Teuchos::rcp(new std::ofstream(s_k.c_str(),std::ios::app));
-
-      (*log_k) << "# Energy spectrum of initial field (non-dimensionalized form)\n";
-      (*log_k) << "#     k              E\n";
-      (*log_k) << std::scientific;
-      for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++)
-      {
-        (*log_k) <<  " "  << std::setw(11) << std::setprecision(4) << (*wavenumbers_)[rr];
-        (*log_k) << "     " << std::setw(11) << std::setprecision(4) << (*energyspectrum_)[rr];
-        (*log_k) << "\n";
-
-        if ((*wavenumbers_)[rr] >= (3-2e-9) and (*wavenumbers_)[rr]<= (3+2e-9))
-            std::cout << "k " << (*wavenumbers_)[rr] << " energy  " << (*energyspectrum_)[rr] << std::endl;
-      }
-      (*log_k) << "\n\n\n";
-    }
-    else
-    {
-      if (type_ == forced_homogeneous_isotropic_turbulence)
-      {
-        if (not multiple_records)
-        {
-          log_k = Teuchos::rcp(new std::ofstream(s_k.c_str(),std::ios::out));
-          (*log_k) << "# Energy and dissipation spectra for incompressible homogeneous isotropic turbulence\n\n\n";
-        }
-        else
-          log_k = Teuchos::rcp(new std::ofstream(s_k.c_str(),std::ios::app));
-
-        (*log_k) << "# Statistics record ";
-        (*log_k) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
-        (*log_k) << "# tke = " << q_E << "    Taylor scale = " << lambda << "    Re_lambda = " << Re_lambda << "\n";
-        (*log_k) << std::scientific;
-        (*log_k) << "#     k              E              D\n";
-        for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++)
-        {
-          (*log_k) <<  " "  << std::setw(11) << std::setprecision(4) << (*wavenumbers_)[rr];
-          (*log_k) << "     " << std::setw(11) << std::setprecision(4) << (*energyspectrum_)[rr]/numsamp_;
-          (*log_k) << "     " << std::setw(11) << std::setprecision(4) << 2*visc_*(*dissipationspectrum_)[rr]/numsamp_;
-          (*log_k) << "\n";
-        }
-        (*log_k) << "\n\n\n";
-      }
-      else
-      {
-        log_k = Teuchos::rcp(new std::ofstream(s_k.c_str(),std::ios::app));
-
-        bool print = false;
-        for (std::size_t rr = 0; rr < outsteps_->size(); rr++)
-        {
-          if (step == (*outsteps_)[rr])
-          {
-            print = true;
-            break;
-          }
-        }
-
-        if (print)
-        {
-          (*log_k) << "# Energy spectrum at time: "<< step*dt_ << " \n";
-          (*log_k) << "#     k              E              D\n";
-          (*log_k) << std::scientific;
-          for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++)
-          {
-            (*log_k) <<  " "  << std::setw(11) << std::setprecision(4) << (*wavenumbers_)[rr];
-            (*log_k) << "     " << std::setw(11) << std::setprecision(4) << (*energyspectrum_)[rr];
-            (*log_k) << "     " << std::setw(11) << std::setprecision(4) << 2*visc_*(*dissipationspectrum_)[rr];
-            (*log_k) << "\n";
-          }
-          (*log_k) << "\n\n\n";
-        }
-      }
-    }
-
-    log_k->flush();
-
-//    if (type_ == decaying_homogeneous_isotropic_turbulence)
-//    {
-//      Teuchos::RCP<std::ofstream> log_t;
-//
-//      std::string s_t = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
-//      s_t.append(".kinetic_energy");
-//
-//      log_t = Teuchos::rcp(new std::ofstream(s_t.c_str(),std::ios::app));
-//
-//      if (step == 0)
-//        (*log_t) << "#     t               q(E)          q(u'u')          MKE\n";
-//
-//      (*log_t) << std::scientific;
-//      (*log_t) <<  " "  << std::setw(11) << std::setprecision(4) << step*dt_;
-//      (*log_t) << "     " << std::setw(11) << std::setprecision(4) << q_E;
-//      (*log_t) << "     " << std::setw(11) << std::setprecision(4) << q_u;
-//      (*log_t) << "     " << std::setw(11) << std::setprecision(4) << mke;
-//
-//      (*log_t) << "\n";
-//      log_t->flush();
-//    }
-  }
-
-  return;
-}
 
 } //end namespace FLD

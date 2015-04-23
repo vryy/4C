@@ -329,6 +329,8 @@ int DRT::ELEMENTS::FluidHDG::Evaluate(Teuchos::ParameterList&            params,
   case FLD::calc_volume_gaussint:
   case FLD::interpolate_hdg_to_node:
   case FLD::interpolate_hdg_for_hit:
+  case FLD::project_hdg_force_on_dof_vec_for_hit:
+  case FLD::project_hdg_initial_field_for_hit:
   case FLD::project_fluid_field:
   {
     return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), impltype)->EvaluateService(this,

@@ -19,6 +19,8 @@ Maintainer: Martin Kronbichler
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_io/io.H"
+#include "../drt_fluid_turbulence/turbulence_hit_forcing.H"
+#include "../drt_fluid_turbulence/turbulence_hit_initial_field.H"
 
 
 /*----------------------------------------------------------------------*
@@ -341,54 +343,74 @@ void FLD::TimIntHDG::SetInitialFlowField(
   const int startfuncno
   )
 {
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
-  const Epetra_Map* intdofrowmap = discret_->DofRowMap(1);
-  Epetra_SerialDenseVector elevec1, elevec2, elevec3;
-  Epetra_SerialDenseMatrix elemat1, elemat2;
-  Teuchos::ParameterList initParams;
-  initParams.set<int>("action",FLD::project_fluid_field);
-  initParams.set("startfuncno",startfuncno);
-  initParams.set<int>("initfield",initfield);
-  // loop over all elements on the processor
-  DRT::Element::LocationArray la(2);
-  double error = 0;
-  for (int el=0; el<discret_->NumMyColElements();++el) {
-    DRT::Element *ele = discret_->lColElement(el);
+  if (initfield == INPAR::FLUID::initfield_hit_comte_bellot_corrsin
+           or initfield == INPAR::FLUID::initfield_forced_hit_simple_algebraic_spectrum
+           or initfield == INPAR::FLUID::initfield_forced_hit_numeric_spectrum
+           or initfield == INPAR::FLUID::initfield_passive_hit_const_input)
+  {
 
-    ele->LocationVector(*discret_,la,false);
-    if (static_cast<std::size_t>(elevec1.M()) != la[0].lm_.size())
-      elevec1.Shape(la[0].lm_.size(), 1);
-    if (elevec2.M() != discret_->NumDof(1,ele))
-      elevec2.Shape(discret_->NumDof(1,ele), 1);
+    // initialize calculation of initial field based on fast Fourier transformation
+    Teuchos::RCP<HomIsoTurbInitialField> HitInitialFieldHDG = Teuchos::rcp(new FLD::HomIsoTurbInitialFieldHDG(*this,initfield));
+    // calculate initial field
+    HitInitialFieldHDG->CalculateInitialField();
 
-    ele->Evaluate(initParams,*discret_,la[0].lm_,elemat1,elemat2,elevec1,elevec2,elevec3);
+    // get statistics of initial field
+    CallStatisticsManager();
 
-    // now fill the ele vector into the discretization
-    for (unsigned int i=0; i<la[0].lm_.size(); ++i) {
-      const int lid = dofrowmap->LID(la[0].lm_[i]);
-      if (lid >= 0) {
-        if ((*velnp_)[lid] != 0)
-          error += std::abs((*velnp_)[lid]-elevec1(i));
-        (*velnp_)[lid] = elevec1(i);
-        (*veln_)[lid] = elevec1(i);
-        (*velnm_)[lid] = elevec1(i);
+    // initialize  forcing depending on initial field
+    forcing_interface_->SetInitialSpectrum(initfield);
+  }
+  else
+  {
+    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+    const Epetra_Map* intdofrowmap = discret_->DofRowMap(1);
+    Epetra_SerialDenseVector elevec1, elevec2, elevec3;
+    Epetra_SerialDenseMatrix elemat1, elemat2;
+    Teuchos::ParameterList initParams;
+    initParams.set<int>("action",FLD::project_fluid_field);
+    initParams.set("startfuncno",startfuncno);
+    initParams.set<int>("initfield",initfield);
+    // loop over all elements on the processor
+    DRT::Element::LocationArray la(2);
+    double error = 0;
+    for (int el=0; el<discret_->NumMyColElements();++el) {
+      DRT::Element *ele = discret_->lColElement(el);
+
+      ele->LocationVector(*discret_,la,false);
+      if (static_cast<std::size_t>(elevec1.M()) != la[0].lm_.size())
+        elevec1.Shape(la[0].lm_.size(), 1);
+      if (elevec2.M() != discret_->NumDof(1,ele))
+        elevec2.Shape(discret_->NumDof(1,ele), 1);
+
+      ele->Evaluate(initParams,*discret_,la[0].lm_,elemat1,elemat2,elevec1,elevec2,elevec3);
+
+      // now fill the ele vector into the discretization
+      for (unsigned int i=0; i<la[0].lm_.size(); ++i) {
+        const int lid = dofrowmap->LID(la[0].lm_[i]);
+        if (lid >= 0) {
+          if ((*velnp_)[lid] != 0)
+            error += std::abs((*velnp_)[lid]-elevec1(i));
+          (*velnp_)[lid] = elevec1(i);
+          (*veln_)[lid] = elevec1(i);
+          (*velnm_)[lid] = elevec1(i);
+        }
+      }
+
+      if (ele->Owner() == discret_->Comm().MyPID()) {
+        std::vector<int> localDofs = discret_->Dof(1, ele);
+        dsassert(localDofs.size() == static_cast<std::size_t>(elevec2.M()), "Internal error");
+        for (unsigned int i=0; i<localDofs.size(); ++i)
+          localDofs[i] = intdofrowmap->LID(localDofs[i]);
+        intvelnp_->ReplaceMyValues(localDofs.size(), elevec2.A(), &localDofs[0]);
+        intveln_->ReplaceMyValues(localDofs.size(), elevec2.A(), &localDofs[0]);
+        intvelnm_->ReplaceMyValues(localDofs.size(), elevec2.A(), &localDofs[0]);
       }
     }
-
-    if (ele->Owner() == discret_->Comm().MyPID()) {
-      std::vector<int> localDofs = discret_->Dof(1, ele);
-      dsassert(localDofs.size() == static_cast<std::size_t>(elevec2.M()), "Internal error");
-      for (unsigned int i=0; i<localDofs.size(); ++i)
-        localDofs[i] = intdofrowmap->LID(localDofs[i]);
-      intvelnp_->ReplaceMyValues(localDofs.size(), elevec2.A(), &localDofs[0]);
-      intveln_->ReplaceMyValues(localDofs.size(), elevec2.A(), &localDofs[0]);
-      intvelnm_->ReplaceMyValues(localDofs.size(), elevec2.A(), &localDofs[0]);
-    }
+    double globerror = 0;
+    discret_->Comm().SumAll(&error, &globerror, 1);
+    if (discret_->Comm().MyPID() == 0)
+      std::cout << "Error project when setting face twice: " << globerror << std::endl;
   }
-  double globerror = 0;
-  discret_->Comm().SumAll(&error, &globerror, 1);
-  if (discret_->Comm().MyPID() == 0)
-    std::cout << "Error project when setting face twice: " << globerror << std::endl;
 }
 
 
@@ -550,5 +572,77 @@ void FLD::TimIntHDG::Output()
       //output_->WriteVector("velnm",intvelnm_);
     }
   }
+}
+
+/*----------------------------------------------------------------------*
+ | calculate intermediate solution                              bk 04/15|
+ *----------------------------------------------------------------------*/
+void FLD::TimIntHDG::CalcIntermediateSolution()
+{
+
+  if ((special_flow_ == "forced_homogeneous_isotropic_turbulence"
+      or special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence"
+      or special_flow_ == "decaying_homogeneous_isotropic_turbulence") and
+      DRT::INPUT::IntegralValue<INPAR::FLUID::ForcingType>(params_->sublist("TURBULENCE MODEL"),"FORCING_TYPE")
+      == INPAR::FLUID::linear_compensation_from_intermediate_spectrum)
+  {
+    Teuchos::RCP<Epetra_Vector> inttmp = LINALG::CreateVector(*discret_->DofRowMap(1),true);
+    inttmp->Update(1.0,*intvelnp_,0.0);
+
+    FLD::FluidImplicitTimeInt::CalcIntermediateSolution();
+
+    intvelnp_->Update(1.0,*inttmp,0.0);
+
+    // This code is entered at the beginning of the nonlinear iteration, so
+    // store that the assembly to be done next is going to be the first one
+    // (without combined vector update) for HDG.
+    firstAssembly_ = true;
+
+
+    // recompute intermediate values, since they have been likewise overwritten
+    // --------------------------------------------------
+    // adjust accnp according to Dirichlet values of velnp
+    //
+    //                                  n+1     n
+    //                               vel   - vel
+    //       n+1      n  gamma-1.0      (0)
+    //    acc    = acc * --------- + ------------
+    //       (0)           gamma      gamma * dt
+    //
+    GenAlphaUpdateAcceleration();
+
+    // ----------------------------------------------------------------
+    // compute values at intermediate time steps
+    // ----------------------------------------------------------------
+    GenAlphaIntermediateValues();
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | Initialize forcing for HIT and peridic hill                  bk 04/15|
+ *----------------------------------------------------------------------*/
+void FLD::TimIntHDG::InitForcing()
+{
+  // -------------------------------------------------------------------
+  // initialize forcing for homogeneous isotropic turbulence
+  // -------------------------------------------------------------------
+  if (special_flow_ == "forced_homogeneous_isotropic_turbulence"
+      or special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence"
+      or special_flow_ == "decaying_homogeneous_isotropic_turbulence"
+      or special_flow_ == "periodic_hill")
+  {
+      forcing_ = LINALG::CreateVector(*(discret_->DofRowMap(1)),true);
+
+    if (special_flow_ == "forced_homogeneous_isotropic_turbulence"
+        or special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence"
+        or special_flow_ == "decaying_homogeneous_isotropic_turbulence")
+    {
+        forcing_interface_ = Teuchos::rcp(new FLD::HomIsoTurbForcingHDG(*this));
+    }
+    else
+      dserror("forcing interface doesn't know this flow");
+  }
+  return;
 }
 

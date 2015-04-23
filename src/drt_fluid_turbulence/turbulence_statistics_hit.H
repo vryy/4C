@@ -196,13 +196,9 @@ public:
   // evaluation of dissipation rate and rbvmm-related quantities
   void EvaluateResiduals(std::map<std::string,Teuchos::RCP<Epetra_Vector> > statevecs){dserror("not implemented for hdg"); return;};
 
-  //! dump the result to file
-  void DumpStatistics(int step, bool multiple_records = false);
   //! version with scalar field
   void DumpScatraStatistics(int step, bool multiple_records = false){dserror("not implemented for hdg"); return;};
 
-  //! reset sums and number of samples to zero
-  void ClearStatistics(){dserror("not implemented for hdg"); return;};
   //! version with scalar field
   void ClearScatraStatistics(){dserror("not implemented for hdg"); return;};
 

@@ -140,6 +140,8 @@ public:
 
   */
   virtual Teuchos::RCP<Epetra_Vector>  ReturnIntVelnp(){return intvelnp_;}
+  virtual Teuchos::RCP<Epetra_Vector>  ReturnIntVeln(){return intveln_;}
+  virtual Teuchos::RCP<Epetra_Vector>  ReturnIntVelnm(){return intvelnm_;}
 
 
 protected:
@@ -180,6 +182,18 @@ protected:
   Teuchos::RCP<Epetra_MultiVector> interpolatedVelocity_;
   Teuchos::RCP<Epetra_Vector> interpolatedPressure_;
   //@}
+
+  /*!
+  \brief calculate intermediate solution
+
+  */
+  virtual void CalcIntermediateSolution();
+
+  /*!
+  \brief Initialize forcing
+
+  */
+  virtual void InitForcing();
 
 private:
 

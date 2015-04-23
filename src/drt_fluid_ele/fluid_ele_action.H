@@ -72,6 +72,8 @@ enum Action {
     project_fluid_field,
     interpolate_hdg_to_node,
     interpolate_hdg_for_hit,
+    project_hdg_force_on_dof_vec_for_hit,
+    project_hdg_initial_field_for_hit,
     velgradient_projection,
     calc_dt_via_cfl,
     calc_mass_flow_periodic_hill,

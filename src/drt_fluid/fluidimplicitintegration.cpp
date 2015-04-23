@@ -615,25 +615,7 @@ void FLD::FluidImplicitTimeInt::CompleteGeneralInit()
   // -------------------------------------------------------------------
   // initialize forcing for homogeneous isotropic turbulence
   // -------------------------------------------------------------------
-  if (special_flow_ == "forced_homogeneous_isotropic_turbulence"
-      or special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence"
-      or special_flow_ == "decaying_homogeneous_isotropic_turbulence"
-      or special_flow_ == "periodic_hill")
-  {
-    forcing_ = LINALG::CreateVector(*(discret_->DofRowMap()),true);
-    forcing_->PutScalar(0.0);
-    if (special_flow_ == "forced_homogeneous_isotropic_turbulence"
-        or special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence"
-        or special_flow_ == "decaying_homogeneous_isotropic_turbulence")
-    {
-      if(DRT::Problem::Instance()->SpatialApproximation()=="HDG")
-        forcing_interface_ = Teuchos::rcp(new FLD::HomIsoTurbForcingHDG(*this));
-      else
-        forcing_interface_ = Teuchos::rcp(new FLD::HomIsoTurbForcing(*this));
-    }
-    else
-      forcing_interface_ = Teuchos::rcp(new FLD::PeriodicHillForcing(*this));
-  }
+  InitForcing();
 
   //Set general parameters:
   //the following two functions are overloaded (switched off) in TimIntPoro
@@ -1079,7 +1061,7 @@ void FLD::FluidImplicitTimeInt::PrepareSolve()
  | overloaded in TimIntRedModels                               bk 12/13 |
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
-{
+{//forcing_->PutScalar(0.0);
   dtele_    = 0.0;
   dtfilter_ = 0.0;
 
@@ -1157,7 +1139,10 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   if (forcing_!=Teuchos::null)
   {
     eleparams.set("forcing",true);
-    discret_->SetState("forcing",forcing_);
+    if(forcing_->Map().SameAs(*discret_->DofRowMap()))
+      discret_->SetState("forcing",forcing_);
+    else
+      discret_->SetState(1,"forcing",forcing_);
   }
 
   //----------------------------------------------------------------------
@@ -6771,5 +6756,34 @@ void FLD::FluidImplicitTimeInt::ExplicitPredictor()
 void FLD::FluidImplicitTimeInt::AddContributionToNeumannLoads(const Teuchos::RCP<const Epetra_Vector> contributing_vector)
 {
   neumann_loads_->Update(1.0,*contributing_vector,1.0);
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | Initialize forcing for HIT and peridic hill                  bk 04/15|
+ *----------------------------------------------------------------------*/
+void FLD::FluidImplicitTimeInt::InitForcing()
+{
+  // -------------------------------------------------------------------
+  // initialize forcing for homogeneous isotropic turbulence
+  // -------------------------------------------------------------------
+  if (special_flow_ == "forced_homogeneous_isotropic_turbulence"
+      or special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence"
+      or special_flow_ == "decaying_homogeneous_isotropic_turbulence"
+      or special_flow_ == "periodic_hill")
+  {
+    forcing_ = LINALG::CreateVector(*(discret_->DofRowMap()),true);
+
+    if (special_flow_ == "forced_homogeneous_isotropic_turbulence"
+        or special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence"
+        or special_flow_ == "decaying_homogeneous_isotropic_turbulence")
+    {
+      forcing_interface_ = Teuchos::rcp(new FLD::HomIsoTurbForcing(*this));
+    }
+    else if (special_flow_ == "periodic_hill")
+      forcing_interface_ = Teuchos::rcp(new FLD::PeriodicHillForcing(*this));
+    else
+      dserror("forcing interface doesn't know this flow");
+  }
   return;
 }

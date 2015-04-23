@@ -136,6 +136,20 @@ namespace ELEMENTS
                                            DRT::Discretization&                 discretization,
                                            Epetra_SerialDenseVector&            elevec1);
 
+    /*! \brief Project force from equidistant points on interior node dof vector
+     */
+    virtual int ProjectForceOnDofVecForHIT(DRT::ELEMENTS::Fluid*                ele,
+                                           DRT::Discretization&                 discretization,
+                                           Epetra_SerialDenseVector&            elevec1,
+                                           Epetra_SerialDenseVector&            elevec2);
+
+    /*! \brief Project initial field for hit
+     */
+    virtual int ProjectInitialFieldForHIT(DRT::ELEMENTS::Fluid*                ele,
+                                           DRT::Discretization&                 discretization,
+                                           Epetra_SerialDenseVector&            elevec1,
+                                           Epetra_SerialDenseVector&            elevec2,
+                                           Epetra_SerialDenseVector&            elevec3);
     /*!
     \brief Initialize the shape functions and solver to the given element (degree is runtime parameter)
      */
@@ -276,7 +290,8 @@ namespace ELEMENTS
                                    const std::vector<double>        & valnp,
                                    const std::vector<double>        & valn,
                                    const double                       avgPressure,
-                                   const LINALG::Matrix<nsd_,nen_>  & ebodyforce);
+                                   const LINALG::Matrix<nsd_,nen_>  & ebodyforce,
+                                   const std::vector<double>         & intebodyforce);
 
       void ComputeFaceResidual(const int                           face,
                                const Teuchos::RCP<MAT::Material> & mat,
@@ -390,6 +405,7 @@ namespace ELEMENTS
     LINALG::Matrix<nsd_,nen_> ebofoaf_;     /// body force (see fluid_ele_calc.cpp)
     LINALG::Matrix<nsd_,nen_> eprescpgaf_;  /// pressure gradient body force
     LINALG::Matrix<nen_,1>    escabofoaf_;  /// scalar body force for loma
+    std::vector<double> interiorebofoaf_; /// extracted local accelerations at n+alpha_f
 
 
     std::vector<double> traceVal_;    /// extracted values from trace solution vector at n+alpha_f
