@@ -58,8 +58,6 @@ protected:
     double&                                 densn,    //!< density at t_(n)
     double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
     double&                                 densam,   //!< density at t_(n+alpha_M)
-    Teuchos::RCP<ScaTraEleDiffManager>      diffmanager,  //!< diffusion manager handling diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-    Teuchos::RCP<ScaTraEleReaManager>       reamanager,   //!< reaction manager
     double&                                 visc,      //!< fluid viscosity
     const int                               iquad=-1   //!< id of current gauss point (default = -1)
   );
@@ -99,76 +97,10 @@ protected:
   //! extract element based or nodal values
   //  return extracted values of phinp
   virtual const std::vector<double> ExtractElementAndNodeValues(
-    DRT::Element*              ele,
-    Teuchos::ParameterList&    params,
-    DRT::Discretization&       discretization,
-    const std::vector<int>&    lm
-  );
-
-private:
-
-  void SetReactionTermsMatScatra(const int                               k,
-                                const double                            porosity);
-
-  //!Calculate K(c)
-  double CalcReaCoeff(
-      const int                        k,                      //!< id of current scalar
-      const double                     porosity                //!< current porosity
-      );
-
-
-  double CalcReaCoeffFac(
-      const std::vector<int>                    stoich,                  //!<stoichometrie of current condition
-      const MAT::PAR::reaction_coupling         couplingtype,            //!<type of coupling the stoichometry coefficients
-      const int                                 k,                       //!< id of current scalar
-      const double                              porosity                 //!< current porosity
-  );
-
-
-  //! calculate \frac{partial}{\partial c} K(c)
-  double CalcReaCoeffDerivMatrix(
-      const int                 k,                  //!< id of current scalar
-      const int                 j,                  //!< concentration to be derived to
-      const double              porosity            //!< current porosity
-      );
-
-
-  double CalcReaCoeffDerivFac(
-      const std::vector<int>                  stoich,                  //!<stoichometrie of current condition
-      const MAT::PAR::reaction_coupling       couplingtype,            //!<type of coupling the stoichometry coefficients
-      const int                               toderive,                //!<concentration to be derived to
-      const int                               k,                       //!< id of current scalar
-      const double                            porosity                //!< current porosity
-  );
-
-
-  //! calculate f(c)
-  double CalcReaBodyForceTerm(
-      const int                                 k,                      //!< id of current scalar
-      const double                              porosity                //!< current porosity
-);
-
-
-  double CalcReaBodyForceTermFac(
-      const std::vector<int>                      stoich,                 //!<stoichometrie of current condition
-      const MAT::PAR::reaction_coupling           couplingtype,           //!<type of coupling the stoichometry coefficients
-      const double                                porosity                //!< current porosity
-  );
-
-
-  //! calculate \frac{partial}{\partial c} f(c)
-  double CalcReaBodyForceDerivMatrix(
-      const int                 k,                  //!< id of current scalar
-      const int                 j,                  //!< concentration to be derived to
-      const double              porosity                //!< current porosity
-);
-
-
-  virtual double CalcReaBodyForceDerivFac(
-      const std::vector<int>                    stoich,                  //!<stoichometrie of current condition
-      const MAT::PAR::reaction_coupling         couplingtype,            //!<type of coupling the stoichometry coefficients
-      const int                                 toderive,                //!<concentration to be derived to
-      const double                              porosity                //!< current porosity
+      DRT::Element*                 ele,
+      Teuchos::ParameterList&       params,
+      DRT::Discretization&          discretization,
+      DRT::Element::LocationArray&  la
   );
 
 };

@@ -551,12 +551,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateConductivity(
  *---------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalcInitialTimeDerivative(
-    DRT::Element*               ele,              //!< current element
-    Epetra_SerialDenseMatrix&   emat,             //!< element matrix
-    Epetra_SerialDenseVector&   erhs,             //!< element residual
-    Teuchos::ParameterList&     params,           //!< parameter list
-    DRT::Discretization&        discretization,   //!< discretization
-    const std::vector<int>&     lm                //!< location vector
+    DRT::Element*                 ele,              //!< current element
+    Epetra_SerialDenseMatrix&     emat,             //!< element matrix
+    Epetra_SerialDenseVector&     erhs,             //!< element residual
+    Teuchos::ParameterList&       params,           //!< parameter list
+    DRT::Discretization&          discretization,   //!< discretization
+    DRT::Element::LocationArray&  la                //!< location array
     )
 {
   // call base class routine
@@ -566,7 +566,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalcInitialTimeDerivative(
       erhs,
       params,
       discretization,
-      lm
+      la
       );
 
   // do another loop over the integration points for the potential:

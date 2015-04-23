@@ -141,6 +141,8 @@ void POROELAST::PORO_SCATRA_Base::SetMeshDisp()
   scatra_->ScaTraField()->ApplyMeshMovement(
       poro_->FluidField()->Dispnp(),
       poro_->FluidField()->Discretization());
+
+  scatra_->ScaTraField()->Discretization()->SetState(1,"displacement",StructureField()->Dispnp());
 }
 
 /*----------------------------------------------------------------------*

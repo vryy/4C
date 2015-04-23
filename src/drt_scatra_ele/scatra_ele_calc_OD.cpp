@@ -53,7 +53,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateOD(
   // extract element based or nodal values
   //--------------------------------------------------------------------------------
 
-  ExtractElementAndNodeValues(ele,params,discretization,la[0].lm_);
+  ExtractElementAndNodeValues(ele,params,discretization,la);
 
   //--------------------------------------------------------------------------------
   // calculate element coefficient matrix

@@ -184,7 +184,7 @@ void MAT::StructPoroReactionECM::Reaction(double cnp,
                - dt*theta * ( - k_on_c1*porosity*(1.0-porosity)*cnp + k_off_c1*conc_m2c1_ )
                + dt*(1.0-theta)*refporositydot_old_
                ;
-  std::cout<<"refporosity_ECM Reaction: "<<refporosity_<<std::endl;
+
   //Todo: multiply by J!
   refporositydot_ = - k_on_c1*porosity*(1.0-porosity)*cnp + k_off_c1 *conc_m2c1_;
 

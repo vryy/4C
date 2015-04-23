@@ -85,14 +85,14 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Evaluate(
  *-----------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 const std::vector<double>  DRT::ELEMENTS::ScaTraEleCalcElch<distype>::ExtractElementAndNodeValues(
-  DRT::Element*              ele,
-  Teuchos::ParameterList&    params,
-  DRT::Discretization&       discretization,
-  const std::vector<int>&    lm
+    DRT::Element*                 ele,
+    Teuchos::ParameterList&       params,
+    DRT::Discretization&          discretization,
+    DRT::Element::LocationArray&  la
 )
 {
   // call base class routine
-  const std::vector<double> myphinp = my::ExtractElementAndNodeValues(ele,params,discretization,lm);
+  const std::vector<double> myphinp = my::ExtractElementAndNodeValues(ele,params,discretization,la);
 
   // get electric potential at element nodes
   for (int ien=0;ien<my::nen_;++ien)

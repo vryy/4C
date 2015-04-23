@@ -79,7 +79,10 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::Done()
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ScaTraEleCalcPoro(const int numdofpernode,const int numscal)
-  : DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode,numscal)
+  : DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode,numscal),
+    xyze0_(true),
+    eporosity_(true),
+    isnodalporosity_(false)
 {
   // initialization of diffusion manager (override initialization in base class)
   my::diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManagerPoro(my::numscal_));
@@ -180,10 +183,10 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ReadElementCoordinates(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 const std::vector<double> DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ExtractElementAndNodeValues(
-  DRT::Element*              ele,
-  Teuchos::ParameterList&    params,
-  DRT::Discretization&       discretization,
-  const std::vector<int>&    lm
+    DRT::Element*                 ele,
+    Teuchos::ParameterList&       params,
+    DRT::Discretization&          discretization,
+    DRT::Element::LocationArray&  la
 )
 {
   const Teuchos::RCP<Epetra_MultiVector> pre = params.get< Teuchos::RCP<Epetra_MultiVector> >("pressure field");
@@ -196,7 +199,29 @@ const std::vector<double> DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ExtractElem
     my::eprenp_(i) = eprenp(0,i);
   }
 
-  return my::ExtractElementAndNodeValues(ele,params,discretization,lm);
+  // this is a hack. Check if the structure (assumed to be the dofset 1) has more DOFs than dimension. If so,
+  // we assume that this is the porosity
+  if( discretization.NumDof(1,ele->Nodes()[0])==my::nsd_+1 )
+  {
+    isnodalporosity_=true;
+
+    Teuchos::RCP<const Epetra_Vector> disp= discretization.GetState(1,"displacement");
+
+    if(disp!=Teuchos::null)
+    {
+      std::vector<double> mydisp(la[1].lm_.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,la[1].lm_);
+
+      for (int inode=0; inode<my::nen_; ++inode)  // number of nodes
+        eporosity_(inode,0) = mydisp[my::nsd_+(inode*(my::nsd_+1))];
+    }
+    else
+      dserror("Cannot get state vector displacement");
+  }
+  else
+    isnodalporosity_=false;
+
+  return my::ExtractElementAndNodeValues(ele,params,discretization,la);
 }
 
 /*----------------------------------------------------------------------*
@@ -265,10 +290,6 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::MatScaTra(
   // set diffusivity (scaled with porosity)
   SetDiffusivity(actmat,k,porosity);
 
-  // set reaction coefficient
-  // TODO: ??? do not (!) scale with porosity, as reactive term is scaled with density (=porosity) before assembly ???
-  SetReaCoefficient(actmat,k,porosity);
-
   // set densities (scaled with porosity)
   SetDensities(porosity,densn,densnp,densam);
 
@@ -315,7 +336,7 @@ inline void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::SetDensities(
     double& densam
     )
 {
-  //all densities are scaled by the porosity
+  //all densities are set to the porosity
   densn = porosity;
   densnp = porosity;
   densam = porosity;
@@ -331,58 +352,66 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ComputePorosity(
     const DRT::Element* ele       //!< the element we are dealing with
   )
 {
-  //gauss point displacements
-  LINALG::Matrix<my::nsd_,1> dispint(false);
-  dispint.Multiply(my::edispnp_,my::funct_);
-
-  //------------------------get determinant of Jacobian dX / ds
-  // transposed jacobian "dX/ds"
-  LINALG::Matrix<my::nsd_,my::nsd_> xjm0;
-  xjm0.MultiplyNT(my::deriv_,xyze0_);
-
-  // inverse of transposed jacobian "ds/dX"
-  LINALG::Matrix<my::nsd_,my::nsd_> xji0(true);
-  const double det0= xjm0.Determinant();
-
-  my::xjm_.MultiplyNT(my::deriv_,my::xyze_);
-  const double det = my::xjm_.Determinant();
-
-  // determinant of deformationgradient det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds) )^-1
-  const double J = det/det0;
-
-  //fluid pressure at gauss point
-  const double pres = my::eprenp_.Dot(my::funct_);
-
-  //empty parameter list
-  Teuchos::ParameterList             params;
-
-  if(ele->NumMaterial()<2)
-    dserror("no secondary material available");
-
-  //here we rely that the structure material has been added as second material
-  Teuchos::RCP< MAT::StructPoro > structmat = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(ele->Material(1));
-  if(structmat==Teuchos::null)
-    dserror("cast to MAT::StructPoro failed!");
-
-  //just evaluate the first scalar (used only in case of reactive porosity)
-  //TODO: extend to multiple scalars
-  const double phinp = my::ephinp_[0].Dot(my::funct_);
-  params.set<double>("scalar",phinp);
-  params.set<double>("delta time",my::scatraparatimint_->Dt());
-
-  //use structure material to evaluate porosity
   double porosity=0.0;
-  structmat->ComputePorosity( params,
-                              pres,
-                              J,
-                              -1,
-                              porosity,
-                              NULL,
-                              NULL,
-                              NULL,
-                              NULL,
-                              NULL,
-                              false);
+
+  if(isnodalporosity_)
+  {
+    porosity = eporosity_.Dot(my::funct_);
+  }
+  else
+  {
+    //gauss point displacements
+    LINALG::Matrix<my::nsd_,1> dispint(false);
+    dispint.Multiply(my::edispnp_,my::funct_);
+
+    //------------------------get determinant of Jacobian dX / ds
+    // transposed jacobian "dX/ds"
+    LINALG::Matrix<my::nsd_,my::nsd_> xjm0;
+    xjm0.MultiplyNT(my::deriv_,xyze0_);
+
+    // inverse of transposed jacobian "ds/dX"
+    LINALG::Matrix<my::nsd_,my::nsd_> xji0(true);
+    const double det0= xjm0.Determinant();
+
+    my::xjm_.MultiplyNT(my::deriv_,my::xyze_);
+    const double det = my::xjm_.Determinant();
+
+    // determinant of deformationgradient det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds) )^-1
+    const double J = det/det0;
+
+    //fluid pressure at gauss point
+    const double pres = my::eprenp_.Dot(my::funct_);
+
+    //empty parameter list
+    Teuchos::ParameterList             params;
+
+    if(ele->NumMaterial()<2)
+      dserror("no secondary material available");
+
+    //here we rely that the structure material has been added as second material
+    Teuchos::RCP< MAT::StructPoro > structmat = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(ele->Material(1));
+    if(structmat==Teuchos::null)
+      dserror("cast to MAT::StructPoro failed!");
+
+    //just evaluate the first scalar (used only in case of reactive porosity)
+    //TODO: extend to multiple scalars
+    const double phinp = my::ephinp_[0].Dot(my::funct_);
+    params.set<double>("scalar",phinp);
+    params.set<double>("delta time",my::scatraparatimint_->Dt());
+
+    //use structure material to evaluate porosity
+    structmat->ComputePorosity( params,
+                                pres,
+                                J,
+                                -1,
+                                porosity,
+                                NULL,
+                                NULL,
+                                NULL,
+                                NULL,
+                                NULL,
+                                false);
+  }
 
   //save porosity in diffusion manager for later access
   DiffManager()->SetPorosity(porosity);

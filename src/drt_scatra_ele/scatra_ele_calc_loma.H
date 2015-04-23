@@ -207,10 +207,10 @@ private:
 
     //! extract element based or nodal values and return extracted values of phinp
     const std::vector<double> ExtractElementAndNodeValues(
-      DRT::Element*              ele,
-      Teuchos::ParameterList&    params,
-      DRT::Discretization&       discretization,
-      const std::vector<int>&    lm
+        DRT::Element*                 ele,
+        Teuchos::ParameterList&       params,
+        DRT::Discretization&          discretization,
+        DRT::Element::LocationArray&  la
     );
 
     //! get density at integration point

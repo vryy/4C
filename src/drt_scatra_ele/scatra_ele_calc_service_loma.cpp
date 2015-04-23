@@ -151,10 +151,10 @@ const DRT::Element*        ele
  *-----------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 const std::vector<double>  DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::ExtractElementAndNodeValues(
-  DRT::Element*              ele,
-  Teuchos::ParameterList&    params,
-  DRT::Discretization&       discretization,
-  const std::vector<int>&    lm
+    DRT::Element*                 ele,
+    Teuchos::ParameterList&       params,
+    DRT::Discretization&          discretization,
+    DRT::Element::LocationArray&  la
 )
 {
   // add loma-specific values
@@ -163,8 +163,8 @@ const std::vector<double>  DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::ExtractEle
     // extract local values from global vector
     Teuchos::RCP<const Epetra_Vector> phiam = discretization.GetState("phiam");
     if (phiam==Teuchos::null) dserror("Cannot get state vector 'phiam'");
-    std::vector<double> myphiam(lm.size());
-    DRT::UTILS::ExtractMyValues(*phiam,myphiam,lm);
+    std::vector<double> myphiam(la[0].lm_.size());
+    DRT::UTILS::ExtractMyValues(*phiam,myphiam,la[0].lm_);
 
     // fill element array
     for (int i=0;i<my::nen_;++i)
@@ -184,7 +184,7 @@ const std::vector<double>  DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::ExtractEle
     thermpressam_ = params.get<double>("thermodynamic pressure at n+alpha_M");
 
   // call base class routine
-  return my::ExtractElementAndNodeValues(ele,params,discretization,lm);
+  return my::ExtractElementAndNodeValues(ele,params,discretization,la);
 }
 
 

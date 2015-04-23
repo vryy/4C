@@ -99,12 +99,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CheckElchElementParamete
  *---------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcInitialTimeDerivative(
-    DRT::Element*               ele,              //!< current element
-    Epetra_SerialDenseMatrix&   emat,             //!< element matrix
-    Epetra_SerialDenseVector&   erhs,             //!< element residual
-    Teuchos::ParameterList&     params,           //!< parameter list
-    DRT::Discretization&        discretization,   //!< discretization
-    const std::vector<int>&     lm                //!< location vector
+    DRT::Element*                 ele,              //!< current element
+    Epetra_SerialDenseMatrix&     emat,             //!< element matrix
+    Epetra_SerialDenseVector&     erhs,             //!< element residual
+    Teuchos::ParameterList&       params,           //!< parameter list
+    DRT::Discretization&          discretization,   //!< discretization
+    DRT::Element::LocationArray&  la                //!< location array
     )
 {
   // call base class routine
@@ -114,7 +114,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcInitialTimeDerivativ
       erhs,
       params,
       discretization,
-      lm
+      la
       );
 
   // dummy mass matrix for the electric current dofs
@@ -182,14 +182,14 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CorrectRHSFromCalcRHSLin
  *-----------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 const std::vector<double> DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::ExtractElementAndNodeValues(
-    DRT::Element*              ele,
-    Teuchos::ParameterList&    params,
-    DRT::Discretization&       discretization,
-    const std::vector<int>&    lm
+    DRT::Element*                 ele,
+    Teuchos::ParameterList&       params,
+    DRT::Discretization&          discretization,
+    DRT::Element::LocationArray&  la
     )
 {
   // call base class routine
-  const std::vector<double> myphinp = myelch::ExtractElementAndNodeValues(ele,params,discretization,lm);
+  const std::vector<double> myphinp = myelch::ExtractElementAndNodeValues(ele,params,discretization,la);
 
   // get current density at element nodes if required
   if(ElchPara()->CurSolVar())

@@ -112,10 +112,10 @@ protected:
   //! extract element based or nodal values
   //  return extracted values of phinp
   virtual const std::vector<double> ExtractElementAndNodeValues(
-    DRT::Element*              ele,
-    Teuchos::ParameterList&    params,
-    DRT::Discretization&       discretization,
-    const std::vector<int>&    lm
+      DRT::Element*                 ele,
+      Teuchos::ParameterList&       params,
+      DRT::Discretization&          discretization,
+      DRT::Element::LocationArray&  la
   );
 
   //! get the material parameters
@@ -172,6 +172,11 @@ protected:
   //! initial node coordinates
   LINALG::Matrix<my::nsd_,my::nen_> xyze0_;
 
+  //! nodal porosity values at t_(n+1)
+  LINALG::Matrix<my::nen_,1> eporosity_;
+
+  //! porosity at gauss point
+  bool isnodalporosity_;
 };
 
 /// ScaTraEleDiffManagerPoro implementation

@@ -176,10 +176,10 @@ namespace ELEMENTS
     //! extract element based or nodal values
     //  return extracted values of phinp
     virtual const std::vector<double> ExtractElementAndNodeValues(
-      DRT::Element*              ele,
-      Teuchos::ParameterList&    params,
-      DRT::Discretization&       discretization,
-      const std::vector<int>&    lm
+      DRT::Element*                 ele,
+      Teuchos::ParameterList&       params,
+      DRT::Discretization&          discretization,
+      DRT::Element::LocationArray&  la
     );
 
     //! extract turbulence approach
@@ -259,12 +259,12 @@ namespace ELEMENTS
 
     //! calculate mass matrix and rhs for determining initial time derivative
     virtual void CalcInitialTimeDerivative(
-      DRT::Element*               ele,              //!< current element
-      Epetra_SerialDenseMatrix&   emat,             //!< element matrix
-      Epetra_SerialDenseVector&   erhs,             //!< element residual
-      Teuchos::ParameterList&     params,           //!< parameter list
-      DRT::Discretization&        discretization,   //!< discretization
-      const std::vector<int>&     lm                //!< location vector
+      DRT::Element*                 ele,              //!< current element
+      Epetra_SerialDenseMatrix&     emat,             //!< element matrix
+      Epetra_SerialDenseVector&     erhs,             //!< element residual
+      Teuchos::ParameterList&       params,           //!< parameter list
+      DRT::Discretization&          discretization,   //!< discretization
+      DRT::Element::LocationArray&  la                //!< location array
     );
 
     //! Correct RHS calculated from CalcRHSLinMass() for the linearized mass term

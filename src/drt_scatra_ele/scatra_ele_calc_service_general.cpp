@@ -62,7 +62,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
       elevec1_epetra,
       params,
       discretization,
-      lm
+      la
       );
     break;
   }
@@ -944,16 +944,16 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcBoxFilter(
  *-----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcInitialTimeDerivative(
-    DRT::Element*               ele,              //!< current element
-    Epetra_SerialDenseMatrix&   emat,             //!< element matrix
-    Epetra_SerialDenseVector&   erhs,             //!< element residual
-    Teuchos::ParameterList&     params,           //!< parameter list
-    DRT::Discretization&        discretization,   //!< discretization
-    const std::vector<int>&     lm                //!< location vector
+    DRT::Element*                 ele,              //!< current element
+    Epetra_SerialDenseMatrix&     emat,             //!< element matrix
+    Epetra_SerialDenseVector&     erhs,             //!< element residual
+    Teuchos::ParameterList&       params,           //!< parameter list
+    DRT::Discretization&          discretization,   //!< discretization
+    DRT::Element::LocationArray&  la                //!< location array
     )
 {
   // extract relevant quantities from discretization and parameter list
-  ExtractElementAndNodeValues(ele,params,discretization,lm);
+  ExtractElementAndNodeValues(ele,params,discretization,la);
 
   //----------------------------------------------------------------------
   // calculation of element volume both for tau at ele. cent. and int. pt.

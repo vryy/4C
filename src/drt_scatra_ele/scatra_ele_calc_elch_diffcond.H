@@ -327,10 +327,10 @@ private:
 
   //! extract element based or nodal values and return extracted values of phinp
   const std::vector<double> ExtractElementAndNodeValues(
-    DRT::Element*              ele,
-    Teuchos::ParameterList&    params,
-    DRT::Discretization&       discretization,
-    const std::vector<int>&    lm
+      DRT::Element*                 ele,
+      Teuchos::ParameterList&       params,
+      DRT::Discretization&          discretization,
+      DRT::Element::LocationArray&  la
   );
 
   //! validity check for all elements with respect to
@@ -341,12 +341,12 @@ private:
 
   //! calculate element mass matrix and element residual for initial time derivative
   void CalcInitialTimeDerivative(
-      DRT::Element*               ele,              //!< current element
-      Epetra_SerialDenseMatrix&   emat,             //!< element matrix
-      Epetra_SerialDenseVector&   erhs,             //!< element residual
-      Teuchos::ParameterList&     params,           //!< parameter list
-      DRT::Discretization&        discretization,   //!< discretization
-      const std::vector<int>&     lm                //!< location vector
+      DRT::Element*                 ele,              //!< current element
+      Epetra_SerialDenseMatrix&     emat,             //!< element matrix
+      Epetra_SerialDenseVector&     erhs,             //!< element residual
+      Teuchos::ParameterList&       params,           //!< parameter list
+      DRT::Discretization&          discretization,   //!< discretization
+      DRT::Element::LocationArray&  la                //!< location array
       );
 
   //! Correct RHS calculated from CalcRHSLinMass() for the linearized mass term

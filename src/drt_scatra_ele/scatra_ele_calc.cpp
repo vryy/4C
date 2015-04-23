@@ -140,7 +140,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Evaluate(
   // extract element based or nodal values
   //--------------------------------------------------------------------------------
 
-  ExtractElementAndNodeValues(ele,params,discretization,la[0].lm_);
+  ExtractElementAndNodeValues(ele,params,discretization,la);
 
   //--------------------------------------------------------------------------------
   // prepare turbulence models
@@ -177,10 +177,10 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Evaluate(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
 const std::vector<double>  DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ExtractElementAndNodeValues(
-  DRT::Element*              ele,
-  Teuchos::ParameterList&    params,
-  DRT::Discretization&       discretization,
-  const std::vector<int>&    lm
+    DRT::Element*                 ele,
+    Teuchos::ParameterList&       params,
+    DRT::Discretization&          discretization,
+    DRT::Element::LocationArray&  la
 )
 {
   // get convective (velocity - mesh displacement) velocity at nodes
@@ -234,6 +234,9 @@ const std::vector<double>  DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Extrac
   Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
   if (hist==Teuchos::null || phinp==Teuchos::null)
     dserror("Cannot get state vector 'hist' and/or 'phinp'");
+
+  //values of scatra field are always in first dofset
+  const std::vector<int>&    lm = la[0].lm_;
   std::vector<double> myhist(lm.size());
   std::vector<double> myphinp(lm.size());
   DRT::UTILS::ExtractMyValues(*hist,myhist,lm);
