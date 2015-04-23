@@ -5,7 +5,7 @@
 
 
 the input line should read
-  MAT 1 ELAST_CoupVarga MUE 200.0
+  MAT 1 ELAST_CoupVarga MUE 200.0 BETA 1.0
 
 <pre>
 Maintainer: Burkhard Bornemann
