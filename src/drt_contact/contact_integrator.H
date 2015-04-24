@@ -902,11 +902,12 @@ public:
    (This is the AuxPlane version, thus master and slave are projected)
 
    */
-  void DerivXiGP3DAuxPlane(MORTAR::MortarElement& ele, double* xigp,
-      double* auxn, std::vector<GEN::pairedvector<int, double> >& derivxi
-      , double& alpha,
-      std::vector<GEN::pairedvector<int, double> >& derivauxn,
-      std::vector<GEN::pairedvector<int, double> >& derivgp);
+  void DerivXiGP3DAuxPlane(MORTAR::MortarElement& ele,
+      double* xigp, double* auxn,
+      std::vector<GEN::pairedvector<int,double> >& derivxi,
+      double& alpha,
+      std::vector<GEN::pairedvector<int,double> >& derivauxn,
+      GEN::pairedvector<int,LINALG::Matrix<3,1> >& derivgp);
 
   /*!
    \brief Assemble g~ contribution of current overlap into slave nodes

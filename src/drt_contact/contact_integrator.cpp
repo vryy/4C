@@ -1756,6 +1756,18 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
     linsize += cnode->GetLinsize();
   }
 
+  // check if the cells are tri3
+  // there's nothing wrong about other shapes, but as long as they are all
+  // tri3 we can perform the jacobian calculation ( and its deriv) outside
+  // the Gauss point loop
+  if (cell->Shape()!=DRT::Element::tri3)
+    dserror("only tri3 integration cells at the moment. See comment in the code");
+  double eta[2]={0.,0.};
+  double jac=cell->Jacobian(eta);
+  // directional derivative of cell Jacobian
+  GEN::pairedvector<int,double> jacintcellmap((nrow+ncol)*ndof);
+  cell->DerivJacobian(eta, jacintcellmap);
+
   //**********************************************************************
   // loop over all Gauss points for integration
   //**********************************************************************
@@ -1839,26 +1851,18 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
     sele.Evaluate2ndDerivShape(sxi,ssecderiv,nrow);
 
     // evaluate linearizations *******************************************
-    // evaluate the intcell Jacobian derivative
-    GEN::pairedvector<int,double> jacintcellmap((nrow+ncol)*ndof);
-    cell->DerivJacobian(eta,jacintcellmap);
 
     // evaluate global GP coordinate derivative
     static LINALG::Matrix<3,1> svalcell;
     static LINALG::Matrix<3,2> sderivcell;
     cell->EvaluateShape(eta,svalcell,sderivcell);
 
-    std::vector<GEN::pairedvector<int,double> > lingp(3,(nrow+ncol)*ndof);
+    GEN::pairedvector<int,LINALG::Matrix<3,1> > lingp((nrow+ncol)*ndof);
 
     for (int v=0;v<3;++v)
-    {
-      for (_CI p=(cell->GetDerivVertex(v))[0].begin();p!=(cell->GetDerivVertex(v))[0].end();++p)
-        lingp[0][p->first] += svalcell(v) * (p->second);
-      for (_CI p=(cell->GetDerivVertex(v))[1].begin();p!=(cell->GetDerivVertex(v))[1].end();++p)
-        lingp[1][p->first] += svalcell(v) * (p->second);
-      for (_CI p=(cell->GetDerivVertex(v))[2].begin();p!=(cell->GetDerivVertex(v))[2].end();++p)
-        lingp[2][p->first] += svalcell(v) * (p->second);
-    }
+      for (int d=0; d<3; ++d)
+        for (_CI p=(cell->GetDerivVertex(v))[d].begin();p!=(cell->GetDerivVertex(v))[d].end();++p)
+          lingp[p->first](d) += svalcell(v) * (p->second);
 
     // evalute the GP slave coordinate derivatives
     std::vector<GEN::pairedvector<int,double> > dsxigp(2,(nrow+ncol)*ndof);
@@ -1867,9 +1871,6 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
     // evalute the GP master coordinate derivatives
     std::vector<GEN::pairedvector<int,double> > dmxigp(2,(nrow+ncol)*ndof);
     DerivXiGP3DAuxPlane(mele,mxi,cell->Auxn(),dmxigp,mprojalpha,cell->GetDerivAuxn(),lingp);
-
-    // evaluate the integration cell Jacobian
-    double jac = cell->Jacobian(eta);
 
     // scaling specific
     double jacsele = 0.0;
@@ -2180,6 +2181,19 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
     CoNode* cnode = dynamic_cast<CoNode*> (mynodes[i]);
     linsize += cnode->GetLinsize();
   }
+
+  // check if the cells are tri3
+  // there's nothing wrong about other shapes, but as long as they are all
+  // tri3 we can perform the jacobian calculation ( and its deriv) outside
+  // the Gauss point loop
+  if (cell->Shape()!=DRT::Element::tri3)
+    dserror("only tri3 integration cells at the moment. See comment in the code");
+  double eta[2]={0.,0.};
+  double jac=cell->Jacobian(eta);
+  // directional derivative of cell Jacobian
+  GEN::pairedvector<int,double> jacintcellmap((nrow+ncol)*ndof);
+  cell->DerivJacobian(eta, jacintcellmap);
+
   //**********************************************************************
   // loop over all Gauss points for integration
   //**********************************************************************
@@ -2269,31 +2283,20 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
     if (dualquad3d) sele.EvaluateShape(psxi,svalmod,sderivmod,nrow,true);
     mele.EvaluateShape(pmxi,mval,mderiv,ncol);
 
-    // evaluate the integration cell Jacobian
-    double jac = cell->Jacobian(eta);
-
     // evaluate 2nd deriv of trace space shape functions (on slave element)
     sele.Evaluate2ndDerivShape(psxi,ssecderiv,nrow);
-
-    GEN::pairedvector<int,double> jacintcellmap(100);
-    cell->DerivJacobian(eta,jacintcellmap);
 
     // evaluate global GP coordinate derivative
     LINALG::Matrix<3,1> svalcell;
     LINALG::Matrix<3,2> sderivcell;
     cell->EvaluateShape(eta,svalcell,sderivcell);
 
-    std::vector<GEN::pairedvector<int,double> > lingp(3,(nrow+ncol)*ndof);
+    GEN::pairedvector<int,LINALG::Matrix<3,1> > lingp((nrow+ncol)*ndof);
 
     for (int v=0;v<3;++v)
-    {
-      for (_CI p=(cell->GetDerivVertex(v))[0].begin();p!=(cell->GetDerivVertex(v))[0].end();++p)
-        lingp[0][p->first] += svalcell(v) * (p->second);
-      for (_CI p=(cell->GetDerivVertex(v))[1].begin();p!=(cell->GetDerivVertex(v))[1].end();++p)
-        lingp[1][p->first] += svalcell(v) * (p->second);
-      for (_CI p=(cell->GetDerivVertex(v))[2].begin();p!=(cell->GetDerivVertex(v))[2].end();++p)
-        lingp[2][p->first] += svalcell(v) * (p->second);
-    }
+      for (int d=0; d<3; ++d)
+        for (_CI p=(cell->GetDerivVertex(v))[d].begin();p!=(cell->GetDerivVertex(v))[d].end();++p)
+          lingp[p->first](d) += svalcell(v) * (p->second);
 
     // evalute the GP slave coordinate derivatives
     std::vector<GEN::pairedvector<int,double> > dsxigp(2,(nrow+ncol)*ndof);
@@ -3901,7 +3904,7 @@ void CONTACT::CoIntegrator::DerivXiGP3DAuxPlane(MORTAR::MortarElement& ele,
                                         std::vector<GEN::pairedvector<int,double> >& derivxi,
                                         double& alpha,
                                         std::vector<GEN::pairedvector<int,double> >& derivauxn,
-                                        std::vector<GEN::pairedvector<int,double> >& derivgp)
+                                        GEN::pairedvector<int,LINALG::Matrix<3,1> >& derivgp)
 {
   //check for problem dimension
   if (Dim()!=3) dserror("ERROR: 3D integration method called for non-3D problem");
@@ -3963,20 +3966,18 @@ void CONTACT::CoIntegrator::DerivXiGP3DAuxPlane(MORTAR::MortarElement& ele,
   }
 
   // (2) Gauss point coordinates part
-  for (_CI p=derivgp[0].begin();p!=derivgp[0].end();++p)
+  for (GEN::pairedvector<int,LINALG::Matrix<3,1> >::const_iterator p=derivgp.begin();
+      p!=derivgp.end();++p)
   {
-    derivxi[0][p->first] += lmatrix(0,0) * (p->second);
-    derivxi[1][p->first] += lmatrix(1,0) * (p->second);
-  }
-  for (_CI p=derivgp[1].begin();p!=derivgp[1].end();++p)
-  {
-    derivxi[0][p->first] += lmatrix(0,1) * (p->second);
-    derivxi[1][p->first] += lmatrix(1,1) * (p->second);
-  }
-  for (_CI p=derivgp[2].begin();p!=derivgp[2].end();++p)
-  {
-    derivxi[0][p->first] += lmatrix(0,2) * (p->second);
-    derivxi[1][p->first] += lmatrix(1,2) * (p->second);
+    const int pf = p->first;
+    double& derivxi0 = derivxi[0][pf];
+    double& derivxi1 = derivxi[1][pf];
+    const LINALG::Matrix<3,1>& tmp=p->second;
+    for (int d=0; d<3; ++d)
+    {
+      derivxi0 += lmatrix(0,d) * tmp(d);
+      derivxi1 += lmatrix(1,d) * tmp(d);
+    }
   }
 
   // (3) AuxPlane normal part
@@ -4951,16 +4952,31 @@ void inline CONTACT::CoIntegrator::GP_3D_G(
     for (int z=0;z<nrow;++z)
     {
       CoNode* cnode = dynamic_cast<CoNode*> (snodes[z]);
-
       for (int k=0;k<3;++k)
-      {
         dgapgp[cnode->Dofs()[k]] -= sval[z] * gpn[k];
+    }
 
-        for (_CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
-          dgapgp[p->first] -= gpn[k] * sderiv(z,0) * cnode->xspatial()[k] * (p->second);
+    for (_CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
+    {
+      double& dg = dgapgp[p->first] ;
+      const double& ps = p->second;
+      for (int z=0;z<nrow;++z)
+      {
+        CoNode* cnode = dynamic_cast<CoNode*> (snodes[z]);
+        for (int k=0;k<3;++k)
+          dg -= gpn[k] * sderiv(z,0) * cnode->xspatial()[k] * ps;
+      }
+    }
 
-        for (_CI p=dsxigp[1].begin();p!=dsxigp[1].end();++p)
-          dgapgp[p->first] -= gpn[k] * sderiv(z,1) * cnode->xspatial()[k] * (p->second);
+    for (_CI p=dsxigp[1].begin();p!=dsxigp[1].end();++p)
+    {
+      double& dg = dgapgp[p->first] ;
+      const double& ps = p->second;
+      for (int z=0;z<nrow;++z)
+      {
+        CoNode* cnode = dynamic_cast<CoNode*> (snodes[z]);
+        for (int k=0;k<3;++k)
+          dg -=  gpn[k] * sderiv(z,1) * cnode->xspatial()[k] * ps;
       }
     }
   }
@@ -4994,16 +5010,31 @@ void inline CONTACT::CoIntegrator::GP_3D_G(
     for (int z=0;z<ncol;++z)
     {
       CoNode* cnode = dynamic_cast<CoNode*> (mnodes[z]);
-
       for (int k=0;k<3;++k)
-      {
         dgapgp[cnode->Dofs()[k]] += mval[z] * gpn[k];
+    }
 
-        for (_CI p=dmxigp[0].begin();p!=dmxigp[0].end();++p)
-          dgapgp[p->first] += gpn[k] * mderiv(z,0) * cnode->xspatial()[k] * (p->second);
+    for (_CI p=dmxigp[0].begin();p!=dmxigp[0].end();++p)
+    {
+      double& dg = dgapgp[p->first] ;
+      const double& ps = p->second;
+      for (int z=0;z<ncol;++z)
+      {
+        CoNode* cnode = dynamic_cast<CoNode*> (mnodes[z]);
+        for (int k=0;k<3;++k)
+          dg+=gpn[k] * mderiv(z,0) * cnode->xspatial()[k] * ps;
+      }
+    }
 
-        for (_CI p=dmxigp[1].begin();p!=dmxigp[1].end();++p)
-          dgapgp[p->first] += gpn[k] * mderiv(z,1) * cnode->xspatial()[k] * (p->second);
+    for (_CI p=dmxigp[1].begin();p!=dmxigp[1].end();++p)
+    {
+      double& dg = dgapgp[p->first] ;
+      const double& ps = p->second;
+      for (int z=0;z<ncol;++z)
+      {
+        CoNode* cnode = dynamic_cast<CoNode*> (mnodes[z]);
+        for (int k=0;k<3;++k)
+          dg += gpn[k] * mderiv(z,1) * cnode->xspatial()[k] * ps;
       }
     }
   }

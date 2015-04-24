@@ -195,17 +195,12 @@ void CONTACT::AugmentedIntegrator::IntegrateDerivCell3DAuxPlane(
     static LINALG::Matrix<3,2> sderivcell;
     cell->EvaluateShape(eta,svalcell,sderivcell);
 
-    std::vector<GEN::pairedvector<int,double> > lingp(3,(nrow+ncol)*ndof);
+    GEN::pairedvector<int,LINALG::Matrix<3,1> > lingp((nrow+ncol)*ndof);
 
     for (int v=0;v<3;++v)
-    {
-      for (CI p=(cell->GetDerivVertex(v))[0].begin();p!=(cell->GetDerivVertex(v))[0].end();++p)
-        lingp[0][p->first] += svalcell(v) * (p->second);
-      for (CI p=(cell->GetDerivVertex(v))[1].begin();p!=(cell->GetDerivVertex(v))[1].end();++p)
-        lingp[1][p->first] += svalcell(v) * (p->second);
-      for (CI p=(cell->GetDerivVertex(v))[2].begin();p!=(cell->GetDerivVertex(v))[2].end();++p)
-        lingp[2][p->first] += svalcell(v) * (p->second);
-    }
+      for (int d=0; d<3; ++d)
+        for (CI p=(cell->GetDerivVertex(v))[d].begin();p!=(cell->GetDerivVertex(v))[d].end();++p)
+          lingp[p->first](d) += svalcell(v) * (p->second);
 
     // evalute the GP slave coordinate derivatives
     std::vector<GEN::pairedvector<int,double> > dsxigp(2,(nrow+ncol)*ndof);

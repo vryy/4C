@@ -1666,7 +1666,10 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
   }
 
   // slave nodes and dofs
+  const int max_nnodes=9;
   const int nnodes = SlaveElement().NumNode();
+  if (nnodes>max_nnodes)
+    dserror("this function is not implemented to handle elements with that many nodes. Just adjust max_nnodes above");
   const int ndof = 3;
   const int msize = MasterElements().size();
 
@@ -1688,12 +1691,15 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
   LINALG::SerialDenseMatrix me(nnodes,nnodes,true);
   LINALG::SerialDenseMatrix de(nnodes,nnodes,true);
 
+  GEN::pairedvector<int,LINALG::Matrix<max_nnodes+1,max_nnodes> > derivde_new((nnodes+mnodes)*ndof);
+
   // two-dim arrays of maps for linearization of me/de
   std::vector<std::vector<GEN::pairedvector<int,double> > >
     derivme(nnodes,std::vector<GEN::pairedvector<int,double> >(nnodes,(nnodes+mnodes)*ndof));
   std::vector<std::vector<GEN::pairedvector<int,double> > >
     derivde(nnodes,std::vector<GEN::pairedvector<int,double> >(nnodes,(nnodes+mnodes)*ndof));
 
+  double A_tot=0.;
   // loop over all master elements associated with this slave element
   for (int m=0;m<(int)Coupling().size();++m)
   {
@@ -1712,8 +1718,23 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
     {
       Teuchos::RCP<MORTAR::IntCell> currcell = Coupling()[m]->Cells()[c];
 
+      A_tot+=currcell->Area();
+
       // create an integrator for this cell
       CONTACT::CoIntegrator integrator(imortar_,currcell->Shape(),Comm());
+
+      // check if the cells are tri3
+      // there's nothing wrong about other shapes, but as long as they are all
+      // tri3 we can perform the jacobian calculation ( and its deriv) outside
+      // the Gauss point loop
+      if (currcell->Shape()!=DRT::Element::tri3)
+        dserror("only tri3 integration cells at the moment. See comment in the code");
+      double eta[2]={0.,0.};
+      detg=currcell->Jacobian(eta);
+      // directional derivative of cell Jacobian
+      GEN::pairedvector<int,double> derivjaccell((nnodes+ncol)*ndof);
+      currcell->DerivJacobian(eta, derivjaccell);
+
       for (int gp=0;gp<integrator.nGP(); ++gp)
       {
         // coordinates and weight
@@ -1749,20 +1770,14 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
 
         // evaluate trace space shape functions at Gauss point
         SlaveElement().EvaluateShape(psxi, sval, sderiv, nnodes);
-        detg=currcell->Jacobian(eta);
 
         // additional data for contact calculation (i.e. incl. derivative of dual shape functions coefficient matrix)
-        // directional derivative of cell Jacobian
-        GEN::pairedvector<int,double> derivjaccell((nnodes+ncol)*ndof);
         // GP slave coordinate derivatives
         std::vector<GEN::pairedvector<int,double> > dsxigp(2,(nnodes+ncol)*ndof);
         // GP slave coordinate derivatives
         std::vector<GEN::pairedvector<int,double> > dpsxigp(2,(nnodes+ncol)*ndof);
         // global GP coordinate derivative on integration element
-        std::vector<GEN::pairedvector<int,double> > lingp(3,(nnodes+ncol)*ndof);
-
-        // compute directional derivative of cell Jacobian
-        currcell->DerivJacobian(eta, derivjaccell);
+        GEN::pairedvector<int,LINALG::Matrix<3,1> > lingp((nnodes+ncol)*ndof);
 
         // compute global GP coordinate derivative
         static LINALG::Matrix<3,1> svalcell;
@@ -1770,14 +1785,9 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
         currcell->EvaluateShape(eta,svalcell,sderivcell);
 
         for (int v=0;v<3;++v)
-        {
-          for (_CI p=(currcell->GetDerivVertex(v))[0].begin();p!=(currcell->GetDerivVertex(v))[0].end();++p)
-            lingp[0][p->first] += svalcell(v) * (p->second);
-          for (_CI p=(currcell->GetDerivVertex(v))[1].begin();p!=(currcell->GetDerivVertex(v))[1].end();++p)
-            lingp[1][p->first] += svalcell(v) * (p->second);
-          for (_CI p=(currcell->GetDerivVertex(v))[2].begin();p!=(currcell->GetDerivVertex(v))[2].end();++p)
-            lingp[2][p->first] += svalcell(v) * (p->second);
-        }
+          for (int d=0; d<3; ++d)
+            for (_CI p=(currcell->GetDerivVertex(v))[d].begin();p!=(currcell->GetDerivVertex(v))[d].end();++p)
+              lingp[p->first](d) += svalcell(v) * (p->second);
 
         // compute GP slave coordinate derivatives
         integrator.DerivXiGP3DAuxPlane(Coupling()[m]->SlaveIntElement(),sxi,currcell->Auxn(),dsxigp,sprojalpha,currcell->GetDerivAuxn(),lingp);
@@ -1792,6 +1802,37 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
         else
           dpsxigp=dsxigp;
 
+        double fac=0.;
+        for (_CI p=derivjaccell.begin();p!=derivjaccell.end();++p)
+        {
+          LINALG::Matrix<max_nnodes+1,max_nnodes>& dtmp = derivde_new[p->first];
+          const double& ps = p->second;
+          for (int j=0;j<nnodes;++j)
+          {
+            fac=wgt*sval[j]*ps;
+            dtmp(nnodes,j)+=fac;
+            for (int k=0; k<nnodes; ++k)
+              dtmp(k,j)+=fac*sval[k];
+          }
+        }
+
+        for (int i=0; i<2; ++i)
+          for (_CI p=dpsxigp[i].begin(); p!=dpsxigp[i].end(); ++p)
+          {
+            LINALG::Matrix<max_nnodes+1,max_nnodes>& dtmp = derivde_new[p->first];
+            const double& ps = p->second;
+            for (int j=0;j<nnodes;++j)
+            {
+              fac = wgt*sderiv(j,i)*detg*ps;
+              dtmp(nnodes,j) += fac;
+              for (int k=0; k<nnodes; ++k)
+              {
+                dtmp(k,j)+=fac*sval[k];
+                dtmp(j,k)+=fac*sval[k];
+              }
+            }
+          }
+
         // computing de, derivde and me, derivme and kappa, derivkappa
         for (int j=0; j<nnodes; ++j)
         {
@@ -1800,44 +1841,11 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
           // computing de
           de(j,j)+=fac*detg;
 
-          // linearization of de
-          // linearization of cell jacobian
-          for (_CI p=derivjaccell.begin();p!=derivjaccell.end();++p)
-            derivde[j][j][p->first] += fac*(p->second);
-
-          // linearization of slave gp coordinates in ansatz function j for derivate of de
-          fac=wgt*sderiv(j,0)*detg;
-          for (_CI p=dpsxigp[0].begin(); p!=dpsxigp[0].end(); ++p)
-            derivde[j][j][p->first] += fac * (p->second);
-          fac=wgt*sderiv(j,1)*detg;
-          for (_CI p=dpsxigp[1].begin(); p!=dpsxigp[1].end(); ++p)
-            derivde[j][j][p->first] += fac*(p->second);
-
           for (int k=0; k<nnodes; ++k)
           {
             // computing me
             fac = wgt*sval[j]*sval[k];
             me(j,k)+=fac*detg;
-
-            // linearization of me
-            // linearization of cell Jacobian
-            for (_CI p=derivjaccell.begin(); p!=derivjaccell.end(); ++p)
-              derivme[j][k][p->first] += fac*(p->second);
-
-            // linearizaion of gp coordinates in ansatz function
-            fac=wgt*sderiv(j,0)*sval[k]*detg;
-            for (_CI p=dpsxigp[0].begin(); p!=dpsxigp[0].end(); ++p)
-            {
-              derivme[j][k][p->first] += fac*(p->second);
-              derivme[k][j][p->first] += fac*(p->second);
-            }
-
-            fac=wgt*sderiv(j,1)*sval[k]*detg;
-            for (_CI p=dpsxigp[1].begin(); p!=dpsxigp[1].end(); ++p)
-            {
-              derivme[j][k][p->first] += fac*(p->second);
-              derivme[k][j][p->first] += fac*(p->second);
-            }
           }
         }
       }
@@ -1847,7 +1855,7 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
   // in case of no overlap just return, as there is no integration area
   // and therefore the consistent dual shape functions are not defined.
   // This doesn't matter, as there is no associated integration domain anyway
-  if (me.Det_long()==0) return;
+  if (A_tot<1.e-12) return;
 
   // invert bi-ortho matrix me
   LINALG::SerialDenseMatrix meinv = LINALG::InvertAndMultiplyByCholesky(me,de,ae);
@@ -1856,25 +1864,20 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
   // (this is done according to a quite complex formula, which
   // we get from the linearization of the biorthogonality condition:
   // Lin (Me * Ae = De) -> Lin(Ae)=Lin(De)*Inv(Me)-Ae*Lin(Me)*Inv(Me) )
-
-  // loop over all entries of ae (index i,j)
-  for (int i=0;i<nnodes;++i)
+  typedef GEN::pairedvector<int,LINALG::Matrix<max_nnodes+1,max_nnodes> >::const_iterator _CIM;
+  for (_CIM p=derivde_new.begin();p!=derivde_new.end();++p)
   {
-    for (int j=0;j<nnodes;++j)
-    {
-      // compute Lin(Ae) according to formula above
-      for (int l=0;l<nnodes;++l)// loop over sum l
+    LINALG::Matrix<max_nnodes+1,max_nnodes>& dtmp = derivde_new[p->first];
+    for (int i=0;i<nnodes;++i)
+      for (int j=0;j<nnodes;++j)
       {
-        // part1: Lin(De)*Inv(Me)
-        for (_CI p=derivde[i][l].begin();p!=derivde[i][l].end();++p)
-          derivae[i][j][p->first] += meinv(l,j)*(p->second);
+        double& pt = derivae[i][j][p->first];
+          pt += meinv(i,j)*dtmp(nnodes,i);
 
-        // part2: Ae*Lin(Me)*Inv(Me)
-        for (int k=0;k<nnodes;++k)// loop over sum k
-          for (_CI p=derivme[k][l].begin();p!=derivme[k][l].end();++p)
-            derivae[i][j][p->first] -= ae(i,k)*meinv(l,j)*(p->second);
+        for (int k=0; k<nnodes; ++k)
+          for (int l=0; l<nnodes; ++l)
+            pt -= ae(i,k)*meinv(l,j)*dtmp(l,k);
       }
-    }
   }
 
   // store ae matrix in slave element data container
