@@ -608,7 +608,7 @@ void FLD::UTILS::SetupFluidSplit(const DRT::Discretization& dis,
   {
     DRT::Node* node = dis.lRowNode(i);
 
-    std::vector<int> dof = dis.Dof(node);
+    std::vector<int> dof = dis.Dof(0,node);
 
     if( (dof.size() % fp_dim) != 0) dserror("Fluid-Pres-Split is not unique! mismatch between number of dofs and fluid/pres dim");
 
@@ -730,7 +730,7 @@ void FLD::UTILS::SetupFluidFluidVelPresSplit(const DRT::Discretization& fluiddis
   {
     DRT::Node* fluidnode = fluiddis.lRowNode(i);
 
-    std::vector<int> fluiddof = fluiddis.Dof(fluidnode);
+    std::vector<int> fluiddof = fluiddis.Dof(0,fluidnode);
     for (unsigned j=0; j<fluiddof.size(); ++j)
     {
       // test for dof position
