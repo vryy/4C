@@ -40,11 +40,6 @@ namespace XFEM
   class MeshProjector
   {
 
-    //! class to write gmsh output for debug purpose
-    class MeshProjectorGmshOutput
-    {
-    };
-
   public:
 
     //! ctor
