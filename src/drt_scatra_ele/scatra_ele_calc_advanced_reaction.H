@@ -224,7 +224,6 @@ protected:
 
   //! Clear reac. body force, reaction coefficient and derivatives (i.e. set them to zero)
   void ClearAdvancedReactionTerms(
-      const int                               k //!< index of current scalar
   );
 
   //! evaluate shape functions and their derivatives at element center
@@ -252,16 +251,27 @@ class ScaTraEleReaManagerAdvReac : public ScaTraEleReaManager
   public:
 
     ScaTraEleReaManagerAdvReac(int numscal): ScaTraEleReaManager(numscal),
-      reacoeff_(numscal,0.0),
-      reacoeffderivmatrix_(numscal,std::vector<double>(numscal,0.0 )), // size of matrix + initialized to zero
       reabodyforce_(numscal,0.0), // size of vector + initialized to zero
-      reabodyforcederiv_(numscal,std::vector<double>(numscal,0.0 )),
-      include_me_(false)
+      reabodyforcederiv_(numscal,std::vector<double>(numscal,0.0 ))
       {return;}
 
     virtual ~ScaTraEleReaManagerAdvReac(){};
 
     //! @name set routines
+
+    //! Clear everything and resize to length numscal
+    virtual void Clear(int numscal)
+    {
+      //clear base class
+      ScaTraEleReaManager::Clear(numscal);
+      //clear
+      reabodyforce_.resize(0);
+      reabodyforcederiv_.resize(0);
+      //resize
+      reabodyforce_.resize(numscal,0.0);
+      reabodyforcederiv_.resize(numscal,std::vector<double>(numscal,0.0 ));
+      return;
+    }
 
     //! Set the reaction coefficient
     virtual void SetReaCoeff(const double reacoeff, const int k)
@@ -273,35 +283,33 @@ class ScaTraEleReaManagerAdvReac : public ScaTraEleReaManager
       return;
     }
 
-    virtual void SetReaCoeffDerivMatrix(const double reacoeffderivmatrix, const int k, const int j)
+    //! Add to the derivative of reaction coefficient
+    virtual void AddToReaCoeffDerivMatrix(const double reacoeffderivmatrix, const int k, const int j)
     {
-      (reacoeffderivmatrix_[k])[j] = reacoeffderivmatrix;
+      (reacoeffderivmatrix_[k])[j] += reacoeffderivmatrix;
       return;
     }
 
-    //! Set the derivative of reaction coefficient
-    virtual void SetReaBodyForce(const double reabodyforce, const int k)
+    //! Add to the body force due to reaction
+    virtual void AddToReaBodyForce(const double reabodyforce, const int k)
     {
-      reabodyforce_[k] = reabodyforce;
+      reabodyforce_[k] += reabodyforce;
       if( reabodyforce!=0.0 )
         include_me_=true;
 
       return;
     }
 
-    virtual void SetReaBodyForceDerivMatrix(const double reabodyforcederiv, const int k, const int j)
+    //! Add to the derivative of the body force due to reaction
+    virtual void AddToReaBodyForceDerivMatrix(const double reabodyforcederiv, const int k, const int j)
     {
-      (reabodyforcederiv_[k])[j] = reabodyforcederiv;
+      (reabodyforcederiv_[k])[j] += reabodyforcederiv;
       return;
     }
 
+    //@}
+
     //! @name access routines
-
-    //! Return the reaction coefficient
-    virtual double GetReaCoeff(const int k){return reacoeff_[k];}
-
-    //! Return the reaction coefficient
-    virtual double GetReaCoeffDerivMatrix(const int k , const int j){return (reacoeffderivmatrix_[k])[j];}
 
     //! Return the reaction coefficient
     virtual double GetReaBodyForce(const int k){return reabodyforce_[k];}
@@ -309,16 +317,11 @@ class ScaTraEleReaManagerAdvReac : public ScaTraEleReaManager
     //! Return the reaction coefficient
     virtual double GetReaBodyForceDerivMatrix(const int k, const int j){return (reabodyforcederiv_[k])[j];}
 
-    //! return flag: reaction activated
-    virtual bool Active(){return include_me_;}
+    //@}
 
-  private:
+  protected:
 
-    //! scalar reaction coefficient
-    std::vector<double> reacoeff_;
-
-    //! reaction derivative for coupled problems
-    std::vector<std::vector<double> > reacoeffderivmatrix_;
+    //! @name protected variables
 
     //! scalar reaction coefficient
     std::vector<double> reabodyforce_;
@@ -326,8 +329,7 @@ class ScaTraEleReaManagerAdvReac : public ScaTraEleReaManager
     //! scalar reaction coefficient
     std::vector<std::vector<double> > reabodyforcederiv_;
 
-    //! flag for reaction
-    bool include_me_;
+    //@}
   };
 
 

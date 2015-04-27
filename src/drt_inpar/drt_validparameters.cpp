@@ -4314,7 +4314,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   BoolParameter("STAB_BIOT","No","Flag to (de)activate BIOT stabilization.",&fdyn_porostab);
   DoubleParameter(
     "STAB_BIOT_SCALING",
-    0.0,
+    1.0,
     "Scaling factor for stabilization parameter for biot stabilization of porous flow.",
     &fdyn_porostab);
 

@@ -1964,6 +1964,9 @@ baci_test(fsi_pw_mono_ss_ost_ga_amgnxn 2 "")
 # fsi_lung using the AMGnxn framework
 baci_test(fsi_lung_mono_amgnxn 2 "")
 
+# poro using the AMGnxn framework
+baci_test(poro_3D_hex8_amgnxn_BGSAMG 2 "")
+
 endif (HAVE_MueLu)
 
 

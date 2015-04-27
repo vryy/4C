@@ -618,10 +618,8 @@ void POROELAST::Monolithic::LinearSolve()
                     iter_ == 1
                     );
   }
-  else // use bgs2x2_operator
+  else
   {
-    // in case of inclined boundary conditions
-    // rotate systemmatrix_ using GetLocSysTrafo()!=Teuchos::null
     LINALG::ApplyDirichlettoSystem(
       systemmatrix_,
       iterinc_,

@@ -1,0 +1,215 @@
+<ParameterList name="dummy">
+
+  <Parameter name="Preconditioner" type="string"  value="myBGSAMG"/>
+
+  <!-- Preconditioners  -->
+
+  <ParameterList name="myBGSAMG">
+  <Parameter name="type" type="string"  value="BlockSmoother(X)"/>
+    <ParameterList name="parameters">
+      <Parameter name="smoother"         type="string"  value="myBGS"/>
+      <Parameter name="verbosity"        type="string"  value="on"/>
+    </ParameterList>
+  </ParameterList>
+
+  <!-- Smoothers  -->
+
+  <ParameterList name="myBGS">
+    <Parameter name="type"   type="string"  value="BGS"/>
+    <ParameterList name="parameters">
+      <Parameter name="blocks"      type="string"  value="(0),(1)"/>
+      <Parameter name="smoothers"   type="string"  value="myMuelu,myMueluF"/>
+      <Parameter name="sweeps"      type="int"     value="1"/>
+      <Parameter name="omega"       type="double"  value="1.0"/>
+    </ParameterList>
+  </ParameterList>
+
+  <!-- Muelu  -->
+
+  <ParameterList name="myMuelu">
+    <Parameter name="type"   type="string"  value="NEW_MUELU_AMG"/>
+    <ParameterList name="parameters">
+      <!-- Factory collection -->
+      <ParameterList name="Factories">
+
+    <!-- Note that ParameterLists must be defined prior to being used -->
+
+    <ParameterList name="myCoalesceDropFact">
+      <Parameter name="factory"                         type="string" value="CoalesceDropFactory"/>
+      <Parameter name="lightweight wrap"                type="bool"   value="false"/>
+    </ParameterList>
+
+    <ParameterList name="myUncoupledAggregationFact">
+      <Parameter name="factory"                         type="string" value="UncoupledAggregationFactory"/>
+      <Parameter name="Graph"                           type="string" value="myCoalesceDropFact"/>
+      <Parameter name="DofsPerNode"                     type="string" value="myCoalesceDropFact"/>
+      <Parameter name="aggregation: max selected neighbors"    type="int"    value="0"/>
+      <Parameter name="aggregation: min agg size"              type="int"    value="12"/>
+      <Parameter name="aggregation: max agg size"              type="int"    value="27"/>
+    </ParameterList>
+
+    <ParameterList name="myTentativePFactory">
+      <Parameter name="factory"                         type="string" value="TentativePFactory"/>
+    </ParameterList>
+
+    <ParameterList name="myProlongatorFact">
+      <Parameter name="factory"                         type="string" value="SaPFactory"/>
+      <Parameter name="P"                               type="string" value="myTentativePFactory"/>
+      <Parameter name="Damping factor"                  type="double" value="1.333"/>
+    </ParameterList>
+
+    <ParameterList name="myRestrictorFact">
+      <Parameter name="factory"                         type="string" value="TransPFactory"/>
+      <Parameter name="P"                               type="string" value="myProlongatorFact"/>
+    </ParameterList>
+
+    <ParameterList name="myRAPFact">
+      <Parameter name="factory"                         type="string" value="RAPFactory"/>
+      <Parameter name="P"                               type="string" value="myProlongatorFact"/>
+      <Parameter name="R"                               type="string" value="myRestrictorFact"/>
+      <Parameter name="RepairMainDiagonal"              type="bool"   value="true"/>
+    </ParameterList>
+
+    <!-- =======================  SMOOTHERS  =================== -->
+
+
+    <ParameterList name="myForwardGaussSeidel">
+      <Parameter name="factory"                         type="string" value="TrilinosSmoother"/>
+      <Parameter name="type"                            type="string"  value="RELAXATION"/>
+      <ParameterList name="ParameterList">
+        <Parameter name="relaxation: type"              type="string"  value="Gauss-Seidel"/>
+        <Parameter name="relaxation: backward mode"     type="bool"    value="false"/>
+        <Parameter name="relaxation: sweeps"            type="int"     value="6"/>
+        <Parameter name="relaxation: damping factor"    type="double"  value="1"/>
+      </ParameterList>
+    </ParameterList>
+
+    <ParameterList name="mySolverFact">
+      <Parameter name="factory"                         type="string" value="DirectSolver"/>
+      <Parameter name="type"                            type="string" value="Klu"/>
+      <ParameterList name="ParameterList">
+        <Parameter name="Reindex"                       type="bool" value="true"/>
+      </ParameterList>
+    </ParameterList>
+
+
+      </ParameterList>
+
+      <!-- Definition of the multigrid preconditioner -->
+
+      <ParameterList name="Hierarchy">
+
+    <Parameter name="numDesiredLevel"          type="int"      value="3"/>
+    <Parameter name="maxCoarseSize"            type="int"      value="1"/>
+    <Parameter name="verbosity"                type="string"   value="Low"/>
+
+    <ParameterList name="All">
+      <Parameter name="startLevel"             type="int"      value="0"/>
+      <Parameter name="Smoother"               type="string"   value="myForwardGaussSeidel"/>
+      <Parameter name="CoarseSolver"           type="string"   value="mySolverFact"/>
+      <Parameter name="Aggregates"             type="string"   value="myUncoupledAggregationFact"/>
+      <Parameter name="Graph"                  type="string"   value="myCoalesceDropFact"/>
+      <Parameter name="A"                      type="string"   value="myRAPFact"/>
+      <Parameter name="P"                      type="string"   value="myProlongatorFact"/>
+      <Parameter name="R"                      type="string"   value="myRestrictorFact"/>
+      <Parameter name="Nullspace"              type="string"   value="myTentativePFactory"/>
+    </ParameterList>
+
+
+      </ParameterList>
+    </ParameterList>
+  </ParameterList>
+
+  <ParameterList name="myMueluF">
+    <Parameter name="type"   type="string"  value="NEW_MUELU_AMG"/>
+    <ParameterList name="parameters">
+      <!-- Factory collection -->
+      <ParameterList name="Factories">
+
+    <!-- Note that ParameterLists must be defined prior to being used -->
+
+    <ParameterList name="myCoalesceDropFact">
+      <Parameter name="factory"                         type="string" value="CoalesceDropFactory"/>
+      <Parameter name="lightweight wrap"                type="bool"   value="false"/>
+    </ParameterList>
+
+    <ParameterList name="myUncoupledAggregationFact">
+      <Parameter name="factory"                         type="string" value="UncoupledAggregationFactory"/>
+      <Parameter name="Graph"                           type="string" value="myCoalesceDropFact"/>
+      <Parameter name="DofsPerNode"                     type="string" value="myCoalesceDropFact"/>
+      <Parameter name="aggregation: max selected neighbors"    type="int"    value="0"/>
+      <Parameter name="aggregation: min agg size"              type="int"    value="12"/>
+      <Parameter name="aggregation: max agg size"              type="int"    value="27"/>
+    </ParameterList>
+
+    <ParameterList name="myTentativePFactory">
+      <Parameter name="factory"                         type="string" value="TentativePFactory"/>
+    </ParameterList>
+
+    <ParameterList name="myProlongatorFact">
+      <Parameter name="factory"                         type="string" value="PgPFactory"/>
+      <Parameter name="P"                               type="string" value="myTentativePFactory"/>
+    </ParameterList>
+
+    <ParameterList name="myRestrictorFact">
+      <Parameter name="factory"                         type="string" value="GenericRFactory"/>
+    </ParameterList>
+
+    <ParameterList name="myRAPFact">
+      <Parameter name="factory"                         type="string" value="RAPFactory"/>
+      <Parameter name="P"                               type="string" value="myProlongatorFact"/>
+      <Parameter name="R"                               type="string" value="myRestrictorFact"/>
+      <Parameter name="RepairMainDiagonal"              type="bool"   value="true"/>
+    </ParameterList>
+
+    <!-- =======================  SMOOTHERS  =================== -->
+
+
+    <ParameterList name="myForwardGaussSeidel">
+      <Parameter name="factory"                         type="string" value="TrilinosSmoother"/>
+      <Parameter name="type"                            type="string"  value="RELAXATION"/>
+      <ParameterList name="ParameterList">
+        <Parameter name="relaxation: type"              type="string"  value="Gauss-Seidel"/>
+        <Parameter name="relaxation: backward mode"     type="bool"    value="false"/>
+        <Parameter name="relaxation: sweeps"            type="int"     value="3"/>
+        <Parameter name="relaxation: damping factor"    type="double"  value="0.69"/>
+      </ParameterList>
+    </ParameterList>
+
+    <ParameterList name="mySolverFact">
+      <Parameter name="factory"                         type="string" value="DirectSolver"/>
+      <Parameter name="type"                            type="string" value="Klu"/>
+      <ParameterList name="ParameterList">
+        <Parameter name="Reindex"                       type="bool" value="true"/>
+      </ParameterList>
+    </ParameterList>
+
+
+      </ParameterList>
+
+      <!-- Definition of the multigrid preconditioner -->
+
+      <ParameterList name="Hierarchy">
+
+    <Parameter name="numDesiredLevel"          type="int"      value="3"/>
+    <Parameter name="maxCoarseSize"            type="int"      value="1"/>
+    <Parameter name="verbosity"                type="string"   value="Low"/>
+
+    <ParameterList name="All">
+      <Parameter name="startLevel"             type="int"      value="0"/>
+      <Parameter name="Smoother"               type="string"   value="myForwardGaussSeidel"/>
+      <Parameter name="CoarseSolver"           type="string"   value="mySolverFact"/>
+      <Parameter name="Aggregates"             type="string"   value="myUncoupledAggregationFact"/>
+      <Parameter name="Graph"                  type="string"   value="myCoalesceDropFact"/>
+      <Parameter name="A"                      type="string"   value="myRAPFact"/>
+      <Parameter name="P"                      type="string"   value="myProlongatorFact"/>
+      <Parameter name="R"                      type="string"   value="myRestrictorFact"/>
+      <Parameter name="Nullspace"              type="string"   value="myTentativePFactory"/>
+    </ParameterList>
+
+
+      </ParameterList>
+    </ParameterList>
+  </ParameterList>
+
+</ParameterList>

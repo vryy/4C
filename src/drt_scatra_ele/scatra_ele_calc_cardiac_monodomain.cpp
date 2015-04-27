@@ -129,13 +129,13 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype,probdim>::MatMyocard(
   // get membrane potential at n+1 or n+alpha_F at integration point
   const double phinp = my::funct_.Dot(my::ephinp_[k]);
 
+  //clear
+  advreamanager->Clear(my::numscal_);
   // get reaction coefficient
-  advreamanager->SetReaBodyForce(-actmat->ReaCoeff(phinp, my::scatraparatimint_->Dt()),k);
-  advreamanager->SetReaBodyForceDerivMatrix(-actmat->ReaCoeffDeriv(phinp, my::scatraparatimint_->Dt()),k,k);
+  advreamanager->AddToReaBodyForce(-actmat->ReaCoeff(phinp, my::scatraparatimint_->Dt()),k);
+  advreamanager->AddToReaBodyForceDerivMatrix(-actmat->ReaCoeffDeriv(phinp, my::scatraparatimint_->Dt()),k,k);
   advreamanager->SetReaCoeff(0.0, k);
   advreamanager->SetReaCoeffDerivMatrix(0.0,k,k);
-  my::reamanager_->SetReaCoeff(0.0, k);
-  my::reamanager_->SetReaCoeffDerivMatrix(0.0, k, k);
 
   return;
 } // ScaTraEleCalcCardiacMonodomain<distype>::MatMyocard

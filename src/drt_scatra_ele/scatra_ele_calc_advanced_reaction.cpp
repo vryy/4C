@@ -140,6 +140,10 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::GetMaterialParams(
 //// get the material
   Teuchos::RCP<MAT::Material> material = ele->Material();
 
+  // We may have some reactive and some non-reactive elements in one discretisation.
+  // But since the calculation classes are singleton we have to reset all reactive stuff in case
+  // of non-reactive elements:
+  ClearAdvancedReactionTerms();
 
   if (material->MaterialType() == INPAR::MAT::m_matlist)
   {
@@ -148,12 +152,6 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::GetMaterialParams(
 
     for (int k = 0;k<my::numscal_;++k)
     {
-      // We may have some reactive and some non-reactive elements in one discretisation.
-      // But since the elements are singleton we have to reset all reactive stuff in case
-      // of non-reactive elements:
-      ClearAdvancedReactionTerms(k); //Note: order is important here, since Biofilm does set the reaction terms inside the Materials() call
-
-
       int matid = actmat->MatID(k);
       Teuchos::RCP< MAT::Material> singlemat = actmat->MaterialById(matid);
 
@@ -182,11 +180,6 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::GetMaterialParams(
   }
   else
   {
-    // We may have some reactive and some non-reactive elements in one discretisation.
-    // But since the elements are singleton we have to reset all reactive stuff in case
-    // of non-reactive elements:
-    ClearAdvancedReactionTerms(0); //Note: order is important here, since Biofilm does set the reaction terms inside the Materials() call
-
     Materials(material,0,densn,densnp,densam,visc,iquad);
   }
   return;
@@ -925,13 +918,13 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::SetAdvancedReactionTe
 {
   const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = ReaManager();
 
-  remanager->SetReaBodyForce( CalcReaBodyForceTerm(k)*scale ,k);
+  remanager->AddToReaBodyForce( CalcReaBodyForceTerm(k)*scale ,k);
 
   remanager->SetReaCoeff( CalcReaCoeff(k)*scale ,k);
 
   for (int j=0; j<my::numscal_ ;j++)
   {
-    remanager->SetReaBodyForceDerivMatrix( CalcReaBodyForceDerivMatrix(k,j)*scale ,k,j );
+    remanager->AddToReaBodyForceDerivMatrix( CalcReaBodyForceDerivMatrix(k,j)*scale ,k,j );
 
     remanager->SetReaCoeffDerivMatrix( CalcReaCoeffDerivMatrix(k,j)*scale ,k,j );
   }
@@ -943,25 +936,14 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::SetAdvancedReactionTe
  *-------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::ClearAdvancedReactionTerms(
-    const int                               k   //!< index of current scalar
                                     )
 {
   const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = ReaManager();
 
   // We may have some reactive and some non-reactive elements in one discretisation.
-  // But since the elements are singleton we have to reset all reactive stuff in case
+  // But since the calculation classes are singleton we have to reset all reactive stuff in case
   // of non-reactive elements
-
-  remanager->SetReaBodyForce( 0 ,k);
-
-  remanager->SetReaCoeff( 0 ,k);
-
-  for (int j=0; j<my::numscal_ ;j++)
-  {
-    remanager->SetReaBodyForceDerivMatrix( 0 ,k,j );
-
-    remanager->SetReaCoeffDerivMatrix( 0 ,k,j );
-  }
+  remanager->Clear(my::numscal_);
 
   //For safety reasons we better do this as well..
 

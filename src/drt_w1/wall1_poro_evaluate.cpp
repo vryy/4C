@@ -1277,7 +1277,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::FillMatrixAndVectorsOD(
                                                 )
                                             ;
 
-          /*-------structure- fluid pressure coupling:  "dracy-terms" + "reactive darcy-terms"
+          /*-------structure- fluid pressure coupling:  "darcy-terms" + "reactive darcy-terms"
            - 2 * reacoeff * J * v^f * phi * d(phi)/dp  Dp
            + 2 * reacoeff * J * v^s * phi * d(phi)/dp  Dp
            + J * J * phi * phi * defgrd_^-T * d(mat_reacoeff)/d(phi) * defgrd_^-1 * (v^s-v^f) * d(phi)/dp Dp

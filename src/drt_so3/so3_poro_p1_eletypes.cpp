@@ -74,7 +74,7 @@ void DRT::ELEMENTS::So_hex8PoroP1Type::SetupElementDefinition( std::map<std::str
 
 void DRT::ELEMENTS::So_hex8PoroP1Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
-  DRT::UTILS::ComputeXFluidDNullSpace( dis, ns, x0, numdf, dimns );
+  DRT::UTILS::ComputeFluidDNullSpace( dis, ns, x0, numdf, dimns );
 }
 
 /*----------------------------------------------------------------------*

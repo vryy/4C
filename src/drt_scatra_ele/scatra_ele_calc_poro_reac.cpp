@@ -179,7 +179,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::MatPoroECM(
   const double porosity = poro::DiffManager()->GetPorosity();
   const double bodyforce = structmat->BodyForceTerm(porosity);
   const double bodyforce_old = reamanageradvreac->GetReaBodyForce(k);
-  reamanageradvreac->SetReaBodyForce(bodyforce_old+bodyforce,k);
+  reamanageradvreac->AddToReaBodyForce(bodyforce_old+bodyforce,k);
 
   return;
 } // ScaTraEleCalcPoroReac<distype>::MatScaTra

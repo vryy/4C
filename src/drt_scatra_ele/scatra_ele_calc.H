@@ -1176,6 +1176,19 @@ namespace ELEMENTS
 
       //! @name set routines
 
+      //! Clear everything and resize to length numscal
+      virtual void Clear(int numscal)
+      {
+        //clear
+        reacoeff_.resize(0);
+        reacoeffderivmatrix_.resize(0);
+        //resize
+        reacoeff_.resize(numscal,0.0);
+        reacoeffderivmatrix_.resize(numscal,std::vector<double>(numscal,0.0 ));
+        include_me_=false;
+        return;
+      }
+
       //! Set the reaction coefficient
       virtual void SetReaCoeff(const double reacoeff, const int k)
       {
@@ -1205,7 +1218,7 @@ namespace ELEMENTS
       //! return flag: reaction activated
       virtual bool Active(){return include_me_;}
 
-    private:
+    protected:
 
       //! scalar reaction coefficient
       std::vector<double> reacoeff_;
