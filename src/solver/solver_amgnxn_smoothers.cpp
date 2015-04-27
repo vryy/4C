@@ -319,8 +319,19 @@ void LINALG::SOLVER::AMGNXN::CoupledAmg::Setup()
     if (not muelu_params_.isSublist(list_name)) dserror("list %s not found",list_name.c_str());
     std::string xml_file = muelu_params_.sublist(list_name).get<std::string>("xml file","none");
     if (xml_file!="none")
+    {
+
+      // If the xml file is not an absolute path, make it relative wrt the main xml file
+      if ((xml_file)[0]!='/')
+      {
+        std::string tmp = smoothers_params_.get<std::string>("main xml path","none");
+        if (tmp=="none") dserror("Path of the main xml not found");
+        xml_file.insert(xml_file.begin(), tmp.begin(), tmp.end());
+      }
+
       Teuchos::updateParametersFromXmlFile(
           xml_file,Teuchos::Ptr<Teuchos::ParameterList>(&muelu_list_this_block));
+    }
     else
       muelu_list_this_block=muelu_params_.sublist(list_name);
 
@@ -1351,8 +1362,18 @@ LINALG::SOLVER::AMGNXN::MueluAMGWrapperFactory::Create()
   std::string list_name = GetParams().get<std::string>("parameter list","none");
   if(xml_filename != "none")
   {
+
+    // If the xml file is not an absolute path, make it relative wrt the main xml file
+    if ((xml_filename)[0]!='/')
+    {
+      std::string tmp = GetParamsSmoother().get<std::string>("main xml path","none");
+      if (tmp=="none") dserror("Path of the main xml not found");
+      xml_filename.insert(xml_filename.begin(), tmp.begin(), tmp.end());
+    }
+
     Teuchos::updateParametersFromXmlFile(
         xml_filename,Teuchos::Ptr<Teuchos::ParameterList>(&myList));
+
     if (GetVerbosity()=="on")
     {
       std::cout << "The chosen parameters are:" << std::endl;
@@ -1451,6 +1472,16 @@ LINALG::SOLVER::AMGNXN::SingleFieldAMGFactory::Create()
   std::string xml_filename = GetParams().get<std::string>("xml file","none");
   if(xml_filename != "none")
   {
+
+    // If the xml file is not an absolute path, make it relative wrt the main xml file
+    if ((xml_filename)[0]!='/')
+    {
+      std::string tmp = GetParamsSmoother().get<std::string>("main xml path","none");
+      if (tmp=="none") dserror("Path of the main xml not found");
+      xml_filename.insert(xml_filename.begin(), tmp.begin(), tmp.end());
+    }
+
+
     Teuchos::updateParametersFromXmlFile(
         xml_filename,Teuchos::Ptr<Teuchos::ParameterList>(&myList));
     if (GetVerbosity()=="on")

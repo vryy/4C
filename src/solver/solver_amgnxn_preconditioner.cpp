@@ -216,8 +216,20 @@ LINALG::SOLVER::AMGnxn_Interface::AMGnxn_Interface(Teuchos::ParameterList& param
     if(amgnxn_xml=="none")
       dserror("The input parameter AMGNXN_XML_FILE is empty.");
     if(not(amgnxn_xml=="none"))
+    {
       Teuchos::updateParametersFromXmlFile(
           amgnxn_xml,Teuchos::Ptr<Teuchos::ParameterList>(&smoo_params_));
+
+      // Find the path to the main xml file and include it in the param list to further usage
+      std::string::size_type pos = amgnxn_xml.rfind('/');
+      if (pos!=std::string::npos)
+      {
+        std::string tmp = amgnxn_xml.substr(0,pos+1);
+        smoo_params_.set<std::string>("main xml path",tmp);
+      }
+      else
+        smoo_params_.set<std::string>("main xml path","");
+    }
   }
   else dserror("\"%s\" is an invalid value for \"AMGNXN_TYPE\". Fix your .dat",amgnxn_type.c_str());
 

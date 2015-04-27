@@ -223,9 +223,21 @@ void FSI::AMGnxnInterfaceFSI::ParseXML()
   if(amgnxn_xml_ == "AMG(BGS)")
     Default_AMG_BGS(smoo_params_);
   else
+  {
     // Parse the whole file
     Teuchos::updateParametersFromXmlFile(
         amgnxn_xml_,Teuchos::Ptr<Teuchos::ParameterList>(&smoo_params_));
+
+    // Find the path to the main xml file and include it in the param list to further usage
+    std::string::size_type pos = amgnxn_xml_.rfind('/');
+    if (pos!=std::string::npos)
+    {
+      std::string tmp = amgnxn_xml_.substr(0,pos+1);
+      smoo_params_.set<std::string>("main xml path",tmp);
+    }
+    else
+      smoo_params_.set<std::string>("main xml path","");
+  }
 
   return;
 }
@@ -453,9 +465,21 @@ void FSI::AMGnxnInterfaceLungFSI::ParseXML()
   if(amgnxn_xml_ == "SIMPLE(ILU,KLU)")
     Default_SCHUR_ILU_KLU(smoo_params_);
   else
+  {
     // Parse the whole file
     Teuchos::updateParametersFromXmlFile(
         amgnxn_xml_,Teuchos::Ptr<Teuchos::ParameterList>(&smoo_params_));
+
+    // Find the path to the main xml file and include it in the param list to further usage
+    std::string::size_type pos = amgnxn_xml_.rfind('/');
+    if (pos!=std::string::npos)
+    {
+      std::string tmp = amgnxn_xml_.substr(0,pos+1);
+      smoo_params_.set<std::string>("main xml path",tmp);
+    }
+    else
+      smoo_params_.set<std::string>("main xml path","");
+  }
 
   return;
 }
