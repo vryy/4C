@@ -105,10 +105,6 @@ void ADAPTER::FluidFluidFSI::Solve()
   xfluidfluid_->PrepareSolve();
   // solve
   xfluidfluid_->Solve();
-
-  if (meshmap_ == Teuchos::null)
-    dserror("Uninitialized mesh map");
-  *xfluidfluid_->WriteAccessDispOldState() = *fluidimpl_->Dispnp();
 }
 
 
@@ -129,6 +125,9 @@ void ADAPTER::FluidFluidFSI::Update()
 
     if (monolithic_approach_ == INPAR::XFEM::XFFSI_FixedALE_Partitioned)
       xfluidfluid_->UpdateMonolithicFluidSolution(FluidFSI::Interface()->FSICondMap());
+
+    if (monolithic_approach_ == INPAR::XFEM::XFFSI_FixedALE_Interpolation)
+      xfluidfluid_->InterpolateEmbeddedStateVectors();
 
     // refresh the merged fluid map extractor
     SetupInterface();

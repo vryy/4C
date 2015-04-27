@@ -66,6 +66,7 @@ std::pair<uint8_t,std::vector<int> > vtk_element_types [] =
     std::pair<uint8_t,std::vector<int> > (5, make_vector<int>() << 0 << 1 << 2),                                     // tri3
     std::pair<uint8_t,std::vector<int> > (22, make_vector<int>() << 0 << 1 << 2 << 3 << 4 << 5),                     // tri6
     std::pair<uint8_t,std::vector<int> > (12, make_vector<int>() << 0 << 1 << 2 << 3 << 4 << 5 << 6 << 7),           // hex8
+    std::pair<uint8_t,std::vector<int> > (12, make_vector<int>() << 0 << 1 << 2 << 3 << 8 << 9 << 10 << 11),         // hex16
     std::pair<uint8_t,std::vector<int> > (12, make_vector<int>() << 0 << 1 << 2 << 3 << 9 << 10 << 11 << 12),        // hex18
     std::pair<uint8_t,std::vector<int> > (25, make_vector<int>() << 0 << 1 << 2 << 3 << 4 << 5 << 6 << 7 << 8        // hex20
                                           << 9 << 10 << 11 << 16 << 17 << 18 << 19 << 12 << 13 << 14 << 15),

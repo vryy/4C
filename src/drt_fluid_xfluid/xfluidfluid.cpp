@@ -39,7 +39,8 @@ Maintainer:  Raffaela Kruse
 #include "../drt_xfem/xfem_edgestab.H"
 #include "../drt_xfem/xfem_dofset.H"
 #include "../drt_xfem/xfem_condition_manager.H"
-#include "../drt_xfem/xfluidfluid_timeInt.H"
+#include "../drt_xfem/xfem_mesh_projector.H"
+#include "../drt_xfem/xfluid_timeInt.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -58,6 +59,7 @@ FLD::XFluidFluid::XFluidFluid(
   xfluiddis->Writer(),
   ale_xfluid),
   embedded_fluid_(embedded_fluid),
+  projector_(Teuchos::rcp(new XFEM::MeshProjector(EmbeddedDiscretization(),discret_,*params_))),
   ale_embfluid_(ale_fluid),
   cond_name_("XFEMSurfFluidFluid")
 {
@@ -99,14 +101,14 @@ FLD::XFluidFluid::~XFluidFluid()
  *----------------------------------------------------------------------*/
 void FLD::XFluidFluid::Init()
 {
-  // set parameters specific for fluid-fluid coupling
-  SetXFluidFluidParams();
-
   // initialize embedded fluid
   embedded_fluid_->Init();
 
   // base class init
   XFluid::Init();
+
+  // set parameters specific for fluid-fluid coupling
+  SetXFluidFluidParams();
 
   if (DRT::INPUT::get<INPAR::FLUID::CalcError>(*params_,"calculate error") != INPAR::FLUID::no_error_calculation)
   {
@@ -118,7 +120,9 @@ void FLD::XFluidFluid::Init()
   if (DRT::INPUT::get<INPAR::FLUID::CalcError>(*params_,"calculate error") != INPAR::FLUID::no_error_calculation
       || mc_xff_->GetAveragingStrategy() == INPAR::XFEM::Embedded_Sided
       || mc_xff_->GetAveragingStrategy() == INPAR::XFEM::Mean)
+  {
     embedded_fluid_->CreateFacesExtension();
+  }
 
   // create internal faces for embedded discretization afterwards, if not full EOS on embedded domain
   {
@@ -127,11 +131,9 @@ void FLD::XFluidFluid::Init()
         DRT::INPUT::IntegralValue<INPAR::FLUID::StabType>(*stabparams, "STABTYPE") == INPAR::FLUID::stabtype_residualbased)
     {
       Teuchos::RCP<DRT::DiscretizationFaces> facediscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(
-        mc_xff_->GetCouplingDis(), true);
-      if (facediscret == Teuchos::null)
-        dserror("Embedded fluid discretization is no DiscretizationFaces. Cannot apply additional EOS pressure stab.");
+        embedded_fluid_->Discretization(), true);
       facediscret->CreateInternalFacesExtension(true);
-   }
+    }
   }
 
   //--------------------------------------------------
@@ -279,7 +281,6 @@ void FLD::XFluidFluid::TimeUpdate()
 {
   embedded_fluid_->TimeUpdate();
   XFluid::TimeUpdate();
-
   xff_state_->xffluidveln_->Update(1.0,*xff_state_->xffluidvelnp_,0.0);
 }
 
@@ -370,16 +371,6 @@ void FLD::XFluidFluid::CreateState()
 
   if (!ale_embfluid_)
     return;
-
-  if (xfluidfluid_timeint_ == Teuchos::null)
-    xfluidfluid_timeint_ =  Teuchos::rcp(new XFEM::XFluidFluidTimeIntegration(
-      XFluid::discret_, embedded_fluid_->Discretization(),
-      xff_state_->Wizard(), step_,
-      xfem_timeintapproach_,*params_));
-
-  // map of background-fluid's standard and enriched node-ids and
-  // their dof-gids for new cut
-  samemaps_ = xfluidfluid_timeint_->SaveBgNodeMapsAndCreateNew(xff_state_->Wizard());
 }
 
 void FLD::XFluidFluid::AssembleMatAndRHS(
@@ -495,8 +486,8 @@ void FLD::XFluidFluid::UpdateByIncrement()
   XFluid::UpdateByIncrement();
   // update xfluid
   xff_state_->velnp_->Update(1.0,*xff_state_->xffluidsplitter_->ExtractXFluidVector(xff_state_->xffluidvelnp_),0.0);
-//  // update embedded fluid
-//  //embedded_fluid_->IterUpdate(xff_state_->xffluidsplitter_->ExtractFluidVector(xff_state_->xffluidincvel_));
+  // update embedded fluid
+  //embedded_fluid_->IterUpdate(xff_state_->xffluidsplitter_->ExtractFluidVector(xff_state_->xffluidincvel_));
   embedded_fluid_->WriteAccessVelnp()->Update(1.0,*xff_state_->xffluidsplitter_->ExtractFluidVector(xff_state_->xffluidvelnp_),0.0);
 }
 
@@ -505,12 +496,12 @@ void FLD::XFluidFluid::UpdateByIncrement()
 void FLD::XFluidFluid::AddEosPresStabToEmbLayer()
 {
   if (ale_embfluid_)
-    mc_xff_->GetCouplingDis()->SetState("gridv", embedded_fluid_->GridVel());
+    embedded_fluid_->Discretization()->SetState("gridv", embedded_fluid_->GridVel());
 
   Teuchos::ParameterList faceparams;
 
   const Teuchos::RCP<DRT::DiscretizationFaces> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(
-    mc_xff_->GetCouplingDis(), true);
+    embedded_fluid_->Discretization(), true);
 
   // set additional faceparams according to ghost-penalty terms due to Nitsche's method
   faceparams.set("ghost_penalty_reconstruct", false);
@@ -566,71 +557,54 @@ void FLD::XFluidFluid::AddEosPresStabToEmbLayer()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::XFluidFluid::XTimint_StoreOldStateData(const bool firstcall_in_timestep)
+bool FLD::XFluidFluid::XTimint_ProjectFromEmbeddedDiscretization(
+  std::vector<Teuchos::RCP<Epetra_Vector> >&               newRowStateVectors,   ///< vectors to be reconstructed
+  Teuchos::RCP<const Epetra_Vector>                        target_dispnp,        ///< displacement col - vector timestep n+1
+  const bool                                               screen_out            ///< screen output?
+)
 {
-  if (!mc_xff_->HasMovingInterface())
-  {
-    XFluid::XTimint_StoreOldStateData(firstcall_in_timestep);
-    return;
-  }
+  std::vector<Teuchos::RCP<const Epetra_Vector> > oldStateVectors;
 
-  // save the old state
-  xff_staten_ = xff_state_;
+  Teuchos::RCP<const Epetra_Vector> velncol = DRT::UTILS::GetColVersionOfRowVector(EmbeddedDiscretization(),embedded_fluid_->Veln());
+  Teuchos::RCP<const Epetra_Vector> accncol = DRT::UTILS::GetColVersionOfRowVector(EmbeddedDiscretization(),embedded_fluid_->Accn());
+  oldStateVectors.push_back(velncol);
+  oldStateVectors.push_back(accncol);
 
-  const int restart = DRT::Problem::Instance()->Restart();
+  // get set of node-ids, that demand projection from embedded discretization
+  std::map<int, std::set<int> >& projection_nodeToDof = xfluid_timeint_->Get_NodeToDofMap_For_Reconstr(INPAR::XFEM::Xf_TimeInt_by_PROJ_from_DIS);
 
-  // if restart
-  if (restart and ((restart+1) == step_))
-  {
-    xfluidfluid_timeint_->CreateBgNodeMapsForRestart(xff_staten_->Wizard());
-  }
-}
+  Teuchos::RCP<const Epetra_Vector> disp = DRT::UTILS::GetColVersionOfRowVector(EmbeddedDiscretization(),dispnpoldstate_);
+  projector_->SetSourcePositionVector(disp);
+  projector_->SetSourceStateVectors(oldStateVectors);
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void FLD::XFluidFluid::XTimint_DoTimeStepTransfer(const bool screen_out)
-{
-  //---------------------------------------------------------------
-  if(myrank_==0 and screen_out) IO::cout << "XFEM::TIMEINTEGRATION: ..." << IO::endl;
+  projector_->Project(
+      projection_nodeToDof,
+      newRowStateVectors,
+      target_dispnp);
 
-  //---------------------------------------------------------------
-  if(timealgo_ !=  INPAR::FLUID::timeint_one_step_theta) dserror("check which vectors have to be reconstructed for non-OST scheme");
+  int numfailed = 0;
+  int my_numfailed = projection_nodeToDof.size();
+  discret_->Comm().SumAll(&my_numfailed,&numfailed,1);
 
-  if (!condition_manager_->HasMovingInterface()) return;
+  return numfailed == 0;
 
-  if (!mc_xff_->HasMovingInterface())
-  {
-    XFluid::XTimint_DoTimeStepTransfer(screen_out);
-    return;
-  }
-
-  switch (monolithic_approach_)
-  {
-  case INPAR::XFEM::XFFSI_Full_Newton:
-  case INPAR::XFEM::XFFSI_FixedALE_Partitioned:
-    SetXFluidStateVectors(dispnpoldstate_);
-    break;
-  case INPAR::XFEM::XFFSI_FixedALE_Interpolation:
-    SetXFluidStateVectors(dispnpoldstate_);
-    SetEmbFluidStateVectors(dispnpoldstate_);
-    break;
-  default:
-    dserror("Unknown monolithic XFFSI approach.");
-    break;
-  }
-
-  embedded_fluid_->SetDirichletNeumannBC();
+  //projector_->GmshOutput(step_);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool FLD::XFluidFluid::XTimint_DoIncrementStepTransfer(
-    const bool screen_out,
-    const bool firstcall_in_timestep
+  const bool screen_out,
+  const bool firstcall_in_timestep
 )
 {
-  if (meshcoupl_dis_.size() > 1 && !mc_xff_->HasMovingInterface())
+  // use increment step transfer if :
+  // - at least one XFEM interface is moving (the fluid-fluid interface or any other)
+  // - first call in time step to initialize velnp
+  if (mc_xff_->HasMovingInterface() || meshcoupl_dis_.size() > 1 || firstcall_in_timestep)
+  {
     return XFluid::XTimint_DoIncrementStepTransfer(screen_out,firstcall_in_timestep);
+  }
   else
     return true;
 }
@@ -641,98 +615,6 @@ void FLD::XFluidFluid::Output()
 {
   XFluid::Output();
   embedded_fluid_->Output();
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void FLD::XFluidFluid::SetXFluidStateVectors(Teuchos::RCP<const Epetra_Vector> disp)
-{
-  if (xfem_timeintapproach_ == INPAR::XFEM::Xff_TimeInt_FullProj or
-      xfem_timeintapproach_ == INPAR::XFEM::Xff_TimeInt_KeepGhostValues or
-     (xfem_timeintapproach_ == INPAR::XFEM::Xff_TimeInt_ProjIfMoved and (not samemaps_)) or
-      xfem_timeintapproach_ == INPAR::XFEM::Xff_TimeInt_IncompProj)
-  {
-    // export the vectors to the column distribution map
-    Teuchos::RCP<Epetra_Vector> velnpcol = LINALG::CreateVector(*embedded_fluid_->Discretization()->DofColMap(),true);
-    Teuchos::RCP<Epetra_Vector> velncol  = LINALG::CreateVector(*embedded_fluid_->Discretization()->DofColMap(),true);
-    Teuchos::RCP<Epetra_Vector> accncol  = LINALG::CreateVector(*embedded_fluid_->Discretization()->DofColMap(),true);
-    Teuchos::RCP<Epetra_Vector> dispcol  = LINALG::CreateVector(*embedded_fluid_->Discretization()->DofColMap(),true);
-
-    LINALG::Export(*embedded_fluid_->Velnp(),*velnpcol);
-    LINALG::Export(*embedded_fluid_->Veln(), *velncol);
-    LINALG::Export(*embedded_fluid_->Accn(),*accncol);
-    LINALG::Export(*disp,  *dispcol);
-
-    // we have five state vectors, which need values from the last time step
-    xfluidfluid_timeint_->SetNewBgStateVectors(xff_state_->velnp_,
-                                               xff_state_->veln_,
-                                               xff_state_->accn_,
-                                               xff_staten_->velnp_,
-                                               xff_staten_->veln_,
-                                               xff_staten_->accn_,
-                                               velnpcol,
-                                               velncol,
-                                               accncol,
-                                               dispcol);
-
-    // project and enforce incompressibility on projection patch
-    if (xfem_timeintapproach_ == INPAR::XFEM::Xff_TimeInt_IncompProj)
-    {
-      xfluidfluid_timeint_->EnforceIncompAfterProjection(
-          xff_state_->Wizard(),
-          xff_staten_->Wizard(),
-          xff_state_->velnp_,
-          xff_state_->veln_,
-          xff_state_->dbcmaps_);
-
-    }
-  }
-  // Note: if Xff_TimeInt_ProjIfMoved is chosen and the maps remain the same
-  // (TODO: they remain the same just for one dofset)
-  // the enriched values are not projected from the embedded fluid anymore.
-  else if (xfem_timeintapproach_ == INPAR::XFEM::Xff_TimeInt_ProjIfMoved and samemaps_)
-  {
-    // we use the old velocity as start value
-    xff_state_->velnp_->Update(1.0,*xff_staten_->velnp_,0.0);
-    xff_state_->veln_-> Update(1.0,*xff_staten_->veln_, 0.0);
-    xff_state_->accn_-> Update(1.0,*xff_staten_->accn_, 0.0);
-  }
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void FLD::XFluidFluid::SetEmbFluidStateVectors(Teuchos::RCP<Epetra_Vector> disp)
-{
-  // get nodal velocities and pressure from previous intersection state
-
-  // export the vectors to the column distribution map
-  Teuchos::RCP<Epetra_Vector> embvelnpcol  = LINALG::CreateVector(*embedded_fluid_->Discretization()->DofColMap(),true);
-  Teuchos::RCP<Epetra_Vector> embvelncol   = LINALG::CreateVector(*embedded_fluid_->Discretization()->DofColMap(),true);
-  Teuchos::RCP<Epetra_Vector> embaccncol   = LINALG::CreateVector(*embedded_fluid_->Discretization()->DofColMap(),true);
-  Teuchos::RCP<Epetra_Vector> embdispcol   = LINALG::CreateVector(*embedded_fluid_->Discretization()->DofColMap(),true);
-  Teuchos::RCP<Epetra_Vector> embdispnpcol = LINALG::CreateVector(*embedded_fluid_->Discretization()->DofColMap(),true);
-
-  LINALG::Export(*embedded_fluid_->Velnp(), *embvelnpcol);
-  LINALG::Export(*embedded_fluid_->Veln(),  *embvelncol);
-  LINALG::Export(*embedded_fluid_->Accn(),  *embaccncol);
-  LINALG::Export(*disp,                     *embdispcol);
-  LINALG::Export(*embedded_fluid_->Dispnp(),*embdispnpcol);
-
-  // TODO: currently no history projection (no write access)
-  xfluidfluid_timeint_->SetNewEmbStateVectors(
-    embedded_fluid_->WriteAccessVelnp(),
-    Teuchos::null,
-    Teuchos::null,
-    embvelnpcol,
-    embvelncol,
-    embaccncol,
-    xff_staten_->velnp_,
-    xff_staten_->veln_,
-    xff_staten_->accn_,
-    embdispnpcol,
-    embdispcol);
-
-  embedded_fluid_->SetOldPartOfRighthandside();
 }
 
 /*----------------------------------------------------------------------*/
@@ -753,8 +635,43 @@ void FLD::XFluidFluid::UpdateMonolithicFluidSolution(const Teuchos::RCP<const Ep
   xff_state_->CreateMergedDBCMapExtractor(fsidbcmapex);
   Solve();
   xff_state_->CreateMergedDBCMapExtractor(embedded_fluid_->GetDBCMapExtractor());
-}//FLD::XFluidFluid::UpdateMonolithicFluidSolution()
+}
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FLD::XFluidFluid::InterpolateEmbeddedStateVectors()
+{
+  XFEM::MeshProjector embedded_projector(EmbeddedDiscretization(),EmbeddedDiscretization(),*params_);
+  std::vector<Teuchos::RCP<Epetra_Vector> > newRowStateVectors;
+
+  newRowStateVectors.push_back(embedded_fluid_->WriteAccessVelnp());
+  newRowStateVectors.push_back(embedded_fluid_->WriteAccessAccnp());
+
+  std::vector<Teuchos::RCP<const Epetra_Vector> > oldStateVectors;
+
+  Teuchos::RCP<const Epetra_Vector> velncol = DRT::UTILS::GetColVersionOfRowVector(EmbeddedDiscretization(),embedded_fluid_->Velnp());
+  Teuchos::RCP<const Epetra_Vector> accncol = DRT::UTILS::GetColVersionOfRowVector(EmbeddedDiscretization(),embedded_fluid_->Accnp());
+  oldStateVectors.push_back(velncol);
+  oldStateVectors.push_back(accncol);
+
+  Teuchos::RCP<const Epetra_Vector> srcdisp = DRT::UTILS::GetColVersionOfRowVector(EmbeddedDiscretization(),dispnpoldstate_);
+  embedded_projector.SetSourcePositionVector(srcdisp);
+  embedded_projector.SetSourceStateVectors(oldStateVectors);
+
+  Teuchos::RCP<const Epetra_Vector> tardisp = DRT::UTILS::GetColVersionOfRowVector(EmbeddedDiscretization(),embedded_fluid_->Dispnp());
+
+  embedded_projector.ProjectInFullTargetDiscretization(
+    newRowStateVectors,
+    tardisp);
+
+  //embedded_projector.GmshOutput(step_,embedded_fluid_->Dispnp());
+
+  embedded_fluid_->SetOldPartOfRighthandside();
+  embedded_fluid_->SetDirichletNeumannBC();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
 {
   // this function provides a general implementation for calculating error norms between computed solutions

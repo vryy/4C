@@ -32,6 +32,33 @@ namespace DRT
 {
 namespace UTILS
 {
+  //! 2 surfaces on a Hex16 element with 8 nodes per surface
+  const int eleNodeNumbering_hex16_surfaces_q8[2][8] = {
+          {0,  3,  2,  1,  7,  6,  5,  4},
+          {8,  9, 10, 11, 12, 13, 14, 15}};
+  //! 4 surfaces on a Hex16 element with 6 nodes per surface
+  const int eleNodeNumbering_hex16_surfaces_q6[4][6] = {
+          {0,  1,  4,  8,  9, 12},
+          {1,  2,  5,  9, 10, 13},
+          {2,  3,  6, 10, 11, 14},
+          {3,  0,  7, 11,  8, 15}};
+
+  //! 8 Lines of a Hex16 element with 3 nodes per line
+  const int eleNodeNumbering_hex16_lines_quad[8][3] = {
+          { 0,  1,  4},
+          { 1,  2,  5},
+          { 2,  3,  6},
+          { 0,  3,  7},
+          { 8,  9, 12},
+          { 9, 10, 13},
+          {10, 11, 14},
+          { 8, 11, 15}};
+  //! 4 Lines in a Hex16 element with 2 nodes per line
+  const int eleNodeNumbering_hex16_lines_lin[4][2] = {
+          {0, 8},
+          {1, 9},
+          {2,10},
+          {3,11}};
 
   //! 2 surfaces on a Hex18 element with 9 nodes per surface
   const int eleNodeNumbering_hex18_surfaces_q9[2][9] = {
@@ -494,6 +521,7 @@ namespace UTILS
   template<> struct DisTypeToNumNodePerEle<DRT::Element::tri3>     {static const int numNodePerElement =  3;};
   template<> struct DisTypeToNumNodePerEle<DRT::Element::tri6>     {static const int numNodePerElement =  6;};
   template<> struct DisTypeToNumNodePerEle<DRT::Element::hex8>     {static const int numNodePerElement =  8;};
+  template<> struct DisTypeToNumNodePerEle<DRT::Element::hex16>    {static const int numNodePerElement = 16;};
   template<> struct DisTypeToNumNodePerEle<DRT::Element::hex18>    {static const int numNodePerElement = 18;};
   template<> struct DisTypeToNumNodePerEle<DRT::Element::hex20>    {static const int numNodePerElement = 20;};
   template<> struct DisTypeToNumNodePerEle<DRT::Element::hex27>    {static const int numNodePerElement = 27;};
@@ -735,6 +763,7 @@ namespace UTILS
   template<> struct DisTypeToDim<DRT::Element::tri3>     {static const int dim = 2;};
   template<> struct DisTypeToDim<DRT::Element::tri6>     {static const int dim = 2;};
   template<> struct DisTypeToDim<DRT::Element::hex8>     {static const int dim = 3;};
+  template<> struct DisTypeToDim<DRT::Element::hex16>    {static const int dim = 3;};
   template<> struct DisTypeToDim<DRT::Element::hex18>    {static const int dim = 3;};
   template<> struct DisTypeToDim<DRT::Element::hex20>    {static const int dim = 3;};
   template<> struct DisTypeToDim<DRT::Element::hex27>    {static const int dim = 3;};
@@ -804,6 +833,7 @@ namespace UTILS
   template<> struct DisTypeToNumDeriv2<DRT::Element::tri3>     {static const int numderiv2 = 3;};
   template<> struct DisTypeToNumDeriv2<DRT::Element::tri6>     {static const int numderiv2 = 3;};
   template<> struct DisTypeToNumDeriv2<DRT::Element::hex8>     {static const int numderiv2 = 6;};
+  template<> struct DisTypeToNumDeriv2<DRT::Element::hex16>    {static const int numderiv2 = 6;};
   template<> struct DisTypeToNumDeriv2<DRT::Element::hex18>    {static const int numderiv2 = 6;};
   template<> struct DisTypeToNumDeriv2<DRT::Element::hex20>    {static const int numderiv2 = 6;};
   template<> struct DisTypeToNumDeriv2<DRT::Element::hex27>    {static const int numderiv2 = 6;};
@@ -836,6 +866,7 @@ namespace UTILS
   template<> struct DisTypeToFaceShapeType<DRT::Element::tri3>     {static const DRT::Element::DiscretizationType shape = DRT::Element::line2;};
   template<> struct DisTypeToFaceShapeType<DRT::Element::tri6>     {static const DRT::Element::DiscretizationType shape = DRT::Element::line3;};
   template<> struct DisTypeToFaceShapeType<DRT::Element::hex8>     {static const DRT::Element::DiscretizationType shape = DRT::Element::quad4;};
+  template<> struct DisTypeToFaceShapeType<DRT::Element::hex16>    {static const DRT::Element::DiscretizationType shape = DRT::Element::quad8;}; // invalid
   template<> struct DisTypeToFaceShapeType<DRT::Element::hex18>    {static const DRT::Element::DiscretizationType shape = DRT::Element::quad9;}; // invalid
   template<> struct DisTypeToFaceShapeType<DRT::Element::hex20>    {static const DRT::Element::DiscretizationType shape = DRT::Element::quad8;};
   template<> struct DisTypeToFaceShapeType<DRT::Element::hex27>    {static const DRT::Element::DiscretizationType shape = DRT::Element::quad9;};
@@ -869,6 +900,7 @@ namespace UTILS
   template<> struct DisTypeToNumFaces<DRT::Element::tri3>     {static const int numFaces = 3;};
   template<> struct DisTypeToNumFaces<DRT::Element::tri6>     {static const int numFaces = 3;};
   template<> struct DisTypeToNumFaces<DRT::Element::hex8>     {static const int numFaces = 6;};
+  template<> struct DisTypeToNumFaces<DRT::Element::hex16>    {static const int numFaces = 6;};
   template<> struct DisTypeToNumFaces<DRT::Element::hex18>    {static const int numFaces = 6;};
   template<> struct DisTypeToNumFaces<DRT::Element::hex20>    {static const int numFaces = 6;};
   template<> struct DisTypeToNumFaces<DRT::Element::hex27>    {static const int numFaces = 6;};
@@ -956,7 +988,7 @@ namespace UTILS
             pos = 1.0/3.0;
             break;
         }
-        case DRT::Element::hex8 : case DRT::Element::hex18 : case DRT::Element::hex20 : case DRT::Element::hex27 :
+        case DRT::Element::hex8 : case DRT::Element::hex16 : case DRT::Element::hex18 : case DRT::Element::hex20 : case DRT::Element::hex27 :
         {
             pos = 0.0;
             break;

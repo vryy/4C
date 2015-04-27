@@ -81,6 +81,7 @@ MONOLITHIC_XFFSI_APPROACH       xffsi_fixedALE_interpolation
 RELAXING_ALE                    yes
 RELAXING_ALE_EVERY              1
 XFLUIDFLUID                     yes
+XFLUID_TIMEINT                  STD=COPY/PROJ_and_GHOST=COPY/PROJ/GP
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Hybrid_LM_Cauchy_stress       // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
 XFF_CONV_STAB_SCALING           none

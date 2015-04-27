@@ -155,6 +155,7 @@ bool Position<elementtype,numNodesElement>::WithinLimits()
   switch ( elementtype )
   {
   case DRT::Element::hex8:
+  case DRT::Element::hex16:
   case DRT::Element::hex20:
   case DRT::Element::hex27:
     return ( xsi_( 0 ) >= -1-TOLERANCE and xsi_( 1 ) >= -1-TOLERANCE and xsi_( 2 ) >= -1-TOLERANCE and

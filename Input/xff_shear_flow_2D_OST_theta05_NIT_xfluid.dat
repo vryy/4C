@@ -69,7 +69,6 @@ COUPLING_METHOD                 Nitsche
 XFF_CONV_STAB_SCALING           none
 GHOST_PENALTY_STAB              yes
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
-XFLUIDFLUID_TIMEINT             Xff_TimeInt_FullProj
 XFLUIDFLUID                     yes
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0

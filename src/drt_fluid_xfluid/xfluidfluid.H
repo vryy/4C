@@ -20,7 +20,7 @@ Maintainer:  Raffaela Kruse
 
 namespace XFEM
 {
-  class XFluidFluidTimeIntegration;
+  class MeshProjector;
   class MeshCouplingFluidFluid;
 }
 
@@ -182,27 +182,14 @@ public:
   //! access to new merged fluid state container
   Teuchos::RCP<FLD::XFluidState> GetNewState();
 
-  /// store state data from old time-step t^n
-  void XTimint_StoreOldStateData(const bool firstcall_in_timestep);
-
-  /// Transfer vectors from old time-step t^n w.r.t dofset and interface position
-  /// from t^n to vectors w.r.t current dofset and interface position
-  void XTimint_DoTimeStepTransfer(const bool screen_out);
-
-  /// Transfer vectors at current time-step t^(n+1) w.r.t dofset and interface position
-  /// from last iteration i to vectors w.r.t current dofset and interface position (i+1)
-  ///
-  /// return, if increment step transfer was successful!
-  bool XTimint_DoIncrementStepTransfer(
-      const bool screen_out,
-      const bool firstcall_in_timestep
-  );
-
   /// update grid velocity of embedded fluid
   void UpdateGridv(){ embedded_fluid_->UpdateGridv(); }
 
   /// solve fluid field after ALE-mesh relaxation
   void UpdateMonolithicFluidSolution(const Teuchos::RCP<const Epetra_Map>& fsidofmap);
+
+  /// interpolate embedded fluid state vectors from previous mesh displacement state
+  void InterpolateEmbeddedStateVectors();
 
   /// create a result test
   Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
@@ -214,6 +201,18 @@ public:
   void EvaluateErrorComparedToAnalyticalSol();
 
 private:
+
+  /// projection of history from other discretization - returns true if projection was successful for all nodes
+  bool XTimint_ProjectFromEmbeddedDiscretization(
+    std::vector<Teuchos::RCP<Epetra_Vector> >&               newRowStateVectors,   ///< vectors to be reconstructed
+    Teuchos::RCP<const Epetra_Vector>                        target_dispnp,        ///< displacement col - vector timestep n+1
+    const bool                                               screen_out            ///< screen output?
+  );
+
+  bool XTimint_DoIncrementStepTransfer(
+      const bool screen_out,
+      const bool firstcall_in_timestep
+  );
 
   //! create a new merged state container
   void CreateState();
@@ -230,21 +229,6 @@ private:
   void AddEosPresStabToEmbLayer();
 
   //! @name XFF time integration
-  //@{
-
-  /*!
-   * \brief as part of time integration: determine new background state vectors
-   * \param disp displacement of the ALE-fluid at the time we want to interpolate
-   * values from it
-   */
-  void SetXFluidStateVectors(Teuchos::RCP<const Epetra_Vector> disp);
-
-  /*!
-   * \brief in fixed-ALE-interpolation XFFSI: interpolate embedded state vectors
-   * from embedded elements at previous position
-   */
-  void SetEmbFluidStateVectors(Teuchos::RCP<Epetra_Vector> disp);
-  //@}
 
   /// embedded fluid field
   Teuchos::RCP<FLD::FluidImplicitTimeInt>     embedded_fluid_;
@@ -252,13 +236,14 @@ private:
   /// pointer to fluid-fluid mesh coupling object
   Teuchos::RCP<XFEM::MeshCouplingFluidFluid>  mc_xff_;
 
+  /// for XFEM time integration by projection from embedded mesh
+  Teuchos::RCP<XFEM::MeshProjector> projector_;
+
   /// whether the embedded fluid is an ALE-fluid
   bool ale_embfluid_;
 
   /// merged fluid state (cut-dependent) at time n+1
   Teuchos::RCP<FLD::XFluidFluidState> xff_state_;
-  /// merged fluid state (cut-dependent) at time n
-  Teuchos::RCP<FLD::XFluidFluidState> xff_staten_;
 
   /// vector with Newton increments (used for monolithic fully newton fsi approach)
   Teuchos::RCP<Epetra_Vector>         stepinc_;
@@ -269,9 +254,6 @@ private:
   /// shape derivatives matrix (linearization with respect to mesh motion),
   /// including background fluid dof (set to zero)
   Teuchos::RCP<LINALG::BlockSparseMatrixBase>    extended_shapederivatives_;
-
-  /// xfem time integration object
-  Teuchos::RCP<XFEM::XFluidFluidTimeIntegration> xfluidfluid_timeint_;
 
   /// flag, that indicates active shape derivatives
   bool active_shapederivatives_;
@@ -287,9 +269,6 @@ private:
   enum INPAR::XFEM::Monolithic_xffsi_Approach monolithic_approach_;  ///< type of monolithic XFFSI-approach
   enum INPAR::XFEM::XFluidFluidTimeInt        xfem_timeintapproach_; ///< XFF time integration approach
   //@}
-
-  //! no change in dof-maps compared to previous cut
-  bool samemaps_;
 
   //! name of fluid-fluid condition for access from condition manager
   const std::string cond_name_;

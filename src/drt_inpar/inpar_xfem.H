@@ -131,7 +131,10 @@ namespace INPAR
       Xf_TimeIntScheme_STD_by_Copy_or_SL_AND_GHOST_by_Copy_or_GP,
       //! std-DOFS:   semi-lagrangean algo (SL) used for large displacements in the whole cut-zone
       //! ghost-DOFS: only ghost-penalty reconstruction
-      Xf_TimeIntScheme_STD_by_SL_cut_zone_AND_GHOST_by_GP
+      Xf_TimeIntScheme_STD_by_SL_cut_zone_AND_GHOST_by_GP,
+      //! std-DOFS: copy or project from embedded fluid mesh
+      //! ghost-DOFS: copy dofs or project from embedded fluid mesh or ghost-penalty reconstruction
+      Xf_TimeIntScheme_STD_by_Copy_or_Proj_AND_GHOST_by_Proj_or_Copy_or_GP
     };
 
     /// xfluid time integration approach for single dofs
@@ -143,6 +146,7 @@ namespace INPAR
       Xf_TimeInt_GHOST_by_GP,               //! Ghost-penalty reconstruction for ghost dof
       Xf_TimeInt_GHOST_by_COPY_from_STD,    //! copy value for ghost-dof at t^(n+1) from std-dof at t^n
       Xf_TimeInt_GHOST_by_COPY_from_GHOST,  //! copy value for ghost-dof at t^(n+1) from ghost-dof at t^n
+      Xf_TimeInt_by_PROJ_from_DIS,          //! project value for std-/ghost-dof at t^(n+1) from embedded fluid mesh at t^n
       Xf_TimeInt_undefined
     };
 

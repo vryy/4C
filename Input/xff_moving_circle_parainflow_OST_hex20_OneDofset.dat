@@ -98,9 +98,9 @@ GHOST_PENALTY_2nd_STAB          yes
 GHOST_PENALTY_FAC               0.1
 IS_PSEUDO_2D                    yes
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
-XFLUIDFLUID_TIMEINT             Xff_TimeInt_FullProj
 MONOLITHIC_XFFSI_APPROACH       xffsi_full_newton
 XFLUIDFLUID                     yes
+XFLUID_TIMEINT                  STD=COPY/SL_and_GHOST=COPY/GP
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2

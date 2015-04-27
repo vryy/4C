@@ -60,11 +60,11 @@ GMSH_DEBUG_OUT                  No
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Hybrid_LM_Cauchy_stress
 XFF_CONV_STAB_SCALING           none
+GHOST_PENALTY_STAB              yes
+GHOST_PENALTY_FAC               0.05
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
-XFLUIDFLUID_TIMEINT             Xff_TimeInt_KeepGhostValues
-RELAXING_ALE                    no
-RELAXING_ALE_EVERY              0
 XFLUIDFLUID                     yes
+XFLUID_TIMEINT                  STD=COPY_and_GHOST=COPY/GP
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 10000000.0 NUE 0.4 DENS 2.0 THEXPANS 0.0
@@ -113,11 +113,11 @@ DLINE 0
 -------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
 DSURF 1
 // Fluid xfem
-E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.2 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
+E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.1 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
 --------------------------------------------DESIGN VOL ALE DIRICH CONDITIONS
 DVOL 1
 // Fluid volume
-E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.2 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.1 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
 --------------------------------------DESIGN XFEM FLUIDFLUID SURF CONDITIONS
 DSURF 1
 // Fluid xfem

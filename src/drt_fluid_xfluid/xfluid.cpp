@@ -111,6 +111,10 @@ void FLD::XFluid::Init()
   // output of stabilization details
   PrintStabilizationParams();
 
+  //--------------------------------------------------------------------------------------
+  // create object for edgebased stabilization
+  edgestab_ =  Teuchos::rcp(new XFEM::XFEM_EdgeStab());
+
 
   //----------------------------------------------------------------------
   // create faces extension if necessary
@@ -121,7 +125,6 @@ void FLD::XFluid::Init()
     discret_->FillComplete();
 
   // create internal faces for edgebased fluid stabilization and ghost penalty stabilization
-  if(eval_eos_ )
   {
     Teuchos::RCP<DRT::DiscretizationFaces> actdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret_, true);
     actdis->CreateInternalFacesExtension();
@@ -486,11 +489,6 @@ void FLD::XFluid::CreateState()
   //--------------------------------------------------------------------------------------
   // initialize the KrylovSpaceProjection
   InitKrylovSpaceProjection();
-
-  //--------------------------------------------------------------------------------------
-  // create object for edgebased stabilization
-  if(eval_eos_)
-    edgestab_ =  Teuchos::rcp(new XFEM::XFEM_EdgeStab(state_->Wizard(), discret_, include_inner_));
 
   //--------------------------------------------------------------------------------------
   if (false/*xfluid_.params_->get<bool>("INFNORMSCALING")*/)
@@ -1095,7 +1093,7 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
 void FLD::XFluid::AssembleMatAndRHS_FaceTerms(bool is_ghost_penalty_reconstruct)
 {
   // call edge stabilization
-  if( eval_eos_)
+  if( eval_eos_ || is_ghost_penalty_reconstruct)
   {
     TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 4) EOS" );
 
@@ -1123,7 +1121,7 @@ void FLD::XFluid::AssembleMatAndRHS_FaceTerms(bool is_ghost_penalty_reconstruct)
 
       bool gmsh_EOS_out(DRT::INPUT::IntegralValue<int>(params_->sublist("XFEM"),"GMSH_EOS_OUT"));
       edgestab_->EvaluateEdgeStabGhostPenalty(
-          faceparams, discret_, face_ele, state_->sysmat_, state_->residual_col_, gmsh_EOS_out);
+          faceparams, discret_, face_ele, state_->sysmat_, state_->residual_col_, state_->Wizard(), include_inner_, gmsh_EOS_out);
     }
   }
 }
@@ -1378,7 +1376,6 @@ void FLD::XFluid::AssembleMatAndRHS_GradientPenalty(
     int err2 = res_tmp.Export(*state_->residual_col_,exporter,Add);
     if (err2) dserror("Export using exporter returned err=%d",err2);
     state_->residual_->Update(1.0,res_tmp,1.0);
-
 
     //-------------------------------------------------------------------------------
     // finalize the complete matrix
@@ -3328,8 +3325,8 @@ void FLD::XFluid::XTimint_DoTimeStepTransfer(const bool screen_out)
   std::vector<Teuchos::RCP<Epetra_Vector> >       newRowStateVectors;
 
   // reconstruction map for nodes and its dofsets - how do we have to reconstruct the sinlge dofs
-  std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> > reconstr_method;
-
+  std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >             node_to_reconstr_method;
+  std::map<INPAR::XFEM::XFluidTimeInt, std::map<int,std::set<int> > > reconstr_method_to_node;
   // vector of DOF-IDs which are Dirichlet BCs for ghost penalty reconstruction method
   Teuchos::RCP<std::set<int> > dbcgids = Teuchos::rcp(new std::set<int>());
 
@@ -3377,13 +3374,40 @@ void FLD::XFluid::XTimint_DoTimeStepTransfer(const bool screen_out)
         state_->Wizard(),
         dofset_Intn_,
         state_->DofSet(),
-        reconstr_method,
+        node_to_reconstr_method,
+        reconstr_method_to_node,
         dbcgids,
         false,
         screen_out);
 
   } // TransferDofsToNewMap
 
+  if (xfluid_timintapproach_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_or_Proj_AND_GHOST_by_Proj_or_Copy_or_GP)
+  {
+    // project from another mesh, if possible (only for multimesh fluid)
+    bool projection_success = XTimint_ProjectFromEmbeddedDiscretization(
+        newRowStateVectors,
+        Teuchos::null,
+        screen_out);
+
+    if (!projection_success)
+    {
+      if (myrank_ == 0 and screen_out)
+        IO::cout << "Reassigment of single-dof time integration approach after projection FAILED in some cases." << IO::endl;
+
+      // we have nodes for which projection failed --> Correct the labels for those!
+      XTimint_CorrectiveTransferVectorsBetweenSteps(
+        xfluid_timintapproach_,
+        oldRowStateVectors,
+        newRowStateVectors,
+        dbcgids,
+        screen_out);
+
+      if (!xfluid_timeint_->Get_NodeToDofMap_For_Reconstr(INPAR::XFEM::Xf_TimeInt_by_PROJ_from_DIS).empty())
+        dserror("Even though projection failed, some nodes still demand projection. No alternatives found for e.g. %d",
+            xfluid_timeint_->Get_NodeToDofMap_For_Reconstr(INPAR::XFEM::Xf_TimeInt_by_PROJ_from_DIS).begin()->first);
+    }
+  }
 
   //------------------------------------------------------------------------------------
   //    GHOST PENALTY RECONSTRUCTION and/or SEMILAGRANGE RECONSTRUCTION necessary?
@@ -3394,8 +3418,6 @@ void FLD::XFluid::XTimint_DoTimeStepTransfer(const bool screen_out)
   bool timint_semi_lagrangean = false;
 
   XTimint_GetReconstructStatus(timint_ghost_penalty, timint_semi_lagrangean);
-
-
 
   //------------------------------------------------------------------------------------
   // STEP 2:               SEMILAGRANGE RECONSTRUCTION of std values
@@ -3422,9 +3444,9 @@ void FLD::XFluid::XTimint_DoTimeStepTransfer(const bool screen_out)
         newdofrowmap,                   ///< dofrowmap at current interface position
         oldRowStateVectors,             ///< vectors from which we reconstruct values (same order of vectors as in newRowStateVectors)
         dispnpcol,                      ///< displacement col - vector timestep n
-        dispncol,                 ///< displacement row - vector timestep n+1
+        dispncol,                       ///< displacement row - vector timestep n+1
         &*dofcolmap_Intn_,              ///< dofcolmap at time and interface position t^n
-        reconstr_method,                ///< reconstruction map for nodes and its dofsets
+        node_to_reconstr_method,        ///< reconstruction map for nodes and its dofsets
         screen_out                      ///< screen output?
         );
 
@@ -3500,7 +3522,8 @@ bool FLD::XFluid::XTimint_DoIncrementStepTransfer(
   std::vector<Teuchos::RCP<Epetra_Vector> >       rowStateVectors_npip;
 
   // reconstruction map for nodes and its dofsets - how do we have to reconstruct the sinlge dofs
-  std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> > reconstr_method;
+  std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >             node_to_reconstr_method;
+  std::map<INPAR::XFEM::XFluidTimeInt, std::map<int,std::set<int> > > reconstr_method_to_node;
 
   // vector of DOF-IDs which are Dirichlet BCs for ghost penalty reconstruction method
   Teuchos::RCP<std::set<int> > dbcgids = Teuchos::rcp(new std::set<int>());
@@ -3553,12 +3576,40 @@ bool FLD::XFluid::XTimint_DoIncrementStepTransfer(
         state_->Wizard(),
         dofset_Intnpi_,
         state_->DofSet(),
-        reconstr_method,
+        node_to_reconstr_method,
+        reconstr_method_to_node,
         dbcgids,
         true,
         screen_out
         );
 
+  }
+
+  if (xfluid_timintapproach_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_or_Proj_AND_GHOST_by_Proj_or_Copy_or_GP)
+  {
+    // project from another mesh, if possible (only for multimesh fluid)
+    bool projection_success = XTimint_ProjectFromEmbeddedDiscretization(
+        rowStateVectors_npip,
+        Teuchos::null,
+        screen_out);
+
+    if (!projection_success)
+    {
+      if (myrank_ == 0 and screen_out)
+        IO::cout << "Reassigment of single-dof time integration approach after projection FAILED in some cases." << IO::endl;
+
+      // we have nodes for which projection failed --> correct the labels for those!
+      XTimint_CorrectiveTransferVectorsBetweenSteps(
+        xfluid_timintapproach_,
+        rowStateVectors_npi,
+        rowStateVectors_npip,
+        dbcgids,
+        screen_out);
+
+      if (!xfluid_timeint_->Get_NodeToDofMap_For_Reconstr(INPAR::XFEM::Xf_TimeInt_by_PROJ_from_DIS).empty())
+        dserror("Even though projection failed, some nodes still hold a projection label. No alternatives found for e.g. %d",
+            xfluid_timeint_->Get_NodeToDofMap_For_Reconstr(INPAR::XFEM::Xf_TimeInt_by_PROJ_from_DIS).begin()->first);
+    }
   }
 
   //------------------------------------------------------------------------------------
@@ -3594,7 +3645,7 @@ bool FLD::XFluid::XTimint_DoIncrementStepTransfer(
           dispnpcol,                      ///< displacement col - vector timestep n
           dispncol,                       ///< displacement row - vector timestep n+1
           &*dofcolmap_Intn_,              ///< dofcolmap at time and interface position t^n
-          reconstr_method,                ///< reconstruction map for nodes and its dofsets
+          node_to_reconstr_method,        ///< reconstruction map for nodes and its dofsets
           screen_out                      ///< screen output?
           );
 
@@ -3635,9 +3686,6 @@ bool FLD::XFluid::XTimint_DoIncrementStepTransfer(
 
   }
 
-
-
-
   //------------------------------------------------------------------------------------
   // decide if the monolithic Newton has to be restarted, in case of the first iteration after a restart this information is
   // not used in the Newton loop
@@ -3668,18 +3716,19 @@ bool FLD::XFluid::XTimint_DoIncrementStepTransfer(
  |                                                         schott 04/14 |
  *----------------------------------------------------------------------*/
 void FLD::XFluid::XTimint_TransferVectorsBetweenSteps(
-    const INPAR::XFEM::XFluidTimeIntScheme           xfluid_timintapproach,  /// xfluid_timintapproch
-    const Teuchos::RCP<DRT::Discretization>          dis,                      /// discretization
-    std::vector<Teuchos::RCP<const Epetra_Vector> >& oldRowStateVectors,       /// row map based vectors w.r.t old interface position
-    std::vector<Teuchos::RCP<Epetra_Vector> >&       newRowStateVectors,       /// row map based vectors w.r.t new interface position
-    const Teuchos::RCP<GEO::CutWizard>               wizard_old,               /// cut wizard w.r.t old interface position
-    const Teuchos::RCP<GEO::CutWizard>               wizard_new,               /// cut wizard w.r.t new interface position
-    const Teuchos::RCP<XFEM::XFEMDofSet>             dofset_old,               /// dofset w.r.t old interface position
-    const Teuchos::RCP<XFEM::XFEMDofSet>             dofset_new,               /// dofset w.r.t new interface position
-    std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >& reconstr_method,  /// reconstruction map for nodes and its dofsets
-    Teuchos::RCP<std::set<int> >                     dbcgids,                  /// set of dof gids that must not be changed by ghost penalty reconstruction
-    bool                                             fill_permutation_map,
-    bool                                             screen_out
+  const INPAR::XFEM::XFluidTimeIntScheme                                 xfluid_timintapproach,  /// xfluid_timintapproch
+  const Teuchos::RCP<DRT::Discretization>                                dis,                      /// discretization
+  std::vector<Teuchos::RCP<const Epetra_Vector> >&                       oldRowStateVectors,       /// row map based vectors w.r.t old interface position
+  std::vector<Teuchos::RCP<Epetra_Vector> >&                             newRowStateVectors,       /// row map based vectors w.r.t new interface position
+  const Teuchos::RCP<GEO::CutWizard>                                     wizard_old,               /// cut wizard w.r.t old interface position
+  const Teuchos::RCP<GEO::CutWizard>                                     wizard_new,               /// cut wizard w.r.t new interface position
+  const Teuchos::RCP<XFEM::XFEMDofSet>                                   dofset_old,               /// dofset w.r.t old interface position
+  const Teuchos::RCP<XFEM::XFEMDofSet>                                   dofset_new,               /// dofset w.r.t new interface position
+  std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >&               node_to_reconstr_method,  /// reconstruction map for nodes and its dofsets
+  std::map<INPAR::XFEM::XFluidTimeInt, std::map<int, std::set<int> > >&  reconstr_method_to_node,  /// inverse reconstruction map for nodes and its dofsets
+  Teuchos::RCP<std::set<int> >                                           dbcgids,                  /// set of dof gids that must not be changed by ghost penalty reconstruction
+  bool                                                                   fill_permutation_map,
+  bool                                                                   screen_out
 )
 {
   const bool reconstruct_method_output = false;
@@ -3690,10 +3739,11 @@ void FLD::XFluid::XTimint_TransferVectorsBetweenSteps(
       dofset_old,
       dofset_new,
       xfluid_timintapproach,
-      reconstr_method,
+      node_to_reconstr_method,
+      reconstr_method_to_node,
       step_));
 
-  xfluid_timeint_->TransferDofsToNewMap(oldRowStateVectors, newRowStateVectors, reconstr_method, dbcgids);
+  xfluid_timeint_->TransferDofsToNewMap(oldRowStateVectors, newRowStateVectors, dbcgids);
 
   if(fill_permutation_map) permutation_map_ = xfluid_timeint_->GetPermutationMap();
 
@@ -3704,7 +3754,31 @@ void FLD::XFluid::XTimint_TransferVectorsBetweenSteps(
   if(reconstruct_method_output) xfluid_timeint_->Output();
 }
 
+/*----------------------------------------------------------------------*
+ |  transfer vectors between two time-steps or Newton steps             |
+ |  (second run in case of failure in first attempt)       kruse 04/15  |
+ *----------------------------------------------------------------------*/
+void FLD::XFluid::XTimint_CorrectiveTransferVectorsBetweenSteps(
+    const INPAR::XFEM::XFluidTimeIntScheme                                 xfluid_timintapproach,    /// xfluid_timintapproch
+    std::vector<Teuchos::RCP<const Epetra_Vector> >&                       oldRowStateVectors,       ///< row map based vectors w.r.t old interface position
+    std::vector<Teuchos::RCP<Epetra_Vector> >&                             newRowStateVectors,       ///< row map based vectors w.r.t new interface position
+    Teuchos::RCP<std::set<int> >                                           dbcgids,                  ///< set of dof gids that must not be changed by ghost penalty reconstruction
+    bool                                                                   screen_out                ///< output to screen
+)
+{
+  std::map<int,std::set<int> >& reconstr_map = xfluid_timeint_->Get_NodeToDofMap_For_Reconstr(INPAR::XFEM::Xf_TimeInt_by_PROJ_from_DIS);
 
+  std::vector<int> failed_nodevec;
+  failed_nodevec.reserve(reconstr_map.size());
+  for (std::map<int,std::set<int> >::const_iterator in = reconstr_map.begin(); in != reconstr_map.end(); ++ in)
+  {
+    failed_nodevec.push_back(in->first);
+  }
+
+  xfluid_timeint_->TransferDofsToNewMap(oldRowStateVectors, newRowStateVectors, dbcgids, failed_nodevec);
+
+  xfluid_timeint_->SetAndPrintStatus(screen_out);
+}
 
 /*----------------------------------------------------------------------*
  | decide if semi-Lagrangean back-tracking or ghost-penalty            |
@@ -4063,14 +4137,14 @@ void FLD::XFluid::XTimint_ReconstructGhostValues(
  |  reconstruct standard values via semi-Lagrangean method schott 08/14 |
  *----------------------------------------------------------------------*/
 void FLD::XFluid::XTimint_SemiLagrangean(
-    std::vector<Teuchos::RCP<Epetra_Vector> >&               newRowStateVectors,   ///< vectors to be reconstructed
-    const Epetra_Map*                                        newdofrowmap,         ///< dofrowmap at current interface position
-    std::vector<Teuchos::RCP<const Epetra_Vector> >&         oldRowStateVectors,   ///< vectors from which we reconstruct values (same order of vectors as in newRowStateVectors)
-    Teuchos::RCP<Epetra_Vector>                              dispn,                ///< displacement initial col - vector timestep n //set to Teuchos::null if no ale displacments
-    Teuchos::RCP<Epetra_Vector>                              dispnp,               ///< displacement initial col - vector timestep n+1 //if Teuchos::null ... --> no ale displacments
-    const Epetra_Map*                                        olddofcolmap,         ///< dofcolmap at time and interface position t^n
-    std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >& reconstr_method,      ///< reconstruction map for nodes and its dofsets
-    const bool                                               screen_out            ///< screen output?
+    std::vector<Teuchos::RCP<Epetra_Vector> >&               newRowStateVectors,      ///< vectors to be reconstructed
+    const Epetra_Map*                                        newdofrowmap,            ///< dofrowmap at current interface position
+    std::vector<Teuchos::RCP<const Epetra_Vector> >&         oldRowStateVectors,      ///< vectors from which we reconstruct values (same order of vectors as in newRowStateVectors)
+    Teuchos::RCP<Epetra_Vector>                              dispn,                   ///< displacement initial col - vector timestep n //set to Teuchos::null if no ale displacments
+    Teuchos::RCP<Epetra_Vector>                              dispnp,                  ///< displacement initial col - vector timestep n+1 //if Teuchos::null ... --> no ale displacments
+    const Epetra_Map*                                        olddofcolmap,            ///< dofcolmap at time and interface position t^n
+    std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >& node_to_reconstr_method, ///< reconstruction map for nodes and its dofsets
+    const bool                                               screen_out               ///< screen output?
 )
 {
 
@@ -4139,7 +4213,7 @@ void FLD::XFluid::XTimint_SemiLagrangean(
       // time integration data for standard dofs, semi-lagrangean approach
       timeIntStd_ = Teuchos::rcp(new XFEM::XFLUID_SemiLagrange(
           *timeIntData,
-          reconstr_method,
+          node_to_reconstr_method,
           xfemtimeint_,
           veln_col,
           dta_,

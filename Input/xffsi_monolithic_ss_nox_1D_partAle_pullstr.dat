@@ -95,6 +95,8 @@ VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk
 VISC_STAB_HK                    vol_equivalent
 IS_PSEUDO_2D                    yes
 XFF_CONV_STAB_SCALING           none
+GHOST_PENALTY_STAB              yes
+GHOST_PENALTY_FAC               0.05
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 2000000 NUE 0.4 DENS 2.0 THEXPANS 0.0

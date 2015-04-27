@@ -656,6 +656,7 @@ set(OBJS_DRT_XFEM
   src/drt_xfem/xfem_discretization_utils.cpp
   src/drt_xfem/xfem_dofset_transparent_independent.cpp
   src/drt_xfem/xfem_dofset.cpp
+  src/drt_xfem/xfem_mesh_projector.cpp
   src/drt_xfem/xfem_neumann.cpp
   src/drt_xfem/xfem_utils.cpp
   src/drt_xfem/xfluidfluid_timeInt.cpp

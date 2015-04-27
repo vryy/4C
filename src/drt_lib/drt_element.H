@@ -86,6 +86,7 @@ public:
     tri3,                       // 3 noded triangle
     tri6,                       // 6 noded triangle
     hex8,                       // 8 noded hexahedra
+    hex16,                      // 16 noded hexahedra
     hex18,                      // 18 noded hexahedra
     hex20,                      // 20 noded hexahedra
     hex27,                      // 27 noded hexahedra
@@ -1406,6 +1407,7 @@ inline std::string DistypeToString(const DRT::Element::DiscretizationType distyp
     case DRT::Element::tri3:       s = "TRI3";  break;
     case DRT::Element::tri6:       s = "TRI6";  break;
     case DRT::Element::hex8:       s = "HEX8";  break;
+    case DRT::Element::hex16:      s = "HEX16";  break;
     case DRT::Element::hex18:      s = "HEX18"; break;
     case DRT::Element::hex20:      s = "HEX20";  break;
     case DRT::Element::hex27:      s = "HEX27";  break;

@@ -124,11 +124,6 @@ VOLUME_GAUSS_POINTS_BY          Tessellation                  //Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation                  //Tessellation
 --------------------------------------------------------------XFLUID DYNAMIC
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
-RELAXING_ALE_EVERY              1
-RELAXING_ALE                    yes
-XFLUIDFLUID_SEARCHRADIUS        1
-MONOLITHIC_XFFSI_APPROACH       xffsi_fixedALE_partitioned
-XFLUIDFLUID_TIMEINT             Xff_TimeInt_FullProj
 XFLUID_TIMEINT                  STD=COPY/SL_and_GHOST=COPY/GP
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 //EMBEDDED_BOUNDARY             BoundaryTypeSigma

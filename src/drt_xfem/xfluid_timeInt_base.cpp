@@ -2437,11 +2437,11 @@ void XFEM::XFLUID_STD::CallProjectOnSide(
       on_side = ProjectOnSide<DRT::Element::quad4,4>(side_xyze, cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist);
       break;
     }
-//    case DRT::Element::quad8:
-//    {
-//      on_side = ProjectOnSide<DRT::Element::quad8,4>(side_xyze, cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist);
-//      break;
-//    }
+    case DRT::Element::quad8:
+    {
+      on_side = ProjectOnSide<DRT::Element::quad8,4>(side_xyze, cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist);
+      break;
+    }
 //      case DRT::Element::quad9:
 //      {
 //        //      on_side = ProjectOnSide<DRT::Element::quad9,4>(side_xyze, cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist);
@@ -2560,6 +2560,11 @@ void XFEM::XFLUID_STD::CallProjectOnLine(
     case DRT::Element::line2:
     {
       on_line = ProjectOnLine<DRT::Element::line2,4>(line_xyze, cutla[0].lm_,state,newNodeCoords,x_line,xi_line, curr_dist);
+      break;
+    }
+    case DRT::Element::line3:
+    {
+      on_line = ProjectOnLine<DRT::Element::line3,4>(line_xyze, cutla[0].lm_,state,newNodeCoords,x_line,xi_line, curr_dist);
       break;
     }
     default:

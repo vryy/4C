@@ -16,6 +16,7 @@ RESTART                         0
 NUMFLUIDDIS                     1
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
+OUTPUT_GMSH                     Yes
 FILESTEPS                       1
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
@@ -66,7 +67,7 @@ REYNOLDS-STRESS                 no_reynolds
 EOS_PRES                        xfem_gp
 EOS_CONV_STREAM                 xfem_gp
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-COUPLING_METHOD                 Nitsche                       // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
+COUPLING_METHOD                 Nitsche
 XFF_CONV_STAB_SCALING           none
 VISC_ADJOINT_SYMMETRY           yes
 NIT_STAB_FAC                    35
@@ -77,10 +78,11 @@ GHOST_PENALTY_2nd_STAB          yes
 GHOST_PENALTY_FAC               0.1
 IS_PSEUDO_2D                    yes
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
-XFLUIDFLUID_TIMEINT             Xff_TimeInt_FullProj
 RELAXING_ALE                    no
 RELAXING_ALE_EVERY              0
 XFLUIDFLUID                     yes
+XFLUID_TIMEINT                  STD=COPY/PROJ_and_GHOST=COPY/PROJ/GP
+XFLUIDFLUID_SEARCHRADIUS        10.0
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
@@ -88,6 +90,7 @@ NAME                            Ale_Solver
 SOLVER                          UMFPACK
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  No
+GMSH_DISCRET_OUT                Yes
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 10000000.0 NUE 0.4 DENS 2.0 THEXPANS 0.0

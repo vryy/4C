@@ -42,35 +42,19 @@ Maintainer: Benedikt Schott
 
 #include "xfem_edgestab.H"
 
-
-/*----------------------------------------------------------------------*
- |  Constructor for XFEM_EdgeStab                          schott 03/12 |
- *----------------------------------------------------------------------*/
-XFEM::XFEM_EdgeStab::XFEM_EdgeStab(
-  Teuchos::RCP<GEO::CutWizard>                 wizard,                ///< cut wizard
-  Teuchos::RCP<DRT::Discretization>            discret,               ///< discretization
-  bool                                         include_inner          ///< stabilize also facets with inside position
-  ) :
-  wizard_(wizard),
-  discret_(discret),
-  include_inner_(include_inner)
-{
-  ghost_penalty_stab_.clear();
-  edge_based_stab_.clear();
-} // end constructor
-
-
 /*----------------------------------------------------------------------*
  |  prepares edge based stabilization and ghost penaly in case of XFEM  |
  |  and calls evaluate routine                             schott 03/12 |
  *----------------------------------------------------------------------*/
 void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
-    Teuchos::ParameterList &               eleparams,        ///< element parameter list
-    Teuchos::RCP<DRT::Discretization>      discret,          ///< discretization
-    DRT::ELEMENTS::FluidIntFace *          faceele,          ///< face element
-    Teuchos::RCP<LINALG::SparseMatrix>     systemmatrix,     ///< systemmatrix
-    Teuchos::RCP<Epetra_Vector>            systemvector,     ///< systemvector
-    bool                                   gmsh_eos_out      ///< stabilization gmsh output
+  Teuchos::ParameterList &               eleparams,        ///< element parameter list
+  Teuchos::RCP<DRT::Discretization>      discret,          ///< discretization
+  DRT::ELEMENTS::FluidIntFace *          faceele,          ///< face element
+  Teuchos::RCP<LINALG::SparseMatrix>     systemmatrix,     ///< systemmatrix
+  Teuchos::RCP<Epetra_Vector>            systemvector,     ///< systemvector
+  Teuchos::RCP<GEO::CutWizard>           wizard,           ///< cut wizard
+  bool                                   include_inner,    ///< stabilize also facets with inside position
+  bool                                   gmsh_eos_out      ///< stabilization gmsh output
 )
 {
 
@@ -117,8 +101,8 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
   DRT::ELEMENTS::Fluid* p_slave  = faceele->ParentSlaveElement();
 
   // get corresponding element handles if available
-  GEO::CUT::ElementHandle * p_master_handle   = wizard_->GetElement( p_master );
-  GEO::CUT::ElementHandle * p_slave_handle    = wizard_->GetElement( p_slave  );
+  GEO::CUT::ElementHandle * p_master_handle   = wizard->GetElement( p_master );
+  GEO::CUT::ElementHandle * p_slave_handle    = wizard->GetElement( p_slave  );
 
   size_t p_master_numnode = p_master->NumNode();
   size_t p_slave_numnode  = p_slave->NumNode();
@@ -196,7 +180,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
         or p_master->Shape() == DRT::Element::pyramid5)
     {
 
-      GEO::CUT::SideHandle* side = GetFace(faceele);
+      GEO::CUT::SideHandle* side = GetFace(faceele,wizard);
 
       //-------------------------------- loop facets of this side -----------------------------
       // facet of current side
@@ -211,7 +195,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
           f != facets.end(); f++)
       {
         if (     (*f)->Position() == GEO::CUT::Point::outside
-            or ( (*f)->Position() == GEO::CUT::Point::inside and include_inner_)
+            or ( (*f)->Position() == GEO::CUT::Point::inside and include_inner)
         )
         {
 
@@ -279,7 +263,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
           {
             dserror("just one vcs reasonable?! face %d", faceele->Id());
           }
-        } // facet outside or (inside and include_inner_)
+        } // facet outside or (inside and include_inner)
         else if ((*f)->Position() == GEO::CUT::Point::undecided)
         {
           dserror("the position of this facet is undecided, how to stabilize???");
@@ -305,7 +289,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
         or p_master->Shape() == DRT::Element::hex27
         or p_master->Shape() == DRT::Element::tet10)
     {
-      GEO::CUT::SideHandle* side = GetFace(faceele);   // the side of the quadratic element
+      GEO::CUT::SideHandle* side = GetFace(faceele,wizard);   // the side of the quadratic element
       //-------------------------------- loop facets of this side -----------------------------
       // facet of current side
       std::vector<GEO::CUT::Facet*> facets;
@@ -320,7 +304,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
           f != facets.end(); f++)
       {
         if (     (*f)->Position() == GEO::CUT::Point::outside
-            or ( (*f)->Position() == GEO::CUT::Point::inside and include_inner_)
+            or ( (*f)->Position() == GEO::CUT::Point::inside and include_inner)
         )
         {
           GEO::CUT::plain_volumecell_set vcs = (*f)->Cells();
@@ -409,7 +393,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
           {
             dserror("just one vcs reasonable?! face %d", faceele->Id());
           }
-        } // facet outside or (inside and include_inner_)
+        } // facet outside or (inside and include_inner)
         else if ((*f)->Position() == GEO::CUT::Point::undecided)
         {
           dserror(
@@ -452,7 +436,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
         or p_master->Shape() == DRT::Element::tet10)
     {
 
-      GEO::CUT::SideHandle * side = GetFace(faceele);
+      GEO::CUT::SideHandle * side = GetFace(faceele,wizard);
 
       // facet of current side
       std::vector<GEO::CUT::Facet*> facets;
@@ -469,7 +453,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
       // get the unique single facet
       GEO::CUT::Facet* f = facets[0];
       if(      f->Position() == GEO::CUT::Point::outside
-          or ( f->Position() == GEO::CUT::Point::inside and include_inner_)
+          or ( f->Position() == GEO::CUT::Point::inside and include_inner)
       )
       {
 
@@ -626,7 +610,10 @@ void XFEM::XFEM_EdgeStab::AssembleEdgeStabGhostPenalty( Teuchos::ParameterList &
  | get the cut side for face's element identified using the sorted      |
  | node ids                                                schott 04/12 |
  *----------------------------------------------------------------------*/
-GEO::CUT::SideHandle* XFEM::XFEM_EdgeStab::GetFace(DRT::Element* faceele)
+GEO::CUT::SideHandle* XFEM::XFEM_EdgeStab::GetFace(
+  DRT::Element* faceele,
+  Teuchos::RCP<GEO::CutWizard> wizard
+)
 {
 
   TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: GetFace" );
@@ -639,8 +626,17 @@ GEO::CUT::SideHandle* XFEM::XFEM_EdgeStab::GetFace(DRT::Element* faceele)
   {
     nodeids[inode] = faceele->NodeIds()[inode];
   }
-  return wizard_->GetSide(nodeids);
+  return wizard->GetSide(nodeids);
 
+}
+
+/*----------------------------------------------------------------------*
+ | reset maps for output                                    kruse 04/15 |
+ *----------------------------------------------------------------------*/
+void XFEM::XFEM_EdgeStab::Reset()
+{
+  ghost_penalty_stab_.clear();
+  edge_based_stab_.clear();
 }
 
 

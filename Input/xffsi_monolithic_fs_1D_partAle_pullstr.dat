@@ -68,6 +68,8 @@ SOLVER                          UMFPACK
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Hybrid_LM_Cauchy_stress
 XFF_CONV_STAB_SCALING           none
+GHOST_PENALTY_STAB              yes
+GHOST_PENALTY_FAC               0.05
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 MONOLITHIC_XFFSI_APPROACH       xffsi_fixedALE_partitioned
 RELAXING_ALE                    yes

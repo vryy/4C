@@ -607,6 +607,7 @@ public:
   virtual Teuchos::RCP<const Epetra_Vector> Velaf()       { return velaf_; }
   virtual Teuchos::RCP<const Epetra_Vector> Veln()        { return veln_; }
   virtual Teuchos::RCP<const Epetra_Vector> Velnm()       { return velnm_; }
+  virtual Teuchos::RCP<Epetra_Vector> WriteAccessAccnp()  { return accnp_; }
   virtual Teuchos::RCP<const Epetra_Vector> Accnp()       { return accnp_; }
   virtual Teuchos::RCP<const Epetra_Vector> Accn()        { return accn_; }
   virtual Teuchos::RCP<const Epetra_Vector> Accnm()       { return accnm_; }

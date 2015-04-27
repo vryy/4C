@@ -72,14 +72,15 @@ public:
 
   //! constructor
   explicit XFluidTimeInt(
-      const Teuchos::RCP<DRT::Discretization>                        dis,                    /// discretization
-      const Teuchos::RCP<GEO::CutWizard>                             wizard_old,             /// cut wizard at t^n
-      const Teuchos::RCP<GEO::CutWizard>                             wizard_new,             /// cut wizard at t^(n+1)
-      const Teuchos::RCP<XFEM::XFEMDofSet>                           dofset_old,             /// XFEM dofset at t^n
-      const Teuchos::RCP<XFEM::XFEMDofSet>                           dofset_new,             /// XFEM dofset at t^(n+1)
-      const INPAR::XFEM::XFluidTimeIntScheme                         xfluid_timintapproach,  /// xfluid_timintapproch
-      std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >&       reconstr_method,        /// reconstruction map for nodes and its dofsets
-      const int                                                      step                    /// global time step
+      const Teuchos::RCP<DRT::Discretization>                               dis,                    /// discretization
+      const Teuchos::RCP<GEO::CutWizard>                                    wizard_old,             /// cut wizard at t^n
+      const Teuchos::RCP<GEO::CutWizard>                                    wizard_new,             /// cut wizard at t^(n+1)
+      const Teuchos::RCP<XFEM::XFEMDofSet>                                  dofset_old,             /// XFEM dofset at t^n
+      const Teuchos::RCP<XFEM::XFEMDofSet>                                  dofset_new,             /// XFEM dofset at t^(n+1)
+      const INPAR::XFEM::XFluidTimeIntScheme                                xfluid_timintapproach,  /// xfluid_timintapproch
+      std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >&              node_to_reconstr_method,/// reconstruction map for nodes and its dofsets
+      std::map<INPAR::XFEM::XFluidTimeInt, std::map<int,std::set<int> > >&  reconstr_method_to_node,/// inverse reconstruction map for nodes and its dofsets
+      const int                                                             step                    /// global time step
   );
 
   //! destructor
@@ -94,15 +95,24 @@ public:
 
   /// transfer standard and ghost dofs to new map as far as possible and mark dofs for reconstruction
   void TransferDofsToNewMap(
-      const std::vector<Teuchos::RCP<const Epetra_Vector> >&   oldRowStateVectors,  /// row map based vectors w.r.t old interface position
-      const std::vector<Teuchos::RCP<Epetra_Vector> >&         newRowStateVectors,  /// row map based vectors w.r.t new interface position
-      std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >& reconstr_method,     /// reconstruction map for nodes and its dofsets
-      const Teuchos::RCP<std::set<int> >                       dbcgids              /// set of dof gids that must not be changed by ghost penalty reconstruction
+    const std::vector<Teuchos::RCP<const Epetra_Vector> >&   oldRowStateVectors,  /// row map based vectors w.r.t old interface position
+    const std::vector<Teuchos::RCP<Epetra_Vector> >&         newRowStateVectors,  /// row map based vectors w.r.t new interface position
+    const Teuchos::RCP<std::set<int> >                       dbcgids              /// set of dof gids that must not be changed by ghost penalty reconstruction
   );
 
+  /// transfer standard and ghost dofs to new map as far as possible and mark dofs for reconstruction for given vector of node gids
+  void TransferDofsToNewMap(
+    const std::vector<Teuchos::RCP<const Epetra_Vector> >&   oldRowStateVectors,  /// row map based vectors w.r.t old interface position
+    const std::vector<Teuchos::RCP<Epetra_Vector> >&         newRowStateVectors,  /// row map based vectors w.r.t new interface position
+    const Teuchos::RCP<std::set<int> >                       dbcgids,             /// set of dof gids that must not be changed by ghost penalty reconstruction
+    const std::vector<int>&                                  node_gids            /// vector of node gids
+  );
 
   /// get for each type of reconstruction method the number of nodes for that this method has to be applied on this proc
   std::map<INPAR::XFEM::XFluidTimeInt,int>& Get_Reconstr_Counts(){return reconstr_counts_;};
+
+  /// get for each type of reconstruction method the node ids with corresponding dof its for that this method has to be applied on this proc
+  std::map<int,std::set<int> >& Get_NodeToDofMap_For_Reconstr(INPAR::XFEM::XFluidTimeInt reconstr);
 
   /// get permutation map for ghost dofs
   Teuchos::RCP<std::map<int, int> > GetPermutationMap(){return permutation_map_;};
@@ -111,6 +121,14 @@ public:
   void Output();
 
   private:
+
+  /// transfer standard and ghost dofs to new map as far as possible and mark dofs for reconstruction for a given node gid
+  void TransferNodalDofsToNewMap(
+    const std::vector<Teuchos::RCP<const Epetra_Vector> >&   oldRowStateVectors,  /// row map based vectors w.r.t old interface position
+    const std::vector<Teuchos::RCP<Epetra_Vector> >&         newRowStateVectors,  /// row map based vectors w.r.t new interface position
+    const Teuchos::RCP<std::set<int> >                       dbcgids,             /// set of dof gids that must not be changed by ghost penalty reconstruction
+    int                                                      gid                  /// nodal gid
+  );
 
   /// returns matching std::string for each reconstruction method
   std::string MapMethodEnumToString
@@ -167,7 +185,7 @@ public:
       const GEO::CUT::Node *                                         n_old,               /// node w.r.t to old wizard
       const GEO::CUT::Node *                                         n_new,               /// node w.r.t to new wizard
       const std::vector<Teuchos::RCP<GEO::CUT::NodalDofSet> > &      dof_cellsets_old,    /// all dofcellsets at t^n
-      const GEO::CUT::NodalDofSet*                                   cell_set_new         /// dofcellset at t^(n+1) which has to be identified
+      const GEO::CUT::NodalDofSet*                                   cell_set_new        /// dofcellset at t^(n+1) which has to be identified
   );
 
   /// special check if the node slides along the cut surface
@@ -248,7 +266,9 @@ public:
 
   INPAR::XFEM::XFluidTimeIntScheme timeint_scheme_; /// which type of time integration scheme shall be used for reconstructing values
 
-  std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >& reconstr_method_; /// map of nodeIds and reconstruction method for all nodal dofsets
+  std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >& node_to_reconstr_method_; /// map of nodeIds and reconstruction method for all nodal dofsets
+
+  std::map<INPAR::XFEM::XFluidTimeInt, std::map<int,std::set<int> > >& reconstr_method_to_node_;/// map of reconstruction method to map of node-id and nodal dofset-id (inverse to node_to_reconstr_method)
 
   std::map<INPAR::XFEM::XFluidTimeInt,int> reconstr_counts_; /// counts the number of dofsets that have to be reconstructed using each method
 

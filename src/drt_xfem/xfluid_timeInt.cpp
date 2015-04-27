@@ -57,14 +57,15 @@ Maintainer: Benedikt Schott
 // constructor
 // -------------------------------------------------------------------
 XFEM::XFluidTimeInt::XFluidTimeInt(
-    const Teuchos::RCP<DRT::Discretization>                        dis,                    /// discretization
-    const Teuchos::RCP<GEO::CutWizard>                             wizard_old,             /// cut wizard at t^n
-    const Teuchos::RCP<GEO::CutWizard>                             wizard_new,             /// cut wizard at t^(n+1)
-    const Teuchos::RCP<XFEM::XFEMDofSet>                           dofset_old,             /// XFEM dofset at t^n
-    const Teuchos::RCP<XFEM::XFEMDofSet>                           dofset_new,             /// XFEM dofset at t^(n+1)
-    const INPAR::XFEM::XFluidTimeIntScheme                         xfluid_timintapproach,  /// xfluid_timintapproch
-    std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >&       reconstr_method,        /// reconstruction map for nodes and its dofsets
-    const int                                                      step                    /// global time step
+    const Teuchos::RCP<DRT::Discretization>                               dis,                    /// discretization
+    const Teuchos::RCP<GEO::CutWizard>                                    wizard_old,             /// cut wizard at t^n
+    const Teuchos::RCP<GEO::CutWizard>                                    wizard_new,             /// cut wizard at t^(n+1)
+    const Teuchos::RCP<XFEM::XFEMDofSet>                                  dofset_old,             /// XFEM dofset at t^n
+    const Teuchos::RCP<XFEM::XFEMDofSet>                                  dofset_new,             /// XFEM dofset at t^(n+1)
+    const INPAR::XFEM::XFluidTimeIntScheme                                xfluid_timintapproach,  /// xfluid_timintapproch
+    std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >&              node_to_reconstr_method,/// reconstruction map for nodes and its dofsets
+    std::map<INPAR::XFEM::XFluidTimeInt, std::map<int,std::set<int> > >&  reconstr_method_to_node,/// inverse reconstruction map for nodes and its dofsets
+    const int                                                             step                    /// global time step
   ) :
   dis_(dis),
   wizard_old_(wizard_old),
@@ -72,7 +73,8 @@ XFEM::XFluidTimeInt::XFluidTimeInt(
   dofset_old_(dofset_old),
   dofset_new_(dofset_new),
   timeint_scheme_ (xfluid_timintapproach),
-  reconstr_method_(reconstr_method),
+  node_to_reconstr_method_(node_to_reconstr_method),
+  reconstr_method_to_node_(reconstr_method_to_node),
   step_(step)
   {
 
@@ -91,9 +93,9 @@ XFEM::XFluidTimeInt::XFluidTimeInt(
 void XFEM::XFluidTimeInt::SetAndPrintStatus(const bool screenout)
 {
 
-
-  for(std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >::iterator node_it=reconstr_method_.begin();
-      node_it!= reconstr_method_.end();
+  reconstr_counts_.clear();
+  for(std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >::iterator node_it=node_to_reconstr_method_.begin();
+      node_it!= node_to_reconstr_method_.end();
       node_it++)
   {
     std::vector<INPAR::XFEM::XFluidTimeInt> nodesets = node_it->second;
@@ -165,25 +167,28 @@ std::string XFEM::XFluidTimeInt::MapMethodEnumToString
   switch (term)
   {
   case INPAR::XFEM::Xf_TimeInt_STD_by_SL:
-    return "Semi-Lagrange: STD(n+1)              ";
+    return "Semi-Lagrange: STD(n+1)                    ";
     break;
   case INPAR::XFEM::Xf_TimeInt_STD_by_COPY_from_GHOST:
-    return "Copy Dofset:   GHOST(n) -> STD(n+1)  ";
+    return "Copy Dofset:   GHOST(n)   -> STD(n+1)      ";
     break;
   case INPAR::XFEM::Xf_TimeInt_STD_by_COPY_from_STD:
-    return "Copy Dofset:   STD(n)   -> STD(n+1)  ";
+    return "Copy Dofset:   STD(n)     -> STD(n+1)      ";
     break;
   case INPAR::XFEM::Xf_TimeInt_GHOST_by_GP:
-    return "Ghost-Penalty: GHOST(n+1)            ";
+    return "Ghost-Penalty: GHOST(n+1)                  ";
     break;
   case INPAR::XFEM::Xf_TimeInt_GHOST_by_COPY_from_GHOST:
-    return "Copy Dofset:   GHOST(n) -> GHOST(n+1)";
+    return "Copy Dofset:   GHOST(n)   -> GHOST(n+1)    ";
     break;
   case INPAR::XFEM::Xf_TimeInt_GHOST_by_COPY_from_STD:
-    return "Copy Dofset:   STD(n)   -> GHOST(n+1)";
+    return "Copy Dofset:   STD(n)     -> GHOST(n+1)    ";
+    break;
+  case INPAR::XFEM::Xf_TimeInt_by_PROJ_from_DIS:
+    return "Copy Dofset:   STD_EMB(n) -> STD/GHOST(n+1)";
     break;
   case INPAR::XFEM::Xf_TimeInt_undefined:
-    return "undefined:                           ";
+    return "undefined:                                 ";
   default :
     dserror("Cannot cope with name enum %d", term);
     return "";
@@ -195,23 +200,15 @@ std::string XFEM::XFluidTimeInt::MapMethodEnumToString
 
 
 // -------------------------------------------------------------------
-// transfer standard and ghost dofs to new map as far as possible and mark dofs for reconstruction
+// transfer standard and ghost dofs to new map as far as possible and
+// mark all dofs for reconstruction
 // -------------------------------------------------------------------
 void XFEM::XFluidTimeInt::TransferDofsToNewMap(
-    const std::vector<Teuchos::RCP<const Epetra_Vector> >&   oldRowStateVectors,  /// row map based vectors w.r.t old interface position
-    const std::vector<Teuchos::RCP<Epetra_Vector> >&         newRowStateVectors,  /// row map based vectors w.r.t new interface position
-    std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >& reconstr_method,     /// reconstruction map for nodes and its dofsets
-    const Teuchos::RCP<std::set<int> >                       dbcgids              /// set of dof gids that must not be changed by ghost penalty reconstruction
-    )
+  const std::vector<Teuchos::RCP<const Epetra_Vector> >&   oldRowStateVectors,  /// row map based vectors w.r.t old interface position
+  const std::vector<Teuchos::RCP<Epetra_Vector> >&         newRowStateVectors,  /// row map based vectors w.r.t new interface position
+  const Teuchos::RCP<std::set<int> >                       dbcgids              /// set of dof gids that must not be changed by ghost penalty reconstruction
+)
 {
-
-#ifdef DEBUG_TIMINT
-  const int numdofpernode = 4;
-#endif
-
-
-  if(oldRowStateVectors.size() != newRowStateVectors.size()) dserror("TransferDofsToNewMap: not equal number of old and new vectors");
-
   //------------------------------------------------------------
   // loop background fluid row nodes
   const Epetra_Map* noderowmap = dis_->NodeRowMap();
@@ -221,261 +218,364 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
   {
     // get global id of a node
     int gid = noderowmap->GID(lid);
+    TransferNodalDofsToNewMap(
+        oldRowStateVectors,
+        newRowStateVectors,
+        dbcgids,
+        gid);
+  }
 
-    // get the node
-    DRT::Node* node = dis_->gNode(gid);
+  // export the reconstruction method information to other procs
+  // this has to be done, when SL-nodes mark non-row surrounding nodes (and its some of its dofsets) as Ghost-penalty dofsets
+  ExportMethods(newRowStateVectors, dbcgids);
+}
 
-    // get cut nodes with respect to cut wizards at t^n and t^(n+1)
-    GEO::CUT::Node * n_new = wizard_new_->GetNode(gid);
-    GEO::CUT::Node * n_old = wizard_old_->GetNode(gid);
+// -------------------------------------------------------------------
+// transfer standard and ghost dofs to new map as far as possible and
+// mark all dofs for reconstruction
+// -------------------------------------------------------------------
+void XFEM::XFluidTimeInt::TransferDofsToNewMap(
+  const std::vector<Teuchos::RCP<const Epetra_Vector> >&   oldRowStateVectors,  /// row map based vectors w.r.t old interface position
+  const std::vector<Teuchos::RCP<Epetra_Vector> >&         newRowStateVectors,  /// row map based vectors w.r.t new interface position
+  const Teuchos::RCP<std::set<int> >                       dbcgids,             /// set of dof gids that must not be changed by ghost penalty reconstruction
+  const std::vector<int>&                                  node_gids            /// vector of node gids
+)
+{
+  for (size_t i=0; i<node_gids.size(); ++i)
+  {
+    // get global id of a node
+    TransferNodalDofsToNewMap(
+        oldRowStateVectors,
+        newRowStateVectors,
+        dbcgids,
+        node_gids[i]);
+  }
+  // export the reconstruction method information to other procs
+  // this has to be done, when SL-nodes mark non-row surrounding nodes (and its some of its dofsets) as Ghost-penalty dofsets
+  ExportMethods(newRowStateVectors, dbcgids);
+}
 
-
-    //---------------------------------------------------------------------------------
-    // switch over different cases dependent of surrounding elements are cut or not at t^n and t^(n+1)
-    //     case A: surrounding elements not cut at t^n AND t^(n+1) => copy dofs
-    //     case B: at least one surrounding element cut at t^n, uncut elements at t^(n+1)
-    //     case C: uncut elements at t^n, but at least one surrounding element cut at t^(n+1)
-    //     case D: surrounding elements cut at old and new timestep t^n and t^(n+1)
-    //---------------------------------------------------------------------------------
-
-    // initialize to true, as in case that no cut information we have standard FE and the dofsets are unique standard dofsets
-    bool unique_std_uncut_np = true;
-    bool unique_std_uncut_n = true;
-
-    // check for unique std dofset and surrounding uncut elements at t^(n+1)
-    if(n_new != NULL)
-    {
-      const int numDofSets_new = n_new->NumDofSets(); //= dof_cellsets_new.size()
-
-      // just one dofset at new timestep t^(n+1)
-      if(numDofSets_new == 1) unique_std_uncut_np = NonIntersectedElements(node, wizard_new_);
-      else                    unique_std_uncut_np = false;
-    }
-
-    // check for unique std dofset and surrounding uncut elements at t^n
-    if(n_old != NULL)
-    {
-      const int numDofSets_old = n_old->NumDofSets(); //= dof_cellsets_old.size()
-
-      // just one dofset at new timestep t^n
-      if(numDofSets_old == 1) unique_std_uncut_n = NonIntersectedElements(node, wizard_old_);
-      else                    unique_std_uncut_n = false;
-    }
-
-    //===========================================================
-    // switch cases A-D
-    //===========================================================
-    if(   (n_new == NULL       and n_old == NULL     )
-        or(n_new == NULL       and unique_std_uncut_n)
-        or(unique_std_uncut_np and n_old == NULL     )
-        or(unique_std_uncut_np and unique_std_uncut_n)
-        )
-    {
-      //---------------------------------------------------------------------------------
-      // case A: surrounding elements not cut at t^n AND t^(n+1) => copy dofs
-      //---------------------------------------------------------------------------------
-
-      // holes are included within the bounding box
-      // REMARK: we assume that the structure does not move more than one element and
-      //         nodes do not change the side w.r.t structure (not to large movement!!!)
-
-      // just one dofset available at t^n and t^(n+1)
-      const int nds_new = 0;
-      const int nds_old = 0;
-
-      // copy dofs from this node from t^n -> t^(n+1)
-      CopyDofs(node, nds_new, nds_old, INPAR::XFEM::Xf_TimeInt_STD_by_COPY_from_STD, newRowStateVectors, oldRowStateVectors,dbcgids);
-
-    }//end case A
-    else if(n_new == NULL or unique_std_uncut_np)
-    {
-      if(n_old == NULL) dserror("you should call case A here");
-
-      //---------------------------------------------------------------------------------
-      // case B: at least one surrounding element cut at t^(n), uncut elements at t^(n+1)
-      //---------------------------------------------------------------------------------
-
-      // case a): a similar uncut position at old and new timestep (but node in bounding box at old timestep)
-      // case b): at least one std-dof at t^n (  -> std-dof can be copied, std-dof should not have changed the side within one timestep!)
-      //                                         -> all ghost-dofs have to be computed newly)
-      // case c): only ghost dofs at t^n (-> to much structural movement within one timestep)
-
-      //-------------------------------
-      // t^(n+1)
-      // assume one unique dofset
-      const int nds_new = 0;
-      GEO::CUT::Point::PointPosition pos_new = GEO::CUT::Point::undecided;
-
-      if(n_new == NULL)
-        pos_new = GEO::CUT::Point::outside; // by default for nodes outside the cut-boundingbox
-      else
-      {
-        if (n_new->NodalDofSets().size() == 1)
-          pos_new = n_new->NodalDofSets()[0]->Position();
-        else
-          dserror("XFEM::XFluidTimeInt::TransferDofsToNewMap() - Case B: n_new->NodalDofSets().size() != 1");
-      }
-
-      if(pos_new != GEO::CUT::Point::outside and pos_new != GEO::CUT::Point::inside)
-        dserror("position of unique std-dofset is not inside and not outside, can this happen?");
-
-      std::vector<int> dofs_new;
-      dofset_new_->Dof(dofs_new, node, nds_new );
-
+// -------------------------------------------------------------------
+// transfer standard and ghost dofs to new map as far as possible
+// and mark nodal dofs for reconstruction
+// -------------------------------------------------------------------
+void XFEM::XFluidTimeInt::TransferNodalDofsToNewMap(
+  const std::vector<Teuchos::RCP<const Epetra_Vector> >&   oldRowStateVectors,  /// row map based vectors w.r.t old interface position
+  const std::vector<Teuchos::RCP<Epetra_Vector> >&         newRowStateVectors,  /// row map based vectors w.r.t new interface position
+  const Teuchos::RCP<std::set<int> >                       dbcgids,             /// set of dof gids that must not be changed by ghost penalty reconstruction
+  int                                                      gid                  /// nodal gid
+)
+{
 #ifdef DEBUG_TIMINT
-      const int numdofs_new = (int)(dofs_new.size());
-      if(numdofs_new != numdofpernode)
-      {
-        dserror("XFLUID-TIMINIT CASE B: node %d,\t %d dofs for node without nodehandle at timestep t^(n+1) ?!", gid, numdofs_new);
-      }
+  const int numdofpernode = 4;
 #endif
 
-      //-------------------------------
-      // t^(n)
+  if(oldRowStateVectors.size() != newRowStateVectors.size()) dserror("TransferDofsToNewMap: not equal number of old and new vectors");
 
-      // how many sets of dofs?
-      const int numDofSets_old = n_old->NumDofSets(); //= dof_cellsets_old.size()
+  // get the node
+  DRT::Node* node = dis_->gNode(gid);
 
-      //-------------------------------------
-      // just one dofset at old timestep t^n
-      //-------------------------------------
-      if(numDofSets_old == 1 and unique_std_uncut_n)
+  // get cut nodes with respect to cut wizards at t^n and t^(n+1)
+  GEO::CUT::Node * n_new = wizard_new_->GetNode(gid);
+  GEO::CUT::Node * n_old = wizard_old_->GetNode(gid);
+
+
+  //---------------------------------------------------------------------------------
+  // switch over different cases dependent of surrounding elements are cut or not at t^n and t^(n+1)
+  //     case A: surrounding elements not cut at t^n AND t^(n+1) => copy dofs
+  //     case B: at least one surrounding element cut at t^n, uncut elements at t^(n+1)
+  //     case C: uncut elements at t^n, but at least one surrounding element cut at t^(n+1)
+  //     case D: surrounding elements cut at old and new timestep t^n and t^(n+1)
+  //---------------------------------------------------------------------------------
+
+  // initialize to true, as in case that no cut information we have standard FE and the dofsets are unique standard dofsets
+  bool unique_std_uncut_np = true;
+  bool unique_std_uncut_n = true;
+
+  // check for unique std dofset and surrounding uncut elements at t^(n+1)
+  if(n_new != NULL)
+  {
+    const int numDofSets_new = n_new->NumDofSets(); //= dof_cellsets_new.size()
+
+    // just one dofset at new timestep t^(n+1)
+    if(numDofSets_new == 1) unique_std_uncut_np = NonIntersectedElements(node, wizard_new_);
+    else                    unique_std_uncut_np = false;
+  }
+
+  // check for unique std dofset and surrounding uncut elements at t^n
+  if(n_old != NULL)
+  {
+    const int numDofSets_old = n_old->NumDofSets(); //= dof_cellsets_old.size()
+
+    // just one dofset at new timestep t^n
+    if(numDofSets_old == 1) unique_std_uncut_n = NonIntersectedElements(node, wizard_old_);
+    else                    unique_std_uncut_n = false;
+  }
+
+  //===========================================================
+  // switch cases A-D
+  //===========================================================
+  if(   (n_new == NULL       and n_old == NULL     )
+      or(n_new == NULL       and unique_std_uncut_n)
+      or(unique_std_uncut_np and n_old == NULL     )
+      or(unique_std_uncut_np and unique_std_uncut_n)
+      )
+  {
+    //---------------------------------------------------------------------------------
+    // case A: surrounding elements not cut at t^n AND t^(n+1) => copy dofs
+    //---------------------------------------------------------------------------------
+
+    // holes are included within the bounding box
+    // REMARK: we assume that the structure does not move more than one element and
+    //         nodes do not change the side w.r.t structure (not to large movement!!!)
+
+    // just one dofset available at t^n and t^(n+1)
+    const int nds_new = 0;
+    const int nds_old = 0;
+
+    // copy dofs from this node from t^n -> t^(n+1)
+    CopyDofs(node, nds_new, nds_old, INPAR::XFEM::Xf_TimeInt_STD_by_COPY_from_STD, newRowStateVectors, oldRowStateVectors,dbcgids);
+
+  }//end case A
+  else if(n_new == NULL or unique_std_uncut_np)
+  {
+    if(n_old == NULL) dserror("you should call case A here");
+
+    //---------------------------------------------------------------------------------
+    // case B: at least one surrounding element cut at t^(n), uncut elements at t^(n+1)
+    //---------------------------------------------------------------------------------
+
+    // case a): a similar uncut position at old and new timestep (but node in bounding box at old timestep)
+    // case b): at least one std-dof at t^n (  -> std-dof can be copied, std-dof should not have changed the side within one timestep!)
+    //                                         -> all ghost-dofs have to be computed newly)
+    // case c): only ghost dofs at t^n (-> to much structural movement within one timestep)
+
+    //-------------------------------
+    // t^(n+1)
+    // assume one unique dofset
+    const int nds_new = 0;
+    GEO::CUT::Point::PointPosition pos_new = GEO::CUT::Point::undecided;
+
+    if(n_new == NULL)
+      pos_new = GEO::CUT::Point::outside; // by default for nodes outside the cut-boundingbox
+    else
+    {
+      if (n_new->NodalDofSets().size() == 1)
+        pos_new = n_new->NodalDofSets()[0]->Position();
+      else
+        dserror("XFEM::XFluidTimeInt::TransferDofsToNewMap() - Case B: n_new->NodalDofSets().size() != 1");
+    }
+
+    if(pos_new != GEO::CUT::Point::outside and pos_new != GEO::CUT::Point::inside)
+      dserror("position of unique std-dofset is not inside and not outside, can this happen?");
+
+    std::vector<int> dofs_new;
+    dofset_new_->Dof(dofs_new, node, nds_new );
+
+#ifdef DEBUG_TIMINT
+    const int numdofs_new = (int)(dofs_new.size());
+    if(numdofs_new != numdofpernode)
+    {
+      dserror("XFLUID-TIMINIT CASE B: node %d,\t %d dofs for node without nodehandle at timestep t^(n+1) ?!", gid, numdofs_new);
+    }
+#endif
+
+    //-------------------------------
+    // t^(n)
+
+    // how many sets of dofs?
+    const int numDofSets_old = n_old->NumDofSets(); //= dof_cellsets_old.size()
+
+    //-------------------------------------
+    // just one dofset at old timestep t^n
+    //-------------------------------------
+    if(numDofSets_old == 1 and unique_std_uncut_n)
+    {
+      dserror("here you should call case A!");
+    }
+    else if(numDofSets_old == 1 and !unique_std_uncut_n)
+    {
+      // check if there is a standard dofset
+      int nds_old = n_old->GetStandardNodalDofSet(pos_new);
+
+      if(nds_old != -1) // case b)
       {
-        dserror("here you should call case A!");
+        // copy values
+        CopyDofs(node, nds_new, nds_old, INPAR::XFEM::Xf_TimeInt_STD_by_COPY_from_STD, newRowStateVectors, oldRowStateVectors,dbcgids);
       }
-      else if(numDofSets_old == 1 and !unique_std_uncut_n)
+      else // case c)
       {
-        // check if there is a standard dofset
-        int nds_old = n_old->GetStandardNodalDofSet(pos_new);
-
-        if(nds_old != -1) // case b)
-        {
-          // copy values
-          CopyDofs(node, nds_new, nds_old, INPAR::XFEM::Xf_TimeInt_STD_by_COPY_from_STD, newRowStateVectors, oldRowStateVectors,dbcgids);
-        }
-        else // case c)
-        {
-          //case: NEWLY CREATED NODEHANDLE: just one ghost dofset at old time!
-          //      structural movement more than one element near node, (here SEMILAGRANGE possible!)
-
-          if(timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_AND_GHOST_by_Copy_or_GP)
-            dserror("structural movement more than one element near node %d", n_new->Id());
-          else if( timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_or_SL_AND_GHOST_by_Copy_or_GP or
-                   timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_SL_cut_zone_AND_GHOST_by_GP)
-          {
-            MarkDofs(node, nds_new, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_STD_by_SL,dbcgids);
-          }
-          else dserror("unknwon INPAR::XFEM::Xf_TimIntScheme");
-
-        }
-      } // some elements cut
-      else if(numDofSets_old == 0 )
-      {
-        // case: "XFLUID-TIMINIT CASE B: node %d,\t no dofset at t^n available,
-        //        structural movement more than one element for node ? (here SEMILAGRANGE possible!", gid);
+        //case: NEWLY CREATED NODEHANDLE: just one ghost dofset at old time!
+        //      structural movement more than one element near node, (here SEMILAGRANGE possible!)
 
         if(timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_AND_GHOST_by_Copy_or_GP)
-          dserror("no dofset at t^n available, structural movement more than one element for node %d", n_new->Id());
+          dserror("structural movement more than one element near node %d", gid);
         else if( timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_or_SL_AND_GHOST_by_Copy_or_GP or
                  timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_SL_cut_zone_AND_GHOST_by_GP)
         {
           MarkDofs(node, nds_new, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_STD_by_SL,dbcgids);
+        }
+        else if ( timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_or_Proj_AND_GHOST_by_Proj_or_Copy_or_GP)
+        {
+          MarkDofs(node, nds_new, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_by_PROJ_from_DIS,dbcgids);
+        }
+        else dserror("unknwon INPAR::XFEM::Xf_TimIntScheme");
+
+      }
+    } // some elements cut
+    else if(numDofSets_old == 0 )
+    {
+      // case: "XFLUID-TIMINIT CASE B: node %d,\t no dofset at t^n available,
+      //        structural movement more than one element for node ? (here SEMILAGRANGE possible!", gid);
+
+      if(timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_AND_GHOST_by_Copy_or_GP)
+        dserror("no dofset at t^n available, structural movement more than one element for node %d", gid);
+      else if( timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_or_SL_AND_GHOST_by_Copy_or_GP or
+               timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_SL_cut_zone_AND_GHOST_by_GP)
+      {
+        MarkDofs(node, nds_new, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_STD_by_SL,dbcgids);
+      }
+      else if ( timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_or_Proj_AND_GHOST_by_Proj_or_Copy_or_GP)
+      {
+        MarkDofs(node, nds_new, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_by_PROJ_from_DIS,dbcgids);
+      }
+      else dserror("unknwon INPAR::XFEM::Xf_TimIntScheme");
+
+    }
+    else
+    {
+      //-------------------------------------
+      // more than one dofset at old timestep
+      //-------------------------------------
+
+      // check if there is a standard dofset
+      int nds_old = n_old->GetStandardNodalDofSet(pos_new);
+
+      if( nds_old == -1 )
+      {
+        // all dofsets at t^n are not std-dofsets, structural movement more than one element
+
+        if(timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_AND_GHOST_by_Copy_or_GP)
+          dserror("all dofset at t^n are ghost-dofsets, structural movement more than one element for node %d", gid);
+        else if( timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_or_SL_AND_GHOST_by_Copy_or_GP or
+                 timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_SL_cut_zone_AND_GHOST_by_GP)
+        {
+          MarkDofs(node, nds_new, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_STD_by_SL,dbcgids);
+        }
+        else if ( timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_or_Proj_AND_GHOST_by_Proj_or_Copy_or_GP)
+        {
+          MarkDofs(node, nds_new, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_by_PROJ_from_DIS,dbcgids);
         }
         else dserror("unknwon INPAR::XFEM::Xf_TimIntScheme");
 
       }
       else
       {
-        //-------------------------------------
-        // more than one dofset at old timestep
-        //-------------------------------------
-
-        // check if there is a standard dofset
-        int nds_old = n_old->GetStandardNodalDofSet(pos_new);
-
-        if( nds_old == -1 )
-        {
-          // all dofsets at t^n are not std-dofsets, structural movement more than one element
-
-          if(timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_AND_GHOST_by_Copy_or_GP)
-            dserror("all dofset at t^n are ghost-dofsets, structural movement more than one element for node %d", n_new->Id());
-          else if( timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_or_SL_AND_GHOST_by_Copy_or_GP or
-                   timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_SL_cut_zone_AND_GHOST_by_GP)
-          {
-            MarkDofs(node, nds_new, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_STD_by_SL,dbcgids);
-          }
-          else dserror("unknwon INPAR::XFEM::Xf_TimIntScheme");
-
-        }
-        else
-        {
-          // copy values
-          CopyDofs(node, nds_new, nds_old, INPAR::XFEM::Xf_TimeInt_STD_by_COPY_from_STD, newRowStateVectors, oldRowStateVectors,dbcgids);
-        }
-      } //end more than one dofset
-    }//end case B
-    else if(n_old == NULL or unique_std_uncut_n)
-    {
-      if(n_new == NULL) dserror("you should call case A here");
-
-      // how many sets of dofs?
-      const int numDofSets_new = n_new->NumDofSets(); //= dof_cellsets_new.size()
-
-      if(numDofSets_new == 0 ) // no values to set
-      {
-        continue; // do nothing for this node
+        // copy values
+        CopyDofs(node, nds_new, nds_old, INPAR::XFEM::Xf_TimeInt_STD_by_COPY_from_STD, newRowStateVectors, oldRowStateVectors,dbcgids);
       }
+    } //end more than one dofset
+  }//end case B
+  else if(n_old == NULL or unique_std_uncut_n)
+  {
+    if(n_new == NULL) dserror("you should call case A here");
 
-      //---------------------------------------------------------------------------------
-      // case C: C: uncut elements at t^n, but at least one surrounding element cut at t^(n+1)
-      //---------------------------------------------------------------------------------
+    // how many sets of dofs?
+    const int numDofSets_new = n_new->NumDofSets(); //= dof_cellsets_new.size()
 
-      // case a): a similar uncut position at old and new timestep (but node now in bounding box)
-      // case b): at least one std-dof at t^(n+1)(  -> std-dof can be copied, std-dof should not have changed the side within one timestep!)
-      //                                            -> all ghost-dofs have to be computed newly)
-      // case c): only ghost dofs at t^(n+1) (-> to much structural movement within one timestep)
+    if(numDofSets_new == 0 ) // no values to set
+    {
+      return; // do nothing for this node
+    }
 
-      //-------------------------------
-      // t^n
-      // assume one unique dofset
-      const int nds_old = 0;
+    //---------------------------------------------------------------------------------
+    // case C: C: uncut elements at t^n, but at least one surrounding element cut at t^(n+1)
+    //---------------------------------------------------------------------------------
 
-      std::vector<int> dofs_old;
-      dofset_old_->Dof(dofs_old, node, nds_old );
+    // case a): a similar uncut position at old and new timestep (but node now in bounding box)
+    // case b): at least one std-dof at t^(n+1)(  -> std-dof can be copied, std-dof should not have changed the side within one timestep!)
+    //                                            -> all ghost-dofs have to be computed newly)
+    // case c): only ghost dofs at t^(n+1) (-> to much structural movement within one timestep)
+
+    //-------------------------------
+    // t^n
+    // assume one unique dofset
+    const int nds_old = 0;
+
+    std::vector<int> dofs_old;
+    dofset_old_->Dof(dofs_old, node, nds_old );
 
 #ifdef DEBUG_TIMINT
-      const int numdofs_old = (int)(dofs_old.size());
-      if(numdofs_old != numdofpernode)
-      {
-        dserror("XFLUID-TIMINIT CASE C: node %d,\t %d dofs for node without nodehandle at timestep t^n ?!", gid, numdofs_old);
-      }
+    const int numdofs_old = (int)(dofs_old.size());
+    if(numdofs_old != numdofpernode)
+    {
+      dserror("XFLUID-TIMINIT CASE C: node %d,\t %d dofs for node without nodehandle at timestep t^n ?!", gid, numdofs_old);
+    }
 #endif
 
-      //-------------------------------
-      // t^(n+1)
-      const std::vector<Teuchos::RCP<GEO::CUT::NodalDofSet> > & dof_cellsets_new = n_new->NodalDofSets();
+    //-------------------------------
+    // t^(n+1)
+    const std::vector<Teuchos::RCP<GEO::CUT::NodalDofSet> > & dof_cellsets_new = n_new->NodalDofSets();
 
 
 
-      //------------------------------------------
-      // just one dofset at new timestep t^(n+1)
-      //------------------------------------------
-      if(numDofSets_new == 1 and unique_std_uncut_np)
+    //------------------------------------------
+    // just one dofset at new timestep t^(n+1)
+    //------------------------------------------
+    if(numDofSets_new == 1 and unique_std_uncut_np)
+    {
+      dserror("here you should call case A!");
+    }
+    else if(numDofSets_new == 1 and !unique_std_uncut_np)
+    {
+      const int nds_new = 0;
+
+      // get the unique cellset
+      const GEO::CUT::NodalDofSet* nodaldofset = &*(dof_cellsets_new[nds_new]);
+
+      if(nodaldofset->Is_Standard_DofSet()) // case b)
       {
-        dserror("here you should call case A!");
+        // copy values or SL
+        if( timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_AND_GHOST_by_Copy_or_GP or
+            timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_or_SL_AND_GHOST_by_Copy_or_GP or
+            timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_or_Proj_AND_GHOST_by_Proj_or_Copy_or_GP)
+        {
+          CopyDofs(node, nds_new, nds_old, INPAR::XFEM::Xf_TimeInt_STD_by_COPY_from_STD, newRowStateVectors, oldRowStateVectors,dbcgids);
+        }
+        else if(timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_SL_cut_zone_AND_GHOST_by_GP)
+        {
+          MarkDofs(node, nds_new, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_STD_by_SL,dbcgids);
+        }
       }
-      else if(numDofSets_new == 1 and !unique_std_uncut_np)
+      else // case c)
       {
-        const int nds_new = 0;
+        // REMARK: Ghost penalty reconstruction is more safe than the copy method GHOST_by_COPY_from_STD
+        // the ghost dof can be also newly created w.r.t a second other interface,
+        // e.g. at t^n a fluid node between two contacting thin structures can become a ghost node w.r.t to a neighbored independent fluid domain
+        // (F|S|F -node- F|S|F -> F|S-node-S|F -- F|S|F)
+        MarkDofs(node, nds_new, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_GHOST_by_GP,dbcgids);
+      }
+    } // just one dofset at new timestep
+    else
+    {
+      //------------------------------------------
+      // more than one dofset at new timestep t^(n+1)
+      //------------------------------------------
 
-        // get the unique cellset
-        const GEO::CUT::NodalDofSet* nodaldofset = &*(dof_cellsets_new[nds_new]);
+      // loop new dofsets
+      for(std::vector<Teuchos::RCP<GEO::CUT::NodalDofSet> >::const_iterator sets=dof_cellsets_new.begin();
+          sets!=dof_cellsets_new.end();
+          sets ++)
+      {
+        Teuchos::RCP<GEO::CUT::NodalDofSet> nodaldofset_new = *sets;
+        int nds_new = sets-dof_cellsets_new.begin();
 
-        if(nodaldofset->Is_Standard_DofSet()) // case b)
+        if(nodaldofset_new->Is_Standard_DofSet()) // first dofset (has been checked to be a std-dofset)
         {
           // copy values or SL
           if( timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_AND_GHOST_by_Copy_or_GP or
-              timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_or_SL_AND_GHOST_by_Copy_or_GP)
+              timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_or_SL_AND_GHOST_by_Copy_or_GP or
+              timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_or_Proj_AND_GHOST_by_Proj_or_Copy_or_GP)
           {
             CopyDofs(node, nds_new, nds_old, INPAR::XFEM::Xf_TimeInt_STD_by_COPY_from_STD, newRowStateVectors, oldRowStateVectors,dbcgids);
           }
@@ -484,209 +584,199 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
             MarkDofs(node, nds_new, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_STD_by_SL,dbcgids);
           }
         }
-        else // case c)
+        else
         {
-          // REMARK: Ghost penalty reconstruction is more safe than the copy method GHOST_by_COPY_from_STD
-          // the ghost dof can be also newly created w.r.t a second other interface,
-          // e.g. at t^n a fluid node between two contacting thin structures can become a ghost node w.r.t to a neighbored independent fluid domain
-          // (F|S|F -node- F|S|F -> F|S-node-S|F -- F|S|F)
+          // for newly created ghost dofsets we have to reconstruct ghost dofs
           MarkDofs(node, nds_new, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_GHOST_by_GP,dbcgids);
         }
-      } // just one dofset at new timestep
-      else
+      }
+    } // more than one dofset
+  } //end case C
+  else
+  {
+    if(n_new == NULL or n_old == NULL) dserror("this case should be done before");
+
+    // how many sets of dofs?
+    const int numDofSets_new = n_new->NumDofSets(); //= dof_cellsets_new.size()
+
+    if(numDofSets_new == 0 ) // no values to set
+    {
+      return; // do nothing for this node
+    }
+
+    //---------------------------------------------------------------------------------
+    // D: surrounding elements cut at old and new timestep t^n and t^(n+1)
+    //---------------------------------------------------------------------------------
+
+    // case a): std-set at t^(n+1) -> try to identify vc-connection
+    //                                    std found: - Check special case of tips with changed side!
+    //                                                  -> Yes: Copy value
+    //                                                  -> No:  Semilagrange
+    //                                    ghost found and only one ghost dof:
+    //                                                   -> copy (or Semilagrange)
+    //                                    ghost found but not unique
+    //                                                   -> Semilagrange
+    // case b): ghost dofset at t^(n+1) -> try to identify vc-connection
+    //                                    std or ghost found -> Copy
+    //                                    not found -> mark for Ghost Penalty!
+
+    //-------------------------------
+    // t^n
+    const std::vector<Teuchos::RCP<GEO::CUT::NodalDofSet> > & dof_cellsets_old = n_old->NodalDofSets();
+
+
+    //-------------------------------
+    // t^(n+1)
+    const std::vector<Teuchos::RCP<GEO::CUT::NodalDofSet> > & dof_cellsets_new = n_new->NodalDofSets();
+
+    // loop new dofsets
+    for(std::vector<Teuchos::RCP<GEO::CUT::NodalDofSet> >::const_iterator sets=dof_cellsets_new.begin();
+              sets!=dof_cellsets_new.end();
+              sets ++)
+    {
+
+      const GEO::CUT::NodalDofSet* cell_set = &**sets;
+
+      int nds_new = sets-dof_cellsets_new.begin(); // nodal dofset counter
+
+      //is current set at t^(n+1) std or ghost or dofset
+      bool is_std_set_np = cell_set->Is_Standard_DofSet();
+
+      //-----------------------------------------------------------------
+      // identify cellsets at t^n with current dofset at t^(n+1)
+      int nds_old = IdentifyOldSets(n_old, n_new, dof_cellsets_old, cell_set); // get nds number of corresponding old dofset
+      //-----------------------------------------------------------------
+
+      if (timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_or_Proj_AND_GHOST_by_Proj_or_Copy_or_GP)
       {
-        //------------------------------------------
-        // more than one dofset at new timestep t^(n+1)
-        //------------------------------------------
-
-        // loop new dofsets
-        for(std::vector<Teuchos::RCP<GEO::CUT::NodalDofSet> >::const_iterator sets=dof_cellsets_new.begin();
-            sets!=dof_cellsets_new.end();
-            sets ++)
+        // check, if we already have an entry for that node!
+        if (node_to_reconstr_method_.find(gid) != node_to_reconstr_method_.end())
         {
-          Teuchos::RCP<GEO::CUT::NodalDofSet> nodaldofset_new = *sets;
-          int nds_new = sets-dof_cellsets_new.begin();
+          // disable safety check in case of double cut if we project from other discretization
+          nds_old = 0;
 
-          if(nodaldofset_new->Is_Standard_DofSet()) // first dofset (has been checked to be a std-dofset)
+          if (nds_old < 0)
+            dserror("Projection failed and there is no old dofset to be copied for node %d", gid);
+        }
+      }
+
+      if(nds_old < 0) // no set or not a unique set found
+      {
+#ifdef DEBUG_TIMINT
+        IO::cout << "XFLUID-TIMINIT CASE D: node " << gid << ",\t no corresponding dofset found at time t^n for dofset " << nds_new << " at time t^(n+1)" << IO::endl;
+#endif
+        if(is_std_set_np) // std at t^(n+1)
+        {
+          if(timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_AND_GHOST_by_Copy_or_GP)
+            dserror("no corresponding dofset at t^n, choose a SL-based-approach for node %d", gid);
+          else if( timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_or_SL_AND_GHOST_by_Copy_or_GP or
+                   timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_SL_cut_zone_AND_GHOST_by_GP)
           {
-            // copy values or SL
-            if( timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_AND_GHOST_by_Copy_or_GP or
-                timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_or_SL_AND_GHOST_by_Copy_or_GP)
+            MarkDofs(node, nds_new, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_STD_by_SL,dbcgids);
+          }
+          else if (timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_or_Proj_AND_GHOST_by_Proj_or_Copy_or_GP)
+          {
+            MarkDofs(node, nds_new, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_by_PROJ_from_DIS,dbcgids);
+          }
+          else dserror("unknwon INPAR::XFEM::Xf_TimIntScheme");
+        }
+        else // ghost at t^(n+1)
+        {
+          MarkDofs(node, nds_new, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_GHOST_by_GP,dbcgids);
+        }
+      }
+      else // unique set found
+      {
+        bool is_std_set_n = dof_cellsets_old[nds_old]->Is_Standard_DofSet();
+
+#ifdef DEBUG_TIMINT
+        IO::cout << "XFLUID-TIMINIT CASE D: node " << gid << ",\t corresponding std(yes/no: " << is_std_set_n << ") dofset "
+                                                   << nds_old << " found at time t^n for dofset " << nds_new << " at time t^(n+1)" << IO::endl;
+#endif
+
+        if(is_std_set_np and is_std_set_n) // std at t^n and t^(n+1)
+        {
+          // copy values or use SL
+          if (timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_AND_GHOST_by_Copy_or_GP or
+              timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_or_SL_AND_GHOST_by_Copy_or_GP or
+              timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_or_Proj_AND_GHOST_by_Proj_or_Copy_or_GP)
+          {
+            CopyDofs(node, nds_new, nds_old, INPAR::XFEM::Xf_TimeInt_STD_by_COPY_from_STD, newRowStateVectors, oldRowStateVectors,dbcgids);
+          }
+          else if( timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_SL_cut_zone_AND_GHOST_by_GP)
+          {
+            MarkDofs(node, nds_new, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_STD_by_SL,dbcgids);
+          }
+          else dserror("unknwon INPAR::XFEM::Xf_TimIntScheme");
+        }
+        else if(is_std_set_np and !is_std_set_n) // ghost at t^n and std at t^(n+1)
+        {
+          // check number of ghost-dofsets
+          // get the number of ghost dofsets -> this check is done in IdentifyOldSets
+          bool ghost_set_unique = true;
+
+          if(ghost_set_unique) // ghost dofset is unique
+          {
+            // copy values
+
+            if(timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_AND_GHOST_by_Copy_or_GP )
             {
-              CopyDofs(node, nds_new, nds_old, INPAR::XFEM::Xf_TimeInt_STD_by_COPY_from_STD, newRowStateVectors, oldRowStateVectors,dbcgids);
+              CopyDofs(node, nds_new, nds_old, INPAR::XFEM::Xf_TimeInt_STD_by_COPY_from_GHOST, newRowStateVectors, oldRowStateVectors,dbcgids);
             }
-            else if(timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_SL_cut_zone_AND_GHOST_by_GP)
+            else if(timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_or_SL_AND_GHOST_by_Copy_or_GP)
+            {
+#if(1) // is a copy from ghost->std reasonable or not?
+            CopyDofs(node, nds_new, nds_old, INPAR::XFEM::Xf_TimeInt_STD_by_COPY_from_GHOST, newRowStateVectors, oldRowStateVectors,dbcgids);
+#else
+            MarkDofs(node, nds_new, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_STD_by_SL,dbcgids);
+#endif
+            }
+            else if( timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_SL_cut_zone_AND_GHOST_by_GP )
             {
               MarkDofs(node, nds_new, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_STD_by_SL,dbcgids);
             }
+            else if ( timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_or_Proj_AND_GHOST_by_Proj_or_Copy_or_GP)
+            {
+              MarkDofs(node, nds_new, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_by_PROJ_from_DIS,dbcgids);
+            }
+            else dserror("unknwon INPAR::XFEM::Xf_TimIntScheme");
+
           }
           else
           {
-            // for newly created ghost dofsets we have to reconstruct ghost dofs
-            MarkDofs(node, nds_new, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_GHOST_by_GP,dbcgids);
+            dserror("case should not be called");
+            // not unique ghost dofset
+            //MarkDofs(node, nds_new, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_SemiLagrange,dbcgids);
           }
         }
-      } // more than one dofset
-    } //end case C
-    else
-    {
-      if(n_new == NULL or n_old == NULL) dserror("this case should be done before");
-
-      // how many sets of dofs?
-      const int numDofSets_new = n_new->NumDofSets(); //= dof_cellsets_new.size()
-
-      if(numDofSets_new == 0 ) // no values to set
-      {
-        continue; // do nothing for this node
-      }
-
-      //---------------------------------------------------------------------------------
-      // D: surrounding elements cut at old and new timestep t^n and t^(n+1)
-      //---------------------------------------------------------------------------------
-
-      // case a): std-set at t^(n+1) -> try to identify vc-connection
-      //                                    std found: - Check special case of tips with changed side!
-      //                                                  -> Yes: Copy value
-      //                                                  -> No:  Semilagrange
-      //                                    ghost found and only one ghost dof:
-      //                                                   -> copy (or Semilagrange)
-      //                                    ghost found but not unique
-      //                                                   -> Semilagrange
-      // case b): ghost dofset at t^(n+1) -> try to identify vc-connection
-      //                                    std or ghost found -> Copy
-      //                                    not found -> mark for Ghost Penalty!
-
-      //-------------------------------
-      // t^n
-      const std::vector<Teuchos::RCP<GEO::CUT::NodalDofSet> > & dof_cellsets_old = n_old->NodalDofSets();
-
-
-      //-------------------------------
-      // t^(n+1)
-      const std::vector<Teuchos::RCP<GEO::CUT::NodalDofSet> > & dof_cellsets_new = n_new->NodalDofSets();
-
-      // loop new dofsets
-      for(std::vector<Teuchos::RCP<GEO::CUT::NodalDofSet> >::const_iterator sets=dof_cellsets_new.begin();
-                sets!=dof_cellsets_new.end();
-                sets ++)
-      {
-
-        const GEO::CUT::NodalDofSet* cell_set = &**sets;
-
-        int nds_new = sets-dof_cellsets_new.begin(); // nodal dofset counter
-
-        //is current set at t^(n+1) std or ghost or dofset
-        bool is_std_set_np = cell_set->Is_Standard_DofSet();
-
-        //-----------------------------------------------------------------
-        // identify cellsets at t^n with current dofset at t^(n+1)
-        int nds_old = IdentifyOldSets(n_old, n_new, dof_cellsets_old, cell_set); // get nds number of corresponding old dofset
-        //-----------------------------------------------------------------
-
-        if(nds_old < 0) // no set or not a unique set found
+        else if(!is_std_set_np and is_std_set_n) // ghost at t^(n+1)
         {
-#ifdef DEBUG_TIMINT
-          IO::cout << "XFLUID-TIMINIT CASE D: node " << gid << ",\t no corresponding dofset found at time t^n for dofset " << nds_new << " at time t^(n+1)" << IO::endl;
-#endif
-          if(is_std_set_np) // std at t^(n+1)
-          {
-            if(timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_AND_GHOST_by_Copy_or_GP)
-              dserror("no corresponding dofset at t^n, choose a SL-based-approach for node %d", n_new->Id());
-            else if( timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_or_SL_AND_GHOST_by_Copy_or_GP or
-                     timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_SL_cut_zone_AND_GHOST_by_GP)
-            {
-              MarkDofs(node, nds_new, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_STD_by_SL,dbcgids);
-            }
-            else dserror("unknwon INPAR::XFEM::Xf_TimIntScheme");
-          }
-          else // ghost at t^(n+1)
-          {
-            MarkDofs(node, nds_new, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_GHOST_by_GP,dbcgids);
-          }
+          // copy values, should be reasonable since dofsets identified
+          CopyDofs(node, nds_new, nds_old, INPAR::XFEM::Xf_TimeInt_GHOST_by_COPY_from_STD, newRowStateVectors, oldRowStateVectors,dbcgids);
+//            MarkDofs(node, nds_new, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_GHOST_by_GP,dbcgids);
         }
-        else // unique set found
+        else if(!is_std_set_np and !is_std_set_n)
         {
-          bool is_std_set_n = dof_cellsets_old[nds_old]->Is_Standard_DofSet();
-
-#ifdef DEBUG_TIMINT
-          IO::cout << "XFLUID-TIMINIT CASE D: node " << gid << ",\t corresponding std(yes/no: " << is_std_set_n << ") dofset "
-                                                     << nds_old << " found at time t^n for dofset " << nds_new << " at time t^(n+1)" << IO::endl;
-#endif
-
-          if(is_std_set_np and is_std_set_n) // std at t^n and t^(n+1)
-          {
-            // copy values or use SL
-            if(timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_AND_GHOST_by_Copy_or_GP or
-                timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_or_SL_AND_GHOST_by_Copy_or_GP)
-            {
-              CopyDofs(node, nds_new, nds_old, INPAR::XFEM::Xf_TimeInt_STD_by_COPY_from_STD, newRowStateVectors, oldRowStateVectors,dbcgids);
-            }
-            else if( timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_SL_cut_zone_AND_GHOST_by_GP)
-            {
-              MarkDofs(node, nds_new, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_STD_by_SL,dbcgids);
-            }
-            else dserror("unknwon INPAR::XFEM::Xf_TimIntScheme");
-          }
-          else if(is_std_set_np and !is_std_set_n) // ghost at t^n and std at t^(n+1)
-          {
-            // check number of ghost-dofsets
-            // get the number of ghost dofsets -> this check is done in IdentifyOldSets
-            bool ghost_set_unique = true;
-
-            if(ghost_set_unique) // ghost dofset is unique
-            {
-              // copy values
-
-              if(timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_AND_GHOST_by_Copy_or_GP )
-              {
-                CopyDofs(node, nds_new, nds_old, INPAR::XFEM::Xf_TimeInt_STD_by_COPY_from_GHOST, newRowStateVectors, oldRowStateVectors,dbcgids);
-              }
-              else if(timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_or_SL_AND_GHOST_by_Copy_or_GP)
-              {
-#if(1) // is a copy from ghost->std reasonable or not?
-              CopyDofs(node, nds_new, nds_old, INPAR::XFEM::Xf_TimeInt_STD_by_COPY_from_GHOST, newRowStateVectors, oldRowStateVectors,dbcgids);
-#else
-              MarkDofs(node, nds_new, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_STD_by_SL,dbcgids);
-#endif
-              }
-              else if( timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_SL_cut_zone_AND_GHOST_by_GP )
-              {
-                MarkDofs(node, nds_new, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_STD_by_SL,dbcgids);
-              }
-              else dserror("unknwon INPAR::XFEM::Xf_TimIntScheme");
-
-            }
-            else
-            {
-              dserror("case should not be called");
-              // not unique ghost dofset
-              //MarkDofs(node, nds_new, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_SemiLagrange,dbcgids);
-            }
-          }
-          else if(!is_std_set_np and is_std_set_n) // ghost at t^(n+1)
-          {
-            // copy values, should be reasonable since dofsets identified
-            CopyDofs(node, nds_new, nds_old, INPAR::XFEM::Xf_TimeInt_GHOST_by_COPY_from_STD, newRowStateVectors, oldRowStateVectors,dbcgids);
+          // copy values, should be reasonable since dofsets identified
+          //dserror("Copy for node %d", gid);
+          CopyDofs(node, nds_new, nds_old, INPAR::XFEM::Xf_TimeInt_GHOST_by_COPY_from_GHOST, newRowStateVectors, oldRowStateVectors,dbcgids);
 //            MarkDofs(node, nds_new, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_GHOST_by_GP,dbcgids);
-          }
-          else if(!is_std_set_np and !is_std_set_n)
-          {
-            // copy values, should be reasonable since dofsets identified
-            CopyDofs(node, nds_new, nds_old, INPAR::XFEM::Xf_TimeInt_GHOST_by_COPY_from_GHOST, newRowStateVectors, oldRowStateVectors,dbcgids);
-//            MarkDofs(node, nds_new, newRowStateVectors, INPAR::XFEM::Xf_TimeInt_GHOST_by_GP,dbcgids);
-          }
-        } // end found set at t^n
+        }
+      } // end found set at t^n
 
-      } // loop new dofsets
-    }//end case D (node handles at t^n and t^(n+1))
-
-  } // loop row nodes
-
-  // export the reconstruction method information to other procs
-  // this has to be done, when SL-nodes mark non-row surrounding nodes (and its some of its dofsets) as Ghost-penalty dofsets
-  ExportMethods(newRowStateVectors, dbcgids);
+    } // loop new dofsets
+  }//end case D (node handles at t^n and t^(n+1))
 
   return;
+}
+
+// -------------------------------------------------------------------
+// get nodes and dofsets for given reconstruction method
+// -------------------------------------------------------------------
+std::map<int,std::set<int> >& XFEM::XFluidTimeInt::Get_NodeToDofMap_For_Reconstr(INPAR::XFEM::XFluidTimeInt reconstr)
+{
+  // returns empty map if reconstruction method is not present
+  return reconstr_method_to_node_[reconstr];
 }
 
 // -------------------------------------------------------------------
@@ -1036,9 +1126,9 @@ bool XFEM::XFluidTimeInt::SetReconstrMethod(
 
   // find the node in map
   std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >::iterator it;
-  it= reconstr_method_.find(node->Id());
+  it= node_to_reconstr_method_.find(node->Id());
 
-  if(it != reconstr_method_.end())
+  if(it != node_to_reconstr_method_.end())
   {
     // assume that we call this function for all nodal dofsets in the right order
     if(nds_new >= numdofsets) dserror("no valid nds %d for node %d", nds_new, n->Id());
@@ -1050,23 +1140,41 @@ bool XFEM::XFluidTimeInt::SetReconstrMethod(
     if(it->second[nds_new] == INPAR::XFEM::Xf_TimeInt_GHOST_by_GP) return false;
 
     // do not overwrite already values, expect that method is Xf_TimeInt_GHOST_by_GP
-    if(it->second[nds_new] != INPAR::XFEM::Xf_TimeInt_undefined and   // overwriting
-       it->second[nds_new] != method and                              // methods not equal
-       method != INPAR::XFEM::Xf_TimeInt_GHOST_by_GP                  // overwriting with non-GP approach
+    if(it->second[nds_new] != INPAR::XFEM::Xf_TimeInt_undefined and    // overwriting
+       it->second[nds_new] != method and                               // methods not equal
+       method != INPAR::XFEM::Xf_TimeInt_GHOST_by_GP and               // overwriting with non-GP approach
+       it->second[nds_new] != INPAR::XFEM::Xf_TimeInt_by_PROJ_from_DIS // overwriting projection after previous failure (label correction)
        )
     {
       dserror("inconsistency in reconstruction method, why do want to replace reconstruction method %d with %d for node=%d and nds=%d",  it->second[nds_new], method, node->Id(), nds_new );
     }
     //---------------------------------------------------------
 
+    // remove the node from the old method in the reconstr. method-to-node map
+    std::map<INPAR::XFEM::XFluidTimeInt, std::map<int,std::set<int> > >::iterator itm;
+    itm = reconstr_method_to_node_.find(it->second[nds_new]);
+
+    if (itm != reconstr_method_to_node_.end())
+    {
+      std::map<int,std::set<int> >::iterator itn = itm->second.find(node->Id());
+      if (itn != itm->second.end())
+        itn->second.erase(nds_new);
+
+      if (itn->second.empty())
+        itm->second.erase(node->Id());
+    }
+
     (it->second)[nds_new] = method;
+    reconstr_method_to_node_[method][node->Id()].insert(nds_new);
+
     return true;
   }
   else
   {
     std::vector<INPAR::XFEM::XFluidTimeInt> vec(numdofsets,INPAR::XFEM::Xf_TimeInt_undefined); // initialize with undefined status
     vec[nds_new] = method;
-    reconstr_method_.insert(std::pair<int,std::vector<INPAR::XFEM::XFluidTimeInt> >(node->Id(), vec ));
+    node_to_reconstr_method_.insert(std::pair<int,std::vector<INPAR::XFEM::XFluidTimeInt> >(node->Id(), vec ));
+    reconstr_method_to_node_[method][node->Id()].insert(nds_new);
     return true;
   }
 
@@ -1081,7 +1189,7 @@ int XFEM::XFluidTimeInt::IdentifyOldSets(
     const GEO::CUT::Node *                                         n_old,               /// node w.r.t to old wizard
     const GEO::CUT::Node *                                         n_new,               /// node w.r.t to new wizard
     const std::vector<Teuchos::RCP<GEO::CUT::NodalDofSet> > &      dof_cellsets_old,    /// all dofcellsets at t^n
-    const GEO::CUT::NodalDofSet*                                   cell_set_new         /// dofcellset at t^(n+1) which has to be identified
+    const GEO::CUT::NodalDofSet*                                   cell_set_new        /// dofcellset at t^(n+1) which has to be identified
 )
 {
 
@@ -1255,9 +1363,10 @@ int XFEM::XFluidTimeInt::IdentifyOldSets(
 
     bool is_std_set_n  = dof_cellsets_old[nds_old]->Is_Standard_DofSet();
 
-    //---------------------------------------
-    // do special checks
-    //---------------------------------------
+  //---------------------------------------
+  // do special checks
+  //---------------------------------------
+
 
     bool did_node_change_side = false;
     bool successful_check = false;
@@ -1616,6 +1725,11 @@ bool XFEM::XFluidTimeInt::SpecialCheck_InterfaceTips_SpaceTime(
       successful_check = WithinSpaceTimeSide<DRT::Element::quad4,DRT::Element::hex8>(node_within_Space_Time_Side,side_old, side_new, n_coord);
       break;
     }
+    case DRT::Element::quad8:
+    {
+      successful_check = WithinSpaceTimeSide<DRT::Element::quad8,DRT::Element::hex16>(node_within_Space_Time_Side,side_old, side_new, n_coord);
+      break;
+    }
     case DRT::Element::quad9:
     {
       successful_check = WithinSpaceTimeSide<DRT::Element::quad9,DRT::Element::hex18>(node_within_Space_Time_Side,side_old, side_new, n_coord);
@@ -1690,7 +1804,7 @@ bool XFEM::XFluidTimeInt::WithinSpaceTimeSide(
       xi_side(0) = 0.3333333333333333;
       xi_side(1) = 0.3333333333333333;
     }
-    else if(numnode_side == 4 or numnode_side == 9)
+    else if(numnode_side == 4 or numnode_side == 8 or numnode_side == 9)
     {
       xi_side(0) = 0.0;
       xi_side(1) = 0.0;
@@ -1989,9 +2103,9 @@ void XFEM::XFluidTimeInt::Output()
       const DRT::Node* actnode = dis_->lRowNode(i);
       const LINALG::Matrix<3,1> pos(actnode->X());
 
-      std::map<int,std::vector<INPAR::XFEM::XFluidTimeInt> >::iterator it = reconstr_method_.find(actnode->Id());
+      std::map<int,std::vector<INPAR::XFEM::XFluidTimeInt> >::iterator it = node_to_reconstr_method_.find(actnode->Id());
 
-      if(it == reconstr_method_.end())
+      if(it == node_to_reconstr_method_.end())
       {
         continue;
         // this is a node in the void domain

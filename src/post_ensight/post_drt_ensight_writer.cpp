@@ -633,6 +633,18 @@ void EnsightWriter::WriteCells(
           }
           break;
         }
+        case DRT::Element::hex16:
+        {
+          // write subelements
+          for (int isubele=0; isubele<GetNumSubEle(DRT::Element::hex16); ++isubele)
+            for (int isubnode=0; isubnode<8; ++isubnode)
+              if (myrank_==0) // proc0 can write its elements immidiately
+                Write(geofile, proc0map->LID(nodes[subhex16map[isubele][isubnode]]->Id())
+                      +1);
+              else // elements on other procs have to store their global node ids
+                nodevector.push_back(nodes[subhex16map[isubele][isubnode]]->Id());
+          break;
+        }
         case DRT::Element::hex18:
         {
           // write subelements

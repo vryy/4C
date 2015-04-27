@@ -65,11 +65,7 @@ class XFEM_EdgeStab
 public:
 
   //! constructor
-  explicit XFEM_EdgeStab(
-      Teuchos::RCP<GEO::CutWizard>                 wizard,                ///< cut wizard
-      Teuchos::RCP<DRT::Discretization>            discret,               ///< discretization
-      bool                                         include_inner          ///< stabilize also facets with inside position
-  );
+  XFEM_EdgeStab(){};
 
   //! destructor
   ~XFEM_EdgeStab()
@@ -79,13 +75,16 @@ public:
 
 
   //! prepares edge based stabilization and ghost penaly in case of XFEM and calls evaluate routine
-  void EvaluateEdgeStabGhostPenalty( Teuchos::ParameterList &               eleparams,              ///< element parameter list
-                                     Teuchos::RCP<DRT::Discretization>      discret,                ///< discretization
-                                     DRT::ELEMENTS::FluidIntFace *          faceele,                ///< face element
-                                     Teuchos::RCP<LINALG::SparseMatrix>     systemmatrix,           ///< systemmatrix
-                                     Teuchos::RCP<Epetra_Vector>            systemvector,           ///< systemvector
-                                     bool                                   gmsh_eos_out = true     ///< stabilization gmsh output
-                                     );
+  void EvaluateEdgeStabGhostPenalty(
+      Teuchos::ParameterList &               eleparams,        ///< element parameter list
+      Teuchos::RCP<DRT::Discretization>      discret,          ///< discretization
+      DRT::ELEMENTS::FluidIntFace *          faceele,          ///< face element
+      Teuchos::RCP<LINALG::SparseMatrix>     systemmatrix,     ///< systemmatrix
+      Teuchos::RCP<Epetra_Vector>            systemvector,     ///< systemvector
+      Teuchos::RCP<GEO::CutWizard>           wizard,           ///< cut wizard
+      bool                                   include_inner,    ///< stabilize also facets with inside position
+      bool                                   gmsh_eos_out = true     ///< stabilization gmsh output
+   );
 
   //! calls the evaluate and assemble routine for edge based stabilization and ghost penaly in the XFEM
   void AssembleEdgeStabGhostPenalty( Teuchos::ParameterList &               eleparams,        ///< element parameter list
@@ -129,13 +128,13 @@ public:
   private:
 
   //! get the cut side for face's element identified using the sorted node ids
-  GEO::CUT::SideHandle* GetFace(DRT::Element* faceele);
+  GEO::CUT::SideHandle* GetFace(
+    DRT::Element* faceele,
+    Teuchos::RCP<GEO::CutWizard> wizard
+  );
 
-
-  Teuchos::RCP<GEO::CutWizard> wizard_;       ///< cut wizard
-  Teuchos::RCP<DRT::Discretization> discret_; ///< discretization
-
-  bool include_inner_; ///< do we have to stabilize facets with inside position?
+  // reset maps for output
+  void Reset();
 
   std::map<int, int> ghost_penalty_stab_;    ///< map of face elements stabilized with ghost penalty
   std::map<int, int> edge_based_stab_;       ///< map of face elements stabilized with edge based fluid stabilization
