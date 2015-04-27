@@ -34,8 +34,6 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 // baci
-#include "linesearch_base.H"
-#include "linesearch_factory.H"
 #include "nln_operator_richardson.H"
 #include "nln_problem.H"
 
@@ -46,7 +44,6 @@
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_sparsematrix.H"
 
 #include "../solver/solver_preconditionertype.H"
 #include "../solver/solver_ifpackpreconditioner.H"
@@ -99,12 +96,6 @@ void NLNSOL::NlnOperatorRichardson::Setup()
 
   Teuchos::RCP<Epetra_MultiVector> tmp =
       Teuchos::rcp(new Epetra_MultiVector(NlnProblem()->DofRowMap(), true));
-
-//  *getOStream() << "Test access to Jacobian Operator on level "
-//      << NlnProblem()->LevelID() << std::endl;
-//  *getOStream() << "Nonlinear problem type: " << NlnProblem()->Label() << std::endl;
-//  if (NlnProblem()->GetJacobianOperator().is_null())
-//    dserror("Jacobian operator cannot be accessed. Teuchos::null!");
 
   // Setup with dummy vectors
   linprec_->Setup(true, &*(NlnProblem()->GetJacobianOperator()),
@@ -180,8 +171,6 @@ int NLNSOL::NlnOperatorRichardson::ApplyInverse(const Epetra_MultiVector& f,
   if (err != 0) { dserror("Update failed."); }
 
   // evaluate at the new solution
-//  Teuchos::RCP<Epetra_MultiVector> fnew =
-//      Teuchos::rcp(new Epetra_MultiVector(f.Map(), true));
   NlnProblem()->ComputeF(x, *fnew);
   double fnorm2 = 1.0e+12;
   bool converged = NlnProblem()->ConvergenceCheck(*fnew, fnorm2);

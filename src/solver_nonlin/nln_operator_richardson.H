@@ -58,7 +58,11 @@ namespace NLNSOL
 /*! \brief Richardson iteration with relaxation and preconditioning
  *
  *  This algorithm implements a Richardson iteration with IFPACK
- *  preconditioning. We allow for a user defined relaxation parameter.
+ *  preconditioning (denoted by \f$M^{-1}\f$. We allow for a user defined
+ *  relaxation parameter \f$\omega\f$. The iterative procedure reads
+ *  \f[
+ *  x_{i+1} = x_i - \omega\left(f + M^{-1}x_i\right)
+ *  \f]
  *
  *  As IFPACK preconditioners, we allow for
  *  <ul>
@@ -66,7 +70,9 @@ namespace NLNSOL
  *  <li> Symmetric Gauss-Seidel </li>
  *  <li> Chebyshev </li>
  *  </ul>
- *  In case of relaxation-type preconditioning, set the number of sweeps to 1
+ *
+ *
+ *  \note In case of relaxation-type preconditioning, set the number of sweeps to 1
  *  for the IFPACK configuration. Sweeps/iterations as well as the damping are
  *  performed by the Richardson algorithm.
  *
@@ -112,7 +118,8 @@ public:
 
   /*! \brief Apply the preconditioner
    *
-   *
+   *  Perform a given number of relaxed and preconditioned Richardson
+   *  iterations.
    *
    *  \return Integer error code, set to 0 if successful.
    *
