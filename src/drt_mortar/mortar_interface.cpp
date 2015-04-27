@@ -1937,9 +1937,8 @@ void MORTAR::MortarInterface::EvaluateDistances(const Teuchos::RCP<Epetra_Vector
     {
       CONTACT::CoNode* mynode = dynamic_cast<CONTACT::CoNode*>(selement->Nodes()[snodes]);
 
-      // TODO (pfaller): only loop over each node once
       // skip this node if already considered
-      if (mynode->MoData().GetD().size()!=0)
+      if (mynode->HasProj())
         continue;
 
       //                store node normals
@@ -2029,6 +2028,9 @@ void MORTAR::MortarInterface::EvaluateDistances(const Teuchos::RCP<Epetra_Vector
         // node on mele?
         if (is_on_mele && is_projected)
         {
+          // store information of projection so that this node is not considered again
+          mynode->HasProj() = true;
+
           // store gap information at GID
           mygap.insert(std::pair<int, double>(gid, projalpha));
 
@@ -2038,7 +2040,8 @@ void MORTAR::MortarInterface::EvaluateDistances(const Teuchos::RCP<Epetra_Vector
           LINALG::SerialDenseMatrix mderiv(ncol,2);
           melements[nummaster]->EvaluateShape(mxi,mval,mderiv,ncol,false);
 
-          int linsize    = mynode->GetLinsize();
+//          int linsize    = mynode->GetLinsize();
+          int linsize = 100;
           double gpn[3]  = {0.0, 0.0, 0.0};
           //**************************************************************
 
