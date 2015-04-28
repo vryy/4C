@@ -150,7 +150,7 @@ namespace FLD
     Teuchos::RCP<LINALG::Solver>  LinearSolver() { return solver_; };
 
     /// evaluate errors compared to implemented analytical solutions
-    virtual void EvaluateErrorComparedToAnalyticalSol();
+    virtual Teuchos::RCP<std::vector<double> > EvaluateErrorComparedToAnalyticalSol();
 
     /// build linear system matrix and rhs
     /// Monolithic FSI needs to access the linear fluid problem.
@@ -339,6 +339,8 @@ namespace FLD
     /// Update velocity and pressure by increment
     virtual void UpdateByIncrement();
 
+    void SetOldPartOfRighthandside();
+
     void SetOldPartOfRighthandside(
         const Teuchos::RCP<Epetra_Vector>&   veln,
         const Teuchos::RCP<Epetra_Vector>&   velnm,
@@ -348,6 +350,11 @@ namespace FLD
         const double                         theta,
         Teuchos::RCP<Epetra_Vector>&         hist
     );
+
+    void SetGamma(Teuchos::ParameterList& eleparams);
+
+    /// set state vectors depending on time integration scheme
+    void SetStateTimInt();
 
     /*!
   \brief Calculate time derivatives for
@@ -359,13 +366,8 @@ namespace FLD
         const Teuchos::RCP<const Epetra_Vector>    veln,     ///< velocity at     n
         const Teuchos::RCP<const Epetra_Vector>    velnm,    ///< velocity at     n-1
         const Teuchos::RCP<const Epetra_Vector>    accn ,    ///< acceleration at n-1
-        const INPAR::FLUID::TimeIntegrationScheme  timealgo, ///< time integration id
-        const int                                  step,     ///< time step
-        const double                               theta,    ///< factor for OST method
-        const double                               dta,      ///< time step size (delta t) n
-        const double                               dtp,      ///< previous time step size (delta t) n-1
         const Teuchos::RCP<Epetra_Vector>          accnp     ///< acceleration at n+1
-  );
+    );
 
     //-----------------------------XFEM time-integration specific function------------------
 

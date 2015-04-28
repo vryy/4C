@@ -168,7 +168,7 @@ void ADAPTER::FluidPoro::RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> m
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-LINALG::MapExtractor& ADAPTER::FluidPoro::VelPresSplitter()
+Teuchos::RCP<LINALG::MapExtractor> ADAPTER::FluidPoro::VelPresSplitter()
 {
   return fluidimpl_->VelPresSplitter();
 }

@@ -311,7 +311,7 @@ Teuchos::RCP<Epetra_Vector> POROELAST::PoroBase::StructureToFluidField(
   {
     Teuchos::RCP<const Epetra_Vector> mv = volcoupl_->ApplyVectorMapping21(iv);
 
-    Teuchos::RCP<Epetra_Vector> sv = LINALG::CreateVector(*(FluidField()->VelPresSplitter().OtherMap()));
+    Teuchos::RCP<Epetra_Vector> sv = LINALG::CreateVector(*(FluidField()->VelPresSplitter()->OtherMap()));
 
     std::copy(mv->Values(), mv->Values()+(mv->MyLength()*mv->NumVectors()), sv->Values());
     return sv;
@@ -481,7 +481,7 @@ void POROELAST::PoroBase::SetupCoupling()
   }
   else
   {
-    FluidField()->SetMeshMap(FluidField()->VelPresSplitter().OtherMap());
+    FluidField()->SetMeshMap(FluidField()->VelPresSplitter()->OtherMap());
   }
 
 

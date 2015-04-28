@@ -132,9 +132,6 @@ namespace XFEM
                     std::vector<int>                   & have_values,
                     std::vector<char>                  & sblock);
 
-    void GmshOutputForFullProjection();
-
-
     Teuchos::RCP<const DRT::Discretization> sourcedis_;
     Teuchos::RCP<const DRT::Discretization> targetdis_;
 

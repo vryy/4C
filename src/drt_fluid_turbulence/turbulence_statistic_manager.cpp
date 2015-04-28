@@ -439,7 +439,7 @@ namespace FLD
         =Teuchos::rcp(new TurbulenceStatisticsGeneralMean(
             discret_,
             homdir,
-            fluid.VelPresSplitter(),true));
+            *fluid.VelPresSplitter(),true));
       }
       else
       {
@@ -447,7 +447,7 @@ namespace FLD
         =Teuchos::rcp(new TurbulenceStatisticsGeneralMean(
             discret_,
             homdir,
-            fluid.VelPresSplitter(),false));
+            *fluid.VelPresSplitter(),false));
       }
     }
     else statistics_general_mean_=Teuchos::null;

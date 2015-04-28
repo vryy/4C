@@ -1589,10 +1589,10 @@ void FLD::FluidImplicitTimeInt::PrintAbsoluteL2Norm(Teuchos::RCP<Epetra_Vector>&
   double incvelnorm_L2;
   double incprenorm_L2;
 
-  Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_.ExtractOtherVector(vector);
+  Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_->ExtractOtherVector(vector);
   onlyvel->Norm2(&incvelnorm_L2);
 
-  Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_.ExtractCondVector(vector);
+  Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_->ExtractCondVector(vector);
   onlypre->Norm2(&incprenorm_L2);
 
   printf("+------------+-------------------+--------------+\n");

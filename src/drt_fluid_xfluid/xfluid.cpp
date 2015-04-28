@@ -588,11 +588,7 @@ void FLD::XFluid::AssembleMatAndRHS( int itnum )
     discret_->SetState("gridv", state_->gridvnp_);
   }
 
-  // set scheme-specific element parameters and vector values
-  if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
-    discret_->SetState("velaf",state_->velaf_);
-  else
-    discret_->SetState("velaf",state_->velnp_);
+  SetStateTimInt();
 
 
   //----------------------------------------------------------------------
@@ -1406,7 +1402,7 @@ Teuchos::RCP<Epetra_Vector> FLD::XFluid::StdVeln()
 /*----------------------------------------------------------------------*
  |  Evaluate errors compared to an analytical solution     schott 09/12 |
  *----------------------------------------------------------------------*/
-void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
+Teuchos::RCP<std::vector<double> > FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
 {
 
   TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::EvaluateErrorComparedToAnalyticalSol" );
@@ -1619,7 +1615,7 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
     } // myrank = 0
   }
 
-  return;
+  return Teuchos::null;
 }
 
 void FLD::XFluid::ComputeErrorNorms(
@@ -2078,12 +2074,6 @@ void FLD::XFluid::TimeLoop()
 
 
     // -------------------------------------------------------------------
-    // evaluate error for test flows with analytical solutions
-    // -------------------------------------------------------------------
-    EvaluateErrorComparedToAnalyticalSol();
-
-
-    // -------------------------------------------------------------------
     //                       update time step sizes
     // -------------------------------------------------------------------
     dtp_ = dta_;
@@ -2230,14 +2220,7 @@ void FLD::XFluid::PrepareSolve()
   // -------------------------------------------------------------------
   //                 set old part of righthandside
   // -------------------------------------------------------------------
-  SetOldPartOfRighthandside(
-      state_->veln_,
-      state_->velnm_,
-      state_->accn_,
-      timealgo_,
-      dta_,
-      theta_,
-      state_->hist_);
+  SetOldPartOfRighthandside();
 
 
   // -------------------------------------------------------------------
@@ -2971,19 +2954,7 @@ void FLD::XFluid::TimeUpdate()
     Teuchos::ParameterList eleparams;
 
     // update time paramters
-    if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
-    {
-      eleparams.set("gamma"  ,gamma_);
-    }
-    else if (timealgo_==INPAR::FLUID::timeint_one_step_theta)
-    {
-      eleparams.set("gamma"  ,theta_);
-    }
-    else if (timealgo_==INPAR::FLUID::timeint_bdf2)
-    {
-      eleparams.set("gamma"  ,1.0);
-    }
-    else dserror("unknown timealgo_");
+    SetGamma(eleparams);
 
 
     eleparams.set("dt"     ,dta_    );
@@ -3010,11 +2981,6 @@ void FLD::XFluid::TimeUpdate()
         onlyveln ,
         onlyvelnm,
         onlyaccn ,
-        timealgo_,
-        step_    ,
-        theta_   ,
-        dta_     ,
-        dtp_     ,
         onlyaccnp);
 
     // copy back into global vector
@@ -4318,6 +4284,11 @@ void FLD::XFluid::StatisticsAndOutput()
   Output();
 
   // -------------------------------------------------------------------
+  // evaluate error for test flows with analytical solutions
+  // -------------------------------------------------------------------
+  EvaluateErrorComparedToAnalyticalSol();
+
+  // -------------------------------------------------------------------
   //          dumping of turbulence statistics if required
   // -------------------------------------------------------------------
   //  statisticsmanager_->DoOutput(output_,step_);
@@ -5232,6 +5203,19 @@ void FLD::XFluid::UpdateByIncrement()
 //  std::cout << std::setprecision(14) << f_norm << std::endl;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FLD::XFluid::SetOldPartOfRighthandside()
+{
+  SetOldPartOfRighthandside(
+      state_->veln_,
+      state_->velnm_,
+      state_->accn_,
+      timealgo_,
+      dta_,
+      theta_,
+      state_->hist_);
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -5296,16 +5280,41 @@ void FLD::XFluid::SetOldPartOfRighthandside(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void FLD::XFluid::SetGamma(Teuchos::ParameterList& eleparams)
+{
+  if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+  {
+    eleparams.set("gamma"  ,gamma_);
+  }
+  else if (timealgo_==INPAR::FLUID::timeint_one_step_theta)
+  {
+    eleparams.set("gamma"  ,theta_);
+  }
+  else if (timealgo_==INPAR::FLUID::timeint_bdf2)
+  {
+    eleparams.set("gamma"  ,1.0);
+  }
+  else dserror("unknown timealgo_");
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FLD::XFluid::SetStateTimInt()
+{
+  // set scheme-specific element parameters and vector values
+  if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+    discret_->SetState("velaf",state_->velaf_);
+  else
+    discret_->SetState("velaf",state_->velnp_);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void FLD::XFluid::CalculateAcceleration(
     const Teuchos::RCP<const Epetra_Vector>    velnp,
     const Teuchos::RCP<const Epetra_Vector>    veln,
     const Teuchos::RCP<const Epetra_Vector>    velnm,
     const Teuchos::RCP<const Epetra_Vector>    accn,
-    const INPAR::FLUID::TimeIntegrationScheme  timealgo,
-    const int                                  step,
-    const double                               theta,
-    const double                               dta,
-    const double                               dtp,
     const Teuchos::RCP<Epetra_Vector>          accnp
 )
 {
@@ -5331,7 +5340,7 @@ void FLD::XFluid::CalculateAcceleration(
 
     */
 
-    switch (timealgo)
+    switch (timealgo_)
     {
       case INPAR::FLUID::timeint_stationary: /* no accelerations for stationary problems*/
       {
@@ -5340,8 +5349,8 @@ void FLD::XFluid::CalculateAcceleration(
       }
       case INPAR::FLUID::timeint_one_step_theta: /* One-step-theta time integration */
       {
-        const double fact1 = 1.0/(theta*dta);
-        const double fact2 =-1.0/theta +1.0;   /* = -1/Theta + 1 */
+        const double fact1 = 1.0/(theta_*dta_);
+        const double fact2 =-1.0/theta_ +1.0;   /* = -1/Theta + 1 */
 
         accnp->Update( fact1,*velnp,0.0);
         accnp->Update(-fact1,*veln ,1.0);
@@ -5350,11 +5359,11 @@ void FLD::XFluid::CalculateAcceleration(
       }
       case INPAR::FLUID::timeint_bdf2:    /* 2nd order backward differencing BDF2 */
       {
-        if (dta*dtp < EPS15) dserror("Zero time step size!!!!!");
-        const double sum = dta + dtp;
+        if (dta_*dtp_ < EPS15) dserror("Zero time step size!!!!!");
+        const double sum = dta_ + dtp_;
 
-        accnp->Update((2.0*dta+dtp)/(dta*sum),*velnp, -sum/(dta*dtp),*veln ,0.0);
-        accnp->Update(dta/(dtp*sum),*velnm,1.0);
+        accnp->Update((2.0*dta_+dtp_)/(dta_*sum),*velnp, -sum/(dta_*dtp_),*veln ,0.0);
+        accnp->Update(dta_/(dtp_*sum),*velnm,1.0);
         break;
       }
       case INPAR::FLUID::timeint_afgenalpha: /* Af-generalized-alpha time integration */

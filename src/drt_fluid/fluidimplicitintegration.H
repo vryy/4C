@@ -633,11 +633,8 @@ public:
 
     return fsvelaf_; }
 
-  /// provide access to the Dirichlet map
-  virtual Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
-
-  /// implement ADAPTER::Fluid, pass through DirichMaps()
-  virtual Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() { return DirichMaps(); }
+  /// access to Dirichlet maps
+  virtual Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() { return dbcmaps_; }
 
   /// Expand the Dirichlet DOF set
   ///
@@ -703,9 +700,9 @@ public:
   virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_); }
   virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> ShapeDerivatives() { return shapederivatives_; }
 
-  virtual LINALG::MapExtractor& VelPresSplitter(){ return velpressplitter_; };
-  virtual Teuchos::RCP<const Epetra_Map> VelocityRowMap();
-  virtual Teuchos::RCP<const Epetra_Map> PressureRowMap();
+  virtual Teuchos::RCP<LINALG::MapExtractor> VelPresSplitter(){ return velpressplitter_; };
+  virtual Teuchos::RCP<const Epetra_Map>     VelocityRowMap();
+  virtual Teuchos::RCP<const Epetra_Map>     PressureRowMap();
 //  virtual void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm);
 //  double TimeScaling() const;
 
@@ -1219,7 +1216,7 @@ protected:
   //!
   //! velocities  = OtherVector
   //! pressure    = CondVector
-  LINALG::MapExtractor      velpressplitter_;
+  Teuchos::RCP<LINALG::MapExtractor>  velpressplitter_;
 
   /// row dof map extractor
   const UTILS::MapExtractor* surfacesplitter_;

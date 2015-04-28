@@ -198,7 +198,7 @@ public:
   void Output();
 
   /// evaluate errors compared to implemented analytical solutions
-  void EvaluateErrorComparedToAnalyticalSol();
+  Teuchos::RCP<std::vector<double> > EvaluateErrorComparedToAnalyticalSol();
 
 private:
 

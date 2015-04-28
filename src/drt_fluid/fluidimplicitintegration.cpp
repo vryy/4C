@@ -107,6 +107,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   external_loads_(Teuchos::null),
   forcing_(Teuchos::null),
   forcing_interface_(Teuchos::null),
+  velpressplitter_(Teuchos::rcp(new LINALG::MapExtractor())),
   surfacesplitter_(NULL),
   inrelaxation_(false),
   xwall_(Teuchos::null),
@@ -194,11 +195,11 @@ void FLD::FluidImplicitTimeInt::Init()
   // -------------------------------------------------------------------
   numdim_ = params_->get<int>("number of velocity degrees of freedom");
 
-  if (velpressplitter_.NumMaps() == 0)
-    FLD::UTILS::SetupFluidSplit(*discret_,numdim_,velpressplitter_);
+  if (velpressplitter_->NumMaps() == 0)
+    FLD::UTILS::SetupFluidSplit(*discret_,numdim_,*velpressplitter_);
   // if the pressure map is empty, the user obviously specified a wrong
   // number of space dimensions in the input file
-  if (velpressplitter_.CondMap()->NumGlobalElements()<1)
+  if (velpressplitter_->CondMap()->NumGlobalElements()<1)
     dserror("Pressure map empty. Wrong DIM value in input file?");
 
   // -------------------------------------------------------------------
@@ -280,7 +281,7 @@ void FLD::FluidImplicitTimeInt::Init()
   else
   {
     Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy> > blocksysmat =
-      Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy>(velpressplitter_,velpressplitter_,108,false,true));
+      Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy>(*velpressplitter_,*velpressplitter_,108,false,true));
     blocksysmat->SetNumdim(numdim_);
     sysmat_ = blocksysmat;
   }
@@ -482,7 +483,7 @@ void FLD::FluidImplicitTimeInt::Init()
 
   if (params_->get<bool>("INFNORMSCALING"))
   {
-    fluid_infnormscaling_ = Teuchos::rcp(new FLD::UTILS::FluidInfNormScaling(velpressplitter_));
+    fluid_infnormscaling_ = Teuchos::rcp(new FLD::UTILS::FluidInfNormScaling(*velpressplitter_));
   }
 
   // ------------------------------------------------------------------------------
@@ -2021,7 +2022,7 @@ void FLD::FluidImplicitTimeInt::UpdateKrylovSpaceProjection()
   Teuchos::RCP<Epetra_Vector> c0 = Teuchos::rcp((*c)(0),false);
   c0->PutScalar(0.0);
   // extract vector of pressure-dofs
-  Teuchos::RCP<Epetra_Vector> presmode = velpressplitter_.ExtractCondVector(*c0);
+  Teuchos::RCP<Epetra_Vector> presmode = velpressplitter_->ExtractCondVector(*c0);
 
   const std::string* weighttype = projector_->WeightType();
   Teuchos::RCP<Epetra_Vector> w0_update=Teuchos::null;
@@ -2244,25 +2245,25 @@ bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int          itnum,
 
 
 
-  Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_.ExtractOtherVector(residual_);
+  Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_->ExtractOtherVector(residual_);
 
   onlyvel->Norm2(&vresnorm_);
 
-  velpressplitter_.ExtractOtherVector(incvel_,onlyvel);
+  velpressplitter_->ExtractOtherVector(incvel_,onlyvel);
 
   onlyvel->Norm2(&incvelnorm_L2_);
 
-  velpressplitter_.ExtractOtherVector(velnp_,onlyvel);
+  velpressplitter_->ExtractOtherVector(velnp_,onlyvel);
 
   onlyvel->Norm2(&velnorm_L2_);
 
-  Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_.ExtractCondVector(residual_);
+  Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_->ExtractCondVector(residual_);
   onlypre->Norm2(&presnorm_);
 
-  velpressplitter_.ExtractCondVector(incvel_,onlypre);
+  velpressplitter_->ExtractCondVector(incvel_,onlypre);
   onlypre->Norm2(&incprenorm_L2_);
 
-  velpressplitter_.ExtractCondVector(velnp_,onlypre);
+  velpressplitter_->ExtractCondVector(velnp_,onlypre);
   onlypre->Norm2(&prenorm_L2_);
 
   // check for any INF's and NaN's
@@ -3174,11 +3175,11 @@ void FLD::FluidImplicitTimeInt::TimIntCalculateAcceleration()
   }
   else //standard case
   {
-    onlyaccn  = velpressplitter_.ExtractOtherVector(accn_);
-    onlyaccnp = velpressplitter_.ExtractOtherVector(accnp_);
-    onlyvelnm = velpressplitter_.ExtractOtherVector(velnm_);
-    onlyveln  = velpressplitter_.ExtractOtherVector(veln_);
-    onlyvelnp = velpressplitter_.ExtractOtherVector(velnp_);
+    onlyaccn  = velpressplitter_->ExtractOtherVector(accn_);
+    onlyaccnp = velpressplitter_->ExtractOtherVector(accnp_);
+    onlyvelnm = velpressplitter_->ExtractOtherVector(velnm_);
+    onlyveln  = velpressplitter_->ExtractOtherVector(veln_);
+    onlyvelnp = velpressplitter_->ExtractOtherVector(velnp_);
   }
 
   CalculateAcceleration(onlyvelnp,
@@ -3389,7 +3390,7 @@ void FLD::FluidImplicitTimeInt::Output()
     // velocity/pressure vector
     output_->WriteVector("velnp",velnp_);
     // (hydrodynamic) pressure
-    Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_.ExtractCondVector(velnp_);
+    Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_->ExtractCondVector(velnp_);
     output_->WriteVector("pressure", pressure);
 
     if(xwall_!=Teuchos::null)
@@ -3404,7 +3405,7 @@ void FLD::FluidImplicitTimeInt::Output()
       // velocity/pressure values at meshfree nodes
       output_->WriteVector("velatmeshfreenodes",velatmeshfreenodes_);
       // (hydrodynamic) pressure values at meshfree nodes
-      Teuchos::RCP<Epetra_Vector> pressureatmeshfreenodes = velpressplitter_.ExtractCondVector(velatmeshfreenodes_);
+      Teuchos::RCP<Epetra_Vector> pressureatmeshfreenodes = velpressplitter_->ExtractCondVector(velatmeshfreenodes_);
       output_->WriteVector("pressureatmeshfreenodes", pressureatmeshfreenodes);
     }
 
@@ -3416,7 +3417,7 @@ void FLD::FluidImplicitTimeInt::Output()
 
     if (physicaltype_ == INPAR::FLUID::varying_density or physicaltype_ == INPAR::FLUID::boussinesq)
     {
-      Teuchos::RCP<Epetra_Vector> scalar_field = velpressplitter_.ExtractCondVector(scaaf_);
+      Teuchos::RCP<Epetra_Vector> scalar_field = velpressplitter_->ExtractCondVector(scaaf_);
       output_->WriteVector("scalar_field", scalar_field);
     }
 
@@ -4796,14 +4797,14 @@ void FLD::FluidImplicitTimeInt::SetScalarFields(
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres)
 {
-   return VelPresSplitter().ExtractOtherVector(velpres);
+   return VelPresSplitter()->ExtractOtherVector(velpres);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::ExtractPressurePart(Teuchos::RCP<const Epetra_Vector> velpres)
 {
-   return VelPresSplitter().ExtractCondVector(velpres);
+   return VelPresSplitter()->ExtractCondVector(velpres);
 }
 
 /*----------------------------------------------------------------------*
@@ -5459,12 +5460,12 @@ const Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::InvDirichlet(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> FLD::FluidImplicitTimeInt::VelocityRowMap()
-{ return velpressplitter_.OtherMap(); }
+{ return velpressplitter_->OtherMap(); }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> FLD::FluidImplicitTimeInt::PressureRowMap()
-{ return velpressplitter_.CondMap(); }
+{ return velpressplitter_->CondMap(); }
 
 
 Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::CalcSFS(
@@ -6384,7 +6385,7 @@ void FLD::FluidImplicitTimeInt::PredictTangVelConsistAcc()
   UpdateIterIncrementally(incvel_);
 
   // keep pressure values from previous time step
-  velpressplitter_.InsertCondVector(velpressplitter_.ExtractCondVector(veln_),velnp_);
+  velpressplitter_->InsertCondVector(velpressplitter_->ExtractCondVector(veln_),velnp_);
 
   // Note: accelerations on Dirichlet DOFs are not set.
 
@@ -6658,10 +6659,10 @@ void FLD::FluidImplicitTimeInt::ExplicitPredictor()
     velnp_->Update(1.0,*veln_,0.0);
 
     // split between acceleration and pressure
-    Teuchos::RCP<Epetra_Vector> inc = velpressplitter_.ExtractOtherVector(accn_);
+    Teuchos::RCP<Epetra_Vector> inc = velpressplitter_->ExtractOtherVector(accn_);
     inc->Scale((1.0-theta_)*dta_);
 
-    velpressplitter_.AddOtherVector(inc,velnp_);
+    velpressplitter_->AddOtherVector(inc,velnp_);
   }
   else if(predictor_=="constant_acceleration")
   {
@@ -6679,10 +6680,10 @@ void FLD::FluidImplicitTimeInt::ExplicitPredictor()
     //
     velnp_->Update(1.0,*veln_,0.0);
 
-    Teuchos::RCP<Epetra_Vector> inc = velpressplitter_.ExtractOtherVector(accn_);
+    Teuchos::RCP<Epetra_Vector> inc = velpressplitter_->ExtractOtherVector(accn_);
     inc->Scale(dta_);
 
-    velpressplitter_.AddOtherVector(inc,velnp_);
+    velpressplitter_->AddOtherVector(inc,velnp_);
   }
   else if(predictor_=="constant_increment")
   {
@@ -6700,12 +6701,12 @@ void FLD::FluidImplicitTimeInt::ExplicitPredictor()
     //
     velnp_->Update(1.0,*veln_,0.0);
 
-    Teuchos::RCP<Epetra_Vector> un  = velpressplitter_.ExtractOtherVector(veln_ );
-    Teuchos::RCP<Epetra_Vector> unm = velpressplitter_.ExtractOtherVector(velnm_);
+    Teuchos::RCP<Epetra_Vector> un  = velpressplitter_->ExtractOtherVector(veln_ );
+    Teuchos::RCP<Epetra_Vector> unm = velpressplitter_->ExtractOtherVector(velnm_);
     unm->Scale(-1.0);
 
-    velpressplitter_.AddOtherVector(un ,velnp_);
-    velpressplitter_.AddOtherVector(unm,velnp_);
+    velpressplitter_->AddOtherVector(un ,velnp_);
+    velpressplitter_->AddOtherVector(unm,velnp_);
   }
   else if(predictor_=="explicit_second_order_midpoint")
   {
@@ -6732,12 +6733,12 @@ void FLD::FluidImplicitTimeInt::ExplicitPredictor()
     velnp_->Update(1.0,*veln_,0.0);
 
     // split between acceleration and pressure
-    Teuchos::RCP<Epetra_Vector> unm = velpressplitter_.ExtractOtherVector(velnm_);
-    Teuchos::RCP<Epetra_Vector> an  = velpressplitter_.ExtractOtherVector(accn_ );
+    Teuchos::RCP<Epetra_Vector> unm = velpressplitter_->ExtractOtherVector(velnm_);
+    Teuchos::RCP<Epetra_Vector> an  = velpressplitter_->ExtractOtherVector(accn_ );
 
     unm->Update(2.0*dta_,*an,1.0);
 
-    velpressplitter_.InsertOtherVector(unm,velnp_);
+    velpressplitter_->InsertOtherVector(unm,velnp_);
   }
   else
     dserror("Unknown fluid predictor %s", predictor_.c_str());

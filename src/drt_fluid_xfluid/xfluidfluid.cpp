@@ -672,7 +672,7 @@ void FLD::XFluidFluid::InterpolateEmbeddedStateVectors()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
+Teuchos::RCP<std::vector<double> > FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
 {
   // this function provides a general implementation for calculating error norms between computed solutions
   // and an analytical solution which is implemented or given by a function in the input file
@@ -680,7 +680,7 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
   INPAR::FLUID::CalcError calcerr = DRT::INPUT::get<INPAR::FLUID::CalcError>(*params_,"calculate error");
 
   if(calcerr == INPAR::FLUID::no_error_calculation)
-    return;
+    return Teuchos::null;
   // set the time to evaluate errors
   //
 
@@ -1037,4 +1037,6 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
         f.close();
     }
   } // myrank = 0
+
+  return Teuchos::null;
 }

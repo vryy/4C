@@ -93,7 +93,7 @@ void FLD::TimIntHDG::Init()
                                 &otherdofmapvec[0],
                                 0,
                                 hdgdis->Comm()));
-  velpressplitter_.Setup(*hdgdis->DofRowMap(),conddofmap, otherdofmap);
+  velpressplitter_->Setup(*hdgdis->DofRowMap(),conddofmap, otherdofmap);
 
   // implement ost and bdf2 through gen-alpha facilities
   if (timealgo_ == INPAR::FLUID::timeint_bdf2)
