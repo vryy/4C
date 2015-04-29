@@ -1063,7 +1063,11 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::ComputeError(
 
     if (calcerr == INPAR::FLUID::topoptchannel &&
         !(xyzint(1)>-0.2-1.0e-014 && xyzint(1)<0.2+1.0e-014))
+    {
       preint = 0.0;
+      u(0) = 0.0;
+      u(1) = 0.0;
+    }
 
     // compute difference between analytical solution and numerical solution
     deltap    = preint - p;
@@ -1279,7 +1283,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::EvaluateAnalyticSolutionPoint
     {
       u(0) = 1-25*xyzint(1)*xyzint(1);
       u(1) = 0.0;
-      p = (xyzint(0)-0.5)*(10 - 50*visc); // 10 bof-o, 50 visc-part
+      p = (xyzint(0)-0.5)*(-50*visc);
 
       dervel(0,0)=0.0;
       dervel(0,1)=-50*xyzint(1);
