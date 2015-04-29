@@ -464,7 +464,7 @@ void OPTI::GCMMA::Asymptotes()
      * asy_max = min(asy_max, x+10*x_diff)
      * asy_max = std::max(asy_max, x+0.01*x_diff)
      *
-     * fac = 1.0 / 0.7 / 1.2 depending on sign of (x-x_old)(x_old-x_old2)
+     * fac = 1.0 / 0.7 / 2.3 depending on sign of (x-x_old)(x_old-x_old2)
      */
     double* xval = x_->Values();
     double* xold = x_old_->Values();
@@ -481,7 +481,7 @@ void OPTI::GCMMA::Asymptotes()
       if (val<0)
         fac = 0.7;
       else if (val>0)
-        fac = 1.2;
+        fac = 2.3;
 
       *asy_min = *xval - fac*(*xold-*asy_min);
       *asy_max = *xval + fac*(*asy_max-*xold);
