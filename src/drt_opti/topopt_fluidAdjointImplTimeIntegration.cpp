@@ -1059,8 +1059,8 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::SetElementGeneralAdjointParameter() const
           const MAT::PAR::Parameter* matparam = imat->Parameter();
           const MAT::PAR::TopOptDens* mat = static_cast<const MAT::PAR::TopOptDens* >(matparam);
 
-          eleparams.set("MIN_PORO",mat->poro_bd_down_);
-          eleparams.set("MAX_PORO",mat->poro_bd_up_);
+          eleparams.set("MIN_PORO",mat->PoroBdDown());
+          eleparams.set("MAX_PORO",mat->PoroBdUp());
 
           const INPAR::TOPOPT::OptiCase testcase = (INPAR::TOPOPT::OptiCase)(params_->get<int>("opti testcase"));
           switch (testcase)
@@ -1077,7 +1077,7 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::SetElementGeneralAdjointParameter() const
           }
           default:
           {
-            eleparams.set("SMEAR_FAC",mat->smear_fac_);
+            eleparams.set("SMEAR_FAC",mat->SmearFac());
             break;
           }
           }
@@ -1200,6 +1200,8 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::Reset(
     output_->OverwriteResultFile();
 
   output_->WriteMesh(0,0.0);
+
+  SetElementGeneralAdjointParameter();
   return;
 }
 

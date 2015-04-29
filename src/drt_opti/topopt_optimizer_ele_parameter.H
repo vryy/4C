@@ -39,8 +39,13 @@ public:
   //! Singleton access method
   static Teuchos::RCP<TopOptParam> Instance();
 
-  //! general fluid parameter are set
+  //! general optimization parameter are set
   void SetGeneralOptimizationParameter(
+      Teuchos::ParameterList& params    //> parameter list
+  );
+
+  //! general optimization parameter are updated
+  void UpdateGeneralOptimizationParameter(
       Teuchos::ParameterList& params    //> parameter list
   );
 

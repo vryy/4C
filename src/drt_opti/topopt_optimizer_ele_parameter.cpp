@@ -179,6 +179,16 @@ void DRT::ELEMENTS::TopOptParam::SetGeneralOptimizationParameter( Teuchos::Param
 
 
 
+//----------------------------------------------------------------------*
+//  update general parameters                          winklmaier 12/14 |
+//----------------------------------------------------------------------*/
+void DRT::ELEMENTS::TopOptParam::UpdateGeneralOptimizationParameter( Teuchos::ParameterList& params )
+{
+  smear_fac_ = params.get<double>("SMEAR_FAC");
+}
+
+
+
 //----------------------------------------------------------------------*/
 // print fluid parameter to screen (AE 01-11)
 //----------------------------------------------------------------------*/

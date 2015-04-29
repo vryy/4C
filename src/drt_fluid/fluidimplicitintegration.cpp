@@ -6245,48 +6245,6 @@ void FLD::FluidImplicitTimeInt::Reset(
     bool newFiles,
     int iter)
 {
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
-
-  // Vectors passed to the element
-  // -----------------------------
-  // velocity/pressure at time n+1, n and n-1
-  velnp_ = LINALG::CreateVector(*dofrowmap,true);
-  veln_  = LINALG::CreateVector(*dofrowmap,true);
-  velnm_ = LINALG::CreateVector(*dofrowmap,true);
-
-  // acceleration/(scalar time derivative) at time n+1 and n
-  accnp_ = LINALG::CreateVector(*dofrowmap,true);
-  accn_  = LINALG::CreateVector(*dofrowmap,true);
-  accnm_ = LINALG::CreateVector(*dofrowmap,true);
-
-  // velocity/pressure at time n+alpha_F
-  velaf_ = LINALG::CreateVector(*dofrowmap,true);
-
-  // acceleration/(scalar time derivative) at time n+alpha_M/(n+alpha_M/n)
-  accam_ = LINALG::CreateVector(*dofrowmap,true);
-
-  // scalar at time n+alpha_F/n+1 and n+alpha_M/n
-  // (only required for low-Mach-number case)
-  scaaf_ = LINALG::CreateVector(*dofrowmap,true);
-  scaam_ = LINALG::CreateVector(*dofrowmap,true);
-
-  // velocity/pressure at nodes for meshfree non-interpolatory basis functions
-  Teuchos::RCP<DRT::MESHFREE::MeshfreeDiscretization> meshfreediscret
-    = Teuchos::rcp_dynamic_cast<DRT::MESHFREE::MeshfreeDiscretization>(discret_);
-  if (meshfreediscret!=Teuchos::null)
-    velatmeshfreenodes_ = LINALG::CreateVector(*dofrowmap,true);
-
-  // history vector
-  hist_ = LINALG::CreateVector(*dofrowmap,true);
-
-  if (alefluid_)
-  {
-    dispnp_ = LINALG::CreateVector(*dofrowmap,true);
-    dispn_  = LINALG::CreateVector(*dofrowmap,true);
-    dispnm_ = LINALG::CreateVector(*dofrowmap,true);
-    gridv_  = LINALG::CreateVector(*dofrowmap,true);
-    gridvn_  = LINALG::CreateVector(*dofrowmap,true);
-  }
 
   if (completeReset)
   {
@@ -6302,6 +6260,51 @@ void FLD::FluidImplicitTimeInt::Reset(
       output_->OverwriteResultFile();
 
     output_->WriteMesh(0,0.0);
+  }
+  else
+  {
+    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+    // Vectors passed to the element
+    // -----------------------------
+    // velocity/pressure at time n+1, n and n-1
+    velnp_ = LINALG::CreateVector(*dofrowmap,true);
+    veln_  = LINALG::CreateVector(*dofrowmap,true);
+    velnm_ = LINALG::CreateVector(*dofrowmap,true);
+
+    // acceleration/(scalar time derivative) at time n+1 and n
+    accnp_ = LINALG::CreateVector(*dofrowmap,true);
+    accn_  = LINALG::CreateVector(*dofrowmap,true);
+    accnm_ = LINALG::CreateVector(*dofrowmap,true);
+
+    // velocity/pressure at time n+alpha_F
+    velaf_ = LINALG::CreateVector(*dofrowmap,true);
+
+    // acceleration/(scalar time derivative) at time n+alpha_M/(n+alpha_M/n)
+    accam_ = LINALG::CreateVector(*dofrowmap,true);
+
+    // scalar at time n+alpha_F/n+1 and n+alpha_M/n
+    // (only required for low-Mach-number case)
+    scaaf_ = LINALG::CreateVector(*dofrowmap,true);
+    scaam_ = LINALG::CreateVector(*dofrowmap,true);
+
+    // velocity/pressure at nodes for meshfree non-interpolatory basis functions
+    Teuchos::RCP<DRT::MESHFREE::MeshfreeDiscretization> meshfreediscret
+    = Teuchos::rcp_dynamic_cast<DRT::MESHFREE::MeshfreeDiscretization>(discret_);
+    if (meshfreediscret!=Teuchos::null)
+      velatmeshfreenodes_ = LINALG::CreateVector(*dofrowmap,true);
+
+    // history vector
+    hist_ = LINALG::CreateVector(*dofrowmap,true);
+
+    if (alefluid_)
+    {
+      dispnp_ = LINALG::CreateVector(*dofrowmap,true);
+      dispn_  = LINALG::CreateVector(*dofrowmap,true);
+      dispnm_ = LINALG::CreateVector(*dofrowmap,true);
+      gridv_  = LINALG::CreateVector(*dofrowmap,true);
+      gridvn_  = LINALG::CreateVector(*dofrowmap,true);
+    }
   }
 
   return;

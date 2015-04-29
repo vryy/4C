@@ -6485,12 +6485,19 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("VOLUME_BOUNDARY",0.7,"maximal percentage of fluid volume in background domain",&topoptoptimizer);
   DoubleParameter("TOL_KKT",1.0e-5,"tolerance of optimization problem (for KKT-conditions)",&topoptoptimizer);
   DoubleParameter("TOL_SUB",1.0e-9,"tolerance of subproblem",&topoptoptimizer);
+  BoolParameter("update_smooth","no","update smoothing parameter of impermeability function",&topoptoptimizer);
+  IntParameter("update_smooth_every_iter",100,"update smoothing parameter every numiter",&topoptoptimizer);
+  DoubleParameter("update_smooth_fac",10.0,"update smoothing parameter factor",&topoptoptimizer);
+
+  // output parameter
+  BoolParameter("GMSH_OUTPUT","No","Write Gmsh files",&topoptoptimizer);
+  IntParameter("UPRES",1,"Increment for writing solution",&topoptoptimizer);
+
+  // parameter of optimization algorithm GCMMA
   DoubleParameter("X_DIFF_MIN",1.0e-5,"minimal difference of upper and lower boundary of optimization variable",&topoptoptimizer);
   DoubleParameter("RHO_INIT",1.0e-2,"initial rho value",&topoptoptimizer);
   DoubleParameter("RHOMIN",1.0e-6,"minimal parameter value",&topoptoptimizer);
   DoubleParameter("FACMIN",1.0e-10,"minimal parameter value",&topoptoptimizer);
-  IntParameter("UPRES",1,"Increment for writing solution",&topoptoptimizer);
-  BoolParameter("GMSH_OUTPUT","No","Write Gmsh files",&topoptoptimizer);
   DoubleParameter("c_init",1000.0,"initial value for solver parameter",&topoptoptimizer);
   DoubleParameter("tol_sub_fac",1.001,"convergence factor for subproblem",&topoptoptimizer);
   DoubleParameter("tol_reducefac",0.1,"reduction factor for subproblem tolerance",&topoptoptimizer);

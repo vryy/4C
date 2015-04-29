@@ -164,6 +164,8 @@ namespace TOPOPT
     const Epetra_Map* RowMap();
     const Epetra_Map* ColMap();
 
+    void UpdateOptimizationParameter();
+
     void AdoptDensityForFD(const double value, const int GID);
 
     const int Iter() const;

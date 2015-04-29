@@ -1,7 +1,7 @@
 /*!------------------------------------------------------------------------------------------------*
 \file optimization_density.H
 
-\brief 
+\brief
 
 <pre>
 Maintainer: Martin Winklmaier
@@ -40,6 +40,17 @@ namespace MAT
       /// destructor
       virtual ~TopOptDens() { ; }
 
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
+      const double PoroBdDown() const {return poro_bd_down_;};
+      const double PoroBdUp() const {return poro_bd_up_;};
+      const double SmearFac() const {return smear_fac_;};
+
+      void UpdateSmearFac(const double new_smearfac) {smear_fac_=new_smearfac;};
+
+    private:
+
       /// @name material parameters
       //@{
 
@@ -48,12 +59,9 @@ namespace MAT
       /// upper boundary for pseudo-porosity field
       const double poro_bd_up_;
       /// smearing factor for computation of porosity field out of density field
-      const double smear_fac_;
+      double smear_fac_;
 
       //@}
-
-      /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
     };  // class TopOptDens
 
@@ -131,13 +139,13 @@ private:
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new TopOptDens( *this ) ); }
 
     /// return upper boundary of porosity field
-    virtual const double MaxPoro() const {return params_->poro_bd_up_;}
+    virtual const double MaxPoro() const {return params_->PoroBdUp();}
 
     /// return upper boundary of porosity field
-    virtual const double MinPoro() const {return params_->poro_bd_down_;}
+    virtual const double MinPoro() const {return params_->PoroBdDown();}
 
     /// return upper boundary of porosity field
-    virtual const double SmearFactor() const {return params_->smear_fac_;}
+    virtual const double SmearFactor() const {return params_->SmearFac();}
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }

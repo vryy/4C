@@ -30,6 +30,8 @@ DRT::ELEMENTS::TopOpt::ActionType DRT::ELEMENTS::TopOpt::convertStringToActionTy
   DRT::ELEMENTS::TopOpt::ActionType act = TopOpt::none;
   if (action == "set_general_optimization_parameter")
     act = TopOpt::set_general_optimization_parameter;
+  else if (action == "update_general_optimization_parameter")
+    act = TopOpt::update_general_optimization_parameter;
   else if (action == "compute_values")
     act = TopOpt::compute_values;
   else if (action == "compute_gradients")
@@ -67,6 +69,12 @@ int DRT::ELEMENTS::TopOpt::Evaluate(
   {
     Teuchos::RCP<DRT::ELEMENTS::TopOptParam> optiparam = DRT::ELEMENTS::TopOptParam::Instance();
     optiparam->SetGeneralOptimizationParameter(params);
+    break;
+  }
+  case update_general_optimization_parameter:
+  {
+    Teuchos::RCP<DRT::ELEMENTS::TopOptParam> optiparam = DRT::ELEMENTS::TopOptParam::Instance();
+    optiparam->UpdateGeneralOptimizationParameter(params);
     break;
   }
   case compute_values:
@@ -137,6 +145,8 @@ DRT::ELEMENTS::TopOptBoundary::ActionType DRT::ELEMENTS::TopOptBoundary::convert
   DRT::ELEMENTS::TopOptBoundary::ActionType act = TopOptBoundary::none;
   if (action == "set_general_optimization_parameter")
     act = TopOptBoundary::set_general_optimization_parameter;
+  else if (action == "update_general_optimization_parameter")
+    act = TopOptBoundary::update_general_optimization_parameter;
   else if (action == "compute_values")
     act = TopOptBoundary::compute_values;
   else if (action == "compute_gradients")
@@ -189,6 +199,12 @@ int DRT::ELEMENTS::TopOptBoundary::EvaluateNeumann(
   {
     Teuchos::RCP<DRT::ELEMENTS::TopOptParam> optiparam = DRT::ELEMENTS::TopOptParam::Instance();
     optiparam->SetGeneralOptimizationParameter(params);
+    break;
+  }
+  case update_general_optimization_parameter:
+  {
+    Teuchos::RCP<DRT::ELEMENTS::TopOptParam> optiparam = DRT::ELEMENTS::TopOptParam::Instance();
+    optiparam->UpdateGeneralOptimizationParameter(params);
     break;
   }
   case compute_values:

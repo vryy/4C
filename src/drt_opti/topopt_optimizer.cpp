@@ -518,8 +518,8 @@ void TOPOPT::Optimizer::ImportFlowParams(
           const MAT::PAR::Parameter* matparam = imat->Parameter();
           const MAT::PAR::TopOptDens* mat = static_cast<const MAT::PAR::TopOptDens* >(matparam);
 
-          opti_ele_params.set("MIN_PORO",mat->poro_bd_down_);
-          opti_ele_params.set("MAX_PORO",mat->poro_bd_up_);
+          opti_ele_params.set("MIN_PORO",mat->PoroBdDown());
+          opti_ele_params.set("MAX_PORO",mat->PoroBdUp());
 
           const INPAR::TOPOPT::OptiCase testcase = (INPAR::TOPOPT::OptiCase)(DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiCase>(params_.sublist("TOPOLOGY OPTIMIZER"),"TESTCASE"));
           switch (testcase)
@@ -536,7 +536,7 @@ void TOPOPT::Optimizer::ImportFlowParams(
           }
           default:
           {
-            opti_ele_params.set("SMEAR_FAC",mat->smear_fac_);
+            opti_ele_params.set("SMEAR_FAC",mat->SmearFac());
             break;
           }
           }
@@ -804,6 +804,75 @@ const Epetra_Map* TOPOPT::Optimizer::ColMap()
     dserror("not implemented type of density field");
 
   return NULL;
+}
+
+
+void TOPOPT::Optimizer::UpdateOptimizationParameter()
+{
+  if (DRT::INPUT::IntegralValue<bool>(params_.sublist("TOPOLOGY OPTIMIZER"),"update_smooth") == true)
+  {
+    // get the material
+    const int nummat = DRT::Problem::Instance()->Materials()->Num();
+    for (int id = 1; id-1 < nummat; ++id)
+    {
+      Teuchos::RCP<const MAT::PAR::Material> imat = DRT::Problem::Instance()->Materials()->ById(id);
+
+      if (imat == Teuchos::null)
+        dserror("Could not find material Id %d", id);
+      else
+      {
+        switch (imat->Type())
+        {
+        case INPAR::MAT::m_opti_dens:
+        {
+          MAT::PAR::Parameter* matparam = imat->Parameter();
+          MAT::PAR::TopOptDens* mat = static_cast<MAT::PAR::TopOptDens* >(matparam);
+
+          const INPAR::TOPOPT::OptiCase testcase = (INPAR::TOPOPT::OptiCase)(DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiCase>(params_.sublist("TOPOLOGY OPTIMIZER"),"TESTCASE"));
+          switch (testcase)
+          {
+          case INPAR::TOPOPT::optitest_channel:
+          case INPAR::TOPOPT::optitest_channel_with_step:
+          case INPAR::TOPOPT::optitest_cornerflow:
+          case INPAR::TOPOPT::optitest_lin_poro:
+          case INPAR::TOPOPT::optitest_quad_poro:
+          case INPAR::TOPOPT::optitest_cub_poro:
+            break;
+          default:
+          {
+            const int stepnum = params_.sublist("TOPOLOGY OPTIMIZER").get<int>("update_smooth_every_iter");
+            const double fac = params_.sublist("TOPOLOGY OPTIMIZER").get<double>("update_smooth_fac");
+            if ((optimizer_->OuterIter()%stepnum==0) and
+                (optimizer_->Iter()>0) and
+                (optimizer_->InnerIter()==1))
+            {
+              // Update material
+              mat->UpdateSmearFac(fac*mat->SmearFac());
+
+              // update the according parameter on element level
+              Teuchos::ParameterList opti_ele_params;
+              opti_ele_params.set("action","update_general_optimization_parameter");
+              opti_ele_params.set("SMEAR_FAC",mat->SmearFac());
+              optidis_->Evaluate(opti_ele_params,Teuchos::null,Teuchos::null);
+            }
+
+            if (mat->SmearFac()>2000000001)
+              dserror("optimization should already be converged");
+            break;
+          }
+          }
+          break;
+        }
+        case INPAR::MAT::m_fluid: break;
+        default:
+        {
+          dserror("unknown material %s",imat->Name().c_str());
+          break;
+        }
+        }
+      }
+    }
+  }
 }
 
 

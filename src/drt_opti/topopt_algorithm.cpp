@@ -320,6 +320,9 @@ void TOPOPT::Algorithm::PrepareOptimizationStep()
       DRT::INPUT::IntegralValue<bool>(AlgoParameters(),"OUTPUT_EVERY_ITER"),
       Optimizer()->Iter()+2);
 
+  // hack to get new optimization parameters in fluid without new routines...
+  FluidField()->Init();
+
   return;
 }
 
@@ -376,6 +379,8 @@ void TOPOPT::Algorithm::Update()
 {
   // clear the field data of the primal and the dual equations
   optimizer_->ClearFieldData();
+
+  Optimizer()->UpdateOptimizationParameter();
 
   return;
 }

@@ -126,8 +126,8 @@ void FLD::TimIntTopOpt::SetElementCustomParameter()
         const MAT::PAR::Parameter* matparam = imat->Parameter();
         const MAT::PAR::TopOptDens* mat = static_cast<const MAT::PAR::TopOptDens* >(matparam);
 
-        eleparams.set("MIN_PORO",mat->poro_bd_down_);
-        eleparams.set("MAX_PORO",mat->poro_bd_up_);
+        eleparams.set("MIN_PORO",mat->PoroBdDown());
+        eleparams.set("MAX_PORO",mat->PoroBdUp());
 
 
         const INPAR::TOPOPT::OptiCase testcase = (INPAR::TOPOPT::OptiCase)(params_->get<int>("opti testcase"));
@@ -145,7 +145,7 @@ void FLD::TimIntTopOpt::SetElementCustomParameter()
         }
         default:
         {
-          eleparams.set("SMEAR_FAC",mat->smear_fac_);
+          eleparams.set("SMEAR_FAC",mat->SmearFac());
           break;
         }
         }

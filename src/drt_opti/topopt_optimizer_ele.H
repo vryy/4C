@@ -323,6 +323,7 @@ private:
   {
     none,
     set_general_optimization_parameter,
+    update_general_optimization_parameter,
     compute_values,
     compute_gradients
   };
@@ -602,6 +603,7 @@ private:
   {
     none,
     set_general_optimization_parameter,
+    update_general_optimization_parameter,
     compute_values,
     compute_gradients
   };
