@@ -1018,16 +1018,12 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
 
-    std::set<std::string> fluidelementtypes;
-    fluidelementtypes.insert("FLUID");
-    fluidelementtypes.insert("FLUIDXW");
-
     if (xfluiddis != Teuchos::null)
     {
-      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", fluidelementtypes)));
+      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS")));
     }
     else
-      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", fluidelementtypes)));
+      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
 
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
 
@@ -1057,11 +1053,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     AddDis("fluid", fluiddis);
     AddDis("ale", aledis);
 
-    std::set<std::string> fluidelementtypes;
-    fluidelementtypes.insert("FLUID");
-
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
-    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", fluidelementtypes)));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
 
 #ifdef EXTENDEDPARALLELOVERLAP
@@ -1107,11 +1100,9 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       AddDis("ale", aledis);
       AddDis("structale", structaledis);
 
-      std::set<std::string> fluidelementtypes;
-      fluidelementtypes.insert("FLUID");
 
       nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
-      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", fluidelementtypes)));
+      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
       //nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
 
   #ifdef EXTENDEDPARALLELOVERLAP
@@ -1253,13 +1244,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     AddDis("fluid", fluiddis);
 
-    std::set<std::string> fluidelementtypes;
-    fluidelementtypes.insert("FLUID");
-    fluidelementtypes.insert("FLUIDXW");
-    fluidelementtypes.insert("MEFLUID");
-    fluidelementtypes.insert("FLUIDHDG");
-
-    nodereader.AddAdvancedReader(fluiddis, reader, "FLUID", fluidelementtypes,
+    nodereader.AddAdvancedReader(fluiddis, reader, "FLUID",
         DRT::INPUT::IntegralValue<INPAR::GeometryType>(FluidDynamicParams(),"GEOMETRY"), 0);
 
     break;
@@ -1356,9 +1341,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     }
     aledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(aledis)));
 
-    std::set<std::string> fluidelementtypes;
-    fluidelementtypes.insert("FLUID");
-    fluidelementtypes.insert("FLUIDXW");
 
     AddDis("fluid", fluiddis);
     if (xfluiddis!=Teuchos::null)
@@ -1369,10 +1351,10 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     if (xfluiddis!=Teuchos::null)
     {
-      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS",fluidelementtypes)));
+      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS")));
     }
     else
-      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS",fluidelementtypes)));
+      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
 
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
 
@@ -1651,10 +1633,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     AddDis("fluid",     fluiddis);
     AddDis("ale",   aledis);
 
-    std::set<std::string> fluidelementtypes;
-    fluidelementtypes.insert("FLUID");
-
-    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis,  reader, "--FLUID ELEMENTS",fluidelementtypes)));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis,  reader, "--FLUID ELEMENTS")));
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
 
     break;
@@ -1673,14 +1652,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     AddDis("structure", structdis);
     AddDis("fluid",     fluiddis);
 
-    std::set<std::string> fluidelementtypes;
-    fluidelementtypes.insert("FLUIDIMMERSED");
-
-    std::set<std::string> structelementtypes;
-    fluidelementtypes.insert("SOLIDH8");
-
-    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS",structelementtypes)));
-    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis,  reader, "--FLUID ELEMENTS",fluidelementtypes)));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis,  reader, "--FLUID ELEMENTS")));
 
     break;
   }
@@ -1702,9 +1675,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     AddDis("porofluid", porofluiddis);
     AddDis("cell", celldis);
     AddDis("scatra", scatradis);
-
-    std::set<std::string> fluidelementtypes;
-    fluidelementtypes.insert("FLUIDIMMERSEDPORO");
 
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(celldis, reader, "--CELL ELEMENTS")));
@@ -1730,10 +1700,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     AddDis("fluid",     fluiddis);
     AddDis("ale",     aledis);
 
-    std::set<std::string> fluidelementtypes;
-    fluidelementtypes.insert("FLUID");
 
-    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis,  reader, "--FLUID ELEMENTS",fluidelementtypes)));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis,  reader, "--FLUID ELEMENTS")));
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
 
     // fluid scatra field
