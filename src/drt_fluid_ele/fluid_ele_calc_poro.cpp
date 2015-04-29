@@ -1664,7 +1664,10 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(
      ComputeOldRHSConti(dphi_dp);
 
      // compute strong residual of mixture (structural) equation
-     if(porofldpara_->StabBiot() and (not my::fldparatimint_->IsStationary()))
+     if (  porofldpara_->StabBiot() and
+           (not my::fldparatimint_->IsStationary()) and
+           structmat_->PoroLawType() != INPAR::MAT::m_poro_law_constant
+        )
        ComputeMixtureStrongResidual(params,defgrd,edispnp,edispn,F_X);
 
      //----------------------------------------------------------------------
@@ -1979,7 +1982,10 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(
      }
 
      // 8) Biot stabilization term
-     if ( porofldpara_->StabBiot() and (not my::fldparatimint_->IsStationary()) )
+     if (  porofldpara_->StabBiot() and
+           (not my::fldparatimint_->IsStationary()) and
+           structmat_->PoroLawType() != INPAR::MAT::m_poro_law_constant
+        )
      {
        StabBiot(estif_q_u,
             ppmat,
@@ -2343,7 +2349,10 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoopOD(
     ComputeOldRHSConti(dphi_dp);
 
     // compute strong residual of mixture (structural) equation
-    if(porofldpara_->StabBiot() and (not my::fldparatimint_->IsStationary()) )
+    if (  porofldpara_->StabBiot() and
+          (not my::fldparatimint_->IsStationary()) and
+          structmat_->PoroLawType() != INPAR::MAT::m_poro_law_constant
+       )
       ComputeMixtureStrongResidual(params,defgrd,edispnp,edispn,F_X);
 
     //----------------------------------------------------------------------
@@ -2916,7 +2925,10 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixContiOD(
 
   //*************************************************************************************************************
   // biot stabilization
-  if( porofldpara_->StabBiot() and (not my::fldparatimint_->IsStationary()) )
+  if (  porofldpara_->StabBiot() and
+        (not my::fldparatimint_->IsStationary()) and
+        structmat_->PoroLawType() != INPAR::MAT::m_poro_law_constant
+     )
   {
     const double val = taustruct_*porosity_;
     double fac_dens = 0.0;
@@ -4355,7 +4367,10 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_Pres_OD(
 
   }
 
-  if(porofldpara_->StabBiot() and (not my::fldparatimint_->IsStationary()) )
+  if (  porofldpara_->StabBiot() and
+        (not my::fldparatimint_->IsStationary()) and
+        structmat_->PoroLawType() != INPAR::MAT::m_poro_law_constant
+     )
   {
     //shape derivative of Jacobian
     {
@@ -5139,7 +5154,10 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_Pres_OD(
     }
   }
 
-  if(porofldpara_->StabBiot() and (not my::fldparatimint_->IsStationary()) )
+  if (  porofldpara_->StabBiot() and
+        (not my::fldparatimint_->IsStationary()) and
+        structmat_->PoroLawType() != INPAR::MAT::m_poro_law_constant
+     )
   {
     //shape derivative of Jacobian
     {
@@ -6321,7 +6339,10 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeStabilizationParameters(co
       dtaudphi_(1)= 0.0;
     dtaudphi_(2)= 0.0;
 
-    if(porofldpara_->StabBiot() and (not my::fldparatimint_->IsStationary()) )
+    if (  porofldpara_->StabBiot() and
+          (not my::fldparatimint_->IsStationary()) and
+          structmat_->PoroLawType() != INPAR::MAT::m_poro_law_constant
+       )
     {
       /*
       This stabilization parameter ro Biot problems

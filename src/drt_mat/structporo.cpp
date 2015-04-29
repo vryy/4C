@@ -11,17 +11,17 @@
  </pre>
  *-----------------------------------------------------------------------*/
 
-
+#include "structporo.H"
+#include "poro_law.H"
 
 #include <vector>
+
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils_factory.H"  // for function Factory in Unpack
+
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/so3_material.H"
 
-#include "../drt_lib/drt_utils_factory.H"  // for function Factory in Unpack
-
-#include "poro_law.H"
-#include "structporo.H"
 
 /*----------------------------------------------------------------------*
                                                               vuong 06/11|
@@ -128,6 +128,14 @@ void MAT::StructPoro::PoroSetup(int numgp, DRT::INPUT::LineDefinition* linedef)
   surfporosity_ = Teuchos::rcp(new std::map<int, std::vector< double > >);
 
   isinitialized_=true;
+}
+
+/*----------------------------------------------------------------------*
+                                                              vuong 06/11|
+*----------------------------------------------------------------------*/
+inline INPAR::MAT::MaterialType MAT::StructPoro::PoroLawType() const
+{
+  return params_->porolaw_->Type();
 }
 
 /*----------------------------------------------------------------------*

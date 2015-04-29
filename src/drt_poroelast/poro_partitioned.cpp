@@ -15,8 +15,8 @@
 #include "poro_partitioned.H"
 
 #include "../drt_adapter/ad_str_fpsiwrapper.H"
-#include "../drt_structure/stru_aux.H"
 #include "../drt_adapter/ad_fld_poro.H"
+#include "../drt_structure/stru_aux.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 

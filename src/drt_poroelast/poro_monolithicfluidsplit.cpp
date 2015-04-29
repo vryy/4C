@@ -15,20 +15,21 @@
 /*----------------------------------------------------------------------*
  | headers                                                              |
  *----------------------------------------------------------------------*/
+#include "poro_monolithicfluidsplit.H"
+
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "poro_monolithicfluidsplit.H"
+#include "../drt_adapter/ad_str_fpsiwrapper.H"
+#include "../drt_adapter/ad_fld_poro.H"
 #include "../drt_adapter/adapter_coupling.H"
-#include "../linalg/linalg_utils.H"
 
 #include "../drt_fsi/fsi_matrixtransform.H"
 #include "../drt_fsi/fsi_overlapprec_fsiamg.H"
-#include "../drt_adapter/ad_str_fpsiwrapper.H"
-#include "../drt_adapter/ad_fld_poro.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 
 #include "../drt_structure/stru_aux.H"
 
+#include "../linalg/linalg_utils.H"
 
 #define FLUIDSPLITAMG
 

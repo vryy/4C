@@ -16,6 +16,11 @@
  | headers                                                              |
  *----------------------------------------------------------------------*/
 
+#include "poroelast_utils.H"
+
+#include <Epetra_Time.h>
+#include <Epetra_MpiComm.h>
+
 #include "poro_base.H"
 
 #include "poro_partitioned.H"
@@ -38,9 +43,6 @@
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_lib/drt_condition_utils.H"
 
-#include <Epetra_Time.h>
-#include <Epetra_MpiComm.h>
-
 #include "../drt_so3/so3_poro_eletypes.H"
 #include "../drt_so3/so3_poro_p1_eletypes.H"
 #include "../drt_w1/wall1_poro_eletypes.H"
@@ -52,7 +54,6 @@
 #include "../drt_mat/fluidporo.H"
 #include "../drt_mat/structporo.H"
 
-#include "poroelast_utils.H"
 
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |

@@ -179,6 +179,9 @@ namespace MAT
         return INPAR::MAT::m_structporo;
       }
 
+      /// poro law type
+      virtual INPAR::MAT::MaterialType PoroLawType() const;
+
       /// check if element kinematics and material kinematics are compatible
       virtual void ValidKinematics(INPAR::STR::KinemType kinem)
       { mat_->ValidKinematics(kinem);}

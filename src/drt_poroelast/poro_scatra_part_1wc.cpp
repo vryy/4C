@@ -15,10 +15,9 @@
 
 #include "poro_scatra_part_1wc.H"
 
-#include "../drt_adapter/adapter_scatra_base_algorithm.H"
-
 #include "poro_base.H"
 
+#include "../drt_adapter/adapter_scatra_base_algorithm.H"
 #include "../drt_adapter/ad_str_fpsiwrapper.H"
 #include "../drt_adapter/ad_fld_poro.H"
 

@@ -15,6 +15,9 @@
 /*----------------------------------------------------------------------*
  | headers                                                              |
  *----------------------------------------------------------------------*/
+
+#include "poro_monolithicsplit_nopenetration.H"
+
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "../drt_adapter/ad_fld_poro.H"
@@ -22,29 +25,24 @@
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/adapter_coupling_nonlin_mortar.H"
 
-//
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils.H"
-//
-#include "../drt_structure/stru_aux.H"
-//
+#include "../drt_contact/contact_interface.H"
+
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
-
-#include "../linalg/linalg_blocksparsematrix.H"
-
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_assemblestrategy.H"
-
 #include "../drt_fsi/fsi_matrixtransform.H"
-
-#include "poro_monolithicsplit_nopenetration.H"
 
 #include "../drt_io/io.H"
 
+#include "../drt_structure/stru_aux.H"
+
+#include "../drt_lib/drt_assemblestrategy.H"
+#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 
-#include "../drt_contact/contact_interface.H"
+#include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_blocksparsematrix.H"
+
 
 /*----------------------------------------------------------------------*
  |                                                         vuong 09/14  |

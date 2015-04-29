@@ -19,43 +19,43 @@
 /*----------------------------------------------------------------------*
  | headers                                                  vuong 01/12 |
  *----------------------------------------------------------------------*/
-#include "poroelast_defines.H"
-
-#include "../drt_adapter/adapter_coupling.H"
-#include "../drt_adapter/ad_fld_base_algorithm.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../linalg/linalg_utils.H"
-#include "../linalg/linalg_solver.H"
-#include "../drt_inpar/inpar_solver.H"
+#include "poroelast_monolithic.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 // needed for PrintNewton
 #include <sstream>
 
-// include this header for coupling stiffness terms
-#include "../drt_lib/drt_assemblestrategy.H"
+#include "poroelast_defines.H"
 
-#include "../drt_io/io_control.H"
-#include "../drt_lib/drt_condition_utils.H"
-
-#include "../drt_fluid_ele/fluid_ele.H"
-#include "../drt_fluid_ele/fluid_ele_action.H"
+//adapters
+#include "../drt_adapter/adapter_coupling_volmortar.H"
+#include "../drt_adapter/adapter_coupling.H"
+#include "../drt_adapter/ad_fld_base_algorithm.H"
 #include "../drt_adapter/ad_fld_poro.H"
-
 #include "../drt_adapter/ad_str_fpsiwrapper.H"
 #include "../drt_adapter/ad_fld_fluid_fsi.H"
-#include "../drt_structure/stru_aux.H"
-#include "../drt_fluid/fluid_utils_mapextractor.H"
 
 //contact
 #include "../drt_contact/contact_poro_lagrange_strategy.H"
-#include "../drt_mortar/mortar_manager_base.H"
 #include "../drt_contact/meshtying_contact_bridge.H"
 
-//for coupling of nonmatching meshes
-#include "../drt_adapter/adapter_coupling_volmortar.H"
+#include "../drt_fluid_ele/fluid_ele_action.H"
+#include "../drt_fluid/fluid_utils_mapextractor.H"
 
-#include "poroelast_monolithic.H"
+// include this header for coupling stiffness terms
+#include "../drt_lib/drt_assemblestrategy.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_condition_utils.H"
+
+#include "../drt_io/io_control.H"
+#include "../drt_inpar/inpar_solver.H"
+
+#include "../drt_structure/stru_aux.H"
+
+#include "../drt_mortar/mortar_manager_base.H"
+
+#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_solver.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                              vuong 01/12  |

@@ -15,14 +15,14 @@
 #include "so3_poro_p1.H"
 #include "so3_poro_p1_eletypes.H"
 
+#include "../drt_fem_general/drt_utils_gder2.H"
+
 #include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_mat/fluidporo.H"
 #include "../drt_mat/structporo.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-
-#include "../drt_fem_general/drt_utils_gder2.H"
 
 /*----------------------------------------------------------------------*
  |                                                           vuong 03/12|

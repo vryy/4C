@@ -81,12 +81,35 @@ TIMESTEP                        0.01
 UPRES                           1
 LINEAR_SOLVER                   1
 CONTIPARTINT                    yes
---------------------------------------------------------------------SOLVER 1
-SOLVER                          UMFPACK
---------------------------------------------------------------------SOLVER 2
-SOLVER                          UMFPACK
---------------------------------------------------------------------SOLVER 3
-SOLVER                          UMFPACK
+-----------------------------------------------------------SOLVER 1
+SOLVER                         Aztec_MSR // UMFPACK Aztec_MSR
+AZSOLVE                        GMRES
+AZPREC                         AMGnxn
+AZSUB                          300
+AZCONV                         AZ_r0
+AZOUTPUT                       10
+AZITER                         400
+AZTOL                          1e-9
+VERBOSITY                      0
+NAME                           Poro_solver
+AMGNXN_TYPE                    XML
+AMGNXN_XML_FILE                poro_3D_hex8_amgnxn_BGSAMG.xml
+-----------------------------------------------------------SOLVER 2
+SOLVER                         Aztec_MSR // UMFPACK Aztec_MSR
+AZSOLVE                        GMRES
+AZPREC                         MueLu_sym
+NAME                           solidsolver
+ML_SMOOTHERFINE                 GS
+ML_SMOOTHERMED                  GS
+ML_SMOOTHERCOARSE               GS
+-----------------------------------------------------------SOLVER 3
+SOLVER                         Aztec_MSR // UMFPACK Aztec_MSR
+AZSOLVE                        GMRES
+AZPREC                         MueLu_sym
+NAME                           fluidsolver
+ML_SMOOTHERFINE                 GS
+ML_SMOOTHERMED                  GS
+ML_SMOOTHERCOARSE               GS
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         Material
 DIVERCONT                       stop

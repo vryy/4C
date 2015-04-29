@@ -16,14 +16,18 @@
  |  headers                                                             |
  *----------------------------------------------------------------------*/
 #include "poro_dyn.H"
+
+#include <Teuchos_TimeMonitor.hpp>
+
 #include "poro_base.H"
 #include "poro_scatra_base.H"
 #include "poroelast_utils.H"
+
 #include "../drt_inpar/inpar_poroelast.H"
+
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 
-#include <Teuchos_TimeMonitor.hpp>
 
 /*------------------------------------------------------------------------------------------------*
  | main control routine for poroelasticity problems                                   vuong 01/12 |

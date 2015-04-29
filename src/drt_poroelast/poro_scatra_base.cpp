@@ -13,22 +13,25 @@
  *----------------------------------------------------------------------*/
 
 #include "poro_scatra_base.H"
-#include "poro_base.H"
+
+#include <Teuchos_TimeMonitor.hpp>
+#include <Teuchos_RCP.hpp>
+
 #include "poroelast_utils.H"
+#include "poro_base.H"
+#include "poro_utils_clonestrategy.H"
+
+#include "../drt_adapter/ad_str_fpsiwrapper.H"
+#include "../drt_adapter/ad_fld_poro.H"
+
+#include "../drt_inpar/inpar_scatra.H"
+
+#include "../drt_lib/drt_utils_createdis.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_scatra/scatra_algorithm.H"
 #include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_scatra_ele/scatra_ele.H"
-#include "../drt_inpar/inpar_scatra.H"
-#include "poro_utils_clonestrategy.H"
-#include "../drt_lib/drt_utils_createdis.H"
-
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_adapter/ad_str_fpsiwrapper.H"
-#include "../drt_adapter/ad_fld_poro.H"
-
-#include <Teuchos_TimeMonitor.hpp>
-#include <Teuchos_RCP.hpp>
 
 /*----------------------------------------------------------------------*
  |                                                         vuong 05/13  |

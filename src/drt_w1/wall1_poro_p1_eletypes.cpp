@@ -17,6 +17,7 @@
 
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_utils_nullspace.H"
 
 /*----------------------------------------------------------------------*
  |  QUAD 4 Element                                          vuong 07/13 |
@@ -77,6 +78,22 @@ void DRT::ELEMENTS::WallQuad4PoroP1Type::SetupElementDefinition( std::map<std::s
       definitions["WALLQ4POROP1"];
 
   defs["QUAD4"]=defs_wallporo["QUAD4"];
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::WallQuad4PoroP1Type::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+{
+  numdf = 3;
+  dimns = 3;
+  nv = 2;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::WallQuad4PoroP1Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+{
+  DRT::UTILS::ComputeFluidDNullSpace( dis, ns, x0, numdf, dimns );
 }
 
 /*----------------------------------------------------------------------*
@@ -157,6 +174,22 @@ void DRT::ELEMENTS::WallQuad9PoroP1Type::SetupElementDefinition( std::map<std::s
 }
 
 /*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::WallQuad9PoroP1Type::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+{
+  numdf = 3;
+  dimns = 3;
+  nv = 2;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::WallQuad9PoroP1Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+{
+  DRT::UTILS::ComputeFluidDNullSpace( dis, ns, x0, numdf, dimns );
+}
+
+/*----------------------------------------------------------------------*
  |  init the element (public)                             vuong 07/13 |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::WallQuad9PoroP1Type::Initialize(DRT::Discretization& dis)
@@ -231,6 +264,22 @@ void DRT::ELEMENTS::WallTri3PoroP1Type::SetupElementDefinition( std::map<std::st
       definitions["WALLT3POROP1"];
 
   defs["TRI3"]=defs_wallporo["TRI3"];
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::WallTri3PoroP1Type::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+{
+  numdf = 3;
+  dimns = 3;
+  nv = 2;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::WallTri3PoroP1Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+{
+  DRT::UTILS::ComputeFluidDNullSpace( dis, ns, x0, numdf, dimns );
 }
 
 /*----------------------------------------------------------------------*

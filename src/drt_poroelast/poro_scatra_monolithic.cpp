@@ -12,32 +12,34 @@
  </pre>
  *----------------------------------------------------------------------*/
 
+#include "poro_scatra_monolithic.H"
+
+#include <Teuchos_TimeMonitor.hpp>
 
 #include "poro_base.H"
 #include "poroelast_utils.H"
-#include "../drt_adapter/adapter_scatra_base_algorithm.H"
 
+#include "../drt_adapter/adapter_scatra_base_algorithm.H"
 #include "../drt_adapter/ad_fld_poro.H"
 #include "../drt_adapter/ad_str_fpsiwrapper.H"
 
 #include "../drt_fluid_ele/fluid_ele_action.H"
+
 #include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_scatra_ele/scatra_ele_action.H"
+
+#include "../drt_io/io_control.H"
+#include "../drt_inpar/inpar_poroelast.H"
+
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_assemblestrategy.H"
 
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_blocksparsematrix.H"
 
-#include "../drt_io/io_control.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_assemblestrategy.H"
 
-#include "../drt_inpar/inpar_poroelast.H"
-
-#include <Teuchos_TimeMonitor.hpp>
-
-#include "poro_scatra_monolithic.H"
 
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |

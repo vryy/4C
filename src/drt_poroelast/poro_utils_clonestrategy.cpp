@@ -17,19 +17,19 @@
  | headers                                                              |
  *----------------------------------------------------------------------*/
 
+#include "poro_utils_clonestrategy.H"
+
 #include "poroelast_utils.H"
 
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/matpar_bundle.H"
 
 #include "../drt_fluid_ele/fluid_ele_poro_immersed.H"
 
+#include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/fluidporo.H"
 #include "../drt_mat/structporo.H"
 
 #include"../drt_w1/wall1_poro.H"
-
-#include "poro_utils_clonestrategy.H"
 
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/11  |

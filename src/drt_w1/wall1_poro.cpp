@@ -14,20 +14,20 @@
 
 #include "wall1_poro.H"
 
+#include "../drt_poroelast/poroelast_utils.H"
+
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils_factory.H"
 
 //for secondDerivativesZero
 #include "../drt_fem_general/drt_utils_shapefunctions_service.H"
+#include "../drt_fem_general/drt_utils_gausspoints.H"
 
 #include "../drt_mat/structporo.H"
 #include "../drt_mat/structporo_reaction.H"
 #include "../drt_mat/fluidporo.H"
 
-#include "../drt_fem_general/drt_utils_gausspoints.H"
-
-#include "../drt_poroelast/poroelast_utils.H"
 
 /*----------------------------------------------------------------------*
  *                                                            vuong 12/12|

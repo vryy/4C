@@ -96,16 +96,14 @@ namespace POROELAST
     //! return pointer to porous structure
     const Teuchos::RCP<ADAPTER::FPSIStructureWrapper>& StructureField(){return poro_->StructureField();};
 
-    //TODO: SCATRA_ELE_CLEANING
     //! return pointer to scalar transport problem
-    //SCATRA::ScaTraTimIntImpl& ScatraField(){return scatra_->ScaTraField();};
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ScaTraField() { return scatra_->ScaTraField(); };
 
     //! return pointer to scalar problem adapter base class
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> ScaTraFieldBase() { return scatra_; };
 
     //! setup solver (for monolithic only)
-    virtual bool SetupSolver(){return false;};
+    virtual bool SetupSolver(){return true;};
 
   protected:
     //!setup up of dofsets for two way coupling

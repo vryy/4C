@@ -72,13 +72,24 @@ void DRT::ELEMENTS::So_hex8PoroP1Type::SetupElementDefinition( std::map<std::str
   defs["HEX8"]=defs_hex8["HEX8"];
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_hex8PoroP1Type::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+{
+  numdf = 4;
+  dimns = 4;
+  nv = 3;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8PoroP1Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
   DRT::UTILS::ComputeFluidDNullSpace( dis, ns, x0, numdf, dimns );
 }
 
 /*----------------------------------------------------------------------*
- |  init the element (public)                        vuong 03/12            |
+ |  init the element (public)                        vuong 03/12        |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_hex8PoroP1Type::Initialize(DRT::Discretization& dis)
 {
