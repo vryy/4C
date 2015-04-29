@@ -507,7 +507,11 @@ void FLD::FluidImplicitTimeInt::Init()
   }
 
   // for the case of edge-oriented stabilization
-  CreateFacesExtension();
+  Teuchos::ParameterList* stabparams = &(params_->sublist("RESIDUAL-BASED STABILIZATION"));
+  if(DRT::INPUT::IntegralValue<INPAR::FLUID::StabType>(*stabparams, "STABTYPE") == INPAR::FLUID::stabtype_edgebased)
+  {
+    CreateFacesExtension();
+  }
 
   // Initialize WSS manager if smoothing via aggregation is desired
   if (not stressmanager_->IsInit())
@@ -534,19 +538,15 @@ void FLD::FluidImplicitTimeInt::Init()
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::CreateFacesExtension()
 {
-  Teuchos::ParameterList* stabparams = &(params_->sublist("RESIDUAL-BASED STABILIZATION"));
-  if(DRT::INPUT::IntegralValue<INPAR::FLUID::StabType>(*stabparams, "STABTYPE") == INPAR::FLUID::stabtype_edgebased)
-  {
-    // if the definition of internal faces would be included
-    // in the standard discretization, these lines can be removed
-    // and CreateInternalFacesExtension() can be called once
-    // in the constructor of the fluid time integration
-    // since we want to keep the standard discretization as clean as
-    // possible, we create interal faces via an enhanced discretization
-    // including the faces between elements
-    facediscret_ = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret_, true);
-    facediscret_->CreateInternalFacesExtension(true);
-  }
+  // if the definition of internal faces would be included
+  // in the standard discretization, these lines can be removed
+  // and CreateInternalFacesExtension() can be called once
+  // in the constructor of the fluid time integration
+  // since we want to keep the standard discretization as clean as
+  // possible, we create interal faces via an enhanced discretization
+  // including the faces between elements
+  facediscret_ = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret_, true);
+  facediscret_->CreateInternalFacesExtension(true);
 }
 /*----------------------------------------------------------------------*
  |  initialize algorithm for nonlinear BCs                   thon 09/14 |
@@ -705,7 +705,7 @@ void FLD::FluidImplicitTimeInt::TimeLoop()
   // time measurement: time loop
   TEUCHOS_FUNC_TIME_MONITOR(" + time loop");
 
-  while (step_<stepmax_ and time_<maxtime_)
+  while (NotFinished())
   {
     // -------------------------------------------------------------------
     //                       evaluate time step size if applicable

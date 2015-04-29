@@ -108,7 +108,7 @@ void FLD::TimIntStationary::SolveStationaryProblem()
   // numbers within only ONE simulation when you apply a proper
   // (pseudo-)timecurve
 
-  while (step_< stepmax_)
+  while (NotFinished())
   {
     // -------------------------------------------------------------------
     //              set (pseudo-)time-dependent parameters

@@ -211,9 +211,9 @@ Teuchos::RCP<const Epetra_Vector> FLD::XFluidFluid::InitialGuess()
   return xff_state_->xffluidincvel_;
 }
 
-void FLD::XFluidFluid::PrepareSolve()
+void FLD::XFluidFluid::PrepareXFEMSolve()
 {
-  XFluid::PrepareSolve();
+  XFluid::PrepareXFEMSolve();
 
   // merge the velnp each into one large Epetra_Vector for the composed system
   xff_state_->xffluidsplitter_->InsertXFluidVector(xff_state_->velnp_, xff_state_->xffluidvelnp_);

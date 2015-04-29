@@ -895,6 +895,14 @@ protected:
   FluidImplicitTimeInt (const FluidImplicitTimeInt& old);
 
   /*!
+  \brief timeloop break criterion
+   */
+  virtual bool NotFinished()
+  {
+    return step_<stepmax_ and time_<maxtime_;
+  }
+
+  /*!
   \brief  increment time and step value
 
   */

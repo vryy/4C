@@ -132,8 +132,6 @@ void ADAPTER::FluidXFEM::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
   if (ivel != Teuchos::null)
     xfluid->ApplyStructInterfaceVelocities(ivel);
 
-
-  FluidField()->PrepareSolve();
   FluidField()->Solve();
 }
 

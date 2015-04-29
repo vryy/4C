@@ -17,13 +17,8 @@ Maintainer:  Benedikt Schott
 
 #include "../drt_inpar/inpar_xfem.H"
 #include "../drt_inpar/inpar_cut.H"
-#include "../drt_lib/drt_discret.H"
 
-#include "../drt_fluid/fluid_timint.H"
-
-#include "../linalg/linalg_blocksparsematrix.H"
-
-#include "../drt_lib/drt_resulttest.H"
+#include "../drt_fluid/fluidimplicitintegration.H"
 
 #include "xfluid_state.H"
 
@@ -87,7 +82,7 @@ namespace FLD
     \author schott
     \date 03/12
   */
-  class XFluid : public TimInt
+  class XFluid : public FluidImplicitTimeInt
   {
     friend class XFluidResultTest;
 
@@ -111,9 +106,6 @@ namespace FLD
     /// print information about current time step to screen
     void PrintTimeStepInfo();
 
-    /// (pseudo-)timeloop finished?
-    bool NotFinished();
-
     void Integrate(){TimeLoop();}
 
     /// Do time integration (time loop)
@@ -129,7 +121,7 @@ namespace FLD
     void DoPredictor();
 
     /// Implement ADAPTER::Fluid
-    virtual void PrepareSolve();
+    virtual void PrepareXFEMSolve();
 
     /// do nonlinear iteration, e.g. full Newton, Newton like or Fixpoint iteration
     void Solve();
@@ -278,6 +270,16 @@ namespace FLD
 
     Teuchos::RCP<FLD::Vreman> Vreman() {return Teuchos::null;}
 
+    /*!
+    \brief velocity required for evaluation of related quantites required on element level
+
+    */
+    const Teuchos::RCP<const Epetra_Vector> EvaluationVel()
+    {
+      return Teuchos::null;
+    }
+
+
     void CreateInitialState();
 
     void SetLevelSetField(
@@ -295,6 +297,9 @@ namespace FLD
     }
 
   protected:
+
+    /// (pseudo-)timeloop finished?
+    bool NotFinished();
 
     virtual void CreateState();
 
@@ -355,6 +360,21 @@ namespace FLD
 
     /// set state vectors depending on time integration scheme
     void SetStateTimInt();
+
+    /*!
+    \brief Scale separation
+
+    */
+    void Sep_Multiply()
+    {
+      return;
+    }
+
+    void OutputofFilteredVel( Teuchos::RCP<Epetra_Vector> outvec,
+                               Teuchos::RCP<Epetra_Vector> fsoutvec)
+    {
+      return;
+    }
 
     /*!
   \brief Calculate time derivatives for
@@ -487,7 +507,7 @@ namespace FLD
     void CheckXFluidParams() const;
 
     /// print stabilization params to screen
-    void PrintStabilizationParams() const;
+    void PrintStabilizationDetails() const;
 
     //! @name Set general xfem specific element parameter in class FluidEleParameterXFEM
     /*!
@@ -607,13 +627,6 @@ namespace FLD
     /// start function number for an initial field
     int startfuncno_;
 
-    /// mixed stress hybrid l2 projection
-    enum INPAR::XFEM::Hybrid_LM_L2_Proj hybrid_lm_l2_proj_;
-
-    //! @name nitsche stabilization factors
-
-    ///< convective stabilization scaling for inflow terms (xfluid)
-    enum INPAR::XFEM::ConvStabScaling conv_stab_scaling_;
 
     //@}
 
@@ -642,8 +655,6 @@ namespace FLD
     Teuchos::RCP<XFluidOutputService> output_service_;
     //--------------------------------------------------------------------
 
-    //! do we move the fluid mesh and calculate the fluid on this moving mesh?
-    bool                          alefluid_;
     //! do we have a turblence model?
     enum INPAR::FLUID::TurbModelAction turbmodel_;
     //@}
@@ -653,7 +664,6 @@ namespace FLD
     int numdim_;
 
     //! @name time stepping variables
-    int     numstasteps_; ///< number of steps for starting algorithm
     bool    startalgo_;   ///< flag for starting algorithm
     //@}
 
@@ -668,39 +678,12 @@ namespace FLD
     double thermpressdtaf_;
     double thermpressdtam_;
 
-    //! @name time step sizes
-    double dtp_;
-    //@}
 
     //! @name time-integration-scheme factors
-    double theta_;
     double omtheta_;
     double alphaM_;
     double alphaF_;
     double gamma_;
-    //@}
-
-    //! use (or not) linearisation of reactive terms on the element
-    INPAR::FLUID::LinearisationAction newton_;
-
-    //! kind of predictor used in nonlinear iteration
-    std::string  predictor_;
-
-    /// form of convective term
-    std::string convform_;
-
-    /// cpu-time measures
-    double  dtele_;
-    double  dtfilter_;
-    double  dtsolve_;
-
-    //! @name norms for convergence check
-    double incvelnorm_L2_;
-    double incprenorm_L2_;
-    double velnorm_L2_;
-    double prenorm_L2_;
-    double vresnorm_;
-    double presnorm_;
     //@}
 
 

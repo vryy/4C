@@ -151,6 +151,14 @@ public:
 
 protected:
 
+  /*!
+  \brief break criterion for pseudo timeloop
+
+  */
+  bool NotFinished()
+  {
+    return step_<stepmax_;
+  }
 
 
 private:

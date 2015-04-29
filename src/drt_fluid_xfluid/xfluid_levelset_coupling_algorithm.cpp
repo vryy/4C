@@ -213,7 +213,6 @@ void XFLUIDLEVELSET::Algorithm::DoFluidField()
   SetScaTraValuesInFluid();
 
   //Solve the Fluid field.
-  FluidField()->PrepareSolve();
   FluidField()->Solve();
 
   return;

@@ -95,7 +95,7 @@ public:
   Teuchos::RCP<const Epetra_Vector> InitialGuess();
 
   /// prepare solution (cut happens here)
-  void PrepareSolve();
+  void PrepareXFEMSolve();
 
   /// Monolithic FSI needs to access the linear fluid problem.
   void Evaluate(

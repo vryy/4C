@@ -101,9 +101,7 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::FluidFluidFSI::DofRowMap()
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidFluidFSI::Solve()
 {
-  // cut and do XFEM time integration
-  xfluidfluid_->PrepareSolve();
-  // solve
+  // cut and do XFEM time integration, solve
   xfluidfluid_->Solve();
 }
 
@@ -121,7 +119,10 @@ void ADAPTER::FluidFluidFSI::Update()
     xfluidfluid_->SetInterfaceFree();
 
     // cut with new interface location and do XFEM time integration
-    xfluidfluid_->PrepareSolve();
+    xfluidfluid_->PrepareXFEMSolve();
+
+    // fix interface position again
+    xfluidfluid_->SetInterfaceFixed();
 
     if (monolithic_approach_ == INPAR::XFEM::XFFSI_FixedALE_Partitioned)
       xfluidfluid_->UpdateMonolithicFluidSolution(FluidFSI::Interface()->FSICondMap());
@@ -135,8 +136,6 @@ void ADAPTER::FluidFluidFSI::Update()
     // create new extended shape derivatives matrix
     PrepareShapeDerivatives();
 
-    // fix interface position again
-    xfluidfluid_->SetInterfaceFixed();
   }
 
   FluidWrapper::Update();

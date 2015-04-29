@@ -111,7 +111,6 @@ void ADAPTER::FluidAleXFEM::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
   // no computation of fluid velocities in case only structure and ALE are to compute
   if (DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO") != fsi_pseudo_structureale)
   {
-    FluidField()->PrepareSolve();
     FluidField()->Solve();
   }
 

@@ -78,9 +78,9 @@ FLD::XFluid::XFluid(
     const Teuchos::RCP<Teuchos::ParameterList>&   params,
     const Teuchos::RCP<IO::DiscretizationWriter>& output,
     bool                                          alefluid /*= false*/)
-  : TimInt(actdis, solver, params, output),
+  : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
     xdiscret_(Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(actdis, true)),
-    alefluid_(alefluid),
+    edgestab_(Teuchos::rcp(new XFEM::XFEM_EdgeStab())),
     turbmodel_(INPAR::FLUID::dynamic_smagorinsky)
 {
   // all discretizations which potentially include mesh-based XFEM coupling/boundary conditions
@@ -98,6 +98,8 @@ FLD::XFluid::XFluid(
 void FLD::XFluid::Init()
 {
 
+  FluidImplicitTimeInt::Init();
+
   // -------------------------------------------------------------------
   // get input params and print Xfluid specific configurations
   // -------------------------------------------------------------------
@@ -108,28 +110,11 @@ void FLD::XFluid::Init()
   // check xfluid input parameter combination for consistency & valid choices
   CheckXFluidParams();
 
-  // output of stabilization details
-  PrintStabilizationParams();
-
-  //--------------------------------------------------------------------------------------
-  // create object for edgebased stabilization
-  edgestab_ =  Teuchos::rcp(new XFEM::XFEM_EdgeStab());
-
-
-  //----------------------------------------------------------------------
-  // create faces extension if necessary
-  //----------------------------------------------------------------------
-
-  // ensure that degrees of freedom in the discretization have been set
-  if ( not discret_->Filled() or not discret_->HaveDofs() )
-    discret_->FillComplete();
-
-  // create internal faces for edgebased fluid stabilization and ghost penalty stabilization
+  // create internal faces, if not already done in base class init
+  if (facediscret_ == Teuchos::null)
   {
-    Teuchos::RCP<DRT::DiscretizationFaces> actdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret_, true);
-    actdis->CreateInternalFacesExtension();
+    CreateFacesExtension();
   }
-
   // -------------------------------------------------------------------
   // create a Condition/Coupling Manager
   // -------------------------------------------------------------------
@@ -147,7 +132,7 @@ void FLD::XFluid::Init()
   // we have to do this before ReadRestart() is called to get the right
   // initial CUT corresponding to time t^n at which the last solution was written
   //
-  // REMARK: ivelnp_ and idispnp_ will be set again for the new time step in PrepareSolve()
+  // REMARK: ivelnp_ and idispnp_ will be set again for the new time step in PrepareXFEMSolve()
 
   const int restart = DRT::Problem::Instance()->Restart();
 
@@ -270,14 +255,7 @@ void FLD::XFluid::SetupFluidDiscretization()
 void FLD::XFluid::SetXFluidParams()
 {
 
-  dtp_          = params_->get<double>("time step size");
-
-  theta_        = params_->get<double>("theta");
   omtheta_      = 1.0 - theta_;
-  numstasteps_  = params_->get<int> ("number of start steps");
-  newton_       = DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(*params_, "Linearisation");
-  predictor_    = params_->get<std::string>("predictor","steady_state_predictor");
-  convform_     = params_->get<string>("form of convective term","convective");
 
   numdim_       = DRT::Problem::Instance()->NDim();
 
@@ -292,10 +270,6 @@ void FLD::XFluid::SetXFluidParams()
 
   // get interface stabilization specific parameters
   coupling_method_    = DRT::INPUT::IntegralValue<INPAR::XFEM::CouplingMethod>(params_xf_stab,"COUPLING_METHOD");
-
-  hybrid_lm_l2_proj_ = DRT::INPUT::IntegralValue<INPAR::XFEM::Hybrid_LM_L2_Proj>(params_xf_stab, "HYBRID_LM_L2_PROJ");
-
-  conv_stab_scaling_     = DRT::INPUT::IntegralValue<INPAR::XFEM::ConvStabScaling>(params_xf_stab,"CONV_STAB_SCALING");
 
   // set flag if any edge-based fluid stabilization has to integrated as std or gp stabilization
   {
@@ -1822,124 +1796,13 @@ void FLD::XFluid::CheckXFluidParams() const
 /*----------------------------------------------------------------------*
  |  Print fluid stabilization parameters                   schott 03/12 |
  *----------------------------------------------------------------------*/
-void FLD::XFluid::PrintStabilizationParams() const
+void FLD::XFluid::PrintStabilizationDetails() const
 {
-  // output of stabilization details
+  FluidImplicitTimeInt::PrintStabilizationDetails();
+  // output of interface stabilization details
   if (myrank_==0)
   {
-    Teuchos::ParameterList *  stabparams                =&(params_->sublist("RESIDUAL-BASED STABILIZATION"));
-    Teuchos::ParameterList *  stabparams_edgebased      =&(params_->sublist("EDGE-BASED STABILIZATION"));
     Teuchos::ParameterList *  interfstabparams          =&(params_->sublist("XFLUID DYNAMIC/STABILIZATION"));
-
-
-    IO::cout << "+------------------------------------------------------------------------------------+" << IO::endl;
-    IO::cout << "                              FLUID-STABILIZATION                      \n " << IO::endl;
-
-    IO::cout << "Stabilization type: " << stabparams->get<string>("STABTYPE") << "\n\n";
-
-    //---------------------------------------------------------------------------------------------
-    // output for residual-based fluid stabilization
-    if(DRT::INPUT::IntegralValue<INPAR::FLUID::StabType>(*stabparams, "STABTYPE") == INPAR::FLUID::stabtype_residualbased)
-    {
-      IO::cout << "RESIDUAL-BASED fluid stabilization " << "\n";
-      IO::cout << "                    " << stabparams->get<string>("TDS")<< "\n";
-      IO::cout << "\n";
-
-      string def_tau = stabparams->get<string>("DEFINITION_TAU");
-
-//      if(    def_tau == "Franca_Barrenechea_Valentin_Frey_Wall"
-//          or def_tau == "Franca_Barrenechea_Valentin_Frey_Wall_wo_dt") dserror("do not use Franca_Barrenechea_Valentin_Frey_Wall stabilization for XFEM -no stable results!");
-
-
-      // instationary case
-      if (timealgo_!=INPAR::FLUID::timeint_stationary)
-      {
-        IO::cout <<  "                    " << "Tau Type        = " << def_tau <<"\n";
-
-        // check for instationary version of tau definitions
-        if(def_tau != "Taylor_Hughes_Zarins" and
-            def_tau != "Taylor_Hughes_Zarins_Whiting_Jansen" and
-            def_tau != "Taylor_Hughes_Zarins_scaled" and
-            def_tau != "Franca_Barrenechea_Valentin_Frey_Wall" and
-            def_tau != "Shakib_Hughes_Codina" and
-            def_tau != "Codina" and
-            def_tau != "Franca_Madureira_Valentin_Badia_Codina" and
-            def_tau != "Smoothed_FBVW")
-        {
-          IO::cout << RED_LIGHT
-              << "Are you sure that you want to use stationary version of stabilization parameters "
-              << "for instationary computations (just reasonable for small time steps dt)"
-              << END_COLOR << IO::endl;
-        }
-      }
-      else // stationary case
-      {
-        if(def_tau != "Taylor_Hughes_Zarins_wo_dt" and
-            def_tau != "Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt" and
-            def_tau != "Taylor_Hughes_Zarins_scaled_wo_dt" and
-            def_tau != "Franca_Barrenechea_Valentin_Frey_Wall_wo_dt" and
-            def_tau != "Shakib_Hughes_Codina_wo_dt" and
-            def_tau != "Codina_wo_dt" and
-            def_tau != "Franca_Madureira_Valentin_Badia_Codina_wo_dt" and
-            def_tau != "Hughes_Franca_Balestra_wo_dt")
-        {
-          dserror("not a valid tau definition (DEFINITION_TAU) for stationary problems");
-        }
-      }
-      IO::cout << "\n";
-
-      if(stabparams->get<string>("TDS") == "quasistatic")
-      {
-        if(stabparams->get<string>("TRANSIENT")=="yes_transient")
-        {
-          dserror("The quasistatic version of the residual-based stabilization currently does not support the incorporation of the transient term.");
-        }
-      }
-      IO::cout <<  "                    " << "TRANSIENT       = " << stabparams->get<std::string>("TRANSIENT")      <<"\n";
-      IO::cout <<  "                    " << "SUPG            = " << stabparams->get<std::string>("SUPG")           <<"\n";
-      IO::cout <<  "                    " << "PSPG            = " << stabparams->get<std::string>("PSPG")           <<"\n";
-      IO::cout <<  "                    " << "VSTAB           = " << stabparams->get<std::string>("VSTAB")          <<"\n";
-      IO::cout <<  "                    " << "GRAD_DIV        = " << stabparams->get<std::string>("GRAD_DIV")       <<"\n";
-      IO::cout <<  "                    " << "CROSS-STRESS    = " << stabparams->get<std::string>("CROSS-STRESS")   <<"\n";
-      IO::cout <<  "                    " << "REYNOLDS-STRESS = " << stabparams->get<std::string>("REYNOLDS-STRESS")<<"\n";
-      IO::cout << "+------------------------------------------------------------------------------------+\n" << IO::endl;
-
-      if(stabparams->get<string>("VSTAB")           != "no_vstab")    dserror("check VSTAB for XFEM");
-      if(stabparams->get<string>("CROSS-STRESS")    != "no_cross")    dserror("check CROSS-STRESS for XFEM");
-      if(stabparams->get<string>("REYNOLDS-STRESS") != "no_reynolds") dserror("check REYNOLDS-STRESS for XFEM");
-
-    }
-    else if(DRT::INPUT::IntegralValue<INPAR::FLUID::StabType>(*stabparams, "STABTYPE") == INPAR::FLUID::stabtype_edgebased)
-    {
-      // safety check for combinations of edge-based and residual-based stabilizations
-      if((DRT::INPUT::IntegralValue<int>(*stabparams,"PSPG") != false)     or
-         (DRT::INPUT::IntegralValue<int>(*stabparams,"SUPG") != false)     or
-         (DRT::INPUT::IntegralValue<int>(*stabparams,"GRAD_DIV") != false)    or
-         (stabparams->get<string>("VSTAB")          != "no_vstab")    or
-         (stabparams->get<string>("CROSS-STRESS")   != "no_cross")    or
-         (stabparams->get<string>("REYNOLDS-STRESS")!= "no_reynolds"))
-         {
-           dserror("if you want to combine residual-based stabilizations with edgebased-ghost-penalty stabilizations, please choose STABTYPE = residualbased");
-         }
-    }
-
-    // check for non-valid combinations of residual-based and edge-based fluid stabilizations in the XFEM
-    if( (DRT::INPUT::IntegralValue<int>(*stabparams,"PSPG") != false) and (stabparams_edgebased->get<std::string>("EOS_PRES") == "std_eos") )
-      dserror("combine PSPG only with ghost-penalty variant of EOS_PRES ! ");
-    if( (DRT::INPUT::IntegralValue<int>(*stabparams,"SUPG") != false) and (stabparams_edgebased->get<std::string>("EOS_CONV_STREAM") == "std_eos") )
-      dserror("combine SUPG only with ghost-penalty variant of EOS_CONV_STREAM ! ");
-    if( (DRT::INPUT::IntegralValue<int>(*stabparams,"SUPG") != false) and (stabparams_edgebased->get<std::string>("EOS_CONV_CROSS") == "std_eos") )
-      dserror("combine SUPG only with ghost-penalty variant of EOS_CONV_CROSS ! ");
-
-    //---------------------------------------------------------------------------------------------
-    IO::cout << "\n\nEDGE-BASED (EOS) fluid stabilizations " << "\n";
-    IO::cout <<  "                    " << "EOS_PRES             = " << stabparams_edgebased->get<std::string>("EOS_PRES")      <<"\n";
-    IO::cout <<  "                    " << "EOS_CONV_STREAM      = " << stabparams_edgebased->get<std::string>("EOS_CONV_STREAM")      <<"\n";
-    IO::cout <<  "                    " << "EOS_CONV_CROSS       = " << stabparams_edgebased->get<std::string>("EOS_CONV_CROSS")      <<"\n";
-    IO::cout <<  "                    " << "EOS_DIV              = " << stabparams_edgebased->get<std::string>("EOS_DIV")      <<"\n";
-    IO::cout <<  "                    " << "EOS_DEFINITION_TAU   = " << stabparams_edgebased->get<std::string>("EOS_DEFINITION_TAU")      <<"\n";
-    IO::cout <<  "                    " << "EOS_H_DEFINITION     = " << stabparams_edgebased->get<std::string>("EOS_H_DEFINITION")      <<"\n";
-    IO::cout << "+------------------------------------------------------------------------------------+\n" << IO::endl;
 
     //---------------------------------------------------------------------------------------------
 
@@ -2040,45 +1903,7 @@ void FLD::XFluid::TimeLoop()
 {
   if(myrank_ == 0) printf("START TIMELOOP (FLD::XFluid::TimeLoop) -- MAXTIME = %11.4E -- STEPMAX %4d\n\n",maxtime_,stepmax_);
 
-  while (NotFinished())
-  {
-    // -----------------------------------------------------------------
-    //                    prepare the timestep
-    // -----------------------------------------------------------------
-    PrepareTimeStep();
-
-
-    // -----------------------------------------------------------------
-    //        prepare nonlinear solve (used for Solve())
-    // -----------------------------------------------------------------
-    PrepareSolve();
-
-
-    // -----------------------------------------------------------------
-    //                     solve nonlinear equation
-    // -----------------------------------------------------------------
-    Solve();
-
-    // -------------------------------------------------------------------
-    //                         update solution
-    //        current solution becomes old solution of next timestep
-    // -------------------------------------------------------------------
-    TimeUpdate();
-
-
-    // -------------------------------------------------------------------
-    //  lift'n'drag forces, statistics time sample and output of solution
-    //  and statistics
-    // -------------------------------------------------------------------
-    StatisticsAndOutput();
-
-
-    // -------------------------------------------------------------------
-    //                       update time step sizes
-    // -------------------------------------------------------------------
-    dtp_ = dta_;
-
-  }
+  FluidImplicitTimeInt::TimeLoop();
 
   // print the results of time measurements
   Teuchos::TimeMonitor::summarize();
@@ -2200,9 +2025,9 @@ void FLD::XFluid::DoPredictor()
 /*----------------------------------------------------------------------*
  |  prepare the nonlinear solver                           schott 03/12 |
  *----------------------------------------------------------------------*/
-void FLD::XFluid::PrepareSolve()
+void FLD::XFluid::PrepareXFEMSolve()
 {
-  // TODO: do we need to call PrepareSolve for each Newton increment when solving a monolithic system
+  // TODO: do we need to call PrepareXFEMSolve for each Newton increment when solving a monolithic system
   // can we shift this to PrepareTimeStep()?
   // -------------------------------------------------------------------
   // set new interface positions and possible values for XFEM Weak Dirichlet and Neumann BCs
@@ -2236,6 +2061,8 @@ void FLD::XFluid::PrepareSolve()
  *----------------------------------------------------------------------*/
 void FLD::XFluid::Solve()
 {
+  PrepareXFEMSolve();
+
   // ---------------------------------------------- nonlinear iteration
   // ------------------------------- stop nonlinear iteration when both
   //                                 increment-norms are below this bound
@@ -2256,11 +2083,6 @@ void FLD::XFluid::Solve()
 
   if(myrank_ == 0)
     printf("----------------------XFLUID-------  time step %2d ----------------------------------------\n", step_);
-
-  // -------------------------------------------------------------------
-  //                       output to screen
-  // -------------------------------------------------------------------
-  PrintTimeStepInfo();
 
   if (myrank_ == 0)
   {
@@ -2846,9 +2668,9 @@ void FLD::XFluid::Evaluate(
     // * the stepinc should contain the Dirichlet values, however, when using an iterative solver the Dirichlet values
     //   of Newton increment might just be approximately zero. In order to strictly set the Dirichlet values to zero
     //   we set them here again.
-    // * for each call of PrepareSolve (see below) the velnp-vector obtains accurate Dirichlet values
+    // * for each call of PrepareXFEMSolve (see below) the velnp-vector obtains accurate Dirichlet values
     // * therefore we directly can copy the Dirichlet values from the last iteration
-    // * further, in the next PrepareSolve()-call, after performing time-integration,
+    // * further, in the next PrepareXFEMSolve()-call, after performing time-integration,
     //   the DBCs are set again in velnp
 
     Teuchos::RCP<Epetra_Vector> velnp_tmp = LINALG::CreateVector(*discret_->DofRowMap(),true);
@@ -2866,7 +2688,7 @@ void FLD::XFluid::Evaluate(
   {
     // for the first call in a new time-step the initialization of velnp_ is not allowed as
     // velnp_ includes a predicted solution (set in PrepareTimeStep).
-    // This predicted solution does not include the DBCs yet, however, in the following PrepareSolve()-call
+    // This predicted solution does not include the DBCs yet, however, in the following PrepareXFEMSolve()-call
     // veln_ and the predicted solution velnp_ will be mapped to the new interface position and afterwards
     // DBCs will be set in velnp_.
   }
@@ -2886,7 +2708,7 @@ void FLD::XFluid::Evaluate(
   // - apply Dirichlet and Neumann boundary conditions
   //--------------------------------------------------------------------------------------------
 
-  PrepareSolve();
+  PrepareXFEMSolve();
 
 
   //--------------------------------------------------------------------------------------------
