@@ -24,7 +24,7 @@ NUMSTEP                         1
 OBJECTIVE_DISSIPATION           Yes
 DISSIPATION_FAC                 7.0
 OBJECTIVE_PRESSURE_DROP         No
-OUTPUT_EVERY_ITER               No
+NUM_OUTPUT_STEPS                1
 PRESSURE_DROP_FAC               1.0
 RESTARTEVRY                     100000
 RESTART_ACTION                  Fluid_Time_Step

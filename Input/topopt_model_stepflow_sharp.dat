@@ -31,7 +31,7 @@ MAXTIME                         1.0
 NUMSTEP                         1
 OBJECTIVE_DISSIPATION           Yes
 OBJECTIVE_PRESSURE_DROP         No
-OUTPUT_EVERY_ITER               Yes
+NUM_OUTPUT_STEPS                0
 PRESSURE_DROP_FAC               1.0
 RESTARTEVRY                     1
 RESTOL                          1e-6
