@@ -659,7 +659,6 @@ set(OBJS_DRT_XFEM
   src/drt_xfem/xfem_mesh_projector.cpp
   src/drt_xfem/xfem_neumann.cpp
   src/drt_xfem/xfem_utils.cpp
-  src/drt_xfem/xfluidfluid_timeInt.cpp
   src/drt_xfem/xfluid_timeInt_base.cpp
   src/drt_xfem/xfluid_timeInt_std_SemiLagrange.cpp
   src/drt_xfem/xfluid_timeInt.cpp
