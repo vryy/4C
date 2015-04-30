@@ -6242,7 +6242,7 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::CalcDivOp()
  *------------------------------------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::Reset(
     bool completeReset,
-    bool newFiles,
+    int numsteps,
     int iter)
 {
 
@@ -6251,13 +6251,20 @@ void FLD::FluidImplicitTimeInt::Reset(
     time_ = 0.0;
     step_ = 0;
 
-    if (newFiles)
+    if (numsteps==1) // just save last solution
+      output_->OverwriteResultFile();
+    else if (numsteps==0) // save all steps
     {
       if (iter<0) dserror("iteration number <0");
-      output_->NewResultFile((iter));
+      output_->NewResultFile(iter);
+    }
+    else if (numsteps>1) // save numstep steps
+    {
+      if (iter<0) dserror("iteration number <0");
+      output_->NewResultFile(iter%numsteps);
     }
     else
-      output_->OverwriteResultFile();
+      dserror("cannot save output for a negative number of steps");
 
     output_->WriteMesh(0,0.0);
   }

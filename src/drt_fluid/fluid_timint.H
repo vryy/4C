@@ -333,7 +333,7 @@ public:
   /// reset data for restart of simulation at beginning
   virtual void Reset(
       bool completeReset = false,
-      bool newFiles = false,
+      int numsteps = 1,
       int iter = -1)
   {
     dserror("reset function not implemented for this fluid adapter");

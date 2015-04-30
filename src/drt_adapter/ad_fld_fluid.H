@@ -259,7 +259,7 @@ namespace ADAPTER {
     /// reset state vectors (needed for biofilm simulations)
     virtual void Reset(
         bool completeReset = false,
-        bool newFiles = false,
+        int numsteps = 1,
         int iter = -1) = 0;
 
     /// set fluid displacement vector due to biofilm growth

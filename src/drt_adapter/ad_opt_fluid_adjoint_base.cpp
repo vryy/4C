@@ -107,7 +107,7 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
 
   Teuchos::RCP<IO::DiscretizationWriter> output = Teuchos::rcp(new IO::DiscretizationWriter(actdis));
   output->SetOutput(adjointoutput);
-  if (DRT::INPUT::IntegralValue<bool>(prbdyn,"OUTPUT_EVERY_ITER"))
+  if (prbdyn.get<int>("NUM_OUTPUT_STEPS") != 1) // more than one output step
   {
     output->NewResultFile(1);
 

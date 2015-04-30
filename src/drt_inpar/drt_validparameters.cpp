@@ -6420,7 +6420,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   BoolParameter("OBJECTIVE_PRESSURE_DROP","No","pressure drop part of the objective function",&topoptcontrol);
   DoubleParameter("PRESSURE_DROP_FAC",-1.0,"factor for the mean pressure drop part of the objective",&topoptcontrol);
 
-  BoolParameter("OUTPUT_EVERY_ITER","No","write output of every iteration",&topoptcontrol);
+  IntParameter("NUM_OUTPUT_STEPS",1,"number of output steps saved, 0 = all",&topoptcontrol);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& topoptoptimizer = topoptcontrol.sublist("TOPOLOGY OPTIMIZER",false,

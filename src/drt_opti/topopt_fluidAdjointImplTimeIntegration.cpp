@@ -39,7 +39,7 @@ TOPOPT::ADJOINT::ImplicitTimeInt::ImplicitTimeInt(
     Teuchos::RCP<LINALG::Solver>           solver,
     Teuchos::RCP<Teuchos::ParameterList>   params,
     Teuchos::RCP<IO::DiscretizationWriter> output)
-  : FluidAdjointTimeInt(actdis,solver,params,output)
+: FluidAdjointTimeInt(actdis,solver,params,output)
 {
   // time measurement: initialization
   TEUCHOS_FUNC_TIME_MONITOR(" + adjoint initialization");
@@ -93,7 +93,7 @@ TOPOPT::ADJOINT::ImplicitTimeInt::ImplicitTimeInt(
   {
     dserror("understand this before using it :)");
     Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy> > blocksysmat =
-      Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy>(*velpressplitter_,*velpressplitter_,108,false,true));
+        Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy>(*velpressplitter_,*velpressplitter_,108,false,true));
     blocksysmat->SetNumdim(numdim_);
     sysmat_ = blocksysmat;
   }
@@ -127,7 +127,7 @@ TOPOPT::ADJOINT::ImplicitTimeInt::ImplicitTimeInt(
     // other parameters needed by the elements
     eleparams.set("total time",time_);
     discret_->EvaluateDirichlet(eleparams, zeros_, Teuchos::null, Teuchos::null,
-                                Teuchos::null, dbcmaps_);
+        Teuchos::null, dbcmaps_);
 
     // the dirichlet values of the standard fluid are contained in zeros_
     // -> clear them since they are unused
@@ -193,19 +193,19 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::TimeLoop()
       {
       case INPAR::FLUID::timeint_one_step_theta:
         printf("TIME: %11.4E/%11.4E  DT = %11.4E   One-Step-Theta (%0.2f)   STEP = %4d/%4d \n",
-              time_,maxtime_,dt_,theta_,step_,stepmax_);
+            time_,maxtime_,dt_,theta_,step_,stepmax_);
         break;
       case INPAR::FLUID::timeint_afgenalpha:
         printf("TIME: %11.4E/%11.4E  DT = %11.4E  Af-Generalized-Alpha  STEP = %4d/%4d \n",
-               time_,maxtime_,dt_,step_,stepmax_);
+            time_,maxtime_,dt_,step_,stepmax_);
         break;
       case INPAR::FLUID::timeint_npgenalpha:
         printf("TIME: %11.4E/%11.4E  DT = %11.4E  Np-Generalized-Alpha  STEP = %4d/%4d \n",
-               time_,maxtime_,dt_,step_,stepmax_);
+            time_,maxtime_,dt_,step_,stepmax_);
         break;
       case INPAR::FLUID::timeint_bdf2:
         printf("TIME: %11.4E/%11.4E  DT = %11.4E       BDF2          STEP = %4d/%4d \n",
-               time_,maxtime_,dt_,step_,stepmax_);
+            time_,maxtime_,dt_,step_,stepmax_);
         break;
       default:
       {
@@ -397,10 +397,10 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::NonLinearSolve()
   // REMARK:
   // commented reduced number of iterations out as it seems that more iterations
   // are necessary before sampling to obtain a converged result
-//  // currently default for turbulent channel flow: only one iteration before sampling
-//  if (special_flow_ == "channel_flow_of_height_2" && step_<samstart_ )
-//       itemax  = 2;
-//  else
+  //  // currently default for turbulent channel flow: only one iteration before sampling
+  //  if (special_flow_ == "channel_flow_of_height_2" && step_<samstart_ )
+  //       itemax  = 2;
+  //  else
   itemax  = params_->get<int>   ("max nonlin iter steps");
 
   dtsolve_  = 0.0;
@@ -632,7 +632,7 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::NonLinearSolve()
           residual_,
           true,
           itnum==1
-        );
+      );
 
       solver_->ResetTolerance();
 
@@ -653,8 +653,8 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::NonLinearSolve()
       optimizer_->ImportAdjointFluidData(velnp_,stepmax_+1-step_);
     else
       optimizer_->ImportAdjointFluidData(velnp_,stepmax_-step_);
-      // we have to switch the step here since we start with step 0 at end-time,
-      // but the step of adjoint fluid and fluid equations shall fit
+    // we have to switch the step here since we start with step 0 at end-time,
+    // but the step of adjoint fluid and fluid equations shall fit
   }
 } // ImplicitTimeInt::NonLinearSolve
 
@@ -764,7 +764,7 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::OutputToGmsh(
 
   gmshfilecontent.close();
 
- return;
+  return;
 }
 
 
@@ -792,9 +792,9 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::ReadRestart(int step)
  |  set initial flow field for test cases              winklmaier 03/12 |
  *----------------------------------------------------------------------*/
 void TOPOPT::ADJOINT::ImplicitTimeInt::SetInitialAdjointField(
-  const INPAR::TOPOPT::InitialAdjointField initfield,
-  const int startfuncno
-  )
+    const INPAR::TOPOPT::InitialAdjointField initfield,
+    const int startfuncno
+)
 {
   // initial zero field (the default)
   switch (initfield)
@@ -826,8 +826,8 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::SetInitialAdjointField(
     // if we have no test case we set the new solution equal to the old although we have a linear system
     // -> smaller numerical errors around 10^-12
     // for test cases we start with zero field so that more terms are active and tested
-//    if (params_->get<INPAR::TOPOPT::AdjointTestCases>("special test case") == INPAR::TOPOPT::adjointtest_no)
-      *velnp_ = *veln_;
+    //    if (params_->get<INPAR::TOPOPT::AdjointTestCases>("special test case") == INPAR::TOPOPT::adjointtest_no)
+    *velnp_ = *veln_;
 
     break;
   }
@@ -885,7 +885,7 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::EvaluateDirichlet()
       std::vector<int> gdofs = discret_->Dof(node);
       velnp_->ReplaceGlobalValues(nsd,(double*)values,&gdofs[0]); // &dofs[0] gives pointer to dofs
     }
-}
+  }
   else // special cases
   {
     INPAR::TOPOPT::AdjointCase testcase = params_->get<INPAR::TOPOPT::AdjointCase>("special test case");
@@ -1158,7 +1158,7 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::SetElementTimeParameter() const
 // reset variables for new simulation (complete reset containing time and step)
 // ----------------------------------------------------------------------------
 void TOPOPT::ADJOINT::ImplicitTimeInt::Reset(
-    bool newFiles,
+    int numsteps,
     int iter
 )
 {
@@ -1191,13 +1191,20 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::Reset(
     }
   }
 
-  if (newFiles)
+  if (numsteps==1) // just save last solution
+    output_->OverwriteResultFile();
+  else if (numsteps==0) // save all steps
   {
     if (iter<0) dserror("iteration number <0");
     output_->NewResultFile(iter);
   }
+  else if (numsteps>0) // save numstep steps
+  {
+    if (iter<0) dserror("iteration number <0");
+    output_->NewResultFile(iter%numsteps);
+  }
   else
-    output_->OverwriteResultFile();
+    dserror("cannot save output for a negative number of steps");
 
   output_->WriteMesh(0,0.0);
 

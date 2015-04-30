@@ -289,8 +289,8 @@ public:
   { return fluid_->UseBlockMatrix(splitmatrix); }
   virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest()
         { return fluid_->CreateFieldTest(); }
-  virtual void Reset(bool completeReset = false, bool newFiles = false, int iter = -1)
-  { return fluid_->Reset(completeReset, newFiles, iter); };
+  virtual void Reset(bool completeReset = false, int numsteps = 1, int iter = -1)
+  { return fluid_->Reset(completeReset, numsteps, iter); };
   virtual void SetFldGrDisp(Teuchos::RCP<Epetra_Vector> fluid_growth_disp)
   { return fluid_->SetFldGrDisp(fluid_growth_disp); }
 

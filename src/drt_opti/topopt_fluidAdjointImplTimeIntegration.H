@@ -169,10 +169,10 @@ public:
   Teuchos::RCP<const Epetra_Map> PressureRowMap() const;
 
   double ResidualScaling() const;
-  
+
   Teuchos::RCP<DRT::ResultTest> CreateFieldTest() const;
 
-  void Reset(bool newFiles=false,int iter=-1);
+  void Reset(int numsteps=1,int iter=-1);
 
 
 protected:

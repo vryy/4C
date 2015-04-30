@@ -286,7 +286,7 @@ void TOPOPT::Algorithm::FDGradient(const int numFDPoints)
       // data of primal (fluid) problem no more required
       FluidField()->Reset(
           true,
-          DRT::INPUT::IntegralValue<bool>(AlgoParameters(),"OUTPUT_EVERY_ITER"),
+          AlgoParameters().get<int>("NUM_OUTPUT_STEPS"),
           Optimizer()->Iter()+2);
 
       // prepare data for new optimization iteration
@@ -317,7 +317,7 @@ void TOPOPT::Algorithm::PrepareOptimizationStep()
   // data of primal (fluid) problem no more required
   FluidField()->Reset(
       true,
-      DRT::INPUT::IntegralValue<bool>(AlgoParameters(),"OUTPUT_EVERY_ITER"),
+      AlgoParameters().get<int>("NUM_OUTPUT_STEPS"),
       Optimizer()->Iter()+2);
 
   // hack to get new optimization parameters in fluid without new routines...
@@ -351,7 +351,7 @@ void TOPOPT::Algorithm::FinishOptimizationStep()
   // data of dual (adjoint) problem no more required
   if (doGradient_)
     AdjointFluidField()->Reset(
-        DRT::INPUT::IntegralValue<bool>(AlgoParameters(),"OUTPUT_EVERY_ITER"),
+        AlgoParameters().get<int>("NUM_OUTPUT_STEPS"),
         Optimizer()->Iter()+1);
 
   return;

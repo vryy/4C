@@ -146,7 +146,7 @@ namespace ADJOINT
     virtual void Output() const = 0;
     //@}
 
-    virtual void Reset(bool newFiles=false,int iter=-1) = 0;
+    virtual void Reset(int numsteps=1,int iter=-1) = 0;
 
   protected:
 

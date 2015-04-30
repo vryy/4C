@@ -157,7 +157,7 @@ namespace ADAPTER {
     /// reset state vectors
     virtual void Reset(
         bool completeReset = false,
-        bool newFiles = false,
+        int numsteps = 1,
         int iter = -1);
 
     /// calculate error in comparison to analytical solution

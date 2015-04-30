@@ -449,10 +449,10 @@ FLD::TimIntHDG::EvaluateErrorComparedToAnalyticalSol()
  *------------------------------------------------------------------------------------------------*/
 void FLD::TimIntHDG::Reset(
     bool completeReset,
-    bool newFiles,
+    int numsteps,
     int iter)
 {
-  FluidImplicitTimeInt::Reset(completeReset, newFiles, iter);
+  FluidImplicitTimeInt::Reset(completeReset, numsteps, iter);
   const Epetra_Map* intdofrowmap = discret_->DofRowMap(1);
   intvelnp_  = LINALG::CreateVector(*intdofrowmap,true);
   intvelaf_  = LINALG::CreateVector(*intdofrowmap,true);

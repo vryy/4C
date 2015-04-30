@@ -481,10 +481,10 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::FluidFSI::Reset(bool completeReset, bool newFiles, int iter)
+void ADAPTER::FluidFSI::Reset(bool completeReset, int numsteps, int iter)
 
 {
-  FluidWrapper::Reset(completeReset, newFiles, iter);
+  FluidWrapper::Reset(completeReset, numsteps, iter);
   return;
 }
 
