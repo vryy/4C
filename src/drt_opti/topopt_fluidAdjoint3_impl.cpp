@@ -197,6 +197,8 @@ int DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Evaluate(DRT::ELEMENTS::Fluid*   
                                                  const DRT::UTILS::GaussIntegration & intpoints
 )
 {
+  ele_ = ele;
+
   // construct views
   LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_> elemat(elesysmat,true);
   LINALG::Matrix<(nsd_+1)*nen_,            1> elevec(elerhs,true);
@@ -250,6 +252,11 @@ int DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Evaluate(DRT::ELEMENTS::Fluid*   
   else
     dserror("not implemented type of density function");
 
+  LINALG::Matrix<nsd_,nen_> efluidbodyforcenp(true);
+  LINALG::Matrix<nsd_,nen_> efluidbodyforcenpp(true);
+  FluidBodyForce(fldAdPara_->Time(),efluidbodyforcenp);
+  FluidBodyForce(fldAdPara_->Time()-fldAdPara_->Dt(),efluidbodyforcenpp);
+
   // get node coordinates and number of elements per node
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
 
@@ -261,8 +268,6 @@ int DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Evaluate(DRT::ELEMENTS::Fluid*   
   // less accurate) computations
   if (fldAdPara_->IsInconsistent() == true) is_higher_order_ele_ = false;
   // TODO deactivate this maybe?!
-
-  ele_ = ele;
 
   // ---------------------------------------------------------------------
   // call routine for calculating element matrix and right hand side
@@ -277,6 +282,8 @@ int DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Evaluate(DRT::ELEMENTS::Fluid*   
          efluidpren,
          efluidprenp,
          efluidprenpp,
+         efluidbodyforcenp,
+         efluidbodyforcenpp,
          elemat,
          elevec,
          edens,
@@ -302,6 +309,8 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Sysmat(
   const LINALG::Matrix<nen_,1>&                 efluidpren,
   const LINALG::Matrix<nen_,1>&                 efluidprenp,
   const LINALG::Matrix<nen_,1>&                 efluidprenpp,
+  const LINALG::Matrix<nsd_,nen_> &             efluidbodyforcenp,
+  const LINALG::Matrix<nsd_,nen_> &             efluidbodyforcenpp,
   LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&  estif,
   LINALG::Matrix<(nsd_+1)*nen_,1>&              eforce,
   const LINALG::Matrix<nen_,1> &                edens,
@@ -488,7 +497,8 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::Sysmat(
     }
 
     // calculate fluid bodyforce on gausspoint
-    FluidBodyForce();
+    fluidbodyforce_.Multiply(efluidbodyforcenp,funct_);
+    fluidbodyforce_new_.Multiply(efluidbodyforcenpp,funct_);
 
     // calculate stabilization parameter at integration point
     if (fldAdPara_->EvalTauAtGP())
@@ -1520,7 +1530,6 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::BodyForce(
   if (fldAdPara_->TestCase() == INPAR::TOPOPT::adjointtest_no)
   {
     const double dissipation = fldAdPara_->ObjDissipationFac(); // zero if no dissipation part in obj-fcn
-
     /* ------------------------------------------------------------------------ *
      * 1) evaluate bodyforce at new time step                                   *
      * ------------------------------------------------------------------------ */
@@ -1653,11 +1662,13 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::BodyForce(
 
 
 
-/*---------------------------------------------------------------------------------*
- | compute bodyforce of momentum equation                         winklmaier 03/12 |
- *---------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------*
+ |  compute fluid body force at element nodes (public)         winklmaier 04/15 |
+ *------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::FluidBodyForce()
+void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::FluidBodyForce(
+    const double                       time,
+    LINALG::Matrix<nsd_,nen_> &        efluidbodyforce)
 {
   std::vector<DRT::Condition*> myneumcond;
 
@@ -1676,83 +1687,62 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::FluidBodyForce()
   {
     const std::string* condtype = myneumcond[0]->Get<std::string>("type");
 
-    // check for potential time curve
-    const std::vector<int>* curve  = myneumcond[0]->Get<std::vector<int> >("curve");
-    int curvenum = -1;
-    if (curve) curvenum = (*curve)[0];
-
-    // initialization of time-curve factor
-    double curvefac = 0.0;
-    double curvefac_new = 0.0;
-
-    if (fldAdPara_->Time() < -1.0e-14)
-        dserror("Negative time in bodyforce calculation: time = %f", fldAdPara_->Time());
-
-    // if time numerically zero, but negative, use positive value to avoid problems with e.g. logarithm
-    const double time = abs(fldAdPara_->Time());
-    const double time_new = abs(fldAdPara_->Time()-fldAdPara_->Dt());
-
-    // compute potential time curve or set time-curve factor to one
-    if (curvenum >= 0)
-    {
-        curvefac = DRT::Problem::Instance()->Curve(curvenum).f(abs(time));
-        curvefac_new = DRT::Problem::Instance()->Curve(curvenum).f(abs(time_new));
-    }
-    else
-    {
-      curvefac = 1.0;
-      curvefac_new = 1.0;
-    }
-
     // get values and switches from the condition
-    const std::vector<int>*    onoff = myneumcond[0]->Get<std::vector<int> >   ("onoff");
-    const std::vector<double>* val   = myneumcond[0]->Get<std::vector<double> >("val"  );
-    const std::vector<int>*    functions = myneumcond[0]->Get<std::vector<int> >("funct");
+    const std::vector<int>*    onoff     = myneumcond[0]->Get<std::vector<int> >   ("onoff");
+    const std::vector<double>* val       = myneumcond[0]->Get<std::vector<double> >("val"  );
+    const std::vector<int>*    functions = myneumcond[0]->Get<std::vector<int> >   ("funct");
+    const std::vector<int>*    curve     = myneumcond[0]->Get<std::vector<int> >   ("curve");
 
     // factor given by spatial function
     double functionfac = 1.0;
-    double functionfac_new = 1.0;
-
     int functnum = -1;
 
-    LINALG::Matrix<nsd_,1> coords(true);
-    coords.Multiply(xyze_,funct_);
+    // factor given by temporal curve
+    double curvefac = 0.0;
+    int curvenum = -1;
 
+    // set this condition to the ebofoaf array
     for (int isd=0;isd<nsd_;isd++)
     {
       // get factor given by spatial function
       if (functions) functnum = (*functions)[isd];
       else functnum = -1;
 
+      if (curve) curvenum = (*curve)[isd];
+      else curvenum = -1;
+      // compute potential time curve or set time-curve factor to one
+      if (curvenum >= 0)
+      {
+        // time factor (negative time indicating error)
+        if (abs(time) >= 1.0e-14)
+             curvefac = DRT::Problem::Instance()->Curve(curvenum).f(abs(time));
+        else
+          dserror("Negative time in bodyforce calculation: time = %f", time);
+      }
+      else curvefac = 1.0;
+
       double num = (*onoff)[isd]*(*val)[isd]*curvefac;
-      double num_new = (*onoff)[isd]*(*val)[isd]*curvefac_new;
 
       for ( int jnode=0; jnode<nen_; ++jnode )
       {
         if (functnum>0)
         {
           // evaluate function at the position of the current node
+          // ------------------------------------------------------
+          // comment: this introduces an additional error compared to an
+          // evaluation at the integration point. However, we need a node
+          // based element bodyforce vector for prescribed pressure gradients
+          // in some fancy turbulance stuff.
           functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(isd,
-                                                                             coords.A(),
+                                                                             (ele_->Nodes()[jnode])->X(),
                                                                              time,
                                                                              NULL);
-          functionfac_new = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(isd,
-                                                                             coords.A(),
-                                                                             time_new,
-                                                                             NULL);
         }
-        else
-        {
-          functionfac = 1.0;
-          functionfac_new = 1.0;
-        }
+        else functionfac = 1.0;
 
         // get usual body force
         if (*condtype == "neum_dead" or *condtype == "neum_live")
-        {
-          fluidbodyforce_(isd) = num*functionfac;
-          fluidbodyforce_new_(isd) = num_new*functionfac_new;
-        }
+          efluidbodyforce(isd,jnode) = num*functionfac;
         // get prescribed pressure gradient
         else if (*condtype == "neum_pgrad")
           dserror("not implemented for adjoints in several parts of the code");

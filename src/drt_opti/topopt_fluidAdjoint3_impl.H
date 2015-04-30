@@ -148,6 +148,8 @@ public:
       const LINALG::Matrix<nen_,1>&                  efluidpren,
       const LINALG::Matrix<nen_,1>&                  efluidprenp,
       const LINALG::Matrix<nen_,1>&                  efluidprenpp,
+      const LINALG::Matrix<nsd_,nen_> &              efluidbodyforcenp,
+      const LINALG::Matrix<nsd_,nen_> &              efluidbodyforcenpp,
       LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&   estif,
       LINALG::Matrix<(nsd_+1)*nen_,    1>&           eforce,
       const LINALG::Matrix<nen_,1> &                 edens,
@@ -197,7 +199,10 @@ private:
   );
 
   /// calculate body force from nodal conditions
-  void FluidBodyForce();
+  void FluidBodyForce(
+      const double                       time,
+      LINALG::Matrix<nsd_,nen_> &        efluidbodyforce
+  );
 
   /// compute force term of continuity equation
   void ContForce();
