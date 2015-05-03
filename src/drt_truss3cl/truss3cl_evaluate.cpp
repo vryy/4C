@@ -273,32 +273,40 @@ template<int fnnode, int ndim, int dof> //number of nodes, number of dimensions 
 int DRT::ELEMENTS::Truss3CL::EvaluatePTC(Teuchos::ParameterList&   params,
                                        Epetra_SerialDenseMatrix& elemat1)
 {
-  dserror("This method is yet to be configured for bio-polymer networks!");
   //factor to regulate artificial ptc stiffness;
-  double ptcfactor = 0.5;
+//  double ptcfactor = 0.5;
 
   //rotational ptc damping
 
   //get friction model according to which forces and damping are applied
-  INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
+//  INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
 
   //damping coefficients for translational and rotational degrees of freedom
-  LINALG::Matrix<3,1> gamma(true);
-  MyDampingConstants(params,gamma,frictionmodel);
+//  LINALG::Matrix<3,1> gamma(true);
+//  MyDampingConstants(params,gamma,frictionmodel);
 
-  double artgam = gamma(1)*ptcfactor;
+//  double artgam = gamma(1)*ptcfactor;
 
-  //diagonal elements
-  for(int i=0; i<6; i++)
-    elemat1(i,i) += artgam;
+  for(int i=0; i<elemat1.RowDim(); i++)
+    for(int j=0; j<elemat1.ColDim(); j++)
+    {
+      if (i==j)
+        elemat1(i,j) += params.get<double>("crotptc",0.0)*0.5*lrefe_/2;
+//      else
+//      //        elemat1(i,j) -= params.get<double>("crotptc",0.0)*0.25*jacobi_;
+     }
 
-  //off-diagonal elements
-  elemat1(0,3) -= artgam;
-  elemat1(1,4) -= artgam;
-  elemat1(2,5) -= artgam;
-  elemat1(3,0) -= artgam;
-  elemat1(4,1) -= artgam;
-  elemat1(5,2) -= artgam;
+//  //diagonal elements
+//  for(int i=0; i<6; i++)
+//    elemat1(i,i) += artgam;
+//
+//  //off-diagonal elements
+//  elemat1(0,3) -= artgam;
+//  elemat1(1,4) -= artgam;
+//  elemat1(2,5) -= artgam;
+//  elemat1(3,0) -= artgam;
+//  elemat1(4,1) -= artgam;
+//  elemat1(5,2) -= artgam;
 
   //diagonal ptc
   /*
@@ -306,8 +314,6 @@ int DRT::ELEMENTS::Truss3CL::EvaluatePTC(Teuchos::ParameterList&   params,
   for(int k=0; k<6; k++)
     elemat1(k,k) += params.get<double>("dti",0.0)*ptcfactor;
   */
-
-
 
   return 0;
 } //DRT::ELEMENTS::Truss3CL::EvaluatePTC
@@ -369,7 +375,7 @@ void DRT::ELEMENTS::Truss3CL::t3_energy(Teuchos::ParameterList& params,
 
    // length of first element and second element required for hermite shape function interpolation
    std::vector<double> LengthofElementatRef(2);
-   // auxilarry vector
+   // auxilary vector
    std::vector<double> aux(6);
    aux[0]=XRefOnlyDisp(0)-XRefOnlyDisp(3);
    aux[1]=XRefOnlyDisp(1)-XRefOnlyDisp(4);
@@ -957,8 +963,8 @@ inline void DRT::ELEMENTS::Truss3CL::MyTranslationalDamping(Teuchos::ParameterLi
 
     //compute velocity and gradient of background flow field at evaluationpoint
     MyBackgroundVelocity<ndim>(params,evaluationpoint,velbackground,velbackgroundgrad);
-    if (velbackground.Norm2()!= 0 && velbackgroundgrad.Norm2()!=0)
-      dserror("Non-zero background velocity found! Please modify the algorithm accordingly.");
+//    if (velbackground.Norm2()!= 0 && velbackgroundgrad.Norm2()!=0)
+//      dserror("Non-zero background velocity found! Please modify the algorithm accordingly.");
 
     //compute tangent vector t_{\par} at current Gauss point
     LINALG::Matrix<ndim,1> tpar(true);
@@ -972,16 +978,13 @@ inline void DRT::ELEMENTS::Truss3CL::MyTranslationalDamping(Teuchos::ParameterLi
       for(int l=0; l<ndim; l++)
         velgp(l) += funct(i)*fvel(dof*i+l);
 
-    /* This part of the code is important, only if there exist a background velocity.
-     * Uncomment this if there is background velocity
-     *
     //compute matrix product (t_{\par} \otimes t_{\par}) \cdot velbackgroundgrad
     LINALG::Matrix<ndim,ndim> tpartparvelbackgroundgrad(true);
     for(int i=0; i<ndim; i++)
       for(int j=0; j<ndim; j++)
         for(int k=0; k<ndim; k++)
           tpartparvelbackgroundgrad(i,j) += tpar(i)*tpar(k)*velbackgroundgrad(k,j);
-     */
+
 
     //loop over all line nodes
     for(int i=0; i<fnnode; i++)
@@ -992,14 +995,12 @@ inline void DRT::ELEMENTS::Truss3CL::MyTranslationalDamping(Teuchos::ParameterLi
         {
           fforce(i*dof+k)+= funct(i)*jacobi[gp]*gausspoints.qwgt[gp]*( (k==l)*gamma(1) + (gamma(0) - gamma(1))*tpar(k)*tpar(l) ) *(velgp(l)- velbackground(l));
 
-          //loop over all column nodes
-          for (int j=0; j<fnnode; j++)
-          {
-            fstiffmatrix(i*dof+k,j*dof+l) += gausspoints.qwgt[gp]*funct(i)*funct(j)*jacobi[gp]*((k==l)*gamma(1) + (gamma(0) - gamma(1))*tpar(k)*tpar(l) ) / dt;
-            /* This part of the code is important, only if there exist a background velocity.
-             * Uncomment this if there is background velocity
+            //loop over all column nodes
+            for (int j=0; j<fnnode; j++)
+            {
+              fstiffmatrix(i*dof+k,j*dof+l) += gausspoints.qwgt[gp]*funct(i)*funct(j)*jacobi[gp]*((k==l)*gamma(1) + (gamma(0) - gamma(1))*tpar(k)*tpar(l) ) / dt;
               fstiffmatrix(i*dof+k,j*dof+l) -= gausspoints.qwgt[gp]*funct(i)*funct(j)*jacobi[gp]*( velbackgroundgrad(k,l)*gamma(1) + (gamma(0) - gamma(1))*tpartparvelbackgroundgrad(k,l) ) ;
-             */
+
             fstiffmatrix(i*dof+k,j*dof+k) += gausspoints.qwgt[gp]*funct(i)*deriv(j)*(gamma(0) - gamma(1))*tpar(l)*(velgp(l) - velbackground(l));
             fstiffmatrix(i*dof+k,j*dof+l) += gausspoints.qwgt[gp]*funct(i)*deriv(j)*(gamma(0) - gamma(1))*tpar(k)*(velgp(l) - velbackground(l));
           }

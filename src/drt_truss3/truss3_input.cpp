@@ -40,7 +40,7 @@ bool DRT::ELEMENTS::Truss3::ReadElement(const std::string& eletype,
     kintype_ = tr3_engstrain;
 
   else
-    dserror("Reading of Torsion2 element failed because of unknown kinematic type!");
+    dserror("Reading of Truss3 element failed because of unknown kinematic type!");
 
   return true;
 }

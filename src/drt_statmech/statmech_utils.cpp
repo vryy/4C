@@ -157,9 +157,9 @@ void STATMECH::StatMechManager::CreateFullyOverlappingNodeMap()
 }
 
 /*----------------------------------------------------------------------*
- | Obviously, checks for row node                        mueller (01/14)|
+ | Checks for row node for a given nodal vector          mueller (01/14)|
  *----------------------------------------------------------------------*/
-bool STATMECH::StatMechManager::CheckIfRowNode(const Epetra_Map& noderowmap, Teuchos::RCP<std::vector<int> > nodeids)
+bool STATMECH::StatMechManager::CheckIfRowNodes(const Epetra_Map& noderowmap, Teuchos::RCP<std::vector<int> > nodeids)
 {
   bool hasrownode = false;
   for(int k=0; k<(int)nodeids->size(); k++)
@@ -168,6 +168,18 @@ bool STATMECH::StatMechManager::CheckIfRowNode(const Epetra_Map& noderowmap, Teu
       hasrownode = true;
       break;
     }
+  return hasrownode;
+}
+
+/*----------------------------------------------------------------------*
+ | Checks for row node for a given node                mukherjee (03/15)|
+ *----------------------------------------------------------------------*/
+bool STATMECH::StatMechManager::CheckRowNode(const Epetra_Map& noderowmap, int&  nodeid)
+{
+  bool hasrownode = false;
+  if(noderowmap.LID(nodeid) > -1)
+    hasrownode = true;
+
   return hasrownode;
 }
 
@@ -1218,3 +1230,49 @@ void STATMECH::StatMechManager::GetElementNodeCoords(DRT::Element* element, Teuc
   }
   return;
 } // StatMechManager::GetElementNodeCoords
+
+
+/*--------------------------------------------------------------------*
+ | Return the inclusive angle between two given vectors               |
+ |                                             (public) mukherjee 3/14|
+ *--------------------------------------------------------------------*/
+double STATMECH::StatMechManager::GetTheta(LINALG::Matrix<3,1> &T1, LINALG::Matrix<3,1> &T2)
+{
+  // Calculate current angle
+  double dotprod=0.0;
+  LINALG::Matrix  <1,3> crossprod(true);
+  double CosTheta=0.0;
+  double SinTheta=0.0;
+
+  double norm_T1 = T1.Norm2();
+  double norm_T2=T2.Norm2();
+  for (int j=0; j<3; ++j)
+    dotprod +=  T1(j) * T2(j);
+
+  CosTheta = dotprod/(norm_T1*norm_T2);
+
+  // cross product
+  crossprod(0) = T1(1)*T2(2) - T1(2)*T2(1);
+  crossprod(1) = T1(2)*T2(0) - T1(0)*T2(2);
+  crossprod(2) = T1(0)*T2(1) - T1(1)*T2(0);
+
+  double norm= crossprod.Norm2();
+  SinTheta= norm/(norm_T1*norm_T2);
+
+  double ThetaBoundary1=M_PI/4;
+  double ThetaBoundary2=3*M_PI/4;
+  double theta=0;
+  if (SinTheta >=0)
+  {
+    if (CosTheta >= cos(ThetaBoundary1))
+      theta=asin(SinTheta);
+    else if (CosTheta <= cos(ThetaBoundary2))
+      theta=M_PI-asin(SinTheta);
+    else
+      theta=acos(CosTheta);
+  }
+  else
+    dserror("Angle more than 180 degrees!");
+
+  return theta;
+} // StatMechManager::GetTheta

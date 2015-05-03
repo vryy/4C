@@ -36,7 +36,7 @@ Maintainer: Kei Müller
 //With the flag CHOSENOUTPUTNODE we can use an alternative variant of the special output type statout_anisotropic
 //which allows to output the sum of squared nodal translational displacements of the node with ID CHOSENOUTPUTNODE.
 //#define CHOSENOUTPUTNODE 254
-
+//#define DEBUGCOUT
 /*!
 \brief management and auxiliary functions for statistical mechanics
 \author cyron (cyron@lnm.mw.tum.de)
@@ -230,7 +230,8 @@ public:
                                   const double&                    color,
                                   std::stringstream&               gmshfilecontent,
                                   int                              eleid,
-                                  bool                             ignoreeleid=false);
+                                  bool                             ignoreeleid=false,
+                                  bool                             IsBarbed=false);
 
   //! \brief Shift arbitrary positions (nodes, binding spots, crosslinkers, etc.) according to periodic BCs
   void ShiftPositions(std::vector<double>& pos,
@@ -289,7 +290,10 @@ public:
                               const int&           istep);
 
   //! \brief checks if one of the node ids given is a row node
-  bool CheckIfRowNode(const Epetra_Map& noderowmap,  Teuchos::RCP<std::vector<int> > nodeids);
+  bool CheckIfRowNodes(const Epetra_Map& noderowmap,  Teuchos::RCP<std::vector<int> > nodeids);
+
+  //! \brief checks if the given node id is a row node
+  bool CheckRowNode(const Epetra_Map& noderowmap, int&  nodeid);
 
   //! \brief create a new crosslinker element and add it to the discretization
   void AddNewCrosslinkerElement(const int&                       crossgid,
@@ -489,6 +493,11 @@ protected:
                             Teuchos::RCP<Epetra_Vector> discol,
                             LINALG::SerialDenseMatrix&  coord,
                             std::vector<int>*           lids=NULL);
+
+  /*!\brief return the inclusive angle between two given vectors */
+  double GetTheta(LINALG::Matrix<3,1> &T1,
+                  LINALG::Matrix<3,1> &T2);
+
   /*!\brief update locations of force sensors
      \param sensornodes   (in) vector holding the GIDs of the sensor nodes
      \param oscdir        (in) direction (DOF) of oscillation*/
@@ -747,6 +756,12 @@ protected:
   void OutputSlidingMotion(const Epetra_Vector& disrow,
                            std::ostringstream&  filename);
 
+  //! \brief Output of current length of truss (spring) linkers
+  void OutputLinkerLength(std::ostringstream&  filename);
+
+  //! \brief Output of change in angle between filaments
+  void OutputDeltaTheta(std::ostringstream&  filename);
+
   //! \brief Output of the COG of the structure as well as the tensor of inertia
   void StructureCOGInertiaTensorOutput(const int&           istep,
                                        const double&        time,
@@ -799,7 +814,8 @@ protected:
                  std::stringstream&              gmshfilecontent,
                  const double                    color,
                  bool                            ignoreeleid=false,
-                 bool                            drawsphere=true);
+                 bool                            drawsphere=true,
+                 bool                            Isbarbed=false);
 
   //! \brief Gmsh triangle output for surface of sphere (visualized as Icosphere)
   void PrintGmshTriangleToStream(std::stringstream& gmshfilecontent,
@@ -984,6 +1000,52 @@ protected:
    *  \param dbcmapextractor       (in)      vector containing onoff values for free DOFs */
   void DBCCreateMap(Teuchos::RCP<std::set<int> >       dbcgids,
                     Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor);
+
+  /******************Begin methods for statmech_polymerization.cpp*****************/
+
+  /* create barbed and pointed end node sets of filaments  */
+  void CreateBarbedPointedNodeSets();
+
+  /* Initiate monomer positions */
+  void MonomerInitiatePos();
+
+  /* add element at the barbed end of filaments  */
+  void AddFilamentElement();
+
+  /* add node at the barbed end of filaments  */
+  void AddFilamentNode(int& polyspotgid);
+
+  /* delete element at the pointed end of filaments  */
+  void DeleteFilamentElement();
+
+  /* Create GID of the new element as a result of polymerization  */
+  int GenerateNewFilamentGID(int & bspotgid);
+
+  /* Create GID of the node of the new element as a result of polymerization  */
+  int GenerateNewNodeGID(int & bspotgid);
+
+  /* simulation of monomer diffusion */
+  void MonomerDiffusion(double mean, double standarddev, const double& dt);
+
+  /* Assign monomers and nodes to volume partitions */
+  void PartitioningAndSearchMonomer(const Teuchos::RCP<Epetra_MultiVector> bspotpositions,
+                                          Teuchos::RCP<Epetra_MultiVector>& neighbourslid);
+
+  void SearchAndSetMonomers(const int&                                 istep,
+                            const double&                              timen,
+                            const double&                              dt,
+                            const Teuchos::RCP<Epetra_MultiVector>     bspotrotations,
+                            const Teuchos::RCP<Epetra_MultiVector>     bspotpositions,
+                            const Epetra_Vector&                       discol,
+                            bool                                       printscreen);
+
+
+  void MonomerIntermediateUpdate( const Epetra_MultiVector& polyspotpositions,
+                                  const LINALG::SerialDenseMatrix& LID,
+                                  const int& monomernumber);
+
+
+  /******************End methods for statmech_polymerization.cpp*****************/
 
   //! \brief containing statistical mechanics input parameters
   Teuchos::ParameterList statmechparams_;
@@ -1217,6 +1279,47 @@ protected:
 
   //! \brief GIDs of elements added at the beginning when this time step was conducted the last time
   std::vector<int> addedcelements_;
+
+  /****************Begin class variables for statmech_polymerization.cpp*****************/
+
+  // GIDs of nodes assigned as barbed ends
+  Teuchos::RCP<std::vector<double> > BarbedEnds_;
+
+  // GIDs of nodes assigned as pointed ends
+  Teuchos::RCP<std::vector<double> > PointedEnds_;
+
+  //! A vector containing the current postion of the monomers
+  Teuchos::RCP<Epetra_MultiVector>    MonomerPositions_;
+
+  // Column Epetra_Map handling Monomer
+  Teuchos::RCP<Epetra_Map> MonomerColMap_;
+
+  // Row Epetra_Map handling Monomer
+    Teuchos::RCP<Epetra_Map> MonomerRowMap_;
+
+  // A vector just for the sake of visualizing monomers
+  Teuchos::RCP<Epetra_MultiVector> VisualizeMonomerPositions_;
+
+  // Number of spots available for polymerization, which may differ from the number of barbed ends
+  // depending on whether the ends are capped or uncapped
+  int NumPolySpots_;
+
+  // Vector memorizing the bonding status of the Monomers and also contains the id of node it's connected to
+  Teuchos::RCP<Epetra_Vector>  MonomerBond_;
+
+  //! \brief a vector indicating the number of attached nodes to a crosslinker
+  Teuchos::RCP<Epetra_Vector> MonomerBindingStatus_;
+
+  //! \brief an Epetra_Map handling processor-specific data of the binding spot geometry
+  Teuchos::RCP<Epetra_Map> PolyEndColMap_;
+
+  //! \brief an Epetra_Map handling cumulated data of the binding spot geometry from all processors
+  Teuchos::RCP<Epetra_Map> PolyEndRowMap_;
+
+  //! \brief flag signaling barbed end
+//  bool IsBarbed_;
+
+  /****************End class variables for statmech_polymerization.cpp*****************/
 
   //variables to save certain class variables *_ in *conv_ in order to allow for repeating a time step with completely new random numbers and actions
   //! \brief vector holding converged state of crosslinkerbond_// \brief vector holding converged state of crosslinkerbond_

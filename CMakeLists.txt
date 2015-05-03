@@ -1698,6 +1698,11 @@ set(OBJS_DRT_T3_LIB
   src/drt_truss3/truss3_evaluate.cpp
   src/drt_truss3/truss3_input.cpp
 )
+set(OBJS_DRT_SP3_LIB
+  src/drt_spring3/spring3.cpp
+  src/drt_spring3/spring3_evaluate.cpp
+  src/drt_spring3/spring3_input.cpp
+)
 set(OBJS_DRT_T3CL_LIB
   src/drt_truss3cl/truss3cl.cpp
   src/drt_truss3cl/truss3cl_evaluate.cpp
@@ -2022,6 +2027,7 @@ add_library(ele_combust3 ${OBJS_DRT_COMBUST3_LIB})
 add_library(ele_opti ${OBJS_DRT_TOPOPT_LIB})
 add_library(ele_s8 ${OBJS_DRT_S8_LIB})
 add_library(ele_scatra ${OBJS_DRT_SCATRA_LIB})
+add_library(ele_sp3 ${OBJS_DRT_SP3_LIB})
 add_library(ele_meshfree_scatra ${OBJS_DRT_MESHFREE_SCATRA_LIB})
 add_library(ele_so ${OBJS_SOH8_LIB})
 add_library(ele_t2 ${OBJS_DRT_T2_LIB})
@@ -2051,6 +2057,7 @@ set(ELEMENT_LIBRARIES
   ele_opti
   ele_s8
   ele_scatra
+  ele_sp3
   ele_meshfree_scatra
   ele_so
   ele_t2

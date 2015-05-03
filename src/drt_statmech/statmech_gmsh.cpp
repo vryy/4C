@@ -21,6 +21,7 @@ Maintainer: Kei Müller
 #include "../drt_beam3ii/beam3ii.H"
 #include "../drt_beam3eb/beam3eb.H"
 #include "../drt_truss3/truss3.H"
+#include "../drt_spring3/spring3.H"
 #include "../drt_truss3cl/truss3cl.H"
 #include "../drt_beam3cl/beam3cl.H"
 #include "../drt_torsion3/torsion3.H"
@@ -120,6 +121,9 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector&                 
         //getting pointer to current element
         DRT::Element* element = discret_->lColElement(i);
         const DRT::ElementType & eot = element->ElementType();
+//        bool PolarityConditions=true;
+        bool IsBarbed=false; // Condition to indicate Barbed ends
+//        bool IsPointed=false; // Condition to indicate Pointed ends
 
         // interpolated beam element
         if(eot==DRT::ELEMENTS::BeamCLType::Instance())
@@ -260,6 +264,18 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector&                 
           LINALG::SerialDenseMatrix nodaltangents(3,nnodes);
           // Change the size of coord for interpolated coordinates
           coord.Reshape(3,n_axial);
+          // Additional plot in case the filament ends are open to (de-)polymerization
+          // i.e Polarity of filaments is taken into account.
+          // In this case, plotting of Barbed ends and pointed ends.
+//          if(PolarityConditions)
+//          {
+//            for (int i=0; i<(int)BarbedEnds_->size(); i++)
+//            {
+//              if (element->NodeIds()[0] == (int)(*BarbedEnds_)[i] || element->NodeIds()[1] == (int)(*BarbedEnds_)[i])
+//                IsBarbed=true;
+//            }
+//          }
+
           // compute current nodal positions
           for (int i=0;i<3;++i)
           {
@@ -390,6 +406,7 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector&                 
                 eot==DRT::ELEMENTS::BeamCLType::Instance() ||
                 eot==DRT::ELEMENTS::Beam3ebType::Instance()||
                 eot == DRT::ELEMENTS::Truss3Type::Instance() ||
+                eot == DRT::ELEMENTS::Spring3Type::Instance() ||
                 eot==DRT::ELEMENTS::Truss3CLType::Instance())
             {
               if (!kinked)
@@ -408,7 +425,8 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector&                 
                       for(int n=0; n<coordout.N(); n++)
                         coordout(m,n)=coord(m,j+n);
 
-                    GmshWedge(nline,coordout,element,gmshfilecontent,color);
+
+                    GmshWedge(nline,coordout,element,gmshfilecontent,color,IsBarbed);
                   }
 
                 }
@@ -457,7 +475,8 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector&                 
                 for(int m=0; m<coordout.M(); m++)
                   for(int n=0; n<coordout.N(); n++)
                     coordout(m,n)=coord(m,j+n);
-              GmshOutputPeriodicBoundary(coordout, color, gmshfilecontent,element->Id(),false);
+
+                GmshOutputPeriodicBoundary(coordout, color, gmshfilecontent,element->Id(),false, IsBarbed);
               }
             }
               else
@@ -582,7 +601,7 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector&                 
           }
         } // end: compute and stream gmsh output for rigid sphere
 
-      }
+      } // discret_->NumMyColElements()
       //write content into file and close it (this way we make sure that the output is written serially)
       fputs(gmshfilecontent.str().c_str(), fp);
       fclose(fp);
@@ -653,7 +672,7 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector&                 
  | gmsh output data in case of periodic boundary conditions             |
  |                                                    public)cyron 02/10|
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix& coord, const double& color, std::stringstream& gmshfilecontent, int eleid, bool ignoreeleid)
+void STATMECH::StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix& coord, const double& color, std::stringstream& gmshfilecontent, int eleid, bool ignoreeleid, bool IsBarbed)
 {
   //number of solid elements by which a round line is depicted
   const int nline = 16;
@@ -684,6 +703,8 @@ void STATMECH::StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialD
       dotline = eot==DRT::ELEMENTS::Truss3CLType::Instance();
     else if (element->ElementType().Name() == "Truss3Type")
       dotline = eot == DRT::ELEMENTS::Truss3Type::Instance();
+    else if (element->ElementType().Name() == "Spring3Type")
+      dotline = eot == DRT::ELEMENTS::Spring3Type::Instance();
     // draw spheres at node positions ("beads" of the bead spring model)
     else if (eot == DRT::ELEMENTS::Torsion3Type::Instance())
     {
@@ -973,6 +994,17 @@ void STATMECH::StatMechManager::GmshOutputCrosslinkDiffusion(double color, const
     //fp = fopen(filename->str().c_str(), "a");
     std::stringstream gmshfilebonds;
 
+    // Print Free monomers
+    /*
+    for (int i=0; i<MonomerBindingStatus_->MyLength(); i++)
+    {
+      double beadcolor2 = 3*color;
+      //writing element by nodal coordinates as a sphere
+      gmshfilebonds << "SP(" << std::scientific;
+      gmshfilebonds<< (*VisualizeMonomerPositions_)[0][i]<< "," << (*VisualizeMonomerPositions_)[1][i] << "," << (*VisualizeMonomerPositions_)[2][i];
+      gmshfilebonds << ")" << "{" << std::scientific << beadcolor2 << "," << beadcolor2 << "};" << std::endl;
+    }*/
+
     // first, just update positions: redundant information on all procs
     for (int i=0; i<numbond_->MyLength(); i++)
     {
@@ -981,11 +1013,14 @@ void STATMECH::StatMechManager::GmshOutputCrosslinkDiffusion(double color, const
         // free linkers
         case 0:
         {
-//          double beadcolor = 5*color;
-//          //writing element by nodal coordinates as a sphere
-//          gmshfilebonds << "SP(" << std::scientific;
-//          gmshfilebonds<< (*visualizepositions_)[0][i]<< "," << (*visualizepositions_)[1][i] << "," << (*visualizepositions_)[2][i];
-//          gmshfilebonds << ")" << "{" << std::scientific << beadcolor << "," << beadcolor << "};" << std::endl;
+          /*
+          double beadcolor = 5*color;
+          //writing element by nodal coordinates as a sphere
+          gmshfilebonds << "SP(" << std::scientific;
+          gmshfilebonds<< (*visualizepositions_)[0][i]<< "," << (*visualizepositions_)[1][i] << "," << (*visualizepositions_)[2][i];
+          gmshfilebonds << ")" << "{" << std::scientific << beadcolor << "," << beadcolor << "};" << std::endl;
+          */
+
         }
         break;
         // crosslink molecule with one bond
@@ -1199,6 +1234,12 @@ void STATMECH::StatMechManager::GmshPrepareVisualization(const Epetra_Vector& di
 
   if (discret_->Comm().MyPID() == 0)
   {
+//    // Capture motion of Free monomers at different time steps
+//    for (int i=0; i<MonomerBindingStatus_->MyLength(); i++)
+//    {
+//      for (int j=0; j<VisualizeMonomerPositions_->NumVectors(); j++)
+//        (*VisualizeMonomerPositions_)[j][i] = (*MonomerPositions_)[j][i];
+//    }
     for (int i=0; i<numbond_->MyLength(); i++)
     {
       switch((int)(*numbond_)[i])
@@ -1255,6 +1296,9 @@ void STATMECH::StatMechManager::GmshPrepareVisualization(const Epetra_Vector& di
             RotationAroundFixedAxis(tangent,normal,alpha);
 
           // calculation of the visualized point lying in the direction of the rotated normal
+          // For Beam3eb elements this value is not calculated properly.
+          // But it's not important since it's only for visualization purposes.
+          // Besides singly bound linkers do not have mechanical contribution.
           for (int j=0; j<visualizepositions_->NumVectors(); j++)
             (*visualizepositions_)[j][i] = bspotpos0(j,0) + ronebond*normal(j,0);
 
@@ -1409,7 +1453,8 @@ void STATMECH::StatMechManager::GmshWedge(const int& n,
                                           std::stringstream& gmshfilecontent,
                                           const double color,
                                           bool ignoreeleid,
-                                          bool drawsphere)
+                                          bool drawsphere,
+                                          bool IsBarbed)
 {
   //if this element is a line element capable of providing its radius get that radius
   double radius = 0.0;
@@ -1428,6 +1473,8 @@ void STATMECH::StatMechManager::GmshWedge(const int& n,
       radius = sqrt((dynamic_cast<DRT::ELEMENTS::Truss3CL*>(thisele))->CSec() / M_PI);
     else if(eot == DRT::ELEMENTS::Truss3Type::Instance())
       radius = sqrt((dynamic_cast<DRT::ELEMENTS::Truss3*>(thisele))->CSec() / M_PI);
+    else if(eot == DRT::ELEMENTS::Spring3Type::Instance())
+      radius = sqrt(4.75166e-06 / M_PI); // Hardcode radius if for Spring3 Element
     else
       dserror("thisele is not a line element providing its radius. Check your input file and your defines flags!");
     // case: crosslinker
@@ -1566,10 +1613,21 @@ void STATMECH::StatMechManager::GmshWedge(const int& n,
   //no thickness >0 specified; plot elements as line segements without physical volume
   else
   {
-    gmshfilecontent << "SL(" << std::scientific;
-    gmshfilecontent << coord(0,0) << "," << coord(1,0) << "," << coord(2,0) << ","
-                    << coord(0,1) << "," << coord(1,1) << "," << coord(2,1);
-    gmshfilecontent << ")" << "{" << std::scientific << color << ","<< color << "};" << std::endl;
+    if(IsBarbed)
+    {
+      double BarbedColor= 0.2;
+      gmshfilecontent << "SL(" << std::scientific;
+      gmshfilecontent << coord(0,0) << "," << coord(1,0) << "," << coord(2,0) << ","
+          << coord(0,1) << "," << coord(1,1) << "," << coord(2,1);
+      gmshfilecontent << ")" << "{" << std::scientific << BarbedColor << ","<< BarbedColor << "};" << std::endl;
+    }
+
+    {
+      gmshfilecontent << "SL(" << std::scientific;
+      gmshfilecontent << coord(0,0) << "," << coord(1,0) << "," << coord(2,0) << ","
+          << coord(0,1) << "," << coord(1,1) << "," << coord(2,1);
+      gmshfilecontent << ")" << "{" << std::scientific << color << ","<< color << "};" << std::endl;
+    }
   }
   // crosslink molecules are marked with an additional small ball if they are plotted as volumeless lines
   if(ignoreeleid && drawsphere)
@@ -1742,7 +1800,7 @@ void STATMECH::StatMechManager::GmshNetworkStructVolume(const int& n, std::strin
                         edgeshift(l,m) += periodlength_->at(l);
                     }
                   // write only the edge of the triangle (i.e. the line connecting two corners of the octagon/hexadecagon)
-                  GmshOutputPeriodicBoundary(edgeshift, color, gmshfilecontent, discret_->lRowElement(0)->Id(),true);
+                  GmshOutputPeriodicBoundary(edgeshift, color, gmshfilecontent, discret_->lRowElement(0)->Id(),true, false);
 
                   // now the other edges will be computed
                   for (int sector=0;sector<n-1;++sector)

@@ -322,7 +322,7 @@ void STATMECH::StatMechManager::ElementSanityCheck()
   if (element->ElementType().Name()=="Beam3iiType" && linkermodel_ != statmech_linker_none && statmechparams_.get<double>("ILINK",0.0) == 0.0)
     dserror("Truss linkers are not currently configured to bind with filaments discretized with Beam3ii elements.\nPlease choose Beam3Type element for linkers.");
   if (element->ElementType().Name()=="Beam3ebType" && linkermodel_ != statmech_linker_none && statmechparams_.get<double>("ILINK",0.0) != 0.0)
-    dserror("Currently only Truss linkers are configured to bind with filaments discretized with Beam3eb elements.\nPlease set ILINK in input file to zero to activate truss linkers.");
+    dserror("Currently only Truss and spring linkers are configured to bind with filaments discretized with Beam3eb elements.\nPlease set ILINK=0 to activate truss linkers, ILINK=ALINK=0 activate spring linkers.");
   return;
 }
 
@@ -1101,16 +1101,13 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
 //==NEW
     // new node positions and rotations
     Teuchos::RCP<Epetra_MultiVector> bspotpositions = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,3,true));
-    Teuchos::RCP<Epetra_MultiVector> bspotrotations = Teuchos::null;
     // In case of Truss C/L, bspotrotations indicate the tangent of nodal displacement vector
-    if(statmechparams_.get<double>("ILINK",0.0)>0.0 || statmechparams_.get<double>("ILINK",0.0)==0.0)
-      bspotrotations = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,3,true));
+    Teuchos::RCP<Epetra_MultiVector> bspotrotations = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,3,true));;
     Epetra_Vector disrow(*discret_->DofRowMap(), true);
     Epetra_Vector discol(*discret_->DofColMap(), true);
     GetBindingSpotPositions(discol, bspotpositions, bspotrotations);
 
-    Teuchos::RCP<Epetra_MultiVector> bspottriadscol = Teuchos::null;
-    bspottriadscol = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,4,true));
+    Teuchos::RCP<Epetra_MultiVector> bspottriadscol = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,4,true));;
     GetBindingSpotTriads(bspotrotations, bspottriadscol);
 //==ENDNEW
 //==OLD
@@ -1342,6 +1339,7 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
             if(CheckOrientation(direction,discol,bspottriadscol,LID) && !intersection)
             {
               numsetelements++;
+              std::cout<<"numsetelements="<<numsetelements<<std::endl;
               (*addcrosselement)[currlink] = 1.0;
               // establish double bond to the first given neighbour
               // attach it to the second binding spot

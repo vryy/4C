@@ -30,6 +30,7 @@ Maintainer: Kei Müller
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 #include "../drt_beam3/beam3.H"
+#include "../drt_spring3/spring3.H"
 #include "../drt_beam3ii/beam3ii.H"
 #include "../drt_beam3eb/beam3eb.H"
 #include "../drt_beam3cl/beam3cl.H"
@@ -88,6 +89,9 @@ useinitdbcset_(false)
   // filament number conditions: quick reference which node belongs to which filament
   InitializeFilamentNumbers();
 
+  // Create randomly assigned endnode sets with barbed and pointed ends
+//  CreateBarbedPointedNodeSets();
+
   // force sensor conditions: for viscoelastic and creep simulations, forces need to be meassured...
   InitializeForceSensors();
 
@@ -96,6 +100,10 @@ useinitdbcset_(false)
 
   // Initialize crosslinker positions (point-like particles while not doubly-bound)
   CrosslinkerMoleculeInit();
+
+  // Initialize crosslinker positions (point-like particles while not doubly-bound)
+//  MonomerInitiatePos();
+
 
   return;
 }// StatMechManager::StatMechManager
@@ -128,11 +136,9 @@ void STATMECH::StatMechManager::Update(const int&                               
 #endif
     //column maps cointaining binding spot positions and their spatial orientation
     Teuchos::RCP<Epetra_MultiVector> bspotpositions = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,3,true));
-    Teuchos::RCP<Epetra_MultiVector> bspotrotations = Teuchos::null;
     // allocate memory to binding spot rotations only if linkers are not Truss3, Truss3CL elements
     // In case of Truss C/L, bspotrotations indicate the tangent of nodal displacement vector
-    if(statmechparams_.get<double>("ILINK",0.0)>0.0 || statmechparams_.get<double>("ILINK",0.0)==0.0)
-      bspotrotations = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,3,true));
+    Teuchos::RCP<Epetra_MultiVector> bspotrotations = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,3,true));;
 
     /* note: access by ExtractMyValues requires column map vector, whereas displacements on level of time integration are
      * handled as row map vector*/
@@ -148,6 +154,7 @@ void STATMECH::StatMechManager::Update(const int&                               
      // crosslink molecule diffusion
     double standarddev = sqrt(statmechparams_.get<double> ("KT", 0.0) / (2*M_PI * statmechparams_.get<double> ("ETA", 0.0) * statmechparams_.get<double> ("R_LINK", 0.0)) * dt);
     CrosslinkerDiffusion(*bspotpositions, 0.0, standarddev, dt);
+//    MonomerDiffusion(0.0, standarddev, dt);
 
 #ifdef MEASURETIME
     const double t3 = Teuchos::Time::wallTime();
@@ -442,24 +449,20 @@ void STATMECH::StatMechManager::GetNodalBindingSpotPositionsFromDisVec(const Epe
     if (discret_->NumDof(node) == 6 && getrotations)
     {
       //Check via dynamic cast, if it's a beam3eb element
-         DRT::ELEMENTS::Beam3eb* BeamElement = dynamic_cast<DRT::ELEMENTS::Beam3eb*>(Element);
-       //if not, tell the user to use beam3 instead
-         if(BeamElement==NULL)
-         {
-           for(int j=0; j<bspotrotationsrow->NumVectors(); j++)
-             (*bspotrotationsrow)[j][i] = discol[discret_->DofColMap()->LID(dofnode[j+3])];
-         }
-         else
-         {
-           LINALG::Matrix<3,1> trefNodeAux(true);
-           trefNodeAux=BeamElement->Tref()[0];
-           for(int j=0; j<bspotrotationsrow->NumVectors(); j++)
-           {
-             (*bspotrotationsrow)[j][i]=trefNodeAux(j)+discol[discret_->DofColMap()->LID(dofnode[j+3])];
-
-           }
-         }
-
+      DRT::ELEMENTS::Beam3eb* BeamElement = dynamic_cast<DRT::ELEMENTS::Beam3eb*>(Element);
+      //if not, tell the user to use beam3 instead
+      if(BeamElement==NULL)
+      {
+        for(int j=0; j<bspotrotationsrow->NumVectors(); j++)
+          (*bspotrotationsrow)[j][i] = discol[discret_->DofColMap()->LID(dofnode[j+3])];
+      }
+      else
+      {
+        LINALG::Matrix<3,1> trefNodeAux(true);
+        trefNodeAux=BeamElement->Tref()[0];
+        for(int j=0; j<bspotrotationsrow->NumVectors(); j++)
+          (*bspotrotationsrow)[j][i]=trefNodeAux(j)+discol[discret_->DofColMap()->LID(dofnode[j+3])];
+      }
     }
   }
 
@@ -1376,7 +1379,7 @@ void STATMECH::StatMechManager::DetectBindingSpotsOctree(const Teuchos::RCP<Epet
 
 
 /*----------------------------------------------------------------------*
- | Binding spot / linker search by Binnind               mueller (11/13)|
+ | Binding spot / linker search by Binning               mueller (11/13)|
  *----------------------------------------------------------------------*/
 void STATMECH::StatMechManager::DetectBindingSpotsBinning(const Teuchos::RCP<Epetra_MultiVector> bspotpositions,
                                                           Teuchos::RCP<Epetra_MultiVector>       bspottriadscol,
@@ -1582,10 +1585,9 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
   double t0 = Teuchos::Time::wallTime();
   /*preliminaries*/
   // BINDING SPOT TRIAD UPDATE
-  Teuchos::RCP<Epetra_MultiVector> bspottriadscol = Teuchos::null;
   // beam elements only. Binding spot triads represent tangential vector for Euler type elements
-    bspottriadscol = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,4,true));
-    GetBindingSpotTriads(bspotrotations, bspottriadscol);
+  Teuchos::RCP<Epetra_MultiVector> bspottriadscol = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,4,true));
+  GetBindingSpotTriads(bspotrotations, bspottriadscol);
 
   //get current on-rate for crosslinkers
   double kon = 0;
@@ -2126,7 +2128,7 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
         /*a crosslinker is added on each processor which is row node owner of at least one of its nodes;
          *the processor which is row map owner of the node with the larger GID will be the owner of the new crosslinker element; on the other processors the new
          *crosslinker element will be present as a ghost element only*/
-        bool hasrownode = CheckIfRowNode(noderowmap,globalnodeids);
+        bool hasrownode = CheckIfRowNodes(noderowmap,globalnodeids);
 
         if(hasrownode)
           AddNewCrosslinkerElement(newcrosslinkerGID, globalnodeids,bspotgid, xrefe,rotrefe,*discret_,nodalquaternions);
@@ -2222,7 +2224,7 @@ void STATMECH::StatMechManager::AddNewCrosslinkerElement(const int&             
         {
           // beam contact discretization
           if(mydiscret.Name()=="beam contact")
-          addedcelements_.push_back(crossgid);
+            addedcelements_.push_back(crossgid);
           else
             addedelements_.push_back(crossgid);
         }
@@ -2285,7 +2287,7 @@ void STATMECH::StatMechManager::AddNewCrosslinkerElement(const int&             
         break;
     }
   }
-  else if(statmechparams_.get<double>("ILINK",0.0) == 0.0)
+  else if(statmechparams_.get<double>("ILINK",0.0) == 0.0 && statmechparams_.get<double>("ALINK",0.0) != 0.0)
   {
     switch((int)globalnodeids->size())
     {
@@ -2328,6 +2330,35 @@ void STATMECH::StatMechManager::AddNewCrosslinkerElement(const int&             
 
        //correct reference configuration data is computed for the new crosslinker element;
        newcrosslinker->SetUpReferenceGeometry(xrefe);
+
+       //add element to discretization
+       if(!addinitlinks)
+         addedelements_.push_back(crossgid);
+       mydiscret.AddElement(newcrosslinker);
+     }
+     break;
+     default:
+       dserror("Received %i global node IDs! Implemented: 2 or 4!", (int)globalnodeids->size());
+       break;
+    }
+  }
+  else if(statmechparams_.get<double>("ILINK",0.0) == 0.0 && statmechparams_.get<double>("ALINK",0.0) == 0.0)
+  {
+    switch((int)globalnodeids->size())
+    {
+     case 2:
+     {
+       Teuchos::RCP<DRT::ELEMENTS::Spring3> newcrosslinker = Teuchos::rcp(new DRT::ELEMENTS::Spring3(crossgid, (mydiscret.gNode(globalnodeids->at(0)))->Owner() ) );
+       DRT::Node* nodes[2] = {mydiscret.gNode( globalnodeids->at(0) ), mydiscret.gNode( globalnodeids->at(1)) };
+
+       newcrosslinker->SetNodeIds(2,&(*globalnodeids)[0]);
+       newcrosslinker->BuildNodalPointers(&nodes[0]);
+
+       //setting up crosslinker element parameters
+       newcrosslinker->SetMaterial(2);
+
+       //correct reference configuration data is computed for the new crosslinker element;
+       newcrosslinker->SetUpReferenceGeometry(xrefe,rotrefe);
 
        //add element to discretization
        if(!addinitlinks)
@@ -2385,7 +2416,7 @@ void STATMECH::StatMechManager::AddSupportElements(const Epetra_Map&            
       for(int j=0; j<(int)addedrotrefe.size(); j++)
         addedrotrefe[j] = rotrefe[6*i+j];
 
-      bool hasrownode = CheckIfRowNode(noderowmap,addednodeids);
+      bool hasrownode = CheckIfRowNodes(noderowmap,addednodeids);
 
       if(hasrownode)
         AddNewCrosslinkerElement(additionalgid, addednodeids,bspotgid, addedxrefe,addedrotrefe,*discret_);
@@ -3515,6 +3546,7 @@ bool STATMECH::StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> dire
   //if orientation is not to be checked explicitly, this function always returns true
   if (statmechparams_.get<double>("ILINK",0.0)>0.0 && (!DRT::INPUT::IntegralValue<int>(statmechparams_, "CHECKORIENT") || bspottriadscol==Teuchos::null))
     return true;
+  // Either Spring3 or Truss3 crosslinkers
   else if (statmechparams_.get<double>("ILINK",0.0)==0.0 && (!DRT::INPUT::IntegralValue<int>(statmechparams_, "CHECKORIENT") || bspottriadscol==Teuchos::null))
     return true;
 
@@ -3573,7 +3605,7 @@ bool STATMECH::StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> dire
   scalarproduct = T1(0, 0)*T2(0,0) + T1(1,0)*T2(1,0) + T1(2,0)*T2(2,0);
   }
 
-
+  // Either Spring3 or Truss3 crosslinkers
   else if(statmechparams_.get<double>("ILINK",0.0)==0.0 )
   {
     //triads on filaments at the two nodes connected by crosslinkers
@@ -3591,18 +3623,16 @@ bool STATMECH::StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> dire
         //if node has also rotational degrees of freedom
         if (discret_->NumDof(node) == 6)
         {
-           //if not, tell the user to use beam3 instead
-             {
-               for(int j=0; j<3; j++)
-               {
-                 TrefFil(j+3*i) = (*bspottriadscol)[j][(int) LID(i,0)];
-                 T(j)=TrefFil(j+3*i)+discol[discret_->DofColMap()->LID(DofNode[j+3])];
-               }
-               if (i==0)
-                 T1=T;
-               else
-                 T2=T;
-             }
+          //if not, tell the user to use beam3 instead
+          for(int j=0; j<3; j++)
+          {
+            TrefFil(j+3*i) = (*bspottriadscol)[j][(int) LID(i,0)];
+            T(j)=TrefFil(j+3*i)+discol[discret_->DofColMap()->LID(DofNode[j+3])];
+          }
+          if (i==0)
+            T1=T;
+          else
+            T2=T;
         }
       }
     }
@@ -3616,6 +3646,7 @@ bool STATMECH::StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> dire
   if(scalarproduct>1.0 && fabs(scalarproduct-1.0)<1e-12)
     scalarproduct = 1.0;
   }
+  // Either Spring3 or Truss3 crosslinkers
   if(statmechparams_.get<double>("ILINK",0.0)==0.0 )
   {
     if(scalarproduct>1.0 || scalarproduct<-1.0 )

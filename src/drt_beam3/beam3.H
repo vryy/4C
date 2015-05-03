@@ -138,6 +138,9 @@ public:
   virtual double ReturnRatioNormForceMoment() const;
   virtual double ReturnNormForce() const;
   virtual double ReturnNormMoment() const;
+  virtual double Lcurr() const;
+  virtual void TcurrBeam3ii(LINALG::Matrix<3,1>& Tcurr1, LINALG::Matrix<3,1>& Tcurr2);
+  virtual void TrefBeam3ii(LINALG::Matrix<3,1>& Tref1, LINALG::Matrix<3,1>& Tref2);
 
   /*!
   \brief Return unique ParObject id
@@ -172,6 +175,11 @@ public:
   \brief Return number of lines to this element
   */
   virtual int NumLine() const {return 1;}
+
+  virtual double GetDeltaTheta() const
+  {
+   return deltatheta_;
+  }
 
 
   /*!
@@ -390,6 +398,7 @@ public:
       jacobi_.resize(nnode-1);
       jacobimass_.resize(nnode);
       jacobinode_.resize(nnode);
+      Qref_.resize((nnode));
       Qconv_.resize((nnode-1));
       Qold_.resize((nnode-1));
       Qnew_.resize((nnode-1));
@@ -492,6 +501,12 @@ public:
         /*the center triad in reference configuration is stored as a quaternion whose equivalent would be the rotation
         * from the identity matrix into the reference configuration*/
         LARGEROTATIONS::triadtoquaternion(Tref,Qconv_[numgp]);
+
+        //Calculating Reference Quternion
+        for(int node=0; node<nnode; node++)
+          LARGEROTATIONS::triadtoquaternion(Tref,Qref_[node]);
+
+
 
         //the here employed beam element does not need data about the current position of the nodal directors so that
         //initilization of those can be skipped (the nodal displacements handeled in beam3_evaluate.cpp are not the current angles,
@@ -625,15 +640,19 @@ private:
   //! storing epsilonn(0)
   double eps_;
 
+  //! Matrix holding tangents at each node in reference configuration (when elements are added)
+//  std::vector<LINALG::Matrix<3,1> > Tref_;
+  //! quaternions of triads at GPs at the end of the preceeding time step due to Crisfield, Vol. 2, equation (17.65)
+  std::vector<LINALG::Matrix<4,1> > Qref_;
   //! quaternions of triads at GPs at the end of the preceeding time step due to Crisfield, Vol. 2, equation (17.65)
   std::vector<LINALG::Matrix<4,1> > Qconv_;
   //! quaternions of triads at GPs at the end of the preceeding iteration step due to Crisfield, Vol. 2, equation (17.65)
   std::vector<LINALG::Matrix<4,1> > Qold_;
   //! quaternions of triads at GPs during the current iteration step due to Crisfield, Vol. 2, equation (17.65)
   std::vector<LINALG::Matrix<4,1> > Qnew_;
-  //! quaternions of triads at GPs at the end of the preceeding iteration step due to Crisfield, Vol. 2, equation (17.65)
+  //! quaternions of triads at Nodes at the end of the preceeding iteration step due to Crisfield, Vol. 2, equation (17.65)
   std::vector<LINALG::Matrix<4,1> > QoldNode_;
-  //! quaternions of triads at GPs during the current iteration step due to Crisfield, Vol. 2, equation (17.65)
+  //! quaternions of triads at Nodes during the current iteration step due to Crisfield, Vol. 2, equation (17.65)
   std::vector<LINALG::Matrix<4,1> > QnewNode_;
   //!curvaturea at the end of the preceeding time step due to Crisfield, Vol. 2, equation (17.72)
   std::vector<LINALG::Matrix<3,1> > curvconv_;
@@ -674,6 +693,12 @@ private:
   //!polar moment of inertia of area
   double Irr_;
 
+  //! Change in inclusive angles between filaments
+  double deltatheta_;
+
+  //! Current length of crosslinkers
+  double lcurr_;
+
   //! Vector holding value of Jacobi determinant jacobi for each Gauss point for underintegration
   std::vector<double> jacobi_;
 
@@ -704,6 +729,9 @@ private:
   /*!this function performs an update of the rotation (in quaterion form) at the node by the incremental rotation deltatheta,
     *by means of a quaternion product and then computes the respective new triad Tnew at node*/
   void UpdateNodalTriad(std::vector<double>& disp, std::vector<LINALG::Matrix<3,1> >& Tnew);
+
+  /*!Calculate change in angle from reference configuration */
+  void CalcDeltaTheta(std::vector<double>& disp);
 
   //!updating local curvature according to Crisfield, Vol. 2, pages 209 - 210, basically equation (16.148)
   void updatecurvature(const LINALG::Matrix<3,3>& Tnew, LINALG::Matrix<3,1>& deltatheta,LINALG::Matrix<3,1>& deltathetaprime, const int numgp);

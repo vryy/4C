@@ -98,6 +98,7 @@ diff_disp_ref_(LINALG::Matrix<1,3>(true)),
 deltatheta_(LINALG::Matrix<1,3>(true)),
 material_(0),
 lrefe_(0),
+lcurr_(0),
 crosssec_(0),
 NormMoment(0),
 NormForce(0),
@@ -125,6 +126,7 @@ DRT::ELEMENTS::Truss3::Truss3(const DRT::ELEMENTS::Truss3& old) :
  deltatheta_(old.deltatheta_),
  material_(old.material_),
  lrefe_(old.lrefe_),
+ lcurr_(old.lcurr_),
  jacobimass_(old.jacobimass_),
  jacobinode_(old.jacobinode_),
  crosssec_(old.crosssec_),
@@ -210,6 +212,7 @@ void DRT::ELEMENTS::Truss3::Pack(DRT::PackBuffer& data) const
   AddtoPack<1,3>(data,deltatheta_);
   AddtoPack(data,material_);
   AddtoPack(data,lrefe_);
+  AddtoPack(data,lcurr_);
   AddtoPack(data,jacobimass_);
   AddtoPack(data,jacobinode_);
   AddtoPack(data,crosssec_);
@@ -249,6 +252,7 @@ void DRT::ELEMENTS::Truss3::Unpack(const std::vector<char>& data)
   ExtractfromPack<1,3>(position,data,deltatheta_);
   ExtractfromPack(position,data,material_);
   ExtractfromPack(position,data,lrefe_);
+  ExtractfromPack(position,data,lcurr_);
   ExtractfromPack(position,data,jacobimass_);
   ExtractfromPack(position,data,jacobinode_);
   ExtractfromPack(position,data,crosssec_);
@@ -459,7 +463,6 @@ void DRT::ELEMENTS::Truss3::SetUpReferenceGeometry(const std::vector<double>& xr
 
           double norm= crossprod.Norm2();
           SinTheta= norm/(norm_v_ref*norm_t1_ref);
-
         }
         else if (location==1)
         {

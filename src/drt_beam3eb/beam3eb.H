@@ -313,6 +313,11 @@ public:
   std::vector<LINALG::Matrix<3,1> > Tref() const;
 
   /*!
+  \brief get reference length i.e. LengthRef_
+  */
+  double LengthRef() const;
+
+  /*!
   \brief get jacobi factor jacobi_
   */
   double jacobi() const;
@@ -502,11 +507,16 @@ private:
 
   //! kinetic energy
   double Ekin_;
+
   //! internal energy
   double Eint_;
 
   //! Matrix holding tangents at each node in reference configuration
   std::vector<LINALG::Matrix<3,1> > Tref_;
+
+  //! Length of element in reference configuration
+  double LengthRef_;
+
   //! angular momentum of the element
   LINALG::Matrix<3,1> L_;
   //! linear momentum of the element

@@ -17,6 +17,11 @@ Maintainer: Kei Müller
 
 #include "../drt_inpar/inpar_statmech.H"
 #include "../linalg/linalg_utils.H"
+#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_element.H"
+#include "../drt_truss3/truss3.H"
+#include "../drt_beam3/beam3.H"
+#include "../drt_beam3ii/beam3ii.H"
 
 
 //MEASURETIME activates measurement of computation time for certain parts of the code
@@ -2019,6 +2024,80 @@ void STATMECH::StatMechManager::OutputLinkerPositions(std::ostringstream& filena
     fputs(filecontent.str().c_str(), fp);
     fclose(fp);
   }
+  return;
+}
+
+/*------------------------------------------------------------------------------*
+ |Output of change of inclusive angles                                          |
+ |between filaments                                     (public) mukherjee 03/15|
+ *------------------------------------------------------------------------------*/
+void STATMECH::StatMechManager::OutputDeltaTheta(std::ostringstream& filename)
+{
+
+    FILE* fp = NULL;
+    std::stringstream filecontent;
+    fp = fopen(filename.str().c_str(), "a");
+    for(int i=0; i<discret_->ElementRowMap()->NumMyElements(); i++)
+    {
+        DRT::Element* ele = discret_->lRowElement(i);
+        const DRT::ElementType &eot = ele->ElementType();
+        if(eot==DRT::ELEMENTS::Truss3Type::Instance())
+        {
+          DRT::ELEMENTS::Truss3* crossele = dynamic_cast<DRT::ELEMENTS::Truss3*> (ele);
+          double DeltaTheta= crossele->GetDeltaTheta();
+          filecontent<<std::scientific<<std::setprecision(8)<<DeltaTheta<<std::endl;
+        }
+        else if(eot==DRT::ELEMENTS::Beam3Type::Instance())
+        {
+          DRT::ELEMENTS::Beam3* crossele = dynamic_cast<DRT::ELEMENTS::Beam3*> (ele);
+          if(crossele==NULL)
+            return;
+          LINALG::Matrix<3,1> Tcurr1_alt(true);
+          LINALG::Matrix<3,1> Tcurr2_alt(true);
+          LINALG::Matrix<3,1> Tref1_alt(true);
+          LINALG::Matrix<3,1> Tref2_alt(true);
+          crossele->TcurrBeam3ii(Tcurr1_alt,Tcurr2_alt);
+          crossele->TrefBeam3ii(Tref1_alt,Tref2_alt);
+          double Phi_ref_alt= GetTheta(Tref1_alt,Tref2_alt);
+          double Phi_curr_alt= GetTheta(Tcurr1_alt,Tcurr2_alt);
+          double DeltaTheta= abs(Phi_ref_alt-Phi_curr_alt);
+          filecontent<<std::scientific<<std::setprecision(8)<<DeltaTheta<<std::endl;
+        }
+    }
+    fputs(filecontent.str().c_str(), fp);
+    fclose(fp);
+
+  return;
+}
+
+/*------------------------------------------------------------------------------*
+ | Output of linker length for spring linkers           (public) mukherjee 03/15|
+ *------------------------------------------------------------------------------*/
+void STATMECH::StatMechManager::OutputLinkerLength(std::ostringstream& filename)
+{
+    FILE* fp = NULL;
+    std::stringstream filecontent;
+    fp = fopen(filename.str().c_str(), "a");
+    for(int i=0; i<discret_->ElementRowMap()->NumMyElements(); i++)
+    {
+        DRT::Element* ele = discret_->lRowElement(i);
+        const DRT::ElementType &eot = ele->ElementType();
+        if(eot==DRT::ELEMENTS::Truss3Type::Instance()) // i.e. it's a spring linker
+        {
+          DRT::ELEMENTS::Truss3* crossele = dynamic_cast<DRT::ELEMENTS::Truss3*> (ele);
+          double lcurrCrosslink= crossele->Lcurr();
+          filecontent<<std::scientific<<std::setprecision(8)<<lcurrCrosslink<<std::endl;
+        }
+        if(eot==DRT::ELEMENTS::Beam3Type::Instance()) // i.e. it's a beam linker
+        {
+          DRT::ELEMENTS::Beam3* crossele = dynamic_cast<DRT::ELEMENTS::Beam3*> (ele);
+          double lcurrCrosslink= crossele->Lcurr();
+          filecontent<<std::scientific<<std::setprecision(8)<<lcurrCrosslink<<std::endl;
+        }
+    }
+    fputs(filecontent.str().c_str(), fp);
+    fclose(fp);
+
   return;
 }
 

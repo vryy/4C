@@ -922,6 +922,9 @@ void STR::TimIntStatMech::NewtonFull()
     //In beam contact applications it can be necessary to limit the Newton step size (scaled residual displacements)
     LimitStepsizeBeamContact(disi_);
 
+    //Biopolymer network applications (for filaments with beam3eb elements and spring crosslinkers)
+    LimitStepsizeBeam(disi_);
+
 //    // recover standard displacements (no effect on StatMech)
 //    RecoverSTCSolution();
 
@@ -978,8 +981,26 @@ void STR::TimIntStatMech::NewtonFull()
     // increment equilibrium loop index
     iter_ += 1;
 
+    // Print GMSHOUTPUT
+    //********************Begin: GMSH Output*******************************
+        // STEP 1: OUTPUT OF TIME STEP INDEX
+//        std::ostringstream filename;
+//        filename << "/home/mukherjee/workspace/baci/release/o/gmsh_output/";
+//
+//        //filename << "o/gmsh_output/";
+//        if (iter_<1000000)
+//          filename << "network_timestep" << std::setw(4) << std::setfill('0')<<step_+1<<"Iter"<<std::setw(2) << std::setfill('0') << iter_-1;
+//        else /*(timestep>=1000000)*/
+//          dserror("ERROR: Gmsh output implemented for max 999.999 time steps");
+//
+//        // finish filename
+//        filename<<".pos";
+//
+//        statmechman_->GmshOutput((*disn_),filename,step_,(*time_)[0]);
+   //********************End: GMSH Output:*******************************
+
     // leave the loop without going to maxiter iteration because most probably, the process will not converge anyway from here on
-    if(normfres_>1.0e6 && iter_>4)
+    if(normfres_>1.0e4 && iter_>4)
     {
       std::cout << "Attention: Left nonlinear equilibrium loop since normfres_>1.0e4!" << std::endl;
       break;
@@ -1002,7 +1023,7 @@ void STR::TimIntStatMech::NewtonFull()
     PrintNewtonIter();
   }
 
-  std::cout << "iterges_: " << iterges_ << std::endl;
+ // std::cout << "iterges_: " << iterges_ << std::endl;
 
   return;
 

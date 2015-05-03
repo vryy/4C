@@ -661,6 +661,8 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_totlag(LINALG::Matrix<1,6>&      Dum
   aux(4) = (xcurr(4) - xcurr(1));
   aux(5) = (xcurr(5) - xcurr(2));
 
+  lcurr_ = sqrt(pow(aux(0),2)+pow(aux(1),2)+pow(aux(2),2));
+
   //calculating strain epsilon from node position by scalar product:
   //epsilon = (xrefe + 0.5*ucurr)^T * N_{,s}^T * N_{,s} * d
   epsilon = 0;
@@ -862,8 +864,7 @@ void DRT::ELEMENTS::Truss3::t3_lumpmass(Epetra_SerialDenseMatrix* emass)
  | Calculate change in angle from reference configuration                     mukherjee 09/14|
  *-------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Truss3::CalcDeltaTheta(std::vector<double>& disp,
-                                                 LINALG::Matrix<1,3>& thetacurr,
-                                                 LINALG::Matrix<1,3>& deltatheta)
+                                           LINALG::Matrix<1,3>& thetacurr)
 {
   //current tangential vector
   std::vector<LINALG::Matrix<3,1> >  tcurrNode;
@@ -973,7 +974,7 @@ void DRT::ELEMENTS::Truss3::CalcDeltaTheta(std::vector<double>& disp,
     else
       dserror("Angle more than 180 degrees!");
 
-    deltatheta(location)=thetacurr(location)-ThetaRef_[location];
+    deltatheta_(location)=thetacurr(location)-ThetaRef_[location];
   }
 
   return;
@@ -1019,7 +1020,7 @@ void DRT::ELEMENTS::Truss3::torsion_stiffmass(Teuchos::ParameterList&   params,
 
   deltatheta_.Clear();
   LINALG::Matrix<1,3> thetacurr(true);
-  CalcDeltaTheta(disp, thetacurr, deltatheta_);
+  CalcDeltaTheta(disp, thetacurr);
   double ThetaBoundary1=M_PI/4;
   double ThetaBoundary2=3*M_PI/4;
 

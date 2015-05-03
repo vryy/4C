@@ -1194,6 +1194,26 @@ void STATMECH::StatMechManager::Output(const int                            ndim
       }
     }
     break;
+    case INPAR::STATMECH::statout_linkerlength:
+    {
+      if ((time>=starttime && (istep-istart_) % statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0) || fabs(time-starttime)<1e-8)
+      {
+        std::ostringstream linkerlengthfilename;
+        linkerlengthfilename << outputrootpath_ << "/StatMechOutput/LinkerLength_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
+        OutputLinkerLength(linkerlengthfilename);
+      }
+    }
+    break;
+    case INPAR::STATMECH::statout_deltatheta:
+    {
+      if ((time>=starttime && (istep-istart_) % statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0) || fabs(time-starttime)<1e-8)
+      {
+        std::ostringstream deltathetafilename;
+        deltathetafilename << outputrootpath_ << "/StatMechOutput/DeltaTheta_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
+        OutputDeltaTheta(deltathetafilename);
+      }
+    }
+    break;
     case INPAR::STATMECH::statout_none:
     default:
     break;

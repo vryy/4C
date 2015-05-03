@@ -42,6 +42,7 @@ Maintainer: Alexander Popp
 #include "../drt_constraint/springdashpot_manager.H"
 #include "../drt_constraint/springdashpot.H"
 #include "../drt_surfstress/drt_surfstress_manager.H"
+#include "../drt_statmech/statmech_manager.H"
 #include "../drt_potential/drt_potential_manager.H"
 #include "../drt_lib/drt_locsys.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -1238,6 +1239,33 @@ void STR::TimIntImpl::LimitStepsizeBeamContact
       while(disi_infnorm>maxdisiscalefac*minimal_radius)
       {
         std::cout << "      Residual displacement scaled! (Minimal element radius: " << minimal_radius << ")" << std::endl;
+        disi->Scale(0.5);
+        disi->NormInf(&disi_infnorm);
+      }
+    }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* Check residual displacement and limit it if necessary*/
+void STR::TimIntImpl::LimitStepsizeBeam (Teuchos::RCP<Epetra_Vector>& disi)
+{
+
+  Teuchos::ParameterList StatMechParams= statmechman_->GetStatMechParams();
+  double alink = StatMechParams.get<double>("ALINK", 4.751658e-06);
+  if(alink==0.0)
+  {
+    {
+      double disi_infnorm=0.0;
+      disi->NormInf(&disi_infnorm);
+      double minimal_radius = 0.00123;
+      double maxdisiscalefac = 1000;
+
+      while(disi_infnorm>maxdisiscalefac*minimal_radius)
+      {
+        std::cout << "Residual displacement scaled! (Minimal element radius: " << minimal_radius << ")" << std::endl;
         disi->Scale(0.5);
         disi->NormInf(&disi_infnorm);
       }

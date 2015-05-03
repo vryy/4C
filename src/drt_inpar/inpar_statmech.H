@@ -48,7 +48,9 @@ namespace INPAR
       statout_octree, ///< writing output for octree visualization and checks
       statout_loom, ///< writing output for loom setup: a) nearest neighbor b) attractive forces c) coverage
       statout_loomelnrg, ///< writing output for filament elastic energy
-      statout_motassay ///< writing output for motility assay (active linker setup)
+      statout_motassay, ///< writing output for motility assay (active linker setup)
+      statout_linkerlength, //< writing output of spring linkers
+      statout_deltatheta // < writing output of change in inclusive angle of filaments when connected to linkers
     };
 
     /// (this enum represents the input file parameter STAT_OUTPUT)

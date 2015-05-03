@@ -726,50 +726,122 @@ inline void DRT::ELEMENTS::Beam3::updatetriad(const LINALG::Matrix<3,1>& deltath
 inline void DRT::ELEMENTS::Beam3::UpdateNodalTriad(std::vector<double>&      disp,
                                       std::vector<LINALG::Matrix<3,1> >&     Tnew)
 {
+  LINALG::Matrix<3,1> thetanew_node;
 
-
-  std::vector<LINALG::Matrix <3,1> > ThetaNode;
-  ThetaNode.resize(2);
-  Tnew.resize(2);
-  //set up current  theta, at the node
-  for (int node=0; node<2; ++node)
+  for(int node=0; node<2; node++)
   {
-    for (int dof=0; dof<3; ++dof)
-    {
-      ThetaNode[node](dof)          += disp[6*node+3+dof];
-    }//for (int dof=0; dof<3; ++dof)
-  ThetaNewNode_[node]= ThetaNode[node];
+    /*compute interpolated angle displacemnt at specific Gauss point;
+     *angle displacement is taken from discretization*/
+    for(int dof=0; dof<3; dof++)
+      thetanew_node(dof) += disp[6*node+3+dof];
+
+    ThetaNewNode_[node]=thetanew_node;
+    //computing quaternion equivalent to rotation by deltatheta
+    LINALG::Matrix<4,1> Qcurr;
+    LARGEROTATIONS::angletoquaternion(ThetaNewNode_[node],Qcurr);
 
 
-  /*to perform a curvature update at a specific nodal point we need to know the angle deltatheta
-   * by which the triad at that node is rotated */
-
-  //compute delta theta for (16.146) at node only according to remark in the bottom of page 209
-  LINALG::Matrix<3,1> deltatheta_node = ThetaNewNode_[node];
-  deltatheta_node -= ThetaOldNode_[node];
-
-  // Convert angle to quaternion
-  LINALG::Matrix<4,1> Qrot(true);
-  LARGEROTATIONS::angletoquaternion(deltatheta_node,Qrot);
-
-  //computing quaternion Qnew_ for new configuration of Qold_ for old configuration by means of a quaternion product
-  LARGEROTATIONS::quaternionproduct(QoldNode_[node],Qrot,QnewNode_[node]);
-
-  //normalizing quaternion in order to make sure that it keeps unit absolute values through time stepping
-  double abs = QnewNode_[node].Norm2();
-
-  for(int i = 0; i<4; i++)
-    QnewNode_[node](i) = QnewNode_[node](i) / abs;
-  LINALG::Matrix<3,3> Triad(true);
-  LARGEROTATIONS::quaterniontotriad(QnewNode_[node],Triad);
-
-  for (int i=0; i<3; i++)
-    Tnew[node](i)=Triad (0,i);
+    LINALG::Matrix<3,3> Triad(true);
+    LARGEROTATIONS::quaterniontotriad(Qcurr,Triad);
+    for (int i=0; i<3; i++)
+      Tnew[node](i)=Triad (0,i);
 
   }//for (int node=0; node<nnode; ++node)
 
   return;
 } //DRT::ELEMENTS::Beam3::UpdateNodalTriad
+
+/*-------------------------------------------------------------------------------------------*
+ | Calculate change in angle from reference configuration                     mukherjee 01/15|
+ *-------------------------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Beam3::CalcDeltaTheta(std::vector<double>& disp)
+{
+  //current tangential vector
+  std::vector<LINALG::Matrix<3,1> >  tcurrNode;
+  std::vector<LINALG::Matrix<3,1> >  trefNode;
+  trefNode.resize(2);
+  tcurrNode.resize(2);
+  //Update nodal triad
+  UpdateNodalTriad(disp,tcurrNode);
+
+  for(int node=0; node<2; node++)
+  {
+    LINALG::Matrix<3,3> Triad(true);
+    LARGEROTATIONS::quaterniontotriad(Qref_[node],Triad);
+    for (int i=0; i<3; i++)
+      trefNode[node](i)=  Triad(0,i);
+  }
+
+    // Calculate current angle
+    double dotprod=0.0;
+    LINALG::Matrix  <1,3> crossprod(true);
+    double CosTheta=0.0;
+    double SinTheta=0.0;
+
+    double norm_t1_curr = tcurrNode[0].Norm2();
+    double norm_t2_curr=tcurrNode[1].Norm2();
+    for (int j=0; j<3; ++j)
+      dotprod +=  tcurrNode[0](j) * tcurrNode[1](j);
+
+    CosTheta = dotprod/(norm_t1_curr*norm_t2_curr);
+
+    // cross product
+    crossprod(0) = tcurrNode[0](1)*tcurrNode[1](2) - tcurrNode[0](2)*tcurrNode[1](1);
+    crossprod(1) = tcurrNode[0](2)*tcurrNode[1](0) - tcurrNode[0](0)*tcurrNode[1](2);
+    crossprod(2) = tcurrNode[0](0)*tcurrNode[1](1) - tcurrNode[0](1)*tcurrNode[1](0);
+
+    double norm= crossprod.Norm2();
+    SinTheta= norm/(norm_t1_curr*norm_t2_curr);
+
+    double ThetaBoundary1=M_PI/4;
+    double ThetaBoundary2=3*M_PI/4;
+    double thetacurr=0;
+    if (SinTheta >=0)
+    {
+      if (CosTheta >= cos(ThetaBoundary1))
+        thetacurr=asin(SinTheta);
+      else if (CosTheta <= cos(ThetaBoundary2))
+        thetacurr=M_PI-asin(SinTheta);
+      else
+        thetacurr=acos(CosTheta);
+    }
+    else
+      dserror("Angle more than 180 degrees!");
+
+
+    // Calculate reference angle
+    double norm_t1_ref = trefNode[0].Norm2();
+    double norm_t2_ref=trefNode[1].Norm2();
+    for (int j=0; j<3; ++j)
+      dotprod +=  trefNode[0](j) * trefNode[1](j);
+
+    CosTheta = dotprod/(norm_t1_ref*norm_t2_ref);
+
+    // cross product
+    crossprod(0) = trefNode[0](1)*trefNode[1](2) - trefNode[0](2)*trefNode[1](1);
+    crossprod(1) = trefNode[0](2)*trefNode[1](0) - trefNode[0](0)*trefNode[1](2);
+    crossprod(2) = trefNode[0](0)*trefNode[1](1) - trefNode[0](1)*trefNode[1](0);
+
+    norm= crossprod.Norm2();
+    SinTheta= norm/(norm_t1_ref*norm_t2_ref);
+
+    double thetaref=0;
+    if (SinTheta >=0)
+    {
+      if (CosTheta >= cos(ThetaBoundary1))
+        thetaref=asin(SinTheta);
+      else if (CosTheta <= cos(ThetaBoundary2))
+        thetaref=M_PI-asin(SinTheta);
+      else
+        thetaref=acos(CosTheta);
+    }
+    else
+      dserror("Angle more than 180 degrees!");
+
+    deltatheta_=abs(thetacurr-thetaref);
+
+  return;
+}
 
 /*-------------------------------------------------------------------------------------------------------*
  |updating local curvature according to Crisfield, Vol. 2, pages 209 - 210; an exact update of           |
@@ -1087,6 +1159,30 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( Teuchos::ParameterList& params,
                                             Epetra_SerialDenseMatrix* massmatrix,
                                             Epetra_SerialDenseVector* force)
 {
+  //Calculate change in angle from reference configuration
+//  CalcDeltaTheta(disp);
+
+  //current node position (first entries 0 .. 2 for first node, 3 ..5 for second node)
+  LINALG::Matrix<6,1> xcurr;
+
+  //auxiliary vector for both internal force and stiffness matrix: N^T_(,xi)*N_(,xi)*xcurr
+  LINALG::Matrix<3,1> aux;
+
+  //current nodal position (first
+  for (int j=0; j<3; ++j)
+  {
+    xcurr(j  )   = Nodes()[0]->X()[j] + disp[j]; //first node
+    xcurr(j+3)   = Nodes()[1]->X()[j] + disp[6+j]; //second node
+  }
+
+  //computing auxiliary vector aux = 4.0*N^T_{,xi} * N_{,xi} * xcurr
+  aux(0) = (xcurr(0) - xcurr(3));
+  aux(1) = (xcurr(1) - xcurr(4));
+  aux(2) = (xcurr(2) - xcurr(5));
+
+  //current length
+  lcurr_ = sqrt(pow(aux(0),2)+pow(aux(1),2)+pow(aux(2),2));
+
   //constitutive laws from Crisfield, Vol. 2, equation (17.76)
   LINALG::Matrix<3,1> Cm;
   LINALG::Matrix<3,1> Cb;
@@ -1104,6 +1200,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( Teuchos::ParameterList& params,
 
   //theta interpolated at the GP. Note: theta is not the current angle theta but only the difference to the reference configuration
   LINALG::Matrix<3,1> thetanew_gp;
+
 
   //derivative of theta with respect to xi
   LINALG::Matrix<3,1> thetaprimenew_gp;
@@ -1157,6 +1254,8 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( Teuchos::ParameterList& params,
   LINALG::Matrix<1,nnode> funct;
   LINALG::Matrix<1,nnode> deriv;
 
+
+
   //Loop through all GP and calculate their contribution to the forcevector and stiffnessmatrix
   for(int numgp=0; numgp < gausspoints.nquad; numgp++)
   {
@@ -1183,6 +1282,10 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( Teuchos::ParameterList& params,
         /*compute interpolated angle displacemnt at specific Gauss point; angle displacement is
          * taken from discretization and interpolated with the according shapefunctions*/
         thetanew_gp(dof)          += disp[6*node+3+dof]*funct(node);
+
+        /*compute interpolated angle displacemnt at specific Gauss point;
+         *angle displacement is taken from discretization*/
+//        thetanew_node(dof)        += disp[6*node+3+dof];
 
         /*compute derivative of interpolated angle displacement with respect to curve parameter at specific Gauss point; angle displacement is
          * taken from discretization and interpolated with the according shapefunctions*/

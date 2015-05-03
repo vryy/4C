@@ -2437,14 +2437,17 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                                     "orientationcorrelation",
                                                     "endtoend_const",
                                                     "viscoelasticity",
-                                                    "networkcreep",
-                                                    "networkrelax",
+//                                                    "networkcreep",
+//                                                    "networkrelax",
                                                     "networkdispfield",
                                                     "structanaly",
                                                     "octree",
                                                     "loom",
                                                     "loomelnrg",
-                                                    "motassay"),
+                                                    "motassay",
+                                                    "linkerlength",
+                                                    "deltatheta"
+                                                    ),
                                  //translating input std::strings into BACI input parameters
                                  tuple<int>(INPAR::STATMECH::statout_none,INPAR::STATMECH::statout_none,
                                             INPAR::STATMECH::statout_endtoendlog,
@@ -2452,15 +2455,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                             INPAR::STATMECH::statout_orientationcorrelation,
                                             INPAR::STATMECH::statout_endtoendconst,
                                             INPAR::STATMECH::statout_viscoelasticity,
-                                            INPAR::STATMECH::statout_networkcreep,
-                                            INPAR::STATMECH::statout_networkrelax,
+//                                            INPAR::STATMECH::statout_networkcreep,
+//                                            INPAR::STATMECH::statout_networkrelax,
                                             INPAR::STATMECH::statout_networkdispfield,
                                             INPAR::STATMECH::statout_structanaly,
                                             INPAR::STATMECH::statout_octree,
                                             INPAR::STATMECH::statout_loom,
                                             INPAR::STATMECH::statout_loomelnrg,
-                                            INPAR::STATMECH::statout_motassay),
+                                            INPAR::STATMECH::statout_motassay,
+                                            INPAR::STATMECH::statout_linkerlength,
+                                            INPAR::STATMECH::statout_deltatheta),
                                  &statmech);
+
   //Reading which kind of friction model should be applied
   setStringToIntegralParameter<int>("FRICTION_MODEL","none","friction model for polymer dynamics",
                                  //listing possible std::strings in input file in category FRICTION_MODEL

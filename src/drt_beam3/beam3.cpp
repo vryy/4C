@@ -12,6 +12,7 @@ Maintainer: Christoph Meier
 *----------------------------------------------------------------------*/
 
 #include "beam3.H"
+#include "../drt_beam3ii/beam3ii.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_dserror.H"
@@ -190,6 +191,7 @@ crosssecshear_(0),
 Iyy_(0),
 Izz_(0),
 Irr_(0),
+deltatheta_(0),
 jacobi_(0),
 jacobimass_(0),
 jacobinode_(0)
@@ -203,6 +205,7 @@ DRT::ELEMENTS::Beam3::Beam3(const DRT::ELEMENTS::Beam3& old) :
  DRT::Element(old),
  isinit_(old.isinit_),
  eps_(old.eps_),
+ Qref_(old.Qref_),
  Qconv_(old.Qconv_),
  Qold_(old.Qold_),
  Qnew_(old.Qnew_),
@@ -224,6 +227,8 @@ DRT::ELEMENTS::Beam3::Beam3(const DRT::ELEMENTS::Beam3& old) :
  Iyy_(old.Iyy_),
  Izz_(old.Izz_),
  Irr_(old.Irr_),
+ deltatheta_(old.deltatheta_),
+ lcurr_(old.lcurr_),
  jacobi_(old.jacobi_),
  jacobimass_(old.jacobimass_),
  jacobinode_(old.jacobinode_)
@@ -254,6 +259,8 @@ DRT::ELEMENTS::Beam3::~Beam3()
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3::Print(std::ostream& os) const
 {
+  os << "beam3 ";
+  Element::Print(os);
   return;
 }
 
@@ -273,6 +280,68 @@ double DRT::ELEMENTS::Beam3::ReturnRatioNormForceMoment() const
 {
 //for now constant, since we only implemented 4-noded interpolated element with linear shape functions
  return RatioNormForceMoment;
+}
+
+//brief! Return current length of beam
+double DRT::ELEMENTS::Beam3::Lcurr() const
+{
+ return lcurr_;
+}
+
+//brief! Return current tangent of beam3ii elements connected to beam3 element
+void DRT::ELEMENTS::Beam3::TcurrBeam3ii(LINALG::Matrix<3,1>& Tcurr1, LINALG::Matrix<3,1>& Tcurr2)
+{
+  DRT::Node* node1 = this->Nodes()[0];
+  DRT::Element* Element1=node1->Elements()[0];
+  const DRT::ElementType &eot_el1 = Element1->ElementType();
+  if(eot_el1==DRT::ELEMENTS::Beam3iiType::Instance())
+  {
+    DRT::ELEMENTS::Beam3ii* fil1 = dynamic_cast<DRT::ELEMENTS::Beam3ii*> (Element1);
+    if(fil1==NULL)
+      return;
+    int nodenumber=0;
+    if(node1->Id()!=fil1->NodeIds()[0])
+      nodenumber=1;
+    Tcurr1=fil1->Tcurr((int)fil1->NodeIds()[nodenumber]);
+  }
+  DRT::Node* node2 = this->Nodes()[1];
+  DRT::Element* Element2=node2->Elements()[0];
+  if(Element2->ElementType()==DRT::ELEMENTS::Beam3iiType::Instance())
+  {
+    DRT::ELEMENTS::Beam3ii* fil2 = dynamic_cast<DRT::ELEMENTS::Beam3ii*> (Element2);
+    if (fil2==NULL)
+      return;
+    int nodenumber=0;
+    if(node1->Id()!=fil2->NodeIds()[0])
+      nodenumber=1;
+    Tcurr2=fil2->Tcurr((int)fil2->NodeIds()[nodenumber]);
+  }
+ return;
+}
+
+//brief! Return current tangent of beam3ii elements connected to beam3 element
+void DRT::ELEMENTS::Beam3::TrefBeam3ii(LINALG::Matrix<3,1>& Tref1, LINALG::Matrix<3,1>& Tref2)
+{
+  DRT::Node* node1 = this->Nodes()[0];
+  DRT::Element* Element1=node1->Elements()[0];
+  const DRT::ElementType &eot_el1 = Element1->ElementType();
+  if(eot_el1==DRT::ELEMENTS::Beam3iiType::Instance())
+  {
+    DRT::ELEMENTS::Beam3ii* fil1 = dynamic_cast<DRT::ELEMENTS::Beam3ii*> (Element1);
+    if(fil1==NULL)
+      return;
+    Tref1=fil1->Tref();
+  }
+  DRT::Node* node2 = this->Nodes()[1];
+  DRT::Element* Element2=node2->Elements()[0];
+  if(Element2->ElementType()==DRT::ELEMENTS::Beam3iiType::Instance())
+  {
+    DRT::ELEMENTS::Beam3ii* fil2 = dynamic_cast<DRT::ELEMENTS::Beam3ii*> (Element2);
+    if (fil2==NULL)
+      return;
+    Tref2=fil2->Tref();
+  }
+ return;
 }
 
 
@@ -335,8 +404,11 @@ void DRT::ELEMENTS::Beam3::Pack(DRT::PackBuffer& data) const
   AddtoPack<3,1>(data,curvold_);
   AddtoPack(data,isinit_);
   AddtoPack(data,Irr_);
+  AddtoPack(data,deltatheta_);
+  AddtoPack(data,lcurr_);
   AddtoPack(data,Iyy_);
   AddtoPack(data,Izz_);
+  AddtoPack<4,1>(data,Qref_);
   AddtoPack<4,1>(data,Qconv_);
   AddtoPack<4,1>(data,Qnew_);
   AddtoPack<4,1>(data,Qold_);
@@ -388,8 +460,11 @@ void DRT::ELEMENTS::Beam3::Unpack(const std::vector<char>& data)
   ExtractfromPack<3,1>(position,data,curvold_);
   isinit_ = ExtractInt(position,data);
   ExtractfromPack(position,data,Irr_);
+  ExtractfromPack(position,data,deltatheta_);
+  ExtractfromPack(position,data,lcurr_);
   ExtractfromPack(position,data,Iyy_);
   ExtractfromPack(position,data,Izz_);
+  ExtractfromPack<4,1>(position,data,Qref_);
   ExtractfromPack<4,1>(position,data,Qconv_);
   ExtractfromPack<4,1>(position,data,Qnew_);
   ExtractfromPack<4,1>(position,data,Qold_);
@@ -403,7 +478,6 @@ void DRT::ELEMENTS::Beam3::Unpack(const std::vector<char>& data)
   ExtractfromPack<3,1>(position,data,thetaprimenew_);
   ExtractfromPack<3,1>(position,data,thetaprimeconv_);
   ExtractfromPack<3,1>(position,data,thetaprimeold_);
-
   ExtractfromPack(position,data,eps_);
   ExtractfromPack<6,1>(position,data,xactrefe_);
   ExtractfromPack<6,1>(position,data,rotinitrefe_);

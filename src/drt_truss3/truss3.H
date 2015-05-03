@@ -336,6 +336,18 @@ public:
     return lrefe_;
   }
 
+  //! \brief return reference length
+  double Lcurr() const
+  {
+    return lcurr_;
+  }
+
+  //! \brief return change in angle between filaments
+  double GetDeltaTheta() const
+  {
+    return abs(deltatheta_(2));
+  }
+
   //! \brief internal force vector
   const Teuchos::RCP<Epetra_SerialDenseVector> InternalForceVector() const
       {
@@ -408,6 +420,9 @@ private:
   //! length in reference configuration
   double lrefe_;
 
+  //! length in reference configuration
+  double lcurr_;
+
   //! Vector holding value of Jacobi determinant jacobi for complete integration of massmatrix
   std::vector<double> jacobimass_;
 
@@ -461,8 +476,7 @@ private:
       Epetra_SerialDenseVector& DummyForce);
 
   // Calculate change in angle from reference configuration
-  void CalcDeltaTheta(std::vector<double>&  disp, LINALG::Matrix<1,3>& thetacurr,
-      LINALG::Matrix<1,3>& deltatheta);
+  void CalcDeltaTheta(std::vector<double>&  disp, LINALG::Matrix<1,3>& thetacurr);
 
   //   Calculate torsional stiffness matrices
   void torsion_stiffmass(Teuchos::ParameterList&   params,

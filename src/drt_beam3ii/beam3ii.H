@@ -215,6 +215,11 @@ public:
    LINALG::Matrix<3,1>  Tcurr(const int NodeID);
 
   /*!
+  \brief get reference tangent at specified node i.e. Tref_
+   */
+   LINALG::Matrix<3,1> Tref();
+
+  /*!
   \brief Get jacobi_ factor of first gauss point
   */
   const double& GetJacobi() const { return jacobi_[0];}
@@ -357,6 +362,15 @@ public:
         LARGEROTATIONS::quaterniontoangle(phi12,kapparef_[0]);
         kapparef_[0].Scale(0.5/jacobi_[0]);
       }//for(int numgp=0; numgp < gausspoints.nquad; numgp++)
+
+      double norm2=0;
+      // For 2 nodes the axial tangents are same for both direction
+        Tref_.Clear();
+        for(int dof = 0; dof< 3 ; dof++ )
+          Tref_(dof) =  xrefe[3+dof] - xrefe[dof];
+
+        norm2 = Tref_.Norm2();
+        Tref_.Scale(1/norm2);
 
       //Get the applied integrationpoints for exact integration of mass matrix
       //TODO: DRT::UTILS::IntegrationPoints1D gausspointsmass(MyGaussRule(nnode,lobattointegration));
@@ -684,6 +698,8 @@ private:
   std::vector<LINALG::Matrix<3,1> > dispthetanew_;
   //! Matrix holding current tangent at the node connected to Beam3ii element for statmech problem
   LINALG::Matrix<3,1> Tcurr_;
+  //! Matrix holding reference tangent at the node connected to Beam3ii element for statmech problem
+  LINALG::Matrix<3,1> Tref_;
 
   //!initial curvature at Gauss points for elasticity (corresponding to \Lambda_0^t \Labmda'_0 in eq. (3.5), Crisfield 1999
   std::vector<LINALG::Matrix<3,1> > kapparef_;
