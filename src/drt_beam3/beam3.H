@@ -640,8 +640,6 @@ private:
   //! storing epsilonn(0)
   double eps_;
 
-  //! Matrix holding tangents at each node in reference configuration (when elements are added)
-//  std::vector<LINALG::Matrix<3,1> > Tref_;
   //! quaternions of triads at GPs at the end of the preceeding time step due to Crisfield, Vol. 2, equation (17.65)
   std::vector<LINALG::Matrix<4,1> > Qref_;
   //! quaternions of triads at GPs at the end of the preceeding time step due to Crisfield, Vol. 2, equation (17.65)

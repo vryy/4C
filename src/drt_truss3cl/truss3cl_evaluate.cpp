@@ -273,47 +273,12 @@ template<int fnnode, int ndim, int dof> //number of nodes, number of dimensions 
 int DRT::ELEMENTS::Truss3CL::EvaluatePTC(Teuchos::ParameterList&   params,
                                        Epetra_SerialDenseMatrix& elemat1)
 {
-  //factor to regulate artificial ptc stiffness;
-//  double ptcfactor = 0.5;
-
-  //rotational ptc damping
-
-  //get friction model according to which forces and damping are applied
-//  INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
-
-  //damping coefficients for translational and rotational degrees of freedom
-//  LINALG::Matrix<3,1> gamma(true);
-//  MyDampingConstants(params,gamma,frictionmodel);
-
-//  double artgam = gamma(1)*ptcfactor;
 
   for(int i=0; i<elemat1.RowDim(); i++)
     for(int j=0; j<elemat1.ColDim(); j++)
-    {
       if (i==j)
         elemat1(i,j) += params.get<double>("crotptc",0.0)*0.5*lrefe_/2;
-//      else
-//      //        elemat1(i,j) -= params.get<double>("crotptc",0.0)*0.25*jacobi_;
-     }
 
-//  //diagonal elements
-//  for(int i=0; i<6; i++)
-//    elemat1(i,i) += artgam;
-//
-//  //off-diagonal elements
-//  elemat1(0,3) -= artgam;
-//  elemat1(1,4) -= artgam;
-//  elemat1(2,5) -= artgam;
-//  elemat1(3,0) -= artgam;
-//  elemat1(4,1) -= artgam;
-//  elemat1(5,2) -= artgam;
-
-  //diagonal ptc
-  /*
-  //each node gets a block diagonal damping term; the Lobatto integration weight is 0.5 for 2-noded elements
-  for(int k=0; k<6; k++)
-    elemat1(k,k) += params.get<double>("dti",0.0)*ptcfactor;
-  */
 
   return 0;
 } //DRT::ELEMENTS::Truss3CL::EvaluatePTC
@@ -508,18 +473,14 @@ void DRT::ELEMENTS::Truss3CL::t3_nlnstiffmass(Teuchos::ParameterList&   params,
 
 
       for (int filament=0; filament<2; filament++)
-      {
         LengthofElementatRef[filament]=sqrt(pow(aux[3*filament],2)+pow(aux[3*filament+1],2)+pow(aux[3*filament+2],2));
-      }
 
 
    // Compute Hermite polynomials in current/spatial position, we need the length of filaments at reference configuration
    std::vector<LINALG::Matrix<1,4> > Ibp(2);
    const DiscretizationType distype = this->Shape();
      for(int filament=0; filament<2; filament++)
-     {
        DRT::UTILS::shape_function_hermite_1D(Ibp[filament],mybindingposition_[filament],LengthofElementatRef[filament],distype);
-     }
 
      //calculate interpolated fictitious nodal displacaments.
      for(int j=0;j<2;j++)         // Number of binding spots

@@ -73,7 +73,6 @@ int ADAPTER::StructureStatMech::Integrate()
         newrandomnumbers=statmechstructure->PerformErrorAction();
     }
     while(!statmechstructure->IsConverged());
-//    dserror("stop");
 #ifdef MEASURETIME
     const double t2 = Teuchos::Time::wallTime();
 #endif

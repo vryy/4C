@@ -34,7 +34,6 @@ void STATMECH::StatMechManager::ChangeActiveLinkerLength(const double&          
                                                          Teuchos::RCP<Epetra_MultiVector> bspotrotations)
 {
 //  std::cout<<"Pre-ChangeLinkerLegth:\n"<<*crosslinkeractlength_<<std::endl;
- std::cout<<"printscreen="<<printscreen<<std::endl;
 
   int numprobshort = 0;
   int numproblong = 0;
@@ -210,9 +209,6 @@ void STATMECH::StatMechManager::ChangeActiveLinkerLength(const double&          
       (*crosslinkeractcycletime_)[i] += dt;
     Teuchos::RCP<Epetra_Vector> crosslinkeractcycletimetrans = Teuchos::rcp(new Epetra_Vector(*transfermap_,true));
     CommunicateVector(crosslinkeractcycletimetrans,crosslinkeractcycletime_);
-
-    std::cout<<"toshortglob+tolongglob="<<toshortglob+tolongglob<<std::endl;
-// dserror("stop");
 
     if(!discret_->Comm().MyPID() && (toshortglob+tolongglob)>0 && printscreen)
     {

@@ -1339,7 +1339,6 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
             if(CheckOrientation(direction,discol,bspottriadscol,LID) && !intersection)
             {
               numsetelements++;
-              std::cout<<"numsetelements="<<numsetelements<<std::endl;
               (*addcrosselement)[currlink] = 1.0;
               // establish double bond to the first given neighbour
               // attach it to the second binding spot
