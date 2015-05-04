@@ -179,7 +179,7 @@ void FLD::XFluid::Init()
   // load GMSH output flags
   if (DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(),"OUTPUT_GMSH"))
   {
-    output_service_ = Teuchos::rcp(new XFluidOutputServiceGmsh(params_->sublist("XFEM"),xdiscret_,condition_manager_));
+    output_service_ = Teuchos::rcp(new XFluidOutputServiceGmsh(params_->sublist("XFEM"),xdiscret_,condition_manager_,include_inner_));
   }
   else
   {

@@ -179,7 +179,8 @@ public:
   XFluidOutputServiceGmsh(
     Teuchos::ParameterList& params_xfem,
     const Teuchos::RCP<DRT::DiscretizationXFEM>& discret,
-    const Teuchos::RCP<XFEM::ConditionManager>&  cond_manager
+    const Teuchos::RCP<XFEM::ConditionManager>&  cond_manager,
+    const bool include_inner
   );
 
   /// Gmsh solution output
@@ -293,6 +294,9 @@ private:
 
   //! integration approach
   const INPAR::CUT::VCellGaussPts VolumeCellGaussPointBy_;
+
+  //! include elements with inside position?
+  const bool include_inner_;
 
 };
 

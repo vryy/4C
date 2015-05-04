@@ -258,7 +258,8 @@ void FLD::XFluidOutputService::Output(
 FLD::XFluidOutputServiceGmsh::XFluidOutputServiceGmsh(
   Teuchos::ParameterList& params_xfem,
   const Teuchos::RCP<DRT::DiscretizationXFEM>& discret,
-  const Teuchos::RCP<XFEM::ConditionManager>&  cond_manager
+  const Teuchos::RCP<XFEM::ConditionManager>&  cond_manager,
+  const bool include_inner
 ) : XFluidOutputService(discret, cond_manager),
   gmsh_sol_out_          ((bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_SOL_OUT")),
   gmsh_ref_sol_out_      (false),
@@ -267,7 +268,8 @@ FLD::XFluidOutputServiceGmsh::XFluidOutputServiceGmsh(
   gmsh_EOS_out_          ((bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_EOS_OUT")),
   gmsh_discret_out_      ((bool)DRT::INPUT::IntegralValue<int>(params_xfem,"GMSH_DISCRET_OUT")),
   gmsh_step_diff_        (500),
-  VolumeCellGaussPointBy_(DRT::INPUT::IntegralValue<INPAR::CUT::VCellGaussPts>(params_xfem, "VOLUME_GAUSS_POINTS_BY"))
+  VolumeCellGaussPointBy_(DRT::INPUT::IntegralValue<INPAR::CUT::VCellGaussPts>(params_xfem, "VOLUME_GAUSS_POINTS_BY")),
+  include_inner_         (include_inner)
 {
   if (! (bool)DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(),"OUTPUT_GMSH"))
     dserror("If GMSH output is globally deactivated, don't create an instance of XFluidOutputServiceGmsh!");
@@ -481,51 +483,63 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
       std::vector< GEO::CUT::plain_volumecell_set > cell_sets;
       std::vector< std::vector<int> > nds_sets;
 
-      const bool include_inner(cond_manager_->GetLevelSetCoupling("XFEMLevelsetTwophase") != Teuchos::null ||
-          cond_manager_->GetLevelSetCoupling("XFEMLevelsetTwophase") == Teuchos::null);
-      e->GetVolumeCellsDofSets( cell_sets, nds_sets, include_inner);
+      e->GetVolumeCellsDofSets( cell_sets, nds_sets, include_inner_);
 
-      int set_counter = 0;
 
-      for( std::vector< GEO::CUT::plain_volumecell_set>::iterator s=cell_sets.begin();
-          s!=cell_sets.end();
-          s++)
+      if(e->IsIntersected())
       {
-        GEO::CUT::plain_volumecell_set & cells = *s;
+        int set_counter = 0;
 
-        std::vector<int> & nds = nds_sets[set_counter];
-
-
-        for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
+        for( std::vector< GEO::CUT::plain_volumecell_set>::iterator s=cell_sets.begin();
+            s!=cell_sets.end();
+            s++)
         {
-          GEO::CUT::VolumeCell * vc = *i;
+          GEO::CUT::plain_volumecell_set & cells = *s;
 
-          if ( e->IsCut() )
+          std::vector<int> & nds = nds_sets[set_counter];
+
+
+          for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
           {
-            GmshOutputVolumeCell( *discret_, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc, actele, e, vc, nds, vel, acc );
-            if ( vc->Position()==GEO::CUT::Point::outside )
+            GEO::CUT::VolumeCell * vc = *i;
+
+            if ( e->IsCut() )
             {
-              if (cond_manager_->HasMeshCoupling())
-                GmshOutputBoundaryCell( *discret_, gmshfilecontent_bound, vc, wizard );
+              GmshOutputVolumeCell( *discret_, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc, actele, e, vc, nds, vel, acc );
+              if ( vc->Position()==GEO::CUT::Point::outside )
+              {
+                if (cond_manager_->HasMeshCoupling())
+                  GmshOutputBoundaryCell( *discret_, gmshfilecontent_bound, vc, wizard );
+              }
             }
+            else
+            {
+              GmshOutputElement( *discret_, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc, actele, nds, vel, acc );
+            }
+            GmshOutputElement( *discret_, gmshfilecontent_vel_ghost, gmshfilecontent_press_ghost, gmshfilecontent_acc_ghost, actele, nds, vel, acc );
           }
-          else
-          {
-            GmshOutputElement( *discret_, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc, actele, nds, vel, acc );
-          }
-          GmshOutputElement( *discret_, gmshfilecontent_vel_ghost, gmshfilecontent_press_ghost, gmshfilecontent_acc_ghost, actele, nds, vel, acc );
+          set_counter += 1;
         }
-        set_counter += 1;
       }
-    }
-    else
+      else if(cell_sets.size() == 1) // non intersected but one set
+      {
+        std::vector<int> & nds = nds_sets[0];
+
+        // one standard uncut physical element
+        GmshOutputElement( *discret_, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc, actele, nds, vel, acc );
+      }
+      else
+      {
+        // ghost element
+      }
+    } // element handle
+    else // no element handle
     {
       std::vector<int> nds; // empty vector
       GmshOutputElement( *discret_, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc, actele, nds, vel, acc );
       GmshOutputElement( *discret_, gmshfilecontent_vel_ghost, gmshfilecontent_press_ghost, gmshfilecontent_acc_ghost, actele, nds, vel, acc );
-
     }
-  }
+  } // loop elements
 
   gmshfilecontent_vel   << "};\n";
   gmshfilecontent_press << "};\n";
