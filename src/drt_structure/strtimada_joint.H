@@ -71,6 +71,12 @@ namespace STR
       case INPAR::STR::dyna_ab2 :
         return INPAR::STR::timada_kind_ab2;
         break;
+      case INPAR::STR::dyna_expleuler :
+        return INPAR::STR::timada_kind_expleuler;
+        break;
+      case INPAR::STR::dyna_centrdiff :
+        return INPAR::STR::timada_kind_centraldiff;
+        break;
       default :
         dserror("Cannot handle requested time integrator");
         return INPAR::STR::timada_kind_none;

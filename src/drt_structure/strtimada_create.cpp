@@ -26,6 +26,8 @@ Maintainer: Alexander Popp
 #include "strtimada_zienxie.H"
 #include "strtimada_joint.H"
 #include "strtimint_ab2.H"
+#include "strtimint_expleuler.H"
+#include "strtimint_centrdiff.H"
 
 /*======================================================================*/
 /* create auxiliary time integration scheme */
@@ -57,6 +59,16 @@ Teuchos::RCP<STR::TimAda> STR::TimAdaCreate
   case INPAR::STR::timada_kind_ab2 :
     // Adams-Bashforth 2nd order
     sta = Teuchos::rcp(new STR::TimAdaJoint<STR::TimIntAB2>(ioflags, sdyn, xparams, tap, tis));
+    break;
+
+  case INPAR::STR::timada_kind_expleuler :
+    // Adams-Bashforth 2nd order
+    sta = Teuchos::rcp(new STR::TimAdaJoint<STR::TimIntExplEuler>(ioflags, sdyn, xparams, tap, tis));
+    break;
+
+  case INPAR::STR::timada_kind_centraldiff :
+    // Adams-Bashforth 2nd order
+    sta = Teuchos::rcp(new STR::TimAdaJoint<STR::TimIntCentrDiff>(ioflags, sdyn, xparams, tap, tis));
     break;
 
   default :

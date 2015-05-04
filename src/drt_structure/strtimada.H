@@ -81,6 +81,12 @@ namespace STR
       case INPAR::STR::timada_kind_ab2 :
         return "AdamsBashforth2";
         break;
+      case INPAR::STR::timada_kind_expleuler :
+        return "ExplicitEuler";
+        break;
+      case INPAR::STR::timada_kind_centraldiff :
+        return "CentralDifference";
+        break;
       default :
         dserror("Cannot cope with name enum %d", term);
         return "";
@@ -101,12 +107,9 @@ namespace STR
     enum AdaEnum
     {
       ada_vague,  //!< algorithm is unknown
-      ada_upward,  //!< of upward type, i.e. auxiliary scheme has \b higher order
-                   //!< of accuracy than marching scheme
-      ada_downward,  //!< of downward type, i.e. auxiliary scheme has \b lower order
-                     //!< of accuracy than marching scheme
-      ada_orderequal,  //!< of equal order type, i.e. auxiliary scheme has the \b some
-                       //!< order of accuracy like the marching method
+      ada_upward,  //!< of upward type, i.e. auxiliary scheme has \b higher order of accuracy than marching scheme
+      ada_downward,  //!< of downward type, i.e. auxiliary scheme has \b lower order of accuracy than marching scheme
+      ada_orderequal,  //!< of equal order type, i.e. auxiliary scheme has the \b same order of accuracy like the marching method
       ada_ident  //!< auxiliary scheme is \b identical to marching scheme
     };
 

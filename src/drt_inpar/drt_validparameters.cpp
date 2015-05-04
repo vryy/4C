@@ -8626,11 +8626,15 @@ void DRT::INPUT::SetValidTimeAdaptivityParameters(Teuchos::ParameterList& list)
     tuple<std::string>(
       "None",
       "ZienkiewiczXie",
-      "AdamsBashforth2"),
+      "AdamsBashforth2",
+      "ExplicitEuler",
+      "CentralDifference"),
     tuple<int>(
       INPAR::STR::timada_kind_none,
       INPAR::STR::timada_kind_zienxie,
-      INPAR::STR::timada_kind_ab2),
+      INPAR::STR::timada_kind_ab2,
+      INPAR::STR::timada_kind_expleuler,
+      INPAR::STR::timada_kind_centraldiff),
     &list);
 
   DoubleParameter("OUTSYSPERIOD", 0.0, "Write system vectors (displacements, velocities, etc) every given period of time", &list);
