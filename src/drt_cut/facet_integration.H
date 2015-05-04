@@ -50,7 +50,7 @@ namespace GEO
         /*!
         \brief Computes the equation of the plane that contains this facet
         */
-        std::vector<double> equation_plane(const std::vector<std::vector<double> > cornersLocal);
+        std::vector<double> equation_plane(const std::vector<std::vector<double> > & cornersLocal);
 
         /*!
         \brief Returns the equation of plane that contains this facet
@@ -73,12 +73,12 @@ namespace GEO
         /*!
         \brief Check whether the vertices numbering of the facet is clockwise
         */
-        void IsClockwise(const std::vector<double> eqn_plane,const std::vector<std::vector<double> > cornersLocal);
+        void IsClockwise(const std::vector<double> & eqn_plane,const std::vector<std::vector<double> > & cornersLocal);
 
         /*
         \brief Compute the function which replaces "x" when projecting the facet into coordinate plane
         */
-        std::vector<double> compute_alpha(std::vector<double> eqn_plane,std::string intType);
+        std::vector<double> compute_alpha(std::vector<double> & eqn_plane,std::string intType);
 
         /*!
         \brief Get normal of the considered facet in a particular coordinate direction defined by intType
@@ -88,7 +88,7 @@ namespace GEO
         /*!
         \brief Perform integration of base functions over boundarycells
         */
-        void BoundaryFacetIntegration(const std::vector<std::vector<double> > cornersLocal,double& facet_integ,
+        void BoundaryFacetIntegration(const std::vector<std::vector<double> > & cornersLocal,double& facet_integ,
                                       std::string intType);
 
         /*!
@@ -99,12 +99,12 @@ namespace GEO
         /*!
         \brief Temporarily create Tri3 cell. This is not stored in Mesh
         */
-        void TemporaryTri3(std::vector<Point*>& corners, plain_boundarycell_set& divCells);
+        void TemporaryTri3(const std::vector<Point*>& corners, plain_boundarycell_set& divCells);
 
         /*!
         \brief Temporarily create Quad4 cell. This is not stored in Mesh
         */
-        void TemporaryQuad4(std::vector<Point*>& corners, plain_boundarycell_set& divCells);
+        void TemporaryQuad4(const std::vector<Point*>& corners, plain_boundarycell_set& divCells);
 
         /*!
         \brief Check whether the facet area calculated by splitting and triangulation are the same
@@ -139,6 +139,8 @@ namespace GEO
 
         //! equation of plane that contains the facet
         std::vector<double> eqn_plane_;
+
+        std::list<Teuchos::RCP<BoundaryCell> > boundarycells_;
 
     };
   }

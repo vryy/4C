@@ -11,7 +11,8 @@
 *---------------------------------------------------------------------------------------------*/
 Epetra_SerialDenseVector GEO::CUT::BoundarycellIntegration::GenerateBoundaryCellIntegrationRule()
 {
-  std::vector<std::vector<double> > corners1 = bcell_->CornerPointsLocal(elem1_);
+  std::vector<std::vector<double> > corners1;
+  bcell_->CornerPointsLocal(elem1_,corners1);
   Epetra_SerialDenseVector rhs_bcell_temp(num_func_);
   FacetIntegration faee1(bcell_,elem1_,position_,true,false);
   for(int fnc=1;fnc<=num_func_;fnc++)

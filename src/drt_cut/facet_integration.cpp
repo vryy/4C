@@ -13,11 +13,15 @@ equations
 
 #include "cut_options.H"
 
+#include <Teuchos_TimeMonitor.hpp>
+
+
 /*-----------------------------------------------------------------------------------------------------*
       compute the equation of the plane Ax+By+Cz=D with the local coordinates of corner points
 *------------------------------------------------------------------------------------------------------*/
-std::vector<double> GEO::CUT::FacetIntegration::equation_plane(const std::vector<std::vector<double> > cornersLocal)
+std::vector<double> GEO::CUT::FacetIntegration::equation_plane(const std::vector<std::vector<double> > & cornersLocal)
 {
+  //TODO: use references for return!!!
 #if 1  //Newell's method of determining equation of plane
 
   std::vector<double> eqn_plane = KERNEL::EqnPlaneOfPolygon( cornersLocal );
@@ -64,8 +68,8 @@ std::vector<double> GEO::CUT::FacetIntegration::equation_plane(const std::vector
           compute only the x-component of unit-normal vector which is used in further computations
     also determine whether the plane is numbered in clockwise or anticlockwise sense when seen away from the face
 *----------------------------------------------------------------------------------------------------------------------*/
-void GEO::CUT::FacetIntegration::IsClockwise( const std::vector<double> eqn_plane,
-                                              const std::vector<std::vector<double> > cornersLocal )
+void GEO::CUT::FacetIntegration::IsClockwise( const std::vector<double> & eqn_plane,
+                                              const std::vector<std::vector<double> > & cornersLocal )
 {
 #if 0 //new generalized method
   clockwise_ = 0;
@@ -310,7 +314,8 @@ bool GEO::CUT::FacetIntegration::IsClockwiseOrdering()
   if( orderingComputed_ )
     return clockwise_;
 
-  std::vector<std::vector<double> > cornersLocal = face1_->CornerPointsLocal(elem1_);
+  std::vector<std::vector<double> > cornersLocal;
+  face1_->CornerPointsLocal(elem1_,cornersLocal);
   if( eqn_plane_.size()==0)
   {
     eqn_plane_ = equation_plane(cornersLocal);
@@ -324,7 +329,7 @@ bool GEO::CUT::FacetIntegration::IsClockwiseOrdering()
                             computes x=f(y,z) from the plane equation
                   equation of this form is used to replace x in the line integral
 *------------------------------------------------------------------------------------------------*/
-std::vector<double> GEO::CUT::FacetIntegration::compute_alpha( std::vector<double> eqn_plane,
+std::vector<double> GEO::CUT::FacetIntegration::compute_alpha( std::vector<double> & eqn_plane,
                                                                std::string intType )
 {
   std::vector<double> alfa(3);
@@ -388,7 +393,8 @@ double GEO::CUT::FacetIntegration::getNormal(std::string intType)
 *--------------------------------------------------------------------------------------*/
 double GEO::CUT::FacetIntegration::integrate_facet()
 {
-    std::vector<std::vector<double> > cornersLocal = face1_->CornerPointsLocal(elem1_);
+    std::vector<std::vector<double> > cornersLocal;
+    face1_->CornerPointsLocal(elem1_,cornersLocal);
     if(global_==true)
     {
       std::vector<Point*>co =  face1_->CornerPoints();
@@ -520,7 +526,7 @@ double GEO::CUT::FacetIntegration::integrate_facet()
 /*-----------------------------------------------------------------------------------------------*
                             Performs integration over the boundarycell
 *------------------------------------------------------------------------------------------------*/
-void GEO::CUT::FacetIntegration::BoundaryFacetIntegration( const std::vector<std::vector<double> > cornersLocal,
+void GEO::CUT::FacetIntegration::BoundaryFacetIntegration( const std::vector<std::vector<double> > & cornersLocal,
                                                            double &facet_integ,
                                                            std::string intType )
 {
@@ -613,6 +619,8 @@ void GEO::CUT::FacetIntegration::BoundaryFacetIntegration( const std::vector<std
 void GEO::CUT::FacetIntegration::DivergenceIntegrationRule( Mesh &mesh,
                                                             Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> & cgp )
 {
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::FacetIntegration::DivergenceIntegrationRule" );
+
   plain_boundarycell_set divCells;
 
   //the last two parameters has no influence when called from the first parameter is set to true
@@ -694,7 +702,8 @@ void GEO::CUT::FacetIntegration::GenerateDivergenceCells( bool divergenceRule, /
                                                           Mesh &mesh,
                                                           plain_boundarycell_set & divCells )
 {
-  std::vector<std::vector<double> > cornersLocal = face1_->CornerPointsLocal(elem1_);
+  std::vector<std::vector<double> > cornersLocal;
+  face1_->CornerPointsLocal(elem1_,cornersLocal);
 
   eqn_plane_ = equation_plane(cornersLocal);
 
@@ -766,7 +775,7 @@ void GEO::CUT::FacetIntegration::GenerateDivergenceCells( bool divergenceRule, /
       for ( std::vector<std::vector<Point*> >::const_iterator j=split.begin();
                                                               j!=split.end(); ++j )
       {
-        std::vector<Point*> tri = *j;
+        const std::vector<Point*> & tri = *j;
         if(tri.size()==3)
           TemporaryTri3(tri, divCells);
         else if(tri.size()==4) // split algorithm always gives convex quad
@@ -793,13 +802,15 @@ void GEO::CUT::FacetIntegration::GenerateDivergenceCells( bool divergenceRule, /
                             temporarily create a tri3 cell
                     this is temporary because this is not stored for the volumecell
 *--------------------------------------------------------------------------------------------*/
-void GEO::CUT::FacetIntegration::TemporaryTri3( std::vector<Point*>& corners,
+void GEO::CUT::FacetIntegration::TemporaryTri3( const std::vector<Point*>& corners,
                                                 plain_boundarycell_set& divCells )
 {
   Epetra_SerialDenseMatrix xyz( 3, 3 );
   for ( int i=0; i<3; ++i )
     corners[i]->Coordinates( &xyz( 0, i ) );
   Tri3BoundaryCell * bc = new Tri3BoundaryCell( xyz, face1_, corners );
+
+  boundarycells_.push_back( Teuchos::rcp( bc ) );
   divCells.insert( bc );
 }
 
@@ -807,13 +818,15 @@ void GEO::CUT::FacetIntegration::TemporaryTri3( std::vector<Point*>& corners,
                             temporarily create a quad4 cell
                     this is temporary because this is not stored for the volumecell
 *--------------------------------------------------------------------------------------------*/
-void GEO::CUT::FacetIntegration::TemporaryQuad4( std::vector<Point*>& corners,
+void GEO::CUT::FacetIntegration::TemporaryQuad4( const std::vector<Point*>& corners,
                                                  plain_boundarycell_set& divCells )
 {
   Epetra_SerialDenseMatrix xyz( 3, 4 );
   for ( int i=0; i<4; ++i )
     corners[i]->Coordinates( &xyz( 0, i ) );
   Quad4BoundaryCell * bc = new Quad4BoundaryCell( xyz, face1_, corners );
+
+  boundarycells_.push_back( Teuchos::rcp( bc ) );
   divCells.insert( bc );
 }
 

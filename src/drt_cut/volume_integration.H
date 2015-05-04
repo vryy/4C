@@ -117,7 +117,7 @@ namespace GEO
         \brief Check whether the intersection point, which is in the plane containing the facet, actually lies with
         in the facet area
         */
-        int pnpoly(std::vector<std::vector<double> >xp, LINALG::Matrix<3,1> pt,std::string projType);
+        int pnpoly(const std::vector<std::vector<double> > & xp, const LINALG::Matrix<3,1> & pt,std::string projType);
 
         /*!
         \brief Adds linear combination of first order base function to the moment fitting system of equations

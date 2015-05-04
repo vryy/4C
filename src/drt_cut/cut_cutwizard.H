@@ -63,7 +63,7 @@ namespace GEO
       CutterMesh(
           Teuchos::RCP<DRT::Discretization> cutterdis,
           Teuchos::RCP<const Epetra_Vector> cutter_disp_col,
-          std::map<int, LINALG::Matrix<3,1> > & tip_nodes,
+          std::map<int, LINALG::Matrix<3,1> > tip_nodes, // copy the values
           const int start_ele_gid
           ) :
           cutterdis_(cutterdis),

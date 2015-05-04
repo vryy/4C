@@ -139,8 +139,10 @@ public:
 
   const std::vector<int> & NodalDofSet() const { return nodaldofset_; }
 
-  void SetNodalDofSet(std::vector<int>& nds){ nodaldofset_.clear();
-                                              std::copy( nds.begin(), nds.end(), std::inserter(nodaldofset_,nodaldofset_.end()) ); }
+  void SetNodalDofSet(const std::vector<int>& nds){
+    nodaldofset_.clear();
+    std::copy( nds.begin(), nds.end(), std::inserter(nodaldofset_,nodaldofset_.end()) );
+  }
 
 
   /*!
@@ -214,17 +216,17 @@ public:
   /*!
   \brief Set the volume of this cell
    */
-  void SetVolume(double vol){volume_=vol;}
+  void SetVolume(const double vol){volume_=vol;}
 
   /*!
   \brief Return the equation of the reference plane when DirectDivergence is used for volumecell treatment
    */
-  std::vector<double> GetRefEqnPlane(){return RefEqnPlane_;}
+  const std::vector<double> & GetRefEqnPlane(){return RefEqnPlane_;}
 
   /*!
   \brief Return Ids of all the points associated with this volumecell
    */
-  std::set<int> VolumeCellPointIds();
+  const std::set<int> & VolumeCellPointIds();
 
   /*!
   \brief Chcek whether this point is inside, outside or on boundary of this this volumecell.
@@ -269,7 +271,7 @@ private:
   \brief Check whether the numbering of points need to be reversed. This is to ensure outward pointing normal for the
   boundarycells when triangulation is performed
    */
-  bool ToReverse( const GEO::CUT::Point::PointPosition posi, std::vector<double> parEqn, std::vector<double> facetEqn );
+  bool ToReverse( const GEO::CUT::Point::PointPosition posi, const std::vector<double> & parEqn, const std::vector<double> & facetEqn );
 
   /*!
   \brief return the Gauss points computed using moment fitting equations

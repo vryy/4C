@@ -154,6 +154,100 @@ void GEO::CutWizard::Cut(
     bool include_inner //!< perform cut in the interior of the cutting mesh
 )
 {
+/*
+  {
+    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- BuildDOFCellSets" );
+  }
+  {
+    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::Facet::CornerPointsLocal" );
+  }
+  {
+    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets (parallel): distribute DofSetData" );
+  }
+  {
+    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::DirectDivergence::VCIntegrationRule" );
+  }
+  {
+    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::DirectDivergence::ListFacets-tmp1" );
+  }
+  {
+    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::DirectDivergence::ListFacets-tmp2" );
+  }
+  {
+    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::Facet::IsPlanar" );
+  }
+  {
+    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::KERNEL::EqnPlaneOfPolygon" );
+  }
+  {
+    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::DirectDivergence::ListFacets" );
+  }
+  {
+    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::KERNEL::DeleteInlinePts" );
+  }
+  {
+    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::KERNEL::getAreaConvexQuad" );
+  }
+  {
+    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::KERNEL::getAreaTri" );
+  }
+  {
+    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::BoundaryCell::TransformLocalCoords" );
+  }
+  {
+    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::FacetIntegration::DivergenceIntegrationRule" );
+  }
+  {
+    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::VolumeCell::GenerateInternalGaussRule" );
+  }
+  {
+    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::Element::CreateSimpleShapedIntegrationCells" );
+  }
+  {
+    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::VolumeCell::GenerateBoundaryCells" );
+  }
+  {
+    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- creating map" );
+  }
+  {
+    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::LinearElementHandle::VolumeCellSets" );
+  }
+  {
+    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- AssignNodalCellSet" );
+  }
+  {
+    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- GEO::CUT::Cmp::Compare(vc,vc)" );
+  }
+  {
+    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- FindDOFSetsNEW" );
+  }
+  {
+    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- SortNodalDofSets" );
+  }
+  {
+    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- CollectNodalDofSets" );
+  }
+  {
+    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- CreateNodalDofSet" );
+  }
+  {
+    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- STEP 2" );
+  }
+  {
+    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- FindNodalCellSets" );
+  }
+  {
+    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- ConnectNodalDOFSets" );
+  }
+  {
+    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- GEO::CUT::Cmp::operator()" );
+  }
+  {
+    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- GEO::CUT::NodalDofSet::NodalDofSet" );
+  }
+*/
+
+
   // safety checks if the cut is initialized correctly
   if(!is_set_options_) dserror("you have call SetOptions() before you can use the CutWizard");
 
@@ -592,6 +686,8 @@ void GEO::CutWizard::Run_Cut(
 void GEO::CutWizard::FindPositionDofSets(bool include_inner)
 {
 
+  backdis_->Comm().Barrier();
+
   TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets (parallel)" );
 
   if(myrank_==0 and screenoutput_) IO::cout << "\t * 5/6 Cut_Positions_Dofsets (parallel) ...";
@@ -644,6 +740,7 @@ void GEO::CutWizard::FindPositionDofSets(bool include_inner)
     }
 
     //--------------------------------------------
+    backdis_->Comm().Barrier();
 
     // find number and connection of dofsets at nodes from cut volumes
     intersection_->CreateNodalDofSet( include_inner, *backdis_);

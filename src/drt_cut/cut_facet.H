@@ -132,12 +132,12 @@ public:
   /*!
   \brief Get the corner points of the facet in global coordinates
    */
-  const std::vector<Point*> CornerPoints() const { return corner_points_; }
+  const std::vector<Point*> & CornerPoints() const { return corner_points_; }
 
   /*!
   \brief Get the corner points of the facet in element local coordinates. Used in Moment fitting method
    */
-  const std::vector<std::vector<double> > CornerPointsLocal( Element *elem1, bool shadow = false );
+  void CornerPointsLocal( Element *elem1, std::vector<std::vector<double> > & cornersLocal, bool shadow = false );
 
   /*!
   \brief Get the triangulated sides of this facet

@@ -11,6 +11,9 @@
 #include "boundarycell_integration.H"
 #include "direct_divergence.H"
 
+#include <Teuchos_TimeMonitor.hpp>
+
+
 #include<algorithm>
 
 
@@ -626,7 +629,8 @@ void GEO::CUT::VolumeCell::DumpGmsh( std::ofstream& file )
     for( unsigned j=0;j<facete.size();j++ )
     {
       Facet * ref = facete[j];
-      const std::vector<std::vector<double> > corners = ref->CornerPointsLocal(ParentElement());
+      std::vector<std::vector<double> > corners;
+      ref->CornerPointsLocal(ParentElement(), corners);
       for( unsigned i=0;i<corners.size();i++ )
       {
         const std::vector<double> coords1 = corners[i];
@@ -842,6 +846,9 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells( Mesh &mesh,
                                                   int BaseNos,
                                                   INPAR::CUT::BCellGaussPts BCellgausstype )
 {
+  //TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::VolumeCell::GenerateBoundaryCells" );
+
+
   //TODO: we have to restructure the creation of boundary cells.
   // bcs should not be stored for a volumecell but for the respective facet, see comments in f->GetBoundaryCells
 
@@ -1033,8 +1040,8 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells( Mesh &mesh,
     This is to check whether the corner points of the cut side facet is aligned to give outward normal
 *---------------------------------------------------------------------------------------------------------*/
 bool GEO::CUT::VolumeCell::ToReverse(const GEO::CUT::Point::PointPosition posi,
-                                     std::vector<double> parEqn,
-                                     std::vector<double> facetEqn)
+                                     const std::vector<double> & parEqn,
+                                     const std::vector<double> & facetEqn)
 {
   bool rever = false;
 
@@ -1072,6 +1079,9 @@ bool GEO::CUT::VolumeCell::ToReverse(const GEO::CUT::Point::PointPosition posi,
 *-------------------------------------------------------------------------------------------*/
 Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::VolumeCell::GenerateInternalGaussRule( Teuchos::RCP<DRT::UTILS::GaussPoints>& gp )
 {
+  //TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::VolumeCell::GenerateInternalGaussRule" );
+
+
   DRT::UTILS::GaussIntegration grule(gp);
 
   Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> cgp = Teuchos::rcp( new DRT::UTILS::CollectedGaussPoints(0) );
@@ -1208,7 +1218,7 @@ void GEO::CUT::VolumeCell::DirectDivergenceGaussRule( Element *elem,
 /*-------------------------------------------------------------------------------------*
 | Return Ids of all the points associated with this volumecell           shahmiri 06/12
 *--------------------------------------------------------------------------------------*/
-std::set<int> GEO::CUT::VolumeCell::VolumeCellPointIds()
+const std::set<int> & GEO::CUT::VolumeCell::VolumeCellPointIds()
 {
   if ( vcpoints_ids_.size() != 0)
   {
@@ -1222,7 +1232,7 @@ std::set<int> GEO::CUT::VolumeCell::VolumeCellPointIds()
     for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
     {
       Facet *fe = *i;
-      std::vector<Point*> corners = fe->CornerPoints();
+      const std::vector<Point*> & corners = fe->CornerPoints();
 
       for(std::vector<Point*>::const_iterator c=corners.begin(); c!=corners.end(); c++)
       {

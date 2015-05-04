@@ -12,12 +12,18 @@ equations
 #include "cut_boundingbox.H"
 #include "cut_kernel.H"
 
+#include <Teuchos_TimeMonitor.hpp>
+
+
 /*-------------------------------------------------------------------------------------------------------------------*
   Create integration points on the facets of the volumecell by triangulating the facets
   A reference facet is identified on which integration weights are set to zero                        Sudhakar 04/12
 *--------------------------------------------------------------------------------------------------------------------*/
 Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::DirectDivergence::VCIntegrationRule( std::vector<double> &RefPlaneEqn )
 {
+  //TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::DirectDivergence::VCIntegrationRule" );
+
+
   std::vector<plain_facet_set::const_iterator> facetIterator; //iterators of facets which need to be considered for integration rule
   plain_facet_set::const_iterator IteratorRefFacet;           //iterator for the reference facet
   isRef_ = false;                                             //whether ref plane is falling on facet?
@@ -51,9 +57,8 @@ Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::DirectDivergence::VCIntegrationR
     faee1.DivergenceIntegrationRule( mesh_, cgp );
   }
 
-  DRT::UTILS::GaussIntegration gi(cgp);
-
 #if 0 //integrate specified functions using the Gaussian rule generated -- used in postprocessing
+  DRT::UTILS::GaussIntegration gi(cgp);
   IntegrateSpecificFuntions( gi, RefPlaneEqn );  //integrate specific functions
 #endif
 
@@ -71,6 +76,8 @@ void GEO::CUT::DirectDivergence::ListFacets( std::vector<plain_facet_set::const_
                                              plain_facet_set::const_iterator& IteratorRefFacet,
                                              bool & IsRefFacet )
 {
+  //TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::DirectDivergence::ListFacets" );
+
   const plain_facet_set & facete = volcell_->Facets();
 
   bool RefOnCutSide=false;
@@ -85,7 +92,7 @@ void GEO::CUT::DirectDivergence::ListFacets( std::vector<plain_facet_set::const_
   for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
   {
     Facet *fe = *i;
-    std::vector<Point*> corn = fe->CornerPoints();
+    const std::vector<Point*> & corn = fe->CornerPoints();
     bool isPlanar = fe->IsPlanar( mesh_, corn );
 
     if ( isPlanar == false )
@@ -107,7 +114,8 @@ void GEO::CUT::DirectDivergence::ListFacets( std::vector<plain_facet_set::const_
   {
     Facet *fe = *i;
 
-    std::vector<std::vector<double> > cornersLocal = fe->CornerPointsLocal(elem1_,true);
+    std::vector<std::vector<double> > cornersLocal;
+    fe->CornerPointsLocal(elem1_,cornersLocal,true);
 
     std::vector<double> RefPlaneTemp = KERNEL::EqnPlaneOfPolygon(cornersLocal );
     eqnAllFacets[i-facete.begin()] = RefPlaneTemp;
@@ -115,6 +123,8 @@ void GEO::CUT::DirectDivergence::ListFacets( std::vector<plain_facet_set::const_
     // consider only facet whose x-direction normal componenet is non-zero
     if( fabs(RefPlaneTemp[0])>TOL_EQN_PLANE )
     {
+      TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::DirectDivergence::ListFacets-tmp1" );
+
       if( warpFac.size() > 0 ) // if there are warped facets that are not yet processed
       {
          if( i == warpFac[0] )
@@ -196,6 +206,8 @@ void GEO::CUT::DirectDivergence::ListFacets( std::vector<plain_facet_set::const_
   //   considered facet are in the same plane, so delete this facet
   if( RefOnCutSide )
   {
+    //TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::DirectDivergence::ListFacets-tmp2" );
+
     for( unsigned i=0;i<facetIterator.size();i++ )
     {
       plain_facet_set::const_iterator iter = facetIterator[i];
@@ -287,7 +299,8 @@ void GEO::CUT::DirectDivergence::DivengenceCellsGMSH( const DRT::UTILS::GaussInt
   //ref plane is on a facet
   if( isRef_ )
   {
-    std::vector<std::vector<double> > corners = refFacet_->CornerPointsLocal(elem1_);
+    std::vector<std::vector<double> > corners;
+    refFacet_->CornerPointsLocal(elem1_,corners);
     for( unsigned i=0;i<corners.size();i++ )
     {
       const std::vector<double> coords1 = corners[i];

@@ -105,7 +105,6 @@ public:
 
     //! Collect all volume-cells belonging to this element ordered by position
     virtual void CollectVolumeCells (
-        bool                   include_inner,
         plain_volumecell_set & cells_inside,
         plain_volumecell_set & cells_outside
     ) = 0;
@@ -202,11 +201,7 @@ public:
 
 
      //! get the element's sets of volume-cells ordered by inside/outside position
-     virtual void VolumeCellSets(
-         bool include_inner,
-         std::vector<plain_volumecell_set> & ele_vc_sets_inside,
-         std::vector<plain_volumecell_set> & ele_vc_sets_outside
-     ) = 0;
+     virtual void VolumeCellSets() = 0;
 
      //! get all the element' sets of volume-cells and nds-vectors
      void GetVolumeCellsDofSets(
@@ -345,7 +340,6 @@ public:
 
   //! Collect all volume-cells belonging to this element ordered by position
   virtual void CollectVolumeCells (
-      bool                   include_inner,
       plain_volumecell_set & cells_inside,
       plain_volumecell_set & cells_outside
   );
@@ -388,17 +382,21 @@ public:
   //! @name access to the element's sets of volume-cells, nds-vectors and integration points
 
   //! get the element's sets of volume-cells ordered by inside/outside position
-  virtual void VolumeCellSets(
-      bool include_inner,
-      std::vector<plain_volumecell_set> & ele_vc_sets_inside,
-      std::vector<plain_volumecell_set> & ele_vc_sets_outside
-  );
+  virtual void VolumeCellSets();
 
   //! get the element's sets of volume-cells with inside position
-  const std::vector<plain_volumecell_set> & GetVcSetsInside() { return vc_sets_inside_; };
+  const std::vector<plain_volumecell_set> & GetVcSetsInside()
+  {
+    if(!cells_set_) VolumeCellSets(); // build the volume cell sets
+    return vc_sets_inside_;
+  };
 
   //! get the element's sets of volume-cells with outside position
-  const std::vector<plain_volumecell_set> & GetVcSetsOutside() { return vc_sets_outside_; };
+  const std::vector<plain_volumecell_set> & GetVcSetsOutside()
+  {
+    if(!cells_set_) VolumeCellSets(); // build the volume cell sets
+    return vc_sets_outside_;
+  };
 
   //@}
 
@@ -472,7 +470,6 @@ public:
 
   //! Collect all volume-cells belonging to this element ordered by position
   virtual void CollectVolumeCells (
-      bool                   include_inner,
       plain_volumecell_set & cells_inside,
       plain_volumecell_set & cells_outside
   );
@@ -515,17 +512,21 @@ public:
   //! @name access to the element's sets of volume-cells, nds-vectors and integration points
 
   //! get the element's sets of volume-cells ordered by inside/outside position
-  virtual void VolumeCellSets(
-      bool include_inner,
-      std::vector<plain_volumecell_set> & ele_vc_sets_inside,
-      std::vector<plain_volumecell_set> & ele_vc_sets_outside
-  );
+  virtual void VolumeCellSets();
 
   //! get connections/sets of volume-cells between sub-elements ordered by inside position
-  const std::vector<plain_volumecell_set> & GetVcSetsInside() { return connected_vc_sets_inside_; };
+  const std::vector<plain_volumecell_set> & GetVcSetsInside()
+  {
+    if(!cells_connected_) VolumeCellSets();
+    return connected_vc_sets_inside_;
+  };
 
   //! get connections/sets of volume-cells between sub-elements ordered by outside position
-  const std::vector<plain_volumecell_set> & GetVcSetsOutside() { return connected_vc_sets_outside_; };
+  const std::vector<plain_volumecell_set> & GetVcSetsOutside()
+  {
+    if(!cells_connected_) VolumeCellSets();
+    return connected_vc_sets_outside_;
+  };
 
   //@}
 
@@ -534,14 +535,7 @@ public:
   //! @name specific routines to connect volume-cells between sub-elements which belong to one connection
 
   //! connect volume-cells to sets of volume-cells
-  virtual void ConnectVolumeCells ( bool include_inner );
-
-  //! get connections/sets of volume-cells between sub-elements
-  virtual void GetConnectedVolumeCellSets (
-      bool                                include_inner,
-      std::vector<plain_volumecell_set> & connected_vc_sets_inside,
-      std::vector<plain_volumecell_set> & connected_vc_sets_outside
-  );
+  virtual void ConnectVolumeCells ();
 
   //! build sets
   void BuildCellSets ( plain_volumecell_set & cells_to_connect, std::vector<plain_volumecell_set> & connected_sets);

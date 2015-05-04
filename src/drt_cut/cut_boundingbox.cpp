@@ -39,13 +39,14 @@ GEO::CUT::BoundingBox::BoundingBox( VolumeCell & volcell )
 GEO::CUT::BoundingBox::BoundingBox( VolumeCell & volcell, Element *elem1 )
   : empty_( true )
 {
-  
+
   const plain_facet_set & facete = volcell.Facets();
   double x[3];
   for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
   {
       Facet* fac = *i;
-      const std::vector<std::vector<double> > corLocal = fac->CornerPointsLocal(elem1);
+      std::vector<std::vector<double> > corLocal;
+      fac->CornerPointsLocal(elem1,corLocal);
       for(std::vector<std::vector<double> >::const_iterator m=corLocal.begin();m!=corLocal.end();m++)
       {
           std::vector<double> loc = *m;

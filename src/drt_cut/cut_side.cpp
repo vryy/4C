@@ -949,7 +949,7 @@ bool GEO::CUT::ConcreteSide<DRT::Element::tri3>::WithinSide( const LINALG::Matri
   rs(1)= rst(1);
   dist = rst(2);
 
-  if(pos.WithinLimitsTol(Tol, false, TOLERANCE))
+  if(pos.WithinLimitsTol(Tol, false, MINIMALTOL))
   {
     return true;
   }
@@ -975,7 +975,7 @@ bool GEO::CUT::ConcreteSide<DRT::Element::quad4>::WithinSide( const LINALG::Matr
   rs(1)= rst(1);
   dist = rst(2);
 
-  if(pos.WithinLimitsTol(Tol, false, TOLERANCE))
+  if(pos.WithinLimitsTol(Tol, false, MINIMALTOL))
   {
     return true;
   }

@@ -24,204 +24,207 @@ Maintainer: Benedikt Schott and Magnus Winter
  *------------------------------------------------------------------------------------------------*/
 void GEO::CUT::ParentIntersection::CreateNodalDofSet( bool include_inner, const DRT::Discretization& dis)
 {
+  dis.Comm().Barrier();
+
   TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- CreateNodalDofSet" );
 
 
-    std::set<int> eids; // eids of elements that are involved in CUT and include ele_vc_set_inside/outside (no duplicates!)
+  std::set<int> eids; // eids of elements that are involved in CUT and include ele_vc_set_inside/outside (no duplicates!)
 
-    Mesh & m = NormalMesh();
+  Mesh & m = NormalMesh();
 
-    const INPAR::CUT::NodalDofSetStrategy strategy = options_.GetNodalDofSetStrategy();
+  const INPAR::CUT::NodalDofSetStrategy strategy = options_.GetNodalDofSetStrategy();
 
-    // nodes used for CUT std::map<node->ID, Node>, shadow nodes have ID<0
-    std::map<int, Node* > nodes;
-    m.GetNodeMap( nodes );
+  // nodes used for CUT std::map<node->ID, Node>, shadow nodes have ID<0
+  std::map<int, Node* > nodes;
+  m.GetNodeMap( nodes );
 
-    //===============
-    // STEP 1: create for each node involved in CUT nodal cell sets for all nodes of adjacent elements of this element
-    //         nodal cell sets are sets of volumecells, that are connected via subelements in a real element
-    //         ° for linear elements a set contains just one single volumecell in its plain_volumecell_set(with usually more than one integrationcells)
-    //         ° for quadratic elements a set contains connected volumecell sets (sorted for inside and outside connections)
-    //
-    //         FindDOFSets() finds also the connections of volumecell sets between adjacent elements
-    //         finally, each found DOFSet around a 1-ring of this node maintains its own set of DOFs
-    //===============
-    // for each node (which is not a shadow node) we have to built nodalDofSets
-    // each connected set of volumecells (connected via adjacent elements - not only via subelements -) gets an own dofset
-    for ( std::map<int, Node* >::iterator i=nodes.begin();
-          i!=nodes.end();
-          ++i )
+  //===============
+  // STEP 1: create for each node involved in CUT nodal cell sets for all nodes of adjacent elements of this element
+  //         nodal cell sets are sets of volumecells, that are connected via subelements in a real element
+  //         ° for linear elements a set contains just one single volumecell in its plain_volumecell_set(with usually more than one integrationcells)
+  //         ° for quadratic elements a set contains connected volumecell sets (sorted for inside and outside connections)
+  //
+  //         FindDOFSets() finds also the connections of volumecell sets between adjacent elements
+  //         finally, each found DOFSet around a 1-ring of this node maintains its own set of DOFs
+  //===============
+  // for each node (which is not a shadow node) we have to built nodalDofSets
+  // each connected set of volumecells (connected via adjacent elements - not only via subelements -) gets an own dofset
+  for ( std::map<int, Node* >::iterator i=nodes.begin();
+      i!=nodes.end();
+      ++i )
+  {
+    Node * n = i->second;
+    int n_gid = n->Id();
+
+    std::vector<int> sourrounding_elements;
+
+    // get all adjacent elements to this node if this is a real (- not a shadow -) node
+    if( n_gid >= 0 )
     {
-        Node * n = i->second;
-        int n_gid = n->Id();
+      DRT::Node * node = dis.gNode(n_gid);
 
-        std::map<int, ElementHandle*> sourrounding_elements;
+      // get adjacent elements for this node
+      const DRT::Element*const* adjelements = node->Elements();
 
-        // get all adjacent elements to this node if this is a real (- not a shadow -) node
-        if( n_gid >= 0 )
+      for (int iele=0; iele < node->NumElement(); iele++)
+      {
+        int adj_eid =  adjelements[iele]->Id();
+
+        // get its elementhandle
+        GEO::CUT::ElementHandle * e = GetElement( adj_eid );
+
+        if( e!=NULL )
         {
-            DRT::Node * node = dis.gNode(n_gid);
-
-            // get adjacent elements for this node
-            const DRT::Element*const* adjelements = node->Elements();
-
-            for (int iele=0; iele < node->NumElement(); iele++)
-            {
-                int adj_eid =  adjelements[iele]->Id();
-
-                // get its elementhandle
-                GEO::CUT::ElementHandle * e = GetElement( adj_eid );
-
-                if( e!=NULL )
-                {
-                    sourrounding_elements.insert(std::pair<int, ElementHandle*>(adj_eid, e));
-                }
-
-            } // end loop over adjacent elements
+          sourrounding_elements.push_back(adj_eid);
+        }
+      } // end loop over adjacent elements
 
 
 
-            // each node stores all its sets of volumecells,
-            // includes all volumecell_sets that are connected (within a whole adjacent element) via subelements, inside and outside sets
-            // (appended for all adjacent elements of a node)
-            std::map<Node*, std::vector<plain_volumecell_set> > nodal_cell_sets_inside;    // for each node a vector of volumecell_sets
-            std::map<Node*, std::vector<plain_volumecell_set> > nodal_cell_sets_outside;   // for each node a vector of volumecell_sets
+      // each node stores all its sets of volumecells,
+      // includes all volumecell_sets that are connected (within a whole adjacent element) via subelements, inside and outside sets
+      // (appended for all adjacent elements of a node)
+      std::map<Node*, std::vector<plain_volumecell_set> > nodal_cell_sets_inside;    // for each node a vector of volumecell_sets
+      std::map<Node*, std::vector<plain_volumecell_set> > nodal_cell_sets_outside;   // for each node a vector of volumecell_sets
 
 
-            // includes all volumecell_sets that are connected (within a whole adjacent element) via subelements, inside and outside sets
-            std::vector<plain_volumecell_set> cell_sets;  // vector of all volumecell sets connected within elements adjacent to this node
+      // includes all volumecell_sets that are connected (within a whole adjacent element) via subelements, inside and outside sets
+      std::vector<plain_volumecell_set> cell_sets;  // vector of all volumecell sets connected within elements adjacent to this node
 
-            //split for inside and outside
-            std::vector<plain_volumecell_set> cell_sets_inside; // sets of volumecells connected between subelements
-            std::vector<plain_volumecell_set> cell_sets_outside;
+      //split for inside and outside
+      std::vector<plain_volumecell_set> cell_sets_inside; // sets of volumecells connected between subelements
+      std::vector<plain_volumecell_set> cell_sets_outside;
 
-            FindNodalCellSets(include_inner,
-                             eids,
-                             sourrounding_elements,
-                             nodal_cell_sets_inside,
-                             nodal_cell_sets_outside,
-                             cell_sets_inside,
-                             cell_sets_outside,
-                             cell_sets );
+      FindNodalCellSets(include_inner,
+          eids,
+          sourrounding_elements,
+          nodal_cell_sets_inside,
+          nodal_cell_sets_outside,
+          cell_sets_inside,
+          cell_sets_outside,
+          cell_sets );
 
 #if(0)
-            // Gmsh output for the NodalCellSet of node with id n_gid
-            if(n_gid == 6)
-            {
-              DumpGmshNodalCellSet(nodal_cell_sets_outside, dis);
-              DumpGmshCellSets(cell_sets_outside, dis);
-            }
+      // Gmsh output for the NodalCellSet of node with id n_gid
+      if(n_gid == 6)
+      {
+        DumpGmshNodalCellSet(nodal_cell_sets_outside, dis);
+        DumpGmshCellSets(cell_sets_outside, dis);
+      }
 #endif
 
 
-            // finds also the connections of volumecell sets between adjacent elements
-            // finally, each found DOFSet around a 1-ring of the node maintains its own set of DOFs
-            if(include_inner)
-            {
-              //WARNING:
-              //This is necessary to have to set the "standard values" at the first DOF-set, and the
-              //ghost values on the following DOFS.
-              // It is important for result check AND later for time-integration!
-              if(n->Position()==Point::outside)
-              {
-                n->FindDOFSetsNEW( nodal_cell_sets_outside, cell_sets_outside);
-                n->FindDOFSetsNEW( nodal_cell_sets_inside, cell_sets_inside);
-              }
-              else
-              {
-                n->FindDOFSetsNEW( nodal_cell_sets_inside, cell_sets_inside);
-                n->FindDOFSetsNEW( nodal_cell_sets_outside, cell_sets_outside);
-              }
-            }
-            else
-            {
-              n->FindDOFSetsNEW( nodal_cell_sets_outside, cell_sets_outside);
-            }
+      // finds also the connections of volumecell sets between adjacent elements
+      // finally, each found DOFSet around a 1-ring of the node maintains its own set of DOFs
+      if(include_inner)
+      {
+        //WARNING:
+        //This is necessary to have to set the "standard values" at the first DOF-set, and the
+        //ghost values on the following DOFS.
+        // It is important for result check AND later for time-integration!
+        if(n->Position()==Point::outside)
+        {
+          n->FindDOFSetsNEW( nodal_cell_sets_outside, cell_sets_outside);
+          n->FindDOFSetsNEW( nodal_cell_sets_inside, cell_sets_inside);
+        }
+        else
+        {
+          n->FindDOFSetsNEW( nodal_cell_sets_inside, cell_sets_inside);
+          n->FindDOFSetsNEW( nodal_cell_sets_outside, cell_sets_outside);
+        }
+      }
+      else
+      {
+        n->FindDOFSetsNEW( nodal_cell_sets_outside, cell_sets_outside);
+      }
 
-            // sort the dofsets for this node after FindDOFSetsNEW
-            n->SortNodalDofSets();
-
-
-            if(strategy == INPAR::CUT::NDS_Strategy_OneDofset_PerNodeAndPosition)
-            {
-
-              // combine the (ghost) dofsets for this node w.r.t each phase to avoid multiple ghost nodal dofsets for a certain phase
-              n->CollectNodalDofSets();
-
-            } // otherwise do nothing
-
-        } // end if n_gid >= 0
-    } // end loop over nodes
+      // sort the dofsets for this node after FindDOFSetsNEW
+      n->SortNodalDofSets();
 
 
-    //===============
-    // STEP 2: for each element that contains volumecell_sets (connections via subelements...),
-    // all nodes of this element have to now the dofset_number for each set of volumecells
-    //===============
-    for( std::set<int>::iterator i= eids.begin(); i!= eids.end(); i++)
+      if(strategy == INPAR::CUT::NDS_Strategy_OneDofset_PerNodeAndPosition)
+      {
+
+        // combine the (ghost) dofsets for this node w.r.t each phase to avoid multiple ghost nodal dofsets for a certain phase
+        n->CollectNodalDofSets();
+
+      } // otherwise do nothing
+
+    } // end if n_gid >= 0
+  } // end loop over nodes
+
+
+  //===============
+  // STEP 2: for each element that contains volumecell_sets (connections via subelements...),
+  // all nodes of this element have to now the dofset_number for each set of volumecells
+  //===============
+  for( std::set<int>::iterator i= eids.begin(); i!= eids.end(); i++)
+  {
+    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- STEP 2" );
+
+
+    int eid = *i;
+
+    // get the nodes of this element
+    // get the element via discret
+    DRT::Element * e = dis.gElement(eid);
+
+    if( e == NULL) dserror(" element not found, this should not be! ");
+
+    // get the nodes of this element
+    int numnode = e->NumNode();
+    const int* nids = e->NodeIds();
+    std::vector<Node*> nodes(numnode);
+
+    for(int i=0; i< numnode; i++)
     {
-        int eid = *i;
+      Node * node = GetNode(nids[i]);
 
-        // get the nodes of this element
-        // get the element via discret
-        DRT::Element * e = dis.gElement(eid);
+      if(node == NULL) dserror("node not found!");
 
-        if( e == NULL) dserror(" element not found, this should not be! ");
-
-        std::vector<Node * > nodes;
-
-        // get the nodes of this element
-        int numnode = e->NumNode();
-        const int* nids = e->NodeIds();
-
-        for(int i=0; i< numnode; i++)
-        {
-            Node * node = GetNode(nids[i]);
-
-            if(node == NULL) dserror("node not found!");
-
-            nodes.push_back( node );
-        }
-
-        if((int)nodes.size() != numnode) dserror("number of nodes not equal to the required number of elemental nodes");
-
-        ElementHandle* eh = GetElement(eid);
-
-        // get inside and outside cell_sets connected within current element
-
-        const std::vector<plain_volumecell_set> & ele_vc_sets_inside = eh->GetVcSetsInside();
-        const std::vector<plain_volumecell_set> & ele_vc_sets_outside = eh->GetVcSetsOutside();
-
-        std::vector<std::vector<int> > & nodaldofset_vc_sets_inside  = eh->GetNodalDofSet_VcSets_Inside();
-        std::vector<std::vector<int> > & nodaldofset_vc_sets_outside = eh->GetNodalDofSet_VcSets_Outside();
-
-        std::vector<std::map<int,int> > & vcsets_nid_dofsetnumber_map_toComm_inside  = eh->Get_NodeDofsetMap_VcSets_Inside_forCommunication();
-        std::vector<std::map<int,int> > & vcsets_nid_dofsetnumber_map_toComm_outside = eh->Get_NodeDofsetMap_VcSets_Outside_forCommunication();
-
-        if(include_inner )
-        {
-          ConnectNodalDOFSets(nodes,
-                              include_inner,
-                              dis,
-                              ele_vc_sets_inside,
-                              nodaldofset_vc_sets_inside,
-                              vcsets_nid_dofsetnumber_map_toComm_inside);
-        }
-
-        ConnectNodalDOFSets(nodes,
-                            include_inner,
-                            dis,
-                            ele_vc_sets_outside,
-                            nodaldofset_vc_sets_outside,
-                            vcsets_nid_dofsetnumber_map_toComm_outside);
-
-
-
+      nodes[i] = node;
     }
+
+    ElementHandle* eh = GetElement(eid);
+
+    // get inside and outside cell_sets connected within current element
+
+    const std::vector<plain_volumecell_set> & ele_vc_sets_inside = eh->GetVcSetsInside();
+    const std::vector<plain_volumecell_set> & ele_vc_sets_outside = eh->GetVcSetsOutside();
+
+    std::vector<std::vector<int> > & nodaldofset_vc_sets_inside  = eh->GetNodalDofSet_VcSets_Inside();
+    std::vector<std::vector<int> > & nodaldofset_vc_sets_outside = eh->GetNodalDofSet_VcSets_Outside();
+
+    std::vector<std::map<int,int> > & vcsets_nid_dofsetnumber_map_toComm_inside  = eh->Get_NodeDofsetMap_VcSets_Inside_forCommunication();
+    std::vector<std::map<int,int> > & vcsets_nid_dofsetnumber_map_toComm_outside = eh->Get_NodeDofsetMap_VcSets_Outside_forCommunication();
+
+    if(include_inner )
+    {
+      ConnectNodalDOFSets(
+          nodes,
+          include_inner,
+          dis,
+          ele_vc_sets_inside,
+          nodaldofset_vc_sets_inside,
+          vcsets_nid_dofsetnumber_map_toComm_inside);
+    }
+
+    ConnectNodalDOFSets(
+        nodes,
+        include_inner,
+        dis,
+        ele_vc_sets_outside,
+        nodaldofset_vc_sets_outside,
+        vcsets_nid_dofsetnumber_map_toComm_outside);
+
+
+
+  }
 
 
 #if(0)
-    DumpGmshNumDOFSets("numdofsets_debug", include_inner, dis);
+  DumpGmshNumDOFSets("numdofsets_debug", include_inner, dis);
 #endif
 }
 
@@ -235,6 +238,7 @@ void GEO::CUT::ParentIntersection::FillParallelDofSetData(
     bool include_inner
 )
 {
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- FillParallelDofSetData" );
 
   // find volumecell sets and non-row nodes for that dofset numbers has to be communicated parallel
   // the communication is done element wise for all its sets of volumecells when there is a non-row node in this element
@@ -332,15 +336,15 @@ void GEO::CUT::ParentIntersection::CreateParallelDofSetDataVC(
     std::map<int,int>&            node_dofset_map
     )
 {
-
     if(node_dofset_map.size() > 0)
     {
-      // get volumcell information
+      // get volumecell information
       // REMARK: identify volumecells using the volumecells (its facets) points
-      std::vector<Point*> cut_points;
+      plain_point_set cut_points; // use sets here such that common points of facets are not stored twice
+
       {
         // get all the facets points
-        const plain_facet_set facets = cell->Facets();
+        const plain_facet_set & facets = cell->Facets();
 
         for(plain_facet_set::const_iterator i = facets.begin(); i!=facets.end(); ++i)
         {
@@ -348,34 +352,29 @@ void GEO::CUT::ParentIntersection::CreateParallelDofSetDataVC(
 
           // decide which points has to be send!!
           // Points, CornerPoints, AllPoints
-          std::vector<Point*> facetpoints = f->Points();
+          const std::vector<Point*> & facetpoints = f->Points();
 
           std::copy( facetpoints.begin(), facetpoints.end(), std::inserter( cut_points, cut_points.begin() ) );
         }
       }
 
-      std::vector<LINALG::Matrix<3,1> > cut_points_coords_;
+      LINALG::Matrix<3,1> coords(true);
 
-      for(std::vector<Point*>::iterator p=cut_points.begin(); p!=cut_points.end(); ++p)
+      std::vector<LINALG::Matrix<3,1> > cut_points_coords(cut_points.size(), coords );
+
+      for(plain_point_set::iterator p=cut_points.begin(); p!=cut_points.end(); ++p)
       {
-        LINALG::Matrix<3,1> coords(true);
-        const double * x = (*p)->X();
-        for(int i=0; i<3; i++)
-        {
-          coords(i) = x[i];
-        }
-        cut_points_coords_.push_back(coords);
+        LINALG::Matrix<3,1> & xyz = cut_points_coords[p-cut_points.begin()];
+
+        std::copy( (*p)->X(), (*p)->X()+3, &xyz( 0, 0 ) );
       }
 
 
-
       // get the parent element Id
-//      int peid = cell->ParentElement()->Id();
       // REMARK: for quadratic elements use the eid for the base element, not -1 for subelements
-      int peid = eid;
 
       // create dofset data for this volumecell for Communication
-      parallel_dofSetData.push_back( Teuchos::rcp(new DofSetData( set_index, inside, cut_points_coords_, peid, node_dofset_map) ) );
+      parallel_dofSetData.push_back( Teuchos::rcp(new DofSetData( set_index, inside, cut_points_coords, eid, node_dofset_map) ) );
 
     }
     else dserror("communication for empty node-dofset map not necessary!");
@@ -388,65 +387,67 @@ void GEO::CUT::ParentIntersection::CreateParallelDofSetDataVC(
  *-------------------------------------------------------------------------------------*/
 void GEO::CUT::ParentIntersection::FindNodalCellSets( bool include_inner,
                                                     std::set<int> & eids,
-                                                    std::map<int, ElementHandle*> & sourrounding_elements,
+                                                    std::vector<int> & sourrounding_elements,
                                                     std::map<Node*, std::vector<plain_volumecell_set> > & nodal_cell_sets_inside,
                                                     std::map<Node*, std::vector<plain_volumecell_set> > & nodal_cell_sets_outside,
                                                     std::vector<plain_volumecell_set> & cell_sets_inside,
                                                     std::vector<plain_volumecell_set> & cell_sets_outside,
                                                     std::vector<plain_volumecell_set> & cell_sets )
 {
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- FindNodalCellSets" );
 
-    for ( std::map<int,ElementHandle*>::iterator i=sourrounding_elements.begin(); i!=sourrounding_elements.end(); ++i )
+  for ( std::vector<int>::iterator i=sourrounding_elements.begin(); i!=sourrounding_elements.end(); ++i )
+  {
+    int eid = *i;
+
+    ElementHandle * e = GetElement(eid);
+
+    const std::vector<plain_volumecell_set> & ele_vc_sets_inside   = e->GetVcSetsInside();
+    const std::vector<plain_volumecell_set> & ele_vc_sets_outside  = e->GetVcSetsOutside();
+//    e->VolumeCellSets( include_inner, ele_vc_sets_inside, ele_vc_sets_outside);
+
+    // copy into cell_sets that collects all sets of adjacent elements
+    if ( include_inner )
     {
-        ElementHandle * e = i->second;
-
-        std::vector<plain_volumecell_set> ele_vc_sets_inside;
-        std::vector<plain_volumecell_set> ele_vc_sets_outside;
-        e->VolumeCellSets( include_inner, ele_vc_sets_inside, ele_vc_sets_outside);
-
-        // copy into cell_sets that collects all sets of adjacent elements
-        if ( include_inner )
-        {
-            std::copy( ele_vc_sets_inside.begin(), ele_vc_sets_inside.end(), std::inserter( cell_sets, cell_sets.end() ) );
-            std::copy( ele_vc_sets_inside.begin(), ele_vc_sets_inside.end(), std::inserter( cell_sets_inside, cell_sets_inside.end() ) );
-
-        }
-
-        std::copy( ele_vc_sets_outside.begin(), ele_vc_sets_outside.end(), std::inserter( cell_sets, cell_sets.end() ) );
-        std::copy( ele_vc_sets_outside.begin(), ele_vc_sets_outside.end(), std::inserter( cell_sets_outside, cell_sets_outside.end() ) );
-
-
-        if(   (ele_vc_sets_inside.size() >0 and include_inner)
-            or ele_vc_sets_outside.size()>0)
-        {
-            eids.insert(i->first); // no duplicates in std::set
-        }
-
-        const std::vector<Node*> & nodes = e->Nodes();
-
-
-        for ( std::vector<Node*>::const_iterator i=nodes.begin();
-              i!=nodes.end();
-              ++i )
-        {
-            Node * n = *i;
-
-            // call once for inside and once for outside
-            {
-                if(include_inner)
-                {
-                    n->AssignNodalCellSet(ele_vc_sets_inside, nodal_cell_sets_inside);
-                }
-
-                n->AssignNodalCellSet(ele_vc_sets_outside, nodal_cell_sets_outside);
-
-            }
-
-
-        } // end loop over nodes of current sourrounding element
-
-
+      std::copy( ele_vc_sets_inside.begin(), ele_vc_sets_inside.end(), std::inserter( cell_sets, cell_sets.end() ) );
+      std::copy( ele_vc_sets_inside.begin(), ele_vc_sets_inside.end(), std::inserter( cell_sets_inside, cell_sets_inside.end() ) );
     }
+
+    std::copy( ele_vc_sets_outside.begin(), ele_vc_sets_outside.end(), std::inserter( cell_sets, cell_sets.end() ) );
+    std::copy( ele_vc_sets_outside.begin(), ele_vc_sets_outside.end(), std::inserter( cell_sets_outside, cell_sets_outside.end() ) );
+
+
+    if(   (ele_vc_sets_inside.size() >0 and include_inner)
+        or ele_vc_sets_outside.size()>0)
+    {
+      eids.insert(eid); // no duplicates in std::set
+    }
+
+    const std::vector<Node*> & nodes = e->Nodes();
+
+
+    for ( std::vector<Node*>::const_iterator n=nodes.begin();
+        n!=nodes.end();
+        ++n )
+    {
+      Node * node = *n;
+
+      // call once for inside and once for outside
+      {
+        if(include_inner)
+        {
+          node->AssignNodalCellSet(ele_vc_sets_inside, nodal_cell_sets_inside);
+        }
+
+        node->AssignNodalCellSet(ele_vc_sets_outside, nodal_cell_sets_outside);
+
+      }
+
+
+    } // end loop over nodes of current sourrounding element
+
+
+  }
 
 }
 
@@ -457,17 +458,20 @@ void GEO::CUT::ParentIntersection::ConnectNodalDOFSets(
     std::vector<Node *> &                     nodes,
     bool                                      include_inner,
     const DRT::Discretization&                dis,
-    const std::vector<plain_volumecell_set> & connected_vc_sets,
+    const std::vector<plain_volumecell_set> & connected_vc_sets, // connections of volumecells within one element connected via subelements
     std::vector<std::vector<int> > &          nodaldofset_vc_sets,
     std::vector<std::map<int,int> >&          vcsets_nid_dofsetnumber_map_toComm
 )
 {
 
-  for(std::vector<plain_volumecell_set>::const_iterator s=connected_vc_sets.begin();
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- ConnectNodalDOFSets" );
+
+
+  for(std::vector<plain_volumecell_set>::const_iterator s=connected_vc_sets.begin(); // connections within this element
       s!=connected_vc_sets.end();
       s++)
   {
-    plain_volumecell_set cells = *s; // this is one connection of volumecells, connected via subelements, within one element
+    const plain_volumecell_set & cells = *s; // this is one connection of volumecells, connected via subelements, within one element
 
     std::vector<int > nds;
 
@@ -492,11 +496,11 @@ void GEO::CUT::ParentIntersection::ConnectNodalDOFSets(
 
         int nid = n->Id();
 
-        DRT::Node* drt_node = dis.gNode(nid);
-
         if( nid >= 0)
         {
 #ifdef PARALLEL
+          DRT::Node* drt_node = dis.gNode(nid);
+
           // decide if the information for this cell has to be ordered from row-node or not
           //REMARK:
           if(drt_node->Owner() == dis.Comm().MyPID())
@@ -506,7 +510,7 @@ void GEO::CUT::ParentIntersection::ConnectNodalDOFSets(
           else
           {
             // insert the required pair of nid and unset dofsetnumber value (-1)
-            nids_dofsetnumber_map_toComm.insert(std::pair<int,int>(nid,-1));
+            nids_dofsetnumber_map_toComm[nid] = -1;
 
             // set dofset number to minus one, not a valid dofset number
             nds.push_back(-1);
@@ -525,7 +529,7 @@ void GEO::CUT::ParentIntersection::ConnectNodalDOFSets(
     vcsets_nid_dofsetnumber_map_toComm.push_back(nids_dofsetnumber_map_toComm);
 
     // set the nds vector for each volumecell of the current set
-    for(plain_volumecell_set::iterator c=cells.begin(); c!=cells.end(); c++)
+    for(plain_volumecell_set::const_iterator c=cells.begin(); c!=cells.end(); c++)
     {
       VolumeCell* cell = *c;
       cell->SetNodalDofSet(nds);
@@ -825,10 +829,8 @@ void GEO::CUT::ParentIntersection::DumpGmshNumDOFSets(std::string filename, bool
         if(eh != NULL)
         {
         // get inside and outside cell_sets connected within current element
-        std::vector<plain_volumecell_set> ele_vc_sets_inside;
-        std::vector<plain_volumecell_set> ele_vc_sets_outside;
-
-        eh->VolumeCellSets( include_inner, ele_vc_sets_inside, ele_vc_sets_outside);
+        const std::vector<plain_volumecell_set> & ele_vc_sets_inside  = eh->GetVcSetsInside();
+        const std::vector<plain_volumecell_set> & ele_vc_sets_outside = eh->GetVcSetsOutside();
 
 
         for ( std::vector<plain_volumecell_set>::const_iterator i=ele_vc_sets_outside.begin();

@@ -1694,7 +1694,7 @@ void VOLMORTAR::VolMortarCoupl::PerformCut(
     //is mele in cut involved?
     if (em != NULL)
     {
-      em->CollectVolumeCells(true, mcells_in, mcells_out);
+      em->CollectVolumeCells(mcells_in, mcells_out);
 
       int count = 0;
 
@@ -1753,7 +1753,7 @@ void VOLMORTAR::VolMortarCoupl::PerformCut(
     volcell_.clear();
     if (em != NULL)
     {
-      em->CollectVolumeCells(true, volcell_, mcells_out);
+      em->CollectVolumeCells(volcell_, mcells_out);
 
       // start integration
       if (switched_conf)

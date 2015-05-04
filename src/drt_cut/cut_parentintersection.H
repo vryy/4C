@@ -62,8 +62,6 @@ public:
         inside_cell_(inside_cell),
         peid_(peid)
       {
-        node_dofsetnumber_map_.clear();
-        cut_points_coords_.clear();
         std::copy(node_dofsetnumber_map.begin(), node_dofsetnumber_map.end(), std::inserter(node_dofsetnumber_map_, node_dofsetnumber_map_.begin()) );
         std::copy(cut_points_coords.begin(), cut_points_coords.end(), std::inserter(cut_points_coords_, cut_points_coords_.begin()) );
       }
@@ -194,7 +192,7 @@ public:
   /// find cell sets around each node (especially for quadratic elements)
   void FindNodalCellSets( bool include_inner,
                           std::set<int> & eids,
-                          std::map<int, ElementHandle*> & sourrounding_elements,
+                          std::vector<int> & sourrounding_elements,
                           std::map<Node*, std::vector<plain_volumecell_set> > & nodal_cell_sets_inside,
                           std::map<Node*, std::vector<plain_volumecell_set> > & nodal_cell_sets_outside,
                           std::vector<plain_volumecell_set> & cell_sets_inside,

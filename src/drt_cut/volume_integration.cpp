@@ -266,10 +266,11 @@ void GEO::CUT::VolumeIntegration::get_zcoordinates(std::vector<std::vector<doubl
         continue;
       }
       Facet *face1 = *i;
-      const std::vector<std::vector<double> > corLocal = face1->CornerPointsLocal(elem1_);
-      for(std::vector<std::vector<double> >::const_iterator k=corLocal.begin();k!=corLocal.end();k++)
+      std::vector<std::vector<double> > corLocal;
+      face1->CornerPointsLocal(elem1_,corLocal);
+      for(std::vector<std::vector<double> >::iterator k=corLocal.begin();k!=corLocal.end();k++)
       {
-        std::vector<double> coords1 = *k;
+        std::vector<double> & coords1 = *k;
 
         thisplane1.push_back(coords1[1]);
         thisplane2.push_back(coords1[2]);
@@ -530,7 +531,7 @@ int GEO::CUT::VolumeIntegration::pnpoly(int npol, std::vector<double>xp, std::ve
 /*-------------------------------------------------------------------------------------------------------------------*
 
 *--------------------------------------------------------------------------------------------------------------------*/
-int GEO::CUT::VolumeIntegration::pnpoly(std::vector<std::vector<double> >xp, LINALG::Matrix<3,1> pt,
+int GEO::CUT::VolumeIntegration::pnpoly(const std::vector<std::vector<double> > & xp, const LINALG::Matrix<3,1> & pt,
                                         std::string projType)
 {
   int npol = xp.size();
@@ -1112,7 +1113,8 @@ std::string GEO::CUT::VolumeIntegration::IsPointInside( LINALG::Matrix<3,1> & rs
   for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
   {
     Facet *fe = *i;
-    std::vector<std::vector<double> > cornersLocal = fe->CornerPointsLocal(elem1_);
+    std::vector<std::vector<double> > cornersLocal;
+    fe->CornerPointsLocal(elem1_,cornersLocal);
 
     FacetIntegration faee1(fe,elem1_,position_,false,false);
     std::vector<double> eqnFacet = faee1.equation_plane(cornersLocal);
@@ -1133,7 +1135,8 @@ std::string GEO::CUT::VolumeIntegration::IsPointInside( LINALG::Matrix<3,1> & rs
   {
     // check whether the infinite ray thru given (y,z) intersect the facet
     Facet *fe = *XFacets[i];
-    std::vector<std::vector<double> > cornersLocal = fe->CornerPointsLocal(elem1_);
+    std::vector<std::vector<double> > cornersLocal;
+    fe->CornerPointsLocal(elem1_,cornersLocal);
     int cutno = pnpoly( cornersLocal, rst, "x" );
     if( cutno==1 )
     {
@@ -1161,7 +1164,8 @@ std::string GEO::CUT::VolumeIntegration::IsPointInside( LINALG::Matrix<3,1> & rs
       if( fabs((eqn[3]/eqn[1]-rst(1,0))/rst(1,0)) < 1e-10 ) // make sure pt is on same plane
       {
         Facet *fe = *NotXFacets[i];
-        std::vector<std::vector<double> > cornersLocal = fe->CornerPointsLocal(elem1_);
+        std::vector<std::vector<double> > cornersLocal;
+        fe->CornerPointsLocal(elem1_,cornersLocal);
         int cutno = pnpoly( cornersLocal, rst, "y" );
         if( cutno==1 ) // make sure pt is within facet area
         {
@@ -1175,7 +1179,8 @@ std::string GEO::CUT::VolumeIntegration::IsPointInside( LINALG::Matrix<3,1> & rs
       if( fabs((eqn[3]/eqn[2]-rst(2,0))/rst(2,0)) < 1e-10 )
       {
         Facet *fe = *NotXFacets[i];
-        std::vector<std::vector<double> > cornersLocal = fe->CornerPointsLocal(elem1_);
+        std::vector<std::vector<double> > cornersLocal;
+        fe->CornerPointsLocal(elem1_, cornersLocal);
         int cutno = pnpoly( cornersLocal, rst, "z" );
         if( cutno==1 )
         {

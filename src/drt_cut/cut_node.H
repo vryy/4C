@@ -20,7 +20,7 @@ class Cmp
 {
 public:
   /// compare operator for plain_volumecell_sets
-  bool operator()( plain_volumecell_set s1, plain_volumecell_set s2 );
+  bool operator()( const plain_volumecell_set& s1, const plain_volumecell_set& s2 );
 
   /// compare operator for sets of plain_volumecell_sets
   bool operator()( const std::set<plain_volumecell_set, Cmp>& set1, const std::set<plain_volumecell_set, Cmp>& set2);
@@ -45,7 +45,7 @@ public:
 
   /// constructor for a nodal dofset
   explicit NodalDofSet(
-      std::set<plain_volumecell_set,Cmp> connected_volumecells,
+      std::set<plain_volumecell_set,Cmp> & connected_volumecells,
       bool is_std_dofset
       );
 
@@ -205,7 +205,7 @@ public:
 
   /// Assign the vc_sets to the node if possible
   void AssignNodalCellSet(
-      std::vector<plain_volumecell_set> & ele_vc_sets,
+      const std::vector<plain_volumecell_set> & ele_vc_sets,
       std::map<Node*, std::vector<plain_volumecell_set> > & nodal_cell_sets
   );
 
@@ -222,7 +222,7 @@ public:
   int DofSetNumber( VolumeCell * cell );
 
   /// get the dofset number of the Volumecell w.r.t this node
-  int DofSetNumberNEW( plain_volumecell_set & cells );
+  int DofSetNumberNEW( const plain_volumecell_set & cells );
 
   /// return the sets of volumecells (old unsed version)
   const std::vector<plain_volumecell_set> & DofSets() const { return dofsets_; }

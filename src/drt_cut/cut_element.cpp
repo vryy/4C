@@ -1218,6 +1218,8 @@ void GEO::CUT::Element::CreateIntegrationCells(Mesh & mesh, int count, bool tetc
 
 bool GEO::CUT::Element::CreateSimpleShapedIntegrationCells(Mesh & mesh)
 {
+  //TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::Element::CreateSimpleShapedIntegrationCells" );
+
 
   if (cells_.size() == 1) // in case there is only one volumecell, check if a simple shaped integration cell is possible
   {

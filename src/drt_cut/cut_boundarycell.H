@@ -8,6 +8,9 @@
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 
+#include <Teuchos_TimeMonitor.hpp>
+
+
 namespace GEO
 {
 namespace CUT
@@ -122,9 +125,9 @@ public:
       const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<celldistype>::numNodePerElement;
       LINALG::Matrix<3,numnodes> xyze( this->xyz_, true );
 
-      LINALG::Matrix<numnodes,1> funct(true);
-      LINALG::Matrix<2,numnodes> deriv(true);
-      LINALG::Matrix<2,2> metrictensor(true);
+      LINALG::Matrix<numnodes,1> funct;
+      LINALG::Matrix<2,numnodes> deriv;
+      LINALG::Matrix<2,2> metrictensor;
 
       DRT::UTILS::shape_function_2D( funct, eta(0), eta(1), celldistype );
       DRT::UTILS::shape_function_2D_deriv1( deriv, eta(0), eta(1), celldistype );
@@ -147,6 +150,9 @@ public:
                              double                    & drs,
                              bool                      shadow = false )
   {
+    //TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::BoundaryCell::TransformLocalCoords" );
+
+
     const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<celldistype>::numNodePerElement;
     LINALG::Matrix<3,numnodes> xyzeGlo( this->xyz_, true ), xyze;
 

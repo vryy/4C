@@ -382,6 +382,8 @@ void GEO::CUT::ElementHandle::BoundaryCellGaussPointsLin(
     std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & intpoints
     )
 {
+  // TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::ElementHandle::BoundaryCellGaussPointsLin" );
+
   for ( std::map<int, std::vector<GEO::CUT::BoundaryCell*> >::const_iterator i=bcells.begin(); i!=bcells.end(); ++i )
   {
     int sid = i->first;
@@ -467,7 +469,6 @@ void GEO::CUT::LinearElementHandle::GetVolumeCells( plain_volumecell_set & cells
 //! Collect all volume-cells belonging to this element ordered by position
 /*----------------------------------------------------------------------*/
 void GEO::CUT::LinearElementHandle::CollectVolumeCells (
-    bool include_inner,
     plain_volumecell_set & cells_inside,
     plain_volumecell_set & cells_outside
 )
@@ -484,13 +485,9 @@ void GEO::CUT::LinearElementHandle::CollectVolumeCells (
     }
     else // inside vc
     {
-      if( include_inner)
-      {
-        cells_inside.insert( *i );
-      }
+      cells_inside.insert( *i );
     }
   }
-
 }
 
 
@@ -544,11 +541,7 @@ bool GEO::CUT::ElementHandle::GetCellSets_DofSets_GaussPoints (
 /*----------------------------------------------------------------------*/
 // get the element's sets of volume-cells ordered by inside/outside position
 /*----------------------------------------------------------------------*/
-void GEO::CUT::LinearElementHandle::VolumeCellSets (
-    bool include_inner,
-    std::vector<plain_volumecell_set> & ele_vc_sets_inside,
-    std::vector<plain_volumecell_set> & ele_vc_sets_outside
-)
+void GEO::CUT::LinearElementHandle::VolumeCellSets()
 {
 
   if(!cells_set_)
@@ -560,32 +553,20 @@ void GEO::CUT::LinearElementHandle::VolumeCellSets (
     {
       if( (*i)->Position() == GEO::CUT::Point::outside )
       {
-        plain_volumecell_set s;
+        plain_volumecell_set s; // plain volume cell set with only one entry
         s.insert(*i);
         vc_sets_outside_.push_back(s);
       }
       else // inside vc
       {
-        if( include_inner)
-        {
-          plain_volumecell_set s;
-          s.insert(*i);
-          vc_sets_inside_.push_back(s);
-        }
+        plain_volumecell_set s;  // plain volume cell set with only one entry
+        s.insert(*i);
+        vc_sets_inside_.push_back(s);
       }
     }
 
     cells_set_ = true;
   }
-
-
-
-  if(include_inner)
-  {
-    std::copy( vc_sets_inside_.begin(), vc_sets_inside_.end(), std::inserter(ele_vc_sets_inside, ele_vc_sets_inside.begin()));
-  }
-
-  std::copy( vc_sets_outside_.begin(), vc_sets_outside_.end(), std::inserter(ele_vc_sets_outside, ele_vc_sets_outside.begin()));
 
 }
 
@@ -661,7 +642,6 @@ void GEO::CUT::QuadraticElementHandle::GetVolumeCells( plain_volumecell_set & ce
 // Collect all volume-cells belonging to this element ordered by position
 /*----------------------------------------------------------------------*/
 void GEO::CUT::QuadraticElementHandle::CollectVolumeCells (
-    bool include_inner,
     plain_volumecell_set & cells_inside,
     plain_volumecell_set & cells_outside
 )
@@ -680,10 +660,7 @@ void GEO::CUT::QuadraticElementHandle::CollectVolumeCells (
       }
       else // inside vc
       {
-        if( include_inner)
-        {
-          cells_inside.insert( *i );
-        }
+        cells_inside.insert( *i );
       }
     } // volume-cells
   } // sub-elements
@@ -717,81 +694,20 @@ void GEO::CUT::QuadraticElementHandle::GetBoundaryCells( plain_boundarycell_set 
 }
 
 
-///*----------------------------------------------------------------------*/
-//// get all the element' sets of volume-cells, nds-vectors and integration points
-///*----------------------------------------------------------------------*/
-//INPAR::CUT::ElementIntegrationType GEO::CUT::QuadraticElementHandle::GetCellSets_DofSets_GaussPoints (
-//    std::vector< plain_volumecell_set >                        & cell_sets ,
-//    std::vector< std::vector< int > >                          & nds_sets,
-//    std::vector< std::vector< DRT::UTILS::GaussIntegration > > & intpoints_sets,
-//    INPAR::CUT::VCellGaussPts                                    gausstype,
-//    bool                                                         include_inner
-//    )
-//{
-//  GetVolumeCellsDofSets( cell_sets, nds_sets, include_inner );
-//
-//  intpoints_sets.clear();
-//
-//  INPAR::CUT::ElementIntegrationType eleinttype= INPAR::CUT::EleIntType_Undecided;
-//  for(int i=0; i<(int)subelements_.size(); i++)
-//  {
-//    INPAR::CUT::ElementIntegrationType subeleinttype = subelements_[i]->GetElementIntegrationType();
-//
-//    if(eleinttype == INPAR::CUT::EleIntType_Undecided) eleinttype = subeleinttype;
-////    else if(subeleinttype  == INPAR::CUT::EleIntType_Undecided)
-////    {
-////      // some subelements can be uncut, which does not change the integration type of the whole element
-////    }
-//    else if(subeleinttype != eleinttype) dserror("we have different element-integration types for the subelements of a quadradtic element");
-//  }
-//
-//  if(eleinttype == INPAR::CUT::EleIntType_Undecided)
-//    dserror("which type of element integration to use is not known!");
-//
-//  // fill Gauss points only when specific XFEM-integration is necessary
-//  if(eleinttype != INPAR::CUT::EleIntType_StandardUncut)
-//  {
-//
-//    intpoints_sets.reserve( cell_sets.size() );
-//
-//    for(std::vector<plain_volumecell_set>::iterator i= cell_sets.begin(); i!=cell_sets.end(); i++)
-//    {
-//      plain_volumecell_set & cells = *i;
-//
-//      std::vector<DRT::UTILS::GaussIntegration> gaussCellsets;
-//      VolumeCellGaussPoints( cells, gaussCellsets );
-//
-//      intpoints_sets.push_back( gaussCellsets );
-//    }
-//  }
-//
-//  return eleinttype;
-//}
-
-
 /*----------------------------------------------------------------------*/
 //! get the element's sets of volume-cells ordered by inside/outside position
 /*----------------------------------------------------------------------*/
-void GEO::CUT::QuadraticElementHandle::VolumeCellSets (
-    bool include_inner,
-    std::vector<plain_volumecell_set> & ele_vc_sets_inside,
-    std::vector<plain_volumecell_set> & ele_vc_set_ouside
-)
+void GEO::CUT::QuadraticElementHandle::VolumeCellSets()
 {
-
   // connect volumecells of subelements
-  ConnectVolumeCells( include_inner );
-
-  // get inside and outside connected volumecellsets for the current element
-  GetConnectedVolumeCellSets( include_inner, ele_vc_sets_inside, ele_vc_set_ouside );
-
+  ConnectVolumeCells();
 }
 
 
 /*----------------------------------------------------------------------*/
 //! connect volume-cells to sets of volume-cells
 /*----------------------------------------------------------------------*/
-void GEO::CUT::QuadraticElementHandle::ConnectVolumeCells ( bool include_inner )
+void GEO::CUT::QuadraticElementHandle::ConnectVolumeCells ()
 {
   // find the connection between volumecells of all subelements for the current element (hex8, hex20, tet4, tet10 etc.)
   // remark: this function determines not the connection outside this element
@@ -803,12 +719,9 @@ void GEO::CUT::QuadraticElementHandle::ConnectVolumeCells ( bool include_inner )
     plain_volumecell_set e_vcs_inside;
     plain_volumecell_set e_vcs_outside;
 
-    CollectVolumeCells(include_inner, e_vcs_inside, e_vcs_outside);
+    CollectVolumeCells(e_vcs_inside, e_vcs_outside);
 
-    if( include_inner )
-    {
-      BuildCellSets(e_vcs_inside , connected_vc_sets_inside_);
-    }
+    BuildCellSets(e_vcs_inside  , connected_vc_sets_inside_);
     BuildCellSets(e_vcs_outside , connected_vc_sets_outside_);
 
     cells_connected_ = true;
@@ -817,20 +730,6 @@ void GEO::CUT::QuadraticElementHandle::ConnectVolumeCells ( bool include_inner )
 
 }
 
-
-/*----------------------------------------------------------------------*/
-//! get connections/sets of volume-cells between sub-elements
-/*----------------------------------------------------------------------*/
-void GEO::CUT::QuadraticElementHandle::GetConnectedVolumeCellSets ( bool include_inner, std::vector<plain_volumecell_set> & connected_vc_sets_inside, std::vector<plain_volumecell_set> & connected_vc_sets_outside)
-{
-
-  if(include_inner)
-  {
-    std::copy(connected_vc_sets_inside_.begin(), connected_vc_sets_inside_.end(), std::inserter(connected_vc_sets_inside, connected_vc_sets_inside.end()));
-  }
-
-  std::copy(connected_vc_sets_outside_.begin(), connected_vc_sets_outside_.end(), std::inserter(connected_vc_sets_outside, connected_vc_sets_outside.end()));
-}
 
 
 /*----------------------------------------------------------------------*/

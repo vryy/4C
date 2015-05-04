@@ -815,13 +815,13 @@ GEO::CUT::VolumeCell* GEO::CUT::Parallel::findVolumeCell(
     vc_found = true;
 
     // get points for my_vc
-    std::vector<GEO::CUT::Point* > my_cut_points;
-    const plain_facet_set facets = cell->Facets();
+    plain_point_set my_cut_points;
+    const plain_facet_set & facets = cell->Facets();
 
     for(plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); i++)
     {
       Facet* f = *i;
-      std::vector<Point*> facetpoints = f->Points();
+      const std::vector<Point*> & facetpoints = f->Points();
       std::copy(facetpoints.begin(), facetpoints.end(), std::inserter(my_cut_points, my_cut_points.begin()));
     }
 
@@ -844,7 +844,7 @@ GEO::CUT::VolumeCell* GEO::CUT::Parallel::findVolumeCell(
       // identical number of points found! this vc is a candidate: check the points"
 
       // brute force search for identical point coords
-      for(std::vector<GEO::CUT::Point*>::iterator my_it=my_cut_points.begin(); my_it!=my_cut_points.end(); my_it++)
+      for(plain_point_set::iterator my_it=my_cut_points.begin(); my_it!=my_cut_points.end(); my_it++)
       {
         bool point_found = true;
 

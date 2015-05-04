@@ -4,6 +4,9 @@
 #include "../drt_io/io_pstream.H"
 #include <iostream>
 
+#include <Teuchos_TimeMonitor.hpp>
+
+
 unsigned GEO::CUT::KERNEL::FindNextCornerPoint( const std::vector<Point*> & points,
                                                 LINALG::Matrix<3,1> & x1,
                                                 LINALG::Matrix<3,1> & x2,
@@ -447,16 +450,18 @@ std::vector<double> GEO::CUT::KERNEL::EqnPlaneOfPolygon( const std::vector<Point
 *-------------------------------------------------------------------------------------------------------------*/
 std::vector<double> GEO::CUT::KERNEL::EqnPlaneOfPolygon( const std::vector<std::vector<double> >& vertices )
 {
-  std::vector<double> eqn_plane(4), middle(3);
-  std::fill( eqn_plane.begin(), eqn_plane.end(), 0.0 );
-  std::fill( middle.begin(), middle.end(), 0.0 );
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::KERNEL::EqnPlaneOfPolygon" );
+
+  // TODO: improvement by a factor of 4
+
+  std::vector<double> eqn_plane(4,0.0), middle(3,0.0);
 
   unsigned num_vert = vertices.size();
 
   for( unsigned ii=0; ii<num_vert; ii++ )
   {
-    const std::vector<double> pt1 = vertices[ii];
-    const std::vector<double> pt2 = vertices[(ii+1)%num_vert];
+    const std::vector<double> & pt1 = vertices[ii];
+    const std::vector<double> & pt2 = vertices[(ii+1)%num_vert];
 
     eqn_plane[0] += ( pt1[1] - pt2[1] ) * ( pt1[2] + pt2[2] );
     eqn_plane[1] += ( pt1[2] - pt2[2] ) * ( pt1[0] + pt2[0] );
@@ -468,9 +473,9 @@ std::vector<double> GEO::CUT::KERNEL::EqnPlaneOfPolygon( const std::vector<std::
 
   for( unsigned jj=0; jj<3; jj++  )
   {
-    middle[jj] = middle[jj] / num_vert;
     eqn_plane[3] += middle[jj] * eqn_plane[jj];
   }
+  eqn_plane[3]/=num_vert;
 
   return eqn_plane;
 }
@@ -690,6 +695,9 @@ void GEO::CUT::KERNEL::FindProjectionPlane( std::string& projPlane, const std::v
 *---------------------------------------------------------------------------------------*/
 void GEO::CUT::KERNEL::DeleteInlinePts( std::vector<Point*>& poly )
 {
+  //TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::KERNEL::DeleteInlinePts" );
+
+
   bool anyInLine = false;
   unsigned num = poly.size();
 
@@ -774,6 +782,7 @@ std::vector<GEO::CUT::Point*> GEO::CUT::KERNEL::Get3NoncollinearPts( std::vector
  *------------------------------------------------------------------------------*/
 double GEO::CUT::KERNEL::getAreaTri( std::vector<Point*> & poly )
 {
+  //TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::KERNEL::getAreaTri" );
 
   if( poly.size() != 3 )
     dserror("expecting a triangle");
@@ -805,6 +814,8 @@ double GEO::CUT::KERNEL::getAreaTri( std::vector<Point*> & poly )
  *------------------------------------------------------------------------------*/
 double GEO::CUT::KERNEL::getAreaConvexQuad( std::vector<Point*> & poly )
 {
+  //TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::KERNEL::getAreaConvexQuad" );
+
   if( poly.size() != 4 )
     dserror("expecting a quad");
 

@@ -756,8 +756,8 @@ void GEO::CUT::Mesh::RectifyCutNumerics()
 void GEO::CUT::Mesh::SearchCollisions(Mesh & cutmesh)
 {
 
-  std::map<plain_int_set, Teuchos::RCP<Side> > cutsides = cutmesh.Sides();
-  for (std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i = cutsides.begin();
+  const std::map<plain_int_set, Teuchos::RCP<Side> > & cutsides = cutmesh.Sides();
+  for (std::map<plain_int_set, Teuchos::RCP<Side> >::const_iterator i = cutsides.begin();
       i != cutsides.end(); ++i)
   {
     Side* cutside = &*i->second;

@@ -197,6 +197,8 @@ bool GEO::CUT::Facet::IsPlanar( Mesh & mesh, bool dotriangulate )
 
 bool GEO::CUT::Facet::IsPlanar( Mesh & mesh, const std::vector<Point*> & points )
 {
+  //TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::Facet::IsPlanar" );
+
   if ( isPlanarComputed_ )
     return isPlanar_;
 
@@ -1099,11 +1101,16 @@ GEO::CUT::Point * GEO::CUT::Facet::OtherPoint( Point * p1, Point * p2 )
   return the local coordinates of corner points with respect to the given element
   if shadow=true, then the mapping is w.r. to the parent quad element from which this element is derived
 *------------------------------------------------------------------------------------------------------------*/
-const std::vector<std::vector<double> > GEO::CUT::Facet::CornerPointsLocal( Element *elem1, bool shadow )
+void GEO::CUT::Facet::CornerPointsLocal( Element *elem1, std::vector<std::vector<double> > & cornersLocal, bool shadow )
 {
+  //TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::Facet::CornerPointsLocal" );
+
+  //TODO: this routine is expensive
+  cornersLocal.clear();
+
   const std::vector<Point*> & corners = CornerPoints();
   int mm=0;
-  std::vector<std::vector<double> >cornersLocal;
+
   for(std::vector<Point*>::const_iterator k=corners.begin();k!=corners.end();k++)
   {
       std::vector<double> pt_local;
@@ -1115,6 +1122,7 @@ const std::vector<std::vector<double> > GEO::CUT::Facet::CornerPointsLocal( Elem
       glo(1,0) = coords[1];
       glo(2,0) = coords[2];
 
+      //TODO: do we really need call a Newton here?
       if( shadow and elem1->isShadow() )
         elem1->LocalCoordinatesQuad( glo, loc );
       else
@@ -1127,7 +1135,6 @@ const std::vector<std::vector<double> > GEO::CUT::Facet::CornerPointsLocal( Elem
       cornersLocal.push_back(pt_local);
       mm++;
   }
-  return cornersLocal;
 }
 
 /*-----------------------------------------------------------------------*
