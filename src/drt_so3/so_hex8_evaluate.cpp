@@ -457,9 +457,6 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       // check length of elevec1
       if (elevec1_epetra.Length() < 1) dserror("The given result vector is too short.");
 
-      // not yet implemented for EAS case
-      if (eastype_ != soh8_easnone) dserror("Internal energy not yet implemented for EAS.");
-
       // initialization of internal energy
       double intenergy = 0.0;
 
@@ -499,6 +496,17 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
         }
       }
 
+      // prepare EAS data
+      Epetra_SerialDenseMatrix* alpha = NULL;  // EAS alphas
+      std::vector<Epetra_SerialDenseMatrix>* M_GP = NULL;   // EAS matrix M at all GPs
+      LINALG::SerialDenseMatrix M;      // EAS matrix M at current GP
+      double detJ0;                     // detJ(origin)
+      LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D> T0invT;  // trafo matrix
+      if (eastype_ != soh8_easnone)
+      {
+        alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");   // get alpha of previous iteration
+        soh8_eassetup(&M_GP,detJ0,T0invT,xrefe);
+      }
 
       // loop over all Gauss points
       for (int gp=0; gp<NUMGPT_SOH8; gp++)
@@ -618,6 +626,33 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
         }
         else
           dserror("unknown kinematic type for energy calculation");
+
+        // EAS technology: "enhance the strains"  ----------------------------- EAS
+        if (eastype_ != soh8_easnone)
+        {
+          M.LightShape(MAT::NUM_STRESS_3D,neas_);
+          // map local M to global, also enhancement is refered to element origin
+          // M = detJ0/detJ T0^{-T} . M
+          //Epetra_SerialDenseMatrix Mtemp(M); // temp M for Matrix-Matrix-Product
+          // add enhanced strains = M . alpha to GL strains to "unlock" element
+          switch(eastype_)
+          {
+          case DRT::ELEMENTS::So_hex8::soh8_easfull:
+            LINALG::DENSEFUNCTIONS::multiply<double,MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D,soh8_easfull>(M.A(), detJ0/detJ_[gp], T0invT.A(), (M_GP->at(gp)).A());
+            LINALG::DENSEFUNCTIONS::multiply<double,MAT::NUM_STRESS_3D,soh8_easfull,1>(1.0,glstrain.A(),1.0,M.A(),alpha->A());
+            break;
+          case DRT::ELEMENTS::So_hex8::soh8_easmild:
+            LINALG::DENSEFUNCTIONS::multiply<double,MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D,soh8_easmild>(M.A(), detJ0/detJ_[gp], T0invT.A(), (M_GP->at(gp)).A());
+            LINALG::DENSEFUNCTIONS::multiply<double,MAT::NUM_STRESS_3D,soh8_easmild,1>(1.0,glstrain.A(),1.0,M.A(),alpha->A());
+            break;
+          case DRT::ELEMENTS::So_hex8::soh8_eassosh8:
+            LINALG::DENSEFUNCTIONS::multiply<double,MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D,soh8_eassosh8>(M.A(), detJ0/detJ_[gp], T0invT.A(), (M_GP->at(gp)).A());
+            LINALG::DENSEFUNCTIONS::multiply<double,MAT::NUM_STRESS_3D,soh8_eassosh8,1>(1.0,glstrain.A(),1.0,M.A(),alpha->A());
+            break;
+          case DRT::ELEMENTS::So_hex8::soh8_easnone: break;
+          default: dserror("Don't know what to do with EAS type %d", eastype_); break;
+          }
+        } // ------------------------------------------------------------------ EAS
 
         // call material for evaluation of strain energy function
         double psi = 0.0;
