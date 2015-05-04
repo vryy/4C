@@ -21,6 +21,7 @@ Maintainer: Martin Winklmaier
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../headers/definitions.h"
 #include <Epetra_SerialDenseSolver.h>
 #include <stdio.h>
@@ -2340,7 +2341,9 @@ void OPTI::GCMMA::Output()
   else
     dserror("undefined type of optimization field");
 
-  if ((DRT::INPUT::IntegralValue<bool>(params_,"GMSH_OUTPUT")==true) and (total_iter_%upres_ == 0))
+  if ((DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->IOParams(),"OUTPUT_GMSH")==true) and
+      (DRT::INPUT::IntegralValue<bool>(params_,"GMSH_OUTPUT")==true) and
+      (total_iter_%upres_ == 0))
     OutputToGmsh(); // TODO look at this: total_iter_,false);
 
   // write domain decomposition for visualization (only once!)

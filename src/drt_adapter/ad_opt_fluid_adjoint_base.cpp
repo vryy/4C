@@ -217,7 +217,10 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   // solution output
   fluidadjointtimeparams->set<int>("write solution every", prbdyn.get<int>("UPRES"));
   // flag for writing fluid field to gmsh
-  fluidadjointtimeparams->set<bool>("GMSH_OUTPUT", DRT::INPUT::IntegralValue<bool>(fdyn,"GMSH_OUTPUT"));
+  if (DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->IOParams(),"OUTPUT_GMSH") == false)
+    fluidadjointtimeparams->set<bool>("GMSH_OUTPUT", false);
+  else
+    fluidadjointtimeparams->set<bool>("GMSH_OUTPUT", DRT::INPUT::IntegralValue<bool>(fdyn,"GMSH_OUTPUT"));
 
   // ----------- initial field for test cases
   INPAR::TOPOPT::InitialAdjointField initfield = DRT::INPUT::IntegralValue<INPAR::TOPOPT::InitialAdjointField>(adjointfdyn,"INITIALFIELD");

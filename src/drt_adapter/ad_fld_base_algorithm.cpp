@@ -1318,7 +1318,14 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
   // flag for writing element data in every step and not only once (i.e. at step == 0 or step == upres)
    fluidtimeparams->set<int>("write element data in every step"  ,DRT::INPUT::IntegralValue<int>(ioflags,"FLUID_ELEDATA_EVRY_STEP"));
   // flag for writing fluid field to gmsh
-  fluidtimeparams->set<bool>("GMSH_OUTPUT", DRT::INPUT::IntegralValue<bool>(fdyn,"GMSH_OUTPUT"));
+   if (DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->IOParams(),"OUTPUT_GMSH") == false)
+   {
+     fluidtimeparams->set<bool>("GMSH_OUTPUT", false);
+     if (DRT::INPUT::IntegralValue<bool>(fdyn,"GMSH_OUTPUT") == true)
+       std::cout << "WARNING! Conflicting GMSH parameter in IO and fluid sections. No GMSH output is written!" << std::endl;
+   }
+   else
+     fluidtimeparams->set<bool>("GMSH_OUTPUT", DRT::INPUT::IntegralValue<bool>(fdyn,"GMSH_OUTPUT"));
   // flag for computing divergence
   fluidtimeparams->set<bool>("COMPUTE_DIVU", DRT::INPUT::IntegralValue<bool>(fdyn,"COMPUTE_DIVU"));
   // flag for computing kinetix energy
