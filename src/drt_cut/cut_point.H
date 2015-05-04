@@ -46,11 +46,11 @@ public:
     outside = -3
   };
 
-  static Point * NewPoint( Mesh & mesh, const double * x, double t, Edge * cut_edge, Side * cut_side );
+  static Point * NewPoint( Mesh & mesh, const double * x, double t, Edge * cut_edge, Side * cut_side, double tolerance = 0.0 );
 
   static Point * InsertCut( Edge * cut_edge, Side * cut_side, Node * n );
 
-  Point( unsigned pid, const double * x, Edge * cut_edge, Side * cut_side );
+  Point( unsigned pid, const double * x, Edge * cut_edge, Side * cut_side, double tolerance );
 
   int Id() const { return pid_; }
 
@@ -207,6 +207,11 @@ public:
 /// Erase the cutsideedge from this point because it is deleted in the selfcut
   void EraseCutSideEdge( Edge * cutsideedge ){ cut_edges_.erase( cutsideedge ); }
 
+  /// Return actual point tolerance
+  const double Tolerance() {return tol_;}
+
+  /// Set new Tolerance (in case points are merged this is necessary)
+  void EnlargeTolerance(double newtol) {if(newtol > tol_){tol_ = newtol;}}
 
 private:
 
@@ -222,6 +227,9 @@ private:
 
   double x_[3];
   std::map<Edge*, double> t_;
+
+  //precicion of the point
+  double tol_;
 
   plain_edge_set cut_edges_;
   plain_side_set cut_sides_;   // a set with all sides

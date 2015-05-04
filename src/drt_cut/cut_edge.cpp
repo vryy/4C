@@ -288,7 +288,7 @@ bool GEO::CUT::Edge::IsCut( Side * side )
   return false;
 }
 
-bool GEO::CUT::Edge::ComputeCut( Edge * other, double & pos, LINALG::Matrix<3,1> & x )
+bool GEO::CUT::Edge::ComputeCut( Edge * other, double & pos, LINALG::Matrix<3,1> & x, double & tolerance )
 {
   LINALG::Matrix<3,1> p1;
   LINALG::Matrix<3,1> p2;
@@ -332,11 +332,17 @@ bool GEO::CUT::Edge::ComputeCut( Edge * other, double & pos, LINALG::Matrix<3,1>
     w.Update( 1, x, -1 );
     double distance = w.Norm2();
 
-    return ( distance < TOLERANCE and
-             s >= -1-TOLERANCE and
-             s <=  1+TOLERANCE and
-             t >= -1-TOLERANCE and
-             t <=  1+TOLERANCE );
+    //approximate the tolerance for evaluating the point!
+    tolerance = p1.NormInf();
+    double tolerance2 = p2.NormInf();
+    if (tolerance2 > tolerance) tolerance = tolerance2;
+    tolerance *= POSITIONTOL;
+
+    return ( distance < tolerance and
+             s >= -1-REFERENCETOL and
+             s <=  1+REFERENCETOL and
+             t >= -1-REFERENCETOL and
+             t <=  1+REFERENCETOL );
   }
 
   return false;
@@ -379,12 +385,12 @@ void GEO::CUT::Edge::LevelSetCut( Mesh & mesh, LevelSetSide & side, PointSet & c
 
   // version for single element cuts, here we need to watch for tolerances on
   // nodal cuts
-  if ( fabs( blsv ) <= TOLERANCE )
+  if ( fabs( blsv ) <= REFERENCETOL )
   {
     cuts.insert( Point::InsertCut( this, &side, BeginNode() ) );
     cutfound = true;
   }
-  if ( fabs( elsv ) <= TOLERANCE )
+  if ( fabs( elsv ) <= REFERENCETOL )
   {
     cuts.insert( Point::InsertCut( this, &side, EndNode() ) );
     cutfound = true;
@@ -405,7 +411,7 @@ void GEO::CUT::Edge::LevelSetCut( Mesh & mesh, LevelSetSide & side, PointSet & c
       LINALG::Matrix<3,1> x;
       x.Update( -1., x1, 1., x2, 0. );
       x.Update( 1., x1, t );
-      Point * p = Point::NewPoint( mesh, x.A(), 2.*t-1., this, &side );
+      Point * p = Point::NewPoint( mesh, x.A(), 2.*t-1., this, &side, 0.0 );
       cuts.insert( p );
     }
   }

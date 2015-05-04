@@ -2973,7 +2973,7 @@ void test_hex8_quad4_alex33()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.Cut( true ,INPAR::CUT::VCellGaussPts_DirectDivergence, INPAR::CUT::BCellGaussPts_Tessellation);
   intersection.Status();
 }
 

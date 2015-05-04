@@ -27,7 +27,7 @@ void GEO::CUT::LevelSetSide::SideCenter( LINALG::Matrix<3,1> & midpoint )
   throw std::runtime_error( "no SideCenter on level set cut surface defined" );
 }
 
-bool GEO::CUT::LevelSetSide::WithinSide( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<2,1> & rs, double & dist, const double & Tol )
+bool GEO::CUT::LevelSetSide::WithinSide( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<2,1> & rs, double & dist)
 {
   throw std::runtime_error( "no WithinSide check implemented" );
 }

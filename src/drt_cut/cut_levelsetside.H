@@ -40,7 +40,7 @@ public:
 
   virtual void SideCenter( LINALG::Matrix<3,1> & midpoint );
 
-  virtual bool WithinSide( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<2,1> & rs, double & dist, const double & Tol );
+  virtual bool WithinSide( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<2,1> & rs, double & dist);
 
   virtual bool RayCut( const LINALG::Matrix<3,1> & p1_xyz, const LINALG::Matrix<3,1> & p2_xyz, LINALG::Matrix<2,1> & rs, double & line_xi);
 

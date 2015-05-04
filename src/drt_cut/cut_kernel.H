@@ -8,6 +8,9 @@
 
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
+//activate debug intersection output in cut_kernel
+//#define DEBUG_CUTKERNEL_OUTPUT
+
 namespace GEO
 {
   namespace CUT
@@ -64,14 +67,14 @@ namespace GEO
         case DRT::Element::quad8:
         case DRT::Element::quad9:
         {
-          return ( fabs( xsi( 0 )+1 )<TOLERANCE or fabs( xsi( 1 )+1 )<TOLERANCE or
-                   fabs( xsi( 0 )-1 )<TOLERANCE or fabs( xsi( 1 )-1 )<TOLERANCE );
+          return ( fabs( xsi( 0 )+1 )<REFERENCETOL or fabs( xsi( 1 )+1 )<REFERENCETOL or
+                   fabs( xsi( 0 )-1 )<REFERENCETOL or fabs( xsi( 1 )-1 )<REFERENCETOL );
         }
         case DRT::Element::tri3:
         case DRT::Element::tri6:
         {
-          return ( fabs( xsi( 0 )+0 )<TOLERANCE or fabs( xsi( 1 )+0 )<TOLERANCE or
-                   fabs( xsi( 1 )+xsi( 0 )-1 )<TOLERANCE );
+          return ( fabs( xsi( 0 )+0 )<REFERENCETOL or fabs( xsi( 1 )+0 )<REFERENCETOL or
+                   fabs( xsi( 1 )+xsi( 0 )-1 )<REFERENCETOL );
         }
         default:
           throw std::runtime_error( "unsupported side type" );
@@ -89,16 +92,16 @@ namespace GEO
         case DRT::Element::quad8:
         case DRT::Element::quad9:
         {
-          intersects = ( xsi( 0 ) >= -1-TOLERANCE and xsi( 1 ) >= -1-TOLERANCE and
-                         xsi( 0 ) <=  1+TOLERANCE and xsi( 1 ) <=  1+TOLERANCE );
+          intersects = ( xsi( 0 ) >= -1-REFERENCETOL and xsi( 1 ) >= -1-REFERENCETOL and
+                         xsi( 0 ) <=  1+REFERENCETOL and xsi( 1 ) <=  1+REFERENCETOL );
           break;
         }
         case DRT::Element::tri3:
         case DRT::Element::tri6:
         {
-          intersects = ( xsi( 0 ) >= 0-TOLERANCE and xsi( 1 ) >= 0-TOLERANCE and
-                         xsi( 0 ) <= 1+TOLERANCE and xsi( 1 ) <= 1+TOLERANCE and
-                         xsi( 1 ) <= ( 1 - xsi( 0 ) )+TOLERANCE );
+          intersects = ( xsi( 0 ) >= 0-REFERENCETOL and xsi( 1 ) >= 0-REFERENCETOL and
+                         xsi( 0 ) <= 1+REFERENCETOL and xsi( 1 ) <= 1+REFERENCETOL and
+                         xsi( 1 ) <= ( 1 - xsi( 0 ) )+REFERENCETOL );
           break;
         }
         default:
@@ -110,7 +113,7 @@ namespace GEO
 
       inline bool LineWithinLimits( const LINALG::Matrix<3,1> & xsi )
       {
-        return xsi( 2 ) >= -1-TOLERANCE and xsi( 2 ) <=  1+TOLERANCE;
+        return xsi( 2 ) >= -1-REFERENCETOL and xsi( 2 ) <=  1+REFERENCETOL;
       }
 
 
@@ -122,24 +125,24 @@ namespace GEO
         case DRT::Element::hex8:
         case DRT::Element::hex20:
         case DRT::Element::hex27:
-          return ( xsi( 0 ) >= -1-TOLERANCE and xsi( 1 ) >= -1-TOLERANCE and xsi( 2 ) >= -1-TOLERANCE and
-                   xsi( 0 ) <=  1+TOLERANCE and xsi( 1 ) <=  1+TOLERANCE and xsi( 2 ) <=  1+TOLERANCE );
+          return ( xsi( 0 ) >= -1-REFERENCETOL and xsi( 1 ) >= -1-REFERENCETOL and xsi( 2 ) >= -1-REFERENCETOL and
+                   xsi( 0 ) <=  1+REFERENCETOL and xsi( 1 ) <=  1+REFERENCETOL and xsi( 2 ) <=  1+REFERENCETOL );
         case DRT::Element::tet4:
         case DRT::Element::tet10:
-          return ( xsi( 0 ) >=   -TOLERANCE and xsi( 1 ) >=   -TOLERANCE and xsi( 2 ) >=   -TOLERANCE and
-                   xsi( 0 )+xsi( 1 )+xsi( 2 ) <= 1+TOLERANCE );
+          return ( xsi( 0 ) >=   -REFERENCETOL and xsi( 1 ) >=   -REFERENCETOL and xsi( 2 ) >=   -REFERENCETOL and
+                   xsi( 0 )+xsi( 1 )+xsi( 2 ) <= 1+REFERENCETOL );
         case DRT::Element::pyramid5:
-          return ( xsi( 0 ) >= -1-TOLERANCE and xsi( 1 ) >= -1-TOLERANCE and xsi( 2 ) >=   -TOLERANCE and
-                   xsi( 0 ) <=  1+TOLERANCE and xsi( 1 ) <=  1+TOLERANCE and
+          return ( xsi( 0 ) >= -1-REFERENCETOL and xsi( 1 ) >= -1-REFERENCETOL and xsi( 2 ) >=   -REFERENCETOL and
+                   xsi( 0 ) <=  1+REFERENCETOL and xsi( 1 ) <=  1+REFERENCETOL and
                    ( fabs( xsi( 0 ) ) > fabs( xsi( 1 ) ) ?
-                     ( xsi( 2 )+fabs( xsi( 0 ) ) <= 1+TOLERANCE ) :
-                     ( xsi( 2 )+fabs( xsi( 1 ) ) <= 1+TOLERANCE ) )
+                     ( xsi( 2 )+fabs( xsi( 0 ) ) <= 1+REFERENCETOL ) :
+                     ( xsi( 2 )+fabs( xsi( 1 ) ) <= 1+REFERENCETOL ) )
             );
         case DRT::Element::wedge6:
         case DRT::Element::wedge15:
-          return ( xsi( 0 ) >=   -TOLERANCE and xsi( 1 ) >=   -TOLERANCE and xsi( 2 ) >= -1-TOLERANCE and
-                   xsi( 2 ) <=  1+TOLERANCE and
-                   xsi( 0 )+xsi( 1 ) <= 1+TOLERANCE );
+          return ( xsi( 0 ) >=   -REFERENCETOL and xsi( 1 ) >=   -REFERENCETOL and xsi( 2 ) >= -1-REFERENCETOL and
+                   xsi( 2 ) <=  1+REFERENCETOL and
+                   xsi( 0 )+xsi( 1 ) <= 1+REFERENCETOL );
         default:
           throw std::runtime_error( "unsupported element type" );
         }
@@ -293,6 +296,18 @@ namespace GEO
         {
           return false;
         }
+
+        double GetTolerance()
+        {
+          dserror("Try to get tolerance from EmptyNewtonStrategy!");
+          return 0.0; //just to make compiler happy!
+        }
+
+        bool ZeroArea()
+        {
+          dserror("Try to get ZeroArea Information from EmptyNewtonStrategy!");
+          return false; //just to make compiler happy!
+        }
       };
 
       /// Debug helper strategy for generic Newton algorithm
@@ -398,7 +413,7 @@ namespace GEO
                       << " rhs b " << b_;
           }
 
-          return fabs( residual ) < TOLERANCE;
+          return fabs( residual ) < REFERENCETOL;
         }
 
         bool LinearSolve( int iter )
@@ -526,7 +541,8 @@ namespace GEO
           : xsi_( xsi ),
             xyze_surface_( NULL ),
             px_( NULL ),
-            checklimits_(checklimits)
+            tol_(0.0),
+            zeroarea_(false)
         {
         }
 
@@ -535,9 +551,20 @@ namespace GEO
         {
           xyze_surface_ = &xyze_surface;
           px_ = &px;
+
+          //use tol_ first just to store the scaling for the tolerance ..
+          //set it to the maximal coordinate of the involved surface or point! -- this defines accuracy of the intersection (for good conditioned linear systems)
+          tol_ = xyze_surface.NormInf();
+          double linescale = px.NormInf();
+          if (linescale > tol_)
+            tol_ = linescale;
+
+          tol_ *= LINSOLVETOL;
         }
 
         double Distance() { return fabs( xsi_( 2 ) ); }
+
+        double SignedDistance() { return  xsi_( 2 ); }
 
         const LINALG::Matrix<3,1> & LocalCoordinates() { return xsi_; }
 
@@ -571,29 +598,25 @@ namespace GEO
                       << "  " << b_;
           }
 
-          if ( iter > 0 )
-          {
-            if( checklimits_ and (not SurfaceWithinLimits<sidetype>( xsi_ )) )
-            {
-              return false;
-            }
-          }
+          if (zeroarea_) return false;
 
-          double solres = xsi_.Norm2();
           double residual = b_.Norm2();
-
-          const double tol = LINSOLVETOL; // / scale_;
-
-          return ( ( solres >= std::numeric_limits<double>::min() and
-                     residual / solres < tol ) or
-                   residual < tol );
+          if (residual < tol_)
+          {
+            tol_ *= sqrt(3);
+            return true;
+          }
+          else
+            return false;
         }
 
         bool LinearSolve( int iter )
         {
+          if (zeroarea_) return false;
           dx_ = 0;
+          //std::cout << "GAUSSELEMIN FOR COMPUTE DISTANCE ... " << std::flush;
           double det = LINALG::gaussElimination<true, 3>( A_, b_, dx_ );
-          return det != 0;
+          return det != 0; //here det = 0 will just happen if the surface element is distorted!
         }
 
         bool Update( int iter )
@@ -604,23 +627,108 @@ namespace GEO
 
         bool NewtonFailed()
         {
-#if 1
-          return true;
-#else
-          std::stringstream str;
-          str << "ComputeDistance: Newton scheme did not converge:\n"
+          tol_ = b_.Norm2();
+          #ifdef DEBUG_CUTKERNEL_OUTPUT
+           {
+           std::stringstream str;
+           str << "ComputeDistance: Newton scheme did not converge:\n"
               << std::setprecision( 16 )
               << ( *xyze_surface_ )
               << ( *px_ )
               << xsi_
-            ;
-          throw std::runtime_error( str.str() );
-#endif
+              ;
+
+          std::ofstream file( "NewtonFailed_distance.pos" );
+          WritetoGmsh(file);
+          #endif
+          return false;
+        }
+
+        void WritetoGmsh(std::ofstream& file)
+        {
+          //std::ofstream file( "NewtonFailed_distance.pos" );
+          file.precision(32); //higher precicion!
+          char elementtype;
+          switch (numNodesSurface )
+          {
+          case 3:
+            elementtype = 'T';
+            break;
+          case 4:
+            elementtype = 'Q';
+            break;
+          default:
+            throw std::runtime_error( "unknown element type in GmshSideDump" );
+          }
+
+          file << "View \"" << "Side" << "\" {\n";
+          {
+            file << "S" << elementtype
+                 << "(";
+            for ( uint i = 0; i < numNodesSurface; ++i )
+            {
+              if ( i != 0 )
+                file << ",";
+              file << ( *xyze_surface_ )(0,i) << "," << ( *xyze_surface_ )(1,i) << "," << ( *xyze_surface_ )(2,i);
+            }
+            file << "){";
+            for ( uint i = 0; i < numNodesSurface; ++i )
+            {
+              if ( i != 0 )
+                file << ",";
+              file << "1";
+            }
+            file << "};\n";
+          }
+          file<<"};";
+
+
+
+
+
+
+
+          //calculate the points
+          LINALG::Matrix<numNodesSurface,1> surface;
+
+          DRT::UTILS::shape_function_2D( surface, xsi_( 0 ), xsi_( 1 ), sidetype );
+
+          LINALG::Matrix<3,1> x1;;
+
+          x1.Multiply( *xyze_surface_, surface );
+
+          file << "View \"" << "Point" << "\" {\n";
+          {
+            file << "SP (";
+            file << ( *px_ )(0,0) << "," << ( *px_ )(1,0)
+                << "," << ( *px_ )(2,0);
+            file << "){";
+            file << 1;
+            file << "};\n";
+
+            file << "SP (";
+            file << x1(0,0) << "," << x1(1,0)
+                << "," << x1(2,0);
+            file << "){";
+            file << 2;
+            file << "};\n";
+          }
+          file<<"};";
+        }
+
+        double GetTolerance()
+        {
+          return tol_;
+        }
+
+        bool ZeroArea()
+        {
+          return zeroarea_;
         }
 
       private:
 
-        void DistanceSystem( const LINALG::Matrix<3,numNodesSurface> & surfaceDeriv2,
+        bool DistanceSystem( const LINALG::Matrix<3,numNodesSurface> & surfaceDeriv2,
                              const LINALG::Matrix<2,numNodesSurface> & surfaceDeriv1,
                              const LINALG::Matrix<numNodesSurface,1> & surface,
                              const LINALG::Matrix<3,numNodesSurface> & xyze_surface,
@@ -653,15 +761,15 @@ namespace GEO
           double cnorm = cross.Norm2();
           double fact1 = 1.0;
 
-          if(fabs(cnorm) < 1e-14)
+          if(fabs(cnorm) == 0.0)
           {
-            fact1=1.0;
-          }
-          else
-          {
-            fact1 = 1./cnorm;
+            zeroarea_ = true; //then calculation of a normal to a line like this make no sense at all!
+            //std::ofstream file( "DistanceNewton_zeroarea.pos" );
+            //WritetoGmsh(file);
+            return false;
           }
 
+          fact1 = 1./cnorm;
           //double fact2 = -0.5/( cnorm*sqrt( cnorm ) );
           cross.Scale( fact1 );
 
@@ -706,6 +814,8 @@ namespace GEO
           B( 2, 1 ) *= fact1; //+ fact2 * A( 2, 2 );
 
           A.Update( 1, B, 1 );
+
+          return true;
         }
 
         LINALG::Matrix<3,1> & xsi_;
@@ -724,7 +834,9 @@ namespace GEO
         LINALG::Matrix<3,1> dx_;
         LINALG::Matrix<3,1> cross_;
 
-        bool checklimits_;
+        double tol_; //tolerance!!!
+
+        bool zeroarea_; //surface element has zero area --> cross product for normal is zero!!!
       };
 
 
@@ -746,15 +858,19 @@ namespace GEO
 
         bool operator()( const LINALG::Matrix<3,numNodesSurface> & xyze_surface,
                          const LINALG::Matrix<3,1> & px,
-                         double & distance )
+                         double & distance,
+                         bool signeddistance = false)
         {
           this->Setup( xyze_surface, px );
-          if ( this->Solve() )
-          {
+
+          bool conv = this->Solve();
+
+          if (!signeddistance)
             distance = this->Distance();
-            return true;
-          }
-          return false;
+          else
+            distance = this->SignedDistance();
+
+          return conv;
         }
 
         const LINALG::Matrix<3,1> & LocalCoordinates()
@@ -765,6 +881,16 @@ namespace GEO
         bool SurfaceWithinLimits()
         {
           return GEO::CUT::KERNEL::SurfaceWithinLimits<sidetype>( LocalCoordinates() );
+        }
+
+        double GetTolerance()
+        {
+          return Strategy::GetTolerance();
+        }
+
+        bool ZeroArea()
+        {
+          return Strategy::ZeroArea();
         }
       };
 
@@ -818,7 +944,8 @@ namespace GEO
           :  xsi_( xsi ),
              xyze_surface_( NULL ),
              xyze_line_( NULL ),
-             check_limits_( checklimits )
+             check_limits_( checklimits ),
+             tol_(0.0)
         {
         }
 
@@ -827,6 +954,15 @@ namespace GEO
         {
           xyze_surface_ = &xyze_surface;
           xyze_line_    = &xyze_line;
+
+          //use tol_ first just to store the scaling for the tolerance ..
+          //set it to the maximal coordinate of the involved surface or line! -- this defines accuracy of the intersection (for good conditioned linear systems)
+          tol_ = xyze_surface.NormInf();
+          double linescale = xyze_line.NormInf();
+          if (linescale > tol_)
+            tol_ = linescale;
+
+          tol_ *= LINSOLVETOL;
 
           if ( debug )
           {
@@ -845,12 +981,7 @@ namespace GEO
                                    // stop the newton scheme if the iteration is too often outside the limits
 
           residual_ = 0;           // residual
-          incr_ = 1;               // increment 2-norm || dx_ = dxi_ ||
 
-          // Newton steps are supposed to converge within the side and within the line. Provide a
-          // maximum legal step size. Larger steps are supposed to diverge.
-          // REMARK: local coordinates for lines and sides are supposed to be in [-1,1], a radius of 5 should be okay
-          maxincr_ = 10.0; //   Uli's version: 10 * xyze_surface_->Norm2(); (unreasonable, update is done in local coordinates, xyz is global!!!)
         }
 
         void SetupStep( int iter )
@@ -864,33 +995,21 @@ namespace GEO
 
         bool TestConverged( int iter )
         {
-          const double tol = LINSOLVETOL; // / scale_;
-
           residual_ = b_.Norm2();
 
           if ( debug )
-            std::cout << "  residual=" << std::setprecision( 15 ) << residual_
-                      << "  incr=" << std::setprecision( 15 ) << incr_
-                      << "\n";
-
-          if ( residual_ < tol and incr_ < tol )
           {
+            double incr = dx_.Norm2();
+            std::cout << "  residual=" << std::setprecision( 15 ) << residual_
+                      << "  incr=" << std::setprecision( 15 ) << incr
+                      << "\n";
+          }
+
+          if ( residual_ < tol_ && iter > 1)
+          {
+            tol_ *= sqrt(3);
             return true;
           }
-
-          if (iter > 0 )
-          {
-            if( (check_limits_ and off_count_ == 0) or not check_limits_)
-            {
-              // test for stagnation (maybe the tolerances cannot be satisfied for ill-conditioned geometries!)
-              old_b_.Update( 1, b_, -1 );
-              if ( old_b_.Norm2() < tol )
-              {
-                return true;
-              }
-            }
-          }
-          old_b_ = b_;
           return false;
         }
 
@@ -899,50 +1018,33 @@ namespace GEO
           DRT::UTILS::shape_function_2D_deriv1( surfaceDeriv1_, xsi_( 0 ), xsi_( 1 ), sidetype );
           DRT::UTILS::shape_function_1D_deriv1( lineDeriv1_, xsi_( 2 ), edgetype );
 
-          A_ = 0;
+          A_ = 0.0;  //Fill with double, same as PutScalar(other).
 
+          //I guess some improvement is possible here... (matrix mult.!!!)
           for ( int inode=0; inode<numNodesSurface; ++inode )
+          {
             for( int isd=0; isd<3; ++isd )
             {
               A_(isd,0) += ( *xyze_surface_ )(isd,inode) * surfaceDeriv1_(0,inode);
               A_(isd,1) += ( *xyze_surface_ )(isd,inode) * surfaceDeriv1_(1,inode);
             }
+          }
 
           for ( int inode=0; inode<numNodesLine; ++inode )
+          {
             for ( int isd=0; isd<3; ++isd )
             {
               A_(isd,2) -= ( *xyze_line_ )(isd,inode) * lineDeriv1_(0,inode);
             }
+          }
 
 
           dx_ = 0;
+
           double det = LINALG::gaussElimination<true, 3>( A_, b_, dx_ );
 
           if ( debug )
             std::cout << "  det=" << std::setprecision( 15 ) << det << "\n";
-
-          if ( fabs( det ) < PARALLEL_DET_TOL )
-          {
-            if ( iter < 3 )
-            {
-              // try a different start point
-              dx_( ( 0+iter ) % 3 ) = .1;
-              dx_( ( 1+iter ) % 3 ) = .12;
-              dx_( ( 2+iter ) % 3 ) = .09;
-            }
-            else
-            {
-              // There is no solution. The line is parallel to the surface.
-              return false;
-            }
-          }
-
-          // beware of large steps that diverge
-          incr_ = dx_.Norm2();
-          if ( incr_ > maxincr_ )
-          {
-            return false;
-          }
 
           return true;
         }
@@ -950,6 +1052,9 @@ namespace GEO
         bool Update( int iter )
         {
           xsi_ += dx_;
+
+//          std::cout << "xsi: " << xsi_ << "   dx: " << dx_ << std::endl;
+
           if ( debug )
           {
             std::cout << "  off_count=" << off_count_
@@ -976,33 +1081,123 @@ namespace GEO
             x2.Update( 1, x1, -1 );
             std::cout << "  dx =" << x2;
           }
-          if ( not SurfaceWithinLimits<sidetype>( xsi_ ) or not LineWithinLimits( xsi_ ) )
-          {
-            off_count_ += 1;
-            // stop only if the iteration has to be within the limits of the side and the line and
-            // the iteration isn't within the the limits for too many iterations (off_counts)
-            if ( off_count_==3 and check_limits_)
-              return false;
-          }
-          else
-          {
-            off_count_ = 0; // reset the off-counter when the iteration is back within limits
-          }
+
           return true;
         }
 
         bool NewtonFailed()
         {
-          std::stringstream str;
-          str << "Newton scheme did not converge:\n  "
-              << ( *xyze_surface_ )
-              << ( *xyze_line_ )
-            ;
-          DumpDoubles( str, xyze_surface_->A(), xyze_surface_->M()*xyze_surface_->N() );
-          str << "\n";
-          DumpDoubles( str, xyze_line_   ->A(), xyze_line_   ->M()*xyze_line_   ->N() );
-          str << "\n";
-          throw std::runtime_error( str.str() );
+          tol_ = b_.Norm2()*sqrt(3);
+          //if (debug)
+          #ifdef DEBUG_CUTKERNEL_OUTPUT
+            {
+            std::stringstream str;
+            str << "Newton scheme did not converge:\n  "
+                << ( *xyze_surface_ )
+                << ( *xyze_line_ )
+              ;
+            DumpDoubles( str, xyze_surface_->A(), xyze_surface_->M()*xyze_surface_->N() );
+            str << "\n";
+            DumpDoubles( str, xyze_line_   ->A(), xyze_line_   ->M()*xyze_line_   ->N() );
+
+            WritetoGmsh();
+            }
+          #endif
+          return false;
+        }
+
+        double GetTolerance()
+        {
+          return tol_;
+        }
+
+        void WritetoGmsh()
+        {
+          std::ofstream file( "NewtonFailed.pos" );
+          file.precision(32); //higher precicion!
+          char elementtype;
+          switch (numNodesSurface )
+          {
+          case 3:
+            elementtype = 'T';
+            break;
+          case 4:
+            elementtype = 'Q';
+            break;
+          default:
+            throw std::runtime_error( "unknown element type in GmshSideDump" );
+          }
+
+          file << "View \"" << "Side" << "\" {\n";
+          {
+            file << "S" << elementtype
+                 << "(";
+            for ( uint i = 0; i < numNodesSurface; ++i )
+            {
+              if ( i != 0 )
+                file << ",";
+              file << ( *xyze_surface_ )(0,i) << "," << ( *xyze_surface_ )(1,i) << "," << ( *xyze_surface_ )(2,i);
+            }
+            file << "){";
+            for ( uint i = 0; i < numNodesSurface; ++i )
+            {
+              if ( i != 0 )
+                file << ",";
+              file << "1";
+            }
+            file << "};\n";
+          }
+          file<<"};";
+
+          file << "View \"" << "Line" << "\" {\n";
+          for (int iline = 0; iline < numNodesLine -1; ++iline)
+          {
+            file << "SL (";
+            file << ( *xyze_line_ )(0,iline) << "," << ( *xyze_line_ )(1,iline)
+                << "," << ( *xyze_line_ )(2,iline) << ",";
+            file << ( *xyze_line_ )(0,iline+1) << "," << ( *xyze_line_ )(1,iline+1)
+                << "," << ( *xyze_line_ )(2,iline+1);
+            file << "){";
+            file << 1<< ",";
+            file << 1;
+            file << "};\n";
+          }
+          file<<"};";
+
+
+          //calculate the points
+          LINALG::Matrix<numNodesSurface,1> surface;
+          LINALG::Matrix<numNodesLine,1> line;
+
+          DRT::UTILS::shape_function_2D( surface, xsi_( 0 ), xsi_( 1 ), sidetype );
+          DRT::UTILS::shape_function_1D( line, xsi_( 2 ), edgetype );
+
+          LINALG::Matrix<3,1> x1;
+          LINALG::Matrix<3,1> x2;
+
+          x1.Multiply( *xyze_surface_, surface );
+          x2.Multiply( *xyze_line_, line );
+          //endof
+
+
+          file << "View \"" << "Point" << "\" {\n";
+          {
+            file << "SP (";
+            file << x1(0,0) << "," << x1(1,0)
+                << "," << x1(2,0);
+            file << "){";
+            file << 1;
+            file << "};\n";
+
+            file << "SP (";
+            file << x2(0,0) << "," << x2(1,0)
+                << "," << x2(2,0);
+            file << "){";
+            file << 2;
+            file << "};\n";
+          }
+          file<<"};";
+          //GEO::CUT::OUTPUT::GmshIntersectionDump<numNodesSurface,numNodesLine>(file,xyze_surface_,xyze_line_);
         }
 
       private:
@@ -1024,10 +1219,9 @@ namespace GEO
         LINALG::Matrix<3,1> old_b_;
 
         double residual_;
-        double incr_;
-        double maxincr_;
         int off_count_;
         bool check_limits_;
+        double tol_; //basic tolerance!!!
       };
 
       /// intersection of side and line
@@ -1070,6 +1264,11 @@ namespace GEO
         bool LineWithinLimits()
         {
           return LineWithinLimits( LocalCoordinates() );
+        }
+
+        double GetTolerance()
+        {
+          return Strategy::GetTolerance();
         }
       };
 

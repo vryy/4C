@@ -660,15 +660,16 @@ void GEO::CUT::TriangulateFacet::EarClippingWithHoles( Side * parentside )
             closestedgexvalueid[1] = (i%maincyclesize)+1;
           }
           intersectioncount++;
-          if ( (abs(edgepointxvalue - edgepointxvalue1) < TOLERANCE and abs(correspondingyvalue - edgepointyvalue1) < TOLERANCE ) or
-               (abs(edgepointxvalue - edgepointxvalue2) < TOLERANCE and abs(correspondingyvalue - edgepointyvalue2) < TOLERANCE ) )
+          //need to scale POSITIONTOL here with InfNorm of Position (atm just works stable for magnitued 1)
+          if ( (abs(edgepointxvalue - edgepointxvalue1) < POSITIONTOL and abs(correspondingyvalue - edgepointyvalue1) < POSITIONTOL ) or
+               (abs(edgepointxvalue - edgepointxvalue2) < POSITIONTOL and abs(correspondingyvalue - edgepointyvalue2) < POSITIONTOL ) )
           {
             intersectioninpoint = true;
           }
         }
       }
     }
-    double epsilon = TOLERANCE;
+    double epsilon = POSITIONTOL; //??
     while ( intersectioninpoint )
     {
       intersectioninpoint = false;
@@ -683,7 +684,7 @@ void GEO::CUT::TriangulateFacet::EarClippingWithHoles( Side * parentside )
         double C = edgepointxvalue1 + edgepointxvalue2 - 2*maximumxvalue - 2;
         double D = edgepointyvalue1 + edgepointyvalue2 - 2*correspondingyvalue - epsilon;
         double N = 2*B - epsilon*A;
-        if ( abs(N) > TOLERANCE )
+        if ( abs(N) > POSITIONTOL ) //Tolerance scaling?
         {
           double eta = ( B*C - A*D )/N;
           double xsi = ( 2*D - epsilon*C )/N;
@@ -692,12 +693,13 @@ void GEO::CUT::TriangulateFacet::EarClippingWithHoles( Side * parentside )
             intersectioncount++;
             double xlocalcoord = maximumxvalue + 1 + eta;
             double ylocalcoord = (2*correspondingyvalue + epsilon + epsilon*eta)/2;
-            if ( (abs(xlocalcoord - edgepointxvalue1) < TOLERANCE and abs(ylocalcoord - edgepointyvalue1) < TOLERANCE ) or
-                 (abs(xlocalcoord - edgepointxvalue2) < TOLERANCE and abs(ylocalcoord - edgepointyvalue2) < TOLERANCE ) )
+            //need to scale POSITIONTOL here with InfNorm of Position (atm just works stable for magnitued 1)
+            if ( (abs(xlocalcoord - edgepointxvalue1) < POSITIONTOL and abs(ylocalcoord - edgepointyvalue1) < POSITIONTOL ) or
+                 (abs(xlocalcoord - edgepointxvalue2) < POSITIONTOL and abs(ylocalcoord - edgepointyvalue2) < POSITIONTOL ) )
             {
               intersectioninpoint = true;
               intersectioncount = 0;
-              epsilon += TOLERANCE;
+              epsilon += POSITIONTOL; //?
               break;
             }
           }
@@ -725,13 +727,14 @@ void GEO::CUT::TriangulateFacet::EarClippingWithHoles( Side * parentside )
     closestpoint(2,0) = 0;
   // 4) Closest visible point is node
     int mutuallyvisiblepointid = 0;
-    if ( (abs(closestpoint(0,0) - localmaincyclepoints[closestedgexvalueid[0]](0,0)) < TOLERANCE ) and
-         (abs(closestpoint(1,0) - localmaincyclepoints[closestedgexvalueid[0]](1,0)) < TOLERANCE ) )
+    //need to scale POSITIONTOL here with InfNorm of Position (atm just works stable for magnitued 1)
+    if ( (abs(closestpoint(0,0) - localmaincyclepoints[closestedgexvalueid[0]](0,0)) < POSITIONTOL ) and
+         (abs(closestpoint(1,0) - localmaincyclepoints[closestedgexvalueid[0]](1,0)) < POSITIONTOL ) )
     {
       mutuallyvisiblepointid = closestedgexvalueid[0];
     }
-    else if ( (abs(closestpoint(0,0) - localmaincyclepoints[closestedgexvalueid[1]](0,0)) < TOLERANCE ) and
-              (abs(closestpoint(1,0) - localmaincyclepoints[closestedgexvalueid[1]](1,0)) < TOLERANCE ) )
+    else if ( (abs(closestpoint(0,0) - localmaincyclepoints[closestedgexvalueid[1]](0,0)) < POSITIONTOL ) and
+              (abs(closestpoint(1,0) - localmaincyclepoints[closestedgexvalueid[1]](1,0)) < POSITIONTOL ) )
     {
       mutuallyvisiblepointid = closestedgexvalueid[1];
     }

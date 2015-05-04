@@ -98,6 +98,10 @@ IS_PSEUDO_2D                    yes
 MONOLITHIC_XFFSI_APPROACH       xffsi_full_newton
 XFLUIDFLUID                     yes
 XFLUID_TIMEINT                  STD=COPY/PROJ_and_GHOST=COPY/PROJ/GP
+----------------------------------------------------------------XFEM GENERAL
+GMSH_DEBUG_OUT                  Yes
+VOLUME_GAUSS_POINTS_BY          DirectDivergence
+BOUNDARY_GAUSS_POINTS_BY        Tessellation
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2

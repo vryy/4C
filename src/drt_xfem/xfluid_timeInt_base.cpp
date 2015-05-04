@@ -464,7 +464,8 @@ bool XFEM::XFLUID_TIMEINT_BASE::callSideEdgeIntersectionT(
   GEO::CUT::IntersectionBase<DRT::Element::line2, sidetype> intersect(xyze_surfaceElement, xyze_lineElement);
 
   // check also limits during the newton scheme and when converged
-  if(intersect.ComputeCurveSurfaceIntersection())
+  double itol;
+  if(intersect.ComputeCurveSurfaceIntersection(itol))
   {
     if( intersect.SurfaceWithinLimits() and intersect.LineWithinLimits())
     {

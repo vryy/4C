@@ -223,10 +223,11 @@ void GEO::CUT::TetMeshIntersection::FindEdgeCuts()
         if ( cp.count( e->BeginNode()->point() )==0 and
              cp.count( e->EndNode()->point() )==0 )
         {
-          bool iscut = e->ComputeCut( ce, pos, x );
+          double tolerance;
+          bool iscut = e->ComputeCut( ce, pos, x, tolerance );
           if ( iscut )
           {
-            Point * p = Point::NewPoint( mesh_, x.A(), pos, ce, NULL );
+            Point * p = Point::NewPoint( mesh_, x.A(), pos, ce, NULL, tolerance );
             p->AddEdge( e );
           }
         }
@@ -1158,7 +1159,7 @@ void GEO::CUT::TetMeshIntersection::RegisterNewPoints( Mesh & parent_mesh, const
           Point * p = *i;
           if ( child_to_parent_.count( p )==0 )
           {
-            Point * pp = parent_mesh.NewPoint( p->X(), NULL, NULL );
+            Point * pp = parent_mesh.NewPoint( p->X(), NULL, NULL, p->Tolerance() );
             Register( pp, p );
           }
         }
@@ -1209,7 +1210,7 @@ void GEO::CUT::TetMeshIntersection::SwapPoints( Mesh & mesh, const std::map<Poin
     std::map<Point*, Point*>::const_iterator j = pointmap.find( p );
     if ( j==pointmap.end() )
     {
-      Point * np = mesh.NewPoint( p->X(), NULL, NULL );
+      Point * np = mesh.NewPoint( p->X(), NULL, NULL, p->Tolerance() );
       new_points.push_back( np );
     }
     else
@@ -1325,7 +1326,7 @@ void GEO::CUT::TetMeshIntersection::CopyCutSide( Side * s, Facet * f )
       }
       else
       {
-        np = Point::NewPoint( mesh_, p->X(), p->t( e ), ne, NULL );
+        np = Point::NewPoint( mesh_, p->X(), p->t( e ), ne, NULL,p->Tolerance() );
         np->Position( Point::oncutsurface );
         Register( p, np );
       }

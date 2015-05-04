@@ -125,7 +125,7 @@ public:
   /*========================================================================*/
 
   /// creates a new point, optional information about cut-edge and cut-side
-  Point* NewPoint( const double * x, Edge * cut_edge, Side * cut_side );
+  Point* NewPoint( const double * x, Edge * cut_edge, Side * cut_side,double tolerance );
 
   /// creates a new line
   void NewLine( Point* p1, Point* p2, Side * cut_side1, Side * cut_side2, Element * cut_element, std::vector<Line*> * newlines=NULL );
@@ -342,7 +342,7 @@ public:
   \brief If node with the given id exists return the node, else create a new node with
   given coordinates and levelset value
    */
-  Node* GetNode( int nid, const double * xyz, double lsv=0.0 );
+  Node* GetNode( int nid, const double * xyz, double lsv=0.0, double tolerance = 0.0 );
 
 #if 0
   Node* GetNode( int nid, Point * p, double lsv=0.0 );

@@ -158,24 +158,24 @@ bool Position<elementtype,numNodesElement>::WithinLimits()
   case DRT::Element::hex16:
   case DRT::Element::hex20:
   case DRT::Element::hex27:
-    return ( xsi_( 0 ) >= -1-TOLERANCE and xsi_( 1 ) >= -1-TOLERANCE and xsi_( 2 ) >= -1-TOLERANCE and
-             xsi_( 0 ) <=  1+TOLERANCE and xsi_( 1 ) <=  1+TOLERANCE and xsi_( 2 ) <=  1+TOLERANCE );
+    return ( xsi_( 0 ) >= -1-REFERENCETOL and xsi_( 1 ) >= -1-REFERENCETOL and xsi_( 2 ) >= -1-REFERENCETOL and
+             xsi_( 0 ) <=  1+REFERENCETOL and xsi_( 1 ) <=  1+REFERENCETOL and xsi_( 2 ) <=  1+REFERENCETOL );
   case DRT::Element::tet4:
   case DRT::Element::tet10:
-    return ( xsi_( 0 ) >=   -TOLERANCE and xsi_( 1 ) >=   -TOLERANCE and xsi_( 2 ) >=   -TOLERANCE and
-             xsi_( 0 )+xsi_( 1 )+xsi_( 2 ) <= 1+TOLERANCE );
+    return ( xsi_( 0 ) >=   -REFERENCETOL and xsi_( 1 ) >=   -REFERENCETOL and xsi_( 2 ) >=   -REFERENCETOL and
+             xsi_( 0 )+xsi_( 1 )+xsi_( 2 ) <= 1+REFERENCETOL );
   case DRT::Element::pyramid5:
-    return ( xsi_( 0 ) >= -1-TOLERANCE and xsi_( 1 ) >= -1-TOLERANCE and xsi_( 2 ) >=   -TOLERANCE and
-             xsi_( 0 ) <=  1+TOLERANCE and xsi_( 1 ) <=  1+TOLERANCE and
+    return ( xsi_( 0 ) >= -1-REFERENCETOL and xsi_( 1 ) >= -1-REFERENCETOL and xsi_( 2 ) >=   -REFERENCETOL and
+             xsi_( 0 ) <=  1+REFERENCETOL and xsi_( 1 ) <=  1+REFERENCETOL and
              ( fabs( xsi_( 0 ) ) > fabs( xsi_( 1 ) ) ?
-               ( xsi_( 2 )+fabs( xsi_( 0 ) ) <= 1+TOLERANCE ) :
-               ( xsi_( 2 )+fabs( xsi_( 1 ) ) <= 1+TOLERANCE ) )
+               ( xsi_( 2 )+fabs( xsi_( 0 ) ) <= 1+REFERENCETOL ) :
+               ( xsi_( 2 )+fabs( xsi_( 1 ) ) <= 1+REFERENCETOL ) )
       );
   case DRT::Element::wedge6:
   case DRT::Element::wedge15:
-    return ( xsi_( 0 ) >=   -TOLERANCE and xsi_( 1 ) >=   -TOLERANCE and xsi_( 2 ) >= -1-TOLERANCE and
-             xsi_( 2 ) <=  1+TOLERANCE and
-             xsi_( 0 )+xsi_( 1 ) <= 1+TOLERANCE );
+    return ( xsi_( 0 ) >=   -REFERENCETOL and xsi_( 1 ) >=   -REFERENCETOL and xsi_( 2 ) >= -1-REFERENCETOL and
+             xsi_( 2 ) <=  1+REFERENCETOL and
+             xsi_( 0 )+xsi_( 1 ) <= 1+REFERENCETOL );
   default:
     throw std::runtime_error( "unsupported element type" );
   }

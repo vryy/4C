@@ -378,7 +378,7 @@ void GEO::CUT::Facet::CreateTriangulation( Mesh & mesh, const std::vector<Point*
     avg.Update(1.0,cur,1.0);
   }
   avg.Scale(1.0/pts.size());
-  Point * p_mid = mesh.NewPoint( avg.A(), NULL, ParentSide() );
+  Point * p_mid = mesh.NewPoint( avg.A(), NULL, ParentSide(),0.0); //change tolerance here intelligently !!! - basically there is no reason why I'd like to merge here!
   p_mid->Position( Position() );
   p_mid->Register( this );
 

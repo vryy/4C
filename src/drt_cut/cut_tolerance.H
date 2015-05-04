@@ -1,25 +1,29 @@
 #ifndef CUT_TOLERANCE_H
 #define CUT_TOLERANCE_H
 
-// Our input files enjoy lax accuracies. Thus, we need to have a large catch
-// point radius during setup. Later on, however, the catch radius determines
-// the numerical exactness we can reach. We need to use a rather small catch
-// radius during the actual cutting.
-//#define SETUPNODECATCHTOL 1e-6
+#define BASICTOL 1e-14 //basic tolerance for the cut, limited by double precicion!
 
-// Tolerances that build on each other. We assume the numbers we compare with
-// these are about 1. These tolerances build on each other. The largest one
-// determines the exactness we can reach in out simulations.
-#define MINIMALTOL  1e-10
-#define TOLERANCE   1e-12
-#define LINSOLVETOL 1e-13
-#define VOLUMETOL   1e-14  // the tolerance when created integration cells are discarded, the boundary cell however will be created
+//derived tolerances
+//--> do not change the relation of these tolerances from the basictolerance, if there isn't a reasonable argument to do that!!!
 
-// special tolerances for some special cut situations
+//to check l2-norm of vector with 3-entries of magnitude 1.0!
+#define LINSOLVETOL (BASICTOL/sqrt(3)*10.0)
+//sqrt(3) because of l2 norm with 3 values in vector
+//10 because scaled with norminf(x) || if norminf(x)=1.0 --> for double precicion 1.(15 digits)
+//REMARK: using this tolerance for increments in reference coordinate system norminf(x)=1!!!
 
-// tolerance in cut_kernel to decide if there is a cut between side and line (dependent on det of system)
-// or if these lie on each other or are parallel
-#define PARALLEL_DET_TOL 1e-16 // has to be smaller than 1e-14 -> cut_test
+//to define general tolerance for position represented by a vector of doubles!
+#define POSITIONTOL (BASICTOL*10.0)
+
+
+#define REFERENCETOL (BASICTOL*10.0) //tolerance to check coordinates in the relative coordinate system (assumtion is that abs(max(value)) = 1.0)!
+
+
+#define VOLUMETOL   1e-14  // JUST FOR TESSILATION: the tolerance when created integration cells are discarded, the boundary cell however will be created
+
+
+
+// special tolerances for some special cut situations --> we should define them relative to our BASICTOL!!!
 
 // tolerance to identify points of volumecells between processors
 #define PARALLEL_COORD_TOL 1e-10

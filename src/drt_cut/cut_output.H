@@ -14,6 +14,8 @@ Maintainer: Sudhakar
 #ifndef CUTOUTPUT_H_
 #define CUTOUTPUT_H_
 
+#include "cut_point.H"
+
 namespace GEO {
 namespace CUT {
 
@@ -41,6 +43,11 @@ void GmshElementDump( std::ofstream & file, const std::vector<Node*> & nodes, ch
 \brief Write output of a side
  */
 void GmshSideDump( std::ofstream & file, const Side* s );
+
+/*!
+\brief Write output of a Triside
+ */
+void GmshTriSideDump( std::ofstream & file, std::vector<Point*> points );
 
 /*!
 \brief Write output of the background element and all the cut sides corresponding to this element

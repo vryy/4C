@@ -57,8 +57,6 @@ public:
    */
   bool WithinLimits(bool allow_dist);
 
-  bool WithinLimitsTol(double TOL, bool allow_dist, double dist_TOL);
-
   /*!
   \brief Return the local coordinates and the distance of the given point to the side
    */
@@ -308,55 +306,33 @@ bool Position2d<elementtype,numNodesElement>::WithinLimits(bool allow_dist)
   case DRT::Element::quad8:
   case DRT::Element::quad9:
   {
-    intersects = ( xsi_( 0 ) >= -1-TOLERANCE and xsi_( 1 ) >= -1-TOLERANCE and
-                   xsi_( 0 ) <=  1+TOLERANCE and xsi_( 1 ) <=  1+TOLERANCE );
+    intersects = ( xsi_( 0 ) >= -1-REFERENCETOL and xsi_( 1 ) >= -1-REFERENCETOL and
+                   xsi_( 0 ) <=  1+REFERENCETOL and xsi_( 1 ) <=  1+REFERENCETOL );
     break;
   }
   case DRT::Element::tri3:
   case DRT::Element::tri6:
   {
-    intersects = ( xsi_( 0 ) >= 0-TOLERANCE and xsi_( 1 ) >= 0-TOLERANCE and
-                   xsi_( 0 ) <= 1+TOLERANCE and xsi_( 1 ) <= 1+TOLERANCE and
-                   xsi_( 1 ) <= ( 1 - xsi_( 0 ) )+TOLERANCE );
+    intersects = ( xsi_( 0 ) >= 0-REFERENCETOL and xsi_( 1 ) >= 0-REFERENCETOL and
+                   xsi_( 0 ) <= 1+REFERENCETOL and xsi_( 1 ) <= 1+REFERENCETOL and
+                   xsi_( 1 ) <= ( 1 - xsi_( 0 ) )+REFERENCETOL );
     break;
   }
   default:
     throw std::runtime_error( "unsupported side type" );
   }
-  if(allow_dist) return intersects;
-  else  return (intersects and fabs( xsi_( 2 ) ) < TOLERANCE);
-}
+  if (!intersects) return false;
+  else if(allow_dist) return intersects;
+  else
+  {
+    double tol = xyze_.NormInf();
+    double tol2 = px_.NormInf();
+    if (tol2 > tol)
+      tol = tol2;
 
-
-template <DRT::Element::DiscretizationType elementtype,
-          int numNodesElement
->
-bool Position2d<elementtype,numNodesElement>::WithinLimitsTol(double TOL, bool allow_dist, double dist_TOL)
-{
-  bool intersects = false;
-  switch ( elementtype )
-  {
-  case DRT::Element::quad4:
-  case DRT::Element::quad8:
-  case DRT::Element::quad9:
-  {
-    intersects = ( xsi_( 0 ) >= -1-TOL and xsi_( 1 ) >= -1-TOL and
-                   xsi_( 0 ) <=  1+TOL and xsi_( 1 ) <=  1+TOL );
-    break;
+    tol *= POSITIONTOL;
+    return (intersects and fabs( xsi_( 2 ) ) < tol);
   }
-  case DRT::Element::tri3:
-  case DRT::Element::tri6:
-  {
-    intersects = ( xsi_( 0 ) >= 0-TOL and xsi_( 1 ) >= 0-TOL and
-                   xsi_( 0 ) <= 1+TOL and xsi_( 1 ) <= 1+TOL and
-                   xsi_( 1 ) <= ( 1 - xsi_( 0 ) )+TOL );
-    break;
-  }
-  default:
-    throw std::runtime_error( "unsupported side type" );
-  }
-  if(allow_dist) return intersects;
-  else  return (intersects and fabs( xsi_( 2 ) ) < dist_TOL);
 }
 
 }

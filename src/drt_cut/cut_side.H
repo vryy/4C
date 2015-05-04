@@ -139,7 +139,7 @@ public:
    \brief lies point with given coordinates within this side?
    */
   virtual bool WithinSide(const LINALG::Matrix<3, 1> & xyz
-      , LINALG::Matrix<2, 1> & rs, double & dist, const double & Tol) = 0;
+      , LINALG::Matrix<2, 1> & rs, double & dist) = 0;
 
   /*
    \brief compute the cut of a ray through two points with the 2D space defined by the side
@@ -458,11 +458,11 @@ public:
   /// get all edges adjacent to given local coordinates
   virtual void EdgeAt(double r, double s, std::vector<Edge*> & edges)
   {
-    if (fabs(s) < MINIMALTOL)
+    if (fabs(s) < REFERENCETOL)
       edges.push_back(Edges()[0]);
-    if (fabs(r + s - 1) < MINIMALTOL)
+    if (fabs(r + s - 1) < REFERENCETOL)
       edges.push_back(Edges()[1]);
-    if (fabs(r) < MINIMALTOL)
+    if (fabs(r) < REFERENCETOL)
       edges.push_back(Edges()[2]);
   }
 
@@ -474,7 +474,7 @@ public:
 
   ///  lies point with given coordinates within this side?
   virtual bool WithinSide(const LINALG::Matrix<3, 1> & xyz
-      , LINALG::Matrix<2, 1> & rs, double & dist, const double & Tol);
+      , LINALG::Matrix<2, 1> & rs, double & dist);
 
   /// compute the cut of a ray through two points with the 2D space defined by the side
   virtual bool RayCut(const LINALG::Matrix<3, 1> & p1_xyz
@@ -543,13 +543,13 @@ public:
   /// get all edges adjacent to given local coordinates
   virtual void EdgeAt(double r, double s, std::vector<Edge*> & edges)
   {
-    if (fabs(s + 1) < MINIMALTOL)
+    if (fabs(s + 1) < REFERENCETOL)
       edges.push_back(Edges()[0]);
-    if (fabs(r - 1) < MINIMALTOL)
+    if (fabs(r - 1) < REFERENCETOL)
       edges.push_back(Edges()[1]);
-    if (fabs(s - 1) < MINIMALTOL)
+    if (fabs(s - 1) < REFERENCETOL)
       edges.push_back(Edges()[2]);
-    if (fabs(r + 1) < MINIMALTOL)
+    if (fabs(r + 1) < REFERENCETOL)
       edges.push_back(Edges()[3]);
   }
 
@@ -561,7 +561,7 @@ public:
 
   ///  lies point with given coordinates within this side?
   virtual bool WithinSide(const LINALG::Matrix<3, 1> & xyz
-      , LINALG::Matrix<2, 1> & rs, double & dist, const double & Tol);
+      , LINALG::Matrix<2, 1> & rs, double & dist);
 
   /// compute the cut of a ray through two points with the 2D space defined by the side
   virtual bool RayCut(const LINALG::Matrix<3, 1> & p1_xyz

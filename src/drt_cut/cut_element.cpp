@@ -64,7 +64,7 @@ struct nextSideAlongRay
     s2->Normal(rs, normal_2);
 
     //-------------
-    if (normal_1.Dot(normal_2) > 1 - TOLERANCE)
+    if (normal_1.Dot(normal_2) > 1 - REFERENCETOL)
       return true;
 
     return false;
@@ -882,8 +882,7 @@ bool GEO::CUT::Element::PositionByAngle(Point* p, Point* cutpoint, Side* s)
 
   LINALG::Matrix<2, 1> rs(true); // local coordinates of the cut-point w.r.t side
   double dist = 0.0; // just used for within-side-check, has to be about 0.0
-  double Tol_2D = 1e-09; // choose a very rough tolerance to allow "bad" cuts as in cut-tests, just to catch non-sense
-  bool within_side = s->WithinSide(cut_point_xyz, rs, dist, Tol_2D);
+  bool within_side = s->WithinSide(cut_point_xyz, rs, dist);
 
   if (!within_side)
   {
@@ -905,11 +904,10 @@ bool GEO::CUT::Element::PositionByAngle(Point* p, Point* cutpoint, Side* s)
   // check the cosine between normal and line_vec
   double n_norm = normal.Norm2();
   double l_norm = line_vec.Norm2();
-  if (n_norm < MINIMALTOL or l_norm < MINIMALTOL)
+  if (n_norm < REFERENCETOL or l_norm < REFERENCETOL)
   {
-    dserror(
-        " the norm of line_vec or n_norm is smaller than %d, should these points be one point in pointpool?, lnorm=%d, nnorm=%d",
-        MINIMALTOL, l_norm, n_norm);
+    dserror(" the norm of line_vec or n_norm is smaller than %d, should these points be one point in pointpool?, lnorm=%d, nnorm=%d",
+        REFERENCETOL, l_norm, n_norm);
   }
 
   // cosine between the line-vector and the normal vector
@@ -955,7 +953,7 @@ bool GEO::CUT::Element::IsOrthogonalSide(Side* s, Point* p, Point* cutpoint)
 
     double line_norm = line.Norm2();
 
-    if (line_norm > TOLERANCE)
+    if (line_norm > BASICTOL)
     {
       line.Scale(1. / line_norm);
     }
@@ -990,7 +988,7 @@ bool GEO::CUT::Element::IsOrthogonalSide(Side* s, Point* p, Point* cutpoint)
     s->Normal(rs, normal);
 
     // check for angle=+-90 between line and normal
-    if (fabs(normal.Dot(line)) < (0.0 + TOLERANCE))
+    if (fabs(normal.Dot(line)) < (0.0 + BASICTOL))
       return true;
 
   }

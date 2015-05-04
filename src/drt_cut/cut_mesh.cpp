@@ -165,11 +165,11 @@ GEO::CUT::Side * GEO::CUT::Mesh::CreateQuad4( int sid, const std::vector<int> & 
 /*-------------------------------------------------------------------------------------*
  * creates a new point, optional information about cut-edge and cut-side
  *-------------------------------------------------------------------------------------*/
-GEO::CUT::Point* GEO::CUT::Mesh::NewPoint( const double * x, Edge * cut_edge, Side * cut_side )
+GEO::CUT::Point* GEO::CUT::Mesh::NewPoint( const double * x, Edge * cut_edge, Side * cut_side,double tolerance )
 {
   bb_.AddPoint( x ); // add the point to the mesh's bounding box
   //Point* p = pp_->NewPoint( x, cut_edge, cut_side, setup_ ? SETUPNODECATCHTOL : MINIMALTOL );
-  Point* p = pp_->NewPoint( x, cut_edge, cut_side, MINIMALTOL ); // add the point in the point pool
+  Point* p = pp_->NewPoint( x, cut_edge, cut_side, tolerance ); // add the point in the point pool
 #if 0
   std::cout << "Mesh::NewPoint: ";
   p->Print();
@@ -1025,11 +1025,11 @@ void GEO::CUT::Mesh::FindLSNodePositions()
     {
       // we have to take into account the tolerance for which a node lies on the levelset-side
       double lsv = n->LSV();
-      if ( lsv > TOLERANCE )
+      if ( lsv > REFERENCETOL )
       {
         p->Position( Point::outside );
       }
-      else if ( lsv < -TOLERANCE )
+      else if ( lsv < -REFERENCETOL )
       {
         p->Position( Point::inside );
       }
@@ -1952,7 +1952,10 @@ void GEO::CUT::Mesh::DumpGmsh( std::string name )
 
     for ( uint i= 0 ; i < pp_->GetPoints().size(); ++i )
     {
-      GEO::CUT::OUTPUT::GmshPointDump( file, &(*(pp_->GetPoints()[i])) );
+      //double tol = (*(pp_->GetPoints()[i])).Tolerance();
+      //int tolval = tol*100/BASICTOL;
+      //GEO::CUT::OUTPUT::GmshPointDump( file, &(*(pp_->GetPoints()[i])), tolval );
+      GEO::CUT::OUTPUT::GmshPointDump( file, &(*(pp_->GetPoints()[i])));
     }
   file << "};\n";
   }
@@ -2013,6 +2016,21 @@ void GEO::CUT::Mesh::DumpGmsh( std::string name )
     for (uint pidx = 0; pidx < points.size(); ++pidx)
     {
       GEO::CUT::OUTPUT::GmshPointDump( file, points[pidx], f.SideId());
+    }
+  }
+  file << "};\n";
+
+  //###############write all triangulated facets ###############
+  file << "View \"" << "Facets" << "\" {\n";
+  for ( std::list<Teuchos::RCP<Facet > >::iterator i=facets_.begin();
+        i!=facets_.end();
+        ++i )
+  {
+    Facet &  f = **i;
+    PointSet points;
+    for (unsigned j = 0; j<f.Triangulation().size() ; ++j)
+    {
+      GEO::CUT::OUTPUT::GmshTriSideDump(file, f.Triangulation()[j]);
     }
   }
   file << "};\n";
@@ -2324,7 +2342,7 @@ GEO::CUT::Node* GEO::CUT::Mesh::GetNode( const plain_int_set & nids ) const
     If node with the given id exists return the node, else create a new node with
     given coordinates and levelset value
  *-------------------------------------------------------------------------------------*/
-GEO::CUT::Node* GEO::CUT::Mesh::GetNode( int nid, const double * xyz, double lsv )
+GEO::CUT::Node* GEO::CUT::Mesh::GetNode( int nid, const double * xyz, double lsv, double tolerance )
 {
   std::map<int, Teuchos::RCP<Node> >::iterator i = nodes_.find( nid );
   if ( i != nodes_.end() )
@@ -2351,7 +2369,7 @@ GEO::CUT::Node* GEO::CUT::Mesh::GetNode( int nid, const double * xyz, double lsv
 //       }
 //     }
 //   }
-  Point * p = NewPoint( xyz, NULL, NULL );
+  Point * p = NewPoint( xyz, NULL, NULL, tolerance );
   Node * n = new Node( nid, p, lsv );
   nodes_[nid] = Teuchos::rcp( n );
 #ifdef DRT_CUT_DUMPCREATION

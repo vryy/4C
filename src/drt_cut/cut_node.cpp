@@ -747,7 +747,7 @@ bool GEO::CUT::Node::isAtSameLocation( const Node * nod ) const
 
   nx1.Update( -1, nx2, 1 );
 
-  if ( nx1.Norm2() < MINIMALTOL )
+  if ( nx1.Norm2() < (this->point()->Tolerance() + nod->point()->Tolerance() ))
     return true;
 
   return false;

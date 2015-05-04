@@ -12,7 +12,7 @@ GEO::CUT::Point* GEO::CUT::OctTreeNode::NewPoint( const double * x, Edge * cut_e
 
   if ( p==NULL )
   {
-    p = &*CreatePoint( points_.size(), x, cut_edge, cut_side ); // create the point
+    p = &*CreatePoint( points_.size(), x, cut_edge, cut_side, tolerance); // create the point
 #if 1
     if ( points_.size()%1000 == 0 ) // split the node starting from level 0
     {
@@ -55,7 +55,7 @@ GEO::CUT::Point* GEO::CUT::OctTreeNode::GetPoint( const double * x, Edge * cut_e
 
       p->Coordinates( nx.A() );
       nx.Update( -1, px, 1 );
-      if ( nx.Norm2() < tol )
+      if ( nx.Norm2() <= (tol + p->Tolerance()) )
       {
         if ( cut_edge!=NULL )
         {
@@ -65,6 +65,7 @@ GEO::CUT::Point* GEO::CUT::OctTreeNode::GetPoint( const double * x, Edge * cut_e
         {
           p->AddSide( cut_side );
         }
+        p->EnlargeTolerance(tol+nx.Norm2());
         return p;
       }
     }
@@ -76,12 +77,12 @@ GEO::CUT::Point* GEO::CUT::OctTreeNode::GetPoint( const double * x, Edge * cut_e
 /*-----------------------------------------------------------------------------------------*
  * Get the point with the specified coordinates "x" from the pointpool
  *-----------------------------------------------------------------------------------------*/
-Teuchos::RCP<GEO::CUT::Point> GEO::CUT::OctTreeNode::CreatePoint( unsigned newid, const double * x, Edge * cut_edge, Side * cut_side )
+Teuchos::RCP<GEO::CUT::Point> GEO::CUT::OctTreeNode::CreatePoint( unsigned newid, const double * x, Edge * cut_edge, Side * cut_side, double tolerance )
 {
   if ( not IsLeaf() )
   {
     // call recursively CreatePoint for the child where the Point shall lie in
-    Teuchos::RCP<Point> p = Leaf( x )->CreatePoint( newid, x, cut_edge, cut_side );
+    Teuchos::RCP<Point> p = Leaf( x )->CreatePoint( newid, x, cut_edge, cut_side, tolerance );
     // add the pointer not only in the leaf but also on the current level
     AddPoint( x, p );
     return p;
@@ -89,7 +90,7 @@ Teuchos::RCP<GEO::CUT::Point> GEO::CUT::OctTreeNode::CreatePoint( unsigned newid
   else
   {
     // create a new point and add the point at the lowest level
-    Teuchos::RCP<Point> p = Teuchos::rcp( new Point( newid, x, cut_edge, cut_side ) );
+    Teuchos::RCP<Point> p = Teuchos::rcp( new Point( newid, x, cut_edge, cut_side, tolerance ) );
     AddPoint( x, p );
     return p;
   }

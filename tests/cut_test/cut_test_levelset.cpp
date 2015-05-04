@@ -1641,7 +1641,7 @@ void ls_hex8_node_value( int element, int node, int & nid, double & x, double & 
   x = xpos[base];
   y = ypos[base];
   z = node / 4 + element;
-  lsv = z - 1 + 0.5*TOLERANCE;
+  lsv = z - 1 + 0.5*REFERENCETOL;
   //lsv = z - 1 + 0.5;
 }
 

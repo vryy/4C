@@ -95,7 +95,7 @@ private:
   /*========================================================================*/
 
   /// Create a point with the specified ID
-  Teuchos::RCP<Point> CreatePoint( unsigned newid, const double * x, Edge * cut_edge, Side * cut_side );
+  Teuchos::RCP<Point> CreatePoint( unsigned newid, const double * x, Edge * cut_edge, Side * cut_side, double tolerance );
 
   /// get the leaf where the point with the given coordinates lies in
   OctTreeNode* Leaf( const double * x );
@@ -138,11 +138,15 @@ public:
 
   /// create a new point in the point PointPool
   Point* NewPoint( const double * x, Edge * cut_edge, Side * cut_side, double tolerance )
-  { return tree_.NewPoint( x, cut_edge, cut_side, tolerance ); }
+  { return tree_.NewPoint( x, cut_edge, cut_side, GetTolerance(x,tolerance)); }
 
   /// get the pointer to a stored point if possible
   Point* GetPoint( const double * x, Edge * cut_edge, Side * cut_side, double tolerance )
-  { return tree_.GetPoint( x, cut_edge, cut_side, tolerance ); }
+  { return tree_.GetPoint( x, cut_edge, cut_side, GetTolerance(x,tolerance)); }
+
+  /// get default tolerance for the case that the tolerance of a point is set to 0!!!
+  double GetTolerance(const double * x, double tolerance)
+  { if (tolerance == 0.0) {LINALG::Matrix<3,1> px( x ); return (px.NormInf()*POSITIONTOL); } else return tolerance; }
 
   /// get the size of the OctTree (total number of stored points)
   unsigned size() const { return tree_.size(); }

@@ -5,9 +5,9 @@
 #include "cut_side.H"
 #include "cut_mesh.H"
 
-GEO::CUT::Point * GEO::CUT::Point::NewPoint( Mesh & mesh, const double * x, double t, Edge * cut_edge, Side * cut_side )
+GEO::CUT::Point * GEO::CUT::Point::NewPoint( Mesh & mesh, const double * x, double t, Edge * cut_edge, Side * cut_side, double tolerance )
 {
-  Point * p = mesh.NewPoint( x, cut_edge, cut_side );
+  Point * p = mesh.NewPoint( x, cut_edge, cut_side, tolerance );
   p->Position( Point::oncutsurface );
   //p->t( cut_edge, t );
   return p;
@@ -30,9 +30,10 @@ GEO::CUT::Point * GEO::CUT::Point::InsertCut( Edge * cut_edge, Side * cut_side, 
   return p;
 }
 
-GEO::CUT::Point::Point( unsigned pid, const double * x, Edge * cut_edge, Side * cut_side )
+GEO::CUT::Point::Point( unsigned pid, const double * x, Edge * cut_edge, Side * cut_side, double tolerance )
   : pid_( pid ),
-    position_( undecided )
+    position_( undecided ),
+    tol_( tolerance )
 {
   std::copy( x, x+3, x_ );
 
@@ -211,7 +212,7 @@ double GEO::CUT::Point::t( Edge* edge )
     double l1 = x.Norm2();
     double l2 = x2.Norm2();
 
-    if ( fabs( l2 )<TOLERANCE )
+    if ( fabs( l2 ) < (p1->Tolerance() + p2->Tolerance()) )
     {
       throw std::runtime_error( "edge with no length" );
     }
@@ -219,14 +220,14 @@ double GEO::CUT::Point::t( Edge* edge )
     double z = l1/l2;
 
     x.Update( -z, x2, 1 );
-    if ( x.Norm2() > MINIMALTOL )
+    if ( x.Norm2() > (Tolerance()+ p1->Tolerance() + p2->Tolerance() ) ) //one could think of choosing a tighter tolerance here, but why?
     {
       std::stringstream str;
       str << "point not on edge, no edge position: "
           << x.Norm2() << "\n"
           << x
           << x1
-          << x2;
+          << x2 << "\n";
       throw std::runtime_error( str.str() );
     }
 

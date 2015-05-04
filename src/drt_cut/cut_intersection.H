@@ -5,6 +5,11 @@
 #include "cut_mesh.H"
 #include "cut_kernel.H"
 
+#include <Teuchos_TimeMonitor.hpp>
+
+//activate debug intersection output in cut_intersection
+//#define DEBUG_CUTINTERSECTION_OUTPUT
+
 namespace GEO
 {
 namespace CUT
@@ -50,16 +55,28 @@ public:
 #endif
   }
 
-  bool ComputeCurveSurfaceIntersection();
+  IntersectionBase( Edge & edge,
+                    ConcreteSide<sidetype> & side )
+  : xsi_( true ),
+    x_( true ),
+    scale_(1)
+{
+  edge.Coordinates( xyze_lineElement_ );
+  side.Coordinates( xyze_surfaceElement_ );
+}
 
-  bool AtEdge();
+  bool ComputeCurveSurfaceIntersection(double& tolerance, int triangleid = 0 );
 
-  bool SurfaceWithinLimits();
+  bool AtEdge(const LINALG::Matrix<3,1> & xsi);
 
-  bool LineWithinLimits();
+  bool SurfaceWithinLimits(double tol = REFERENCETOL, DRT::Element::DiscretizationType checksidetype = sidetype);
+
+  bool LineWithinLimits(double tol = REFERENCETOL);
 
 
-private:
+protected:
+
+  void GetTriangle(LINALG::Matrix<3,3>& xyze_triElement, int triangleid);
 
   LINALG::Matrix<3, numNodesLine> xyze_lineElement_;
   LINALG::Matrix<3, numNodesSurface> xyze_surfaceElement_;
@@ -71,34 +88,81 @@ private:
 
 };
 
-
-
 template <DRT::Element::DiscretizationType edgetype,
           DRT::Element::DiscretizationType sidetype,
           int numNodesLine,
           int numNodesSurface
 >
-bool IntersectionBase<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeCurveSurfaceIntersection()
+bool IntersectionBase<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeCurveSurfaceIntersection(double& tolerance, int triangleid)
 {
-  KERNEL::ComputeIntersection<edgetype, sidetype> ci( xsi_ );
-  //KERNEL::DebugComputeIntersection<edgetype, sidetype> ci( xsi_ );
+  TEUCHOS_FUNC_TIME_MONITOR( "ComputeCurveSurfaceIntersection" );
 
+  bool conv;
 
-  if ( ci( xyze_surfaceElement_, xyze_lineElement_ ) )
+  if (!triangleid)
   {
-    return true;
+    KERNEL::ComputeIntersection<edgetype, sidetype> ci( xsi_ );
+    //KERNEL::DebugComputeIntersection<edgetype, sidetype> ci( xsi_ );
+    conv =  ci( xyze_surfaceElement_, xyze_lineElement_ );
+    tolerance = ci.GetTolerance();
+  }
+  else
+  {
+    KERNEL::ComputeIntersection<edgetype,  DRT::Element::tri3> ci( xsi_ );
+
+    LINALG::Matrix<3, 3> xyze_triElement;
+    GetTriangle(xyze_triElement,triangleid);
+
+    conv =  ci( xyze_triElement, xyze_lineElement_ );
+    tolerance = ci.GetTolerance();
   }
 
-  return false;
+return conv;
 }
-
 
 template <DRT::Element::DiscretizationType edgetype,
           DRT::Element::DiscretizationType sidetype,
           int numNodesLine,
           int numNodesSurface
 >
-bool IntersectionBase<edgetype, sidetype, numNodesLine, numNodesSurface>::AtEdge()
+//get triangle coords with triangleid = 1 or triangleid = 2
+void IntersectionBase<edgetype, sidetype, numNodesLine, numNodesSurface>::GetTriangle(LINALG::Matrix<3,3>& xyze_triElement, int triangleid)
+{
+  if (sidetype == DRT::Element::quad4)
+ {
+    //here it is important that the triangle is created in the same rotation as the quad is, to get normal in the same direction and therefore the same signed distance!!!
+     int n0 = 0;
+     switch (triangleid)
+     {
+     case 1 :
+       n0 = 0;
+       break;
+     case 2 :
+       n0 = 2;
+       break;
+     default :
+       dserror("There should be just two triangles, but triangleid = %d",triangleid);
+     }
+
+     //guess this can be done more efficient! - feel free!
+     for (uint dim = 0; dim < 3; ++dim)
+       for (uint nidx = 0; nidx < 3 ; nidx++)
+       {
+         xyze_triElement(dim,nidx) = xyze_surfaceElement_(dim,( (nidx+n0) % 4 ) );
+       }
+  }
+  else
+  {
+    dserror("Cut::Intersection::ComputDistance: For Triangulation a quad4 is expected!");
+  }
+}
+
+template <DRT::Element::DiscretizationType edgetype,
+          DRT::Element::DiscretizationType sidetype,
+          int numNodesLine,
+          int numNodesSurface
+>
+bool IntersectionBase<edgetype, sidetype, numNodesLine, numNodesSurface>::AtEdge(const LINALG::Matrix<3,1> & xsi)
 {
   switch ( sidetype )
   {
@@ -106,14 +170,14 @@ bool IntersectionBase<edgetype, sidetype, numNodesLine, numNodesSurface>::AtEdge
   case DRT::Element::quad8:
   case DRT::Element::quad9:
   {
-    return ( fabs( xsi_( 0 )+1 )<TOLERANCE or fabs( xsi_( 1 )+1 )<TOLERANCE or
-             fabs( xsi_( 0 )-1 )<TOLERANCE or fabs( xsi_( 1 )-1 )<TOLERANCE );
+    return ( fabs( xsi( 0 )+1 )<REFERENCETOL or fabs( xsi( 1 )+1 )<REFERENCETOL or
+             fabs( xsi( 0 )-1 )<REFERENCETOL or fabs( xsi( 1 )-1 )<REFERENCETOL );
   }
   case DRT::Element::tri3:
   case DRT::Element::tri6:
   {
-    return ( fabs( xsi_( 0 )+0 )<TOLERANCE or fabs( xsi_( 1 )+0 )<TOLERANCE or
-             fabs( xsi_( 1 )+xsi_( 0 )-1 )<TOLERANCE );
+    return ( fabs( xsi( 0 )+0 )<REFERENCETOL or fabs( xsi( 1 )+0 )<REFERENCETOL or
+             fabs( xsi( 1 )+xsi( 0 )-1 )<REFERENCETOL );
   }
   default:
     throw std::runtime_error( "unsupported side type" );
@@ -126,25 +190,25 @@ template <DRT::Element::DiscretizationType edgetype,
           int numNodesLine,
           int numNodesSurface
 >
-bool IntersectionBase<edgetype, sidetype, numNodesLine, numNodesSurface>::SurfaceWithinLimits()
+bool IntersectionBase<edgetype, sidetype, numNodesLine, numNodesSurface>::SurfaceWithinLimits( double tolerance, DRT::Element::DiscretizationType checksidetype)
 {
   bool intersects = false;
-  switch ( sidetype )
+  switch ( checksidetype )
   {
   case DRT::Element::quad4:
   case DRT::Element::quad8:
   case DRT::Element::quad9:
   {
-    intersects = ( xsi_( 0 ) >= -1-TOLERANCE and xsi_( 1 ) >= -1-TOLERANCE and
-                   xsi_( 0 ) <=  1+TOLERANCE and xsi_( 1 ) <=  1+TOLERANCE );
+    intersects = ( xsi_( 0 ) >= -1-tolerance and xsi_( 1 ) >= -1-tolerance and
+                   xsi_( 0 ) <=  1+tolerance and xsi_( 1 ) <=  1+tolerance );
     break;
   }
   case DRT::Element::tri3:
   case DRT::Element::tri6:
   {
-    intersects = ( xsi_( 0 ) >= 0-TOLERANCE and xsi_( 1 ) >= 0-TOLERANCE and
-                   xsi_( 0 ) <= 1+TOLERANCE and xsi_( 1 ) <= 1+TOLERANCE and
-                   xsi_( 1 ) <= ( 1 - xsi_( 0 ) )+TOLERANCE );
+    intersects = ( xsi_( 0 ) >= 0-tolerance and xsi_( 1 ) >= 0-tolerance and
+                   xsi_( 0 ) <= 1+tolerance and xsi_( 1 ) <= 1+tolerance and
+                   xsi_( 1 ) <= ( 1 - xsi_( 0 ) )+tolerance );
     break;
   }
   default:
@@ -159,11 +223,10 @@ template <DRT::Element::DiscretizationType edgetype,
           int numNodesLine,
           int numNodesSurface
 >
-bool IntersectionBase<edgetype, sidetype, numNodesLine, numNodesSurface>::LineWithinLimits()
+bool IntersectionBase<edgetype, sidetype, numNodesLine, numNodesSurface>::LineWithinLimits(double tolerance)
 {
-  return xsi_( 2 ) >= -1-TOLERANCE and xsi_( 2 ) <=  1+TOLERANCE;
+  return xsi_( 2 ) >= -1-tolerance and xsi_( 2 ) <=  1+tolerance;
 }
-
 
 
 /*!
@@ -175,7 +238,7 @@ template <DRT::Element::DiscretizationType edgetype,
           int numNodesLine    = DRT::UTILS::DisTypeToNumNodePerEle<edgetype>::numNodePerElement,
           int numNodesSurface = DRT::UTILS::DisTypeToNumNodePerEle<sidetype>::numNodePerElement
 >
-class Intersection
+class Intersection : public IntersectionBase<edgetype,sidetype,numNodesLine,numNodesSurface>
 {
 
 public:
@@ -183,54 +246,48 @@ public:
   Intersection( Mesh & mesh,
                 Edge & edge,
                 ConcreteSide<sidetype> & side )
-    : mesh_( mesh ),
+    :   IntersectionBase<edgetype,sidetype,numNodesLine,numNodesSurface>(edge , side),
+      mesh_( mesh ),
       edge_( edge ),
       side_( side ),
-      xsi_( true ),
-      x_( true )
-  {
-    edge_.Coordinates( xyze_lineElement_ );
-    side_.Coordinates( xyze_surfaceElement_ );
-
-#if 1
-    scale_ = 1;
-#else
-    scale_ = 0;
-    LINALG::Matrix<3,1> d;
-    for ( int i=0; i<numNodesSurface; ++i )
-    {
-      LINALG::Matrix<3,1> x1( &xyze_surfaceElement_( 0, i ),  true );
-      LINALG::Matrix<3,1> x2( &xyze_surfaceElement_( 0, ( i+1 )%numNodesSurface ),  true );
-      d.Update( 1, x2, -1, x1, 0 );
-      scale_ += d.Norm2();
-    }
-    scale_ /= numNodesSurface;
-
-    xyze_lineElement_.Scale( 1./scale_ );
-    xyze_surfaceElement_.Scale( 1./scale_ );
-#endif
-  }
+      xyze_surfaceElement_( IntersectionBase<edgetype,sidetype,numNodesLine,numNodesSurface>::xyze_surfaceElement_ ),
+      xyze_lineElement_( IntersectionBase<edgetype,sidetype,numNodesLine,numNodesSurface>::xyze_lineElement_ ),
+      xsi_( IntersectionBase<edgetype,sidetype,numNodesLine,numNodesSurface>::xsi_ ),
+      x_( IntersectionBase<edgetype,sidetype,numNodesLine,numNodesSurface>::x_ ),
+      scale_( IntersectionBase<edgetype,sidetype,numNodesLine,numNodesSurface>::scale_ )
+  {  }
 
   /*!
   \brief Computes the intersection points of the edge with the specified side and store the points in cuts
    */
   bool Intersect( PointSet & cuts );
 
-  bool ComputeCurveSurfaceIntersection();
-
-  bool AtEdge();
-
-  bool SurfaceWithinLimits();
-
-  bool LineWithinLimits();
-
   LINALG::Matrix<3,1> & FinalPoint();
+
+  bool ComputeCurveSurfaceIntersection(double& tolerance, int triangleid = 0 )
+  {return IntersectionBase<edgetype,sidetype,numNodesLine,numNodesSurface>::ComputeCurveSurfaceIntersection(tolerance,triangleid); }
+
+  bool AtEdge(const LINALG::Matrix<3,1> & xsi)
+  {return IntersectionBase<edgetype,sidetype,numNodesLine,numNodesSurface>::AtEdge(xsi); }
+
+  bool SurfaceWithinLimits(double tol = REFERENCETOL, DRT::Element::DiscretizationType checksidetype = sidetype)
+  {return IntersectionBase<edgetype,sidetype,numNodesLine,numNodesSurface>::SurfaceWithinLimits(tol,checksidetype); }
+
+  bool LineWithinLimits(double tol = REFERENCETOL)
+  {return IntersectionBase<edgetype,sidetype,numNodesLine,numNodesSurface>::LineWithinLimits(tol); }
+
+protected:
+
+  void GetTriangle(LINALG::Matrix<3,3>& xyze_triElement, int triangleid)
+  {return IntersectionBase<edgetype,sidetype,numNodesLine,numNodesSurface>::GetTriangle(xyze_triElement,triangleid); }
 
 private:
 
-  double ComputeDistance( Point * p );
+  bool ComputeDistance( LINALG::Matrix<3,1> point, double& distance, double& tolerance,  bool& zeroarea, bool signeddistance = false, int triangleid = 0 );
 
-  bool ComputeCut( Edge * e1, Edge * e2 );
+  bool ComputeDistance( Point * p, double& distance, double& tolerance, bool& zeroarea, bool signeddistance = false, int triangleid = 0 );
+
+  bool ComputeCut( Edge * e1, Edge * e2, double& tolerance );
 
   /// add cut point that is a node to all edges and sides it touches
   void InsertCut( Node * n, PointSet & cuts )
@@ -247,7 +304,7 @@ private:
 
   void TestSideEdges( Point * p, const LINALG::Matrix<3,1> & xsi, std::vector<Edge*> & edges )
   {
-    if ( AtEdge() )
+    if ( AtEdge(xsi) )
     {
       side_.EdgeAt( xsi( 0, 0 ), xsi( 1, 0 ), edges );
       for ( std::vector<Edge*>::iterator i=edges.begin(); i!=edges.end(); ++i )
@@ -262,13 +319,13 @@ private:
   Edge & edge_;
   ConcreteSide<sidetype> & side_;
 
-  LINALG::Matrix<3, numNodesSurface> xyze_surfaceElement_;
-  LINALG::Matrix<3, numNodesLine> xyze_lineElement_;
+  LINALG::Matrix<3, numNodesSurface>& xyze_surfaceElement_;
+  LINALG::Matrix<3, numNodesLine>& xyze_lineElement_;
 
-  LINALG::Matrix<3,1> xsi_;
-  LINALG::Matrix<3,1> x_;
+  LINALG::Matrix<3,1>& xsi_;
+  LINALG::Matrix<3,1>& x_;
 
-  double scale_;
+  double& scale_;
 };
 
 
@@ -279,93 +336,198 @@ template <DRT::Element::DiscretizationType edgetype,
 >
 bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::Intersect( PointSet & cuts )
 {
-  bool begin_within_limits = false;
-  bool end_within_limits = false;
+  //!WARNING: Intersection just works for planes (tri3,quad4 unwarped!) with lines!!!
 
-  LINALG::Matrix<3,1> begin_xsi;
-  LINALG::Matrix<3,1> end_xsi;
+  //the ordering of the steps in intersection is optimized for a general case, where special cases (paralell) are not happening
+ //too often. That's why we first std-Intersection and then continue with treatment of special cases. --> so minimum effort for std-cases!
+//--> not optimized for the cut tests!!!
 
-  if ( ComputeDistance( edge_.BeginNode()->point() ) < TOLERANCE and SurfaceWithinLimits() )
+  //intersection should also return a tolerance for the evaluation of each point, which will be used to merge points in the pointpool!!!
+
+  //1// try to find not overlapping geometries with boundigboxes to avoid a big load of work ... has to be done
+    //this is here just for performance ... intersection should also be robust without that!!!
+
+  //2// first with starting the distance to both end points of a line, go get rid of paralell cases (where intersection wouldn't converge) and also get rid
+    // of cases, where the line is just on one side of the surface --> definitly no intersection!!!
+    //REMARK: as for quad4 where the projected end points of the line are outside the element, we do always get reliable results (normal can flip outside the element), generally
+   //the distance is computed to the two triangles (be aware of the fact, that this is just possible because we limit this function to plane(unwarped) quad4 sides!!!
+
+  //3//take care of special intersections on the surface edges
+
+  //4// try to calculate the intersection point directly with the Newton
+    //this will basically fail if the system is conditioned badly --> means that line and plane are parallel (which should be the case anymore as it was
+    //already captured in point //2//) or element is distorted or it's a quad4 and
+   //the intersection point is outside the element and is not part of the interpolation space!
+   //these cases should be treated seperatly later!!!
+
+  //5// take care of other special cases --> 5.1 quad4 outside interpolation space, 5.2 distorted elements
+
+  //6// throw dserror in case this intersection wasn't treated right --> this means there is still handling of some special cases missing
+     //in the code & it does not mean that there is no intersection point
+
+  //1 bounding box check
+  bool debugbb = false;
+  BoundingBox SBB = GEO::CUT::BoundingBox(side_);
+  BoundingBox EBB = GEO::CUT::BoundingBox(edge_);
+  if (!SBB.Within(1.0,EBB))
   {
-    begin_xsi = xsi_;
-    begin_within_limits = true;
-    if ( ComputeDistance( edge_.EndNode()->point() ) < TOLERANCE and SurfaceWithinLimits() )
+    #ifdef DEBUG_CUTINTERSECTION_OUTPUT
+      std::cout << "No Cut Point, as not even the Bounding Boxes are Overlapping! (Codeline:" << __LINE__ << ")" << std::endl;
+    #endif
+    debugbb = true; //at the moment we want to test as many intersections as possible, that's why bounding boxes are not used yet!
+    //return false; //not even the bounding boxes are overlapping, no need to search for an intersection point!
+  }
+
+  //2 line || plane
+
+  bool success = false;
+  Point * nodalpoint = NULL;
+
+  //all information gathered by Compute Distance is gathered here!!! - 0...begin point / 1...end point of line!!!
+  bool zeroarea;
+  std::vector<bool> lineendpoint_within_surfacelimits(2,false); //local coordinates are inside element
+  std::vector<bool> lineendpoint_in_surface(2,false); //point is really inside element (normal distance = 0)
+  std::vector<double> lineendpoint_dist(2);
+  std::vector<double> lineendpoint_tol(2);
+  std::vector<bool> lineendpoint_conv(2,false);
+  std::vector<LINALG::Matrix<3,1> > lineendpoint_xsi(2);
+
+  //store the intersection xsi before it is overwritten by computlineendpoint_dist[1]ance for later!
+  LINALG::Matrix<3,1> i_xsi;
+
+  for (uint lp = 0; lp < 2 ; ++lp) //loop over line endpoints!
+  {
+    GEO::CUT::Point * actpoint;
+    if (lp == 0)
+      actpoint = edge_.BeginNode()->point();
+    else if(lp == 1)
+      actpoint = edge_.EndNode()->point();
+    else
+      dserror("You Expect more than two Endpoints for a line?");
+
+    if (sidetype == DRT::Element::tri3)
+    {
+      lineendpoint_conv[lp] = ComputeDistance( actpoint, lineendpoint_dist[lp], lineendpoint_tol[lp],zeroarea , true ) ;
+      lineendpoint_within_surfacelimits[lp] = SurfaceWithinLimits();
+      lineendpoint_xsi[lp] = xsi_;
+    }
+    else if (sidetype == DRT::Element::quad4)
+    {
+        bool done = false;
+      //problem here is that computedistance might change the normal direction if the projected point lies outside the element, that why prefer to compute the distance onto tri3!
+        std::vector<double> tri_dist(2);
+        std::vector<double> tri_tol(2);
+        std::vector<bool> tri_conv(2);
+        uint tri;
+        for (tri = 0; tri < 2; tri++)
+        {
+          tri_conv[tri] = ComputeDistance( actpoint, tri_dist[tri], tri_tol[tri], zeroarea , true , tri+1 );
+
+          #ifdef DEBUGCUTLIBRARY
+            if (tri == 1)//just warping check!!!
+            {
+              if (!(fabs(tri_dist[0] - tri_dist[1]) < tri_tol[0] or fabs(tri_dist[0] - tri_dist[1]) < tri_tol[1]))
+                dserror("Expect Distance from both Triangles to be the same --> is your quad4 warped??");
+            }
+          #endif
+
+          if (fabs(tri_dist[tri]) >= tri_tol[tri]) //in this case the point is not on the surface an we stop calculation of distance right now! (could also be the second triangle if first one was distorted --> very big tolerance)
+          {
+            //REMARK: lineendpoint_within_surfacelimits[lp] is not correctly evaluated in this case, as it is not needed!!!
+            done = true;
+            break;
+          }
+          else
+          {
+            lineendpoint_within_surfacelimits[lp] = SurfaceWithinLimits(tri_tol[tri], DRT::Element::tri3);
+            if (lineendpoint_within_surfacelimits[lp])
+            {
+              if (tri_conv[tri] = false)
+                dserror("You found a case where the triangulation does not converge and it is inside the element, basically removing this dserror should be ok, but please contact me so that I can have a look into it!!! Christoph Ager");
+              break;
+            }
+          }
+        }
+        if (done or tri == 2) //calculate distance to triangles was enough
+        {
+          if (tri == 2)
+          {
+            lineendpoint_within_surfacelimits[lp] = false;//in this case both tri3s where outside!
+            tri = 1; //set back to the last tri
+          }
+          lineendpoint_conv[lp] = tri_conv[tri];
+          lineendpoint_dist[lp] = tri_dist[tri];
+          lineendpoint_tol[lp] = tri_tol[tri];
+          #ifdef DEBUG_CUTINTERSECTION_OUTPUT
+            lineendpoint_xsi[lp] = xsi_; //just set for output reasons!!!
+          #endif
+        }
+        else //calculate distance to quad4, as the projected points lies inside and we want to calc local coord (should converge in 1 newton loop (theoretically also tri3 didn't converge, but then there is anyway no hope)
+        {
+         // std::cout << "calculate distance from quad4 ..." << std::endl;
+          lineendpoint_conv[lp] = ComputeDistance( actpoint, lineendpoint_dist[lp], lineendpoint_tol[lp], zeroarea , true ) ;
+          lineendpoint_within_surfacelimits[lp] = SurfaceWithinLimits();
+          lineendpoint_xsi[lp] = xsi_;
+        }
+        if (zeroarea)
+          dserror("zeroarea handling for quad4 not implemented yet (not expected to happen here, as it should just occure in the triangulation procedure!)");
+      }
+      else
+        dserror("Intersection Error: Other surfaces than tri3 and quad4 are not supported to avoid huge problems!!!");
+  }
+
+  if (fabs(lineendpoint_dist[0]) >= lineendpoint_tol[0] and (fabs(lineendpoint_dist[1]) >= lineendpoint_tol[1]) and lineendpoint_dist[0]*lineendpoint_dist[1]>0 and !zeroarea) //both points outside the plane on the same side --> no intersection
+  {
+    #ifdef DEBUG_CUTINTERSECTION_OUTPUT
+      std::cout << "No Cut Point, because we detected following normal distance at the line end points: ... lineendpoint_dist[0]: " << lineendpoint_dist[0] << " lineendpoint_dist[1]: " << lineendpoint_dist[1] << "(Codeline:" << __LINE__ << ")" << std::endl;
+    #endif
+    return false; //there is no intersection between surface and line!!!
+  }
+
+  if (lineendpoint_conv[0] && lineendpoint_conv[1]) //for all paralell cases this should converge!!!
+  {
+
+    if ( fabs(lineendpoint_dist[0]) < lineendpoint_tol[0] and lineendpoint_within_surfacelimits[0] )
+      lineendpoint_in_surface[0] = true;
+
+    if ( fabs(lineendpoint_dist[1]) < lineendpoint_tol[1] and lineendpoint_within_surfacelimits[1] )
+      lineendpoint_in_surface[1] = true;
+
+    if ( lineendpoint_in_surface[0] and lineendpoint_in_surface[1] ) //case where both nodes of the line are inside the plane
     {
       InsertCut( edge_.BeginNode(), cuts );
       InsertCut( edge_.EndNode()  , cuts );
-      TestSideEdges( edge_.BeginNode()->point(), begin_xsi );
-      TestSideEdges( edge_.EndNode()  ->point(), xsi_ );
+      TestSideEdges( edge_.BeginNode()->point(), lineendpoint_xsi[0] );
+      TestSideEdges( edge_.EndNode()  ->point(), lineendpoint_xsi[1] );
+      #ifdef DEBUG_CUTINTERSECTION_OUTPUT
+        std::cout << "Cut points found, Begin & End Node of the Line are inside the surface: ... lineendpoint_dist[0]: " << lineendpoint_dist[0] << " lineendpoint_dist[1]: " << lineendpoint_dist[1] << " (Codeline:" << __LINE__ << ")" << std::endl;
+      #endif
+      if (debugbb) dserror("Bounding Boxes said that ther is no intersection point!");
       return true;
     }
-  }
-  else if ( ComputeDistance( edge_.EndNode()->point() ) < TOLERANCE and SurfaceWithinLimits() )
-  {
-    end_xsi = xsi_;
-    end_within_limits = true;
-  }
-
-  if ( ComputeCurveSurfaceIntersection() )
-  {
-    if ( SurfaceWithinLimits() and LineWithinLimits() )
-    {
-      FinalPoint();
-
-      if ( fabs( xsi_( 2, 0 )+1 ) < TOLERANCE )
-      {
-        InsertCut( edge_.BeginNode(), cuts );
-        TestSideEdges( edge_.BeginNode()->point(), xsi_ );
-        return true;
-      }
-      else if ( fabs( xsi_( 2, 0 )-1 ) < TOLERANCE )
-      {
-        InsertCut( edge_.EndNode(), cuts );
-        TestSideEdges( edge_.EndNode()->point(), xsi_ );
-        return true;
-      }
-      else
-      {
-        Node * n = side_.OnNode( x_ );
-        if ( n!=NULL )
-        {
-          InsertCut( n, cuts );
-          TestSideEdges( n->point(), xsi_ );
-          return true;
-        }
-        else
-        {
-          Point * p = Point::NewPoint( mesh_, x_.A(), xsi_( 2, 0 ), &edge_, &side_ );
-          TestSideEdges( p, xsi_ );
-          cuts.insert( p );
-          return true;
-        }
-      }
-    }
-  }
-  else
-  {
-    bool success = false;
-    Point * nodalpoint = NULL;
-
-    if ( begin_within_limits )
+    else if (lineendpoint_in_surface[0])
     {
       InsertCut( edge_.BeginNode(), cuts );
-
-      std::vector<Edge*> cut_edges;
       nodalpoint = edge_.BeginNode()->point();
-      TestSideEdges( nodalpoint, begin_xsi, cut_edges );
-
+      TestSideEdges( nodalpoint, lineendpoint_xsi[0]);
+      #ifdef DEBUG_CUTINTERSECTION_OUTPUT
+        std::cout << "Cut points found, Begin Node of the Line are inside the surface: ... lineendpoint_dist[0]: " << lineendpoint_dist[0] << " lineendpoint_dist[1]: " << lineendpoint_dist[1] << " (Codeline:" << __LINE__ << ")" << std::endl;
+      #endif
       success = true;
     }
-    else if ( end_within_limits )
+    else if (lineendpoint_in_surface[1])
     {
       InsertCut( edge_.EndNode(), cuts );
-
-      std::vector<Edge*> cut_edges;
       nodalpoint = edge_.EndNode()->point();
-      TestSideEdges( nodalpoint, end_xsi, cut_edges );
-
+      TestSideEdges( nodalpoint, lineendpoint_xsi[1]);
+      #ifdef DEBUG_CUTINTERSECTION_OUTPUT
+        std::cout << "Cut points found, End Node of the Line are inside the surface: ... lineendpoint_dist[0]: " << lineendpoint_dist[0] << " lineendpoint_dist[1]: " << lineendpoint_dist[1] << " (Codeline:" << __LINE__ << ")" << std::endl;
+      #endif
       success = true;
     }
+  }
+
+  //3// see if edges are cut special!!!
 
     // Search all side edges for a cut. We could cross the side.
 
@@ -388,149 +550,271 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::Intersect(
       {
         // Nothing to be done. There are cut points between these edges. We
         // cannot find new ones.
-      }
-      else if ( ComputeCut( e, &edge_ ) )
-      {
-        Point * p = Point::NewPoint( mesh_, x_.A(), xsi_( 2 ), &edge_, &side_ );
-        p->AddEdge( e );
-        cuts.insert( p );
+        if (cut_points.size() == 1)
+          cuts.insert(cut_points[0]);
+        else if (cut_points.size() == 2)
+        {
+          cuts.insert(cut_points[0]);
+          cuts.insert(cut_points[1]);
+        }
+        else
+        {
+          #ifdef DEBUG_CUTINTERSECTION_OUTPUT
+            for (uint i = 0; i < cut_points.size(); ++i)
+              cut_points[i]->Print(std::cout);
+            edge_.BeginNode()->point()->Print(std::cout);
+            edge_.EndNode()->point()->Print(std::cout);
+            e->BeginNode()->point()->Print(std::cout);
+            e->EndNode()->point()->Print(std::cout);
+          #endif
+
+          dserror("Two Edges have more than two cutpoint, sounds strange!");
+        }
+        #ifdef DEBUG_CUTINTERSECTION_OUTPUT
+          std::cout << "Cut points found, by intersection of edges!" << " (Codeline:" << __LINE__ << ")" << std::endl;
+        #endif
         success = true;
       }
       else
       {
+        double tolerance = 0.0;
+        if ( ComputeCut( e, &edge_, tolerance ))
+        {
+          Point * p = Point::NewPoint( mesh_, x_.A(), xsi_( 2 ), &edge_, &side_, tolerance);
+          p->AddEdge( e );
+          cuts.insert( p );
+          #ifdef DEBUG_CUTINTERSECTION_OUTPUT
+            std::cout << "Cut points found, by intersection of edges!" << " (Codeline:" << __LINE__ << ")" << std::endl;
+          #endif
+          success = true;
+        }
       }
     }
 
-    return success;
-  }
+    if (success) //parallel cases handled!!!
+    {if (debugbb) dserror("Bounding Boxes said that ther is no intersection point!");
+      return true;
+    }
+    else if (lineendpoint_conv[0] and lineendpoint_conv[1] )
+    {
+      if (fabs(lineendpoint_dist[0]) < lineendpoint_tol[0] and fabs(lineendpoint_dist[1]) < lineendpoint_tol[1]) // parallel to the plane but No Cut Points found!!!
+      {
+        #ifdef DEBUG_CUTINTERSECTION_OUTPUT
+          std::cout << "No Cut Point, because we detected following normal distance at the line end points: ... lineendpoint_dist[0]: " << lineendpoint_dist[0] << " lineendpoint_dist[1]: " << lineendpoint_dist[1] << " and there was no edge intersection! (Codeline:" << __LINE__ << ")" << std::endl;
+        #endif
+        return false;
+      }
+    }
+    else if (zeroarea)
+    {
+      #ifdef DEBUG_CUTINTERSECTION_OUTPUT
+        std::cout << "No Cut Point, because surface has no area and edges don't have any intersection! (Codeline:" << __LINE__ << ")" << std::endl;
+      #endif
+      return false;
+    }
 
-  return false;
-}
 
+  //4//
 
-template <DRT::Element::DiscretizationType edgetype,
-          DRT::Element::DiscretizationType sidetype,
-          int numNodesLine,
-          int numNodesSurface
->
-bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeCurveSurfaceIntersection()
-{
-  KERNEL::ComputeIntersection<edgetype, sidetype> ci( xsi_ );
-  //KERNEL::DebugComputeIntersection<edgetype, sidetype> ci( xsi_ );
-
-
-  if ( ci( xyze_surfaceElement_, xyze_lineElement_ ) )
+  double itol;
+  bool conv = ComputeCurveSurfaceIntersection(itol);
+  if ( conv ) //in newton converges we trust the result!
   {
-    return true;
+  //  std::cout << "Intersection converged! itol: " << itol << std::endl;
+    if ( SurfaceWithinLimits() and LineWithinLimits() )
+    {
+      FinalPoint();
+      if ( fabs( xsi_( 2, 0 )+1 ) < REFERENCETOL ) //case point lies on begin node of line!!!
+      {
+        InsertCut( edge_.BeginNode(), cuts );
+        TestSideEdges( edge_.BeginNode()->point(), xsi_ );
+        #ifdef DEBUG_CUTINTERSECTION_OUTPUT
+          //Basically this case should already be cought in section //2// for paralell intersections!
+          std::cout << "Cut points found by intersection, Begin Node is in surface! (Codeline:" << __LINE__ << ")" << std::endl;
+        #endif
+          if (debugbb) dserror("Bounding Boxes said that ther is no intersection point!");
+        return true;
+      }
+      else if ( fabs( xsi_( 2, 0 )-1 ) < REFERENCETOL ) //case point lies on end node of line!!!
+      {
+        InsertCut( edge_.EndNode(), cuts );
+        TestSideEdges( edge_.EndNode()->point(), xsi_ );
+        #ifdef DEBUG_CUTINTERSECTION_OUTPUT
+          //Basically this case should already be cought in section //2// for paralell intersections!
+          std::cout << "Cut points found by intersection, End Node is in surface! (Codeline:" << __LINE__ << ")" << std::endl;
+        #endif
+        return true;
+      }
+      else
+      {
+        Node * n = side_.OnNode( x_ ); //point lies on a node of the side???
+        if ( n!=NULL ) //no is a new point
+        {
+          InsertCut( n, cuts );
+          TestSideEdges( n->point(), xsi_ );
+          #ifdef DEBUG_CUTINTERSECTION_OUTPUT
+            //Basically this case should already be cought in section //2// for paralell intersections!
+            std::cout << "Cut points found by intersection, with local coords: xsi: " << xsi_(0,0) << " / eta: "<< xsi_(1,0) << " / alpha: "<< xsi_(2,0) << " (Codeline:" << __LINE__ << ")" << std::endl;
+          #endif
+            if (debugbb) dserror("Bounding Boxes said that ther is no intersection point!");
+          return true;
+        }
+        else
+        {
+          Point * p = Point::NewPoint( mesh_, x_.A(), xsi_( 2, 0 ), &edge_, &side_, itol );
+          TestSideEdges( p, xsi_ );
+          cuts.insert( p );
+          #ifdef DEBUG_CUTINTERSECTION_OUTPUT
+            std::cout << "Cut points found by intersection, with local coords: xsi: " << xsi_(0,0) << " / eta: "<< xsi_(1,0) << " / alpha: "<< xsi_(2,0) << " (Codeline:" << __LINE__ << ")" << std::endl;
+          #endif
+            if (debugbb) dserror("Bounding Boxes said that ther is no intersection point!");
+          return true;
+        }
+      }
+    }
+    else
+    {
+      #ifdef DEBUG_CUTINTERSECTION_OUTPUT
+        std::cout << "No Cut Point found by intersection, with local coords: xsi: " << xsi_(0,0) << " / eta: "<< xsi_(1,0) << " / alpha: "<< xsi_(2,0) << " and a tolerance of " << itol << " (Codeline:" << __LINE__ << ")" << std::endl;
+      #endif
+      return false; //there is no intersection between surface and line!!!
+    }
+  }
+  //5// treat speacial cases ...
+  else
+  {
+    i_xsi = xsi_;
+
+    //5.1 point is outside the element and is not part of the interpolation space (just for quad4 try triangulation)
+    if (sidetype == DRT::Element::quad4)
+    {
+      std::vector<double> tri_tol(2);
+      std::vector<bool> tri_conv(2);
+      for (uint tri = 0; tri < 2; tri++)
+      {
+        tri_conv[tri] = ComputeCurveSurfaceIntersection(tri_tol[tri] , tri+1 );
+
+        if (SurfaceWithinLimits(tri_tol[tri],DRT::Element::tri3)) //we expect the quad4 to converge in case that the projected point is inside the quad4 or tri3!
+        {
+          std::cout << "(fabs(lineendpoint_dist[0]) >= lineendpoint_tol[0]): " << (fabs(lineendpoint_dist[0]) >= lineendpoint_tol[0]) << " (fabs(lineendpoint_dist[1]) >= lineendpoint_tol[1]): " << (fabs(lineendpoint_dist[1]) >= lineendpoint_tol[1]) << " (lineendpoint_dist[0]*lineendpoint_dist[1]>0 ): " << (lineendpoint_dist[0]*lineendpoint_dist[1]>0 ) << std::endl;
+          std::cout << "Local Coordinates from ComputeDistance (lineendpoint_dist[0] = " << lineendpoint_dist[0] << "[tol=" << lineendpoint_tol[0] << "]) on Quad4: " << "xsi: " << lineendpoint_xsi[0](0,0) << " / eta: "<< lineendpoint_xsi[0](1,0) << " / alpha: "<< lineendpoint_xsi[0](2,0) << std::endl;
+          std::cout << "Local Coordinates from ComputeDistance (lineendpoint_dist[1] = " << lineendpoint_dist[1] << "[tol=" << lineendpoint_tol[1] << "]) on Quad4: " << "xsi: " << lineendpoint_xsi[1](0,0) << " / eta: "<< lineendpoint_xsi[1](1,0) << " / alpha: "<< lineendpoint_xsi[1](2,0) << std::endl;
+          std::cout << "Local Coordinates from ComputeIntersection (tol=" << itol << ") on Quad4: " << "xsi: " << i_xsi(0,0) << " / eta: "<< i_xsi(1,0) << " / alpha: "<< i_xsi(2,0) << std::endl;
+          std::cout << "Local Coordinates from ComputeIntersection (tol=" << tri_tol[tri] << ") on Tri3: " << "xsi: " << xsi_(0,0) << " / eta: "<< xsi_(1,0) << " / alpha: "<< xsi_(2,0) << std::endl;
+          dserror("ComputeCurveSurfaceIntersection for Quad4 didn't converge, but ComputeCurveSurfaceIntersection for triangulation %d is inside the Element!",tri+1);
+        }
+      }
+      if (tri_conv[0] and tri_conv[1]) //both converged and are outside!!! (tested directly)
+      {
+        #ifdef DEBUG_CUTINTERSECTION_OUTPUT
+          std::cout << "No Cut Point found by intersection with triangulated quad4! (Codeline:" << __LINE__ << ")" << std::endl;
+        #endif
+        return false; //point outside the interpolation space of quad4
+      }
+      //else
+        //Looks like this is the result of an distorted element, here triangulation is not better that the distance directly from the quad4
+    }
+
+    //5.2 distorted elements!!!
+    //now let's do what is possible for the rest, basically we can just find out if there is no intersection, everything else would be pure speculation!
+
+    {
+      //scale this tolerance into reference system!!!
+
+      //calculate the tolerance in the reference coordinate system!!!
+      double scaling;
+      double ritol;
+      {
+        scaling = xyze_surfaceElement_.NormInf(); //not definitely sure if this is a choise, but at least the same as in the cut kernel!
+        double linescale = xyze_lineElement_.NormInf();
+        if (linescale > scaling)
+          scaling = linescale;
+      }
+      ritol = itol/scaling;
+
+      xsi_ = i_xsi; //set xsi_ back to the intersection xsi!!!
+      if ( SurfaceWithinLimits(ritol) and LineWithinLimits(ritol) )
+      {
+        std::cout << "local coordinates: <plane: " << xsi_(0) << ", " << xsi_(1) << ">, <line: " << xsi_(2) << "> | relative tolerance: "  << ritol << std::endl;
+        //std::cout << "Information about the LineEndpoints: lineendpoint_dist[0]: " << lineendpoint_dist[0] << "(" << lineendpoint_tol[0] << ") lineendpoint_dist[1]: " << lineendpoint_dist[1] << "(" << lineendpoint_tol[1] << ")" << std::endl;
+        std::cout << "Local Coordinates from ComputeDistance (lineendpoint_dist[0] = " << lineendpoint_dist[0] << "[tol=" << lineendpoint_tol[0] << "], conv = " << lineendpoint_conv[0] << ") on Quad4: " << "xsi: " << lineendpoint_xsi[0](0,0) << " / eta: "<< lineendpoint_xsi[0](1,0) << " / alpha: "<< lineendpoint_xsi[0](2,0) << std::endl;
+        std::cout << "Local Coordinates from ComputeDistance (lineendpoint_dist[1] = " << lineendpoint_dist[1] << "[tol=" << lineendpoint_tol[1] << "], conv = " << lineendpoint_conv[1] << ") on Quad4: " << "xsi: " << lineendpoint_xsi[1](0,0) << " / eta: "<< lineendpoint_xsi[1](1,0) << " / alpha: "<< lineendpoint_xsi[1](2,0) << std::endl;
+        //6// throw dserror! - It is not allowed to remove this dserror (don't even do that in your local version, as the cut then just generates something undefined)!!!
+        dserror("CRITICAL ERROR: Your Intersection seems to be a special case, which is not treated right yet!!! --> to fix this the intersection code in baci has to be improved!!!");
+      }
+      else
+      {
+        #ifdef DEBUG_CUTINTERSECTION_OUTPUT
+          std::cout << "No Cut Point found by intersection, with local coords: xsi: " << xsi_(0,0) << " / eta: "<< xsi_(1,0) << " / alpha: "<< xsi_(2,0) << " and a tolerance of " << itol << " (Codeline:" << __LINE__ << ")" << std::endl;
+        #endif
+        return false;
+      }
+    }
   }
 
+  //6// throw dserror! - It is not allowed to remove this dserror (don't even do that in your local version, as the cut then just generates something undefined)!!!
+  dserror("CRITICAL ERROR: Your Intersection seems to be a special case, which is not treated right yet!!! --> to fix this the intersection code in baci has to be improved!!!");
   return false;
 }
-
 
 template <DRT::Element::DiscretizationType edgetype,
           DRT::Element::DiscretizationType sidetype,
           int numNodesLine,
           int numNodesSurface
 >
-double Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeDistance( Point * p )
+//compute distance to side from point
+bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeDistance( Point * p, double& distance, double& tolerance,  bool& zeroarea, bool signeddistance, int triangleid )
 {
-  KERNEL::ComputeDistance<edgetype, sidetype> cd( xsi_ );
-  //KERNEL::DebugComputeDistance<edgetype, sidetype> cd;
   LINALG::Matrix<3,1> point( p->X() );
 
-  double dist;
-  if ( not cd( xyze_surfaceElement_, point, dist ) )
-  {
-    throw std::runtime_error( "failed to calculate side--point distance" );
-  }
-
-  return dist;
+  return ComputeDistance(point, distance, tolerance, zeroarea, signeddistance, triangleid);
 }
-
 
 template <DRT::Element::DiscretizationType edgetype,
           DRT::Element::DiscretizationType sidetype,
           int numNodesLine,
           int numNodesSurface
 >
-bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeCut( Edge * e1, Edge * e2 )
+//compute distance to side from point
+bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeDistance( LINALG::Matrix<3,1> point, double& distance, double& tolerance,  bool& zeroarea, bool signeddistance, int triangleid)
 {
-  return e2->ComputeCut( e1, xsi_( 2 ), x_ );
-}
+  TEUCHOS_FUNC_TIME_MONITOR( "ComputeDistance" );
+  bool conv;
 
+  if (!triangleid)
+  {
+    KERNEL::ComputeDistance<edgetype, sidetype> cd( xsi_ );
+  //KERNEL::DebugComputlineendpoint_dist[1]ance<edgetype, sidetype> cd;
+    conv = cd( xyze_surfaceElement_, point, distance,signeddistance );
+    tolerance = cd.GetTolerance();
+    zeroarea = cd.ZeroArea();
+  }
+  else
+  {
+    KERNEL::ComputeDistance<edgetype, DRT::Element::tri3> cd( xsi_ );
+
+    LINALG::Matrix<3, 3> xyze_triElement;
+    GetTriangle(xyze_triElement,triangleid);
+
+    conv = cd( xyze_triElement, point, distance,signeddistance );
+    tolerance = cd.GetTolerance();
+    zeroarea = cd.ZeroArea();
+  }
+
+  //std::cout << "dist: " << distance << "conv: " << conv << "     tolerance: " << tolerance << std::endl;
+
+return conv;
+}
 
 template <DRT::Element::DiscretizationType edgetype,
           DRT::Element::DiscretizationType sidetype,
           int numNodesLine,
           int numNodesSurface
 >
-bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::AtEdge()
+bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeCut( Edge * e1, Edge * e2, double& tolerance )
 {
-  switch ( sidetype )
-  {
-  case DRT::Element::quad4:
-  case DRT::Element::quad8:
-  case DRT::Element::quad9:
-  {
-    return ( fabs( xsi_( 0 )+1 )<TOLERANCE or fabs( xsi_( 1 )+1 )<TOLERANCE or
-             fabs( xsi_( 0 )-1 )<TOLERANCE or fabs( xsi_( 1 )-1 )<TOLERANCE );
-  }
-  case DRT::Element::tri3:
-  case DRT::Element::tri6:
-  {
-    return ( fabs( xsi_( 0 )+0 )<TOLERANCE or fabs( xsi_( 1 )+0 )<TOLERANCE or
-             fabs( xsi_( 1 )+xsi_( 0 )-1 )<TOLERANCE );
-  }
-  default:
-    throw std::runtime_error( "unsupported side type" );
-  }
+  return e2->ComputeCut( e1, xsi_( 2 ), x_, tolerance );
 }
-
-
-template <DRT::Element::DiscretizationType edgetype,
-          DRT::Element::DiscretizationType sidetype,
-          int numNodesLine,
-          int numNodesSurface
->
-bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::SurfaceWithinLimits()
-{
-  bool intersects = false;
-  switch ( sidetype )
-  {
-  case DRT::Element::quad4:
-  case DRT::Element::quad8:
-  case DRT::Element::quad9:
-  {
-    intersects = ( xsi_( 0 ) >= -1-TOLERANCE and xsi_( 1 ) >= -1-TOLERANCE and
-                   xsi_( 0 ) <=  1+TOLERANCE and xsi_( 1 ) <=  1+TOLERANCE );
-    break;
-  }
-  case DRT::Element::tri3:
-  case DRT::Element::tri6:
-  {
-    intersects = ( xsi_( 0 ) >= 0-TOLERANCE and xsi_( 1 ) >= 0-TOLERANCE and
-                   xsi_( 0 ) <= 1+TOLERANCE and xsi_( 1 ) <= 1+TOLERANCE and
-                   xsi_( 1 ) <= ( 1 - xsi_( 0 ) )+TOLERANCE );
-    break;
-  }
-  default:
-    throw std::runtime_error( "unsupported side type" );
-  }
-  return intersects;
-}
-
-
-template <DRT::Element::DiscretizationType edgetype,
-          DRT::Element::DiscretizationType sidetype,
-          int numNodesLine,
-          int numNodesSurface
->
-bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::LineWithinLimits()
-{
-  return xsi_( 2 ) >= -1-TOLERANCE and xsi_( 2 ) <=  1+TOLERANCE;
-}
-
 
 template <DRT::Element::DiscretizationType edgetype,
           DRT::Element::DiscretizationType sidetype,

@@ -152,8 +152,7 @@ private:
       double omax) const
   {
     double tol = BOXOVERLAP * norm;
-    return ((omax > smin - tol and omin < smax + tol)
-        or (smax > omin - tol and smin < omax + tol));
+    return ((omax > smin - tol) and (smax > omin - tol));
   }
 
   bool empty_;

@@ -657,7 +657,7 @@ GEO::CUT::Node * GEO::CUT::Side::OnNode( const LINALG::Matrix<3,1> & x )
     Node * n = *i;
     n->Coordinates( nx.A() );
     nx.Update( -1, x, 1 );
-    if ( nx.Norm2() < MINIMALTOL )
+    if ( nx.Norm2() <= (x.NormInf()*POSITIONTOL + n->point()->Tolerance()) )
     {
       return n;
     }
@@ -783,13 +783,13 @@ bool GEO::CUT::Side::IsCloserSide( LINALG::Matrix<3,1>& startpoint_xyz, GEO::CUT
 
 //    std::cout << "line_xi " << line_xi << std::endl;
 
-    if(line_xi > 1.0+TOLERANCE)
+    if(line_xi > 1.0+REFERENCETOL)
     {
       // the first side is closer to the start point than the second side
       is_closer = true;
       return true;
     }
-    else if(fabs(line_xi - 1.0) <= TOLERANCE)
+    else if(fabs(line_xi - 1.0) <= REFERENCETOL)
     {
       // the found intersection point on the other is the midpoint of the fist side
       // in that case both sides lie within one plane
@@ -800,13 +800,13 @@ bool GEO::CUT::Side::IsCloserSide( LINALG::Matrix<3,1>& startpoint_xyz, GEO::CUT
 
       return false;
     }
-    else if(line_xi < 1.0-TOLERANCE and line_xi > -1.0+TOLERANCE)
+    else if(line_xi < 1.0-REFERENCETOL and line_xi > -1.0+REFERENCETOL)
     {
       // the most safe check (accept the other side as the nearest side)
       is_closer = false;
       return true;
     }
-    else if(fabs(line_xi + 1.0) <= TOLERANCE )
+    else if(fabs(line_xi + 1.0) <= REFERENCETOL )
     {
       // the intersection point is the same as the start-point of the ray
       // the other side contains the start-point and the cut-point shared with the original side
@@ -821,7 +821,7 @@ bool GEO::CUT::Side::IsCloserSide( LINALG::Matrix<3,1>& startpoint_xyz, GEO::CUT
 
       return false;
     }
-    else if(line_xi < -1.0-TOLERANCE)
+    else if(line_xi < -1.0-REFERENCETOL)
     {
       // both sides lead to the same result
       is_closer = true; // false would be also okay
@@ -935,7 +935,7 @@ void GEO::CUT::ConcreteSide<DRT::Element::quad4>::SideCenter( LINALG::Matrix<3,1
 /*--------------------------------------------------------------------*
  * lies point with given coordinates within this side?
  *--------------------------------------------------------------------*/
-bool GEO::CUT::ConcreteSide<DRT::Element::tri3>::WithinSide( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<2,1> & rs, double & dist, const double & Tol)
+bool GEO::CUT::ConcreteSide<DRT::Element::tri3>::WithinSide( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<2,1> & rs, double & dist)
 {
   Position2d<DRT::Element::tri3> pos( *this, xyz );
   bool success = pos.IsGivenPointWithinSide();
@@ -949,7 +949,7 @@ bool GEO::CUT::ConcreteSide<DRT::Element::tri3>::WithinSide( const LINALG::Matri
   rs(1)= rst(1);
   dist = rst(2);
 
-  if(pos.WithinLimitsTol(Tol, false, MINIMALTOL))
+  if(pos.WithinLimits(false))
   {
     return true;
   }
@@ -961,7 +961,7 @@ bool GEO::CUT::ConcreteSide<DRT::Element::tri3>::WithinSide( const LINALG::Matri
 /*--------------------------------------------------------------------*
  * lies point with given coordinates within this side?
  *--------------------------------------------------------------------*/
-bool GEO::CUT::ConcreteSide<DRT::Element::quad4>::WithinSide( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<2,1> & rs, double & dist, const double & Tol)
+bool GEO::CUT::ConcreteSide<DRT::Element::quad4>::WithinSide( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<2,1> & rs, double & dist)
 {
   Position2d<DRT::Element::quad4> pos( *this, xyz );
   bool success = pos.IsGivenPointWithinSide();
@@ -975,7 +975,7 @@ bool GEO::CUT::ConcreteSide<DRT::Element::quad4>::WithinSide( const LINALG::Matr
   rs(1)= rst(1);
   dist = rst(2);
 
-  if(pos.WithinLimitsTol(Tol, false, MINIMALTOL))
+  if(pos.WithinLimits(false))
   {
     return true;
   }
@@ -1325,7 +1325,7 @@ bool GEO::CUT::Side::HoleOfFacet( Facet & facet, const std::vector<Cycle> & hole
       double C = facetpoint1(0) + facetpoint2(0) - 2*holepointlocalcoord(0) - 2;
       double D = facetpoint1(1) + facetpoint2(1) - 2*holepointlocalcoord(1) - epsilon;
       double N = 2*B - epsilon*A;
-      if ( abs(N) > TOLERANCE )
+      if ( abs(N) > REFERENCETOL )
       {
         double eta = ( B*C - A*D )/N;
         double xsi = ( 2*D - epsilon*C )/N;
@@ -1334,12 +1334,12 @@ bool GEO::CUT::Side::HoleOfFacet( Facet & facet, const std::vector<Cycle> & hole
           intersectioncount++;
           double xlocalcoord = holepointlocalcoord(0) + 1 + eta;
           double ylocalcoord = (2*holepointlocalcoord(1) + epsilon + epsilon*eta)/2;
-          if ( (abs(xlocalcoord - facetpoint1(0)) < TOLERANCE and abs(ylocalcoord - facetpoint1(1)) < TOLERANCE ) or
-               (abs(xlocalcoord - facetpoint2(0)) < TOLERANCE and abs(ylocalcoord - facetpoint2(1)) < TOLERANCE ) )
+          if ( (abs(xlocalcoord - facetpoint1(0)) < REFERENCETOL and abs(ylocalcoord - facetpoint1(1)) < REFERENCETOL ) or
+               (abs(xlocalcoord - facetpoint2(0)) < REFERENCETOL and abs(ylocalcoord - facetpoint2(1)) < REFERENCETOL ) )
           {
             intersectioninpoint = true;
             intersectioncount = 0;
-            epsilon += TOLERANCE;
+            epsilon += REFERENCETOL;
             break;
           }
         }
