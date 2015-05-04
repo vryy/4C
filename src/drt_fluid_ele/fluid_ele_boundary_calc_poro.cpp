@@ -3161,9 +3161,19 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
                                k_fluid,
                                rhs);
     }
+    else if(ele->ParentElement()->Shape()==DRT::Element::tri3)
+    {
+      NoPenetrationMatAndRHS<DRT::Element::tri3>(
+                               ele,
+                               params,
+                               discretization,
+                               lm,
+                               k_fluid,
+                               rhs);
+    }
     else
     {
-      dserror("expected combination line2/quad4 for line/parent pair");
+      dserror("expected combination line2/quad4 or line2/tri3 for line/parent pair");
     }
     break;
   }
@@ -3596,9 +3606,19 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
                                k_struct,
                                k_lambda);
     }
+    else if(ele->ParentElement()->Shape()==DRT::Element::tri3)
+    {
+      NoPenetrationMatOD<DRT::Element::tri3>(
+                               ele,
+                               params,
+                               discretization,
+                               lm,
+                               k_struct,
+                               k_lambda);
+    }
     else
     {
-      dserror("expected combination line2/quad4 for line/parent pair");
+      dserror("expected combination line2/quad4 or line2/tri3 for line/parent pair");
     }
     break;
   }
@@ -4266,9 +4286,18 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
                                lm,
                                k_pres);
     }
+    else if(ele->ParentElement()->Shape()==DRT::Element::tri3)
+    {
+      NoPenetrationMatODPoroPres<DRT::Element::tri3>(
+                               ele,
+                               params,
+                               discretization,
+                               lm,
+                               k_pres);
+    }
     else
     {
-      dserror("expected combination line2/quad4 for line/parent pair");
+      dserror("expected combination line2/quad4 or line2/tri3 for line/parent pair");
     }
     break;
   }
@@ -4684,9 +4713,18 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
                                plm,
                                k_disp);
     }
+    else if(ele->ParentElement()->Shape()==DRT::Element::tri3)
+    {
+      NoPenetrationMatODPoroDisp<DRT::Element::tri3>(
+                               ele,
+                               params,
+                               discretization,
+                               plm,
+                               k_disp);
+    }
     else
     {
-      dserror("expected combination line2/quad4 for line/parent pair");
+      dserror("expected combination line2/quad4 or line2/tri3 for line/parent pair");
     }
     break;
   }

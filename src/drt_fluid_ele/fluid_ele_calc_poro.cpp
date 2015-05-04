@@ -269,12 +269,6 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(
   // (only required to be set up for routines "ExtractValuesFromGlobalVector")
   my::rotsymmpbc_->Setup(ele);
 
-  // construct views
-  LINALG::Matrix<(my::nsd_+1)*my::nen_,(my::nsd_+1)*my::nen_> elemat1(elemat1_epetra,true);
-  //LINALG::Matrix<(my::nsd_+1)*my::nen_,(my::nsd_+1)*my::nen_> elemat2(elemat2_epetra,true);
-  LINALG::Matrix<(my::nsd_ + 1) * my::nen_, 1> elevec1(elevec1_epetra, true);
-  // elevec2 and elevec3 are currently not in use
-
   // ---------------------------------------------------------------------
   // call routine for calculation of body force in element nodes,
   // with pressure gradient prescribed as body force included for turbulent
@@ -282,9 +276,12 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(
   // (evaluation at time n+alpha_F for generalized-alpha scheme,
   //  and at time n+1 otherwise)
   // ---------------------------------------------------------------------
-  LINALG::Matrix<my::nsd_,my::nen_> ebofoaf(true);
-  LINALG::Matrix<my::nsd_,my::nen_> eprescpgaf(true);
-  LINALG::Matrix<my::nen_,1>    escabofoaf(true);
+  static LINALG::Matrix<my::nsd_,my::nen_> ebofoaf(true);
+  ebofoaf.Clear();
+  static LINALG::Matrix<my::nsd_,my::nen_> eprescpgaf(true);
+  eprescpgaf.Clear();
+  static LINALG::Matrix<my::nen_,1>    escabofoaf(true);
+  escabofoaf.Clear();
   my::BodyForce(ele,ebofoaf,eprescpgaf,escabofoaf);
 
   // ---------------------------------------------------------------------
@@ -299,37 +296,48 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(
   // af_genalpha: velocity/pressure at time n+alpha_F
   // np_genalpha: velocity at time n+alpha_F, pressure at time n+1
   // ost:         velocity/pressure at time n+1
-  LINALG::Matrix<my::nsd_, my::nen_> evelaf(true);
-  LINALG::Matrix<my::nen_, 1> epreaf(true);
+  static LINALG::Matrix<my::nsd_, my::nen_> evelaf(true);
+  evelaf.Clear();
+  static LINALG::Matrix<my::nen_, 1> epreaf(true);
+  epreaf.Clear();
   my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &evelaf,
       &epreaf, "velaf");
 
   // np_genalpha: additional vector for velocity at time n+1
-  LINALG::Matrix<my::nsd_, my::nen_> evelnp(true);
-  LINALG::Matrix<my::nen_, 1> eprenp(true);
+  static LINALG::Matrix<my::nsd_, my::nen_> evelnp(true);
+  evelnp.Clear();
+  static LINALG::Matrix<my::nen_, 1> eprenp(true);
+  eprenp.Clear();
   if (my::fldparatimint_->IsGenalphaNP())
     my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &evelnp,
         &eprenp, "velnp");
 
-  LINALG::Matrix<my::nsd_, my::nen_> emhist(true);
-  LINALG::Matrix<my::nen_, 1> echist(true);
+  static LINALG::Matrix<my::nsd_, my::nen_> emhist(true);
+  emhist.Clear();
+  static LINALG::Matrix<my::nen_, 1> echist(true);
+  echist.Clear();
   my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &emhist,
       &echist, "hist");
 
-  LINALG::Matrix<my::nsd_, my::nen_> eaccam(true);
+  static LINALG::Matrix<my::nsd_, my::nen_> eaccam(true);
+  eaccam.Clear();
   my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &eaccam,
       NULL, "accam");
 
-  LINALG::Matrix<my::nen_, 1> epren(true);
-  LINALG::Matrix<my::nsd_, my::nen_> eveln(true);
+  static LINALG::Matrix<my::nen_, 1> epren(true);
+  epren.Clear();
+  static LINALG::Matrix<my::nsd_, my::nen_> eveln(true);
+  eveln.Clear();
   my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &eveln,
       &epren, "veln");
 
-  LINALG::Matrix<my::nen_, 1> epressnp_timederiv(true);
+  static LINALG::Matrix<my::nen_, 1> epressnp_timederiv(true);
+  epressnp_timederiv.Clear();
   my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, NULL,
       &epressnp_timederiv, "accnp");
 
-  LINALG::Matrix<my::nen_,1> escaaf(true);
+  static LINALG::Matrix<my::nen_,1> escaaf(true);
+  escaaf.Clear();
   my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, NULL, &escaaf,"scaaf");
 
   if (not my::fldparatimint_->IsGenalpha())
@@ -338,10 +346,14 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(
   // ---------------------------------------------------------------------
   // get additional state vectors for ALE case: grid displacement and vel.
   // ---------------------------------------------------------------------
-  LINALG::Matrix<my::nsd_, my::nen_> edispnp(true);
-  LINALG::Matrix<my::nsd_, my::nen_> egridv(true);
-  LINALG::Matrix<my::nsd_, my::nen_> egridvn(true);
-  LINALG::Matrix<my::nsd_, my::nen_> edispn(true);
+  static LINALG::Matrix<my::nsd_, my::nen_> edispnp(true);
+  edispnp.Clear();
+  static LINALG::Matrix<my::nsd_, my::nen_> egridv(true);
+  egridv.Clear();
+  static LINALG::Matrix<my::nsd_, my::nen_> egridvn(true);
+  egridvn.Clear();
+  static LINALG::Matrix<my::nsd_, my::nen_> edispn(true);
+  edispn.Clear();
 
   LINALG::Matrix<my::nen_, 1> eporositynp(true);
 
@@ -357,6 +369,12 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(
   // get node coordinates and number of elements per node
   GEO::fillInitialPositionArray<distype, my::nsd_, LINALG::Matrix<my::nsd_, my::nen_> >(
       ele, my::xyze_);
+
+  // construct views
+  LINALG::Matrix<(my::nsd_+1)*my::nen_,(my::nsd_+1)*my::nen_> elemat1(elemat1_epetra,true);
+  //LINALG::Matrix<(my::nsd_+1)*my::nen_,(my::nsd_+1)*my::nen_> elemat2(elemat2_epetra,true);
+  LINALG::Matrix<(my::nsd_ + 1) * my::nen_, 1> elevec1(elevec1_epetra, true);
+  // elevec2 and elevec3 are currently not in use
 
   PreEvaluate(params,ele,discretization);
 
@@ -445,9 +463,12 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(
   // (evaluation at time n+alpha_F for generalized-alpha scheme,
   //  and at time n+1 otherwise)
   // ---------------------------------------------------------------------
-  LINALG::Matrix<my::nsd_,my::nen_> ebofoaf(true);
-  LINALG::Matrix<my::nsd_,my::nen_> eprescpgaf(true);
-  LINALG::Matrix<my::nen_,1>    escabofoaf(true);
+  static LINALG::Matrix<my::nsd_,my::nen_> ebofoaf(true);
+  static LINALG::Matrix<my::nsd_,my::nen_> eprescpgaf(true);
+  static LINALG::Matrix<my::nen_,1>    escabofoaf(true);
+  ebofoaf.Clear();
+  eprescpgaf.Clear();
+  escabofoaf.Clear();
   my::BodyForce(ele,ebofoaf,eprescpgaf,escabofoaf);
 
   // ---------------------------------------------------------------------
@@ -462,42 +483,56 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(
   // af_genalpha: velocity/pressure at time n+alpha_F
   // np_genalpha: velocity at time n+alpha_F, pressure at time n+1
   // ost:         velocity/pressure at time n+1
-  LINALG::Matrix<my::nsd_, my::nen_> evelaf(true);
-  LINALG::Matrix<my::nen_, 1> epreaf(true);
+  static LINALG::Matrix<my::nsd_, my::nen_> evelaf(true);
+  static LINALG::Matrix<my::nen_, 1> epreaf(true);
+  evelaf.Clear();
+  epreaf.Clear();
   my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &evelaf,
       &epreaf, "velaf");
 
   // np_genalpha: additional vector for velocity at time n+1
-  LINALG::Matrix<my::nsd_, my::nen_> evelnp(true);
-  LINALG::Matrix<my::nen_, 1> eprenp(true);
+  static LINALG::Matrix<my::nsd_, my::nen_> evelnp(true);
+  static LINALG::Matrix<my::nen_, 1> eprenp(true);
+  evelnp.Clear();
+  eprenp.Clear();
   if (my::fldparatimint_->IsGenalphaNP())
     my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &evelnp,
         &eprenp, "velnp");
 
-  LINALG::Matrix<my::nsd_, my::nen_> eveln(true);
-  LINALG::Matrix<my::nen_, 1> epren(true);
+  static LINALG::Matrix<my::nsd_, my::nen_> eveln(true);
+  static LINALG::Matrix<my::nen_, 1> epren(true);
+  eveln.Clear();
+  epren.Clear();
   my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &eveln,
         &epren, "veln");
 
-  LINALG::Matrix<my::nen_, 1> epressnp_timederiv(true);
+  static LINALG::Matrix<my::nen_, 1> epressnp_timederiv(true);
+  epressnp_timederiv.Clear();
   my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, NULL,
       &epressnp_timederiv, "accnp");
 
-  LINALG::Matrix<my::nen_,1> escaaf(true);
+  static LINALG::Matrix<my::nen_,1> escaaf(true);
+  epressnp_timederiv.Clear();
   my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, NULL, &escaaf,"scaaf");
 
-  LINALG::Matrix<my::nsd_, my::nen_> emhist(true);
-  LINALG::Matrix<my::nen_, 1> echist(true);
+  static LINALG::Matrix<my::nsd_, my::nen_> emhist(true);
+  static LINALG::Matrix<my::nen_, 1> echist(true);
+  emhist.Clear();
+  echist.Clear();
   my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &emhist,
       &echist, "hist");
 
   // ---------------------------------------------------------------------
   // get additional state vectors for ALE case: grid displacement and vel.
   // ---------------------------------------------------------------------
-  LINALG::Matrix<my::nsd_, my::nen_> edispnp(true);
-  LINALG::Matrix<my::nsd_, my::nen_> edispn(true);
-  LINALG::Matrix<my::nsd_, my::nen_> egridv(true);
-  LINALG::Matrix<my::nsd_, my::nen_> egridvn(true);
+  static LINALG::Matrix<my::nsd_, my::nen_> edispnp(true);
+  edispnp.Clear();
+  static LINALG::Matrix<my::nsd_, my::nen_> edispn(true);
+  edispn.Clear();
+  static LINALG::Matrix<my::nsd_, my::nen_> egridv(true);
+  egridv.Clear();
+  static LINALG::Matrix<my::nsd_, my::nen_> egridvn(true);
+  egridvn.Clear();
 
   my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &edispnp,
       NULL, "dispnp");
