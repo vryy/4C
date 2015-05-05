@@ -17,6 +17,7 @@ Maintainer: Alexander Popp
 #include "contact_interpolator.H"
 #include "../drt_contact_aug/contact_augmented_integrator.H"
 #include "contact_node.H"
+#include "contact_element.H"
 #include "contact_defines.H"
 #include "../drt_mortar/mortar_coupling3d_classes.H"
 #include "../drt_mortar/mortar_defines.H"
@@ -88,7 +89,8 @@ bool CONTACT::CoCoupling3d::AuxiliaryPlane()
 /*----------------------------------------------------------------------*
  |  Integration of cells (3D)                                 popp 11/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::CoCoupling3d::IntegrateCells()
+bool CONTACT::CoCoupling3d::IntegrateCells(GEN::pairedvector<int,Epetra_SerialDenseMatrix>* dMatrixDeriv,
+    GEN::pairedvector<int,Epetra_SerialDenseMatrix>* mMatrixDeriv)
 {
   /**********************************************************************/
   /* INTEGRATION                                                        */
@@ -152,7 +154,7 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
       if (stype_ == INPAR::CONTACT::solution_augmented)
         Teuchos::rcp_dynamic_cast<CONTACT::AugmentedIntegrator>(integrator)->IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn(),Comm());
       else
-        integrator->IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn(),Comm());
+        integrator->IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn(),dMatrixDeriv,mMatrixDeriv,Comm());
     }
 
     // *******************************************************************
@@ -180,7 +182,7 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
           dynamic_cast<MORTAR::IntElement&>(MasterIntElement());
 
       // call integrator
-      integrator->IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),sintref,mintref,Cells()[i],Auxn());
+      integrator->IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),sintref,mintref,Cells()[i],Auxn(),dMatrixDeriv,mMatrixDeriv);
     }
 
     // *******************************************************************
@@ -200,7 +202,7 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
           dynamic_cast<MORTAR::IntElement&>(MasterIntElement());
 
       // call integrator
-      integrator->IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),sintref,mintref,Cells()[i],Auxn());
+      integrator->IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),sintref,mintref,Cells()[i],Auxn(),dMatrixDeriv,mMatrixDeriv);
     }
 
     // *******************************************************************
@@ -218,7 +220,7 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
     else
       dserror("ERROR: IntegrateCells: Invalid case for 3D mortar contact LM interpolation");
     // *******************************************************************
-  }
+  } // cell loop
 
   return true;
 }
@@ -1228,8 +1230,34 @@ void CONTACT::CoCoupling3dManager::EvaluateMortar()
     ConsistDualShape();
 
     // integrate cells
-    for (int m = 0; m < (int) MasterElements().size(); ++m)
-      Coupling()[m]->IntegrateCells();
+
+    // number of dofs that may appear in the linearization
+    int numderiv=0;
+    numderiv+=SlaveElement().NumNode()*3*12;
+    for (unsigned m=0;m<MasterElements().size(); ++m)
+      numderiv += (MasterElements()[m])->NumNode()*3;
+
+    // temporary d-matrix linearization of this slave element
+    GEN::pairedvector<int,Epetra_SerialDenseMatrix> dMatrixDeriv(numderiv,0,
+        Epetra_SerialDenseMatrix(SlaveElement().NumNode(),SlaveElement().NumNode()));
+
+    for (int i=0; i<(int)Coupling().size(); ++i)
+    {
+      // temporary m-matrix linearization of this slave/master pair
+      GEN::pairedvector<int,Epetra_SerialDenseMatrix> mMatrixDeriv(
+          SlaveElement().NumNode()*3*12+Coupling()[i]->MasterElement().NumNode()*3,0,
+          Epetra_SerialDenseMatrix(SlaveElement().NumNode(),Coupling()[i]->MasterElement().NumNode()));
+
+      // integrate cells
+      Coupling()[i]->IntegrateCells(&dMatrixDeriv,&mMatrixDeriv);
+
+      // assemble m-matrix for this slave/master pair
+      dynamic_cast<CONTACT::CoElement&> (SlaveElement()).AssembleMderivToNodes(mMatrixDeriv,Coupling()[i]->MasterElement());
+    }
+
+    // assemble d-matrix linearization for this slave element
+    dynamic_cast<CONTACT::CoElement&> (SlaveElement()).AssembleDderivToNodes(dMatrixDeriv,
+        (ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin));
   }
 
   //**********************************************************************
@@ -1267,26 +1295,54 @@ void CONTACT::CoCoupling3dManager::EvaluateMortar()
       {
         if (boundary_ele == true)
         {
-            // loop over all master elements associated with this slave element
-            for (int m = 0; m < (int) MasterElements().size(); ++m)
-            {
-              // create CoCoupling3d object and push back
-              Coupling().push_back(Teuchos::rcp(new CoCoupling3d(idiscret_, dim_, false, imortar_,
-                  SlaveElement(), MasterElement(m))));
+          // loop over all master elements associated with this slave element
+          for (int m = 0; m < (int) MasterElements().size(); ++m)
+          {
+            // create CoCoupling3d object and push back
+            Coupling().push_back(
+                Teuchos::rcp(
+                    new CoCoupling3d(idiscret_, dim_, false, imortar_,
+                        SlaveElement(), MasterElement(m))));
 
-              // do coupling
-              Coupling()[m]->EvaluateCoupling();
+            // do coupling
+            Coupling()[m]->EvaluateCoupling();
 
-              // store number of intcells
-              ncells_ += (int) (Coupling()[m]->Cells()).size();
-            }
+            // store number of intcells
+            ncells_ += (int) (Coupling()[m]->Cells()).size();
+          }
 
-            // special treatment of boundary elements
-            ConsistDualShape();
+          // special treatment of boundary elements
+          ConsistDualShape();
+
+          // integrate cells
+
+          // number of dofs that may appear in the linearization
+          int numderiv=0;
+          numderiv+=SlaveElement().NumNode()*3*12;
+          for (unsigned m=0;m<MasterElements().size(); ++m)
+            numderiv += (MasterElements()[m])->NumNode()*3;
+
+          // temporary d-matrix linearization of this slave element
+          GEN::pairedvector<int,Epetra_SerialDenseMatrix> dMatrixDeriv(numderiv,0,
+              Epetra_SerialDenseMatrix(SlaveElement().NumNode(),SlaveElement().NumNode()));
+
+          for (int i=0; i<(int)Coupling().size(); ++i)
+          {
+            // temporary m-matrix linearization of this slave/master pair
+            GEN::pairedvector<int,Epetra_SerialDenseMatrix> mMatrixDeriv(
+                SlaveElement().NumNode()*3*12+Coupling()[i]->MasterElement().NumNode()*3,0,
+                Epetra_SerialDenseMatrix(SlaveElement().NumNode(),Coupling()[i]->MasterElement().NumNode()));
 
             // integrate cells
-            for (int m = 0; m < (int) MasterElements().size(); ++m)
-              Coupling()[m]->IntegrateCells();
+            Coupling()[i]->IntegrateCells(&dMatrixDeriv,&mMatrixDeriv);
+
+            // assemble m-matrix for this slave/master pair
+            dynamic_cast<CONTACT::CoElement&> (SlaveElement()).AssembleMderivToNodes(mMatrixDeriv,Coupling()[i]->MasterElement());
+          }
+
+          // assemble d-matrix linearization for this slave element
+          dynamic_cast<CONTACT::CoElement&> (SlaveElement()).AssembleDderivToNodes(dMatrixDeriv,
+              (ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin));
         }
       }
     }
@@ -1408,8 +1464,27 @@ void CONTACT::CoCoupling3dQuadManager::EvaluateMortar()
 
     ConsistDualShape();
 
+
+    int numderiv=0;
+    numderiv+=SlaveElement().NumNode()*3*12;
+    for (unsigned m=0;m<MasterElements().size(); ++m)
+      numderiv += (MasterElements()[m])->NumNode()*3;
+
+    GEN::pairedvector<int,Epetra_SerialDenseMatrix> dMatrixDeriv(numderiv,0,
+        Epetra_SerialDenseMatrix(SlaveElement().NumNode(),SlaveElement().NumNode()));
+
     for (int i=0; i<(int)Coupling().size(); ++i)
-      Coupling()[i]->IntegrateCells();
+    {
+      GEN::pairedvector<int,Epetra_SerialDenseMatrix> mMatrixDeriv(
+          SlaveElement().NumNode()*3*12+Coupling()[i]->MasterElement().NumNode()*3,0,
+          Epetra_SerialDenseMatrix(SlaveElement().NumNode(),Coupling()[i]->MasterElement().NumNode()));
+
+      Coupling()[i]->IntegrateCells(&dMatrixDeriv,&mMatrixDeriv);
+      dynamic_cast<CONTACT::CoElement&> (SlaveElement()).AssembleMderivToNodes(mMatrixDeriv,Coupling()[i]->MasterElement());
+    }
+
+    dynamic_cast<CONTACT::CoElement&> (SlaveElement()).AssembleDderivToNodes(dMatrixDeriv,
+        (ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin));
   }
 
   //**********************************************************************
@@ -1443,36 +1518,61 @@ void CONTACT::CoCoupling3dQuadManager::EvaluateMortar()
     {
       if (boundary_ele == true)
       {
+        Coupling().resize(0);
+
+        // build linear integration elements from quadratic MortarElements
+        std::vector<Teuchos::RCP<MORTAR::IntElement> > sauxelements(0);
+        std::vector<std::vector<Teuchos::RCP<MORTAR::IntElement> > >mauxelements(MasterElements().size());
+        SplitIntElements(SlaveElement(), sauxelements);
+
         // loop over all master elements associated with this slave element
         for (int m = 0; m < (int) MasterElements().size(); ++m)
         {
           // build linear integration elements from quadratic MortarElements
-          std::vector<Teuchos::RCP<MORTAR::IntElement> > sauxelements(0);
-          std::vector<Teuchos::RCP<MORTAR::IntElement> > mauxelements(0);
-          SplitIntElements(SlaveElement(), sauxelements);
-          SplitIntElements(*MasterElements()[m], mauxelements);
+          mauxelements[m].resize(0);
+          SplitIntElements(*MasterElements()[m], mauxelements[m]);
 
           // loop over all IntElement pairs for coupling
           for (int i = 0; i < (int) sauxelements.size(); ++i)
           {
-            for (int j = 0; j < (int) mauxelements.size(); ++j)
+            for (int j = 0; j < (int) mauxelements[m].size(); ++j)
             {
-              // create instance of coupling class
-              CoCoupling3dQuad coup(Discret(), Dim(), true, Params(),
-                  SlaveElement(), *MasterElements()[m], *sauxelements[i],
-                  *mauxelements[j]);
-              // do coupling
-              coup.EvaluateCoupling();
+              Coupling().push_back(
+                  Teuchos::rcp(new CoCoupling3dQuad(Discret(), Dim(), true, Params(), SlaveElement(),
+                      *MasterElements()[m], *sauxelements[i], *mauxelements[m][j])));
 
-              // integrate cells
-              coup.IntegrateCells();
+              Coupling()[Coupling().size()-1]->EvaluateCoupling();
 
               // increase counter of slave/master integration pairs and intcells
               smintpairs_ += 1;
-              intcells_ += (int) coup.Cells().size();
+              intcells_ += (int) Coupling()[Coupling().size()-1]->Cells().size();
             } // for maux
           } // for saux
         } // for m
+
+        ConsistDualShape();
+
+
+        int numderiv=0;
+        numderiv+=SlaveElement().NumNode()*3;
+        for (unsigned m=0;m<MasterElements().size(); ++m)
+          numderiv += (MasterElements()[m])->NumNode()*3;
+
+        GEN::pairedvector<int,Epetra_SerialDenseMatrix> dMatrixDeriv(numderiv,0,
+            Epetra_SerialDenseMatrix(SlaveElement().NumNode(),SlaveElement().NumNode()));
+
+        for (int i=0; i<(int)Coupling().size(); ++i)
+        {
+          GEN::pairedvector<int,Epetra_SerialDenseMatrix> mMatrixDeriv(
+              SlaveElement().NumNode()*3*4+Coupling()[i]->MasterElement().NumNode()*3,0,
+              Epetra_SerialDenseMatrix(SlaveElement().NumNode(),Coupling()[i]->MasterElement().NumNode()));
+
+          Coupling()[i]->IntegrateCells(&dMatrixDeriv,&mMatrixDeriv);
+          dynamic_cast<CONTACT::CoElement&> (SlaveElement()).AssembleMderivToNodes(mMatrixDeriv,Coupling()[i]->MasterElement());
+        }
+
+        dynamic_cast<CONTACT::CoElement&> (SlaveElement()).AssembleDderivToNodes(dMatrixDeriv,
+            (ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin));
       }
     }
   }
@@ -1680,8 +1780,9 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
 
   // Dual shape functions coefficient matrix and linearization
   LINALG::SerialDenseMatrix ae(nnodes,nnodes,true);
-  std::vector<std::vector<GEN::pairedvector<int, double> > >
-    derivae(nnodes,std::vector<GEN::pairedvector<int,double> >(nnodes,(nnodes+mnodes)*ndof));
+  SlaveElement().MoData().DerivDualShape() =
+      Teuchos::rcp(new GEN::pairedvector<int,Epetra_SerialDenseMatrix>((nnodes+mnodes)*ndof,0,Epetra_SerialDenseMatrix(nnodes,nnodes)));
+  GEN::pairedvector<int,Epetra_SerialDenseMatrix>& derivae=*(SlaveElement().MoData().DerivDualShape());
 
   // various variables
   double detg=0.0;
@@ -1868,23 +1969,20 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
   for (_CIM p=derivde_new.begin();p!=derivde_new.end();++p)
   {
     LINALG::Matrix<max_nnodes+1,max_nnodes>& dtmp = derivde_new[p->first];
+    Epetra_SerialDenseMatrix& pt = derivae[p->first];
     for (int i=0;i<nnodes;++i)
       for (int j=0;j<nnodes;++j)
       {
-        double& pt = derivae[i][j][p->first];
-          pt += meinv(i,j)*dtmp(nnodes,i);
+          pt(i,j) += meinv(i,j)*dtmp(nnodes,i);
 
         for (int k=0; k<nnodes; ++k)
           for (int l=0; l<nnodes; ++l)
-            pt -= ae(i,k)*meinv(l,j)*dtmp(l,k);
+            pt(i,j) -= ae(i,k)*meinv(l,j)*dtmp(l,k);
       }
   }
 
   // store ae matrix in slave element data container
   SlaveElement().MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
-
-  // store derivae into element
-  SlaveElement().MoData().DerivDualShape() = Teuchos::rcp(new std::vector<std::vector<GEN::pairedvector<int,double> > >(derivae));
 
   return;
 }

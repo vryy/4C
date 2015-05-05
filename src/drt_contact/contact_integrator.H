@@ -141,7 +141,7 @@ public:
       ,
       const std::vector<GEN::pairedvector<int, double> >& ximaps
       ,
-      const std::vector<std::vector<GEN::pairedvector<int, double> > >& dualmap);
+      const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap);
 
   /*!
    \brief lin D/M-matrix entries at GP for bound case
@@ -167,7 +167,7 @@ public:
       const GEN::pairedvector<int, double>& dmxigp,
       const GEN::pairedvector<int, double>& derivjac,
       const std::vector<GEN::pairedvector<int, double> >& ximaps,
-      const std::vector<std::vector<GEN::pairedvector<int, double> > >& dualmap);
+      const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap);
 
   /*!
    \brief lin D/M-matrix entries at GP for elebased integration
@@ -186,14 +186,13 @@ public:
       double& wgt,
       const GEN::pairedvector<int, double>& dmxigp,
       const GEN::pairedvector<int, double>& derivjac,
-      const std::vector<std::vector<GEN::pairedvector<int, double> > >& dualmap);
+      const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap);
 
   /*!
    \brief lin D/M-matrix entries at GP for bound case
 
    */
   void inline GP_3D_DM_Lin(
-      int& iter,
       bool& duallin,
       MORTAR::MortarElement& sele,
       MORTAR::MortarElement& mele,
@@ -208,7 +207,9 @@ public:
       std::vector<GEN::pairedvector<int, double> >& dsxigp,
       std::vector<GEN::pairedvector<int, double> >& dmxigp,
       GEN::pairedvector<int, double>& jacintcellmap,
-      const std::vector<std::vector<GEN::pairedvector<int, double> > >& dualmap);
+      const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap,
+      GEN::pairedvector<int,Epetra_SerialDenseMatrix>* dMatrixDeriv,
+      GEN::pairedvector<int,Epetra_SerialDenseMatrix>* mMatrixDeriv);
 
   /*!
    \brief lin D/M-matrix entries at GP for elebased integration
@@ -229,12 +230,12 @@ public:
       double& jacslave,
       std::vector<GEN::pairedvector<int, double> >& dmxigp,
       GEN::pairedvector<int, double>& jacslavemap,
-      const std::vector<std::vector<GEN::pairedvector<int, double> > >& dualmap);
+      const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap);
   /*!
    \brief lin D/M-matrix entries at GP for bound case (3D quad)
 
    */
-  void inline GP_3D_DM_Quad_Lin(int& iter, bool& duallin,
+  void inline GP_3D_DM_Quad_Lin(bool& duallin,
       MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
       LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& svalmod,
       LINALG::SerialDenseVector& mval, LINALG::SerialDenseVector& lmval,
@@ -243,8 +244,10 @@ public:
       const std::vector<GEN::pairedvector<int, double> >& dpsxigp,
       const std::vector<GEN::pairedvector<int, double> >& dpmxigp,
       const GEN::pairedvector<int, double>& jacintcellmap,
-      const std::vector<std::vector<GEN::pairedvector<int, double> > >& dualmap,
-      bool dualquad3d);
+      const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap,
+      bool dualquad3d,
+      GEN::pairedvector<int,Epetra_SerialDenseMatrix>* dMatrixDeriv,
+      GEN::pairedvector<int,Epetra_SerialDenseMatrix>* mMatrixDeriv);
 
   void inline GP_3D_DM_Quad_pwlin_Lin(int& iter, MORTAR::MortarElement& sele,
       MORTAR::MortarElement& sintele, MORTAR::MortarElement& mele,
@@ -329,7 +332,7 @@ public:
       const GEN::pairedvector<int, double>& dmxigp,
       const GEN::pairedvector<int, double>& derivjac,
       const std::vector<GEN::pairedvector<int, double> >& ximaps,
-      const std::vector<std::vector<GEN::pairedvector<int, double> > >& dualmap);
+      const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap);
 
   /*!
    \brief evaluate weighted Gap entries at GP
@@ -346,7 +349,7 @@ public:
       double& wgt,
       const GEN::pairedvector<int, double>& dgapgp,
       const GEN::pairedvector<int, double>& derivjac,
-      const std::vector<std::vector<GEN::pairedvector<int, double> > >& dualmap);
+      const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap);
 
   /*!
    \brief evaluate weighted Gap entries at GP
@@ -370,7 +373,7 @@ public:
       GEN::pairedvector<int, double>& jacintcellmap,
       std::vector<GEN::pairedvector<int, double> >& dsxigp,
       std::vector<GEN::pairedvector<int, double> >& dmxigp,
-      const std::vector<std::vector<GEN::pairedvector<int, double> > >& dualmap);
+      const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap);
 
   /*!
    \brief evaluate weighted Gap entries at GP (quad)
@@ -384,7 +387,7 @@ public:
       const GEN::pairedvector<int, double>& dgapgp,
       const GEN::pairedvector<int, double>& jacintcellmap,
       const std::vector<GEN::pairedvector<int, double> >& dpsxigp,
-      const std::vector<std::vector<GEN::pairedvector<int, double> > >& dualmap,
+      const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap,
       bool dualquad3d);
 
   /*!
@@ -407,7 +410,7 @@ public:
       bool& dualquad3d,
       GEN::pairedvector<int, double>& dgapgp,
       GEN::pairedvector<int, double>& jacslavemap,
-      const std::vector<std::vector<GEN::pairedvector<int, double> > >& dualmap);
+      const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap);
 
   /*!
    \brief evaluate weighted Gap entries at GP (quad)
@@ -510,7 +513,7 @@ public:
       const GEN::pairedvector<int, double>& dslipgp,
       const std::vector<GEN::pairedvector<int, double> >& ximaps,
       const GEN::pairedvector<int, double>& derivjac,
-      const std::vector<std::vector<GEN::pairedvector<int, double> > >& dualmap);
+      const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap);
 
   void inline GP_3D_SlipIncr_Lin(
       int& iter,
@@ -525,7 +528,7 @@ public:
       const GEN::pairedvector<int, double>& jacintcellmap,
       const std::vector<GEN::pairedvector<int, double> >& dslipgp,
       const std::vector<GEN::pairedvector<int, double> >& dsxigp,
-      const std::vector<std::vector<GEN::pairedvector<int, double> > >& dualmap);
+      const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap);
   /*!
    \brief evaluate  T and E matrix
 
@@ -563,7 +566,7 @@ public:
       const GEN::pairedvector<int, double>& derivjac,
       const GEN::pairedvector<int, double>& dsliptmatrixgp,
       const std::vector<GEN::pairedvector<int, double> >& ximaps,
-      const std::vector<std::vector<GEN::pairedvector<int, double> > >& dualmap);
+      const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap);
 
   /*!
    \brief evaluate Lin T and E matrix
@@ -581,7 +584,7 @@ public:
       const GEN::pairedvector<int, double>& derivjac,
       const GEN::pairedvector<int, double>& dsliptmatrixgp,
       const std::vector<GEN::pairedvector<int, double> >& ximaps,
-      const std::vector<std::vector<GEN::pairedvector<int, double> > >& dualmap,
+      const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap,
       const Epetra_Comm& comm);
 
   /*!
@@ -602,7 +605,7 @@ public:
       const std::vector<GEN::pairedvector<int, double> >& dsxigp,
       const GEN::pairedvector<int, double>& jacintcellmap,
       const GEN::pairedvector<int, double>& dsliptmatrixgp,
-      const std::vector<std::vector<GEN::pairedvector<int, double> > >& dualmap);
+      const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap);
 
   /*!
    \brief evaluate Lin T and E matrix (Master)
@@ -621,8 +624,8 @@ public:
       const std::vector<GEN::pairedvector<int, double> >& dmxigp,
       const GEN::pairedvector<int, double>& jacintcellmap,
       const GEN::pairedvector<int, double>& dsliptmatrixgp,
-      const std::vector<std::vector<GEN::pairedvector<int, double> > >& dualmap,
-      const std::vector<std::vector<GEN::pairedvector<int, double> > >& dual2map,
+      const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap,
+      const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dual2map,
       const Epetra_Comm& comm);
   /*!
    \brief evaluate matrix A for tsi-contact
@@ -667,7 +670,7 @@ public:
       double* jumpval, double* wearval,
       const GEN::pairedvector<int, double>& dsxigp,
       const GEN::pairedvector<int, double>& dmxigp,
-      const std::vector<std::vector<GEN::pairedvector<int, double> > >& dualmap,
+      const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap,
       const std::vector<GEN::pairedvector<int, double> >& ximaps,
       const std::vector<GEN::pairedvector<int, double> >& dnmap_unit,
       GEN::pairedvector<int, double> & dsliptmatrixgp,
@@ -693,7 +696,7 @@ public:
       const std::vector<GEN::pairedvector<int, double> >& dsxigp,
       const std::vector<GEN::pairedvector<int, double> >& dmxigp,
       const std::vector<GEN::pairedvector<int, double> >& dnmap_unit,
-      const std::vector<std::vector<GEN::pairedvector<int, double> > >& dualmap,
+      const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap,
       double& mechdiss);
 
   /*!
@@ -718,7 +721,7 @@ public:
       const GEN::pairedvector<int, double>& dweargp,
       const std::vector<GEN::pairedvector<int, double> >& ximaps,
       const GEN::pairedvector<int, double>& derivjac,
-      const std::vector<std::vector<GEN::pairedvector<int, double> > >& dualmap);
+      const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap);
 
   /*!
    \brief lin weighted wear at GP
@@ -739,7 +742,7 @@ public:
       const GEN::pairedvector<int, double>& dweargp,
       const GEN::pairedvector<int, double>& jacintcellmap,
       const std::vector<GEN::pairedvector<int, double> >& dsxigp,
-      const std::vector<std::vector<GEN::pairedvector<int, double> > >& dualmap);
+      const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap);
 
 
   /*!
@@ -785,7 +788,7 @@ public:
        const GEN::pairedvector<int,double>& jacintcellmap,
        const std::vector<GEN::pairedvector<int,double> >& dsxigp,
        const std::vector<GEN::pairedvector<int,double> >& dmxigp,
-       const std::vector<std::vector<GEN::pairedvector<int,double> > >& dualmap);
+       const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap);
 
   /*!
    \brief Build all integrals and linearizations without segmentation -- 2D
@@ -830,7 +833,10 @@ public:
    */
   void IntegrateDerivCell3DAuxPlane(MORTAR::MortarElement& sele,
       MORTAR::MortarElement& mele, Teuchos::RCP<MORTAR::IntCell> cell,
-      double* auxn, const Epetra_Comm& comm);
+      double* auxn,
+      GEN::pairedvector<int,Epetra_SerialDenseMatrix>* dMatrixDeriv,
+      GEN::pairedvector<int,Epetra_SerialDenseMatrix>* mMatrixDeriv,
+      const Epetra_Comm& comm);
 
   /*!
    \brief Build all integrals and linearizations on a 2D slave /
@@ -841,7 +847,9 @@ public:
   void IntegrateDerivCell3DAuxPlaneQuad(MORTAR::MortarElement& sele,
       MORTAR::MortarElement& mele, MORTAR::IntElement& sintele,
       MORTAR::IntElement& mintele, Teuchos::RCP<MORTAR::IntCell> cell,
-      double* auxn);
+      double* auxn,
+      GEN::pairedvector<int,Epetra_SerialDenseMatrix>* dMatrixDeriv,
+      GEN::pairedvector<int,Epetra_SerialDenseMatrix>* mMatrixDeriv);
 
   /*!
    \brief Compute penalty scaling factor kappa on slave element
@@ -1043,7 +1051,6 @@ protected:
     LINALG::SerialDenseMatrix                        mcoord_;      // master element nodal coordinates
     LINALG::SerialDenseMatrix                        ssecderiv_;   // storage for 2nd derivatives of standard shape fct.
     bool                                             duallin_;     // flag indicating linearization of dual shape fct.
-    std::vector<std::vector<std::map<int,double> > > dualmap_;     // storage for dual shape fct. derivatives
     std::vector<std::map<int,double> >               ximaps_;      // storage for 2d segment endpoints derivatives
     const Epetra_Comm&                               Comm_;
 

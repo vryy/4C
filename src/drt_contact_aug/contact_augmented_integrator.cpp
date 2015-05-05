@@ -831,7 +831,7 @@ void CONTACT::AugmentedIntegrator::IntegrateDerivEle2D(
   // prepare directional derivative of dual shape functions
   // this is only necessary for quadratic dual shape functions in 2D
   //bool duallin = false; // --> coming soon
-  std::vector<std::vector<GEN::pairedvector<int,double> > > dualmap(nrow,std::vector<GEN::pairedvector<int,double> >(nrow,ndof*nrow));
+  GEN::pairedvector<int,Epetra_SerialDenseMatrix> dualmap(ndof*nrow,0,Epetra_SerialDenseMatrix(nrow,nrow));
   if ((ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() ==INPAR::MORTAR::shape_petrovgalerkin)
       && (sele.Shape()==MORTAR::MortarElement::line3 || sele.MoData().DerivDualShape()!=Teuchos::null))
   {

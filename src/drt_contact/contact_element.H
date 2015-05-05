@@ -236,6 +236,16 @@ public:
   virtual void DJacDXi(double* djacdxi, double* xi,
       const LINALG::SerialDenseMatrix& secderiv);
 
+  /*!
+   \brief Assemble D-Matrix deriv contribution of one slave element into the adjacent nodes
+   */
+  virtual void AssembleDderivToNodes(GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dderiv,bool dual);
+
+  /*!
+   \brief Assemble M-Matrix deriv contribution of one slave/master pair into the adjacent nodes
+   */
+  virtual void AssembleMderivToNodes(GEN::pairedvector<int,Epetra_SerialDenseMatrix>& mderiv,MORTAR::MortarElement& mele);
+
   //@}
 
 private:

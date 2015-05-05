@@ -95,7 +95,8 @@ public:
    and assembled into the slave element nodes.
 
    */
-  virtual bool IntegrateCells();
+  virtual bool IntegrateCells(GEN::pairedvector<int,Epetra_SerialDenseMatrix>* dMatrixDeriv=NULL,
+      GEN::pairedvector<int,Epetra_SerialDenseMatrix>* mMatrixDeriv=NULL);
 
   //@}
 

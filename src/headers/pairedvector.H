@@ -59,6 +59,18 @@ class pairedvector
   {}
 
   /**
+   *  @brief  constructor creates no elements, but reserves the maximum
+   *          number of entries.
+   *  @param reserve The number of elements that are preallocated
+   *  @param default_key default value for the key within the pair
+   *  @param default_T   default value for the data within the pair
+   */
+  pairedvector(size_t reserve, Key default_key, T default_T):
+    _m(reserve,std::pair<Key,T>(default_key,default_T)),
+    _entries(0)
+  {}
+
+  /**
    *  The dtor only erases the elements, and note that if the
    *  elements themselves are pointers, the pointed-to memory is
    *  not touched in any way.  Managing the pointer is the user's

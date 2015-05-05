@@ -530,8 +530,9 @@ void CONTACT::CoCoupling2dManager::ConsistDualShape()
   LINALG::SerialDenseMatrix ae(nnodes,nnodes,true);
 
   // store derivae into element
-  SlaveElement().MoData().DerivDualShape() = Teuchos::rcp(new std::vector<std::vector<GEN::pairedvector<int,double> > >(nnodes,std::vector<GEN::pairedvector<int,double> >(nnodes,linsize + 2*ndof*mnodes)));
-  std::vector<std::vector<GEN::pairedvector<int,double> > >& derivae=*(SlaveElement().MoData().DerivDualShape());
+  SlaveElement().MoData().DerivDualShape() =
+      Teuchos::rcp(new GEN::pairedvector<int,Epetra_SerialDenseMatrix>(linsize + 2*ndof*mnodes,0,Epetra_SerialDenseMatrix(nnodes,nnodes)));
+  GEN::pairedvector<int,Epetra_SerialDenseMatrix>& derivae=*(SlaveElement().MoData().DerivDualShape());
 
   // compute entries to bi-ortho matrices me/de with Gauss quadrature
   MORTAR::ElementIntegrator integrator(SlaveElement().Shape());
@@ -667,12 +668,12 @@ void CONTACT::CoCoupling2dManager::ConsistDualShape()
       {
         // part1: Lin(De)*Inv(Me)
         for (_CI p=derivde[i][l].begin();p!=derivde[i][l].end();++p)
-          derivae[i][j][p->first] += meinv(l,j)*(p->second);
+          derivae[p->first](i,j) += meinv(l,j)*(p->second);
 
         // part2: Ae*Lin(Me)*Inv(Me)
         for (int k=0;k<nnodes;++k)// loop over sum k
           for (_CI p=derivme[k][l].begin();p!=derivme[k][l].end();++p)
-            derivae[i][j][p->first] -= ae(i,k)*meinv(l,j)*(p->second);
+            derivae[p->first](i,j) -= ae(i,k)*meinv(l,j)*(p->second);
       }
     }
   }

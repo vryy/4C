@@ -640,9 +640,9 @@ void MORTAR::MortarElement::DerivUnitNormalAtXi(double* xi,
 
   // n is cross product of gxi and geta
   double n[3] = {0.0, 0.0, 0.0};
-  n[0] = gxi[1]*geta[2]-gxi[2]*geta[1];
-  n[1] = gxi[2]*geta[0]-gxi[0]*geta[2];
-  n[2] = gxi[0]*geta[1]-gxi[1]*geta[0];
+  n[0] = gxi[1]*geta[2]-gxi[2]*geta[1]*normalfac_;
+  n[1] = gxi[2]*geta[0]-gxi[0]*geta[2]*normalfac_;
+  n[2] = gxi[0]*geta[1]-gxi[1]*geta[0]*normalfac_;
 
   // build unit normal
   const double length = sqrt(n[0]*n[0]+n[1]*n[1]+n[2]*n[2]);
@@ -703,26 +703,26 @@ void MORTAR::MortarElement::DerivUnitNormalAtXi(double* xi,
 
   for (CI p=derivnnu[0].begin();p!=derivnnu[0].end();++p)
   {
-    derivn[0][p->first] += linv*(p->second);
-    derivn[0][p->first] -= lllinv*sxsx*(p->second);
-    derivn[1][p->first] -= lllinv*sxsy*(p->second);
-    derivn[2][p->first] -= lllinv*sxsz*(p->second);
+    derivn[0][p->first] += linv*(p->second)*normalfac_;
+    derivn[0][p->first] -= lllinv*sxsx*(p->second)*normalfac_;
+    derivn[1][p->first] -= lllinv*sxsy*(p->second)*normalfac_;
+    derivn[2][p->first] -= lllinv*sxsz*(p->second)*normalfac_;
   }
 
   for (CI p=derivnnu[1].begin();p!=derivnnu[1].end();++p)
   {
-    derivn[1][p->first] += linv*(p->second);
-    derivn[1][p->first] -= lllinv*sysy*(p->second);
-    derivn[0][p->first] -= lllinv*sxsy*(p->second);
-    derivn[2][p->first] -= lllinv*sysz*(p->second);
+    derivn[1][p->first] += linv*(p->second)*normalfac_;
+    derivn[1][p->first] -= lllinv*sysy*(p->second)*normalfac_;
+    derivn[0][p->first] -= lllinv*sxsy*(p->second)*normalfac_;
+    derivn[2][p->first] -= lllinv*sysz*(p->second)*normalfac_;
   }
 
   for (CI p=derivnnu[2].begin();p!=derivnnu[2].end();++p)
   {
-    derivn[2][p->first] += linv*(p->second);
-    derivn[2][p->first] -= lllinv*szsz*(p->second);
-    derivn[0][p->first] -= lllinv*sxsz*(p->second);
-    derivn[1][p->first] -= lllinv*sysz*(p->second);
+    derivn[2][p->first] += linv*(p->second)*normalfac_;
+    derivn[2][p->first] -= lllinv*szsz*(p->second)*normalfac_;
+    derivn[0][p->first] -= lllinv*sxsz*(p->second)*normalfac_;
+    derivn[1][p->first] -= lllinv*sysz*(p->second)*normalfac_;
   }
 
   return;

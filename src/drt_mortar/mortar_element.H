@@ -137,7 +137,7 @@ public:
   \brief Return directional derivative of matrix of dual shape function coefficients
 
   */
-  virtual Teuchos::RCP<std::vector<std::vector<GEN::pairedvector<int,double> > > >& DerivDualShape() {return derivdualshapecoeff_; }
+  virtual Teuchos::RCP<GEN::pairedvector<int,Epetra_SerialDenseMatrix> >& DerivDualShape() {return derivdualshapecoeff_; }
 
   /*!
   \brief Reset matrix of dual shape function coefficients and free memory
@@ -172,7 +172,7 @@ protected:
   Teuchos::RCP<LINALG::SerialDenseMatrix> dualshapecoeff_;
 
   // derivative of coefficient matrix for dual shape functions
-  Teuchos::RCP<std::vector<std::vector<GEN::pairedvector<int,double> > > > derivdualshapecoeff_;
+  Teuchos::RCP<GEN::pairedvector<int,Epetra_SerialDenseMatrix> > derivdualshapecoeff_;
 
   // Displacement of Parent Element
   std::vector<double> parentdisp_;
@@ -626,7 +626,7 @@ public:
                          (= derivatives of the dual coefficient matrix Ae)
   */
   void ShapeFunctionLinearizations(MortarElement::ShapeType shape,
-                                   std::vector<std::vector<GEN::pairedvector<int,double> > >& derivdual);
+      GEN::pairedvector<int,Epetra_SerialDenseMatrix>& derivdual);
 
   /*!
   \brief Evaluate displacement shape functions and derivatives
@@ -662,7 +662,8 @@ public:
   \param derivdual (in): derivative maps to be filled
                          (= derivatives of the dual coefficient matrix Ae)
   */
-  virtual bool DerivShapeDual(std::vector<std::vector<GEN::pairedvector<int,double> > >& derivdual);
+  virtual bool DerivShapeDual(
+      GEN::pairedvector<int,Epetra_SerialDenseMatrix>& derivdual);
 
   /*!
   \brief Interpolate global coordinates for given local element coordinates
