@@ -31,7 +31,7 @@ public:
    */
   PropagateTip( Teuchos::RCP<DRT::Discretization> discret,
                 std::vector<int> tipnodes,
-                std::set<int> cracknode,
+                std::set<int> cracknodes,
                 int segment_id );
 
   /*!
@@ -95,6 +95,16 @@ public:
   void addBoundaryNode( int nodeid ){ boun_nodes_.insert( nodeid ); }
 
   /*!
+  \brief Get all the nodes that are on the boundary (structure boundary + crack surfaces)
+   */
+  std::set<int> getAllBoundaryNodes(){ return boun_nodes_; }
+
+  /*!
+  \brief Replace the existing boundary nodes with the given nodes
+   */
+  void InitializeBoundaryNodes( std::set<int> bound ){ boun_nodes_ = bound; }
+
+  /*!
   \brief Get segment tip nodes
    */
   std::vector<int> getSegmentTipNodes(){return tipnodes_;}
@@ -105,8 +115,6 @@ private:
   \brief calculate stress intensity factors
    */
   void findStressIntensityFactor();
-
-  //void Compute_J_integral();
 
   /*!
   \brief Construct local coordinate system at crack tip
@@ -164,6 +172,11 @@ private:
   void WriteCrackTipLocation( const std::vector<int>& newTip );
 
   /*!
+  \brief Write all points located on the crack surface
+   */
+  void WriteCrackSurfacePoints();
+
+  /*!
   \brief Split appropriate HEX element into WEDGEs
    */
   void split_All_HEX_Elements( int &new_ele_id );
@@ -179,6 +192,11 @@ private:
   bool toReplaceNode( DRT::Element * ele, DRT::Node * tip, const std::vector<double>& lmtAngle );
 
   /*!
+  \brief Returns true if the given node id exists on boundary
+   */
+  bool is_A_BoundaryNode( int & id );
+
+  /*!
   \brief Data structure that stores details of how HEX element is split into WEDGEs
    */
   struct splitThisEle_
@@ -192,6 +210,11 @@ private:
     int element_id_;
     std::vector<int> node_ids_ele_;
   };
+
+  /*!
+  \brief Compute vector J-integral around the crack tip
+   */
+  void Compute_J_integral();
 
   //! Collection of all HEX elements that must be split
   std::map<int,splitThisEle_> all_split_ele_;
@@ -223,6 +246,9 @@ private:
   //! Holds the displacement in column vector
   Teuchos::RCP<Epetra_Vector> disp_col_;
 
+  //! Interface forces in column vector
+  Teuchos::RCP<Epetra_Vector> iforce_col_;
+
   //! communicator
   const Epetra_Comm& comm_;
 
@@ -231,6 +257,9 @@ private:
 
   //! critical stress intensity factors
   double critical_K_I_, critical_K_II_;
+
+  //! critical J value -- used to check whether crack propagates or not
+  double critical_J_;
 
   //! value of PI
   double PI_;
@@ -254,11 +283,17 @@ private:
 
   double fac_;
 
-  //! unit normal vector at crack tip
+  //! unit normal vector at crack tip in current configuration
   LINALG::Matrix<3,1> normal_;
 
-  //! unit tangent vector at crack tip
+  //! unit tangent vector at crack tip in current configuration
   LINALG::Matrix<3,1> tangent_;
+
+  //! unit normal vector at crack tip in reference configuration
+  LINALG::Matrix<3,1> normal_ref_;
+
+  //! unit tangent vector at crack tip in reference configuration
+  LINALG::Matrix<3,1> tangent_ref_;
 
   //! data structure that stores two neighboring crack surface points for each tip node
   std::map<int, int> tip_phi_;
@@ -276,6 +311,9 @@ private:
   //! file name to write crack tip location
   std::ostringstream filename_;
 
+  //! file name to write J-integral
+  std::ostringstream filename_jint_;
+
   //! All nodal ids that will be crack tip in next step
   std::vector<int> newTip_;
 
@@ -288,7 +326,8 @@ private:
   //! crack propagation criterion
   INPAR::CRACK::propagationCriterion propcrit_;
 
-  //std::vector<double> Jvector_;
+  //! value of J-vector (stores only 2 components)
+  std::vector<double> Jvector_;
 };
 
 } /* namespace CRACK */

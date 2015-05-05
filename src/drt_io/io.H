@@ -101,6 +101,14 @@ public:
    */
   void ReadRedundantDoubleVector(Teuchos::RCP<std::vector<double> >& doublevec, const std::string name);
 
+  //! read a non discretisation based vector of integers
+  /*!
+    This vector should have been written only by proc0.
+    It is assumed that this is a 'small' vector which has to be present on all procs.
+    It is read from proc0 again and then communicated to all present procs.
+   */
+  void ReadRedundantIntVector( Teuchos::RCP<std::vector<int> >& intvec, const std::string name);
+
 protected:
 
   /// find control file entry to given time step
@@ -271,6 +279,16 @@ public:
    */
   virtual void WriteRedundantDoubleVector(const std::string name,
                Teuchos::RCP<std::vector<double> > doublevec);
+
+  //! write a non discretisation based vector of integers
+  /*!
+    Write this vector only from proc0. It is assumed that this is a 'small' vector
+    which is present on all procs. It shall be read from proc0 again and then
+    communicated to all present procs.
+   */
+  virtual void WriteRedundantIntVector(const std::string name,
+               Teuchos::RCP<std::vector<int> > setint );
+
 
   /// overwrite result files for the inverse analysis
   void OverwriteResultFile();

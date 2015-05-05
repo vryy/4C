@@ -176,6 +176,9 @@ namespace STR
     //! create fields, based on dofrowmap, whose previous time step values are unimportant
     void createFields( Teuchos::RCP<LINALG::Solver>& solver );
 
+    //! Construct all solution vectors
+    void createAllEpetraVectors();
+
     //! Resize #TimIntMStep<T> multi-step quantities
     virtual void ResizeMStep() = 0;
 
@@ -673,6 +676,9 @@ namespace STR
     //! Read and set restart values for multi scale materials
     void ReadRestartMultiScale();
 
+    //! Read restart files for crack simulations
+    void ReadRestartCrack();
+
     //! initial guess of Newton's method
     virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() = 0;
 
@@ -926,7 +932,7 @@ namespace STR
     virtual void PreSolve(){};
 
     /// wrapper for things that should be done after solving the nonlinear iterations
-    virtual void PostSolve(){};
+    virtual void PostSolve();
 
     /// wrapper for things that should be done before updating
     virtual void PreUpdate(){};
@@ -937,8 +943,8 @@ namespace STR
     /// wrapper for things that should be done before the output
     virtual void PreOutput(){};
 
-    /// wrapper for things that should be done after the output
-    virtual void PostOutput();
+    /// wrapper for things that should be done after convergence of Newton scheme (like crack propagation)
+    virtual void PostOutput(){};
 
     /// wrapper for things that should be done after the actual time loop is finished
     virtual void PostTimeLoop();
@@ -1011,6 +1017,10 @@ namespace STR
 
     //! update all Epectra_vectors related to the chosen time integration
     virtual void updateEpetraVectorsCrack( std::map<int,int>& oldnew ) = 0;
+
+    //! Reconstruct all vectors while reading restart
+    // This is mandatory for methods that modify the discretization (like crack propagation)
+    virtual void ReconstructEpetraVectors() = 0;
 
     //! Get map of old and new crack tip nodes
     std::map<int,int> getOldNewCrackNodes();

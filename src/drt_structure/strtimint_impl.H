@@ -792,6 +792,12 @@ namespace STR
     /// update all the field vectors to account for new node introduced by crack
     virtual void updateMethodSpecificEpetraCrack( std::map<int,int>& oldnew ) = 0;
 
+    /// Reconstruct method specific epetra vectors during restart
+    virtual void ReconstructMethodSpecificVectorsRestart() = 0;
+
+    /// Reconstruct all solution vectors common to all implicit time integration schemes
+    void ReconstructEpetraVectors();
+
     /*! \brief Prepare system for solving with Newton's method
      *
      *  Blank DOFs with Dirichlet BCs in the residual. By default
@@ -900,7 +906,6 @@ namespace STR
       OutputStep(forced_writerestart);
       // write Gmsh output
       writeGmshStrucOutputStep();
-      PostOutput();
     }
 
     //! Set residual displacements \f$\Delta D_{n+1}^{<k>}\f$

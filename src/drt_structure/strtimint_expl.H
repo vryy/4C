@@ -234,7 +234,6 @@ namespace STR
       OutputStep(forced_writerestart);
       // write Gmsh output
       writeGmshStrucOutputStep();
-      PostOutput();
       return;
     }
 
@@ -265,6 +264,9 @@ namespace STR
 
     /// update all the field vectors to account for new node introduced by crack
     void updateEpetraVectorsCrack( std::map<int,int>& oldnew ) { dserror( "not implemented yet" ); }
+
+    /// Reconstruct all epetra vector during restart
+    void ReconstructEpetraVectors(){ dserror( "not implemented yet" ); }
 
     /// are there any algebraic constraints?
     virtual bool HaveConstraint()

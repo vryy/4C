@@ -29,6 +29,8 @@
 
 // If angle between diagonal node in a hex element and  propagation angle is less than this value, then
 // crack propagates through this node; One HEX is split into two WEDGE
-#define TOL_DIAG_NODE 0.175
+#define TOL_DIAG_NODE 0.25 // 0.35 //0.25 //0.175
+
+//#define TOL_DIAG_NODE 0.325 // for very large strain problems
 
 #endif

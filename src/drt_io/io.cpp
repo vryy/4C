@@ -113,6 +113,8 @@ void IO::DiscretizationReader::ReadMultiVector(Teuchos::RCP<Epetra_MultiVector> 
 /*----------------------------------------------------------------------*/
 void IO::DiscretizationReader::ReadMesh(int step)
 {
+  dis_->DeleteAllNodesAndElements();
+
   FindMeshGroup(step, input_->ControlFile());
 
   Teuchos::RCP<std::vector<char> > nodedata =
@@ -121,12 +123,7 @@ void IO::DiscretizationReader::ReadMesh(int step)
   Teuchos::RCP<std::vector<char> > elementdata =
     meshreader_->ReadElementData(step,dis_->Comm().NumProc(),dis_->Comm().MyPID());
 
-  // before we unpack nodes/elements we store a copy of the nodal row/col map
-  Teuchos::RCP<Epetra_Map> noderowmap = Teuchos::rcp(new Epetra_Map(*dis_->NodeRowMap()));
-  Teuchos::RCP<Epetra_Map> nodecolmap = Teuchos::rcp(new Epetra_Map(*dis_->NodeColMap()));
-
   // unpack nodes and elements and redistributed to current layout
-
   // take care --- we are just adding elements to the discretisation
   // that means depending on the current distribution and the
   // distribution of the data read we might increase the
@@ -135,7 +132,8 @@ void IO::DiscretizationReader::ReadMesh(int step)
   // so everything should be OK
   dis_->UnPackMyNodes(nodedata);
   dis_->UnPackMyElements(elementdata);
-  dis_->Redistribute(*noderowmap,*nodecolmap);
+
+  dis_->SetupGhosting(true, false, false);
   return;
 }
 
@@ -165,8 +163,6 @@ void IO::DiscretizationReader::ReadRedundantDoubleVector( Teuchos::RCP<std::vect
   if (dis_->Comm().MyPID() == 0)
   {
     // only proc0 reads the vector entities
-    // was muß aber jetzt hier wirklich geschehen???
-
     MAP* result = map_read_map(restart_step_, name.c_str());
     std::string value_path = map_read_string(result, "values");
 
@@ -183,6 +179,35 @@ void IO::DiscretizationReader::ReadRedundantDoubleVector( Teuchos::RCP<std::vect
 
   // now distribute information to all procs
   dis_->Comm().Broadcast ( &((*doublevec)[0]), length, 0 );
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IO::DiscretizationReader::ReadRedundantIntVector( Teuchos::RCP<std::vector<int> >& intvec,
+                const std::string name)
+{
+  int length;
+
+  if (dis_->Comm().MyPID() == 0)
+  {
+    // only proc0 reads the vector entities
+    MAP* result = map_read_map(restart_step_, name.c_str());
+    std::string value_path = map_read_string(result, "values");
+
+    intvec = reader_->ReadIntVector(value_path);
+
+    length = intvec->size();
+  }
+
+  // communicate the length of the vector to come
+  dis_->Comm().Broadcast(&length,1,0);
+
+  // make vector having the correct length on all procs
+  intvec->resize(length);
+
+  // now distribute information to all procs
+  dis_->Comm().Broadcast ( &((*intvec)[0]), length, 0 );
   return;
 }
 
@@ -1316,6 +1341,57 @@ void IO::DiscretizationWriter::WriteRedundantDoubleVector(
     } // endif proc0
   }
 
+}
+
+/*----------------------------------------------------------------------*/
+/* write a stl set of integers from proc0                             */
+/*----------------------------------------------------------------------*/
+void IO::DiscretizationWriter::WriteRedundantIntVector(
+  const std::string name,
+  Teuchos::RCP<std::vector<int> > vectorint )
+{
+  if(binio_)
+  {
+    if (dis_->Comm().MyPID() == 0)
+    {
+      // only proc0 writes the entities to the binary data
+      // an appropriate name has to be provided
+      std::string valuename = name + ".values";
+      const hsize_t size = vectorint->size();
+      if (size != 0)
+      {
+        const herr_t make_status = H5LTmake_dataset_int(resultgroup_,valuename.c_str(),1,&size,&((*vectorint)[0]));
+        if (make_status < 0)
+          dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
+      }
+      else
+      {
+        const herr_t make_status = H5LTmake_dataset_int(resultgroup_,valuename.c_str(),0,&size,&((*vectorint)[0]));
+        if (make_status < 0)
+          dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
+      }
+
+      // do I need the following naming stuff?
+      std::ostringstream groupname;
+
+      groupname << "/step"
+          << step_
+          << "/"
+        ;
+
+      valuename = groupname.str()+valuename;
+
+      // a comment is also added to the control file
+      output_->ControlFile()
+        << "    " << name << ":\n"
+        << "        values = \"" << valuename.c_str() << "\"\n\n"
+        << std::flush;
+
+      const herr_t flush_status = H5Fflush(resultgroup_,H5F_SCOPE_LOCAL);
+      if (flush_status < 0)
+        dserror("Failed to flush HDF file %s", resultfilename_.c_str());
+    } // endif proc0
+  }
 }
 
 

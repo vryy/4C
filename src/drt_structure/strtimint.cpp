@@ -207,31 +207,7 @@ STR::TimInt::TimInt
   if ( (writeenergyevery_ != 0) and (myrank_ == 0) )
     AttachEnergyFile();
 
-  // displacements D_{n}
-  dis_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
-  // velocities V_{n}
-  vel_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
-  // accelerations A_{n}
-  acc_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
-
-  // displacements D_{n+1} at t_{n+1}
-  disn_ = LINALG::CreateVector(*DofRowMapView(), true);
-
-  if (DRT::Problem::Instance()->ProblemType() == prb_struct_ale)
-  {
-    // material displacements Dm_{n+1} at t_{n+1}
-    dismatn_ = LINALG::CreateVector(*DofRowMapView(),true);
-
-    // material_displacements D_{n}
-    dismat_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
-  }
-
-  // velocities V_{n+1} at t_{n+1}
-  veln_ = LINALG::CreateVector(*DofRowMapView(), true);
-  // accelerations A_{n+1} at t_{n+1}
-  accn_ = LINALG::CreateVector(*DofRowMapView(), true);
-  // create empty interface force vector
-  fifc_ = LINALG::CreateVector(*DofRowMapView(), true);
+  createAllEpetraVectors();
 
   // create stiffness, mass matrix and other fields
   createFields( solver );
@@ -385,6 +361,39 @@ STR::TimInt::TimInt
 
   // stay with us
   return;
+}
+
+/*----------------------------------------------------------------------------------------------*
+ * Create all solution vectors
+ *----------------------------------------------------------------------------------------------*/
+void STR::TimInt::createAllEpetraVectors()
+{
+  // displacements D_{n}
+  dis_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+  // velocities V_{n}
+  vel_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+  // accelerations A_{n}
+  acc_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+
+  // displacements D_{n+1} at t_{n+1}
+  disn_ = LINALG::CreateVector(*DofRowMapView(), true);
+
+  if (DRT::Problem::Instance()->ProblemType() == prb_struct_ale and
+      (DRT::Problem::Instance()->WearParams()).get<double>("WEARCOEFF")>0.0)
+  {
+    // material displacements Dm_{n+1} at t_{n+1}
+    dismatn_ = LINALG::CreateVector(*DofRowMapView(),true);
+
+    // material_displacements D_{n}
+    dismat_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+  }
+
+  // velocities V_{n+1} at t_{n+1}
+  veln_ = LINALG::CreateVector(*DofRowMapView(), true);
+  // accelerations A_{n+1} at t_{n+1}
+  accn_ = LINALG::CreateVector(*DofRowMapView(), true);
+  // create empty interface force vector
+  fifc_ = LINALG::CreateVector(*DofRowMapView(), true);
 }
 
 /*-------------------------------------------------------------------------------------------*
@@ -933,8 +942,8 @@ void STR::TimInt::PrepareStatMech()
 }
 
 /*----------------------------------------------------------------------*/
-/* things that should be done after the output */
-void STR::TimInt::PostOutput()
+/* things that should be done after the convergence of Newton method */
+void STR::TimInt::PostSolve()
 {
   // propagate crack within the structure
   UpdateCrackInformation( Dispnp() );
@@ -1715,6 +1724,7 @@ void STR::TimInt::ReadRestart
   ReadRestartStatMech();
   ReadRestartSurfstress();
   ReadRestartMultiScale();
+  ReadRestartCrack();
 
   ReadRestartForce();
 
@@ -1772,6 +1782,9 @@ void STR::TimInt::SetRestart
   if (HaveBiofilmGrowth())
     dserror("Set restart not implemented for biofilm growth");
 
+  if ( isCrack_ )
+    dserror("Set restart not implemented for crack growth");
+
   // ---------------------------------------------------------------------------
 
   return;
@@ -1782,11 +1795,23 @@ void STR::TimInt::SetRestart
 void STR::TimInt::ReadRestartState()
 {
   IO::DiscretizationReader reader(discret_, step_);
+  reader.ReadMesh(step_);
+
+  // This is already done in the timint constructor, but they are based
+  // on the maps from discretization in the input file
+  // If discretization is redistributed during the solution, this should be done.
+  createAllEpetraVectors();
+
+  createFields( solver_ );
+
+  ReconstructEpetraVectors();
+
   reader.ReadVector(disn_, "displacement");
   dis_->UpdateSteps(*disn_);
 
   if( (dismatn_!=Teuchos::null) )
   {
+    dismatn_ = LINALG::CreateVector(*DofRowMapView(), true);
     reader.ReadVector(dismatn_, "material_displacement");
     dismat_->UpdateSteps(*dismatn_);
   }
@@ -1795,7 +1820,6 @@ void STR::TimInt::ReadRestartState()
   vel_->UpdateSteps(*veln_);
   reader.ReadVector(accn_, "acceleration");
   acc_->UpdateSteps(*accn_);
-  reader.ReadMesh(step_);
 
   return;
 }
@@ -1929,6 +1953,22 @@ void STR::TimInt::ReadRestartMultiScale()
       discret_->ClearState();
       break;
     }
+  }
+}
+
+/*-----------------------------------------------------------------------*
+ * Read and initialize data for crack propagation problem        sudhakar 12/14
+ *-----------------------------------------------------------------------*/
+void STR::TimInt::ReadRestartCrack()
+{
+  if( isCrack_ )
+  {
+    IO::DiscretizationReader reader(discret_,step_);
+    propcrack_->ReadRestartCrack( reader );
+
+    dbcmaps_= Teuchos::rcp(new LINALG::MapExtractor());
+    createFields( solver_ );
+    ReconstructEpetraVectors();
   }
 }
 
@@ -2243,6 +2283,12 @@ void STR::TimInt::OutputRestart
   if (HaveBiofilmGrowth())
   {
     output_->WriteVector("str_growth_displ", strgrdisp_);
+  }
+
+  // crack propagation
+  if( isCrack_ )
+  {
+    propcrack_->WriteRestartCrack( output_ );
   }
 
   // springdashpot output
@@ -3484,6 +3530,10 @@ void STR::TimInt::PrepareCrackSimulation()
 
     const Teuchos::ParameterList& crackparam = DRT::Problem::Instance()->CrackParams();
     gmsh_out_ = DRT::INPUT::IntegralValue<int>(crackparam,"GMSH_OUT")==1;
+
+    bool gmsh_io = DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(),"OUTPUT_GMSH");
+    if( not gmsh_io )
+      gmsh_out_ = false;
   }
 }
 

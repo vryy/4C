@@ -231,7 +231,28 @@ void DRT::CRACK::UTILS::addNodesToConditions( DRT::Condition * cond,
 
   const std::vector<int>* conNodes = cond->Nodes();
   for( unsigned ii = 0; ii < conNodes->size(); ii++ )
-      add.push_back( (*conNodes)[ii] );
+    add.push_back( (*conNodes)[ii] );
+
+  Teuchos::RCP<std::vector<int> > storage = Teuchos::rcp( new std::vector<int>(add) );
+
+  std::sort( storage->begin(), storage->end() );
+  cond->Add( "Node Ids", storage );
+}
+
+/*------------------------------------------------------------------------------------*
+ * Add some new nodes to the given condition                                  sudhakar 12/14
+ *------------------------------------------------------------------------------------*/
+void DRT::CRACK::UTILS::addNodesToConditions( DRT::Condition * cond,
+                                              std::set<int> addnodes )
+{
+  if( addnodes.size() == 0 )
+    dserror("No nodes passed for adding to condition\n");
+
+  const std::vector<int>* conNodes = cond->Nodes();
+  for( unsigned ii = 0; ii < conNodes->size(); ii++ )
+    addnodes.insert( (*conNodes)[ii] );
+
+  std::vector<int> add( addnodes.begin(), addnodes.end() );
 
   Teuchos::RCP<std::vector<int> > storage = Teuchos::rcp( new std::vector<int>(add) );
 
@@ -242,7 +263,7 @@ void DRT::CRACK::UTILS::addNodesToConditions( DRT::Condition * cond,
 /*------------------------------------------------------------------------------------*
  * Add some new nodes to the given condition                                  sudhakar 05/14
  *------------------------------------------------------------------------------------*/
-void DRT::CRACK::UTILS::addNodesToConditions( DRT::Condition * cond,
+/*void DRT::CRACK::UTILS::addNodesToConditions( DRT::Condition * cond,
                                               std::set<int> add )
 {
   std::vector<int> vec (add.size());
@@ -255,7 +276,7 @@ void DRT::CRACK::UTILS::addNodesToConditions( DRT::Condition * cond,
   }
 
   addNodesToConditions( cond, vec );
-}
+}*/
 
 double DRT::CRACK::UTILS::ComputeDiracDelta( const double & dx, const double & dy, const double & h )
 {
@@ -497,8 +518,6 @@ void DRT::CRACK::UTILS::get_nodal_values_from_gauss_point_val( Teuchos::RCP<DRT:
     Teuchos::RCP<Epetra_SerialDenseMatrix> gpstr = Teuchos::rcp(new Epetra_SerialDenseMatrix);
     DRT::ParObject::ExtractfromPack(position, *gausspts_val, *gpstr);
     (*mapdata)[elemap->GID(i)]=gpstr;
-    //std::cout<<"printing gauss point stress\n";//blockkk
-    //gpstr->Print(std::cout);//blockkk
   }
 
   const Epetra_Comm& comm = discret->Comm();
@@ -533,6 +552,19 @@ std::vector<double> DRT::CRACK::UTILS::getDisplacementNode( Teuchos::RCP<DRT::Di
 }
 
 /*------------------------------------------------------------------------------------*
+ * Extract displacement at the given node                                     sudhakar 10/14
+ *------------------------------------------------------------------------------------*/
+std::vector<double> DRT::CRACK::UTILS::getDisplacementNode( Teuchos::RCP<DRT::Discretization>& discret,
+                                                            const int node_gid,
+                                                            Teuchos::RCP<const Epetra_Vector>& disp )
+{
+  if( not discret->HaveGlobalNode( node_gid ) )
+    dserror( "node not found on this processor\n" );
+  DRT::Node * node = discret->gNode( node_gid );
+  return getDisplacementNode( discret, node, disp );
+}
+
+/*------------------------------------------------------------------------------------*
  * Extract displacement at the given node                                     sudhakar 12/13
  *------------------------------------------------------------------------------------*/
 std::vector<double> DRT::CRACK::UTILS::getDisplacementNode( Teuchos::RCP<DRT::Discretization>& discret,
@@ -548,4 +580,88 @@ std::vector<double> DRT::CRACK::UTILS::getDisplacementNode( Teuchos::RCP<DRT::Di
   DRT::UTILS::ExtractMyValues( *disp, mydisp, lm );
 
   return mydisp;
+}
+
+/*------------------------------------------------------------------------------------*
+ * Extract displacement at the given node                                     sudhakar 12/13
+ *------------------------------------------------------------------------------------*/
+std::vector<double> DRT::CRACK::UTILS::getDisplacementNode( Teuchos::RCP<DRT::Discretization>& discret,
+                                                            const DRT::Node * node,
+                                                            Teuchos::RCP<const Epetra_Vector>& disp )
+{
+  std::vector<int> lm;
+  std::vector<double> mydisp;
+  LINALG::Matrix<3,1> displ;
+
+  discret->Dof( node, lm );
+
+  DRT::UTILS::ExtractMyValues( *disp, mydisp, lm );
+
+  return mydisp;
+}
+
+/*------------------------------------------------------------------------------------*
+ *  Remove duplicate elements from vector                                     sudhakar 12/14
+ *  NOTE: During this process, the vector is sorted
+ *------------------------------------------------------------------------------------*/
+void DRT::CRACK::UTILS::removeDuplicateElementsVector( std::vector<int> &vec )
+{
+  std::sort(vec.begin(), vec.end());
+  vec.erase(std::unique(vec.begin(), vec.end()), vec.end());
+}
+
+/*--------------------------------------------------------------------------------------------------------------------------*
+ * Get one layer of elements and associated nodes, and identify the nodes that are lying on the                     sudhakar 10/14
+ * outer surfaces for this layer of nodes
+ *--------------------------------------------------------------------------------------------------------------------------*/
+void DRT::CRACK::UTILS::get_layer_ele_nodes( std::set<int>& allnodes, std::set<int>& outer_nodes, std::set<int>& allele,
+                                             Teuchos::RCP<DRT::Discretization> discret, int myrank,
+                                             std::set<int>& boun_nodes,
+                                             std::set<int>& crack_nodes )
+{
+  std::set<int> procNodes( outer_nodes );
+  outer_nodes.clear();
+
+  std::set<int> add_allele;
+
+  for( std::set<int>::iterator it = procNodes.begin(); it != procNodes.end(); it++ )
+  {
+    int tipid = *it;
+    if( discret->HaveGlobalNode( tipid ) )
+    {
+      DRT::Node * tipnode = discret->gNode( tipid );
+      if( tipnode->Owner() == myrank )
+      {
+
+        /*if( boun_nodes.find(tipid) != boun_nodes.end() and
+            crack_nodes.find(tipid) == crack_nodes.end() )
+        {
+          outer_nodes.insert( tipid );
+        }*/
+
+        DRT::Element ** eleptr = tipnode->Elements();
+        int numele = tipnode->NumElement();
+        for( int eleno = 0; eleno < numele; eleno++ )
+        {
+          DRT::Element * thisele = eleptr[eleno];
+
+          if( allele.find( thisele->Id() ) != allele.end() )
+            continue;
+
+          int numnode = thisele->NumNode();
+          const int * thiselenodes = thisele->NodeIds();
+
+          for( int nodeno = 0; nodeno < numnode; nodeno++ )
+          {
+            if( allnodes.find( thiselenodes[nodeno] ) == allnodes.end() )
+              outer_nodes.insert( thiselenodes[nodeno] );
+          }
+          add_allele.insert( thisele->Id() );
+        }
+      }
+    }
+  }
+
+  allnodes.insert( outer_nodes.begin(), outer_nodes.end() );
+  allele.insert( add_allele.begin(), add_allele.end() );
 }

@@ -824,6 +824,24 @@ public:
   virtual bool DeleteNodes();
 
   /*!
+  \brief Removes all elements from discretization (Filled()==true NOT prerequisite)
+
+  \return Returns true upon successful deletion of all elements
+
+  \note CheckFilledGlobally() is called to make sure all processors are informed.
+  */
+  virtual bool DeleteElements();
+
+  /*!
+  \brief Removes all nodes and elements from discretization (Filled()==true NOT prerequisite)
+
+  \return Returns true upon successful deletion
+
+  \note CheckFilledGlobally() is called to make sure all processors are informed.
+  */
+  virtual void DeleteAllNodesAndElements();
+
+  /*!
   \brief Delete an element from the discretization (Filled()==true NOT prerequisite)
 
   Delete an element from the discretization. Element can either be ghosted or not.

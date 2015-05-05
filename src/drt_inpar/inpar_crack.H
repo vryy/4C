@@ -52,7 +52,7 @@ namespace INPAR
     enum propagationCriterion
     {
       displacementCorrelation,
-      InteractionIntegral
+      J_Integral
     };
 
   }  // namespace CRACK

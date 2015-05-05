@@ -118,7 +118,29 @@ namespace UTILS{
   /*!
   \brief Get displacement at given node
    */
+  std::vector<double> getDisplacementNode( Teuchos::RCP<DRT::Discretization>& discret, const int node_gid, Teuchos::RCP<const Epetra_Vector>& disp );
+
+  /*!
+  \brief Get displacement at given node
+   */
   std::vector<double> getDisplacementNode( Teuchos::RCP<DRT::Discretization>& discret, const DRT::Node * node, Teuchos::RCP<Epetra_Vector>& disp );
+
+  /*!
+  \brief Get displacement at given node
+   */
+  std::vector<double> getDisplacementNode( Teuchos::RCP<DRT::Discretization>& discret, const DRT::Node * node, Teuchos::RCP<const Epetra_Vector>& disp );
+
+  /*!
+  \brief Remove duplicate elements from vector. NOTE: The vector is sorted during this process
+   */
+  void removeDuplicateElementsVector( std::vector<int> &vec );
+
+  /*!
+  \brief Get one layer of elements and associated node. Also identifies nodes lying on outer surface
+   */
+  void get_layer_ele_nodes( std::set<int>& allnodes, std::set<int>& outer_nodes, std::set<int>& allele,
+                            Teuchos::RCP<DRT::Discretization> discret_, int myrank, std::set<int>& boun_nodes,
+                            std::set<int>& crack_nodes );
 
 } /* namespace CRACK */
 } /* namespace CRACK */

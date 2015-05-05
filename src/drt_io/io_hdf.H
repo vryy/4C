@@ -170,6 +170,13 @@ public:
     return values;
   };
 
+  Teuchos::RCP<std::vector<int> > ReadIntVector(std::string path) const
+  {
+    std::vector<int> length;
+    Teuchos::RCP<std::vector<int> > values = ReadIntData(path,0,1);
+    return values;
+  };
+
 private:
 
   /// reads the dataset 'path' in all the files in the range [start,end)

@@ -47,6 +47,7 @@ DRT::CRACK::CrackDyn::CrackDyn( Teuchos::RCP<DRT::Discretization>& discret )
 {
   strIsSplit_ = false;
   crackInitiated_ = false;
+  isRestart_ = false;
 
   //---
   // Read crack tip nodes from the input file
@@ -187,10 +188,11 @@ void DRT::CRACK::CrackDyn::propagateOperations( Teuchos::RCP<const Epetra_Vector
   tipnodes_.clear();
 
   // parameters related to clearing all conditions
+  //TODO:: if( not restart at this step )
   justClearedCondns_ = false;
   if( clearCondns_ )
   {
-    //DeleteConditions(); //unblockkk???
+    //DeleteConditions();
     justClearedCondns_ = true;
     return;
   }
@@ -302,6 +304,8 @@ void DRT::CRACK::CrackDyn::propagateOperations( Teuchos::RCP<const Epetra_Vector
   }
 
   step_++;
+
+  isRestart_ = false;
 }
 
 /*------------------------------------------------------------------------------------*
@@ -406,6 +410,7 @@ void DRT::CRACK::CrackDyn::updateALE_BC_nodes()
   // update all data structure
   for( std::map<int,int>::iterator it = oldnew_.begin(); it != oldnew_.end(); it++ )
   {
+    cracknodes_.insert( it->first );
     cracknodes_.insert( it->second );
     new_ale_bc_nodes_.insert( it->second );
     ALE_line_nodes_.insert( it->second );
@@ -604,6 +609,204 @@ void DRT::CRACK::CrackDyn::printConditions(std::multimap<std::string,Teuchos::RC
     }
     std::cout<<"\n";
   }
+}
+
+/*---------------------------------------------------------------------------------------------------*
+ * Write all necessary data for restarting the simulation                                    sudhakar 12/14
+ *---------------------------------------------------------------------------------------------------*/
+void DRT::CRACK::CrackDyn::WriteRestartCrack( Teuchos::RCP<IO::DiscretizationWriter> outputWriter )
+{
+  if( myrank_ == 0 )
+    std::cout<<"~~~ Writing restart data for crack ~~~\n";
+
+  // all nodes that fall on the crack surface
+  Teuchos::RCP<std::vector<int> > dummy_crack_nodes = Teuchos::rcp( new std::vector<int>() );
+  for( std::set<int>::iterator it = cracknodes_.begin(); it != cracknodes_.end(); it++ )
+    dummy_crack_nodes->push_back( *it );
+  outputWriter->WriteRedundantIntVector( "cracksurfacenodes", dummy_crack_nodes );
+
+  // all nodes that hold ALE line BC
+  Teuchos::RCP<std::vector<int> > dummy_ale_line_nodes = Teuchos::rcp( new std::vector<int>() );
+  for( std::set<int>::iterator it = ALE_line_nodes_.begin(); it != ALE_line_nodes_.end(); it++ )
+    dummy_ale_line_nodes->push_back( *it );
+  outputWriter->WriteRedundantIntVector( "alelinenodes", dummy_ale_line_nodes );
+
+  // new Nodes that are added to ALE boundary conditions
+  Teuchos::RCP<std::vector<int> > dummy_ale_new_nodes = Teuchos::rcp( new std::vector<int>() );
+  for( std::set<int>::iterator it = new_ale_bc_nodes_.begin(); it != new_ale_bc_nodes_.end(); it++ )
+    dummy_ale_new_nodes->push_back( *it );
+  outputWriter->WriteRedundantIntVector( "newalebcnodes", dummy_ale_new_nodes );
+
+  // current crack tip nodes
+  Teuchos::RCP<std::vector<int> > dummy_tip_ids = Teuchos::rcp( new std::vector<int>() );
+  int num_nodes_per_tip = 0;
+  for( unsigned segno = 0 ; segno < tip_segments_.size(); segno++ )
+  {
+    std::vector<int>segtip = tip_segments_[segno]->getSegmentTipNodes();
+    num_nodes_per_tip = segtip.size();
+    dummy_tip_ids->insert(dummy_tip_ids->end(), segtip.begin(), segtip.end());
+  }
+  outputWriter->WriteInt( "numnodepertip", num_nodes_per_tip );
+  outputWriter->WriteRedundantIntVector( "alltipsegmentnodes", dummy_tip_ids );
+
+  // ids of new node and ele ids to be added to discret
+  outputWriter->WriteInt( "startnewnodeid", startNewNodeId_ );
+  outputWriter->WriteInt( "startneweleid", startNewEleId_ );
+
+  // Write boundary nodes
+  std::set<int> bounNodes = tip_segments_[0]->getAllBoundaryNodes();
+  Teuchos::RCP<std::vector<int> > dummy_bounNodes = Teuchos::rcp( new std::vector<int>() );
+  for( std::set<int>::iterator it = bounNodes.begin(); it != bounNodes.end(); it++ )
+    dummy_bounNodes->push_back( *it );
+  outputWriter->WriteRedundantIntVector( "boundaryNodes", dummy_bounNodes );
+
+  // Other boolean variables
+  int boolclearcondn = 0;
+  if( clearCondns_ )
+    boolclearcondn = 1;
+
+  int boolstrsplit = 0;
+  if( strIsSplit_ )
+    boolstrsplit = 1;
+
+  int justclearedcondn = 0;
+  if( justClearedCondns_ )
+    justclearedcondn = 1;
+
+  outputWriter->WriteInt( "boolclearcondn", boolclearcondn );
+  outputWriter->WriteInt( "boolstrsplit", boolstrsplit );
+  outputWriter->WriteInt( "justclearedcondn", justclearedcondn );
+}
+
+/*---------------------------------------------------------------------------------------------------*
+ * Read restart data and properly initialize all variables                                   sudhakar 12/14
+ *---------------------------------------------------------------------------------------------------*/
+void DRT::CRACK::CrackDyn::ReadRestartCrack( IO::DiscretizationReader& reader )
+{
+  if( myrank_ == 0 )
+    std::cout<<"~~~ Reading restart data for crack ~~~\n";
+
+  //---
+  // Read crack surface nodes
+  //--
+  Teuchos::RCP<std::vector<int> > dummy_crack_nodes = Teuchos::rcp( new std::vector<int>() );
+  reader.ReadRedundantIntVector( dummy_crack_nodes, "cracksurfacenodes" );
+  cracknodes_.clear();
+  for( unsigned i=0; i< dummy_crack_nodes->size(); i++ )
+    cracknodes_.insert( (*dummy_crack_nodes)[i] );
+
+  //---
+  // Read all ALE line nodes
+  //---
+  Teuchos::RCP<std::vector<int> > dummy_ale_line_nodes = Teuchos::rcp( new std::vector<int>() );
+  reader.ReadRedundantIntVector( dummy_ale_line_nodes, "alelinenodes" );
+  ALE_line_nodes_.clear();
+  for( unsigned i=0; i<dummy_ale_line_nodes->size(); i++ )
+    ALE_line_nodes_.insert( (*dummy_ale_line_nodes)[i] );
+
+  //---
+  // Read all new nodes that are added to discretization
+  //---
+  Teuchos::RCP<std::vector<int> > dummy_ale_new_nodes = Teuchos::rcp( new std::vector<int>() );
+  reader.ReadRedundantIntVector( dummy_ale_new_nodes, "newalebcnodes" );
+  new_ale_bc_nodes_.clear();
+  for( unsigned i=0; i<dummy_ale_new_nodes->size(); i++ )
+    new_ale_bc_nodes_.insert( (*dummy_ale_new_nodes)[i] );
+
+  //---
+  // Read boundary nodes
+  //---
+  Teuchos::RCP<std::vector<int> > dummy_bounNodes = Teuchos::rcp( new std::vector<int>() );
+  reader.ReadRedundantIntVector( dummy_bounNodes, "boundaryNodes" );
+  std::set<int> bounNodes( dummy_bounNodes->begin(), dummy_bounNodes->end() );
+
+  //---
+  // Reading starting node and element ids
+  //---
+  startNewNodeId_ = reader.ReadInt( "startnewnodeid" );
+  startNewEleId_ = reader.ReadInt( "startneweleid" );
+
+  //---
+  // Set crack tip segments
+  //---
+  int num_nodes_per_tip = reader.ReadInt( "numnodepertip" );
+  Teuchos::RCP<std::vector<int> > allcracktips = Teuchos::rcp( new std::vector<int>() );
+  reader.ReadRedundantIntVector( allcracktips, "alltipsegmentnodes" );
+
+  int totaltips = (int)allcracktips->size();
+  if( totaltips % num_nodes_per_tip != 0 )
+    dserror( "Different tip segments have different number of tip nodes? Not supported currently!" );
+  if( totaltips != 0 )
+    crackInitiated_ = true;
+
+  int no_segments = totaltips/num_nodes_per_tip;
+  tip_segments_.clear();
+  for( int tipno=0; tipno<no_segments; tipno++ )
+  {
+    std::vector<int> segment_tip;
+    int begin = tipno*num_nodes_per_tip;
+    for( int jj=begin; jj< begin+num_nodes_per_tip; jj++ )
+      segment_tip.push_back( (*allcracktips)[jj] );
+
+    Teuchos::RCP<PropagateTip> pt = Teuchos::rcp(new PropagateTip( discret_, segment_tip, cracknodes_, tipno ));
+    pt->InitializeBoundaryNodes( bounNodes );
+    tip_segments_.push_back( pt );
+  }
+
+  //---
+  // Read other boolean parameters
+  //---
+  int boolclearcondn = reader.ReadInt( "boolclearcondn" );
+  if( boolclearcondn == 0 )
+    clearCondns_ = false;
+  else
+    clearCondns_ = true;
+
+  int boolstrsplit = reader.ReadInt( "boolstrsplit" );
+  if( boolstrsplit == 0 )
+    strIsSplit_ = false;
+  else
+    strIsSplit_ = true;
+
+  int justclearedcondn = reader.ReadInt( "justclearedcondn" );
+  if( justclearedcondn == 0 )
+    justClearedCondns_ = false;
+  else
+    justClearedCondns_ = true;
+
+  isRestart_ = true;
+
+  std::vector<DRT::Condition*> allcond;
+  discret_->GetCondition( "Dirichlet", allcond );
+
+  if( allcond.size() == 0 )
+    dserror("No Dirichlet condition found for this discretization\n");
+
+  for(unsigned i=0;i<allcond.size();i++)
+  {
+    DRT::Condition* con = allcond[i];
+    if( con->Type() == DRT::Condition::VolumeDirichlet )
+    {
+      DRT::CRACK::UTILS::addNodesToConditions( con, cracknodes_ );
+    }
+  }
+
+  if( DRT::Problem::Instance()->ProblemType() == prb_fsi_crack )
+  {
+    DRT::Condition* cond_fsi = discret_->GetCondition("FSICoupling");
+    DRT::Condition* cond_xfem = discret_->GetCondition("XFEMCoupling");
+
+    if( not cond_fsi->Nodes()->size() == dummy_ale_new_nodes->size() )
+    {
+      if( cond_fsi == NULL or cond_xfem == NULL )
+        dserror( "XFEM or FSI coupling conditions undefined in XFSI problem?\n" );
+
+      DRT::CRACK::UTILS::addNodesToConditions( cond_fsi, *dummy_ale_new_nodes );
+      DRT::CRACK::UTILS::addNodesToConditions( cond_xfem, *dummy_ale_new_nodes );
+    }
+  }
+
+  discret_->FillComplete();
 }
 
 #if 0

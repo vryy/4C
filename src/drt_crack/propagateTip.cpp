@@ -18,11 +18,12 @@ Maintainer: Sudhakar
 #include "crack_tolerance.H"
 #include "crackUtils.H"
 #include "SplitHexIntoTwoWedges.H"
-//#include "interaction_int.H"
+#include "j_Integral.H"
 
 #include "../drt_mat/elasthyper.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_matelast/elast_coupneohooke.H"
+#include "../drt_mat/stvenantkirchhoff.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_parallel.H"
@@ -96,6 +97,7 @@ DRT::CRACK::PropagateTip::PropagateTip( Teuchos::RCP<DRT::Discretization> discre
     {
       material_id_ = itm->first;
       mat_found = true;
+      break;
     }
   }
 
@@ -104,6 +106,14 @@ DRT::CRACK::PropagateTip::PropagateTip( Teuchos::RCP<DRT::Discretization> discre
 
   switch(actmat->MaterialType())
   {
+    case INPAR::MAT::m_stvenant:
+    {
+      MAT::PAR::StVenantKirchhoff* params = dynamic_cast<MAT::PAR::StVenantKirchhoff*>(actmat->Parameter());
+      if ( not params ) dserror("Cannot cast material parameters");
+      young_ = params->youngs_;
+      poisson_ = params->poissonratio_;
+      break;
+    }
     case INPAR::MAT::m_elasthyper:
     {
       MAT::PAR::ElastHyper* params = dynamic_cast<MAT::PAR::ElastHyper*>(actmat->Parameter());
@@ -130,8 +140,11 @@ DRT::CRACK::PropagateTip::PropagateTip( Teuchos::RCP<DRT::Discretization> discre
       break;
     }
     default:
-      dserror("material type  not supported for crack simulations");
+    {
+      std::cout<<"material type = "<<actmat->MaterialType()<<"\n";
+      dserror("This material type not supported for crack simulations");
       break;
+    }
   }
 
   //---
@@ -153,25 +166,46 @@ DRT::CRACK::PropagateTip::PropagateTip( Teuchos::RCP<DRT::Discretization> discre
   propcrit_ = DRT::INPUT::IntegralValue<INPAR::CRACK::propagationCriterion>(crackparam, "CRACK_PROPAGATION_CRITERION");
 
   //---
-  // Read critical stress intensity factor values from input file
+  // Read critical stress intensity factor and critical J-integral from input file
   //---
   critical_K_I_ = crackparam.get<double>("CRITICAL_K1");
   critical_K_II_ = crackparam.get<double>("CRITICAL_K2");
+  critical_J_ = crackparam.get<double>("CRITICAL_J");
 
   //---
   // Preparation for writing crack tip location into a file
   // makes sure already existing files are overwritten
   //---
-  const std::string filebase(DRT::Problem::Instance()->OutputControlFile()->FileName());
-  std::ostringstream pid_stream;
-  pid_stream << ".crackTip" << segment_id_ <<".txt";
+  {
+    const std::string filebase(DRT::Problem::Instance()->OutputControlFile()->FileName());
+    std::ostringstream pid_stream;
+    pid_stream << ".crackTip" << segment_id_ <<".txt";
 
-  filename_<< filebase<< pid_stream.str();
+    filename_<< filebase<< pid_stream.str();
 
-  std::ofstream f;
-  if( myrank_ == 0 )
-    f.open( filename_.str().c_str(), std::fstream::trunc );
-  f.close();
+    std::ofstream f;
+    if( myrank_ == 0 )
+      f.open( filename_.str().c_str(), std::fstream::trunc );
+
+    f.close();
+  }
+
+  //---
+  // Preparation for writing J-integral
+  // makes sure already existing files are overwritten
+  //---
+  {
+    const std::string filebase(DRT::Problem::Instance()->OutputControlFile()->FileName());
+    std::ostringstream pid_stream;
+    pid_stream << ".Jintegral" << segment_id_ <<".txt";
+
+    filename_jint_<< filebase<< pid_stream.str();
+
+    std::ofstream f;
+    if( myrank_ == 0 )
+      f.open( filename_jint_.str().c_str(), std::fstream::trunc );
+    f.close();
+  }
 }
 
 /*----------------------------------------------------------------------------------------------*
@@ -200,6 +234,8 @@ void DRT::CRACK::PropagateTip::propagateThisTip( Teuchos::RCP<const Epetra_Vecto
   disp_col_ = LINALG::CreateVector( *discret_->DofColMap(), true );
   LINALG::Export(*displace,*disp_col_);
 
+  //WriteCrackSurfacePoints();
+
   //-------------
   // STEP 1 : Compute stress-intensity factors at crack tip
   //-------------
@@ -213,9 +249,10 @@ void DRT::CRACK::PropagateTip::propagateThisTip( Teuchos::RCP<const Epetra_Vecto
     if( K_I_ < 0.0 )
       return;
   }
-  //else if( propcrit_ == INPAR::CRACK::Jintegral )
-  //{
-  //}
+  else if( propcrit_ == INPAR::CRACK::J_Integral )
+  {
+    Compute_J_integral();
+  }
   else
     dserror("unknown crack propagation method\n");
 
@@ -314,14 +351,6 @@ void DRT::CRACK::PropagateTip::findStressIntensityFactor()
   comm_.Broadcast( &normal_(0,0), 3, gmaster );
   comm_.Broadcast( &tangent_(0,0), 3, gmaster );
 
-
-
-  /********************************************/
-  /*Interaction_integral j_int( discret_, gausspts_stress_, gausspts_strain_, disp_col_, cracknodes_, boun_nodes_, tipnodes_,
-                              young_, poisson_, normal_, tangent_, segment_id_ );
-  std::vector<double> sif = j_int.compute_interaction_integral();*/
-  /********************************************/
-
   LINALG::GatherAll( tip_phi_, comm_ );
   LINALG::GatherAll( tip_mphi_, comm_ );
 
@@ -403,7 +432,10 @@ void DRT::CRACK::PropagateTip::findStressIntensityFactor()
   }
 }
 
-/*void DRT::CRACK::PropagateTip::Compute_J_integral()
+/*-----------------------------------------------------------------------------------------*
+ * Compute domain form of vector J-integral                                        sudhakar 11/14
+ *-----------------------------------------------------------------------------------------*/
+void DRT::CRACK::PropagateTip::Compute_J_integral()
 {
   DRT::Node * tipnode = NULL;
   int lmaster = 0, gmaster = 0;
@@ -431,12 +463,34 @@ void DRT::CRACK::PropagateTip::findStressIntensityFactor()
   // broadcast them to all processors
   comm_.Broadcast( &normal_(0,0), 3, gmaster );
   comm_.Broadcast( &tangent_(0,0), 3, gmaster );
+  comm_.Broadcast( &normal_ref_(0,0), 3, gmaster );
+  comm_.Broadcast( &tangent_ref_(0,0), 3, gmaster );
 
   Jvector_.clear();
-  J_Integral j_int( discret_, gausspts_stress_, gausspts_strain_, disp_col_, cracknodes_, boun_nodes_, tipnodes_, normal_, tangent_, segment_id_ );
+  J_Integral j_int( discret_, gausspts_stress_, gausspts_strain_, disp_col_, iforce_col_, cracknodes_, boun_nodes_, tipnodes_,
+                    normal_, tangent_, segment_id_ );
   Jvector_ = j_int.compute_j_integral();
-  std::cout<<"jvector = "<<Jvector_[0]<<" "<<Jvector_[1]<<"\n";
-}*/
+
+  if( myrank_ == 0 )
+    std::cout<<"jvector = "<<Jvector_[0]<<" "<<Jvector_[1]<<"\n";
+
+  // Write J-integral into a file
+  std::ofstream f;
+  if( myrank_ == 0 )
+    f.open( filename_jint_.str().c_str(), std::fstream::ate | std::fstream::app );
+
+  static int itno = 0;
+  itno++;
+  if( myrank_ == 0 )
+  {
+    std::ostringstream s;
+    s<<itno<<"\t"<<Jvector_[0]<<"\t"<<Jvector_[1];
+    f<<s.str()<<"\n";
+  }
+
+  if( myrank_ == 0 )
+    f.close();
+}
 
 /*------------------------------------------------------------------------------------*
  * In order to calculate stress intensity factors at the crack tip, we        sudhakar 12/13
@@ -566,6 +620,29 @@ void DRT::CRACK::PropagateTip::findNormal( const DRT::Node * tipnode,
     std::cout<<"normal vector = "<<normal_(0,0)<<"\t"<<normal_(1,0)<<"\t"<<normal_(2,0)<<"\n";
     std::cout<<"tangent vector = "<<tangent_(0,0)<<"\t"<<tangent_(1,0)<<"\t"<<tangent_(2,0)<<"\n";
   }
+
+  //---
+  // Computation of normal and tangents in reference frame
+  //---
+  std::vector<double> surcoord_ref(3);
+  for( int dim=0; dim<3; dim++ )
+    surcoord_ref[dim] = 0.5*( surcoord1[dim] + surcoord2[dim] );
+
+  normal_ref_(0,0) = tipcoord[0] - surcoord_ref[0];
+  normal_ref_(1,0) = tipcoord[1] - surcoord_ref[1];
+  normal_ref_(2,0) = 0.0;
+
+  double fac_ref = sqrt( normal_ref_(0,0)*normal_ref_(0,0) + normal_ref_(1,0)*normal_ref_(1,0) + normal_ref_(2,0)*normal_ref_(2,0) );
+  normal_ref_(0,0) = normal_ref_(0,0) / fac_ref;
+  normal_ref_(1,0) = normal_ref_(1,0) / fac_ref;
+  normal_ref_(2,0) = normal_ref_(2,0) / fac_ref;
+
+  double theta_ref = atan2( normal_ref_(1,0), normal_ref_(0,0) ) - atan2( 0.0, 1.0 );
+
+  // apply linear transformation to rotate (0,1) to angle theta
+  tangent_ref_(0,0) = -1.0 * sin(theta_ref);
+  tangent_ref_(1,0) = cos(theta_ref);
+  tangent_ref_(2,0) = 0.0;
 }
 
 /*------------------------------------------------------------------------------------*
@@ -884,10 +961,46 @@ Teuchos::RCP<DRT::Element> DRT::CRACK::PropagateTip::getSurfaceThisPlane( std::v
  *------------------------------------------------------------------------------------*/
 bool DRT::CRACK::PropagateTip::DoCrackPropagate()
 {
-  double check = pow( (K_I_ / critical_K_I_), 2.0 ) + pow( (K_II_ / critical_K_II_), 2.0 );
-  if( check < 0.99999999999999999 )
-    return false;
-  return true;
+  if ( DRT::Problem::Instance()->ProblemType() == prb_fsi_crack )
+  {
+    if( propcrit_ == INPAR::CRACK::displacementCorrelation )
+    {
+      if( K_I_ > critical_K_I_ )
+        return true;
+      return false;
+    }
+    else if( propcrit_ == INPAR::CRACK::J_Integral )
+    {
+      if( Jvector_[0] > critical_J_ )
+        return true;
+      return false;
+    }
+    else
+      dserror("unknown propagation criterion\n");
+  }
+
+  else
+  {
+    if( propcrit_ == INPAR::CRACK::displacementCorrelation )
+    {
+      double check = pow( (K_I_ / critical_K_I_), 2.0 ) + pow( (K_II_ / critical_K_II_), 2.0 );
+      if( check < 0.99999999999999999 )
+        return false;
+      return true;
+    }
+    else if( propcrit_ == INPAR::CRACK::J_Integral )
+    {
+      double jtot = sqrt( pow(Jvector_[0],2) + pow(Jvector_[1],2) );
+      if( jtot > critical_J_ )
+        return true;
+      return false;
+    }
+    else
+      dserror("unknown propagation criterion\n");
+  }
+
+  dserror("should not have reached here");
+  return true; // just for warning-free compilation
 }
 
 /*------------------------------------------------------------------------------------*
@@ -895,8 +1008,17 @@ bool DRT::CRACK::PropagateTip::DoCrackPropagate()
  *------------------------------------------------------------------------------------*/
 void DRT::CRACK::PropagateTip::decidePropagationAngle()
 {
-  double deno = K_I_ + sqrt( K_I_ * K_I_ + 8.0 * K_II_ * K_II_ );
-  propAngle_ = 2.0*atan( -2.0 * K_II_ / deno );
+  if( propcrit_ == INPAR::CRACK::displacementCorrelation )
+  {
+    double deno = K_I_ + sqrt( K_I_ * K_I_ + 8.0 * K_II_ * K_II_ );
+    propAngle_ = 2.0*atan( -2.0 * K_II_ / deno );
+  }
+  else if( propcrit_ == INPAR::CRACK::J_Integral )
+  {
+    propAngle_ = atan2( Jvector_[1], Jvector_[0] );
+  }
+  else
+    dserror("unknown crack propagation method\n");
 
   //propAngle_ = 0.0;
   /*********************************************************/
@@ -929,8 +1051,6 @@ void DRT::CRACK::PropagateTip::decidePropagationAngle()
     propAngle_ = 2 * PI_ + propAngle_;
   else if( propAngle_ > 2*PI_ )
     propAngle_ = propAngle_ - 2*PI_;
-
-  //propAngle_ = 270 * PI_ / 180.0;
 
   if( myrank_ == 0 )
     std::cout<<"propagation angle = "<<propAngle_ * 180.0 / PI_ <<"deg\n";
@@ -1113,6 +1233,10 @@ std::vector<int> DRT::CRACK::PropagateTip::findNewCrackTip()
                 lspl_ele_id = Element->Id();
                 //SplitEleData( Element->Id(), node1->Id() );
 
+                //TODO: Check this
+                //if( is_A_BoundaryNode( lnewtip ) )
+                //  break;
+
                 double tot_ang = fabs( angle1 - angle2 );
                 std::vector<double> disp_bc(3);
                 double ratio = fabs(angle1 / tot_ang);
@@ -1138,6 +1262,10 @@ std::vector<int> DRT::CRACK::PropagateTip::findNewCrackTip()
                 lspl_node_id = node2->Id();
                 lspl_ele_id = Element->Id();
                 //SplitEleData( Element->Id(), node2->Id() );
+
+                //TODO: Check this
+                //if( is_A_BoundaryNode( lnewtip ) )
+                //  break;
 
                 double tot_ang = fabs( angle1 - angle2 );
                 std::vector<double> disp_bc(3);
@@ -1189,6 +1317,10 @@ std::vector<int> DRT::CRACK::PropagateTip::findNewCrackTip()
               }
 
               found_edge = true;
+
+              //TODO: Check this
+              //if( is_A_BoundaryNode( lnewtip ) )
+              //  break;
 
               if( found_edge )
               {
@@ -1601,7 +1733,7 @@ std::vector<double> DRT::CRACK::PropagateTip::getLimitAngles( const std::vector<
   double secAng = 0.0;
   comm_.SumAll( &tempAng, &secAng, 1 );
 
-#if 1 // this shud be the case if we move crack nodes (I believe) -- sudhakar 02/14
+#if 1 // this shud be the case if we move crack nodes
   ang.push_back( propAngle_ );
 #else
   ang.push_back( secAng );
@@ -1670,7 +1802,8 @@ void DRT::CRACK::PropagateTip::CheckCompleteSplit( int & start_new_node_id )
 
   // This corresponds to 3D crack, or multiple cracks in 2D or 3D
   else if( nodes_on_boundary != tipnodes_.size() )
-    dserror("Only few tip nodes are falling on the boundary. Current crack implementation does not support this\n");
+    dserror("Only few tip nodes are falling on the boundary. This means it is not through-thickness crack."
+                  "Current crack implementation does not support this\n");
 
   std::cout<<"================splitting the body into two================\n";
 
@@ -1726,7 +1859,10 @@ void DRT::CRACK::PropagateTip::CheckCompleteSplit( int & start_new_node_id )
       const double * tipco = tipnode->X();
 
       if( not discret_->HaveGlobalNode( old_tipid1 ) )
+      {
         dserror("old tip id not found on this processor");
+        //continue;
+      }
 
       DRT::Node* oldnode = discret_->gNode( old_tipid1 );
       const double * oldco = oldnode->X();
@@ -1820,7 +1956,7 @@ void DRT::CRACK::PropagateTip::CheckCompleteSplit( int & start_new_node_id )
   //TODO: check to remove the lines marked as //-----------------
   /*std::map<int,std::vector<double> > disppl;//-----------------
   std::vector<double> disp(3,0.0);//-----------------
-  disp[1] = 0.05;//------------------
+  disp[0] = -0.05;//------------------
 
   for( unsigned num = 0; num < tipnodes_.size(); num++ )
   {
@@ -1828,7 +1964,8 @@ void DRT::CRACK::PropagateTip::CheckCompleteSplit( int & start_new_node_id )
     if( discret_->HaveGlobalNode( tip_id ) )
     {
       DRT::Node * tipnode = discret_->gNode( tip_id );
-      std::vector<double> disp_temp = this->getDisplacementNode( tipnode, disp_col_ );//-------------
+      std::vector<double> disp_temp = DRT::CRACK::UTILS::getDisplacementNode( discret_, tipnode, disp_col_ );//-------------
+
       for( unsigned dispp = 0; dispp < 3; dispp++ )//-------------
         disp_temp[dispp] += disp[dispp];//-------------
 
@@ -1846,7 +1983,7 @@ void DRT::CRACK::PropagateTip::CheckCompleteSplit( int & start_new_node_id )
 
   clearCondns_ = true;
 
-  //DRT::CRACK::UTILS::AddConditions( discret_, disppl );
+  DRT::CRACK::UTILS::AddConditions( discret_, disppl );
 
   discret_->FillComplete();*/
   /************************************************************/ //-------------
@@ -1863,4 +2000,43 @@ void DRT::CRACK::PropagateTip::CheckCompleteSplit( int & start_new_node_id )
   //TODO: push the newly formed nodes into tip nodes --> for fsi-crack problem
 
   alreadySplit_ = true;
+}
+
+/*-----------------------------------------------------------------------*
+ * Returns true if the given node id is on the boundary          sudhakar 01/15
+ *-----------------------------------------------------------------------*/
+bool DRT::CRACK::PropagateTip::is_A_BoundaryNode( int & id )
+{
+  if( boun_nodes_.find( id ) == boun_nodes_.end() )
+    return false;
+  return true;
+}
+
+/*-----------------------------------------------------------------------*
+ * Output the location all crack surface nodes in current conf   sudhakar 01/15
+ *-----------------------------------------------------------------------*/
+void DRT::CRACK::PropagateTip::WriteCrackSurfacePoints()
+{
+  const std::string filebase = "cracklocation";
+  std::ostringstream pid_stream;
+  pid_stream << ".crackTip" << segment_id_ <<".txt";
+
+  std::ostringstream filename;
+  filename<< filebase<< pid_stream.str();
+
+  std::ofstream f;
+  f.open( filename.str().c_str() );
+
+  for( std::set<int>::iterator it = cracknodes_.begin(); it != cracknodes_.end(); it++ )
+  {
+    int nid = *it;
+    DRT::Node * node = discret_->gNode( nid );
+    const double * coo = node->X();
+
+    std::vector<double> disp_node = DRT::CRACK::UTILS::getDisplacementNode( discret_, node, disp_col_ );
+
+    f << coo[1] + disp_node[1] <<" "<<coo[0]<<"\n";
+  }
+  f.close();
+
 }

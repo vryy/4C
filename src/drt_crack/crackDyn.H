@@ -20,9 +20,17 @@ Maintainer: Sudhakar
 #include "../drt_lib/drt_discret.H"
 #include "propagateTip.H"
 
+//#include "../drt_io/io.H"
+
 namespace ALE
 {
 class Ale;
+}
+
+namespace IO
+{
+class DiscretizationWriter;
+class DiscretizationReader;
 }
 
 namespace DRT
@@ -61,6 +69,16 @@ public:
   \brief Returns true if the Dirichlet conditions are cleared in this time step
    */
   bool DidIClearConditionsNow(){ return justClearedCondns_; }
+
+  /*!
+  \brief Write all data related to restart
+   */
+  void WriteRestartCrack( Teuchos::RCP<IO::DiscretizationWriter> outputWriter );
+
+  /*!
+  \brief Read restart data for crack
+   */
+  void ReadRestartCrack( IO::DiscretizationReader& reader );
 
 private:
 
@@ -178,6 +196,9 @@ private:
 
   //! whether crack just initiated at this step
   bool crackInitiatedThisStep_;
+
+  //! bool to store the information whether it is a restart
+  bool isRestart_;
 
 };
 

@@ -8057,10 +8057,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                       "Crack propagation criterion used for LEFM",
                                       tuple<std::string>(
                                         "displacement_correlation",
-                                        "InteractionIntegral"),
+                                        "J_Integral"),
                                       tuple<int>(
                                         INPAR::CRACK::displacementCorrelation,
-                                        INPAR::CRACK::InteractionIntegral),
+                                        INPAR::CRACK::J_Integral),
                                       &crackdyn);
 
   IntParameter("NO_LAYERS_J_INT",4,"No of element layers used for J-integral calculation",&crackdyn);
