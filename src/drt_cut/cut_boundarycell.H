@@ -125,9 +125,9 @@ public:
       const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<celldistype>::numNodePerElement;
       LINALG::Matrix<3,numnodes> xyze( this->xyz_, true );
 
-      LINALG::Matrix<numnodes,1> funct;
-      LINALG::Matrix<2,numnodes> deriv;
-      LINALG::Matrix<2,2> metrictensor;
+      LINALG::Matrix<numnodes,1> funct(false);
+      LINALG::Matrix<2,numnodes> deriv(false);
+      LINALG::Matrix<2,2> metrictensor(false);
 
       DRT::UTILS::shape_function_2D( funct, eta(0), eta(1), celldistype );
       DRT::UTILS::shape_function_2D_deriv1( deriv, eta(0), eta(1), celldistype );
