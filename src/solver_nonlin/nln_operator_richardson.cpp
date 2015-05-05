@@ -154,7 +154,7 @@ int NLNSOL::NlnOperatorRichardson::ApplyInverse(const Epetra_MultiVector& f,
     err = NlnProblem()->GetJacobianOperator()->Apply(*dx, *r);
     if (err != 0) { dserror("Apply failed."); }
 
-    err = r->Update(1.0, *fnew, -1.0);
+    err = r->Update(-1.0, *fnew, -1.0);
     if (err != 0) { dserror("Update failed."); }
 
     // compute new iterative increment
