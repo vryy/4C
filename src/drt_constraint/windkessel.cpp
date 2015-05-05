@@ -30,13 +30,13 @@ D) a full closed-loop cardiovascular model with 0D elastance atria models and bi
 (DESIGN SURF HEART VALVE CARDIOVASCULAR FULL WINDKESSEL CONDITIONS)
 (based on MA thesis of Marina Basilious and Kerckhoffs et. al. 2007, Coupling of a 3D Finite Element Model of Cardiac Ventricular
 Mechanics to Lumped Systems Models of the Systemic and Pulmonic Circulations, Annals of Biomedical Engineering, Vol. 35, No. 1
-      [(p_v - p_ar)/R_arv - q_vout                     ]   [ 0 ]
       [d(p_at/E_at)/dt - q_ven_other + q_vin           ]   [ 0 ]
-      [C_ar * d(p_ar)/dt - q_vout + q_ar               ]   [ 0 ]
-Res = [C_ven * d(p_ven)/dt - q_ar + q_ven              ] = [ 0 ]
       [(p_at - p_v)/R_atv - q_vin                      ]   [ 0 ]
       [d(V_v)/dt - q_vin + q_vout                      ]   [ 0 ]
+Res = [(p_v - p_ar)/R_arv - q_vout                     ] = [ 0 ]
+      [C_ar * d(p_ar)/dt - q_vout + q_ar               ]   [ 0 ]
       [L_ar/R_ar + (p_ven - p_ar)/R_ar + q_ar          ]   [ 0 ]
+      [C_ven * d(p_ven)/dt - q_ar + q_ven              ]   [ 0 ]
       [L_ven/R_ven + (p_at_other - p_ven)/R_ven + q_ven]   [ 0 ]
 ************************************************************************************************************************************
 
@@ -1852,70 +1852,78 @@ void UTILS::Windkessel::EvaluateHeartValveCardiovascularFullWindkessel(
     {
 
       //extract values of dof vector wkdofn
-      p_at_n = (*sysvec7)[numdof_per_cond*condID+1];
+      p_at_n = (*sysvec7)[numdof_per_cond*condID+0];
       //extract values of dof vector wkdof
-      p_at_ = (*sysvec8)[numdof_per_cond*condID+1];
+      p_at_ = (*sysvec8)[numdof_per_cond*condID+0];
       //extract values of dof vector wkdofm
-      p_v_m = (*sysvec6)[numdof_per_cond*condID];
-      p_at_m = (*sysvec6)[numdof_per_cond*condID+1];
-      p_ar_m = (*sysvec6)[numdof_per_cond*condID+2];
-      p_ven_m = (*sysvec6)[numdof_per_cond*condID+3];
-      q_vin_m = (*sysvec6)[numdof_per_cond*condID+4];
-      q_vout_m = (*sysvec6)[numdof_per_cond*condID+5];
-      q_ar_m = (*sysvec6)[numdof_per_cond*condID+6];
+      p_at_m = (*sysvec6)[numdof_per_cond*condID+0];
+      q_vin_m = (*sysvec6)[numdof_per_cond*condID+1];
+      q_vout_m = (*sysvec6)[numdof_per_cond*condID+2];
+      p_v_m = (*sysvec6)[numdof_per_cond*condID+3];
+      p_ar_m = (*sysvec6)[numdof_per_cond*condID+4];
+      q_ar_m = (*sysvec6)[numdof_per_cond*condID+5];
+      p_ven_m = (*sysvec6)[numdof_per_cond*condID+6];
       q_ven_m = (*sysvec6)[numdof_per_cond*condID+7];
 
       if (condID == 0)
       {
-        p_at_other_m = (*sysvec6)[numdof_per_cond*1+1];
+        p_at_other_m = (*sysvec6)[numdof_per_cond*1+0];
         q_ven_other_m = (*sysvec6)[numdof_per_cond*1+7];
       }
       else if (condID == 1)
       {
-        p_at_other_m = (*sysvec6)[numdof_per_cond*0+1];
+        p_at_other_m = (*sysvec6)[numdof_per_cond*0+0];
         q_ven_other_m = (*sysvec6)[numdof_per_cond*0+7];
       }
       else dserror("Do not choose more than 2 conditions / do not id them different than 0 and 1!");
 
       // fill multipliers for rhs vector
-      if (p_v_m < p_ar_m) factor_wkdof[0] = 1./R_arvalve_max;
-      if (p_v_m >= p_ar_m) factor_wkdof[0] = 1./R_arvalve_min;
+      // atrium
+      factor_wkdof[0] = 0.;
       factor_dwkdof[0] = 0.;
       factor_Q[0] = 0.;
-      if (p_v_m < p_ar_m) factor_1[0] = -p_ar_m/R_arvalve_max - q_vout_m;
-      if (p_v_m >= p_ar_m) factor_1[0] = -p_ar_m/R_arvalve_min - q_vout_m;
+      factor_1[0] = (p_at_n/E_at_n - p_at_/E_at_)/ts_size - q_ven_other_m + q_vin_m;
 
-      factor_wkdof[1] = 0.;
+      //atrioventricular valve
+      factor_wkdof[1] = -1.;
       factor_dwkdof[1] = 0.;
       factor_Q[1] = 0.;
-      factor_1[1] = (p_at_n/E_at_n - p_at_/E_at_)/ts_size - q_ven_other_m + q_vin_m;
+      if (p_v_m < p_at_m) factor_1[1] = (p_at_m-p_v_m)/R_atvalve_min;
+      if (p_v_m >= p_at_m) factor_1[1] = (p_at_m-p_v_m)/R_atvalve_max;
 
-      factor_wkdof[2] = 0.;
-      factor_dwkdof[2] = C_ar;
-      factor_Q[2] = 0.;
-      factor_1[2] = -q_vout_m + q_ar_m;
+      //ventricular mass balance
+      factor_wkdof[2] = 1.;
+      factor_dwkdof[2] = 0.;
+      factor_Q[2] = -1.;
+      factor_1[2] = -q_vin_m;
 
-      factor_wkdof[3] = 0.;
-      factor_dwkdof[3] = C_ven;
+      //semilunar valve
+      if (p_v_m < p_ar_m) factor_wkdof[3] = 1./R_arvalve_max;
+      if (p_v_m >= p_ar_m) factor_wkdof[3] = 1./R_arvalve_min;
+      factor_dwkdof[3] = 0.;
       factor_Q[3] = 0.;
-      factor_1[3] = -q_ar_m + q_ven_m;
+      if (p_v_m < p_ar_m) factor_1[3] = -p_ar_m/R_arvalve_max - q_vout_m;
+      if (p_v_m >= p_ar_m) factor_1[3] = -p_ar_m/R_arvalve_min - q_vout_m;
 
-      factor_wkdof[4] = -1.;
-      factor_dwkdof[4] = 0.;
+      //arterial mass balance
+      factor_wkdof[4] = 0.;
+      factor_dwkdof[4] = C_ar;
       factor_Q[4] = 0.;
-      if (p_v_m < p_at_m) factor_1[4] = (p_at_m-p_v_m)/R_atvalve_min;
-      if (p_v_m >= p_at_m) factor_1[4] = (p_at_m-p_v_m)/R_atvalve_max;
+      factor_1[4] = -q_vout_m + q_ar_m;
 
+      //arterial linear momentum balance
       factor_wkdof[5] = 1.;
-      factor_dwkdof[5] = 0.;
-      factor_Q[5] = -1.;
-      factor_1[5] = -q_vin_m;
+      factor_dwkdof[5] = L_ar/R_ar;
+      factor_Q[5] = 0.;
+      factor_1[5] = (p_ven_m-p_ar_m)/R_ar;
 
-      factor_wkdof[6] = 1.;
-      factor_dwkdof[6] = L_ar/R_ar;
+      //venous mass balance
+      factor_wkdof[6] = 0.;
+      factor_dwkdof[6] = C_ven;
       factor_Q[6] = 0.;
-      factor_1[6] = (p_ven_m-p_ar_m)/R_ar;
+      factor_1[6] = -q_ar_m + q_ven_m;
 
+      //venous linear momentum balance
       factor_wkdof[7] = 1.;
       factor_dwkdof[7] = L_ven/R_ven;
       factor_Q[7] = 0.;
@@ -1960,43 +1968,49 @@ void UTILS::Windkessel::EvaluateHeartValveCardiovascularFullWindkessel(
     // assemble of Windkessel stiffness matrix, scale with time-integrator dependent value
     if (assmat1)
     {
+      //atrium
+      wkstiff(0,0) = 1./(E_at_n*ts_size);
+      wkstiff(0,1) = theta;
 
-      if (p_v_m < p_ar_m) wkstiff(0,0) = theta/R_arvalve_max;
-      if (p_v_m >= p_ar_m) wkstiff(0,0) = theta/R_arvalve_min;
-      if (p_v_m < p_ar_m) wkstiff(0,2) = -theta/R_arvalve_max;
-      if (p_v_m >= p_ar_m) wkstiff(0,2) = -theta/R_arvalve_min;
-      wkstiff(0,5) = -theta;
+      //atrioventricular valve
+      wkstiff(1,1) = -theta;
+      if (p_v_m < p_at_m) wkstiff(1,0) = theta/R_atvalve_min;
+      if (p_v_m >= p_at_m) wkstiff(1,0) = theta/R_atvalve_max;
+      if (p_v_m < p_at_m) wkstiff(1,3) = -theta/R_atvalve_min;
+      if (p_v_m >= p_at_m) wkstiff(1,3) = -theta/R_atvalve_max;
 
-      wkstiff(1,1) = 1./(E_at_n*ts_size);
-      wkstiff(1,4) = theta;
+      //ventricular mass balance
+      wkstiff(2,2) = theta;
+      wkstiff(2,1) = -theta;
 
-      wkstiff(2,2) = C_ar/ts_size;
-      wkstiff(2,5) = -theta;
-      wkstiff(2,6) = theta;
+      //semilunar valve
+      if (p_v_m < p_ar_m) wkstiff(3,3) = theta/R_arvalve_max;
+      if (p_v_m >= p_ar_m) wkstiff(3,3) = theta/R_arvalve_min;
+      if (p_v_m < p_ar_m) wkstiff(3,4) = -theta/R_arvalve_max;
+      if (p_v_m >= p_ar_m) wkstiff(3,4) = -theta/R_arvalve_min;
+      wkstiff(3,2) = -theta;
 
-      wkstiff(3,3) = C_ven/ts_size;
-      wkstiff(3,6) = -theta;
-      wkstiff(3,7) = theta;
+      //arterial mass balance
+      wkstiff(4,4) = C_ar/ts_size;
+      wkstiff(4,2) = -theta;
+      wkstiff(4,5) = theta;
 
-      if (p_v_m < p_at_m) wkstiff(4,0) = -theta/R_atvalve_min;
-      if (p_v_m >= p_at_m) wkstiff(4,0) = -theta/R_atvalve_max;
-      if (p_v_m < p_at_m) wkstiff(4,1) = theta/R_atvalve_min;
-      if (p_v_m >= p_at_m) wkstiff(4,1) = theta/R_atvalve_max;
-      wkstiff(4,4) = -theta;
+      //arterial linear momentum balance
+      wkstiff(5,5) = L_ar/(R_ar*ts_size) + theta;
+      wkstiff(5,4) = -theta/R_ar;
+      wkstiff(5,6) = theta/R_ar;
 
-      wkstiff(5,4) = -theta;
-      wkstiff(5,5) = theta;
+      //venous mass balance
+      wkstiff(6,6) = C_ven/ts_size;
+      wkstiff(6,5) = -theta;
+      wkstiff(6,7) = theta;
 
-      wkstiff(6,2) = -theta/R_ar;
-      wkstiff(6,3) = theta/R_ar;
-      wkstiff(6,6) = L_ar/(R_ar*ts_size) + theta;
-
-      wkstiff(7,3) = -theta/R_ven;
+      //venous linear momentum balance
       wkstiff(7,7) = L_ven/(R_ven*ts_size) + theta;
+      wkstiff(7,6) = -theta/R_ven;
 
-
-      wkstiff_other(1,7) = -theta;
-      wkstiff_other(7,1) = theta/R_ven;
+      wkstiff_other(0,7) = -theta;
+      wkstiff_other(7,0) = theta/R_ven;
 
       sysmat1->UnComplete();
 
@@ -2114,8 +2128,8 @@ void UTILS::Windkessel::EvaluateHeartValveCardiovascularFullWindkessel(
         // assemble the offdiagonal stiffness block (1,0 block) arising from dR_windk/dd
         // -> this matrix is later on transposed when building the whole block matrix
         std::vector<int> colvec(1);
-        colvec[0]=gindex[5];
-        elevector2.Scale(factor_Q[5]/ts_size);
+        colvec[0]=gindex[2];
+        elevector2.Scale(factor_Q[2]/ts_size);
         sysmat2->Assemble(eid,lmstride,elevector2,lm,lmowner,colvec);
       }
 
@@ -2297,7 +2311,7 @@ void UTILS::Windkessel::EvaluateHeartValveCardiovascularFullWindkessel(
         // assemble the offdiagonal stiffness block (0,1 block) arising from dR_struct/dwkdof
         // assemble to rectangular matrix. The col corresponds to the Windkessel ID.
         std::vector<int> colvec(1);
-        colvec[0]=gindex[0];
+        colvec[0]=gindex[3];
         elevector.Scale(sc_strtimint);
         sysmat3->Assemble(eid,lmstride,elevector,lm,lmowner,colvec);
       }
@@ -2634,10 +2648,10 @@ void UTILS::Windkessel::InitializeHeartValveCardiovascularFullWindkessel(
     double q_ar_0=windkesselcond_[condID]->GetDouble("q_ar_0");
     double q_ven_0=windkesselcond_[condID]->GetDouble("q_ven_0");
 
-    int err1 = sysvec2->SumIntoGlobalValues(1,&p_at_0,&gindex[1]);
-    int err2 = sysvec2->SumIntoGlobalValues(1,&p_ar_0,&gindex[2]);
-    int err3 = sysvec2->SumIntoGlobalValues(1,&p_ven_0,&gindex[3]);
-    int err4 = sysvec2->SumIntoGlobalValues(1,&q_ar_0,&gindex[6]);
+    int err1 = sysvec2->SumIntoGlobalValues(1,&p_at_0,&gindex[0]);
+    int err2 = sysvec2->SumIntoGlobalValues(1,&p_ar_0,&gindex[4]);
+    int err3 = sysvec2->SumIntoGlobalValues(1,&p_ven_0,&gindex[6]);
+    int err4 = sysvec2->SumIntoGlobalValues(1,&q_ar_0,&gindex[5]);
     int err5 = sysvec2->SumIntoGlobalValues(1,&q_ven_0,&gindex[7]);
     if (err1 or err2 or err3 or err4 or err5) dserror("SumIntoGlobalValues failed!");
 
@@ -2885,10 +2899,10 @@ void UTILS::Windkessel::ResetHeartValveCardiovascularFullWindkessel(
     double q_ar_0=windkesselcond_[condID]->GetDouble("q_ar_0");
     double q_ven_0=windkesselcond_[condID]->GetDouble("q_ven_0");
 
-    int err1 = sysvec->SumIntoGlobalValues(1,&p_at_0,&gindex[1]);
-    int err2 = sysvec->SumIntoGlobalValues(1,&p_ar_0,&gindex[2]);
-    int err3 = sysvec->SumIntoGlobalValues(1,&p_ven_0,&gindex[3]);
-    int err4 = sysvec->SumIntoGlobalValues(1,&q_ar_0,&gindex[6]);
+    int err1 = sysvec->SumIntoGlobalValues(1,&p_at_0,&gindex[0]);
+    int err2 = sysvec->SumIntoGlobalValues(1,&p_ar_0,&gindex[4]);
+    int err3 = sysvec->SumIntoGlobalValues(1,&p_ven_0,&gindex[6]);
+    int err4 = sysvec->SumIntoGlobalValues(1,&q_ar_0,&gindex[5]);
     int err5 = sysvec->SumIntoGlobalValues(1,&q_ven_0,&gindex[7]);
     if (err1 or err2 or err3 or err4 or err5) dserror("SumIntoGlobalValues failed!");
 

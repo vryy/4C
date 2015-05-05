@@ -30,13 +30,13 @@ D) a full closed-loop cardiovascular model with 0D elastance atria models and bi
 (DESIGN SURF HEART VALVE CARDIOVASCULAR FULL WINDKESSEL CONDITIONS)
 (based on MA thesis of Marina Basilious and Kerckhoffs et. al. 2007, Coupling of a 3D Finite Element Model of Cardiac Ventricular
 Mechanics to Lumped Systems Models of the Systemic and Pulmonic Circulations, Annals of Biomedical Engineering, Vol. 35, No. 1
-      [(p_v - p_ar)/R_arv - q_vout                     ]   [ 0 ]
       [d(p_at/E_at)/dt - q_ven_other + q_vin           ]   [ 0 ]
-      [C_ar * d(p_ar)/dt - q_vout + q_ar               ]   [ 0 ]
-Res = [C_ven * d(p_ven)/dt - q_ar + q_ven              ] = [ 0 ]
       [(p_at - p_v)/R_atv - q_vin                      ]   [ 0 ]
       [d(V_v)/dt - q_vin + q_vout                      ]   [ 0 ]
+Res = [(p_v - p_ar)/R_arv - q_vout                     ] = [ 0 ]
+      [C_ar * d(p_ar)/dt - q_vout + q_ar               ]   [ 0 ]
       [L_ar/R_ar + (p_ven - p_ar)/R_ar + q_ar          ]   [ 0 ]
+      [C_ven * d(p_ven)/dt - q_ar + q_ven              ]   [ 0 ]
       [L_ven/R_ven + (p_at_other - p_ven)/R_ven + q_ven]   [ 0 ]
 ************************************************************************************************************************************
 
@@ -141,7 +141,7 @@ UTILS::WindkesselManager::WindkesselManager
   }
   if (wk_heartvalvecardiovascular_full_->HaveWindkessel())
   {
-    // dof vector for ONE windkessel condition of this type: [p_v  p_at  p_ar  p_ven  q_vin  q_vout  q_ar  q_ven]^T
+    // dof vector for ONE windkessel condition of this type: [p_at  q_vin  q_vout  p_v  p_ar  q_ar  p_ven  q_ven]^T
     num_dofs_per_windkessel = 8;
   }
 
@@ -333,7 +333,7 @@ void UTILS::WindkesselManager::StiffnessAndInternalForces(
   // A) dof = p
   // B) dof = [p_v  p_ar]^T
   // C) dof = [p_v  p_arp  y_arp  p_ard]^T
-  // D) dof = [p_v  p_at  p_ar  p_ven  q_vin  q_vout  q_ar  q_ven]^T
+  // D) dof = [p_at  q_vin  q_vout  p_v  p_ar  q_ar  p_ven  q_ven]^T
 
   // evaluate current volume only
   wk_std_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,vnredundant,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
@@ -594,7 +594,7 @@ void UTILS::WindkesselManager::EvaluateNeumannWindkesselCoupling(Teuchos::RCP<Ep
     if (wk_std_->HaveWindkessel()) newval[0] = -(*actpres)[id_wkstrcoupcond];
     if (wk_heartvalvearterial_->HaveWindkessel()) newval[0] = -(*actpres)[2*id_wkstrcoupcond];
     if (wk_heartvalvearterial_proxdist_->HaveWindkessel()) newval[0] = -(*actpres)[4*id_wkstrcoupcond];
-    if (wk_heartvalvecardiovascular_full_->HaveWindkessel()) newval[0] = -(*actpres)[8*id_wkstrcoupcond];
+    if (wk_heartvalvecardiovascular_full_->HaveWindkessel()) newval[0] = -(*actpres)[8*id_wkstrcoupcond+3];
     cond->Add("val",newval);
   }
 
@@ -673,27 +673,27 @@ void UTILS::WindkesselManager::PrintPresFlux() const
       if (wk_heartvalvecardiovascular_full_->HaveWindkessel())
       {
         printf("Windkessel output id%2d:\n",currentID[i]);
-        printf("%2d p_v: %10.5e \n",currentID[i],(*wkdofmredundant)[8*i]);
-        printf("%2d p_at: %10.5e \n",currentID[i],(*wkdofmredundant)[8*i+1]);
-        printf("%2d p_ar: %10.5e \n",currentID[i],(*wkdofmredundant)[8*i+2]);
-        printf("%2d p_ven: %10.5e \n",currentID[i],(*wkdofmredundant)[8*i+3]);
-        printf("%2d q_vin: %10.5e \n",currentID[i],(*wkdofmredundant)[8*i+4]);
-        printf("%2d q_vout: %10.5e \n",currentID[i],(*wkdofmredundant)[8*i+5]);
-        printf("%2d q_ar: %10.5e \n",currentID[i],(*wkdofmredundant)[8*i+6]);
+        printf("%2d p_at: %10.5e \n",currentID[i],(*wkdofmredundant)[8*i]);
+        printf("%2d q_vin: %10.5e \n",currentID[i],(*wkdofmredundant)[8*i+1]);
+        printf("%2d q_vout: %10.5e \n",currentID[i],(*wkdofmredundant)[8*i+2]);
+        printf("%2d p_v: %10.5e \n",currentID[i],(*wkdofmredundant)[8*i+3]);
+        printf("%2d p_ar: %10.5e \n",currentID[i],(*wkdofmredundant)[8*i+4]);
+        printf("%2d q_ar: %10.5e \n",currentID[i],(*wkdofmredundant)[8*i+5]);
+        printf("%2d p_ven: %10.5e \n",currentID[i],(*wkdofmredundant)[8*i+6]);
         printf("%2d q_ven: %10.5e \n",currentID[i],(*wkdofmredundant)[8*i+7]);
         printf("%2d V_at: %10.5e \n",currentID[i],(*compvolmredundant)[8*i+0]);
-        printf("%2d V_v: %10.5e \n",currentID[i],(*vmredundant)[8*i+5]);
+        printf("%2d V_v: %10.5e \n",currentID[i],(*vmredundant)[8*i+2]);
         printf("%2d V_ar: %10.5e \n",currentID[i],(*compvolmredundant)[8*i+1]);
         printf("%2d V_ven: %10.5e \n",currentID[i],(*compvolmredundant)[8*i+2]);
         if(enhanced_output_)
         {
-          printf("%2d dp_v/dt: %10.5e \n",currentID[i],(*dwkdofmredundant)[8*i]);
-          printf("%2d dp_at/dt: %10.5e \n",currentID[i],(*dwkdofmredundant)[8*i+1]);
-          printf("%2d dp_ar/dt: %10.5e \n",currentID[i],(*dwkdofmredundant)[8*i+2]);
-          printf("%2d dp_ven/dt: %10.5e \n",currentID[i],(*dwkdofmredundant)[8*i+3]);
-          printf("%2d dq_vin/dt: %10.5e \n",currentID[i],(*dwkdofmredundant)[8*i+4]);
-          printf("%2d dq_vout/dt: %10.5e \n",currentID[i],(*dwkdofmredundant)[8*i+5]);
-          printf("%2d dq_ar/dt: %10.5e \n",currentID[i],(*dwkdofmredundant)[8*i+6]);
+          printf("%2d dp_at/dt: %10.5e \n",currentID[i],(*dwkdofmredundant)[8*i]);
+          printf("%2d dq_vin/dt: %10.5e \n",currentID[i],(*dwkdofmredundant)[8*i+1]);
+          printf("%2d dq_vout/dt: %10.5e \n",currentID[i],(*dwkdofmredundant)[8*i+2]);
+          printf("%2d dp_v/dt: %10.5e \n",currentID[i],(*dwkdofmredundant)[8*i+3]);
+          printf("%2d dp_ar/dt: %10.5e \n",currentID[i],(*dwkdofmredundant)[8*i+4]);
+          printf("%2d dq_ar/dt: %10.5e \n",currentID[i],(*dwkdofmredundant)[8*i+5]);
+          printf("%2d dp_ven/dt: %10.5e \n",currentID[i],(*dwkdofmredundant)[8*i+6]);
           printf("%2d dq_ven/dt: %10.5e \n",currentID[i],(*dwkdofmredundant)[8*i+7]);
         }
       }
