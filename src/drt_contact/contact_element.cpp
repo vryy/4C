@@ -199,21 +199,20 @@ void CONTACT::CoElement::DerivNormalAtXi(double* xi, int& i,
   DRT::Node** mynodes = Nodes();
   if (!mynodes)
     dserror("ERROR: DerivNormalAtXi: Null pointer!");
-    LINALG::SerialDenseVector val(nnodes);
-    LINALG::SerialDenseMatrix deriv(nnodes,2,true);
-    std::vector<double> gxi(3);
-    std::vector<double> geta(3);
+  LINALG::SerialDenseVector val(nnodes);
+  LINALG::SerialDenseMatrix deriv(nnodes,2,true);
+  std::vector<double> gxi(3);
+  std::vector<double> geta(3);
 
-    // get shape function values and derivatives at xi
-    EvaluateShape(xi, val, deriv, nnodes);
+  // get shape function values and derivatives at xi
+  EvaluateShape(xi, val, deriv, nnodes);
 
-    // get local element basis vectors
-    Metrics(xi, gxi, geta);
+  // get local element basis vectors
+  Metrics(xi, gxi, geta);
 
-    // derivative weighting matrix for current element
-    LINALG::Matrix<3, 3
->W;  const double
-lcubeinv = 1.0 / (elens(4, i) * elens(4, i) * elens(4, i));
+  // derivative weighting matrix for current element
+  LINALG::Matrix<3, 3>W;
+  const double lcubeinv = 1.0 / (elens(4, i) * elens(4, i) * elens(4, i));
 
   for (int j = 0; j < 3; ++j)
   {
@@ -231,11 +230,10 @@ lcubeinv = 1.0 / (elens(4, i) * elens(4, i) * elens(4, i));
     CoNode* mycnode = dynamic_cast<CoNode*>(mynodes[n]);
     if (!mycnode)
       dserror("ERROR: DerivNormalAtXi: Null pointer!");
-      int ndof = mycnode->NumDof();
+    int ndof = mycnode->NumDof();
 
-      // derivative weighting matrix for current node
-      static LINALG::Matrix<3, 3
->F    ;
+    // derivative weighting matrix for current node
+    static LINALG::Matrix<3, 3> F;
     F(0, 0) = 0.0;
     F(1, 1) = 0.0;
     F(2, 2) = 0.0;
