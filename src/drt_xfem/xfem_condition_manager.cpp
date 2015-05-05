@@ -856,12 +856,13 @@ void XFEM::MeshCoupling::InitStateVectors()
 {
   const Epetra_Map* cutterdofrowmap = cutter_dis_->DofRowMap();
 
-  ivelnp_  = LINALG::CreateVector(*cutterdofrowmap,true);
-  iveln_   = LINALG::CreateVector(*cutterdofrowmap,true);
-  ivelnm_  = LINALG::CreateVector(*cutterdofrowmap,true);
+  ivelnp_   = LINALG::CreateVector(*cutterdofrowmap,true);
+  iveln_    = LINALG::CreateVector(*cutterdofrowmap,true);
+  ivelnm_   = LINALG::CreateVector(*cutterdofrowmap,true);
 
-  idispnp_ = LINALG::CreateVector(*cutterdofrowmap,true);
-  idispn_  = LINALG::CreateVector(*cutterdofrowmap,true);
+  idispnp_  = LINALG::CreateVector(*cutterdofrowmap,true);
+  idispn_   = LINALG::CreateVector(*cutterdofrowmap,true);
+  idispnpi_ = LINALG::CreateVector(*cutterdofrowmap,true);
 }
 
 
@@ -882,6 +883,7 @@ void XFEM::MeshCoupling::SetStateDisplacement()
 
   cutter_dis_->SetState("idispnp",idispnp_);
   cutter_dis_->SetState("idispn",idispn_);
+  cutter_dis_->SetState("idispnpi",idispnpi_);
 
 }
 
@@ -896,6 +898,17 @@ void XFEM::MeshCoupling::UpdateStateVectors()
 
   // update displacement n
   idispn_->Update(1.0,*idispnp_,0.0);
+
+  // update displacement from last increment (also used for combinations of non-monolithic fluidfluid and monolithic xfsi)
+  idispnpi_->Update(1.0,*idispnp_,0.0);
+}
+
+void XFEM::MeshCoupling::UpdateDisplacementIterationVectors()
+{
+  // update last iteration interface displacements
+
+  // update displacement from last increment (also used for combinations of non-monolithic fluidfluid and monolithic xfsi)
+  idispnpi_->Update(1.0,*idispnp_,0.0);
 }
 
 
@@ -931,6 +944,8 @@ XFEM::MeshCouplingBC::MeshCouplingBC(
 
   // set the interface displacements also to idispn
   idispn_->Update(1.0,*idispnp_,0.0);
+
+  idispnpi_->Update(1.0,*idispnp_,0.0);
 
 }
 
@@ -1388,6 +1403,7 @@ void XFEM::MeshCouplingFSI::ReadRestart(
   // REMARK: ivelnp_ and idispnp_ are set again for the new time step in PrepareSolve()
   boundaryreader.ReadVector(ivelnp_,  "ivelnp_res");
   boundaryreader.ReadVector(idispnp_, "idispnp_res");
+  boundaryreader.ReadVector(idispnpi_, "idispnpi_res");
 
   if (not (cutter_dis_->DofRowMap())->SameAs(ivelnp_->Map()))
     dserror("Global dof numbering in maps does not match");
@@ -1396,6 +1412,8 @@ void XFEM::MeshCouplingFSI::ReadRestart(
   if (not (cutter_dis_->DofRowMap())->SameAs(idispnp_->Map()))
     dserror("Global dof numbering in maps does not match");
   if (not (cutter_dis_->DofRowMap())->SameAs(idispn_->Map()))
+    dserror("Global dof numbering in maps does not match");
+  if (not (cutter_dis_->DofRowMap())->SameAs(idispnpi_->Map()))
     dserror("Global dof numbering in maps does not match");
 
 
@@ -1499,6 +1517,7 @@ void XFEM::MeshCouplingFSI::Output(
     cutter_output_->WriteVector("idispn_res",  idispn_);
     cutter_output_->WriteVector("ivelnp_res",  ivelnp_);
     cutter_output_->WriteVector("idispnp_res", idispnp_);
+    cutter_output_->WriteVector("idispnpi_res", idispnpi_);
   }
 }
 
@@ -1668,12 +1687,13 @@ void XFEM::MeshCouplingFSICrack::UpdateBoundaryValuesAfterCrack(
   // NOTE: these routines create new vectors, transfer data from the original to the new one and set the pointers to
   // the newly created vectors
 
-  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( cutter_dis_, ivelnp_, oldnewIds );
-  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( cutter_dis_, iveln_,  oldnewIds );
-  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( cutter_dis_, ivelnm_, oldnewIds );
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( cutter_dis_, ivelnp_,  oldnewIds );
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( cutter_dis_, iveln_,   oldnewIds );
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( cutter_dis_, ivelnm_,  oldnewIds );
 
-  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( cutter_dis_, idispnp_, oldnewIds );
-  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( cutter_dis_, idispn_,  oldnewIds );
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( cutter_dis_, idispnp_,  oldnewIds );
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( cutter_dis_, idispnpi_, oldnewIds );
+  DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( cutter_dis_, idispn_,   oldnewIds );
 
   // update necessary for partitioned FSI, where structure is solved first and
   // crack values have been updated at the end of the last time step,

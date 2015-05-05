@@ -204,6 +204,7 @@ private:
 
   /// projection of history from other discretization - returns true if projection was successful for all nodes
   bool XTimint_ProjectFromEmbeddedDiscretization(
+    const Teuchos::RCP<XFEM::XFluidTimeInt>&                 xfluid_timeint,       ///< xfluid time integration class
     std::vector<Teuchos::RCP<Epetra_Vector> >&               newRowStateVectors,   ///< vectors to be reconstructed
     Teuchos::RCP<const Epetra_Vector>                        target_dispnp,        ///< displacement col - vector timestep n+1
     const bool                                               screen_out            ///< screen output?

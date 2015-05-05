@@ -44,7 +44,7 @@ Maintainer: Benedikt Schott
 #include "../drt_fluid_ele/fluid_ele_factory.H"
 
 #include "xfem_dofset.H"
-
+#include "xfem_condition_manager.H"
 #include "xfluid_timeInt.H"
 
 #include <iostream>
@@ -57,7 +57,9 @@ Maintainer: Benedikt Schott
 // constructor
 // -------------------------------------------------------------------
 XFEM::XFluidTimeInt::XFluidTimeInt(
+    const bool                                                            is_newton_increment_transfer, /// monolithic newton increment transfer or time step transfer?
     const Teuchos::RCP<DRT::Discretization>                               dis,                    /// discretization
+    const Teuchos::RCP<XFEM::ConditionManager>                            condition_manager,      /// condition manager
     const Teuchos::RCP<GEO::CutWizard>                                    wizard_old,             /// cut wizard at t^n
     const Teuchos::RCP<GEO::CutWizard>                                    wizard_new,             /// cut wizard at t^(n+1)
     const Teuchos::RCP<XFEM::XFEMDofSet>                                  dofset_old,             /// XFEM dofset at t^n
@@ -67,7 +69,9 @@ XFEM::XFluidTimeInt::XFluidTimeInt(
     std::map<INPAR::XFEM::XFluidTimeInt, std::map<int,std::set<int> > >&  reconstr_method_to_node,/// inverse reconstruction map for nodes and its dofsets
     const int                                                             step                    /// global time step
   ) :
+  is_newton_increment_transfer_(is_newton_increment_transfer),
   dis_(dis),
+  condition_manager_(condition_manager),
   wizard_old_(wizard_old),
   wizard_new_(wizard_new),
   dofset_old_(dofset_old),
@@ -1391,6 +1395,7 @@ int XFEM::XFluidTimeInt::IdentifyOldSets(
     if ( DRT::Problem::Instance()->ProblemType() == prb_fsi_crack )
       return nds_old; // don't do further checks, otherwise SpaceTimeCheck can lead to segfault's as sides at t^(n+1) are not available at t^n
 
+#if(1)
     //--------------------------------------
     // special check for interface tips if the node has changed the side w.r.t identified sides at t^n and t^(n+1)
     if( (is_std_set_np and is_std_set_n) or (!is_std_set_np and !is_std_set_n))
@@ -1401,6 +1406,7 @@ int XFEM::XFluidTimeInt::IdentifyOldSets(
       if(!successful_check or (successful_check and did_node_change_side))
         return -1; // do not accept the old value
     }
+#endif
 
     //---------------------------------------
     // if the unique candidate passed all checks we accept the value
@@ -1652,24 +1658,21 @@ bool XFEM::XFluidTimeInt::SpecialCheck_InterfaceTips(
     IO::cout <<  "\t CheckChangingSide for node " << n_old->Id() << " w.r.t side " << *sides << IO::endl;
 #endif
 
-    int sid = *sides;
+    const int coup_sid = *sides; // side id used within the cut
 
-    GEO::CUT::SideHandle* side_old = wizard_old_->GetMeshCuttingSide(sid, 0);
-    GEO::CUT::SideHandle* side_new = wizard_new_->GetMeshCuttingSide(sid, 0);
+    if(condition_manager_->IsMeshCoupling(coup_sid))
+    {
+      DRT::Element * side = condition_manager_->GetSide(coup_sid);
 
-    if(side_old == NULL and side_new == NULL)
+      successful_check = SpecialCheck_InterfaceTips_SpaceTime(changed_side, side, coup_sid, n_coord_old);
+    }
+    else
     {
       if(n_diff.Norm2()>1e-14)
         dserror("background fluid ALE with level-sets interface??? Think about that, does Scatra support this?");
 
       successful_check = SpecialCheck_InterfaceTips_Levelset(changed_side);
     }
-    else if(side_old != NULL and side_new != NULL)
-    {
-      successful_check = SpecialCheck_InterfaceTips_SpaceTime(changed_side, side_old, side_new, n_coord_old);
-    }
-    else dserror("side is a level-set side at one time and is a mesh cutting side at the other time! Cannot happen!");
-
 
     if(!successful_check) return false; // return non-successful check
 
@@ -1700,16 +1703,14 @@ bool XFEM::XFluidTimeInt::SpecialCheck_InterfaceTips_Levelset(
 
 bool XFEM::XFluidTimeInt::SpecialCheck_InterfaceTips_SpaceTime(
     bool&                         changed_side,              /// did the node change the side ?
-    GEO::CUT::SideHandle*         side_old,                  /// side w.r.t old interface
-    GEO::CUT::SideHandle*         side_new,                  /// side w.r.t new interface
+    DRT::Element *                side,
+    const int                     coup_sid,
     const LINALG::Matrix<3,1>&    n_coord                    /// node coodinates
 )
 {
   bool node_within_Space_Time_Side = false;
 
-  if(side_old->Shape() != side_new->Shape()) dserror("the same side has different shapes at tn and t(n+1) -> not possible!");
-
-  DRT::Element::DiscretizationType side_distype = side_old->Shape();
+  DRT::Element::DiscretizationType side_distype = side->Shape();
 
   bool successful_check = false;
 
@@ -1717,22 +1718,22 @@ bool XFEM::XFluidTimeInt::SpecialCheck_InterfaceTips_SpaceTime(
   {
     case DRT::Element::tri3:
     {
-      successful_check = WithinSpaceTimeSide<DRT::Element::tri3,DRT::Element::wedge6>(node_within_Space_Time_Side,side_old, side_new, n_coord);
+      successful_check = WithinSpaceTimeSide<DRT::Element::tri3,DRT::Element::wedge6>(node_within_Space_Time_Side, side, coup_sid, n_coord);
       break;
     }
     case DRT::Element::quad4:
     {
-      successful_check = WithinSpaceTimeSide<DRT::Element::quad4,DRT::Element::hex8>(node_within_Space_Time_Side,side_old, side_new, n_coord);
+      successful_check = WithinSpaceTimeSide<DRT::Element::quad4,DRT::Element::hex8>(node_within_Space_Time_Side, side, coup_sid, n_coord);
       break;
     }
     case DRT::Element::quad8:
     {
-      successful_check = WithinSpaceTimeSide<DRT::Element::quad8,DRT::Element::hex16>(node_within_Space_Time_Side,side_old, side_new, n_coord);
+      successful_check = WithinSpaceTimeSide<DRT::Element::quad8,DRT::Element::hex16>(node_within_Space_Time_Side, side, coup_sid, n_coord);
       break;
     }
     case DRT::Element::quad9:
     {
-      successful_check = WithinSpaceTimeSide<DRT::Element::quad9,DRT::Element::hex18>(node_within_Space_Time_Side,side_old, side_new, n_coord);
+      successful_check = WithinSpaceTimeSide<DRT::Element::quad9,DRT::Element::hex18>(node_within_Space_Time_Side, side, coup_sid, n_coord);
       break;
     }
     default: dserror("side-distype %s not handled", DRT::DistypeToString(side_distype).c_str()); break;
@@ -1749,36 +1750,68 @@ bool XFEM::XFluidTimeInt::SpecialCheck_InterfaceTips_SpaceTime(
 template<DRT::Element::DiscretizationType side_distype, DRT::Element::DiscretizationType space_time_distype>
 bool XFEM::XFluidTimeInt::WithinSpaceTimeSide(
     bool&                         within_space_time_side,    /// within the space time side
-    GEO::CUT::SideHandle*         side_old,                  /// side w.r.t old interface
-    GEO::CUT::SideHandle*         side_new,                  /// side w.r.t new interface
+    DRT::Element *                side,
+    const int                     coup_sid,
     const LINALG::Matrix<3,1>&    n_coord                    /// node coodinates
 )
 {
+  // get the right cutter discretization for the given side
+  Teuchos::RCP<DRT::Discretization> cutter_dis = condition_manager_->GetCutterDis( coup_sid );
+
+  std::string state_new = "idispnp";
+  std::string state_old = "";
+
+  if(is_newton_increment_transfer_)
+    state_old = "idispnpi"; // get displacements from last newton increment
+  else
+    state_old = "idispn";   // get displacements from last time step
+
+  // get state of the global vector
+  Teuchos::RCP<const Epetra_Vector> idisp_new = cutter_dis->GetState(state_new);
+  Teuchos::RCP<const Epetra_Vector> idisp_old = cutter_dis->GetState(state_old);
+
 
   const int numnode_space_time = DRT::UTILS::DisTypeToNumNodePerEle<space_time_distype>::numNodePerElement;
 
   const int numnode_side = DRT::UTILS::DisTypeToNumNodePerEle<space_time_distype>::numNodePerElement/2;
 
-  Epetra_SerialDenseMatrix xyze_old;
-  Epetra_SerialDenseMatrix xyze_new;
-
-  if( side_new == NULL )
-    dserror("encountered NULL pointer\n");
-
-  side_old->Coordinates(xyze_old);
-  side_new->Coordinates(xyze_new);
-
-
   // space time side coordinates
   LINALG::Matrix<3,numnode_space_time> xyze_st;
 
-  for( int i=0; i<numnode_side; ++i )
+  const int numnode = side->NumNode();
+  DRT::Node ** nodes = side->Nodes();
+
+
+  Epetra_SerialDenseMatrix xyze_old(3, numnode);
+  Epetra_SerialDenseMatrix xyze_new(3, numnode);
+
+  for (int i = 0; i < numnode; ++i)
   {
-    for(int j=0; j< 3; j++)
-    {
-      xyze_st(j,i) = xyze_old(j,i);
-      xyze_st(j,i+numnode_side) = xyze_new(j,i);
-    }
+    DRT::Node & node = *nodes[i];
+
+    LINALG::Matrix<3, 1> x_old(node.X());
+    LINALG::Matrix<3, 1> x_new(node.X());
+
+    std::vector<int> lm;
+    std::vector<double> mydisp_old;
+    std::vector<double> mydisp_new;
+
+    cutter_dis->Dof(&node, lm);
+
+    DRT::UTILS::ExtractMyValues(*idisp_old, mydisp_old, lm);
+    DRT::UTILS::ExtractMyValues(*idisp_new, mydisp_new, lm);
+
+    // add displacements
+    x_old(0) += mydisp_old.at(0);
+    x_old(1) += mydisp_old.at(1);
+    x_old(2) += mydisp_old.at(2);
+
+    x_new(0) += mydisp_new.at(0);
+    x_new(1) += mydisp_new.at(1);
+    x_new(2) += mydisp_new.at(2);
+
+    std::copy(x_old.A(), x_old.A() + 3, &xyze_old(0, i));
+    std::copy(x_new.A(), x_new.A() + 3, &xyze_new(0, i));
   }
 
   // check the space time side volume
@@ -1814,9 +1847,9 @@ bool XFEM::XFluidTimeInt::WithinSpaceTimeSide(
     // Initialization
     LINALG::Matrix<2,numnode_side> deriv(true);      // derivatives dr, ds
 
-    LINALG::Matrix<3,2> derxy (true);
-    LINALG::Matrix<3,1> dx_dr (true);
-    LINALG::Matrix<3,1> dx_ds (true);
+    LINALG::Matrix<3,2> derxy(true);
+    LINALG::Matrix<3,1> dx_dr(true);
+    LINALG::Matrix<3,1> dx_ds(true);
 
     // get current values
     DRT::UTILS::shape_function_2D_deriv1( deriv, xi_side( 0 ), xi_side( 1 ), side_distype );

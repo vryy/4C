@@ -61,6 +61,7 @@ namespace Teuchos
 namespace XFEM
 {
   class XFEMDofSet;
+  class ConditionManager;
 
 /*!
 \brief this class is the basic TIMEINT class for the projection, adaption or
@@ -72,7 +73,9 @@ public:
 
   //! constructor
   explicit XFluidTimeInt(
+      const bool                                                            is_newton_increment_transfer, /// monolithic newton increment transfer or time step transfer?
       const Teuchos::RCP<DRT::Discretization>                               dis,                    /// discretization
+      const Teuchos::RCP<XFEM::ConditionManager>                            condition_manager ,     /// condition manager
       const Teuchos::RCP<GEO::CutWizard>                                    wizard_old,             /// cut wizard at t^n
       const Teuchos::RCP<GEO::CutWizard>                                    wizard_new,             /// cut wizard at t^(n+1)
       const Teuchos::RCP<XFEM::XFEMDofSet>                                  dofset_old,             /// XFEM dofset at t^n
@@ -185,7 +188,7 @@ public:
       const GEO::CUT::Node *                                         n_old,               /// node w.r.t to old wizard
       const GEO::CUT::Node *                                         n_new,               /// node w.r.t to new wizard
       const std::vector<Teuchos::RCP<GEO::CUT::NodalDofSet> > &      dof_cellsets_old,    /// all dofcellsets at t^n
-      const GEO::CUT::NodalDofSet*                                   cell_set_new        /// dofcellset at t^(n+1) which has to be identified
+      const GEO::CUT::NodalDofSet*                                   cell_set_new         /// dofcellset at t^(n+1) which has to be identified
   );
 
   /// special check if the node slides along the cut surface
@@ -218,8 +221,8 @@ public:
   /// special check for mesh based interface tips
   bool SpecialCheck_InterfaceTips_SpaceTime(
       bool&                         changed_side,              /// did the node change the side ?
-      GEO::CUT::SideHandle*         side_old,                  /// side w.r.t old interface
-      GEO::CUT::SideHandle*         side_new,                  /// side w.r.t new interface
+      DRT::Element *                side,
+      const int                     coup_sid,
       const LINALG::Matrix<3,1>&    n_coord                    /// node coodinates
   );
 
@@ -227,8 +230,8 @@ public:
   template<DRT::Element::DiscretizationType side_distype, DRT::Element::DiscretizationType space_time_distype>
   bool WithinSpaceTimeSide(
       bool&                         within_space_time_side,    /// within the space time side
-      GEO::CUT::SideHandle*         side_old,                  /// side w.r.t old interface
-      GEO::CUT::SideHandle*         side_new,                  /// side w.r.t new interface
+      DRT::Element *                side,
+      const int                     coup_sid,
       const LINALG::Matrix<3,1>&    n_coord                    /// node coodinates
   );
 
@@ -252,7 +255,11 @@ public:
       std::vector<char>& dataRecv                       //!< received data
   ) const;
 
+  const bool is_newton_increment_transfer_; /// monolithic newton increment transfer or time step transfer?
+
   Teuchos::RCP<DRT::Discretization> dis_;         /// background  discretization
+
+  Teuchos::RCP<XFEM::ConditionManager> condition_manager_; /// condition manager
 
   Teuchos::RCP<GEO::CutWizard> wizard_old_;       /// old cut wizard w.r.t old interface position
   Teuchos::RCP<GEO::CutWizard> wizard_new_;       /// new cut wizard w.r.t new interface position
@@ -278,6 +285,7 @@ public:
   int step_;
 
   Teuchos::RCP<std::map<int, int> > permutation_map_;
+
 
 };
 

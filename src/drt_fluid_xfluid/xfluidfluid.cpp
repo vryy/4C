@@ -335,6 +335,7 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluidFluid::GetNewState()
 
   if (ale_embfluid_)
   {
+    mc_xff_->UpdateDisplacementIterationVectors(); // update last iteration interface displacements
     LINALG::Export(*embedded_fluid_->Dispnp(),*mc_xff_->IDispnp());
   }
 
@@ -558,6 +559,7 @@ void FLD::XFluidFluid::AddEosPresStabToEmbLayer()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool FLD::XFluidFluid::XTimint_ProjectFromEmbeddedDiscretization(
+  const Teuchos::RCP<XFEM::XFluidTimeInt>&                 xfluid_timeint,       ///< xfluid time integration class
   std::vector<Teuchos::RCP<Epetra_Vector> >&               newRowStateVectors,   ///< vectors to be reconstructed
   Teuchos::RCP<const Epetra_Vector>                        target_dispnp,        ///< displacement col - vector timestep n+1
   const bool                                               screen_out            ///< screen output?
@@ -571,7 +573,7 @@ bool FLD::XFluidFluid::XTimint_ProjectFromEmbeddedDiscretization(
   oldStateVectors.push_back(accncol);
 
   // get set of node-ids, that demand projection from embedded discretization
-  std::map<int, std::set<int> >& projection_nodeToDof = xfluid_timeint_->Get_NodeToDofMap_For_Reconstr(INPAR::XFEM::Xf_TimeInt_by_PROJ_from_DIS);
+  std::map<int, std::set<int> >& projection_nodeToDof = xfluid_timeint->Get_NodeToDofMap_For_Reconstr(INPAR::XFEM::Xf_TimeInt_by_PROJ_from_DIS);
 
   Teuchos::RCP<const Epetra_Vector> disp = DRT::UTILS::GetColVersionOfRowVector(EmbeddedDiscretization(),dispnpoldstate_);
   projector_->SetSourcePositionVector(disp);

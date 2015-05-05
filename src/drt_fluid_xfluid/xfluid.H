@@ -213,7 +213,11 @@ namespace FLD
     // @}
 
 
-    virtual Teuchos::RCP<const Epetra_Map> DofRowMap(){return state_->xfluiddofrowmap_;}
+    virtual Teuchos::RCP<const Epetra_Map> DofRowMap()
+    {
+      return state_->xfluiddofrowmap_; // no ownership, //TODO: otherwise we have to create a new system all the time!
+//      return Teuchos::rcpFromRef(*state_->xfluiddofrowmap_); // no ownership, //TODO: otherwise we have to create a new system all the time!
+    }
 
     Teuchos::RCP<LINALG::MapExtractor> VelPresSplitter() { return state_->velpressplitter_; }
     Teuchos::RCP<const Epetra_Map>     VelocityRowMap()  { return state_->velpressplitter_->OtherMap(); }
@@ -421,29 +425,23 @@ namespace FLD
 
     /// did the dofsets change?
     bool XTimint_ChangedDofsets(
-        Teuchos::RCP<DRT::Discretization> dis,                       ///< discretization
-        Teuchos::RCP<XFEM::XFEMDofSet>   dofset,                     ///< first dofset
-        Teuchos::RCP<XFEM::XFEMDofSet>   dofset_other                ///< other dofset
+        Teuchos::RCP<DRT::Discretization> dis,                        ///< discretization
+        Teuchos::RCP<XFEM::XFEMDofSet>    dofset,                     ///< first dofset
+        Teuchos::RCP<XFEM::XFEMDofSet>    dofset_other                ///< other dofset
     );
 
     /// transfer vectors between two time-steps or Newton steps
     void XTimint_TransferVectorsBetweenSteps(
-        const INPAR::XFEM::XFluidTimeIntScheme                                 xfluid_timintapproach,    /// xfluid_timintapproch
-        const Teuchos::RCP<DRT::Discretization>                                dis,                      ///< discretization
+        const Teuchos::RCP<XFEM::XFluidTimeInt> &                              xfluid_timeint,           ///< xfluid time integration class
         std::vector<Teuchos::RCP<const Epetra_Vector> >&                       oldRowStateVectors,       ///< row map based vectors w.r.t old interface position
         std::vector<Teuchos::RCP<Epetra_Vector> >&                             newRowStateVectors,       ///< row map based vectors w.r.t new interface position
-        const Teuchos::RCP<GEO::CutWizard>                                     wizard_old,               ///< cut wizard w.r.t old interface position
-        const Teuchos::RCP<GEO::CutWizard>                                     wizard_new,               ///< cut wizard w.r.t new interface position
-        const Teuchos::RCP<XFEM::XFEMDofSet>                                   dofset_old,               ///< dofset w.r.t old interface position
-        const Teuchos::RCP<XFEM::XFEMDofSet>                                   dofset_new,               ///< dofset w.r.t new interface position
-        std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >&               node_to_reconstr_method,  ///< reconstruction map for nodes and its dofsets
-        std::map<INPAR::XFEM::XFluidTimeInt, std::map<int, std::set<int> > >&  reconstr_method_to_node,  /// inverse reconstruction map for nodes and its dofsets
         Teuchos::RCP<std::set<int> >                                           dbcgids,                  ///< set of dof gids that must not be changed by ghost penalty reconstruction
-        bool                                                                   fill_permutation_map,     ///< do we have to fill the permutation map?
+        bool                                                                   fill_permutation_map,
         bool                                                                   screen_out                ///< output to screen
     );
 
     void XTimint_CorrectiveTransferVectorsBetweenSteps(
+        const Teuchos::RCP<XFEM::XFluidTimeInt> &                              xfluid_timeint,           ///< xfluid time integration class
         const INPAR::XFEM::XFluidTimeIntScheme                                 xfluid_timintapproach,    /// xfluid_timintapproch
         std::vector<Teuchos::RCP<const Epetra_Vector> >&                       oldRowStateVectors,       ///< row map based vectors w.r.t old interface position
         std::vector<Teuchos::RCP<Epetra_Vector> >&                             newRowStateVectors,       ///< row map based vectors w.r.t new interface position
@@ -453,8 +451,9 @@ namespace FLD
 
     /// decide if semi-Lagrangean back-tracking or ghost-penalty reconstruction has to be performed on any processor
     void XTimint_GetReconstructStatus(
-        bool & timint_ghost_penalty,         ///< do we have to perform ghost penalty reconstruction of ghost values?
-        bool & timint_semi_lagrangean        ///< do we have to perform semi-Lagrangean reconstruction of standard values?
+        const Teuchos::RCP<XFEM::XFluidTimeInt> & xfluid_timeint, ///< xfluid time integration class
+        bool & timint_ghost_penalty,                              ///< do we have to perform ghost penalty reconstruction of ghost values?
+        bool & timint_semi_lagrangean                             ///< do we have to perform semi-Lagrangean reconstruction of standard values?
     );
 
     /// create DBC and free map and return their common extractor
@@ -492,6 +491,7 @@ namespace FLD
 
     /// projection of history from other discretization - returns true if projection was successful for all nodes
     virtual bool XTimint_ProjectFromEmbeddedDiscretization(
+        const Teuchos::RCP<XFEM::XFluidTimeInt>&                 xfluid_timeint,       ///< xfluid time integration class
         std::vector<Teuchos::RCP<Epetra_Vector> >&               newRowStateVectors,   ///< vectors to be reconstructed
         Teuchos::RCP<const Epetra_Vector>                        target_dispnp,        ///< displacement col - vector timestep n+1
         const bool                                               screen_out            ///< screen output?
@@ -637,11 +637,6 @@ namespace FLD
 
     /// edgebased stabilization or ghost penalty stabilization (1st order, 2nd order derivatives, viscous, transient) due to Nitsche's method
     bool eval_eos_;
-
-    //-----------------------------time integration----------------------
-
-    Teuchos::RCP<XFEM::XFluidTimeInt> xfluid_timeint_;
-
 
     //---------------------------------output----------------------------
 

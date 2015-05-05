@@ -373,6 +373,9 @@ public:
   /// update interface field state vectors
   virtual void UpdateStateVectors();
 
+  /// update last iteration interface displacements
+  virtual void UpdateDisplacementIterationVectors();
+
   virtual void GmshOutput(
       const std::string & filename_base,
       const int step,
@@ -453,8 +456,11 @@ protected:
   Teuchos::RCP<Epetra_Vector>    iveln_;
   Teuchos::RCP<Epetra_Vector>    ivelnm_;
 
-  Teuchos::RCP<Epetra_Vector>    idispnp_;
-  Teuchos::RCP<Epetra_Vector>    idispn_;
+  Teuchos::RCP<Epetra_Vector>    idispnp_;  ///< current displacements at t^n+1
+  Teuchos::RCP<Epetra_Vector>    idispn_;   ///< last displacements at t^n
+  Teuchos::RCP<Epetra_Vector>    idispnpi_; ///< displacements of last Newton increment at t^n+1 (for monolithic approaches)
+
+
   //@}
 
   //! @name output discretization writers
