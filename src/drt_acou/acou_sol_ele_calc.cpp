@@ -2187,7 +2187,7 @@ ComputeSourcePressureMonitorVector(DRT::ELEMENTS::Acou*        ele,
   // here, we have to perform the Schur complement thing, because the source term from the adjoint
   // is not applied to the trace field but to the pressure field, which is an internal field
   // also, we have to evaluate the source at the given face....
-  dsassert(sourceterm.M()==ndofs_,"size of sourceterm must be ndofs_");
+  dsassert(sourceterm.M()==(int)ndofs_,"size of sourceterm must be ndofs_");
 
   if(!(params.get<bool>("adjoint"))) return;
 
