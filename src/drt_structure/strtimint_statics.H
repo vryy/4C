@@ -216,9 +216,6 @@ namespace STR
     /// update all the field vectors to account for new node introduced by crack
     void updateMethodSpecificEpetraCrack( std::map<int,int>& oldnew );
 
-    /// Reconstruct method specific epetra vectors during restart
-    void ReconstructMethodSpecificVectorsRestart();
-
   protected:
 
     //! equal operator is hidden

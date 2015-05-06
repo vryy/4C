@@ -922,69 +922,6 @@ void STR::TimIntGenAlpha::updateMethodSpecificEpetraCrack( std::map<int,int>& ol
 }
 
 /*-----------------------------------------------------------------------------*
- * When restart files are read, all epetra vectors are reconstructed   sudhakar 12/14
- * This is mandatory when discretization changes at each time step
- * like crack propagation problems
- *----------------------------------------------------------------------------*/
-void STR::TimIntGenAlpha::ReconstructMethodSpecificVectorsRestart()
-{
-  dism_ = LINALG::CreateVector(*DofRowMapView(), true);
-  velm_ = LINALG::CreateVector(*DofRowMapView(), true);
-  accm_ = LINALG::CreateVector(*DofRowMapView(), true);
-
-  fint_ = LINALG::CreateVector(*DofRowMapView(), true);
-  fintm_ = LINALG::CreateVector(*DofRowMapView(), true);
-  fintn_ = LINALG::CreateVector(*DofRowMapView(), true);
-
-  fext_ = LINALG::CreateVector(*DofRowMapView(), true);
-  fextm_ = LINALG::CreateVector(*DofRowMapView(), true);
-  fextn_ = LINALG::CreateVector(*DofRowMapView(), true);
-
-  finert_ = LINALG::CreateVector(*DofRowMapView(), true);
-  finertm_ = LINALG::CreateVector(*DofRowMapView(), true);
-  finertn_ = LINALG::CreateVector(*DofRowMapView(), true);
-  fviscm_ = LINALG::CreateVector(*DofRowMapView(), true);
-
-  // set initial external force vector
-  ApplyForceExternal((*time_)[0], (*dis_)(0), disn_, (*vel_)(0), fext_);
-
-  if (!HaveNonlinearMass())
-  {
-    // determine mass, damping and initial accelerations
-    DetermineMassDampConsistAccel();
-  }
-  else
-  {
-    /* the case of nonlinear inertia terms works so far only for examples with
-     * vanishing initial accelerations, i.e. the initial external forces and
-     * initial velocities have to be chosen consistently!!!
-     */
-    (*acc_)(0)->PutScalar(0.0);
-  }
-
-  ApplyForceStiffExternal((*time_)[0], (*dis_)(0), disn_, (*vel_)(0), fext_, stiff_);
-
-    // create parameter list
-    Teuchos::ParameterList params;
-
-  if (!HaveNonlinearMass())
-  {
-    // set initial internal force vector
-    ApplyForceStiffInternal((*time_)[0], (*dt_)[0], (*dis_)(0), zeros_, (*vel_)(0), fint_, stiff_, params);
-  }
-  else
-  {
-    double timeintfac_dis=beta_*(*dt_)[0]*(*dt_)[0];
-    double timeintfac_vel=gamma_*(*dt_)[0];
-
-    // Check, if initial residuum really vanishes for acc_ = 0
-    ApplyForceStiffInternalAndInertial((*time_)[0], (*dt_)[0], timeintfac_dis, timeintfac_vel, (*dis_)(0), zeros_, (*vel_)(0), (*acc_)(0), fint_, finert_, stiff_, mass_,params,beta_,gamma_,alphaf_,alpham_);
-
-    NonlinearMassSanityCheck(fext_, (*dis_)(0), (*vel_)(0), (*acc_)(0));
-  }
-}
-
-/*-----------------------------------------------------------------------------*
  * Build total residual vector and effective tangential stiffness    meier 05/14
  * matrix in case of nonlinear, rotational inertia effects
  *----------------------------------------------------------------------------*/

@@ -4797,21 +4797,6 @@ void STR::TimIntImpl::updateEpetraVectorsCrack( std::map<int,int>& oldnew )
 }
 
 /*-----------------------------------------------------------------------------*
- * Adopt the vectors to new maps after discretization is               sudhakar 12/14
- * changed or while reading restart files
- *-----------------------------------------------------------------------------*/
-void STR::TimIntImpl::ReconstructEpetraVectors()
-{
-  disi_ = LINALG::CreateVector(*DofRowMapView(), true);
-  fres_ = LINALG::CreateVector(*DofRowMapView(), true);
-  freact_ = LINALG::CreateVector(*DofRowMapView(), true);
-
-  stcmat_= Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
-
-  ReconstructMethodSpecificVectorsRestart();
-}
-
-/*-----------------------------------------------------------------------------*
  * check, if according to divercont flag                             meier 01/15
  * time step size can be increased
  *-----------------------------------------------------------------------------*/

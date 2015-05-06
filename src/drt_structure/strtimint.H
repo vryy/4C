@@ -1018,10 +1018,6 @@ namespace STR
     //! update all Epectra_vectors related to the chosen time integration
     virtual void updateEpetraVectorsCrack( std::map<int,int>& oldnew ) = 0;
 
-    //! Reconstruct all vectors while reading restart
-    // This is mandatory for methods that modify the discretization (like crack propagation)
-    virtual void ReconstructEpetraVectors() = 0;
-
     //! Get map of old and new crack tip nodes
     std::map<int,int> getOldNewCrackNodes();
 

@@ -474,17 +474,6 @@ void STR::TimIntStatics::updateMethodSpecificEpetraCrack( std::map<int,int>& old
   DRT::CRACK::UTILS::UpdateThisEpetraVectorCrack( discret_, fextn_, oldnew );
 }
 
-/*-----------------------------------------------------------------------------*
- * When restart files are read, all epetra vectors are reconstructed   sudhakar 12/14
- * This is mandatory when discretization changes at each time step
- * like crack propagation problems
- *----------------------------------------------------------------------------*/
-void STR::TimIntStatics::ReconstructMethodSpecificVectorsRestart()
-{
-  fintn_ = LINALG::CreateVector(*DofRowMapView(), true);
-  fextn_ = LINALG::CreateVector(*DofRowMapView(), true);
-}
-
 /*---------------------------------------------------------------*/
 /* Apply Dirichlet boundary conditions on provided state vectors */
 void STR::TimIntStatics::ApplyDirichletBC

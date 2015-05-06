@@ -109,11 +109,13 @@ void IO::DiscretizationReader::ReadMultiVector(Teuchos::RCP<Epetra_MultiVector> 
 }
 
 
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ * Read the mesh from restart files
 /*----------------------------------------------------------------------*/
 void IO::DiscretizationReader::ReadMesh(int step)
 {
-  dis_->DeleteAllNodesAndElements();
+  dis_->DeleteNodes();
+  dis_->DeleteElements();
 
   FindMeshGroup(step, input_->ControlFile());
 
@@ -134,6 +136,9 @@ void IO::DiscretizationReader::ReadMesh(int step)
   dis_->UnPackMyElements(elementdata);
 
   dis_->SetupGhosting(true, false, false);
+
+  dis_->FillComplete();
+
   return;
 }
 

@@ -946,7 +946,8 @@ void STR::TimInt::PrepareStatMech()
 void STR::TimInt::PostSolve()
 {
   // propagate crack within the structure
-  UpdateCrackInformation( Dispnp() );
+  if( DRT::Problem::Instance()->ProblemType() == prb_crack )
+    UpdateCrackInformation( Dispnp() );
 
   return;
 }
@@ -1795,16 +1796,6 @@ void STR::TimInt::SetRestart
 void STR::TimInt::ReadRestartState()
 {
   IO::DiscretizationReader reader(discret_, step_);
-  reader.ReadMesh(step_);
-
-  // This is already done in the timint constructor, but they are based
-  // on the maps from discretization in the input file
-  // If discretization is redistributed during the solution, this should be done.
-  createAllEpetraVectors();
-
-  createFields( solver_ );
-
-  ReconstructEpetraVectors();
 
   reader.ReadVector(disn_, "displacement");
   dis_->UpdateSteps(*disn_);
@@ -1968,7 +1959,6 @@ void STR::TimInt::ReadRestartCrack()
 
     dbcmaps_= Teuchos::rcp(new LINALG::MapExtractor());
     createFields( solver_ );
-    ReconstructEpetraVectors();
   }
 }
 

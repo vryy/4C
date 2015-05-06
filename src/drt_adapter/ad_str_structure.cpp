@@ -143,8 +143,20 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
   if(mtcond.size()==0 and ccond.size()!=0)
     onlycontact = true;
 
+  // Problem-types involving changing mesh (like crack) or redistribution of mesh
+  // for load balancing (like particle or contact) during the simulation needs an additional step.
+  // This is because the discretization read from the input file
+  // do not match with the discr. at the current time step.
+  // Here we read the discretization at the current time step from restart files
+  const int restart = DRT::Problem::Instance()->Restart();
+  if (restart  and DRT::Problem::Instance()->ProblemType() != prb_ac_fsi )
+  {
+    IO::DiscretizationReader reader(actdis, restart);
+    reader.ReadMesh(restart);
+  }
   // set degrees of freedom in the discretization
-  if (not actdis->Filled() || not actdis->HaveDofs()) actdis->FillComplete();
+  else if (not actdis->Filled() || not actdis->HaveDofs())
+    actdis->FillComplete();
 
   // get input parameter lists and copy them, because a few parameters are overwritten
   //const Teuchos::ParameterList& probtype

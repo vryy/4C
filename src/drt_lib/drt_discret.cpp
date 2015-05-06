@@ -148,15 +148,6 @@ bool DRT::Discretization::DeleteElements()
 }
 
 /*----------------------------------------------------------------------*
- |  remove all nodes and elements  (public)               sudhakar 12/14|
- *----------------------------------------------------------------------*/
-void DRT::Discretization::DeleteAllNodesAndElements()
-{
-  DeleteNodes();
-  DeleteElements();
-}
-
-/*----------------------------------------------------------------------*
  |  delete an element (public)                               mwgee 10/08|
  *----------------------------------------------------------------------*/
 bool DRT::Discretization::DeleteElement(Teuchos::RCP<DRT::Element> ele)
