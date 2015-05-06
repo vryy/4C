@@ -8103,6 +8103,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                     INPAR::ACOU::acou_lossless,
                     INPAR::ACOU::acou_solid),
                     &acousticdyn);
+  // for viscous flows, one can specify if the displacement gradient or the stresses are outputted
+  BoolParameter("WRITESTRESS","Yes","Output of stresses instead of displacement gradient",&acousticdyn);
 
   // photoacoustics
   BoolParameter("PHOTOACOU","No","Coupling with Scatra for Diffusive Light Transport",&acousticdyn);

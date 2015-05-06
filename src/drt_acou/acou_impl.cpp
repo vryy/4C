@@ -57,6 +57,7 @@ ACOU::AcouImplicitTimeInt::AcouImplicitTimeInt(
   dtsolve_        (0.0),
   invana_         (params_->get<bool>("invana")),
   writemonitor_   (DRT::INPUT::IntegralValue<bool>(*params_,"WRITEMONITOR")),
+  writestress_    (DRT::INPUT::IntegralValue<bool>(*params_,"WRITESTRESS")),
   errormaps_      (DRT::INPUT::IntegralValue<bool>(*params_,"ERRORMAPS")),
   padaptivity_    (DRT::INPUT::IntegralValue<bool>(*params_,"P_ADAPTIVITY")),
   padapttol_      (params_->get<double>("P_ADAPT_TOL")),
@@ -892,7 +893,7 @@ void ACOU::AcouImplicitTimeInt::AssembleMatAndRHS()
       discret_->EvaluateCondition(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null,condname);
     }
   }
-  if(adjoint_)
+  if(adjoint_ && phys_==INPAR::ACOU::acou_lossless) // only needed for fluid, since the source term for the solid is calculated directly in the update routine
   {
     std::string condname = "PressureMonitor";
     std::vector<DRT::Condition*> pressuremon;
@@ -962,7 +963,6 @@ void ACOU::AcouImplicitTimeInt::UpdateInteriorVariablesAndAssemebleRHS()
   eleparams.set<int>("action",ACOU::update_secondary_solution_and_calc_residual);
   eleparams.set<INPAR::ACOU::DynamicType>("dynamic type",dyna_);
 
-
   residual_->Scale(0.0);
   eleparams.set<Teuchos::RCP<Epetra_MultiVector> >("adjointrhs",adjoint_rhs_);
   eleparams.set<int>("step",step_);
@@ -982,8 +982,8 @@ void ACOU::AcouImplicitTimeInt::UpdateInteriorVariablesAndAssemebleRHS()
   discret_->ClearState();
 
   // calculate source term for adjoint simulation
-  if(adjoint_)
-  {
+  if(adjoint_ && phys_==INPAR::ACOU::acou_lossless) // only needed for fluid, since the source term for the solid is calculated directly in the update routine
+  { // TODO
     std::string condname = "PressureMonitor";
     std::vector<DRT::Condition*> pressuremon;
     discret_->GetCondition(condname,pressuremon);
@@ -1196,7 +1196,8 @@ namespace
                             Teuchos::RCP<Epetra_Vector>       &pressure,
                             Teuchos::RCP<Epetra_MultiVector>  &tracevelocity,
                             Teuchos::RCP<Epetra_Vector>       &cellPres,
-                            INPAR::ACOU::PhysicalType         phys)
+                            INPAR::ACOU::PhysicalType         phys,
+                            bool                              writestress)
   {
     {
       const Epetra_Map* nodemap = dis.NodeRowMap();
@@ -1211,6 +1212,7 @@ namespace
     Teuchos::ParameterList params;
     params.set<int>("action",ACOU::interpolate_hdg_to_node);
     params.set<INPAR::ACOU::PhysicalType>("physical type",phys);
+    params.set<bool>("writestress",writestress);
     dis.SetState(0,"trace",traceValues);
 
     std::vector<int> dummy;
@@ -1302,7 +1304,7 @@ void ACOU::AcouImplicitTimeInt::Output(Teuchos::RCP<Epetra_MultiVector> history,
   {
     getNodeVectorsHDGSolid(*discret_, velnp_, numdim_,
         interpolatedVelocityGradient,interpolatedVelocity,interpolatedPressure,
-        traceVelocity,cellPres,phys_);
+        traceVelocity,cellPres,phys_,writestress_);
   }
   // fill in pressure values into monitor file, if required
   FillMonitorFile(interpolatedPressure);
@@ -1537,7 +1539,7 @@ void ACOU::AcouImplicitTimeInt::NodalPressureField(Teuchos::RCP<Epetra_Vector> o
 
     getNodeVectorsHDGSolid(*discret_, velnp_, numdim_,
         interpolatedVelocityGradient,interpolatedVelocity,interpolatedPressure,
-        traceVelocity,cellPres,phys_);
+        traceVelocity,cellPres,phys_,writestress_);
 
     for(int i=0; i<traceVelocity->MyLength(); ++i)
       outvec->ReplaceMyValue(i,0,interpolatedPressure->operator [](i));

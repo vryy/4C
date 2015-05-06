@@ -493,7 +493,6 @@ int DRT::ELEMENTS::AcouSolBoundary::Evaluate(
     Epetra_SerialDenseVector& elevec2,
     Epetra_SerialDenseVector& elevec3)
 {
-  // TODO
   DRT::ELEMENTS::AcouBoundaryImplInterface::Impl(this)->Absorbing(this,params,discretization,lm,elemat1,elemat2,elevec1,elevec2,elevec3);
   return 0;
 }

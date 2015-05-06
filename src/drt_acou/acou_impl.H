@@ -195,6 +195,7 @@ protected:
 
   bool invana_;                         /// flag indicating whether inverse analysis is performed
   bool writemonitor_;                   /// flag indicating if a monitor file is written
+  bool writestress_;                   /// flag indicating if a stresses or -if no- the displacment gradient is written to the output
   bool errormaps_;                      /// flag indicating whether error maps are calculated
   bool padaptivity_;                    /// p-adaptivity flag
   double padapttol_;                    /// p-adaptivity error tolerance

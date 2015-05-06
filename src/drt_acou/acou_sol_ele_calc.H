@@ -82,7 +82,8 @@ public:
   /// map solution values to nodes
   void NodeBasedValues(const Teuchos::RCP<MAT::Material>    &mat,
                        DRT::ELEMENTS::Acou*                 ele,
-                       Epetra_SerialDenseVector&            elevec1);
+                       Epetra_SerialDenseVector&            elevec1,
+                       bool                                 writestress);
 
   /// map solution values to nodes
   void NodeBasedPsi(const Teuchos::RCP<MAT::Material>    &mat,
@@ -164,8 +165,12 @@ private:
     /// add terms corresponding to the absorbing boundary condition
     void ComputeSourcePressureMonitor(DRT::ELEMENTS::Acou*        ele,
                             Teuchos::ParameterList&     params,
-                            int                         face,
                             Epetra_SerialDenseVector    &elevec);
+
+    /// add terms corresponding to the absorbing boundary condition
+    void ComputeSourcePressureMonitorVector(DRT::ELEMENTS::Acou*        ele,
+                            Teuchos::ParameterList&     params,
+                            Epetra_SerialDenseVector    &sourceterm);
 
     /// add terms corresponding to the absorbing boundary condition
     void ComputeSourcePressureMonitorLine3D(DRT::ELEMENTS::Acou*        ele,
