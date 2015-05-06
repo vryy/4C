@@ -354,9 +354,6 @@ public:
   /// get the edge with begin node and end node
   Edge* GetEdge( Node* begin, Node* end );
 
-  /// get all sides (subsides) that belong to the parent side with sid
-  const std::vector<GEO::CUT::Side*> & GetSides( int sid );
-
   /// get the side that contains the nodes with the following node ids
   Side* GetSide( std::vector<int>& nids ) const;
 
@@ -436,7 +433,7 @@ public:
   bool WithinBB( Element & element );
 
   /// ?
-  void CreateSideIds();
+  void CreateSideIds(int lastid = 0);
 
   /// ?
   void AssignOtherVolumeCells( const Mesh & other );
@@ -469,9 +466,6 @@ public:
 
   /// Erases a side of the cutmesh
   void EraseSide( plain_int_set sid ) { sides_.erase( sid ); }
-
-  /// Erases a cut side of the cutmesh
-  void EraseCutSide( int sid ) { cut_sides_.erase( sid ); }
 
   /// Erases a edge of the cutmesh
   void EraseEdge( plain_int_set eid ) { edges_.erase( eid ); }
@@ -549,9 +543,6 @@ private:
 
   /// sides by set of nodal ids
   std::map<plain_int_set, Teuchos::RCP<Side> > sides_;
-
-  /// cut side with (non-unique) side id > -1
-  std::map<int, std::vector<Side*> > cut_sides_;
 
   /// elements by unique id
   std::map<int, Teuchos::RCP<Element> > elements_;

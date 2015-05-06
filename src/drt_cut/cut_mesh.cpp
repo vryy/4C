@@ -1914,23 +1914,6 @@ void GEO::CUT::Mesh::DumpGmsh( std::string name )
   file << "};\n";
   }
 
-  //###############write all cutsides###############
-  if (cut_sides_.size() > 0)
-  {
-  file << "View \"" << "CutSides" << "\" {\n";
-    for ( std::map<int, std::vector<Side*> >::iterator i=cut_sides_.begin();
-          i!=cut_sides_.end();
-          ++i )
-    {
-      std::vector<Side*> & sv = i->second;
-      for (uint sid = 0; sid < sv.size(); ++sid)
-      {
-        GEO::CUT::OUTPUT::GmshSideDump( file, sv[sid] );
-      }
-    }
-  file << "};\n";
-  }
-
   //###############write all nodes###############
   if (sides_.size() > 0)
   {
@@ -2501,21 +2484,6 @@ GEO::CUT::Edge* GEO::CUT::Mesh::GetEdge( const plain_int_set & nids, const std::
   return e;
 }
 
-
-/*-------------------------------------------------------------------------------------*
- * get all sides (subsides) that belong to the parent side with sid
- *-------------------------------------------------------------------------------------*/
-const std::vector<GEO::CUT::Side*> & GEO::CUT::Mesh::GetSides( int sid )
-{
-  std::map<int, std::vector<Side*> >::iterator i=cut_sides_.find( sid );
-  if ( i!=cut_sides_.end() )
-  {
-    return i->second;
-  }
-  throw std::runtime_error( "no side with given id" );
-}
-
-
 /*-------------------------------------------------------------------------------------*
  * get the side that contains the nodes with the following node ids
  *-------------------------------------------------------------------------------------*/
@@ -2641,10 +2609,6 @@ GEO::CUT::Side* GEO::CUT::Mesh::GetSide( int sid,
     throw std::runtime_error( "unsupported side topology" );
   }
   sides_[nids] = Teuchos::rcp( s );
-  if ( sid > -1 )
-  {
-    cut_sides_[sid].push_back( s );
-  }
   return s;
 }
 
@@ -2958,32 +2922,8 @@ bool GEO::CUT::Mesh::WithinBB( Element & element )
 /*-------------------------------------------------------------------------------------*
  * ?
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::Mesh::CreateSideIds()
+void GEO::CUT::Mesh::CreateSideIds(int lastid)
 {
-#if 0
-  int localmaxid = cut_sides_.rbegin()->first;
-  int globalmaxid;
-
-  int err = MPI_Allreduce( &localmaxid, &globalmaxid, 1, MPI_INT, MPI_MAX, comm );
-  if ( err!=0 )
-    throw std::runtime_error( "mpi error" );
-
-  int myrank;
-  int numproc;
-  MPI_Comm_rank( comm, &myrank );
-  MPI_Comm_size( comm, &numproc );
-
-  //std::vector<int>
-#endif
-
-  int lastid = 0;
-  if ( cut_sides_.size() > 0 )
-  {
-    lastid = cut_sides_.rbegin()->first;
-  }
-
-  //int numelementsides = sides_.size() - cut_sides_.size();
-
   for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=sides_.begin();
         i!=sides_.end();
         ++i )
@@ -2993,7 +2933,6 @@ void GEO::CUT::Mesh::CreateSideIds()
     {
       lastid += 1;
       s->SetId( lastid );
-      cut_sides_[lastid].push_back( s );
     }
   }
 
