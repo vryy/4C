@@ -59,7 +59,7 @@ FLD::XFluidFluid::XFluidFluid(
   xfluiddis->Writer(),
   ale_xfluid),
   embedded_fluid_(embedded_fluid),
-  projector_(Teuchos::rcp(new XFEM::MeshProjector(EmbeddedDiscretization(),discret_,*params_))),
+  projector_(Teuchos::rcp(new XFEM::MeshProjector(embedded_fluid_->Discretization(),discret_,*params_))),
   ale_embfluid_(ale_fluid),
   cond_name_("XFEMSurfFluidFluid")
 {
@@ -567,15 +567,15 @@ bool FLD::XFluidFluid::XTimint_ProjectFromEmbeddedDiscretization(
 {
   std::vector<Teuchos::RCP<const Epetra_Vector> > oldStateVectors;
 
-  Teuchos::RCP<const Epetra_Vector> velncol = DRT::UTILS::GetColVersionOfRowVector(EmbeddedDiscretization(),embedded_fluid_->Veln());
-  Teuchos::RCP<const Epetra_Vector> accncol = DRT::UTILS::GetColVersionOfRowVector(EmbeddedDiscretization(),embedded_fluid_->Accn());
+  Teuchos::RCP<const Epetra_Vector> velncol = DRT::UTILS::GetColVersionOfRowVector(embedded_fluid_->Discretization(),embedded_fluid_->Veln());
+  Teuchos::RCP<const Epetra_Vector> accncol = DRT::UTILS::GetColVersionOfRowVector(embedded_fluid_->Discretization(),embedded_fluid_->Accn());
   oldStateVectors.push_back(velncol);
   oldStateVectors.push_back(accncol);
 
   // get set of node-ids, that demand projection from embedded discretization
   std::map<int, std::set<int> >& projection_nodeToDof = xfluid_timeint->Get_NodeToDofMap_For_Reconstr(INPAR::XFEM::Xf_TimeInt_by_PROJ_from_DIS);
 
-  Teuchos::RCP<const Epetra_Vector> disp = DRT::UTILS::GetColVersionOfRowVector(EmbeddedDiscretization(),dispnpoldstate_);
+  Teuchos::RCP<const Epetra_Vector> disp = DRT::UTILS::GetColVersionOfRowVector(embedded_fluid_->Discretization(),dispnpoldstate_);
   projector_->SetSourcePositionVector(disp);
   projector_->SetSourceStateVectors(oldStateVectors);
 
@@ -643,7 +643,7 @@ void FLD::XFluidFluid::UpdateMonolithicFluidSolution(const Teuchos::RCP<const Ep
 /*----------------------------------------------------------------------*/
 void FLD::XFluidFluid::InterpolateEmbeddedStateVectors()
 {
-  XFEM::MeshProjector embedded_projector(EmbeddedDiscretization(),EmbeddedDiscretization(),*params_);
+  XFEM::MeshProjector embedded_projector(embedded_fluid_->Discretization(),embedded_fluid_->Discretization(),*params_);
   std::vector<Teuchos::RCP<Epetra_Vector> > newRowStateVectors;
 
   newRowStateVectors.push_back(embedded_fluid_->WriteAccessVelnp());
@@ -651,16 +651,16 @@ void FLD::XFluidFluid::InterpolateEmbeddedStateVectors()
 
   std::vector<Teuchos::RCP<const Epetra_Vector> > oldStateVectors;
 
-  Teuchos::RCP<const Epetra_Vector> velncol = DRT::UTILS::GetColVersionOfRowVector(EmbeddedDiscretization(),embedded_fluid_->Velnp());
-  Teuchos::RCP<const Epetra_Vector> accncol = DRT::UTILS::GetColVersionOfRowVector(EmbeddedDiscretization(),embedded_fluid_->Accnp());
+  Teuchos::RCP<const Epetra_Vector> velncol = DRT::UTILS::GetColVersionOfRowVector(embedded_fluid_->Discretization(),embedded_fluid_->Velnp());
+  Teuchos::RCP<const Epetra_Vector> accncol = DRT::UTILS::GetColVersionOfRowVector(embedded_fluid_->Discretization(),embedded_fluid_->Accnp());
   oldStateVectors.push_back(velncol);
   oldStateVectors.push_back(accncol);
 
-  Teuchos::RCP<const Epetra_Vector> srcdisp = DRT::UTILS::GetColVersionOfRowVector(EmbeddedDiscretization(),dispnpoldstate_);
+  Teuchos::RCP<const Epetra_Vector> srcdisp = DRT::UTILS::GetColVersionOfRowVector(embedded_fluid_->Discretization(),dispnpoldstate_);
   embedded_projector.SetSourcePositionVector(srcdisp);
   embedded_projector.SetSourceStateVectors(oldStateVectors);
 
-  Teuchos::RCP<const Epetra_Vector> tardisp = DRT::UTILS::GetColVersionOfRowVector(EmbeddedDiscretization(),embedded_fluid_->Dispnp());
+  Teuchos::RCP<const Epetra_Vector> tardisp = DRT::UTILS::GetColVersionOfRowVector(embedded_fluid_->Discretization(),embedded_fluid_->Dispnp());
 
   embedded_projector.ProjectInFullTargetDiscretization(
     newRowStateVectors,

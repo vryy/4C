@@ -128,22 +128,13 @@ public:
       Teuchos::RCP<Epetra_Map> innermap,
       Teuchos::RCP<Epetra_Map> condmap);
 
-  Teuchos::RCP<const Epetra_Vector> RHS()           { return xff_state_->xffluidresidual_; }
+  Teuchos::RCP<const Epetra_Vector> RHS()             { return xff_state_->xffluidresidual_; }
+  Teuchos::RCP<const Epetra_Vector> Velnp()           { return xff_state_->xffluidvelnp_; }
+  Teuchos::RCP<      Epetra_Vector> WriteAccessVelnp(){ return xff_state_->xffluidvelnp_; }
+  Teuchos::RCP<const Epetra_Vector> Veln()            { return xff_state_->xffluidveln_; }
+  Teuchos::RCP<const Epetra_Vector> Stepinc()         { return stepinc_; }
 
-  Teuchos::RCP<const Epetra_Vector> Velnp()             { return xff_state_->xffluidvelnp_; }
-  Teuchos::RCP<      Epetra_Vector> WriteAccessVelnp()  { return xff_state_->xffluidvelnp_; }
-  Teuchos::RCP<const Epetra_Vector> Veln()              { return xff_state_->xffluidveln_; }
-  Teuchos::RCP<const Epetra_Vector> GridVel()           { return embedded_fluid_->GridVel(); }
-  Teuchos::RCP<      Epetra_Vector> WriteAccessGridVel(){ return embedded_fluid_->WriteAccessGridVel(); }
-  Teuchos::RCP<const Epetra_Vector> Stepinc()           { return stepinc_; }
-
-  Teuchos::RCP<const Epetra_Vector> Dispnp()                  { return embedded_fluid_->Dispnp(); }
-  Teuchos::RCP<      Epetra_Vector> WriteAccessDispnp()       { return embedded_fluid_->WriteAccessDispnp(); }
-  Teuchos::RCP<      Epetra_Vector> WriteAccessDispOldState() { return dispnpoldstate_; }
-  Teuchos::RCP<const Epetra_Vector> Dispn()                   { return embedded_fluid_->Dispn(); }
-
-  /// get embedded fluid discretization
-  const Teuchos::RCP<DRT::Discretization>& EmbeddedDiscretization() { return embedded_fluid_->Discretization(); }
+  Teuchos::RCP<      Epetra_Vector> WriteAccessDispOldState(){ return dispnpoldstate_; }
 
   /// get merged fluid dofmap
   Teuchos::RCP<const Epetra_Map> DofRowMap()
@@ -151,12 +142,15 @@ public:
     return xff_state_->xffluiddofrowmap_;
   }
 
+  /// get merged vel-pres-splitter
   Teuchos::RCP<LINALG::MapExtractor> VelPresSplitter()
   {
     return xff_state_->xffluidvelpressplitter_;
   }
 
+  // get merged pressure dof-map
   Teuchos::RCP<const Epetra_Map> PressureRowMap();
+  // get merged velocity dof-map
   Teuchos::RCP<const Epetra_Map> VelocityRowMap();
 
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> ExtendedShapeDerivatives(){ return extended_shapederivatives_; }
@@ -181,9 +175,6 @@ public:
 
   //! access to new merged fluid state container
   Teuchos::RCP<FLD::XFluidState> GetNewState();
-
-  /// update grid velocity of embedded fluid
-  void UpdateGridv(){ embedded_fluid_->UpdateGridv(); }
 
   /// solve fluid field after ALE-mesh relaxation
   void UpdateMonolithicFluidSolution(const Teuchos::RCP<const Epetra_Map>& fsidofmap);
@@ -210,6 +201,7 @@ private:
     const bool                                               screen_out            ///< screen output?
   );
 
+  //! transfer dofs between Newton steps
   bool XTimint_DoIncrementStepTransfer(
       const bool screen_out,
       const bool firstcall_in_timestep

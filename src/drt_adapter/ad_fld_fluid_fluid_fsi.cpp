@@ -197,6 +197,50 @@ void ADAPTER::FluidFluidFSI::Evaluate(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidFluidFSI::GridVel()
+{
+  return fluidimpl_->GridVel();
+
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<      Epetra_Vector> ADAPTER::FluidFluidFSI::WriteAccessGridVel()
+{
+  return fluidimpl_->WriteAccessGridVel();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidFluidFSI::Dispnp()
+{
+  return fluidimpl_->Dispnp();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<      Epetra_Vector> ADAPTER::FluidFluidFSI::WriteAccessDispnp()
+{
+  return fluidimpl_->WriteAccessDispnp();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidFluidFSI::Dispn()
+{
+  return fluidimpl_->Dispn();
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+const Teuchos::RCP<DRT::Discretization>& ADAPTER::FluidFluidFSI::Discretization()
+{
+  return fluidimpl_->Discretization();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> ADAPTER::FluidFluidFSI::VelocityRowMap()
 {
   // in case of fsi with fluidsplit, return the embedded velocity DOF
@@ -208,13 +252,6 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::FluidFluidFSI::VelocityRowMap()
   maps.push_back(xfluidfluid_->VelocityRowMap());
   Teuchos::RCP<const Epetra_Map> innervelocitymap = LINALG::MultiMapExtractor::IntersectMaps(maps);
   return innervelocitymap;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-const Teuchos::RCP<DRT::Discretization>& ADAPTER::FluidFluidFSI::Discretization()
-{
-  return xfluidfluid_->EmbeddedDiscretization();
 }
 
 /*----------------------------------------------------------------------*
@@ -266,7 +303,7 @@ void ADAPTER::FluidFluidFSI::SetupInterface()
 void ADAPTER::FluidFluidFSI::PrepareShapeDerivatives()
 {
   // the dof-maps may have changed: create a new shape derivatives matrix
-  Teuchos::RCP<std::set<int> > condelements = mergedfluidinterface_->ConditionedElementMap(*xfluidfluid_->EmbeddedDiscretization());
+  Teuchos::RCP<std::set<int> > condelements = mergedfluidinterface_->ConditionedElementMap(*fluidimpl_->Discretization()());
   xfluidfluid_->PrepareShapeDerivatives(mergedfluidinterface_,condelements);
 }
 
