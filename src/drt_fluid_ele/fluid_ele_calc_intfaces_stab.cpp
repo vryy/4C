@@ -675,8 +675,8 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
 
     if (pele->IsAle())
     {
-      peconvvelaf_.Update(1.0,pegridv_,-1.0);
-      neconvvelaf_.Update(1.0,negridv_,-1.0);
+      peconvvelaf_.Update(-1.0,pegridv_,1.0);
+      neconvvelaf_.Update(-1.0,negridv_,1.0);
     }
   }
   // set element advective field for Oseen problems
