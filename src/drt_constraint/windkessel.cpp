@@ -2076,9 +2076,9 @@ void UTILS::Windkessel::EvaluateHeartValveCardiovascularFullWindkessel(
     // set vector of compartment volumes (does not hold volume stemming from FE (ventricles) - assembled later!)
     if (assvec6 and assvec9)
     {
-      p_at_m = (*sysvec6)[numdof_per_cond*condID+1];
-      p_ar_m = (*sysvec6)[numdof_per_cond*condID+2];
-      p_ven_m = (*sysvec6)[numdof_per_cond*condID+3];
+      p_at_m = (*sysvec6)[numdof_per_cond*condID+0];
+      p_ar_m = (*sysvec6)[numdof_per_cond*condID+4];
+      p_ven_m = (*sysvec6)[numdof_per_cond*condID+6];
 
       // atrial volume
       (*sysvec9)[numdof_per_cond*condID + 0] = p_at_m/E_at_m + V_at_0;
