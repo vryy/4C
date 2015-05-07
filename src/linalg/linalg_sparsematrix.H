@@ -88,7 +88,7 @@ class SparseMatrix : public SparseMatrixBase
     /// that require implicit casting. Therefore you have to instantiate this class with exactly the types
     /// matching one of the constructors
 #if __cplusplus >= 201103L
-  template <typename... T> foo(T...) = delete;
+  template <typename... T> SparseMatrix(T...) = delete;
 #else
   template <typename T0>                                                     SparseMatrix(T0)                 {BOOST_STATIC_ASSERT_MSG(sizeof(T0) == 0, "dummy templated constructor") __attribute__((unused));}
   template <typename T0, typename T1>                                        SparseMatrix(T0, T1)             {BOOST_STATIC_ASSERT_MSG(sizeof(T0) == 0, "dummy templated constructor") __attribute__((unused));}
