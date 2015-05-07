@@ -96,6 +96,10 @@ public:
       Teuchos::ParameterList&          params            ///< parameter list
   );
 
+  //! set flag if step is a ghost-penalty reconstruction step for xfluid time integration
+  void Set_GhostPenaltyReconstruction(const bool is_ghost_penalty_reconstruction_step){is_ghost_penalty_reconstruction_step_ = is_ghost_penalty_reconstruction_step;};
+
+
 
   /*========================================================================*/
   //! @name access-routines
@@ -191,6 +195,9 @@ public:
   //! get the EOS pattern for the assembly of the current face
   INPAR::FLUID::EOS_GP_Pattern Face_EOS_GP_Pattern(){return face_eos_gp_pattern_;};
 
+  //! get flag if step is a ghost-penalty reconstruction step for xfluid time integration
+  bool Is_GhostPenaltyReconstruction(){return is_ghost_penalty_reconstruction_step_; };
+
 
 protected:
 
@@ -285,7 +292,10 @@ protected:
 
   INPAR::FLUID::EOS_GP_Pattern face_eos_gp_pattern_;
 
-
+  /*----------------------------------------------------*/
+  //! @name Flag for ghost-penalty reconstruction steps
+  /*----------------------------------------------------*/
+  bool is_ghost_penalty_reconstruction_step_;
 
   /// private Constructor since we are a Singleton.
   FluidEleParameterIntFace();

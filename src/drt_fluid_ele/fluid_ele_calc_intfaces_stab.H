@@ -924,18 +924,26 @@ namespace DRT
        /*!
         \brief computation of the EOS-stabilization parameter and ghost penalty parameter
        */
-       void ComputeStabilizationParams(
-           const INPAR::FLUID::EOS_TauType tautype,
-           const double  normal_vel_lin_space,
-           const double  max_vel_L2_norm,
-           const double  timefac,
-           const bool    instationary,
-           const double  gamma_ghost_penalty_visc,
-           const double  gamma_ghost_penalty_trans
-           );
+      void ComputeStabilizationParams(
+          const INPAR::FLUID::EOS_TauType tautype,
+          const double  normal_vel_lin_space,
+          const double  max_vel_L2_norm,
+          const double  timefac,
+          const bool    instationary,
+          const double  gamma_ghost_penalty_visc,
+          const double  gamma_ghost_penalty_trans
+      );
 
-//      //! pointer to parameter list
-//      Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara_;
+    private:
+
+      // element matrices in block structure master vs. slave
+      LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>  elematrix_mm_;         ///< element matrix master-master block
+      LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>  elematrix_ms_;         ///< element matrix master-slave block
+      LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>  elematrix_sm_;         ///< element matrix slave-master block
+      LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>  elematrix_ss_;         ///< element matrix slave-slave block
+
+      LINALG::Matrix<numdofpernode_*piel, 1>  elevector_m_;          ///< element vector master block
+      LINALG::Matrix<numdofpernode_*niel, 1>  elevector_s_;          ///< element vector slave block
 
       // nodal arrays
       // ------------
@@ -1060,6 +1068,12 @@ namespace DRT
       //! neighbor velocity (2nd) derivatives in gausspoint, time n+af
       LINALG::Matrix<1,numderiv2_n> npderxy2af_;
 
+      //! velocity gradient difference, time n+af
+      LINALG::Matrix<nsd_,nsd_> vderxyaf_diff_;
+      //! velocity gradient difference, time n+1
+      LINALG::Matrix<nsd_,nsd_> vderxynp_diff_;
+
+
       //! pressure in gausspoint, time n+1
       double prenp_;
       //! parent pressure derivatives in gausspoint, time n+1
@@ -1067,12 +1081,39 @@ namespace DRT
       //! neighbor velocity derivatives in gausspoint, time n+1
       LINALG::Matrix<nsd_,1> nprederxy_;
 
-    protected:
+      LINALG::Matrix<piel,piel> pderiv_dyad_pderiv_;
+      LINALG::Matrix<piel,piel> pderiv_dyad_pderiv_tau_timefacfac_;
+      LINALG::Matrix<piel,piel> pderiv_dyad_pderiv_tau_timefacfacpre_;
+
+      LINALG::Matrix<piel,niel> pderiv_dyad_nderiv_;
+      LINALG::Matrix<piel,niel> pderiv_dyad_nderiv_tau_timefacfac_;
+      LINALG::Matrix<piel,niel> pderiv_dyad_nderiv_tau_timefacfacpre_;
+
+      LINALG::Matrix<niel,niel> nderiv_dyad_nderiv_;
+      LINALG::Matrix<niel,niel> nderiv_dyad_nderiv_tau_timefacfac_;
+      LINALG::Matrix<niel,niel> nderiv_dyad_nderiv_tau_timefacfacpre_;
+
+      //! vector of shape function derivatives in global coordinate system scaled with tau_timefacfac
+      LINALG::Matrix<nsd_,piel> pderxy_tau_timefacfac_;
+      //! vector of shape function derivatives in global coordinate system scaled with tau_timefacfac
+      LINALG::Matrix<nsd_,niel> nderxy_tau_timefacfac_;
+
 
       //! face/edge integration points
       Teuchos::RCP<DRT::UTILS::GaussPoints> intpoints_;
 
-    private:
+      //! number of Gaussian points
+      unsigned int numgp_;
+
+      Epetra_SerialDenseMatrix p_xi_points_;
+      Epetra_SerialDenseMatrix n_xi_points_;
+      Epetra_SerialDenseMatrix face_xi_points_master_;
+      Epetra_SerialDenseMatrix face_xi_points_slave_;
+
+
+      LINALG::Matrix<facensd_,1> face_xi_gp_;
+      LINALG::Matrix<nsd_,1> p_xi_gp_;
+      LINALG::Matrix<nsd_,1> n_xi_gp_;
 
       // element, side, line connectivity
       // ---------------------------------------------------
@@ -1100,6 +1141,9 @@ namespace DRT
       //! longest edge in parent element
       double p_hk_;
 
+      //! longest edge in parent element squared
+      double p_hk_squared_;
+
       // effective stabilization parameters
       // ---------------------------------------------------
       double tau_grad_; ///< viscous ghost penalty stabilization factor for velocity gradient jump ghost-penalty term
@@ -1107,6 +1151,10 @@ namespace DRT
       double tau_u_;    ///< stabilization factor for component-wise velocity gradient jump stabilization terms
       double tau_div_;  ///< stabilization factor for coupled divergence jump stabilization term
       double tau_p_;    ///< stabilization factor for pressure gradient jump stabilization term
+
+
+      bool ishigherorder_; ///< is the face a higher order face with higher order neighboring elements?
+
 
     };
 

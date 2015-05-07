@@ -85,7 +85,8 @@ DRT::ELEMENTS::FluidEleParameterIntFace::FluidEleParameterIntFace()
     is_face_GP_visc_(false),
     is_face_GP_trans_(false),
     is_face_GP_u_p_2nd_(false),
-    face_eos_gp_pattern_(INPAR::FLUID::EOS_GP_Pattern_up)
+    face_eos_gp_pattern_(INPAR::FLUID::EOS_GP_Pattern_up),
+    is_ghost_penalty_reconstruction_step_(false)
 {
   // we have to know the time parameters here to check for illegal combinations
   fldparatimint_ = DRT::ELEMENTS::FluidEleParameterTimInt::Instance();
@@ -234,6 +235,18 @@ bool DRT::ELEMENTS::FluidEleParameterIntFace::SetFaceSpecificFluidXFEMParameter(
 
   TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: SetFaceSpecificFluidXFEMParameter" );
 
+  Set_GhostPenaltyReconstruction(params.get<bool>("ghost_penalty_reconstruct", false));
+
+  // do not assemble non-ghost-penalty faces if not necessary!
+  // remark: flags for ghost penalty have to be set
+  if( Is_GhostPenaltyReconstruction() )
+  {
+    if( face_type != INPAR::XFEM::face_type_ghost_penalty )
+      return false; // do not assembly (stabilizing just the ghost-penalty faces is sufficient)
+
+    // otherwise continue and set the required flags for the face
+  }
+
   //----------------------------------------------------------------------------
   // decide which terms have to be assembled and decide the assembly pattern
 
@@ -268,6 +281,8 @@ bool DRT::ELEMENTS::FluidEleParameterIntFace::SetFaceSpecificFluidXFEMParameter(
   }
   else if(face_type == INPAR::XFEM::face_type_boundary_ghost_penalty)
   {
+    // TODO: this can be improved if only pressure is assembled later on
+
     Set_Face_EOS_Pres        ((EOS_Pres() == INPAR::FLUID::EOS_PRES_xfem_gp));
     Set_Face_EOS_Conv_Stream (false);
     Set_Face_EOS_Conv_Cross  (false);
