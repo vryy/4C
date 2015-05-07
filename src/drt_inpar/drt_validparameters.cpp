@@ -35,6 +35,7 @@ Maintainer: Martin Kronbichler
 #include "inpar_fsi.H"
 #include "inpar_topopt.H"
 #include "inpar_scatra.H"
+#include "inpar_s2i.H"
 #include "inpar_structure.H"
 #include "inpar_potential.H"
 #include "inpar_problemtype.H"
@@ -5797,6 +5798,71 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                   INPAR::SCATRA::consistency_no,
                                   INPAR::SCATRA::consistency_l2_projection_lumped),
                                &scatradyn_stab);
+
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& s2idyn = list->sublist(
+      "S2I DYNAMIC",
+      false,
+      "control parameters for scatra-scatra interface coupling"
+      );
+
+  // type of global system matrix in global system of equations
+  setStringToIntegralParameter<int>(
+      "MATRIXTYPE",
+      "sparse",
+      "type of global system matrix in global system of equations",
+      tuple<std::string>(
+          "sparse",
+          "block_geometric"
+          ),
+      tuple<int>(
+          INPAR::S2I::matrix_sparse,
+          INPAR::S2I::matrix_block_geometric
+          ),
+      &s2idyn
+      );
+
+  // type of mortar meshtying
+  setStringToIntegralParameter<int>(
+      "MORTARTYPE",
+      "Undefined",
+      "type of mortar meshtying",
+      tuple<std::string>(
+          "Undefined",
+          "NoMortar",
+          "StandardMortar",
+          "SaddlePointMortar",
+          "CondensedMortar"
+          ),
+      tuple<int>(
+          INPAR::S2I::mortar_undefined,
+          INPAR::S2I::mortar_none,
+          INPAR::S2I::mortar_standard,
+          INPAR::S2I::mortar_saddlepoint,
+          INPAR::S2I::mortar_condensed
+          ),
+      &s2idyn
+      );
+
+  // flag for equilibration of global system of equations
+  setStringToIntegralParameter<int>(
+      "EQUILIBRATION",
+      "none",
+      "flag for equilibration of global system of equations",
+      tuple<std::string>(
+          "none",
+          "rows",
+          "columns",
+          "full"
+          ),
+      tuple<int>(
+          INPAR::S2I::equilibration_none,
+          INPAR::S2I::equilibration_rows,
+          INPAR::S2I::equilibration_columns,
+          INPAR::S2I::equilibration_full
+          ),
+      &s2idyn
+      );
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& stidyn = list->sublist(

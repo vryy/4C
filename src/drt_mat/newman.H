@@ -57,12 +57,12 @@ namespace MAT
       /// number of parameter needed  for implemented concentration dependence
       const int transnrparanum_;
       /// parameter needed  for implemented concentration dependence
-      const std::vector<double>* transnrpara_;
+      const std::vector<double> transnrpara_;
 
       /// number of parameter needed for implemented concentration dependence
       const int thermfacparanum_;
       /// parameter needed for implemented concentration dependence
-      const std::vector<double>* thermfacpara_;
+      const std::vector<double> thermfacpara_;
       //@}
 
       /// create material instance of matching type with my parameters
@@ -163,13 +163,13 @@ namespace MAT
     const int ThermFacCurve() const { return params_->thermfaccurve_; }
 
     /// parameter needed for implemented concentration dependence
-    const std::vector<double>* TransNrParams() const
+    const std::vector<double>& TransNrParams() const
     {
       return params_->transnrpara_;
     }
 
     /// parameter needed for implemented concentration dependence
-    const std::vector<double>* ThermFacParams() const
+    const std::vector<double>& ThermFacParams() const
     {
       return params_->thermfacpara_;
     }

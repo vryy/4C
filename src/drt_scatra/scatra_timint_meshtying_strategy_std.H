@@ -39,7 +39,7 @@ class MeshtyingStrategyStd : public MeshtyingStrategyBase
   public:
 
     //! constructor
-    MeshtyingStrategyStd(
+    explicit MeshtyingStrategyStd(
         SCATRA::ScaTraTimIntImpl* scatratimint
         );
 

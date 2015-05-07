@@ -20,9 +20,10 @@ Maintainer: Rui Fang
  | constructor                                               fang 12/14 |
  *----------------------------------------------------------------------*/
 SCATRA::MeshtyingStrategyS2IElch::MeshtyingStrategyS2IElch(
-    SCATRA::ScaTraTimIntElch* elchtimint
+    SCATRA::ScaTraTimIntElch*       elchtimint,   //! elch time integrator
+    const Teuchos::ParameterList&   parameters    //! input parameters for scatra-scatra interface coupling
     ) :
-MeshtyingStrategyS2I(elchtimint)
+MeshtyingStrategyS2I(elchtimint,parameters)
 {
   return;
 } // SCATRA::MeshtyingStrategyS2IElch::MeshtyingStrategyS2IElch

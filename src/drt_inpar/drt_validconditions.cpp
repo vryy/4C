@@ -16,6 +16,7 @@ Maintainer: Martin Kronbichler
 
 #include "drt_validconditions.H"
 #include "../drt_lib/drt_conditiondefinition.H"
+#include "../drt_inpar/inpar_s2i.H"
 #include "../drt_inpar/inpar_scatra.H"
 #include "../drt_inpar/inpar_xfem.H"
 
@@ -913,15 +914,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     std::vector<Teuchos::RCP<ConditionComponent> > s2icomponents;
 
     {
-      // type of mortar meshtying
-      s2icomponents.push_back(Teuchos::rcp(new StringConditionComponent("mortar type","Undefined",
-            Teuchos::tuple<std::string>("Undefined","NoMortar","StandardMortar","BlockMortar","CondensedMortar"),
-            Teuchos::tuple<int>(INPAR::SCATRA::s2i_mortar_undefined,
-                                INPAR::SCATRA::s2i_mortar_none,
-                                INPAR::SCATRA::s2i_mortar_standard,
-                                INPAR::SCATRA::s2i_mortar_block,
-                                INPAR::SCATRA::s2i_mortar_condensed))));
-
       // kinetic models for scatra-scatra interface coupling
       std::vector<Teuchos::RCP<CondCompBundle> > kineticmodels;
       {
@@ -943,7 +935,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
               realsepcomp,
               realvectcomp
           )));
-          kineticmodels.push_back(Teuchos::rcp(new CondCompBundle("ConstantPermeability",constperm,INPAR::SCATRA::s2i_kinetics_constperm)));
+          kineticmodels.push_back(Teuchos::rcp(new CondCompBundle("ConstantPermeability",constperm,INPAR::S2I::kinetics_constperm)));
         }
 
         {
@@ -983,7 +975,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
               std::vector<Teuchos::RCP<ConditionComponent> > constepd;
               constepd.push_back(Teuchos::rcp(new SeparatorConditionComponent("epd")));
               constepd.push_back(Teuchos::rcp(new RealConditionComponent("epd")));
-              epdmodels.push_back(Teuchos::rcp(new CondCompBundle("Constant",constepd,INPAR::SCATRA::s2i_epd_const)));
+              epdmodels.push_back(Teuchos::rcp(new CondCompBundle("Constant",constepd,INPAR::S2I::epd_const)));
             }
 
             {
@@ -1006,7 +998,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                   realsepcomp,
                   realvectcomp
               )));
-              epdmodels.push_back(Teuchos::rcp(new CondCompBundle("Redlich-Kister",redlichkister,INPAR::SCATRA::s2i_epd_redlichkister)));
+              epdmodels.push_back(Teuchos::rcp(new CondCompBundle("Redlich-Kister",redlichkister,INPAR::S2I::epd_redlichkister)));
             }
           }
 
@@ -1018,10 +1010,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                  "epd model",
                  "Constant",
                  Teuchos::tuple<std::string>("Constant","Redlich-Kister"),
-                 Teuchos::tuple<int>(INPAR::SCATRA::s2i_epd_const,INPAR::SCATRA::s2i_epd_redlichkister))),
+                 Teuchos::tuple<int>(INPAR::S2I::epd_const,INPAR::S2I::epd_redlichkister))),
               epdmodels)));
 
-          kineticmodels.push_back(Teuchos::rcp(new CondCompBundle("Butler-Volmer",butlervolmer,INPAR::SCATRA::s2i_kinetics_butlervolmer)));
+          kineticmodels.push_back(Teuchos::rcp(new CondCompBundle("Butler-Volmer",butlervolmer,INPAR::S2I::kinetics_butlervolmer)));
         }
       } // kinetic models for scatra-scatra interface coupling
 
@@ -1033,7 +1025,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
              "kinetic model",
              "ConstantPermeability",
              Teuchos::tuple<std::string>("ConstantPermeability","Butler-Volmer"),
-             Teuchos::tuple<int>(INPAR::SCATRA::s2i_kinetics_constperm,INPAR::SCATRA::s2i_kinetics_butlervolmer))),
+             Teuchos::tuple<int>(INPAR::S2I::kinetics_constperm,INPAR::S2I::kinetics_butlervolmer))),
           kineticmodels)));
     }
 

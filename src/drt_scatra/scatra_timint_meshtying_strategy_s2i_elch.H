@@ -41,8 +41,9 @@ class MeshtyingStrategyS2IElch : public MeshtyingStrategyS2I
   public:
 
     //! constructor
-    MeshtyingStrategyS2IElch(
-        SCATRA::ScaTraTimIntElch* elchtimint
+    explicit MeshtyingStrategyS2IElch(
+        SCATRA::ScaTraTimIntElch*       elchtimint,   //! elch time integrator
+        const Teuchos::ParameterList&   parameters    //! input parameters for scatra-scatra interface coupling
         );
 
     //! destructor

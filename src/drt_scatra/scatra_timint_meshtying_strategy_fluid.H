@@ -47,7 +47,7 @@ class MeshtyingStrategyFluid : public MeshtyingStrategyBase
   public:
 
     //! constructor
-    MeshtyingStrategyFluid(
+    explicit MeshtyingStrategyFluid(
         SCATRA::ScaTraTimIntImpl* scatratimint
         );
 

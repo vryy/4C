@@ -140,7 +140,7 @@ void ADAPTER::FluidPoro::EvaluateNoPenetrationCond(Teuchos::RCP<Epetra_Vector> C
         Teuchos::null
     );
 
-    // evaluate the fluid-mechancial system matrix on the fluid element
+    // evaluate the fluid-mechanical system matrix on the fluid element
     Discretization()->EvaluateCondition( params, couplstrategy,"NoPenetration" );
   }
   else

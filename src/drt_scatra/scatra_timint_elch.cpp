@@ -1069,7 +1069,7 @@ void SCATRA::ScaTraTimIntElch::CreateMeshtyingStrategy()
 
   // scatra-scatra interface coupling
   else if(s2icoupling_)
-    strategy_ = Teuchos::rcp(new MeshtyingStrategyS2IElch(this));
+    strategy_ = Teuchos::rcp(new MeshtyingStrategyS2IElch(this,DRT::Problem::Instance()->S2IDynamicParams()));
 
   // standard case without meshtying
   else
@@ -1195,7 +1195,8 @@ void SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
         if (myrank_ == 0)
           std::cout << "|  " << std::setw(3) << iternum_ << "/" << std::setw(3) << itermax << "   | "
                     << std::setw(10) << std::setprecision(3) << std::scientific << itertol << "[L_2 ]  | "
-                    << std::setw(10) << std::setprecision(3) << std::scientific << potresnorm << "   |      --      |" << std::endl;
+                    << std::setw(10) << std::setprecision(3) << std::scientific << potresnorm << "   |      --      | (      --     ,te="
+                    << std::setw(10) << std::setprecision(3) << std::scientific << dtele_ << ")" << std::endl;
 
         // absolute tolerance for deciding if residual is already zero
         // prevents additional solver calls that will not improve the residual anymore
@@ -1218,7 +1219,9 @@ void SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
           std::cout << "|  " << std::setw(3) << iternum_ << "/" << std::setw(3) << itermax << "   | "
                     << std::setw(10) << std::setprecision(3) << std::scientific << itertol << "[L_2 ]  | "
                     << std::setw(10) << std::setprecision(3) << std::scientific << potresnorm << "   | "
-                    << std::setw(10) << std::setprecision(3) << std::scientific << incpotnorm_L2/potnorm_L2 << "   |" << std::endl;
+                    << std::setw(10) << std::setprecision(3) << std::scientific << incpotnorm_L2/potnorm_L2 << "   | (ts="
+                    << std::setw(10) << std::setprecision(3) << std::scientific << dtsolve_ << ",te="
+                    << std::setw(10) << std::setprecision(3) << std::scientific << dtele_ << ")" << std::endl;
 
         // convergence check
         if((potresnorm <= itertol and incpotnorm_L2/potnorm_L2 <= itertol) or potresnorm < restol)
@@ -1255,12 +1258,18 @@ void SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
       // zero out increment vector
       increment_->PutScalar(0.);
 
+      // store time before solving global system of equations
+      const double time = Teuchos::Time::wallTime();
+
       // reprepare Krylov projection if required
       if (updateprojection_)
         UpdateKrylovSpaceProjection();
 
       // solve final system of equations incrementally
-      solver_->Solve(sysmat_->EpetraOperator(),increment_,residual_,true,true,projector_);
+      strategy_->Solve(solver_,sysmat_,increment_,residual_,phinp_,1,projector_);
+
+      // determine time needed for solving global system of equations
+      dtsolve_ = Teuchos::Time::wallTime()-time;
 
       // update electric potential degrees of freedom in initial state vector
       splitter_->AddCondVector(splitter_->ExtractCondVector(increment_),phinp_);

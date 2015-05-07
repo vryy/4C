@@ -14,7 +14,7 @@ Maintainer: Rui Fang
 #ifndef SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_H
 #define SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_H
 
-#include "../drt_inpar/inpar_scatra.H"
+#include "../drt_inpar/inpar_s2i.H"
 
 #include "scatra_timint_meshtying_strategy_base.H"
 
@@ -63,8 +63,9 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
   public:
 
     //! constructor
-    MeshtyingStrategyS2I(
-        SCATRA::ScaTraTimIntImpl* scatratimint
+    explicit MeshtyingStrategyS2I(
+        SCATRA::ScaTraTimIntImpl*       scatratimint,   //! scalar transport time integrator
+        const Teuchos::ParameterList&   parameters      //! input parameters for scatra-scatra interface coupling
         );
 
     //! destructor
@@ -92,9 +93,6 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
 
   protected:
 
-    //! flag for meshtying method
-    INPAR::SCATRA::S2IMortarType s2imortartype_;
-
     //! global map extractor (0: other, 1: slave, 2: master)
     Teuchos::RCP<LINALG::MultiMapExtractor> maps_;
 
@@ -116,10 +114,39 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
     //! master dofs transformed to slave side of scatra-scatra interface
     Teuchos::RCP<Epetra_Vector> imasterphinp_;
 
+    //! sums of absolute values of row entries in global system matrix
+    Teuchos::RCP<Epetra_Vector> invrowsums_;
+
+    //! sums of absolute values of column entries in global system matrix
+    Teuchos::RCP<Epetra_Vector> invcolsums_;
+
   private:
 
     //! copy constructor
     MeshtyingStrategyS2I(const MeshtyingStrategyS2I& old);
+
+    //! equilibrate global system of equations if necessary
+    void EquilibrateSystem(
+        const Teuchos::RCP<LINALG::SparseOperator>&   systemmatrix,   //! system matrix
+        const Teuchos::RCP<Epetra_Vector>&            residual        //! residual vector
+        ) const;
+
+    //! unequilibrate global increment vector if necessary
+    void UnequilibrateIncrement(
+        const Teuchos::RCP<Epetra_Vector>&   increment   //! increment vector
+        ) const;
+
+    //! flag for row equilibration of global system of equations
+    const bool rowequilibration_;
+
+    //! flag for column equilibration of global system of equations
+    const bool colequilibration_;
+
+    //! flag for meshtying method
+    const INPAR::S2I::MortarType mortartype_;
+
+    //! type of global system matrix in global system of equations
+    const INPAR::S2I::MatrixType matrixtype_;
 }; // class MeshtyingStrategyS2I
 } // namespace SCATRA
 #endif // #ifndef SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_H

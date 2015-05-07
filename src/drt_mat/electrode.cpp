@@ -26,18 +26,18 @@ MAT::PAR::Electrode::Electrode(
   Parameter(matdata),
   diffcurve_(matdata->GetInt("DIFFCOEF")),
   diffparanum_(matdata->GetInt("DIFF_PARA_NUM")),
-  diffpara_(matdata->Get<std::vector<double> >("DIFF_PARA")),
+  diffpara_(*matdata->Get<std::vector<double> >("DIFF_PARA")),
   condcurve_(matdata->GetInt("COND")),
   condparanum_(matdata->GetInt("COND_PARA_NUM")),
-  condpara_(matdata->Get<std::vector<double> >("COND_PARA"))
+  condpara_(*matdata->Get<std::vector<double> >("COND_PARA"))
 {
   // safety checks
-  if(diffparanum_ != (int) diffpara_->size())
+  if(diffparanum_ != (int) diffpara_.size())
      dserror("Mismatch in number of parameters for diffusion coefficient!");
-  if(condparanum_ != (int) condpara_->size())
+  if(condparanum_ != (int) condpara_.size())
      dserror("Mismatch in number of parameters for conductivity!");
-  CheckProvidedParams(diffcurve_,diffpara_->size());
-  CheckProvidedParams(condcurve_,condpara_->size());
+  CheckProvidedParams(diffcurve_,diffpara_.size());
+  CheckProvidedParams(condcurve_,condpara_.size());
 
   return;
 }
@@ -64,28 +64,28 @@ void MAT::PAR::Electrode::CheckProvidedParams(
     {
       case -1:
       {
-        // constant value: functval=(*functparams)[0];
+        // constant value: functval=functparams[0];
         functionname = "'constant value'";
         paraforfunction=1;
         break;
       }
       case -2:
       {
-        // linear function: functval=(*functparams)[0]+(*functparams)[1]*cint;
+        // linear function: functval=functparams[0]+functparams[1]*cint;
         functionname = "'linear function'";
         paraforfunction=2;
         break;
       }
       case -3:
       {
-        // quadratic function: functval=(*functparams)[0]+(*functparams)[1]*cint+(*functparams)[2]*cint*cint;
+        // quadratic function: functval=functparams[0]+functparams[1]*cint+functparams[2]*cint*cint;
         functionname = "'quadratic function'";
         paraforfunction=3;
         break;
       }
       case -4:
       {
-        // power function: functval=(*functparams)[0]*pow(cint,(*functparams)[1]);
+        // power function: functval=functparams[0]*pow(cint,functparams[1]);
         functionname = "'power function'";
         paraforfunction=2;
         break;
@@ -323,7 +323,7 @@ const double MAT::Electrode::ComputeFirstDerivCond(const double cint) const
 const double MAT::Electrode::EvalFunctValue(
     const int                    functnr,
     const double                 cint,
-    const std::vector<double>*   functparams
+    const std::vector<double>&   functparams
     ) const
 {
   double functval(0.);
@@ -331,51 +331,51 @@ const double MAT::Electrode::EvalFunctValue(
   switch (functnr)
   {
     // a0
-    case -1: functval=(*functparams)[0]; break;
+    case -1: functval=functparams[0]; break;
 
     // a0 + a1*c
-    case -2: functval=(*functparams)[0]+(*functparams)[1]*cint; break;
+    case -2: functval=functparams[0]+functparams[1]*cint; break;
 
     // a0 + a1*c + a2*c^2
-    case -3: functval=(*functparams)[0]+(*functparams)[1]*cint+(*functparams)[2]*cint*cint; break;
+    case -3: functval=functparams[0]+functparams[1]*cint+functparams[2]*cint*cint; break;
 
     // a0*c^a1
-    case -4: functval=(*functparams)[0]*pow(cint,(*functparams)[1]); break;
+    case -4: functval=functparams[0]*pow(cint,functparams[1]); break;
 
     // conductivity
     case -5:
     {
-      const double nenner=(1.0+(*functparams)[2]*cint*cint-(*functparams)[3]*cint*cint*cint*cint);
-      // (*functparams)[0]*((*functparams)[1]*cint/nenner) + 0.01 -> constant level 0.01 deleted since it does not have a physical meaning (28.04.2014)
-      functval=(*functparams)[0]*((*functparams)[1]*cint/nenner);
+      const double nenner=(1.0+functparams[2]*cint*cint-functparams[3]*cint*cint*cint*cint);
+      // functparams[0]*(functparams[1]*cint/nenner) + 0.01 -> constant level 0.01 deleted since it does not have a physical meaning (28.04.2014)
+      functval=functparams[0]*(functparams[1]*cint/nenner);
       break;
     }
 
     // a0*c + a1*c^1.5 + a2*c^3
-    case -6: functval=(*functparams)[0]*cint+(*functparams)[1]*pow(cint,1.5)+(*functparams)[2]*cint*cint*cint; break;
+    case -6: functval=functparams[0]*cint+functparams[1]*pow(cint,1.5)+functparams[2]*cint*cint*cint; break;
 
     // a0 + a1*c + a2*c^2 + a3*c^3
-    case -7: functval=(*functparams)[0]+(*functparams)[1]*cint+(*functparams)[2]*cint*cint+(*functparams)[3]*cint*cint*cint; break;
+    case -7: functval=functparams[0]+functparams[1]*cint+functparams[2]*cint*cint+functparams[3]*cint*cint*cint; break;
 
     // thermodynamic factor Nyman 2008
     case -8:
     {
-      const double num=(*functparams)[0]+(*functparams)[1]*cint+(*functparams)[2]*cint*cint;
-      const double denom=(*functparams)[3]+(*functparams)[4]*cint+(*functparams)[5]*cint*cint+(*functparams)[6]*cint*cint*cint;
+      const double num=functparams[0]+functparams[1]*cint+functparams[2]*cint*cint;
+      const double denom=functparams[3]+functparams[4]*cint+functparams[5]*cint*cint+functparams[6]*cint*cint*cint;
       functval=num/denom;
       break;
     }
 
     // linear thermodynamic factor including Debye-Hückel theory
     // 1 + a1*0.5*c^0.5 + a2*c
-    case -9: functval= 1.0 + (*functparams)[0]*0.5*pow(cint,0.5)+(*functparams)[1]*cint; break;
+    case -9: functval= 1.0 + functparams[0]*0.5*pow(cint,0.5)+functparams[1]*cint; break;
 
     // conductivity: own definition which also fulfills the Kohlrausches Square root law
     case -10:
     {
-      const double num = (*functparams)[0]*cint+(*functparams)[1]*pow(cint,1.5)+(*functparams)[2]*cint*cint+(*functparams)[3]*cint*cint*cint;
-      const double denom=(1.0+(*functparams)[4]*cint*cint+(*functparams)[5]*cint*cint*cint*cint);
-      // (*functparams)[0]*((*functparams)[1]*cint/nenner) + 0.01 -> constant level 0.01 deleted since it does not have a physical meaning (28.04.2014)
+      const double num = functparams[0]*cint+functparams[1]*pow(cint,1.5)+functparams[2]*cint*cint+functparams[3]*cint*cint*cint;
+      const double denom=(1.0+functparams[4]*cint*cint+functparams[5]*cint*cint*cint*cint);
+      // functparams[0]*(functparams[1]*cint/nenner) + 0.01 -> constant level 0.01 deleted since it does not have a physical meaning (28.04.2014)
       functval=num/denom;
       break;
     }
@@ -384,10 +384,18 @@ const double MAT::Electrode::EvalFunctValue(
     // kappa = a0*c*exp(a1*c^a2)
     case -11:
     {
+      // safety check
       if(cint < 1.e-12)
         dserror("Concentration value %lf is zero or negative!",cint);
 
-      functval = (*functparams)[0]*cint*exp((*functparams)[1]*pow(cint,(*functparams)[2]));
+      const double exponent = functparams[1]*pow(cint,functparams[2]);
+
+      // safety check
+      if(exponent > 20.)
+        dserror("Overflow detected during conductivity evaluation! Exponent is too large: %lf",exponent);
+
+      functval = functparams[0]*cint*exp(exponent);
+
       break;
     }
 
@@ -408,7 +416,7 @@ const double MAT::Electrode::EvalFunctValue(
 const double MAT::Electrode::EvalFirstDerivFunctValue(
     const int                    functnr,
     const double                 cint,
-    const std::vector<double>*   functparams
+    const std::vector<double>&   functparams
     ) const
 {
   double firstderivfunctval(0.);
@@ -419,53 +427,53 @@ const double MAT::Electrode::EvalFirstDerivFunctValue(
     case -1: firstderivfunctval=0.0; break;
 
     // d/dc: a0 + a1*c
-    case -2: firstderivfunctval=(*functparams)[1]; break;
+    case -2: firstderivfunctval=functparams[1]; break;
 
     // d/dc: a0 + a1*c + a2*c^2
-    case -3: firstderivfunctval=(*functparams)[1]+2*(*functparams)[2]*cint; break;
+    case -3: firstderivfunctval=functparams[1]+2*functparams[2]*cint; break;
 
     // d/dc: a0 + c^a1
-    case -4: firstderivfunctval=(*functparams)[0]*(*functparams)[1]*pow(cint,(*functparams)[1]-1.0); break;
+    case -4: firstderivfunctval=functparams[0]*functparams[1]*pow(cint,functparams[1]-1.0); break;
 
     // d/dc: conductivity
     case -5:
     {
-      const double nenner=(1.0+(*functparams)[2]*cint*cint-(*functparams)[3]*cint*cint*cint*cint);
+      const double nenner=(1.0+functparams[2]*cint*cint-functparams[3]*cint*cint*cint*cint);
       const double nennernenner = nenner*nenner;
-      firstderivfunctval=(*functparams)[0]*(((*functparams)[1]*nenner-(*functparams)[1]*cint*(2*(*functparams)[2]*cint-4*(*functparams)[3]*cint*cint*cint))/nennernenner);
+      firstderivfunctval=functparams[0]*((functparams[1]*nenner-functparams[1]*cint*(2*functparams[2]*cint-4*functparams[3]*cint*cint*cint))/nennernenner);
       break;
     }
 
     // d/dc: a0*c + a1*c^1.5 + a2*c^3
-    case -6: firstderivfunctval=(*functparams)[0]+1.5*(*functparams)[1]*pow(cint,0.5)+3*(*functparams)[2]*cint*cint; break;
+    case -6: firstderivfunctval=functparams[0]+1.5*functparams[1]*pow(cint,0.5)+3*functparams[2]*cint*cint; break;
 
     // d/dc: a0 + a1*c + a2*c^2 + a3*c^3
-    case -7: firstderivfunctval=(*functparams)[1]+2*(*functparams)[2]*cint+3*(*functparams)[3]*cint*cint; break;
+    case -7: firstderivfunctval=functparams[1]+2*functparams[2]*cint+3*functparams[3]*cint*cint; break;
 
     // d/dc: thermodynamic factor Nyman 2008
     case -8:
     {
-      const double num=(*functparams)[0]+(*functparams)[1]*cint+(*functparams)[2]*cint*cint;
-      const double denom=(*functparams)[3]+(*functparams)[4]*cint+(*functparams)[5]*cint*cint+(*functparams)[6]*cint*cint*cint;
+      const double num=functparams[0]+functparams[1]*cint+functparams[2]*cint*cint;
+      const double denom=functparams[3]+functparams[4]*cint+functparams[5]*cint*cint+functparams[6]*cint*cint*cint;
       const double denomdenom = denom*denom;
-      const double derivnum=(*functparams)[1]+2*(*functparams)[2]*cint;
-      const double derivdenom=(*functparams)[4]+2*(*functparams)[5]*cint+3*(*functparams)[6]*cint*cint;
+      const double derivnum=functparams[1]+2*functparams[2]*cint;
+      const double derivdenom=functparams[4]+2*functparams[5]*cint+3*functparams[6]*cint*cint;
       firstderivfunctval=(derivnum*denom-num*derivdenom)/denomdenom;
       break;
     }
 
     // linear thermodynamic factor including Debye-Hückel theory
     // d/dc: 1 + a1*0.5*c^0.5 + a2*c
-    case -9: firstderivfunctval= (*functparams)[0]*0.5*0.5*pow(cint,-0.5)+(*functparams)[1]; break;
+    case -9: firstderivfunctval= functparams[0]*0.5*0.5*pow(cint,-0.5)+functparams[1]; break;
 
     // d/dc: conductivity: own definition which also fulfills the Kohlrausches Square root law
     case -10:
     {
-      const double num = (*functparams)[0]*cint+(*functparams)[1]*pow(cint,1.5)+(*functparams)[2]*cint*cint+(*functparams)[3]*cint*cint*cint;
-      const double denom=(1.0+(*functparams)[4]*cint*cint+(*functparams)[5]*cint*cint*cint*cint);
+      const double num = functparams[0]*cint+functparams[1]*pow(cint,1.5)+functparams[2]*cint*cint+functparams[3]*cint*cint*cint;
+      const double denom=(1.0+functparams[4]*cint*cint+functparams[5]*cint*cint*cint*cint);
       const double denomdenom = denom*denom;
-      const double derivnum=(*functparams)[0]+1.5*(*functparams)[1]*pow(cint,0.5)+2.0*(*functparams)[2]*cint+3.0*(*functparams)[3]*cint*cint;
-      const double derivdenom=2.0*(*functparams)[4]*cint+4.0*(*functparams)[5]*cint*cint*cint;
+      const double derivnum=functparams[0]+1.5*functparams[1]*pow(cint,0.5)+2.0*functparams[2]*cint+3.0*functparams[3]*cint*cint;
+      const double derivdenom=2.0*functparams[4]*cint+4.0*functparams[5]*cint*cint*cint;
       firstderivfunctval= ((derivnum*denom-num*derivdenom)/denomdenom);
       break;
     }
@@ -474,10 +482,18 @@ const double MAT::Electrode::EvalFirstDerivFunctValue(
     // d/dc: kappa = a0*c*exp(a1*c^a2)
     case -11:
     {
+      // safety check
       if(cint < 1.e-12)
         dserror("Concentration value %lf is zero or negative!",cint);
 
-      firstderivfunctval = (*functparams)[0]*exp((*functparams)[1]*pow(cint,(*functparams)[2]))*(1+(*functparams)[1]*(*functparams)[2]*pow(cint,(*functparams)[2]));
+      const double exponent = functparams[1]*pow(cint,functparams[2]);
+
+      // safety check
+      if(exponent > 20.)
+        dserror("Overflow detected during conductivity evaluation! Exponent is too large: %lf",exponent);
+
+      firstderivfunctval = functparams[0]*exp(exponent)*(1+functparams[1]*functparams[2]*pow(cint,functparams[2]));
+
       break;
     }
 

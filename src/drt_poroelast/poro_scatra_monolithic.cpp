@@ -1183,7 +1183,7 @@ void POROELAST::PORO_SCATRA_Mono::EvaluateODBlockMatPoro()
       Teuchos::null
   );
 
-  // evaluate the mechancial-fluid system matrix on the structural element
+  // evaluate the mechanical-fluid system matrix on the structural element
   PoroField()->StructureField()->Discretization()->EvaluateCondition( sparams, structuralstrategy,"PoroCoupling" );
   //StructureField()->Discretization()->Evaluate( sparams, structuralstrategy);
   PoroField()->StructureField()->Discretization()->ClearState(true);
@@ -1241,7 +1241,7 @@ void POROELAST::PORO_SCATRA_Mono::EvaluateODBlockMatScatra()
       Teuchos::null
   );
 
-  // evaluate the mechancial-fluid system matrix on the structural element
+  // evaluate the mechanical-fluid system matrix on the structural element
   ScaTraField()->Discretization()->EvaluateCondition( sparams_struct, scatrastrategy_struct,"PoroCoupling" );
   //StructureField()->Discretization()->Evaluate( sparams, structuralstrategy);
 
@@ -1294,7 +1294,7 @@ void POROELAST::PORO_SCATRA_Mono::EvaluateODBlockMatScatra()
       Teuchos::null
   );
 
-  // evaluate the mechancial-fluid system matrix on the structural element
+  // evaluate the mechanical-fluid system matrix on the structural element
   ScaTraField()->Discretization()->EvaluateCondition( sparams_fluid, scatrastrategy_fluid,"PoroCoupling" );
   //StructureField()->Discretization()->Evaluate( sparams, structuralstrategy);
   ScaTraField()->Discretization()->ClearState(true);

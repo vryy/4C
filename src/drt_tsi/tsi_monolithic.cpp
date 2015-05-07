@@ -1969,7 +1969,7 @@ void TSI::Monolithic::ApplyStrCouplMatrix(
                           Teuchos::null
                           );
 
-  // evaluate the mechancial-thermal system matrix on the structural element
+  // evaluate the mechanical-thermal system matrix on the structural element
   StructureField()->Discretization()->Evaluate(sparams,structuralstrategy);
   StructureField()->Discretization()->ClearState(true);
 
@@ -2091,14 +2091,14 @@ void TSI::Monolithic::ApplyThrCouplMatrix(
   DRT::AssembleStrategy thermostrategy(
                           0,  // thermdofset for row
                           1,  // structdofset for column
-                          k_ts,  // thermal-mechancial matrix
+                          k_ts,  // thermal-mechanical matrix
                           Teuchos::null,  // no other matrix or vectors
                           Teuchos::null,
                           Teuchos::null,
                           Teuchos::null
                           );
 
-  // evaluate the thermal-mechancial system matrix on the thermal element
+  // evaluate the thermal-mechanical system matrix on the thermal element
   ThermoField()->Discretization()->Evaluate(tparams,thermostrategy);
   ThermoField()->Discretization()->ClearState(true);
 
@@ -2190,14 +2190,14 @@ void TSI::Monolithic::ApplyThrCouplMatrix_ConvBC(
     DRT::AssembleStrategy thermostrategy(
                             0,  // thermdofset for row
                             1,  // structdofset for column
-                            k_ts,  // thermal-mechancial matrix
+                            k_ts,  // thermal-mechanical matrix
                             Teuchos::null,  // no other matrix or vectors
                             Teuchos::null,
                             Teuchos::null,
                             Teuchos::null
                             );
 
-    // evaluate the thermal-mechancial system matrix on the thermal element
+    // evaluate the thermal-mechanical system matrix on the thermal element
     ThermoField()->Discretization()->EvaluateCondition(tparams,thermostrategy,condstring);
     //clear all states set in discretization
     ThermoField()->Discretization()->ClearState(true);

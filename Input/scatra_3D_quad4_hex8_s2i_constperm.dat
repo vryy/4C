@@ -36,6 +36,8 @@ LINEAR_SOLVER                   1
 ITEMAX                          10
 CONVTOL                         1e-8
 ABSTOLRES                       1e-15
+--------------------------------------------------------S2I DYNAMIC
+MORTARTYPE                      NoMortar
 -----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS
@@ -75,7 +77,7 @@ E 3 - NUMDOF 2 ONOFF 1 1 VAL 1.0 1.0 CURVE 1 1 FUNCT 0 0
 -----------------------DESIGN S2I COUPLING LINE CONDITIONS / SLAVE
 DLINE  1
 // coupling_surface
-E 1 - NoMortar KineticModel ConstantPermeability numscal 2 permeabilities 1.0 0.1
+E 1 - KineticModel ConstantPermeability numscal 2 permeabilities 1.0 0.1
 ----------------------DESIGN S2I COUPLING LINE CONDITIONS / MASTER
 DLINE  1
 // coupling_block

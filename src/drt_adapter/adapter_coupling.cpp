@@ -180,11 +180,12 @@ void ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
                                       const std::vector<int>& masternodes,
                                       const std::vector<int>& slavenodes,
                                       const int numdof,
-                                      bool matchall)
+                                      const bool matchall,
+                                      const double tolerance)
 {
   std::vector<int> patchedmasternodes(masternodes);
   std::vector<int> permslavenodes;
-  MatchNodes(masterdis, slavedis, patchedmasternodes, permslavenodes, slavenodes, matchall);
+  MatchNodes(masterdis, slavedis, patchedmasternodes, permslavenodes, slavenodes, matchall, tolerance);
 
   // Epetra maps in original distribution
 
@@ -208,7 +209,8 @@ void ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
                                       const Epetra_Map& masternodes,
                                       const Epetra_Map& slavenodes,
                                       const int numdof,
-                                      bool matchall)
+                                      const bool matchall,
+                                      const double tolerance)
 {
   if (masternodes.NumGlobalElements()!=slavenodes.NumGlobalElements() and matchall)
     dserror("got %d master nodes but %d slave nodes for coupling",
@@ -221,7 +223,7 @@ void ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
                         slavenodes.MyGlobalElements() + slavenodes.NumMyElements());
   std::vector<int> permslavenodes;
 
-  MatchNodes(masterdis, slavedis, mastervect, permslavenodes, slavevect, matchall);
+  MatchNodes(masterdis, slavedis, mastervect, permslavenodes, slavevect, matchall, tolerance);
 
   // Epetra maps in original distribution
 
@@ -245,14 +247,11 @@ void ADAPTER::Coupling::MatchNodes(const DRT::Discretization& masterdis,
                                    std::vector<int>& masternodes,
                                    std::vector<int>& permslavenodes,
                                    const std::vector<int>& slavenodes,
-                                   bool matchall)
+                                   const bool matchall,
+                                   const double tolerance)
 {
   // match master and slave nodes using Peter's octtree
-
-  // We need some way to guess the tolerance. It must not be too small,
-  // otherwise we won't find matching nodes. Too large a tolerance will not
-  // hurt that much. It just means we will have to test more nodes.
-  DRT::UTILS::NodeMatchingOctree tree(masterdis, masternodes, 150, 1e-3);
+  DRT::UTILS::NodeMatchingOctree tree(masterdis, masternodes, 150, tolerance);
 
   std::map<int,std::pair<int,double> > coupling;
   tree.FindMatch(slavedis, slavenodes, coupling);

@@ -12,6 +12,8 @@ Maintainer: Rui Fang
 </pre>
  */
 /*----------------------------------------------------------------------*/
+#include "../drt_inpar/inpar_s2i.H"
+
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 
@@ -277,6 +279,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateS2ICoupl
     dserror("Invalid element type, expected face element");
   Teuchos::RCP<MAT::Material> material = faceele->ParentElement()->Material();
 
+  // safety check
+  if(material->MaterialType() != INPAR::MAT::m_elchmat)
+    dserror("Invalid electrolyte material for scatra-scatra interface coupling!");
+
   // get global and interface state vectors
   Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
   Teuchos::RCP<const Epetra_Vector> imasterphinp = discretization.GetState("imasterphinp");
@@ -381,7 +387,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateS2ICoupl
       switch(kineticmodel)
       {
         // Butler-Volmer kinetics
-        case INPAR::SCATRA::s2i_kinetics_butlervolmer:
+        case INPAR::S2I::kinetics_butlervolmer:
         {
           const double i0 = kr*faraday*pow(eslavephiint,alphaa)*pow(cmax-emasterphiint,alphaa)*pow(emasterphiint,alphac);
           const double expterm1 = exp(alphaa*frt*eta);
@@ -545,7 +551,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EquilibriumPoten
   switch(epdmodel)
   {
     // Redlich-Kister expansion
-    case INPAR::SCATRA::s2i_epd_redlichkister:
+    case INPAR::S2I::epd_redlichkister:
     {
       // extract relevant parameters from boundary condition
       const double DeltaG = condition->GetDouble("DeltaG");

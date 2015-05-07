@@ -31,10 +31,10 @@ Maintainer: Rui Fang
  | constructor                                               fang 12/14 |
  *----------------------------------------------------------------------*/
 SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I(
-    SCATRA::ScaTraTimIntImpl* scatratimint
+    SCATRA::ScaTraTimIntImpl*       scatratimint,   //! scalar transport time integrator
+    const Teuchos::ParameterList&   parameters      //! input parameters for scatra-scatra interface coupling
     ) :
 MeshtyingStrategyBase(scatratimint),
-s2imortartype_(INPAR::SCATRA::s2i_mortar_undefined),
 maps_(Teuchos::null),
 icoup_(Teuchos::null),
 islavematrix_(Teuchos::null),
@@ -43,7 +43,21 @@ islavetomastercoltransform_(Teuchos::null),
 islavetomasterrowtransform_(Teuchos::null),
 islavetomasterrowcoltransform_(Teuchos::null),
 islaveresidual_(Teuchos::null),
-imasterphinp_(Teuchos::null)
+imasterphinp_(Teuchos::null),
+invrowsums_(Teuchos::null),
+invcolsums_(Teuchos::null),
+rowequilibration_(
+    DRT::INPUT::IntegralValue<int>(parameters,"EQUILIBRATION") == INPAR::S2I::equilibration_rows
+    or
+    DRT::INPUT::IntegralValue<int>(parameters,"EQUILIBRATION") == INPAR::S2I::equilibration_full
+    ),
+colequilibration_(
+    DRT::INPUT::IntegralValue<int>(parameters,"EQUILIBRATION") == INPAR::S2I::equilibration_columns
+    or
+    DRT::INPUT::IntegralValue<int>(parameters,"EQUILIBRATION") == INPAR::S2I::equilibration_full
+    ),
+mortartype_(DRT::INPUT::IntegralValue<INPAR::S2I::MortarType>(parameters,"MORTARTYPE")),
+matrixtype_(DRT::INPUT::IntegralValue<INPAR::S2I::MatrixType>(parameters,"MATRIXTYPE"))
 {
   return;
 } // SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I
@@ -57,15 +71,10 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying() const
   // time measurement: evaluate condition 'S2ICoupling'
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'S2ICoupling'");
 
-  switch(s2imortartype_)
+  switch(mortartype_)
   {
-  case INPAR::SCATRA::s2i_mortar_none:
+  case INPAR::S2I::mortar_none:
   {
-    // check matrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocksystemmatrix = scatratimint_->BlockSystemMatrix();
-    if(blocksystemmatrix == Teuchos::null)
-      dserror("System matrix is not a block matrix!");
-
     // create parameter list
     Teuchos::ParameterList condparams;
 
@@ -87,20 +96,65 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying() const
     scatratimint_->Discretization()->EvaluateCondition(condparams,islavematrix_,imastermatrix_,islaveresidual_,Teuchos::null,Teuchos::null,"S2ICouplingSlave");
     scatratimint_->Discretization()->ClearState();
 
-    // assemble linearizations of slave fluxes w.r.t. slave dofs into global system matrix
+    // finalize interface matrices
     islavematrix_->Complete();
-    blocksystemmatrix->Matrix(1,1).Add(*islavematrix_,false,1.,1.);
-
-    // transform linearizations of slave fluxes w.r.t. master dofs and assemble into global system matrix
     imastermatrix_->Complete();
-    (*islavetomastercoltransform_)(imastermatrix_->RowMap(),imastermatrix_->ColMap(),*imastermatrix_,1.,
-        ADAPTER::CouplingSlaveConverter(*icoup_),blocksystemmatrix->Matrix(1,2));
 
-    // derive linearizations of master fluxes w.r.t. slave dofs and assemble into global system matrix
-    (*islavetomasterrowtransform_)(*islavematrix_,-1.,ADAPTER::CouplingSlaveConverter(*icoup_),blocksystemmatrix->Matrix(2,1));
+    // assemble global system matrix depending on matrix type
+    switch(matrixtype_)
+    {
+      case INPAR::S2I::matrix_sparse:
+      {
+        // check matrix
+        Teuchos::RCP<LINALG::SparseMatrix> systemmatrix = scatratimint_->SystemMatrix();
+        if(systemmatrix == Teuchos::null)
+          dserror("System matrix is not a sparse matrix!");
 
-    // derive linearizations of master fluxes w.r.t. master dofs and assemble into global system matrix
-    (*islavetomasterrowcoltransform_)(*imastermatrix_,-1.,ADAPTER::CouplingSlaveConverter(*icoup_),ADAPTER::CouplingSlaveConverter(*icoup_),blocksystemmatrix->Matrix(2,2),true,true);
+        // assemble linearizations of slave fluxes w.r.t. slave dofs into global system matrix
+        systemmatrix->Add(*islavematrix_,false,1.,1.);
+
+        // transform linearizations of slave fluxes w.r.t. master dofs and assemble into global system matrix
+        (*islavetomastercoltransform_)(imastermatrix_->RowMap(),imastermatrix_->ColMap(),*imastermatrix_,1.,
+            ADAPTER::CouplingSlaveConverter(*icoup_),*systemmatrix,true,true);
+
+        // derive linearizations of master fluxes w.r.t. slave dofs and assemble into global system matrix
+        (*islavetomasterrowtransform_)(*islavematrix_,-1.,ADAPTER::CouplingSlaveConverter(*icoup_),*systemmatrix,true);
+
+        // derive linearizations of master fluxes w.r.t. master dofs and assemble into global system matrix
+        (*islavetomasterrowcoltransform_)(*imastermatrix_,-1.,ADAPTER::CouplingSlaveConverter(*icoup_),ADAPTER::CouplingSlaveConverter(*icoup_),*systemmatrix,true,true);
+
+        break;
+      }
+
+      case INPAR::S2I::matrix_block_geometric:
+      {
+        // check matrix
+        Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocksystemmatrix = scatratimint_->BlockSystemMatrix();
+        if(blocksystemmatrix == Teuchos::null)
+          dserror("System matrix is not a block matrix!");
+
+        // assemble linearizations of slave fluxes w.r.t. slave dofs into global system matrix
+        blocksystemmatrix->Matrix(1,1).Add(*islavematrix_,false,1.,1.);
+
+        // transform linearizations of slave fluxes w.r.t. master dofs and assemble into global system matrix
+        (*islavetomastercoltransform_)(imastermatrix_->RowMap(),imastermatrix_->ColMap(),*imastermatrix_,1.,
+            ADAPTER::CouplingSlaveConverter(*icoup_),blocksystemmatrix->Matrix(1,2));
+
+        // derive linearizations of master fluxes w.r.t. slave dofs and assemble into global system matrix
+        (*islavetomasterrowtransform_)(*islavematrix_,-1.,ADAPTER::CouplingSlaveConverter(*icoup_),blocksystemmatrix->Matrix(2,1));
+
+        // derive linearizations of master fluxes w.r.t. master dofs and assemble into global system matrix
+        (*islavetomasterrowcoltransform_)(*imastermatrix_,-1.,ADAPTER::CouplingSlaveConverter(*icoup_),ADAPTER::CouplingSlaveConverter(*icoup_),blocksystemmatrix->Matrix(2,2),true,true);
+
+        break;
+      }
+
+      default:
+      {
+        dserror("Type of global system matrix for scatra-scatra interface coupling not recognized!");
+        break;
+      }
+    }
 
     // assemble slave residuals into global residual vector
     maps_->AddVector(islaveresidual_,1,scatratimint_->Residual());
@@ -111,19 +165,19 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying() const
     break;
   }
 
-  case INPAR::SCATRA::s2i_mortar_standard:
+  case INPAR::S2I::mortar_standard:
   {
     dserror("Not yet implemented!");
     break;
   }
 
-  case INPAR::SCATRA::s2i_mortar_block:
+  case INPAR::S2I::mortar_saddlepoint:
   {
     dserror("Not yet implemented!");
     break;
   }
 
-  case INPAR::SCATRA::s2i_mortar_condensed:
+  case INPAR::S2I::mortar_condensed:
   {
     dserror("Not yet implemented!");
     break;
@@ -151,13 +205,11 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
   std::vector<DRT::Condition*> masterconditions;
   scatratimint_->Discretization()->GetCondition("S2ICouplingMaster", masterconditions);
 
-  // get type of mortar meshtying
-  s2imortartype_ = static_cast<INPAR::SCATRA::S2IMortarType>(slaveconditions[0]->GetInt("mortar type"));
-
-  switch(s2imortartype_)
+  // determine type of mortar meshtying
+  switch(mortartype_)
   {
   // setup scatra-scatra interface coupling for interfaces with pairwise overlapping interface nodes
-  case INPAR::SCATRA::s2i_mortar_none:
+  case INPAR::S2I::mortar_none:
   {
     // initialize int vectors for global ids of slave and master interface nodes
     std::vector<int> islavenodegidvec;
@@ -203,7 +255,7 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
     if(scatratimint_->NumScal() < 1)
       dserror("Number of transported scalars not correctly set!");
     icoup_ = Teuchos::rcp(new ADAPTER::Coupling());
-    icoup_->SetupCoupling(*(scatratimint_->Discretization()),*(scatratimint_->Discretization()),imasternodegidvec,islavenodegidvec,scatratimint_->NumDofPerNode());
+    icoup_->SetupCoupling(*(scatratimint_->Discretization()),*(scatratimint_->Discretization()),imasternodegidvec,islavenodegidvec,scatratimint_->NumDofPerNode(),true,1.e-8);
 
     // generate interior and interface maps
     Teuchos::RCP<Epetra_Map> ifullmap = LINALG::MergeMap(icoup_->SlaveDofMap(),icoup_->MasterDofMap(),false);
@@ -235,9 +287,9 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
   }
 
   // setup scatra-scatra interface coupling for interfaces with non-overlapping interface nodes
-  case INPAR::SCATRA::s2i_mortar_standard:
-  case INPAR::SCATRA::s2i_mortar_block:
-  case INPAR::SCATRA::s2i_mortar_condensed:
+  case INPAR::S2I::mortar_standard:
+  case INPAR::S2I::mortar_saddlepoint:
+  case INPAR::S2I::mortar_condensed:
   {
     dserror("Not yet implemented!");
     break;
@@ -250,6 +302,12 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
   }
   }
 
+  // initialize vectors for row and column sums of global system matrix if necessary
+  if(rowequilibration_)
+    invrowsums_ = Teuchos::rcp(new Epetra_Vector(*scatratimint_->Discretization()->DofRowMap(),false));
+  if(colequilibration_)
+    invcolsums_ = Teuchos::rcp(new Epetra_Vector(*scatratimint_->Discretization()->DofRowMap(),false));
+
   return;
 } // SCATRA::MeshtyingStrategyS2I::InitMeshtying
 
@@ -261,31 +319,25 @@ Teuchos::RCP<LINALG::SparseOperator> SCATRA::MeshtyingStrategyS2I::InitSystemMat
 {
   Teuchos::RCP<LINALG::SparseOperator> systemmatrix(Teuchos::null);
 
-  switch(s2imortartype_)
+  switch(matrixtype_)
   {
-  case INPAR::SCATRA::s2i_mortar_none:
+  case INPAR::S2I::matrix_sparse:
+  {
+    // initialize system matrix
+    systemmatrix = Teuchos::rcp(new LINALG::SparseMatrix(*(scatratimint_->Discretization()->DofRowMap()),27,false,true));
+    break;
+  }
+
+  case INPAR::S2I::matrix_block_geometric:
   {
     // initialize system matrix and associated strategy
     systemmatrix = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(*maps_,*maps_));
     break;
   }
 
-  case INPAR::SCATRA::s2i_mortar_standard:
-  case INPAR::SCATRA::s2i_mortar_condensed:
-  {
-    dserror("Not yet implemented!");
-    break;
-  }
-
-  case INPAR::SCATRA::s2i_mortar_block:
-  {
-    dserror("Not yet implemented!");
-    break;
-  }
-
   default:
   {
-    dserror("Meshtying type for scatra-scatra interface coupling not recognized!");
+    dserror("Type of global system matrix for scatra-scatra interface coupling not recognized!");
     break;
   }
   }
@@ -307,10 +359,109 @@ void SCATRA::MeshtyingStrategyS2I::Solve(
     const Teuchos::RCP<LINALG::KrylovProjector>&   projector       //! Krylov projector
     ) const
 {
-  if(s2imortartype_ != INPAR::SCATRA::s2i_mortar_block)
+  if(mortartype_ != INPAR::S2I::mortar_saddlepoint)
+  {
+    // equilibrate global system of equations if necessary
+    EquilibrateSystem(systemmatrix,residual);
+
+    // solve global system of equations
     solver->Solve(systemmatrix->EpetraOperator(),increment,residual,true,iteration==1,projector);
+
+    // unequilibrate global increment vector if necessary
+    UnequilibrateIncrement(increment);
+  }
+
   else
     dserror("Not yet implemented!");
 
   return;
 } // SCATRA::MeshtyingStrategyS2I::Solve
+
+
+/*----------------------------------------------------------------------*
+ | equilibrate global system of equations if necessary       fang 05/15 |
+ *----------------------------------------------------------------------*/
+void SCATRA::MeshtyingStrategyS2I::EquilibrateSystem(
+    const Teuchos::RCP<LINALG::SparseOperator>&   systemmatrix,   //! system matrix
+    const Teuchos::RCP<Epetra_Vector>&            residual        //! residual vector
+    ) const
+{
+  if(rowequilibration_ or colequilibration_)
+  {
+    // perform equilibration depending on type of global system matrix
+    switch(matrixtype_)
+    {
+    case INPAR::S2I::matrix_sparse:
+    {
+      // check matrix
+      Teuchos::RCP<LINALG::SparseMatrix> sparsematrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix);
+      if(sparsematrix == Teuchos::null)
+        dserror("System matrix is not a sparse matrix!");
+
+      // perform row equilibration
+      if(rowequilibration_)
+      {
+        // compute row sums of global system matrix
+        if(sparsematrix->EpetraMatrix()->InvRowSums(*invrowsums_))
+          dserror("Row sums of global system matrix could not be successfully computed!");
+
+        // take square root of row sums if global system matrix is scaled from left and right
+        for(int i=0; i<invrowsums_->MyLength(); ++i)
+          (*invrowsums_)[i] = sqrt((*invrowsums_)[i]);
+
+        // perform equilibration of global system matrix
+        if(sparsematrix->LeftScale(*invrowsums_))
+          dserror("Row equilibration of global system matrix failed!");
+
+        // perform equilibration of global residual vector
+        if(residual->Multiply(1.,*invrowsums_,*residual,0.))
+          dserror("Equilibration of global residual vector failed!");
+      }
+
+      // perform column equilibration
+      if(colequilibration_)
+      {
+        // compute column sums of global system matrix
+        if(sparsematrix->EpetraMatrix()->InvColSums(*invcolsums_))
+          dserror("Column sums of global system matrix could not be successfully computed!");
+
+        // take square root of column sums if global system matrix is scaled from left and right
+        for(int i=0; i<invcolsums_->MyLength(); ++i)
+          (*invcolsums_)[i] = sqrt((*invcolsums_)[i]);
+
+        // perform equilibration of global system matrix
+        if(sparsematrix->RightScale(*invcolsums_))
+          dserror("Column equilibration of global system matrix failed!");
+      }
+
+      break;
+    }
+
+    default:
+    {
+      dserror("Equilibration of global system of equations for scatra-scatra interface coupling is only implemented for sparse matrices without block structure!");
+      break;
+    }
+    }
+  }
+
+  return;
+} // SCATRA::MeshtyingStrategyS2I::EquilibrateSystem
+
+
+/*----------------------------------------------------------------------*
+ | unequilibrate global increment vector if necessary        fang 05/15 |
+ *----------------------------------------------------------------------*/
+void SCATRA::MeshtyingStrategyS2I::UnequilibrateIncrement(
+    const Teuchos::RCP<Epetra_Vector>&   increment   //! increment vector
+    ) const
+{
+  // unequilibrate global increment vector if necessary
+  if(colequilibration_)
+  {
+    if(increment->Multiply(1.,*invcolsums_,*increment,0.))
+      dserror("Unequilibration of global increment vector failed!");
+  }
+
+  return;
+} // SCATRA::MeshtyingStrategyS2I::UnequilibrateIncrement

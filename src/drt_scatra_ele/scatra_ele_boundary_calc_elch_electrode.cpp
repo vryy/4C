@@ -68,6 +68,28 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::ScaTraEleBoundaryCal
 
 
 /*-------------------------------------------------------------------------------------*
+ | evaluate scatra-scatra interface coupling condition (electrochemistry)   fang 04/15 |
+ *-------------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoupling(
+    const DRT::Element*         ele,              ///< current boundary element
+    Teuchos::ParameterList&     params,           ///< parameter list
+    DRT::Discretization&        discretization,   ///< discretization
+    std::vector<int>&           lm,               ///< location vector
+    Epetra_SerialDenseMatrix&   eslavematrix,     ///< element matrix for slave side
+    Epetra_SerialDenseMatrix&   emastermatrix,    ///< element matrix for master side
+    Epetra_SerialDenseVector&   eslaveresidual    ///< element residual for slave side
+    )
+{
+  // this function should never be called
+  dserror("Each scatra-scatra interface for electrochemistry problems with conforming interface discretization "
+          "must have an electrode on the master side and the electrolyte on the slave side, not the other way around!");
+
+  return;
+} // DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoupling
+
+
+/*-------------------------------------------------------------------------------------*
  | extract valence of species k from element material                       fang 02/15 |
  *-------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>

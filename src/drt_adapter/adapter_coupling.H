@@ -120,19 +120,25 @@ namespace ADAPTER
       in more master nodes that slave nodes as long as there is one
       master node for each slave node.
 
+      We need some way to guess the tolerance for the octree. It must not be too small,
+      otherwise we won't find matching nodes. Too large a tolerance will not
+      hurt that much. It just means we will have to test more nodes.
+
       \param masterdis   (i) master side mesh
       \param slavedis    (i) slave side mesh
       \param masternodes (i) gids of nodes on master side to be coupled
       \param slavenodes  (i) gids of nodes on slave side to be coupled
       \param numdof      (i) number of dofs per node to be coupled
       \param matchall    (i) flag indicating matching slave and master nodes
+      \param tolerance   (i) tolerance for octree for node matching
      */
     void SetupCoupling(const DRT::Discretization& masterdis,
                        const DRT::Discretization& slavedis,
                        const std::vector<int>& masternodes,
                        const std::vector<int>& slavenodes,
                        const int numdof,
-                       bool matchall=true);
+                       const bool matchall=true,
+                       const double tolerance=1.e-3);
 
     /// setup coupling of given nodes
     /*!
@@ -144,19 +150,25 @@ namespace ADAPTER
       in more master nodes that slave nodes as long as there is one
       master node for each slave node.
 
+      We need some way to guess the tolerance for the octree. It must not be too small,
+      otherwise we won't find matching nodes. Too large a tolerance will not
+      hurt that much. It just means we will have to test more nodes.
+
       \param masterdis   (i) master side mesh
       \param slavedis    (i) slave side mesh
       \param masternodes (i) gids of nodes on master side to be coupled
       \param slavenodes  (i) gids of nodes on slave side to be coupled
       \param numdof      (i) number of dofs per node to be coupled
       \param matchall    (i) flag indicating matching slave and master nodes
+      \param tolerance   (i) tolerance for octree for node matching
      */
     void SetupCoupling(const DRT::Discretization& masterdis,
                        const DRT::Discretization& slavedis,
                        const Epetra_Map& masternodes,
                        const Epetra_Map& slavenodes,
                        const int numdof,
-                       bool matchall=true);
+                       const bool matchall=true,
+                       const double tolerance=1.e-3);
 
     //@}
 
@@ -268,13 +280,15 @@ namespace ADAPTER
       \param permslavenodes (o) slave node gids permuted to match master node gids
       \param slavenodes (i) slave node gids
       \param matchall (i) bool indicating match of all slave and master nodes
+      \param tolerance   (i) tolerance for octree for node matching
      */
     void MatchNodes(const DRT::Discretization& masterdis,
                     const DRT::Discretization& slavedis,
                     std::vector<int>& masternodes,
                     std::vector<int>& permslavenodes,
                     const std::vector<int>& slavenodes,
-                    bool matchall=true);
+                    const bool matchall,
+                    const double tolerance);
 
     /// build slave to master permutation and dof all maps
     void FinishCoupling(const DRT::Discretization& masterdis,

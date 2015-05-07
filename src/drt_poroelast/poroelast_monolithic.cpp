@@ -1140,7 +1140,7 @@ void POROELAST::Monolithic::ApplyStrCouplMatrix(
       Teuchos::null
   );
 
-  // evaluate the mechancial-fluid system matrix on the structural element
+  // evaluate the mechanical-fluid system matrix on the structural element
   StructureField()->Discretization()->EvaluateCondition( sparams, structuralstrategy,"PoroCoupling" );
   //StructureField()->Discretization()->Evaluate( sparams, structuralstrategy);
   StructureField()->Discretization()->ClearState();

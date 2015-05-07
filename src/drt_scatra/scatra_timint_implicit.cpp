@@ -2223,7 +2223,7 @@ void SCATRA::ScaTraTimIntImpl::CreateMeshtyingStrategy()
 
   // scatra-scatra interface coupling
   else if(s2icoupling_)
-    strategy_ = Teuchos::rcp(new MeshtyingStrategyS2I(this));
+    strategy_ = Teuchos::rcp(new MeshtyingStrategyS2I(this,DRT::Problem::Instance()->S2IDynamicParams()));
 
   // standard case without meshtying
   else

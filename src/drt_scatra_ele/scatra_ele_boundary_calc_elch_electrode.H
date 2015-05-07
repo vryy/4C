@@ -47,6 +47,17 @@ namespace DRT
       //! protected constructor for singletons
       ScaTraEleBoundaryCalcElchElectrode(const int numdofpernode,const int numscal);
 
+      //! evaluate scatra-scatra interface coupling condition
+      virtual void EvaluateS2ICoupling(
+          const DRT::Element*         ele,              ///< current boundary element
+          Teuchos::ParameterList&     params,           ///< parameter list
+          DRT::Discretization&        discretization,   ///< discretization
+          std::vector<int>&           lm,               ///< location vector
+          Epetra_SerialDenseMatrix&   eslavematrix,     ///< element matrix for slave side
+          Epetra_SerialDenseMatrix&   emastermatrix,    ///< element matrix for master side
+          Epetra_SerialDenseVector&   eslaveresidual    ///< element residual for slave side
+      );
+
       //! extract valence of species k from element material
       virtual const double GetValence(
           const Teuchos::RCP<const MAT::Material>&   material,   //! element material

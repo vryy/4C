@@ -49,7 +49,7 @@ namespace MAT
         const int diffparanum_;
 
         //! parameters for diffusion coefficient
-        const std::vector<double>* diffpara_;
+        const std::vector<double> diffpara_;
 
         //! curve number for conductivity
         const int condcurve_;
@@ -58,7 +58,7 @@ namespace MAT
         const int condparanum_;
 
         //! parameters for conductivity
-        const std::vector<double>* condpara_;
+        const std::vector<double> condpara_;
         //@}
 
       protected:
@@ -163,23 +163,23 @@ namespace MAT
       const int CondCurve() const {return params_->condcurve_;};
 
       //! return parameters for diffusion coefficient
-      const std::vector<double>* DiffParams() const {return params_->diffpara_;};
+      const std::vector<double>& DiffParams() const {return params_->diffpara_;};
 
       //! return parameters for conductivity
-      const std::vector<double>* CondParams() const {return params_->condpara_;};
+      const std::vector<double>& CondParams() const {return params_->condpara_;};
 
       //! evaluate value of predefined function
       const double EvalFunctValue(
           const int                    functnr,
           const double                 cint,
-          const std::vector<double>*   functparams
+          const std::vector<double>&   functparams
           ) const;
 
       //! evaluate first derivative of predefined function
       const double EvalFirstDerivFunctValue(
           const int                    functnr,
           const double                 cint,
-          const std::vector<double>*   functparams
+          const std::vector<double>&   functparams
           ) const;
 
       //! return material parameters

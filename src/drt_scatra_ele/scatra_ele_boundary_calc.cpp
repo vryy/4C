@@ -19,16 +19,20 @@ Maintainer: Andreas Ehrl
 
 #include <cstdlib>
 
+#include "../drt_fem_general/drt_utils_boundary_integration.H"
+
+#include "../drt_inpar/inpar_s2i.H"
+
 #include "../drt_lib/drt_globalproblem.H" // for curves and functions
 #include "../drt_lib/standardtypes_cpp.H" // for EPS12 and so on
-#include "../drt_fem_general/drt_utils_boundary_integration.H"
-#include "../drt_nurbs_discret/drt_nurbs_utils.H"
 
 #include "../drt_mat/fourieriso.H"
 #include "../drt_mat/material.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_mat/scatra_mat.H"
 #include "../drt_mat/thermostvenantkirchhoff.H"
+
+#include "../drt_nurbs_discret/drt_nurbs_utils.H"
 
 #include "scatra_ele.H"
 #include "scatra_ele_parameter_std.H"
@@ -1137,7 +1141,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICoupling(
       switch(kineticmodel)
       {
         // constant permeability model
-        case INPAR::SCATRA::s2i_kinetics_constperm:
+        case INPAR::S2I::kinetics_constperm:
         {
           // access real vector of constant permeabilities
           const std::vector<double>* permeabilities = s2icondition->GetMutable<std::vector<double> >("permeabilities");

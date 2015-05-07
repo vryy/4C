@@ -41,7 +41,7 @@ class MeshtyingStrategyStdElch : public MeshtyingStrategyStd
   public:
 
     //! constructor
-    MeshtyingStrategyStdElch(
+    explicit MeshtyingStrategyStdElch(
         SCATRA::ScaTraTimIntElch* elchtimint
         );
 

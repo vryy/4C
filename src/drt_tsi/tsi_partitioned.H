@@ -167,7 +167,7 @@ namespace TSI
     INPAR::TSI::SolutionSchemeOverFields coupling_;
     //! we couple based on displacements
     bool displacementcoupling_;
-    //! quasi-static solution of the mechancial equation
+    //! quasi-static solution of the mechanical equation
     bool quasistatic_;
 
   };  // Partitioned
