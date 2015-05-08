@@ -453,14 +453,38 @@ private:
       );
 
   //Density on each side of interface
-  double        densaf_master_;
-  double        densaf_slave_;
+  double        densaf_master_;        ///< density at master side
+  double        densaf_slave_;         ///< density at slave side
+
   //Viscosity on each side of interface
-  double        viscaf_master_;
-  double        viscaf_slave_;
+  double        viscaf_master_;        ///< viscosity at master side
+  double        viscaf_slave_;         ///< viscosity at slave side
+
   //Surface tension on each side (If it is not the same, error should be thrown.)
-  double        gamma_m_;
-  double        gamma_s_;
+  double        gamma_m_;              ///< surface tension coefficient at master side
+  double        gamma_s_;              ///< surface tension coefficient at master side
+
+  LINALG::Matrix<my::nsd_,my::nen_> evelaf_; ///< element velocity at time t^n+af, implemented also in base class, not accessable via ExtractValuesFromGlobalVector
+  LINALG::Matrix<my::nen_,1>        epreaf_; ///< element pressure at time t^n+af, implemented also in base class, not accessable via ExtractValuesFromGlobalVector
+
+  LINALG::Matrix<my::nsd_,my::nen_> eveln_; ///< element velocity at time t^n, implemented also in base class, not accessable via ExtractValuesFromGlobalVector
+  LINALG::Matrix<my::nen_,1>        epren_; ///< element velocity at time t^n, implemented also in base class, not accessable via ExtractValuesFromGlobalVector
+
+  LINALG::Matrix<my::nsd_,1> ivelint_jump_;      ///< interface velocity jump at t^n+1
+  LINALG::Matrix<my::nsd_,1> itraction_jump_;    ///< interface traction jump at t^n+1
+
+  LINALG::Matrix<my::nsd_,1> ivelintn_jump_;     ///< interface velocity jump at t^n
+  LINALG::Matrix<my::nsd_,1> itractionn_jump_;   ///< interface traction jump at t^n
+
+  LINALG::Matrix<my::nsd_,1> velint_s_;     ///< velocity of slave side at time t^n+1 at integration point
+  LINALG::Matrix<my::nsd_,1> velintn_s_;    ///< velocity of slave side at time t^n at integration point
+
+  LINALG::Matrix<my::nsd_,1> rst_; ///< local coordinates of Gaussian point w.r.t background element
+
+  LINALG::Matrix<my::nsd_,1> normal_;   ///< normal vector
+  LINALG::Matrix<my::nsd_,1> x_side_;   ///< gauss-point coordinates
+  LINALG::Matrix<my::nsd_,1> x_gp_lin_; ///< gauss-point in xyz-system on linearized interface
+
 
 };
 

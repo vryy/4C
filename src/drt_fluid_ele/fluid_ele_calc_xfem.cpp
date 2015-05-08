@@ -40,6 +40,8 @@ Maintainer: Raffaela Kruse /Benedikt Schott
 
 #include "../drt_xfem/xfem_condition_manager.H"
 
+#include <Teuchos_TimeMonitor.hpp>
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
@@ -84,7 +86,21 @@ DRT::ELEMENTS::FluidEleCalcXFEM<distype>::FluidEleCalcXFEM()
     viscaf_master_(0.0),
     viscaf_slave_(0.0),
     gamma_m_(0.0),
-    gamma_s_(0.0)
+    gamma_s_(0.0),
+    evelaf_(true),
+    epreaf_(true),
+    eveln_(true),
+    epren_(true),
+    ivelint_jump_(true),
+    itraction_jump_(true),
+    ivelintn_jump_(true),
+    itractionn_jump_(true),
+    velint_s_(true),
+    velintn_s_(true),
+    rst_(true),
+    normal_(true),
+    x_side_(true),
+    x_gp_lin_(true)
 {
   // we use the standard parameter list here, since there are not any additional
   // xfem-specific parameters required in this derived class
@@ -2953,10 +2969,10 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
   // get additional state vectors for ALE case: grid displacement and vel.
   // ---------------------------------------------------------------------
 
-  LINALG::Matrix<my::nsd_, my::nen_> edispnp(true);
-  LINALG::Matrix<my::nsd_, my::nen_> egridv(true);
+  my::edispnp_.Clear();
+  my::egridv_.Clear();
 
-  if (ele->IsAle()) my::GetGridDispVelALE(dis, lm, edispnp, egridv);
+  if (ele->IsAle()) my::GetGridDispVelALE(dis, lm, my::edispnp_, my::egridv_);
 
 
   // ---------------------------------------------------------------------
@@ -2974,15 +2990,15 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
   // ---------------------------------------------------------------------
 
   // get element-wise velocity/pressure field for current time step
-  LINALG::Matrix<my::nsd_,my::nen_> evelaf(true);
-  LINALG::Matrix<my::nen_,1> epreaf(true);
-  my::ExtractValuesFromGlobalVector(dis, lm, *my::rotsymmpbc_, &evelaf, &epreaf, "velaf");
+  evelaf_.Clear();
+  epreaf_.Clear();
+  my::ExtractValuesFromGlobalVector(dis, lm, *my::rotsymmpbc_, &evelaf_, &epreaf_, "velaf");
 
   // get element-wise velocity/pressure field for previous time step
-  LINALG::Matrix<my::nsd_,my::nen_> eveln(true);
-  LINALG::Matrix<my::nen_,1> epren(true);
+  eveln_.Clear();
+  epren_.Clear();
   if (my::fldparatimint_->IsNewOSTImplementation())
-    my::ExtractValuesFromGlobalVector(dis, lm, *my::rotsymmpbc_, &eveln, &epren, "veln");
+    my::ExtractValuesFromGlobalVector(dis, lm, *my::rotsymmpbc_, &eveln_, &epren_, "veln");
 
   // ---------------------------------------------------------------------
   // set element advective field for Oseen problems
@@ -3065,12 +3081,14 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
       i!=bintpoints.end();
       ++i )
   {
+    TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::GaussIntegrationloop");
+
     //-----------------------------------------------------------------------------------
 
     // interface normal vector, pointing from background domain into the interface
-    LINALG::Matrix<3,1> normal(true);
+    normal_.Clear();
     // gauss-point coordinates
-    LINALG::Matrix<3,1> x_side(true);
+    x_side_.Clear();
 
     // we need an interface to the boundary element (for projection)
     Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype> > si;
@@ -3308,48 +3326,52 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
 
         const LINALG::Matrix<2,1> eta( iquad.Point() ); // xi-coordinates with respect to side
 
-        LINALG::Matrix<3,1> rst(true); // local coordinates w.r.t background element
 
-        LINALG::Matrix<3,1> x_gp_lin(true); // gp in xyz-system on linearized interface
 
         // compute transformation factor, normal vector and global Gauss point coordinates
         if (bc->Shape() != DRT::Element::dis_none) // Tessellation approach
         {
-          ComputeSurfaceTransformation(drs, x_gp_lin, normal, bc, eta);
+          TEUCHOS_FUNC_TIME_MONITOR( "FluidEleCalcXFEM::ComputeSurfaceTransformation" );
+
+          ComputeSurfaceTransformation(drs, x_gp_lin_, normal_, bc, eta);
         }
         else // MomentFitting approach
         {
           drs = 1.0;
-          normal = bc->GetNormalVector();
+          normal_ = bc->GetNormalVector();
           const double* gpcord = iquad.Point();
           for (int idim=0;idim<3;idim++)
           {
-            x_gp_lin(idim,0) = gpcord[idim];
+            x_gp_lin_(idim,0) = gpcord[idim];
           }
         }
 
-        // find element local position of gauss point
-        GEO::CUT::Position<distype> pos( my::xyze_, x_gp_lin );
-        pos.Compute();
-        rst = pos.LocalCoordinates();
+        {
+          TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::GEO::CUT::Position");
 
-        //TODO unify ProjectOnSide and Evaluate for different spatial dimensions of boundary slave element and volumetric slave element
+          // find element local position of gauss point
+          GEO::CUT::Position<distype> pos( my::xyze_, x_gp_lin_ );
+          pos.Compute();
+          rst_ = pos.LocalCoordinates();
+        }
+
         if (is_mesh_coupling_side)
         {
           // project gaussian point from linearized interface to warped side (get/set local side coordinates in SideImpl)
-          LINALG::Matrix<3,1> xi_side(true);
+          LINALG::Matrix<3,1> xi_side;
+
           // project on boundary element
-          si->ProjectOnSide(x_gp_lin, x_side, xi_side);
+          si->ProjectOnSide(x_gp_lin_, x_side_, xi_side);
 
           if (non_xfluid_coupling)
-            ci->Evaluate( x_side ); // evaluate embedded element's shape functions at gauss-point coordinates
+            ci->Evaluate( x_side_ ); // evaluate embedded element's shape functions at gauss-point coordinates
           else
             ci->Evaluate( xi_side ); // evaluate side's shape functions at gauss-point coordinates
         }
         else if (is_ls_coupling_side)
         {
           if(cond_manager->IsCoupling( coup_sid, my::eid_ ))
-            ci->Evaluate( x_gp_lin ); // evaluate embedded element's shape functions at gauss-point coordinates
+            ci->Evaluate( x_gp_lin_ ); // evaluate embedded element's shape functions at gauss-point coordinates
         }
 
         // integration factors
@@ -3357,19 +3379,19 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
         const double timefacfac = surf_fac * my::fldparatimint_->TimeFac();
 
         // evaluate background element shape functions
-        EvalFuncAndDeriv( rst );
+        EvalFuncAndDeriv( rst_ );
 
         // get velocity at integration point
         // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-        my::velint_.Multiply(evelaf,my::funct_);
+        my::velint_.Multiply(evelaf_,my::funct_);
 
         // get velocity derivatives at integration point
         // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-        my::vderxy_.MultiplyNT(evelaf,my::derxy_);
+        my::vderxy_.MultiplyNT(evelaf_,my::derxy_);
 
         // get pressure at integration point
         // (value at n+1)
-        double press = my::funct_.Dot(epreaf);
+        double press = my::funct_.Dot(epreaf_);
 
         //----------------------------------------------
         // get convective velocity at integration point
@@ -3381,17 +3403,16 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
         double NIT_full_stab_fac = 0.0;
 
         //Extract slave velocity at Gausspoint
-        LINALG::Matrix<my::nsd_,1> velint_s;
-        ci->GetInterfaceVelnp(velint_s);
+        ci->GetInterfaceVelnp(velint_s_);
 
         NIT_Compute_FullPenalty_Stabfac(
             NIT_full_stab_fac,             ///< to be filled: full Nitsche's penalty term scaling (viscous+convective part)
-            normal,
+            normal_,
             h_k,
             kappa_m,
             kappa_s,
             my::convvelint_,
-            velint_s,
+            velint_s_,
             NIT_visc_stab_fac             ///< Nitsche's viscous scaling part of penalty term
             );
 
@@ -3399,18 +3420,18 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
         //-----------------------------------------------------------------------------
         // define the prescribed interface jump vectors for velocity and traction
 
-        LINALG::Matrix<my::nsd_,1> ivelint_jump (true);
-        LINALG::Matrix<my::nsd_,1> itraction_jump (true);
+        ivelint_jump_.Clear();
+        itraction_jump_.Clear();
 
         GetInterfaceJumpVectors(
             coupcond,
             coupling,
-            ivelint_jump,
-            itraction_jump,
-            x_gp_lin,
-            normal,
+            ivelint_jump_,
+            itraction_jump_,
+            x_gp_lin_,
+            normal_,
             si,
-            rst
+            rst_
         );
 
         if(cond_type == INPAR::XFEM::CouplingCond_LEVELSET_NEUMANN or
@@ -3421,7 +3442,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
           EvaluateNeumann(
               timefacfac,             ///< theta*dt
               my::funct_,             ///< coupling master shape functions
-              itraction_jump,         ///< prescribed interface traction, jump height for coupled problems
+              itraction_jump_,        ///< prescribed interface traction, jump height for coupled problems
               elevec1_epetra          ///< element rhs vector
           );
 
@@ -3432,12 +3453,14 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
         }
         else
         {
+          TEUCHOS_FUNC_TIME_MONITOR( "FluidEleCalcXFEM::NIT_evaluateCoupling" );
+
           //-----------------------------------------------------------------------------
           // evaluate the coupling terms for coupling with current side
           // (or embedded element through current side)
           // time step n+1
           ci->NIT_evaluateCoupling(
-            normal,                      // normal vector
+            normal_,                     // normal vector
             timefacfac,                  // theta*dt
             viscaf_master_,              // dynvisc viscosity in background fluid
             viscaf_slave_,               // dynvisc viscosity in embedded fluid
@@ -3450,8 +3473,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
             my::vderxy_,                 // bg grad u^n+1
             press,                       // bg p^n+1
             my::velint_,                 // bg u^n+1
-            ivelint_jump,                // prescribed interface velocity, Dirichlet values or jump height for coupled problems
-            itraction_jump               // prescribed interface traction, jump height for coupled problems
+            ivelint_jump_,               // prescribed interface velocity, Dirichlet values or jump height for coupled problems
+            itraction_jump_              // prescribed interface traction, jump height for coupled problems
           );
 
 
@@ -3459,14 +3482,15 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
           {
             // get velocity at integration point
             // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-            my::velintn_.Multiply(eveln,my::funct_);
+            my::velintn_.Multiply(eveln_,my::funct_);
 
             // get velocity derivatives at integration point
             // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-            my::vderxyn_.MultiplyNT(eveln,my::derxy_);
+            my::vderxyn_.MultiplyNT(eveln_,my::derxy_);
 
-            LINALG::Matrix<my::nsd_,1> ivelintn_jump (true);
-            LINALG::Matrix<my::nsd_,1> itractionn_jump (true);
+            ivelintn_jump_.Clear();
+            itractionn_jump_.Clear();
+
 
             if(cond_type != INPAR::XFEM::CouplingCond_LEVELSET_TWOPHASE and
                 cond_type != INPAR::XFEM::CouplingCond_LEVELSET_COMBUSTION)
@@ -3474,13 +3498,13 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
               GetInterfaceJumpVectorsOldState(
                   coupcond,
                   coupling,
-                  ivelintn_jump,
-                  itractionn_jump,
-                  x_gp_lin,
-                  normal,
+                  ivelintn_jump_,
+                  itractionn_jump_,
+                  x_gp_lin_,
+                  normal_,
                   si,
-                  my::funct_.Dot(epren),       // bg p^n
-                  rst
+                  my::funct_.Dot(epren_),       // bg p^n
+                  rst_
               );
             }
             else
@@ -3488,13 +3512,13 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
               GetInterfaceJumpVectorsOldState(
                   coupcond,
                   coupling,
-                  ivelintn_jump,
-                  itractionn_jump,
-                  x_gp_lin,
-                  normal,
+                  ivelintn_jump_,
+                  itractionn_jump_,
+                  x_gp_lin_,
+                  normal_,
                   ci,
-                  my::funct_.Dot(epren),       // bg p^n
-                  rst
+                  my::funct_.Dot(epren_),       // bg p^n
+                  rst_
               );
             }
 
@@ -3509,23 +3533,23 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
             double NIT_full_stab_fac_n = 0.0;
             if (fldparaxfem_->InterfaceTermsPreviousState() == INPAR::XFEM::PreviousState_full)
             {
-              LINALG::Matrix<my::nsd_,1> velintn_s (true);
-              ci->GetInterfaceVeln(velintn_s);
+              velintn_s_.Clear();
+              ci->GetInterfaceVeln(velintn_s_);
 
               NIT_Compute_FullPenalty_Stabfac(
                 NIT_full_stab_fac_n,  ///< to be filled: full Nitsche's penalty term scaling (viscous+convective part)
-                normal,
+                normal_,
                 h_k,
                 kappa_m, //weights (only existing for Nitsche currently!!)
                 kappa_s, //weights (only existing for Nitsche currently!!)
                 my::convvelintn_,
-                velintn_s,
+                velintn_s_,
                 NIT_visc_stab_fac   ///< Nitsche's viscous scaling part of penalty term
               );
             }
 
             ci->NIT_evaluateCouplingOldState(
-              normal,                      // normal vector
+              normal_,                     // normal vector
               surf_fac * (my::fldparatimint_->Dt()-my::fldparatimint_->TimeFac()), // scaling of rhs depending on time discretization scheme dt*(1-theta)
               viscaf_master_,              // dynvisc viscosity in background fluid
               viscaf_slave_,               // dynvisc viscosity in embedded fluid
@@ -3535,10 +3559,10 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
               my::funct_,                  // bg shape functions
               my::derxy_,                  // bg shape function gradient
               my::vderxyn_,                // bg grad u^n
-              my::funct_.Dot(epren),       // bg p^n
+              my::funct_.Dot(epren_),       // bg p^n
               my::velintn_,                // bg u^n
-              ivelintn_jump,               // velocity jump at interface (i.e. [| u |])
-              itractionn_jump,             // traction jump at interface (i.e. [| -pI + \mu*[\nabla u + (\nabla u)^T]  |] \cdot n)
+              ivelintn_jump_,               // velocity jump at interface (i.e. [| u |])
+              itractionn_jump_,             // traction jump at interface (i.e. [| -pI + \mu*[\nabla u + (\nabla u)^T]  |] \cdot n)
               fldparaxfem_->InterfaceTermsPreviousState(), // only consistency terms or also adjoint and penalty?
               NIT_full_stab_fac_n,                         // penalty parameter at n
               fldparaxfem_->XffConvStabScaling()           // XFF inflow terms
@@ -3555,9 +3579,9 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
         //-------------------------------
         // traction vector w.r.t fluid domain, resulting stresses acting on the fluid surface
         // t= (-p*I + 2mu*eps(u))*n^f
-        LINALG::Matrix<my::nsd_,1> traction(true);
+        LINALG::Matrix<my::nsd_,1> traction;
 
-        BuildTractionVector( traction, press, normal );
+        BuildTractionVector( traction, press, normal_ );
         ci->ComputeInterfaceForce(iforce, traction, surf_fac );
 
       } // end loop gauss points of boundary cell
@@ -3594,6 +3618,7 @@ void FluidEleCalcXFEM<distype>::GetInterfaceJumpVectors(
     LINALG::Matrix<3,1>& rst                                                 ///< local coordinates of GP for bg element
 )
 {
+  //TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::GetInterfaceJumpVectors");
 
   // [| v |] := vm - vs
 
@@ -3795,6 +3820,8 @@ void FluidEleCalcXFEM<distype>::NIT_BuildPatchCuiui(
     std::map<int, std::vector<Epetra_SerialDenseMatrix> >&  Cuiui_coupling    ///< Cuiui matrices for all cutting sides
 )
 {
+  //TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::NIT_BuildPatchCuiui");
+
   // build patch-Cuiui matrix
   int ipatchsizesbefore = 0;
   for (std::map<int, std::vector<Epetra_SerialDenseMatrix> >::const_iterator m=Cuiui_coupling.begin();
@@ -4077,6 +4104,8 @@ void FluidEleCalcXFEM<distype>::NIT_Compute_FullPenalty_Stabfac(
     bool                               error_calc                     ///< when called in error calculation, don't add the inflow terms
 )
 {
+  //TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::NIT_Compute_FullPenalty_Stabfac");
+
   //------------------------------------------------------------------------------
   // compute the full Nitsche parameter
 
@@ -4311,24 +4340,21 @@ void FluidEleCalcXFEM<distype>::BuildTractionVector(
 )
 {
   // compute the stresses at the current Gaussian point for computing the interface force
-  LINALG::Matrix<my::nsd_,my::nsd_> eps(true);
+  LINALG::Matrix<my::nsd_,my::nsd_> two_eps;
   for(int i=0; i<my::nsd_; i++)
   {
     for(int j=0; j<my::nsd_; j++)
     {
-      eps(i,j) = 0.5 * (my::vderxy_(i,j) + my::vderxy_(j,i));
+      two_eps(j,i) = my::vderxy_(i,j) + my::vderxy_(j,i);
     }
   }
   //-------------------------------
 
   // t = ( -pI + 2mu eps(u) )*n^f
-  traction.Clear();
-  traction.Multiply(eps, normal);
+  traction.Multiply(two_eps, normal);
 
   // add the pressure part and scale the viscous part with the viscosity
-   traction.Update( -press, normal, 2.0*viscaf_master_);
-  //traction.Update( -press, normal, 2.0*my::visceff_);
-
+  traction.Update( -press, normal, viscaf_master_);
 
   return;
 }
@@ -4344,6 +4370,8 @@ void FluidEleCalcXFEM<distype>::AssembleInterfaceForce(
     Epetra_SerialDenseVector &             iforce     ///< interface force vector
 )
 {
+  //TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::AssembleInterfaceForce");
+
   const Epetra_Map* dofcolmap = cutdis.DofColMap();
 
   for (int idof = 0; idof < (int)(lm.size()); ++idof)
@@ -4479,6 +4507,8 @@ double FluidEleCalcXFEM<distype>::ComputeCharEleLength(
     DRT::Element *                                                        face                   ///< side element in 3D
 )
 {
+  //TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::ComputeCharEleLength");
+
   const INPAR::XFEM::ViscStab_hk visc_stab_hk = fldparaxfem_->ViscStabHK();
 
   const int coup_sid = bintpoints.begin()->first;
@@ -4794,14 +4824,16 @@ void FluidEleCalcXFEM<distype>::GetMaterialParametersVolumeCell( Teuchos::RCP<co
     )
 {
 
+  //TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::GetMaterialParametersVolumeCell");
+
   //Initiate dummy variables:
   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   // get element-wise velocity/pressure field for current time step
-  LINALG::Matrix<my::nsd_,my::nen_>     evelaf(true);
+  my::evelaf_.Clear();
   //Scatra field
-  const LINALG::Matrix<my::nen_,1>      escabofoaf(true);
-  const LINALG::Matrix<my::nen_,1>      escaaf(true);
-  const LINALG::Matrix<my::nen_,1>      escaam(true);
+  my::escabofoaf_.Clear();
+  my::escaaf_.Clear();
+  my::escaam_.Clear();
   // set thermodynamic pressure at n+1/n+alpha_F and n+alpha_M/n and
   // its time derivative at n+alpha_M/n+1 (LOMA specific!!)
   const double thermpressaf   = 1.0;
@@ -4818,7 +4850,7 @@ void FluidEleCalcXFEM<distype>::GetMaterialParametersVolumeCell( Teuchos::RCP<co
   //Get material from FluidEleCalc routine.
   // If non-constant density or viscosity wants to be calculated on the different sides. A review over how the scalar variables
   // are set at the surface should be made.
-  my::GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,vol,densam,densaf,densn,viscaf,viscn,gamma);
+  my::GetMaterialParams(material,my::evelaf_,my::escaaf_,my::escaam_,my::escabofoaf_,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,vol,densam,densaf,densn,viscaf,viscn,gamma);
 
   return;
 

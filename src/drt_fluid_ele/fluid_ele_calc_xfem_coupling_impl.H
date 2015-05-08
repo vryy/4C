@@ -198,6 +198,29 @@ namespace DRT
         LINALG::Matrix<nsd_, slave_nen_> interface_velnp_jump_; ///< cutter element's prescribed velocity jump height or prescribed DBC values
         LINALG::Matrix<nsd_, slave_nen_> interface_veln_jump_; ///< cutter element's prescribed velocity jump height or prescribed DBC values
 
+        LINALG::Matrix<slave_nen_,1> proj_funct_;      ///< shape functions for project on side
+        LINALG::Matrix<2,slave_nen_> proj_deriv_;      ///< derivatives dr, ds for project on side
+        LINALG::Matrix<3,slave_nen_> proj_deriv2_;     ///< 2nd derivatives drdr, dsds, drds for project on side
+
+        LINALG::Matrix<3,1> proj_x_;             ///< global coordinates
+        LINALG::Matrix<3,2> proj_derxy_;         ///< global xyz derivatives
+        LINALG::Matrix<3,3> proj_derxy2_;        ///< global xyz 2nd derivatives
+
+        LINALG::Matrix<3,1> proj_residuum_;      ///<  residuum of the newton iteration
+        LINALG::Matrix<3,3> proj_sysmat_;        ///<  matrix for the newton system
+        LINALG::Matrix<3,1> proj_incr_;          ///<  increment of the newton system
+
+        LINALG::Matrix<3,1> proj_sol_;           ///< sol carries xi_1, xi_2, d (distance)
+
+        // get vector products
+        LINALG::Matrix<3,1> proj_dx_drdr_times_dx_ds_;
+        LINALG::Matrix<3,1> proj_dx_dr_times_dx_drds_;
+        LINALG::Matrix<3,1> proj_dx_drds_times_dx_ds_;
+        LINALG::Matrix<3,1> proj_dx_dr_times_dx_dsds_;
+        LINALG::Matrix<3,1> proj_dx_dr_times_dx_ds_;
+
+
+
       };
 
       /*!
@@ -636,6 +659,57 @@ namespace DRT
         const double adj_visc_scale_;
 
         const bool eval_coupling_; ///< do we have to evaluate coupling terms?
+
+        LINALG::Matrix<nsd_,1> velint_s_; ///< velocity at integration point on slave side
+
+        LINALG::Matrix<nen_,1> funct_m_timefacfac_;
+
+        LINALG::Matrix<slave_nen_,1> funct_s_;
+        LINALG::Matrix<slave_nen_,1> funct_s_timefacfac_;
+
+        LINALG::Matrix<nen_,nen_> funct_m_m_dyad_timefacfac_;
+
+        LINALG::Matrix<nen_,nen_> funct_m_m_dyad_timefacfac_stabfac_;
+
+        LINALG::Matrix<slave_nen_,slave_nen_> funct_s_s_dyad_timefacfac_;
+
+        LINALG::Matrix<slave_nen_,slave_nen_> funct_s_s_dyad_timefacfac_stabfac_;
+
+        LINALG::Matrix<slave_nen_,nen_> funct_s_m_dyad_timefacfac_;
+
+        LINALG::Matrix<slave_nen_,nen_> funct_s_m_dyad_timefacfac_stabfac_;
+
+
+        LINALG::Matrix<slave_nen_,1> funct_s_timefacfac_km_;
+
+        // funct_m * timefac * fac * kappa_s
+        LINALG::Matrix<nen_,1> funct_m_timefacfac_ks_;
+
+        LINALG::Matrix<nen_,1> funct_m_viscm_timefacfac_;
+
+        // funct_s * 2 * mu_m * kappa_m * timefac * fac
+        LINALG::Matrix<slave_nen_,1> funct_s_viscm_timefacfac_;
+
+        LINALG::Matrix<nsd_,nen_> derxy_m_viscm_timefacfac_;
+
+
+        LINALG::Matrix<nsd_,1> half_normal_;
+
+        LINALG::Matrix<nen_,1> half_normal_deriv_m_;
+
+        LINALG::Matrix<nen_,1> normal_deriv_m_viscm_km_;
+
+        LINALG::Matrix<nsd_,1> vderxy_m_normal_;
+
+        LINALG::Matrix<nsd_,1> vderxy_m_normal_transposed_;
+
+        LINALG::Matrix<nsd_,1> velint_diff_;
+        LINALG::Matrix<nsd_,1> velint_diff_stabfac_;
+
+        double velint_diff_normal_;
+
+
+
 
       };
 

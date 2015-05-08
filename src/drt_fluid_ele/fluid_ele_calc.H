@@ -1427,6 +1427,70 @@ protected:
   //! required for turbulence modeling
   bool is_inflow_ele_;
 
+  //========================================================
+
+  //! element stiffness block velocity-velocity
+  LINALG::Matrix<nen_*nsd_,nen_*nsd_>  estif_u_;
+  //! element stiffness block pressure-velocity
+  LINALG::Matrix<nen_*nsd_,nen_>       estif_p_v_;
+  //! element stiffness block velocity-pressure
+  LINALG::Matrix<nen_, nen_*nsd_>      estif_q_u_;
+  //! element stiffness block pressure-pressure
+  LINALG::Matrix<nen_,nen_>            ppmat_;
+
+  // definition of vectors
+  //! element rhs blocks pressure
+  LINALG::Matrix<nen_,1>     preforce_;
+  //! element rhs blocks velocity
+  LINALG::Matrix<nsd_,nen_>  velforce_;
+
+  //! definition of velocity-based momentum residual vectors
+  LINALG::Matrix<nsd_*nsd_,nen_>  lin_resM_Du_;
+  LINALG::Matrix<nsd_,1>          resM_Du_;
+
+
+  //========================================================
+
+  //! nodal based quantities for an element
+  LINALG::Matrix<nsd_,nen_> ebofoaf_;
+  LINALG::Matrix<nsd_,nen_> eprescpgaf_;
+  LINALG::Matrix<nen_,1>    escabofoaf_;
+
+  LINALG::Matrix<nsd_,nen_> ebofon_;
+  LINALG::Matrix<nsd_,nen_> eprescpgn_;
+  LINALG::Matrix<nen_,1>    escabofon_;
+
+  LINALG::Matrix<nsd_,nen_> evelaf_;
+  LINALG::Matrix<nen_,1>    epreaf_;
+  LINALG::Matrix<nsd_,nen_> evelnp_;
+  LINALG::Matrix<nen_,1>    eprenp_;
+  LINALG::Matrix<nsd_,nen_> eveln_;
+  LINALG::Matrix<nen_,1>    epren_;
+  LINALG::Matrix<nsd_,nen_> eaccam_;
+  LINALG::Matrix<nen_,1>    escadtam_;
+  LINALG::Matrix<nen_,1>    escaaf_;
+  LINALG::Matrix<nen_,1>    escaam_;
+  LINALG::Matrix<nsd_,nen_> emhist_;
+  LINALG::Matrix<nen_,1>    eporo_;
+
+  LINALG::Matrix<nsd_,nen_> gradphiele_;
+  LINALG::Matrix<nen_,1>    curvatureele_;
+  LINALG::Matrix<nsd_,nen_> gradphielen_;
+  LINALG::Matrix<nen_,1>    curvatureelen_;
+
+  LINALG::Matrix<nsd_,2*nen_> gradphieletot_;
+  LINALG::Matrix<nen_,2>      curvatureeletot_;
+
+  LINALG::Matrix<nsd_, nen_> edispnp_;
+  LINALG::Matrix<nsd_, nen_> egridv_;
+
+  LINALG::Matrix<nsd_,nen_> fsevelaf_;
+  LINALG::Matrix<nen_,1>    fsescaaf_;
+
+  LINALG::Matrix<nsd_,nen_> evel_hat_;
+  LINALG::Matrix<nsd_*nsd_,nen_> ereynoldsstress_hat_;
+
+
   //! node coordinates
   LINALG::Matrix<nsd_,nen_> xyze_;
   //! array for shape functions

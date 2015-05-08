@@ -105,18 +105,18 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
   //  preliminary definitions and evaluations
   //------------------------------------------------------------------------
   // definition of matrices
-  LINALG::Matrix<nen_*nsd_,nen_*nsd_>  estif_u(true);
-  LINALG::Matrix<nen_*nsd_,nen_>       estif_p_v(true);
-  LINALG::Matrix<nen_, nen_*nsd_>      estif_q_u(true);
-  LINALG::Matrix<nen_,nen_>            ppmat(true);
+  estif_u_.Clear();
+  estif_p_v_.Clear();
+  estif_q_u_.Clear();
+  ppmat_.Clear();
 
   // definition of vectors
-  LINALG::Matrix<nen_,1>     preforce(true);
-  LINALG::Matrix<nsd_,nen_>  velforce(true);
+  preforce_.Clear();
+  velforce_.Clear();
 
   // definition of velocity-based momentum residual vectors
-  LINALG::Matrix<nsd_*nsd_,nen_>  lin_resM_Du(true);
-  LINALG::Matrix<nsd_,1>          resM_Du(true);
+  lin_resM_Du_.Clear();
+  resM_Du_.Clear();
 
   // if polynomial pressure projection: reset variables
   if (fldpara_->PPP())
@@ -161,7 +161,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
 
   // potential evaluation of multifractal subgrid-scales at element center
   // coefficient B of fine-scale velocity
-  LINALG::Matrix<nsd_,1> B_mfs(true);
+  static LINALG::Matrix<nsd_,1> B_mfs(true);
+  B_mfs.Clear();
+
   // coefficient D of fine-scale scalar (loma only)
   double D_mfs = 0.0;
   if (fldpara_->TurbModAction() == INPAR::FLUID::multifractal_subgrid_scales)
@@ -210,7 +212,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
       vderxy_.MultiplyNT(evelaf,derxy_); //required for time-dependent subscales
 
       // compute velnp at integration point (required for time-dependent subscales)
-      LINALG::Matrix<nsd_,1> velintnp(true);
+      static LINALG::Matrix<nsd_,1> velintnp(true);
       velintnp.Multiply(evelnp,funct_);
       vel_normnp_ = velintnp.Norm2();
     }
@@ -340,7 +342,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
         velhatdiv_ += velhatderxy_(idim, idim);
       }
 
-      LINALG::Matrix<nsd_*nsd_,nen_> evelhativelhatj;
+      static LINALG::Matrix<nsd_*nsd_,nen_> evelhativelhatj;
       velhativelhatjdiv_.Clear();
       for (int nn=0;nn<nsd_;++nn)
       {
@@ -507,7 +509,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
       for (int idim = 0; idim <nsd_; ++idim)
       {
         //get vdiv at time n+1 for np_genalpha,
-        LINALG::Matrix<nsd_,nsd_> vderxy(true);
+        static LINALG::Matrix<nsd_,nsd_> vderxy(true);
         vderxy.MultiplyNT(evelnp,derxy_);
         vdiv_ += vderxy(idim, idim);
       }
@@ -614,13 +616,13 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
     }
 
     // set velocity-based momentum residual vectors to zero
-    lin_resM_Du.Clear();
-    resM_Du.Clear();
+    lin_resM_Du_.Clear();
+    resM_Du_.Clear();
 
     // compute first version of velocity-based momentum residual containing
     // inertia term, convection term (convective and reactive part),
     // reaction term and cross-stress term
-    LinGalMomResUOSTNew(lin_resM_Du,
+    LinGalMomResUOSTNew(lin_resM_Du_,
                   timefacfac);
 
     // potentially rescale first version of velocity-based momentum residual
@@ -628,9 +630,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
        &&
        fldpara_->Transient()==INPAR::FLUID::inertia_stab_keep)
     {
-      LinGalMomResU_subscales(estif_p_v,
-                              lin_resM_Du,
-                              resM_Du,
+      LinGalMomResU_subscales(estif_p_v_,
+                              lin_resM_Du_,
+                              resM_Du_,
                               timefacfac,
                               facMtau);
     }
@@ -642,19 +644,21 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
     // 1) standard Galerkin inertia, convection and reaction terms
     //    (convective and reactive part for convection term)
     //    as well as first part of cross-stress term on left-hand side
-    InertiaConvectionReactionGalPart(estif_u,
-                                     velforce,
-                                     lin_resM_Du,
-                                     resM_Du,
+    InertiaConvectionReactionGalPart(estif_u_,
+                                     velforce_,
+                                     lin_resM_Du_,
+                                     resM_Du_,
                                      rhsfac,
                                      rhsfacn);
 
     // 2) standard Galerkin viscous term
     //    (including viscous stress computation,
     //     excluding viscous part for low-Mach-number flow)
-    LINALG::Matrix<nsd_,nsd_> viscstress(true);
-    ViscousGalPart(estif_u,
-                   velforce,
+    static LINALG::Matrix<nsd_,nsd_> viscstress(true);
+    viscstress.Clear();
+
+    ViscousGalPart(estif_u_,
+                   velforce_,
                    viscstress,
                    timefacfac,
                    rhsfac,
@@ -665,8 +669,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
     //    right-hand-side part of standard Galerkin viscous term
     if (fldpara_->CStab() or
         fldpara_->PhysicalType() == INPAR::FLUID::loma)
-      ContStab( estif_u,
-                velforce,
+      ContStab( estif_u_,
+                velforce_,
                 fldparatimint_->TimeFac(),
                 timefacfac,
                 timefacfacpre,
@@ -674,8 +678,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
                 rhsfacn);
 
     // 4) standard Galerkin pressure term
-    PressureGalPart(estif_p_v,
-                    velforce,
+    PressureGalPart(estif_p_v_,
+                    velforce_,
                     timefacfac,
                     timefacfacpre,
                     rhsfac,
@@ -684,15 +688,15 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
                     pressn);
 
     // 5) standard Galerkin continuity term
-    ContinuityGalPart(estif_q_u,
-                      preforce,
+    ContinuityGalPart(estif_q_u_,
+                      preforce_,
                       timefacfac,
                       timefacfacpre,
                       rhsfac,
                       rhsfacn);
 
     // 6) standard Galerkin bodyforce term on right-hand side
-    BodyForceRhsTerm(velforce,
+    BodyForceRhsTerm(velforce_,
                      rhsfac,
                      rhsfacn);
 
@@ -700,8 +704,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
     //    New One Step Theta not implemented for this as of yet!
     if (fldpara_->IsConservative())
     {
-      ConservativeFormulation(estif_u,
-                              velforce,
+      ConservativeFormulation(estif_u_,
+                              velforce_,
                               timefacfac,
                               rhsfac);
     }
@@ -712,8 +716,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
     if (fldpara_->PhysicalType() == INPAR::FLUID::loma or
         fldpara_->PhysicalType() == INPAR::FLUID::artcomp)
     {
-      LomaGalPart(estif_q_u,
-                  preforce,
+      LomaGalPart(estif_q_u_,
+                  preforce_,
                   timefacfac,
                   rhsfac);
     }
@@ -722,24 +726,24 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
     //    in case of artificial compressibility (only left-hand side)
     if (fldpara_->PhysicalType() == INPAR::FLUID::artcomp and
         not fldparatimint_->IsStationary())
-      ArtCompPressureInertiaGalPartandContStab(estif_p_v,
-                                               ppmat);
+      ArtCompPressureInertiaGalPartandContStab(estif_p_v_,
+                                               ppmat_);
 
     //----------------------------------------------------------------------
     // compute second version of velocity-based momentum residual containing
     // inertia term, convection term (convective and reactive part) and
     // viscous term
     //----------------------------------------------------------------------
-    StabLinGalMomResU(lin_resM_Du,
+    StabLinGalMomResU(lin_resM_Du_,
                       timefacfac);
 
     // 10) PSPG term
     if (fldpara_->PSPG())
     {
-      PSPGOSTNew(estif_q_u,
-           ppmat,
-           preforce,
-           lin_resM_Du,
+      PSPGOSTNew(estif_q_u_,
+           ppmat_,
+           preforce_,
+           lin_resM_Du_,
            fac3,
            timefacfac,
            timefacfacpre,
@@ -751,11 +755,11 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
     //     left-hand side and Reynolds-stress term on right-hand side
     if(fldpara_->SUPG())
     {
-      SUPGOSTNew(estif_u,
-           estif_p_v,
-           velforce,
-           preforce,
-           lin_resM_Du,
+      SUPGOSTNew(estif_u_,
+           estif_p_v_,
+           velforce_,
+           preforce_,
+           lin_resM_Du_,
            fac3,
            timefacfac,
            timefacfacpre,
@@ -765,10 +769,10 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
     // 12) reactive stabilization term
    if (fldpara_->RStab() != INPAR::FLUID::reactive_stab_none)
    {
-      ReacStab(estif_u,
-               estif_p_v,
-               velforce,
-               lin_resM_Du,
+      ReacStab(estif_u_,
+               estif_p_v_,
+               velforce_,
+               lin_resM_Du_,
                timefacfac,
                timefacfacpre,
                rhsfac,
@@ -779,10 +783,10 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
     if (is_higher_order_ele_ and
         (fldpara_->VStab() != INPAR::FLUID::viscous_stab_none))
     {
-      ViscStab(estif_u,
-               estif_p_v,
-               velforce,
-               lin_resM_Du,
+      ViscStab(estif_u_,
+               estif_p_v_,
+               velforce_,
+               lin_resM_Du_,
                timefacfac,
                timefacfacpre,
                rhsfac,
@@ -802,10 +806,10 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
     //     iteration) as well as cross-stress term on right-hand side
     if(fldpara_->Cross() != INPAR::FLUID::cross_stress_stab_none)
     {
-      CrossStressStab(estif_u,
-                      estif_p_v,
-                      velforce,
-                      lin_resM_Du,
+      CrossStressStab(estif_u_,
+                      estif_p_v_,
+                      velforce_,
+                      lin_resM_Du_,
                       timefacfac,
                       timefacfacpre,
                       rhsfac,
@@ -817,9 +821,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
     if (fldpara_->Reynolds() == INPAR::FLUID::reynolds_stress_stab and
         fldpara_->IsNewton())
     {
-      ReynoldsStressStab(estif_u,
-                         estif_p_v,
-                         lin_resM_Du,
+      ReynoldsStressStab(estif_u_,
+                         estif_p_v_,
+                         lin_resM_Du_,
                          timefacfac,
                          timefacfacpre,
                          fac3);
@@ -831,7 +835,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
     {
       const double fssgviscfac = fssgvisc_*rhsfac;
 
-      FineScaleSubGridViscosityTerm(velforce,
+      FineScaleSubGridViscosityTerm(velforce_,
                                     fssgviscfac);
     }
 
@@ -840,12 +844,12 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
     if (fldpara_->TurbModAction() == INPAR::FLUID::scale_similarity)
     {
       ScaleSimSubGridStressTermCross(
-                        velforce,
+                        velforce_,
                         rhsfac,
                         fldpara_->Cl());
 
       ScaleSimSubGridStressTermReynolds(
-                        velforce,
+                        velforce_,
                         rhsfac,
                         fldpara_->Cl());
     }
@@ -853,7 +857,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
     if (fldpara_->TurbModAction() == INPAR::FLUID::scale_similarity_basic)
     {
       ScaleSimSubGridStressTermPrefiltering(
-                            velforce,
+                            velforce_,
                             rhsfac,
                             fldpara_->Cl());
     }
@@ -862,14 +866,14 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
     if (fldpara_->TurbModAction() == INPAR::FLUID::multifractal_subgrid_scales)
     {
       MultfracSubGridScalesCross(
-                        estif_u,
-                        velforce,
+                        estif_u_,
+                        velforce_,
                         timefacfac,
                         rhsfac);
 
       MultfracSubGridScalesReynolds(
-                        estif_u,
-                        velforce,
+                        estif_u_,
+                        velforce_,
                         timefacfac,
                         rhsfac);
     }
@@ -878,7 +882,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
     //     (parameter-free inf-sub-stabilization, e.g. used instead of PSPG)
     if (fldpara_->PPP())
     {
-      PressureProjection(ppmat);
+      PressureProjection(ppmat_);
     }
 
     // linearization wrt mesh motion
@@ -909,9 +913,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
   if (fldpara_->PPP())
   {
     if (fldparatimint_->IsGenalphaNP())
-      PressureProjectionFinalize(ppmat,preforce,eprenp);
+      PressureProjectionFinalize(ppmat_,preforce_,eprenp);
     else
-      PressureProjectionFinalize(ppmat,preforce,epreaf);
+      PressureProjectionFinalize(ppmat_,preforce_,epreaf);
   }
 
   //------------------------------------------------------------------------
@@ -920,7 +924,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
   // add pressure part to right-hand-side vector
   for (int vi=0; vi<nen_; ++vi)
   {
-    eforce(numdofpernode_*vi+nsd_)+=preforce(vi);
+    eforce(numdofpernode_*vi+nsd_)+=preforce_(vi);
   }
 
   // add velocity part to right-hand-side vector
@@ -928,7 +932,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
   {
     for (int idim=0; idim<nsd_; ++idim)
     {
-      eforce(numdofpernode_*vi+idim)+=velforce(idim,vi);
+      eforce(numdofpernode_*vi+idim)+=velforce_(idim,vi);
     }
   }
 
@@ -941,7 +945,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
     {
       const int numdof_vi_p_nsd = numdofpernode_*vi+nsd_;
 
-      estif(numdof_vi_p_nsd,fuippp)+=ppmat(vi,ui);
+      estif(numdof_vi_p_nsd,fuippp)+=ppmat_(vi,ui);
     }
   }
 
@@ -963,7 +967,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
 
         for (int idim=0; idim <nsd_; ++idim)
         {
-          estif(numdof_vi+idim, numdof_ui_jdim) += estif_u(nsd_vi+idim, nsd_ui_jdim);
+          estif(numdof_vi+idim, numdof_ui_jdim) += estif_u_(nsd_vi+idim, nsd_ui_jdim);
         }
       }
     }
@@ -981,7 +985,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
 
       for (int idim=0; idim <nsd_; ++idim)
       {
-        estif(numdof_vi+idim, numdof_ui_nsd) += estif_p_v(nsd_vi+idim, ui);
+        estif(numdof_vi+idim, numdof_ui_nsd) += estif_p_v_(nsd_vi+idim, ui);
       }
     }
   }
@@ -998,7 +1002,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
       const int nsd_ui_jdim = nsd_ui+jdim;
 
       for (int vi=0; vi<nen_; ++vi)
-        estif(numdofpernode_*vi+nsd_, numdof_ui_jdim) += estif_q_u(vi, nsd_ui_jdim);
+        estif(numdofpernode_*vi+nsd_, numdof_ui_jdim) += estif_q_u_(vi, nsd_ui_jdim);
     }
   }
 
@@ -1309,7 +1313,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::ComputeSubgridScaleVelocityOS
 
     */
 
-    LINALG::Matrix<1,nsd_> sgvelintaf(true);
+    static LINALG::Matrix<1,nsd_> sgvelintaf(true);
+    sgvelintaf.Clear();
     for (int rr=0;rr<nsd_;++rr)
     {
       tds_->UpdateSvelnpInOneDirection(
@@ -1673,7 +1678,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::ViscousGalPart(
   const double v = visceff_*rhsfac;
   const double vn = viscn_*rhsfacn;
 
-  LINALG::Matrix<nsd_,nsd_> viscstressn(true);
+  static LINALG::Matrix<nsd_,nsd_> viscstressn(true);
+  viscstressn.Clear();
 
   for (int jdim = 0; jdim < nsd_; ++jdim)
   {
@@ -2146,7 +2152,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SUPGOSTNew(
                     \                                /
    */
 
-  LINALG::Matrix<nsd_,1> temp;
+  static LINALG::Matrix<nsd_,1> temp;
 
   double supgfac;
   if(fldpara_->Tds()==INPAR::FLUID::subscales_quasistatic)
@@ -2154,7 +2160,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SUPGOSTNew(
   else
     supgfac=densaf_*fldparatimint_->AlphaF()*fac3;
 
-  LINALG::Matrix<nen_,1> supg_test;
+  static LINALG::Matrix<nen_,1> supg_test;
   for (int vi=0; vi<nen_; ++vi)
   {
     supg_test(vi)=supgfac*conv_c_(vi);
