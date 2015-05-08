@@ -115,7 +115,8 @@ protected:
   virtual double CalcReaCoeffFac(
       const std::vector<int>                    stoich,                  //!<stoichometrie of current condition
       const MAT::PAR::reaction_coupling         couplingtype,            //!<type of coupling the stoichiometry coefficients
-      const int                                 k                       //!< id of current scalar
+      const std::vector<double>                 couprole,                //!<type of coupling role
+      const int                                 k                        //!< id of current scalar
   );
 
 
@@ -128,9 +129,10 @@ protected:
 
   virtual double CalcReaCoeffDerivFac(
       const std::vector<int>                  stoich,                  //!<stoichometrie of current condition
-      const MAT::PAR::reaction_coupling      couplingtype,            //!<type of coupling the stoichiometry coefficients
+      const MAT::PAR::reaction_coupling       couplingtype,            //!<type of coupling the stoichiometry coefficients
+      const std::vector<double>               couprole,                //!<type of coupling role
       const int                               toderive,                //!<concentration to be derived to
-      const int                               k                       //!< id of current scalar
+      const int                               k                        //!< id of current scalar
   );
 
 
@@ -142,7 +144,9 @@ protected:
 
   virtual double CalcReaBodyForceTermFac(
       const std::vector<int>                      stoich,                 //!<stoichometrie of current condition
-      const MAT::PAR::reaction_coupling           couplingtype            //!<type of coupling the stoichiometry coefficients
+      const MAT::PAR::reaction_coupling           couplingtype,           //!<type of coupling the stoichiometry coefficients
+      const std::vector<double>                   couprole,               //!<type of coupling role
+      const int                                   k                       //!< id of current scalar
   );
 
 
@@ -155,17 +159,20 @@ protected:
 
   virtual double CalcReaBodyForceDerivFac(
       const std::vector<int>                    stoich,                  //!<stoichometrie of current condition
-      const MAT::PAR::reaction_coupling       couplingtype,            //!<type of coupling the stoichiometry coefficients
-      const int                                 toderive                 //!<concentration to be derived to
+      const MAT::PAR::reaction_coupling         couplingtype,            //!<type of coupling the stoichiometry coefficients
+      const std::vector<double>                 couprole,                //!<type of coupling role
+      const int                                 toderive,                //!<concentration to be derived to
+      const int                                 k                        //!< id of current scalar
   );
 
 
   //! Calculate (K(c)-reacstart(c)./c)_{+}
   virtual void ReacStartForReaCoeff(
-  const int                               k,            //!< id of current scalar
+  const int                               k,             //!< id of current scalar
   const int                               condnum,       //!< id of current condition
-  const double                            reacstart,      //!< value for reaction starting
-  double&                                 value         //!< current reaction value
+  const double                            reacstart,     //!< value for reaction starting
+  double&                                 value,         //!< current reaction value
+  const MAT::PAR::reaction_coupling       couplingtype   //!<type of coupling the stoichiometry coefficients
   );
 
   //! Calculate \frac{\partial}{\partial_c} (K(c)-reacstart(c)./c)_{+}
@@ -176,16 +183,16 @@ protected:
     const double                            reacstart,      //!< value for reaction starting
     double&                                 value,          //!< current reaction value
     const std::vector<int>                  stoich,         //!<stoichometrie of current condition
-    const MAT::PAR::reaction_coupling  couplingtype    //!<type of coupling the stoichiometry coefficients
+    const MAT::PAR::reaction_coupling  couplingtype         //!<type of coupling the stoichiometry coefficients
     );
 
 
   //! Calculate (f(c)-reacstart(c))_{+}
   virtual void ReacStartForReaBF(
-  const int                               k,            //!< id of current scalar
+  const int                               k,             //!< id of current scalar
   const int                               condnum,       //!< id of current condition
-  const double                            reacstart,      //!< value for reaction starting
-  double&                                 value         //!< current reaction value
+  const double                            reacstart,     //!< value for reaction starting
+  double&                                 value          //!< current reaction value
   );
 
   //! Calculate \frac{\partial}{\partial_c} (f(c)-reacstart(c))_{+}
@@ -196,7 +203,7 @@ protected:
     const double                            reacstart,      //!< value for reaction starting
     double&                                 value,          //!< current reaction value
     const std::vector<int>                  stoich,         //!< stoichometrie of current condition
-    const MAT::PAR::reaction_coupling  couplingtype    //!<type of coupling the stoichiometry coefficients
+    const MAT::PAR::reaction_coupling  couplingtype         //!<type of coupling the stoichiometry coefficients
     );
 
   //! calculation of reactive element matrix
@@ -207,8 +214,8 @@ protected:
     const double                       timetaufac,  //!< domain-integration factor times time-integration factor times tau
     const double                       taufac,      //!< domain-integration factor times tau
     const double                       densnp,      //!< density at time_(n+1)
-    const LINALG::Matrix<my::nen_,1>&      sgconv,      //!< subgrid-scale convective operator
-    const LINALG::Matrix<my::nen_,1>&      diff         //!< laplace term
+    const LINALG::Matrix<my::nen_,1>&      sgconv,  //!< subgrid-scale convective operator
+    const LINALG::Matrix<my::nen_,1>&      diff     //!< laplace term
   );
 
   //! Get numcond, stoich list, reaction coefficient, couplingtpye from material
@@ -229,12 +236,13 @@ protected:
   //! evaluate shape functions and their derivatives at element center
   virtual const double EvalShapeFuncAndDerivsAtEleCenter();
 
-  int numcond_;                              //!< number of homogenous scatra coupling conditions
-  std::vector<std::vector<int> > stoich_;    //!< vector containing the stoichometrie
-  std::vector<double> reaccoeff_;             //!< constant by which the reaction coefficient is multiplied
-  std::vector<MAT::PAR::reaction_coupling> couplingtype_;//!< how to calculate the different couplings
-  std::vector<double> reacstart_;             //!< constant by which the reaction starts
-  LINALG::Matrix<my::nen_,1> funct_elementcenter_; //! array for shape function at element center
+  int numcond_;                                               //!< number of homogenous scatra coupling conditions
+  std::vector<std::vector<int> > stoich_;                     //!< vector containing the stoichometrie
+  std::vector<double> reaccoeff_;                             //!< constant by which the reaction coefficient is multiplied
+  std::vector<MAT::PAR::reaction_coupling> couplingtype_;     //!< how to calculate the different couplings
+  std::vector<std::vector<double> > couprole_;                //!<vector containing how to treat educts>
+  std::vector<double> reacstart_;                             //!< constant by which the reaction starts
+  LINALG::Matrix<my::nen_,1> funct_elementcenter_;            //! array for shape function at element center
 
   //! get reaction manager for advanced reaction
   Teuchos::RCP<ScaTraEleReaManagerAdvReac> ReaManager(){return Teuchos::rcp_static_cast<ScaTraEleReaManagerAdvReac>(my::reamanager_);};

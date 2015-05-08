@@ -127,10 +127,9 @@ void FS3I::ACFSI::ReadRestart()
       // This has to be done before setting the step in the scatra fields, because step_ it needs to be zero.
       const Teuchos::ParameterList& scatradynparams = DRT::Problem::Instance()->ScalarTransportDynamicParams();
       const bool skiptimederiv = DRT::INPUT::IntegralValue<int>(scatradynparams,"SKIPINITDER");
-      std::cout<<__FILE__<<__LINE__<<std::endl;
+
       if (not skiptimederiv)
       {
-        std::cout<<__FILE__<<__LINE__<<std::endl;
         SetMeshDisp();
         SetVelocityFields();
         //SetFSISolution(); //Before we have to set the velocity fields

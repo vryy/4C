@@ -25,8 +25,14 @@ namespace MAT
 
   enum reaction_coupling
   {
-    reac_coup_none,  ///< no coupling, initialisation value
-    reac_coup_simple_multiplicative ///< coupling of type A*B
+    reac_coup_none,  ///< no coupling, initialization value
+    reac_coup_simple_multiplicative, ///< coupling of type A*B
+    reac_coup_constant, //< no coupling, constant increase/decrease
+    reac_coup_michaelis_menten, //coupling of type (B/(const+B))*A
+//    reac_coup_linear_dependent, //no coupling, linear dependent dA/dt = const*B
+//    reac_coup_bounded_michment, //coupling of typ dD/dt = (A/(const+A))*(B/(const*C+B))
+//    reac_coup_bounded_production,
+//    reac_coup_robin_boundary
   };
 
   /*----------------------------------------------------------------------*/
@@ -62,6 +68,9 @@ namespace MAT
 
     /// type of coupling
     const MAT::PAR::reaction_coupling coupling_;
+
+    /// specifies scalar type in reaction
+    const std::vector<double>* couprole_;
 
     /// parameter to define start of reaction
     const double reacstart_;
@@ -152,6 +161,9 @@ private:
 
     /// return type of coupling
     MAT::PAR::reaction_coupling Coupling() const { return params_->coupling_; }
+
+    /// return role in coupling
+    std::vector<double>* Couprole() const { return (std::vector<double>*)params_->couprole_;}
 
     /// densification coefficient
     double ReacStart() const { return params_->reacstart_; }

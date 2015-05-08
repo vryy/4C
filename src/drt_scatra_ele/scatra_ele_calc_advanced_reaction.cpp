@@ -46,12 +46,40 @@
   //! MAT 2 MAT_scatra DIFFUSIVITY 0.0
   //! MAT 3 MAT_scatra_reaction NUMSCAL 3 STOICH -1 -2 3 REACOEFF 4.0 COUPLING simple_multiplicative
   //!
-  //! implementation is of form: \partial_t c_i + K_i(c)*c_i = f_i(c), were f_i(c) is supposed not to depend on c_i
+  //! implementation is of form: \partial_t c_i + K_i(c)*c_i = f_i(c), were f_i(c) is supposed not to linear depend on c_i
   //! hence we have to calculate and set K(c)=(4*B;8*A;0) and f(c)=(0;0;12*A*B) and corresponding derivatives.
 
+//! note for the implementation of the michaelis-menten scatra coupling feature:
+  //! reactant A promotes C and reactant B influences only until certain limit
+  //!
+  //! MAT 1 MAT_matlist_reactions LOCAL No NUMMAT 3 MATIDS 2 4 5 NUMREAC 1 REACIDS 3 END //collect Concentrations
+  //! MAT 2 MAT_scatra DIFFUSIVITY 0.0
+  //! MAT 4 MAT_scatra DIFFUSIVITY 0.0
+  //! MAT 5 MAT_scatra DIFFUSIVITY 0.0
+  //! MAT 3 MAT_scatra_reaction NUMSCAL 3 STOICH -1 -1 1 REACOEFF 5.0 COUPLING michaelis_menten ROLE -1 3 0
+  //!
+  //! the corresponding equations are
+  //!            \partial_t A = -5*A*(B/(3+B))
+  //!            \partial_t B = -5*A*(B/(3+B))
+  //!            \partial_t C = 5*A*(B/(3+B))
+  //!
+  //! implementation is of form: \partial_t c_i + K_i(c)*c_i = f_i(c), were f_i(c) is supposed not to linear depend on c_i
+  //! hence we have to calculate and set K(c)=(5*(B/(3+B));5*A*(1/(3+B));0) and f(c)=(0;0;5*A*(B/(3+B))) and corresponding derivatives.
 
+  //! note for the implementation of the constant scatra coupling feature:
+  //! Product A is constantly produced
+  //!
+  //! MAT 1 MAT_matlist_reactions LOCAL No NUMMAT 1 MATIDS 2 NUMREAC 1 REACIDS 3 END //collect Concentrations
+  //! MAT 2 MAT_scatra DIFFUSIVITY 0.0
+  //! MAT 3 MAT_scatra_reaction NUMSCAL 1 STOICH 2 REACOEFF 5.0 COUPLING constant
+  //!
+  //! the corresponding equations are
+  //!            \partial_t A = 5*2
+  //!
+  //! implementation is of form: \partial_t c_i + K_i(c)*c_i = f_i(c), were f_i(c) is supposed not to depend linearly on c_i
+  //! hence we have to calculate and set K(c)=(0) and f(c)=(5*2) and zero derivatives.
 
-  //! note for the implementation of the homogenous scatra coupling reacstart feature:
+  //! note for the implementation of the reacstart feature:
   //! Assume concentration A is reproducing with reaction coefficient 1.0 and if the concentration
   //! exceeds some threshold 2.0 if starts to react A->3*B with reacion coefficient 4.0.
   //!
@@ -65,7 +93,7 @@
   //! MAT 3 MAT_scatra_reaction NUMSCAL 2 STOICH -1 0 REACOEFF -1.0 COUPLING simple_multiplicative
   //! MAT 4 MAT_scatra_reaction NUMSCAL 2 STOICH -1 3 REACOEFF 4.0 COUPLING simple_multiplicative REACSTART 2.0
   //!
-  //! implementation is of form: \partial_t c_i + K_i(c)*c_i = f_i(c), were f_i(c) is supposed not to depend on c_i
+  //! implementation is of form: \partial_t c_i + K_i(c)*c_i = f_i(c), were f_i(c) is supposed not to linear depend on c_i
   //! hence we have to calculate and set K(c)=(-A + 4*(A-2)_{+};0) and f(c)=(0;12*(A-2)_{+}) and corresponding derivatives.
 
 /*----------------------------------------------------------------------*
@@ -115,6 +143,7 @@ DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::ScaTraEleCalcAdvReac(const
     stoich_(0),
     reaccoeff_(0),
     couplingtype_(MAT::PAR::reac_coup_none),
+    couprole_(0),
     reacstart_(0)
 {
   my::reamanager_ = Teuchos::rcp(new ScaTraEleReaManagerAdvReac(my::numscal_));
@@ -366,14 +395,15 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaCoeff(
       const std::vector<int>& stoich = stoich_[condnum]; //get stoichometrie
       const double& reaccoeff = reaccoeff_[condnum]; //get reaction coefficient
       const MAT::PAR::reaction_coupling& couplingtype = couplingtype_[condnum]; //get coupling type
+      const std::vector<double>& couprole = couprole_[condnum]; //get scalar treatment
       const double& reacstart = reacstart_[condnum]; //get reactionstart coefficient
 
-    if (stoich[k] < 0)
+    if (stoich[k]<0 or couplingtype==MAT::PAR::reac_coup_michaelis_menten)
     {
-      double rcfac= CalcReaCoeffFac(stoich,couplingtype,k);
+      double rcfac= CalcReaCoeffFac(stoich,couplingtype,couprole,k);
 
       if (reacstart>0 and rcfac>0)
-        ReacStartForReaCoeff(k,condnum,reacstart,rcfac);
+        ReacStartForReaCoeff(k,condnum,reacstart,rcfac,couplingtype);
 
       reactermK += -reaccoeff*stoich[k]*rcfac; // scalar at integration point np
     }
@@ -386,38 +416,74 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaCoeff(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaCoeffFac(
-          const std::vector<int>                    stoich,                  //!<stoichometrie of current condition
-          const MAT::PAR::reaction_coupling         couplingtype,            //!<type of coupling the stoichiometry coefficients
+          const std::vector<int>                    stoich,                 //!<stoichometrie of current condition
+          const MAT::PAR::reaction_coupling         couplingtype,           //!<type of coupling the stoichiometry coefficients
+          const std::vector<double>                 couprole,               //!<type of coupling role
           const int                                 k                       //!< id of current scalar
 )
 {
-  double rcfac=1;
-  bool allpositive = true;
-  for (int ii=0; ii < my::numscal_; ii++)
+double rcfac=1.0;
+
+switch (couplingtype)
+{
+  case MAT::PAR::reac_coup_simple_multiplicative: //reaction of type A*B*C:
   {
-    if (stoich[ii]<0)
+    for (int ii=0; ii < my::numscal_; ii++)
     {
-      allpositive = false;
-      if (ii!=k)
+      if (stoich[ii]<0)
       {
-        switch (couplingtype)
-        {
-        case MAT::PAR::reac_coup_simple_multiplicative:
+        if (ii!=k)
           rcfac *=my::scatravarmanager_->Phinp(ii);
-          break;
-        //case ... :  //insert new Couplings here
-        case MAT::PAR::reac_coup_none:
-          dserror("reac_coup_none is not a valid coupling");
-          break;
-        default:
-          dserror("The couplingtype %i is not a valid coupling type.", couplingtype);
-          break;
-        }
       }
     }
+    break;
   }
-  if (allpositive)
-    dserror("there must be at least one negative entry in each stoich list");
+
+  case MAT::PAR::reac_coup_constant: //constant source term:
+  {
+    rcfac = 0.0;
+    break;
+  }
+
+  case MAT::PAR::reac_coup_michaelis_menten: //reaction of type A*B/(B+4)
+  {
+    if (stoich[k] != 0)
+    {
+      for (int ii=0; ii < my::numscal_; ii++)
+      {
+        if (couprole[k]<0)
+        {
+          if ((couprole[ii] < 0) and (ii != k))
+            rcfac *= my::funct_.Dot(my::ephinp_[ii]);
+          else if ((couprole[ii] > 0) and (ii!=k))
+            rcfac *= (my::funct_.Dot(my::ephinp_[ii])/(my::funct_.Dot(my::ephinp_[ii]) + couprole[ii]));
+        }
+        else if (couprole[k]>0)
+        {
+          if (ii == k)
+            rcfac *= (1/(my::funct_.Dot(my::ephinp_[ii])+couprole[ii]));
+          else if (couprole[ii] < 0)
+            rcfac *= my::funct_.Dot(my::ephinp_[ii]);
+          else if (couprole[ii] > 0)
+            rcfac *= (my::funct_.Dot(my::ephinp_[ii])/(my::funct_.Dot(my::ephinp_[ii]) + couprole[ii]));
+        }
+        else //if (couprole[k] == 0)
+          rcfac = 0;
+      }
+    }
+    else
+      rcfac = 0;
+    break;
+  }
+
+  case MAT::PAR::reac_coup_none:
+    dserror("reac_coup_none is not a valid coupling");
+    break;
+
+  default:
+    dserror("The couplingtype %i is not a valid coupling type.", couplingtype);
+    break;
+}
 
   return rcfac;
 }
@@ -438,17 +504,18 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaCoeffDerivMa
       const std::vector<int>& stoich = stoich_[condnum]; //get stoichometrie
       const double& reaccoeff = reaccoeff_[condnum]; //get reaction coefficient
       const MAT::PAR::reaction_coupling& couplingtype = couplingtype_[condnum]; //get coupling type
+      const std::vector<double>& couprole = couprole_[condnum]; //get scalar treatment
       const double& reacstart = reacstart_[condnum]; //get reactionstart coefficient
 
-    if (stoich[k] < 0)
+    if (stoich[k]<0 or couplingtype==MAT::PAR::reac_coup_michaelis_menten)
     {
-      double rcdmfac = CalcReaCoeffDerivFac(stoich,couplingtype,j,k);
+      double rcdmfac = CalcReaCoeffDerivFac(stoich,couplingtype,couprole,j,k);
 
       if (reacstart>0)
         ReacStartForReaCoeffDeriv(k,j,condnum,reacstart,rcdmfac,stoich,couplingtype);
 
       reacoeffderivmatrixKJ += -reaccoeff*stoich[k]*rcdmfac;
-    } //end if(stoich[k] != 0)
+    }
   }
   return reacoeffderivmatrixKJ;
 }
@@ -460,37 +527,132 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaCoeffDerivFac(
           const std::vector<int>                  stoich,                  //!<stoichometrie of current condition
           const MAT::PAR::reaction_coupling       couplingtype,            //!<type of coupling the stoichiometry coefficients
+          const std::vector<double>               couprole,                //!<type of coupling role
           const int                               toderive,                //!<concentration to be derived to
-          const int                               k                       //!< id of current scalar
+          const int                               k                        //!< id of current scalar
 )
 {
   double rcdmfac=1;
 
-  if (stoich[toderive]<0 and toderive!=k)
+  switch (couplingtype)
   {
-    for (int ii=0; ii < my::numscal_; ii++)
+    case MAT::PAR::reac_coup_simple_multiplicative: //reaction of type A*B*C:
     {
-      if (stoich[ii]<0)
+      if (stoich[toderive]<0 and toderive!=k)
       {
-        switch (couplingtype)
+        for (int ii=0; ii < my::numscal_; ii++)
         {
-        case MAT::PAR::reac_coup_simple_multiplicative:
-          if (ii!=k and ii!= toderive)
+          if (stoich[ii]<0 and ii!=k and ii!= toderive)
             rcdmfac *= my::scatravarmanager_->Phinp(ii);
-          break;
-        //case ... :  //insert new Couplings here
-        case MAT::PAR::reac_coup_none:
-          dserror("reac_coup_none is not a valid coupling");
-          break;
-        default:
-          dserror("The couplingtype %i is not a valid coupling type.", couplingtype);
-          break;
         }
       }
+      else
+        rcdmfac=0.0;
+      break;
     }
+
+    case MAT::PAR::reac_coup_constant: //constant source term:
+    {
+      rcdmfac = 0.0;
+      break;
+    }
+
+    case MAT::PAR::reac_coup_michaelis_menten: //reaction of type A*B/(B+4)
+    {
+      if (stoich[k] != 0)
+      {
+        for (int ii=0; ii < my::numscal_; ii++)
+        {
+          if (couprole[k] < 0)
+          {
+            if ((couprole[toderive]==0) or (k==toderive))
+              rcdmfac = 0;
+            else if ( (k!= toderive) and (couprole[toderive]<0) )
+            {
+              if (ii==k)
+                rcdmfac *= 1;
+              else if (ii!=toderive and couprole[ii]<0)
+                rcdmfac *= my::funct_.Dot(my::ephinp_[ii]);
+              else if (ii!=toderive and couprole[ii]>0)
+                rcdmfac *= my::funct_.Dot(my::ephinp_[ii])/(couprole[ii]+my::funct_.Dot(my::ephinp_[ii]));
+              else if (ii!=toderive and couprole[ii] == 0)
+                rcdmfac *= 1;
+              else if (ii == toderive)
+                rcdmfac *= 1;
+            }
+            else if ( (k!= toderive) and (couprole[toderive]>0) )
+            {
+              if (ii==k)
+                rcdmfac *= 1;
+              else if (ii!=toderive and couprole[ii]<0)
+                rcdmfac *= my::funct_.Dot(my::ephinp_[ii]);
+              else if (ii!=toderive and couprole[ii]>0)
+                rcdmfac *= my::funct_.Dot(my::ephinp_[ii])/(couprole[ii]+my::funct_.Dot(my::ephinp_[ii]));
+              else if (ii!=toderive and couprole[ii]==0)
+                rcdmfac *= 1;
+              else if (ii == toderive)
+                rcdmfac *= couprole[ii]/std::pow((couprole[ii]+my::funct_.Dot(my::ephinp_[ii])),2);
+            }
+          }
+          else if (couprole[k] > 0 )
+          {
+            if (couprole[toderive]==0)
+              rcdmfac = 0;
+            else if ( (k!=toderive) and couprole[toderive]<0)
+            {
+              if (ii==k)
+                rcdmfac *= 1/(couprole[ii]+my::funct_.Dot(my::ephinp_[ii]));
+              else if ((ii !=toderive) and (couprole[ii]<0))
+                rcdmfac *= my::funct_.Dot(my::ephinp_[ii]);
+              else if ((ii!=toderive) and (couprole[ii]>0))
+                rcdmfac *= my::funct_.Dot(my::ephinp_[ii])/(couprole[ii]+my::funct_.Dot(my::ephinp_[ii]));
+              else if ((ii!=toderive) and (couprole[ii]==0))
+                rcdmfac *= 1;
+              else if (ii==toderive)
+                rcdmfac *= 1;
+            }
+            else if ( (k!=toderive) and couprole[toderive]>0)
+            {
+              if (ii==k)
+                rcdmfac *= 1/(couprole[ii]+my::funct_.Dot(my::ephinp_[ii]));
+              else if ((ii!=toderive) and couprole[ii]<0)
+                rcdmfac *= my::funct_.Dot(my::ephinp_[ii]);
+              else if ((ii!=toderive) and couprole[ii]>0)
+                rcdmfac *= my::funct_.Dot(my::ephinp_[ii])/(couprole[ii] + my::funct_.Dot(my::ephinp_[ii]));
+              else if ((ii!=toderive) and (couprole[ii]==0))
+                rcdmfac *= 1;
+              else if (ii==toderive)
+                rcdmfac *= couprole[ii]/std::pow((couprole[ii]+my::funct_.Dot(my::ephinp_[ii])),2);
+            }
+            else if (k==toderive)
+            {
+              if (ii==k)
+                rcdmfac *= -1/std::pow((couprole[ii]+my::funct_.Dot(my::ephinp_[ii])),2);
+              else if ((ii!=toderive) and (couprole[ii]<0))
+                rcdmfac *= my::funct_.Dot(my::ephinp_[ii]);
+              else if ((ii!=toderive) and (couprole[ii]>0))
+                rcdmfac *= my::funct_.Dot(my::ephinp_[ii])/(couprole[ii] + my::funct_.Dot(my::ephinp_[ii]));
+              else if ((ii!=toderive) and (couprole[ii]==0))
+                rcdmfac *= 1;
+            }
+          }
+          else
+            rcdmfac = 0;
+        }
+      }
+      else //if (couprole[k] == 0)
+        rcdmfac = 0;
+      break;
+    }
+
+    case MAT::PAR::reac_coup_none:
+      dserror("reac_coup_none is not a valid coupling");
+      break;
+
+    default:
+      dserror("The couplingtype %i is not a valid coupling type.", couplingtype);
+      break;
   }
-  else
-    rcdmfac = 0;
 
   return rcdmfac;
 }
@@ -511,11 +673,12 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaBodyForceTer
     const std::vector<int>& stoich = stoich_[condnum]; //get stoichometrie
     const double& reaccoeff = reaccoeff_[condnum]; //get reaction coefficient
     const MAT::PAR::reaction_coupling& couplingtype = couplingtype_[condnum]; //get coupling type
+    const std::vector<double>& couprole = couprole_[condnum]; //get scalar treatment
     const double& reacstart = reacstart_[condnum]; //get reactionstart coefficient
 
-    if (stoich[k] > 0)
+    if (stoich[k]>0 or couplingtype==MAT::PAR::reac_coup_michaelis_menten)
     {
-      double bftfac = CalcReaBodyForceTermFac(stoich,couplingtype);// scalar at integration point np
+      double bftfac = CalcReaBodyForceTermFac(stoich,couplingtype,couprole,k);// scalar at integration point np
 
       if (reacstart>0 and bftfac>0)
         ReacStartForReaBF(k,condnum,reacstart,bftfac);
@@ -532,33 +695,62 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaBodyForceTer
 template <DRT::Element::DiscretizationType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaBodyForceTermFac(
           const std::vector<int>                      stoich,                 //!<stoichometrie of current condition
-          const MAT::PAR::reaction_coupling           couplingtype            //!<type of coupling the stoichiometry coefficients
+          const MAT::PAR::reaction_coupling           couplingtype,           //!<type of coupling the stoichiometry coefficients
+          const std::vector<double>                   couprole,               //!<type of coupling role
+          const int                                   k                       //!< id of current scalar
 )
 {
-  double bftfac=1;
-  bool allpositive = true;
-  for (int ii=0; ii < my::numscal_; ii++)
+  double bftfac=1.0;
+
+  switch (couplingtype)
   {
-    if (stoich[ii]<0)
+    case MAT::PAR::reac_coup_simple_multiplicative: //reaction of type A*B*C:
     {
-      allpositive = false;
-      switch (couplingtype)
+      for (int ii=0; ii < my::numscal_; ii++)
       {
-      case MAT::PAR::reac_coup_simple_multiplicative:
-        bftfac *=my::scatravarmanager_->Phinp(ii);
-        break;
-      //case ... :  //insert new Couplings here
-      case MAT::PAR::reac_coup_none:
-        dserror("reac_coup_none is not a valid coupling");
-        break;
-      default:
-        dserror("The couplingtype %i is not a valid coupling type.", couplingtype);
-        break;
+        if (stoich[ii]<0)
+        {
+          bftfac *=my::scatravarmanager_->Phinp(ii);
+        }
       }
+      break;
     }
+
+    case MAT::PAR::reac_coup_constant: //constant source term:
+    {
+      if (stoich[k]<0)
+        bftfac = 0.0;
+      break;
+    }
+
+    case MAT::PAR::reac_coup_michaelis_menten: //reaction of type A*B/(B+4)
+      if (stoich[k] != 0)
+      {
+        if (couprole[k] != 0)
+          bftfac = 0;
+        else // if (couprole[k] == 0)
+        {
+          for (int ii=0; ii < my::numscal_; ii++)
+          {
+            if (couprole[ii]>0) //and (ii!=k))
+              bftfac *= my::funct_.Dot(my::ephinp_[ii])/(couprole[ii]+my::funct_.Dot(my::ephinp_[ii]));
+            else if (couprole[ii]<0) //and (ii!=k))
+              bftfac *= my::funct_.Dot(my::ephinp_[ii]);
+          }
+        }
+      }
+      else //if (stoich[k] == 0)
+        bftfac = 0;
+      break;
+
+    case MAT::PAR::reac_coup_none:
+      dserror("reac_coup_none is not a valid coupling");
+      break;
+
+    default:
+      dserror("The couplingtype %i is not a valid coupling type.", couplingtype);
+      break;
   }
-  if (allpositive)
-    dserror("there must be at least one negative entry in each stoich list");
 
   return bftfac;
 }
@@ -573,18 +765,19 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaBodyForceDer
     const int                 j                   //!< concentration to be derived to
 )
 {
-  double reabodyforcederivmatrixKJ=0;
+  double reabodyforcederivmatrixKJ=0.0;
 
     for (int condnum = 0;condnum < numcond_;condnum++)
     {
       const std::vector<int>& stoich = stoich_[condnum]; //get stoichometrie
       const double& reaccoeff = reaccoeff_[condnum]; //get reaction coefficient
       const MAT::PAR::reaction_coupling& couplingtype = couplingtype_[condnum]; //get coupling type
+      const std::vector<double>& couprole = couprole_[condnum]; //get scalar treatment
       const double& reacstart = reacstart_[condnum]; //get reactionstart coefficient
 
-    if (stoich[k] > 0)
+    if (stoich[k]>0 or couplingtype==MAT::PAR::reac_coup_michaelis_menten)
     {
-      double bfdmfac = CalcReaBodyForceDerivFac(stoich,couplingtype,j);
+      double bfdmfac = CalcReaBodyForceDerivFac(stoich,couplingtype,couprole,j,k);
 
       if (reacstart>0 and bfdmfac>0)
         ReacStartForReaBFDeriv(k,j,condnum,reacstart,bfdmfac,stoich,couplingtype);
@@ -602,35 +795,80 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaBodyForceDerivFac(
         const std::vector<int>                    stoich,                  //!<stoichometrie of current condition
         const MAT::PAR::reaction_coupling         couplingtype,            //!<type of coupling the stoichiometry coefficients
-        const int                                 toderive                 //!<concentration to be derived to
+        const std::vector<double>                 couprole,                //!<type of coupling role
+        const int                                 toderive,                //!<concentration to be derived to
+        const int                                 k                        //!< id of current scalar
 )
 {
-  double bfdmfac=1;
-  if (stoich[toderive]<0)
+  double bfdmfac=1.0;
+
+  switch (couplingtype)
   {
-    for (int ii=0; ii < my::numscal_; ii++)
+    case MAT::PAR::reac_coup_simple_multiplicative: //reaction of type A*B*C:
     {
-      if (stoich[ii]<0)
-      {
-        switch (couplingtype)
+      if (stoich[toderive]<0)
         {
-        case MAT::PAR::reac_coup_simple_multiplicative:
-          if (ii!=toderive)
-            bfdmfac *= my::funct_.Dot(my::ephinp_[ii]);
-          break;
-        //case ... :  //insert new Couplings here
-        case MAT::PAR::reac_coup_none:
-          dserror("reac_coup_none is not a valid coupling");
-          break;
-        default:
-          dserror("The couplingtype %i is not a valid coupling type.", couplingtype);
-          break;
+          for (int ii=0; ii < my::numscal_; ii++)
+          {
+            if (stoich[ii]<0 and ii!=toderive)
+              bfdmfac *= my::funct_.Dot(my::ephinp_[ii]);
+          }
+        }
+      else
+        bfdmfac=0.0;
+      break;
+    }
+
+    case MAT::PAR::reac_coup_constant: //constant source term:
+    {
+      bfdmfac = 0.0;
+      break;
+    }
+
+    case MAT::PAR::reac_coup_michaelis_menten: //reaction of type A*B/(B+4)
+    {
+      if (stoich[k] != 0)
+      {
+        for (int ii=0; ii < my::numscal_; ii++)
+        {
+          if (couprole[k]!= 0)
+            bfdmfac = 0;
+          else
+          {
+            if (ii != toderive)
+            {
+              if (couprole[ii] > 0)
+                bfdmfac *= my::funct_.Dot(my::ephinp_[ii])/(couprole[ii] + my::funct_.Dot(my::ephinp_[ii]));
+              else if (couprole[ii] < 0)
+                bfdmfac *= my::funct_.Dot(my::ephinp_[ii]);
+              else
+                bfdmfac *= 1;
+            }
+            else
+            {
+              if (couprole[ii] > 0)
+                bfdmfac *= couprole[ii]/(std::pow((my::funct_.Dot(my::ephinp_[ii])+couprole[ii]), 2));
+              else if (couprole[ii] < 0)
+                bfdmfac *= 1;
+              else
+                bfdmfac = 0;
+            }
+          }
         }
       }
+      else //if (stoich[k] == 0)
+        bfdmfac = 0;
+      break;
     }
+
+    case MAT::PAR::reac_coup_none:
+      dserror("reac_coup_none is not a valid coupling");
+      break;
+
+    default:
+      dserror("The couplingtype %i is not a valid coupling type.", couplingtype);
+      break;
   }
-  else
-    bfdmfac = 0;
 
   return bfdmfac;
 }
@@ -643,15 +881,31 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::ReacStartForReaCoeff(
   const int                               k,            //!< id of current scalar
   const int                               condnum,      //!< id of current condition
   const double                            reacstart,      //!< value for reaction starting
-  double&                                 value         //!< current reaction value
+  double&                                 value,         //!< current reaction value
+  const MAT::PAR::reaction_coupling       couplingtype            //!<type of coupling the stoichiometry coefficients
   )
 {
-  double prod = value * my::scatravarmanager_->Phinp(k); //for simple multiplikative only!
+  switch (couplingtype)
+  {
+    case MAT::PAR::reac_coup_simple_multiplicative: //reaction of type A*B*C:
+    {
+      double prod = value * my::scatravarmanager_->Phinp(k); //for simple multiplikative only!
 
-    if (prod > reacstart )
-      value = value - reacstart/my::scatravarmanager_->Phinp(k);
-    else
-      value = 0;
+      if (prod > reacstart )
+        value = value - reacstart/my::scatravarmanager_->Phinp(k);
+      else
+        value = 0;
+      break;
+    }
+
+    case MAT::PAR::reac_coup_none:
+      dserror("reac_coup_none is not a valid coupling");
+      break;
+
+    default:
+      dserror("The reacstart feature is only implemented for reactions of type simple_multiplicative!", couplingtype);
+      break;
+  }
 
     return;
 }
@@ -670,7 +924,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::ReacStartForReaCoeffD
         const MAT::PAR::reaction_coupling       couplingtype    //!<type of coupling the stoichiometry coefficients
   )
 {
-  double prod = CalcReaBodyForceTermFac(stoich,couplingtype);
+  double prod = CalcReaBodyForceTermFac(stoich,couplingtype,std::vector<double>(),k);
 
   if ( prod > reacstart)
   {
@@ -715,7 +969,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::ReacStartForReaBFDeri
         const MAT::PAR::reaction_coupling       couplingtype    //!<type of coupling the stoichiometry coefficients
   )
 {
-  double prod = CalcReaBodyForceTermFac(stoich,couplingtype);
+  double prod = CalcReaBodyForceTermFac(stoich,couplingtype,std::vector<double>(),k);
 
   if ( prod > reacstart) { }
   else
@@ -893,6 +1147,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::GetAdvancedReactionCo
     stoich_.resize(numcond_);
     couplingtype_.resize(numcond_);
     reaccoeff_.resize(numcond_);
+    couprole_.resize(numcond_);
     reacstart_.resize(numcond_);
 
   for (int i=0;i<numcond_;i++)
@@ -903,6 +1158,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::GetAdvancedReactionCo
     stoich_[i] = *(reacmat->Stoich()); //get stoichometrie
     couplingtype_[i] = reacmat->Coupling(); //get coupling type
     reaccoeff_[i] = reacmat->ReacCoeff(); //get reaction coefficient
+    couprole_[i] = *(reacmat->Couprole());
     reacstart_[i] = reacmat->ReacStart(); //get reaction start coefficient
   }
 }
@@ -953,6 +1209,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::ClearAdvancedReaction
   stoich_.resize(numcond_);
   couplingtype_.resize(numcond_);
   reaccoeff_.resize(numcond_);
+  couprole_.resize(numcond_);
   reacstart_.resize(numcond_);
 
 }
