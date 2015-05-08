@@ -534,7 +534,8 @@ namespace DRT
                            double &            h_e               ///< element length w.r.t parent element
       )
       {
-        LINALG::Matrix<nsd_,numnode> xyz_surf(true);
+        static LINALG::Matrix<nsd_,numnode> xyz_surf(true);
+        xyz_surf.Clear();
 
         if(connectivity.size() != numnode) dserror("wrong number of nodes for parent's surface");
 
@@ -636,7 +637,8 @@ namespace DRT
                            double &            h_e               ///< element length w.r.t parent element
       )
       {
-        LINALG::Matrix<nsd_,numnode> xyz_surf(true);
+        static LINALG::Matrix<nsd_,numnode> xyz_surf(true);
+        xyz_surf.Clear();
 
         if(connectivity.size() != numnode) dserror("wrong number of nodes for parent's surface");
 
@@ -696,7 +698,8 @@ namespace DRT
       )
       {
         // matrix that contains the coordinates of the start and end point of the connecting lines between the two opposite surfaces
-        LINALG::Matrix<nsd_ ,numlines*2> xyze_distance_lines;
+        static LINALG::Matrix<nsd_ ,numlines*2> xyze_distance_lines;
+        xyze_distance_lines.Clear();
 
         if (master == true) // is parent element the master element?
         {
