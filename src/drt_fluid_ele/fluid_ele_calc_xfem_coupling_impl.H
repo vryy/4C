@@ -453,7 +453,6 @@ namespace DRT
         //! evaluate viscous-consistency term for Nitsche's method (scaled with slave side's weighting factor)
         void NIT_visc_Consistency_SlaveTerms(
           const LINALG::Matrix<nsd_,slave_nen_> &  derxy_s,                      ///< slave shape function derivatives
-          const LINALG::Matrix<nsd_,nsd_> &        vderxy_s,                     ///< slave velocity gradient
           const LINALG::Matrix<nen_,1> &           funct_m_viscs_timefacfac_ks,  ///< funct_m*mu_m*timefacfac
           const LINALG::Matrix<slave_nen_,1> &     funct_s_viscs_timefacfac_ks,  ///< funct_s*mu_m*timefacfac
           const LINALG::Matrix<nsd_,1> &           normal                        ///< normal vector
@@ -512,7 +511,6 @@ namespace DRT
 
         //! evaluate rhs of viscous-consistency term for Nitsche's method (scaled with master side's weighting factor)
         void NIT_visc_Consistency_MasterRHS(
-          const LINALG::Matrix<nsd_,nsd_> &        vderxy_m,                     ///< master velocity gradient
           const LINALG::Matrix<nen_,1> &           funct_m_viscm_timefacfac_km,  ///< funct_m*mu_m*timefacfac
           const LINALG::Matrix<slave_nen_,1> &     funct_s_viscm_timefacfac_km,  ///< funct_s*mu_m*timefacfac
           const LINALG::Matrix<nsd_,1> &           normal                        ///< normal vector
@@ -692,16 +690,23 @@ namespace DRT
 
         LINALG::Matrix<nsd_,nen_> derxy_m_viscm_timefacfac_;
 
-
         LINALG::Matrix<nsd_,1> half_normal_;
 
         LINALG::Matrix<nen_,1> half_normal_deriv_m_;
 
+        LINALG::Matrix<slave_nen_,1> half_normal_deriv_s_;
+
         LINALG::Matrix<nen_,1> normal_deriv_m_viscm_km_;
+
+        LINALG::Matrix<slave_nen_,1> normal_deriv_s_viscs_ks_;
 
         LINALG::Matrix<nsd_,1> vderxy_m_normal_;
 
+        LINALG::Matrix<nsd_,1> vderxy_s_normal_;
+
         LINALG::Matrix<nsd_,1> vderxy_m_normal_transposed_;
+
+        LINALG::Matrix<nsd_,1> vderxy_s_normal_transposed_;
 
         LINALG::Matrix<nsd_,1> velint_diff_;
         LINALG::Matrix<nsd_,1> velint_diff_stabfac_;
