@@ -149,7 +149,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
   // do not match with the discr. at the current time step.
   // Here we read the discretization at the current time step from restart files
   const int restart = DRT::Problem::Instance()->Restart();
-  if (restart  and DRT::Problem::Instance()->ProblemType() != prb_ac_fsi )
+  if ( restart and probtype == prb_crack )
   {
     IO::DiscretizationReader reader(actdis, restart);
     reader.ReadMesh(restart);
