@@ -721,8 +721,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::ApplyConvStabTerms(
       velint_diff_stabfac_.Update(NIT_stab_fac_conv, velint_diff_, 0.0);
 
       NIT_Stab_Penalty_MasterTerms(
-        velint_m,
-        velint_s_,
         funct_m_timefacfac,
         funct_m_m_dyad_timefacfac,
         NIT_stab_fac_conv
@@ -753,8 +751,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::ApplyConvStabTerms(
       if (xff_conv_stab == INPAR::XFEM::XFF_ConvStabScaling_upwinding)
       {
         NIT_Stab_Penalty(
-          velint_m,
-          velint_s_,
           funct_m_timefacfac,
           funct_m_m_dyad_timefacfac,
           funct_s_timefacfac,
@@ -869,8 +865,9 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
 
   velint_diff_.Update(1.0, velint_m, -1.0, velint_s_, 0.0);
 
-  velint_diff_normal_ = velint_diff_.Dot(normal);
+  velint_diff_stabfac_.Update(NIT_full_stab_fac, velint_diff_, 0.0);
 
+  velint_diff_normal_ = velint_diff_.Dot(normal);
 
   // funct_m * timefac * fac
   funct_m_timefacfac_.Update(timefacfac,funct_m, 0.0 );
@@ -906,8 +903,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
   if ( !eval_coupling_ )
   {
     NIT_Stab_Penalty_MasterTerms(
-      velint_m,
-      velint_s_,
       funct_m_timefacfac_,
       funct_m_m_dyad_timefacfac_,
       NIT_full_stab_fac
@@ -916,8 +911,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
   else
   {
     NIT_Stab_Penalty(
-      velint_m,
-      velint_s_,
       funct_m_timefacfac_,
       funct_m_m_dyad_timefacfac_,
       funct_s_timefacfac_,
@@ -1055,9 +1048,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
   // funct_s * 2 * mu_m * kappa_m * timefac * fac
   LINALG::Matrix<slave_nen_,1> funct_s_viscm_timefacfac_km(funct_s_);
   funct_s_viscm_timefacfac_km.Scale(km_viscm_fac);
-
-
-
 
 
   if (! full_slavesided)
@@ -1253,7 +1243,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOl
     dserror("Invalid weights kappa_m=%d and kappa_s=%d. The have to sum up to 1.0!", kappa_m, kappa_s);
 
   half_normal_.Update(0.5,normal,0.0);
-
   half_normal_deriv_m_.MultiplyTN(derxy_m, half_normal_); // half_normal(k)*derxy_m(k,ic);
 
   vderxy_m_normal_.Multiply(vderxyn_m, half_normal_);
@@ -2590,8 +2579,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_visc_AdjointConsis
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
 void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Stab_Penalty(
-  const LINALG::Matrix<nsd_,1>&                 velint_m,                     ///< velocity at integration point
-  const LINALG::Matrix<nsd_,1>&                 velint_s,                     ///< interface velocity at integration point
   const LINALG::Matrix<nen_,1>&                 funct_m_timefacfac,           ///< funct * timefacfac
   const LINALG::Matrix<nen_,nen_>&              funct_m_m_dyad_timefacfac,    ///< (funct^T * funct) * timefacfac
   const LINALG::Matrix<slave_nen_,1>&           funct_s_timefacfac,           ///< funct_s^T * timefacfac
@@ -2630,8 +2617,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Stab_Penalty(
       }
     }
   }
-
-  velint_diff_stabfac_.Update(stabfac, velint_diff_, 0.0);
 
   for (unsigned ir=0; ir<nen_; ir++)
   {
@@ -2715,8 +2700,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Stab_Penalty(
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
 void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Stab_Penalty_MasterTerms(
-  const LINALG::Matrix<nsd_,1>&                 velint_m,                     ///< velocity at integration point
-  const LINALG::Matrix<nsd_,1>&                 velint_s,                     ///< interface velocity at integration point
   const LINALG::Matrix<nen_,1>&                 funct_m_timefacfac,           ///< funct * timefacfac
   const LINALG::Matrix<nen_,nen_>&              funct_m_m_dyad_timefacfac,    ///< (funct^T * funct) * timefacfac
   const double &                                stabfac

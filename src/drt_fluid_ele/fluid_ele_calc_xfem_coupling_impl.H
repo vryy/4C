@@ -542,8 +542,6 @@ namespace DRT
 
         //!  evaluate Nitsche's penalty term
         void NIT_Stab_Penalty(
-          const LINALG::Matrix<nsd_,1>&                 velint_m,                     ///< velocity at integration point
-          const LINALG::Matrix<nsd_,1>&                 velint_s,                     ///< interface velocity at integration point
           const LINALG::Matrix<nen_,1>&                 funct_m_timefacfac,           ///< funct * timefacfac
           const LINALG::Matrix<nen_,nen_>&              funct_m_m_dyad_timefacfac,    ///< (funct^T * funct) * timefacfac
           const LINALG::Matrix<slave_nen_,1>&           funct_s_timefacfac,           ///< funct_s^T * timefacfac
@@ -554,8 +552,6 @@ namespace DRT
 
         //!  evaluate only the master side's part of Nitsche's penalty term
         void NIT_Stab_Penalty_MasterTerms(
-          const LINALG::Matrix<nsd_,1>&                 velint_m,                     ///< velocity at integration point
-          const LINALG::Matrix<nsd_,1>&                 velint_s,                     ///< interface velocity at integration point
           const LINALG::Matrix<nen_,1>&                 funct_m_timefacfac,           ///< funct * timefacfac
           const LINALG::Matrix<nen_,nen_>&              funct_m_m_dyad_timefacfac,    ///< (funct^T * funct) * timefacfac
           const double &                                stabfac
@@ -565,7 +561,7 @@ namespace DRT
         void NIT_Stab_Penalty_MasterRHS(
           const LINALG::Matrix<nsd_,1>&                 velint_m,                     ///< velocity at integration point
           const LINALG::Matrix<nsd_,1>&                 velint_s,                     ///< interface velocity at integration point
-          const LINALG::Matrix<nen_,1>&           funct_m_timefacfac,           ///< funct_m^T * timefacfac
+          const LINALG::Matrix<nen_,1>&                 funct_m_timefacfac,           ///< funct_m^T * timefacfac
           const double &                                stabfac                       ///< stabilization factor
         );
 
