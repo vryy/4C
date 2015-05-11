@@ -93,7 +93,7 @@ void FLD::XFluidOutputService::Output(
 
     // if the dofs for this node do not exist in the xdofrowmap, then a hole is given
     // else copy the right nodes
-    const std::vector<int> gdofs_current(discret_->Dof(xfemnode));
+    const std::vector<int> gdofs_current(discret_->Dof(0,xfemnode));
 
     if(gdofs_current.size() == 0)
     {

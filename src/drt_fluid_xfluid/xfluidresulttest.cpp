@@ -101,19 +101,19 @@ void FLD::XFluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr,
       res.ExtractString("QUANTITY",position);
       if (position=="velx")
       {
-        result = (*velnp)[velnpmap.LID(discret->Dof(actnode,0))];
+        result = (*velnp)[velnpmap.LID(discret->Dof(0,actnode,0))];
       }
       else if (position=="vely")
       {
-        result = (*velnp)[velnpmap.LID(discret->Dof(actnode,1))];
+        result = (*velnp)[velnpmap.LID(discret->Dof(0,actnode,1))];
       }
       else if (position=="velz")
       {
-        result = (*velnp)[velnpmap.LID(discret->Dof(actnode,2))];
+        result = (*velnp)[velnpmap.LID(discret->Dof(0,actnode,2))];
       }
       else if (position=="pressure")
       {
-        result = (*velnp)[velnpmap.LID(discret->Dof(actnode,3))];
+        result = (*velnp)[velnpmap.LID(discret->Dof(0,actnode,3))];
       }
       else
       {

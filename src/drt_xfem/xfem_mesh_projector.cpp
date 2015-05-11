@@ -80,7 +80,7 @@ void XFEM::MeshProjector::SetSourcePositionVector(
   for (int lid = 0; lid < sourcedis_->NumMyColNodes(); ++lid)
   {
     const DRT::Node* node = sourcedis_->lColNode(lid);
-    std::vector<int> src_dofs(3);
+    std::vector<int> src_dofs(4);
     std::vector<double> mydisp(3, 0.0);
 
     if (sourcedisp != Teuchos::null)
@@ -232,8 +232,8 @@ void XFEM::MeshProjector::Project(
   {
     const DRT::Node* node = targetdis_->gNode(i->first);
 
-    std::vector<int> tar_dofs(3);
-    std::vector<double> mydisp(3, 0.0);
+    std::vector<int> tar_dofs(4);
+    std::vector<double> mydisp(4, 0.0);
 
     if (targetdisp != Teuchos::null)
     {

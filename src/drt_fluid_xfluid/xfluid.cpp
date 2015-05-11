@@ -4201,7 +4201,7 @@ void FLD::XFluid::SetInitialFlowField(
       // get the processor local node
       DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
       // the set of degrees of freedom associated with the node
-      const std::vector<int> nodedofset = discret_->Dof(lnode);
+      const std::vector<int> nodedofset = discret_->Dof(0,lnode);
 
       if (nodedofset.size()!=0)
       {
@@ -4246,7 +4246,7 @@ void FLD::XFluid::SetInitialFlowField(
       DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
 
       // the set of degrees of freedom associated with the node
-      std::vector<int> nodedofset = discret_->Dof(lnode);
+      std::vector<int> nodedofset = discret_->Dof(0,lnode);
 
       // set node coordinates
       for(int dim=0;dim<numdim_;dim++)
