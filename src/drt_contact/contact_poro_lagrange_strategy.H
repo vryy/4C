@@ -12,7 +12,7 @@ Maintainer: Christoph Ager
 #ifndef CONTACT_PORO_LAGRANGE_STRATEGY_H
 #define CONTACT_PORO_LAGRANGE_STRATEGY_H
 
-#include "contact_lagrange_strategy.H"
+#include "contact_monocoupled_lagrange_strategy.H"
 #include "../drt_lib/drt_dserror.H"
 
 namespace ADAPTER
@@ -43,7 +43,7 @@ namespace CONTACT
 
  \author popp (popp@lnm.mw.tum.de)
  */
-class PoroLagrangeStrategy : public CoLagrangeStrategy
+class PoroLagrangeStrategy : public MonoCoupledLagrangeStrategy
 {
   public:
 
@@ -88,12 +88,6 @@ class PoroLagrangeStrategy : public CoLagrangeStrategy
    void PoroInitialize(ADAPTER::Coupling& coupfs , Teuchos::RCP<const Epetra_Map> fluiddofs);
 
     /*!
-    \brief Evaluate poro contact
-    Modify poro coupling matrix k_sf for contact! -- RHS is already done by standard EvaluateContact!
-    */
-    void EvaluatePoroContact(Teuchos::RCP<LINALG::SparseMatrix>& kteff); //global proro Coupling Matrix Structure Fluid K_SF
-
-    /*!
     \brief Evaluate poro no penetration contact
 
      Evaluate poro coupling contact matrices for no penetration
@@ -102,22 +96,6 @@ class PoroLagrangeStrategy : public CoLagrangeStrategy
     void EvaluatePoroNoPenContact(Teuchos::RCP<LINALG::SparseMatrix>& k_fseff, //global poro Coupling Matrix Fluid Structure K_FS
                                   Teuchos::RCP<LINALG::SparseMatrix>& Feff, //global fluid Matrix in poro
                                   Teuchos::RCP<Epetra_Vector>& feff); //global RHS of fluid in poro
-
-
-
-
-    /*!
-    \brief Recovery method
-
-    We only recover the Lagrange multipliers here, which had been
-    statically condensated during the setup of the global problem!
-    Optionally satisfaction or violation of the contact boundary
-    conditions can be checked, too.*/
-
-    void Recover(Teuchos::RCP<Epetra_Vector> disi)
-    {dserror("PoroLagrangeStrategy::Recover(disi) --> Use the overloaded Recover(disi,veli) Method for Poro Contact! \nIf this is done in a Structural- Predictor it might still make sense!");}
-
-    void Recover(Teuchos::RCP<Epetra_Vector> disi,Teuchos::RCP<Epetra_Vector> veli);
 
     /*!
     \brief Recovery method
@@ -158,10 +136,6 @@ class PoroLagrangeStrategy : public CoLagrangeStrategy
     PoroLagrangeStrategy operator = (const PoroLagrangeStrategy& old);
     PoroLagrangeStrategy(const PoroLagrangeStrategy& old);
 
-    void SaveCouplingMatrices(Teuchos::RCP<LINALG::SparseMatrix> dhat,
-                              Teuchos::RCP<LINALG::SparseMatrix> mhataam,
-                              Teuchos::RCP<LINALG::SparseMatrix> invda);
-
     // flag activation poro contact no penetration condition
     bool no_penetration_;
 
@@ -172,7 +146,6 @@ class PoroLagrangeStrategy : public CoLagrangeStrategy
     Teuchos::RCP<LINALG::SparseMatrix> csfsm_;  //poro coupling stiffness block Csf_sm (needed for LM)
     Teuchos::RCP<LINALG::SparseMatrix> csfss_;  //poro coupling stiffness block Csf_ss (needed for LM)
 
-
     //For Recovery of no penetration lagrange multiplier!!!
     Teuchos::RCP<Epetra_Vector> ffs_; //poro fluid RHS (needed for no pen LM)
     Teuchos::RCP<LINALG::SparseMatrix> cfssn_; //poro coupling stiffness block Cfs_sn (needed for no pen LM)
@@ -182,11 +155,6 @@ class PoroLagrangeStrategy : public CoLagrangeStrategy
     Teuchos::RCP<LINALG::SparseMatrix> fsn_; //poro fluid stiffness block F_sn (needed for no pen LM)
     Teuchos::RCP<LINALG::SparseMatrix> fsm_; //poro fluid stiffness block F_sm (needed for no pen LM)
     Teuchos::RCP<LINALG::SparseMatrix> fss_; //poro fluid stiffness block F_ss (needed for no pen LM)
-
-    Teuchos::RCP<LINALG::SparseMatrix> dhat_;
-    Teuchos::RCP<LINALG::SparseMatrix> mhataam_;
-    Teuchos::RCP<LINALG::SparseMatrix> invda_;
-
 
     //Matrices transformed to the fluid dofs!!!
     Teuchos::RCP<LINALG::SparseMatrix> fdhat_;

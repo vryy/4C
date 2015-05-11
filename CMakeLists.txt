@@ -1747,6 +1747,7 @@ set(OBJS_DRT_CONTACT
   src/drt_contact/contact_interface_tools.cpp
   src/drt_contact/contact_interpolator.cpp
   src/drt_contact/contact_lagrange_strategy.cpp
+  src/drt_contact/contact_monocoupled_lagrange_strategy.cpp
   src/drt_contact/contact_poro_lagrange_strategy.cpp
   src/drt_contact/contact_manager.cpp
   src/drt_contact/manager_nurbs.cpp

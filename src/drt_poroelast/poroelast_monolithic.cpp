@@ -183,6 +183,10 @@ void POROELAST::Monolithic::Solve()
     // 2.) EvaluateForceStiffResidual(),
     // 3.) PrepareSystemForNewtonSolve()
     Evaluate(iterinc_,iter_==1);
+
+    //Modify System for Contact!
+    EvalPoroContact();
+
     //std::cout << "  time for Evaluate : " << timer.ElapsedTime() << "\n";
     //timer.ResetStartTime();
 
@@ -337,8 +341,6 @@ void POROELAST::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x, bool f
   // create full monolithic rhs vector
   SetupRHS(firstiter);
 
-  //Modify System for Contact!
-  EvalPoroContact();
 } // Evaluate()
 
 /*----------------------------------------------------------------------*
@@ -1982,7 +1984,7 @@ void POROELAST::Monolithic::RecoverLagrangeMultiplierAfterNewtonStep(Teuchos::RC
         Teuchos::RCP<Epetra_Vector> tmpsx = Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(*sx));
         Teuchos::RCP<Epetra_Vector> tmpfx = Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(*fx));
 
-        costrategy.Recover(tmpsx,tmpfx);
+        costrategy.RecoverCoupled(tmpsx,tmpfx);
         if (no_penetration_)
           costrategy.RecoverPoroNoPen(tmpsx,tmpfx);
         return;
@@ -2039,25 +2041,26 @@ void POROELAST::Monolithic::EvalPoroContact()
      if (StructureField()->MeshtyingContactBridge()->HaveContact())
      {
         CONTACT::PoroLagrangeStrategy& costrategy = static_cast<CONTACT::PoroLagrangeStrategy&>(StructureField()->MeshtyingContactBridge()->ContactManager()->GetStrategy());
-
-        ///---Initialize Poro Contact
-        costrategy.PoroInitialize(FluidStructureCoupling(), FluidField()->DofRowMap()); //true stands for the no_penetration condition !!!
-
         ///---Modifiy coupling matrix k_sf
 
         //Get matrix block!
-        Teuchos::RCP<LINALG::SparseMatrix> k_sf = Teuchos::rcp<LINALG::SparseMatrix>(new LINALG::SparseMatrix(systemmatrix_->Matrix(0,1)));
+        Teuchos::RCP<LINALG::SparseOperator> k_ss = Teuchos::rcp<LINALG::SparseMatrix>(new LINALG::SparseMatrix(systemmatrix_->Matrix(0,0)));
+        Teuchos::RCP<LINALG::SparseOperator> k_sf = Teuchos::rcp<LINALG::SparseMatrix>(new LINALG::SparseMatrix(systemmatrix_->Matrix(0,1)));
+        Teuchos::RCP<Epetra_Vector> rhs_s = Extractor()->ExtractVector(rhs_,0);
 
-
-        //Evaluate Poro Contact Condensation for K_sf
-        costrategy.EvaluatePoroContact(k_sf);
+        //Evaluate Poro Contact Condensation for K_ss, K_sf
+        costrategy.ApplyForceStiffCmtCoupled(StructureField()->WriteAccessDispnp(),k_ss,k_sf,rhs_s,Step(),iter_,false);
 
         //Assign modified matrixes & vectors
-        systemmatrix_->Assign(0,1,Copy,*k_sf);
+        systemmatrix_->Assign(0,0,Copy,*Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(k_ss));
+        systemmatrix_->Assign(0,1,Copy,*Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(k_sf));
+        Extractor()->InsertVector(rhs_s,0,rhs_);
 
         ///---Modify fluid matrix, coupling matrix k_fs and rhs of fluid
         if (no_penetration_)
         {
+          ///---Initialize Poro Contact
+          costrategy.PoroInitialize(FluidStructureCoupling(), FluidField()->DofRowMap()); //true stands for the no_penetration condition !!!
           //Get matrix blocks & rhs vector!
           Teuchos::RCP<LINALG::SparseMatrix> f = Teuchos::rcp<LINALG::SparseMatrix>(new LINALG::SparseMatrix(systemmatrix_->Matrix(1,1)));
           Teuchos::RCP<LINALG::SparseMatrix> k_fs = Teuchos::rcp<LINALG::SparseMatrix>(new LINALG::SparseMatrix(systemmatrix_->Matrix(1,0)));
