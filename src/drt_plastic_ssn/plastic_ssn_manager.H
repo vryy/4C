@@ -157,9 +157,33 @@ public:
   bool TSI() {return probtype_==prb_tsi; };
 
   /*
-  \brief Is this a TSI problem
+  \brief Return the data container for the Semi-smooth Newton data
   */
   DRT::UTILS::PlastSsnData& SetData() { return data_; };
+
+  /*
+  \brief Print the data container for the Semi-smooth Newton data
+  */
+  void PrintData()
+  {
+    std::cout << "unconverged_active_set_: " <<  data_.unconverged_active_set_  << std::endl;
+    std::cout << "pl_inc_: " <<  data_.pl_inc_  << std::endl;
+    std::cout << "pl_res_: " <<  data_.pl_res_  << std::endl;
+    std::cout << "eas_: " << data_.eas_   << std::endl;
+    std::cout << "eas_res_: " <<  data_.eas_res_  << std::endl;
+    std::cout << "eas_inc_: " <<  data_.eas_inc_  << std::endl;
+    std::cout << "num_active_: " <<  data_.num_active_  << std::endl;
+    std::cout << "pred_type_: " <<  data_.pred_type_  << std::endl;
+    std::cout << "no_pl_condensation_: " << data_.no_pl_condensation_   << std::endl;
+    std::cout << "no_recovery_: " <<   data_.no_recovery_ << std::endl;
+    std::cout << "scale_timint_: " <<   data_.scale_timint_ << std::endl;
+    std::cout << "dt_: " <<    data_.dt_<< std::endl;
+    std::cout << "split_res_: " << data_.split_res_   << std::endl;
+    std::cout << "cond_rhs_norm_: " <<   data_.cond_rhs_norm_ << std::endl;
+    std::cout << "ls_: " << data_.ls_   << std::endl;
+    std::cout << "alpha_ls_: " <<  data_.alpha_ls_  << std::endl;
+    std::cout << "myPID: " <<  data_.myPID  << std::endl;
+  }
 
 private:
 
