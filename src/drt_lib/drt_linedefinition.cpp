@@ -178,7 +178,7 @@ bool DRT::INPUT::TagComponent::Read(DRT::INPUT::LineDefinition& definition, std:
 {
   std::string tag;
   stream >> tag;
-  return tag==name_ and stream;
+  return tag==name_ and !(stream.fail());
 }
 
 
@@ -188,7 +188,7 @@ bool DRT::INPUT::TagComponent::Read(std::istream& stream)
 {
   std::string tag;
   stream >> tag;
-  return tag==name_ and stream;
+  return tag==name_ and !(stream.fail());
 }
 
 
@@ -225,7 +225,7 @@ template <class type>
 bool DRT::INPUT::NamedComponent<type>::Read(std::istream& stream)
 {
   stream >> value_;
-  return stream;
+  return !(stream.fail());
 }
 
 
@@ -256,7 +256,7 @@ bool DRT::INPUT::NamedVectorComponent<type>::Read(std::istream& stream)
     stream >> values_[i];
   }
 
-  return stream;
+  return !(stream.fail());
 }
 
 
