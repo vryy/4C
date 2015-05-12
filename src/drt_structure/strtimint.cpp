@@ -1802,7 +1802,6 @@ void STR::TimInt::ReadRestartState()
 
   if( (dismatn_!=Teuchos::null) )
   {
-    dismatn_ = LINALG::CreateVector(*DofRowMapView(), true);
     reader.ReadVector(dismatn_, "material_displacement");
     dismat_->UpdateSteps(*dismatn_);
   }
@@ -1811,6 +1810,7 @@ void STR::TimInt::ReadRestartState()
   vel_->UpdateSteps(*veln_);
   reader.ReadVector(accn_, "acceleration");
   acc_->UpdateSteps(*accn_);
+  reader.ReadMesh(step_);
 
   return;
 }
