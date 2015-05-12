@@ -41,7 +41,7 @@ void shape_function_3D(
   )
 {
   // if the given template parameter is of type int, the error "boost::STATIC_ASSERTION_FAILURE<false>" occurs during compilation
-  BOOST_STATIC_ASSERT((not boost::is_same<int,T>::value));
+  BOOST_STATIC_ASSERT((not boost::is_same<int,T>::value)) BACI_ATTRIBUTE_UNUSED;
 
   const T Q18 = 1.0 / 8.0;
   const T Q12 = 1.0 / 2.0;
@@ -346,7 +346,7 @@ void shape_function_3D_deriv1(
   )
 {
   // if the given template parameter is of type int, the error "boost::STATIC_ASSERTION_FAILURE<false>" occurs during compilation
-  BOOST_STATIC_ASSERT((not boost::is_same<int,T>::value));
+  BOOST_STATIC_ASSERT((not boost::is_same<int,T>::value)) BACI_ATTRIBUTE_UNUSED;
 
   const int dr = 0;
   const int ds = 1;
@@ -981,7 +981,7 @@ void shape_function_3D_deriv2(
   )
 {
   // if the given template parameter is of type int, the error "boost::STATIC_ASSERTION_FAILURE<false>" occurs during compilation
-  BOOST_STATIC_ASSERT((not boost::is_same<int,T>::value));
+  BOOST_STATIC_ASSERT((not boost::is_same<int,T>::value)) BACI_ATTRIBUTE_UNUSED;
 
   const T Q18 = 1.0 / 8.0;
   const T Q12 = 1.0 / 2.0;
@@ -1943,7 +1943,7 @@ void shape_function_2D(
   )
 {
   // if the given template parameter is of type int, the error "boost::STATIC_ASSERTION_FAILURE<false>" occurs during compilation
-  BOOST_STATIC_ASSERT((not boost::is_same<int,T>::value));
+  BOOST_STATIC_ASSERT((not boost::is_same<int,T>::value)) BACI_ATTRIBUTE_UNUSED;
 
   switch (distype)
   {
@@ -2093,7 +2093,7 @@ void shape_function_2D_deriv1(
   )
 {
   // if the given template parameter is of type int, the error "boost::STATIC_ASSERTION_FAILURE<false>" occurs during compilation
-  BOOST_STATIC_ASSERT((not boost::is_same<int,T>::value));
+  BOOST_STATIC_ASSERT((not boost::is_same<int,T>::value)) BACI_ATTRIBUTE_UNUSED;
 
   const int dr = 0;
   const int ds = 1;
@@ -2315,7 +2315,7 @@ void shape_function_2D_deriv2(
   )
 {
   // if the given template parameter is of type int, the error "boost::STATIC_ASSERTION_FAILURE<false>" occurs during compilation
-  BOOST_STATIC_ASSERT((not boost::is_same<int,T>::value));
+  BOOST_STATIC_ASSERT((not boost::is_same<int,T>::value)) BACI_ATTRIBUTE_UNUSED;
 
   const int drdr = 0;
   const int dsds = 1;
@@ -2605,7 +2605,7 @@ void shape_function_1D(
   )
 {
   // if the given template parameter is of type int, the error "boost::STATIC_ASSERTION_FAILURE<false>" occurs during compilation
-  BOOST_STATIC_ASSERT((not boost::is_same<int,T>::value));
+  BOOST_STATIC_ASSERT((not boost::is_same<int,T>::value)) BACI_ATTRIBUTE_UNUSED;
 
   switch (distype)
   {
@@ -2701,7 +2701,7 @@ void shape_function_1D_deriv1(
   )
 {
   // if the given template parameter is of type int, the error "boost::STATIC_ASSERTION_FAILURE<false>" occurs during compilation
-  BOOST_STATIC_ASSERT((not boost::is_same<int,T>::value));
+  BOOST_STATIC_ASSERT((not boost::is_same<int,T>::value)) BACI_ATTRIBUTE_UNUSED;
 
   const int dr = 0;
   switch (distype)
@@ -2803,7 +2803,7 @@ void shape_function_1D_deriv2(
   )
 {
   // if the given template parameter is of type int, the error "boost::STATIC_ASSERTION_FAILURE<false>" occurs during compilation
-  BOOST_STATIC_ASSERT((not boost::is_same<int,T>::value));
+  BOOST_STATIC_ASSERT((not boost::is_same<int,T>::value)) BACI_ATTRIBUTE_UNUSED;
 
   const int drdr = 0;
   switch (distype)
@@ -2855,7 +2855,7 @@ void shape_function_hermite_1D(
   )
 {
   // if the given template parameter is of type int, the error "boost::STATIC_ASSERTION_FAILURE<false>" occurs during compilation
-  BOOST_STATIC_ASSERT((not boost::is_same<int,T>::value));
+  BOOST_STATIC_ASSERT((not boost::is_same<int,T>::value)) BACI_ATTRIBUTE_UNUSED;
 
   switch (distype)
   {
@@ -2888,7 +2888,7 @@ void shape_function_hermite_1D_deriv1(
   )
 {
   // if the given template parameter is of type int, the error "boost::STATIC_ASSERTION_FAILURE<false>" occurs during compilation
-  BOOST_STATIC_ASSERT((not boost::is_same<int,T>::value));
+  BOOST_STATIC_ASSERT((not boost::is_same<int,T>::value)) BACI_ATTRIBUTE_UNUSED;
 
   switch (distype)
   {
@@ -2921,7 +2921,7 @@ void shape_function_hermite_1D_deriv2(
   )
 {
   // if the given template parameter is of type int, the error "boost::STATIC_ASSERTION_FAILURE<false>" occurs during compilation
-  BOOST_STATIC_ASSERT((not boost::is_same<int,T>::value));
+  BOOST_STATIC_ASSERT((not boost::is_same<int,T>::value)) BACI_ATTRIBUTE_UNUSED;
 
   switch (distype)
   {
@@ -2954,7 +2954,7 @@ void shape_function_hermite_1D_deriv3(
   )
 {
   // if the given template parameter is of type int, the error "boost::STATIC_ASSERTION_FAILURE<false>" occurs during compilation
-  BOOST_STATIC_ASSERT((not boost::is_same<int,T>::value));
+  BOOST_STATIC_ASSERT((not boost::is_same<int,T>::value)) BACI_ATTRIBUTE_UNUSED;
 
   switch (distype)
   {
@@ -2987,7 +2987,7 @@ void shape_function_hermite_1D_order5(
   )
 {
   // if the given template parameter is of type int, the error "boost::STATIC_ASSERTION_FAILURE<false>" occurs during compilation
-  BOOST_STATIC_ASSERT((not boost::is_same<int,T>::value));
+  BOOST_STATIC_ASSERT((not boost::is_same<int,T>::value)) BACI_ATTRIBUTE_UNUSED;
 
   switch (distype)
   {
@@ -3028,7 +3028,7 @@ void shape_function_hermite_1D_order5_deriv1(
   )
 {
   // if the given template parameter is of type int, the error "boost::STATIC_ASSERTION_FAILURE<false>" occurs during compilation
-  BOOST_STATIC_ASSERT((not boost::is_same<int,T>::value));
+  BOOST_STATIC_ASSERT((not boost::is_same<int,T>::value)) BACI_ATTRIBUTE_UNUSED;
 
   switch (distype)
   {
@@ -3065,7 +3065,7 @@ void shape_function_hermite_1D_order5_deriv2(
   )
 {
   // if the given template parameter is of type int, the error "boost::STATIC_ASSERTION_FAILURE<false>" occurs during compilation
-  BOOST_STATIC_ASSERT((not boost::is_same<int,T>::value));
+  BOOST_STATIC_ASSERT((not boost::is_same<int,T>::value)) BACI_ATTRIBUTE_UNUSED;
 
   switch (distype)
   {
@@ -3100,7 +3100,7 @@ void shape_function_hermite_1D_order5_deriv3(
   )
 {
   // if the given template parameter is of type int, the error "boost::STATIC_ASSERTION_FAILURE<false>" occurs during compilation
-  BOOST_STATIC_ASSERT((not boost::is_same<int,T>::value));
+  BOOST_STATIC_ASSERT((not boost::is_same<int,T>::value)) BACI_ATTRIBUTE_UNUSED;
 
   switch (distype)
   {

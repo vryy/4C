@@ -927,7 +927,7 @@ int DRT::ELEMENTS::So_tet4::EvaluateNeumann(Teuchos::ParameterList& params,
 
 
   // (SPATIAL) FUNCTION BUSINESS
-  BOOST_STATIC_ASSERT((NUMGPT_SOTET4 == 1));
+  BOOST_STATIC_ASSERT((NUMGPT_SOTET4 == 1)) BACI_ATTRIBUTE_UNUSED;
   const std::vector<int>* funct = condition.Get<std::vector<int> >("funct");
   LINALG::Matrix<NUMDIM_SOTET4,1> xrefegp(false);
   bool havefunct = false;

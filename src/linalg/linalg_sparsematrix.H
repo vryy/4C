@@ -90,11 +90,11 @@ class SparseMatrix : public SparseMatrixBase
 #if __cplusplus >= 201103L
   template <typename... T> SparseMatrix(T...) = delete;
 #else
-  template <typename T0>                                                     SparseMatrix(T0)                 {BOOST_STATIC_ASSERT_MSG(sizeof(T0) == 0, "dummy templated constructor");}
-  template <typename T0, typename T1>                                        SparseMatrix(T0, T1)             {BOOST_STATIC_ASSERT_MSG(sizeof(T0) == 0, "dummy templated constructor");}
-  template <typename T0, typename T1, typename T2>                           SparseMatrix(T0, T1, T2)         {BOOST_STATIC_ASSERT_MSG(sizeof(T0) == 0, "dummy templated constructor");}
-  template <typename T0, typename T1, typename T2, typename T3>              SparseMatrix(T0, T1, T2, T3)     {BOOST_STATIC_ASSERT_MSG(sizeof(T0) == 0, "dummy templated constructor");}
-  template <typename T0, typename T1, typename T2, typename T3, typename T4> SparseMatrix(T0, T1, T2, T3, T4) {BOOST_STATIC_ASSERT_MSG(sizeof(T0) == 0, "dummy templated constructor");}
+  template <typename T0>                                                     SparseMatrix(T0)                 {BOOST_STATIC_ASSERT_MSG(sizeof(T0) == 0, "dummy templated constructor") BACI_ATTRIBUTE_UNUSED;}
+  template <typename T0, typename T1>                                        SparseMatrix(T0, T1)             {BOOST_STATIC_ASSERT_MSG(sizeof(T0) == 0, "dummy templated constructor") BACI_ATTRIBUTE_UNUSED;}
+  template <typename T0, typename T1, typename T2>                           SparseMatrix(T0, T1, T2)         {BOOST_STATIC_ASSERT_MSG(sizeof(T0) == 0, "dummy templated constructor") BACI_ATTRIBUTE_UNUSED;}
+  template <typename T0, typename T1, typename T2, typename T3>              SparseMatrix(T0, T1, T2, T3)     {BOOST_STATIC_ASSERT_MSG(sizeof(T0) == 0, "dummy templated constructor") BACI_ATTRIBUTE_UNUSED;}
+  template <typename T0, typename T1, typename T2, typename T3, typename T4> SparseMatrix(T0, T1, T2, T3, T4) {BOOST_STATIC_ASSERT_MSG(sizeof(T0) == 0, "dummy templated constructor") BACI_ATTRIBUTE_UNUSED;}
 #endif
 
     /// construction of sparse matrix

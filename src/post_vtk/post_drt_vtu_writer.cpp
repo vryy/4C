@@ -96,7 +96,7 @@ std::pair<uint8_t,std::vector<int> > vtk_element_types [] =
 VtuWriter::VtuWriter(PostField* field, const std::string &filename) :
     VtkWriter(field, filename)
 {
-  BOOST_STATIC_ASSERT_MSG((ssize_t)(sizeof(vtk_element_types)/sizeof(std::pair<uint8_t,std::vector<int> >) == (ssize_t)DRT::Element::max_distype), "The number of element types defined by DRT::Element::DiscretizationType does not match the number of element types supported by the post vtu filter.");
+  BOOST_STATIC_ASSERT_MSG((ssize_t)(sizeof(vtk_element_types)/sizeof(std::pair<uint8_t,std::vector<int> >) == (ssize_t)DRT::Element::max_distype), "The number of element types defined by DRT::Element::DiscretizationType does not match the number of element types supported by the post vtu filter.") BACI_ATTRIBUTE_UNUSED;
 }
 
 

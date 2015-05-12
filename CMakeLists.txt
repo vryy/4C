@@ -28,6 +28,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules")
 
 # include all external (cmake) macros that we use
 INCLUDE(CheckCXXSourceRuns)
+INCLUDE(CheckCXXSourceCompiles)
 
 # test for svn executable
 FIND_PROGRAM(Subversion_SVN_EXECUTABLE svn
@@ -278,6 +279,22 @@ if (Boost_FOUND)
     message("WW ***********************************************************************")
   endif()
 
+  CHECK_CXX_SOURCE_COMPILES(
+  "
+  #include <boost/static_assert.hpp>
+  int main()
+  {
+    BOOST_STATIC_ASSERT(2 < 3) __attribute__((unused));
+  }
+  "
+  BOOST_STATIC_ASSERT_UNUSED_WORKS
+  )
+
+  if (BOOST_STATIC_ASSERT_UNUSED_WORKS)
+    add_definitions(-DBACI_ATTRIBUTE_UNUSED=__attribute__\(\(unused\)\))
+  else ()
+    add_definitions(-DBACI_ATTRIBUTE_UNUSED)
+  endif()
 
 else()
  message(FATAL_ERROR ${Boost_ERROR_REASON})
