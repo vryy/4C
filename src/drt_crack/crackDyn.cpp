@@ -796,7 +796,7 @@ void DRT::CRACK::CrackDyn::ReadRestartCrack( IO::DiscretizationReader& reader )
     DRT::Condition* cond_fsi = discret_->GetCondition("FSICoupling");
     DRT::Condition* cond_xfem = discret_->GetCondition("XFEMCoupling");
 
-    if( not cond_fsi->Nodes()->size() == dummy_ale_new_nodes->size() )
+    if( cond_fsi->Nodes()->size() != dummy_ale_new_nodes->size() )
     {
       if( cond_fsi == NULL or cond_xfem == NULL )
         dserror( "XFEM or FSI coupling conditions undefined in XFSI problem?\n" );

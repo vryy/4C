@@ -88,7 +88,7 @@ namespace GEO
 
         bool operator!=( const Handle<length> & other ) const
         {
-          return not ( *this ) == other;
+          return not(( *this ) == other);
         }
 
         int operator[]( int i ) const { return points_[i]; }
