@@ -293,7 +293,7 @@ if (Boost_FOUND)
   if (BOOST_STATIC_ASSERT_UNUSED_WORKS)
     add_definitions(-DBACI_ATTRIBUTE_UNUSED=__attribute__\(\(unused\)\))
   else ()
-    add_definitions(-DBACI_ATTRIBUTE_UNUSED)
+    add_definitions(-DBACI_ATTRIBUTE_UNUSED=)
   endif()
 
 else()
