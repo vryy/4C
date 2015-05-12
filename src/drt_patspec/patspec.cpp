@@ -787,7 +787,7 @@ std::vector<double> PATSPEC::GetCenterline(std::string filename)
 {
 
   std::ifstream file (filename.c_str());
-  if (file == NULL) dserror ("Error opening centerline file");
+  if (file.fail()) dserror ("Error opening centerline file");
   std::string sLine;
   std::vector<double> clcoords;
   while (std::getline(file, sLine))
