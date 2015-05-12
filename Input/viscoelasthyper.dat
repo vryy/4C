@@ -40,7 +40,7 @@ FILESTEPS                       1000
 LINEAR_SOLVER                   1
 DYNAMICTYP                      OneStepTheta
 RESULTSEVRY                     1
-RESTARTEVRY                     100
+RESTARTEVRY                     10
 TIMESTEP                        0.05
 NUMSTEP                         60
 MAXTIME                         3.0
