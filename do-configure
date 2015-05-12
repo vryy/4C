@@ -14,6 +14,7 @@ USE_FORCEBUILD=0
 TRILINOS_EXPERIMENTAL=0  # use experimental Trilinos version
 ADDITIONAL_TESTS_PATH=""
 FOUND_NO_SUPERLU=ON
+SHARED_LIBS=OFF
 
 # activate debug version: ./do-configure --debug 
 # or choose do-configure-debug which does the same
@@ -202,6 +203,8 @@ $CMAKE_COMMAND \
     -D CMAKE_Fortran_FLAGS:STRING="-Wall" \
     -D CMAKE_Fortran_FLAGS_RELEASE:STRING="-O5 -funroll-all-loops -malign-double" \
     -D CMAKE_VERBOSE_MAKEFILE:BOOL=OFF \
+    -D BUILD_SHARED_LIBS:BOOL=$SHARED_LIBS \
+    -D CMAKE_LIBRARY_OUTPUT_DIRECTORY:FILEPATH="./src" \
     -D HAVENOT_SUPERLU:BOOL=$FOUND_NO_SUPERLU \
     -D HAVE_TEKO:BOOL=$BUILD_Teko \
     -D HAVE_MueLu:BOOL=$BUILD_MueLu \
