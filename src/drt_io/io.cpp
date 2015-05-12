@@ -110,8 +110,8 @@ void IO::DiscretizationReader::ReadMultiVector(Teuchos::RCP<Epetra_MultiVector> 
 
 
 /*----------------------------------------------------------------------*
- * Read the mesh from restart files
-/*----------------------------------------------------------------------*/
+ * Read the mesh from restart files                                     *
+ *----------------------------------------------------------------------*/
 void IO::DiscretizationReader::ReadMesh(int step)
 {
   dis_->DeleteNodes();
