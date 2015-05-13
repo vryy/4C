@@ -633,7 +633,6 @@ set(OBJS_DRT_RED_AIRWAYS_LIB
   src/drt_red_airways/red_air_blood_scatraLine3.cpp
   src/drt_red_airways/red_airway_input.cpp
   src/drt_red_airways/red_airway_resulttest.cpp
-  src/drt_red_airways/redairway_tissue.cpp
 )
 set(OBJS_DRT_INPAR
   src/drt_inpar/drt_boolifyparameters.cpp
@@ -1020,6 +1019,7 @@ set(OBJS_DRT_FS3I
 )
 set(OBJS_DRT_RED_AIRWAYS
   src/drt_red_airways/airwayimplicitintegration.cpp
+  src/drt_red_airways/redairway_tissue.cpp
   src/drt_red_airways/red_airways_dyn_drt.cpp
 )
 set(OBJS_DRT_THERMO_LIB
@@ -1786,18 +1786,20 @@ set(OBJS_DRT_CONTACT_AUG
   src/drt_contact_aug/contact_augmented_interface_tools.cpp
   src/drt_contact_aug/contact_augmented_integrator.cpp
 )
-set(OBJS_DRT_CRACK
+set(OBJS_DRT_CRACK_LIB
   src/drt_crack/InsertCohesiveElements.cpp
   src/drt_crack/dcohesive.cpp
   src/drt_crack/dcohesive_evaluate.cpp
-  src/drt_crack/crackDyn.cpp
   src/drt_crack/propagateTip.cpp
   src/drt_crack/initiateCrack.cpp
   src/drt_crack/crackUtils.cpp
-  src/drt_crack/aleCrack.cpp
   src/drt_crack/SplitHexIntoTwoWedges.cpp
   src/drt_crack/j_Integral.cpp
-)
+  )
+set(OBJS_DRT_CRACK
+  src/drt_crack/aleCrack.cpp
+  src/drt_crack/crackDyn.cpp
+  )
 set(OBJS_DRT_CUT
   src/drt_cut/base_vol.cpp
   src/drt_cut/cut_boundarycell.cpp
@@ -2132,6 +2134,7 @@ add_library(alg_combust ${OBJS_DRT_COMBUST})
 #add_library(alg_contact SHARED ${OBJS_DRT_CONTACT})
 add_library(alg_contact ${OBJS_DRT_CONTACT})
 add_library(alg_contact_aug ${OBJS_DRT_CONTACT_AUG})
+add_library(alg_crack ${OBJS_DRT_CRACK})
 add_library(alg_fluid ${OBJS_DRT_FLUID})
 add_library(alg_fluid_turbulence ${OBJS_DRT_FLUID_TURBULENCE})
 add_library(alg_xfluid ${OBJS_DRT_FLUID_XFLUID})
@@ -2161,6 +2164,7 @@ set(SINGLEFIELD_LIBRARIES
   alg_scatra
   alg_structure
   alg_statmech
+  alg_crack
   alg_plastic_ssn
   alg_invanalysis
   alg_statinvanalysis
@@ -2207,7 +2211,7 @@ add_library(drt_lib_utils ${OBJS_DRT_UTILS})
 add_library(drt_lib_artnet ${OBJS_DRT_ARTNET_LIB})
 add_library(drt_lib_redairways ${OBJS_DRT_RED_AIRWAYS_LIB})
 add_library(drt_lib_cut ${OBJS_DRT_CUT})
-add_library(drt_lib_crack ${OBJS_DRT_CRACK})
+add_library(drt_lib_crack ${OBJS_DRT_CRACK_LIB})
 add_library(drt_lib_statinv_anal ${OBJS_STATINV_ANALYSIS_LIB})
 add_library(drt_lib_immersed ${OBJS_DRT_IMMERSED_LIB})
 add_library(drt_lib_xfem_manag ${OBJS_DRT_XFEM_MANAG_LIB})
@@ -2331,10 +2335,7 @@ include(CTest)
 
 add_executable(cut_test EXCLUDE_FROM_ALL ${OBJS_CUT_TEST})
 target_link_libraries(cut_test drt_lib_cut ${QHULL_LIBRARIES} shards epetra teuchoscore ${LAPACK_LIBRARIES}
-    drt_lib_utils
-    drt_lib_io
-    linalg
-    ${LIBRARIES}
+    ${FILTER_LIBRARIES}
 )
 add_test(NAME run_cut_test COMMAND ${MPI_DIR}/bin/mpirun $<TARGET_FILE:cut_test>)
 
