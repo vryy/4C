@@ -442,7 +442,7 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::Intersect(
             lineendpoint_within_surfacelimits[lp] = SurfaceWithinLimits(tri_tol[tri], DRT::Element::tri3);
             if (lineendpoint_within_surfacelimits[lp])
             {
-              if (tri_conv[tri] = false)
+              if (tri_conv[tri] == false)
                 dserror("You found a case where the triangulation does not converge and it is inside the element, basically removing this dserror should be ok, but please contact me so that I can have a look into it!!! Christoph Ager");
               break;
             }
