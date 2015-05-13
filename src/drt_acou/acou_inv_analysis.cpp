@@ -387,10 +387,12 @@ void ACOU::InvAnalysis::ReadMonitor(std::string monitorfilename)
   if( timesteps_[0] != 0.0 )
     dserror("your measured values have to start at time 0.0");
   else if( timesteps_[0] == 0.0 && timesteps_[1] == dtacou_ ) // the standard case
+  {
     for(unsigned int i=0; i<pressuremonmicsunique.size(); ++i)
       if( acou_discret_->HaveGlobalNode(pressuremonmicsunique[i]) )
         for(unsigned int j=0; j<nsteps; ++j)
           acou_rhsm_->ReplaceGlobalValue(pressuremonmicsunique[i],j,nod_curve_interpol_(i*nsteps+j)); // the proc who has this row, writes the value
+  }
   else // we have to interpolate!
   {
     if( numvec < int(nsteps) )
