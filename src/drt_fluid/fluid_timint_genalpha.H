@@ -88,12 +88,6 @@ public:
   virtual void SetStateTimInt();
 
   /*!
-  \brief Project gradient for reconstruction of second derivatives of residual, depends on time integrator used
-
-  */
-  virtual void ProjectGradientAndSetParam(Teuchos::ParameterList& eleparams);
-
-  /*!
   \brief Set time factor in GenAlpha
 
   */
@@ -172,6 +166,11 @@ public:
       Teuchos::RCP<Epetra_Vector> vecm  ///< vector at time level of equilibrium
       );
 
+  /*!
+  \brief treat turbulence models in AssembleMatAndRHS
+
+  */
+  virtual void TreatTurbulenceModels(Teuchos::ParameterList& eleparams);
 protected:
 
   /// copy constructor

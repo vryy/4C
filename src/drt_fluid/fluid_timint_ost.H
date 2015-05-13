@@ -175,6 +175,12 @@ public:
   */
   virtual void TimeUpdateExternalForces();
 
+  /*!
+  \brief treat turbulence models in AssembleMatAndRHS
+
+  */
+  virtual void TreatTurbulenceModels(Teuchos::ParameterList& eleparams);
+
 protected:
 
   /// copy constructor

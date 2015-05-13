@@ -332,3 +332,14 @@ void FLD::TimIntOneStepTheta::TimeUpdateExternalForces()
 
   return;
 }
+
+/*----------------------------------------------------------------------*|
+ | Set Eleparams for turbulence models                          bk 12/13 |
+ *----------------------------------------------------------------------*/
+void FLD::TimIntOneStepTheta::TreatTurbulenceModels(Teuchos::ParameterList& eleparams)
+{
+  FLD::FluidImplicitTimeInt::TreatTurbulenceModels(eleparams);
+  if(reconstructder_)
+    ProjectGradientAndSetParam(eleparams,velaf_,"velafgrad");
+  return;
+}
