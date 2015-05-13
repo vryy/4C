@@ -176,7 +176,7 @@ private:
   static const int num_newton_it_ = 20;
 
   //! brief convergence tolerance for loop in CheckIfNodeInElement routine
-  static const double convtol_ =10e-6;
+  static const double convtol_;
 
   //! brief write statistics every write_stats step
   int write_stats_;

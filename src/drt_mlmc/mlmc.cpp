@@ -50,6 +50,11 @@ Maintainer: Jonas Biehler
 
 
 /*----------------------------------------------------------------------*/
+/* initialization of static variable */
+const double UQ::MLMC::convtol_ = 1e-6;
+
+
+/*----------------------------------------------------------------------*/
 /* standard constructor */
 UQ::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis)
   : discret_(dis)
