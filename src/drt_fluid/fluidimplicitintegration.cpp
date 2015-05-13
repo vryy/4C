@@ -2276,12 +2276,12 @@ bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int          itnum,
       std::isnan(prenorm_L2_))
     dserror("At least one of the calculated vector norms is NaN.");
 
-  if (std::abs(std::isinf(vresnorm_)) or
-      std::abs(std::isinf(incvelnorm_L2_)) or
-      std::abs(std::isinf(velnorm_L2_)) or
-      std::abs(std::isinf(presnorm_)) or
-      std::abs(std::isinf(incprenorm_L2_)) or
-      std::abs(std::isinf(prenorm_L2_)))
+  if (std::isinf(vresnorm_) or
+      std::isinf(incvelnorm_L2_) or
+      std::isinf(velnorm_L2_) or
+      std::isinf(presnorm_) or
+      std::isinf(incprenorm_L2_) or
+      std::isinf(prenorm_L2_))
     dserror("At least one of the calculated vector norms is INF.");
 
   // care for the case that nothing really happens in velocity

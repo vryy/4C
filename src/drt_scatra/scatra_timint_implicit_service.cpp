@@ -1703,9 +1703,9 @@ bool SCATRA::ScaTraTimIntImpl::ConvergenceCheck(int          itnum,
       std::isnan(phinorm_L2))
     dserror("At least one of the calculated vector norms is NaN.");
 
-  if (abs(std::isinf(resnorm_L2)) or
-      abs(std::isinf(phiincnorm_L2)) or
-      abs(std::isinf(phinorm_L2)))
+  if (std::isinf(resnorm_L2) or
+      std::isinf(phiincnorm_L2) or
+      std::isinf(phinorm_L2))
     dserror("At least one of the calculated vector norms is INF.");
 
   // for scalar norm being (close to) zero, set to one
