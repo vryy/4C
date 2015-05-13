@@ -1252,7 +1252,7 @@ void SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
       // safety checks
       if(std::isnan(incpotnorm_L2) or std::isnan(potnorm_L2) or std::isnan(potresnorm))
         dserror("calculated vector norm is NaN.");
-      if(abs(std::isinf(incpotnorm_L2)) or abs(std::isinf(potnorm_L2)) or abs(std::isinf(potresnorm)))
+      if(std::isinf(incpotnorm_L2) or std::isinf(potnorm_L2) or std::isinf(potresnorm))
         dserror("calculated vector norm is INF.");
 
       // zero out increment vector
