@@ -1681,6 +1681,8 @@ protected:
   double D_;
   LINALG::Matrix<nen_,1> E_;
 
+  LINALG::Matrix<nsd_*nsd_,nen_> evelafgrad_;
+
   //protected:
   //static std::map<int,std::map<int,DRT::ELEMENTS::FluidEleCalc<distype>* >* > instances_;
 

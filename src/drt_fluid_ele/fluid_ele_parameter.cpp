@@ -35,6 +35,7 @@ DRT::ELEMENTS::FluidEleParameter::FluidEleParameter()
     is_inconsistent_(false),
     reaction_(false),
     oseenfieldfuncno_(-1),
+    is_reconstructder_(false),
     tds_(INPAR::FLUID::subscales_quasistatic),
     transient_(INPAR::FLUID::inertia_stab_drop),
     pspg_(true),
@@ -188,6 +189,8 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter(
     // this might be interesting for fast (but slightly
     // less accurate) computations
     is_inconsistent_ = DRT::INPUT::IntegralValue<int>(stablist,"INCONSISTENT");
+
+    is_reconstructder_ = DRT::INPUT::IntegralValue<int>(stablist,"Reconstruct_Sec_Der");
     //-------------------------------
     // get tau definition
     //-------------------------------

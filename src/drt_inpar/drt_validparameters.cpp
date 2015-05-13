@@ -3894,6 +3894,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   BoolParameter("INCONSISTENT","No","residual based without second derivatives (i.e. only consistent for tau->0, but faster)",&fdyn_stab);
 
+  BoolParameter("Reconstruct_Sec_Der","No","residual computed with a reconstruction of the second derivatives via projection or superconvergent patch recovery",&fdyn_stab);
+
   // the following parameters are necessary only if a residual based stabilized method is applied
   setStringToIntegralParameter<int>("TDS",
                                "quasistatic",
@@ -4344,6 +4346,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &fdyn_porostab);
 
   BoolParameter("INCONSISTENT","No","residual based without second derivatives (i.e. only consistent for tau->0, but faster)",&fdyn_porostab);
+
+  BoolParameter("Reconstruct_Sec_Der","No","residual computed with a reconstruction of the second derivatives via projection or superconvergent patch recovery",&fdyn_porostab);
 
   // the following parameters are necessary only if a residual based stabilized method is applied
   setStringToIntegralParameter<int>("TDS",

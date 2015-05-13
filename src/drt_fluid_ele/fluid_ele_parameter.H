@@ -85,6 +85,8 @@ public:
   bool Reaction() const {return reaction_;};
   //! Return function number of Oseen advective field
   int OseenFieldFuncNo() const {return oseenfieldfuncno_;};
+  //! flag to activate consistent reconstruction of second derivatives
+  bool IsReconstructDer() const {return is_reconstructder_;};
 
   /*----------------------------------------------------*/
   //! @name stabilization parameters
@@ -255,6 +257,8 @@ protected:
   bool reaction_;
   //! function number of Oseen advective field
   int oseenfieldfuncno_;
+  //! flag to activate consistent reconstruction of second derivatives
+  bool is_reconstructder_;
 
   /*----------------------------------------------------*/
   //! @name stabilization parameters

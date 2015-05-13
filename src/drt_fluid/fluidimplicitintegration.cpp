@@ -512,6 +512,7 @@ void FLD::FluidImplicitTimeInt::Init()
   {
     CreateFacesExtension();
   }
+  reconstructder_ = DRT::INPUT::IntegralValue<int>(*stabparams,"Reconstruct_Sec_Der");
 
   // Initialize WSS manager if smoothing via aggregation is desired
   if (not stressmanager_->IsInit())
@@ -1283,6 +1284,10 @@ void FLD::FluidImplicitTimeInt::TreatTurbulenceModels(Teuchos::ParameterList& el
   //set xwall params
   if(xwall_!=Teuchos::null)
     xwall_->SetXWallParams(eleparams);
+
+  //prepare reconstruction of second derivatives for residual
+  if(reconstructder_)
+    ProjectGradientAndSetParam(eleparams);
 
   return;
 }

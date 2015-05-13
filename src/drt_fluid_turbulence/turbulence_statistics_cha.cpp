@@ -3178,6 +3178,41 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
     // action for elements
     eleparams_.set<int>("action",FLD::calc_dissipation);
 
+    // add velafgrad
+    Teuchos::ParameterList* stabparams = &(params_.sublist("RESIDUAL-BASED STABILIZATION"));
+    if(DRT::INPUT::IntegralValue<int>(*stabparams,"Reconstruct_Sec_Der"))
+    {
+      Teuchos::RCP<Epetra_MultiVector> test;
+      for(std::map<std::string,Teuchos::RCP<Epetra_Vector> >::iterator state =statevecs.begin();
+                                                    state!=statevecs.end()  ;
+                                                    ++state                 )
+      {
+        if(state->first=="velaf")
+        {
+          const int solvernumber = params_.get<int>("VELGRAD_PROJ_SOLVER");
+          if(solvernumber>0)
+          {
+          // project velocity gradient of fluid to nodal level via L2 projection and store it in a ParameterList
+          const int numvec = 3*3;//turbulence is 3D
+          Teuchos::ParameterList params;
+          params.set<int>("action",FLD::velgradient_projection);
+
+          test =
+              DRT::UTILS::ComputeNodalL2Projection(discret_, state->second, "vel", numvec, params, solvernumber);
+          }
+          else
+            dserror("currently we only have the l2-projection implemented for reconstruction of the velocity gradient");
+          // calculate projection
+  //  #ifdef L2
+  //        test = FLD::UTILS::ComputeL2ProjectedVelGradient(discret_, state->second );
+  //  #else
+  //        test = FLD::UTILS::ComputePatchReconstructedVelGradient(discret_, state->second );
+  //  #endif
+          break;
+        }
+      }
+      discret_->AddMultiVectorToParameterList(eleparams_,"velafgrad",test);
+    }
     // parameters for a turbulence model
     {
       eleparams_.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");

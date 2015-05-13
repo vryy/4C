@@ -17,6 +17,7 @@ Maintainers: Ursula Rasthofer & Martin Kronbichler
 #include "../drt_fluid_turbulence/dyn_smag.H"
 #include "../drt_fluid_turbulence/dyn_vreman.H"
 #include "../drt_fluid_turbulence/boxfilter.H"
+#include "../drt_lib/drt_utils.H"
 
 
 /*----------------------------------------------------------------------*
@@ -314,6 +315,36 @@ void FLD::TimIntGenAlpha::SetStateTimInt()
   discret_->SetState("velaf",velaf_);
   if (timealgo_==INPAR::FLUID::timeint_npgenalpha)
     discret_->SetState("velnp",velnp_);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*|
+ | Set Eleparams for turbulence models                          bk 05/15 |
+ *----------------------------------------------------------------------*/
+void FLD::TimIntGenAlpha::ProjectGradientAndSetParam(Teuchos::ParameterList& eleparams)
+{
+  //reconstruction of second derivatives for fluid residual
+  const int solvernumber = params_->get<int>("VELGRAD_PROJ_SOLVER");
+  if(solvernumber>0)
+  {
+  // project velocity gradient of fluid to nodal level via L2 projection and store it in a ParameterList
+  const int numvec = numdim_*numdim_;
+  Teuchos::ParameterList params;
+  params.set<int>("action",FLD::velgradient_projection);
+
+  Teuchos::RCP<Epetra_MultiVector> projected_velgrad =
+      DRT::UTILS::ComputeNodalL2Projection(discret_, velaf_, "vel", numvec, params, solvernumber);
+  discret_->AddMultiVectorToParameterList(eleparams,"velafgrad",projected_velgrad);
+  }
+  else
+    dserror("currently we only have the l2-projection implemented for reconstruction of the velocity gradient");
+//    #ifdef L2
+//      Teuchos::RCP<Epetra_MultiVector> test = FLD::UTILS::ComputeL2ProjectedVelGradient(discret_, velaf_ );
+//    #else
+//      Teuchos::RCP<Epetra_MultiVector> test = FLD::UTILS::ComputePatchReconstructedVelGradient(discret_, velaf_ );
+//    #endif
+  // store projected velocity gradient (ux,x  ux,y  ux,z  uy,x  uy,y  uy,z  uz,x  uz,y  uz,z)
 
   return;
 }

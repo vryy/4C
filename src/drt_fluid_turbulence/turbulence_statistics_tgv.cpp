@@ -256,484 +256,520 @@ void FLD::TurbulenceStatisticsTgv::EvaluateResiduals(
   std::map<std::string,Teuchos::RCP<Epetra_Vector> >      scatrastatevecs,
   std::map<std::string,Teuchos::RCP<Epetra_MultiVector> > scatrafieldvecs)
 {
-    //--------------------------------------------------------------------
-    // set parameter list (time integration)
+  //--------------------------------------------------------------------
+  // set parameter list (time integration)
 
-    // action for elements
-    eleparams_.set<int>("action",FLD::calc_dissipation);
+  // action for elements
+  eleparams_.set<int>("action",FLD::calc_dissipation);
 
-    // parameters for a turbulence model
-    {
-      eleparams_.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
-      if ((params_.sublist("TURBULENCE MODEL").get<std::string>("PHYSICAL_MODEL")=="Scale_Similarity"))
-      {
-        for(std::map<std::string,Teuchos::RCP<Epetra_MultiVector> >::iterator state =statetenss.begin();state!=statetenss.end();++state)
-        {
-          eleparams_.set(state->first,state->second);
-        }
-      }
-    }
-
-    eleparams_.set<double>("thermpress at n+alpha_F/n+1",thermpressaf);
-    eleparams_.set<double>("thermpress at n+alpha_M/n",thermpressam);
-    eleparams_.set<double>("thermpressderiv at n+alpha_F/n+1",thermpressdtaf);
-    eleparams_.set<double>("thermpressderiv at n+alpha_M/n+1",thermpressdtam);
-
-    // set state vectors for element call
+  // add velafgrad
+  Teuchos::ParameterList* stabparams = &(params_.sublist("RESIDUAL-BASED STABILIZATION"));
+  if(DRT::INPUT::IntegralValue<int>(*stabparams,"Reconstruct_Sec_Der"))
+  {
+    Teuchos::RCP<Epetra_MultiVector> test;
     for(std::map<std::string,Teuchos::RCP<Epetra_Vector> >::iterator state =statevecs.begin();
                                                   state!=statevecs.end()  ;
                                                   ++state                 )
     {
-      discret_->SetState(state->first,state->second);
+      if(state->first=="velaf")
+      {
+        const int solvernumber = params_.get<int>("VELGRAD_PROJ_SOLVER");
+        if(solvernumber>0)
+        {
+        // project velocity gradient of fluid to nodal level via L2 projection and store it in a ParameterList
+        const int numvec = 3*3;//turbulence is 3D
+        Teuchos::ParameterList params;
+        params.set<int>("action",FLD::velgradient_projection);
+
+        test =
+            DRT::UTILS::ComputeNodalL2Projection(discret_, state->second, "vel", numvec, params, solvernumber);
+        }
+        else
+          dserror("currently we only have the l2-projection implemented for reconstruction of the velocity gradient");
+        // calculate projection
+//  #ifdef L2
+//        test = FLD::UTILS::ComputeL2ProjectedVelGradient(discret_, state->second );
+//  #else
+//        test = FLD::UTILS::ComputePatchReconstructedVelGradient(discret_, state->second );
+//  #endif
+        break;
+      }
     }
-
-    // call loop over elements to compute means
-    discret_->Evaluate(eleparams_,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-
-    discret_->ClearState();
-
-    // ------------------------------------------------
-    // get results from element call via parameter list
-    Teuchos::RCP<std::vector<double> > local_vol               =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrvol"         );
-
-    Teuchos::RCP<std::vector<double> > local_incrhk            =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrhk"          );
-    Teuchos::RCP<std::vector<double> > local_incrhbazilevs     =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrhbazilevs"   );
-    Teuchos::RCP<std::vector<double> > local_incrstrle         =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrstrle"       );
-    Teuchos::RCP<std::vector<double> > local_incrgradle        =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrgradle"      );
-
-    Teuchos::RCP<std::vector<double> > local_incrtauC          =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrtauC"        );
-    Teuchos::RCP<std::vector<double> > local_incrtauM          =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrtauM"        );
-
-    Teuchos::RCP<std::vector<double> > local_incrmk            =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrmk"          );
-
-    Teuchos::RCP<std::vector<double> > local_incrres           =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrres"         );
-    Teuchos::RCP<std::vector<double> > local_incrres_sq        =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrres_sq"      );
-    Teuchos::RCP<std::vector<double> > local_incrabsres        =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrabsres"      );
-    Teuchos::RCP<std::vector<double> > local_incrtauinvsvel    =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrtauinvsvel"  );
-    Teuchos::RCP<std::vector<double> > local_incrsvelaf        =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrsvelaf"      );
-    Teuchos::RCP<std::vector<double> > local_incrsvelaf_sq     =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrsvelaf_sq"   );
-    Teuchos::RCP<std::vector<double> > local_incrabssvelaf     =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrabssvelaf"   );
-    Teuchos::RCP<std::vector<double> > local_incrresC          =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrresC"        );
-    Teuchos::RCP<std::vector<double> > local_incrresC_sq       =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrresC_sq"     );
-    Teuchos::RCP<std::vector<double> > local_incrspressnp      =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrspressnp"    );
-    Teuchos::RCP<std::vector<double> > local_incrspressnp_sq   =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrspressnp_sq" );
-
-    Teuchos::RCP<std::vector<double> > local_incr_eps_visc     = eleparams_.get<Teuchos::RCP<std::vector<double> > >("incr_eps_visc"    );
-    Teuchos::RCP<std::vector<double> > local_incr_eps_conv     = eleparams_.get<Teuchos::RCP<std::vector<double> > >("incr_eps_conv"    );
-    Teuchos::RCP<std::vector<double> > local_incr_eps_eddyvisc = eleparams_.get<Teuchos::RCP<std::vector<double> > >("incr_eps_eddyvisc");
-    Teuchos::RCP<std::vector<double> > local_incr_eps_avm3     = eleparams_.get<Teuchos::RCP<std::vector<double> > >("incr_eps_avm3"    );
-    Teuchos::RCP<std::vector<double> > local_incr_eps_mfs      = eleparams_.get<Teuchos::RCP<std::vector<double> > >("incr_eps_mfs"     );
-    Teuchos::RCP<std::vector<double> > local_incr_eps_mfscross = eleparams_.get<Teuchos::RCP<std::vector<double> > >("incr_eps_mfscross");
-    Teuchos::RCP<std::vector<double> > local_incr_eps_mfsrey   = eleparams_.get<Teuchos::RCP<std::vector<double> > >("incr_eps_mfsrey"  );
-    Teuchos::RCP<std::vector<double> > local_incr_eps_supg     = eleparams_.get<Teuchos::RCP<std::vector<double> > >("incr_eps_supg"    );
-    Teuchos::RCP<std::vector<double> > local_incr_eps_cross    = eleparams_.get<Teuchos::RCP<std::vector<double> > >("incr_eps_cross"   );
-    Teuchos::RCP<std::vector<double> > local_incr_eps_rey      = eleparams_.get<Teuchos::RCP<std::vector<double> > >("incr_eps_rey"     );
-    Teuchos::RCP<std::vector<double> > local_incr_eps_graddiv    = eleparams_.get<Teuchos::RCP<std::vector<double> > >("incr_eps_graddiv"   );
-    Teuchos::RCP<std::vector<double> > local_incr_eps_pspg     = eleparams_.get<Teuchos::RCP<std::vector<double> > >("incr_eps_pspg"    );
-
-    Teuchos::RCP<std::vector<double> > local_incrcrossstress   = eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrcrossstress"  );
-    Teuchos::RCP<std::vector<double> > local_incrreystress     = eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrreystress"    );
-
-    int presize    = local_incrresC       ->size();
-    int velsize    = local_incrres        ->size();
-    int stresssize = local_incrcrossstress->size();
-
-    //--------------------------------------------------
-    // vectors to sum over all procs
-
-    // volume of element layers
-    Teuchos::RCP<std::vector<double> > global_vol;
-    global_vol           =  Teuchos::rcp(new std::vector<double> (presize,0.0));
-
-    // element sizes of element layers
-    Teuchos::RCP<std::vector<double> > global_incrhk;
-    global_incrhk        =  Teuchos::rcp(new std::vector<double> (presize,0.0));
-
-    // element sizes in Bazilevs parameter, viscous regime in element layers
-    Teuchos::RCP<std::vector<double> > global_incrhbazilevs;
-    global_incrhbazilevs =  Teuchos::rcp(new std::vector<double> (presize,0.0));
-
-    // element sizes of element stream length
-    Teuchos::RCP<std::vector<double> > global_incrstrle;
-    global_incrstrle     =  Teuchos::rcp(new std::vector<double> (presize,0.0));
-
-    // element sizes based on gradient length
-    Teuchos::RCP<std::vector<double> > global_incrgradle;
-    global_incrgradle     =  Teuchos::rcp(new std::vector<double> (presize,0.0));
-
-    // (in plane) averaged values of tauM/tauC
-
-    Teuchos::RCP<std::vector<double> > global_incrtauM;
-    global_incrtauM=  Teuchos::rcp(new std::vector<double> (presize,0.0));
-
-    Teuchos::RCP<std::vector<double> > global_incrtauC;
-    global_incrtauC=  Teuchos::rcp(new std::vector<double> (presize,0.0));
-
-    // mk of element layers
-    Teuchos::RCP<std::vector<double> > global_incrmk;
-    global_incrmk        =  Teuchos::rcp(new std::vector<double> (presize,0.0));
-
-    // (in plane) averaged values of resM (^2) (abs)
-
-    Teuchos::RCP<std::vector<double> > global_incrres;
-    global_incrres=  Teuchos::rcp(new std::vector<double> (velsize,0.0));
-
-    Teuchos::RCP<std::vector<double> > global_incrres_sq;
-    global_incrres_sq=  Teuchos::rcp(new std::vector<double> (velsize,0.0));
-
-    Teuchos::RCP<std::vector<double> > global_incrtauinvsvel;
-    global_incrtauinvsvel=  Teuchos::rcp(new std::vector<double> (velsize,0.0));
-
-    Teuchos::RCP<std::vector<double> > global_incrabsres;
-    global_incrabsres=  Teuchos::rcp(new std::vector<double> (presize,0.0));
-
-    // (in plane) averaged values of svelaf (^2) (abs)
-
-    Teuchos::RCP<std::vector<double> > global_incrsvelaf;
-    global_incrsvelaf=  Teuchos::rcp(new std::vector<double> (velsize,0.0));
-
-    Teuchos::RCP<std::vector<double> > global_incrsvelaf_sq;
-    global_incrsvelaf_sq=  Teuchos::rcp(new std::vector<double> (velsize,0.0));
-
-    Teuchos::RCP<std::vector<double> > global_incrabssvelaf;
-    global_incrabssvelaf=  Teuchos::rcp(new std::vector<double> (presize,0.0));
-
-    // (in plane) averaged values of resC (^2)
-
-    Teuchos::RCP<std::vector<double> > global_incrresC;
-    global_incrresC=  Teuchos::rcp(new std::vector<double> (presize,0.0));
-
-    Teuchos::RCP<std::vector<double> > global_incrresC_sq;
-    global_incrresC_sq=  Teuchos::rcp(new std::vector<double> (presize,0.0));
-
-    // (in plane) averaged values of spressnp (^2)
-
-    Teuchos::RCP<std::vector<double> > global_incrspressnp;
-    global_incrspressnp=  Teuchos::rcp(new std::vector<double> (presize,0.0));
-
-    Teuchos::RCP<std::vector<double> > global_incrspressnp_sq;
-    global_incrspressnp_sq=  Teuchos::rcp(new std::vector<double> (presize,0.0));
-
-    // (in plane) averaged values of dissipation by pspg term
-
-    Teuchos::RCP<std::vector<double> > global_incr_eps_pspg;
-    global_incr_eps_pspg  = Teuchos::rcp(new std::vector<double> (presize,0.0));
-
-    // (in plane) averaged values of dissipation by supg term
-
-    Teuchos::RCP<std::vector<double> > global_incr_eps_supg;
-    global_incr_eps_supg  = Teuchos::rcp(new std::vector<double> (presize,0.0));
-
-    // (in plane) averaged values of dissipation by cross term
-
-    Teuchos::RCP<std::vector<double> > global_incr_eps_cross;
-    global_incr_eps_cross  = Teuchos::rcp(new std::vector<double> (presize,0.0));
-
-    // (in plane) averaged values of dissipation by reynolds term
-
-    Teuchos::RCP<std::vector<double> > global_incr_eps_rey;
-    global_incr_eps_rey  = Teuchos::rcp(new std::vector<double> (presize,0.0));
-
-    // (in plane) averaged values of dissipation by continuity stabilisation
-
-    Teuchos::RCP<std::vector<double> > global_incr_eps_graddiv;
-    global_incr_eps_graddiv  = Teuchos::rcp(new std::vector<double> (presize,0.0));
-
-    // (in plane) averaged values of dissipation by eddy viscosity
-
-    Teuchos::RCP<std::vector<double> > global_incr_eps_eddyvisc;
-    global_incr_eps_eddyvisc  = Teuchos::rcp(new std::vector<double> (presize,0.0));
-
-    Teuchos::RCP<std::vector<double> > global_incr_eps_avm3;
-    global_incr_eps_avm3  = Teuchos::rcp(new std::vector<double> (presize,0.0));
-    // (in plane) averaged values of dissipation by scale similarity model
-    Teuchos::RCP<std::vector<double> > global_incr_eps_mfs;
-    global_incr_eps_mfs  = Teuchos::rcp(new std::vector<double> (presize,0.0));
-    Teuchos::RCP<std::vector<double> > global_incr_eps_mfscross;
-    global_incr_eps_mfscross  = Teuchos::rcp(new std::vector<double> (presize,0.0));
-    Teuchos::RCP<std::vector<double> > global_incr_eps_mfsrey;
-    global_incr_eps_mfsrey  = Teuchos::rcp(new std::vector<double> (presize,0.0));
-
-    // (in plane) averaged values of dissipation by viscous forces
-
-    Teuchos::RCP<std::vector<double> > global_incr_eps_visc;
-    global_incr_eps_visc  = Teuchos::rcp(new std::vector<double> (presize,0.0));
-
-    // (in plane) averaged values of dissipation/production by convection
-
-    Teuchos::RCP<std::vector<double> > global_incr_eps_conv;
-    global_incr_eps_conv  = Teuchos::rcp(new std::vector<double> (presize,0.0));
-
-    // (in plane) averaged values of subgrid stresses resulting from supg and cross term
-
-    Teuchos::RCP<std::vector<double> > global_incrcrossstress;
-    global_incrcrossstress = Teuchos::rcp(new std::vector<double> (stresssize,0.0));
-
-    // (in plane) averaged values of subgrid stresses resulting from reynolds stresses
-    Teuchos::RCP<std::vector<double> > global_incrreystress;
-    global_incrreystress   = Teuchos::rcp(new std::vector<double> (stresssize,0.0));
-
-
-    //--------------------------------------------------
-    // global sums
-
-    // compute global sum, volume
-    discret_->Comm().SumAll(&((*local_vol )[0]),
-                            &((*global_vol)[0]),
-                            presize);
-
-    // compute global sum, element sizes
-    discret_->Comm().SumAll(&((*local_incrhk )[0]),
-                            &((*global_incrhk)[0]),
-                            presize);
-
-    // compute global sum, element sizes in viscous regime, Bazilevs parameter
-    discret_->Comm().SumAll(&((*local_incrhbazilevs )[0]),
-                            &((*global_incrhbazilevs)[0]),
-                            presize);
-
-    // compute global sum, element sizes
-    discret_->Comm().SumAll(&((*local_incrstrle )[0]),
-                            &((*global_incrstrle)[0]),
-                            presize);
-
-    // compute global sum, gradient based element sizes
-    discret_->Comm().SumAll(&((*local_incrgradle )[0]),
-                            &((*global_incrgradle)[0]),
-                            presize);
-
-    // compute global sums, stabilisation parameters
-    discret_->Comm().SumAll(&((*local_incrtauM )[0]),
-                            &((*global_incrtauM)[0]),
-                            presize);
-    discret_->Comm().SumAll(&((*local_incrtauC )[0]),
-                            &((*global_incrtauC)[0]),
-                            presize);
-
-    // compute global sum, mk
-    discret_->Comm().SumAll(&((*local_incrmk )[0]),
-                            &((*global_incrmk)[0]),
-                            presize);
-
-    // compute global sums, momentum equation residuals
-    discret_->Comm().SumAll(&((*local_incrres       )[0]),
-                            &((*global_incrres      )[0]),
-                            velsize);
-    discret_->Comm().SumAll(&((*local_incrres_sq    )[0]),
-                            &((*global_incrres_sq   )[0]),
-                            velsize);
-    discret_->Comm().SumAll(&((*local_incrtauinvsvel)[0]),
-                            &((*global_incrtauinvsvel)[0]),
-                            velsize);
-    discret_->Comm().SumAll(&((*local_incrabsres    )[0]),
-                            &((*global_incrabsres   )[0]),
-                            presize);
-
-    discret_->Comm().SumAll(&((*local_incrsvelaf    )[0]),
-                            &((*global_incrsvelaf   )[0]),
-                            velsize);
-    discret_->Comm().SumAll(&((*local_incrsvelaf_sq )[0]),
-                            &((*global_incrsvelaf_sq)[0]),
-                            velsize);
-    discret_->Comm().SumAll(&((*local_incrabssvelaf )[0]),
-                            &((*global_incrabssvelaf)[0]),
-                            presize);
-
-    // compute global sums, incompressibility residuals
-    discret_->Comm().SumAll(&((*local_incrresC      )[0]),
-                            &((*global_incrresC     )[0]),
-                            presize);
-    discret_->Comm().SumAll(&((*local_incrresC_sq   )[0]),
-                            &((*global_incrresC_sq  )[0]),
-                            presize);
-
-    discret_->Comm().SumAll(&((*local_incrspressnp     )[0]),
-                            &((*global_incrspressnp    )[0]),
-                            presize);
-    discret_->Comm().SumAll(&((*local_incrspressnp_sq  )[0]),
-                            &((*global_incrspressnp_sq )[0]),
-                            presize);
-
-    // compute global sums, dissipation rates
-
-    discret_->Comm().SumAll(&((*local_incr_eps_pspg  )[0]),
-                            &((*global_incr_eps_pspg )[0]),
-                            presize);
-    discret_->Comm().SumAll(&((*local_incr_eps_supg  )[0]),
-                            &((*global_incr_eps_supg )[0]),
-                            presize);
-    discret_->Comm().SumAll(&((*local_incr_eps_cross  )[0]),
-                            &((*global_incr_eps_cross )[0]),
-                            presize);
-    discret_->Comm().SumAll(&((*local_incr_eps_rey  )[0]),
-                            &((*global_incr_eps_rey )[0]),
-                            presize);
-    discret_->Comm().SumAll(&((*local_incr_eps_graddiv  )[0]),
-                            &((*global_incr_eps_graddiv )[0]),
-                            presize);
-    discret_->Comm().SumAll(&((*local_incr_eps_eddyvisc  )[0]),
-                            &((*global_incr_eps_eddyvisc )[0]),
-                            presize);
-    discret_->Comm().SumAll(&((*local_incr_eps_visc  )[0]),
-                            &((*global_incr_eps_visc )[0]),
-                            presize);
-    discret_->Comm().SumAll(&((*local_incr_eps_conv  )[0]),
-                            &((*global_incr_eps_conv )[0]),
-                            presize);
-    discret_->Comm().SumAll(&((*local_incr_eps_avm3  )[0]),
-                            &((*global_incr_eps_avm3 )[0]),
-                            presize);
-    discret_->Comm().SumAll(&((*local_incr_eps_mfs  )[0]),
-                            &((*global_incr_eps_mfs )[0]),
-                            presize);
-    discret_->Comm().SumAll(&((*local_incr_eps_mfscross  )[0]),
-                            &((*global_incr_eps_mfscross )[0]),
-                            presize);
-    discret_->Comm().SumAll(&((*local_incr_eps_mfsrey  )[0]),
-                            &((*global_incr_eps_mfsrey )[0]),
-                            presize);
-
-    // compute global sums, subgrid stresses
-    discret_->Comm().SumAll(&((*local_incrcrossstress )[0]),
-                            &((*global_incrcrossstress)[0]),
-                            stresssize);
-    discret_->Comm().SumAll(&((*local_incrreystress )[0]),
-                            &((*global_incrreystress)[0]),
-                            stresssize);
-
-
-    for (int rr=0;rr<velsize;++rr)
+    discret_->AddMultiVectorToParameterList(eleparams_,"velafgrad",test);
+  }
+
+  // parameters for a turbulence model
+  {
+    eleparams_.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
+    if ((params_.sublist("TURBULENCE MODEL").get<std::string>("PHYSICAL_MODEL")=="Scale_Similarity"))
     {
-      (*sumres_          )[rr]+=(*global_incrres          )[rr];
-      (*sumres_sq_       )[rr]+=(*global_incrres_sq       )[rr];
-      (*sumsvelaf_       )[rr]+=(*global_incrsvelaf       )[rr];
-      (*sumsvelaf_sq_    )[rr]+=(*global_incrsvelaf_sq    )[rr];
-
-      (*sumtauinvsvel_   )[rr]+=(*global_incrtauinvsvel   )[rr];
+      for(std::map<std::string,Teuchos::RCP<Epetra_MultiVector> >::iterator state =statetenss.begin();state!=statetenss.end();++state)
+      {
+        eleparams_.set(state->first,state->second);
+      }
     }
-    for (int rr=0;rr<presize;++rr)
-    {
+  }
 
-      (*sumabsres_       )[rr]+=(*global_incrabsres       )[rr];
-      (*sumabssvelaf_    )[rr]+=(*global_incrabssvelaf    )[rr];
+  eleparams_.set<double>("thermpress at n+alpha_F/n+1",thermpressaf);
+  eleparams_.set<double>("thermpress at n+alpha_M/n",thermpressam);
+  eleparams_.set<double>("thermpressderiv at n+alpha_F/n+1",thermpressdtaf);
+  eleparams_.set<double>("thermpressderiv at n+alpha_M/n+1",thermpressdtam);
 
-      (*sumhk_           )[rr]+=(*global_incrhk           )[rr];
-      (*sumhbazilevs_    )[rr]+=(*global_incrhbazilevs    )[rr];
-      (*sumstrle_        )[rr]+=(*global_incrstrle        )[rr];
-      (*sumgradle_       )[rr]+=(*global_incrgradle       )[rr];
+  // set state vectors for element call
+  for(std::map<std::string,Teuchos::RCP<Epetra_Vector> >::iterator state =statevecs.begin();
+                                                state!=statevecs.end()  ;
+                                                ++state                 )
+  {
+    discret_->SetState(state->first,state->second);
+  }
 
-      (*sumtauM_         )[rr]+=(*global_incrtauM         )[rr];
-      (*sumtauC_         )[rr]+=(*global_incrtauC         )[rr];
+  // call loop over elements to compute means
+  discret_->Evaluate(eleparams_,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
-      (*summk_           )[rr]+=(*global_incrmk           )[rr];
+  discret_->ClearState();
 
-      (*sumresC_         )[rr]+=(*global_incrresC         )[rr];
-      (*sumresC_sq_      )[rr]+=(*global_incrresC_sq      )[rr];
-      (*sumspressnp_     )[rr]+=(*global_incrspressnp     )[rr];
-      (*sumspressnp_sq_  )[rr]+=(*global_incrspressnp_sq  )[rr];
+  // ------------------------------------------------
+  // get results from element call via parameter list
+  Teuchos::RCP<std::vector<double> > local_vol               =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrvol"         );
 
-      (*sum_eps_pspg_    )[rr]+=(*global_incr_eps_pspg    )[rr];
-      (*sum_eps_supg_    )[rr]+=(*global_incr_eps_supg    )[rr];
-      (*sum_eps_cross_   )[rr]+=(*global_incr_eps_cross   )[rr];
-      (*sum_eps_rey_     )[rr]+=(*global_incr_eps_rey     )[rr];
-      (*sum_eps_graddiv_   )[rr]+=(*global_incr_eps_graddiv   )[rr];
-      (*sum_eps_eddyvisc_)[rr]+=(*global_incr_eps_eddyvisc)[rr];
-      (*sum_eps_visc_    )[rr]+=(*global_incr_eps_visc    )[rr];
-      (*sum_eps_conv_    )[rr]+=(*global_incr_eps_conv    )[rr];
-      (*sum_eps_avm3_    )[rr]+=(*global_incr_eps_avm3    )[rr];
-      (*sum_eps_mfs_     )[rr]+=(*global_incr_eps_mfs     )[rr];
-      (*sum_eps_mfscross_)[rr]+=(*global_incr_eps_mfscross)[rr];
-      (*sum_eps_mfsrey_  )[rr]+=(*global_incr_eps_mfsrey  )[rr];
-    }
+  Teuchos::RCP<std::vector<double> > local_incrhk            =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrhk"          );
+  Teuchos::RCP<std::vector<double> > local_incrhbazilevs     =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrhbazilevs"   );
+  Teuchos::RCP<std::vector<double> > local_incrstrle         =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrstrle"       );
+  Teuchos::RCP<std::vector<double> > local_incrgradle        =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrgradle"      );
 
-    for (int rr=0;rr<stresssize;++rr)
-    {
-      (*sum_crossstress_)[rr]+=(*global_incrcrossstress)[rr];
-      (*sum_reystress_  )[rr]+=(*global_incrreystress  )[rr];
-    }
+  Teuchos::RCP<std::vector<double> > local_incrtauC          =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrtauC"        );
+  Teuchos::RCP<std::vector<double> > local_incrtauM          =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrtauM"        );
 
-    // reset working arrays
-    local_vol               = Teuchos::rcp(new std::vector<double> (presize,0.0));
+  Teuchos::RCP<std::vector<double> > local_incrmk            =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrmk"          );
 
-    local_incrhk            = Teuchos::rcp(new std::vector<double> (presize,0.0));
-    local_incrhbazilevs     = Teuchos::rcp(new std::vector<double> (presize,0.0));
-    local_incrstrle         = Teuchos::rcp(new std::vector<double> (presize,0.0));
-    local_incrgradle        = Teuchos::rcp(new std::vector<double> (presize,0.0));
+  Teuchos::RCP<std::vector<double> > local_incrres           =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrres"         );
+  Teuchos::RCP<std::vector<double> > local_incrres_sq        =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrres_sq"      );
+  Teuchos::RCP<std::vector<double> > local_incrabsres        =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrabsres"      );
+  Teuchos::RCP<std::vector<double> > local_incrtauinvsvel    =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrtauinvsvel"  );
+  Teuchos::RCP<std::vector<double> > local_incrsvelaf        =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrsvelaf"      );
+  Teuchos::RCP<std::vector<double> > local_incrsvelaf_sq     =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrsvelaf_sq"   );
+  Teuchos::RCP<std::vector<double> > local_incrabssvelaf     =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrabssvelaf"   );
+  Teuchos::RCP<std::vector<double> > local_incrresC          =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrresC"        );
+  Teuchos::RCP<std::vector<double> > local_incrresC_sq       =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrresC_sq"     );
+  Teuchos::RCP<std::vector<double> > local_incrspressnp      =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrspressnp"    );
+  Teuchos::RCP<std::vector<double> > local_incrspressnp_sq   =eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrspressnp_sq" );
 
-    local_incrtauC          = Teuchos::rcp(new std::vector<double> (presize,0.0));
-    local_incrtauM          = Teuchos::rcp(new std::vector<double> (presize,0.0));
+  Teuchos::RCP<std::vector<double> > local_incr_eps_visc     = eleparams_.get<Teuchos::RCP<std::vector<double> > >("incr_eps_visc"    );
+  Teuchos::RCP<std::vector<double> > local_incr_eps_conv     = eleparams_.get<Teuchos::RCP<std::vector<double> > >("incr_eps_conv"    );
+  Teuchos::RCP<std::vector<double> > local_incr_eps_eddyvisc = eleparams_.get<Teuchos::RCP<std::vector<double> > >("incr_eps_eddyvisc");
+  Teuchos::RCP<std::vector<double> > local_incr_eps_avm3     = eleparams_.get<Teuchos::RCP<std::vector<double> > >("incr_eps_avm3"    );
+  Teuchos::RCP<std::vector<double> > local_incr_eps_mfs      = eleparams_.get<Teuchos::RCP<std::vector<double> > >("incr_eps_mfs"     );
+  Teuchos::RCP<std::vector<double> > local_incr_eps_mfscross = eleparams_.get<Teuchos::RCP<std::vector<double> > >("incr_eps_mfscross");
+  Teuchos::RCP<std::vector<double> > local_incr_eps_mfsrey   = eleparams_.get<Teuchos::RCP<std::vector<double> > >("incr_eps_mfsrey"  );
+  Teuchos::RCP<std::vector<double> > local_incr_eps_supg     = eleparams_.get<Teuchos::RCP<std::vector<double> > >("incr_eps_supg"    );
+  Teuchos::RCP<std::vector<double> > local_incr_eps_cross    = eleparams_.get<Teuchos::RCP<std::vector<double> > >("incr_eps_cross"   );
+  Teuchos::RCP<std::vector<double> > local_incr_eps_rey      = eleparams_.get<Teuchos::RCP<std::vector<double> > >("incr_eps_rey"     );
+  Teuchos::RCP<std::vector<double> > local_incr_eps_graddiv    = eleparams_.get<Teuchos::RCP<std::vector<double> > >("incr_eps_graddiv"   );
+  Teuchos::RCP<std::vector<double> > local_incr_eps_pspg     = eleparams_.get<Teuchos::RCP<std::vector<double> > >("incr_eps_pspg"    );
 
-    local_incrmk            = Teuchos::rcp(new std::vector<double> (presize,0.0));
+  Teuchos::RCP<std::vector<double> > local_incrcrossstress   = eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrcrossstress"  );
+  Teuchos::RCP<std::vector<double> > local_incrreystress     = eleparams_.get<Teuchos::RCP<std::vector<double> > >("incrreystress"    );
 
-    local_incrres           = Teuchos::rcp(new std::vector<double> (velsize,0.0));
-    local_incrres_sq        = Teuchos::rcp(new std::vector<double> (velsize,0.0));
-    local_incrsvelaf        = Teuchos::rcp(new std::vector<double> (velsize,0.0));
-    local_incrsvelaf_sq     = Teuchos::rcp(new std::vector<double> (velsize,0.0));
-    local_incrtauinvsvel    = Teuchos::rcp(new std::vector<double> (velsize,0.0));
+  int presize    = local_incrresC       ->size();
+  int velsize    = local_incrres        ->size();
+  int stresssize = local_incrcrossstress->size();
 
-    local_incrabsres        = Teuchos::rcp(new std::vector<double> (presize,0.0));
-    local_incrabssvelaf     = Teuchos::rcp(new std::vector<double> (presize,0.0));
+  //--------------------------------------------------
+  // vectors to sum over all procs
 
-    local_incrresC          = Teuchos::rcp(new std::vector<double> (presize,0.0));
-    local_incrresC_sq       = Teuchos::rcp(new std::vector<double> (presize,0.0));
-    local_incrspressnp      = Teuchos::rcp(new std::vector<double> (presize,0.0));
-    local_incrspressnp_sq   = Teuchos::rcp(new std::vector<double> (presize,0.0));
+  // volume of element layers
+  Teuchos::RCP<std::vector<double> > global_vol;
+  global_vol           =  Teuchos::rcp(new std::vector<double> (presize,0.0));
 
-    local_incr_eps_pspg     = Teuchos::rcp(new std::vector<double> (presize,0.0));
-    local_incr_eps_supg     = Teuchos::rcp(new std::vector<double> (presize,0.0));
-    local_incr_eps_cross    = Teuchos::rcp(new std::vector<double> (presize,0.0));
-    local_incr_eps_rey      = Teuchos::rcp(new std::vector<double> (presize,0.0));
-    local_incr_eps_graddiv  = Teuchos::rcp(new std::vector<double> (presize,0.0));
-    local_incr_eps_eddyvisc = Teuchos::rcp(new std::vector<double> (presize,0.0));
-    local_incr_eps_visc     = Teuchos::rcp(new std::vector<double> (presize,0.0));
-    local_incr_eps_conv     = Teuchos::rcp(new std::vector<double> (presize,0.0));
-    local_incr_eps_avm3     = Teuchos::rcp(new std::vector<double> (presize,0.0));
-    local_incr_eps_mfs      = Teuchos::rcp(new std::vector<double> (presize,0.0));
-    local_incr_eps_mfscross = Teuchos::rcp(new std::vector<double> (presize,0.0));
-    local_incr_eps_mfsrey   = Teuchos::rcp(new std::vector<double> (presize,0.0));
+  // element sizes of element layers
+  Teuchos::RCP<std::vector<double> > global_incrhk;
+  global_incrhk        =  Teuchos::rcp(new std::vector<double> (presize,0.0));
 
-    local_incrcrossstress   = Teuchos::rcp(new std::vector<double> (stresssize,0.0));
-    local_incrreystress     = Teuchos::rcp(new std::vector<double> (stresssize,0.0));
+  // element sizes in Bazilevs parameter, viscous regime in element layers
+  Teuchos::RCP<std::vector<double> > global_incrhbazilevs;
+  global_incrhbazilevs =  Teuchos::rcp(new std::vector<double> (presize,0.0));
 
-    eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrvol"          ,local_vol              );
-    eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrhk"           ,local_incrhk           );
-    eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrhbazilevs"    ,local_incrhbazilevs    );
-    eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrstrle"        ,local_incrstrle        );
-    eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrgradle"       ,local_incrgradle       );
+  // element sizes of element stream length
+  Teuchos::RCP<std::vector<double> > global_incrstrle;
+  global_incrstrle     =  Teuchos::rcp(new std::vector<double> (presize,0.0));
 
-    eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrtauC"         ,local_incrtauC         );
-    eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrtauM"         ,local_incrtauM         );
+  // element sizes based on gradient length
+  Teuchos::RCP<std::vector<double> > global_incrgradle;
+  global_incrgradle     =  Teuchos::rcp(new std::vector<double> (presize,0.0));
 
-    eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrmk"           ,local_incrmk           );
+  // (in plane) averaged values of tauM/tauC
 
-    eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrres"          ,local_incrres          );
-    eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrres_sq"       ,local_incrres_sq       );
-    eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrabsres"       ,local_incrabsres       );
-    eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrtauinvsvel"   ,local_incrtauinvsvel   );
-    eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrsvelaf"       ,local_incrsvelaf       );
-    eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrsvelaf_sq"    ,local_incrsvelaf_sq    );
-    eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrabssvelaf"    ,local_incrabssvelaf    );
+  Teuchos::RCP<std::vector<double> > global_incrtauM;
+  global_incrtauM=  Teuchos::rcp(new std::vector<double> (presize,0.0));
 
-    eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrresC"         ,local_incrresC         );
-    eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrresC_sq"      ,local_incrresC_sq      );
-    eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrspressnp"     ,local_incrspressnp     );
-    eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrspressnp_sq"  ,local_incrspressnp_sq  );
+  Teuchos::RCP<std::vector<double> > global_incrtauC;
+  global_incrtauC=  Teuchos::rcp(new std::vector<double> (presize,0.0));
 
-    eleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_eps_pspg"    ,local_incr_eps_pspg    );
-    eleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_eps_supg"    ,local_incr_eps_supg    );
-    eleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_eps_cross"   ,local_incr_eps_cross   );
-    eleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_eps_rey"     ,local_incr_eps_rey     );
-    eleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_eps_graddiv"   ,local_incr_eps_graddiv   );
-    eleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_eps_eddyvisc",local_incr_eps_eddyvisc);
-    eleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_eps_visc"    ,local_incr_eps_visc    );
-    eleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_eps_conv"    ,local_incr_eps_conv    );
-    eleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_eps_avm3"    ,local_incr_eps_avm3    );
-    eleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_eps_mfs"     ,local_incr_eps_mfs     );
-    eleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_eps_mfscross",local_incr_eps_mfscross);
-    eleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_eps_mfsrey"   ,local_incr_eps_mfsrey );
+  // mk of element layers
+  Teuchos::RCP<std::vector<double> > global_incrmk;
+  global_incrmk        =  Teuchos::rcp(new std::vector<double> (presize,0.0));
 
-    eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrcrossstress"  ,local_incrcrossstress  );
-    eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrreystress"    ,local_incrreystress    );
+  // (in plane) averaged values of resM (^2) (abs)
+
+  Teuchos::RCP<std::vector<double> > global_incrres;
+  global_incrres=  Teuchos::rcp(new std::vector<double> (velsize,0.0));
+
+  Teuchos::RCP<std::vector<double> > global_incrres_sq;
+  global_incrres_sq=  Teuchos::rcp(new std::vector<double> (velsize,0.0));
+
+  Teuchos::RCP<std::vector<double> > global_incrtauinvsvel;
+  global_incrtauinvsvel=  Teuchos::rcp(new std::vector<double> (velsize,0.0));
+
+  Teuchos::RCP<std::vector<double> > global_incrabsres;
+  global_incrabsres=  Teuchos::rcp(new std::vector<double> (presize,0.0));
+
+  // (in plane) averaged values of svelaf (^2) (abs)
+
+  Teuchos::RCP<std::vector<double> > global_incrsvelaf;
+  global_incrsvelaf=  Teuchos::rcp(new std::vector<double> (velsize,0.0));
+
+  Teuchos::RCP<std::vector<double> > global_incrsvelaf_sq;
+  global_incrsvelaf_sq=  Teuchos::rcp(new std::vector<double> (velsize,0.0));
+
+  Teuchos::RCP<std::vector<double> > global_incrabssvelaf;
+  global_incrabssvelaf=  Teuchos::rcp(new std::vector<double> (presize,0.0));
+
+  // (in plane) averaged values of resC (^2)
+
+  Teuchos::RCP<std::vector<double> > global_incrresC;
+  global_incrresC=  Teuchos::rcp(new std::vector<double> (presize,0.0));
+
+  Teuchos::RCP<std::vector<double> > global_incrresC_sq;
+  global_incrresC_sq=  Teuchos::rcp(new std::vector<double> (presize,0.0));
+
+  // (in plane) averaged values of spressnp (^2)
+
+  Teuchos::RCP<std::vector<double> > global_incrspressnp;
+  global_incrspressnp=  Teuchos::rcp(new std::vector<double> (presize,0.0));
+
+  Teuchos::RCP<std::vector<double> > global_incrspressnp_sq;
+  global_incrspressnp_sq=  Teuchos::rcp(new std::vector<double> (presize,0.0));
+
+  // (in plane) averaged values of dissipation by pspg term
+
+  Teuchos::RCP<std::vector<double> > global_incr_eps_pspg;
+  global_incr_eps_pspg  = Teuchos::rcp(new std::vector<double> (presize,0.0));
+
+  // (in plane) averaged values of dissipation by supg term
+
+  Teuchos::RCP<std::vector<double> > global_incr_eps_supg;
+  global_incr_eps_supg  = Teuchos::rcp(new std::vector<double> (presize,0.0));
+
+  // (in plane) averaged values of dissipation by cross term
+
+  Teuchos::RCP<std::vector<double> > global_incr_eps_cross;
+  global_incr_eps_cross  = Teuchos::rcp(new std::vector<double> (presize,0.0));
+
+  // (in plane) averaged values of dissipation by reynolds term
+
+  Teuchos::RCP<std::vector<double> > global_incr_eps_rey;
+  global_incr_eps_rey  = Teuchos::rcp(new std::vector<double> (presize,0.0));
+
+  // (in plane) averaged values of dissipation by continuity stabilisation
+
+  Teuchos::RCP<std::vector<double> > global_incr_eps_graddiv;
+  global_incr_eps_graddiv  = Teuchos::rcp(new std::vector<double> (presize,0.0));
+
+  // (in plane) averaged values of dissipation by eddy viscosity
+
+  Teuchos::RCP<std::vector<double> > global_incr_eps_eddyvisc;
+  global_incr_eps_eddyvisc  = Teuchos::rcp(new std::vector<double> (presize,0.0));
+
+  Teuchos::RCP<std::vector<double> > global_incr_eps_avm3;
+  global_incr_eps_avm3  = Teuchos::rcp(new std::vector<double> (presize,0.0));
+  // (in plane) averaged values of dissipation by scale similarity model
+  Teuchos::RCP<std::vector<double> > global_incr_eps_mfs;
+  global_incr_eps_mfs  = Teuchos::rcp(new std::vector<double> (presize,0.0));
+  Teuchos::RCP<std::vector<double> > global_incr_eps_mfscross;
+  global_incr_eps_mfscross  = Teuchos::rcp(new std::vector<double> (presize,0.0));
+  Teuchos::RCP<std::vector<double> > global_incr_eps_mfsrey;
+  global_incr_eps_mfsrey  = Teuchos::rcp(new std::vector<double> (presize,0.0));
+
+  // (in plane) averaged values of dissipation by viscous forces
+
+  Teuchos::RCP<std::vector<double> > global_incr_eps_visc;
+  global_incr_eps_visc  = Teuchos::rcp(new std::vector<double> (presize,0.0));
+
+  // (in plane) averaged values of dissipation/production by convection
+
+  Teuchos::RCP<std::vector<double> > global_incr_eps_conv;
+  global_incr_eps_conv  = Teuchos::rcp(new std::vector<double> (presize,0.0));
+
+  // (in plane) averaged values of subgrid stresses resulting from supg and cross term
+
+  Teuchos::RCP<std::vector<double> > global_incrcrossstress;
+  global_incrcrossstress = Teuchos::rcp(new std::vector<double> (stresssize,0.0));
+
+  // (in plane) averaged values of subgrid stresses resulting from reynolds stresses
+  Teuchos::RCP<std::vector<double> > global_incrreystress;
+  global_incrreystress   = Teuchos::rcp(new std::vector<double> (stresssize,0.0));
+
+
+  //--------------------------------------------------
+  // global sums
+
+  // compute global sum, volume
+  discret_->Comm().SumAll(&((*local_vol )[0]),
+                          &((*global_vol)[0]),
+                          presize);
+
+  // compute global sum, element sizes
+  discret_->Comm().SumAll(&((*local_incrhk )[0]),
+                          &((*global_incrhk)[0]),
+                          presize);
+
+  // compute global sum, element sizes in viscous regime, Bazilevs parameter
+  discret_->Comm().SumAll(&((*local_incrhbazilevs )[0]),
+                          &((*global_incrhbazilevs)[0]),
+                          presize);
+
+  // compute global sum, element sizes
+  discret_->Comm().SumAll(&((*local_incrstrle )[0]),
+                          &((*global_incrstrle)[0]),
+                          presize);
+
+  // compute global sum, gradient based element sizes
+  discret_->Comm().SumAll(&((*local_incrgradle )[0]),
+                          &((*global_incrgradle)[0]),
+                          presize);
+
+  // compute global sums, stabilisation parameters
+  discret_->Comm().SumAll(&((*local_incrtauM )[0]),
+                          &((*global_incrtauM)[0]),
+                          presize);
+  discret_->Comm().SumAll(&((*local_incrtauC )[0]),
+                          &((*global_incrtauC)[0]),
+                          presize);
+
+  // compute global sum, mk
+  discret_->Comm().SumAll(&((*local_incrmk )[0]),
+                          &((*global_incrmk)[0]),
+                          presize);
+
+  // compute global sums, momentum equation residuals
+  discret_->Comm().SumAll(&((*local_incrres       )[0]),
+                          &((*global_incrres      )[0]),
+                          velsize);
+  discret_->Comm().SumAll(&((*local_incrres_sq    )[0]),
+                          &((*global_incrres_sq   )[0]),
+                          velsize);
+  discret_->Comm().SumAll(&((*local_incrtauinvsvel)[0]),
+                          &((*global_incrtauinvsvel)[0]),
+                          velsize);
+  discret_->Comm().SumAll(&((*local_incrabsres    )[0]),
+                          &((*global_incrabsres   )[0]),
+                          presize);
+
+  discret_->Comm().SumAll(&((*local_incrsvelaf    )[0]),
+                          &((*global_incrsvelaf   )[0]),
+                          velsize);
+  discret_->Comm().SumAll(&((*local_incrsvelaf_sq )[0]),
+                          &((*global_incrsvelaf_sq)[0]),
+                          velsize);
+  discret_->Comm().SumAll(&((*local_incrabssvelaf )[0]),
+                          &((*global_incrabssvelaf)[0]),
+                          presize);
+
+  // compute global sums, incompressibility residuals
+  discret_->Comm().SumAll(&((*local_incrresC      )[0]),
+                          &((*global_incrresC     )[0]),
+                          presize);
+  discret_->Comm().SumAll(&((*local_incrresC_sq   )[0]),
+                          &((*global_incrresC_sq  )[0]),
+                          presize);
+
+  discret_->Comm().SumAll(&((*local_incrspressnp     )[0]),
+                          &((*global_incrspressnp    )[0]),
+                          presize);
+  discret_->Comm().SumAll(&((*local_incrspressnp_sq  )[0]),
+                          &((*global_incrspressnp_sq )[0]),
+                          presize);
+
+  // compute global sums, dissipation rates
+
+  discret_->Comm().SumAll(&((*local_incr_eps_pspg  )[0]),
+                          &((*global_incr_eps_pspg )[0]),
+                          presize);
+  discret_->Comm().SumAll(&((*local_incr_eps_supg  )[0]),
+                          &((*global_incr_eps_supg )[0]),
+                          presize);
+  discret_->Comm().SumAll(&((*local_incr_eps_cross  )[0]),
+                          &((*global_incr_eps_cross )[0]),
+                          presize);
+  discret_->Comm().SumAll(&((*local_incr_eps_rey  )[0]),
+                          &((*global_incr_eps_rey )[0]),
+                          presize);
+  discret_->Comm().SumAll(&((*local_incr_eps_graddiv  )[0]),
+                          &((*global_incr_eps_graddiv )[0]),
+                          presize);
+  discret_->Comm().SumAll(&((*local_incr_eps_eddyvisc  )[0]),
+                          &((*global_incr_eps_eddyvisc )[0]),
+                          presize);
+  discret_->Comm().SumAll(&((*local_incr_eps_visc  )[0]),
+                          &((*global_incr_eps_visc )[0]),
+                          presize);
+  discret_->Comm().SumAll(&((*local_incr_eps_conv  )[0]),
+                          &((*global_incr_eps_conv )[0]),
+                          presize);
+  discret_->Comm().SumAll(&((*local_incr_eps_avm3  )[0]),
+                          &((*global_incr_eps_avm3 )[0]),
+                          presize);
+  discret_->Comm().SumAll(&((*local_incr_eps_mfs  )[0]),
+                          &((*global_incr_eps_mfs )[0]),
+                          presize);
+  discret_->Comm().SumAll(&((*local_incr_eps_mfscross  )[0]),
+                          &((*global_incr_eps_mfscross )[0]),
+                          presize);
+  discret_->Comm().SumAll(&((*local_incr_eps_mfsrey  )[0]),
+                          &((*global_incr_eps_mfsrey )[0]),
+                          presize);
+
+  // compute global sums, subgrid stresses
+  discret_->Comm().SumAll(&((*local_incrcrossstress )[0]),
+                          &((*global_incrcrossstress)[0]),
+                          stresssize);
+  discret_->Comm().SumAll(&((*local_incrreystress )[0]),
+                          &((*global_incrreystress)[0]),
+                          stresssize);
+
+
+  for (int rr=0;rr<velsize;++rr)
+  {
+    (*sumres_          )[rr]+=(*global_incrres          )[rr];
+    (*sumres_sq_       )[rr]+=(*global_incrres_sq       )[rr];
+    (*sumsvelaf_       )[rr]+=(*global_incrsvelaf       )[rr];
+    (*sumsvelaf_sq_    )[rr]+=(*global_incrsvelaf_sq    )[rr];
+
+    (*sumtauinvsvel_   )[rr]+=(*global_incrtauinvsvel   )[rr];
+  }
+  for (int rr=0;rr<presize;++rr)
+  {
+
+    (*sumabsres_       )[rr]+=(*global_incrabsres       )[rr];
+    (*sumabssvelaf_    )[rr]+=(*global_incrabssvelaf    )[rr];
+
+    (*sumhk_           )[rr]+=(*global_incrhk           )[rr];
+    (*sumhbazilevs_    )[rr]+=(*global_incrhbazilevs    )[rr];
+    (*sumstrle_        )[rr]+=(*global_incrstrle        )[rr];
+    (*sumgradle_       )[rr]+=(*global_incrgradle       )[rr];
+
+    (*sumtauM_         )[rr]+=(*global_incrtauM         )[rr];
+    (*sumtauC_         )[rr]+=(*global_incrtauC         )[rr];
+
+    (*summk_           )[rr]+=(*global_incrmk           )[rr];
+
+    (*sumresC_         )[rr]+=(*global_incrresC         )[rr];
+    (*sumresC_sq_      )[rr]+=(*global_incrresC_sq      )[rr];
+    (*sumspressnp_     )[rr]+=(*global_incrspressnp     )[rr];
+    (*sumspressnp_sq_  )[rr]+=(*global_incrspressnp_sq  )[rr];
+
+    (*sum_eps_pspg_    )[rr]+=(*global_incr_eps_pspg    )[rr];
+    (*sum_eps_supg_    )[rr]+=(*global_incr_eps_supg    )[rr];
+    (*sum_eps_cross_   )[rr]+=(*global_incr_eps_cross   )[rr];
+    (*sum_eps_rey_     )[rr]+=(*global_incr_eps_rey     )[rr];
+    (*sum_eps_graddiv_   )[rr]+=(*global_incr_eps_graddiv   )[rr];
+    (*sum_eps_eddyvisc_)[rr]+=(*global_incr_eps_eddyvisc)[rr];
+    (*sum_eps_visc_    )[rr]+=(*global_incr_eps_visc    )[rr];
+    (*sum_eps_conv_    )[rr]+=(*global_incr_eps_conv    )[rr];
+    (*sum_eps_avm3_    )[rr]+=(*global_incr_eps_avm3    )[rr];
+    (*sum_eps_mfs_     )[rr]+=(*global_incr_eps_mfs     )[rr];
+    (*sum_eps_mfscross_)[rr]+=(*global_incr_eps_mfscross)[rr];
+    (*sum_eps_mfsrey_  )[rr]+=(*global_incr_eps_mfsrey  )[rr];
+  }
+
+  for (int rr=0;rr<stresssize;++rr)
+  {
+    (*sum_crossstress_)[rr]+=(*global_incrcrossstress)[rr];
+    (*sum_reystress_  )[rr]+=(*global_incrreystress  )[rr];
+  }
+
+  // reset working arrays
+  local_vol               = Teuchos::rcp(new std::vector<double> (presize,0.0));
+
+  local_incrhk            = Teuchos::rcp(new std::vector<double> (presize,0.0));
+  local_incrhbazilevs     = Teuchos::rcp(new std::vector<double> (presize,0.0));
+  local_incrstrle         = Teuchos::rcp(new std::vector<double> (presize,0.0));
+  local_incrgradle        = Teuchos::rcp(new std::vector<double> (presize,0.0));
+
+  local_incrtauC          = Teuchos::rcp(new std::vector<double> (presize,0.0));
+  local_incrtauM          = Teuchos::rcp(new std::vector<double> (presize,0.0));
+
+  local_incrmk            = Teuchos::rcp(new std::vector<double> (presize,0.0));
+
+  local_incrres           = Teuchos::rcp(new std::vector<double> (velsize,0.0));
+  local_incrres_sq        = Teuchos::rcp(new std::vector<double> (velsize,0.0));
+  local_incrsvelaf        = Teuchos::rcp(new std::vector<double> (velsize,0.0));
+  local_incrsvelaf_sq     = Teuchos::rcp(new std::vector<double> (velsize,0.0));
+  local_incrtauinvsvel    = Teuchos::rcp(new std::vector<double> (velsize,0.0));
+
+  local_incrabsres        = Teuchos::rcp(new std::vector<double> (presize,0.0));
+  local_incrabssvelaf     = Teuchos::rcp(new std::vector<double> (presize,0.0));
+
+  local_incrresC          = Teuchos::rcp(new std::vector<double> (presize,0.0));
+  local_incrresC_sq       = Teuchos::rcp(new std::vector<double> (presize,0.0));
+  local_incrspressnp      = Teuchos::rcp(new std::vector<double> (presize,0.0));
+  local_incrspressnp_sq   = Teuchos::rcp(new std::vector<double> (presize,0.0));
+
+  local_incr_eps_pspg     = Teuchos::rcp(new std::vector<double> (presize,0.0));
+  local_incr_eps_supg     = Teuchos::rcp(new std::vector<double> (presize,0.0));
+  local_incr_eps_cross    = Teuchos::rcp(new std::vector<double> (presize,0.0));
+  local_incr_eps_rey      = Teuchos::rcp(new std::vector<double> (presize,0.0));
+  local_incr_eps_graddiv  = Teuchos::rcp(new std::vector<double> (presize,0.0));
+  local_incr_eps_eddyvisc = Teuchos::rcp(new std::vector<double> (presize,0.0));
+  local_incr_eps_visc     = Teuchos::rcp(new std::vector<double> (presize,0.0));
+  local_incr_eps_conv     = Teuchos::rcp(new std::vector<double> (presize,0.0));
+  local_incr_eps_avm3     = Teuchos::rcp(new std::vector<double> (presize,0.0));
+  local_incr_eps_mfs      = Teuchos::rcp(new std::vector<double> (presize,0.0));
+  local_incr_eps_mfscross = Teuchos::rcp(new std::vector<double> (presize,0.0));
+  local_incr_eps_mfsrey   = Teuchos::rcp(new std::vector<double> (presize,0.0));
+
+  local_incrcrossstress   = Teuchos::rcp(new std::vector<double> (stresssize,0.0));
+  local_incrreystress     = Teuchos::rcp(new std::vector<double> (stresssize,0.0));
+
+  eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrvol"          ,local_vol              );
+  eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrhk"           ,local_incrhk           );
+  eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrhbazilevs"    ,local_incrhbazilevs    );
+  eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrstrle"        ,local_incrstrle        );
+  eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrgradle"       ,local_incrgradle       );
+
+  eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrtauC"         ,local_incrtauC         );
+  eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrtauM"         ,local_incrtauM         );
+
+  eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrmk"           ,local_incrmk           );
+
+  eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrres"          ,local_incrres          );
+  eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrres_sq"       ,local_incrres_sq       );
+  eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrabsres"       ,local_incrabsres       );
+  eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrtauinvsvel"   ,local_incrtauinvsvel   );
+  eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrsvelaf"       ,local_incrsvelaf       );
+  eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrsvelaf_sq"    ,local_incrsvelaf_sq    );
+  eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrabssvelaf"    ,local_incrabssvelaf    );
+
+  eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrresC"         ,local_incrresC         );
+  eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrresC_sq"      ,local_incrresC_sq      );
+  eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrspressnp"     ,local_incrspressnp     );
+  eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrspressnp_sq"  ,local_incrspressnp_sq  );
+
+  eleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_eps_pspg"    ,local_incr_eps_pspg    );
+  eleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_eps_supg"    ,local_incr_eps_supg    );
+  eleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_eps_cross"   ,local_incr_eps_cross   );
+  eleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_eps_rey"     ,local_incr_eps_rey     );
+  eleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_eps_graddiv"   ,local_incr_eps_graddiv   );
+  eleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_eps_eddyvisc",local_incr_eps_eddyvisc);
+  eleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_eps_visc"    ,local_incr_eps_visc    );
+  eleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_eps_conv"    ,local_incr_eps_conv    );
+  eleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_eps_avm3"    ,local_incr_eps_avm3    );
+  eleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_eps_mfs"     ,local_incr_eps_mfs     );
+  eleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_eps_mfscross",local_incr_eps_mfscross);
+  eleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_eps_mfsrey"   ,local_incr_eps_mfsrey );
+
+  eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrcrossstress"  ,local_incrcrossstress  );
+  eleparams_.set<Teuchos::RCP<std::vector<double> > >("incrreystress"    ,local_incrreystress    );
 
   return;
 } // FLD::TurbulenceStatisticsTgv::EvaluateResiduals

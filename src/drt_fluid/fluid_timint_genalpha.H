@@ -88,6 +88,12 @@ public:
   virtual void SetStateTimInt();
 
   /*!
+  \brief Project gradient for reconstruction of second derivatives of residual, depends on time integrator used
+
+  */
+  virtual void ProjectGradientAndSetParam(Teuchos::ParameterList& eleparams);
+
+  /*!
   \brief Set time factor in GenAlpha
 
   */

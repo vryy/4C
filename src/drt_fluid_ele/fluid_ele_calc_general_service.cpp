@@ -1522,7 +1522,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcDissipation(
   //----------------------------------------------------------------------
   // get all nodal values
   // ---------------------------------------------------------------------
-
+  if(not fldparatimint_->IsGenalpha())
+    dserror("this routine supports only GenAlpha currently");
   // call routine for calculation of body force in element nodes,
   // with pressure gradient prescribed as body force included for turbulent
   // channel flow and with scatra body force included for variable-density flow
@@ -1574,6 +1575,12 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcDissipation(
 
   if (fldparatimint_->IsGenalpha()) eveln.Clear();
   else                            eaccam.Clear();
+
+  if (fldpara_->IsReconstructDer())
+  {
+    const Teuchos::RCP<Epetra_MultiVector> velafgrad = params.get< Teuchos::RCP<Epetra_MultiVector> >("velafgrad");
+    DRT::UTILS::ExtractMyNodeBasedValues(ele,evelafgrad_,velafgrad,nsd_*nsd_);
+  }
 
   // get additional state vectors for ALE case: grid displacement and vel.
   LINALG::Matrix<nsd_, nen_> edispnp(true);
@@ -1919,7 +1926,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcDissipation(
     conv_old_.Multiply(vderxy_,convvelint_);
 
     // compute viscous term from previous iteration and viscous operator
-    if (is_higher_order_ele_) CalcDivEps(evelaf,eveln);
+    if (is_higher_order_ele_) CalcDivEps(evelaf);
     else
       visc_old_.Clear();
 

@@ -1300,6 +1300,8 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
   fluidtimeparams->set<string>          ("CONVCHECK"  ,fdyn.get<std::string>("CONVCHECK"));
   // set recomputation of residual after solution has convergenced
   fluidtimeparams->set<bool>            ("INCONSISTENT_RESIDUAL",DRT::INPUT::IntegralValue<int>(fdyn,"INCONSISTENT_RESIDUAL")==1);
+  // set solver for L2 projection of gradients for reconstruction of consistent residual
+  fluidtimeparams->set<int>            ("VELGRAD_PROJ_SOLVER",fdyn.get<int>("VELGRAD_PROJ_SOLVER"));
   // set adaptive linear solver tolerance
   fluidtimeparams->set<bool>            ("ADAPTCONV",DRT::INPUT::IntegralValue<int>(fdyn,"ADAPTCONV")==1);
   fluidtimeparams->set<double>          ("ADAPTCONV_BETTER",fdyn.get<double>("ADAPTCONV_BETTER"));

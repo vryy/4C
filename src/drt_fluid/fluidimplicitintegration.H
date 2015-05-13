@@ -254,6 +254,13 @@ public:
   virtual void TreatTurbulenceModels(Teuchos::ParameterList& eleparams);
 
   /*!
+  \brief Project gradient for reconstruction of second derivatives of residual, depends on time integrator used
+
+  */
+  virtual void ProjectGradientAndSetParam(Teuchos::ParameterList& eleparams)
+  {dserror("not implemented here"); return;};
+
+  /*!
   \brief Evaluate for AVM3 Separation
 
   */
@@ -1065,6 +1072,9 @@ protected:
 
   //! flag to skip calculation of residual after solution has converged
   bool inconsistent_;
+
+  //! flag to reconstruct second derivative for fluid residual
+  bool reconstructder_;
 
   /// flag for special turbulent flow
   std::string special_flow_;
