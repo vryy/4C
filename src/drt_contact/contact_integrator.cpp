@@ -1617,7 +1617,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(
 
       // warning, if an element which is declared not to be on the boundary by the above test
       // has non-projectable Gauss points
-      if (is_on_mele == false && boundary_ele==false)
+      if (is_on_mele == false && *boundary_ele==false)
         std::cout << "*** warning *** Non-boundary element has non-projectable Gauss point \n" ;
 
       //if one gp has counterparts on 2 elements --> non-uniqueness
