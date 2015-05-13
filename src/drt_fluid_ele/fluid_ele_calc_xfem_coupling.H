@@ -41,6 +41,8 @@ namespace DRT
 {
   namespace ELEMENTS
   {
+    class FluidEleParameterXFEM;
+
     namespace XFLUID
     {
       /**
@@ -225,45 +227,45 @@ namespace DRT
         static const unsigned  master_numdof_ = nsd_ + 1;
 
         static Teuchos::RCP<NitscheInterface<distype> > CreateNitscheCoupling_XFluidWDBC(
-          Epetra_SerialDenseMatrix &  C_umum,                 ///< C_umum coupling matrix
-          Epetra_SerialDenseMatrix &  rhC_um,                 ///< C_um coupling rhs
-          bool                        is_viscAdjointSymmetric ///< flag that indicates equal signs of Nitsche's standard & adjoint viscous term
+          Epetra_SerialDenseMatrix &                  C_umum,      ///< C_umum coupling matrix
+          Epetra_SerialDenseMatrix &                  rhC_um,      ///< C_um coupling rhs
+          const DRT::ELEMENTS::FluidEleParameterXFEM& fldparaxfem  ///< specific XFEM based fluid parameters
           );
 
         //! create a coupling interface for Nitsche's method for xfluid weak dirichlet problems
         static Teuchos::RCP<NitscheInterface<distype> > CreateNitscheCoupling_XFluidWDBC(
-          DRT::Element *              bele,                   ///< boundary element
-          Epetra_SerialDenseMatrix &  bele_xyz,               ///< global node coordinates of boundary element
-          Epetra_SerialDenseMatrix &  C_umum,                 ///< C_umum coupling matrix
-          Epetra_SerialDenseMatrix &  rhC_um,                 ///< C_um coupling rhs
-          bool                        is_viscAdjointSymmetric ///< flag that indicates equal signs of Nitsche's standard & adjoint viscous term
+          DRT::Element *              bele,                        ///< boundary element
+          Epetra_SerialDenseMatrix &  bele_xyz,                    ///< global node coordinates of boundary element
+          Epetra_SerialDenseMatrix &  C_umum,                      ///< C_umum coupling matrix
+          Epetra_SerialDenseMatrix &  rhC_um,                      ///< C_um coupling rhs
+          const DRT::ELEMENTS::FluidEleParameterXFEM& fldparaxfem  ///< specific XFEM based fluid parameters
           );
 
         //! create a coupling interface for Nitsche's method for xfluid-sided coupling strategy
         static Teuchos::RCP<NitscheInterface<distype> > CreateNitscheCoupling_XFluidSided(
-          DRT::Element *              bele,           ///< boundary element
-          Epetra_SerialDenseMatrix &  bele_xyz,       ///< global node coordinates of boundary element
-          Epetra_SerialDenseMatrix &  C_umum,         ///< C_umum coupling matrix
-          Epetra_SerialDenseMatrix &  C_usum,         ///< C_usum coupling matrix
-          Epetra_SerialDenseMatrix &  C_umus,         ///< C_umus coupling matrix
-          Epetra_SerialDenseMatrix &  C_usus,         ///< C_usus coupling matrix
-          Epetra_SerialDenseMatrix &  rhC_um,         ///< C_um coupling rhs
-          Epetra_SerialDenseMatrix &  rhC_us,         ///< C_us coupling rhs
-          bool                        is_viscAdjointSymmetric ///< flag that indicates equal signs of Nitsche's standard & adjoint viscous term
+          DRT::Element *              bele,                        ///< boundary element
+          Epetra_SerialDenseMatrix &  bele_xyz,                    ///< global node coordinates of boundary element
+          Epetra_SerialDenseMatrix &  C_umum,                      ///< C_umum coupling matrix
+          Epetra_SerialDenseMatrix &  C_usum,                      ///< C_usum coupling matrix
+          Epetra_SerialDenseMatrix &  C_umus,                      ///< C_umus coupling matrix
+          Epetra_SerialDenseMatrix &  C_usus,                      ///< C_usus coupling matrix
+          Epetra_SerialDenseMatrix &  rhC_um,                      ///< C_um coupling rhs
+          Epetra_SerialDenseMatrix &  rhC_us,                      ///< C_us coupling rhs
+          const DRT::ELEMENTS::FluidEleParameterXFEM& fldparaxfem  ///< specific XFEM based fluid parameters
           );
 
         //! create a coupling interface for Nitsche's method for two-sided coupling strategy
         //! (weighted or fully embedded-sided)
         static Teuchos::RCP<NitscheInterface<distype> > CreateNitscheCoupling_TwoSided(
-          DRT::Element *              vele,           ///< volumetric element to couple with
-          Epetra_SerialDenseMatrix &  vele_xyz,       ///< global node coordinates of volumetric element
-          Epetra_SerialDenseMatrix &  C_umum,         ///< C_umum coupling matrix
-          Epetra_SerialDenseMatrix &  C_usum,         ///< C_usum coupling matrix
-          Epetra_SerialDenseMatrix &  C_umus,         ///< C_umus coupling matrix
-          Epetra_SerialDenseMatrix &  C_usus,         ///< C_usus coupling matrix
-          Epetra_SerialDenseMatrix &  rhC_um,         ///< C_um coupling rhs
-          Epetra_SerialDenseMatrix &  rhC_us,         ///< C_us coupling rhs
-          bool                        is_viscAdjointSymmetric ///< flag that indicates equal signs of Nitsche's standard & adjoint viscous term
+          DRT::Element *              vele,                        ///< volumetric element to couple with
+          Epetra_SerialDenseMatrix &  vele_xyz,                    ///< global node coordinates of volumetric element
+          Epetra_SerialDenseMatrix &  C_umum,                      ///< C_umum coupling matrix
+          Epetra_SerialDenseMatrix &  C_usum,                      ///< C_usum coupling matrix
+          Epetra_SerialDenseMatrix &  C_umus,                      ///< C_umus coupling matrix
+          Epetra_SerialDenseMatrix &  C_usus,                      ///< C_usus coupling matrix
+          Epetra_SerialDenseMatrix &  rhC_um,                      ///< C_um coupling rhs
+          Epetra_SerialDenseMatrix &  rhC_us,                      ///< C_us coupling rhs
+          const DRT::ELEMENTS::FluidEleParameterXFEM& fldparaxfem  ///< specific XFEM based fluid parameters
           );
 
         //! dtor
@@ -281,14 +283,14 @@ namespace DRT
           const double &                                        NIT_stab_fac_conv,      ///< full Nitsche's penalty term scaling (viscous+convective part)
           const double &                                        timefacfac,             ///< theta*dt
           const LINALG::Matrix<nsd_,1> &                        ivelint_jump,           ///< prescribed interface velocity, Dirichlet values or jump height for coupled problems
-          const INPAR::XFEM::EleCouplingCondType &              cond_type,              ///< condition type
-          INPAR::XFEM::XFF_ConvStabScaling                      xff_conv_stab = INPAR::XFEM::XFF_ConvStabScaling_none ///< type of convective stabilization in XFF-problems
+          const INPAR::XFEM::EleCouplingCondType &              cond_type               ///< condition type
         ) = 0;
 
         //! build coupling matrices for Nitsche's method (NIT)
         virtual void NIT_evaluateCoupling(
           const LINALG::Matrix<nsd_,1> &    normal,                 ///< outward pointing normal (defined by the coupling partner, that determines the interface traction)
           const double &                    timefacfac,             ///< theta*dt
+          const double &                    pres_timefacfac,        ///< timescaling for pressure
           const double &                    visceff_m,              ///< viscosity in coupling master fluid
           const double &                    visceff_s,              ///< viscosity in coupling slave fluid
           const double &                    kappa_m,                ///< mortaring weight for coupling master
@@ -301,19 +303,19 @@ namespace DRT
           const double &                    press_m,                ///< coupling master pressure
           const LINALG::Matrix<nsd_,1> &    velint_m,               ///< coupling master interface velocity
           const LINALG::Matrix<nsd_,1> &    ivelint_jump,           ///< prescribed interface velocity, Dirichlet values or jump height for coupled problems
-          const LINALG::Matrix<nsd_,1> &    itraction_jump,         ///< prescribed interface traction, jump height for coupled problems
-          INPAR::XFEM::XFF_ConvStabScaling  xff_conv_stab = INPAR::XFEM::XFF_ConvStabScaling_none ///< type of convective stabilization in XFF-problems
+          const LINALG::Matrix<nsd_,1> &    itraction_jump          ///< prescribed interface traction, jump height for coupled problems
         ) = 0;
 
         //! add rhs contributions from old time step in Nitsche's (NIT) method
         virtual void NIT_evaluateCouplingOldState(
           const LINALG::Matrix<nsd_,1> &           normal,                  ///< outward pointing normal (defined by the coupling partner, that determines the interface traction)
           const double &                           timefacfacn,             ///< dt*(1-theta)*fac
+          bool                                     isImplPressure,          ///< flag for implicit pressure treatment
           const double &                           visceff_m,               ///< viscosity in coupling master fluid
           const double &                           visceff_s,               ///< viscosity in coupling slave fluid
           const double &                           kappa_m,                 ///< mortaring weight for coupling master
           const double &                           kappa_s,                 ///< mortaring weight for coupling slave
-          const double &                           density_m,              ///< fluid density (master) USED IN XFF
+          const double &                           density_m,               ///< fluid density (master) USED IN XFF
           const LINALG::Matrix<nen_,1> &           funct_m,                 ///< coupling master shape functions
           const LINALG::Matrix<nsd_,nen_> &        derxy_m,                 ///< spatial derivatives of coupling master shape functions
           const LINALG::Matrix<nsd_,nsd_> &        vderxyn_m,               ///< coupling master spatial velocity derivatives
@@ -321,9 +323,7 @@ namespace DRT
           const LINALG::Matrix<nsd_,1> &           velintn_m,               ///< coupling master interface velocity
           const LINALG::Matrix<nsd_,1> &           ivelintn_jump,           ///< prescribed interface velocity, Dirichlet values or jump height for coupled problems
           const LINALG::Matrix<nsd_,1> &           itractionn_jump,         ///< prescribed interface traction, jump height for coupled problems
-          INPAR::XFEM::InterfaceTermsPreviousState prev_state = INPAR::XFEM::PreviousState_only_consistency, ///< evaluate all terms or only consistency term at previous state
-          const double                             NIT_full_stab_facn = 0.0, ///< full Nitsche's penalty term scaling (viscous+convective part)
-          INPAR::XFEM::XFF_ConvStabScaling         xff_conv_stab = INPAR::XFEM::XFF_ConvStabScaling_none ///< type of convective stabilization in XFF-problems
+          const double                             NIT_full_stab_facn = 0.0 ///< full Nitsche's penalty term scaling (viscous+convective part)
         ) = 0;
 
       };

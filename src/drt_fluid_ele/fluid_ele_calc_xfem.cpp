@@ -1589,12 +1589,12 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
           Epetra_SerialDenseMatrix & C_uiui = side_matrices_extra[3];
 
           si_nit[coup_sid] = DRT::ELEMENTS::XFLUID::NitscheInterface<distype>::CreateNitscheCoupling_XFluidSided(
-              side, side_xyze, elemat1_epetra, C_uiu, C_uui, C_uiui, elevec1_epetra, rhC_ui, fldparaxfem_->IsViscousAdjointSymmetric());
+              side, side_xyze, elemat1_epetra, C_uiu, C_uui, C_uiui, elevec1_epetra, rhC_ui, *fldparaxfem_);
         }
         else
         {
           si_nit[coup_sid] = DRT::ELEMENTS::XFLUID::NitscheInterface<distype>::CreateNitscheCoupling_XFluidWDBC(
-              side, side_xyze, elemat1_epetra, elevec1_epetra, fldparaxfem_->IsViscousAdjointSymmetric());
+              side, side_xyze, elemat1_epetra, elevec1_epetra, *fldparaxfem_);
         }
 
         // set velocity for current time step
@@ -1613,7 +1613,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
         else
         {
           si_nit[coup_sid] = DRT::ELEMENTS::XFLUID::NitscheInterface<distype>::CreateNitscheCoupling_XFluidWDBC(
-            elemat1_epetra,elevec1_epetra,fldparaxfem_->IsViscousAdjointSymmetric());
+            elemat1_epetra,elevec1_epetra,*fldparaxfem_);
         }
       }
       else dserror("no mesh-/level-set coupling object for coupling sid %i", coup_sid);
@@ -1841,8 +1841,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
                 NIT_full_stab_fac,
                 timefacfac,
                 ivelint_jump,
-                cond_type,
-                fldparaxfem_->XffConvStabScaling()
+                cond_type
               );
             }
             else // non-coupling
@@ -1908,6 +1907,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
             si_nit.at(coup_sid)->NIT_evaluateCouplingOldState(
               normal,
               surf_fac * (my::fldparatimint_->Dt()-my::fldparatimint_->TimeFac()), // scaling of rhs depending on time discretization scheme
+              false,
               viscaf_master_,              // dynvisc viscosity in background fluid
               viscaf_slave_,               // dynvisc viscosity in embedded fluid
               kappa_m,                     // mortaring weighting
@@ -3205,12 +3205,12 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
       if(is_ls_coupling_side) //... for problems with cut interface defined by level-set field, currently only one-sided
       {
         ci = DRT::ELEMENTS::XFLUID::NitscheInterface<distype>::CreateNitscheCoupling_XFluidWDBC(
-          elemat1_epetra,elevec1_epetra,fldparaxfem_->IsViscousAdjointSymmetric());
+          elemat1_epetra,elevec1_epetra,*fldparaxfem_);
       }
       else if(is_mesh_coupling_side)
       {
         ci = DRT::ELEMENTS::XFLUID::NitscheInterface<distype>::CreateNitscheCoupling_XFluidWDBC(
-            coupl_ele,coupl_xyze,elemat1_epetra,elevec1_epetra,fldparaxfem_->IsViscousAdjointSymmetric());
+            coupl_ele,coupl_xyze,elemat1_epetra,elevec1_epetra,*fldparaxfem_);
       }
     }
     else // coupling
@@ -3233,12 +3233,12 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
       {
         // create interface for the embedded element and the associated side
         ci = DRT::ELEMENTS::XFLUID::NitscheInterface<distype>::CreateNitscheCoupling_TwoSided(
-            coupl_ele,coupl_xyze,elemat1_epetra,C_uiu,C_uui,eleCuiui,elevec1_epetra,rhC_ui,fldparaxfem_->IsViscousAdjointSymmetric());
+            coupl_ele,coupl_xyze,elemat1_epetra,C_uiu,C_uui,eleCuiui,elevec1_epetra,rhC_ui,*fldparaxfem_);
       }
       else // ... for xfluid-sided coupling
       {
         ci = DRT::ELEMENTS::XFLUID::NitscheInterface<distype>::CreateNitscheCoupling_XFluidSided(
-            coupl_ele,coupl_xyze,elemat1_epetra,C_uiu,C_uui,eleCuiui,elevec1_epetra,rhC_ui,fldparaxfem_->IsViscousAdjointSymmetric());
+            coupl_ele,coupl_xyze,elemat1_epetra,C_uiu,C_uui,eleCuiui,elevec1_epetra,rhC_ui,*fldparaxfem_);
       }
     }
 
@@ -3459,13 +3459,19 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
           // evaluate the coupling terms for coupling with current side
           // (or embedded element through current side)
           // time step n+1
+
+          const bool isImplPressureNewOst(my::fldparatimint_->IsFullImplPressureAndCont() && my::fldparatimint_->IsNewOSTImplementation());
+
+          const double pres_timefacfac(isImplPressureNewOst ? my::fldparatimint_->Dt() * surf_fac : timefacfac);
+
           ci->NIT_evaluateCoupling(
             normal_,                     // normal vector
-            timefacfac,                  // theta*dt
+            timefacfac,                  // theta*dt*fac
+            pres_timefacfac,             // impl. pressure with new OST: dt * fac, else theta*dt*fac
             viscaf_master_,              // dynvisc viscosity in background fluid
             viscaf_slave_,               // dynvisc viscosity in embedded fluid
-            kappa_m,                      // mortaring weighting
-            kappa_s,                      // mortaring weighting
+            kappa_m,                     // mortaring weighting
+            kappa_s,                     // mortaring weighting
             my::densaf_,                 // fluid density
             NIT_full_stab_fac,           // full Nitsche's penalty term scaling (viscous+convective part)
             my::funct_,                  // bg shape functions
@@ -3548,9 +3554,11 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
               );
             }
 
+            const double timefacfacn = surf_fac * (my::fldparatimint_->Dt()-my::fldparatimint_->TimeFac());
             ci->NIT_evaluateCouplingOldState(
-              normal_,                     // normal vector
-              surf_fac * (my::fldparatimint_->Dt()-my::fldparatimint_->TimeFac()), // scaling of rhs depending on time discretization scheme dt*(1-theta)
+              normal_,
+              timefacfacn,
+              isImplPressureNewOst,
               viscaf_master_,              // dynvisc viscosity in background fluid
               viscaf_slave_,               // dynvisc viscosity in embedded fluid
               kappa_m,                     // mortaring weighting
@@ -3560,12 +3568,10 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
               my::derxy_,                  // bg shape function gradient
               my::vderxyn_,                // bg grad u^n
               my::funct_.Dot(epren_),       // bg p^n
-              my::velintn_,                // bg u^n
+              my::velintn_,                 // bg u^n
               ivelintn_jump_,               // velocity jump at interface (i.e. [| u |])
               itractionn_jump_,             // traction jump at interface (i.e. [| -pI + \mu*[\nabla u + (\nabla u)^T]  |] \cdot n)
-              fldparaxfem_->InterfaceTermsPreviousState(), // only consistency terms or also adjoint and penalty?
-              NIT_full_stab_fac_n,                         // penalty parameter at n
-              fldparaxfem_->XffConvStabScaling()           // XFF inflow terms
+              NIT_full_stab_fac_n           // penalty parameter at n
             );
           }
         }

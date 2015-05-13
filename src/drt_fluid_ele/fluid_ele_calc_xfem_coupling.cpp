@@ -175,14 +175,14 @@ Teuchos::RCP<SlaveElementInterface<distype> > SlaveElementInterface<distype>::Cr
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 Teuchos::RCP<NitscheInterface<distype> > NitscheInterface<distype>::CreateNitscheCoupling_XFluidWDBC(
-  Epetra_SerialDenseMatrix &  C_umum,                 ///< C_umum coupling matrix
-  Epetra_SerialDenseMatrix &  rhC_um,                 ///< C_um coupling rhs
-  bool  is_viscAdjointSymmetric ///< flag that indicates equal signs of Nitsche's standard & adjoint viscous term
+  Epetra_SerialDenseMatrix &  C_umum,
+  Epetra_SerialDenseMatrix &  rhC_um,
+  const DRT::ELEMENTS::FluidEleParameterXFEM& fldparaxfem
 )
 {
   NitscheInterface * nit = NULL;
   typedef NitscheCoupling<distype,DRT::Element::dis_none,3> NitscheCouplType;
-  nit = new NitscheCouplType(C_umum,rhC_um,is_viscAdjointSymmetric);
+  nit = new NitscheCouplType(C_umum,rhC_um,fldparaxfem);
 
   return Teuchos::rcp(nit);
 }
@@ -190,11 +190,11 @@ Teuchos::RCP<NitscheInterface<distype> > NitscheInterface<distype>::CreateNitsch
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 Teuchos::RCP<NitscheInterface<distype> > NitscheInterface<distype>::CreateNitscheCoupling_XFluidWDBC(
-  DRT::Element *              bele,           ///< boundary element
-  Epetra_SerialDenseMatrix &  bele_xyz,       ///< global node coordinates of boundary element
-  Epetra_SerialDenseMatrix &  C_umum,         ///< C_umum coupling matrix
-  Epetra_SerialDenseMatrix &  rhC_um,         ///< C_um coupling rhs
-  bool                        is_viscAdjointSymmetric ///< flag that indicates equal signs of Nitsche's standard & adjoint viscous term
+  DRT::Element *              bele,
+  Epetra_SerialDenseMatrix &  bele_xyz,
+  Epetra_SerialDenseMatrix &  C_umum,
+  Epetra_SerialDenseMatrix &  rhC_um,
+  const DRT::ELEMENTS::FluidEleParameterXFEM& fldparaxfem
 )
 {
   NitscheInterface * nit = NULL;
@@ -225,19 +225,19 @@ Teuchos::RCP<NitscheInterface<distype> > NitscheInterface<distype>::CreateNitsch
     case DRT::Element::quad4:
     {
       typedef NitscheCoupling<distype,DRT::Element::quad4,3> NitscheCouplType;
-      nit = new NitscheCouplType(bele_xyz,C_umum,rhC_um,is_viscAdjointSymmetric);
+      nit = new NitscheCouplType(bele_xyz,C_umum,rhC_um,fldparaxfem);
       break;
     }
     case DRT::Element::quad8:
     {
       typedef NitscheCoupling<distype,DRT::Element::quad8,3> NitscheCouplType;
-      nit = new NitscheCouplType(bele_xyz,C_umum,rhC_um,is_viscAdjointSymmetric);
+      nit = new NitscheCouplType(bele_xyz,C_umum,rhC_um,fldparaxfem);
       break;
     }
     case DRT::Element::quad9:
     {
       typedef NitscheCoupling<distype,DRT::Element::quad9,3> NitscheCouplType;
-      nit = new NitscheCouplType(bele_xyz,C_umum,rhC_um,is_viscAdjointSymmetric);
+      nit = new NitscheCouplType(bele_xyz,C_umum,rhC_um,fldparaxfem);
       break;
     }
     default:
@@ -251,15 +251,15 @@ Teuchos::RCP<NitscheInterface<distype> > NitscheInterface<distype>::CreateNitsch
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 Teuchos::RCP<NitscheInterface<distype> > NitscheInterface<distype>::CreateNitscheCoupling_XFluidSided(
-  DRT::Element *              bele,            ///< boundary element
-  Epetra_SerialDenseMatrix &  bele_xyz,        ///< global node coordinates of boundary element
-  Epetra_SerialDenseMatrix &  C_umum,          ///< C_umum coupling matrix
-  Epetra_SerialDenseMatrix &  C_usum,          ///< C_usum coupling matrix
-  Epetra_SerialDenseMatrix &  C_umus,          ///< C_umus coupling matrix
-  Epetra_SerialDenseMatrix &  C_usus,          ///< C_usus coupling matrix
-  Epetra_SerialDenseMatrix &  rhC_um,          ///< C_um coupling rhs
-  Epetra_SerialDenseMatrix &  rhC_us,          ///< C_us coupling rhs
-  bool                        is_viscAdjointSymmetric ///< flag that indicates equal signs of Nitsche's standard & adjoint viscous term
+  DRT::Element *              bele,
+  Epetra_SerialDenseMatrix &  bele_xyz,
+  Epetra_SerialDenseMatrix &  C_umum,
+  Epetra_SerialDenseMatrix &  C_usum,
+  Epetra_SerialDenseMatrix &  C_umus,
+  Epetra_SerialDenseMatrix &  C_usus,
+  Epetra_SerialDenseMatrix &  rhC_um,
+  Epetra_SerialDenseMatrix &  rhC_us,
+  const DRT::ELEMENTS::FluidEleParameterXFEM& fldparaxfem
 )
 {
   NitscheInterface * nit = NULL;
@@ -287,19 +287,19 @@ Teuchos::RCP<NitscheInterface<distype> > NitscheInterface<distype>::CreateNitsch
     case DRT::Element::quad4:
     {
       typedef NitscheCoupling<distype,DRT::Element::quad4,3> NitscheCouplType;
-      nit = new NitscheCouplType(bele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,is_viscAdjointSymmetric);
+      nit = new NitscheCouplType(bele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,fldparaxfem);
       break;
     }
     case DRT::Element::quad8:
     {
       typedef NitscheCoupling<distype,DRT::Element::quad8,3> NitscheCouplType;
-      nit = new NitscheCouplType(bele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,is_viscAdjointSymmetric);
+      nit = new NitscheCouplType(bele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,fldparaxfem);
       break;
     }
     case DRT::Element::quad9:
     {
       typedef NitscheCoupling<distype,DRT::Element::quad9,3> NitscheCouplType;
-      nit = new NitscheCouplType(bele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,is_viscAdjointSymmetric);
+      nit = new NitscheCouplType(bele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,fldparaxfem);
       break;
     }
     default:
@@ -325,19 +325,19 @@ Teuchos::RCP<NitscheInterface<distype> > NitscheInterface<distype>::CreateNitsch
     case DRT::Element::quad4:
     {
       typedef NitscheCoupling<distype,DRT::Element::quad4,4> NitscheCouplType;
-      nit = new NitscheCouplType(bele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,is_viscAdjointSymmetric);
+      nit = new NitscheCouplType(bele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,fldparaxfem);
       break;
     }
     case DRT::Element::quad8:
     {
       typedef NitscheCoupling<distype,DRT::Element::quad8,4> NitscheCouplType;
-      nit = new NitscheCouplType(bele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,is_viscAdjointSymmetric);
+      nit = new NitscheCouplType(bele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,fldparaxfem);
       break;
     }
     case DRT::Element::quad9:
     {
       typedef NitscheCoupling<distype,DRT::Element::quad9,4> NitscheCouplType;
-      nit = new NitscheCouplType(bele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,is_viscAdjointSymmetric);
+      nit = new NitscheCouplType(bele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,fldparaxfem);
       break;
     }
     default:
@@ -354,15 +354,15 @@ Teuchos::RCP<NitscheInterface<distype> > NitscheInterface<distype>::CreateNitsch
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 Teuchos::RCP<NitscheInterface<distype> > NitscheInterface<distype>::CreateNitscheCoupling_TwoSided(
-  DRT::Element *              vele,            ///< volumetric element to couple with
-  Epetra_SerialDenseMatrix &  vele_xyz,        ///< global node coordinates of volumetric element
-  Epetra_SerialDenseMatrix &  C_umum,          ///< C_umum coupling matrix
-  Epetra_SerialDenseMatrix &  C_usum,          ///< C_usum coupling matrix
-  Epetra_SerialDenseMatrix &  C_umus,          ///< C_umus coupling matrix
-  Epetra_SerialDenseMatrix &  C_usus,          ///< C_usus coupling matrix
-  Epetra_SerialDenseMatrix &  rhC_um,          ///< C_um coupling rhs
-  Epetra_SerialDenseMatrix &  rhC_us,          ///< C_us coupling rhs
-  bool                        is_viscAdjointSymmetric ///< flag that indicates equal signs of Nitsche's standard & adjoint viscous term
+  DRT::Element *              vele,
+  Epetra_SerialDenseMatrix &  vele_xyz,
+  Epetra_SerialDenseMatrix &  C_umum,
+  Epetra_SerialDenseMatrix &  C_usum,
+  Epetra_SerialDenseMatrix &  C_umus,
+  Epetra_SerialDenseMatrix &  C_usus,
+  Epetra_SerialDenseMatrix &  rhC_um,
+  Epetra_SerialDenseMatrix &  rhC_us,
+  const DRT::ELEMENTS::FluidEleParameterXFEM& fldparaxfem
 )
 {
   NitscheInterface * nit = NULL;
@@ -394,19 +394,19 @@ Teuchos::RCP<NitscheInterface<distype> > NitscheInterface<distype>::CreateNitsch
     case DRT::Element::hex8:
     {
       typedef NitscheCoupling<distype,DRT::Element::hex8,4> NitscheCouplType;
-      nit = new NitscheCouplType(vele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,is_viscAdjointSymmetric);
+      nit = new NitscheCouplType(vele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,fldparaxfem);
       break;
     }
     case DRT::Element::hex20:
     {
       typedef NitscheCoupling<distype,DRT::Element::hex20,4> NitscheCouplType;
-      nit = new NitscheCouplType(vele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,is_viscAdjointSymmetric);
+      nit = new NitscheCouplType(vele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,fldparaxfem);
       break;
     }
     case DRT::Element::hex27:
     {
       typedef NitscheCoupling<distype,DRT::Element::hex27,4> NitscheCouplType;
-      nit = new NitscheCouplType(vele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,is_viscAdjointSymmetric);
+      nit = new NitscheCouplType(vele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,fldparaxfem);
       break;
     }
     default:

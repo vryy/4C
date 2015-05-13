@@ -25,6 +25,7 @@ namespace DRT
 {
   namespace ELEMENTS
   {
+    class FluidEleParameterXFEM;
     namespace XFLUID
     {
       //! class for concrete coupling slave element
@@ -287,30 +288,16 @@ namespace DRT
         NitscheCoupling(
             Epetra_SerialDenseMatrix &  C_umum,          ///< C_umum coupling matrix
             Epetra_SerialDenseMatrix &  rhC_um,          ///< C_um coupling rhs
-            bool isViscAdjointSymmetric = true
-        ) :
-          SlaveElementRepresentation<distype,slave_distype,slave_numdof>(),
-          C_umum_(C_umum.A(), true),
-          rhC_um_(rhC_um.A(), true),
-          adj_visc_scale_(isViscAdjointSymmetric ? 1.0 : -1.0),
-          eval_coupling_(false)
-        {
-        }
+            const DRT::ELEMENTS::FluidEleParameterXFEM& fldparaxfem ///< specific XFEM based fluid parameters
+        );
 
         //! ctor for one-sided (xfluid weak dirichlet) problems (interface defined by mesh)
         NitscheCoupling(
-          Epetra_SerialDenseMatrix &  slave_xyze, ///< global node coordinates of slave element
-          Epetra_SerialDenseMatrix &  C_umum,          ///< C_umum coupling matrix
-          Epetra_SerialDenseMatrix &  rhC_um,          ///< C_um coupling rhs
-          bool isViscAdjointSymmetric = true
-        ) :
-          SlaveElementRepresentation<distype,slave_distype,slave_numdof>(slave_xyze),
-          C_umum_(C_umum.A(), true),
-          rhC_um_(rhC_um.A(), true),
-          adj_visc_scale_(isViscAdjointSymmetric ? 1.0 : -1.0),
-          eval_coupling_(false)
-        {
-        }
+          Epetra_SerialDenseMatrix &  slave_xyze,                  ///< global node coordinates of slave element
+          Epetra_SerialDenseMatrix &  C_umum,                      ///< C_umum coupling matrix
+          Epetra_SerialDenseMatrix &  rhC_um,                      ///< C_um coupling rhs
+          const DRT::ELEMENTS::FluidEleParameterXFEM& fldparaxfem  ///< specific XFEM based fluid parameters
+        );
 
         //! ctor for two-sided problems
         NitscheCoupling(
@@ -321,19 +308,8 @@ namespace DRT
           Epetra_SerialDenseMatrix &  C_usus,          ///< C_usus coupling matrix
           Epetra_SerialDenseMatrix &  rhC_um,          ///< C_um coupling rhs
           Epetra_SerialDenseMatrix &  rhC_us,          ///< C_us coupling rhs
-          bool isViscAdjointSymmetric = true           ///< symmetric or skew-symmetric formulation of Nitsche's adjoint viscous term
-        ) :
-          SlaveElementRepresentation<distype,slave_distype,slave_numdof>(slave_xyze),
-          C_umum_(C_umum.A(), true),
-          C_usum_(C_usum.A(), true),
-          C_umus_(C_umus.A(), true),
-          C_usus_(C_usus.A(), true),
-          rhC_um_(rhC_um.A(), true),
-          rhC_us_(rhC_us.A(), true),
-          adj_visc_scale_(isViscAdjointSymmetric ? 1.0 : -1.0),
-          eval_coupling_(true)
-        {
-        }
+          const DRT::ELEMENTS::FluidEleParameterXFEM& fldparaxfem ///< specific XFEM based fluid parameters
+        );
 
         //! add contributions from convective stabilization
         //! this method is applied in a non-Nitsche context (e.g. MHVS) by
@@ -347,14 +323,14 @@ namespace DRT
           const double &                                        NIT_stab_fac_conv,      ///< full Nitsche's penalty term scaling (viscous+convective part)
           const double &                                        timefacfac,             ///< theta*dt
           const LINALG::Matrix<nsd_,1> &                        ivelint_jump,           ///< prescribed interface velocity, Dirichlet values or jump height for coupled problems
-          const INPAR::XFEM::EleCouplingCondType &              cond_type,              ///< condition type
-          INPAR::XFEM::XFF_ConvStabScaling                      xff_conv_stab = INPAR::XFEM::XFF_ConvStabScaling_none         ///< type of convective stabilization in XFF-problems
+          const INPAR::XFEM::EleCouplingCondType &              cond_type              ///< condition type
         );
 
         //! build coupling matrices and assemble terms for Nitsche's (NIT) method
         void NIT_evaluateCoupling(
           const LINALG::Matrix<nsd_,1> &    normal,                 ///< outward pointing normal (defined by the coupling partner, that determines the interface traction)
           const double &                    timefacfac,             ///< theta*dt*fac
+          const double &                    pres_timefacfac,        ///< pressure time scaling * fac
           const double &                    visceff_m,              ///< viscosity in coupling master fluid
           const double &                    visceff_s,              ///< viscosity in coupling slave fluid
           const double &                    kappa_m,                ///< mortaring weight for coupling master
@@ -367,14 +343,14 @@ namespace DRT
           const double &                    pres_m,                 ///< coupling master pressure
           const LINALG::Matrix<nsd_,1> &    velint_m,               ///< coupling master interface velocity
           const LINALG::Matrix<nsd_,1> &    ivelint_jump,           ///< prescribed interface velocity, Dirichlet values or jump height for coupled problems
-          const LINALG::Matrix<nsd_,1> &    itraction_jump,         ///< prescribed interface traction, jump height for coupled problems
-          INPAR::XFEM::XFF_ConvStabScaling  xff_conv_stab = INPAR::XFEM::XFF_ConvStabScaling_none ///< type of convective stabilization in XFF-problems
+          const LINALG::Matrix<nsd_,1> &    itraction_jump          ///< prescribed interface traction, jump height for coupled problems
         );
 
         //! add rhs contributions from old time step in Nitsche's (NIT) method
         void NIT_evaluateCouplingOldState(
           const LINALG::Matrix<nsd_,1> &           normal,                  ///< outward pointing normal (defined by the coupling partner, that determines the interface traction)
           const double &                           timefacfacn,             ///< dt*(1-theta)*fac
+          bool                                     isImplPressure,          ///< flag for implicit pressure treatment
           const double &                           visceff_m,               ///< viscosity in coupling master fluid
           const double &                           visceff_s,               ///< viscosity in coupling slave fluid
           const double &                           kappa_m,                 ///< mortaring weight for coupling master
@@ -387,9 +363,7 @@ namespace DRT
           const LINALG::Matrix<nsd_,1> &           velintn_m,               ///< coupling master interface velocity
           const LINALG::Matrix<nsd_,1> &           ivelintn_jump,           ///< prescribed interface velocity, Dirichlet values or jump height for coupled problems
           const LINALG::Matrix<nsd_,1> &           itractionn_jump,         ///< prescribed interface traction, jump height for coupled problems
-          INPAR::XFEM::InterfaceTermsPreviousState prev_state = INPAR::XFEM::PreviousState_only_consistency, ///< evaluate all terms or only consistency term at previous state
-          const double                             NIT_full_stab_facn = 0.0, ///< full Nitsche's penalty term scaling (viscous+convective part)
-          INPAR::XFEM::XFF_ConvStabScaling         xff_conv_stab = INPAR::XFEM::XFF_ConvStabScaling_none ///< type of convective stabilization in XFF-problems
+          const double                             NIT_full_stab_facn = 0.0 ///< full Nitsche's penalty term scaling (viscous+convective part)
         );
 
       private:
@@ -404,196 +378,150 @@ namespace DRT
         //! evaluate pressure-consistency term for Nitsche's method (scaled with master side's weighting factor)
         void NIT_p_Consistency_MasterTerms(
           const double &                            pres_m,                       ///< master pressure
-          const LINALG::Matrix<nen_,1> &            funct_m_timefacfac_km,        ///< funct * timefacfac *kappa_m
-          const LINALG::Matrix<slave_nen_,1> &      funct_s_timefacfac_km,        ///< funct_s * timefacfac *kappa_m
-          const LINALG::Matrix<nsd_,1> &            normal,                       ///< normal vector
-          const LINALG::Matrix<slave_nen_,nen_> &   funct_s_m_dyad_timefacfac_km, ///< (funct_s^T * funct) * timefacfac *kappa_m
-          const LINALG::Matrix<nen_,nen_> &         funct_m_m_dyad_timefacfac_km  ///< (funct^T * funct) * timefacfac *kappa_m
+          const LINALG::Matrix<nen_,1> &            funct_m,                      ///< funct
+          const LINALG::Matrix<nsd_,1> &            normal_timefacfac_km          ///< normal vector * timefacfac * *kappa_m
         );
 
         //! evaluate pressure-consistency term for Nitsche's method (scaled with slave side's weighting factor)
         void NIT_p_Consistency_SlaveTerms(
-          const double &                                pres_s,                       ///< slave pressure
-          const LINALG::Matrix<nen_,1> &                funct_m_timefacfac_ks,        ///< funct * timefacfac *kappa_m
-          const LINALG::Matrix<slave_nen_,1> &          funct_s_timefacfac_ks,        ///< funct_s * timefacfac *kappa_m
-          const LINALG::Matrix<slave_nen_,nen_> &       funct_s_m_dyad_timefacfac_ks, ///< (funct_s^T * funct) * timefacfac *kappa_m
-          const LINALG::Matrix<slave_nen_,slave_nen_> & funct_s_s_dyad_timefacfac_ks, ///< (funct^T * funct) * timefacfac *kappa_m
-          const LINALG::Matrix<nsd_,1> &                normal                        ///< normal vector
+          const double &                            pres_s,                       ///< slave pressure
+          const LINALG::Matrix<nen_,1> &            funct_m      ,                ///< funct
+          const LINALG::Matrix<nsd_,1> &            normal_timefacfac_ks          ///< normal vector
         );
 
         //! evaluate pressure-adjoint-consistency term for Nitsche's method (scaled with master side's weighting factor)
         void NIT_p_AdjointConsistency_MasterTerms(
-          const double &                          velint_normal_m,              ///< velocity in normal direction
-          const double &                          velint_normal_s,              ///< interface velocity in normal direction
-          const LINALG::Matrix<nen_,1> &          funct_m_timefacfac_km,        ///< funct * timefacfac *kappa_m
-          const LINALG::Matrix<slave_nen_,nen_> & funct_s_m_dyad_timefacfac_km, ///< (funct^T * funct_s) * timefacfac *kappa_m
-          const LINALG::Matrix<nen_,nen_> &       funct_m_m_dyad_timefacfac_km, ///< (funct^T * funct) * timefacfac *kappa_m
-          const LINALG::Matrix<nsd_,1> &          normal                        ///< normal vector
+          const LINALG::Matrix<nen_,1> &            funct_m,                          ///< funct
+          const LINALG::Matrix<nsd_,1> &            normal_timefacfac_km,             ///< normal vector
+          const double &                            velint_diff_normal_timefacfac_km  ///< (velint_m - velint_s) * normal * timefacfac *kappa_m
         );
 
         //! evaluate pressure-adjoint-consistency term for Nitsche's method (scaled with slave side's weighting factor)
         void NIT_p_AdjointConsistency_SlaveTerms(
-          const double &                                velint_normal_m,              ///< velocity in normal direction
-          const double &                                velint_normal_s,              ///< interface velocity in normal direction
-          const LINALG::Matrix<slave_nen_,1> &          funct_s_timefacfac_ks,        ///< funct_s * timefacfac * kappas
-          const LINALG::Matrix<slave_nen_,nen_> &       funct_s_m_dyad_timefacfac_ks, ///< (funct_s^T * funct) * timefacfac *kappas
-          const LINALG::Matrix<slave_nen_,slave_nen_> & funct_s_s_dyad_timefacfac_ks, ///< (funct_s^T * funct_s) * timefacfac *kappas
-          const LINALG::Matrix<nsd_,1> &                normal                        ///< normal vector
+            const LINALG::Matrix<nsd_,1> &          normal_timefacfac_ks,            ///< normal vector
+            const double &                          velint_diff_normal_timefacfac_ks ///< (velint_m - velint_s) * normal * timefacfac * kappa_s
         );
 
         //! evaluate viscous-consistency term for Nitsche's method (scaled with master side's weighting factor)
         void NIT_visc_Consistency_MasterTerms(
-          const LINALG::Matrix<nsd_,nen_> &        derxy_m,                      ///< master deriv
-          const LINALG::Matrix<nsd_,nsd_> &        vderxy_m,                     ///< master velocity gradient
-          const LINALG::Matrix<nen_,1> &           funct_m_viscm_timefacfac_km,  ///< funct_m*mu_m*timefacfac
-          const LINALG::Matrix<slave_nen_,1> &     funct_s_viscm_timefacfac_km,  ///< funct_s*mu_m*timefacfac
-          const LINALG::Matrix<nsd_,1> &           normal                        ///< normal vector
+          const LINALG::Matrix<nsd_,nen_> &         derxy_m,                      ///< master deriv
+          const LINALG::Matrix<nen_,1> &            funct_m                       ///< funct_m
         );
 
         //! evaluate viscous-consistency term for Nitsche's method (scaled with slave side's weighting factor)
         void NIT_visc_Consistency_SlaveTerms(
-          const LINALG::Matrix<nsd_,slave_nen_> &  derxy_s,                      ///< slave shape function derivatives
-          const LINALG::Matrix<nen_,1> &           funct_m_viscs_timefacfac_ks,  ///< funct_m*mu_m*timefacfac
-          const LINALG::Matrix<slave_nen_,1> &     funct_s_viscs_timefacfac_ks,  ///< funct_s*mu_m*timefacfac
-          const LINALG::Matrix<nsd_,1> &           normal                        ///< normal vector
+          const LINALG::Matrix<nsd_,slave_nen_> &   derxy_s,                      ///< slave shape function derivatives
+          const LINALG::Matrix<nen_,1> &            funct_m                       ///< funct_m
         );
 
         //! evaluate viscous-adjoint-consistency term for Nitsche's method (scaled with master side's weighting factor)
         void NIT_visc_AdjointConsistency_MasterTerms(
-          const LINALG::Matrix<nsd_,1>&            velint_m,                          ///< velocity
-          const LINALG::Matrix<nsd_,1>&            velint_s,                          ///< interface velocity
-          const LINALG::Matrix<nsd_,nen_> &        derxy_m_viscm_timefacfac_km,       ///< master shape function derivatives * timefacfac * 2 * mu_m * kappa_m
-          const LINALG::Matrix<nen_,1> &           funct_m,                           ///< embedded element funct *mu*timefacfac
-          const LINALG::Matrix<slave_nen_,1> &     funct_s,                           ///< embedded element funct *mu*timefacfac
-          const LINALG::Matrix<nsd_,1> &           normal                             ///< normal vector
+          const LINALG::Matrix<nsd_,nen_> &         derxy_m_viscm_timefacfac_km,  ///< master shape function derivatives * timefacfac * 2 * mu_m * kappa_m
+          const LINALG::Matrix<nen_,1> &            funct_m,                      ///< funct_m
+          const LINALG::Matrix<nsd_,1> &            normal                        ///< normal vector
         );
 
         //! evaluate viscous-adjoint-consistency term for Nitsche's method (scaled with slave side's weighting factor)
         void NIT_visc_AdjointConsistency_SlaveTerms(
-          const LINALG::Matrix<nsd_,1>&            velint_m,                          ///< velocity
-          const LINALG::Matrix<nsd_,1>&            velint_s,                          ///< interface velocity
-          const LINALG::Matrix<nen_,1> &           funct_m,                           ///< embedded element funct *mu*timefacfac
-          const LINALG::Matrix<slave_nen_,1> &     funct_s,                           ///< embedded element funct *mu*timefacfac
-          const LINALG::Matrix<nsd_,slave_nen_> &  derxy_s_viscs_timefacfac_ks,       ///< master shape function derivatives * timefacfac * 2 * mu_m * kappa_m
-          const LINALG::Matrix<nsd_,1> &           normal
+          const LINALG::Matrix<nen_,1> &            funct_m,                      ///< funct_m
+          const LINALG::Matrix<nsd_,slave_nen_> &   derxy_s_viscs_timefacfac_ks,  ///< master shape function derivatives * timefacfac * 2 * mu_m * kappa_m
+          const LINALG::Matrix<nsd_,1> &            normal
         );
 
         //! evaluate rhs of pressure-consistency term for Nitsche's method (scaled with master side's weighting factor)
         void NIT_p_Consistency_MasterRHS(
-          const double &                            pres_m,                       ///< master pressure
-          const LINALG::Matrix<nen_,1> &            funct_m_timefacfac_km,        ///< funct * timefacfac *kappa_m
-          const LINALG::Matrix<slave_nen_,1> &      funct_s_timefacfac_km,        ///< funct_s * timefacfac *kappa_m
-          const LINALG::Matrix<nsd_,1> &            normal                        ///< normal vector
+          const double &                           pres_s,                        ///< master pressure
+          const LINALG::Matrix<nen_,1> &           funct_m,                       ///< funct_m
+          const LINALG::Matrix<nsd_,1> &           normal_timefacfac_km           ///< normal vector * timefacfac * kappa_m
         );
 
         //! evaluate rhs of pressure-consistency term for Nitsche's method (scaled with slave side's weighting factor)
         void NIT_p_Consistency_SlaveRHS(
-          const double &                                pres_s,                       ///< slave pressure
-          const LINALG::Matrix<nen_,1> &                funct_m_timefacfac_ks,        ///< funct * timefacfac *kappa_m
-          const LINALG::Matrix<slave_nen_,1> &          funct_s_timefacfac_ks,        ///< funct_s * timefacfac *kappa_m
-          const LINALG::Matrix<nsd_,1> &                normal                        ///< normal vector
+          const double &                           pres_s,                        ///< slave pressure
+          const LINALG::Matrix<nen_,1> &           funct_m,                       ///< funct_m
+          const LINALG::Matrix<nsd_,1> &           normal_timefacfac_ks           ///< normal vector * timefacfac * kappa_s
         );
 
         //! evaluate rhs of pressure-adjoint-consistency term for Nitsche's method (scaled with master side's weighting factor)
         void NIT_p_AdjointConsistency_MasterRHS(
-          const double &                          velint_normal_m,              ///< velocity in normal direction
-          const double &                          velint_normal_s,              ///< interface velocity in normal direction
-          const LINALG::Matrix<nen_,1> &          funct_m_timefacfac_km,        ///< funct * timefacfac *kappa_m
-          const LINALG::Matrix<nsd_,1> &          normal                        ///< normal vector
+          const double &                           velint_diff_normal_timefacfac_km,  ///<  (velint_m - velint_s) * normal * timefacfac *kappa_m
+          const LINALG::Matrix<nen_,1> &           funct_m                            ///< funct_m
         );
 
         //! evaluate rhs of pressure-adjoint-consistency term for Nitsche's method (scaled with slave side's weighting factor)
         void NIT_p_AdjointConsistency_SlaveRHS(
-          const double &                                velint_normal_m,              ///< velocity in normal direction
-          const double &                                velint_normal_s,              ///< interface velocity in normal direction
-          const LINALG::Matrix<slave_nen_,1> &          funct_s_timefacfac_ks         ///< funct_s * timefacfac * kappas
+            const double &                         velint_diff_normal_timefacfac_ks   ///<  (velint_m - velint_s) * normal * timefacfac *kappa_s
         );
 
         //! evaluate rhs of viscous-consistency term for Nitsche's method (scaled with master side's weighting factor)
         void NIT_visc_Consistency_MasterRHS(
-          const LINALG::Matrix<nen_,1> &           funct_m_viscm_timefacfac_km,  ///< funct_m*mu_m*timefacfac
-          const LINALG::Matrix<slave_nen_,1> &     funct_s_viscm_timefacfac_km,  ///< funct_s*mu_m*timefacfac
-          const LINALG::Matrix<nsd_,1> &           normal                        ///< normal vector
+          const LINALG::Matrix<nen_,1> &           funct_m                            ///< funct_m
         );
 
         //! evaluate rhs of viscous-consistency term for Nitsche's method (scaled with slave side's weighting factor)
         void NIT_visc_Consistency_SlaveRHS(
-          const LINALG::Matrix<nsd_,nsd_> &        vderxy_s,                     ///< slave velocity gradient
-          const LINALG::Matrix<nen_,1> &           funct_m_viscs_timefacfac_ks,  ///< funct_m*mu_m*timefacfac
-          const LINALG::Matrix<slave_nen_,1> &     funct_s_viscs_timefacfac_ks,  ///< funct_s*mu_m*timefacfac
-          const LINALG::Matrix<nsd_,1> &           normal                        ///< normal vector
+          const LINALG::Matrix<nen_,1> &           funct_m                            ///< funct_m
         );
 
         //! evaluate rhs of viscous-adjoint-consistency term for Nitsche's method (scaled with master side's weighting factor)
         void NIT_visc_AdjointConsistency_MasterRHS(
-          const LINALG::Matrix<nsd_,1>&            velint_m,                          ///< velocity
-          const LINALG::Matrix<nsd_,1>&            velint_s,                          ///< interface velocity
+          const LINALG::Matrix<nsd_,1>&            velint_m,                          ///< master velocity
+          const LINALG::Matrix<nsd_,1>&            velint_s,                          ///< slave velocity
           const LINALG::Matrix<nsd_,nen_> &        derxy_m_viscm_timefacfac_km,       ///< master shape function derivatives * timefacfac * 2 * mu_m * kappa_m
           const LINALG::Matrix<nsd_,1> &           normal                             ///< normal vector
         );
 
         //! evaluate rhs of viscous-adjoint-consistency term for Nitsche's method (scaled with slave side's weighting factor)
         void NIT_visc_AdjointConsistency_SlaveRHS(
-          const LINALG::Matrix<nsd_,1>&            velint_m,                          ///< velocity
-          const LINALG::Matrix<nsd_,1>&            velint_s,                          ///< interface velocity
+          const LINALG::Matrix<nsd_,1>&            velint_m,                          ///< master velocity
+          const LINALG::Matrix<nsd_,1>&            velint_s,                          ///< slave velocity
           const LINALG::Matrix<nsd_,slave_nen_> &  derxy_s_viscs_timefacfac_ks,       ///< master shape function derivatives * timefacfac * 2 * mu_m * kappa_m
           const LINALG::Matrix<nsd_,1> &           normal
         );
 
         //!  evaluate Nitsche's penalty term
         void NIT_Stab_Penalty(
-          const LINALG::Matrix<nen_,1>&                 funct_m_timefacfac,           ///< funct * timefacfac
-          const LINALG::Matrix<nen_,nen_>&              funct_m_m_dyad_timefacfac,    ///< (funct^T * funct) * timefacfac
-          const LINALG::Matrix<slave_nen_,1>&           funct_s_timefacfac,           ///< funct_s^T * timefacfac
-          const LINALG::Matrix<slave_nen_,nen_>&        funct_s_m_dyad_timefacfac,    ///< (funct_s^T * funct) * timefacfac
-          const LINALG::Matrix<slave_nen_,slave_nen_>&  funct_s_s_dyad_timefacfac,    ///< (funct_s^T * funct_s) * timefacfac
-          const double &                                stabfac                       ///< stabilization factor
+            const LINALG::Matrix<nen_,1>&          funct_m,         ///< funct
+            const double &                         stabfac,         ///< stabilization factor
+            const double &                         timefacfac       ///< time integration factor
         );
 
         //!  evaluate only the master side's part of Nitsche's penalty term
         void NIT_Stab_Penalty_MasterTerms(
-          const LINALG::Matrix<nen_,1>&                 funct_m_timefacfac,           ///< funct * timefacfac
-          const LINALG::Matrix<nen_,nen_>&              funct_m_m_dyad_timefacfac,    ///< (funct^T * funct) * timefacfac
-          const double &                                stabfac
+          const LINALG::Matrix<nen_,1>&            funct_m,         ///< funct
+          const double &                           stabfac,         ///< Nitsche stabilization factor
+          const double &                           timefacfac       ///< time integration scaling
         );
 
         //!  evaluate master side's part of rhs contribution from Nitsche's penalty term
         void NIT_Stab_Penalty_MasterRHS(
-          const LINALG::Matrix<nsd_,1>&                 velint_m,                     ///< velocity at integration point
-          const LINALG::Matrix<nsd_,1>&                 velint_s,                     ///< interface velocity at integration point
-          const LINALG::Matrix<nen_,1>&                 funct_m_timefacfac,           ///< funct_m^T * timefacfac
-          const double &                                stabfac                       ///< stabilization factor
+            const LINALG::Matrix<nen_,1>&          funct_m,         ///< funct
+            const double &                         stabfac,         ///< stabilization factor
+            const double &                         timefacfac       ///< time integration scaling
         );
 
         //!  evaluate slave side's part of rhs contribution from Nitsche's penalty term
         void NIT_Stab_Penalty_SlaveRHS(
-          const LINALG::Matrix<nsd_,1>&                 velint_m,                     ///< velocity at integration point
-          const LINALG::Matrix<nsd_,1>&                 velint_s,                     ///< interface velocity at integration point
-          const LINALG::Matrix<slave_nen_,1>&           funct_s_timefacfac,           ///< funct_s^T * timefacfac
-          const double &                                stabfac                      ///< stabilization factor
+          const double &                           stabfac,         ///< stabilization factor
+          const double &                           timefacfac       ///< time integration scaling
         );
 
         //! add stabilizing terms due to cross-interface convective mass transport (fluid-fluid only)
         void NIT_Stab_Inflow_AveragedTerm(
-          const LINALG::Matrix<nsd_,1>&                 velint_m,                     ///< velocity at integration point
-          const LINALG::Matrix<nsd_,1>&                 velint_s,                     ///< interface velocity at integration point
-          const LINALG::Matrix<nen_,1>&                 funct_m_timefacfac,           ///< funct * timefacfac
-          const LINALG::Matrix<nen_,nen_>&              funct_m_m_dyad_timefacfac,    ///< (funct^T * funct) * timefacfac
-          const LINALG::Matrix<slave_nen_,1>&           funct_s_timefacfac,           ///< funct_s^T * timefacfac
-          const LINALG::Matrix<slave_nen_,nen_>&        funct_s_m_dyad_timefacfac,    ///< (funct_s^T * funct) * timefacfac
-          const LINALG::Matrix<slave_nen_,slave_nen_> & funct_s_s_dyad_timefacfac,    ///< (funct_s^T * funct_s) * timefacfac
-          const LINALG::Matrix<nsd_,1>&                 normal,                       ///< normal vector n^m
-          const double &                                density                       ///< fluid density
+          const LINALG::Matrix<nen_,1>&            funct_m,         ///< funct
+          const LINALG::Matrix<nsd_,1>&            velint_m,        ///< master velocity
+          const LINALG::Matrix<nsd_,1>&            normal,          ///< normal vector n^m
+          const double &                           density,         ///< fluid density
+          const double &                           timefacfac       ///< timefac * fac
         );
 
         //! add stabilizing terms due to cross-interface convective mass transport (fluid-fluid only, RHS)
         void NIT_Stab_Inflow_AveragedTermRHS(
-          const LINALG::Matrix<nsd_,1>&                 velint_m,                     ///< velocity at integration point
-          const LINALG::Matrix<nsd_,1>&                 velint_s,                     ///< interface velocity at integration point
-          const LINALG::Matrix<nen_,1>&                 funct_m_timefacfac,           ///< funct * timefacfac
-          const LINALG::Matrix<slave_nen_,1>&           funct_s_timefacfac,           ///< funct_s^T * timefacfac
-          const LINALG::Matrix<nsd_,1>&                 normal,                       ///< normal vector n^m
-          const double &                                density                       ///< fluid density
+          const LINALG::Matrix<nen_,1>&            funct_m,         ///< funct
+          const LINALG::Matrix<nsd_,1>&            velint_m,        ///< master velocity
+          const LINALG::Matrix<nsd_,1>&            normal,          ///< normal vector n^m
+          const double &                           density,         ///< fluid density
+          const double &                           timefacfac       ///< timefac * fac
         );
 
       private:
@@ -642,6 +570,9 @@ namespace DRT
         static unsigned sPres(unsigned inod){ return inod*slave_numdof + Pres; }
         //@}
 
+        /// specific XFEM based fluid parameters
+        const DRT::ELEMENTS::FluidEleParameterXFEM& fldparaxfem_;
+
         LINALG::Matrix<master_numdof_*nen_,master_numdof_*nen_>         C_umum_;          ///< coupling matrix C_umum
         LINALG::Matrix<slave_numdof*slave_nen_,master_numdof_*nen_>     C_usum_;          ///< coupling matrix C_usum
         LINALG::Matrix<master_numdof_*nen_,slave_numdof*slave_nen_>     C_umus_;          ///< coupling matrix C_umus
@@ -656,41 +587,37 @@ namespace DRT
 
         LINALG::Matrix<nsd_,1> velint_s_; ///< velocity at integration point on slave side
 
-        LINALG::Matrix<nen_,1> funct_m_timefacfac_;
-
         LINALG::Matrix<slave_nen_,1> funct_s_;
-        LINALG::Matrix<slave_nen_,1> funct_s_timefacfac_;
-
-        LINALG::Matrix<nen_,nen_> funct_m_m_dyad_timefacfac_;
-
-        LINALG::Matrix<nen_,nen_> funct_m_m_dyad_timefacfac_stabfac_;
-
-        LINALG::Matrix<slave_nen_,slave_nen_> funct_s_s_dyad_timefacfac_;
-
-        LINALG::Matrix<slave_nen_,slave_nen_> funct_s_s_dyad_timefacfac_stabfac_;
-
-        LINALG::Matrix<slave_nen_,nen_> funct_s_m_dyad_timefacfac_;
-
-        LINALG::Matrix<slave_nen_,nen_> funct_s_m_dyad_timefacfac_stabfac_;
-
 
         LINALG::Matrix<slave_nen_,1> funct_s_timefacfac_km_;
 
-        // funct_m * timefac * fac * kappa_s
         LINALG::Matrix<nen_,1> funct_m_timefacfac_ks_;
 
-        LINALG::Matrix<nen_,1> funct_m_viscm_timefacfac_;
+        LINALG::Matrix<nen_,nen_> funct_m_m_dyad_;
 
-        // funct_s * 2 * mu_m * kappa_m * timefac * fac
-        LINALG::Matrix<slave_nen_,1> funct_s_viscm_timefacfac_;
+        LINALG::Matrix<slave_nen_,nen_> funct_s_m_dyad_;
+
+        LINALG::Matrix<slave_nen_,slave_nen_> funct_s_s_dyad_;
 
         LINALG::Matrix<nsd_,nen_> derxy_m_viscm_timefacfac_;
 
+        LINALG::Matrix<nsd_,1> normal_timefacfac_;
+
+        LINALG::Matrix<nsd_,1> normal_pres_timefacfac_;
+
+        LINALG::Matrix<nsd_,1> normal_pres_timefacfac_km_;
+
+        LINALG::Matrix<nsd_,1> normal_pres_timefacfac_ks_;
+
         LINALG::Matrix<nsd_,1> half_normal_;
 
-        LINALG::Matrix<nen_,1> half_normal_deriv_m_;
+        LINALG::Matrix<nsd_,1> half_normal_viscm_timefacfac_km_;
 
-        LINALG::Matrix<slave_nen_,1> half_normal_deriv_s_;
+        LINALG::Matrix<nsd_,1> half_normal_viscs_timefacfac_ks_;
+
+        LINALG::Matrix<nen_,1> half_normal_deriv_m_viscm_timefacfac_km_;
+
+        LINALG::Matrix<slave_nen_,1> half_normal_deriv_s_viscs_timefacfac_ks_;
 
         LINALG::Matrix<nen_,1> normal_deriv_m_viscm_km_;
 
@@ -700,18 +627,17 @@ namespace DRT
 
         LINALG::Matrix<nsd_,1> vderxy_s_normal_;
 
-        LINALG::Matrix<nsd_,1> vderxy_m_normal_transposed_;
+        LINALG::Matrix<nsd_,1> vderxy_m_normal_transposed_viscm_timefacfac_km_;
 
-        LINALG::Matrix<nsd_,1> vderxy_s_normal_transposed_;
+        LINALG::Matrix<nsd_,1> vderxy_s_normal_transposed_viscs_timefacfac_ks_;
 
         LINALG::Matrix<nsd_,1> velint_diff_;
-        LINALG::Matrix<nsd_,1> velint_diff_stabfac_;
 
-        double velint_diff_normal_;
+        LINALG::Matrix<nsd_,1> velint_diff_timefacfac_stabfac_;
 
+        double velint_diff_normal_timefacfac_;
 
-
-
+        double velint_diff_normal_pres_timefacfac_;
       };
 
       /// concrete class for interface coupling using mixed/hybrid stress-based Lagrange multipliers method
