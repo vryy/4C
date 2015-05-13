@@ -37,26 +37,26 @@ RESTARTEVRY                     5
 SIMPLER                         no
 STEADYSTEP                      -1
 STEADYTOL                       1e-06
-THETA                           1//0.66
+THETA                           1.0//0.66
 TIMEINTEGR                      One_Step_Theta                //Stationary
 TIMESTEP                        0.01//0.003125                //0.00625
 NONLINEARBC                     no
 LINEAR_SOLVER                   1
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
-STABTYPE                        edge_based                    // residual_based //
+STABTYPE                        residual_based
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG                            no
-SUPG                            no
+PSPG                            yes
+SUPG                            yes
 VSTAB                           no_vstab
-GRAD_DIV                        no                            //yes
+GRAD_DIV                        yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        std_eos                       // none, std_eos, xfem_gp
-EOS_CONV_STREAM                 std_eos                       // none, std_eos, xfem_gp
+EOS_PRES                        xfem_gp                       // none, std_eos, xfem_gp
+EOS_CONV_STREAM                 xfem_gp                       // none, std_eos, xfem_gp
 EOS_CONV_CROSS                  none                          // none, std_eos, xfem_gp
-EOS_DIV                         vel_jump_std_eos              // none, vel_jump_std_eos, vel_jump_xfem_gp, div_jump_std_eos, div_jump_xfem_gp
+EOS_DIV                         vel_jump_xfem_gp              // none, vel_jump_std_eos, vel_jump_xfem_gp, div_jump_std_eos, div_jump_xfem_gp
 EOS_DEFINITION_TAU              Burman_Fernandez
 EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf   // EOS_he_surf_with_max_diameter
 ----------------------------------------------------------STRUCTURAL DYNAMIC
@@ -96,7 +96,7 @@ SECONDORDER                     no
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 LINEARBLOCKSOLVER               PreconditionedKrylov          // FSIAMG PreconditionedKrylov
 ITEMAX                          40
-CONVTOL                         1.0E-8
+CONVTOL                         1.0E-10
 PRECONDREUSE                    0
 SHAPEDERIVATIVES                yes
 --------------------------------------------------------------------SOLVER 1
@@ -108,11 +108,14 @@ GMSH_SOL_OUT                    no
 GMSH_DISCRET_OUT                no//yes
 GMSH_CUT_OUT                    no
 GMSH_EOS_OUT                    no
+VOLUME_GAUSS_POINTS_BY          DirectDivergence
+BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche                       //BoundaryTypeSigma "BoundaryTypeTauPressure" "" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
 IS_PSEUDO_2D                    yes
 NIT_STAB_FAC                    21.97015825                   // 35/CT(3d)
 VISC_STAB_HK                    vol_equivalent
+MASS_CONSERVATION_SCALING       full
 XFF_CONV_STAB_SCALING           none
 GHOST_PENALTY_STAB              yes
 GHOST_PENALTY_FAC               0.01
@@ -124,7 +127,7 @@ RELAXING_ALE_EVERY              1
 XFLUIDFLUID                     yes
 XFLUID_TIMEINT                  STD=COPY/PROJ_and_GHOST=COPY/PROJ/GP
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_fluid DYNVISCOSITY 1 DENSITY 1
+MAT 1 MAT_fluid DYNVISCOSITY 0.04 DENSITY 7.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 10000 NUE 0.0 DENS 1
 MAT 4 MAT_ElastHyper NUMMAT 1 MATIDS 5 DENS 0.1
 MAT 5 ELAST_CoupNeoHooke YOUNG 2.5e6 NUE 0.35
@@ -16725,7 +16728,7 @@ NODE 6336 COORD 1.36494889432 1.49156612093 -0.03
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS xfluid NODE 8 QUANTITY velx VALUE -3.08459399564079917e-01 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 8 QUANTITY pressure VALUE -4.08731907412382744e-01 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 8 QUANTITY velx VALUE -2.41233126431176712e-03 TOLERANCE 1e-8
+FLUID DIS xfluid NODE 8 QUANTITY pressure VALUE 1.02373688723906425e-02 TOLERANCE 1e-8
 -------------------------------------------------------------------------END
 //                              END

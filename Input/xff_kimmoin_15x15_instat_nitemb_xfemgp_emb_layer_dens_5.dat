@@ -1,7 +1,7 @@
 //
-// Maintainer: Shadan Shahmiri
+// Maintainer: Raffaela Kruse
 //
-// stationary Kim-Moin with density 5
+// stationary Kim-Moin with density 5, dyn. viscosity 0.005, full eos, Nitsche
 //
 ==================================================================
 General Data File BACI
@@ -17,9 +17,6 @@ PROBLEMTYP                      Fluid_XFEM
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
-NUMSTRUCDIS                     1
-NUMALEDIS                       1
-NUMTHERMDIS                     1
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
@@ -54,7 +51,6 @@ ADAPTCONV                       Yes
 ADAPTCONV_BETTER                0.1
 SIMPLER                         No
 CALCERROR                       kimmoin_instat_navier_stokes
-NEW_OST                         yes
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based                    // residual_based //
 DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen  //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
@@ -78,13 +74,12 @@ GMSH_DEBUG_OUT                  no
 GMSH_SOL_OUT                    no
 GMSH_DISCRET_OUT                No
 GMSH_CUT_OUT                    No
-VOLUME_GAUSS_POINTS_BY          Tessellation                  //MomentFitting //Tessellation //MomentFitting //Tessellation
-BOUNDARY_GAUSS_POINTS_BY        Tessellation                  //MomentFitting //Tessellation
+VOLUME_GAUSS_POINTS_BY          DirectDivergence
+BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 XFLUIDFLUID                     yes
-INTERFACE_TERMS_PREVIOUS_STATE  PreviousState_full
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-COUPLING_METHOD                 Nitsche                       /// BoundaryTypeSigma // "BoundaryTypeTauPressure"BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
+COUPLING_METHOD                 Nitsche
 IS_PSEUDO_2D                    yes
 NIT_STAB_FAC                    24.40282794                   // 35/CT(2d)
 VISC_STAB_TRACE_ESTIMATE        CT_div_by_hk                  // eigenvalue
@@ -119,21 +114,11 @@ ML_DAMPFINE                     0.2                           // damping fine gr
 ML_DAMPMED                      0.2                           // damping med grids
 ML_DAMPCOARSE                   1.0                           // damping coarse grid
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_fluid DYNVISCOSITY 0.5 DENSITY 5.0 GAMMA 1.0
-MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 100000000000.0 NUE 0.0 DENS 0.0 THEXPANS 0.0
-----------------------------------------------------------------------CURVE1
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
+MAT 1 MAT_fluid DYNVISCOSITY 0.005 DENSITY 5.0 GAMMA 1.0
 ----------------------------------------------------------------------FUNCT1
 FUNCT1 KIMMOIN-RHS MAT 1 ISSTAT 0 ISSTOKES 0
 ----------------------------------FUNCT2 // exact velocity/pressure solution
-FUNCT2                          KIMMOIN-UP MAT 1 ISSTAT 0
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
+FUNCT2 KIMMOIN-UP MAT 1 ISSTAT 0
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 1
 NDLINE 0
@@ -9570,20 +9555,20 @@ NODE 3509 COORD 1.9256652534522772e-01 1.6104242373388949e-01 -3.333333333333333
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS xfluid NODE 118 QUANTITY velx VALUE 4.74458393662767264e-01 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 118 QUANTITY vely VALUE 3.10332153882716011e-01 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 118 QUANTITY pressure VALUE -1.73995292855442379e-01 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 118 QUANTITY velx VALUE 6.01625813064549098e-01 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 118 QUANTITY vely VALUE 3.93664098277612229e-01 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 118 QUANTITY pressure VALUE -2.32646881112259757e-01 TOLERANCE 1e-6
 FLUID DIS xfluid NODE 159 QUANTITY velx VALUE 8.19448655288902956e-17 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 159 QUANTITY vely VALUE 5.86410725010200751e-01 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 159 QUANTITY pressure VALUE -6.93669539535749613e-01 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 250 QUANTITY velx VALUE 3.32477274161495709e-02 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 250 QUANTITY vely VALUE 7.17103867162850572e-01 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 250 QUANTITY pressure VALUE 3.05497141092319513e-01 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 1817 QUANTITY velx VALUE -5.23181410011462789e-01 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 1817 QUANTITY vely VALUE -6.47660994852382599e-02 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 1817 QUANTITY pressure VALUE 7.99888686876399913e-01 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 1851 QUANTITY velx VALUE -5.52412867481261949e-01 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 1851 QUANTITY vely VALUE -2.34112243409864668e-01 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 1851 QUANTITY pressure VALUE 1.01202846070585759e-01 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 159 QUANTITY vely VALUE 7.41386617731614295e-01 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 159 QUANTITY pressure VALUE -1.22165430577948353e+00 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 250 QUANTITY velx VALUE 4.28327647469291736e-02 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 250 QUANTITY vely VALUE 9.08323996089917651e-01 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 250 QUANTITY pressure VALUE 2.95934962377041810e-01 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 1817 QUANTITY velx VALUE -6.64113555552028445e-01 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 1817 QUANTITY vely VALUE -7.96531097912925312e-02 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 1817 QUANTITY pressure VALUE 1.33214965742829894e+00 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 1851 QUANTITY velx VALUE -7.00888717474697276e-01 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 1851 QUANTITY vely VALUE -2.94135850845242852e-01 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 1851 QUANTITY pressure VALUE 2.50915522439713434e-01 TOLERANCE 1e-6
 -------------------------------------------------------------------------END
 //                              END

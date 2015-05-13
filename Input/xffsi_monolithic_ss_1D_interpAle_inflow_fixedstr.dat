@@ -31,20 +31,21 @@ TIMEINTEGR                      One_Step_Theta
 LINEAR_SOLVER                   1
 PREDICTOR                       steady_state
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
-STABTYPE                        edge_based
+STABTYPE                        residual_based
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG                            no
-SUPG                            no
+PSPG                            yes
+SUPG                            yes
 VSTAB                           no_vstab
-GRAD_DIV                        no
+GRAD_DIV                        yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen
 --------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                        std_eos                       // none, std_eos, xfem_gp
-EOS_CONV_STREAM                 std_eos                       // none, std_eos, xfem_gp
-EOS_CONV_CROSS                  none                          // none, std_eos, xfem_gp
-EOS_DIV                         vel_jump_std_eos              // none, vel_jump_std_eos, vel_jump_xfem_gp, div_jump_std_eos, div_jump_xfem_gp
+EOS_PRES                        xfem_gp                     // none, std_eos, xfem_gp
+EOS_CONV_STREAM                 xfem_gp                     // none, std_eos, xfem_gp
+EOS_CONV_CROSS                  none                        // none, std_eos, xfem_gp
+EOS_DIV                         vel_jump_xfem_gp            // none, vel_jump_std_eos, vel_jump_xfem_gp, div_jump_std_eos, div_jump_xfem_gp
 EOS_DEFINITION_TAU              Burman_Fernandez
 EOS_H_DEFINITION                EOS_he_surf_with_max_diameter  // EOS_he_surf_with_max_diameter
 ----------------------------------------------------------STRUCTURAL DYNAMIC
@@ -69,20 +70,29 @@ RESTARTEVRY                     1
 COUPALGO                        iter_fluidfluid_monolithicstructuresplit_nonox
 SECONDORDER                     No
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
+LINEARBLOCKSOLVER               PreconditionedKrylov
 ITEMAX                          7
+PRECONDREUSE                    0
 SHAPEDERIVATIVES                yes
+CONVTOL                         1e-10
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ----------------------------------------------------------------XFEM GENERAL
+VOLUME_GAUSS_POINTS_BY          DirectDivergence
+BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
-COUPLING_METHOD                 Hybrid_LM_Cauchy_stress       // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
+COUPLING_METHOD                 Nitsche
+NIT_STAB_FAC                    30
+VISC_STAB_TRACE_ESTIMATE        eigenvalue
+VISC_STAB_HK                    vol_equivalent
+MASS_CONSERVATION_SCALING       full
 XFF_CONV_STAB_SCALING           none
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 MONOLITHIC_XFFSI_APPROACH       xffsi_fixedALE_interpolation
 XFLUIDFLUID                     yes
 XFLUID_TIMEINT                  STD=COPY/PROJ_and_GHOST=COPY/PROJ/GP
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
+MAT 1 MAT_fluid DYNVISCOSITY 0.02 DENSITY 10.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 200 NUE 0.4 DENS 2.0 THEXPANS 0.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
@@ -124,7 +134,7 @@ E 5 - 1
 --------------------------------------DESIGN XFEM FLUIDFLUID SURF CONDITIONS
 DSURF 1
 // xfem
-E 2 - 1 xfluid
+E 2 - 1 embedded
 ---------------------------------DESIGN FLUID FLUID COUPLING SURF CONDITIONS
 DSURF 1
 // fluidfluid
@@ -250,24 +260,24 @@ NODE 36 COORD 1.3500000000000001e+00 2.9999999999999999e-01 2.9999999999999999e-
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS xfluid NODE 8 QUANTITY velx VALUE 3.59999999999990272e-01 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 8 QUANTITY pressure VALUE 5.27334972292164039e+01 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 9 QUANTITY velx VALUE 3.60000000000009146e-01 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 9 QUANTITY pressure VALUE 5.27334972292164039e+01 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 10 QUANTITY velx VALUE 3.59999999999990272e-01 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 10 QUANTITY pressure VALUE 5.27334972292164039e+01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 18 QUANTITY velx VALUE 3.59999999999990272e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 18 QUANTITY pressure VALUE 5.27983972292154959e+01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 17 QUANTITY velx VALUE 3.59999999999990272e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 17 QUANTITY pressure VALUE 5.27983972292154959e+01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 21 QUANTITY velx VALUE 3.59999999999990272e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 21 QUANTITY pressure VALUE 5.21383972292155349e+01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 26 QUANTITY velx VALUE 3.59999999999990272e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 26 QUANTITY pressure VALUE 5.14783972292155667e+01 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 34 QUANTITY dispx VALUE 9.10000000000045078e-02 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 36 QUANTITY dispx VALUE 9.10000000000044662e-02 TOLERANCE 1e-6
-FSI NODE 33 QUANTITY lambdax VALUE 4.63305575062940367e+00 TOLERANCE 1e-8
-FSI NODE 33 QUANTITY lambday VALUE 3.60425000000016693e+00 TOLERANCE 1e-8
-FSI NODE 33 QUANTITY lambdaz VALUE -3.60425000000016693e+00 TOLERANCE 1e-8
+FLUID DIS xfluid NODE 8 QUANTITY velx VALUE 3.59999999999990272e-01 TOLERANCE 1e-8
+FLUID DIS xfluid NODE 8 QUANTITY pressure VALUE 6.40293976436886680e+01 TOLERANCE 1e-8
+FLUID DIS xfluid NODE 9 QUANTITY velx VALUE 3.60000000000009146e-01 TOLERANCE 1e-8
+FLUID DIS xfluid NODE 9 QUANTITY pressure VALUE 6.40293976436885544e+01 TOLERANCE 1e-8
+FLUID DIS xfluid NODE 10 QUANTITY velx VALUE 3.59999999999990272e-01 TOLERANCE 1e-8
+FLUID DIS xfluid NODE 10 QUANTITY pressure VALUE 6.40293976436886823e+01 TOLERANCE 1e-8
+FLUID DIS fluid NODE 18 QUANTITY velx VALUE 3.59999999999990272e-01 TOLERANCE 1e-8
+FLUID DIS fluid NODE 18 QUANTITY pressure VALUE 6.46783977156399885e+01 TOLERANCE 1e-8
+FLUID DIS fluid NODE 17 QUANTITY velx VALUE 3.59999999999990272e-01 TOLERANCE 1e-8
+FLUID DIS fluid NODE 17 QUANTITY pressure VALUE 6.46783977156401022e+01 TOLERANCE 1e-8
+FLUID DIS fluid NODE 21 QUANTITY velx VALUE 3.59999999999990272e-01 TOLERANCE 1e-8
+FLUID DIS fluid NODE 21 QUANTITY pressure VALUE 5.80783975275494626e+01 TOLERANCE 1e-8
+FLUID DIS fluid NODE 26 QUANTITY velx VALUE 3.59999999999990272e-01 TOLERANCE 1e-8
+FLUID DIS fluid NODE 26 QUANTITY pressure VALUE 5.14783971459865057e+01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 34 QUANTITY dispx VALUE 9.10000000000045078e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 36 QUANTITY dispx VALUE 9.10000000000044662e-02 TOLERANCE 1e-8
+FSI NODE 33 QUANTITY lambdax VALUE 4.63305575062940367e+00 TOLERANCE 1e-10
+FSI NODE 33 QUANTITY lambday VALUE 3.60425000000016693e+00 TOLERANCE 1e-10
+FSI NODE 33 QUANTITY lambdaz VALUE -3.60425000000016693e+00 TOLERANCE 1e-10
 -------------------------------------------------------------------------END
 //                              END
