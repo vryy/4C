@@ -269,3 +269,14 @@ const double FLD::TimIntStationary::TimIntParam() const
     dserror("FSI does not allow a stationary time integrator.");
   return retval;
 }
+
+/*----------------------------------------------------------------------*|
+ | Set Eleparams for turbulence models                          bk 12/13 |
+ *----------------------------------------------------------------------*/
+void FLD::TimIntStationary::TreatTurbulenceModels(Teuchos::ParameterList& eleparams)
+{
+  FLD::FluidImplicitTimeInt::TreatTurbulenceModels(eleparams);
+  if(reconstructder_)
+    ProjectGradientAndSetParam(eleparams,velnp_,"velafgrad");
+  return;
+}

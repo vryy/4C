@@ -1451,7 +1451,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       if(ProblemType()==prb_fluid_xfem_ls)
         fluiddis  = Teuchos::rcp(new DRT::DiscretizationXFEM("fluid",reader.Comm()));
       else
-        fluiddis  = Teuchos::rcp(new DRT::Discretization("fluid",reader.Comm()));
+        fluiddis  = Teuchos::rcp(new DRT::DiscretizationFaces("fluid",reader.Comm()));
       scatradis = Teuchos::rcp(new DRT::Discretization("scatra",reader.Comm()));
       particledis = Teuchos::rcp(new DRT::Discretization("particle",reader.Comm()));
 
