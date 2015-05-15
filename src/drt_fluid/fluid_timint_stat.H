@@ -149,12 +149,6 @@ public:
   */
   const Teuchos::RCP<const Epetra_Vector> EvaluationVel() {return Teuchos::null;};
 
-
-  /*!
-  \brief treat turbulence models in AssembleMatAndRHS
-  */
-  virtual void TreatTurbulenceModels(Teuchos::ParameterList& eleparams);
-
 protected:
 
   /*!

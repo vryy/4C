@@ -41,7 +41,6 @@ Maintainer: Benedikt Schott
 #include "../drt_cut/cut_position.H"
 
 #include "../drt_mat/newtonianfluid.H"
-#include "../drt_mat/matlist.H"
 
 #include "fluid_ele_calc_intfaces_stab.H"
 
@@ -1613,61 +1612,6 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GetEle
     kinvisc_ = actmat->Viscosity()/actmat->Density();
     density_ = actmat->Density();
 
-  }
-  else if (material->MaterialType() == INPAR::MAT::m_matlist)
-  {
-    // get material list for this element
-    const MAT::MatList* matlist = static_cast<const MAT::MatList*>(material.get());
-
-    int numofmaterials = matlist->NumMat();
-
-    //Error messages
-    if(numofmaterials>2)
-    {
-      dserror("More than two materials is currently not supported.");
-    }
-
-    std::vector<double> density(numofmaterials); //Assume density[0] is on positive side, and density[1] is on negative side.
-    std::vector<double> viscosity(numofmaterials);
-    std::vector<double> gamma_vector(numofmaterials);
-    for(int nmaterial=0; nmaterial<numofmaterials; nmaterial++)
-    {
-      // set default id in list of materials
-      int matid = -1;
-      matid = matlist->MatID(nmaterial);
-
-      Teuchos::RCP<const MAT::Material> matptr = matlist->MaterialById(matid);
-      INPAR::MAT::MaterialType mattype = matptr->MaterialType();
-
-      // choose from different materials
-      switch(mattype)
-      {
-      //--------------------------------------------------------
-      // Newtonian fluid for incompressible flow (standard case)
-      //--------------------------------------------------------
-      case INPAR::MAT::m_fluid:
-      {
-        const MAT::NewtonianFluid* mat = static_cast<const MAT::NewtonianFluid*>(matptr.get());
-        density[nmaterial]=mat->Density();
-        viscosity[nmaterial]=mat->Viscosity();
-        gamma_vector[nmaterial]=mat->Gamma();
-        break;
-      }
-      //------------------------------------------------
-      // different types of materials (to be added here)
-      //------------------------------------------------
-      default:
-        dserror("Only Newtonian fluids supported as input.");
-        break;
-      }
-    }
-    if(viscosity[0]!=viscosity[1])
-      dserror("Edge-based stabilization for smeared two-phase/changing viscosity is not supported.");
-    if(density[0]!=density[1])
-      dserror("Edge-based stabilization for smeared two-phase/changing density is not supported.");
-
-    kinvisc_ = viscosity[0]/density[0];
-    density_ = density[0];
   }
   else
   {
