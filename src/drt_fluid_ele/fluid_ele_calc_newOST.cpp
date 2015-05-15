@@ -1050,55 +1050,184 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcDivEps(
     derxy2_.Scale(prefac);
  }
   else prefac = 1.0;
-
-  if (nsd_==3)
+  //reconstruction of second derivative via projection or superconvergent patch recovery
+  if (fldpara_->IsReconstructDer())
   {
-    for (int inode=0; inode<nen_; ++inode)
-    {
-      double sum = (derxy2_(0,inode)+derxy2_(1,inode)+derxy2_(2,inode))/prefac;
-      viscs2_(0,inode) = 0.5 * (sum + derxy2_(0,inode));
-      viscs2_(1,inode) = 0.5 *  derxy2_(3,inode);
-      viscs2_(2,inode) = 0.5 *  derxy2_(4,inode);
-      viscs2_(3,inode) = 0.5 *  derxy2_(3,inode);
-      viscs2_(4,inode) = 0.5 * (sum + derxy2_(1,inode));
-      viscs2_(5,inode) = 0.5 *  derxy2_(5,inode);
-      viscs2_(6,inode) = 0.5 *  derxy2_(4,inode);
-      viscs2_(7,inode) = 0.5 *  derxy2_(5,inode);
-      viscs2_(8,inode) = 0.5 * (sum + derxy2_(2,inode));
+    if(is_higher_order_ele_ == false)
+      dserror("this doesn't make sense");
 
+    // global second derivatives of evalaf (projected velgrad)
+    // not symmetric!
+    LINALG::Matrix<nsd_*nsd_,nsd_> evelgradderxy;
+    evelgradderxy.MultiplyNT(evelafgrad_,derxy_);
+    //*VELNP*
+    if (nsd_==3)
+    {
+      // assemble div epsilon(evelaf)
       for (int idim=0; idim<nsd_; ++idim)
       {
         const int nsd_idim = idim*nsd_;
-        for (int jdim=0; jdim<nsd_; ++jdim)
+        // select diagonal entries (u,xx + u,yy + u,zz)
+        double sum1 = (evelgradderxy(nsd_idim,0) + evelgradderxy(nsd_idim+1,1)
+            + evelgradderxy(nsd_idim+2,2))/prefac;
+        // interpolate mixed terms
+        double sum2;
+        if (idim==0)
         {
-          visc_old_(idim) += viscs2_(nsd_idim+jdim,inode)*evelaf(jdim,inode);
-          visc_oldn_(idim) += viscs2_(nsd_idim+jdim,inode)*eveln(jdim,inode);
+          // uy,xy + uz,xz
+          sum2 = 0.5 * (evelgradderxy(3,1) + evelgradderxy(4,0) + evelgradderxy(6,2) + evelgradderxy(8,0));
+        }
+        else if (idim==1)
+        {
+          // ux,xy + uz,yz
+          sum2 = 0.5 * (evelgradderxy(1,0) + evelgradderxy(0,1) + evelgradderxy(7,2) + evelgradderxy(8,1));
+        }
+        else
+        {
+          // ux,xz + uy,yz
+          sum2 = 0.5 * (evelgradderxy(2,0) + evelgradderxy(0,2) + evelgradderxy(5,1) + evelgradderxy(4,2));
+        }
+        // assemble each row of div epsilon(evelaf)
+        visc_old_(idim) = 0.5 * (sum1 + evelgradderxy(nsd_idim+idim,idim) + sum2);
+      }
+    }
+    else if(nsd_==2)
+    {
+      // assemble div epsilon(evelaf)
+      for (int idim=0; idim<nsd_; ++idim)
+      {
+        const int nsd_idim = idim*nsd_;
+        // select diagonal entries (u,xx + u,yy)
+        double sum1 = (evelgradderxy(nsd_idim,0) + evelgradderxy(nsd_idim+1,1))/prefac;
+        // interpolate mixed terms
+        double sum2;
+        if (idim==0)
+        {
+          // uy,xy
+          sum2 = 0.5 * (evelgradderxy(2,1) + evelgradderxy(3,0));
+        }
+        else if (idim==1)
+        {
+          // ux,xy
+          sum2 = 0.5 * (evelgradderxy(1,0) + evelgradderxy(0,1));
+        }
+        // assemble each row of div epsilon(evelaf)
+        visc_old_(idim) = 0.5 * (sum1 + evelgradderxy(nsd_idim+idim,idim) + sum2);
+      }
+    }
+    else dserror("Epsilon(N) is not implemented for the 1D case");
+
+    //*VELN*
+    //LINALG::Matrix<nsd_*nsd_,nsd_> evelngradderxy;
+    evelgradderxy.Clear();
+    evelgradderxy.MultiplyNT(evelngrad_,derxy_);
+    if (nsd_==3)
+    {
+      // assemble div epsilon(evelaf)
+      for (int idim=0; idim<nsd_; ++idim)
+      {
+        const int nsd_idim = idim*nsd_;
+        // select diagonal entries (u,xx + u,yy + u,zz)
+        double sum1 = (evelgradderxy(nsd_idim,0) + evelgradderxy(nsd_idim+1,1)
+            + evelgradderxy(nsd_idim+2,2))/prefac;
+        // interpolate mixed terms
+        double sum2;
+        if (idim==0)
+        {
+          // uy,xy + uz,xz
+          sum2 = 0.5 * (evelgradderxy(3,1) + evelgradderxy(4,0) + evelgradderxy(6,2) + evelgradderxy(8,0));
+        }
+        else if (idim==1)
+        {
+          // ux,xy + uz,yz
+          sum2 = 0.5 * (evelgradderxy(1,0) + evelgradderxy(0,1) + evelgradderxy(7,2) + evelgradderxy(8,1));
+        }
+        else
+        {
+          // ux,xz + uy,yz
+          sum2 = 0.5 * (evelgradderxy(2,0) + evelgradderxy(0,2) + evelgradderxy(5,1) + evelgradderxy(4,2));
+        }
+        // assemble each row of div epsilon(evelaf)
+        visc_oldn_(idim) = 0.5 * (sum1 + evelgradderxy(nsd_idim+idim,idim) + sum2);
+      }
+    }
+    else if(nsd_==2)
+    {
+      // assemble div epsilon(evelaf)
+      for (int idim=0; idim<nsd_; ++idim)
+      {
+        const int nsd_idim = idim*nsd_;
+        // select diagonal entries (u,xx + u,yy)
+        double sum1 = (evelgradderxy(nsd_idim,0) + evelgradderxy(nsd_idim+1,1))/prefac;
+        // interpolate mixed terms
+        double sum2;
+        if (idim==0)
+        {
+          // uy,xy
+          sum2 = 0.5 * (evelgradderxy(2,1) + evelgradderxy(3,0));
+        }
+        else if (idim==1)
+        {
+          // ux,xy
+          sum2 = 0.5 * (evelgradderxy(1,0) + evelgradderxy(0,1));
+        }
+        // assemble each row of div epsilon(evelaf)
+        visc_oldn_(idim) = 0.5 * (sum1 + evelgradderxy(nsd_idim+idim,idim) + sum2);
+      }
+    }
+    else dserror("Epsilon(N) is not implemented for the 1D case");
+  }
+  else
+  {
+    if (nsd_==3)
+    {
+      for (int inode=0; inode<nen_; ++inode)
+      {
+        double sum = (derxy2_(0,inode)+derxy2_(1,inode)+derxy2_(2,inode))/prefac;
+        viscs2_(0,inode) = 0.5 * (sum + derxy2_(0,inode));
+        viscs2_(1,inode) = 0.5 *  derxy2_(3,inode);
+        viscs2_(2,inode) = 0.5 *  derxy2_(4,inode);
+        viscs2_(3,inode) = 0.5 *  derxy2_(3,inode);
+        viscs2_(4,inode) = 0.5 * (sum + derxy2_(1,inode));
+        viscs2_(5,inode) = 0.5 *  derxy2_(5,inode);
+        viscs2_(6,inode) = 0.5 *  derxy2_(4,inode);
+        viscs2_(7,inode) = 0.5 *  derxy2_(5,inode);
+        viscs2_(8,inode) = 0.5 * (sum + derxy2_(2,inode));
+
+        for (int idim=0; idim<nsd_; ++idim)
+        {
+          const int nsd_idim = idim*nsd_;
+          for (int jdim=0; jdim<nsd_; ++jdim)
+          {
+            visc_old_(idim) += viscs2_(nsd_idim+jdim,inode)*evelaf(jdim,inode);
+            visc_oldn_(idim) += viscs2_(nsd_idim+jdim,inode)*eveln(jdim,inode);
+          }
         }
       }
     }
-  }
-  else if (nsd_==2)
-  {
-    for (int inode=0; inode<nen_; ++inode)
+    else if (nsd_==2)
     {
-    double sum = (derxy2_(0,inode)+derxy2_(1,inode))/prefac;
-    viscs2_(0,inode) = 0.5 * (sum + derxy2_(0,inode));
-    viscs2_(1,inode) = 0.5 * derxy2_(2,inode);
-    viscs2_(2,inode) = 0.5 * derxy2_(2,inode);
-    viscs2_(3,inode) = 0.5 * (sum + derxy2_(1,inode));
-
-    for (int idim=0; idim<nsd_; ++idim)
-    {
-      const int nsd_idim = idim*nsd_;
-      for (int jdim=0; jdim<nsd_; ++jdim)
+      for (int inode=0; inode<nen_; ++inode)
       {
-        visc_old_(idim) += viscs2_(nsd_idim+jdim,inode)*evelaf(jdim,inode);
-        visc_oldn_(idim) += viscs2_(nsd_idim+jdim,inode)*eveln(jdim,inode);
+        double sum = (derxy2_(0,inode)+derxy2_(1,inode))/prefac;
+        viscs2_(0,inode) = 0.5 * (sum + derxy2_(0,inode));
+        viscs2_(1,inode) = 0.5 * derxy2_(2,inode);
+        viscs2_(2,inode) = 0.5 * derxy2_(2,inode);
+        viscs2_(3,inode) = 0.5 * (sum + derxy2_(1,inode));
+
+        for (int idim=0; idim<nsd_; ++idim)
+        {
+          const int nsd_idim = idim*nsd_;
+          for (int jdim=0; jdim<nsd_; ++jdim)
+          {
+            visc_old_(idim) += viscs2_(nsd_idim+jdim,inode)*evelaf(jdim,inode);
+            visc_oldn_(idim) += viscs2_(nsd_idim+jdim,inode)*eveln(jdim,inode);
+          }
+        }
       }
     }
-    }
+    else dserror("Epsilon(N) is not implemented for the 1D case");
   }
-  else dserror("Epsilon(N) is not implemented for the 1D case");
 
   return;
 }

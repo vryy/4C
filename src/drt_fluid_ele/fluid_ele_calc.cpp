@@ -192,7 +192,8 @@ DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::FluidEleCalc():
     mfssgscaint_(0.0),
     grad_fsscaaf_(true),
     tds_(Teuchos::null),
-    evelafgrad_(true)
+    evelafgrad_(true),
+    evelngrad_(true)
 {
   rotsymmpbc_= Teuchos::rcp(new FLD::RotationallySymmetricPeriodicBC<distype,enrtype>());
 
@@ -331,11 +332,14 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Evaluate(DRT::ELEMENTS::Fluid*
 
   if(fldpara_->IsReconstructDer())
   {
-    if (not fldparatimint_->IsGenalpha())
-      dserror("currently only implemented for af-genalpha");
     //extract gradient projection for consistent residual
     const Teuchos::RCP<Epetra_MultiVector> velafgrad = params.get< Teuchos::RCP<Epetra_MultiVector> >("velafgrad");
     DRT::UTILS::ExtractMyNodeBasedValues(ele,evelafgrad_,velafgrad,nsd_*nsd_);
+    if(fldparatimint_->IsNewOSTImplementation())
+    {
+      const Teuchos::RCP<Epetra_MultiVector> velngrad = params.get< Teuchos::RCP<Epetra_MultiVector> >("velngrad");
+      DRT::UTILS::ExtractMyNodeBasedValues(ele,evelngrad_,velngrad,nsd_*nsd_);
+    }
   }
 
   // clear vectors not required for respective time-integration scheme
