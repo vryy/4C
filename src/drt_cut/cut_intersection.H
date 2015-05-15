@@ -30,12 +30,9 @@ public:
 
   IntersectionBase(  LINALG::Matrix<3, numNodesSurface> xyze_surfaceElement,
                      LINALG::Matrix<3, numNodesLine> xyze_lineElement )
-    : xyze_lineElement_(xyze_lineElement),
-      xyze_surfaceElement_(xyze_surfaceElement),
-      xsi_( true ),
-      x_( true )
   {
-
+    xyze_lineElement_ = xyze_lineElement;
+    xyze_surfaceElement_ = xyze_surfaceElement;
 #if 1
     scale_ = 1;
 #else
@@ -57,9 +54,7 @@ public:
 
   IntersectionBase( Edge & edge,
                     ConcreteSide<sidetype> & side )
-  : xsi_( true ),
-    x_( true ),
-    scale_(1)
+  :scale_(1)
 {
   edge.Coordinates( xyze_lineElement_ );
   side.Coordinates( xyze_surfaceElement_ );
@@ -78,11 +73,12 @@ protected:
 
   void GetTriangle(LINALG::Matrix<3,3>& xyze_triElement, int triangleid);
 
-  LINALG::Matrix<3, numNodesLine> xyze_lineElement_;
-  LINALG::Matrix<3, numNodesSurface> xyze_surfaceElement_;
+  //
+  static LINALG::Matrix<3, numNodesLine> xyze_lineElement_;
+  static LINALG::Matrix<3, numNodesSurface> xyze_surfaceElement_;
 
-  LINALG::Matrix<3,1> xsi_;
-  LINALG::Matrix<3,1> x_;
+  static LINALG::Matrix<3,1> xsi_;
+  static LINALG::Matrix<3,1> x_;
 
   double scale_;
 
@@ -838,5 +834,11 @@ LINALG::Matrix<3,1> & Intersection<edgetype, sidetype, numNodesLine, numNodesSur
 
 }
 }
+
+//static members of Intersection base class
+template <DRT::Element::DiscretizationType edgetype, DRT::Element::DiscretizationType sidetype, int numNodesLine, int numNodesSurface > LINALG::Matrix< 3 , numNodesLine > GEO::CUT::IntersectionBase<edgetype,sidetype,numNodesLine,numNodesSurface>::xyze_lineElement_;
+template <DRT::Element::DiscretizationType edgetype, DRT::Element::DiscretizationType sidetype, int numNodesLine, int numNodesSurface > LINALG::Matrix< 3 , numNodesSurface > GEO::CUT::IntersectionBase<edgetype,sidetype,numNodesLine,numNodesSurface>::xyze_surfaceElement_;
+template <DRT::Element::DiscretizationType edgetype, DRT::Element::DiscretizationType sidetype, int numNodesLine, int numNodesSurface > LINALG::Matrix< 3 , 1 > GEO::CUT::IntersectionBase<edgetype,sidetype,numNodesLine,numNodesSurface>::xsi_(true);
+template <DRT::Element::DiscretizationType edgetype, DRT::Element::DiscretizationType sidetype, int numNodesLine, int numNodesSurface > LINALG::Matrix< 3 , 1 > GEO::CUT::IntersectionBase<edgetype,sidetype,numNodesLine,numNodesSurface>::x_(true);
 
 #endif

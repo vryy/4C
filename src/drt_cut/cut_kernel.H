@@ -455,12 +455,12 @@ namespace GEO
         const LINALG::Matrix<3, numNodesElement> * xyze_;
         const LINALG::Matrix<3,1> * px_;
 
-        LINALG::Matrix<numNodesElement,1> funct_;
-        LINALG::Matrix<3,numNodesElement> deriv1_;
+        static LINALG::Matrix<numNodesElement,1> funct_;
+        static LINALG::Matrix<3,numNodesElement> deriv1_;
 
-        LINALG::Matrix<3,3> A_;
-        LINALG::Matrix<3,1> b_;
-        LINALG::Matrix<3,1> dx_;
+        static LINALG::Matrix<3,3> A_;
+        static LINALG::Matrix<3,1> b_;
+        static LINALG::Matrix<3,1> dx_;
       };
 
 
@@ -682,12 +682,6 @@ namespace GEO
           }
           file<<"};";
 
-
-
-
-
-
-
           //calculate the points
           LINALG::Matrix<numNodesSurface,1> surface;
 
@@ -823,16 +817,16 @@ namespace GEO
         const LINALG::Matrix<3,numNodesSurface> * xyze_surface_;
         const LINALG::Matrix<3,1> * px_;
 
-        LINALG::Matrix<numNodesSurface,1> surfaceFunct_;
-        LINALG::Matrix<2,numNodesSurface> surfaceDeriv1_;
-        LINALG::Matrix<3,numNodesSurface> surfaceDeriv2_;
+        static LINALG::Matrix<numNodesSurface,1> surfaceFunct_;
+        static LINALG::Matrix<2,numNodesSurface> surfaceDeriv1_;
+        static LINALG::Matrix<3,numNodesSurface> surfaceDeriv2_;
 
-        LINALG::Matrix<3,3> A_;
-        LINALG::Matrix<3,3> B_;
-        LINALG::Matrix<3,3> C_;
-        LINALG::Matrix<3,1> b_;
-        LINALG::Matrix<3,1> dx_;
-        LINALG::Matrix<3,1> cross_;
+        static LINALG::Matrix<3,3> A_;
+        static LINALG::Matrix<3,3> B_;
+        static LINALG::Matrix<3,3> C_;
+        static LINALG::Matrix<3,1> b_;
+        static LINALG::Matrix<3,1> dx_;
+        static LINALG::Matrix<3,1> cross_;
 
         double tol_; //tolerance!!!
 
@@ -976,7 +970,6 @@ namespace GEO
         {
           xsi_ = 0;                // local coordinates (xi1_side, xi2_side, xi_line)
           dx_ = 0;                 // increment in local coordinates d(xi1_side, xi2_side, xi_line)
-          old_b_ = 0;              // rhs of linear system
           off_count_ = 0;          // count how many iterations during the newton, the local coordinates are not within limits!
                                    // stop the newton scheme if the iteration is too often outside the limits
 
@@ -1207,16 +1200,14 @@ namespace GEO
         const LINALG::Matrix<3,numNodesSurface> * xyze_surface_;
         const LINALG::Matrix<3,numNodesLine> * xyze_line_;
 
-        LINALG::Matrix<numNodesSurface,1> surfaceFunct_;
-        LINALG::Matrix<numNodesLine,1> lineFunct_;
-        LINALG::Matrix<2,numNodesSurface> surfaceDeriv1_;
-        LINALG::Matrix<1,numNodesLine> lineDeriv1_;
+         static LINALG::Matrix<numNodesSurface,1> surfaceFunct_;
+         static LINALG::Matrix<numNodesLine,1> lineFunct_;
+         static LINALG::Matrix<2,numNodesSurface> surfaceDeriv1_;
+         static LINALG::Matrix<1,numNodesLine> lineDeriv1_;
 
-        LINALG::Matrix<3,3> A_;
-        LINALG::Matrix<3,1> b_;
-        LINALG::Matrix<3,1> dx_;
-
-        LINALG::Matrix<3,1> old_b_;
+         static LINALG::Matrix<3,3> A_;
+         static LINALG::Matrix<3,1> b_;
+         static LINALG::Matrix<3,1> dx_;
 
         double residual_;
         int off_count_;
@@ -1311,5 +1302,34 @@ namespace GEO
     }
   }
 }
+
+
+//static members in KERNEL
+//in compute position strategy
+template <bool debug,DRT::Element::DiscretizationType elementtype, int numNodesElement > LINALG::Matrix<numNodesElement , 1> GEO::CUT::KERNEL::ComputePositionStrategy<debug, elementtype, numNodesElement >::funct_;
+template <bool debug,DRT::Element::DiscretizationType elementtype, int numNodesElement > LINALG::Matrix<3 , numNodesElement> GEO::CUT::KERNEL::ComputePositionStrategy<debug, elementtype, numNodesElement >::deriv1_;
+template <bool debug,DRT::Element::DiscretizationType elementtype, int numNodesElement > LINALG::Matrix<3 , 3> GEO::CUT::KERNEL::ComputePositionStrategy<debug, elementtype, numNodesElement >::A_;
+template <bool debug,DRT::Element::DiscretizationType elementtype, int numNodesElement > LINALG::Matrix<3 , 1> GEO::CUT::KERNEL::ComputePositionStrategy<debug, elementtype, numNodesElement >::b_;
+template <bool debug,DRT::Element::DiscretizationType elementtype, int numNodesElement > LINALG::Matrix<3 , 1> GEO::CUT::KERNEL::ComputePositionStrategy<debug, elementtype, numNodesElement >::dx_;
+
+//in compute distance strategy
+template <bool debug, DRT::Element::DiscretizationType edgetype, DRT::Element::DiscretizationType sidetype, int numNodesLine, int numNodesSurface > LINALG::Matrix<numNodesSurface , 1> GEO::CUT::KERNEL::ComputeDistanceStrategy<debug, edgetype, sidetype, numNodesLine, numNodesSurface >::surfaceFunct_;
+template <bool debug, DRT::Element::DiscretizationType edgetype, DRT::Element::DiscretizationType sidetype, int numNodesLine, int numNodesSurface > LINALG::Matrix<2 , numNodesSurface> GEO::CUT::KERNEL::ComputeDistanceStrategy<debug, edgetype, sidetype, numNodesLine, numNodesSurface >::surfaceDeriv1_;
+template <bool debug, DRT::Element::DiscretizationType edgetype, DRT::Element::DiscretizationType sidetype, int numNodesLine, int numNodesSurface > LINALG::Matrix<3 , numNodesSurface> GEO::CUT::KERNEL::ComputeDistanceStrategy<debug, edgetype, sidetype, numNodesLine, numNodesSurface >::surfaceDeriv2_;
+template <bool debug, DRT::Element::DiscretizationType edgetype, DRT::Element::DiscretizationType sidetype, int numNodesLine, int numNodesSurface > LINALG::Matrix<3 , 3> GEO::CUT::KERNEL::ComputeDistanceStrategy<debug, edgetype, sidetype, numNodesLine, numNodesSurface >::A_;
+template <bool debug, DRT::Element::DiscretizationType edgetype, DRT::Element::DiscretizationType sidetype, int numNodesLine, int numNodesSurface > LINALG::Matrix<3 , 3> GEO::CUT::KERNEL::ComputeDistanceStrategy<debug, edgetype, sidetype, numNodesLine, numNodesSurface >::B_;
+template <bool debug, DRT::Element::DiscretizationType edgetype, DRT::Element::DiscretizationType sidetype, int numNodesLine, int numNodesSurface > LINALG::Matrix<3 , 3> GEO::CUT::KERNEL::ComputeDistanceStrategy<debug, edgetype, sidetype, numNodesLine, numNodesSurface >::C_;
+template <bool debug, DRT::Element::DiscretizationType edgetype, DRT::Element::DiscretizationType sidetype, int numNodesLine, int numNodesSurface > LINALG::Matrix<3 , 1> GEO::CUT::KERNEL::ComputeDistanceStrategy<debug, edgetype, sidetype, numNodesLine, numNodesSurface >::b_;
+template <bool debug, DRT::Element::DiscretizationType edgetype, DRT::Element::DiscretizationType sidetype, int numNodesLine, int numNodesSurface > LINALG::Matrix<3 , 1> GEO::CUT::KERNEL::ComputeDistanceStrategy<debug, edgetype, sidetype, numNodesLine, numNodesSurface >::dx_;
+template <bool debug, DRT::Element::DiscretizationType edgetype, DRT::Element::DiscretizationType sidetype, int numNodesLine, int numNodesSurface > LINALG::Matrix<3 , 1> GEO::CUT::KERNEL::ComputeDistanceStrategy<debug, edgetype, sidetype, numNodesLine, numNodesSurface >::cross_;
+
+  //in compute intersection strategy
+template <bool debug, DRT::Element::DiscretizationType edgetype, DRT::Element::DiscretizationType sidetype, int numNodesLine , int numNodesSurface > LINALG::Matrix<numNodesSurface , 1> GEO::CUT::KERNEL::ComputeIntersectionStrategy<debug, edgetype, sidetype,numNodesLine, numNodesSurface>::surfaceFunct_;
+template <bool debug, DRT::Element::DiscretizationType edgetype, DRT::Element::DiscretizationType sidetype, int numNodesLine , int numNodesSurface > LINALG::Matrix<numNodesLine , 1> GEO::CUT::KERNEL::ComputeIntersectionStrategy<debug, edgetype, sidetype,numNodesLine, numNodesSurface>::lineFunct_;
+template <bool debug, DRT::Element::DiscretizationType edgetype, DRT::Element::DiscretizationType sidetype, int numNodesLine , int numNodesSurface > LINALG::Matrix<2 , numNodesSurface> GEO::CUT::KERNEL::ComputeIntersectionStrategy<debug, edgetype, sidetype,numNodesLine, numNodesSurface>::surfaceDeriv1_;
+template <bool debug, DRT::Element::DiscretizationType edgetype, DRT::Element::DiscretizationType sidetype, int numNodesLine , int numNodesSurface > LINALG::Matrix<1 , numNodesLine> GEO::CUT::KERNEL::ComputeIntersectionStrategy<debug, edgetype, sidetype,numNodesLine, numNodesSurface>::lineDeriv1_;
+template <bool debug, DRT::Element::DiscretizationType edgetype, DRT::Element::DiscretizationType sidetype, int numNodesLine , int numNodesSurface > LINALG::Matrix<3 , 3> GEO::CUT::KERNEL::ComputeIntersectionStrategy<debug, edgetype, sidetype,numNodesLine, numNodesSurface>::A_;
+template <bool debug, DRT::Element::DiscretizationType edgetype, DRT::Element::DiscretizationType sidetype, int numNodesLine , int numNodesSurface > LINALG::Matrix<3 , 1> GEO::CUT::KERNEL::ComputeIntersectionStrategy<debug, edgetype, sidetype,numNodesLine, numNodesSurface>::b_;
+template <bool debug, DRT::Element::DiscretizationType edgetype, DRT::Element::DiscretizationType sidetype, int numNodesLine , int numNodesSurface > LINALG::Matrix<3 , 1> GEO::CUT::KERNEL::ComputeIntersectionStrategy<debug, edgetype, sidetype,numNodesLine, numNodesSurface>::dx_;
 
 #endif
