@@ -601,8 +601,6 @@ namespace DRT
 
         LINALG::Matrix<nsd_,nen_> derxy_m_viscm_timefacfac_;
 
-        LINALG::Matrix<nsd_,1> normal_timefacfac_;
-
         LINALG::Matrix<nsd_,1> normal_pres_timefacfac_;
 
         LINALG::Matrix<nsd_,1> normal_pres_timefacfac_km_;
@@ -634,8 +632,6 @@ namespace DRT
         LINALG::Matrix<nsd_,1> velint_diff_;
 
         LINALG::Matrix<nsd_,1> velint_diff_timefacfac_stabfac_;
-
-        double velint_diff_normal_timefacfac_;
 
         double velint_diff_normal_pres_timefacfac_;
       };

@@ -756,10 +756,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::ApplyConvStabTerms(
 
   velint_diff_.Update(1.0, velint_m, -1.0, velint_s_, 0.0);
 
-  normal_timefacfac_.Update(timefacfac,normal,0.0);
-
-  velint_diff_normal_timefacfac_ = velint_diff_.Dot(normal_timefacfac_);
-
 
   // REMARK:
   // the (additional) convective stabilization is included in NIT_full_stab_fac
@@ -886,7 +882,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
   //--------------------------------------------
 
   half_normal_.Update(0.5,normal,0.0);
-  normal_timefacfac_.Update(timefacfac,normal,0.0);
   normal_pres_timefacfac_.Update(pres_timefacfac,normal,0.0);
 
   // get velocity at integration point
@@ -902,7 +897,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
 
   velint_diff_.Update(1.0, velint_m, -1.0, velint_s_, 0.0);
 
-  velint_diff_normal_timefacfac_ = velint_diff_.Dot(normal_timefacfac_);
   velint_diff_normal_pres_timefacfac_ = velint_diff_.Dot(normal_pres_timefacfac_);
 
   // funct_s * timefac * fac
@@ -985,9 +979,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
 
   if (!eval_coupling_ || full_mastersided)
   {
-    half_normal_viscm_timefacfac_km_.Update(viscm_fac,half_normal_,0.0);
-    half_normal_deriv_m_viscm_timefacfac_km_.Scale(viscm_fac);
-    vderxy_m_normal_transposed_viscm_timefacfac_km_.Scale(viscm_fac);
     //-----------------------------------------------------------------
     // pressure consistency term
     NIT_p_Consistency_MasterTerms(
@@ -1004,6 +995,10 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
       normal_pres_timefacfac_,
       velint_diff_normal_pres_timefacfac_
     );
+
+    half_normal_viscm_timefacfac_km_.Update(viscm_fac,half_normal_,0.0);
+    half_normal_deriv_m_viscm_timefacfac_km_.Scale(viscm_fac);
+    vderxy_m_normal_transposed_viscm_timefacfac_km_.Scale(viscm_fac);
 
     //-----------------------------------------------------------------
     // viscous consistency term
@@ -1035,9 +1030,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
 
   normal_pres_timefacfac_km_.Update(kappa_m,normal_pres_timefacfac_,0.0);
 
-  const double velint_diff_normal_pres_timefacfac_km = velint_diff_normal_pres_timefacfac_ * kappa_m;
-  const double velint_diff_normal_pres_timefacfac_ks = velint_diff_normal_pres_timefacfac_ * kappa_s;
-
   //TODO: introduce member for the subsequent matrices or introduce the scalings otherwise
 
   //-----------------------------------------------------------------
@@ -1057,7 +1049,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
 
     //-----------------------------------------------------------------
     // pressure adjoint consistency term
-
+    const double velint_diff_normal_pres_timefacfac_km = velint_diff_normal_pres_timefacfac_ * kappa_m;
     NIT_p_AdjointConsistency_MasterTerms(
         funct_m,
         normal_pres_timefacfac_km_,
@@ -1106,7 +1098,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
 
   //-----------------------------------------------------------------
   // pressure adjoint consistency term
-
+  const double velint_diff_normal_pres_timefacfac_ks = velint_diff_normal_pres_timefacfac_ * kappa_s;
   NIT_p_AdjointConsistency_SlaveTerms(
       normal_pres_timefacfac_ks_,
       velint_diff_normal_pres_timefacfac_ks);
@@ -1197,7 +1189,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOl
     dserror("Invalid weights kappa_m=%d and kappa_s=%d. The have to sum up to 1.0!", kappa_m, kappa_s);
 
   half_normal_.Update(0.5,normal,0.0);
-
   normal_pres_timefacfac_.Update(timefacfacn,normal,0.0);
 
   //--------------------------------------------
@@ -1230,6 +1221,23 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOl
   // funct_s * funct_m (dyadic product)
   funct_s_m_dyad_.MultiplyNT(funct_s_, funct_m);
 
+  //-----------------------------------------------------------------
+  // standard consistency traction jump term
+  if( eval_coupling_ )
+  {
+    // funct_s * timefac * fac * kappa_m
+    funct_s_timefacfac_km_.Update(kappa_m * timefacfacn,funct_s_,0.0);
+
+    // funct_m * timefac * fac * kappa_s
+    funct_m_timefacfac_ks_.Update(kappa_s * timefacfacn, funct_m, 0.0);
+
+    NIT_Traction_Consistency_Term(
+      funct_m_timefacfac_ks_,
+      funct_s_timefacfac_km_,
+      itractionn_jump
+    );
+  }
+
   // 2 * mu_m * timefacfacn
   const double viscm_facn = 2.0 * timefacfacn * visceff_m;
 
@@ -1244,13 +1252,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOl
 
   if (!eval_coupling_ || full_mastersided)
   {
-    vderxy_m_normal_transposed_viscm_timefacfac_km_.Scale(viscm_facn);
-
-    //-----------------------------------------------------------------
-    // viscous consistency term
-    NIT_visc_Consistency_MasterRHS(
-        funct_m);
-
     if (not isImplPressure)
     {
       //-----------------------------------------------------------------
@@ -1261,6 +1262,13 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOl
           normal_pres_timefacfac_
       );
     }
+
+    vderxy_m_normal_transposed_viscm_timefacfac_km_.Scale(viscm_facn);
+
+    //-----------------------------------------------------------------
+    // viscous consistency term
+    NIT_visc_Consistency_MasterRHS(
+        funct_m);
 
     // done, if only consistency terms are evaluated for previos time step
     if (fldparaxfem_.InterfaceTermsPreviousState() != INPAR::XFEM::PreviousState_full)
@@ -1306,10 +1314,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOl
 
   // 2 * mu_m * kappa_m * timefac * fac
   const double km_viscm_facn = viscm_facn * kappa_m;
-
-  vderxy_m_normal_transposed_viscm_timefacfac_km_.Update(1.0,vderxy_m_normal_,1.0);
   vderxy_m_normal_transposed_viscm_timefacfac_km_.Scale(km_viscm_facn);
-
   normal_pres_timefacfac_km_.Update(kappa_m,normal_pres_timefacfac_,0.0);
 
 
@@ -1366,23 +1371,6 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOl
   // kappa_s > 0.0
 
   //-----------------------------------------------------------------
-  // standard consistency traction jump term
-  if( eval_coupling_ )
-  {
-    // funct_m * timefac * fac * kappa_s
-    funct_m_timefacfac_ks_.Update(kappa_s * timefacfacn, funct_m, 0.0);
-
-    // funct_s * timefac * fac * kappa_s
-    funct_s_timefacfac_km_.Update(kappa_m * timefacfacn,funct_s_,0.0);
-
-    NIT_Traction_Consistency_Term(
-      funct_m_timefacfac_ks_,
-      funct_s_timefacfac_km_,
-      itractionn_jump
-    );
-  }
-
-  //-----------------------------------------------------------------
   // pressure consistency term
 
   if (not isImplPressure)
@@ -1417,6 +1405,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCouplingOl
   NIT_visc_Consistency_SlaveRHS(
       funct_m);
 
+  // consistency terms evaluated
   if (fldparaxfem_.InterfaceTermsPreviousState() != INPAR::XFEM::PreviousState_full)
     return;
 
