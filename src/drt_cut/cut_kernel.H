@@ -308,6 +308,11 @@ namespace GEO
           dserror("Try to get ZeroArea Information from EmptyNewtonStrategy!");
           return false; //just to make compiler happy!
         }
+
+        void WritetoGmsh(std::ofstream& file)
+        {
+          dserror("Try WritetoGmsh() from EmptyNewtonStrategy!");
+        }
       };
 
       /// Debug helper strategy for generic Newton algorithm
@@ -646,7 +651,6 @@ namespace GEO
 
         void WritetoGmsh(std::ofstream& file)
         {
-          //std::ofstream file( "NewtonFailed_distance.pos" );
           file.precision(32); //higher precicion!
           char elementtype;
           switch (numNodesSurface )
@@ -758,13 +762,10 @@ namespace GEO
           if(fabs(cnorm) == 0.0)
           {
             zeroarea_ = true; //then calculation of a normal to a line like this make no sense at all!
-            //std::ofstream file( "DistanceNewton_zeroarea.pos" );
-            //WritetoGmsh(file);
             return false;
           }
 
           fact1 = 1./cnorm;
-          //double fact2 = -0.5/( cnorm*sqrt( cnorm ) );
           cross.Scale( fact1 );
 
           C = 0;
@@ -1093,7 +1094,8 @@ namespace GEO
             str << "\n";
             DumpDoubles( str, xyze_line_   ->A(), xyze_line_   ->M()*xyze_line_   ->N() );
 
-            WritetoGmsh();
+            std::ofstream file( "NewtonFailed.pos" );
+            WritetoGmsh(file);
             }
           #endif
           return false;
@@ -1104,9 +1106,8 @@ namespace GEO
           return tol_;
         }
 
-        void WritetoGmsh()
+        void WritetoGmsh(std::ofstream& file)
         {
-          std::ofstream file( "NewtonFailed.pos" );
           file.precision(32); //higher precicion!
           char elementtype;
           switch (numNodesSurface )
@@ -1190,7 +1191,6 @@ namespace GEO
             file << "};\n";
           }
           file<<"};";
-          //GEO::CUT::OUTPUT::GmshIntersectionDump<numNodesSurface,numNodesLine>(file,xyze_surface_,xyze_line_);
         }
 
       private:
@@ -1260,6 +1260,11 @@ namespace GEO
         double GetTolerance()
         {
           return Strategy::GetTolerance();
+        }
+
+        void WritetoGmsh(std::ofstream& file)
+        {
+          return Strategy::WritetoGmsh(file);
         }
       };
 

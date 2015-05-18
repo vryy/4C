@@ -731,10 +731,18 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::Intersect(
       xsi_ = i_xsi; //set xsi_ back to the intersection xsi!!!
       if ( SurfaceWithinLimits(ritol) and LineWithinLimits(ritol) )
       {
+        //Output of the availabe information!!!
         std::cout << "local coordinates: <plane: " << xsi_(0) << ", " << xsi_(1) << ">, <line: " << xsi_(2) << "> | relative tolerance: "  << ritol << std::endl;
-        //std::cout << "Information about the LineEndpoints: lineendpoint_dist[0]: " << lineendpoint_dist[0] << "(" << lineendpoint_tol[0] << ") lineendpoint_dist[1]: " << lineendpoint_dist[1] << "(" << lineendpoint_tol[1] << ")" << std::endl;
-        std::cout << "Local Coordinates from ComputeDistance (lineendpoint_dist[0] = " << lineendpoint_dist[0] << "[tol=" << lineendpoint_tol[0] << "], conv = " << lineendpoint_conv[0] << ") on Quad4: " << "xsi: " << lineendpoint_xsi[0](0,0) << " / eta: "<< lineendpoint_xsi[0](1,0) << " / alpha: "<< lineendpoint_xsi[0](2,0) << std::endl;
-        std::cout << "Local Coordinates from ComputeDistance (lineendpoint_dist[1] = " << lineendpoint_dist[1] << "[tol=" << lineendpoint_tol[1] << "], conv = " << lineendpoint_conv[1] << ") on Quad4: " << "xsi: " << lineendpoint_xsi[1](0,0) << " / eta: "<< lineendpoint_xsi[1](1,0) << " / alpha: "<< lineendpoint_xsi[1](2,0) << std::endl;
+        std::cout << "Local Coordinates from ComputeDistance (lineendpoint_dist[0] = " << lineendpoint_dist[0] << "[tol=" << lineendpoint_tol[0] << "], conv = " << lineendpoint_conv[0] << ") on surface: " << "xsi: " << lineendpoint_xsi[0](0,0) << " / eta: "<< lineendpoint_xsi[0](1,0) << " / alpha: "<< lineendpoint_xsi[0](2,0) << std::endl;
+        std::cout << "Local Coordinates from ComputeDistance (lineendpoint_dist[1] = " << lineendpoint_dist[1] << "[tol=" << lineendpoint_tol[1] << "], conv = " << lineendpoint_conv[1] << ") on surface: " << "xsi: " << lineendpoint_xsi[1](0,0) << " / eta: "<< lineendpoint_xsi[1](1,0) << " / alpha: "<< lineendpoint_xsi[1](2,0) << std::endl;
+
+        { //just to creat gmsh output of the failed intersection!!!
+          KERNEL::ComputeIntersection<edgetype, sidetype> ci( xsi_ );
+          ci( xyze_surfaceElement_, xyze_lineElement_ );
+          std::ofstream file("CUT_INTERSECTION_DSERROR.pos");
+          ci.WritetoGmsh(file);
+        }
+
         //6// throw dserror! - It is not allowed to remove this dserror (don't even do that in your local version, as the cut then just generates something undefined)!!!
         dserror("CRITICAL ERROR: Your Intersection seems to be a special case, which is not treated right yet!!! --> to fix this the intersection code in baci has to be improved!!!");
       }
