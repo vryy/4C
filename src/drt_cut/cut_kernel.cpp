@@ -6,10 +6,6 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_io/io_control.H"
-
-
 unsigned GEO::CUT::KERNEL::FindNextCornerPoint( const std::vector<Point*> & points,
                                                 LINALG::Matrix<3,1> & x1,
                                                 LINALG::Matrix<3,1> & x2,
