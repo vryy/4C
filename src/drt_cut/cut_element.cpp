@@ -6,6 +6,7 @@
 #include "cut_volumecellgenerator.H"
 #include "cut_facetgraph.H"
 #include "cut_output.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_geometry/element_volume.H"
 
@@ -1484,8 +1485,9 @@ void GEO::CUT::Element::DebugDump()
  *------------------------------------------------------------------------------*/
 void GEO::CUT::Element::GmshFailureElementDump()
 {
+  std::string filename = DRT::Problem::Instance()->OutputControlFile()->FileName();
   std::stringstream str;
-  str << "cut_element" << Id() << "_fail.pos";
+  str << filename << ".cut_element" << Id() << "_CUTFAIL.pos";
   std::ofstream file( str.str().c_str() );
 
   GEO::CUT::OUTPUT::GmshCompleteCutElement( file, this );

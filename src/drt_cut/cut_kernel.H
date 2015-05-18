@@ -4,6 +4,9 @@
 #include "cut_tolerance.H"
 #include "cut_utils.H"
 
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_io/io_control.H"
+
 #include "../linalg/linalg_gauss.H"
 
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
@@ -643,7 +646,10 @@ namespace GEO
               << xsi_
               ;
 
-          std::ofstream file( "NewtonFailed_distance.pos" );
+          std::string filename = DRT::Problem::Instance()->OutputControlFile()->FileName();
+          std::stringstream str;
+          str << filename <<".NewtonFailed_distance.pos";
+          std::ofstream file(str.str().c_str());
           WritetoGmsh(file);
           #endif
           return false;
@@ -684,7 +690,7 @@ namespace GEO
             }
             file << "};\n";
           }
-          file<<"};";
+          file<<"};\n";
 
           //calculate the points
           LINALG::Matrix<numNodesSurface,1> surface;
@@ -1094,7 +1100,10 @@ namespace GEO
             str << "\n";
             DumpDoubles( str, xyze_line_   ->A(), xyze_line_   ->M()*xyze_line_   ->N() );
 
-            std::ofstream file( "NewtonFailed.pos" );
+            std::string filename = DRT::Problem::Instance()->OutputControlFile()->FileName();
+            std::stringstream str;
+            str << filename <<".NewtonFailed_intersection.pos";
+            std::ofstream file(str.str().c_str());
             WritetoGmsh(file);
             }
           #endif
@@ -1141,7 +1150,7 @@ namespace GEO
             }
             file << "};\n";
           }
-          file<<"};";
+          file<<"};\n";
 
           file << "View \"" << "Line" << "\" {\n";
           for (int iline = 0; iline < numNodesLine -1; ++iline)
@@ -1156,7 +1165,7 @@ namespace GEO
             file << 1;
             file << "};\n";
           }
-          file<<"};";
+          file<<"};\n";
 
 
           //calculate the points
