@@ -4,6 +4,7 @@
 #include "cut_side.H"
 #include "cut_mesh.H"
 #include "cut_kernel.H"
+#include "cut_output.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

@@ -8,10 +8,12 @@
 
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
-#include "cut_output.H"
-
 //activate debug intersection output in cut_kernel
 //#define DEBUG_CUTKERNEL_OUTPUT
+
+#ifdef DEBUG_CUTKERNEL_OUTPUT
+  #include "cut_output.H"
+#endif
 
 namespace GEO
 {
@@ -1098,10 +1100,11 @@ namespace GEO
             str << "\n";
             DumpDoubles( str, xyze_line_   ->A(), xyze_line_   ->M()*xyze_line_   ->N() );
 
-            std::string filename = DRT::Problem::Instance()->OutputControlFile()->FileName();
+
             std::stringstream str;
-            str << filename <<".NewtonFailed_intersection.pos";
-            std::ofstream file(str.str().c_str());
+            str  <<".NewtonFailed_intersection.pos";
+            std::string filename(GEO::CUT::OUTPUT::GenerateGmshOutputFilename(str.str()));
+            std::ofstream file(filename.c_str());
             WritetoGmsh(file);
             }
           #endif

@@ -20,8 +20,8 @@ Maintainer: Sudhakar
 #include "cut_edge.H"
 #include "cut_point.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_io/io_control.H"
+//#include "../drt_lib/drt_globalproblem.H"
+//#include "../drt_io/io_control.H"
 
 /*--------------------------------------------------------------------------------------*
  * Write GMSH output of given element                                           sudhakar 03/14
@@ -370,7 +370,8 @@ void GEO::CUT::OUTPUT::GmshElementCutTest( std::ofstream & file, GEO::CUT::Eleme
 
 std::string GEO::CUT::OUTPUT::GenerateGmshOutputFilename(const std::string& filename_tail)
 {
-  std::string filename = DRT::Problem::Instance()->OutputControlFile()->FileName();
+//  std::string filename = DRT::Problem::Instance()->OutputControlFile()->FileName();
+  std::string filename("xxx");
   filename.append(filename_tail);
   return filename;
 
