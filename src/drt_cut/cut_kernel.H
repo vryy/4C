@@ -4,12 +4,11 @@
 #include "cut_tolerance.H"
 #include "cut_utils.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_io/io_control.H"
-
 #include "../linalg/linalg_gauss.H"
 
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+
+#include "cut_output.H"
 
 //activate debug intersection output in cut_kernel
 //#define DEBUG_CUTKERNEL_OUTPUT
@@ -646,11 +645,10 @@ namespace GEO
               << xsi_
               ;
 
-          std::string filename = DRT::Problem::Instance()->OutputControlFile()->FileName();
-          std::stringstream str;
-          str << filename <<".NewtonFailed_distance.pos";
-          std::ofstream file(str.str().c_str());
+          std::string filename = OUTPUT::GenerateGmshOutputFilename(".NewtonFailed_distance.pos");
+          std::ofstream file(filename.c_str());
           WritetoGmsh(file);
+          file.close();
           #endif
           return false;
         }

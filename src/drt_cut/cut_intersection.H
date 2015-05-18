@@ -5,9 +5,6 @@
 #include "cut_mesh.H"
 #include "cut_kernel.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_io/io_control.H"
-
 #include <Teuchos_TimeMonitor.hpp>
 
 //activate debug intersection output in cut_intersection
@@ -741,11 +738,10 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::Intersect(
           KERNEL::ComputeIntersection<edgetype, sidetype> ci( xsi_ );
           ci( xyze_surfaceElement_, xyze_lineElement_ );
 
-          std::string filename = DRT::Problem::Instance()->OutputControlFile()->FileName();
-          std::stringstream str;
-          str << filename <<".intersection_CUTFAIL.pos";
-          std::ofstream file(str.str().c_str());
+          std::string filename(OUTPUT::GenerateGmshOutputFilename(".intersection_CUTFAIL.pos"));
+          std::ofstream file(filename.c_str());
           ci.WritetoGmsh(file);
+          file.close();
         }
 
         //6// throw dserror! - It is not allowed to remove this dserror (don't even do that in your local version, as the cut then just generates something undefined)!!!

@@ -15,8 +15,6 @@ Maintainer: Benedikt Schott
 #include <boost/bind.hpp>
 
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_io/io_control.H"
 
 #include "cut_mesh.H"
 
@@ -2250,10 +2248,11 @@ void GEO::CUT::Mesh::DebugDump(GEO::CUT::Element* ele, std::string file, int lin
   if (file != "" || line != -1)
     std::cout << "GEO::CUT::Mesh::DebugDump called in " << file << " in line " << line << std::endl;
 
-  std::string filename = DRT::Problem::Instance()->OutputControlFile()->FileName();
+
   std::stringstream str;
-  str << filename << ".full_debug_cut_output." << myrank_ << "_CUTFAIL.pos";
-  DumpGmsh(str.str());
+  str << ".full_debug_cut_output." << myrank_ << "_CUTFAIL.pos";
+  std::string filename(GEO::CUT::OUTPUT::GenerateGmshOutputFilename(str.str()));
+  DumpGmsh(filename);
 
   ele->DebugDump();
 }

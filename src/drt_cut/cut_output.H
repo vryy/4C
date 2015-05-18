@@ -84,6 +84,12 @@ void GmshPointDump( std::ofstream & file, GEO::CUT::Point*  point);
 */
 void GmshElementCutTest( std::ofstream & file, GEO::CUT::Element* ele);
 
+/*!
+ \brief Generate filename for gmsh output with specific ending
+ */
+std::string GenerateGmshOutputFilename(const std::string& filename_tail);
+
+
 }
 
 } /* namespace CUT */

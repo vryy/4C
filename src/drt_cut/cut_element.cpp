@@ -1485,12 +1485,13 @@ void GEO::CUT::Element::DebugDump()
  *------------------------------------------------------------------------------*/
 void GEO::CUT::Element::GmshFailureElementDump()
 {
-  std::string filename = DRT::Problem::Instance()->OutputControlFile()->FileName();
   std::stringstream str;
-  str << filename << ".cut_element" << Id() << "_CUTFAIL.pos";
-  std::ofstream file( str.str().c_str() );
+  str  << ".cut_element" << Id() << "_CUTFAIL.pos";
+  std::string filename(GEO::CUT::OUTPUT::GenerateGmshOutputFilename(str.str()));
+  std::ofstream file( filename.c_str() );
 
   GEO::CUT::OUTPUT::GmshCompleteCutElement( file, this );
+  file.close();
 }
 
 void GEO::CUT::Element::GnuplotDump()
