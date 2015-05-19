@@ -53,7 +53,11 @@ Maintainer: Volker Gravemeier
 #include "../linalg/linalg_utils.H"
 #include "../drt_inpar/inpar_fluid.H"
 
-
+namespace IO
+{
+  class DiscretizationReader;
+  class DiscretizationWriter;
+}
 
 namespace FLD
 {
@@ -125,6 +129,19 @@ public:
 
   void ClearStatistics();
 
+
+  /*!
+  \brief Input of statistics data after restart
+  */
+
+  void ReadRestart(
+    IO::DiscretizationReader&  reader);
+
+  /*!
+  \brief Write output file of statistics data to allow restart
+  */
+  void WriteRestart(
+    IO::DiscretizationWriter&  writer);
 
 protected:
 

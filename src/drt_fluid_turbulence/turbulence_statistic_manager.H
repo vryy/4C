@@ -174,13 +174,13 @@ public:
   \brief Restart collection of statistics
 
   */
-  void Restart(IO::DiscretizationReader& reader,int step);
+  void ReadRestart(IO::DiscretizationReader& reader,int step);
 
   /*!
   \brief Restart scatra-specific collection of statistics
 
   */
-  void RestartScaTra(IO::DiscretizationReader& scatrareader,int step);
+  void ReadRestartScaTra(IO::DiscretizationReader& scatrareader,int step);
 
   /*!
   \brief Provide access to scalar transport field

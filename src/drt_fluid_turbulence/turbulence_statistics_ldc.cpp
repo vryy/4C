@@ -23,6 +23,8 @@ Maintainer: Volker Gravemeier
 
 #include "turbulence_statistics_ldc.H"
 
+#include "../drt_io/io.H"
+
 /*----------------------------------------------------------------------*/
 /*!
   \brief Standard Constructor (public)
@@ -1668,4 +1670,147 @@ void FLD::TurbulenceStatisticsLdc::ClearStatistics()
   return;
 }// TurbulenceStatisticsLdc::ClearStatistics
 
+/*----------------------------------------------------------------------*
+ *
+ *----------------------------------------------------------------------*/
+void FLD::TurbulenceStatisticsLdc::ReadRestart(
+  IO::DiscretizationReader&  reader)
+{
+  numsamp_ = reader.ReadDouble("numsamp");
 
+  reader.ReadRedundantDoubleVector(x1sumu_ ,"x1sumu");
+  reader.ReadRedundantDoubleVector(x1sumv_ ,"x1sumv");
+  reader.ReadRedundantDoubleVector(x1sumw_ ,"x1sumw");
+  reader.ReadRedundantDoubleVector(x1sump_ ,"x1sump");
+//  reader.ReadRedundantDoubleVector(x1sumrho_ ,"x1sumrho");
+//  reader.ReadRedundantDoubleVector(x1sumT_ ,"x1sumT");
+
+  reader.ReadRedundantDoubleVector(x1sumsqu_ ,"x1sumsqu");
+  reader.ReadRedundantDoubleVector(x1sumsqv_ ,"x1sumsqv");
+  reader.ReadRedundantDoubleVector(x1sumsqw_ ,"x1sumsqw");
+  reader.ReadRedundantDoubleVector(x1sumsqp_ ,"x1sumsqp");
+//  reader.ReadRedundantDoubleVector(x1sumsqrho_ ,"x1sumsqrho");
+//  reader.ReadRedundantDoubleVector(x1sumsqT_ ,"x1sumsqT");
+
+  reader.ReadRedundantDoubleVector(x1sumuv_ ,"x1sumuv");
+  reader.ReadRedundantDoubleVector(x1sumuw_ ,"x1sumuw");
+  reader.ReadRedundantDoubleVector(x1sumvw_ ,"x1sumvw");
+//  reader.ReadRedundantDoubleVector(x1sumuT_ ,"x1sumuT");
+//  reader.ReadRedundantDoubleVector(x1sumvT_ ,"x1sumvT");
+//  reader.ReadRedundantDoubleVector(x1sumwT_ ,"x1sumwT");
+
+  reader.ReadRedundantDoubleVector(x2sumu_ ,"x2sumu");
+  reader.ReadRedundantDoubleVector(x2sumv_ ,"x2sumv");
+  reader.ReadRedundantDoubleVector(x2sumw_ ,"x2sumw");
+  reader.ReadRedundantDoubleVector(x2sump_ ,"x2sump");
+//  reader.ReadRedundantDoubleVector(x2sumrho_ ,"x2sumrho");
+//  reader.ReadRedundantDoubleVector(x2sumT_ ,"x2sumT");
+
+  reader.ReadRedundantDoubleVector(x2sumsqu_ ,"x2sumsqu");
+  reader.ReadRedundantDoubleVector(x2sumsqv_ ,"x2sumsqv");
+  reader.ReadRedundantDoubleVector(x2sumsqw_ ,"x2sumsqw");
+  reader.ReadRedundantDoubleVector(x2sumsqp_ ,"x2sumsqp");
+//  reader.ReadRedundantDoubleVector(x2sumsqrho_ ,"x2sumsqrho");
+//  reader.ReadRedundantDoubleVector(x2sumsqT_ ,"x2sumsqT");
+
+  reader.ReadRedundantDoubleVector(x2sumuv_ ,"x2sumuv");
+  reader.ReadRedundantDoubleVector(x2sumuw_ ,"x2sumuw");
+  reader.ReadRedundantDoubleVector(x2sumvw_ ,"x2sumvw");
+//  reader.ReadRedundantDoubleVector(x2sumuT_ ,"x2sumuT");
+//  reader.ReadRedundantDoubleVector(x2sumvT_ ,"x2sumvT");
+//  reader.ReadRedundantDoubleVector(x2sumwT_ ,"x2sumwT");
+
+  reader.ReadRedundantDoubleVector(x3sumu_ ,"x3sumu");
+  reader.ReadRedundantDoubleVector(x3sumv_ ,"x3sumv");
+  reader.ReadRedundantDoubleVector(x3sumw_ ,"x3sumw");
+  reader.ReadRedundantDoubleVector(x3sump_ ,"x3sump");
+//  reader.ReadRedundantDoubleVector(x3sumrho_ ,"x3sumrho");
+//  reader.ReadRedundantDoubleVector(x3sumT_ ,"x3sumT");
+
+  reader.ReadRedundantDoubleVector(x3sumsqu_ ,"x3sumsqu");
+  reader.ReadRedundantDoubleVector(x3sumsqv_ ,"x3sumsqv");
+  reader.ReadRedundantDoubleVector(x3sumsqw_ ,"x3sumsqw");
+  reader.ReadRedundantDoubleVector(x3sumsqp_ ,"x3sumsqp");
+//  reader.ReadRedundantDoubleVector(x3sumsqrho_ ,"x3sumsqrho");
+//  reader.ReadRedundantDoubleVector(x3sumsqT_ ,"x3sumsqT");
+
+  reader.ReadRedundantDoubleVector(x3sumuv_ ,"x3sumuv");
+  reader.ReadRedundantDoubleVector(x3sumuw_ ,"x3sumuw");
+  reader.ReadRedundantDoubleVector(x3sumvw_ ,"x3sumvw");
+//  reader.ReadRedundantDoubleVector(x3sumuT_ ,"x3sumuT");
+//  reader.ReadRedundantDoubleVector(x3sumvT_ ,"x3sumvT");
+//  reader.ReadRedundantDoubleVector(x3sumwT_ ,"x3sumwT");
+
+}
+
+/*----------------------------------------------------------------------*
+ *
+ *----------------------------------------------------------------------*/
+void FLD::TurbulenceStatisticsLdc::WriteRestart(
+  IO::DiscretizationWriter&  writer)
+{
+  writer.WriteDouble("numsamp",numsamp_);
+
+  writer.WriteRedundantDoubleVector("x1sumu", x1sumu_);
+  writer.WriteRedundantDoubleVector("x1sumv", x1sumv_);
+  writer.WriteRedundantDoubleVector("x1sumw", x1sumw_);
+  writer.WriteRedundantDoubleVector("x1sump", x1sump_);
+//  writer.WriteRedundantDoubleVector("x1sumrho", x1sumrho_);
+//  writer.WriteRedundantDoubleVector("x1sumT", x1sumT_);
+
+  writer.WriteRedundantDoubleVector("x1sumsqu", x1sumsqu_);
+  writer.WriteRedundantDoubleVector("x1sumsqv", x1sumsqv_);
+  writer.WriteRedundantDoubleVector("x1sumsqw", x1sumsqw_);
+  writer.WriteRedundantDoubleVector("x1sumsqp", x1sumsqp_);
+//  writer.WriteRedundantDoubleVector("x1sumsqrho", x1sumsqrho_);
+//  writer.WriteRedundantDoubleVector("x1sumsqT", x1sumsqT_);
+
+  writer.WriteRedundantDoubleVector("x1sumuv", x1sumuv_);
+  writer.WriteRedundantDoubleVector("x1sumuw", x1sumuw_);
+  writer.WriteRedundantDoubleVector("x1sumvw", x1sumvw_);
+//  writer.WriteRedundantDoubleVector("x1sumuT", x1sumuT_);
+//  writer.WriteRedundantDoubleVector("x1sumvT", x1sumvT_);
+//  writer.WriteRedundantDoubleVector("x1sumwT", x1sumwT_);
+
+  writer.WriteRedundantDoubleVector("x2sumu", x2sumu_);
+  writer.WriteRedundantDoubleVector("x2sumv", x2sumv_);
+  writer.WriteRedundantDoubleVector("x2sumw", x2sumw_);
+  writer.WriteRedundantDoubleVector("x2sump", x2sump_);
+//  writer.WriteRedundantDoubleVector("x2sumrho", x2sumrho_);
+//  writer.WriteRedundantDoubleVector("x2sumT", x2sumT_);
+
+  writer.WriteRedundantDoubleVector("x2sumsqu", x2sumsqu_);
+  writer.WriteRedundantDoubleVector("x2sumsqv", x2sumsqv_);
+  writer.WriteRedundantDoubleVector("x2sumsqw", x2sumsqw_);
+  writer.WriteRedundantDoubleVector("x2sumsqp", x2sumsqp_);
+//  writer.WriteRedundantDoubleVector("x2sumsqrho", x2sumsqrho_);
+//  writer.WriteRedundantDoubleVector("x2sumsqT", x2sumsqT_);
+
+  writer.WriteRedundantDoubleVector("x2sumuv", x2sumuv_);
+  writer.WriteRedundantDoubleVector("x2sumuw", x2sumuw_);
+  writer.WriteRedundantDoubleVector("x2sumvw", x2sumvw_);
+//  writer.WriteRedundantDoubleVector("x2sumuT", x2sumuT_);
+//  writer.WriteRedundantDoubleVector("x2sumvT", x2sumvT_);
+//  writer.WriteRedundantDoubleVector("x2sumwT", x2sumwT_);
+
+  writer.WriteRedundantDoubleVector("x3sumu", x3sumu_);
+  writer.WriteRedundantDoubleVector("x3sumv", x3sumv_);
+  writer.WriteRedundantDoubleVector("x3sumw", x3sumw_);
+  writer.WriteRedundantDoubleVector("x3sump", x3sump_);
+//  writer.WriteRedundantDoubleVector("x3sumrho", x3sumrho_);
+//  writer.WriteRedundantDoubleVector("x3sumT", x3sumT_);
+
+  writer.WriteRedundantDoubleVector("x3sumsqu", x3sumsqu_);
+  writer.WriteRedundantDoubleVector("x3sumsqv", x3sumsqv_);
+  writer.WriteRedundantDoubleVector("x3sumsqw", x3sumsqw_);
+  writer.WriteRedundantDoubleVector("x3sumsqp", x3sumsqp_);
+//  writer.WriteRedundantDoubleVector("x3sumsqrho", x3sumsqrho_);
+//  writer.WriteRedundantDoubleVector("x3sumsqT", x3sumsqT_);
+
+  writer.WriteRedundantDoubleVector("x3sumuv", x3sumuv_);
+  writer.WriteRedundantDoubleVector("x3sumuw", x3sumuw_);
+  writer.WriteRedundantDoubleVector("x3sumvw", x3sumvw_);
+//  writer.WriteRedundantDoubleVector("x3sumuT", x3sumuT_);
+//  writer.WriteRedundantDoubleVector("x3sumvT", x3sumvT_);
+//  writer.WriteRedundantDoubleVector("x3sumwT", x3sumwT_);
+}

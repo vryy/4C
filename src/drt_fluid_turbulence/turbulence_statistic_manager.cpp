@@ -1532,6 +1532,9 @@ namespace FLD
 
         if(outputformat == write_single_record)
           statistics_ldc_->DumpStatistics(step);
+
+        if (outputformat != do_not_write)
+           statistics_ldc_->WriteRestart(output);
         break;
       }
       case loma_lid_driven_cavity:
@@ -1866,30 +1869,45 @@ namespace FLD
   Restart statistics collection
 
   ----------------------------------------------------------------------*/
-  void TurbulenceStatisticManager::Restart(
+  void TurbulenceStatisticManager::ReadRestart(
     IO::DiscretizationReader& reader,
     int                       step
     )
   {
 
+  if(samstart_<step && step<=samstop_)
+  {
+
     if(statistics_general_mean_!=Teuchos::null)
     {
-      if(samstart_<step && step<=samstop_)
+      if(discret_->Comm().MyPID()==0)
       {
+
+        std::cout << "XXXXXXXXXXXXXXXXXXXXXXXXX          ";
+        std::cout << "Read general mean values           ";
+        std::cout << "XXXXXXXXXXXXXXXXXXXXXXXXX";
+        std::cout << "\n\n";
+      }
+
+      statistics_general_mean_->ReadOldStatistics(reader);
+    }
+
+    if (statistics_ldc_!=Teuchos::null)
+    {
         if(discret_->Comm().MyPID()==0)
         {
           std::cout << "XXXXXXXXXXXXXXXXXXXXX              ";
-          std::cout << "Read general mean values           ";
+          std::cout << "Read ldc statistics                ";
           std::cout << "XXXXXXXXXXXXXXXXXXXXX";
           std::cout << "\n\n";
         }
 
-        statistics_general_mean_->ReadOldStatistics(reader);
-      }
+        statistics_ldc_->ReadRestart(reader);
     }
+  }
 
     return;
-  } // Restart
+  }// Restart
 
 
   /*----------------------------------------------------------------------
@@ -1897,7 +1915,7 @@ namespace FLD
   Restart for scatra mean fields (statistics was restarted via Restart() )
 
   ----------------------------------------------------------------------*/
-  void TurbulenceStatisticManager::RestartScaTra(
+  void TurbulenceStatisticManager::ReadRestartScaTra(
     IO::DiscretizationReader& scatrareader,
     int                       step
   )

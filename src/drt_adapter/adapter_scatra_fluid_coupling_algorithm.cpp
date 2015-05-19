@@ -163,7 +163,7 @@ void ADAPTER::ScaTraFluidCouplingAlgorithm::ReadRestart(int step)
   if (FluidField()->TurbulenceStatisticManager() != Teuchos::null)
   {
     IO::DiscretizationReader reader(ScaTraField()->Discretization(),step);
-    FluidField()->TurbulenceStatisticManager()->RestartScaTra(reader,step);
+    FluidField()->TurbulenceStatisticManager()->ReadRestartScaTra(reader,step);
   }
 
   return;

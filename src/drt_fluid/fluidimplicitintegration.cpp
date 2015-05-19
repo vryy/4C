@@ -3780,7 +3780,7 @@ void FLD::FluidImplicitTimeInt::ReadRestart(int step)
   // Here it is already needed by AVM3 and impedance boundary condition!!
   SetElementTimeParameter();
 
-  statisticsmanager_->Restart(reader,step);
+  statisticsmanager_->ReadRestart(reader,step);
 
   if ((fssgv_ != INPAR::FLUID::no_fssgv) or
       (scale_sep_ == INPAR::FLUID::algebraic_multigrid_operator))
