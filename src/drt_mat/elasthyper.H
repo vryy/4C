@@ -249,7 +249,7 @@ private:
     virtual bool AnisotropicModified() const { return anisomod_;}
 
     /// return if isotropic, splitted and viscos formulation
-    virtual bool IsotropicModifiedVisco() const { return isomodvisco_;}
+    virtual bool IsotropicModifiedVisco() const { return isovisco_;}
 
     /// return if viscous-genmax (ssl-model) formulation
     virtual bool ViscoGenMax() const { return viscogenmax_;}
@@ -532,7 +532,7 @@ private:
     bool isomod_; ///< global indicator for isotropic splitted formulation
     bool anisoprinc_ ; ///< global indicator for anisotropic principal formulation
     bool anisomod_ ; ///< global indicator for anisotropic splitted formulation
-    bool isomodvisco_ ; ///< global indicator for isotropic splitted viscous formulation
+    bool isovisco_ ; ///< global indicator for isotropic splitted viscous formulation
     bool viscogenmax_ ; ///< global indicator for viscous contribution according the SLS-Model
     //@}
 

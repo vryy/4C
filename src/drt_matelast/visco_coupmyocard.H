@@ -102,7 +102,7 @@ namespace ELASTIC
     /// Add modified coeffiencts.
     virtual void AddCoefficientsViscoModified(
         const LINALG::Matrix<3,1>& modinv,  ///< modified invariants of right Cauchy-Green tensor
-        LINALG::Matrix<8,1>& modmy,  ///<necassary coefficients for piola-kirchhoff-stress
+        LINALG::Matrix<8,1>& modmu,  ///<necassary coefficients for piola-kirchhoff-stress
         LINALG::Matrix<33,1>& modxi,  ///<necassary coefficients for viscosity tensor
         LINALG::Matrix<7,1>& modrateinv,
         Teuchos::ParameterList& params,
@@ -121,12 +121,12 @@ namespace ELASTIC
         bool& isomod, ///< global indicator for isotropic splitted formulation
         bool& anisoprinc, ///< global indicator for anisotropic principal formulation
         bool& anisomod, ///< global indicator for anisotropic splitted formulation
-        bool& isomodvisco, ///< global indicator for isotropic splitted viscos formulation
+        bool& isovisco, ///< global indicator for isotropic viscous formulation
         bool& viscogenmax  ///< global indicator for viscous contribution according the SLS-Model
       )
     {
-      isomod = true;
-      isomodvisco = true;
+      isoprinc = true;
+      isovisco = true;
       return;
     };
 

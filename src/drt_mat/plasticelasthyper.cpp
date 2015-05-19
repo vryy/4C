@@ -155,7 +155,7 @@ void MAT::PlasticElastHyper::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,(int)isomod_);
   AddtoPack(data,(int)anisoprinc_);
   AddtoPack(data,(int)anisomod_);
-  AddtoPack(data,(int)isomodvisco_);
+  AddtoPack(data,(int)isovisco_);
   AddtoPack(data,(int)viscogenmax_);
 
   // plastic anisotropy
@@ -225,7 +225,7 @@ void MAT::PlasticElastHyper::Unpack(const std::vector<char>& data)
   isomod_=(bool)ExtractInt(position,data);
   anisoprinc_=(bool)ExtractInt(position,data);
   anisomod_=(bool)ExtractInt(position,data);
-  isomodvisco_=(bool)ExtractInt(position,data);
+  isovisco_=(bool)ExtractInt(position,data);
   viscogenmax_=(bool)ExtractInt(position,data);
 
   // plastic anisotropy
@@ -310,12 +310,12 @@ void MAT::PlasticElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition* linede
   isomod_ = false ;
   anisoprinc_ = false ;
   anisomod_ = false;
-  isomodvisco_ = false;
+  isovisco_ = false;
   viscogenmax_ = false;
 
   for (unsigned int p=0; p<potsum_.size(); ++p)
   {
-    potsum_[p]->SpecifyFormulation(isoprinc_,isomod_,anisoprinc_,anisomod_,isomodvisco_,viscogenmax_);
+    potsum_[p]->SpecifyFormulation(isoprinc_,isomod_,anisoprinc_,anisomod_,isovisco_,viscogenmax_);
   }
   // in this case the mandel stress become non-symmetric and the
   // calculated derivatives have to be extended.
@@ -606,7 +606,7 @@ void MAT::PlasticElastHyper::EvaluateThermalStress(
   // do TSI only for decoupled isotropic materials. By doing so, the stresses
   // due to thermal expansion can be easily calculated by the volumetric
   // part of the strain energy function
-  if (isoprinc_ || anisomod_ || anisoprinc_ || isomodvisco_)
+  if (isoprinc_ || anisomod_ || anisoprinc_ || isovisco_)
     dserror("TSI with semi-Smooth Newton type plasticity algorithm only "
         "with decoupled strain energy functions");
 
@@ -661,7 +661,7 @@ void MAT::PlasticElastHyper::EvaluateCTvol(
   // do TSI only for decoupled isotropic materials. By doing so, the stresses
   // due to thermal expansion can be easily calculated by the volumetric
   // part of the strain energy function
-  if (isoprinc_ || anisomod_ || anisoprinc_ || isomodvisco_)
+  if (isoprinc_ || anisomod_ || anisoprinc_ || isovisco_)
     dserror("TSI with semi-Smooth Newton type plasticity algorithm only "
         "with decoupled strain energy functions");
 

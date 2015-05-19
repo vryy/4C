@@ -124,7 +124,7 @@ void MAT::ElastHyper::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,isomod_);
   AddtoPack(data,anisoprinc_);
   AddtoPack(data,anisomod_);
-  AddtoPack(data,isomodvisco_);
+  AddtoPack(data,isovisco_);
   AddtoPack(data,viscogenmax_);
 
   if (params_ != NULL) // summands are not accessible in postprocessing mode
@@ -150,7 +150,7 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
   isomod_ = false;
   anisoprinc_ = false;
   anisomod_ = false;
-  isomodvisco_ = false;
+  isovisco_ = false;
   viscogenmax_ = false;
 
   std::vector<char>::size_type position = 0;
@@ -179,21 +179,21 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
   int isomod;
   int anisoprinc;
   int anisomod;
-  int isomodvisco;
+  int isovisco;
   int viscogenmax;
 
   ExtractfromPack(position,data,isoprinc);
   ExtractfromPack(position,data,isomod);
   ExtractfromPack(position,data,anisoprinc);
   ExtractfromPack(position,data,anisomod);
-  ExtractfromPack(position,data,isomodvisco);
+  ExtractfromPack(position,data,isovisco);
   ExtractfromPack(position,data,viscogenmax);
 
   if (isoprinc != 0) isoprinc_ = true;
   if (isomod != 0) isomod_ = true;
   if (anisoprinc != 0) anisoprinc_ = true;
   if (anisomod != 0) anisomod_ = true;
-  if (isomodvisco != 0) isomodvisco_ = true;
+  if (isovisco != 0) isovisco_ = true;
   if (viscogenmax != 0) viscogenmax_ = true;
 
   if (params_ != NULL) // summands are not accessible in postprocessing mode
@@ -290,12 +290,12 @@ void MAT::ElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
   isomod_ = false ;
   anisoprinc_ = false ;
   anisomod_ = false;
-  isomodvisco_ = false;
+  isovisco_ = false;
   viscogenmax_ = false;
 
   for (unsigned int p=0; p<potsum_.size(); ++p)
   {
-    potsum_[p]->SpecifyFormulation(isoprinc_,isomod_,anisoprinc_,anisomod_,isomodvisco_,viscogenmax_);
+    potsum_[p]->SpecifyFormulation(isoprinc_,isomod_,anisoprinc_,anisomod_,isovisco_,viscogenmax_);
   }
 
   return;

@@ -43,7 +43,7 @@ MAT::ELASTIC::CoupMyocard::CoupMyocard(MAT::ELASTIC::PAR::CoupMyocard* params)
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupMyocard::AddCoefficientsViscoModified(
   const LINALG::Matrix<3,1>& modinv,
-  LINALG::Matrix<8,1>& modmy,
+  LINALG::Matrix<8,1>& modmu,
   LINALG::Matrix<33,1>& modxi,
   LINALG::Matrix<7,1>& modrateinv,
   Teuchos::ParameterList& params,
@@ -64,7 +64,7 @@ void MAT::ELASTIC::CoupMyocard::AddCoefficientsViscoModified(
   const double a_hack = std::pow(modinv(2),4./3.);
 
   // my(1) += 2. * n/dt * rateinv(0);
-  modmy(1) += 2. * n/dt * modrateinv(0) * a_hack;
+  modmu(1) += 2. * n/dt * modrateinv(0) * a_hack;
 
   // xi(3) += 4. * n/(dt*dt);
   modxi(3) += 4. * n/(dt*dt) * a_hack;

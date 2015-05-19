@@ -45,7 +45,7 @@ MAT::ELASTIC::IsoRateDep::IsoRateDep(MAT::ELASTIC::PAR::IsoRateDep* params)
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::IsoRateDep::AddCoefficientsViscoModified(
   const LINALG::Matrix<3,1>& modinv,
-  LINALG::Matrix<8,1>& modmy,
+  LINALG::Matrix<8,1>& modmu,
   LINALG::Matrix<33,1>& modxi,
   LINALG::Matrix<7,1>& modrateinv,
   Teuchos::ParameterList& params,
@@ -58,8 +58,8 @@ void MAT::ELASTIC::IsoRateDep::AddCoefficientsViscoModified(
   // get time algorithmic parameters.
   double dt = params.get<double>("delta time");
 
-  modmy(1) += 2.* n * modrateinv(1) ;
-  modmy(2) += (2.* n *(modinv(0)-3.) ) / dt;
+  modmu(1) += 2.* n * modrateinv(1) ;
+  modmu(2) += (2.* n *(modinv(0)-3.) ) / dt;
 
   modxi(1) += (4.* n) / dt;
   modxi(2) += (4.* n *(modinv(0)-3.) ) / (dt*dt);
