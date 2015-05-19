@@ -958,34 +958,33 @@ int DRT::ELEMENTS::So_tet4::EvaluateNeumann(Teuchos::ParameterList& params,
     xrefe(i,2) = x[2];
   }
 
+  /* get the matrix of the coordinates of nodes needed to compute the volume,
+  ** which is used here as detJ in the quadrature rule.
+  ** ("Jacobian matrix") for the quadrature rule:
+  **             [  1    1    1    1  ]
+  **         J = [ X_1  X_2  X_3  X_4 ]
+  **             [ Y_1  Y_2  Y_3  Y_4 ]
+  **             [ Z_1  Z_2  Z_3  Z_4 ]
+  */
+  LINALG::Matrix<NUMCOORD_SOTET4,NUMCOORD_SOTET4> jac;
+  for (int i=0; i<4; i++)
+    jac(0,i)=1.0;
+  for (int row=0;row<3;row++)
+    for (int col=0;col<4;col++)
+      jac(row+1,col)= xrefe(col,row);
+
+  // compute determinant of Jacobian once outside Gauss point loop since it is constant
+  // jac.Determinant() delivers six times the reference volume of the tet
+  const double detJ=jac.Determinant()*(1.0/6.0);
+
+  if (detJ == 0.0)
+    dserror("ZERO JACOBIAN DETERMINANT");
+  else if (detJ < 0.0)
+    dserror("NEGATIVE JACOBIAN DETERMINANT");
 
 /* ================================================= Loop over Gauss Points */
   for (int gp=0; gp<NUMGPT_SOTET4; gp++)
   {
-
-    /* get the matrix of the coordinates of nodes needed to compute the volume,
-    ** which is used here as detJ in the quadrature rule.
-    ** ("Jacobian matrix") for the quadrature rule:
-    **             [  1    1    1    1  ]
-    **         J = [ X_1  X_2  X_3  X_4 ]
-    **             [ Y_1  Y_2  Y_3  Y_4 ]
-    **             [ Z_1  Z_2  Z_3  Z_4 ]
-    */
-    LINALG::Matrix<NUMCOORD_SOTET4,NUMCOORD_SOTET4> jac;
-    for (int i=0; i<4; i++)
-      jac(0,i)=1;
-    for (int row=0;row<3;row++)
-      for (int col=0;col<4;col++)
-        jac(row+1,col)= xrefe(col,row);
-
-
-    // compute determinant of Jacobian
-    double detJ=jac.Determinant();
-    if (detJ == 0.0)
-      dserror("ZERO JACOBIAN DETERMINANT");
-    else if (detJ < 0.0)
-      dserror("NEGATIVE JACOBIAN DETERMINANT");
-
     // material/reference co-ordinates of Gauss point
     if (havefunct)
     {
@@ -1699,25 +1698,25 @@ const std::vector<LINALG::Matrix<NUMDIM_SOTET4+1,NUMNOD_SOTET4> > DRT::ELEMENTS:
   std::vector<LINALG::Matrix<NUMDIM_SOTET4+1,NUMNOD_SOTET4> > derivs(NUMGPT_SOTET4);
   // There is only one gausspoint, so the loop (and the vector) is not really needed.
   for (int gp=0; gp<NUMGPT_SOTET4; gp++) {
-    (derivs[gp])(0,0) = 1;
-    (derivs[gp])(1,0) = 0;
-    (derivs[gp])(2,0) = 0;
-    (derivs[gp])(3,0) = 0;
+    (derivs[gp])(0,0) = 1.0;
+    (derivs[gp])(1,0) = 0.0;
+    (derivs[gp])(2,0) = 0.0;
+    (derivs[gp])(3,0) = 0.0;
 
-    (derivs[gp])(0,1) = 0;
-    (derivs[gp])(1,1) = 1;
-    (derivs[gp])(2,1) = 0;
-    (derivs[gp])(3,1) = 0;
+    (derivs[gp])(0,1) = 0.0;
+    (derivs[gp])(1,1) = 1.0;
+    (derivs[gp])(2,1) = 0.0;
+    (derivs[gp])(3,1) = 0.0;
 
-    (derivs[gp])(0,2) = 0;
-    (derivs[gp])(1,2) = 0;
-    (derivs[gp])(2,2) = 1;
-    (derivs[gp])(3,2) = 0;
+    (derivs[gp])(0,2) = 0.0;
+    (derivs[gp])(1,2) = 0.0;
+    (derivs[gp])(2,2) = 1.0;
+    (derivs[gp])(3,2) = 0.0;
 
-    (derivs[gp])(0,3) = 0;
-    (derivs[gp])(1,3) = 0;
-    (derivs[gp])(2,3) = 0;
-    (derivs[gp])(3,3) = 1;
+    (derivs[gp])(0,3) = 0.0;
+    (derivs[gp])(1,3) = 0.0;
+    (derivs[gp])(2,3) = 0.0;
+    (derivs[gp])(3,3) = 1.0;
   }
   return derivs;
 }
@@ -1768,25 +1767,25 @@ const std::vector<LINALG::Matrix<NUMDIM_SOTET4+1,NUMNOD_SOTET4> > DRT::ELEMENTS:
   std::vector<LINALG::Matrix<NUMDIM_SOTET4+1,NUMNOD_SOTET4> > derivs(4);
 
   for (int gp=0; gp<4; gp++) {
-    (derivs[gp])(0,0) = 1;
-    (derivs[gp])(1,0) = 0;
-    (derivs[gp])(2,0) = 0;
-    (derivs[gp])(3,0) = 0;
+    (derivs[gp])(0,0) = 1.0;
+    (derivs[gp])(1,0) = 0.0;
+    (derivs[gp])(2,0) = 0.0;
+    (derivs[gp])(3,0) = 0.0;
 
-    (derivs[gp])(0,1) = 0;
-    (derivs[gp])(1,1) = 1;
-    (derivs[gp])(2,1) = 0;
-    (derivs[gp])(3,1) = 0;
+    (derivs[gp])(0,1) = 0.0;
+    (derivs[gp])(1,1) = 1.0;
+    (derivs[gp])(2,1) = 0.0;
+    (derivs[gp])(3,1) = 0.0;
 
-    (derivs[gp])(0,2) = 0;
-    (derivs[gp])(1,2) = 0;
-    (derivs[gp])(2,2) = 1;
-    (derivs[gp])(3,2) = 0;
+    (derivs[gp])(0,2) = 0.0;
+    (derivs[gp])(1,2) = 0.0;
+    (derivs[gp])(2,2) = 1.0;
+    (derivs[gp])(3,2) = 0.0;
 
-    (derivs[gp])(0,3) = 0;
-    (derivs[gp])(1,3) = 0;
-    (derivs[gp])(2,3) = 0;
-    (derivs[gp])(3,3) = 1;
+    (derivs[gp])(0,3) = 0.0;
+    (derivs[gp])(1,3) = 0.0;
+    (derivs[gp])(2,3) = 0.0;
+    (derivs[gp])(3,3) = 1.0;
   }
   return derivs;
 }
