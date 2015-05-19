@@ -421,18 +421,12 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
   Teuchos::ParameterList p;
   if(!simplebubbleforce_)
   {
+    INPAR::FLUID::GradientReconstructionMethod recomethod =
+        DRT::INPUT::IntegralValue<INPAR::FLUID::GradientReconstructionMethod>(DRT::Problem::Instance()->FluidDynamicParams(),"VELGRAD_PROJ_METHOD");
+    if(recomethod == INPAR::FLUID::gradreco_none)
+      dserror("Please specify which gradient-reconstruction method you want to use");
     // project velocity gradient of fluid to nodal level via L2 projection and store it in a ParameterList
-    const int dim = DRT::Problem::Instance()->NDim();
-    const int numvec = dim*dim;
-    Teuchos::ParameterList params;
-    params.set<int>("action",FLD::velgradient_projection);
-    const int solvernumber = DRT::Problem::Instance()->FluidDynamicParams().get<int>("VELGRAD_PROJ_SOLVER");
-
-    Teuchos::RCP<Epetra_MultiVector> projected_velgrad =
-        DRT::UTILS::ComputeNodalL2Projection(fluiddis_, vel, "vel", numvec, params, solvernumber);
-
-    // store projected velocity gradient (ux,x  ux,y  ux,z  uy,x  uy,y  uy,z  uz,x  uz,y  uz,z)
-    fluiddis_->AddMultiVectorToParameterList(p, "velgradient", projected_velgrad);
+    FLD::UTILS::ProjectGradientAndSetParam(fluiddis_,p,vel,"velgradient",false);
   }
 
   // at the beginning of the coupling step: veln = velnp(previous step) and current velnp contains fluid predictor

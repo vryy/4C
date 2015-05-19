@@ -186,6 +186,23 @@ namespace UTILS
       const int solvernumber                   ///< solver number for solving the resulting global system
     );
 
+  /*!
+    \brief compute gradient via superconvergent patch recovery
+
+    \return an Epetra_MultiVector based on the discret's node row map containing numvec vectors
+            with the projected state
+
+    \author Georg Hammerl
+    \date 05/15
+   */
+  Teuchos::RCP<Epetra_MultiVector> ComputePatchReconstructedVelGradient(
+      Teuchos::RCP<DRT::Discretization> dis,   ///< underlying discretization
+      Teuchos::RCP<const Epetra_Vector> state, ///< state vector needed on element level
+      const std::string statename,             ///< name of state which will be set
+      const int numvec,                        ///< number of entries per node to project
+      Teuchos::ParameterList& params          ///< parameter list that contains the element action
+    );
+
 
 /*!
 \brief handles random numbers through boost

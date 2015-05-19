@@ -1272,3 +1272,43 @@ void FLD::UTILS::WriteDoublesToFile(
     f.close();
   }
 }
+
+/*----------------------------------------------------------------------*|
+ | Set Eleparams for turbulence models                          bk 05/15 |
+ *----------------------------------------------------------------------*/
+void FLD::UTILS::ProjectGradientAndSetParam(Teuchos::RCP<DRT::Discretization> discret, Teuchos::ParameterList& eleparams, Teuchos::RCP<Epetra_Vector> vel, const std::string paraname, bool alefluid)
+{
+  //reconstruction of second derivatives for fluid residual
+  INPAR::FLUID::GradientReconstructionMethod recomethod = DRT::INPUT::IntegralValue<INPAR::FLUID::GradientReconstructionMethod>(DRT::Problem::Instance()->FluidDynamicParams(),"VELGRAD_PROJ_METHOD");
+
+  const int dim = DRT::Problem::Instance()->NDim();
+  const int numvec = dim*dim;
+  Teuchos::ParameterList params;
+
+
+  if(recomethod == INPAR::FLUID::gradreco_none)
+    ;//no projection and no parameter in parameter list
+  else if(recomethod == INPAR::FLUID::gradreco_spr)
+  {
+    if(alefluid)
+      dserror("ale fluid is currently not supported everywhere for superconvergent patch recovery, but it is easy to implement");
+    params.set<int>("action",FLD::calc_velgrad_ele_center);
+    // project velocity gradient of fluid to nodal level via L2 projection and store it in a ParameterList
+    Teuchos::RCP<Epetra_MultiVector> projected_velgrad =
+        DRT::UTILS::ComputePatchReconstructedVelGradient(discret, vel, "vel", numvec, params);
+    discret->AddMultiVectorToParameterList(eleparams,paraname,projected_velgrad);
+  }
+  else if(recomethod == INPAR::FLUID::gradreco_l2)
+  {
+    const int solvernumber = DRT::Problem::Instance()->FluidDynamicParams().get<int>("VELGRAD_PROJ_SOLVER");
+    if(solvernumber<1)
+      dserror("you have to specify a VELGRAD_PROJ_SOLVER");
+    params.set<int>("action",FLD::velgradient_projection);
+    // project velocity gradient of fluid to nodal level via L2 projection and store it in a ParameterList
+    Teuchos::RCP<Epetra_MultiVector> projected_velgrad =
+        DRT::UTILS::ComputeNodalL2Projection(discret, vel, "vel", numvec, params, solvernumber);
+    discret->AddMultiVectorToParameterList(eleparams,paraname,projected_velgrad);
+  }
+
+  return;
+}

@@ -6799,33 +6799,3 @@ void FLD::FluidImplicitTimeInt::InitForcing()
   }
   return;
 }
-
-/*----------------------------------------------------------------------*|
- | Set Eleparams for turbulence models                          bk 05/15 |
- *----------------------------------------------------------------------*/
-void FLD::FluidImplicitTimeInt::ProjectGradientAndSetParam(Teuchos::ParameterList& eleparams, Teuchos::RCP<Epetra_Vector> vel, const std::string paraname)
-{
-  //reconstruction of second derivatives for fluid residual
-  const int solvernumber = params_->get<int>("VELGRAD_PROJ_SOLVER");
-  if(solvernumber>0)
-  {
-  // project velocity gradient of fluid to nodal level via L2 projection and store it in a ParameterList
-  const int numvec = numdim_*numdim_;
-  Teuchos::ParameterList params;
-  params.set<int>("action",FLD::velgradient_projection);
-
-  Teuchos::RCP<Epetra_MultiVector> projected_velgrad =
-      DRT::UTILS::ComputeNodalL2Projection(discret_, vel, "vel", numvec, params, solvernumber);
-  discret_->AddMultiVectorToParameterList(eleparams,paraname,projected_velgrad);
-  }
-  else
-    dserror("currently we only have the l2-projection implemented for reconstruction of the velocity gradient");
-//    #ifdef L2
-//      Teuchos::RCP<Epetra_MultiVector> test = FLD::UTILS::ComputeL2ProjectedVelGradient(discret_, velaf_ );
-//    #else
-//      Teuchos::RCP<Epetra_MultiVector> test = FLD::UTILS::ComputePatchReconstructedVelGradient(discret_, velaf_ );
-//    #endif
-  // store projected velocity gradient (ux,x  ux,y  ux,z  uy,x  uy,y  uy,z  uz,x  uz,y  uz,z)
-
-  return;
-}

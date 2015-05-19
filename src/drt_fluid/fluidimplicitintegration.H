@@ -254,12 +254,6 @@ public:
   virtual void TreatTurbulenceModels(Teuchos::ParameterList& eleparams);
 
   /*!
-  \brief Project gradient for reconstruction of second derivatives of residual, depends on time integrator used
-
-  */
-  virtual void ProjectGradientAndSetParam(Teuchos::ParameterList& eleparams, Teuchos::RCP<Epetra_Vector> vel, const std::string paraname);
-
-  /*!
   \brief Evaluate for AVM3 Separation
 
   */

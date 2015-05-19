@@ -371,6 +371,14 @@ namespace INPAR
       cfl_number
     };
 
+    //! physical type of the fluid flow (incompressible, Boussinesq approximation, varying density, loma)
+    enum GradientReconstructionMethod
+    {
+      gradreco_none,
+      gradreco_spr,
+      gradreco_l2
+    };
+
   }  // namespace FLUID
 
 }  // namespace INPAR

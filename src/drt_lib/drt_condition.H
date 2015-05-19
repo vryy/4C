@@ -265,6 +265,7 @@ public:
     ParticlePeriodic,
     RedAirwayVolDependentPleuralPressureCond,
     RedAirwayEvalLungVolCond,
+    SPRboundary,
     TransportRobin
   };
 

@@ -185,6 +185,11 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::EvaluateService(
       return CalcTimeStep(ele, discretization, lm, elevec1);
     }
     break;
+    case FLD::calc_velgrad_ele_center:
+    {
+      return CalcVelGradientEleCenter(ele, discretization, lm, elevec1, elevec2);
+    }
+    break;
     case FLD::calc_mass_flow_periodic_hill:
     {
       // compute element mass matrix
@@ -4309,6 +4314,63 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcMassFlowPeriodicHill(
 
   return 0;
 }
+
+/*-----------------------------------------------------------------------------*
+ | Calculate coordinates and velocities and element center          bk 01/2015 |
+ *-----------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcVelGradientEleCenter(
+    DRT::ELEMENTS::Fluid*                ele,
+    DRT::Discretization &                discretization,
+    const std::vector<int> &             lm,
+    Epetra_SerialDenseVector&            elevec1,
+    Epetra_SerialDenseVector&            elevec2
+    )
+{
+  if(distype!=DRT::Element::hex8 && distype!=DRT::Element::tet4 && distype!=DRT::Element::quad4 && distype!=DRT::Element::tri3)
+    dserror("this is currently only implemented for linear elements");
+  // get node coordinates
+  GEO::fillInitialPositionArray<distype,nsd_, LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+  // Do ALE specific updates if necessary
+  if (ele->IsAle())
+  {
+    LINALG::Matrix<nsd_,nen_> edisp(true);
+    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edisp, NULL, "disp");
+
+    // get new node positions of ALE mesh
+     xyze_ += edisp;
+  }
+
+  // evaluate shape functions and derivatives element center
+  EvalShapeFuncAndDerivsAtEleCenter();
+
+  // extract element velocities
+  LINALG::Matrix<nsd_,nen_> evel(true);
+  ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &evel, NULL,"vel");
+
+  // get gradient of velocity at element center
+  vderxy_.MultiplyNT(evel,derxy_);
+
+  // write values into element vector (same order as in VelGradientProjection())
+  for (int i=0; i<nsd_; ++i) // loop rows of vderxy
+  {
+    for (int j=0; j<nsd_; ++j) // loop columns of vderxy
+    {
+      elevec1[i*nsd_+j] = vderxy_(i,j);
+    }
+  }
+
+  // get position of element centroid
+  LINALG::Matrix<nsd_,1> x_centroid(true);
+  x_centroid.Multiply(xyze_,funct_);
+  for (int i=0; i<nsd_; ++i)
+  {
+    elevec2[i] = x_centroid(i);
+  }
+
+  return 0;
+}
+
 
 
 // template classes

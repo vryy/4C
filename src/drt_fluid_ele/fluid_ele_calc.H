@@ -240,6 +240,19 @@ public:
       Teuchos::ParameterList&              params
       );
 
+  /*! \brief Calculate coordinates and velocities and element center
+   *
+   *  \author bk \date 01/2015
+   */
+  virtual int CalcVelGradientEleCenter(
+      DRT::ELEMENTS::Fluid*                ele,
+      DRT::Discretization &                discretization,
+      const std::vector<int> &             lm,
+      Epetra_SerialDenseVector&            elevec1,
+      Epetra_SerialDenseVector&            elevec2
+      );
+
+
   /*! \brief Calculate properties for adaptive time step based on CFL number
    *
    *  \author bk \date 08/2014

@@ -18,6 +18,7 @@ Maintainers: Ursula Rasthofer & Martin Kronbichler
 #include "../drt_fluid_turbulence/dyn_smag.H"
 #include "../drt_fluid_turbulence/dyn_vreman.H"
 #include "../drt_fluid_turbulence/boxfilter.H"
+#include "../drt_fluid/fluid_utils.H"
 
 #include "../drt_meshfree_discret/drt_meshfree_discret.H"
 
@@ -277,6 +278,6 @@ void FLD::TimIntStationary::TreatTurbulenceModels(Teuchos::ParameterList& elepar
 {
   FLD::FluidImplicitTimeInt::TreatTurbulenceModels(eleparams);
   if(reconstructder_)
-    ProjectGradientAndSetParam(eleparams,velnp_,"velafgrad");
+    FLD::UTILS::ProjectGradientAndSetParam(discret_,eleparams,velnp_,"velafgrad",alefluid_);
   return;
 }

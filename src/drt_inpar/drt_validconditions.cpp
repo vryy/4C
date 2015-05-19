@@ -1773,6 +1773,35 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
    condlist.push_back(surfreinitializationtaylorgalerkin);
 
+   /*--------------------------------------------------------------------*/
+  // boundary for superconvergent patch recovery (SPR)
+
+  std::vector<Teuchos::RCP<ConditionComponent> > sprcomponents;
+
+  Teuchos::RCP<ConditionDefinition> linespr =
+    Teuchos::rcp(new ConditionDefinition("DESIGN PATCH RECOVERY BOUNDARY LINE CONDITIONS",
+                                         "SPRboundary",
+                                         "Boundary for SPR",
+                                         DRT::Condition::SPRboundary,
+                                         false,
+                                         DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> surfspr =
+    Teuchos::rcp(new ConditionDefinition("DESIGN PATCH RECOVERY BOUNDARY SURF CONDITIONS",
+                                         "SPRboundary",
+                                         "Boundary for SPR",
+                                         DRT::Condition::SPRboundary,
+                                         false,
+                                         DRT::Condition::Surface));
+
+  for (unsigned i=0; i<sprcomponents.size(); ++i)
+  {
+    linespr->AddComponent(sprcomponents[i]);
+    surfspr->AddComponent(sprcomponents[i]);
+  }
+
+  condlist.push_back(linespr);
+  condlist.push_back(surfspr);
+
   // FSI
 
   std::vector<Teuchos::RCP<ConditionComponent> > fsicomponents;

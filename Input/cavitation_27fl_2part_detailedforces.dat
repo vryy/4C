@@ -66,6 +66,7 @@ UPRES                           1
 MESHTYING                       no
 INITIALFIELD                    field_by_function
 VELGRAD_PROJ_SOLVER             9
+VELGRAD_PROJ_METHOD             L2_projection
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
 GRAD_DIV                        yes

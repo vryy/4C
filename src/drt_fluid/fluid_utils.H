@@ -638,6 +638,13 @@ void WriteVolumeToFile(
   );
 
 /*!
+\brief Project gradient for reconstruction of second derivatives of residual, depends on time integrator used
+
+*/
+void ProjectGradientAndSetParam(Teuchos::RCP<DRT::Discretization> discret, Teuchos::ParameterList& eleparams, Teuchos::RCP<Epetra_Vector> vel, const std::string paraname, bool alefluid);
+
+
+/*!
   \brief integrate impulse rate over surfaces
 
   for each condition Id, compute the impulse rate vector through the surface

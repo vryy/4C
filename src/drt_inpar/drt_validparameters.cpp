@@ -3868,6 +3868,23 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   IntParameter("VELGRAD_PROJ_SOLVER",-1,"Number of linear solver used for L2 projection",&fdyn);
 
+  setStringToIntegralParameter<int>("VELGRAD_PROJ_METHOD",
+                               "none",
+                               "Flag to (de)activate gradient reconstruction.",
+                               tuple<std::string>(
+                                 "none",
+                                 "superconvergent_patch_recovery",
+                                 "L2_projection"),
+                               tuple<std::string>(
+                                 "no gradient reconstruction",
+                                 "gradient reconstruction via superconvergent patch recovery",
+                                 "gracient reconstruction via l2-projection"),
+                               tuple<int>(
+                                 INPAR::FLUID::gradreco_none,       // no convective streamline edge-based stabilization
+                                 INPAR::FLUID::gradreco_spr,    // convective streamline edge-based stabilization on the entire domain
+                                 INPAR::FLUID::gradreco_l2     // pressure edge-based stabilization as ghost penalty around cut elements
+                               ),
+                               &fdyn);
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn_stab = fdyn.sublist("RESIDUAL-BASED STABILIZATION",false,"");
 

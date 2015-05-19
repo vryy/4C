@@ -341,10 +341,10 @@ void FLD::TimIntOneStepTheta::TreatTurbulenceModels(Teuchos::ParameterList& elep
   FLD::FluidImplicitTimeInt::TreatTurbulenceModels(eleparams);
   if(reconstructder_)
   {
-    ProjectGradientAndSetParam(eleparams,velnp_,"velafgrad");
+    FLD::UTILS::ProjectGradientAndSetParam(discret_,eleparams,velnp_,"velafgrad",alefluid_);
     if( params_->get<bool>("ost new") )
     {
-      ProjectGradientAndSetParam(eleparams,veln_,"velngrad");
+      FLD::UTILS::ProjectGradientAndSetParam(discret_,eleparams,veln_,"velngrad",alefluid_);
     }
   }
   return;

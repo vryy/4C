@@ -59,6 +59,7 @@ ALPHA_M                         1.00
 LIFTDRAG                        no
 VELGRAD_PROJ_SOLVER             2
 GMSH_OUTPUT                     Yes
+VELGRAD_PROJ_METHOD             L2_projection
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 TDS                             quasistatic

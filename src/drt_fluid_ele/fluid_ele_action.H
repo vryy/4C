@@ -77,7 +77,8 @@ enum Action {
     velgradient_projection,
     calc_dt_via_cfl,
     calc_mass_flow_periodic_hill,
-    reset_immersed_ele
+    reset_immersed_ele,
+    calc_velgrad_ele_center,
 }; // enum Action
 
 /*--------------------------------------------------------------------------
