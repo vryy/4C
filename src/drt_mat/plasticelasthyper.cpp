@@ -314,13 +314,16 @@ void MAT::PlasticElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition* linede
   viscogenmax_ = false;
 
   for (unsigned int p=0; p<potsum_.size(); ++p)
-  {
     potsum_[p]->SpecifyFormulation(isoprinc_,isomod_,anisoprinc_,anisomod_,isovisco_,viscogenmax_);
-  }
+
   // in this case the mandel stress become non-symmetric and the
   // calculated derivatives have to be extended.
   if (anisomod_==true || anisoprinc_==true)
     dserror("PlasticElastHyper only for isotropic elastic material!");
+
+  // no visco-elasticity (yet?)
+  if (isovisco_ || viscogenmax_)
+    dserror("no visco-elasticity in PlasticElastHyper...yet(?)");
 
   // check if either zero or three fiber directions are given
   if (linedef->HaveNamed("FIBER1") || linedef->HaveNamed("FIBER2") || linedef->HaveNamed("FIBER3"))
