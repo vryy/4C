@@ -650,7 +650,7 @@ void MAT::ViscoElastHyper::EvaluateIsoViscoPrincipal(
   stress.Update(mu(2),rcgrate,1.0);
 
   // contribution: id4sharp_{ijkl} = 1/2 (\delta_{ik}\delta_{jl} + \delta_{il}\delta_{jk})
-  cmat.Update(xi(3),id4sharp,1.0);
+  cmat.Update(xi(2),id4sharp,1.0);
 
   return;
 }
@@ -705,8 +705,6 @@ void MAT::ViscoElastHyper::EvaluateIsoViscoModified(
   modcmat.MultiplyNT(modxi(1), modrcgrate, id2, 1.0);
   // contribution: Id4
   modcmat.Update(modxi(2), id4, 1.0);
-  // contribution: Id \otimes Id (needed for derivatives of J_1, as used in material coupmyocard)
-  modcmat.MultiplyNT(modxi(3), id2, id2, 1.0);
   //scaling
   modcmat.Scale(std::pow(modinv(2),-4./3.));
   //contribution: P:\overline{C}:P

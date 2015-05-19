@@ -2,9 +2,8 @@
 /*!
 \file visco_coupmyocard.H
 \brief
-This file contains the routines required to calculate the isochoric contribution
-of a viscous material representing the collagen and elastin matrix surrounding
-the myocardial fiber (chappelle12)
+Isochoric coupled viscous material with pseudo-potential representing the collagen and
+elastin matrix surrounding the myocardial fiber (chappelle12)
 <pre>
 Maintainer: Martin Pfaller, pfaller@lnm.mw.tum.de
 </pre>
@@ -25,7 +24,7 @@ namespace ELASTIC
   {
 
     /*----------------------------------------------------------------------*/
-    /// material parameters for isotropic contribution of myocardial matrix
+    /// material parameters for viscous part of myocardial matrix
     ///
     /// <h3>Input line</h3>
     /// MAT 1 VISCO_CoupMyocard N 1
@@ -69,17 +68,28 @@ namespace ELASTIC
   }  // namespace PAR
 
   /*----------------------------------------------------------------------*/
-  /// Isochoric general power material
-  ///
-  /// This is the isochoric part of a viscohyperelastic, isotropic
-  /// material depending on the modified of the rate of the right
-  /// Cauchy-Green tensor.
+  /// Isochoric coupled viscous material with pseudo-potential
   ///
   /// Strain energy function is given by
   ///\f[
-  ///   \Psi = \eta/2 J_1^2.
+  ///   \Psi_v = \eta/2 tr(\dot{E}^2) = \eta/8 tr(\dot{C}^2).
   ///\f]
-  /// (n = \eta)
+  ///
+  /// Viscous second Piola-Kirchhoff stress
+  ///\f[
+  ///   S_v =  2 \frac{\partial \Psi_v}{\partial \dot{C}} = \eta/2 \dot{C}.
+  ///\f]
+  ///
+  /// Viscous constitutive tensor
+  ///\f[
+  ///   C_v =  4 \frac{\partial^2 W_v}{\partial \dot{C} \partial \dot{C}} = \eta I#,
+  ///\f]
+  ///
+  /// with
+  ///
+  ///\f[
+  ///   I#_{ijkl} = \frac{1}{2}(\delta_{ik}\delta_{jl} + \delta_{il}\delta_{jk})
+  ///\f]
   ///
   /// \author pfaller
   /// \date 04/15
@@ -100,11 +110,11 @@ namespace ELASTIC
     //@}
 
     /// Add modified coeffiencts.
-    virtual void AddCoefficientsViscoModified(
-        const LINALG::Matrix<3,1>& modinv,  ///< modified invariants of right Cauchy-Green tensor
-        LINALG::Matrix<8,1>& modmu,  ///<necassary coefficients for piola-kirchhoff-stress
-        LINALG::Matrix<33,1>& modxi,  ///<necassary coefficients for viscosity tensor
-        LINALG::Matrix<7,1>& modrateinv,
+    virtual void AddCoefficientsViscoPrincipal(
+        const LINALG::Matrix<3,1>& prinv,  ///< invariants of right Cauchy-Green tensor
+        LINALG::Matrix<8,1>& mu,  ///<necassary coefficients for piola-kirchhoff-stress
+        LINALG::Matrix<33,1>& xi,  ///<necassary coefficients for viscosity tensor
+        LINALG::Matrix<7,1>& rateinv,
         Teuchos::ParameterList& params,
         const int eleGID
     );
