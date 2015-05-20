@@ -42,7 +42,7 @@ has_to_recover_(false)
 void CONTACT::MonoCoupledLagrangeStrategy::ApplyForceStiffCmtCoupled(
                                 Teuchos::RCP<Epetra_Vector> dis,
                                 Teuchos::RCP<LINALG::SparseOperator>& k_ss,
-                                std::map<int,Teuchos::RCP<LINALG::SparseOperator>& > k_sx,
+                                std::map<int,Teuchos::RCP<LINALG::SparseOperator> > k_sx,
                                 Teuchos::RCP<Epetra_Vector>& rhs_s,
                                 const int step,
                                 const int iter,
@@ -52,7 +52,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::ApplyForceStiffCmtCoupled(
   CONTACT::CoAbstractStrategy::ApplyForceStiffCmt(dis,k_ss,rhs_s,step,iter,predictor);
 
   //Take care of the alternative condensation of the off-diagonal blocks!!!
-  std::map<int,Teuchos::RCP<LINALG::SparseOperator>& >::iterator matiter;
+  std::map<int,Teuchos::RCP<LINALG::SparseOperator> >::iterator matiter;
   for (matiter=k_sx.begin(); matiter!=k_sx.end(); ++matiter)
   {
     EvaluateOffDiagContact(matiter->second,matiter->first);
