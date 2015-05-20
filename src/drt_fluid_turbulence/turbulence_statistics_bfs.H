@@ -76,6 +76,7 @@ public:
   */
   TurbulenceStatisticsBfs(Teuchos::RCP<DRT::Discretization> actdis,
                           Teuchos::ParameterList&           params,
+                          const std::string&                statistics_outfilename,
                           const std::string&            geotype);
 
   /*!
@@ -204,6 +205,9 @@ private:
   const bool inflowchannel_;
   //! x-coordinate of outflow of inflow channel
   const double inflowmax_;
+
+  //! name of statistics output file, despite the ending
+  const std::string statistics_outfilename_;
 
    //! pointer to vel/pres^2 field (space allocated in constructor)
   Teuchos::RCP<Epetra_Vector>       squaredvelnp_;

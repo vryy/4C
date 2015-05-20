@@ -24,10 +24,12 @@ Maintainer: Benjamin Krank
   ---------------------------------------------------------------------*/
 FLD::TurbulenceStatisticsTgv::TurbulenceStatisticsTgv(
   Teuchos::RCP<DRT::Discretization> actdis,
-  Teuchos::ParameterList&           params)
+  Teuchos::ParameterList&           params,
+  const std::string&                statistics_outfilename)
   :
-  discret_            (actdis             ),
-  params_             (params             )
+  discret_               (actdis             ),
+  params_                (params             ),
+  statistics_outfilename_(statistics_outfilename)
 {
   //----------------------------------------------------------------------
   // plausibility check
@@ -221,7 +223,7 @@ FLD::TurbulenceStatisticsTgv::TurbulenceStatisticsTgv(
     sum_reystress_  ->resize(6*(nodeplanes_->size()-1),0.0);
 
     // output of residuals and subscale quantities
-    std::string s_res = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+    std::string s_res(statistics_outfilename_);
     s_res.append(".dissipation");
     Teuchos::RCP<std::ofstream> log_res;
     log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),std::ios::out));
@@ -775,7 +777,7 @@ void FLD::TurbulenceStatisticsTgv::DumpStatistics(const int step)
       Teuchos::RCP<std::ofstream> log_res;
 
       // output of residuals and subscale quantities
-      std::string s_res = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string s_res(statistics_outfilename_);
       s_res.append(".dissipation");
 
       log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),std::ios::app));

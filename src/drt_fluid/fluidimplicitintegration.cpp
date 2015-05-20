@@ -304,156 +304,7 @@ void FLD::FluidImplicitTimeInt::Init()
   // -------------------------------------------------------------------
   // initialize vectors and flags for turbulence approach
   // -------------------------------------------------------------------
-
-  turbmodel_ = INPAR::FLUID::no_model;
-
-  std::string physmodel = params_->sublist("TURBULENCE MODEL").get<std::string>("PHYSICAL_MODEL","no_model");
-
-  // flag for special flow
-  special_flow_ = params_->sublist("TURBULENCE MODEL").get<std::string>("CANONICAL_FLOW","no");
-
-  // scale-separation
-  scale_sep_ = INPAR::FLUID::no_scale_sep;
-
-  // fine-scale subgrid viscosity?
-  fssgv_ = DRT::INPUT::IntegralValue<INPAR::FLUID::FineSubgridVisc>(params_->sublist("TURBULENCE MODEL"),"FSSUGRVISC");
-
-  // warning if classical (all-scale) turbulence model and fine-scale
-  // subgrid-viscosity approach are intended to be used simultaneously
-  if (fssgv_ != INPAR::FLUID::no_fssgv
-      and (physmodel == "Smagorinsky"
-        or physmodel == "Dynamic_Smagorinsky"
-        or physmodel == "Smagorinsky_with_van_Driest_damping"))
-    dserror("No combination of classical all-scale subgrid-viscosity turbulence model and fine-scale subgrid-viscosity approach currently possible!");
-
-  if (params_->sublist("TURBULENCE MODEL").get<std::string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES") == "CLASSICAL_LES")
-  {
-
-    if(physmodel == "Dynamic_Smagorinsky")
-    {
-      turbmodel_ = INPAR::FLUID::dynamic_smagorinsky;
-
-      // get one instance of the dynamic Smagorinsky class
-      DynSmag_=Teuchos::rcp(new FLD::DynSmagFilter(discret_, *params_));
-    }
-    else if (physmodel == "Smagorinsky")
-      turbmodel_ = INPAR::FLUID::smagorinsky;
-    else if (physmodel == "Smagorinsky_with_van_Driest_damping")
-      turbmodel_ = INPAR::FLUID::smagorinsky_with_van_Driest_damping;
-    else if(physmodel == "Scale_Similarity" or physmodel == "Scale_Similarity_basic")
-    {
-      if (physmodel == "Scale_Similarity")
-        turbmodel_ = INPAR::FLUID::scale_similarity;
-      else
-        turbmodel_ = INPAR::FLUID::scale_similarity_basic;
-      Teuchos::ParameterList *  modelparams =&(params_->sublist("MULTIFRACTAL SUBGRID SCALES"));
-      const std::string scale_sep = modelparams->get<std::string>("SCALE_SEPARATION");
-      if (scale_sep == "box_filter")
-      {
-        scale_sep_ = INPAR::FLUID::box_filter;
-        // get one instance of the Boxfilter class
-        Boxf_=Teuchos::rcp(new FLD::Boxfilter(discret_, *params_));
-      }
-      else if (scale_sep == "algebraic_multigrid_operator")
-      {
-        scale_sep_ = INPAR::FLUID::algebraic_multigrid_operator;
-      }
-      else
-      {
-        dserror("Unknown filter type!");
-      }
-
-      const Epetra_Map* nodecolmap = discret_->NodeColMap();
-      filteredvel_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,3,true));
-      finescalevel_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,3,true));
-      filteredreystr_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,9,true));
-
-      fsvelaf_  = LINALG::CreateVector(*dofrowmap,true);
-    }
-    else if(physmodel == "Multifractal_Subgrid_Scales")
-    {
-      turbmodel_ = INPAR::FLUID::multifractal_subgrid_scales;
-
-      fsvelaf_  = LINALG::CreateVector(*dofrowmap,true);
-
-      Teuchos::ParameterList *  modelparams =&(params_->sublist("MULTIFRACTAL SUBGRID SCALES"));
-
-      const std::string scale_sep = modelparams->get<std::string>("SCALE_SEPARATION");
-      if (scale_sep == "box_filter")
-      {
-        scale_sep_ = INPAR::FLUID::box_filter;
-
-        // get one instance of the Boxfilter class
-        Boxf_=Teuchos::rcp(new FLD::Boxfilter(discret_, *params_));
-
-        if (fssgv_ != INPAR::FLUID::no_fssgv)
-          dserror("No fine-scale subgrid viscosity for this scale separation operator!");
-      }
-      else if (scale_sep == "algebraic_multigrid_operator")
-      {
-        scale_sep_ = INPAR::FLUID::algebraic_multigrid_operator;
-      }
-      else
-      {
-        dserror("Unknown filter type!");
-      }
-
-      // fine-scale scalar at time n+alpha_F/n+1 and n+alpha_M/n
-      // (only required for low-Mach-number case)
-      fsscaaf_ = LINALG::CreateVector(*dofrowmap,true);
-    }
-    else if (physmodel == "Vreman")
-    {
-      turbmodel_ = INPAR::FLUID::vreman;
-    }
-    else if (physmodel == "Dynamic_Vreman")
-    {
-      turbmodel_ = INPAR::FLUID::dynamic_vreman;
-      Vrem_=Teuchos::rcp(new FLD::Vreman(discret_, *params_));
-    }
-    else if (physmodel == "no_model")
-      dserror("Turbulence model for LES expected!");
-    else
-      dserror("Undefined turbulence model!");
-
-    PrintTurbulenceModel();
-  }
-  else
-  {
-    if (turbmodel_ != INPAR::FLUID::no_model)
-      dserror("Set TURBULENCE APPROACH to CLASSICAL LES to activate turbulence model!");
-  }
-
-  // -------------------------------------------------------------------
-  // necessary only for the AVM3 approach:
-  // fine-scale solution vector + respective output
-  // -------------------------------------------------------------------
-  if (fssgv_ != INPAR::FLUID::no_fssgv)
-  {
-    fsvelaf_  = LINALG::CreateVector(*dofrowmap,true);
-
-    if (myrank_ == 0)
-    {
-      // Output
-      std::cout << "FLUID: Fine-scale subgrid-viscosity approach based on AVM3: ";
-      std::cout << &std::endl << &std::endl;
-      std::cout << fssgv_;
-      std::cout << " with Smagorinsky constant Cs= ";
-      std::cout << params_->sublist("SUBGRID VISCOSITY").get<double>("C_SMAGORINSKY") ;
-      std::cout << &std::endl << &std::endl << &std::endl;
-    }
-  }
-
-  // -------------------------------------------------------------------
-  // check whether we have a coupling to a turbulent inflow generating
-  // computation and initialize the transfer if necessary
-  // -------------------------------------------------------------------
-  if(xwall_==Teuchos::null)
-    turbulent_inflow_condition_
-      = Teuchos::rcp(new TransferTurbulentInflowCondition(discret_,dbcmaps_));
-  else
-    turbulent_inflow_condition_
-      = Teuchos::rcp(new TransferTurbulentInflowConditionXW(discret_,dbcmaps_));
+  SetGeneralTurbulenceParameters();
 
   // -------------------------------------------------------------------
   // initialize turbulence-statistics evaluation
@@ -5522,7 +5373,7 @@ void FLD::FluidImplicitTimeInt::SetElementGeneralFluidParameter()
 }
 
 // -------------------------------------------------------------------
-// set turbulence parameters                         rasthofer 11/2011
+// set turbulence parameters for element level       rasthofer 11/2011
 // -------------------------------------------------------------------
 void FLD::FluidImplicitTimeInt::SetElementTurbulenceParameters()
 {
@@ -5566,6 +5417,164 @@ void FLD::FluidImplicitTimeInt::SetFaceGeneralFluidParameter()
 
   DRT::ELEMENTS::FluidIntFaceType::Instance().PreEvaluate(*discret_,faceparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
+}
+
+// -------------------------------------------------------------------
+// set turbulence parameters
+// -------------------------------------------------------------------
+void FLD::FluidImplicitTimeInt::SetGeneralTurbulenceParameters()
+{
+  turbmodel_ = INPAR::FLUID::no_model;
+
+  std::string physmodel = params_->sublist("TURBULENCE MODEL").get<std::string>("PHYSICAL_MODEL","no_model");
+
+  statistics_outfilename_ = params_->sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+
+  // flag for special flow
+  special_flow_ = params_->sublist("TURBULENCE MODEL").get<std::string>("CANONICAL_FLOW","no");
+
+  // scale-separation
+  scale_sep_ = INPAR::FLUID::no_scale_sep;
+
+  // fine-scale subgrid viscosity?
+  fssgv_ = DRT::INPUT::IntegralValue<INPAR::FLUID::FineSubgridVisc>(params_->sublist("TURBULENCE MODEL"),"FSSUGRVISC");
+
+  // warning if classical (all-scale) turbulence model and fine-scale
+  // subgrid-viscosity approach are intended to be used simultaneously
+  if (fssgv_ != INPAR::FLUID::no_fssgv
+      and (physmodel == "Smagorinsky"
+        or physmodel == "Dynamic_Smagorinsky"
+        or physmodel == "Smagorinsky_with_van_Driest_damping"))
+    dserror("No combination of classical all-scale subgrid-viscosity turbulence model and fine-scale subgrid-viscosity approach currently possible!");
+
+  if (params_->sublist("TURBULENCE MODEL").get<std::string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES") == "CLASSICAL_LES")
+  {
+
+    if(physmodel == "Dynamic_Smagorinsky")
+    {
+      turbmodel_ = INPAR::FLUID::dynamic_smagorinsky;
+
+      // get one instance of the dynamic Smagorinsky class
+      DynSmag_=Teuchos::rcp(new FLD::DynSmagFilter(discret_, *params_));
+    }
+    else if (physmodel == "Smagorinsky")
+      turbmodel_ = INPAR::FLUID::smagorinsky;
+    else if (physmodel == "Smagorinsky_with_van_Driest_damping")
+      turbmodel_ = INPAR::FLUID::smagorinsky_with_van_Driest_damping;
+    else if(physmodel == "Scale_Similarity" or physmodel == "Scale_Similarity_basic")
+    {
+      if (physmodel == "Scale_Similarity")
+        turbmodel_ = INPAR::FLUID::scale_similarity;
+      else
+        turbmodel_ = INPAR::FLUID::scale_similarity_basic;
+      Teuchos::ParameterList *  modelparams =&(params_->sublist("MULTIFRACTAL SUBGRID SCALES"));
+      const std::string scale_sep = modelparams->get<std::string>("SCALE_SEPARATION");
+      if (scale_sep == "box_filter")
+      {
+        scale_sep_ = INPAR::FLUID::box_filter;
+        // get one instance of the Boxfilter class
+        Boxf_=Teuchos::rcp(new FLD::Boxfilter(discret_, *params_));
+      }
+      else if (scale_sep == "algebraic_multigrid_operator")
+      {
+        scale_sep_ = INPAR::FLUID::algebraic_multigrid_operator;
+      }
+      else
+      {
+        dserror("Unknown filter type!");
+      }
+
+      const Epetra_Map* nodecolmap = discret_->NodeColMap();
+      filteredvel_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,3,true));
+      finescalevel_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,3,true));
+      filteredreystr_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,9,true));
+
+      fsvelaf_  = LINALG::CreateVector(*discret_->DofRowMap(),true);
+    }
+    else if(physmodel == "Multifractal_Subgrid_Scales")
+    {
+      turbmodel_ = INPAR::FLUID::multifractal_subgrid_scales;
+
+      fsvelaf_  = LINALG::CreateVector(*discret_->DofRowMap(),true);
+
+      Teuchos::ParameterList *  modelparams =&(params_->sublist("MULTIFRACTAL SUBGRID SCALES"));
+
+      const std::string scale_sep = modelparams->get<std::string>("SCALE_SEPARATION");
+      if (scale_sep == "box_filter")
+      {
+        scale_sep_ = INPAR::FLUID::box_filter;
+
+        // get one instance of the Boxfilter class
+        Boxf_=Teuchos::rcp(new FLD::Boxfilter(discret_, *params_));
+
+        if (fssgv_ != INPAR::FLUID::no_fssgv)
+          dserror("No fine-scale subgrid viscosity for this scale separation operator!");
+      }
+      else if (scale_sep == "algebraic_multigrid_operator")
+      {
+        scale_sep_ = INPAR::FLUID::algebraic_multigrid_operator;
+      }
+      else
+      {
+        dserror("Unknown filter type!");
+      }
+
+      // fine-scale scalar at time n+alpha_F/n+1 and n+alpha_M/n
+      // (only required for low-Mach-number case)
+      fsscaaf_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
+    }
+    else if (physmodel == "Vreman")
+    {
+      turbmodel_ = INPAR::FLUID::vreman;
+    }
+    else if (physmodel == "Dynamic_Vreman")
+    {
+      turbmodel_ = INPAR::FLUID::dynamic_vreman;
+      Vrem_=Teuchos::rcp(new FLD::Vreman(discret_, *params_));
+    }
+    else if (physmodel == "no_model")
+      dserror("Turbulence model for LES expected!");
+    else
+      dserror("Undefined turbulence model!");
+
+    PrintTurbulenceModel();
+  }
+  else
+  {
+    if (turbmodel_ != INPAR::FLUID::no_model)
+      dserror("Set TURBULENCE APPROACH to CLASSICAL LES to activate turbulence model!");
+  }
+
+  // -------------------------------------------------------------------
+  // necessary only for the AVM3 approach:
+  // fine-scale solution vector + respective output
+  // -------------------------------------------------------------------
+  if (fssgv_ != INPAR::FLUID::no_fssgv)
+  {
+    fsvelaf_  = LINALG::CreateVector(*discret_->DofRowMap(),true);
+
+    if (myrank_ == 0)
+    {
+      // Output
+      std::cout << "FLUID: Fine-scale subgrid-viscosity approach based on AVM3: ";
+      std::cout << &std::endl << &std::endl;
+      std::cout << fssgv_;
+      std::cout << " with Smagorinsky constant Cs= ";
+      std::cout << params_->sublist("SUBGRID VISCOSITY").get<double>("C_SMAGORINSKY") ;
+      std::cout << &std::endl << &std::endl << &std::endl;
+    }
+  }
+
+  // -------------------------------------------------------------------
+  // check whether we have a coupling to a turbulent inflow generating
+  // computation and initialize the transfer if necessary
+  // -------------------------------------------------------------------
+  if(xwall_==Teuchos::null)
+    turbulent_inflow_condition_
+      = Teuchos::rcp(new TransferTurbulentInflowCondition(discret_,dbcmaps_));
+  else
+    turbulent_inflow_condition_
+      = Teuchos::rcp(new TransferTurbulentInflowConditionXW(discret_,dbcmaps_));
 }
 
 /*----------------------------------------------------------------------*

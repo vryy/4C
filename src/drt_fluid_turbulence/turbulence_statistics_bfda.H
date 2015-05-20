@@ -46,7 +46,8 @@ public:
 
   */
   TurbulenceStatisticsBfda(Teuchos::RCP<DRT::Discretization> actdis,
-                          Teuchos::ParameterList&           params);
+                          Teuchos::ParameterList&           params,
+                          const std::string&                statistics_outfilename);
 
   /*!
   \brief Destructor
@@ -109,6 +110,9 @@ private:
 
   //! parameter list
   Teuchos::ParameterList&           params_;
+
+  //! name of statistics output file, despite the ending
+  const std::string statistics_outfilename_;
 
   //! positions for evaluation
   std::vector<double>               posEvaluation_;

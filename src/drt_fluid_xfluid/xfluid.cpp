@@ -439,6 +439,14 @@ void FLD::XFluid::SetElementTimeParameter()
   DRT::ELEMENTS::FluidType::Instance().PreEvaluate(*discret_,eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FLD::XFluid::SetGeneralTurbulenceParameters()
+{
+  FluidImplicitTimeInt::SetGeneralTurbulenceParameters();
+  // mark XFEM fluid in name of statistics outputfile (postfix)
+  statistics_outfilename_.append("_xfluid");
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -4092,53 +4100,6 @@ const double FLD::XFluid::TimIntParam() const
   break;
   }
   return retval;
-}
-
-
-/*----------------------------------------------------------------------*
- |  evaluate statistics and write output                   schott 03/12 |
- *----------------------------------------------------------------------*/
-void FLD::XFluid::StatisticsAndOutput()
-{
-  // time measurement: output and statistics
-  TEUCHOS_FUNC_TIME_MONITOR("      + output and statistics");
-
-  // -------------------------------------------------------------------
-  //          calculate lift'n'drag forces from the residual
-  // -------------------------------------------------------------------
-  LiftDrag();
-
-  // -------------------------------------------------------------------
-  //          calculate flow through surfaces
-  // -------------------------------------------------------------------
-  //    ComputeSurfaceFlowRates();
-
-  // -------------------------------------------------------------------
-  //          calculate impuls rate through surfaces
-  // -------------------------------------------------------------------
-  //    ComputeSurfaceImpulsRates();
-
-  // -------------------------------------------------------------------
-  //   add calculated velocity to mean value calculation (statistics)
-  // -------------------------------------------------------------------
-  //  statisticsmanager_->DoTimeSample(step_,time_);
-
-  // -------------------------------------------------------------------
-  //                         output of solution
-  // -------------------------------------------------------------------
-  Output();
-
-  // -------------------------------------------------------------------
-  // evaluate error for test flows with analytical solutions
-  // -------------------------------------------------------------------
-  EvaluateErrorComparedToAnalyticalSol();
-
-  // -------------------------------------------------------------------
-  //          dumping of turbulence statistics if required
-  // -------------------------------------------------------------------
-  //  statisticsmanager_->DoOutput(output_,step_);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*

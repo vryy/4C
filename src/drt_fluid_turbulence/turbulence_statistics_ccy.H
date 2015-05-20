@@ -78,7 +78,8 @@ public:
   TurbulenceStatisticsCcy(Teuchos::RCP<DRT::Discretization> actdis             ,
                           bool                             alefluid           ,
                           Teuchos::RCP<Epetra_Vector>       dispnp             ,
-                          Teuchos::ParameterList&                   params             ,
+                          Teuchos::ParameterList&           params             ,
+                          const std::string&                statistics_outfilename,
                           const bool                       withscatra);
 
   /*!
@@ -197,6 +198,10 @@ private:
   //! contains plane normal direction etc --- this is the original
   //! fluid dynamic parameterlist
   Teuchos::ParameterList&                   params_;
+
+  //! name of statistics output file, despite the ending
+  const std::string statistics_outfilename_;
+
 
   //! parameterlist for the element call when averages of residuals
   //! are calculated --- used for communication between element

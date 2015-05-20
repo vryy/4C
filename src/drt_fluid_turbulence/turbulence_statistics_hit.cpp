@@ -41,11 +41,13 @@ namespace FLD
  | constructor                                  rasthofer 04/13 |
  *--------------------------------------------------------------*/
 TurbulenceStatisticsHit::TurbulenceStatisticsHit(
-  Teuchos::RCP<DRT::Discretization>    actdis,
-  Teuchos::ParameterList&     params,
+  Teuchos::RCP<DRT::Discretization>  actdis,
+  Teuchos::ParameterList&            params,
+  const std::string&                 statistics_outfilename,
   const bool forced):
   discret_(actdis),
-  params_(params)
+  params_(params),
+  statistics_outfilename_(statistics_outfilename)
 {
   // set type
   if (forced == true)
@@ -351,7 +353,7 @@ TurbulenceStatisticsHit::TurbulenceStatisticsHit(
 
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+    std::string s(statistics_outfilename_);
     s.append(".energy_spectra");
 
     log_1 = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::out));
@@ -359,7 +361,7 @@ TurbulenceStatisticsHit::TurbulenceStatisticsHit(
 
     log_1->flush();
 
-    s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+    s = statistics_outfilename_;
     s.append(".kinetic_energy");
 
     log_2 = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::out));
@@ -1258,7 +1260,7 @@ void TurbulenceStatisticsHit::DumpStatistics(
   {
     Teuchos::RCP<std::ofstream> log_k;
 
-    std::string s_k = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+    std::string s_k(statistics_outfilename_);
     s_k.append(".energy_spectra");
 
     if (step == 0 and type_ == decaying_homogeneous_isotropic_turbulence)
@@ -1342,7 +1344,7 @@ void TurbulenceStatisticsHit::DumpStatistics(
     {
       Teuchos::RCP<std::ofstream> log_t;
 
-      std::string s_t = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string s_t(statistics_outfilename_);
       s_t.append(".kinetic_energy");
 
       log_t = Teuchos::rcp(new std::ofstream(s_t.c_str(),std::ios::app));
@@ -1414,7 +1416,7 @@ void TurbulenceStatisticsHit::DumpScatraStatistics(
   {
     Teuchos::RCP<std::ofstream> log_k;
 
-    std::string s_k = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+    std::string s_k = statistics_outfilename_;
     s_k.append(".energy_spectra");
 
 //    {
@@ -1775,7 +1777,7 @@ void TurbulenceStatisticsHit::CalculateResolvedEnergyDecayingTurbulence()
   Teuchos::RCP<std::ofstream> log;
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+    std::string s = statistics_outfilename_;
     s.append(".kinetic_energy");
 
     log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::app));
@@ -1809,8 +1811,9 @@ void TurbulenceStatisticsHit::CalculateResolvedEnergyDecayingTurbulence()
 TurbulenceStatisticsHitHDG::TurbulenceStatisticsHitHDG(
   Teuchos::RCP<DRT::Discretization>    actdis,
   Teuchos::ParameterList&     params,
+  const std::string&          statistics_outfilename,
   const bool forced):
-  TurbulenceStatisticsHit(actdis,params,forced)
+  TurbulenceStatisticsHit(actdis,params,statistics_outfilename,forced)
 {
 
   //-----------------------------------
@@ -1904,7 +1907,7 @@ TurbulenceStatisticsHitHDG::TurbulenceStatisticsHitHDG(
 
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+    std::string s(statistics_outfilename_);
     s.append(".energy_spectra");
 
     log_1 = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::app));
@@ -1912,7 +1915,7 @@ TurbulenceStatisticsHitHDG::TurbulenceStatisticsHitHDG(
 
     log_1->flush();
 
-    s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+    s = statistics_outfilename_;
     s.append(".kinetic_energy");
 
     log_2 = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::app));

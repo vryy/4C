@@ -38,6 +38,7 @@ public:
   //! constructor: set-up sampling
   TurbulenceStatisticsHit(Teuchos::RCP<DRT::Discretization> actdis,
                           Teuchos::ParameterList& params,
+                          const std::string& statistics_outfilename,
                           const bool forced);
 
   //! destructor
@@ -121,6 +122,9 @@ protected:
   //! parameter list
   Teuchos::ParameterList& params_;
 
+  //! name of statistics output file, despite the ending
+  const std::string statistics_outfilename_;
+
   //! specifies type
   enum SpecialFlow
   {decaying_homogeneous_isotropic_turbulence,
@@ -177,6 +181,7 @@ public:
   //! constructor: set-up sampling
   TurbulenceStatisticsHitHDG(Teuchos::RCP<DRT::Discretization> actdis,
                           Teuchos::ParameterList& params,
+                          const std::string&      statistics_outfilename,
                           const bool forced);
 
   //! destructor

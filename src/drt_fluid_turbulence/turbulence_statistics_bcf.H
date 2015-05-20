@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file turbulence_statistics_cha_mult_phase.H
+\file turbulence_statistics_bcf.H
 
 \brief Compute (time and space) averaged values for turbulent channel
        flows with multiple phases and write them to files.
@@ -91,7 +91,8 @@ public:
   */
   TurbulenceStatisticsBcf(
                           Teuchos::RCP<DRT::Discretization>      actdis,
-                          Teuchos::ParameterList&                        params);
+                          Teuchos::ParameterList&                params,
+                          const std::string&                     statistics_outfilename);
 
 
   /*!
@@ -271,6 +272,9 @@ private:
   //! contains plane normal direction etc --- this is the original
   //! fluid dynamic parameterlist
   Teuchos::ParameterList&                             params_;
+
+  //! name of statistics output file, despite the ending
+  const std::string statistics_outfilename_;
 
   //! the dim_-coordinates of the homogeneous planes containing nodes
   Teuchos::RCP<std::vector<double> >               nodeplanes_;

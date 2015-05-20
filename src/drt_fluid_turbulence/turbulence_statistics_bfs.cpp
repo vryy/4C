@@ -41,13 +41,15 @@ Maintainer: Volker Gravemeier
 /*----------------------------------------------------------------------*/
 FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
   Teuchos::RCP<DRT::Discretization> actdis,
-  Teuchos::ParameterList&          params,
-  const std::string&                    geotype):
+  Teuchos::ParameterList&           params,
+  const std::string&                statistics_outfilename,
+  const std::string&                geotype):
   discret_      (actdis),
   params_       (params),
   geotype_      (TurbulenceStatisticsBfs::none),
   inflowchannel_(DRT::INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")),
-  inflowmax_    (params_.sublist("TURBULENT INFLOW").get<double>("INFLOW_CHA_SIDE",0.0))
+  inflowmax_    (params_.sublist("TURBULENT INFLOW").get<double>("INFLOW_CHA_SIDE",0.0)),
+  statistics_outfilename_(statistics_outfilename)
 {
   if (discret_->Comm().MyPID()==0)
   {
@@ -594,7 +596,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
 
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+    std::string s(statistics_outfilename_);
 
     if(physicaltype == INPAR::FLUID::loma)
     {
@@ -1459,7 +1461,7 @@ void FLD::TurbulenceStatisticsBfs::DumpStatistics(int step)
   Teuchos::RCP<std::ofstream> log;
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+    std::string s(statistics_outfilename_);
     s.append(".flow_statistics");
 
     log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::out));
@@ -1598,7 +1600,7 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step)
   Teuchos::RCP<std::ofstream> log;
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+    std::string s(statistics_outfilename_);
     s.append(".loma_statistics");
 
     log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::out));
@@ -1822,7 +1824,7 @@ void FLD::TurbulenceStatisticsBfs::DumpScatraStatistics(int          step)
   Teuchos::RCP<std::ofstream> log;
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+    std::string s(statistics_outfilename_);
     s.append(".flow_statistics");
 
     log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::out));

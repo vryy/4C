@@ -354,6 +354,9 @@ public:
   */
   virtual void SetFaceGeneralFluidParameter();
 
+  /// initialize vectors and flags for turbulence approach
+  virtual void SetGeneralTurbulenceParameters();
+
   /*!
   \brief do explicit predictor step to start nonlinear iteration from
          a better initial value
@@ -1049,6 +1052,8 @@ protected:
   int samstop_;
   int dumperiod_;
   //@}
+
+  std::string statistics_outfilename_;
 
   //! @name cfl number for adaptive time step
   double cfl_; ///< cfl number

@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file turbulence_statistics_tvg.H
+\file turbulence_statistics_tgv.H
 
 \brief Compute dissipation rates for Taylor-Green vortex
        and write them to files.
@@ -40,7 +40,8 @@ public:
   \brief Standard Constructor (public)
   */
   TurbulenceStatisticsTgv(Teuchos::RCP<DRT::Discretization> actdis,
-                          Teuchos::ParameterList&           params);
+                          Teuchos::ParameterList&           params,
+                          const std::string&                statistics_outfilename);
 
   /*!
   \brief Destructor
@@ -93,6 +94,8 @@ private:
   //! contains plane normal direction etc --- this is the original
   //! fluid dynamic parameterlist
   Teuchos::ParameterList&                   params_;
+  //! name of statistics output file, despite the ending
+  const std::string statistics_outfilename_;
 
   //! parameterlist for the element call when averages of residuals
   //! are calculated --- used for communication between element

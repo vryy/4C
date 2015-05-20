@@ -30,17 +30,19 @@ Maintainer: Benjamin Krank
   ---------------------------------------------------------------------*/
 FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(
   Teuchos::RCP<DRT::Discretization> actdis             ,
-  bool                             alefluid           ,
+  bool                              alefluid           ,
   Teuchos::RCP<Epetra_Vector>       dispnp             ,
-  Teuchos::ParameterList&                   params             ,
-  const bool                       withscatra
+  Teuchos::ParameterList&           params             ,
+  const std::string&                statistics_outfilename,
+  const bool                        withscatra
   )
   :
-  discret_            (actdis             ),
-  dispnp_             (dispnp             ),
-  params_             (params             ),
-  withscatra_         (withscatra         ),
-  numscatradofpernode_(0)
+  discret_               (actdis             ),
+  dispnp_                (dispnp             ),
+  params_                (params             ),
+  statistics_outfilename_(statistics_outfilename),
+  withscatra_            (withscatra         ),
+  numscatradofpernode_   (0)
 {
   //----------------------------------------------------------------------
   // plausibility check
@@ -471,7 +473,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(
 
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+    std::string s(statistics_outfilename_);
     s.append(".flow_statistics");
 
     log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::out));
@@ -1407,7 +1409,7 @@ void FLD::TurbulenceStatisticsCcy::TimeAverageMeansAndOutputOfStatistics(int ste
   Teuchos::RCP<std::ofstream> log;
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+    std::string s(statistics_outfilename_);
     s.append(".flow_statistics");
 
     log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::app));

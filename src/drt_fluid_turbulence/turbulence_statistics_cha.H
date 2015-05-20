@@ -102,7 +102,8 @@ public:
   TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discretization> actdis             ,
                           bool                             alefluid           ,
                           Teuchos::RCP<Epetra_Vector>       dispnp             ,
-                          Teuchos::ParameterList&                   params             ,
+                          Teuchos::ParameterList&           params             ,
+                          const std::string&                statistics_outfilename,
                           bool                             subgrid_dissipation,
                           Teuchos::RCP<FLD::XWall> xwallobj);
 
@@ -365,6 +366,8 @@ private:
   //! contains plane normal direction etc --- this is the original
   //! fluid dynamic parameterlist
   Teuchos::ParameterList&                   params_;
+  //! name of statistics output file, despite the ending
+  const std::string statistics_outfilename_;
   //! contains plane normal direction etc --- this is the original
   //! scatra dynamic parameterlist
   Teuchos::RCP<Teuchos::ParameterList> scatraparams_;

@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file turbulence_statistics_cha_mult_phase.cpp
+\file turbulence_statistics_bcf.cpp
 
 \brief calculate mean values and fluctuations for turbulent channel
 flows.
@@ -25,10 +25,12 @@ Maintainer: Benjamin Krank
   ---------------------------------------------------------------------*/
 COMBUST::TurbulenceStatisticsBcf::TurbulenceStatisticsBcf(
   Teuchos::RCP<DRT::Discretization>   actdis,
-  Teuchos::ParameterList&                     params)
+  Teuchos::ParameterList&             params,
+  const std::string&                  statistics_outfilename)
   :
   discret_(actdis),
-  params_ (params)
+  params_ (params),
+  statistics_outfilename_(statistics_outfilename)
 {
   //----------------------------------------------------------------------
   // plausibility check
@@ -381,7 +383,7 @@ COMBUST::TurbulenceStatisticsBcf::TurbulenceStatisticsBcf(
   if (discret_->Comm().MyPID()==0)
   {
     {
-      std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string s(statistics_outfilename_);
       s.append(".flow_statistics");
 
       log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::out));
@@ -392,7 +394,7 @@ COMBUST::TurbulenceStatisticsBcf::TurbulenceStatisticsBcf(
     }
 
     {
-      std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string s(statistics_outfilename_);
       s.append(".void_fraction");
 
       log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::out));
@@ -1132,7 +1134,7 @@ void COMBUST::TurbulenceStatisticsBcf::TimeAverageMeansAndOutputOfStatistics(int
   Teuchos::RCP<std::ofstream> log;
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+    std::string s(statistics_outfilename_);
     s.append(".flow_statistics");
 
     log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::app));
@@ -1215,7 +1217,7 @@ void COMBUST::TurbulenceStatisticsBcf::TimeAverageMeansAndOutputOfStatistics(int
 
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+    std::string s(statistics_outfilename_);
     s.append(".void_fraction");
 
     log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::app));
@@ -1301,7 +1303,7 @@ void COMBUST::TurbulenceStatisticsBcf::DumpStatistics(int step)
   Teuchos::RCP<std::ofstream> log;
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+    std::string s(statistics_outfilename_);
     s.append(".flow_statistics");
 
     log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::out));
@@ -1400,7 +1402,7 @@ void COMBUST::TurbulenceStatisticsBcf::DumpStatistics(int step)
 
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+    std::string s(statistics_outfilename_);
     s.append(".void_fraction");
 
     log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::app));

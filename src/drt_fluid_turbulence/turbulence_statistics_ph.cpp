@@ -23,9 +23,11 @@ Maintainer: Benjamin Krank
 //----------------------------------------------------------------------
 FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(
   Teuchos::RCP<DRT::Discretization> actdis,
-  Teuchos::ParameterList&          params):
+  Teuchos::ParameterList&           params,
+  const std::string&                statistics_outfilename):
   discret_      (actdis),
-  params_       (params)
+  params_       (params),
+  statistics_outfilename_(statistics_outfilename)
 {
   if (discret_->Comm().MyPID()==0)
   {
@@ -513,7 +515,7 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(
 
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+    std::string s(statistics_outfilename_);
 
       s.append(".flow_statistics");
 
@@ -897,7 +899,7 @@ void FLD::TurbulenceStatisticsPh::DumpStatistics(int step)
 
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+    std::string s(statistics_outfilename_);
     s.append(".flow_statistics");
 
     log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::out));

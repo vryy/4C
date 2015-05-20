@@ -40,6 +40,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   bool                     alefluid           ,
   Teuchos::RCP<Epetra_Vector>       dispnp             ,
   Teuchos::ParameterList&  params             ,
+  const std::string&       statistics_outfilename,
   bool                     subgrid_dissipation,
   Teuchos::RCP<FLD::XWall> xwallobj
   )
@@ -49,6 +50,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   alefluid_           (alefluid           ),
   dispnp_             (dispnp             ),
   params_             (params             ),
+  statistics_outfilename_(statistics_outfilename),
   subgrid_dissipation_(subgrid_dissipation),
   inflowchannel_      (DRT::INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")),
   inflowmax_(params_.sublist("TURBULENT INFLOW").get<double>("INFLOW_CHA_SIDE",0.0)),
@@ -1257,7 +1259,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
 
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+    std::string s(statistics_outfilename_);
 
     if (physicaltype_ == INPAR::FLUID::loma)
     {
@@ -1274,7 +1276,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
       // additional output for dynamic Smagorinsky model
       if (smagorinsky_)
       {
-        std::string s_smag = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+        std::string s_smag(statistics_outfilename_);
         s_smag.append(".Cs_statistics");
 
         log_Cs = Teuchos::rcp(new std::ofstream(s_smag.c_str(),std::ios::out));
@@ -1296,7 +1298,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
       // additional output for dynamic Smagorinsky model
       if (smagorinsky_)
       {
-        std::string s_smag = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+        std::string s_smag(statistics_outfilename_);
         s_smag.append(".Cs_statistics");
 
         log_Cs = Teuchos::rcp(new std::ofstream(s_smag.c_str(),std::ios::out));
@@ -1306,7 +1308,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
       // additional output for scale similarity model
       if (scalesimilarity_)
       {
-        std::string s_ssm = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+        std::string s_ssm(statistics_outfilename_);
         s_ssm.append(".SSM_statistics");
 
         log_SSM = Teuchos::rcp(new std::ofstream(s_ssm.c_str(),std::ios::out));
@@ -1316,7 +1318,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
       // additional output for multifractal subgrid scales
       if (multifractal_)
       {
-        std::string s_mf = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+        std::string s_mf(statistics_outfilename_);
         s_mf.append(".MF_statistics");
 
         log_MF = Teuchos::rcp(new std::ofstream(s_mf.c_str(),std::ios::out));
@@ -1327,7 +1329,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     // additional output of residuals and subscale quantities
     if (subgrid_dissipation_)
     {
-      std::string s_res = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string s_res(statistics_outfilename_);
       s_res.append(".res_statistics");
 
       log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),std::ios::out));
@@ -1335,7 +1337,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
       (*log_res) << "# All values are first averaged over the integration points in an element \n";
       (*log_res) << "# and after that averaged over a whole element layer in the homogeneous plane\n\n";
 
-      std::string s_res_scatra = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string s_res_scatra(statistics_outfilename_);
       s_res_scatra.append(".res_scatra_statistics");
 
       log_res_scatra = Teuchos::rcp(new std::ofstream(s_res_scatra.c_str(),std::ios::out));
@@ -4012,7 +4014,7 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
   Teuchos::RCP<std::ofstream> log;
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+    std::string s(statistics_outfilename_);
     if (inflowchannel_)
       s.append(".inflow.flow_statistics");
     else
@@ -4085,7 +4087,7 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
       // get the outfile
       Teuchos::RCP<std::ofstream> log_Cs;
 
-      std::string s_smag = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string s_smag(statistics_outfilename_);
       s_smag.append(".Cs_statistics");
 
       log_Cs = Teuchos::rcp(new std::ofstream(s_smag.c_str(),std::ios::app));
@@ -4131,7 +4133,7 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
       // get the outfile
       Teuchos::RCP<std::ofstream> log_SSM;
 
-      std::string s_ssm = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string s_ssm(statistics_outfilename_);
       s_ssm.append(".SSM_statistics");
 
       log_SSM = Teuchos::rcp(new std::ofstream(s_ssm.c_str(),std::ios::app));
@@ -4163,7 +4165,7 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
       // get the outfile
       Teuchos::RCP<std::ofstream> log_mf;
 
-      std::string s_mf = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string s_mf(statistics_outfilename_);
       s_mf.append(".MF_statistics");
 
       log_mf = Teuchos::rcp(new std::ofstream(s_mf.c_str(),std::ios::app));
@@ -4207,7 +4209,7 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
       Teuchos::RCP<std::ofstream> log_res;
 
       // output of residuals and subscale quantities
-      std::string s_res = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string s_res(statistics_outfilename_);
       s_res.append(".res_statistics");
 
       log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),std::ios::app));
@@ -4426,7 +4428,7 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(const int step)
   Teuchos::RCP<std::ofstream> log;
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+    std::string s(statistics_outfilename_);
     if (inflowchannel_)
       s.append(".inflow.flow_statistics");
     else
@@ -4480,7 +4482,7 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(const int step)
       // get the outfile
       Teuchos::RCP<std::ofstream> log_Cs;
 
-      std::string s_smag = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string s_smag(statistics_outfilename_);
       s_smag.append(".Cs_statistics");
 
       log_Cs = Teuchos::rcp(new std::ofstream(s_smag.c_str(),std::ios::out));
@@ -4525,7 +4527,7 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(const int step)
       Teuchos::RCP<std::ofstream> log_res;
 
       // output of residuals and subscale quantities
-      std::string s_res = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string s_res(statistics_outfilename_);
       s_res.append(".res_statistics");
 
       log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),std::ios::out));
@@ -4751,7 +4753,7 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
   Teuchos::RCP<std::ofstream> log;
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+    std::string s(statistics_outfilename_);
     if (inflowchannel_)
       s.append(".inflow.loma_statistics");
     else
@@ -4817,7 +4819,7 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
       Teuchos::RCP<std::ofstream> log_res;
 
       // output of residuals and subscale quantities
-      std::string s_res = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string s_res(statistics_outfilename_);
       s_res.append(".res_statistics");
 
       log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),std::ios::out));
@@ -4975,7 +4977,7 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
       Teuchos::RCP<std::ofstream> log_res_scatra;
 
       // output of residuals and subscale quantities
-      std::string s_res_scatra = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string s_res_scatra(statistics_outfilename_);
       s_res_scatra.append(".res_scatra_statistics");
 
       log_res_scatra = Teuchos::rcp(new std::ofstream(s_res_scatra.c_str(),std::ios::out));
@@ -5043,7 +5045,7 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
       // get the outfile
       Teuchos::RCP<std::ofstream> log_Cs;
 
-      std::string s_smag = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string s_smag(statistics_outfilename_);
       s_smag.append(".Cs_statistics");
 
       log_Cs = Teuchos::rcp(new std::ofstream(s_smag.c_str(),std::ios::out));
@@ -5156,7 +5158,7 @@ void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(const int step)
   Teuchos::RCP<std::ofstream> log;
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+    std::string s(statistics_outfilename_);
     if (inflowchannel_)
       s.append(".inflow.flow_statistics");
     else
@@ -5216,7 +5218,7 @@ void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(const int step)
       Teuchos::RCP<std::ofstream> log_res;
 
       // output of residuals and subscale quantities
-      std::string s_res = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string s_res(statistics_outfilename_);
       s_res.append(".res_statistics");
 
       log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),std::ios::out));
@@ -5374,7 +5376,7 @@ void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(const int step)
       Teuchos::RCP<std::ofstream> log_res_scatra;
 
       // output of residuals and subscale quantities
-      std::string s_res_scatra = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string s_res_scatra(statistics_outfilename_);
       s_res_scatra.append(".res_scatra_statistics");
 
       log_res_scatra = Teuchos::rcp(new std::ofstream(s_res_scatra.c_str(),std::ios::out));
@@ -5442,7 +5444,7 @@ void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(const int step)
       // get the outfile
       Teuchos::RCP<std::ofstream> log_mf;
 
-      std::string s_mf = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string s_mf(statistics_outfilename_);
       s_mf.append(".MF_statistics");
 
       log_mf = Teuchos::rcp(new std::ofstream(s_mf.c_str(),std::ios::out));
@@ -5495,7 +5497,7 @@ void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(const int step)
       // get the outfile
       Teuchos::RCP<std::ofstream> log_Cs;
 
-      std::string s_smag = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string s_smag(statistics_outfilename_);
       s_smag.append(".Cs_statistics");
 
       log_Cs = Teuchos::rcp(new std::ofstream(s_smag.c_str(),std::ios::out));

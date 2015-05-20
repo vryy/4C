@@ -77,6 +77,7 @@ namespace FLD
     turbmodel_      (INPAR::FLUID::no_model),
     subgrid_dissipation_(false             ),
     inflow_(false                          ),
+    statistics_outfilename_(fluid.statistics_outfilename_),
     statistics_general_mean_(Teuchos::null ),
     statistics_channel_(Teuchos::null      ),
     statistics_channel_multiphase_(Teuchos::null),
@@ -115,6 +116,7 @@ namespace FLD
                                                           alefluid_           ,
                                                           mydispnp_           ,
                                                           *params_             ,
+                                                          statistics_outfilename_,
                                                           subgrid_dissipation_,
                                                           myxwall_));
     }
@@ -131,6 +133,7 @@ namespace FLD
                                                           alefluid_           ,
                                                           mydispnp_           ,
                                                           *params_             ,
+                                                          statistics_outfilename_,
                                                           subgrid_dissipation_,
                                                           Teuchos::null));
     }
@@ -147,6 +150,7 @@ namespace FLD
                                                           alefluid_           ,
                                                           mydispnp_           ,
                                                           *params_             ,
+                                                          statistics_outfilename_,
                                                           subgrid_dissipation_,
                                                           Teuchos::null));
     }
@@ -176,7 +180,7 @@ namespace FLD
         // the flow under consideration
         if (flow_==forced_homogeneous_isotropic_turbulence
             or flow_==scatra_forced_homogeneous_isotropic_turbulence)
-          statistics_hit_    =Teuchos::rcp(new TurbulenceStatisticsHitHDG(discret_,*params_,true));
+          statistics_hit_    =Teuchos::rcp(new TurbulenceStatisticsHitHDG(discret_,*params_,statistics_outfilename_,true));
         else
         {
           statistics_hit_ = Teuchos::null;
@@ -189,9 +193,9 @@ namespace FLD
         // the flow under consideration
         if (flow_==forced_homogeneous_isotropic_turbulence
             or flow_==scatra_forced_homogeneous_isotropic_turbulence)
-          statistics_hit_    =Teuchos::rcp(new TurbulenceStatisticsHit(discret_,*params_,true));
+          statistics_hit_    =Teuchos::rcp(new TurbulenceStatisticsHit(discret_,*params_,statistics_outfilename_,true));
         else
-          statistics_hit_    =Teuchos::rcp(new TurbulenceStatisticsHit(discret_,*params_,false));
+          statistics_hit_    =Teuchos::rcp(new TurbulenceStatisticsHit(discret_,*params_,statistics_outfilename_,false));
       }
     }
     else if(fluid.special_flow_=="taylor_green_vortex")
@@ -203,7 +207,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_tgv_    =Teuchos::rcp(new TurbulenceStatisticsTgv(discret_,*params_));
+      statistics_tgv_    =Teuchos::rcp(new TurbulenceStatisticsTgv(discret_,*params_,statistics_outfilename_));
     }
     else if(fluid.special_flow_=="lid_driven_cavity")
     {
@@ -214,7 +218,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_ldc_    =Teuchos::rcp(new TurbulenceStatisticsLdc(discret_,*params_));
+      statistics_ldc_    =Teuchos::rcp(new TurbulenceStatisticsLdc(discret_,*params_,statistics_outfilename_));
     }
     else if(fluid.special_flow_=="loma_lid_driven_cavity")
     {
@@ -225,7 +229,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_ldc_    =Teuchos::rcp(new TurbulenceStatisticsLdc(discret_,*params_));
+      statistics_ldc_    =Teuchos::rcp(new TurbulenceStatisticsLdc(discret_,*params_,statistics_outfilename_));
     }
     else if(fluid.special_flow_=="backward_facing_step")
     {
@@ -236,7 +240,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_bfs_ = Teuchos::rcp(new TurbulenceStatisticsBfs(discret_,*params_,"geometry_DNS_incomp_flow"));
+      statistics_bfs_ = Teuchos::rcp(new TurbulenceStatisticsBfs(discret_,*params_,statistics_outfilename_, "geometry_DNS_incomp_flow"));
 
       // statistics manager for turbulent boundary layer not available
       if (inflow_)
@@ -251,7 +255,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_ph_ = Teuchos::rcp(new TurbulenceStatisticsPh(discret_,*params_));
+      statistics_ph_ = Teuchos::rcp(new TurbulenceStatisticsPh(discret_,*params_,statistics_outfilename_));
 
     }
     else if(fluid.special_flow_=="loma_backward_facing_step")
@@ -263,7 +267,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_bfs_ = Teuchos::rcp(new TurbulenceStatisticsBfs(discret_,*params_,"geometry_LES_flow_with_heating"));
+      statistics_bfs_ = Teuchos::rcp(new TurbulenceStatisticsBfs(discret_,*params_,statistics_outfilename_,"geometry_LES_flow_with_heating"));
 
       // build statistics manager for inflow channel flow
       if (inflow_)
@@ -279,6 +283,7 @@ namespace FLD
                                                               alefluid_,
                                                               mydispnp_,
                                                               *params_,
+                                                              statistics_outfilename_,
                                                               subgrid_dissipation_,
                                                               myxwall_));
         }
@@ -293,7 +298,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_bfs_ = Teuchos::rcp(new TurbulenceStatisticsBfs(discret_,*params_,"geometry_EXP_vogel_eaton"));
+      statistics_bfs_ = Teuchos::rcp(new TurbulenceStatisticsBfs(discret_,*params_,statistics_outfilename_,"geometry_EXP_vogel_eaton"));
 
       // build statistics manager for inflow channel flow
       if (inflow_)
@@ -309,6 +314,7 @@ namespace FLD
                                                               alefluid_,
                                                               mydispnp_,
                                                               *params_,
+                                                              statistics_outfilename_,
                                                               subgrid_dissipation_,
                                                               myxwall_));
         }
@@ -326,7 +332,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_oracles_ = Teuchos::rcp(new COMBUST::TurbulenceStatisticsORACLES(discret_,*params_,"geometry_ORACLES",false));
+      statistics_oracles_ = Teuchos::rcp(new COMBUST::TurbulenceStatisticsORACLES(discret_,*params_,statistics_outfilename_,"geometry_ORACLES",false));
 
       // build statistics manager for inflow channel flow
       if (inflow_)
@@ -340,6 +346,7 @@ namespace FLD
                                                               alefluid_,
                                                               mydispnp_,
                                                               *params_,
+                                                              statistics_outfilename_,
                                                               subgrid_dissipation_,
                                                               Teuchos::null));
         }
@@ -357,7 +364,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_sqc_    =Teuchos::rcp(new TurbulenceStatisticsSqc(discret_,*params_));
+      statistics_sqc_    =Teuchos::rcp(new TurbulenceStatisticsSqc(discret_,*params_,statistics_outfilename_));
     }
     else if(fluid.special_flow_=="square_cylinder_nurbs")
     {
@@ -380,6 +387,7 @@ namespace FLD
                                                       alefluid_           ,
                                                       mydispnp_           ,
                                                       *params_             ,
+                                                      statistics_outfilename_,
                                                       withscatra));
     }
     else if(fluid.special_flow_=="rotating_circular_cylinder_nurbs_scatra")
@@ -396,6 +404,7 @@ namespace FLD
                                                       alefluid_           ,
                                                       mydispnp_           ,
                                                       *params_             ,
+                                                      statistics_outfilename_,
                                                       withscatra));
     }
     else if(fluid.special_flow_=="time_averaging")
@@ -414,7 +423,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_bfda_ = Teuchos::rcp(new TurbulenceStatisticsBfda(discret_,*params_));
+      statistics_bfda_ = Teuchos::rcp(new TurbulenceStatisticsBfda(discret_,*params_, statistics_outfilename_));
     }
     else
     {
@@ -489,6 +498,7 @@ namespace FLD
     turbmodel_      (INPAR::FLUID::no_model),
     subgrid_dissipation_(false             ),
     inflow_(false                          ),
+    statistics_outfilename_(timeint.params_->sublist("TURBULENCE MODEL").get<std::string>("statistics outfile")),
     statistics_general_mean_(Teuchos::null ),
     statistics_channel_(Teuchos::null      ),
     statistics_channel_multiphase_(Teuchos::null),
@@ -523,7 +533,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_channel_multiphase_ = Teuchos::rcp(new COMBUST::TurbulenceStatisticsBcf(discret_, *params_ ));
+      statistics_channel_multiphase_ = Teuchos::rcp(new COMBUST::TurbulenceStatisticsBcf(discret_, *params_, statistics_outfilename_));
     }
     else if(timeint.special_flow_=="combust_oracles")
     {
@@ -539,7 +549,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_oracles_ = Teuchos::rcp(new COMBUST::TurbulenceStatisticsORACLES(discret_,*params_,"geometry_ORACLES",withscatra_));
+      statistics_oracles_ = Teuchos::rcp(new COMBUST::TurbulenceStatisticsORACLES(discret_,*params_,statistics_outfilename_,"geometry_ORACLES",withscatra_));
 
       // build statistics manager for inflow channel flow
       if (inflow_)
@@ -553,6 +563,7 @@ namespace FLD
                                                               alefluid_,
                                                               mydispnp_,
                                                               *params_,
+                                                              statistics_outfilename_,
                                                               subgrid_dissipation_,
                                                               Teuchos::null));
         }
@@ -1730,7 +1741,7 @@ namespace FLD
     if (discret_->Comm().MyPID()==0 and  turbmodel_ == INPAR::FLUID::dynamic_vreman)
     {
 
-      std::string fnamevreman = params_->sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string fnamevreman(statistics_outfilename_);
 
       fnamevreman.append(".vremanconstant");
       double Cv;

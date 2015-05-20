@@ -12,11 +12,7 @@ Maintainer:  Raffaela Kruse
 
 #include "xfluidfluid.H"
 #include "xfluid_state_creator.H"
-
 #include "xfluidresulttest.H"
-
-#include "../drt_fluid/fluidimplicitintegration.H"
-#include "../drt_fluid/fluid_utils.H"
 
 #include "../drt_lib/drt_discret_faces.H"
 #include "../drt_lib/drt_globalproblem.H"

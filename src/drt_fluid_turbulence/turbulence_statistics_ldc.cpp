@@ -39,10 +39,12 @@ Maintainer: Volker Gravemeier
 /*----------------------------------------------------------------------*/
 FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
   Teuchos::RCP<DRT::Discretization> actdis,
-  Teuchos::ParameterList&                   params)
+  Teuchos::ParameterList&           params,
+  const std::string&                statistics_outfilename)
   :
   discret_(actdis),
-  params_ (params)
+  params_ (params),
+  statistics_outfilename_(statistics_outfilename)
 {
   //----------------------------------------------------------------------
   // plausibility check
@@ -556,7 +558,7 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
 
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+    std::string s(statistics_outfilename_);
 
     if (physicaltype == INPAR::FLUID::loma)
     {
@@ -1214,7 +1216,7 @@ void FLD::TurbulenceStatisticsLdc::DumpStatistics(int step)
   Teuchos::RCP<std::ofstream> log;
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+    std::string s(statistics_outfilename_);
     s.append(".flow_statistics");
 
     log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::out));
@@ -1380,7 +1382,7 @@ void FLD::TurbulenceStatisticsLdc::DumpLomaStatistics(int step)
   Teuchos::RCP<std::ofstream> log;
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+    std::string s(statistics_outfilename_);
     s.append(".loma_statistics");
 
     log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::out));

@@ -28,11 +28,13 @@ Maintainer: Benjamin Krank
 COMBUST::TurbulenceStatisticsORACLES::TurbulenceStatisticsORACLES(
   Teuchos::RCP<DRT::Discretization> discret,
   Teuchos::ParameterList&          params,
-  const std::string&                    geotype,
+  const std::string&               statistics_outfilename,
+  const std::string&               geotype,
   const bool                       withscatra)
   :
   discret_    (discret),
   params_     (params),
+  statistics_outfilename_(statistics_outfilename),
   withscatra_ (withscatra),
   h_          (0.0299),
   x1min_      (-9.0*h_), // (-5.0*h_),
@@ -461,147 +463,147 @@ COMBUST::TurbulenceStatisticsORACLES::TurbulenceStatisticsORACLES(
   if (discret_->Comm().MyPID()==0)
   {
     {
-      std::string outfile = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string outfile(statistics_outfilename_);
       outfile.append(".oracles.-5h.flow_statistics");
       std::ofstream title(outfile.c_str(),std::ios::out);
       title << "# ORACLES vertical flow statistics file\n";
       title.flush();
     }
     {
-      std::string outfile = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string outfile(statistics_outfilename_);
       outfile.append(".oracles.ramp.flow_statistics");
       std::ofstream title(outfile.c_str(),std::ios::out);
       title << "# ORACLES vertical flow statistics file\n";
       title.flush();
     }
     {
-      std::string outfile = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string outfile(statistics_outfilename_);
       outfile.append(".oracles.00h.flow_statistics");
       std::ofstream title(outfile.c_str(),std::ios::out);
       title << "# ORACLES vertical flow statistics file\n";
       title.flush();
     }
     {
-      std::string outfile = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string outfile(statistics_outfilename_);
       outfile.append(".oracles.01h.flow_statistics");
       std::ofstream title(outfile.c_str(),std::ios::out);
       title << "# ORACLES vertical flow statistics file\n";
       title.flush();
     }
     {
-      std::string outfile = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string outfile(statistics_outfilename_);
       outfile.append(".oracles.02h.flow_statistics");
       std::ofstream title(outfile.c_str(),std::ios::out);
       title << "# ORACLES vertical flow statistics file\n";
       title.flush();
     }
     {
-      std::string outfile = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string outfile(statistics_outfilename_);
       outfile.append(".oracles.03h.flow_statistics");
       std::ofstream title(outfile.c_str(),std::ios::out);
       title << "# ORACLES vertical flow statistics file\n";
       title.flush();
     }
     {
-      std::string outfile = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string outfile(statistics_outfilename_);
       outfile.append(".oracles.04h.flow_statistics");
       std::ofstream title(outfile.c_str(),std::ios::out);
       title << "# ORACLES vertical flow statistics file\n";
       title.flush();
     }
     {
-      std::string outfile = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string outfile(statistics_outfilename_);
       outfile.append(".oracles.05h.flow_statistics");
       std::ofstream title(outfile.c_str(),std::ios::out);
       title << "# ORACLES vertical flow statistics file\n";
       title.flush();
     }
     {
-      std::string outfile = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string outfile(statistics_outfilename_);
       outfile.append(".oracles.06h.flow_statistics");
       std::ofstream title(outfile.c_str(),std::ios::out);
       title << "# ORACLES vertical flow statistics file\n";
       title.flush();
     }
     {
-      std::string outfile = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string outfile(statistics_outfilename_);
       outfile.append(".oracles.07h.flow_statistics");
       std::ofstream title(outfile.c_str(),std::ios::out);
       title << "# ORACLES vertical flow statistics file\n";
       title.flush();
     }
     {
-      std::string outfile = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string outfile(statistics_outfilename_);
       outfile.append(".oracles.08h.flow_statistics");
       std::ofstream title(outfile.c_str(),std::ios::out);
       title << "# ORACLES vertical flow statistics file\n";
       title.flush();
     }
     {
-      std::string outfile = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string outfile(statistics_outfilename_);
       outfile.append(".oracles.09h.flow_statistics");
       std::ofstream title(outfile.c_str(),std::ios::out);
       title << "# ORACLES vertical flow statistics file\n";
       title.flush();
     }
     {
-      std::string outfile = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string outfile(statistics_outfilename_);
       outfile.append(".oracles.10h.flow_statistics");
       std::ofstream title(outfile.c_str(),std::ios::out);
       title << "# ORACLES vertical flow statistics file\n";
       title.flush();
     }
     {
-      std::string outfile = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string outfile(statistics_outfilename_);
       outfile.append(".oracles.11h.flow_statistics");
       std::ofstream title(outfile.c_str(),std::ios::out);
       title << "# ORACLES vertical flow statistics file\n";
       title.flush();
     }
     {
-      std::string outfile = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string outfile(statistics_outfilename_);
       outfile.append(".oracles.12h.flow_statistics");
       std::ofstream title(outfile.c_str(),std::ios::out);
       title << "# ORACLES vertical flow statistics file\n";
       title.flush();
     }
     {
-      std::string outfile = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string outfile(statistics_outfilename_);
       outfile.append(".oracles.13h.flow_statistics");
       std::ofstream title(outfile.c_str(),std::ios::out);
       title << "# ORACLES vertical flow statistics file\n";
       title.flush();
     }
     {
-      std::string outfile = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string outfile(statistics_outfilename_);
       outfile.append(".oracles.14h.flow_statistics");
       std::ofstream title(outfile.c_str(),std::ios::out);
       title << "# ORACLES vertical flow statistics file\n";
       title.flush();
     }
     {
-      std::string outfile = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string outfile(statistics_outfilename_);
       outfile.append(".oracles.15h.flow_statistics");
       std::ofstream title(outfile.c_str(),std::ios::out);
       title << "# ORACLES vertical flow statistics file\n";
       title.flush();
     }
     {
-      std::string outfile = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string outfile(statistics_outfilename_);
       outfile.append(".oracles.16h.flow_statistics");
       std::ofstream title(outfile.c_str(),std::ios::out);
       title << "# ORACLES vertical flow statistics file\n";
       title.flush();
     }
     {
-      std::string outfile = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string outfile(statistics_outfilename_);
       outfile.append(".oracles.horiz.chamber.flow_statistics");
       std::ofstream title(outfile.c_str(),std::ios::out);
       title << "# ORACLES horizontal chamber flow statistics file\n";
       title.flush();
     }
     {
-      std::string outfile = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string outfile(statistics_outfilename_);
       outfile.append(".oracles.horiz.inflow.flow_statistics");
       std::ofstream title(outfile.c_str(),std::ios::out);
       title << "# ORACLES horizontal inflow flow statistics file\n";
@@ -1330,7 +1332,7 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
     // write horizontal ltau profiles chamber
     //---------------------------------------
     {
-      std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string s(statistics_outfilename_);
       // define file name suffix
       s.append(".oracles.horiz.chamber.flow_statistics");
 
@@ -1399,7 +1401,7 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
     // write horizontal ltau profiles inflow channels
     //-----------------------------------------------
     {
-      std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+      std::string s(statistics_outfilename_);
       // define file name suffix
       s.append(".oracles.horiz.inflow.flow_statistics");
 
@@ -1609,7 +1611,7 @@ void COMBUST::TurbulenceStatisticsORACLES::WriteStatisticsFile(
       double* profileg
 )
 {
-  std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+  std::string s(statistics_outfilename_);
 
   std::ostringstream filename;
   filename << "." << suffix << ".flow_statistics";

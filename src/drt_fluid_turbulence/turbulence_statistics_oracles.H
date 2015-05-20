@@ -51,7 +51,8 @@ public:
   */
   TurbulenceStatisticsORACLES(Teuchos::RCP<DRT::Discretization> discret,
                               Teuchos::ParameterList&           params,
-                              const std::string&                     geotype,
+                              const std::string&                statistics_outfilename,
+                              const std::string&                geotype,
                               const bool                        withscatra);
 
   /*!
@@ -150,6 +151,9 @@ private:
 
   //! parameter list of time integration
   Teuchos::ParameterList& params_;
+
+  //! name of statistics output file, despite the ending
+  const std::string statistics_outfilename_;
 
   //! pointer to fluid solution vel/pres and residual (force)
   Teuchos::RCP<Epetra_Vector> vel_;

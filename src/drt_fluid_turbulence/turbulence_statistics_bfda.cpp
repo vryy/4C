@@ -46,9 +46,11 @@ Maintainer: Benjamin Krank
 /*----------------------------------------------------------------------*/
 FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
   Teuchos::RCP<DRT::Discretization> actdis,
-  Teuchos::ParameterList&          params):
+  Teuchos::ParameterList&           params,
+  const std::string&                statistics_outfilename):
   discret_      (actdis),
-  params_       (params)
+  params_       (params),
+  statistics_outfilename_(statistics_outfilename)
 {
   if (discret_->Comm().MyPID()==0)
   {
@@ -463,8 +465,8 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
 
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
-    std::string s2 = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+    std::string s(statistics_outfilename_);;
+    std::string s2(statistics_outfilename_);
 
 //    s.append(".flow_statistics");
     s.append(".flow_statistics_along_z");
@@ -674,7 +676,7 @@ void FLD::TurbulenceStatisticsBfda::DumpStatistics(int step)
   Teuchos::RCP<std::ofstream> log_2;
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+    std::string s(statistics_outfilename_);
     s.append(".flow_statistics_along_z");    // s.append(".flow_statistics");
     log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::out));
 
@@ -699,7 +701,7 @@ void FLD::TurbulenceStatisticsBfda::DumpStatistics(int step)
     //----------------------------------------------------------------------------------------------
     // file *.flow_statistics_evaluation_planes
     //----------------------------------------------------------------------------------------------
-    std::string s2 = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
+    std::string s2(statistics_outfilename_);
     s2.append(".flow_statistics_evaluation_planes");
     log_2 = Teuchos::rcp(new std::ofstream(s2.c_str(),std::ios::out));
 

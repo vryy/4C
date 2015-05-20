@@ -77,7 +77,8 @@ public:
 
   */
   TurbulenceStatisticsLdc(Teuchos::RCP<DRT::Discretization> actdis,
-                          Teuchos::ParameterList&                   params);
+                          Teuchos::ParameterList&           params,
+                          const std::string&                statistics_outfilename);
 
   /*!
   \brief Destructor
@@ -185,6 +186,9 @@ private:
 
   //! parameter list
   Teuchos::ParameterList&                   params_;
+
+  //! name of statistics output file, despite the ending
+  const std::string statistics_outfilename_;
 
   //! toogle vectors: sums are computed by scalarproducts
   Teuchos::RCP<Epetra_Vector>       toggleu_;

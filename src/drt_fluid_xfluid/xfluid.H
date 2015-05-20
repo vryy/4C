@@ -167,10 +167,6 @@ namespace FLD
     /// ...
     Teuchos::RCP<std::map<int, int> > GetPermutationMap(){ return permutation_map_; }
 
-    /// lift'n'drag forces, statistics time sample and output of solution and
-    /// statistics
-    void StatisticsAndOutput();
-
     /// update configuration and output to file/screen
     virtual void Output();
 
@@ -538,6 +534,8 @@ namespace FLD
     */
     void SetFaceGeneralFluidXFEMParameter();
 
+    /// initialize vectors and flags for turbulence approach
+    void SetGeneralTurbulenceParameters();
 
     void ExplicitPredictor();
 

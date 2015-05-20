@@ -336,6 +336,10 @@ private:
   //! averaging takes place in time, if hom. directions have been specified
   //! additionally along these lines
   bool out_mean_;
+
+  //! name of statistics output file, despite the ending
+  const std::string statistics_outfilename_;
+
   Teuchos::RCP<TurbulenceStatisticsGeneralMean> statistics_general_mean_;
 
   //! turbulence statistics for turbulent channel flow
