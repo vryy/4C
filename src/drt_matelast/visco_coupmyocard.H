@@ -5,7 +5,8 @@
 Isochoric coupled viscous material with pseudo-potential representing the collagen and
 elastin matrix surrounding the myocardial fiber (chappelle12)
 <pre>
-Maintainer: Martin Pfaller, pfaller@lnm.mw.tum.de
+Maintainer: Martin Pfaller
+            pfaller@lnm.mw.tum.de
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -68,31 +69,33 @@ namespace ELASTIC
   }  // namespace PAR
 
   /*----------------------------------------------------------------------*/
-  /// Isochoric coupled viscous material with pseudo-potential
-  ///
-  /// Strain energy function is given by
-  ///\f[
-  ///   \Psi_v = \eta/2 tr(\dot{E}^2) = \eta/8 tr(\dot{C}^2).
-  ///\f]
-  ///
-  /// Viscous second Piola-Kirchhoff stress
-  ///\f[
-  ///   S_v =  2 \frac{\partial \Psi_v}{\partial \dot{C}} = \eta/2 \dot{C}.
-  ///\f]
-  ///
-  /// Viscous constitutive tensor
-  ///\f[
-  ///   C_v =  4 \frac{\partial^2 W_v}{\partial \dot{C} \partial \dot{C}} = \eta I#,
-  ///\f]
-  ///
-  /// with
-  ///
-  ///\f[
-  ///   I#_{ijkl} = \frac{1}{2}(\delta_{ik}\delta_{jl} + \delta_{il}\delta_{jk})
-  ///\f]
-  ///
-  /// \author pfaller
-  /// \date 04/15
+  /*!
+  *  Isochoric coupled viscous material with pseudo-potential
+  *
+  *  Strain energy function is given by
+  * \f[
+  *    \Psi_v = \eta/2 tr(\dot{E}^2) = \eta/8 tr(\dot{C}^2).
+  * \f]
+  *
+  *  Viscous second Piola-Kirchhoff stress
+  * \f[
+  *    S_v =  2 \frac{\partial \Psi_v}{\partial \dot{C}} = \eta/2 \dot{C}.
+  * \f]
+  *
+  *  Viscous constitutive tensor
+  * \f[
+  *    C_v =  4 \frac{\partial^2 W_v}{\partial \dot{C} \partial \dot{C}} = \eta I^\#,
+  * \f]
+  *
+  *  with
+  *
+  * \f[
+  *    I^\#_{ijkl} = \frac{1}{2}(\delta_{ik}\delta_{jl} + \delta_{il}\delta_{jk})
+  * \f]
+  *
+  *  \author pfaller
+  *  \date 04/15
+  */
   class CoupMyocard : public Summand
   {
 
