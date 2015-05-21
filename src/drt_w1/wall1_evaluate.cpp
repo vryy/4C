@@ -1006,7 +1006,7 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList&   params,
       {
         // calculate reference position of GP
         LINALG::SerialDenseMatrix gp_coord(1, numdim_);
-        gp_coord.Multiply('T', 'T', 1.0, funct, xrefe, 0.0);
+        gp_coord.Multiply('T', 'T', 1.0, shapefcts, xrefe, 0.0);
 
         // write coordinates in another datatype
         double gp_coord2[3]; // the position vector has to be given in 3D!!!
