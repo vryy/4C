@@ -261,6 +261,8 @@ public:
 
   LINALG::Matrix<3,1> & FinalPoint();
 
+  bool RefinedBBOverlapCheck(int maxstep = 10);
+
   bool ComputeCurveSurfaceIntersection(double& tolerance, int triangleid = 0 )
   {return IntersectionBase<edgetype,sidetype,numNodesLine,numNodesSurface>::ComputeCurveSurfaceIntersection(tolerance,triangleid); }
 
@@ -389,7 +391,7 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::Intersect(
   std::vector<bool> lineendpoint_conv(2,false);
   std::vector<LINALG::Matrix<3,1> > lineendpoint_xsi(2);
 
-  //store the intersection xsi before it is overwritten by computlineendpoint_dist[1]ance for later!
+  //store the intersection xsi before it is overwritten by computlineendpoint_distance for later!
   LINALG::Matrix<3,1> i_xsi;
 
   for (uint lp = 0; lp < 2 ; ++lp) //loop over line endpoints!
@@ -589,7 +591,7 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::Intersect(
     }
 
     if (success) //parallel cases handled!!!
-    {if (debugbb) dserror("Bounding Boxes said that ther is no intersection point!");
+    {if (debugbb) dserror("Bounding Boxes said that there is no intersection point!");
       return true;
     }
     else if (lineendpoint_conv[0] and lineendpoint_conv[1] )
@@ -651,7 +653,7 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::Intersect(
             //Basically this case should already be cought in section //2// for paralell intersections!
             std::cout << "Cut points found by intersection, with local coords: xsi: " << xsi_(0,0) << " / eta: "<< xsi_(1,0) << " / alpha: "<< xsi_(2,0) << " (Codeline:" << __LINE__ << ")" << std::endl;
           #endif
-            if (debugbb) dserror("Bounding Boxes said that ther is no intersection point!");
+            if (debugbb) dserror("Bounding Boxes said that there is no intersection point!");
           return true;
         }
         else
@@ -662,7 +664,7 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::Intersect(
           #ifdef DEBUG_CUTINTERSECTION_OUTPUT
             std::cout << "Cut points found by intersection, with local coords: xsi: " << xsi_(0,0) << " / eta: "<< xsi_(1,0) << " / alpha: "<< xsi_(2,0) << " (Codeline:" << __LINE__ << ")" << std::endl;
           #endif
-            if (debugbb) dserror("Bounding Boxes said that ther is no intersection point!");
+            if (debugbb) dserror("Bounding Boxes said that there is no intersection point!");
           return true;
         }
       }
@@ -691,9 +693,8 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::Intersect(
 
         if (SurfaceWithinLimits(tri_tol[tri],DRT::Element::tri3)) //we expect the quad4 to converge in case that the projected point is inside the quad4 or tri3!
         {
-          std::cout << "(fabs(lineendpoint_dist[0]) >= lineendpoint_tol[0]): " << (fabs(lineendpoint_dist[0]) >= lineendpoint_tol[0]) << " (fabs(lineendpoint_dist[1]) >= lineendpoint_tol[1]): " << (fabs(lineendpoint_dist[1]) >= lineendpoint_tol[1]) << " (lineendpoint_dist[0]*lineendpoint_dist[1]>0 ): " << (lineendpoint_dist[0]*lineendpoint_dist[1]>0 ) << std::endl;
-          std::cout << "Local Coordinates from ComputeDistance (lineendpoint_dist[0] = " << lineendpoint_dist[0] << "[tol=" << lineendpoint_tol[0] << "]) on Quad4: " << "xsi: " << lineendpoint_xsi[0](0,0) << " / eta: "<< lineendpoint_xsi[0](1,0) << " / alpha: "<< lineendpoint_xsi[0](2,0) << std::endl;
-          std::cout << "Local Coordinates from ComputeDistance (lineendpoint_dist[1] = " << lineendpoint_dist[1] << "[tol=" << lineendpoint_tol[1] << "]) on Quad4: " << "xsi: " << lineendpoint_xsi[1](0,0) << " / eta: "<< lineendpoint_xsi[1](1,0) << " / alpha: "<< lineendpoint_xsi[1](2,0) << std::endl;
+          std::cout << "Local Coordinates from ComputeDistance (lineendpoint_dist[0] = " << lineendpoint_dist[0] << "[tol=" << lineendpoint_tol[0] << "]) on surface: " << "xsi: " << lineendpoint_xsi[0](0,0) << " / eta: "<< lineendpoint_xsi[0](1,0) << " / alpha: "<< lineendpoint_xsi[0](2,0) << std::endl;
+          std::cout << "Local Coordinates from ComputeDistance (lineendpoint_dist[1] = " << lineendpoint_dist[1] << "[tol=" << lineendpoint_tol[1] << "]) on surface: " << "xsi: " << lineendpoint_xsi[1](0,0) << " / eta: "<< lineendpoint_xsi[1](1,0) << " / alpha: "<< lineendpoint_xsi[1](2,0) << std::endl;
           std::cout << "Local Coordinates from ComputeIntersection (tol=" << itol << ") on Quad4: " << "xsi: " << i_xsi(0,0) << " / eta: "<< i_xsi(1,0) << " / alpha: "<< i_xsi(2,0) << std::endl;
           std::cout << "Local Coordinates from ComputeIntersection (tol=" << tri_tol[tri] << ") on Tri3: " << "xsi: " << xsi_(0,0) << " / eta: "<< xsi_(1,0) << " / alpha: "<< xsi_(2,0) << std::endl;
           dserror("ComputeCurveSurfaceIntersection for Quad4 didn't converge, but ComputeCurveSurfaceIntersection for triangulation %d is inside the Element!",tri+1);
@@ -730,23 +731,37 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::Intersect(
       xsi_ = i_xsi; //set xsi_ back to the intersection xsi!!!
       if ( SurfaceWithinLimits(ritol) and LineWithinLimits(ritol) )
       {
-        //Output of the availabe information!!!
-        std::cout << "local coordinates: <plane: " << xsi_(0) << ", " << xsi_(1) << ">, <line: " << xsi_(2) << "> | relative tolerance: "  << ritol << std::endl;
-        std::cout << "Local Coordinates from ComputeDistance (lineendpoint_dist[0] = " << lineendpoint_dist[0] << "[tol=" << lineendpoint_tol[0] << "], conv = " << lineendpoint_conv[0] << ") on surface: " << "xsi: " << lineendpoint_xsi[0](0,0) << " / eta: "<< lineendpoint_xsi[0](1,0) << " / alpha: "<< lineendpoint_xsi[0](2,0) << std::endl;
-        std::cout << "Local Coordinates from ComputeDistance (lineendpoint_dist[1] = " << lineendpoint_dist[1] << "[tol=" << lineendpoint_tol[1] << "], conv = " << lineendpoint_conv[1] << ") on surface: " << "xsi: " << lineendpoint_xsi[1](0,0) << " / eta: "<< lineendpoint_xsi[1](1,0) << " / alpha: "<< lineendpoint_xsi[1](2,0) << std::endl;
+        //we think there shouldn't be an intersection point ... to prove this we refine our bounding boxes!!!
+        if (sidetype == DRT::Element::tri3)
+        {
+          if (!RefinedBBOverlapCheck())
+          {
+            #ifdef DEBUG_CUTINTERSECTION_OUTPUT
+              std::cout << "No Cut Point found by Refined Bounding Boxes! (Codeline:" << __LINE__ << ")" << std::endl;
+            #endif
+            return false;
+          }
+          else
+          {
+            //Output of the availabe information!!!
+            std::cout << "local coordinates: <plane: " << xsi_(0) << ", " << xsi_(1) << ">, <line: " << xsi_(2) << "> | relative tolerance: "  << ritol << std::endl;
+            std::cout << "Local Coordinates from ComputeDistance (lineendpoint_dist[0] = " << lineendpoint_dist[0] << "[tol=" << lineendpoint_tol[0] << "], conv = " << lineendpoint_conv[0] << ") on surface: " << "xsi: " << lineendpoint_xsi[0](0,0) << " / eta: "<< lineendpoint_xsi[0](1,0) << " / alpha: "<< lineendpoint_xsi[0](2,0) << std::endl;
+            std::cout << "Local Coordinates from ComputeDistance (lineendpoint_dist[1] = " << lineendpoint_dist[1] << "[tol=" << lineendpoint_tol[1] << "], conv = " << lineendpoint_conv[1] << ") on surface: " << "xsi: " << lineendpoint_xsi[1](0,0) << " / eta: "<< lineendpoint_xsi[1](1,0) << " / alpha: "<< lineendpoint_xsi[1](2,0) << std::endl;
 
-        { //just to creat gmsh output of the failed intersection!!!
-          KERNEL::ComputeIntersection<edgetype, sidetype> ci( xsi_ );
-          ci( xyze_surfaceElement_, xyze_lineElement_ );
+            {
+              //just to creat gmsh output of the failed intersection!!!
+              KERNEL::ComputeIntersection<edgetype, sidetype> ci( xsi_ );
+              ci( xyze_surfaceElement_, xyze_lineElement_ );
 
-          std::string filename(OUTPUT::GenerateGmshOutputFilename(".intersection_CUTFAIL.pos"));
-          std::ofstream file(filename.c_str());
-          ci.WritetoGmsh(file);
-          file.close();
+              std::string filename(OUTPUT::GenerateGmshOutputFilename(".intersection_CUTFAIL.pos"));
+              std::ofstream file(filename.c_str());
+              ci.WritetoGmsh(file);
+              file.close();
+            }
+            //6// throw dserror! - It is not allowed to remove this dserror (don't even do that in your local version, as the cut then just generates something undefined)!!!
+            dserror("CRITICAL ERROR: Your Intersection seems to be a special case, which is not treated right yet!!! --> to fix this the intersection code in baci has to be improved!!!");
+          }
         }
-
-        //6// throw dserror! - It is not allowed to remove this dserror (don't even do that in your local version, as the cut then just generates something undefined)!!!
-        dserror("CRITICAL ERROR: Your Intersection seems to be a special case, which is not treated right yet!!! --> to fix this the intersection code in baci has to be improved!!!");
       }
       else
       {
@@ -840,6 +855,136 @@ LINALG::Matrix<3,1> & Intersection<edgetype, sidetype, numNodesLine, numNodesSur
     }
   x_.Scale( scale_ );
   return x_;
+}
+
+template <DRT::Element::DiscretizationType edgetype,
+          DRT::Element::DiscretizationType sidetype,
+          int numNodesLine,
+          int numNodesSurface
+>
+bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::RefinedBBOverlapCheck(int maxstep)
+{
+  if (sidetype != DRT::Element::tri3)
+    dserror("RefinedBBOverlapCheck is made for distored tri3s!");
+
+  std::vector< LINALG::Matrix<3, 1> > surfpoints;
+  std::vector< LINALG::Matrix<3, 1> > linepoints;
+  LINALG::Matrix<3, 1> actpoint;
+  for (int nid = 0; nid < numNodesSurface; nid ++)
+  {
+    (side_.Nodes()[nid])->Coordinates(actpoint.A());
+    surfpoints.push_back(actpoint);
+  }
+  //find shortest edge on the surface!
+  int smallestedge;
+  {
+    LINALG::Matrix<3, 1> d1, d2, d3;
+    d1.Update(1.0, surfpoints[1],-1.0,surfpoints[2]);
+    d2.Update(1.0, surfpoints[2],-1.0,surfpoints[0]);
+    d3.Update(1.0, surfpoints[0],-1.0,surfpoints[1]);
+    std::vector<double> lengths;
+    lengths.push_back(d1.Norm2());
+    lengths.push_back(d2.Norm2());
+    lengths.push_back(d3.Norm2());
+    if (lengths[0] < lengths[1] && lengths[0] < lengths[2]) //0 is smallest
+      smallestedge = 0;
+    else if(lengths[1] < lengths[2] && lengths[1] < lengths[0]) //1 is smallest
+      smallestedge = 1;
+    else //2 is smallest plus all the rest
+      smallestedge = 2;
+  }
+
+  LINALG::Matrix<3, 1> v1(true);
+  LINALG::Matrix<3, 1> v2(true);
+  v1.Update(1.0, surfpoints[(smallestedge+1)%3],-1.0,surfpoints[smallestedge]);
+  v2.Update(1.0, surfpoints[(smallestedge+2)%3],-1.0,surfpoints[smallestedge]);
+
+  for (int nid = 0; nid < numNodesLine; nid ++)
+  {
+    (edge_.Nodes()[nid])->Coordinates(actpoint.A());
+    linepoints.push_back(actpoint);
+  }
+  LINALG::Matrix<3, 1> v3(true);
+  v3.Update(1.0, linepoints[1],-1.0,linepoints[0]);
+
+  bool overlap = false; //we have an overlap of the refined bounding boxes?
+
+  int pow_fac = 4;
+  int max_steps = pow(pow_fac,maxstep-1);
+  double dmax_steps = 1.0/max_steps;
+  int act_steps = 0;
+  uint act_boxidx = 0;
+  std::vector< std::vector< int > > overlappingidx;
+  std::vector< std::vector< int > > newoverlappingidx;
+  std::vector< int > tmpoverlappingidx;
+  tmpoverlappingidx.push_back(0); //min idx with overlap for tri3
+  tmpoverlappingidx.push_back(max_steps); //max idx with overlap tri3
+  tmpoverlappingidx.push_back(0); //min idx with overlap for line2
+  tmpoverlappingidx.push_back(max_steps); //max idx with overlap for line2
+  overlappingidx.push_back(tmpoverlappingidx);
+
+  LINALG::Matrix<3, 1> p1,p2,p3,p4,lp1,lp2;
+
+  for (int refinestep = 1; refinestep <= maxstep; refinestep++)
+  {
+    newoverlappingidx.clear();
+    act_boxidx = 0;
+    act_steps = pow(pow_fac,(maxstep - refinestep));
+
+    overlap = false;
+    for (int surfstep = 0; surfstep < max_steps; surfstep += act_steps)
+    {
+      tmpoverlappingidx.clear();
+      while ((act_boxidx + 1) < overlappingidx.size() and (overlappingidx[act_boxidx + 1])[0] < surfstep) act_boxidx++;
+      if (!(overlappingidx[act_boxidx][0] <= surfstep and overlappingidx[act_boxidx][1] >= surfstep + act_steps )) continue;
+      double alpha = surfstep*dmax_steps;
+      double alphap = (surfstep+act_steps)*dmax_steps;
+      p1.Update(1.0, surfpoints[smallestedge], alpha,v1);
+      p2.Update(1.0, surfpoints[smallestedge], alphap,v1);
+      p3.Update(1.0, surfpoints[smallestedge], alpha,v2);
+      p4.Update(1.0, surfpoints[smallestedge], alphap,v2);
+      BoundingBox SBB;
+      SBB.AddPoint(p1);
+      SBB.AddPoint(p2);
+      SBB.AddPoint(p3);
+      SBB.AddPoint(p4);
+      for (int linestep = 0; linestep < max_steps; linestep += act_steps)
+      {
+        if (!(overlappingidx[act_boxidx][2] <= linestep and overlappingidx[act_boxidx][3] >= linestep + act_steps )) continue;
+        double lalpha = linestep*dmax_steps;
+        double lalphap = (linestep+act_steps)*dmax_steps;
+        lp1.Update(1.0, linepoints[0], lalpha,v3);
+        lp2.Update(1.0, linepoints[0], lalphap,v3);
+        BoundingBox EBB;
+        EBB.AddPoint(lp1);
+        EBB.AddPoint(lp2);
+
+        if (SBB.Within(POSITIONTOL/BOXOVERLAP,EBB))
+        {
+          overlap = true;
+          if (!tmpoverlappingidx.size())
+          {
+            tmpoverlappingidx.push_back(surfstep);//min idx with overlap for tri3
+            tmpoverlappingidx.push_back(surfstep+act_steps);//max idx with overlap for tri3
+            tmpoverlappingidx.push_back(linestep);//min idx with overlap for line2
+            tmpoverlappingidx.push_back(linestep+act_steps);//max idx with overlap for line2
+          }
+          else
+          {
+            if (tmpoverlappingidx[2] > linestep) tmpoverlappingidx[2] = linestep;
+            if (tmpoverlappingidx[3] < linestep + act_steps) tmpoverlappingidx[3] = linestep + act_steps;
+          }
+        }
+      }
+      if (tmpoverlappingidx.size()) newoverlappingidx.push_back(tmpoverlappingidx);
+    }
+    overlappingidx = newoverlappingidx;
+
+    std::cout << "RefinedBBOverlapCheck: Refinement Level " << refinestep << " there is " << overlap << " overlap!" << std::endl;
+    if (!overlap)
+      break;
+  }
+  return overlap;
 }
 
 }
