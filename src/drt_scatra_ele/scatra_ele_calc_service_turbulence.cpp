@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_ele_calc_turbulence_service.cpp
+\file scatra_ele_calc_service_turbulence.cpp
 
 \brief Internal implementation of ScaTra element
 
@@ -24,7 +24,7 @@ Maintainer: Ursula Rasthofer
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_mat/newtonianfluid.H"
-#include "../drt_mat/sutherland.H"
+#include "../drt_mat/matlist.H"
 
 #include "../drt_lib/drt_dserror.H"
 
@@ -57,11 +57,22 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::scatra_apply_box_filter(
   // use one-point Gauss rule to do calculations at the element center
   volume = EvalShapeFuncAndDerivsAtEleCenter();
 
+  // get material
+  Teuchos::RCP<const MAT::Material> material = ele->Material();
+
   // get phi at integration point
   const double phinp = funct_.Dot(ephinp_[0]);
 
+  // get temperature at integration point
+  double tempnp = phinp;
+  if (material->MaterialType() == INPAR::MAT::m_matlist)
+  {
+    const MAT::MatList* actmat = static_cast<const MAT::MatList*>(material.get());
+    tempnp = funct_.Dot(ephinp_[actmat->NumMat()-1]);
+  }
+
   // density at time n+1
-  const double densnp = GetDensity(ele,ele->Material(),params,phinp);
+  const double densnp = GetDensity(ele,material,params,tempnp);
 
   // get velocities (n+alpha_F/1,i) at integration point
   LINALG::Matrix<nsd_,1> convelint(true);
@@ -173,7 +184,7 @@ const double DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::GetDensity(
     const DRT::Element*                 ele,
     Teuchos::RCP<const MAT::Material>   material,
     Teuchos::ParameterList&             params,
-    const double                        phinp
+    const double                        tempnp
     )
 {
   // initialization

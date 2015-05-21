@@ -218,7 +218,7 @@ private:
         const DRT::Element*                 ele,
         Teuchos::RCP<const MAT::Material>   material,
         Teuchos::ParameterList&             params,
-        const double                        phinp
+        const double                        tempnp
         );
 
     //! calculate viscous part of subgrid-scale velocity

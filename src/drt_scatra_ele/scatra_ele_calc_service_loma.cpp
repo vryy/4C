@@ -18,6 +18,8 @@ Maintainer: Ursula Rasthofer / Volker Gravemeier
 #include "../drt_lib/drt_utils.H"
 
 #include "../drt_mat/material.H"
+#include "../drt_mat/matlist.H"
+#include "../drt_mat/arrhenius_temp.H"
 #include "../drt_mat/sutherland.H"
 
 #include "scatra_ele.H"
@@ -196,22 +198,35 @@ const double DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::GetDensity(
     const DRT::Element*                 ele,
     Teuchos::RCP<const MAT::Material>   material,
     Teuchos::ParameterList&             params,
-    const double                        phinp
+    const double                        tempnp
     )
 {
   // initialization
   double density(0.);
 
-  if(material->MaterialType() == INPAR::MAT::m_sutherland)
+  if (material->MaterialType() == INPAR::MAT::m_sutherland)
   {
     // get thermodynamic pressure
     const double thermpress = params.get<double>("thermpress");
 
-    density = Teuchos::rcp_dynamic_cast<const MAT::Sutherland>(material)->ComputeDensity(phinp,thermpress);
+    density = Teuchos::rcp_dynamic_cast<const MAT::Sutherland>(material)->ComputeDensity(tempnp,thermpress);
   }
+  else if (material->MaterialType() == INPAR::MAT::m_matlist)
+  {
+    // get thermodynamic pressure
+    const double thermpress = params.get<double>("thermpress");
 
-  else
-    dserror("Invalid material type!");
+    const MAT::MatList* actmat = static_cast<const MAT::MatList*>(material.get());
+
+    const int lastmatid = actmat->NumMat()-1;
+
+    // compute density based on temperature and thermodynamic pressure
+    if (actmat->MaterialById(lastmatid)->MaterialType() == INPAR::MAT::m_arrhenius_temp)
+      density = static_cast<const MAT::ArrheniusTemp*>(actmat->MaterialById(lastmatid).get())->ComputeDensity(tempnp,thermpress);
+
+    else dserror("Type of material found in material list not supported, should be Arrhenius-type temperature!");
+  }
+  else dserror("Invalid material type!");
 
   return density;
 } // DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::GetDensity

@@ -31,7 +31,8 @@ MAT::PAR::ArrheniusSpec::ArrheniusSpec(
   schnum_(matdata->GetDouble("SCHNUM")),
   preexcon_(matdata->GetDouble("PREEXCON")),
   tempexp_(matdata->GetDouble("TEMPEXP")),
-  actemp_(matdata->GetDouble("ACTEMP"))
+  actemp_(matdata->GetDouble("ACTEMP")),
+  gasconst_(matdata->GetDouble("GASCON"))
 {
 }
 
@@ -117,6 +118,18 @@ void MAT::ArrheniusSpec::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+double MAT::ArrheniusSpec::ComputeViscosity(const double temp) const
+{
+  // previous implementation using "pow"-function appears to be extremely
+  // time-consuming sometimes, at least on the computing cluster
+  //const double visc = std::pow((temp/RefTemp()),1.5)*((RefTemp()+SuthTemp())/(temp+SuthTemp()))*RefVisc();
+  const double visc = sqrt((temp/RefTemp())*(temp/RefTemp())*(temp/RefTemp()))*((RefTemp()+SuthTemp())/(temp+SuthTemp()))*RefVisc();
+
+  return visc;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 double MAT::ArrheniusSpec::ComputeDiffusivity(const double temp) const
 {
   // previous implementation using "pow"-function appears to be extremely
@@ -125,6 +138,17 @@ double MAT::ArrheniusSpec::ComputeDiffusivity(const double temp) const
   const double diffus = sqrt((temp/RefTemp())*(temp/RefTemp())*(temp/RefTemp()))*((RefTemp()+SuthTemp())/(temp+SuthTemp()))*RefVisc()/SchNum();
 
   return diffus;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double MAT::ArrheniusSpec::ComputeDensity(const double temp,
+                                          const double thermpress) const
+{
+  const double density = thermpress/(GasConst()*temp);
+
+  return density;
 }
 
 

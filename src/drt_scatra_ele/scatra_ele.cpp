@@ -1,5 +1,5 @@
 /*!
-\file scatra_element.cpp
+\file scatra_ele.cpp
 \brief A finite element for simulation transport phenomena
 
 <pre>
@@ -332,6 +332,25 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
           dserror("In the context of ELCH the material Mat_matlist can be only used in combination with Mat_ion");
       }
       numdofpernode_ += 1;
+    }
+    // for problem type LOMA, only combination of Arrhenius-type species (first)
+    // and temperature (last) equation possible in this specific order
+    // in case of matlist
+    else if (DRT::Problem::Instance()->ProblemType()== prb_loma)
+    {
+      // only two-equation systems, for the time being: check!
+      if (numdofpernode_ > 2)
+        dserror("Only two-equation systems (one species and one temperature equation for Arrhenius-type systems, for the time being!");
+
+      // check that first equations are species equations and that temperature
+      // equation is last equation
+      for (int ii=0; ii<(numdofpernode_-1); ++ii)
+      {
+        if (actmat->MaterialById(actmat->MatID(ii))->MaterialType() != INPAR::MAT::m_arrhenius_spec)
+          dserror("For problem type LOMA, only combination of Arrhenius-type species (first equations) and temperature (last equation) possible in this specific order in case of matlist: one of the first equations is not a species equation!");
+      }
+      if (actmat->MaterialById(actmat->MatID(numdofpernode_-1))->MaterialType() != INPAR::MAT::m_arrhenius_temp)
+          dserror("For problem type LOMA, only combination of Arrhenius-type species (first equations) and temperature (last equation) possible in this specific order in case of matlist: last equation is not a temperature equation!");
     }
   }
   else if(mat->MaterialType() == INPAR::MAT::m_matlist_reactions) // we have a system of reactive scalars

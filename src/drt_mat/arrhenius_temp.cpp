@@ -34,7 +34,6 @@ MAT::PAR::ArrheniusTemp::ArrheniusTemp(
   preexcon_(matdata->GetDouble("PREEXCON")),
   tempexp_(matdata->GetDouble("TEMPEXP")),
   actemp_(matdata->GetDouble("ACTEMP")),
-  thermpress_(matdata->GetDouble("THERMPRESS")),
   gasconst_(matdata->GetDouble("GASCON"))
 {
 }
@@ -118,6 +117,18 @@ void MAT::ArrheniusTemp::Unpack(const std::vector<char>& data)
     dserror("Mismatch in size of data %d <-> %d",data.size(),position);
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double MAT::ArrheniusTemp::ComputeViscosity(const double temp) const
+{
+  // previous implementation using "pow"-function appears to be extremely
+  // time-consuming sometimes, at least on the computing cluster
+  //const double visc = std::pow((temp/RefTemp()),1.5)*((RefTemp()+SuthTemp())/(temp+SuthTemp()))*RefVisc();
+  const double visc = sqrt((temp/RefTemp())*(temp/RefTemp())*(temp/RefTemp()))*((RefTemp()+SuthTemp())/(temp+SuthTemp()))*RefVisc();
+
+  return visc;
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

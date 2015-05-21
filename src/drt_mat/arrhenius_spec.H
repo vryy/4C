@@ -56,6 +56,8 @@ namespace MAT
       const double tempexp_;
       /// activation temperature
       const double actemp_;
+      /// specific gas constant R
+      const double gasconst_;
 
       //@}
 
@@ -138,8 +140,14 @@ private:
     /// return copy of this material object
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new ArrheniusSpec( *this ) ); }
 
+    /// compute viscosity
+    double ComputeViscosity(const double temp) const;
+
     /// compute diffusivity
     double ComputeDiffusivity(const double temp) const;
+
+    /// compute density
+    double ComputeDensity(const double temp, const double thermpress) const;
 
     /// compute reaction coefficient
     double ComputeReactionCoeff(const double temp) const;
@@ -161,6 +169,8 @@ private:
     double TempExp() const { return params_->tempexp_; }
     /// activation temperature
     double AcTemp() const { return params_->actemp_; }
+    /// specific gas constant R
+    double GasConst() const { return params_->gasconst_; }
 
     //@}
 

@@ -673,11 +673,11 @@ void SCATRA::ScaTraTimIntImpl::ComputeDensity()
 
 
 /*----------------------------------------------------------------------*
- |  output of some mean values                               gjb   01/09|
+ | output mean values of scalar(s)                             vg 05/15 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::OutputMeanScalars(const int num)
 {
-  if (outmean_)
+  if(outmean_)
   {
     // set scalar values needed by elements
     discret_->ClearState();
@@ -687,7 +687,7 @@ void SCATRA::ScaTraTimIntImpl::OutputMeanScalars(const int num)
     eleparams.set<int>("action",SCATRA::calc_mean_scalars);
     eleparams.set("inverting",false);
 
-    //provide displacement field in case of ALE
+    // provide displacement field in case of ALE
     if (isale_)
       discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
@@ -697,22 +697,19 @@ void SCATRA::ScaTraTimIntImpl::OutputMeanScalars(const int num)
     discret_->EvaluateScalars(eleparams, scalars);
     discret_->ClearState();   // clean up
 
+    // extract domain integral
     const double domint = (*scalars)[numscal_];
 
-    // print out values
+    // print out results to screen and file
     if (myrank_ == 0)
     {
-      std::cout << "Domain integral:          " << std::setprecision (9) << domint << std::endl;
-      for (int k = 0; k < numscal_; k++)
+     // screen output
+     for (int k = 0; k < numscal_; k++)
       {
-        std::cout << "Total concentration (c_"<<k+1<<"): "<< std::setprecision (9) << (*scalars)[k] << std::endl;
-        std::cout << "Mean concentration (c_"<<k+1<<"): "<< std::setprecision (9) << (*scalars)[k]/domint << std::endl;
+        std::cout << "Mean scalar " << k+1 << ": " << std::setprecision (9) << (*scalars)[k]/domint << std::endl;
       }
-    }
 
-    // print out results to file as well
-    if (myrank_ == 0)
-    {
+     // file output
       std::stringstream number;
       number << num;
       const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()+number.str()+".meanvalues.txt";
@@ -721,20 +718,21 @@ void SCATRA::ScaTraTimIntImpl::OutputMeanScalars(const int num)
       if (Step() <= 1)
       {
         f.open(fname.c_str(),std::fstream::trunc);
-        f << "#| Step | Time | Domain integral ";
+        f << "#| Step | Time | Domain integral |";
         for (int k = 0; k < numscal_; k++)
-          f << "Total concentration (c_"<<k+1<<")| Mean concentration (c_"<<k+1<<") ";
+        {
+          f << " Total scalar " << k+1 << " |";
+          f << " Mean scalar " << k+1 << " |";
+        }
         f << "\n";
       }
-      else
-        f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+      else f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
 
-      f << Step() << " " << Time() << " ";
-      f << std::setprecision (9) << domint << " ";
+      f << Step() << " " << Time() << " " << std::setprecision (9) << domint;
       for (int k = 0; k < numscal_; k++)
       {
-        f << std::setprecision (9) << (*scalars)[k] << " ";
-        f << std::setprecision (9) << (*scalars)[k]/domint << " ";
+        f << " " << std::setprecision (9) << (*scalars)[k];
+        f << " " << std::setprecision (9) << (*scalars)[k]/domint;
       }
       f << "\n";
       f.flush();
@@ -1672,69 +1670,132 @@ bool SCATRA::ScaTraTimIntImpl::ConvergenceCheck(int          itnum,
                                                 int          itmax,
                                                 const double ittol)
 {
+  // declare bool variable for potentially stopping nonlinear iteration
   bool stopnonliniter = false;
 
-  // define L2-norm of residual, incremental scalar and scalar
-  double resnorm_L2(0.0);
-  double phiincnorm_L2(0.0);
-  double phinorm_L2(0.0);
+  // declare L2-norm of (two) residual, incremental scalar and scalar
+  double res1norm_L2(0.0);
+  double res2norm_L2(0.0);
+  double phi1incnorm_L2(0.0);
+  double phi2incnorm_L2(0.0);
+  double phi1norm_L2(0.0);
+  double phi2norm_L2(0.0);
 
-  if (numscal_>1)
-    dserror("Convergence check for two way coupled ScaTra problems, does not support multiple scalar fields. Yet!");
-
-  // for the time being, only one scalar considered for low-Mach-number flow
-  /*if (numscal_>1)
+  // distinguish whether one or two scalars are considered
+  if (numscal_ == 2)
   {
-    Teuchos::RCP<Epetra_Vector> onlyphi = splitter_->ExtractCondVector(increment_);
-    onlyphi->Norm2(&phiincnorm_L2);
+    Teuchos::RCP<Epetra_Vector> vec1 = splitter_->ExtractOtherVector(residual_);
+    Teuchos::RCP<Epetra_Vector> vec2 = splitter_->ExtractCondVector(residual_);
+    vec1->Norm2(&res1norm_L2);
+    vec2->Norm2(&res2norm_L2);
 
-    splitter_->ExtractCondVector(phinp_,onlyphi);
-    onlyphi->Norm2(&phinorm_L2);
-  }
-  else*/
+    vec1 = splitter_->ExtractOtherVector(increment_);
+    vec2 = splitter_->ExtractCondVector(increment_);
+    vec1->Norm2(&phi1incnorm_L2);
+    vec2->Norm2(&phi2incnorm_L2);
 
-  residual_ ->Norm2(&resnorm_L2);
-  increment_->Norm2(&phiincnorm_L2);
-  phinp_    ->Norm2(&phinorm_L2);
+    vec1 = splitter_->ExtractOtherVector(phinp_);
+    vec2 = splitter_->ExtractCondVector(phinp_);
+    vec1->Norm2(&phi1norm_L2);
+    vec2->Norm2(&phi2norm_L2);
 
-  // check for any INF's and NaN's
-  if (std::isnan(resnorm_L2) or
-      std::isnan(phiincnorm_L2) or
-      std::isnan(phinorm_L2))
-    dserror("At least one of the calculated vector norms is NaN.");
+    // check for any INF's and NaN's
+    if (std::isnan(res1norm_L2) or
+        std::isnan(phi1incnorm_L2) or
+        std::isnan(phi1norm_L2) or
+        std::isnan(res2norm_L2) or
+        std::isnan(phi2incnorm_L2) or
+        std::isnan(phi2norm_L2))
+      dserror("At least one of the calculated vector norms is NaN.");
 
-  if (std::isinf(resnorm_L2) or
-      std::isinf(phiincnorm_L2) or
-      std::isinf(phinorm_L2))
-    dserror("At least one of the calculated vector norms is INF.");
+    if (std::isinf(res1norm_L2) or
+        std::isinf(phi1incnorm_L2) or
+        std::isinf(phi1norm_L2) or
+        std::isinf(res2norm_L2) or
+        std::isinf(phi2incnorm_L2) or
+        std::isinf(phi2norm_L2))
+      dserror("At least one of the calculated vector norms is INF.");
 
-  // for scalar norm being (close to) zero, set to one
-  if (phinorm_L2 < 1e-5) phinorm_L2 = 1.0;
+    // for scalar norm being (close to) zero, set to one
+    if (phi1norm_L2 < 1e-5) phi1norm_L2 = 1.0;
+    if (phi2norm_L2 < 1e-5) phi2norm_L2 = 1.0;
 
-  if (myrank_==0)
-  {
-    printf("+------------+-------------------+--------------+--------------+\n");
-    printf("|- step/max -|- tol      [norm] -|- residual   -|- scalar-inc -|\n");
-    printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |",
-         itnum,itmax,ittol,resnorm_L2,phiincnorm_L2/phinorm_L2);
-    printf("\n");
-    printf("+------------+-------------------+--------------+--------------+\n");
-  }
-
-  if ((resnorm_L2 <= ittol) and
-      (phiincnorm_L2/phinorm_L2 <= ittol)) stopnonliniter=true;
-
-  // warn if itemax is reached without convergence, but proceed to next timestep
-  if ((itnum == itmax) and
-      ((resnorm_L2 > ittol) or (phiincnorm_L2/phinorm_L2 > ittol)))
-  {
-    stopnonliniter=true;
     if (myrank_==0)
     {
-      printf("|            >>>>>> not converged in itemax steps!             |\n");
-      printf("+--------------------------------------------------------------+\n");
+      printf("+------------+-------------------+---------------+---------------+---------------+---------------+\n");
+      printf("|- step/max -|- tol      [norm] -|- residual1   -|- scalar1-inc -|- residual2   -|- scalar2-inc -|\n");
+      printf("|  %3d/%3d   | %10.3E[L_2 ]  |  %10.3E   |  %10.3E   |  %10.3E   |  %10.3E   |",
+           itnum,itmax,ittol,res1norm_L2,phi1incnorm_L2/phi1norm_L2,res2norm_L2,phi2incnorm_L2/phi2norm_L2);
+      printf("\n");
+      printf("+------------+-------------------+---------------+---------------+---------------+---------------+\n");
+    }
+
+     if ((res1norm_L2 <= ittol) and
+        (phi1incnorm_L2/phi1norm_L2 <= ittol) and
+         (res2norm_L2 <= ittol) and
+        (phi2incnorm_L2/phi2norm_L2 <= ittol))
+       stopnonliniter=true;
+
+    // warn if itemax is reached without convergence, but proceed to next timestep
+    if ((itnum == itmax) and
+        ((res1norm_L2 > ittol) or (phi1incnorm_L2/phi1norm_L2 > ittol) or
+         (res2norm_L2 > ittol) or (phi2incnorm_L2/phi2norm_L2 > ittol)))
+    {
+      stopnonliniter=true;
+      if (myrank_==0)
+      {
+        printf("|            >>>>>> not converged in itemax steps!             |\n");
+        printf("+--------------------------------------------------------------+\n");
+      }
     }
   }
+  else if (numscal_ == 1)
+  {
+    // compute L2-norm of residual, incremental scalar and scalar
+    residual_ ->Norm2(&res1norm_L2);
+    increment_->Norm2(&phi1incnorm_L2);
+    phinp_    ->Norm2(&phi1norm_L2);
+
+    // check for any INF's and NaN's
+    if (std::isnan(res1norm_L2) or
+        std::isnan(phi1incnorm_L2) or
+        std::isnan(phi1norm_L2))
+      dserror("At least one of the calculated vector norms is NaN.");
+
+    if (std::isinf(res1norm_L2) or
+        std::isinf(phi1incnorm_L2) or
+        std::isinf(phi1norm_L2))
+      dserror("At least one of the calculated vector norms is INF.");
+
+    // for scalar norm being (close to) zero, set to one
+    if (phi1norm_L2 < 1e-5) phi1norm_L2 = 1.0;
+
+    if (myrank_==0)
+    {
+      printf("+------------+-------------------+--------------+--------------+\n");
+      printf("|- step/max -|- tol      [norm] -|- residual   -|- scalar-inc -|\n");
+      printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |",
+           itnum,itmax,ittol,res1norm_L2,phi1incnorm_L2/phi1norm_L2);
+      printf("\n");
+      printf("+------------+-------------------+--------------+--------------+\n");
+    }
+
+     if ((res1norm_L2 <= ittol) and
+        (phi1incnorm_L2/phi1norm_L2 <= ittol)) stopnonliniter=true;
+
+    // warn if itemax is reached without convergence, but proceed to next timestep
+    if ((itnum == itmax) and
+        ((res1norm_L2 > ittol) or (phi1incnorm_L2/phi1norm_L2 > ittol)))
+    {
+      stopnonliniter=true;
+      if (myrank_==0)
+      {
+        printf("|            >>>>>> not converged in itemax steps!             |\n");
+        printf("+--------------------------------------------------------------+\n");
+      }
+    }
+  }
+  else dserror("ScaTra convergence check for number of scalars other than one or two not yet supported!");
 
   return stopnonliniter;
 } // SCATRA::ScaTraTimIntImplicit::ConvergenceCheck

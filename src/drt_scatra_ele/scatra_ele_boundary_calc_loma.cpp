@@ -261,9 +261,9 @@ const double DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::GetDensity(
   {
     const MAT::MatList* actmat = static_cast<const MAT::MatList*>(material.get());
 
-    const int matid = actmat->MatID(0);
+    const int lastmatid = actmat->NumMat()-1;
 
-    if(actmat->MaterialById(matid)->MaterialType() == INPAR::MAT::m_arrhenius_temp)
+    if (actmat->MaterialById(lastmatid)->MaterialType() == INPAR::MAT::m_arrhenius_temp)
     {
       // compute temperature values at nodes (always last scalar)
       LINALG::Matrix<my::nen_,1> tempnod(true);
@@ -275,11 +275,10 @@ const double DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::GetDensity(
       const double temp = my::funct_.Dot(tempnod);
 
       // compute density based on temperature and thermodynamic pressure
-      density = static_cast<const MAT::ArrheniusTemp*>(actmat->MaterialById(matid).get())->ComputeDensity(temp,thermpress_);
+      density = static_cast<const MAT::ArrheniusTemp*>(actmat->MaterialById(lastmatid).get())->ComputeDensity(temp,thermpress_);
     }
 
-    else
-      dserror("type of material found in material list is not supported");
+    else dserror("Type of material found in material list not supported, should be Arrhenius-type temperature!");
 
     break;
   }

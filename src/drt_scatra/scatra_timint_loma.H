@@ -96,9 +96,6 @@ namespace SCATRA
     //! return time derivative of thermo. press. at time step n+alpha_M
     virtual double ThermPressDtAm() = 0;
 
-    //! output mean values of scalar(s)
-    void OutputMeanScalars(const int num=0);
-
     protected:
 
     //! add parameters depending on the problem, i.e., loma, level-set, ...

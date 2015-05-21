@@ -2585,23 +2585,58 @@ void SCATRA::ScaTraTimIntImpl::LinearSolve()
     UpdateIter(increment_);
 
     //--------------------------------------------- compute norm of increment
-    double incnorm_L2(0.0);
-    double scalnorm_L2(0.0);
-    increment_->Norm2(&incnorm_L2);
-    phinp_    ->Norm2(&scalnorm_L2);
-
-    if (myrank_ == 0)
+    // distinguish whether one or two scalars are considered
+    if (numscal_ == 2)
     {
-      printf("+-------------------------------+-------------+\n");
+      double inc1norm_L2(0.0);
+      double inc2norm_L2(0.0);
+      double scal1norm_L2(0.0);
+      double scal2norm_L2(0.0);
+
+      Teuchos::RCP<Epetra_Vector> vec1 = splitter_->ExtractOtherVector(increment_);
+      Teuchos::RCP<Epetra_Vector> vec2 = splitter_->ExtractCondVector(increment_);
+      vec1->Norm2(&inc1norm_L2);
+      vec2->Norm2(&inc2norm_L2);
+
+      vec1 = splitter_->ExtractOtherVector(phinp_);
+      vec2 = splitter_->ExtractCondVector(phinp_);
+      vec1->Norm2(&scal1norm_L2);
+      vec2->Norm2(&scal2norm_L2);
+
+      if (myrank_ == 0)
       {
-        if (scalnorm_L2 > EPS10)
-          printf("|  relative increment (L2 norm) | %10.3E  |",incnorm_L2/scalnorm_L2);
-        else // prevent division by an almost zero value
-          printf("|  absolute increment (L2 norm) | %10.3E  |\n",incnorm_L2);
+        printf("+----------------------------------------------------+-------------+-------------+\n");
+        {
+          if ((scal1norm_L2 > EPS10) and (scal2norm_L2 > EPS10))
+            printf("|  relative increments for scalars 1 and 2 (L2 norm) | %10.3E  | %10.3E  |",inc1norm_L2/scal1norm_L2,inc2norm_L2/scal2norm_L2);
+          else // prevent division by an almost zero value
+            printf("|  absolute increments for scalars 1 and 2 (L2 norm) | %10.3E  | %10.3E  |\n",inc1norm_L2,inc2norm_L2);
+        }
+        printf(" (ts=%10.3E,te=%10.3E)\n",dtsolve_,dtele_);
+        printf("+----------------------------------------------------+-------------+-------------+\n");
       }
-      printf(" (ts=%10.3E,te=%10.3E)\n",dtsolve_,dtele_);
-      printf("+-------------------------------+-------------+\n");
     }
+    else if (numscal_ == 1)
+    {
+      double incnorm_L2(0.0);
+      double scalnorm_L2(0.0);
+      increment_->Norm2(&incnorm_L2);
+      phinp_    ->Norm2(&scalnorm_L2);
+
+      if (myrank_ == 0)
+      {
+        printf("+-------------------------------+-------------+\n");
+        {
+          if (scalnorm_L2 > EPS10)
+            printf("|  relative increment (L2 norm) | %10.3E  |",incnorm_L2/scalnorm_L2);
+          else // prevent division by an almost zero value
+            printf("|  absolute increment (L2 norm) | %10.3E  |\n",incnorm_L2);
+        }
+        printf(" (ts=%10.3E,te=%10.3E)\n",dtsolve_,dtele_);
+        printf("+-------------------------------+-------------+\n");
+      }
+    }
+    else dserror("ScaTra computation of norm of increment for number of scalars other than one or two not yet supported!");
   }
   else
   {

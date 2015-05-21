@@ -32,17 +32,8 @@ Maintainer: Andreas Ehrl
 
 // material headers
 #include "../drt_mat/scatra_mat.H"
-#include "../drt_mat/myocard.H"
-#include "../drt_mat/mixfrac.H"
-#include "../drt_mat/sutherland.H"
-#include "../drt_mat/arrhenius_spec.H"
-#include "../drt_mat/arrhenius_temp.H"
-#include "../drt_mat/arrhenius_pv.H"
-#include "../drt_mat/ferech_pv.H"
 #include "../drt_mat/ion.H"
 #include "../drt_mat/fourieriso.H"
-#include "../drt_mat/thermostvenantkirchhoff.H"
-#include "../drt_mat/yoghurt.H"
 #include "../drt_mat/matlist.H"
 
 #include "../drt_mat/elchmat.H"

@@ -86,8 +86,11 @@ void SCATRA::ScaTraTimIntLoma::SetInitialThermPressure()
 
     thermpressn_ = actmat->thermpress_;
   }
-  else thermpressn_ = 0.0;
-
+  else
+  {
+    dserror("No Sutherland material found for initial setting of thermodynamic pressure!");
+    //thermpressn_ = 0.0;
+  }
 
   // initialize also value at n+1
   // (computed if not constant, otherwise prescribed value remaining)
@@ -296,62 +299,3 @@ void SCATRA::ScaTraTimIntLoma::AddProblemSpecificParametersAndVectors(
   AddThermPressToParameterList(params);
   return;
 }
-
-
-/*----------------------------------------------------------------------*
- | output mean values of scalar(s)                           fang 02/15 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntLoma::OutputMeanScalars(const int num)
-{
-  if(outmean_)
-  {
-    // set scalar values needed by elements
-    discret_->ClearState();
-    discret_->SetState("phinp",phinp_);
-    // set action for elements
-    Teuchos::ParameterList eleparams;
-    eleparams.set<int>("action",SCATRA::calc_mean_scalars);
-    eleparams.set("inverting",false);
-
-    //provide displacement field in case of ALE
-    if (isale_)
-      discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
-
-    // evaluate integrals of scalar(s) and domain
-    Teuchos::RCP<Epetra_SerialDenseVector> scalars
-    = Teuchos::rcp(new Epetra_SerialDenseVector(numscal_+1));
-    discret_->EvaluateScalars(eleparams, scalars);
-    discret_->ClearState();   // clean up
-
-    const double domint = (*scalars)[numscal_];
-
-    // print out values
-    if (myrank_ == 0)
-      std::cout << "Mean scalar: " << std::setprecision (9) << (*scalars)[0]/domint << std::endl;
-
-    // print out results to file as well
-    if (myrank_ == 0)
-    {
-      std::stringstream number;
-      number << num;
-      const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()+number.str()+".meanvalues.txt";
-
-      std::ofstream f;
-      if (Step() <= 1)
-      {
-        f.open(fname.c_str(),std::fstream::trunc);
-        f << "#| Step | Time | Mean scalar |\n";
-      }
-      else
-        f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
-
-      f << Step() << " " << Time() << " ";
-      f << (*scalars)[0]/domint << "\n";
-      f.flush();
-      f.close();
-    }
-
-  } // if(outmean_)
-
-  return;
-} // SCATRA::ScaTraTimIntLoma::OutputMeanScalars

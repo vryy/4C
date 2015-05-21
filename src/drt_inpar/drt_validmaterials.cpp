@@ -338,6 +338,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"PREEXCON","pre-exponential constant (1/s)");
     AddNamedReal(m,"TEMPEXP","exponent of temperature dependence");
     AddNamedReal(m,"ACTEMP","activation temperature (K)");
+    AddNamedReal(m,"GASCON","specific gas constant R (J/(kg*K))");
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -360,7 +361,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"PREEXCON","pre-exponential constant (1/s)");
     AddNamedReal(m,"TEMPEXP","exponent of temperature dependence");
     AddNamedReal(m,"ACTEMP","activation temperature (K)");
-    AddNamedReal(m,"THERMPRESS","(initial) thermodynamic pressure (J/m^3)");
     AddNamedReal(m,"GASCON","specific gas constant R (J/(kg*K))");
 
     AppendMaterialDefinition(matlist,m);

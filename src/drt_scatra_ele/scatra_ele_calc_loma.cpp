@@ -1,6 +1,6 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file scatra_ele_calc_loma.H
+\file scatra_ele_calc_loma.cpp
 
 \brief Element evaluations for loma problems
 
@@ -207,7 +207,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatSutherland(
     = Teuchos::rcp_dynamic_cast<const MAT::Sutherland>(material);
 
   if(my::numdofpernode_!=1)
-    dserror("more than 1 dof per node for progress-variable material!");
+    dserror("more than 1 dof per node for Sutherland material!");
 
   // get specific heat capacity at constant pressure
   shc_ = actmat->Shc();
@@ -215,9 +215,9 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatSutherland(
   // compute temperature at n+1 or n+alpha_F
   const double tempnp = my::funct_.Dot(my::ephinp_[0]);
   if (tempnp < 0.0)
-    dserror("Negative temperature occurred! Sutherland's law is defined for positive temperatures, only!");
+    dserror("Negative temperature, but Sutherland's law only defined for positive temperatures!");
 
-  // compute diffusivity according to material sutherland
+  // compute diffusivity according to Sutherland's law
   my::diffmanager_->SetIsotropicDiff(actmat->ComputeDiffusivity(tempnp),k);
 
   // compute density at n+1 or n+alpha_F based on temperature
@@ -338,23 +338,46 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatArrheniusSpec(
   double&                                 visc      //!< fluid viscosity
   )
 {
-  if (k != my::numscal_-1)
-    dserror("Temperature equation always needs to be the last variable for reactive equation system!");
-
   const Teuchos::RCP<const MAT::ArrheniusSpec>& actmat
     = Teuchos::rcp_dynamic_cast<const MAT::ArrheniusSpec>(material);
 
-  // compute temperature
+  // compute temperature at n+1 or n+alpha_F
   const double tempnp = my::funct_.Dot(my::ephinp_[my::numscal_-1]);
 
-  // compute diffusivity according to
+  // compute diffusivity according to Sutherland's law
   my::diffmanager_->SetIsotropicDiff(actmat->ComputeDiffusivity(tempnp),k);
 
-  // compute reaction coefficient for species equation
-  const double reacoef = actmat->ComputeReactionCoeff(tempnp);
+  // compute density at n+1 or n+alpha_F based on temperature
+  // and thermodynamic pressure
+  densnp = actmat->ComputeDensity(tempnp,thermpressnp_);
 
-  // set different reaction terms in the reaction manager
-  my::reamanager_->SetReaCoeff(reacoef,0);
+  if (my::scatraparatimint_->IsGenAlpha())
+  {
+    // compute density at n+alpha_M
+    const double tempam = my::funct_.Dot(ephiam_[my::numscal_-1]);
+    densam = actmat->ComputeDensity(tempam,thermpressam_);
+
+    if (not my::scatraparatimint_->IsIncremental())
+    {
+      // compute density at n (thermodynamic pressure approximated at n+alpha_M)
+      const double tempn = my::funct_.Dot(my::ephin_[my::numscal_-1]);
+      densn = actmat->ComputeDensity(tempn,thermpressam_);
+    }
+    else densn = 1.0;
+  }
+  else densam = densnp;
+
+  // factor for density gradient
+  densgradfac_[k] = -densnp/tempnp;
+
+  // compute reaction coefficient for species equation and set in reaction manager
+  const double reacoef = actmat->ComputeReactionCoeff(tempnp);
+  my::reamanager_->SetReaCoeff(reacoef,k);
+
+  // get also fluid viscosity if subgrid-scale velocity is to be included
+  // or multifractal subgrid-scales are used
+  if (my::scatrapara_->RBSubGrVel() or my::scatrapara_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
+    visc = actmat->ComputeViscosity(tempnp);
 
   return;
 }
@@ -373,7 +396,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatArrheniusTemp(
   )
 {
   if (k != my::numscal_-1)
-    dserror("Temperature equation always needs to be the last variable for reactive equation system!");
+    dserror("Temperature always needs to be the last variable for this Arrhenius-type system!");
 
   const Teuchos::RCP<const MAT::ArrheniusTemp>& actmat
     = Teuchos::rcp_dynamic_cast<const MAT::ArrheniusTemp>(material);
@@ -381,15 +404,19 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatArrheniusTemp(
   // get specific heat capacity at constant pressure
   shc_ = actmat->Shc();
 
-  // compute species mass fraction and temperature
-  const double spmf   = my::funct_.Dot(my::ephinp_[0]);
+  // compute species mass fraction and temperature at n+1 or n+alpha_F
+  // (only two-equation systems, for the time being, such that only one species
+  //  mass fraction possible)
+  const double spmfnp = my::funct_.Dot(my::ephinp_[0]);
   const double tempnp = my::funct_.Dot(my::ephinp_[k]);
+  if (tempnp < 0.0)
+    dserror("Negative temperature, but Sutherland's law only defined for positive temperatures!");
 
-  // compute diffusivity according to
+  // compute diffusivity according to Sutherland's law
   my::diffmanager_->SetIsotropicDiff(actmat->ComputeDiffusivity(tempnp),k);
-  //diffus_[k] = actsinglemat->ComputeDiffusivity(tempnp);
 
-  // compute density based on temperature and thermodynamic pressure
+  // compute density at n+1 or n+alpha_F based on temperature
+  // and thermodynamic pressure
   densnp = actmat->ComputeDensity(tempnp,thermpressnp_);
 
   if (my::scatraparatimint_->IsGenAlpha())
@@ -412,10 +439,14 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatArrheniusTemp(
   densgradfac_[k] = -densnp/tempnp;
 
   // compute sum of reaction rates for temperature equation divided by specific
-  // heat capacity -> will be considered a right-hand side contribution
-  const double reatemprhs = actmat->ComputeReactionRHS(spmf,tempnp)/shc_;
+  // heat capacity -> will be considered as a right-hand side contribution
+  const double reatemprhs = actmat->ComputeReactionRHS(spmfnp,tempnp);
+  Teuchos::rcp_dynamic_cast<ScaTraEleReaManagerLoma>(my::reamanager_)->SetReaTempRhs(reatemprhs,k);
 
-  Teuchos::rcp_dynamic_cast<ScaTraEleReaManagerLoma>(my::reamanager_)->SetReaTempRhs(reatemprhs,0);
+  // get also fluid viscosity if subgrid-scale velocity is to be included
+  // or multifractal subgrid-scales are used
+  if (my::scatrapara_->RBSubGrVel() or my::scatrapara_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
+    visc = actmat->ComputeViscosity(tempnp);
 
   return;
 }
@@ -557,13 +588,25 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::GetRhsInt(
   // get reatemprhs of species k from the reaction manager
   const double reatemprhs = Teuchos::rcp_dynamic_cast<ScaTraEleReaManagerLoma>(my::reamanager_)->GetReaTempRhs(k);
 
-  // compute rhs containing bodyforce (divided by specific heat capacity) and,
-  // for temperature equation, the time derivative of thermodynamic pressure,
-  // if not constant, and for temperature equation of a reactive
-  // equation system, the reaction-rate term
-  rhsint = my::bodyforce_[k].Dot(my::funct_)/shc_;
-  rhsint += thermpressdt_/shc_;
-  rhsint += densnp*reatemprhs;
+  // Three cases have to be distinguished for computing the rhs:
+  // 1) reactive temperature equation: reaction-rate term
+  //    (divided by specific heat capacity)
+  // 2) non-reactive temperature equation: heat-source term and
+  //    temporal derivative of thermodynamic pressure
+  //    (both divided by specific heat capacity)
+  // 3) species equation: only potential body force (usually zero)
+  const double tol=1e-8;
+  if ((reatemprhs < (0.0-tol)) or (reatemprhs > (0.0+tol)))
+    rhsint = densnp*reatemprhs/shc_;
+  else
+  {
+    if (k == my::numscal_-1)
+    {
+      rhsint  = my::bodyforce_[k].Dot(my::funct_)/shc_;
+      rhsint += thermpressdt_/shc_;
+    }
+    else rhsint  = my::bodyforce_[k].Dot(my::funct_);
+  }
 
   return;
 } // GetRhsInt
