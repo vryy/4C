@@ -404,8 +404,21 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Evaluate(DRT::ELEMENTS::Fluid*
           intpoints_=intpoints_tmp;
           break;
         }
+        if(fldparatimint_->IsNewOSTImplementation()) //To add enhanced Gaussrule to elements at time n as well.
+        {
+          for(int i=0; i<nen_; i++)
+          {
+            if(abs(escaam_(i,0)) <= epsilon)
+            {
+              //Intpoints are changed. For sine and cosine, this new rule is utilized for error computation compared to analytical solution.
+              DRT::UTILS::GaussIntegration intpoints_tmp(distype, ele->Degree()*2+3);
+              intpoints_=intpoints_tmp;
+              break;
+            }
+          }
+        }//fldparatimint_->IsNewOSTImplementation()
       }
-    }
+    } //fldpara_->GetEnhancedGaussRuleInInterface()
   } //fldpara_->GetIncludeSurfaceTension()
 
   eporo_.Clear();

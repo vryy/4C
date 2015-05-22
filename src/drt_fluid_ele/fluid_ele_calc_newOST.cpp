@@ -1,12 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fluid_ele_calc.cpp
+\file fluid_ele_calc_newOST.cpp
 
 \brief main file containing routines for calculation of fluid element
 
 <pre>
-Maintainer: Ursula Rasthofer & Volker Gravemeier
-            {rasthofer,vgravem}@lnm.mw.tum.de
+Maintainer: Magnus Winter & Volker Gravemeier
+            {winter,vgravem}@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236/-245
 </pre>
@@ -1311,8 +1311,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::ComputeSubgridScaleVelocityOS
           momres_old_(rr) -= (densaf_*bodyforce_(rr)    +  densn_*quotfac*bodyforcen_(rr));
           momres_old_(rr) += reacoeff_*(velint_(rr)     +  quotfac*velintn_(rr));  //TODO: Time dependant reacoef.
           momres_old_(rr) += (densaf_*conv_old_(rr)     +  densn_*quotfac*conv_oldn_(rr));
-          momres_old_(rr) += -2*(visceff_*visc_old_(rr) +  viscn_*quotfac*visc_oldn_(rr)); //TODO: Fix viscosity for time step (n)
-          momres_old_(rr) += generalbodyforce_(rr)      +  quotfac*generalbodyforcen_(rr);
+          momres_old_(rr) -= 2.0*(visceff_*visc_old_(rr) +  viscn_*quotfac*visc_oldn_(rr));
+          momres_old_(rr) -= generalbodyforce_(rr)      +  quotfac*generalbodyforcen_(rr);
           if(not fldparatimint_->IsFullImplPressureAndCont()){
             momres_old_(rr) += gradp_(rr)                 +  quotfac*gradpn_(rr);
           }
