@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file Cavitationfluid.H
+\file cavitationfluid.H
 
 <pre>
 Maintainer: Georg Hammerl
