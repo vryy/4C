@@ -26,6 +26,7 @@ bool DRT::ELEMENTS::Spring3::ReadElement(const std::string& eletype,
   linedef->ExtractInt("MAT",material);
   SetMaterial(material);
 
+  // Gruesse aus Barcelona, Martin und Dhruba
   linedef->ExtractDouble("CROSS",crosssec_);
 
   return true;
