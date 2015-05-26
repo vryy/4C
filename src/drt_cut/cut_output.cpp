@@ -86,6 +86,8 @@ void GEO::CUT::OUTPUT::GmshSideDump( std::ofstream & file, const Side* s )
   char elementtype;
   switch ( nodes.size() )
   {
+  case 0:
+    return; //I'm a Levelset Side - do nothing!
   case 3:
     elementtype = 'T';
     break;
