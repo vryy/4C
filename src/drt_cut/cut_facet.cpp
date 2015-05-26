@@ -1137,6 +1137,29 @@ void GEO::CUT::Facet::CornerPointsLocal( Element *elem1, std::vector<std::vector
   }
 }
 
+/*---------------------------------------------------------------------------------------------------------*
+ * Return the global coordinates all of its corner points in order                                 sudhakar 05/15
+ *---------------------------------------------------------------------------------------------------------*/
+const std::vector<std::vector<double> > GEO::CUT::Facet::CornerPointsGlobal( Element *elem1, bool shadow )
+{
+  const std::vector<Point*> & corners = CornerPoints();
+  int mm=0;
+  std::vector<std::vector<double> >cornersLocal;
+  for(std::vector<Point*>::const_iterator k=corners.begin();k!=corners.end();k++)
+  {
+      std::vector<double> pt_local(3);
+      const Point* po = *k;
+      const double * coords = po->X();
+
+      for( unsigned dim=0; dim<3; dim++ )
+        pt_local[dim] = coords[dim];
+
+      cornersLocal.push_back(pt_local);
+      mm++;
+  }
+  return cornersLocal;
+}
+
 /*-----------------------------------------------------------------------*
           Split the facet into a number of tri and quad cells
 *------------------------------------------------------------------------*/

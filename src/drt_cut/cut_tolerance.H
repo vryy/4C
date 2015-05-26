@@ -55,12 +55,19 @@
 // We may get volumecells with all facets on a plane
 // in such case directdivergence may produce negative volume, because it works only for closed geometries
 // if volume of cell is less than this, we do not generate gauss rules
-#define REF_VOL_DIRDIV 1e-6
+#define REF_VOL_DIRDIV 1e-26
 
 #define SELF_CUT_POS_TOL 1e-10
 
 // If the area of boundarycell is less than this value, then it is eliminated from boundary integration
 // Such small area can lead to zero or a very small negative value in the boundary cell mapping's Jacobian
 #define REF_AREA_BCELL 1e-30
+
+// If the distance of the line between the main Gauss points and its projected point is less than
+// this value, then this main Gauss point is not considered
+#define JAC_LINE_TOL 1e-14
+
+// Construct the integration rules directly on the local coordinate system of the element
+#define LOCAL
 
 #endif

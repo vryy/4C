@@ -140,6 +140,11 @@ public:
   void CornerPointsLocal( Element *elem1, std::vector<std::vector<double> > & cornersLocal, bool shadow = false );
 
   /*!
+  \brief Return the global coordinates all of its corner points in order
+   */
+  const std::vector<std::vector<double> > CornerPointsGlobal( Element *elem1, bool shadow = false );
+
+  /*!
   \brief Get the triangulated sides of this facet
    */
   const std::vector<std::vector<Point*> > & Triangulation() const { return triangulation_; }

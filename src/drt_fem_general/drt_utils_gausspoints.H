@@ -2,6 +2,7 @@
 #define DRT_UTILS_GAUSSPOINTS_H
 
 #include "drt_utils_fem_shapefunctions.H"
+#include "../drt_geometry/element_coordtrafo.H"
 
 namespace DRT
 {
@@ -392,14 +393,14 @@ public:
 
     GaussIntegration intpoints( gp );
 
-    ProjectGaussPoints<distype>( xie, intpoints, cgp );
+    ProjectGaussPointsLocalToGlobal<distype>( xie, intpoints, cgp );
 
     return cgp;
   }
 
-  /// Project the given Gauss integration rule over the given element coordinates
+  /// Project the given Gauss points in local coordinate system of the element to its global coordinate system
   template <DRT::Element::DiscretizationType distype>
-  static void ProjectGaussPoints( const LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim,
+  static void ProjectGaussPointsLocalToGlobal( const LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim,
                                         DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement> & xie,
                                   GaussIntegration& intpoints,
                                   Teuchos::RCP<CollectedGaussPoints>& cgp
@@ -438,6 +439,50 @@ public:
     }
   }
 
+  /// Project the given Gauss points in global coordinate system of the element to its local coordinate system
+  template <DRT::Element::DiscretizationType distype>
+  static Teuchos::RCP<GaussPoints> ProjectGaussPointsGlobalToLocal( const LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim,
+                                                                    DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement> & xie,
+                                                                    GaussIntegration& intpoints )
+  {
+    const int nsd = DRT::UTILS::DisTypeToDim<distype>::dim;
+    const int nen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+
+    LINALG::Matrix<nen,1> funct;
+    LINALG::Matrix<nsd,nen> deriv;
+
+    LINALG::Matrix<nsd,nsd> xjm;
+    LINALG::Matrix<nsd,1> xi;
+
+    Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> cgp = Teuchos::rcp( new
+                                    DRT::UTILS::CollectedGaussPoints( intpoints.NumPoints() ) );
+
+    for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints.begin();
+              iquad!=intpoints.end();
+              ++iquad )
+    {
+      LINALG::Matrix<nsd,1> glo( iquad.Point() );
+
+      bool insideele = GEO::currentToVolumeElementCoordinates(distype, xie, glo, xi);
+      if( not insideele )
+      {
+        dserror("Given Gauss points not inside the element?");
+      }
+
+      // cell shape functions and their first derivatives
+      DRT::UTILS::shape_function<distype>(xi,funct);
+      DRT::UTILS::shape_function_deriv1<distype>(xi,deriv);
+
+      // get transposed of the jacobian matrix d x / d \xi
+      // xjm(i,j) = deriv(i,k)*xyze(j,k)
+      xjm.MultiplyNT( deriv, xie );
+
+      double det = xjm.Determinant();
+
+      cgp->Append( xi, iquad.Weight()/det );
+    }
+    return cgp;
+  }
 
 private:
 

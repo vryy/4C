@@ -42,7 +42,6 @@ class LineIntegration
     /*!
     \brief Transform the Gauss integration point available in the limit (-1,1) to the actual line coordinates
      */
-    template <DRT::Element::DiscretizationType celldistype>
     void Transform( const LINALG::Matrix<2,2> &xyze,
                     const double              & eta,
                     LINALG::Matrix<2,1>       & x_gp_lin,
@@ -70,7 +69,6 @@ class LineIntegration
 
     //! over which plane (x, y or z) boundarycell has to be projected when performing boundarycell integration
     std::string intType_;
-                
 };
 
 #endif

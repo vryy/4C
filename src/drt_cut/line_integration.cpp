@@ -53,7 +53,7 @@ double LineIntegration::integrate_line()
       double weight = iquad.Weight();
       LINALG::Matrix<2,1>normaltemp,actCoord;
       double drs=0.0;
-      Transform<DRT::Element::line2>(end_pts_,eta(0,0),actCoord,normaltemp,drs);
+      Transform(end_pts_,eta(0,0),actCoord,normaltemp,drs);
 
       if(bcellInt_==false)  //integration over volumecell
       {
@@ -82,21 +82,20 @@ double LineIntegration::integrate_line()
 /*---------------------------------------------------------------------------------------------------------------------*
 *     Transform the Gaussian point coordinates and weight from (-1,1) interval to actual coordinate of the lines       *
 *----------------------------------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType celldistype>
 void LineIntegration::Transform( const LINALG::Matrix<2,2> &xyze,
                 const double              & eta,
                 LINALG::Matrix<2,1>       & x_gp_lin,
                 LINALG::Matrix<2,1>       & normal,
                 double                    & drs)
 {
-    const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<celldistype>::numNodePerElement;
+    const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::line2>::numNodePerElement;
     LINALG::Matrix<numnodes,1> funct;
     LINALG::Matrix<1,numnodes> deriv;
     LINALG::Matrix<1,1> metrictensor;
 
-    DRT::UTILS::shape_function_1D( funct, eta, celldistype );
-    DRT::UTILS::shape_function_1D_deriv1( deriv, eta, celldistype );
-    DRT::UTILS::ComputeMetricTensorForBoundaryEle<celldistype>( xyze, deriv, metrictensor, drs, &normal );
+    DRT::UTILS::shape_function_1D( funct, eta, DRT::Element::line2 );
+    DRT::UTILS::shape_function_1D_deriv1( deriv, eta, DRT::Element::line2 );
+    DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::line2>( xyze, deriv, metrictensor, drs, &normal );
 
     x_gp_lin.Multiply(xyze, funct);
 

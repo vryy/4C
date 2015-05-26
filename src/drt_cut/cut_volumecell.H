@@ -86,6 +86,11 @@ public:
   void DirectDivergenceGaussRule(Element *elem, Mesh & mesh, bool include_inner, INPAR::CUT::BCellGaussPts BCellgausstype );
 
   /*!
+  \brief Project the integration rule generated w.r to the global coordinates of the element to its local coordinate system
+   */
+  void ProjectGaussPointsToLocalCoodinates();
+
+  /*!
   \brief Generate boundarycells for the cut facets. This is used when volumecells are treated by momentfitting and boundarycells
   are by tessellation
    */

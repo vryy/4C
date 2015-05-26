@@ -57,7 +57,7 @@ namespace GEO
         \brief Geometry of volumecell, reference facet, main and internal gauss points for gmsh output.
          */
         void DivengenceCellsGMSH( const DRT::UTILS::GaussIntegration & gpv,
-                                  const std::vector<DRT::UTILS::GaussIntegration> intGRule  );
+                                  Teuchos::RCP<DRT::UTILS::GaussPoints>& gpmain );
 
       private:
 

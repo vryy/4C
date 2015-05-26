@@ -94,22 +94,22 @@ namespace GEO
         /*!
         \brief Generate boundary cells for the considered facet. May need to perform triangulatio
         */
-        void GenerateDivergenceCells(bool divergenceRule,Mesh &mesh,plain_boundarycell_set & divCells);
+        void GenerateDivergenceCells(bool divergenceRule,Mesh &mesh, std::list<Teuchos::RCP<BoundaryCell> > & divCells);
 
         /*!
         \brief Temporarily create Tri3 cell. This is not stored in Mesh
         */
-        void TemporaryTri3(const std::vector<Point*>& corners, plain_boundarycell_set& divCells);
+        void TemporaryTri3(const std::vector<Point*>& corners, std::list<Teuchos::RCP<BoundaryCell> >& divCells);
 
         /*!
         \brief Temporarily create Quad4 cell. This is not stored in Mesh
         */
-        void TemporaryQuad4(const std::vector<Point*>& corners, plain_boundarycell_set& divCells);
+        void TemporaryQuad4(const std::vector<Point*>& corners, std::list<Teuchos::RCP<BoundaryCell> >& divCells);
 
         /*!
         \brief Check whether the facet area calculated by splitting and triangulation are the same
          */
-        void DebugAreaCheck( plain_boundarycell_set & divCells,
+        void DebugAreaCheck( std::list<Teuchos::RCP<BoundaryCell> > & divCells,
                              std::string alreadyDone,
                              Mesh &mesh );
 

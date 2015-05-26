@@ -59,7 +59,7 @@ Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::ElementHandle::CreateProjected(
   Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> cgp = Teuchos::rcp( new DRT::UTILS::CollectedGaussPoints( gp_ic->NumPoints() ) );
 
   // Perform actual mapping to correct local coordinates
-  DRT::UTILS::GaussIntegration::ProjectGaussPoints<distype> ( xie, intpoints, cgp );
+  DRT::UTILS::GaussIntegration::ProjectGaussPointsLocalToGlobal<distype> ( xie, intpoints, cgp );
   return cgp;
 }
 

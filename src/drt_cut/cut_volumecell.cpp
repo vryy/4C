@@ -629,8 +629,12 @@ void GEO::CUT::VolumeCell::DumpGmsh( std::ofstream& file )
     for( unsigned j=0;j<facete.size();j++ )
     {
       Facet * ref = facete[j];
+#ifdef LOCAL
       std::vector<std::vector<double> > corners;
       ref->CornerPointsLocal(ParentElement(), corners);
+#else
+      const std::vector<std::vector<double> > corners = ref->CornerPointsGlobal(ParentElement());
+#endif
       for( unsigned i=0;i<corners.size();i++ )
       {
         const std::vector<double> coords1 = corners[i];
@@ -1086,6 +1090,38 @@ Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::VolumeCell::GenerateInternalGaus
 
   Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> cgp = Teuchos::rcp( new DRT::UTILS::CollectedGaussPoints(0) );
 
+#ifdef LOCAL
+#else
+  // Construct bounding box over the parent element
+  // Consider the plane containing the diagonal of this element to project the Gauss points
+  // REMEMBER: Assumed that the element has constant thickness in z-direction
+  // TODO: May be consider two diagonals and take the one that has larger surface area
+  BoundingBox bb(*(ParentElement()));
+  //BoundingBox bb(*this);
+  std::vector<std::vector<double> > all_points;
+
+  std::vector<double> pt1(3);
+  pt1[0] = bb.minx();
+  pt1[1] = bb.miny();
+  pt1[2] = bb.minz();
+
+  std::vector<double> pt2(3);
+  pt2[0] = bb.minx();
+  pt2[1] = bb.miny();
+  pt2[2] = bb.maxz();
+
+  std::vector<double> pt3(3);
+  pt3[0] = bb.maxx();
+  pt3[1] = bb.maxy();
+  pt3[2] = bb.maxz();
+
+  all_points.push_back(pt1);
+  all_points.push_back(pt2);
+  all_points.push_back(pt3);
+
+  RefEqnPlane_ = KERNEL::EqnPlaneOfPolygon( all_points );
+#endif
+
   for ( DRT::UTILS::GaussIntegration::iterator quadint=grule.begin(); quadint!=grule.end(); ++quadint )
   {
     const LINALG::Matrix<3,1> etaFacet( quadint.Point() );  //coordinates and weight of main gauss point
@@ -1165,7 +1201,6 @@ void GEO::CUT::VolumeCell::DirectDivergenceGaussRule( Element *elem,
                                                       bool include_inner,
                                                       INPAR::CUT::BCellGaussPts BCellgausstype )
 {
-
   //position is used to decide whether the ordering of points are in clockwise or not
   const GEO::CUT::Point::PointPosition posi = Position();
 
@@ -1174,7 +1209,7 @@ void GEO::CUT::VolumeCell::DirectDivergenceGaussRule( Element *elem,
 
   //if the volumecell is inside and includeinner is false, no need to compute the Gaussian points
   //as this vc will never be computed in xfem algorithm
-  if(posi == Point::inside && include_inner==false)
+  if( posi == Point::inside and include_inner==false )
     return;
 
   if( Facets().size() < 4 )
@@ -1189,30 +1224,72 @@ void GEO::CUT::VolumeCell::DirectDivergenceGaussRule( Element *elem,
   Teuchos::RCP<DRT::UTILS::GaussPoints> gp = dd.VCIntegrationRule( RefEqnPlane_ );// compute main gauss points
   gp_ = GenerateInternalGaussRule( gp );               // compute internal gauss points for every main gauss point
 
+#ifdef DEBUGCUTLIBRARY  // write volumecell, main and internal Gauss points
+  {
+    DRT::UTILS::GaussIntegration gpi(gp_);
+    dd.DivengenceCellsGMSH( gpi, gp );
+  }
+#endif
+
   // compute volume of this cell
   // also check whether generated gauss rule predicts volume accurately
   // also check this vc can be eliminated due to its very small volume
-  DRT::UTILS::GaussIntegration gpi(gp_);
   bool isNegVol = false;
-  dd.DebugVolume( gpi, isNegVol );
+ {
+    DRT::UTILS::GaussIntegration gpi(gp_);
+    dd.DebugVolume( gpi, isNegVol );
 
-  // then this vol is extremely small that we erase the gauss points
-  if( isNegVol )
-  {
-    gp_.reset();
-    isNegligibleSmall_ = true;
+    // then this vol is extremely small that we erase the gauss points
+    if( isNegVol )
+    {
+      gp_.reset();
+      isNegligibleSmall_ = true;
+    }
   }
 
-//#if 0 // integrate a predefined function
-//  dd.IntegrateSpecificFuntions( gpi, RefEqnPlane_, intGP_ );
-//#endif
-//
-//#ifdef DEBUGCUTLIBRARY  // write volumecell, main and internal Gauss points
-//  dd.DivengenceCellsGMSH( gpi, intGP_ );
-//#endif
+ if( not isNegVol )
+ {
 
+#ifdef LOCAL
+
+#else
+   // we have generated the integration rule in global coordinates of the element
+   // Now we map this rule to local coodinates since the weak form evaluation is done on local coord
+   ProjectGaussPointsToLocalCoodinates();
+#endif
+
+#if 0 // integrate a predefined function
+    DRT::UTILS::GaussIntegration gpi(gp_);
+    dd.IntegrateSpecificFuntions( gpi );
+#endif
+ }
   // generate boundary cells -- when using tessellation this is automatically done
   GenerateBoundaryCells( mesh, posi, elem, 0, INPAR::CUT::BCellGaussPts_Tessellation );
+}
+
+/*----------------------------------------------------------------------------------------------------*
+ * Project the integration rule generated on global coordinate system of                      sudhakar 05/15
+ * the background element to its local coordinates
+ *----------------------------------------------------------------------------------------------------*/
+void GEO::CUT::VolumeCell::ProjectGaussPointsToLocalCoodinates()
+{
+  if( element_->Shape() != DRT::Element::hex8 )
+    dserror("Currently Direct divergence in global coordinates work only for hex8 elements\n");
+
+  DRT::UTILS::GaussIntegration intpoints( gp_ );
+
+  if( element_->isShadow() )
+  {
+    LINALG::Matrix<3, 20> xyze;
+    element_->CoordinatesQuad( xyze.A() );
+    gp_ = DRT::UTILS::GaussIntegration::ProjectGaussPointsGlobalToLocal<DRT::Element::hex20>( xyze, intpoints );
+  }
+  else
+  {
+    LINALG::Matrix<3, 8> xyze;
+    element_->Coordinates( xyze.A() );
+    gp_ = DRT::UTILS::GaussIntegration::ProjectGaussPointsGlobalToLocal<DRT::Element::hex8>( xyze, intpoints );
+  }
 }
 
 /*-------------------------------------------------------------------------------------*

@@ -12,6 +12,7 @@ equations
 #include "cut_kernel.H"
 
 #include "cut_options.H"
+//#include "cut_point.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -23,7 +24,6 @@ std::vector<double> GEO::CUT::FacetIntegration::equation_plane(const std::vector
 {
   //TODO: use references for return!!!
 #if 1  //Newell's method of determining equation of plane
-
   std::vector<double> eqn_plane = KERNEL::EqnPlaneOfPolygon( cornersLocal );
 #endif
 
@@ -65,244 +65,298 @@ std::vector<double> GEO::CUT::FacetIntegration::equation_plane(const std::vector
 }
 
 /*---------------------------------------------------------------------------------------------------------------------*
-          compute only the x-component of unit-normal vector which is used in further computations
-    also determine whether the plane is numbered in clockwise or anticlockwise sense when seen away from the face
+  A facet is clockwise ordered meaning that the normal vector of the facet is acting on the wrong direction.
+  This routine checks if the facet is ordered clockwise                                                        sudhakar 05/15
+
+  We have two cases:
+
+  Case 1 : the facet is formed from a cut side
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      We compute the normal vectors of the parent side and the facet. If they are not acting on the opposite
+      directions, then the facet is clockwise ordered.
+      REMEMBER: This idea cannot be used in the case 2 below because of the use of Shards element topology, wherein
+      all the surfaces are not ensured to have correct normal
+
+  Case 2 : the facet is formed from the element side
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      Construct a reference vector from pointing from the element centre to the geometric centre of the facet.
+      This vector must be in the correct normal direction. Take the dot product of reference vector and the
+      normal vector of facet. If the dot product < 0, then the facet is clockwise ordered
 *----------------------------------------------------------------------------------------------------------------------*/
 void GEO::CUT::FacetIntegration::IsClockwise( const std::vector<double> & eqn_plane,
                                               const std::vector<std::vector<double> > & cornersLocal )
 {
-#if 0 //new generalized method
+  orderingComputed_ = true;
   clockwise_ = 0;
-  Side* parent = face1_->ParentSide();
-  const std::vector<Node*> &par_nodes = parent->Nodes();
-  std::vector<std::vector<double> > corners(par_nodes.size());
-  int mm=0;
-  //std::cout<<"parent side\t"<<"element id = "<<elem1_->Id()<<"\n";
-  for(std::vector<Node*>::const_iterator i=par_nodes.begin();i!=par_nodes.end();i++)
+
+#if 1
+  bool iscut = face1_->OnCutSide();
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Case 1: Facet is formed from the cut side
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if(iscut)
   {
-    Node *nod = *i;
-    double x1[3];
-    nod->Coordinates(x1);
-    LINALG::Matrix<3,1> glo,loc;
-    std::vector<double> pt_local(3);
-    for(int nodno=0;nodno<3;nodno++)
-      glo(nodno,0) = x1[nodno];
+    Side* parent = face1_->ParentSide();
+    const std::vector<Node*> &par_nodes = parent->Nodes();
+    std::vector<std::vector<double> > corners(par_nodes.size());
+    int mm=0;
+    for(std::vector<Node*>::const_iterator i=par_nodes.begin();i!=par_nodes.end();i++)
+    {
+      Node *nod = *i;
+      double x1[3];
+      nod->Coordinates(x1);
 
-     elem1_->LocalCoordinates(glo,loc);
+      std::vector<double> pt_local(3);
+#ifdef LOCAL
+      LINALG::Matrix<3,1> glo,loc;
 
-     pt_local[0] = loc(0,0);
-     pt_local[1] = loc(1,0);
-     pt_local[2] = loc(2,0);
+      for(int nodno=0;nodno<3;nodno++)
+        glo(nodno,0) = x1[nodno];
+       elem1_->LocalCoordinates(glo,loc);
 
-    //std::cout<<loc(0,0)<<"\t"<<loc(1,0)<<"\t"<<loc(2,0)<<"\n";
+       pt_local[0] = loc(0,0);
+       pt_local[1] = loc(1,0);
+       pt_local[2] = loc(2,0);
+#else
+       pt_local[0] = x1[0];
+       pt_local[1] = x1[1];
+       pt_local[2] = x1[2];
+#endif
 
-     corners[mm] = pt_local;
-     mm++;
+       corners[mm] = pt_local;
+       mm++;
     }
-//        std::cout<<"\n";
+
     std::vector<double> eqn_par = equation_plane(corners);
 
-    bool iscut = face1_->OnCutSide();
-    if(iscut)
+    double dotProduct = 0.0;
+#ifdef LOCAL
+    dotProduct = eqn_plane[0]*eqn_par[0];
+#else
+    dotProduct = eqn_plane[0]*eqn_par[0] +
+                 eqn_plane[1]*eqn_par[1] +
+                 eqn_plane[2]*eqn_par[2];
+#endif
+
+    // We use the fact that the normal to any cut side is always pointing towards fluid domain
+    if( position_ == CUT::Point::inside )
     {
-      if(position_==-2)
-      {
-        if(eqn_plane[0]*eqn_par[0]<0.0)
-          clockwise_ = 1;
-      }
-      else
-      {
-        if(eqn_plane[0]*eqn_par[0]>0.0)
-          clockwise_ = 1;
-      }
+      if( dotProduct < 0.0 )
+        clockwise_ = 1;
     }
     else
     {
-      if(eqn_plane[0]*eqn_par[0]<0.0)
+      if( dotProduct > 0.0 )
         clockwise_ = 1;
     }
-    //std::cout<<"clockwise = "<<clockwise_<<"\t"<<"is cut side = "<<iscut<<"\n";
+  }
+
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Case 2: Facet is formed from the element  side
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  else
+  {
+    //-----
+    // STEP 1: Get centroid of the parent element
+    //-----
+    LINALG::Matrix<3,1> elecen;
+#ifdef LOCAL
+    switch( elem1_->Shape() )
+    {
+    case DRT::Element::hex8:
+    {
+      elecen = DRT::UTILS::getLocalCenterPosition<3>(DRT::Element::hex8);
+      break;
+    }
+    case DRT::Element::tet4:
+    {
+      elecen = DRT::UTILS::getLocalCenterPosition<3>(DRT::Element::tet4);
+      break;
+    }
+    default:
+    {
+      dserror("Add other elements not only here but in complete direct divergence procedure");
+      break;
+    }
+    }
+#else
+    elem1_->ElementCenter( elecen );
 #endif
 
-#if 1 //old method of checking the ordering - separate check for different background elements (is this necessary?)
-  std::string ordering;
+    //-----
+    // STEP 2: Get geometric centre point of the facet
+    // For concave facets, this is not the actual centre, but it does not matter
+    //-----
+    LINALG::Matrix<3,1> facecen;
+    unsigned npts = cornersLocal.size();
+    for( std::vector<std::vector<double> >::const_iterator fit = cornersLocal.begin(); fit != cornersLocal.end(); fit++ )
+    {
+      const std::vector<double> & fpt = *fit;
+      for( unsigned dim = 0; dim < 3; dim++ )
+        facecen(dim,0) += fpt[dim];
+    }
 
-  //if( cornersLocal.size()==3 )
-  //{
+    for( unsigned dim = 0; dim < 3; dim++ )
+      facecen(dim,0) = facecen(dim,0) / npts;
+
+    //-----
+    // STEP 3: Construct a unit vector that points FROM element centre TO the facet centre
+    // This reference vector is in the correct normal direction
+    //-----
+    LINALG::Matrix<3,1> ref_vec;
+    ref_vec.Update( 1.0, facecen, -1.0, elecen );
+    double l2_ref_vec = ref_vec.Norm2();
+    ref_vec.Scale( 1.0/l2_ref_vec );
+
+    //-----
+    // STEP 4: Take dot product with the normal of facet
+    // If both are in the opposite direction, then the facet nodes are arranged clockwise
+    //-----
+    LINALG::Matrix<3,1> norm_fac;
+    for( unsigned dim = 0; dim < 3; dim++ )
+      norm_fac(dim,0) = eqn_plane[dim];
+
+    double dotProduct = ref_vec.Dot( norm_fac );
+    if( dotProduct < 0.0 )
+      clockwise_ = 1;
+  }
+  //std::cout<<"clockwise = "<<clockwise_<<"\t"<<"is cut side = "<<iscut<<"\n";
+  return;
+
+  // Old implementation of checking the normal direction
+  // This involves the  use of element topology data extensively
+  // TODO: Must go away after extensive testing of the above procedure
+#else
+  {
+    std::string ordering;
+
     if(eqn_plane[0]>0.0)
       ordering = "acw";
     else
       ordering = "cw";
-  //}
-#if 1
-  /*else
-  {
-    double crossProd = 0.0;
-    for(unsigned i=0;i<cornersLocal.size();i++)
+
+    clockwise_ = 0;
+    Side* parent = face1_->ParentSide();
+    const std::vector<Node*> &par_nodes = parent->Nodes();
+    std::vector<std::vector<double> > corners(par_nodes.size());
+    int mm=0;
+
+    for(std::vector<Node*>::const_iterator i=par_nodes.begin();i!=par_nodes.end();i++)
     {
-      unsigned j = (i+1)%cornersLocal.size();
-      crossProd += (cornersLocal[j][1]-cornersLocal[i][1])*(cornersLocal[j][2]+cornersLocal[i][2]);
-    }
-    if(crossProd>0)
-      ordering = "cw";
-    else if(crossProd<0)
-      ordering = "acw";
-    else
-    {
-      std::cout<<"value of cross product = "<<crossProd<<"\n";
-      dserror("the points in the facet are neither ordered in clockwise not anti-clockwise or all collinear"
-          " point in this facet");
-    }
-  }*/
-#else
-  else
-  {
-    double crossProd = 0.0;
-    int count=0;
-    for(unsigned i=0;i<cornersLocal.size();i++)
-    {
-      unsigned j = (i+1)%cornersLocal.size();
-      unsigned k = (i+2)%cornersLocal.size();
-      crossProd = (cornersLocal[j][1]-cornersLocal[i][1])*(cornersLocal[k][2]-cornersLocal[j][2]);
-      crossProd -= (cornersLocal[j][2]-cornersLocal[i][2])*(cornersLocal[k][1]-cornersLocal[j][1]);
-      std::cout<<"cross = "<<crossProd<<"\n";
-      if(crossProd<0)
-        count--;
-      else if(crossProd>0)
-        count++;
+      Node *nod = *i;
+      double x1[3];
+      nod->Coordinates(x1);
+      LINALG::Matrix<3,1> glo,loc;
+      std::vector<double> pt_local(3);
+      for(int nodno=0;nodno<3;nodno++)
+        glo(nodno,0) = x1[nodno];
 
-    }
-    if(count>0)
-      ordering = "acw";
-    else if(count<0)
-      ordering = "cw";
-    else
-      dserror("the points in the facet are neither ordered in clockwise not anti-clockwise or all collinear"
-          " point in this facet");
-  }
-#endif
+       elem1_->LocalCoordinates(glo,loc);
 
-  clockwise_ = 0;
-  Side* parent = face1_->ParentSide();
-  const std::vector<Node*> &par_nodes = parent->Nodes();
-  std::vector<std::vector<double> > corners(par_nodes.size());
-  int mm=0;
+       pt_local[0] = loc(0,0);
+       pt_local[1] = loc(1,0);
+       pt_local[2] = loc(2,0);
 
-  for(std::vector<Node*>::const_iterator i=par_nodes.begin();i!=par_nodes.end();i++)
-  {
-    Node *nod = *i;
-    double x1[3];
-    nod->Coordinates(x1);
-    LINALG::Matrix<3,1> glo,loc;
-    std::vector<double> pt_local(3);
-    for(int nodno=0;nodno<3;nodno++)
-      glo(nodno,0) = x1[nodno];
+       corners[mm] = pt_local;
+       mm++;
+      }
 
-     elem1_->LocalCoordinates(glo,loc);
+      std::vector<double> eqn_par = equation_plane(corners);
 
-     pt_local[0] = loc(0,0);
-     pt_local[1] = loc(1,0);
-     pt_local[2] = loc(2,0);
-
-     corners[mm] = pt_local;
-     mm++;
-    }
-
-    std::vector<double> eqn_par = equation_plane(corners);
-
-    // the cut sides are always convex (????)
-    // just comparing the sign of coordinates of eqn of plane will do
-    bool iscut = face1_->OnCutSide();
-    if(iscut)
-    {
-      if(position_==-2)
+      // the cut sides are always convex
+      // just comparing the sign of coordinates of eqn of plane will do
+      // We use the fact that the normal to any cut side is always pointing towards fluid domain
+      bool iscut = face1_->OnCutSide();
+      if(iscut)
       {
-        if(eqn_plane[0]*eqn_par[0]<0.0)
-          clockwise_ = 1;
+        if( position_ == GEO::CUT::Point::inside )
+        {
+          if(eqn_plane[0]*eqn_par[0]<0.0)
+          {
+            clockwise_ = 1;
+          }
+        }
+        else
+        {
+          if(eqn_plane[0]*eqn_par[0]>0.0)
+          {
+            clockwise_ = 1;
+          }
+        }
       }
       else
       {
-        if(eqn_plane[0]*eqn_par[0]>0.0)
-          clockwise_ = 1;
-      }
-    }
-    else
-    {
-      const std::vector<Side*> &ele_sides = elem1_->Sides();
+        const std::vector<Side*> &ele_sides = elem1_->Sides();
 
-      int parentSideno = 0;
-      for(std::vector<Side*>::const_iterator i=ele_sides.begin();i!=ele_sides.end();i++)
-      {
-        Side*sss = *i;
-        if(sss==parent)
+        int parentSideno = 0;
+        for(std::vector<Side*>::const_iterator i=ele_sides.begin();i!=ele_sides.end();i++)
         {
+          Side*sss = *i;
+          if(sss==parent)
+          {
+            break;
+          }
+          parentSideno++;
+
+        }
+
+  //should check whether this is sufficient or do we need to find the number of side in the element and
+  //use their orientation to get clockwise ordering
+  //                std::cout<<"parent side no = "<<parentSideno<<"\n";
+  //      std::cout<<"parentSideno = "<<parentSideno<<"corner = "<<corners[0][0]<<"\n";
+  //ParentSideno=1 is x=1 face and 3 is x=-1 face
+      // After an element is mapped in local coordinate system, it has
+      // non-zero x-normal component only for checked "parentSideno"
+      // (See BaciReport for ordering of sides and nodes in Baci)
+      switch ( elem1_->Shape() )
+      {
+        case DRT::Element::hex8:
+        {
+          if(parentSideno==0 and ordering=="cw")
+            clockwise_ = 1;
+          else if(parentSideno==1 and ordering=="cw")
+            clockwise_ = 1;
+          else if(parentSideno==2 and ordering=="acw")
+            clockwise_ = 1;
+          else if(parentSideno==3 and ordering=="acw")
+            clockwise_ = 1;
+          else if(parentSideno==4 and ordering=="acw")
+            clockwise_ = 1;
+          else if(parentSideno==5 and ordering=="cw")
+            clockwise_ = 1;
           break;
         }
-        parentSideno++;
-
+        case DRT::Element::tet4:
+        {
+          if(parentSideno==1 && ordering=="cw")
+           clockwise_ = 1;
+         if(parentSideno==2 && ordering=="acw")
+           clockwise_ = 1;
+          break;
+        }
+        case DRT::Element::wedge6:
+        {
+          if(parentSideno==0 && ordering=="cw")
+           clockwise_ = 1;
+         if(parentSideno==1 && ordering=="acw")
+           clockwise_ = 1;
+          break;
+        }
+        case DRT::Element::pyramid5:
+        {
+          if(parentSideno==1 && ordering=="cw")
+            clockwise_ = 1;
+          if(parentSideno==3 && ordering=="acw")
+            clockwise_ = 1;
+          break;
+        }
+        default:
+          throw std::runtime_error( "unsupported integration cell type" );
       }
-
-//should check whether this is sufficient or do we need to find the number of side in the element and
-//use their orientation to get clockwise ordering
-//                std::cout<<"parent side no = "<<parentSideno<<"\n";
-//      std::cout<<"parentSideno = "<<parentSideno<<"corner = "<<corners[0][0]<<"\n";
-//ParentSideno=1 is x=1 face and 3 is x=-1 face
-#if 0 //this is only for hex
-      if(parentSideno==1 && eqn_plane_[0]<0.0)
-        clockwise_ = 1;
-      if(parentSideno==3 && eqn_plane_[0]>0.0)
-        clockwise_ = 1;
-#endif
-
-    // After an element is mapped in local coordinate system, it has
-    // non-zero x-normal component only for checked "parentSideno"
-    // (See BaciReport for ordering of sides and nodes in Baci)
-    switch ( elem1_->Shape() )
-    {
-      case DRT::Element::hex8:
-      {
-        if(parentSideno==1 && ordering=="cw")
-          clockwise_ = 1;
-        if(parentSideno==3 && ordering=="acw")
-          clockwise_ = 1;
-        break;
-      }
-      case DRT::Element::tet4:
-      {
-        if(parentSideno==1 && ordering=="cw")
-         clockwise_ = 1;
-       if(parentSideno==2 && ordering=="acw")
-         clockwise_ = 1;
-        break;
-      }
-      case DRT::Element::wedge6:
-      {
-        if(parentSideno==0 && ordering=="cw")
-         clockwise_ = 1;
-       if(parentSideno==1 && ordering=="acw")
-         clockwise_ = 1;
-        break;
-      }
-      case DRT::Element::pyramid5:
-      {
-        if(parentSideno==1 && ordering=="cw")
-          clockwise_ = 1;
-        if(parentSideno==3 && ordering=="acw")
-          clockwise_ = 1;
-        break;
-      }
-      default:
-        throw std::runtime_error( "unsupported integration cell type" );
     }
-
-      /*if(corners[0][0]==1 && eqn_plane_[0]<0.0)
-        clockwise_ = 1;
-      if(corners[0][0]==-1 && eqn_plane_[0]>0.0)
-        clockwise_ = 1;*/
+    //std::cout<<"clockwise = "<<clockwise_<<"\t"<<"is cut side = "<<iscut<<"\n";
   }
-
 #endif
-  orderingComputed_ = true;
 
 }
 
@@ -393,20 +447,20 @@ double GEO::CUT::FacetIntegration::getNormal(std::string intType)
 *--------------------------------------------------------------------------------------*/
 double GEO::CUT::FacetIntegration::integrate_facet()
 {
-    std::vector<std::vector<double> > cornersLocal;
-    face1_->CornerPointsLocal(elem1_,cornersLocal);
-    if(global_==true)
-    {
-      std::vector<Point*>co =  face1_->CornerPoints();
-      for(std::vector<Point*>::iterator i=co.begin();i!=co.end();i++)
-      {
-        Point* po = *i;
-        double xo[3];
-        po->Coordinates(xo);
-        for(unsigned j=0;j<3;j++)
-          cornersLocal[i-co.begin()][j] = xo[j];
-      }
-    }
+#ifdef LOCAL
+  std::vector<std::vector<double> > cornersLocal;
+  face1_->CornerPointsLocal(elem1_,cornersLocal,true);
+
+  // Special case when using moment fitting for boundary integration
+  if( global_ )
+  {
+    cornersLocal.clear();
+    cornersLocal = face1_->CornerPointsGlobal(elem1_,true);
+  }
+
+#else
+  std::vector<std::vector<double> > cornersLocal = face1_->CornerPointsGlobal(elem1_,true);
+#endif
 
     eqn_plane_ = equation_plane(cornersLocal);
 
@@ -621,7 +675,7 @@ void GEO::CUT::FacetIntegration::DivergenceIntegrationRule( Mesh &mesh,
 {
   TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::FacetIntegration::DivergenceIntegrationRule" );
 
-  plain_boundarycell_set divCells;
+  std::list<Teuchos::RCP<BoundaryCell> > divCells;
 
   //the last two parameters has no influence when called from the first parameter is set to true
   GenerateDivergenceCells( true, mesh, divCells );
@@ -631,9 +685,11 @@ void GEO::CUT::FacetIntegration::DivergenceIntegrationRule( Mesh &mesh,
   if(clockwise_) //because if ordering is clockwise the contribution of this facet must be subtracted
     normalX = -1.0*normalX;
 
-  for(plain_boundarycell_set::iterator i=divCells.begin();i!=divCells.end();i++)
+  for ( std::list<Teuchos::RCP<BoundaryCell> >::iterator i=divCells.begin();
+                i!=divCells.end();
+                ++i )
   {
-    BoundaryCell* bcell = *i;
+    BoundaryCell * bcell = &**i;
 
 #if 0//DEBUGCUTLIBRARY //write separate file for each bcell along with the distribution of Gauss points
     static int facetno = 0;
@@ -649,9 +705,9 @@ void GEO::CUT::FacetIntegration::DivergenceIntegrationRule( Mesh &mesh,
       Point* pt1 = ptl[ii];
       LINALG::Matrix<3,1> global1,local1;
       pt1->Coordinates(global1.A());
-      elem1_->LocalCoordinatesQuad( global1, local1 );
-      file<<"Point("<<mm<<")="<<"{"<<local1(0,0)<<","<<local1(1,0)<<","<<local1(2,0)<<"};\n";
-      //file<<"Point("<<mm<<")="<<"{"<<global1(0,0)<<","<<global1(1,0)<<","<<global1(2,0)<<"};\n";
+      elem1_->LocalCoordinates( global1, local1 );
+      //file<<"Point("<<mm<<")="<<"{"<<local1(0,0)<<","<<local1(1,0)<<","<<local1(2,0)<<"};\n";
+      file<<"Point("<<mm<<")="<<"{"<<global1(0,0)<<","<<global1(1,0)<<","<<global1(2,0)<<"};\n";
       mm++;
     }
     for( unsigned ii=0;ii<ptl.size();ii++ )
@@ -672,12 +728,20 @@ void GEO::CUT::FacetIntegration::DivergenceIntegrationRule( Mesh &mesh,
       {
         case DRT::Element::tri3:
         {
+#ifdef LOCAL
           bcell->TransformLocalCoords<DRT::Element::tri3>(elem1_,eta, x_gp_loc, normal, drs, true);
+#else
+          bcell->Transform<DRT::Element::tri3>( eta, x_gp_loc, normal, drs );
+#endif
           break;
         }
         case DRT::Element::quad4:
         {
+#ifdef LOCAL
           bcell->TransformLocalCoords<DRT::Element::quad4>(elem1_,eta, x_gp_loc, normal, drs, true);
+#else
+          bcell->Transform<DRT::Element::quad4>( eta, x_gp_loc, normal, drs );
+#endif
           break;
         }
         default:
@@ -700,10 +764,14 @@ void GEO::CUT::FacetIntegration::DivergenceIntegrationRule( Mesh &mesh,
 *------------------------------------------------------------------------------------------------------*/
 void GEO::CUT::FacetIntegration::GenerateDivergenceCells( bool divergenceRule, //if called to generate direct divergence rule
                                                           Mesh &mesh,
-                                                          plain_boundarycell_set & divCells )
+                                                          std::list<Teuchos::RCP<BoundaryCell> >& divCells )
 {
+#ifdef LOCAL
   std::vector<std::vector<double> > cornersLocal;
   face1_->CornerPointsLocal(elem1_,cornersLocal);
+#else
+  std::vector<std::vector<double> > cornersLocal = face1_->CornerPointsGlobal(elem1_);
+#endif
 
   eqn_plane_ = equation_plane(cornersLocal);
 
@@ -759,9 +827,8 @@ void GEO::CUT::FacetIntegration::GenerateDivergenceCells( bool divergenceRule, /
         splitMethod = "split";
 #endif
 
-  #if 0 // triangulate facet
+#if 0 // triangulate facet
         //std::cout<<"!!! WARNING !!! Facets are triangulated instead of getting splitted ---> more Gauss points\n";
-        std::vector<std::vector<GEO::CUT::Point*> > split;
         TriangulateFacet tf( corners );
 
         std::vector<int> ptconc;
@@ -803,15 +870,13 @@ void GEO::CUT::FacetIntegration::GenerateDivergenceCells( bool divergenceRule, /
                     this is temporary because this is not stored for the volumecell
 *--------------------------------------------------------------------------------------------*/
 void GEO::CUT::FacetIntegration::TemporaryTri3( const std::vector<Point*>& corners,
-                                                plain_boundarycell_set& divCells )
+                                                std::list<Teuchos::RCP<BoundaryCell> >& divCells )
 {
   Epetra_SerialDenseMatrix xyz( 3, 3 );
   for ( int i=0; i<3; ++i )
     corners[i]->Coordinates( &xyz( 0, i ) );
   Tri3BoundaryCell * bc = new Tri3BoundaryCell( xyz, face1_, corners );
-
-  boundarycells_.push_back( Teuchos::rcp( bc ) );
-  divCells.insert( bc );
+  divCells.push_back( Teuchos::rcp( bc ) );
 }
 
 /*-------------------------------------------------------------------------------------------*
@@ -819,15 +884,13 @@ void GEO::CUT::FacetIntegration::TemporaryTri3( const std::vector<Point*>& corne
                     this is temporary because this is not stored for the volumecell
 *--------------------------------------------------------------------------------------------*/
 void GEO::CUT::FacetIntegration::TemporaryQuad4( const std::vector<Point*>& corners,
-                                                 plain_boundarycell_set& divCells )
+                                                 std::list<Teuchos::RCP<BoundaryCell> >& divCells )
 {
   Epetra_SerialDenseMatrix xyz( 3, 4 );
   for ( int i=0; i<4; ++i )
     corners[i]->Coordinates( &xyz( 0, i ) );
   Quad4BoundaryCell * bc = new Quad4BoundaryCell( xyz, face1_, corners );
-
-  boundarycells_.push_back( Teuchos::rcp( bc ) );
-  divCells.insert( bc );
+  divCells.push_back( Teuchos::rcp( bc ) );
 }
 
 /*----------------------------------------------------------------------------------------------*
@@ -835,14 +898,16 @@ void GEO::CUT::FacetIntegration::TemporaryQuad4( const std::vector<Point*>& corn
           triangular procedure are the same.                                       sudhakar 05/12
           This is a check for the adopted splitting procedure
 *-----------------------------------------------------------------------------------------------*/
-void GEO::CUT::FacetIntegration::DebugAreaCheck( plain_boundarycell_set & divCells,
+void GEO::CUT::FacetIntegration::DebugAreaCheck( std::list<Teuchos::RCP<BoundaryCell> > & divCells,
                                                  std::string alreadyDone,
                                                  Mesh &mesh )
 {
   double area1 = 0.0;
-  for( plain_boundarycell_set::const_iterator i=divCells.begin();i!=divCells.end();i++ )
+  for ( std::list<Teuchos::RCP<BoundaryCell> >::iterator i=divCells.begin();
+                i!=divCells.end();
+                ++i )
   {
-    BoundaryCell* bcell = *i;
+    BoundaryCell * bcell = &**i;
     area1 += bcell->Area();
   }
 
@@ -864,7 +929,7 @@ void GEO::CUT::FacetIntegration::DebugAreaCheck( plain_boundarycell_set & divCel
     split1 = tf.GetSplitCells();
   }
 
-  plain_boundarycell_set tempCells;
+  std::list<Teuchos::RCP<BoundaryCell> > tempCells;
 
   for ( std::vector<std::vector<Point*> >::const_iterator j=split1.begin();
                                                           j!=split1.end(); ++j )
@@ -884,9 +949,11 @@ void GEO::CUT::FacetIntegration::DebugAreaCheck( plain_boundarycell_set & divCel
   }
 
   double area2 = 0.0;
-  for( plain_boundarycell_set::const_iterator i=tempCells.begin();i!=tempCells.end();i++ )
+  for ( std::list<Teuchos::RCP<BoundaryCell> >::iterator i=tempCells.begin();
+          i!=tempCells.end();
+          ++i )
   {
-    BoundaryCell* bcell = *i;
+    BoundaryCell * bcell = &**i;
     area2 += bcell->Area();
   }
 
@@ -903,9 +970,11 @@ void GEO::CUT::FacetIntegration::DebugAreaCheck( plain_boundarycell_set & divCel
     }
 
     std::cout<<"cells produced by Method 1\n";
-    for( plain_boundarycell_set::const_iterator i=divCells.begin();i!=divCells.end();i++ )
+    for ( std::list<Teuchos::RCP<BoundaryCell> >::iterator i=divCells.begin();
+              i!=divCells.end();
+              ++i )
     {
-      BoundaryCell* bcell = *i;
+      BoundaryCell * bcell = &**i;
       const std::vector<Point*> pts = bcell->Points();
       std::cout<<"cells\n";
       for( unsigned j=0;j<pts.size();j++ )
@@ -918,9 +987,11 @@ void GEO::CUT::FacetIntegration::DebugAreaCheck( plain_boundarycell_set & divCel
     }
 
     std::cout<<"cells produced by Method 2\n";
-    for( plain_boundarycell_set::const_iterator i=tempCells.begin();i!=tempCells.end();i++ )
+    for ( std::list<Teuchos::RCP<BoundaryCell> >::iterator i=tempCells.begin();
+              i!=tempCells.end();
+              ++i )
     {
-      BoundaryCell* bcell = *i;
+      BoundaryCell * bcell = &**i;
       const std::vector<Point*> pts = bcell->Points();
       std::cout<<"cells\n";
       for( unsigned j=0;j<pts.size();j++ )
