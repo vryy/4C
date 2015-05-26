@@ -71,7 +71,8 @@ ParObject(),
 id_(id),
 lid_(-1),
 owner_(owner),
-mat_(1,Teuchos::null)
+mat_(1,Teuchos::null),
+isNurbs_(false)
 {}
 
 /*----------------------------------------------------------------------*
@@ -85,7 +86,8 @@ owner_(old.owner_),
 nodeid_(old.nodeid_),
 node_(old.node_),
 face_(old.face_),
-mat_(1,Teuchos::null)
+mat_(1,Teuchos::null),
+isNurbs_(old.isNurbs_)
 {
   // we do NOT want a deep copy of the condition_ as the condition
   // is only a reference in the elements anyway

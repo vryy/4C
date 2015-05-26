@@ -91,6 +91,7 @@ data_()
 {
   invJ_.resize(NUMGPT_SONURBS27, LINALG::Matrix<NUMDIM_SONURBS27,NUMDIM_SONURBS27>(true));
   detJ_.resize(NUMGPT_SONURBS27, 0.0);
+  SetNurbsElement()=true;
   return;
 }
 
@@ -108,6 +109,7 @@ detJ_   (old.detJ_   )
   {
     invJ_[i] = old.invJ_[i];
   }
+  SetNurbsElement()=true;
 
   return;
 }

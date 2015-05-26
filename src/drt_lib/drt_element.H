@@ -445,6 +445,19 @@ public:
   }
 
   /*!
+  \brief Set whether the given element is a nurbs element
+  */
+  virtual bool& SetNurbsElement()
+  { return isNurbs_; }
+
+
+  /*!
+  \brief Get whether the given element is a nurbs element
+  */
+  virtual bool IsNurbsElement() const
+  { return isNurbs_; }
+
+  /*!
   \brief Returns whether the given element actually is a face element with degrees of freedom living there
   */
   virtual bool IsFaceElement() const
@@ -1205,6 +1218,9 @@ private:
 
   //! vector of material objects of element
   std::vector<Teuchos::RCP<MAT::Material> > mat_;
+
+  //! is this a nurbs element?
+  bool isNurbs_;
 
 }; // class Element
 

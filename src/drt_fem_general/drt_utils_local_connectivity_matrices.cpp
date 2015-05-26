@@ -1465,7 +1465,8 @@ LINALG::Matrix<3,1> DRT::UTILS::getNodeCoordinates(   const int                 
                 dserror("node number does not exist");
         }
     }
-    else if(distype == DRT::Element::hex20) //schott 05/11
+    else if(distype == DRT::Element::hex20 //schott 05/11
+           || distype == DRT::Element::hex27) //seitz 05/15
     {
         switch(nodeId)
         {
@@ -1608,6 +1609,69 @@ LINALG::Matrix<3,1> DRT::UTILS::getNodeCoordinates(   const int                 
                 coord(1) =  0.0;
                 coord(2) = +1.0;
                 break;
+            }
+            case 20:
+            {
+              if (distype==DRT::Element::hex20)
+                dserror("node number does not exist");
+              coord(0) =  0.0;
+              coord(1) =  0.0;
+              coord(2) = -1.0;
+              break;
+            }
+            case 21:
+            {
+              if (distype==DRT::Element::hex20)
+                dserror("node number does not exist");
+              coord(0) =  0.0;
+              coord(1) = -1.0;
+              coord(2) =  0.0;
+              break;
+            }
+            case 22:
+            {
+              if (distype==DRT::Element::hex20)
+                dserror("node number does not exist");
+              coord(0) = +1.0;
+              coord(1) =  0.0;
+              coord(2) =  0.0;
+              break;
+            }
+            case 23:
+            {
+              if (distype==DRT::Element::hex20)
+                dserror("node number does not exist");
+              coord(0) =  0.0;
+              coord(1) = +1.0;
+              coord(2) =  0.0;
+              break;
+            }
+            case 24:
+            {
+              if (distype==DRT::Element::hex20)
+                dserror("node number does not exist");
+              coord(0) = -1.0;
+              coord(1) =  0.0;
+              coord(2) =  0.0;
+              break;
+            }
+            case 25:
+            {
+              if (distype==DRT::Element::hex20)
+                dserror("node number does not exist");
+              coord(0) =  0.0;
+              coord(1) =  0.0;
+              coord(2) = +1.0;
+              break;
+            }
+            case 26:
+            {
+              if (distype==DRT::Element::hex20)
+                dserror("node number does not exist");
+              coord(0) =  0.0;
+              coord(1) =  0.0;
+              coord(2) =  0.0;
+              break;
             }
             default:
                 dserror("node number does not exist");

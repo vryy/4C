@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file post_drt_vtu.H
+\file post_drt_vtu_writer.H
 
 \brief VTU filter
 
@@ -22,6 +22,8 @@ Maintainer: Martin Kronbichler
 #include <string>
 #include <map>
 #include <vector>
+
+#include "../drt_lib/drt_element.H"
 
 
 // forward declarations
@@ -109,6 +111,19 @@ protected:
 
   //! write the geometry of one time step
   virtual void WriteGeo();
+
+  //! write the geometry of Nurbs Element
+  virtual void WriteGeoNurbsEle(const DRT::Element* ele,std::vector<uint8_t>& celltypes,
+      int& outNodeId,std::vector<int32_t>& celloffset,std::vector<double>& coordinates);
+
+  //! Write a single result step for one Nurbs Element
+  virtual void WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncomponents,const int numdf,
+      std::vector<double>& solution,Teuchos::RCP<Epetra_Vector> ghostedData,
+      const int from, const bool fillzeros);
+
+  //! Write a single result step for one Nurbs Element
+  virtual void WriteNodalResultStepNurbsEle(const DRT::Element* ele, int ncomponents,const int numdf,
+      std::vector<double>& solution,Teuchos::RCP<Epetra_MultiVector> ghostedData);
 
 };
 

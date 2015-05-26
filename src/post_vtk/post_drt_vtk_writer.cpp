@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file post_drt_vtk.cpp
+\file post_drt_vtk_writer.cpp
 
 \brief VTK filter
 
@@ -447,8 +447,9 @@ VtkWriter::WriteResult(const std::string groupname,
 
   if ( not (field_->problem()->SpatialApproximation()=="Polynomial" or
             field_->problem()->SpatialApproximation()=="Meshfree" or
-            field_->problem()->SpatialApproximation()=="HDG") )
-    dserror("Only polynomial or meshfree approximations can be written with the VTK filter");
+            field_->problem()->SpatialApproximation()=="HDG" or
+            field_->problem()->SpatialApproximation()=="Nurbs"))
+    dserror("Only polynomial or meshfree or Nurbs approximations can be written with the VTK filter");
 
   // need dummy structure that is required for the generic writer interface
   // but not needed by the vtk writer.
