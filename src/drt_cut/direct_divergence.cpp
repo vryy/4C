@@ -206,6 +206,75 @@ void GEO::CUT::DirectDivergence::ListFacets( std::vector<plain_facet_set::const_
     for( unsigned i=1;i<4;i++ )
       RefPlaneEqn[i] = 0.0;
   }
+#else
+  // Construct bounding box over the parent element
+  // Consider the plane containing the diagonal of this element to project the Gauss points
+  // REMEMBER: Assumed that the element has constant thickness in z-direction
+  BoundingBox bb(*elem1_);
+  //BoundingBox bb(*this);
+  std::vector<std::vector<double> > diagonal1,diagonal2;
+
+  // get two diagonal-1 of Hex
+  std::vector<double> pt1(3);
+  pt1[0] = bb.minx();
+  pt1[1] = bb.miny();
+  pt1[2] = bb.minz();
+
+  std::vector<double> pt2(3);
+  pt2[0] = bb.minx();
+  pt2[1] = bb.miny();
+  pt2[2] = bb.maxz();
+
+  std::vector<double> pt3(3);
+  pt3[0] = bb.maxx();
+  pt3[1] = bb.maxy();
+  pt3[2] = bb.maxz();
+
+  std::vector<double> pt4(3);
+  pt4[0] = bb.maxx();
+  pt4[1] = bb.maxy();
+  pt4[2] = bb.minz();
+
+  diagonal1.push_back(pt1);
+  diagonal1.push_back(pt2);
+  diagonal1.push_back(pt3);
+  diagonal1.push_back(pt4);
+
+  // get diagonal-2 of Hex
+  std::vector<double> pt5(3);
+  pt5[0] = bb.maxx();
+  pt5[1] = bb.miny();
+  pt5[2] = bb.minz();
+
+  std::vector<double> pt6(3);
+  pt6[0] = bb.maxx();
+  pt6[1] = bb.miny();
+  pt6[2] = bb.maxz();
+
+  std::vector<double> pt7(3);
+  pt7[0] = bb.minx();
+  pt7[1] = bb.maxy();
+  pt7[2] = bb.maxz();
+
+  std::vector<double> pt8(3);
+  pt8[0] = bb.minx();
+  pt8[1] = bb.maxy();
+  pt8[2] = bb.minz();
+
+  diagonal2.push_back( pt5 );
+  diagonal2.push_back( pt6 );
+  diagonal2.push_back( pt7 );
+  diagonal2.push_back( pt8 );
+
+  // Compute the area of both diagonal surfaces
+  // Take the plane which has maximum area as the reference plane
+  double area1 = CUT::KERNEL::getAreaConvexQuad( diagonal1 );
+  double area2 = CUT::KERNEL::getAreaConvexQuad( diagonal2 );
+
+  if( area1 > area2 )
+    RefPlaneEqn = KERNEL::EqnPlaneOfPolygon( diagonal1 );
+  else
+    RefPlaneEqn = KERNEL::EqnPlaneOfPolygon( diagonal2 );
 #endif
 
   // if a1x+a2y+a3z=a4 is the equation of reference plane and
@@ -370,7 +439,7 @@ void GEO::CUT::DirectDivergence::DivengenceCellsGMSH( const DRT::UTILS::GaussInt
 
   BoundingBox bb( *elem1_ );
   //BoundingBox bb( *volcell_ );
-  std::vector<std::vector<double> > all_points;
+  std::vector<std::vector<double> > diagonal1, diagonal2;
 
   std::vector<double> pt1(3);
   pt1[0] = bb.minx();
@@ -392,10 +461,47 @@ void GEO::CUT::DirectDivergence::DivengenceCellsGMSH( const DRT::UTILS::GaussInt
   pt4[1] = bb.maxy();
   pt4[2] = bb.minz();
 
-  all_points.push_back(pt1);
-  all_points.push_back(pt2);
-  all_points.push_back(pt3);
-  all_points.push_back(pt4);
+  diagonal1.push_back(pt1);
+  diagonal1.push_back(pt2);
+  diagonal1.push_back(pt3);
+  diagonal1.push_back(pt4);
+
+  std::vector<double> pt5(3);
+  pt5[0] = bb.maxx();
+  pt5[1] = bb.miny();
+  pt5[2] = bb.minz();
+
+  std::vector<double> pt6(3);
+  pt6[0] = bb.maxx();
+  pt6[1] = bb.miny();
+  pt6[2] = bb.maxz();
+
+  std::vector<double> pt7(3);
+  pt7[0] = bb.minx();
+  pt7[1] = bb.maxy();
+  pt7[2] = bb.maxz();
+
+  std::vector<double> pt8(3);
+  pt8[0] = bb.minx();
+  pt8[1] = bb.maxy();
+  pt8[2] = bb.minz();
+
+  diagonal2.push_back( pt5 );
+  diagonal2.push_back( pt6 );
+  diagonal2.push_back( pt7 );
+  diagonal2.push_back( pt8 );
+
+  // Compute the area of both diagonal surfaces
+  // Take the plane which has maximum area as the reference plane
+  double area1 = CUT::KERNEL::getAreaConvexQuad( diagonal1 );
+  double area2 = CUT::KERNEL::getAreaConvexQuad( diagonal2 );
+
+  std::vector<std::vector<double> > all_points;
+  if( area1 > area2 )
+    all_points = diagonal1;
+  else
+    all_points = diagonal2;
+
 
   for( unsigned itp = 0; itp != all_points.size(); itp++ )
   {

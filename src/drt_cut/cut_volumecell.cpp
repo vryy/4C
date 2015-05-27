@@ -932,13 +932,6 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells( Mesh &mesh,
        continue;
      NewTri3Cell( mesh, fac, corners );
    }
-   else if(corners.size()==4)
-   {
-     double areaCell = GEO::CUT::KERNEL::getAreaConvexQuad( corners );
-     if( areaCell < REF_AREA_BCELL )
-       continue;
-     NewQuad4Cell(mesh,fac,corners);
-   }
    else
    {
       if(BCellgausstype==INPAR::CUT::BCellGaussPts_Tessellation)//generate boundarycell gausspoints by triangulation
@@ -1089,38 +1082,6 @@ Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::VolumeCell::GenerateInternalGaus
   DRT::UTILS::GaussIntegration grule(gp);
 
   Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> cgp = Teuchos::rcp( new DRT::UTILS::CollectedGaussPoints(0) );
-
-#ifdef LOCAL
-#else
-  // Construct bounding box over the parent element
-  // Consider the plane containing the diagonal of this element to project the Gauss points
-  // REMEMBER: Assumed that the element has constant thickness in z-direction
-  // TODO: May be consider two diagonals and take the one that has larger surface area
-  BoundingBox bb(*(ParentElement()));
-  //BoundingBox bb(*this);
-  std::vector<std::vector<double> > all_points;
-
-  std::vector<double> pt1(3);
-  pt1[0] = bb.minx();
-  pt1[1] = bb.miny();
-  pt1[2] = bb.minz();
-
-  std::vector<double> pt2(3);
-  pt2[0] = bb.minx();
-  pt2[1] = bb.miny();
-  pt2[2] = bb.maxz();
-
-  std::vector<double> pt3(3);
-  pt3[0] = bb.maxx();
-  pt3[1] = bb.maxy();
-  pt3[2] = bb.maxz();
-
-  all_points.push_back(pt1);
-  all_points.push_back(pt2);
-  all_points.push_back(pt3);
-
-  RefEqnPlane_ = KERNEL::EqnPlaneOfPolygon( all_points );
-#endif
 
   for ( DRT::UTILS::GaussIntegration::iterator quadint=grule.begin(); quadint!=grule.end(); ++quadint )
   {
