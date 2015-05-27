@@ -207,14 +207,14 @@ bool GEO::CUT::Element::Cut(Mesh & mesh, Side & cut_side, int recursion)
 /*--------------------------------------------------------------------*
  * cut this element with its cut faces                    wirtz 08/14 *
  *--------------------------------------------------------------------*/
-void GEO::CUT::Element::FindCutPoints(Mesh & mesh)
+void GEO::CUT::Element::FindCutPoints(Mesh & mesh, int recursion)
 {
 
   for (plain_side_set::iterator i = cut_faces_.begin(); i != cut_faces_.end();
       ++i)
   {
     Side & cut_side = **i;
-    bool cut = FindCutPoints(mesh, cut_side, 0);
+    bool cut = FindCutPoints(mesh, cut_side, recursion);
     if (!cut)
     {
       --i;
@@ -287,6 +287,7 @@ void GEO::CUT::Element::MakeCutLines(Mesh & mesh, Creator & creator)
   for (plain_side_set::iterator i = cut_faces_.begin(); i != cut_faces_.end();
       ++i)
   {
+    //Comment: For LevelSet cuts, this loop is entered only from TetMeshIntersection.
     Side & cut_side = **i;
 
     bool cut = false;
@@ -1117,6 +1118,7 @@ void GEO::CUT::Element::GetCutPoints(PointSet & cut_points)
 
 void GEO::CUT::Element::CreateIntegrationCells(Mesh & mesh, int count, bool tetcellsonly)
 {
+  //Is volume cell active? (i.e. in recursive call, has this vc already been removed in FixBrokenTets())
   if (not active_)
     return;
 
@@ -1149,7 +1151,7 @@ void GEO::CUT::Element::CreateIntegrationCells(Mesh & mesh, int count, bool tetc
   {
     if (mesh.CreateOptions().SimpleShapes()) // try to create only simple-shaped integration cells for all! volumecells
     {
-      if (IntegrationCellCreator::CreateCells(mesh, this, cells_))
+      if(IntegrationCellCreator::CreateCells(mesh, this, cells_)) //Does not help for cuts with a "tri"
       {
         CalculateVolumeOfCellsTessellation();
         return; // return if this was possible
@@ -1207,13 +1209,19 @@ void GEO::CUT::Element::CreateIntegrationCells(Mesh & mesh, int count, bool tetc
 
   // standard subtetrahedralization starts here, there also the boundary cells will be created
 
+#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
+  std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
+  std::cout << "Create TetMesh for element: " << this->Id() << std::endl;
+#endif
   TetMesh tetmesh(points, facets_, false);
   tetmesh.CreateElementTets(mesh, this, cells_, cut_faces_, count, tetcellsonly);
 
   CalculateVolumeOfCellsTessellation();
 }
 
-
+/* Can a simple shaped integration cells be formed for this element?
+ * I.e. is the element un-cut???
+ */
 bool GEO::CUT::Element::CreateSimpleShapedIntegrationCells(Mesh & mesh)
 {
   //TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::Element::CreateSimpleShapedIntegrationCells" );
@@ -1441,6 +1449,7 @@ void GEO::CUT::Element::DebugDump()
 {
   std::cout << "Problem in element " << Id() << " of shape " << Shape()
       << ":\n";
+  bool haslevelsetside = false;
   const std::vector<Node*> & nodes = Nodes();
   for (std::vector<Node*>::const_iterator i = nodes.begin(); i != nodes.end();
       ++i)
@@ -1456,6 +1465,8 @@ void GEO::CUT::Element::DebugDump()
   {
     Side * s = *i;
     //s->Print();
+    if(s->IsLevelSetSide())
+      haslevelsetside=true;
     const std::vector<Node*> & side_nodes = s->Nodes();
     for (std::vector<Node*>::const_iterator i = side_nodes.begin();
         i != side_nodes.end(); ++i)
@@ -1473,7 +1484,7 @@ void GEO::CUT::Element::DebugDump()
     std::stringstream str;
     str << "cut_test_bacigenerated_" << Id() << ".cpp";
     std::ofstream file( str.str().c_str() );
-    GEO::CUT::OUTPUT::GmshElementCutTest(file,this);
+    GEO::CUT::OUTPUT::GmshElementCutTest(file,this,haslevelsetside);
   }
 
 }

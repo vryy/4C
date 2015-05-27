@@ -204,11 +204,11 @@ public:
   /// Cuts the background elements with this levelset side
   void Cut( LevelSetSide & side );
 
-  /// ???
+  /// Used in TetMeshIntersection, however, unclear for what use??!
   void RectifyCutNumerics();
 
   /// finds intersections between sides and edges
-  void FindCutPoints();
+  void FindCutPoints(int recursion = 0);
 
   /*========================================================================*/
   //! @name Basic routines to create lines, facets and volumecells
@@ -444,8 +444,8 @@ public:
   /// ???
   void TestVolumeSurface();
 
-  /// ???
-  void TestFacetArea();
+  /// Test if the area of a cut facet is covered by the same area of boundary cells on both sides.
+  void TestFacetArea(bool istetmeshintersection = false);
 
 
   /*========================================================================*/

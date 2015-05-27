@@ -162,6 +162,7 @@ void GEO::CUT::OUTPUT::GmshCompleteCutElement( std::ofstream & file, Element * e
   for( plain_side_set::const_iterator its = cutsides.begin(); its != cutsides.end(); its++ )
   {
     const Side * s = *its;
+//    if(not (*its)->IsLevelSetSide())
     GmshSideDump( file, s );
   }
   file<<"};";
@@ -245,7 +246,7 @@ void GEO::CUT::OUTPUT::GmshPointDump( std::ofstream & file, GEO::CUT::Point*  po
 /*-------------------------------------------------------------------------------*
  * Write cuttest for this element!                                     ager 04/15
  *-------------------------------------------------------------------------------*/
-void GEO::CUT::OUTPUT::GmshElementCutTest( std::ofstream & file, GEO::CUT::Element* ele)
+void GEO::CUT::OUTPUT::GmshElementCutTest( std::ofstream & file, GEO::CUT::Element* ele, bool haslevelsetside)
 {
   std::cout << "Write Cut Test for Element " << ele->Id() << " ... " << std::flush;
 
@@ -262,6 +263,8 @@ void GEO::CUT::OUTPUT::GmshElementCutTest( std::ofstream & file, GEO::CUT::Eleme
   file << "" << "\n";
   file << "#include \"../../src/drt_cut/cut_side.H\"" << "\n";
   file << "#include \"../../src/drt_cut/cut_meshintersection.H\"" << "\n";
+  file << "#include \"../../src/drt_cut/cut_levelsetintersection.H\"" << "\n";
+  file << "#include \"../../src/drt_cut/cut_combintersectio.H\"" << "\n";
   file << "#include \"../../src/drt_cut/cut_tetmeshintersection.H\"" << "\n";
   file << "#include \"../../src/drt_cut/cut_options.H\"" << "\n";
   file << "#include \"../../src/drt_cut/cut_volumecell.H\"" << "\n";
@@ -270,34 +273,47 @@ void GEO::CUT::OUTPUT::GmshElementCutTest( std::ofstream & file, GEO::CUT::Eleme
   file << "" << "\n";
   file << "void test_bacigenerated_" << ele->Id() << "()" << "\n";
   file << "{" << "\n";
-  file << "  GEO::CUT::MeshIntersection intersection;" << "\n";
+  file << "  //GEO::CUT::MeshIntersection intersection;" << "\n";
+  file << "  GEO::CUT::CombIntersection intersection(-1);" << "\n";
   file << "  std::vector<int> nids;" << "\n";
   file << "" << "\n";
   file << "  int sidecount = 0;" << "\n";
+  file << "  std::vector<double> lsvs("<<ele->Nodes().size()<<");" << "\n";
 
-  // -- 2 -- add sides -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-  const plain_side_set & cutsides = ele->CutSides();
-  for (plain_side_set::const_iterator i = cutsides.begin(); i != cutsides.end();++i)
+  if(not haslevelsetside)
   {
-    file << "  {" << "\n";
-    file << "    Epetra_SerialDenseMatrix tri3_xyze( 3, 3 );" << "\n";
-    file << "" << "\n";
-    Side * s = *i;
-    const std::vector<Node*> & side_nodes = s->Nodes();
-    int nodelid = -1;
-    file << "    nids.clear();" << "\n";
-    for (std::vector<Node*>::const_iterator j = side_nodes.begin(); j != side_nodes.end(); ++j)
+    // -- 2 -- add sides -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+    const plain_side_set & cutsides = ele->CutSides();
+    for (plain_side_set::const_iterator i = cutsides.begin(); i != cutsides.end();++i)
     {
-      nodelid++;
-      Node * n = *j;
-      for (int dim = 0; dim < 3; ++dim)
+      file << "  {" << "\n";
+      file << "    Epetra_SerialDenseMatrix tri3_xyze( 3, 3 );" << "\n";
+      file << "" << "\n";
+      Side * s = *i;
+      const std::vector<Node*> & side_nodes = s->Nodes();
+      int nodelid = -1;
+      file << "    nids.clear();" << "\n";
+      for (std::vector<Node*>::const_iterator j = side_nodes.begin(); j != side_nodes.end(); ++j)
       {
-        file << "    tri3_xyze(" << dim << "," << nodelid << ") = " << n->point()->X()[dim] << ";" << "\n";
+        nodelid++;
+        Node * n = *j;
+        for (int dim = 0; dim < 3; ++dim)
+        {
+          file << "    tri3_xyze(" << dim << "," << nodelid << ") = " << n->point()->X()[dim] << ";" << "\n";
+        }
+        file << "    nids.push_back( " << n->Id() << " );" << "\n";
       }
-      file << "    nids.push_back( " << n->Id() << " );" << "\n";
+      file << "    intersection.AddCutSide( ++sidecount, nids, tri3_xyze, DRT::Element::tri3 );" << "\n";
+      file << "  }" << "\n";
     }
-    file << "    intersection.AddCutSide( ++sidecount, nids, tri3_xyze, DRT::Element::tri3 );" << "\n";
-    file << "  }" << "\n";
+  }
+  else
+  {
+    file << "  ci.AddLevelSetSide(1);" << "\n";
+    for (uint i = 0; i < ele->Nodes().size(); ++i)
+    {
+      file << "  lsvs[" << i << "] = " << ele->Nodes()[i]->LSV() << ";" << "\n";
+    }
   }
 
   // -- 3 -- add background element -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
@@ -314,60 +330,65 @@ void GEO::CUT::OUTPUT::GmshElementCutTest( std::ofstream & file, GEO::CUT::Eleme
     file << "  nids.push_back( " << ele->Nodes()[i]->Id() << " );" << "\n";
   }
   file << "" << "\n";
-  file << "  intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );" << "\n";
+  file << "  intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8, &lsvs[0], false );" << "\n";
   file << "" << "\n";
   file << "  intersection.Status();" << "\n";
   file << "" << "\n";
-  file << "  intersection.Cut( true, INPAR::CUT::VCellGaussPts_Tessellation );" << "\n";
+  //file << "  intersection.Cut( true, INPAR::CUT::VCellGaussPts_Tessellation );" << "\n";
+  file << "  intersection.Cut( true);" << "\n";
+  file << "  intersection.Cut_Finalize( true, INPAR::CUT::VCellGaussPts_Tessellation, INPAR::CUT::BCellGaussPts_Tessellation, false, true );" << "\n";
   file << "  }" << "\n";
   file << "" << "\n";
 
-  // -- 4 -- compare integration methods -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-  file << "  std::vector<double> tessVol,momFitVol,dirDivVol;" << "\n";
-  file << "" << "\n";
-  file << "  GEO::CUT::Mesh mesh = intersection.NormalMesh();" << "\n";
-  file << "  const std::list<Teuchos::RCP<GEO::CUT::VolumeCell> > & other_cells = mesh.VolumeCells();" << "\n";
-  file << "  for ( std::list<Teuchos::RCP<GEO::CUT::VolumeCell> >::const_iterator i=other_cells.begin();" << "\n";
-  file << "        i!=other_cells.end();" << "\n";
-  file << "        ++i )" << "\n";
-  file << "  {" << "\n";
-  file << "    GEO::CUT::VolumeCell * vc = &**i;" << "\n";
-  file << "    tessVol.push_back(vc->Volume());" << "\n";
-  file << "  }" << "\n";
-  file << "" << "\n";
-  file << "  intersection.Status();" << "\n";
-  file << "" << "\n";
-  file << "  for ( std::list<Teuchos::RCP<GEO::CUT::VolumeCell> >::const_iterator i=other_cells.begin();" << "\n";
-  file << "        i!=other_cells.end();" << "\n";
-  file << "        ++i )" << "\n";
-  file << "  {" << "\n";
-  file << "    GEO::CUT::VolumeCell * vc = &**i;" << "\n";
-  file << "    vc->MomentFitGaussWeights(vc->ParentElement(),mesh,true,INPAR::CUT::BCellGaussPts_Tessellation);" << "\n";
-  file << "    momFitVol.push_back(vc->Volume());" << "\n";
-  file << "  }" << "\n";
-  file << "" << "\n";
-  file << "  for ( std::list<Teuchos::RCP<GEO::CUT::VolumeCell> >::const_iterator i=other_cells.begin();" << "\n";
-  file << "           i!=other_cells.end();" << "\n";
-  file << "           ++i )" << "\n";
-  file << "   {" << "\n";
-  file << "     GEO::CUT::VolumeCell * vc = &**i;" << "\n";
-  file << "     vc->DirectDivergenceGaussRule(vc->ParentElement(),mesh,true,INPAR::CUT::BCellGaussPts_DirectDivergence);" << "\n";
-  file << "     dirDivVol.push_back(vc->Volume());" << "\n";
-  file << "   }" << "\n";
-  file << "" << "\n";
-  file << "  std::cout<<\"the volumes predicted by\\n tessellation \\t MomentFitting \\t DirectDivergence\\n\";" << "\n";
-  file << "  for(unsigned i=0;i<tessVol.size();i++)" << "\n";
-  file << "  {" << "\n";
-  file << "    std::cout<<tessVol[i]<<\"\\t\"<<momFitVol[i]<<\"\\t\"<<dirDivVol[i]<<\"\\n\";" << "\n";
-  file << "    if( fabs(tessVol[i]-momFitVol[i])>1e-9 || fabs(dirDivVol[i]-momFitVol[i])>1e-9 )" << "\n";
-  file << "    {" << "\n";
-  file << "      mesh.DumpGmsh(\"Cuttest_Debug_Output.pos\");" << "\n";
-  file << "      intersection.CutMesh().GetElement(1)->DebugDump();" << "\n";
-  file << "      dserror(\"volume predicted by either one of the method is wrong\");" << "\n";
-  file << "      }" << "\n";
-  file << "    }" << "\n";
-  file << "}" << "\n";
-  std::cout << "done " << std::endl;
+  if(not haslevelsetside)
+  {
+    // -- 4 -- compare integration methods -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+    file << "  std::vector<double> tessVol,momFitVol,dirDivVol;" << "\n";
+    file << "" << "\n";
+    file << "  GEO::CUT::Mesh mesh = intersection.NormalMesh();" << "\n";
+    file << "  const std::list<Teuchos::RCP<GEO::CUT::VolumeCell> > & other_cells = mesh.VolumeCells();" << "\n";
+    file << "  for ( std::list<Teuchos::RCP<GEO::CUT::VolumeCell> >::const_iterator i=other_cells.begin();" << "\n";
+    file << "        i!=other_cells.end();" << "\n";
+    file << "        ++i )" << "\n";
+    file << "  {" << "\n";
+    file << "    GEO::CUT::VolumeCell * vc = &**i;" << "\n";
+    file << "    tessVol.push_back(vc->Volume());" << "\n";
+    file << "  }" << "\n";
+    file << "" << "\n";
+    file << "  intersection.Status();" << "\n";
+    file << "" << "\n";
+    file << "  for ( std::list<Teuchos::RCP<GEO::CUT::VolumeCell> >::const_iterator i=other_cells.begin();" << "\n";
+    file << "        i!=other_cells.end();" << "\n";
+    file << "        ++i )" << "\n";
+    file << "  {" << "\n";
+    file << "    GEO::CUT::VolumeCell * vc = &**i;" << "\n";
+    file << "    vc->MomentFitGaussWeights(vc->ParentElement(),mesh,true,INPAR::CUT::BCellGaussPts_Tessellation);" << "\n";
+    file << "    momFitVol.push_back(vc->Volume());" << "\n";
+    file << "  }" << "\n";
+    file << "" << "\n";
+    file << "  for ( std::list<Teuchos::RCP<GEO::CUT::VolumeCell> >::const_iterator i=other_cells.begin();" << "\n";
+    file << "           i!=other_cells.end();" << "\n";
+    file << "           ++i )" << "\n";
+    file << "   {" << "\n";
+    file << "     GEO::CUT::VolumeCell * vc = &**i;" << "\n";
+    file << "     vc->DirectDivergenceGaussRule(vc->ParentElement(),mesh,true,INPAR::CUT::BCellGaussPts_DirectDivergence);" << "\n";
+    file << "     dirDivVol.push_back(vc->Volume());" << "\n";
+    file << "   }" << "\n";
+    file << "" << "\n";
+    file << "  std::cout<<\"the volumes predicted by\\n tessellation \\t MomentFitting \\t DirectDivergence\\n\";" << "\n";
+    file << "  for(unsigned i=0;i<tessVol.size();i++)" << "\n";
+    file << "  {" << "\n";
+    file << "    std::cout<<tessVol[i]<<\"\\t\"<<momFitVol[i]<<\"\\t\"<<dirDivVol[i]<<\"\\n\";" << "\n";
+    file << "    if( fabs(tessVol[i]-momFitVol[i])>1e-9 || fabs(dirDivVol[i]-momFitVol[i])>1e-9 )" << "\n";
+    file << "    {" << "\n";
+    file << "      mesh.DumpGmsh(\"Cuttest_Debug_Output.pos\");" << "\n";
+    file << "      intersection.CutMesh().GetElement(1)->DebugDump();" << "\n";
+    file << "      dserror(\"volume predicted by either one of the method is wrong\");" << "\n";
+    file << "      }" << "\n";
+    file << "    }" << "\n";
+    file << "}" << "\n";
+    std::cout << "done " << std::endl;
+  }
 }
 
 std::string GEO::CUT::OUTPUT::GenerateGmshOutputFilename(const std::string& filename_tail)

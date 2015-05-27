@@ -569,7 +569,7 @@ void GEO::CUT::ParentIntersection::Cut_Finalize( bool include_inner,
     //m.RemoveEmptyVolumeCells();
 
 #ifdef DEBUGCUTLIBRARY
-    //m.TestVolumeSurface();
+    //m.TestVolumeSurface(); //Broken test, needs to be fixed for proper usage.
     m.TestFacetArea();
 #endif
     m.SimplifyIntegrationCells();

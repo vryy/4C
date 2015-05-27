@@ -107,7 +107,7 @@ public:
   /*!
   \brief cut this element with its cut faces
    */
-  void FindCutPoints( Mesh & mesh );
+  void FindCutPoints( Mesh & mesh, int recursion = 0 );
 
   /*!
   \brief cut this element with given cut_side

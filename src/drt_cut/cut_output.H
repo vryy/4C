@@ -82,7 +82,7 @@ void GmshPointDump( std::ofstream & file, GEO::CUT::Point*  point);
 /*!
 \brief Write cuttest for this element!
 */
-void GmshElementCutTest( std::ofstream & file, GEO::CUT::Element* ele);
+void GmshElementCutTest( std::ofstream & file, GEO::CUT::Element* ele, bool haslevelsetside=false);
 
 /*!
  \brief Generate filename for gmsh output with specific ending

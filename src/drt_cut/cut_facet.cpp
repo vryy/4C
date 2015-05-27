@@ -259,6 +259,16 @@ bool GEO::CUT::Facet::IsPlanar( Mesh & mesh, const std::vector<Point*> & points 
   return true;
 }
 
+//Does the facet share the same cut-side?
+bool GEO::CUT::Facet::ShareSameCutSide( Facet* f )
+{
+  if(this->parentside_->Id() == f->ParentSide()->Id())
+  {
+    return true;
+  }
+  return false;
+}
+
 /*-------------------------------------------------------------------------------------------------------*
       Find the middle point (M) and join them with the corners of the facet to create triangles
       Works only for convex facets, because of the middle point calculation
@@ -513,6 +523,7 @@ void GEO::CUT::Facet::GetLines( std::map<std::pair<Point*, Point*>, plain_facet_
   // We are interested in the surrounding lines of the facet. Thus the
   // internal lines that result from a triangulation are not wanted
   // here. (There are no other facets connected to any of our internal lines.)
+  //if ( this->ParentSide()->IsLevelSetSide() and  IsTriangulated() )
   if ( IsTriangulated() )
   {
     for ( std::vector<std::vector<Point*> >::iterator i=triangulation_.begin();
@@ -920,12 +931,14 @@ void GEO::CUT::Facet::GetBoundaryCells( plain_boundarycell_set & bcells )
   }
 }
 
-void GEO::CUT::Facet::TestFacetArea( double tolerance )
+void GEO::CUT::Facet::TestFacetArea( double tolerance, bool istetmeshintersection)
 {
   if ( OnCutSide() and cells_.size() > 1 )
   {
     std::vector<double> area;
     area.reserve( 2 );
+    //Does not necessarily have to be same on both sides of cutside.
+    // Especially true for tetmeshintersection.
     for ( plain_volumecell_set::iterator i=cells_.begin(); i!=cells_.end(); ++i )
     {
       VolumeCell * vc = *i;
@@ -952,12 +965,32 @@ void GEO::CUT::Facet::TestFacetArea( double tolerance )
     double diff = area[0] - area[1];
     if ( fabs( diff ) >= tolerance )
     {
+      int eleId = cells_[0]->ParentElement()->Id();
       std::stringstream str;
-      str << "area mismatch: a1=" << area[0]
-          << " a2=" << area[1]
-          << " diff=" << diff;
-      //throw std::runtime_error( str.str() );
+      if(istetmeshintersection)
+      {
+        str << "In eleId=" << eleId
+            << ", in TetMeshIntersection,"
+            << " area mismatch: a1=" << area[0]
+            << " a2=" << area[1]
+            << " diff=" << diff;
+      }
+      else
+      {
+        str << "In eleId=" << eleId
+            << " area mismatch: a1=" << area[0]
+            << " a2=" << area[1]
+            << " diff=" << diff;
+      }
+
       std::cout << "WARNING: " << str.str() << "\n";
+#ifdef DEBUGCUTLIBRARY
+      throw std::runtime_error( str.str() );
+#endif
+
+//CUT_Magnus: might want to remove runtime_error
+//        if(area[0]==0 or area[1]==0)
+//
     }
   }
 }

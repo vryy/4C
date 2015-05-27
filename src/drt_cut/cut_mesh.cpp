@@ -797,7 +797,7 @@ void GEO::CUT::Mesh::SearchCollisions(Mesh & cutmesh)
  * finds intersections between sides and edges                                         *
  *                                                                         wirtz 08/14 *
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::Mesh::FindCutPoints()
+void GEO::CUT::Mesh::FindCutPoints(int recursion)
 {
   TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 4/6 --- Cut_MeshIntersection --- FindCutPoints" );
 
@@ -808,7 +808,7 @@ void GEO::CUT::Mesh::FindCutPoints()
     Element & e = *i->second;
     try
     {
-      e.FindCutPoints( *this );
+      e.FindCutPoints( *this, recursion);
     }
     catch ( std::runtime_error & err )
     {
@@ -823,7 +823,7 @@ void GEO::CUT::Mesh::FindCutPoints()
     Element & e = *i->second;
     try
     {
-      e.FindCutPoints( *this );
+      e.FindCutPoints( *this, recursion);
     }
     catch ( std::runtime_error & err )
     {
@@ -1025,11 +1025,11 @@ void GEO::CUT::Mesh::FindLSNodePositions()
     {
       // we have to take into account the tolerance for which a node lies on the levelset-side
       double lsv = n->LSV();
-      if ( lsv > REFERENCETOL )
+      if ( lsv > 0.0) //REFERENCETOL )
       {
         p->Position( Point::outside );
       }
-      else if ( lsv < -REFERENCETOL )
+      else if ( lsv < 0.0)//-REFERENCETOL )
       {
         p->Position( Point::inside );
       }
@@ -1037,6 +1037,7 @@ void GEO::CUT::Mesh::FindLSNodePositions()
       {
         //throw std::runtime_error( "undecided nodal point on levelset
         //surface" );
+        std::cout << "UNDECIDED CUT POSITION! SHOULD THIS HAPPEN?!" << " lsv= " << std::setprecision(24) << lsv << std::endl;
         p->Position( Point::oncutsurface );
       }
     }
@@ -1607,6 +1608,32 @@ void GEO::CUT::Mesh::TestElementVolume( DRT::Element::DiscretizationType shape, 
 #endif
 
     double volume_error = ( ev-cv )/ev;
+//Uncomment for a lot of output.
+//#ifdef DEBUGCUTLIBRARY
+//    std::cout << "#vc=" << cells.size()
+//              << " #ic=" << numic
+//              << " #bc=" << numbc
+//              << " #gp=" << numgp
+//              << " \t-- "
+//              << ev << "  "
+//              << cv << "  "
+//              << ev-cv << "  "
+//              << volume_error
+//              << " \t-- "
+//              << ba
+//              << "\n";
+//#endif
+
+    if ( fatal and fabs( volume_error ) > 1e-5 )
+    {
+      std::stringstream err;
+      err << " !!!!!!!!!!! volume test failed: !!!!!!!!!!!!!!!"
+          << "eleID=" << e.Id() << "  "
+          << "ve=" << ev << "  "
+          << "vc=" << cv << "  "
+          << "vd= "<< ev-cv << "  "
+          << "err=" << volume_error;
+      std::cout << err.str() << std::endl;
 
 #ifdef DEBUGCUTLIBRARY
     std::cout << "#vc=" << cells.size()
@@ -1623,17 +1650,10 @@ void GEO::CUT::Mesh::TestElementVolume( DRT::Element::DiscretizationType shape, 
               << "\n";
 #endif
 
-    if ( fatal and fabs( volume_error ) > 1e-5 )
-    {
-      std::stringstream err;
-      err << " !!!!!!!!!!! volume test failed: !!!!!!!!!!!!!!!"
-          << "eleID=" << e.Id() << "  "
-          << "ve=" << ev << "  "
-          << "vc=" << cv << "  "
-          << "vd= "<< ev-cv << "  "
-          << "err=" << volume_error;
-      std::cout << err.str() << std::endl;
-//      throw std::runtime_error( err.str() );
+    //Cut test is written for level-set cases as well.
+    if(LINSOLVETOL>volume_error)
+      throw std::runtime_error( err.str() );
+
     }
   }
 }
@@ -1909,7 +1929,10 @@ void GEO::CUT::Mesh::DumpGmsh( std::string name )
           ++i )
     {
       Side & s = *i->second;
+//      if(not s.IsLevelSetSide())
+//      {
       GEO::CUT::OUTPUT::GmshSideDump( file, &s );
+//      }
     }
   file << "};\n";
   }
@@ -3008,13 +3031,15 @@ void GEO::CUT::Mesh::TestVolumeSurface()
 /*-------------------------------------------------------------------------------------*
  * ???
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::Mesh::TestFacetArea()
+void GEO::CUT::Mesh::TestFacetArea(bool istetmeshintersection)
 {
   for ( std::list<Teuchos::RCP<Facet> >::iterator i=facets_.begin(); i!=facets_.end(); ++i )
   {
     Facet * f = &**i;
 
     // This is a crude test. We do not demand so much here...
-    f->TestFacetArea( 1e-7 );
+    double tolerance = 1e-7;
+    //double tolerance = 1e-11; // sharper tolerance
+    f->TestFacetArea( tolerance, istetmeshintersection );
   }
 }

@@ -10,6 +10,26 @@
 #include "cut_tetmeshintersection.H"
 #include "cut_volumecell.H"
 
+/* Initialize a Mesh within an element. This is done if a TetMesh is created but can't be filled in FillFacetMesh().
+   Basically this constructor converts the data structure used for TetMesh into the data structures used for Mesh.
+
+   The TetMesh produced from the in the "parent element" is decomposed into a "small" Mesh object with its TETs.
+   When Cut is Called these TETs are cut as a normal Mesh would with cut-sides etc... Then every TET of this Mesh,
+   is is tested to see if a TetMesh can be produced out of its new cut configuration.
+     If Yes -> We are done! The cut element has been tesselated
+     If No  -> Another call to the TetMeshIntersection class is necessary
+        PROBLEM: For problematic cut situations we run into machine precision error with this type of algorithm.
+                 It is NOT very stable... An alternative should be pursued. It is likely that ALE will not
+                 work for LevelSet with this algorithm, eventhough it works (sort of) all right for a cartesian
+                 constellation.
+
+   For a LevelSet-Cut the triangulated facet is decomposed into TRI-surfaces here.
+
+   o mesh_      is a normal Mesh object composed of the the accepted TETs
+   o cut_mesh_  is created from the facets and triangulated facets????
+   o pp_        a new local point pool for the decomposition of this tetmesh of this element into a mesh object.
+
+ */
 GEO::CUT::TetMeshIntersection::TetMeshIntersection( Options & options,
                                                     Element * element,
                                                     const std::vector<std::vector<int> > & tets,
@@ -21,7 +41,7 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( Options & options,
     mesh_( options, 1, pp_ ),
     cut_mesh_( options, 1, pp_, true )
 {
-
+  // Create the nodes and make the connectivity to the parent_mesh.
   for ( std::vector<Point*>::const_iterator i=points.begin(); i!=points.end(); ++i )
   {
     Point * p = *i;
@@ -31,6 +51,7 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( Options & options,
     Register( p, np );
   }
 
+  // Create the tets and register if the nodes of the tets are on a cut surface (i.e. register edges)
   for ( std::vector<std::vector<int> >::const_iterator i=tets.begin(); i!=tets.end(); ++i )
   {
     const std::vector<int> & tet = *i;
@@ -61,6 +82,7 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( Options & options,
 
     plain_facet_set facets;
     const std::vector<Facet*> & side_facets = s->Facets();
+    //Extract the facets of the cut-side
     for ( std::vector<Facet*>::const_iterator i=side_facets.begin(); i!=side_facets.end(); ++i )
     {
       Facet * f = *i;
@@ -74,6 +96,8 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( Options & options,
     {
       Facet * f = *i;
 
+      //Is this facet a LevelSetSide or is it Triangulated
+      // add this to triangulated and the new nodes to nodemap
       if ( f->ParentSide()->IsLevelSetSide() or f->IsTriangulated() )
       {
         triangulated.push_back( f );
@@ -97,6 +121,7 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( Options & options,
   cut_mesh_.NewNodesFromPoints( nodemap );
 
   // do triangulated facets (create extra cut sides)
+  // and initialize cut_mesh_
 
   for ( std::vector<Facet*>::iterator i=triangulated.begin(); i!=triangulated.end(); ++i )
   {
@@ -145,6 +170,7 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( Options & options,
       {
       case 2:
         // Degenerated nonsense. Why does that happen?
+        dserror("In TetMeshIntersection() the corner points of a facet is points.size()=2. Shoudln't happen?");
 
         // make sure the mapping entry exists
         side_parent_to_child_[s];
@@ -236,6 +262,10 @@ void GEO::CUT::TetMeshIntersection::FindEdgeCuts()
   }
 }
 
+/* Cut the created mesh in a similar fashion as is done for ParentIntersection.
+   However it is not done exactly the same way... It seems to be quite complex...
+   One would have to spend quite some time to find out the thinking behind it and maybe connect it to the existing algo.
+ */
 void GEO::CUT::TetMeshIntersection::Cut( Mesh & parent_mesh,
                                          Element * element,
                                          const plain_volumecell_set & parent_cells,
@@ -261,6 +291,11 @@ void GEO::CUT::TetMeshIntersection::Cut( Mesh & parent_mesh,
 
   plain_element_set elements_done;
   cut_mesh_.Cut( mesh_, elements_done, count+1 );
+
+  //New way of cut? Might need to join the the TetMeshIntersection with the new Cut algorithm?
+  //THIS IS NOT WORKING AT THE MOMENT!!!
+//  mesh_.SearchCollisions(cut_mesh_);
+//  mesh_.FindCutPoints(count+1);
 
   cut_mesh_.RectifyCutNumerics();
   mesh_.RectifyCutNumerics();
@@ -295,13 +330,18 @@ void GEO::CUT::TetMeshIntersection::Cut( Mesh & parent_mesh,
   //mesh_.RemoveEmptyVolumeCells();
 
 #ifdef DEBUGCUTLIBRARY
-  //mesh_.TestVolumeSurface();
-  mesh_.TestFacetArea();
+  //mesh_.TestVolumeSurface(); //Broken test, needs to be fixed for proper usage.
+  mesh_.TestFacetArea(true);
+#endif
+#ifdef DEBUGCUTLIBRARY
+  mesh_.TestElementVolume(true);
 #endif
 
   Fill( parent_mesh, element, parent_cells, cellmap );
 }
 
+/// Make sure connectivity between the new VolumeCell (of the children of the VC) are correctly connected to its parents.
+/// However not sure exactly how this is done....
 void GEO::CUT::TetMeshIntersection::MapVolumeCells( Mesh & parent_mesh, Element * element, const plain_volumecell_set & parent_cells, std::map<VolumeCell*, ChildCell> & cellmap )
 {
   plain_volumecell_set done_child_cells;

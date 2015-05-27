@@ -185,7 +185,7 @@ bool GEO::CUT::VolumeIntegration::compute_Gaussian_points(int numeach)
       else
         wei = true;
 #ifdef DEBUGCUTLIBRARY
-      std::cout<<"number of Gauss points"<<gaus_pts_.size()<<std::endl;
+      std::cout<<"number of Gauss points "<<gaus_pts_.size()<<std::endl;
 #endif
       return wei;
     }

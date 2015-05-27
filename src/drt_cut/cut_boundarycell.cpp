@@ -315,6 +315,6 @@ void GEO::CUT::BoundaryCell::Print()
   std::cout<<"The coordinates of boundary cell are \n";
   for( unsigned i=0; i<points_.size(); i++ )
   {
-    std::cout<<xyz_(0,i)<<"\t"<<xyz_(1,i)<<"\t"<<xyz_(2,i)<<"\n";
+    std::cout<< "pID: " << points_()[i]->Id() << ", coord: " << xyz_(0,i)<<"\t"<<xyz_(1,i)<<"\t"<<xyz_(2,i)<<"\n";
   }
 }

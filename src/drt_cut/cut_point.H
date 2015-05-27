@@ -379,9 +379,14 @@ private:
 
 }
 
+/// Find if the points in side (which is actually a tet...) share a common side,
+///   (i.e. do all points lie on the same surface?)
+/// A point knows which cut_sides it is associated to.
 inline void FindCommonSides( const std::vector<Point*> & side, plain_side_set & sides )
 {
   std::vector<Point*>::const_iterator is = side.begin();
+  //Get the sides this point cuts
+  //A cut-side which is a LevelSet-side is empty but is still present.
   sides = ( *is )->CutSides();
   for ( ++is; is!=side.end(); ++is )
   {

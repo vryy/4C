@@ -48,6 +48,19 @@ public:
     std::cout << "\n";
   }
 
+  ///Print only point IDs of a facet.
+  void PrintPointIds()
+  {
+    for ( std::vector<Point*>::iterator i=points_.begin();
+          i!=points_.end();
+          ++i )
+    {
+      Point & p = **i;
+      std::cout << p.Pid() << " ";
+    }
+    std::cout << "\n";
+  }
+
   void Print( std::ostream & stream );
 
   bool OnCutSide() { return SideId() > -1; }
@@ -187,7 +200,7 @@ public:
   /// unused, see comment
   void GetBoundaryCells( plain_boundarycell_set & bcells );
 
-  void TestFacetArea( double tolerance );
+  void TestFacetArea( double tolerance, bool istetmeshintersection = false);
 
   bool IsTriangle( const std::vector<Point*> & tri ) const;
 
@@ -234,6 +247,9 @@ public:
   const std::vector<std::vector<Point*> > & GetSplitCells() const { return splitCells_; }
 
   bool IsPlanar( Mesh & mesh, const std::vector<Point*> & points );
+
+  ///Do the facets share the same CutSide?
+  bool ShareSameCutSide( Facet * f );
 
 private:
 
@@ -350,6 +366,11 @@ inline void FindCommonFacets( const std::vector<Point*> & side, plain_facet_set 
       break;
     }
   }
+  //CUT_Magnus
+  //This is probably an unnecessary call as side here is a tet, i.e. side.size() == 4.
+  if(side.size()==3)
+    dserror("The TET is degenerate! It does not contain 4 points!");
+  //Might be able to remove this call requires side.size()==3
   RemoveNonmatchingTriangulatedFacets( side, facets );
 }
 

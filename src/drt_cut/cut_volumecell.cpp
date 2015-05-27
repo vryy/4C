@@ -563,6 +563,14 @@ std::string GEO::CUT::VolumeCell::IsThisPointInside( LINALG::Matrix<3,1>& xglo )
   return inside;
 }
 
+/*
+ * There is a flaw in this test. If there are points added through TetMeshIntersection on the facet boundary
+ * the test will fail.
+ *
+ * In order to fix this test one has to check if the remaining lines are connected. I.e. are the points added from the
+ * tesselation connected correctly?
+ *
+ */
 void GEO::CUT::VolumeCell::TestSurface()
 {
   if ( Empty() )
@@ -577,14 +585,15 @@ void GEO::CUT::VolumeCell::TestSurface()
   // This finds all the degenerated cases that where dropped before. Thus the
   // test complains a lot.
 
-  for ( plain_facet_set::iterator i=facets_.begin(); i!=facets_.end(); ++i )
+  for ( plain_facet_set::iterator j=facets_.begin(); j!=facets_.end(); ++j )
   {
-    Facet * f = *i;
+    Facet * f = *j;
 
     if ( f->OnCutSide() )
     {
       if ( f->IsTriangulated() )
       {
+//        std::cout << "f->Triangulation().size(): " << f->Triangulation().size();
         //
       }
       if ( f->HasHoles() )
@@ -598,11 +607,16 @@ void GEO::CUT::VolumeCell::TestSurface()
       Cycle cycle( points );
       cycle.Add( lines );
 
+      point_line_set facetlines = lines;
+
       for ( plain_boundarycell_set::iterator i=bcells_.begin(); i!=bcells_.end(); ++i )
       {
         BoundaryCell * bc = *i;
         if ( bc->GetFacet() == f )
         {
+//          std::cout << "Printing boundary cell: " << std::endl;
+//          bc->Print();
+//          std::cout << std::endl;
           const std::vector<Point*> & points = bc->Points();
           Cycle cycle( points );
           cycle.Add( lines );
@@ -611,6 +625,57 @@ void GEO::CUT::VolumeCell::TestSurface()
 
       if ( lines.size()!=0 )
       {
+//        std::cout << "Problem Facet: " << std::endl;
+//        f->Print(std::cout);
+//        std::cout << std::endl;
+//        std::cout << "lines.size(): " << lines.size() << std::endl;
+//        for(unsigned k=0; k< lines.size(); k++)
+//        {
+//          std::cout << "#: " << k <<std::endl;
+//          lines[k].first->Print(std::cout);
+//          lines[k].second->Print(std::cout);
+//          std::cout << std::endl;
+//        }
+//
+        //Q: What line in the facetlines is not connected?
+        int numberoflines=0;
+        std::vector<int> facetlineindex;
+        for(unsigned k=0; k< lines.size(); k++)
+        {
+          for(unsigned l=0; l < facetlines.size(); l++)
+          {
+            if(lines[k]==facetlines[l])
+            {
+              numberoflines++;
+              facetlineindex.push_back(l);
+            }
+          }
+        }
+        std::cout << "numberoflines: " << numberoflines << std::endl;
+
+        //test that no line is the same.
+        for(unsigned k=0; k< facetlineindex.size(); k++)
+        {
+          for(unsigned l=0; l< facetlineindex.size(); l++)
+            if(facetlineindex[k]==facetlineindex[l] and k!=l)
+              throw std::runtime_error("volume cut facets not closed!!");
+        }
+
+//        //Find the connection.
+//        for(unsigned k=0; k< numberoflines; k++)
+//        {
+//          int index1 = facetlines[facetlineindex[k]].first->Id();
+//          int index2 = facetlines[facetlineindex[k]].second->Id();
+//
+//
+//
+//
+//        }
+
+
+        //One would have to check if the facetline(s) found here is/are connected in lines. Would probably be best implemented
+        // with some sort of tree structure.
+
         throw std::runtime_error( "volume cut facets not closed" );
       }
     }

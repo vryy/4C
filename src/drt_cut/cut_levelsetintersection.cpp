@@ -159,6 +159,12 @@ void GEO::CUT::LevelSetIntersection::Cut( bool include_inner, bool screenoutput 
 #endif
 
   m.TestElementVolume( true );
+
+#if DEBUGCUTLIBRARY
+  m.TestVolumeSurface(); //Broken test, needs to be fixed for proper usage.
+  m.TestFacetArea();
+#endif
+
 //######################################################################################
 
 }//GEO::CUT::LevelSetIntersection::Cut

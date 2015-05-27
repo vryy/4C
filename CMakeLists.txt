@@ -1854,6 +1854,7 @@ set(OBJS_CUT_TEST
   tests/cut_test/cut_test_geometry.cpp
   tests/cut_test/cut_test_intersection.cpp
   tests/cut_test/cut_test_levelset.cpp
+  tests/cut_test/cut_test_levelset_no_loc_coord.cpp
   tests/cut_test/cut_test_loader.cpp
   tests/cut_test/cut_test_main.cpp
   tests/cut_test/cut_test_selfcut.cpp
