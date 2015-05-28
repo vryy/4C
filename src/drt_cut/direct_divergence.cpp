@@ -12,6 +12,8 @@ equations
 #include "cut_boundingbox.H"
 #include "cut_kernel.H"
 
+#include "cut_output.H"
+
 #include <Teuchos_TimeMonitor.hpp>
 
 
@@ -207,74 +209,82 @@ void GEO::CUT::DirectDivergence::ListFacets( std::vector<plain_facet_set::const_
       RefPlaneEqn[i] = 0.0;
   }
 #else
-  // Construct bounding box over the parent element
-  // Consider the plane containing the diagonal of this element to project the Gauss points
-  // REMEMBER: Assumed that the element has constant thickness in z-direction
-  BoundingBox bb(*elem1_);
-  //BoundingBox bb(*this);
-  std::vector<std::vector<double> > diagonal1,diagonal2;
+  // When we construct integration rule in global coordinate system,
+  // we need a reference plane such that when the main Gauss points are projected over
+  // this plane, this line of projection must be completely within the background element
+  // In order to do this, we consider all the 6 possible diagonals of the element
+  // Find component of normal vector in x-direction (n_x), and choose the diagonal
+  // surface for which n_x is maximum --> To minimize roundoff error
 
-  // get two diagonal-1 of Hex
-  std::vector<double> pt1(3);
-  pt1[0] = bb.minx();
-  pt1[1] = bb.miny();
-  pt1[2] = bb.minz();
+  // Additional note: Any diagonal of the background element can be chosen and the line of
+  // projection stays completely within the element
+  // How? Because the background element is always CONVEX
+  if( elem1_->Shape() != DRT::Element::hex8 )
+    dserror("Currently can handle only hexagonal family\n");
 
-  std::vector<double> pt2(3);
-  pt2[0] = bb.minx();
-  pt2[1] = bb.miny();
-  pt2[2] = bb.maxz();
+  std::vector<Point*> ptslist = elem1_->Points();
+  std::vector<std::vector<Point*> >diagonals;
 
-  std::vector<double> pt3(3);
-  pt3[0] = bb.maxx();
-  pt3[1] = bb.maxy();
-  pt3[2] = bb.maxz();
+  std::vector<Point*> diag;
+  diag.push_back( ptslist[0] );
+  diag.push_back( ptslist[1] );
+  diag.push_back( ptslist[6] );
+  diag.push_back( ptslist[7] );
+  diagonals.push_back( diag );
 
-  std::vector<double> pt4(3);
-  pt4[0] = bb.maxx();
-  pt4[1] = bb.maxy();
-  pt4[2] = bb.minz();
+  diag.clear();
+  diag.push_back( ptslist[2] );
+  diag.push_back( ptslist[3] );
+  diag.push_back( ptslist[4] );
+  diag.push_back( ptslist[5] );
+  diagonals.push_back( diag );
 
-  diagonal1.push_back(pt1);
-  diagonal1.push_back(pt2);
-  diagonal1.push_back(pt3);
-  diagonal1.push_back(pt4);
+  diag.clear();
+  diag.push_back( ptslist[5] );
+  diag.push_back( ptslist[6] );
+  diag.push_back( ptslist[3] );
+  diag.push_back( ptslist[0] );
+  diagonals.push_back( diag );
 
-  // get diagonal-2 of Hex
-  std::vector<double> pt5(3);
-  pt5[0] = bb.maxx();
-  pt5[1] = bb.miny();
-  pt5[2] = bb.minz();
+  diag.clear();
+  diag.push_back( ptslist[4] );
+  diag.push_back( ptslist[7] );
+  diag.push_back( ptslist[2] );
+  diag.push_back( ptslist[1] );
+  diagonals.push_back( diag );
 
-  std::vector<double> pt6(3);
-  pt6[0] = bb.maxx();
-  pt6[1] = bb.miny();
-  pt6[2] = bb.maxz();
+  diag.clear();
+  diag.push_back( ptslist[0] );
+  diag.push_back( ptslist[4] );
+  diag.push_back( ptslist[6] );
+  diag.push_back( ptslist[2] );
+  diagonals.push_back( diag );
 
-  std::vector<double> pt7(3);
-  pt7[0] = bb.minx();
-  pt7[1] = bb.maxy();
-  pt7[2] = bb.maxz();
+  diag.clear();
+  diag.push_back( ptslist[5] );
+  diag.push_back( ptslist[1] );
+  diag.push_back( ptslist[3] );
+  diag.push_back( ptslist[7] );
+  diagonals.push_back( diag );
 
-  std::vector<double> pt8(3);
-  pt8[0] = bb.minx();
-  pt8[1] = bb.maxy();
-  pt8[2] = bb.minz();
+  double xnormal = 0.0;
+  for( std::vector<std::vector<Point*> >::iterator itd = diagonals.begin();
+                                                   itd != diagonals.end(); itd++ )
+  {
+    std::vector<Point*> ptl = *itd;
+    std::vector<double> RefPlaneTemp = KERNEL::EqnPlaneOfPolygon( ptl );
+    if( fabs(RefPlaneTemp[0]) < REF_PLANE_DIRDIV )
+      continue;
 
-  diagonal2.push_back( pt5 );
-  diagonal2.push_back( pt6 );
-  diagonal2.push_back( pt7 );
-  diagonal2.push_back( pt8 );
-
-  // Compute the area of both diagonal surfaces
-  // Take the plane which has maximum area as the reference plane
-  double area1 = CUT::KERNEL::getAreaConvexQuad( diagonal1 );
-  double area2 = CUT::KERNEL::getAreaConvexQuad( diagonal2 );
-
-  if( area1 > area2 )
-    RefPlaneEqn = KERNEL::EqnPlaneOfPolygon( diagonal1 );
-  else
-    RefPlaneEqn = KERNEL::EqnPlaneOfPolygon( diagonal2 );
+    double fac = sqrt( pow(RefPlaneTemp[0],2)+pow(RefPlaneTemp[1],2)+pow(RefPlaneTemp[2],2) );
+    double xn = fabs(RefPlaneTemp[0]) / fac;
+    if( xn > xnormal )
+    {
+      xnormal = xn;
+      RefPlaneEqn = RefPlaneTemp;
+      refPtsGmsh_ = ptl;
+    }
+  }
 #endif
 
   // if a1x+a2y+a3z=a4 is the equation of reference plane and
@@ -407,6 +417,7 @@ void GEO::CUT::DirectDivergence::DivengenceCellsGMSH( const DRT::UTILS::GaussInt
   str << "divergenceCells" << sideno << ".pos";
   std::ofstream file( str.str().c_str() );
 
+  GEO::CUT::OUTPUT::GmshCompleteCutElement( file, elem1_ );
   volcell_->DumpGmsh( file );
 
   /*//-----------------------------------------------------------------------
@@ -437,76 +448,13 @@ void GEO::CUT::DirectDivergence::DivengenceCellsGMSH( const DRT::UTILS::GaussInt
   file<<"Geometry.LineWidth=1.0;\n";
   file<<"View \"Diagonal reference side \" {\n";
 
-  BoundingBox bb( *elem1_ );
-  //BoundingBox bb( *volcell_ );
-  std::vector<std::vector<double> > diagonal1, diagonal2;
-
-  std::vector<double> pt1(3);
-  pt1[0] = bb.minx();
-  pt1[1] = bb.miny();
-  pt1[2] = bb.minz();
-
-  std::vector<double> pt2(3);
-  pt2[0] = bb.minx();
-  pt2[1] = bb.miny();
-  pt2[2] = bb.maxz();
-
-  std::vector<double> pt3(3);
-  pt3[0] = bb.maxx();
-  pt3[1] = bb.maxy();
-  pt3[2] = bb.maxz();
-
-  std::vector<double> pt4(3);
-  pt4[0] = bb.maxx();
-  pt4[1] = bb.maxy();
-  pt4[2] = bb.minz();
-
-  diagonal1.push_back(pt1);
-  diagonal1.push_back(pt2);
-  diagonal1.push_back(pt3);
-  diagonal1.push_back(pt4);
-
-  std::vector<double> pt5(3);
-  pt5[0] = bb.maxx();
-  pt5[1] = bb.miny();
-  pt5[2] = bb.minz();
-
-  std::vector<double> pt6(3);
-  pt6[0] = bb.maxx();
-  pt6[1] = bb.miny();
-  pt6[2] = bb.maxz();
-
-  std::vector<double> pt7(3);
-  pt7[0] = bb.minx();
-  pt7[1] = bb.maxy();
-  pt7[2] = bb.maxz();
-
-  std::vector<double> pt8(3);
-  pt8[0] = bb.minx();
-  pt8[1] = bb.maxy();
-  pt8[2] = bb.minz();
-
-  diagonal2.push_back( pt5 );
-  diagonal2.push_back( pt6 );
-  diagonal2.push_back( pt7 );
-  diagonal2.push_back( pt8 );
-
-  // Compute the area of both diagonal surfaces
-  // Take the plane which has maximum area as the reference plane
-  double area1 = CUT::KERNEL::getAreaConvexQuad( diagonal1 );
-  double area2 = CUT::KERNEL::getAreaConvexQuad( diagonal2 );
-
-  std::vector<std::vector<double> > all_points;
-  if( area1 > area2 )
-    all_points = diagonal1;
-  else
-    all_points = diagonal2;
-
-
-  for( unsigned itp = 0; itp != all_points.size(); itp++ )
+  for( unsigned itp = 0; itp != refPtsGmsh_.size(); itp++ )
   {
-    std::vector<double> co1 = all_points[itp];
-    std::vector<double> co2 = all_points[(itp+1)%all_points.size()];
+    Point* pt1 = refPtsGmsh_[itp];
+    Point* pt2 = refPtsGmsh_[(itp+1)%refPtsGmsh_.size()];
+    double co1[3], co2[3];
+    pt1->Coordinates(co1);
+    pt2->Coordinates(co2);
     file<<"SL("<<co1[0]<<","<<co1[1]<<","<<co1[2]<<","
                <<co2[0]<<","<<co2[1]<<","<<co2[2]<<"){0.0,0.0};"<<std::endl;
   }

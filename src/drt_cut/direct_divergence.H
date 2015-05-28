@@ -88,6 +88,9 @@ namespace GEO
 
         //! true if the reference plane is on a facet of volumecell
         bool isRef_;
+
+        //! Points that define the reference plane used for this volumecell
+        std::vector<Point*> refPtsGmsh_;
     };
   }
 }
