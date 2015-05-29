@@ -211,9 +211,9 @@ bool GEO::CUT::SelfCut::MergeCoincidingNodes( Side* keep, Side* replace )
 {
   bool merge = false;
 
-  const std::vector<Node*> cutnodes = keep->Nodes();
+  const std::vector<Node*> & cutnodes = keep->Nodes();
 
-  const std::vector<Node*> scnodes = replace->Nodes();
+  const std::vector<Node*> & scnodes = replace->Nodes();
 
   // store the nodes that should be replaced with other ids
   std::vector<std::pair<const Node*,const Node*> > ids_replace;
@@ -292,7 +292,7 @@ void GEO::CUT::SelfCut::operationsForNodeMerging( std::vector<std::pair<const No
   for( std::vector<std::pair<const Node*,const Node*> >::iterator it = repl.begin();
                                                                   it != repl.end(); it++ )
   {
-    std::pair<const Node*,const Node*> pai = *it;
+    std::pair<const Node*,const Node*> & pai = *it;
     Node* nod      = const_cast<Node*>( pai.first );
     Node* replwith = const_cast<Node*>( pai.second );
 
@@ -324,6 +324,8 @@ template <typename A, typename B>
 void GEO::CUT::SelfCut::ModifyEdgeOrSideMap( std::map<A,B>& data, int nod, int replwith )
 {
   typedef typename std::map<A, B>::iterator ittype;
+  typedef typename A::iterator A_ittype;
+
   std::vector<ittype> eraseThese;
 
   // -----
@@ -336,15 +338,16 @@ void GEO::CUT::SelfCut::ModifyEdgeOrSideMap( std::map<A,B>& data, int nod, int r
     A idset = itmap->first;
     A newids;
     bool modi = false;
-    for( unsigned ii=0; ii<idset.size(); ii++ )
+
+    for(A_ittype ii = idset.begin(); ii!=idset.end(); ii++)
     {
-      if( idset[ii] == nod )
+      if( *ii == nod )
       {
         newids.insert( replwith );
         modi = true;
       }
       else
-        newids.insert( idset[ii] );
+        newids.insert( *ii );
     }
 
     // insert correct elements
@@ -2325,7 +2328,13 @@ void GEO::CUT::SelfCut::AllSingleGmsh( const std::string & location )
   {
     Side * cutside = &*i->second;
     std::stringstream filenamegmsh;
-    filenamegmsh << location << "_SelfCutSide_" << i->first[0] << "_" << i->first[1] << "_" << i->first[2] << ".pos";
+
+    plain_int_set::const_iterator it = (i->first).begin();
+    const int first  = *it; it++;
+    const int second = *it; it++;
+    const int third  = *it;
+
+    filenamegmsh << location << "_SelfCutSide_" << first << "_" << second << "_" << third << ".pos";
     ErrorGmsh(filenamegmsh.str(), *cutside);
   }
 
@@ -2861,7 +2870,7 @@ void GEO::CUT::SelfCut::EraseSide(std::vector<plain_int_set> & cutsideids)
   for (std::vector<plain_int_set>::iterator i = cutsideids.begin();
       i != cutsideids.end(); ++i)
   {
-    plain_int_set cutsideid = *i;
+    const plain_int_set & cutsideid = *i;
     selfcut_sides_.erase(cutsideid);
     mesh_.EraseSide(cutsideid);
   }
@@ -2900,7 +2909,7 @@ void GEO::CUT::SelfCut::EraseEdge(std::vector<plain_int_set> & cutsideedgeids)
   for (std::vector<plain_int_set>::iterator i = cutsideedgeids.begin();
       i != cutsideedgeids.end(); ++i)
   {
-    plain_int_set cutsideedgeid = *i;
+    const plain_int_set & cutsideedgeid = *i;
     selfcut_edges_.erase(cutsideedgeid);
     mesh_.EraseEdge(cutsideedgeid);
   }

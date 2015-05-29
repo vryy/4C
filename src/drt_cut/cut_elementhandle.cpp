@@ -612,9 +612,9 @@ bool GEO::CUT::QuadraticElementHandle::IsIntersected()
     if(unique_pos == GEO::CUT::Point::undecided)
     {
       // assume a new unique position for all sub elements
-      unique_pos = e->VolumeCells()[0]->Position();
+      unique_pos = (*e->VolumeCells().begin())->Position();
     }
-    else if (e->VolumeCells()[0]->Position() != unique_pos)
+    else if ((*e->VolumeCells().begin())->Position() != unique_pos)
     {
       return true;
     }

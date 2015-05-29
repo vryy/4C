@@ -700,7 +700,7 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
         //Pointer to material of current volume cell
         //Assumes the plain_volumecell_set are all on the same side of the interface.
         Teuchos::RCP<MAT::Material> mat;
-        condition_manager_->GetVolumeCellMaterial(actele,mat,cells[0]);
+        condition_manager_->GetVolumeCellMaterial(actele,mat,*cells.begin());
 
         // we have to assemble all volume cells of this set
         // for linear elements, there should be only one volume-cell for each set
@@ -1687,7 +1687,7 @@ void FLD::XFluid::ComputeErrorNorms(
               vc->GetBoundaryCells( bcells );
           }
 
-          const int cellcount = i - cells.begin();
+          const int cellcount = std::distance(cells.begin(), i);
 
           if(!has_xfem_integration_rule) // use standard integration!!!
           {

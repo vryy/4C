@@ -913,7 +913,7 @@ void GEO::CUT::Parallel::ReplaceNdsVectors (ElementHandle*                      
   plain_volumecell_set cells = ele_vc_sets[set_index];
 
   // get the old nds vector for all cells in current set, represented by the first Volumecell
-  const std::vector<int> nds_old = cells[0]->NodalDofSet();
+  const std::vector<int> nds_old = (*cells.begin())->NodalDofSet();
 
   // get vector of nids in current element
   const std::vector<GEO::CUT::Node* > nodes = e->Nodes();

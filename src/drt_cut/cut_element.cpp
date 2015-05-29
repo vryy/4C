@@ -157,7 +157,7 @@ bool GEO::CUT::Element::Cut(Mesh & mesh, Side & cut_side, int recursion)
   bool cut = false;
 
   // find nodal points inside the element (a level-set side does not have nodes)
-  const std::vector<Node*> side_nodes = cut_side.Nodes();
+  const std::vector<Node*> & side_nodes = cut_side.Nodes();
 
   for (std::vector<Node*>::const_iterator i = side_nodes.begin();
       i != side_nodes.end(); ++i)
@@ -210,14 +210,20 @@ bool GEO::CUT::Element::Cut(Mesh & mesh, Side & cut_side, int recursion)
 void GEO::CUT::Element::FindCutPoints(Mesh & mesh, int recursion)
 {
 
-  for (plain_side_set::iterator i = cut_faces_.begin(); i != cut_faces_.end();
-      ++i)
+  for (plain_side_set::iterator i = cut_faces_.begin(); i != cut_faces_.end(); // do not increment
+      )
   {
     Side & cut_side = **i;
     bool cut = FindCutPoints(mesh, cut_side, recursion);
+
+    // insert this side into cut_faces_, also the case when a side just touches the element at a single point, edge or the whole side
     if (!cut)
     {
-      --i;
+      set_erase(cut_faces_, i);
+    }
+    else
+    {
+      ++i;
     }
   }
 
@@ -266,16 +272,7 @@ bool GEO::CUT::Element::FindCutPoints(Mesh & mesh, Side & cut_side,
     }
   }
 
-  // insert this side into cut_faces_, also the case when a side just touches the element at a single point, edge or the whole side
-  if (cut)
-  {
-    return true;
-  }
-  else
-  {
-    cut_faces_.erase(&cut_side);
-    return false;
-  }
+  return cut;
 }
 
 /*---------------------------------------------------------------------------*
@@ -811,12 +808,12 @@ bool GEO::CUT::Element::ComputePosition(Point * p, // the point for that the pos
   }
 
   // that's the adjacent volume-cell
-  VolumeCell* vc = adjacent_cells[0];
+  VolumeCell* vc = *(adjacent_cells.begin());
 
   //---------------------------
   // get the element's cut-sides adjacent to this cut-point and adjacent to the same volume-cell
   const plain_side_set & cut_sides = this->CutSides();
-  plain_side_set point_cut_sides;
+  std::vector<Side*> point_cut_sides;
 
   //  plain_side_set e_cut_sides;
   for (plain_side_set::const_iterator side_it = cut_sides.begin();
@@ -829,7 +826,7 @@ bool GEO::CUT::Element::ComputePosition(Point * p, // the point for that the pos
         and !IsOrthogonalSide(*side_it, p, cutpoint))
     {
       // the angle-criterion has to be checked for this side
-      point_cut_sides.insert(*side_it);
+      point_cut_sides.push_back(*side_it);
     }
   }
 
@@ -854,7 +851,7 @@ bool GEO::CUT::Element::ComputePosition(Point * p, // the point for that the pos
   //------------------------------------------------------------------------
   // determine the inside/outside position w.r.t the chosen cut-side
   // in case of the right side the "angle-criterion" leads to the right decision (position)
-  Side* cut_side = point_cut_sides[0];
+  Side* cut_side = *(point_cut_sides.begin());
 
   bool successful = PositionByAngle(p, cutpoint, cut_side);
   //------------------------------------------------------------------------

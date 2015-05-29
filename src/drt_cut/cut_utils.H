@@ -11,8 +11,9 @@
 
 #ifdef CUT_USE_SORTED_VECTOR
 #include "sorted_vector.H"
+#else
+#include <vector>
 #endif
-
 
 namespace GEO
 {
@@ -47,6 +48,8 @@ namespace GEO
     typedef sorted_vector<Facet*>      plain_facet_set;
     typedef sorted_vector<VolumeCell*> plain_volumecell_set;
 
+    typedef sorted_vector<std::pair<Point*, Point*> > point_line_set;
+
     typedef sorted_vector<BoundaryCell*>    plain_boundarycell_set;
     typedef sorted_vector<IntegrationCell*> plain_integrationcell_set;
 
@@ -69,6 +72,8 @@ namespace GEO
     typedef std::set<Line*>       plain_line_set;
     typedef std::set<Facet*>      plain_facet_set;
     typedef std::set<VolumeCell*> plain_volumecell_set;
+
+    typedef std::set<std::pair<Point*, Point*> > point_line_set;
 
     typedef std::set<BoundaryCell*>    plain_boundarycell_set;
     typedef std::set<IntegrationCell*> plain_integrationcell_set;

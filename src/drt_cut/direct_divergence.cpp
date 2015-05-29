@@ -40,8 +40,8 @@ Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::DirectDivergence::VCIntegrationR
     const plain_facet_set & facete = volcell_->Facets();
 
     std::cout << "number of facets: " << facete.size() << std::endl;
-    for(unsigned j=0; j< facete.size(); j++)
-      facete[j]->Print(std::cout);
+    for(plain_facet_set::const_iterator f = facete.begin(); f!= facete.end(); f++)
+      (*f)->Print(std::cout);
 
     dserror( "x-component normal is zero on all the facets? It should not be." );
 
@@ -123,7 +123,8 @@ void GEO::CUT::DirectDivergence::ListFacets( std::vector<plain_facet_set::const_
 #endif
 
     std::vector<double> RefPlaneTemp = KERNEL::EqnPlaneOfPolygon(cornersLocal );
-    eqnAllFacets[i-facete.begin()] = RefPlaneTemp;
+    const int index = std::distance(facete.begin(), i);
+    eqnAllFacets[index] = RefPlaneTemp;
 
     // consider only facet whose x-direction normal componenet is non-zero
     if( fabs(RefPlaneTemp[0])>TOL_EQN_PLANE )
@@ -299,10 +300,12 @@ void GEO::CUT::DirectDivergence::ListFacets( std::vector<plain_facet_set::const_
     {
       plain_facet_set::const_iterator iter = facetIterator[i];
 
-      double facetx = eqnAllFacets[iter-facete.begin()][0];
-      double facety = eqnAllFacets[iter-facete.begin()][1];
-      double facetz = eqnAllFacets[iter-facete.begin()][2];
-      double facetRhs = eqnAllFacets[iter-facete.begin()][3];
+      const int index = std::distance(facete.begin(), iter);
+
+      double facetx = eqnAllFacets[index][0];
+      double facety = eqnAllFacets[index][1];
+      double facetz = eqnAllFacets[index][2];
+      double facetRhs = eqnAllFacets[index][3];
 
       if( fabs(RefPlaneEqn[3])>TOL_EQN_PLANE && fabs(facetRhs)>TOL_EQN_PLANE ) // planes for which ax+by+cz=d
       {

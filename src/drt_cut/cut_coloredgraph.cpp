@@ -1,6 +1,8 @@
 #include <fstream>
 #include <stack>
 #include <queue>
+#include <algorithm>
+#include <stdexcept>
 
 #include "cut_coloredgraph.H"
 

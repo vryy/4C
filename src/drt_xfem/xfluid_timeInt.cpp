@@ -854,11 +854,11 @@ void XFEM::XFluidTimeInt::FindSurroundingGhostDofsets(
     const GEO::CUT::plain_volumecell_set & vcs= *e_vcset;
 
     // get the element, ask the first vc
-    int peid = vcs[0]->ParentElement()->GetParentId();
+    int peid = (*vcs.begin())->ParentElement()->GetParentId();
     DRT::Element * ele = dis_->gElement(peid);
     DRT::Node* * nodes = ele->Nodes();
 
-    const std::vector<int> & nds = vcs[0]->NodalDofSet();
+    const std::vector<int> & nds = (*vcs.begin())->NodalDofSet();
 
     // which dofset is the corresponding to the current vc-connection and is a ghost dofset?
     for(int n_it=0; n_it < ele->NumNode(); n_it++)

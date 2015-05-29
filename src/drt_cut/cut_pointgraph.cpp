@@ -179,7 +179,7 @@ void GEO::CUT::IMPL::PointGraph::FillGraph( Element * element, Side * side, Cycl
     bool element_cut = l->IsCut( element );
     if ( strategy==all_lines or element_cut )
       graph_.AddEdge( l->BeginPoint(), l->EndPoint() );
-#if DEBUGCUTLIBRARY
+#ifdef DEBUGCUTLIBRARY
     if ( element_cut )
     {
       Point * p1 = l->BeginPoint();

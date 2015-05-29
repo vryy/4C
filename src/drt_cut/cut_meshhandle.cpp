@@ -15,7 +15,7 @@ Maintainer: Benedikt Schott
 
 
 /*-----------------------------------------------------------------------------------------*
- * create a new side (sidehanlde) of the cutter discretization and return the sidehandle
+ * create a new side (sidehandle) of the cutter discretization and return the sidehandle
  * non-tri3 sides will be subdivided into tri3 subsides
  *-----------------------------------------------------------------------------------------*/
 GEO::CUT::SideHandle * GEO::CUT::MeshHandle::CreateSide( int sid, const std::vector<int> & nids, DRT::Element::DiscretizationType distype )

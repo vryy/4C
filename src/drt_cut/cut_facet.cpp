@@ -965,7 +965,7 @@ void GEO::CUT::Facet::TestFacetArea( double tolerance, bool istetmeshintersectio
     double diff = area[0] - area[1];
     if ( fabs( diff ) >= tolerance )
     {
-      int eleId = cells_[0]->ParentElement()->Id();
+      int eleId = (*cells_.begin())->ParentElement()->Id();
       std::stringstream str;
       if(istetmeshintersection)
       {

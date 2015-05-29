@@ -10,6 +10,7 @@
 #include "volume_integration.H"
 #include "boundarycell_integration.H"
 #include "direct_divergence.H"
+#include "cut_utils.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -466,7 +467,8 @@ void GEO::CUT::VolumeCell::SimplifyIntegrationCells( Mesh & mesh )
     int sideid = i->first;
     std::vector<Facet*> & facets = i->second;
     std::vector<BoundaryCell*> bcs;
-    sorted_vector<std::pair<Point*, Point*> > lines;
+    point_line_set lines;
+
     for ( plain_boundarycell_set::iterator i=bcells_.begin(); i!=bcells_.end(); ++i )
     {
       BoundaryCell * bc = *i;
@@ -644,11 +646,15 @@ void GEO::CUT::VolumeCell::TestSurface()
         {
           for(unsigned l=0; l < facetlines.size(); l++)
           {
+#if(0)
             if(lines[k]==facetlines[l])
             {
               numberoflines++;
               facetlineindex.push_back(l);
             }
+#else
+            dserror("not supported when using std::set in definition of point_line_set. Adapt this. Anyway this routine is not bugfree! This about before using this function!!!");
+#endif
           }
         }
         std::cout << "numberoflines: " << numberoflines << std::endl;
@@ -691,9 +697,9 @@ void GEO::CUT::VolumeCell::DumpGmsh( std::ofstream& file )
     const plain_facet_set & facete = Facets();
 
     file<<"View \"Volume Cell \" {\n";
-    for( unsigned j=0;j<facete.size();j++ )
+    for( plain_facet_set::const_iterator j=facete.begin(); j!=facete.end(); j++ )
     {
-      Facet * ref = facete[j];
+      Facet * ref = *j;
 #ifdef LOCAL
       std::vector<std::vector<double> > corners;
       ref->CornerPointsLocal(ParentElement(), corners);

@@ -1956,12 +1956,14 @@ void GEO::CUT::Mesh::DumpGmsh( std::string name )
   {
     file << "View \"" << "Points" << "\" {\n";
 
-    for ( uint i= 0 ; i < pp_->GetPoints().size(); ++i )
+    const RCPPointSet & points = pp_->GetPoints();
+
+    for ( RCPPointSet::const_iterator i= points.begin() ; i != points.end(); ++i )
     {
       //double tol = (*(pp_->GetPoints()[i])).Tolerance();
       //int tolval = tol*100/BASICTOL;
-      //GEO::CUT::OUTPUT::GmshPointDump( file, &(*(pp_->GetPoints()[i])), tolval );
-      GEO::CUT::OUTPUT::GmshPointDump( file, &(*(pp_->GetPoints()[i])));
+//      GEO::CUT::OUTPUT::GmshPointDump( file, &(*(*i)), tolval );
+      GEO::CUT::OUTPUT::GmshPointDump( file, &(*(*i)));
     }
   file << "};\n";
   }
@@ -2019,9 +2021,10 @@ void GEO::CUT::Mesh::DumpGmsh( std::string name )
     Facet &  f = **i;
     PointSet points;
     f.TriangulationPoints(points);
-    for (uint pidx = 0; pidx < points.size(); ++pidx)
+
+    for(PointSet::iterator p = points.begin(); p!=points.end(); p++)
     {
-      GEO::CUT::OUTPUT::GmshPointDump( file, points[pidx], f.SideId());
+      GEO::CUT::OUTPUT::GmshPointDump( file, *p, f.SideId());
     }
   }
   file << "};\n";

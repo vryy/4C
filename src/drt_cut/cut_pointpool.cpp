@@ -32,6 +32,9 @@ GEO::CUT::Point* GEO::CUT::OctTreeNode::GetPoint( const double * x, Edge * cut_e
   // try to find the point in all of the 8 children nodes
   if ( not IsLeaf() )
   {
+    // stop finding the point when point is not included in the current bounding box
+    if(!bb_.Within(1.0, x)) return NULL;
+
     for ( int i=0; i<8; ++i )
     {
       Point * p = nodes_[i]->GetPoint( x, cut_edge, cut_side, tolerance );

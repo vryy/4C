@@ -416,11 +416,15 @@ bool GEO::CUT::VolumeIntegration::IsIntersect(double *pt, double *mini, double *
     {
       bool ptsInside = false;
       unsigned face1 = i->second;
-      Facet *facet1 = *(f+face1);
+      plain_facet_set::const_iterator f1 = f;
+      for(int k=0; k< i->second; k++) f1++;
+      Facet *facet1 = *f1;
       std::vector<double> inter1 = i->first;
       i++;
       unsigned face2 = i->second;
-      Facet *facet2 = *(f+face2);
+      plain_facet_set::const_iterator f2 = f;
+      for(int k=0; k< i->second; k++) f2++;
+      Facet *facet2 = *f2;
       std::vector<double> inter2 = i->first;
       i--;
 
@@ -1141,7 +1145,8 @@ std::string GEO::CUT::VolumeIntegration::IsPointInside( LINALG::Matrix<3,1> & rs
     if( cutno==1 )
     {
       // find x-value of intersection point, (yInt,zInt) = (y,z) of given pt
-      std::vector<double> eqn = Eqnplane[XFacets[i]-facete.begin()];
+      const int idx = std::distance(facete.begin(), XFacets[i]);
+      std::vector<double> eqn = Eqnplane[idx];
       double x = (eqn[3]-eqn[1]*rst(1,0)-eqn[2]*rst(2,0))/eqn[0];
       if( fabs((x-rst(0,0))/x) < 1e-8 ) // pt is on one of the XFacets
         return "onBoundary";
@@ -1157,7 +1162,8 @@ std::string GEO::CUT::VolumeIntegration::IsPointInside( LINALG::Matrix<3,1> & rs
   // Check to see if point is in x-z or x-y oriented facets
   for( unsigned i=0;i<NotXFacets.size();i++ )
   {
-    std::vector<double> eqn = Eqnplane[NotXFacets[i]-facete.begin()];
+    const int idx = std::distance(facete.begin(),NotXFacets[i]);
+    std::vector<double> eqn = Eqnplane[idx];
     // check pt on x-y plane facet
     if( fabs(eqn[2])<1e-10 )  // make sure it is x-y facet
     {

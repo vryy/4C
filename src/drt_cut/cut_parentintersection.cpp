@@ -364,7 +364,8 @@ void GEO::CUT::ParentIntersection::CreateParallelDofSetDataVC(
 
       for(plain_point_set::iterator p=cut_points.begin(); p!=cut_points.end(); ++p)
       {
-        LINALG::Matrix<3,1> & xyz = cut_points_coords[p-cut_points.begin()];
+        const int idx = std::distance(cut_points.begin(),p);
+        LINALG::Matrix<3,1> & xyz = cut_points_coords[idx];
 
         std::copy( (*p)->X(), (*p)->X()+3, &xyz( 0, 0 ) );
       }

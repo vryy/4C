@@ -132,7 +132,7 @@ GEO::CUT::NodalDofSet::NodalDofSet(
 
   // set the position of the nodal dofset
   const plain_volumecell_set & set = *(volumecell_composite_.begin());
-  position_ = set[0]->Position();
+  position_ = (*set.begin())->Position();
 
 }
 

@@ -1,5 +1,5 @@
 /*!------------------------------------------------------------------------------------------------*
-\file xfluid_timeinnt_std_SemiLagrange.cpp
+\file xfluid_timeInt_std_SemiLagrange.cpp
 
 \brief provides the SemiLagrangean class
 
@@ -956,7 +956,7 @@ void XFEM::XFLUID_SemiLagrange::newIteration_nodalData(
           cellset_it++)
       {
         // the first vc representing the set
-        GEO::CUT::VolumeCell* vc = (*cellset_it)[0];
+        GEO::CUT::VolumeCell* vc = *((*cellset_it).begin());
         int peid = vc->ParentElement()->GetParentId();
 
         if(!discret_->HaveGlobalElement(peid)) dserror("element %d for averaging not on proc %d", peid, myrank_);
@@ -1364,7 +1364,7 @@ void XFEM::XFLUID_SemiLagrange::backTracking(
           cellset_it++)
       {
         // the first vc representing the set
-        GEO::CUT::VolumeCell* vc = (*cellset_it)[0];
+        GEO::CUT::VolumeCell* vc = *((*cellset_it).begin());
         int peid = vc->ParentElement()->GetParentId();
 
         if(!discret_->HaveGlobalElement(peid)) dserror("element %d for averaging not on proc %d", peid, myrank_);

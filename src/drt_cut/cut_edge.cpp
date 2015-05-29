@@ -138,7 +138,7 @@ void GEO::CUT::Edge::CutPoint( Node* edge_start, Node* edge_end, std::vector<Poi
 void GEO::CUT::Edge::CutPoints( Side * side, PointSet & cut_points )
 {
   IMPL::SideCutFilter filter( side );
-  for ( std::vector<Point*>::iterator i=cut_points_.begin(); i!=cut_points_.end(); ++i )
+  for ( PointPositionSet::iterator i=cut_points_.begin(); i!=cut_points_.end(); ++i )
   {
     Point * p = *i;
     plain_line_set cut_lines;
@@ -154,8 +154,8 @@ void GEO::CUT::Edge::CutPointsBetween( Point* begin, Point* end, std::vector<Poi
 {
 //   PointPositionLess::iterator bi = cut_points_.find( begin );
 //   PointPositionLess::iterator ei = cut_points_.find( end );
-  std::vector<Point*>::iterator bi = std::lower_bound( cut_points_.begin(), cut_points_.end(), begin, PointPositionLess( this ) );
-  std::vector<Point*>::iterator ei = std::lower_bound( cut_points_.begin(), cut_points_.end(), end  , PointPositionLess( this ) );
+  PointPositionSet::iterator bi = std::lower_bound( cut_points_.begin(), cut_points_.end(), begin, PointPositionLess( this ) );
+  PointPositionSet::iterator ei = std::lower_bound( cut_points_.begin(), cut_points_.end(), end  , PointPositionLess( this ) );
 
   if ( *bi != begin )
     bi = cut_points_.end();
@@ -195,8 +195,8 @@ void GEO::CUT::Edge::CutPointsBetween( Point* begin, Point* end, std::vector<Poi
 
 void GEO::CUT::Edge::CutPointsIncluding( Point* begin, Point* end, std::vector<Point*> & line )
 {
-  std::vector<Point*>::iterator bi = std::lower_bound( cut_points_.begin(), cut_points_.end(), begin, PointPositionLess( this ) );
-  std::vector<Point*>::iterator ei = std::lower_bound( cut_points_.begin(), cut_points_.end(), end  , PointPositionLess( this ) );
+  PointPositionSet::iterator bi = std::lower_bound( cut_points_.begin(), cut_points_.end(), begin, PointPositionLess( this ) );
+  PointPositionSet::iterator ei = std::lower_bound( cut_points_.begin(), cut_points_.end(), end  , PointPositionLess( this ) );
 
   if ( *bi != begin )
     throw std::runtime_error( "begin point not on edge" );
@@ -232,7 +232,7 @@ void GEO::CUT::Edge::CutPointsInside( Element * element, std::vector<Point*> & l
 {
   Point * first = NULL;
   Point * last = NULL;
-  for ( std::vector<Point*>::iterator i=cut_points_.begin(); i!=cut_points_.end(); ++i )
+  for ( PointPositionSet::iterator i=cut_points_.begin(); i!=cut_points_.end(); ++i )
   {
     Point * p = *i;
     if ( p->IsCut( element ) )
@@ -277,7 +277,7 @@ void GEO::CUT::Edge::CutPointsInside( Element * element, std::vector<Point*> & l
 bool GEO::CUT::Edge::IsCut( Side * side )
 {
   // cutpoints contains end-points and internal cut-points
-  for ( std::vector<Point*>::iterator i=cut_points_.begin(); i!=cut_points_.end(); ++i )
+  for ( PointPositionSet::iterator i=cut_points_.begin(); i!=cut_points_.end(); ++i )
   {
     Point * p = *i;
     if ( p->IsCut( side ) )
@@ -427,20 +427,24 @@ void GEO::CUT::Edge::RectifyCutNumerics()
     // This assumes linear sides. There might be a problem with quad4
     // sides. Those are actually not supported.
 
-    std::map<Side*, std::vector<Point*>::iterator> sidecuts;
-    for ( std::vector<Point*>::iterator pi=cut_points_.begin(); pi!=cut_points_.end(); ++pi )
+    std::map<Side*, PointPositionSet::iterator> sidecuts;
+
+    for ( PointPositionSet::iterator pi=cut_points_.begin(); pi!=cut_points_.end(); ++pi )
     {
       Point * p = *pi;
       const plain_side_set & cutsides = p->CutSides();
       for ( plain_side_set::const_iterator i=cutsides.begin(); i!=cutsides.end(); ++i )
       {
         Side * s = *i;
-        std::map<Side*, std::vector<Point*>::iterator>::iterator j = sidecuts.find( s );
+        std::map<Side*, PointPositionSet::iterator>::iterator j = sidecuts.find( s );
         if ( j!=sidecuts.end() )
         {
           //if ( std::distance( j->second, pi ) > 1 )
           {
-            for ( std::vector<Point*>::iterator i=j->second+1; i!=pi; ++i )
+            PointPositionSet::iterator next = j->second;
+            next++;
+
+            for ( PointPositionSet::const_iterator i=next; i!=pi; ++i )
             {
               Point * p = *i;
               p->AddSide( s );

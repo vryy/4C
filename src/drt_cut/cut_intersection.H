@@ -550,17 +550,19 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::Intersect(
         // Nothing to be done. There are cut points between these edges. We
         // cannot find new ones.
         if (cut_points.size() == 1)
-          cuts.insert(cut_points[0]);
+          cuts.insert(*(cut_points.begin()));
         else if (cut_points.size() == 2)
         {
-          cuts.insert(cut_points[0]);
-          cuts.insert(cut_points[1]);
+          PointSet::iterator cp = cut_points.begin();
+          cuts.insert(*cp);
+          cp++;
+          cuts.insert(*cp);
         }
         else
         {
           #ifdef DEBUG_CUTINTERSECTION_OUTPUT
-            for (uint i = 0; i < cut_points.size(); ++i)
-              cut_points[i]->Print(std::cout);
+            for (PointSet::iterator i = cut_points.begin(); i != cut_points.end(); ++i)
+              (*i)->Print(std::cout);
             edge_.BeginNode()->point()->Print(std::cout);
             edge_.EndNode()->point()->Print(std::cout);
             e->BeginNode()->point()->Print(std::cout);

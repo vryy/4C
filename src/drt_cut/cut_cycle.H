@@ -24,12 +24,6 @@ namespace GEO
     class Side;
     class Element;
 
-#ifdef CUT_USE_SORTED_VECTOR
-    typedef sorted_vector<std::pair<Point*, Point*> > point_line_set;
-#else
-    typedef std::set<std::pair<Point*, Point*> > point_line_set;
-#endif
-
     /*!
     \brief Contains closed cycle of points. A utility class for facet creation from this cycle of points
      */

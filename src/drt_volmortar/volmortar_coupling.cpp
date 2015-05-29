@@ -1698,19 +1698,25 @@ void VOLMORTAR::VolMortarCoupl::PerformCut(
 
       int count = 0;
 
-      for (int u = 0; u < (int) mcells_in.size(); ++u)
-        for (int z = 0; z < (int) mcells_in[u]->IntegrationCells().size(); ++z)
+      for(GEO::CUT::plain_volumecell_set::iterator u=mcells_in.begin(); u!=mcells_in.end(); u++)
+      {
+        GEO::CUT::VolumeCell *vc = *u;
+        const GEO::CUT::plain_integrationcell_set & intcells = vc->IntegrationCells();
+
+        for(GEO::CUT::plain_integrationcell_set::const_iterator z=intcells.begin(); z!=intcells.end(); z++)
         {
+          GEO::CUT::IntegrationCell * ic = *z;
+
           IntCells.push_back(
               Teuchos::rcp(
                   new VOLMORTAR::Cell(count, 4,
-                      mcells_in[u]->IntegrationCells()[z]->Coordinates(),
-                      mcells_in[u]->IntegrationCells()[z]->Shape())));
+                      ic->Coordinates(),
+                      ic->Shape())));
           volume_ += IntCells[count]->Vol();
 
           count++;
         }
-
+      }
       //integrate found cells - tesselation
       if (!switched_conf)
         Integrate3DCell(*sele, *mele, IntCells);
@@ -2901,13 +2907,12 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell_DirectDivergence(
         << "****************************   CELL SIZE > 1 ***************************"
         << std::endl;
 
-  for (int i = 0; i < (int) (volcell_.size()); ++i)
+  for(GEO::CUT::plain_volumecell_set::iterator i = volcell_.begin(); i!=volcell_.end(); i++)
   {
-
-    if (volcell_[i] == NULL)
+    if (*i == NULL)
       continue;
 
-    GEO::CUT::VolumeCell * vc = volcell_[i];
+    GEO::CUT::VolumeCell * vc = *i;
 
     if (vc->IsNegligiblySmall())
       continue;

@@ -879,7 +879,7 @@ void COMBUST::FlameFront::CaptureFlameFront(
             if (numstoredvol != 1) dserror("No volume stored for touched element!");
 
             // check for potential boundary cells: corresponds to touched elements
-            const GEO::CUT::plain_boundarycell_set bcells = volcells.at(0)->BoundaryCells();
+            const GEO::CUT::plain_boundarycell_set bcells = (*volcells.begin())->BoundaryCells();
             if (bcells.size() > 0)
             {
               //IO::cout << "element " << rootcell->Ele()->Id() << " is potentially touched" << IO::endl;

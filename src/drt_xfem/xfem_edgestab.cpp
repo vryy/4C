@@ -208,8 +208,11 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
             {
               TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: create nds");
 
-              GEO::CUT::VolumeCell* vc1 = vcs[0];
-              GEO::CUT::VolumeCell* vc2 = vcs[1];
+              GEO::CUT::plain_volumecell_set::iterator vc_it = vcs.begin();
+
+              GEO::CUT::VolumeCell* vc1 = *(vc_it);
+              vc_it++;
+              GEO::CUT::VolumeCell* vc2 = *(vc_it);
 
 
               // get the parent element
@@ -314,8 +317,12 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
             //------------------------ create nodal dof sets
             {
               TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: create nds");
-              GEO::CUT::VolumeCell* vc1 = vcs[0];
-              GEO::CUT::VolumeCell* vc2 = vcs[1];
+
+              GEO::CUT::plain_volumecell_set::iterator vc_it = vcs.begin();
+
+              GEO::CUT::VolumeCell* vc1 = *(vc_it);
+              vc_it++;
+              GEO::CUT::VolumeCell* vc2 = *(vc_it);
 
               // get the parent element
               int vc_ele1_id = vc1->ParentElement()->GetParentId();
@@ -466,7 +473,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
             {
               TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: create nds" );
 
-              GEO::CUT::VolumeCell* vc = vcs[0];
+              GEO::CUT::VolumeCell* vc = *(vcs.begin());
 
               // get the parent element
               int vc_ele_id = vc->ParentElement()->Id();
@@ -664,26 +671,13 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabStd(
   size_t p_master_numnode = p_master->NumNode();
   size_t p_slave_numnode  = p_slave->NumNode();
 
-
-  std::vector<int> nds_master;
-  nds_master.reserve(p_master_numnode);
-
-  std::vector<int> nds_slave;
-  nds_slave.reserve(p_slave_numnode);
-
   //------------------------------------------------------------------------------
   // simplest case: no element handles for both parent elements
   // two uncut elements / standard fluid case
   //------------------------------------------------------------------------------
 
-  {
-    TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: create nds" );
-
-    for(size_t i=0; i< p_master_numnode; i++)  nds_master.push_back(0);
-
-    for(size_t i=0; i< p_slave_numnode; i++)   nds_slave.push_back(0);
-  }
-
+  std::vector<int> nds_master(p_master_numnode,0);
+  std::vector<int> nds_slave(p_slave_numnode,0);
 
   //Provide material at both sides:
   Teuchos::RCP<MAT::Material> matptr_m;
