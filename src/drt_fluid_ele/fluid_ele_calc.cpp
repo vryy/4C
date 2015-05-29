@@ -4982,20 +4982,37 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::ViscousGalPart(
 
   for (int vi=0; vi<nen_; ++vi)
   {
-    for (int ui=0; ui<nen_; ++ui)
+    for (int jdim= 0; jdim<nsd_;++jdim)
     {
-      for (int jdim= 0; jdim<nsd_;++jdim)
-      {
-        const double temp=visceff_timefacfac*derxy_(jdim,vi);
+      const double temp=visceff_timefacfac*derxy_(jdim,vi);
 
+      for (int ui=0; ui<nen_; ++ui)
+      {
         for (int idim = 0; idim <nsd_; ++idim)
         {
           estif_u(nsd_*vi+idim,nsd_*ui+jdim) += temp*derxy_(idim, ui);
-          estif_u(nsd_*vi+idim,nsd_*ui+idim) += temp*derxy_(jdim, ui);
-        } // end for (jdim)
+        }
+      }
+    }
+  }
+
+  static LINALG::Matrix<nen_,nen_> tmp_dyad;
+  tmp_dyad.MultiplyTN(derxy_,derxy_);
+  tmp_dyad.Scale(visceff_timefacfac);
+
+  for (int ui=0; ui<nen_; ++ui)
+  {
+    for (int vi=0; vi<nen_; ++vi)
+    {
+      const double tmp_val = tmp_dyad(vi, ui);
+
+      for (int idim = 0; idim <nsd_; ++idim)
+      {
+        estif_u(nsd_*vi+idim,nsd_*ui+idim) += tmp_val;
       } // end for (idim)
     } // ui
   } //vi
+
 
   const double v = visceff_*rhsfac;
 
@@ -5007,18 +5024,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::ViscousGalPart(
     }
   }
 
-  // computation of right-hand-side viscosity term
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    for (int idim = 0; idim < nsd_; ++idim)
-    {
-      for (int jdim = 0; jdim < nsd_; ++jdim)
-      {
-        /* viscosity term on right-hand side */
-        velforce(idim,vi)-= viscstress(idim,jdim)*derxy_(jdim,vi);
-      }
-    }
-  }
+  static LINALG::Matrix<nsd_,nen_> tmp;
+  tmp.Multiply(viscstress,derxy_);
+  velforce.Update(-1.0, tmp, 1.0);
 
 
   return;

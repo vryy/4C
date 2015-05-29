@@ -1789,54 +1789,69 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::ViscousGalPart(
 
   for (int vi=0; vi<nen_; ++vi)
   {
-    for (int ui=0; ui<nen_; ++ui)
+    for (int jdim= 0; jdim<nsd_;++jdim)
     {
-      for (int jdim= 0; jdim<nsd_;++jdim)
-      {
-        const double temp=visceff_timefacfac*derxy_(jdim,vi);
+      const double temp=visceff_timefacfac*derxy_(jdim,vi);
 
+      for (int ui=0; ui<nen_; ++ui)
+      {
         for (int idim = 0; idim <nsd_; ++idim)
         {
           estif_u(nsd_*vi+idim,nsd_*ui+jdim) += temp*derxy_(idim, ui);
-          estif_u(nsd_*vi+idim,nsd_*ui+idim) += temp*derxy_(jdim, ui);
-        } // end for (jdim)
+        }
+      }
+    }
+  }
+
+  static LINALG::Matrix<nen_,nen_> tmp_dyad;
+  tmp_dyad.MultiplyTN(derxy_,derxy_);
+  tmp_dyad.Scale(visceff_timefacfac);
+
+  for (int ui=0; ui<nen_; ++ui)
+  {
+    for (int vi=0; vi<nen_; ++vi)
+    {
+      const double tmp_val = tmp_dyad(vi, ui);
+
+      for (int idim = 0; idim <nsd_; ++idim)
+      {
+        estif_u(nsd_*vi+idim,nsd_*ui+idim) += tmp_val;
       } // end for (idim)
     } // ui
   } //vi
 
-  const double v = visceff_*rhsfac;
-  const double vn = viscn_*rhsfacn;
+  static LINALG::Matrix<nsd_,nsd_> viscstressn;
 
-  static LINALG::Matrix<nsd_,nsd_> viscstressn(true);
-  viscstressn.Clear();
+  const double v  = visceff_*rhsfac;
+  const double vn = viscn_  *rhsfacn;
 
   for (int jdim = 0; jdim < nsd_; ++jdim)
   {
     for (int idim = 0; idim < nsd_; ++idim)
     {
-      viscstress(idim,jdim)=v*(vderxy_(jdim,idim)+vderxy_(idim,jdim));
+      viscstress(idim,jdim) =v *(vderxy_(jdim,idim) +vderxy_(idim,jdim));
       viscstressn(idim,jdim)=vn*(vderxyn_(jdim,idim)+vderxyn_(idim,jdim));
     }
   }
 
-  // computation of right-hand-side viscosity term
-  for (int vi=0; vi<nen_; ++vi)
+
+  static LINALG::Matrix<nsd_,nen_> tmp;
+
+
+  if(fldparatimint_->IsNewOSTImplementation())
   {
-    for (int idim = 0; idim < nsd_; ++idim)
+    if (fldparatimint_->IsOneStepTheta())
     {
-      for (int jdim = 0; jdim < nsd_; ++jdim)
-      {
-        /* viscosity term on right-hand side */
-        velforce(idim,vi)-= viscstress(idim,jdim)*derxy_(jdim,vi);
-        if(fldparatimint_->IsNewOSTImplementation())
-        {
-          if (fldparatimint_->IsOneStepTheta())
-            velforce(idim,vi)-= viscstressn(idim,jdim)*derxy_(jdim,vi);
-        }//end IsNewOSTImplementation
-      }
+      static LINALG::Matrix<nsd_,nsd_> viscstress_added;
+
+      viscstress_added.Update(1.0, viscstress, 1.0, viscstressn, 0.0);
+      tmp.Multiply(viscstress_added,derxy_);
     }
   }
+  else
+    tmp.Multiply(viscstress,derxy_);
 
+  velforce.Update(-1.0, tmp, 1.0);
 
   return;
 }
