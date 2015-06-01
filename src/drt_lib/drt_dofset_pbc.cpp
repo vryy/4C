@@ -27,17 +27,9 @@ Maintainer: Martin Kronbichler
  |  ctor (public)                                            gammi 05/07|
  *----------------------------------------------------------------------*/
 DRT::PBCDofSet::PBCDofSet(Teuchos::RCP<std::map<int,std::vector<int> > >  couplednodes)
-  :DofSet(), perbndcouples_(couplednodes), myMaxGID_(-1)
+  :DofSet(), perbndcouples_(Teuchos::null), myMaxGID_(-1)
 {
-  slavenodeids_ = Teuchos::rcp(new std::set<int>);
-
-  for( std::map<int,std::vector<int> >::iterator curr = perbndcouples_->begin();
-       curr != perbndcouples_->end();
-       ++curr )
-  {
-    std::vector<int> & sids = curr->second;
-    std::copy( sids.begin(), sids.end(), std::inserter( *slavenodeids_, slavenodeids_->begin() ) );
-  }
+  SetCoupledNodes(couplednodes);
 }
 
 
@@ -147,6 +139,29 @@ void DRT::PBCDofSet::SetCoupledNodes(Teuchos::RCP<std::map<int,std::vector<int> 
     std::copy( sids.begin(), sids.end(), std::inserter( *slavenodeids_, slavenodeids_->begin() ) );
   }
 
+  /// Build the connectivity between slave node and its master node
+  BuildSlaveToMasterNodeConnectivity();
+
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Build the connectivity between slave node and its master node       |
+ |                                                       schott 05/15   |
+ *----------------------------------------------------------------------*/
+void DRT::PBCDofSet::BuildSlaveToMasterNodeConnectivity()
+{
+  perbnd_slavetomaster_ = Teuchos::rcp(new std::map<int, int>);
+
+  for(std::map<int,std::vector<int> >::const_iterator masterslavepair = perbndcouples_->begin();
+      masterslavepair != perbndcouples_->end() ; ++masterslavepair)
+  {
+    // loop slave nodes associated with master
+    for(std::vector<int>::const_iterator iter=masterslavepair->second.begin(); iter!=masterslavepair->second.end(); ++iter)
+    {
+      const int slavegid = *iter;
+      (*perbnd_slavetomaster_)[slavegid] = masterslavepair->first;
+    }
+  }
 }
 

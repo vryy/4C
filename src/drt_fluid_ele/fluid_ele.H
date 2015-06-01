@@ -925,7 +925,8 @@ public:
       std::vector<int>&     lm_slaveToPatch,      ///< local map between lm_slave and lm_patch
       std::vector<int>&     lm_faceToPatch,       ///< local map between lm_face and lm_patch
       std::vector<int>&     lm_masterNodeToPatch, ///< local map between master nodes and nodes in patch
-      std::vector<int>&     lm_slaveNodeToPatch   ///< local map between slave nodes and nodes in patch
+      std::vector<int>&     lm_slaveNodeToPatch,  ///< local map between slave nodes and nodes in patch
+      Teuchos::RCP<std::map<int,int> > pbcconnectivity ///< connectivity between slave and PBC's master nodes
       );
 
   /*!
@@ -945,7 +946,8 @@ public:
       std::vector<int>&     lm_slaveToPatch,      ///< local map between lm_slave and lm_patch
       std::vector<int>&     lm_faceToPatch,       ///< local map between lm_face and lm_patch
       std::vector<int>&     lm_masterNodeToPatch, ///< local map between master nodes and nodes in patch
-      std::vector<int>&     lm_slaveNodeToPatch   ///< local map between slave nodes and nodes in patch
+      std::vector<int>&     lm_slaveNodeToPatch,  ///< local map between slave nodes and nodes in patch
+      Teuchos::RCP<std::map<int,int> > pbcconnectivity ///< connectivity between slave and PBC's master nodes
       );
 
   /*!

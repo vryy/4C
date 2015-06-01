@@ -128,7 +128,8 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
     std::vector<int>&     lm_slaveToPatch,      ///< local map between lm_slave and lm_patch
     std::vector<int>&     lm_faceToPatch,       ///< local map between lm_face and lm_patch
     std::vector<int>&     lm_masterNodeToPatch, ///< local map between master nodes and nodes in patch
-    std::vector<int>&     lm_slaveNodeToPatch   ///< local map between slave nodes and nodes in patch
+    std::vector<int>&     lm_slaveNodeToPatch,  ///< local map between slave nodes and nodes in patch
+    Teuchos::RCP<std::map<int,int> > pbcconnectivity ///< connectivity between slave and PBC's master nodes
     )
 {
   // create one patch location vector containing all dofs of master, slave and
@@ -166,6 +167,11 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
   //----------------------------------------------------
   int curr_patch_lm_size  = 0; // patch_lm.size() (equal to master_lm.size() during the fill of patch data with master data)
 
+  //----------------------------------------------------
+  // check for PBC nodes
+  bool has_PBC = (pbcconnectivity!=Teuchos::null);
+
+
   // ---------------------------------------------------
   const int dofset = 0; // assume dofset 0
 
@@ -180,8 +186,18 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
 
     const int size = dof.size();
 
+    int nid = node->Id(); // node id of node and id of master node if it is a PBC node
+
+    if(has_PBC) // set the id of the master node if the node is a PBC node
+    {
+      std::map<int,int>::iterator slave_it = pbcconnectivity->find(nid); // find the slave node id, is there a corresponding pbc master node?
+
+      if(slave_it != pbcconnectivity->end())
+        nid = slave_it->second;
+    }
+
     //insert a pair of node-Id and current length of master_lm ( to get the start offset for node's dofs)
-    m_node_lm_offset.insert(std::pair<int,int>(node->Id(), curr_patch_lm_size));
+    m_node_lm_offset.insert(std::pair<int,int>(nid, curr_patch_lm_size));
 
     for (int j=0; j< size; ++j)
     {
@@ -197,6 +213,8 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
     patchnode_count++;
   }
 
+
+
   // ---------------------------------------------------
   // fill patch lm with missing slave's nodes and extract slave's lm from patch_lm
 
@@ -204,14 +222,24 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
   {
     DRT::Node* node = s_nodes[k];
 
+    int nid = node->Id(); // node id of node and id of master node if it is a PBC node
+
+    if(has_PBC) // set the id of the master node if the node is a PBC node
+    {
+      std::map<int,int>::iterator slave_it = pbcconnectivity->find(nid); // find the slave node id, is there a corresponding pbc master node?
+
+      if(slave_it != pbcconnectivity->end())
+        nid = slave_it->second;
+    }
+
     // slave node already contained?
     std::map<int,int>::iterator m_offset;
-    m_offset = m_node_lm_offset.find(node->Id());
+    m_offset = m_node_lm_offset.find(nid);
 
     if(m_offset==m_node_lm_offset.end()) // node not included yet
     {
       std::vector<int> dof;// = discretization.Dof(dofset,node);
-      discretization.Dof(dof,node,dofset,nds_slave[k]);
+      discretization.Dof(dof,node,dofset,nds_slave[k]); // in case of pbcs, the right dofs are stored also for the slave node
 
       const int size = dof.size();
 
@@ -258,9 +286,19 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
   {
     DRT::Node* node = f_nodes[k];
 
+    int nid = node->Id(); // node id of node and id of master node if it is a PBC node
+
+    if(has_PBC) // set the id of the master node if the node is a PBC node
+    {
+      std::map<int,int>::iterator slave_it = pbcconnectivity->find(nid); // find the slave node id, is there a corresponding pbc master node?
+
+      if(slave_it != pbcconnectivity->end())
+        nid = slave_it->second;
+    }
+
     // face node must be contained
     std::map<int,int>::iterator m_offset;
-    m_offset = m_node_lm_offset.find(node->Id());
+    m_offset = m_node_lm_offset.find(nid);
 
     if(m_offset!=m_node_lm_offset.end()) // node not included yet
     {
@@ -297,7 +335,8 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
     std::vector<int>&     lm_slaveToPatch,      ///< local map between lm_slave and lm_patch
     std::vector<int>&     lm_faceToPatch,       ///< local map between lm_face and lm_patch
     std::vector<int>&     lm_masterNodeToPatch, ///< local map between master nodes and nodes in patch
-    std::vector<int>&     lm_slaveNodeToPatch   ///< local map between slave nodes and nodes in patch
+    std::vector<int>&     lm_slaveNodeToPatch,  ///< local map between slave nodes and nodes in patch
+    Teuchos::RCP<std::map<int,int> > pbcconnectivity ///< connectivity between slave and PBC's master nodes
     )
 {
   // create one patch location vector containing all dofs of master, slave and
@@ -350,6 +389,10 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
   int curr_patch_lm_size  = 0; // patch_lm.size()
   int curr_master_lm_size = 0; // master_lm.size()
 
+  //----------------------------------------------------
+  // check for PBC nodes
+  bool has_PBC = (pbcconnectivity!=Teuchos::null);
+
   // ---------------------------------------------------
   const int dofset = 0; // assume dofset 0
 
@@ -365,9 +408,19 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
 
     const int size = dof.size();
 
+    int nid = node->Id(); // node id of node and id of master node if it is a PBC node
+
+    if(has_PBC) // set the id of the master node if the node is a PBC node
+    {
+      std::map<int,int>::iterator slave_it = pbcconnectivity->find(nid); // find the slave node id, is there a corresponding pbc master node?
+
+      if(slave_it != pbcconnectivity->end())
+        nid = slave_it->second;
+    }
+
     //insert a pair of node-Id and current length of master_lm ( to get the start offset for node's dofs)
 
-    m_node_lm_offset.insert(std::pair<int,int>(node->Id(), curr_master_lm_size));
+    m_node_lm_offset.insert(std::pair<int,int>(nid, curr_master_lm_size));
 
     for (int j=0; j< size; ++j)
     {
@@ -396,9 +449,19 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
   {
     DRT::Node* node = s_nodes[k];
 
+    int nid = node->Id(); // node id of node and id of master node if it is a PBC node
+
+    if(has_PBC) // set the id of the master node if the node is a PBC node
+    {
+      std::map<int,int>::iterator slave_it = pbcconnectivity->find(nid); // find the slave node id, is there a corresponding pbc master node?
+
+      if(slave_it != pbcconnectivity->end())
+        nid = slave_it->second;
+    }
+
     // slave node already contained?
     std::map<int,int>::iterator m_offset;
-    m_offset = m_node_lm_offset.find(node->Id());
+    m_offset = m_node_lm_offset.find(nid);
 
     if(m_offset==m_node_lm_offset.end()) // node not included yet
     {
@@ -457,9 +520,19 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
   {
     DRT::Node* node = f_nodes[k];
 
+    int nid = node->Id(); // node id of node and id of master node if it is a PBC node
+
+    if(has_PBC) // set the id of the master node if the node is a PBC node
+    {
+      std::map<int,int>::iterator slave_it = pbcconnectivity->find(nid); // find the slave node id, is there a corresponding pbc master node?
+
+      if(slave_it != pbcconnectivity->end())
+        nid = slave_it->second;
+    }
+
     // face node must be contained
     std::map<int,int>::iterator m_offset;
-    m_offset = m_node_lm_offset.find(node->Id());
+    m_offset = m_node_lm_offset.find(nid);
 
     if(m_offset!=m_node_lm_offset.end()) // node not included yet
     {

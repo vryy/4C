@@ -611,6 +611,21 @@ Teuchos::RCP<std::map<int,std::vector<int> > > DRT::Discretization::GetAllPBCCou
   return Teuchos::rcp(new std::map<int,std::vector<int> >);
 }
 
+Teuchos::RCP<std::map<int,int> > DRT::Discretization::GetPBCSlaveToMasterNodeConnectivity()
+{
+  // check for pbcs
+  for (int nds = 0; nds<NumDofSets(); nds++)
+  {
+    Teuchos::RCP<PBCDofSet> pbcdofset = Teuchos::rcp_dynamic_cast<PBCDofSet> (dofsets_[nds]);
+
+    if (pbcdofset!=Teuchos::null)
+      // it is assumed that, if one pbc set is available, all other potential dofsets hold the same layout
+      return pbcdofset->GetSlaveToMasterNodeConnectivity();
+  }
+
+  return Teuchos::null;
+}
+
 
 /*----------------------------------------------------------------------*
  |  set a reference to a data vector (public)                mwgee 12/06|

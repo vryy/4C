@@ -28,7 +28,6 @@ Maintainer: Benedikt Schott
 #include "../drt_lib/drt_discret_faces.H"
 
 
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidIntFaceImplInterface* DRT::ELEMENTS::FluidIntFaceImplInterface::Impl(const DRT::Element* ele)
@@ -156,6 +155,9 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
   static const int numdofpernode = nsd + 1;
 
 
+  //---------------------- check for PBCS ------------------
+  Teuchos::RCP<std::map<int,int> > pbcconnectivity = discretization.GetPBCSlaveToMasterNodeConnectivity();
+
   //----------------------- create patchlm -----------------
 
   const int numnode_master = intface->ParentMasterElement()->NumNode();
@@ -189,7 +191,8 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
                                   lm_patch,
                                   // lm_master, lm_slave, lm_face,
                                   lm_masterToPatch, lm_slaveToPatch, lm_faceToPatch,
-                                  lm_masterNodeToPatch, lm_slaveNodeToPatch
+                                  lm_masterNodeToPatch, lm_slaveNodeToPatch,
+                                  pbcconnectivity
                                   );
 
 
@@ -219,11 +222,11 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
 
 #ifdef DEBUG
   for(int isd=0; isd < numdofpernode; isd++)
-  if((int)(patch_components_lm[isd].size()) != numnodeinpatch) dserror("patch_components_lm[%d] has wrong size", isd);
-
+  if((int)(patch_components_lm[isd].size()) != numnodeinpatch)
+    dserror("patch_components_lm[%d] has wrong size: size is %i but expected %i", isd, (int)(patch_components_lm[isd].size()), numnodeinpatch);
 #endif
 
-  //------------- create and evaluate block element matrics -----------------
+  //------------- create and evaluate block element matrices -----------------
 
   //------------------------------------------------------------------------------------
   // decide which pattern

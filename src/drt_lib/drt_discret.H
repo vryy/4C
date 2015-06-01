@@ -302,6 +302,11 @@ public:
   */
   virtual Teuchos::RCP<std::map<int,std::vector<int> > > GetAllPBCCoupledColNodes();
 
+  /*!
+  \brief Get slave to master connectivity in case of periodic boundary conditions
+  */
+  virtual Teuchos::RCP<std::map<int,int > > GetPBCSlaveToMasterNodeConnectivity();
+
   //@}
 
   /// @name Dof query methods for multi dof set discretizations

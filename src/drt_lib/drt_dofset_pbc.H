@@ -92,6 +92,9 @@ public:
   /// Get coupled nodes map (corresponding col format)
   virtual Teuchos::RCP<std::map<int,std::vector<int> > > GetCoupledNodes(){return perbndcouples_;};
 
+  /// Get connectivity map between slave node and its master node
+  virtual Teuchos::RCP<std::map<int,int> > GetSlaveToMasterNodeConnectivity(){return perbnd_slavetomaster_;};
+
 protected:
 
   /// get number of nodal dofs for this element at this node
@@ -115,7 +118,13 @@ protected:
 
 private:
 
+  /// Build the connectivity between slave node and its master node
+  void BuildSlaveToMasterNodeConnectivity();
+
   Teuchos::RCP<std::set<int> > slavenodeids_;
+
+  //!\brief slave node to master node connectivity for periodic boundary conditions (key=slave nid, value=master nid)
+  Teuchos::RCP<std::map<int,int> >  perbnd_slavetomaster_;
 
 }; // class PBCDofSet
 
