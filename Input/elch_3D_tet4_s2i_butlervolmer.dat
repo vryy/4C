@@ -45,7 +45,7 @@ DIFFCOND_FORMULATION            Yes
 EQUPOT                          divi
 -----------------------------------------------------------------S2I DYNAMIC
 MORTARTYPE                      NoMortar
-MATRIXTYPE                      block_geometric
+MATRIXTYPE                      block_condition
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
@@ -113,6 +113,11 @@ E 4 - KineticModel Butler-Volmer numscal 1 stoichiometries -1 e- 1 k_r 2.07e-5 a
 DSURF                           2
 E 2 -
 E 5 -
+--------------------------DESIGN S2I COUPLING SURF CONDITIONS / PARTITIONING
+DVOL                            3
+E 1 -
+E 2 -
+E 3 -
 -----------------------------DESIGN ELECTRODE STATE OF CHARGE VOL CONDITIONS
 DVOL                            2
 //

@@ -1070,6 +1070,33 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
 
   /*--------------------------------------------------------------------*/
+  // scatra-scatra interface coupling (domain partitioning for block preconditioning of global system matrix)
+  {
+    // partitioning of 2D domain into 2D subdomains
+    Teuchos::RCP<ConditionDefinition> s2ilinepartitioning =
+        Teuchos::rcp(new ConditionDefinition("DESIGN S2I COUPLING LINE CONDITIONS / PARTITIONING",
+                                             "S2ICouplingPartitioning",
+                                             "Scatra-scatra line interface coupling (domain partitioning)",
+                                             DRT::Condition::S2ICoupling,
+                                             false,
+                                             DRT::Condition::Surface));
+
+    // partitioning of 3D domain into 3D subdomains
+    Teuchos::RCP<ConditionDefinition> s2isurfpartitioning =
+        Teuchos::rcp(new ConditionDefinition("DESIGN S2I COUPLING SURF CONDITIONS / PARTITIONING",
+                                             "S2ICouplingPartitioning",
+                                             "Scatra-scatra surface interface coupling (domain partitioning)",
+                                             DRT::Condition::S2ICoupling,
+                                             false,
+                                             DRT::Condition::Volume));
+
+    // insert condition definitions into global list of valid condition definitions
+    condlist.push_back(s2ilinepartitioning);
+    condlist.push_back(s2isurfpartitioning);
+  }
+
+
+  /*--------------------------------------------------------------------*/
   // electrode state of charge
   {
     // definition of electrode state of charge volume condition

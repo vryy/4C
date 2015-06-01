@@ -44,7 +44,7 @@ CONVTOL                         1e-15
 ABSTOLRES                       1e-15
 --------------------------------------------------------S2I DYNAMIC
 MORTARTYPE                      NoMortar
-MATRIXTYPE                      block_geometric
+MATRIXTYPE                      block_geometry
 -----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS

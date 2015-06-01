@@ -93,8 +93,13 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
 
   protected:
 
-    //! global map extractor (0: other, 1: slave, 2: master)
-    Teuchos::RCP<LINALG::MultiMapExtractor> maps_;
+    //! interface map extractor (0: other, 1: slave, 2: master)
+    Teuchos::RCP<LINALG::MultiMapExtractor> interfacemaps_;
+
+    //! condition map extractors based on domain partitioning
+    Teuchos::RCP<LINALG::MultiMapExtractor> conditionmaps_;
+    Teuchos::RCP<LINALG::MultiMapExtractor> conditionmaps_slave_;
+    Teuchos::RCP<LINALG::MultiMapExtractor> conditionmaps_master_;
 
     //! interface coupling adapter
     Teuchos::RCP<ADAPTER::Coupling> icoup_;

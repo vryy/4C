@@ -26,7 +26,7 @@ Maintainer: Michael Gee
 
 namespace LINALG
 {
-  // forward delcarations:
+  // forward declarations:
   class BlockSparseMatrixBase;
   template <class Strategy> class BlockSparseMatrix;
 
@@ -525,6 +525,10 @@ class SparseMatrix : public SparseMatrixBase
      */
     void Split2x2(BlockSparseMatrixBase& Abase) const;
 
+    //! split SparseMatrix into an NxN BlockSparseMatrix with square main diagonal blocks
+    //! used by public function "Split" and does not call Complete() on resulting BlockSparseMatrix
+    void SplitNxN(BlockSparseMatrixBase& Abase) const;
+
     /// saved graph (if any)
     Teuchos::RCP<Epetra_CrsGraph> graph_;
 
@@ -573,11 +577,11 @@ class SparseMatrix : public SparseMatrixBase
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 /*!
-  \brief Split matrix in either 2x2 or 3x3 blocks (3x3 not yet impl.)
+  \brief Split matrix in either 2x2 or NxN blocks (with N>2)
 
-  Split given matrix 'this' into 2x2 block matrix and
+  Split given matrix 'this' into 2x2 or NxN block matrix and
   return result as templated BlockSparseMatrix.
-  The MultiMapExtractor's provided have to be 2 and 2 maps,
+  The MultiMapExtractor's provided have to be 2x2 or NxN maps,
   otherwise this method will throw an error.
 
   \note This is an expensive operation!
@@ -590,20 +594,25 @@ LINALG::SparseMatrix::Split(
     const MultiMapExtractor& domainmaps,
     const MultiMapExtractor& rangemaps) const
 {
-  if (domainmaps.NumMaps()==2 && rangemaps.NumMaps()==2)
-  {
-    const int npr = EpetraMatrix()->MaxNumEntries();
-    Teuchos::RCP<BlockSparseMatrix<Strategy> > blockA =
-      Teuchos::rcp(new LINALG::BlockSparseMatrix<Strategy>(domainmaps,rangemaps,npr,
-          explicitdirichlet_,savegraph_));
+  // safety check
+  if(domainmaps.NumMaps() != rangemaps.NumMaps())
+    dserror("Must have equal number of range and domain maps for matrix splitting!");
+
+  // initialize resulting BlockSparseMatrix
+  const int npr = EpetraMatrix()->MaxNumEntries();
+  Teuchos::RCP<BlockSparseMatrix<Strategy> > blockA =
+    Teuchos::rcp(new LINALG::BlockSparseMatrix<Strategy>(domainmaps,rangemaps,npr,explicitdirichlet_,savegraph_));
+
+  // perform matrix splitting
+  if(domainmaps.NumMaps() == 2)
     this->Split2x2(*blockA);
-    return blockA;
-  }
+  else if(domainmaps.NumMaps() > 2)
+    this->SplitNxN(*blockA);
   else
-    dserror("Currently can only split matrix in 2x2 blocks");
+    dserror("Invalid number %d of matrix blocks for splitting operation!",domainmaps.NumMaps());
 
-  return Teuchos::null;
+  // return resulting BlockSparseMatrix
+  return blockA;
 }
-
 
 #endif

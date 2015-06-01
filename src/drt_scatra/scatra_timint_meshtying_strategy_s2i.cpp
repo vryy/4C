@@ -35,7 +35,10 @@ SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I(
     const Teuchos::ParameterList&   parameters      //! input parameters for scatra-scatra interface coupling
     ) :
 MeshtyingStrategyBase(scatratimint),
-maps_(Teuchos::null),
+interfacemaps_(Teuchos::null),
+conditionmaps_(Teuchos::null),
+conditionmaps_slave_(Teuchos::null),
+conditionmaps_master_(Teuchos::null),
 icoup_(Teuchos::null),
 islavematrix_(Teuchos::null),
 imastermatrix_(Teuchos::null),
@@ -86,7 +89,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying() const
     scatratimint_->AddTimeIntegrationSpecificVectors();
 
     // fill interface state vector imasterphinp_ with transformed master dof values and add to discretization
-    maps_->InsertVector(icoup_->MasterToSlave(maps_->ExtractVector(*(scatratimint_->Phiafnp()),2)),1,imasterphinp_);
+    interfacemaps_->InsertVector(icoup_->MasterToSlave(interfacemaps_->ExtractVector(*(scatratimint_->Phiafnp()),2)),1,imasterphinp_);
     scatratimint_->Discretization()->SetState("imasterphinp",imasterphinp_);
 
     // evaluate scatra-scatra interface coupling at time t_{n+1} or t_{n+alpha_F}
@@ -126,7 +129,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying() const
         break;
       }
 
-      case INPAR::S2I::matrix_block_geometric:
+      case INPAR::S2I::matrix_block_geometry:
       {
         // check matrix
         Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocksystemmatrix = scatratimint_->BlockSystemMatrix();
@@ -149,6 +152,47 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying() const
         break;
       }
 
+      case INPAR::S2I::matrix_block_condition:
+      {
+        // check matrix
+        Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocksystemmatrix = scatratimint_->BlockSystemMatrix();
+        if(blocksystemmatrix == Teuchos::null)
+          dserror("System matrix is not a block matrix!");
+
+        Teuchos::RCP<LINALG::SparseMatrix> ksm(Teuchos::rcp(new LINALG::SparseMatrix(*icoup_->SlaveDofMap(),81,false)));
+        Teuchos::RCP<LINALG::SparseMatrix> kms(Teuchos::rcp(new LINALG::SparseMatrix(*icoup_->MasterDofMap(),81,false)));
+        Teuchos::RCP<LINALG::SparseMatrix> kmm(Teuchos::rcp(new LINALG::SparseMatrix(*icoup_->MasterDofMap(),81,false)));
+
+        // transform linearizations of slave fluxes w.r.t. master dofs
+        (*islavetomastercoltransform_)(imastermatrix_->RowMap(),imastermatrix_->ColMap(),*imastermatrix_,1.,ADAPTER::CouplingSlaveConverter(*icoup_),*ksm);
+        ksm->Complete(*icoup_->MasterDofMap(),*icoup_->SlaveDofMap());
+
+        // derive linearizations of master fluxes w.r.t. slave dofs
+        (*islavetomasterrowtransform_)(*islavematrix_,-1.,ADAPTER::CouplingSlaveConverter(*icoup_),*kms);
+        kms->Complete(*icoup_->SlaveDofMap(),*icoup_->MasterDofMap());
+
+        // derive linearizations of master fluxes w.r.t. master dofs
+        (*islavetomasterrowcoltransform_)(*imastermatrix_,-1.,ADAPTER::CouplingSlaveConverter(*icoup_),ADAPTER::CouplingSlaveConverter(*icoup_),*kmm);
+        kmm->Complete();
+
+        Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockkss(islavematrix_->Split<LINALG::DefaultBlockMatrixStrategy>(*conditionmaps_slave_,*conditionmaps_slave_));
+        blockkss->Complete();
+        Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockksm(ksm->Split<LINALG::DefaultBlockMatrixStrategy>(*conditionmaps_master_,*conditionmaps_slave_));
+        blockksm->Complete();
+        Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockkms(kms->Split<LINALG::DefaultBlockMatrixStrategy>(*conditionmaps_slave_,*conditionmaps_master_));
+        blockkms->Complete();
+        Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockkmm(kmm->Split<LINALG::DefaultBlockMatrixStrategy>(*conditionmaps_master_,*conditionmaps_master_));
+        blockkmm->Complete();
+
+        // assemble interface block matrices into global block system matrix
+        blocksystemmatrix->Add(*blockkss,false,1.,1.);
+        blocksystemmatrix->Add(*blockksm,false,1.,1.);
+        blocksystemmatrix->Add(*blockkms,false,1.,1.);
+        blocksystemmatrix->Add(*blockkmm,false,1.,1.);
+
+        break;
+      }
+
       default:
       {
         dserror("Type of global system matrix for scatra-scatra interface coupling not recognized!");
@@ -157,10 +201,10 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying() const
     }
 
     // assemble slave residuals into global residual vector
-    maps_->AddVector(islaveresidual_,1,scatratimint_->Residual());
+    interfacemaps_->AddVector(islaveresidual_,1,scatratimint_->Residual());
 
     // transform master residuals and assemble into global residual vector
-    maps_->AddVector(icoup_->SlaveToMaster(islaveresidual_),2,scatratimint_->Residual(),-1.);
+    interfacemaps_->AddVector(icoup_->SlaveToMaster(islaveresidual_),2,scatratimint_->Residual(),-1.);
 
     break;
   }
@@ -259,14 +303,14 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
 
     // generate interior and interface maps
     Teuchos::RCP<Epetra_Map> ifullmap = LINALG::MergeMap(icoup_->SlaveDofMap(),icoup_->MasterDofMap(),false);
-    std::vector<Teuchos::RCP<const Epetra_Map> > maps;
-    maps.push_back(LINALG::SplitMap(*(scatratimint_->Discretization()->DofRowMap()),*ifullmap));
-    maps.push_back(icoup_->SlaveDofMap());
-    maps.push_back(icoup_->MasterDofMap());
+    std::vector<Teuchos::RCP<const Epetra_Map> > imaps;
+    imaps.push_back(LINALG::SplitMap(*(scatratimint_->Discretization()->DofRowMap()),*ifullmap));
+    imaps.push_back(icoup_->SlaveDofMap());
+    imaps.push_back(icoup_->MasterDofMap());
 
     // initialize global map extractor
-    maps_ = Teuchos::rcp(new LINALG::MultiMapExtractor(*(scatratimint_->Discretization()->DofRowMap()),maps));
-    maps_->CheckForValidMapExtractor();
+    interfacemaps_ = Teuchos::rcp(new LINALG::MultiMapExtractor(*(scatratimint_->Discretization()->DofRowMap()),imaps));
+    interfacemaps_->CheckForValidMapExtractor();
 
     // initialize interface vector
     // Although the interface vector only contains the transformed master interface dofs, we still initialize it with
@@ -282,6 +326,66 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
 
     // initialize auxiliary residual vector
     islaveresidual_ = Teuchos::rcp(new Epetra_Vector(*(icoup_->SlaveDofMap())));
+
+    if(matrixtype_ == INPAR::S2I::matrix_block_condition)
+    {
+      std::vector<Teuchos::RCP<DRT::Condition> > partitioningconditions;
+      scatratimint_->Discretization()->GetCondition("S2ICouplingPartitioning",partitioningconditions);
+      const unsigned ncond = partitioningconditions.size();
+      if(!ncond)
+        dserror("For block preconditioning based on domain partitioning, at least one associated condition needs to be specified in the input file!");
+      std::vector<std::set<int> > dofids(ncond);
+      std::vector<Teuchos::RCP<const Epetra_Map> > conditionmaps(ncond);
+      for(unsigned icond=0; icond<ncond; ++icond)
+      {
+        const std::vector<int>* nodegids = partitioningconditions[icond]->Nodes();
+
+        for (unsigned inode=0; inode<nodegids->size(); ++inode)
+        {
+          const int nodegid = (*nodegids)[inode];
+
+          // consider current node only if node is owned by current processor
+          // need to make sure that node is stored on current processor, otherwise cannot resolve "->Owner()"
+          if(scatratimint_->Discretization()->HaveGlobalNode(nodegid) and scatratimint_->Discretization()->gNode(nodegid)->Owner() == scatratimint_->Discretization()->Comm().MyPID())
+          {
+            const std::vector<int> nodedofs = scatratimint_->Discretization()->Dof(scatratimint_->Discretization()->gNode(nodegid));
+            std::copy(nodedofs.begin(),nodedofs.end(),std::inserter(dofids[icond],dofids[icond].end()));
+          }
+        }
+
+        int nummyelements(0);
+        int* myglobalelements(NULL);
+        std::vector<int> dofidvec;
+        if(dofids[icond].size() > 0)
+        {
+          dofidvec.reserve(dofids[icond].size());
+          dofidvec.assign(dofids[icond].begin(),dofids[icond].end());
+          nummyelements = dofidvec.size();
+          myglobalelements = &(dofidvec[0]);
+        }
+        conditionmaps[icond] = Teuchos::rcp(new Epetra_Map(-1,nummyelements,myglobalelements,scatratimint_->DofRowMap()->IndexBase(),scatratimint_->DofRowMap()->Comm()));
+      }
+
+      // initialize condition map extractors
+      conditionmaps_ = Teuchos::rcp(new LINALG::MultiMapExtractor(*(scatratimint_->Discretization()->DofRowMap()),conditionmaps));
+      conditionmaps_->CheckForValidMapExtractor();
+
+      std::vector<Teuchos::RCP<const Epetra_Map> > conditionmaps_slave(ncond);
+      std::vector<Teuchos::RCP<const Epetra_Map> > conditionmaps_master(ncond);
+      for(unsigned icond=0; icond<ncond; ++icond)
+      {
+        std::vector<Teuchos::RCP<const Epetra_Map> > maps(2);
+        maps[0] = conditionmaps[icond];
+        maps[1] = icoup_->SlaveDofMap();
+        conditionmaps_slave[icond] = LINALG::MultiMapExtractor::IntersectMaps(maps);
+        maps[1] = icoup_->MasterDofMap();
+        conditionmaps_master[icond] = LINALG::MultiMapExtractor::IntersectMaps(maps);
+      }
+      conditionmaps_slave_ = Teuchos::rcp(new LINALG::MultiMapExtractor(*icoup_->SlaveDofMap(),conditionmaps_slave));
+      conditionmaps_slave_->CheckForValidMapExtractor();
+      conditionmaps_master_ = Teuchos::rcp(new LINALG::MultiMapExtractor(*icoup_->MasterDofMap(),conditionmaps_master));
+      conditionmaps_master_->CheckForValidMapExtractor();
+    }
 
     break;
   }
@@ -328,10 +432,18 @@ Teuchos::RCP<LINALG::SparseOperator> SCATRA::MeshtyingStrategyS2I::InitSystemMat
     break;
   }
 
-  case INPAR::S2I::matrix_block_geometric:
+  case INPAR::S2I::matrix_block_geometry:
   {
     // initialize system matrix and associated strategy
-    systemmatrix = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(*maps_,*maps_));
+    systemmatrix = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(*interfacemaps_,*interfacemaps_));
+    break;
+  }
+
+  case INPAR::S2I::matrix_block_condition:
+  {
+    // initialize system matrix and associated strategy
+    systemmatrix = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(*conditionmaps_,*conditionmaps_));
+
     break;
   }
 

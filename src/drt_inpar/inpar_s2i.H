@@ -48,7 +48,8 @@ namespace INPAR
     enum MatrixType
     {
       matrix_sparse,
-      matrix_block_geometric
+      matrix_block_geometry,
+      matrix_block_condition
     };
 
     //! equilibration methods for global system of equations

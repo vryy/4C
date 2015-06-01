@@ -5834,11 +5834,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       "type of global system matrix in global system of equations",
       tuple<std::string>(
           "sparse",
-          "block_geometric"
+          "block_geometry",
+          "block_condition"
           ),
       tuple<int>(
           INPAR::S2I::matrix_sparse,
-          INPAR::S2I::matrix_block_geometric
+          INPAR::S2I::matrix_block_geometry,
+          INPAR::S2I::matrix_block_condition
           ),
       &s2idyn
       );
