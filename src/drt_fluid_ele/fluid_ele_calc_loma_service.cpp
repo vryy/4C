@@ -300,7 +300,10 @@ else if (material->MaterialType() == INPAR::MAT::m_sutherland)
   double tempaf = funct_.Dot(escaaf);
 
   // add subgrid-scale part to obtain complete temperature
+  // and check whether it is positive
   tempaf += sgsca;
+  if (tempaf < 0.0)
+    dserror("Negative temperature in Fluid Sutherland material-update evaluation!");
 
   // compute viscosity according to Sutherland law
   visc_ = actmat->ComputeViscosity(tempaf);
@@ -362,7 +365,11 @@ else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
   provaraf += sgsca;
 
   // compute temperature based on progress variable at n+alpha_F or n+1
+  // and check whether it is positive
   const double tempaf = actmat->ComputeTemperature(provaraf);
+  if (tempaf < 0.0)
+    dserror("Negative temperature in Fluid Arrhenius progress-variable material-update evaluation!");
+
 
   // compute viscosity according to Sutherland law
   visc_ = actmat->ComputeViscosity(tempaf);
@@ -414,7 +421,10 @@ else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
   provaraf += sgsca;
 
   // compute temperature based on progress variable at n+alpha_F or n+1
+  // and check whether it is positive
   const double tempaf = actmat->ComputeTemperature(provaraf);
+  if (tempaf < 0.0)
+    dserror("Negative temperature in Fluid Ferziger and Echekki progress-variable material-update evaluation!");
 
   // compute viscosity according to Sutherland law
   visc_ = actmat->ComputeViscosity(tempaf);
@@ -464,8 +474,10 @@ else if (material->MaterialType() == INPAR::MAT::m_yoghurt)
   densam_ = densaf_;
   densn_  = densaf_;
 
-  // compute temperature at n+alpha_F or n+1
+  // compute temperature at n+alpha_F or n+1 and check whether it is positive
   const double tempaf = funct_.Dot(escaaf);
+  if (tempaf < 0.0)
+    dserror("Negative temperature in Fluid yoghurt material-update evaluation!");
 
   // compute rate of strain at n+alpha_F or n+1
   double rateofstrain = -1.0e30;

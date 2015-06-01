@@ -2212,12 +2212,13 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::GetDensity(
   {
     const MAT::Sutherland* actmat = static_cast<const MAT::Sutherland*>(material.get());
 
-    // compute temperature at n+alpha_F or n+1
+    // compute temperature at n+alpha_F or n+1 and check whether it is positive
     const double tempaf = funct_.Dot(escaaf);
+    if (tempaf < 0.0)
+      dserror("Negative temperature in Fluid Sutherland density evaluation on boundary!");
 
     // compute density at n+alpha_F or n+1 based on temperature
     // and thermodynamic pressure
-
     densaf_ = actmat->ComputeDensity(tempaf,thermpressaf);
 
     // set density factor for Neumann boundary conditions to density for present material

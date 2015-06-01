@@ -204,6 +204,10 @@ const double DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::GetDensity(
   // initialization
   double density(0.);
 
+  // check whether temperature is positive
+  if (tempnp < 0.0)
+    dserror("Negative temperature in ScaTra low-Mach-number routine 'GetDensity'!");
+
   if (material->MaterialType() == INPAR::MAT::m_sutherland)
   {
     // get thermodynamic pressure

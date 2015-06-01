@@ -271,13 +271,14 @@ const double DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::GetDensity(
       {
         tempnod(inode) = ephinp[(inode+1)*my::numdofpernode_-1];
       }
-      // compute temperature
+      // compute temperature and check whether it is positive
       const double temp = my::funct_.Dot(tempnod);
+      if (temp < 0.0)
+        dserror("Negative temperature in ScaTra Arrhenius temperature density evaluation on boundary!");
 
       // compute density based on temperature and thermodynamic pressure
       density = static_cast<const MAT::ArrheniusTemp*>(actmat->MaterialById(lastmatid).get())->ComputeDensity(temp,thermpress_);
     }
-
     else dserror("Type of material found in material list not supported, should be Arrhenius-type temperature!");
 
     break;
@@ -293,8 +294,13 @@ const double DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::GetDensity(
 
   case INPAR::MAT::m_sutherland:
   {
+    // compute temperature and check whether it is positive
+    const double temp = my::funct_.Dot(phinod);
+    if (temp < 0.0)
+      dserror("Negative temperature in ScaTra Sutherland density evaluation on boundary!");
+
     // compute density based on temperature and thermodynamic pressure
-    density = static_cast<const MAT::Sutherland*>(material.get())->ComputeDensity(my::funct_.Dot(phinod),thermpress_);
+    density = static_cast<const MAT::Sutherland*>(material.get())->ComputeDensity(temp,thermpress_);
 
     break;
   }

@@ -2410,8 +2410,10 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::GetMaterialParams(
     densam = densaf;
     densn  = densaf;
 
-    // compute temperature at n+alpha_F or n+1
+    // compute temperature at n+alpha_F or n+1 and check whether it is positive
     const double tempaf = funct_.Dot(escaaf);
+    if (tempaf < 0.0)
+      dserror("Negative temperature in Fluid yoghurt material evaluation!");
 
     // compute rate of strain at n+alpha_F or n+1
     double rateofstrain = -1.0e30;
@@ -2474,8 +2476,11 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::GetMaterialParams(
   {
     const MAT::Sutherland* actmat = static_cast<const MAT::Sutherland*>(material.get());
 
-    // compute temperature at n+alpha_F or n+1
+    // compute temperature at n+alpha_F or n+1 and check whether it is positive
     const double tempaf = funct_.Dot(escaaf);
+    if (tempaf < 0.0)
+      dserror("Negative temperature in Fluid Sutherland material evaluation!");
+
 
     // compute viscosity according to Sutherland law
     visc = actmat->ComputeViscosity(tempaf);
@@ -2613,7 +2618,10 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::GetMaterialParams(
     const double provaraf = funct_.Dot(escaaf);
 
     // compute temperature based on progress variable at n+alpha_F or n+1
+    // and check whether it is positive
     const double tempaf = actmat->ComputeTemperature(provaraf);
+    if (tempaf < 0.0)
+      dserror("Negative temperature in Fluid Arrhenius progress-variable material evaluation!");
 
     // compute viscosity according to Sutherland law
     visc = actmat->ComputeViscosity(tempaf);
@@ -2673,7 +2681,10 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::GetMaterialParams(
     const double provaraf = funct_.Dot(escaaf);
 
     // compute temperature based on progress variable at n+alpha_F or n+1
+    // and check whether it is positive
     const double tempaf = actmat->ComputeTemperature(provaraf);
+    if (tempaf < 0.0)
+      dserror("Negative temperature in Fluid Ferziger and Echekki progress-variable material evaluation!");
 
     // compute viscosity according to Sutherland law
     visc = actmat->ComputeViscosity(tempaf);

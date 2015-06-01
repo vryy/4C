@@ -147,9 +147,6 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatMixFrac(
   const Teuchos::RCP<const MAT::MixFrac>& actmat
     = Teuchos::rcp_dynamic_cast<const MAT::MixFrac>(material);
 
-  if(my::numdofpernode_!=1)
-    dserror("more than 1 dof per node for progress-variable material!");
-
   // compute mixture fraction at n+1 or n+alpha_F
   const double mixfracnp = my::funct_.Dot(my::ephinp_[0]);
 
@@ -206,16 +203,13 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatSutherland(
   const Teuchos::RCP<const MAT::Sutherland>& actmat
     = Teuchos::rcp_dynamic_cast<const MAT::Sutherland>(material);
 
-  if(my::numdofpernode_!=1)
-    dserror("more than 1 dof per node for Sutherland material!");
-
   // get specific heat capacity at constant pressure
   shc_ = actmat->Shc();
 
-  // compute temperature at n+1 or n+alpha_F
+  // compute temperature at n+1 or n+alpha_F and check whether it is positive
   const double tempnp = my::funct_.Dot(my::ephinp_[0]);
   if (tempnp < 0.0)
-    dserror("Negative temperature, but Sutherland's law only defined for positive temperatures!");
+    dserror("Negative temperature in ScaTra Sutherland material evaluation!");
 
   // compute diffusivity according to Sutherland's law
   my::diffmanager_->SetIsotropicDiff(actmat->ComputeDiffusivity(tempnp),k);
@@ -268,9 +262,6 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatArrheniusPV(
   const Teuchos::RCP<const MAT::ArrheniusPV>& actmat
     = Teuchos::rcp_dynamic_cast<const MAT::ArrheniusPV>(material);
 
-  if(my::numdofpernode_!=1)
-    dserror("more than 1 dof per node for progress-variable material!");
-
   // get progress variable at n+1 or n+alpha_F
   const double provarnp = my::funct_.Dot(my::ephinp_[0]);
 
@@ -278,8 +269,10 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatArrheniusPV(
   // compute temperature based on progress variable
   shc_ = actmat->ComputeShc(provarnp);
 
-  // compute temperature at n+1 or n+alpha_F
+  // compute temperature at n+1 or n+alpha_F and check whether it is positive
   const double tempnp = actmat->ComputeTemperature(provarnp);
+  if (tempnp < 0.0)
+    dserror("Negative temperature in ScaTra Arrhenius progress-variable material evaluation!");
 
   // compute density at n+1 or n+alpha_F
   densnp = actmat->ComputeDensity(provarnp);
@@ -341,8 +334,10 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatArrheniusSpec(
   const Teuchos::RCP<const MAT::ArrheniusSpec>& actmat
     = Teuchos::rcp_dynamic_cast<const MAT::ArrheniusSpec>(material);
 
-  // compute temperature at n+1 or n+alpha_F
+  // compute temperature at n+1 or n+alpha_F and check whether it is positive
   const double tempnp = my::funct_.Dot(my::ephinp_[my::numscal_-1]);
+  if (tempnp < 0.0)
+    dserror("Negative temperature in ScaTra Arrhenius species material evaluation!");
 
   // compute diffusivity according to Sutherland's law
   my::diffmanager_->SetIsotropicDiff(actmat->ComputeDiffusivity(tempnp),k);
@@ -404,13 +399,14 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatArrheniusTemp(
   // get specific heat capacity at constant pressure
   shc_ = actmat->Shc();
 
-  // compute species mass fraction and temperature at n+1 or n+alpha_F
+  // compute species mass fraction and temperature at n+1 or n+alpha_F, including
+  // check whether temperature is positive
   // (only two-equation systems, for the time being, such that only one species
   //  mass fraction possible)
   const double spmfnp = my::funct_.Dot(my::ephinp_[0]);
   const double tempnp = my::funct_.Dot(my::ephinp_[k]);
   if (tempnp < 0.0)
-    dserror("Negative temperature, but Sutherland's law only defined for positive temperatures!");
+    dserror("Negative temperature in ScaTra Arrhenius temperature material evaluation!");
 
   // compute diffusivity according to Sutherland's law
   my::diffmanager_->SetIsotropicDiff(actmat->ComputeDiffusivity(tempnp),k);
@@ -468,18 +464,16 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatFerechPV(
   const Teuchos::RCP<const MAT::FerEchPV>& actmat
     = Teuchos::rcp_dynamic_cast<const MAT::FerEchPV>(material);
 
-  dsassert(my::numdofpernode_==1,"more than 1 dof per node for progress-variable material");
-
-  if(my::numdofpernode_!=1)
-    dserror("more than 1 dof per node for progress-variable material!");
-
   // get progress variable at n+1 or n+alpha_F
   const double provarnp = my::funct_.Dot(my::ephinp_[0]);
 
-  // get specific heat capacity at constant pressure and
-  // compute temperature based on progress variable
+  // get specific heat capacity at constant pressure
   shc_ = actmat->ComputeShc(provarnp);
+
+  // compute temperature at n+1 or n+alpha_F and check whether it is positive
   const double tempnp = actmat->ComputeTemperature(provarnp);
+  if (tempnp < 0.0)
+    dserror("Negative temperature in ScaTra Ferziger and Echekki progress-variable material evaluation!");
 
   // compute density at n+1 or n+alpha_F
   densnp = actmat->ComputeDensity(provarnp);
@@ -541,9 +535,6 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatYoghurt(
   const Teuchos::RCP<const MAT::Yoghurt>& actmat
      = Teuchos::rcp_dynamic_cast<const MAT::Yoghurt>(material);
 
-  if(my::numdofpernode_!=1)
-    dserror("more than 1 dof per node for progress-variable material!");
-
   // get specific heat capacity at constant pressure
   shc_ = actmat->Shc();
 
@@ -560,8 +551,10 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatYoghurt(
   // or multifractal subgrid-scales are used
   if (my::scatrapara_->RBSubGrVel() or my::scatrapara_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
   {
-    // compute temperature at n+1 or n+alpha_F
+    // compute temperature at n+1 or n+alpha_F and check whether it is positive
     const double tempnp = my::funct_.Dot(my::ephinp_[0]);
+    if (tempnp < 0.0)
+      dserror("Negative temperature in ScaTra yoghurt material evaluation!");
 
     // compute rate of strain
     double rateofstrain = -1.0e30;
