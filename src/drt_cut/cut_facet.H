@@ -251,6 +251,9 @@ public:
   ///Do the facets share the same CutSide?
   bool ShareSameCutSide( Facet * f );
 
+  /// Return true is the facet is convex shaped
+  bool isConvex();
+
 private:
 
   Facet( const Facet & );

@@ -1008,9 +1008,9 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells( Mesh &mesh,
       if(BCellgausstype==INPAR::CUT::BCellGaussPts_Tessellation)//generate boundarycell gausspoints by triangulation
       {
 #if 1 // Call split facets -- Remember: the facet can be  concave shaped
-        if( !fac->IsFacetSplit() )
-          fac->SplitFacet( corners );
-        const std::vector<std::vector<Point*> > & triangulation = fac->GetSplitCells();
+        if(!fac->IsTriangulated())
+          fac->DoTriangulation( mesh, corners );
+        const std::vector<std::vector<Point*> > & triangulation = fac->Triangulation();
 #else  // creates both tri and quad. less no of Gauss points - but deleted some points leads to error
 
         if( cornersTemp.size()==0 )

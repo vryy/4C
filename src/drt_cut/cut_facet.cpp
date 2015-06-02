@@ -270,19 +270,10 @@ bool GEO::CUT::Facet::ShareSameCutSide( Facet* f )
 }
 
 /*-------------------------------------------------------------------------------------------------------*
-      Find the middle point (M) and join them with the corners of the facet to create triangles
-      Works only for convex facets, because of the middle point calculation
-
-                                           4   ________ 3
-                                              /.     . \
-                                             /  .   .   \
-                                            /    . .     \
-                                        5  /      . M     \ 2
-                                           \     . .      /
-                                            \   .   .    /
-                                             \._______./
-                                            0            1
-      Whenever possible call SplitFacet() instead of triangulation as it is very effective
+  Perform triangulation of the facet.                                                            sudhakar 06/15
+  When convex, centre-point-triangulation is used that can better approximate the geometry
+  For concave facets, Ear-clipping procedure is utilized -- slightly less accurate due to
+  deleting the inline points but no other choice
 *--------------------------------------------------------------------------------------------------------*/
 void GEO::CUT::Facet::CreateTriangulation( Mesh & mesh, const std::vector<Point*> & points )
 {
@@ -376,35 +367,67 @@ void GEO::CUT::Facet::CreateTriangulation( Mesh & mesh, const std::vector<Point*
     //std::cout << "\n";
   }
 #else  //new simpler triangulation implementation (Sudhakar 04/12)
-  std::vector<Point*> pts( points );
 
-  //Find the middle point
-  LINALG::Matrix<3,1> cur;
-  LINALG::Matrix<3,1> avg(true); //fill with zeros
-  for( std::vector<Point*>::iterator i=pts.begin();i!=pts.end();i++ )
+  // Perform centre-point triangulation
+  // Find the middle point (M) and join them with the corners of the facet to create triangles
+  // Works only for convex facets, because of the middle point calculation
+  //                                                                  |
+  //                                       4 _______ 3                |
+  //                                        /.     .\                 |
+  //                                       /  .   .  \                |
+  //                                      /    . .    \               |
+  //                                  5  /      . M    \ 2            |
+  //                                     \     . .     /              |
+  //                                      \   .   .   /               |
+  //                                       \._______./                |
+  //                                      0          1                |
+  //
+  if( this->isConvex() )
   {
-    Point* p1 = *i;
-    p1->Coordinates(cur.A());
-    avg.Update(1.0,cur,1.0);
-  }
-  avg.Scale(1.0/pts.size());
-  Point * p_mid = mesh.NewPoint( avg.A(), NULL, ParentSide(),0.0); //change tolerance here intelligently !!! - basically there is no reason why I'd like to merge here!
-  p_mid->Position( Position() );
-  p_mid->Register( this );
+    std::vector<Point*> pts( points );
+    //Find the middle point
+    LINALG::Matrix<3,1> cur;
+    LINALG::Matrix<3,1> avg(true); //fill with zeros
+    for( std::vector<Point*>::iterator i=pts.begin();i!=pts.end();i++ )
+    {
+      Point* p1 = *i;
+      p1->Coordinates(cur.A());
+      avg.Update(1.0,cur,1.0);
+    }
+    avg.Scale(1.0/pts.size());
+    Point * p_mid = mesh.NewPoint( avg.A(), NULL, ParentSide(),0.0); //change tolerance here intelligently !!! - basically there is no reason why I'd like to merge here!
+    p_mid->Position( Position() );
+    p_mid->Register( this );
 
-  //form triangles and store them in triangulation_
-  triangulation_.clear();
-  std::vector<Point*> newtri(3);
-  newtri[0] = p_mid;
-  for( unsigned i=0;i<pts.size();i++ )
+    //form triangles and store them in triangulation_
+    triangulation_.clear();
+    std::vector<Point*> newtri(3);
+    newtri[0] = p_mid;
+    for( unsigned i=0;i<pts.size();i++ )
+    {
+      Point* pt1 = pts[i];
+      Point* pt2 = pts[(i+1)%pts.size()];
+
+      newtri[1] = pt1;
+      newtri[2] = pt2;
+      triangulation_.push_back(newtri);
+    }
+  }
+  // When the facet is concave, perform triangulation by applying Ear-clipping procedure
+  // This is less accurate than the centre-point-triangulation, as it involves deleting in-line points
+  // upto a tolerance
+  // But we have no choice in the case of concave polyhedra
+  else
   {
-    Point* pt1 = pts[i];
-    Point* pt2 = pts[(i+1)%pts.size()];
+    triangulation_.clear();
+    std::vector<Point*> pts( points );
+    std::vector<int> ptc;
+    GEO::CUT::TriangulateFacet tf( pts );
+    tf.EarClipping( ptc, true );
 
-    newtri[1] = pt1;
-    newtri[2] = pt2;
-    triangulation_.push_back(newtri);
+    triangulation_ = tf.GetSplitCells();
   }
+
 #endif
 }
 
@@ -1196,12 +1219,26 @@ const std::vector<std::vector<double> > GEO::CUT::Facet::CornerPointsGlobal( Ele
 /*-----------------------------------------------------------------------*
           Split the facet into a number of tri and quad cells
 *------------------------------------------------------------------------*/
- void GEO::CUT::Facet::SplitFacet( const std::vector<Point*> & points )
- {
-   TriangulateFacet tf( points );
-   tf.SplitFacet();
-   splitCells_ = tf.GetSplitCells();
- }
+void GEO::CUT::Facet::SplitFacet( const std::vector<Point*> & points )
+{
+ TriangulateFacet tf( points );
+ tf.SplitFacet();
+ splitCells_ = tf.GetSplitCells();
+}
+
+/*-----------------------------------------------------------------------*
+          Returns true if the facet is convex shaped
+*------------------------------------------------------------------------*/
+bool GEO::CUT::Facet::isConvex()
+{
+ std::string geoType;
+ std::vector<int> ptConcavity = KERNEL::CheckConvexity( corner_points_, geoType, false, false );
+
+ if( geoType == "convex" )
+   return true;
+
+ return false;
+}
 
  /*-----------------------------------------------------------------------*
 

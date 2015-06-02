@@ -61,7 +61,7 @@
 
 // If the area of boundarycell is less than this value, then it is eliminated from boundary integration
 // Such small area can lead to zero or a very small negative value in the boundary cell mapping's Jacobian
-#define REF_AREA_BCELL 1e-30
+#define REF_AREA_BCELL 1e-13
 
 // If the distance of the line between the main Gauss points and its projected point is less than
 // this value, then this main Gauss point is not considered
