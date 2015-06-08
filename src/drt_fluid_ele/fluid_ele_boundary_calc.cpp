@@ -344,6 +344,7 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(
   const std::vector<double>* val   = condition.Get<std::vector<double> >("val"  );
   const std::vector<int>*    func  = condition.Get<std::vector<int> >   ("funct");
   const std::vector<int>*    curve = condition.Get<std::vector<int> >   ("curve");
+  const std::string*         type  = condition.Get<std::string>("type");
 
   // get time factor for Neumann term
   const double timefac = fldparatimint_->TimeFacRhs();
@@ -493,49 +494,105 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(
 
     for(int idim=0; idim<(nsd_); ++idim)
     {
-      if((*onoff)[idim])  // Is this dof activated
+      if (*type == "neum_live")
       {
-        if (func)
-          functnum = (*func)[idim];
-        if (functnum>0)
+        if((*onoff)[idim])  // Is this dof activated
         {
-          // evaluate function at current gauss point
-          functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(idim,coordgpref,time,NULL);
-          functfacn = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(idim,coordgpref,time-fldparatimint_->Dt(),NULL);
-        }
-        else
-        {
-          functfac = 1.0;
-          functfacn = 1.0;
-        }
-
-        // get time-curve factor/ n = - grad phi / |grad phi|
-        if (curve)
-          curvenum = (*curve)[idim];
-        if (curvenum>=0 and usetime)
-        {
-          curvefac  = DRT::Problem::Instance()->Curve(curvenum).f(time);
-          curvefacn = DRT::Problem::Instance()->Curve(curvenum).f(time-fldparatimint_->Dt());
-        }
-        else
-        {
-          curvefac  = 1.0;
-          curvefacn = 1.0;
-        }
-
-        const double valfac = (*val)[idim]*fac_time_dens*functfac*curvefac;
-        const double valfacn = (*val)[idim]*fac_time_densn*functfacn*curvefacn;
-        for(int inode=0; inode < bdrynen_; ++inode )
-        {
-          elevec1_epetra[inode*numdofpernode_+idim] += funct_(inode)*valfac;
-          if(fldparatimint_->IsNewOSTImplementation())
+          if (func)
+            functnum = (*func)[idim];
+          if (functnum>0)
           {
-            if(fldparatimint_->IsOneStepTheta())
-              elevec1_epetra[inode*numdofpernode_+idim] += funct_(inode)*valfacn;
+            // evaluate function at current gauss point
+            functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(idim,coordgpref,time,NULL);
+            functfacn = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(idim,coordgpref,time-fldparatimint_->Dt(),NULL);
           }
-        } //end IsNewOSTImplementation
-      }  // if (*onoff)
-    }
+          else
+          {
+            functfac = 1.0;
+            functfacn = 1.0;
+          }
+
+          // get time-curve factor/ n = - grad phi / |grad phi|
+          if (curve)
+            curvenum = (*curve)[idim];
+          if (curvenum>=0 and usetime)
+          {
+            curvefac  = DRT::Problem::Instance()->Curve(curvenum).f(time);
+            curvefacn = DRT::Problem::Instance()->Curve(curvenum).f(time-fldparatimint_->Dt());
+          }
+          else
+          {
+            curvefac  = 1.0;
+            curvefacn = 1.0;
+          }
+
+          const double valfac = (*val)[idim]*fac_time_dens*functfac*curvefac;
+          const double valfacn = (*val)[idim]*fac_time_densn*functfacn*curvefacn;
+          for(int inode=0; inode < bdrynen_; ++inode )
+          {
+            elevec1_epetra[inode*numdofpernode_+idim] += funct_(inode)*valfac;
+            if(fldparatimint_->IsNewOSTImplementation())
+            {
+              if(fldparatimint_->IsOneStepTheta())
+                elevec1_epetra[inode*numdofpernode_+idim] += funct_(inode)*valfacn;
+            }
+          } //end IsNewOSTImplementation
+        }  // if (*onoff)
+      }
+      else if (*type == "neum_pseudo_orthopressure")
+      {
+        if (idim != 0 and (*onoff)[idim])
+          dserror("If you apply a pseudo_orthopressure load on the fluid, only a load in\n"
+              "the first component (which corresponds to the normal direction) is valid!");
+
+        if((*onoff)[0])  // Do we have a load in normal direction?
+        {
+          if (func)
+            functnum = (*func)[0];
+          if (functnum>0)
+          {
+            // evaluate function at current gauss point
+            functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(idim,coordgpref,time,NULL);
+            functfacn = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(idim,coordgpref,time-fldparatimint_->Dt(),NULL);
+          }
+          else
+          {
+            functfac = 1.0;
+            functfacn = 1.0;
+          }
+
+          // get time-curve factor/ n = - grad phi / |grad phi|
+          if (curve)
+            curvenum = (*curve)[0];
+          if (curvenum>=0 and usetime)
+          {
+            curvefac  = DRT::Problem::Instance()->Curve(curvenum).f(time);
+            curvefacn = DRT::Problem::Instance()->Curve(curvenum).f(time-fldparatimint_->Dt());
+          }
+          else
+          {
+            curvefac  = 1.0;
+            curvefacn = 1.0;
+          }
+
+          const double valfac = (*val)[0]*fac_time_dens*functfac*curvefac;
+          const double valfacn = (*val)[0]*fac_time_densn*functfacn*curvefacn;
+          for(int inode=0; inode < bdrynen_; ++inode )
+          {
+            elevec1_epetra[inode*numdofpernode_+idim] += funct_(inode)*valfac*(-unitnormal_(idim));
+
+            if(fldparatimint_->IsNewOSTImplementation())
+            {
+              if(fldparatimint_->IsOneStepTheta())
+                elevec1_epetra[inode*numdofpernode_+idim] += funct_(inode)*valfacn*(-unitnormal_(idim));
+            }
+          } //end IsNewOSTImplementation
+        }  // if (*onoff)
+      }
+      else
+        dserror("The type '%s' is not supported in the fluid neumann condition!",type->c_str());
+
+    } //for(int idim=0; idim<(nsd_); ++idim)
   }
 
   return 0;
@@ -2212,13 +2269,12 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::GetDensity(
   {
     const MAT::Sutherland* actmat = static_cast<const MAT::Sutherland*>(material.get());
 
-    // compute temperature at n+alpha_F or n+1 and check whether it is positive
+    // compute temperature at n+alpha_F or n+1
     const double tempaf = funct_.Dot(escaaf);
-    if (tempaf < 0.0)
-      dserror("Negative temperature in Fluid Sutherland density evaluation on boundary!");
 
     // compute density at n+alpha_F or n+1 based on temperature
     // and thermodynamic pressure
+
     densaf_ = actmat->ComputeDensity(tempaf,thermpressaf);
 
     // set density factor for Neumann boundary conditions to density for present material
