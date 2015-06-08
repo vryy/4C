@@ -101,14 +101,17 @@ void CONTACT::AnalyticalSolutions2D(const LINALG::Matrix<2,1>& pos,
 
   else if (entype==INPAR::CONTACT::errornorms_infiniteplate)
   {
-    const double E=100.0;
-    const double nue=0.3;
-    const double s_inf = 1.0; // tensile stress at infinity
-    const double a=2.0; // hole radius
+    double E=1.0e5;
+    double nue=0.3;
+    const double s_inf = 10.0; // tensile stress at infinity
+    const double a=1.0; // hole radius
     const double x=-pos(0,0);
     const double y=-pos(1,0);
     LINALG::Matrix<3,1> stress_analytical;
 
+  // plane strain modification
+    E  /=1.-nue*nue;
+    nue/=1.-nue;
 
     stress_analytical(0) = 0.5*s_inf/((x*x+y*y)*(x*x+y*y)*(x*x+y*y)*(x*x+y*y))
                            *( 2.0*x*x*x*x*x*x*x*x
@@ -157,6 +160,16 @@ void CONTACT::AnalyticalSolutions2D(const LINALG::Matrix<2,1>& pos,
     epsanalyt(1,0) = strain_analytical(1);
     epsanalyt(2,0) = .5*strain_analytical(2);
     epsanalyt(3,0) = .5*strain_analytical(2);
+
+    double kappa = (3.-nue)/(1.+nue);
+    double mu = E/(2.*(1.+nue));
+    uanalyt.Clear();
+    uanalyt(0)=+s_inf*a*(-((kappa+1.)*x/a)+2.*a*(-(kappa+1.)*x*pow((x*x+y*y),-1./2.)
+    -cos(3.*acos(x*pow((x*x+y*y),-1./2.))))*pow((x*x+y*y),-1./2.)+
+    2.*(int)pow(a,3)*cos(3.*acos(x*pow((x*x+y*y),-1./2.)))*pow((x*x+y*y),-3./2.))/mu/8.;
+    uanalyt(1)=s_inf*a/mu*((kappa-3)/a*sqrt(x*x+y*y)*sqrt(1.-x*x/(x*x+y*y))
+        +2.*a*((1-kappa)*sqrt(1.-x*x/(x*x+y*y))+sin(3.*acos(x*pow(x*x+y*y,-1./2.))))*pow(x*x+y*y,-1./2.)
+        -2.*pow(a,3.)*sin(3.*acos(x*pow(x*x+y*y,-1./2.)))*pow(x*x+y*y,-3./2.))/8.;
 
   }
 
