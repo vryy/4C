@@ -167,6 +167,8 @@ void POROELAST::Monolithic::Solve()
   // --> On #rhs_ is the positive force residuum
   // --> On #systemmatrix_ is the effective dynamic tangent matrix
 
+  //---------------------------------------- initialise equilibrium loop and norms
+  SetupNewton();
 
   //---------------------------------------------- iteration loop
   // equilibrium iteration loop (loop over k)
