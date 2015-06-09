@@ -423,7 +423,7 @@ void GEO::CUT::Facet::CreateTriangulation( Mesh & mesh, const std::vector<Point*
     std::vector<Point*> pts( points );
     std::vector<int> ptc;
     GEO::CUT::TriangulateFacet tf( pts );
-    tf.EarClipping( ptc, true );
+    tf.EarClipping( ptc, true, true );
 
     triangulation_ = tf.GetSplitCells();
   }
