@@ -24,12 +24,12 @@ RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-DYNAMICTYP                      Statics//GenAlpha
+DYNAMICTYP                      GenAlpha
 RESULTSEVRY                     1
 RESTARTEVRY                     1
 NLNSOL                          fullnewton                      // fullnewton modnewton matfreenewton nlncg ptc
 TIMESTEP                        0.0025
-NUMSTEP                         9
+NUMSTEP                         12
 MAXTIME                         0.75
 DAMPING                         No
 M_DAMP                          0.0
@@ -118,7 +118,7 @@ NDVOL   2
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
 DLINE  1
 // pos_force
-E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
+E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0 Live Mid
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  1
 // zero_disp
@@ -4502,8 +4502,8 @@ NODE 1576   COORD 3.1111111111111112e+00  8.0000000000000000e+00  0.000000000000
 ------------------------------------------------TRANSPORT ELEMENTS
 ---------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 1580 QUANTITY dispx VALUE 5.05796480738169468e-05 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 1580 QUANTITY dispy VALUE 2.22448912566757280e-06 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 1580 QUANTITY dispx VALUE 4.65207688062915597e-05 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 1580 QUANTITY dispy VALUE 1.34711200432348647e-04 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 1580 QUANTITY dispz VALUE 0.0 TOLERANCE 1e-12
 ---------------------------------------------------------------END
 // END
