@@ -119,10 +119,10 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
     //! master dofs transformed to slave side of scatra-scatra interface
     Teuchos::RCP<Epetra_Vector> imasterphinp_;
 
-    //! sums of absolute values of row entries in global system matrix
+    //! inverse sums of absolute values of row entries in global system matrix
     Teuchos::RCP<Epetra_Vector> invrowsums_;
 
-    //! sums of absolute values of column entries in global system matrix
+    //! inverse sums of absolute values of column entries in global system matrix
     Teuchos::RCP<Epetra_Vector> invcolsums_;
 
   private:
@@ -134,6 +134,30 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
     void EquilibrateSystem(
         const Teuchos::RCP<LINALG::SparseOperator>&   systemmatrix,   //! system matrix
         const Teuchos::RCP<Epetra_Vector>&            residual        //! residual vector
+        ) const;
+
+    //! compute inverse sums of absolute values of matrix row entries
+    void ComputeInvRowSums(
+        const LINALG::SparseMatrix&          matrix,      //! matrix
+        const Teuchos::RCP<Epetra_Vector>&   invrowsums   //! inverse sums of absolute values of row entries in matrix
+        ) const;
+
+    //! compute inverse sums of absolute values of matrix column entries
+    void ComputeInvColSums(
+        const LINALG::SparseMatrix&          matrix,      //! matrix
+        const Teuchos::RCP<Epetra_Vector>&   invcolsums   //! inverse sums of absolute values of column entries in matrix
+        ) const;
+
+    //! equilibrate matrix rows
+    void EquilibrateMatrixRows(
+        LINALG::SparseMatrix&                matrix,      //! matrix
+        const Teuchos::RCP<Epetra_Vector>&   invrowsums   //! sums of absolute values of row entries in matrix
+        ) const;
+
+    //! equilibrate matrix columns
+    void EquilibrateMatrixColumns(
+        LINALG::SparseMatrix&                matrix,      //! matrix
+        const Teuchos::RCP<Epetra_Vector>&   invcolsums   //! sums of absolute values of column entries in matrix
         ) const;
 
     //! unequilibrate global increment vector if necessary

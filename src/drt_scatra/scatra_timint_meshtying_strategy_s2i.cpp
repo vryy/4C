@@ -513,37 +513,67 @@ void SCATRA::MeshtyingStrategyS2I::EquilibrateSystem(
       // perform row equilibration
       if(rowequilibration_)
       {
-        // compute row sums of global system matrix
-        if(sparsematrix->EpetraMatrix()->InvRowSums(*invrowsums_))
-          dserror("Row sums of global system matrix could not be successfully computed!");
+        // compute inverse row sums of global system matrix
+        ComputeInvRowSums(*sparsematrix,invrowsums_);
 
-        // take square root of row sums if global system matrix is scaled from left and right
-        for(int i=0; i<invrowsums_->MyLength(); ++i)
-          (*invrowsums_)[i] = sqrt((*invrowsums_)[i]);
-
-        // perform equilibration of global system matrix
-        if(sparsematrix->LeftScale(*invrowsums_))
-          dserror("Row equilibration of global system matrix failed!");
-
-        // perform equilibration of global residual vector
-        if(residual->Multiply(1.,*invrowsums_,*residual,0.))
-          dserror("Equilibration of global residual vector failed!");
+        // perform row equilibration of global system matrix
+        EquilibrateMatrixRows(*sparsematrix,invrowsums_);
       }
 
       // perform column equilibration
       if(colequilibration_)
       {
-        // compute column sums of global system matrix
-        if(sparsematrix->EpetraMatrix()->InvColSums(*invcolsums_))
-          dserror("Column sums of global system matrix could not be successfully computed!");
+        // compute inverse column sums of global system matrix
+        ComputeInvColSums(*sparsematrix,invcolsums_);
 
-        // take square root of column sums if global system matrix is scaled from left and right
-        for(int i=0; i<invcolsums_->MyLength(); ++i)
-          (*invcolsums_)[i] = sqrt((*invcolsums_)[i]);
+        // perform column equilibration of global system matrix
+        EquilibrateMatrixColumns(*sparsematrix,invcolsums_);
+      }
 
-        // perform equilibration of global system matrix
-        if(sparsematrix->RightScale(*invcolsums_))
-          dserror("Column equilibration of global system matrix failed!");
+      break;
+    }
+
+    case INPAR::S2I::matrix_block_condition:
+    {
+      // check matrix
+      Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocksparsematrix = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(systemmatrix);
+      if(blocksparsematrix == Teuchos::null)
+        dserror("System matrix is not a block sparse matrix!");
+
+      // perform row equilibration
+      if(rowequilibration_)
+      {
+        for(int i=0; i<blocksparsematrix->Rows(); ++i)
+        {
+          // compute inverse row sums of current main diagonal matrix block
+          Teuchos::RCP<Epetra_Vector> invrowsums(Teuchos::rcp(new Epetra_Vector(blocksparsematrix->Matrix(i,i).RangeMap())));
+          ComputeInvRowSums(blocksparsematrix->Matrix(i,i),invrowsums);
+
+          // perform row equilibration of matrix blocks in current row block of global system matrix
+          for(int j=0; j<blocksparsematrix->Cols(); ++j)
+            EquilibrateMatrixRows(blocksparsematrix->Matrix(i,j),invrowsums);
+
+          // insert inverse row sums of current main diagonal matrix block into global vector
+          conditionmaps_->InsertVector(invrowsums,i,invrowsums_);
+        }
+      }
+
+      // perform column equilibration
+      if(colequilibration_)
+      {
+        for(int j=0; j<blocksparsematrix->Cols(); ++j)
+        {
+          // compute inverse column sums of current main diagonal matrix block
+          Teuchos::RCP<Epetra_Vector> invcolsums(Teuchos::rcp(new Epetra_Vector(blocksparsematrix->Matrix(j,j).DomainMap())));
+          ComputeInvColSums(blocksparsematrix->Matrix(j,j),invcolsums);
+
+          // perform column equilibration of matrix blocks in current column block of global system matrix
+          for(int i=0; i<blocksparsematrix->Rows(); ++i)
+            EquilibrateMatrixColumns(blocksparsematrix->Matrix(i,j),invcolsums);
+
+          // insert inverse column sums of current main diagonal matrix block into global vector
+          conditionmaps_->InsertVector(invcolsums,j,invcolsums_);
+        }
       }
 
       break;
@@ -551,14 +581,91 @@ void SCATRA::MeshtyingStrategyS2I::EquilibrateSystem(
 
     default:
     {
-      dserror("Equilibration of global system of equations for scatra-scatra interface coupling is only implemented for sparse matrices without block structure!");
+      dserror("Equilibration of global system of equations for scatra-scatra interface coupling is not implemented for chosen type of global system matrix!");
       break;
     }
     }
+
+    // perform equilibration of global residual vector
+    if(rowequilibration_)
+      if(residual->Multiply(1.,*invrowsums_,*residual,0.))
+        dserror("Equilibration of global residual vector failed!");
   }
 
   return;
 } // SCATRA::MeshtyingStrategyS2I::EquilibrateSystem
+
+
+/*----------------------------------------------------------------------------*
+ | compute inverse sums of absolute values of matrix row entries   fang 06/15 |
+ *----------------------------------------------------------------------------*/
+void SCATRA::MeshtyingStrategyS2I::ComputeInvRowSums(
+    const LINALG::SparseMatrix&          matrix,      //! matrix
+    const Teuchos::RCP<Epetra_Vector>&   invrowsums   //! inverse sums of absolute values of row entries in matrix
+    ) const
+{
+  // compute inverse row sums of matrix
+  if(matrix.EpetraMatrix()->InvRowSums(*invrowsums))
+    dserror("Inverse row sums of matrix could not be successfully computed!");
+
+  // take square root of inverse row sums if matrix is scaled from left and right
+  if(colequilibration_)
+    for(int i=0; i<invrowsums->MyLength(); ++i)
+      (*invrowsums)[i] = sqrt((*invrowsums)[i]);
+
+  return;
+} // SCATRA::MeshtyingStrategyS2I::ComputeInvRowSums
+
+
+/*-------------------------------------------------------------------------------*
+ | compute inverse sums of absolute values of matrix column entries   fang 06/15 |
+ *-------------------------------------------------------------------------------*/
+void SCATRA::MeshtyingStrategyS2I::ComputeInvColSums(
+    const LINALG::SparseMatrix&          matrix,      //! matrix
+    const Teuchos::RCP<Epetra_Vector>&   invcolsums   //! inverse sums of absolute values of column entries in matrix
+    ) const
+{
+  // compute inverse column sums of matrix
+  if(matrix.EpetraMatrix()->InvColSums(*invcolsums))
+    dserror("Inverse column sums of matrix could not be successfully computed!");
+
+  // take square root of inverse column sums if matrix is scaled from left and right
+  if(rowequilibration_)
+    for(int i=0; i<invcolsums->MyLength(); ++i)
+      (*invcolsums)[i] = sqrt((*invcolsums)[i]);
+
+  return;
+} // SCATRA::MeshtyingStrategyS2I::ComputeInvColSums
+
+
+/*----------------------------------------------------------------------*
+ | equilibrate matrix rows                                   fang 06/15 |
+ *----------------------------------------------------------------------*/
+void SCATRA::MeshtyingStrategyS2I::EquilibrateMatrixRows(
+    LINALG::SparseMatrix&                matrix,      //! matrix
+    const Teuchos::RCP<Epetra_Vector>&   invrowsums   //! sums of absolute values of row entries in matrix
+    ) const
+{
+  if(matrix.LeftScale(*invrowsums))
+    dserror("Row equilibration of matrix failed!");
+
+  return;
+} // SCATRA::MeshtyingStrategyS2I::EquilibrateMatrixRows
+
+
+/*----------------------------------------------------------------------*
+ | equilibrate matrix columns                                fang 06/15 |
+ *----------------------------------------------------------------------*/
+void SCATRA::MeshtyingStrategyS2I::EquilibrateMatrixColumns(
+    LINALG::SparseMatrix&                matrix,      //! matrix
+    const Teuchos::RCP<Epetra_Vector>&   invcolsums   //! sums of absolute values of column entries in matrix
+    ) const
+{
+  if(matrix.RightScale(*invcolsums))
+    dserror("Column equilibration of matrix failed!");
+
+  return;
+} // SCATRA::MeshtyingStrategyS2I::EquilibrateMatrixColumns
 
 
 /*----------------------------------------------------------------------*
