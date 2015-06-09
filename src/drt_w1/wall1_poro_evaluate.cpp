@@ -753,14 +753,14 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::FillMatrixAndVectors(
 {
   //const double reacoeff = fluidmat_->ComputeReactionCoeff();
 
-  LINALG::Matrix<numdim_,numdim_> matreatensor(true);
-  LINALG::Matrix<numdim_,numdim_> reatensor(true);
-  LINALG::Matrix<numdim_,numdim_> linreac_dphi(true);
-  LINALG::Matrix<numdim_,numdim_> linreac_dJ(true);
-  LINALG::Matrix<numdim_,1> reafvel(true);
-  LINALG::Matrix<numdim_,1> reavel(true);
+  static LINALG::Matrix<numdim_,numdim_> matreatensor(true);
+  static LINALG::Matrix<numdim_,numdim_> reatensor(true);
+  static LINALG::Matrix<numdim_,numdim_> linreac_dphi(true);
+  static LINALG::Matrix<numdim_,numdim_> linreac_dJ(true);
+  static LINALG::Matrix<numdim_,1> reafvel(true);
+  static LINALG::Matrix<numdim_,1> reavel(true);
   {
-    LINALG::Matrix<numdim_,numdim_> temp(true);
+    static LINALG::Matrix<numdim_,numdim_> temp(false);
     fluidmat_->ComputeReactionTensor(matreatensor,J,porosity);
     fluidmat_->ComputeLinMatReactionTensor(linreac_dphi,linreac_dJ,J,porosity);
     temp.Multiply(1.0,matreatensor,defgrd_inv);
@@ -769,7 +769,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::FillMatrixAndVectors(
     reafvel.Multiply(reatensor,fvelint);
   }
 
-  const double detJ_w = detJ_[gp]*intpoints_.Weight(gp);
+  const double detJ_w = detJ_[gp]*intpoints_.Weight(gp)*thickness_;
 
   {
     for (int k=0; k<numnod_; k++)
@@ -852,13 +852,13 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::FillMatrixAndVectors(
   }
 
   //inverse Right Cauchy-Green tensor as vector
-  LINALG::Matrix<numstr_,1> C_inv_vec;
+  static LINALG::Matrix<numstr_,1> C_inv_vec;
   C_inv_vec(0) = C_inv(0,0);
   C_inv_vec(1) = C_inv(1,1);
   C_inv_vec(2) = C_inv(0,1);
 
   //B^T . C^-1
-  LINALG::Matrix<numdof_,1> cinvb(true);
+  static LINALG::Matrix<numdof_,1> cinvb(true);
   cinvb.MultiplyTN(bop,C_inv_vec);
 
   const double fac1 = -detJ_w * press;
@@ -874,7 +874,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::FillMatrixAndVectors(
   // update stiffness matrix
   if (stiffmatrix != NULL)
   {
-    LINALG::Matrix<numdof_,numdof_> tmp;
+    static LINALG::Matrix<numdof_,numdof_> tmp;
 
     // additional fluid stress- stiffness term -(B^T . C^-1 . dJ/d(us) * p^f * detJ * w(gp))
     tmp.Multiply(fac1,cinvb,dJ_dus);
@@ -929,7 +929,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::FillMatrixAndVectorsBrinkman(
     LINALG::Matrix<numdof_,1>*                      force,
     LINALG::Matrix<numstr_,1>&                      fstress)
 {
-  const double detJ_w = detJ_[gp]*intpoints_.Weight(gp);
+  const double detJ_w = detJ_[gp]*intpoints_.Weight(gp)*thickness_;
 
   const double visc = fluidmat_->Viscosity();
   LINALG::Matrix<numdim_,numdim_> CinvFvel;
@@ -1234,7 +1234,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::FillMatrixAndVectorsOD(
     reafvel.Multiply(reatensor,fvelint);
   }
 
-  const double detJ_w = detJ_[gp]*intpoints_.Weight(gp);
+  const double detJ_w = detJ_[gp]*intpoints_.Weight(gp)*thickness_;
 
   //inverse Right Cauchy-Green tensor as vector
   LINALG::Matrix<numstr_,1> C_inv_vec;
@@ -1333,7 +1333,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::FillMatrixAndVectorsBrinkmanOD(
     const LINALG::Matrix<numdim_,numdim_>&  C_inv,
     LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>& ecoupl)
 {
-  const double detJ_w = detJ_[gp]*intpoints_.Weight(gp);
+  const double detJ_w = detJ_[gp]*intpoints_.Weight(gp)*thickness_;
   const double visc = fluidmat_->Viscosity();
 
   LINALG::Matrix<numstr_,1> fstress;

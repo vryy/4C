@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file fluid_ele_calc_poro_p1.H
+ \file fluid_ele_calc_poro.H
 
  \brief Internal implementation of poro Fluid element (standard poro fluid)
 
@@ -1005,7 +1005,8 @@ protected:
       const LINALG::Matrix<my::nsd_,my::nsd_>&          defgrd,
       const LINALG::Matrix<my::nsd_, my::nen_>&         edispnp,
       const LINALG::Matrix<my::nsd_, my::nen_>&         edispn,
-      const LINALG::Matrix<my::nsd_*my::nsd_,my::nsd_>& F_X
+      const LINALG::Matrix<my::nsd_*my::nsd_,my::nsd_>& F_X,
+      const bool                                        computeLinOD
       );
 
   virtual int ComputeVolume(
@@ -1052,8 +1053,8 @@ protected:
   LINALG::Matrix<my::nsd_,my::nen_> N_XYZ_;
   /*!
   \brief second derivatives of shape functions w.r.t. material coordinates XYZ
-    3D: (N,XX ; N,YZ ; N,ZZ ; N,XY ; N,XZ ; N,YX ; N,YZ;  N,ZX ; N,ZY)
-    2D: (N,XX ; N,YZ ; N,XY ; N,YX )
+    3D: (N,XX ; N,YY ; N,ZZ ; N,XY ; N,XZ ; N,YX ; N,YZ;  N,ZX ; N,ZY)
+    2D: (N,XX ; N,YY ; N,XY ; N,YX )
    */
   LINALG::Matrix<my::numderiv2_,my::nen_> N_XYZ2_;
   ///second derivatives of shape functions w.r.t. material coordinates XYZ (ordered in symmetric matrix)
@@ -1146,8 +1147,11 @@ protected:
   //! the stabilisation parameter  for biot stabilization
   double taustruct_;
 
-  //! reactive tensor x convective velocity
+  //! residual of mixture (structural) equation
   LINALG::Matrix<my::nsd_,1>            mixres_;
+
+  //! linearisation residual of mixture (structural) equation
+  LINALG::Matrix<my::nsd_,my::nsd_ * my::nen_>            mixresLinOD_;
 
   //! corresponding poro structure material
   Teuchos::RCP< MAT::StructPoro > structmat_;

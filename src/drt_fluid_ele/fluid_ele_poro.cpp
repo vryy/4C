@@ -266,7 +266,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::FluidPoro::Volumes()
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::FluidPoro::Print(std::ostream& os) const
 {
-  os << "FluidPoro ";
+  os << "FluidPoro "<<(DistypeToString(distype_)).c_str();
   Element::Print(os);
   return;
 }

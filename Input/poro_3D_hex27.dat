@@ -73,7 +73,7 @@ MAXTIME                         8
 NORMCOMBI_RESFINC               And
 NORM_INC                        AbsSingleFields
 NORM_RESF                       AbsSingleFields
-NUMSTEP                         5
+NUMSTEP                         2
 RESTARTEVRY                     5
 TOLINC_DISP                     1e-08
 TOLINC_VEL                      1e-08
@@ -122,12 +122,12 @@ CURVE1 on EXPR FUNC -1e0*(1-exp(-t^2/0.5)) t1 0.0 t2 8.0
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS porofluid NODE 100 QUANTITY velx VALUE -2.62569166480576162e-02 TOLERANCE 1e-8
-FLUID DIS porofluid NODE 115 QUANTITY pressure VALUE 4.81751991292636639e+00 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 62 QUANTITY dispx VALUE -2.00527804320744955e-05 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 71 QUANTITY dispy VALUE -8.33852511852359432e-05 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 212 QUANTITY dispx VALUE -4.30201537107331006e-04 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 100 QUANTITY dispx VALUE -3.13434986225182813e-04 TOLERANCE 1e-8
+FLUID DIS porofluid NODE 100 QUANTITY velx VALUE -1.03462367631295456e-02 TOLERANCE 1e-8
+FLUID DIS porofluid NODE 115 QUANTITY pressure VALUE 2.25680537875319631e+00 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 62 QUANTITY dispx VALUE 5.58157522987135771e-07 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 71 QUANTITY dispy VALUE -1.10816440335588011e-05 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 212 QUANTITY dispx VALUE -5.36565377105122408e-05 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 100 QUANTITY dispx VALUE -6.11035942540528543e-05 TOLERANCE 1e-8
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         8
 NDLINE                          12

@@ -177,7 +177,7 @@ int DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::Evaluate(
 
   static LINALG::Matrix<my::nen_,1> escaaf(true);
   escaaf.Clear();
-  LINALG::Matrix<my::nen_,1> eporosity(true);
+  static LINALG::Matrix<my::nen_,1> eporosity(true);
   eporosity.Clear();
   my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, NULL, &escaaf,"scaaf");
 

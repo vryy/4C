@@ -143,9 +143,9 @@ FUNCT1 EXPR 0 0.0 0 FUNCTION 1.0
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 12 QUANTITY phi VALUE 1.00434360647484167e+00 TOLERANCE 1e-8
-SCATRA DIS scatra NODE 21 QUANTITY phi VALUE 9.61424886205770823e-01 TOLERANCE 1e-8
-SCATRA DIS scatra NODE 5 QUANTITY phi VALUE 9.61424886205770046e-01 TOLERANCE 1e-8
+SCATRA DIS scatra NODE 12 QUANTITY phi VALUE 1.00457920796861067e+00 TOLERANCE 1e-8
+SCATRA DIS scatra NODE 21 QUANTITY phi VALUE 9.62771680707222188e-01 TOLERANCE 1e-8
+SCATRA DIS scatra NODE 5 QUANTITY phi VALUE 9.62771680707220190e-01 TOLERANCE 1e-8
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         4
 NDLINE                          4

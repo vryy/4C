@@ -1703,7 +1703,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(
            (not my::fldparatimint_->IsStationary()) and
            structmat_->PoroLawType() != INPAR::MAT::m_poro_law_constant
         )
-       ComputeMixtureStrongResidual(params,defgrd,edispnp,edispn,F_X);
+       ComputeMixtureStrongResidual(params,defgrd,edispnp,edispn,F_X,false);
 
      //----------------------------------------------------------------------
      // set time-integration factors for left- and right-hand side
@@ -2388,7 +2388,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoopOD(
           (not my::fldparatimint_->IsStationary()) and
           structmat_->PoroLawType() != INPAR::MAT::m_poro_law_constant
        )
-      ComputeMixtureStrongResidual(params,defgrd,edispnp,edispn,F_X);
+      ComputeMixtureStrongResidual(params,defgrd,edispnp,edispn,F_X,true);
 
     //----------------------------------------------------------------------
     // set time-integration factors for left- and right-hand side
@@ -3006,6 +3006,19 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixContiOD(
             ecoupl_p(vi,ui*my::nsd_+jdim) += stiff_val * dphi_dus(ui*my::nsd_+jdim);
       }
     }
+
+    if (my::is_higher_order_ele_)
+    {
+      const double val = timefacfacpre * taustruct_/J_ ;
+      for (int vi=0; vi<my::nen_; ++vi)
+      {
+        for (int ui=0; ui<my::nen_; ++ui)
+          for(int jdim=0;jdim<my::nsd_;++jdim)
+            for(int idim=0;idim<my::nsd_;++idim)
+              ecoupl_p(vi,ui*my::nsd_+jdim) += val * N_XYZ_(idim,vi)*mixresLinOD_(idim,ui*my::nsd_+jdim);
+      }
+    }
+
   }
 
   //*************************************************************************************************************
@@ -5491,47 +5504,31 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::StabBiot(
     }
   } // end for(idim)
 
-  for (int idim = 0; idim <my::nsd_; ++idim)
-  {
-    const double temp = -1.0*taustruct_*rhsfac*(
-                        -my::gradp_(idim)
-                        +porosity_*my::visc_old_(idim)
-                         );
-
-    for (int vi=0; vi<my::nen_; ++vi)
-    {
-      // pressure stabilisation
-      preforce(vi) -= temp*my::derxy_(idim, vi);
-    }
-  } // end for(idim)
-
   for (int vi=0; vi<my::nen_; ++vi)
   {
-    double visc_derxy = 0.;
+    double visc_N_XYZ_ = 0.;
     double gradp_N_XYZ = 0.;
 
     for (int idim = 0; idim < my::nsd_; ++idim)
     {
-      visc_derxy      += my::visc_old_(idim)  * my::derxy_(idim,vi);
+      visc_N_XYZ_      += my::visc_old_(idim)  * N_XYZ_(idim,vi);
       gradp_N_XYZ     += my::gradp_(idim)     * N_XYZ_(idim,vi);
     }
 
     for (int ui=0; ui<my::nen_; ++ui)
     {
       double sum = 0.;
-      double sum2 = 0.;
 
       for (int idim = 0; idim < my::nsd_; ++idim)
       {
-        sum             += my::derxy_(idim,ui)  * my::derxy_(idim,vi);
-        sum2            += my::derxy_(idim,ui)  * N_XYZ_(idim,vi);
+        sum             += my::derxy_(idim,ui)  * N_XYZ_(idim,vi);
       }
 
       ppmat(vi,ui) +=    timefacfacpre*taustruct_*
                           (   sum
-                            - dphi_dp*visc_derxy
+                            - dphi_dp*visc_N_XYZ_
                           )
-                       - timefacfacpre*taustruct_*( porosity_*sum2 + dphi_dp*gradp_N_XYZ*my::funct_(ui)
+                       - timefacfacpre*taustruct_*( porosity_*sum + dphi_dp*gradp_N_XYZ*my::funct_(ui)
                            )
           ;
     } // ui
@@ -5574,7 +5571,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeFDerivative(
 {
   F_X.Clear();
 
-  if(my::is_higher_order_ele_)
+  if(my::is_higher_order_ele_ and kintype_!=INPAR::STR::kinem_linear )
     for(int i=0; i<my::nsd_; i++)
       for(int j=0; j<my::nsd_; j++)
         for(int k=0; k<my::nsd_; k++)
@@ -6380,10 +6377,10 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeStabilizationParameters(co
        )
     {
       /*
-      This stabilization parameter ro Biot problems
+      Stabilization parameter for Biot problems
 
       literature:
-      1) Badia S., Quaini A. Quaterorni A. , Coupling Biot and Navier-Stokes equations for
+      1) Badia S., Quaini A. Quateroni A. , Coupling Biot and Navier-Stokes equations for
          modelling fluid-poroelastic media interaction, Comput. Physics. 228
          (2009) 7686-8014.
       2) Wan J., Stabilized finite element methods for coupled geomechanics and multiphase flow
@@ -7194,7 +7191,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeDefGradient(
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
     defgrd.MultiplyNT(xcurr,N_XYZ); //  (6.17)
   }
-  else if(kintype_==INPAR::STR::kinem_linear) //linear kinmatics
+  else if(kintype_==INPAR::STR::kinem_linear) //linear kinematics
   {
     defgrd.Clear();
     for(int i=0;i<my::nsd_;i++)
@@ -7428,34 +7425,40 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeMixtureStrongResidual(
     const LINALG::Matrix<my::nsd_,my::nsd_>&          defgrd,
     const LINALG::Matrix<my::nsd_, my::nen_>&         edispnp,
     const LINALG::Matrix<my::nsd_, my::nen_>&         edispn,
-    const LINALG::Matrix<my::nsd_*my::nsd_,my::nsd_>& F_X
+    const LINALG::Matrix<my::nsd_*my::nsd_,my::nsd_>& F_X,
+    const bool                                        computeLinOD
     )
 {
   const double dens_struct = structmat_->Density();
-
   mixres_.Clear();
-  for (int rr=0;rr<my::nsd_;++rr)
-    mixres_(rr) =   dens_struct*(gridvelint_(rr)-gridvelnint_(rr))/my::fldparatimint_->Theta()/my::fldparatimint_->Dt();
+
+  if(not my::fldparatimint_->IsStationary())
+    for (int rr=0;rr<my::nsd_;++rr)
+      mixres_(rr) =   dens_struct * ( gridvelint_(rr)-gridvelnint_(rr)
+          ) /my::fldparatimint_->Theta()/my::fldparatimint_->Dt();
 
   for (int rr=0;rr<my::nsd_;++rr)
   {
     mixres_(rr) +=
-                  - dens_struct *my::bodyforce_(rr)
-                  - J_*porosity_*my::gradp_(rr)
-                  - J_*porosity_*reaconvel_(rr)
+      - dens_struct *my::bodyforce_(rr)
+      + J_*(1.0-porosity_)*my::gradp_(rr) - J_*porosity_*my::visc_old_(rr)
+      - J_*porosity_*reaconvel_(rr)
     ;
   }
+
 
   if (my::is_higher_order_ele_)
   {
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-    LINALG::Matrix<6,1> glstrain(true);
+    static LINALG::Matrix<6,1> glstrain(true);
+    glstrain.Clear();
     if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
     {
       // Right Cauchy-Green tensor = F^T * F
       LINALG::Matrix<my::nsd_,my::nsd_> cauchygreen;
       cauchygreen.MultiplyTN(defgrd,defgrd);
       // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
+      // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
       if(my::nsd_==3)
       {
         glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
@@ -7471,8 +7474,8 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeMixtureStrongResidual(
         glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
         glstrain(2) = 0.0;
         glstrain(3) = cauchygreen(0,1);
-        glstrain(4) = 0.0;;
-        glstrain(5) = cauchygreen(2,0);
+        glstrain(4) = 0.0;
+        glstrain(5) = 0.0;
       }
     }
     else
@@ -7498,8 +7501,8 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeMixtureStrongResidual(
         }
         else if (my::nsd_==2)
         {
-          bop(3,my::nsd_*i+0) = defgrd(0,0)*N_XYZ_(1,i) + defgrd(0,1)*N_XYZ_(0,i);
-          bop(3,my::nsd_*i+1) = defgrd(1,0)*N_XYZ_(1,i) + defgrd(1,1)*N_XYZ_(0,i);
+          bop(3,my::nsd_*i+0) = 0.5 * (defgrd(0,0)*N_XYZ_(1,i) + defgrd(0,1)*N_XYZ_(0,i));
+          bop(3,my::nsd_*i+1) = 0.5 * (defgrd(1,0)*N_XYZ_(1,i) + defgrd(1,1)*N_XYZ_(0,i));
         }
       }
 
@@ -7517,54 +7520,81 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeMixtureStrongResidual(
         }
     }
 
-    LINALG::Matrix<6,1> stress_vec(true);
-    LINALG::Matrix<6,6> cmat(true);
+    static LINALG::Matrix<6,1> stress_vec(true);
+    static LINALG::Matrix<6,6> cmat(true);
+    stress_vec.Clear();
+    cmat.Clear();
     structmat_->Evaluate(NULL,&glstrain,params,&stress_vec,&cmat,my::eid_);
 
-    LINALG::Matrix<my::nsd_,my::nsd_> stress(true);
+    static LINALG::Matrix<6,my::nsd_> E_X(true);
+    E_X.Clear();
 
-    LINALG::Matrix<6,my::nsd_> E_X(true);
+    if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
+    {
+      if(my::nsd_==3)
+      {
+        for (int i=0; i<my::nsd_; ++i)
+          for (int j=0; j<my::nsd_; ++j)
+          {
+            E_X(0,i) += F_X(j*my::nsd_+0,i)*defgrd(j,0);
+            E_X(1,i) += F_X(j*my::nsd_+1,i)*defgrd(j,1);
+            E_X(2,i) += F_X(j*my::nsd_+2,i)*defgrd(j,2);
+
+            E_X(3,i) += 0.5*( F_X(j*my::nsd_+0,i)*defgrd(j,1) + defgrd(j,0)*F_X(j*my::nsd_+1,i) );
+            E_X(4,i) += 0.5*( F_X(j*my::nsd_+0,i)*defgrd(j,2) + defgrd(j,0)*F_X(j*my::nsd_+2,i) );
+            E_X(5,i) += 0.5*( F_X(j*my::nsd_+1,i)*defgrd(j,2) + defgrd(j,1)*F_X(j*my::nsd_+2,i) );
+          }
+      }
+      else if(my::nsd_==2)
+      {
+        for (int i=0; i<my::nsd_; ++i)
+          for (int j=0; j<my::nsd_; ++j)
+          {
+            E_X(0,i) += F_X(j*my::nsd_+0,i)*defgrd(j,0);
+            E_X(1,i) += F_X(j*my::nsd_+1,i)*defgrd(j,1);
+
+            E_X(3,i) += 0.5*( F_X(j*my::nsd_+0,i)*defgrd(j,1) + defgrd(j,0)*F_X(j*my::nsd_+1,i) );
+          }
+      }
+    }
+    else
+    {
+      if(my::nsd_==3)
+      {
+        dserror("not implemented");
+      }
+      else if(my::nsd_==2)
+      {
+        for (int i=0; i<my::nsd_; ++i)
+          for (int k=0; k<my::nen_; ++k)
+          {
+            for (int j=0; j<my::nsd_; ++j)
+            {
+            E_X(0,i) += N_XYZ2full_(i*my::nsd_+0,k)*defgrd(j,0)*edispnp(j,k);
+            E_X(1,i) += N_XYZ2full_(i*my::nsd_+1,k)*defgrd(j,1)*edispnp(j,k);
+            }
+
+            E_X(3,i) += 0.5*( N_XYZ2full_(i*my::nsd_+0,k)*defgrd(1,1)*edispnp(1,k) + N_XYZ2full_(i*my::nsd_+1,k)*defgrd(0,0)*edispnp(0,k) );
+          }
+      }
+    }
+
+    static LINALG::Matrix<6,my::nsd_> cmat_E_X(true);
+    cmat_E_X.Multiply(cmat,E_X);
+    static LINALG::Matrix<my::nsd_,1> cmat_E_X_vec(true);
     if(my::nsd_==3)
     {
-      for (int i=0; i<my::nsd_; ++i)
-        for (int j=0; j<my::nsd_; ++j)
-        {
-          E_X(0,i) += F_X(j*my::nsd_+0,i)*defgrd(j,0);
-          E_X(1,i) += F_X(j*my::nsd_+1,i)*defgrd(j,1);
-          E_X(2,i) += F_X(j*my::nsd_+2,i)*defgrd(j,2);
-
-          E_X(3,i) += 0.5*( F_X(j*my::nsd_+0,i)*defgrd(j,1) + defgrd(j,0)*F_X(j*my::nsd_+1,i) );
-          E_X(4,i) += 0.5*( F_X(j*my::nsd_+0,i)*defgrd(j,2) + defgrd(j,0)*F_X(j*my::nsd_+2,i) );
-          E_X(5,i) += 0.5*( F_X(j*my::nsd_+1,i)*defgrd(j,2) + defgrd(j,1)*F_X(j*my::nsd_+2,i) );
-        }
+      cmat_E_X_vec(0)= cmat_E_X(0,0)+cmat_E_X(3,1)+cmat_E_X(4,2);
+      cmat_E_X_vec(1)= cmat_E_X(3,0)+cmat_E_X(1,1)+cmat_E_X(5,2);
+      cmat_E_X_vec(2)= cmat_E_X(4,0)+cmat_E_X(5,1)+cmat_E_X(2,2);
     }
     else if(my::nsd_==2)
     {
-      for (int i=0; i<my::nsd_; ++i)
-        for (int j=0; j<my::nsd_; ++j)
-        {
-          E_X(0,i) += F_X(j*my::nsd_+0,i)*defgrd(j,0);
-          E_X(1,i) += F_X(j*my::nsd_+1,i)*defgrd(j,1);
-
-          E_X(3,i) += 0.5*( F_X(j*my::nsd_+0,i)*defgrd(j,1) + defgrd(j,0)*F_X(j*my::nsd_+1,i) );
-        }
+      cmat_E_X_vec(0)= cmat_E_X(0,0)+cmat_E_X(3,1);
+      cmat_E_X_vec(1)= cmat_E_X(3,0)+cmat_E_X(1,1);
     }
 
-    LINALG::Matrix<6,my::nsd_> temp(true);
-    temp.Multiply(cmat,E_X);
-    LINALG::Matrix<my::nsd_,1> temp2(true);
-    if(my::nsd_==3)
-    {
-      temp2(0)= temp(0,0)+temp(3,1)+temp(4,2);
-      temp2(1)= temp(3,0)+temp(1,1)+temp(5,2);
-      temp2(2)= temp(4,0)+temp(5,1)+temp(2,2);
-    }
-    else if(my::nsd_==2)
-    {
-      temp2(0)= temp(0,0)+temp(3,1);
-      temp2(1)= temp(3,0)+temp(1,1);
-    }
-
+    static LINALG::Matrix<my::nsd_,my::nsd_> stress(false);
     if(my::nsd_==3)
     {
       stress(0,0)=stress_vec(0);
@@ -7589,7 +7619,105 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeMixtureStrongResidual(
       for (int j=0; j<my::nsd_; ++j)
         for (int k=0; k<my::nsd_; ++k)
           mixres_(i) -= F_X(i*my::nsd_+j,k)*stress(j,k);
-    mixres_.MultiplyNN(1.0,defgrd,temp2,1.0);
+
+    mixres_.MultiplyNN(-1.0,defgrd,cmat_E_X_vec,1.0);
+    if(computeLinOD)
+    {
+      mixresLinOD_.Clear();
+      for (int i=0; i<my::nsd_; ++i)
+        for (int j=0; j<my::nen_; ++j)
+          for (int k=0; k<my::nsd_; ++k)
+            mixresLinOD_(i,j*my::nsd_+k) -= N_XYZ_(i,j)*cmat_E_X_vec(k);
+
+      static LINALG::Matrix<6*my::nsd_,my::nsd_*my::nen_> E_X_Lin(true);
+      E_X_Lin.Clear();
+      if(my::nsd_==3)
+      {
+        for (int i=0; i<my::nsd_; ++i)
+          for (int j=0; j<my::nsd_; ++j)
+            for (int k=0; k<my::nen_; ++k)
+            {
+              for (int l=0; l<my::nsd_; ++l)
+              {
+                const int dof = k*my::nsd_+l;
+                E_X_Lin(i*6+0,dof) += N_XYZ2full_(0*my::nsd_+i,k)*defgrd(l,0);
+                E_X_Lin(i*6+1,dof) += N_XYZ2full_(1*my::nsd_+i,k)*defgrd(l,1);
+                E_X_Lin(i*6+2,dof) += N_XYZ2full_(2*my::nsd_+i,k)*defgrd(l,2);
+
+                E_X_Lin(i*6+3,dof) += 0.5*( N_XYZ2full_(0*my::nsd_+i,k)*defgrd(l,1) + defgrd(l,0)*N_XYZ2full_(1*my::nsd_+i,k) );
+                E_X_Lin(i*6+4,dof) += 0.5*( N_XYZ2full_(0*my::nsd_+i,k)*defgrd(l,2) + defgrd(l,0)*N_XYZ2full_(2*my::nsd_+i,k) );
+                E_X_Lin(i*6+5,dof) += 0.5*( N_XYZ2full_(1*my::nsd_+i,k)*defgrd(l,2) + defgrd(l,1)*N_XYZ2full_(2*my::nsd_+i,k) );
+              }
+
+              E_X_Lin(i*6+0,k*my::nsd_+0) += F_X(j*my::nsd_+0,i)*N_XYZ_(0,k);
+              E_X_Lin(i*6+1,k*my::nsd_+1) += F_X(j*my::nsd_+1,i)*N_XYZ_(1,k);
+              E_X_Lin(i*6+2,k*my::nsd_+2) += F_X(j*my::nsd_+2,i)*N_XYZ_(2,k);
+
+              E_X_Lin(i*6+3,k*my::nsd_+0) += 0.5*( N_XYZ_(0,k)*F_X(j*my::nsd_+1,i) );
+              E_X_Lin(i*6+3,k*my::nsd_+1) += 0.5*( F_X(j*my::nsd_+0,i)*N_XYZ_(1,k) );
+              E_X_Lin(i*6+4,k*my::nsd_+0) += 0.5*( N_XYZ_(0,k)*F_X(j*my::nsd_+2,i) );
+              E_X_Lin(i*6+4,k*my::nsd_+2) += 0.5*( F_X(j*my::nsd_+0,i)*N_XYZ_(2,k) );
+              E_X_Lin(i*6+5,k*my::nsd_+1) += 0.5*( N_XYZ_(1,k)*F_X(j*my::nsd_+2,i) );
+              E_X_Lin(i*6+5,k*my::nsd_+2) += 0.5*( F_X(j*my::nsd_+1,i)*N_XYZ_(2,k) );
+            }
+      }
+      else if(my::nsd_==2)
+      {
+        for (int i=0; i<my::nsd_; ++i)
+          for (int j=0; j<my::nsd_; ++j)
+            for (int k=0; k<my::nen_; ++k)
+            {
+              const int dof = k*my::nsd_+j;
+              E_X_Lin(i*6+0,dof) += N_XYZ2full_(0*my::nsd_+i,k)*defgrd(j,0);
+              E_X_Lin(i*6+1,dof) += N_XYZ2full_(1*my::nsd_+i,k)*defgrd(j,1);
+
+              E_X_Lin(i*6+3,dof) += 0.5*( N_XYZ2full_(0*my::nsd_+i,k)*defgrd(j,1) + defgrd(j,0)*N_XYZ2full_(1*my::nsd_+i,k) );
+
+              E_X_Lin(i*6+0,k*my::nsd_+0) += F_X(j*my::nsd_+0,i)*N_XYZ_(0,k);
+              E_X_Lin(i*6+1,k*my::nsd_+1) += F_X(j*my::nsd_+1,i)*N_XYZ_(1,k);
+
+              E_X_Lin(i*6+3,k*my::nsd_+0) += 0.5*( N_XYZ_(0,k)*F_X(j*my::nsd_+1,i) );
+              E_X_Lin(i*6+3,k*my::nsd_+1) += 0.5*( F_X(j*my::nsd_+0,i)*N_XYZ_(1,k) );
+            }
+      }
+
+      static LINALG::Matrix<6*my::nsd_,my::nsd_*my::nen_> cmat_E_X_Lin(true);
+      cmat_E_X_Lin.Clear();
+      for (int i=0; i<my::nsd_; ++i)
+        for (int j=0; j<my::nsd_; ++j)
+          for (int k=0; k<my::nen_; ++k)
+          {
+            const int dof = k*my::nsd_+j;
+            for (int l=0; l<6; ++l)
+              for (int m=0; m<6; ++m)
+                cmat_E_X_Lin(i*6+m,dof) += cmat(m,l)*E_X_Lin(i*6+l,dof);
+          }
+
+      static LINALG::Matrix<my::nsd_,my::nsd_*my::nen_> cmat_E_X_vec_Lin(true);
+      if(my::nsd_==3)
+      {
+        for (int j=0; j<my::nsd_; ++j)
+          for (int k=0; k<my::nen_; ++k)
+          {
+            const int dof = k*my::nsd_+j;
+            cmat_E_X_vec_Lin(0,dof)= cmat_E_X_Lin(0*6+0,dof)+cmat_E_X_Lin(1*6+3,dof)+cmat_E_X_Lin(2*6+4,dof);
+            cmat_E_X_vec_Lin(1,dof)= cmat_E_X_Lin(0*6+3,dof)+cmat_E_X_Lin(1*6+1,dof)+cmat_E_X_Lin(2*6+5,dof);
+            cmat_E_X_vec_Lin(2,dof)= cmat_E_X_Lin(0*6+4,dof)+cmat_E_X_Lin(1*6+5,dof)+cmat_E_X_Lin(2*6+2,dof);
+          }
+      }
+      else if(my::nsd_==2)
+      {
+        for (int j=0; j<my::nsd_; ++j)
+          for (int k=0; k<my::nen_; ++k)
+          {
+            const int dof = k*my::nsd_+j;
+            cmat_E_X_vec_Lin(0,dof)= cmat_E_X_Lin(0*6+0,dof)+cmat_E_X_Lin(1*6+3,dof);
+            cmat_E_X_vec_Lin(1,dof)= cmat_E_X_Lin(0*6+3,dof)+cmat_E_X_Lin(1*6+1,dof);
+          }
+      }
+
+      mixresLinOD_.MultiplyNN(-1.0,defgrd,cmat_E_X_vec_Lin,1.0);
+    }
   }
 
   return;

@@ -963,7 +963,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
           (not my::fldparatimint_->IsStationary()) and
           my::structmat_->PoroLawType() != INPAR::MAT::m_poro_law_constant
        )
-      my::ComputeMixtureStrongResidual(params,defgrd,edispnp,edispn,F_X);
+      my::ComputeMixtureStrongResidual(params,defgrd,edispnp,edispn,F_X,true);
 
     //----------------------------------------------------------------------
     // set time-integration factors for left- and right-hand side

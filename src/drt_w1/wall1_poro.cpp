@@ -299,7 +299,7 @@ template<DRT::Element::DiscretizationType distype>
 bool DRT::ELEMENTS::Wall1_Poro<distype>::VisData(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
-  if (DRT::Element::VisData(name,data))
+  if (Wall1::VisData(name,data))
     return true;
 
   return SolidMaterial()->VisData(name, data, numgpt_,this->Id());

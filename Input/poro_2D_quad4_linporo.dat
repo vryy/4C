@@ -1,18 +1,6 @@
-//
-// Maintainer: Anh-Tu Vuong
-// vuong@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-//
-//
-//
-==================================================================
-General Data File BACI
-==================================================================
 -----------------------------------------------------------------------TITLE
 testing framework for 2D porus medium with quad4 elements
 ----------------------------------------------------------------PROBLEM SIZE
-//ELEMENTS                      4
-//NODES                         9
 DIM                             2
 --------------------------------------------------------------DISCRETISATION
 NUMAIRWAYSDIS                   0
@@ -28,19 +16,19 @@ GRIDVEL                         BE
 INITIALFIELD                    zero_field
 PREDICTOR                       steady_state
 THETA                           0.66
-TIMEINTEGR                      One_Step_Theta //One_Step_Theta Stationary
+TIMEINTEGR                      One_Step_Theta                //One_Step_Theta Stationary
 UPRES                           1
 LINEAR_SOLVER                   3
-----------------------------------FLUID DYNAMIC/POROUS-FLOW STABILIZATION
+-------------------------------------FLUID DYNAMIC/POROUS-FLOW STABILIZATION
 CROSS-STRESS                    no_cross
 GRAD_DIV                        no
 DEFINITION_TAU                  Franca_Madureira_Valentin_Badia_Codina
 EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
-PSPG                            yes //yes no
+PSPG                            yes                           //yes no
 REYNOLDS-STRESS                 no_reynolds
-RSTAB                           rstab_gls //rstab_gls no_rstab
-STABTYPE                        residual_based //residual_based no_stabilization
+RSTAB                           rstab_gls                     //rstab_gls no_rstab
+STABTYPE                        residual_based                //residual_based no_stabilization
 SUPG                            no
 TDS                             quasistatic
 TRANSIENT                       no_transient
@@ -62,7 +50,7 @@ THERM_HEATFLUX                  None
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
 ------------------------------------------------------POROELASTICITY DYNAMIC
-COUPALGO                        poro_monolithic //poro_monolithic poro_monolithicstructuresplit poro_monolithicfluidsplit
+COUPALGO                        poro_monolithic               //poro_monolithic poro_monolithicstructuresplit poro_monolithicfluidsplit
 PHYSICAL_TYPE                   Poro
 ITEMAX                          20
 ITEMIN                          1
@@ -97,7 +85,7 @@ SOLVER                          UMFPACK                       // Amesos_KLU_sym,
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         Material
 DIVERCONT                       stop
-DYNAMICTYP                      OneStepTheta //OneStepTheta Statics
+DYNAMICTYP                      OneStepTheta                  //OneStepTheta Statics
 PREDICT                         ConstDis
 LINEAR_SOLVER                   1
 --------------------------------------------------------CLONING MATERIAL MAP
@@ -113,7 +101,6 @@ MAT 3 MAT_FluidPoro DYNVISCOSITY 0.01 DENSITY 1.0 PERMEABILITY 1.0e-2 TYPE Darcy
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC -1.0*0.5*(1-cos((t*pi/2.0))) t1 0.0 t2 2.0 // Tmax=4
 CURVE1 on EXPR FUNC -1.0 t1 2.0 t2 2000.0 // Tmax=4
-//CURVE1 on EXPR FUNC 1-exp(-t^2/0.5) t1 0.0 t2 200000.0 // Tmax=4
 ----------------------------------------------------------------------CURVE2
 ----------------------------------------------------------------------CURVE3
 ----------------------------------------------------------------------CURVE4
@@ -123,9 +110,9 @@ CURVE1 on EXPR FUNC -1.0 t1 2.0 t2 2000.0 // Tmax=4
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS porofluid NODE 4 QUANTITY velx VALUE -7.85398163397448279e-01 TOLERANCE 1e-8
-FLUID DIS porofluid NODE 5 QUANTITY pressure VALUE -5.37600171850208686e-03 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 2 QUANTITY dispx VALUE -2.50028445501940477e-01 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE -2.50061265659034582e-01 TOLERANCE 1e-8
+FLUID DIS porofluid NODE 5 QUANTITY pressure VALUE  3.91531606752404324e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 2 QUANTITY dispx VALUE -2.49997482944369659e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE -2.49995855989375793e-01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 4 QUANTITY dispx VALUE -5.00000000000000555e-01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 4 QUANTITY velx VALUE -7.85398163397448279e-01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE 0 TOLERANCE 1e-14
@@ -136,47 +123,26 @@ NDSURF                          1
 NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          4
-// Point x+y+
 E 1 - NUMDOF 2 ONOFF 1 1 VAL 1.0 0.0 CURVE 1 none FUNCT 0 0
-// Point x-y+
 E 2 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
-// Point x-y-
 E 3 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
-// Point x+y-
 E 4 - NUMDOF 2 ONOFF 1 1 VAL 1.0 0.0 CURVE 1 none FUNCT 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           4
-//                              Line_x+
 E 1 - NUMDOF 2 ONOFF 1 1 VAL 1.0 0.0 CURVE 1 none FUNCT 0 0
-//                              Line_x-
 E 2 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
-//                              Line_y+
 E 3 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
-//                              Line_y-
 E 4 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
 ---------------------------------DESIGN LINE NORMAL NO PENETRATION CONDITION
 DLINE                           2
-//                              Line_x+
 E 1 -
-//                              Line_x-
 E 2 -
-//                              Line_y+
-//E 3 -
-//                              Line_y-
-//E 4 -
 ----------------------------------------DESIGN LINE PORO PARTIAL INTEGRATION
 DLINE                           2
-//                              Line_x+
-//E 1 -
-//                              Line_x-
-//E 2 -
-//                              Line_y+
 E 3 -
-//                              Line_y-
 E 4 -
 ---------------------------------------DESIGN SURFACE POROCOUPLING CONDITION
 DSURF                           1
-//                              Surface
 E 1 -
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
@@ -230,4 +196,4 @@ NODE 9 COORD -5.0000000000000000e+00 -5.0000000000000000e+00 0.0000000000000000e
 3 WALLQ4PORO QUAD4 4 3 7 8 MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 2 2
 4 WALLQ4PORO QUAD4 3 6 9 7 MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 2 2
 -------------------------------------------------------------------------END
-//                              END
+// END
