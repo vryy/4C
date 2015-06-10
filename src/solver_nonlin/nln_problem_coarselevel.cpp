@@ -121,7 +121,7 @@ const NLNSOL::FAS::AMGHierarchy&
 NLNSOL::NlnProblemCoarseLevel::Hierarchy() const
 {
   if (hierarchy_.is_null())
-    dserror("AMG-FAS hierarchy object 'nlnprecfas_' has not been set, yet.");
+    dserror("AMG-FAS hierarchy object 'hierarchy_' has not been set, yet.");
 
   return *hierarchy_;
 }
@@ -151,4 +151,31 @@ NLNSOL::NlnProblemCoarseLevel::GetJacobianOperator() const
     dserror("Jacobian operator 'jac_' has not been initialized, yet.");
 
   return Teuchos::rcp_const_cast<Epetra_Operator>(jacop);
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void NLNSOL::NlnProblemCoarseLevel::WriteVector(
+    Teuchos::RCP<const Epetra_MultiVector> vec, const std::string& description,
+    const IO::DiscretizationWriter::VectorType vt) const
+{
+  // Prolongate to fine level
+  Teuchos::RCP<Epetra_MultiVector> vecfine =
+      Hierarchy().ProlongateToFineLevel(*vec, LevelID());
+
+  // Write debug output on fine level
+  NLNSOL::NlnProblem::WriteVector(vecfine, description, vt);
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void NLNSOL::NlnProblemCoarseLevel::WriteVector(
+    const Epetra_MultiVector& vec, const std::string& description,
+    const IO::DiscretizationWriter::VectorType vt) const
+{
+  WriteVector(Teuchos::rcp(&vec, false), description, vt);
+
+  return;
 }

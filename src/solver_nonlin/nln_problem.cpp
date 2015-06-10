@@ -36,6 +36,9 @@ Maintainer: Matthias Mayr
 // baci
 #include "nln_problem.H"
 #include "nln_utils.H"
+#include "nln_utils_debugwriter.H"
+
+#include "../drt_io/io.H"
 
 #include "../drt_lib/drt_dserror.H"
 
@@ -52,6 +55,7 @@ NLNSOL::NlnProblem::NlnProblem()
   params_(Teuchos::null),
   noxgrp_(Teuchos::null),
   jac_(Teuchos::null),
+  dbgwriter_(Teuchos::null),
   tolresl2_(0.0),
   lengthscaling_(true)
 {
@@ -62,7 +66,8 @@ NLNSOL::NlnProblem::NlnProblem()
 /*----------------------------------------------------------------------------*/
 void NLNSOL::NlnProblem::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& params, NOX::Abstract::Group& noxgrp,
-    Teuchos::RCP<LINALG::SparseOperator> jac)
+    Teuchos::RCP<LINALG::SparseOperator> jac,
+    Teuchos::RCP<NLNSOL::UTILS::DebugWriterBase> dbgwriter)
 {
   // We need to call Setup() after Init()
   issetup_ = false;
@@ -72,6 +77,7 @@ void NLNSOL::NlnProblem::Init(const Epetra_Comm& comm,
   params_ = Teuchos::rcp(&params, false);
   noxgrp_ = Teuchos::rcp(&noxgrp, false);
   jac_ = jac;
+  dbgwriter_ = dbgwriter;
 
   // read some parameters from parameter list and store them separately
   tolresl2_ = Params().get<double>("Nonlinear Problem: Tol Res L2");
@@ -293,4 +299,54 @@ const Epetra_Map& NLNSOL::NlnProblem::DofRowMap() const
     dserror("Jacobian operator 'jac_' has not been initialized, yet.");
 
   return jac_->OperatorRangeMap();
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void NLNSOL::NlnProblem::WriteVector(Teuchos::RCP<const Epetra_MultiVector> vec,
+    const std::string& description,
+    const IO::DiscretizationWriter::VectorType vt) const
+{
+  if (HaveDebugWriter())
+  {
+    dbgwriter_->WriteVector(vec, description, vt);
+  }
+  else
+  {
+    if (getVerbLevel() > Teuchos::VERB_NONE)
+    {
+      *getOStream() << Label()
+          << ": WARNING: Cant't write debug output of vector '"
+          << description << "', since debug writer 'dbgwriter_' has not been "
+              "set properly, yet."
+          << std::endl;
+    }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void NLNSOL::NlnProblem::WriteVector(const Epetra_MultiVector& vec,
+    const std::string& description,
+    const IO::DiscretizationWriter::VectorType vt) const
+{
+  WriteVector(Teuchos::rcp(&vec, false), description, vt);
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+const bool NLNSOL::NlnProblem::HaveDebugWriter() const
+{
+  return ((not dbgwriter_.is_null()) and dbgwriter_->IsSetup());
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+Teuchos::RCP<NLNSOL::UTILS::DebugWriterBase> NLNSOL::NlnProblem::DebugWriter() const
+{
+  return dbgwriter_;
 }

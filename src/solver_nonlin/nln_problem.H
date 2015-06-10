@@ -24,6 +24,7 @@ Maintainer: Matthias Mayr
 #include <Teuchos_VerboseObject.hpp>
 
 // baci
+#include "../drt_io/io.H"
 #include "../drt_lib/drt_dserror.H"
 
 /*----------------------------------------------------------------------------*/
@@ -37,7 +38,15 @@ class Epetra_Operator;
 namespace LINALG
 {
   class SparseOperator;
-}
+} // namespace LINALG
+
+namespace NLNSOL
+{
+  namespace UTILS
+  {
+    class DebugWriterBase;
+  }  // namespace UTILS
+} // namespace NLNSOL
 
 namespace NOX
 {
@@ -56,7 +65,8 @@ namespace Teuchos
 /* definition of classes */
 namespace NLNSOL
 {
-  /*! \brief Base class for interface of nonlinear solver to BACI
+  /*! \class NlnProblem
+   *  \brief Base class for interface of nonlinear solver to BACI
    *
    *  Interface class between the nonlinear solver and BACI. We utilize the
    *  NOX::Abstract::Group() to access the time integration within BACI for
@@ -95,7 +105,8 @@ namespace NLNSOL
     virtual void Init(const Epetra_Comm& comm, ///< communicator
         const Teuchos::ParameterList& params, ///< parameter list
         NOX::Abstract::Group& noxgrp, ///< NOX group for call back routines to time integration
-        Teuchos::RCP<LINALG::SparseOperator> jac /// Jacobian matrix of underlying problem
+        Teuchos::RCP<LINALG::SparseOperator> jac, ///< Jacobian matrix of underlying problem
+        Teuchos::RCP<NLNSOL::UTILS::DebugWriterBase> dbgwriter = Teuchos::null ///< Debug writer for output of intermediate solutions
         );
 
     //! Setup of nonlinear problem
@@ -187,6 +198,38 @@ namespace NLNSOL
 
     //@}
 
+    //! Debug output of data
+    //@{
+
+    /*! \brief Access to debug writer
+     *
+     *  Return RCP-pointer to debug writer. We allow for returning
+     *  Teuchos::null, since the debug writer will not be set for 'production'
+     *  code and, thus, it will be mostly Teuchos::null. This case is taken care
+     *  of during output.
+     *
+     *  \author mayr.mt \date 06/2015
+     */
+    Teuchos::RCP<NLNSOL::UTILS::DebugWriterBase> DebugWriter() const;
+
+    /*! \brief Write Teuchos::RCP<Epetra_MultiVector> to output
+     *
+     *  \author mayr.mt \date 06/2015
+     */
+    virtual void WriteVector(Teuchos::RCP<const Epetra_MultiVector> vec, ///< vector with result data (to be outputted)
+        const std::string& description, ///< description of output quantity
+        const IO::DiscretizationWriter::VectorType vt = IO::DiscretizationWriter::dofvector ///< vector type
+        ) const;
+
+    /*! \brief Wrapper to write plain Epetra_MultiVector to output
+     *
+     *  \author mayr.mt \date 06/2015
+     */
+    virtual void WriteVector(const Epetra_MultiVector& vec, ///< vector with result data (to be outputted)
+        const std::string& description, ///< description of output quantity
+        const IO::DiscretizationWriter::VectorType vt = IO::DiscretizationWriter::dofvector ///< vector type
+        ) const;
+
     //@}
 
     //! @name Access to underlying NOX group elements
@@ -221,7 +264,7 @@ namespace NLNSOL
 
     //@}
 
-    //! @name Get attributes
+    //! @name Access to status indicators
     //@{
 
     //! Has Init() already been called?
@@ -229,6 +272,16 @@ namespace NLNSOL
 
     //! Has Setup() already been called?
     virtual const bool IsSetup() const { return issetup_; }
+
+    /*! \brief Is there a valid debug writer?
+     *
+     *  The debug writer #dbgwriter_ is considered as valid and as ready to use
+     *  if it's RCP_pointer != Teuchos::null and if it's setup routine has been
+     *  called.
+     *
+     *  \author mayr.mt \date 06/2015
+     */
+    virtual const bool HaveDebugWriter() const;
 
     //@}
 
@@ -266,6 +319,9 @@ namespace NLNSOL
      *  group might go away at some point.
      */
     Teuchos::RCP<LINALG::SparseOperator> jac_;
+
+    //! Debug writer for output of intermediate solutions
+    Teuchos::RCP<NLNSOL::UTILS::DebugWriterBase> dbgwriter_;
 
     //! @name Convergence check
     //@{

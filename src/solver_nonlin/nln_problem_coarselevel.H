@@ -25,6 +25,8 @@ Maintainer: Matthias Mayr
 // baci
 #include "nln_problem.H"
 
+#include "../drt_io/io.H"
+
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
 
@@ -40,7 +42,8 @@ namespace Teuchos
 /* definition of classes */
 namespace NLNSOL
 {
-  /*! \brief Coarse level interface of nonlinear solver to BACI
+  /*! \class NlnProblemCoarseLevel
+   *  \brief Coarse level interface of nonlinear solver to BACI
    *
    *  This is a coarse-level-wrapper around the NLNSOL::NlnProblem class. It
    *  handles prolongation to fine and restriction to coarse level and calls the
@@ -129,6 +132,33 @@ namespace NLNSOL
 
     //! get Jacobian as Epetra_Operator
     virtual Teuchos::RCP<Epetra_Operator> GetJacobianOperator() const;
+
+    //@}
+
+    //! Debug output of data
+    //@{
+
+    /*! \brief Write Teuchos::RCP<Epetra_MultiVector> to output
+     *
+     *  The debug output writer lives on the fine level discretization, only.
+     *  Thus, we first prolongate the coarse level vector #vec to the fine level
+     *  and then output it using the fine level discretization writer.
+     *
+     *  \author mayr.mt \date 06/2015
+     */
+    virtual void WriteVector(Teuchos::RCP<const Epetra_MultiVector> vec, ///< vector with result data (to be outputted)
+        const std::string& description, ///< description of output quantity
+        const IO::DiscretizationWriter::VectorType vt = IO::DiscretizationWriter::dofvector ///< vector type
+        ) const;
+
+    /*! \brief Wrapper to write plain Epetra_MultiVector to output
+     *
+     *  \author mayr.mt \date 06/2015
+     */
+    virtual void WriteVector(const Epetra_MultiVector& vec, ///< vector with result data (to be outputted)
+        const std::string& description, ///< description of output quantity
+        const IO::DiscretizationWriter::VectorType vt = IO::DiscretizationWriter::dofvector ///<vector type
+        ) const;
 
     //@}
 
