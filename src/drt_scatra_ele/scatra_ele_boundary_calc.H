@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_ele_boundary_calc_std.H
+\file scatra_ele_boundary_calc.H
 
 \brief evaluation of scatra boundary terms at integration points
 
@@ -182,10 +182,9 @@ public:
 
   //! evaluate shape functions and derivatives at int. point
   double EvalShapeFuncAndIntFac(
-      const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
-      const int                                    iquad,      ///< id of current Gauss point
-      const int                                    eleid,      ///< the element id
-      LINALG::Matrix<1 + nsd_,1>*  normalvec = NULL            ///< normal vector at Gauss point(optional)
+      const DRT::UTILS::IntPointsAndWeights<nsd_>&   intpoints,         ///< integration points
+      const int                                      iquad,             ///< id of current Gauss point
+      LINALG::Matrix<1 + nsd_,1>*                    normalvec = NULL   ///< normal vector at Gauss point(optional)
   );
 
   //! evaluate scatra-scatra interface coupling condition

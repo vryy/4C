@@ -146,7 +146,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype>::EvaluateElchBoundaryKi
 )
 {
   // call base class routine
-  myelch::EvaluateElchBoundaryKinetics(ele,emat,erhs,ephinp,ehist,timefac,material,cond,nume,stoich,kinetics,pot0,frt,1.);
+  myelch::EvaluateElchBoundaryKinetics(ele,emat,erhs,ephinp,ehist,timefac,material,cond,nume,stoich,kinetics,pot0,frt,scalar);
 
   // compute matrix and residual contributions arising from closing equation for electric potential
   switch(myelch::ElchParams()->EquPot())

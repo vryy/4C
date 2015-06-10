@@ -165,6 +165,9 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
         const Teuchos::RCP<Epetra_Vector>&   increment   //! increment vector
         ) const;
 
+    //! input parameters for scatra-scatra interface coupling
+    Teuchos::RCP<Teuchos::ParameterList> parameters_;
+
     //! flag for row equilibration of global system of equations
     const bool rowequilibration_;
 

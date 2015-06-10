@@ -161,12 +161,9 @@ void DRT::Discretization::ComputeNullSpaceML(Teuchos::ParameterList& mllist)
   nv    = gdata[2];
   np    = gdata[3];
 
-  Teuchos::RCP<std::vector<double> > ns = mllist.get<Teuchos::RCP<std::vector<double> > >("nullspace",Teuchos::null);
-
   // no, we have not previously computed the nullspace
   // or want to recompute it anyway
   // -> compute nullspace
-  ns = Teuchos::null;
   mllist.set<Teuchos::RCP<std::vector<double> > >("nullspace",Teuchos::null);
   // ML would not tolerate this Teuchos::rcp-ptr in its list otherwise
   mllist.set<bool>("ML validate parameter list",false);
@@ -178,7 +175,7 @@ void DRT::Discretization::ComputeNullSpaceML(Teuchos::ParameterList& mllist)
 
   // allocate dimns times the local length of the rowmap
   const int lrows = DofRowMap(0)->NumMyElements();
-  ns = Teuchos::rcp(new std::vector<double>(dimns*lrows));
+  Teuchos::RCP<std::vector<double> > ns = Teuchos::rcp(new std::vector<double>(dimns*lrows));
   double* nullsp = &((*ns)[0]);
   mllist.set<Teuchos::RCP<std::vector<double> > >("nullspace",ns);
   mllist.set("null space: vectors",nullsp);

@@ -139,7 +139,7 @@ void LINALG::SOLVER::AMGnxn_Preconditioner::Setup(Teuchos::RCP<BlockSparseMatrix
     dserror("Unknown preconditioner type: %s", myInterface.GetPreconditionerType().c_str());
 
   double elaptime =  timer.ElapsedTime();
-  if(A->Comm().MyPID()==0)
+  if(myInterface.GetPreconditionerParams().get<std::string>("verbosity","off") == "on" and A->Comm().MyPID() == 0)
     std::cout <<  "       Calling LINALG::SOLVER::AMGnxn_Preconditioner::Setup takes " << std::setw(16) << std::setprecision(6) << elaptime << " s" << std::endl ;
 
   return;
@@ -270,8 +270,8 @@ LINALG::SOLVER::AMGnxn_Interface::AMGnxn_Interface(Teuchos::ParameterList& param
     null_spaces_data_[block] =
       mllist.get<Teuchos::RCP<std::vector<double> > >("nullspace",Teuchos::null);
 
-    //Some cheks
-    if(num_pdes_[block]<1 or num_pdes_[block]<1)
+    // Some checks
+    if(num_pdes_[block]<1 or null_spaces_dim_[block]<1)
       dserror("Error: PDE equations or null space dimension wrong.");
     if(null_spaces_data_[block]==Teuchos::null)
       dserror("Error: null space data is empty");

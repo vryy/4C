@@ -533,7 +533,7 @@ void LINALG::SOLVER::AMGNXN::MueluAMGWrapper::Setup()
   P_ = Teuchos::rcp(new MueLu::EpetraOperator(H_));
 
   double elaptime =  timer.ElapsedTime();
-  if(A_->Comm().MyPID()==0)
+  if(muelu_list_.sublist("Hierarchy").get<std::string>("verbosity","None") != "None" and A_->Comm().MyPID() == 0)
     std::cout <<  "       Calling LINALG::SOLVER::AMGNXN::MueluAMGWrapper::Setup takes " << std::setw(16) << std::setprecision(6) << elaptime << " s" << std::endl ;
   return;
 }

@@ -388,7 +388,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcNernstLinearization(
       const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
       for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
       {
-        const double fac = my::EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
+        const double fac = my::EvalShapeFuncAndIntFac(intpoints,gpid);
 
         // elch-specific values at integration point:
         // concentration is evaluated at all GP since some reaction models depend on all concentrations
@@ -452,7 +452,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcCellVoltage(
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
     // evaluate values of shape functions and domain integration factor at current integration point
-    const double fac = my::EvalShapeFuncAndIntFac(intpoints,iquad,ele->Id());
+    const double fac = my::EvalShapeFuncAndIntFac(intpoints,iquad);
 
     // calculate potential and domain integrals
     for (int vi=0; vi<my::nen_; ++vi)
@@ -555,7 +555,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElchBoundaryKine
     *----------------------------------------------------------------------*/
     for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
     {
-      const double fac = my::EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
+      const double fac = my::EvalShapeFuncAndIntFac(intpoints,gpid);
 
       // elch-specific values at integration point:
       // concentration is evaluated at all GP since some reaction models depend on all concentrations
@@ -1175,7 +1175,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
     // loop over integration points
     for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
     {
-      const double fac = my::EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
+      const double fac = my::EvalShapeFuncAndIntFac(intpoints,gpid);
 
       // elch-specific values at integration point:
       for (int kk=0; kk<my::numscal_; ++kk)

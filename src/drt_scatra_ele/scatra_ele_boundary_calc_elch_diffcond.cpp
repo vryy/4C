@@ -218,7 +218,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateElchBoun
 )
 {
   // call base class routine
-  myelch::EvaluateElchBoundaryKinetics(ele,emat,erhs,ephinp,ehist,timefac,material,cond,nume,stoich,kinetics,pot0,frt,dmedc_->GetPhasePoro(0));
+  myelch::EvaluateElchBoundaryKinetics(ele,emat,erhs,ephinp,ehist,timefac,material,cond,nume,stoich,kinetics,pot0,frt,scalar);
 
   // compute matrix and residual contributions arising from closing equation for electric potential
   switch(ElchParams()->EquPot())
@@ -361,7 +361,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateS2ICoupl
     for (int gpid=0; gpid<intpoints.IP().nquad; ++gpid)
     {
       // evaluate values of shape functions and domain integration factor at current integration point
-      const double fac = my::EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
+      const double fac = my::EvalShapeFuncAndIntFac(intpoints,gpid);
 
       // evaluate overall integration factors
       const double timefacfac = my::scatraparamstimint_->TimeFac()*fac;

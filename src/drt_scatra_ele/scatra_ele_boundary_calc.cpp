@@ -520,7 +520,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateNeumann(
   // integration loop
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
-    double fac = EvalShapeFuncAndIntFac(intpoints,iquad,ele->Id());
+    double fac = EvalShapeFuncAndIntFac(intpoints,iquad);
 
     // factor given by spatial function
     double functfac = 1.0;
@@ -690,7 +690,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::NeumannInflow(
     // loop over all integration points
     for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
     {
-      const double fac = EvalShapeFuncAndIntFac(intpoints,iquad,ele->Id(),&normal_);
+      const double fac = EvalShapeFuncAndIntFac(intpoints,iquad,&normal_);
 
       // get velocity at integration point
       velint_.Multiply(evelnp,funct_);
@@ -833,7 +833,7 @@ std::vector<double> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcConvectiv
     // loop over all integration points
     for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
     {
-      const double fac = EvalShapeFuncAndIntFac(intpoints,iquad,ele->Id(),&normal_);
+      const double fac = EvalShapeFuncAndIntFac(intpoints,iquad,&normal_);
 
       // get velocity at integration point
       velint_.Multiply(evelnp,funct_);
@@ -891,7 +891,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ConvectiveHeatTransfer(
     // loop over all integration points
     for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
     {
-      const double fac = EvalShapeFuncAndIntFac(intpoints,iquad,ele->Id(),&normal_);
+      const double fac = EvalShapeFuncAndIntFac(intpoints,iquad,&normal_);
 
       // get specific heat capacity at constant volume
       double shc = 0.0;
@@ -959,10 +959,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ConvectiveHeatTransfer(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvalShapeFuncAndIntFac(
-    const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
-    const int                                    iquad,      ///< id of current Gauss point
-    const int                                    eleid,      ///< the element id
-    LINALG::Matrix<1 + nsd_,1>*         normalvec ///< normal vector at Gauss point(optional)
+    const DRT::UTILS::IntPointsAndWeights<nsd_>&   intpoints,   ///< integration points
+    const int                                      iquad,       ///< id of current Gauss point
+    LINALG::Matrix<1 + nsd_,1>*                    normalvec    ///< normal vector at Gauss point(optional)
 )
 {
   // coordinates of the current integration point
@@ -1054,7 +1053,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::GetConstNormal(
     // hack: ele-id = -1
     // for nurbs elements the normal vector must be scaled with a special orientation factor!!
     // this is already part of this function call
-    EvalShapeFuncAndIntFac(intpoints,0,-1,&normal);
+    EvalShapeFuncAndIntFac(intpoints,0,&normal);
 #endif
     normal(0)= 1.0;
   }
@@ -1122,7 +1121,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICoupling(
   for (int gpid=0; gpid<intpoints.IP().nquad; ++gpid)
   {
     // evaluate values of shape functions and domain integration factor at current integration point
-    const double fac = DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
+    const double fac = DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvalShapeFuncAndIntFac(intpoints,gpid);
 
     // evaluate overall integration factors
     const double timefacfac = scatraparamstimint_->TimeFac()*fac;
@@ -1207,7 +1206,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcRobinBoundary(
   {
     for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
     {
-      const double fac = DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
+      const double fac = DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvalShapeFuncAndIntFac(intpoints,gpid);
       // evaluate overall integration factors
       const double timefac = scatraparamstimint_->TimeFac()*fac;
       const double timefacprefac = timefac * prefac;
@@ -1269,7 +1268,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateSurfacePermeability(
       // loop over all integration points
       for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
       {
-        const double fac = EvalShapeFuncAndIntFac(intpoints,iquad,ele->Id(),&normal_);
+        const double fac = EvalShapeFuncAndIntFac(intpoints,iquad,&normal_);
 
         // integration factor for right-hand side
         double facfac = 0.0;
@@ -1377,7 +1376,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateKedemKatchalsky(
       // loop over all integration points
       for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
       {
-        const double fac = EvalShapeFuncAndIntFac(intpoints, iquad, ele->Id(), &normal_);
+        const double fac = EvalShapeFuncAndIntFac(intpoints, iquad, &normal_);
 
         // integration factor
         double facfac = 0.0;
@@ -1460,7 +1459,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::IntegrateShapeFunctions(
   // loop over integration points
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
   {
-    const double fac = EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
+    const double fac = EvalShapeFuncAndIntFac(intpoints,gpid);
 
     // compute integral of shape functions
     for (int node=0;node<nen_;++node)

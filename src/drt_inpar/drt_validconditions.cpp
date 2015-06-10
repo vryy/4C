@@ -897,7 +897,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
         Teuchos::rcp(new ConditionDefinition("DESIGN S2I COUPLING LINE CONDITIONS / SLAVE",
                                              "S2ICouplingSlave",
                                              "Scatra-scatra line interface coupling (slave side)",
-                                             DRT::Condition::S2ICoupling,
+                                             DRT::Condition::S2ICouplingSlave,
                                              true,
                                              DRT::Condition::Line));
 
@@ -906,7 +906,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
         Teuchos::rcp(new ConditionDefinition("DESIGN S2I COUPLING SURF CONDITIONS / SLAVE",
                                              "S2ICouplingSlave",
                                              "Scatra-scatra surface interface coupling (slave side)",
-                                             DRT::Condition::S2ICoupling,
+                                             DRT::Condition::S2ICouplingSlave,
                                              true,
                                              DRT::Condition::Surface));
 
@@ -1050,7 +1050,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
         Teuchos::rcp(new ConditionDefinition("DESIGN S2I COUPLING LINE CONDITIONS / MASTER",
                                              "S2ICouplingMaster",
                                              "Scatra-scatra line interface coupling (master side)",
-                                             DRT::Condition::S2ICoupling,
+                                             DRT::Condition::S2ICouplingMaster,
                                              true,
                                              DRT::Condition::Line));
 
@@ -1059,7 +1059,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
         Teuchos::rcp(new ConditionDefinition("DESIGN S2I COUPLING SURF CONDITIONS / MASTER",
                                              "S2ICouplingMaster",
                                              "Scatra-scatra surface interface coupling (master side)",
-                                             DRT::Condition::S2ICoupling,
+                                             DRT::Condition::S2ICouplingMaster,
                                              true,
                                              DRT::Condition::Surface));
 
@@ -1074,19 +1074,19 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   {
     // partitioning of 2D domain into 2D subdomains
     Teuchos::RCP<ConditionDefinition> s2ilinepartitioning =
-        Teuchos::rcp(new ConditionDefinition("DESIGN S2I COUPLING LINE CONDITIONS / PARTITIONING",
+        Teuchos::rcp(new ConditionDefinition("DESIGN S2I COUPLING SURF CONDITIONS / PARTITIONING",
                                              "S2ICouplingPartitioning",
                                              "Scatra-scatra line interface coupling (domain partitioning)",
-                                             DRT::Condition::S2ICoupling,
+                                             DRT::Condition::S2ICouplingPartitioning,
                                              false,
                                              DRT::Condition::Surface));
 
     // partitioning of 3D domain into 3D subdomains
     Teuchos::RCP<ConditionDefinition> s2isurfpartitioning =
-        Teuchos::rcp(new ConditionDefinition("DESIGN S2I COUPLING SURF CONDITIONS / PARTITIONING",
+        Teuchos::rcp(new ConditionDefinition("DESIGN S2I COUPLING VOL CONDITIONS / PARTITIONING",
                                              "S2ICouplingPartitioning",
                                              "Scatra-scatra surface interface coupling (domain partitioning)",
-                                             DRT::Condition::S2ICoupling,
+                                             DRT::Condition::S2ICouplingPartitioning,
                                              false,
                                              DRT::Condition::Volume));
 

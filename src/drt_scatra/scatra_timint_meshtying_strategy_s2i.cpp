@@ -18,6 +18,8 @@ Maintainer: Rui Fang
 
 #include "../drt_fsi/fsi_matrixtransform.H"
 
+#include "../drt_lib/drt_globalproblem.H"
+
 #include "../drt_scatra/scatra_timint_implicit.H"
 
 #include "../drt_scatra_ele/scatra_ele_action.H"
@@ -49,18 +51,19 @@ islaveresidual_(Teuchos::null),
 imasterphinp_(Teuchos::null),
 invrowsums_(Teuchos::null),
 invcolsums_(Teuchos::null),
+parameters_(Teuchos::rcp(new Teuchos::ParameterList(parameters))),
 rowequilibration_(
-    DRT::INPUT::IntegralValue<int>(parameters,"EQUILIBRATION") == INPAR::S2I::equilibration_rows
+    DRT::INPUT::IntegralValue<int>(*parameters_,"EQUILIBRATION") == INPAR::S2I::equilibration_rows
     or
-    DRT::INPUT::IntegralValue<int>(parameters,"EQUILIBRATION") == INPAR::S2I::equilibration_full
+    DRT::INPUT::IntegralValue<int>(*parameters_,"EQUILIBRATION") == INPAR::S2I::equilibration_full
     ),
 colequilibration_(
-    DRT::INPUT::IntegralValue<int>(parameters,"EQUILIBRATION") == INPAR::S2I::equilibration_columns
+    DRT::INPUT::IntegralValue<int>(*parameters_,"EQUILIBRATION") == INPAR::S2I::equilibration_columns
     or
-    DRT::INPUT::IntegralValue<int>(parameters,"EQUILIBRATION") == INPAR::S2I::equilibration_full
+    DRT::INPUT::IntegralValue<int>(*parameters_,"EQUILIBRATION") == INPAR::S2I::equilibration_full
     ),
-mortartype_(DRT::INPUT::IntegralValue<INPAR::S2I::MortarType>(parameters,"MORTARTYPE")),
-matrixtype_(DRT::INPUT::IntegralValue<INPAR::S2I::MatrixType>(parameters,"MATRIXTYPE"))
+mortartype_(DRT::INPUT::IntegralValue<INPAR::S2I::MortarType>(*parameters_,"MORTARTYPE")),
+matrixtype_(DRT::INPUT::IntegralValue<INPAR::S2I::MatrixType>(*parameters_,"MATRIXTYPE"))
 {
   return;
 } // SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I
@@ -385,6 +388,23 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
       conditionmaps_slave_->CheckForValidMapExtractor();
       conditionmaps_master_ = Teuchos::rcp(new LINALG::MultiMapExtractor(*icoup_->MasterDofMap(),conditionmaps_master));
       conditionmaps_master_->CheckForValidMapExtractor();
+
+      // extract number of linear solver for each block of global block system matrix
+      const int blocksolver = parameters_->get<int>("BLOCKSOLVER");
+
+      // safety check
+      if(blocksolver == -1)
+        dserror("Invalid number of linear solver for each block of global block system matrix!");
+
+      // feed block preconditioner with solver and nullspace information for each block of global block system matrix
+      const Teuchos::ParameterList& blocksolverparams = DRT::Problem::Instance()->SolverParams(blocksolver);
+      for(unsigned icond=0; icond<ncond; ++icond)
+      {
+        std::ostringstream icondstr;
+        icondstr << icond+1;
+        scatratimint_->Solver()->PutSolverParamsToSubParams("Inverse"+icondstr.str(),blocksolverparams);
+        scatratimint_->Discretization()->ComputeNullSpaceIfNecessary(scatratimint_->Solver()->Params().sublist("Inverse"+icondstr.str()));
+      }
     }
 
     break;

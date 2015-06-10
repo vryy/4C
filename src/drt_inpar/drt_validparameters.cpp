@@ -5887,6 +5887,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       &s2idyn
       );
 
+  IntParameter(
+      "BLOCKSOLVER",
+      -1,
+      "number of linear solver for each block of global block system matrix",
+      &s2idyn
+      );
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& stidyn = list->sublist(
       "STI DYNAMIC",

@@ -361,7 +361,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::NormDiffFluxAndVelIntegr
   // loop over integration points
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
   {
-    const double fac = my::EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
+    const double fac = my::EvalShapeFuncAndIntFac(intpoints,gpid);
 
     // compute integral of normal flux
     for (int node=0;node<my::nen_;++node)
