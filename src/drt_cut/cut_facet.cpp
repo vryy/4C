@@ -382,7 +382,12 @@ void GEO::CUT::Facet::CreateTriangulation( Mesh & mesh, const std::vector<Point*
   //                                       \._______./                |
   //                                      0          1                |
   //
-  if( this->isConvex() )
+
+  // TODO: We force the facets created from levelset side to use centre-pt-tri
+  // This is not completely correct but since we use a single levelset side for each element
+  // (even though the levelset can break into two), we get some weird facet shapes.
+  // This procedure seems to give better result even if the facet is concave in such cases
+  if( isConvex() or ParentSide()->IsLevelSetSide() )
   {
     std::vector<Point*> pts( points );
     //Find the middle point
@@ -419,6 +424,9 @@ void GEO::CUT::Facet::CreateTriangulation( Mesh & mesh, const std::vector<Point*
   // But we have no choice in the case of concave polyhedra
   else
   {
+    if( ParentSide()->IsCut() and ParentSide()->IsLevelSetSide() )
+      dserror("done");
+
     triangulation_.clear();
     std::vector<Point*> pts( points );
     std::vector<int> ptc;
