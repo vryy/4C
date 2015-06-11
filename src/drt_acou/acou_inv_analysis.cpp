@@ -1293,7 +1293,8 @@ void ACOU::InvAnalysis::CalculateGradient()
     psi = CalculateNonconformRhsvec(adjoint_phi_0_);
 
   scatra_discret_->SetState("psi",psi);
-  matman_->Evaluate(0.0,objgrad_,true);
+  matman_->AddEvaluate(0.0,objgrad_);
+  matman_->Finalize(objgrad_);
 
   INVANA::MVNorm(*objgrad_,*matman_->ParamLayoutMapUnique(),2,&normgrad_);
   if( iter_ == 0)

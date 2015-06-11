@@ -266,17 +266,14 @@ void INVANA::InvanaAugLagr::EvaluateGradient(const Epetra_MultiVector& sol, Teuc
   zeros->Scale(0.0);
 
   //loop the time steps
-  bool sumaccrosprocs = false;
   for (int j=0; j<msteps_; j++)
   {
     Discret()->SetState(0, "displacement", Teuchos::rcp((*dis_)(j),false));
     Discret()->SetState(0, "residual displacement", zeros);
     Discret()->SetState(0, "dual displacement", Teuchos::rcp((*disdual_)(j),false));
-
-    if (j==msteps_-1) sumaccrosprocs = true;
-
-    Matman()->Evaluate(time_[j], gradient, sumaccrosprocs);
+    Matman()->AddEvaluate(time_[j], gradient);
   }
+  Matman()->Finalize(gradient);
 
   if (Regman() != Teuchos::null)
     Regman()->EvaluateGradient(sol,gradient);

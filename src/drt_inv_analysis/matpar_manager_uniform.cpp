@@ -80,7 +80,7 @@ void INVANA::MatParManagerUniform::ContractGradient(Teuchos::RCP<Epetra_MultiVec
   if (success!=0) dserror("error code %d", success);
 }
 
-void INVANA::MatParManagerUniform::Consolidate(Teuchos::RCP<Epetra_MultiVector> dfint)
+void INVANA::MatParManagerUniform::Finalize(Teuchos::RCP<Epetra_MultiVector> dfint)
 {
   std::vector<double> val(dfint->MyLength(),0.0);
   Discret()->Comm().SumAll((*dfint)(0)->Values(),&val[0],dfint->MyLength());

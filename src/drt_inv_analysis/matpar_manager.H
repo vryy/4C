@@ -122,7 +122,11 @@ public:
   virtual void Setup() = 0;
 
   //! evaluate derivative of the residual force vector w.r.t to the material parameters using duals
-  virtual void Evaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint, bool consolidate=false);
+  virtual void AddEvaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint);
+
+  //! account for partial chain rule application per proc only
+  //! and sum up contributions accross procs
+  virtual void Finalize(Teuchos::RCP<Epetra_MultiVector> dfint) = 0;
 
   //! evaluate derivative of the residual force vector w.r.t to the material parameters using FD
   void EvaluateFD(Teuchos::RCP<Epetra_MultiVector> dfint);
@@ -180,9 +184,6 @@ protected:
       int elepos,
       int paraposglobal,
       int paraposlocal) = 0;
-
-  //! "consolidate" chain rule application among procs
-  virtual void Consolidate(Teuchos::RCP<Epetra_MultiVector> dfint) = 0;
 
   Teuchos::RCP<DRT::Discretization> Discret(){return discret_;}
 

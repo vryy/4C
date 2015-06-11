@@ -44,6 +44,9 @@ public:
   //! Setup specific parametrization layout
   virtual void Setup();
 
+  //! nothing to be done in case of elementwise parameters
+  virtual void Finalize(Teuchos::RCP<Epetra_MultiVector> dfint){return;}
+
 protected:
 
   virtual void FillParameters(Teuchos::RCP<Epetra_MultiVector> params);
@@ -51,9 +54,6 @@ protected:
   virtual void InitParameters(int parapos, double val);
 
   virtual void ContractGradient(Teuchos::RCP<Epetra_MultiVector> dfint, double val, int elepos, int paraposglobal, int paraposlocal);
-
-  //! nothing to be done in case of elementwise parameters
-  virtual void Consolidate(Teuchos::RCP<Epetra_MultiVector> dfint){return;}
 
   const std::vector<int>& ParamsLIDtoeleGID() const {return paramsLIDtoeleGID_;}
 

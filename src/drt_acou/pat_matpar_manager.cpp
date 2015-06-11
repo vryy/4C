@@ -39,7 +39,7 @@ ACOU::PatMatParManagerPerElement::PatMatParManagerPerElement(Teuchos::RCP<DRT::D
 }
 
 /*----------------------------------------------------------------------*/
-void ACOU::PatMatParManagerUniform::Evaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint, bool consolidate)
+void ACOU::PatMatParManagerUniform::AddEvaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint)
 {
   Teuchos::RCP<const Epetra_Vector> phi = Discret()->GetState("phi");
 
@@ -93,13 +93,10 @@ void ACOU::PatMatParManagerUniform::Evaluate(double time, Teuchos::RCP<Epetra_Mu
 
   }//loop elements
 
-  if (consolidate)
-    Consolidate(dfint);
-
   return;
 }
 /*----------------------------------------------------------------------*/
-void ACOU::PatMatParManagerPerElement::Evaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint, bool consolidate)
+void ACOU::PatMatParManagerPerElement::AddEvaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint)
 {
   Teuchos::RCP<const Epetra_Vector> phi = Discret()->GetState("phi");
 
@@ -154,9 +151,6 @@ void ACOU::PatMatParManagerPerElement::Evaluate(double time, Teuchos::RCP<Epetra
     }//loop this elements material parameters (only the ones to be optimized)
 
   }//loop elements
-
-  if (consolidate)
-    Consolidate(dfint);
 
   return;
 }

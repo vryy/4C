@@ -231,7 +231,7 @@ void INVANA::MatParManager::ResetParams()
 /*----------------------------------------------------------------------*/
 /* evaluate gradient based on dual solution                  keh 10/13  */
 /*----------------------------------------------------------------------*/
-void INVANA::MatParManager::Evaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint, bool consolidate)
+void INVANA::MatParManager::AddEvaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint)
 {
   Teuchos::RCP<const Epetra_Vector> disdual = discret_->GetState("dual displacement");
 
@@ -267,7 +267,7 @@ void INVANA::MatParManager::Evaluate(double time, Teuchos::RCP<Epetra_MultiVecto
     std::vector<int>::const_iterator it;
     for ( it=actparams.begin(); it!=actparams.end(); it++)
     {
-      p.set("action", "calc_struct_internalforce");
+      p.set("action", "calc_struct_nlnstiff");
       p.set("matparderiv", *it);
 
       //initialize element vectors
@@ -307,9 +307,6 @@ void INVANA::MatParManager::Evaluate(double time, Teuchos::RCP<Epetra_MultiVecto
     }//loop this elements material parameters (only the ones to be optimized)
 
   }//loop elements
-
-  if (consolidate)
-    Consolidate(dfint);
 }
 
 /*----------------------------------------------------------------------*/

@@ -33,7 +33,7 @@ public:
   ~PatMatParManagerUniform(){};
 
   //! evaluate derivative of the residual force vector w.r.t to the material parameters using duals
-  void Evaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint, bool consolidate=false);
+  void AddEvaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint);
 
 };
 
@@ -49,7 +49,7 @@ public:
   ~PatMatParManagerPerElement(){};
 
   //! evaluate derivative of the residual force vector w.r.t to the material parameters using duals
-  void Evaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint, bool consolidate=false);
+  void AddEvaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint);
 
 private:
 

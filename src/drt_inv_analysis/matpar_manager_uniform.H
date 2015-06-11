@@ -43,6 +43,8 @@ public:
   //! Setup specific parametrization layout
   virtual void Setup();
 
+  virtual void Finalize(Teuchos::RCP<Epetra_MultiVector> dfint);
+
 protected:
 
   virtual void FillParameters(Teuchos::RCP<Epetra_MultiVector> params);
@@ -50,8 +52,6 @@ protected:
   virtual void InitParameters(int parapos, double val);
 
   virtual void ContractGradient(Teuchos::RCP<Epetra_MultiVector> dfint, double val, int elepos, int paraposglobal, int paraposlocal);
-
-  virtual void Consolidate(Teuchos::RCP<Epetra_MultiVector> dfint);
 
 };
 }  // namespace INVANA
