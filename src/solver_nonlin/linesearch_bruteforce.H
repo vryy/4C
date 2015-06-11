@@ -29,17 +29,16 @@ Maintainer: Matthias Mayr
 /* definition of classes */
 namespace NLNSOL
 {
-  /*!
-   * \brief Line search based on a brute force backtracking strategy
+  /*! \class LineSearchBruteForce
+   *  \brief Line search based on a brute force backtracking strategy
    *
-   * The step length parameter is varied by constant increments in an interval
-   * \f$\alpha\in]0,1]\f$. Then, the \f$alpha\f$ that results in the minimal
-   * residual norm is chosen as the final step length.
+   *  The step length parameter is varied by constant increments in an interval
+   *  \f$\alpha\in]0,1]\f$. Then, the \f$alpha\f$ that results in the minimal
+   *  residual norm is chosen as the final step length.
    *
-   * This algorithms seems to be quite accurate, though it is very expensive.
+   *  This algorithms seems to be quite accurate, though it is very expensive.
    *
-   * \author mayr.mt
-   * \date 01/2015
+   *  \author mayr.mt \date 01/2015
    */
   class LineSearchBruteForce : public NLNSOL::LineSearchBase
   {

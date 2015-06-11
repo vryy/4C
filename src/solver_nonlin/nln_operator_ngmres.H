@@ -45,7 +45,8 @@ namespace Teuchos
 /* definition of classes */
 namespace NLNSOL
 {
-  /*! \brief Nonlinear GMRES
+  /*! \class NlnOperatorNGmres
+   *  \brief Nonlinear GMRES
    *
    *  We do a nonlinear Krylov acceleration, also referred to as nonlinear
    *  GMRES (NGMRES). By recombining previous iterates/solutions, we hope to
@@ -75,7 +76,7 @@ namespace NLNSOL
    *          pp. A1351-1379, 2012 </li>
    *  </ul>
    *
-   *  \Note Both references, [Washio (1997)] and [Sterck (2012)], describe the
+   *  \note Both references, [Washio (1997)] and [Sterck (2012)], describe the
    *        same algorithm. However, some signs are different at certain places.
    *        The present implementation follows the notation in [Sterck (2012)].
    *

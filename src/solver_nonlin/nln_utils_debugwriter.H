@@ -159,7 +159,7 @@ namespace UTILS
 
     /*! \brief Create the log file and write header into file
      *
-     *  \Note Only processor 0 is writing to the log file.
+     *  \note Only processor 0 is writing to the log file.
      */
     virtual void CreateLogFile();
 
@@ -204,7 +204,7 @@ namespace UTILS
      *  Write the auto-generated output name \p name and the user-provided
      *  description \p description to the log file.
      *
-     *  \Note Only processor 0 is writing to the log file.
+     *  \note Only processor 0 is writing to the log file.
      */
     virtual void WriteLogFileEntry(const std::string& name, ///< auto-generated name of output data
       const std::string& description ///< user-provided description
@@ -225,7 +225,7 @@ namespace UTILS
 
     /*! \brief Counter for automated name generation
      *
-     *  \Note Needs to be mutable to enable increasing the counter every time
+     *  \note Needs to be mutable to enable increasing the counter every time
      *  the debug writer is used for writing output.
      */
     mutable unsigned int counter_;

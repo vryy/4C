@@ -55,7 +55,8 @@ namespace Teuchos
 /* definition of classes */
 namespace NLNSOL
 {
-  /*! \brief Nonlinear Conjugate Gradient as nonlinear preconditioner
+  /*! \class NlnOperatorNonlinCG
+   *  \brief Nonlinear Conjugate Gradient as nonlinear preconditioner
    *
    *  <h3>References:</h3>
    *  <ul>
@@ -191,7 +192,7 @@ namespace NLNSOL
      *
      *  \f[ \beta_{k+1}^{FR} = \frac{f_{k+1}^TM^{-1}f_{k+1}}{f_{k}^TM^{-1}f_{k}} \f]
      *
-     *  \Note This is the same as in linear CG.
+     *  \note This is the same as in linear CG.
      *
      *  \author mayr \date 11/2013
      */

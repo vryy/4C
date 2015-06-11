@@ -57,7 +57,8 @@ namespace Teuchos
 /* definition of classes */
 namespace NLNSOL
 {
-  /*! \brief Nonlinear Algebraic Multigrid with Full Approximation Scheme.
+  /*! \class NlnOperatorFas
+   *  \brief Nonlinear Algebraic Multigrid with Full Approximation Scheme.
    *
    *  The FAS operator holds a NLNSOL::FAS::AMGHierarchy which stores all the
    *  multigrid levels. The algorithm that loops over all levels as solver or

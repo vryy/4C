@@ -47,7 +47,8 @@ namespace Teuchos
 /* definition of classes */
 namespace NLNSOL
 {
-  /*! \brief Steepest-descent algorithm as nonlinear preconditioner
+  /*! \class NlnOperatorSD
+   *  \brief Steepest-descent algorithm as nonlinear preconditioner
    *
    *  When solving nonlinear equations, steepest descent means that the residual
    *  is chosen as the search direction.

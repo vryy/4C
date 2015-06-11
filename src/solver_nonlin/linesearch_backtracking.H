@@ -29,20 +29,19 @@ Maintainer: Matthias Mayr
 /* definition of classes */
 namespace NLNSOL
 {
-  /*!
-   * \brief Line search based on a simple backtracking strategy
+  /*! \class LineSearchBacktracking
+   *  \brief Line search based on a simple backtracking strategy
    *
-   * We start with a trial step length of \f$alpha = 1.0\f$. if the sufficient
-   * decrease condition is not met, the trial step length is halved.
+   *  We start with a trial step length of \f$alpha = 1.0\f$. if the sufficient
+   *  decrease condition is not met, the trial step length is halved.
    *
-   * <h3> References </h3>
-   * <ul>
-   * <li>[1] Kelley CT: Iterative Methods for Linear and Nonlinear Equations,
-   *         SIAM, Philadelphia (1995)
-   * </ul>
+   *  <h3> References </h3>
+   *  <ul>
+   *  <li>[1] Kelley CT: Iterative Methods for Linear and Nonlinear Equations,
+   *          SIAM, Philadelphia (1995)
+   *  </ul>
    *
-   * \author mayr.mt
-   * \date 01/2015
+   *  \author mayr.mt \date 01/2015
    */
   class LineSearchBacktracking : public NLNSOL::LineSearchBase
   {

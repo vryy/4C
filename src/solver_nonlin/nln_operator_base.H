@@ -53,6 +53,7 @@ namespace Teuchos
 
 /*----------------------------------------------------------------------------*/
 /* definition of classes */
+
 /*! \brief NLNSOL: a nonlinear solver tool box
  *
  *  A collection of nonlinear solver routines and methods to build a
@@ -71,7 +72,8 @@ namespace Teuchos
  */
 namespace NLNSOL
 {
-  /*! \brief General nonlinear operator base class
+  /*! \class NlnOperatorBase
+   *  \brief General nonlinear operator base class
    *
    *  This is a base class for all kinds of nonlinear solution and
    *  preconditioning algorithms. The central method is ApplyInverse(), where

@@ -55,7 +55,8 @@ class ParameterList;
 /* definition of classes */
 namespace NLNSOL
 {
-/*! \brief Wrapper around a linear preconditioner from BACI
+/*! \class NlnOperatorLinPrec
+ *  \brief Wrapper around a linear preconditioner from BACI
  *
  *  \sa NlnOperatorBase
  *

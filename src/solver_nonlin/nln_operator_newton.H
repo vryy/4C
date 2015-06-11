@@ -54,7 +54,8 @@ namespace Teuchos
 /* definition of classes */
 namespace NLNSOL
 {
-  /*! \brief Newton-type algorithm as nonlinear preconditioner
+  /*! \class NlnOperatorNewton
+   *  \brief Newton-type algorithm as nonlinear preconditioner
    *
    *  This Newton-type algorithm enables several versions that differ in the
    *  frequency of updating the Jacobian. This update frequency is controlled
@@ -164,7 +165,7 @@ namespace NLNSOL
      *  Compute search direction \f$p\f$ by solving \f$Jp=f\f$ with the Jacobian
      *  matrix \f$J\f$ and the residual \f$f\f$.
      *
-     *  \Note We test for success of the linear solver only, if Newton is
+     *  \note We test for success of the linear solver only, if Newton is
      *  applied as the outer nonlinear solver. If Newton is used as
      *  preconditioner, we allow incomplete linear solves (e.g. with limited
      *  Krylov subspace) to save computational time.

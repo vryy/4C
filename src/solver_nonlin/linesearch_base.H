@@ -45,15 +45,15 @@ namespace NLNSOL
 /* definition of classes */
 namespace NLNSOL
 {
-  /*!
-   * \brief Line search base class
+  /*! \class LineSearchBase
+   *  \brief Line search base class
    *
-   * This base class for different line search strategies provides some common
-   * routines, that are part of every line search strategy. The core routine
-   * ComputeLSParam() has to be implemented by derived classes since there are
-   * the main differences between all line search strategies.
+   *  This base class for different line search strategies provides some common
+   *  routines, that are part of every line search strategy. The core routine
+   *  ComputeLSParam() has to be implemented by derived classes since there are
+   *  the main differences between all line search strategies.
    *
-   * \author mayr.mt \date 05/2014
+   *  \author mayr.mt \date 05/2014
    */
   class LineSearchBase : public Teuchos::VerboseObject<LineSearchBase>
   {

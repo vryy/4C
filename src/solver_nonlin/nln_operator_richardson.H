@@ -55,7 +55,8 @@ class ParameterList;
 /* definition of classes */
 namespace NLNSOL
 {
-/*! \brief Richardson iteration with relaxation and preconditioning
+/*! \class NlnOperatorRichardson
+ *  \brief Richardson iteration with relaxation and preconditioning
  *
  *  This algorithm implements a Richardson iteration with IFPACK
  *  preconditioning (denoted by \f$M^{-1}\f$. We allow for a user defined

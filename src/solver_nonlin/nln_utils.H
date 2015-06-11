@@ -198,7 +198,7 @@ namespace UTILS
    *  loop over the read parameter list and check, whether we need to read
    *  additional sublists from another xml-file. This is done recursively.
    *
-   *  \Note: We introduce the convention, that sublists, which shall be read from
+   *  \note: We introduce the convention, that sublists, which shall be read from
    *  a file, a marked by an std::string parameter entry
    *  "sublistfile: mypath/myfilename.xml". This helps to distinguish between
    *  standard std::string parameters and those, that replace a sublist.

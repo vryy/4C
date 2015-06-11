@@ -1012,7 +1012,7 @@ namespace FSI
      *
      *  Rebuild preconditioner as soon as this counter is zero.
      *
-     *  \Note We enforce rebuilding the preconditioner at the beginning of
+     *  \note We enforce rebuilding the preconditioner at the beginning of
      *  every time step.
      */
     int precondreusecount_;

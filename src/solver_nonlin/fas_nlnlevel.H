@@ -44,7 +44,8 @@ namespace NLNSOL
 {
 namespace FAS
 {
-  /*! \brief Nonlinear level
+  /*! \class NlnLevel
+   *  \brief Nonlinear level
    *
    *  Here, we store all data that belongs to a multigrid level like transfer
    *  operators #rop_ and #pop_, the coarse level matrix representation #A_,

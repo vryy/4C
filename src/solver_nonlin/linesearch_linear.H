@@ -29,10 +29,10 @@ Maintainer: Matthias Mayr
 /* definition of classes */
 namespace NLNSOL
 {
-  /*!
-   * \brief Line search based on linearity assumption
+  /*! \class LineSearchLinear
+   *  \brief Line search based on linearity assumption
    *
-   * \author mayr.mt \date 10/2014
+   *  \author mayr.mt \date 10/2014
    */
   class LineSearchLinear : public NLNSOL::LineSearchBase
   {

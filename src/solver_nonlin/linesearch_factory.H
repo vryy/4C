@@ -39,8 +39,8 @@ namespace Teuchos
 /* definition of classes */
 namespace NLNSOL
 {
-  /*!
-   * \brief Line search factory class
+  /*! \class LineSearchFactory
+   *  \brief Line search factory class
    *
    *  Factory class to create any kind of line search algorithm. This class just
    *  implements a Create()-routine that creates the wanted object and returns

@@ -42,7 +42,8 @@ namespace Teuchos
 //! NLNSOL: a nonlinear solver tool box
 namespace NLNSOL
 {
-  /*! \brief Factory for nonlinear operators
+  /*! \class NlnOperatorFactory
+   *  \brief Factory for nonlinear operators
    *
    *  Factory class to create any kind of nonlinear operator. This class just
    *  implements a Create()-routine that creates the wanted object and returns

@@ -77,7 +77,8 @@ namespace NLNSOL
   //! NLNSOL::FAS: A Full Approximation Scheme multigrid within the NLNSOL framework
   namespace FAS
   {
-    /*! \brief Hierarchy of multigrid levels based on MueLu
+    /*! \class AMGHierarchy
+     *  \brief Hierarchy of multigrid levels based on MueLu
      *
      *  Here, we create and store the hierarchy of multigrid levels. For
      *  creation of the multigrid hierarchy, Setup() utilizes the MueLu package

@@ -47,7 +47,8 @@ namespace Teuchos
 /* definition of classes */
 namespace NLNSOL
 {
-  /*! \brief Use inverse of diagonal of Jacobian as preconditioner
+  /*! \class NlnOperatorDInverse
+   *  \brief Use inverse of diagonal of Jacobian as preconditioner
    *
    *  \sa NlnOperatorBase
    *

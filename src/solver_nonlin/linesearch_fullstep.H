@@ -29,8 +29,8 @@ Maintainer: Matthias Mayr
 /* definition of classes */
 namespace NLNSOL
 {
-  /*!
-   * \brief Line search with fixed full step
+  /*! \class LineSearchFullStep
+   *  \brief Line search with fixed full step
    *
    *  We do not compute the step length. We always take the full step,
    *  i.e. step length \f$\alpha = 1.0\f$.

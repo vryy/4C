@@ -29,7 +29,8 @@ Maintainer: Matthias Mayr
 /* definition of classes */
 namespace NLNSOL
 {
-  /*! \brief Line search based on polynomials
+  /*! \class LineSearchPolynomial
+   *  \brief Line search based on polynomials
    *
    *  Create a series of second order polynomials to model the L2-norm of the
    *  residual along the search direction. Try minimum of this polynomial model
@@ -116,7 +117,7 @@ namespace NLNSOL
      *  c = y_0 - l_0^2a - l_0b;
      *  \f]
      *
-     *  \Note Coefficient \f$c\f$ is not necessary to determine the minimizer
+     *  \note Coefficient \f$c\f$ is not necessary to determine the minimizer
      *  of the polynomial. Therefore, \f$a\f$ and \f$b\f$ are sufficient.
      *
      *  <h3> How to determine the minimizer \f$l_{min}\f$ of the quadratic
@@ -127,7 +128,7 @@ namespace NLNSOL
      *  l_{min} = -\frac{b}{2a}
      *  \f]
      *
-     *  \Note See [Kelley (1995), p. 143] for treatment of special cases.
+     *  \note See [Kelley (1995), p. 143] for treatment of special cases.
      *
      *  Line search is finished as soon as the sufficient decrease condition is
      *  satisfied (cf. IsSufficientDecrease()). We stop after #itermax_
