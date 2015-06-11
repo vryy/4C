@@ -174,13 +174,16 @@ public:
   }
 
   //! set time step size
-  virtual void SetDt(const double dtnew)
+  virtual void SetDt(const double dtnew ///< new time step size (to be set)
+      )
   {
     ale_->SetDt(dtnew);
   }
 
   //! Set time and step
-  void SetTimeStep(const double time, const int step)
+  void SetTimeStep(const double time, ///< simulation time (to be set)
+      const int step ///< step number (to be set)
+      )
   {
     ale_->SetTimeStep(time, step);
   }
@@ -227,8 +230,9 @@ public:
   }
 
 
-  //! read restart information for given time step #step
-  virtual void ReadRestart(const int step)
+  //! read restart information for given time step \p step
+  virtual void ReadRestart(const int step ///< step number to read restart from
+      )
   {
     return ale_->ReadRestart(step);
   }
@@ -333,7 +337,9 @@ public:
    *
    *  \author mayr.mt \date 10/2014
    */
-  virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc);
+  virtual void Evaluate(
+      Teuchos::RCP<const Epetra_Vector> stepinc ///< step increment
+      );
 
 private:
 

@@ -4,7 +4,7 @@
 
 \brief Fluid field adapter for fsi
 
-Can only be used in conjunction with #FluidImplicitTimeInt
+Can only be used in conjunction with FLD::FluidImplicitTimeInt
 
 <pre>
 Maintainer: Matthias Mayr
@@ -140,18 +140,18 @@ namespace ADAPTER {
 
     virtual void UseBlockMatrix(bool splitmatrix);
 
-    //! Project the velocity field into a divergence free subspace
-    //!
-    //! Project the velocity field into a divergence free subspace
-    //! while interface and Dirichlet DOFS are not affected.
-    //! The projection is done by the following operation:
-    //!
-    //! \$f v_{divfree} = \left(I - B(B^TB)^{-1}B^T)\right) v + B(B^TB)^{-1} R\$f
-    //!
-    //! The vector \$f R \$f ensures that interface and Dirichlet DOFs are not modified.
-    //!
-    //! \autor: mayr.mt
-    //! \date  06/2012
+    /*! \brief Project the velocity field into a divergence free subspace
+     *
+     *  Project the velocity field into a divergence free subspace
+     *  while interface and Dirichlet DOFS are not affected.
+     *  The projection is done by the following operation:
+     *
+     *  \$f v_{divfree} = (I - B(B^TB)^{-1}B^T)) v + B(B^TB)^{-1} R\$f
+     *
+     *  The vector \$f R \$f ensures that interface and Dirichlet DOFs are not modified.
+     *
+     *  \author mayr.mt \date  06/2012
+     */
     void ProjVelToDivZero();
 
     /// reset state vectors

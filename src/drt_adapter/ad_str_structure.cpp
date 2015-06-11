@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file adapter_structure.cpp
+\file ad_str_structure.cpp
 
 \brief Structure field adapter
 

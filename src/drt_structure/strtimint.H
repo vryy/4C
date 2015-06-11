@@ -179,10 +179,10 @@ namespace STR
     //! Construct all solution vectors
     void createAllEpetraVectors();
 
-    //! Resize #TimIntMStep<T> multi-step quantities
+    //! Resize \p TimIntMStep<T> multi-step quantities
     virtual void ResizeMStep() = 0;
 
-    //! Resize #TimIntMStep<T> multi-step quantities, needed for fsi time adaptivity
+    //! Resize \p TimIntMStep<T> multi-step quantities, needed for fsi time adaptivity
     virtual void ResizeMStepTimAda();
 
     //! Merge

@@ -4,7 +4,7 @@
 
 \brief Fluid field adapter for fsi
 
-Can only be used in conjunction with #FluidImplicitTimeInt
+Can only be used in conjunction with FLD::FluidImplicitTimeInt
 
 <pre>
 Maintainer: Matthias Mayr

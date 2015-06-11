@@ -345,8 +345,9 @@ namespace ADAPTER {
     /*! Do one step with auxiliary time integration scheme
      *
      *  Do a single time step with the user given auxiliary time integration
-     *  scheme. Result is stored in #locerrvelnp_ and is used later to estimate
-     *  the local discretization error of the marching time integration scheme.
+     *  scheme. Result is stored in \p locerrvelnp_ and is used later to
+     *  estimate the local discretization error of the marching time integration
+     *  scheme.
      *
      *  \author mayr.mt \date 12/2013
      */

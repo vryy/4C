@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file adapter_structure_constrained.cpp
+\file ad_str_constr_merged.cpp
 
 \brief Adapter Layer for Structures with Algebraic Constraints
 

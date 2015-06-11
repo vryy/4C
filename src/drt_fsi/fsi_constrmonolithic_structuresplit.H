@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_monolithicfstructuresplit.H
+\file fsi_constrmonolithic_structuresplit.H
 
 \brief Solve FSI problem with constraints
 

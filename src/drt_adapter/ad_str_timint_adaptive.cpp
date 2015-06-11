@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file adapter_structure_timint.cpp
+\file ad_str_timint_adaptive.cpp
 
 \brief Structure field adapter for time step size adaptivity
 

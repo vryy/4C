@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_overlappprec_amgnxn.cpp
+\file fsi_overlapprec_amgnxn.cpp
 
 \brief Special version of block matrix that includes the AMGnxn preconditioner
 

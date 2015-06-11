@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file FSIStructureWrapper.cpp
+\file ad_str_fsiwrapper.cpp
 
 \brief Structural adapter for FSI problems containing the interface
        and methods dependent on the interface

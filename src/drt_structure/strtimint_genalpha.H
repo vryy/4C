@@ -264,7 +264,7 @@ namespace STR
 
     //! @name set-up
     //@{
-    //! mid-average type more at #MidAverageEnum
+    //! mid-average type more at MidAverageEnum
     enum INPAR::STR::MidAverageEnum midavg_;
     //@}
 

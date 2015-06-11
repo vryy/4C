@@ -91,7 +91,7 @@ namespace STR
     //! Destructor
     virtual ~TimIntImpl() { ; }
 
-    //! Resize #TimIntMStep<T> multi-step quantities
+    //! Resize \p TimIntMStep<T> multi-step quantities
     virtual void ResizeMStep() = 0;
 
     //! return time integration factor

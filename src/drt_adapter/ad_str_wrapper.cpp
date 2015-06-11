@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file adapter_structure_wrapper.cpp
+\file ad_str_wrapper.cpp
 
 \brief Wrapper for the structural time integration
 
