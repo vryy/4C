@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file pat_matpar_manager.H
+\file pat_matpar_manager.cpp
 \brief manage material parameters during optimization
 
 <pre>
@@ -180,7 +180,7 @@ void ACOU::PatMatParManagerPerElement::FillAdjacencyMatrix(const Epetra_Map& par
     // the current element
     int pgid = paramrowmap.GID(i); // !! the local id of the partial map is not the local parameter id!!
     int plid = paramlayoutmap_->LID(pgid);
-    int elegid = paramsLIDtoeleGID_[plid];
+    int elegid = ParamsLIDtoeleGID()[plid];
     DRT::Element* ele=Discret()->gElement(elegid);
     if (ele == NULL) dserror("element not found here");
 
