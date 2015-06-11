@@ -17,6 +17,7 @@
 
 #include "Teuchos_RCP.hpp"
 #include "Epetra_MultiVector.h"
+#include "../drt_inpar/inpar_structure.H"
 
 // forward declarations
 namespace DRT
@@ -81,6 +82,9 @@ protected:
   //! Evaluate the objective functions gradient w.r.t the material parameters
   void EvaluateGradient(const Epetra_MultiVector& sol, Teuchos::RCP<Epetra_MultiVector> gradient);
 
+  //! Evaluate the objective functions gradient w.r.t the material parameters
+  void EvaluateGradientFD(const Epetra_MultiVector& sol, Teuchos::RCP<Epetra_MultiVector> gradient);
+
   //! Evaluate the objective function
   void EvaluateError(const Epetra_MultiVector& sol, double* val);
 
@@ -100,14 +104,28 @@ private:
   //! dual variables (lagrange multiplier)
   Teuchos::RCP<Epetra_MultiVector> disdual_;
 
+  //! dual variables at the prestressed state
+  Teuchos::RCP<Epetra_MultiVector> disdualp_;
+
   //! time of steps of the forward problem
   std::vector<double> time_;
+
+  //! timestep
+  double timestep_;
 
   //! number of simulation steps in the forward problem
   int msteps_;
 
+  //! prestress type
+  INPAR::STR::PreStress pstype_;
+
+  //! prestress time
+  double pstime_;
+
   //! restart of the forward problem
   int fprestart_;
+
+  int fpcounter;
 
   //! number of optimization algorithm iterations
   //! before using parameter continuation

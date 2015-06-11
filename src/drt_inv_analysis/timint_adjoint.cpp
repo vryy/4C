@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file timint_adjoint.H
+\file timint_adjoint.cpp
 \brief Time integration for a hyperleastic quasi static adjoint problem
 
 <pre>
@@ -23,6 +23,7 @@ Maintainer: Sebastian Kehl
 #include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_comm/comm_utils.H"
+#include "../drt_inpar/inpar_structure.H"
 
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_solver.H"
@@ -35,14 +36,19 @@ Maintainer: Sebastian Kehl
 /*----------------------------------------------------------------------*/
 STR::TimIntAdjoint::TimIntAdjoint(Teuchos::RCP<DRT::Discretization> discret):
 discret_(discret),
+writer_(Teuchos::null),
 solver_(Teuchos::null),
 dbcmaps_(Teuchos::rcp(new LINALG::MapExtractor())),
 dbctoggle_(Teuchos::null),
 dis_(Teuchos::null),
 rhs_(Teuchos::null),
 stiff_(Teuchos::null),
+stiffn_(Teuchos::null),
 zeros_(Teuchos::null),
 stepn_(0),
+dt_(0.0),
+writestep_(0),
+writetime_(0.0),
 isinit_(false)
 {
   PrintLogo();
@@ -59,6 +65,7 @@ isinit_(false)
 
   //setup size of the solution vector
   msteps_ = sdyn.get<int>("NUMSTEP");
+  dt_ = sdyn.get<double>("TIMESTEP");
 
   // initialize stiffness matrix
   stiff_ = Teuchos::rcp(new LINALG::SparseMatrix(*(dofrowmap_), 81, true, true));
@@ -91,6 +98,36 @@ isinit_(false)
   // Get Dirichlet Map Extractor
   GetDBCMap();
 
+  CreateWriter();
+}
+
+void STR::TimIntAdjoint::CreateWriter()
+{
+  writer_ = Teuchos::rcp(new IO::DiscretizationWriter(discret_));
+
+  //output for the forward problem
+  std::string filename = DRT::Problem::Instance()->OutputControlFile()->FileName();
+  std::string prefix = DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
+  size_t pos = filename.rfind('/');
+  size_t pos2 = prefix.rfind('-');
+  std::string filenameout = filename.substr(0,pos+1) + prefix.substr(0,pos2) + "_adjoint" + filename.substr(pos+1+prefix.length());
+
+  Teuchos::RCP<IO::OutputControl> controlfile =
+      Teuchos::rcp(new IO::OutputControl(
+          discret_->Comm(),
+          DRT::Problem::Instance()->ProblemName(),
+          DRT::Problem::Instance()->SpatialApproximation(),
+          DRT::Problem::Instance()->OutputControlFile()->InputFileName(),
+          filenameout,
+          DRT::Problem::Instance()->NDim(),
+          0,
+          DRT::Problem::Instance()->OutputControlFile()->FileSteps(),
+          DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(),"OUTPUT_BIN")
+      )
+      );
+
+  writer_->SetOutput(controlfile);
+  writer_->OverwriteResultFile();
 }
 
 /*----------------------------------------------------------------------*/
@@ -110,7 +147,7 @@ void STR::TimIntAdjoint::SetupAdjoint(Teuchos::RCP<Epetra_MultiVector> rhs,
     dserror("setup of the timesteps for the adjoint problem messed up");
 
   stepn_ = msteps_;
-  timen_ = -1.0;
+  timen_ = time_[stepn_-1];
 
   if (rhs_ != Teuchos::null && dis_ != Teuchos::null)
     isinit_ = true;
@@ -128,9 +165,10 @@ void STR::TimIntAdjoint::Integrate()
   //integration of the adjoints is reverse! For the quasi static case it doesn't matter
   while ( stepn_ > 0)
   {
-    PrepareStep(); // -> stepn_ is stepn_-1 now
+    PrepareStep();
     Solve();
-    UpdateStep();
+    OutputStep();
+    Update();
   }
 
   isinit_ = false;
@@ -139,7 +177,7 @@ void STR::TimIntAdjoint::Integrate()
 }
 
 /*----------------------------------------------------------------------*/
-/* evaluate stiffness at the coverged primal state           keh 10/13  */
+/* evaluate stiffness at the converged primal state           keh 10/13  */
 /*----------------------------------------------------------------------*/
 void STR::TimIntAdjoint::EvaluateStiff()
 {
@@ -153,8 +191,7 @@ void STR::TimIntAdjoint::EvaluateStiff()
 
   // set the parameters for the discretization
   Teuchos::ParameterList p;
-  const std::string action = "calc_struct_nlnstiff";
-  p.set("action", action);
+  p.set("action", "calc_struct_nlnstiff");
 
   //set time point
   p.set("total time", timen_);
@@ -168,9 +205,9 @@ void STR::TimIntAdjoint::EvaluateStiff()
   stiffn_->Complete();
 
   discret_->Evaluate(p, stiff_, Teuchos::null, fintn, Teuchos::null, Teuchos::null);
-  stiff_->Complete();
 
-  //neumann might bring asymmetrie but we want the adjoint operator to the stiffness matrix, so add transpose
+  //neumann might bring asymmetrie but we want the adjoint
+  // operator to the stiffness matrix, so add transpose
   stiff_->Add(*stiffn_,true,1.0,1.0);
 
   stiff_->Complete();
@@ -233,10 +270,6 @@ int STR::TimIntAdjoint::FindStep(double time)
 /*----------------------------------------------------------------------*/
 void STR::TimIntAdjoint::PrepareStep()
 {
-  // decrease stepn first
-  stepn_ -= 1;
-  timen_=time_[stepn_];
-
   steprhsn_ = FindStep(timen_);
 
   // if there is not rhs for this timestep the dual solution is zero anyways
@@ -245,7 +278,7 @@ void STR::TimIntAdjoint::PrepareStep()
     return;
 
   // extract variables needed for this "time step"
-  disn_->Update(1.0,*(*dis_)(stepn_),0.0);
+  disn_->Update(1.0,*(*dis_)(stepn_-1),0.0);
   rhsn_->Update(-1.0,*(*rhs_)(steprhsn_),0.0);
   // !!! rhs is the optimality condition differentiated w.r.t the displacement; so it has to be
   //multiplied by -1 to be the correct rhsn_ for the dual problem
@@ -258,17 +291,59 @@ void STR::TimIntAdjoint::PrepareStep()
 
 
 /*----------------------------------------------------------------------*/
-/* update state                                              keh 10/13  */
+/* update                                                    keh 10/13  */
 /*----------------------------------------------------------------------*/
-void STR::TimIntAdjoint::UpdateStep()
+void STR::TimIntAdjoint::Update()
 {
-  (*disdual_)(stepn_)->Update(1.0,*disdualn_,0.0);
+  //Update State
+  UpdateStepState();
+
+  //Update Step
+  stepn_ -= 1;
+  timen_ -= dt_;
 
   if ( printtoscreen_ and stepn_%printtoscreen_==0 )
   {
     if (discret_->Comm().MyPID() == 0)
       std::cout << "Finalized step " << stepn_+1 << " / " << msteps_ << std::endl;
   }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* update state                                              keh 12/14  */
+/*----------------------------------------------------------------------*/
+void STR::TimIntAdjoint::UpdateStepState()
+{
+  //Update State
+  (*disdual_)(stepn_-1)->Update(1.0,*disdualn_,0.0);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* output                                                    keh 10/14  */
+/*----------------------------------------------------------------------*/
+void STR::TimIntAdjoint::OutputStep()
+{
+  bool writeown=false;
+  if (not writestep_)
+  {
+    writer_->WriteMesh(0, 0.0);
+    writeown=true;
+  }
+
+  writestep_+=1;
+  writetime_+=dt_;
+
+  // dont write if the solution is zero
+  if (steprhsn_==-1)
+    return;
+
+  writer_->NewStep(writestep_, writetime_);
+  writer_->WriteVector("displacement", disdualn_);
+  writer_->WriteElementData(writeown);
 
   return;
 }
@@ -315,3 +390,12 @@ void STR::TimIntAdjoint::PrintLogo()
   IO::cout << "--   Welcome to the adjoint time integration    --" << IO::endl;
   IO::cout << "--------------------------------------------------" << IO::endl;
 }
+
+
+
+
+
+
+
+
+

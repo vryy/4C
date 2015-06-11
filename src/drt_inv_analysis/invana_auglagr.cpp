@@ -24,6 +24,7 @@ Maintainer: Sebastian Kehl
 
 #include "../drt_adapter/ad_str_invana.H"
 #include "timint_adjoint.H"
+#include "timint_adjoint_prestress.H"
 
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_pstream.H"
@@ -46,7 +47,11 @@ INVANA::InvanaAugLagr::InvanaAugLagr():
   InvanaBase(),
 dis_(Teuchos::null),
 disdual_(Teuchos::null),
+disdualp_(Teuchos::null),
+timestep_(0.0),
 msteps_(0),
+pstype_(INPAR::STR::prestress_none),
+pstime_(0.0),
 fprestart_(0),
 itertopc_(10)
 {
@@ -55,15 +60,21 @@ itertopc_(10)
 
   // this is supposed to be the number of simulation steps in the primal AND the dual problem
   msteps_ = sdyn.get<int>("NUMSTEP");
-  double timestep = sdyn.get<double>("TIMESTEP");
+  timestep_ = sdyn.get<double>("TIMESTEP");
+
+  // prestress stuff
+  pstype_ = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn,"PRESTRESS");
+  pstime_ = sdyn.get<double>("PRESTRESSTIME");
 
   // initialize the vector of time steps according to the structural dynamic params
   time_.resize(msteps_,0.0);
   for (int i=0; i< msteps_; i++)
-    time_[i] = (i+1)*timestep;
+    time_[i] = (i+1)*timestep_;
 
   fprestart_ = invp.get<int>("FPRESTART");
   itertopc_ = invp.get<int>("ITERTOPC");
+
+  fpcounter=0;
 
 }
 
@@ -78,6 +89,7 @@ void INVANA::InvanaAugLagr::Setup()
   // initialize "state" vectors
   dis_ = Teuchos::rcp(new Epetra_MultiVector(*(Discret()->DofRowMap()),msteps_,true));
   disdual_ = Teuchos::rcp(new Epetra_MultiVector(*(Discret()->DofRowMap()),msteps_,true));
+  disdualp_ = Teuchos::rcp(new Epetra_MultiVector(*(Discret()->DofRowMap()),msteps_,true));
 
   //output for the forward problem
   std::string filename = DRT::Problem::Instance()->OutputControlFile()->FileName();
@@ -112,7 +124,7 @@ void INVANA::InvanaAugLagr::MStepEpetraToEpetraMulti(Teuchos::RCP<DRT::UTILS::Ti
                                                             Teuchos::RCP<Epetra_MultiVector> multivec)
 {
   for (int i=0; i<msteps_; i++)
-    (*multivec)(i)->Update(1.0,*(*mstepvec)(-(msteps_-i-1)),0.0);
+    (*multivec)(i)->Update(1.0, *(*mstepvec)(-(msteps_-i-1)),0.0);
 }
 
 /*----------------------------------------------------------------------*/
@@ -142,6 +154,7 @@ void INVANA::InvanaAugLagr::SolveForwardProblem()
   {
     case INPAR::STR::dyna_statics:
     {
+
       ADAPTER::StructureBaseAlgorithm adapterbase(sdyn,const_cast<Teuchos::ParameterList&>(sdyn), Discret());
       Teuchos::RCP<ADAPTER::StructureInvana> structadaptor =
           Teuchos::rcp_dynamic_cast<ADAPTER::StructureInvana>(adapterbase.StructureField());
@@ -160,17 +173,22 @@ void INVANA::InvanaAugLagr::SolveForwardProblem()
         {
           //find whether measurements exist for this simulation timestep
           int mstep=ObjectiveFunct()->FindStep(time_[i]);
-          if (mstep!=-1)
+
+          // do this step only in case of measurements or when it is the last prestress step
+          if (mstep!=-1 or (time_[i]>pstime_-structadaptor->Dt() and time_[i]<pstime_))
           {
             structadaptor->SetTimeStepStateOld(time_[i]-structadaptor->Dt(),i,
                 Teuchos::rcp((*dis_)(i),false),
                 Teuchos::rcp((*dis_)(i),false)); // veln is not used so far so just put disn
+
             structadaptor->Integrate();
           }
         }
       }
-
-      structadaptor->Integrate();
+      else
+      {
+        structadaptor->Integrate();
+      }
 
       // get displacement and time
       MStepEpetraToEpetraMulti(structadaptor->DispSteps(), dis_);
@@ -186,13 +204,14 @@ void INVANA::InvanaAugLagr::SolveForwardProblem()
     case INPAR::STR::dyna_ab2:
     case INPAR::STR::dyna_euma:
     case INPAR::STR::dyna_euimsto:
-      dserror("return of multistep-variables only for static analysis (so far)");
+      dserror("inverse analysis for statics only so far");
       break;
     default:
       dserror("unknown time integration scheme '%s'", sdyn.get<std::string>("DYNAMICTYP").c_str());
       break;
   }
 
+  fpcounter+=1;
   return;
 }
 
@@ -221,14 +240,24 @@ void INVANA::InvanaAugLagr::SolveAdjointProblem()
   }
 
   //initialize adjoint time integration with RHS as input
-  STR::TimIntAdjoint timintadj = STR::TimIntAdjoint(Discret());
-  timintadj.SetupAdjoint(adjrhs, mtime, dis_, time_);
+  Teuchos::RCP<STR::TimIntAdjoint> timintadj;
+  if (pstype_==INPAR::STR::prestress_none)
+    timintadj = Teuchos::rcp(new STR::TimIntAdjoint(Discret()));
+  else if(pstype_==INPAR::STR::prestress_mulf)
+    timintadj = Teuchos::rcp(new STR::TimIntAdjointPrestress(Discret()));
+
+  timintadj->SetupAdjoint(adjrhs, mtime, dis_, time_);
 
   // adjoint time integration
-  timintadj.Integrate();
+  timintadj->Integrate();
 
   // get the solution
-  disdual_ = timintadj.ExtractSolution();
+  disdual_->Update(1.0,*timintadj->ExtractSolution(),0.0);
+
+  if (pstype_==INPAR::STR::prestress_mulf)
+  {
+    disdualp_->Update(1.0,*timintadj->ExtractPrestressSolution(),0.0);
+  }
 
 }
 
@@ -238,7 +267,8 @@ void INVANA::InvanaAugLagr::SolveAdjointProblem()
 void INVANA::InvanaAugLagr::Evaluate(const Epetra_MultiVector& sol, double* val, Teuchos::RCP<Epetra_MultiVector> gradient)
 {
   Matman()->ReplaceParams(sol);
-  ResetDiscretization();
+  if (Optimizer()->Runc()<=itertopc_)
+    ResetDiscretization();
 
   if ( gradient != Teuchos::null or val!=NULL )
   {
@@ -249,6 +279,10 @@ void INVANA::InvanaAugLagr::Evaluate(const Epetra_MultiVector& sol, double* val,
     {
       SolveAdjointProblem();
       EvaluateGradient(sol,gradient);
+      //gradient->Print(std::cout);
+      //EvaluateGradientFD(sol,gradient);
+      //gradient->Print(std::cout);
+      //exit(0);
     }
   }
 }
@@ -263,7 +297,6 @@ void INVANA::InvanaAugLagr::EvaluateGradient(const Epetra_MultiVector& sol, Teuc
 
   Teuchos::RCP<Epetra_Vector> zeros;
   zeros = LINALG::CreateVector(*(Discret()->DofRowMap()), true);
-  zeros->Scale(0.0);
 
   //loop the time steps
   for (int j=0; j<msteps_; j++)
@@ -272,11 +305,63 @@ void INVANA::InvanaAugLagr::EvaluateGradient(const Epetra_MultiVector& sol, Teuc
     Discret()->SetState(0, "residual displacement", zeros);
     Discret()->SetState(0, "dual displacement", Teuchos::rcp((*disdual_)(j),false));
     Matman()->AddEvaluate(time_[j], gradient);
+
+    Discret()->ClearState();
+
+    if (pstype_==INPAR::STR::prestress_mulf)
+    {
+      int stepps=(int)(pstime_/(timestep_));
+      Discret()->SetState(0, "displacement", Teuchos::rcp((*dis_)(stepps-1),false));
+      Discret()->SetState(0, "residual displacement", zeros);
+      Discret()->SetState(0, "dual displacement", Teuchos::rcp((*disdualp_)(j),false));
+      Matman()->AddEvaluate(time_[stepps-1], gradient);
+    }
   }
   Matman()->Finalize(gradient);
 
+
   if (Regman() != Teuchos::null)
     Regman()->EvaluateGradient(sol,gradient);
+
+}
+
+/*----------------------------------------------------------------------*/
+/* evaluate gradient of the objective function using FD     keh 12/14   */
+/*----------------------------------------------------------------------*/
+void INVANA::InvanaAugLagr::EvaluateGradientFD(const Epetra_MultiVector& sol, Teuchos::RCP<Epetra_MultiVector> gradient)
+{
+  if (Discret()->Comm().NumProc()!=1)
+    dserror("FD gradient evaluation is only implemented for single processor simulations");
+
+  //zero out gradient vector initially
+  gradient->Scale(0.0);
+
+  // get a non const copy of the parameters
+  Teuchos::RCP<Epetra_MultiVector> params_0=Teuchos::rcp(new Epetra_MultiVector(sol));
+
+  //Evaluate the reference solution:
+  double val_0;
+  Matman()->ReplaceParams(sol);
+  ResetDiscretization();
+  SolveForwardProblem();
+  EvaluateError(*params_0,&val_0);
+
+  //do the perturbation loop
+  double alpha=1.0e-7;
+  double beta=1.0e-12;
+  double dp=0.0; // perturbation parameter
+  double val_p;
+  for (int j=0; j<params_0->MyLength(); j++)
+  {
+    dp=(*(*params_0)(0))[j]*alpha+beta;
+    params_0->SumIntoGlobalValue(j,0,-dp);
+    Matman()->ReplaceParams(*params_0);
+    ResetDiscretization();
+    SolveForwardProblem();
+    EvaluateError(*params_0,&val_p);
+    gradient->ReplaceGlobalValue(j,0,(val_0-val_p)/dp);
+    params_0->Update(1.0,sol,0.0);
+  }
 
 }
 

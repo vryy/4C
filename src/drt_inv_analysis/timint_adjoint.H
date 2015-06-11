@@ -72,36 +72,48 @@ public:
       mtime - vector with time for each entry in the primal solution.
       \param In
   */
-  void SetupAdjoint(Teuchos::RCP<Epetra_MultiVector> rhs,
-                    std::vector<double> mtime,
-                    Teuchos::RCP<Epetra_MultiVector> dis,
-                    std::vector<double> time);
+  virtual void SetupAdjoint(Teuchos::RCP<Epetra_MultiVector> rhs,
+                            std::vector<double> mtime,
+                            Teuchos::RCP<Epetra_MultiVector> dis,
+                            std::vector<double> time);
 
   //! do reverse time integration
   void Integrate();
 
-  // result vector
+  //! dual variables corresponding to the standard adjoint equation
   Teuchos::RCP<Epetra_MultiVector> ExtractSolution() {return disdual_;}
 
-private:
+  //! dual variables corresponding to the "prestressed adjoint equation"
+  virtual Teuchos::RCP<Epetra_MultiVector> ExtractPrestressSolution() {return Teuchos::null;}
+
+protected:
 
   //! intro
   void PrintLogo();
 
   //! solve the linear system
-  void Solve();
+  virtual void Solve();
 
-  // evaluate stiffness matrix
+  //! evaluate stiffness matrix
   void EvaluateStiff();
 
-  // set up things needed for this timestep
+  //! set up things needed for this timestep
   void PrepareStep();
 
-  // update step and time
-  void UpdateStep();
+  //! update step and time
+  void Update();
 
-  // create a linear solver according to sdyn section
+  //! update state
+  virtual void UpdateStepState();
+
+  //! create a linear solver according to sdyn section
   void CreateLinearSolver(const Teuchos::ParameterList& sdyn);
+
+  //! create the writer
+  void CreateWriter();
+
+  //! write output
+  void OutputStep();
 
   // DBC Map
   void GetDBCMap();
@@ -117,6 +129,10 @@ private:
 
   //! the discretization
   Teuchos::RCP<DRT::Discretization> discret_;
+
+  //! a writer for the output
+  Teuchos::RCP<IO::DiscretizationWriter> writer_;
+
 
   //! the dofrowmap of the discretization
   const Epetra_Map* dofrowmap_;
@@ -172,11 +188,20 @@ private:
   //! timesteps coming from the primal problem
   std::vector<double> time_;
 
+  //! dt (from forward problem)
+  double dt_;
+
   //! timesteps for which there is a rhs not zero
   std::vector<double> mtime_;
 
   //! current time
   double timen_;
+
+  //! "write step" counter
+  int writestep_;
+
+  //! "write time"
+  double writetime_;
 
   //! rhs and primal variables set?
   bool isinit_;
