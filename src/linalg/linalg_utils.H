@@ -1661,7 +1661,7 @@ const Epetra_Comm& comm)
  \brief Gather information of type set<T> from all processors
 
  This template gathers information provided in data on all processors.
- The redistributed data is returned in data which has appropiate size
+ The redistributed data is returned in data which has appropriate size
  on output.
 
  \note Functionality of this method is equal to that of Epetra_Comm::GatherAll
@@ -1690,7 +1690,7 @@ template<typename T> void GatherAll(std::set<T>& data, const Epetra_Comm& comm)
  \brief Gather information of type map<T,U> from all processors
 
  This template gathers information provided in data on all processors.
- The redistributed data is returned in data which has appropiate size
+ The redistributed data is returned in data which has appropriate size
  on output.
 
  \param data (in/out) : Information to be gathered.
@@ -1717,7 +1717,7 @@ const Epetra_Comm& comm)
  \brief Gather information of type map<int,vector<T> > from all processors
 
  This template gathers information provided in data on all processors.
- The redistributed data is returned in data which has appropiate size
+ The redistributed data is returned in data which has appropriate size
  on output.
 
  \param data (in/out) : Information to be gathered.
@@ -1736,6 +1736,34 @@ const Epetra_Comm& comm)
 
   Gather<T>(data, data, numprocs, allproc, comm);
 
+  return;
+}
+
+/*!
+ \brief Gather information of type vector<T> from all processors
+
+ This template gathers information provided in data on all processors.
+ The redistributed data is returned in data which has appropriate size
+ on output.
+
+ \note Functionality of this method is equal to that of Epetra_Comm::GatherAll
+ except for that the Epetra version demands the data to be of constant
+ size over all procs which this method does not require!
+
+ \param data (in/out) : Information to be gathered.
+ Length of data can be different on every proc.
+ \param comm (in):   communicator to be used.
+
+ */
+template<typename T> void GatherAll(std::vector<T>& data, const Epetra_Comm& comm)
+{
+  // ntargetprocs is equal to the total number of processors to make data redundant on all procs
+  const int numprocs = comm.NumProc();
+  int allproc[numprocs];
+  for (int i = 0; i < numprocs; ++i)
+    allproc[i] = i;
+
+  Gather<T>(data, data, numprocs, allproc, comm);
   return;
 }
 
