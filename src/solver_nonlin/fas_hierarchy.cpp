@@ -145,16 +145,17 @@ void NLNSOL::FAS::AMGHierarchy::Setup()
   // Setup MueLu Hierarchy
   MLParameterListInterpreter mueLuFactory(mlparams);
   Teuchos::RCP<Hierarchy> H = mueLuFactory.CreateHierarchy();
-  H->GetLevel(0)->Set("A", mueluOp);
+  H->GetLevel(0)->Set("A", mueLuOp);
   mueLuFactory.SetupHierarchy(*H);
 
   */
 
+/* MueLu input via MueLu Parameter List */
   // ---------------------------------------------------------------------------
   // Setup MueLu Hierarchy based on user-provided parameters from xml-file
   // ---------------------------------------------------------------------------
-  /* extract local copy of MueLu parameter list that is needed for an
-  / easy-to-handle setup of the MueLu hierarchy */
+  // extract local copy of MueLu parameter list that is needed for an
+  // easy-to-handle setup of the MueLu hierarchy
   Teuchos::ParameterList mueluparams = Params().sublist("FAS: MueLu Parameters");
 
   // create the MueLu Factory via a MueLu ParameterList interpreter
@@ -171,6 +172,7 @@ void NLNSOL::FAS::AMGHierarchy::Setup()
 
   // setup the MueLu Hierarchy
   mueLuFactory_->SetupHierarchy(*mueLuHierarchy_);
+  /**/
 
   // ---------------------------------------------------------------------------
   // Create NLNSOL::FAS::NlnLevel instances and feed MueLu data to them
@@ -227,7 +229,8 @@ void NLNSOL::FAS::AMGHierarchy::Setup()
       coarseprobparams->set<int>("Level ID", level);
 
       nlnproblem = Teuchos::rcp(new NLNSOL::NlnProblemCoarseLevel());
-      nlnproblem->Init(NlnProblem()->Comm(), *coarseprobparams, NlnProblem()->NOXGroup(), myA);
+      nlnproblem->Init(NlnProblem()->Comm(), *coarseprobparams,
+          NlnProblem()->NOXGroup(), myA, NlnProblem()->DebugWriter());
       nlnproblem->Setup();
     }
 
@@ -554,6 +557,9 @@ const bool NLNSOL::FAS::AMGHierarchy::CheckAllLevelStagnation() const
 
   if (stagcount > 0)
     stagnation = true;
+
+  if (stagnation)
+    *getOStream() << "*** FAS: detected stagnation ***" << std::endl;
 
   return stagnation;
 }
