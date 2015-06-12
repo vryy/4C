@@ -3534,6 +3534,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::SCATRA::impltype_cardiac_monodomain),
                                  &ssidyn);
 
+  BoolParameter("MATCHINGGRID","Yes","is matching grid",&ssidyn);
+
   /*----------------------------------------------------------------------*/
   /* parameters for partitioned SSI */
   /*----------------------------------------------------------------------*/

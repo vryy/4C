@@ -4757,6 +4757,25 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(poropresint_line);
 
   /*--------------------------------------------------------------------*/
+  Teuchos::RCP<ConditionDefinition> linessi =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SSI COUPLING LINE CONDITIONS",
+                                         "SSICoupling",
+                                         "SSI Coupling",
+                                         DRT::Condition::SSICoupling,
+                                         true,
+                                         DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> surfssi =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SSI COUPLING SURF CONDITIONS",
+                                         "SSICoupling",
+                                         "SSI Coupling",
+                                         DRT::Condition::SSICoupling,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  condlist.push_back(linessi);
+  condlist.push_back(surfssi);
+
+  /*--------------------------------------------------------------------*/
   // condition for evaluation of boundary terms in fpsi problems
   // necessary where neumann term needs to be integrated in interface
   // elements which share a node with the fpsi interface. Tangential

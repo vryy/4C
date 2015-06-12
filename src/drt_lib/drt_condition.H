@@ -233,6 +233,7 @@ public:
     PoroCoupling,
     PoroPartInt,
     PoroPresInt,
+    SSICoupling,
     RedAirwayVentilatorCond,
     RedAirwayTissue,
     RedAirwayNodeTissue,

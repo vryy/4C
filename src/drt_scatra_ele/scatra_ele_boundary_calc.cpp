@@ -988,7 +988,6 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvalShapeFuncAndIntFac(
 
   // the metric tensor and the area of an infinitesimal surface/line element
   // optional: get normal at integration point as well
-  // Note: this is NOT yet a unit normal. Its norm corresponds to the area/length of the element
   double drs(0.0);
   DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(xyze_,deriv_,metrictensor_,drs,normalvec);
 

@@ -162,7 +162,9 @@ public:
     Teuchos::RCP<const Epetra_Vector> fsvel,   //!< fine-scale velocity vector
     Teuchos::RCP<const DRT::DofSet>   dofset,  //!< dofset pointer
     Teuchos::RCP<DRT::Discretization> dis,     //!< fluid/structure discretization
-    bool setpressure=false);
+    bool setpressure=false,                    //!< flag whether the fluid pressure needs to be known for the scatra
+    int nds=0                                  //!< number of the dofset the velocity/pressure state belongs to
+    );
 
   void SetWallShearStresses(
       Teuchos::RCP<const Epetra_Vector> wss,
@@ -198,7 +200,8 @@ public:
   //! apply moving mesh data
   void ApplyMeshMovement(
     Teuchos::RCP<const Epetra_Vector> dispnp, //!< displacement vector
-    Teuchos::RCP<DRT::Discretization> dis     //!< fluid/structure discretization
+    Teuchos::RCP<DRT::Discretization> dis,    //!< fluid/structure discretization
+    int nds=0                                 //!< number of the dofset the displacement state belongs to
   );
 
   //! calculate mass/heat flux vectors (in domain / at boundary)

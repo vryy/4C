@@ -1109,7 +1109,8 @@ Teuchos::RCP<const Epetra_Vector> vel,
 Teuchos::RCP<const Epetra_Vector> fsvel,
 Teuchos::RCP<const DRT::DofSet>   dofset,
 Teuchos::RCP<DRT::Discretization> dis,
-bool setpressure)
+bool setpressure,
+int nds)
 {
   //---------------------------------------------------------------------------
   // preliminaries
@@ -1179,7 +1180,7 @@ bool setpressure)
     //   using multiple dof sets, e.g., for structure-based scalar transport
     // - for XFEM, a different nodeset is required
     std::vector<int> nodedofs;
-    if (dofset == Teuchos::null) nodedofs = dis->Dof(0,lnode);
+    if (dofset == Teuchos::null) nodedofs = dis->Dof(nds,lnode);
     else                         nodedofs = (*dofset).Dof(lnode);
 
     // determine number of space dimensions
@@ -1381,7 +1382,8 @@ void SCATRA::ScaTraTimIntImpl::Solve()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::ApplyMeshMovement(
     Teuchos::RCP<const Epetra_Vector> dispnp,
-    Teuchos::RCP<DRT::Discretization> dis
+    Teuchos::RCP<DRT::Discretization> dis,
+    int nds
 )
 {
   //---------------------------------------------------------------------------
@@ -1398,7 +1400,7 @@ void SCATRA::ScaTraTimIntImpl::ApplyMeshMovement(
     int err(0);
 
     // get dofrowmap of discretization
-    const Epetra_Map* dofrowmap = dis->DofRowMap();
+    const Epetra_Map* dofrowmap = dis->DofRowMap(nds);
 
     //-------------------------------------------------------------------------
     // transfer of dofs
@@ -1415,7 +1417,7 @@ void SCATRA::ScaTraTimIntImpl::ApplyMeshMovement(
       // get degrees of freedom associated with this fluid/structure node
       // (first dofset always considered, allowing for using multiple
       //  dof sets, e.g., for structure-based scalar transport)
-      std::vector<int> nodedofs = dis->Dof(0,lnode);
+      std::vector<int> nodedofs = dis->Dof(nds,lnode);
 
       // determine number of space dimensions
       const int numdim = DRT::Problem::Instance()->NDim();

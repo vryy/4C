@@ -30,22 +30,7 @@ SSI::SSI_Part2WC::SSI_Part2WC(const Epetra_Comm& comm,
   : SSI_Part(comm, globaltimeparams, scatraparams, structparams),
     scaincnp_(LINALG::CreateVector(*scatra_->ScaTraField()->Discretization()->DofRowMap(0),true)),
     dispincnp_(LINALG::CreateVector(*structure_->DofRowMap(0),true))
-    //dispnp_(structure_->Dispnp()),
-    //velnp_(structure_->Velnp()),
-    //phinp_(scatra_->ScaTraField()->Phinp())
 {
-  // build a proxy of the structure discretization for the scatra field
-  Teuchos::RCP<DRT::DofSet> structdofset
-    = structure_->Discretization()->GetDofSetProxy();
-  // build a proxy of the temperature discretization for the structure field
-  Teuchos::RCP<DRT::DofSet> scatradofset
-    = scatra_->ScaTraField()->Discretization()->GetDofSetProxy();
-
-  // check if scatra field has 2 discretizations, so that coupling is possible
-  if (scatra_->ScaTraField()->Discretization()->AddDofSet(structdofset)!=1)
-    dserror("unexpected dof sets in scatra field");
-  if (structure_->Discretization()->AddDofSet(scatradofset)!=1)
-    dserror("unexpected dof sets in structure field");
 
   if (DRT::INPUT::IntegralValue<int>(globaltimeparams, "DIFFTIMESTEPSIZE")){
     dserror("Different time stepping for two way coupling not implemented yet.");

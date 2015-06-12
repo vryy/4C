@@ -11,15 +11,17 @@
  </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#include "../drt_lib/drt_globalproblem.H"
 #include "ssi_base.H"
+
 #include "ssi_partitioned.H"
 #include "ssi_utils.H"
 #include "../drt_inpar/inpar_ssi.H"
 
 #include "../drt_adapter/ad_str_wrapper.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
+#include "../drt_adapter/adapter_coupling_mortar.H"
 
+#include "../drt_lib/drt_globalproblem.H"
 //for cloning
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_scatra/scatra_timint_implicit.H"
@@ -27,6 +29,7 @@
 #include "../drt_scatra_ele/scatra_ele.H"
 
 #include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_mapextractor.H"
 
 #include "../drt_particle/binning_strategy.H"
 
@@ -40,7 +43,14 @@ SSI::SSI_Base::SSI_Base(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams):
-    AlgorithmBase(comm, globaltimeparams)
+    AlgorithmBase(comm, globaltimeparams),
+    structure_(Teuchos::null),
+    scatra_(Teuchos::null),
+    zeros_(Teuchos::null),
+    adaptermeshtying_(Teuchos::null),
+    extractor_(Teuchos::null),
+    matchinggrid_(true),
+    boundarytransport_(false)
 {
   DRT::Problem* problem = DRT::Problem::Instance();
 
@@ -145,17 +155,17 @@ void SSI::SSI_Base::SetupDiscretizations(const Epetra_Comm& comm)
       if(element == NULL)
         dserror("Invalid element type!");
       else
-        element->SetImplType(DRT::INPUT::IntegralValue<INPAR::SCATRA::ImplType>(DRT::Problem::Instance()->SSIControlParams(),"SCATRATYPE"));
+        element->SetImplType(DRT::INPUT::IntegralValue<INPAR::SCATRA::ImplType>(problem->SSIControlParams(),"SCATRATYPE"));
     }
   }
 
   else
   {
-   std::map<std::string,std::string> conditions_to_copy;
-   SCATRA::ScatraFluidCloneStrategy clonestrategy;
-   conditions_to_copy = clonestrategy.ConditionsToCopy();
-   DRT::UTILS::DiscretizationCreatorBase creator;
-   creator.CopyConditions(scatradis,scatradis,conditions_to_copy);
+    std::map<std::string,std::string> conditions_to_copy;
+    SCATRA::ScatraFluidCloneStrategy clonestrategy;
+    conditions_to_copy = clonestrategy.ConditionsToCopy();
+    DRT::UTILS::DiscretizationCreatorBase creator;
+    creator.CopyConditions(scatradis,scatradis,conditions_to_copy);
 
     // redistribute discr. with help of binning strategy
     if(scatradis->Comm().NumProc()>1)
@@ -174,5 +184,156 @@ void SSI::SSI_Base::SetupDiscretizations(const Epetra_Comm& comm)
       Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy =
         Teuchos::rcp(new BINSTRATEGY::BinningStrategy(dis,stdelecolmap,stdnodecolmap));
     }
+  }
+
+  matchinggrid_ = DRT::INPUT::IntegralValue<bool>(problem->SSIControlParams(),"MATCHINGGRID");
+
+  if(matchinggrid_)
+  {
+    // build a proxy of the structure discretization for the scatra field
+    Teuchos::RCP<DRT::DofSet> structdofset
+      = structdis->GetDofSetProxy();
+    // build a proxy of the temperature discretization for the structure field
+    Teuchos::RCP<DRT::DofSet> scatradofset
+      = scatradis->GetDofSetProxy();
+
+    // check if scatra field has 2 discretizations, so that coupling is possible
+    if (scatradis->AddDofSet(structdofset)!=1)
+      dserror("unexpected dof sets in scatra field");
+    if (structdis->AddDofSet(scatradofset)!=1)
+      dserror("unexpected dof sets in structure field");
+
+    structdis->FillComplete();
+    scatradis->FillComplete();
+  }
+  else
+  {
+    //first call FillComplete for single discretizations.
+    //This way the physical dofs are numbered successively
+    structdis->FillComplete();
+    scatradis->FillComplete();
+
+    //build auxiliary dofsets, i.e. pseudo dofs on each discretization
+    const int ndofpernode_scatra = 1; //scatradis->lRowElement(0)->NumDofPerNode();
+    const int ndofperelement_scatra  = 0;
+    const int ndofpernode_struct = DRT::Problem::Instance()->NDim();
+    const int ndofperelement_struct = 0;
+    if (structdis->BuildDofSetAuxProxy(ndofpernode_scatra, ndofperelement_scatra, 0, true ) != 1)
+      dserror("unexpected dof sets in structure field");
+    if (scatradis->BuildDofSetAuxProxy(ndofpernode_struct, ndofperelement_struct, 0, true) != 1)
+      dserror("unexpected dof sets in thermo field");
+
+    //call AssignDegreesOfFreedom also for auxiliary dofsets
+    //note: the order of FillComplete() calls determines the gid numbering!
+    // 1. structure dofs
+    // 2. scatra dofs
+    // 3. structure auxiliary dofs
+    // 4. scatra auxiliary dofs
+    structdis->FillComplete(true, false,false);
+    scatradis->FillComplete(true, false,false);
+  }
+
+
+  {
+    //check for ssi coupling condition
+    std::vector<DRT::Condition*> ssicoupling;
+    scatradis->GetCondition("SSICoupling",ssicoupling);
+    if(ssicoupling.size())
+      boundarytransport_=true;
+    else
+      boundarytransport_=false;
+
+    if(boundarytransport_ and matchinggrid_)
+      dserror("Transport on domain boundary and matching discretizations is not supported. "
+          "Set MATCHINGGRID to 'no' in SSI CONTROL section or remove SSI Coupling Condition");
+
+
+    if(boundarytransport_)
+    {
+      adaptermeshtying_ = Teuchos::rcp(new ADAPTER::CouplingMortar());
+
+      std::vector<int> coupleddof(problem->NDim(), 1);
+      // Setup of meshtying adapter
+      adaptermeshtying_->Setup(structdis,
+                              scatradis,
+                              Teuchos::null,
+                              coupleddof,
+                              "SSICoupling",
+                              structdis->Comm(),
+                              false,
+                              false,
+                              0,
+                              1
+                              );
+
+      extractor_= Teuchos::rcp(new LINALG::MapExtractor(*structdis->DofRowMap(0),adaptermeshtying_->MasterDofRowMap(),true));
+    }
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::SSI_Base::SetStructSolution( Teuchos::RCP<const Epetra_Vector> disp,
+                                       Teuchos::RCP<const Epetra_Vector> vel )
+{
+  SetMeshDisp(disp);
+  SetVelocityFields(vel);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::SSI_Base::SetScatraSolution( Teuchos::RCP<const Epetra_Vector> phi )
+{
+  if(not boundarytransport_)
+    structure_->Discretization()->SetState(1,"temperature",phi);
+  else
+    dserror("transfering scalar state to structure discretization not implemented for"
+        "transport on structural boundary. Only SolidToScatra coupling available.");
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::SSI_Base::SetVelocityFields( Teuchos::RCP<const Epetra_Vector> vel)
+{
+  if(not boundarytransport_)
+  {
+    scatra_->ScaTraField()->SetVelocityField(
+        zeros_, //convective vel.
+        Teuchos::null, //acceleration
+        vel, //velocity
+        Teuchos::null, //fsvel
+        Teuchos::null, //dofset
+        structure_->Discretization()); //discretization
+  }
+  else
+  {
+    scatra_->ScaTraField()->SetVelocityField(
+        adaptermeshtying_->MasterToSlave(extractor_->ExtractCondVector(zeros_)), //convective vel.
+        Teuchos::null, //acceleration
+        adaptermeshtying_->MasterToSlave(extractor_->ExtractCondVector(vel)), //velocity
+        Teuchos::null, //fsvel
+        Teuchos::null, //dofset
+        scatra_->ScaTraField()->Discretization(),
+        false,
+        1); //discretization
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::SSI_Base::SetMeshDisp( Teuchos::RCP<const Epetra_Vector> disp )
+{
+  if(not boundarytransport_)
+  {
+    scatra_->ScaTraField()->ApplyMeshMovement(
+        disp,
+        structure_->Discretization());
+  }
+  else
+  {
+    scatra_->ScaTraField()->ApplyMeshMovement(
+        adaptermeshtying_->MasterToSlave(extractor_->ExtractCondVector(disp)),
+        scatra_->ScaTraField()->Discretization(),
+        1);
   }
 }

@@ -11,8 +11,8 @@
  </pre>
  *------------------------------------------------------------------------------------------------*/
 
-#ifndef SSI_ALGO_H_
-#define SSI_ALGO_H_
+#ifndef SSI_BASE_H_
+#define SSI_BASE_H_
 
 #include "../drt_adapter/adapter_algorithmbase.H"
 
@@ -23,6 +23,12 @@ namespace ADAPTER
   class ScaTraBaseAlgorithm;
   class Structure;
   class ScaTraTimIntImpl;
+  class CouplingMortar;
+}
+
+namespace LINALG
+{
+  class MapExtractor;
 }
 
 namespace SSI
@@ -62,6 +68,13 @@ namespace SSI
     //! access to scatra field
     //const Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm>&  ScaTraField(){return scatra_;}
 
+    /// set structure solution on scatra field
+    void SetStructSolution( Teuchos::RCP<const Epetra_Vector> disp,
+                            Teuchos::RCP<const Epetra_Vector> vel ) ;
+
+    /// set scatra solution on structure field
+    void SetScatraSolution( Teuchos::RCP<const Epetra_Vector> phi ) ;
+
   protected:
 
     /// underlying structure of the SSI problem
@@ -73,14 +86,31 @@ namespace SSI
     /// a zero vector of full length
     Teuchos::RCP<Epetra_Vector> zeros_;
 
+    //! adapter to mortar framework
+    Teuchos::RCP<ADAPTER::CouplingMortar> adaptermeshtying_;
+
+    Teuchos::RCP<LINALG::MapExtractor> extractor_;
+
   private:
     /// clone scatra discretization form structure discretization
     void SetupDiscretizations(const Epetra_Comm& comm);
 
+    /// set structure mesh displacement on scatra field
+    void SetMeshDisp( Teuchos::RCP<const Epetra_Vector> disp ) ;
+
+    /// set structure velocity fields on scatra field
+    void SetVelocityFields( Teuchos::RCP<const Epetra_Vector> vel ) ;
+
     /// Function for checking that the different time steps are a
     /// multiplicative of each other
     //void CheckTimeStepping(double dt1, double dt2);
+
+    /// flag for matching structure and scatra discretization
+    bool matchinggrid_;
+
+    /// flag whether scalar transport on a boundary of the structure is present
+    bool boundarytransport_;
   };
 }
 
-#endif /* SSI_ALGO_H_ */
+#endif /* SSI_BASE_H_ */

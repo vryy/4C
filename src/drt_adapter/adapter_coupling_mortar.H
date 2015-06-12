@@ -73,14 +73,17 @@ namespace ADAPTER
     //! setup the machinery (generalized version)
     /// master and slave discretization are identical for sliding ale and fluid/scatra meshtying
     /// ale discretization is Teuchos::null for sliding ale and fluid/scatra meshtying
-    void Setup( Teuchos::RCP<DRT::Discretization>   masterdis,      ///> master discretization
-                Teuchos::RCP<DRT::Discretization>   slavedis,       ///> slave discretization
-                Teuchos::RCP<DRT::Discretization>   aledis,         ///> ale discretization
-                std::vector<int>                    coupleddof,     ///> vector defining coupled degree's of freedom
-                const std::string&                  couplingcond,   ///> string for coupling condition
-                const Epetra_Comm&                  comm,           ///> communicate
-                bool                                slavewithale=false,  ///> flag defining if slave is ALE
-                bool                                slidingale=false);  //> flag defining sliding ale case
+    void Setup( Teuchos::RCP<DRT::Discretization>   masterdis,            ///> master discretization
+                Teuchos::RCP<DRT::Discretization>   slavedis,             ///> slave discretization
+                Teuchos::RCP<DRT::Discretization>   aledis,               ///> ale discretization
+                std::vector<int>                    coupleddof,           ///> vector defining coupled degree's of freedom
+                const std::string&                  couplingcond,         ///> string for coupling condition
+                const Epetra_Comm&                  comm,                 ///> communicate
+                bool                                slavewithale=false,   ///> flag defining if slave is ALE
+                bool                                slidingale=false,     ///> flag defining sliding ale case
+                int                                 nds_master=0,         ///> dofset number of master
+                int                                 nds_slave=0           ///> dofset number of slave
+                );
 
     //! setup the machinery (hack version (used in UQ to obtain surface normals of slave interface ONLY))
     void SetupForUQAbuseNormalCalculation( Teuchos::RCP<DRT::Discretization>   slavedis,       ///>  discretization

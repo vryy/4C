@@ -48,7 +48,9 @@ void ADAPTER::CouplingMortar::Setup(
     const std::string&                  couplingcond,
     const Epetra_Comm&                  comm,
     bool                                slavewithale,
-    bool                                slidingale)
+    bool                                slidingale,
+    int                                 nds_master,
+    int                                 nds_slave)
 {
   // vector coupleddof defines degree of freedom which are coupled (1: coupled; 0: not coupled), e.g.:
   // - fluid 3D meshtying: coupleddof = [1, 1, 1, 1] -> all degrees of freedom (velocity and pressure) are coupled
@@ -151,12 +153,12 @@ void ADAPTER::CouplingMortar::Setup(
 
   // number of dofs per node based on the coupling vector coupleddof
   int dof = coupleddof.size();
-  if((masterdis->NumDof(masterdis->lRowNode(0))!=dof and slavewithale==true and slidingale==false) or
-      (slavedis->NumDof(slavedis->lRowNode(0))!=dof and slavewithale==false and slidingale==false))
+  if((masterdis->NumDof(nds_master,masterdis->lRowNode(0))!=dof and slavewithale==true and slidingale==false) or
+      (slavedis->NumDof(nds_slave,slavedis->lRowNode(0))!=dof and slavewithale==false and slidingale==false))
   {
     dserror("The size of the coupling vector coupleddof and dof defined in the discretization does not fit!! \n"
             "dof defined in the discretization: %i \n"
-            "length of coupleddof: %i",masterdis->NumDof(masterdis->lRowNode(0)), dof);
+            "length of coupleddof: %i",masterdis->NumDof(nds_master,masterdis->lRowNode(0)), dof);
   }
 
   // special case: sliding ale
@@ -168,7 +170,7 @@ void ADAPTER::CouplingMortar::Setup(
   if(slidingale==true)
   {
     nodeoffset = masterdis->NodeRowMap()->MaxAllGID()+1;
-    dofoffset = masterdis->DofRowMap()->MaxAllGID()+1;
+    dofoffset = masterdis->DofRowMap(nds_master)->MaxAllGID()+1;
   }
 
   // number of coupled dofs (defined in coupleddof by a 1)
@@ -191,7 +193,7 @@ void ADAPTER::CouplingMortar::Setup(
       {
         // get the gid of the coupled dof (size dof)
         // and store it in the vector dofids containing only coupled dofs (size numcoupleddof)
-        dofids[ii] = masterdis->Dof(node)[k];
+        dofids[ii] = masterdis->Dof(nds_master,node)[k];
         ii +=1;
       }
     }
@@ -216,7 +218,7 @@ void ADAPTER::CouplingMortar::Setup(
       {
         // get the gid of the coupled dof (size dof)
         // and store it in the vector dofids containing only coupled dofs (size numcoupleddof)
-        dofids[ii] = slavedis->Dof(node)[k]+dofoffset;
+        dofids[ii] = slavedis->Dof(nds_slave,node)[k]+dofoffset;
         ii += 1;
       }
     }
