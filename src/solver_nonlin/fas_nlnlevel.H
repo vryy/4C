@@ -123,7 +123,7 @@ namespace FAS
      *  \author mayr.mt \date 10/2013
      */
     virtual int RestrictToNextCoarserLevel(
-        Teuchos::RCP<Epetra_MultiVector>& vec ///< vector to be restricted
+        Teuchos::RCP<Epetra_MultiVector> vec ///< vector to be restricted
         ) const;
 
     /*! \brief Prolongate vector to next finer level
@@ -138,7 +138,7 @@ namespace FAS
      *  \author mayr.mt \date 11/2013
      */
     virtual int ProlongateToNextFinerLevel(
-        Teuchos::RCP<Epetra_MultiVector>& vec ///< vector to be prolongated
+        Teuchos::RCP<Epetra_MultiVector> vec ///< vector to be prolongated
         ) const;
 
     //@}
@@ -255,7 +255,7 @@ namespace FAS
 
     /*! \brief Check for stagnation of level smoother
      *
-     *  We currently just check post-smooting and coarse level solve, since pre-
+     *  We currently just check post-smoothing and coarse level solve, since pre-
      *  smoothing stagnation might be cured by coarser levels. // ToDo Fix this comment
      *
      *  \author mayr.mt \date 03/2015

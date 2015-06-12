@@ -166,7 +166,7 @@ void NLNSOL::FAS::NlnLevel::SetPOp(Teuchos::RCP<const Epetra_CrsMatrix> myP)
 
 /*----------------------------------------------------------------------------*/
 int NLNSOL::FAS::NlnLevel::RestrictToNextCoarserLevel(
-    Teuchos::RCP<Epetra_MultiVector>& vec
+    Teuchos::RCP<Epetra_MultiVector> vec
     ) const
 {
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
@@ -198,7 +198,7 @@ int NLNSOL::FAS::NlnLevel::RestrictToNextCoarserLevel(
 
 /*----------------------------------------------------------------------------*/
 int NLNSOL::FAS::NlnLevel::ProlongateToNextFinerLevel(
-    Teuchos::RCP<Epetra_MultiVector>& vec
+    Teuchos::RCP<Epetra_MultiVector> vec
     ) const
 {
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
