@@ -4087,7 +4087,7 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(MORTAR::MortarElement& ele,
                 ele.NumNode(), ele.NodeIds(), nodes, ele.IsSlave(), false)));
   }
 
-  // ************************************************************ tri3 ***
+  // ************************************************************ nurbs9 ***
   else if (ele.Shape() == DRT::Element::nurbs9)
   {
     // create one IntElement from one nurbs9 element
