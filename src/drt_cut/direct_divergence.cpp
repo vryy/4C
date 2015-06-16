@@ -11,6 +11,7 @@ equations
 
 #include "cut_boundingbox.H"
 #include "cut_kernel.H"
+#include "direct_divergence_refplane.H"
 
 #include "cut_output.H"
 
@@ -213,79 +214,9 @@ void GEO::CUT::DirectDivergence::ListFacets( std::vector<plain_facet_set::const_
   // When we construct integration rule in global coordinate system,
   // we need a reference plane such that when the main Gauss points are projected over
   // this plane, this line of projection must be completely within the background element
-  // In order to do this, we consider all the 6 possible diagonals of the element
-  // Find component of normal vector in x-direction (n_x), and choose the diagonal
-  // surface for which n_x is maximum --> To minimize roundoff error
-
-  // Additional note: Any diagonal of the background element can be chosen and the line of
-  // projection stays completely within the element
-  // How? Because the background element is always CONVEX
-  if( elem1_->Shape() != DRT::Element::hex8 )
-    dserror("Currently can handle only hexagonal family\n");
-
-  std::vector<Point*> ptslist = elem1_->Points();
-  std::vector<std::vector<Point*> >diagonals;
-
-  std::vector<Point*> diag;
-  diag.push_back( ptslist[0] );
-  diag.push_back( ptslist[1] );
-  diag.push_back( ptslist[6] );
-  diag.push_back( ptslist[7] );
-  diagonals.push_back( diag );
-
-  diag.clear();
-  diag.push_back( ptslist[2] );
-  diag.push_back( ptslist[3] );
-  diag.push_back( ptslist[4] );
-  diag.push_back( ptslist[5] );
-  diagonals.push_back( diag );
-
-  diag.clear();
-  diag.push_back( ptslist[5] );
-  diag.push_back( ptslist[6] );
-  diag.push_back( ptslist[3] );
-  diag.push_back( ptslist[0] );
-  diagonals.push_back( diag );
-
-  diag.clear();
-  diag.push_back( ptslist[4] );
-  diag.push_back( ptslist[7] );
-  diag.push_back( ptslist[2] );
-  diag.push_back( ptslist[1] );
-  diagonals.push_back( diag );
-
-  diag.clear();
-  diag.push_back( ptslist[0] );
-  diag.push_back( ptslist[4] );
-  diag.push_back( ptslist[6] );
-  diag.push_back( ptslist[2] );
-  diagonals.push_back( diag );
-
-  diag.clear();
-  diag.push_back( ptslist[5] );
-  diag.push_back( ptslist[1] );
-  diag.push_back( ptslist[3] );
-  diag.push_back( ptslist[7] );
-  diagonals.push_back( diag );
-
-  double xnormal = 0.0;
-  for( std::vector<std::vector<Point*> >::iterator itd = diagonals.begin();
-                                                   itd != diagonals.end(); itd++ )
-  {
-    std::vector<Point*> ptl = *itd;
-    std::vector<double> RefPlaneTemp = KERNEL::EqnPlaneOfPolygon( ptl );
-    if( fabs(RefPlaneTemp[0]) < REF_PLANE_DIRDIV )
-      continue;
-
-    double fac = sqrt( pow(RefPlaneTemp[0],2)+pow(RefPlaneTemp[1],2)+pow(RefPlaneTemp[2],2) );
-    double xn = fabs(RefPlaneTemp[0]) / fac;
-    if( xn > xnormal )
-    {
-      xnormal = xn;
-      RefPlaneEqn = RefPlaneTemp;
-      refPtsGmsh_ = ptl;
-    }
-  }
+  DirectDivergenceGlobalRefplane ddg( elem1_ );
+  RefPlaneEqn = ddg.GetReferencePlane();
+  refPtsGmsh_ = ddg.GetReferencePointGmsh();
 #endif
 
   // if a1x+a2y+a3z=a4 is the equation of reference plane and
