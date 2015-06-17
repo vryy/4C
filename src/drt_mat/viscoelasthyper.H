@@ -171,7 +171,7 @@ private:
     /// Check if history variables are already initialized
     virtual bool Initialized() const
     {
-      return isinitvis_&&(histrcgcurr_!=Teuchos::null);
+      return isinitvis_&&(histscgcurr_!=Teuchos::null);
       return isinitvis_&&(histstresscurr_!=Teuchos::null);
       return isinitvis_&&(histartstresscurr_!=Teuchos::null);
     }
@@ -195,11 +195,12 @@ private:
     /// calculates the kinematic quantities and tensors used afterwards for viscos part
     virtual void EvaluateKinQuantVis(
         LINALG::Matrix<6,1> rcg,
+        LINALG::Matrix<6,1> scg,
         LINALG::Matrix<6,1>& modrcg,
         LINALG::Matrix<6,1> icg,
         Teuchos::ParameterList& params,
         LINALG::Matrix<3,1> prinv,
-        LINALG::Matrix<6,1>& rcgrate,
+        LINALG::Matrix<6,1>& scgrate,
         LINALG::Matrix<6,1>& modrcgrate,
         LINALG::Matrix<7,1>& rateinv,
         LINALG::Matrix<7,1>& modrateinv
@@ -226,7 +227,7 @@ private:
         LINALG::Matrix<8,1> mu,
         LINALG::Matrix<33,1> xi,
         LINALG::Matrix<6,6> id4sharp,
-        LINALG::Matrix<6,1> rcgrate
+        LINALG::Matrix<6,1> scgrate
         );
 
     /// calculates the isotropic stress and elasticity tensor for viscous decoupled configuration
@@ -263,8 +264,8 @@ private:
   private:
 
     /// visco history Cauchy-Green-Tensor
-    Teuchos::RCP<std::vector<LINALG::Matrix<6,1> > > histrcgcurr_; ///< current Cauchy-Green-Tensor
-    Teuchos::RCP<std::vector<LINALG::Matrix<6,1> > > histrcglast_; ///< Cauchy-Green-Tensor of last converged state
+    Teuchos::RCP<std::vector<LINALG::Matrix<6,1> > > histscgcurr_; ///< current Cauchy-Green-Tensor
+    Teuchos::RCP<std::vector<LINALG::Matrix<6,1> > > histscglast_; ///< Cauchy-Green-Tensor of last converged state
     Teuchos::RCP<std::vector<LINALG::Matrix<6,1> > > histmodrcgcurr_; ///< current decoupled Cauchy-Green-Tensor
     Teuchos::RCP<std::vector<LINALG::Matrix<6,1> > > histmodrcglast_; ///< decoupled Cauchy-Green-Tensor of last converged state
     Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > > histstresscurr_; ///< current stress
