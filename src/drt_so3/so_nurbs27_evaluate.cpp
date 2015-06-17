@@ -1066,7 +1066,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
   }/* end of Loop over GP */
 
   return;
-} // DRT::ELEMENTS::So_nurbs7::sonurbs27_nlnstiffmass
+} // DRT::ELEMENTS::So_nurbs27::sonurbs27_nlnstiffmass
 
 /*----------------------------------------------------------------------*
  |  Evaluate nurbs27 Shape fcts at all 27 Gauss Points                     |
