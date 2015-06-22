@@ -37,7 +37,7 @@ class Epetra_MultiVector;
 namespace LINALG
 {
   class Solver;
-}
+} // namespace LINALG
 
 namespace NLNSOL
 {
@@ -92,6 +92,15 @@ namespace NLNSOL
    *
    *  Setup() constructs the actual algorithm and has to be implemented by every
    *  specific algorithm itself.
+   *
+   *  \note The flag #isinit_ has to be checked at the entry of Setup() to make
+   *  sure, Init() has already been called.
+   *
+   *  \note The flags #isinit_ and #issetup_ indicate, whether Init() and
+   *  Setup() have already been called. We need to check them when entering
+   *  every public method to make sure, that the operator is in a valid state
+   *  and can perform its actions properly. This is not necessary in protected
+   *  and private routines.
    *
    *  ApplyInverse() is the central routine. It needs to implement the actual
    *  solution algorithm and iterative process.
@@ -185,9 +194,13 @@ namespace NLNSOL
       //! Init() has been called
       virtual void SetIsInit() { isinit_ = true; return; }
 
-      //! Setup() has been called
-      virtual void SetIsSetup(const bool issetup = true)
-      { issetup_ = issetup; return; }
+      /*! \brief Setup() has been called
+       *
+       *  We allow for the input argument 'issetup = false' to reset the setup
+       *  state of the operator and to enforce a re-setup with a new state.
+       */
+      virtual void SetIsSetup(const bool issetup = true ///< flag indicating validity of setup state
+          ) { issetup_ = issetup; return; }
 
       //@}
 
