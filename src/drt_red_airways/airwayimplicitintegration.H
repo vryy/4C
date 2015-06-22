@@ -199,6 +199,12 @@ public:
   void Output  (bool               CoupledTo3D = false,
                 Teuchos::RCP<Teuchos::ParameterList> CouplingParams = Teuchos::null);
 
+  // Output for UQ problemtype
+  void OutputUQ(Teuchos::RCP<Teuchos::ParameterList> CouplingParams);
+
+  // Adjust acini_volume with psrestress
+  void ComputeVol0ForPreStress();
+
   /*!
   \brief Assembling of the RHS Vector and the LHS Matrix
 
@@ -397,6 +403,10 @@ protected:
   Teuchos::RCP<Epetra_Vector>          acini_e_volumen_;
   Teuchos::RCP<Epetra_Vector>          acini_e_volumenp_;
   Teuchos::RCP<Epetra_Vector>          acini_e_volume_strain_;
+  Teuchos::RCP<Epetra_Vector>          acini_max_strain_location_;
+
+  bool                                 calcV0PreStress_;
+  double                               transpulmpress_;
 
   //@}
 
@@ -425,6 +435,7 @@ protected:
   Teuchos::RCP<Epetra_Vector>          cfls_;
 
   bool                        solveScatra_;
+
   //@}
 
   //! @name state saving vectors

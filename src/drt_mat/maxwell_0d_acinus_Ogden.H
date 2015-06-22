@@ -38,6 +38,12 @@ namespace MAT
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
+      /// return optimizable parameters
+      virtual void OptParams(std::map<std::string, int>* pnames);
+
+      /// enum for mapping between material parameter and entry in the matparams_ vector
+      enum matparamnames_ {kappa, beta, first=kappa, last=beta};
+
   };  // class Maxwell_0d_acinus_Ogden
 }  // namespace PAR
 
@@ -133,6 +139,18 @@ class Maxwell_0d_acinus_Ogden : public Maxwell_0d_acinus
                           const double Vo,
                           double time,
                           double dt);
+
+    /// Return names of visualization data
+    virtual void VisNames(std::map<std::string,int>& names);
+
+    /// Return visualization data
+    virtual bool VisData(const std::string& name, std::vector<double>& data , int eleID);
+
+    /// Return value of class parameter
+    virtual double GetParams(std::string parametername);
+
+    /// Set value of class parameter
+    virtual void SetParams(std::string parametername, double new_value);
 
   private:
 

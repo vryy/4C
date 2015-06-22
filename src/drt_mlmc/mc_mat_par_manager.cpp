@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------*/
 /*!
- \file matpar_manager.cpp
+ \file mc_mat_par_manager.cpp
 \brief manages material parameters during UQ at some point this should
        be merged with the mat par manager in stat inv ana
 
@@ -30,6 +30,7 @@ Maintainer: Jonas Biehler
 #include "randomfield_fourier.H"
 #include "randomfield_spectral.H"
 #include "randomvariable.H"
+#include "../drt_mat/maxwell_0d_acinus_Ogden.H"
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -310,7 +311,7 @@ void UQ::MCMatParManager::ComputeMatParamsMultivectorFromRandomVariables(
 }
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void UQ::MCMatParManager::SetParams(double para_cont_parameter)
+void UQ::MCMatParManager::SetParamsStructure(double para_cont_parameter)
 {
   const std::map<int, Teuchos::RCP<MAT::PAR::Material> >& mats =
       *DRT::Problem::Instance()->Materials()->Map();
@@ -371,11 +372,111 @@ void UQ::MCMatParManager::SetParams(double para_cont_parameter)
       }
     } //loop materials
   }
+}
 
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void UQ::MCMatParManager::SetParamsRedAirways(double para_cont_parameter)
+{
+  // ************************************************************
+  // deal with material parameters modeled as random field first
+  // ************************************************************
+  // do we have quantities modeled as random fields ?
+  if(numstochparams_r_field_)
+  {
+    // updates params_r_field_
+    ComputeMatParamsMultivectorFromRandomFields(para_cont_parameter);
 
+    // loop over number of elements (on processor) -- the material class has element specific parameters
+    for (int i=0; i< (discret_->NumMyColElements()); i++)
+    {
+      int eleDID = discret_->ElementColMap()->GID(i); // get global element ID
+      int num_mymat = discret_->gElement(eleDID)->NumMaterial(); // get the number of element materials
 
+      // loop over number of element materials
+      for (int j=0; j<num_mymat; j++)
+      {
+        // is this material a stochastic material, global material id needed
+        if (stochparamap_r_field_.find(discret_->gElement(eleDID)->Material(j)->Parameter()->Id()) != stochparamap_r_field_.end() )
+        {
+          switch (discret_->gElement(eleDID)->Material(j)->MaterialType())
+          {
+          case INPAR::MAT::m_0d_maxwell_acinus_ogden:
+          {
+            Teuchos::RCP<MAT::Maxwell_0d_acinus_Ogden> mymat = Teuchos::rcp_dynamic_cast<MAT::Maxwell_0d_acinus_Ogden>(discret_->gElement(eleDID)->Material(j));
 
+            // it iterator over number of RF per element, meaning stochastic parameters for element,
+            // in this case now, only kappa is evaluted using RF, so only one RF per element.
+            // loop the parameters to be optimized
+            std::vector<int> actparams = stochparamap_r_field_.at(stochparamap_r_field_.find(discret_->gElement(eleDID)->Material(j)->Parameter()->Id())->first);
+            std::vector<int>::const_iterator it;
+            for ( it=actparams.begin(); it!=actparams.end(); it++)
+            {
+              mymat->SetParams("kappa",(*params_r_field_)[*it][i]);
+            }
+            break;
+          }
+          default:
+          {
+            dserror("Material not implemented yet for stochastic parameter setting");
+            break;
+          }
 
+          }//end switch
+
+        }// end if stochastic
+      }// end loop element materials
+    }// end loop elements
+  }//end if
+
+  // **************************************************************
+  // now deal with material parameters modeled as random variables
+  // **************************************************************
+  // do we have quantities modeled as random variables ?
+  if(numstochparams_r_var_)
+  {
+    ComputeMatParamsMultivectorFromRandomVariables(para_cont_parameter);
+    // loop over number of elements (on processor) -- the material class has element specific parameters
+    for (int i=0; i< (discret_->NumMyColElements()); i++)
+    {
+      int eleDID = discret_->ElementColMap()->GID(i); // get global element ID
+      int num_mymat = discret_->gElement(eleDID)->NumMaterial(); // get the number of element materials
+
+      // loop over number of element materials
+      for (int j=0; j<num_mymat; j++)
+      {
+        // is this material a stochastic material, global material id needed
+        if (stochparamap_r_field_.find(discret_->gElement(eleDID)->Material(j)->Parameter()->Id()) != stochparamap_r_field_.end() )
+        {
+          switch (discret_->gElement(eleDID)->Material(j)->MaterialType())
+          {
+          case INPAR::MAT::m_0d_maxwell_acinus_ogden:
+          {
+            Teuchos::RCP<MAT::Maxwell_0d_acinus_Ogden> mymat = Teuchos::rcp_dynamic_cast<MAT::Maxwell_0d_acinus_Ogden>(discret_->gElement(eleDID)->Material(j));
+
+            // it iterator over number of RF per element, meaning stochastic parameters for element,
+            // in this case now, only kappa is evaluted using RF, so only one RF per element.
+            // loop the parameters to be optimized
+            std::vector<int> actparams = stochparamap_r_var_.at(stochparamap_r_var_.find(discret_->gElement(eleDID)->Material(j)->Parameter()->Id())->first);
+            std::vector<int>::const_iterator it;
+            for ( it=actparams.begin(); it!=actparams.end(); it++)
+            {
+              mymat->SetParams(0,(*params_r_var_)[*it][i]);
+            }
+            break;
+          }
+          default:
+          {
+            dserror("Material not implemented yet for stochastic parameter setting");
+            break;
+          }
+
+          }//end switch
+
+        }// end if stochastic
+      }// end loop element materials
+    }// end loop elements
+  }//end if
 }
 
 /*----------------------------------------------------------------------------*/
@@ -458,7 +559,22 @@ void UQ::MCMatParManager::SetUpStochMats(unsigned int myseed,
   if(!reuse_rf)
     CreateNewRealizationOfRandomQuantities(myseed);
 
-  SetParams(para_cont_parameter);
+  // depending on forward problem, call either red_airwaz or structure specific function
+  const Teuchos::ParameterList& mlmcp = DRT::Problem::Instance()->MultiLevelMonteCarloParams();
+  INPAR::MLMC::FWDProblem fwdprb = DRT::INPUT::IntegralValue<INPAR::MLMC::FWDProblem>(mlmcp,"FWDPROBLEM");
+
+  switch(fwdprb)
+  {
+  case INPAR::MLMC::structure:
+    SetParamsStructure(para_cont_parameter);
+    break;
+  case INPAR::MLMC::red_airways:
+    SetParamsRedAirways(para_cont_parameter);
+    break;
+  default:
+    dserror("Unknown forward problem type fix your input file");
+    break;
+  }
 }
 
 

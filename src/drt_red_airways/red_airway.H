@@ -536,6 +536,10 @@ public:
   */
   virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
 
+  /*!
+  \brief Return center coordinates of element
+  */
+  virtual std::vector<double> ElementCenterRefeCoords();
 
   /*!
   \brief Return unique ParObject id
@@ -763,6 +767,9 @@ public:
 
   //! set qout
   //  void           setqout(double Qout){ qout_ = Qout;}
+
+  //! set element parameters
+  void           setParams(std::string name, double & var);
 
   //! get element parameters
   void           getParams(std::string name, double & var);

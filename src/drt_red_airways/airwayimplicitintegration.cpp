@@ -22,8 +22,9 @@ Maintainer: Christian Roth
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_nodematchingoctree.H"
 #include "../drt_lib/drt_function.H"
-
-
+#include "../drt_io/io_control.H"
+#include "../drt_mat/maxwell_0d_acinus_Ogden.H"
+#include "../drt_mlmc/mc_utils.H"
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                    ismail 01/10|
@@ -71,6 +72,11 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
   // solve scatra
   solveScatra_ = params_.get<bool> ("SolveScatra");
 
+  // calculate acini volume0 flag
+  calcV0PreStress_ = params_.get<bool>("CalcV0PreStress"); //option for acini volume adjustment
+  // transpulmonary pressure, only needed in case of prestressing prestressing
+  if (calcV0PreStress_)
+    transpulmpress_ = params_.get<double>("transpulmpress");
 
   // ensure that degrees of freedom in the discretization have been set
   if (!discret_->Filled() || !actdis->HaveDofs()) discret_->FillComplete();
@@ -159,6 +165,7 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
   acini_e_volumen_      = LINALG::CreateVector(*elementcolmap,true);
   acini_e_volumenp_     = LINALG::CreateVector(*elementcolmap,true);
   acini_e_volume_strain_= LINALG::CreateVector(*elementcolmap,true);
+  acini_max_strain_location_ = LINALG::CreateVector(*elementcolmap,true);
 
   //--------------------------------------------------------------------
   // Initialize "scalar transpor" variables
@@ -333,6 +340,11 @@ void AIRWAY::RedAirwayImplicitTimeInt::Integrate()
 void AIRWAY::RedAirwayImplicitTimeInt::Integrate(bool CoupledTo3D,
                                                  Teuchos::RCP<Teuchos::ParameterList> CouplingParams)
 {
+  if (calcV0PreStress_)
+  {
+    ComputeVol0ForPreStress();
+  }
+
   coupledTo3D_ = CoupledTo3D;
   if (CoupledTo3D && CouplingParams.get() == NULL)
   {
@@ -350,7 +362,72 @@ void AIRWAY::RedAirwayImplicitTimeInt::Integrate(bool CoupledTo3D,
   return;
 } // RedAirwayImplicitTimeInt::Integrate
 
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+void AIRWAY::RedAirwayImplicitTimeInt::ComputeVol0ForPreStress()
+{
+  double p = transpulmpress_;
 
+  // loop over number of elements (on processor)
+  for (int i=0; i< (discret_->NumMyColElements()); i++)
+  {
+    // check if element is an acinus
+    if((*generations_)[i]==-1)
+    {
+      int GID = discret_->ElementColMap()->GID(i); //global element ID
+
+      // check if aciuns is ogden type material
+      if(discret_->gElement(GID)->Material(0)->MaterialType() == INPAR::MAT::m_0d_maxwell_acinus_ogden)
+      {
+      // get material parameters kappa and beta
+      Teuchos::RCP<MAT::Maxwell_0d_acinus_Ogden> mymat = Teuchos::rcp_dynamic_cast<MAT::Maxwell_0d_acinus_Ogden>(discret_->gElement(GID)->Material(0));
+      double kappa = mymat->GetParams("kappa");
+      double beta = mymat->GetParams("beta");
+
+      // calculate alpha
+      double alpha = 0.1; //starting value for approximation
+      double f;
+      double f_der;
+
+      // get approximation for alpha with newton-raphson method
+      while(std::abs(p-kappa/beta/alpha*(1-std::pow(alpha,-beta)))>1e-06)
+      {
+        f = p-kappa/beta/alpha*(1-std::pow(alpha,-beta));
+        f_der = kappa/beta*std::pow(alpha,-2.0)+kappa/beta*(1-beta)*std::pow(alpha,-beta);
+        // get new alpha
+        alpha = alpha - f/f_der;
+      }
+
+      // adjust aciunus volume 0 in the elements parameters
+
+      // aditional check whether element is RedAcinusType
+      const DRT::ElementType& ele_type = discret_->gElement(GID)->ElementType();
+      if (ele_type == DRT::ELEMENTS::RedAcinusType::Instance())
+      {
+        // dynamic cast to aciunus element, since Elements base class does not have the functions getParams and setParams
+        DRT::ELEMENTS::RedAcinus * acini_ele = dynamic_cast<DRT::ELEMENTS::RedAcinus *>( discret_->gElement(GID) );
+        // get original value for aciuns volume (entered in dat file)
+        double val;
+        acini_ele->getParams("AcinusVolume_Init", val);
+        // calculate new value for aciuns volume with alpha and set in element parameters
+        val = val/alpha;
+        acini_ele->setParams("AcinusVolume", val);
+
+        // adjust acini volumes in the vectors used in this function
+        (*acini_e_volumenp_)[i] = val;
+        (*acini_e_volumen_)[i] = val;
+        (*acini_e_volumenm_)[i] = val;
+        (*acini_e_volume0_)[i] = val;
+      }
+
+      }
+      else
+      {
+        std::cout << "Warning! Acinus " << GID << " is not Ogden type material! Initial volume cannot be adjusted!" << std::endl;
+      }
+    }
+  }
+}
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -467,6 +544,15 @@ void AIRWAY::RedAirwayImplicitTimeInt::OneStepTimeLoop(bool CoupledTo3D,
   }
 
   // -------------------------------------------------------------------
+  //  Output for UQ Problemtype
+  // -------------------------------------------------------------------
+  if (DRT::Problem::Instance()->ProblemType() == prb_uq)
+  {
+    // CouplingTo3DParams are used to hand over UQ run information
+    OutputUQ(CouplingTo3DParams);
+  }
+
+  // -------------------------------------------------------------------
   //  Output
   // -------------------------------------------------------------------
   if (!CoupledTo3D)
@@ -481,6 +567,148 @@ void AIRWAY::RedAirwayImplicitTimeInt::OneStepTimeLoop(bool CoupledTo3D,
 
 } // RedAirwayImplicitTimeInt::OneStepTimeLoop
 
+/*----------------------------------------------------------------------*
+ | Output for UQ Problemtype                                 mundt 02/15|
+ *----------------------------------------------------------------------*/
+void AIRWAY::RedAirwayImplicitTimeInt::OutputUQ(Teuchos::RCP<Teuchos::ParameterList> CouplingParams)
+{
+  // Calculate total lung volume
+
+
+  double lung_volume_np = 0.0;
+  bool err = this->SumAllColElemVal(acini_e_volumenp_,acini_bc_,lung_volume_np);
+  if(err)
+  {
+    dserror("Error by summing all acinar volumes");
+  }
+
+  // Calculate maximal volumetric strain
+
+  // vector for volumetric strains
+  Teuchos::RCP<std::vector <double> > vol_strain = Teuchos::rcp(new std::vector<double > );
+  // vector for kappa values
+  Teuchos::RCP<std::vector <double> > kappa = Teuchos::rcp(new std::vector<double > );
+  // vector for corresponding element ids
+  Teuchos::RCP<std::vector <int> > ele_Id = Teuchos::rcp(new std::vector<int > );
+
+  // loop over number of elements (on processor)
+  for (int i=0; i< (discret_->NumMyColElements()); i++)
+  {
+    if((*generations_)[i]==-1)
+    {
+      if((*acini_e_volume0_)[i]!=0)
+      {
+        int GID = discret_->ElementColMap()->GID(i); //global element ID
+
+        // Volumetric strain
+        vol_strain->push_back((*acini_e_volume_strain_)[i]);
+
+        // Kappa
+        Teuchos::RCP<MAT::Maxwell_0d_acinus_Ogden> mymat = Teuchos::rcp_dynamic_cast<MAT::Maxwell_0d_acinus_Ogden>(discret_->gElement(GID)->Material(0));
+        kappa->push_back(mymat->GetParams("kappa"));
+
+        // Global element ID
+        ele_Id->push_back(GID); //get global element id
+      }
+      else
+      {
+        dserror("Acini with initial volume 0");
+      }
+    }
+  }
+
+  Teuchos::RCP<std::pair<double,std::pair <int , double> > > vol_strain_max = Teuchos::rcp(new std::pair<double,std::pair <int , double> >);
+  Teuchos::RCP<std::pair<double,std::pair <int , double> > > vol_strain_quantile99 = Teuchos::rcp(new std::pair<double,std::pair <int , double> > );
+  Teuchos::RCP<std::pair<double,std::pair <int , double> > > kappa_max = Teuchos::rcp(new std::pair<double,std::pair <int , double> > );
+  Teuchos::RCP<std::pair<double,std::pair <int , double> > > kappa_quantile99 = Teuchos::rcp(new std::pair<double,std::pair <int , double> > );
+  Teuchos::RCP<std::pair<double,std::pair <int , double> > > kappa_min = Teuchos::rcp(new std::pair<double,std::pair <int , double> > );
+
+  //calculate total number of acini for ComputePeakAndQuantile function
+  int tot_num_elements = 0; // total number of acini
+  for (int i=0; i< (discret_->NumMyColElements()); i++)
+  {
+    if((*generations_)[i]==-1)
+    {
+      ++tot_num_elements;
+    }
+  }
+
+  // Use UQ utility ComputePeakAndQuantile to compute min/max and quantile with corresponding ele Id and kappa/max strain
+  UQ::ComputePeakAndQuantile(vol_strain,kappa,ele_Id,
+      vol_strain_max,
+      vol_strain_quantile99,
+      tot_num_elements,
+      "max",
+      discret_->Comm()); //maximum search mode
+  UQ::ComputePeakAndQuantile(kappa,vol_strain,ele_Id,
+      kappa_min,
+      kappa_quantile99,
+      tot_num_elements,
+      "min",
+      discret_->Comm()); //minimum search mode
+  UQ::ComputePeakAndQuantile(kappa,vol_strain,ele_Id,
+      kappa_max,
+      kappa_quantile99,
+      tot_num_elements,
+      "max",
+      discret_->Comm()); //maximum search mode */
+
+  // Update location of max strain
+  // first reset vector to all 0s
+  acini_max_strain_location_->PutScalar(0.0);
+  // then write 1 at location of max volumetric strain
+  acini_max_strain_location_->ReplaceGlobalValue(vol_strain_max->second.first,0,1);
+
+  // File Output
+  if (discret_->Comm().MyPID()==0)
+  {
+    std::string filename = DRT::Problem::Instance()->OutputControlFile()->FileName();
+    std::stringstream outputfile;
+
+    // if the OUTPUT_BIN option in the dat file is set to no, to create only minimal output,
+    // the filename is not automatically changed to include the number of the UQ run, so
+    // this info is handed over through the CouplingParams
+    if (!DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(),"OUTPUT_BIN"))
+    {
+      int numb_run = CouplingParams->get<int>("run");
+      outputfile << filename << "_run_" << numb_run << "_volumetric_strain_max_values.txt";
+    }
+    else
+    {
+      outputfile << filename << "_volumetric_strain_max_values.txt";
+    }
+
+    filename = outputfile.str();
+    std::ofstream myfile;
+    if (step_ == 1)
+    {
+      myfile.open(filename.c_str(),std::ios::out);
+      if (myfile.is_open())
+      {
+        myfile << "Step,Time,LungVol,EleId,Strain_Max,Kappa,EleId,Strain99,Kappa,EleId,Strain,Kappa_Min,EleId,Strain,Kappa_Max" << std::endl;
+        myfile.close();
+      }
+      else
+      {
+        dserror("Unable to open output file for volumetric strain maxima");
+      }
+    }
+    // reopen in append mode
+    myfile.open(filename.c_str(),std::ios::app);
+
+    // to be consistent with other output from red_airways simulation, all volumetric strain values are reduced by 1,
+    // all Element Ids are increased by 1. (vol_strain -= 1, eleId += 1)
+
+    myfile << step_ << "," << time_ << "," << lung_volume_np << ","
+        << vol_strain_max->second.first+1 << "," << vol_strain_max->first << "," << vol_strain_max->second.second << ","
+        << vol_strain_quantile99->second.first+1 << "," << vol_strain_quantile99->first << "," << vol_strain_quantile99->second.second << ","
+        << kappa_min->second.first+1 << "," << kappa_min->second.second <<"," << kappa_min->first <<","
+        << kappa_max->second.first+1 << "," << kappa_max->second.second <<"," << kappa_max->first
+        << std::endl;
+    myfile.close();
+  }
+  discret_->Comm().Barrier();
+ }
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1710,6 +1938,12 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
       output_.WriteVector("acini_volumetric_strain",qexp_);
     }
     {
+      Epetra_Export exporter(acini_max_strain_location_->Map(),qexp_->Map());
+      int err = qexp_->Export(*acini_max_strain_location_,exporter,Zero);
+      if (err) dserror("Export using exporter returned err=%d",err);
+      output_.WriteVector("acini_max_strain_location",qexp_);
+    }
+    {
       Epetra_Export exporter(acini_e_volume0_->Map(),qexp_->Map());
       int err = qexp_->Export(*acini_e_volume0_,exporter,Zero);
       if (err) dserror("Export using exporter returned err=%d",err);
@@ -1832,6 +2066,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
     output_.WriteVector("acini_vnp",qexp_);
     LINALG::Export(*acini_e_volume_strain_,*qexp_);
     output_.WriteVector("acini_volumetric_strain",qexp_);
+    LINALG::Export(*acini_max_strain_location_,*qexp_);
+    output_.WriteVector("acini_max_strain_location",qexp_);
     LINALG::Export(*acini_e_volume0_,*qexp_);
     output_.WriteVector("acini_v0",qexp_);
 
@@ -1895,6 +2131,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::ReadRestart(int step, bool coupledTo3D)
   LINALG::Export(*qexp_,*acini_e_volumenp_);
   reader.ReadVector(qexp_,"acini_volumetric_strain");
   LINALG::Export(*qexp_,*acini_e_volume_strain_);
+  reader.ReadVector(qexp_,"acini_max_strain_location");
+  LINALG::Export(*qexp_,*acini_max_strain_location_);
   reader.ReadVector(qexp_,"acini_v0");
   LINALG::Export(*qexp_,*acini_e_volume0_);
 

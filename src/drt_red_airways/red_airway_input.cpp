@@ -121,6 +121,9 @@ bool DRT::ELEMENTS::RedAcinus::ReadElement(const std::string& eletype,
     elemParams_["Area"]               = A;
     generation_                       = generation;
 
+    // save initial acinus volume as such
+    elemParams_["AcinusVolume_Init"]  = elemParams_["AcinusVolume"];
+
     //Setup material, calls overloaded function Setup(linedef) for each Maxwell_0d_acinus material
     Teuchos::RCP<MAT::Material> mat = Material();
     Teuchos::RCP<MAT::Maxwell_0d_acinus> acinus_mat = Teuchos::rcp_dynamic_cast<MAT::Maxwell_0d_acinus>(Material());

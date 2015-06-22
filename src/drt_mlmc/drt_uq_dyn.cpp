@@ -65,7 +65,6 @@ void dyn_uq()
    else if (fwdprb==INPAR::MLMC::red_airways)
    {
      redairways_uq();
-      dserror("UQ for reduced airways is not implemented, yet !");
    }
    else
      dserror("Unknown forward problem type fix your input file");

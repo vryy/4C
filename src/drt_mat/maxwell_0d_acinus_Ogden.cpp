@@ -20,7 +20,6 @@ Maintainer: Christian Roth
 #include "../drt_lib/drt_linedefinition.H"
 
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PAR::Maxwell_0d_acinus_Ogden::Maxwell_0d_acinus_Ogden(
@@ -35,6 +34,12 @@ Teuchos::RCP<MAT::Material> MAT::PAR::Maxwell_0d_acinus_Ogden::CreateMaterial()
   return Teuchos::rcp(new MAT::Maxwell_0d_acinus_Ogden(this));
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::PAR::Maxwell_0d_acinus_Ogden::OptParams(std::map<std::string,int>* pnames)
+{
+ pnames->insert(std::pair<std::string,int>("KAPPA", kappa));
+}
 
 MAT::Maxwell_0d_acinusOgdenType MAT::Maxwell_0d_acinusOgdenType::instance_;
 
@@ -139,7 +144,7 @@ void MAT::Maxwell_0d_acinus_Ogden::Setup(DRT::INPUT::LineDefinition* linedef)
  | deformation                                                          |
  |                                                          roth 10/2014|
  *----------------------------------------------------------------------*/
- void MAT::Maxwell_0d_acinus_Ogden::Evaluate(
+void MAT::Maxwell_0d_acinus_Ogden::Evaluate(
     Epetra_SerialDenseVector&                epnp,
     Epetra_SerialDenseVector&                epn,
     Epetra_SerialDenseVector&                epnm,
@@ -204,4 +209,55 @@ void MAT::Maxwell_0d_acinus_Ogden::Setup(DRT::INPUT::LineDefinition* linedef)
   rhs(0)      = -1.0*((rhsLin+rhsNL)*NumOfAcini/Kq_np);
   rhs(1)      =  1.0*((rhsLin+rhsNL)*NumOfAcini/Kq_np);
 
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double MAT::Maxwell_0d_acinus_Ogden::GetParams(std::string parametername)
+{
+  if(parametername=="kappa")
+    return kappa_;
+  else if(parametername=="beta")
+    return beta_;
+  else
+  {
+    dserror("Chosen Parameter can not be returned with this function!");
+    return 0;
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::Maxwell_0d_acinus_Ogden::SetParams(std::string parametername, double new_value)
+{
+  if(parametername=="kappa")
+    kappa_ = new_value;
+  else
+    dserror("Chosen Parameter can not be set with this function yet!");
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::Maxwell_0d_acinus_Ogden::VisNames(std::map<std::string,int>& names)
+{
+  std::string fiber = "kappa";
+  names[fiber] = 1; // scalar
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool MAT::Maxwell_0d_acinus_Ogden::VisData(const std::string& name, std::vector<double>& data, int eleGID)
+{
+
+ if (name=="kappa")
+ {
+   if ((int)data.size()!=1) dserror("size mismatch");
+
+   data[0] = GetParams("kappa");
+ }
+ else
+ {
+   return false;
+ }
+ return true;
 }

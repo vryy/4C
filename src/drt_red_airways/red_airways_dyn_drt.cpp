@@ -121,6 +121,17 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
   else
     airwaystimeparams.set                  ("SolveScatra" ,false);
 
+  //Adjust acini volume with pre-stress condition
+  if (rawdyn.get<string>("CALCV0PRESTRESS")=="yes")
+  {
+    airwaystimeparams.set                  ("CalcV0PreStress" ,true);
+    airwaystimeparams.set                  ("transpulmpress"          ,rawdyn.get<double>("TRANSPULMPRESS"));
+  }
+  else
+    airwaystimeparams.set                  ("CalcV0PreStress" ,false);
+
+
+
   // 6. Create all vectors and variables associated with the time
   // integration (call the constructor);
   // the only parameter from the list required here is the number of

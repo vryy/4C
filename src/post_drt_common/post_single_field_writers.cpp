@@ -1,5 +1,5 @@
 /*!
-  \file post_drt_ensight_single_field_writers.cpp
+  \file post_single_field_writers.cpp
 
   \brief main routine of the Ensight filter
 
@@ -106,6 +106,7 @@ void StructureFilter::WriteAllResults(PostField* field)
 
   writer_->WriteResult("acini_vnp", "acini_volume",elementbased, 1);
   writer_->WriteResult("acini_volumetric_strain", "acini_volume_strain",elementbased, 1);
+  writer_->WriteResult("acini_max_strain_location", "acini_max_strain_location",elementbased, 1);
   writer_->WriteResult("acin_bc", "acini_bc",elementbased, 1);
   writer_->WriteResult("acini_v0","acini_volume0",elementbased, 1);
 

@@ -173,6 +173,19 @@ namespace MAT
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
+    /// Return value of class parameter
+    virtual double GetParams(std::string parametername);
+
+    /// Set value of class parameter
+    virtual void SetParams(std::string parametername, double new_value);
+
+    /// Return names of visualization data
+    virtual void VisNames(std::map<std::string,int>& names)
+    { /* do nothing for simple material models */ };
+
+    /// Return visualization data
+    virtual bool VisData(const std::string& name, std::vector<double>& data , int eleID)
+    { /* do nothing for simple material models */ return false; };
 
   protected:
     /// my material parameters

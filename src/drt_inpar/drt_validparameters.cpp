@@ -5404,6 +5404,19 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                          "solve scatra"),
                                        tuple<int>(0,1),
                                        &redawdyn);
+    // Re-calculate initial acini volume flag
+    setStringToIntegralParameter<int>("CALCV0PRESTRESS",
+                                      "no",
+                                      "Flag to (de)activate initial acini volume adjustment with pre-stress condition ",
+                                      tuple<std::string>(
+                                        "no",
+                                        "yes"),
+                                      tuple<std::string>(
+                                        "do not adjust",
+                                        "adjust volumes"),
+                                      tuple<int>(0,1),
+                                      &redawdyn);
+    DoubleParameter("TRANSPULMPRESS",800.0,"Transpulmonary pressure needed for recalculation of acini volumes",&redawdyn);
 
 
   /*----------------------------------------------------------------------*/

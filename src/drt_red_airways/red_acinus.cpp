@@ -13,6 +13,7 @@ Maintainer: Christian Roth
 *----------------------------------------------------------------------*/
 
 #include "red_airway.H"
+#include "../drt_mat/maxwell_0d_acinus.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_linedefinition.H"
@@ -244,11 +245,46 @@ void DRT::ELEMENTS::RedAcinus::Print(std::ostream& os) const
   return;
 }
 
+/*-----------------------------------------------------------------------------*
+*------------------------------------------------------------------------------*/
+std::vector<double> DRT::ELEMENTS::RedAcinus::ElementCenterRefeCoords()
+{
+//  // update element geometry
+  DRT::Node** nodes = Nodes();
+
+  Epetra_SerialDenseMatrix mat(NumNode(),3, false);
+  for (int i=0; i<NumNode(); ++i)
+  {
+    const double* x = nodes[i]->X();
+    mat(i,0) = x[0];
+    mat(i,1) = x[1];
+    mat(i,2) = x[2];
+  }
+
+  std::vector<double> centercoords(3,0);
+  for (int i=0; i<3; ++i)
+  {
+    double var = 0;
+    for (int j=0; j<NumNode(); ++j )
+    {
+      var = var + mat(j,i);
+    }
+    centercoords[i] = var/NumNode();
+  }
+
+  return centercoords;
+}
+
 /*----------------------------------------------------------------------*
  |  Return names of visualization data                     ismail 01/10 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::RedAcinus::VisNames(std::map<std::string,int>& names)
 {
+  Teuchos::RCP<MAT::Material> mat = Material();
+
+  // cast to specific material, because general material does not have VisNames/VisData
+  Teuchos::RCP<MAT::Maxwell_0d_acinus> mxwll_0d_acin = Teuchos::rcp_dynamic_cast<MAT::Maxwell_0d_acinus>(Material());
+  mxwll_0d_acin->VisNames(names);
 
 #if 0
   // see whether we have additional data for visualization in our container
@@ -277,9 +313,27 @@ bool DRT::ELEMENTS::RedAcinus::VisData(const std::string& name, std::vector<doub
   if(DRT::Element::VisData(name,data))
     return true;
 
-  return false;
+  // cast to specific material, because general material does not have VisNames/VisData
+  Teuchos::RCP<MAT::Maxwell_0d_acinus> mxwll_0d_acin = Teuchos::rcp_dynamic_cast<MAT::Maxwell_0d_acinus>(Material());
+
+  return mxwll_0d_acin->VisData(name, data, this->Id());
 }
 
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+void DRT::ELEMENTS::RedAcinus::setParams(std::string name, double & var)
+{
+
+  std::map<std::string,double>::iterator it;
+  it = elemParams_.find(name);
+  if (it == elemParams_.end())
+  {
+    dserror ("[%s] is not found with in the element variables",name.c_str());
+    exit(1);
+  }
+  elemParams_[name] = var;
+
+}
 
 /*----------------------------------------------------------------------*
  |  Get element parameters (public)                        ismail 04/10 |

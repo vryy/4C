@@ -130,14 +130,21 @@ private:
   */
   void InitStochParaMaps();
 
-
   /*!
-  \brief Compute params vector and set vectors of respective materials
+  \brief Compute params vector and set vectors of respective structure materials
 
    \param para_cont_parameter (in): value between 0 and 1 for parameter
                                     continuation scheme
   */
-  void SetParams(double para_cont_parameter);
+  void SetParamsStructure(double para_cont_parameter);
+
+  /*!
+  \brief Compute params vector and set parameters of respective airway materials
+
+   \param para_cont_parameter (in): value between 0 and 1 for parameter
+                                    continuation scheme
+  */
+  void SetParamsRedAirways(double para_cont_parameter);
 
   /*!
   \brief Compute a new realisation for all random fields

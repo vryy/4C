@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file maxwell_0d_acinus.H
+\file maxwell_0d_acinus.cpp
 
 <pre>
 Maintainer: Christian Roth
@@ -22,13 +22,11 @@ Maintainer: Christian Roth
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PAR::Maxwell_0d_acinus::Maxwell_0d_acinus(
-  Teuchos::RCP<MAT::PAR::Material> matdata
-  )
-: Parameter(matdata),
-  stiffness1_(matdata->GetDouble("Stiffness1")),
-  stiffness2_(matdata->GetDouble("Stiffness2")),
-  viscosity1_(matdata->GetDouble("Viscosity1")),
-  viscosity2_(matdata->GetDouble("Viscosity2"))
+    Teuchos::RCP<MAT::PAR::Material> matdata) :
+    Parameter(matdata), stiffness1_(matdata->GetDouble("Stiffness1")), stiffness2_(
+        matdata->GetDouble("Stiffness2")), viscosity1_(
+        matdata->GetDouble("Viscosity1")), viscosity2_(
+        matdata->GetDouble("Viscosity2"))
 {
 }
 
@@ -83,12 +81,10 @@ void MAT::Maxwell_0d_acinus::Pack(DRT::PackBuffer& data) const
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 void MAT::Maxwell_0d_acinus::Unpack(const std::vector<char>& data)
 {
-
-
   std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
@@ -112,5 +108,20 @@ void MAT::Maxwell_0d_acinus::Unpack(const std::vector<char>& data)
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",data.size(),position);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double MAT::Maxwell_0d_acinus::GetParams(std::string parametername)
+{
+  dserror("GetParams not implemented yet for this material!");
+  return 0;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::Maxwell_0d_acinus::SetParams(std::string parametername, double new_value)
+{
+  dserror("SetParams not implemented yet for this material!");
 }
 

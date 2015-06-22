@@ -508,6 +508,14 @@ void AIRWAY::RedAirwayTissue::SetupRedAirways()
     airwaystimeparams.set                  ("SolveScatra" ,true);
   else
     airwaystimeparams.set                  ("SolveScatra" ,false);
+  //Adjust acini volume with pre-stress condition
+  if (rawdyn.get<string>("CALCV0PRESTRESS")=="yes")
+  {
+    airwaystimeparams.set                  ("CalcV0PreStress" ,true);
+    airwaystimeparams.set                  ("transpulmpress"          ,rawdyn.get<double>("TRANSPULMPRESS"));
+  }
+  else
+    airwaystimeparams.set                  ("CalcV0PreStress" ,false);
 
 
   airwaystimeparams.set<FILE*>("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
