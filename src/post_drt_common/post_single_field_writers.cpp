@@ -317,6 +317,7 @@ void ScaTraFilter::WriteAllResults(PostField* field)
 
 
   writer_->WriteResult("rea_coeff","rea_coeff",elementbased,1);
+  writer_->WriteResult("diff_coeff","diff_coeff",elementbased,1);
 
   // write element results (e.g. element owner)
   WriteElementResults(field);

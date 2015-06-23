@@ -49,8 +49,8 @@ Maintainer: Svenja Schoeder
 /*----------------------------------------------------------------------*/
 ACOU::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> scatradis,
                                Teuchos::RCP<DRT::DiscretizationHDG> acoudis,
-                               const Teuchos::ParameterList& scapara,
-                               const Teuchos::ParameterList& scasolvpara,
+                               Teuchos::RCP<Teuchos::ParameterList> scatrapara,
+                               Teuchos::RCP<LINALG::Solver> scatrasolv,
                                Teuchos::RCP<Teuchos::ParameterList> acoupara,
                                Teuchos::RCP<LINALG::Solver> acousolv,
                                Teuchos::RCP<IO::DiscretizationWriter> acouout
@@ -59,8 +59,8 @@ ACOU::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> scatradis,
     acou_discret_(acoudis),
     scatraalgo_(Teuchos::null),
     acoualgo_(Teuchos::null),
-    scatraparams_(scapara),
-    scatrasolverparams_(scasolvpara),
+    scatraparams_(scatrapara),
+    scatrasolver_(scatrasolv),
     acouparams_(acoupara),
     acousolver_(acousolv),
     acououtput_(acouout),
@@ -94,14 +94,24 @@ ACOU::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> scatradis,
   if(not acou_discret_->Filled() || not acou_discret_->HaveDofs()) dserror("acoustical discretization is not complete or has no dofs");
   if(not scatra_discret_->Filled() || not scatra_discret_->HaveDofs()) dserror("scatra discretization is not complete or has no dofs");
 
+  // create necessary extra parameter list for scatra
+  scatraextraparams_ = Teuchos::rcp(new Teuchos::ParameterList());
+  scatraextraparams_->set<FILE*>("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
+  scatraextraparams_->set<bool>("isale",false);
+  const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
+  scatraextraparams_->sublist("TURBULENCE MODEL")=fdyn.sublist("TURBULENCE MODEL");
+  scatraextraparams_->sublist("SUBGRID VISCOSITY")=fdyn.sublist("SUBGRID VISCOSITY");
+  scatraextraparams_->sublist("MULTIFRACTAL SUBGRID SCALES")=fdyn.sublist("MULTIFRACTAL SUBGRID SCALES");
+  scatraextraparams_->sublist("TURBULENT INFLOW")=fdyn.sublist("TURBULENT INFLOW");
+
   // set up of the output
-  scatra_output_ = scatra_discret_->Writer();
+  scatraoutput_ = scatra_discret_->Writer();
   name_ = DRT::Problem::Instance()->OutputControlFile()->FileName();
 
   // vectors we need
-  adjoint_phi_0_ = LINALG::CreateVector(*(acou_discret_->NodeRowMap()),true);
+  adjoint_psi_ = LINALG::CreateVector(*(acou_discret_->NodeRowMap()),true);
   phi_ = LINALG::CreateVector(*(scatra_discret_->DofRowMap()),true);
-  adjoint_w_ = LINALG::CreateVector(*(scatra_discret_->DofRowMap()),true);
+  adjoint_phi_ = LINALG::CreateVector(*(scatra_discret_->DofRowMap()),true);
 
   // tolerance for the gradient, if used
   if(calcacougrad_) tol_grad_ = acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<double>("INV_TOL_GRAD");
@@ -502,7 +512,6 @@ double ACOU::InvAnalysis::GetEpsilon(int nnodes)
     if(min_abs>min_dis[i])
       min_abs=min_dis[i];
 
-
   eps = min_abs/100.0;
 
   return eps;
@@ -566,18 +575,17 @@ void ACOU::InvAnalysis::ComputeNodeBasedVectors()
 /*----------------------------------------------------------------------*/
 void ACOU::InvAnalysis::Integrate()
 {
-  // Solve the standard problem
-  count_=0;
+
   // Estimate values for mu_a
   if(backprojection_)
-    EstimateMua();
+    EstimateMua(0);
 
   // Solve the standard problem
   SolveStandardProblemScatra();
 
   if(backprojection_)
   {
-    EstimateMua();
+    EstimateMua(1);
     SolveStandardProblemScatra(); //to output the actual distribution
   }
   SolveStandardProblemAcou();
@@ -664,26 +672,7 @@ void ACOU::InvAnalysis::Integrate()
 /*----------------------------------------------------------------------*/
 void ACOU::InvAnalysis::SolveStandardProblemScatra()
 {
-  // create scatra algorithm
-  const INPAR::SCATRA::VelocityField veltype = DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(scatraparams_,"VELOCITYFIELD");
-
-  Teuchos::RCP<LINALG::Solver> solver = Teuchos::rcp(new LINALG::Solver(scatrasolverparams_,scatra_discret_->Comm(),DRT::Problem::Instance()->ErrorFile()->Handle()));
-  Teuchos::RCP<Teuchos::ParameterList> scatratimeparams= Teuchos::rcp(new Teuchos::ParameterList(scatraparams_));
-  scatratimeparams->set<double>   ("TIMESTEP"    ,1.0);
-  scatratimeparams->set<double>   ("MAXTIME"     ,1.0);
-  scatratimeparams->set<int>      ("NUMSTEP"     ,1);
-  scatratimeparams->set           ("RESTARTEVRY" ,1);
-  scatratimeparams->set           ("UPRES"       ,1);
-
-  Teuchos::RCP<Teuchos::ParameterList> extraparams = Teuchos::rcp(new Teuchos::ParameterList());
-  extraparams->set<FILE*>("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
-  extraparams->set<bool>("isale",false);
-  const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
-  extraparams->sublist("TURBULENCE MODEL")=fdyn.sublist("TURBULENCE MODEL");
-  extraparams->sublist("SUBGRID VISCOSITY")=fdyn.sublist("SUBGRID VISCOSITY");
-  extraparams->sublist("MULTIFRACTAL SUBGRID SCALES")=fdyn.sublist("MULTIFRACTAL SUBGRID SCALES");
-  extraparams->sublist("TURBULENT INFLOW")=fdyn.sublist("TURBULENT INFLOW");
-
+  // output for user
   scatra_discret_->Comm().Barrier();
   if(!myrank_)
   {
@@ -694,6 +683,8 @@ void ACOU::InvAnalysis::SolveStandardProblemScatra()
     std::cout << std::endl;
   }
 
+  // create and run scatra algorithm
+  const INPAR::SCATRA::VelocityField veltype = DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(*scatraparams_,"VELOCITYFIELD");
   switch (veltype)
   {
     case INPAR::SCATRA::velocity_zero:  // zero  (see case 1)
@@ -705,12 +696,12 @@ void ACOU::InvAnalysis::SolveStandardProblemScatra()
 
       std::string outname = name_;
       outname.append("_invforward_opti");
-      scatra_output_->NewResultFile(outname,output_count_);
+      scatraoutput_->NewResultFile(outname,output_count_);
       output_count_++;
-      scatra_output_->WriteMesh(0,0.0);
+      scatraoutput_->WriteMesh(0,0.0);
 
       // create instance of scalar transport basis algorithm (empty fluid discretization)
-      scatraalgo_ = Teuchos::rcp(new SCATRA::TimIntStationary(scatra_discret_, solver, scatratimeparams, extraparams, scatra_output_));
+      scatraalgo_ = Teuchos::rcp(new SCATRA::TimIntStationary(scatra_discret_, scatrasolver_, scatraparams_, scatraextraparams_, scatraoutput_));
 
       scatraalgo_->Init();
       scatraalgo_->SetVelocityField();
@@ -718,8 +709,9 @@ void ACOU::InvAnalysis::SolveStandardProblemScatra()
       scatraalgo_->TimeLoop();
 
       // output of elemental reaction coefficient
-      scatraalgo_->DiscWriter().WriteVector("rea_coeff",ElementMatVec());
+      OutputReactionAndDiffusion();
 
+      // store the solution vector
       phi_ = scatraalgo_->Phinp();
 
       break;
@@ -731,6 +723,27 @@ void ACOU::InvAnalysis::SolveStandardProblemScatra()
   return;
 }
 
+void ACOU::InvAnalysis::OutputReactionAndDiffusion()
+{
+
+  // build the two vectors
+  Teuchos::RCP<Epetra_Vector> reacvec = Teuchos::rcp(new Epetra_Vector(*(scatra_discret_->ElementRowMap()),false));
+  Teuchos::RCP<Epetra_Vector> diffvec = Teuchos::rcp(new Epetra_Vector(*(scatra_discret_->ElementRowMap()),false));
+
+  for (int i=0; i<scatra_discret_->NumMyRowElements(); i++)
+  {
+    DRT::Element* actele;
+    actele = scatra_discret_->lRowElement(i);
+    double reac = actele->Material()->Parameter()->GetParameter(1,scatra_discret_->ElementColMap()->LID(actele->Id()));
+    double diff = actele->Material()->Parameter()->GetParameter(0,scatra_discret_->ElementColMap()->LID(actele->Id()));
+    reacvec->operator [](i) = reac;
+    diffvec->operator [](i) = diff;
+  }
+  scatraoutput_->WriteVector("rea_coeff",reacvec);
+  scatraoutput_->WriteVector("diff_coeff",diffvec);
+
+  return;
+}
 void ACOU::InvAnalysis::SolveStandardProblemAcou()
 {
   bool meshconform = DRT::INPUT::IntegralValue<bool>(*acouparams_,"MESHCONFORM");
@@ -778,47 +791,13 @@ void ACOU::InvAnalysis::SolveStandardProblemAcou()
   // we have to call a slightly changed routine, which fills our history vector which we need for the adjoint problem
   acou_rhs_->Scale(0.0);
 
-  double norminf = 0.0;
-  matman_->GetMatParams()->NormInf(&norminf);
-  if(norminf>1.0e-9) // we do not have to solve when the maximum reaction coefficient is zero, just a waste of time!
-    acoualgo_->Integrate(acou_rhs_,abcnodes_mapex_);
+  // determine if we have to perform this evaluation
+  double maxval = 0.0;
+  matman_->GetParams()->MaxValue(&maxval);
 
-    //if(iter_==0 && output_count_<3) // do you want this output?
-//    {
-//      //std::cout<<"measured values"<<std::endl;
-//      std::cout.precision(15);
-//      for(int j=0; j<acou_rhs_->NumVectors(); ++j)
-//      {
-//        //std::cout<<"j "<<j<<" myrank "<<myrank_<<std::endl;
-//        acou_discret_->Comm().Barrier();
-//        if(myrank_==0)
-//        {
-//          std::cout<<dtacou_*double(j)<<" ";
-//          std::cout<<flush;
-//        }
-//        //std::cout<<"j "<<j<<" myrank "<<myrank_<<" numglobalelements "<<acou_rhs_->Map().NumGlobalElements()<<std::endl;
-//        for(int i=0; i<acou_rhs_->Map().NumGlobalElements(); ++i)
-//        {
-//          //std::cout<<"j "<<j<<" i "<<i<<" myrank "<<myrank_<<" lid "<<acou_rhs_->Map().LID(nodes_[i])<<std::endl;
-//          acou_discret_->Comm().Barrier();
-//          usleep(500);
-//          if(acou_rhs_->Map().LID(nodes_[i])>=0)
-//          {
-//            std::cout<<" "<<acou_rhs_->operator ()(j)->operator [](i);
-//            std::cout<<flush;
-//          }
-//        }
-//        acou_discret_->Comm().Barrier();
-//        usleep(500);
-//        if(myrank_==0)
-//        {
-//          std::cout<<std::endl;
-//          std::cout<<flush;
-//        }
-//        acou_discret_->Comm().Barrier();
-//        usleep(500);
-//      }
-//    }
+  // only necessary for values which are nonzero
+  if(maxval>1.0e-9) // we do not have to solve when the maximum reaction coefficient is zero, just a waste of time!
+    acoualgo_->Integrate(acou_rhs_,abcnodes_mapex_);
 
   return;
 } // void ACOU::InvAnalysis::SolveStandardProblem()
@@ -862,39 +841,32 @@ void ACOU::InvAnalysis::SolveAdjointAcouProblem()
   // but we had to set the flag such that the integrator accounts for the right hand side values
   // from the difference of measured and simulated values, also these values have to be fed into
   // the parameter list
-
   acouparams_->set<bool>("adjoint",true); // but this time, we set the flag that we are doing the adjoint problem
+
   // set list of monitored nodes
   Teuchos::RCP<std::vector<int> > nodes_rcp= Teuchos::rcp(new std::vector<int> (nodes_.size()));
   for(unsigned int i=0; i<nodes_.size(); ++i)
     (*nodes_rcp)[i] = nodes_[i];
   acouparams_->set<Teuchos::RCP<std::vector<int> > >("monitorednodes",nodes_rcp);
 
-  // set p-p_m
-  /*  cout<<"measured"<<endl;
-  acou_rhsm_->Print(cout);
-  cout<<"simulated"<<endl;
-  acou_rhs_->Print(cout);
-  cout<<"simulated"<<endl;
-  for(int i=0; i<acou_rhs_->NumVectors(); ++i)
-  {
-    cout<< double(i)*dtacou_ <<" "<<acou_rhs_->operator ()(i)->operator [](0)<<" "<<acou_rhs_->operator ()(i)->operator [](1)<<" "<<acou_rhs_->operator ()(i)->operator [](2)<<" "<<acou_rhs_->operator ()(i)->operator [](3)<<endl;
-  }
-  */
+  // build difference
   acou_rhs_->Update(-1.0,*acou_rhsm_,1.0);
 
-  // acou_rhs_ has to be scaled with weighting (adjoint of the weighting)
+  // acou_rhs_ has to be scaled with weighting (adjoint of the mappint (|R))
   Teuchos::RCP<Epetra_Vector> touchcountvec = LINALG::CreateVector(*abcnodes_map_);
   acoualgo_->FillTouchCountVec(touchcountvec);
   acou_rhs_->Multiply(1.0,*touchcountvec,*acou_rhs_,0.0);
 
+  // set the difference between measured and simulated values
   acouparams_->set<Teuchos::RCP<Epetra_MultiVector> >("rhsvec",acou_rhs_);
 
+  // prepare the output
   std::string outname = name_;
   outname.append("_invadjoint_acou");
   acououtput_->NewResultFile(outname,output_count_);
   output_count_++;
 
+  // create the acoustic algorithm
   switch(dyna_)
   {
   case INPAR::ACOU::acou_impleuler:
@@ -933,9 +905,9 @@ void ACOU::InvAnalysis::SolveAdjointAcouProblem()
   // integrate the adjoint problem
   acoualgo_->Integrate();
 
-  // give me phi(0) which is needed for the source term of the adjoint optical problem
-  adjoint_phi_0_->PutScalar(0.0);
-  acoualgo_->NodalPsiField(adjoint_phi_0_);
+  // give me psi which is needed for the source term of the adjoint optical problem
+  adjoint_psi_->PutScalar(0.0);
+  acoualgo_->NodalPsiField(adjoint_psi_);
 
   return;
 } // void ACOU::InvAnalysis::SolveAdjointAcouProblem()
@@ -966,21 +938,23 @@ void ACOU::InvAnalysis::SolveAdjointOptiProblem()
   // calculate this rhs vector!!!
   // acou node based vector -> opti dof based vector
   Teuchos::RCP<Epetra_Vector> rhsvec;
+
+  // consider both cases
   bool meshconform = DRT::INPUT::IntegralValue<bool>(*acouparams_,"MESHCONFORM");
   if(meshconform)
   {
     rhsvec = LINALG::CreateVector(*(scatra_discret_->DofRowMap()),true);
 
-    int maxnodeidacou = acou_discret_->NodeRowMap()->MaxAllGID();
+    int minnodeidscatra = scatra_discret_->NodeRowMap()->MinAllGID();
     for(int nd=0; nd<acou_discret_->NumGlobalNodes(); ++nd)
     {
       // get node and owner
       int myoptnodeowner = -1;
       int optnodeowner = -1;
       DRT::Node* opti_node = NULL;
-      if( scatra_discret_->HaveGlobalNode(nd+maxnodeidacou+1) )
+      if( scatra_discret_->HaveGlobalNode(nd+minnodeidscatra) )
       {
-        opti_node = scatra_discret_->gNode(nd+maxnodeidacou+1);
+        opti_node = scatra_discret_->gNode(nd+minnodeidscatra);
         myoptnodeowner = opti_node->Owner();
         if( myoptnodeowner != scatra_discret_->Comm().MyPID() ) myoptnodeowner = -1; // cannot use myrank_ because that is acou_discret_->Comm().MyPID()
       }
@@ -991,7 +965,7 @@ void ACOU::InvAnalysis::SolveAdjointOptiProblem()
       double loc_value = 0.0;
       if(acou_discret_->NodeRowMap()->LID(nd)>-1)
       {
-        loc_value = adjoint_phi_0_->operator [](acou_discret_->NodeRowMap()->LID(nd));
+        loc_value = adjoint_psi_->operator [](acou_discret_->NodeRowMap()->LID(nd));
       }
       double glo_value = 0.0;
       acou_discret_->Comm().SumAll(&loc_value,&glo_value,1);
@@ -999,7 +973,7 @@ void ACOU::InvAnalysis::SolveAdjointOptiProblem()
       // ok, we got the value, we still need c, rho and mu_a, but they are stored on the nodemap of the scatra dis, so this should not be a problem
       if(scatra_discret_->Comm().MyPID() == optnodeowner)
       {
-        int lnodeid = node_mu_a_->Map().LID(nd+maxnodeidacou+1);
+        int lnodeid = node_mu_a_->Map().LID(nd+minnodeidscatra);
         double mu_a = node_mu_a_->operator [](lnodeid);
         int dofgid = scatra_discret_->Dof(opti_node,0);
         int doflid = scatra_discret_->DofRowMap()->LID(dofgid);
@@ -1010,7 +984,7 @@ void ACOU::InvAnalysis::SolveAdjointOptiProblem()
   } // if(meshconform)
   else
   {
-    rhsvec = CalculateNonconformRhsvec(adjoint_phi_0_);
+    rhsvec = CalculateNonconformRhsvec(adjoint_psi_);
     for(int i=0; i<node_mu_a_->MyLength(); ++i)
     {
       double mu_a = node_mu_a_->operator [](i);
@@ -1020,14 +994,14 @@ void ACOU::InvAnalysis::SolveAdjointOptiProblem()
     }
   } // else ** if(meshconform)
 
+  // perform the element integration
   Teuchos::ParameterList eleparams;
   scatra_discret_->SetState("rhsnodebasedvals",rhsvec);
   eleparams.set<int>("action",SCATRA::calc_integr_pat_rhsvec);
   Teuchos::RCP<Epetra_Vector> b = LINALG::CreateVector(*(scatra_discret_->DofRowMap()),true);
-
   scatra_discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,b,Teuchos::null,Teuchos::null);
 
-
+  // consider Dirichlet boundaries in the right hand side vector
   std::string condname = "Dirichlet";
   std::vector<DRT::Condition*> dirichlets;
   scatra_discret_->GetCondition(condname,dirichlets);
@@ -1043,22 +1017,21 @@ void ACOU::InvAnalysis::SolveAdjointOptiProblem()
         int err = b->ReplaceGlobalValue(dofgid,0,0.0);
         if (err) dserror("could not replace global vector entry");
       }
-    } // for(unsigned int i=0; i<dirichlets.size(); ++i)
-  } // for(int nd=0; nd<scatra_discret_->NumMyRowNodes(); ++nd)
+    }
+  }
 
-  // the rhsvec is ready for take off
   // solve the system now!
-  Teuchos::RCP<LINALG::Solver> solver = Teuchos::rcp(new LINALG::Solver(scatrasolverparams_,scatra_discret_->Comm(),DRT::Problem::Instance()->ErrorFile()->Handle()));
-  solver->Solve(sysmatscatra->EpetraOperator(),adjoint_w_,b,true,true);
+  scatrasolver_->Solve(sysmatscatra->EpetraOperator(),adjoint_phi_,b,true,true);
 
+  // output the solution
   std::string outname = name_;
   outname.append("_invadjoint_opti");
-  scatra_output_->NewResultFile(outname,output_count_);
+  scatraoutput_->NewResultFile(outname,output_count_);
   output_count_++;
-  scatraalgo_->DiscWriter().WriteMesh(0,0.0);
-  scatraalgo_->DiscWriter().NewStep(1,1.0);
-  scatraalgo_->DiscWriter().WriteElementData(true);
-  scatraalgo_->DiscWriter().WriteVector("phinp",adjoint_w_);
+  scatraoutput_->WriteMesh(0,0.0);
+  scatraoutput_->NewStep(1,1.0);
+  scatraoutput_->WriteElementData(true);
+  scatraoutput_->WriteVector("phinp",adjoint_phi_);
   return;
 } // void ACOU::InvAnalysis::SolveAdjointOptiProblem()
 
@@ -1246,7 +1219,7 @@ void ACOU::InvAnalysis::CalculateGradient()
   if(regman_ != Teuchos::null)
     regman_->EvaluateGradient(*(matman_->GetParams()),objgrad_);
 
-  scatra_discret_->SetState("dual phi",adjoint_w_);
+  scatra_discret_->SetState("adjoint phi",adjoint_phi_);
   scatra_discret_->SetState("phi",phi_);
 
   Teuchos::RCP<Epetra_Vector> psi = LINALG::CreateVector(*(scatra_discret_->DofRowMap()),true);
@@ -1274,7 +1247,7 @@ void ACOU::InvAnalysis::CalculateGradient()
       double loc_value = 0.0;
       if(acou_discret_->NodeRowMap()->LID(nd)>-1)
       {
-        loc_value = adjoint_phi_0_->operator [](acou_discret_->NodeRowMap()->LID(nd));
+        loc_value = adjoint_psi_->operator [](acou_discret_->NodeRowMap()->LID(nd));
       }
       double glo_value = 0.0;
       acou_discret_->Comm().SumAll(&loc_value,&glo_value,1);
@@ -1290,9 +1263,11 @@ void ACOU::InvAnalysis::CalculateGradient()
     }
   }
   else
-    psi = CalculateNonconformRhsvec(adjoint_phi_0_);
-
+    psi = CalculateNonconformRhsvec(adjoint_psi_);
+  // set the psi vector
   scatra_discret_->SetState("psi",psi);
+
+  // do the actual evaluation
   matman_->AddEvaluate(0.0,objgrad_);
   matman_->Finalize(objgrad_);
 
@@ -1311,16 +1286,14 @@ void ACOU::InvAnalysis::CalculateGradient()
 /*----------------------------------------------------------------------*/
 void ACOU::InvAnalysis::FD_GradientCheck()
 {
-  if(!myrank_)
-  {
-    std::cout<<"ooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"<<std::endl;
-    std::cout<<"ooooooooooooooooooooo FD Check oooooooooooooooooooooooooo"<<std::endl;
-    std::cout<<"ooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"<<std::endl;
-  }
+  if(myrank_)
+    dserror("The Gradient Check works only for serial calculations");
 
+  std::cout<<"ooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"<<std::endl;
+  std::cout<<"ooooooooooooooooooooo FD Check oooooooooooooooooooooooooo"<<std::endl;
+  std::cout<<"ooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"<<std::endl;
 
-  if(!myrank_)
-    std::cout<<"Gradient according to adjoint analysis"<<std::endl;
+  std::cout<<"Gradient according to adjoint analysis"<<std::endl;
   objgrad_->Print(std::cout);
 
   double J_before = J_;
@@ -1332,7 +1305,7 @@ void ACOU::InvAnalysis::FD_GradientCheck()
   Teuchos::RCP<Epetra_MultiVector> objgradFD = Teuchos::rcp(new Epetra_MultiVector(*(matman_->ParamLayoutMap()), matman_->NumVectors(),true));
 
   double perturba = 1.0e-3;
-  double perturbb = 1.0e-4;
+  double perturbb = 0.0; //1.0e-4;
 
   Teuchos::RCP<Epetra_MultiVector> perturb = Teuchos::rcp(new Epetra_MultiVector(*(matman_->ParamLayoutMap()), matman_->NumVectors(),true));
   perturb->Update(1.0,*(matman_->GetParams()),0.0);
@@ -1374,8 +1347,7 @@ void ACOU::InvAnalysis::FD_GradientCheck()
   matman_->ReplaceParams(*pcurr);
   J_ = J_before;
 
-  if(!myrank_)
-    std::cout<<"Gradient according to finite difference check"<<std::endl;
+  std::cout<<"Gradient according to finite difference check"<<std::endl;
   objgradFD->Print(std::cout);
 
   acou_rhs_->Update(1.0,tempvec,0.0);
@@ -1388,10 +1360,12 @@ bool ACOU::InvAnalysis::UpdateParameters()
 {
   double J_before = J_;
 
+  // first iteration is steepest descent
   if(iter_==0 || opti_ == INPAR::ACOU::inv_gd)
     d_->Update(-1.0,*objgrad_,0.0);
   else
   {
+    // else the inverse hessian is applied
     StoreVectors();
     ComputeDirection();
   }
@@ -1399,11 +1373,13 @@ bool ACOU::InvAnalysis::UpdateParameters()
   if(iter_==0 || opti_ == INPAR::ACOU::inv_gd) // in the first iteration the lbfgs does not know how long the step should be, gradient descent should always do scaled step length
     d_->Scale(1.0/normgrad0_*double(objgrad_->Map().NumGlobalElements()));
 
+  // output for small problems
   if(d_->GlobalLength()<30)
   {
     std::cout<<"search direction "<<std::endl;
     d_->Print(std::cout);
   }
+  // perform the actual line search
   bool success = LineSearch();
 
   if (success == false && opti_ == INPAR::ACOU::inv_lbfgs && iter_ != 0)
@@ -1516,8 +1492,6 @@ void ACOU::InvAnalysis::ComputeDirection()
 /*----------------------------------------------------------------------*/
 bool ACOU::InvAnalysis::LineSearch()
 {
-  //Epetra_SerialDenseVector pnew(d.M());
-
   // This is a backtracking line search, starting with initial alpha and reducing it,
   // as long as the sufficient decrease condition is not yet satisfied
 
@@ -1544,6 +1518,7 @@ bool ACOU::InvAnalysis::LineSearch()
       std::cout<<"*************** line search iteration "<<count<<" of maximal "<<max_ls_iter_<<" line search iterations, condition "<<condition<<" step length "<<alpha<<" norm direction "<<norm_d<<std::endl;
 
     step_->Update(alpha,*d_,0.0);
+
     matman_->UpdateParams(step_);
 
     SolveStandardProblemScatra();
@@ -1628,7 +1603,15 @@ bool ACOU::InvAnalysis::ConvergenceCheck()
 /*----------------------------------------------------------------------*/
 const Teuchos::RCP<Epetra_MultiVector> ACOU::InvAnalysis::ElementMatVec()
 {
-  return matman_->GetMatParams();
+  Teuchos::RCP<Epetra_Vector> reacvec = Teuchos::rcp(new Epetra_Vector(*(scatra_discret_->ElementRowMap()),false));
+  for (int i=0; i<scatra_discret_->NumMyRowElements(); i++)
+  {
+    DRT::Element* actele;
+    actele = scatra_discret_->lRowElement(i);
+    double reac = actele->Material()->Parameter()->GetParameter(1,scatra_discret_->ElementColMap()->LID(actele->Id()));
+    reacvec->operator [](i) = reac;
+  }
+  return reacvec;
 } // const Teuchos::RCP<Epetra_Vector> ACOU::InvAnalysis::ElementMatVec()
 
 /*----------------------------------------------------------------------*/
@@ -1638,7 +1621,7 @@ Teuchos::RCP<DRT::ResultTest> ACOU::InvAnalysis::CreateFieldTest()
 } // Teuchos::RCP<DRT::ResultTest> ACOU::InvAnalysis::CreateFieldTest()
 
 /*----------------------------------------------------------------------*/
-void ACOU::InvAnalysis::EstimateMua()
+void ACOU::InvAnalysis::EstimateMua(int count)
 {
   // backprojection-algorithm
 
@@ -1729,7 +1712,7 @@ void ACOU::InvAnalysis::EstimateMua()
   //***********************************************************************
   // phi-correction:
 
-  if(count_)
+  if(count)
   {
     for(int a=0;a<scatra_discret_->NumMyRowElements();a++)
     {
@@ -1910,7 +1893,6 @@ void ACOU::InvAnalysis::EstimateMua()
     }
   }
   matman_->ReplaceParams(*step_);
-  count_++;
 
   return;
 }

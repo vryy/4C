@@ -282,6 +282,8 @@ void ACOU::AcouImplicitTimeInt::SetInitialPhotoAcousticField(
   if(meshconform)
   {
     int minoptelegid = scatradis->ElementRowMap()->MinAllGID();
+    int minacouelegid = discret_->ElementRowMap()->MinAllGID();
+
     std::vector<int> localrelevantghostelements;
     // loop all optical elements (usually there are less optical elements than acoustical elements
     for(int optel=0; optel<numoptele; ++optel)
@@ -304,14 +306,14 @@ void ACOU::AcouImplicitTimeInt::SetInitialPhotoAcousticField(
 
       // who is the owner of the associated acoustical element?
       DRT::Element* acouele = NULL;
-      if( discret_->HaveGlobalElement(optel) )
+      if( discret_->HaveGlobalElement(optel+minacouelegid) )
       {
-        acouele = discret_->gElement(optel);
+        acouele = discret_->gElement(optel+minacouelegid);
         myacoueleowner = acouele->Owner();
         if ( myacoueleowner != myrank_ )
         {
           myacoueleowner = -1;
-          localrelevantghostelements.push_back(optel);
+          localrelevantghostelements.push_back(optel+minacouelegid);
         } // do not want to consider ghosted elements
       }
 
@@ -958,7 +960,8 @@ void ACOU::AcouImplicitTimeInt::UpdateInteriorVariablesAndAssemebleRHS()
 
   Teuchos::RCP<std::vector<double> > elevals;
   if(errormaps_)
-    elevals = Teuchos::rcp(new std::vector<double>(discret_->NumGlobalElements(),0.0));eleparams.set<Teuchos::RCP<std::vector<double> > >("elevals",elevals);
+    elevals = Teuchos::rcp(new std::vector<double>(discret_->NumGlobalElements(),0.0));
+  eleparams.set<Teuchos::RCP<std::vector<double> > >("elevals",elevals);
 
   eleparams.set<int>("action",ACOU::update_secondary_solution_and_calc_residual);
   eleparams.set<INPAR::ACOU::DynamicType>("dynamic type",dyna_);
@@ -1128,65 +1131,6 @@ namespace
 
     return;
   } // getNodeVectorsHDG
-  void getNodalPsiHDG (DRT::Discretization               &dis,
-                       const Teuchos::RCP<Epetra_Vector> &traceValues,
-                       Teuchos::RCP<Epetra_Vector>       &psi,
-                       INPAR::ACOU::PhysicalType         phys,
-                       double                            dt)
-  {
-
-    const Epetra_Map* nodemap = dis.NodeRowMap();
-    psi.reset(new Epetra_Vector(*nodemap));
-
-    // call element routine for interpolate HDG to elements
-    Teuchos::ParameterList params;
-    params.set<int>("action",ACOU::interpolate_psi_to_node);
-    dis.SetState(0,"trace",traceValues);
-    params.set<INPAR::ACOU::PhysicalType>("physical type",phys);
-    params.set<double>("dt",dt);
-    params.set<bool>("padaptivity",false); // TODO
-
-    std::vector<int> dummy;
-    DRT::Element::LocationArray la(2);
-
-    Epetra_SerialDenseMatrix dummyMat;
-    Epetra_SerialDenseVector dummyVec;
-    Epetra_SerialDenseVector interpolVec;
-    std::vector<unsigned char> touchCount(psi->MyLength());
-
-    psi->PutScalar(0.);
-
-    for (int el=0; el<dis.NumMyColElements();++el)
-    {
-      DRT::Element *ele = dis.lColElement(el);
-      ele->LocationVector(dis,la,false);
-      if (interpolVec.M() == 0)
-        interpolVec.Resize(ele->NumNode());
-
-      ele->Evaluate(params,dis,la[0].lm_,dummyMat,dummyMat,interpolVec,dummyVec,dummyVec);
-
-      // sum values on nodes into vectors and record the touch count (build average of values)
-      for (int i=0; i<ele->NumNode(); ++i)
-      {
-        DRT::Node* node = ele->Nodes()[i];
-        const int localIndex = psi->Map().LID(node->Id());
-
-        if (localIndex < 0)
-          continue;
-
-        touchCount[localIndex]++;
-        (*psi)[localIndex] += interpolVec(i);
-      }
-
-    }
-
-    for (int i=0; i<psi->MyLength(); ++i)
-      (*psi)[i] /= touchCount[i];
-
-    dis.ClearState();
-
-    return;
-  } // getNodalPsiHDG
 
   void getNodeVectorsHDGSolid(DRT::Discretization              &dis,
                             const Teuchos::RCP<Epetra_Vector> &traceValues,
@@ -1419,14 +1363,14 @@ void ACOU::AcouImplicitTimeInt::FillTouchCountVec(Teuchos::RCP<Epetra_Vector> to
 {
   // absorbing boundary conditions
   std::string condname = "PressureMonitor";
-  std::vector<DRT::Condition*> absorbingBC;
-  discret_->GetCondition(condname,absorbingBC);
+  std::vector<DRT::Condition*> pressuremon;
+  discret_->GetCondition(condname,pressuremon);
 
   std::vector<unsigned char> touchCount(touchcount->MyLength());
 
-  for(unsigned int i=0; i<absorbingBC.size(); ++i)
+  for(unsigned int i=0; i<pressuremon.size(); ++i)
   {
-    std::map<int,Teuchos::RCP<DRT::Element> >& geom = absorbingBC[i]->Geometry();
+    std::map<int,Teuchos::RCP<DRT::Element> >& geom = pressuremon[i]->Geometry();
     std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
     for (curr=geom.begin(); curr!=geom.end(); ++curr)
     {
@@ -1506,11 +1450,53 @@ void ACOU::AcouImplicitTimeInt::OutputToScreen()
  *----------------------------------------------------------------------*/
 void ACOU::AcouImplicitTimeInt::NodalPsiField(Teuchos::RCP<Epetra_Vector> outvec)
 {
-  Teuchos::RCP<Epetra_Vector> interpolatedPressure;
-  getNodalPsiHDG(*discret_, velnp_,interpolatedPressure, phys_, dtp_);
 
-  for(int i=0; i<interpolatedPressure->MyLength(); ++i)
-    outvec->ReplaceMyValue(i,0,interpolatedPressure->operator [](i));
+  // call element routine for interpolate HDG to elements
+  Teuchos::ParameterList params;
+  params.set<int>("action",ACOU::interpolate_psi_to_node);
+  discret_->SetState(0,"trace",velnp_);
+  params.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
+  params.set<double>("dt",dtp_);
+  params.set<bool>("padaptivity",false);
+
+  std::vector<int> dummy;
+  DRT::Element::LocationArray la(2);
+
+  Epetra_SerialDenseMatrix dummyMat;
+  Epetra_SerialDenseVector dummyVec;
+  Epetra_SerialDenseVector interpolVec;
+  std::vector<unsigned char> touchCount(outvec->MyLength());
+
+  outvec->PutScalar(0.);
+
+  for (int el=0; el<discret_->NumMyColElements();++el)
+  {
+    DRT::Element *ele = discret_->lColElement(el);
+    ele->LocationVector(*discret_,la,false);
+    if (interpolVec.M() == 0)
+      interpolVec.Resize(ele->NumNode());
+
+    ele->Evaluate(params,*discret_,la[0].lm_,dummyMat,dummyMat,interpolVec,dummyVec,dummyVec);
+
+    // sum values on nodes into vectors and record the touch count (build average of values)
+    for (int i=0; i<ele->NumNode(); ++i)
+    {
+      DRT::Node* node = ele->Nodes()[i];
+      const int localIndex = outvec->Map().LID(node->Id());
+
+      if (localIndex < 0)
+        continue;
+
+      touchCount[localIndex]++;
+      (*outvec)[localIndex] += interpolVec(i);
+    }
+
+  }
+
+  for (int i=0; i<outvec->MyLength(); ++i)
+    (*outvec)[i] /= touchCount[i];
+
+  discret_->ClearState();
 
   return;
 } // NodalPsiField

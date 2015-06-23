@@ -1,5 +1,5 @@
 /*!
-\file scatra_element_evaluate.cpp
+\file scatra_ele_evaluate.cpp
 \brief
 
 <pre>
@@ -254,6 +254,7 @@ int DRT::ELEMENTS::Transport::Evaluate(
     case SCATRA::calc_elch_conductivity:
     case SCATRA::calc_elch_electrode_soc:
     case SCATRA::calc_integr_grad_reac:
+    case SCATRA::calc_integr_grad_diff:
     case SCATRA::recon_gradients_at_nodes:
     case SCATRA::recon_curvature_at_nodes:
     case SCATRA::calc_mass_center_smoothingfunct:

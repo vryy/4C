@@ -266,7 +266,7 @@ void acoustics_drt()
       dserror("you chose to do a photoacoustic image reconstruction, so please set PHOTOACOU to Yes");
 
     // access the problem-specific parameter list
-    const Teuchos::ParameterList& scatradyn = DRT::Problem::Instance()->ScalarTransportDynamicParams();
+    Teuchos::RCP<Teuchos::ParameterList> scatraparams = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->ScalarTransportDynamicParams()));
 
     // access the scatra discretization
     Teuchos::RCP<DRT::Discretization> scatradis = DRT::Problem::Instance()->GetDis("scatra");
@@ -279,11 +279,18 @@ void acoustics_drt()
 
     // till here it was all the same...
     // now, we set up the inverse analysis algorithm
-    const int linsolvernumber_scatra = scatradyn.get<int>("LINEAR_SOLVER");
+    const int linsolvernumber_scatra = scatraparams->get<int>("LINEAR_SOLVER");
     if ( linsolvernumber_scatra == (-1) )
       dserror("no linear solver defined for acoustical problem. Please set LINEAR_SOLVER in ACOUSTIC DYNAMIC to a valid number!");
 
-    ACOU::InvAnalysis myinverseproblem(scatradis,acoudishdg,scatradyn,DRT::Problem::Instance()->SolverParams(linsolvernumber_scatra),params,solver,output);
+    // create solver
+    Teuchos::RCP<LINALG::Solver> scatrasolver =
+      Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber_scatra),
+                                      scatradis->Comm(),
+                                      DRT::Problem::Instance()->ErrorFile()->Handle()));
+
+    // create and run the inverse problem
+    ACOU::InvAnalysis myinverseproblem(scatradis,acoudishdg,scatraparams,scatrasolver,params,solver,output);
     myinverseproblem.Integrate();
 
     // do testing if required

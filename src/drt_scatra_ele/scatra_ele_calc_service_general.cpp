@@ -405,7 +405,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
   }
   case SCATRA::calc_integr_grad_reac:
   {
-    Teuchos::RCP<const Epetra_Vector> dualphi = discretization.GetState("dual phi");
+    Teuchos::RCP<const Epetra_Vector> dualphi = discretization.GetState("adjoint phi");
     Teuchos::RCP<const Epetra_Vector> psi     = discretization.GetState("psi");
     if(dualphi==Teuchos::null || psi==Teuchos::null) dserror("Cannot get state vector 'dual phi' or 'psi' in action calc_integr_grad_reac");
     std::vector<double> mydualphi(lm.size());
@@ -438,6 +438,35 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
     bool scaleele = params.get<bool>("scaleele");
     if(scaleele) elevec1_epetra += temp;
     else         elevec1_epetra.Multiply('N','N',1.0,massmat,temp,1.0);
+    break;
+  }
+  case SCATRA::calc_integr_grad_diff:
+  {
+    Teuchos::RCP<const Epetra_Vector> dualphi = discretization.GetState("adjoint phi");
+    if(dualphi==Teuchos::null ) dserror("Cannot get state vector 'dual phi' in action calc_integr_grad_reac");
+    std::vector<double> mydualphi(lm.size());
+    DRT::UTILS::ExtractMyValues(*dualphi,mydualphi,lm);
+
+    bool sign = params.get<bool>("signum_D");
+    double sign_fac = 1.0;
+    if(sign) sign_fac = 0.0;
+
+    // compute stiffness matrix
+    Epetra_SerialDenseMatrix stiffmat;
+    stiffmat.Shape(nen_,nen_);
+    const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+    double area = 0.0;
+    for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+    {
+      const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+      area += fac;
+      CalcMatDiff(stiffmat,0,fac);
+    }
+
+    Epetra_SerialDenseVector temp(nen_);
+    for(int i=0;i<nen_;++i) temp(i) = mydualphi[i];
+    elevec1_epetra.Multiply('N','N',sign_fac/(diffmanager_->GetIsotropicDiff(0)),stiffmat,temp,0.0);
+
     break;
   }
   case SCATRA::recon_gradients_at_nodes:

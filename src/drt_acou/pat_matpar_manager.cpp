@@ -58,12 +58,20 @@ void ACOU::PatMatParManagerUniform::AddEvaluate(double time, Teuchos::RCP<Epetra
 
     // this works if we optimize only with respect to reac
     p.set<bool>("signum_mu",actele->Material()->Parameter()->GetParameter(1,Discret()->ElementColMap()->LID(actele->Id()))<0.0);
+    p.set<bool>("signum_D", actele->Material()->Parameter()->GetParameter(0,Discret()->ElementColMap()->LID(actele->Id()))<0.0);
     p.set<bool>("scaleele",false);
 
     std::vector<int> actparams = ParaMap().at( elematid );
     std::vector<int>::const_iterator it;
     for ( it=actparams.begin(); it!=actparams.end(); it++)
     {
+      if((*it) == 1)
+        p.set<int>("action",SCATRA::calc_integr_grad_reac);
+      else if((*it) == 0)
+        p.set<int>("action",SCATRA::calc_integr_grad_diff);
+      else
+        dserror("unkown elematid provided");
+
       //initialize element vectors
       int ndof = actele->NumNode();
       Epetra_SerialDenseMatrix elematrix1(ndof,ndof,false);
@@ -113,16 +121,23 @@ void ACOU::PatMatParManagerPerElement::AddEvaluate(double time, Teuchos::RCP<Epe
     }
     // list to define routines at elementlevel
     Teuchos::ParameterList p;
-    p.set<int>("action",SCATRA::calc_integr_grad_reac);
 
     // this works if we optimize only with respect to reac
     p.set<bool>("signum_mu",actele->Material()->Parameter()->GetParameter(1,Discret()->ElementColMap()->LID(actele->Id()))<0.0);
+    p.set<bool>("signum_D", actele->Material()->Parameter()->GetParameter(0,Discret()->ElementColMap()->LID(actele->Id()))<0.0);
     p.set<bool>("scaleele",scalegradele_);
 
     std::vector<int> actparams = ParaMap().at( elematid );
     std::vector<int>::const_iterator it;
     for ( it=actparams.begin(); it!=actparams.end(); it++)
     {
+      if((*it) == 1)
+        p.set<int>("action",SCATRA::calc_integr_grad_reac);
+      else if((*it) == 0)
+        p.set<int>("action",SCATRA::calc_integr_grad_diff);
+      else
+        dserror("unkown elematid provided");
+
       //initialize element vectors
       int ndof = actele->NumNode();
       Epetra_SerialDenseMatrix elematrix1(ndof,ndof,false);

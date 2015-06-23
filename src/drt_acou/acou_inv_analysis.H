@@ -81,8 +81,8 @@ public:
   InvAnalysis(
     Teuchos::RCP<DRT::Discretization> scatradis, //!< the light discretization
     Teuchos::RCP<DRT::DiscretizationHDG> acoudis, //!< the sound discretization
-    const Teuchos::ParameterList& scapara,
-    const Teuchos::ParameterList& scasolvpara,
+    Teuchos::RCP<Teuchos::ParameterList> scatrapara,
+    Teuchos::RCP<LINALG::Solver> scatrasolv,
     Teuchos::RCP<Teuchos::ParameterList> acoupara,
     Teuchos::RCP<LINALG::Solver> acousolv,
     Teuchos::RCP<IO::DiscretizationWriter> acouout);
@@ -105,25 +105,26 @@ private:
   std::string name_;
 
   //! scatra and acoustical discretizations to work with
-  Teuchos::RCP<DRT::Discretization> scatra_discret_;
+  Teuchos::RCP<DRT::Discretization>    scatra_discret_;
   Teuchos::RCP<DRT::DiscretizationHDG> acou_discret_;
 
   //! scatra and acoustical base algorithms to work with
-  Teuchos::RCP<SCATRA::TimIntStationary> scatraalgo_;
+  Teuchos::RCP<SCATRA::TimIntStationary>  scatraalgo_;
   Teuchos::RCP<ACOU::AcouImplicitTimeInt> acoualgo_;
 
   //! some things we need for the scatra and acou time integrators
-  const Teuchos::ParameterList& scatraparams_;
-  const Teuchos::ParameterList& scatrasolverparams_;
-  Teuchos::RCP<Teuchos::ParameterList> acouparams_;
-  Teuchos::RCP<LINALG::Solver> acousolver_;
+  Teuchos::RCP<Teuchos::ParameterList>   scatraparams_;
+  Teuchos::RCP<Teuchos::ParameterList>   scatraextraparams_;
+  Teuchos::RCP<LINALG::Solver>           scatrasolver_;
+  Teuchos::RCP<Teuchos::ParameterList>   acouparams_;
+  Teuchos::RCP<LINALG::Solver>           acousolver_;
   Teuchos::RCP<IO::DiscretizationWriter> acououtput_;
-  Teuchos::RCP<IO::DiscretizationWriter> scatra_output_;
+  Teuchos::RCP<IO::DiscretizationWriter> scatraoutput_;
 
   //! time integration scheme
-  INPAR::ACOU::DynamicType dyna_;
+  INPAR::ACOU::DynamicType      dyna_;
   //! physical type
-  INPAR::ACOU::PhysicalType phys_;
+  INPAR::ACOU::PhysicalType     phys_;
   //! optimization tyoe
   INPAR::ACOU::OptimizationType opti_;
 
@@ -131,18 +132,18 @@ private:
   int myrank_;
 
   //! for iteration loop progress
-  double error_;       //! actual error
-  double tol_;         //! prescribed error tolerance
-  double tol_grad_;    //! prescribed norm of gradient tolerance
-  int iter_;           //! actual iteration number
-  int max_iter_;       //! maximal iteration number for inverse analysis
-  int max_ls_iter_;    //! maximal iteration number for line search
-  int output_count_;   //! auxiliary variable for nicely named output files
-  bool fdcheck_;       //! flag indicating performance of finite difference check
-  double ls_c_;        //! parameter for calculation of sufficient decrease condition
-  double ls_rho_;      //! step length reduction given by this parameter
-  double ls_gd_scal_;  //! factor for line search step length scaling
-  bool backprojection_;//! flag if material should be estimated with backprojection
+  double error_;         //! actual error
+  double tol_;            //! prescribed error tolerance
+  double tol_grad_;       //! prescribed norm of gradient tolerance
+  int    iter_;           //! actual iteration number
+  int    max_iter_;       //! maximal iteration number for inverse analysis
+  int    max_ls_iter_;    //! maximal iteration number for line search
+  int    output_count_;   //! auxiliary variable for nicely named output files
+  bool   fdcheck_;        //! flag indicating performance of finite difference check
+  double ls_c_;           //! parameter for calculation of sufficient decrease condition
+  double ls_rho_;         //! step length reduction given by this parameter
+  double ls_gd_scal_;     //! factor for line search step length scaling
+  bool   backprojection_; //! flag if material should be estimated with backprojection
 
   //! flag whether we want to do check for the gradient as convergence criteria
   bool calcacougrad_;
@@ -153,25 +154,24 @@ private:
   //! container for right hand side values of acoustical adjoint problem
   Teuchos::RCP<Epetra_MultiVector> acou_rhs_;
   Teuchos::RCP<Epetra_MultiVector> acou_rhsm_;
-  Teuchos::RCP<Epetra_Map> abcnodes_map_;
+  Teuchos::RCP<Epetra_Map>         abcnodes_map_;
 
   //! map extractor for monitored / abc nodes
   Teuchos::RCP<LINALG::MapExtractor> abcnodes_mapex_;
 
   //! list of observed node gids
-  std::vector<int>     nodes_;
-  std::vector<std::vector<double> >     meascoords_;
-  Epetra_SerialDenseVector mcurve_;
-  Epetra_SerialDenseVector nod_curve_interpol_;
-  std::vector<double>  timesteps_;
-  int count_;
+  std::vector<int>                  nodes_;
+  std::vector<std::vector<double> > meascoords_;
+  Epetra_SerialDenseVector          mcurve_;
+  Epetra_SerialDenseVector          nod_curve_interpol_;
+  std::vector<double>               timesteps_;
 
   //! solution of the acoustical adjoint problem at initial step (so to say last step of the backward time integration)
-  Teuchos::RCP<Epetra_Vector> adjoint_phi_0_;
+  Teuchos::RCP<Epetra_Vector> adjoint_psi_;
   //! solution of the optical forward problem
   Teuchos::RCP<Epetra_Vector> phi_;
   //! solution of the optical adjoint problem
-  Teuchos::RCP<Epetra_Vector> adjoint_w_;
+  Teuchos::RCP<Epetra_Vector> adjoint_phi_;
 
   //! material handling done by the MatParManager from Sebastian Kehl
   Teuchos::RCP<INVANA::MatParManager> matman_;
@@ -240,7 +240,7 @@ private:
   double GetEpsilon(int nnodes);
 
   //! Estimate the mu values of each element via back-projection
-  void EstimateMua();
+  void EstimateMua(int count);
 
   //! Compute node based vectors
   void ComputeNodeBasedVectors();
@@ -250,6 +250,9 @@ private:
 
   //! optical forward problem
   void SolveStandardProblemScatra();
+
+  //! output for parameters
+  void OutputReactionAndDiffusion();
 
   //! acoustical forward problem
   void SolveStandardProblemAcou();

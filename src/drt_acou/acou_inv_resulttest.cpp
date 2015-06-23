@@ -48,7 +48,7 @@ void ACOU::AcouInvResultTest::TestElement(DRT::INPUT::LineDefinition& res, int& 
   int haveelement(dis_->HaveGlobalElement(element));
   int iselementofanybody(0);
   dis_->Comm().SumAll(&haveelement,&iselementofanybody,1);
-
+  mysol_->Print(std::cout);
   if (iselementofanybody==0)
   {
     dserror("Element %d does not belong to discretization %s",element+1,dis_->Name().c_str());
@@ -69,7 +69,8 @@ void ACOU::AcouInvResultTest::TestElement(DRT::INPUT::LineDefinition& res, int& 
 
       if (position == "absorptioncoeff")
       {
-        result = mysol_->operator ()(0)->operator [](dis_->ElementColMap()->LID(element));
+        std::cout<<"lid "<<dis_->ElementRowMap()->LID(element)<<" ele "<<element<<" myrank "<<dis_->Comm().MyPID()<<std::endl;
+        result = mysol_->operator ()(0)->operator [](dis_->ElementRowMap()->LID(element));
       }
       else
       {
