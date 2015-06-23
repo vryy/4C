@@ -1252,7 +1252,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::MatScaTra(
     // For all implementations, dens=1.0 is assumed, in particular for multifractal_subgrid_scales. Hence,
     // visc and diffus are kinematic quantities. Using dens!=1.0 should basically work, but you should check it
     // before application.
-   }
+  }
 
   return;
 } // ScaTraEleCalc<distype>::MatScaTra

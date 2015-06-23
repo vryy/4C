@@ -140,6 +140,24 @@ void MAT::PAR::Electrode::CheckProvidedParams(
         paraforfunction=3;
         break;
       }
+      case -12:
+      {
+        // diffusion coefficient based on a function defined in
+        // Stewart, S. G. & Newman, J. The Use of UV/vis Absorption to Measure Diffusion Coefficients in LiPF6 Electrolytic Solutions Journal of The Electrochemical Society, 2008, 155, F13-F16
+        // diff = a0*exp(-a1*c^a2)
+        functionname = "'diffusion coefficient as an exponential function: a1*exp(a2*c)'";
+        paraforfunction=2;
+        break;
+      }
+      case -13:
+      {
+        // TDF based on a function defined in
+        // J. Landesfeind, A. Ehrl, M. Graf, W.A. Wall, H.A. Gasteiger: Direct electrochemical determination of activity coefficients in aprotic binary electrolytes
+        // TDF = 1.0 - 0.5 a1 sqrt(c)/(1+a2*sqrt(c)) + a2*c
+        functionname = "'TDF as as a function of concentration according to Landesfeind, Ehrl, Graf, Wall, Gasteiger (2015)'";
+        paraforfunction=3;
+        break;
+      }
       default:
       {
         dserror("Curve number %i is not implemented",functnr);
@@ -398,7 +416,23 @@ const double MAT::Electrode::EvalFunctValue(
 
       break;
     }
-
+    // diffusion coefficient based on a function defined in
+    // Stewart, S. G. & Newman, J. The Use of UV/vis Absorption to Measure Diffusion Coefficients in LiPF6 Electrolytic Solutions Journal of The Electrochemical Society, 2008, 155, F13-F16
+    // diff = a0*exp(-a1*c^a2)
+    case -12:
+    {
+      functval = functparams[0]*exp(functparams[1]*cint);
+      break;
+    }
+    case -13:
+    {
+      // TDF based on a function defined in
+      // J. Landesfeind, A. Ehrl, M. Graf, W.A. Wall, H.A. Gasteiger: Direct electrochemical determination of activity coefficients in aprotic binary electrolytes
+      // TDF = 1.0 - 0.5 a1 sqrt(c)/(1+a2*sqrt(c)) + a2*c
+      functval = 1.0 - (0.5*functparams[0]*pow(cint,0.5))/(pow((1+functparams[1]*pow(cint,0.5)),2))
+                     + functparams[2]*cint;
+      break;
+    }
     default:
     {
       dserror("Curve number %i is not implemented!",functnr);
@@ -496,7 +530,25 @@ const double MAT::Electrode::EvalFirstDerivFunctValue(
 
       break;
     }
-
+    // diffusion coefficient based on a function defined in
+    // Stewart, S. G. & Newman, J. The Use of UV/vis Absorption to Measure Diffusion Coefficients in LiPF6 Electrolytic Solutions Journal of The Electrochemical Society, 2008, 155, F13-F16
+    // diff = a0*exp(-a1*c^a2)
+    // deriv (diff) = a0*a1*exp(a1*c^a2)
+    case -12:
+    {
+      firstderivfunctval = functparams[0]*functparams[1]*exp(functparams[1]*cint);
+      break;
+    }
+    case -13:
+    {
+      // TDF based on a function defined in
+      // J. Landesfeind, A. Ehrl, M. Graf, W.A. Wall, H.A. Gasteiger: Direct electrochemical determination of activity coefficients in aprotic binary electrolytes
+      // TDF = 1.0 - 0.5 a1 sqrt(c)/(1+a2*sqrt(c)) + a2*c
+      firstderivfunctval = -(0.25*functparams[0]*pow(cint,-0.5))/(pow((1+functparams[1]*pow(cint,0.5)),2))
+                           +(0.5*functparams[0]*functparams[1])/(pow((1+functparams[1]*pow(cint,0.5)),3))
+                           +functparams[2];
+      break;
+    }
     default:
     {
       dserror("Curve number %i is not implemented!",functnr);

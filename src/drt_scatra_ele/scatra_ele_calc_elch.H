@@ -210,17 +210,19 @@ protected:
   ){return;};
 
   //! calculate error of numerical solution with respect to analytical solution
-  void CalErrorComparedToAnalytSolution(
+  virtual void CalErrorComparedToAnalytSolution(
     const DRT::Element*                   ele,        //!< the element we are dealing with
     Teuchos::ParameterList&               params,     //!< parameter list
     Epetra_SerialDenseVector&             errors      //!< vector containing L2-error norm
-  );
+  )=0;
 
   //! calculate conductivity of electrolyte solution
   void CalculateConductivity(
     const DRT::Element*               ele,        //!< the element we are dealing with
     const enum INPAR::ELCH::EquPot    equpot,     //!< type of closing equation for electric potential
-    Epetra_SerialDenseVector&         sigma       //!< conductivity of all single ions + overall electrolyte solution
+    Epetra_SerialDenseVector&         sigma,      //!< conductivity of all single ions + overall electrolyte solution
+    bool                              effCond,    //!< flag if effective conductivity should be calculated
+    bool                              specresist      //!< flag if inverse of conductivity should be calculated -> specific resistance
   );
 
   //! calculate element mass matrix and element residual for initial time derivative
@@ -237,7 +239,8 @@ protected:
   virtual void GetConductivity(
     const enum INPAR::ELCH::EquPot    equpot,     //!< type of closing equation for electric potential
     double&                           sigma_all,  //!< conductivity of electrolyte solution
-    Epetra_SerialDenseVector&         sigma       //!< conductivity of all single ions + overall electrolyte solution
+    std::vector<double>&              sigma,       //!< conductivity of all single ions + overall electrolyte solution
+    bool                              effCond
   ) = 0;
 
   //! set internal variables

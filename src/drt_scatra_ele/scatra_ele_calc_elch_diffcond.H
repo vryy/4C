@@ -358,6 +358,14 @@ private:
     const double                  phinp        //!< scalar at time_(n+1)
   );
 
+  //! get conductivity
+  void GetConductivity(
+    const enum INPAR::ELCH::EquPot   equpot,      //!< type of closing equation for electric potential
+    double&                          sigma_all,   //!< conductivity of electrolyte solution
+    std::vector<double>&             sigma,       //!< conductivity or a single ion + overall electrolyte solution
+    bool                             effCond     //!< flag if effective conductivity should be calculated
+  );
+
   //!  calculate weighted mass flux (no reactive flux so far) -> elch-specific implementation
   void CalculateFlux(
       LINALG::Matrix<my::nsd_,1>&     q,          //!< flux of species k
@@ -371,6 +379,13 @@ private:
       LINALG::Matrix<my::nsd_,1>&     q,          //!< flux of species k
       const INPAR::SCATRA::FluxType   fluxtype,   //!< type fo flux
       const double                    fac         //!< integration factor
+  );
+
+  //! calculate error of numerical solution with respect to analytical solution
+  void CalErrorComparedToAnalytSolution(
+    const DRT::Element*                   ele,        //!< the element we are dealing with
+    Teuchos::ParameterList&               params,     //!< parameter list
+    Epetra_SerialDenseVector&             errors      //!< vector containing L2-error norm
   );
 
   //! set internal variables for diffusion-conduction formulation
@@ -562,6 +577,12 @@ class ScaTraEleDiffManagerElchDiffCond : public ScaTraEleDiffManagerElchElectrod
 
       for(int k=0;k<numscal;++k)
         std::cout << "derivation of thermodynamic factor " << k << ":   " << derivthermfac_[k] << std::endl;
+      std::cout << std::endl;
+
+      std::cout << "porosity species" << 0 << ":   " << eps_[0] << std::endl;
+      std::cout << std::endl;
+
+      std::cout << "tortuosity species" << 0 << ":   " << tort_[0] << std::endl;
       std::cout << std::endl;
 
       return;

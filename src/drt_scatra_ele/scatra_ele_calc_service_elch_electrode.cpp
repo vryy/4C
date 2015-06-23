@@ -96,7 +96,8 @@ template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::GetConductivity(
     const enum INPAR::ELCH::EquPot   equpot,      //!< type of closing equation for electric potential
     double&                          sigma_all,   //!< conductivity of electrolyte solution
-    Epetra_SerialDenseVector&        sigma        //!< conductivity or a single ion + overall electrolyte solution
+    std::vector<double>&             sigma,        //!< conductivity or a single ion + overall electrolyte solution
+    bool                             effCond
     )
 {
   // use precomputed conductivity

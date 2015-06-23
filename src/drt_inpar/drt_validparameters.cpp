@@ -6115,7 +6115,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("GSTATCURVENO",-1,"function number defining the imposed current curve",&elchcontrol);
   IntParameter("GSTATITEMAX",10,"maximum number of iterations for galvanostatic mode",&elchcontrol);
   DoubleParameter("GSTAT_LENGTH_CURRENTPATH",0.0,"average length of the current path",&elchcontrol);
-//  IntParameter("MAGNETICFIELD_FUNCNO",-1,"function number defining an externally imposed magnetic field",&elchcontrol);
+
   setStringToIntegralParameter<int>("EQUPOT",
                                "Undefined",
                                "type of closing equation for electric potential",

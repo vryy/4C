@@ -3003,7 +3003,7 @@ void SCATRA::ScaTraTimIntImpl::OutputState()
   output_->WriteVector("phinp", phinp_);
 
   // convective velocity (not written in case of coupled simulations)
-  if (cdvel_ != INPAR::SCATRA::velocity_Navier_Stokes)
+  if (cdvel_ != INPAR::SCATRA::velocity_zero)
     output_->WriteVector("convec_velocity", convel_,IO::DiscretizationWriter::nodevector);
 
   // displacement field

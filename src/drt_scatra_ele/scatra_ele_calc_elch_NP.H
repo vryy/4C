@@ -289,7 +289,8 @@ private:
   void GetConductivity(
     const enum INPAR::ELCH::EquPot    equpot,     //!< type of closing equation for electric potential
     double&                           sigma_all,  //!< conductivity of electrolyte solution
-    Epetra_SerialDenseVector&         sigma       //!< conductivity of a single ion + overall electrolyte solution
+    std::vector<double>&              sigma,       //!< conductivity of a single ion + overall electrolyte solution
+    bool                              effCond     //!< flag if effective conductivity should be calculated
   );
 
   //!  calculate weighted mass flux (no reactive flux so far) -> elch-specific implementation
@@ -298,6 +299,13 @@ private:
     const INPAR::SCATRA::FluxType   fluxtype,   //!< type fo flux
     const int                       k,          //!< index of current scalar
     const double                    fac         //!< integration factor
+  );
+
+  //! calculate error of numerical solution with respect to analytical solution
+  void CalErrorComparedToAnalytSolution(
+    const DRT::Element*                   ele,        //!< the element we are dealing with
+    Teuchos::ParameterList&               params,     //!< parameter list
+    Epetra_SerialDenseVector&             errors      //!< vector containing L2-error norm
   );
 
   //! set internal variables for Nernst-Planck formulation

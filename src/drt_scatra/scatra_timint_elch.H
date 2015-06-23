@@ -187,7 +187,7 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   void CalcInitialPotentialField();
 
   //! computes different conductivity expressions for electrolyte solutions (ELCH)
-  Teuchos::RCP<Epetra_SerialDenseVector>  ComputeConductivity();
+  double  ComputeConductivity(bool effCond=false, bool specresist=false);
 
   //! apply galvanostatic control (update electrode potential) (ELCH)
   bool ApplyGalvanostaticControl();

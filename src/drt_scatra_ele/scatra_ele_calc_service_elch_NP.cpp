@@ -17,6 +17,8 @@ Maintainer: Andreas Ehrl
 #include "scatra_ele.H"
 #include "scatra_ele_calc_elch_NP.H"
 
+#include "../drt_lib/standardtypes_cpp.H"  // for EPS13 and so on
+
 
 /*----------------------------------------------------------------------------------------------------------*
  | validity check with respect to input parameters, degrees of freedom, number of scalars etc.   fang 02/15 |
@@ -59,7 +61,8 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::GetConductivity(
   const enum INPAR::ELCH::EquPot    equpot,
   double&                           sigma_all,
-  Epetra_SerialDenseVector&         sigma
+  std::vector<double>&              sigma,
+  bool                              effCond  // the bool effCond is not used for the NP formulation since the volume averaging is not implemented
 )
 {
   // calculate conductivity of electrolyte solution
@@ -139,6 +142,237 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalculateFlux(
 
   return;
 } // ScaTraCalc::CalculateFlux
+
+/*---------------------------------------------------------------------*
+  |  calculate error compared to analytical solution           gjb 10/08|
+  *---------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalErrorComparedToAnalytSolution(
+  const DRT::Element*                   ele,
+  Teuchos::ParameterList&               params,
+  Epetra_SerialDenseVector&             errors
+  )
+{
+  //at the moment, there is only one analytical test problem available!
+  if (DRT::INPUT::get<SCATRA::Action>(params,"action") != SCATRA::calc_error)
+    dserror("How did you get here?");
+
+  // -------------- prepare common things first ! -----------------------
+  // in the ALE case add nodal displacements
+  if (my::scatrapara_->IsAle()) dserror("No ALE for Kwok & Wu error calculation allowed.");
+
+  // set constants for analytical solution
+  const double t = my::scatraparatimint_->Time() + (1- my::scatraparatimint_->AlphaF())* my::scatraparatimint_->Dt(); //-(1-alphaF_)*dta_
+  const double frt = myelch::ElchPara()->FRT();
+
+  // density at t_(n)
+  double densn(1.0);
+  // density at t_(n+1) or t_(n+alpha_F)
+  double densnp(1.0);
+  // density at t_(n+alpha_M)
+  double densam(1.0);
+
+  // fluid viscosity
+  double visc(0.0);
+
+  // get material parameter (constants values)
+  this->GetMaterialParams(ele,densn,densnp,densam,visc);
+
+  // integration points and weights
+  // more GP than usual due to (possible) cos/exp fcts in analytical solutions
+  const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToGaussRuleForExactSol<distype>::rule);
+
+  const INPAR::SCATRA::CalcError errortype = DRT::INPUT::get<INPAR::SCATRA::CalcError>(params, "calcerrorflag");
+  switch(errortype)
+  {
+  case INPAR::SCATRA::calcerror_Kwok_Wu:
+  {
+    //   References:
+    //   Kwok, Yue-Kuen and Wu, Charles C. K.
+    //   "Fractional step algorithm for solving a multi-dimensional diffusion-migration equation"
+    //   Numerical Methods for Partial Differential Equations
+    //   1995, Vol 11, 389-397
+
+    //   G. Bauer, V. Gravemeier, W.A. Wall,
+    //   A 3D finite element approach for the coupled numerical simulation of
+    //   electrochemical systems and fluid flow, IJNME, 86 (2011) 1339–1359.
+
+    if (my::numscal_ != 2)
+      dserror("Numscal_ != 2 for desired error calculation.");
+
+    // working arrays
+    double                      potint(0.0);
+    LINALG::Matrix<2,1>         conint(true);
+    LINALG::Matrix<my::nsd_,1>  xint(true);
+    LINALG::Matrix<2,1>         c(true);
+    double                      deltapot(0.0);
+    LINALG::Matrix<2,1>         deltacon(true);
+
+    // start loop over integration points
+    for (int iquad=0;iquad<intpoints.IP().nquad;iquad++)
+    {
+      const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+
+      // get values of all transported scalars at integration point
+      for (int k=0; k<my::numscal_; ++k)
+      {
+        conint(k) = my::funct_.Dot(my::ephinp_[k]);
+      }
+
+      // get el. potential solution at integration point
+      potint = my::funct_.Dot(myelch::epotnp_);
+
+      // get global coordinate of integration point
+      xint.Multiply(my::xyze_,my::funct_);
+
+      // compute various constants
+      const double d = frt*((myelch::DiffManager()->GetIsotropicDiff(0)*myelch::DiffManager()->GetValence(0)) - (myelch::DiffManager()->GetIsotropicDiff(1)*myelch::DiffManager()->GetValence(1)));
+      if (abs(d) == 0.0) dserror("division by zero");
+      const double D = frt*((myelch::DiffManager()->GetValence(0)*myelch::DiffManager()->GetIsotropicDiff(0)*myelch::DiffManager()->GetIsotropicDiff(1)) - (myelch::DiffManager()->GetValence(1)*myelch::DiffManager()->GetIsotropicDiff(1)*myelch::DiffManager()->GetIsotropicDiff(0)))/d;
+
+      // compute analytical solution for cation and anion concentrations
+      const double A0 = 2.0;
+      const double m = 1.0;
+      const double n = 2.0;
+      const double k = 3.0;
+      const double A_mnk = 1.0;
+      double expterm;
+      double c_0_0_0_t;
+
+      if (my::nsd_==3)
+      {
+        expterm = exp((-D)*(m*m + n*n + k*k)*t*PI*PI);
+        c(0) = A0 + (A_mnk*(cos(m*PI*xint(0))*cos(n*PI*xint(1))*cos(k*PI*xint(2)))*expterm);
+        c_0_0_0_t = A0 + (A_mnk*exp((-D)*(m*m + n*n + k*k)*t*PI*PI));
+      }
+      else if (my::nsd_==2)
+      {
+        expterm = exp((-D)*(m*m + n*n)*t*PI*PI);
+        c(0) = A0 + (A_mnk*(cos(m*PI*xint(0))*cos(n*PI*xint(1)))*expterm);
+        c_0_0_0_t = A0 + (A_mnk*exp((-D)*(m*m + n*n)*t*PI*PI));
+      }
+      else if (my::nsd_==1)
+      {
+        expterm = exp((-D)*(m*m)*t*PI*PI);
+        c(0) = A0 + (A_mnk*(cos(m*PI*xint(0)))*expterm);
+        c_0_0_0_t = A0 + (A_mnk*exp((-D)*(m*m)*t*PI*PI));
+      }
+      else
+        dserror("Illegal number of space dimensions for analyt. solution: %d",my::nsd_);
+
+      // compute analytical solution for anion concentration
+      c(1) = (-myelch::DiffManager()->GetValence(0)/myelch::DiffManager()->GetValence(1))* c(0);
+      // compute analytical solution for el. potential
+      const double pot = ((myelch::DiffManager()->GetIsotropicDiff(1)-myelch::DiffManager()->GetIsotropicDiff(0))/d) * log(c(0)/c_0_0_0_t);
+
+      // compute differences between analytical solution and numerical solution
+      deltapot = potint - pot;
+      deltacon.Update(1.0,conint,-1.0,c);
+
+      // add square to L2 error
+      errors[0] += deltacon(0)*deltacon(0)*fac; // cation concentration
+      errors[1] += deltacon(1)*deltacon(1)*fac; // anion concentration
+      errors[2] += deltapot*deltapot*fac; // electric potential in electrolyte solution
+
+    } // end of loop over integration points
+  } // Kwok and Wu
+  break;
+  case INPAR::SCATRA::calcerror_cylinder:
+  {
+    // two-ion system with Butler-Volmer kinetics between two concentric cylinders
+    //   G. Bauer, V. Gravemeier, W.A. Wall,
+    //   A 3D finite element approach for the coupled numerical simulation of
+    //   electrochemical systems and fluid flow, IJNME, 86 (2011) 1339–1359.
+
+    if (my::numscal_ != 2)
+      dserror("Numscal_ != 2 for desired error calculation.");
+
+    // working arrays
+    LINALG::Matrix<2,1>     conint(true);
+    LINALG::Matrix<my::nsd_,1>  xint(true);
+    LINALG::Matrix<2,1>     c(true);
+    LINALG::Matrix<2,1>     deltacon(true);
+
+    // some constants that are needed
+    const double c0_inner = 0.6147737641011396;
+    const double c0_outer = 1.244249192148809;
+    const double r_inner = 1.0;
+    const double r_outer = 2.0;
+    const double pot_inner = 2.758240847314454;
+    const double b = log(r_outer/r_inner);
+
+    // start loop over integration points
+    for (int iquad=0;iquad<intpoints.IP().nquad;iquad++)
+    {
+      const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+
+      // get values of all transported scalars at integration point
+      for (int k=0; k<my::numscal_; ++k)
+      {
+        conint(k) = my::funct_.Dot(my::ephinp_[k]);
+      }
+
+      // get el. potential solution at integration point
+      const double potint = my::funct_.Dot(myelch::epotnp_);
+
+      // get global coordinate of integration point
+      xint.Multiply(my::xyze_,my::funct_);
+
+      // evaluate analytical solution for cation concentration at radial position r
+      if (my::nsd_==3)
+      {
+        const double r = sqrt(xint(0)*xint(0) + xint(1)*xint(1));
+        c(0) = c0_inner + ((c0_outer- c0_inner)*(log(r) - log(r_inner))/b);
+      }
+      else
+        dserror("Illegal number of space dimensions for analyt. solution: %d",my::nsd_);
+
+      // compute analytical solution for anion concentration
+      c(1) = (-myelch::DiffManager()->GetValence(0)/myelch::DiffManager()->GetValence(1))* c(0);
+      // compute analytical solution for el. potential
+      const double d = frt*((myelch::DiffManager()->GetIsotropicDiff(0)*myelch::DiffManager()->GetValence(0)) - (myelch::DiffManager()->GetIsotropicDiff(1)*myelch::DiffManager()->GetValence(1)));
+      if (abs(d) == 0.0) dserror("division by zero");
+      // reference value + ohmic resistance + concentration potential
+      const double pot = pot_inner + log(c(0)/c0_inner); // + (((diffus_[1]-diffus_[0])/d) * log(c(0)/c0_inner));
+
+      // compute differences between analytical solution and numerical solution
+      double deltapot = potint - pot;
+      deltacon.Update(1.0,conint,-1.0,c);
+
+      // add square to L2 error
+      errors[0] += deltacon(0)*deltacon(0)*fac; // cation concentration
+      errors[1] += deltacon(1)*deltacon(1)*fac; // anion concentration
+      errors[2] += deltapot*deltapot*fac; // electric potential in electrolyte solution
+
+    } // end of loop over integration points
+  } // concentric cylinders
+  break;
+  case INPAR::SCATRA::calcerror_electroneutrality:
+  {
+    // start loop over integration points
+    for (int iquad=0;iquad<intpoints.IP().nquad;iquad++)
+    {
+      const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+
+      // get values of transported scalars at integration point
+      // and compute electroneutrality
+      double deviation(0.0);
+      for (int k=0; k<my::numscal_; ++k)
+      {
+        const double conint_k = my::funct_.Dot(my::ephinp_[k]);
+        deviation += myelch::DiffManager()->GetValence(k)*conint_k;
+      }
+
+    // add square to L2 error
+    errors[0] += deviation*deviation*fac;
+    } // loop over integration points
+  }
+  break;
+  default: dserror("Unknown analytical solution!"); break;
+  } //switch(errortype)
+
+  return;
+} // CalErrorComparedToAnalytSolution
 
 
 /*------------------------------------------------------------------------------*

@@ -167,7 +167,8 @@ namespace DRT
         void GetConductivity(
           const enum INPAR::ELCH::EquPot   equpot,      //!< type of closing equation for electric potential
           double&                          sigma_all,   //!< conductivity of electrolyte solution
-          Epetra_SerialDenseVector&        sigma        //!< conductivity or a single ion + overall electrolyte solution
+          std::vector<double>&             sigma,       //!< conductivity or a single ion + overall electrolyte solution
+          bool                             effCond      //!< flag if effective conductivity should be calculated
         );
 
         //! calculate electrode state of charge
@@ -186,6 +187,13 @@ namespace DRT
             const int                       k,          //!< index of current scalar
             const double                    fac         //!< integration factor
         );
+
+        //! calculate error of numerical solution with respect to analytical solution
+        void CalErrorComparedToAnalytSolution(
+          const DRT::Element*                   ele,        //!< the element we are dealing with
+          Teuchos::ParameterList&               params,     //!< parameter list
+          Epetra_SerialDenseVector&             errors      //!< vector containing L2-error norm
+        ){return;};
 
         //! set internal variables for electrodes
         virtual void SetInternalVariablesForMatAndRHS();
