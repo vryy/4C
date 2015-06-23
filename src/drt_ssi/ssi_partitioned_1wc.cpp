@@ -126,12 +126,52 @@ SSI::SSI_Part1WC_SolidToScatra::SSI_Part1WC_SolidToScatra(const Epetra_Comm& com
     const Teuchos::ParameterList& structparams)
   : SSI_Part1WC(comm, globaltimeparams, scatraparams, structparams)
 {
-  // build a proxy of the structure discretization for the scatra field
-  Teuchos::RCP<DRT::DofSet> structdofset
-    = structure_->Discretization()->GetDofSetProxy();
+
+  if(matchinggrid_)
+  {
+    // build a proxy of the structure discretization for the scatra field
+    Teuchos::RCP<DRT::DofSet> structdofset
+      = structure_->Discretization()->GetDofSetProxy();
+
+    // check if scatra field has 2 discretizations, so that coupling is possible
+    if (scatra_->ScaTraField()->Discretization()->AddDofSet(structdofset)!=1)
+      dserror("unexpected dof sets in scatra field");
+  }
+  else
+  {
+    //first call FillComplete for single discretizations.
+    //This way the physical dofs are numbered successively
+    structure_->Discretization()->FillComplete();
+    scatra_->ScaTraField()->Discretization()->FillComplete();
+
+    //build auxiliary dofsets, i.e. pseudo dofs on each discretization
+    const int ndofpernode_scatra = 1; //scatradis->lRowElement(0)->NumDofPerNode();
+    const int ndofperelement_scatra  = 0;
+    const int ndofpernode_struct = DRT::Problem::Instance()->NDim();
+    const int ndofperelement_struct = 0;
+    if (structure_->Discretization()->BuildDofSetAuxProxy(ndofpernode_scatra, ndofperelement_scatra, 0, true ) != 1)
+      dserror("unexpected dof sets in structure field");
+    if (scatra_->ScaTraField()->Discretization()->BuildDofSetAuxProxy(ndofpernode_struct, ndofperelement_struct, 0, true) != 1)
+      dserror("unexpected dof sets in scatra field");
+
+    //call AssignDegreesOfFreedom also for auxiliary dofsets
+    //note: the order of FillComplete() calls determines the gid numbering!
+    // 1. structure dofs
+    // 2. scatra dofs
+    // 3. structure auxiliary dofs
+    // 4. scatra auxiliary dofs
+    structure_->Discretization()->FillComplete(true, false,false);
+    scatra_->ScaTraField()->Discretization()->FillComplete(true, false,false);
+  }
+
+  SetupBoundaryScatra();
 
   //do some checks
   {
+    if(boundarytransport_ and matchinggrid_)
+      dserror("Transport on domain boundary and matching discretizations is not supported. "
+          "Set MATCHINGGRID to 'no' in SSI CONTROL section or remove SSI Coupling Condition");
+
     INPAR::SCATRA::ConvForm convform
     = DRT::INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(scatraparams,"CONVFORM");
     if ( convform != INPAR::SCATRA::convform_conservative )
@@ -175,6 +215,50 @@ SSI::SSI_Part1WC_ScatraToSolid::SSI_Part1WC_ScatraToSolid(const Epetra_Comm& com
   // Flag for reading scatra result from restart file instead of computing it
   isscatrafromfile_ = DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->SSIControlParams(),"SCATRA_FROM_RESTART_FILE");
 
+  if(matchinggrid_)
+  {
+    // build a proxy of the scatra discretization for the structure field
+    Teuchos::RCP<DRT::DofSet> scatradofset
+      = scatra_->ScaTraField()->Discretization()->GetDofSetProxy();
+
+    // check if structure field has 2 discretizations, so that coupling is possible
+    if (structure_->Discretization()->AddDofSet(scatradofset)!=1)
+      dserror("unexpected dof sets in structure field");
+
+    if (scatra_->ScaTraField()->Discretization()->NumDofSets()!=1)
+      dserror("unexpected dof sets in scatra field");
+  }
+  else
+  {
+    //first call FillComplete for single discretizations.
+    //This way the physical dofs are numbered successively
+    structure_->Discretization()->FillComplete();
+    scatra_->ScaTraField()->Discretization()->FillComplete();
+
+    //build auxiliary dofsets, i.e. pseudo dofs on each discretization
+    const int ndofpernode_scatra = 1; //scatradis->lRowElement(0)->NumDofPerNode();
+    const int ndofperelement_scatra  = 0;
+    const int ndofpernode_struct = DRT::Problem::Instance()->NDim();
+    const int ndofperelement_struct = 0;
+    if (structure_->Discretization()->BuildDofSetAuxProxy(ndofpernode_scatra, ndofperelement_scatra, 0, true ) != 1)
+      dserror("unexpected dof sets in structure field");
+    if (scatra_->ScaTraField()->Discretization()->BuildDofSetAuxProxy(ndofpernode_struct, ndofperelement_struct, 0, true) != 1)
+      dserror("unexpected dof sets in scatra field");
+
+    //call AssignDegreesOfFreedom also for auxiliary dofsets
+    //note: the order of FillComplete() calls determines the gid numbering!
+    // 1. structure dofs
+    // 2. scatra dofs
+    // 3. structure auxiliary dofs
+    // 4. scatra auxiliary dofs
+    structure_->Discretization()->FillComplete(true, false,false);
+    scatra_->ScaTraField()->Discretization()->FillComplete(true, false,false);
+  }
+
+  SetupBoundaryScatra();
+  if(boundarytransport_ and matchinggrid_)
+    dserror("Transport on domain boundary and matching discretizations is not supported. "
+        "Set MATCHINGGRID to 'no' in SSI CONTROL section or remove SSI Coupling Condition");
 }
 
 /*----------------------------------------------------------------------*/

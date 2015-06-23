@@ -188,87 +188,6 @@ void SSI::SSI_Base::SetupDiscretizations(const Epetra_Comm& comm)
 
   matchinggrid_ = DRT::INPUT::IntegralValue<bool>(problem->SSIControlParams(),"MATCHINGGRID");
 
-  if(matchinggrid_)
-  {
-    // build a proxy of the structure discretization for the scatra field
-    Teuchos::RCP<DRT::DofSet> structdofset
-      = structdis->GetDofSetProxy();
-    // build a proxy of the temperature discretization for the structure field
-    Teuchos::RCP<DRT::DofSet> scatradofset
-      = scatradis->GetDofSetProxy();
-
-    // check if scatra field has 2 discretizations, so that coupling is possible
-    if (scatradis->AddDofSet(structdofset)!=1)
-      dserror("unexpected dof sets in scatra field");
-    if (structdis->AddDofSet(scatradofset)!=1)
-      dserror("unexpected dof sets in structure field");
-
-    structdis->FillComplete();
-    scatradis->FillComplete();
-  }
-  else
-  {
-    //first call FillComplete for single discretizations.
-    //This way the physical dofs are numbered successively
-    structdis->FillComplete();
-    scatradis->FillComplete();
-
-    //build auxiliary dofsets, i.e. pseudo dofs on each discretization
-    const int ndofpernode_scatra = 1; //scatradis->lRowElement(0)->NumDofPerNode();
-    const int ndofperelement_scatra  = 0;
-    const int ndofpernode_struct = DRT::Problem::Instance()->NDim();
-    const int ndofperelement_struct = 0;
-    if (structdis->BuildDofSetAuxProxy(ndofpernode_scatra, ndofperelement_scatra, 0, true ) != 1)
-      dserror("unexpected dof sets in structure field");
-    if (scatradis->BuildDofSetAuxProxy(ndofpernode_struct, ndofperelement_struct, 0, true) != 1)
-      dserror("unexpected dof sets in thermo field");
-
-    //call AssignDegreesOfFreedom also for auxiliary dofsets
-    //note: the order of FillComplete() calls determines the gid numbering!
-    // 1. structure dofs
-    // 2. scatra dofs
-    // 3. structure auxiliary dofs
-    // 4. scatra auxiliary dofs
-    structdis->FillComplete(true, false,false);
-    scatradis->FillComplete(true, false,false);
-  }
-
-
-  {
-    //check for ssi coupling condition
-    std::vector<DRT::Condition*> ssicoupling;
-    scatradis->GetCondition("SSICoupling",ssicoupling);
-    if(ssicoupling.size())
-      boundarytransport_=true;
-    else
-      boundarytransport_=false;
-
-    if(boundarytransport_ and matchinggrid_)
-      dserror("Transport on domain boundary and matching discretizations is not supported. "
-          "Set MATCHINGGRID to 'no' in SSI CONTROL section or remove SSI Coupling Condition");
-
-
-    if(boundarytransport_)
-    {
-      adaptermeshtying_ = Teuchos::rcp(new ADAPTER::CouplingMortar());
-
-      std::vector<int> coupleddof(problem->NDim(), 1);
-      // Setup of meshtying adapter
-      adaptermeshtying_->Setup(structdis,
-                              scatradis,
-                              Teuchos::null,
-                              coupleddof,
-                              "SSICoupling",
-                              structdis->Comm(),
-                              false,
-                              false,
-                              0,
-                              1
-                              );
-
-      extractor_= Teuchos::rcp(new LINALG::MapExtractor(*structdis->DofRowMap(0),adaptermeshtying_->MasterDofRowMap(),true));
-    }
-  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -335,5 +254,43 @@ void SSI::SSI_Base::SetMeshDisp( Teuchos::RCP<const Epetra_Vector> disp )
         adaptermeshtying_->MasterToSlave(extractor_->ExtractCondVector(disp)),
         scatra_->ScaTraField()->Discretization(),
         1);
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::SSI_Base::SetupBoundaryScatra()
+{
+  DRT::Problem* problem = DRT::Problem::Instance();
+  Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis("structure");
+  Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis("scatra");
+
+  //check for ssi coupling condition
+  std::vector<DRT::Condition*> ssicoupling;
+  scatradis->GetCondition("SSICoupling",ssicoupling);
+  if(ssicoupling.size())
+    boundarytransport_=true;
+  else
+    boundarytransport_=false;
+
+  if(boundarytransport_)
+  {
+    adaptermeshtying_ = Teuchos::rcp(new ADAPTER::CouplingMortar());
+
+    std::vector<int> coupleddof(problem->NDim(), 1);
+    // Setup of meshtying adapter
+    adaptermeshtying_->Setup(structdis,
+                            scatradis,
+                            Teuchos::null,
+                            coupleddof,
+                            "SSICoupling",
+                            structdis->Comm(),
+                            false,
+                            false,
+                            0,
+                            1
+                            );
+
+    extractor_= Teuchos::rcp(new LINALG::MapExtractor(*structdis->DofRowMap(0),adaptermeshtying_->MasterDofRowMap(),true));
   }
 }

@@ -91,6 +91,15 @@ namespace SSI
 
     Teuchos::RCP<LINALG::MapExtractor> extractor_;
 
+    /// flag for matching structure and scatra discretization
+    bool matchinggrid_;
+
+    /// flag whether scalar transport on a boundary of the structure is present
+    bool boundarytransport_;
+
+    /// setup adapters for transport on boundary if necessary
+    void SetupBoundaryScatra();
+
   private:
     /// clone scatra discretization form structure discretization
     void SetupDiscretizations(const Epetra_Comm& comm);
@@ -104,12 +113,6 @@ namespace SSI
     /// Function for checking that the different time steps are a
     /// multiplicative of each other
     //void CheckTimeStepping(double dt1, double dt2);
-
-    /// flag for matching structure and scatra discretization
-    bool matchinggrid_;
-
-    /// flag whether scalar transport on a boundary of the structure is present
-    bool boundarytransport_;
   };
 }
 
