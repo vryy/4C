@@ -52,12 +52,14 @@
  |  ctor (public)                                            farah 10/13|
  *----------------------------------------------------------------------*/
 VOLMORTAR::VolMortarCoupl::VolMortarCoupl(
-    int dim,
+    int dim,                                // problem dimension
     Teuchos::RCP<DRT::Discretization> dis1, // on Omega_1
     Teuchos::RCP<DRT::Discretization> dis2, // on Omega_2
     std::vector<int>* coupleddof12, // 2-->1
     std::vector<int>* coupleddof21, // 1-->2
-    Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy
+    std::pair<int,int>* dofset12,  // 2-->1
+    std::pair<int,int>* dofset21,  // 1-->2
+    Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy // strategy for element information transfer
     ) :
     dim_(dim),
     dis1_(dis1),
@@ -74,26 +76,39 @@ VOLMORTAR::VolMortarCoupl::VolMortarCoupl(
   comm_ = Teuchos::rcp(dis1->Comm().Clone());
   myrank_ = comm_->MyPID();
 
-  // define row/col map of projection operators
-  if(coupleddof12!=NULL)
-  {
-    BuildMaps(dis1, dis2, P12_dofrowmap_, P12_dofcolmap_, coupleddof12);
-  }
+  if(dofset21 == NULL)
+    dofset21_ = std::pair<int,int>(1,0);
   else
-  {
-    P12_dofrowmap_ = Teuchos::rcp(Discret1()->DofRowMap(1),false);
-    P12_dofcolmap_ = Teuchos::rcp(Discret2()->DofRowMap(0),false);
-  }
+    dofset21_ = *dofset21;
 
-  if(coupleddof21!=NULL)
+  if(dofset12 == NULL)
+    dofset12_ = std::pair<int,int>(1,0);
+  else
+    dofset12_ = *dofset12;
+
+  if(coupleddof12 == NULL)
   {
-    BuildMaps(dis2, dis1, P21_dofrowmap_, P21_dofcolmap_, coupleddof21);
+    int numdof = dis2_->NumDof(dofset12_.second,dis2_->lColNode(0));
+    coupleddof12_ = std::vector<int>(numdof,1);
   }
   else
+    coupleddof12_ = *coupleddof12;
+
+  if(coupleddof21 == NULL)
   {
-    P21_dofrowmap_ = Teuchos::rcp(Discret2()->DofRowMap(1),false);
-    P21_dofcolmap_ = Teuchos::rcp(Discret1()->DofRowMap(0),false);
+    int numdof = dis1_->NumDof(dofset21_.second,dis1_->lColNode(0));
+    coupleddof21_ = std::vector<int>(numdof,1);
   }
+  else
+    coupleddof21_ = *coupleddof21;
+
+  // define row/col map of projection operators
+
+  BuildMaps(dis1, P12_dofrowmap_, coupleddof12_,dofset12_.first);
+  BuildMaps(dis2, P12_dofcolmap_, coupleddof12_,dofset12_.second);
+
+  BuildMaps(dis2, P21_dofrowmap_, coupleddof21_,dofset21_.first);
+  BuildMaps(dis1, P21_dofcolmap_, coupleddof21_,dofset21_.second);
 
   // get required parameter list
   ReadAndCheckInput();
@@ -119,69 +134,31 @@ VOLMORTAR::VolMortarCoupl::VolMortarCoupl(
  |  Build maps based on coupling dofs                        farah 03/15|
  *----------------------------------------------------------------------*/
 void VOLMORTAR::VolMortarCoupl::BuildMaps(
-    Teuchos::RCP<DRT::Discretization>& dis1,
-    Teuchos::RCP<DRT::Discretization>& dis2,
-    Teuchos::RCP<const Epetra_Map>& dofmap1,
-    Teuchos::RCP<const Epetra_Map>& dofmap2,
-    std::vector<int>* coupleddof
+    Teuchos::RCP<DRT::Discretization>& dis,
+    Teuchos::RCP<const Epetra_Map>& dofmap,
+    std::vector<int>& coupleddof,
+    int dofset
     )
 {
-  std::vector<int> dofmapvec1;
-  std::vector<int> dofmapvec2;
+  std::vector<int> dofmapvec;
+  std::map<int, std::vector<int> > dofs;
+  const int* nodes  = dis->NodeRowMap()->MyGlobalElements();
+  const int numnode = dis->NodeRowMap()->NumMyElements();
 
-  std::map<int, std::vector<int> > dofs1;
-  std::map<int, std::vector<int> > dofs2;
-
-  const int* nodes1 = dis1->NodeColMap()->MyGlobalElements();
-  const int* nodes2 = dis2->NodeColMap()->MyGlobalElements();
-
-  const int numnode1 = dis1->NodeColMap()->NumMyElements();
-  const int numnode2 = dis2->NodeColMap()->NumMyElements();
-
-  // dis1
-  for (int i=0; i<numnode1; ++i)
+  for (int i=0; i<numnode; ++i)
   {
-    const DRT::Node* actnode = dis1->gNode(nodes1[i]);
+    const DRT::Node* actnode = dis->gNode(nodes[i]);
 
-    const std::vector<int> dof = dis1->Dof(1,actnode);
-    if (coupleddof->size() > dof.size())
-      dserror("got just %d dofs at node %d (lid=%d) but expected %d",dof.size(),nodes1[i],i,coupleddof->size());
+    const std::vector<int> dof = dis->Dof(dofset,actnode);
+    if (coupleddof.size() > dof.size())
+      dserror("got just %d dofs at node %d (lid=%d) but expected %d",dof.size(),nodes[i],i,coupleddof.size());
     //copy(&dof[0], &dof[0]+numdof, back_inserter(dofmapvec));
-    for(unsigned j=0;j<coupleddof->size();++j)
-      if((*coupleddof)[j]==1)
-        dofmapvec1.push_back(dof[j]);
+    for(unsigned j=0;j<coupleddof.size();++j)
+      if(coupleddof[j]==1)
+        dofmapvec.push_back(dof[j]);
   }
-
-  // dis2
-  for (int i=0; i<numnode2; ++i)
-  {
-    const DRT::Node* actnode = dis2->gNode(nodes2[i]);
-
-    const std::vector<int> dof = dis2->Dof(0,actnode);
-    if (coupleddof->size() > dof.size())
-      dserror("got just %d dofs at node %d (lid=%d) but expected %d",dof.size(),nodes2[i],i,coupleddof->size());
-    //copy(&dof[0], &dof[0]+numdof, back_inserter(dofmapvec));
-    for(unsigned j=0;j<coupleddof->size();++j)
-      if((*coupleddof)[j]==1)
-        dofmapvec2.push_back(dof[j]);
-  }
-
-  std::vector<int>::const_iterator pos1 = std::min_element(dofmapvec1.begin(), dofmapvec1.end());
-  if (pos1!=dofmapvec1.end() and *pos1 < 0)
-    dserror("illegal dof number %d", *pos1);
-
-  std::vector<int>::const_iterator pos2 = std::min_element(dofmapvec2.begin(), dofmapvec2.end());
-  if (pos2!=dofmapvec2.end() and *pos2 < 0)
-    dserror("illegal dof number %d", *pos2);
-
   // dof map is the original, unpermuted distribution of dofs
-  dofmap1 = Teuchos::rcp(new Epetra_Map(-1, dofmapvec1.size(), &dofmapvec1[0], 0, *comm_));
-  dofmap2 = Teuchos::rcp(new Epetra_Map(-1, dofmapvec2.size(), &dofmapvec2[0], 0, *comm_));
-
-  dofmapvec1.clear();
-  dofmapvec2.clear();
-  dofs1.clear();
-  dofs2.clear();
+  dofmap = Teuchos::rcp(new Epetra_Map(-1, dofmapvec.size(), &dofmapvec[0], 0, *comm_));
 
   return;
 }
@@ -429,7 +406,8 @@ LINALG::Matrix<9, 2> VOLMORTAR::VolMortarCoupl::CalcDop(DRT::Element& ele)
 /*----------------------------------------------------------------------*
  |  Perform searching procedure                              farah 05/14|
  *----------------------------------------------------------------------*/
-std::vector<int> VOLMORTAR::VolMortarCoupl::Search(DRT::Element& ele,
+std::vector<int> VOLMORTAR::VolMortarCoupl::Search(
+    DRT::Element& ele,
     Teuchos::RCP<GEO::SearchTree> SearchTree,
     std::map<int, LINALG::Matrix<9, 2> >& currentKDOPs)
 {
@@ -509,7 +487,8 @@ void VOLMORTAR::VolMortarCoupl::AssignMaterials()
  |  Calculate trafo matrix for quadr. elements               farah 05/14|
  *----------------------------------------------------------------------*/
 std::vector<int> VOLMORTAR::VolMortarCoupl::GetAdjacentNodes(
-    DRT::Element::DiscretizationType shape, int& lid)
+    DRT::Element::DiscretizationType shape,
+    int& lid)
 {
   // vector of adjacent node ids
   std::vector<int> ids;
@@ -622,6 +601,7 @@ std::vector<int> VOLMORTAR::VolMortarCoupl::GetAdjacentNodes(
   }
   default:
     dserror("ERROR: shape unknown\n");
+    break;
   }
 
   return ids;
@@ -629,8 +609,10 @@ std::vector<int> VOLMORTAR::VolMortarCoupl::GetAdjacentNodes(
 /*----------------------------------------------------------------------*
  |  Calculate trafo matrix for quadr. elements               farah 05/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::CreateTrafoOperator(DRT::Element& ele,
-    Teuchos::RCP<DRT::Discretization> searchdis, bool dis,
+void VOLMORTAR::VolMortarCoupl::CreateTrafoOperator(
+    DRT::Element& ele,
+    Teuchos::RCP<DRT::Discretization> searchdis,
+    bool dis,
     std::set<int>& donebefore)
 {
   // trafo parameter
@@ -758,9 +740,9 @@ void VOLMORTAR::VolMortarCoupl::EvaluateConsistentInterpolation()
    * Init P-matrices                                         *
    ***********************************************************/
   P12_ = Teuchos::rcp(
-      new LINALG::SparseMatrix(*Discret1()->DofRowMap(1), 10));
+      new LINALG::SparseMatrix(*P12_dofrowmap_, 10));
   P21_ = Teuchos::rcp(
-      new LINALG::SparseMatrix(*Discret2()->DofRowMap(1), 100));
+      new LINALG::SparseMatrix(*P21_dofrowmap_, 100));
 
   /***********************************************************
    * create search tree and current dops                     *
@@ -785,7 +767,7 @@ void VOLMORTAR::VolMortarCoupl::EvaluateConsistentInterpolation()
     std::vector<int> found =
         Search(*anode->Elements()[0], SearchTreeB, CurrentDOPsB);
 
-    AssembleConsistentInterpolation_ADis(anode,found);
+    AssembleConsistentInterpolation_P12(anode,found);
   } // end node loop
 
   //================================================
@@ -799,14 +781,14 @@ void VOLMORTAR::VolMortarCoupl::EvaluateConsistentInterpolation()
     std::vector<int> found =
         Search(*bnode->Elements()[0], SearchTreeA, CurrentDOPsA);
 
-    AssembleConsistentInterpolation_BDis(bnode,found);
+    AssembleConsistentInterpolation_P21(bnode,found);
   } // end node loop
 
   /***********************************************************
    * Complete                                                *
    ***********************************************************/
-  P12_->Complete(*Discret2()->DofRowMap(0), *Discret1()->DofRowMap(1));
-  P21_->Complete(*Discret1()->DofRowMap(0), *Discret2()->DofRowMap(1));
+  P12_->Complete(*P12_dofcolmap_, *P12_dofrowmap_);
+  P21_->Complete(*P21_dofcolmap_, *P21_dofrowmap_);
 
   return;
 }
@@ -847,7 +829,7 @@ void VOLMORTAR::VolMortarCoupl::EvaluateElements()
     DRT::Element* Aele = dis1_->lColElement(j);
 
     std::vector<int> found = Search(*Aele, SearchTreeB, CurrentDOPsB);
-    Integrate3DEleBased_ADis(*Aele, found);
+    Integrate3DEleBased_P12(*Aele, found);
 
     // create trafo operator for quadr. modification
     if (dualquad_ != INPAR::VOLMORTAR::dualquad_no_mod)
@@ -875,7 +857,7 @@ void VOLMORTAR::VolMortarCoupl::EvaluateElements()
     DRT::Element* Bele = dis2_->lColElement(j);
 
     std::vector<int> found = Search(*Bele, SearchTreeA, CurrentDOPsA);
-    Integrate3DEleBased_BDis(*Bele, found);
+    Integrate3DEleBased_P21(*Bele, found);
 
     // create trafo operator for quadr. modification
     if (dualquad_ != INPAR::VOLMORTAR::dualquad_no_mod)
@@ -2298,8 +2280,10 @@ void VOLMORTAR::VolMortarCoupl::Integrate2D(
 /*----------------------------------------------------------------------*
  |  Integrate3D Cells                                        farah 01/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::Integrate3DCell(DRT::Element& sele,
-    DRT::Element& mele, std::vector<Teuchos::RCP<Cell> >& cells)
+void VOLMORTAR::VolMortarCoupl::Integrate3DCell(
+    DRT::Element& sele,
+    DRT::Element& mele,
+    std::vector<Teuchos::RCP<Cell> >& cells)
 {
   //--------------------------------------------------------------------
   // loop over cells for A Field
@@ -2615,7 +2599,8 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(DRT::Element& sele,
 /*----------------------------------------------------------------------*
  |  Integrate3D elebased                                     farah 04/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis(DRT::Element& Aele,
+void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P12(
+    DRT::Element& Aele,
     std::vector<int>& foundeles)
 {
   switch (Aele.Shape())
@@ -2627,7 +2612,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis(DRT::Element& Aele,
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Aele, foundeles, *D1_,
-        *M12_, dis1_, dis2_,1,0);
+        *M12_, dis1_, dis2_,dofset12_.first,dofset12_.second);
     break;
   }
   case DRT::Element::tet4:
@@ -2636,7 +2621,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis(DRT::Element& Aele,
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Aele, foundeles, *D1_,
-        *M12_, dis1_, dis2_,1,0);
+        *M12_, dis1_, dis2_,dofset12_.first,dofset12_.second);
     break;
   }
   case DRT::Element::hex27:
@@ -2645,7 +2630,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis(DRT::Element& Aele,
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Aele, foundeles, *D1_,
-        *M12_, dis1_, dis2_,1,0);
+        *M12_, dis1_, dis2_,dofset12_.first,dofset12_.second);
     break;
   }
   case DRT::Element::hex20:
@@ -2654,7 +2639,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis(DRT::Element& Aele,
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Aele, foundeles, *D1_,
-        *M12_, dis1_, dis2_,1,0);
+        *M12_, dis1_, dis2_,dofset12_.first,dofset12_.second);
     break;
   }
   case DRT::Element::tet10:
@@ -2663,7 +2648,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis(DRT::Element& Aele,
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Aele, foundeles, *D1_,
-        *M12_, dis1_, dis2_,1,0);
+        *M12_, dis1_, dis2_,dofset12_.first,dofset12_.second);
     break;
   }
   default:
@@ -2679,7 +2664,8 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis(DRT::Element& Aele,
 /*----------------------------------------------------------------------*
  |  Integrate3D Cells                                        farah 04/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis(DRT::Element& Bele,
+void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P21(
+    DRT::Element& Bele,
     std::vector<int>& foundeles)
 {
   switch (Bele.Shape())
@@ -2691,7 +2677,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis(DRT::Element& Bele,
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Bele, foundeles, *D2_,
-        *M21_, dis2_, dis1_,1,0);
+        *M21_, dis2_, dis1_,dofset21_.first,dofset21_.second);
     break;
   }
   case DRT::Element::tet4:
@@ -2700,7 +2686,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis(DRT::Element& Bele,
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Bele, foundeles, *D2_,
-        *M21_, dis2_, dis1_,1,0);
+        *M21_, dis2_, dis1_,dofset21_.first,dofset21_.second);
     break;
   }
   case DRT::Element::hex27:
@@ -2709,7 +2695,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis(DRT::Element& Bele,
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Bele, foundeles, *D2_,
-        *M21_, dis2_, dis1_,1,0);
+        *M21_, dis2_, dis1_,dofset21_.first,dofset21_.second);
     break;
   }
   case DRT::Element::hex20:
@@ -2718,7 +2704,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis(DRT::Element& Bele,
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Bele, foundeles, *D2_,
-        *M21_, dis2_, dis1_,1,0);
+        *M21_, dis2_, dis1_,dofset21_.first,dofset21_.second);
     break;
   }
   case DRT::Element::tet10:
@@ -2727,7 +2713,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis(DRT::Element& Bele,
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Bele, foundeles, *D2_,
-        *M21_, dis2_, dis1_,1,0);
+        *M21_, dis2_, dis1_,dofset21_.first,dofset21_.second);
     break;
   }
   default:
@@ -2742,7 +2728,8 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis(DRT::Element& Bele,
 /*----------------------------------------------------------------------*
  |  Integrate3D elebased                                     farah 03/15|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis_MeshInit(DRT::Element& Aele,
+void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis_MeshInit(
+    DRT::Element& Aele,
     std::vector<int>& foundeles,
     int dofseta,
     int dofsetb)
@@ -2808,7 +2795,8 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis_MeshInit(DRT::Element& 
 /*----------------------------------------------------------------------*
  |  Integrate3D Cells                                        farah 03/15|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis_MeshInit(DRT::Element& Bele,
+void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis_MeshInit(
+    DRT::Element& Bele,
     std::vector<int>& foundeles,
     int dofsetb,
     int dofseta)
@@ -2873,12 +2861,12 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis_MeshInit(DRT::Element& 
 /*----------------------------------------------------------------------*
  |  Assemble p matrix for cons. interpolation approach       farah 06/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::AssembleConsistentInterpolation_ADis(
+void VOLMORTAR::VolMortarCoupl::AssembleConsistentInterpolation_P12(
     DRT::Node* node,
     std::vector<int>& foundeles)
 {
   static ConsInterpolator interpolator;
-  interpolator.Interpolate(node, *P12_, dis1_, dis2_,foundeles);
+  interpolator.Interpolate(node, *P12_, dis1_, dis2_,foundeles,dofset12_,coupleddof12_);
 
   return;
 }
@@ -2886,12 +2874,12 @@ void VOLMORTAR::VolMortarCoupl::AssembleConsistentInterpolation_ADis(
 /*----------------------------------------------------------------------*
  |  Assemble p matrix for cons. interpolation approach       farah 06/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::AssembleConsistentInterpolation_BDis(
+void VOLMORTAR::VolMortarCoupl::AssembleConsistentInterpolation_P21(
     DRT::Node* node,
     std::vector<int>& foundeles)
 {
   static ConsInterpolator interpolator;
-  interpolator.Interpolate(node, *P21_, dis2_, dis1_,foundeles);
+  interpolator.Interpolate(node, *P21_, dis2_, dis1_,foundeles,dofset12_,coupleddof12_);
 
   return;
 }
@@ -2900,7 +2888,9 @@ void VOLMORTAR::VolMortarCoupl::AssembleConsistentInterpolation_BDis(
  |  Integrate3D Cells for direct divergence approach         farah 04/14|
  *----------------------------------------------------------------------*/
 void VOLMORTAR::VolMortarCoupl::Integrate3DCell_DirectDivergence(
-    DRT::Element& sele, DRT::Element& mele, bool switched_conf)
+    DRT::Element& sele,
+    DRT::Element& mele,
+    bool switched_conf)
 {
   if ((int) (volcell_.size()) > 1)
     std::cout
@@ -3002,8 +2992,10 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell_DirectDivergence(
 /*----------------------------------------------------------------------*
  |  Integrate over A-element domain                          farah 01/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::Integrate3D(DRT::Element& sele,
-    DRT::Element& mele, int domain)
+void VOLMORTAR::VolMortarCoupl::Integrate3D(
+    DRT::Element& sele,
+    DRT::Element& mele,
+    int domain)
 {
   //--------------------------------------------------------------------
   // loop over cells for A Field
@@ -3453,7 +3445,8 @@ void VOLMORTAR::VolMortarCoupl::CreateProjectionOperator()
 /*----------------------------------------------------------------------*
  |  Define polygon of mortar vertices                        farah 01/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::DefineVerticesSlave(DRT::Element& ele,
+void VOLMORTAR::VolMortarCoupl::DefineVerticesSlave(
+    DRT::Element& ele,
     std::vector<MORTAR::Vertex>& SlaveVertices)
 {
   // project slave nodes onto auxiliary plane
@@ -3486,7 +3479,8 @@ void VOLMORTAR::VolMortarCoupl::DefineVerticesSlave(DRT::Element& ele,
 /*----------------------------------------------------------------------*
  |  Define polygon of mortar vertices                        farah 01/14|
  *----------------------------------------------------------------------*/
-void VOLMORTAR::VolMortarCoupl::DefineVerticesMaster(DRT::Element& ele,
+void VOLMORTAR::VolMortarCoupl::DefineVerticesMaster(
+    DRT::Element& ele,
     std::vector<MORTAR::Vertex>& SlaveVertices)
 {
   // project slave nodes onto auxiliary plane
@@ -3520,9 +3514,12 @@ void VOLMORTAR::VolMortarCoupl::DefineVerticesMaster(DRT::Element& ele,
  |  Clipping of two polygons (NEW version)                    popp 11/09|
  *----------------------------------------------------------------------*/
 bool VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(
-    std::vector<MORTAR::Vertex>& poly1, std::vector<MORTAR::Vertex>& poly2,
-    std::vector<MORTAR::Vertex>& respoly, DRT::Element& sele,
-    DRT::Element& mele, double& tol)
+    std::vector<MORTAR::Vertex>& poly1,
+    std::vector<MORTAR::Vertex>& poly2,
+    std::vector<MORTAR::Vertex>& respoly,
+    DRT::Element& sele,
+    DRT::Element& mele,
+    double& tol)
 {
   //**********************************************************************
   // STEP1: Input check

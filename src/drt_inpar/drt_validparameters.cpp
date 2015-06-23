@@ -7060,6 +7060,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int> ("DIVPROJECTION", "no", "Project velocity into divergence-free subspace for partitioned fsi",
                                      yesnotuple,yesnovalue,&fsidyn);
 
+  BoolParameter("MATCHGRID_FLUIDALE","Yes","is matching grid (fluid-ale)",&fsidyn);
+
   /*----------------------------------------------------------------------*/
   /* parameters for time step size adaptivity in fsi dynamics */
   Teuchos::ParameterList& fsiadapt = fsidyn.sublist("TIMEADAPTIVITY",false,"");

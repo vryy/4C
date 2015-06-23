@@ -87,7 +87,7 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm,
     Teuchos::RCP<UTILS::PoroMaterialStrategy> materialstrategy = Teuchos::rcp(new UTILS::PoroMaterialStrategy());
 
     //setup projection matrices
-    volcoupl_->Setup(structdis,fluiddis,NULL,NULL,materialstrategy);
+    volcoupl_->Setup(structdis,fluiddis,NULL,NULL,NULL,NULL,materialstrategy);
   }
 
   // access structural dynamic params list which will be possibly modified while creating the time integrator

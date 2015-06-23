@@ -61,7 +61,7 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
 
     Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy= Teuchos::rcp(new TSI::UTILS::TSIMaterialStrategy() );
     //setup projection matrices
-    volcoupl_->Setup(structdis,thermodis,NULL,NULL,materialstrategy);
+    volcoupl_->Setup(structdis,thermodis,NULL,NULL,NULL,NULL,materialstrategy);
   }
 
   // access structural dynamic params list which will be possibly modified while creating the time integrator
@@ -130,7 +130,7 @@ void TSI::Algorithm::Output(bool forced_writerestart)
   if ( (upres!=0 and (Step()%upres == 0))
     or ( (uprestart != 0) and (Step()%uprestart == 0) )
     or forced_writerestart == true )
-    if(!matchinggrid_)
+    if(not matchinggrid_)
     {
       //************************************************************************************
       Teuchos::RCP<const Epetra_Vector> dummy1 = volcoupl_->ApplyVectorMapping12(ThermoField()->Tempnp());
@@ -141,7 +141,7 @@ void TSI::Algorithm::Output(bool forced_writerestart)
         DRT::Node* structnode = StructureField()->Discretization()->lRowNode(lnodeid);
         std::vector<int> structdofs = StructureField()->Discretization()->Dof(1,structnode);
 
-        // global and processor's local fluid dof ID
+        // global and processor's local structure dof ID
         const int sgid = structdofs[0];
         const int slid = StructureField()->Discretization()->DofRowMap(1)->LID(sgid);
 

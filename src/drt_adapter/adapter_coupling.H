@@ -33,6 +33,76 @@ namespace DRT
 
 namespace ADAPTER
 {
+  /// Abstract interface to coupling managers
+  /*!
+   * This class is an interface to the coupling adapters.
+   *
+   * The standard version ADAPTER::Coupling (see below) can couple two (matching) sets of nodes from
+   * two discretizations at an interface (e.g. fluid-structure) or within a volume (e.g. fluid-ale).
+   *
+   * For non-matching sets of nodes within a volume, the ADAPTER::MortarVolCoupl can be used.
+   *
+   * For non-matching sets of nodes at an interface, the ADAPTER::CouplingMortar can be used (does not (yet?)
+   * inherit from this interface).
+   */
+  class Coupling_Base
+  {
+  public:
+    /// empty constructor
+    Coupling_Base(){};
+
+    /// virtual destructor
+    virtual ~Coupling_Base(){};
+
+    /** \name Conversion between master and slave */
+    //@{
+    /// There are different versions to satisfy all needs. The basic
+    /// idea is the same for all of them.
+
+    /// transfer a dof vector from master to slave
+    virtual Teuchos::RCP<Epetra_Vector> MasterToSlave(Teuchos::RCP<Epetra_Vector> mv) const =0;
+
+    /// transfer a dof vector from slave to master
+    virtual Teuchos::RCP<Epetra_Vector> SlaveToMaster(Teuchos::RCP<Epetra_Vector> sv) const =0;
+
+    /// transfer a dof vector from master to slave
+    virtual Teuchos::RCP<Epetra_MultiVector> MasterToSlave(Teuchos::RCP<Epetra_MultiVector> mv) const =0;
+
+    /// transfer a dof vector from slave to master
+    virtual Teuchos::RCP<Epetra_MultiVector> SlaveToMaster(Teuchos::RCP<Epetra_MultiVector> sv) const =0;
+
+    /// transfer a dof vector from master to slave
+    virtual Teuchos::RCP<Epetra_Vector> MasterToSlave(Teuchos::RCP<const Epetra_Vector> mv) const =0;
+
+    /// transfer a dof vector from slave to master
+    virtual Teuchos::RCP<Epetra_Vector> SlaveToMaster(Teuchos::RCP<const Epetra_Vector> sv) const =0;
+
+    /// transfer a dof vector from master to slave
+    virtual Teuchos::RCP<Epetra_MultiVector> MasterToSlave(Teuchos::RCP<const Epetra_MultiVector> mv) const =0;
+
+    /// transfer a dof vector from slave to master
+    virtual Teuchos::RCP<Epetra_MultiVector> SlaveToMaster(Teuchos::RCP<const Epetra_MultiVector> sv) const =0;
+
+    /// transfer a dof vector from master to slave
+    virtual void MasterToSlave(Teuchos::RCP<const Epetra_MultiVector> mv, Teuchos::RCP<Epetra_MultiVector> sv) const =0;
+
+    /// transfer a dof vector from slave to master
+    virtual void SlaveToMaster(Teuchos::RCP<const Epetra_MultiVector> sv, Teuchos::RCP<Epetra_MultiVector> mv) const =0;
+
+    //@}
+
+    /** \name Coupled maps */
+    //@{
+
+    /// the interface dof map of the master side
+    virtual Teuchos::RCP<const Epetra_Map> MasterDofMap() const =0;
+
+    /// the interface dof map of the slave side
+    virtual Teuchos::RCP<const Epetra_Map> SlaveDofMap()  const =0;
+
+    //@}
+  };
+
   /// Management of coupling between two (matching) sets of nodes from two discretizations
   /*!
     Interface coupled problems with matching meshes need to transfer
@@ -70,7 +140,7 @@ namespace ADAPTER
     \author u.kue
     \date 06/07
    */
-  class Coupling
+  class Coupling: public Coupling_Base
   {
   public:
 

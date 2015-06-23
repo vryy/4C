@@ -29,6 +29,7 @@ namespace ADAPTER
 {
   // forward declarations
 
+  class Coupling_Base;
   class Coupling;
   class AleFluidWrapper;
 
@@ -92,7 +93,7 @@ namespace ADAPTER
     //@}
 
     /// coupling of fluid and ale (whole field)
-    Teuchos::RCP<Coupling>               coupfa_;
+    Teuchos::RCP<Coupling_Base>          coupfa_;
 
     /// coupling of fluid and ale (interface only)
     Teuchos::RCP<Coupling>               icoupfa_;

@@ -20,6 +20,7 @@ Maintainer: Matthias Mayr
 
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "adapter_coupling.H"
+#include "adapter_coupling_volmortar.H"
 #include "../drt_inpar/inpar_fsi.H"
 
 /*----------------------------------------------------------------------------*/
@@ -39,16 +40,44 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn,
 
   const int ndim = DRT::Problem::Instance()->NDim();
 
-  // the fluid-ale coupling always matches
-  const Epetra_Map* fluidnodemap = FluidField()->Discretization()->NodeRowMap();
-  const Epetra_Map* alenodemap   = AleField()->Discretization()->NodeRowMap();
+  //check for matching fluid and ale meshes (==true in default case)
+  if(DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->FSIDynamicParams(),"MATCHGRID_FLUIDALE"))
+  {
+    // the fluid-ale coupling matches
+    const Epetra_Map* fluidnodemap = FluidField()->Discretization()->NodeRowMap();
+    const Epetra_Map* alenodemap   = AleField()->Discretization()->NodeRowMap();
 
-  coupfa_ = Teuchos::rcp(new Coupling());
-  coupfa_->SetupCoupling(*FluidField()->Discretization(),
-                         *AleField()->Discretization(),
-                         *fluidnodemap,
-                         *alenodemap,
-                         ndim);
+    //setup coupling adapter
+    Teuchos::RCP<ADAPTER::Coupling> coupfa_matching = Teuchos::rcp(new Coupling());
+    coupfa_matching->SetupCoupling(*FluidField()->Discretization(),
+                                   *AleField()->Discretization(),
+                                   *fluidnodemap,
+                                   *alenodemap,
+                                   ndim);
+   coupfa_ = coupfa_matching;
+  }
+  else
+  {
+    //non matching volume meshes of fluid and ale
+    Teuchos::RCP<ADAPTER::MortarVolCoupl>  coupfa_volmortar = Teuchos::rcp(new MortarVolCoupl());
+
+    //couple displacement dofs of ale and velocity dofs of fluid
+
+    //projection ale -> fluid : all ndim dofs (displacements)
+    std::vector<int> coupleddof12 = std::vector<int>(ndim,1);
+
+    //projection fluid -> ale : ndim dofs (only velocity, no pressure)
+    std::vector<int> coupleddof21 = std::vector<int>(ndim+1,1);
+    // unmark pressure dof
+    coupleddof21[ndim]=0;
+
+    //setup coupling adapter
+    coupfa_volmortar->Setup( FluidField()->Discretization(),
+                             AleField()->WriteAccessDiscretization(),
+                             &coupleddof12,
+                             &coupleddof12);
+    coupfa_ = coupfa_volmortar;
+  }
 
   //initializing the fluid is done later as for xfluids the first cut is done
   // there (coupfa_ cannot be build anymore!!!)

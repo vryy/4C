@@ -1762,7 +1762,9 @@ void VOLMORTAR::ConsInterpolator::Interpolate(
     LINALG::SparseMatrix& pmatrix,
     Teuchos::RCP<const DRT::Discretization> nodediscret,
     Teuchos::RCP<const DRT::Discretization> elediscret,
-    std::vector<int>& foundeles)
+    std::vector<int>& foundeles,
+    std::pair<int,int>& dofset,
+    std::vector<int>& coupleddof)
 {
   // check ownership
   if (node->Owner() != nodediscret->Comm().MyPID())
@@ -1798,7 +1800,9 @@ void VOLMORTAR::ConsInterpolator::Interpolate(
           eleid,
           dist,
           AuxXi,
-          nodepos);
+          nodepos,
+          dofset,
+          coupleddof);
       break;
     }
     case DRT::Element::tri6:
@@ -1814,7 +1818,9 @@ void VOLMORTAR::ConsInterpolator::Interpolate(
           eleid,
           dist,
           AuxXi,
-          nodepos);
+          nodepos,
+          dofset,
+          coupleddof);
       break;
     }
     case DRT::Element::quad4:
@@ -1830,7 +1836,9 @@ void VOLMORTAR::ConsInterpolator::Interpolate(
           eleid,
           dist,
           AuxXi,
-          nodepos);
+          nodepos,
+          dofset,
+          coupleddof);
       break;
     }
     case DRT::Element::quad8:
@@ -1846,7 +1854,9 @@ void VOLMORTAR::ConsInterpolator::Interpolate(
           eleid,
           dist,
           AuxXi,
-          nodepos);
+          nodepos,
+          dofset,
+          coupleddof);
       break;
     }
     case DRT::Element::quad9:
@@ -1862,7 +1872,9 @@ void VOLMORTAR::ConsInterpolator::Interpolate(
           eleid,
           dist,
           AuxXi,
-          nodepos);
+          nodepos,
+          dofset,
+          coupleddof);
       break;
     }
 
@@ -1880,7 +1892,9 @@ void VOLMORTAR::ConsInterpolator::Interpolate(
           eleid,
           dist,
           AuxXi,
-          nodepos);
+          nodepos,
+          dofset,
+          coupleddof);
       break;
     }
     case DRT::Element::hex20:
@@ -1896,7 +1910,9 @@ void VOLMORTAR::ConsInterpolator::Interpolate(
           eleid,
           dist,
           AuxXi,
-          nodepos);
+          nodepos,
+          dofset,
+          coupleddof);
       break;
     }
     case DRT::Element::hex27:
@@ -1912,7 +1928,9 @@ void VOLMORTAR::ConsInterpolator::Interpolate(
           eleid,
           dist,
           AuxXi,
-          nodepos);
+          nodepos,
+          dofset,
+          coupleddof);
       break;
     }
     case DRT::Element::tet4:
@@ -1928,7 +1946,9 @@ void VOLMORTAR::ConsInterpolator::Interpolate(
           eleid,
           dist,
           AuxXi,
-          nodepos);
+          nodepos,
+          dofset,
+          coupleddof);
       break;
     }
     case DRT::Element::tet10:
@@ -1944,7 +1964,9 @@ void VOLMORTAR::ConsInterpolator::Interpolate(
           eleid,
           dist,
           AuxXi,
-          nodepos);
+          nodepos,
+          dofset,
+          coupleddof);
       break;
     }
     default:
@@ -1981,7 +2003,9 @@ bool VOLMORTAR::ConsInterpolatorEval(
     int& eleid,
     double& dist,
     double* AuxXi,
-    double* nodepos)
+    double* nodepos,
+    std::pair<int,int>& dofset,
+    std::vector<int>& coupleddof)
 {
   //! ns_: number of slave element nodes
   static const int n_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
@@ -2026,17 +2050,20 @@ bool VOLMORTAR::ConsInterpolatorEval(
   LINALG::Matrix<n_,1>  val;
   UTILS::shape_function<distype>(val,xi);
 
-  int nsdof=nodediscret->NumDof(1,node);
+  int nsdof=nodediscret->NumDof(dofset.first,node);
 
   //loop over slave dofs
   for (int jdof=0;jdof<nsdof;++jdof)
   {
-    int row = nodediscret->Dof(1,node,jdof);
+    if(coupleddof[jdof]==0)
+      continue;
+
+    int row = nodediscret->Dof(dofset.first,node,jdof);
 
     for (int k=0; k<ele->NumNode(); ++k)
     {
       DRT::Node* bnode = ele->Nodes()[k];
-      int col = elediscret->Dof(0,bnode,jdof);
+      int col = elediscret->Dof(dofset.second,bnode,jdof);
 
       double val2=val(k);
       //if (abs(val2)>VOLMORTARINTTOL)

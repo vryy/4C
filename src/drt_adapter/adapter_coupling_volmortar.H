@@ -20,6 +20,8 @@ Maintainer: Philipp Farah
 #include <Epetra_Vector.h>
 #include "../linalg/linalg_fixedsizematrix.H"
 
+#include "adapter_coupling.H"
+
 /*---------------------------------------------------------------------*
  | forward declarations                                    farah 10/13 |
  *---------------------------------------------------------------------*/
@@ -45,7 +47,7 @@ namespace VOLMORTAR
 namespace ADAPTER
 {
   /// Class for calling volmortar coupling and proper parallel redistr.
-  class MortarVolCoupl
+  class MortarVolCoupl: public Coupling_Base
   {
   public:
 
@@ -61,8 +63,10 @@ namespace ADAPTER
     */
     void Setup(Teuchos::RCP<DRT::Discretization> dis1,
                Teuchos::RCP<DRT::Discretization> dis2,
-               std::vector<int>* coupleddof12,
-               std::vector<int>* coupleddof21,
+               std::vector<int>* coupleddof12 = NULL,
+               std::vector<int>* coupleddof21 = NULL,
+               std::pair<int,int>* dofsets12 = NULL,
+               std::pair<int,int>* dofsets21 = NULL,
                Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy = Teuchos::null
                );
 
@@ -95,7 +99,70 @@ namespace ADAPTER
         Teuchos::RCP<DRT::Discretization> dis2,
         Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy = Teuchos::null);
 
+
+    /** \name Conversion between master and slave */
+    //@{
+    /// There are different versions to satisfy all needs. The basic
+    /// idea is the same for all of them.
+
+    /// transfer a dof vector from master to slave
+    Teuchos::RCP<Epetra_Vector> MasterToSlave(Teuchos::RCP<Epetra_Vector> mv) const
+      { return MasterToSlave(Teuchos::rcp_static_cast<const Epetra_Vector>(mv)); }
+
+    /// transfer a dof vector from slave to master
+    Teuchos::RCP<Epetra_Vector> SlaveToMaster(Teuchos::RCP<Epetra_Vector> sv) const
+      { return SlaveToMaster(Teuchos::rcp_static_cast<const Epetra_Vector>(sv)); }
+
+    /// transfer a dof vector from master to slave
+    Teuchos::RCP<Epetra_MultiVector> MasterToSlave(Teuchos::RCP<Epetra_MultiVector> mv) const
+      { return MasterToSlave(Teuchos::rcp_static_cast<const Epetra_MultiVector>(mv)); }
+
+    /// transfer a dof vector from slave to master
+    Teuchos::RCP<Epetra_MultiVector> SlaveToMaster(Teuchos::RCP<Epetra_MultiVector> sv) const
+      { return SlaveToMaster(Teuchos::rcp_static_cast<const Epetra_MultiVector>(sv)); }
+
+    /// transfer a dof vector from master to slave
+    virtual Teuchos::RCP<Epetra_Vector> MasterToSlave(Teuchos::RCP<const Epetra_Vector> mv) const;
+
+    /// transfer a dof vector from slave to master
+    virtual Teuchos::RCP<Epetra_Vector> SlaveToMaster(Teuchos::RCP<const Epetra_Vector> sv) const;
+
+    /// transfer a dof vector from master to slave
+    virtual Teuchos::RCP<Epetra_MultiVector> MasterToSlave(Teuchos::RCP<const Epetra_MultiVector> mv) const;
+
+    /// transfer a dof vector from slave to master
+    virtual Teuchos::RCP<Epetra_MultiVector> SlaveToMaster(Teuchos::RCP<const Epetra_MultiVector> sv) const;
+
+    /// transfer a dof vector from master to slave
+    virtual void MasterToSlave(Teuchos::RCP<const Epetra_MultiVector> mv, Teuchos::RCP<Epetra_MultiVector> sv) const;
+
+    /// transfer a dof vector from slave to master
+    virtual void SlaveToMaster(Teuchos::RCP<const Epetra_MultiVector> sv, Teuchos::RCP<Epetra_MultiVector> mv) const;
+
+    //@}
+
+    /** \name Coupled maps */
+    //@{
+
+    /// the interface dof map of the master side
+    virtual Teuchos::RCP<const Epetra_Map> MasterDofMap() const;
+
+    /// the interface dof map of the slave side
+    virtual Teuchos::RCP<const Epetra_Map> SlaveDofMap()  const;
+
+    //@}
+
   private:
+
+    /*!
+    \brief Create auxiliary dofsets for multiphysics if necessary
+
+    */
+    void CreateAuxDofsets(Teuchos::RCP<DRT::Discretization> dis1,
+                          Teuchos::RCP<DRT::Discretization> dis2,
+                          std::vector<int>* coupleddof12,
+                          std::vector<int>* coupleddof21);
+
     // mortar matrices and projector
     // s1 = P12 * s2
     // s2 = P21 * s1

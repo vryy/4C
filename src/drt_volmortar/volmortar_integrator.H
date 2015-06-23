@@ -359,7 +359,9 @@ bool ConsInterpolatorEval(
      int& eleid,
      double& dist,
      double* AuxXi,
-     double* nodepos);
+     double* nodepos,
+     std::pair<int,int>& dofset,
+     std::vector<int>& coupleddof);
 
 //===================================
 // Alternative to VolMortar coupling:
@@ -381,7 +383,10 @@ public:
                    LINALG::SparseMatrix& pmatrix_,
                    Teuchos::RCP<const DRT::Discretization> nodediscret,
                    Teuchos::RCP<const DRT::Discretization> elediscret,
-                   std::vector<int>& foundeles);
+                   std::vector<int>& foundeles,
+                   std::pair<int,int>& dofset,
+                   std::vector<int>& coupleddof);
+
 
 };
 
