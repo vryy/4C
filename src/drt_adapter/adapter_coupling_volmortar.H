@@ -47,7 +47,7 @@ namespace VOLMORTAR
 namespace ADAPTER
 {
   /// Class for calling volmortar coupling and proper parallel redistr.
-  class MortarVolCoupl: public Coupling_Base
+  class MortarVolCoupl: public CouplingBase
   {
   public:
 

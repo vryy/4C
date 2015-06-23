@@ -1,22 +1,31 @@
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /*!
 \file ad_fld_fluid_ale.H
 
-\brief
+\brief Solver for fluid field on a moving ALE mesh
 
 <pre>
-Maintainer: Ulrich Kuettler
-            kuettler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
+Maintainer: Matthias Mayr
+            mayr@mhpc.mw.tum.de
+            089 - 289-10362
 </pre>
 */
-/*----------------------------------------------------------------------*/
-
+/*----------------------------------------------------------------------------*/
 
 #ifndef ADAPTER_FLUID_ALE_H
 #define ADAPTER_FLUID_ALE_H
 
+/*----------------------------------------------------------------------------*/
+/* forward declarations */
+namespace ADAPTER
+{
+  class CouplingBase;
+  class Coupling;
+  class AleFluidWrapper;
+} // namespace ADAPTER
+
+/*----------------------------------------------------------------------------*/
+/* headers */
 #include <Epetra_Comm.h>
 
 #include <Teuchos_RCP.hpp>
@@ -25,36 +34,44 @@ Maintainer: Ulrich Kuettler
 #include "ad_fld_moving_boundary.H"
 #include "ad_fld_base_algorithm.H"
 
+/*----------------------------------------------------------------------------*/
+/* definition of classes */
 namespace ADAPTER
 {
-  // forward declarations
-
-  class Coupling_Base;
-  class Coupling;
-  class AleFluidWrapper;
-
-
   /// fluid on ale
   class FluidAle : public FluidMovingBoundary
   {
   public:
 
     FluidAle(const Teuchos::ParameterList& prbdyn,
-                    std::string condname);
+        std::string condname);
 
     /// fluid field
     const Teuchos::RCP<ADAPTER::Fluid>& FluidField() { return fluid_; }
 
     /// ale field
-    const Teuchos::RCP<ADAPTER::AleFluidWrapper>& AleField() const { return ale_; }
+    const Teuchos::RCP<ADAPTER::AleFluidWrapper>& AleField() const
+    { return ale_; }
 
+    /// discretization
     virtual Teuchos::RCP<DRT::Discretization> Discretization();
-    virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const { return fluid_->Interface(); }
 
+    /// fluid interface
+    virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const
+    { return fluid_->Interface(); }
+
+    /// Prepare a single time step
     virtual void PrepareTimeStep();
+
+    /// Update to go from time step \f$t_n\f$ to \f$t_{n+1}\f$
     virtual void Update();
+
+    /// Output current state of simulation
     virtual void Output();
-    virtual double ReadRestart(int step);
+
+    /// Read resatart data
+    virtual double ReadRestart(int step ///< step number to restart from
+        );
 
     virtual void NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,Teuchos::RCP<Epetra_Vector> ivel);
 
@@ -77,32 +94,41 @@ namespace ADAPTER
   protected:
 
     //! @name Transfer helpers
+    //@{
 
     /// field transform
-    virtual Teuchos::RCP<Epetra_Vector> AleToFluidField(Teuchos::RCP<Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> AleToFluidField(
+        Teuchos::RCP<Epetra_Vector> iv ///< ALE vector (to be converted)
+        ) const;
 
     /// field transform
-    virtual Teuchos::RCP<Epetra_Vector> AleToFluidField(Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> AleToFluidField(
+        Teuchos::RCP<const Epetra_Vector> iv ///< ALE vector (to be converted)
+        ) const;
 
     /// interface transform
-    virtual Teuchos::RCP<Epetra_Vector> FluidToAle(Teuchos::RCP<Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> FluidToAle(
+        Teuchos::RCP<Epetra_Vector> iv ///< Fluid vector (to be converted)
+        ) const;
 
     /// interface transform
-    virtual Teuchos::RCP<Epetra_Vector> FluidToAle(Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> FluidToAle(
+        Teuchos::RCP<const Epetra_Vector> iv ///< Fluid vector (to be converted)
+        ) const;
 
     //@}
 
     /// coupling of fluid and ale (whole field)
-    Teuchos::RCP<Coupling_Base>          coupfa_;
+    Teuchos::RCP<CouplingBase> coupfa_;
 
     /// coupling of fluid and ale (interface only)
-    Teuchos::RCP<Coupling>               icoupfa_;
+    Teuchos::RCP<Coupling> icoupfa_;
 
     /// coupling of fluid and ale at the free surface
-    Teuchos::RCP<Coupling>               fscoupfa_;
+    Teuchos::RCP<Coupling> fscoupfa_;
 
     /// coupling of fluid and ale for the ale update condition
-    Teuchos::RCP<Coupling>               aucoupfa_;
+    Teuchos::RCP<Coupling> aucoupfa_;
 
   private:
 
@@ -110,7 +136,7 @@ namespace ADAPTER
     Teuchos::RCP<ADAPTER::Fluid> fluid_;
 
     /// problem-specific ALE-wrapper
-    Teuchos::RCP<ADAPTER::AleFluidWrapper>  ale_;
+    Teuchos::RCP<ADAPTER::AleFluidWrapper> ale_;
 
   };
 

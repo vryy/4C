@@ -1,93 +1,119 @@
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 /*!
 \file adapter_coupling.H
 
-\brief
+\brief Coupling of two discretizations (surface- or volume-coupling)
 
 <pre>
-Maintainer: Ulrich Kuettler
-            kuettler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
+Maintainer: Matthias Mayr
+            mayr@mhpc.mw.tum.de
+            089 - 289-10362
 </pre>
 */
-/*----------------------------------------------------------------------*/
-
+/*----------------------------------------------------------------------------*/
 
 #ifndef ADAPTER_COUPLING_H
 #define ADAPTER_COUPLING_H
 
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Map.h>
-#include <Epetra_CrsMatrix.h>
-
+/*----------------------------------------------------------------------------*/
+/* forward declarations */
 namespace LINALG
 {
   class SparseMatrix;
-}
+} // namespace LINALG
 
 namespace DRT
 {
   class Discretization;
-}
+} // namespace DRT
 
+/*----------------------------------------------------------------------------*/
+/* headers */
+#include <Teuchos_RCP.hpp>
+#include <Epetra_Map.h>
+#include <Epetra_CrsMatrix.h>
+
+/*----------------------------------------------------------------------------*/
+/* definition of classes */
 namespace ADAPTER
 {
-  /// Abstract interface to coupling managers
-  /*!
-   * This class is an interface to the coupling adapters.
+  /*! \class CouplingBase
+   *  \brief Abstract interface to coupling managers
+   *  This class is an interface to the coupling adapters.
    *
-   * The standard version ADAPTER::Coupling (see below) can couple two (matching) sets of nodes from
-   * two discretizations at an interface (e.g. fluid-structure) or within a volume (e.g. fluid-ale).
+   *  The standard version ADAPTER::Coupling (see below) can couple two
+   *  (matching) sets of nodes from two discretizations at an surface-interface
+   *  (e.g. fluid-structure) or within a volume (e.g. fluid-ale).
    *
-   * For non-matching sets of nodes within a volume, the ADAPTER::MortarVolCoupl can be used.
+   *  For non-matching sets of nodes within a volume, the ADAPTER::MortarVolCoupl
+   *  can be used.
    *
-   * For non-matching sets of nodes at an interface, the ADAPTER::CouplingMortar can be used (does not (yet?)
-   * inherit from this interface).
+   *  For non-matching sets of nodes at an interface, the ADAPTER::CouplingMortar
+   *  can be used (does not (yet?) inherit from this interface).
    */
-  class Coupling_Base
+  class CouplingBase
   {
   public:
     /// empty constructor
-    Coupling_Base(){};
+    CouplingBase(){};
 
     /// virtual destructor
-    virtual ~Coupling_Base(){};
+    virtual ~CouplingBase(){};
 
-    /** \name Conversion between master and slave */
+    /// @name Conversion between master and slave
     //@{
-    /// There are different versions to satisfy all needs. The basic
-    /// idea is the same for all of them.
 
     /// transfer a dof vector from master to slave
-    virtual Teuchos::RCP<Epetra_Vector> MasterToSlave(Teuchos::RCP<Epetra_Vector> mv) const =0;
+    virtual Teuchos::RCP<Epetra_Vector> MasterToSlave(
+        Teuchos::RCP<Epetra_Vector> mv ///< master vector (to be transferred)
+        )const = 0;
 
     /// transfer a dof vector from slave to master
-    virtual Teuchos::RCP<Epetra_Vector> SlaveToMaster(Teuchos::RCP<Epetra_Vector> sv) const =0;
+    virtual Teuchos::RCP<Epetra_Vector> SlaveToMaster(
+        Teuchos::RCP<Epetra_Vector> sv ///< slave vector (to be transferred)
+        ) const = 0;
 
     /// transfer a dof vector from master to slave
-    virtual Teuchos::RCP<Epetra_MultiVector> MasterToSlave(Teuchos::RCP<Epetra_MultiVector> mv) const =0;
+    virtual Teuchos::RCP<Epetra_MultiVector> MasterToSlave(
+        Teuchos::RCP<Epetra_MultiVector> mv ///< master vector (to be transferred)
+        ) const = 0;
 
     /// transfer a dof vector from slave to master
-    virtual Teuchos::RCP<Epetra_MultiVector> SlaveToMaster(Teuchos::RCP<Epetra_MultiVector> sv) const =0;
+    virtual Teuchos::RCP<Epetra_MultiVector> SlaveToMaster(
+        Teuchos::RCP<Epetra_MultiVector> sv ///< slave vector (to be transferred)
+        ) const = 0;
 
     /// transfer a dof vector from master to slave
-    virtual Teuchos::RCP<Epetra_Vector> MasterToSlave(Teuchos::RCP<const Epetra_Vector> mv) const =0;
+    virtual Teuchos::RCP<Epetra_Vector> MasterToSlave(
+        Teuchos::RCP<const Epetra_Vector> mv ///< master vector (to be transferred)
+        ) const = 0;
 
     /// transfer a dof vector from slave to master
-    virtual Teuchos::RCP<Epetra_Vector> SlaveToMaster(Teuchos::RCP<const Epetra_Vector> sv) const =0;
+    virtual Teuchos::RCP<Epetra_Vector> SlaveToMaster(
+        Teuchos::RCP<const Epetra_Vector> sv ///< slave vector (to be transferred)
+        ) const = 0;
 
     /// transfer a dof vector from master to slave
-    virtual Teuchos::RCP<Epetra_MultiVector> MasterToSlave(Teuchos::RCP<const Epetra_MultiVector> mv) const =0;
+    virtual Teuchos::RCP<Epetra_MultiVector> MasterToSlave(
+        Teuchos::RCP<const Epetra_MultiVector> mv ///< master vector (to be transferred)
+        ) const = 0;
 
     /// transfer a dof vector from slave to master
-    virtual Teuchos::RCP<Epetra_MultiVector> SlaveToMaster(Teuchos::RCP<const Epetra_MultiVector> sv) const =0;
+    virtual Teuchos::RCP<Epetra_MultiVector> SlaveToMaster(
+        Teuchos::RCP<const Epetra_MultiVector> sv ///< slave vector (to be transferred)
+        ) const = 0;
 
     /// transfer a dof vector from master to slave
-    virtual void MasterToSlave(Teuchos::RCP<const Epetra_MultiVector> mv, Teuchos::RCP<Epetra_MultiVector> sv) const =0;
+    virtual void MasterToSlave(
+        Teuchos::RCP<const Epetra_MultiVector> mv, ///< master vector (to be transferred)
+        Teuchos::RCP<Epetra_MultiVector> sv ///< slave vector (containing result)
+        ) const = 0;
 
     /// transfer a dof vector from slave to master
-    virtual void SlaveToMaster(Teuchos::RCP<const Epetra_MultiVector> sv, Teuchos::RCP<Epetra_MultiVector> mv) const =0;
+    virtual void SlaveToMaster(
+        Teuchos::RCP<const Epetra_MultiVector> sv, ///< slave vector (to be transferred)
+        Teuchos::RCP<Epetra_MultiVector> mv ///< master vector (containing result)
+        ) const = 0;
 
     //@}
 
@@ -95,52 +121,54 @@ namespace ADAPTER
     //@{
 
     /// the interface dof map of the master side
-    virtual Teuchos::RCP<const Epetra_Map> MasterDofMap() const =0;
+    virtual Teuchos::RCP<const Epetra_Map> MasterDofMap() const = 0;
 
     /// the interface dof map of the slave side
-    virtual Teuchos::RCP<const Epetra_Map> SlaveDofMap()  const =0;
+    virtual Teuchos::RCP<const Epetra_Map> SlaveDofMap()  const = 0;
 
     //@}
   };
 
-  /// Management of coupling between two (matching) sets of nodes from two discretizations
-  /*!
-    Interface coupled problems with matching meshes need to transfer
-    results between their interfaces. That is values which belong to
-    the dofs of one side have to be accessed by the other side as
-    well. In a parallel setting, of course, these sides do not in
-    general reside on the same processors.
-
-    This class handles the transfer of dof values at the interface
-    (Epetra_Vectors build on the interface dof map of either side) to
-    the other side. To distinguish both sides lets speak of master and
-    slave, even though no side really dominates the other. On the
-    contrary we provide perfect symmetry once the setup is done.
-
-    The idea is simple: We have a master dof map that describes the
-    distribution of the master's interface dofs. And we have a slave
-    dof map that describes the distribution of the slave's interface
-    dofs. Both maps, however, live in their respective
-    communicator. We cannot transfer data between them. Furthermore
-    the dof gids are totally independent of each other.
-
-    So we build a mapping between the nodes from both meshes during
-    the setup phase. This establishes the connection. From that
-    connection we deduce (in a somewhat painful way) a permuted
-    master dof map and a permuted slave dof map. These permuted
-    maps are bound to have the same layout as the normal maps from the
-    other side. So we can exchange dof values between fields by simply
-    copying from a normal Epetra_Vector to the permuted
-    Epetra_Vector from the other side without actually looking at the
-    respective maps. Afterwards the communication happens within one
-    field in the usual fashion. So the transfer functions
-    MasterToSlave() and SlaveToMaster() are quite simple. The hard
-    work happens (once) during setup.
-
-    \author u.kue
-    \date 06/07
+  /*! \class Coupling
+   *  \brief Management of coupling between two (matching) sets of nodes from
+   *  two discretizations
+   *
+   *  Interface coupled problems with matching meshes need to transfer
+   *  results between their interfaces. That is values which belong to
+   *  the dofs of one side have to be accessed by the other side as
+   *  well. In a parallel setting, of course, these sides do not in
+   *  general reside on the same processors.
+   *
+   *  This class handles the transfer of dof values at the interface
+   *  (Epetra_Vectors build on the interface dof map of either side) to
+   *  the other side. To distinguish both sides lets speak of master and
+   *  slave, even though no side really dominates the other. On the
+   *  contrary we provide perfect symmetry once the setup is done.
+   *
+   *  The idea is simple: We have a master dof map that describes the
+   *  distribution of the master's interface dofs. And we have a slave
+   *  dof map that describes the distribution of the slave's interface
+   *  dofs. Both maps, however, live in their respective
+   *  communicator. We cannot transfer data between them. Furthermore
+   *  the dof gids are totally independent of each other.
+   *
+   *  So we build a mapping between the nodes from both meshes during
+   *  the setup phase. This establishes the connection. From that
+   *  connection we deduce (in a somewhat painful way) a permuted
+   *  master dof map and a permuted slave dof map. These permuted
+   *  maps are bound to have the same layout as the normal maps from the
+   *  other side. So we can exchange dof values between fields by simply
+   *  copying from a normal Epetra_Vector to the permuted
+   *  Epetra_Vector from the other side without actually looking at the
+   *  respective maps. Afterwards the communication happens within one
+   *  field in the usual fashion. So the transfer functions
+   *  MasterToSlave() and SlaveToMaster() are quite simple. The hard
+   *  work happens (once) during setup.
+   *
+   *  \author u.kue
+   *  \date 06/07
    */
-  class Coupling: public Coupling_Base
+  class Coupling: public CouplingBase
   {
   public:
 
@@ -171,74 +199,76 @@ namespace ADAPTER
       affiliation to other condition and build appropriate dof maps.
 
      */
-    void SetupConstrainedConditionCoupling(const DRT::Discretization& masterdis,
-                                           Teuchos::RCP<const Epetra_Map> mastercondmap,
-                                           const DRT::Discretization& slavedis,
-                                           Teuchos::RCP<const Epetra_Map> slavecondmap,
-                                           const std::string& condname1,
-                                           const std::string& condname2,
-                                           const int numdof,
-                                           bool matchall=true);
+    void SetupConstrainedConditionCoupling(
+        const DRT::Discretization& masterdis, ///< discretization of master side
+        Teuchos::RCP<const Epetra_Map> mastercondmap, ///< map with condition DOFs of master side
+        const DRT::Discretization& slavedis, ///< discretization of slave side
+        Teuchos::RCP<const Epetra_Map> slavecondmap, ///< map with condition DOFs of slave side
+        const std::string& condname1, ///< condition name
+        const std::string& condname2, ///< condition name
+        const int numdof, ///< number of DOFs to be coupled at each node
+        bool matchall = true ///< Do all nodes need to match exactly?
+        );
 
-    /// setup coupling of given nodes
-    /*!
-      Setup the whole thing. Find matching nodes via octtree and build
-      appropriate dof maps.
-
-      \note All slave nodes are required to find a match. In contrast
-      master nodes do not need to have a match. So it is legal to hand
-      in more master nodes that slave nodes as long as there is one
-      master node for each slave node.
-
-      We need some way to guess the tolerance for the octree. It must not be too small,
-      otherwise we won't find matching nodes. Too large a tolerance will not
-      hurt that much. It just means we will have to test more nodes.
-
-      \param masterdis   (i) master side mesh
-      \param slavedis    (i) slave side mesh
-      \param masternodes (i) gids of nodes on master side to be coupled
-      \param slavenodes  (i) gids of nodes on slave side to be coupled
-      \param numdof      (i) number of dofs per node to be coupled
-      \param matchall    (i) flag indicating matching slave and master nodes
-      \param tolerance   (i) tolerance for octree for node matching
+    /*! \brief Setup coupling of given nodes
+     *
+     *  Setup the whole thing. Find matching nodes via octtree and build
+     *  appropriate dof maps.
+     *
+     *  \note All slave nodes are required to find a match. In contrast
+     *  master nodes do not need to have a match. So it is legal to hand
+     *  in more master nodes that slave nodes as long as there is one
+     *  master node for each slave node.
+     *
+     *  We need some way to guess the tolerance for the octree. It must not be
+     *  too small, otherwise we won't find matching nodes. Too large a tolerance
+     *  will not hurt that much. It just means we will have to test more nodes.
+     *
+     *  \param masterdis   (i) master side mesh
+     *  \param slavedis    (i) slave side mesh
+     *  \param masternodes (i) gids of nodes on master side to be coupled
+     *  \param slavenodes  (i) gids of nodes on slave side to be coupled
+     *  \param numdof      (i) number of dofs per node to be coupled
+     *  \param matchall    (i) flag indicating matching slave and master nodes
+     *  \param tolerance   (i) tolerance for octree for node matching
      */
     void SetupCoupling(const DRT::Discretization& masterdis,
-                       const DRT::Discretization& slavedis,
-                       const std::vector<int>& masternodes,
-                       const std::vector<int>& slavenodes,
-                       const int numdof,
-                       const bool matchall=true,
-                       const double tolerance=1.e-3);
+        const DRT::Discretization& slavedis,
+        const std::vector<int>& masternodes,
+        const std::vector<int>& slavenodes,
+        const int numdof,
+        const bool matchall=true,
+        const double tolerance=1.e-3);
 
-    /// setup coupling of given nodes
-    /*!
-      Setup the whole thing. Find matching nodes via octtree and build
-      appropriate dof maps.
-
-      \note All slave nodes are required to find a match. In contrast
-      master nodes do not need to have a match. So it is legal to hand
-      in more master nodes that slave nodes as long as there is one
-      master node for each slave node.
-
-      We need some way to guess the tolerance for the octree. It must not be too small,
-      otherwise we won't find matching nodes. Too large a tolerance will not
-      hurt that much. It just means we will have to test more nodes.
-
-      \param masterdis   (i) master side mesh
-      \param slavedis    (i) slave side mesh
-      \param masternodes (i) gids of nodes on master side to be coupled
-      \param slavenodes  (i) gids of nodes on slave side to be coupled
-      \param numdof      (i) number of dofs per node to be coupled
-      \param matchall    (i) flag indicating matching slave and master nodes
-      \param tolerance   (i) tolerance for octree for node matching
+    /*! \brief Setup coupling of given nodes
+     *
+     *  Setup the whole thing. Find matching nodes via octtree and build
+     *  appropriate dof maps.
+     *
+     *  \note All slave nodes are required to find a match. In contrast
+     *  master nodes do not need to have a match. So it is legal to hand
+     *  in more master nodes that slave nodes as long as there is one
+     *  master node for each slave node.
+     *
+     *  We need some way to guess the tolerance for the octree. It must not be
+     *  too small, otherwise we won't find matching nodes. Too large a tolerance
+     *  will not hurt that much. It just means we will have to test more nodes.
+     *
+     *  \param masterdis   (i) master side mesh
+     *  \param slavedis    (i) slave side mesh
+     *  \param masternodes (i) gids of nodes on master side to be coupled
+     *  \param slavenodes  (i) gids of nodes on slave side to be coupled
+     *  \param numdof      (i) number of dofs per node to be coupled
+     *  \param matchall    (i) flag indicating matching slave and master nodes
+     *  \param tolerance   (i) tolerance for octree for node matching
      */
     void SetupCoupling(const DRT::Discretization& masterdis,
-                       const DRT::Discretization& slavedis,
-                       const Epetra_Map& masternodes,
-                       const Epetra_Map& slavenodes,
-                       const int numdof,
-                       const bool matchall=true,
-                       const double tolerance=1.e-3);
+        const DRT::Discretization& slavedis,
+        const Epetra_Map& masternodes,
+        const Epetra_Map& slavenodes,
+        const int numdof,
+        const bool matchall=true,
+        const double tolerance=1.e-3);
 
     //@}
 
@@ -248,42 +278,64 @@ namespace ADAPTER
     /// idea is the same for all of them.
 
     /// transfer a dof vector from master to slave
-    Teuchos::RCP<Epetra_Vector> MasterToSlave(Teuchos::RCP<Epetra_Vector> mv) const
-      { return MasterToSlave(Teuchos::rcp_static_cast<const Epetra_Vector>(mv)); }
+    Teuchos::RCP<Epetra_Vector> MasterToSlave(
+        Teuchos::RCP<Epetra_Vector> mv ///< master vector (to be transferred)
+        ) const
+    { return MasterToSlave(Teuchos::rcp_static_cast<const Epetra_Vector>(mv)); }
 
     /// transfer a dof vector from slave to master
-    Teuchos::RCP<Epetra_Vector> SlaveToMaster(Teuchos::RCP<Epetra_Vector> sv) const
-      { return SlaveToMaster(Teuchos::rcp_static_cast<const Epetra_Vector>(sv)); }
+    Teuchos::RCP<Epetra_Vector> SlaveToMaster(
+        Teuchos::RCP<Epetra_Vector> sv ///< slave vector (to be transferred)
+        ) const
+    { return SlaveToMaster(Teuchos::rcp_static_cast<const Epetra_Vector>(sv)); }
 
     /// transfer a dof vector from master to slave
-    Teuchos::RCP<Epetra_MultiVector> MasterToSlave(Teuchos::RCP<Epetra_MultiVector> mv) const
-      { return MasterToSlave(Teuchos::rcp_static_cast<const Epetra_MultiVector>(mv)); }
+    Teuchos::RCP<Epetra_MultiVector> MasterToSlave(
+        Teuchos::RCP<Epetra_MultiVector> mv ///< master vector (to be transferred)
+        ) const
+    { return MasterToSlave(Teuchos::rcp_static_cast<const Epetra_MultiVector>(mv)); }
 
     /// transfer a dof vector from slave to master
-    Teuchos::RCP<Epetra_MultiVector> SlaveToMaster(Teuchos::RCP<Epetra_MultiVector> sv) const
-      { return SlaveToMaster(Teuchos::rcp_static_cast<const Epetra_MultiVector>(sv)); }
+    Teuchos::RCP<Epetra_MultiVector> SlaveToMaster(
+        Teuchos::RCP<Epetra_MultiVector> sv ///< slave vector (to be transferred)
+        ) const
+    { return SlaveToMaster(Teuchos::rcp_static_cast<const Epetra_MultiVector>(sv)); }
 
     /// transfer a dof vector from master to slave
-    Teuchos::RCP<Epetra_Vector> MasterToSlave(Teuchos::RCP<const Epetra_Vector> mv) const;
+    Teuchos::RCP<Epetra_Vector> MasterToSlave(
+        Teuchos::RCP<const Epetra_Vector> mv ///< master vector (to be transferred)
+        ) const;
 
     /// transfer a dof vector from slave to master
-    Teuchos::RCP<Epetra_Vector> SlaveToMaster(Teuchos::RCP<const Epetra_Vector> sv) const;
+    Teuchos::RCP<Epetra_Vector> SlaveToMaster(
+        Teuchos::RCP<const Epetra_Vector> sv ///< slave vector (to be transferred)
+        ) const;
 
     /// transfer a dof vector from master to slave
-    Teuchos::RCP<Epetra_MultiVector> MasterToSlave(Teuchos::RCP<const Epetra_MultiVector> mv) const;
+    Teuchos::RCP<Epetra_MultiVector> MasterToSlave(
+        Teuchos::RCP<const Epetra_MultiVector> mv  ///< master vector (to be transferred)
+        ) const;
 
     /// transfer a dof vector from slave to master
-    Teuchos::RCP<Epetra_MultiVector> SlaveToMaster(Teuchos::RCP<const Epetra_MultiVector> sv) const;
+    Teuchos::RCP<Epetra_MultiVector> SlaveToMaster(
+        Teuchos::RCP<const Epetra_MultiVector> sv ///< slave vector (to be transferred)
+        ) const;
 
     /// transfer a dof vector from master to slave
-    void MasterToSlave(Teuchos::RCP<const Epetra_MultiVector> mv, Teuchos::RCP<Epetra_MultiVector> sv) const;
+    void MasterToSlave(
+        Teuchos::RCP<const Epetra_MultiVector> mv, ///< master vector (to be transferred)
+        Teuchos::RCP<Epetra_MultiVector> sv ///< slave vector (containing result)
+        ) const;
 
     /// transfer a dof vector from slave to master
-    void SlaveToMaster(Teuchos::RCP<const Epetra_MultiVector> sv, Teuchos::RCP<Epetra_MultiVector> mv) const;
+    void SlaveToMaster(
+        Teuchos::RCP<const Epetra_MultiVector> sv, ///< slave vector (to be transferred)
+        Teuchos::RCP<Epetra_MultiVector> mv ///< master vector (containing result)
+        ) const;
 
     //@}
 
-    /** \name Coupled maps */
+    //! @name Access to coupled maps
     //@{
 
     /// the interface dof map of the master side
@@ -300,7 +352,7 @@ namespace ADAPTER
 
     //@}
 
-    /** \name Matrix transform */
+    //! @name Matrix transform
     //@{
 
     /// fill rowmap with master -> slave pairs
@@ -327,8 +379,8 @@ namespace ADAPTER
 
     /// create coupling matrices for Lagrangian coupling conditions
     void SetupCouplingMatrices(const Epetra_Map& shiftedmastermap,
-                               const Epetra_Map& masterdomainmap,
-                               const Epetra_Map& slavedomainmap);
+        const Epetra_Map& masterdomainmap,
+        const Epetra_Map& slavedomainmap);
 
     Teuchos::RCP<Epetra_CrsMatrix> MasterToMasterMat() const { return matmm_; }
     Teuchos::RCP<Epetra_CrsMatrix> SlaveToMasterMat() const { return matsm_; }
@@ -339,34 +391,34 @@ namespace ADAPTER
 
   private:
 
-    /// do the actual matching of the master <-> slave pairs
-    /*!
-      Here the octree is used. Afterwards all not paired master nodes
-      are removed.
-
-      \param masterdis   (i) master side mesh
-      \param slavedis    (i) slave side mesh
-      \param masternodes (i/o) all master node gids. on output those that have a match
-      \param permslavenodes (o) slave node gids permuted to match master node gids
-      \param slavenodes (i) slave node gids
-      \param matchall (i) bool indicating match of all slave and master nodes
-      \param tolerance   (i) tolerance for octree for node matching
+    /*! \brief Do the actual matching of the master <-> slave pairs
+     *
+     *  Here the octree is used. Afterwards all not paired master nodes
+     *  are removed.
+     *
+     *  \param masterdis   (i) master side mesh
+     *  \param slavedis    (i) slave side mesh
+     *  \param masternodes (i/o) all master node gids. on output those that have a match
+     *  \param permslavenodes (o) slave node gids permuted to match master node gids
+     *  \param slavenodes (i) slave node gids
+     *  \param matchall (i) bool indicating match of all slave and master nodes
+     *  \param tolerance   (i) tolerance for octree for node matching
      */
     void MatchNodes(const DRT::Discretization& masterdis,
-                    const DRT::Discretization& slavedis,
-                    std::vector<int>& masternodes,
-                    std::vector<int>& permslavenodes,
-                    const std::vector<int>& slavenodes,
-                    const bool matchall,
-                    const double tolerance);
+        const DRT::Discretization& slavedis,
+        std::vector<int>& masternodes,
+        std::vector<int>& permslavenodes,
+        const std::vector<int>& slavenodes,
+        const bool matchall,
+        const double tolerance);
 
     /// build slave to master permutation and dof all maps
     void FinishCoupling(const DRT::Discretization& masterdis,
-                        const DRT::Discretization& slavedis,
-                        Teuchos::RCP<Epetra_Map> masternodemap,
-                        Teuchos::RCP<Epetra_Map> slavenodemap,
-                        Teuchos::RCP<Epetra_Map> permslavenodemap,
-                        const int numdof);
+        const DRT::Discretization& slavedis,
+        Teuchos::RCP<Epetra_Map> masternodemap,
+        Teuchos::RCP<Epetra_Map> slavenodemap,
+        Teuchos::RCP<Epetra_Map> permslavenodemap,
+        const int numdof);
 
     /// build dof maps from node maps
     /*!
@@ -374,37 +426,46 @@ namespace ADAPTER
       node are of interest.
      */
     void BuildDofMaps(const DRT::Discretization& dis,
-                      Teuchos::RCP<const Epetra_Map> nodemap,
-                      Teuchos::RCP<const Epetra_Map> permnodemap,
-                      Teuchos::RCP<const Epetra_Map>& dofmap,
-                      Teuchos::RCP<const Epetra_Map>& permdofmap,
-                      Teuchos::RCP<Epetra_Export>& exporter,
-                      const int numdof);
+        Teuchos::RCP<const Epetra_Map> nodemap,
+        Teuchos::RCP<const Epetra_Map> permnodemap,
+        Teuchos::RCP<const Epetra_Map>& dofmap,
+        Teuchos::RCP<const Epetra_Map>& permdofmap,
+        Teuchos::RCP<Epetra_Export>& exporter,
+        const int numdof);
 
-    /** \name Fundamental dof maps */
+    /*! @name Fundamental dof maps
+     *
+     *  We keep the master and slave dof map as well as permuted versions
+     *  that match the respective other side.
+     */
     //@{
-    /// We keep the master and slave dof map as well as permuted versions
-    /// that match the respective other side.
 
+    //! the interface dof map of the master side
     Teuchos::RCP<const Epetra_Map> masterdofmap_;
+
+    //! the permuted interface dof map of the master side
     Teuchos::RCP<const Epetra_Map> permmasterdofmap_;
+
+    //! the interface dof map of the slave side
     Teuchos::RCP<const Epetra_Map> slavedofmap_;
+
+    //! the permuted interface dof map of the slave side
     Teuchos::RCP<const Epetra_Map> permslavedofmap_;
 
     //@}
 
-    /** \name Communication object */
+    //! @name Communication object
     //@{
 
-    /// permuted master dof map to master dof map exporter
+    //! permuted master dof map to master dof map exporter
     Teuchos::RCP<Epetra_Export> masterexport_;
 
-    /// permuted slave dof map to slave dof map exporter
+    //! permuted slave dof map to slave dof map exporter
     Teuchos::RCP<Epetra_Export> slaveexport_;
 
     //@}
 
-    /** \name coupling matrices for Lagrangian multiplier coupling */
+    //! @name coupling matrices for Lagrangian multiplier coupling
     //@{
 
     Teuchos::RCP<Epetra_CrsMatrix> matmm_;
@@ -416,15 +477,16 @@ namespace ADAPTER
   };
 
 
-  /// abstract converter base
-  /*!
-    The point is that many generic coupling algorithms that transfer data
-    between master and slave might be used in both directions. These
-    algorithms can utilize a Converter to enable use in both directions.
-
-    \author u.kue
-    \date 05/08
-  */
+  /*! \class CouplingConverter
+   *  \brief abstract converter base
+   *
+   *  The point is that many generic coupling algorithms that transfer data
+   *  between master and slave might be used in both directions. These
+   *  algorithms can utilize a Converter to enable use in both directions.
+   *
+   *  \author u.kue
+   *  \date 05/08
+   */
   class CouplingConverter
   {
   public:
