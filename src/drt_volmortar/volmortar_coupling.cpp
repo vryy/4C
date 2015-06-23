@@ -2879,7 +2879,7 @@ void VOLMORTAR::VolMortarCoupl::AssembleConsistentInterpolation_P21(
     std::vector<int>& foundeles)
 {
   static ConsInterpolator interpolator;
-  interpolator.Interpolate(node, *P21_, dis2_, dis1_,foundeles,dofset12_,coupleddof12_);
+  interpolator.Interpolate(node, *P21_, dis2_, dis1_,foundeles,dofset21_,coupleddof21_);
 
   return;
 }

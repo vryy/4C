@@ -39,9 +39,6 @@ POROELAST::PORO_SCATRA_Part_2WC::PORO_SCATRA_Part_2WC(const Epetra_Comm& comm,
   if(comm.MyPID()==0)
     std::cout<<"\n Create PORO_SCATRA_Part_2WC algorithm ... \n"<<std::endl;
 
-  // the problem is two way coupled, thus each discretization must know the other discretization
-  AddDofSets();
-
   const Teuchos::ParameterList& params = DRT::Problem::Instance()->PoroScatraControlParams();
   // Get the parameters for the ConvergenceCheck
   itmax_ = params.get<int>("ITEMAX"); // default: =10
@@ -103,18 +100,11 @@ void POROELAST::PORO_SCATRA_Part_2WC::ReadRestart(int restart)
 
     SetTimeStep(PoroField()->Time(), restart);
 
-//    // Material pointers to other field were deleted during ReadRestart().
-//    // They need to be reset.
-//    POROELAST::UTILS::SetMaterialPointersMatchingGrid(PoroField()->StructureField()->Discretization(),
-//                                                      PoroField()->FluidField()->Discretization());
-
     // Material pointers to other field were deleted during ReadRestart().
     // They need to be reset.
     POROELAST::UTILS::SetMaterialPointersMatchingGrid(PoroField()->StructureField()->Discretization(),
                                                       ScaTraField()->Discretization());
     POROELAST::UTILS::SetMaterialPointersMatchingGrid(PoroField()->FluidField()->Discretization(),
-                                                      ScaTraField()->Discretization());
-    POROELAST::UTILS::SetMaterialPointersMatchingGrid(PoroField()->StructureField()->Discretization(),
                                                       ScaTraField()->Discretization());
   }
 }
@@ -246,7 +236,7 @@ void POROELAST::PORO_SCATRA_Part_2WC::Solve()
 }
 
 /*----------------------------------------------------------------------*
- | convergence check for both fields (scatra & poro) (copied form tsi)
+ | convergence check for both fields (scatra & poro) (copied from tsi)
  *----------------------------------------------------------------------*/
 bool POROELAST::PORO_SCATRA_Part_2WC::ConvergenceCheck(int itnum)
 {

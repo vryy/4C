@@ -26,6 +26,7 @@
 namespace ADAPTER
 {
   class ScaTraBaseAlgorithm;
+  class MortarVolCoupl;
   class FluidPoro;
   class FPSIStructureWrapper;
 }
@@ -113,6 +114,16 @@ namespace POROELAST
     Teuchos::RCP<POROELAST::PoroBase> poro_;
     //! Pointer to the ScaTra problem.     (drt_scatra)
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_;
+
+    //! @name Volume Mortar stuff
+
+    //! flag for matchinggrid
+    const bool matchinggrid_;
+
+    //! volume coupling (using mortar) adapter
+    Teuchos::RCP< ::ADAPTER::MortarVolCoupl> volcoupl_structurescatra_;
+    Teuchos::RCP< ::ADAPTER::MortarVolCoupl> volcoupl_fluidscatra_;
+    //@}
 
   private:
     //! apply displacement fields to scatra

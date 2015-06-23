@@ -60,8 +60,6 @@ POROELAST::PORO_SCATRA_Mono::PORO_SCATRA_Mono(
     blockrowdofmap_(Teuchos::null),
     directsolve_(true)
 {
-  // the problem is two way coupled, thus each discretization must know the other discretization
-  AddDofSets();
 
   const Teuchos::ParameterList& sdynparams
   = DRT::Problem::Instance()->StructuralDynamicParams();

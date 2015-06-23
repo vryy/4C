@@ -3455,6 +3455,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                 ),
                               &poroscatradyn);
 
+  BoolParameter("MATCHINGGRID","Yes","is matching grid",&poroscatradyn);
+
   // type of scalar transport
   setStringToIntegralParameter<int>("SCATRATYPE","Undefined",
                                "Type of scalar transport problem",

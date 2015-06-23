@@ -116,14 +116,6 @@ POROELAST::PORO_SCATRA_Part_1WC_PoroToScatra::PORO_SCATRA_Part_1WC_PoroToScatra(
 {
   if(comm.MyPID()==0)
     std::cout<<"\n Create PORO_SCATRA_Part_1WC_PoroToScatra algorithm ... \n"<<std::endl;
-
-  // build a proxy of the structure discretization for the scatra field
-  Teuchos::RCP<DRT::DofSet> structdofset
-    = PoroField()->StructureField()->Discretization()->GetDofSetProxy();
-
-  // check if scatra field has 2 discretizations, so that coupling is possible
-  if (ScaTraField()->Discretization()->AddDofSet(structdofset)!=1)
-    dserror("unexpected dof sets in scatra field");
 }
 
 /*----------------------------------------------------------------------*
@@ -171,11 +163,6 @@ void POROELAST::PORO_SCATRA_Part_1WC_PoroToScatra::ReadRestart(int restart)
     ScaTraField()->ReadRestart(restart);
 
     SetTimeStep(PoroField()->Time(), restart);
-
-//    // Material pointers to other field were deleted during ReadRestart().
-//    // They need to be reset.
-//    POROELAST::UTILS::SetMaterialPointersMatchingGrid(PoroField()->StructureField()->Discretization(),
-//                                                      PoroField()->FluidField()->Discretization());
 
     // Material pointers to other field were deleted during ReadRestart().
     // They need to be reset.
@@ -251,18 +238,11 @@ void POROELAST::PORO_SCATRA_Part_1WC_ScatraToPoro::ReadRestart(int restart)
 
     SetTimeStep(PoroField()->Time(), restart);
 
-//    // Material pointers to other field were deleted during ReadRestart().
-//    // They need to be reset.
-//    POROELAST::UTILS::SetMaterialPointersMatchingGrid(PoroField()->StructureField()->Discretization(),
-//                                                      PoroField()->FluidField()->Discretization());
-
     // Material pointers to other field were deleted during ReadRestart().
     // They need to be reset.
     POROELAST::UTILS::SetMaterialPointersMatchingGrid(PoroField()->StructureField()->Discretization(),
                                                       ScaTraField()->Discretization());
     POROELAST::UTILS::SetMaterialPointersMatchingGrid(PoroField()->FluidField()->Discretization(),
-                                                      ScaTraField()->Discretization());
-    POROELAST::UTILS::SetMaterialPointersMatchingGrid(PoroField()->StructureField()->Discretization(),
                                                       ScaTraField()->Discretization());
   }
 }

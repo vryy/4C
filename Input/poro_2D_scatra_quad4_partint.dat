@@ -110,6 +110,12 @@ TOLINC_GLOBAL                   1e-08
 VECTORNORM_RESF                 L2
 VECTORNORM_INC                  L2
 SCATRATYPE                      Poroscatra
+MATCHINGGRID                    no
+----------------------------------------------------------VOLMORTAR COUPLING
+COUPLINGTYPE                    consint
+INTTYPE                         segments
+MESH_INIT                       no
+KEEP_EXTENDEDGHOSTING           yes
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD porofluid TAR_MAT 3
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD scatra TAR_MAT 5
@@ -135,16 +141,16 @@ FUNCT1 EXPR 0 0.0 0 FUNCTION 1.0
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 2 QUANTITY phi VALUE 5.58447512662756940e-01 TOLERANCE 1e-8
-SCATRA DIS scatra NODE 7 QUANTITY phi VALUE 5.58447512662730405e-01 TOLERANCE 1e-8
-SCATRA DIS scatra NODE 5 QUANTITY phi VALUE 1.16762805888100996e+00 TOLERANCE 1e-8
+SCATRA DIS scatra NODE 11 QUANTITY phi VALUE 5.10660091019520257e-01 TOLERANCE 1e-8
+SCATRA DIS scatra NODE 16 QUANTITY phi VALUE 5.95117298270338546e-01 TOLERANCE 1e-8
+SCATRA DIS scatra NODE 14 QUANTITY phi VALUE 1.16851006066816177e+00 TOLERANCE 1e-8
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         4
-NDLINE                          4
+NDLINE                          5
 NDSURF                          1
 NDVOL                           0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE                           1
+DLINE                           2
 //                              Line_x+
 E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
 //                              Line_x-
@@ -153,6 +159,7 @@ E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
 //E 3 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
 //                              Line_y-
 //E 4 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 5 - NUMDOF 1 ONOFF 1 VAL 1.0 CURVE 2 FUNCT 0
 ----------------------------------------DESIGN LINE PORO PARTIAL INTEGRATION
 DLINE                           2
 //                              Line_x+
@@ -191,9 +198,9 @@ E 4 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 DSURF                           1
 //                              Surface
 E 1 -
--------------------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
-DLINE                           1
-E 1 - NUMDOF 1 ONOFF 1 VAL 1.0 CURVE 2 FUNCT 0
+//-------------------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
+//DLINE                           1
+//E 1 - NUMDOF 1 ONOFF 1 VAL 1.0 CURVE 2 FUNCT 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
 NODE 5 DNODE 2
@@ -212,6 +219,9 @@ NODE 5 DLINE 3
 NODE 7 DLINE 4
 NODE 8 DLINE 4
 NODE 9 DLINE 4
+NODE 10 DLINE 5
+NODE 13 DLINE 5
+NODE 17 DLINE 5
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 2 DSURFACE 1
@@ -233,10 +243,24 @@ NODE 6 COORD -5.0000000000000000e+00 0.0000000000000000e+00 0.0000000000000000e+
 NODE 7 COORD 0.0000000000000000e+00 -5.0000000000000000e+00 0.0000000000000000e+00
 NODE 8 COORD 5.0000000000000000e+00 -5.0000000000000000e+00 0.0000000000000000e+00
 NODE 9 COORD -5.0000000000000000e+00 -5.0000000000000000e+00 0.0000000000000000e+00
+NODE 10 COORD 5.0000000000000000e+00 5.0000000000000000e+00 0.0000000000000000e+00
+NODE 11 COORD 0.0000000000000000e+00 5.0000000000000000e+00 0.0000000000000000e+00
+NODE 12 COORD 0.0000000000000000e+00 1.0000000000000000e+00 0.0000000000000000e+00
+NODE 13 COORD 5.0000000000000000e+00 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 14 COORD -5.0000000000000000e+00 5.0000000000000000e+00 0.0000000000000000e+00
+NODE 15 COORD -5.0000000000000000e+00 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 16 COORD 0.0000000000000000e+00 -5.0000000000000000e+00 0.0000000000000000e+00
+NODE 17 COORD 5.0000000000000000e+00 -5.0000000000000000e+00 0.0000000000000000e+00
+NODE 18 COORD -5.0000000000000000e+00 -5.0000000000000000e+00 0.0000000000000000e+00
 ----------------------------------------------------------STRUCTURE ELEMENTS
 1 WALLQ4PORO QUAD4 1 2 3 4 MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 2 2
 2 WALLQ4PORO QUAD4 2 5 6 3 MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 2 2
 3 WALLQ4PORO QUAD4 4 3 7 8 MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 2 2
 4 WALLQ4PORO QUAD4 3 6 9 7 MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 2 2
+----------------------------------------------------------TRANSPORT ELEMENTS
+1 TRANSP QUAD4 10 11 12 13 MAT 5 TYPE Poro
+2 TRANSP QUAD4 11 14 15 12 MAT 5 TYPE Poro
+3 TRANSP QUAD4 13 12 16 17 MAT 5 TYPE Poro
+4 TRANSP QUAD4 12 15 18 16 MAT 5 TYPE Poro
 -------------------------------------------------------------------------END
 //                              END

@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file tsi_utils.cpp
+ \file poroelast_utils.cpp
 
  \brief utility functions for porous media problems
 
@@ -556,6 +556,6 @@ void POROELAST::UTILS::SetupPoroScatraDiscretizations(const Epetra_Comm& comm)
     POROELAST::UTILS::SetMaterialPointersMatchingGrid(structdis,scatradis);
     POROELAST::UTILS::SetMaterialPointersMatchingGrid(fluiddis,scatradis);
   }
-  else
-  dserror("Structure AND ScaTra discretization present. This is not supported.");
+//  else
+//  dserror("Structure AND ScaTra discretization present. This is not supported.");
 }

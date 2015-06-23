@@ -1722,9 +1722,9 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   case prb_poroscatra:
   {
     // create empty discretizations
-    structdis = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
-    porofluiddis  = Teuchos::rcp(new DRT::Discretization("porofluid"   ,reader.Comm()));
-    scatradis = Teuchos::rcp(new DRT::Discretization("scatra",reader.Comm()));
+    structdis     = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
+    porofluiddis  = Teuchos::rcp(new DRT::Discretization("porofluid" ,reader.Comm()));
+    scatradis     = Teuchos::rcp(new DRT::Discretization("scatra",    reader.Comm()));
 
     // create discretization writer - in constructor set into and owned by corresponding discret
     structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
@@ -1733,9 +1733,11 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     AddDis("structure", structdis);
     AddDis("porofluid", porofluiddis);
-    AddDis("scatra", scatradis);
+    AddDis("scatra",    scatradis);
 
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(porofluiddis, reader, "--FLUID ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
     break;
   }
   case prb_ssi:
