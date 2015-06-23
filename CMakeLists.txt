@@ -419,11 +419,11 @@ set(OBJS_DRT_LIB
   src/drt_lib/drt_utils_nullspace.cpp
 )
 set(OBJS_DRT_MAT_LIB
+  src/drt_mat/aaa_mixedeffects.cpp
   src/drt_mat/aaagasser.cpp
   src/drt_mat/aaaneohooke.cpp
   src/drt_mat/aaaneohooke_stopro.cpp
   src/drt_mat/aaaraghavanvorp_damage.cpp
-  src/drt_mat/aaa_mixedeffects.cpp
   src/drt_mat/arrhenius_pv.cpp
   src/drt_mat/arrhenius_spec.cpp
   src/drt_mat/arrhenius_temp.cpp
@@ -434,24 +434,23 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/compogden.cpp
   src/drt_mat/constraintmixture.cpp
   src/drt_mat/constraintmixture_history.cpp
+  src/drt_mat/damage.cpp
   src/drt_mat/elasthyper.cpp
-  src/drt_mat/plasticelasthyper.cpp
+  src/drt_mat/elchmat.cpp
+  src/drt_mat/elchphase.cpp
+  src/drt_mat/electrode.cpp
   src/drt_mat/ferech_pv.cpp
   src/drt_mat/fluidporo.cpp
   src/drt_mat/fourieriso.cpp
   src/drt_mat/growth_ip.cpp
   src/drt_mat/growth_law.cpp
   src/drt_mat/growth_scd.cpp
-  src/drt_mat/scatra_growth_scd.cpp
   src/drt_mat/herschelbulkley.cpp
   src/drt_mat/ion.cpp
-  src/drt_mat/elchmat.cpp
-  src/drt_mat/elchphase.cpp
-  src/drt_mat/newman.cpp
-  src/drt_mat/electrode.cpp
   src/drt_mat/material.cpp
   src/drt_mat/material_service.cpp
   src/drt_mat/matlist.cpp
+  src/drt_mat/matlist_reactions.cpp
   src/drt_mat/matpar_bundle.cpp
   src/drt_mat/matpar_material.cpp
   src/drt_mat/matpar_parameter.cpp
@@ -459,38 +458,40 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/mixfrac.cpp
   src/drt_mat/modpowerlaw.cpp
   src/drt_mat/myocard.cpp
-  src/drt_mat/myocard_tools.cpp
-  src/drt_mat/myocard_minimal.cpp
   src/drt_mat/myocard_fitzhugh_nagumo.cpp
   src/drt_mat/myocard_inada.cpp
+  src/drt_mat/myocard_minimal.cpp
   src/drt_mat/myocard_san_garny.cpp
   src/drt_mat/myocard_tentusscher.cpp
+  src/drt_mat/myocard_tools.cpp
   src/drt_mat/neohooke.cpp
+  src/drt_mat/newman.cpp
   src/drt_mat/newtonianfluid.cpp
   src/drt_mat/optimization_density.cpp
   src/drt_mat/permeablefluid.cpp
-  src/drt_mat/plasticnlnlogneohooke.cpp
+  src/drt_mat/plasticelasthyper.cpp
   src/drt_mat/plasticlinelast.cpp
+  src/drt_mat/plasticnlnlogneohooke.cpp
   src/drt_mat/poro_law.cpp
-  src/drt_mat/damage.cpp
+  src/drt_mat/robinson.cpp
+  src/drt_mat/scatra_growth_scd.cpp
   src/drt_mat/scatra_mat.cpp
+  src/drt_mat/scatra_mat_aniso.cpp
   src/drt_mat/scatra_mat_poro_ecm.cpp
   src/drt_mat/scatra_reaction_mat.cpp
-  src/drt_mat/matlist_reactions.cpp
-  src/drt_mat/scatra_mat_aniso.cpp
+  src/drt_mat/soret.cpp
   src/drt_mat/spring.cpp
   src/drt_mat/structporo.cpp
   src/drt_mat/structporo_reaction.cpp
   src/drt_mat/structporo_reaction_ecm.cpp
   src/drt_mat/stvenantkirchhoff.cpp
   src/drt_mat/sutherland.cpp
-  src/drt_mat/thermostvenantkirchhoff.cpp
-  src/drt_mat/thermoplasticlinelast.cpp
   src/drt_mat/thermoplastichyperelast.cpp
-  src/drt_mat/robinson.cpp
+  src/drt_mat/thermoplasticlinelast.cpp
+  src/drt_mat/thermostvenantkirchhoff.cpp
   src/drt_mat/viscoanisotropic.cpp
-  src/drt_mat/visconeohooke.cpp
   src/drt_mat/viscoelasthyper.cpp
+  src/drt_mat/visconeohooke.cpp
   src/drt_mat/yoghurt.cpp
   src/drt_matelast/elast_coupanisoexpo.cpp
   src/drt_matelast/elast_coupanisoexpotwocoup.cpp

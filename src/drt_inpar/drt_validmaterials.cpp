@@ -208,7 +208,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"DIFFUSIVITY","kinematic diffusivity");
     AddNamedReal(m,"REACOEFF","reaction coefficient",0.0,true);
     AddNamedReal(m,"SCNUM","schmidt number",0.0,true);
-    AddNamedReal(m,"FLDDENSITY","fluid density",0.0,true);
     AddNamedReal(m,"DENSIFICATION","densification coefficient",0.0,true);
 
     AppendMaterialDefinition(matlist,m);
@@ -226,7 +225,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"DIFFUSIVITY","kinematic diffusivity");
     AddNamedReal(m,"REACOEFF","reaction coefficient",0.0,true);
     AddNamedReal(m,"SCNUM","schmidt number",0.0,true);
-    AddNamedReal(m,"FLDDENSITY","fluid density",0.0,true);
     AddNamedReal(m,"DENSIFICATION","densification coefficient",0.0,true);
 
     AppendMaterialDefinition(matlist,m);
@@ -263,7 +261,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"DIFF3","kinematic diffusivity component 3");
     AddNamedReal(m,"REACOEFF","reaction coefficient",0.0,true);
 //    AddNamedReal(m,"SCNUM","schmidt number",0.0,true);
-//    AddNamedReal(m,"FLDDENSITY","fluid density",0.0,true);
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -1563,10 +1560,24 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             "isotropic (linear) Fourier's law of heat conduction",
                                             INPAR::MAT::m_th_fourier_iso));
 
-    AddNamedReal(m,"CAPA","capacity");
-    AddNamedReal(m,"CONDUCT","conductivity");
+    AddNamedReal(m,"CAPA","volumetric heat capacity");
+    AddNamedReal(m,"CONDUCT","thermal conductivity");
 
     AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // material for heat transport due to Fourier-type thermal conduction and the Soret effect (fang 06/15)
+  {
+    Teuchos::RCP<MaterialDefinition> matsoret = Teuchos::rcp(new MaterialDefinition("MAT_soret","material for heat transport due to Fourier-type thermal conduction and the Soret effect",INPAR::MAT::m_soret));
+
+    // mandatory parameters
+    AddNamedReal(matsoret,"CAPA","volumetric heat capacity");
+    AddNamedReal(matsoret,"CONDUCT","thermal conductivity");
+    AddNamedReal(matsoret,"SORET","Soret coefficient");
+
+    // add Soret material to global list of valid materials
+    AppendMaterialDefinition(matlist,matsoret);
   }
 
   /*----------------------------------------------------------------------*/

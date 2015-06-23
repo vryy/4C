@@ -54,7 +54,7 @@ namespace PAR
     /// @name material parameters
     //@{
 
-    /// heat capacity
+    /// volumetric heat capacity
     const double capa_;
     /// heat conductivity
     const double conduct_;
@@ -145,7 +145,7 @@ private:
     /// conductivity
     double Conductivity() const { return params_->conduct_; }
 
-    /// material capacity
+    /// volumetric heat capacity
     double Capacity() const { return params_->capa_; }
 
     /// material type

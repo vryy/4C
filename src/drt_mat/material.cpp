@@ -65,6 +65,7 @@ Maintainer: Lena Wiechert
 #include "plasticelasthyper.H"
 #include "cnst_1d_art.H"
 #include "fourieriso.H"
+#include "soret.H"
 #include "growth_ip.H"
 #include "growth_scd.H"
 #include "scatra_growth_scd.H"
@@ -569,6 +570,13 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::FourierIso(curmat));
     MAT::PAR::FourierIso* params = static_cast<MAT::PAR::FourierIso*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_soret:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::Soret(curmat));
+    MAT::PAR::Soret* params = static_cast<MAT::PAR::Soret*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_growth_volumetric:
