@@ -105,7 +105,13 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::De
     return DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype>::Instance(numdofpernode,numscal);
     break;
   }
-  case INPAR::SCATRA::impltype_thermo:
+  case INPAR::SCATRA::impltype_thermo_elch_electrode:
+  {
+    // to be implemented very soon...
+    return NULL;
+    break;
+  }
+  case INPAR::SCATRA::impltype_thermo_elch_diffcond:
   {
     // to be implemented very soon...
     return NULL;

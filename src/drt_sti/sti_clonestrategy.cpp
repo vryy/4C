@@ -86,11 +86,12 @@ void STI::ScatraThermoCloneStrategy::SetElementData(
     const bool                   isnurbs   //! nurbs flag
     )
 {
-  // cast pointer to current cloned element on target discretization
+  // cast pointers to current element on source discretization and to current cloned element on target discretization
+  DRT::ELEMENTS::Transport* oldele_transport = dynamic_cast<DRT::ELEMENTS::Transport*>(oldele);
   Teuchos::RCP<DRT::ELEMENTS::Transport> newele_transport = Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::Transport>(newele);
 
   // safety check
-  if(newele_transport == Teuchos::null)
+  if(oldele_transport == NULL or newele_transport == Teuchos::null)
     dserror("Expected transport element, but received element of type '%s'!",typeid(*newele).name());
 
   // provide cloned element with material
@@ -100,7 +101,24 @@ void STI::ScatraThermoCloneStrategy::SetElementData(
   newele_transport->SetDisType(oldele->Shape());
 
   // provide cloned element with physical implementation type
-  newele_transport->SetImplType(INPAR::SCATRA::impltype_thermo);
+  switch(oldele_transport->ImplType())
+  {
+  case INPAR::SCATRA::impltype_elch_diffcond:
+  {
+    newele_transport->SetImplType(INPAR::SCATRA::impltype_thermo_elch_diffcond);
+    break;
+  }
+  case INPAR::SCATRA::impltype_elch_electrode:
+  {
+    newele_transport->SetImplType(INPAR::SCATRA::impltype_thermo_elch_electrode);
+    break;
+  }
+  default:
+  {
+    dserror("Scatra-thermo interaction not yet implemented for given element implementation type!");
+    break;
+  }
+  }
 
   return;
 }

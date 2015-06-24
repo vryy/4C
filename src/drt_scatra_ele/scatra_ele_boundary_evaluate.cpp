@@ -68,7 +68,8 @@ int DRT::ELEMENTS::TransportBoundary::Evaluate(
   case INPAR::SCATRA::impltype_loma:
   case INPAR::SCATRA::impltype_poro:
   case INPAR::SCATRA::impltype_pororeac:
-  case INPAR::SCATRA::impltype_thermo:
+  case INPAR::SCATRA::impltype_thermo_elch_diffcond:
+  case INPAR::SCATRA::impltype_thermo_elch_electrode:
     // do nothing in these cases
     break;
 

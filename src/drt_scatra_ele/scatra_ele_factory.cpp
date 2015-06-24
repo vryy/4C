@@ -247,7 +247,13 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
     return DRT::ELEMENTS::ScaTraEleCalcStd<distype,probdim>::Instance(numdofpernode,numscal);
     break;
   }
-  case INPAR::SCATRA::impltype_thermo:
+  case INPAR::SCATRA::impltype_thermo_elch_electrode:
+  {
+    // to be implemented soon...
+    return NULL;
+    break;
+  }
+  case INPAR::SCATRA::impltype_thermo_elch_diffcond:
   {
     // to be implemented soon...
     return NULL;

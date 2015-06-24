@@ -105,9 +105,14 @@ const std::string ImplTypeToString(const INPAR::SCATRA::ImplType impltype)
     impltypestring = "Standard scalar transport";
     break;
   }
-  case INPAR::SCATRA::impltype_thermo:
+  case INPAR::SCATRA::impltype_thermo_elch_electrode:
   {
-    impltypestring = "Heat transport for scatra-thermo interaction";
+    impltypestring = "Heat transport within electrodes";
+    break;
+  }
+  case INPAR::SCATRA::impltype_thermo_elch_diffcond:
+  {
+    impltypestring = "Heat transport within concentrated electrolytes";
     break;
   }
   case INPAR::SCATRA::impltype_advreac:
