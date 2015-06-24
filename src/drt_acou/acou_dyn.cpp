@@ -19,12 +19,14 @@ Maintainer: Svenja Schoeder
 #include "acou_dyn.H"
 #include "acou_ele.H"
 #include "acou_sol_ele.H"
+#include "acou_timeint.H"
 #include "acou_impl.H"
 #include "acou_impl_euler.H"
 #include "acou_impl_trap.H"
 #include "acou_impl_bdf.H"
 #include "acou_impl_dirk.H"
 #include "acou_inv_analysis.H"
+#include "acou_expl.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_acou.H"
 #include "../drt_inpar/inpar_scatra.H"
@@ -66,12 +68,32 @@ void acoustics_drt()
   bool invanalysis = (DRT::INPUT::IntegralValue<INPAR::ACOU::InvAnalysisType>(acouparams,"INV_ANALYSIS") != INPAR::ACOU::inv_none);
 
   // access the discretization
-  Teuchos::RCP<DRT::DiscretizationHDG> acoudishdg = Teuchos::rcp_static_cast<DRT::DiscretizationHDG>(DRT::Problem::Instance()->GetDis("acou"));
+  Teuchos::RCP<DRT::DiscretizationHDG> acoudishdg = Teuchos::rcp_dynamic_cast<DRT::DiscretizationHDG>(DRT::Problem::Instance()->GetDis("acou"));
   if (acoudishdg == Teuchos::null)
     dserror("Failed to cast DRT::Discretization to DRT::DiscretizationHDG.");
 
   // call fill complete on acoustical discretization
   if (not acoudishdg->Filled() || not acoudishdg->HaveDofs()) acoudishdg->FillComplete();
+
+  // for explicit time integration, need to provide some additional ghosting
+  {
+    INPAR::ACOU::DynamicType dyna = DRT::INPUT::IntegralValue<INPAR::ACOU::DynamicType>(acouparams,"TIMEINT");
+    switch(dyna)
+    {
+    case INPAR::ACOU::acou_expleuler:
+    case INPAR::ACOU::acou_classrk4:
+    case INPAR::ACOU::acou_lsrk45reg2:
+    case INPAR::ACOU::acou_lsrk33reg2:
+    case INPAR::ACOU::acou_lsrk45reg3:
+    case INPAR::ACOU::acou_ssprk:
+    {
+      acoudishdg->AddElementGhostLayer();
+      break;
+    }
+    default:
+      break;
+    }
+  }
 
   // calculate size of required dof set (internal field)
   const int dim = DRT::Problem::Instance()->NDim();
@@ -97,7 +119,6 @@ void acoustics_drt()
   acoudishdg->BuildDofSetAuxProxy(0,eledofs,0,false);
 
   // call fill complete on acoustical discretization
-  //if (not acoudishdg->Filled() || not acoudishdg->HaveDofs())
   acoudishdg->FillComplete();
 
   // print problem specific logo
@@ -146,7 +167,7 @@ void acoustics_drt()
     bool photoacou = DRT::INPUT::IntegralValue<bool>(acouparams,"PHOTOACOU");
 
     // create algorithm depending on the temporal discretization
-    Teuchos::RCP<ACOU::AcouImplicitTimeInt> acoualgo;
+    Teuchos::RCP<ACOU::AcouTimeInt> acoualgo;
 
     INPAR::ACOU::DynamicType dyna = DRT::INPUT::IntegralValue<INPAR::ACOU::DynamicType>(acouparams,"TIMEINT");
 
@@ -177,6 +198,17 @@ void acoustics_drt()
       acoualgo = Teuchos::rcp(new ACOU::TimIntImplDIRK(acoudishdg,solver,params,output));
       break;
     }
+    case INPAR::ACOU::acou_expleuler:
+    case INPAR::ACOU::acou_classrk4:
+    case INPAR::ACOU::acou_lsrk45reg2:
+    case INPAR::ACOU::acou_lsrk33reg2:
+    case INPAR::ACOU::acou_lsrk45reg3:
+    case INPAR::ACOU::acou_ssprk:
+    {
+      acoualgo = Teuchos::rcp(new ACOU::AcouExplicitTimeInt(acoudishdg,solver,params,output));
+      break;
+    }
+
     default:
       dserror("Unknown time integration scheme for problem type Acoustics");
       break;
@@ -234,6 +266,8 @@ void acoustics_drt()
       }
     }
 
+    acoualgo->PrintInformationToScreen();
+
     // set initial field
     if (restart) // standard restart scenario
     {
@@ -250,6 +284,7 @@ void acoustics_drt()
       // calculate initial pressure distribution by means of the scalar transport problem
       acoualgo->SetInitialPhotoAcousticField(scatrainitialpress,DRT::Problem::Instance()->GetDis("scatra"), meshconform);
     }
+
     acoualgo->Integrate();
 
     // print monitoring of time consumption

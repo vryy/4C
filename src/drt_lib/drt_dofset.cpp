@@ -494,6 +494,9 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
       for (int i=0; i<numcolelements; ++i)
       {
         DRT::FaceElement** faces = dis.lColElement(i)->Faces();
+        // If no faces are found, continue...
+        if (faces == NULL)
+          continue;
         for (int face=0; face<dis.lColElement(i)->NumFace(); ++face)
           if (faces[face]->Owner() == mypid) {
             const int mylid = facedis->FaceRowMap()->LID(faces[face]->Id());
@@ -507,6 +510,8 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
       for (int i=0; i<numcolelements; ++i)
       {
         DRT::FaceElement** faces = dis.lColElement(i)->Faces();
+        if (faces == NULL)
+          continue;
         for (int face=0; face<dis.lColElement(i)->NumFace(); ++face)
           if (faces[face]->Owner() == mypid)
           {

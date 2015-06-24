@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file acou_impltimint.H
+\file acou_impl.H
 
 \brief Acoustics Base Algorithm for implicit time integration
 
@@ -20,50 +20,15 @@ Maintainer: Svenja Schoeder
 #ifndef ACOU_IMPLTIMINT_H
 #define ACOU_IMPLTIMINT_H
 
+#include "acou_timeint.H"
 
 /*----------------------------------------------------------------------*
- | headers                                               schoeder 01/14 |
- *----------------------------------------------------------------------*/
-
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-
-#include <Epetra_Vector.h>
-#include <Epetra_Map.h>
-#include <Epetra_Operator.h>
-#include <Epetra_CrsGraph.h>
-
-#include "../drt_inpar/inpar_acou.H"
-
-/*----------------------------------------------------------------------*
- | forward declarations                                  schoeder 01/14 |
- *----------------------------------------------------------------------*/
-namespace LINALG
-{
-  class SparseOperator;
-  class MapExtractor;
-  class Solver;
-}
-namespace DRT
-{
-  class Discretization;
-  class DiscretizationHDG;
-  class Node;
-  class ResultTest;
-}
-namespace IO
-{
-  class DiscretizationWriter;
-}
-
-
-/*----------------------------------------------------------------------*
- | acoustics algorithm                                   schoeder 01/14 |
+ | implicit time integration for acoustics               schoeder 01/14 |
  *----------------------------------------------------------------------*/
 namespace ACOU
 {
 // acoustics solver
-class AcouImplicitTimeInt
+class AcouImplicitTimeInt : public AcouTimeInt
 {
 public:
 
@@ -78,9 +43,6 @@ public:
   /// virtual destructor
   virtual ~AcouImplicitTimeInt();
 
-  /// read restart information for given time step
-  virtual void ReadRestart(int step);
-
   /// set initial field to zero (needed for adjoint problem)
   virtual void SetInitialZeroField();
 
@@ -90,21 +52,11 @@ public:
   /// set initial field by given light distribution
   virtual void SetInitialPhotoAcousticField(Teuchos::RCP<Epetra_Vector> light, Teuchos::RCP<DRT::Discretization> scatradis, bool meshconform);
 
-  /// print out user information
-  void PrintInformationToScreen();
-
   /// run a complete simulation
   virtual void Integrate(Teuchos::RCP<Epetra_MultiVector> history = Teuchos::null, Teuchos::RCP<LINALG::MapExtractor> splitter = Teuchos::null);
 
   /// solve the system for trace and interior variables
   virtual void Solve();
-
-  /// increment time and step value
-  void IncrementTimeAndStep()
-  {
-    step_ += 1;
-    time_ += dtp_;
-  }
 
   /// call elements to calculate system matrix
   virtual void AssembleMatAndRHS();
@@ -117,9 +69,6 @@ public:
 
   /// output
   void Output(Teuchos::RCP<Epetra_MultiVector> history = Teuchos::null, Teuchos::RCP<LINALG::MapExtractor> splitter = Teuchos::null);
-
-  /// write restart
-  virtual void WriteRestart();
 
   /// function to output user information
   void OutputToScreen();
@@ -143,7 +92,6 @@ public:
   void FillTouchCountVec(Teuchos::RCP<Epetra_Vector> touchcount);
 
   /// For result tests
-  Teuchos::RCP<DRT::Discretization> Discretization();
   Teuchos::RCP<Epetra_Vector> Velnp()   { return velnp_; }
 
   /// init a monitor file
@@ -152,52 +100,20 @@ public:
   /// fill monitor file
   void FillMonitorFile(Teuchos::RCP<Epetra_Vector> ip);
 
-  /// create result test for encapsulated structure algorithm
-  virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
-
   /// return the name of the time integration scheme
   virtual std::string Name() = 0;
 
-
 protected:
 
-  /// discretization, solver, parameter list and output
-  Teuchos::RCP<DRT::DiscretizationHDG>   discret_;
-  Teuchos::RCP<LINALG::Solver>           solver_;
-  Teuchos::RCP<Teuchos::ParameterList>   params_;
-  Teuchos::RCP<IO::DiscretizationWriter> output_;
-
-  bool    adjoint_;                     /// flag indicating whether this is standard or an adjoint solve
-
-  int     myrank_;                      /// processor id
-
-  double  time_;                        /// physical time
-  int     step_;                        /// time step
-  int     restart_;                     /// restart step
-
-  double  maxtime_;                     /// maximum time
-  int     stepmax_;                     /// maximum step
-
-  int     uprestart_;                   /// write restart data every uprestart_ steps
-  int     upres_;                       /// write output every upres_ steps
-
   int     sourcefuncno_;                /// function number of source term for wave equation
-
-  INPAR::ACOU::DynamicType dyna_;       /// time integration scheme
-  INPAR::ACOU::PhysicalType phys_;      /// physical type
-
-  int numdim_;                          /// number of spatial dimensions
-  double dtp_;                          /// time step size
 
   /// cpu-time measures
   double  dtele_;                       /// element evaluation time
   double  dtsolve_;                     /// solver time
 
-  bool invana_;                         /// flag indicating whether inverse analysis is performed
   bool writemonitor_;                   /// flag indicating if a monitor file is written
   bool writestress_;                   /// flag indicating if a stresses or -if no- the displacment gradient is written to the output
   bool errormaps_;                      /// flag indicating whether error maps are calculated
-  bool padaptivity_;                    /// p-adaptivity flag
   double padapttol_;                    /// p-adaptivity error tolerance
   bool calcerr_;                        /// flag for error calculation
   bool allelesequal_;                   /// flag true if all elements have same shape and same material (for faster evaluation for uniform meshes)
@@ -216,11 +132,6 @@ protected:
 
   /// needed in case of adjoint problem solve
   Teuchos::RCP<Epetra_MultiVector>    adjoint_rhs_;
-
-  //! @name velocity at time n+1, n, and n-1
-  Teuchos::RCP<Epetra_Vector>    velnp_;
-  Teuchos::RCP<Epetra_Vector>    veln_;
-  Teuchos::RCP<Epetra_Vector>    velnm_;
 
   /// element based error vector, only if desired by user
   Teuchos::RCP<Epetra_Vector>    error_;

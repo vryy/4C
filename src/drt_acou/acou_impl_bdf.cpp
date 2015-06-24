@@ -67,7 +67,6 @@ void ACOU::TimIntImplBDF::ReadRestart(int step)
 
   reader.ReadVector(velnp_,"velnps");
   reader.ReadVector(veln_, "veln");
-  reader.ReadVector(velnm_,"velnm");
 
   Teuchos::RCP<Epetra_Vector> intvelnmm;
   Teuchos::RCP<Epetra_Vector> intvelnmmm;
@@ -124,7 +123,7 @@ void ACOU::TimIntImplBDF::WriteRestart()
   }
 
   // call base class function first
-  ACOU::AcouImplicitTimeInt::WriteRestart();
+  ACOU::AcouTimeInt::WriteRestart();
 
   // and additionally write BDF specific vectors
   if ( order_ > 2 )

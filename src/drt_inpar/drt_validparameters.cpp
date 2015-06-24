@@ -8252,10 +8252,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("P_ADAPT_TOL",1.0e-15,"Error tolerance for p-adaptivity",&acousticdyn);
 
   // time integration
-  setStringToIntegralParameter<int>("TIMEINT","impl",
+  setStringToIntegralParameter<int>("TIMEINT","impleuler",
                     "Type of time integration scheme",
                     tuple<std::string>(
-                    "impl",
+                    "impleuler",
                     "trap",
                     "dirk23",
                     "dirk33",
@@ -8263,7 +8263,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                     "dirk54",
                     "bdf2",
                     "bdf3",
-                    "bdf4"),
+                    "bdf4",
+                    "expleuler",
+                    "classrk4",
+                    "lsrk45reg2",
+                    "lsrk33reg2",
+                    "lsrk45reg3",
+                    "ssprk"),
                     tuple<int>(
                     INPAR::ACOU::acou_impleuler,
                     INPAR::ACOU::acou_trapezoidal,
@@ -8273,7 +8279,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                     INPAR::ACOU::acou_dirk54,
                     INPAR::ACOU::acou_bdf2,
                     INPAR::ACOU::acou_bdf3,
-                    INPAR::ACOU::acou_bdf4),
+                    INPAR::ACOU::acou_bdf4,
+                    INPAR::ACOU::acou_expleuler,
+                    INPAR::ACOU::acou_classrk4,
+                    INPAR::ACOU::acou_lsrk45reg2,
+                    INPAR::ACOU::acou_lsrk33reg2,
+                    INPAR::ACOU::acou_lsrk45reg3,
+                    INPAR::ACOU::acou_ssprk),
                     &acousticdyn);
 
   BoolParameter("WRITEMONITOR","No","Write a monitor file for Pressure Monitor Condition",&acousticdyn);

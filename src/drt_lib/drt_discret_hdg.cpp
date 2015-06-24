@@ -435,6 +435,118 @@ void DRT::DiscretizationHDG::AssignGlobalIDs(const Epetra_Comm& comm,
   }
 }
 
+
+
+/*----------------------------------------------------------------------*
+ |  AddElementGhostLayer                               kronbichler 04/15|
+ *----------------------------------------------------------------------*/
+void
+DRT::DiscretizationHDG::AddElementGhostLayer()
+{
+  if (!Filled())
+    dserror("Discretization must be filled upon entry of AddElementGhostLayer");
+
+  const int mypid = Comm().MyPID();
+
+  // step 1: identify all nodes on row elements
+  std::vector<std::pair<int,int> > nodeids;
+  for (int ele=0; ele<NumMyRowElements(); ++ele)
+    for (int n=0; n<lRowElement(ele)->NumNode(); ++n)
+      nodeids.push_back(std::make_pair(lRowElement(ele)->Nodes()[n]->Id(),
+                                       lRowElement(ele)->Nodes()[n]->Owner()));
+
+  // sort and compress out duplicates
+  std::sort(nodeids.begin(), nodeids.end());
+  nodeids.resize(std::unique(nodeids.begin(), nodeids.end())-nodeids.begin());
+
+  // step 2: Get patch of elements around each node. this info must be provided by the owner
+  // of the node.
+
+  // step 2a: create a map with data we want to import
+  std::vector<int> indices;
+  for (unsigned int i=0; i<nodeids.size(); ++i)
+    if (nodeids[i].second != mypid)
+      indices.push_back(nodeids[i].first);
+  const int numindices = indices.size();
+  if (numindices == 0)
+    indices.push_back(-1);
+  Epetra_Map targetmap(-1, numindices, &indices[0], 0, Comm());
+
+  // step 2b: create a copy of the element topology for owned nodes
+  std::map<int, std::vector<int> > nodetoelement;
+  for (int n=0; n<NumMyRowNodes(); ++n)
+  {
+    std::vector<int> &elements = nodetoelement[lRowNode(n)->Id()];
+    elements.resize(lRowNode(n)->NumElement());
+    for (unsigned int e=0; e<elements.size(); ++e)
+      elements[e] = lRowNode(n)->Elements()[e]->Id();
+  }
+
+  // step 3: do the communication
+  {
+    Exporter exporter(*NodeRowMap(), targetmap, Comm());
+    exporter.Export(nodetoelement);
+  }
+
+  // step 4: collect the ids of the new set of col elements
+  std::vector<int> newcolelements;
+  for (int i=0; i<NumMyColElements(); ++i)
+    newcolelements.push_back(lColElement(i)->Id());
+
+  for (std::map<int, std::vector<int> >::const_iterator it=nodetoelement.begin();
+      it != nodetoelement.end(); ++it)
+    for (unsigned int e=0; e<it->second.size(); ++e)
+      newcolelements.push_back(it->second[e]);
+
+  nodetoelement.clear();
+
+  // sort and compress out duplicates
+  std::sort(newcolelements.begin(), newcolelements.end());
+  newcolelements.resize(std::unique(newcolelements.begin(), newcolelements.end())-
+      newcolelements.begin());
+  const int numcolelements = newcolelements.size();
+  if (numcolelements == 0)
+    newcolelements.push_back(-1);
+  Epetra_Map elecolmap(-1, numcolelements, &newcolelements[0], 0, Comm());
+
+  // step 5: find node col map that matches the selected elements, similarly to elements
+  std::map<int, std::vector<int> > elementtonode;
+  for (int e=0; e<NumMyRowElements(); ++e)
+  {
+    std::vector<int> &nodes = elementtonode[lRowElement(e)->Id()];
+    nodes.resize(lRowElement(e)->NumNode());
+    for (unsigned int n=0; n<nodes.size(); ++n)
+      nodes[n] = lRowElement(e)->Nodes()[n]->Id();
+  }
+  {
+    Exporter exporter(*ElementRowMap(), elecolmap, Comm());
+    exporter.Export(elementtonode);
+  }
+  std::vector<int> newcolnodes;
+  for (std::map<int, std::vector<int> >::const_iterator it=elementtonode.begin();
+       it != elementtonode.end(); ++it)
+    for (unsigned int n=0; n<it->second.size(); ++n)
+      newcolnodes.push_back(it->second[n]);
+
+  elementtonode.clear();
+
+  // sort and compress out duplicates
+  std::sort(newcolnodes.begin(), newcolnodes.end());
+  newcolnodes.resize(std::unique(newcolnodes.begin(), newcolnodes.end())-
+                     newcolnodes.begin());
+  const int numcolnodes = newcolnodes.size();
+  if (numcolnodes == 0)
+    newcolnodes.push_back(-1);
+  Epetra_Map nodecolmap(-1, numcolnodes, &newcolnodes[0], 0, Comm());
+
+  // step 6: pass information about new col elements to the discretization (i.e., myself)
+  ExportColumnNodes(nodecolmap);
+  ExportColumnElements(elecolmap);
+  FillComplete();
+}
+
+
+
 /*----------------------------------------------------------------------*
  |  << operator                                        kronbichler 12/13|
  *----------------------------------------------------------------------*/

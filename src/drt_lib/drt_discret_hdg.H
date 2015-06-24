@@ -145,6 +145,17 @@ public:
                                const std::map< std::vector<int>, Teuchos::RCP<DRT::Element> >& elementmap,
                                std::map< int, Teuchos::RCP<DRT::Element> >& finalelements );
 
+  /*!
+   * this function computes a slightly modified layer for ghosting around the elements:
+   * instead of only keeping ghost elements to provide all nodes with complete neighborhood,
+   * this method adds a layer of one element around all owned elements. this is necessary
+   * for explicit time integration schemes
+   *
+   * this method calls FillComplete() at the end
+   *
+   * prerequisite: FillComplete() must have been called before
+   */
+  void AddElementGhostLayer();
 
 }; // class DiscretizationHDG
 } // namespace DRT

@@ -32,7 +32,13 @@ namespace INPAR
       acou_dirk54,      // diagonally implicit Runge-Kutta with 2 stages of order 3
       acou_bdf2,        // backward differentiation formula of order 2
       acou_bdf3,        // backward differentiation formula of order 3
-      acou_bdf4         // backward differentiation formula of order 4
+      acou_bdf4,        // backward differentiation formula of order 4
+      acou_expleuler,   // explicit Euler
+      acou_classrk4,    // classical explicit Runge-Kutta with 4 stages
+      acou_lsrk45reg2,  // low storage Runge-Kutta
+      acou_lsrk33reg2,  // low storage Runge-Kutta
+      acou_lsrk45reg3,  // low storage Runge-Kutta
+      acou_ssprk        // strong stability preserving Runge-Kutta
     };
 
     // physical type

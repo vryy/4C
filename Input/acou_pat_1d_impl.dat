@@ -33,7 +33,7 @@ STARTFUNCNO                     1
 PHOTOACOU                       Yes
 MESHCONFORM                     Yes
 ERRORMAPS                       No
-TIMEINT                         impl
+TIMEINT                         impleuler
 INV_ANALYSIS                    none
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   2

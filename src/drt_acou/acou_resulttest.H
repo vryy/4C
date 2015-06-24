@@ -27,7 +27,7 @@ class Discretization;
 
 namespace ACOU
 {
-class AcouImplicitTimeInt;
+class AcouTimeInt;
 
 class AcouResultTest : public DRT::ResultTest
 {
@@ -36,7 +36,7 @@ public:
   /*!
   \brief constructor
   */
-  AcouResultTest(AcouImplicitTimeInt& acoualgo);
+  AcouResultTest(AcouTimeInt& acoualgo);
 
 
   /// our version of nodal value tests

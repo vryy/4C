@@ -46,9 +46,6 @@ ACOU::TimIntImplDIRK::TimIntImplDIRK(
  *----------------------------------------------------------------------*/
 void ACOU::TimIntImplDIRK::Integrate(Teuchos::RCP<Epetra_MultiVector> history, Teuchos::RCP<LINALG::MapExtractor> splitter)
 {
-  // write some information for the curious user
-  PrintInformationToScreen();
-
   // output of initial field (given by function for purely acoustic simulation or given by optics for PAT simulation)
   Output(history,splitter);
 
@@ -174,6 +171,12 @@ void ACOU::TimIntImplDIRK::AssembleMatAndRHS(int stage)
     sysmat_->Complete();
     resonly_ = true;
   }
+
+  std::ofstream file("matrix.dat");
+  file << *Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
+  const double cond = LINALG::Condest(*Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_),
+                                      Ifpack_GMRES, 1000, 1e-10);
+  std::cout << "Condition number estimate matrix: " << cond << std::endl;
 
   return;
 } // AssembleMatAndRHS

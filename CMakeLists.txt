@@ -128,6 +128,7 @@ option (FS3I_INCACouplingTest "Nightly test for FS3I_INCA_coupling turned off" O
       )
   endif(HDF5_FOUND)
 
+find_package(MPI REQUIRED)
 
 find_package(Qhull REQUIRED)
 if (QHULL_FOUND)
@@ -323,6 +324,31 @@ if (NETCDF_FOUND)
     ${NETCDF_LIBRARIES}
     )
 endif(NETCDF_FOUND)
+
+# deal.II package for deal.II support
+CMAKE_POLICY(SET CMP0015 OLD)
+find_package(deal.II 8.3
+    HINTS ${DEAL_II_DIR} ${deal.II_DIR} $ENV{DEAL_II_DIR}
+  )
+if (deal.II_FOUND)
+  include_directories(${DEAL_II_INCLUDE_DIRS})
+  if (${CMAKE_BUILD_TYPE} STREQUAL "DEBUG")
+    link_directories(${DEAL_II_LIBRARIES_DEBUG})
+    set(LIBRARIES
+      ${LIBRARIES}
+      ${DEAL_II_LIBRARIES_DEBUG}
+      )
+  else()
+    link_directories(${DEAL_II_LIBRARIES_RELEASE})
+    set(LIBRARIES
+      ${LIBRARIES}
+      ${DEAL_II_LIBRARIES_RELEASE}
+      )
+  endif()
+  add_definitions("-DHAVE_DEAL_II")   # HAVE_DEAL_II preprocessor flag for BACI
+else()
+  message("-- DEAL.II package not found")
+endif()
 
 # FFTW for Jonas Biehler
 find_package(FFTW)
@@ -1491,9 +1517,13 @@ set(OBJS_DRT_ACOU
   src/drt_acou/acou_impl_euler.cpp
   src/drt_acou/acou_impl.cpp
   src/drt_acou/acou_impl_trap.cpp
+  src/drt_acou/acou_timeint.cpp
   src/drt_acou/acou_inv_analysis.cpp
   src/drt_acou/acou_inv_resulttest.cpp
   src/drt_acou/acou_resulttest.cpp
+  src/drt_acou/acou_expl.cpp
+  src/drt_acou/acou_expl_worker.cpp
+  src/drt_acou/deal_tria_wrapper.cpp
   src/drt_acou/pat_matpar_manager.cpp
 )
 set(OBJS_DRT_ACOU_LIB

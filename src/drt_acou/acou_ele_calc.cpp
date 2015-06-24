@@ -819,8 +819,8 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ProjectField(
       for (unsigned int i=0;i<nsd_;++i)
         ele->eleinteriorVelnp_(i*shapes_.ndofs_+r) += localMat(r, i); // velocity
     }
-
   }
+
   switch (dyna_)
   {
   case INPAR::ACOU::acou_bdf4:
@@ -1224,8 +1224,7 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::NodeBasedValues(
       elevec1(d * nen_ + i) = sum;
     }
   }
-
-  if (!padaptivity)
+  if (!padaptivity && (traceVal_.size()>0)) // (trace val size is zero for explicit time integration)
   {
     Epetra_SerialDenseVector fvalues(1);
     Epetra_SerialDenseVector touchcount(nen_);
@@ -1265,7 +1264,7 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::NodeBasedValues(
       elevec1((nsd_ + 1) * nen_ + i) /= touchcount(i);
 
   }
-  else
+  else if (padaptivity)
     for (unsigned int i = 0; i < nen_; ++i)
       elevec1((nsd_ + 1) * nen_ + i) = ele->elenodeTrace_(i);
 

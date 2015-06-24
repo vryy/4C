@@ -23,7 +23,7 @@ http://www.lnm.mw.tum.de/staff/svenja-schoeder/
 /*----------------------------------------------------------------------*
  |                                                       schoeder 01/14 |
  *----------------------------------------------------------------------*/
-ACOU::AcouResultTest::AcouResultTest(AcouImplicitTimeInt&  acoualgo)
+ACOU::AcouResultTest::AcouResultTest(AcouTimeInt&  acoualgo)
   : DRT::ResultTest("ACOUSTIC")
 {
   dis_ = acoualgo.Discretization();
