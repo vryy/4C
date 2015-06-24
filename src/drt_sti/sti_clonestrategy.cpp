@@ -52,6 +52,7 @@ std::map<std::string,std::string> STI::ScatraThermoCloneStrategy::ConditionsToCo
   conditions.insert(std::pair<std::string,std::string>("ThermoLineNeumann","LineNeumann"));
   conditions.insert(std::pair<std::string,std::string>("ThermoSurfaceNeumann","SurfaceNeumann"));
   conditions.insert(std::pair<std::string,std::string>("ThermoVolumeNeumann","VolumeNeumann"));
+  conditions.insert(std::pair<std::string,std::string>("ThermoInitfield","Initfield"));
 
   // return map
   return conditions;
@@ -99,7 +100,7 @@ void STI::ScatraThermoCloneStrategy::SetElementData(
   newele_transport->SetDisType(oldele->Shape());
 
   // provide cloned element with physical implementation type
-  newele_transport->SetImplType(INPAR::SCATRA::impltype_std);
+  newele_transport->SetImplType(INPAR::SCATRA::impltype_thermo);
 
   return;
 }

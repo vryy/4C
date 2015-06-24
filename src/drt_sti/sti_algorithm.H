@@ -40,9 +40,10 @@ namespace STI
       //! constructor
       explicit Algorithm(
           const Epetra_Comm&              comm,          //! communicator
-          const Teuchos::ParameterList&   scatradyn,     //! scalar transport parameter list
+          const Teuchos::ParameterList&   stidyn,        //! parameter list for scatra-thermo interaction
+          const Teuchos::ParameterList&   scatradyn,     //! scalar transport parameter list for scatra and thermo fields
           const Teuchos::ParameterList&   solverparams   //! solver parameter list
-          );
+         );
 
       //! read restart data
       void ReadRestart(
@@ -69,6 +70,9 @@ namespace STI
       //! check termination criterion for Newton-Raphson iteration
       const bool ExitNewtonRaphson();
 
+      //! modify field parameters for thermo field
+      void ModifyFieldParametersForThermoField();
+
       //! output solution to screen and files
       void Output();
 
@@ -86,6 +90,12 @@ namespace STI
 
       //! thermo time integrator
       Teuchos::RCP<SCATRA::ScaTraTimIntImpl> thermo_;
+
+      //! input parameters for scatra-thermo interaction
+      Teuchos::RCP<Teuchos::ParameterList> stiparameters_;
+
+      //! input parameters for scatra and thermo fields
+      Teuchos::RCP<Teuchos::ParameterList> fieldparameters_;
 
       //! counter for Newton-Raphson iterations
       unsigned int iter_;

@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_element_input.cpp
+\file scatra_ele_input.cpp
 \brief
 
 <pre>
@@ -45,8 +45,12 @@ bool DRT::ELEMENTS::Transport::ReadElement(
     impltype_ = INPAR::SCATRA::impltype_cardiac_monodomain;
   else if(impltype == "ElchDiffCond")
     impltype_ = INPAR::SCATRA::impltype_elch_diffcond;
+  else if(impltype == "ElchDiffCondThermo")
+    impltype_ = INPAR::SCATRA::impltype_elch_diffcond_thermo;
   else if(impltype == "ElchElectrode")
     impltype_ = INPAR::SCATRA::impltype_elch_electrode;
+  else if(impltype == "ElchElectrodeThermo")
+    impltype_ = INPAR::SCATRA::impltype_elch_electrode_thermo;
   else if(impltype == "ElchNP")
     impltype_ = INPAR::SCATRA::impltype_elch_NP;
   else if(impltype == "Loma")

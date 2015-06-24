@@ -286,15 +286,15 @@ void runEnsightVtuFilter(PostProblem    &problem)
       if(transport_element == NULL)
         dserror("Elements of unknown type on scalar transport discretization!");
 
-      if(transport_element->ImplType() == INPAR::SCATRA::impltype_elch_NP or
-         transport_element->ImplType() == INPAR::SCATRA::impltype_elch_electrode or
-         transport_element->ImplType() == INPAR::SCATRA::impltype_elch_diffcond)
+      if(transport_element->ImplType() == INPAR::SCATRA::impltype_elch_electrode_thermo or
+         transport_element->ImplType() == INPAR::SCATRA::impltype_elch_diffcond_thermo)
       {
         ElchFilter elchwriter(problem.get_discretization(0), basename);
         elchwriter.WriteFiles();
       }
       else
       {
+        dserror("Scatra-thermo interaction not yet implemented for standard scalar transport!");
         ScaTraFilter scatrawriter(problem.get_discretization(0), basename);
         scatrawriter.WriteFiles();
       }

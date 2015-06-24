@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file scatra_element_boundary_evaluate.cpp
+\file scatra_ele_boundary_evaluate.cpp
 \brief
 
 Evaluate boundary conditions for scalar transport problems
@@ -42,7 +42,9 @@ int DRT::ELEMENTS::TransportBoundary::Evaluate(
   switch(ParentElement()->ImplType())
   {
   case INPAR::SCATRA::impltype_elch_diffcond:
+  case INPAR::SCATRA::impltype_elch_diffcond_thermo:
   case INPAR::SCATRA::impltype_elch_electrode:
+  case INPAR::SCATRA::impltype_elch_electrode_thermo:
   case INPAR::SCATRA::impltype_elch_NP:
   {
     // adapt number of transported scalars for electrochemistry problems
@@ -66,6 +68,7 @@ int DRT::ELEMENTS::TransportBoundary::Evaluate(
   case INPAR::SCATRA::impltype_loma:
   case INPAR::SCATRA::impltype_poro:
   case INPAR::SCATRA::impltype_pororeac:
+  case INPAR::SCATRA::impltype_thermo:
     // do nothing in these cases
     break;
 

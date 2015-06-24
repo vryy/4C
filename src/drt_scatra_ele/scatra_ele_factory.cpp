@@ -240,32 +240,92 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
         problem != INPAR::SCATRA::impltype_cardiac_monodomain)
       dserror("ImplType '%s' not implemented for transport on manifolds!",SCATRA::ImplTypeToString(problem).c_str());
 
-  if (problem == INPAR::SCATRA::impltype_std)
+  switch(problem)
+  {
+  case INPAR::SCATRA::impltype_std:
+  {
     return DRT::ELEMENTS::ScaTraEleCalcStd<distype,probdim>::Instance(numdofpernode,numscal);
-  else if (problem == INPAR::SCATRA::impltype_levelset)
+    break;
+  }
+  case INPAR::SCATRA::impltype_thermo:
+  {
+    // to be implemented soon...
+    return NULL;
+    break;
+  }
+  case INPAR::SCATRA::impltype_levelset:
+  {
     return DRT::ELEMENTS::ScaTraEleCalcLS<distype>::Instance(numdofpernode,numscal);
-  else if (problem == INPAR::SCATRA::impltype_lsreinit)
+    break;
+  }
+  case INPAR::SCATRA::impltype_lsreinit:
+  {
     return DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Instance(numdofpernode,numscal);
-  else if (problem == INPAR::SCATRA::impltype_loma)
+    break;
+  }
+  case INPAR::SCATRA::impltype_loma:
+  {
     return DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::Instance(numdofpernode,numscal);
-  else if (problem == INPAR::SCATRA::impltype_elch_NP)
+    break;
+  }
+  case INPAR::SCATRA::impltype_elch_NP:
+  {
     return DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::Instance(numdofpernode,numscal);
-  else if (problem == INPAR::SCATRA::impltype_elch_electrode)
+    break;
+  }
+  case INPAR::SCATRA::impltype_elch_electrode:
+  {
     return DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::Instance(numdofpernode,numscal);
-  else if (problem == INPAR::SCATRA::impltype_elch_diffcond)
+    break;
+  }
+  case INPAR::SCATRA::impltype_elch_electrode_thermo:
+  {
+    // to be implemented soon...
+    return NULL;
+    break;
+  }
+  case INPAR::SCATRA::impltype_elch_diffcond:
+  {
     return DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::Instance(numdofpernode,numscal);
-  else if (problem == INPAR::SCATRA::impltype_poro)
+    break;
+  }
+  case INPAR::SCATRA::impltype_elch_diffcond_thermo:
+  {
+    // to be implemented soon...
+    return NULL;
+    break;
+  }
+  case INPAR::SCATRA::impltype_poro:
+  {
     return DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::Instance(numdofpernode,numscal);
-  else if (problem == INPAR::SCATRA::impltype_advreac)
+    break;
+  }
+  case INPAR::SCATRA::impltype_advreac:
+  {
     return DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::Instance(numdofpernode,numscal);
-  else if (problem == INPAR::SCATRA::impltype_pororeac)
-      return DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::Instance(numdofpernode,numscal);
-  else if (problem == INPAR::SCATRA::impltype_aniso)
-      return DRT::ELEMENTS::ScaTraEleCalcAniso<distype>::Instance(numdofpernode,numscal);
-  else if (problem == INPAR::SCATRA::impltype_cardiac_monodomain)
-      return DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype,probdim>::Instance(numdofpernode,numscal);
-  else
+    break;
+  }
+  case INPAR::SCATRA::impltype_pororeac:
+  {
+    return DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::Instance(numdofpernode,numscal);
+    break;
+  }
+  case INPAR::SCATRA::impltype_aniso:
+  {
+    return DRT::ELEMENTS::ScaTraEleCalcAniso<distype>::Instance(numdofpernode,numscal);
+    break;
+  }
+  case INPAR::SCATRA::impltype_cardiac_monodomain:
+  {
+    return DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype,probdim>::Instance(numdofpernode,numscal);
+    break;
+  }
+  default:
+  {
     dserror("Defined problem type does not exist!!");
+    break;
+  }
+  }
 
   return NULL;
 }

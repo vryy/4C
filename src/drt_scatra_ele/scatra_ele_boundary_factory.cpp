@@ -105,6 +105,12 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::De
     return DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype>::Instance(numdofpernode,numscal);
     break;
   }
+  case INPAR::SCATRA::impltype_thermo:
+  {
+    // to be implemented very soon...
+    return NULL;
+    break;
+  }
   case INPAR::SCATRA::impltype_loma:
   {
     return DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::Instance(numdofpernode,numscal);
@@ -115,9 +121,21 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::De
     return DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::Instance(numdofpernode,numscal);
     break;
   }
+  case INPAR::SCATRA::impltype_elch_electrode_thermo:
+  {
+    // to be implemented very soon...
+    return NULL;
+    break;
+  }
   case INPAR::SCATRA::impltype_elch_diffcond:
   {
     return DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::Instance(numdofpernode,numscal);
+    break;
+  }
+  case INPAR::SCATRA::impltype_elch_diffcond_thermo:
+  {
+    // to be implemented very soon...
+    return NULL;
     break;
   }
   case INPAR::SCATRA::impltype_elch_NP:

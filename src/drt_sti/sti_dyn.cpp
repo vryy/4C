@@ -95,7 +95,7 @@ void sti_dyn(
     dserror("No linear solver specified in input file section 'SCALAR TRANSPORT DYNAMIC'!");
 
   // instantiate monolithic algorithm for scatra-thermo interaction
-  Teuchos::RCP<STI::Algorithm> sti_algorithm = Teuchos::rcp(new STI::Algorithm(comm,scatradyn,DRT::Problem::Instance()->SolverParams(solver_id)));
+  Teuchos::RCP<STI::Algorithm> sti_algorithm = Teuchos::rcp(new STI::Algorithm(comm,problem->STIDynamicParams(),scatradyn,DRT::Problem::Instance()->SolverParams(solver_id)));
 
   // read restart data if necessary
   if(restartstep)

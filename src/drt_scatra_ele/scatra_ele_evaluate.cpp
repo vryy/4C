@@ -149,7 +149,9 @@ int DRT::ELEMENTS::Transport::Evaluate(
   switch(impltype_)
   {
   case INPAR::SCATRA::impltype_elch_diffcond:
+  case INPAR::SCATRA::impltype_elch_diffcond_thermo:
   case INPAR::SCATRA::impltype_elch_electrode:
+  case INPAR::SCATRA::impltype_elch_electrode_thermo:
   case INPAR::SCATRA::impltype_elch_NP:
   {
     // adapt number of transported scalars for electrochemistry problems
@@ -181,6 +183,7 @@ int DRT::ELEMENTS::Transport::Evaluate(
   }
 
   case INPAR::SCATRA::impltype_std:
+  case INPAR::SCATRA::impltype_thermo:
   case INPAR::SCATRA::impltype_advreac:
   case INPAR::SCATRA::impltype_aniso:
   case INPAR::SCATRA::impltype_cardiac_monodomain:

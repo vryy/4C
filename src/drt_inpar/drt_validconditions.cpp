@@ -703,6 +703,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   // (for initial vector fields, use the COMPONENT option of our functions)
   initfieldscomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("funct",1)));
 
+  // general initial field conditions
   Teuchos::RCP<ConditionDefinition> pointinitfields =
     Teuchos::rcp(new ConditionDefinition("DESIGN POINT INITIAL FIELD CONDITIONS",
                                          "Initfield",
@@ -732,6 +733,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          false,
                                          DRT::Condition::Volume));
 
+  // initial field conditions for particle problems
   Teuchos::RCP<ConditionDefinition> particleinitfields =
     Teuchos::rcp(new ConditionDefinition("DESIGN PARTICLE INITIAL FIELD CONDITIONS",
                                          "Initfield",
@@ -739,6 +741,36 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          DRT::Condition::PointInitfield,
                                          false,
                                          DRT::Condition::Particle));
+
+  // initial field conditions for temperature
+  Teuchos::RCP<ConditionDefinition> pointthermoinitfields =
+    Teuchos::rcp(new ConditionDefinition("DESIGN POINT THERMO INITIAL FIELD CONDITIONS",
+                                         "ThermoInitfield",
+                                         "Point Thermo Initfield",
+                                         DRT::Condition::PointInitfield,
+                                         false,
+                                         DRT::Condition::Point));
+  Teuchos::RCP<ConditionDefinition> linethermoinitfields =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE THERMO INITIAL FIELD CONDITIONS",
+                                         "ThermoInitfield",
+                                         "Line Thermo Initfield",
+                                         DRT::Condition::LineInitfield,
+                                         false,
+                                         DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> surfthermoinitfields =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURF THERMO INITIAL FIELD CONDITIONS",
+                                         "ThermoInitfield",
+                                         "Surface Thermo Initfield",
+                                         DRT::Condition::SurfaceInitfield,
+                                         false,
+                                         DRT::Condition::Surface));
+  Teuchos::RCP<ConditionDefinition> volthermoinitfields =
+    Teuchos::rcp(new ConditionDefinition("DESIGN VOL THERMO INITIAL FIELD CONDITIONS",
+                                         "ThermoInitfield",
+                                         "Volume Thermo Initfield",
+                                         DRT::Condition::VolumeInitfield,
+                                         false,
+                                         DRT::Condition::Volume));
 
   for (unsigned i=0; i<initfieldscomponents.size(); ++i)
   {
@@ -748,6 +780,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     volinitfields->AddComponent(initfieldscomponents[i]);
 
     particleinitfields->AddComponent(initfieldscomponents[i]);
+
+    pointthermoinitfields->AddComponent(initfieldscomponents[i]);
+    linethermoinitfields->AddComponent(initfieldscomponents[i]);
+    surfthermoinitfields->AddComponent(initfieldscomponents[i]);
+    volthermoinitfields->AddComponent(initfieldscomponents[i]);
   }
 
   condlist.push_back(pointinitfields);
@@ -756,6 +793,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(volinitfields);
 
   condlist.push_back(particleinitfields);
+
+  condlist.push_back(pointthermoinitfields);
+  condlist.push_back(linethermoinitfields);
+  condlist.push_back(surfthermoinitfields);
+  condlist.push_back(volthermoinitfields);
 
   /*--------------------------------------------------------------------*/
   // mortar contact

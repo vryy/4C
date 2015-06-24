@@ -5936,6 +5936,27 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
        &stidyn
        );
 
+  // specification of initial temperature field
+  setStringToIntegralParameter<int>(
+      "THERMO_INITIALFIELD",
+      "zero_field",
+      "initial temperature field for scatra-thermo interaction problems",
+      tuple<std::string>(
+          "zero_field",
+          "field_by_function",
+          "field_by_condition"
+          ),
+      tuple<int>(
+          INPAR::THR::initfield_zero_field,
+          INPAR::THR::initfield_field_by_function,
+          INPAR::THR::initfield_field_by_condition
+          ),
+      &stidyn
+      );
+
+  // function number for initial temperature field
+  IntParameter("THERMO_INITFUNCNO",-1,"function number for initial temperature field for scatra-thermo interaction problems",&stidyn);
+
   /*----------------------------------------------------------------------*/
   /* Control parameters for FS3I */
   /*----------------------------------------------------------------------*/

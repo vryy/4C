@@ -1,5 +1,5 @@
 /*!
-\file scatra_ele_impl_utils.cpp
+\file scatra_ele_calc_utils.cpp
 
 <pre>
 Maintainer: Andreas Ehrl
@@ -105,6 +105,11 @@ const std::string ImplTypeToString(const INPAR::SCATRA::ImplType impltype)
     impltypestring = "Standard scalar transport";
     break;
   }
+  case INPAR::SCATRA::impltype_thermo:
+  {
+    impltypestring = "Heat transport for scatra-thermo interaction";
+    break;
+  }
   case INPAR::SCATRA::impltype_advreac:
   {
     impltypestring = "Advanced reactions";
@@ -125,9 +130,19 @@ const std::string ImplTypeToString(const INPAR::SCATRA::ImplType impltype)
     impltypestring = "Electrochemistry for diffusion-conduction formulation";
     break;
   }
+  case INPAR::SCATRA::impltype_elch_diffcond_thermo:
+  {
+    impltypestring = "Electrochemistry for diffusion-conduction formulation with thermal effects";
+    break;
+  }
   case INPAR::SCATRA::impltype_elch_electrode:
   {
     impltypestring = "Electrochemistry for electrodes";
+    break;
+  }
+  case INPAR::SCATRA::impltype_elch_electrode_thermo:
+  {
+    impltypestring = "Electrochemistry for electrodes with thermal effects";
     break;
   }
   case INPAR::SCATRA::impltype_elch_NP:

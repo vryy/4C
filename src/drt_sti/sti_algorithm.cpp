@@ -33,22 +33,21 @@ Maintainer: Rui Fang
  *--------------------------------------------------------------------------------*/
 STI::Algorithm::Algorithm(
     const Epetra_Comm&              comm,          //! communicator
-    const Teuchos::ParameterList&   scatradyn,     //! scalar transport parameter list
+    const Teuchos::ParameterList&   stidyn,        //! parameter list for scatra-thermo interaction
+    const Teuchos::ParameterList&   scatradyn,     //! scalar transport parameter list for scatra and thermo fields
     const Teuchos::ParameterList&   solverparams   //! solver parameter list
     ) :
     // instantiate base class
     AlgorithmBase(comm,scatradyn),
 
-    // initialize scatra time integrator
-    scatra_(Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(scatradyn,false,"scatra",solverparams))->ScaTraField()),
-
-    // initialize thermo time integrator
-    thermo_(Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(scatradyn,false,"thermo",solverparams))->ScaTraField()),
-
+    scatra_(Teuchos::null),
+    thermo_(Teuchos::null),
+    stiparameters_(Teuchos::rcp(new Teuchos::ParameterList(stidyn))),
+    fieldparameters_(Teuchos::rcp(new Teuchos::ParameterList(scatradyn))),
     iter_(0),
-    itermax_(scatradyn.sublist("NONLINEAR").get<int>("ITEMAX")),
-    itertol_(scatradyn.sublist("NONLINEAR").get<double>("CONVTOL")),
-    restol_(scatradyn.sublist("NONLINEAR").get<double>("ABSTOLRES")),
+    itermax_(fieldparameters_->sublist("NONLINEAR").get<int>("ITEMAX")),
+    itertol_(fieldparameters_->sublist("NONLINEAR").get<double>("CONVTOL")),
+    restol_(fieldparameters_->sublist("NONLINEAR").get<double>("ABSTOLRES")),
 
     // initialize global map extractor
     maps_(Teuchos::rcp(new LINALG::MapExtractor(
@@ -130,6 +129,15 @@ STI::Algorithm::Algorithm(
   // additional safety check
   if(!scatra_->IsIncremental())
     dserror("Must have incremental solution approach for scatra-thermo interaction!");
+
+  // initialize scatra time integrator
+  scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(*fieldparameters_,false,"scatra",solverparams))->ScaTraField();
+
+  // modify field parameters for thermo field
+  ModifyFieldParametersForThermoField();
+
+  // initialize thermo time integrator
+  thermo_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(*fieldparameters_,false,"thermo",solverparams))->ScaTraField();
 
   return;
 } // STI::Algorithm::Algorithm
@@ -257,6 +265,24 @@ const bool STI::Algorithm::ExitNewtonRaphson()
 
   return exit;
 } // STI::Algorithm::ExitNewtonRaphson()
+
+
+/*----------------------------------------------------------------------*
+ | modify field parameters for thermo field                  fang 06/15 |
+ *----------------------------------------------------------------------*/
+void STI::Algorithm::ModifyFieldParametersForThermoField()
+{
+  // extract parameters for initial temperature field from parameter list for scatra-thermo interaction
+  // and overwrite corresponding parameters in parameter list for thermo field
+  if(!fieldparameters_->isParameter("INITIALFIELD") or !fieldparameters_->isParameter("INITFUNCNO"))
+    dserror("Initial field parameters not properly set in input file section SCALAR TRANSPORT DYNAMIC!");
+  if(!stiparameters_->isParameter("THERMO_INITIALFIELD") or !stiparameters_->isParameter("THERMO_INITFUNCNO"))
+    dserror("Initial field parameters not properly set in input file section SCALAR TRANSPORT DYNAMIC!");
+  fieldparameters_->set<int>("INITIALFIELD",stiparameters_->get<int>("THERMO_INITIALFIELD"));
+  fieldparameters_->set<int>("INITFUNCNO",stiparameters_->get<int>("THERMO_INITFUNCNO"));
+
+  return;
+} // STI::Algorithm::ModifyFieldParametersForThermoField()
 
 
 /*----------------------------------------------------------------------*
