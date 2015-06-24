@@ -1518,12 +1518,13 @@ OBSOLETE for baci input, read only in ccarat.
 \begin{verbatim}
 ------------------------------------DESIGN POINT DIRICH CONDITIONS 
 DPOINT num
-E X - FLAG(6) VAL(6) CURVE(6) FUNCT(6)
+E X - NUMDOF ONOFF(6) VAL(6) CURVE(6) FUNCT(6)
 \end{verbatim}
 \begin{center}
 \begin{tabular}{c||l}
 $X$                           & design point id                                                  \\ \hline
-FLAG                          & six (0/1) flags switching the Dirichletboundary condition off/on \\ \hline
+NUMDOF                        & Number of DOFs                                                 \\ \hline
+ONOFF                          & six (0/1) flags switching the Dirichletboundary condition off/on \\ \hline
 VAL                           & six boundary values (double)                                     \\ \hline
 CURVE                         & six time-curve ids specifing the corresponding time curves       \\ \hline
 FUNCT                         & six function-ids for corresponding spatial functions             \\ 
@@ -1617,16 +1618,18 @@ See corresponding volume condition.
 \subsection{DESIGN VOL NEUMANN CONDITIONS}
 \begin{verbatim}
 -------------------------------------DESIGN VOL NEUMANN CONDITIONS
-E X - CURVE ONOFF(6) VAL(6) loadtype
+E X - NUMDOF ONOFF(6) VAL(6) CURVE(6) FUNCT(6) loadtype
 \end{verbatim}
 
 \begin{center}
 \begin{tabular}{c||l}
 $X$                           & design point id                                                  \\ \hline
-CURVE                         & one time-curve ids specifing the corresponding time curve        \\ \hline
-ONOFF                         & six (0/1) flags switching the boundary condition off/on in the   \\
+NUMDOF                        & Number of DOFs                                                 \\ \hline
+ONOFF                         & (0/1) flags switching the boundary condition off/on in the   \\
                               & respective direction                                             \\ \hline
 VAL                           & six boundary values (double)                                     \\ \hline
+CURVE                         & time-curve ids specifing the corresponding time curve        \\ \hline
+FUNCT                         & function-ids for corresponding spatial functions             \\ 
 \end{tabular}
 \end{center}
 
