@@ -284,7 +284,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateConductivity(
   // integration loop
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
-    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+    const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
 
     //----------------------------------------------------------------------
     // get material and stabilization parameters (evaluation at element center)
