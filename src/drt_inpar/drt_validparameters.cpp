@@ -2248,8 +2248,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /* parameters for potential-based beam interaction */
   Teuchos::ParameterList& beampotential = list->sublist("BEAM POTENTIAL",false,"");
 
-  setNumericStringParameter("POT_LAW_EXPONENT","", "negative(!) exponent(s) m_i of potential law Phi(r) = sum_i (k_i * r^(-m_i)).",&beampotential);
-  setNumericStringParameter("POT_LAW_PREFACTOR","", "prefactor(s) k_i of potential law Phi(r) = sum_i (k_i * r^(-m_i)).",&beampotential);
+  setNumericStringParameter("POT_LAW_EXPONENT","1.0", "negative(!) exponent(s) m_i of potential law Phi(r) = sum_i (k_i * r^(-m_i)).",&beampotential);
+  setNumericStringParameter("POT_LAW_PREFACTOR","0.0", "prefactor(s) k_i of potential law Phi(r) = sum_i (k_i * r^(-m_i)).",&beampotential);
   DoubleParameter("CUTOFFRADIUS",-1.0,"cutoff radius for search of potential-based interaction pairs",&beampotential);
 
   setStringToIntegralParameter<int>("BEAMPOTENTIAL_TYPE","Surface","Type of potential interaction: surface (default) or volume potential",
