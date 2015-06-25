@@ -1620,7 +1620,11 @@ void FLD::XWall::FixDirichletInflow(Teuchos::RCP<Epetra_Vector>   trueresidual)
                   std::vector<DRT::Condition*> dircond;
                   test[l]->GetCondition("Dirichlet",dircond);
                   if(dircond.empty())
-                    dserror("this should be a Dirichlet node");
+                  {
+                    test[l]->GetCondition("FSICoupling",dircond);
+                    if(dircond.empty())
+                      dserror("this should be a Dirichlet or fsi coupling node");
+                  }
                   bool isuglydirnode = false;
                   for (unsigned numcond=0;numcond<dircond.size();++numcond)
                   {
