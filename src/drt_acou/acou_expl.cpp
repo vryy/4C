@@ -532,14 +532,14 @@ double DirichletBoundaryFunction<dim>::value (const Point<dim>   &p,
 
   // warning: only possibilities are "value" and "function" not "curve". if you want to use "curve" in your dbc, implement the evaluation here
   double return_value = 0.0;
-  int funct_num = (*(dirichletBC[dbcindex]->Get<std::vector<int> >("funct")))[0];
+  int funct_num = (*(dirichletBC[dbcindex]->template Get<std::vector<int> >("funct")))[0];
   if(funct_num>0) // return value specified by functione evaluation
   {
     return_value = DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(0,xyz,t,NULL);
   }
   else // return value given by input value "VAL"
   {
-    return_value = (*(dirichletBC[dbcindex]->Get<std::vector<double> >("val")))[0];
+    return_value = (*(dirichletBC[dbcindex]->template Get<std::vector<double> >("val")))[0];
   }
 
   return return_value;
