@@ -551,16 +551,11 @@ void DRT::Discretization::BuildElementRowColumn(
 
   std::vector<int> rtopo(stoposize);
 
-  // communicate number of nodes per proc
-  std::vector<int> nodesperproc(numproc);
-  int nummynodes = noderowmap.NumMyElements();
-  Comm().GatherAll(&nummynodes, &nodesperproc[0], 1);
-
   // estimate no. of elements equal to no. of nodes
-  std::vector<int> myele(nummynodes);
+  std::vector<int> myele(noderowmap.NumMyElements());
   int nummyele=0;
   // estimate no. of ghosted elements much lower
-  std::vector<int> myghostele(nummynodes/4);
+  std::vector<int> myghostele(noderowmap.NumMyElements()/4);
   int nummyghostele=0;
 
   // loop processors and sort elements into
@@ -616,25 +611,18 @@ void DRT::Discretization::BuildElementRowColumn(
 
       // the proc with the largest number of nodes owns the element,
       // all others ghost it
-      //
-      // tie-breaking if number of nodes is equal among some procs:
-      // the processor with the smaller number of row nodes owns the element;
-      // if still tied, the last node owner with equal number of nodes owns
-      // the element
+      // if no. of nodes is equal among some procs,
+      // the last node owner with equal number of nodes owns the element
       int owner   = -1;
       int maxnode = 0;
-      int minrownodes = noderowmap.NumGlobalElements();
       for (int j=0; j<numnode; ++j)
       {
         int currentproc = nodeowner[j];
         int ownhowmany  = numperproc[currentproc];
-        if (ownhowmany > maxnode
-            ||
-            (ownhowmany == maxnode && nodesperproc[currentproc] <= minrownodes))
+        if (ownhowmany>=maxnode)
         {
           owner   = currentproc;
           maxnode = ownhowmany;
-          minrownodes = nodesperproc[currentproc];
         }
       }
       if (myrank==owner)
