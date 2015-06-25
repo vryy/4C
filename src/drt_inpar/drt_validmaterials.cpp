@@ -193,6 +193,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AddNamedReal(m,"DYNVISCOSITY","dynamic viscosity");
     AddNamedReal(m,"DENSITY","spatial mass density");
+    AddNamedReal(m,"GAMMA","surface tension coefficient");
+    AddNamedReal(m,"PVAPOR","vapor pressure");
 
     AppendMaterialDefinition(matlist,m);
   }

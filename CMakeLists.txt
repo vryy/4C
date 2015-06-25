@@ -1515,6 +1515,7 @@ set(OBJS_DRT_PARTICLE
   src/drt_particle/cavitation_service.cpp
   src/drt_particle/particle_contact.cpp
   src/drt_particle/scatra_particle_coupling.cpp
+  src/drt_particle/particle_resulttest.cpp
 )
 set(OBJS_DRT_ACOU
   src/drt_acou/acou_dyn.cpp

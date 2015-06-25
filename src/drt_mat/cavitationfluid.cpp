@@ -26,7 +26,9 @@ MAT::PAR::CavitationFluid::CavitationFluid(
   )
 : Parameter(matdata),
   viscosity_(matdata->GetDouble("DYNVISCOSITY")),
-  density_(matdata->GetDouble("DENSITY"))
+  density_(matdata->GetDouble("DENSITY")),
+  gamma_(matdata->GetDouble("GAMMA")),
+  p_vapor_(matdata->GetDouble("PVAPOR"))
 {
 }
 

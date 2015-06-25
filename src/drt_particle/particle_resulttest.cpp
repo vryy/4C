@@ -1,73 +1,76 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file stru_resulttest.cpp
+\file particle_resulttest.cpp
 
-\brief tesing of structure calculation results
+\brief testing of particle calculation results
 
 <pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
+Maintainer: Georg Hammerl
+            hammerl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15238
+            089 - 289-15237
 </pre>
 */
 /*----------------------------------------------------------------------*/
 
 #include <string>
-#include "stru_resulttest.H"
-#include "strtimint.H"
+#include "particle_resulttest.H"
+#include "../drt_particle/particle_timint.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-StruResultTest::StruResultTest(STR::TimInt& tintegrator)
-  : DRT::ResultTest("STRUCTURE")
+PartResultTest::PartResultTest(PARTICLE::TimInt& tintegrator)
+  : DRT::ResultTest("PARTICLE")
 {
-  dis_  = tintegrator.Dis();
-  vel_  = tintegrator.Vel();
-  acc_  = tintegrator.Acc();
-  strudisc_ = tintegrator.Discretization();
-  if (DRT::Problem::Instance()->ProblemType() == prb_struct_ale and
-      (DRT::Problem::Instance()->WearParams()).get<double>("WEARCOEFF")>0.0)
-    dism_ = tintegrator.Dismat();
-  else
-    dism_=Teuchos::null;
+  dis_  = tintegrator.Dispnp();
+  if (tintegrator.Velnp() != Teuchos::null)
+  {
+    vel_  = tintegrator.Velnp();
+  }
+  if (tintegrator.Accnp() != Teuchos::null)
+  {
+    acc_  = tintegrator.Accnp();
+  }
+  if (tintegrator.Radius() != Teuchos::null)
+  {
+    radius_  = tintegrator.Radius();
+  }
+  partdisc_ = tintegrator.Discretization();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void StruResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+void PartResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
-  // this implementation does not allow testing of stresses !
-
   // care for the case of multiple discretizations of the same field type
   std::string dis;
   res.ExtractString("DIS",dis);
-  if (dis != strudisc_->Name())
+  if (dis != partdisc_->Name())
     return;
 
   int node;
   res.ExtractInt("NODE",node);
   node -= 1;
 
-  int havenode(strudisc_->HaveGlobalNode(node));
+  int havenode(partdisc_->HaveGlobalNode(node));
   int isnodeofanybody(0);
-  strudisc_->Comm().SumAll(&havenode,&isnodeofanybody,1);
+  partdisc_->Comm().SumAll(&havenode,&isnodeofanybody,1);
 
   if (isnodeofanybody==0)
   {
-    dserror("Node %d does not belong to discretization %s",node+1,strudisc_->Name().c_str());
+    dserror("Node %d does not belong to discretization %s",node+1,partdisc_->Name().c_str());
   }
   else
   {
-    if (strudisc_->HaveGlobalNode(node))
+    if (partdisc_->HaveGlobalNode(node))
     {
-      const DRT::Node* actnode = strudisc_->gNode(node);
+      const DRT::Node* actnode = partdisc_->gNode(node);
 
       // Here we are just interested in the nodes that we own (i.e. a row node)!
-      if (actnode->Owner() != strudisc_->Comm().MyPID())
+      if (actnode->Owner() != partdisc_->Comm().MyPID())
         return;
 
       std::string position;
@@ -92,32 +95,10 @@ void StruResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& t
         if (idx >= 0)
         {
           unknownpos = false;
-          int lid = disnpmap.LID(strudisc_->Dof(0,actnode,idx));
+          int lid = disnpmap.LID(partdisc_->Dof(0,actnode,idx));
           if (lid < 0)
             dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx, actnode->Id());
           result = (*dis_)[lid];
-        }
-      }
-
-      // test material displacements
-      if (dism_ != Teuchos::null)
-      {
-        const Epetra_BlockMap& dismpmap = dism_->Map();
-        int idx = -1;
-        if (position == "dispmx")
-          idx = 0;
-        else if (position == "dispmy")
-          idx = 1;
-        else if (position == "dispmz")
-          idx = 2;
-
-        if (idx >= 0)
-        {
-          unknownpos = false;
-          int lid = dismpmap.LID(strudisc_->Dof(0,actnode,idx));
-          if (lid < 0)
-            dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx, actnode->Id());
-          result = (*dism_)[lid];
         }
       }
 
@@ -136,7 +117,7 @@ void StruResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& t
         if (idx >= 0)
         {
           unknownpos = false;
-          int lid = velnpmap.LID(strudisc_->Dof(0,actnode,idx));
+          int lid = velnpmap.LID(partdisc_->Dof(0,actnode,idx));
           if (lid < 0)
             dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx, actnode->Id());
           result = (*vel_)[lid];
@@ -158,16 +139,35 @@ void StruResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& t
         if (idx >= 0)
         {
           unknownpos = false;
-          int lid = accnpmap.LID(strudisc_->Dof(0,actnode,idx));
+          int lid = accnpmap.LID(partdisc_->Dof(0,actnode,idx));
           if (lid < 0)
             dserror("You tried to test %s on nonexistent dof %d on node %d", position.c_str(), idx, actnode->Id());
           result = (*acc_)[lid];
         }
       }
 
-      // catch position std::strings, which are not handled by structure result test
+      // test radius
+      if (radius_ != Teuchos::null)
+      {
+        const Epetra_BlockMap& radiusmap = radius_->Map();
+        int idx = -1;
+        if (position == "radius")
+          idx = 0;
+
+        if (idx >= 0)
+        {
+          unknownpos = false;
+          // node based vector
+          int lid = radiusmap.LID(actnode->Id());
+          if (lid < 0)
+            dserror("You tried to test %s on nonexistent node %d", position.c_str(), actnode->Id());
+          result = (*radius_)[lid];
+        }
+      }
+
+      // catch position std::strings, which are not handled by particle result test
       if (unknownpos)
-        dserror("Quantity '%s' not supported in structure testing", position.c_str());
+        dserror("Quantity '%s' not supported in particle testing", position.c_str());
 
       // compare values
       const int err = CompareValues(result, "NODE", res);

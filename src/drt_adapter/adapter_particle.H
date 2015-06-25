@@ -147,8 +147,14 @@ namespace ADAPTER
     //! Return accelerations \f$A_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Accnp() = 0;
 
-    //! Return radii of particles
+    //! Return radii of particles \f$R_{0}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Radius0() = 0;
+
+    //! Return radii of particles \f$R_{n}\f$ or \f$R_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Radius() = 0;
+
+    //! Return first time derivative of radii \f$\dot{R}_{n}\f$ or \f$\dot{R}_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> RadiusDot() = 0;
 
     //! Return mass of particles
     virtual Teuchos::RCP<const Epetra_Vector> Mass() = 0;
@@ -167,8 +173,14 @@ namespace ADAPTER
     //! extract velocities
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelnp() = 0;
 
-    //! Return radii of particles
+    //! extract initial radii
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadius0() = 0;
+
+    //! extract radii
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadius() = 0;
+
+    //! wxtract first time derivative of radii
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadiusDot() = 0;
 
     //! extract mass vector
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessMass() = 0;
@@ -181,7 +193,10 @@ namespace ADAPTER
     /// Get the current time
     virtual double TimeOld() const = 0;
 
-    //! Return current step number $n$
+    /// Return target time \f$t_{n+1}\f$
+    virtual double Time() const = 0;
+
+    /// Return current step number $n$
     virtual int StepOld() const = 0;
 
     /// Set time and step

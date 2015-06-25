@@ -227,6 +227,18 @@ public:
       Epetra_SerialDenseVector&            elevec2_epetra
       );
 
+  /*! \brief Interpolate pressure to given point
+   *
+   *  \author ghamm \date 06/2015
+   */
+  int InterpolatePressureToPoint(
+      DRT::ELEMENTS::Fluid*                ele,
+      Teuchos::ParameterList&              params,
+      DRT::Discretization &                discretization,
+      std::vector<int> &                   lm,
+      Epetra_SerialDenseVector&            elevec1_epetra
+      );
+
   /*! \brief Reset debug output of immersed element
    *
    *  \author rauch \date 05/2014

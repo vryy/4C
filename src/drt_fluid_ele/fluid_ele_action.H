@@ -65,6 +65,7 @@ enum Action {
     calc_volume,
     interpolate_velocity_to_given_point,
     interpolate_velgrad_to_given_point,
+    interpolate_pressure_to_given_point,
     xwall_l2_projection,
     xwall_calc_mk,
     tauw_via_gradient,
@@ -78,7 +79,7 @@ enum Action {
     calc_dt_via_cfl,
     calc_mass_flow_periodic_hill,
     reset_immersed_ele,
-    calc_velgrad_ele_center,
+    calc_velgrad_ele_center
 }; // enum Action
 
 /*--------------------------------------------------------------------------

@@ -17,7 +17,7 @@ Maintainer: Georg Hammerl
 #include "particle_timint.H"
 #include "particle_algorithm.H"
 #include "particle_contact.H"
-#include "../drt_structure/stru_resulttest.H"
+#include "particle_resulttest.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_pstream.H"
@@ -81,6 +81,8 @@ PARTICLE::TimInt::TimInt
   veln_(Teuchos::null),
   accn_(Teuchos::null),
   radius_(Teuchos::null),
+  radius0_(Teuchos::null),
+  radiusdot_(Teuchos::null),
   mass_(Teuchos::null),
   inertia_(Teuchos::null),
   ang_vel_(Teuchos::null),
@@ -90,6 +92,7 @@ PARTICLE::TimInt::TimInt
   orient_(Teuchos::null),
   density_(-1.0),
   fifc_(Teuchos::null),
+  variableradius_((bool)DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CavitationParams(),"COMPUTE_RADIUS_RP_BASED")),
   collhandler_(Teuchos::null)
 {
   // welcome user
@@ -142,6 +145,13 @@ void PARTICLE::TimInt::Init()
    fifc_ = LINALG::CreateVector(*DofRowMapView(), true);
    // radius of each particle
    radius_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
+   if(variableradius_)
+   {
+     // initial radius of each particle for time dependent radius
+     radius0_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
+     // time derivative of radius of each particle for time dependent radius
+     radiusdot_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
+   }
    // mass of each particle
    mass_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
 
@@ -432,6 +442,20 @@ void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
     LINALG::Export(*old, *radius_);
   }
 
+  if (radius0_ != Teuchos::null)
+  {
+    old = radius0_;
+    radius0_ = LINALG::CreateVector(*discret_->NodeRowMap(),true);
+    LINALG::Export(*old, *radius0_);
+  }
+
+  if (radiusdot_ != Teuchos::null)
+  {
+    old = radiusdot_;
+    radiusdot_ = LINALG::CreateVector(*discret_->NodeRowMap(),true);
+    LINALG::Export(*old, *radiusdot_);
+  }
+
   if (mass_ != Teuchos::null)
   {
     old = mass_;
@@ -491,6 +515,11 @@ void PARTICLE::TimInt::ReadRestartState()
   reader.ReadVector(accn_, "acceleration");
   acc_->UpdateSteps(*accn_);
   reader.ReadVector(radius_, "radius");
+  if(variableradius_)
+  {
+    reader.ReadVector(radius0_, "radius0");
+    reader.ReadVector(radiusdot_, "radiusdot");
+  }
 
   // initialize radius
   for(int lid=0; lid<discret_->NumMyRowNodes(); ++lid)
@@ -591,6 +620,11 @@ void PARTICLE::TimInt::OutputRestart
   output_->WriteVector("velocity", (*vel_)(0));
   output_->WriteVector("acceleration", (*acc_)(0));
   output_->WriteVector("radius", radius_, output_->nodevector);
+  if(variableradius_)
+  {
+    output_->WriteVector("radius0", radius0_, output_->nodevector);
+    output_->WriteVector("radiusdot", radiusdot_, output_->nodevector);
+  }
 
   if(collhandler_ != Teuchos::null)
   {
@@ -799,7 +833,7 @@ void PARTICLE::TimInt::AttachEnergyFile()
 /* Creates the field test                                               */
 Teuchos::RCP<DRT::ResultTest> PARTICLE::TimInt::CreateFieldTest()
 {
-  return Teuchos::rcp(new StruResultTest(*this));
+  return Teuchos::rcp(new PartResultTest(*this));
 }
 
 /*----------------------------------------------------------------------*/

@@ -283,14 +283,12 @@ void FLD::TimIntOneStepTheta::ApplyExternalForces
  *----------------------------------------------------------------------*/
 void FLD::TimIntOneStepTheta::OutputExternalForces()
 {
+  // call base class
+  FLD::FluidImplicitTimeInt::OutputExternalForces();
+
   if(external_loadsn_ != Teuchos::null)
   {
-    output_->WriteInt("have_fexternal",external_loadsn_->GlobalLength());
-    output_->WriteVector("fexternal",external_loadsn_);
-  }
-  else
-  {
-    output_->WriteInt("have_fexternal",-1);
+    output_->WriteVector("fexternal_n",external_loadsn_);
   }
 
   return;
@@ -312,8 +310,7 @@ void FLD::TimIntOneStepTheta::ReadRestart(int step)
   {
     external_loadsn_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
     external_loadsnp_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
-    external_loads_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
-    reader.ReadVector(external_loadsn_,"fexternal");
+    reader.ReadVector(external_loadsn_,"fexternal_n");
     if(have_fexternal != external_loadsn_->GlobalLength())
       dserror("reading of external loads failed");
   }

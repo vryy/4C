@@ -1,20 +1,20 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file stru_resulttest.H
+\file particle_resulttest.H
 
-\brief testing of structure calculation results
+\brief testing of particle calculation results
 
 <pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
+Maintainer: Georg Hammerl
+            hammerl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15238
+            089 - 289-15237
 </pre>
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef STRURESULTTEST_H
-#define STRURESULTTEST_H
+#ifndef PARTICLERESULTTEST_H
+#define PARTICLERESULTTEST_H
 
 #include <Epetra_Vector.h>
 #include "../drt_lib/drt_resulttest.H"
@@ -36,7 +36,7 @@ namespace IO
   class DiscretizationWriter;
 }
 
-namespace STR
+namespace PARTICLE
 {
   class TimInt;
 }
@@ -44,36 +44,33 @@ namespace STR
 /*!
   \brief Structure specific result test class
 */
-class StruResultTest : public DRT::ResultTest
+class PartResultTest : public DRT::ResultTest
 {
 public:
-  //! Constructor for time integrators of general kind
-  //! \author bborn \date 06/08
-  StruResultTest(STR::TimInt& tintegrator);
+  //! Constructor for particle time integrators of general kind
+  PartResultTest(PARTICLE::TimInt& tintegrator);
 
-  //! \brief structure version of nodal value tests
+  //! \brief particle version of nodal value tests
   //!
   //! Possible position flags are "dispx", "dispy", "dispz",
   //!                             "velx", "vely", "velz",
   //!                             "accx", "accy", "accz"
+  //!                             "radius"
   virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
 private:
 
   //! our discretisation
-  Teuchos::RCP<DRT::Discretization> strudisc_;
+  Teuchos::RCP<DRT::Discretization> partdisc_;
   // our solution
   //! global displacement DOFs
   Teuchos::RCP<const Epetra_Vector> dis_;
-  //! global material displacement DOFs
-  Teuchos::RCP<const Epetra_Vector> dism_;
   //! global velocity DOFs
   Teuchos::RCP<const Epetra_Vector> vel_;
   //! global acceleration DOFs
   Teuchos::RCP<const Epetra_Vector> acc_;
-  /* NOTE: these have to be present explicitly
-   * as they are not part of the problem instance like in fluid3
-   */
+  //! global radius DOFs
+  Teuchos::RCP<const Epetra_Vector> radius_;
 };
 
-#endif /* #ifndef STRURESULTTEST_H */
+#endif /* #ifndef PARTICLERESULTTEST_H */

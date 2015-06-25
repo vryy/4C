@@ -8111,6 +8111,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   IntParameter("TIME_STEP_SIZE_RATIO",1,"Ration between fluid and particle time step size in cavitation problems",&cavitationdyn);
 
+  BoolParameter("COMPUTE_RADIUS_RP_BASED","no","switch on/off radius calculation based on Ralyeigh-Plesset equation",&cavitationdyn);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& crackdyn = list->sublist("CRACK",false,"");
 

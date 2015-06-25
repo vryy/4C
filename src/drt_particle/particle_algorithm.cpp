@@ -775,6 +775,9 @@ void PARTICLE::Algorithm::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap)
     std::vector<int> bincolmap(bins.begin(),bins.end());
     bincolmap_ = Teuchos::rcp(new Epetra_Map(-1,(int)bincolmap.size(),&bincolmap[0],0,Comm()));
 
+    if(bincolmap_->NumGlobalElements() == 1 && bincolmap_->Comm().NumProc() > 1)
+      dserror("one bin cannot be run in parallel -> reduce CUTOFF_RADIUS");
+
     // create ghosting for bins (each knowing its particle ids)
     particledis_->ExtendedGhosting(*bincolmap_,true,false,true,false);
   }

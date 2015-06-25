@@ -158,6 +158,12 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::EvaluateService(
       return InterpolateVelocityToNode(params, ele, discretization, lm, elevec1, elevec2);
     }
     break;
+    case FLD::interpolate_pressure_to_given_point:
+    {
+      // interpolate pressure to given point
+      return InterpolatePressureToPoint(ele, params, discretization, lm, elevec1);
+    }
+    break;
     case FLD::calc_turbulence_statistics:
     {
       if (nsd_ == 3)
@@ -3404,6 +3410,70 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityToNode(
 
   return 0;
 }
+
+/*---------------------------------------------------------------------*
+ | Action type: interpolate_pressure_to_given_point                    |
+ | calculate pressure at given point                       ghamm 06/15 |
+ *---------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolatePressureToPoint(
+    DRT::ELEMENTS::Fluid*     ele,
+    Teuchos::ParameterList&   params,
+    DRT::Discretization&      discretization,
+    std::vector<int>&         lm,
+    Epetra_SerialDenseVector& elevec1)
+{
+  // coordinates of the current integration point
+  LINALG::Matrix<nsd_,1> elecoords = params.get<LINALG::Matrix<nsd_,1> >("elecoords");
+
+  //----------------------------------------------------------------------------
+  //                         ELEMENT GEOMETRY
+  //----------------------------------------------------------------------------
+
+  // get node coordinates
+  GEO::fillInitialPositionArray<distype,nsd_, LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+  // set element id
+  eid_ = ele->Id();
+
+  if (ele->IsAle())
+  {
+    LINALG::Matrix<nsd_,nen_>       edispnp(true);
+    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &edispnp, NULL,"disp");
+
+    // get new node positions for isale
+     xyze_ += edispnp;
+  }
+
+  // the int point considered is the point given from outside
+  EvalShapeFuncAndDerivsAtIntPoint(elecoords.A(), -1.0);
+
+  //----------------------------------------------------------------------------
+  //   Extract pressure from global vectors and compute pressure at point
+  //----------------------------------------------------------------------------
+
+  static LINALG::Matrix<nen_,1> epre;
+
+  if(discretization.HasState("veln"))
+  {
+    // fill the local element vector with the global values
+    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, NULL, &epre,"veln");
+    elevec1[0] = funct_.Dot(epre);
+  }
+
+  if(discretization.HasState("velnp"))
+  {
+    // fill the local element vector with the global values
+    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, NULL, &epre,"velnp");
+
+    if (elevec1.Length() != 2)
+      dserror("velnp is set, there must be a veln as well");
+
+    elevec1[1] = funct_.Dot(epre);
+  }
+
+  return 0;
+}
+
 /*-----------------------------------------------------------------------------*
  | Calculate channel statistics                                     bk 05/2014 |
  *-----------------------------------------------------------------------------*/

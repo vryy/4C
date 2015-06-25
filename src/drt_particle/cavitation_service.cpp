@@ -1,8 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file cavitation_algorithm.cpp
+\file cavitation_service.cpp
 
-\brief Algorithm to control cavitation simulations
+\brief Helper methods for cavitation simulations
 
 <pre>
 Maintainer: Georg Hammerl
@@ -1146,6 +1146,66 @@ void CAVITATION::Algorithm::AssignSmallBubbles(
   }
 
   return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | get underlying element as well as position in element space          |
+ |                                                          ghamm 06/15 |
+ *----------------------------------------------------------------------*/
+DRT::Element* CAVITATION::Algorithm::GetEleCoordinatesFromPosition(
+  LINALG::Matrix<3,1>& myposition,          ///< position
+  DRT::MESHFREE::MeshfreeMultiBin* currbin, ///< corresponding bin
+  LINALG::Matrix<3,1>& elecoord,            ///< matrix to be filled with particle coordinates in element space
+  const bool approxelecoordsinit            ///< bool whether an inital approx. of the ele coords is used
+  )
+{
+  // variables to store information about element in which the particle is located
+  DRT::Element* targetfluidele = NULL;
+  elecoord.Clear();
+
+  DRT::Element** fluidelesinbin = currbin->AssociatedFluidEles();
+  int numfluidelesinbin = currbin->NumAssociatedFluidEle();
+
+  std::set<int>::const_iterator eleiter;
+  // search for underlying fluid element with fast search if desired
+  for(int ele=0; ele<numfluidelesinbin; ++ele)
+  {
+    DRT::Element* fluidele = fluidelesinbin[ele];
+    const LINALG::SerialDenseMatrix xyze(GEO::InitialPositionArray(fluidele));
+
+    //get coordinates of the particle position in parameter space of the element
+    bool insideele = GEO::currentToVolumeElementCoordinates(fluidele->Shape(), xyze, myposition, elecoord, approxelecoordsinit);
+
+    if(insideele == true)
+    {
+      targetfluidele = fluidele;
+      // leave loop over all fluid eles in bin
+      break;
+    }
+  }
+
+  // repeat search for underlying fluid element with standard search in case nothing was found
+  if(targetfluidele == NULL and approxelecoordsinit == true)
+  {
+    for(int ele=0; ele<numfluidelesinbin; ++ele)
+    {
+      DRT::Element* fluidele = fluidelesinbin[ele];
+      const LINALG::SerialDenseMatrix xyze(GEO::InitialPositionArray(fluidele));
+
+      //get coordinates of the particle position in parameter space of the element
+      bool insideele = GEO::currentToVolumeElementCoordinates(fluidele->Shape(), xyze, myposition, elecoord, false);
+
+      if(insideele == true)
+      {
+        targetfluidele = fluidele;
+        // leave loop over all fluid eles in bin
+        break;
+      }
+    }
+  }
+
+  return targetfluidele;
 }
 
 

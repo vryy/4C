@@ -5,23 +5,21 @@
 // 089/289-15237
 //
 ==================================================================
-General Data File BACI
+                  General Data File BACI
 ==================================================================
------------------------------------------------------------------------TITLE
-single air bubble rising due to buoyancy in water
-walls with slip condition and Krylov projection for pressure
-----------------------------------------------------------------PROBLEM SIZE
-//ELEMENTS                      500
-//NODES                         756
-DIM                             3
+-------------------------------------------------------------TITLE
+created by pre_exodus
+------------------------------------------------------PROBLEM SIZE
+//ELEMENTS    832
+//NODES       1134
+DIM           3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Cavitation
-//RESTART                         18
+//RESTART                         150
 --------------------------------------------------------------------------IO
-FILESTEPS                       10000
+FILESTEPS                       1000
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
-STRUCT_STRESS                   No
 FLUID_SOL                       No
 FLUID_STRESS                    No
 FLUID_VIS                       No
@@ -30,33 +28,34 @@ WRITE_TO_FILE                   No
 LIMIT_OUTP_TO_PROC              -1
 --------------------------------------------------------------------MESHFREE
 TYPE                            Particle
-CUTOFF_RADIUS                   1.0
+CUTOFF_RADIUS                   0.03
 ----------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYP                      CentrDiff
-GRAVITY_ACCELERATION            0.0 0.0 -980.0
 ----------------------------------------------------------CAVITATION DYNAMIC
+COMPUTE_RADIUS_RP_BASED         yes
 COUPALGO                        cavitation_twowayfull
-UPRES                           5
-RESTARTEVRY                     18
-TIMESTEP                        5.0e-3
-NUMSTEP                         20
-MAXTIME                         5.0
-SIMPLIFIED_BUBBLE_FORCES        Yes
-VOIDFRAC_PROJ_SOLVER            2
+UPRES                           1
+RESTARTEVRY                     50
+TIMESTEP                        5.0e-7
+NUMSTEP                         200
+MAXTIME                         0.00035
+TIME_STEP_SIZE_RATIO            1
 VOID_FRACTION_CALC              analytical_quadraticpoly
+VOIDFRAC_PROJ_SOLVER            2
 NUM_GP_VOID_FRACTION            6
+SIMPLIFIED_BUBBLE_FORCES        Yes
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
 ADAPTCONV                       yes
-ADAPTCONV_BETTER                0.01
-ALPHA_M                         0.83333333333333
-ALPHA_F                         0.66666666666666
-GAMMA                           0.66666666666666
+ADAPTCONV_BETTER                0.1
+ALPHA_F                         1.0                           // 0.666666
+ALPHA_M                         1.0                           // 0.833333
+GAMMA                           0.66
 CONVCHECK                       L_2_norm
 CONVFORM                        convective
-CONVTOL                         1e-8
+CONVTOL                         1e-06
 GEOMETRY                        box
-ITEMAX                          10
+ITEMAX                          5
 MAXTIME                         0.5
 NONLINITER                      Newton
 NUMSTEP                         8
@@ -65,11 +64,14 @@ PREDICTOR                       steady_state
 RESTARTEVRY                     20
 STARTFUNCNO                     1
 TIMEINTEGR                      Af_Gen_Alpha
+TIMESTEP                        0.05
+UPRES                           1
 INITIALFIELD                    field_by_function
+VELGRAD_PROJ_SOLVER             9
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
 GRAD_DIV                        yes
-DEFINITION_TAU Taylor_Hughes_Zarins_Whiting_Jansen //Franca_Barrenechea_Valentin_Frey_Wall
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen
 PSPG                            yes
 STABTYPE                        residual_based
 SUPG                            yes
@@ -79,13 +81,13 @@ NAME                            Fluid_Solver
 SOLVER                          Aztec_MSR                     // UMFPACK //Aztec_MSR // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        0                             // output every so often, 0 no output
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          ILU                           // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
+AZPREC                          ML                            // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
 AZREUSE                         0                             // how often to recompute some preconditioners
 AZDROP                          0.0                           // drop tolerance for ILUT
 IFPACKFILL                      1.0
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
-AZTOL                           1.0E-10                       // tolerance in (un)scaled residual
+AZTOL                           1.0E-5                        // tolerance in (un)scaled residual
 AZCONV                          AZ_r0                         // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 AZITER                          1000                          // max iterations
 AZSUB                           1000                          // size of krylov space for gmres
@@ -111,10 +113,47 @@ ML_DAMPCOARSE                   1.0                           // damping coarse 
 --------------------------------------------------------------------SOLVER 2
 NAME                            L2_projection solver for void fraction projection
 SOLVER                          UMFPACK
+--------------------------------------------------------------------SOLVER 9
+NAME                            L2-projection solver for velocity gradient
+SOLVER                          Belos                         // Aztec_MSR SPOOLES_nonsym Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+AZOUTPUT                        5                             // output every so often, 0 no output
+AZSOLVE                         CG                            // CG GMRES CGS BiCGSTAB LU TFQMR
+AZPREC                          ILU                           // none ML MLFLUID MLFLUID2 ILU ILUT ICC LU Jacobi SymmGaussSeidel Least_Squares Neumann
+AZREUSE                         8                             // how often to recompute some preconditioners
+AZDROP                          0.0                           // drop tolerance for ILUT
+IFPACKFILL                      1.0                           // fill-in for ILUT
+IFPACKGFILL                     0                             // graph fill for ILU
+AZTOL                           1.0E-6                        // tolerance in unscaled residual
+AZITER                          60                            // max iterations
+AZSUB                           25                            // size of krylov space for gmres
+AZOMEGA                         1.0                           // unused
+AZGRAPH                         1                             // unused
+AZPOLY                          5                             // polynomial order for Neumann
+IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
+AZSCAL                          none                          // none sym infnorm scaling of the system
+AZCONV                          AZ_r0                         // AZ_r0 AZ_noscaled AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZTECOO_conv_test AZ_inf_noscaled
+ML_PRINT                        0                             // ML print-out level (0-10)
+ML_MAXCOARSESIZE                5000                          // ML stop coarsening when coarse ndof smaller then this
+ML_MAXLEVEL                     3                             // ML max number of levels
+ML_COARSEN                      UC                            // UC MIS METIS VBMETIS
+ML_AGG_SIZE                     27                            // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
+ML_PROLONG_SMO                  1.33                          // damping factor for prolongator smoother (usually 1.33 or 0.0)
+ML_PROLONG_THRES                0.0                           // threshold for prolongator smoother/aggregation
+ML_SMOOTHERFINE                 SGS                           // SGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERMED                  SGS                           // SGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERCOARSE               KLU                           // SGS Jacobi Chebychev MLS KLU Superlu
+ML_SMOTIMES                     2 3 1                         // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_DAMPFINE                     0.89                          // damping fine grid
+ML_DAMPMED                      1.0                           // damping med grids
+ML_DAMPCOARSE                   1.0                           // damping coarse grid
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_cavitation DYNVISCOSITY 3.73 DENSITY 0.970 GAMMA 0.0 PVAPOR 0.0
-MAT 2 MAT_Particle DENSITY 1.120 INITRADIUS 0.75 NUE 0.0 YOUNG 1.0
+MAT 1 MAT_cavitation DYNVISCOSITY 0.798e-3 DENSITY 996.0 GAMMA 0.072 PVAPOR 4240.0
+MAT 2 MAT_Particle DENSITY 1.120 INITRADIUS 1.0e-5 NUE 0.0 YOUNG 1.0
 ----------------------------------------------------------------------CURVE1
+CURVE1 on EXPR FUNC -2.6e9*t+12000.0                                        t1 0.0 t2 0.000005 // linear decrease from 12000 to -1000 in [0,0.000005]s  /////-2.6e9*t+12000
+CURVE1 on EXPR FUNC -1000.0                                                 t1 0.000005 t2 0.000007 // constant value of -1000 in [0.000005,0.000007]s
+CURVE1 on EXPR FUNC 928571428.6*t-7500.0                                    t1 0.000007 t2 0.000021 // linear increase from -1000 to 12000 in [0.000007,0.000021]s
+CURVE1 on EXPR FUNC 12000.0                                                 t1 0.000021 t2 0.00035 // constant value of 12000 in [0.000021,0.00035]s
 ----------------------------------------------------------------------CURVE2
 ----------------------------------------------------------------------CURVE3
 ----------------------------------------------------------------------CURVE4
@@ -122,74 +161,37 @@ MAT 2 MAT_Particle DENSITY 1.120 INITRADIUS 0.75 NUE 0.0 YOUNG 1.0
 FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0
 FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
 FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 15209.6-950.6*z  // p_init = \rho_fl * g * z + offset
+FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 12000.0  // initial pressure identical to CURVE1
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 2954 QUANTITY velx VALUE -1.46306849041322795e-01 TOLERANCE 1.000e-12
-FLUID DIS fluid NODE 2954 QUANTITY vely VALUE -1.46306849041350412e-01 TOLERANCE 1.000e-12
-FLUID DIS fluid NODE 2954 QUANTITY velz VALUE -1.11739774887106930e-01 TOLERANCE 1.000e-12
-FLUID DIS fluid NODE 2954 QUANTITY pressure VALUE  3.80893260609727258e+03 TOLERANCE 1.000e-06
-FLUID DIS fluid NODE 2736 QUANTITY velx VALUE  1.20984738469329028e-01 TOLERANCE 1.000e-12
-FLUID DIS fluid NODE 2736 QUANTITY vely VALUE  1.20984738469326045e-01 TOLERANCE 1.000e-12
-FLUID DIS fluid NODE 2736 QUANTITY velz VALUE -1.83963891541306962e-01 TOLERANCE 1.000e-12
-FLUID DIS fluid NODE 2736 QUANTITY pressure VALUE  4.76163134191361223e+03 TOLERANCE 1.000e-06
-FLUID DIS fluid ELEMENT 288 QUANTITY fluidfraction VALUE  9.44374302013311739e-01 TOLERANCE 1.000e-12
-FLUID DIS fluid ELEMENT 313 QUANTITY fluidfraction VALUE  6.69720794570445421e-01 TOLERANCE 1.000e-12
-FLUID DIS fluid ELEMENT 338 QUANTITY fluidfraction VALUE  9.44118436505179126e-01 TOLERANCE 1.000e-12
-PARTICLE DIS particle NODE 1 QUANTITY dispx VALUE 5.0 TOLERANCE 1.000e-12
-PARTICLE DIS particle NODE 1 QUANTITY dispy VALUE 5.0 TOLERANCE 1.000e-12
-PARTICLE DIS particle NODE 1 QUANTITY dispz VALUE 1.24809128554499029e+01  TOLERANCE 1.000e-12
-PARTICLE DIS particle NODE 1 QUANTITY velx VALUE 0.0 TOLERANCE 1.000e-12
-PARTICLE DIS particle NODE 1 QUANTITY vely VALUE 0.0 TOLERANCE 1.000e-12
-PARTICLE DIS particle NODE 1 QUANTITY velz VALUE -3.94153189570029872e+00 TOLERANCE 1.000e-12
+-------------------------------------------------RESULT DESCRIPTION
+PARTICLE DIS particle NODE 1 QUANTITY dispx VALUE 0.05 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 1 QUANTITY dispy VALUE 0.05 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 1 QUANTITY dispz VALUE 0.05 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 1 QUANTITY radius VALUE 1.07172430458623963e-05 TOLERANCE 1.0e-12
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  0
 NDSURF  6
 NDVOL   1
-NDPARTICLE  0
--------------------------------------DESIGN VOL NEUMANN CONDITIONS
+NDPARTICLE  1
+-------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL   1
-// fluid_volume
-E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -980.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Dead
-------------------------------------DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION
-DVOL 1
-// fluid_volume
-E 1 - fluid NUMMODES 4 ONOFF 0 0 0 1 integration
--------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF  6
-// neg_x_surface
-E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-// pos_x_surface
-E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-// neg_y_surface
-E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-// pos_y_surface
-E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-// neg_z_surface
-E 5 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-// pos_z_surface
-E 6 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+// prescribe pressure on fluid_volume
+E 1 - NUMDOF 4 ONOFF 1 1 1 1 VAL 0.0 0.0 0.0 1.0 CURVE none none none 1 FUNCT 0 0 0 0
 -----------------------------------------------------DPARTICLE-NODE TOPOLOGY
 -----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
-SIDE fluid x- DSURFACE 1
-SIDE fluid x+ DSURFACE 2
-SIDE fluid y- DSURFACE 3
-SIDE fluid y+ DSURFACE 4
-SIDE fluid z- DSURFACE 5
-SIDE fluid z+ DSURFACE 6
 ------------------------------------------------DVOL-NODE TOPOLOGY
 VOLUME fluid DVOL 1
 -------------------------------------------------------NODE COORDS
-PARTICLE 1      COORD   5.0000000000000000e+00  5.0000000000000000e+00  1.2750000000000000e+01
+PARTICLE 1      COORD   0.0500000000000000e+00  0.0500000000000000e+00  0.050000000000e+00
 ----------------------------------------------------------FLUID DOMAIN
 LOWER_BOUND 0.0 0.0 0.0
-UPPER_BOUND 10.0 10.0 16.0
-INTERVALS   5 5 16
+UPPER_BOUND 0.1 0.1 0.1
+INTERVALS   3 3 3
 ELEMENTS    FLUID HEX8 MAT 1 NA Euler GP 2 2 2
 ---------------------------------------------------------------END
-
+// END

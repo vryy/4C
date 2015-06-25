@@ -34,19 +34,13 @@ Maintainer: Georg Hammerl
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils_parallel.H"
 
-#include "../drt_mortar/mortar_utils.H"
-#include "../drt_mortar/mortar_coupling3d_classes.H"
-
 #include "../drt_geometry/searchtree.H"
 #include "../drt_geometry/searchtree_geometry_service.H"
 #include "../drt_geometry/intersection_math.H"
 #include "../drt_geometry/element_coordtrafo.H"
 #include "../drt_geometry/position_array.H"
 #include "../drt_geometry/element_volume.H"
-#include "../drt_cut/cut_position.H"
 #include "../linalg/linalg_utils.H"
-#include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_solver.H"
 
 #include "../drt_inpar/inpar_cavitation.H"
 #include "../drt_io/io.H"
@@ -63,6 +57,7 @@ CAVITATION::Algorithm::Algorithm(
   const Epetra_Comm& comm,
   const Teuchos::ParameterList& params
   ) : PARTICLE::Algorithm(comm,params),
+  dim_(3),
   coupalgo_(DRT::INPUT::IntegralValue<INPAR::CAVITATION::CouplingStrategyOverFields>(params,"COUPALGO")),
   void_frac_strategy_(DRT::INPUT::IntegralValue<INPAR::CAVITATION::VoidFractionCalculation>(params,"VOID_FRACTION_CALC")),
   gauss_rule_per_dir_(params.get<int>("NUM_GP_VOID_FRACTION")),
@@ -73,7 +68,10 @@ CAVITATION::Algorithm::Algorithm(
   fluid_(Teuchos::null),
   ele_volume_(Teuchos::null),
   fluidfracn_(Teuchos::null),
-  fluidfracnp_(Teuchos::null)
+  fluidfracnp_(Teuchos::null),
+  computeradiusRPbased_((bool)DRT::INPUT::IntegralValue<int>(params,"COMPUTE_RADIUS_RP_BASED")),
+  dtsub_(Teuchos::null),
+  pg0_(Teuchos::null)
 {
   // setup fluid time integrator
   fluiddis_ = DRT::Problem::Instance()->GetDis("fluid");
@@ -95,8 +93,7 @@ CAVITATION::Algorithm::Algorithm(
     const std::vector<int>*    onoff = condition[0]->Get<std::vector<int> >   ("onoff");
     const std::vector<double>* val   = condition[0]->Get<std::vector<double> >("val"  );
 
-    const int dim = 3;
-    for(int i=0; i<dim; ++i)
+    for(int i=0; i<dim_; ++i)
     {
       if(gravity_acc_(i) != (*val)[i])
         dserror("body force for particles does not match body force for fluid");
@@ -154,6 +151,9 @@ CAVITATION::Algorithm::Algorithm(
 
   if(timestepsizeratio_ < 1)
     dserror("fluid time step must be a multiplicative greater or equal unity. Your choice: %d", timestepsizeratio_);
+
+  if(computeradiusRPbased_ && myrank_ == 0)
+    IO::cout << "Radius is adapted based on Rayleigh-Plesset equation" << IO::endl;
 
   return;
 }
@@ -255,7 +255,8 @@ void CAVITATION::Algorithm::InitCavitation()
   // adapt time step properties for particles in case of independent time stepping
   Teuchos::RCP<Teuchos::ParameterList> adaptedcavitationdyn = Teuchos::rcp(new Teuchos::ParameterList(cavitationdyn));
 
-  adaptedcavitationdyn->set<double>("TIMESTEP", cavitationdyn.get<double>("TIMESTEP") / (double)timestepsizeratio_);
+  const double bubbletimestep = cavitationdyn.get<double>("TIMESTEP") / (double)timestepsizeratio_;
+  adaptedcavitationdyn->set<double>("TIMESTEP", bubbletimestep);
   adaptedcavitationdyn->set<int>("NUMSTEP", timestepsizeratio_ * cavitationdyn.get<int>("NUMSTEP"));
   adaptedcavitationdyn->set<int>("RESTARTEVRY", timestepsizeratio_ * cavitationdyn.get<int>("RESTARTEVRY"));
   adaptedcavitationdyn->set<int>("UPRES", timestepsizeratio_ * cavitationdyn.get<int>("UPRES"));
@@ -307,11 +308,124 @@ void CAVITATION::Algorithm::InitCavitation()
   CalculateAndApplyForcesToParticles();
   particles_->DetermineMassDampConsistAccel();
 
+  if(computeradiusRPbased_ == true)
+  {
+    // determine initial pressure and radius for radius adaption based on Rayleigh-Plesset equ.
+    pg0_ = LINALG::CreateVector(*particledis_->NodeRowMap(), false);
+    InitBubblePressure();
+    // init individual time step size for bubble radius adaption (will be corrected if too large)
+    dtsub_ = LINALG::CreateVector(*particledis_->NodeRowMap(), false);
+    dtsub_->PutScalar(1.0e-2*bubbletimestep);
+  }
+
   // some output
   if (myrank_ == 0)
     IO::cout << "after ghosting" << IO::endl;
   DRT::UTILS::PrintParallelDistribution(*particledis_);
   DRT::UTILS::PrintParallelDistribution(*fluiddis_);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | initialize bubble pressure                              ghamm 06/15  |
+ *----------------------------------------------------------------------*/
+void CAVITATION::Algorithm::InitBubblePressure()
+{
+  // extract variables
+  Teuchos::RCP<const Epetra_Vector> bubblepos = particles_->Dispn();
+  Teuchos::RCP<Epetra_Vector> bubbleradius0 = particles_->WriteAccessRadius0();
+  Teuchos::RCP<Epetra_Vector> bubbleradiusdot = particles_->WriteAccessRadiusDot();
+  Teuchos::RCP<const Epetra_Vector> bubbleradiusn = particles_->Radius();
+  Teuchos::RCP<const Epetra_Vector> veln = Teuchos::rcp(new Epetra_Vector(*fluid_->Veln()));
+
+  // set state for pressure evaluation in fluid
+  fluiddis_->SetState("veln",veln);
+
+  // get cavitation material
+  int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_cavitation);
+  if (id == -1)
+    dserror("no cavitation fluid material specified");
+  const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+  const MAT::PAR::CavitationFluid* actmat = static_cast<const MAT::PAR::CavitationFluid*>(mat);
+  // get surface tension and vapor pressure
+  const double gamma = actmat->gamma_;
+  const double pvapor = actmat->p_vapor_;
+
+  // define element matrices and vectors
+  Epetra_SerialDenseMatrix elemat1;
+  Epetra_SerialDenseMatrix elemat2;
+  Epetra_SerialDenseVector elevec1;
+  Epetra_SerialDenseVector elevec2;
+  Epetra_SerialDenseVector elevec3;
+
+  // Reshape element vector for pressure contribution
+  elevec1.Size(1);
+
+  // correct initialization of bubble states for variable radius
+  for(int i=0; i<particledis_->NodeRowMap()->NumMyElements(); ++i)
+  {
+    // set values here and overwrite in case of restart later
+    double r0_bub = (*bubbleradiusn)[i];
+    (*bubbleradius0)[i] = r0_bub;
+    (*bubbleradiusdot)[i] = 0.0;
+
+    // bubble position is needed to get current ambient pressure for that bubble
+    DRT::Node* currparticle = particledis_->lRowNode(i);
+    // fill particle position
+    static LINALG::Matrix<3,1> particleposition;
+    std::vector<int> lm_b = particledis_->Dof(currparticle);
+    int posx = bubblepos->Map().LID(lm_b[0]);
+    for (int d=0; d<dim_; ++d)
+      particleposition(d) = (*bubblepos)[posx+d];
+
+    // state vector of fluid has already been set earlier ("veln")
+    ComputePressureAtBubblePosition(currparticle, particleposition, elemat1, elemat2, elevec1, elevec2, elevec3);
+    const double pambient0 = elevec1[0];
+
+    // compute initial equilibrium bubble gas partial pressure
+    (*pg0_)[i] = pambient0 - pvapor + 2.0*gamma/r0_bub;
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | compute pressure at bubble position                     ghamm 06/15  |
+ *----------------------------------------------------------------------*/
+void CAVITATION::Algorithm::ComputePressureAtBubblePosition(
+  DRT::Node* currparticle,
+  LINALG::Matrix<3,1>& particleposition,
+  Epetra_SerialDenseMatrix& elemat1,
+  Epetra_SerialDenseMatrix& elemat2,
+  Epetra_SerialDenseVector& elevec1,
+  Epetra_SerialDenseVector& elevec2,
+  Epetra_SerialDenseVector& elevec3)
+{
+  // find out in which fluid element the current particle is located
+  if(currparticle->NumElement() != 1)
+    dserror("ERROR: A particle is assigned to more than one bin!");
+  DRT::Element** currele = currparticle->Elements();
+  DRT::MESHFREE::MeshfreeMultiBin* currbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currele[0]);
+
+  static LINALG::Matrix<3,1> elecoord(false);
+  DRT::Element* targetfluidele = GetEleCoordinatesFromPosition(particleposition, currbin, elecoord, approxelecoordsinit_);
+
+  // get element location vector and ownerships
+  std::vector<int> lm_f;
+  std::vector<int> lmowner_f;
+  std::vector<int> lmstride;
+  targetfluidele->LocationVector(*fluiddis_,lm_f,lmowner_f,lmstride);
+
+  // set action in order to compute pressure -> state with name "veln" (and "velnp") expected inside
+  Teuchos::ParameterList params;
+  params.set<int>("action",FLD::interpolate_pressure_to_given_point);
+  params.set<LINALG::Matrix<3,1> >("elecoords", elecoord);
+
+  // call the element specific evaluate method (elevec1 = fluid press)
+  targetfluidele->Evaluate(params,*fluiddis_,lm_f,elemat1,elemat2,elevec1,elevec2,elevec3);
 
   return;
 }
@@ -353,6 +467,8 @@ void CAVITATION::Algorithm::Integrate()
       CalculateFluidFraction();
       SetFluidFraction();
     }
+    TEUCHOS_FUNC_TIME_MONITOR("CAVITATION::Algorithm::IntegrateFluid");
+    fluid_->Solve();
   }
   else
   {
@@ -361,14 +477,14 @@ void CAVITATION::Algorithm::Integrate()
       IO::cout << "particle substep no. " << (particles_->StepOld() % timestepsizeratio_)+1 << IO::endl;
   }
 
+  if(computeradiusRPbased_ == true)
+  {
+    // update bubble radius
+    ComputeRadius();
+  }
+
   // apply forces and solve particle time step
   PARTICLE::Algorithm::Integrate();
-
-  if(particles_->StepOld() % timestepsizeratio_ == 0)
-  {
-    TEUCHOS_FUNC_TIME_MONITOR("CAVITATION::Algorithm::IntegrateFluid");
-    fluid_->Solve();
-  }
 
   return;
 }
@@ -405,18 +521,17 @@ void CAVITATION::Algorithm::SetFluidFraction()
 void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
 {
   TEUCHOS_FUNC_TIME_MONITOR("CAVITATION::Algorithm::CalculateAndApplyForcesToParticles");
-  const int dim = 3;
 
   fluiddis_->ClearState();
   particledis_->ClearState();
 
+  Teuchos::RCP<Epetra_Vector> velnp = Teuchos::rcp(new Epetra_Vector(*fluid_->Velnp()));
   Teuchos::RCP<Epetra_Vector> veln = Teuchos::rcp(new Epetra_Vector(*fluid_->Veln()));
-  Teuchos::RCP<Epetra_Vector> velnm = Teuchos::rcp(new Epetra_Vector(*fluid_->Velnm()));
   // compute acceleration
-  Teuchos::RCP<Epetra_Vector> acc = Teuchos::rcp(new Epetra_Vector(*veln));
-  acc->Update(-1.0/Dt(), *velnm, 1.0/Dt());
+  Teuchos::RCP<Epetra_Vector> acc = Teuchos::rcp(new Epetra_Vector(*velnp));
+  acc->Update(-1.0/Dt(), *veln, 1.0/Dt());
 
-  Teuchos::RCP<Epetra_Vector> vel = Teuchos::rcp(new Epetra_Vector(*veln));
+  Teuchos::RCP<Epetra_Vector> vel = Teuchos::rcp(new Epetra_Vector(*velnp));
 
   Teuchos::ParameterList p;
   if(!simplebubbleforce_)
@@ -494,17 +609,13 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     static LINALG::Matrix<3,1> particleposition(false);
     std::vector<int> lm_b = particledis_->Dof(currparticle);
     int posx = bubblepos->Map().LID(lm_b[0]);
-    for (int d=0; d<dim; ++d)
+    for (int d=0; d<dim_; ++d)
       particleposition(d) = (*bubblepos)[posx+d];
 
 
     //--------------------------------------------------------------------
     // 1st step: element coordinates of particle position in fluid element
     //--------------------------------------------------------------------
-
-    // variables to store information about element in which the particle is located
-    DRT::Element* targetfluidele = NULL;
-    static LINALG::Matrix<3,1> elecoord(false);
 
     // find out in which fluid element the current particle is located
     if(currparticle->NumElement() != 1)
@@ -515,47 +626,9 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     if(test == NULL) dserror("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeMultiBin failed");
 #endif
     DRT::MESHFREE::MeshfreeMultiBin* currbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currele[0]);
-    DRT::Element** fluidelesinbin = currbin->AssociatedFluidEles();
-    int numfluidelesinbin = currbin->NumAssociatedFluidEle();
 
-    std::set<int>::const_iterator eleiter;
-    // search for underlying fluid element with fast search if desired
-    for(int ele=0; ele<numfluidelesinbin; ++ele)
-    {
-      DRT::Element* fluidele = fluidelesinbin[ele];
-      const LINALG::SerialDenseMatrix xyze(GEO::InitialPositionArray(fluidele));
-
-      //get coordinates of the particle position in parameter space of the element
-      bool insideele = GEO::currentToVolumeElementCoordinates(fluidele->Shape(), xyze, particleposition, elecoord, approxelecoordsinit_);
-
-      if(insideele == true)
-      {
-        targetfluidele = fluidele;
-        // leave loop over all fluid eles in bin
-        break;
-      }
-    }
-
-    // repeat search for underlying fluid element with standard search in case nothing was found
-    if(targetfluidele == NULL and approxelecoordsinit_ == true)
-    {
-      for(int ele=0; ele<numfluidelesinbin; ++ele)
-      {
-        DRT::Element* fluidele = fluidelesinbin[ele];
-        const LINALG::SerialDenseMatrix xyze(GEO::InitialPositionArray(fluidele));
-
-        //get coordinates of the particle position in parameter space of the element
-        bool insideele = GEO::currentToVolumeElementCoordinates(fluidele->Shape(), xyze, particleposition, elecoord, false);
-
-        if(insideele == true)
-        {
-          targetfluidele = fluidele;
-          // leave loop over all fluid eles in bin
-          break;
-        }
-      }
-    }
-
+    static LINALG::Matrix<3,1> elecoord(false);
+    DRT::Element* targetfluidele = GetEleCoordinatesFromPosition(particleposition, currbin, elecoord, approxelecoordsinit_);
 
     //--------------------------------------------------------------------
     // 2nd step: forces on this bubble are calculated
@@ -566,12 +639,13 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
       std::cout << "INFO: currparticle with Id: " << currparticle->Id() << " and position: " << particleposition(0) << " "
           << particleposition(1) << " " << particleposition(2) << " " << " does not have an underlying fluid element -> no forces calculated" << std::endl;
 
-      std::vector<double> tmpposition(dim);
-      for(int d=0; d<dim; ++d)
+      std::vector<double> tmpposition(dim_);
+      for(int d=0; d<dim_; ++d)
         tmpposition[d] = particleposition(d);
       int bubbleBinId = ConvertPosToGid(tmpposition);
+
       std::cout << "particle is in binId: " << bubbleBinId << " while currbin->Id() is " << currbin->Id() <<
-          " . The following number of fluid eles is in this bin:" << numfluidelesinbin << std::endl;
+          " . The following number of fluid eles is in this bin:" << currbin->NumAssociatedFluidEle() << std::endl;
 
       // do not assemble forces for this bubble and continue with next bubble
       continue;
@@ -584,9 +658,9 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     targetfluidele->LocationVector(*fluiddis_,lm_f,lmowner_f,lmstride);
 
     // Reshape element matrices and vectors and initialize to zero
-    elevector1.Size(dim);
-    elevector2.Size(dim);
-    elevector3.Size(dim);
+    elevector1.Size(dim_);
+    elevector2.Size(dim_);
+    elevector3.Size(dim_);
 
     // set action in order to calculate the velocity and material derivative of the velocity
     Teuchos::ParameterList params;
@@ -599,8 +673,8 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     if(!simplebubbleforce_)
     {
       // Reshape element matrices and vectors and initialize to zero
-      elevector4.Size(dim);
-      elevector5.Size(dim);
+      elevector4.Size(dim_);
+      elevector5.Size(dim_);
 
       // set action in order to calculate the pressure gradient and divergence of the stress tensor
       Teuchos::ParameterList params_surfintegrals(p);
@@ -620,7 +694,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
 
     // bubble Reynolds number
     static LINALG::Matrix<3,1> v_rel(false);
-    for (int d=0; d<dim; ++d)
+    for (int d=0; d<dim_; ++d)
       v_rel(d) = elevector1[d] - v_bub[d];
 
     const double v_relabs = v_rel.Norm2();
@@ -671,7 +745,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     const double c_l = 0.5;
     const double vol_b = 4.0 / 3.0 * M_PI * r_bub * r_bub* r_bub;
     static LINALG::Matrix<3,1> rot_u(false);
-    for (int d=0; d<dim; ++d)
+    for (int d=0; d<dim_; ++d)
       rot_u(d) = elevector3(d);
 
     LINALG::Matrix<3,1> liftforce = GEO::computeCrossProduct(v_rel, rot_u);
@@ -687,7 +761,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
 
     // material fluid acceleration at bubble position
     static LINALG::Matrix<3,1> Du_Dt(false);
-    for (int d=0; d<dim; ++d)
+    for (int d=0; d<dim_; ++d)
       Du_Dt(d) = elevector2[d];
 
     if(simplebubbleforce_)
@@ -710,7 +784,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
 
       static LINALG::Matrix<3,1> grad_p(false);
       static LINALG::Matrix<3,1> visc_stress(false);
-      for (int d=0; d<dim; ++d)
+      for (int d=0; d<dim_; ++d)
       {
         grad_p(d) = elevector4[d];
         visc_stress(d) = elevector5[d];
@@ -759,7 +833,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     {
       // extract dbc accelerations
       static LINALG::Matrix<3,1> Dv_Dt(false);
-      for (int d=0; d<dim; ++d)
+      for (int d=0; d<dim_; ++d)
         Dv_Dt(d) = (*bubbleacc)[posx+d];
 
       // compute bubble force
@@ -771,7 +845,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     // rough safety check whether chosen time step is within stability criterion
     // of explicit time integration scheme: acc * \Delta t < v_rel (*safety factor 0.5)
     const double invmass = 1.0 / (vol_b * rho_b);
-    for(int d=0; d<dim; ++d)
+    for(int d=0; d<dim_; ++d)
     {
       // ignore case with v_rel close to zero
       const double acc = bubbleforce(d) *invmass;
@@ -802,7 +876,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
 
     // assemble of bubble forces (note: row nodes evaluated)
     static Epetra_SerialDenseVector forcecurrbubble(3);
-    for(int d=0; d<dim; ++d)
+    for(int d=0; d<dim_; ++d)
       forcecurrbubble[d] = bubbleforce(d);
     std::vector<int> lmowner_b(lm_b.size(), myrank_);
     LINALG::Assemble(*bubbleforces,forcecurrbubble,lm_b,lmowner_b);
@@ -829,16 +903,16 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
       DRT::UTILS::shape_function_3D(funct,elecoord(0),elecoord(1),elecoord(2),targetfluidele->Shape());
       // prepare assembly for fluid forces (pressure degrees do not have to be filled)
 
-      const int numdofperfluidele = numnode*(dim+1);
+      const int numdofperfluidele = numnode*(dim_+1);
       double val[numdofperfluidele];
       for(int iter=0; iter<numnode; ++iter)
       {
-        for(int d=0; d<dim; ++d)
+        for(int d=0; d<dim_; ++d)
         {
-          val[iter*(dim+1) + d] = funct[iter] * couplingforce(d);
+          val[iter*(dim_+1) + d] = funct[iter] * couplingforce(d);
         }
         // no contribution on pressure dof
-        val[iter*(dim+1) + 3] = 0.0;
+        val[iter*(dim_+1) + 3] = 0.0;
       }
       // do assembly of bubble forces on fluid
       int err = fluidforces->SumIntoGlobalValues(numdofperfluidele, &lm_f[0], &val[0]);
@@ -885,7 +959,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
       {
         static LINALG::Matrix<3,1> grad_p(false);
         static LINALG::Matrix<3,1> visc_stress(false);
-        for (int d=0; d<dim; ++d)
+        for (int d=0; d<dim_; ++d)
         {
           grad_p(d) = elevector4[d];
           visc_stress(d) = elevector5[d];
@@ -962,6 +1036,335 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
   }
 
   return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | calculate radius based on RP equation                   ghamm 06/15  |
+ *----------------------------------------------------------------------*/
+void CAVITATION::Algorithm::ComputeRadius()
+{
+  // unit conversion for integrating bubble radius in order to account for
+  // fast changes of small bubbles
+  // --> TODO: are these units general enough?
+  const double LENGTHSCALE = 1.0e6;   // [m] = 1.0e6 [µm] // m -> µm
+  const double TIMESCALE = 1.0e9;     // [s] = 1.0e9 [ns] //s -> ns
+  const double WEIGHTSCALE = 1.0e15;  // [kg] = 1.0e15 [pg]  //kg -> pg
+
+  // end of bubble time step
+  const double particle_timenp = particles_->Time()*TIMESCALE;
+  double subtime = particles_->TimeOld()*TIMESCALE;
+
+  // set min/max value of time step sizes allowed during adaptation
+  // --> TODO: are these bounds general enough?
+  const double dt_min = 1.0e-12*TIMESCALE;
+  const double dt_max = 1.0e-6*TIMESCALE;
+
+  // get needed variables for RP equation for all particles
+  Teuchos::RCP<const Epetra_Vector> bubblepos = particles_->Dispn();
+  Teuchos::RCP<const Epetra_Vector> bubbleradius0 = particles_->Radius0();
+  Teuchos::RCP<Epetra_Vector> bubbleradiusn = particles_->WriteAccessRadius();
+  Teuchos::RCP<Epetra_Vector> bubbleradiusdot = particles_->WriteAccessRadiusDot();
+
+  Teuchos::RCP<const Epetra_Vector> velnp = Teuchos::rcp(new Epetra_Vector(*fluid_->Velnp()));
+  Teuchos::RCP<const Epetra_Vector> veln = Teuchos::rcp(new Epetra_Vector(*fluid_->Veln()));
+
+  // set fluid state vectors to interpolate pressure values
+  fluiddis_->SetState("velnp",velnp);
+  fluiddis_->SetState("veln",veln);
+  const double fluid_timenp = fluid_->Time()*TIMESCALE;
+  const double fluid_timen = (fluid_->Time() - fluid_->Dt())*TIMESCALE;
+
+  // define element matrices and vectors
+  Epetra_SerialDenseMatrix elemat1;
+  Epetra_SerialDenseMatrix elemat2;
+  Epetra_SerialDenseVector elevec1;
+  Epetra_SerialDenseVector elevec2;
+  Epetra_SerialDenseVector elevec3;
+
+  // Reshape element vector for pressure contribution
+  elevec1.Size(2);
+
+  // get cavitation material
+  int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_cavitation);
+  if (id == -1)
+    dserror("no cavitation fluid material specified");
+  const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+  const MAT::PAR::CavitationFluid* actmat = static_cast<const MAT::PAR::CavitationFluid*>(mat);
+
+  // initialization of required constants
+  const double rho_l = actmat->density_*WEIGHTSCALE/pow(LENGTHSCALE,3.0);
+  const double mu_l = actmat->viscosity_*WEIGHTSCALE/(LENGTHSCALE*TIMESCALE);
+  const double gamma = (actmat->gamma_)*WEIGHTSCALE/(TIMESCALE*TIMESCALE);
+  const double pvapor = actmat->p_vapor_*WEIGHTSCALE/(LENGTHSCALE*TIMESCALE*TIMESCALE);
+
+  // only row particles are evaluated
+  for(int i=0; i<particledis_->NodeRowMap()->NumMyElements(); ++i)
+  {
+    DRT::Node* currparticle = particledis_->lRowNode(i);
+    // fill particle position
+    static LINALG::Matrix<3,1> particleposition;
+    std::vector<int> lm_b = particledis_->Dof(currparticle);
+    int posx = bubblepos->Map().LID(lm_b[0]);
+    for (int d=0; d<dim_; ++d)
+      particleposition(d) = (*bubblepos)[posx+d];
+
+    // compute pressure at bubble position
+    ComputePressureAtBubblePosition(currparticle, particleposition, elemat1, elemat2, elevec1, elevec2, elevec3);
+
+    const double pfluidn = elevec1[0]*WEIGHTSCALE/(LENGTHSCALE*TIMESCALE*TIMESCALE);
+    const double pfluidnp = elevec1[1]*WEIGHTSCALE/(LENGTHSCALE*TIMESCALE*TIMESCALE);
+
+    const int particlelid = particledis_->NodeRowMap()->LID(currparticle->Id());
+    // get bubble radii of different sub time steps
+    double r_bub_k = ((*bubbleradiusn)[particlelid])*LENGTHSCALE;
+    const double r_bub_0 = ((*bubbleradius0)[particlelid])*LENGTHSCALE;
+    // first derivative of bubble radius needed for rk method
+    double r_dot_bub_k = ((*bubbleradiusdot)[particlelid])*LENGTHSCALE/TIMESCALE;
+    // initialization of bubble radius at new time
+    double r_bub_kp = 0.0;
+
+    // get current sub time step size
+    double dtsub = ((*dtsub_)[particlelid])*TIMESCALE;
+
+    // get initial pressure for current bubble
+    const double pg0i = ((*pg0_)[particlelid])*WEIGHTSCALE/(LENGTHSCALE*TIMESCALE*TIMESCALE);
+
+    // while far away of the end of the time step
+    while(particle_timenp-subtime > 2.0*dtsub)
+    {
+      const bool allowadaption = true;
+      // calculate radius and adapt time step size
+      IntegrateRadius(subtime,pvapor,pg0i,dtsub,rho_l,mu_l,gamma,fluid_timenp,fluid_timen,pfluidnp,pfluidn,r_bub_0,r_bub_k,r_bub_kp,r_dot_bub_k,allowadaption,dt_min,dt_max);
+
+      // warning if relative radius change is large (hard coded values from experience)
+      if ((r_bub_kp-r_bub_k) < -0.07*r_bub_kp or (r_bub_kp-r_bub_k) > 0.05*r_bub_kp)
+      {
+        std::cout << "WARNING: large change in radius per time step:" << std::endl;
+        std::cout << "bubble-id: " << currparticle->Id() << " at position: x: " << particleposition(0) << " y: "
+            << particleposition(1) << " z: " << particleposition(2) << " , current radius: " << r_bub_kp
+            << " has a relative change of radius of: " << (r_bub_kp-r_bub_k)/r_bub_kp << std::endl << std::endl;
+      }
+
+      // update bubble radius
+      r_bub_k = r_bub_kp;
+    }
+
+    // the last time steps should be divided in two equal parts in order to reach the final point exactly
+    dtsub = (particle_timenp-subtime)*0.5;
+
+    // while close to the end of time step
+    while(particle_timenp-subtime > 1.0e-3*dtsub)
+    {
+      const bool allowadaption = false;
+      // calculate radius and adapt time step size
+      IntegrateRadius(subtime,pvapor,pg0i,dtsub,rho_l,mu_l,gamma,fluid_timenp,fluid_timen,pfluidnp,pfluidn,r_bub_0,r_bub_k,r_bub_kp,r_dot_bub_k,allowadaption,dt_min,dt_max);
+
+      // warning if RelStepSize has a large value
+      if ((r_bub_kp-r_bub_k) < -0.07*r_bub_kp or (r_bub_kp-r_bub_k) > 0.05*r_bub_kp)
+      {
+        std::cout << "WARNING: large change in radius per time step:" << std::endl;
+        std::cout << "bubble-id: " << currparticle->Id() << " at position: x: " << particleposition(0) << " y: "
+            << particleposition(1) << " z: " << particleposition(2) << " , current radius: " << r_bub_kp
+            << " has a relative change of radius of: " << (r_bub_kp-r_bub_k)/r_bub_kp << std::endl << std::endl;
+      }
+
+      // update variables
+      r_bub_k = r_bub_kp;
+    }
+
+    // make sure that the time step size limits hold
+    dtsub = std::min(dt_max,std::max(dtsub,dt_min));
+
+    // convert variables according to unit system and write to state vectors
+    (*bubbleradiusn)[particlelid] = r_bub_k/LENGTHSCALE;
+    (*bubbleradiusdot)[particlelid] = r_dot_bub_k/LENGTHSCALE*TIMESCALE;
+    (*dtsub_)[particlelid] = dtsub/TIMESCALE;
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | time integration of bubble radius                        ghamm 06/15 |
+ *----------------------------------------------------------------------*/
+void CAVITATION::Algorithm::IntegrateRadius(
+  double& subtime,
+  const double pvapor,
+  const double pg0i,
+  double& dtsub,
+  const double rho_l,
+  const double mu_l,
+  const double gamma,
+  const double fluid_timenp,
+  const double fluid_timen,
+  const double pfluidnp,
+  const double pfluidn,
+  const double r_bub_0,
+  const double r_bub_k,
+  double& r_bub_kp,
+  double& r_dot_bub_k,
+  const bool allowadaption,
+  const double dt_min,
+  const double dt_max
+  )
+{
+  // time integration with 3rd order RK scheme and local truncation error
+  // estimation using the embedded 2nd order solution (Bogacki-Shampine scheme)
+
+  // initialize maximum number of iterations for time step size adaption
+  const int itermax = 20;
+  int iter = 1;
+
+  // determine polytropic exponent according to [Moss et al., 2000]
+  double polytropic_exp = 0.0;
+  if(r_bub_k >= r_bub_0)
+    polytropic_exp = 1.0; // isothermal change
+  else
+    polytropic_exp = 7.0/5.0; // adiabatic change: PolEx = kappa = c_p/c_v
+
+  // normalized local truncation error
+  double localtruncerr = 1.0;
+
+  // init of RK sub time
+  double subtime_rk = 0.0;
+  double r_dot_bub_kp;
+
+  const double interpolfac = (pfluidnp-pfluidn)/(fluid_timenp-fluid_timen);
+
+  // define the allowed normalized local truncation error
+  // --> TODO: Is this value general enough?
+  const double epsilon = 1.0e-3;
+
+  // repeat time steps until local truncation error is smaller than given limit epsilon
+  while(localtruncerr > epsilon)
+  {
+    // reset/initialization of RK sub time with current sub time
+    subtime_rk = subtime;
+
+    //// RK STEP 1
+
+    // calculate values at t = t_k + dtsub/2 of RK-method
+    const double dtsub_half = dtsub*0.5;
+    subtime_rk += dtsub_half;
+
+    // compute ambient and interior pressure
+    double pambient = pfluidn + (subtime_rk-fluid_timen)*interpolfac;
+    double pb_srk = pvapor + pg0i*pow(r_bub_0/r_bub_k,3.0*polytropic_exp);
+
+    const double kRDot_1 = f_R_dot(r_bub_k,r_dot_bub_k,rho_l,gamma,mu_l,pb_srk,pambient);
+    const double RDot_1 = r_dot_bub_k + dtsub_half*kRDot_1;
+    const double R_1 = r_bub_k + dtsub_half*r_dot_bub_k;
+
+    //// RK STEP 2
+
+    // calculate values at t = t_k + 3/4*dtsub of RK-method
+    const double dtsub_threequart = dtsub*0.75;
+    subtime_rk += dtsub*0.25;
+
+    // compute ambient and interior pressure
+    pambient = pfluidn + (subtime_rk-fluid_timen)*interpolfac;
+    pb_srk = pvapor + pg0i*pow(r_bub_0/R_1,3.0*polytropic_exp);
+
+    const double kRDot_2 = f_R_dot(R_1,RDot_1,rho_l,gamma,mu_l,pb_srk,pambient);
+    const double RDot_2 = r_dot_bub_k + dtsub_threequart*kRDot_2;
+    const double R_2 = r_bub_k + dtsub_threequart*RDot_1;
+
+    //// RK STEP 3
+
+    // calculate values at t = t_k + dtsub of RK-method
+    subtime_rk += dtsub*0.25;
+
+    // compute ambient and interior pressure
+    pambient = pfluidn + (subtime_rk-fluid_timen)*interpolfac;
+    pb_srk = pvapor + pg0i*pow(r_bub_0/R_2,3.0*polytropic_exp);
+
+    const double kRDot_3 = f_R_dot(R_2,RDot_2,rho_l,gamma,mu_l,pb_srk,pambient);
+    const double RDot_3 = r_dot_bub_k + dtsub*(2.0/9.0*kRDot_1 + 1.0/3.0*kRDot_2 + 4.0/9.0*kRDot_3);
+
+    r_dot_bub_kp = r_dot_bub_k + dtsub*(2.0/9.0*kRDot_1 + 1.0/3.0*kRDot_2 + 4.0/9.0*kRDot_3);
+    r_bub_kp = r_bub_k + dtsub*(2.0/9.0*r_dot_bub_k + 1.0/3.0*RDot_1 + 4.0/9.0*RDot_2);
+
+    // computation of normalized local truncation error abs(R[n+1]-R_emb[n+1])/R[n+1]
+    localtruncerr = abs(dtsub*(-5.0/72.0*r_dot_bub_k + 1.0/12.0*RDot_1 + 1.0/9.0*RDot_2 - 1.0/8.0*RDot_3)/r_bub_kp);
+
+    // adapt time step according to estimated local truncation error
+    if (allowadaption == true)
+    {
+      // define values used for time step adaption with respect to local truncation error
+      const double SafetyFactor = 0.9;
+      const double MinScale = 1.0/1.3;
+      const double MaxScale = 1.3;
+
+      // adaption of time step due to local truncation error with respect to maximum and minimum time step
+      const double scale = std::min(std::max(SafetyFactor*pow(epsilon/localtruncerr,1.0/3.0),MinScale),MaxScale);
+
+      // adapt time step size
+      dtsub = std::min( std::max(scale*dtsub,dt_min), dt_max );
+
+      // step is repeated if
+      if (localtruncerr <= epsilon)
+      {
+        // leave while loop and update at the end
+        break;
+      }
+    }
+    else // we are close to the end of a time step and we want to reach it exactly
+    {
+      if (localtruncerr <= epsilon)
+      {
+        // leave while loop and update at the end
+        break;
+      }
+      else
+      {
+        // half current time step size and repeat RK step
+        dtsub *= 0.5;
+      }
+    }
+
+    // exit if local truncation error is not satisfied although minimum time step is reached
+    if (dtsub <= dt_min and localtruncerr > epsilon)
+      dserror("with given dtMin pretended local truncation error cannot be achieved");
+
+    // stop if itermax is reached
+    if (iter == itermax)
+      dserror("local truncation error could not be reduced enough -> reached max iterations");
+
+    // increment iterator
+    ++iter;
+  }
+
+  // update variables -> update of radius already done in r_bub_kp = ...
+  subtime = subtime_rk;
+  r_dot_bub_k = r_dot_bub_kp;
+
+  // exit if if r_bub_kp < 0 since this is not physical
+  if (r_bub_kp < 0.0)
+    dserror("radius of bubble has negative value");
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | solve Rayleigh-Plesset equation                         ghamm 06/15  |
+ *----------------------------------------------------------------------*/
+double CAVITATION::Algorithm::f_R_dot(
+  const double r_bub,
+  const double r_dot_bub,
+  const double rho_l,
+  const double sigma,
+  const double mu_l,
+  const double pbk,
+  const double pambientk)
+{
+  // Rayleigh-Plesset equation solved for second derivative of radius
+  // -> necessary due to splitting of second order ODE into two first order ODE
+  const double inv_r_bub = 1.0/r_bub;
+  return (inv_r_bub/rho_l)*(-3.0/2.0*rho_l*r_dot_bub*r_dot_bub +
+      pbk - pambientk - 2.0*sigma*inv_r_bub - 4.0*mu_l*r_dot_bub*inv_r_bub);
 }
 
 
@@ -1055,7 +1458,7 @@ void CAVITATION::Algorithm::ParticleInflow()
       DRT::Node* currparticle = particledis_->gNode(newbubbleid);
       // get the first gid of a particle and convert it into a LID
       int lid = dofrowmap->LID(particledis_->Dof(currparticle, 0));
-      for(int dim=0; dim<3; ++dim)
+      for(int dim=0; dim<dim_; ++dim)
       {
         (*disn)[lid+dim] = inflow_position[dim];
         (*veln)[lid+dim] = inflow_vel[dim] * curvefac;
@@ -1103,8 +1506,16 @@ void CAVITATION::Algorithm::ReadRestart(int restart)
   SetTimeStep(fluid_->Time(),restart);
 
   // additionally read restart data for fluid fraction
-  IO::DiscretizationReader reader(fluid_->Discretization(),restart);
-  reader.ReadVector(fluidfracn_,"fluid_fraction");
+  IO::DiscretizationReader reader_fl(fluid_->Discretization(),restart);
+  reader_fl.ReadVector(fluidfracn_,"fluid_fraction");
+
+  if(computeradiusRPbased_ == true)
+  {
+    // additionally read restart data for bubbles with radius computation based on RP equ.
+    IO::DiscretizationReader reader_p(particles_->Discretization(),timestepsizeratio_*restart);
+    reader_p.ReadVector(pg0_,"pg0");
+    reader_p.ReadVector(dtsub_,"dtsub");
+  }
   return;
 }
 
@@ -1298,16 +1709,24 @@ void CAVITATION::Algorithm::TestResults(const Epetra_Comm& comm)
  *----------------------------------------------------------------------*/
 void CAVITATION::Algorithm::Output()
 {
+  // do we have a restart step?
+  const int uprestart = DRT::Problem::Instance()->CavitationParams().get<int>("RESTARTEVRY");
+
   if((particles_->StepOld()-1) % timestepsizeratio_ == 0)
   {
     // call fluid output and add restart data for fluid fraction if necessary
     fluid_->Output();
-    const int uprestart = DRT::Problem::Instance()->CavitationParams().get<int>("RESTARTEVRY");
     if( Step()%uprestart == 0 && uprestart != 0 )
       fluid_->DiscWriter()->WriteVector("fluid_fraction", fluidfracn_, IO::DiscretizationWriter::dofvector);
   }
 
+  // call particle output and add restart data for initial pressure and sub time stepping if necessary
   PARTICLE::Algorithm::Output();
+  if(computeradiusRPbased_ == true && particles_->StepOld() % (timestepsizeratio_ * uprestart) == 0)
+  {
+    particles_->DiscWriter()->WriteVector("pg0", pg0_, IO::DiscretizationWriter::nodevector);
+    particles_->DiscWriter()->WriteVector("dtsub", dtsub_, IO::DiscretizationWriter::nodevector);
+  }
 
   return;
 }

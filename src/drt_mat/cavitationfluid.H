@@ -48,6 +48,10 @@ namespace MAT
       const double viscosity_;
       /// density
       const double density_;
+      /// surface tension coefficient
+      const double gamma_;
+      /// vapor pressure
+      const double p_vapor_;
 
       //@}
 
@@ -136,6 +140,12 @@ private:
 
     /// return density
     virtual double Density() const { return params_->density_; }
+
+    /// return surface tension coefficient
+    virtual double Gamma() const { return params_->gamma_; }
+
+    /// return vapor pressure
+    virtual double Pvapor() const { return params_->p_vapor_; }
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }

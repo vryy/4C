@@ -40,6 +40,11 @@ namespace ADAPTER
 namespace DRT
 {
   class Element;
+
+  namespace MESHFREE
+  {
+    class MeshfreeMultiBin;
+  }
 }
 namespace LINALG
 {
@@ -88,6 +93,20 @@ namespace CAVITATION
 
   protected:
 
+    /// initialize bubble pressure
+    virtual void InitBubblePressure();
+
+   /// compute pressure at bubble position
+   virtual void ComputePressureAtBubblePosition(
+     DRT::Node* currparticle,
+     LINALG::Matrix<3,1>& particleposition,
+     Epetra_SerialDenseMatrix& elemat1,
+     Epetra_SerialDenseMatrix& elemat2,
+     Epetra_SerialDenseVector& elevec1,
+     Epetra_SerialDenseVector& elevec2,
+     Epetra_SerialDenseVector& elevec3
+     );
+
     /// prepare time step
     virtual void PrepareTimeStep();
 
@@ -100,8 +119,45 @@ namespace CAVITATION
     /// force on particles is calculated and applied
     virtual void CalculateAndApplyForcesToParticles();
 
+    /// calculate radius based on RP equation
+    //! For details see Semesterarbeit Christoph Schmidt
+    virtual void ComputeRadius();
+
+     /// time integration of bubble radius
+    virtual void IntegrateRadius(
+      double& subtimek,
+      const double pvapor,
+      const double pg0i,
+      double& dtsub,
+      const double rho_l,
+      const double mu_l,
+      const double gamma,
+      const double fluid_timenp,
+      const double fluid_timen,
+      const double pfluidnp,
+      const double pfluidn,
+      const double r_bub_0,
+      const double r_bub_k,
+      double& r_bub_kp,
+      double& r_dot_bub_k,
+      const bool allowadaption,
+      const double dt_min,
+      const double dt_max
+      );
+
+    /// solve Rayleigh-Plesset equation
+    virtual double f_R_dot(
+      const double r_bub,
+      const double r_dot_bub,
+      const double rho_l,
+      const double sigma,
+      const double mu_l,
+      const double pbk,
+      const double pambientk
+      );
+
     /// insert particles into domain
-    void ParticleInflow();
+    virtual void ParticleInflow();
 
     /// update the current time step
     virtual void Update();
@@ -198,7 +254,7 @@ namespace CAVITATION
       std::vector<LINALG::Matrix<3,1> >& surfacenodes
       );
 
-    /// evaluate line integral for analytic integration (constan polynomial)
+    /// evaluate line integral for analytic integration (constant polynomial)
     virtual void EvaluateTwoPointsConstPoly(
       const LINALG::Matrix<3,1>&    n,
       const LINALG::Matrix<3,1>&    CenterRing,
@@ -235,6 +291,14 @@ namespace CAVITATION
       Teuchos::RCP<Epetra_FEVector> void_volumes
       );
 
+    /// get underlying element as well as position in element space
+    virtual DRT::Element* GetEleCoordinatesFromPosition(
+      LINALG::Matrix<3,1>& myposition,
+      DRT::MESHFREE::MeshfreeMultiBin* currbin,
+      LINALG::Matrix<3,1>& elecoord,
+      const bool approxelecoordsinit
+      );
+
     /// L2 projection of a single value per element to nodal value distribution
     virtual void ComputeL2ProjectedFluidFraction(
       Teuchos::RCP<const Epetra_MultiVector>
@@ -249,20 +313,22 @@ namespace CAVITATION
       );
 
   private:
+    const int dim_;   ///< spatial dimension of problem
+
     //! @name cavitation related stuff
     //@{
 
-    INPAR::CAVITATION::CouplingStrategyOverFields coupalgo_;   ///< coupling strategy between fluid and particle
+    const INPAR::CAVITATION::CouplingStrategyOverFields coupalgo_;   ///< coupling strategy between fluid and particle
 
-    INPAR::CAVITATION::VoidFractionCalculation void_frac_strategy_;   ///< strategy for void fraction calculation
+    const INPAR::CAVITATION::VoidFractionCalculation void_frac_strategy_;   ///< strategy for void fraction calculation
 
-    int gauss_rule_per_dir_;   ///< number of gauss points in each direction for void fraction computation
+    const int gauss_rule_per_dir_;   ///< number of gauss points in each direction for void fraction computation
 
-    bool approxelecoordsinit_;   ///< bool whether a fast and approximate initial guess is used for computing natural coords
+    const bool approxelecoordsinit_;   ///< bool whether a fast and approximate initial guess is used for computing natural coords
 
-    bool simplebubbleforce_;   ///< bool whether a simplified force computation is applied
+    const bool simplebubbleforce_;   ///< bool whether a simplified force computation is applied
 
-    int timestepsizeratio_;   ///< ratio between fluid and particle time step in case of subcycling
+    const int timestepsizeratio_;   ///< ratio between fluid and particle time step in case of subcycling
 
     //@}
 
@@ -280,6 +346,17 @@ namespace CAVITATION
     Teuchos::RCP<Epetra_Vector> fluidfracn_;   ///< fluid fraction in pressure dof of dofrowmap at t_n
 
     Teuchos::RCP<Epetra_Vector> fluidfracnp_;   ///< fluid fraction in pressure dof of dofrowmap at t_n+1
+
+    //@}
+
+    //! @name Rayleigh-Plesset specific stuff for bubble radius variation
+    //@{
+
+    const bool computeradiusRPbased_;   ///< bool whether bubble radius is adapted based on the Rayleigh-Plesset equation
+
+    Teuchos::RCP<Epetra_Vector> dtsub_;   ///< individual time step size for each bubble during radius adaption
+
+    Teuchos::RCP<Epetra_Vector> pg0_;   ///< partial pressure of noncondensable gas at bubble initialization time
 
     //@}
 

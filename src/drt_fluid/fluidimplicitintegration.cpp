@@ -3600,7 +3600,16 @@ void FLD::FluidImplicitTimeInt::OutputToGmsh(
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::OutputExternalForces()
 {
-  // nothing to do here, possibly in derived classes
+  if(external_loads_ != Teuchos::null)
+  {
+    output_->WriteInt("have_fexternal",external_loads_->GlobalLength());
+    output_->WriteVector("fexternal",external_loads_);
+  }
+  else
+  {
+    output_->WriteInt("have_fexternal",-1);
+  }
+
   return;
 }
 
@@ -3697,6 +3706,16 @@ void FLD::FluidImplicitTimeInt::ReadRestart(int step)
       impedancebc_->ReadRestart(reader);
       impedancebc_optimization_->ReadRestart(reader);
     }
+  }
+
+  // check whether external forces were written
+  const int have_fexternal = reader.ReadInt("have_fexternal");
+  if(have_fexternal != -1)
+  {
+    external_loads_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
+    reader.ReadVector(external_loads_,"fexternal");
+    if(have_fexternal != external_loads_->GlobalLength())
+      dserror("reading of external loads failed");
   }
 
   // read the previously written elements including the history data

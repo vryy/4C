@@ -259,8 +259,14 @@ namespace PARTICLE
     //! Return accelerations \f$A_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Accnp() { return accn_; }
 
-    //! Return radii of particles
+    //! Return radii of particles \f$R_{0}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Radius0() {return radius0_; }
+
+    //! Return radii of particles \f$R_{n}\f$ or \f$R_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Radius() { return radius_; }
+
+    //! Return first time derivative of radii \f$\dot{R}_{n}\f$ or \f$\dot{R}_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> RadiusDot() { return radiusdot_; }
 
     //! Return mass of particles
     virtual Teuchos::RCP<const Epetra_Vector> Mass() { return mass_; }
@@ -279,8 +285,14 @@ namespace PARTICLE
     //! extract velocities
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelnp(){ return veln_; }
 
-    //! Return radii of particles
+    //! extract initial radii
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadius0() { return radius0_; }
+
+    //! extract radii
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadius() { return radius_; }
+
+    //! extract fist time derivative of radii
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadiusDot() { return radiusdot_; }
 
     //! extract mass vector
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessMass() { return mass_; }
@@ -298,6 +310,9 @@ namespace PARTICLE
 
     //! Return current time map
     virtual double TimeOld() const { return (*time_)[0]; }
+
+    //! Return target time \f$t_{n+1}\f$
+    virtual double Time() const { return timen_; }
 
     //! Return current step number $n$
     virtual int StepOld() const { return step_; }
@@ -376,8 +391,12 @@ namespace PARTICLE
     Teuchos::RCP<Epetra_Vector> veln_;
     //! global accelerations \f${A}_{n+1}\f$ at \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> accn_;
-    //! radius of each particle at \f$t_{n}\f$
+    //! radius of each particle at \f$t_{n}\f$ or \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> radius_;
+    //! radius of each particle at \f$t_{0}\f$
+    Teuchos::RCP<Epetra_Vector> radius0_;
+    //! first derivative of time of radius of each particle at \f$t_{n}\f$ or $\f$t_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> radiusdot_;
     //! mass of each particle at \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> mass_;
     //! moment of inertia of each particle at \f$t_{n+1}\f$
@@ -396,6 +415,13 @@ namespace PARTICLE
     double density_;
     //! additional external forces
     Teuchos::RCP<Epetra_Vector> fifc_;
+
+    //@}
+
+    //! @control flags for special features
+    //@{
+
+    const bool variableradius_;   //!< bool to control whether radius is constant or variable
 
     //@}
 
