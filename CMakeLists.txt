@@ -327,24 +327,30 @@ endif(NETCDF_FOUND)
 
 # deal.II package for deal.II support
 CMAKE_POLICY(SET CMP0015 OLD)
-find_package(deal.II 8.3
+find_package(deal.II 8.3 QUIET
     HINTS ${DEAL_II_DIR} ${deal.II_DIR} $ENV{DEAL_II_DIR}
   )
 if (deal.II_FOUND)
+  MESSAGE("\nFound deal.II!  Here are the details: ")
+  MESSAGE("   deal.II_VERSION = ${DEAL_II_VERSION}")
+  MESSAGE("   deal.II_DIR = ${DEAL_II_DIR}")
   include_directories(${DEAL_II_INCLUDE_DIRS})
   if (${CMAKE_BUILD_TYPE} STREQUAL "DEBUG")
+    MESSAGE("   deal.II_LIBRARIES = ${DEAL_II_LIBRARIES_DEBUG}")
     link_directories(${DEAL_II_LIBRARIES_DEBUG})
     set(LIBRARIES
       ${LIBRARIES}
       ${DEAL_II_LIBRARIES_DEBUG}
       )
   else()
+    MESSAGE("   deal.II_LIBRARIES = ${DEAL_II_LIBRARIES_RELEASE}")
     link_directories(${DEAL_II_LIBRARIES_RELEASE})
     set(LIBRARIES
       ${LIBRARIES}
       ${DEAL_II_LIBRARIES_RELEASE}
       )
   endif()
+  MESSAGE("End of deal.II details\n")
   add_definitions("-DHAVE_DEAL_II")   # HAVE_DEAL_II preprocessor flag for BACI
 else()
   message("-- DEAL.II package not found")
