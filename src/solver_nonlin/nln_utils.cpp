@@ -142,7 +142,7 @@ const bool NLNSOL::UTILS::StagnationDetection::Status(
 {
   bool stagnation = false;
 
-  if (IsActive() and stagiter_ >= stagitermax_)
+  if (IsActive() and (stagiter_ >= stagitermax_ or stagratio_ > 1.0))
     stagnation = true;
 
   // fill output parameter list
@@ -152,6 +152,9 @@ const bool NLNSOL::UTILS::StagnationDetection::Status(
     oparams->set<double>("Stagnation Detection: ratio", stagratio_);
     oparams->set<int>("Stagnation Detection: iterations", stagiter_);
   }
+
+  if (stagnation)
+    *getOStream() << "*** Detected Stagnation ***" << std::endl;
 
   return stagnation;
 }

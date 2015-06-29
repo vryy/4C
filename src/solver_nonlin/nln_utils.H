@@ -26,6 +26,7 @@ Maintainer: Matthias Mayr
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
 
+// Teuchos
 namespace Teuchos
 {
   class ParameterList;
@@ -92,6 +93,13 @@ namespace UTILS
     virtual const bool Check(const double norm);
 
     /*! \brief Get status of stagnation test
+     *
+     *  An iterative process is considered to be in stagnation if
+     *  <ul>
+     *  <li> the ratio of #stagitermax_ subsequent residuals is above a given
+     *       threshold #stagthreshold_ </li>
+     *  <li> the residual increases </li>
+     *  </ul>
      *
      *  \return Bool that indicates stagnation (true) or sufficient residual
      *  norm decrease (false)
