@@ -3889,6 +3889,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::FLUID::gradreco_l2     // pressure edge-based stabilization as ghost penalty around cut elements
                                ),
                                &fdyn);
+
+  BoolParameter("OFF_PROC_ASSEMBLY","No","Do not evaluate ghosted elements but communicate them --> faster if element call is expensive",&fdyn);
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn_stab = fdyn.sublist("RESIDUAL-BASED STABILIZATION",false,"");
 
@@ -4983,7 +4985,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     &fdyn_wallmodel);
 
   IntParameter("GP_Wall_Normal",3,"Gauss points in wall normal direction",&fdyn_wallmodel);
-
+  IntParameter("GP_Wall_Normal_Off_Wall",3,"Gauss points in wall normal direction, off-wall elements",&fdyn_wallmodel);
   IntParameter("GP_Wall_Parallel",3,"Gauss points in wall parallel direction",&fdyn_wallmodel);
 
   BoolParameter("Enr_MFS_Fine_Scale","No","Flag to add the enrichment part to the fine scale velocity. if no: enrichment part of coarse scales",&fdyn_wallmodel);
@@ -4995,8 +4997,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     -1,
     "Set solver number for l2-projection.",
   &fdyn_wallmodel);
-
-  DoubleParameter("Quadrature_Tol",-1.0,"Increment of Tauw of full step, between 0.0 and 1.0",&fdyn_wallmodel);
 
   /*----------------------------------------------------------------------*/
   // sublist with additional input parameters for multifractal subgrid-scales

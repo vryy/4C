@@ -99,6 +99,7 @@ FLD::XWall::XWall(
 
   //get gauss points
   gp_norm_=params_->sublist("WALL MODEL").get<int>("GP_Wall_Normal") ;
+  gp_norm_ow_=params_->sublist("WALL MODEL").get<int>("GP_Wall_Normal_Off_Wall") ;
   gp_par_=params_->sublist("WALL MODEL").get<int>("GP_Wall_Parallel") ;
 
   // compute initial pressure
@@ -154,8 +155,6 @@ FLD::XWall::XWall(
   if (scale_sep != "algebraic_multigrid_operator" && mfs_fs_)
     dserror("enrichment can only be fine-scale velocity if the AVM3 method is used");
 
-  quadraturetol_=params_->sublist("WALL MODEL").get<double>("Quadrature_Tol") ;
-
   //output:
   if(myrank_==0)
   {
@@ -167,6 +166,7 @@ FLD::XWall::XWall(
     std::cout << "Minimum tau_w (clipping):     " << min_tauw_ << std::endl;
     std::cout << "Increment of tau_w:           " << fac_ << std::endl;
     std::cout << "Gauss rule:                   normal:  " << gp_norm_ << "  parallel:  " << gp_par_ << "  overall:  " << gp_norm_*gp_par_*gp_par_ << std::endl;
+    std::cout << "Gauss rule (off-wall):        normal:  " << gp_norm_ow_ << "  parallel:  " << gp_par_ << "  overall:  " << gp_norm_ow_*gp_par_*gp_par_ << std::endl;
     std::cout << "Enriched DOFs l2-projected:   "<< projectiontype << std::endl;
     std::cout << "Blending method:              " << blendingtype << std::endl;
     std::cout << "Smooth tau_w:                 " << smooth_res_aggregation_ << std::endl;
@@ -174,7 +174,6 @@ FLD::XWall::XWall(
     std::cout << "Solver for projection:        " << params_->sublist("WALL MODEL").get<int>("PROJECTION_SOLVER") << std::endl;
     std::cout << "Enrichment fine scale vel:    " << mfs_fs_ << std::endl;
     std::cout << "Fix Dirichlet inflow:         " << fix_residual_on_inflow_ << std::endl;
-    std::cout << "Tolerance of adaptive quadr.: " << quadraturetol_ << std::endl;
     std::cout << std::endl;
     std::cout << "WARNING: ramp functions are used to treat fluid Mortar coupling conditions" << std::endl;
     std::cout << "WARNING: face element with enrichment not implemented" << std::endl;
@@ -211,15 +210,10 @@ void FLD::XWall::SetXWallParams(Teuchos::ParameterList& eleparams)
   eleparams.set("xwalltoggle",xwalltoggle_);
 
   eleparams.set("mk",mkstate_);
-  double finaltol = quadraturetol_;
-  if(iter_>2)
-    finaltol = quadraturetol_/10.0;
-  else if(iter_>8)
-    finaltol = quadraturetol_/1000.0;
-  eleparams.set<double>("qtol",finaltol);
 
-  eleparams.set("gpnorm",gpvecnorm_);
-  eleparams.set("gppar",gpvecpar_);
+  eleparams.set("gpnorm",gp_norm_);
+  eleparams.set("gpnormow",gp_norm_ow_);
+  eleparams.set("gppar",gp_par_);
 
   return;
 }
@@ -239,8 +233,9 @@ void FLD::XWall::SetXWallParamsXWDis(Teuchos::ParameterList& eleparams)
 
   eleparams.set("mk",mkxwstate_);
 
-  eleparams.set("gpnorm",gpvecnormxw_);
-  eleparams.set("gppar",gpvecparxw_);
+  eleparams.set("gpnorm",gp_norm_);
+  eleparams.set("gpnormow",gp_norm_ow_);
+  eleparams.set("gppar",gp_par_);
   return;
 }
 
@@ -284,15 +279,6 @@ void FLD::XWall::Setup()
     mkxwstate_->PutScalar(0.33333333333);
     mkstate_ = Teuchos::rcp(new Epetra_Vector(*(discret_->ElementColMap()),true));
     mkstate_->PutScalar(0.33333333333);
-
-    gpvecnorm_ = Teuchos::rcp(new Epetra_Vector(*(discret_->ElementColMap()),true));
-    gpvecpar_ = Teuchos::rcp(new Epetra_Vector(*(discret_->ElementColMap()),true));
-    gpvecnorm_->PutScalar((double)gp_norm_);
-    gpvecpar_->PutScalar((double)gp_par_);
-    gpvecnormxw_ = Teuchos::rcp(new Epetra_Vector(*(xwdiscret_->ElementColMap()),true));
-    gpvecparxw_ = Teuchos::rcp(new Epetra_Vector(*(xwdiscret_->ElementColMap()),true));
-    gpvecnormxw_->PutScalar((double)gp_norm_);
-    gpvecparxw_->PutScalar((double)gp_par_);
 
     restart_wss_=Teuchos::null;
   }
@@ -894,17 +880,7 @@ void FLD::XWall::SetupL2Projection()
 {
 
   iter_=0;
-  {//export Gauss points to xw discretization
-    Teuchos::RCP<Epetra_Vector> gpvxw=Teuchos::rcp(new Epetra_Vector(*(xwdiscret_->ElementRowMap()),true));
-    Teuchos::RCP<Epetra_Vector> gpv=Teuchos::rcp(new Epetra_Vector(*(discret_->ElementRowMap()),true));
 
-    LINALG::Export(*gpvecnorm_,*gpv);
-    LINALG::Export(*gpv,*gpvxw);
-    LINALG::Export(*gpvxw,*gpvecnormxw_);
-    LINALG::Export(*gpvecpar_,*gpv);
-    LINALG::Export(*gpv,*gpvxw);
-    LINALG::Export(*gpvxw,*gpvecparxw_);
-  }
   TransferAndSaveTauw();
 
   Teuchos::RCP<Epetra_Vector> newtauw = Teuchos::rcp(new Epetra_Vector(*xwallrownodemap_,true));

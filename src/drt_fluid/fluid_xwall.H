@@ -233,12 +233,6 @@ protected:
   //! MK for xwall discretization
   Teuchos::RCP<Epetra_Vector> mkxwstate_;
 
-  Teuchos::RCP<Epetra_Vector> gpvecnorm_;
-  Teuchos::RCP<Epetra_Vector> gpvecpar_;
-
-  Teuchos::RCP<Epetra_Vector> gpvecnormxw_;
-  Teuchos::RCP<Epetra_Vector> gpvecparxw_;
-
   Teuchos::RCP<Epetra_Vector> restart_wss_;
 
   Teuchos::RCP<TransferTurbulentInflowConditionNodal> turbulent_inflow_condition_;
@@ -257,6 +251,7 @@ protected:
 
   //! number of gauss points in wall-parallel and normal direction
   int gp_norm_;
+  int gp_norm_ow_;
   int gp_par_;
 
   //! viscosity
@@ -288,9 +283,6 @@ protected:
 
   //! switch from gradient-based to residual-based calculation of tauw
   int switch_step_;
-
-  //! increment factor of tauw
-  double quadraturetol_;
 
   int iter_;
 

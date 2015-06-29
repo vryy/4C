@@ -52,6 +52,7 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_assemblestrategy.H"
 #include "../drt_lib/drt_locsys.H"
+#include "../linalg/linalg_sparsematrix.H"
 #include "../drt_comm/comm_utils.H"
 #include "../drt_adapter/adapter_coupling_mortar.H"
 #include "../drt_adapter/ad_opt.H"
@@ -119,6 +120,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   impedancebc_(Teuchos::null),
   impedancebc_optimization_(Teuchos::null),
   isimpedancebc_(false),
+  off_proc_asselby_(params_->get<bool>("OFF_PROC_ASSEMBLY", false)),
   massmat_(Teuchos::null),
   logenergy_(Teuchos::null)
 {
@@ -274,16 +276,26 @@ void FLD::FluidImplicitTimeInt::Init()
       && params_->get<int>("MESHTYING") == INPAR::FLUID::no_meshtying)
   {
     // initialize standard (stabilized) system matrix (construct its graph already)
-    sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true));
+    // off_proc_asselby_ requires an EpetraFECrs matrix
+    if(off_proc_asselby_)
+      sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true,LINALG::SparseMatrix::FE_MATRIX));
+    else
+      sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true));
   }
   else if(params_->get<int>("MESHTYING")!= INPAR::FLUID::no_meshtying)
+  {
     SetupMeshtying();
+    if(off_proc_asselby_)
+      dserror("Off processor assembly currently not available for this matrix type");
+  }
   else
   {
     Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy> > blocksysmat =
       Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy>(*velpressplitter_,*velpressplitter_,108,false,true));
     blocksysmat->SetNumdim(numdim_);
     sysmat_ = blocksysmat;
+    if(off_proc_asselby_)
+      dserror("Off processor assembly currently not available for this matrix type");
   }
 
   // the vector containing body and surface forces
@@ -1019,7 +1031,7 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   AddProblemDependentVectors();
 
   // call standard loop over elements
-  discret_->Evaluate(eleparams,sysmat_,shapederivatives_,residual_,Teuchos::null,Teuchos::null);
+  EvaluateMatAndRHS(eleparams);
   ClearStateAssembleMatAndRHS();
 
   //----------------------------------------------------------------------
@@ -1065,6 +1077,80 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
 
   return;
 } // FluidImplicitTimeInt::AssembleMatAndRHS
+
+/*----------------------------------------------------------------------*
+ | Call evaluate routine on elements                           bk 06/15 |
+ | only for AssembleMatAndRHS                                           |
+ *----------------------------------------------------------------------*/
+void FLD::FluidImplicitTimeInt::EvaluateMatAndRHS(Teuchos::ParameterList& eleparams)
+{
+  if(off_proc_asselby_)
+  {
+    const Epetra_Map* dofcolmap = discret_->DofColMap();
+    Teuchos::RCP<Epetra_Vector> residual_col      = LINALG::CreateVector(*dofcolmap,true);
+    Teuchos::RCP<LINALG::SparseMatrix> sysmat = Teuchos::rcp_dynamic_cast < LINALG::SparseMatrix > (sysmat_);
+    if(sysmat == Teuchos::null)
+      dserror("expected Sparse Matrix");
+    //------------------------------------------------------------
+    DRT::AssembleStrategy strategy(0, 0, sysmat,Teuchos::null,residual_col,Teuchos::null,Teuchos::null);
+
+    DRT::Element::LocationArray la( 1 );
+
+    //------------------------------------------------------------
+    // call standard loop over elements
+
+    // loop over row elements
+    const int numrowele = discret_->NumMyRowElements();
+
+    // REMARK: in this XFEM framework the whole evaluate routine uses only row elements
+    // and assembles into EpetraFECrs matrix
+    // this is baci-unusual but more efficient in all XFEM applications
+    for (int i=0; i<numrowele; ++i)
+    {
+      DRT::Element* actele = discret_->lRowElement(i);
+      //Teuchos::RCP<MAT::Material> mat = actele->Material();
+      Teuchos::RCP<MAT::Material> mat = actele->Material();
+      if(mat->MaterialType()==INPAR::MAT::m_matlist)
+        dserror("No matlists allowed here!!");
+      // get element location vector, dirichlet flags and ownerships
+      actele->LocationVector(*discret_,la,false);
+      // get dimension of element matrices and vectors
+      // Reshape element matrices and vectors and init to zero
+      strategy.ClearElementStorage( la[0].Size(), la[0].Size() );
+      {
+        int err = actele->Evaluate(eleparams,*discret_,la[0].lm_,strategy.Elematrix1(),strategy.Elematrix2(),strategy.Elevector1(),strategy.Elevector2(),strategy.Elevector3());
+
+        if (err) dserror("Proc %d: Element %d returned err=%d",discret_->Comm().MyPID(),actele->Id(),err);
+      }
+      int eid = actele->Id();
+      std::vector<int> myowner(la[0].lmowner_.size(), strategy.Systemvector1()->Comm().MyPID());
+      {
+        // calls the Assemble function for EpetraFECrs matrices including communication of non-row entries
+        sysmat->FEAssemble(eid, strategy.Elematrix1(), la[0].lm_,myowner,la[0].lm_);
+      }
+      // introduce an vector containing the rows for that values have to be communicated
+      // REMARK: when assembling row elements also non-row rows have to be communicated
+
+      // REMARK:: call Assemble without lmowner
+      // to assemble the residual_col vector on only row elements also column nodes have to be assembled
+      // do not exclude non-row nodes (modify the real owner to myowner)
+      // after assembly the col vector it has to be exported to the row residual_ vector
+      // using the 'Add' flag to get the right value for shared nodes
+      LINALG::Assemble(*strategy.Systemvector1(),strategy.Elevector1(),la[0].lm_,myowner);
+    }
+    //-------------------------------------------------------------------------------
+    Teuchos::RCP<Epetra_Vector> tmp=LINALG::CreateVector(*discret_->DofRowMap(),true);
+
+    Epetra_Export exporter(residual_col->Map(),tmp->Map());
+    int err = tmp->Export(*residual_col,exporter,Add);
+    if (err) dserror("Export using exporter returned err=%d",err);
+    residual_->Update(1.0,*tmp,1.0);
+  }
+  else
+    discret_->Evaluate(eleparams,sysmat_,shapederivatives_,residual_,Teuchos::null,Teuchos::null);
+
+  return;
+}
 
 /*----------------------------------------------------------------------------*
  | Evaluate mass matrix                                       mayr.mt 05/2014 |

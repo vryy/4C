@@ -54,6 +54,7 @@ ALPHA_M                         0.83333333333333
 ALPHA_F                         0.66666666666666
 GAMMA                           0.66666666666666
 CONVTOL                         1e-04
+OFF_PROC_ASSEMBLY               Yes
 ------------------------------------FLUID DYNAMIC/WALL MODEL
 X_WALL                          Yes
 Tauw_Type                       between_steps//fix_point_iter_with_step_control//between_steps//between_steps//fix_point_iter_with_step_control//between_steps//fix_point_iter_with_step_control//mean_iter
@@ -65,6 +66,7 @@ Inc_Tauw                        1.0
 Projection                      onlyl2projection
 Blending_Type                   ramp_function
 GP_Wall_Normal                  8
+GP_Wall_Normal_Off_Wall         4
 GP_Wall_Parallel                4
 PROJECTION_SOLVER               9
 -------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
@@ -189,10 +191,10 @@ FLUID DIS fluid NODE 1781 QUANTITY velx VALUE 1.61797068396320992e-01 TOLERANCE 
 FLUID DIS fluid NODE 1781 QUANTITY vely VALUE 0.0000000000000e+00 TOLERANCE 1e-10
 FLUID DIS fluid NODE 1781 QUANTITY velz VALUE 0.0000000000000e+00 TOLERANCE 1e-10
 // bfs node
-FLUID DIS fluid NODE 2001 QUANTITY velx VALUE 3.40251428900653005e-02 TOLERANCE 1e-10
-FLUID DIS fluid NODE 2001 QUANTITY vely VALUE -2.54778162176386245e-04 TOLERANCE 1e-10
+FLUID DIS fluid NODE 2001 QUANTITY velx VALUE 3.40558521534398348e-02 TOLERANCE 1e-10
+FLUID DIS fluid NODE 2001 QUANTITY vely VALUE -2.55884838251233242e-04 TOLERANCE 1e-10
 FLUID DIS fluid NODE 2001 QUANTITY velz VALUE 1.05531796633279463e-15 TOLERANCE 1e-10
-FLUID DIS fluid NODE 2001 QUANTITY pressure VALUE 1.14432364229980821e+00 TOLERANCE 1e-10
+FLUID DIS fluid NODE 2001 QUANTITY pressure VALUE 1.12509828371636189e+00 TOLERANCE 1e-10
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 1
 NDLINE  0

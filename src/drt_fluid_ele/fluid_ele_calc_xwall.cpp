@@ -118,7 +118,6 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::EvaluateService(
               Epetra_SerialDenseVector& elevec3)
 {
   calcoldandnewpsi_=false;
-  evaluate_sysmat_=false;
   const FLD::Action act = DRT::INPUT::get<FLD::Action>(params,"action");
   if(act==FLD::xwall_l2_projection)
     calcoldandnewpsi_=true;
@@ -248,7 +247,6 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::Evaluate(DRT::ELEMENTS::F
                                                  bool                       offdiag)
 {
   calcoldandnewpsi_=false;
-  evaluate_sysmat_=true;
 
   GetEleProperties(ele, discretization, lm,params, mat);
 
@@ -305,12 +303,6 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::Evaluate(DRT::ELEMENTS::F
       ++row1;
     }
 
-    //transfer gauss points back
-    if(quadraturetol_>0.0)
-    {
-      (*gpvecnorm_)[gpvecnorm_->Map().LID(ele->Id())]=(double)numgpnorm_;
-      (*gpvecpar_)[gpvecpar_->Map().LID(ele->Id())]=(double)numgpplane_;
-    }
     return err;
   }
   else
@@ -340,9 +332,6 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::GetEleProperties(DRT::EL
   // rotate the vector field in the case of rotationally symmetric boundary conditions
   if(my::rotsymmpbc_->HasRotSymmPBC())
     dserror("rotsymm pbc don't work with xwall");
-
-//  if(ele->IsAle())
-//    dserror("ale not supported with xwall");
 
   //get xwall toggle
   {
@@ -464,35 +453,14 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::GetEleProperties(DRT::EL
   const Teuchos::RCP<Epetra_Vector> mkvec = params.get< Teuchos::RCP<Epetra_Vector> >("mk");
   mk_=(*mkvec)[mkvec->Map().LID(ele->Id())];
 
-  gpvecnorm_ = params.get< Teuchos::RCP<Epetra_Vector> >("gpnorm");
-  gpvecpar_ = params.get< Teuchos::RCP<Epetra_Vector> >("gppar");
-
-  if(evaluate_sysmat_)
-  {
-    quadraturetol_=params.get<double>("qtol");
-
-    if(quadraturetol_<0.0)
-    {
-      numgpnorm_=(int)(*gpvecnorm_)[gpvecnorm_->Map().LID(ele->Id())];
-      numgpplane_=(int)(*gpvecpar_)[gpvecpar_->Map().LID(ele->Id())];
-      // get node coordinates and number of elements per node
-      GEO::fillInitialPositionArray<distype,my::nsd_,LINALG::Matrix<my::nsd_,my::nen_> >(ele,my::xyze_);
-      LINALG::Matrix<my::nsd_, my::nen_> edispnp(true);
-      if (ele->IsAle()) GetGridDispALE(discretization, lm, edispnp);
-      PrepareGaussRule();
-    }
-  }
-  else
-  {
-    numgpnorm_=(int)(*gpvecnorm_)[gpvecnorm_->Map().LID(ele->Id())];
-    numgpplane_=(int)(*gpvecpar_)[gpvecpar_->Map().LID(ele->Id())];
-
-    // get node coordinates and number of elements per node
-    GEO::fillInitialPositionArray<distype,my::nsd_,LINALG::Matrix<my::nsd_,my::nen_> >(ele,my::xyze_);
-    LINALG::Matrix<my::nsd_, my::nen_> edispnp(true);
-    if (ele->IsAle()) GetGridDispALE(discretization, lm, edispnp);
-    PrepareGaussRule();
-  }
+  numgpnorm_ = params.get< int >("gpnorm");
+  numgpnormow_ = params.get< int >("gpnormow");
+  numgpplane_ = params.get< int >("gppar");
+  // get node coordinates and number of elements per node
+  GEO::fillInitialPositionArray<distype,my::nsd_,LINALG::Matrix<my::nsd_,my::nen_> >(ele,my::xyze_);
+  LINALG::Matrix<my::nsd_, my::nen_> edispnp(true);
+  if (ele->IsAle()) GetGridDispALE(discretization, lm, edispnp);
+  PrepareGaussRule();
 
   return;
 }

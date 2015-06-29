@@ -128,53 +128,6 @@ public:
                       double *                                      svelnp,
                       const DRT::UTILS::GaussIntegration &          intpoints);
 
-  virtual void SysmatForErrorEstimation(const LINALG::Matrix<my::nsd_,my::nen_> &             ebofoaf,
-                      const LINALG::Matrix<my::nsd_,my::nen_> &             eprescpgaf,
-                      const LINALG::Matrix<my::nsd_,my::nen_> &             ebofon,
-                      const LINALG::Matrix<my::nsd_,my::nen_> &             eprescpgn,
-                      const LINALG::Matrix<my::nsd_,my::nen_>&              evelaf,
-                      const LINALG::Matrix<my::nsd_,my::nen_>&              eveln,
-                      const LINALG::Matrix<my::nsd_,my::nen_> &             evelnp,
-                      const LINALG::Matrix<my::nsd_,my::nen_>&              fsevelaf,
-                      const LINALG::Matrix<my::nen_,1> &                fsescaaf,
-                      const LINALG::Matrix<my::nsd_,my::nen_>&              evel_hat,
-                      const LINALG::Matrix<my::nsd_*my::nsd_,my::nen_>&         ereynoldsstress_hat,
-                      const LINALG::Matrix<my::nen_,1>&                 epreaf,
-                      const LINALG::Matrix<my::nen_,1>&                 epren,
-                      const LINALG::Matrix<my::nen_,1>&                 eprenp,
-                      const LINALG::Matrix<my::nsd_,my::nen_>&              eaccam,
-                      const LINALG::Matrix<my::nen_,1>&                 escaaf,
-                      const LINALG::Matrix<my::nen_,1>&                 escaam,
-                      const LINALG::Matrix<my::nen_,1>&                 escadtam,
-                      const LINALG::Matrix<my::nen_,1>&                 escabofoaf,
-                      const LINALG::Matrix<my::nen_,1>&                 escabofon,
-                      const LINALG::Matrix<my::nsd_,my::nen_>&              emhist,
-                      const LINALG::Matrix<my::nsd_,my::nen_>&              edispnp,
-                      const LINALG::Matrix<my::nsd_,my::nen_>&              egridv,
-                      LINALG::Matrix<(my::nsd_+1)*my::nen_,(my::nsd_+1)*my::nen_>&  estif,
-                      LINALG::Matrix<(my::nsd_+1)*my::nen_,(my::nsd_+1)*my::nen_>&  emesh,
-                      LINALG::Matrix<(my::nsd_+1)*my::nen_,    1>&          eforce,
-                      const LINALG::Matrix<my::nen_,1> &                eporo,
-                      const LINALG::Matrix<my::nsd_,2*my::nen_> &             egradphi,
-                      const LINALG::Matrix<my::nen_,2*1> &                ecurvature,
-                      const double                                  thermpressaf,
-                      const double                                  thermpressam,
-                      const double                                  thermpressdtaf,
-                      const double                                  thermpressdtam,
-                      Teuchos::RCP<const MAT::Material>             material,
-                      double&                                       Cs_delta_sq,
-                      double&                                       Ci_delta_sq,
-                      double&                                       Cv,
-                      bool                                          isale,
-                      double *                                      saccn,
-                      double *                                      sveln,
-                      double *                                      svelnp,
-                      const DRT::UTILS::GaussIntegration &          intpoints,
-                      double dot1,
-                      double dot2,
-                      double dot3,
-                      int gp);
-
   //! get ALE grid displacements and grid velocity for element
   virtual void GetGridDispALE(
       DRT::Discretization &                   discretization,
@@ -369,13 +322,9 @@ private:
   // element parameter mk
   double mk_;
 
-  double quadraturetol_;
-
   int numgpnorm_;
+  int numgpnormow_;
   int numgpplane_;
-
-  Teuchos::RCP<Epetra_Vector> gpvecnorm_;
-  Teuchos::RCP<Epetra_Vector> gpvecpar_;
 
   //! object to construct gauss points in several dimensions
   Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> cgp_;

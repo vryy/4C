@@ -43,6 +43,7 @@ ALPHA_M                         0.83333333333333
 ALPHA_F                         0.66666666666666
 GAMMA                           0.66666666666666
 CONVTOL                         1e-6
+OFF_PROC_ASSEMBLY               Yes
 -------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 TDS                             quasistatic
@@ -72,6 +73,7 @@ Switch_Step                     2
 Min_Tauw                        0.085
 Blending_Type                   ramp_function
 GP_Wall_Normal                  12
+GP_Wall_Normal_Off_Wall         12
 GP_Wall_Parallel                5
 PROJECTION_SOLVER               9
 -----------------------------------------------------------------ALE DYNAMIC

@@ -1245,7 +1245,6 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
  const Teuchos::ParameterList& fdyn)
 {
   fluidtimeparams->set<int>("Simple Preconditioner",DRT::INPUT::IntegralValue<int>(fdyn,"SIMPLER"));
-  // fluidtimeparams->set<int>("AMG(BS) Preconditioner",DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(DRT::Problem::Instance()->FluidSolverParams(),"AZPREC")); // probably can be removed
 
   // -------------------------------------- number of degrees of freedom
   // number of degrees of freedom
@@ -1385,6 +1384,9 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
 
     fluidtimeparams->sublist("TURBULENCE MODEL").set<string>("statistics outfile",DRT::Problem::Instance()->OutputControlFile()->FileName());
   }
+
+  // ---------------------------parallel evaluation
+  fluidtimeparams->set<bool>  ("OFF_PROC_ASSEMBLY",DRT::INPUT::IntegralValue<int>(fdyn,"OFF_PROC_ASSEMBLY")==1);
 
   return;
 }

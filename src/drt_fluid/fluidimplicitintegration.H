@@ -922,6 +922,12 @@ protected:
   virtual void AssembleMatAndRHS();
 
   /*!
+  \brief call elements to calculate system matrix/rhs and assemble, called from AssembleMatAndRHS
+
+  */
+  virtual void EvaluateMatAndRHS(Teuchos::ParameterList& eleparams);
+
+  /*!
   \brief calculate intermediate solution
 
   */
@@ -1288,6 +1294,9 @@ protected:
 
   /// flag for windkessel outflow condition
   bool isimpedancebc_;
+
+  /// flag for windkessel outflow condition
+  bool off_proc_asselby_;
 
 
   //! @name Set general parameter in class f3Parameter
