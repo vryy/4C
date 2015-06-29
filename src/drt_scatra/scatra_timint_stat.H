@@ -86,7 +86,7 @@ protected:
   TimIntStationary (const TimIntStationary& old);
 
   /// set time parameter for element evaluation
-  void SetElementTimeParameter(bool forcedincrementalsolver=false);
+  void SetElementTimeParameter(bool forcedincrementalsolver=false) const;
 
   //! set time for evaluation of Neumann boundary conditions
   void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params);

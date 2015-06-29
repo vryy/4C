@@ -129,8 +129,6 @@ public:
 
 protected:
 
-  bool set_general_scatra_parameter_;
-
   /*--------------------------*/
   //! @name general parameters
   /*--------------------------*/

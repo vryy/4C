@@ -152,7 +152,8 @@ ITEMAX                          100
 LINEARBLOCKSOLVER               PreconditionedKrylov
 PCITER                          1 1 1
 PCOMEGA                         1.0 1.0 1.0
-PRECONDREUSE                    0
+REBUILDPRECEVERYSTEP            No
+PRECONDREUSE                    25
 SHAPEDERIVATIVES                yes
 SYMMETRICPRECOND                no
 --------------------------------------------------------------------------IO
@@ -187,7 +188,18 @@ SCATRA_SOLVERTYPE               linear
 COUPLED_LINEAR_SOLVER           1                             // FS3I problem
 LINEAR_SOLVER1                  4                             // ScaTra FLUID solver
 LINEAR_SOLVER2                  3                             // ScaTra STRUCT solver
+STRUCTSCAL_INITFUNCNO           1
+STRUCTSCAL_INITIALFIELD         field_by_function
 SCATRATYPE                      ConvectionDiffusion
+----------------------------------------------------------------FS3I DYNAMIC/STRUCTURE SCALAR STABILIZATION
+ASSUGRDIFF                      no
+CONSISTENCY                     no
+DEFINITION_ASSGD                artificial_linear
+DEFINITION_TAU                  Franca_Valentin
+EVALUATION_MAT                  integration_point //element_center
+EVALUATION_TAU                  integration_point //element_center
+STABTYPE                        no_stabilization //GLS //SUPG //
+SUGRVEL                         no
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 CALCERROR                       No
 CONVFORM                        conservative

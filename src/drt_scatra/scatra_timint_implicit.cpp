@@ -45,6 +45,7 @@ Maintainer: Andreas Ehrl
 #include "../drt_fluid_turbulence/dyn_vreman.H"
 
 #include "../drt_nurbs_discret/drt_apply_nurbs_initial_condition.H"
+#include "../drt_nurbs_discret/drt_nurbs_discret.H"
 
 #include "../drt_meshfree_discret/drt_meshfree_discret.H"
 
@@ -726,35 +727,33 @@ SCATRA::ScaTraTimIntImpl::~ScaTraTimIntImpl()
 /*--------------------------------------------------------------------------------*
  | set all general parameters for element                              fang 10/14 |
  *--------------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::SetElementGeneralParameters(bool calcinitialtimederivative)
+void SCATRA::ScaTraTimIntImpl::SetElementGeneralParameters(bool calcinitialtimederivative) const
 {
   Teuchos::ParameterList eleparams;
 
   eleparams.set<int>("action",SCATRA::set_general_scatra_parameter);
 
-  eleparams.set<int>("form of convective term",convform_);
-  eleparams.set("isale",isale_);
+  eleparams.set<int>("convform",convform_);
+
+  eleparams.set<bool>("isale",isale_);
 
   // set flag for writing the flux vector fields
   eleparams.set<int>("writeflux",writeflux_);
 
   //! set vector containing ids of scalars for which flux vectors are calculated
-  eleparams.set<Teuchos::RCP<std::vector<int> > >("writefluxids",writefluxids_);
+  eleparams.set<Teuchos::RCP<std::vector<int> > >("writeflux_ids",writefluxids_);
 
   // parameters for stabilization
-  eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
-  if(calcinitialtimederivative)      // deactivate stabilization when calculating initial time derivative
+  eleparams.sublist("stabilization") = params_->sublist("STABILIZATION");
+  if(calcinitialtimederivative)
   {
-    Teuchos::setStringToIntegralParameter<int>("STABTYPE",
-        "no_stabilization",
-        "type of stabilization (if any)",
-        Teuchos::tuple<std::string>("no_stabilization"),
-        Teuchos::tuple<std::string>("Do not use any stabilization"),
-        Teuchos::tuple<int>(INPAR::SCATRA::stabtype_no_stabilization),
-        &eleparams.sublist("STABILIZATION"));
-    DRT::INPUT::BoolParameter("SUGRVEL","no","potential incorporation of subgrid-scale velocity",&eleparams.sublist("STABILIZATION"));
-    DRT::INPUT::BoolParameter("ASSUGRDIFF","no",
-          "potential incorporation of all-scale subgrid diffusivity (a.k.a. discontinuity-capturing) term",&eleparams.sublist("STABILIZATION"));
+    // deactivate stabilization when calculating initial time derivative
+    eleparams.sublist("stabilization").set<std::string>("STABTYPE","no_stabilization");
+    eleparams.sublist("stabilization").set<std::string>("DEFINITION_TAU","Zero");
+    // deactivate subgrid-scale velocity
+    eleparams.sublist("stabilization").set<std::string>("SUGRVEL","no");
+    // deactivate subgrid diffusivity
+    eleparams.sublist("stabilization").set<std::string>("ASSUGRDIFF","no");
   }
 
   // parameters for finite difference check
@@ -762,6 +761,7 @@ void SCATRA::ScaTraTimIntImpl::SetElementGeneralParameters(bool calcinitialtimed
     eleparams.set<int>("fdcheck",INPAR::SCATRA::fdcheck_none);
   else
     eleparams.set<int>("fdcheck",fdcheck_);
+
   eleparams.set<double>("fdcheckeps",fdcheckeps_);
   eleparams.set<double>("fdchecktol",fdchecktol_);
 
@@ -778,7 +778,7 @@ void SCATRA::ScaTraTimIntImpl::SetElementGeneralParameters(bool calcinitialtimed
 /*----------------------------------------------------------------------*
  | set turbulence parameters for element                rasthofer 11/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::SetElementTurbulenceParameters(bool calcinitialtimederivative)
+void SCATRA::ScaTraTimIntImpl::SetElementTurbulenceParameters(bool calcinitialtimederivative) const
 {
   Teuchos::ParameterList eleparams;
 
@@ -895,6 +895,27 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
 
   return;
 } // ScaTraTimIntImpl::PrepareTimeStep
+
+
+/*---------------------------------------------------------------------------------------*
+ | prepare evaluate if one has more than one scatra discretization  (public) thon 06/15  |
+ *---------------------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::PrepareEvaluateWithMultipleScatraFields() const
+{
+  //TODO: We would be happy if we don't need this function. But therefore one would probably have to
+  // extend the singleton principle for the ele_calc_classes :-(
+
+  // We could have more than one scatra discretization. But if one calls an Evaluate() routine one does
+  // always end up in the same ele_calc class (they are accessed via the static Instance() function,
+  // i.e. they are singletons). So we always have to reset all the parameter who differ between the different
+  // discretizations before we call an Evaluate(). For now these are 'just' the stabilization
+  // parameters, hence we must be able to reset them.
+
+  //Set GeneralParameters (i.e. stabilization parameters and some more) as they are specified in the
+  //parameter list
+  SetElementGeneralParameters(false);
+
+}
 
 
 /*----------------------------------------------------------------------*
@@ -1597,15 +1618,21 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
     const Teuchos::ParameterList& scatradyn =
       DRT::Problem::Instance()->ScalarTransportDynamicParams();
     const int lstsolver = scatradyn.get<int>("LINEAR_SOLVER");
-    if (lstsolver == (-1))
-      dserror("no linear solver defined for least square NURBS problem. Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number! Note: this solver block is misused for the least square problem. Maybe one should add a separate parameter for this.");
 
-    DRT::NURBS::apply_nurbs_initial_condition(
-        *discret_  ,
-        errfile_,
-        DRT::Problem::Instance()->SolverParams(lstsolver),
-        startfuncno,
-        phin_     );
+    DRT::NURBS::NurbsDiscretization* nurbsdis
+    = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*discret_));
+    if(nurbsdis!=NULL)
+    {
+      if (lstsolver == (-1))
+        dserror("no linear solver defined for least square NURBS problem. Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number! Note: this solver block is misused for the least square problem. Maybe one should add a separate parameter for this.");
+
+      DRT::NURBS::apply_nurbs_initial_condition(
+          *discret_  ,
+          errfile_,
+          DRT::Problem::Instance()->SolverParams(lstsolver),
+          startfuncno,
+          phin_     );
+    }
 
     // initialize also the solution vector. These values are a pretty good guess for the
     // solution after the first time step (much better than starting with a zero vector)

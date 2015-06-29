@@ -107,13 +107,13 @@ protected:
   TimIntGenAlpha (const TimIntGenAlpha& old);
 
   /// set time parameter for element evaluation
-  virtual void SetElementTimeParameter(bool forcedincrementalsolver=false);
+  virtual void SetElementTimeParameter(bool forcedincrementalsolver=false) const;
 
   //! set time for evaluation of Neumann boundary conditions
   virtual void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params);
 
   /// set time parameter for element evaluation applying an iterative backward Euler scheme
-  virtual void SetElementTimeParameterBackwardEuler();
+  virtual void SetElementTimeParameterBackwardEuler() const;
 
   /// Initialization procedure before the first time step is done
   void PrepareFirstTimeStep();

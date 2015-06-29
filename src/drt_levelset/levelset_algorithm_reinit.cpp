@@ -74,11 +74,11 @@ void SCATRA::LevelSetAlgorithm::SetReinitializationElementParameters()
 
   // reinitialization equation id given in convective form
   // ale is not intended here
-  eleparams.set<int>("form of convective term",INPAR::SCATRA::convform_convective);
+  eleparams.set<int>("convform",INPAR::SCATRA::convform_convective);
   eleparams.set("isale",false);
 
   // parameters for stabilization, which are the same as for the level-set equation (if turned on)
-  eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
+  eleparams.sublist("stabilization") = params_->sublist("STABILIZATION");
 
   // set flag for writing the flux vector fields
   eleparams.set<int>("writeflux",writeflux_);

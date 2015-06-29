@@ -250,25 +250,25 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcTauFrancaValentin(
   // due to time factor and reaction coefficient (reaction coefficient
   // ensured to be zero in GetMaterialParams for non-reactive material)
   double sigma_tot = reacoeff;
-  if (scatrapara_->TauDef() == INPAR::SCATRA::tau_franca_valentin) sigma_tot += 1.0/scatraparatimint_->TimeFac();
+  if (scatrapara_->TauDef() == INPAR::SCATRA::tau_franca_valentin)
+    sigma_tot += 1.0/scatraparatimint_->TimeFac();
 
   // calculate characteristic element length
   const double h = CalcCharEleLength(vol,vel_norm, convelint);
 
   // various parameter computations:
   // relating convective to viscous part
-  if (diffus < EPS14) dserror("Invalid diffusion coefficent: %i",diffus);
-  const double epe = mk * densnp * vel_norm * h / diffus;
+  const double epe = mk * densnp * vel_norm * h;
   // relating viscous to reactive part
   double epe1 = 0.0;
   if (scatrapara_->TauDef() == INPAR::SCATRA::tau_franca_valentin or reacoeff != 0.0)
     epe1 = 2.0*diffus/(mk*densnp*sigma_tot*DSQR(h));
 
   // respective "switching" parameters
-  const double xi  = std::max(epe,1.0);
+  const double xi  = std::max(epe,1.0*diffus);
   const double xi1 = std::max(epe1,1.0);
 
-  tau = DSQR(h)/(DSQR(h)*densnp*sigma_tot*xi1 + 2.0*diffus*xi/mk);
+  tau = DSQR(h)/(DSQR(h)*densnp*sigma_tot*xi1 + 2.0*xi/mk);
 
   return;
 }

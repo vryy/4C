@@ -109,7 +109,7 @@ SCATRA::TimIntOneStepTheta::~TimIntOneStepTheta()
 /*----------------------------------------------------------------------*
  |  set time parameter for element evaluation (usual call)   ehrl 11/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::SetElementTimeParameter(bool forcedincrementalsolver)
+void SCATRA::TimIntOneStepTheta::SetElementTimeParameter(bool forcedincrementalsolver) const
 {
   Teuchos::ParameterList eleparams;
 

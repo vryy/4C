@@ -89,19 +89,6 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   const Teuchos::ParameterList& scatradyn =
     DRT::Problem::Instance()->ScalarTransportDynamicParams();
 
-  // print out default parameters of scalar transport parameter lists
-  if (actdis->Comm().MyPID()==0)
-  {
-    DRT::INPUT::PrintDefaultParameters(IO::cout, scatradyn);
-    DRT::INPUT::PrintDefaultParameters(IO::cout, scatradyn.sublist("STABILIZATION"));
-    DRT::INPUT::PrintDefaultParameters(IO::cout, scatradyn.sublist("NONLINEAR"));
-    /*
-    const Teuchos::ParameterList& solverparams =
-        DRT::Problem::Instance()->ScalarTransportFluidSolverParams();
-    DRT::INPUT::PrintDefaultParameters(IO::cout, solverparams);
-    */
-  }
-
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
@@ -133,29 +120,35 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   scatratimeparams->set           ("UPRES"       ,prbdyn.get<int>("UPRES"));
 
   // -------------------------------------------------------------------
-  // overrule flag for form of convective term as well as stabilization
-  // for solid-based scalar transport in FS3I-type problems, to allow
-  // for simultaneously using convective formulation and stabilization
-  // in fluid-based scalar transport, while conservative formulation
-  // and no stabilization is mandatorily used in solid-based scalar
-  // transport, for the time being
+  // overrule flags for solid-based scalar transport!
   // (assumed disname = "scatra2" for solid-based scalar transport)
   // -------------------------------------------------------------------
-  if (disname == "scatra2")
+  if (probtype == prb_ac_fsi or probtype == prb_biofilm_fsi or probtype == prb_gas_fsi or probtype ==prb_fps3i)
   {
-    scatratimeparams->set<string>("CONVFORM","conservative");
-    scatratimeparams->sublist("STABILIZATION").set<string>("STABTYPE","no_stabilization");
-    scatratimeparams->sublist("STABILIZATION").set<string>("DEFINITION_TAU","Zero");
+    //scatra1 (=fluid scalar) get's inputs from SCALAR TRANSPORT DYNAMIC/STABILIZATION, hence nothing is to do here
+//    if (disname== "scatra1") //get's inputs from SCALAR TRANSPORT DYNAMIC/STABILIZATION
 
-    // some provisions not yet activated
-    /*if (DRT::INPUT::IntegralValue<INPAR::SCATRA::StabType>(scatratimeparams->sublist("STABILIZATION"),"STABTYPE") == INPAR::SCATRA::stabtype_SUPG)
-      scatratimeparams->sublist("STABILIZATION").set<string>("STABTYPE","USFEM");
+    if (disname == "scatra2") //structure_scatra discretisation
+    {
+      //scatra2 (=structure scalar) get's inputs from FS3I DYNAMIC/STRUCTURE SCALAR STABILIZATION, hence we have to replace it
+      scatratimeparams->sublist("STABILIZATION")=prbdyn.sublist("STRUCTURE SCALAR STABILIZATION");
 
-    if (DRT::INPUT::IntegralValue<INPAR::SCATRA::TauType>(scatratimeparams->sublist("STABILIZATION"),"DEFINITION_TAU") == INPAR::SCATRA::tau_franca_valentin)
-      scatratimeparams->sublist("STABILIZATION").set<string>("DEFINITION_TAU","Franca_Madureira_Valentin");
-    else if (DRT::INPUT::IntegralValue<INPAR::SCATRA::TauType>(scatratimeparams->sublist("STABILIZATION"),"DEFINITION_TAU") == INPAR::SCATRA::tau_franca_valentin_wo_dt or
-     DRT::INPUT::IntegralValue<INPAR::SCATRA::TauType>(scatratimeparams->sublist("STABILIZATION"),"DEFINITION_TAU") == INPAR::SCATRA::tau_exact_1d)
-      scatratimeparams->sublist("STABILIZATION").set<string>("DEFINITION_TAU","Franca_Madureira_Valentin_wo_dt");*/
+      //scatra2 get's in initial functions from FS3I DYNAMICS
+      switch ( DRT::INPUT::IntegralValue<INPAR::SCATRA::InitialField>(prbdyn,"STRUCTSCAL_INITIALFIELD") )
+      {
+      case INPAR::SCATRA::initfield_zero_field:
+        scatratimeparams->set<std::string>("INITIALFIELD","zero_field"); //we want zero initial conditions for the structure scalar
+        scatratimeparams->set<int>("INITFUNCNO",-1);
+        break;
+      case INPAR::SCATRA::initfield_field_by_function:
+        scatratimeparams->set<std::string>("INITIALFIELD","field_by_function"); //we want the same initial conditions for structure scalar as for the fluid scalar
+        scatratimeparams->set<int>("INITFUNCNO", prbdyn.get<int>("STRUCTSCAL_INITFUNCNO") );
+        break;
+      default:
+        dserror("Your STRUCTSCAL_INITIALFIELD type is not supported!");
+        break;
+      }
+    }
   }
 
   // -------------------------------------------------------------------

@@ -112,7 +112,7 @@ SCATRA::TimIntBDF2::~TimIntBDF2()
 /*----------------------------------------------------------------------*
  |  set time parameter for element evaluation (usual call)   ehrl 11/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntBDF2::SetElementTimeParameter(bool forcedincrementalsolver)
+void SCATRA::TimIntBDF2::SetElementTimeParameter(bool forcedincrementalsolver) const
 {
   Teuchos::ParameterList eleparams;
 

@@ -57,7 +57,18 @@ SCATRA_SOLVERTYPE               nonlinear //linear
 COUPLED_LINEAR_SOLVER           4                             // FS3I problem
 LINEAR_SOLVER1                  5                             // ScaTra FLUID solver
 LINEAR_SOLVER2                  6                             // ScaTra STRUCT solver
+STRUCTSCAL_INITIALFIELD         zero_field
+STRUCTSCAL_INITFUNCNO           -1
 SCATRATYPE                      Advanced_Reaction //ConvectionDiffusion //
+----------------------------------------------------------------FS3I DYNAMIC/STRUCTURE SCALAR STABILIZATION
+ASSUGRDIFF                      no
+CONSISTENCY                     no
+DEFINITION_ASSGD                artificial_linear
+DEFINITION_TAU                  Franca_Valentin
+EVALUATION_MAT                  integration_point //element_center
+EVALUATION_TAU                  integration_point //element_center
+STABTYPE                        no_stabilization //GLS //SUPG //
+SUGRVEL                         no
 ----------------------------------------------------------------FS3I DYNAMIC/PARTITIONED
 COUPALGO                        fs3i_SequStagg //fs3i_IterStagg //
 CONVTOL                         1e-03
@@ -105,7 +116,7 @@ DEFINITION_ASSGD                artificial_linear
 DEFINITION_TAU                  Franca_Valentin
 EVALUATION_MAT                  integration_point //element_center
 EVALUATION_TAU                  integration_point //element_center
-STABTYPE                        GLS //SUPG //no_stabilization
+STABTYPE                        no_stabilization // GLS // SUPG
 SUGRVEL                         no
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 NUMSTEP                         3000
@@ -251,6 +262,7 @@ SHAPEDERIVATIVES                No //
 ITEMAX                          100
 INFNORMSCALING                  Yes
 SYMMETRICPRECOND                No
+REBUILDPRECEVERYSTEP            No
 PRECONDREUSE                    50 //0 //how often is preconditioner rebuild??
 LINEARBLOCKSOLVER               PreconditionedKrylov
 STRUCTPCOMEGA                   1.0 1.0 1.0 1.0

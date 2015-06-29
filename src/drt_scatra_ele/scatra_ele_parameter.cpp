@@ -28,9 +28,7 @@ Maintainer: Andreas Ehrl
 //    constructor
 //----------------------------------------------------------------------*/
 DRT::ELEMENTS::ScaTraEleParameter::ScaTraEleParameter()
- : //set_general_fluid_parameter_(false),
-  set_general_scatra_parameter_(false),
-  is_ale_(false),
+ :is_ale_(false),
   is_conservative_(false),
   writeflux_(INPAR::SCATRA::flux_no),
   writefluxids_(Teuchos::null),
@@ -88,7 +86,8 @@ void DRT::ELEMENTS::ScaTraEleParameter::SetElementGeneralParameters(Teuchos::Par
 
   // set flag for conservative form
   const INPAR::SCATRA::ConvForm convform =
-    DRT::INPUT::get<INPAR::SCATRA::ConvForm>(params, "form of convective term");
+    DRT::INPUT::get<INPAR::SCATRA::ConvForm>(params, "convform");
+
   is_conservative_ = false;
   if (convform ==INPAR::SCATRA::convform_conservative) is_conservative_ = true;
 
@@ -96,10 +95,11 @@ void DRT::ELEMENTS::ScaTraEleParameter::SetElementGeneralParameters(Teuchos::Par
   writeflux_ =  DRT::INPUT::get<INPAR::SCATRA::FluxType>(params, "writeflux");
 
   //! vector containing ids of scalars for which flux vectors are calculated
-  writefluxids_ =  params.get<Teuchos::RCP<std::vector<int> > >("writefluxids");
+  if (writeflux_ != INPAR::SCATRA::flux_no)
+    writefluxids_ =  params.get<Teuchos::RCP<std::vector<int> > >("writeflux_ids");
 
   // set parameters for stabilization
-  Teuchos::ParameterList& stablist = params.sublist("STABILIZATION");
+  Teuchos::ParameterList& stablist = params.sublist("stabilization");
 
   // get definition for stabilization parameter tau
   whichtau_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::TauType>(stablist,"DEFINITION_TAU");

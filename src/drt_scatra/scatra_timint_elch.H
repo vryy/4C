@@ -61,7 +61,7 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   /*========================================================================*/
 
   //! Set elch-specific parameters
-  void SetElementSpecificScaTraParameters(Teuchos::ParameterList& eleparams);
+  void SetElementSpecificScaTraParameters(Teuchos::ParameterList& eleparams) const;
 
   //! contains the nonlinear iteration loop
   void NonlinearSolve();

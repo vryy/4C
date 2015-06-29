@@ -57,7 +57,17 @@ SCATRA_SOLVERTYPE               nonlinear //linear
 COUPLED_LINEAR_SOLVER           4                             // FS3I problem
 LINEAR_SOLVER1                  5                             // ScaTra FLUID solver
 LINEAR_SOLVER2                  6                             // ScaTra STRUCT solver
+STRUCTSCAL_INITIALFIELD         zero_field //field_by_function //
 SCATRATYPE                      Advanced_Reaction //ConvectionDiffusion //
+----------------------------------------------------------------FS3I DYNAMIC/STRUCTURE SCALAR STABILIZATION
+ASSUGRDIFF                      no
+CONSISTENCY                     no
+DEFINITION_ASSGD                artificial_linear
+DEFINITION_TAU                  Franca_Valentin
+EVALUATION_MAT                  integration_point //element_center
+EVALUATION_TAU                  integration_point //element_center
+STABTYPE                        no_stabilization //GLS //SUPG //
+SUGRVEL                         no
 ----------------------------------------------------------------FS3I DYNAMIC/PARTITIONED
 COUPALGO                        fs3i_SequStagg //fs3i_IterStagg //
 CONVTOL                         1e-03
@@ -70,8 +80,8 @@ PERIODICITY                     0.02
 CALCERROR                       No
 CONVFORM                        conservative
 GAMMA                           0.5
-INITFUNCNO                      -1
-INITIALFIELD                    zero_field //field_by_function //
+INITFUNCNO                      2
+INITIALFIELD                    field_by_function //zero_field //
 MAXTIME                         10000
 NUMSTEP                         10
 OUTMEAN                         No
@@ -100,10 +110,10 @@ ITEMAX                          10
 ASSUGRDIFF                      no
 CONSISTENCY                     no
 DEFINITION_ASSGD                artificial_linear
-DEFINITION_TAU                  Franca_Valentin
+DEFINITION_TAU                  Codina
 EVALUATION_MAT                  integration_point //element_center
 EVALUATION_TAU                  integration_point //element_center
-STABTYPE                        GLS //SUPG //no_stabilization
+STABTYPE                        GLS //no_stabilization //SUPG //
 SUGRVEL                         no
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 NUMSTEP                         3000
@@ -249,6 +259,7 @@ SHAPEDERIVATIVES                No //
 ITEMAX                          100
 INFNORMSCALING                  Yes
 SYMMETRICPRECOND                No
+REBUILDPRECEVERYSTEP            No
 PRECONDREUSE                    50 //0 //how often is preconditioner rebuild??
 LINEARBLOCKSOLVER               PreconditionedKrylov
 STRUCTPCOMEGA                   1.0 1.0 1.0 1.0
@@ -513,33 +524,33 @@ SRC_FIELD structure SRC_MAT 2 TAR_FIELD scatra2 TAR_MAT 12
 CURVE 1 on EXPR FUNC ((1-cos(pi/2/0.05*t))*0.4266) t1 0 t2 0.0499999
 CURVE 1 on PhysiologicalWaveform InterpolType Fourier Period 1.000 Flowrate 1 Samplingpoints 60 Arrayread 0.3840 0.4266 0.4693 0.5689 1.1377 1.6212 2.2896 3.1998 3.9109 4.4370 4.5224 4.1811 3.6833 3.1856 2.6168 2.1616 1.8915 1.7350 1.6212 1.5786 1.5217 1.2373 0.8959 0.1991 -0.3129 -0.7964 -0.9955 -0.9955 -0.6684 0.0142 0.4835 0.8391 0.9813 0.9813 0.8533 0.6399 0.4409 0.3129 0.2418 0.2418 0.2418 0.3555 0.4550 0.4978 0.5404 0.5547 0.5404 0.5404 0.4835 0.4124 0.3698 0.3413 0.3271 0.3413 0.3555 0.3698 0.3840 0.3840 0.3840 0.3840
 -------------------------------------------------------------CURVE2
-CURVE 2 on EXPR FUNC 0 t1 0 t2 0.01
-CURVE 2 on EXPR FUNC ((1-cos(pi*(t-0.01)/0.1))*0.5) t1 0.01 t2 0.11
-CURVE 2 on EXPR FUNC 1 t1 0.11 t2 100
+CURVE 2 on EXPR FUNC 0.01 t1 0 t2 0.01
+CURVE 2 on EXPR FUNC (0.01+(1-cos(pi*(t-0.01)/0.1))*0.5) t1 0.01 t2 0.11
+CURVE 2 on EXPR FUNC 1.01 t1 0.11 t2 100
 -------------------------------------------------------------CURVE3
 -------------------------------------------------------------CURVE4
 -------------------------------------------------------------FUNCT1
 FUNCT1 EXPR 0 0 0 FUNCTION ((1-(((x)^2+(y)^2)^4)/(18^8)))
 -------------------------------------------------------------FUNCT2
-//FUNCT2 EXPR 0 0 0 FUNCTION 0.000
+FUNCT 2 COMPONENT 0 EXPR 0 0 0 FUNCTION 0.01 // 1.0
 -------------------------------------------------------------FUNCT3
 -------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra2 NODE 4146 QUANTITY phi VALUE 8.90180426338311407e-04 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 4146 QUANTITY dispx VALUE -3.33141838375134169e-02 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 4146 QUANTITY dispy VALUE -1.40963970746917581e-02 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 4146 QUANTITY dispz VALUE 2.36892726786350587e-02 TOLERANCE 1e-6
-SCATRA DIS scatra1 NODE 39 QUANTITY phi VALUE 2.34038318762042445e-02 TOLERANCE 1e-6
-FLUID DIS fluid NODE 39 QUANTITY velx VALUE 4.09092586765470445e-02 TOLERANCE 1e-6
-FLUID DIS fluid NODE 39 QUANTITY vely VALUE -2.05092783111124888e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 39 QUANTITY velz VALUE 1.07747174845718163e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 39 QUANTITY pressure VALUE -6.00350951451447585e+01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 39 QUANTITY wssx VALUE -3.28169140404810378e-03 TOLERANCE 1e-6
-FLUID DIS fluid NODE 39 QUANTITY wssy VALUE 8.71833627533646904e-03 TOLERANCE 1e-6
-FLUID DIS fluid NODE 39 QUANTITY wssz VALUE 1.12283778104759313e+00 TOLERANCE 1e-6
-ALE DIS ale NODE 39 QUANTITY dispx VALUE 1.49884194197267488e-03 TOLERANCE 1e-6
-ALE DIS ale NODE 39 QUANTITY dispy VALUE -6.97258281640960632e-03 TOLERANCE 1e-6
-ALE DIS ale NODE 39 QUANTITY dispz VALUE 6.01404579540629064e-02 TOLERANCE 1e-6
+SCATRA DIS scatra2 NODE 4146 QUANTITY phi VALUE 1.13462700874152902e-03 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 4146 QUANTITY dispx VALUE -1.54965780693951893e-01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 4146 QUANTITY dispy VALUE -6.31329182213312412e-02 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 4146 QUANTITY dispz VALUE 2.86222379542604953e-02 TOLERANCE 1e-6
+SCATRA DIS scatra1 NODE 39 QUANTITY phi VALUE 2.62131971327816092e-02 TOLERANCE 1e-6
+FLUID DIS fluid NODE 39 QUANTITY velx VALUE 1.51883174822416311e-01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 39 QUANTITY vely VALUE -7.55524473944987562e-01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 39 QUANTITY velz VALUE 2.75638358439604048e-01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 39 QUANTITY pressure VALUE -1.84461404643283288e+02 TOLERANCE 1e-6
+FLUID DIS fluid NODE 39 QUANTITY wssx VALUE -1.92983004989031315e-02 TOLERANCE 1e-6
+FLUID DIS fluid NODE 39 QUANTITY wssy VALUE 7.10984637736373770e-02 TOLERANCE 1e-6
+FLUID DIS fluid NODE 39 QUANTITY wssz VALUE 2.45029582317429373e+00 TOLERANCE 1e-6
+ALE DIS ale NODE 39 QUANTITY dispx VALUE 1.57450725411074528e-02 TOLERANCE 1e-6
+ALE DIS ale NODE 39 QUANTITY dispy VALUE -7.83119261631470970e-02 TOLERANCE 1e-6
+ALE DIS ale NODE 39 QUANTITY dispz VALUE 1.99824863160809413e-01 TOLERANCE 1e-6
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  4

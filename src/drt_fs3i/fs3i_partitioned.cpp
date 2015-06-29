@@ -207,7 +207,7 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> fluidscatra =
     Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(fs3idyn,true,"scatra1",problem->SolverParams(linsolver1number)));
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> structscatra =
-    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(fs3idyn,true,"scatra2",DRT::Problem::Instance()->SolverParams(linsolver2number)));
+    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(fs3idyn,true,"scatra2",problem->SolverParams(linsolver2number)));
 
   scatravec_.push_back(fluidscatra);
   scatravec_.push_back(structscatra);

@@ -151,7 +151,8 @@ ITEMAX                          100
 LINEARBLOCKSOLVER               PreconditionedKrylov
 PCITER                          1 1 1 1
 PCOMEGA                         1.0 1.0 1.0 1.0
-PRECONDREUSE                    0
+REBUILDPRECEVERYSTEP            No
+PRECONDREUSE                    10
 SHAPEDERIVATIVES                yes
 SYMMETRICPRECOND                no
 --------------------------------------------------------------------------IO
@@ -186,6 +187,11 @@ COUPLED_LINEAR_SOLVER           1
 LINEAR_SOLVER1                  4
 LINEAR_SOLVER2                  3
 SCATRATYPE                      Advanced_Reaction
+STRUCTSCAL_INITIALFIELD         field_by_function
+STRUCTSCAL_INITFUNCNO           1
+----------------------------------------------------------------FS3I DYNAMIC/STRUCTURE SCALAR STABILIZATION
+STABTYPE                        no_stabilization //SUPG
+DEFINITION_TAU                  Taylor_Hughes_Zarins
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 CALCERROR                       No
 CONVFORM                        conservative
@@ -222,7 +228,7 @@ DEFINITION_ASSGD                artificial_linear
 DEFINITION_TAU                  Taylor_Hughes_Zarins
 EVALUATION_MAT                  element_center
 EVALUATION_TAU                  integration_point
-STABTYPE                        SUPG
+STABTYPE                        no_stabilization //SUPG
 SUGRVEL                         no
 -------------------------------------------------------------BIOFILM CONTROL
 BIONUMSTEP                      2

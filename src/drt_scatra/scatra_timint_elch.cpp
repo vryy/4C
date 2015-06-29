@@ -159,7 +159,7 @@ void SCATRA::ScaTraTimIntElch::Init()
 /*----------------------------------------------------------------------*
  | set elch-specific element parameters                      fang 11/14 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElch::SetElementSpecificScaTraParameters(Teuchos::ParameterList& eleparams)
+void SCATRA::ScaTraTimIntElch::SetElementSpecificScaTraParameters(Teuchos::ParameterList& eleparams) const
 {
   // overwrite action type
   if(DRT::INPUT::IntegralValue<int>(*elchparams_,"DIFFCOND_FORMULATION"))

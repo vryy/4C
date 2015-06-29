@@ -2,6 +2,8 @@
 \file fluid_timint_ac.cpp
 \brief
 
+Fluid time integrator for FS3I-AC problems
+
 <pre>
    Maintainer: Moritz Thon
                thon@mhpc.mw.tum.de

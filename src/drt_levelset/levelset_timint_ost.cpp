@@ -109,7 +109,7 @@ void SCATRA::LevelSetTimIntOneStepTheta::PrepareFirstTimeStep()
 
     // reinitialization equation id given in convective form
     // ale is not intended here
-    eleparams.set<int>("form of convective term",INPAR::SCATRA::convform_convective);
+    eleparams.set<int>("convform",INPAR::SCATRA::convform_convective);
     eleparams.set("isale",false);
 
     // set flag for writing the flux vector fields
@@ -119,7 +119,7 @@ void SCATRA::LevelSetTimIntOneStepTheta::PrepareFirstTimeStep()
     eleparams.set<Teuchos::RCP<std::vector<int> > >("writefluxids",writefluxids_);
 
     // parameters for stabilization
-    eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
+    eleparams.sublist("stabilization") = params_->sublist("STABILIZATION");
 
     // set level-set reitialization specific parameters
     eleparams.sublist("REINITIALIZATION") = levelsetparams_->sublist("REINITIALIZATION");

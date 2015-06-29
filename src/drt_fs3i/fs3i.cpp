@@ -359,8 +359,12 @@ void FS3I::FS3I_Base::EvaluateScatraFields()
 {
   for (unsigned i=0; i<scatravec_.size(); ++i)
   {
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_adap = scatravec_[i];
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra = scatra_adap->ScaTraField();
+    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra = scatravec_[i]->ScaTraField();
+
+    // set scatra parameters before assembling, since we could have more than one scatra discretisation but only one calc routine
+    scatra->PrepareEvaluateWithMultipleScatraFields();
+
+    //evaluate scatra field
     scatra->PrepareLinearSolve();
     // add contributions due to finite interface permeability
     if (!infperm_)

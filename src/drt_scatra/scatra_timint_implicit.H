@@ -134,6 +134,9 @@ public:
   //! initialization procedure before the first time step is done
   virtual void PrepareFirstTimeStep() = 0;
 
+  //! prepare evaluate if one has more than one scatra discretization
+  void PrepareEvaluateWithMultipleScatraFields () const;
+
   //! preparations for solve
   virtual void PrepareLinearSolve();
 
@@ -530,25 +533,22 @@ protected:
   //! @name set element parameters
   /*========================================================================*/
 
-  virtual void SetElementTimeParameter(bool forcedincrementalsolver=false)=0;
+  virtual void SetElementTimeParameter(bool forcedincrementalsolver=false)  const=0;
 
   //! Set backward Euler time parameter
-  virtual void SetElementTimeParameterBackwardEuler(){return;};
+  virtual void SetElementTimeParameterBackwardEuler() const {return;};
 
   //! set time for evaluation of Neumann boundary conditions
   virtual void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params) = 0;
 
   //! Set general element parameters
-  void SetElementGeneralParameters(bool calcinitialtimederivative = false);
+  void SetElementGeneralParameters(bool calcinitialtimederivative = false) const;
 
   //! Set additional problem-specific parameters for non-standard scalar transport problems (electrochemistry etc.)
-  virtual void SetElementSpecificScaTraParameters(Teuchos::ParameterList& eleparams){return;};
+  virtual void SetElementSpecificScaTraParameters(Teuchos::ParameterList& eleparams) const {return;};
 
   //! Set element parameter specific for turbulence
-  void SetElementTurbulenceParameters(bool calcinitialtimederivative = false);
-
-  //! Deactivate element parameter specific for turbulence
-  void SetElementTurbulenceParametersDeactivated();
+  void SetElementTurbulenceParameters(bool calcinitialtimederivative = false) const;
 
   /*========================================================================*/
   //! @name general framework
@@ -820,10 +820,10 @@ protected:
   Teuchos::RCP<LINALG::Solver>         solver_;
 
   //! parameter list
-  Teuchos::RCP<Teuchos::ParameterList> params_;
+  const Teuchos::RCP<Teuchos::ParameterList> params_;
 
   //! parameter list containing extra parameters (application dependent)
-  Teuchos::RCP<Teuchos::ParameterList> extraparams_;
+  const Teuchos::RCP<Teuchos::ParameterList> extraparams_;
 
   //! processor id
   int myrank_;

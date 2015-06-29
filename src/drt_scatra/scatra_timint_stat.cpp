@@ -97,7 +97,7 @@ SCATRA::TimIntStationary::~TimIntStationary()
 /*----------------------------------------------------------------------*
  | set time parameter for element evaluation (usual call)    ehrl 11/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntStationary::SetElementTimeParameter(bool forcedincrementalsolver)
+void SCATRA::TimIntStationary::SetElementTimeParameter(bool forcedincrementalsolver) const
 {
   Teuchos::ParameterList eleparams;
 

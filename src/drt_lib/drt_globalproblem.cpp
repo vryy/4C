@@ -271,6 +271,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--STI DYNAMIC", *list);
   reader.ReadGidSection("--FS3I DYNAMIC", *list);
   reader.ReadGidSection("--FS3I DYNAMIC/PARTITIONED", *list);
+  reader.ReadGidSection("--FS3I DYNAMIC/STRUCTURE SCALAR STABILIZATION", *list);
   reader.ReadGidSection("--FS3I DYNAMIC/AC", *list);
   reader.ReadGidSection("--ALE DYNAMIC", *list);
   reader.ReadGidSection("--FSI DYNAMIC", *list);

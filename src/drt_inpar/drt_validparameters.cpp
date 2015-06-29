@@ -5687,7 +5687,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("ADAPTCONV_BETTER",0.1,"The linear solver shall be this much better than the current nonlinear residual in the nonlinear convergence limit",&scatra_nonlin);
 
 /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& scatradyn_stab = scatradyn.sublist("STABILIZATION",false,"");
+  Teuchos::ParameterList& scatradyn_stab = scatradyn.sublist("STABILIZATION",false,"control parameters for the stabilization of scalar transport problems");
 
   // this parameter governs type of stabilization
   setStringToIntegralParameter<int>("STABTYPE",
@@ -5996,6 +5996,20 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("LINEAR_SOLVER1",-1,"number of linear solver used for fluid problem",&fs3idyn);
   IntParameter("LINEAR_SOLVER2",-1,"number of linear solver used for structural problem",&fs3idyn);
 
+
+  setStringToIntegralParameter<int>("STRUCTSCAL_INITIALFIELD",
+                                  "zero_field",
+                                  "Initial Field for structure scalar transport problem",
+                                  tuple<std::string>(
+                                    "zero_field",
+                                    "field_by_function"),
+                                  tuple<int>(
+                                      INPAR::SCATRA::initfield_zero_field,
+                                      INPAR::SCATRA::initfield_field_by_function),
+                                  &fs3idyn);
+
+  IntParameter("STRUCTSCAL_INITFUNCNO",-1,"function number for structure scalar transport initial field",&fs3idyn);
+
   // type of scalar transport
   setStringToIntegralParameter<int>("SCATRATYPE","Undefined",
                                "Type of scalar transport problem",
@@ -6014,7 +6028,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fs3idynpart = fs3idyn.sublist(
       "PARTITIONED",false,
-      "Fluid-Structure-Scalar-Scalar Interaction control section"
+      "partioned fluid-structure-scalar-scalar interaction control section"
        );
 
 // Coupling strategy for partitioned FS3I
@@ -6036,12 +6050,22 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   IntParameter("ITEMAX",10,"Maximum number of outer iterations",&fs3idynpart);
 
+  /*----------------------------------------------------------------------  */
+  /* parameters for stabilization of the structure-scalar field             */
+  /*----------------------------------------------------------------------  */
+  Teuchos::ParameterList& fs3idynstructscalstab = fs3idyn.sublist(
+      "STRUCTURE SCALAR STABILIZATION",false,
+      "parameters for stabilization of the structure-scalar field"
+       );
+
+  fs3idynstructscalstab = scatradyn.sublist("STABILIZATION",true,"control parameters for the stabilization of scalar transport problems");
+
   /*----------------------------------------------------------------------*/
   /* parameters for Atherosclerosis FSI */
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fs3idynac = fs3idyn.sublist(
       "AC",false,
-      "Atherosclerosis Fluid-Structure-Scalar-Scalar Interaction control section"
+      "Atherosclerosis fluid-structure-scalar-scalar interaction control section"
        );
 
   // FSI time steps per SSI time step

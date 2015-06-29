@@ -91,7 +91,7 @@ protected:
   TimIntBDF2 (const TimIntBDF2& old);
 
   /// set time parameter for element evaluation
-  virtual void SetElementTimeParameter(bool forcedincrementalsolver=false);
+  virtual void SetElementTimeParameter(bool forcedincrementalsolver=false) const;
 
   //! set time for evaluation of Neumann boundary conditions
   virtual void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params);

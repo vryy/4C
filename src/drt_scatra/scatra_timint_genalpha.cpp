@@ -133,7 +133,7 @@ SCATRA::TimIntGenAlpha::~TimIntGenAlpha()
 /*----------------------------------------------------------------------*
  |  set time parameter for element evaluation (usual call)   ehrl 11/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::SetElementTimeParameter(bool forcedincrementalsolver)
+void SCATRA::TimIntGenAlpha::SetElementTimeParameter(bool forcedincrementalsolver) const
 {
   Teuchos::ParameterList eleparams;
 
@@ -160,7 +160,7 @@ void SCATRA::TimIntGenAlpha::SetElementTimeParameter(bool forcedincrementalsolve
 /*----------------------------------------------------------------------*
  |  set time parameter for element evaluation (usual call)   ehrl 11/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::SetElementTimeParameterBackwardEuler()
+void SCATRA::TimIntGenAlpha::SetElementTimeParameterBackwardEuler() const
 {
   Teuchos::ParameterList eleparams;
 
