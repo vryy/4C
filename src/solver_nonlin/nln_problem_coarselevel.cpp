@@ -96,11 +96,11 @@ void NLNSOL::NlnProblemCoarseLevel::ComputeF(const Epetra_MultiVector& xc,
   // residual correction on coarse level
   if (fhat_.is_null()) { dserror("Residual correction 'fhat_' not set, yet."); }
   if (fbar_.is_null()) { dserror("Residual correction 'fbar_' not set, yet."); }
-  err = fcoarse->Update(-1.0, *fhat_, 1.0, *fbar_, 1.0);
+  err = fcoarse->Update(-1.0, *fhat_, 1.0, *fbar_, -1.0);
   if (err != 0) { dserror("Update failed."); }
 
   // copy result to provided output variable
-  err = fc.Update(1.0, *fcoarse, 0.0);
+  err = fc.Update(-1.0, *fcoarse, 0.0);
   if (err != 0) { dserror("Update failed."); }
 
   return;
