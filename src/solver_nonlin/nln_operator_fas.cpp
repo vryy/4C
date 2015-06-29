@@ -85,6 +85,8 @@ void NLNSOL::NlnOperatorFas::Setup()
 int NLNSOL::NlnOperatorFas::ApplyInverse(const Epetra_MultiVector& f,
     Epetra_MultiVector& x) const
 {
+  int err = 0;
+
   // time measurements
   Teuchos::RCP<Teuchos::Time> time = Teuchos::TimeMonitor::getNewCounter(
       "NLNSOL::NlnOperatorFas::ApplyInverse");
@@ -96,11 +98,18 @@ int NLNSOL::NlnOperatorFas::ApplyInverse(const Epetra_MultiVector& f,
 
   // local copy of residual that can be modified
   Teuchos::RCP<Epetra_MultiVector> ftmp =
-      Teuchos::rcp(new Epetra_MultiVector(f));
+      Teuchos::rcp(new Epetra_MultiVector(f.Map(), true));
+  NlnProblem()->ComputeF(x, *ftmp);
+
+  // local copy of solution to work with
+  Teuchos::RCP<Epetra_MultiVector> xtmp =
+      Teuchos::rcp(new Epetra_MultiVector(x));
 
   bool converged = false;
   double fnorm2 = 1.0e+12;
-  NlnProblem()->ConvergenceCheck(f, fnorm2);
+  NlnProblem()->ConvergenceCheck(*ftmp, fnorm2);
+
+  *getOStream() << "Starting FAS with residual norm = " << fnorm2 << std::endl;
 
   Teuchos::RCP<NLNSOL::UTILS::StagnationDetection> stagdetect =
       Teuchos::rcp(new NLNSOL::UTILS::StagnationDetection());
@@ -119,16 +128,20 @@ int NLNSOL::NlnOperatorFas::ApplyInverse(const Epetra_MultiVector& f,
     }
 
     // call generic cycling routine
-    Cycle(*ftmp, x, 0);
+    Cycle(ftmp, xtmp, 0);
 
     // Evaluate and check for convergence
-    NlnProblem()->ComputeF(x, *ftmp);
+    NlnProblem()->ComputeF(*xtmp, *ftmp);
     converged = NlnProblem()->ConvergenceCheck(*ftmp, fnorm2);
 
     stagdetect->Check(fnorm2);
 
     PrintIterSummary(iter, fnorm2);
   }
+
+  // Update reference to solution
+  err = x.Update(1.0, *xtmp, 0.0);
+  if (err != 0) { dserror("Update failed."); }
 
   bool stagnation = false;
   if (stagdetect->Status() or Hierarchy()->CheckAllLevelStagnation())
@@ -157,11 +170,13 @@ int NLNSOL::NlnOperatorFas::ApplyInverse(const Epetra_MultiVector& f,
 }
 
 /*----------------------------------------------------------------------------*/
-void NLNSOL::NlnOperatorFas::Cycle(const Epetra_MultiVector& f,
-    Epetra_MultiVector& x,
-    const int level
-    ) const
+const int NLNSOL::NlnOperatorFas::Cycle(
+    Teuchos::RCP<const Epetra_MultiVector> f,
+    Teuchos::RCP<Epetra_MultiVector> x, const int level) const
 {
+  // error code
+  int err = 0;
+
   // chose multigrid cycle type based on user input
   switch (cycletype_)
   {
@@ -172,12 +187,12 @@ void NLNSOL::NlnOperatorFas::Cycle(const Epetra_MultiVector& f,
   }
   case INPAR::NLNSOL::FAS::cycle_v:
   {
-    VCycle(f, x, level);
+    err = VCycle(f, x, level);
     break;
   }
   case INPAR::NLNSOL::FAS::cycle_w:
   {
-    WCycle();
+    err = WCycle();
     break;
   }
   default:
@@ -187,159 +202,151 @@ void NLNSOL::NlnOperatorFas::Cycle(const Epetra_MultiVector& f,
   }
   }
 
-  return;
+  return err;
 }
 
 /*----------------------------------------------------------------------------*/
-void NLNSOL::NlnOperatorFas::VCycle(const Epetra_MultiVector& f,
-    Epetra_MultiVector& x,
-    const int level
-    ) const
+const int NLNSOL::NlnOperatorFas::VCycle(
+    Teuchos::RCP<const Epetra_MultiVector> fbar,
+    Teuchos::RCP<Epetra_MultiVector> xbar, const int level) const
 {
+  *getOStream() << "Entering VCycle on level " << level << std::endl;
+
+  // error code
   int err = 0;
 
-  Hierarchy()->CheckLevelID(level);
+  if (not fbar->Map().PointSameAs(xbar->Map()))
+    dserror("Maps do not match.");
 
-  if (getVerbLevel() > Teuchos::VERB_NONE)
-    *getOStream() << "WELCOME to VCycle on level " << level << "." << std::endl;
+  Hierarchy()->CheckLevelID(level); // check for valid level ID
 
-  // we need at least zeroed vectors, especially on the fine level
-  // restriction of fine-level residual
-  Teuchos::RCP<Epetra_MultiVector> fbar =
-      Teuchos::rcp(new Epetra_MultiVector(f));
-  // restriction of fine-level solution
-  Teuchos::RCP<Epetra_MultiVector> xbar =
-      Teuchos::rcp(new Epetra_MultiVector(x));
-  // coarse-grid evaluation of residual
-  Teuchos::RCP<Epetra_MultiVector> fhat =
-      Teuchos::rcp(new Epetra_MultiVector(f.Map(), 1, true));
+  Teuchos::RCP<Epetra_MultiVector> x = Teuchos::rcp(new Epetra_MultiVector(*xbar));
+  Teuchos::RCP<Epetra_MultiVector> f = Teuchos::rcp(new Epetra_MultiVector(*fbar));
 
-  /* Leave 'x' untouched on the level since it is needed to approximate the
-   * error after the post-smoothing. Use 'xtemp' instead for all operations on
-   * this level.
-   */
-  Teuchos::RCP<Epetra_MultiVector> xtemp =
-      Teuchos::rcp(new Epetra_MultiVector(x));
-
-  // compute coarse level contributions
+  // Compute residual corrections (only on coarse levels)
   if (level > 0)
   {
-    // restrict fine level residual to current (coarser) level
-    Hierarchy()->NlnLevel(level)->RestrictToNextCoarserLevel(fbar);
+    Teuchos::RCP<Epetra_MultiVector> fhat =
+        Teuchos::rcp(new Epetra_MultiVector(fbar->Map(), true));
 
-    // restrict fine level solution to current (coarser) level
-    Hierarchy()->NlnLevel(level)->RestrictToNextCoarserLevel(xbar);
-    Hierarchy()->NlnLevel(level)->RestrictToNextCoarserLevel(fhat);
-
-    // Set zero vectors for fhat and fbar to enable evaluation of fhat.
-    // Note: 'fhat' is zero here.
+    /* Set zeroed vectors for residual corrections in coarse level problem to
+     * have a proper initialization for the evaluation of 'fhat'. */
     Hierarchy()->NlnLevel(level)->NlnProblem()->SetFHatFBar(fhat, fhat);
 
-    // evaluate coarse-grid residual
     Hierarchy()->NlnLevel(level)->NlnProblem()->ComputeF(*xbar, *fhat);
-
-    Hierarchy()->NlnLevel(level)->RestrictToNextCoarserLevel(xtemp);
-
-    // set fhat_ and fbar_ in current level
     Hierarchy()->NlnLevel(level)->NlnProblem()->SetFHatFBar(fhat, fbar);
   }
-  else if (level == 0) // do nothing on the fine level
+
+  if (not Hierarchy()->NlnLevel(level)->IsCoarsestLevel())
   {
-    fbar->PutScalar(0.0);
-    xbar->PutScalar(0.0);
-    fhat->PutScalar(0.0);
-  } // do nothing on the fine level
+    PreSmoothing(*x, level);
+
+    // -------------------------------------------------------------------------
+    // prepare next coarser level
+    // -------------------------------------------------------------------------
+    // restrict current solution
+    Teuchos::RCP<Epetra_MultiVector> xc = Teuchos::rcp(new Epetra_MultiVector(*x));
+    xc = Hierarchy()->NlnLevel(level+1)->RestrictToNextCoarserLevel(xc);
+
+    // restrict current residual
+    Teuchos::RCP<Epetra_MultiVector> fc = Teuchos::rcp(new Epetra_MultiVector(*f));
+    Hierarchy()->NlnLevel(level)->NlnProblem()->ComputeF(*x, *fc);
+    fc = Hierarchy()->NlnLevel(level+1)->RestrictToNextCoarserLevel(fc);
+    // -------------------------------------------------------------------------
+
+    err = VCycle(fc, xc, level + 1);
+    if (err != 0)
+      dserror("VCycle on level %d returned error %d.", level+1, err);
+
+    // apply coarse level correction
+    xc = Hierarchy()->NlnLevel(level+1)->ProlongateToNextFinerLevel(xc);
+    err = x->Update(1.0, *xc, 1.0);
+    if (err != 0) { dserror("Update failed."); }
+
+    PostSmoothing(*x, level);
+  }
   else
   {
-    dserror("Level ID %d is not a valid level ID. Level ID has to be in [0,%d]",
-        level, Hierarchy()->NumLevels() - 1);
-  }
-
-#ifdef DEBUG
-  // additional safety checks w.r.t. maps
-  if (not Hierarchy()->NlnLevel(level)->DofRowMap().PointSameAs(fbar->Map()))
-    dserror("Maps do not match.");
-  if (not Hierarchy()->NlnLevel(level)->DofRowMap().PointSameAs(xbar->Map()))
-    dserror("Maps do not match.");
-  if (not Hierarchy()->NlnLevel(level)->DofRowMap().PointSameAs(fhat->Map()))
-    dserror("Maps do not match.");
-  if (not Hierarchy()->NlnLevel(level)->DofRowMap().PointSameAs(xtemp->Map()))
-    dserror("Maps do not match.");
-#endif
-
-  // do further coarsening only in case we are not on the coarsest level, yet.
-  if (level + 1 < Hierarchy()->NumLevels())
-  {
-    // evaluate current residual
-    Teuchos::RCP<Epetra_MultiVector> fsmoothed =
-        Teuchos::rcp(new Epetra_MultiVector(xtemp->Map(), true));
-    Hierarchy()->NlnLevel(level)->NlnProblem()->ComputeF(*xtemp, *fsmoothed);
-
-    // pre-smoothing
-    Hierarchy()->NlnLevel(level)->DoPreSmoothing(*fsmoothed, *xtemp);
-
-    // evaluate current residual
-    Hierarchy()->NlnLevel(level)->NlnProblem()->ComputeF(*xtemp, *fsmoothed);
-
-    // call VCycle on next coarser level recursively
-    VCycle(*fsmoothed, *xtemp, level + 1);
-
-    // evaluate current residual
-    Hierarchy()->NlnLevel(level)->NlnProblem()->ComputeF(*xtemp, *fsmoothed);
-
-    // post-smoothing
-    Hierarchy()->NlnLevel(level)->DoPostSmoothing(*fsmoothed, *xtemp);
-  }
-  else // coarse level solve
-  {
-    if (getVerbLevel() > Teuchos::VERB_NONE)
-    {
-        *getOStream() << std::endl
-            << "**************************" << std::endl
-            << "*** COARSE LEVEL SOLVE ***" << std::endl
-            << "**************************" << std::endl
-            << std::endl;
-    }
-
-    // evaluate current residual // ToDo Do we really need to ComputeF() here?
-    Teuchos::RCP<Epetra_MultiVector> fsmoothed =
-        Teuchos::rcp(new Epetra_MultiVector(xtemp->Map(), true));
-    Hierarchy()->NlnLevel(Hierarchy()->NumLevels() - 1)->NlnProblem()->ComputeF(
-        *xtemp, *fsmoothed);
-    Hierarchy()->NlnLevel(Hierarchy()->NumLevels() - 1)->DoCoarseLevelSolve(
-        *fsmoothed, *xtemp);
+    CoarseLevelSolve(*x, level);
   }
 
   if (level > 0)
   {
-    // coarse-grid correction (=approximation of error)
-    Teuchos::RCP<Epetra_MultiVector> correction =
-        Teuchos::rcp(new Epetra_MultiVector(xtemp->Map(), 1, true));
-    err = correction->Update(1.0, *xtemp, -1.0, *xbar, 0.0);
-    if (err != 0) { dserror("Failed!"); }
-
-    // prolongate correction to finer level and apply it
-    Hierarchy()->NlnLevel(level)->ProlongateToNextFinerLevel(correction);
-    x.Update(1.0, *correction, 1.0);
+    err = xbar->Update(1.0, *x, -1.0);
+    if (err != 0) { dserror("Update failed."); }
   }
-  else /* no correction on the finest level */
+  else
   {
-    x.Update(1.0, *xtemp, 0.0);
+    err = xbar->Update(1.0, *x, 0.0);
+    if (err != 0) { dserror("Update failed."); }
   }
 
-#ifdef DEBUG
-  // check whether all level transfers handled the maps correctly
-  if (not x.Map().PointSameAs(f.Map()))
-    dserror("Map failure during recursive calls of V-cycle!");
-#endif
+  *getOStream() << "Leaving VCycle on level " << level << std::endl;
 
+  return err;
+}
+
+/*----------------------------------------------------------------------------*/
+const int NLNSOL::NlnOperatorFas::WCycle() const
+{
+  dserror("W-Cycle not implemented, yet.");
+
+  return -1;
+}
+
+/*----------------------------------------------------------------------------*/
+const int NLNSOL::NlnOperatorFas::PreSmoothing(
+//    Teuchos::RCP<Epetra_MultiVector> x, const int level) const
+    Epetra_MultiVector& x, const int level) const
+{
+  // evaluate current residual
+  Teuchos::RCP<Epetra_MultiVector> fsmoothed =
+      Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
+  Hierarchy()->NlnLevel(level)->NlnProblem()->ComputeF(x, *fsmoothed);
+
+  // pre-smoothing
+  Hierarchy()->NlnLevel(level)->DoPreSmoothing(*fsmoothed, x);
+
+  return 0;
+}
+
+/*----------------------------------------------------------------------------*/
+const int NLNSOL::NlnOperatorFas::PostSmoothing(
+//    Teuchos::RCP<Epetra_MultiVector> x, const int level) const
+    Epetra_MultiVector& x, const int level) const
+{
+  // evaluate current residual
+  Teuchos::RCP<Epetra_MultiVector> fsmoothed =
+      Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
+  Hierarchy()->NlnLevel(level)->NlnProblem()->ComputeF(x, *fsmoothed);
+
+  // post-smoothing
+  Hierarchy()->NlnLevel(level)->DoPostSmoothing(*fsmoothed, x);
+
+  return 0;
+}
+
+/*----------------------------------------------------------------------------*/
+const int NLNSOL::NlnOperatorFas::CoarseLevelSolve(
+//    Teuchos::RCP<Epetra_MultiVector> x, const int level) const
+    Epetra_MultiVector& x, const int level) const
+{
   if (getVerbLevel() > Teuchos::VERB_NONE)
   {
-      *getOStream() << "GOOD BYE from VCycle on level " << level << "."
-          <<  std::endl;
+      *getOStream() << std::endl
+          << "**************************" << std::endl
+          << "*** COARSE LEVEL SOLVE ***" << std::endl
+          << "**************************" << std::endl
+          << std::endl;
   }
 
-  return;
+  // evaluate current residual // ToDo Do we really need to ComputeF() here?
+  Teuchos::RCP<Epetra_MultiVector> f =
+      Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
+  Hierarchy()->NlnLevel(level)->NlnProblem()->ComputeF(x, *f);
+  Hierarchy()->NlnLevel(level)->DoCoarseLevelSolve(*f, x);
+
+  return 0;
 }
 
 /*----------------------------------------------------------------------------*/

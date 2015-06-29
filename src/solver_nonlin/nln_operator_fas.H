@@ -126,11 +126,18 @@ namespace NLNSOL
     //! @name Mathematical functions
     //@{
 
-    /*! \brief Apply the preconditioner, i.e. do one step of Quasi-Newton
+    /*! \brief Apply the preconditioner, i.e. do iterations on FAS-Cycle
      *
-     * \return Integer error code, set to 0 if successful.
+     *  Do iterations on FAS cycle, where the actual cycling routine is called
+     *  recursively. ApplyIncerse only contains the fine level entry to the
+     *  cycling, but no actual computation. This is all done in the respective
+     *  cycling routines.
      *
-     * \author mayr.mt \date 03/2014
+     *  \return Integer error code, set to 0 if successful.
+     *
+     *  \sa Cycle, VCycle, WCycle
+     *
+     *  \author mayr.mt \date 03/2014
      */
     virtual int ApplyInverse(const Epetra_MultiVector& f, ///< residual
       Epetra_MultiVector& x ///< solution
@@ -166,19 +173,44 @@ namespace NLNSOL
     //@{
 
     //! Entry to all kind of multigrid cycles
-    virtual void Cycle(const Epetra_MultiVector& f, ///< residual
-      Epetra_MultiVector& x, ///< solution
-      const int level ///< level ID
-      ) const;
+    virtual const int Cycle(
+        Teuchos::RCP<const Epetra_MultiVector> fbar, ///< residual from finer level
+        Teuchos::RCP<Epetra_MultiVector> xbar, ///< solution from finer level
+        const int level ///< level ID
+        ) const;
 
     //! V-Cycle (recursive definition)
-    virtual void VCycle(const Epetra_MultiVector& f, ///< residual
-      Epetra_MultiVector& x, ///< solution
-      const int level ///< level ID
-      ) const;
+    virtual const int VCycle(
+        Teuchos::RCP<const Epetra_MultiVector> fbar, ///< residual from finer level
+        Teuchos::RCP<Epetra_MultiVector> xbar, ///< solution from finer level
+        const int level ///< level ID
+        ) const;
 
-    //! W-Cycle
-    virtual void WCycle() const { dserror("W-Cycle not implemented, yet."); }
+    //! W-Cycle // ToDo (mayr) implement W-Cycle
+    virtual const int WCycle() const;
+
+    //@}
+
+    //! @name Core routines of a multigrid cycle
+    //@{
+
+    //! Do the presmoothing
+    virtual const int PreSmoothing(
+        Epetra_MultiVector& x, ///< solution from finer level
+        const int level ///< level ID
+        ) const;
+
+    //! Do the postsmoothing
+    virtual const int PostSmoothing(
+        Epetra_MultiVector& x, ///< solution from finer level
+        const int level ///< level ID
+        ) const;
+
+    //! Do the coarse level solve
+    virtual const int CoarseLevelSolve(
+        Epetra_MultiVector& x, ///< solution from finer level
+        const int level ///< level ID
+        ) const;
 
     //@}
 
@@ -186,7 +218,7 @@ namespace NLNSOL
     const Teuchos::RCP<const NLNSOL::FAS::AMGHierarchy> Hierarchy() const;
 
     //! Hierarchy of multigrid levels
-    Teuchos::RCP<NLNSOL::FAS::AMGHierarchy> hierarchy_;
+    mutable Teuchos::RCP<NLNSOL::FAS::AMGHierarchy> hierarchy_;
 
     //! Type of multigrid cycle
     INPAR::NLNSOL::FAS::CycleType cycletype_;
