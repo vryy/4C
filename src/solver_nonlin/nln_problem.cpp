@@ -346,7 +346,8 @@ const bool NLNSOL::NlnProblem::HaveDebugWriter() const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<NLNSOL::UTILS::DebugWriterBase> NLNSOL::NlnProblem::DebugWriter() const
+Teuchos::RCP<NLNSOL::UTILS::DebugWriterBase>
+NLNSOL::NlnProblem::DebugWriter() const
 {
   return dbgwriter_;
 }

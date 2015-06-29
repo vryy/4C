@@ -19,6 +19,8 @@ Maintainer: Matthias Mayr
 #include <Xpetra_CrsMatrix.hpp>
 #include <Xpetra_CrsMatrixWrap.hpp>
 #include <Xpetra_EpetraCrsMatrix.hpp>
+#include <Xpetra_MultiVector.hpp>
+#include <Xpetra_MultiVectorFactory.hpp>
 
 // MueLu
 //#include <MueLu_Hierarchy.hpp>
@@ -52,6 +54,7 @@ Maintainer: Matthias Mayr
 
 // Teuchos
 #include <Teuchos_Array.hpp>
+#include <Teuchos_ArrayRCP.hpp>
 #include <Teuchos_FancyOStream.hpp>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
@@ -83,6 +86,7 @@ NLNSOL::FAS::AMGHierarchy::AMGHierarchy()
   comm_(Teuchos::null),
   params_(Teuchos::null),
   nlnproblem_(Teuchos::null),
+  mlparams_(Teuchos::null),
   nlnlevels_(0)
 #ifdef HAVE_MueLu
   ,
@@ -96,13 +100,14 @@ NLNSOL::FAS::AMGHierarchy::AMGHierarchy()
 /*----------------------------------------------------------------------------*/
 void NLNSOL::FAS::AMGHierarchy::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& params,
-    Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem
-    )
+    Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem,
+    const Teuchos::ParameterList& mlparams)
 {
   // fill member variables
   comm_ = Teuchos::rcp(&comm, false);
   params_ = Teuchos::rcp(&params, false);
   nlnproblem_ = nlnproblem;
+  mlparams_ = Teuchos::rcp(&mlparams, false);
 
   setVerbLevel(
       NLNSOL::UTILS::TranslateVerbosityLevel(
@@ -131,48 +136,37 @@ void NLNSOL::FAS::AMGHierarchy::Setup()
   Teuchos::RCP<Xpetra::Matrix<double,int,int,Node> > mueLuOp =
       GetXpetraFineLevelMatrix();
 
-/* MueLu input via ML Parameter List
+  // null space
+  Teuchos::RCP<Xpetra::MultiVector< double, int, int, Node> > nullspace =
+      GetXpetraNullSpace();
 
-  // ToDo (mayr) delete this as soon as we have enough confidence in the MueLu input
+  {
+    // -------------------------------------------------------------------------
+    // Setup MueLu Hierarchy based on user-provided parameters from xml-file
+    // -------------------------------------------------------------------------
+    // extract local copy of MueLu parameter list that is needed for an
+    // easy-to-handle setup of the MueLu hierarchy
+    Teuchos::ParameterList multigridparams = Params().sublist("FAS: MueLu Parameters");
+//    Teuchos::ParameterList mlparams = Params().sublist("FAS: ML Parameters");
 
-  // ---------------------------------------------------------------------------
-  // Setup MueLu Hierarchy based on user specified parameters
-  // ---------------------------------------------------------------------------
-  // extract local copy of ML parameter list that is needed for an
-  // easy-to-handle setup of the MueLu hierarchy
-  Teuchos::ParameterList mlparams = Params().sublist("FAS: ML Parameters");
+    // create the MueLu Factory via a MueLu ParameterList interpreter
+    mueLuFactory_ = Teuchos::rcp(new ParameterListInterpreter(multigridparams));
 
-  // Setup MueLu Hierarchy
-  MLParameterListInterpreter mueLuFactory(mlparams);
-  Teuchos::RCP<Hierarchy> H = mueLuFactory.CreateHierarchy();
-  H->GetLevel(0)->Set("A", mueLuOp);
-  mueLuFactory.SetupHierarchy(*H);
+    // create MueLu Hierarchy
+    mueLuHierarchy_ = mueLuFactory_->CreateHierarchy();
 
-  */
+    // configure MueLu Hierarchy
+    mueLuHierarchy_->GetLevel(0)->Set("A", mueLuOp); // set fine level matrix
+    mueLuHierarchy_->GetLevel(0)->Set("Nullspace", nullspace); // set nullspace
+    mueLuHierarchy_->GetLevel(0)->setlib(Xpetra::UseEpetra);
+    mueLuHierarchy_->setlib(Xpetra::UseEpetra);
+    mueLuHierarchy_->Keep("R"); // keep R for faster RAPs later
+    mueLuHierarchy_->Keep("P"); // keep P for faster RAPs later
+    mueLuHierarchy_->Keep("RAP Pattern"); // keep sparsity pattern for faster RAPs later
 
-/* MueLu input via MueLu Parameter List */
-  // ---------------------------------------------------------------------------
-  // Setup MueLu Hierarchy based on user-provided parameters from xml-file
-  // ---------------------------------------------------------------------------
-  // extract local copy of MueLu parameter list that is needed for an
-  // easy-to-handle setup of the MueLu hierarchy
-  Teuchos::ParameterList mueluparams = Params().sublist("FAS: MueLu Parameters");
-
-  // create the MueLu Factory via a MueLu ParameterList interpreter
-  mueLuFactory_ = Teuchos::rcp(new ParameterListInterpreter(mueluparams));
-
-  // create MueLu Hierarchy
-  mueLuHierarchy_ = mueLuFactory_->CreateHierarchy();
-
-  // configure MueLu Hierarchy
-  mueLuHierarchy_->GetLevel(0)->Set("A", mueLuOp); // set fine level matrix
-  mueLuHierarchy_->Keep("R"); // keep R for faster RAPs later
-  mueLuHierarchy_->Keep("P"); // keep P for faster RAPs later
-  mueLuHierarchy_->Keep("RAP Pattern"); // keep sparsity pattern for faster RAPs later
-
-  // setup the MueLu Hierarchy
-  mueLuFactory_->SetupHierarchy(*mueLuHierarchy_);
-  /**/
+    // setup the MueLu Hierarchy
+    mueLuFactory_->SetupHierarchy(*mueLuHierarchy_);
+  }
 
   // ---------------------------------------------------------------------------
   // Create NLNSOL::FAS::NlnLevel instances and feed MueLu data to them
@@ -206,7 +200,6 @@ void NLNSOL::FAS::AMGHierarchy::Setup()
       // prolongation operator
       Teuchos::RCP<Matrix> myProlongator = muelulevel->Get<Teuchos::RCP<Matrix> >("P");
       myP = MueLu::Utils<double,int,int,Node>::Op2NonConstEpetraCrs(myProlongator);
-
     }
 
     // get the level parameter list
@@ -332,12 +325,13 @@ NLNSOL::FAS::AMGHierarchy::RestrictToCoarseLevel(const Epetra_MultiVector& vec,
   CheckLevelID(targetlevel);
 
   // copy input vector
-  Teuchos::RCP<Epetra_MultiVector> veccoarse = Teuchos::rcp(new Epetra_MultiVector(vec));
+  Teuchos::RCP<Epetra_MultiVector> veccoarse =
+      Teuchos::rcp(new Epetra_MultiVector(vec));
 
   // loop over levels and do recursive restrictions
   for (int i = 0; i < targetlevel; ++i)
   {
-    NlnLevel(i+1)->RestrictToNextCoarserLevel(veccoarse);
+    veccoarse = NlnLevel(i+1)->RestrictToNextCoarserLevel(veccoarse);
   }
 
   if (veccoarse.is_null()) { dserror("veccoarse is null."); }
@@ -366,7 +360,7 @@ NLNSOL::FAS::AMGHierarchy::ProlongateToFineLevel(
   // loop over levels and do recursive prolongations
   for (int i = sourcelevel; i > 0; --i)
   {
-    NlnLevel(i)->ProlongateToNextFinerLevel(vecfine);
+    vecfine = NlnLevel(i)->ProlongateToNextFinerLevel(vecfine);
   }
 
   if (vecfine.is_null()) { dserror("vecfine is null."); }
@@ -536,6 +530,56 @@ NLNSOL::FAS::AMGHierarchy::GetXpetraFineLevelMatrix() const
       Teuchos::rcp(new Xpetra::CrsMatrixWrap<double,int,int,Node>(mueluA));
 
   return mueLuOp;
+}
+
+/*----------------------------------------------------------------------------*/
+Teuchos::RCP<Xpetra::MultiVector<double,int,int,Node> >
+NLNSOL::FAS::AMGHierarchy::GetXpetraNullSpace() const
+{
+
+  // extract null space data from parameter list
+  const int numdof = mlparams_->get<int>("PDE equations"); // number of DOFs per node
+  const int numnsv = mlparams_->get<int>("null space: dimension"); // number of null space vectors
+  Teuchos::RCP<std::vector<double> > nsdata =
+      mlparams_->get<Teuchos::RCP<std::vector<double> > >("nullspace"); // null space vectors (all in one vector)
+
+  *getOStream() << "Number of PDE equations: " << numdof << std::endl;
+  *getOStream() << "Number of null space vectors: " << numnsv << std::endl;
+
+  // some safety checks
+  if(numdof < 1 or numnsv < 1)
+    dserror("PDE equations or null space dimension wrong.");
+  if(nsdata.is_null())
+    dserror("Null space data is empty");
+
+  // Prepare null space vector for MueLu
+  Teuchos::RCP<const Xpetra::Map<LO,GO,NO> > rowMap =
+      GetXpetraFineLevelMatrix()->getRowMap();
+  Teuchos::RCP<MultiVector> nsp =
+      Xpetra::MultiVectorFactory<double,int,int,Node>::Build(rowMap, numnsv, true);
+
+  // copy null space vectors from 'nsdata' to 'nsp'
+  for (unsigned int i = 0; i < Teuchos::as<size_t>(numnsv); ++i)
+  {
+    Teuchos::ArrayRCP<double> nspvector = nsp->getDataNonConst(i);
+    const int mylength = nsp->getLocalLength();
+    for (int j = 0; j < mylength; ++j)
+    {
+      nspvector[j] = (*nsdata)[i*mylength+j];
+    }
+  }
+
+//  *getOStream() << "The null space vectors as Xpetra::MultiVector:" << std::endl;
+//  *getOStream() << *nsp << std::endl;
+//
+//  Teuchos::RCP<MultiVector> tmp =
+//      Xpetra::MultiVectorFactory<double,int,int,Node>::Build(rowMap, numnsv, true);
+//  GetXpetraFineLevelMatrix()->apply(*nsp, *tmp);
+//  *getOStream() << "Stiffness times null space vectors (should equal 0.0):" << std::endl;
+//  *getOStream() << *tmp << std::endl;
+//  dserror("Stop.");
+
+  return nsp;
 }
 #endif
 

@@ -112,9 +112,14 @@ namespace NLNSOL
     //! Setup of nonlinear problem
     virtual void Setup();
 
-    //! Set coarse level residual corrections for FAS
-    virtual void SetFHatFBar(Teuchos::RCP<Epetra_MultiVector> fhat, ///< \f$\hat{F}\f$
-        Teuchos::RCP<Epetra_MultiVector> fbar ///< \f$\bar{F}\f$
+    /*! \brief Set coarse level residual corrections for FAS
+     *
+     *  \note Only needed for coarse levels. Implemented here only for purpose
+     *  of inheritance.
+     */
+    virtual void SetFHatFBar(
+        Teuchos::RCP<const Epetra_MultiVector> fhat, ///< \f$\hat{F}\f$
+        Teuchos::RCP<const Epetra_MultiVector> fbar ///< \f$\bar{F}\f$
         )
     {
       dserror("Not implemented in base class. This routine is needed only in "

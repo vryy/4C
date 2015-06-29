@@ -37,6 +37,8 @@ Maintainer: Matthias Mayr
 
 #include "../drt_lib/drt_dserror.H"
 
+#include "../linalg/linalg_solver.H"
+
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
@@ -60,10 +62,12 @@ void NLNSOL::NlnOperatorFas::Setup()
 
   // create the multigrid level hierarchy
   hierarchy_ = Teuchos::rcp(new NLNSOL::FAS::AMGHierarchy());
-  hierarchy_->Init(Comm(), Params(), NlnProblem());
+  hierarchy_->Init(Comm(), Params(), NlnProblem(),
+      BaciLinearSolver()->Params().sublist("ML Parameters"));
   hierarchy_->Setup();
 
-  std::string cycletype = Params().sublist("FAS: MueLu Parameters").get<std::string>("cycle type");
+  std::string cycletype =
+      Params().sublist("FAS: MueLu Parameters").get<std::string>("cycle type");
   if (cycletype == "V")
     cycletype_ = INPAR::NLNSOL::FAS::cycle_v;
   else if (cycletype == "W")
@@ -315,8 +319,7 @@ void NLNSOL::NlnOperatorFas::VCycle(const Epetra_MultiVector& f,
     if (err != 0) { dserror("Failed!"); }
 
     // prolongate correction to finer level and apply it
-    err = Hierarchy()->NlnLevel(level)->ProlongateToNextFinerLevel(correction);
-    if (err != 0) { dserror("Failed!"); }
+    Hierarchy()->NlnLevel(level)->ProlongateToNextFinerLevel(correction);
     x.Update(1.0, *correction, 1.0);
   }
   else /* no correction on the finest level */

@@ -128,11 +128,19 @@ NLNSOL::NlnProblemCoarseLevel::Hierarchy() const
 
 /*----------------------------------------------------------------------------*/
 void NLNSOL::NlnProblemCoarseLevel::SetFHatFBar(
-    Teuchos::RCP<Epetra_MultiVector> fhat,
-    Teuchos::RCP<Epetra_MultiVector> fbar)
+    Teuchos::RCP<const Epetra_MultiVector> fhat,
+    Teuchos::RCP<const Epetra_MultiVector> fbar)
 {
-  fhat_ = fhat;
-  fbar_ = fbar;
+//  fhat_ = fhat; //ToDo (mayr) switch back to pointer assignment instead of allocating new vectors?
+//  fbar_ = fbar;
+
+  fhat_ = Teuchos::rcp(new Epetra_MultiVector(*fhat));
+  fbar_ = Teuchos::rcp(new Epetra_MultiVector(*fbar));
+
+  dsassert(not fhat_.is_null(), "fhat_ is Teuchos::null.");
+  dsassert(fhat_.is_valid_ptr(), "fhat_ is not a valid pointer.");
+  dsassert(not fbar_.is_null(), "fbar_ is Teuchos::null.");
+  dsassert(fbar_.is_valid_ptr(), "fbar_ is not a valid pointer.");
 
   return;
 }
@@ -159,6 +167,9 @@ void NLNSOL::NlnProblemCoarseLevel::WriteVector(
     Teuchos::RCP<const Epetra_MultiVector> vec, const std::string& description,
     const IO::DiscretizationWriter::VectorType vt) const
 {
+  if (not vec->Map().PointSameAs(DofRowMap()))
+    dserror("Map of vector does not match map of this level.");
+
   // Prolongate to fine level
   Teuchos::RCP<Epetra_MultiVector> vecfine =
       Hierarchy().ProlongateToFineLevel(*vec, LevelID());

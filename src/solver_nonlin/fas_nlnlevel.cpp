@@ -165,46 +165,45 @@ void NLNSOL::FAS::NlnLevel::SetPOp(Teuchos::RCP<const Epetra_CrsMatrix> myP)
 }
 
 /*----------------------------------------------------------------------------*/
-int NLNSOL::FAS::NlnLevel::RestrictToNextCoarserLevel(
-    Teuchos::RCP<Epetra_MultiVector> vec
-    ) const
+Teuchos::RCP<Epetra_MultiVector>
+NLNSOL::FAS::NlnLevel::RestrictToNextCoarserLevel(
+    Teuchos::RCP<const Epetra_MultiVector> vf) const
 {
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
   if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
 
-  int err = 0;
+  // coarse vector (to be returned)
+  Teuchos::RCP<Epetra_MultiVector> vc = Teuchos::null;
 
   if (HaveROp() and LevelID() > 0)
   {
-    Teuchos::RCP<Epetra_MultiVector> tempvec =
-        Teuchos::rcp(new Epetra_MultiVector(rop_->RowMap(), 1, true));
+    vc = Teuchos::rcp(new Epetra_MultiVector(rop_->RowMap(), 1, true));
 
-    dsassert(rop_->DomainMap().PointSameAs(vec->Map()), "Maps do not match.");
-    dsassert(rop_->RowMap().PointSameAs(tempvec->Map()), "Maps do not match.");
-
-    err = rop_->Apply(*vec, *tempvec);
+    int err = rop_->Apply(*vf, *vc);
     if (err != 0) { dserror("Failed."); }
-    vec = Teuchos::rcp(new Epetra_MultiVector(*tempvec));
   }
   else // no restriction on finest level
   {
     dserror("You are on the fine level. "
         "There is no restriction operator available.");
-    err = 1;
   }
 
-  return err;
+  if (vc.is_null()) { dserror("Vector to be returned is Teuchos::null."); }
+
+  return vc;
 }
 
 /*----------------------------------------------------------------------------*/
-int NLNSOL::FAS::NlnLevel::ProlongateToNextFinerLevel(
-    Teuchos::RCP<Epetra_MultiVector> vec
+Teuchos::RCP<Epetra_MultiVector>
+NLNSOL::FAS::NlnLevel::ProlongateToNextFinerLevel(
+    Teuchos::RCP<const Epetra_MultiVector> vc
     ) const
 {
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
   if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
 
-  int err = 0;
+  // fine vector (to be returned)
+  Teuchos::RCP<Epetra_MultiVector> vf = Teuchos::null;
 
   if (HavePOp() and (LevelID() > 0))
   {
@@ -214,18 +213,18 @@ int NLNSOL::FAS::NlnLevel::ProlongateToNextFinerLevel(
     dsassert(pop_->DomainMap().PointSameAs(vec->Map()), "Maps do not match.");
     dsassert(pop_->RowMap().PointSameAs(tempvec->Map()), "Maps do not match.");
 
-    err = pop_->Apply(*vec, *tempvec);
+    int err = pop_->Apply(*vc, *vf);
     if (err != 0) { dserror("Failed."); }
-    vec = Teuchos::rcp(new Epetra_MultiVector(*tempvec));
   }
   else // no prolongation on finest level
   {
     dserror("You are on the fine level, already. "
         "No further prolongation possible.");
-    err = 1;
   }
 
-  return err;
+  if (vf.is_null()) { dserror("Vector to be returned is Teuchos::null."); }
+
+  return vf;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -383,7 +382,7 @@ int NLNSOL::FAS::NlnLevel::DoPostSmoothing(const Epetra_MultiVector& fhatbar,
 }
 
 /*----------------------------------------------------------------------------*/
-int NLNSOL::FAS::NlnLevel::DoCoarseLevelSolve(const Epetra_MultiVector& fhatbar,
+int NLNSOL::FAS::NlnLevel::DoCoarseLevelSolve(const Epetra_MultiVector& f,
                                               Epetra_MultiVector& x
                                               ) const
 {
@@ -401,7 +400,7 @@ int NLNSOL::FAS::NlnLevel::DoCoarseLevelSolve(const Epetra_MultiVector& fhatbar,
         << std::endl;
   }
 
-  return coarsesolver_->ApplyInverse(fhatbar,x);
+  return coarsesolver_->ApplyInverse(f,x);
 }
 
 /*----------------------------------------------------------------------------*/

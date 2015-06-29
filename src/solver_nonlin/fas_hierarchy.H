@@ -116,7 +116,8 @@ namespace NLNSOL
       //! Initialization of member variables
       virtual void Init(const Epetra_Comm& comm, ///< communicator
           const Teuchos::ParameterList& params, ///< parameter list
-          Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem ///< nonlinear problem to solve
+          Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem, ///< nonlinear problem to solve
+          const Teuchos::ParameterList& mlparams ///< ML parameter list from baci linear solver (just for null space)
           );
 
       //! Setup of multigrid hierarchy
@@ -236,6 +237,19 @@ namespace NLNSOL
        */
       Teuchos::RCP<Xpetra::Matrix<double,int,int,Node> >
       GetXpetraFineLevelMatrix() const;
+
+      /*! \brief Access to pre-computed null space as Xpetra::MultiVector
+       *
+       *  Take pre-computed nullspace from Teuchos::ParameterList and transform
+       *  it into a Xpetra::MultiVector.
+       *
+       *  \return Teuchos::RCP<Xpetra::MultiVector> with \f$N\f$ vectors, that
+       *  contains the \f$N\f$ null space vectors
+       *
+       *  \author mayr.mt \date 06/2015
+       */
+      Teuchos::RCP<Xpetra::MultiVector<double,int,int,Node> >
+      GetXpetraNullSpace() const;
 #endif
       //@}
 
@@ -273,6 +287,9 @@ namespace NLNSOL
 
       //! Nonlinear problem to be evaluated and solved
       Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem_;
+
+      //! ML parameter list of baci linear solver (just for nullspace)
+      Teuchos::RCP<const Teuchos::ParameterList> mlparams_;
 
       //! vector containing all nonlinear levels
       Teuchos::Array<Teuchos::RCP<NLNSOL::FAS::NlnLevel> > nlnlevels_;

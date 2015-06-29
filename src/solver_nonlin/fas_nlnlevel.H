@@ -116,14 +116,14 @@ namespace FAS
      *  Restriction is performed on coarser level, i.e. from 'level-1' to
      *  'level', since only the coarse level knows the transfer operator.
      *
-     *  \return integer error code (set to zero if successful)
+     *  \return coarse vector
      *
      *  \sa ProlongateToNextFinerLevel()
      *
      *  \author mayr.mt \date 10/2013
      */
-    virtual int RestrictToNextCoarserLevel(
-        Teuchos::RCP<Epetra_MultiVector> vec ///< vector to be restricted
+    virtual Teuchos::RCP<Epetra_MultiVector> RestrictToNextCoarserLevel(
+        Teuchos::RCP<const Epetra_MultiVector> vf ///< fine vector to be restricted
         ) const;
 
     /*! \brief Prolongate vector to next finer level
@@ -131,14 +131,14 @@ namespace FAS
      *  Prolongation is performed on coarser level, i.e. from 'level' to
      *  'level-1', since only the coarse level knows the transfer operator.
      *
-     *  \return integer error code (set to zero if successful)
+     *  \return fine vector
      *
      *  \sa RestrictToNextCoarserLevel()
      *
      *  \author mayr.mt \date 11/2013
      */
-    virtual int ProlongateToNextFinerLevel(
-        Teuchos::RCP<Epetra_MultiVector> vec ///< vector to be prolongated
+    virtual Teuchos::RCP<Epetra_MultiVector> ProlongateToNextFinerLevel(
+        Teuchos::RCP<const Epetra_MultiVector> vc ///< coarse vector to be prolongated
         ) const;
 
     //@}
@@ -244,7 +244,7 @@ namespace FAS
      *  \date 10/2013
      */
     virtual int DoCoarseLevelSolve(
-        const Epetra_MultiVector& fhatbar, ///< residual correction \f$-\hat{F}+\bar{F}\f$
+        const Epetra_MultiVector& f, ///< current residual
         Epetra_MultiVector& x ///< solution
         ) const;
 
