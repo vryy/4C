@@ -282,8 +282,8 @@ int NLNSOL::NlnOperatorNewton::ApplyInverse(const Epetra_MultiVector& f,
 
 /*----------------------------------------------------------------------------*/
 const int NLNSOL::NlnOperatorNewton::ComputeSearchDirection(
-    Teuchos::RCP<Epetra_MultiVector>& rhs,
-    Teuchos::RCP<Epetra_MultiVector>& inc, const bool refactor) const
+    Teuchos::RCP<Epetra_MultiVector> rhs,
+    Teuchos::RCP<Epetra_MultiVector> inc, const bool refactor) const
 {
   // compute search direction with either fixed or most recent, updated jacobian
   int linsolve_error = linsolver_->Solve(NlnProblem()->GetJacobianOperator(),
