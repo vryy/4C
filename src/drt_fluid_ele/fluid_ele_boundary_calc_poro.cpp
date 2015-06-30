@@ -284,6 +284,24 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     }
     break;
   }
+  case DRT::Element::tri3:
+  {
+    if(ele->ParentElement()->Shape()==DRT::Element::tet4)
+    {
+      this->FPSICoupling<DRT::Element::tet4>(
+          ele,
+          params,
+          discretization,
+          plm,
+          elemat1,
+          elevec1);
+    }
+    else
+    {
+      dserror(" expected combination tri3/tet4 for surface/parent pair ");
+    }
+    break;
+  }
   default:
   {
     dserror("surface/parent element pair not yet implemented. Just do it.\n");
@@ -362,10 +380,6 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
 
   // number of parentnodes
   static const int nenparent = DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
-  if(nenparent != 8)
-  {
-    dserror("nenparent not equal 8 for Hex8 element !!! ...");
-  }
 
   // get the parent element
   DRT::ELEMENTS::Fluid* pele = ele->ParentElement();
@@ -468,11 +482,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
   Teuchos::RCP<MAT::NewtonianFluid> newtonianfluidmaterial;
 
   currentmaterial = ele->ParentElement()->Material();
-  //  if(ele->Id()==43 and discretization.Name() == "fluid")
-  //  {
-  //    std::cout<<"Called on Dis: "<<discretization.Name()<<" boundary ele id: "<<ele->Id()<<" opposing ele id: "<<InterfaceFacingElementMap->find(ele->Id())->second<<endl;
-  //    std::cout<<"interface owner: "<<ele->Owner()<<"  bulk element owned by dis?: "<<discretization.HaveGlobalElement(InterfaceFacingElementMap->find(ele->Id())->second)<<endl;
-  //  }
+
   if(discretization.Name() == "fluid")
   {
     if (block != "NeumannIntegration" && block != "NeumannIntegration_Ale")
@@ -1068,10 +1078,6 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
         dNdxon(0,inode) += derxy(idof,inode)*my::unitnormal_(idof);
       }
     }
-
-
-    //      std::cout<<"pfunct : "<<pfunct<<endl;
-    //      std::cout<<"my::funct_ : "<<my::funct_<<endl;
 
     //LINALG::Matrix<1,my::nsd_*nenparent> gradNon;
     LINALG::Matrix<1,     nenparent> gradNon(true);

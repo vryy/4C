@@ -13,9 +13,7 @@ Maintainer: Andreas Rauch
 
 /*----------------------------------------------------------------------*/
 // GENERAL includes
-#include <sstream>
 #include <Teuchos_TimeMonitor.hpp>
-#include <Teuchos_Time.hpp>
 
 // FPSI includes
 #include "fpsi_defines.H"
@@ -23,52 +21,23 @@ Maintainer: Andreas Rauch
 #include "fpsi_utils.H"
 
 // POROELAST includes
-#include "../drt_poroelast/poroelast_utils.H"
-#include "../drt_poroelast/poro_base.H"
 #include "../drt_poroelast/poroelast_monolithic.H"
 
-// FSI includes
-#include "../drt_fsi/fsi_debugwriter.H"
-#include "../drt_fsi/fsi_statustest.H"
-
 // LINALG includes
-#include "../linalg/linalg_blocksparsematrix.H"
-#include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
-
-// INPAR includes
-#include "../drt_inpar/drt_validparameters.H"
-#include "../drt_inpar/inpar_solver.H"
 
 // drt_lib includes
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_assemblestrategy.H"
-#include "../drt_lib/drt_condition_utils.H"
 
 // drt_adapter includes
-#include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/ad_str_fpsiwrapper.H"
 #include "../drt_adapter/ad_fld_poro.H"
 
-// STRUCTURE includes
+//// STRUCTURE includes
 #include "../drt_structure/stru_aux.H"
 
-// FLUID includes
-#include "../drt_fluid/fluid_utils_mapextractor.H"
-#include "../drt_fluid_ele/fluid_ele.H"
-#include "../drt_fluid_ele/fluid_ele_action.H"
-
-// ALE includes
-#include "../drt_ale/ale_utils_mapextractor.H"
-
-// OTHER includes
-#include "../drt_constraint/constraint_manager.H"
+//// OTHER includes
 #include "../drt_io/io_control.H"
-#include "../drt_lib/drt_dofset.H"
-
-#include <iostream>
-#include <fstream>
 
 
 /*----------------------------------------------------------------------*/
@@ -158,10 +127,10 @@ void FPSI::MonolithicBase::RedistributeInterface()
     Teuchos::RCP<std::map<int,int> > Fluid_PoroFluid_InterfaceMap = FPSI_UTILS->Get_Fluid_PoroFluid_InterfaceMap();
     Teuchos::RCP<std::map<int,int> > PoroFluid_Fluid_InterfaceMap = FPSI_UTILS->Get_PoroFluid_Fluid_InterfaceMap();
 
-    FPSI_UTILS->RedistributeInterface(problem->GetDis("fluid")    ,*problem->GetDis("porofluid"),"FPSICoupling",*PoroFluid_Fluid_InterfaceMap);
-    FPSI_UTILS->RedistributeInterface(problem->GetDis("ale")      ,*problem->GetDis("porofluid"),"FPSICoupling",*PoroFluid_Fluid_InterfaceMap);
-    FPSI_UTILS->RedistributeInterface(problem->GetDis("porofluid"),*problem->GetDis("fluid")    ,"FPSICoupling",*Fluid_PoroFluid_InterfaceMap);
-    FPSI_UTILS->RedistributeInterface(problem->GetDis("structure"),*problem->GetDis("fluid")    ,"FPSICoupling",*Fluid_PoroFluid_InterfaceMap);
+    FPSI_UTILS->RedistributeInterface(problem->GetDis("fluid")    ,problem->GetDis("porofluid"),"FPSICoupling",*PoroFluid_Fluid_InterfaceMap);
+    FPSI_UTILS->RedistributeInterface(problem->GetDis("ale")      ,problem->GetDis("porofluid"),"FPSICoupling",*PoroFluid_Fluid_InterfaceMap);
+    FPSI_UTILS->RedistributeInterface(problem->GetDis("porofluid"),problem->GetDis("fluid")    ,"FPSICoupling",*Fluid_PoroFluid_InterfaceMap);
+    FPSI_UTILS->RedistributeInterface(problem->GetDis("structure"),problem->GetDis("fluid")    ,"FPSICoupling",*Fluid_PoroFluid_InterfaceMap);
 
     // Material pointers need to be reset after redistribution.
     POROELAST::UTILS::SetMaterialPointersMatchingGrid(problem->GetDis("structure"), problem->GetDis("porofluid"));
@@ -559,8 +528,9 @@ void FPSI::Monolithic::TestResults(const Epetra_Comm& comm)
 bool FPSI::Monolithic::SetupSolver()
 {
 
+  const Teuchos::ParameterList& fpsidynamicparams = DRT::Problem::Instance()->FPSIDynamicParams();
+
 #ifdef FPSIDIRECTSOLVE
-    const Teuchos::ParameterList& fpsidynamicparams = DRT::Problem::Instance()->FPSIDynamicParams();
 
     const int linsolvernumber = fpsidynamicparams.get<int>("LINEAR_SOLVER");
     if (linsolvernumber == (-1))

@@ -18,20 +18,27 @@
 #include <Epetra_Time.h>
 #include <Epetra_Vector.h>
 #include "Teuchos_RCP.hpp"
-#include "../drt_inpar/inpar_fpsi.H"
-#include "fpsi.H"
-#include "fpsi_monolithic.H"
-#include "fpsi_monolithic_plain.H"
-#include "../drt_adapter/adapter_algorithmbase.H"
+#include "Teuchos_ParameterList.hpp"
+//#include "../drt_inpar/inpar_fpsi.H"
+//#include "fpsi.H"
+//#include "fpsi_monolithic.H"
+//#include "fpsi_monolithic_plain.H"
+//#include "../drt_adapter/adapter_algorithmbase.H"
 
 /*----------------------------------------------------------------------*
  | forward declarations                                                  |
  *----------------------------------------------------------------------*/
+namespace DRT
+{
+  class Discretization;
+}
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 namespace FPSI
 {
+  class FPSI_Base;
 
   class UTILS
   {
@@ -40,14 +47,18 @@ namespace FPSI
   //! Singleton access method
   static Teuchos::RCP<UTILS> Instance();
 
+  //! singleton object
   static Teuchos::RCP<FPSI::UTILS> instance_;
 
+  //! Setup Discretizations for FPSI problem (clone ALE and porofluid and setup interfaces)
   Teuchos::RCP<FPSI::FPSI_Base> SetupDiscretizations(const Epetra_Comm& comm,
                                                      const Teuchos::ParameterList& fpsidynparams,
                                                      const Teuchos::ParameterList& poroelastdynparams);
 
-  void RedistributeInterface(Teuchos::RCP<DRT::Discretization> masterdis, const DRT::Discretization& slavedis, const std::string& condname, std::map<int,int>& interfacefacingelementmap);
+  //! redistribute interface for parallel computations
+  void RedistributeInterface(Teuchos::RCP<DRT::Discretization> masterdis, Teuchos::RCP<const DRT::Discretization> slavedis, const std::string& condname, std::map<int,int>& interfacefacingelementmap);
 
+  //! build map for fpsi interface
   void SetupInterfaceMap(const Epetra_Comm& comm,
       Teuchos::RCP<DRT::Discretization> structdis,
       Teuchos::RCP<DRT::Discretization> porofluiddis,
@@ -70,12 +81,14 @@ namespace FPSI
   */
   void SetupLocalInterfaceFacingElementMap(DRT::Discretization& masterdis, const DRT::Discretization& slavedis, const std::string& condname, std::map<int,int>& interfacefacingelementmap);
 
-  Teuchos::RCP<std::map<int,int> > Fluid_PoroFluid_InterfaceMap;
-  Teuchos::RCP<std::map<int,int> > PoroFluid_Fluid_InterfaceMap;
-
-
+  //!access methods
   Teuchos::RCP<std::map<int,int> > Get_Fluid_PoroFluid_InterfaceMap(){return Fluid_PoroFluid_InterfaceMap;};
   Teuchos::RCP<std::map<int,int> > Get_PoroFluid_Fluid_InterfaceMap(){return PoroFluid_Fluid_InterfaceMap;};
+
+  private:
+  //!interface maps
+  Teuchos::RCP<std::map<int,int> > Fluid_PoroFluid_InterfaceMap;
+  Teuchos::RCP<std::map<int,int> > PoroFluid_Fluid_InterfaceMap;
 
   }; // class UTILS
 } // namespace FPSI
