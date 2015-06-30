@@ -24,8 +24,6 @@ Maintainer: Alexander Popp
 #include "../linalg/linalg_blocksparsematrix.H"
 #include "../drt_io/io_pstream.H"
 
-#include "../solver_nonlin/nln_utils.H"
-
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void STR::TimIntImpl::NoxSetup()
@@ -33,24 +31,16 @@ void STR::TimIntImpl::NoxSetup()
   // create
   noxparams_ = Teuchos::rcp(new Teuchos::ParameterList());
 
-  // ---------------------------------------------------------------------------
-  // Create / read parameter list for configuration of nonlinear solver
-  // ---------------------------------------------------------------------------
-  Teuchos::RCP<Teuchos::ParameterList> params =
-      NLNSOL::UTILS::CreateParamListFromXML("xml/nox.xml");
+  // solving
+  Teuchos::ParameterList& newtonParams = (*noxparams_).sublist("Newton");
+  newtonParams = *(NoxCreateSolverParameters());
+//  Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
+//  Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
+  //Teuchos::ParameterList& solverOptions = nlParams.sublist("Solver Options");
 
-  printiter_ = true;
-
-//  // solving
-//  Teuchos::ParameterList& newtonParams = (*noxparams_).sublist("Newton");
-//  newtonParams = *(NoxCreateSolverParameters());
-////  Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
-////  Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
-//  //Teuchos::ParameterList& solverOptions = nlParams.sublist("Solver Options");
-//
-//  // printing
+  // printing
   Teuchos::ParameterList& printParams = (*noxparams_).sublist("Printing");
-  printParams = *(NoxCreatePrintParameters(true));
+  printParams = *(NoxCreatePrintParameters(false));
 
   // Create printing utilities
   noxutils_ = Teuchos::rcp(new NOX::Utils(printParams));
