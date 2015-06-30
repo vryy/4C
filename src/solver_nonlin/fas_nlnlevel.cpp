@@ -179,6 +179,9 @@ NLNSOL::FAS::NlnLevel::RestrictToNextCoarserLevel(
   {
     vc = Teuchos::rcp(new Epetra_MultiVector(rop_->RowMap(), 1, true));
 
+    dsassert(pop_->DomainMap().PointSameAs(vf->Map()), "Maps do not match.");
+    dsassert(pop_->RowMap().PointSameAs(vc->Map()), "Maps do not match.");
+
     int err = rop_->Apply(*vf, *vc);
     if (err != 0) { dserror("Failed."); }
   }
@@ -207,11 +210,10 @@ NLNSOL::FAS::NlnLevel::ProlongateToNextFinerLevel(
 
   if (HavePOp() and (LevelID() > 0))
   {
-    Teuchos::RCP<Epetra_MultiVector> tempvec =
-        Teuchos::rcp(new Epetra_MultiVector(pop_->RowMap(), 1, true));
+    vf = Teuchos::rcp(new Epetra_MultiVector(pop_->RowMap(), 1, true));
 
-    dsassert(pop_->DomainMap().PointSameAs(vec->Map()), "Maps do not match.");
-    dsassert(pop_->RowMap().PointSameAs(tempvec->Map()), "Maps do not match.");
+    dsassert(pop_->DomainMap().PointSameAs(vc->Map()), "Maps do not match.");
+    dsassert(pop_->RowMap().PointSameAs(vf->Map()), "Maps do not match.");
 
     int err = pop_->Apply(*vc, *vf);
     if (err != 0) { dserror("Failed."); }
