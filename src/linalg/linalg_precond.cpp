@@ -89,6 +89,7 @@ void LINALG::Preconditioner::Setup(Teuchos::RCP<Epetra_Operator>      matrix,
     // do ifpack if desired
     if (doifpack)
     {
+      prec_ = Teuchos::null;
       Teuchos::ParameterList& ifpacklist = solver_->Params().sublist("IFPACK Parameters");
       ifpacklist.set<bool>("relaxation: zero starting solution",true);
       // create a copy of the scaled matrix
