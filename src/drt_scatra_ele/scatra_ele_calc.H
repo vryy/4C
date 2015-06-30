@@ -453,13 +453,11 @@ namespace ELEMENTS
     );
 
     //! calculation of residual and residual-based subgrid-scale scalar for stabilization
-    void CalcResidualAndSubgrScalar(
+    void CalcStrongResidual(
       const int                   k,          //!< index of current scalar
       double&                     scatrares,  //!< residual of convection-diffusion-reaction eq
-      double&                     sgphi,      //!< residual-based subgrid-scale scalar
       const double                densam,     //!< density at t_(n+am)
       const double                densnp,     //!< density at t_(n+1)
-      const double                diff_phi,   //!< diffusive contribution
       const double                rea_phi,    //!< reactive contribution
       const double                rhsint,     //!< rhs at integration point
       const double                tau         //!< the stabilisation parameter

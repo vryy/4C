@@ -493,18 +493,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
     // loop all scalars
     for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
     {
-      // diffusive part used in stabilization terms
-      double diff_phi(0.0);
-      LINALG::Matrix<nen_,1> diff(true);
-      // diffusive term using current scalar value for higher-order elements
-      if (use2ndderiv_)
-      {
-        // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
-        GetLaplacianStrongForm(diff);
-        diff.Scale(diffmanager_->GetIsotropicDiff(k));
-        diff_phi = diff.Dot(ephinp_[k]);
-      }
-
       // reactive part of the form: (reaction coefficient)*phi
       double rea_phi(0.0);
       rea_phi = densnp*scatravarmanager_->Phinp(k)*reamanager_->GetReaCoeff(k);
@@ -513,9 +501,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
       LINALG::Matrix<nsd_,1> fsgradphi(true);
       if (scatrapara_->FSSGD())
         fsgradphi.Multiply(derxy_,fsphinp_[k]);
-
-      // get history data (or acceleration)
-      double hist = scatravarmanager_->Hist(k);
 
       // compute rhs containing bodyforce (divided by specific heat capacity) and,
       // for temperature equation, the time derivative of thermodynamic pressure,
@@ -534,60 +519,39 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
       // subgrid-scale velocity vector in gausspoint
       LINALG::Matrix<nsd_,1> sgvelint(true);
 
+      double scatrares(0.0);
+      //calculate strong residual
+      CalcStrongResidual(k,scatrares,densam,densnp,rea_phi,rhsint,tau[k]);
+
       if (scatrapara_->TauGP())
       {
         // artificial diffusion / shock capturing: adaption of diffusion coefficient
         if (scatrapara_->ASSGD())
         {
-          // residual of convection-diffusion-reaction eq
-          double scatrares(0.0);
-          // residual-based subgrid-scale scalar (just a dummy here)
-          double sgphi(0.0);
-
-          // compute residual of scalar transport equation
-          // (subgrid-scale part of scalar, which is also computed, not required)
-          CalcResidualAndSubgrScalar(k,scatrares,sgphi,densam,densnp,diff_phi,rea_phi,rhsint,tau[k]);
-
           // pre-calculation of stabilization parameter at integration point need for some forms of artificial diffusion
           CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp,scatravarmanager_->ConVel(),vol);
 
           // compute artificial diffusion
           CalcArtificialDiff(vol,k,densnp,scatravarmanager_->ConVel(),scatravarmanager_->GradPhi(k),scatravarmanager_->ConvPhi(k),scatrares,tau[k]);
 
-          // adapt diffusive term using current scalar value for higher-order elements,
-          // since diffus -> diffus + sgdiff
-          if (use2ndderiv_)
-          {
-            // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
-            diff.Clear();
-            GetLaplacianStrongForm(diff);
-            diff.Scale(diffmanager_->GetIsotropicDiff(k));
-            diff_phi = diff.Dot(ephinp_[k]);
-          }
+          // recompute strong residual since now diffus_new = diffus_old + artdiff
+          CalcStrongResidual(k,scatrares,densam,densnp,rea_phi,rhsint,tau[k]);
         }
 
-      // calculation of all-scale subgrid diffusivity (by, e.g.,
-      // Smagorinsky model) at element center
-      if (scatrapara_->TurbModel() == INPAR::FLUID::smagorinsky
-          or scatrapara_->TurbModel() == INPAR::FLUID::dynamic_smagorinsky
-          or scatrapara_->TurbModel() == INPAR::FLUID::dynamic_vreman)
-      {
-        CalcSubgrDiff(visc,vol,k,densnp);
-
-        // adapt diffusive term using current scalar value for higher-order elements,
-        // since diffus -> diffus + sgdiff
-        if (use2ndderiv_)
+        // calculation of all-scale subgrid diffusivity (by, e.g.,
+        // Smagorinsky model) at element center
+        if (scatrapara_->TurbModel() == INPAR::FLUID::smagorinsky
+            or scatrapara_->TurbModel() == INPAR::FLUID::dynamic_smagorinsky
+            or scatrapara_->TurbModel() == INPAR::FLUID::dynamic_vreman)
         {
-          // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
-          diff.Clear();
-          GetLaplacianStrongForm(diff);
-          diff.Scale(diffmanager_->GetIsotropicDiff(k));
-          diff_phi = diff.Dot(ephinp_[k]);
-        }
-      }
+          CalcSubgrDiff(visc,vol,k,densnp);
 
-      // calculation of fine-scale artificial subgrid diffusivity at element center
-      if (scatrapara_->FSSGD()) CalcFineScaleSubgrDiff(sgdiff,subgrdiff,ele,vol,k,densnp,diffmanager_->GetIsotropicDiff(k),scatravarmanager_->ConVel());
+          // recompute strong residual since now diffus_new = diffus_old + sgdiff
+          CalcStrongResidual(k,scatrares,densam,densnp,rea_phi,rhsint,tau[k]);
+        }
+
+        // calculation of fine-scale artificial subgrid diffusivity at element center
+        if (scatrapara_->FSSGD()) CalcFineScaleSubgrDiff(sgdiff,subgrdiff,ele,vol,k,densnp,diffmanager_->GetIsotropicDiff(k),scatravarmanager_->ConVel());
 
         // calculation of subgrid-scale velocity at integration point if required
         if (scatrapara_->RBSubGrVel())
@@ -602,18 +566,18 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
           sgconv.MultiplyTN(derxy_,sgvelint);
         }
 
-        // calculation of stabilization parameter at integration point
+        // (re)compute stabilization parameter at integration point, since diffusion may have changed
         CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp,scatravarmanager_->ConVel(),vol);
       }
 
-      // residual of convection-diffusion-reaction eq
-      double scatrares(0.0);
-      // residual-based subgrid-scale scalar (just a dummy here)
-      double sgphi(0.0);
-
-      // compute residual of scalar transport equation and
-      // subgrid-scale part of scalar
-      CalcResidualAndSubgrScalar(k,scatrares,sgphi,densam,densnp,diff_phi,rea_phi,rhsint,tau[k]);
+      LINALG::Matrix<nen_,1> diff(true);
+      // diffusive term using current scalar value for higher-order elements
+      if (use2ndderiv_)
+      {
+        // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
+        GetLaplacianStrongForm(diff);
+        diff.Scale(diffmanager_->GetIsotropicDiff(k));
+      }
 
       // prepare multifractal subgrid-scale modeling
       // calculation of model coefficients B (velocity) and D (scalar)
@@ -717,7 +681,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
 
       // the order of the following three functions is important
       // and must not be changed
-      ComputeRhsInt(rhsint,densam,densnp,hist);
+      ComputeRhsInt(rhsint,densam,densnp,scatravarmanager_->Hist(k));
 
       RecomputeScatraResForRhs(scatrares,k,diff,densn,densnp,rea_phi,rhsint);
 
@@ -1770,9 +1734,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ComputeRhsInt(
 
     rhsint   *= (scatraparatimint_->TimeFac()/scatraparatimint_->AlphaF());
   }
-  else // OST, BDF2
+  else // OST, BDF2, stationary
   {
-    if (not scatraparatimint_->IsStationary())
+    if (not scatraparatimint_->IsStationary()) // OST, BDF2
     {
       rhsint *= scatraparatimint_->TimeFac();
       rhsint += densnp*hist;

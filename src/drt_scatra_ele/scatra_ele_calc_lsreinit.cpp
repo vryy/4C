@@ -378,12 +378,10 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatHyperbolic(
 
     // residual of convection-diffusion-reaction eq
     double scatrares(0.0);
-    // residual-based subgrid-scale scalar (just a dummy here)
-    double sgphi(0.0);
 
     // compute residual of scalar transport equation and
     // subgrid-scale part of scalar
-    my::CalcResidualAndSubgrScalar(0,scatrares,sgphi,1.0,1.0,hist,conv_phi,0.0,0.0,signphi,tau);
+    my::CalcStrongResidual(0,scatrares,1.0,1.0,hist,conv_phi,0.0,signphi,tau);
 
     //----------------------------------------------------------------
     // evaluation of matrix and rhs
@@ -689,8 +687,6 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatHyperbolic(
     VarManager()->SetConVel(convelint);
     VarManager()->SetConvPhi(0,conv_phi);
 
-    // diffusive part used in stabilization terms
-    double diff_phi(0.0);
     LINALG::Matrix<my::nen_,1> diff(true);
     // diffusive term using current scalar value for higher-order elements
     if (my::use2ndderiv_)
@@ -698,7 +694,6 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatHyperbolic(
       // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
       my::GetLaplacianStrongForm(diff);
       diff.Scale(0.0);
-      diff_phi = diff.Dot(my::ephinp_[0]);
     }
 
     // get history data (or acceleration)
@@ -753,9 +748,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatHyperbolic(
     {
       // residual of reinit eq
       double scatrares = 0.0;
-      // subgrid scalar (dummy)
-      double sgphi = 0.0;
-      my::CalcResidualAndSubgrScalar(0,scatrares,sgphi,1.0,1.0,diff_phi,0.0,signphi,tau);
+
+      my::CalcStrongResidual(0,scatrares,1.0,1.0,0.0,signphi,tau);
 
       // compute artificial diffusion
       // diffusion coefficient has been explicitly set to zero
@@ -789,11 +783,9 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatHyperbolic(
 
     // residual of convection-diffusion-reaction eq
     double scatrares(0.0);
-    // residual-based subgrid-scale scalar (just a dummy here)
-    double sgphi(0.0);
     // compute residual of scalar transport equation and
     // subgrid-scale part of scalar
-    my::CalcResidualAndSubgrScalar(0,scatrares,sgphi,1.0,1.0,diff_phi,0.0,signphi,tau);
+    my::CalcStrongResidual(0,scatrares,1.0,1.0,0.0,signphi,tau);
 
     //----------------------------------------------------------------
     // evaluation of matrix and rhs

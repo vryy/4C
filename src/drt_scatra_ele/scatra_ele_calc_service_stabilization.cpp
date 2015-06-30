@@ -831,13 +831,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcArtificialDiff(
  |  stationary or time-integration scheme)                     vg 10/11 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcResidualAndSubgrScalar(
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcStrongResidual(
   const int                   k,          //!< index of current scalar
   double&                     scatrares,  //!< residual of convection-diffusion-reaction eq
-  double&                     sgphi,      //!< residual-based subgrid-scale scalar
   const double                densam,     //!< density at t_(n+am)
   const double                densnp,     //!< density at t_(n+1)
-  const double                diff_phi,   //!< diffusive contribution
   const double                rea_phi,    //!< reactive contribution
   const double                rhsint,     //!< rhs at gauss point
   const double                tau         //!< the stabilisation parameter
@@ -849,6 +847,20 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcResidualAndSubgrScalar(
   const double   hist = scatravarmanager_->Hist(k);
   // convective contribution
   const double   conv_phi = scatravarmanager_->ConvPhi(k);
+
+  // diffusive part used in stabilization terms
+  double diff_phi(0.0);
+  LINALG::Matrix<nen_,1> diff(true);
+
+  // diffusive term using current scalar value for higher-order elements
+  // Note: has to be recomputed here every time, since the diffusion coefficient may have changed since the last call
+  if (use2ndderiv_)
+  {
+    // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
+    GetLaplacianStrongForm(diff);
+    diff.Scale(diffmanager_->GetIsotropicDiff(k));
+    diff_phi = diff.Dot(ephinp_[k]);
+  }
 
   if (scatraparatimint_->IsGenAlpha())
   {
@@ -867,13 +879,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcResidualAndSubgrScalar(
       scatrares += densnp*(phinp - hist)/scatraparatimint_->Dt();
     }
   }
-  //--------------------------------------------------------------------
-  // calculation of subgrid-scale part of scalar
-  //--------------------------------------------------------------------
-  sgphi = -tau*scatrares;
 
   return;
-} //ScaTraEleCalc::CalcResidualAndSubgrScalar
+} //ScaTraEleCalc::CalcStrongResidual
 
 
 /*----------------------------------------------------------------------*

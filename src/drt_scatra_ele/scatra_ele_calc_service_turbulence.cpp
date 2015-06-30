@@ -1832,12 +1832,15 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDissipation(
 
     // residual of convection-diffusion-reaction eq
     double scatrares(0.0);
-    // residual-based subgrid-scale scalar (just a dummy here)
-    double sgphi(0.0);
 
     // compute residual of scalar transport equation and
     // subgrid-scale part of scalar
-    CalcResidualAndSubgrScalar(0,scatrares,sgphi,densam,densnp,diff_phi,rea_phi,rhsint,tau[0]);
+    CalcStrongResidual(0,scatrares,densam,densnp,rea_phi,rhsint,tau[0]);
+
+    //--------------------------------------------------------------------
+    // calculation of subgrid-scale part of scalar
+    //--------------------------------------------------------------------
+    double sgphi = -tau[0]*scatrares;
 
     // not supported anymore
     // update material parameters based on inclusion of subgrid-scale

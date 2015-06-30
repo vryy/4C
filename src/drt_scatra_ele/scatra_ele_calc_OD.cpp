@@ -168,18 +168,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::SysmatODMesh(
     for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
     {
 
-      // diffusive part used in stabilization terms
-      double diff_phi(0.0);
-      static LINALG::Matrix<nen_,1> diff(true);
-      // diffusive term using current scalar value for higher-order elements
-      if (use2ndderiv_)
-      {
-        // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
-        GetLaplacianStrongForm(diff);
-        diff.Scale(diffmanager_->GetIsotropicDiff(k));
-        diff_phi = diff.Dot(ephinp_[k]);
-      }
-
       // reactive part of the form: (reaction coefficient)*phi
       double rea_phi(0.0);
       rea_phi = densnp*scatravarmanager_->Phinp(k)*reamanager_->GetReaCoeff(k);
@@ -203,17 +191,13 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::SysmatODMesh(
 
       // residual of convection-diffusion-reaction eq
       double scatrares(0.0);
-      // residual-based subgrid-scale scalar (just a dummy here)
-      double sgphi(0.0);
 
       // compute residual of scalar transport equation and
       // subgrid-scale part of scalar
-      CalcResidualAndSubgrScalar( k,
+      CalcStrongResidual(         k,
                                   scatrares,
-                                  sgphi,
                                   densam,
                                   densnp,
-                                  diff_phi,
                                   rea_phi,
                                   rhsint,
                                   tau[k]);
@@ -240,6 +224,16 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::SysmatODMesh(
       // the order of the following three functions is important
       // and must not be changed
       ComputeRhsInt(rhsint,densam,densnp,hist);
+
+      // diffusive part used in stabilization terms
+      LINALG::Matrix<nen_,1> diff(true);
+      // diffusive term using current scalar value for higher-order elements
+      if (use2ndderiv_)
+      {
+        // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
+        GetLaplacianStrongForm(diff);
+        diff.Scale(diffmanager_->GetIsotropicDiff(k));
+      }
 
       RecomputeScatraResForRhs( scatrares,
                                 k,
