@@ -183,6 +183,7 @@ const int NLNSOL::NlnOperatorFas::Cycle(
   case INPAR::NLNSOL::FAS::cycle_none:
   {
     dserror("No multigrid cycle type chose.");
+    err = -1;
     break;
   }
   case INPAR::NLNSOL::FAS::cycle_v:
@@ -198,6 +199,7 @@ const int NLNSOL::NlnOperatorFas::Cycle(
   default:
   {
     dserror("Unknown multigrid cycle type.");
+    err = -1;
     break;
   }
   }
@@ -296,7 +298,6 @@ const int NLNSOL::NlnOperatorFas::WCycle() const
 
 /*----------------------------------------------------------------------------*/
 const int NLNSOL::NlnOperatorFas::PreSmoothing(
-//    Teuchos::RCP<Epetra_MultiVector> x, const int level) const
     Epetra_MultiVector& x, const int level) const
 {
   // evaluate current residual
@@ -305,14 +306,11 @@ const int NLNSOL::NlnOperatorFas::PreSmoothing(
   Hierarchy()->NlnLevel(level)->NlnProblem()->ComputeF(x, *fsmoothed);
 
   // pre-smoothing
-  Hierarchy()->NlnLevel(level)->DoPreSmoothing(*fsmoothed, x);
-
-  return 0;
+  return Hierarchy()->NlnLevel(level)->DoPreSmoothing(*fsmoothed, x);
 }
 
 /*----------------------------------------------------------------------------*/
 const int NLNSOL::NlnOperatorFas::PostSmoothing(
-//    Teuchos::RCP<Epetra_MultiVector> x, const int level) const
     Epetra_MultiVector& x, const int level) const
 {
   // evaluate current residual
@@ -321,14 +319,11 @@ const int NLNSOL::NlnOperatorFas::PostSmoothing(
   Hierarchy()->NlnLevel(level)->NlnProblem()->ComputeF(x, *fsmoothed);
 
   // post-smoothing
-  Hierarchy()->NlnLevel(level)->DoPostSmoothing(*fsmoothed, x);
-
-  return 0;
+  return Hierarchy()->NlnLevel(level)->DoPostSmoothing(*fsmoothed, x);
 }
 
 /*----------------------------------------------------------------------------*/
 const int NLNSOL::NlnOperatorFas::CoarseLevelSolve(
-//    Teuchos::RCP<Epetra_MultiVector> x, const int level) const
     Epetra_MultiVector& x, const int level) const
 {
   if (getVerbLevel() > Teuchos::VERB_NONE)
@@ -344,9 +339,7 @@ const int NLNSOL::NlnOperatorFas::CoarseLevelSolve(
   Teuchos::RCP<Epetra_MultiVector> f =
       Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
   Hierarchy()->NlnLevel(level)->NlnProblem()->ComputeF(x, *f);
-  Hierarchy()->NlnLevel(level)->DoCoarseLevelSolve(*f, x);
-
-  return 0;
+  return Hierarchy()->NlnLevel(level)->DoCoarseLevelSolve(*f, x);
 }
 
 /*----------------------------------------------------------------------------*/
