@@ -730,9 +730,9 @@ namespace FSI
      *    \kappa_{opt} = \left(\frac{tol}{\vert error\vert}\right)^\frac{1}{p+1}
      *  \f]
      *  To reduce the number of time step repetitions, the scaling factor is
-     *  reduced by a safety factor \f$\kappa_{safe} \in [0, 1]\f$ (#sizeratioscale_)
-     *  to hopefully keep the achieved local discretization error a little bit
-     *  below the tolerance.
+     *  reduced by a safety factor \f$\kappa_{safe} \in [0, 1]\f$ (given in the
+     *  input file) to hopefully keep the achieved local discretization error a
+     *  little bit below the tolerance.
      *
      *  Starting with the current time step size \f$\Delta t_{curr}\f$,
      *  the new time step size is computed as
@@ -748,10 +748,11 @@ namespace FSI
      *
      *  \author mayr.mt \date 12/2013
      */
-    double CalculateTimeStepSize(const double errnorm,  ///< length-scaled L2-norm of local discretization error
-                                 const double errtol,   ///< user given error tolerance
-                                 const double estorder  ///< order of accuracy of time integration scheme
-                                 ) const;
+    double CalculateTimeStepSize(
+        const double errnorm, ///< length-scaled L2-norm of local discretization error
+        const double errtol, ///< user given error tolerance
+        const double estorder ///< order of accuracy of time integration scheme
+        ) const;
 
     /*! \brief Select new time step size \f$\Delta t\f$ from all suggestions
      *

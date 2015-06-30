@@ -139,7 +139,7 @@ namespace FSI
      */
     virtual void CalculateInterfaceEnergyIncrement();
 
-    /*! \briefAdditional safety check of kinematic constraint during a single time step:
+    /*! \brief Additional safety check of kinematic constraint during a single time step:
      *
      *  Constraint equation:
      *

@@ -181,8 +181,7 @@ namespace NLNSOL
 
     /*! \brief Compute a new tentative iterate
      *
-     *  Apply the preconditioner once and store result in #xbar. Afterwards,
-     *  evaluate the residual and store it in #fbar.
+     *  Apply the preconditioner once and store result in \p xbar.
      *
      *  \return Integer error code, set to 0 if successful
      *
@@ -225,9 +224,9 @@ namespace NLNSOL
 
     /*! \brief Perform line search
      *
-     *  We perform a line search along the search direction betweeen #xbar and
-     *  #xhat. For storage and algorithmic reasons, the result is written in
-     *  #xbar on output.
+     *  We perform a line search along the search direction betweeen \p xbar and
+     *  \p xhat. For storage and algorithmic reasons, the result is written in
+     *  \p xbar on output.
      *
      *  The implementation follows [Sterck (2012)].
      *

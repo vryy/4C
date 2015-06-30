@@ -1,10 +1,12 @@
 /*----------------------------------------------------------------------------*/
 /*!
  \file ad_ale_xffsi.cpp
+
  <pre>
-       Maintainer: Matthias Mayr
-       mayr@mhpc.mw.tum.de
-       089 - 289-10362
+ Maintainer: Raffaela Kruse
+             kruse@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15249
  </pre>
  */
 /*----------------------------------------------------------------------------*/

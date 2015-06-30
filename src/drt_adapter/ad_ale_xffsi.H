@@ -1,13 +1,14 @@
 /*----------------------------------------------------------------------------*/
 /*!
- \file ad_ale_fsi.H
+ \file ad_ale_xffsi.H
 
  \brief Wrapper for the ALE time integration
 
  <pre>
-       Maintainer: Matthias Mayr
-       mayr@mhpc.mw.tum.de
-       089 - 289-10362
+ Maintainer: Raffaela Kruse
+             kruse@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15249
  </pre>
  */
 /*----------------------------------------------------------------------------*/

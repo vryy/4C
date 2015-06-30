@@ -65,7 +65,7 @@ namespace NLNSOL
      *  We use the analytical formula to compute the exact and optimal line
      *  search parameter for the case of a linear problem:
      *
-     *  \[\alpha = \frac{F_k^Ts_k}{F(x_k+s_k)^Ts_k - F_k^Ts_k}\]
+     *  \f[\alpha = \frac{F_k^Ts_k}{F(x_k+s_k)^Ts_k - F_k^Ts_k}\f]
      *
      *  \author mayr.mt \date 10/2014
      */
@@ -79,7 +79,7 @@ namespace NLNSOL
      *  We use the analytical formula to compute the exact and optimal line
      *  search parameter for the case of a linear problem:
      *
-     *  \[\alpha = \frac{F_k^Ts_k}{F(x_k+s_k)^Ts_k - F_k^Ts_k}\]
+     *  \f[\alpha = \frac{F_k^Ts_k}{F(x_k+s_k)^Ts_k - F_k^Ts_k}\f]
      *
      *  \author mayr.mt \date 10/2014
      */

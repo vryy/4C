@@ -97,7 +97,7 @@ namespace FAS
     /*! \brief Update matrix and rebuild preconditioners
      *
      *  Update the coarse level matrix by the recently computes RAP. Rebuild
-     *  possible preconditioners of #presmoother_, #poststmoother_, and
+     *  possible preconditioners of #presmoother_, #postsmoother_, and
      *  #coarsesolver_.
      *
      *  \author mayr.mt \date 03/2015

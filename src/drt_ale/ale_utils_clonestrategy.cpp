@@ -68,10 +68,6 @@ void ALE::UTILS::AleCloneStrategy::SetElementData(
     const int matid,
     const bool nurbsdis)
 {
-  // We need to set material and possibly other things to complete element setup.
-  // This is again really ugly as we have to extract the actual
-  // element type in order to access the material property.
-
 #ifdef D_ALE
     if(nurbsdis==false)
     {

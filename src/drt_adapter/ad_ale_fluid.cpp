@@ -1,11 +1,12 @@
 /*----------------------------------------------------------------------------*/
 /*!
- \file ad_ale_fluid_ale.cpp
+ \file ad_ale_fluid.cpp
+
  <pre>
  Maintainer: Raffaela Kruse
-            kruse@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15249
+             kruse@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15249
  </pre>
  */
 /*----------------------------------------------------------------------------*/
