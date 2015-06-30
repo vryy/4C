@@ -205,12 +205,6 @@ namespace STR
       return fextn_;
     }
 
-    virtual Teuchos::RCP<Epetra_Vector> Velaf()
-    {
-      dserror("mid velocities not available");
-      return Teuchos::null;
-    }
-
     //@}
 
     /// update all the field vectors to account for new node introduced by crack

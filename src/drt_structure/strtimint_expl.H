@@ -170,12 +170,6 @@ namespace STR
     //! Write internal and external forces for restart
     virtual void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output) = 0;
 
-    virtual Teuchos::RCP<Epetra_Vector> Velaf()
-    {
-      dserror("mid velocities not available");
-      return Teuchos::null;
-    }
-
     //! InitialGuess is not available for explicit time integrators
     virtual Teuchos::RCP<const Epetra_Vector> InitialGuess()
     {

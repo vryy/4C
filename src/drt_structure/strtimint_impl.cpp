@@ -175,11 +175,17 @@ STR::TimIntImpl::TimIntImpl
 
   stccompl_ =false;
 
+  Teuchos::RCP<Teuchos::ParameterList> params =
+      NLNSOL::UTILS::CreateParamListFromXML("xml/nox.xml");
+
   // setup NOX parameter lists
   if (itertype_ == INPAR::STR::soltech_noxnewtonlinesearch)
     NoxSetup();
   else if (itertype_ == INPAR::STR::soltech_noxgeneral)
-    NoxSetup(xparams.sublist("NOX"));
+  {
+//    NoxSetup(xparams.sublist("NOX"));
+    NoxSetup(*params);
+  }
 
   // setup tolerances and binary operators for convergence check of contact/meshtying problems
   // in saddlepoint formulation

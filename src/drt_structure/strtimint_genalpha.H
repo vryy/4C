@@ -229,8 +229,6 @@ namespace STR
       return fextn_;
     }
 
-    virtual Teuchos::RCP<Epetra_Vector> Velaf() { return velm_; }
-
     //@}
 
     //! @name Generalised-alpha specific methods

@@ -221,12 +221,6 @@ namespace STR
       return fextn_;
     }
 
-   virtual Teuchos::RCP<Epetra_Vector> Velaf()
-    {
-      dserror("mid velocities not available");
-      return Teuchos::null;
-    }
-
     //@}
 
     //! @name GEMM-specific methods

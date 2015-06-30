@@ -914,12 +914,6 @@ namespace STR
     //! Return the rhs-vector (negative sign for Newton is already included.)
     Teuchos::RCP<const Epetra_Vector> RHS() { return fres_; }
 
-    virtual Teuchos::RCP<Epetra_Vector> Velaf()
-    {
-      dserror("mid velocities not available");
-      return Teuchos::null;
-    }
-
     //@}
 
   protected:
