@@ -745,6 +745,95 @@ void SCATRA::ScaTraTimIntImpl::OutputMeanScalars(const int num)
 } // SCATRA::ScaTraTimIntImpl::OutputMeanScalars
 
 
+/*--------------------------------------------------------------------------------------------------------*
+ | output domain or boundary integrals, i.e., surface areas or volumes of specified nodesets   fang 06/15 |
+ *--------------------------------------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::OutputDomainOrBoundaryIntegrals(const std::string condstring)
+{
+  // check whether output is applicable
+  if((computeintegrals_ == INPAR::SCATRA::computeintegrals_initial and Step() == 0) or computeintegrals_ == INPAR::SCATRA::computeintegrals_repeated)
+  {
+    // initialize label
+    std::string label;
+
+    // create parameter list
+    Teuchos::ParameterList condparams;
+
+    // determine label and element action depending on whether domain or boundary integrals are relevant
+    if(condstring == "BoundaryIntegral")
+    {
+      label = "Boundary";
+      condparams.set<int>("action",SCATRA::calc_domain_integral);
+    }
+    else if(condstring == "DomainIntegral")
+    {
+      label = "Domain";
+      condparams.set<int>("action",SCATRA::bd_calc_boundary_integral);
+    }
+    else
+      dserror("Invalid condition name!");
+
+    // extract conditions for computation of domain or boundary integrals
+    std::vector<DRT::Condition*> conditions;
+    discret_->GetCondition(condstring,conditions);
+
+    // print header
+    if(conditions.size() > 0 and myrank_ == 0)
+    {
+      std::cout << label+" integrals:" << std::endl;
+      std::cout << "+----+-------------------------+" << std::endl;
+      std::cout << "| ID | value of integral       |" << std::endl;
+    }
+
+    // loop over all conditions
+    for(unsigned condid=0; condid<conditions.size(); ++condid)
+    {
+      // clear state vectors on discretization
+      discret_->ClearState();
+
+      // initialize one-component result vector for value of current domain or boundary integral
+      Teuchos::RCP<Epetra_SerialDenseVector> integralvalue = Teuchos::rcp(new Epetra_SerialDenseVector(1));
+
+      // compute value of current domain or boundary integral
+      discret_->EvaluateScalars(condparams,integralvalue,condstring,condid);
+      discret_->ClearState();
+
+      // output results to screen and file
+      if(myrank_ == 0)
+      {
+        // print results to screen
+         std::cout << "| " << std::setw(2) << condid << " |         " << std::setw(6) << std::setprecision(3) << std::fixed << (*integralvalue)(0) << "          |" << std::endl;
+
+         // set file name
+         const std::string filename(DRT::Problem::Instance()->OutputControlFile()->FileName()+"."+label+"_integrals.txt");
+
+         // open file in appropriate mode and write header at beginning
+         std::ofstream file;
+         if(Step() == 0)
+         {
+           file.open(filename.c_str(),std::fstream::trunc);
+           file << "Step,Time,"+label+"ID,"+label+"Integral" << std::endl;
+         }
+         else
+           file.open(filename.c_str(),std::fstream::app);
+
+         // write value of current domain or boundary integral to file
+         file << Step() << "," << Time() << "," << condid << ',' << std::setprecision(16) << std::fixed << (*integralvalue)(0) << std::endl;
+
+         // close file
+         file.close();
+      } // if(myrank_ == 0)
+    } // loop over all conditions
+
+    // print finish line to screen
+    if(myrank_ == 0)
+      std::cout << "+----+-------------------------+" << std::endl << std::endl;
+  } // check whether output is applicable
+
+  return;
+} // SCATRA::ScaTraTimIntImpl::OutputDomainOrBoundaryIntegrals
+
+
 /*----------------------------------------------------------------------*
  | Evaluate surface/interface permeability for FS3I          Thon 11/14 |
  *----------------------------------------------------------------------*/

@@ -198,6 +198,13 @@ public:
       Epetra_SerialDenseVector&   eslaveresidual    ///< element residual for slave side
   );
 
+  //! calculate boundary integral, i.e., surface area of boundary element
+  void CalcBoundaryIntegral(
+      const DRT::Element*         ele,     //!< the element we are dealing with
+      Epetra_SerialDenseVector&   scalar   //!< result vector for scalar integral to be computed
+      );
+
+
   //! evaluate Kedem-Katchalsky interface condition
   void EvaluateKedemKatchalsky(
       const DRT::Element*        ele,         ///< the actual boundary element

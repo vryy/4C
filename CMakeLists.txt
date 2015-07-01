@@ -1115,6 +1115,7 @@ set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra_ele/scatra_ele_calc_service_elch_diffcond.cpp
   src/drt_scatra_ele/scatra_ele_calc_service_elch.cpp
   src/drt_scatra_ele/scatra_ele_calc_service_cardiac_monodomain.cpp
+  src/drt_scatra_ele/scatra_ele_utils_elch.cpp
 )
 set(OBJS_DRT_MESHFREE_SCATRA_LIB
   src/drt_meshfree_discret/meshfree_scatra_cell.cpp

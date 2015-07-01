@@ -487,9 +487,9 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoBoundary()
 
   if(myrank_ == 0)
   {
-    std::cout<<"Status of '"<<condname<<"':\n"
-    <<"++----+---------------------+------------------+----------------------+--------------------+----------------+----------------+"<<std::endl;
-    printf("|| ID |    Total current    | Area of boundary | Mean current density | Mean overpotential | Electrode pot. | Mean Concentr. |\n");
+    std::cout << "Status of '" << condname << "':" << std::endl;
+    std::cout << "+----+----------+---------------------+------------------+----------------------+--------------------+----------------+----------------+" << std::endl;
+    std::cout << "| ID | porosity |    total current    | area of boundary | mean current density | mean overpotential | electrode pot. | mean concentr. |" << std::endl;
   }
 
   // evaluate the conditions and separate via ConditionID
@@ -515,7 +515,7 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoBoundary()
 
   if(myrank_ == 0)
   {
-    std::cout << "++----+---------------------+------------------+----------------------+--------------------+----------------+----------------+" << std::endl << std::endl;
+    std::cout << "+----+---------------------+------------------+----------------------+--------------------+----------------+----------------+" << std::endl << std::endl;
     // print out the net total current for all indicated boundaries
     printf("Net total current over boundary: %10.3E\n\n",sum);
   }
@@ -578,7 +578,7 @@ void SCATRA::ScaTraTimIntElch::OutputSingleElectrodeInfoBoundary(
 
   // initialize result vector
   // physical meaning of vector components is described below
-  Teuchos::RCP<Epetra_SerialDenseVector> scalars = Teuchos::rcp(new Epetra_SerialDenseVector(10));
+  Teuchos::RCP<Epetra_SerialDenseVector> scalars = Teuchos::rcp(new Epetra_SerialDenseVector(11));
 
   // evaluate relevant boundary integrals
   discret_->EvaluateScalars(eleparams,scalars,"ElchBoundaryKinetics",condid);
@@ -603,6 +603,8 @@ void SCATRA::ScaTraTimIntElch::OutputSingleElectrodeInfoBoundary(
   double currderiv = (*scalars)(8);
   // get negative current residual (right-hand side of galvanostatic balance equation)
   double currentresidual = (*scalars)(9);
+  // get total boundary area scaled with boundary porosity
+  double boundaryint_porous = (*scalars)(10);
 
   // specify some return values
   currentsum += currentintegral; // sum of currents
@@ -619,8 +621,10 @@ void SCATRA::ScaTraTimIntElch::OutputSingleElectrodeInfoBoundary(
   if(myrank_ == 0 and print)
   {
     // print out results to screen
-    printf("|| %2d |     %10.3E      |    %10.3E    |      %10.3E      |     %10.3E     |   %10.3E   |   %10.3E   |\n",
-        condid,currentintegral+currentdlintegral,boundaryint,currentintegral/boundaryint+currentdlintegral/boundaryint,overpotentialint/boundaryint, electrodepot, cint/boundaryint);
+    printf("| %2d | without  |     %10.3E      |    %10.3E    |      %10.3E      |     %10.3E     |   %10.3E   |   %10.3E   |\n",
+        condid,currentintegral+currentdlintegral,boundaryint,currentintegral/boundaryint+currentdlintegral/boundaryint,overpotentialint/boundaryint, electrodepot, cint/boundaryint_porous);
+    printf("| %2d | with     |     %10.3E      |    %10.3E    |      %10.3E      |     %10.3E     |   %10.3E   |   %10.3E   |\n",
+        condid,currentintegral+currentdlintegral,boundaryint_porous,currentintegral/boundaryint_porous+currentdlintegral/boundaryint_porous,overpotentialint/boundaryint_porous, electrodepot, cint/boundaryint);
 
     // write results to file
     std::ostringstream temp;
@@ -1635,24 +1639,30 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
 } // end ApplyGalvanostaticControl()
 
 
-/*----------------------------------------------------------------------*
- | evaluate contribution of electrode kinetics to eq. system  gjb 02/09 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElch::EvaluateElectrodeBoundaryConditions(
-    Teuchos::RCP<LINALG::SparseOperator> matrix,
-    Teuchos::RCP<Epetra_Vector>          rhs
+/*----------------------------------------------------------------------------*
+ | evaluate domain or boundary conditions for electrode kinetics   fang 06/15 |
+ *----------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElch::EvaluateElectrodeKineticsConditions(
+    Teuchos::RCP<LINALG::SparseOperator>   systemmatrix,   //!< global system matrix
+    Teuchos::RCP<Epetra_Vector>            rhs,            //!< global right-hand side vector
+    const std::string                      condstring      //!< name of condition to be evaluated
 )
 {
-  // time measurement: evaluate condition 'ElchBoundaryKinetics'
-  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'ElchBoundaryKinetics'");
+  // time measurement
+  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition '"+condstring+"'");
 
   discret_->ClearState();
 
   // create parameter list
   Teuchos::ParameterList condparams;
 
-  // action for elements
-  condparams.set<int>("action",SCATRA::bd_calc_elch_boundary_kinetics);
+  // set action for elements depending on type of condition to be evaluated
+  if(condstring == "ElchDomainKinetics")
+    condparams.set<int>("action",SCATRA::calc_elch_domain_kinetics);
+  else if(condstring == "ElchBoundaryKinetics")
+    condparams.set<int>("action",SCATRA::bd_calc_elch_boundary_kinetics);
+  else
+    dserror("Illegal action for electrode kinetics evaluation!");
 
   // parameters for Elch/DiffCond formulation
   condparams.sublist("DIFFCOND") = elchparams_->sublist("DIFFCOND");
@@ -1663,16 +1673,16 @@ void SCATRA::ScaTraTimIntElch::EvaluateElectrodeBoundaryConditions(
   // add element parameters and set state vectors according to time-integration scheme
   AddTimeIntegrationSpecificVectors();
 
-  // evaluate ElchBoundaryKinetics conditions at time t_{n+1} or t_{n+alpha_F}
-  discret_->EvaluateCondition(condparams,matrix,Teuchos::null,rhs,Teuchos::null,Teuchos::null,"ElchBoundaryKinetics");
+  // evaluate electrode kinetics conditions at time t_{n+1} or t_{n+alpha_F}
+  discret_->EvaluateCondition(condparams,systemmatrix,Teuchos::null,rhs,Teuchos::null,Teuchos::null,condstring);
   discret_->ClearState();
 
-  // Add linearization of NernstCondition to system matrix
-  if(ektoggle_!=Teuchos::null)
+  // add linearization of NernstCondition to system matrix
+  if(ektoggle_ != Teuchos::null)
     LinearizationNernstCondition();
 
   return;
-} // ScaTraTimIntElch::EvaluateElectrodeBoundaryConditions
+} // ScaTraTimIntElch::EvaluateElectrodeKineticsConditions
 
 
 /*----------------------------------------------------------------------*
@@ -1718,8 +1728,11 @@ void SCATRA::ScaTraTimIntElch::EvaluateSolutionDependingConditions(
     Teuchos::RCP<Epetra_Vector>          rhs                //!< rhs vector
 )
 {
-  // evaluate electrode boundary conditions
-  EvaluateElectrodeBoundaryConditions(systemmatrix,rhs);
+  // evaluate domain conditions for electrode kinetics
+  EvaluateElectrodeKineticsConditions(systemmatrix,rhs,"ElchDomainKinetics");
+
+  // evaluate boundary conditions for electrode kinetics
+  EvaluateElectrodeKineticsConditions(systemmatrix,rhs,"ElchBoundaryKinetics");
 
   // call base class routine
   ScaTraTimIntImpl::EvaluateSolutionDependingConditions(systemmatrix,rhs);

@@ -21,8 +21,9 @@ namespace DRT
 {
   namespace ELEMENTS
   {
-    // forward declaration
+    // forward declarations
     class ScaTraEleParameterElch;
+    template <DRT::Element::DiscretizationType distype> class ScaTraEleUtilsElch;
 
     // class implementation
     template<DRT::Element::DiscretizationType distype> class ScaTraEleBoundaryCalcElch : public ScaTraEleBoundaryCalc<distype>
@@ -132,6 +133,9 @@ namespace DRT
 
       //! return parameter class for electrochemistry problems
       const DRT::ELEMENTS::ScaTraEleParameterElch* ElchParams() const {return static_cast<DRT::ELEMENTS::ScaTraEleParameterElch*>(my::scatraparams_);};
+
+      //! utility class supporting element evaluation
+      DRT::ELEMENTS::ScaTraEleUtilsElch<distype>* utils_;
     }; // class ScaTraEleBoundaryCalcElch
   } // namespace ELEMENTS
 } // namespace DRT

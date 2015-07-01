@@ -5671,6 +5671,24 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("FDCHECKEPS",1.e-6,"dof perturbation magnitude for finite difference check (1.e-6 seems to work very well, whereas smaller values don't)",&scatradyn);
   DoubleParameter("FDCHECKTOL",1.e-6,"relative tolerance for finite difference check",&scatradyn);
 
+  // parameter for optional computation of domain and boundary integrals, i.e., of surface areas and volumes associated with specified nodesets
+  setStringToIntegralParameter<int>(
+      "COMPUTEINTEGRALS",
+      "none",
+      "flag for optional computation of domain integrals",
+      tuple<std::string>(
+          "none",
+          "initial",
+          "repeated"
+          ),
+      tuple<int>(
+          INPAR::SCATRA::computeintegrals_none,
+          INPAR::SCATRA::computeintegrals_initial,
+          INPAR::SCATRA::computeintegrals_repeated
+          ),
+      &scatradyn
+      );
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& scatra_nonlin = scatradyn.sublist(
       "NONLINEAR",
@@ -8077,7 +8095,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
    BoolParameter("TENSION_CUTOFF","no","switch on/off tension cutoff",&particledyn);
    BoolParameter("MOVING_WALLS","no","switch on/off moving walls",&particledyn);
    DoubleParameter("RANDOM_AMPLITUDE",0.0,"random value for initial position",&particledyn);
-
+   BoolParameter("RADIUS_DISTRIBUTION","no","switch on/off random normal distribution of particle radii",&particledyn);
+   DoubleParameter("RADIUS_DISTRIBUTION_SIGMA",-1.0,"standard deviation of normal distribution of particle radii",&particledyn);
    setNumericStringParameter("GRAVITY_ACCELERATION","0.0 0.0 0.0",
                              "Acceleration due to gravity in particle/cavitation simulations.",
                              &particledyn);

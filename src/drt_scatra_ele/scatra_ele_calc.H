@@ -291,6 +291,12 @@ namespace ELEMENTS
       const int                       k          //!< index of current scalar
     );
 
+    //! calculate domain integral, i.e., surface area or volume of domain element
+    void CalcDomainIntegral(
+        const DRT::Element*         ele,     //!< the element we are dealing with
+        Epetra_SerialDenseVector&   scalar   //!< result vector for scalar integral to be computed
+        );
+
     //! calculate scalar(s) and domain integral
     void CalculateScalars(
       const DRT::Element*             ele,       //!< the element we are dealing with

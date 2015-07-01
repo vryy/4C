@@ -221,8 +221,9 @@ int DRT::ELEMENTS::Transport::Evaluate(
               elevec2,
               elevec3
               );
+      break;
     }
-    break;
+
     case SCATRA::calc_scatra_mono_odblock_fluid:
     case SCATRA::calc_scatra_mono_odblock_mesh:
     {
@@ -237,8 +238,9 @@ int DRT::ELEMENTS::Transport::Evaluate(
               elevec2,
               elevec3
               );
+      break;
     }
-    break;
+
     case SCATRA::check_scatra_element_parameter:
     case SCATRA::calc_initial_time_deriv:
     case SCATRA::integrate_shape_functions:
@@ -254,9 +256,11 @@ int DRT::ELEMENTS::Transport::Evaluate(
     case SCATRA::calc_dissipation:
     case SCATRA::calc_mat_and_rhs_lsreinit_correction_step:
     case SCATRA::calc_node_based_reinit_velocity:
+    case SCATRA::calc_domain_integral:
     case SCATRA::calc_error:
     case SCATRA::calc_elch_conductivity:
     case SCATRA::calc_elch_electrode_soc:
+    case SCATRA::calc_elch_domain_kinetics:
     case SCATRA::calc_integr_grad_reac:
     case SCATRA::calc_integr_grad_diff:
     case SCATRA::recon_gradients_at_nodes:
@@ -281,6 +285,7 @@ int DRT::ELEMENTS::Transport::Evaluate(
                elevec3);
       break;
     }
+
     case SCATRA::set_general_scatra_parameter:
     case SCATRA::set_turbulence_scatra_parameter:
     case SCATRA::set_time_parameter:
@@ -288,10 +293,14 @@ int DRT::ELEMENTS::Transport::Evaluate(
     case SCATRA::set_lsreinit_scatra_parameter:
     case SCATRA::set_elch_scatra_parameter:
     case SCATRA::set_diffcond_scatra_parameter:
+      // these actions have already been evaluated during element pre-evaluate
       break;
+
     default:
+    {
       dserror("Unknown type of action '%i' for ScaTra", action);
       break;
+    }
   } // switch(action)
 
   return 0;

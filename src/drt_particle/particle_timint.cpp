@@ -243,6 +243,39 @@ void PARTICLE::TimInt::SetInitialFields()
     }
   }
 
+  // evaluate random normal distribution for particle radii if applicable
+  if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"RADIUS_DISTRIBUTION"))
+  {
+    // get minimum and maximum radius for particles
+    const double min_radius = DRT::Problem::Instance()->ParticleParams().get<double>("MIN_RADIUS");
+    const double max_radius = DRT::Problem::Instance()->ParticleParams().get<double>("MAX_RADIUS");
+
+    // loop over all particles
+    for(int n=0; n<discret_->NumMyRowNodes(); ++n)
+    {
+      // get local ID of current particle
+      int lid = discret_->NodeRowMap()->LID(discret_->lRowNode(n)->Id());
+
+      if(lid != -1)
+      {
+        // initialize random number generator with current particle radius as mean and input parameter value as standard deviation
+        DRT::Problem::Instance()->Random()->SetMeanVariance((*radius_)[lid],DRT::Problem::Instance()->ParticleParams().get<double>("RADIUS_DISTRIBUTION_SIGMA"));
+
+        // generate normally distributed random value for particle radius
+        double random_radius = DRT::Problem::Instance()->Random()->Normal();
+
+        // check whether random value lies within allowed bounds, and adjust otherwise
+        if(random_radius > max_radius)
+          random_radius = max_radius;
+        else if(random_radius < min_radius)
+          random_radius = min_radius;
+
+        // set particle radius to random value
+        (*radius_)[lid] = random_radius;
+      }
+    }
+  }
+
   // set initial velocity field if existing
   const std::string field = "Velocity";
   std::vector<int> localdofs;

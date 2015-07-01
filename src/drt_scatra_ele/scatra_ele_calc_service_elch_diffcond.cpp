@@ -12,17 +12,15 @@ Maintainer: Andreas Ehrl
 </pre>
 */
 /*--------------------------------------------------------------------------*/
+#include "scatra_ele_calc_elch_diffcond.H"
+#include "scatra_ele_utils_elch.H"
 
-#include "scatra_ele.H"
-
+#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/standardtypes_cpp.H"  // for EPS13 and so on
+#include "../drt_lib/standardtypes_cpp.H"
 
 #include "../drt_mat/elchmat.H"
 #include "../drt_mat/elchphase.H"
-
-#include "scatra_ele_calc_elch_diffcond.H"
-
 
 /*-----------------------------------------------------------------------*
   |  Set scatra element parameter                             ehrl 01/14 |
@@ -34,6 +32,20 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CheckElchElementParamete
 {
   // get the material
   Teuchos::RCP<const MAT::Material> material = ele->Material();
+
+  // safety check for closing equation
+  switch(myelch::ElchPara()->EquPot())
+  {
+  case INPAR::ELCH::equpot_divi:
+  case INPAR::ELCH::equpot_enc:
+    // valid closing equations for electric potential
+    break;
+  default:
+  {
+    dserror("Invalid closing equation for electric potential!");
+    break;
+  }
+  }
 
   // 1) Check material specific options
   // 2) Check if numdofpernode, numscal is set correctly
@@ -176,6 +188,349 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CorrectRHSFromCalcRHSLin
 
   return;
 }
+
+
+/*----------------------------------------------------------------------*
+ | evaluate action                                           fang 07/15 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::EvaluateAction(
+    DRT::Element*                 ele,
+    Teuchos::ParameterList&       params,
+    DRT::Discretization&          discretization,
+    const SCATRA::Action&         action,
+    DRT::Element::LocationArray&  la,
+    Epetra_SerialDenseMatrix&     elemat1_epetra,
+    Epetra_SerialDenseMatrix&     elemat2_epetra,
+    Epetra_SerialDenseVector&     elevec1_epetra,
+    Epetra_SerialDenseVector&     elevec2_epetra,
+    Epetra_SerialDenseVector&     elevec3_epetra
+    )
+{
+  // determine and evaluate action
+  switch(action)
+  {
+  case SCATRA::calc_elch_domain_kinetics:
+  {
+    CalcElchDomainKinetics(
+        ele,
+        params,discretization,
+        la[0].lm_,
+        elemat1_epetra,
+        elevec1_epetra
+        );
+
+    break;
+  }
+
+  default:
+  {
+    myelectrode::EvaluateAction(
+        ele,
+        params,
+        discretization,
+        action,
+        la,
+        elemat1_epetra,
+        elemat2_epetra,
+        elevec1_epetra,
+        elevec2_epetra,
+        elevec3_epetra
+        );
+
+    break;
+  }
+  } // switch(action)
+
+  return 0;
+}
+
+
+/*------------------------------------------------------------------------*
+ | evaluate electrode kinetics domain condition                fang 07/15 |
+ *------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcElchDomainKinetics(
+    DRT::Element*                     ele,
+    Teuchos::ParameterList&           params,
+    DRT::Discretization&              discretization,
+    std::vector<int>&                 lm,
+    Epetra_SerialDenseMatrix&         elemat1_epetra,
+    Epetra_SerialDenseVector&         elevec1_epetra
+    )
+{
+  //from scatra_ele_boundary_calc_elch_diffcond.cpp
+  Teuchos::RCP<MAT::Material> material = ele->Material();
+
+  if(material->MaterialType() == INPAR::MAT::m_elchmat)
+  {
+    const MAT::ElchMat* elchmat = static_cast<const MAT::ElchMat*>(material.get());
+
+    for(int iphase=0; iphase<elchmat->NumPhase(); ++iphase)
+    {
+      Teuchos::RCP<const MAT::Material> phase = elchmat->PhaseById(elchmat->PhaseID(iphase));
+
+      if(phase->MaterialType() == INPAR::MAT::m_elchphase)
+        DiffManager()->SetPhasePoro((static_cast<const MAT::ElchPhase*>(phase.get()))->Epsilon(),iphase);
+
+      else
+        dserror("Invalid material!");
+    }
+  }
+
+  else
+    dserror("Invalid material!");
+
+  // get actual values of transported scalars
+  Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+  if(phinp == Teuchos::null)
+    dserror("Cannot get state vector 'phinp'");
+
+  // extract local values from the global vector
+  std::vector<double> ephinp(lm.size());
+  DRT::UTILS::ExtractMyValues(*phinp,ephinp,lm);
+
+  // get history variable (needed for double layer modeling)
+  Teuchos::RCP<const Epetra_Vector> hist = discretization.GetState("hist");
+  if(phinp == Teuchos::null)
+    dserror("Cannot get state vector 'hist'");
+
+  // extract local values from the global vector
+  std::vector<double> ehist(lm.size());
+  DRT::UTILS::ExtractMyValues(*hist,ehist,lm);
+
+  // get current condition
+  Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition> >("condition");
+  if(cond == Teuchos::null)
+    dserror("Cannot access condition 'ElchDomainKinetics'");
+
+  // access parameters of the condition
+  const int                 kinetics = cond->GetInt("kinetic model");
+  double                    pot0 = cond->GetDouble("pot");
+  const int                 curvenum = cond->GetInt("curve");
+  const int                 nume = cond->GetInt("e-");
+  // if zero=1=true, the current flow across the electrode is zero (comparable to do-nothing Neuman condition)
+  // but the electrode status is evaluated
+  const int                 zerocur = cond->GetInt("zero_cur");
+  if(nume < 0)
+    dserror("The convention for electrochemical reactions at the electrodes does not allow \n"
+        "a negative number of transferred electrons");
+
+  // convention for stoichiometric coefficients s_i:
+  // Sum_i (s_i  M_i^(z_i)) -> n e- (n needs to be positive)
+  const std::vector<int>*   stoich = cond->GetMutable<std::vector<int> >("stoich");
+  if((unsigned int)my::numscal_ != (*stoich).size())
+    dserror("Electrode kinetics: number of stoichiometry coefficients %u does not match"
+            " the number of ionic species %d", (*stoich).size(), my::numscal_);
+
+  // the classical implementations of kinetic electrode models does not support
+  // more than one reagent or product!! There are alternative formulations
+  // as e.g. Newman (2004), pp. 205, eq. 8.6 with 8.10
+  {
+    int reactspecies = 0;
+    for(int kk=0; kk<my::numscal_; ++kk)
+      reactspecies += abs((*stoich)[kk]);
+
+    if(reactspecies>1 and (kinetics==INPAR::SCATRA::butler_volmer or kinetics == INPAR::SCATRA::butler_volmer_yang1997 or
+        kinetics == INPAR::SCATRA::tafel or kinetics == INPAR::SCATRA::linear))
+      dserror("Kinetic model Butler-Volmer / Butler-Volmer-Yang / Tafel and Linear: \n"
+          "Only one educt and no product is allowed in the implemented version");
+  }
+
+  // access input parameter
+  const double frt = ElchPara()->FRT();
+  if (frt<=0.0)
+    dserror("A negative factor frt is not possible by definition");
+
+  // get control parameter from parameter list
+  const bool   is_stationary = my::scatraparatimint_->IsStationary();
+  const double time = my::scatraparatimint_->Time();
+  double       timefac = 1.0;
+  double       rhsfac  = 1.0;
+  // find out whether we shell use a time curve and get the factor
+  // this feature can be also used for stationary "pseudo time loops"
+  if (curvenum>=0)
+  {
+    const double curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+    // adjust potential at metal side accordingly
+    pot0 *= curvefac;
+  }
+
+  if(not is_stationary)
+  {
+    // One-step-Theta:    timefac = theta*dt
+    // BDF2:              timefac = 2/3 * dt
+    // generalized-alpha: timefac = (gamma*alpha_F/alpha_M) * dt
+    timefac = my::scatraparatimint_->TimeFac();
+    if (timefac < 0.0) dserror("time factor is negative.");
+    // for correct scaling of rhs contribution (see below)
+    rhsfac =  1/my::scatraparatimint_->AlphaF();
+  }
+
+  if(zerocur == 0)
+  {
+    EvaluateElchDomainKinetics(
+        ele,
+        elemat1_epetra,
+        elevec1_epetra,
+        ephinp,
+        ehist,
+        timefac,
+        material,
+        cond,
+        nume,
+        *stoich,
+        kinetics,
+        pot0,
+        frt
+    );
+  }
+
+  // realize correct scaling of rhs contribution for gen.alpha case
+  // with dt*(gamma/alpha_M) = timefac/alpha_F
+  // matrix contributions are already scaled correctly with
+  // timefac=dt*(gamma*alpha_F/alpha_M)
+  elevec1_epetra.Scale(rhsfac);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | evaluate electrode kinetics domain condition              fang 07/15 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::EvaluateElchDomainKinetics(
+    const DRT::Element*                 ele,        ///< the actual boundary element
+    Epetra_SerialDenseMatrix&           emat,       ///< element-matrix
+    Epetra_SerialDenseVector&           erhs,       ///< element-rhs
+    const std::vector<double>&          ephinp,     ///< actual conc. and pot. values
+    const std::vector<double>&          ehist,      ///< element history vector
+    double                              timefac,    ///< time factor
+    Teuchos::RCP<const MAT::Material>   material,   ///< the material
+    Teuchos::RCP<DRT::Condition>        cond,       ///< the condition
+    const int                           nume,       ///< number of transferred electrons
+    const std::vector<int>              stoich,     ///< stoichiometry of the reaction
+    const int                           kinetics,   ///< desired electrode kinetics model
+    const double                        pot0,       ///< actual electrode potential on metal side
+    const double                        frt         ///< factor F/RT
+)
+{
+  // for pre-multiplication of i0 with 1/(F z_k)
+  const double faraday = INPAR::ELCH::faraday_const;    // unit of F: C/mol or mC/mmol or µC/µmol
+
+  // integration points and weights
+  const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  // concentration values of reactive species at element nodes
+  std::vector<LINALG::Matrix<my::nen_,1> > conreact(my::numscal_);
+
+  // el. potential values at element nodes
+  LINALG::Matrix<my::nen_,1> pot(true);
+
+  // element history vector for potential at electrode
+  LINALG::Matrix<my::nen_,1> phihist(true);
+
+  for (int inode=0; inode< my::nen_;++inode)
+  {
+    for(int kk=0; kk<my::numscal_; kk++)
+      conreact[kk](inode) = ephinp[inode*my::numdofpernode_+kk];
+
+    pot(inode) = ephinp[inode*my::numdofpernode_+my::numscal_];
+    phihist(inode) = ehist[inode*my::numdofpernode_+my::numscal_];
+  }
+
+  // loop over all scalars
+  for(int k=0; k<my::numscal_; ++k)
+  {
+    if(stoich[k]==0)
+      continue;
+
+    //(- N^(d+m)*n) = j = s_k / (nume * faraday * z_e-) * i
+    //                  = s_k / (nume * faraday * (-1)) * i
+    //                    |_______fns_________________|
+    // see, e.g. in Ehrl et al., "A computational approach for the simulation of natural convection in
+    // electrochemical cells", JCP, 2012
+    double fns = -1.0/faraday/nume;
+    // stoichiometry as a consequence of the reaction convention
+    fns*=stoich[k];
+
+    // get valence of the single reactant
+    const double valence_k = myelch::DiffManager()->GetValence(k);
+
+   /*----------------------------------------------------------------------*
+    |               start loop over integration points                     |
+    *----------------------------------------------------------------------*/
+    for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
+    {
+      const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints,gpid);
+
+      // extract specific electrode surface area A_s from condition
+      double A_s = cond->GetDouble("A_s");
+
+      //call util-class evaluation routine
+      utils_->EvaluateElchKineticsAtIntegrationPoint(
+          ele,
+          emat,
+          erhs,
+          conreact,
+          pot,
+          phihist,
+          timefac,
+          fac,
+          my::funct_,
+          material,
+          cond,
+          nume,
+          stoich,
+          valence_k,
+          kinetics,
+          pot0,
+          frt,
+          fns,
+          A_s,
+          k
+      );
+    } // end of loop over integration points gpid
+  } // end loop over scalars
+
+  // compute matrix and residual contributions arising from closing equation for electric potential
+  switch(ElchPara()->EquPot())
+  {
+  case INPAR::ELCH::equpot_enc:
+  {
+    // do nothing, since no boundary integral present
+    break;
+  }
+
+  case INPAR::ELCH::equpot_divi:
+  {
+    for(int k=0; k<my::numscal_; ++k)
+    {
+      for (int vi=0; vi<my::nen_; ++vi)
+      {
+        for (int ui=0; ui<my::nen_; ++ui)
+        {
+          emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+k) += nume*emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k);
+          emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+my::numscal_) += nume*emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+my::numscal_);
+        }
+
+        erhs[vi*my::numdofpernode_+my::numscal_] += nume*erhs[vi*my::numdofpernode_+k];
+      }
+    }
+
+    break;
+  }
+
+  default:
+  {
+    dserror("Unknown closing equation for electric potential!");
+    break;
+  }
+  } // switch(ElchPara()->EquPot())
+
+  return;
+} // DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::EvaluateElchDomainKinetics
 
 
 /*-----------------------------------------------------------------------------------------*

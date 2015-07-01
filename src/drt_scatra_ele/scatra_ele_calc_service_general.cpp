@@ -66,6 +66,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
       );
     break;
   }
+
   case SCATRA::integrate_shape_functions:
   {
     // calculate integral of shape functions
@@ -74,6 +75,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
 
     break;
   }
+
   case SCATRA::calc_flux_domain:
   {
     // get velocity values at the nodes
@@ -125,6 +127,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
 
     break;
   }
+
   case SCATRA::calc_mean_scalars:
   {
     // get flag for inverting
@@ -152,6 +155,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
 
     break;
   }
+
   // calculate filtered fields for calculation of turbulent Prandtl number
   // required for dynamic Smagorinsky model in scatra
   case SCATRA::calc_scatra_box_filter:
@@ -163,6 +167,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
 
     break;
   }
+
   // calculate turbulent prandtl number of dynamic Smagorinsky model
   case SCATRA::calc_turbulent_prandtl_number:
   {
@@ -242,6 +247,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
 
     break;
   }
+
   case SCATRA::calc_vreman_scatra:
   {
     if (nsd_ == 3)
@@ -290,6 +296,15 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
 
     break;
   }
+
+  // calculate domain integral, i.e., surface area or volume of domain element
+  case SCATRA::calc_domain_integral:
+  {
+    CalcDomainIntegral(ele,elevec1_epetra);
+
+    break;
+  }
+
   // calculate normalized subgrid-diffusivity matrix
   case SCATRA::calc_subgrid_diffusivity_matrix:
   {
@@ -300,6 +315,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
 
     break;
   }
+
   // calculate mean Cai of multifractal subgrid-scale modeling approach
   case SCATRA::calc_mean_Cai:
   {
@@ -394,6 +410,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
 
     break;
   }
+
   // calculate dissipation introduced by stabilization and turbulence models
   case SCATRA::calc_dissipation:
   {
@@ -403,6 +420,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
                     lm);
     break;
   }
+
   case SCATRA::calc_integr_grad_reac:
   {
     Teuchos::RCP<const Epetra_Vector> dualphi = discretization.GetState("adjoint phi");
@@ -440,6 +458,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
     else         elevec1_epetra.Multiply('N','N',1.0,massmat,temp,1.0);
     break;
   }
+
   case SCATRA::calc_integr_grad_diff:
   {
     Teuchos::RCP<const Epetra_Vector> dualphi = discretization.GetState("adjoint phi");
@@ -469,6 +488,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
 
     break;
   }
+
   case SCATRA::recon_gradients_at_nodes:
   {
     // need current scalar vector
@@ -492,6 +512,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
 
     break;
   }
+
   case SCATRA::recon_curvature_at_nodes:
     {
       // need current scalar vector
@@ -539,6 +560,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
 
       break;
     }
+
   case SCATRA::calc_mass_center_smoothingfunct:
     {
       double interface_thickness = params.get<double>("INTERFACE_THICKNESS_TPF");
@@ -577,6 +599,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
       }
       break;
     }
+
   case SCATRA::calc_integr_pat_rhsvec:
   {
     // extract local values from the global vectors w and phi
@@ -610,6 +633,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
 
     break;
   }
+
   case SCATRA::calc_error:
   {
     // check if length suffices
@@ -640,6 +664,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
 
     break;
   }
+
   case SCATRA::calc_immersed_element_source:
   {
 
@@ -655,6 +680,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
 
     break;
   }
+
   default:
   {
     dserror("Not acting on this action. Forgot implementation?");
@@ -1293,6 +1319,39 @@ const int                       k
 
   return;
 } // ScaTraCalc::CalculateFlux
+
+
+/*----------------------------------------------------------------------------------------*
+ | calculate domain integral, i.e., surface area or volume of domain element   fang 07/15 |
+ *----------------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDomainIntegral(
+    const DRT::Element*         ele,     //!< the element we are dealing with
+    Epetra_SerialDenseVector&   scalar   //!< result vector for scalar integral to be computed
+    )
+{
+  // initialize variable for domain integral
+  double domainintegral(0.);
+
+  // get integration points and weights
+  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  // loop over integration points
+  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+  {
+    // evaluate values of shape functions and domain integration factor at current integration point
+    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+
+    // add contribution from current integration point to domain integral
+    for (int vi=0; vi<nen_; ++vi)
+      domainintegral += funct_(vi)*fac;
+  } // loop over integration points
+
+  // write result into result vector
+  scalar(0) = domainintegral;
+
+  return;
+} // DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDomainIntegral
 
 
 /*----------------------------------------------------------------------*

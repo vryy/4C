@@ -110,12 +110,12 @@ NDPOINT                         0
 NDLINE                          5
 NDSURF                          0
 NDVOL                           0
-------------------------------------------ELECTRODE KINETICS LINE CONDITIONS
+---------------------------------ELECTRODE BOUNDARY KINETICS LINE CONDITIONS
 DLINE                           2
 //                              cathode
-E 3 - ID 0 pot -0.2 curve 1 numscal 1 stoich -1 e- 1 zero_cur 0 Butler-Volmer alpha_a 0.25 alpha_c 0.75 i0 10 gamma 1.0 refcon 0.1 dl_spec_cap 0.0 END
+E 3 - ID 0 pot -0.2 curve 1 numscal 1 stoich -1 e- 1 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 0.25 alpha_c 0.75 i0 10 gamma 1.0 refcon 0.1 dl_spec_cap 0.0 END
 //                              anode
-E 4 - ID 1 pot 0.0 curve 1 numscal 1 stoich -1 e- 1 zero_cur 0 Butler-Volmer alpha_a 0.25 alpha_c 0.75 i0 10 gamma 1.0 refcon 0.1 dl_spec_cap 0.0 END
+E 4 - ID 1 pot 0.0 curve 1 numscal 1 stoich -1 e- 1 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 0.25 alpha_c 0.75 i0 10 gamma 1.0 refcon 0.1 dl_spec_cap 0.0 END
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 NODE 3 DLINE 1

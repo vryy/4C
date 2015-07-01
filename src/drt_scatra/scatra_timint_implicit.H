@@ -439,6 +439,9 @@ public:
   //! output mean values of scalar(s)
   virtual void OutputMeanScalars(const int num=0);
 
+  //! output domain or boundary integrals, i.e., surface areas or volumes of specified nodesets
+  void OutputDomainOrBoundaryIntegrals(const std::string condstring);
+
   //! output of reaction(s) integral
   void OutputIntegrReac(const int num=0);
 
@@ -896,6 +899,9 @@ protected:
 
   //! relative tolerance for finite difference check
   const double fdchecktol_;
+
+  //! flag for computation of domain and boundary integrals, i.e., of surface areas and volumes associated with specified nodesets
+  INPAR::SCATRA::ComputeIntegrals computeintegrals_;
 
   /*========================================================================*/
   //! @name Time, time-step, and iteration variables

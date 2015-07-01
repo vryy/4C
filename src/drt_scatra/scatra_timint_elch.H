@@ -192,10 +192,11 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   //! apply galvanostatic control (update electrode potential) (ELCH)
   bool ApplyGalvanostaticControl();
 
-  //! compute contribution of electrode kinetics to eq. system
-  void EvaluateElectrodeBoundaryConditions(
-    Teuchos::RCP<LINALG::SparseOperator> matrix, //!< system matrix
-    Teuchos::RCP<Epetra_Vector>          rhs     //!< rhs vector
+  //! evaluate domain or boundary conditions for electrode kinetics
+  void EvaluateElectrodeKineticsConditions(
+      Teuchos::RCP<LINALG::SparseOperator>   systemmatrix,   //!< global system matrix
+      Teuchos::RCP<Epetra_Vector>            rhs,            //!< global right-hand side vector
+      const std::string                      condstring      //!< name of condition to be evaluated
   );
 
   //! Add Linearization for Nernst-BC

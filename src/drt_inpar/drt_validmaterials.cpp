@@ -545,8 +545,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             "material parameters for ion species in electrolyte solution",
                                             INPAR::MAT::m_elchphase));
 
-    AddNamedReal(m,"EPSILON","porousity of the phase");
-    AddNamedReal(m,"TORTUOSITY","porousity of the phase");
+    AddNamedReal(m,"EPSILON","phase porosity");
+    AddNamedReal(m,"TORTUOSITY","inverse (!) of phase tortuosity");
     AddNamedInt(m,"NUMMAT","number of materials in electrolyte");
     AddNamedIntVector(m,"MATIDS","the list phasel IDs","NUMMAT");
     AddNamedSeparator(m,"END","indicating end of line");

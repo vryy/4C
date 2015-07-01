@@ -223,6 +223,14 @@ namespace INPAR
       fdcheck_local,
       fdcheck_global
     };
+
+    /// possible options for computation of domain and boundary integrals, i.e., surface areas and volumes
+    enum ComputeIntegrals
+    {
+      computeintegrals_none,
+      computeintegrals_initial,
+      computeintegrals_repeated
+    };
   }  // namespace SCATRA
 }  // namespace INPAR
 

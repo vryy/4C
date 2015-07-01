@@ -1174,7 +1174,15 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   /*--------------------------------------------------------------------*/
   // cell voltage
   {
-    // definition of cell voltage surface condition
+    // definition of cell voltage line and surface conditions
+    Teuchos::RCP<ConditionDefinition> cellvoltageline =
+        Teuchos::rcp(new ConditionDefinition("DESIGN CELL VOLTAGE LINE CONDITIONS",
+                                             "CellVoltage",
+                                             "cell voltage line condition",
+                                             DRT::Condition::CellVoltage,
+                                             true,
+                                             DRT::Condition::Line));
+
     Teuchos::RCP<ConditionDefinition> cellvoltagesurf =
         Teuchos::rcp(new ConditionDefinition("DESIGN CELL VOLTAGE SURF CONDITIONS",
                                              "CellVoltage",
@@ -1183,7 +1191,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                              true,
                                              DRT::Condition::Surface));
 
-    // equip condition definition with input file line components
+    // equip condition definitions with input file line components
     std::vector<Teuchos::RCP<ConditionComponent> > cellvoltagecomponents;
 
     {
@@ -1191,14 +1199,85 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
       cellvoltagecomponents.push_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
     }
 
-    // insert input file line components into condition definition
+    // insert input file line components into condition definitions
     for (unsigned i=0; i<cellvoltagecomponents.size(); ++i)
+    {
+      cellvoltageline->AddComponent(cellvoltagecomponents[i]);
       cellvoltagesurf->AddComponent(cellvoltagecomponents[i]);
+    }
 
-    // insert condition definition into global list of valid condition definitions
+    // insert condition definitions into global list of valid condition definitions
+    condlist.push_back(cellvoltageline);
     condlist.push_back(cellvoltagesurf);
   }
 
+
+  /*--------------------------------------------------------------------*/
+  // compute domain integrals, i.e., cumulative volumes of 3D domain elements or cumulative surface areas of 2D domain elements
+  {
+    // definition of surface and volume conditions for domain integral computation
+    Teuchos::RCP<ConditionDefinition> domainintegralsurf =
+        Teuchos::rcp(new ConditionDefinition("DESIGN DOMAIN INTEGRAL SURF CONDITIONS",
+                                             "DomainIntegral",
+                                             "compute cumulative surface areas of 2D domain elements",
+                                             DRT::Condition::DomainIntegral,
+                                             true,
+                                             DRT::Condition::Surface));
+
+    Teuchos::RCP<ConditionDefinition> domainintegralvol =
+        Teuchos::rcp(new ConditionDefinition("DESIGN DOMAIN INTEGRAL VOL CONDITIONS",
+                                             "DomainIntegral",
+                                             "compute cumulative volumes of 3D domain elements",
+                                             DRT::Condition::DomainIntegral,
+                                             true,
+                                             DRT::Condition::Volume));
+
+    // equip condition definitions with input file line components
+    std::vector<Teuchos::RCP<ConditionComponent> > domainintegralcomponents;
+
+    {
+      domainintegralcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("ID")));
+      domainintegralcomponents.push_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+    }
+
+    // insert input file line components into condition definitions
+    for (unsigned i=0; i<domainintegralcomponents.size(); ++i)
+    {
+      domainintegralsurf->AddComponent(domainintegralcomponents[i]);
+      domainintegralvol->AddComponent(domainintegralcomponents[i]);
+    }
+
+    // insert condition definitions into global list of valid condition definitions
+    condlist.push_back(domainintegralsurf);
+    condlist.push_back(domainintegralvol);
+  }
+
+  /*--------------------------------------------------------------------*/
+  // compute boundary integrals, i.e., cumulative surface areas of 2D boundary elements
+  {
+    Teuchos::RCP<ConditionDefinition> boundaryintegralsurf =
+        Teuchos::rcp(new ConditionDefinition("DESIGN BOUNDARY INTEGRAL SURF CONDITIONS",
+                                             "BoundaryIntegral",
+                                             "compute cumulative surface areas of 2D boundary elements",
+                                             DRT::Condition::BoundaryIntegral,
+                                             true,
+                                             DRT::Condition::Surface));
+
+    // equip condition definition with input file line components
+    std::vector<Teuchos::RCP<ConditionComponent> > boundaryintegralcomponents;
+
+    {
+      boundaryintegralcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("ID")));
+      boundaryintegralcomponents.push_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+    }
+
+    // insert input file line components into condition definition
+    for (unsigned i=0; i<boundaryintegralcomponents.size(); ++i)
+      boundaryintegralsurf->AddComponent(boundaryintegralcomponents[i]);
+
+    // insert condition definition into global list of valid condition definitions
+    condlist.push_back(boundaryintegralsurf);
+  }
 
   /*--------------------------------------------------------------------*/
   // wear in ALE description
@@ -3325,7 +3404,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
 
   /*--------------------------------------------------------------------*/
-  // Electrode kinetics as boundary condition on electrolyte (Electrochemistry)
+  // electrode kinetics as boundary condition on electrolyte
   {
     std::vector<Teuchos::RCP<CondCompBundle> > reactionmodel;
 
@@ -3482,6 +3561,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
         realveccomp)));
     elechemcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("e-")));
     elechemcomponents.push_back(Teuchos::rcp(new IntConditionComponent("e-")));
+    // porosity of electrode boundary, set to -1 if equal to porosity of electrolyte domain
+    elechemcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("epsilon")));
+    elechemcomponents.push_back(Teuchos::rcp(new RealConditionComponent("epsilon")));
     elechemcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("zero_cur")));
     elechemcomponents.push_back(Teuchos::rcp(new IntConditionComponent("zero_cur")));
     elechemcomponents.push_back(Teuchos::rcp(new CondCompBundleSelector(
@@ -3501,32 +3583,157 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                INPAR::SCATRA::zero))),
         reactionmodel)));
 
+    Teuchos::RCP<ConditionDefinition> electrodeboundarykineticspoint =
+        Teuchos::rcp(new ConditionDefinition("ELECTRODE BOUNDARY KINETICS POINT CONDITIONS",
+                                             "ElchBoundaryKinetics",
+                                             "point electrode boundary kinetics",
+                                             DRT::Condition::ElchBoundaryKinetics,
+                                             true,
+                                             DRT::Condition::Point));
 
-    Teuchos::RCP<ConditionDefinition> lineelec =
-      Teuchos::rcp(new ConditionDefinition("ELECTRODE KINETICS LINE CONDITIONS",
-                                           "ElchBoundaryKinetics",
-                                           "Line Electrode Kinetics",
-                                           DRT::Condition::ElchBoundaryKinetics,
-                                           true,
-                                           DRT::Condition::Line));
-    Teuchos::RCP<ConditionDefinition> surfelec =
-      Teuchos::rcp(new ConditionDefinition("ELECTRODE KINETICS SURF CONDITIONS",
-                                           "ElchBoundaryKinetics",
-                                           "Surface Electrode Kinetics",
-                                           DRT::Condition::ElchBoundaryKinetics,
-                                           true,
-                                           DRT::Condition::Surface));
+    Teuchos::RCP<ConditionDefinition> electrodeboundarykineticsline =
+        Teuchos::rcp(new ConditionDefinition("ELECTRODE BOUNDARY KINETICS LINE CONDITIONS",
+                                             "ElchBoundaryKinetics",
+                                             "line electrode boundary kinetics",
+                                             DRT::Condition::ElchBoundaryKinetics,
+                                             true,
+                                             DRT::Condition::Line));
+
+    Teuchos::RCP<ConditionDefinition> electrodeboundarykineticssurf =
+        Teuchos::rcp(new ConditionDefinition("ELECTRODE BOUNDARY KINETICS SURF CONDITIONS",
+                                             "ElchBoundaryKinetics",
+                                             "surface electrode boundary kinetics",
+                                             DRT::Condition::ElchBoundaryKinetics,
+                                             true,
+                                             DRT::Condition::Surface));
 
     for (unsigned i=0; i<elechemcomponents.size(); ++i)
     {
-      lineelec->AddComponent(elechemcomponents[i]);
-      surfelec->AddComponent(elechemcomponents[i]);
+      electrodeboundarykineticspoint->AddComponent(elechemcomponents[i]);
+      electrodeboundarykineticsline->AddComponent(elechemcomponents[i]);
+      electrodeboundarykineticssurf->AddComponent(elechemcomponents[i]);
     }
 
-    condlist.push_back(lineelec);
-    condlist.push_back(surfelec);
+    condlist.push_back(electrodeboundarykineticspoint);
+    condlist.push_back(electrodeboundarykineticsline);
+    condlist.push_back(electrodeboundarykineticssurf);
   }
 
+  /*--------------------------------------------------------------------*/
+  // electrode kinetics as domain condition within electrolyte
+  {
+    // definition of line, surface, and volume conditions for electrode domain kinetics
+    Teuchos::RCP<ConditionDefinition> electrodedomainkineticsline =
+        Teuchos::rcp(new ConditionDefinition("ELECTRODE DOMAIN KINETICS LINE CONDITIONS",
+                                             "ElchDomainKinetics",
+                                             "line electrode domain kinetics",
+                                             DRT::Condition::ElchDomainKinetics,
+                                             true,
+                                             DRT::Condition::Line));
+
+    Teuchos::RCP<ConditionDefinition> electrodedomainkineticssurf =
+        Teuchos::rcp(new ConditionDefinition("ELECTRODE DOMAIN KINETICS SURF CONDITIONS",
+                                             "ElchDomainKinetics",
+                                             "surface electrode domain kinetics",
+                                             DRT::Condition::ElchDomainKinetics,
+                                             true,
+                                             DRT::Condition::Surface));
+
+    Teuchos::RCP<ConditionDefinition> electrodedomainkineticsvol =
+        Teuchos::rcp(new ConditionDefinition("ELECTRODE DOMAIN KINETICS VOL CONDITIONS",
+                                             "ElchDomainKinetics",
+                                             "volume electrode domain kinetics",
+                                             DRT::Condition::ElchDomainKinetics,
+                                             true,
+                                             DRT::Condition::Volume));
+
+    // equip condition definition with input file line components
+    std::vector<Teuchos::RCP<ConditionComponent> > electrodedomainkineticscomponents;
+
+    {
+      electrodedomainkineticscomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("ID")));
+      electrodedomainkineticscomponents.push_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+      electrodedomainkineticscomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("pot")));
+      electrodedomainkineticscomponents.push_back(Teuchos::rcp(new RealConditionComponent("pot")));
+      electrodedomainkineticscomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("curve")));
+      electrodedomainkineticscomponents.push_back(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
+      electrodedomainkineticscomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("numscal")));
+
+      // input: stoichiometry for reaction mechanism (IntRealBundle)
+      // definition separator for int vectors
+      std::vector<Teuchos::RCP<SeparatorConditionComponent> > intsepveccomp;
+      intsepveccomp.push_back(Teuchos::rcp(new SeparatorConditionComponent("stoich")));
+
+      // definition int vectors
+      std::vector<Teuchos::RCP<IntVectorConditionComponent> > intveccomp;
+      intveccomp.push_back(Teuchos::rcp(new IntVectorConditionComponent("stoich",2)));
+
+      // definition separator for real vectors: length of the real vector is zero -> nothing is read
+      std::vector<Teuchos::RCP<SeparatorConditionComponent> > realsepveccomp;
+
+      // definition real vectors: length of the real vector is zero -> nothing is read
+      std::vector<Teuchos::RCP<RealVectorConditionComponent> > realveccomp;
+
+      electrodedomainkineticscomponents.push_back(Teuchos::rcp(new IntRealBundle(
+          "intreal bundle",
+          Teuchos::rcp(new IntConditionComponent("numscal")),
+          intsepveccomp,
+          intveccomp,
+          realsepveccomp,
+          realveccomp)));
+
+      electrodedomainkineticscomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("e-")));
+      electrodedomainkineticscomponents.push_back(Teuchos::rcp(new IntConditionComponent("e-")));
+      electrodedomainkineticscomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("zero_cur")));
+      electrodedomainkineticscomponents.push_back(Teuchos::rcp(new IntConditionComponent("zero_cur")));
+
+      // kinetic models
+      std::vector<Teuchos::RCP<CondCompBundle> > kineticmodels;
+
+      {
+        // Butler-Volmer
+        std::vector<Teuchos::RCP<ConditionComponent> > butlervolmer;
+        butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("A_s")));   // ratio of electrode-electrolyte interface area to total two-phase volume
+        butlervolmer.push_back(Teuchos::rcp(new RealConditionComponent("A_s")));
+        butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("alpha_a")));
+        butlervolmer.push_back(Teuchos::rcp(new RealConditionComponent("alpha_a")));
+        butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("alpha_c")));
+        butlervolmer.push_back(Teuchos::rcp(new RealConditionComponent("alpha_c")));
+        butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("i0")));
+        butlervolmer.push_back(Teuchos::rcp(new RealConditionComponent("i0")));
+        butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("gamma")));
+        butlervolmer.push_back(Teuchos::rcp(new RealConditionComponent("gamma")));
+        butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("refcon")));
+        butlervolmer.push_back(Teuchos::rcp(new RealConditionComponent("refcon")));
+        butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("dl_spec_cap")));
+        butlervolmer.push_back(Teuchos::rcp(new RealConditionComponent("dl_spec_cap")));
+        butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("END")));
+        kineticmodels.push_back(Teuchos::rcp(new CondCompBundle("Butler-Volmer",butlervolmer,INPAR::SCATRA::butler_volmer)));
+      }
+
+      electrodedomainkineticscomponents.push_back(Teuchos::rcp(new CondCompBundleSelector(
+          "kinetic model bundle",
+          Teuchos::rcp(new StringConditionComponent(
+              "kinetic model",
+              "Butler-Volmer",
+              Teuchos::tuple<std::string>("Butler-Volmer"),
+              Teuchos::tuple<int>(INPAR::SCATRA::butler_volmer))),
+          kineticmodels)));
+    }
+
+    // insert input file line components into condition definitions
+    for (unsigned i=0; i<electrodedomainkineticscomponents.size(); ++i)
+    {
+     electrodedomainkineticsline->AddComponent(electrodedomainkineticscomponents[i]);
+     electrodedomainkineticssurf->AddComponent(electrodedomainkineticscomponents[i]);
+     electrodedomainkineticsvol->AddComponent(electrodedomainkineticscomponents[i]);
+    }
+
+    // insert condition definitions into global list of valid condition definitions
+    condlist.push_back(electrodedomainkineticsline);
+    condlist.push_back(electrodedomainkineticssurf);
+    condlist.push_back(electrodedomainkineticsvol);
+  }
 
   /*--------------------------------------------------------------------*/
   // Boundary flux evaluation condition for scalar transport

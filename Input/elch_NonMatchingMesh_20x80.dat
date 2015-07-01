@@ -93,12 +93,12 @@ NDPOINT                         0
 NDLINE                          6
 NDSURF                          1
 NDVOL                           0
-------------------------------------------ELECTRODE KINETICS LINE CONDITIONS
+---------------------------------ELECTRODE BOUNDARY KINETICS LINE CONDITIONS
 DLINE                           2
 //                              cathode
-E 1 - ID 0 pot 0.0 curve 1 numscal 2 stoich -1 0 e- 1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 2.0 gamma 1.0 refcon 0.1 dl_spec_cap 0.0 END
+E 1 - ID 0 pot 0.0 curve 1 numscal 2 stoich -1 0 e- 1 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 2.0 gamma 1.0 refcon 0.1 dl_spec_cap 0.0 END
 //                              anode
-E 2 - ID 1 pot 25.0 curve 1 numscal 2 stoich -1 0 e- 1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 2.0 gamma 1.0 refcon 0.1 dl_spec_cap 0.0 END
+E 2 - ID 1 pot 25.0 curve 1 numscal 2 stoich -1 0 e- 1 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 2.0 gamma 1.0 refcon 0.1 dl_spec_cap 0.0 END
 -----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE                           2
 // left internal boundary

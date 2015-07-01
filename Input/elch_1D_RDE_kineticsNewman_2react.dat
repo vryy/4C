@@ -142,11 +142,11 @@ NDVOL                           0
 DLINE                           1
 //                              right_electrode
 E 2 - NUMDOF 7 ONOFF 1 1 1 1 1 1 1 VAL 9.95 0.1 5.0 5.0 1000 985 0.0 CURVE none none none none none none none FUNCT 0 0 0 0 0 0 0
-------------------------------------------ELECTRODE KINETICS LINE CONDITIONS
+---------------------------------ELECTRODE BOUNDARY KINETICS LINE CONDITIONS
 DLINE                           2
 //                              left_electrode
-E 1 - ID 0 pot -1.0 curve 1 numscal 6 stoich -1 1 0 0 0 0 e- 1 zero_cur 0 Butler-Volmer-Newman k_a 1.0312e-1 k_c 1.0364e-3 beta 0.5 dl_spec_cap 0.0 END
-E 1 - ID 1 pot -1.0 curve 1 numscal 6 stoich 0 0 -1 1 0 0 e- 1 zero_cur 0 Butler-Volmer-Newman k_a 1.16e-4 k_c 9.32e+2 beta 0.463 dl_spec_cap 0.0 END
+E 1 - ID 0 pot -1.0 curve 1 numscal 6 stoich -1 1 0 0 0 0 e- 1 epsilon -1 zero_cur 0 Butler-Volmer-Newman k_a 1.0312e-1 k_c 1.0364e-3 beta 0.5 dl_spec_cap 0.0 END
+E 1 - ID 1 pot -1.0 curve 1 numscal 6 stoich 0 0 -1 1 0 0 e- 1 epsilon -1 zero_cur 0 Butler-Volmer-Newman k_a 1.16e-4 k_c 9.32e+2 beta 0.463 dl_spec_cap 0.0 END
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 NODE 1 DLINE 1

@@ -112,6 +112,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   fdcheck_(DRT::INPUT::IntegralValue<INPAR::SCATRA::FDCheck>(*params,"FDCHECK")),
   fdcheckeps_(params->get<double>("FDCHECKEPS")),
   fdchecktol_(params->get<double>("FDCHECKTOL")),
+  computeintegrals_(DRT::INPUT::IntegralValue<INPAR::SCATRA::ComputeIntegrals>(*params,"COMPUTEINTEGRALS")),
   time_   (0.0),
   maxtime_  (params->get<double>("MAXTIME")),
   step_   (0),
@@ -1535,6 +1536,10 @@ void SCATRA::ScaTraTimIntImpl::Output(const int num)
 
     // write mean values of scalar(s)
     OutputMeanScalars(num);
+
+    // write domain and boundary integrals, i.e., surface areas and volumes of specified nodesets
+    OutputDomainOrBoundaryIntegrals("DomainIntegral");
+    OutputDomainOrBoundaryIntegrals("BoundaryIntegral");
 
     // write integral values of reaction(s)
     OutputIntegrReac(num);

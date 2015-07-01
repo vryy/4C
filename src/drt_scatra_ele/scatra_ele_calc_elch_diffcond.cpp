@@ -12,18 +12,15 @@ Maintainer: Andreas Ehrl
 </pre>
 */
 /*--------------------------------------------------------------------------*/
-
 #include "scatra_ele_calc_elch_diffcond.H"
-#include "scatra_ele.H"
-#include "scatra_ele_parameter_elch.H"
+#include "scatra_ele_utils_elch.H"
 
-#include "../drt_geometry/position_array.H"
-#include "../drt_nurbs_discret/drt_nurbs_utils.H"
+#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 
 #include "../drt_mat/elchmat.H"
-#include "../drt_mat/newman.H"
 #include "../drt_mat/elchphase.H"
+#include "../drt_mat/newman.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -67,9 +64,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::Done()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::ScaTraEleCalcElchDiffCond(const int numdofpernode,const int numscal)
-  : DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::ScaTraEleCalcElchElectrode(numdofpernode,numscal),
-    diffcondmat_(INPAR::ELCH::diffcondmat_undefined)
+DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::ScaTraEleCalcElchDiffCond(const int numdofpernode,const int numscal) :
+  DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::ScaTraEleCalcElchElectrode(numdofpernode,numscal),
+  diffcondmat_(INPAR::ELCH::diffcondmat_undefined),
+  ecurnp_(true),
+  utils_(ScaTraEleUtilsElch<distype>::Instance(numdofpernode,numscal))
 {
   // replace diffusion manager for electrodes by diffusion manager for diffusion-conduction formulation
   my::diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManagerElchDiffCond(my::numscal_));

@@ -103,12 +103,12 @@ E 5 - NUMDOF 2 ONOFF 1 0 VAL 0.1 0.0 CURVE  none none FUNCT 0 0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  1
 E 1 - NUMDOF 2 ONOFF 1 0 VAL 0.1 0.0 CURVE none none FUNCT 0 0
---------------------------------ELECTRODE KINETICS LINE CONDITIONS
+-----------------------ELECTRODE BOUNDARY KINETICS LINE CONDITIONS
 DLINE  2
 // cathode
-E 3 - ID 0 pot -10.0 curve 1 numscal 1 stoich -1 e- 1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 2.0 gamma 1.0 refcon 0.1 dl_spec_cap 0.0 END
+E 3 - ID 0 pot -10.0 curve 1 numscal 1 stoich -1 e- 1 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 2.0 gamma 1.0 refcon 0.1 dl_spec_cap 0.0 END
 // anode
-E 4 - ID 1 pot 25.0 curve 1 numscal 1 stoich -1 e- 1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 2.0 gamma 1.0 refcon 0.1 dl_spec_cap 0.0 END
+E 4 - ID 1 pot 25.0 curve 1 numscal 1 stoich -1 e- 1 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 2.0 gamma 1.0 refcon 0.1 dl_spec_cap 0.0 END
 -----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE 2
 // quad

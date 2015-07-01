@@ -45,9 +45,11 @@ enum Action {
   calc_initial_time_deriv,         // calc_initial_time_deriv,
   calc_flux_domain,                // calc_condif_flux,
   calc_mean_scalars,               // calc_mean_scalars,
+  calc_domain_integral,            // n/a
   calc_error,                      // calc_error,
   calc_elch_conductivity,          // calc_elch_conductivity,
   calc_elch_electrode_soc,         // calculate electrode state of charge
+  calc_elch_domain_kinetics,       // calculate electrode kinetics in domain
   calc_scatra_box_filter,          // calc_scatra_box_filter,
   calc_turbulent_prandtl_number,   // calc_turbulent_prandtl_number
   calc_vreman_scatra,              // calc_vreman_scatra,
@@ -86,6 +88,7 @@ enum BoundaryAction {
   bd_add_convective_mass_flux,      //add_convective_mass_flux
   bd_calc_convective_heat_transfer, //calc_convective_heat_transfer,
   bd_calc_s2icoupling,              //n/a
+  bd_calc_boundary_integral,        //n/a
   bd_calc_elch_boundary_kinetics,   //calc_elch_electrode_kinetics,
   bd_calc_elch_linearize_nernst,    //calc_elch_electrode_kinetics,
   bd_calc_elch_cell_voltage,        //n/a

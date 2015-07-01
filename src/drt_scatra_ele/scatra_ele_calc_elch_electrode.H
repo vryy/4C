@@ -42,7 +42,7 @@ namespace DRT
         virtual void Done();
 
         //! evaluate action
-        int EvaluateAction(
+        virtual int EvaluateAction(
             DRT::Element*                 ele,
             Teuchos::ParameterList&       params,
             DRT::Discretization&          discretization,

@@ -18,6 +18,8 @@ Maintainer: Andreas Ehrl
 #include "scatra_ele_parameter_elch_diffcond.H"
 #include "scatra_ele_calc_elch_electrode.H"
 
+#include "../drt_lib/drt_element.H"
+
 namespace DRT
 {
 namespace ELEMENTS
@@ -25,6 +27,7 @@ namespace ELEMENTS
   // forward declarations
   class ScaTraEleDiffManagerElchDiffCond;
   template<int NSD, int NEN> class ScaTraEleInternalVariableManagerElchDiffCond;
+  template<DRT::Element::DiscretizationType distype> class ScaTraEleUtilsElch;
 
   // class implementation
 template<DRT::Element::DiscretizationType distype>
@@ -325,6 +328,37 @@ private:
   //! @name additional service routines
   /*========================================================================*/
 
+  //! evaluate action
+  int EvaluateAction(
+      DRT::Element*                 ele,
+      Teuchos::ParameterList&       params,
+      DRT::Discretization&          discretization,
+      const SCATRA::Action&         action,
+      DRT::Element::LocationArray&  la,
+      Epetra_SerialDenseMatrix&     elemat1_epetra,
+      Epetra_SerialDenseMatrix&     elemat2_epetra,
+      Epetra_SerialDenseVector&     elevec1_epetra,
+      Epetra_SerialDenseVector&     elevec2_epetra,
+      Epetra_SerialDenseVector&     elevec3_epetra
+  );
+
+  //! evaluate electrode kinetics domain condition
+  void EvaluateElchDomainKinetics(
+      const DRT::Element*                 ele,        ///< the actual boundary element
+      Epetra_SerialDenseMatrix&           emat,       ///< element-matrix
+      Epetra_SerialDenseVector&           erhs,       ///< element-rhs
+      const std::vector<double>&          ephinp,     ///< actual conc. and pot. values
+      const std::vector<double>&          ehist,      ///< element history vector
+      double                              timefac,    ///< time factor
+      Teuchos::RCP<const MAT::Material>   material,   ///< the material
+      Teuchos::RCP<DRT::Condition>        cond,       ///< the condition
+      const int                           nume,       ///< number of transferred electrons
+      const std::vector<int>              stoich,     ///< stoichiometry of the reaction
+      const int                           kinetics,   ///< desired electrode kinetics model
+      const double                        pot0,       ///< actual electrode potential on metal side
+      const double                        frt         ///< factor F/RT
+  );
+
   //! extract element based or nodal values and return extracted values of phinp
   const std::vector<double> ExtractElementAndNodeValues(
       DRT::Element*                 ele,
@@ -388,6 +422,16 @@ private:
     Epetra_SerialDenseVector&             errors      //!< vector containing L2-error norm
   );
 
+  void CalcElchDomainKinetics(
+      DRT::Element*                 ele,
+      Teuchos::ParameterList&           params,
+      DRT::Discretization&              discretization,
+      std::vector<int>&                 lm,
+      Epetra_SerialDenseMatrix&         elemat1_epetra,
+      Epetra_SerialDenseVector&         elevec1_epetra
+  );
+
+
   //! set internal variables for diffusion-conduction formulation
   void SetInternalVariablesForMatAndRHS();
 
@@ -405,6 +449,9 @@ private:
 
   //! nodal current density values at t_(n+1) or t_(n+alpha_F)
   LINALG::Matrix<my::nsd_,my::nen_> ecurnp_;
+
+  //! util class for electrode kinetics evaluation
+  DRT::ELEMENTS::ScaTraEleUtilsElch<distype>* utils_;
 };
 
 

@@ -168,6 +168,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
     CalcNormalVectors(params,ele);
     break;
   }
+
   case SCATRA::bd_integrate_shape_functions:
   {
     // NOTE: add area value only for elements which are NOT ghosted!
@@ -176,6 +177,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
 
     break;
   }
+
   case SCATRA::bd_calc_Neumann:
   {
     DRT::Condition* condition = params.get<DRT::Condition*>("condition");
@@ -186,6 +188,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
 
     break;
   }
+
   case SCATRA::bd_calc_Neumann_inflow:
   {
     NeumannInflow(
@@ -199,6 +202,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
 
     break;
   }
+
   case SCATRA::bd_calc_convective_heat_transfer:
   {
     // get the parent element including its material
@@ -234,6 +238,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
 
     break;
   }
+
   case SCATRA::bd_calc_weak_Dirichlet:
   {
     // get the parent element including its material
@@ -262,32 +267,34 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
       }
       break;
     }
+
     // 3D:
     case DRT::Element::quad4:
     {
       if(ele->ParentElement()->Shape()==DRT::Element::hex8)
-      {
         WeakDirichlet<DRT::Element::quad4,DRT::Element::hex8>(ele,
             params,
             discretization,
             mat,
             elemat1_epetra,
             elevec1_epetra);
-      }
+
       else
-      {
         dserror("expected combination quad4/hex8 or line2/quad4 for surface/parent pair");
-      }
+
       break;
     }
+
     default:
     {
       dserror("not implemented yet\n");
+      break;
     }
     }
 
     break;
   }
+
   case SCATRA::bd_calc_fs3i_surface_permeability:
   {
     if(scatraparamstimint_->IsGenAlpha() or not scatraparamstimint_->IsIncremental())
@@ -336,6 +343,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
 
     break;
   }
+
   case SCATRA::bd_calc_fps3i_surface_permeability:
   {
     // safety checks
@@ -419,6 +427,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
 
     break;
   }
+
   case SCATRA::bd_add_convective_mass_flux:
   {
     //calculate integral of convective mass/heat flux
@@ -447,6 +456,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
 
     break;
   }
+
   case SCATRA::bd_calc_s2icoupling:
   {
     EvaluateS2ICoupling(ele,
@@ -459,6 +469,13 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
 
     break;
   }
+
+  case SCATRA::bd_calc_boundary_integral:
+  {
+    CalcBoundaryIntegral(ele,elevec1_epetra);
+    break;
+  }
+
   case SCATRA::bd_calc_Robin:
   {
     CalcRobinBoundary(
@@ -472,6 +489,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
         );
     break;
   }
+
   default:
   {
     dserror("Not acting on this boundary action. Forgot implementation?");
@@ -1175,6 +1193,40 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICoupling(
 
   return;
 }
+
+
+/*----------------------------------------------------------------------------------*
+ | calculate boundary integral, i.e., surface area of boundary element   fang 07/15 |
+ *----------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcBoundaryIntegral(
+    const DRT::Element*         ele,     //!< the element we are dealing with
+    Epetra_SerialDenseVector&   scalar   //!< result vector for scalar integral to be computed
+    )
+{
+  // initialize variable for boundary integral
+  double boundaryintegral(0.);
+
+  // get integration points and weights
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  // loop over integration points
+  for(int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+  {
+    // evaluate values of shape functions and boundary integration factor at current integration point
+    const double fac = DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvalShapeFuncAndIntFac(intpoints,iquad);
+
+    // add contribution from current integration point to boundary integral
+    for(int vi=0; vi<nen_; ++vi)
+      boundaryintegral += funct_(vi)*fac;
+  } // loop over integration points
+
+  // write result into result vector
+  scalar(0) = boundaryintegral;
+
+  return;
+} // DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcBoundaryIntegral
+
 
 /*----------------------------------------------------------------------*
  | evaluate Robin boundary condition                    schoeder 03/15  |
