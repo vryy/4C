@@ -460,7 +460,9 @@ void DRT::ELEMENTS::Wall1::MaterialResponse3dPlane(
     const double tol = EPS6;
     const int n = 10;
     // working arrays
-    LINALG::Matrix<3,3> crr(false);  // LHS // constitutive matrix of restraint compo
+    LINALG::Matrix<3,3> crr(true);  // LHS // constitutive matrix of restraint compo
+                                           // this matrix needs to be zeroed out for further usage
+                                           // in case the following while loop is entirely skipped during runtime
     LINALG::Matrix<3,1> rr(false);  // RHS // stress residual of restraint compo
     LINALG::Matrix<3,1> ir(false);  // SOL  // restraint strain components
     // the Newton-Raphson loop

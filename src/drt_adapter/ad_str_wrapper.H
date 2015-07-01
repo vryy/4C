@@ -101,7 +101,7 @@ namespace ADAPTER
 
     /// switch structure field to block matrix
     virtual void UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps, Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps)
-    { return structure_->UseBlockMatrix(domainmaps, rangemaps); }
+    { structure_->UseBlockMatrix(domainmaps, rangemaps); return; }
 
     // access to contact/meshtying bridge
     virtual Teuchos::RCP<CONTACT::MeshtyingContactBridge> MeshtyingContactBridge()
@@ -179,7 +179,7 @@ namespace ADAPTER
 
     //! Sets the current time \f$t_{n}\f$
     virtual void SetTime(const double time)
-    { return structure_->SetTime(time); }
+    { structure_->SetTime(time); return; }
 
     //! Sets the target time \f$t_{n+1}\f$ of this time step
     virtual void SetTimen(const double time)
@@ -187,11 +187,11 @@ namespace ADAPTER
 
     //! Sets the target step \f$n\f$
     virtual void SetStep(int step)
-    { return structure_->SetStep(step);}
+    { structure_->SetStep(step); return; }
 
     //! Sets the target step \f$n+1\f$
     virtual void SetStepn(int step)
-    { return structure_->SetStepn(step);}
+    { structure_->SetStepn(step); return; }
 
     //! Return current time \f$t_{n}\f$
     virtual double TimeOld() const
@@ -238,7 +238,7 @@ namespace ADAPTER
 
     /// set time step size
     virtual void SetDt(const double dtnew)
-    { return structure_->SetDt(dtnew); }
+    { structure_->SetDt(dtnew); return; }
 
     /// start new time step
     virtual void PrepareTimeStep()
@@ -274,7 +274,7 @@ namespace ADAPTER
 
     /// prepare output (i.e. calculate stresses, strains, energies)
     virtual void PrepareOutput()
-    { return structure_->PrepareOutput(); }
+    { structure_->PrepareOutput(); return; }
 
     // Get restart data
     virtual void GetRestartData
@@ -287,19 +287,19 @@ namespace ADAPTER
       Teuchos::RCP<std::vector<char> > elementdata,
       Teuchos::RCP<std::vector<char> > nodedata
     )
-    {return structure_->GetRestartData(step,time, disn,veln,accn,elementdata,nodedata );}
+    { structure_->GetRestartData(step,time, disn,veln,accn,elementdata,nodedata ); return; }
 
     /// output results
     virtual void Output(bool forced_writerestart = false)
-    { return structure_->Output(forced_writerestart); }
+    { structure_->Output(forced_writerestart); return; }
 
     /// output results to screen
     virtual void PrintStep()
-    { return structure_->PrintStep(); }
+    { structure_->PrintStep(); return; }
 
     /// read restart information for given time step
     virtual void ReadRestart(const int step)
-    { return structure_->ReadRestart(step); }
+    { structure_->ReadRestart(step); return; }
 
      /// set restart information for parameter continuation
     virtual void SetRestart
@@ -312,7 +312,7 @@ namespace ADAPTER
       Teuchos::RCP<std::vector<char> > elementdata,
       Teuchos::RCP<std::vector<char> > nodedata
     )
-    {return structure_->SetRestart(step,time,disn,veln,accn,elementdata,nodedata);}
+    { structure_->SetRestart(step,time,disn,veln,accn,elementdata,nodedata); return; }
 
     /// wrapper for things that should be done before PrepareTimeStep is called
     virtual void PrePredict()
@@ -424,7 +424,7 @@ namespace ADAPTER
     //@{
 
     virtual void SetStrGrDisp(Teuchos::RCP<Epetra_Vector> struct_growth_disp)
-    { return structure_->SetStrGrDisp(struct_growth_disp); }
+    { structure_->SetStrGrDisp(struct_growth_disp); return; }
 
     //@}
 
@@ -435,7 +435,7 @@ namespace ADAPTER
     virtual bool UpdateCrackInformation(Teuchos::RCP<const Epetra_Vector> displace){ return structure_->UpdateCrackInformation( displace ); }
 
     /// Write Gmsh output for structural field
-    virtual void writeGmshStrucOutputStep() { return structure_->writeGmshStrucOutputStep(); }
+    virtual void writeGmshStrucOutputStep() { structure_->writeGmshStrucOutputStep(); return; }
 
     /// Get map of newly introduced node ids with their corresponding old node ids
     virtual std::map<int,int> getOldNewCrackNodes(){ return structure_->getOldNewCrackNodes(); }
