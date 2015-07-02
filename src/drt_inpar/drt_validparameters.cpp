@@ -4988,8 +4988,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("GP_Wall_Normal_Off_Wall",3,"Gauss points in wall normal direction, off-wall elements",&fdyn_wallmodel);
   IntParameter("GP_Wall_Parallel",3,"Gauss points in wall parallel direction",&fdyn_wallmodel);
 
-  BoolParameter("Enr_MFS_Fine_Scale","No","Flag to add the enrichment part to the fine scale velocity. if no: enrichment part of coarse scales",&fdyn_wallmodel);
-
   BoolParameter("Treat_Tauw_on_Dirichlet_Inflow","No","Flag to treat residual on Dirichlet inflow nodes for calculation of wall shear stress",&fdyn_wallmodel);
 
   IntParameter(

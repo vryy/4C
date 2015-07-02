@@ -3369,7 +3369,7 @@ void FLD::FluidImplicitTimeInt::Output()
       if (myrank_==0)
         std::cout<<"Writing stresses"<<std::endl;
       //only perform wall shear stress calculation when output is needed
-      if (write_wall_shear_stresses_)
+      if (write_wall_shear_stresses_ && xwall_ == Teuchos::null)
       {
         output_->WriteVector("wss",stressmanager_->GetPreCalcWallShearStresses(trueresidual_));
       }
@@ -3448,12 +3448,7 @@ void FLD::FluidImplicitTimeInt::Output()
         output_->WriteVector("gridvn", gridvn_);
       }
       if(xwall_!=Teuchos::null)
-      {
-        if (not write_wall_shear_stresses_)
-        {
-          output_->WriteVector("wss",stressmanager_->GetPreCalcWallShearStresses(trueresidual_));
-        }
-      }
+          output_->WriteVector("wss",stressmanager_->GetPreCalcWallShearStresses(xwall_->FixDirichletInflow(trueresidual_)));
 
       // flow rate, flow volume and impedance in case of flow-dependent pressure bc
       if (nonlinearbc_)
@@ -3506,7 +3501,7 @@ void FLD::FluidImplicitTimeInt::Output()
       Teuchos::RCP<Epetra_Vector> traction = stressmanager_->GetPreCalcStresses(trueresidual_);
       output_->WriteVector("traction",traction);
       //only perform wall shear stress calculation when output is needed
-      if (write_wall_shear_stresses_)
+      if (write_wall_shear_stresses_ && xwall_ == Teuchos::null)
       {
         output_->WriteVector("wss",stressmanager_->GetPreCalcWallShearStresses(trueresidual_));
       }
@@ -3518,11 +3513,10 @@ void FLD::FluidImplicitTimeInt::Output()
     output_->WriteVector("veln", veln_);
     output_->WriteVector("velnm",velnm_);
 
-    if(xwall_!=Teuchos::null)
+    if(xwall_ != Teuchos::null)
     {
       output_->WriteVector("xwall_tauw",xwall_->GetTauwVector());
-      if (not write_wall_shear_stresses_)
-        output_->WriteVector("wss",stressmanager_->GetPreCalcWallShearStresses(trueresidual_));
+      output_->WriteVector("wss",stressmanager_->GetPreCalcWallShearStresses(xwall_->FixDirichletInflow(trueresidual_)));
     }
 
     // flow rate, flow volume and impedance in case of flow-dependent pressure bc
@@ -4110,9 +4104,6 @@ void FLD::FluidImplicitTimeInt::AVM3GetScaleSeparationMatrix()
   diag->Update(1.0,*tmp,1.0);
   //Hint: ReplaceDiagonalValues doesn't do anything if nothing in graph before
   Sep_->ReplaceDiagonalValues(*diag);
-
-  if (xwall_ != Teuchos::null)
-    xwall_->AssembleOnesOnDiagonal(Sep_);
 
   //complete scale-separation matrix and check maps
   Sep_->Complete(Sep_->DomainMap(),Sep_->RangeMap());

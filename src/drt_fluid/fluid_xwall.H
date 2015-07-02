@@ -75,8 +75,6 @@ public:
   // returns tauw of discret_
   Teuchos::RCP<Epetra_Vector>   GetTauw();
 
-  void AssembleOnesOnDiagonal(Teuchos::RCP<LINALG::SparseMatrix> Sep);
-
   Teuchos::RCP<Epetra_Vector> GetTauwVector()
       {
         Teuchos::RCP<Epetra_Vector> tauw=Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()),true));
@@ -274,9 +272,6 @@ protected:
 
   //! smoothing through aggregation of residual
   bool smooth_res_aggregation_;
-
-  //! mfs on fine scales
-  bool mfs_fs_;
 
   //! mfs on fine scales
   bool fix_residual_on_inflow_;
