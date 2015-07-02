@@ -132,7 +132,6 @@ void CONTACT::MonoCoupledLagrangeStrategy::EvaluateOffDiagContact(
     // some temporary Teuchos::RCPs
     Teuchos::RCP<Epetra_Map> tempmap0;
     Teuchos::RCP<Epetra_Map> tempmap1;
-    Teuchos::RCP<Epetra_Map> tempmap;
     Teuchos::RCP<Epetra_Map> ftempmap;
     Teuchos::RCP<LINALG::SparseMatrix> tempmtx1;
     Teuchos::RCP<LINALG::SparseMatrix> tempmtx2;
@@ -194,15 +193,11 @@ void CONTACT::MonoCoupledLagrangeStrategy::EvaluateOffDiagContact(
     //---------------------------------------------------------- SECOND LINE
     // km: add T(mhataam)*kan
     Teuchos::RCP<LINALG::SparseMatrix> kmmod = Teuchos::rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
-//    std::cout << __LINE__ << std::endl;
     kmmod->Add(*km,false,1.0,1.0);
-//    std::cout << __LINE__ << std::endl;
     if (aset)
     {
-  //    std::cout << __LINE__ << std::endl;
-    Teuchos::RCP<LINALG::SparseMatrix> kmadd = LINALG::MLMultiply(*mhataam_,true,*ka,false,false,false,true);
-  //    std::cout << __LINE__ << std::endl;
-    kmmod->Add(*kmadd,false,1.0,1.0);
+      Teuchos::RCP<LINALG::SparseMatrix> kmadd = LINALG::MLMultiply(*mhataam_,true,*ka,false,false,false,true);
+      kmmod->Add(*kmadd,false,1.0,1.0);
     }
     kmmod->Complete(kteff->DomainMap(),km->RowMap());
 
@@ -213,15 +208,11 @@ void CONTACT::MonoCoupledLagrangeStrategy::EvaluateOffDiagContact(
 
     // kin: subtract T(dhat)*kan --
     Teuchos::RCP<LINALG::SparseMatrix> kimod = Teuchos::rcp(new LINALG::SparseMatrix(*gidofs,100));
-//    std::cout << __LINE__ << std::endl;
     kimod->Add(*ki,false,1.0,1.0);
-//    std::cout << __LINE__ << std::endl;
     if (aset)
     {
-  //    std::cout << __LINE__ << std::endl;
-    Teuchos::RCP<LINALG::SparseMatrix> kiadd = LINALG::MLMultiply(*dhat_,true,*ka,false,false,false,true);
-  //    std::cout << __LINE__ << std::endl;
-    kimod->Add(*kiadd,false,-1.0,1.0);
+      Teuchos::RCP<LINALG::SparseMatrix> kiadd = LINALG::MLMultiply(*dhat_,true,*ka,false,false,false,true);
+      kimod->Add(*kiadd,false,-1.0,1.0);
     }
     kimod->Complete(kteff->DomainMap(),ki->RowMap());
 
@@ -233,11 +224,8 @@ void CONTACT::MonoCoupledLagrangeStrategy::EvaluateOffDiagContact(
     Teuchos::RCP<LINALG::SparseMatrix> kamod;
     if (aset)
     {
-  //    std::cout << __LINE__ << std::endl;
       kamod = LINALG::MLMultiply(*tmatrix_,false,*invda_,true,false,false,true);
-  //    std::cout << __LINE__ << std::endl;
       kamod = LINALG::MLMultiply(*kamod,false,*ka,false,false,false,true);
-  //    std::cout << __LINE__ << std::endl;
     }
 
     /********************************************************************/
@@ -289,32 +277,23 @@ void CONTACT::MonoCoupledLagrangeStrategy::EvaluateOffDiagContact(
     /**********************************************************************/
 
     Teuchos::RCP<LINALG::SparseMatrix> kteffnew = Teuchos::rcp(new LINALG::SparseMatrix(*gdisprowmap_,81,true,false,kteffmatrix->GetMatrixtype()));
-   // Teuchos::RCP<Epetra_Vector> feffnew = LINALG::CreateVector(*ProblemDofs());
 
     //----------------------------------------------------------- FIRST LINE
     // add n submatrices to kteffnew
-//    std::cout << __LINE__ << std::endl;
     kteffnew->Add(*kn,false,1.0,1.0);
-//    std::cout << __LINE__ << std::endl;
     //---------------------------------------------------------- SECOND LINE
     // add m submatrices to kteffnew
-//    std::cout << __LINE__ << std::endl;
     kteffnew->Add(*kmmod,false,1.0,1.0);
-//    std::cout << __LINE__ << std::endl;
     //----------------------------------------------------------- THIRD LINE
     // add i submatrices to kteffnew
-//    std::cout << __LINE__ << std::endl;
     if (iset) kteffnew->Add(*kimod,false,1.0,1.0);
-//    std::cout << __LINE__ << std::endl;
 
     //---------------------------------------------------------- FOURTH LINE
     // for off diag blocks this line is empty (weighted normal = f(disp))
 
     //----------------------------------------------------------- FIFTH LINE
     // add a submatrices to kteffnew
-//    std::cout << __LINE__ << std::endl;
     if (aset) kteffnew->Add(*kamod,false,1.0,1.0);
-//    std::cout << __LINE__ << std::endl;
 
     // FillComplete kteffnew (square)
     kteffnew->Complete(*domainmap,*gdisprowmap_);
