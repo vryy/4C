@@ -1296,7 +1296,7 @@ protected:
   bool isimpedancebc_;
 
   /// flag for windkessel outflow condition
-  bool off_proc_asselby_;
+  bool off_proc_assembly_;
 
 
   //! @name Set general parameter in class f3Parameter

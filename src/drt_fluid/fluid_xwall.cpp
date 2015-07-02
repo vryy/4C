@@ -896,8 +896,9 @@ void FLD::XWall::SetupL2Projection()
       dserror("wssmanager not available in xwall");
     //fix nodal forces on dirichlet inflow surfaces
     if(fix_residual_on_inflow_)
-      FixDirichletInflow(trueresidual);
-    wss=mystressmanager_->GetPreCalcWallShearStresses(trueresidual); //The time variables are just dummies, hence the mean WSS functionality does not work!!!
+      wss=mystressmanager_->GetPreCalcWallShearStresses(FixDirichletInflow(trueresidual));
+    else
+      wss=mystressmanager_->GetPreCalcWallShearStresses(trueresidual); //The time variables are just dummies, hence the mean WSS functionality does not work!!!
   }
   switch (tauwtype_)
   {
@@ -914,7 +915,7 @@ void FLD::XWall::SetupL2Projection()
       inctauw_->PutScalar(0.0);
 
       if(itnum==0)//in between steps
-        CalcTauW(step,trueresidual,velnp,wss);
+        CalcTauW(step,velnp,wss);
       else
         return;
     }
@@ -981,7 +982,7 @@ void FLD::XWall::SetupL2Projection()
 /*----------------------------------------------------------------------*
  |  Routines to calculate Tauw                                 bk 07/14 |
  *----------------------------------------------------------------------*/
-void FLD::XWall::CalcTauW(int step, Teuchos::RCP<Epetra_Vector>   trueresidual,Teuchos::RCP<Epetra_Vector>   velnp, Teuchos::RCP<Epetra_Vector>   wss)
+void FLD::XWall::CalcTauW(int step,Teuchos::RCP<Epetra_Vector>   velnp, Teuchos::RCP<Epetra_Vector>   wss)
 {
 
   Teuchos::RCP<Epetra_Vector> newtauw = Teuchos::rcp(new Epetra_Vector(*xwallrownodemap_,true));
@@ -1519,9 +1520,11 @@ void FLD::XWall::ReadRestart(IO::DiscretizationReader& reader)
 /*----------------------------------------------------------------------*
  |  treat Dirichlet inflow                                     bk 04/15 |
  *----------------------------------------------------------------------*/
-void FLD::XWall::FixDirichletInflow(Teuchos::RCP<Epetra_Vector>   trueresidual)
+Teuchos::RCP<Epetra_Vector> FLD::XWall::FixDirichletInflow(Teuchos::RCP<Epetra_Vector>   trueresidual)
 {
   Teuchos::RCP<Epetra_Vector> res = Teuchos::rcp(new Epetra_Vector(*(discret_->DofColMap()),true));
+  Teuchos::RCP<Epetra_Vector> fixedtrueresidual = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()),true));
+  fixedtrueresidual->Update(1.0,*trueresidual,0.0);
   LINALG::Export(*trueresidual,*res);
   for (int j=0; j<xwallrownodemap_->NumMyElements();++j)
   {
@@ -1643,9 +1646,9 @@ void FLD::XWall::FixDirichletInflow(Teuchos::RCP<Epetra_Vector>   trueresidual)
             double newvalue2 = 0.5*(*res)[firstlocaldofidnewvalue+1];
             double newvalue3 = 0.5*(*res)[firstlocaldofidnewvalue+2];
 
-            int err =     trueresidual->ReplaceGlobalValues(1,&newvalue1,&firstglobaldofidtoreplace);
-            err =     trueresidual->ReplaceGlobalValues(1,&newvalue2,&secondglobaldofidtoreplace);
-            err =     trueresidual->ReplaceGlobalValues(1,&newvalue3,&thirdglobaldofidtoreplace);
+            int err = fixedtrueresidual->ReplaceGlobalValues(1,&newvalue1,&firstglobaldofidtoreplace);
+            err =     fixedtrueresidual->ReplaceGlobalValues(1,&newvalue2,&secondglobaldofidtoreplace);
+            err =     fixedtrueresidual->ReplaceGlobalValues(1,&newvalue3,&thirdglobaldofidtoreplace);
             if(err!=0)
               dserror("something wrong");
           }
@@ -1653,7 +1656,7 @@ void FLD::XWall::FixDirichletInflow(Teuchos::RCP<Epetra_Vector>   trueresidual)
       }
     }
   }
-  return;
+  return fixedtrueresidual;
 }
 
 

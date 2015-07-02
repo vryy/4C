@@ -120,7 +120,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   impedancebc_(Teuchos::null),
   impedancebc_optimization_(Teuchos::null),
   isimpedancebc_(false),
-  off_proc_asselby_(params_->get<bool>("OFF_PROC_ASSEMBLY", false)),
+  off_proc_assembly_(params_->get<bool>("OFF_PROC_ASSEMBLY", false)),
   massmat_(Teuchos::null),
   logenergy_(Teuchos::null)
 {
@@ -276,8 +276,8 @@ void FLD::FluidImplicitTimeInt::Init()
       && params_->get<int>("MESHTYING") == INPAR::FLUID::no_meshtying)
   {
     // initialize standard (stabilized) system matrix (construct its graph already)
-    // off_proc_asselby_ requires an EpetraFECrs matrix
-    if(off_proc_asselby_)
+    // off_proc_assembly_ requires an EpetraFECrs matrix
+    if(off_proc_assembly_)
       sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true,LINALG::SparseMatrix::FE_MATRIX));
     else
       sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true));
@@ -285,7 +285,7 @@ void FLD::FluidImplicitTimeInt::Init()
   else if(params_->get<int>("MESHTYING")!= INPAR::FLUID::no_meshtying)
   {
     SetupMeshtying();
-    if(off_proc_asselby_)
+    if(off_proc_assembly_)
       dserror("Off processor assembly currently not available for this matrix type");
   }
   else
@@ -294,7 +294,7 @@ void FLD::FluidImplicitTimeInt::Init()
       Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy>(*velpressplitter_,*velpressplitter_,108,false,true));
     blocksysmat->SetNumdim(numdim_);
     sysmat_ = blocksysmat;
-    if(off_proc_asselby_)
+    if(off_proc_assembly_)
       dserror("Off processor assembly currently not available for this matrix type");
   }
 
@@ -1084,8 +1084,10 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::EvaluateMatAndRHS(Teuchos::ParameterList& eleparams)
 {
-  if(off_proc_asselby_)
+  if(off_proc_assembly_)
   {
+    if(shapederivatives_!=Teuchos::null)
+      dserror("The shape derivative cannot be assembled off-proc currently");
     const Epetra_Map* dofcolmap = discret_->DofColMap();
     Teuchos::RCP<Epetra_Vector> residual_col      = LINALG::CreateVector(*dofcolmap,true);
     Teuchos::RCP<LINALG::SparseMatrix> sysmat = Teuchos::rcp_dynamic_cast < LINALG::SparseMatrix > (sysmat_);
@@ -5196,6 +5198,9 @@ void FLD::FluidImplicitTimeInt::UseBlockMatrix(Teuchos::RCP<std::set<int> >     
 
   if (splitmatrix)
   {
+    if(off_proc_assembly_)
+      dserror("Off proc assembly does not work with Block Matrices currently. Use structure split if you do an FSI.");
+
     // (re)allocate system matrix
     mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
     mat->SetCondElements(condelements);

@@ -88,7 +88,7 @@ public:
   void ReadRestart(IO::DiscretizationReader& reader);
 
   //fix residual at Dirichlet-inflow nodes such that the wss can be calculated
-  void FixDirichletInflow(Teuchos::RCP<Epetra_Vector>   trueresidual);
+  Teuchos::RCP<Epetra_Vector>  FixDirichletInflow(Teuchos::RCP<Epetra_Vector>   trueresidual);
 
   //set current non-linear iteration number
   void SetIter(int iter){iter_=iter;return;}
@@ -117,7 +117,7 @@ protected:
   void SetupL2Projection();
 
   // calculate wall shear stress
-  void CalcTauW(int step, Teuchos::RCP<Epetra_Vector>   trueresidual, Teuchos::RCP<Epetra_Vector>   velnp,Teuchos::RCP<Epetra_Vector>   wss);
+  void CalcTauW(int step, Teuchos::RCP<Epetra_Vector>   velnp,Teuchos::RCP<Epetra_Vector>   wss);
 
   // l2 project vectors
   void L2ProjectVector(Teuchos::RCP<Epetra_Vector>   veln,Teuchos::RCP<Epetra_Vector>   velnp,Teuchos::RCP<Epetra_Vector>   accn);

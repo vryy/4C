@@ -58,7 +58,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::PrepareGaussRule()
   const double dot1=abs(normwallrst(0)/normwallrstnorm2);
   const double dot2=abs(normwallrst(1)/normwallrstnorm2);
   const double dot3=abs(normwallrst(2)/normwallrstnorm2);
-  //calculate nodal shape values of psi
+
   double minyp = 1e9;
   for (int inode=0;inode<enren_;inode++)
   {

@@ -1348,4 +1348,19 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::GetGridDispALE(
 
 }
 
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+void DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::LinMeshMotion_3D(
+    LINALG::Matrix<(my::nsd_+1)*my::nen_,(my::nsd_+1)*my::nen_>&  emesh,
+    const LINALG::Matrix<my::nsd_,my::nen_>&              evelaf,
+    const double &                                press,
+    const double &                                timefac,
+    const double &                                timefacfac)
+{
+  // xGderiv_ = sum(gridx(k,i) * deriv_(j,k), k);
+  // xGderiv_ == xjm_
+dserror("wrong");
+
+  return;
+}
+
 template class DRT::ELEMENTS::FluidEleCalcXWall<DRT::Element::hex8,DRT::ELEMENTS::Fluid::xwall>;

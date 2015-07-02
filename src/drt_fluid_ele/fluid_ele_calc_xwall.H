@@ -135,6 +135,15 @@ public:
       LINALG::Matrix<my::nsd_,my::nen_>&              edispnp
   );
 
+  //! linearisation in the case of mesh motion 3-D
+  virtual void LinMeshMotion_3D(
+      LINALG::Matrix<(my::nsd_+1)*my::nen_,(my::nsd_+1)*my::nen_>&  emesh,        ///< mesh motion
+      const LINALG::Matrix<my::nsd_,my::nen_>&              evelaf,       ///< velocity at time n+alpha_f / n+1
+      const double &                                press,        ///< pressure at integration point
+      const double &                                timefac,      ///< time factor
+      const double &                                timefacfac    ///< = timefac x fac
+      );
+
 private:
 
   const static int enren_=DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
