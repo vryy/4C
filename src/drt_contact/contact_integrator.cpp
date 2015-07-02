@@ -11138,7 +11138,7 @@ double inline CONTACT::CoIntegrator::DetDeformationGradient3D(
   switch (distype)
   {
   case DRT::Element::hex8:
-    J = TDetDeformationGradient3D<DRT::Element::hex8>(sele,wgt,gpcoord);
+    J = TDetDeformationGradient3D<DRT::Element::hex8,3>(sele,wgt,gpcoord);
     break;
   default:
     dserror("DetDeformationGradient3D: Parent Element Type not templated yet, just add it here!");
@@ -11151,13 +11151,12 @@ double inline CONTACT::CoIntegrator::DetDeformationGradient3D(
 /*-------------------------------------------------------------------------------*
  |  Templated Calculate Determinate of the Deformation Gradient at GP  ager 10/14|
  *------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType parentdistype>
+template <DRT::Element::DiscretizationType parentdistype, int dim>
 double inline CONTACT::CoIntegrator::TDetDeformationGradient3D(
     MORTAR::MortarElement& sele,
     double& wgt,
     double* gpcoord)
 {
-  static const unsigned int dim = 3;
 
   //! nen_: number of element nodes (T. Hughes: The Finite Element Method)
   static const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<parentdistype>::numNodePerElement;

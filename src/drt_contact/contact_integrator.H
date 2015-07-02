@@ -1035,7 +1035,7 @@ protected:
   \brief Templated Calculate Determinate of the Deformation Gradient at GP
 
   */
-  template <DRT::Element::DiscretizationType parentdistype>
+  template <DRT::Element::DiscretizationType parentdistype, int dim>
   double inline TDetDeformationGradient3D(
       MORTAR::MortarElement& sele,
       double& wgt,
