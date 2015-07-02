@@ -547,15 +547,12 @@ CONTACT::CoManager::CoManager(
                 isslave[j],
                 nurbs));
 
-        //Setup Parent element Map (will be used in Interface FillComplete()!)
-        if (cparams.get<int>("PROBTYPE")==INPAR::CONTACT::poro) //!Cannot be used with parallel redistribution!
+        //store information about parent for porous contact (required for calculation of deformation gradient!)
+        if (cparams.get<int>("PROBTYPE")==INPAR::CONTACT::poro)
         {
-          if (isslave[j]) //Parent just required for Slave Elements --> onesided poro contact!
-          {
-            Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele,true);
-            std::pair<DRT::Element*,int> pairval = std::make_pair(faceele->ParentElement(), faceele->FaceParentNumber());
-            interface->ParentElementMap()[cele->Id()] = pairval;
-          }
+          Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele,true);
+          if (faceele == Teuchos::null) dserror("Cast to FaceElement failed!");
+          cele->SetParentMasterElement(faceele->ParentElement(), faceele->FaceParentNumber());
         }
 
         //------------------------------------------------------------------

@@ -777,20 +777,6 @@ public:
   virtual std::vector<Epetra_SerialDenseVector>& Knots() { return mortarknots_; };
 
   /*!
-  \brief ReSet the master element this face element is connected to
-
-  Sets the pointers of the main parent element adjacent to the current face.
-  This method is used after redistribution of the elements, for elements which still stay on the same
-  proc. (Unpack will set the pointer default to NULL & face id to -1)
-  Additionally initializes parent displacement vector!
-
-  \param master: parent element which shares the orientation of faces
-  \param lface_master: local number of face within master element
-  */
-  virtual void ReSetParentMasterElement(DRT::Element* master,
-                              const int     lface_master);
-
-  /*!
   \brief Get the linearization of the spatial position of the Nodes for this Ele.
 
          Returns a vector of vector of maps. Outer vector for the nodes,

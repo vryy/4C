@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file poroelast_utils.cpp
+ \file poroelast_utils.H
 
  \brief utility functions for poroelasticity problems
 
@@ -93,6 +93,15 @@ namespace POROELAST
     void SetMaterialPointersMatchingGrid(
         Teuchos::RCP<const DRT::Discretization> sourcedis,
         Teuchos::RCP<const DRT::Discretization> targetdis);
+
+    /*!
+     Create volume ghosting:
+     To ease the contact search algorithms we'll afford the luxury to ghost all nodes
+     on all processors in the general mortar coupling framework.
+    Here we additionally ghost volume elements and their nodes
+     (required if an evaluation of gradients is required)!
+     */
+    void CreateVolumeGhosting(DRT::Discretization& idiscret); //redistributed interface discretization of contact!
 
     //! Determine norm of vector
     double CalculateVectorNorm(

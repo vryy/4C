@@ -50,6 +50,8 @@ Maintainer: Alexander Popp
 
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 
+#include "../drt_poroelast/poroelast_utils.H"
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
@@ -727,6 +729,10 @@ void MORTAR::MortarInterface::FillComplete(int maxdof, bool newghosting)
   // make sure discretization is complete
   Discret().FillComplete(true, false, false);
 
+  //ghost also parent elements according to the ghosting strategy of the interface (atm just for poro)
+  if (newghosting && poro_)
+    POROELAST::UTILS::CreateVolumeGhosting(Discret());
+
   // need row and column maps of slave and master nodes / elements / dofs
   // separately so we can easily address them
   UpdateMasterSlaveSets();
@@ -786,14 +792,18 @@ void MORTAR::MortarInterface::FillComplete(int maxdof, bool newghosting)
 
   if (poro_)
   {
-    //******!Cannot be used with parallel redistribution!
-    for (std::map<int, std::pair<DRT::Element*, int> >::iterator it = ParentElementMap().begin();
-        it != ParentElementMap().end(); ++it)
+    // initialize master element data container
+    for (int i = 0; i < MasterColElements()->NumMyElements(); ++i)
     {
-      MORTAR::MortarElement* ele = dynamic_cast<MORTAR::MortarElement*>(Discret().gElement(it->first));
-      ele->ReSetParentMasterElement(it->second.first, it->second.second);
+      int gid = MasterColElements()->GID(i);
+      DRT::Element* ele = Discret().gElement(gid);
+      if (!ele)
+        dserror("ERROR: Cannot find ele with gid %i", gid);
+      MortarElement* mele = dynamic_cast<MortarElement*>(ele);
+
+      // initialize container if not yet initialized before
+      mele->InitializeDataContainer();
     }
-    //******!!
   }
 
   // communicate quadslave status among ALL processors

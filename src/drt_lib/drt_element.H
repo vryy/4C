@@ -1260,11 +1260,39 @@ public:
   FaceElement(const FaceElement &old);
 
   /*!
+  \brief Pack this class so it can be communicated
+
+  \ref Pack and \ref Unpack are used to communicate this face element
+
+  */
+  virtual void Pack(DRT::PackBuffer& data) const;
+
+  /*!
+  \brief Unpack data from a char vector into this class
+
+  \ref Pack and \ref Unpack are used to communicate this face element
+
+  */
+  virtual void Unpack(const std::vector<char>& data);
+
+  /*!
   \brief Returns whether the given element actually is a face element with degrees of freedom living there
   */
   virtual bool IsFaceElement() const
   {
     return true;
+  }
+
+  /*!
+  \brief Return the parent element id the face element is connected to (for interior faces, the parent master element).
+
+  If no parent master has been assigned, -1 is returned (e.g. on non-face discretizations)
+
+  This Id is also available, if the calling processor is not owner of the ParentElement()!
+  */
+  int ParentElementId() const
+  {
+    return parent_id_;
   }
 
   /*!
@@ -1336,7 +1364,6 @@ public:
     return localtrafomap_;
   }
 
-protected:
   /*!
   \brief Set the master element this face element is connected to
 
@@ -1353,7 +1380,11 @@ protected:
   {
     parent_master_ = master;
     lface_master_  = lface_master;
+    if (master != NULL)
+      parent_id_ = master->Id();
   }
+
+protected:
 
   /*!
   \brief Set the slave element this face element is connected to
@@ -1402,6 +1433,9 @@ private:
           and the slave element's face's coordinate system
    */
   std::vector<int> localtrafomap_;
+
+  //! The parent element id
+  int parent_id_;
 
   //! Friend declaration
   friend class DRT::DiscretizationHDG;

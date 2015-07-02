@@ -193,8 +193,8 @@ void MORTAR::MortarElement::Pack(DRT::PackBuffer& data) const
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
-  // add base class DRT::Element
-  DRT::Element::Pack(data);
+  // add base class DRT::FaceElement
+  DRT::FaceElement::Pack(data);
   // add shape_
   AddtoPack(data,shape_);
   // add isslave_
@@ -239,10 +239,10 @@ void MORTAR::MortarElement::Unpack(const std::vector<char>& data)
   int type = 0;
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
-  // extract base class DRT::Element
+  // extract base class DRT::FaceElement
   std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
-  DRT::Element::Unpack(basedata);
+  DRT::FaceElement::Unpack(basedata);
   // shape_
   shape_ = static_cast<DiscretizationType>( ExtractInt(position,data) );
   // isslave_
@@ -1395,7 +1395,13 @@ void MORTAR::MortarElement::InitializeDataContainer()
   if (modata_==Teuchos::null)
     modata_=Teuchos::rcp(new MORTAR::MortarEleDataContainer());
 
-  return;
+  if (ParentElement() != NULL)
+  {
+    int numdof = ParentElement()->NumNode()*ParentElement()->NumDofPerNode(*ParentElement()->Nodes()[0]);
+    MoData().ParentDisp() = std::vector<double>(numdof);
+    for (int i = 0; i < numdof; ++i)
+      MoData().ParentDisp()[i] = 0.0;
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -1768,23 +1774,6 @@ void MORTAR::MortarElement::DeleteSearchElements()
   MoData().SearchElements().clear();
 
   return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Sets the pointers of the main parent element              ager 10/14|
- *----------------------------------------------------------------------*/
-void MORTAR::MortarElement::ReSetParentMasterElement(DRT::Element* master,
-                            const int     lface_master)
-{
-  if (master != NULL)
-    {
-    SetParentMasterElement(master,lface_master);
-    int numdof = master->NumNode()*master->NumDofPerNode(*master->Nodes()[0]);
-    MoData().ParentDisp() = std::vector<double>(numdof);
-    for (int i = 0; i < numdof; ++i)
-      MoData().ParentDisp()[i] = 0.0;
-    }
 }
 
 /*----------------------------------------------------------------------*

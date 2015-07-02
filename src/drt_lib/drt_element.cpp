@@ -958,7 +958,8 @@ DRT::FaceElement::FaceElement(const int id, const int owner)
   parent_master_(NULL),
   parent_slave_(NULL),
   lface_master_(-1),
-  lface_slave_(-1)
+  lface_slave_(-1),
+  parent_id_(-1)
 {}
 
 
@@ -973,10 +974,57 @@ DRT::FaceElement::FaceElement(const DRT::FaceElement &old)
   parent_slave_(old.parent_slave_),
   lface_master_(old.lface_master_),
   lface_slave_(old.lface_slave_),
-  localtrafomap_(old.localtrafomap_)
+  localtrafomap_(old.localtrafomap_),
+  parent_id_(old.parent_id_)
 {}
 
+/*----------------------------------------------------------------------*
+ |  Pack data                                                  (public) |
+ |                                                           ager 06/15 |
+ *----------------------------------------------------------------------*/
+void DRT::FaceElement::Pack(DRT::PackBuffer& data) const
+{
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
 
+  // pack type of this instance of ParObject
+  int type = UniqueParObjectId();   AddtoPack(data,type);
+  // add base class DRT::Elememt
+  DRT::Element::Pack(data);
+  //add lface_master_
+  AddtoPack(data,lface_master_);
+  //Pack Parent Id, used to set parent_master_ after parallel communication!
+  AddtoPack(data,parent_id_);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Unpack data                                                (public) |
+ |                                                           ager 06/15 |
+ *----------------------------------------------------------------------*/
+void DRT::FaceElement::Unpack(const std::vector<char>& data)
+{
+  std::vector<char>::size_type position = 0;
+  // extract type
+  int type = 0;
+  ExtractfromPack(position,data,type);
+  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+  // extract base class DRT::Element
+  std::vector<char> basedata(0);
+  ExtractfromPack(position,data,basedata);
+  DRT::Element::Unpack(basedata);
+
+  // lface_master_
+  lface_master_ = ExtractInt(position,data);
+  //Parent Id
+  parent_id_ = ExtractInt(position,data);
+
+  if (position != data.size())
+    dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+  return;
+}
 
 /*----------------------------------------------------------------------*
  |  set the local trafo map (protected)                kronbichler 03/15|

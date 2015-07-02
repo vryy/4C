@@ -54,6 +54,8 @@
 #include "../drt_mat/fluidporo.H"
 #include "../drt_mat/structporo.H"
 
+#include "../linalg/linalg_utils.H"
+
 
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
@@ -345,6 +347,103 @@ void POROELAST::UTILS::SetMaterialPointersMatchingGrid(
     //for coupling we add the source material to the target element and vice versa
     targetele->AddMaterial(sourceele->Material());
     sourceele->AddMaterial(targetele->Material());
+  }
+}
+
+/*----------------------------------------------------------------------*
+ | create volume ghosting (public)                            ager 06/15|
+ *----------------------------------------------------------------------*/
+void POROELAST::UTILS::CreateVolumeGhosting(DRT::Discretization& idiscret)
+{
+  //**********************************************************************
+  // Prerequisites of this funtion:
+  // All Contact Elements need a set parent_id_ (member of faceelement!) before
+  // calling CreateInterfaceGhosting as this id will be communicated to all
+  // processors! Otherwise any information which connects face and volume
+  // element is lost! (Parent Element Pointer is not communicated)
+  //**********************************************************************
+
+  //We get the discretizations from the global problem, as the contact does not have
+  //both structural and porofluid discretization, but we should guarantee consistent ghosting!
+
+  DRT::Problem* problem = DRT::Problem::Instance();
+
+  std::vector<Teuchos::RCP<DRT::Discretization> > voldis;
+  voldis.push_back(problem->GetDis("structure"));
+  voldis.push_back(problem->GetDis("porofluid"));
+
+  const Epetra_Map* ielecolmap = idiscret.ElementColMap();
+
+  for (uint disidx = 0; disidx < voldis.size(); ++disidx)
+  {
+    //1 Ghost all Volume Element + Nodes,for all ghosted mortar elements!
+    std::vector<int> rdata;
+
+    //Fill rdata with existing colmap
+
+    const Epetra_Map* elecolmap = voldis[disidx]->ElementColMap();
+    const Teuchos::RCP<Epetra_Map> allredelecolmap = LINALG::AllreduceEMap(*elecolmap);
+
+    for (int i = 0; i < elecolmap->NumMyElements(); ++i)
+    {
+      int gid = elecolmap->GID(i);
+      rdata.push_back(gid);
+    }
+
+    //Find elements, which are ghosted on the interface but not in the volume discretization
+    for (int i = 0; i < ielecolmap->NumMyElements(); ++i)
+    {
+      int gid = ielecolmap->GID(i);
+
+      DRT::Element* ele = idiscret.gElement(gid);
+      if (!ele)
+        dserror("ERROR: Cannot find element with gid %", gid);
+      DRT::FaceElement* faceele = dynamic_cast<DRT::FaceElement*>(ele);
+
+      int volgid = faceele->ParentElementId();
+      //Ghost the parent element additionally
+      if (elecolmap->LID(volgid) == -1 && allredelecolmap->LID(volgid) != -1) //Volume Discretization has not Element on this proc but on another
+        rdata.push_back(volgid);
+      }
+
+      // re-build element column map
+      Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::rcp(
+          new Epetra_Map(-1, (int) rdata.size(), &rdata[0], 0, voldis[disidx]->Comm()));
+      rdata.clear();
+
+      // redistribute the volume discretization according to the
+      // new (=old) element column layout & and ghost also nodes!
+      voldis[disidx]->ExtendedGhosting(*newelecolmap);
+  }
+
+  //2 Reconnect Face Element -- Porostructural Parent Element Pointers!
+  {
+    const Epetra_Map* elecolmap = voldis[0]->ElementColMap();
+
+    for (int i = 0; i < ielecolmap->NumMyElements(); ++i)
+    {
+      int gid = ielecolmap->GID(i);
+
+      DRT::Element* ele = idiscret.gElement(gid);
+      if (!ele)
+        dserror("ERROR: Cannot find element with gid %", gid);
+      DRT::FaceElement* faceele = dynamic_cast<DRT::FaceElement*>(ele);
+
+      int volgid = faceele->ParentElementId();
+      if (elecolmap->LID(volgid) == -1) //Volume Discretization has not Element
+        dserror("CreateVolumeGhosting: Element %d does not exist on this Proc!",volgid);
+
+      DRT::Element* vele = voldis[0]->gElement(volgid);
+      if (!vele)
+        dserror("ERROR: Cannot find element with gid %", volgid);
+
+      faceele->SetParentMasterElement(vele,faceele->FaceParentNumber());
+    }
+  }
+
+  {
+    // Material pointers need to be reset after redistribution.
+    POROELAST::UTILS::SetMaterialPointersMatchingGrid(voldis[0], voldis[1]);
   }
 }
 
