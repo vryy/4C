@@ -49,6 +49,7 @@ wasincontact_(false),
 wasincontactlts_(false),
 isselfcontact_(false),
 friction_(false),
+regularized_(false),
 dualquadslave3d_(false),
 tsi_(false),
 weightedwear_(false),
@@ -88,6 +89,9 @@ constr_direction_(DRT::INPUT::IntegralValue<INPAR::CONTACT::ConstraintDirection>
   if (wside == INPAR::WEAR::wear_both and
       wtype == INPAR::WEAR::wear_primvar)
     wbothpv_ = true;
+
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::Regularization>(Params(), "CONTACT_REGULARIZATION") != INPAR::CONTACT::reg_none)
+    regularized_ = true;
 
   // set thermo-structure-interaction with contact
   if (params.get<int>("PROBTYPE") == INPAR::CONTACT::tsi)

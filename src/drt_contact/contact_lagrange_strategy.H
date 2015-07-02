@@ -233,6 +233,27 @@ class CoLagrangeStrategy : public CoAbstractStrategy
     */
     void CheckConservationLaws(const Epetra_Vector& fs, const Epetra_Vector& fm);
 
+    /*!
+    \brief do additional matrix manipulations for regularization scaling
+
+    */
+    void DoRegularizationScaling(bool aset,
+                                bool iset,
+                                Teuchos::RCP<LINALG::SparseMatrix>& invda,
+                                Teuchos::RCP<LINALG::SparseMatrix>& kan,
+                                Teuchos::RCP<LINALG::SparseMatrix>& kam,
+                                Teuchos::RCP<LINALG::SparseMatrix>& kai,
+                                Teuchos::RCP<LINALG::SparseMatrix>& kaa,
+                                Teuchos::RCP<Epetra_Vector>& fa,
+                                Teuchos::RCP<LINALG::SparseMatrix>& kteffnew,
+                                Teuchos::RCP<Epetra_Vector>& feffnew);
+
+    /*!
+    \brief calculate regularization scaling and apply it to matrixes
+
+    */
+    void EvaluateRegularizationScaling(Teuchos::RCP<Epetra_Vector> gact);
+
     //@}
 
     //! @name Empty methods
@@ -285,9 +306,12 @@ class CoLagrangeStrategy : public CoAbstractStrategy
     Teuchos::RCP<LINALG::SparseMatrix> mhatmatrix_; // product of global Mortar matrices inv(D)*M
 
     Teuchos::RCP<LINALG::SparseMatrix> tmatrix_; // global Matrix T containing active node tangents
+    Teuchos::RCP<LINALG::SparseMatrix> nmatrix_; // global Matrix N containing active node normals
+
     Teuchos::RCP<LINALG::SparseMatrix> smatrix_; // global Matrix S containing normal+D+M derivatives
     Teuchos::RCP<LINALG::SparseMatrix> smatrixW_;// global Matrix S containing W derivatives
-    Teuchos::RCP<LINALG::SparseMatrix> pmatrix_; // global Matrix P containing tangent derivatives
+    Teuchos::RCP<LINALG::SparseMatrix> tderivmatrix_; // global Matrix containing tangent derivatives
+    Teuchos::RCP<LINALG::SparseMatrix> nderivmatrix_; // global Matrix containing normal derivatives
 
 
     Teuchos::RCP<Epetra_Vector> fs_;          // slave side effective forces (needed for LM)

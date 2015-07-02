@@ -390,10 +390,11 @@ public:
   virtual void AssembleLinZ(LINALG::SparseMatrix& lambdaglobal);
 
   /*!
-  \brief Assemble matrix T containing nodal tangents
+  \brief Assemble matrix T containing nodal tangents and/or matrix N containing nodal normals!
 
   */
-  virtual void AssembleT(LINALG::SparseMatrix& tglobal);
+  virtual void AssembleTN(Teuchos::RCP<LINALG::SparseMatrix> tglobal = Teuchos::null,
+                          Teuchos::RCP<LINALG::SparseMatrix> nglobal = Teuchos::null);
 
   /*!
   \brief Assemble matrix S containing linearizations
@@ -407,20 +408,21 @@ public:
   virtual void AssembleS(LINALG::SparseMatrix& sglobal);
 
   /*!
-  \brief Assemble matrix P containing linearizations
+  \brief Assemble matrix Tderiv and Nderiv containing linearizations
 
   This method builds an algebraic form of the FULL linearization
-  of the tangential contact condition (frictionless). Concretely,
-  this means assembling the linearization of the slave side
-  nodal tangents and the current Lagrange multipliers.
+  of the tangential contact condition (frictionless) and/or normal
+  condition (tractionlss).
+  Concretely, this means assembling the linearization of the slave side
+  nodal tangents / nodal normals and the current Lagrange multipliers.
 
     usePoroLM: linearisation will be multiplied with ...
    - true ->  poro no penetration lagrange multiplier!
    - false -> standard contact lagrange multiplier!
 
   */
-  virtual void AssembleP(LINALG::SparseMatrix& pglobal,
-                          bool usePoroLM = false);
+  virtual void AssembleTNderiv(Teuchos::RCP<LINALG::SparseMatrix> tderivglobal = Teuchos::null,
+      Teuchos::RCP<LINALG::SparseMatrix> nderivglobal = Teuchos::null, bool usePoroLM = false);
 
   /*!
   \brief Assemble matrices LinD, LinM containing linearizations

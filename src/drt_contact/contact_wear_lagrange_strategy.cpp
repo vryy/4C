@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file contact_wear_lagrange_srategy.cpp
+\file contact_wear_lagrange_strategy.cpp
 
 <pre>
 Maintainer: Philipp Farah
@@ -2587,7 +2587,7 @@ void CONTACT::WearLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::Sparse
   /**********************************************************************/
   for (int i=0; i<(int)interface_.size(); ++i)
   {
-    interface_[i]->AssembleT(*tmatrix_);
+    interface_[i]->AssembleTN(tmatrix_,Teuchos::null);
     interface_[i]->AssembleS(*smatrix_);
     interface_[i]->AssembleLinDM(*lindmatrix_,*linmmatrix_);
     interface_[i]->AssembleLinStick(*linstickLM_,*linstickDIS_,*linstickRHS_);

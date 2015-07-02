@@ -106,8 +106,8 @@ void CONTACT::PoroLagrangeStrategy::PoroInitialize(ADAPTER::Coupling& coupfs, Te
      interface_[i]->AssembleNCoupLin(*NCoup_lindisp_);
      interface_[i]->AssembleNCoupLin(*NCoup_linvel_,true);
 
-     interface_[i]->AssembleT(*Tangential_);
-     interface_[i]->AssembleP(*linTangentiallambda_,true); //use lambda(n +1) for tangential condition!!!
+     interface_[i]->AssembleTN(Tangential_,Teuchos::null);
+     interface_[i]->AssembleTNderiv(linTangentiallambda_,Teuchos::null,true); //use lambda(n +1) for tangential condition!!!
 
      interface_[i]->AssembleLinDM(*porolindmatrix_,*porolinmmatrix_);
     }
@@ -238,11 +238,11 @@ void CONTACT::PoroLagrangeStrategy::PoroInitialize(ADAPTER::Coupling& coupfs, Te
      tmpftanginvD->Complete(*fgactivedofs_,*falldofrowmap_);
       //better solution to get maps as wanted? -- for this matrix map as important as there will be a matrix-matrix multiplication
 
-     Teuchos::RCP<Epetra_Map> restfgactivet_, restfgactivedofs;
+     Teuchos::RCP<Epetra_Map> restfgactivet, restfgactivedofs;
      Teuchos::RCP<LINALG::SparseMatrix> tmpm1, tmpm2, tmpm3;
 
       //This should just be a temporary solution to change the row map of the matrix ...
-      LINALG::SplitMatrix2x2(tmpftanginvD,fgactivet_,restfgactivet_,fgactivedofs_,restfgactivedofs,ftanginvD_,tmpm1,tmpm2,tmpm3);
+      LINALG::SplitMatrix2x2(tmpftanginvD,fgactivet_,restfgactivet,fgactivedofs_,restfgactivedofs,ftanginvD_,tmpm1,tmpm2,tmpm3);
 
 #if(0)
 //Some solutions that do not work!
@@ -838,7 +838,7 @@ void CONTACT::PoroLagrangeStrategy::EvaluatePoroNoPenContact(Teuchos::RCP<LINALG
 //          kammod = MORTAR::MatrixRowTransform(kammod,pgsdofrowmap_);
 //          kaamod = MORTAR::MatrixRowTransform(kaamod,pgsdofrowmap_);
 //          if (iset) kaimod = MORTAR::MatrixRowTransform(kaimod,pgsdofrowmap_);
-//          pmatrix_ = MORTAR::MatrixRowTransform(pmatrix_,pgsdofrowmap_);
+//          pmatrix_ = MORTAR::MatrixRowTransform(tderivmatrix_,pgsdofrowmap_);
 //        }
       }
       /**********************************************************************/

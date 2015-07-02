@@ -830,6 +830,13 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
       && DRT::INPUT::IntegralValue<int>(contact, "FRLESS_FIRST") == true)
     dserror("ERROR: Frictionless first contact step with Tresca's law not yet implemented"); // hopefully coming soon, when Coulomb and Tresca are combined
 
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::Regularization>(contact,"CONTACT_REGULARIZATION") != INPAR::CONTACT::reg_none
+      && DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") != INPAR::CONTACT::solution_lagmult)
+    dserror("ERROR: Regularized Contact just available for Dual Mortar Contact with Lagrangean Multiplier!");
+
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::Regularization>(contact,"CONTACT_REGULARIZATION") != INPAR::CONTACT::reg_none
+      && DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact,"FRICTION") != INPAR::CONTACT::friction_none)
+    dserror("ERROR: Regularized Contact for contact with friction not implemented yet!");
 
   // *********************************************************************
   // warnings
@@ -1026,32 +1033,32 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
     // *********************************************************************
     // poroelastic contact
     // *********************************************************************
-    if ((problemtype==prb_poroelast || problemtype==prb_fpsi) &&
+    if ((problemtype==prb_poroelast || problemtype==prb_fpsi || problemtype==prb_fpsi_xfem) &&
         (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"LM_SHAPEFCN") != INPAR::MORTAR::shape_dual &&
         DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"LM_SHAPEFCN") != INPAR::MORTAR::shape_petrovgalerkin))
       dserror("POROCONTACT: Only dual and petrovgalerkin shape functions implemented yet!");
 
-    if ((problemtype==prb_poroelast || problemtype==prb_fpsi) &&
+    if ((problemtype==prb_poroelast || problemtype==prb_fpsi || problemtype==prb_fpsi_xfem) &&
         DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(mortar,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
       dserror("POROCONTACT: Parallel Redistribution not implemented yet!"); //Since we use Pointers to Parent Elements, which are not copied to other procs!
 
-    if ((problemtype==prb_poroelast || problemtype==prb_fpsi) &&
+    if ((problemtype==prb_poroelast || problemtype==prb_fpsi || problemtype==prb_fpsi_xfem) &&
         DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") != INPAR::CONTACT::solution_lagmult)
       dserror("POROCONTACT: Use Lagrangean Strategy for poro contact!");
 
-    if ((problemtype==prb_poroelast || problemtype==prb_fpsi) &&
+    if ((problemtype==prb_poroelast || problemtype==prb_fpsi || problemtype==prb_fpsi_xfem) &&
         DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact,"FRICTION") != INPAR::CONTACT::friction_none)
       dserror("POROCONTACT: Friction for poro contact not implemented!");
 
-    if ((problemtype==prb_poroelast || problemtype==prb_fpsi) &&
+    if ((problemtype==prb_poroelast || problemtype==prb_fpsi || problemtype==prb_fpsi_xfem) &&
         DRT::INPUT::IntegralValue<int>(mortar,"LM_NODAL_SCALE")==true)
       dserror("POROCONTACT: Nodal scaling not yet implemented for poro contact problems");
 
-    if ((problemtype==prb_poroelast || problemtype==prb_fpsi) &&
+    if ((problemtype==prb_poroelast || problemtype==prb_fpsi || problemtype==prb_fpsi_xfem) &&
         DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(contact,"SYSTEM") != INPAR::CONTACT::system_condensed)
       dserror("POROCONTACT: System has to be condensed for poro contact!");
 
-    if ((problemtype==prb_poroelast || problemtype==prb_fpsi) && dim != 3)
+    if ((problemtype==prb_poroelast || problemtype==prb_fpsi || problemtype==prb_fpsi_xfem) && dim != 3)
     {
       const Teuchos::ParameterList& porodyn = DRT::Problem::Instance()->PoroelastDynamicParams();
       if (DRT::INPUT::IntegralValue<int>(porodyn,"CONTACTNOPEN"))

@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file contact_wear_lagrange_srategy.H
+\file contact_wear_lagrange_strategy.H
 
 <pre>
 Maintainer: Philipp Farah

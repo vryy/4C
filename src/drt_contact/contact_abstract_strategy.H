@@ -792,6 +792,7 @@ protected:
     bool wasincontactlts_;    // flag indicating global contact status of last time step
     bool isselfcontact_;      // flag indicating potential self contact
     bool friction_;           // flag for frictional contact
+    bool regularized_;        // flag for regularized contact
 
     bool                                dualquadslave3d_; // flag indicating whether trafo should be applied
     Teuchos::RCP<LINALG::SparseMatrix>  trafo_;           // transformation matrix T for dual quad 3D case

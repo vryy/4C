@@ -1993,6 +1993,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       &scontact
       );
 
+  setStringToIntegralParameter<int>("CONTACT_REGULARIZATION","no",
+      "use regularized contact",
+      tuple<std::string>(
+        "no",
+        "tanh"),
+      tuple<int>(
+        INPAR::CONTACT::reg_none,
+        INPAR::CONTACT::reg_tanh),
+      &scontact
+      );
+
+
   /*----------------------------------------------------------------------*/
   /* parameters for volmortar */
   Teuchos::ParameterList& volmortar = list->sublist("VOLMORTAR COUPLING",false,"");

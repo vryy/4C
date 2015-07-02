@@ -180,7 +180,7 @@ class PoroLagrangeStrategy : public MonoCoupledLagrangeStrategy
     Teuchos::RCP<FSI::UTILS::MatrixRowColTransform> linncoupveltransform_;
     //! transform object for linearized ncoup matrix \f$linncoup\f$
     Teuchos::RCP<FSI::UTILS::MatrixRowTransform> linncoupdisptransform_;
-    //! transform object for linearized ncoup matrix \f$linncoup\f$
+    //! transform object for tangential times Dinv matrix \f$T*D^-1\f$
     Teuchos::RCP<FSI::UTILS::MatrixRowColTransform> tanginvtransform_;
     //! transform object for linearized tangentlambda matrix \f$lintanglambda\f$
     Teuchos::RCP<FSI::UTILS::MatrixRowTransform> lintangentlambdatransform_;

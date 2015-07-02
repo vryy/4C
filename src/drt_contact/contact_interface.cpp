@@ -3235,9 +3235,10 @@ void CONTACT::CoInterface::AssembleLinZ(LINALG::SparseMatrix& linzglobal)
 }
 
 /*----------------------------------------------------------------------*
- |  Assemble matrix with nodal tangents                       popp 01/08|
+ |  Assemble matrix with nodal tangents or/and normals         popp 01/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::AssembleT(LINALG::SparseMatrix& tglobal)
+void CONTACT::CoInterface::AssembleTN(Teuchos::RCP<LINALG::SparseMatrix> tglobal,
+                                      Teuchos::RCP<LINALG::SparseMatrix> nglobal)
 {
   // get out of here if not participating in interface
   if (!lComm())
@@ -3247,7 +3248,10 @@ void CONTACT::CoInterface::AssembleT(LINALG::SparseMatrix& tglobal)
   if (activenodes_==Teuchos::null)
     return;
 
-  // loop over all active slave nodes of the interface
+  if (Dim() != 2 && Dim() != 3)
+    dserror("ERROR: Dim() must be either 2 or 3!");
+
+// loop over all active slave nodes of the interface
   for (int i=0;i<activenodes_->NumMyElements();++i)
   {
     int gid = activenodes_->GID(i);
@@ -3256,109 +3260,124 @@ void CONTACT::CoInterface::AssembleT(LINALG::SparseMatrix& tglobal)
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     if (cnode->Owner() != Comm().MyPID())
-      dserror("ERROR: AssembleT: Node ownership inconsistency!");
+      dserror("ERROR: AssembleTN: Node ownership inconsistency!");
 
-    if (constr_direction_==INPAR::CONTACT::constr_xyz)
+    if (tglobal != Teuchos::null)
     {
-      if (Dim()==2)
+      if (constr_direction_==INPAR::CONTACT::constr_xyz)
       {
-        // prepare assembly
-        std::vector<int> lmrowT(cnode->NumDof());
-        std::vector<int> lmrowownerT(cnode->NumDof());
-        std::vector<int> lmcol(cnode->NumDof());
-
-        Epetra_SerialDenseMatrix Tnode(cnode->NumDof(),cnode->NumDof());
-        for (int i=0; i<cnode->NumDof(); ++i)
+        if (Dim()==2)
         {
-          lmrowT[i] = cnode->Dofs()[i];
-          lmrowownerT[i] = cnode->Owner();
-          for (int j=0; j<cnode->NumDof(); ++j)
+          // prepare assembly
+          std::vector<int> lmrowT(cnode->NumDof());
+          std::vector<int> lmrowownerT(cnode->NumDof());
+          std::vector<int> lmcol(cnode->NumDof());
+
+          Epetra_SerialDenseMatrix Tnode(cnode->NumDof(),cnode->NumDof());
+          for (int i=0; i<cnode->NumDof(); ++i)
           {
-            lmcol[j] = cnode->Dofs()[j];
-            Tnode(i,j)= cnode->CoData().txi()[i]*cnode->CoData().txi()[j];
+            lmrowT[i] = cnode->Dofs()[i];
+            lmrowownerT[i] = cnode->Owner();
+            for (int j=0; j<cnode->NumDof(); ++j)
+            {
+              lmcol[j] = cnode->Dofs()[j];
+              Tnode(i,j)= cnode->CoData().txi()[i]*cnode->CoData().txi()[j];
+            }
           }
+          tglobal->Assemble(-1,Tnode,lmrowT,lmrowownerT,lmcol);
         }
-        tglobal.Assemble(-1,Tnode,lmrowT,lmrowownerT,lmcol);
-      }
-      else if (Dim()==3)
-      {
-        std::vector<int> lmrowT(cnode->NumDof());
-        std::vector<int> lmrowownerT(cnode->NumDof());
-        std::vector<int> lmcol(cnode->NumDof());
-
-        Epetra_SerialDenseMatrix Tnode(cnode->NumDof(),cnode->NumDof());
-
-        for (int i=0; i<cnode->NumDof(); ++i)
+        else if (Dim()==3)
         {
-          lmrowT[i]=cnode->Dofs()[i];
-          lmrowownerT[i]=cnode->Owner();
-          for (int j=0; j<cnode->NumDof(); ++j)
+          std::vector<int> lmrowT(cnode->NumDof());
+          std::vector<int> lmrowownerT(cnode->NumDof());
+          std::vector<int> lmcol(cnode->NumDof());
+
+          Epetra_SerialDenseMatrix Tnode(cnode->NumDof(),cnode->NumDof());
+
+          for (int i=0; i<cnode->NumDof(); ++i)
           {
-            lmcol[j] = cnode->Dofs()[j];
-            Tnode(i,j) = cnode->CoData().txi()[i]*cnode->CoData().txi()[j]
-                                                                        +cnode->CoData().teta()[i]*cnode->CoData().teta()[j];
+            lmrowT[i]=cnode->Dofs()[i];
+            lmrowownerT[i]=cnode->Owner();
+            for (int j=0; j<cnode->NumDof(); ++j)
+            {
+              lmcol[j] = cnode->Dofs()[j];
+              Tnode(i,j) = cnode->CoData().txi()[i]*cnode->CoData().txi()[j]
+                                                                          +cnode->CoData().teta()[i]*cnode->CoData().teta()[j];
+            }
           }
+          tglobal->Assemble(-1,Tnode,lmrowT,lmrowownerT,lmcol);
         }
-        tglobal.Assemble(-1,Tnode,lmrowT,lmrowownerT,lmcol);
+        else
+          dserror("ERROR: Dim() must be either 2D or 3D");
+
       }
       else
-        dserror("ERROR: Dim() must be either 2D or 3D");
+      {
+        if (Dim()==2)
+        {
+          // prepare assembly
+          int colsize = cnode->NumDof();
+          std::vector<int> lmrowT(1);
+          std::vector<int> lmrowownerT(1);
+          std::vector<int> lmcol(colsize);
 
+          lmrowT[0] = activet_->GID(i);
+          lmrowownerT[0] = cnode->Owner();
+
+          /**************************************************** T-matrix ******/
+          Epetra_SerialDenseMatrix Tnode(1,colsize);
+
+          for (int j=0;j<colsize;++j)
+          {
+            lmcol[j] = cnode->Dofs()[j];
+            Tnode(0,j) = cnode->CoData().txi()[j];
+          }
+
+          // assemble into matrix of normal vectors T
+          tglobal->Assemble(-1,Tnode,lmrowT,lmrowownerT,lmcol);
+        }
+
+        else if (Dim()==3)
+        {
+          // prepare assembly
+          int colsize = cnode->NumDof();
+          std::vector<int> lmrowT(2);
+          std::vector<int> lmrowownerT(2);
+          std::vector<int> lmcol(colsize);
+
+          lmrowT[0] = activet_->GID(2*i);
+          lmrowT[1] = activet_->GID(2*i+1);
+          lmrowownerT[0] = cnode->Owner();
+          lmrowownerT[1] = cnode->Owner();
+
+          /**************************************************** T-matrix ******/
+          Epetra_SerialDenseMatrix Tnode(2,colsize);
+
+          for (int j=0;j<colsize;++j)
+          {
+            lmcol[j] = cnode->Dofs()[j];
+            Tnode(0,j) = cnode->CoData().txi()[j];
+            Tnode(1,j) = cnode->CoData().teta()[j];
+          }
+
+          // assemble into matrix of normal vectors T
+          tglobal->Assemble(-1,Tnode,lmrowT,lmrowownerT,lmcol);
+        }
+        else
+          dserror("ERROR: Dim() must be either 2D or 3D");
+      }
     }
-    else
+
+    if (nglobal != Teuchos::null)
     {
-      if (Dim()==2)
-      {
-        // prepare assembly
-        int colsize = cnode->NumDof();
-        std::vector<int> lmrowT(1);
-        std::vector<int> lmrowownerT(1);
-        std::vector<int> lmcol(colsize);
+      // nodal normal
+      double* nodalnormal = cnode->MoData().n();
 
-        lmrowT[0] = activet_->GID(i);
-        lmrowownerT[0] = cnode->Owner();
+      int row = activen_->GID(i);
 
-        /**************************************************** T-matrix ******/
-        Epetra_SerialDenseMatrix Tnode(1,colsize);
-
-        for (int j=0;j<colsize;++j)
-        {
-          lmcol[j] = cnode->Dofs()[j];
-          Tnode(0,j) = cnode->CoData().txi()[j];
-        }
-
-        // assemble into matrix of normal vectors T
-        tglobal.Assemble(-1,Tnode,lmrowT,lmrowownerT,lmcol);
-      }
-
-      else if (Dim()==3)
-      {
-        // prepare assembly
-        int colsize = cnode->NumDof();
-        std::vector<int> lmrowT(2);
-        std::vector<int> lmrowownerT(2);
-        std::vector<int> lmcol(colsize);
-
-        lmrowT[0] = activet_->GID(2*i);
-        lmrowT[1] = activet_->GID(2*i+1);
-        lmrowownerT[0] = cnode->Owner();
-        lmrowownerT[1] = cnode->Owner();
-
-        /**************************************************** T-matrix ******/
-        Epetra_SerialDenseMatrix Tnode(2,colsize);
-
-        for (int j=0;j<colsize;++j)
-        {
-          lmcol[j] = cnode->Dofs()[j];
-          Tnode(0,j) = cnode->CoData().txi()[j];
-          Tnode(1,j) = cnode->CoData().teta()[j];
-        }
-
-        // assemble into matrix of normal vectors T
-        tglobal.Assemble(-1,Tnode,lmrowT,lmrowownerT,lmcol);
-      }
-      else
-        dserror("ERROR: Dim() must be either 2D or 3D");
+      // add normal to corresponding row in global matrix
+      for (int k = 0; k < cnode->NumDof(); ++k)
+        nglobal->Assemble(nodalnormal[k], row, cnode->Dofs()[k]); //use the first dof for normal direction!!!
     }
   }
 
@@ -3511,9 +3530,11 @@ void CONTACT::CoInterface::AssembleS(LINALG::SparseMatrix& sglobal)
 }
 
 /*----------------------------------------------------------------------*
- |  Assemble matrix P containing tangent derivatives          popp 05/08|
+ |  Assemble tangent deriv or/and normal deriv matrix         popp 05/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::AssembleP(LINALG::SparseMatrix& pglobal,bool usePoroLM)
+void CONTACT::CoInterface::AssembleTNderiv(Teuchos::RCP<LINALG::SparseMatrix> tderivglobal,
+                                           Teuchos::RCP<LINALG::SparseMatrix> nderivglobal,
+                                           bool usePoroLM)
 {
   // get out of here if not participating in interface
   if (!lComm())
@@ -3523,6 +3544,9 @@ void CONTACT::CoInterface::AssembleP(LINALG::SparseMatrix& pglobal,bool usePoroL
   if (activenodes_==Teuchos::null)
     return;
 
+  if (Dim() != 2 && Dim() != 3)
+    dserror("ERROR: Dim() must be either 2 or 3!");
+
   // loop over all active slave nodes of the interface
   for (int i=0;i<activenodes_->NumMyElements();++i)
   {
@@ -3531,150 +3555,124 @@ void CONTACT::CoInterface::AssembleP(LINALG::SparseMatrix& pglobal,bool usePoroL
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
-    if (cnode->Owner() != Comm().MyPID())
-      dserror("ERROR: AssembleP: Node ownership inconsistency!");
+    if (cnode->Owner() != Comm().MyPID()) //move this check into debug?
+      dserror("ERROR: AssembleTNderiv: Node ownership inconsistency!");
 
-    if (Dim()==2)
+    if (tderivglobal != Teuchos::null) //assemble tangential derivs?
     {
-      // prepare assembly
       std::vector<GEN::pairedvector<int,double> >& dtmap = cnode->CoData().GetDerivTxi();
       GEN::pairedvector<int,double>::iterator colcurr;
-      int colsize = (int)dtmap[0].size();
-      int mapsize = (int)dtmap.size();
-      int row = activet_->GID(i);
 
-      if (mapsize==3) mapsize=2;
-
-      for (int j=0;j<mapsize-1;++j)
-        if ((int)dtmap[j].size() != (int)dtmap[j+1].size())
-          dserror("ERROR: AssembleP: Column dim. of nodal DerivT-map is inconsistent!");
-
-      // begin assembly of P-matrix
-      //std::cout << std::endl << "->Assemble P for Node ID: " << cnode->Id() << std::endl;
-
-      // loop over all derivative maps (=dimensions)
-      for (int j=0;j<mapsize;++j)
+      for (int dim = 0; dim < Dim() -1; ++dim) //for both tangents
       {
-        int k=0;
+        if (dim == 1) //just for 3d case, 2nd tangent
+          dtmap = cnode->CoData().GetDerivTeta();
+        int colsize = (int)dtmap[0].size();
+        int mapsize = (int)dtmap.size();
 
-        // loop over all entries of the current derivative map
-        for (colcurr=dtmap[j].begin();colcurr!=dtmap[j].end();++colcurr)
+        int row = activet_->GID((Dim()-1)*i+dim);
+
+        if (Dim() == 2 && mapsize==3) mapsize=2; //??
+
+        for (int j=0;j<mapsize-1;++j) //move this check into debug?
+          if ((int)dtmap[j].size() != (int)dtmap[j+1].size())
+            dserror("ERROR: AssembleTNderiv: Column dim. of nodal DerivT-map is inconsistent!");
+
+        // begin assembly of Tderiv-matrix
+        //std::cout << std::endl << "->Assemble P for Node ID: " << cnode->Id() << std::endl;
+
+        // loop over all derivative maps (=dimensions)
+        for (int j=0;j<mapsize;++j)
         {
-          int col = colcurr->first;
-          double val;
-          if (!usePoroLM)
-            val= cnode->MoData().lm()[j]*(colcurr->second);
-          else
-            val= cnode->CoPoroData().poroLM()[j]*(colcurr->second);
-          //std::cout << "lm[" << j << "]=" << cnode->MoData().lm()[j] << " deriv=" << colcurr->second << std::endl;
-          //std::cout << "Assemble P: " << row << " " << col << " " << val << std::endl;
-          // do not assemble zeros into P matrix
+          int k=0;
 
-          if (constr_direction_==INPAR::CONTACT::constr_xyz)
+          // loop over all entries of the current derivative map
+          for (colcurr=dtmap[j].begin();colcurr!=dtmap[j].end();++colcurr)
           {
-            for (int i=0; i<cnode->NumDof(); ++i)
-              if (abs(val)>1.0e-12)
-                pglobal.Assemble(val*cnode->CoData().txi()[i],cnode->Dofs()[i],col);
-          }
-          else
-            if (abs(val)>1.0e-12) pglobal.Assemble(val,row,col);
-          ++k;
-        }
+            int col = colcurr->first;
+            double val;
+            if (!usePoroLM)
+              val= cnode->MoData().lm()[j]*(colcurr->second);
+            else
+              val= cnode->CoPoroData().poroLM()[j]*(colcurr->second);
+            //std::cout << "lm[" << j << "]=" << cnode->MoData().lm()[j] << " deriv=" << colcurr->second << std::endl;
+            //std::cout << "Assemble P: " << row << " " << col << " " << val << std::endl;
+            // do not assemble zeros into P matrix
 
-        if (k!=colsize)
-          dserror("ERROR: AssembleP: k = %i but colsize = %i",k,colsize);
+            if (constr_direction_==INPAR::CONTACT::constr_xyz)
+            {
+              for (int i=0; i<cnode->NumDof(); ++i)
+              {
+                if (abs(val)>1.0e-12)
+                {
+                  double t;
+                  if (dim == 0)
+                    t = cnode->CoData().txi()[i];
+                  else
+                    t = cnode->CoData().teta()[i];
+                  tderivglobal->Assemble(val*t,cnode->Dofs()[i],col);
+                }
+              }
+            }
+            else
+              if (abs(val)>1.0e-12) tderivglobal->Assemble(val,row,col);
+            ++k;
+          }
+
+          if (k!=colsize)
+            dserror("ERROR: AssembleTNderiv: k = %i but colsize = %i",k,colsize);
+        }
       }
     }
-    else if (Dim()==3)
+
+    if (nderivglobal != Teuchos::null) //assemble normal derivs?
     {
-      // prepare assembly
-      std::vector<GEN::pairedvector<int,double> >& dtximap  = cnode->CoData().GetDerivTxi();
-      std::vector<GEN::pairedvector<int,double> >& dtetamap = cnode->CoData().GetDerivTeta();
+      std::vector<GEN::pairedvector<int,double> >& dnmap = cnode->CoData().GetDerivN();
       GEN::pairedvector<int,double>::iterator colcurr;
-      int colsizexi  = (int)dtximap[0].size();
-      int colsizeeta = (int)dtetamap[0].size();
-      int mapsizexi  = (int)dtximap.size();
-      int mapsizeeta = (int)dtetamap.size();
-      int rowxi  = activet_->GID(2*i);
-      int roweta = activet_->GID(2*i+1);
 
-      for (int j=0;j<mapsizexi-1;++j)
-        if ((int)dtximap[j].size() != (int)dtximap[j+1].size())
-          dserror("ERROR: AssembleS: Column dim. of nodal DerivTXi-map is inconsistent!");
+        int colsize = (int)dnmap[0].size();
+        int mapsize = (int)dnmap.size();
 
-      for (int j=0;j<mapsizeeta-1;++j)
-        if ((int)dtetamap[j].size() != (int)dtetamap[j+1].size())
-          dserror("ERROR: AssembleS: Column dim. of nodal DerivTEta-map is inconsistent!");
+        int row = activen_->GID(i);
 
-      // begin assembly of P-matrix
-      //std::cout << std::endl << "->Assemble P for Node ID: " << cnode->Id() << std::endl;
+        if (Dim() == 2 && mapsize==3) mapsize=2; //??
 
-      // loop over all derivative maps (=dimensions) for TXi
-      for (int j=0;j<mapsizexi;++j)
-      {
-        int k=0;
+        for (int j=0;j<mapsize-1;++j) //move this check into debug?
+          if ((int)dnmap[j].size() != (int)dnmap[j+1].size())
+            dserror("ERROR: AssembleTNderiv: Column dim. of nodal DerivN-map is inconsistent!");
 
-        // loop over all entries of the current derivative map
-        for (colcurr=dtximap[j].begin();colcurr!=dtximap[j].end();++colcurr)
+        // loop over all derivative maps (=dimensions)
+        for (int j=0;j<mapsize;++j)
         {
-          int col = colcurr->first;
-          double val;
-          if (!usePoroLM)
-            val= cnode->MoData().lm()[j]*(colcurr->second);
-          else
-            val= cnode->CoPoroData().poroLM()[j]*(colcurr->second);
-          //std::cout << "lm[" << j << "]=" << cnode->MoData().lm()[j] << " deriv=" << colcurr->second << std::endl;
-          //std::cout << "Assemble P: " << rowxi << " " << col << " " << val << std::endl;
-          // do not assemble zeros into P matrix
-          if (constr_direction_==INPAR::CONTACT::constr_xyz)
+          int k=0;
+
+          // loop over all entries of the current derivative map
+          for (colcurr=dnmap[j].begin();colcurr!=dnmap[j].end();++colcurr)
           {
-            for (int i=0; i<cnode->NumDof(); ++i)
-              if (abs(val)>1.0e-12)
-                pglobal.Assemble(val*cnode->CoData().txi()[i],cnode->Dofs()[i],col);
+            int col = colcurr->first;
+            double val;
+            if (!usePoroLM)
+              val= cnode->MoData().lm()[j]*(colcurr->second);
+            else
+              val= cnode->CoPoroData().poroLM()[j]*(colcurr->second);
+
+            // do not assemble zeros into P matrix
+
+            if (constr_direction_==INPAR::CONTACT::constr_xyz)
+            {
+              for (int i=0; i<cnode->NumDof(); ++i)
+                if (abs(val)>1.0e-12)
+                  nderivglobal->Assemble(val*cnode->MoData().n()[i],cnode->Dofs()[i],col);
+            }
+            else
+              if (abs(val)>1.0e-12) nderivglobal->Assemble(val,row,col);
+            ++k;
           }
-          else
-            if (abs(val)>1.0e-12) pglobal.Assemble(val,rowxi,col);
-          ++k;
+
+          if (k!=colsize)
+            dserror("ERROR: AssembleTNderiv: k = %i but colsize = %i",k,colsize);
         }
-
-        if (k!=colsizexi)
-          dserror("ERROR: AssembleP: k = %i but colsize = %i",k,colsizexi);
-      }
-
-      // loop over all derivative maps (=dimensions) for TEta
-      for (int j=0;j<mapsizeeta;++j)
-      {
-        int k=0;
-
-        // loop over all entries of the current derivative map
-        for (colcurr=dtetamap[j].begin();colcurr!=dtetamap[j].end();++colcurr)
-        {
-          int col = colcurr->first;
-          double val;
-          if (!usePoroLM)
-            val= cnode->MoData().lm()[j]*(colcurr->second);
-          else
-            val= cnode->CoPoroData().poroLM()[j]*(colcurr->second);
-          //std::cout << "lm[" << j << "]=" << cnode->MoData().lm()[j] << " deriv=" << colcurr->second << std::endl;
-          //std::cout << "Assemble P: " << roweta << " " << col << " " << val << std::endl;
-          // do not assemble zeros into P matrix
-          if (constr_direction_==INPAR::CONTACT::constr_xyz)
-          {
-            for (int i=0; i<cnode->NumDof(); ++i)
-              if (abs(val)>1.0e-12)
-                pglobal.Assemble(val*cnode->CoData().teta()[i],cnode->Dofs()[i],col);
-          }
-          else
-            if (abs(val)>1.0e-12) pglobal.Assemble(val,roweta,col);
-          ++k;
-        }
-
-        if (k!=colsizeeta)
-          dserror("ERROR: AssembleP: k = %i but colsize = %i",k,colsizeeta);
-      }
     }
-    else
-      dserror("ERROR: Dim() must be either 2 or 3!");
 
   } //for (int i=0;i<activenodes_->NumMyElements();++i)
 
