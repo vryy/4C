@@ -1399,9 +1399,9 @@ void MORTAR::MortarInterface::UpdateMasterSlaveSets()
     std::vector<int> mrb; // master row map - boundary nodes
     std::vector<int> mcb; // master column map - boundary nodes
 
-    for (int i = 0; i < oldnodecolmap_->NumMyElements(); ++i)
+    for (int i = 0; i < Discret().NodeColMap()->NumMyElements(); ++i)
     {
-      int gid = oldnodecolmap_->GID(i);
+      int gid = Discret().NodeColMap()->GID(i);
       bool isslave =
           dynamic_cast<MORTAR::MortarNode*>(Discret().gNode(gid))->IsSlave();
       bool isonbound =
@@ -1459,9 +1459,9 @@ void MORTAR::MortarInterface::UpdateMasterSlaveSets()
     std::vector<int> mc; // master column map
     std::vector<int> mr; // master row map
 
-    for (int i = 0; i < oldelecolmap_->NumMyElements(); ++i)
+    for (int i = 0; i < Discret().ElementColMap()->NumMyElements(); ++i)
     {
-      int gid = oldelecolmap_->GID(i);
+      int gid = Discret().ElementColMap()->GID(i);
       bool isslave = dynamic_cast<MORTAR::MortarElement*>(Discret().gElement(
           gid))->IsSlave();
 
@@ -1500,9 +1500,9 @@ void MORTAR::MortarInterface::UpdateMasterSlaveSets()
     std::vector<int> mc; // master column map
     std::vector<int> mr; // master row map
 
-    for (int i = 0; i < oldnodecolmap_->NumMyElements(); ++i)
+    for (int i = 0; i < Discret().NodeColMap()->NumMyElements(); ++i)
     {
-      int gid = oldnodecolmap_->GID(i);
+      int gid = Discret().NodeColMap()->GID(i);
       DRT::Node* node = Discret().gNode(gid);
       if (!node)
         dserror("ERROR: Cannot find node with gid %", gid);
