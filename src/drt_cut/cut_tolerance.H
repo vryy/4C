@@ -68,6 +68,6 @@
 #define JAC_LINE_TOL 1e-14
 
 // Construct the integration rules directly on the local coordinate system of the element
-//#define LOCAL
+#define LOCAL
 
 #endif
