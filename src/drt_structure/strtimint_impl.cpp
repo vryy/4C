@@ -3686,9 +3686,8 @@ void STR::TimIntImpl::UpdateIterIncrementally
     disi_->PutScalar(0.0);
 
   // recover contact / meshtying Lagrange multipliers (monolithic FSI)
-  // not in the case of TSI with contact and poro with contact
-  if (DRT::Problem::Instance()->ProblemType()!=prb_tsi and DRT::Problem::Instance()->ProblemType()!=prb_poroelast and DRT::Problem::Instance()->ProblemType()!=prb_fpsi
-      and DRT::Problem::Instance()->ProblemType()!=prb_fpsi_xfem)
+  // not in the case of TSI with contact
+  if (DRT::Problem::Instance()->ProblemType()!=prb_tsi)
     if (HaveContactMeshtying() && disi != Teuchos::null)
       cmtbridge_->Recover(disi_);
 
