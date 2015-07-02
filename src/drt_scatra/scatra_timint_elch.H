@@ -89,20 +89,24 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   //! problem-specific outputs
   void OutputProblemSpecific();
 
-  //! output of all electrode boundary status information to screen and file
+  //! output electrode domain status information to screen and file
+  void OutputElectrodeInfoDomain();
+
+  //! output electrode boundary status information to screen and file
   void OutputElectrodeInfoBoundary();
 
   //! output of electrode information for a single boundary condition
-  void OutputSingleElectrodeInfoBoundary(
-    DRT::Condition* condition, //!< pointer to the condition
-    const int  condid,         //!< condition id
-    const bool print,          //!< flag for output to screen and file
-    double& currentsum,        //!< net current over all boundaries (out)
-    double& pottangent,        //!< tangent of current w.r.t. electrode potential (out)
-    double& currresidual,      //!< neg. residual of current equation (out)
-    double& electrodesurface,  //!< surface of the electrode
-    double& electrodepot,      //!< electrode potential (metal side)
-    double& meanoverpot        //!< mean surface overpotential
+  void OutputSingleElectrodeInfo(
+      DRT::Condition*     condition,          //!< condition to be evaluated
+      const int           condid,             //!< ID of condition to be evaluated
+      const std::string   condstring,         //!< name of condition to be evaluated
+      const bool          print,              //!< flag for output to screen and file
+      double&             currentsum,         //!< net current involving all conditions (out)
+      double&             currtangent,        //!< tangent of current w.r.t. electrode potential (out)
+      double&             currresidual,       //!< negative residual of current equation (out)
+      double&             electrodeint,       //!< physical dimensions of the electrode region (out)
+      double&             electrodepot,       //!< electrode potential on electrode side (out)
+      double&             meanoverpot         //!< mean overpotential (out)
   );
 
   //! output electrode interior status information to screen and files

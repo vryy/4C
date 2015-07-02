@@ -533,6 +533,114 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::EvaluateElchDomainKineti
 } // DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::EvaluateElchDomainKinetics
 
 
+/*---------------------------------------------------------------------------*
+ | calculate electrode domain kinetics status information         fang 07/15 |
+ *---------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::ElectrodeStatus(
+    const DRT::Element*           ele,        ///< the actual boundary element
+    Epetra_SerialDenseVector&     scalars,    ///< scalars to be computed
+    Teuchos::ParameterList&       params,     ///< the parameter list
+    Teuchos::RCP<DRT::Condition>  cond,       ///< the condition
+    const std::vector<double>&    ephinp,     ///< current conc. and potential values
+    const std::vector<double>&    ephidtnp,   ///< time derivative vector evaluated at t_{n+1}
+    const int                     kinetics,   ///< desired electrode kinetics model
+    const std::vector<int>        stoich,     ///< stoichiometry of the reaction
+    const int                     nume,       ///<  number of transferred electrons
+    const double                  pot0,       ///< actual electrode potential on metal side at t_{n+1}
+    const double                  frt,        ///< factor F/RT
+    const double                  timefac,    ///< factor due to time discretization
+    const double                  scalar      ///< scaling factor for current related quantities
+)
+{
+  // Warning:
+  // Specific time integration parameter are set in the following function.
+  // In the case of a genalpha-time integration scheme the solution vector phiaf_ at time n+af
+  // is passed to the element evaluation routine. Therefore, the electrode status is evaluate at a
+  // different time (n+af) than our output routine (n+1), resulting in slightly different values at the electrode.
+  // A different approach is not possible (without major hacks) since the time-integration scheme is
+  // necessary to perform galvanostatic simulations, for instance.
+  // Think about: double layer effects for genalpha time-integration scheme
+
+  // if zero=1=true, the current flow across the electrode is zero (comparable to do-nothing Neuman condition)
+  // but the electrode status is evaluated
+  const int zerocur = cond->GetInt("zero_cur");
+
+  // extract volumetric electrode surface area A_s from condition
+  double A_s = cond->GetDouble("A_s");
+
+  // integration points and weights
+  const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  // concentration values of reactive species at element nodes
+  std::vector<LINALG::Matrix<my::nen_,1> > conreact(my::numscal_);
+
+  // el. potential values at element nodes
+  LINALG::Matrix<my::nen_,1> pot(true);
+  LINALG::Matrix<my::nen_,1> potdtnp(true);
+  for (int inode=0; inode< my::nen_;++inode)
+  {
+    for (int kk=0; kk<my::numscal_; ++kk)
+      conreact[kk](inode) = ephinp[inode*my::numdofpernode_+kk];
+
+    pot(inode) = ephinp[inode*my::numdofpernode_+my::numscal_];
+    potdtnp(inode) = ephidtnp[inode*my::numdofpernode_+my::numscal_];
+  }
+
+  bool statistics = false;
+
+  // index of reactive species (starting from zero)
+  for(int k=0; k<my::numscal_; ++k)
+  {
+    // only the first oxidized species O is considered for statistics
+    // statistics of other species result directly from the oxidized species (current density, ...)
+    // or need to be implemented (surface concentration, OCV, ...)
+    if(stoich[k]>=0)
+      continue;
+
+    statistics = true;
+
+    // loop over integration points
+    for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
+    {
+      const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints,gpid);
+
+      // call utility class for element evaluation
+      utils_->EvaluateElectrodeStatusAtIntegrationPoint(
+        ele,
+        scalars,
+        params,
+        cond,
+        conreact,
+        pot,
+        potdtnp,
+        my::funct_,
+        zerocur,
+        kinetics,
+        stoich,
+        nume,
+        pot0,
+        frt,
+        timefac,
+        fac,
+        A_s,
+        k
+      );
+    } // loop over integration points
+
+    // stop loop over ionic species after one evaluation (see also comment above)
+    break;
+  } // loop over scalars
+
+  // safety check
+  if(statistics == false)
+    dserror("There is no oxidized species O (stoich<0) defined in your input file!! \n"
+            " Statistics could not be evaluated");
+
+  return;
+} // DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::ElectrodeStatus
+
+
 /*-----------------------------------------------------------------------------------------*
  | extract element based or nodal values and return extracted values of phinp   fang 01/15 |
  *-----------------------------------------------------------------------------------------*/

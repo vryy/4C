@@ -65,6 +65,28 @@ namespace DRT
             const int                                     k           ///< index of evaluated scalar
         ) const;
 
+        //! evaluate electrode kinetics status information at integration point on domain or boundary element
+        void EvaluateElectrodeStatusAtIntegrationPoint(
+            const DRT::Element*                           ele,        ///< current element
+            Epetra_SerialDenseVector&                     scalars,    ///< scalars to be computed
+            const Teuchos::ParameterList&                 params,     ///< parameter list
+            const Teuchos::RCP<DRT::Condition>&           cond,       ///< condition
+            const std::vector<LINALG::Matrix<nen_,1> >&   conreact,   ///< concentration values of reactive species at element nodes
+            const LINALG::Matrix<nen_,1>&                 pot,        ///< potential vector
+            const LINALG::Matrix<nen_,1>&                 potdtnp,    ///< potential derivative vector
+            const LINALG::Matrix<nen_,1>&                 funct,      ///< shape functions at integration point
+            const int                                     zerocur,    ///< flag for zero current
+            const int                                     kinetics,   ///< desired electrode kinetics model
+            const std::vector<int>&                       stoich,     ///< stoichiometry of the reaction
+            const int                                     nume,       ///< number of transferred electrons
+            const double                                  pot0,       ///< actual electrode potential on metal side at t_{n+1}
+            const double                                  frt,        ///< factor F/RT
+            const double                                  timefac,    ///< factor due to time discretization
+            const double                                  fac,        ///< integration factor
+            const double                                  scalar,     ///< scaling factor for current related quantities
+            const int                                     k           ///< index of evaluated scalar
+        ) const;
+
       private:
 
         //! private constructor for singletons

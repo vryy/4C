@@ -431,6 +431,22 @@ private:
       Epetra_SerialDenseVector&         elevec1_epetra
   );
 
+  void ElectrodeStatus(
+      const DRT::Element*           ele,        ///< the actual boundary element
+      Epetra_SerialDenseVector&     scalars,    ///< scalars to be computed
+      Teuchos::ParameterList&       params,     ///< the parameter list
+      Teuchos::RCP<DRT::Condition>  cond,       ///< the condition
+      const std::vector<double>&    ephinp,     ///< current conc. and potential values
+      const std::vector<double>&    ephidtnp,   ///< time derivative vector evaluated at t_{n+1}
+      const int                     kinetics,   ///< desired electrode kinetics model
+      const std::vector<int>        stoich,     ///< stoichiometry of the reaction
+      const int                     nume,       ///<  number of transferred electrons
+      const double                  pot0,       ///< actual electrode potential on metal side at t_{n+1}
+      const double                  frt,        ///< factor F/RT
+      const double                  timefac,    ///< factor due to time discretization
+      const double                  scalar      ///< scaling factor for current related quantities
+      );
+
 
   //! set internal variables for diffusion-conduction formulation
   void SetInternalVariablesForMatAndRHS();
