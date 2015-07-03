@@ -94,6 +94,12 @@ void NLNSOL::UTILS::DebugWriterBase::CreateLogFile()
       DRT::Problem::Instance()->OutputControlFile()->FileName();
   filename.append("-");
   filename.append(GetName());
+  filename.append("-step-");
+  {
+    std::stringstream stepstring;
+    stepstring << GetStep();
+    filename.append(stepstring.str());
+  }
 
   std::string filelog = filename;
   filelog.append(".dbgout");
