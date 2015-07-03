@@ -98,12 +98,41 @@ class PoroLagrangeStrategy : public MonoCoupledLagrangeStrategy
                                   Teuchos::RCP<Epetra_Vector>& feff); //global RHS of fluid in poro
 
     /*!
+    \brief Evaluate poro no penetration contact
+
+     Evaluate poro coupling contact matrices for no penetration
+     condition on contact surface
+    */
+    void EvaluatePoroNoPenContact(Teuchos::RCP<LINALG::SparseMatrix>& k_fseff,
+                                  std::map<int,Teuchos::RCP<LINALG::SparseMatrix> >& Feff,
+                                  Teuchos::RCP<Epetra_Vector>& feff);
+
+    /*!
+    \brief Evaluate poro no penetration contact
+
+     Evaluate all other matrixes here!
+    */
+    void EvaluateMatPoroNoPen(Teuchos::RCP<LINALG::SparseMatrix>& k_fseff, //global poro Coupling Matrix Fluid Structure K_FS
+                              Teuchos::RCP<Epetra_Vector>& feff); //global RHS of fluid in poro
+
+    /*!
+    \brief Evaluate poro no penetration contact
+
+     Evaluate all other matrixes here!
+    */
+    void EvaluateOtherMatPoroNoPen(Teuchos::RCP<LINALG::SparseMatrix>& Feff,
+                             int Column_Block_Id);
+
+    /*!
     \brief Recovery method
 
     We only recover the Lagrange multipliers for poro no penetration condition here, which had been
     statically condensated during the setup of the global problem!*/
 
-    void RecoverPoroNoPen(Teuchos::RCP<Epetra_Vector> disi,Teuchos::RCP<Epetra_Vector> veli);
+    void RecoverPoroNoPen(Teuchos::RCP<Epetra_Vector> disi,Teuchos::RCP<Epetra_Vector> inc);
+
+    void RecoverPoroNoPen(Teuchos::RCP<Epetra_Vector> disi,std::map<int , Teuchos::RCP<Epetra_Vector> > inc);
+
 
     void UpdatePoroContact();
 
@@ -155,6 +184,8 @@ class PoroLagrangeStrategy : public MonoCoupledLagrangeStrategy
     Teuchos::RCP<LINALG::SparseMatrix> fsn_; //poro fluid stiffness block F_sn (needed for no pen LM)
     Teuchos::RCP<LINALG::SparseMatrix> fsm_; //poro fluid stiffness block F_sm (needed for no pen LM)
     Teuchos::RCP<LINALG::SparseMatrix> fss_; //poro fluid stiffness block F_ss (needed for no pen LM)
+
+    std::map<int , Teuchos::RCP<LINALG::SparseOperator> > cfx_s_; //offdiagonal coupling stiffness blocks on slave side!
 
     //Matrices transformed to the fluid dofs!!!
     Teuchos::RCP<LINALG::SparseMatrix> fdhat_;
