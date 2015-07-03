@@ -356,41 +356,80 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcElchDomainKinetics(
     pot0 *= curvefac;
   }
 
-  if(not is_stationary)
+  if(!(params.get<bool>("calc_status",false)))
   {
-    // One-step-Theta:    timefac = theta*dt
-    // BDF2:              timefac = 2/3 * dt
-    // generalized-alpha: timefac = (gamma*alpha_F/alpha_M) * dt
-    timefac = my::scatraparatimint_->TimeFac();
-    if (timefac < 0.0) dserror("time factor is negative.");
-    // for correct scaling of rhs contribution (see below)
-    rhsfac =  1/my::scatraparatimint_->AlphaF();
+    if(not is_stationary)
+    {
+      // One-step-Theta:    timefac = theta*dt
+      // BDF2:              timefac = 2/3 * dt
+      // generalized-alpha: timefac = (gamma*alpha_F/alpha_M) * dt
+      timefac = my::scatraparatimint_->TimeFac();
+      if (timefac < 0.0) dserror("time factor is negative.");
+      // for correct scaling of rhs contribution (see below)
+      rhsfac =  1/my::scatraparatimint_->AlphaF();
+    }
+
+    if(zerocur == 0)
+    {
+      EvaluateElchDomainKinetics(
+          ele,
+          elemat1_epetra,
+          elevec1_epetra,
+          ephinp,
+          ehist,
+          timefac,
+          material,
+          cond,
+          nume,
+          *stoich,
+          kinetics,
+          pot0,
+          frt
+      );
+    }
+
+    // realize correct scaling of rhs contribution for gen.alpha case
+    // with dt*(gamma/alpha_M) = timefac/alpha_F
+    // matrix contributions are already scaled correctly with
+    // timefac=dt*(gamma*alpha_F/alpha_M)
+    elevec1_epetra.Scale(rhsfac);
   }
 
-  if(zerocur == 0)
+  else
   {
-    EvaluateElchDomainKinetics(
+    // get actual values of transported scalars
+    Teuchos::RCP<const Epetra_Vector> phidtnp = discretization.GetState("phidtnp");
+    if(phidtnp == Teuchos::null)
+      dserror("Cannot get state vector 'ephidtnp'");
+    // extract local values from the global vector
+    std::vector<double> ephidtnp(lm.size());
+    DRT::UTILS::ExtractMyValues(*phidtnp,ephidtnp,lm);
+
+    if(not is_stationary)
+    {
+      // One-step-Theta:    timefacrhs = theta*dt
+      // BDF2:              timefacrhs = 2/3 * dt
+      // generalized-alpha: timefacrhs = (gamma/alpha_M) * dt
+      timefac = my::scatraparatimint_->TimeFacRhs();
+      if(timefac < 0.)
+        dserror("time factor is negative.");
+    }
+
+    ElectrodeStatus(
         ele,
-        elemat1_epetra,
         elevec1_epetra,
-        ephinp,
-        ehist,
-        timefac,
-        material,
+        params,
         cond,
-        nume,
-        *stoich,
+        ephinp,
+        ephidtnp,
         kinetics,
+        *stoich,
+        nume,
         pot0,
-        frt
-    );
+        frt,
+        timefac
+        );
   }
-
-  // realize correct scaling of rhs contribution for gen.alpha case
-  // with dt*(gamma/alpha_M) = timefac/alpha_F
-  // matrix contributions are already scaled correctly with
-  // timefac=dt*(gamma*alpha_F/alpha_M)
-  elevec1_epetra.Scale(rhsfac);
 
   return;
 }
@@ -549,8 +588,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::ElectrodeStatus(
     const int                     nume,       ///<  number of transferred electrons
     const double                  pot0,       ///< actual electrode potential on metal side at t_{n+1}
     const double                  frt,        ///< factor F/RT
-    const double                  timefac,    ///< factor due to time discretization
-    const double                  scalar      ///< scaling factor for current related quantities
+    const double                  timefac     ///< factor due to time discretization
 )
 {
   // Warning:
@@ -708,19 +746,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalculateFlux(
     // no break statement here!
   case INPAR::SCATRA::flux_diffusive_domain:
     // diffusive flux contribution
-//<<<<<<< .mine
-//    q.Update(-dmedc->GetPhasePoroTort(0)*dmedc->GetIsotropicDiff(k),vmdc->GradPhi(k),1.0);
-//=======
     q.Update(-DiffManager()->GetIsotropicDiff(k)*DiffManager()->GetPhasePoroTort(0),VarManager()->GradPhi(k),1.0);
     // flux due to ohmic overpotential
-//<<<<<<< .mine
-//    q.Update(-dmedc->GetTransNum(k)*vmdc->InvFVal(k)*dmedc->GetPhasePoroTort(0)*dmedc->GetCond(),vmdc->GradPot(),1.0);
-//=======
     q.Update(-DiffManager()->GetTransNum(k)*VarManager()->InvFVal(k)*DiffManager()->GetCond()*DiffManager()->GetPhasePoroTort(0),VarManager()->GradPot(),1.0);
     // flux due to concentration overpotential
-//<<<<<<< .mine
-//    q.Update(-dmedc->GetTransNum(k)*vmdc->RTFFCVal(k)*dmedc->GetPhasePoroTort(0)*dmedc->GetCond()*dmedc->GetThermFac()*(myelch::elchpara_->NewmanConstA()+(myelch::elchpara_->NewmanConstB()*dmedc->GetTransNum(k)))*vmdc->ConIntInv(k),vmdc->GradPhi(k),1.0);
-//=======
     q.Update(-DiffManager()->GetTransNum(k)*VarManager()->RTFFCVal(k)*DiffManager()->GetCond()*DiffManager()->GetPhasePoroTort(0)*DiffManager()->GetThermFac()*(ElchPara()->NewmanConstA()+(ElchPara()->NewmanConstB()*DiffManager()->GetTransNum(k)))*VarManager()->ConIntInv(k),VarManager()->GradPhi(k),1.0);
     break;
   default:

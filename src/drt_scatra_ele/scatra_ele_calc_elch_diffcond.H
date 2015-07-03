@@ -443,8 +443,7 @@ private:
       const int                     nume,       ///<  number of transferred electrons
       const double                  pot0,       ///< actual electrode potential on metal side at t_{n+1}
       const double                  frt,        ///< factor F/RT
-      const double                  timefac,    ///< factor due to time discretization
-      const double                  scalar      ///< scaling factor for current related quantities
+      const double                  timefac     ///< factor due to time discretization
       );
 
 

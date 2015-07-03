@@ -148,12 +148,10 @@ void SCATRA::ScaTraTimIntElch::Init()
     dserror("At the moment, we cannot have electrode domain kinetics conditions and electrode boundary kinetics conditions at the same time!");
   else if(electrodedomainconditions.size() > 0 or electrodeboundaryconditions.size() > 0)
   {
-    electrodeconc_ = Teuchos::rcp(new std::vector<double>);
-    electrodeconc_->resize(electrodeboundaryconditions.size(),-1.);
-    electrodeeta_ = Teuchos::rcp(new std::vector<double>);
-    electrodeeta_->resize(electrodeboundaryconditions.size(),-1.);
-    electrodecurr_ = Teuchos::rcp(new std::vector<double>);
-    electrodecurr_->resize(electrodeboundaryconditions.size(),-1.);
+    const unsigned ncond = electrodedomainconditions.size()+electrodeboundaryconditions.size();
+    electrodeconc_ = Teuchos::rcp(new std::vector<double>(ncond,-1.));
+    electrodeeta_ = Teuchos::rcp(new std::vector<double>(ncond,-1.));
+    electrodecurr_ = Teuchos::rcp(new std::vector<double>(ncond,-1.));
   }
 
   return;
@@ -493,7 +491,7 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoBoundary()
   if(myrank_ == 0)
   {
     std::cout << "Status of '" << condname << "':" << std::endl;
-    std::cout << "+----+--------          --+---------------------+------------------+----------------------+--------------------+----------------+----------------+" << std::endl;
+    std::cout << "+----+--------------------+---------------------+------------------+----------------------+--------------------+----------------+----------------+" << std::endl;
     std::cout << "| ID |   Porosity         |    Total current    | Area of boundary | Mean current density | Mean overpotential | Electrode pot. | Mean Concentr. |" << std::endl;
   }
 
@@ -521,7 +519,7 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoBoundary()
 
   if(myrank_ == 0)
   {
-    std::cout << "+----+--------          --+---------------------+------------------+----------------------+--------------------+----------------+----------------+" << std::endl << std::endl;
+    std::cout << "+----+--------------------+---------------------+------------------+----------------------+--------------------+----------------+----------------+" << std::endl << std::endl;
     // print out the net total current for all indicated boundaries
     printf("Net total current over boundary: %10.3E\n\n",sum);
   }
@@ -637,9 +635,9 @@ void SCATRA::ScaTraTimIntElch::OutputSingleElectrodeInfo(
   if(myrank_ == 0 and print)
   {
     // print out results to screen
-    printf("|| %2d |   without          |     %10.3E      |    %10.3E    |      %10.3E      |     %10.3E     |   %10.3E   |   %10.3E   |\n",
+    printf("| %2d |   without          |     %10.3E      |    %10.3E    |      %10.3E      |     %10.3E     |   %10.3E   |   %10.3E   |\n",
         condid,currentintegral+currentdlintegral,shapefuncint,currentintegral/shapefuncint+currentdlintegral/shapefuncint,overpotentialint/shapefuncint, electrodepot, cint/shapefuncint_porous);
-    printf("|| %2d |   with             |     %10.3E      |    %10.3E    |      %10.3E      |     %10.3E     |   %10.3E   |   %10.3E   |\n",
+    printf("| %2d |   with             |     %10.3E      |    %10.3E    |      %10.3E      |     %10.3E     |   %10.3E   |   %10.3E   |\n",
         condid,currentintegral+currentdlintegral,shapefuncint,currentintegral/shapefuncint_porous+currentdlintegral/shapefuncint_porous,overpotentialint/shapefuncint_porous, electrodepot, cint/shapefuncint);
 
     // write results to file
