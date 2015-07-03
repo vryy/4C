@@ -97,7 +97,8 @@ namespace UTILS
     //! Initialize class members
     virtual void Init(const Epetra_Comm& comm, ///< communicator
         Teuchos::RCP<const DRT::Discretization> dis, ///< discretization of single field
-        const std::string& name ///< name for output file
+        const std::string& name, ///< name for output file
+        const unsigned int step ///< time step number
         ) = 0;
 
     //! Setup the object
@@ -157,6 +158,9 @@ namespace UTILS
     //! Set output filename
     virtual void SetOutputFileName(const std::string& name);
 
+    //! Set time step number
+    virtual void SetStep(const unsigned int step);
+
     /*! \brief Create the log file and write header into file
      *
      *  \note Only processor 0 is writing to the log file.
@@ -182,6 +186,9 @@ namespace UTILS
 
     //! Return name of debug output appendix
     const std::string& GetName() const { return name_; }
+
+    //! Return time step number
+    const unsigned int GetStep() const { return step_; }
 
     //! communicator
     virtual Teuchos::RCP<const Epetra_Comm> Comm() const;
@@ -240,6 +247,9 @@ namespace UTILS
     //! Communicator
     Teuchos::RCP<const Epetra_Comm> comm_;
 
+    //! time step number
+    unsigned int step_;
+
   }; // class DebugWriterBase
 
   // ---------------------------------------------------------------------------
@@ -271,7 +281,8 @@ namespace UTILS
     //! Initialize class members
     virtual void Init(const Epetra_Comm& comm, ///< communicator
         Teuchos::RCP<const DRT::Discretization> dis, ///< discretization of single field
-        const std::string& name ///< name for output file
+        const std::string& name, ///< name for output file
+        const unsigned int step ///< time step number
         );
 
     //! Setup the output tool

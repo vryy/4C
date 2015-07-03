@@ -52,7 +52,8 @@ NLNSOL::UTILS::DebugWriterBase::DebugWriterBase()
   name_("unknown"),
   counter_(0),
   log_(Teuchos::null),
-  comm_(Teuchos::null)
+  comm_(Teuchos::null),
+  step_(0)
 {
   return;
 }
@@ -71,6 +72,15 @@ void NLNSOL::UTILS::DebugWriterBase::SetComm(const Epetra_Comm& comm)
 void NLNSOL::UTILS::DebugWriterBase::SetOutputFileName(const std::string& name)
 {
   name_ = name;
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void NLNSOL::UTILS::DebugWriterBase::SetStep(const unsigned int step)
+{
+  step_ = step;
 
   return;
 }
@@ -157,7 +167,8 @@ NLNSOL::UTILS::DebugWriterSingleField::DebugWriterSingleField()
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void NLNSOL::UTILS::DebugWriterSingleField::Init(const Epetra_Comm& comm,
-    Teuchos::RCP<const DRT::Discretization> dis, const std::string& name)
+    Teuchos::RCP<const DRT::Discretization> dis, const std::string& name,
+    const unsigned int step)
 {
   if (IsInit())
     dserror("Init() has already been called. Yoy may call it only once!");
@@ -165,6 +176,7 @@ void NLNSOL::UTILS::DebugWriterSingleField::Init(const Epetra_Comm& comm,
   // Initialize base class members
   SetComm(comm);
   SetOutputFileName(name);
+  SetStep(step);
 
   // Initialize class members
   dis_ = dis;
@@ -187,23 +199,36 @@ void NLNSOL::UTILS::DebugWriterSingleField::Setup()
 
   CreateLogFile();
 
+  // ---------------------------------------------------------------------------
   // Create separate debug control file
+  // ---------------------------------------------------------------------------
+  // Create unique filename
   std::string filecontrol =
       DRT::Problem::Instance()->OutputControlFile()->FileName();
   filecontrol.append("-");
   filecontrol.append(GetName());
+  filecontrol.append("-step-");
+  {
+    std::stringstream stepstring;
+    stepstring << GetStep();
+    filecontrol.append(stepstring.str());
+  }
+
+  // Create the control file
   control_ = Teuchos::rcp(new IO::OutputControl(dis_->Comm(),
 //      "none",                   // we do not have a problem type
-      "Structure",              // temp (mayr) provide problem type for post filter
+      "Structure",              // ToDo (mayr) provide problem type for post filter
       "Polynomial",             // this is a FE code ... no nurbs
       "debug-output",           // no input file either
       filecontrol.c_str(),      // an output file name is needed
-      DRT::Problem::Instance()->NDim(),
+      DRT::Problem::Instance()->NDim(), // spatial dimension of problem
       0,                        // restart is meaningless here
       1000,                     // we never expect to get 1000 iterations
       DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(),
               "OUTPUT_BIN")
       ));
+
+  // ---------------------------------------------------------------------------
 
   // Create and initialize debug discretization writer
   writer_ = Teuchos::rcp(new IO::DiscretizationWriter(Teuchos::rcp_const_cast<DRT::Discretization>(dis_)));
