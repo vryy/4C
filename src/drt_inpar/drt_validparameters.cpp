@@ -5269,16 +5269,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
            //"surface_tension_approx_fixed_curvature",              //prescribed curvature
            //"surface_tension_approx_divgrad",                      //calcs curvature at GP using the smoothed grad_phi and smoothed grad_phi for normal  //Do Not Migrate.
            "surface_tension_approx_divgrad_normal",               //calcs curvature at GP using the smoothed grad_phi and normal on Boundary Cell for normal
-           "surface_tension_approx_nodal_curvature"),              //calcs curvature at nodes and normal on Boundary Cell for normal
-           //"surface_tension_approx_laplacebeltrami",              //standard Laplace-Beltrami (see e.g. Fries 2009)
+           "surface_tension_approx_nodal_curvature",              //calcs curvature at nodes and normal on Boundary Cell for normal
+           "surface_tension_approx_laplacebeltrami"),              //standard Laplace-Beltrami (see e.g. Fries 2009)
            //"surface_tension_approx_laplacebeltrami_smoothed"),    //         Laplace-Beltrami, includes additional projection based on the smoothed normal (see e.g. Gross, Reusken 2009)
            tuple<int>(
                INPAR::TWOPHASE::surface_tension_approx_none,
                //INPAR::TWOPHASE::surface_tension_approx_fixed_curvature,
                //INPAR::TWOPHASE::surface_tension_approx_divgrad,
                INPAR::TWOPHASE::surface_tension_approx_divgrad_normal,
-               INPAR::TWOPHASE::surface_tension_approx_nodal_curvature),
-//               INPAR::TWOPHASE::surface_tension_approx_laplacebeltrami,
+               INPAR::TWOPHASE::surface_tension_approx_nodal_curvature,
+               INPAR::TWOPHASE::surface_tension_approx_laplacebeltrami),
 //               INPAR::TWOPHASE::surface_tension_approx_laplacebeltrami_smoothed),
                &twophase_surftens);
 
@@ -5310,6 +5310,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                INPAR::TWOPHASE::l2_projected,
                INPAR::TWOPHASE::averaged),
                &twophase_surftens);
+
+   setStringToIntegralParameter<int>("LAPLACE_BELTRAMI","matrix_mixed_smoothed","Type of calculation of Laplace-Beltrami projection matrix",
+       tuple<std::string>(
+           "matrix_non_smoothed",
+           "matrix_smoothed",
+           "matrix_mixed_smoothed"),
+           tuple<int>(
+               INPAR::TWOPHASE::matrix_non_smoothed,
+               INPAR::TWOPHASE::matrix_smoothed,
+               INPAR::TWOPHASE::matrix_mixed_smoothed),
+               &twophase_surftens);
+
    DoubleParameter("SMOOTHING_PARAMETER",0.0,"Diffusion Coefficient for Smoothing",&twophase_surftens); //Added diffusion for L2_projection
 
 

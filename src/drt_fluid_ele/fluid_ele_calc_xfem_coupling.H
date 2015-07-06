@@ -303,7 +303,9 @@ namespace DRT
           const double &                    press_m,                ///< coupling master pressure
           const LINALG::Matrix<nsd_,1> &    velint_m,               ///< coupling master interface velocity
           const LINALG::Matrix<nsd_,1> &    ivelint_jump,           ///< prescribed interface velocity, Dirichlet values or jump height for coupled problems
-          const LINALG::Matrix<nsd_,1> &    itraction_jump          ///< prescribed interface traction, jump height for coupled problems
+          const LINALG::Matrix<nsd_,1> &    itraction_jump,         ///< prescribed interface traction, jump height for coupled problems
+          const LINALG::Matrix<nsd_,nsd_>&  itraction_jump_matrix,  ///< prescribed projection matrix for laplace-beltrami problems
+          const bool                        is_traction_jump        ///< is it a normal traction jump or calculated throw laplace-beltrami
         ) = 0;
 
         //! add rhs contributions from old time step in Nitsche's (NIT) method

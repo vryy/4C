@@ -123,6 +123,7 @@ namespace XFLUIDLEVELSET
 
     /// Two Phase Specific parameter
     INPAR::TWOPHASE::SurfaceTensionApprox surftensapprox_;
+    INPAR::TWOPHASE::LaplaceBeltramiCalc  laplacebeltrami_;
 
     /// Outer-loop convergence variables:
     Teuchos::RCP<Epetra_Vector> velnpi_;

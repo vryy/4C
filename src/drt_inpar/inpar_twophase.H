@@ -31,9 +31,8 @@ namespace INPAR
       //surface_tension_approx_fixed_curvature,
       //surface_tension_approx_divgrad,
       surface_tension_approx_divgrad_normal,
-      surface_tension_approx_nodal_curvature
-      //surface_tension_approx_laplacebeltrami,
-      //surface_tension_approx_laplacebeltrami_smoothed
+      surface_tension_approx_nodal_curvature,
+      surface_tension_approx_laplacebeltrami
     };
 
     /// type of surface tension approximation
@@ -52,6 +51,13 @@ namespace INPAR
     {
       l2_projected,
       averaged
+    };
+
+    enum LaplaceBeltramiCalc
+    {
+      matrix_non_smoothed,
+      matrix_smoothed,
+      matrix_mixed_smoothed
     };
 
 //    /// type of velocity jump

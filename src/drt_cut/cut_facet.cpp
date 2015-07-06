@@ -1019,9 +1019,6 @@ void GEO::CUT::Facet::TestFacetArea( double tolerance, bool istetmeshintersectio
       throw std::runtime_error( str.str() );
 #endif
 
-//CUT_Magnus: might want to remove runtime_error
-//        if(area[0]==0 or area[1]==0)
-//
     }
   }
 }

@@ -162,6 +162,8 @@ void GEO::CUT::LevelSetIntersection::Cut( bool include_inner, bool screenoutput 
 
 #ifdef DEBUGCUTLIBRARY
  // m.TestVolumeSurface(); //Broken test, needs to be fixed for proper usage.
+  //If set sharply (i.e. 10^-11) this will cause some test cases to fail for Combust.
+  //  thus this makes it likely that the cut is sensitive to 10^-11? Why?
   m.TestFacetArea();
 #endif
 

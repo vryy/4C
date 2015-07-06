@@ -275,10 +275,38 @@ void fluid_xfem_ls_drt(int restart)
    }
    else dserror("Fluid AND ScaTra discretization present. This is not supported.");
 
+   // ---------------------------------------------
+   //
+   //              SAFETY CHECKS!
+   //   make sure input is not conflicting
+   //
+   // ---------------------------------------------
+
    // get linear solver id from SCALAR TRANSPORT DYNAMIC
    const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
    if (linsolvernumber == (-1))
      dserror("no linear solver defined for xfem two phase flow (XTPF) problem. Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
+
+   // Check for coupling condition.
+   {
+     std::string condition_to_check="XFEMLevelsetTwophase";
+
+     std::vector<std::string> names;
+     fluiddis->GetConditionNames( names );
+
+     if(std::find(names.begin(), names.end(), condition_to_check) != names.end())
+     {
+       int levelsetfunctnumberxfem   = fluiddis->GetCondition(condition_to_check)->GetInt("levelsetfieldno");
+       int levelsetfunctnumberscatra = scatradyn.get<int>("INITFUNCNO");
+       if(levelsetfunctnumberxfem != levelsetfunctnumberscatra)
+         dserror("Function number for level-set in SCALAR TRANSPORT DYNAMIC is not same as provided in DESIGN XFEM LEVELSET TWOPHASE VOL CONDITIONS!");
+     }
+     else
+       dserror("No DESIGN XFEM LEVELSET TWOPHASE VOL CONDITIONS provided, please add to input file.");
+   }
+
+   // ---------------------------------------------- //Safety check done.
+
 
    // Test replacing fdyn in Algorithm with prbdyn
    Teuchos::RCP<XFLUIDLEVELSET::Algorithm>  xfluid_levelset = Teuchos::rcp(new XFLUIDLEVELSET::Algorithm(comm,twophasedyn,DRT::Problem::Instance()->SolverParams(linsolvernumber)));

@@ -372,13 +372,6 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Evaluate(DRT::ELEMENTS::Fluid*
       ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &gradphielen_, &curvatureelen_,"tpf_gradphi_curvn");
     }
 
-//    //TPF_Magnus
-//    gradphiele.Print(std::cout);
-//    gradphielen.Print(std::cout);
-//
-//    curvatureele.Print(std::cout);
-//    curvatureelen.Print(std::cout);
-
     for(int i=0; i<nen_; i++)
     {
       for(int idim=0; idim<nsd_; idim++ )
@@ -1198,9 +1191,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Sysmat(
       mffsvdiv_ = 0.0;
     }
 
-//    //@Magnus Decide where to have this function!!!
-//    //Adds surface tension force to the Gausspoint.
-//    // Note: has to be called after GetMaterialParams(), otherwise gamma_ is uninitialized!!
+    //Adds surface tension force to the Gausspoint.
+    // Note: has to be called after GetMaterialParams(), otherwise gamma_ is uninitialized!!
     if(fldpara_->GetIncludeSurfaceTension())
       AddSurfaceTensionForce(escaaf,escaam,egradphi,ecurvature);
 

@@ -1351,6 +1351,9 @@ void GEO::CUT::Mesh::CreateIntegrationCells( int count, bool tetcellsonly )
     }
     catch ( std::runtime_error & err )
     {
+      if( count > 0 )
+        std::cout << "Error occurred in a recursive call i.e. in a call from TetMeshIntersection." << std::endl;
+
       DebugDump(&e,__FILE__,__LINE__);
       throw;
     }
@@ -1366,6 +1369,9 @@ void GEO::CUT::Mesh::CreateIntegrationCells( int count, bool tetcellsonly )
     }
     catch ( std::runtime_error & err )
     {
+      if( count > 0 )
+        std::cout << "Error occurred in a recursive call i.e. in a call from TetMeshIntersection." << std::endl;
+
       DebugDump(&e,__FILE__,__LINE__);
       throw;
     }
@@ -3019,7 +3025,9 @@ void GEO::CUT::Mesh::AssignOtherVolumeCells( const Mesh & other )
 
 
 /*-------------------------------------------------------------------------------------*
- * ???
+ * Broken test needs fixing before being run properly.
+ * The idea is to test if the boundary of the boundary cells (i.e. lines) created include
+ * the cut facet given.
  *-------------------------------------------------------------------------------------*/
 void GEO::CUT::Mesh::TestVolumeSurface()
 {
@@ -3032,7 +3040,11 @@ void GEO::CUT::Mesh::TestVolumeSurface()
 
 
 /*-------------------------------------------------------------------------------------*
- * ???
+ * Tests if the area of the facet created by boundary cells is equal on both sides.
+ *
+ * WARNING: If set sharply (i.e. 10^-11) this will cause some test cases to fail for Combust,
+ *          cut is done in local coordinates. Thus this makes it likely that the cut
+ *          is sensitive to 10^-11? Why?
  *-------------------------------------------------------------------------------------*/
 void GEO::CUT::Mesh::TestFacetArea(bool istetmeshintersection)
 {

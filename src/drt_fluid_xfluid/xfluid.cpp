@@ -4282,7 +4282,16 @@ void FLD::XFluid::SetLevelSetField(
   condition_manager_->SetLevelSetField(scalaraf, curvatureaf, smoothed_gradphiaf, scatradis);
 }
 
+void FLD::XFluid::InitTwoPhaseSurftensParameters(
+    INPAR::TWOPHASE::SurfaceTensionApprox surftensapprox,
+    INPAR::TWOPHASE::LaplaceBeltramiCalc  laplacebeltrami)
+{
+  //Only supported for 1 levelset so far.
+  if(condition_manager_->NumLevelSetCoupling() != 1)
+    dserror("There is either no LevelSetCoupling or more than 1. Exactly 1 is expected and supported at this point!");
 
+  Teuchos::rcp_dynamic_cast<XFEM::LevelSetCouplingTwoPhase>(condition_manager_->GetLevelSetCoupling(0))->SetSurfaceTensionSpecifcParameters(surftensapprox,laplacebeltrami);
+}
 
 // -------------------------------------------------------------------
 // set general fluid parameter (AE 01/2011)

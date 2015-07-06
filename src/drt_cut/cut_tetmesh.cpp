@@ -529,7 +529,6 @@ void GEO::CUT::TetMesh::CallQHull( const std::vector<Point*> & points,
   // Qz seems to be required for rotational symmetric input
   std::vector<std::string> options;
 
-  //CUT_Magnus: Change qhull, test other input options
   //Qhull options:
   //      Qbb - scale last coordinate to [0,m]. Preferable for integer input
   //      QbB - scales input to unit cube [-0.5,0.5]^3. Scaling can reduce precision errors if coord values wary widely.
@@ -745,7 +744,6 @@ bool GEO::CUT::TetMesh::IsValidTet( const std::vector<Point*> & t )
     {
       return true;
     }
-    //CUT_Magnus: Added dserror...
     //Why do we have to enter here? Shouldn't it be clear already if the side=0, the points of the tet
     //  can't share a common facet? A cut-side can be outside of the element, thus a case can occur,
     //  when a tet is not on a cut-side. BUT shares a facet. However this is already tested in FindCommonSides,
@@ -962,7 +960,6 @@ void GEO::CUT::TetMesh::TestUsedPoints( const std::vector<std::vector<int> > & t
 */
 void GEO::CUT::TetMesh::FixBrokenTets()
 {
-  //CUT_Magnus: remove counter
 #ifdef DEBUGCUTLIBRARY
   int counter=0;
 #endif

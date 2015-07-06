@@ -846,7 +846,9 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
   const double &                    pres_m,                 ///< coupling master pressure
   const LINALG::Matrix<nsd_,1> &    velint_m,               ///< coupling master interface velocity
   const LINALG::Matrix<nsd_,1> &    ivelint_jump,           ///< prescribed interface velocity, Dirichlet values or jump height for coupled problems
-  const LINALG::Matrix<nsd_,1> &    itraction_jump          ///< prescribed interface traction, jump height for coupled problems
+  const LINALG::Matrix<nsd_,1> &    itraction_jump,         ///< prescribed interface traction, jump height for coupled problems
+  const LINALG::Matrix<nsd_,nsd_>&  itraction_jump_matrix,  ///< prescribed projection matrix for laplace-beltrami problems
+  const bool is_traction_jump                               ///< is it a normal traction jump or calculated throw laplace-beltrami
 )
 {
   TEUCHOS_FUNC_TIME_MONITOR("FLD::NIT_evaluateCoupling");
@@ -949,7 +951,7 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
 
   //-----------------------------------------------------------------
   // standard consistency traction jump term
-  if( eval_coupling_ )
+  if( eval_coupling_ and is_traction_jump)
   {
     // funct_s * timefac * fac * kappa_m
     funct_s_timefacfac_km_.Update(kappa_m * timefacfac, funct_s_, 0.0);
@@ -1136,6 +1138,23 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_evaluateCoupling(
       derxy_s_viscs_timefacfac_ks,
       normal
   );
+
+  //-----------------------------------------------------------------
+  // projection matrix approach
+  if( eval_coupling_ and  (!is_traction_jump) )
+  {
+    LINALG::Matrix<nsd_,slave_nen_> derxy_s_timefacfac_km(derxy_s);
+    derxy_s_timefacfac_km.Scale(kappa_m*timefacfac);
+
+    LINALG::Matrix<nsd_,nen_> derxy_m_timefacfac_ks(derxy_m);
+    derxy_m_timefacfac_ks.Scale(kappa_s*timefacfac);
+
+    NIT_Projected_Traction_Consistency_Term(
+    derxy_m_timefacfac_ks,
+    derxy_s_timefacfac_km,
+    itraction_jump_matrix);
+  }
+
 }
 
 /*----------------------------------------------------------------------*
@@ -1512,6 +1531,67 @@ void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Traction_Consisten
 
       const unsigned row = sIndex(ir,ivel);
       rhC_us_(row,0) += funct_s_km_timefacfac_traction;
+    }
+  } // end loop over velocity components
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
+void NitscheCoupling<distype,slave_distype,slave_numdof>::NIT_Projected_Traction_Consistency_Term(
+  const LINALG::Matrix<nsd_,nen_> &        derxy_m_timefacfac_ks,       ///< master shape function derivatives * timefacfac * kappa_s
+  const LINALG::Matrix<nsd_,slave_nen_> &  derxy_s_timefacfac_km,       ///< slave shape function derivatives * timefacfac * kappa_m
+  const LINALG::Matrix<nsd_,nsd_> &        itraction_jump_matrix        ///< prescribed projection matrix
+)
+{
+        /*                   \
+     - |  < \nabla v > : P    |   with P = (I - n (x) n )
+        \                    /     */
+
+  // Two-Phase Flow:
+  //
+  //     t_{n+1}          ( < \nabla v > : P )
+  //                                          P can be calculated in different ways. P_smooth*P_cut is best approach so far.
+  //
+  //      t_{n}           [| sigma*n |] = [|  -pI + \mu*[\nabla u + (\nabla u)^T]  |] * n
+
+
+  // Two-Phase Flow, Laplace Beltrami approach:
+  // loop over velocity components
+  for (unsigned ivel = 0; ivel < nsd_; ++ ivel)
+  {
+    //-----------------------------------------------
+    //    - (\nabla vm, ks * P)
+    //-----------------------------------------------
+    for (unsigned ir = 0; ir<nen_; ir++)
+    {
+      double derxy_m_ks_timefacfac_sum = 0.0;
+      //Sum over space dimensions
+      for (unsigned idum = 0; idum<nsd_; idum++)
+      {
+        derxy_m_ks_timefacfac_sum += derxy_m_timefacfac_ks(idum,ir)*itraction_jump_matrix(idum,ivel);
+      }
+
+      const unsigned row = mIndex(ir,ivel);
+      rhC_um_(row,0) -= derxy_m_ks_timefacfac_sum;
+    }
+
+    if (!eval_coupling_ ) continue;
+
+    //-----------------------------------------------
+    //    + (\nabla vs, km * P)
+    //-----------------------------------------------
+    for (unsigned ir = 0; ir<slave_nen_; ir++)
+    {
+      double derxy_s_km_timefacfac_sum = 0.0;
+      //Sum over space dimensions
+      for (unsigned idum = 0; idum<nsd_; idum++)
+      {
+        derxy_s_km_timefacfac_sum += derxy_s_timefacfac_km(idum,ir)*itraction_jump_matrix(idum,ivel);
+      }
+
+      const unsigned row = sIndex(ir,ivel);
+      rhC_us_(row,0) -= derxy_s_km_timefacfac_sum;
     }
   } // end loop over velocity components
 }

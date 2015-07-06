@@ -715,6 +715,9 @@ set(OBJS_DRT_XFEM
 
 
 set(OBJS_DRT_XFEM_MANAG_LIB
+  src/drt_xfem/xfem_coupling_levelset.cpp
+  src/drt_xfem/xfem_coupling_mesh.cpp
+  src/drt_xfem/xfem_coupling_base.cpp
   src/drt_xfem/xfem_condition_manager.cpp
 )
 

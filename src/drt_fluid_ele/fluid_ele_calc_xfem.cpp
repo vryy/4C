@@ -93,6 +93,7 @@ DRT::ELEMENTS::FluidEleCalcXFEM<distype>::FluidEleCalcXFEM()
     epren_(true),
     ivelint_jump_(true),
     itraction_jump_(true),
+    itraction_jump_matrix_(true),
     ivelintn_jump_(true),
     itractionn_jump_(true),
     velint_s_(true),
@@ -1727,16 +1728,20 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
 
         LINALG::Matrix<my::nsd_,1> ivelint_jump (true);
         LINALG::Matrix<my::nsd_,1> itraction_jump (true);
+        LINALG::Matrix<my::nsd_,my::nsd_> itraction_jump_matrix (true);
+        bool is_traction_jump = true;
 
         GetInterfaceJumpVectors(
             coupcond,
             coupling,
             ivelint_jump,
             itraction_jump,
+            itraction_jump_matrix,
             x_gp_lin,
             normal,
             si,
-            rst
+            rst,
+            is_traction_jump
         );
 
         if(cond_type == INPAR::XFEM::CouplingCond_LEVELSET_NEUMANN or
@@ -3422,16 +3427,20 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
 
         ivelint_jump_.Clear();
         itraction_jump_.Clear();
+        itraction_jump_matrix_.Clear();
+        bool is_traction_jump = true;
 
         GetInterfaceJumpVectors(
             coupcond,
             coupling,
             ivelint_jump_,
             itraction_jump_,
+            itraction_jump_matrix_,
             x_gp_lin_,
             normal_,
             si,
-            rst_
+            rst_,
+            is_traction_jump
         );
 
         if(cond_type == INPAR::XFEM::CouplingCond_LEVELSET_NEUMANN or
@@ -3479,8 +3488,10 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
             my::vderxy_,                 // bg grad u^n+1
             press,                       // bg p^n+1
             my::velint_,                 // bg u^n+1
-            ivelint_jump_,               // prescribed interface velocity, Dirichlet values or jump height for coupled problems
-            itraction_jump_              // prescribed interface traction, jump height for coupled problems
+            ivelint_jump_,                // prescribed interface velocity, Dirichlet values or jump height for coupled problems
+            itraction_jump_,              // prescribed interface traction, jump height for coupled problems
+            itraction_jump_matrix_,       // prescribed interface traction matrix for Laplace-Beltrami projection
+            is_traction_jump
           );
 
 
@@ -3618,10 +3629,12 @@ void FluidEleCalcXFEM<distype>::GetInterfaceJumpVectors(
     Teuchos::RCP<XFEM::CouplingBase> coupling,                               ///< coupling object
     LINALG::Matrix<my::nsd_,1>& ivelint_jump,                                ///< prescribed interface jump vector for velocity
     LINALG::Matrix<my::nsd_,1>& itraction_jump,                              ///< prescribed interface jump vector for traction
+    LINALG::Matrix<my::nsd_,my::nsd_>& itraction_jump_matrix,                ///< prescribed projection matrix for evaluation of curavture through Laplace-Beltrami
     const LINALG::Matrix<my::nsd_,1>& x,                                     ///< global coordinates of Gaussian point
     const LINALG::Matrix<my::nsd_,1>& normal,                                ///< normal vector at Gaussian point
     Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype> > si, ///< side implementation for cutter element
-    LINALG::Matrix<3,1>& rst                                                 ///< local coordinates of GP for bg element
+    LINALG::Matrix<3,1>& rst,                                                ///< local coordinates of GP for bg element
+    bool& is_traction_jump                                                   ///< is it a traction jump or is it a laplace-beltrami
 )
 {
   //TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::GetInterfaceJumpVectors");
@@ -3678,15 +3691,12 @@ void FluidEleCalcXFEM<distype>::GetInterfaceJumpVectors(
     // [sigma*n] = gamma * curv * n   with curv = div(grad(phi)/||grad(phi)||)
 
     double surf_coeff    = gamma_m_;
-    double curvature_int = 0.0;
 
-    //Is this dynamic_cast efficient here? Should maybe change structure of Coupling manager.
     if(gamma_m_ != 0.0)
     {
-      Teuchos::rcp_dynamic_cast<XFEM::LevelSetCouplingTwoPhase>(coupling)->EvaluateCurvature<distype>(curvature_int,my::eid_,rst,my::funct_,my::derxy_);
+      Teuchos::rcp_dynamic_cast<XFEM::LevelSetCouplingTwoPhase>(coupling)->EvaluateTractionDiscontinuity<distype>(itraction_jump,itraction_jump_matrix,my::eid_,my::funct_,my::derxy_,normal,surf_coeff,is_traction_jump);
     }
 
-    itraction_jump.Update(curvature_int * surf_coeff, normal, 0.0);
     break;
   }
   case INPAR::XFEM::CouplingCond_LEVELSET_COMBUSTION:

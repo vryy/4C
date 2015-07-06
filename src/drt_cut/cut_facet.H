@@ -369,7 +369,6 @@ inline void FindCommonFacets( const std::vector<Point*> & side, plain_facet_set 
       break;
     }
   }
-  //CUT_Magnus
   //This is probably an unnecessary call as side here is a tet, i.e. side.size() == 4.
   if(side.size()==3)
     dserror("The TET is degenerate! It does not contain 4 points!");

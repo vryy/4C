@@ -343,7 +343,9 @@ namespace DRT
           const double &                    pres_m,                 ///< coupling master pressure
           const LINALG::Matrix<nsd_,1> &    velint_m,               ///< coupling master interface velocity
           const LINALG::Matrix<nsd_,1> &    ivelint_jump,           ///< prescribed interface velocity, Dirichlet values or jump height for coupled problems
-          const LINALG::Matrix<nsd_,1> &    itraction_jump          ///< prescribed interface traction, jump height for coupled problems
+          const LINALG::Matrix<nsd_,1> &    itraction_jump,         ///< prescribed interface traction, jump height for coupled problems
+          const LINALG::Matrix<nsd_,nsd_>&  itraction_jump_matrix,  ///< prescribed projection matrix for laplace-beltrami problems
+          const bool                        is_traction_jump        ///< is it a normal traction jump or calculated throw laplace-beltrami
         );
 
         //! add rhs contributions from old time step in Nitsche's (NIT) method
@@ -374,6 +376,13 @@ namespace DRT
           const LINALG::Matrix<slave_nen_,1> &      funct_s_timefacfac_km,        ///< funct_s * timefacfac *kappa_m
           const LINALG::Matrix<nsd_,1> &            itraction_jump                ///< prescribed interface traction, jump height for coupled problems
         );
+
+        //! evaluate traction-consistency term for Nitsche's method (for integration by parts aproach)
+       void NIT_Projected_Traction_Consistency_Term(
+         const LINALG::Matrix<nsd_,nen_> &        derxy_m_timefacfac_ks,       ///< master shape function derivatives * timefacfac * kappa_s
+         const LINALG::Matrix<nsd_,slave_nen_> &  derxy_s_timefacfac_km,       ///< slave shape function derivatives * timefacfac * kappa_m
+         const LINALG::Matrix<nsd_,nsd_> &        itraction_jump_matrix        ///< prescribed projection matrix
+       );
 
         //! evaluate pressure-consistency term for Nitsche's method (scaled with master side's weighting factor)
         void NIT_p_Consistency_MasterTerms(

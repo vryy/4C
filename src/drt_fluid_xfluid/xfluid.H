@@ -17,6 +17,8 @@ Maintainer:  Benedikt Schott
 
 #include "../drt_inpar/inpar_xfem.H"
 #include "../drt_inpar/inpar_cut.H"
+//Needed to set Surface Tension parameters in condition_manager
+#include "../drt_inpar/inpar_twophase.H"
 
 #include "../drt_fluid/fluidimplicitintegration.H"
 
@@ -288,6 +290,10 @@ namespace FLD
        Teuchos::RCP<Epetra_MultiVector>  smoothed_gradphiaf,
        Teuchos::RCP<DRT::Discretization> scatradis
        );
+
+    void InitTwoPhaseSurftensParameters(
+        INPAR::TWOPHASE::SurfaceTensionApprox surftensapprox,
+        INPAR::TWOPHASE::LaplaceBeltramiCalc  laplacebeltrami);
 
     virtual void UpdateGridv();
 

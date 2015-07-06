@@ -248,10 +248,12 @@ private:
       Teuchos::RCP<XFEM::CouplingBase> coupling,                               ///< coupling object
       LINALG::Matrix<my::nsd_,1>& ivelint_jump,                                ///< prescribed interface jump vector for velocity
       LINALG::Matrix<my::nsd_,1>& itraction_jump,                              ///< prescribed interface jump vector for traction
+      LINALG::Matrix<my::nsd_,my::nsd_>& itraction_jump_matrix,                ///< prescribed projection matrix for evaluation of curavture through Laplace-Beltrami
       const LINALG::Matrix<my::nsd_,1>& x,                                     ///< global coordinates of Gaussian point
       const LINALG::Matrix<my::nsd_,1>& normal,                                ///< normal vector at Gaussian point
       Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype> > si, ///< side implementation for cutter element
-      LINALG::Matrix<3,1>& rst                                                 ///< local coordinates of GP for bg element
+      LINALG::Matrix<3,1>& rst,                                                ///< local coordinates of GP for bg element
+      bool& is_traction_jump                                                   ///< is it a normal traction jump or calculated throw laplace-beltrami
   );
 
   //! get the interface jump vectors for velocity and traction at the Gaussian point for previous time step
@@ -470,8 +472,9 @@ private:
   LINALG::Matrix<my::nsd_,my::nen_> eveln_; ///< element velocity at time t^n, implemented also in base class, not accessable via ExtractValuesFromGlobalVector
   LINALG::Matrix<my::nen_,1>        epren_; ///< element velocity at time t^n, implemented also in base class, not accessable via ExtractValuesFromGlobalVector
 
-  LINALG::Matrix<my::nsd_,1> ivelint_jump_;      ///< interface velocity jump at t^n+1
-  LINALG::Matrix<my::nsd_,1> itraction_jump_;    ///< interface traction jump at t^n+1
+  LINALG::Matrix<my::nsd_,1> ivelint_jump_;                  ///< interface velocity jump at t^n+1
+  LINALG::Matrix<my::nsd_,1> itraction_jump_;                ///< interface traction jump at t^n+1
+  LINALG::Matrix<my::nsd_,my::nsd_> itraction_jump_matrix_;  ///< interface matrix jump (for Laplace-Beltrami) at t^n+1
 
   LINALG::Matrix<my::nsd_,1> ivelintn_jump_;     ///< interface velocity jump at t^n
   LINALG::Matrix<my::nsd_,1> itractionn_jump_;   ///< interface traction jump at t^n

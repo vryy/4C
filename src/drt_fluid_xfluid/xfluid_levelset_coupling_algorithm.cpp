@@ -314,6 +314,11 @@ void XFLUIDLEVELSET::Algorithm::SetScaTraValuesInFluid()
     {
       nodalcurvature = Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField())->GetNodalCurvature(ScaTraField()->Phinp());
     }
+    else if(surftensapprox_==INPAR::TWOPHASE::surface_tension_approx_laplacebeltrami)
+    {
+      if(not laplacebeltrami_==INPAR::TWOPHASE::matrix_non_smoothed)
+        smoothedgradphi = ScaTraField()->GetSmoothedGradientAtNodes(ScaTraField()->Phinp());
+    }
 
     xfluid->SetLevelSetField(ScaTraField()->Phinp(),
                              nodalcurvature,
@@ -591,6 +596,9 @@ void XFLUIDLEVELSET::Algorithm::SetProblemSpecificParameters(const Teuchos::Para
 {
     surftensapprox_ = DRT::INPUT::IntegralValue<INPAR::TWOPHASE::SurfaceTensionApprox>(prbdyn.sublist("SURFACE TENSION"),"SURFTENSAPPROX");
 
+    if(surftensapprox_==INPAR::TWOPHASE::surface_tension_approx_laplacebeltrami)
+      laplacebeltrami_ = DRT::INPUT::IntegralValue<INPAR::TWOPHASE::LaplaceBeltramiCalc>(prbdyn.sublist("SURFACE TENSION"),"LAPLACE_BELTRAMI");
+
     //SAFETY-CHECKS
     if(DRT::INPUT::IntegralValue<bool>(prbdyn.sublist("SURFACE TENSION"),"L2_PROJECTION_SECOND_DERIVATIVES"))
       dserror("Second L2-projected derivatives can not be calculated as of now for the Level Set.");
@@ -603,6 +611,9 @@ void XFLUIDLEVELSET::Algorithm::SetProblemSpecificParameters(const Teuchos::Para
 
     if(prbdyn.sublist("SURFACE TENSION").get<double>("SMOOTHING_PARAMETER")!=0.0)
      dserror("No smoothing available for now.");
+
+    Teuchos::RCP<FLD::XFluid> xfluid = Teuchos::rcp_dynamic_cast<FLD::XFluid>(FluidField(), true);
+    xfluid->InitTwoPhaseSurftensParameters(surftensapprox_,laplacebeltrami_);
 
   return;
 }
