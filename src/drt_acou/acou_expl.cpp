@@ -559,9 +559,6 @@ WaveEquationProblem<dim>::WaveEquationProblem(Teuchos::RCP<DRT::DiscretizationHD
   dof_handler_post_disp(triangulation),
   time(0.0),
   step(1),
-  corr_cells(4),
-  indices_454743(corr_cells),
-  indices_473993(corr_cells),
   cfl_number (0.3/fe.degree/dim),
   discret(discretin),
   bacitimeint(timeintin)
@@ -727,6 +724,10 @@ template <int dim>
 void
 WaveEquationProblem<dim>::compute_post_pressure()
 {
+  for (unsigned int d=0; d<dim+1; ++d)
+    previous_solutions[d] = 0;
+  evaluator->apply(solutions,previous_solutions,time);
+
   QGauss<dim> quadrature_post(dof_handler_post_disp.get_fe().degree+1);
   FEValues<dim> fe_values(dof_handler.get_fe(),quadrature_post,
                           update_values | update_gradients | update_quadrature_points |
@@ -886,7 +887,6 @@ WaveEquationProblem<dim>::output_results (const unsigned int timestep_number)
 //        std::sqrt(Utilities::MPI::sum (norm_per_cell_p.norm_sqr(), MPI_COMM_WORLD));
 //
 //    norm_per_cell_p = 0;
-//    evaluator->apply(solutions,previous_solutions,time);
 //    compute_post_pressure();
 //    IndexSet relevant_set;
 //    get_relevant_set(dof_handler_post_disp, relevant_set);
@@ -948,93 +948,6 @@ WaveEquationProblem<dim>::output_results (const unsigned int timestep_number)
 }
 
 
-template <int dim>
-void
-WaveEquationProblem<dim>::output_nodal_results()
-{
-  if (dim == 3)
-    {
-      double val1=0., val2=0.;
-      for (unsigned int c=0; c<corr_cells; ++c)
-        {
-          val1 += solutions[dim][indices_454743[c]];
-          val2 += solutions[dim][indices_473993[c]];
-        }
-      val1 /= corr_cells;
-      val2 /= corr_cells;
-      std::ofstream nodal_output;
-      nodal_output.open(("nodal_output_q" + Utilities::int_to_string(fe.degree) + ".txt").c_str(),(time>0) ? std::ios::app : std::ios::out);
-      nodal_output << std::setw(11) << std::setprecision(6) << time << " "
-                   << std::setw(15) << std::setprecision(8) << val1 << " "
-                   << std::setw(15) << std::setprecision(8) << val2 << "\n";
-      nodal_output.close();
-    }
-}
-
-
-
-template <int dim>
-void
-WaveEquationProblem<dim>::compute_nodal_indices(const unsigned int node_nr, const std::vector<unsigned int> nodal_infos)
-{
-  const unsigned int fe_degree = dof_handler.get_fe().degree;
-  for (unsigned int c=0; c<corr_cells; ++c)
-    {
-      unsigned int index = dof_handler.get_fe().dofs_per_cell*nodal_infos[c];
-      unsigned int vertex_id = 0;
-      if (nodal_infos[c+corr_cells]>=0 && nodal_infos[c+corr_cells]<4)
-        vertex_id = nodal_infos[c+corr_cells];
-      else if (nodal_infos[c+corr_cells]>3 && nodal_infos[c+corr_cells]<8)
-        {
-          index += fe_degree * (fe_degree+1) * (fe_degree +1);
-          vertex_id = nodal_infos[c+corr_cells] - 4;
-        }
-      else
-        Assert(false,ExcNotImplemented());
-
-      switch (vertex_id)
-        {
-        case 0:
-          index += 0;
-          break;
-        case 1:
-          index += fe_degree;
-          break;
-        case 2:
-          index += fe_degree * (fe_degree + 1);
-          break;
-        case 3:
-          index += (fe_degree + 1) * (fe_degree + 1) - 1;
-          break;
-        default:
-          Assert(false,ExcNotImplemented());
-        }
-      if (node_nr == 0)
-        indices_454743[c] = index;
-      else if (node_nr == 1)
-        indices_473993[c] = index;
-      else
-        Assert(false,ExcNotImplemented());
-    }
-}
-
-
-
-template <int dim>
-struct PointComparator
-{
-  bool operator () (const Point<dim> &p1,
-                    const Point<dim> &p2) const
-  {
-    const double tolerance = 1e-15;
-    for (unsigned int k=0; k<dim; ++k)
-      if (p1[k] < p2[k] - tolerance)
-        return true;
-      else if (p1[k] > p2[k] + tolerance)
-        return false;
-    return false;
-  }
-};
 
 template<int dim>
 void WaveEquationProblem<dim>::run()
@@ -1042,14 +955,44 @@ void WaveEquationProblem<dim>::run()
   previous_solutions = solutions;
 
   output_results(0);
-  output_nodal_results();
 
-  ExplicitEuler      ee;
-  ClassRK4           crk4;
-  LowStorageRK45Reg2 ls2r;
-  LowStorageRK33Reg2 ls2r3;
-  LowStorageRK45Reg3 ls3r;
-  SSPRK              ssprk(4,8);
+  Teuchos::RCP<RungeKuttaIntegrator<WaveEquationOperationBase<dim> > > integrator;
+  switch(dyna)
+    {
+    case INPAR::ACOU::acou_expleuler:
+      {
+        integrator.reset(new ExplicitEuler<WaveEquationOperationBase<dim> >(*evaluator));
+        break;
+      }
+    case INPAR::ACOU::acou_classrk4:
+      {
+        integrator.reset(new ClassicalRK4<WaveEquationOperationBase<dim> >(*evaluator));
+        break;
+      }
+    case INPAR::ACOU::acou_lsrk45reg2:
+      {
+        integrator.reset(new LowStorageRK45Reg2<WaveEquationOperationBase<dim> >(*evaluator));
+        break;
+      }
+    case INPAR::ACOU::acou_lsrk33reg2:
+      {
+        integrator.reset(new LowStorageRK45Reg2<WaveEquationOperationBase<dim> >(*evaluator));
+        break;
+      }
+    case INPAR::ACOU::acou_lsrk45reg3:
+      {
+        integrator.reset(new LowStorageRK45Reg3<WaveEquationOperationBase<dim> >(*evaluator));
+        break;
+      }
+    case INPAR::ACOU::acou_ssprk:
+      {
+        integrator.reset(new StrongStabilityPreservingRK<WaveEquationOperationBase<dim> >(*evaluator, 4, 8));
+        break;
+      }
+    default:
+      dserror("unknown explicit time integration scheme");
+      break;
+    }
 
   Timer timer;
   double wtime = 0;
@@ -1058,45 +1001,9 @@ void WaveEquationProblem<dim>::run()
   {
     bacitimeint->IncrementTimeAndStep();
     timer.restart();
-    for (unsigned int d=0; d<(dim+1); ++d)
-      previous_solutions[d].swap(solutions[d]);
+    previous_solutions.swap(solutions);
+    integrator->do_time_step(previous_solutions, solutions, time-time_step, time_step);
 
-    switch(dyna)
-    {
-    case INPAR::ACOU::acou_expleuler:
-    {
-      ee.perform_time_step(previous_solutions,solutions,time-time_step,time_step,*evaluator);
-      break;
-    }
-    case INPAR::ACOU::acou_classrk4:
-    {
-      crk4.perform_time_step(previous_solutions,solutions,time-time_step,time_step,*evaluator);
-      break;
-    }
-    case INPAR::ACOU::acou_lsrk45reg2:
-    {
-      ls2r.perform_time_step(previous_solutions,solutions,time-time_step,time_step,*evaluator);
-      break;
-    }
-    case INPAR::ACOU::acou_lsrk33reg2:
-    {
-      ls2r3.perform_time_step(previous_solutions,solutions,time-time_step,time_step,*evaluator);
-      break;
-    }
-    case INPAR::ACOU::acou_lsrk45reg3:
-    {
-      ls3r.perform_time_step(previous_solutions,solutions,time-time_step,time_step,*evaluator);
-      break;
-    }
-    case INPAR::ACOU::acou_ssprk:
-    {
-      ssprk.perform_time_step(previous_solutions,solutions,time-time_step,time_step,*evaluator);
-      break;
-    }
-    default:
-      dserror("unknown explicit time integration scheme");
-      break;
-    }
     wtime += timer.wall_time();
 
     pcout<< "TIME: "<<
@@ -1112,8 +1019,6 @@ void WaveEquationProblem<dim>::run()
     << std::endl;
 
     timer.restart();
-
-    output_nodal_results();
 
     if (step % up_res == 0 ||
         time+time_step > final_time)

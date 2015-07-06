@@ -22,6 +22,8 @@ Maintainer: Svenja Schoeder
 #include <deal.II/dofs/dof_tools.h>
 #include <deal.II/base/timer.h>
 
+#include <Epetra_MpiComm.h>
+
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_discret_hdg.H"
 #include "../drt_mat/acoustic.H"
@@ -30,6 +32,41 @@ Maintainer: Svenja Schoeder
 
 namespace ACOU
 {
+  namespace internal
+  {
+    template <int dim, typename Number>
+    MatrixFree<dim,Number>
+    create_matrix_free(const DoFHandler<dim> &dof_handler,
+                       const unsigned int     fe_degree,
+                       const Epetra_Comm     &comm)
+    {
+      if (fe_degree != dof_handler.get_fe().degree)
+        dserror("Internal error in element degree detection");
+
+      QGauss<1> quadrature (fe_degree+1);
+      typename MatrixFree<dim,Number>::AdditionalData additional_data;
+
+      const Epetra_MpiComm* mpi_comm = dynamic_cast<const Epetra_MpiComm*>(&comm);
+      if (mpi_comm == 0)
+        dserror("The Epetra MPI communicator is not derived from Epetra_MpiComm. Fatal error.");
+
+      additional_data.mpi_communicator = mpi_comm->Comm();
+      additional_data.tasks_parallel_scheme = MatrixFree<dim,Number>::AdditionalData::partition_partition;
+      additional_data.build_face_info = true;
+      additional_data.mapping_update_flags = (update_gradients | update_JxW_values |
+                                              update_quadrature_points | update_normal_vectors |
+                                              update_values);
+      ConstraintMatrix dummy;
+      dummy.close();
+      MatrixFree<dim,Number> data;
+      data.reinit (dof_handler, dummy, quadrature, additional_data);
+
+      return data;
+    }
+  }
+
+
+
 // TODO: also need to have a Mapping for representing curved boundaries
 template<int dim, int fe_degree>
 WaveEquationOperation<dim,fe_degree>::
@@ -38,28 +75,14 @@ WaveEquationOperation(const DoFHandler<dim> &dof_handler,
                       Teuchos::RCP<Function<dim> > boundary_conditions,
                       Teuchos::RCP<Function<dim> > source_term)
   :
+  data(internal::create_matrix_free<dim,value_type>(dof_handler, fe_degree,
+                                                    discret->Comm())),
   time(0.),
-  computing_times(4),
+  computing_times(3),
   dirichlet_boundary_conditions(boundary_conditions),
-  source_term(source_term)
+  source_term(source_term),
+  mass_matrix_data(data)
 {
-
-  if (fe_degree != dof_handler.get_fe().degree)
-    dserror("Internal error in element degree detection");
-
-  QGauss<1> quadrature (fe_degree+1);
-  typename MatrixFree<dim,value_type>::AdditionalData additional_data;
-  // FIX MPI_COMM_WORLD
-  additional_data.mpi_communicator = MPI_COMM_WORLD;
-  additional_data.tasks_parallel_scheme = MatrixFree<dim,value_type>::AdditionalData::partition_partition;
-  additional_data.build_face_info = true;
-  additional_data.mapping_update_flags = (update_gradients | update_JxW_values |
-                                          update_quadrature_points | update_normal_vectors |
-                                          update_values);
-  ConstraintMatrix dummy;
-  dummy.close();
-  data.reinit (dof_handler, dummy, quadrature, additional_data);
-
   densities.resize(data.n_macro_cells()+data.n_macro_ghost_cells());
   speeds.resize(data.n_macro_cells()+data.n_macro_ghost_cells());
   for (unsigned int i=0; i<data.n_macro_cells()+data.n_macro_ghost_cells(); ++i)
@@ -80,7 +103,7 @@ WaveEquationOperation(const DoFHandler<dim> &dof_handler,
       }
   }
 
-  ConditionalOStream pcout(std::cout,Utilities::MPI::this_mpi_process(additional_data.mpi_communicator) == 0);
+  ConditionalOStream pcout(std::cout, discret->Comm().MyPID() == 0);
   data.print_memory_consumption(pcout);
 
 }
@@ -90,11 +113,11 @@ WaveEquationOperation(const DoFHandler<dim> &dof_handler,
 template <int dim, int fe_degree>
 WaveEquationOperation<dim,fe_degree>::~WaveEquationOperation()
 {
-  if (computing_times[3] > 0)
-    std::cout << "Computing " << (std::size_t)computing_times[3]
+  if (computing_times[2] > 0)
+    std::cout << "Computing " << (std::size_t)computing_times[2]
               << " times: evaluate "
               << computing_times[0] << "s, inv mass: " << computing_times[1]
-              << "s, vec_zero: " << computing_times[2] << "s" << std::endl;
+              << "s" << std::endl;
 }
 
 
@@ -591,23 +614,19 @@ local_apply_mass_matrix(const MatrixFree<dim,value_type>                  &data,
                         const std::vector<parallel::distributed::Vector<value_type> >  &src,
                         const std::pair<unsigned int,unsigned int>    &cell_range) const
 {
-  FEEvaluation<dim,fe_degree,fe_degree+1,dim+1,value_type> phi(data);
-  const unsigned int dofs_per_cell = phi.dofs_per_cell;
-
-  AlignedVector<VectorizedArray<value_type> > coefficients(dofs_per_cell);
-  MatrixFreeOperators::CellwiseInverseMassMatrix<dim, fe_degree, dim+1, value_type> inverse(phi);
-
+  internal::InverseMassMatrixData<dim,fe_degree,value_type>& mass_data = mass_matrix_data.get();
   for (unsigned int cell=cell_range.first; cell<cell_range.second; ++cell)
-  {
-    phi.reinit(cell);
-    phi.read_dof_values(src, 0);
+    {
+      mass_data.phi[0].reinit(cell);
+      mass_data.phi[0].read_dof_values(src, 0);
 
-    inverse.fill_inverse_JxW_values(coefficients);
-    inverse.apply(coefficients,dim+1,phi.begin_dof_values(),
-        phi.begin_dof_values());
+      mass_data.inverse.fill_inverse_JxW_values(mass_data.coefficients);
+      mass_data.inverse.apply(mass_data.coefficients, dim+1,
+                              mass_data.phi[0].begin_dof_values(),
+                              mass_data.phi[0].begin_dof_values());
 
-    phi.set_dof_values(dst,0);
-  }
+      mass_data.phi[0].set_dof_values(dst,0);
+    }
 }
 
 
@@ -618,17 +637,10 @@ apply(const std::vector<parallel::distributed::Vector<value_type> >  &src,
       std::vector<parallel::distributed::Vector<value_type> >        &dst,
       const double                                              &cur_time) const
 {
+  Timer timer;
   time = cur_time;
   dirichlet_boundary_conditions->set_time(time);
   source_term->set_time(time);
-
-  Timer timer;
-  for (unsigned int d=0; d<(dim+1); ++d)
-    {
-      dst[d] = 0;
-    }
-  computing_times[2] += timer.wall_time();
-  timer.restart();
 
   data.loop (&WaveEquationOperation<dim, fe_degree>::local_apply_domain,
              &WaveEquationOperation<dim, fe_degree>::local_apply_face,
@@ -642,7 +654,7 @@ apply(const std::vector<parallel::distributed::Vector<value_type> >  &src,
                  this, dst, dst);
 
   computing_times[1] += timer.wall_time();
-  computing_times[3] += 1.;
+  computing_times[2] += 1.;
 }
 
 

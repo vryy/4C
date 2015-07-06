@@ -39,7 +39,7 @@ template<int dim>
 class WaveEquationProblem
 {
 public:
-  typedef double value_type;
+  typedef typename WaveEquationOperationBase<dim>::value_type value_type;
   WaveEquationProblem(Teuchos::RCP<DRT::DiscretizationHDG>       discretin,
                       const Teuchos::RCP<Teuchos::ParameterList> params,
                       Teuchos::RCP<ACOU::AcouExplicitTimeInt>    timeintin);
@@ -65,8 +65,6 @@ public:
 private:
   void make_grid_and_dofs (Teuchos::RCP<DRT::DiscretizationHDG> discret);
   void output_results (const unsigned int timestep_number);
-  void output_nodal_results ();
-  void compute_nodal_indices(const unsigned int node_nr, const std::vector<unsigned int> nodal_infos);
   void compute_post_pressure();
 
   parallel::distributed::Vector<value_type> post_pressure;
@@ -84,9 +82,6 @@ private:
 
   // maximal step, write restart, write output
   int step_max, up_res, step;
-
-  const unsigned int corr_cells;
-  std::vector<unsigned int> indices_454743, indices_473993;
 
   // cfl number (determined during construction)
   const double cfl_number;
@@ -156,7 +151,7 @@ private:
 
 }
 
-#else // HAVE_DEAL_II
+#else // #ifdef HAVE_DEAL_II
 
 namespace ACOU
 {

@@ -19,7 +19,10 @@ Maintainer: Svenja Schoeder
 #include <deal.II/base/function.h>
 #include <deal.II/base/aligned_vector.h>
 #include <deal.II/base/table.h>
+#include <deal.II/base/thread_local_storage.h>
 #include <deal.II/matrix_free/matrix_free.h>
+#include <deal.II/matrix_free/fe_evaluation.h>
+#include <deal.II/matrix_free/operators.h>
 #include <Teuchos_RCP.hpp>
 
 
@@ -32,11 +35,19 @@ namespace ACOU
 {
   using namespace dealii;
 
+  // forward declaration
+  namespace internal
+  {
+    template <int,int,typename> struct InverseMassMatrixData;
+  }
+
+
   template <int dim>
   class WaveEquationOperationBase
   {
   public:
     typedef double value_type;
+    typedef parallel::distributed::Vector<value_type> vector_type;
 
     virtual ~WaveEquationOperationBase() {}
 
@@ -116,7 +127,42 @@ namespace ACOU
 
     mutable Teuchos::RCP<Function<dim> > dirichlet_boundary_conditions;
     mutable Teuchos::RCP<Function<dim> > source_term;
+
+    mutable Threads::ThreadLocalStorage<internal::InverseMassMatrixData<dim,fe_degree,value_type> > mass_matrix_data;
   };
+
+
+
+  namespace internal
+  {
+    /// Collect all data for the inverse mass matrix operation in a struct in
+    /// order to avoid allocating the memory repeatedly.
+    template <int dim, int fe_degree, typename Number>
+    struct InverseMassMatrixData
+    {
+      InverseMassMatrixData(const MatrixFree<dim,Number> &data)
+        :
+        phi(1, FEEvaluation<dim,fe_degree,fe_degree+1,dim+1,Number>(data)),
+        coefficients(FEEvaluation<dim,fe_degree,fe_degree+1,dim+1,Number>::n_q_points),
+        inverse(phi[0])
+      {}
+
+      // Manually implement the copy operator because CellwiseInverseMassMatrix
+      // must point to the object 'phi'
+      InverseMassMatrixData(const InverseMassMatrixData &other)
+        :
+        phi(other.phi),
+        coefficients(other.coefficients),
+        inverse(phi[0])
+      {}
+
+      // For memory alignment reasons, need to place the FEEvaluation object
+      // into an aligned vector
+      AlignedVector<FEEvaluation<dim,fe_degree,fe_degree+1,dim+1,Number> > phi;
+      AlignedVector<VectorizedArray<Number> > coefficients;
+      MatrixFreeOperators::CellwiseInverseMassMatrix<dim,fe_degree,dim+1,Number> inverse;
+    };
+  }
 }
 
 #endif // HAVE_DEAL_II
