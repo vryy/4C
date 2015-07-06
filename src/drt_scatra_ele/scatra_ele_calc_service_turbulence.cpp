@@ -1709,18 +1709,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDissipation(
     LINALG::Matrix<nsd_,1> gradphi(true);
     gradphi.Multiply(derxy_,ephinp_[0]);
 
-    // diffusive part used in stabilization terms
-    double diff_phi(0.0);
-    LINALG::Matrix<nen_,1> diff(true);
-    // diffusive term using current scalar value for higher-order elements
-    if (use2ndderiv_)
-    {
-      // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
-      GetLaplacianStrongForm(diff);
-      diff.Scale(diffmanager_->GetIsotropicDiff(0));
-      diff_phi = diff.Dot(ephinp_[0]);
-    }
-
     // reactive part of the form: (reaction coefficient)*phi
     const double rea_phi = densnp*phinp*reamanager_->GetReaCoeff(0);
 
@@ -1760,17 +1748,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDissipation(
           or scatrapara_->TurbModel() == INPAR::FLUID::dynamic_vreman)
       {
         CalcSubgrDiff(visc,vol,0,densnp);
-
-        // adapt diffusive term using current scalar value for higher-order elements,
-        // since diffus -> diffus + sgdiff
-        if (use2ndderiv_)
-        {
-          // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
-          diff.Clear();
-          GetLaplacianStrongForm(diff);
-          diff.Scale(diffmanager_->GetIsotropicDiff(0));
-          diff_phi = diff.Dot(ephinp_[0]);
-        }
       }
 
       // calculation of fine-scale artificial subgrid diffusivity at element center
