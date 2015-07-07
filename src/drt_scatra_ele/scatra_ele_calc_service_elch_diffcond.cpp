@@ -338,7 +338,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcElchDomainKinetics(
   }
 
   // access input parameter
-  const double frt = ElchPara()->FRT();
+  const double frt = VarManager()->FRT();
   if (frt<=0.0)
     dserror("A negative factor frt is not possible by definition");
 
@@ -844,7 +844,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalErrorComparedToAnalyt
 
   // set constants for analytical solution
   const double t = my::scatraparatimint_->Time() + (1- my::scatraparatimint_->AlphaF())* my::scatraparatimint_->Dt(); //-(1-alphaF_)*dta_
-  const double frt = ElchPara()->FRT();
+  const double frt = VarManager()->FRT();
 
   // density at t_(n)
   double densn(1.0);

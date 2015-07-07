@@ -317,7 +317,7 @@ namespace DRT
         //! constructor
         ScaTraEleInternalVariableManagerElchElectrode(int numscal,DRT::ELEMENTS::ScaTraEleParameterElch* elchpara):
           ScaTraEleInternalVariableManagerElch<NSD,NEN>(numscal,elchpara),
-          invf_(1./elchpara->Faraday())
+          invf_(1./vmelch::parameters_->Faraday())
         {return;}
 
         //! destructor

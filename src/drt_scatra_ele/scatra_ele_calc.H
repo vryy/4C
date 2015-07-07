@@ -1302,6 +1302,8 @@ namespace ELEMENTS
     virtual const LINALG::Matrix<NSD,1>& ConVel() const {return convelint_;};
     //! return convective part in convective form
     virtual const LINALG::Matrix<NEN,1>& Conv() const {return conv_;};
+    //! return spatial gradient of all scalar values
+    virtual const std::vector<LINALG::Matrix<NSD,1> >& GradPhi() const {return gradphi_;};
     //! return spatial gradient of current scalar value
     virtual const LINALG::Matrix<NSD,1>& GradPhi(const int k) const {return gradphi_[k];};
     //! return convective term of current scalar value

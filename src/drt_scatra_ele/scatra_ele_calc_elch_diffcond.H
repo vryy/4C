@@ -689,12 +689,14 @@ class ScaTraEleInternalVariableManagerElchDiffCond : public ScaTraEleInternalVar
 {
   public:
 
-    typedef ScaTraEleInternalVariableManagerElchElectrode<NSD,NEN> vm;
+    typedef ScaTraEleInternalVariableManager<NSD,NEN> vm;
+    typedef ScaTraEleInternalVariableManagerElch<NSD,NEN> vmelch;
+    typedef ScaTraEleInternalVariableManagerElchElectrode<NSD,NEN> vmelectrode;
 
     ScaTraEleInternalVariableManagerElchDiffCond(int numscal,DRT::ELEMENTS::ScaTraEleParameterElchDiffCond* elchpara):
       ScaTraEleInternalVariableManagerElchElectrode<NSD,NEN>(numscal,elchpara),
-      rtf_(1/vm::frt_),
-      rtffc_(rtf_*vm::invf_/elchpara->NewmanConstC()),
+      rtf_(0.),
+      rtffc_(0.),
       invval_(numscal),
       invfval_(numscal),
       rtffcval_(numscal),
@@ -718,13 +720,19 @@ class ScaTraEleInternalVariableManagerElchDiffCond : public ScaTraEleInternalVar
     )
     {
       // set internal variables in base variable manager
-      vm::SetInternalVariablesElchElectrode(funct,derxy,ephinp,ephin,epotnp,econvelnp,ehist,dmedc);
+      vmelectrode::SetInternalVariablesElchElectrode(funct,derxy,ephinp,ephin,epotnp,econvelnp,ehist,dmedc);
+
+      // set constant parameter RT/F
+      rtf_ = 1./vmelch::frt_;
+
+      // set constant parameter RT/(F^2*Newman_const_C)
+      rtffc_ = rtf_*vmelectrode::invf_/static_cast<DRT::ELEMENTS::ScaTraEleParameterElchDiffCond*>(vmelch::parameters_)->NewmanConstC();
 
       // constant material-depending variables
       for(int k=0; k<vm::numscal_; ++k)
       {
         invval_[k] = 1./dmedc->GetValence(k);
-        invfval_[k] = vm::invf_/dmedc->GetValence(k);
+        invfval_[k] = vmelectrode::invf_/dmedc->GetValence(k);
         rtffcval_[k] = rtffc_/dmedc->GetValence(k);
       }
 

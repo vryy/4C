@@ -1,6 +1,6 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file scatra_ele_calc_elch.cpp
+\file scatra_ele_calc_elch_NP.cpp
 
 \brief evaluation of ScaTra elements for Nernst-Planck ion-transport equations
 
@@ -92,7 +92,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
   )
 {
   // Compute residual of Nernst-Planck equation in strong form and subgrid-scale part of concentration c_k
-  const double residual = CalcRes(k,VarManager()->ConInt(k),hist,VarManager()->ConvPhi(k),myelch::ElchPara()->FRT(),VarManager()->MigConv(),rhsint);
+  const double residual = CalcRes(k,VarManager()->Phinp(k),hist,VarManager()->ConvPhi(k),VarManager()->FRT(),VarManager()->MigConv(),rhsint);
 
   //--------------------------------------------------------------------------
   // 1) element matrix: instationary terms arising from Nernst-Planck equation
@@ -123,7 +123,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
   }
 
   // 2c) element matrix: stabilization of convective term due to fluid flow and migration
-  CalcMatConvStab(emat,k,timefacfac,taufac,timetaufac,tauderpot,myelch::ElchPara()->FRT(),VarManager()->Conv(),VarManager()->MigConv(),VarManager()->ConInt(k),VarManager()->GradPhi(k),residual);
+  CalcMatConvStab(emat,k,timefacfac,taufac,timetaufac,tauderpot,VarManager()->FRT(),VarManager()->Conv(),VarManager()->MigConv(),VarManager()->Phinp(k),VarManager()->GradPhi(k),residual);
 
   // 2d) element matrix: standard Galerkin diffusive term (constant diffusion coefficient)
   my::CalcMatDiff(emat,k,timefacfac);
@@ -132,7 +132,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
   // not implemented, only SUPG stabilization of convective term due to fluid flow and migration available
 
   // 2f) element matrix: standard Galerkin migration term (can be split up into convective and reactive parts)
-  CalcMatMigr(emat,k,timefacfac,myelch::ElchPara()->FRT(),VarManager()->MigConv(),VarManager()->ConInt(k));
+  CalcMatMigr(emat,k,timefacfac,VarManager()->FRT(),VarManager()->MigConv(),VarManager()->Phinp(k));
 
   // 2g) element matrix: stabilization of reactive term due to migration
   // not implemented, only SUPG stabilization of convective term due to fluid flow and migration available
@@ -151,12 +151,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
   }
   case INPAR::ELCH::equpot_enc_pde:
   {
-    CalcMatPotEquENCPDE(emat,k,timefacfac,myelch::ElchPara()->FRT(),VarManager()->MigConv(),VarManager()->ConInt(k));
+    CalcMatPotEquENCPDE(emat,k,timefacfac,VarManager()->FRT(),VarManager()->MigConv(),VarManager()->Phinp(k));
     break;
   }
   case INPAR::ELCH::equpot_enc_pde_elim:
   {
-    CalcMatPotEquENCPDEElim(emat,k,timefacfac,myelch::ElchPara()->FRT(),VarManager()->MigConv(),VarManager()->ConInt(k));
+    CalcMatPotEquENCPDEElim(emat,k,timefacfac,VarManager()->FRT(),VarManager()->MigConv(),VarManager()->Phinp(k));
     break;
   }
   case INPAR::ELCH::equpot_poisson:
@@ -174,7 +174,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
     dserror("Closing equation for electric potential not recognized!");
     break;
   }
-  } // end switch(elchparam_->EquPot())
+  }
 
   //----------------------------------------------------------------------------
   // 4) element right hand side vector (negative residual of nonlinear problem):
@@ -201,7 +201,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
   {
     double vdiv(0.);
     my::GetDivergence(vdiv,my::evelnp_);
-    CalcRhsConvAddCons(erhs,k,rhsfac,VarManager()->ConInt(k),vdiv);
+    CalcRhsConvAddCons(erhs,k,rhsfac,VarManager()->Phinp(k),vdiv);
   }
 
   // 4f) element rhs: stabilization of convective term due to fluid flow and migration
@@ -214,7 +214,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
   // not implemented, only SUPG stabilization of convective term due to fluid flow and migration available
 
   // 4i) element rhs: standard Galerkin migration term (can be split up into convective and reactive parts)
-  CalcRhsMigr(erhs,k,rhsfac,VarManager()->MigConv(),VarManager()->ConInt(k));
+  CalcRhsMigr(erhs,k,rhsfac,VarManager()->MigConv(),VarManager()->Phinp(k));
 
   // 4j) element rhs: stabilization of reactive term due to migration
   // not implemented, only SUPG stabilization of convective term due to fluid flow and migration available
@@ -229,22 +229,22 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
   {
   case INPAR::ELCH::equpot_enc:
   {
-    myelch::CalcRhsPotEquENC(erhs,k,fac,VarManager()->ConInt(k));
+    myelch::CalcRhsPotEquENC(erhs,k,fac,VarManager()->Phinp(k));
     break;
   }
   case INPAR::ELCH::equpot_enc_pde:
   {
-    CalcRhsPotEquENCPDE(erhs,k,rhsfac,VarManager()->MigConv(),VarManager()->ConInt(k),VarManager()->GradPhi(k));
+    CalcRhsPotEquENCPDE(erhs,k,rhsfac,VarManager()->MigConv(),VarManager()->Phinp(k),VarManager()->GradPhi(k));
     break;
   }
   case INPAR::ELCH::equpot_enc_pde_elim:
   {
-    CalcRhsPotEquENCPDEElim(erhs,k,rhsfac,VarManager()->MigConv(),VarManager()->ConInt(k),VarManager()->GradPhi(k));
+    CalcRhsPotEquENCPDEElim(erhs,k,rhsfac,VarManager()->MigConv(),VarManager()->Phinp(k),VarManager()->GradPhi(k));
     break;
   }
   case INPAR::ELCH::equpot_poisson:
   {
-    CalcRhsPotEquPoisson(erhs,k,fac,myelch::ElchPara()->Epsilon(),myelch::ElchPara()->Faraday(),VarManager()->ConInt(k),VarManager()->GradPot());
+    CalcRhsPotEquPoisson(erhs,k,fac,myelch::ElchPara()->Epsilon(),myelch::ElchPara()->Faraday(),VarManager()->Phinp(k),VarManager()->GradPot());
     break;
   }
   case INPAR::ELCH::equpot_laplace:
@@ -1006,10 +1006,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::PrepareStabilization(
     {
       // calculate stabilization parameter tau for charged species
       if (abs(myelch::DiffManager()->GetValence(k)) > 1.e-10)
-        my::CalcTau(tau[k],resdiffus,my::reamanager_->GetReaCoeff(k),densnp,VarManager()->ConVelInt(),vol);
+        my::CalcTau(tau[k],resdiffus,my::reamanager_->GetReaCoeff(k),densnp,VarManager()->ConVel(),vol);
       else
         // calculate stabilization parameter tau for uncharged species
-        my::CalcTau(tau[k],myelch::DiffManager()->GetIsotropicDiff(k),my::reamanager_->GetReaCoeff(k),densnp,VarManager()->ConVelInt(),vol);
+        my::CalcTau(tau[k],myelch::DiffManager()->GetIsotropicDiff(k),my::reamanager_->GetReaCoeff(k),densnp,VarManager()->ConVel(),vol);
     }
   }
 
@@ -1035,7 +1035,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::PrepareStabilization(
     for (int k=0; k<my::numscal_; ++k)
     {
       // Compute effective velocity as sum of convective and migration velocities
-      LINALG::Matrix<my::nsd_,1> veleff(VarManager()->ConVelInt());
+      LINALG::Matrix<my::nsd_,1> veleff(VarManager()->ConVel());
       veleff.Update(myelch::DiffManager()->GetValence(k)*myelch::DiffManager()->GetIsotropicDiff(k),VarManager()->MigVelInt(),1.);
 
       // calculate stabilization parameter tau
@@ -1047,7 +1047,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::PrepareStabilization(
         case INPAR::SCATRA::tau_taylor_hughes_zarins_wo_dt:
         {
           // Calculate derivative of tau w.r.t. electric potential
-          CalcTauDerPotTaylorHughesZarins(tauderpot[k],tau[k],densnp,myelch::ElchPara()->FRT(),myelch::DiffManager()->GetIsotropicDiff(k)*myelch::DiffManager()->GetValence(k),veleff);
+          CalcTauDerPotTaylorHughesZarins(tauderpot[k],tau[k],densnp,VarManager()->FRT(),myelch::DiffManager()->GetIsotropicDiff(k)*myelch::DiffManager()->GetValence(k),veleff);
           break;
         }
         default:

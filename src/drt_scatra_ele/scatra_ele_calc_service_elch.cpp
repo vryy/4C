@@ -299,8 +299,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateConductivity(
     // fluid viscosity
     double visc(0.0);
 
-    // material parameter at the element center
+    // material parameter at integration point
     this->GetMaterialParams(ele,densn,densnp,densam,visc,iquad);
+
+    // set internal variables at integration point
+    SetInternalVariablesForMatAndRHS();
 
     // calculate integrals of (inverted) scalar(s) and domain
     for (int i=0; i<my::nen_; i++)

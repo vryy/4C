@@ -285,7 +285,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhsOutsideScal
         myelch::CalcMatPotEquENC(emat,k,fac,my::scatraparatimint_->AlphaF());
 
         //
-        myelch::CalcRhsPotEquENC(erhs,k,fac,VarManager()->ConInt(k));
+        myelch::CalcRhsPotEquENC(erhs,k,fac,VarManager()->Phinp(k));
       }
     }
     else
@@ -339,7 +339,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhsOutsideScal
         myelch::CalcMatPotEquENC(emat,k,fac,my::scatraparatimint_->AlphaF());
 
         //
-        myelch::CalcRhsPotEquENC(erhs,k,fac,VarManager()->ConInt(k));
+        myelch::CalcRhsPotEquENC(erhs,k,fac,VarManager()->Phinp(k));
       }
     }
     else
@@ -1321,7 +1321,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::Materials(
       for (int k = 0;k<my::numscal_;++k)
         conint[k] = my::funct_.Dot(my::ephinp_[k]);
 
-      DiffManager()->CalcConductivity(my::numscal_,INPAR::ELCH::faraday_const*ElchPara()->FRT(),conint);
+      DiffManager()->CalcConductivity(my::numscal_,INPAR::ELCH::faraday_const*VarManager()->FRT(),conint);
       DiffManager()->CalcTransNum(my::numscal_,conint);
     }
   }

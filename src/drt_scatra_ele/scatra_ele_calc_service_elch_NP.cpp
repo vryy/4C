@@ -66,7 +66,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::GetConductivity(
 )
 {
   // calculate conductivity of electrolyte solution
-  const double frt = myelch::ElchPara()->FRT();
+  const double frt = VarManager()->FRT();
   const double factor = frt*INPAR::ELCH::faraday_const; // = F^2/RT
 
   // get concentration of transported scalar k at integration point
@@ -122,14 +122,14 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalculateFlux(
   {
   case INPAR::SCATRA::flux_total_domain:
     // convective flux contribution
-    q.Update(VarManager()->ConInt(k),VarManager()->ConVelInt());
+    q.Update(VarManager()->Phinp(k),VarManager()->ConVel());
 
     // no break statement here!
   case INPAR::SCATRA::flux_diffusive_domain:
     // diffusive flux contribution
     q.Update(-myelch::DiffManager()->GetIsotropicDiff(k),VarManager()->GradPhi(k),1.0);
 
-    q.Update(-myelch::ElchPara()->FRT()*myelch::DiffManager()->GetIsotropicDiff(k)*myelch::DiffManager()->GetValence(k)*VarManager()->ConInt(k),VarManager()->GradPot(),1.0);
+    q.Update(-VarManager()->FRT()*myelch::DiffManager()->GetIsotropicDiff(k)*myelch::DiffManager()->GetValence(k)*VarManager()->Phinp(k),VarManager()->GradPot(),1.0);
 
     break;
 
@@ -163,7 +163,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalErrorComparedToAnalytSoluti
 
   // set constants for analytical solution
   const double t = my::scatraparatimint_->Time() + (1- my::scatraparatimint_->AlphaF())* my::scatraparatimint_->Dt(); //-(1-alphaF_)*dta_
-  const double frt = myelch::ElchPara()->FRT();
+  const double frt = VarManager()->FRT();
 
   // density at t_(n)
   double densn(1.0);

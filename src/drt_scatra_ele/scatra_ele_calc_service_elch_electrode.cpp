@@ -195,7 +195,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalculateFlux(
   {
   case INPAR::SCATRA::flux_total_domain:
   {
-    q.Update(VarManager()->ConInt(k),VarManager()->ConVelInt());
+    q.Update(VarManager()->Phinp(k),VarManager()->ConVel());
     break;
   }
 

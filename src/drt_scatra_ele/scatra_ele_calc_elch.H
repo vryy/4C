@@ -264,7 +264,6 @@ protected:
 
   //! electric potential
   LINALG::Matrix<my::nen_,1> epotnp_;
-
 };
 
 
@@ -332,7 +331,8 @@ class ScaTraEleInternalVariableManagerElch : public ScaTraEleInternalVariableMan
 
     ScaTraEleInternalVariableManagerElch(int numscal,DRT::ELEMENTS::ScaTraEleParameterElch* elchpara):
       ScaTraEleInternalVariableManager<NSD, NEN>(numscal),
-      frt_(elchpara->FRT()),
+      parameters_(elchpara),
+      frt_(0.),
       // internal variables evaluated at the Gauss point
       conintinv_(numscal),
       gradpot_(true),
@@ -369,6 +369,9 @@ class ScaTraEleInternalVariableManagerElch : public ScaTraEleInternalVariableMan
       // calculate gradient of electric potential at GP at t_(n+1) or t_(n+alpha_F)
       gradpot_.Multiply(derxy,epotnp);
 
+      // set factor F/RT
+      SetFRT();
+
       return;
     };
 
@@ -376,24 +379,32 @@ class ScaTraEleInternalVariableManagerElch : public ScaTraEleInternalVariableMan
   //! @name return methods for internal variables
   /*========================================================================*/
 
-    //! return gradient of phi for species k at GP
-    const LINALG::Matrix<NSD,1>& GradPhi (const int k) const {return my::GradPhi(k);};
-    //! return gradient of phi for all species in a vector at GP
-    const std::vector<LINALG::Matrix<NSD,1> >& GradPhi() const {return my::gradphi_;};
-    //! return concentration of species k at GP
-    const double& ConInt(const int k) const {return my::Phinp(k);};
-    //! return 1/concentration of species k at GP
+    //! return factor F/RT
+    const double FRT() const {return frt_;};
+
+    //! return 1/concentration of species k
     const double& ConIntInv(const int k) const {return conintinv_[k];};
-    //! return 1/concentration of all species in a vector at GP
+
+    //! return 1/concentration of all species in a vector
     const std::vector<double>& ConIntInv() const {return conintinv_;};
-    //! return gradient of electric potential at GP
+
+    //! return gradient of electric potential
     const LINALG::Matrix<NSD,1>& GradPot() const {return gradpot_;};
-    //! return convective velocity at GP
-    const LINALG::Matrix<NSD,1>& ConVelInt() const {return my::ConVel();};
+
     //! return subgrid velocity
     const LINALG::Matrix<NEN,1>& SGConv() const {return sgconv_;};
 
   protected:
+
+    //! set factor F/RT
+    virtual void SetFRT()
+    {
+      frt_ = parameters_->FRT();
+
+      return;
+    }
+
+    DRT::ELEMENTS::ScaTraEleParameterElch* parameters_;
 
   /*========================================================================*/
   //! @name constant internal variables
@@ -409,10 +420,8 @@ class ScaTraEleInternalVariableManagerElch : public ScaTraEleInternalVariableMan
 
     //! 1/concentration at GP
     std::vector<double> conintinv_;
-    //! gradient of electric potential at integration point
+    //! gradient of electric potential
     LINALG::Matrix<NSD,1> gradpot_;
-    //! velocity at GP
-//    LINALG::Matrix<NSD,1> velint_;
     // subgrid velocity
     LINALG::Matrix<NEN,1> sgconv_;
 };
