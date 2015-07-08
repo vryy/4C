@@ -13,7 +13,8 @@ namespace CUT
   class IntegrationCellCreator;
 
 /*!
-\class Base class for integrationcells
+\class Integration Cell
+\brief Base class for integrationcells
  */
 class IntegrationCell
 {
