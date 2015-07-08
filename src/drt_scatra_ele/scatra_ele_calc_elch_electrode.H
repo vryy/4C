@@ -16,6 +16,7 @@ Maintainer: Rui Fang
 #define SCATRA_ELE_CALC_ELCH_ELECTRODE_H
 
 #include "scatra_ele_calc_elch.H"
+#include "scatra_ele_utils_elch_electrode.H"
 
 namespace DRT
 {
@@ -24,6 +25,7 @@ namespace DRT
     // forward declarations
     class ScaTraEleDiffManagerElchElectrode;
     template<int NSD, int NEN> class ScaTraEleInternalVariableManagerElchElectrode;
+    template<DRT::Element::DiscretizationType distype> class ScaTraEleUtilsElchElectrode;
 
     // class implementation
     template<DRT::Element::DiscretizationType distype>
@@ -118,11 +120,6 @@ namespace DRT
           const int                            iquad=-1       //!< id of current gauss point (default = -1)
         );
 
-        //! evaluate electrode material
-        void MatElectrode(
-            const Teuchos::RCP<const MAT::Material>           material   //!< pointer to current material
-        );
-
         /*========================================================================*/
         //! @name methods for evaluation of individual terms
         /*========================================================================*/
@@ -198,11 +195,16 @@ namespace DRT
         //! set internal variables for electrodes
         virtual void SetInternalVariablesForMatAndRHS();
 
+      private:
+
         //! get diffusion manager for electrodes
         Teuchos::RCP<ScaTraEleDiffManagerElchElectrode> DiffManager(){return Teuchos::rcp_static_cast<ScaTraEleDiffManagerElchElectrode>(my::diffmanager_);};
 
         //! get internal variable manager for electrodes
         Teuchos::RCP<ScaTraEleInternalVariableManagerElchElectrode<my::nsd_,my::nen_> > VarManager(){return Teuchos::rcp_static_cast<ScaTraEleInternalVariableManagerElchElectrode<my::nsd_,my::nen_> >(my::scatravarmanager_);};
+
+        //! get utility class supporting element evaluation for electrodes
+        DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>* Utils(){return static_cast<DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>*>(myelch::utils_);};
     };
 
 

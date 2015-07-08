@@ -17,10 +17,15 @@ Maintainer: Rui Fang
 
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
+#include "../drt_inpar/inpar_elch.H"
+
 namespace DRT
 {
   namespace ELEMENTS
   {
+    // forward declaration
+    class ScaTraEleDiffManagerElch;
+
     // class implementation
     template<DRT::Element::DiscretizationType distype> class ScaTraEleUtilsElch
     {
@@ -87,13 +92,23 @@ namespace DRT
             const int                                     k           ///< index of evaluated scalar
         ) const;
 
-      private:
+        //! evaluate ion material
+        void MatIon(
+            const Teuchos::RCP<const MAT::Material>         material,     //!< ion material
+            const int                                       k,            //!< ID of ion material
+            const INPAR::ELCH::EquPot                       equpot,       //!< type of closing equation for electric potential
+            const Teuchos::RCP<ScaTraEleDiffManagerElch>&   diffmanager   //!< diffusion manager
+        );
 
-        //! private constructor for singletons
+      protected:
+
+        //! protected constructor for singletons
         ScaTraEleUtilsElch(const int numdofpernode, const int numscal);
 
         //! destructor
         virtual ~ScaTraEleUtilsElch(){return;};
+
+      private:
 
         //! number of degrees of freedom per node
         const int numdofpernode_;

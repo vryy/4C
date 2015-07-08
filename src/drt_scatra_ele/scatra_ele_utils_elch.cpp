@@ -13,10 +13,12 @@ Maintainer: Rui Fang
  */
 /*----------------------------------------------------------------------*/
 #include "scatra_ele_utils_elch.H"
+#include "scatra_ele_calc_elch.H"
 
-#include "../drt_inpar/inpar_scatra.H"
-#include "../drt_inpar/inpar_elch.H"
+#include "../drt_mat/ion.H"
+
 #include "../headers/definitions.h"
+
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 07/15 |
@@ -1173,6 +1175,47 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
 
   return;
 } // DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegrationPoint
+
+
+/*----------------------------------------------------------------------*
+ | evaluate ion material                                     fang 07/15 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::MatIon(
+    const Teuchos::RCP<const MAT::Material>         material,     //!< ion material
+    const int                                       k,            //!< ID of ion material
+    const INPAR::ELCH::EquPot                       equpot,       //!< type of closing equation for electric potential
+    const Teuchos::RCP<ScaTraEleDiffManagerElch>&   diffmanager   //!< diffusion manager
+    )
+{
+  // cast material to ion material
+  const Teuchos::RCP<const MAT::Ion> mation = Teuchos::rcp_static_cast<const MAT::Ion>(material);
+
+  // valence of ionic species
+  diffmanager->SetValence(mation->Valence(),k);
+
+  // concentration depending diffusion coefficient
+  diffmanager->SetIsotropicDiff(mation->Diffusivity(),k);
+
+  // Loop over materials is finished - now all material parameter are set
+  if(k == numscal_-1)
+  {
+    // Material data of eliminated ion species is read from the LAST ion material
+    // in the matlist!
+    if(equpot == INPAR::ELCH::equpot_enc_pde_elim)
+    {
+      diffmanager->IncreaseLengthVector(k,numscal_);
+
+      // valence of ionic species
+      diffmanager->SetValence(mation->ElimValence(),numscal_);
+
+      // concentration depending diffusion coefficient
+      diffmanager->SetIsotropicDiff(mation->ElimDiffusivity(),numscal_);
+    }
+  }
+
+  return;
+}
 
 
 // template classes

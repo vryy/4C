@@ -12,13 +12,11 @@ Maintainer: Andreas Ehrl
 </pre>
 */
 /*--------------------------------------------------------------------------*/
-
 #include "scatra_ele_calc_elch_NP.H"
-#include "scatra_ele_parameter.H"
+#include "scatra_ele_utils_elch.H"
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
-#include "../drt_mat/material.H"
 #include "../drt_mat/matlist.H"
 
 /*----------------------------------------------------------------------*
@@ -974,8 +972,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::Materials(
   )
 {
   if(material->MaterialType() == INPAR::MAT::m_ion)
-    myelch::MatIon(material,k,densn,densnp,densam,visc,iquad);
-  else dserror("Material type is not supported");
+    myelch::utils_->MatIon(material,k,myelch::ElchPara()->EquPot(),myelch::DiffManager());
+  else
+    dserror("Material type is not supported");
 
   return;
 }

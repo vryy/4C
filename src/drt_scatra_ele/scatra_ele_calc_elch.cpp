@@ -12,22 +12,16 @@ Maintainer: Andreas Ehrl
 </pre>
 */
 /*--------------------------------------------------------------------------*/
-#include "../drt_geometry/position_array.H"
-
-#include "../drt_mat/ion.H"
-
-#include "../drt_nurbs_discret/drt_nurbs_utils.H"
-
-#include "../headers/definitions.h"
-
-#include "scatra_ele.H"
 #include "scatra_ele_calc_elch.H"
+#include "scatra_ele_utils_elch.H"
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleCalcElch<distype>::ScaTraEleCalcElch(const int numdofpernode,const int numscal)
   : DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode,numscal),
+    utils_(DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::Instance(numdofpernode,numscal)),
     epotnp_(my::numscal_)
 {
   // replace standard scatra diffusion manager by elch diffusion manager
@@ -204,48 +198,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Sysmat(
 
     // Compute element matrix and rhs
     CalcMatAndRhsOutsideScalarLoop(emat,erhs,fac,timefacfac,rhsfac);
-  }
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Material ION                                             ehrl 11/13 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::MatIon(
-  const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
-  const int                               k,        //!< id of current scalar
-  double&                                 densn,    //!< density at t_(n)
-  double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
-  double&                                 densam,   //!< density at t_(n+alpha_M)
-  double&                                 visc,     //!< fluid viscosity
-  const int                               iquad     //!< id of current gauss point
-  )
-{
-  const MAT::Ion* actmat = static_cast<const MAT::Ion*>(material.get());
-
-  // valence of ionic species
-  DiffManager()->SetValence(actmat->Valence(),k);
-
-  // concentration depending diffusion coefficient
-  DiffManager()->SetIsotropicDiff(actmat->Diffusivity(),k);
-
-  // Loop over materials is finished - now all material parameter are set
-  if(k==(my::numscal_-1))
-  {
-    // Material data of eliminated ion species is read from the LAST ion material
-    // in the matlist!
-    if(ElchPara()->EquPot()==INPAR::ELCH::equpot_enc_pde_elim)
-    {
-      DiffManager()->IncreaseLengthVector(k, my::numscal_);
-
-      // valence of ionic species
-      DiffManager()->SetValence(actmat->ElimValence(),my::numscal_);
-
-      // concentration depending diffusion coefficient
-      DiffManager()->SetIsotropicDiff(actmat->ElimDiffusivity(),my::numscal_);
-    }
   }
 
   return;

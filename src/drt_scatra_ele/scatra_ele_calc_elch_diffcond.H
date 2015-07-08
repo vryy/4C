@@ -18,8 +18,6 @@ Maintainer: Andreas Ehrl
 #include "scatra_ele_parameter_elch_diffcond.H"
 #include "scatra_ele_calc_elch_electrode.H"
 
-#include "../drt_lib/drt_element.H"
-
 namespace DRT
 {
 namespace ELEMENTS
@@ -27,7 +25,7 @@ namespace ELEMENTS
   // forward declarations
   class ScaTraEleDiffManagerElchDiffCond;
   template<int NSD, int NEN> class ScaTraEleInternalVariableManagerElchDiffCond;
-  template<DRT::Element::DiscretizationType distype> class ScaTraEleUtilsElch;
+  template<DRT::Element::DiscretizationType distype> class ScaTraEleUtilsElchDiffCond;
 
   // class implementation
 template<DRT::Element::DiscretizationType distype>
@@ -98,48 +96,14 @@ private:
   //! @name material and related and related functions
   /*========================================================================*/
 
-  //! get the material parameters
+  //! get material parameters
   void GetMaterialParams(
-    const DRT::Element* ele,       //!< the element we are dealing with
-    double&             densn,     //!< density at t_(n)
-    double&             densnp,    //!< density at t_(n+1) or t_(n+alpha_F)
-    double&             densam,    //!< density at t_(n+alpha_M)
-    double&             visc,                       //!< fluid viscosity
-    const int           iquad=-1                    //!< id of current gauss point (default = -1)
-  );
-
-
-  //! evaluate material
-  void Materials(
-    const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
-    const int                               k,        //!< id of current scalar
-    double&                                 densn,    //!< density at t_(n)
-    double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
-    double&                                 densam,   //!< density at t_(n+alpha_M)
-    double&                                 visc,         //!< fluid viscosity
-    const int                               iquad=-1      //!< id of current gauss point (default = -1)
-  );
-
-  //! material ScaTra
-  void MatPhase(
-    const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
-    const int                               iphase,   //!< id of current scalar
-    double&                                 densn,    //!< density at t_(n)
-    double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
-    double&                                 densam,   //!< density at t_(n+alpha_M)
-    double&                                 visc,           //!< fluid viscosity
-    const int                               iquad=-1        //!< id of current gauss point (default = -1)
-  );
-
-  //! material ScaTra
-  void MatNewman(
-    const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
-    const int                               k,        //!< id of current scalar
-    double&                                 densn,    //!< density at t_(n)
-    double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
-    double&                                 densam,   //!< density at t_(n+alpha_M)
-    double&                                 visc,           //!< fluid viscosity
-    const int                               iquad=-1        //!< id of current gauss point (default = -1)
+      const DRT::Element*   ele,       //!< current element
+      double&               densn,     //!< density at t_(n)
+      double&               densnp,    //!< density at t_(n+1) or t_(n+alpha_F)
+      double&               densam,    //!< density at t_(n+alpha_M)
+      double&               visc,      //!< fluid viscosity
+      const int             iquad=-1   //!< ID of current integration point
   );
 
   /*========================================================================*/
@@ -459,14 +423,14 @@ private:
   //! get internal variable manager for diffusion-conduction formulation
   Teuchos::RCP<ScaTraEleInternalVariableManagerElchDiffCond<my::nsd_,my::nen_> > VarManager(){return Teuchos::rcp_static_cast<ScaTraEleInternalVariableManagerElchDiffCond<my::nsd_,my::nen_> >(my::scatravarmanager_);};
 
+  //! get utility class supporting element evaluation for diffusion-conduction formulation
+  ScaTraEleUtilsElchDiffCond<distype>* Utils(){return static_cast<ScaTraEleUtilsElchDiffCond<distype>*>(myelch::utils_);};
+
   //! flag for used element formulation (material based)
   INPAR::ELCH::DiffCondMat diffcondmat_;
 
   //! nodal current density values at t_(n+1) or t_(n+alpha_F)
   LINALG::Matrix<my::nsd_,my::nen_> ecurnp_;
-
-  //! util class for electrode kinetics evaluation
-  DRT::ELEMENTS::ScaTraEleUtilsElch<distype>* utils_;
 };
 
 

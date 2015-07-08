@@ -13,14 +13,13 @@ Maintainer: Andreas Ehrl
 */
 /*--------------------------------------------------------------------------*/
 #include "scatra_ele_calc_elch_diffcond.H"
-#include "scatra_ele_utils_elch.H"
+#include "scatra_ele_utils_elch_diffcond.H"
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 
-#include "../drt_mat/elchmat.H"
-#include "../drt_mat/elchphase.H"
-#include "../drt_mat/newman.H"
+#include "../drt_mat/material.H"
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -67,8 +66,7 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::ScaTraEleCalcElchDiffCond(const int numdofpernode,const int numscal) :
   DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::ScaTraEleCalcElchElectrode(numdofpernode,numscal),
   diffcondmat_(INPAR::ELCH::diffcondmat_undefined),
-  ecurnp_(true),
-  utils_(ScaTraEleUtilsElch<distype>::Instance(numdofpernode,numscal))
+  ecurnp_(true)
 {
   // replace diffusion manager for electrodes by diffusion manager for diffusion-conduction formulation
   my::diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManagerElchDiffCond(my::numscal_));
@@ -78,6 +76,9 @@ DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::ScaTraEleCalcElchDiffCond(con
 
   // replace internal variable manager for electrodes by internal variable manager for diffusion-conduction formulation
   my::scatravarmanager_ = Teuchos::rcp(new ScaTraEleInternalVariableManagerElchDiffCond<my::nsd_, my::nen_>(my::numscal_,ElchPara()));
+
+  // replace utility class for electrodes by utility class for diffusion-conduction formulation
+  myelch::utils_ = DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::Instance(numdofpernode,numscal);
 
   return;
 }
@@ -1234,180 +1235,43 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CorrectionForFluxAcrossD
 
 
 /*----------------------------------------------------------------------*
- |  get the material constants  (private)                     ehrl 01/14|
+ | get material parameters                                   fang 07/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::GetMaterialParams(
-  const DRT::Element* ele,       //!< the element we are dealing with
-  double&             densn,     //!< density at t_(n)
-  double&             densnp,    //!< density at t_(n+1) or t_(n+alpha_F)
-  double&             densam,    //!< density at t_(n+alpha_M)
-  double&             visc,      //!< fluid viscosity
-  const int           iquad      //!< id of current gauss point
+  const DRT::Element*   ele,      //!< current element
+  double&               densn,    //!< density at t_(n)
+  double&               densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
+  double&               densam,   //!< density at t_(n+alpha_M)
+  double&               visc,     //!< fluid viscosity
+  const int             iquad     //!< ID of current integration point
   )
 {
-  // get the material
+  // extract material from element
   Teuchos::RCP<MAT::Material> material = ele->Material();
 
   if (material->MaterialType() == INPAR::MAT::m_elchmat)
   {
-    const Teuchos::RCP<const MAT::ElchMat>& actmat
-          = Teuchos::rcp_dynamic_cast<const MAT::ElchMat>(material);
+    // compute concentrations of all species at integration point
+    std::vector<double> concentrations(my::numscal_,0.);
+    for(int k=0; k<my::numscal_; ++k)
+      concentrations[k] = my::funct_.Dot(my::ephinp_[k]);
 
-    // 1) loop over single phases
-    for (int iphase=0; iphase < actmat->NumPhase();++iphase)
-    {
-      // access phase material
-      const int phaseid = actmat->PhaseID(iphase);
-      Teuchos::RCP<const MAT::Material> singlephase = actmat->PhaseById(phaseid);
-      // get parameters (porosity and tortuosity) from mat_phase
-      Materials(singlephase,iphase,densn,densnp,densam,visc,iquad);
+    // set factor F/RT at integration point
+    VarManager()->SetFRT();
 
-      // dynamic cast: get access to mat_phase
-      const Teuchos::RCP<const MAT::ElchPhase>& actphase
-         = Teuchos::rcp_dynamic_cast<const MAT::ElchPhase>(singlephase);
-
-      // 2) loop over materials of the single phase
-      for (int imat=0; imat < actphase->NumMat();++imat)
-      {
-        const int matid = actphase->MatID(imat);
-        Teuchos::RCP<const MAT::Material> singlemat = actphase->MatById(matid);
-
-        Materials(singlemat,imat,densn,densnp,densam,visc,iquad);
-      }
-    }
+    // evaluate electrode material
+    Utils()->MatElchMat(material,concentrations,INPAR::ELCH::faraday_const*VarManager()->FRT(),ElchPara()->EquPot(),DiffManager(),diffcondmat_);
   }
+
   else
-    dserror("");
+    dserror("Invalid material type!");
 
   return;
-} //ScaTraEleCalc::GetMaterialParams
-
-
-/*----------------------------------------------------------------------*
- |  evaluate single material  (protected)                    ehrl 11/13 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::Materials(
-  const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
-  const int                               k,        //!< id of current scalar
-  double&                                 densn,    //!< density at t_(n)
-  double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
-  double&                                 densam,   //!< density at t_(n+alpha_M)
-  double&                                 visc,         //!< fluid viscosity
-  const int                               iquad         //!< id of current gauss point
-  )
-{
-  if(material->MaterialType() == INPAR::MAT::m_elchphase)
-    MatPhase(material,k,densn,densnp,densam,visc,iquad);
-  else if(material->MaterialType() == INPAR::MAT::m_newman)
-  {
-    MatNewman(material,k,densn,densnp,densam,visc,iquad);
-    diffcondmat_ = INPAR::ELCH::diffcondmat_newman;
-  }
-  else if(material->MaterialType() == INPAR::MAT::m_ion)
-  {
-    myelch::MatIon(material,k,densn,densnp,densam,visc,iquad);
-
-    // set flag for material type
-    diffcondmat_ = INPAR::ELCH::diffcondmat_ion;
-
-    // Loop over materials is finished - now all material parameter are set
-    // calculation of conductivity and transference number based on diffusion coefficient and valence
-    // for mat_ion
-    if(k==(my::numscal_-1))
-    {
-      std::vector<double> conint(my::numscal_);
-      for (int k = 0;k<my::numscal_;++k)
-        conint[k] = my::funct_.Dot(my::ephinp_[k]);
-
-      DiffManager()->CalcConductivity(my::numscal_,INPAR::ELCH::faraday_const*VarManager()->FRT(),conint);
-      DiffManager()->CalcTransNum(my::numscal_,conint);
-    }
-  }
-  else dserror("Material type is not supported");
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Material Phase                                           ehrl 11/13 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::MatPhase(
-  const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
-  const int                               iphase,        //!< id of current scalar
-  double&                                 densn,    //!< density at t_(n)
-  double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
-  double&                                 densam,   //!< density at t_(n+alpha_M)
-  double&                                 visc,     //!< fluid viscosity
-  const int                               iquad     //!< id of current gauss point
-  )
-{
-  const MAT::ElchPhase* actsinglemat = static_cast<const MAT::ElchPhase*>(material.get());
-
-  // set porosity
-  DiffManager()->SetPhasePoro(actsinglemat->Epsilon(),iphase);
-
-  // set tortuosity
-  DiffManager()->SetPhaseTort(actsinglemat->Tortuosity(),iphase);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Material Newman                                          ehrl 11/13 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::MatNewman(
-  const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
-  const int                               k,        //!< id of current scalar
-  double&                                 densn,    //!< density at t_(n)
-  double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
-  double&                                 densam,   //!< density at t_(n+alpha_M)
-  double&                                 visc,     //!< fluid viscosity
-  const int                               iquad     //!< id of current gauss point
-  )
-{
-  //materialNewman = true;
-  const MAT::Newman* actmat = static_cast<const MAT::Newman*>(material.get());
-
-  // concentration of species k at the integration point
-  const double conint = my::funct_.Dot(my::ephinp_[k]);
-
-  // valence of ionic species
-  DiffManager()->SetValence(actmat->Valence(),k);
-
-  // concentration depending diffusion coefficient
-  DiffManager()->SetIsotropicDiff(actmat->ComputeDiffusionCoefficient(conint),k);
-  // derivation of concentration depending diffusion coefficient wrt all ionic species
-  DiffManager()->SetDerivIsoDiffCoef(actmat->ComputeFirstDerivDiffCoeff(conint),k,k);
-
-  // concentration depending transference number
-  DiffManager()->SetTransNum(actmat->ComputeTransferenceNumber(conint),k);
-  // derivation of concentration depending transference number wrt all ionic species
-  DiffManager()->SetDerivTransNum(actmat->ComputeFirstDerivTrans(conint),k,k);
-
-  // thermodynamic factor of electrolyte solution
-  DiffManager()->SetThermFac(actmat->ComputeThermFac(conint));
-  // derivative of conductivity with respect to concentrations
-  DiffManager()->SetDerivThermFac(actmat->ComputeFirstDerivThermFac(conint),0);
-
-  // conductivity and first derivative can maximally depend on one concentration
-  // since time curve is used as input routine
-  // conductivity of electrolyte solution
-  DiffManager()->SetCond(actmat->ComputeConductivity(conint));
-  // derivative of conductivity with respect to concentrations
-  DiffManager()->SetDerivCond(actmat->ComputeFirstDerivCond(conint),0);
-
-  return;
-}
+} // DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::GetMaterialParams
 
 
 // template classes
-
 // 1D elements
 template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::line2>;
 template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::line3>;

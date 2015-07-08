@@ -13,7 +13,7 @@ Maintainer: Andreas Ehrl
 */
 /*--------------------------------------------------------------------------*/
 #include "scatra_ele_calc_elch_diffcond.H"
-#include "scatra_ele_utils_elch.H"
+#include "scatra_ele_utils_elch_diffcond.H"
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -21,6 +21,7 @@ Maintainer: Andreas Ehrl
 
 #include "../drt_mat/elchmat.H"
 #include "../drt_mat/elchphase.H"
+
 
 /*-----------------------------------------------------------------------*
   |  Set scatra element parameter                             ehrl 01/14 |
@@ -507,8 +508,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::EvaluateElchDomainKineti
       // extract specific electrode surface area A_s from condition
       double A_s = cond->GetDouble("A_s");
 
-      //call util-class evaluation routine
-      utils_->EvaluateElchKineticsAtIntegrationPoint(
+      // call utility class for element evaluation
+      Utils()->EvaluateElchKineticsAtIntegrationPoint(
           ele,
           emat,
           erhs,
@@ -644,7 +645,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::ElectrodeStatus(
       const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints,gpid);
 
       // call utility class for element evaluation
-      utils_->EvaluateElectrodeStatusAtIntegrationPoint(
+      Utils()->EvaluateElectrodeStatusAtIntegrationPoint(
         ele,
         scalars,
         params,

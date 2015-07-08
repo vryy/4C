@@ -26,6 +26,7 @@ namespace ELEMENTS
   // forward declarations
   class ScaTraEleDiffManagerElch;
   template<int NSD, int NEN> class ScaTraEleInternalVariableManagerElch;
+  template<DRT::Element::DiscretizationType distype> class ScaTraEleUtilsElch;
 
   // class implementation
 template<DRT::Element::DiscretizationType distype>
@@ -139,21 +140,6 @@ protected:
   );
 
   /*========================================================================*/
-  //! @name material and related functions
-  /*========================================================================*/
-
-  //! material ion
-  void MatIon(
-    const Teuchos::RCP<const MAT::Material> material,     //!< pointer to current material
-    const int                               k,            //!< id of current scalar
-    double&                                 densn,        //!< density at t_(n)
-    double&                                 densnp,       //!< density at t_(n+1) or t_(n+alpha_F)
-    double&                                 densam,       //!< density at t_(n+alpha_M)
-    double&                                 visc,         //!< fluid viscosity
-    const int                               iquad         //!< id of current gauss point
-  );
-
-  /*========================================================================*/
   //! @name stabilization and related functions
   /*========================================================================*/
 
@@ -252,15 +238,8 @@ protected:
   //! get elch parameter list
   ScaTraEleParameterElch* ElchPara(){return static_cast<ScaTraEleParameterElch*>(my::scatrapara_);};
 
-  /*========================================================================*/
-  //! @name flags and enums
-  /*========================================================================*/
-
-  // empty
-
-  /*========================================================================*/
-  //! @name scalar degrees of freedom and related
-  /*========================================================================*/
+  //! utility class supporting element evaluation
+  DRT::ELEMENTS::ScaTraEleUtilsElch<distype>* utils_;
 
   //! electric potential
   LINALG::Matrix<my::nen_,1> epotnp_;
@@ -394,8 +373,6 @@ class ScaTraEleInternalVariableManagerElch : public ScaTraEleInternalVariableMan
     //! return subgrid velocity
     const LINALG::Matrix<NEN,1>& SGConv() const {return sgconv_;};
 
-  protected:
-
     //! set factor F/RT
     virtual void SetFRT()
     {
@@ -404,6 +381,9 @@ class ScaTraEleInternalVariableManagerElch : public ScaTraEleInternalVariableMan
       return;
     }
 
+  protected:
+
+    //! parameter class for electrochemistry problems
     DRT::ELEMENTS::ScaTraEleParameterElch* parameters_;
 
   /*========================================================================*/

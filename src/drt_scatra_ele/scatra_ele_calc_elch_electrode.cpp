@@ -12,9 +12,10 @@ Maintainer: Rui Fang
 </pre>
 */
 /*--------------------------------------------------------------------------*/
-#include "../drt_mat/electrode.H"
-
 #include "scatra_ele_calc_elch_electrode.H"
+#include "scatra_ele_utils_elch_electrode.H"
+
+#include "../drt_mat/material.H"
 
 
 /*----------------------------------------------------------------------*
@@ -63,13 +64,16 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::Done()
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::ScaTraEleCalcElchElectrode(const int numdofpernode,const int numscal) :
-myelch::ScaTraEleCalcElch(numdofpernode,numscal)
+  myelch::ScaTraEleCalcElch(numdofpernode,numscal)
 {
   // replace elch diffusion manager by diffusion manager for electrodes
   my::diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManagerElchElectrode(my::numscal_));
 
   // replace elch internal variable manager by internal variable manager for electrodes
   my::scatravarmanager_ = Teuchos::rcp(new ScaTraEleInternalVariableManagerElchElectrode<my::nsd_, my::nen_>(my::numscal_,myelch::ElchPara()));
+
+  // replace elch utility class by utility class for electrodes
+  myelch::utils_ = DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::Instance(numdofpernode,numscal);
 
   return;
 }
@@ -285,44 +289,20 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::GetMaterialParams(
   // get material
   Teuchos::RCP<const MAT::Material> material = ele->Material();
 
-  // evaluate electrode material
   if(material->MaterialType() == INPAR::MAT::m_electrode)
-    MatElectrode(material);
+  {
+    // concentration at integration point
+    const double conint = my::funct_.Dot(my::ephinp_[0]);
+
+    // evaluate electrode material
+    Utils()->MatElectrode(material,conint,DiffManager());
+  }
 
   else
     dserror("Material type not supported!");
 
   return;
 } // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::GetMaterialParams
-
-
-/*----------------------------------------------------------------------*
- | evaluate electrode material                               fang 02/15 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::MatElectrode(
-    const Teuchos::RCP<const MAT::Material>           material   //!< pointer to current material
-    )
-{
-  const MAT::Electrode* actmat = static_cast<const MAT::Electrode*>(material.get());
-
-  // concentration at integration point
-  const double conint = my::funct_.Dot(my::ephinp_[0]);
-
-  // diffusion coefficient
-  DiffManager()->SetIsotropicDiff(actmat->ComputeDiffusionCoefficient(conint),0);
-
-  // derivative of diffusion coefficient with respect to concentration
-  DiffManager()->SetDerivIsoDiffCoef(actmat->ComputeFirstDerivDiffCoeff(conint),0,0);
-
-  // electronic conductivity
-  DiffManager()->SetCond(actmat->ComputeConductivity(conint));
-
-  // derivative of electronic conductivity with respect to concentration
-  DiffManager()->SetDerivCond(actmat->ComputeFirstDerivCond(conint),0);
-
-  return;
-}
 
 
 // template classes
