@@ -1,45 +1,32 @@
-From 9dddf92b0e8aba3b9a0b30cb710e61aaa4a965a8 Mon Sep 17 00:00:00 2001
-From: Tobias Wiesner <wiesner@lnm.mw.tum.de>
-Date: Tue, 25 Nov 2014 22:52:48 +0100
-Subject: [PATCH 07/16] disable some functionality in mortar_interface:
-
-- binning strategy (could probably be added)
-- meshfree discretization???
----
- src/drt_mortar/mortar_interface.cpp |   49 +++++++++++-----------------------
- 1 files changed, 16 insertions(+), 33 deletions(-)
-
-diff --git a/src/drt_mortar/mortar_interface.cpp b/src/drt_mortar/mortar_interface.cpp
-index adfdc73..13c30ae 100644
---- a/src/drt_mortar/mortar_interface.cpp
-+++ b/src/drt_mortar/mortar_interface.cpp
-@@ -29,20 +29,20 @@ Maintainer: Alexander Popp
- #include "../linalg/linalg_utils.H"
- #include "../linalg/linalg_sparsematrix.H"
+Index: src/drt_mortar/mortar_interface.cpp
+===================================================================
+--- src/drt_mortar/mortar_interface.cpp	(revision 21208)
++++ src/drt_mortar/mortar_interface.cpp	(working copy)
+@@ -35,23 +35,13 @@
+ #include "../linalg/linalg_serialdensevector.H"
+ #include "../linalg/linalg_serialdensematrix.H"
  
 -#include "../drt_io/io_control.H"
 -#include "../drt_meshfree_discret/drt_meshfree_discret.H"
-+//#include "../drt_io/io_control.H"
-+//#include "../drt_meshfree_discret/drt_meshfree_discret.H"
- 
+-
  #include "../drt_lib/drt_utils_parmetis.H"
  #include "../drt_lib/drt_utils.H"
 -#include "../drt_lib/drt_globalproblem.H"
-+//#include "../drt_lib/drt_globalproblem.H"
  
  #include <Teuchos_Time.hpp>
  #include <Epetra_Time.h>
  #include <Epetra_SerialComm.h>
  
 -#include "../drt_particle/binning_strategy.H"
-+//#include "../drt_particle/binning_strategy.H"
- 
+-
 -#include "../drt_nurbs_discret/drt_nurbs_discret.H"
-+//#include "../drt_nurbs_discret/drt_nurbs_discret.H"
- 
+-
+-#include "../drt_poroelast/poroelast_utils.H"
+-
  /*----------------------------------------------------------------------*
   |  ctor (public)                                            mwgee 10/07|
-@@ -73,31 +73,8 @@ MORTAR::MortarInterface::MortarInterface(
+  *----------------------------------------------------------------------*/
+@@ -81,32 +71,9 @@
    procmap_.clear();
  
    // build interface disretization
@@ -57,7 +44,9 @@ index adfdc73..13c30ae 100644
 -      Teuchos::RCP<Teuchos::ParameterList> meshfreeparams
 -        = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->MeshfreeParams()));
 -      meshfreeparams->set("TYPE", "GeoDecoupled");
--
++  idiscret_ = Teuchos::rcp(
++      new DRT::Discretization((std::string) "mortar interface", com));
+ 
 -      idiscret_ = Teuchos::rcp(
 -          new DRT::MESHFREE::MeshfreeDiscretization((std::string) "mortar interface", com, *meshfreeparams));
 -    }
@@ -68,12 +57,11 @@ index adfdc73..13c30ae 100644
 -        new DRT::NURBS::NurbsDiscretization((std::string) "mortar interface",
 -            com));
 -  }
-+  idiscret_ = Teuchos::rcp(
-+    new DRT::Discretization((std::string) "mortar interface", com));
- 
+-
    // overwrite shape function type
    INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<
-@@ -276,7 +253,7 @@ void MORTAR::MortarInterface::AddMortarNode(
+       INPAR::MORTAR::ShapeFcn>(IParams(), "LM_SHAPEFCN");
+@@ -284,7 +251,7 @@
  void MORTAR::MortarInterface::AddMortarPoint(
      Teuchos::RCP<MORTAR::MortarNode> mrtrnode)
  {
@@ -82,7 +70,7 @@ index adfdc73..13c30ae 100644
    return;
  }
  
-@@ -310,6 +287,9 @@ void MORTAR::MortarInterface::AddMortarElement(
+@@ -318,6 +285,9 @@
   *----------------------------------------------------------------------*/
  void MORTAR::MortarInterface::RemoveSingleInterfaceSide(bool slaveside)
  {
@@ -92,7 +80,7 @@ index adfdc73..13c30ae 100644
    Teuchos::RCP<Epetra_Map> elecolmap;
    Teuchos::RCP<Epetra_Map> nodecolmap;
    Teuchos::RCP<Epetra_Map> pointcolmap;
-@@ -397,7 +377,7 @@ void MORTAR::MortarInterface::RemoveSingleInterfaceSide(bool slaveside)
+@@ -405,7 +375,7 @@
          idiscret_->DeleteNode(gid);
      }
    }
@@ -101,7 +89,18 @@ index adfdc73..13c30ae 100644
    return;
  }
  
-@@ -806,6 +786,9 @@ void MORTAR::MortarInterface::FillComplete(int maxdof, bool newghosting)
+@@ -729,10 +699,6 @@
+   // make sure discretization is complete
+   Discret().FillComplete(true, false, false);
+ 
+-  //ghost also parent elements according to the ghosting strategy of the interface (atm just for poro)
+-  if (newghosting && poro_)
+-    POROELAST::UTILS::CreateVolumeGhosting(Discret());
+-
+   // need row and column maps of slave and master nodes / elements / dofs
+   // separately so we can easily address them
+   UpdateMasterSlaveSets();
+@@ -822,6 +788,9 @@
   *----------------------------------------------------------------------*/
  void MORTAR::MortarInterface::BinningStrategy(Teuchos::RCP<Epetra_Map> initial_elecolmap, double vel)
  {
@@ -111,7 +110,7 @@ index adfdc73..13c30ae 100644
    // init XAABB
    LINALG::Matrix<3,2> XAABB(false);
    for(int dim=0; dim<3; ++dim)
-@@ -910,7 +893,7 @@ void MORTAR::MortarInterface::BinningStrategy(Teuchos::RCP<Epetra_Map> initial_e
+@@ -926,7 +895,7 @@
  
    // fillcomplete interface
    FillComplete();
@@ -120,6 +119,3 @@ index adfdc73..13c30ae 100644
    return;
  }
  
--- 
-1.7.7.6
-

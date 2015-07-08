@@ -217,7 +217,11 @@ void getValidParameters(Teuchos::ParameterList& list)
 
   Teuchos::setStringToIntegralParameter<int>("WEARCOEFF_CONF","material","configuration in which wcoeff is defined",
          Teuchos::tuple<std::string>("material","mat", "spatial","sp"),
-         Teuchos::tuple<int>(INPAR::WEAR::wear_conf_mat, INPAR::WEAR::wear_conf_mat, INPAR::WEAR::wear_conf_sp, INPAR::WEAR::wear_conf_sp),&list);
+         Teuchos::tuple<int>(INPAR::WEAR::wear_coeff_mat, INPAR::WEAR::wear_coeff_mat, INPAR::WEAR::wear_coeff_sp, INPAR::WEAR::wear_coeff_sp),&list);
+
+  Teuchos::setStringToIntegralParameter<int>("WEAR_SHAPE_EVO","material","configuration for shape evolution step",
+         Teuchos::tuple<std::string>("material","mat","spatial","sp"),
+         Teuchos::tuple<int>(INPAR::WEAR::wear_se_mat, INPAR::WEAR::wear_se_mat, INPAR::WEAR::wear_se_sp, INPAR::WEAR::wear_se_sp),&list);
 
   Teuchos::setStringToIntegralParameter<int>("WEAR_SHAPEFCN","std","Type of employed set of shape functions for wear",
          Teuchos::tuple<std::string>("Dual", "dual", "Standard", "standard", "std"),
@@ -239,17 +243,19 @@ void getValidParameters(Teuchos::ParameterList& list)
          Teuchos::tuple<std::string>("Yes", "No", "yes", "no", "YES", "NO"),
          Teuchos::tuple<int>(true,false,true,false,true,false),&list);
 
-  Teuchos::setStringToIntegralParameter<int>("BOTH_SIDED_WEAR","No","Definition of wear side",
-         Teuchos::tuple<std::string>("No","no", "none" , "Mapping","mapping", "map", "bothdiscr","bd", "sm"),
-         Teuchos::tuple<int>(INPAR::WEAR::wear_slave, INPAR::WEAR::wear_slave, INPAR::WEAR::wear_slave,
-                INPAR::WEAR::wear_both_map, INPAR::WEAR::wear_both_map,INPAR::WEAR::wear_both_map,
-                INPAR::WEAR::wear_both_discr, INPAR::WEAR::wear_both_discr,INPAR::WEAR::wear_both_discr),&list);
+  Teuchos::setStringToIntegralParameter<int>("WEAR_SIDE","slave","Definition of wear side",
+      Teuchos::tuple<std::string>("s","slave", "Slave" ,"both","slave_master", "sm"),
+      Teuchos::tuple<int>(INPAR::WEAR::wear_slave,INPAR::WEAR::wear_slave,INPAR::WEAR::wear_slave,INPAR::WEAR::wear_both, INPAR::WEAR::wear_both, INPAR::WEAR::wear_both),&list);
 
-  Teuchos::setStringToIntegralParameter<int>("WEARTYPE","internal_state_expl","Definition of wear algorithm",
-         Teuchos::tuple<std::string>("intstate_impl","is_impl", "internal_state_impl", "intstate_expl","is_expl", "internal_state_expl", "primvar","pv", "primary_variable"),
-         Teuchos::tuple<int>(INPAR::WEAR::wear_intstate_impl, INPAR::WEAR::wear_intstate_impl, INPAR::WEAR::wear_intstate_impl,
-                INPAR::WEAR::wear_intstate_expl, INPAR::WEAR::wear_intstate_expl, INPAR::WEAR::wear_intstate_expl,
-                INPAR::WEAR::wear_primvar, INPAR::WEAR::wear_primvar, INPAR::WEAR::wear_primvar),&list);
+  Teuchos::setStringToIntegralParameter<int>("WEARTYPE","internal_state","Definition of wear algorithm",
+      Teuchos::tuple<std::string>("intstate","is", "internal_state" , "primvar","pv", "primary_variable"),
+      Teuchos::tuple<int>(INPAR::WEAR::wear_intstate, INPAR::WEAR::wear_intstate, INPAR::WEAR::wear_intstate,
+                INPAR::WEAR::wear_primvar,  INPAR::WEAR::wear_primvar,  INPAR::WEAR::wear_primvar),&list);
+
+  Teuchos::setStringToIntegralParameter<int>("WEARTIMINT","explicit","Definition of wear time integration",
+      Teuchos::tuple<std::string>("explicit","e", "expl" ,"implicit","i", "impl"),
+      Teuchos::tuple<int>(INPAR::WEAR::wear_expl, INPAR::WEAR::wear_expl, INPAR::WEAR::wear_expl,
+                INPAR::WEAR::wear_impl, INPAR::WEAR::wear_impl, INPAR::WEAR::wear_impl),&list);
 
   Teuchos::setStringToIntegralParameter<int>("WEAR_COUPALGO","stagg","Definition of wear (ALE) coupling algorithm",
          Teuchos::tuple<std::string>("stagg","s", "iterstagg","is", "monolithic","mono"),
@@ -273,6 +279,10 @@ void getValidParameters(Teuchos::ParameterList& list)
   Teuchos::setStringToIntegralParameter<int>("GP_SLIP_INCR","No","If chosen the slip increment is computed gp-wise which results to a non-objective quantity, but this would be consistent to wear and tsi calculations.",
          Teuchos::tuple<std::string>("Yes", "No", "yes", "no", "YES", "NO"),
          Teuchos::tuple<int>(true,false,true,false,true,false),&list);
+
+  Teuchos::setStringToIntegralParameter<int>("CONTACT_REGULARIZATION","no","use regularized contact",
+      Teuchos::tuple<std::string>("no","tanh"),
+      Teuchos::tuple<int>(INPAR::CONTACT::reg_none,INPAR::CONTACT::reg_tanh), &list);
 
   DoubleParameter("FRCOEFF",0.0,"Friction coefficient for Coulomb friction",&list);
 

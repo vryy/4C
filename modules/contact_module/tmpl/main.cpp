@@ -158,7 +158,7 @@ int main(int argc, char *argv[]) {
   interf->FillComplete(17);
 
   // print interface
-  interf->Print(std::cout);
+  //interf->Print(std::cout);
 
   // print friction information
   INPAR::CONTACT::FrictionType fric = DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(myParams,"FRICTION");

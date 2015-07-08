@@ -1,19 +1,9 @@
-From ae4d89b198f6896da59b3d2d456470009cc02b38 Mon Sep 17 00:00:00 2001
-From: Tobias Wiesner <wiesner@lnm.mw.tum.de>
-Date: Wed, 26 Nov 2014 10:24:30 +0100
-Subject: [PATCH 06/16] Disable OutputWear due to dependency on
- LINALG::LinearSolver
-
----
- src/drt_contact/contact_wear_lagrange_strategy.cpp |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
-
-diff --git a/src/drt_contact/contact_wear_lagrange_strategy.cpp b/src/drt_contact/contact_wear_lagrange_strategy.cpp
-index a2ffef7..2378fda 100644
---- a/src/drt_contact/contact_wear_lagrange_strategy.cpp
-+++ b/src/drt_contact/contact_wear_lagrange_strategy.cpp
-@@ -32,7 +32,7 @@ Maintainer: Philipp Farah
- #include "../drt_inpar/inpar_wear.H"
+Index: src/drt_contact/contact_wear_lagrange_strategy.cpp
+===================================================================
+--- src/drt_contact/contact_wear_lagrange_strategy.cpp	(revision 21208)
++++ src/drt_contact/contact_wear_lagrange_strategy.cpp	(working copy)
+@@ -33,7 +33,7 @@
+ #include "../drt_io/io.H"
  
  #include "../linalg/linalg_utils.H"
 -#include "../linalg/linalg_solver.H"
@@ -21,24 +11,20 @@ index a2ffef7..2378fda 100644
  #include <Epetra_FEVector.h>
  
  /*----------------------------------------------------------------------*
-@@ -3905,6 +3905,9 @@ void CONTACT::WearLagrangeStrategy::UpdateDisplacementsAndLMincrements(Teuchos::
+@@ -3929,6 +3929,9 @@
  *-----------------------------------------------------------------------*/
  void CONTACT::WearLagrangeStrategy::OutputWear()
  {
 +#if 1
 +  dserror("Linear solvers not included in contact module. Please contact AdCo Engineering GW GmbH for more details");
 +#else
-   if(weardiscr_)
-   {
-     if(weartimescales_)
-@@ -4252,6 +4255,7 @@ void CONTACT::WearLagrangeStrategy::OutputWear()
+   //***********************************************
+   //                 primvar wear
+   //***********************************************
+@@ -4099,6 +4102,7 @@
        }
      }
    }
 +#endif /* if 0 */
    return;
  }
- 
--- 
-1.7.7.6
-
