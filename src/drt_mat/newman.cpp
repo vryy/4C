@@ -40,8 +40,8 @@ MAT::PAR::Newman::Newman(
      dserror("number of materials %d does not fit to size of material vector %d", thermfacparanum_, thermfacpara_.size());
 
   //check if number of provided parameter is valid for a the chosen predefined function
-  CheckProvidedParams(transnrcurve_,transnrpara_.size());
-  CheckProvidedParams(thermfaccurve_,thermfacpara_.size());
+  CheckProvidedParams(transnrcurve_,transnrpara_);
+  CheckProvidedParams(thermfaccurve_,thermfacpara_);
 }
 
 

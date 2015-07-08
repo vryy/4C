@@ -65,8 +65,8 @@ namespace MAT
 
         //! check whether number of parameters is consistent with curve number
         void CheckProvidedParams(
-            const int          functnr,
-            const unsigned int functparams
+            const int                    functnr,
+            const std::vector<double>&   functparams
             );
     };  // class MAT::PAR::Electrode
   } // namespace PAR

@@ -36,8 +36,8 @@ MAT::PAR::Electrode::Electrode(
      dserror("Mismatch in number of parameters for diffusion coefficient!");
   if(condparanum_ != (int) condpara_.size())
      dserror("Mismatch in number of parameters for conductivity!");
-  CheckProvidedParams(diffcurve_,diffpara_.size());
-  CheckProvidedParams(condcurve_,condpara_.size());
+  CheckProvidedParams(diffcurve_,diffpara_);
+  CheckProvidedParams(condcurve_,condpara_);
 
   return;
 }
@@ -47,15 +47,15 @@ MAT::PAR::Electrode::Electrode(
  | check whether number of parameters is consistent with curve number   fang 02/15 |
  *---------------------------------------------------------------------------------*/
 void MAT::PAR::Electrode::CheckProvidedParams(
-    const int           functnr,
-    const unsigned int  numfunctparams
+    const int                    functnr,
+    const std::vector<double>&   functparams
     )
 {
   // name of specified curve
   std::string functionname;
 
   // expected number of parameters for specified curve
-  unsigned int paraforfunction = 0;
+  unsigned int nfunctparams = 0;
 
   // check set of implemented functions with negative curve number
   if(functnr < 0)
@@ -66,70 +66,70 @@ void MAT::PAR::Electrode::CheckProvidedParams(
       {
         // constant value: functval=functparams[0];
         functionname = "'constant value'";
-        paraforfunction=1;
+        nfunctparams=1;
         break;
       }
       case -2:
       {
         // linear function: functval=functparams[0]+functparams[1]*cint;
         functionname = "'linear function'";
-        paraforfunction=2;
+        nfunctparams=2;
         break;
       }
       case -3:
       {
         // quadratic function: functval=functparams[0]+functparams[1]*cint+functparams[2]*cint*cint;
         functionname = "'quadratic function'";
-        paraforfunction=3;
+        nfunctparams=3;
         break;
       }
       case -4:
       {
         // power function: functval=functparams[0]*pow(cint,functparams[1]);
         functionname = "'power function'";
-        paraforfunction=2;
+        nfunctparams=2;
         break;
       }
       case -5:
       {
         // function 1 for conductivity;
         functionname = "'function 1 for conductivity'";
-        paraforfunction=4;
+        nfunctparams=4;
         break;
       }
       case -6:
       {
         // a0*c + a1*c^1.5 + a2*c^3
         functionname = "'a0*c + a1*c^1.5 + a2*c^3'";
-        paraforfunction=3;
+        nfunctparams=3;
         break;
       }
       case -7:
       {
         // a0 + a1*c + a2*c^2 + a3*c^3
         functionname = "'a0 + a1*c + a2*c^2 + a3*c^3'";
-        paraforfunction=4;
+        nfunctparams=4;
         break;
       }
       case -8:
       {
         // thermodynamic factor Nyman 2008
         functionname = "'function thermodynamic factor (Nyman 2008)'";
-        paraforfunction=7;
+        nfunctparams=7;
         break;
       }
       case -9:
       {
         // linear thermodynamic factor including Debye-Hückel theory
         functionname = "'function linear thermodynamic factor (including Debye Hueckel theory)'";
-        paraforfunction=2;
+        nfunctparams=2;
         break;
       }
       case -10:
       {
         // function 1 for conductivity
         functionname = "'function 1 for conductivity: own definition'";
-        paraforfunction=6;
+        nfunctparams=6;
         break;
       }
       case -11:
@@ -137,7 +137,7 @@ void MAT::PAR::Electrode::CheckProvidedParams(
         // conductivity as a function of concentration according to Goldin, Colclasure, Wiedemann, Kee (2012)
         // kappa = a0*c*exp(a1*c^a2)
         functionname = "'conductivity as a function of concentration according to Goldin, Colclasure, Wiedemann, Kee (2012)'";
-        paraforfunction=3;
+        nfunctparams=3;
         break;
       }
       case -12:
@@ -146,7 +146,7 @@ void MAT::PAR::Electrode::CheckProvidedParams(
         // Stewart, S. G. & Newman, J. The Use of UV/vis Absorption to Measure Diffusion Coefficients in LiPF6 Electrolytic Solutions Journal of The Electrochemical Society, 2008, 155, F13-F16
         // diff = a0*exp(-a1*c^a2)
         functionname = "'diffusion coefficient as an exponential function: a1*exp(a2*c)'";
-        paraforfunction=2;
+        nfunctparams=2;
         break;
       }
       case -13:
@@ -155,7 +155,7 @@ void MAT::PAR::Electrode::CheckProvidedParams(
         // J. Landesfeind, A. Ehrl, M. Graf, W.A. Wall, H.A. Gasteiger: Direct electrochemical determination of activity coefficients in aprotic binary electrolytes
         // TDF = 1.0 - 0.5 a1 sqrt(c)/(1+a2*sqrt(c)) + a2*c
         functionname = "'TDF as as a function of concentration according to Landesfeind, Ehrl, Graf, Wall, Gasteiger (2015)'";
-        paraforfunction=3;
+        nfunctparams=3;
         break;
       }
       default:
@@ -166,7 +166,7 @@ void MAT::PAR::Electrode::CheckProvidedParams(
     }
 
     // safety check
-    if(numfunctparams != paraforfunction)
+    if(functparams.size() != nfunctparams)
       dserror("Number of provided parameters does not match number of expected parameters for function with curve number %i (%s)!",functnr,functionname.c_str());
   }
 
@@ -523,8 +523,8 @@ const double MAT::Electrode::EvalFirstDerivFunctValue(
       const double exponent = functparams[1]*pow(cint,functparams[2]);
 
       // safety check
-      if(exponent > 20.)
-        dserror("Overflow detected during conductivity evaluation! Exponent is too large: %lf",exponent);
+      if(abs(exponent) > 20.)
+        dserror("Overflow detected during conductivity evaluation! Absolute value of exponent is too large: %lf",exponent);
 
       firstderivfunctval = functparams[0]*exp(exponent)*(1+functparams[1]*functparams[2]*pow(cint,functparams[2]));
 

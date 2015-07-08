@@ -43,7 +43,7 @@ namespace MAT
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
       /// provide ids of the individual mat
-      const std::vector<int>* MatIds() const {return matids_;}
+      const std::vector<int>& MatIds() const {return matids_;}
 
       /// provide access to phases by its ID
       Teuchos::RCP<MAT::Material> MatById(const int id) const
@@ -79,7 +79,7 @@ namespace MAT
       const int nummat_;
 
       /// the list of material IDs
-      const std::vector<int>* matids_;
+      const std::vector<int> matids_;
 
       /// flag for individual materials or only one at global scope
       bool local_;
@@ -179,7 +179,7 @@ private:
     ) const
     {
       if ((int)index < params_->nummat_)
-        return params_->matids_->at(index);
+        return params_->matids_.at(index);
       else
       {
         dserror("Index too large");

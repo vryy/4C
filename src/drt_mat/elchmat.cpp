@@ -26,18 +26,18 @@ MAT::PAR::ElchMat::ElchMat(
   numdof_((matdata->GetInt("NUMDOF"))),
   numscal_((matdata->GetInt("NUMSCAL"))),
   numphase_(matdata->GetInt("NUMPHASE")),
-  phaseids_(matdata->Get<std::vector<int> >("PHASEIDS")),
+  phaseids_(*matdata->Get<std::vector<int> >("PHASEIDS")),
   local_(false)
 {
-  if (numphase_ != (int)phaseids_->size())
-    dserror("number of phases %d does not fit to size of phase vector %d", numphase_, phaseids_->size());
+  if (numphase_ != (int)phaseids_.size())
+    dserror("number of phases %d does not fit to size of phase vector %d", numphase_, phaseids_.size());
 
   if (not local_)
   {
     // make sure the referenced materials in material list have quick access parameters
     std::vector<int>::const_iterator n;
     // phase
-    for (n=phaseids_->begin(); n!=phaseids_->end(); ++n)
+    for (n=phaseids_.begin(); n!=phaseids_.end(); ++n)
     {
       const int phaseid = *n;
       Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(phaseid);
@@ -97,7 +97,7 @@ void MAT::ElchMat::SetupMatMap()
 
   // here's the recursive creation of materials
   std::vector<int>::const_iterator n;
-  for (n=params_->PhaseIds()->begin(); n!=params_->PhaseIds()->end(); ++n)
+  for (n=params_->PhaseIds().begin(); n!=params_->PhaseIds().end(); ++n)
   {
     const int phaseid = *n;
     Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(phaseid);
@@ -139,7 +139,7 @@ void MAT::ElchMat::Pack(DRT::PackBuffer& data) const
     {
       //std::map<int, Teuchos::RCP<MAT::Material> >::const_iterator m;
       std::vector<int>::const_iterator n;
-      for (n=params_->PhaseIds()->begin(); n!=params_->PhaseIds()->end(); n++)
+      for (n=params_->PhaseIds().begin(); n!=params_->PhaseIds().end(); n++)
       {
         (mat_.find(*n))->second->Pack(data);
       }
@@ -180,7 +180,7 @@ void MAT::ElchMat::Unpack(const std::vector<char>& data)
   {
     // make sure the referenced materials in material list have quick access parameters
     std::vector<int>::const_iterator n;
-    for (n=params_->PhaseIds()->begin(); n!=params_->PhaseIds()->end(); n++)
+    for (n=params_->PhaseIds().begin(); n!=params_->PhaseIds().end(); n++)
     {
       const int actphaseid = *n;
       Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(actphaseid);
@@ -191,7 +191,7 @@ void MAT::ElchMat::Unpack(const std::vector<char>& data)
     if (params_->local_)
     {
       // loop map of associated local materials
-      for (n=params_->PhaseIds()->begin(); n!=params_->PhaseIds()->end(); n++)
+      for (n=params_->PhaseIds().begin(); n!=params_->PhaseIds().end(); n++)
       {
         std::vector<char> pbtest;
         ExtractfromPack(position,data,pbtest);

@@ -434,10 +434,9 @@ private:
 };
 
 
-/// ScaTraEleDiffManagerElch implementation
+/// ScaTraEleDiffManagerElchDiffCond implementation
 /*!
   This class keeps all Diffusion-Conduction-specific transport parameter needed for the evaluation of an element.
-  ScaTraEleDiffManagerElch is derived from ScaTraEleDiffManagerElectrode.
 */
 class ScaTraEleDiffManagerElchDiffCond : public ScaTraEleDiffManagerElchElectrode
 {

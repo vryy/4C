@@ -45,7 +45,7 @@ namespace MAT
       //@{
 
       /// provide ids of the individual phase
-      const std::vector<int>* PhaseIds() const {return phaseids_;}
+      const std::vector<int>& PhaseIds() const {return phaseids_;}
 
       /// provide access to phases by its ID
       Teuchos::RCP<MAT::Material> PhaseById(const int id) const
@@ -78,7 +78,7 @@ namespace MAT
       const int numphase_;
 
       /// the list of material IDs
-      const std::vector<int>* phaseids_;
+      const std::vector<int> phaseids_;
 
       /// flag for individual materials or only one at global scope
       bool local_;
@@ -180,7 +180,7 @@ private:
     ) const
     {
       if ((int)index < params_->numphase_)
-        return params_->phaseids_->at(index);
+        return params_->phaseids_.at(index);
       else
       {
         dserror("Index too large");
