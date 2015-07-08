@@ -144,6 +144,32 @@ STI::Algorithm::Algorithm(
 
 
 /*----------------------------------------------------------------------*
+ | assemble global system of equations                       fang 07/15 |
+ *----------------------------------------------------------------------*/
+void STI::Algorithm::AssembleMatAndRHS()
+{
+  // build system matrix and residual for scatra field
+  scatra_->PrepareLinearSolve();
+
+  // build system matrix and residual for thermo field
+  thermo_->PrepareLinearSolve();
+
+  // build global system matrix
+  systemmatrix_->Assign(0,0,View,*scatra_->SystemMatrix());
+  systemmatrix_->Assign(0,1,View,*scatrathermoblock_);
+  systemmatrix_->Assign(1,0,View,*thermoscatrablock_);
+  systemmatrix_->Assign(1,1,View,*thermo_->SystemMatrix());
+  systemmatrix_->Complete();
+
+  // create full monolithic rhs vector
+  maps_->InsertVector(scatra_->Residual(),0,residual_);
+  maps_->InsertVector(thermo_->Residual(),1,residual_);
+
+  return;
+} // STI::Algorithm::AssembleMatAndRHS
+
+
+/*----------------------------------------------------------------------*
  | global map of degrees of freedom                          fang 04/15 |
  *----------------------------------------------------------------------*/
 const Teuchos::RCP<const Epetra_Map>& STI::Algorithm::DofRowMap() const
@@ -374,26 +400,16 @@ void STI::Algorithm::Solve()
     // reset timer
     timer_->ResetStartTime();
 
-    // build system matrix and residual for scatra field
-    scatra_->PrepareLinearSolve();
-
-    // build system matrix and residual for thermo field
-    thermo_->PrepareLinearSolve();
-
-    // build global system matrix
-    systemmatrix_->Assign(0,0,View,*scatra_->SystemMatrix());
-    systemmatrix_->Assign(0,1,View,*scatrathermoblock_);
-    systemmatrix_->Assign(1,0,View,*thermoscatrablock_);
-    systemmatrix_->Assign(1,1,View,*thermo_->SystemMatrix());
-    systemmatrix_->Complete();
+    // assemble global system of equations
+    AssembleMatAndRHS();
 
     // safety check
     if(!systemmatrix_->Filled())
       dserror("Complete() has not been called on global system matrix yet!");
 
-    // create full monolithic rhs vector
-    maps_->InsertVector(scatra_->Residual(),0,residual_);
-    maps_->InsertVector(thermo_->Residual(),1,residual_);
+    // perform finite difference check on time integrator level
+    if(scatra_->FDCheckType() == INPAR::SCATRA::fdcheck_global)
+      FDCheck();
 
     // check termination criterion for Newton-Raphson iteration
     if(ExitNewtonRaphson())
@@ -479,3 +495,186 @@ void STI::Algorithm::Update()
 
   return;
 } // STI::Algorithm::Update()
+
+
+/*---------------------------------------------------------------------------------------------*
+ | finite difference check for global system matrix (for debugging only)            fang 07/15 |
+ *---------------------------------------------------------------------------------------------*/
+void STI::Algorithm::FDCheck()
+{
+  // initial screen output
+  if(Comm().MyPID() == 0)
+    std::cout << std::endl << "FINITE DIFFERENCE CHECK FOR STI SYSTEM MATRIX" << std::endl;
+
+  // create global state vector
+  Teuchos::RCP<Epetra_Vector> statenp(LINALG::CreateVector(*DofRowMap(),true));
+  maps_->InsertVector(scatra_->Phinp(),0,statenp);
+  maps_->InsertVector(thermo_->Phinp(),1,statenp);
+
+  // make a copy of global state vector to undo perturbations later
+  Teuchos::RCP<Epetra_Vector> statenp_original = Teuchos::rcp(new Epetra_Vector(*statenp));
+
+  // make a copy of system matrix as Epetra_CrsMatrix
+  Teuchos::RCP<Epetra_CrsMatrix> sysmat_original = Teuchos::null;
+  if(Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(systemmatrix_) != Teuchos::null)
+    sysmat_original = (new LINALG::SparseMatrix(*(Teuchos::rcp_static_cast<LINALG::BlockSparseMatrixBase>(systemmatrix_)->Merge())))->EpetraMatrix();
+  else
+    dserror("Global system matrix must be a block sparse matrix!");
+  sysmat_original->FillComplete();
+
+  // make a copy of system right-hand side vector
+  Teuchos::RCP<Epetra_Vector> rhs_original = Teuchos::rcp(new Epetra_Vector(*residual_));
+
+  // initialize counter for system matrix entries with failing finite difference check
+  int counter(0);
+
+  // initialize tracking variable for maximum absolute and relative errors
+  double maxabserr(0.);
+  double maxrelerr(0.);
+
+  for (int col=0; col<sysmat_original->NumGlobalCols(); ++col)
+  {
+    // fill global state vector with original state variables
+    statenp->Update(1.,*statenp_original,0.);
+
+    // impose perturbation
+    statenp->SumIntoGlobalValue(col,0,scatra_->FDCheckEps());
+    scatra_->Phinp()->Update(1.,*maps_->ExtractVector(statenp,0),0.);
+    thermo_->Phinp()->Update(1.,*maps_->ExtractVector(statenp,1),0.);
+
+    // carry perturbation over to state vectors at intermediate time stages if necessary
+    scatra_->ComputeIntermediateValues();
+    thermo_->ComputeIntermediateValues();
+
+    // calculate element right-hand side vector for perturbed state
+    AssembleMatAndRHS();
+
+    // Now we compare the difference between the current entries in the system matrix
+    // and their finite difference approximations according to
+    // entries ?= (residual_perturbed - residual_original) / epsilon
+
+    // Note that the residual_ vector actually denotes the right-hand side of the linear
+    // system of equations, i.e., the negative system residual.
+    // To account for errors due to numerical cancellation, we additionally consider
+    // entries + residual_original / epsilon ?= residual_perturbed / epsilon
+
+    // Note that we still need to evaluate the first comparison as well. For small entries in the system
+    // matrix, the second comparison might yield good agreement in spite of the entries being wrong!
+    for(int row=0; row<DofRowMap()->NumMyElements(); ++row)
+    {
+      // get current entry in original system matrix
+      double entry(0.);
+      int length = sysmat_original->NumMyEntries(row);
+      int numentries;
+      std::vector<double> values(length);
+      std::vector<int> indices(length);
+      sysmat_original->ExtractMyRowCopy(row,length,numentries,&values[0],&indices[0]);
+      for(int ientry=0; ientry<length; ++ientry)
+      {
+        if(sysmat_original->ColMap().GID(indices[ientry]) == col)
+        {
+          entry = values[ientry];
+          break;
+        }
+      }
+
+      // finite difference suggestion (first divide by epsilon and then add for better conditioning)
+      const double fdval = -(*residual_)[row] / scatra_->FDCheckEps() + (*rhs_original)[row] / scatra_->FDCheckEps();
+
+      // confirm accuracy of first comparison
+      if(abs(fdval) > 1.e-17 and abs(fdval) < 1.e-15)
+        dserror("Finite difference check involves values too close to numerical zero!");
+
+      // absolute and relative errors in first comparison
+      const double abserr1 = entry - fdval;
+      if(abs(abserr1) > maxabserr)
+        maxabserr = abs(abserr1);
+      double relerr1(0.);
+      if(abs(entry) > 1.e-17)
+        relerr1 = abserr1 / abs(entry);
+      else if(abs(fdval) > 1.e-17)
+        relerr1 = abserr1 / abs(fdval);
+      if(abs(relerr1) > maxrelerr)
+        maxrelerr = abs(relerr1);
+
+      // evaluate first comparison
+      if(abs(relerr1) > scatra_->FDCheckTol())
+      {
+        std::cout << "sysmat[" << row << "," << col << "]:  " << entry << "   ";
+        std::cout << "finite difference suggestion:  " << fdval << "   ";
+        std::cout << "absolute error:  " << abserr1 << "   ";
+        std::cout << "relative error:  " << relerr1 << std::endl;
+
+        counter++;
+      }
+
+      // first comparison OK
+      else
+      {
+        // left-hand side in second comparison
+        const double left  = entry - (*rhs_original)[row] / scatra_->FDCheckEps();
+
+        // right-hand side in second comparison
+        const double right = -(*residual_)[row] / scatra_->FDCheckEps();
+
+        // confirm accuracy of second comparison
+        if(abs(right) > 1.e-17 and abs(right) < 1.e-15)
+          dserror("Finite difference check involves values too close to numerical zero!");
+
+        // absolute and relative errors in second comparison
+        const double abserr2 = left - right;
+        if(abs(abserr2) > maxabserr)
+          maxabserr = abs(abserr2);
+        double relerr2(0.);
+        if(abs(left) > 1.e-17)
+          relerr2 = abserr2 / abs(left);
+        else if(abs(right) > 1.e-17)
+          relerr2 = abserr2 / abs(right);
+        if(abs(relerr2) > maxrelerr)
+          maxrelerr = abs(relerr2);
+
+        // evaluate second comparison
+        if(abs(relerr2) > scatra_->FDCheckTol())
+        {
+          std::cout << "sysmat[" << row << "," << col << "]-rhs[" << row << "]/eps:  " << left << "   ";
+          std::cout << "-rhs_perturbed[" << row << "]/eps:  " << right << "   ";
+          std::cout << "absolute error:  " << abserr2 << "   ";
+          std::cout << "relative error:  " << relerr2 << std::endl;
+
+          counter++;
+        }
+      }
+    }
+  }
+
+  // communicate tracking variables
+  int counterglobal(0);
+  Comm().SumAll(&counter,&counterglobal,1);
+  double maxabserrglobal(0.);
+  Comm().MaxAll(&maxabserr,&maxabserrglobal,1);
+  double maxrelerrglobal(0.);
+  Comm().MaxAll(&maxrelerr,&maxrelerrglobal,1);
+
+  // final screen output
+  if(Comm().MyPID() == 0)
+  {
+    if(counterglobal)
+    {
+      printf("--> FAILED AS LISTED ABOVE WITH %d CRITICAL MATRIX ENTRIES IN TOTAL\n\n",counterglobal);
+      dserror("Finite difference check failed for scalar transport system matrix!");
+    }
+    else
+      printf("--> PASSED WITH MAXIMUM ABSOLUTE ERROR %+12.5e AND MAXIMUM RELATIVE ERROR %+12.5e\n\n",maxabserrglobal,maxrelerrglobal);
+  }
+
+  // undo perturbations of state variables
+  scatra_->Phinp()->Update(1.,*maps_->ExtractVector(statenp_original,0),0.);
+  scatra_->ComputeIntermediateValues();
+  thermo_->Phinp()->Update(1.,*maps_->ExtractVector(statenp_original,1),0.);
+  thermo_->ComputeIntermediateValues();
+
+  // recompute system matrix and right-hand side vector based on original state variables
+  AssembleMatAndRHS();
+
+  return;
+}

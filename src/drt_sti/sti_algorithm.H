@@ -61,6 +61,9 @@ namespace STI
 
     private:
 
+      //! assemble global system of equations
+      void AssembleMatAndRHS();
+
       //! global map of degrees of freedom
       const Teuchos::RCP<const Epetra_Map>& DofRowMap() const;
 
@@ -69,6 +72,9 @@ namespace STI
 
       //! check termination criterion for Newton-Raphson iteration
       const bool ExitNewtonRaphson();
+
+      //! finite difference check for global system matrix
+      void FDCheck();
 
       //! modify field parameters for thermo field
       void ModifyFieldParametersForThermoField();

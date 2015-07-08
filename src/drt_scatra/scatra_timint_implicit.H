@@ -337,6 +337,11 @@ public:
   //! return solver
   const Teuchos::RCP<LINALG::Solver>& Solver() const { return solver_; }
 
+  //! return parameters for finite difference check
+  const INPAR::SCATRA::FDCheck FDCheckType() const {return fdcheck_;};
+  const double FDCheckEps() const {return fdcheckeps_;};
+  const double FDCheckTol() const {return fdchecktol_;};
+
   /*========================================================================*/
   //! @name Time, time-step and related methods
   /*========================================================================*/
