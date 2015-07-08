@@ -31,8 +31,7 @@ MAT::PAR::GrowthScd::GrowthScd(
   )
 : Growth(matdata),
   rearate_(matdata->GetDouble("REARATE")),
-  satcoeff_(matdata->GetDouble("SATCOEFF")),
-  growthcoupl_(matdata->Get<std::string>("GROWTHCOUPL"))
+  satcoeff_(matdata->GetDouble("SATCOEFF"))
 {
   if (growthlaw_->MaterialType() == INPAR::MAT::m_growth_linear or growthlaw_->MaterialType() == INPAR::MAT::m_growth_exponential)
   {
@@ -52,6 +51,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::GrowthScd::CreateMaterial()
   {
   case INPAR::MAT::m_growth_linear:
   case INPAR::MAT::m_growth_exponential:
+  case INPAR::MAT::m_growth_biofilm:
     mat = Teuchos::rcp(new MAT::GrowthScd(this));
     break;
   case INPAR::MAT::m_growth_ac:
@@ -87,7 +87,6 @@ MAT::GrowthScd::GrowthScd()
     detFe_(Teuchos::null), //initialized in GrowthScd::Unpack
     dtheta_(Teuchos::null), //initialized in GrowthScd::Unpack
     concentration_(-1.0),
-    stressgrowthfunc(-1.0),
     paramsScd_(NULL)
 {
 }
@@ -101,7 +100,6 @@ MAT::GrowthScd::GrowthScd(MAT::PAR::GrowthScd* params)
     detFe_(Teuchos::null), //initialized in GrowthScd::Setup
     dtheta_(Teuchos::null), //initialized in GrowthScd::Setup
     concentration_(-1.0),
-    stressgrowthfunc(-1.0),
     paramsScd_(params)
 {
 }
@@ -117,7 +115,6 @@ void MAT::GrowthScd::ResetAll(const int numgp)
     dtheta_->at(j) = 0.0;
   }
   concentration_= -1.0;
-  stressgrowthfunc = -1.0;
 
   MAT::GrowthMandel::ResetAll(numgp);
 }
@@ -291,111 +288,30 @@ void MAT::GrowthScd::Evaluate
     (*dtheta_)[i] = ((*theta_)[i]-(*thetaold_)[i])/dt;
 }
 
-/*----------------------------------------------------------------------*
- |  Evaluate growth function                        (protected)  vuong   02/10|
- *----------------------------------------------------------------------*/
-void MAT::GrowthScd::EvaluateGrowthFunction
-(
-    double & growthfunc, // (o)
-    double traceM,       // (i)
-    double theta         // (i)
-)
+// evaluate the volumetric growth factor theta
+void MAT::GrowthScd::EvaluateGrowth(double* theta,
+                      LINALG::Matrix<6,1>* dthetadC,
+                      Teuchos::RCP<MAT::So3Material> matelastic,
+                      const LINALG::Matrix<3,3>* defgrd,
+                      const LINALG::Matrix<6,1>* glstrain,
+                      Teuchos::ParameterList& params,
+                      const int eleGID )
 {
-  //call stress based growth law
-  GrowthMandel::EvaluateGrowthFunction(growthfunc,traceM,theta);
-  stressgrowthfunc = growthfunc;
 
-  MAT::PAR::GrowthScd* params=Parameter();
   // parameters
-  const double rearate = params->rearate_;
-  const double satcoeff = params->satcoeff_;
-  const std::string* growthcoupl =params->growthcoupl_;
+  MAT::PAR::GrowthScd* matparams=Parameter();
+  const double rearate = matparams->rearate_;
+  const double satcoeff = matparams->satcoeff_;
 
-  if (*growthcoupl == "ScaleConc")
-    // scale with concentration dependent factor
-    growthfunc = rearate * concentration_/(satcoeff+concentration_) * growthfunc;
+  double fac=1.0;
+  // concentration depedent factor
+  fac=rearate * concentration_/(satcoeff+concentration_);
 
-  else if (*growthcoupl == "StressRed")
-    // reduce the growth due to scalar transport because of the presence of stresses (biofilm)
-   growthfunc = rearate * concentration_/(satcoeff+concentration_) - abs(growthfunc);
-
-  else
-    dserror ("The chosen coupling law between stress dependent growth and reaction dependent growth is not implemented");
+  Parameter()->growthlaw_->SetFactor(fac);
+  GrowthMandel::EvaluateGrowth(theta,dthetadC,matelastic_,defgrd, glstrain,params,eleGID);
 
   return;
 }
-
-/*----------------------------------------------------------------------*
- |  Evaluate derivative of growth function       (protected)  vuong 02/10|
- *----------------------------------------------------------------------*/
-void MAT::GrowthScd::EvaluateGrowthFunctionDerivTheta
-(
-    double & dgrowthfunctheta,
-    double traceM,
-    double theta,
-    const LINALG::Matrix<NUM_STRESS_3D, 1>& Cdach,
-    const LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic
-)
-{
-  //call stress based growth law
-  GrowthMandel::EvaluateGrowthFunctionDerivTheta(dgrowthfunctheta,traceM,theta,Cdach,cmatelastic);
-
-  MAT::PAR::GrowthScd* params=Parameter();
-  // parameters
-  const double rearate = params->rearate_;
-  const double satcoeff = params->satcoeff_;
-  const std::string* growthcoupl =params->growthcoupl_;
-
-  if (*growthcoupl == "ScaleConc")
-    dgrowthfunctheta = rearate * concentration_/(satcoeff+concentration_) * dgrowthfunctheta;
-
-  if (*growthcoupl == "StressRed")
-  {
-    if (stressgrowthfunc==0.0) dgrowthfunctheta = 0.0;
-    else dgrowthfunctheta = - abs(stressgrowthfunc) / stressgrowthfunc * dgrowthfunctheta;
-  }
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Evaluate derivative of growth function       (protected) vuong 02/10|
- *----------------------------------------------------------------------*/
-void MAT::GrowthScd::EvaluateGrowthFunctionDerivC
-(
-    LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdC,
-    double traceM,
-    double theta,
-    const LINALG::Matrix<NUM_STRESS_3D, 1>& C,
-    const LINALG::Matrix<NUM_STRESS_3D, 1>& S,
-    const LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat
-)
-{
-  //call stress based growth law
-  GrowthMandel::EvaluateGrowthFunctionDerivC(dgrowthfuncdC,traceM,theta,C,S,cmat);
-
-  // parameters
-  MAT::PAR::GrowthScd* params=Parameter();
-
-  const double rearate = params->rearate_;
-  const double satcoeff = params->satcoeff_;
-  const std::string* growthcoupl =params->growthcoupl_;
-
-  if (*growthcoupl == "ScaleConc")
-    // scale with concentration dependent factor
-    dgrowthfuncdC.Scale(rearate * concentration_/(satcoeff+concentration_));
-
-  if (*growthcoupl == "StressRed")
-  {
-    if (stressgrowthfunc==0) dgrowthfuncdC.Scale(0.0);
-    else dgrowthfuncdC.Scale(- abs(stressgrowthfunc) / stressgrowthfunc);
-  }
-  return;
-}
-
-
-
-
-
 
 MAT::GrowthScdACType MAT::GrowthScdACType::instance_;
 
@@ -410,7 +326,7 @@ DRT::ParObject* MAT::GrowthScdACType::Create( const std::vector<char> & data )
  |  Constructor                                               Thon 11/14|
  *----------------------------------------------------------------------*/
 MAT::GrowthScdAC::GrowthScdAC()
-  : GrowthBasic(),
+  : GrowthMandel(),
     concentrations_(Teuchos::null),
     paramsScdAC_(NULL)
 {
@@ -421,7 +337,7 @@ MAT::GrowthScdAC::GrowthScdAC()
  |  Copy-Constructor                                          Thon 11/14|
  *----------------------------------------------------------------------*/
 MAT::GrowthScdAC::GrowthScdAC(MAT::PAR::GrowthScd* params)
-  : GrowthBasic(params),
+  : GrowthMandel(params),
     concentrations_(Teuchos::null),
     paramsScdAC_(params)
 {
@@ -434,7 +350,7 @@ void MAT::GrowthScdAC::ResetAll(const int numgp)
 {
   concentrations_ = Teuchos::rcp(new std::vector<double> (10,0.0));
 
-  MAT::Growth::ResetAll(numgp);
+  MAT::GrowthMandel::ResetAll(numgp);
 }
 
 /*----------------------------------------------------------------------*
@@ -468,7 +384,7 @@ void MAT::GrowthScdAC::Pack(DRT::PackBuffer& data) const
   }
 
   // Pack base class material
-  Growth::Pack(data);
+  GrowthMandel::Pack(data);
 
   return;
 }
@@ -481,7 +397,7 @@ void MAT::GrowthScdAC::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
   concentrations_ = Teuchos::rcp(new std::vector<double> (10,0.0)); //this is just a dummy, since we overwrite this pointer in MAT::GrowthScdAC::Evaluate anyway
 
   //setup base class
-  Growth::Setup(numgp, linedef);
+  GrowthMandel::Setup(numgp, linedef);
   return;
 }
 
@@ -533,8 +449,8 @@ void MAT::GrowthScdAC::Unpack(const std::vector<char>& data)
 
   // extract base class material
   std::vector<char> basedata(0);
-  Growth::ExtractfromPack(position,data,basedata);
-  Growth::Unpack(basedata);
+  GrowthMandel::ExtractfromPack(position,data,basedata);
+  GrowthMandel::Unpack(basedata);
 
 
   if (position != data.size())
@@ -568,27 +484,9 @@ void MAT::GrowthScdAC::Evaluate
 //  if (concentrations_ == Teuchos::null)
 //    dserror("getting the mean concentrations failed!");
 
-  GrowthBasic::Evaluate(defgrd,glstrain,params,stress,cmat,eleGID);
+  Parameter()->growthlaw_->SetFactor(*concentrations_);
+  GrowthMandel::Evaluate(defgrd,glstrain,params,stress,cmat,eleGID);
 }
-
-/*----------------------------------------------------------------------*
- |  Calculate the volumetric growth parameter                 Thon 11/14|
- *----------------------------------------------------------------------*/
-double MAT::GrowthScdAC::CalculateTheta( const double J )
-{
-  double theta = Parameter()->growthlaw_->CalculateTheta( concentrations_ , J );
-
-  return theta;
-}
-
-/*--------------------------------------------------------------------------------*
- |  Calculate the volumetric growth derived w.r.t. chauy-green strains  Thon 01/15|
- *--------------------------------------------------------------------------------*/
-void MAT::GrowthScdAC::CalculateThetaDerivC( LINALG::Matrix<3,3>& dThetadC , const LINALG::Matrix<3,3>& C , const double J )
-{
-  Parameter()->growthlaw_->CalculateThetaDerivC( dThetadC , C , concentrations_ , J );
-}
-
 
 
 MAT::GrowthScdACRadialType MAT::GrowthScdACRadialType::instance_;
@@ -761,7 +659,7 @@ void MAT::GrowthScdACRadial::Evaluate
   //get pointer vector containing the mean scalar values
   concentrations_ = params.get< Teuchos::RCP<std::vector<double> > >("mean_concentrations",Teuchos::rcp(new std::vector<double> (10,0.0)) );
   //TODO: (Thon) there must be a better way to catch the first call of the structure evaluate
-
+  Parameter()->growthlaw_->SetFactor(*concentrations_);
   //------------------------------------------------------------------------------------------
   //------------------------------------------------------------------------------------------
 
@@ -790,7 +688,12 @@ void MAT::GrowthScdACRadial::Evaluate
     //spatial configuration on has to set "J" instead of "1" in the following
     //  //J = det(F);
     //double J = defgrd->Determinant();
-    double theta = CalculateTheta( 1 );
+    double theta;
+    //--------------------------------------------------------------------------------------
+    // evaluation of the volumetric growth factor and its derivative wrt cauchy-green
+    //--------------------------------------------------------------------------------------
+    LINALG::Matrix<6,1> dthetadC(true);
+    GrowthMandel::EvaluateGrowth(&theta,&dthetadC,matelastic_,defgrd, glstrain,params,eleGID);
 
     // store theta
     theta_->at(gp) = theta;

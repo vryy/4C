@@ -1595,7 +1595,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedInt(m,"IDMATELASTIC","number of elastic material in input file: MAT IDMATELASTIC ...");
     AddNamedReal(m,"STARTTIME","start growth after this time");
     AddNamedReal(m,"ENDTIME","end growth after this time");
-    AddNamedReal(m,"TOL","tolerance for local Newton iteration");
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -1612,10 +1611,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
      AddNamedInt(mm,"IDMATELASTIC","number of elastic material in input file: MAT IDMATELASTIC ...");
      AddNamedReal(mm,"STARTTIME","start growth after this time");
      AddNamedReal(mm,"ENDTIME","end growth after this time");
-     AddNamedReal(mm,"TOL","tolerance for local Newton iteration",1e-06,true);
      AddNamedReal(mm,"REARATE","substrate uptake rate coefficient",-1.0,true);
      AddNamedReal(mm,"SATCOEFF","saturation coefficient for concentration dependent growth law",-1.0,true);
-     AddNamedString(mm,"GROWTHCOUPL","Coupling between stress dependent growth and reaction dependent growth","ScaleConc", true);
 
      AppendMaterialDefinition(matlist,mm);
    }
@@ -1636,6 +1633,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"KMINUS","growth law parameter kthetaminus");
     AddNamedReal(m,"MMINUS","growth law parameter mthetaminus");
     AddNamedReal(m,"HOMMANDEL","homeostatic value for mandelstress");
+    AddNamedReal(m,"TOL","tolerance for local Newton iteration");
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -1650,6 +1648,36 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             INPAR::MAT::m_growth_exponential));
 
     AddNamedReal(m,"MANDEL","reference value for mandelstress");
+    AddNamedReal(m,"TOL","tolerance for local Newton iteration");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  /*----------------------------------------------------------------------*/
+  // biofilm growth law
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_GrowthBiofilm",
+                                            "biofilm growth law",
+                                            INPAR::MAT::m_growth_biofilm));
+
+    AddNamedReal(m,"MANDEL","reference value for mandelstress");
+    AddNamedReal(m,"TOL","tolerance for local Newton iteration");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  /*----------------------------------------------------------------------*/
+  // constant rate growth law
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_GrowthConst",
+                                            "constant growth law",
+                                            INPAR::MAT::m_growth_const));
+
+    AddNamedReal(m,"THETARATE","reference value for mandelstress");
 
     AppendMaterialDefinition(matlist,m);
   }

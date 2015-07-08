@@ -51,11 +51,6 @@ namespace MAT
       const double satcoeff_;
       //@}
 
-      // Coupling between stress dependent growth and reaction dependent growth
-      // it could be that the stress dependent growth has to be scaled with the reaaction term (ScaleConc)
-      // or that the reaction dependent growth is reduced by the presence of stresses (StressRed)
-      const std::string* growthcoupl_;
-
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
     };  // class ScdGrowth
@@ -68,7 +63,7 @@ namespace MAT
 
     std::string Name() const { return "GrowthScdType"; }
 
-    static GrowthScdType & Instance() { return instance_; };
+    static GrowthScdType & Instance() { return instance_; }
 
     virtual DRT::ParObject* Create( const std::vector<char> & data );
 
@@ -158,6 +153,17 @@ namespace MAT
         const int eleGID
      );
 
+    // evaluate the volumetric growth factor theta
+    virtual void EvaluateGrowth
+    (
+        double* theta,
+        LINALG::Matrix<6,1>* dthetadC,
+        Teuchos::RCP<MAT::So3Material> matelastic,
+        const LINALG::Matrix<3,3>* defgrd,
+        const LINALG::Matrix<6,1>* glstrain,
+        Teuchos::ParameterList& params,
+        const int eleGID );
+
     /// Return density
     //virtual double Density() const {return params_->density_;}
 
@@ -192,36 +198,6 @@ namespace MAT
     double GetConcentration() const {return concentration_;}
 
   protected:
-    /// Evaluate growth function (overwrites implementation in stress based growth law)
-    void EvaluateGrowthFunction
-    (
-        double & growthfunc,
-        double traceM,
-        double theta
-    );
-
-    /// Evaluate derivative of growth function w.r.t. growth factor (overwrites implementation in stress based growth law)
-    void EvaluateGrowthFunctionDerivTheta
-    (
-        double & dgrowthfunctheta,
-        double traceM,
-        double theta,
-        const LINALG::Matrix<NUM_STRESS_3D, 1>& Cdach,
-        const LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic
-    );
-
-    /// Evaluate derivative of growth function w.r.t. Green-Lagrange-Strain (overwrites implementation in stress based growth law)
-    void EvaluateGrowthFunctionDerivC
-    (
-        LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdC,
-        double traceM,
-        double theta,
-        const LINALG::Matrix<NUM_STRESS_3D, 1>& C,
-        const LINALG::Matrix<NUM_STRESS_3D, 1>& S,
-        const LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat
-    );
-
-  protected:
 
     /// determinante of elastic deformation gradient F_e for each gauss point
     Teuchos::RCP<std::vector<double> > detFe_;
@@ -229,9 +205,6 @@ namespace MAT
     Teuchos::RCP<std::vector<double> > dtheta_;
     /// concentration (e.g. nutrients)
     double concentration_;
-
-    /// growth function value evaluated by the stress law
-    double stressgrowthfunc;
 
   private:
 
@@ -248,7 +221,7 @@ namespace MAT
 
     std::string Name() const { return "GrowthScdACType"; }
 
-    static GrowthScdACType & Instance() { return instance_; };
+    static GrowthScdACType & Instance() { return instance_; }
 
     virtual DRT::ParObject* Create( const std::vector<char> & data );
 
@@ -259,7 +232,7 @@ namespace MAT
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for growth material
-  class GrowthScdAC : public GrowthBasic                                                    //
+  class GrowthScdAC : public GrowthMandel                                                    //
   {
   public:
 
@@ -341,15 +314,6 @@ namespace MAT
     virtual MAT::PAR::GrowthScd* Parameter() const { return paramsScdAC_; }
 
   protected:
-
-    ///Calculate the volumetric growth parameter
-    double CalculateTheta( const double J );
-
-    ///Calculate the volumetric growth derived w.r.t. chauy-green strains
-    void CalculateThetaDerivC( LINALG::Matrix<3,3>& dThetadC ,
-                               const LINALG::Matrix<3,3>& C, ///< cauchy-green strain
-                               const double J ///< det(F)
-                               );
 
     /// pointer to mean concentrations at present timestep
     Teuchos::RCP<std::vector<double> > concentrations_;
