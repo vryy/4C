@@ -62,6 +62,8 @@ int DRT::ELEMENTS::TransportBoundary::Evaluate(
 
   case INPAR::SCATRA::impltype_std:
   case INPAR::SCATRA::impltype_advreac:
+  case INPAR::SCATRA::impltype_chemo:
+  case INPAR::SCATRA::impltype_chemoreac:
   case INPAR::SCATRA::impltype_aniso:
   case INPAR::SCATRA::impltype_cardiac_monodomain:
   case INPAR::SCATRA::impltype_levelset:

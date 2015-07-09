@@ -1,13 +1,11 @@
 /*!----------------------------------------------------------------------
-\file matlist_reactions.H
+\file matlist_chemoreac.H
 
  \brief
 
-This file contains the material for reactive scalars. It derives from MAT_matlist
-and adds everything to supervise all the MAT_scatra_raction materials. The reactions
-itself are defined inside the MAT_scatra_raction materials. So MAT_matlist_reactions
-is just a "control instance".
-
+This file contains the material for reactive AND chemotactic scalars. It is
+in diamond inheritance with MatListReactions and MatListChemotaxis,
+which govern the actual doings
 
 <pre>
 Maintainer: Moritz Thon
@@ -17,14 +15,17 @@ Maintainer: Moritz Thon
 </pre>
 *----------------------------------------------------------------------*/
 
-#ifndef MatListReactions_H
-#define MatListReactions_H
+
+#ifndef MATLIST_CHEMOREAC_H_
+#define MATLIST_CHEMOREAC_H_
 
 
 
 #include "matpar_parameter.H"
 #include "material.H"
 #include "matlist.H"
+#include "matlist_reactions.H"
+#include "matlist_chemotaxis.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 
 namespace MAT
@@ -34,65 +35,53 @@ namespace MAT
   {
     /*----------------------------------------------------------------------*/
     /// material parameters for list of materials
-    class MatListReactions : public virtual MatList
+    class MatListChemoReac : public MatListReactions, public MatListChemotaxis
     {
     public:
 
       /// standard constructor
-      MatListReactions(
+      MatListChemoReac(
         Teuchos::RCP<MAT::PAR::Material> matdata
         );
 
       /// destructor
-      virtual ~MatListReactions() { ; }
+      virtual ~MatListChemoReac() { ; }
 
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
       /// @name material parameters
-      //@{
-
-      /// provide ids of the individual reaction materials
-      const std::vector<int>* ReacIds() const {return reacids_;}
-
-      /// length of reaction list
-      const int numreac_;
-
-      /// the list of reaction IDs
-      const std::vector<int>* reacids_;
-
-      //@}
 
     };  // class MatListReactions
 
   }  // namespace PAR
 
-class MatListReactionsType : public DRT::ParObjectType
+class MatListChemoReacType : public DRT::ParObjectType
 {
 public:
 
-  std::string Name() const { return "MatListReactionsType"; }
+  std::string Name() const { return "MatListChemoReacType"; }
 
-  static MatListReactionsType & Instance() { return instance_; };
+  static MatListChemoReacType & Instance() { return instance_; };
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
 private:
 
-  static MatListReactionsType instance_;
+  static MatListChemoReacType instance_;
 };
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for a list of materials
-  class MatListReactions : public virtual MatList
+  class MatListChemoReac : public MatListChemotaxis, public MatListReactions
   {
   public:
 
     /// construct empty material object
-    MatListReactions();
+    MatListChemoReac();
 
     /// construct the material object given material parameters
-    explicit MatListReactions(MAT::PAR::MatListReactions* params);
+    explicit MatListChemoReac(MAT::PAR::MatListChemoReac* params);
 
     //! @name Packing and Unpacking
 
@@ -102,7 +91,7 @@ private:
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return MatListReactionsType::Instance().UniqueParObjectId(); }
+    virtual int UniqueParObjectId() const { return MatListChemoReacType::Instance().UniqueParObjectId(); }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -133,35 +122,27 @@ private:
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_matlist_reactions; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_matlist_chemoreac; }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new MatListReactions( *this ) ); }
-
-    /// number of reactions
-    int NumReac() const { return paramsreac_->numreac_; }
-
-    /// reaction ID by Index
-    int ReacID( const unsigned index ) const;
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new MatListChemoReac( *this ) ); }
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::MatListReactions* Parameter() const { return paramsreac_; }
+    virtual MAT::PAR::MatListChemoReac* Parameter() const {return paramsreachemo_;}
 
-  protected:
+  private:
 
     /// setup of material map
     virtual void SetupMatMap();
-
-  private:
 
     /// clear everything
     void Clear();
 
     /// my material parameters
-    MAT::PAR::MatListReactions* paramsreac_;
+    MAT::PAR::MatListChemoReac* paramsreachemo_;
   };
 
 }
 
-#endif
 
+#endif /* MATLIST_CHEMOREAC_H_ */

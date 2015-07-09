@@ -16,6 +16,10 @@ Maintainer: Andreas Ehrl
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_mat/matlist_reactions.H"
+#include "../drt_mat/matlist_chemotaxis.H"
+#include "../drt_mat/scatra_chemotaxis_mat.H"
+#include "../drt_mat/matlist_chemoreac.H"
+#include "../drt_mat/scatra_reaction_mat.H"
 #include "../drt_mat/elchmat.H"
 #include "../drt_mat/myocard.H"
 #include "../drt_mat/elasthyper.H"
@@ -355,7 +359,8 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
   }
   else if(mat->MaterialType() == INPAR::MAT::m_matlist_reactions) // we have a system of reactive scalars
     {
-      const MAT::MatListReactions* actmat = static_cast<const MAT::MatListReactions*>(mat.get());
+    //Note: We need to do a dynamic_cast here since Chemotaxis, Reaction, and Chemo-reaction are in a diamond inheritance structure
+      const MAT::MatListReactions* actmat = dynamic_cast<const MAT::MatListReactions*>(mat.get());
       numdofpernode_=actmat->NumMat();
 
       for (int ii=0; ii<numdofpernode_; ++ii)
@@ -373,8 +378,82 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
         // In the context of reactions the only valid material combination is m_matlist and m_scatra_reaction
         if(actmat->MaterialById(actmat->ReacID(jj))->MaterialType() != INPAR::MAT::m_scatra_reaction)
           dserror("The material MAT_matlist_reaction only supports MAT_scatra_reaction as valid reaction Material");
+
+        // some safty check for the MAT_scatra_reaction materials
+        const Teuchos::RCP<const MAT::ScatraReactionMat>& reacmat = Teuchos::rcp_static_cast<const MAT::ScatraReactionMat>(actmat->MaterialById(actmat->ReacID(jj)));
+        const int stoichlength = reacmat->Stoich()->size();
+        if (stoichlength != numdofpernode_)
+          dserror("The number of scalars in your MAT_scatra_reaction material with ID %i does not fit to the number of scalars!",actmat->ReacID(jj));
       }
   }
+  else if (mat->MaterialType() == INPAR::MAT::m_matlist_chemotaxis) // we have a system of chemotactic scalars
+  {
+    //Note: We need to do a dynamic_cast here since Chemotaxis, Reaction, and Chemo-reaction are in a diamond inheritance structure
+    const MAT::MatListChemotaxis* actmat = dynamic_cast<const MAT::MatListChemotaxis*>(mat.get());
+    numdofpernode_=actmat->NumMat();
+
+    for (int ii=0; ii<numdofpernode_; ++ii)
+    {
+      // In the context of chemotaxis the only valid material combination is m_matlist and m_scatra
+      if(actmat->MaterialById(actmat->MatID(ii))->MaterialType() != INPAR::MAT::m_scatra)
+        dserror("The material Mat_matlist_chemotaxis only supports MAT_scatra as valid main Material");
+    }
+
+    int numpair = actmat->NumPair();
+    for (int jj=0; jj<numpair; ++jj)
+    {
+      // In the context of chemotaxis the only valid material combination is m_matlist and m_scatra_chemotaxis
+      if(actmat->MaterialById(actmat->PairID(jj))->MaterialType() != INPAR::MAT::m_scatra_chemotaxis)
+        dserror("The material MAT_matlist_chemotaxis only supports MAT_scatra_chemotaxis as valid reaction Material");
+
+      // some safty check for the MAT_scatra_chemotaxis materials
+      const Teuchos::RCP<const MAT::ScatraChemotaxisMat>& reacmat = Teuchos::rcp_static_cast<const MAT::ScatraChemotaxisMat>(actmat->MaterialById(actmat->PairID(jj)));
+      const int pairlength = reacmat->Pair()->size();
+      if (pairlength != numdofpernode_)
+        dserror("The number of scalars in your MAT_scatra_chemotaxis material with ID %i does not fit to the number of scalars!",actmat->PairID(jj));
+    }
+  }
+  else if (mat->MaterialType() == INPAR::MAT::m_matlist_chemoreac) // we have a system of chemotactic scalars
+  {
+    //Note: We need to do a dynamic_cast here since Chemotaxis, Reaction, and Chemo-reaction are in a diamond inheritance structure
+    const MAT::MatListChemoReac* actmat = dynamic_cast<const MAT::MatListChemoReac*>(mat.get());
+    numdofpernode_=actmat->NumMat();
+
+    for (int ii=0; ii<numdofpernode_; ++ii)
+    {
+      // In the context of reactions/chemotaxis the only valid material combination is m_matlist and m_scatra
+      if(actmat->MaterialById(actmat->MatID(ii))->MaterialType() != INPAR::MAT::m_scatra)
+        dserror("The material Mat_matlist_chemoreac only supports MAT_scatra as valid main Material");
+    }
+
+    int numreac = actmat->NumReac();
+    for (int jj=0; jj<numreac; ++jj)
+    {
+      // In the context of reactions the only valid material combination is m_matlist and m_scatra_reaction
+      if(actmat->MaterialById(actmat->ReacID(jj))->MaterialType() != INPAR::MAT::m_scatra_reaction)
+        dserror("The material MAT_matlist_reaction only supports MAT_scatra_reaction as valid reaction Material");
+
+      // some safty check for the MAT_scatra_reaction materials
+      const Teuchos::RCP<const MAT::ScatraReactionMat>& reacmat = Teuchos::rcp_static_cast<const MAT::ScatraReactionMat>(actmat->MaterialById(actmat->ReacID(jj)));
+      const int stoichlength = reacmat->Stoich()->size();
+      if (stoichlength != numdofpernode_)
+        dserror("The number of scalars in your MAT_scatra_reaction material with ID %i does not fit to the number of scalars!",actmat->ReacID(jj));
+    }
+
+    int numpair = actmat->NumPair();
+    for (int jj=0; jj<numpair; ++jj)
+    {
+      // In the context of chemotaxis the only valid material combination is m_matlist and m_scatra_chemotaxis
+      if(actmat->MaterialById(actmat->PairID(jj))->MaterialType() != INPAR::MAT::m_scatra_chemotaxis)
+        dserror("The material MAT_matlist_chemotaxis only supports MAT_scatra_chemotaxis as valid reaction Material");
+
+      // some safty check for the MAT_scatra_chemotaxis materials
+      const Teuchos::RCP<const MAT::ScatraChemotaxisMat>& reacmat = Teuchos::rcp_static_cast<const MAT::ScatraChemotaxisMat>(actmat->MaterialById(actmat->PairID(jj)));
+      const int pairlength = reacmat->Pair()->size();
+      if (pairlength != numdofpernode_)
+        dserror("The number of scalars in your MAT_scatra_chemotaxis material with ID %i does not fit to the number of scalars!",actmat->PairID(jj));
+    }
+}
   else if(mat->MaterialType() == INPAR::MAT::m_elchmat)
   {
     const MAT::ElchMat* actmat = static_cast<const MAT::ElchMat*>(mat.get());

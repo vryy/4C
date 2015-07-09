@@ -665,7 +665,14 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
         CalcMatReact(emat,k,timefacfac,timetaufac,taufac,densnp,sgconv,diff);
 
       //----------------------------------------------------------------
-      // 4) element right hand side
+      // 4) element matrix: chemotactic term
+      //----------------------------------------------------------------
+
+      //including stabilization
+      CalcMatChemo(emat,k,timefacfac,timetaufac,densnp,scatrares,sgconv,diff);
+
+      //----------------------------------------------------------------
+      // 5) element right hand side
       //----------------------------------------------------------------
       //----------------------------------------------------------------
       // computation of bodyforce (and potentially history) term,
@@ -716,7 +723,13 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
         CalcRHSReact(erhs,k,rhsfac,rhstaufac,rea_phi,densnp,scatrares);
 
       //----------------------------------------------------------------
-      // 5) advanced turbulence models
+      // chemotactic terms (standard Galerkin and stabilization) on rhs
+      //----------------------------------------------------------------
+
+      CalcRHSChemo(erhs,k,rhsfac,rhstaufac,scatrares,densnp);
+
+      //----------------------------------------------------------------
+      // 6) advanced turbulence models
       //----------------------------------------------------------------
 
       //----------------------------------------------------------------
@@ -1114,7 +1127,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::GetMaterialParams(
 // get the material
   Teuchos::RCP<MAT::Material> material = ele->Material();
 
-// get diffusivity / diffusivities
   if (material->MaterialType() == INPAR::MAT::m_matlist)
   {
     const Teuchos::RCP<const MAT::MatList>& actmat
@@ -1151,10 +1163,15 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Materials(
 
   )
 {
-  if (material->MaterialType() == INPAR::MAT::m_scatra)
+  switch(material->MaterialType())
+  {
+  case INPAR::MAT::m_scatra:
     MatScaTra(material,k,densn,densnp,densam,visc,iquad);
-  else dserror("Material type is not supported");
-
+    break;
+  default:
+    dserror("Material type %i is not supported",material->MaterialType());
+    break;
+  }
   return;
 }
 
@@ -2024,6 +2041,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcRHSReact(
   if (scatrapara_->StabType() != INPAR::SCATRA::stabtype_no_stabilization)
   {
     vrhs = scatrapara_->USFEMGLSFac()*rhstaufac*densnp*reamanager_->GetReaCoeff(k)*scatrares;
+    //TODO: this is not totally correct since GetReaCoeff(k) can depend on phinp(k)...
     for (int vi=0; vi<nen_; ++vi)
     {
       const int fvi = vi*numdofpernode_+k;

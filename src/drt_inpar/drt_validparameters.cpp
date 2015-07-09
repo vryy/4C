@@ -3540,12 +3540,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Undefined",
                                  "ConvectionDiffusion",
                                  "Advanced_Reaction",
-                                 "Cardiac_Monodomain"),
+                                 "Cardiac_Monodomain",
+                                 "Chemotaxis",
+                                 "Chemo_Reac"),
                                tuple<int>(
                                  INPAR::SCATRA::impltype_undefined,
                                  INPAR::SCATRA::impltype_std,
                                  INPAR::SCATRA::impltype_advreac,
-                                 INPAR::SCATRA::impltype_cardiac_monodomain),
+                                 INPAR::SCATRA::impltype_cardiac_monodomain,
+                                 INPAR::SCATRA::impltype_chemo,
+                                 INPAR::SCATRA::impltype_chemoreac),
                                  &ssidyn);
 
   BoolParameter("MATCHINGGRID","Yes","is matching grid",&ssidyn);
@@ -6056,11 +6060,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<std::string>(
                                  "Undefined",
                                  "ConvectionDiffusion",
-                                 "Advanced_Reaction"),
+                                 "Advanced_Reaction",
+                                 "Chemotaxis",
+                                 "Chemo_Reac"),
                                tuple<int>(
                                  INPAR::SCATRA::impltype_undefined,
                                  INPAR::SCATRA::impltype_std,
-                                 INPAR::SCATRA::impltype_advreac),
+                                 INPAR::SCATRA::impltype_advreac,
+                                 INPAR::SCATRA::impltype_chemo,
+                                 INPAR::SCATRA::impltype_chemoreac),
                                  &fs3idyn);
 
   /*----------------------------------------------------------------------*/

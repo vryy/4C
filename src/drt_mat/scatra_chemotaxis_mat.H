@@ -1,9 +1,9 @@
 /*!----------------------------------------------------------------------
-\file scatra_reaction_mat.H
+\file scatra_chemotaxis_mat.H
 
  \brief
 
-This file contains the base material for reactive scalars.
+This file contains the base material for chemotactic scalars.
 
 <pre>
 Maintainer: Moritz Thon
@@ -13,11 +13,8 @@ Maintainer: Moritz Thon
 </pre>
 *----------------------------------------------------------------------*/
 
-
-#ifndef SCATRA_REACTION_MAT_H
-#define SCATRA_REACTION_MAT_H
-
-
+#ifndef SCATRA_CHEMOTAXIS_MAT_H_
+#define SCATRA_CHEMOTAXIS_MAT_H_
 
 #include "matpar_parameter.H"
 #include "material.H"
@@ -29,84 +26,62 @@ namespace MAT
   namespace PAR
   {
 
-  enum reaction_coupling
-  {
-    reac_coup_none,  ///< no coupling, initialization value
-    reac_coup_simple_multiplicative, ///< coupling of type A*B
-    reac_coup_constant, //< no coupling, constant increase/decrease
-    reac_coup_michaelis_menten, //coupling of type (B/(const+B))*A
-  };
-
   /*----------------------------------------------------------------------*/
   /// parameters for scalar transport material
-  class ScatraReactionMat : public Parameter
+  class ScatraChemotaxisMat : public Parameter
   {
   public:
 
     /// standard constructor
-    ScatraReactionMat(
+    ScatraChemotaxisMat(
       Teuchos::RCP<MAT::PAR::Material> matdata
       );
 
     /// destructor
-    virtual ~ScatraReactionMat() { ; }
+    virtual ~ScatraChemotaxisMat() { ; }
 
     /// create material instance of matching type with my parameters
     virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
-    void OptParams(std::map<std::string, int>* pnames);
-
-    /// returns the enum of the current coupling type
-    MAT::PAR::reaction_coupling SetCouplingType( Teuchos::RCP<MAT::PAR::Material> matdata );
-
-    /// number of scalars in this reaction
+    /// number of scalars in this pair
     const int numscal_;
 
     /// the list of material IDs
-    const std::vector<int>* stoich_;
+    const std::vector<int>* pair_;
 
     /// reaction coefficient
-    const double reaccoeff_;
-
-    /// type of coupling
-    const MAT::PAR::reaction_coupling coupling_;
-
-    /// specifies scalar type in reaction
-    const std::vector<double>* couprole_;
-
-    /// parameter to define start of reaction
-    const double reacstart_;
+    const double chemocoeff_;
 
   };  // class Scatra
 
 } // namespace PAR
 
-class ScatraReactionMatType : public DRT::ParObjectType
+class ScatraChemotaxisMatType : public DRT::ParObjectType
 {
 public:
 
-  std::string Name() const { return "ScatraReactionMatType"; }
+  std::string Name() const { return "ScatraChemotaxisMatType"; }
 
-  static ScatraReactionMatType & Instance() { return instance_; };
+  static ScatraChemotaxisMatType & Instance() { return instance_; };
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
 private:
 
-  static ScatraReactionMatType instance_;
+  static ScatraChemotaxisMatType instance_;
 };
 
   /*----------------------------------------------------------------------*/
   /// wrapper for scalar transport material
-  class ScatraReactionMat : public Material
+  class ScatraChemotaxisMat : public Material
   {
   public:
 
     /// construct empty material object
-    ScatraReactionMat();
+    ScatraChemotaxisMat();
 
     /// construct the material object given material parameters
-    explicit ScatraReactionMat(MAT::PAR::ScatraReactionMat* params);
+    explicit ScatraChemotaxisMat(MAT::PAR::ScatraChemotaxisMat* params);
 
     //! @name Packing and Unpacking
 
@@ -116,7 +91,7 @@ private:
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return ScatraReactionMatType::Instance().UniqueParObjectId(); }
+    virtual int UniqueParObjectId() const { return ScatraChemotaxisMatType::Instance().UniqueParObjectId(); }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -147,28 +122,19 @@ private:
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_scatra_reaction; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_scatra_chemotaxis; }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new ScatraReactionMat( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new ScatraChemotaxisMat( *this ) ); }
 
     /// return number of scalars for this reaction
     int NumScal() const { return params_->numscal_; }
 
-    /// return reaction coefficient
-    double ReacCoeff() const { return params_->reaccoeff_; }
+    /// return chemotaxis coefficient
+    double ChemoCoeff() const { return params_->chemocoeff_; }
 
-    /// return stoichometrie
-    std::vector<int>* Stoich() const { return (std::vector<int>*)params_->stoich_; }
-
-    /// return type of coupling
-    MAT::PAR::reaction_coupling Coupling() const { return params_->coupling_; }
-
-    /// return role in coupling
-    std::vector<double>* Couprole() const { return (std::vector<double>*)params_->couprole_;}
-
-    /// densification coefficient
-    double ReacStart() const { return params_->reacstart_; }
+    /// return pairing
+    std::vector<int>* Pair() const { return (std::vector<int>*)params_->pair_; }
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
@@ -176,10 +142,10 @@ private:
   private:
 
     /// my material parameters
-    MAT::PAR::ScatraReactionMat* params_;
+    MAT::PAR::ScatraChemotaxisMat* params_;
 
   };
 
 }
 
-#endif
+#endif /* SCATRA_CHEMOTAXIS_MAT_H_ */

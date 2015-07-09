@@ -825,11 +825,10 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcArtificialDiff(
 } //ScaTraEleCalc::CalcSubgrDiff
 
 
-/*----------------------------------------------------------------------*
- |  calculate residual of scalar transport equation and                 |
- |  subgrid-scale part of scalar (depending on respective               |
- |  stationary or time-integration scheme)                     vg 10/11 |
- *----------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------------*
+ |  calculation of strong residual for stabilization                             |
+ | (depending on respective stationary or time-integration scheme)      vg 10/11 |
+ *-------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcStrongResidual(
   const int                   k,          //!< index of current scalar

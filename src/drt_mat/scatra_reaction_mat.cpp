@@ -1,11 +1,15 @@
 /*!----------------------------------------------------------------------
-\file scatra_reactions_mat.cpp
+\file scatra_reaction_mat.cpp
+
+ \brief
+
+This file contains the base material for reactive scalars.
 
 <pre>
 Maintainer: Moritz Thon
             thon@mhpc.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289- 10364
+            089-289-10364
 </pre>
 *----------------------------------------------------------------------*/
 

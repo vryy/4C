@@ -22,6 +22,8 @@ Maintainer: Andreas Ehrl
 #include "scatra_ele_calc_loma.H"
 #include "scatra_ele_calc_poro.H"
 #include "scatra_ele_calc_advanced_reaction.H"
+#include "scatra_ele_calc_chemo.H"
+#include "scatra_ele_calc_chemo_reac.H"
 #include "scatra_ele_calc_poro_reac.H"
 #include "scatra_ele_calc_aniso.H"
 #include "scatra_ele_calc_cardiac_monodomain.H"
@@ -309,6 +311,16 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
   case INPAR::SCATRA::impltype_advreac:
   {
     return DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::Instance(numdofpernode,numscal);
+    break;
+  }
+  case INPAR::SCATRA::impltype_chemo:
+    {
+      return DRT::ELEMENTS::ScaTraEleCalcChemo<distype>::Instance(numdofpernode,numscal);
+      break;
+    }
+  case INPAR::SCATRA::impltype_chemoreac:
+  {
+    return DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype>::Instance(numdofpernode,numscal);
     break;
   }
   case INPAR::SCATRA::impltype_pororeac:

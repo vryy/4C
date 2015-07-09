@@ -70,6 +70,8 @@ namespace INPAR
       m_ion,                                   ///< properties of an ion species in an electrolyte solution
       m_matlist,                               ///< collection of single materials (used for scalar transport problems)
       m_matlist_reactions,                     ///< collection of single materials (used for scalar transport problems) and collection of reactions (used for advanced reaction elements)
+      m_matlist_chemotaxis,                    ///< collection of single materials (used for scalar transport problems) and collection of chemotactic pairs (used for chemotaxis elements)
+      m_matlist_chemoreac,                     ///< collection of single materials (used for scalar transport problems) and collection of chemotactic pairs AND reactions
       m_mixfrac,                               ///< material according to mixture-fraction approach
       m_modpowerlaw,                           ///< fluid with nonlinear viscosity according to a modified power law
       m_myocard,                               ///< anisotropic electrophysical model of heart tissue
@@ -91,6 +93,7 @@ namespace INPAR
       m_scatra_growth_scd,                     ///< scalar transport material for coupling with growth model
       m_scatra_poroECM,                        ///< scalar transport material
       m_scatra_reaction,                       ///< reaction definition and parameters
+      m_scatra_chemotaxis,                     ///< chemotaxis definition parameters
       m_soret,                                 ///< material for heat transport due to Fourier-type thermal conduction and the Soret effect
       m_spring,                                ///< elastic spring (translational or rotational)
       m_struct_multiscale,                     ///<  structural microscale approach

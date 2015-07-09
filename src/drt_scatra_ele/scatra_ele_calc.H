@@ -458,8 +458,8 @@ namespace ELEMENTS
       const double                 vol        //!< element volume
     );
 
-    //! calculation of residual and residual-based subgrid-scale scalar for stabilization
-    void CalcStrongResidual(
+    //! calculation of strong residual for stabilization
+    virtual void CalcStrongResidual(
       const int                   k,          //!< index of current scalar
       double&                     scatrares,  //!< residual of convection-diffusion-reaction eq
       const double                densam,     //!< density at t_(n+am)
@@ -810,6 +810,17 @@ namespace ELEMENTS
       const LINALG::Matrix<nen_,1>&      diff         //!< laplace term
     );
 
+    virtual void CalcMatChemo(
+      Epetra_SerialDenseMatrix&           emat,
+      const int                           k,
+      const double                        timefacfac,
+      const double                        timetaufac,
+      const double                        densnp,
+      const double                        scatrares,
+      const LINALG::Matrix<nen_,1>&       sgconv,
+      const LINALG::Matrix<nen_,1>&       diff
+    ){return;};
+
     //! calculation of linearized mass rhs vector
     void CalcRHSLinMass(
       Epetra_SerialDenseVector&     erhs,        //!< element vector to be filled
@@ -891,6 +902,15 @@ namespace ELEMENTS
       const double                  densnp,      //!< density at time_(n+1)
       const double                  scatrares    //!< residual of convection-diffusion-reaction eq
     );
+
+    virtual void CalcRHSChemo(
+        Epetra_SerialDenseVector&     erhs,
+        const int                     k,
+        const double                  rhsfac,
+        const double                  rhstaufac,
+        const double                  scatrares,
+        const double                  densnp
+    ){return;};
 
     //! fine-scale subgrid-diffusivity term on right hand side
     void CalcRHSFSSGD(

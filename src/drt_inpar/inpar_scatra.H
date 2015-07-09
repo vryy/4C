@@ -186,7 +186,9 @@ namespace INPAR
       impltype_pororeac,
       impltype_aniso,
       impltype_std_meshfree,
-      impltype_cardiac_monodomain
+      impltype_cardiac_monodomain,
+      impltype_chemo,
+      impltype_chemoreac
     };
 
     /// type of method for improving consistency of stabilized methods

@@ -70,7 +70,10 @@ Maintainer: Lena Wiechert
 #include "growth_scd.H"
 #include "scatra_growth_scd.H"
 #include "scatra_reaction_mat.H"
+#include "scatra_chemotaxis_mat.H"
 #include "matlist_reactions.H"
+#include "matlist_chemotaxis.H"
+#include "matlist_chemoreac.H"
 #include "constraintmixture.H"
 #include "biofilm.H"
 #include "optimization_density.H"
@@ -260,6 +263,13 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     MAT::PAR::ScatraReactionMat* params = static_cast<MAT::PAR::ScatraReactionMat*>(curmat->Parameter());
     return params->CreateMaterial();
   }
+  case INPAR::MAT::m_scatra_chemotaxis:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::ScatraChemotaxisMat(curmat));
+    MAT::PAR::ScatraChemotaxisMat* params = static_cast<MAT::PAR::ScatraChemotaxisMat*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
     case INPAR::MAT::m_scatra_aniso:
   {
     if (curmat->Parameter() == NULL)
@@ -374,9 +384,26 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
   }
   case INPAR::MAT::m_matlist_reactions:
     {
+      //Note: We need to do a dynamic_cast here since Chemotaxis, Reaction, and Chemo-reaction are in a diamond inheritance structure
       if (curmat->Parameter() == NULL)
         curmat->SetParameter(new MAT::PAR::MatListReactions(curmat));
-            MAT::PAR::MatListReactions* params = static_cast<MAT::PAR::MatListReactions*>(curmat->Parameter());
+            MAT::PAR::MatListReactions* params = dynamic_cast<MAT::PAR::MatListReactions*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
+  case INPAR::MAT::m_matlist_chemotaxis:
+    {
+      //Note: We need to do a dynamic_cast here since Chemotaxis, Reaction, and Chemo-reaction are in a diamond inheritance structure
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::MatListChemotaxis(curmat));
+            MAT::PAR::MatListChemotaxis* params = dynamic_cast<MAT::PAR::MatListChemotaxis*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
+  case INPAR::MAT::m_matlist_chemoreac:
+    {
+      //Note: We need to do a dynamic_cast here since Chemotaxis, Reaction, and Chemo-reaction are in a diamond inheritance structure
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::MatListChemoReac(curmat));
+            MAT::PAR::MatListChemoReac* params = dynamic_cast<MAT::PAR::MatListChemoReac*>(curmat->Parameter());
       return params->CreateMaterial();
     }
   case INPAR::MAT::m_elchmat:

@@ -229,9 +229,8 @@ protected:
       const double                            scale=1.0     //!< scale factor
   );
 
-  //! Clear reac. body force, reaction coefficient and derivatives (i.e. set them to zero)
-  void ClearAdvancedReactionTerms(
-  );
+  //! Clear all reaction related class variable (i.e. set them to zero)
+  void ClearAdvancedReactionTerms( );
 
   //! evaluate shape functions and their derivatives at element center
   virtual const double EvalShapeFuncAndDerivsAtEleCenter();

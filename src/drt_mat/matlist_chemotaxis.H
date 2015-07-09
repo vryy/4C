@@ -1,11 +1,11 @@
 /*!----------------------------------------------------------------------
-\file matlist_reactions.H
+\file matlist_chemotaxis.H
 
  \brief
 
-This file contains the material for reactive scalars. It derives from MAT_matlist
-and adds everything to supervise all the MAT_scatra_raction materials. The reactions
-itself are defined inside the MAT_scatra_raction materials. So MAT_matlist_reactions
+This file contains the material for chemotactic scalars. It derives from MAT_matlist
+and adds everything to supervise all the MAT_scatra_chemotaxis materials. The chemotaxation
+itself is defined inside the MAT_scatra_chemotaxis materials. So MAT_matlist_chemotaxis
 is just a "control instance".
 
 
@@ -17,10 +17,8 @@ Maintainer: Moritz Thon
 </pre>
 *----------------------------------------------------------------------*/
 
-#ifndef MatListReactions_H
-#define MatListReactions_H
-
-
+#ifndef MATLIST_CHEMOTAXIS_H_
+#define MATLIST_CHEMOTAXIS_H_
 
 #include "matpar_parameter.H"
 #include "material.H"
@@ -34,17 +32,17 @@ namespace MAT
   {
     /*----------------------------------------------------------------------*/
     /// material parameters for list of materials
-    class MatListReactions : public virtual MatList
+    class MatListChemotaxis : public virtual MatList
     {
     public:
 
       /// standard constructor
-      MatListReactions(
+      MatListChemotaxis(
         Teuchos::RCP<MAT::PAR::Material> matdata
         );
 
       /// destructor
-      virtual ~MatListReactions() { ; }
+      virtual ~MatListChemotaxis() { ; }
 
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
@@ -52,14 +50,14 @@ namespace MAT
       /// @name material parameters
       //@{
 
-      /// provide ids of the individual reaction materials
-      const std::vector<int>* ReacIds() const {return reacids_;}
+      /// provide ids of the individual pair materials
+      const std::vector<int>* PairIds() const {return pairids_;}
 
-      /// length of reaction list
-      const int numreac_;
+      /// length of pair list
+      const int numpair_;
 
-      /// the list of reaction IDs
-      const std::vector<int>* reacids_;
+      /// the list of pair IDs
+      const std::vector<int>* pairids_;
 
       //@}
 
@@ -67,32 +65,32 @@ namespace MAT
 
   }  // namespace PAR
 
-class MatListReactionsType : public DRT::ParObjectType
+class MatListChemotaxisType : public DRT::ParObjectType
 {
 public:
 
-  std::string Name() const { return "MatListReactionsType"; }
+  std::string Name() const { return "MatListChemotaxisType"; }
 
-  static MatListReactionsType & Instance() { return instance_; };
+  static MatListChemotaxisType & Instance() { return instance_; };
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
 private:
 
-  static MatListReactionsType instance_;
+  static MatListChemotaxisType instance_;
 };
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for a list of materials
-  class MatListReactions : public virtual MatList
+  class MatListChemotaxis : public virtual MatList
   {
   public:
 
     /// construct empty material object
-    MatListReactions();
+    MatListChemotaxis();
 
     /// construct the material object given material parameters
-    explicit MatListReactions(MAT::PAR::MatListReactions* params);
+    explicit MatListChemotaxis(MAT::PAR::MatListChemotaxis* params);
 
     //! @name Packing and Unpacking
 
@@ -102,7 +100,7 @@ private:
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return MatListReactionsType::Instance().UniqueParObjectId(); }
+    virtual int UniqueParObjectId() const { return MatListChemotaxisType::Instance().UniqueParObjectId(); }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -133,19 +131,19 @@ private:
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_matlist_reactions; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_matlist_chemotaxis; }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new MatListReactions( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new MatListChemotaxis( *this ) ); }
 
     /// number of reactions
-    int NumReac() const { return paramsreac_->numreac_; }
+    int NumPair() const { return paramschemo_->numpair_; }
 
     /// reaction ID by Index
-    int ReacID( const unsigned index ) const;
+    int PairID( const unsigned index ) const;
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::MatListReactions* Parameter() const { return paramsreac_; }
+    virtual MAT::PAR::MatListChemotaxis* Parameter() const { return paramschemo_; }
 
   protected:
 
@@ -153,15 +151,14 @@ private:
     virtual void SetupMatMap();
 
   private:
-
     /// clear everything
     void Clear();
 
     /// my material parameters
-    MAT::PAR::MatListReactions* paramsreac_;
+    MAT::PAR::MatListChemotaxis* paramschemo_;
   };
 
 }
 
-#endif
 
+#endif /* MATLIST_CHEMOTAXIS_H_ */

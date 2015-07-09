@@ -511,6 +511,11 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/scatra_mat_aniso.cpp
   src/drt_mat/scatra_mat_poro_ecm.cpp
   src/drt_mat/scatra_reaction_mat.cpp
+  src/drt_mat/scatra_chemotaxis_mat.cpp
+  src/drt_mat/matlist_reactions.cpp
+  src/drt_mat/matlist_chemotaxis.cpp
+  src/drt_mat/matlist_chemoreac.cpp
+  src/drt_mat/scatra_mat_aniso.cpp
   src/drt_mat/soret.cpp
   src/drt_mat/spring.cpp
   src/drt_mat/structporo.cpp
@@ -1099,6 +1104,8 @@ set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra_ele/scatra_ele_calc_lsreinit.cpp
   src/drt_scatra_ele/scatra_ele_calc_poro.cpp
   src/drt_scatra_ele/scatra_ele_calc_advanced_reaction.cpp
+  src/drt_scatra_ele/scatra_ele_calc_chemo.cpp
+  src/drt_scatra_ele/scatra_ele_calc_chemo_reac.cpp
   src/drt_scatra_ele/scatra_ele_calc_poro_reac.cpp
   src/drt_scatra_ele/scatra_ele_calc_utils.cpp
   src/drt_scatra_ele/scatra_ele_parameter.cpp

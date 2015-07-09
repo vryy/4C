@@ -232,7 +232,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AppendMaterialDefinition(matlist,m);
   }
   /*----------------------------------------------------------------------*/
-  // anisotropic scalar transport material (with potential reaction coefficient)
+  // scalar transport reaction material
   {
     Teuchos::RCP<MaterialDefinition> m
       = Teuchos::rcp(new MaterialDefinition("MAT_scatra_reaction",
@@ -249,6 +249,20 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AppendMaterialDefinition(matlist,m);
   }
 
+  /*----------------------------------------------------------------------*/
+  // scalar transport chemotaxis material
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_scatra_chemotaxis",
+                                            "chemotaxis material",
+                                            INPAR::MAT::m_scatra_chemotaxis));
+
+    AddNamedInt(m,"NUMSCAL","number of chemotactic pairs for these elements");
+    AddNamedIntVector(m,"PAIR","chemotaxis pairing","NUMSCAL");
+    AddNamedReal(m,"CHEMOCOEFF","chemotaxis coefficient");
+
+    AppendMaterialDefinition(matlist,m);
+  }
 
   /*----------------------------------------------------------------------*/
   // anisotropic scalar transport material (with potential reaction coefficient)
@@ -510,9 +524,46 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             INPAR::MAT::m_matlist_reactions));
 
     AddNamedBool(m,"LOCAL","individual materials allocated per element or only at global scope");
-    //AddNamedInt(m,"LOCAL","individual materials allocated per element or only at global scope");
     AddNamedInt(m,"NUMMAT","number of materials in list");
     AddNamedIntVector(m,"MATIDS","the list material IDs","NUMMAT");
+    AddNamedInt(m,"NUMREAC","number of reactions for these elements",0);
+    AddNamedIntVector(m,"REACIDS","advanced reaction list","NUMREAC",0);
+    AddNamedSeparator(m,"END","indicating end of line");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // material collection with chemotaxis (thon 06/15)
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_matlist_chemotaxis",
+                                            "list/collection of materials, i.e. material IDs and list of chemotactic pairs",
+                                            INPAR::MAT::m_matlist_chemotaxis));
+
+    AddNamedBool(m,"LOCAL","individual materials allocated per element or only at global scope");
+    AddNamedInt(m,"NUMMAT","number of materials in list");
+    AddNamedIntVector(m,"MATIDS","the list material IDs","NUMMAT");
+    AddNamedInt(m,"NUMPAIR","number of pairs for these elements",0);
+    AddNamedIntVector(m,"PAIRIDS","chemotaxis pairs list","NUMPAIR",0);
+    AddNamedSeparator(m,"END","indicating end of line");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // material collection with reactions AND chemotaxis (thon 06/15)
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_matlist_chemo_reac",
+                                            "list/collection of materials, i.e. material IDs and list of reactive/chemotactic pairs",
+                                            INPAR::MAT::m_matlist_chemoreac));
+
+    AddNamedBool(m,"LOCAL","individual materials allocated per element or only at global scope");
+    AddNamedInt(m,"NUMMAT","number of materials in list");
+    AddNamedIntVector(m,"MATIDS","the list material IDs","NUMMAT");
+    AddNamedInt(m,"NUMPAIR","number of pairs for these elements",0);
+    AddNamedIntVector(m,"PAIRIDS","chemotaxis pairs list","NUMPAIR",0);
     AddNamedInt(m,"NUMREAC","number of reactions for these elements",0);
     AddNamedIntVector(m,"REACIDS","advanced reaction list","NUMREAC",0);
     AddNamedSeparator(m,"END","indicating end of line");

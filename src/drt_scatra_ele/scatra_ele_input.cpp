@@ -39,6 +39,10 @@ bool DRT::ELEMENTS::Transport::ReadElement(
     impltype_ = INPAR::SCATRA::impltype_std;
   else if(impltype == "AdvReac")
     impltype_ = INPAR::SCATRA::impltype_advreac;
+  else if(impltype == "Chemo")
+      impltype_ = INPAR::SCATRA::impltype_chemo;
+  else if(impltype == "ChemoReac")
+      impltype_ = INPAR::SCATRA::impltype_chemoreac;
   else if(impltype == "Aniso")
     impltype_ = INPAR::SCATRA::impltype_aniso;
   else if(impltype == "CardMono")

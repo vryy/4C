@@ -120,6 +120,16 @@ const std::string ImplTypeToString(const INPAR::SCATRA::ImplType impltype)
     impltypestring = "Advanced reactions";
     break;
   }
+  case INPAR::SCATRA::impltype_chemo:
+  {
+     impltypestring = "Chemotaxis";
+     break;
+  }
+  case INPAR::SCATRA::impltype_chemoreac:
+  {
+     impltypestring = "Advanced reactions AND chemotaxis";
+     break;
+  }
   case INPAR::SCATRA::impltype_aniso:
   {
     impltypestring = "Anisotropic scalar transport";

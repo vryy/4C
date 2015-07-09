@@ -42,14 +42,17 @@
   //!
   //! this equation is in BACI achieved by the MAT_scatra_reaction material:
   //! ----------------------------------------------------------MATERIALS
-  //! MAT 1 MAT_matlist_reactions LOCAL No NUMMAT 1 MATIDS 2 NUMREAC 1 REACIDS 3 END //collect Concentrations
+  //! MAT 1 MAT_matlist_reactions LOCAL No NUMMAT 3 MATIDS 2 4 5 NUMREAC 1 REACIDS 3 END //collect Concentrations
   //! MAT 2 MAT_scatra DIFFUSIVITY 0.0
+  //! MAT 4 MAT_scatra DIFFUSIVITY 0.0
+  //! MAT 5 MAT_scatra DIFFUSIVITY 0.0
   //! MAT 3 MAT_scatra_reaction NUMSCAL 3 STOICH -1 -2 3 REACOEFF 4.0 COUPLING simple_multiplicative
   //!
   //! implementation is of form: \partial_t c_i + K_i(c)*c_i = f_i(c), were f_i(c) is supposed not to linear depend on c_i
   //! hence we have to calculate and set K(c)=(4*B;8*A;0) and f(c)=(0;0;12*A*B) and corresponding derivatives.
 
-//! note for the implementation of the michaelis-menten scatra coupling feature:
+
+  //! note for the implementation of the michaelis-menten scatra coupling feature:
   //! reactant A promotes C and reactant B influences only until certain limit
   //!
   //! MAT 1 MAT_matlist_reactions LOCAL No NUMMAT 3 MATIDS 2 4 5 NUMREAC 1 REACIDS 3 END //collect Concentrations
@@ -65,6 +68,16 @@
   //!
   //! implementation is of form: \partial_t c_i + K_i(c)*c_i = f_i(c), were f_i(c) is supposed not to linear depend on c_i
   //! hence we have to calculate and set K(c)=(5*(B/(3+B));5*A*(1/(3+B));0) and f(c)=(0;0;5*A*(B/(3+B))) and corresponding derivatives.
+  //!
+  //! Thereby ROLE does describe of how to build the reaction term (negative value -1.3: simply multiply by A,
+  //! positive value 3.2: multiply by B/(B+3.2) ) and STOICH does describe on which scalar the reaction term should be applied.
+  //! Here another example:
+  //!   //! MAT 3 MAT_scatra_reaction NUMSCAL 4 STOICH +2 -1 0 0  REACOEFF 2.1 COUPLING michaelis_menten ROLE -1 0 1.2 3.0
+  //! the corresponding equations are
+  //!            \partial_t A = 2*2.1*A*C/(C+1.2)*D/(D+3.0)
+  //!            \partial_t B = -1*2.1*A*C/(C+1.2)*D/(D+3.0)
+  //!            \partial_t C = 0
+  //!            \partial_t D = 0
 
   //! note for the implementation of the constant scatra coupling feature:
   //! Product A is constantly produced
@@ -166,18 +179,18 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::GetMaterialParams(
   const int           iquad      //!< id of current gauss point
   )
 {
-//// get the material
+  // get the material
   Teuchos::RCP<MAT::Material> material = ele->Material();
 
   // We may have some reactive and some non-reactive elements in one discretisation.
-  // But since the calculation classes are singleton we have to reset all reactive stuff in case
+  // But since the calculation classes are singleton, we have to reset all reactive stuff in case
   // of non-reactive elements:
   ClearAdvancedReactionTerms();
 
   if (material->MaterialType() == INPAR::MAT::m_matlist)
   {
     const Teuchos::RCP<const MAT::MatList>& actmat = Teuchos::rcp_dynamic_cast<const MAT::MatList>(material);
-    if (actmat->NumMat() < my::numscal_) dserror("Not enough materials in MatList.");
+    if (actmat->NumMat() != my::numscal_) dserror("Not enough materials in MatList.");
 
     for (int k = 0;k<my::numscal_;++k)
     {
@@ -187,11 +200,11 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::GetMaterialParams(
       Materials(singlemat,k,densn,densnp,densam,visc,iquad);
     }
   }
+
   else if (material->MaterialType() == INPAR::MAT::m_matlist_reactions)
   {
-
     const Teuchos::RCP<const MAT::MatListReactions>& actmat = Teuchos::rcp_dynamic_cast<const MAT::MatListReactions>(material);
-    if (actmat->NumMat() < my::numscal_) dserror("Not enough materials in MatList.");
+    if (actmat->NumMat() != my::numscal_) dserror("Not enough materials in MatList.");
 
     GetAdvancedReactionCoefficients(actmat); // read all reaction input from material and copy it into local variables
 
@@ -205,12 +218,13 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::GetMaterialParams(
 
       SetAdvancedReactionTerms(k,1.0); //every reaction calculation stuff happens in here!!
     }
-
   }
+
   else
   {
     Materials(material,0,densn,densnp,densam,visc,iquad);
   }
+
   return;
 } //ScaTraEleCalc::GetMaterialParams
 
@@ -1138,17 +1152,17 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::GetAdvancedReactionCo
 {
   const Teuchos::RCP<const MAT::MatListReactions>& actmat = Teuchos::rcp_dynamic_cast<const MAT::MatListReactions>(material);
 
-    if(actmat==Teuchos::null)
-      dserror("cast to MatListReactions failed");
+  if(actmat==Teuchos::null)
+    dserror("cast to MatListReactions failed");
 
-    numcond_= actmat->NumReac();
+  numcond_= actmat->NumReac();
 
-    //We always have to reinitialize these vectors since our elements are singleton
-    stoich_.resize(numcond_);
-    couplingtype_.resize(numcond_);
-    reaccoeff_.resize(numcond_);
-    couprole_.resize(numcond_);
-    reacstart_.resize(numcond_);
+  //We always have to reinitialize these vectors since our elements are singleton
+  stoich_.resize(numcond_);
+  couplingtype_.resize(numcond_);
+  reaccoeff_.resize(numcond_);
+  couprole_.resize(numcond_);
+  reacstart_.resize(numcond_);
 
   for (int i=0;i<numcond_;i++)
   {
@@ -1187,12 +1201,11 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::SetAdvancedReactionTe
 
 }
 
-/*-------------------------------------------------------------------------------*
- |  clear reac. body force, reaction coefficient and derivatives      thon 02/15 |
- *-------------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------------*
+ |  Clear all reaction related class variable (i.e. set them to zero)   thon 02/15 |
+ *---------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::ClearAdvancedReactionTerms(
-                                    )
+void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::ClearAdvancedReactionTerms( )
 {
   const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = ReaManager();
 
