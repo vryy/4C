@@ -88,6 +88,10 @@ int MORTAR::MortarDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis,
   dofrowmap_ = newdofrowmap;
   dofcolmap_ = newdofcolmap;
 
+  // mortar element == face element: we need this...
+  idxcolfaces_   = idxcolelements_;
+  numdfcolfaces_ = numdfcolelements_;
+
   // tell all proxies (again!)
   NotifyAssigned();
 
