@@ -144,8 +144,6 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype,probdim>::CalcMatChemo(
          {
            const int fui = ui*my::numdofpernode_+partner;
            emat(fvi,fui) -= chemofac*chemocoeff*my::funct_.Dot(my::ephinp_[k])*gradgradmatrix(vi,ui);
-//           std::cout << "Scalar: " << k << "  derived to Scalar: " << partner << "\t at Position(" << fvi << "," << fui << ")" << std::endl;
-//           std::cout << "chemofac: " << chemofac << "\t chemocoeff: " << chemocoeff << "\t Phi " << my::funct_.Dot(my::ephinp_[k]) << "\t Gradient Gradient Matrix: " << gradgradmatrix(vi,ui) << std::endl;
          }
        }
 
@@ -366,7 +364,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype,probdim>::CalcStrongResidual(
       {
         // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
         LINALG::Matrix<my::nen_,1> laplace(true);;
-        GetLaplacianStrongForm(laplace);
+        my::GetLaplacianStrongForm(laplace);
         laplattractant = laplace.Dot(my::ephinp_[partner]);
       }
 
