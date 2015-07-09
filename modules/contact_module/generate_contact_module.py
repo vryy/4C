@@ -184,8 +184,9 @@ def main(argv=None):
   ##runCommand("cp -a " + inputfolder + "*.patch " + folder)
   
   # apply patch files
+  runCommand("for i in ./patches/*.patch; do patch -p0 < $i; done")
   runCommand("for i in ./patches/*.patch; do patch -p1 < $i; done")
-    
+
   # copy test program to main folder
   runCommand ("cp -a tmpl/main.cpp src/main.cpp")
   runCommand ("cp -a tmpl/validParameters.H src/validParameters.H")
