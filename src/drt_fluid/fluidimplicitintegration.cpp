@@ -377,23 +377,6 @@ void FLD::FluidImplicitTimeInt::Init()
   }
   reconstructder_ = DRT::INPUT::IntegralValue<int>(*stabparams,"Reconstruct_Sec_Der");
 
-  // Initialize WSS manager if smoothing via aggregation is desired
-  if (not stressmanager_->IsInit())
-  {
-    //necessary for the assembly
-    SetElementTimeParameter();
-
-    // create the parameters for the discretization
-    Teuchos::ParameterList eleparams;
-
-    //necessary here, because some application time integrations add something to the residual
-    //before the Neumann loads are added
-    residual_->PutScalar(0.0);
-
-    AVM3AssembleMatAndRHS(eleparams);
-    stressmanager_->InitAggr(sysmat_);
-  }
-
   return;
 } // FluidImplicitTimeInt::Init()
 
@@ -497,6 +480,23 @@ void FLD::FluidImplicitTimeInt::CompleteGeneralInit()
 
   //initialize Krylov space projection
   InitKrylovSpaceProjection();
+
+  // Initialize WSS manager if smoothing via aggregation is desired
+  if (not stressmanager_->IsInit())
+  {
+    //necessary for the assembly
+    SetElementTimeParameter();
+
+    // create the parameters for the discretization
+    Teuchos::ParameterList eleparams;
+
+    //necessary here, because some application time integrations add something to the residual
+    //before the Neumann loads are added
+    residual_->PutScalar(0.0);
+
+    AVM3AssembleMatAndRHS(eleparams);
+    stressmanager_->InitAggr(sysmat_);
+  }
 
   // ------------------------------------------------------------------------------
   // Pre-compute mass matrix in case the user wants output of kinetic energy

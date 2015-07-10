@@ -41,6 +41,7 @@ DRT::ELEMENTS::FluidEleParameter::FluidEleParameter()
     pspg_(true),
     supg_(true),
     vstab_(INPAR::FLUID::viscous_stab_none),
+    rstab_(INPAR::FLUID::reactive_stab_none),
     graddiv_(true),
     cross_(INPAR::FLUID::cross_stress_stab_none),
     reynolds_(INPAR::FLUID::reynolds_stress_stab_none),
