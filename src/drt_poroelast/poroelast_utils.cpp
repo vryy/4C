@@ -382,7 +382,7 @@ void POROELAST::UTILS::CreateVolumeGhosting(DRT::Discretization& idiscret)
     //Fill rdata with existing colmap
 
     const Epetra_Map* elecolmap = voldis[disidx]->ElementColMap();
-    const Teuchos::RCP<Epetra_Map> allredelecolmap = LINALG::AllreduceEMap(*elecolmap);
+    const Teuchos::RCP<Epetra_Map> allredelecolmap = LINALG::AllreduceEMap(*voldis[disidx]->ElementRowMap());
 
     for (int i = 0; i < elecolmap->NumMyElements(); ++i)
     {
@@ -413,7 +413,7 @@ void POROELAST::UTILS::CreateVolumeGhosting(DRT::Discretization& idiscret)
 
       // redistribute the volume discretization according to the
       // new (=old) element column layout & and ghost also nodes!
-      voldis[disidx]->ExtendedGhosting(*newelecolmap);
+      voldis[disidx]->ExtendedGhosting(*newelecolmap,true,true,true,false); //no check!!!
   }
 
   //2 Reconnect Face Element -- Porostructural Parent Element Pointers!
