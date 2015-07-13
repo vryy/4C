@@ -285,12 +285,13 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
   if((writeflux_==INPAR::SCATRA::flux_total_boundary)
       or (writeflux_==INPAR::SCATRA::flux_convective_boundary))
   {
-    if(myrank_ == 0)
+    // following screen output removed, for the time being
+    /*if(myrank_ == 0)
     {
       std::cout << "Convective flux contribution is added to trueresidual_ vector." << std::endl;
       std::cout << "Be sure not to address the same boundary part twice!" << std::endl;
       std::cout << "Two flux calculation boundaries should also not share a common node!" << std::endl;
-    }
+    }*/
 
     // now we evaluate the conditions and separate via ConditionID
     for (unsigned int i=0; i < condnames.size(); i++)
