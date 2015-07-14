@@ -2264,7 +2264,7 @@ void SCATRA::ScaTraTimIntImpl::CreateMeshtyingStrategy()
     strategy_ = Teuchos::rcp(new MeshtyingStrategyStd(this));
 
   return;
-} // ScaTraTimIntImpl::UpdateKrylovSpaceProjection
+} // ScaTraTimIntImpl::CreateMeshtyingStrategy
 
 
 /*----------------------------------------------------------------------*

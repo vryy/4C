@@ -34,6 +34,8 @@ TIMESTEP                        1.0
 INITIALFIELD                    field_by_condition
 WRITEFLUX                       totalflux_boundary
 LINEAR_SOLVER                   1
+------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
+ADAPTCONV                       no
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        no_stabilization
 DEFINITION_TAU                  Zero
@@ -45,9 +47,13 @@ DIFFCOND_FORMULATION            Yes
 EQUPOT                          divi
 -----------------------------------------------------------------S2I DYNAMIC
 MORTARTYPE                      NoMortar
-EQUILIBRATION                   full
+MATRIXTYPE                      block_condition
+EQUILIBRATION                   rows
 --------------------------------------------------------------------SOLVER 1
-SOLVER                          UMFPACK
+SOLVER                          Aztec_MSR
+AZPREC                          AMGnxn
+AMGNXN_TYPE                     XML
+AMGNXN_XML_FILE                 elch_3D_tet4_s2i_butlervolmer_BGS-AMG_3x3.xml
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_electrode DIFFCOEF -1 COND -1 DIFF_PARA_NUM 1 DIFF_PARA 2.e-10 COND_PARA_NUM 1 COND_PARA 1.e5 END
 MAT 2 MAT_elchmat NUMDOF 2 NUMSCAL 1 NUMPHASE 1 PHASEIDS 4 END
@@ -64,29 +70,29 @@ FUNCT 2 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION -0.080830788307857
 FUNCT 3 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 10.56
 FUNCT 3 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION 3.892392107528559
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 40 QUANTITY phi1 VALUE 8.25386927818403926e+00 TOLERANCE 1.e-09      // local lithium concentration at anode-electrolyte interface (anode side)
-SCATRA DIS scatra NODE 40 QUANTITY phi2 VALUE -7.10591078037155026e-08 TOLERANCE 1.e-16     // local electric potential at anode-electrolyte interface (anode side)
-SCATRA DIS scatra NODE 40 QUANTITY fluxx VALUE -4.21605799617962504e-06 TOLERANCE 1.e-15    // local flux at anode-electrolyte interface (anode side)
-SCATRA DIS scatra NODE 40 QUANTITY fluxy VALUE -5.00118504590161356e-06 TOLERANCE 1.e-15
-SCATRA DIS scatra NODE 40 QUANTITY fluxz VALUE 3.74057407583640724e-06 TOLERANCE 1.e-15
-SCATRA DIS scatra NODE 317 QUANTITY fluxx VALUE -4.21588342879101206e-06 TOLERANCE 1.e-15   // local flux at anode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 317 QUANTITY fluxy VALUE -5.00087247489078616e-06 TOLERANCE 1.e-15
-SCATRA DIS scatra NODE 317 QUANTITY fluxz VALUE 3.74020918397649532e-06 TOLERANCE 1.e-15
-SCATRA DIS scatra NODE 317 QUANTITY phi1 VALUE 1.20013743861816047e+00 TOLERANCE 1.e-09     // local lithium concentration at anode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 317 QUANTITY phi2 VALUE -9.96792905277102542e-02 TOLERANCE 1.e-11    // local electric potential at anode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 237 QUANTITY phi1 VALUE 1.19995900543406631e+00 TOLERANCE 1.e-09     // local lithium concentration at cathode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 237 QUANTITY phi2 VALUE -9.96864242915524862e-02 TOLERANCE 1.e-11    // local electric potential at cathode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 237 QUANTITY fluxx VALUE 3.98407565579928315e-06 TOLERANCE 1.e-15    // local flux at cathode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 237 QUANTITY fluxy VALUE 6.65584865137824792e-06 TOLERANCE 1.e-15
-SCATRA DIS scatra NODE 237 QUANTITY fluxz VALUE -3.69722415743184303e-06 TOLERANCE 1.e-15
-SCATRA DIS scatra NODE 480 QUANTITY fluxx VALUE 3.98139712681979963e-06 TOLERANCE 1.e-15    // local flux at cathode-electrolyte interface (cathode side)
-SCATRA DIS scatra NODE 480 QUANTITY fluxy VALUE 6.65145961539773058e-06 TOLERANCE 1.e-15
-SCATRA DIS scatra NODE 480 QUANTITY fluxz VALUE -3.69520102990893203e-06 TOLERANCE 1.e-15
-SCATRA DIS scatra NODE 480 QUANTITY phi1 VALUE 1.26719486103657637e+01 TOLERANCE 1.e-08     // local lithium concentration at cathode-electrolyte interface (cathode side)
-SCATRA DIS scatra NODE 480 QUANTITY phi2 VALUE 3.76931800099281356e+00 TOLERANCE 1.e-09     // local electric potential at cathode-electrolyte interface (cathode side)
-SCATRA SPECIAL QUANTITY soc1 VALUE 9.44444412960199653e-01 TOLERANCE 1.e-10                 // anode state of charge
-SCATRA SPECIAL QUANTITY soc2 VALUE 9.58363824559259059e-01 TOLERANCE 1.e-10                 // cathode state of charge
-SCATRA SPECIAL QUANTITY cellvoltage VALUE 3.76931705453120314e+00 TOLERANCE 1.e-09          // cell voltage
+SCATRA DIS scatra NODE 40 QUANTITY phi1 VALUE 8.25386993502143440e+00 TOLERANCE 1.e-09      // local lithium concentration at anode-electrolyte interface (anode side)
+SCATRA DIS scatra NODE 40 QUANTITY phi2 VALUE -7.10591068244664165e-08 TOLERANCE 1.e-16     // local electric potential at anode-electrolyte interface (anode side)
+SCATRA DIS scatra NODE 40 QUANTITY fluxx VALUE -4.21605770021763203e-06 TOLERANCE 1.e-15    // local flux at anode-electrolyte interface (anode side)
+SCATRA DIS scatra NODE 40 QUANTITY fluxy VALUE -5.00118469482468338e-06 TOLERANCE 1.e-15
+SCATRA DIS scatra NODE 40 QUANTITY fluxz VALUE 3.74057381325278979e-06 TOLERANCE 1.e-15
+SCATRA DIS scatra NODE 317 QUANTITY fluxx VALUE -4.21588342769242981e-06 TOLERANCE 1.e-15   // local flux at anode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 317 QUANTITY fluxy VALUE -5.00087247358765054e-06 TOLERANCE 1.e-15
+SCATRA DIS scatra NODE 317 QUANTITY fluxz VALUE 3.74020918300186533e-06 TOLERANCE 1.e-15
+SCATRA DIS scatra NODE 317 QUANTITY phi1 VALUE 1.20013743408645168e+00 TOLERANCE 1.e-09     // local lithium concentration at anode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 317 QUANTITY phi2 VALUE -9.96792872635060556e-02 TOLERANCE 1.e-11    // local electric potential at anode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 237 QUANTITY phi1 VALUE 1.19995900092656882e+00 TOLERANCE 1.e-09     // local lithium concentration at cathode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 237 QUANTITY phi2 VALUE -9.96864210271912604e-02 TOLERANCE 1.e-11    // local electric potential at cathode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 237 QUANTITY fluxx VALUE 3.98407537220622512e-06 TOLERANCE 1.e-15    // local flux at cathode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 237 QUANTITY fluxy VALUE 6.65584817702683785e-06 TOLERANCE 1.e-15
+SCATRA DIS scatra NODE 237 QUANTITY fluxz VALUE -3.69722389425734598e-06 TOLERANCE 1.e-15
+SCATRA DIS scatra NODE 480 QUANTITY fluxx VALUE 3.98139712549336129e-06 TOLERANCE 1.e-15    // local flux at cathode-electrolyte interface (cathode side)
+SCATRA DIS scatra NODE 480 QUANTITY fluxy VALUE 6.65145961318173653e-06 TOLERANCE 1.e-15
+SCATRA DIS scatra NODE 480 QUANTITY fluxz VALUE -3.69520102867784248e-06 TOLERANCE 1.e-15
+SCATRA DIS scatra NODE 480 QUANTITY phi1 VALUE 1.26719486102326950e+01 TOLERANCE 1.e-08     // local lithium concentration at cathode-electrolyte interface (cathode side)
+SCATRA DIS scatra NODE 480 QUANTITY phi2 VALUE 3.76931800425948893e+00 TOLERANCE 1.e-09     // local electric potential at cathode-electrolyte interface (cathode side)
+SCATRA SPECIAL QUANTITY soc1 VALUE 9.44444428898682520e-01 TOLERANCE 1.e-10                 // anode state of charge
+SCATRA SPECIAL QUANTITY soc2 VALUE 9.58363824563066458e-01 TOLERANCE 1.e-10                 // cathode state of charge
+SCATRA SPECIAL QUANTITY cellvoltage VALUE 3.76931705779787896e+00 TOLERANCE 1.e-09          // cell voltage
 SCATRA SPECIAL QUANTITY numiterlastnewton VALUE 3.0 TOLERANCE 1.e-20                        // number of Newton-Raphson iterations during last time step
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDSURF                          14

@@ -59,6 +59,15 @@ class MeshtyingStrategyS2IElch : public MeshtyingStrategyS2I
 
     //! return pointer to elch time integrator after cast
     SCATRA::ScaTraTimIntElch* ElchTimInt() const {return dynamic_cast<SCATRA::ScaTraTimIntElch*>(scatratimint_);};
+
+    //! build maps associated with blocks of global system matrix
+    void BuildBlockMaps(
+        const std::vector<Teuchos::RCP<DRT::Condition> >&   partitioningconditions,   //! domain partitioning conditions
+        std::vector<Teuchos::RCP<const Epetra_Map> >&       blockmaps                 //! empty vector for maps to be built
+        ) const;
+
+    //! build null spaces associated with blocks of global system matrix
+    void BuildBlockNullSpaces() const;
 }; // class MeshtyingStrategyS2IElch
 } // namespace SCATRA
 #endif // #ifndef SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_ELCH_H

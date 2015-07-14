@@ -5902,12 +5902,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       tuple<std::string>(
           "sparse",
           "block_geometry",
-          "block_condition"
+          "block_condition",
+          "block_condition_dof"
           ),
       tuple<int>(
           INPAR::S2I::matrix_sparse,
           INPAR::S2I::matrix_block_geometry,
-          INPAR::S2I::matrix_block_condition
+          INPAR::S2I::matrix_block_condition,
+          INPAR::S2I::matrix_block_condition_dof
           ),
       &s2idyn
       );
@@ -5951,13 +5953,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
           INPAR::S2I::equilibration_columns,
           INPAR::S2I::equilibration_full
           ),
-      &s2idyn
-      );
-
-  IntParameter(
-      "BLOCKSOLVER",
-      -1,
-      "number of linear solver for each block of global block system matrix",
       &s2idyn
       );
 

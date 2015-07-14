@@ -81,7 +81,7 @@
           <Parameter name="factory" type="string" value="TrilinosSmoother"/>
           <Parameter name="type"    type="string" value="ILU"/>
           <ParameterList name="ParameterList">
-            <Parameter name="fact: level-of-fill" type="int" value="1"/>
+            <Parameter name="fact: level-of-fill" type="int" value="0"/>
           </ParameterList>
         </ParameterList>
         

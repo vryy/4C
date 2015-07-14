@@ -49,7 +49,8 @@ namespace INPAR
     {
       matrix_sparse,
       matrix_block_geometry,
-      matrix_block_condition
+      matrix_block_condition,
+      matrix_block_condition_dof
     };
 
     //! equilibration methods for global system of equations

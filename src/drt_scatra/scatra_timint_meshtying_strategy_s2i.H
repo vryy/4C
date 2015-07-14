@@ -24,6 +24,11 @@ namespace ADAPTER
   class Coupling;
 }
 
+namespace DRT
+{
+  class Condition;
+}
+
 namespace FSI
 {
   namespace UTILS
@@ -93,13 +98,22 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
 
   protected:
 
+    //! build maps associated with blocks of global system matrix
+    virtual void BuildBlockMaps(
+        const std::vector<Teuchos::RCP<DRT::Condition> >&   partitioningconditions,   //! domain partitioning conditions
+        std::vector<Teuchos::RCP<const Epetra_Map> >&       blockmaps                 //! empty vector for maps to be built
+        ) const;
+
+    //! build null spaces associated with blocks of global system matrix
+    virtual void BuildBlockNullSpaces() const;
+
     //! interface map extractor (0: other, 1: slave, 2: master)
     Teuchos::RCP<LINALG::MultiMapExtractor> interfacemaps_;
 
-    //! condition map extractors based on domain partitioning
-    Teuchos::RCP<LINALG::MultiMapExtractor> conditionmaps_;
-    Teuchos::RCP<LINALG::MultiMapExtractor> conditionmaps_slave_;
-    Teuchos::RCP<LINALG::MultiMapExtractor> conditionmaps_master_;
+    //! map extractors associated with blocks of global system matrix
+    Teuchos::RCP<LINALG::MultiMapExtractor> blockmaps_;
+    Teuchos::RCP<LINALG::MultiMapExtractor> blockmaps_slave_;
+    Teuchos::RCP<LINALG::MultiMapExtractor> blockmaps_master_;
 
     //! interface coupling adapter
     Teuchos::RCP<ADAPTER::Coupling> icoup_;
@@ -125,10 +139,19 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
     //! inverse sums of absolute values of column entries in global system matrix
     Teuchos::RCP<Epetra_Vector> invcolsums_;
 
+    //! input parameters for scatra-scatra interface coupling
+    Teuchos::RCP<Teuchos::ParameterList> parameters_;
+
+    //! type of global system matrix in global system of equations
+    const INPAR::S2I::MatrixType matrixtype_;
+
   private:
 
     //! copy constructor
     MeshtyingStrategyS2I(const MeshtyingStrategyS2I& old);
+
+    //! build map extractors associated with blocks of global system matrix
+    void BuildBlockMapExtractors();
 
     //! equilibrate global system of equations if necessary
     void EquilibrateSystem(
@@ -165,9 +188,6 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
         const Teuchos::RCP<Epetra_Vector>&   increment   //! increment vector
         ) const;
 
-    //! input parameters for scatra-scatra interface coupling
-    Teuchos::RCP<Teuchos::ParameterList> parameters_;
-
     //! flag for row equilibration of global system of equations
     const bool rowequilibration_;
 
@@ -176,9 +196,6 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
 
     //! flag for meshtying method
     const INPAR::S2I::MortarType mortartype_;
-
-    //! type of global system matrix in global system of equations
-    const INPAR::S2I::MatrixType matrixtype_;
 }; // class MeshtyingStrategyS2I
 } // namespace SCATRA
 #endif // #ifndef SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_H

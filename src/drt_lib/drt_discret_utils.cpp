@@ -126,48 +126,26 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   Teuchos::RCP<std::vector<double> > ns = mllist.get<Teuchos::RCP<std::vector<double> > >("nullspace",Teuchos::null);
   if (ns != Teuchos::null && !recompute) return;
 
+  // no, we have not previously computed the nullspace
+  // or want to recompute it anyway
+  // -> compute nullspace
   // do the usual tests
   if (!Filled()) dserror("FillComplete was not called on discretization");
   if (!HaveDofs()) dserror("Discretization has no dofs assigned");
 
   // compute nullspace and fill it into the ML parameter list
-  ComputeNullSpaceML(mllist);
+  ComputeNullSpaceML(mllist,numdf,dimns);
 }
 
 /*--------------------------------------------------------------------------*
  |  directly compute nullspace (for Krylov projection)   (public) nis Feb13 |
  *--------------------------------------------------------------------------*/
-void DRT::Discretization::ComputeNullSpaceML(Teuchos::ParameterList& mllist)
+void DRT::Discretization::ComputeNullSpaceML(
+    Teuchos::ParameterList& mllist,
+    const int numdf,
+    const int dimns
+    )
 {
-  int numdf = 1; // default value for no. of degrees of freedom per node
-  int dimns = 1; // default value for no. of nullspace vectors
-  int nv=0; // default value for no. of velocity dofs
-  int np=0; // default value for no. of pressure dofs
-
-  // downwinding needs nodal block information, compute it
-  if (NumMyRowElements())
-  {
-    // We assume that all elements are of equal type
-    DRT::Element* dwele = lRowElement(0);
-    dwele->ElementType().NodalBlockInformation( dwele, numdf, dimns, nv, np );
-  }
-
-  // communicate data to procs without row element
-  int ldata[4] = {numdf, dimns, nv, np};
-  int gdata[4] = {0, 0, 0 ,0};
-  Comm().MaxAll(&ldata[0], &gdata[0], 4);
-  numdf = gdata[0];
-  dimns = gdata[1];
-  nv    = gdata[2];
-  np    = gdata[3];
-
-  // no, we have not previously computed the nullspace
-  // or want to recompute it anyway
-  // -> compute nullspace
-  mllist.set<Teuchos::RCP<std::vector<double> > >("nullspace",Teuchos::null);
-  // ML would not tolerate this Teuchos::rcp-ptr in its list otherwise
-  mllist.set<bool>("ML validate parameter list",false);
-
   mllist.set("PDE equations",numdf);
   mllist.set("null space: dimension",dimns);
   mllist.set("null space: type","pre-computed");
@@ -179,6 +157,7 @@ void DRT::Discretization::ComputeNullSpaceML(Teuchos::ParameterList& mllist)
   double* nullsp = &((*ns)[0]);
   mllist.set<Teuchos::RCP<std::vector<double> > >("nullspace",ns);
   mllist.set("null space: vectors",nullsp);
+  mllist.set<bool>("ML validate parameter list",false); // otherwise, ML would not tolerate the Teuchos::RCP pointer to the null space in its list
 
   // compute null space directly. that will call eletypes.
   ComputeNullSpace(ns, numdf, dimns);

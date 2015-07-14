@@ -1726,7 +1726,11 @@ public:
   \sa ComputeNullSpaceIfNecessary()
   \sa ComputeNullSpace()
   */
-  virtual void ComputeNullSpaceML(Teuchos::ParameterList& mllist);
+  virtual void ComputeNullSpaceML(
+      Teuchos::ParameterList& mllist,
+      const int numdf,
+      const int dimns
+      );
 
   /*!
   \brief Compute the nullspace of the discretization
