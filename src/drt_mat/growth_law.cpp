@@ -224,7 +224,7 @@ void MAT::GrowthLawDyn::EvaluateNonLinMass(double* theta,
                                            const int eleGID )
 {
   Evaluate(theta,thetaold,linmass_disp,matelastic,defgrd,glstrain,params,eleGID);
-  linmass_disp->Update(3.0*(*theta)*(*theta)*matelastic->Density(),*linmass_disp);
+  linmass_disp->Scale(3.0*(*theta)*(*theta)*matelastic->Density());
 }
 
 /*----------------------------------------------------------------------------*/
