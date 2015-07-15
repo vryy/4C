@@ -973,10 +973,10 @@ double PATSPEC::ComputeMaxILTThickness(Teuchos::RCP<DRT::Discretization> dis)
   // get the AAA surface conditions
    std::vector<DRT::Condition* > aaa_surface;
    dis->GetCondition("AAASurface",aaa_surface);
-   // check wether length of condition is two first condition luminal ILT surface second interface ilt/wall
+   // check whether length of condition is two first condition luminal ILT surface second interface ilt/wall
    if (aaa_surface.size()==0)
      dserror("AAA Surface condition condition not set! It must contain two surfaces. One surface of luminal ILT, one interface ILT/wall");
-   // check wether length of condition is two first condition luminal ILT surface second interface ilt/wall
+   // check whether length of condition is two first condition luminal ILT surface second interface ilt/wall
    if (aaa_surface.size()!=2)
      dserror("AAA Surface condition must contain two surfaces. One surface of luminal ILT, one interface ILT/wall");
    const std::vector<int>* luminal_nodes = aaa_surface[0]->Nodes();
