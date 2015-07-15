@@ -37,26 +37,6 @@ void StructureFilter::WriteAllResults(PostField* field)
   if (field->problem()->struct_mat_disp() == "yes")
     writer_->WriteResult("material_displacement", "material_displacement", dofbased, field->problem()->num_dim());
 
-  // Statistical Output from MLMC
-  writer_->WriteResult("mean_displacements", "mean_displacement", dofbased, field->problem()->num_dim());
-  writer_->WriteResult("variance_displacements", "variance_displacement", dofbased, field->problem()->num_dim());
-  writer_->WriteResult("mean_gauss_2PK_stresses_xyz", "mean_gauss_2PK_stresses_xyz", nodebased,6);
-  writer_->WriteResult("variance_gauss_2PK_stresses_xyz", "variance_gauss_2PK_stresses_xyz", nodebased,6);
-  writer_->WriteResult("mean_gauss_GL_strain_xyz", "mean_gauss_GL_strain_xyz", nodebased,6);
-  writer_->WriteResult("variance_gauss_GL_strain_xyz", "variance_gauss_GL_strain_xyz", nodebased,6);
-
-  writer_->WriteResult("diff_to_ll_displacement", "diff_to_ll_displacement", dofbased, field->problem()->num_dim());
-  writer_->WriteResult("diff_to_ll_prolongated_gauss_2PK_stresses_xyz", "diff_to_ll_prolongated_gauss_2PK_stresses_xyz", nodebased,6);
-  writer_->WriteResult("diff_to_ll_prolongated_gauss_GL_strains_xyz", "diff_to_ll_prolongated_gauss_GL_strains_xyz", nodebased,6);
-
-  writer_->WriteResult("diff_mean_displacements", "diff_mean_displacement", dofbased, field->problem()->num_dim());
-  writer_->WriteResult("diff_variance_displacements", "diff_variance_displacement", dofbased, field->problem()->num_dim());
-  writer_->WriteResult("diff_mean_gauss_2PK_stresses_xyz", "diff_mean_gauss_2PK_stresses_xyz", nodebased,6);
-  writer_->WriteResult("diff_variance_gauss_2PK_stresses_xyz", "diff_variance_gauss_2PK_stresses_xyz", nodebased,6);
-  writer_->WriteResult("diff_mean_gauss_GL_strain_xyz", "diff_mean_gauss_GL_strain_xyz", nodebased,6);
-  writer_->WriteResult("diff_variance_gauss_GL_strain_xyz", "diff_variance_gauss_GL_strain_xyz", nodebased,6);
-
-
    // contact and meshtying results
   writer_->WriteResult("activeset", "activeset", nodebased,1);
   writer_->WriteResult("norcontactstress", "norcontactstress", dofbased, field->problem()->num_dim());

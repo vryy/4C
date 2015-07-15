@@ -49,10 +49,6 @@ Maintainer: Jonas Biehler
 #include "../drt_lib/drt_element.H"
 
 
-/*----------------------------------------------------------------------*/
-/* initialization of static variable */
-const double UQ::MLMC::convtol_ = 1e-6;
-
 
 /*----------------------------------------------------------------------*/
 /* standard constructor */
@@ -68,10 +64,6 @@ UQ::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis)
 
   filename_ = DRT::Problem::Instance()->OutputControlFile()->FileName();
 
-  // input parameters structural dynamics
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-  // get number of timesteps
-  tsteps_ = sdyn.get<int>("NUMSTEP");
   // input parameters multi level monte carlo
   const Teuchos::ParameterList& mlmcp = DRT::Problem::Instance()->MultiLevelMonteCarloParams();
 
@@ -80,10 +72,6 @@ UQ::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis)
 
   // get starting random seed
   start_random_seed_ = mlmcp.get<int>("INITRANDOMSEED");
-
-
-  //write statistics every write_stat_ steps
-  write_stats_ = mlmcp.get<int>("WRITESTATS");
 
   stoch_wall_thickness_=DRT::INPUT::IntegralValue<int>(mlmcp ,"RANDOMGEOMETRY");
 
@@ -140,6 +128,7 @@ UQ::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis)
   cont_disn_init_ = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(),true));
   cont_veln_ = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(),true));
   cont_accn_ = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(),true));
+
   // this should also have row map layout
   // we need to of those because we need to store and keep eleementdata of initial run with constant beta
   cont_elementdata_init_ = Teuchos::rcp(new std::vector<char>);
@@ -159,30 +148,6 @@ UQ::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis)
   }
   else
     my_thickness_manager_=Teuchos::null;
-
-
-  //legecay stuff from multilevel monte carlo
-  if(0)
-  {
-    // init vectors to store mean stresses and displacements
-    mean_disp_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->DofRowMap()),1,true));
-    mean_stress_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->NodeRowMap()),6,true));
-    mean_strain_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->NodeRowMap()),6,true));
-    // init vectors to store standard dev of  stresses and displacements
-    var_disp_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->DofRowMap()),1,true));
-    var_stress_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->NodeRowMap()),6,true));
-    var_strain_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->NodeRowMap()),6,true));
-    // init vectors to calc standard dev of  stresses and displacements
-    delta_disp_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->DofRowMap()),1,true));
-    delta_stress_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->NodeRowMap()),6,true));
-    delta_strain_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->NodeRowMap()),6,true));
-    m2_var_disp_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->DofRowMap()),1,true));
-    m2_var_stress_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->NodeRowMap()),6,true));
-    m2_var_strain_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->NodeRowMap()),6,true));
-    m2_helper_var_disp_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->DofRowMap()),1,true));
-    m2_helper_var_stress_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->NodeRowMap()),6,true));
-    m2_helper_var_strain_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->NodeRowMap()),6,true));
-  }
 }
 
 
@@ -331,12 +296,6 @@ void UQ::MLMC::Integrate()
     if(write_rv_to_file_)
     my_matpar_manager_->WriteRandomVariablesToFile(filename_,numb_run_);
 
-    if (0)
-    {
-      // write statoutput evey now and then
-      if(numb_run_% write_stats_ == 0)
-        WriteStatOutput();
-    }
 
     // reset geometry to initial read in geometry
     if(stoch_wall_thickness_)
@@ -450,7 +409,6 @@ void UQ::MLMC::IntegrateNoReset()
         /// Try some nasty stuff
         if (numb_run_-start_run_== 0)
         {
-
           // for first run do normal integration
           my_matpar_manager_->SetUpStochMats((random_seed+(unsigned int)numb_run_),0.0,false);
           structadaptor->Integrate();
@@ -480,8 +438,6 @@ void UQ::MLMC::IntegrateNoReset()
           paramcont_info->at(0)=num_cont_steps;
           paramcont_info->at(1)=num_cont_steps_new;
           paramcont_info->at(2)=num_trials;
-
-
         }
 
 
@@ -625,7 +581,7 @@ void UQ::MLMC::IntegrateScaleByThickness()
 
           if(stoch_wall_thickness_)
           {
-           // my_thickness_manager_->SetUpThickness((random_seed+(unsigned int)numb_run_),0.0,false);
+           //my_thickness_manager_->SetUpThickness((random_seed+(unsigned int)numb_run_),0.0,false);
           }
           discret_->Comm().Barrier();
           ResetPrestress();

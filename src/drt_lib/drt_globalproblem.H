@@ -182,9 +182,6 @@ public:
   /// set up supporting processors for micro-scale discretizations
   void ReadMicrofields_NPsupport();
 
-  /// set up multilvel discetizations for mulit level monte carlo simulations
-  void ReadMultiLevelDiscretization(DRT::INPUT::DatFileReader& reader);
-
   /// read target discretization for surface current based inverse analysis
   void ReadReferenceDiscretization(DRT::INPUT::DatFileReader& reader);
 

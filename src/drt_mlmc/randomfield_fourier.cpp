@@ -307,7 +307,7 @@ double UQ::RandomFieldFourier::EvalFieldAtLocation(const std::vector<double> loc
   if (marginal_pdf_ == normal)
     temp_rf_val = det_value_paracont_ * (1.0 - paracont_parameter)
         + (paracont_parameter) * (local_median + sigma_0_ * tempgp);
-  // computing exp(log(local_media)) might seem strange. It is done to
+  // computing exp(log(local_median)) might seem strange. It is done to
   // allow for a consistent input of local median in both cases: gauss and
   // lognormal
   else if (marginal_pdf_ == lognormal)

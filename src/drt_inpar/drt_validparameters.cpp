@@ -1565,14 +1565,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                   &iap);
 
   /*----------------------------------------------------------------------*/
-
   /* parameters for multi-level monte carlo */
   Teuchos::ParameterList& mlmcp = list->sublist("MULTI LEVEL MONTE CARLO",
       false, "");
 
-  //setStringToIntegralParameter<int>("MLMC","no",
-  // "perform multi level monte carlo analysis",
-  // yesnotuple,yesnovalue,&mlmcp);
   IntParameter("NUMRUNS", 200, "Number of Monte Carlo runs", &mlmcp);
 
   IntParameter("START_RUN", 0,
@@ -1623,7 +1619,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
      "list of std::string of parameters that are to be modelled as random fields, 1 YOUNG BETA",
      &mlmcp);
 
-
   setNumericStringParameter("OUTPUT_ELEMENT_IDS", "-1",
       "Set ID's of Output Elements, default is -1 which is none", &mlmcp);
 
@@ -1655,24 +1650,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   // For variable geometry/wall thickness
   setStringToIntegralParameter<int>("START_RF_ABOVE_BIFURCATION", "No",
       "Start random geometry above bifurcation", yesnotuple, yesnovalue, &mlmcp);
-
-  // Legacy input parameters for multilevel mc
-  IntParameter("WRITESTATS", 1000,
-      "Write statistics to file every WRITESTATS (only for polongated Dis)",
-      &mlmcp);
-
-  // keep this input parameter incase we want to read in another discretization (thats all it does at the moment)
-  setStringToIntegralParameter<int>("PROLONGATERES", "No",
-      "Prolongate Displacements to finest Discretization", yesnotuple,
-      yesnovalue, &mlmcp);
-
-  // additional inputfile which should be read (currently not used, but we want to keep the feature for now)
-  StringParameter(
-      "DISCRETIZATION_FOR_PROLONGATION",
-      "filename.dat",
-      "filename of.dat file which contains discretization to which the results are prolongated",
-      &mlmcp);
-
 
   /*----------------------------------------------------------------------*/
   // set valid parameters for random fields

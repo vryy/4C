@@ -168,71 +168,6 @@ private:
   Teuchos::RCP<std::vector<char> > cont_nodedata_init_;
   Teuchos::RCP<std::vector<char> > cont_nodedata_ ;
 
-  // #########################################################################
-  // ##     variables needed for Multilevel Monte Carlo only                ##
-  // #########################################################################
-
-  //! brief number of Newton iterations
-  static const int num_newton_it_ = 20;
-
-  //! brief convergence tolerance for loop in CheckIfNodeInElement routine
-  static const double convtol_;
-
-  //! brief write statistics every write_stats step
-  int write_stats_;
-
-  //! brief number of timesteps
-  int tsteps_;
-
-  // means
-  //! \brief Vector to store mean stresses
-  Teuchos::RCP<Epetra_MultiVector> mean_stress_;
-
-  //! \brief Vector to store mean strains
-  Teuchos::RCP<Epetra_MultiVector> mean_strain_;
-
-  //! \brief Vector to store mean disp
-  Teuchos::RCP<Epetra_MultiVector> mean_disp_;
-
-
-  // std
-  //! \brief Vector to store standard deviation of stress
-  Teuchos::RCP<Epetra_MultiVector> var_stress_;
-
-  //! \brief Vector to store standard deviation of strain
-  Teuchos::RCP<Epetra_MultiVector> var_strain_;
-
-  //! \brief Vector to store standard deviation of disp
-  Teuchos::RCP<Epetra_MultiVector> var_disp_;
-
-  // Vectors needed on the way to calculate std
-  //! \brief some helper vector
-  Teuchos::RCP<Epetra_MultiVector> delta_stress_;
-
-  //! \brief some helper vector
-  Teuchos::RCP<Epetra_MultiVector> delta_strain_;
-
-  //! \brief some helper vector
-  Teuchos::RCP<Epetra_MultiVector> delta_disp_;
-
-  //! \brief some helper vector
-  Teuchos::RCP<Epetra_MultiVector> m2_var_stress_;
-
-  //! \brief some helper vector
-  Teuchos::RCP<Epetra_MultiVector> m2_var_strain_;
-
-  //! \brief some helper vector
-  Teuchos::RCP<Epetra_MultiVector> m2_var_disp_;
-
-  //! \brief some helper vector
-  Teuchos::RCP<Epetra_MultiVector> m2_helper_var_disp_;
-
-  //! \brief some helper vector
-  Teuchos::RCP<Epetra_MultiVector> m2_helper_var_stress_;
-
-  //! \brief some helper vector
-  Teuchos::RCP<Epetra_MultiVector> m2_helper_var_strain_;
-
   // ###########################################################################
   // ##     variables regarding setup and management of stochastic mat params  ##
   // ###########################################################################
@@ -338,36 +273,6 @@ public:
       Teuchos::RCP<std::pair<int, double> > peak
       ,Teuchos::RCP<std::pair<int, double> > quantile99);
 
-
-  // #########################################################################
-  // ##     functions needed for Multilevel Monte Carlo only                ##
-  // #########################################################################
-
-  // someday these should move to another class
-
-  //! \brief find backgroundelement of a node in the background discretization
-  int FindBackgroundElement(DRT::Node node,
-      Teuchos::RCP<DRT::Discretization> background_dis,
-      int* bg_ele_id, double* xsi);
-
-  //! \brief check if a node lies within a specific element, returns double based on minimum value of local coordinates abscissa
-  double CheckIfNodeInElement(DRT::Node& node, DRT::Element& ele, double* xsi);
-
-  //! \brief helper function
-  bool EvaluateF(double* f, DRT::Node& node, DRT::Element& ele,
-      const double* xsi);
-
-  //! \brief helper function
-  bool EvaluateGradF(LINALG::Matrix<3, 3>& fgrad,DRT::Node& node
-      , DRT::Element& ele,const double* xsi);
-
-  //! \brief calculate some statistics
-  void CalcStatStressDisp(Teuchos::RCP<Epetra_MultiVector> curr_stress,
-      Teuchos::RCP<Epetra_MultiVector> curr_strain,
-      Teuchos::RCP<Epetra_MultiVector> curr_disp);
-
-  //! brief write calculated statistics to file
-  void WriteStatOutput();
 
   // ###########################################################################
   // ##     general helper functions  ##

@@ -1976,9 +1976,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       // (in case of multi-scale material models)
       if (npType != copy_dat_file) ReadMicroFields(reader);
 
-      // Read in another discretization for MultiLevel Monte Carlo use
-      if (npType != copy_dat_file) ReadMultiLevelDiscretization(reader);
-
       // Read in a target discretization for the inverse analysis
       if (npType != copy_dat_file) ReadReferenceDiscretization(reader);
 
@@ -2294,59 +2291,6 @@ void DRT::Problem::ReadMicrofields_NPsupport()
   return;
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void DRT::Problem::ReadMultiLevelDiscretization(DRT::INPUT::DatFileReader& reader)
-{
-  // check whether multilvel monte carlo is on
-  const Teuchos::ParameterList& mlmcp = DRT::Problem::Instance()->MultiLevelMonteCarloParams();
-  // should not read in second discretization if not needed
-
-  if(DRT::Problem::Instance()->ProblemType()==prb_uq && Teuchos::getIntegralValue<int>(mlmcp,"PROLONGATERES")!=false)
-  {
-    std::string second_input_file = mlmcp.get<std::string>("DISCRETIZATION_FOR_PROLONGATION");
-
-    DRT::Problem* multilevel_problem = DRT::Problem::Instance(1);
-
-
-    if(reader.Comm()->NumProc() != 1)
-      dserror("ReadMultiLevelDiscretization only available in serial!");
-    // Read in other level
-    DRT::INPUT::DatFileReader multilevel_reader(second_input_file, reader.Comm(), 1);
-
-    Teuchos::RCP<DRT::Discretization> structdis_multilevel = Teuchos::rcp(new DRT::Discretization("structure", multilevel_reader.Comm()));
-
-    // create discretization writer - in constructor set into and owned by corresponding discret
-    structdis_multilevel->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis_multilevel)));
-
-    multilevel_problem->AddDis("structure", structdis_multilevel);
-    multilevel_problem->ReadParameter(multilevel_reader);
-    /* input of not mesh or time based problem data  */
-    //multilevel_problem->InputControl();
-    // Read in Materials
-    DRT::Problem::Instance()->materials_->SetReadFromProblem(1);
-    multilevel_problem->ReadMaterials(multilevel_reader);
-    // Read in Nodes and Elements
-    DRT::INPUT::NodeReader multilevelnodereader(multilevel_reader, "--NODE COORDS");
-    multilevelnodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis_multilevel, multilevel_reader, "--STRUCTURE ELEMENTS")));
-    multilevelnodereader.Read();
-
-    // read conditions of other levels
-    // -> note that no time curves and spatial functions can be read!
-    multilevel_problem->ReadTimeFunctionResult(multilevel_reader);
-    multilevel_problem->ReadConditions(multilevel_reader);
-
-    // At this point, everything for the other levels is read,
-    // subsequent reading is only for level 0
-    structdis_multilevel->FillComplete();
-
-    // set the problem number from which to call materials again to zero
-    materials_->SetReadFromProblem(0);
-
-    materials_->ResetReadFromProblem();
-  }
-}
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::Problem::ReadReferenceDiscretization(DRT::INPUT::DatFileReader& reader)

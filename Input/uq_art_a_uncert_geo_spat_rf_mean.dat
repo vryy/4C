@@ -177,7 +177,6 @@ NUMRUNS                         1
 REDUCED_OUTPUT                  no
 START_RUN                       0
 PARAMLIST_R_FIELD               1 BETA
-WRITESTATS                      1000
 NUMCONTSTEPS                    2
 RANDOMGEOMETRY                  yes
 MEAN_GEO_FROM_ALE_POINTDBC      yes
