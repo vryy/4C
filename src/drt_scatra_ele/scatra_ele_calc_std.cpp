@@ -22,24 +22,31 @@ template<DRT::Element::DiscretizationType distype,int probdim>
 DRT::ELEMENTS::ScaTraEleCalcStd<distype,probdim>* DRT::ELEMENTS::ScaTraEleCalcStd<distype,probdim>::Instance(
     const int numdofpernode,
     const int numscal,
+    const std::string& disname,
     bool create
     )
 {
-  static ScaTraEleCalcStd<distype,probdim>* instance;
+  static std::map<std::string,ScaTraEleCalcStd<distype,probdim>* >  instances;
 
   if(create)
   {
-    if(instance == NULL)
-      instance = new ScaTraEleCalcStd<distype,probdim>(numdofpernode,numscal);
+    if(instances.find(disname) == instances.end())
+      instances[disname] = new ScaTraEleCalcStd<distype,probdim>(numdofpernode,numscal);
   }
 
-  else if(instance != NULL)
+  else if(instances.find(disname) != instances.end())
   {
-    delete instance;
-    instance = NULL;
+    for( typename std::map<std::string,ScaTraEleCalcStd<distype,probdim>* >::iterator i=instances.begin(); i!=instances.end(); ++i )
+     {
+      delete i->second;
+      i->second = NULL;
+     }
+
+    instances.clear();
+    return NULL;
   }
 
-  return instance;
+  return instances[disname];
 }
 
 
@@ -50,7 +57,7 @@ template<DRT::Element::DiscretizationType distype,int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcStd<distype,probdim>::Done()
 {
   // delete instance
-  Instance(0,0,false);
+  Instance(0,0,"",false);
 
   return;
 }

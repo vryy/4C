@@ -82,7 +82,7 @@ int DRT::ELEMENTS::MeshfreeTransport::Evaluate(
     // be used in principle inside any element (at the moment: only Transport element)
     case SCATRA::calc_mat_and_rhs:
     {
-      return DRT::ELEMENTS::ScaTraFactory::ProvideMeshfreeImpl(Shape(), impltype_, numdofpernode, numscal)->Evaluate(
+      return DRT::ELEMENTS::ScaTraFactory::ProvideMeshfreeImpl(Shape(), impltype_, numdofpernode, numscal, discretization.Name() )->Evaluate(
               this,
               params,
               discretization,

@@ -25,24 +25,30 @@ template<DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>* DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::Instance(
     const int numdofpernode,
     const int numscal,
-    bool create
-    )
+    const std::string& disname,
+    bool create )
 {
-  static ScaTraEleCalcElchElectrode<distype>* instance;
+  static std::map<std::string,ScaTraEleCalcElchElectrode<distype>* >  instances;
 
   if(create)
   {
-    if(instance == NULL)
-      instance = new ScaTraEleCalcElchElectrode<distype>(numdofpernode,numscal);
+    if(instances.find(disname) == instances.end())
+      instances[disname] = new ScaTraEleCalcElchElectrode<distype>(numdofpernode,numscal);
   }
 
-  else if(instance != NULL)
+  else if(instances.find(disname) != instances.end())
   {
-    delete instance;
-    instance = NULL;
+    for( typename std::map<std::string,ScaTraEleCalcElchElectrode<distype>* >::iterator i=instances.begin(); i!=instances.end(); ++i )
+     {
+      delete i->second;
+      i->second = NULL;
+     }
+
+    instances.clear();
+    return NULL;
   }
 
-  return instance;
+  return instances[disname];
 }
 
 
@@ -53,7 +59,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::Done()
 {
   // delete singleton
-  Instance(0,0,false);
+  Instance( 0, 0, "", false);
 
   return;
 }

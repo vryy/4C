@@ -43,14 +43,16 @@ public:
     DRT::Element::DiscretizationType distype,
     INPAR::SCATRA::ImplType problem,
     const int numdofpernode,
-    const int numscal);
+    const int numscal,
+    const std::string& disname);
 
   //! ProvideMeshfreeImpl
   static MeshfreeScaTraCellInterface* ProvideMeshfreeImpl(
     DRT::Element::DiscretizationType distype,
     INPAR::SCATRA::ImplType problem,
     const int numdofpernode,
-    const int numscal);
+    const int numscal,
+    const std::string& disname);
 
 private:
   //! define ScatraEle instances dependent on problem
@@ -58,14 +60,16 @@ private:
   static ScaTraEleInterface* DefineProblemType(
     INPAR::SCATRA::ImplType problem,
     const int numdofpernode,
-    const int numscal);
+    const int numscal,
+    const std::string& disname);
 
   //! define MeshfreeScatraCell instances dependent on problem
   template<DRT::Element::DiscretizationType distype>
   static MeshfreeScaTraCellInterface* DefineMeshfreeProblemType(
     INPAR::SCATRA::ImplType impltype,
     const int numdofpernode,
-    const int numscal);
+    const int numscal,
+    const std::string& disname);
 
 
 }; // end class ScaTraFactory

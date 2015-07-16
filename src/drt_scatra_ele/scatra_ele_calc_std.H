@@ -28,7 +28,7 @@ namespace DRT
       public:
 
         //! abbreviation
-        typedef ScaTraEleCalc<distype> my;
+        typedef ScaTraEleCalc<distype,probdim> my;
 
         //! destructor
         virtual ~ScaTraEleCalcStd(){return;};
@@ -37,6 +37,7 @@ namespace DRT
         static ScaTraEleCalcStd<distype,probdim> * Instance(
             const int numdofpernode,
             const int numscal,
+            const std::string& disname,
             bool create=true
             );
 

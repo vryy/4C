@@ -43,23 +43,30 @@ template<DRT::Element::DiscretizationType distype,int probdim>
 DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype,probdim> * DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype,probdim>::Instance(
   const int numdofpernode,
   const int numscal,
+  const std::string& disname,
   bool create )
 {
-  static ScaTraEleCalcCardiacMonodomain<distype,probdim> * instance;
-  if ( create )
+  static std::map<std::string,ScaTraEleCalcCardiacMonodomain<distype,probdim>* >  instances;
+
+  if(create)
   {
-    if ( instance==NULL )
-    {
-      instance = new ScaTraEleCalcCardiacMonodomain<distype,probdim>(numdofpernode,numscal);
-    }
+    if(instances.find(disname) == instances.end())
+      instances[disname] = new ScaTraEleCalcCardiacMonodomain<distype,probdim>(numdofpernode,numscal);
   }
-  else
+
+  else if(instances.find(disname) != instances.end())
   {
-    if ( instance!=NULL )
-      delete instance;
-    instance = NULL;
+    for( typename std::map<std::string,ScaTraEleCalcCardiacMonodomain<distype,probdim>* >::iterator i=instances.begin(); i!=instances.end(); ++i )
+     {
+      delete i->second;
+      i->second = NULL;
+     }
+
+    instances.clear();
+    return NULL;
   }
-  return instance;
+
+  return instances[disname];
 }
 
 
@@ -70,7 +77,7 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype,probdim>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-  Instance( 0, 0, false );
+  Instance( 0, 0, "", false );
 }
 
 

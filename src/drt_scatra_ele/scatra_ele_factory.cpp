@@ -45,7 +45,8 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
   DRT::Element::DiscretizationType distype,
   INPAR::SCATRA::ImplType problem,
   const int numdofpernode,
-  const int numscal)
+  const int numscal,
+  const std::string& disname)
 {
   // -------------------------------------- number of degrees of freedom
   // number of degrees of freedom
@@ -56,35 +57,35 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
   case DRT::Element::hex8:
   {
     if(ndim==3)
-      return DefineProblemType<DRT::Element::hex8,3>(problem,numdofpernode,numscal);
+      return DefineProblemType<DRT::Element::hex8,3>(problem,numdofpernode,numscal,disname);
     else
       dserror("invalid problem dimension for HEX8 transport element!");
     break;
   }
 //  case DRT::Element::hex20:
 //  {
-//    return ScaTraImpl<DRT::Element::hex20>::Instance(problem,numdofpernode,numscal);
+//    return ScaTraImpl<DRT::Element::hex20>::Instance(problem,numdofpernode,numscal,disname);
 //  } */
   case DRT::Element::hex27:
   {
     if(ndim==3)
-      return DefineProblemType<DRT::Element::hex27,3>(problem,numdofpernode,numscal);
+      return DefineProblemType<DRT::Element::hex27,3>(problem,numdofpernode,numscal,disname);
     else
       dserror("invalid problem dimension for HEX27 transport element!");
     break;
   }
 //  case DRT::Element::nurbs8:
 //  {
-//    return ScaTraImpl<DRT::Element::nurbs8,3>::Instance(problem,numdofpernode,numscal);
+//    return ScaTraImpl<DRT::Element::nurbs8,3>::Instance(problem,numdofpernode,numscal,disname);
 //  } */
 //  case DRT::Element::nurbs27:
 //  {
-//    return ScaTraImpl<DRT::Element::nurbs27,3>::Instance(problem,numdofpernode,numscal);
+//    return ScaTraImpl<DRT::Element::nurbs27,3>::Instance(problem,numdofpernode,numscal,disname);
 //  }
   case DRT::Element::tet4:
   {
     if(ndim==3)
-      return DefineProblemType<DRT::Element::tet4,3>(problem,numdofpernode,numscal);
+      return DefineProblemType<DRT::Element::tet4,3>(problem,numdofpernode,numscal,disname);
     else
       dserror("invalid problem dimension for TET4 transport element!");
     break;
@@ -92,23 +93,23 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
   case DRT::Element::tet10:
   {
     if(ndim==3)
-      return DefineProblemType<DRT::Element::tet10,3>(problem,numdofpernode,numscal);
+      return DefineProblemType<DRT::Element::tet10,3>(problem,numdofpernode,numscal,disname);
     else
       dserror("invalid problem dimension for TET10 transport element!");
     break;
   }
 //  case DRT::Element::wedge6:
 //  {
-//    return ScaTraImpl<DRT::Element::wedge6,3>::Instance(problem,numdofpernode,numscal);
+//    return ScaTraImpl<DRT::Element::wedge6,3>::Instance(problem,numdofpernode,numscal,disname);
 //  } /*
 //  case DRT::Element::wedge15:
 //  {
-//    return ScaTraImpl<DRT::Element::wedge15,3>::Instance(problem,numdofpernode,numscal);
+//    return ScaTraImpl<DRT::Element::wedge15,3>::Instance(problem,numdofpernode,numscal,disname);
 //  } */
   case DRT::Element::pyramid5:
   {
     if(ndim==3)
-      return DefineProblemType<DRT::Element::pyramid5,3>(problem,numdofpernode,numscal);
+      return DefineProblemType<DRT::Element::pyramid5,3>(problem,numdofpernode,numscal,disname);
     else
       dserror("invalid problem dimension for PYRAMID5 transport element!");
     break;
@@ -116,57 +117,57 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
   case DRT::Element::quad4:
   {
     if(ndim==2)
-      return DefineProblemType<DRT::Element::quad4,2>(problem,numdofpernode,numscal);
+      return DefineProblemType<DRT::Element::quad4,2>(problem,numdofpernode,numscal,disname);
     else if(ndim==3)
-      return DefineProblemType<DRT::Element::quad4,3>(problem,numdofpernode,numscal);
+      return DefineProblemType<DRT::Element::quad4,3>(problem,numdofpernode,numscal,disname);
     else
       dserror("invalid problem dimension for quad4 transport element!");
     break;
   } /*
 //  case DRT::Element::quad8:
 //  {
-//    return ScaTraImpl<DRT::Element::quad8,2>::Instance(problem,numdofpernode,numscal);
+//    return ScaTraImpl<DRT::Element::quad8,2>::Instance(problem,numdofpernode,numscal,disname);
 //  } */
   case DRT::Element::quad9:
   {
     if(ndim==2)
-      return DefineProblemType<DRT::Element::quad9,2>(problem,numdofpernode,numscal);
+      return DefineProblemType<DRT::Element::quad9,2>(problem,numdofpernode,numscal,disname);
 //    else if(ndim==3)
-//      return DefineProblemType<DRT::Element::quad9,3>(problem,numdofpernode,numscal);
+//      return DefineProblemType<DRT::Element::quad9,3>(problem,numdofpernode,numscal,disname);
     else
       dserror("QUAD9 transport element not implemented as part of %i-dimensional problem. Just do it",ndim);
     break;
   } /*
 //  case DRT::Element::nurbs4:
 //  {
-//    return ScaTraImpl<DRT::Element::nurbs4,2>::Instance(problem,numdofpernode,numscal);
+//    return ScaTraImpl<DRT::Element::nurbs4,2>::Instance(problem,numdofpernode,numscal,disname);
 //  } */
   case DRT::Element::nurbs9:
   {
     if(ndim==2)
-      return DefineProblemType<DRT::Element::nurbs9,2>(problem,numdofpernode,numscal);
+      return DefineProblemType<DRT::Element::nurbs9,2>(problem,numdofpernode,numscal,disname);
 //    else if(ndim==3)
-//      return DefineProblemType<DRT::Element::nurbs9,3>(problem,numdofpernode,numscal);
+//      return DefineProblemType<DRT::Element::nurbs9,3>(problem,numdofpernode,numscal,disname);
     else
       dserror("NURBS9 transport element not implemented as part of %i-dimensional problem. Just do it",ndim);
     break;
   }
 //  case DRT::Element::tri3:
 //  {
-//    return ScaTraImpl<DRT::Element::tri3,2>::Instance(problem,numdofpernode,numscal);
+//    return ScaTraImpl<DRT::Element::tri3,2>::Instance(problem,numdofpernode,numscal,disname);
 //  } /*
 //  case DRT::Element::tri6:
 //  {
-//    return ScaTraImpl<DRT::Element::tri6,2>::Instance(problem,numdofpernode,numscal);
+//    return ScaTraImpl<DRT::Element::tri6,2>::Instance(problem,numdofpernode,numscal,disname);
 //  }*/
   case DRT::Element::line2:
   {
     if(ndim==1)
-      return DefineProblemType<DRT::Element::line2,1>(problem,numdofpernode,numscal);
+      return DefineProblemType<DRT::Element::line2,1>(problem,numdofpernode,numscal,disname);
     else if(ndim==2)
-      return DefineProblemType<DRT::Element::line2,2>(problem,numdofpernode,numscal);
+      return DefineProblemType<DRT::Element::line2,2>(problem,numdofpernode,numscal,disname);
     else if(ndim==3)
-      return DefineProblemType<DRT::Element::line2,3>(problem,numdofpernode,numscal);
+      return DefineProblemType<DRT::Element::line2,3>(problem,numdofpernode,numscal,disname);
     else
       dserror("invalid problem dimension for LINE2 transport element!");
     break;
@@ -174,11 +175,11 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
   case DRT::Element::line3:
   {
     if(ndim==1)
-      return DefineProblemType<DRT::Element::line3,1>(problem,numdofpernode,numscal);
+      return DefineProblemType<DRT::Element::line3,1>(problem,numdofpernode,numscal,disname);
 //    else if(ndim==2)
-//      return DefineProblemType<DRT::Element::line2,2>(problem,numdofpernode,numscal);
+//      return DefineProblemType<DRT::Element::line2,2>(problem,numdofpernode,numscal,disname);
 //    else if(ndim==3)
-//      return DefineProblemType<DRT::Element::line2,3>(problem,numdofpernode,numscal);
+//      return DefineProblemType<DRT::Element::line2,3>(problem,numdofpernode,numscal,disname);
     else
       dserror("LINE3 transport element not implemented as part of %i-dimensional problem. Just do it",ndim);
     break;
@@ -197,29 +198,30 @@ DRT::ELEMENTS::MeshfreeScaTraCellInterface* DRT::ELEMENTS::ScaTraFactory::Provid
   DRT::Element::DiscretizationType distype,
   INPAR::SCATRA::ImplType problem,
   const int numdofpernode,
-  const int numscal)
+  const int numscal,
+  const std::string& disname)
 {
   switch(distype)
   {
   case DRT::Element::hex8:
   {
-    return DefineMeshfreeProblemType<DRT::Element::hex8>(problem,numdofpernode,numscal);
+    return DefineMeshfreeProblemType<DRT::Element::hex8>(problem,numdofpernode,numscal,disname);
   }
   case DRT::Element::tet4:
   {
-    return DefineMeshfreeProblemType<DRT::Element::tet4>(problem,numdofpernode,numscal);
+    return DefineMeshfreeProblemType<DRT::Element::tet4>(problem,numdofpernode,numscal,disname);
   }
   case DRT::Element::quad4:
   {
-    return DefineMeshfreeProblemType<DRT::Element::quad4>(problem,numdofpernode,numscal);
+    return DefineMeshfreeProblemType<DRT::Element::quad4>(problem,numdofpernode,numscal,disname);
   }
   case DRT::Element::tri3:
   {
-    return DefineMeshfreeProblemType<DRT::Element::tri3>(problem,numdofpernode,numscal);
+    return DefineMeshfreeProblemType<DRT::Element::tri3>(problem,numdofpernode,numscal,disname);
   }
   case DRT::Element::line2:
   {
-    return DefineMeshfreeProblemType<DRT::Element::line2>(problem,numdofpernode,numscal);
+    return DefineMeshfreeProblemType<DRT::Element::line2>(problem,numdofpernode,numscal,disname);
   }
   default:
     dserror("Element shape %s not activated. Just do it.",DRT::DistypeToString(distype).c_str());
@@ -235,7 +237,8 @@ template<DRT::Element::DiscretizationType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemType(
   INPAR::SCATRA::ImplType problem,
   const int numdofpernode,
-  const int numscal)
+  const int numscal,
+  const std::string& disname)
 {
   if(DRT::UTILS::DisTypeToDim<distype>::dim != probdim)
     if( problem != INPAR::SCATRA::impltype_std and
@@ -246,7 +249,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
   {
   case INPAR::SCATRA::impltype_std:
   {
-    return DRT::ELEMENTS::ScaTraEleCalcStd<distype,probdim>::Instance(numdofpernode,numscal);
+    return DRT::ELEMENTS::ScaTraEleCalcStd<distype,probdim>::Instance(numdofpernode,numscal,disname);
     break;
   }
   case INPAR::SCATRA::impltype_thermo_elch_electrode:
@@ -263,27 +266,27 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
   }
   case INPAR::SCATRA::impltype_levelset:
   {
-    return DRT::ELEMENTS::ScaTraEleCalcLS<distype>::Instance(numdofpernode,numscal);
+    return DRT::ELEMENTS::ScaTraEleCalcLS<distype>::Instance(numdofpernode,numscal,disname);
     break;
   }
   case INPAR::SCATRA::impltype_lsreinit:
   {
-    return DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Instance(numdofpernode,numscal);
+    return DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Instance(numdofpernode,numscal,disname);
     break;
   }
   case INPAR::SCATRA::impltype_loma:
   {
-    return DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::Instance(numdofpernode,numscal);
+    return DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::Instance(numdofpernode,numscal,disname);
     break;
   }
   case INPAR::SCATRA::impltype_elch_NP:
   {
-    return DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::Instance(numdofpernode,numscal);
+    return DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::Instance(numdofpernode,numscal,disname);
     break;
   }
   case INPAR::SCATRA::impltype_elch_electrode:
   {
-    return DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::Instance(numdofpernode,numscal);
+    return DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::Instance(numdofpernode,numscal,disname);
     break;
   }
   case INPAR::SCATRA::impltype_elch_electrode_thermo:
@@ -294,7 +297,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
   }
   case INPAR::SCATRA::impltype_elch_diffcond:
   {
-    return DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::Instance(numdofpernode,numscal);
+    return DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::Instance(numdofpernode,numscal,disname);
     break;
   }
   case INPAR::SCATRA::impltype_elch_diffcond_thermo:
@@ -305,37 +308,37 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
   }
   case INPAR::SCATRA::impltype_poro:
   {
-    return DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::Instance(numdofpernode,numscal);
+    return DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::Instance(numdofpernode,numscal,disname);
     break;
   }
   case INPAR::SCATRA::impltype_advreac:
   {
-    return DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::Instance(numdofpernode,numscal);
+    return DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::Instance(numdofpernode,numscal,disname);
     break;
   }
   case INPAR::SCATRA::impltype_chemo:
     {
-      return DRT::ELEMENTS::ScaTraEleCalcChemo<distype>::Instance(numdofpernode,numscal);
+      return DRT::ELEMENTS::ScaTraEleCalcChemo<distype>::Instance(numdofpernode,numscal,disname);
       break;
     }
   case INPAR::SCATRA::impltype_chemoreac:
   {
-    return DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype>::Instance(numdofpernode,numscal);
+    return DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype>::Instance(numdofpernode,numscal,disname);
     break;
   }
   case INPAR::SCATRA::impltype_pororeac:
   {
-    return DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::Instance(numdofpernode,numscal);
+    return DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::Instance(numdofpernode,numscal,disname);
     break;
   }
   case INPAR::SCATRA::impltype_aniso:
   {
-    return DRT::ELEMENTS::ScaTraEleCalcAniso<distype>::Instance(numdofpernode,numscal);
+    return DRT::ELEMENTS::ScaTraEleCalcAniso<distype,probdim>::Instance(numdofpernode,numscal,disname);
     break;
   }
   case INPAR::SCATRA::impltype_cardiac_monodomain:
   {
-    return DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype,probdim>::Instance(numdofpernode,numscal);
+    return DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype,probdim>::Instance(numdofpernode,numscal,disname);
     break;
   }
   default:
@@ -355,10 +358,11 @@ template<DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::MeshfreeScaTraCellInterface* DRT::ELEMENTS::ScaTraFactory::DefineMeshfreeProblemType(
     INPAR::SCATRA::ImplType impltype,
   const int numdofpernode,
-  const int numscal)
+  const int numscal,
+  const std::string& disname)
 {
   if (impltype == INPAR::SCATRA::impltype_std_meshfree)
-    return DRT::ELEMENTS::MeshfreeScaTraCellCalcStd<distype>::Instance(numdofpernode,numscal);
+    return DRT::ELEMENTS::MeshfreeScaTraCellCalcStd<distype>::Instance(numdofpernode,numscal,disname);
   else
     dserror("Defined problem type does not exist!!");
 

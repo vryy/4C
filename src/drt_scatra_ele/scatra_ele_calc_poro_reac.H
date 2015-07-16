@@ -43,6 +43,7 @@ public:
   static ScaTraEleCalcPoroReac<distype> * Instance(
     const int numdofpernode,
     const int numscal,
+    const std::string& disname,
     bool create=true );
 
   /// called upon destruction

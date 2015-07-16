@@ -212,7 +212,7 @@ int DRT::ELEMENTS::Transport::Evaluate(
     // be used in principle inside any element (at the moment: only Transport element)
     case SCATRA::calc_mat_and_rhs:
     {
-      return DRT::ELEMENTS::ScaTraFactory::ProvideImpl(Shape(),impltype_,numdofpernode,numscal)->Evaluate(
+      return DRT::ELEMENTS::ScaTraFactory::ProvideImpl(Shape(),impltype_,numdofpernode,numscal,discretization.Name())->Evaluate(
               this,
               params,
               discretization,
@@ -229,7 +229,7 @@ int DRT::ELEMENTS::Transport::Evaluate(
     case SCATRA::calc_scatra_mono_odblock_fluid:
     case SCATRA::calc_scatra_mono_odblock_mesh:
     {
-      return DRT::ELEMENTS::ScaTraFactory::ProvideImpl(Shape(),impltype_,numdofpernode,numscal)->EvaluateOD(
+      return DRT::ELEMENTS::ScaTraFactory::ProvideImpl(Shape(),impltype_,numdofpernode,numscal,discretization.Name())->EvaluateOD(
               this,
               params,
               discretization,
@@ -275,7 +275,7 @@ int DRT::ELEMENTS::Transport::Evaluate(
     case SCATRA::calc_integr_pat_rhsvec:
     case SCATRA::calc_immersed_element_source:
     {
-      return DRT::ELEMENTS::ScaTraFactory::ProvideImpl(Shape(),impltype_,numdofpernode,numscal)->EvaluateService(
+      return DRT::ELEMENTS::ScaTraFactory::ProvideImpl(Shape(),impltype_,numdofpernode,numscal,discretization.Name())->EvaluateService(
                this,
                params,
                discretization,

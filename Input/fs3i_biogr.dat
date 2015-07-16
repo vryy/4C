@@ -190,8 +190,14 @@ SCATRATYPE                      Advanced_Reaction
 STRUCTSCAL_INITIALFIELD         field_by_function
 STRUCTSCAL_INITFUNCNO           1
 ----------------------------------------------------------------FS3I DYNAMIC/STRUCTURE SCALAR STABILIZATION
-STABTYPE                        no_stabilization //SUPG
+ASSUGRDIFF                      no
+CONSISTENCY                     no
+DEFINITION_ASSGD                artificial_linear
 DEFINITION_TAU                  Taylor_Hughes_Zarins
+EVALUATION_MAT                  element_center
+EVALUATION_TAU                  integration_point
+STABTYPE                        no_stabilization //SUPG
+SUGRVEL                         no
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 CALCERROR                       No
 CONVFORM                        conservative
