@@ -345,7 +345,11 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype,probdim>::CalcStrongResidual(
       const double                tau         //!< the stabilisation parameter
     )
 {
+  //Note: order is important here
+  //First the scatrares without chemotaxis..
+  my::CalcStrongResidual(k,scatrares,densam,densnp,rea_phi,rhsint,tau);
 
+  //Second chemotaxis to strong residual
   Teuchos::RCP<varmanager > varmanager = my::scatravarmanager_;
 
   double chemo_phi = 0;
@@ -375,9 +379,10 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype,probdim>::CalcStrongResidual(
     }
   }
 
-  scatrares = chemo_phi;
+  chemo_phi *= my::scatraparatimint_->TimeFac()/my::scatraparatimint_->Dt();
 
-  my::CalcStrongResidual(k,scatrares,densam,densnp,rea_phi,rhsint,tau);
+  // Add to residual
+  scatrares += chemo_phi;
 
   return;
 

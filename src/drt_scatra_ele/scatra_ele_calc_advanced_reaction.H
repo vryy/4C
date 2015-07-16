@@ -37,7 +37,6 @@ protected:
 private:
 
   typedef ScaTraEleCalc<distype,probdim> my;
-  typedef ScaTraEleInternalVariableManager<my::nsd_,my::nen_> varmanager;
 
 public:
   virtual ~ScaTraEleCalcAdvReac(){return;};
