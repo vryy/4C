@@ -18,15 +18,6 @@ Maintainer: Philipp Farah
 #include "Epetra_Comm.h"
 #include "../drt_mortar/mortar_manager_base.H" // TODO forward declaration!!!
 #include "../drt_lib/drt_dserror.H"
-//#include "Epetra_Map.h"
-
-
-// forward declarations
-//namespace IO
-//{
-// class DiscretizationWriter;
-// //class DiscretizationReader;
-//}
 
 namespace DRT
 {
@@ -58,7 +49,8 @@ public:
   MeshtyingContactBridge(DRT::Discretization& dis,
                          std::vector<DRT::Condition*>& mtcond,
                          std::vector<DRT::Condition*>& ccond,
-                         double alphaf);
+                         double alphaf,
+                         bool smoothing = false);
 
   /*!
   \brief Destructor
@@ -83,13 +75,25 @@ public:
   \brief Get contact manager
 
   */
-  Teuchos::RCP<MORTAR::ManagerBase> ContactManager() {return cman_;}
+  Teuchos::RCP<MORTAR::ManagerBase> ContactManager()
+  {
+    if(sman_!=Teuchos::null)
+      return sman_;
+    else
+      return cman_;
+  }
 
   /*!
   \brief Get meshtying manager
 
   */
   Teuchos::RCP<MORTAR::ManagerBase> MtManager() {return mtman_;}
+
+  /*!
+  \brief Get smoothing manager
+
+  */
+  Teuchos::RCP<MORTAR::ManagerBase> SManager() {return sman_;}
 
   /*!
   \brief Get strategy of mt/contact problem
@@ -101,13 +105,25 @@ public:
   \brief return bool indicating if contact is defined
 
   */
-  bool HaveContact() { return (cman_ != Teuchos::null); }
+  bool HaveContact()
+  {
+    if(sman_ != Teuchos::null)
+      return true;
+    else
+      return (cman_ != Teuchos::null);
+  }
 
   /*!
   \brief return bool indicating if meshtying is defined
 
   */
   bool HaveMeshtying() { return (mtman_ != Teuchos::null); }
+
+  /*!
+  \brief return bool indicating if smoothing is defined
+
+  */
+  bool HaveSmoothing() { return (sman_ != Teuchos::null); }
 
   /*!
   \brief postprocess tractions for mesht/contact
@@ -169,6 +185,7 @@ protected:
 
   Teuchos::RCP<MORTAR::ManagerBase>   cman_;   //! contact manager
   Teuchos::RCP<MORTAR::ManagerBase>   mtman_;  //! meshtying manager
+  Teuchos::RCP<MORTAR::ManagerBase>   sman_;   //! smoothing manager
 
 }; // class MeshtyingContactBridge
 } // namespace CONTACT

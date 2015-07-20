@@ -1218,9 +1218,13 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
   /**********************************************************************/
   /* calculate                                                          */
   /**********************************************************************/
-  /* build global matrix t with tangent vectors of active nodes         */
-  /* and global matrix s with normal derivatives of active nodes        */
-  /* and global matrix p with tangent derivatives of active nodes       */
+  /* build global matrix tmatrix_ with tangent vectors of active nodes  */
+  /* and global matrix nmatrix_ with normal vectors of active nodes     */
+  /* and global matrix s with normal+D+M derivatives of active nodes    */
+  /* and global matrix tderivmatrix_ with tangent derivatives           */
+  /*     of active nodes                                                */
+  /* and global matrix nderivmatrix_ with normal derivatives            */
+  /*     of active nodes                                                */
   /* and inactive right-hand side with old lagrange multipliers (incr)  */
   /* and tangential right-hand side (incr)                              */
   /**********************************************************************/

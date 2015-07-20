@@ -1731,7 +1731,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("LM_NODAL_SCALE","No","If chosen a nodal scaling factor is calculated for each LM",
                                yesnotuple,yesnovalue,&mortar);
 
-  setStringToIntegralParameter<int>("HERMITE_SMOOTHING","No","If chosen hermite interface smoothing is activated for line2 elements",
+  setStringToIntegralParameter<int>("HERMITE_SMOOTHING","No","If chosen, hermite interface smoothing is activated for line2 elements",
                                yesnotuple,yesnovalue,&mortar);
 
   setStringToIntegralParameter<int>("MESH_RELOCATION","Initial","Type of mesh relocation",
@@ -1824,6 +1824,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                  INPAR::CONTACT::adhesion_none,INPAR::CONTACT::adhesion_none,
                  INPAR::CONTACT::adhesion_bound,INPAR::CONTACT::adhesion_bound),
       &scontact);
+
+  setStringToIntegralParameter<int>("DISCR_SMOOTHING","No","If chosen, interface smoothing with additional interface discr. is activated",
+                               yesnotuple,yesnovalue,&scontact);
 
   setStringToIntegralParameter<int>("FRICTION","None","Type of friction law",
       tuple<std::string>("None","none",
