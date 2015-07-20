@@ -1,14 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file fluid_xwall.cpp
-\brief XWall
 
-<pre>
-Maintainer: Benjamin Krank
-            krank@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15252
-</pre>
+\maintainer Benjamin Krank
+
+\level 2
+
+\brief handling the time-integration-level for xwall
+
 */
 /*----------------------------------------------------------------------*/
 
@@ -389,16 +388,10 @@ void FLD::XWall::InitWallDist()
 
   Teuchos::RCP<Epetra_Map> testrednodecolmap = LINALG::AllreduceEMap(*(discret_->NodeRowMap()));
   commondis->ExportColumnNodes(*testrednodecolmap);
-  // find out if we are in parallel; needed for TransparentDofSet
-  bool parallel = (commondis->Comm().NumProc() == 1) ? false : true;
 
-  // dofs of the original discretization are used to set same dofs for the new discretization
-  Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::TransparentDofSet(discret_,parallel));
-
-  commondis->ReplaceDofSet(newdofset);
-  commondis->FillComplete(true,false,false);
-
-  newdofset=Teuchos::null;
+  // do not assign any dofs to save memory
+  // only the nodes are needed in this discretization
+  commondis->FillComplete(false,false,false);
 
   //also build a fully overlapping map of enriched nodes here:
   std::vector<int> colvec;          // node col map
@@ -488,6 +481,7 @@ void FLD::XWall::InitWallDist()
   if(myrank_==0)
     std::cout << "done!  " << std::endl;
 
+  commondis = Teuchos::null;
   return;
 }
 
