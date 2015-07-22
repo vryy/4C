@@ -1237,7 +1237,9 @@ void STR::TimIntImpl::LimitStepsizeBeamContact
 
       while(disi_infnorm>maxdisiscalefac*minimal_radius)
       {
-        std::cout << "      Residual displacement scaled! (Minimal element radius: " << minimal_radius << ")" << std::endl;
+        if(myrank_==0)
+          std::cout << "      Residual displacement scaled! (Minimal element radius: " << minimal_radius << ")" << std::endl;
+
         disi->Scale(0.5);
         disi->NormInf(&disi_infnorm);
       }

@@ -40,7 +40,6 @@ Maintainer: Alexander Popp
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_lib/drt_utils_timintmstep.H"
 
-
 // forward declarations
 namespace DRT
 {

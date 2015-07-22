@@ -113,7 +113,7 @@ MAT 1 MAT_VISCOANISO KAPPA 1.6667E04 MUE 33.3556 DENS 0.0000000001 K1 100.0 K2 1
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 122 QUANTITY dispx VALUE 5.461770782255928993e-04 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 122 QUANTITY dispx VALUE 5.46175549816273870e-04 TOLERANCE 1e-9
 STRUCTURE DIS structure NODE 122 QUANTITY dispy VALUE -4.012349912656664342e-04 TOLERANCE 1e-9
 STRUCTURE DIS structure NODE 122 QUANTITY dispz VALUE -2.950703693420292156e-04 TOLERANCE 1e-9
 ----------------------------------------------------------DESIGN DESCRIPTION

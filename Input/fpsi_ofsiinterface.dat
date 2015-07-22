@@ -473,8 +473,7 @@ NODE 24    COORD  -1.5  0.5  -0.5
 ------------------------------------------------TRANSPORT ELEMENTS
 ---------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 5 QUANTITY dispy VALUE -1.04338761537801179e-04 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE -1.04338761537801748e-04 TOLERANCE 1e-10
-
+STRUCTURE DIS structure NODE 5 QUANTITY dispy VALUE -1.38855167325157837e-04 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE -1.38855167325158027e-04 TOLERANCE 1e-10
 ---------------------------------------------------------------END
 // END

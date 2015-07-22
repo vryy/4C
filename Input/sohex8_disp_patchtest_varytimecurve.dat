@@ -63,9 +63,9 @@ CURVE1 on File PathToFile ../Input/sohex8_disp_patchtest_timecurve.txt
 ----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 3.44326126731719695e+00 TOLERANCE 1e-13
-STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE -1.17060109624717898e-01 TOLERANCE 1e-14
-STRUCTURE DIS structure NODE 1 QUANTITY dispz VALUE -8.97335390878255257e-02 TOLERANCE 1e-14
+STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 3.41063771576905861e+00 TOLERANCE 1e-13
+STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE -1.16125247085816133e-01 TOLERANCE 1e-14
+STRUCTURE DIS structure NODE 1 QUANTITY dispz VALUE -9.61653170340928815e-02 TOLERANCE 1e-14
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         16
 NDLINE                          32

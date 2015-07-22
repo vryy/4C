@@ -1003,6 +1003,9 @@ void STR::TimInt::PostTimeLoop()
  * and identify consistent accelerations */
 void STR::TimInt::DetermineMassDampConsistAccel()
 {
+  // temporary right hand sinde vector in this routing
+  Teuchos::RCP<Epetra_Vector> rhs
+    = LINALG::CreateVector(*DofRowMapView(), true); // right hand side
   // temporary force vectors in this routine
   Teuchos::RCP<Epetra_Vector> fext
     = LINALG::CreateVector(*DofRowMapView(), true); // external force
@@ -1013,8 +1016,14 @@ void STR::TimInt::DetermineMassDampConsistAccel()
   stiff_->Zero();
   mass_->Zero();
 
+  //auxiliary vector in order to store accelerations of inhomogeneous Dirichilet-DoFs
+  //Meier 2015: This contribution is necessary in order to determine correct initial
+  //accelerations in case of inhomogeneous Dirichlet conditions
+  Teuchos::RCP<Epetra_Vector> acc_aux = LINALG::CreateVector(*DofRowMapView(), true);
+  acc_aux->PutScalar(0.0);
+
   // overwrite initial state vectors with DirichletBCs
-  ApplyDirichletBC((*time_)[0], (*dis_)(0), (*vel_)(0), (*acc_)(0), false);
+  ApplyDirichletBC((*time_)[0], (*dis_)(0), (*vel_)(0), acc_aux, false);
 
   /* get external force (no linearization since we assume Rayleigh damping
    * to be independent of follower loads) */
@@ -1065,9 +1074,18 @@ void STR::TimInt::DetermineMassDampConsistAccel()
     discret_->SetState(0,"residual displacement", zeros_);
     discret_->SetState(0,"displacement", (*dis_)(0));
     discret_->SetState(0,"velocity", (*vel_)(0));
-    discret_->SetState(0,"acceleration", (*acc_)(0));
+
+    //The acceleration is only used as a dummy here and should not be applied inside an element, since
+    //this is not the consistent initial acceleration vector which will be determined later on
+    discret_->SetState(0,"acceleration", acc_aux);
+
     if (damping_ == INPAR::STR::damp_material)
       discret_->SetState(0,"velocity", (*vel_)(0));
+
+    // for structure ale
+    if( dismat_!=Teuchos::null )
+      discret_->SetState(0,"material_displacement",(*dismat_)(0));
+
     // for structure ale
     if( dismat_!=Teuchos::null )
       discret_->SetState(0,"material_displacement",(*dismat_)(0));
@@ -1097,20 +1115,10 @@ void STR::TimInt::DetermineMassDampConsistAccel()
   // in case of C0 pressure field, we need to get rid of
   // pressure equations
   Teuchos::RCP<LINALG::SparseOperator> mass = Teuchos::null;
-  if (pressure_ != Teuchos::null)
-  {
-    mass = Teuchos::rcp(new LINALG::SparseMatrix(*MassMatrix(),Copy));
-    mass->ApplyDirichlet(*(pressure_->CondMap()));
-  }
-  else if (porositysplitter_ != Teuchos::null)
-  {
-    mass = Teuchos::rcp(new LINALG::SparseMatrix(*MassMatrix(),Copy));
-    mass->ApplyDirichlet(*(porositysplitter_->CondMap()));
-  }
-  else
-  {
-    mass = mass_;
-  }
+  //Meier 2015: Here, we apply a deep copy in order to not perform the Dirichlet conditions on the constant matrix mass_ later on.
+  //This is necessary since we need the original mass matrix mass_ (without blanked rows) on the Dirichlet DoFs
+  //in order to calculate correct reaction forces (Christoph Meier)
+  mass = Teuchos::rcp(new LINALG::SparseMatrix(*MassMatrix(),Copy));
 
   /* calculate consistent initial accelerations
    * WE MISS:
@@ -1119,23 +1127,58 @@ void STR::TimInt::DetermineMassDampConsistAccel()
    *   - linearization of follower loads
    */
   {
-    Teuchos::RCP<Epetra_Vector> rhs = LINALG::CreateVector(*DofRowMapView(), true);
+
+    //Contribution to rhs due to damping forces
     if (damping_ == INPAR::STR::damp_rayleigh)
     {
       damp_->Multiply(false, (*vel_)[0], *rhs);
     }
+    //Contribution to rhs due to internal and external forces
     rhs->Update(-1.0, *fint, 1.0, *fext, -1.0);
 
-    // blank RHS on DBC DOFs
-    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), rhs);
-    if (pressure_ != Teuchos::null)
-      pressure_->InsertCondVector(pressure_->ExtractCondVector(zeros_), rhs);
-    if (porositysplitter_ != Teuchos::null)
-      porositysplitter_->InsertCondVector(porositysplitter_->ExtractCondVector(zeros_), rhs);
+    //Contribution to rhs due to beam contact
+    if (HaveBeamContact())
+    {
+      // create empty parameter list
+      Teuchos::ParameterList beamcontactparams;
+      beamcontactparams.set("iter", 0);
+      beamcontactparams.set("dt", (*dt_)[0]);
+      beamcontactparams.set("numstep", step_);
+      beamcman_->Evaluate(*SystemMatrix(),*rhs,(*dis_)[0],beamcontactparams,true,timen_);
+    }
 
-//    std::cout<<"mass->EpetraOperator()"<<mass->EpetraOperator()<<std::endl;
-//    std::cout<<"(*acc_)(0)"<<*(*acc_)(0)<<std::endl;
+    //Contribution to rhs due to inertia forces of inhomogeneous Dirichlet conditions
+    Teuchos::RCP<Epetra_Vector> finert0 = LINALG::CreateVector(*DofRowMapView(), true);
+    finert0->PutScalar(0.0);
+    mass_->Multiply(false, *acc_aux, *finert0);
+    rhs->Update(-1.0, *finert0, 1.0);
+
+    // blank RHS and system matrix on DBC DOFs
+    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), rhs);
+
+    //Apply Dirichlet conditions also to mass matrix (which represents the system matrix of
+    //the considered linear system of equations)
+    mass->ApplyDirichlet(*(dbcmaps_->CondMap()));
+
+    if (pressure_ != Teuchos::null)
+    {
+      pressure_->InsertCondVector(pressure_->ExtractCondVector(zeros_), rhs);
+      mass->ApplyDirichlet(*(pressure_->CondMap()));
+    }
+    if (porositysplitter_ != Teuchos::null)
+    {
+      porositysplitter_->InsertCondVector(porositysplitter_->ExtractCondVector(zeros_), rhs);
+      mass->ApplyDirichlet(*(porositysplitter_->CondMap()));
+    }
+
+    //Meier 2015: Due to the Dirichlet conditions applied to the mass matrix, we solely solve
+    //for the accelerations at non-Dirichlet DoFs while the resulting accelerations at the
+    //Dirichlet-DoFs will be zero. Therefore, the accelerations at DoFs with inhomogeneous
+    //Dirichlet conditions will be added below at *).
     solver_->Solve(mass->EpetraOperator(), (*acc_)(0), rhs, true, true);
+
+    //*) Add contributions of inhomogeneous DBCs
+    (*acc_)(0)->Update(1.0,*acc_aux,1.0);
   }
 
   // We need to reset the stiffness matrix because its graph (topology)

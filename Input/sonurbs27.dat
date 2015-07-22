@@ -72,9 +72,9 @@ MAT 2 ELAST_CoupNeoHooke YOUNG 2.0e6 NUE 0.3
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC -1.0*0.5*(1-cos((t*pi/2.0))) t1 0.0 t2 2.0
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 4433 QUANTITY dispz VALUE -1.35222711423511527e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 4433 QUANTITY dispz VALUE -1.35222727958044048e-01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 3876 QUANTITY dispz VALUE -2.44717418524232344e-01 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 2323 QUANTITY dispz VALUE -1.74736155491491102e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 2323 QUANTITY dispz VALUE -1.74736178676021398e-01 TOLERANCE 1e-8
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         32
 NDLINE                          40

@@ -390,7 +390,7 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(Teuchos::ParameterList& par
   // F_{int;n+1-alpha_f} := (1.-alphaf) * F_{int;n+1} + alpha_f * F_{int;n}
   fintm_->Update(1.-alphaf_, *fintn_, alphaf_, *fint_, 0.0);
 
-  // ************************** (3) INERTIAL FORCES ***************************
+  // ************************** (3) INERTIA FORCES ***************************
 
   // build new inertia forces and stiffness
   if (HaveNonlinearMass() == INPAR::STR::ml_none)
