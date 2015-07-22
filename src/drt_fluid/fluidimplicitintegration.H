@@ -678,6 +678,9 @@ public:
   //! Return wss manager
   virtual Teuchos::RCP<FLD::UTILS::StressManager> StressManager() {return stressmanager_;}
 
+  //! Return impedance BC
+  virtual Teuchos::RCP<FLD::UTILS::FluidImpedanceWrapper> ImpedanceBC_() {return impedancebc_;}
+
   //! Evaluate Dirichlet and Neumann boundary conditions
   virtual void SetDirichletNeumannBC();
 

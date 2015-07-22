@@ -693,6 +693,17 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
      xwall_->UpdateTauW(step_,trueresidual_,0,accn_,velnp_,veln_);
    }
 
+  // ----------------------------------------------------------------
+  // Prepare time step for impedance conditions
+  // ----------------------------------------------------------------
+  if (nonlinearbc_)
+  {
+    if (isimpedancebc_)
+    {
+      impedancebc_->PrepareTimeStepImpedance(time_);
+    }
+  }
+
   // -------------------------------------------------------------------
   //  evaluate Dirichlet and Neumann boundary conditions
   // -------------------------------------------------------------------
@@ -1044,12 +1055,6 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   //----------------------------------------------------------------------
   if (nonlinearbc_)
   {
-    if (isimpedancebc_)
-    {
-      // update impedance boundary condition
-      impedancebc_->UpdateResidual(residual_);
-    }
-
     ApplyNonlinearBoundaryConditions();
   }
 
@@ -1229,18 +1234,37 @@ void FLD::FluidImplicitTimeInt::TreatTurbulenceModels(Teuchos::ParameterList& el
 
 /*----------------------------------------------------------------------*
  | application of nonlinear boundary conditions to system, such as      |
- | 1) Neumann inflow boundary conditions                                |
- | 2) flow-dependent pressure boundary conditions                       |
- | 3) weak Dirichlet boundary conditions                                |
- | 4) mixed/hybrid Dirichlet boundary conditions                        |
- | 5) Slip Supplemental Curved Boundary conditions                      |
- | 6) Navier-slip boundary conditions                                   |
+ | 1) Impedance conditions                                              |
+ | 2) Neumann inflow boundary conditions                                |
+ | 3) flow-dependent pressure boundary conditions                       |
+ | 4) weak Dirichlet boundary conditions                                |
+ | 5) mixed/hybrid Dirichlet boundary conditions                        |
+ | 6) Slip Supplemental Curved Boundary conditions                      |
+ | 7) Navier-slip boundary conditions                                   |
  |                                                             vg 06/13 |
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
 {
   //----------------------------------------------------------------------
-  // 1) Neumann inflow boundary conditions
+  // 1) Impedance conditions
+  //----------------------------------------------------------------------
+  if (isimpedancebc_)
+  {
+    discret_->ClearState();
+    discret_->SetState("velaf",velnp_);
+
+    if (alefluid_)
+      discret_->SetState("dispnp", dispn_);
+
+    //Do actual calculations
+    impedancebc_->FlowRateCalculation(time_,dta_);
+    impedancebc_->OutflowBoundary(time_,dta_);
+    // update impedance boundary condition
+    impedancebc_->UpdateResidual(residual_);
+  }
+
+  //----------------------------------------------------------------------
+  // 2) Neumann inflow boundary conditions
   //----------------------------------------------------------------------
   // check whether there are Neumann inflow boundary conditions
   std::vector<DRT::Condition*> neumanninflow;
@@ -1275,7 +1299,7 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
   }
 
   //----------------------------------------------------------------------
-  // 2) flow-dependent pressure boundary conditions
+  // 3) flow-dependent pressure boundary conditions
   //    (either based on (out)flow rate or on (out)flow volume (e.g.,
   //     for air cushion outside of boundary))
   //----------------------------------------------------------------------
@@ -1541,7 +1565,7 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
   }
 
   //----------------------------------------------------------------------
-  // 3) weak Dirichlet boundary conditions
+  // 4) weak Dirichlet boundary conditions
   //----------------------------------------------------------------------
   // check whether there are weak Dirichlet boundary conditions
   std::vector<DRT::Condition*> weakdbcline;
@@ -1575,7 +1599,7 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
   }
 
   //----------------------------------------------------------------------
-  // 4) mixed/hybrid Dirichlet boundary conditions
+  // 5) mixed/hybrid Dirichlet boundary conditions
   //----------------------------------------------------------------------
   // check whether there are mixed/hybrid Dirichlet boundary conditions
   std::vector<DRT::Condition*> mhdbcline;
@@ -1616,7 +1640,7 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
   }
 
   //------------------------------------------------------------------------
-  // 5) Slip Supplemental Curved Boundary conditions            [hahn 07/14]
+  // 6) Slip Supplemental Curved Boundary conditions            [hahn 07/14]
   //    (Boundary condition used for counteracting spurious velocities at
   //     curved boundaries with slip-conditions. For details see Behr M.,
   //     2003, "On the Application of Slip Boundary Condition on Curved
@@ -1705,7 +1729,7 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
   }
 
   //------------------------------------------------------------------------
-  // 6) Navier-slip boundary conditions                         [hahn 03/14]
+  // 7) Navier-slip boundary conditions                         [hahn 03/14]
   //    At the boundary, apply a shear stress which is proportional to the
   //    tangential/bi-tangential velocity. In BACI, this is achieved by
   //    applying h = sigma*n = -beta*u under the condition that u*n=0 has
@@ -3055,7 +3079,7 @@ void FLD::FluidImplicitTimeInt::TimeUpdateNonlinearBC()
   }
 
   if (isimpedancebc_)
-    {
+  {
     // -------------------------------------------------------------------
     // treat impedance BC
     // note: these methods return without action, if the problem does not
@@ -3063,14 +3087,13 @@ void FLD::FluidImplicitTimeInt::TimeUpdateNonlinearBC()
     // -------------------------------------------------------------------
     discret_->ClearState();
     discret_->SetState("velaf",velnp_);
-    discret_->SetState("hist",hist_);
 
     if (alefluid_)
       discret_->SetState("dispnp", dispn_);
 
-    //Do actual calculations
+    //do update flowrates and resulting pressures
     impedancebc_->FlowRateCalculation(time_,dta_);
-    impedancebc_->OutflowBoundary(time_,dta_,theta_);
+    impedancebc_->OutflowBoundary(time_,dta_);
 
     // get the parameters needed to be optimized
     Teuchos::ParameterList WkOpt_params;
@@ -3080,7 +3103,7 @@ void FLD::FluidImplicitTimeInt::TimeUpdateNonlinearBC()
 
     // update wind kessel optimization condition
     impedancebc_optimization_->Solve(WkOpt_params);
-    }
+  }
 }
 
 
