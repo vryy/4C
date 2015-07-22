@@ -55,12 +55,16 @@ mintotalsimgap_(0.0),
 mintotalsimrelgap_(0.0),
 mintotalsimunconvgap_(0.0),
 totpenaltyenergy_(0.0),
+totpenaltywork_(0.0),
 maxdeltadisp_(0.0),
+totalmaxdeltadisp_(0.0),
 firststep_(true),
 elementtypeset_(false),
 outputcounter_(0),
 timen_(0.0),
-contactevaluationtime_(0.0)
+contactevaluationtime_(0.0),
+global_kappa_max_(0.0),
+step_(0)
 {
   // create new (basically copied) discretization for contact
   // (to ease our search algorithms we afford the luxury of
@@ -351,6 +355,7 @@ contactevaluationtime_(0.0)
 
   // initialize input parameters
   currentpp_ = sbeamcontact_.get<double>("BEAMS_BTBPENALTYPARAM");
+
   btspp_ = sbeamcontact_.get<double>("BEAMS_BTSPENALTYPARAM");
 
   if (btsph_)
@@ -594,7 +599,7 @@ contactevaluationtime_(0.0)
         dlinenodemap_[(*node_ids)[j]] = i;
       }
     }
-  } // beam potential line charge condition applied
+  } //beam potential line charge condition applied
 
   return;
 }
@@ -748,7 +753,9 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
 
   t_end = Teuchos::Time::wallTime() - t_start;
   std::cout << "      Evaluate Contact Pairs: " << t_end << " seconds. "<< std::endl;
-  contactevaluationtime_+=t_end;
+  double sumproc_evaluationtime=0.0;
+  Comm().SumAll(&t_end,&sumproc_evaluationtime,1);
+  contactevaluationtime_+=sumproc_evaluationtime;
   t_start = Teuchos::Time::wallTime();
 
   if (DRT::INPUT::IntegralValue<INPAR::STR::MassLin>(sstructdynamic_,"MASSLIN") != INPAR::STR::ml_rotations)
@@ -1162,6 +1169,33 @@ void CONTACT::Beam3cmanager::SetState(std::map<int,LINALG::Matrix<3,1> >& curren
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::EvaluateAllPairs(Teuchos::ParameterList timeintparams)
 {
+  //Begin: Determine maximal curvature occuring in complete beam discretization
+  double kappa_max=0.0;
+  global_kappa_max_=0.0;
+
+  for (int i=0;i<ProblemDiscret().NumMyColElements();i++)
+  {
+    DRT::Element* element = ProblemDiscret().lColElement(i);
+    const DRT::ElementType & eot = element->ElementType();
+    if (eot == DRT::ELEMENTS::Beam3ebType::Instance())
+    {
+      const DRT::ELEMENTS::Beam3eb* beam3ebelement = dynamic_cast<const DRT::ELEMENTS::Beam3eb*>(element);
+
+      if(fabs(beam3ebelement->GetKappaMax())>kappa_max)
+        kappa_max=fabs(beam3ebelement->GetKappaMax());
+    }
+    else
+    {
+      std::cout << "Warning: Calculation of kappa_max only implemented for beam3eb elements so far!" << std::endl;
+      kappa_max=0.0;
+    }
+  }
+
+  Comm().MaxAll(&kappa_max,&global_kappa_max_,1);
+  std::cout << "global_kappa_max_: " << global_kappa_max_ << std::endl;
+  timeintparams.set("kappa_max", global_kappa_max_);
+  //End: Determine maximal curvature occuring in complete beam discretization
+
   // Loop over all BTB contact pairs
   for (int i=0;i<(int)pairs_.size();++i)
   {
@@ -1933,6 +1967,9 @@ void CONTACT::Beam3cmanager::Update(const Epetra_Vector& disrow, const int& time
   // store values of fc_ into fcold_ (generalized alpha)
   fcold_->Update(1.0,*fc_,0.0);
 
+  double disold_L2=0.0;
+  dis_old_->Norm2(&disold_L2);
+
   // calculate (dis_old_-dis_):
   dis_old_->Update(-1.0,*dis_,1.0);
   // calculate inf-norm of (dis_old_-dis_)
@@ -1941,6 +1978,9 @@ void CONTACT::Beam3cmanager::Update(const Epetra_Vector& disrow, const int& time
   dis_old_->Update(1.0,*dis_,1.0);
   //update dis_old_ -> dis_
   dis_old_->Update(1.0,*dis_,0.0);
+
+  if(maxdeltadisp_>totalmaxdeltadisp_ and disold_L2>1.0e-12)//don't consider the first time step where disold_L2=0!
+    totalmaxdeltadisp_=maxdeltadisp_;
 
   //If the original gap function definition is applied, the displacement per time is not allowed
   //to be larger than the smalles beam cross section radius occurring in the discretization!
@@ -1957,6 +1997,8 @@ void CONTACT::Beam3cmanager::Update(const Epetra_Vector& disrow, const int& time
               "but newgapfunction_ flag is not set. Choose smaller time step!");
     }
   }
+  //std::cout << "mineleradius_: " << mineleradius_ << std::endl;
+  //std::cout << "totalmaxdeltadisp_: " << totalmaxdeltadisp_ << std::endl;
 
   // create gmsh output for nice visualization
   // (endoftimestep flag set to TRUE)
@@ -2059,7 +2101,7 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
 //    dserror("GmshOutput not implemented for beam-to-solid contact so far!");
 
   #ifdef OUTPUTEVERY
-    if(fabs(timen_-(outputcounter_+1)*OUTPUTEVERY)<1.0e-8)
+    if(fabs(timen_ -(outputcounter_+1)*OUTPUTEVERY)<1.0e-8)
     {
       outputcounter_++;
     }
@@ -3056,15 +3098,35 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm()
 
   //Clear class variable
   totpenaltyenergy_=0.0;
+  double proclocal_penaltyenergy=0.0;
+
+  //Calculate contact work
+  double deltapenaltywork=0.0;
+  Epetra_Vector delta_disp(*dis_);
+  delta_disp.Update(-1.0,*dis_old_,1.0);
+
+  Epetra_Vector fc_alpha(*fc_);
+  fc_alpha.Update(alphaf_,*fcold_,1.0-alphaf_);
+
+  delta_disp.Dot(fc_alpha,&deltapenaltywork);
+
+  deltapenaltywork=-deltapenaltywork;
+
+  totpenaltywork_+=deltapenaltywork;
 
   // loop over all pairs to find all gaps
   for (int i=0;i<(int)pairs_.size();++i)
   {
+
+    // make sure to evaluate each pair only once
+    int firsteleid = (pairs_[i]->Element1())->Id();
+    bool firstisinrowmap = RowElements()->MyGID(firsteleid);
+
     // only relevant if current pair is active
-    if (pairs_[i]->GetContactFlag() == true)
+    if (pairs_[i]->GetContactFlag() == true and firstisinrowmap)
     {
       //Update penalty energy
-      totpenaltyenergy_ += pairs_[i]->GetEnergy();
+      proclocal_penaltyenergy += pairs_[i]->GetEnergy();
 
       //get smaller radius of the two elements:
       double smallerradius=0.0;
@@ -3105,6 +3167,8 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm()
   Comm().MinAll(&mingap,&minallgap,1);
   Comm().MaxAll(&maxrelgap,&maxallrelgap,1);
   Comm().MinAll(&minrelgap,&minallrelgap,1);
+
+  Comm().SumAll(&proclocal_penaltyenergy,&totpenaltyenergy_,1);
 
   //So far, we have determined the extrema of the current time step. Now, we want to determine the
   //extrema of the total simulation:
@@ -3258,19 +3322,52 @@ void CONTACT::Beam3cmanager::ConsoleOutput()
     }
     Comm().Barrier();
 
-    int totcontactpairs=0;
-
     double maxangle=0.0;
-    double mingap=0.0;
+    double minangle=90.0;
+    double mincpgap=1000.0;
+    double mingpgap=1000.0;
+    double minepgap=1000.0;
+    double maxcpgap=-1000.0;
+    double maxgpgap=-1000.0;
+    double maxepgap=-1000.0;
     int numperpc=0;
     int numparc=0;
     int numepc=0;
+    int numperpc_transitions=0;
+    int numepc_boundarygausspoint=0;
 
     #ifdef PRINTGAPFILE
       double error=0.0;
       int gapsize=0;
       double refgap=-0.002;
      #endif
+
+    double perpshiftangle1 = sbeamcontact_.get<double>("BEAMS_PERPSHIFTANGLE1");
+    double perpshiftangle2 = sbeamcontact_.get<double>("BEAMS_PERPSHIFTANGLE2");
+
+    #ifdef PRINTGAPSOVERLENGTHFILE
+      step_++;
+      std::ostringstream filename;
+      filename << "gp_gapsandforces_1x49filaments_consistentaxialtension_40elefil_" << step_ <<".txt";
+
+      // do output to file in c-style
+      FILE* fp = NULL;
+      std::stringstream filecontent;
+
+      //if(firststep_)
+      if(true)
+      {
+        // open file to write output data into
+        fp = fopen(filename.str().c_str(), "w");
+        filecontent << "ID1 ID2 xi eta gap force angles\n";
+        firststep_=false;
+      }
+      else
+      {
+        // open file to write output data into
+        fp = fopen(filename.str().c_str(), "a");
+      }
+    #endif
 
     // loop over all pairs
     for (int i=0;i<(int)pairs_.size();++i)
@@ -3279,7 +3376,6 @@ void CONTACT::Beam3cmanager::ConsoleOutput()
       if (pairs_[i]->GetContactFlag())
       {
         // make sure to print each pair only once
-        // (TODO: this is not yet enough...)
         int firsteleid = (pairs_[i]->Element1())->Id();
         bool firstisinrowmap = RowElements()->MyGID(firsteleid);
 
@@ -3309,79 +3405,121 @@ void CONTACT::Beam3cmanager::ConsoleOutput()
             if(fabs(angles[j]/M_PI*180.0)>maxangle)
               maxangle=fabs(angles[j]/M_PI*180.0);
 
-            if(gaps[j]<mingap)
-              mingap=gaps[j];
+            if(fabs(angles[j]/M_PI*180.0)<minangle)
+              minangle=fabs(angles[j]/M_PI*180.0);
 
             if(types[j]==0)
+            {
+              if(gaps[j]<mincpgap)
+                mincpgap=gaps[j];
+              if(gaps[j]>maxcpgap)
+                maxcpgap=gaps[j];
               numperpc++;
 
+              if(fabs(angles[j]/M_PI*180.0)<perpshiftangle2 and fabs(angles[j]/M_PI*180.0)>perpshiftangle1)
+                numperpc_transitions++;
+            }
+
             if(types[j]==1)
+            {
+              if(gaps[j]<mingpgap)
+                mingpgap=gaps[j];
+              if(gaps[j]>maxgpgap)
+                maxgpgap=gaps[j];
               numparc++;
+              if( ((id1+1)%10)==0 and fabs(closestpoints[j].first-0.99)<0.02)
+                numepc_boundarygausspoint++;
+
+              #ifdef PRINTGAPSOVERLENGTHFILE
+                //if(id1>=10 and id1 <=19 and id2>=20 and id2<=29)
+                if(id1>=320 and id1 <=359 and id2>=360 and id2<=399)
+                filecontent << id1 << " "<< id2 << " " << closestpoints[j].first  << " "<<  closestpoints[j].second << " " << gaps[j] << " " << forces[j] << " " << angles[j]/M_PI*180.0 << "\n";
+              #endif
+            }
 
             if(types[j]==2)
+            {
+              if(gaps[j]<minepgap)
+                minepgap=gaps[j];
+              if(gaps[j]>maxepgap)
+                maxepgap=gaps[j];
               numepc++;
-
-            #ifdef PRINTGAPSOVERLENGTHFILE
-              std::ostringstream filename;
-              filename << "gp_gapsandforces.txt";
-
-              // do output to file in c-style
-              FILE* fp = NULL;
-              std::stringstream filecontent;
-
-              if(firststep_)
-              {
-                // open file to write output data into
-                fp = fopen(filename.str().c_str(), "w");
-                filecontent << "xi gap force\n";
-                firststep_=false;
-              }
-              else
-              {
-                // open file to write output data into
-                fp = fopen(filename.str().c_str(), "a");
-              }
-              if(numsegments.second,types[j]==1)
-                filecontent << closestpoints[j].first << " " << gaps[j] << " " << forces[j] <<"\n";
-              //write content into file and close it
-              fprintf(fp, filecontent.str().c_str());
-              fclose(fp);
-            #endif
+            }
 
             printf("      %-6d (%2d/%-2d) %-6d (%2d/%-2d)   %-1d  %-6.2f %-6.2f %-7.2f %-11.8e %-11.2e \n",id1,segmentids[j].first+1,numsegments.first,id2,segmentids[j].second+1,numsegments.second,types[j],closestpoints[j].first,closestpoints[j].second,angles[j]/M_PI*180.0,gaps[j],forces[j]);
             fflush(stdout);
-            totcontactpairs++;
           }
         }
       }
     }
 
+#ifdef PRINTGAPSOVERLENGTHFILE
+  //write content into file and close it
+  fprintf(fp, filecontent.str().c_str());
+  fclose(fp);
+#endif
+
+    //Calculate sum over all procs
+    double sumpro_maxangle=0.0;
+    double sumpro_minangle=0.0;
+    double sumpro_mincpgap=0.0;
+    double sumpro_mingpgap=0.0;
+    double sumpro_minepgap=0.0;
+    double sumpro_maxcpgap=0.0;
+    double sumpro_maxgpgap=0.0;
+    double sumpro_maxepgap=0.0;
+    int sumpro_numperpc=0;
+    int sumpro_numparc=0;
+    int sumpro_numepc=0;
+    int sumpro_numperpc_transitions=0;
+    int sumpro_numepc_boundarygausspoint=0;
+
+    Comm().MaxAll(&maxangle,&sumpro_maxangle,1);
+    Comm().MinAll(&minangle,&sumpro_minangle,1);
+    Comm().MinAll(&mincpgap,&sumpro_mincpgap,1);
+    Comm().MinAll(&mingpgap,&sumpro_mingpgap,1);
+    Comm().MinAll(&minepgap,&sumpro_minepgap,1);
+    Comm().MaxAll(&maxcpgap,&sumpro_maxcpgap,1);
+    Comm().MaxAll(&maxgpgap,&sumpro_maxgpgap,1);
+    Comm().MaxAll(&maxepgap,&sumpro_maxepgap,1);
+    Comm().SumAll(&numperpc,&sumpro_numperpc,1);
+    Comm().SumAll(&numparc,&sumpro_numparc,1);
+    Comm().SumAll(&numepc,&sumpro_numepc,1);
+    Comm().SumAll(&numperpc_transitions,&sumpro_numperpc_transitions,1);
+    Comm().SumAll(&numepc_boundarygausspoint,&sumpro_numepc_boundarygausspoint,1);
+
     #ifdef PRINTNUMCONTACTSFILE
-    std::ostringstream filename;
-    filename << "activecontacts2.txt";
-
-    // do output to file in c-style
-    FILE* fp = NULL;
-    std::stringstream filecontent;
-
-    if(firststep_)
+    if(Comm().MyPID()==0)
     {
-      // open file to write output data into
-      fp = fopen(filename.str().c_str(), "w");
-      filecontent << "perpcontacts parcontacts epcontacts\n";
-      firststep_=false;
-    }
-    else
-    {
-      // open file to write output data into
-      fp = fopen(filename.str().c_str(), "a");
-    }
+      //TODO
+      std::ostringstream filename;
+      filename << "activecontacts_minmaxgapangle_statmech_37filaments_noendpoints.txt";
 
-    filecontent << numperpc << " " << numparc << " " << numepc <<"\n";
+      // do output to file in c-style
+      FILE* fp = NULL;
+      std::stringstream filecontent;
 
-    //write content into file and close it
-    fprintf(fp, filecontent.str().c_str());
-    fclose(fp);
+      if(firststep_)
+      {
+        // open file to write output data into
+        fp = fopen(filename.str().c_str(), "w");
+        filecontent << "perpcontacts parcontacts epcontacts pertransitions minangle maxangle minperpgap minpargap minepgap global_kappa_max\n";
+
+        firststep_=false;
+      }
+      else
+      {
+        // open file to write output data into
+        fp = fopen(filename.str().c_str(), "a");
+      }
+
+      filecontent << sumpro_numperpc << " " << sumpro_numparc << " " << sumpro_numepc << " " << sumpro_numperpc_transitions << " ";
+      filecontent << sumpro_minangle << " " << sumpro_maxangle << " " << sumpro_mincpgap << " " << sumpro_mingpgap << " " << sumpro_minepgap<< " " << global_kappa_max_ << "\n";
+
+      //write content into file and close it
+      fprintf(fp, filecontent.str().c_str());
+      fclose(fp);
+    }
     #endif
 
     #ifdef PRINTGAPFILE
@@ -3415,9 +3553,28 @@ void CONTACT::Beam3cmanager::ConsoleOutput()
       fclose(fp);
     #endif
 
-    std::cout << "Total Number of Contact Pairs: " << totcontactpairs << std::endl;
-    std::cout << "Maximal contact angle: " << maxangle << std::endl;
-    std::cout << "Minimal gap: " << mingap << std::endl;
+    if (Comm().MyPID()==0)
+    {
+      std::cout << "Number of Point-to-Point Contact Pairs: " << sumpro_numperpc << std::endl;
+      std::cout << "Number of Point Contacts in Transition Range: " << sumpro_numperpc_transitions << std::endl;
+      std::cout << "Number of Line-to-Line Contact Pairs: " << sumpro_numparc << std::endl;
+      std::cout << "Number of Boundary Gauss points at left end of bundle: " << sumpro_numepc_boundarygausspoint << std::endl;
+      std::cout << "Number of Endpoint Contact Pairs: " << sumpro_numepc << std::endl;
+
+      std::cout << "Minimal contact angle: " << sumpro_minangle << std::endl;
+      std::cout << "Maximal contact angle: " << sumpro_maxangle << std::endl;
+
+      std::cout << "Minimal Point-to-Point gap: " << sumpro_mincpgap << std::endl;
+      std::cout << "Minimal Line-to-Line gap: " << sumpro_mingpgap << std::endl;
+      std::cout << "Minimal Endpoint gap: " << sumpro_minepgap << std::endl;
+
+      std::cout << "Maximal Point-to-Point gap: " << sumpro_maxcpgap << std::endl;
+      std::cout << "Maximal Line-to-Line gap: " << sumpro_maxgpgap << std::endl;
+      std::cout << "Maximal Endpoint gap: " << sumpro_maxepgap << std::endl;
+
+      std::cout << " global_kappa_max_: " << global_kappa_max_ << std::endl;
+      std::cout << " contactevaluationtime_: " << contactevaluationtime_ << std::endl;
+    }
 
         // loop over all btsph pairs
     for (int i=0;i<(int)btsphpairs_.size();++i)
@@ -4172,7 +4329,7 @@ void CONTACT::Beam3cmanager::GMSH_N_noded(const int& n,
 //      gmshfilecontent << "{\"" << thisele->Id() << "\"};" << std::endl;
 //    }
 
-//separate elements by black dots
+//    //separate elements by black dots
 //    if(i==0)
 //    {
 //      gmshfilecontent <<"SP(" << coord(0,0) <<  "," << coord(1,0)+0.05 << "," << coord(2,0) << "){0.0,0.0};"<<std::endl;
@@ -4337,14 +4494,20 @@ void CONTACT::Beam3cmanager::GMSH_N_nodedLine(const int& n,
     }
   #endif
 
-
   for (int i=0;i<n_axial-1;i++)
   {
-      gmshfilecontent << "SL("<< std::scientific;
-      gmshfilecontent << allcoord(0,i) << "," << allcoord(1,i) << "," << allcoord(2,i) << ",";
-      gmshfilecontent << allcoord(0,i+1) << "," << allcoord(1,i+1) << "," << allcoord(2,i+1);
-      gmshfilecontent << "){" << std::scientific;
-      gmshfilecontent << color << "," << color << "};" << std::endl;
+    //    //Output of element IDs
+//    if (i==n_axial/2)
+//    {
+//      gmshfilecontent << "T3(" << std::scientific << allcoord(0,i) << "," << allcoord(1,i) << "," << allcoord(2,i) << "," << 17 << ")";
+//      gmshfilecontent << "{\"" << thisele->Id() << "\"};" << std::endl;
+//    }
+
+    gmshfilecontent << "SL("<< std::scientific;
+    gmshfilecontent << allcoord(0,i) << "," << allcoord(1,i) << "," << allcoord(2,i) << ",";
+    gmshfilecontent << allcoord(0,i+1) << "," << allcoord(1,i+1) << "," << allcoord(2,i+1);
+    gmshfilecontent << "){" << std::scientific;
+    gmshfilecontent << color << "," << color << "};" << std::endl;
   }
 
   return;
@@ -4858,7 +5021,11 @@ bool CONTACT::Beam3cmanager::CloseMidpointDistance(const DRT::Element* ele1, con
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::ReadRestart(IO::DiscretizationReader& reader)
 {
+
   reader.ReadVector(fcold_, "fcold");
+  reader.ReadVector(dis_old_, "dis_old");
+  totpenaltywork_ = reader.ReadDouble("totpenaltywork");
+  //outputcounter_ = reader.ReadInt("outputcounter");
 
   return;
 }
@@ -4870,6 +5037,9 @@ void CONTACT::Beam3cmanager::WriteRestart(Teuchos::RCP<IO::DiscretizationWriter>
 {
 
   output->WriteVector("fcold", fcold_);
+  output->WriteVector("dis_old", dis_old_);
+  output->WriteDouble("totpenaltywork", totpenaltywork_);
+  output->WriteInt("outputcounter", outputcounter_);
 
   return;
 }

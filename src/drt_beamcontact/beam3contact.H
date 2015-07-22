@@ -404,7 +404,6 @@ public:
   };
   //@}
 
-  //TODO: This still has to be implemented for beam3contact elements!
   /*!
     \Get energy of penalty contact.
   */
@@ -422,14 +421,57 @@ public:
     {
       double ppfac = BEAMCONTACT::CastToDouble(cpvariables_[i]->GetPPfac());
       double e = -cpvariables_[i]->GetIntegratedEnergy();
-      energy += ppfac*ppfac*e;
+      energy += ppfac*e;
     }
 
     for (int i=0;i<(int)gpvariables_.size();i++)
     {
       double ppfac = BEAMCONTACT::CastToDouble(gpvariables_[i]->GetPPfac());
       double e = -gpvariables_[i]->GetIntegratedEnergy();
-      energy += ppfac*ppfac*e;
+      energy += ppfac*e;
+    }
+
+    return energy;
+  };
+
+  /*!
+    \Get energy of perp penalty contact without transition factor contribution.
+  */
+  double GetUnscaledPerpEnergy()
+  {
+    if(     DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(bcparams_,"BEAMS_PENALTYLAW") != INPAR::BEAMCONTACT::pl_lp
+        and DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(bcparams_,"BEAMS_PENALTYLAW") != INPAR::BEAMCONTACT::pl_qp
+        and DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(bcparams_,"BEAMS_PENALTYLAW") != INPAR::BEAMCONTACT::pl_lpqp)
+      dserror("Contact Energy calculation not implemented for the chosen penalty law!");
+
+
+    double energy=0.0;
+
+    for (int i=0;i<(int)cpvariables_.size();i++)
+    {
+      double e = -cpvariables_[i]->GetIntegratedEnergy();
+      energy += e;
+    }
+
+    return energy;
+  };
+
+  /*!
+    \Get energy of parallel penalty contact without transition factor contribution.
+  */
+  double GetUnscaledParallelEnergy()
+  {
+    if(     DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(bcparams_,"BEAMS_PENALTYLAW") != INPAR::BEAMCONTACT::pl_lp
+        and DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(bcparams_,"BEAMS_PENALTYLAW") != INPAR::BEAMCONTACT::pl_qp
+        and DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(bcparams_,"BEAMS_PENALTYLAW") != INPAR::BEAMCONTACT::pl_lpqp)
+      dserror("Contact Energy calculation not implemented for the chosen penalty law!");
+
+    double energy=0.0;
+
+    for (int i=0;i<(int)gpvariables_.size();i++)
+    {
+      double e = -gpvariables_[i]->GetIntegratedEnergy();
+      energy += e;
     }
 
     return energy;
@@ -656,13 +698,29 @@ private:
   /*!
   \brief Find closest point eta2_master on a line for a given slave point eta1_slave
   */
-  bool PointToLineProjection( double& eta1_slave,
-                              double& eta_left2,
-                              double& l2,
-                              double& eta2_master,
-                              bool& pairactive,
-                              bool smallanglepair,
-                              bool invertpairs=false);
+  bool PointToLineProjection(double& eta1_slave,
+                             double& eta_left2,
+                             double& l2,
+                             double& eta2_master,
+                             double& gap,
+                             double& alpha,
+                             bool& pairactive,
+                             bool smallanglepair,
+                             bool invertpairs=false,
+                             bool orthogonalprojection=false);
+
+  /*!
+  \brief Determine minimal distance and contact angle for unconverged segment pair
+  */
+  void CheckUnconvergedSegmentPair( double& eta_left1,
+                                    double& eta_left2,
+                                    double& l1,
+                                    double& l2,
+                                    double& eta1_min,
+                                    double& eta2_min,
+                                    double& g_min,
+                                    double& alpha_g_min,
+                                    bool& pointtolinesolfound);
 
   /*!
   \brief Subdivide elements into segments for CPP
@@ -966,7 +1024,9 @@ private:
   void EvaluatePTLOrthogonalityCondition( TYPE& f,
                                           const LINALG::TMatrix<TYPE,3,1>& delta_r,
                                           const double norm_delta_r,
-                                          const LINALG::TMatrix<TYPE,3,1>& r2_xi);
+                                          const LINALG::TMatrix<TYPE,3,1>& r1_xi,
+                                          const LINALG::TMatrix<TYPE,3,1>& r2_xi,
+                                          bool orthogonalprojection);
 
   /*!
   \brief Evaluate Jacobian df of PTLOrthogonalityCondition
@@ -974,8 +1034,10 @@ private:
   bool EvaluateLinPTLOrthogonalityCondition(TYPE& df,
                                             const LINALG::TMatrix<TYPE,3,1>& delta_r,
                                             const double norm_delta_r,
+                                            const LINALG::TMatrix<TYPE,3,1>& r1_xi,
                                             const LINALG::TMatrix<TYPE,3,1>& r2_xi,
-                                            const LINALG::TMatrix<TYPE,3,1>& r2_xixi);
+                                            const LINALG::TMatrix<TYPE,3,1>& r2_xixi,
+                                            bool orthogonalprojection);
 
   /*!
   \brief Compute normal vector and gap function at contact point

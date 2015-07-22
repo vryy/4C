@@ -29,14 +29,16 @@ Maintainer: Christoph Meier
 //default: 50
 #define BEAMCONTACTTOL 1.0e-10    /* convergence tolerance for local Newton */
 //default: 1.0e-10
+#define RELBEAMCONTACTTOL 1.0e-6    /* apply relative convergence tolerance for local Newton */
+//default: 1.0e-8
+#define CRITICALRELNORM 1.0e-6    /*we get an error message, if the relative norm of the local Newton is decreased by CRITICALRELNORM, but no convergence is reached nevertheless*/
+//default: 1.0e-8
 #define XIETAITERATIVEDISPTOL 1.0e-10  /* second convergence tolerance for local Newton: norm of iterative displacements in xi and eta */
 //default: 1.0e-10
 #define XIETARESOLUTIONFAC 10     /*this quantity defines the smallest possible difference in parameter space between two different closest points as multiple of XIETAITERATIVEDISPTOL*/
 //default: 10
 #define XIETASAFETYFAC            /*safety factor for closest point projection*/
 //default: 10
-#define CRITICALRELNORM 1.0e-6    /*we get an error message, if the relative norm of the local Newton is decreased by CRITICALRELNORM, but no convergence is reached nevertheless*/
-//default: 1.0e-8
 #define XIETATOL 1.0e-7           /* tolerance for valid values of beam parameters Xi and Eta
 //default: 1.0e-9                                     (e.g. Xi \in [-1 - XIETATOL; 1 + XIETATOL]) */
 #define NORMTOL  1.0e-12           /* tolerance when the to contact points are to close and one
@@ -104,19 +106,27 @@ Maintainer: Christoph Meier
 #define ANGLETOL 0.1/180*M_PI                      //within the search algorithm, for angles<ANGLETOL two segments are assumed to be parallel
 #define UNIQUECPPANGLE 1.0/180.0*M_PI              //angle above which it is assumed that a unique cpp can be found by the local Newton
 
-//#define DELTALARGEANGLE   1.0/180.0*M_PI           //bound for search of large angle contact segment pairs
-//#define DELTASMALLANGLE   35.0/180.0*M_PI          //bound for search of small angle contact segment pairs
-
 #define BEAMCONTACTGAUSSRULE intrule_line_5point   //Gauss rule applied in each segment
 //default: 5 GP
 
-//#define CONSISTENTTRANSITION
+//#define CONSISTENTTRANSITION 2                    //apply moment based transition: 1 -> variant 1, 2 -> variant 2
 //#define ENDPOINTSEGMENTATION                       //build integration segments at the physical beam endpoints
 #define RELSEGMENTTOL 0.0000000001            //default:0.0000000001              //minimal (relative) size of a cut integration interval
 //#define CONVERGENCECONTROLE                      //check, if all local Newton loops converge
 
-#define INITSEG1 1                                 //minimal number of segments of element1 (necessary for debugging)
-#define INITSEG2 1                                 //minimal number of segments of element2 (necessary for debugging)
+//#define CHANGEENDPOINTPROJECTION                 //If CHANGEENDPOINTPROJECTION is defined, the endpoint projection necessary for ENDPOINTSEGMENTATION is done
+                                                 //as an orthogonal projection and not as an closest point projection
+
+//TODO
+//#define ONLYLEFTENDPOINTCONTACT                  //hack necessary for example "dynamic failure of rope" -> endpoint contact is only considered at one end of the ropes
+
+#define CPP_APPROX                                  //Use approximation based on point-to-line projection in case of non-converent cpp
+
+#define MAXCROSSSECTIONTOCURVATURE 0.005           //maximal allowed ratio of cross-section radius to curvature radius
+
+#define INITSEG1 1                                //minimal number of segments of element1 (necessary for debugging)
+#define INITSEG2 1                                //minimal number of segments of element2 (necessary for debugging)
+//#define NOSEGMENTATION                             //switch segmentation of -> one element=one segment
 
 //TODO: Change back to default
 #define MAXPENETRATIONSAFETYFAC 0.8       //0.8         //maximal allowed penetration is MAXPENETRATIONSAFETYFAC*(R1_+R2_)
@@ -146,12 +156,12 @@ Maintainer: Christoph Meier
 /* Debugging options                                                    */
 /************************************************************************/
 #define N_CIRCUMFERENTIAL 10      /* number of gmsh visualization devisions of beam element in circumferential direction*/
-#define N_Axial 10                /* number of gmsh visualization devisions of beam element in axial direction*/
+#define N_Axial 10               /* number of gmsh visualization devisions of beam element in axial direction*/
 
 //#define DISTINGUOSHCONTACTCOLOR
 //#define CONTACTPAIRSPECIFICOUTPUT
 //#define OUTPUTALLPROCS
-//#define OUTPUTEVERY 0.001          //Write gmsh output in time intervals of size OUTPUTEVERY
+//#define OUTPUTEVERY 0.000001        //Write gmsh output in time intervals of size OUTPUTEVERY
 //#define OUTPUTEVERYNEWTONSTEP      //Write output also after each Newton step
 //#define GMSHTIMESTEPS              /*write gmsh output in each time step */
 //#define GMSHNEWTONSTEPS            /*write gmsh and console output in each Newton step */
@@ -159,10 +169,13 @@ Maintainer: Christoph Meier
 //#define BEAMCONTACTFDCHECKS        /* perform finite difference checks */
 
 //#define PRINTGAPFILE //print file with gap/gap error
-//#define PRINTNUMCONTACTSFILE //print number of active contact points over time
-//#define PRINTGAPSOVERLENGTHFILE //print all GP gaps and forces over element length (only implemented for one element so far...)
+//#define PRINTNUMCONTACTSFILE//print number of active contact points over time
+//#define PRINTGAPSOVERLENGTHFILE //print all GP gaps and forces over element length
 
 //#define FDCHECK                //perform finite difference check of contact linearization
+
+
+
 
 /************************************************************************/
 /* Beam to solid contact options                                        */
@@ -196,9 +209,9 @@ Maintainer: Christoph Meier
 
 #ifndef AUTOMATICDIFFBTS
   //#define BTSOLGMSH                           // gmsh output of solids
-  #define GMSHDEBUG                             // Draw gap as 3D text at each Gauss point in Gmsh
-  #define GMSHFORCE                             // Create extra Gmsh file with contact forces acting on solid element
-  #define SAVEFORCE                             // Create text file with contact forces at all contact interval borders and Gauss points
+  //#define GMSHDEBUG                             // Draw gap as 3D text at each Gauss point in Gmsh
+  //#define GMSHFORCE                             // Create extra Gmsh file with contact forces acting on solid element
+  //#define SAVEFORCE                             // Create text file with contact forces at all contact interval borders and Gauss points
 #endif
 // -----------------------------------------------------------------
 

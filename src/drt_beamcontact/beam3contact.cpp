@@ -172,39 +172,25 @@ boundarynode2_(std::make_pair(0,0))
 
   bool beamsdebug = DRT::INPUT::IntegralValue<int>(beamcontactparams,"BEAMS_DEBUG");
 
+  //Check, if a unique closest point solution can be guaranteed for angles alpha > BEAMS_PERPSHIFTANGLE1
+  if((perpshiftangle1<acos(1.0-2*MAXCROSSSECTIONTOCURVATURE)) and !beamsdebug)
+    dserror("Choose larger shifting angle BEAMS_PERPSHIFTANGLE1 in order to enable a unique CPP!");
+
   double segangle = bcparams_.get<double>("BEAMS_SEGANGLE",-1.0)/180.0*M_PI;
 
-  if(bcparams_.get<double>("BEAMS_SEGANGLE",-1.0)<0)
+  if(bcparams_.get<double>("BEAMS_SEGANGLE",-1.0)<0.0)
     dserror("Input variable BEAMS_SEGANGLE has to be defined!");
 
-#ifdef DELTALARGEANGLE
-  deltalargeangle_=DELTALARGEANGLE;
+  double safetyfac=1.5;
+  //Determine bound for search of large-angle contact pairs
+  deltalargeangle_=perpshiftangle1-safetyfac*2*segangle;
 
-  if(deltalargeangle_<(2*segangle + UNIQUECPPANGLE + ANGLETOL))
-    dserror("DELTALARGEANGLE too small, no unique cpp possible!");
+  //In case of a negative value of deltalargeangle_ all pairs have to be evaluate by the large-angle contact formulation
+  if(deltalargeangle_<=0)
+    deltalargeangle_=0;
 
-  if(deltalargeangle_>(perpshiftangle1-2*segangle-ANGLETOL))
-    dserror("DELTALARGEANGLE too large, according to the values of BEAMS_PERPSHIFTANGLE1 and segangle not all relevant pairs can be found!");
-
-#else
-  deltalargeangle_=perpshiftangle1-2*segangle-ANGLETOL;
-
-//TODO:
-  if(deltalargeangle_<(2*segangle + UNIQUECPPANGLE + ANGLETOL) and !beamsdebug)
-    dserror("DELTALARGEANGLE too small, no unique cpp possible!");
-#endif
-
-#ifdef DELTASMALLANGLE
-  deltasmallangle_=DELTASMALLANGLE;
-
-  if(deltasmallangle_ < (parshiftangle2+2*segangle+ANGLETOL))
-      dserror("DELTASMALLANGLE too small, according to the values of BEAMS_PARSHIFTANGLE2 and segangle not all relevant pairs can be found!");
-#else
-  deltasmallangle_ = parshiftangle2+2*segangle+ANGLETOL;
-#endif
-
-  if((deltasmallangle_ < ANGLETOL or deltalargeangle_ < ANGLETOL) and !beamsdebug)
-    dserror("Tolerance ANGLETOL has to be chosen smaller!");
+  //Determine bound for search of small-angle contact pairs
+  deltasmallangle_ = parshiftangle2+safetyfac*2*segangle;
 
   //Check, if we have enough gauss points in order to find every contact point!!
   //Calculate maximal length distance between two gauss points (the factor 1.5 takes into account the not evenly distributed locations
@@ -220,7 +206,10 @@ boundarynode2_(std::make_pair(0,0))
   if(gausspoints.nquad>10)
     dserror("So far, not more than 10 Gauss points are allowed!");
 
-  if((deltal1>R1_/sin(perpshiftangle1)) and !beamsdebug)
+  //TODO We have not considered the factor of 4 occurring in the formula of maximal Gauss point distance, therefore
+  //we have an additional safety factor here...
+  //TODO!!!!
+  if((deltal1>R1_/sin(parshiftangle2)) and !beamsdebug)
     dserror("Not enough Gauss points crossing of beams possible!!!");
 
   return;
@@ -284,7 +273,25 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::Evaluate( LINALG::SparseMa
   closelargeanglesegments.clear();
   closesmallanglesegments.clear();
 
-  GetCloseSegments(endpoints1,endpoints2,closesmallanglesegments,closelargeanglesegments,closeendpointsegments,maxactivegap_);
+  bool endpoint_penalty=DRT::INPUT::IntegralValue<int>(bcparams_,"BEAMS_ENDPOINTPENALTY");
+
+  //Sub-devision of contact elements in search segments or not?
+  #ifndef NOSEGMENTATION
+    GetCloseSegments(endpoints1,endpoints2,closesmallanglesegments,closelargeanglesegments,closeendpointsegments,maxactivegap_);
+  #else
+    LINALG::TMatrix<double,3,1> segmentdata(true);
+    segmentdata(0)=0.0;  //segment angle
+    segmentdata(1)=0.0;    //eta1_seg
+    segmentdata(2)=0.0;    //eta2_seg
+    closesmallanglesegments[std::make_pair(0,0)]=segmentdata;
+    closelargeanglesegments[std::make_pair(0,0)]=segmentdata;
+
+    if(endpoint_penalty)
+    {
+      if(boundarynode1_.first or boundarynode1_.second or boundarynode2_.first or boundarynode2_.second)
+        closeendpointsegments.push_back(std::make_pair(0,0));
+    }
+  #endif
 
   //**********************************************************************
   // (1) Closest Point Projection for all close large angle segments(CPP)
@@ -323,8 +330,6 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::Evaluate( LINALG::SparseMa
       EvaluateActiveSmallAnglePairs(stiffmatrix,fint,&iminmax,&leftrightsolutionwithinsegment,&eta1_leftrightboundary);
     #endif
   }
-
-  bool endpoint_penalty=DRT::INPUT::IntegralValue<int>(bcparams_,"BEAMS_ENDPOINTPENALTY");
 
   if(endpoint_penalty)
   {
@@ -539,17 +544,53 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetActiveSmallAnglePairs( 
         int segid1 = segment_ids.first;
         double eta1_segleft = -1.0+segid1*l1;
         double eta2_segleft = -1.0;
-        double eta1_leftboundary_trial = 0.0;
+        double eta1_boundary_trial = 0.0;
         bool dummy;
-        leftsolutionwithinsegment=PointToLineProjection(eta2_segleft,eta1_segleft,l1,eta1_leftboundary_trial,dummy,true,true);
-        if(leftsolutionwithinsegment)
+
+        bool solutionwithinsegment=false;
+
+        double gap_dummy=0.0;
+        double alpha_dummy=0.0;
+
+        #ifndef CHANGEENDPOINTPROJECTION
+          solutionwithinsegment=PointToLineProjection(eta2_segleft,eta1_segleft,l1,eta1_boundary_trial,gap_dummy,alpha_dummy,dummy,true,true);
+        #else
+          solutionwithinsegment=PointToLineProjection(eta2_segleft,eta1_segleft,l1,eta1_boundary_trial,gap_dummy,alpha_dummy,dummy,true,true,true);
+        #endif
+
+        if(solutionwithinsegment)
         {
-          eta1_leftboundary=eta1_leftboundary_trial;
-          //determine ID of integration interval in which the point eta1_leftboundary lies
-          imin = BEAMCONTACT::GetIntervalId(eta1_leftboundary,intintervals,true);
-          //get length of segmented integration interval
-          leftintervallength=-1.0+(imin+1)*2.0/intintervals-eta1_leftboundary;
-          break;
+          //Determine if the projection eta1_boundary_trial is a left boundary of the integration segment or a right boundary of the integration segment
+          //This is done in the following way: First, we determine the tangent of the master boundary node in a way, such that the tangent points into the
+          //elements interior. Then, we determine the tangent on slave beam at the projection point eta1_boundary_trial. This tangent automatically points
+          //into positive eta1-direction=integration direction. Thus, if the scalar product of these two tangents is positive, the master element evolves
+          //in positive eta1-direction and consequently, eta1_boundary_trial is the left boundary of the integration segment. If the scalar product is negative,
+          //eta1_boundary_trial is the right boundary of the integration segment
+          LINALG::TMatrix<TYPE, 3, 1> inward_tangent_master=r_xi(eta2_segleft, element2_);
+          LINALG::TMatrix<TYPE, 3, 1> tangent_slave=r_xi(eta1_boundary_trial, element1_);
+          double orientation=BEAMCONTACT::CastToDouble(BEAMCONTACT::ScalarProduct(inward_tangent_master,tangent_slave));
+          if(orientation>0)//left boundary
+          {
+            leftsolutionwithinsegment=true;
+            eta1_leftboundary=eta1_boundary_trial;
+            //determine ID of integration interval in which the point eta1_leftboundary lies
+            imin = BEAMCONTACT::GetIntervalId(eta1_leftboundary,intintervals,true);
+            //get length of segmented integration interval
+            leftintervallength=-1.0+(imin+1)*2.0/intintervals-eta1_leftboundary;
+            break;
+          }
+          else if(orientation<0)//right boundary
+          {
+            rightsolutionwithinsegment=true;
+            eta1_rightboundary=eta1_boundary_trial;
+            //determine ID of integration interval in which the point eta1_leftboundary lies
+            imax = BEAMCONTACT::GetIntervalId(eta1_rightboundary,intintervals,false);
+            //get length of segmented integration interval
+            rightintervallength=eta1_rightboundary-(-1.0+imax*2.0/intintervals);
+            break;
+          }
+          else //This can only happen, if both beams are exactly perpendicular AND the master beam endpoint projects perpendicular on the slave beam!
+            dserror("The very unlikely case orientation==0 is not implemented so far!");
         }
       }
     }
@@ -566,20 +607,61 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetActiveSmallAnglePairs( 
         int segid1 = segment_ids.first;
         double eta1_segleft = -1.0+segid1*l1;
         double eta2_segright = 1.0;
-        double eta1_rightboundary_trial = 0.0;
+        double eta1_boundary_trial = 0.0;
         bool dummy;
 
-        rightsolutionwithinsegment=PointToLineProjection(eta2_segright,eta1_segleft,l1,eta1_rightboundary_trial,dummy,true,true);
+        bool solutionwithinsegment=false;
 
-        if(rightsolutionwithinsegment)
+        double gap_dummy=0.0;
+        double alpha_dummy=0.0;
+
+        #ifndef CHANGEENDPOINTPROJECTION
+          solutionwithinsegment=PointToLineProjection(eta2_segright,eta1_segleft,l1,eta1_boundary_trial,gap_dummy,alpha_dummy,dummy,true,true);
+        #else
+          solutionwithinsegment=PointToLineProjection(eta2_segright,eta1_segleft,l1,eta1_boundary_trial,gap_dummy,alpha_dummy,dummy,true,true,true);
+        #endif
+
+        if(solutionwithinsegment)
         {
-          eta1_rightboundary=eta1_rightboundary_trial;
-          //determine ID of integration interval in which the point eta1_leftboundary lies
-          imax = BEAMCONTACT::GetIntervalId(eta1_rightboundary,intintervals,false);
-          //get length of segmented integration interval
+          //Determine if the projection eta1_boundary_trial is a left boundary of the integration segment or a right boundary of the integration segment
+          //This is done in the following way: First, we determine the tangent of the master boundary node in a way, such that the tangent points into the
+          //elements interior. Then, we determine the tangent on slave beam at the projection point eta1_boundary_trial. This tangent automatically points
+          //into positive eta1-direction=integration direction. Thus, if the scalar product of these two tangents is positive, the master element evolves
+          //in positive eta1-direction and consequently, eta1_boundary_trial is the left boundary of the integration segment. If the scalar product is negative,
+          //eta1_boundary_trial is the right boundary of the integration segment
+          LINALG::TMatrix<TYPE, 3, 1> inward_tangent_master=r_xi(eta2_segright, element2_);
+          //Scale tangent of right element node (eta2=1.0) in order to get inward tangent!
+          inward_tangent_master.Scale(-1.0);
+          LINALG::TMatrix<TYPE, 3, 1> tangent_slave=r_xi(eta1_boundary_trial, element1_);
+          double orientation=BEAMCONTACT::CastToDouble(BEAMCONTACT::ScalarProduct(inward_tangent_master,tangent_slave));
+          if(orientation>0)//left boundary
+          {
+            if(leftsolutionwithinsegment)
+              dserror("Something went wrong here: both boundary nodes of the master beam (discretized by one finite element?!?) are prejected as left boundary of the integration segment!");
 
-          rightintervallength=eta1_rightboundary-(-1.0+imax*2.0/intintervals);
-          break;
+            leftsolutionwithinsegment=true;
+            eta1_leftboundary=eta1_boundary_trial;
+            //determine ID of integration interval in which the point eta1_leftboundary lies
+            imin = BEAMCONTACT::GetIntervalId(eta1_leftboundary,intintervals,true);
+            //get length of segmented integration interval
+            leftintervallength=-1.0+(imin+1)*2.0/intintervals-eta1_leftboundary;
+            break;
+          }
+          else if(orientation<0)//right boundary
+          {
+            if(rightsolutionwithinsegment)
+              dserror("Something went wrong here: both boundary nodes of the master beam (discretized by one finite element?!?) are prejected as right boundary of the integration segment!");
+
+            rightsolutionwithinsegment=true;
+            eta1_rightboundary=eta1_boundary_trial;
+            //determine ID of integration interval in which the point eta1_leftboundary lies
+            imax = BEAMCONTACT::GetIntervalId(eta1_rightboundary,intintervals,false);
+            //get length of segmented integration interval
+            rightintervallength=eta1_rightboundary-(-1.0+imax*2.0/intintervals);
+            break;
+          }
+          else //This can only happen, if both beams are exactly perpendicular AND the master beam endpoint projects perpendicular on the slave beam!
+            dserror("The very unlikely case orientation==0 is not implemented so far!");
         }
       }
     }
@@ -641,10 +723,9 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetActiveSmallAnglePairs( 
         //store relevant pairs in new vector
         curintsegpairs.push_back(inversepairs[size-1-k]);
 
-        //(*) In case eta1_segright (the largest parameter coordinate lying within the slave segment) is smaller then
+        //(*) In case eta1_segright (the largest parameter coordinate lying within the slave segment) is smaller than
         //eta1_max(the upper bound of the integration interval), the considered segment will not be relevant for the next
-        //integration interval at i+1 and has to be deleted. This is important, since we otherwise would leave the k-loop
-        //at the next integration interval i+1 without checking if the last but one segment pair in inversepairs is relevant or not!
+        //integration interval at i+1 and can be deleted.
         if(eta1_segright< eta1_max-1.0e-10)
         {
           inversepairs.pop_back();
@@ -702,7 +783,10 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetActiveSmallAnglePairs( 
             double eta2_master = 0.0;
             bool pairactive=false;
 
-            bool solutionwithinsegment=PointToLineProjection(eta1_slave,eta2_segleft,l2,eta2_master,pairactive,true);
+            double gap_dummy=0.0;
+            double alpha_dummy=0.0;
+
+            bool solutionwithinsegment=PointToLineProjection(eta1_slave,eta2_segleft,l2,eta2_master,gap_dummy,alpha_dummy,pairactive,true);
 
             if(solutionwithinsegment)
             {
@@ -717,7 +801,9 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetActiveSmallAnglePairs( 
                 std::pair<int,int> integration_ids = std::make_pair(numgp,interval);
                 std::pair<int,int> leftpoint_ids = std::make_pair(leftpoint_id1,leftpoint_id2);
                 TYPE jacobi = GetJacobi(element1_)*jacobi_interval;
+
                 const double parallel_pp = bcparams_.get<double>("BEAMS_BTBLINEPENALTYPARAM");
+
                 if(parallel_pp<0.0)
                   dserror("BEAMS_BTBLINEPENALTYPARAM not set!");
 
@@ -730,9 +816,9 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetActiveSmallAnglePairs( 
             }
           }
         }
-      }
-    }
-  }//for(int i=0;i<intintervals;i++)
+      }//for (int numgp=0; numgp<gausspoints.nquad; ++numgp)
+    }//if(curintsegpairs.size()>0)
+  }//for(int interval=imin;interval<=imax;interval++)
 
 #ifdef ENDPOINTSEGMENTATION
   if(iminmax==NULL or leftrightsolutionwithinsegment==NULL or eta1_leftrightboundary==NULL)
@@ -852,14 +938,14 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::EvaluateActiveSmallAnglePa
 //    std::cout << "r1_xi*r2_xi: " << BEAMCONTACT::ScalarProduct(r1_xi,r2_xi) << std::endl;
 //    std::cout << "gpvariables_[numgptot]->Getfp(): " << gpvariables_[numgp]->Getfp() << std::endl;
 
-    //In member segids_ the interval-local Gauss point number (relevant for determination of Gauss point weight) is stored
+    //Determine the integration-segment-local Gauss point-ID of the considered gpvariable
     int numgploc = gpvariables_[numgptot]->GetIntIds().first;
 
     double weight = gausspoints.qwgt[numgploc];
     TYPE jacobi = gpvariables_[numgptot]->GetJacobi();
 
     #ifdef ENDPOINTSEGMENTATION
-      int numinterval = gpvariables_[numgptot]->GetSegIds().second;
+      int numinterval = gpvariables_[numgptot]->GetIntIds().second;
     #endif
 
     //TODO: Here we apply an element jacobian that is constant along the beam element. This works only for initially straight elements!
@@ -889,7 +975,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::EvaluateActiveSmallAnglePa
     {
       //We need the linearization of the mapping from the element parameter space to the integration interval parameter
       //space: xi_ele=xi_left*(1.0-xi_local)/2.0+xi_right*(1.0+xi_local)/2.0.
-      //-> d(xi_ele)/d(xi_left)=-xi_local)/2.0 and d(xi_ele)/d(xi_right)=xi_local)/2.0
+      //-> d(xi_ele)/d(xi_left)=(1.0-xi_local)/2.0 and d(xi_ele)/d(xi_right)=(1.0+xi_local)/2.0
 
       double d_xi_ele_d_xi_left=(1.0-gausspoints.qxg[numgploc][0])/2.0;
       EvaluateStiffcContactIntSeg(stiffmatrix, delta_xi_L, r1, r2, r1_xi, r2_xi, r1_xixi, r2_xixi, N1, N2, N1_xi, N2_xi, gpvariables_[numgptot],intfac,d_xi_ele_d_xi_left,-jacobi_interval);
@@ -938,7 +1024,10 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetActiveEndPointPairs(std
       double eta2=0.0;
       bool pairactive=false;
 
-      bool solutionwithinsegment=PointToLineProjection(eta1,eta2_segleft,l2,eta2,pairactive,false);
+      double gap_dummy=0.0;
+      double alpha_dummy=0.0;
+
+      bool solutionwithinsegment=PointToLineProjection(eta1,eta2_segleft,l2,eta2,gap_dummy,alpha_dummy,pairactive,false);
 
       if(solutionwithinsegment and pairactive)
       {
@@ -954,6 +1043,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetActiveEndPointPairs(std
       }
     }
 
+    #ifndef ONLYLEFTENDPOINTCONTACT
     if(segid1==numseg1_-1 and boundarynode1_.second)
     {
       //given parameter coordinate
@@ -962,7 +1052,10 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetActiveEndPointPairs(std
       double eta2=0.0;
       bool pairactive=false;
 
-      bool solutionwithinsegment=PointToLineProjection(eta1,eta2_segleft,l2,eta2,pairactive,false);
+      double gap_dummy=0.0;
+      double alpha_dummy=0.0;
+
+      bool solutionwithinsegment=PointToLineProjection(eta1,eta2_segleft,l2,eta2,gap_dummy,alpha_dummy,pairactive,false);
 
       if(solutionwithinsegment and pairactive)
       {
@@ -977,6 +1070,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetActiveEndPointPairs(std
           epvariables_.push_back(Teuchos::rcp (new CONTACT::Beam3contactvariables<numnodes,numnodalvalues>(closestpoint,leftpoint_ids,integration_ids,pp,1.0)));
       }
     }
+    #endif
 
     if(segid2==0 and boundarynode2_.first)
     {
@@ -986,7 +1080,10 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetActiveEndPointPairs(std
       double eta1=0.0;
       bool pairactive=false;
 
-      bool solutionwithinsegment=PointToLineProjection(eta2,eta1_segleft,l1,eta1,pairactive,false,true);
+      double gap_dummy=0.0;
+      double alpha_dummy=0.0;
+
+      bool solutionwithinsegment=PointToLineProjection(eta2,eta1_segleft,l1,eta1,gap_dummy,alpha_dummy,pairactive,false,true);
 
       if(solutionwithinsegment and pairactive)
       {
@@ -1002,6 +1099,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetActiveEndPointPairs(std
       }
     }
 
+    #ifndef ONLYLEFTENDPOINTCONTACT
     if(segid2==numseg2_-1 and boundarynode2_.second)
     {
       //given parameter coordinate
@@ -1010,7 +1108,10 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetActiveEndPointPairs(std
       double eta1=0.0;
       bool pairactive=false;
 
-      bool solutionwithinsegment=PointToLineProjection(eta2,eta1_segleft,l1,eta1,pairactive,false,true);
+      double gap_dummy=0.0;
+      double alpha_dummy=0.0;
+
+      bool solutionwithinsegment=PointToLineProjection(eta2,eta1_segleft,l1,eta1,gap_dummy,alpha_dummy,pairactive,false,true);
 
       if(solutionwithinsegment and pairactive)
       {
@@ -1025,6 +1126,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetActiveEndPointPairs(std
           epvariables_.push_back(Teuchos::rcp (new CONTACT::Beam3contactvariables<numnodes,numnodalvalues>(closestpoint,leftpoint_ids,integration_ids,pp,1.0)));
       }
     }
+    #endif
 
     if((segid1==0 and boundarynode1_.first) and (segid2==0 and boundarynode2_.first))
     {
@@ -1051,6 +1153,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetActiveEndPointPairs(std
       }
     }
 
+    #ifndef ONLYLEFTENDPOINTCONTACT
     if((segid1==0 and boundarynode1_.first) and (segid2==numseg2_-1 and boundarynode2_.second))
     {
       double eta1=-1.0;
@@ -1125,6 +1228,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetActiveEndPointPairs(std
         epvariables_.push_back(Teuchos::rcp (new CONTACT::Beam3contactvariables<numnodes,numnodalvalues>(closestpoint,leftpoint_ids,integration_ids,pp,1.0)));
       }
     }
+    #endif
   }//for(int i=0;i<closeendpointsegments.size();i++)
 
 }
@@ -1451,8 +1555,27 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::CalcPerpPenaltyScaleFac(Te
       ppfac=0.0;
     else if(BEAMCONTACT::CastToDouble(s)>s2)
     {
-      ppfac=0.5*(cos(M_PI*(s-s2)/(s1-s2))+1.0);
-      dppfac=-0.5*M_PI/(s1-s2)*sin(M_PI*(s-s2)/(s1-s2));
+      #ifndef CONSISTENTTRANSITION
+        ppfac=0.5*(cos(M_PI*(s-s2)/(s1-s2))+1.0);
+        dppfac=-0.5*M_PI/(s1-s2)*sin(M_PI*(s-s2)/(s1-s2));
+      #else
+        if(CONSISTENTTRANSITION==1)
+        {
+          TYPE simple_fac=0.5*(cos(M_PI*(s-s2)/(s1-s2))+1.0);
+          TYPE d_simple_fac=-0.5*M_PI/(s1-s2)*sin(M_PI*(s-s2)/(s1-s2));
+          ppfac=simple_fac*simple_fac;
+          dppfac=2*simple_fac*d_simple_fac;
+        }
+        else if(CONSISTENTTRANSITION==2)
+        {
+          TYPE simple_fac=0.5*(-cos(M_PI*(s-s2)/(s1-s2))+1.0);
+          TYPE d_simple_fac=0.5*M_PI/(s1-s2)*sin(M_PI*(s-s2)/(s1-s2));
+          ppfac=1-simple_fac*simple_fac;
+          dppfac=-2*simple_fac*d_simple_fac;
+        }
+        else
+          dserror("Inadmissible value of CONSISTENTTRANSITION, only the values 1 and 2 are allowed!");
+      #endif
     }
   }
 
@@ -1498,8 +1621,15 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::CalcParPenaltyScaleFac(Teu
       ppfac=1.0;
     else if(BEAMCONTACT::CastToDouble(s)>s2)
     {
-      ppfac=0.5*(-cos(M_PI*(s-s2)/(s1-s2))+1.0);
-      dppfac=0.5*M_PI/(s1-s2)*sin(M_PI*(s-s2)/(s1-s2));
+      #ifndef CONSISTENTTRANSITION
+        ppfac=0.5*(-cos(M_PI*(s-s2)/(s1-s2))+1.0);
+        dppfac=0.5*M_PI/(s1-s2)*sin(M_PI*(s-s2)/(s1-s2));
+      #else
+        TYPE simple_fac=0.5*(-cos(M_PI*(s-s2)/(s1-s2))+1.0);
+        TYPE d_simple_fac=0.5*M_PI/(s1-s2)*sin(M_PI*(s-s2)/(s1-s2));
+        ppfac=simple_fac*simple_fac;
+        dppfac=2*simple_fac*d_simple_fac;
+      #endif
     }
     else
       ppfac=0.0;
@@ -1586,8 +1716,7 @@ double CONTACT::Beam3contact<numnodes, numnodalvalues>::CreateSegments(DRT::Elem
       endpoints[i+1]=r2;
       l=BEAMCONTACT::VectorNorm<3>(BEAMCONTACT::DiffVector(r1,r2));
       //TODO: adapt this tolerance if necessary!!!
-      double safetyfac2=2.0;
-      segdist=safetyfac2*l/2.0*(1.0-cos(segangle))/sin(segangle);
+      segdist=1.0*l/2.0*tan(segangle);
 
       if(segdist>maxsegdist)
         maxsegdist=segdist;
@@ -1600,6 +1729,11 @@ double CONTACT::Beam3contact<numnodes, numnodalvalues>::CreateSegments(DRT::Elem
   }
   numsegment=numsegment/2;
 
+  #ifdef NOSEGMENTATION
+    if(numsegment>1)
+      dserror("Choose higher SEGANGLE since in the case NOSEGMENTATION only one segment per element is allowed!");
+  #endif
+
   //std::cout << "numsegment: " << numsegment << std::endl;
   endpoints_final.resize(numsegment+1);
 
@@ -1607,10 +1741,6 @@ double CONTACT::Beam3contact<numnodes, numnodalvalues>::CreateSegments(DRT::Elem
   {
     endpoints_final[i]=endpoints[i];
   }
-
-  //TODO: Uncomment this line if necessary!
-//  if(maxsegdist<R1_ or maxsegdist<R2_)
-//    std::cout << "      Warning: maxsegist is smaller than the beam radius, smaller number of segments is sufficient. Choose smaller segment angle!" << std::endl;
 
   return maxsegdist;
 }
@@ -1689,12 +1819,6 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::CheckSegment( LINALG::TMat
   double dist(0.0);
   double segangle = bcparams_.get<double>("BEAMS_SEGANGLE")/180.0*M_PI;
 
-//  std::cout << "r1: " << r1 << std::endl;
-//  std::cout << "r2: " << r2 << std::endl;
-//  std::cout << "t1: " << t1 << std::endl;
-//  std::cout << "t2: " << t2 << std::endl;
-//  std::cout << "rm: " << rm << std::endl;
-
   //Calculate tangent and midpint of linear nodal interpolation
   for(int i=0;i<3;i++)
   {
@@ -1707,9 +1831,6 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::CheckSegment( LINALG::TMat
   dist = (double)BEAMCONTACT::VectorNorm<3>(diffvec);
   angle1 = (double)BEAMCONTACT::CalcAngle(t1,t_lin);
   angle2 = (double)BEAMCONTACT::CalcAngle(t2,t_lin);
-
-//  std::cout << "angle1: " << angle1 << std::endl;
-//  std::cout << "angle2: " << angle2 << std::endl;
 
   if(fabs(angle1)<segangle and fabs(angle2)<segangle) //segment distribution is fine enough
   {
@@ -1749,19 +1870,6 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetCloseSegments( const st
   //Distance at which intersection happens
   double distancelimit=safetyfac*(maxsegdist1_+maxsegdist2_+maxactivedist+R1_+R2_);
 
-//  std::cout << "maxactivedist: " << maxactivedist << std::endl;
-//  std::cout << "R1_: " << R1_ << std::endl;
-//  std::cout << "R2_: " << R2_ << std::endl;
-//  std::cout << "maxsegdist1_: " << maxsegdist1_ << std::endl;
-//  std::cout << "maxsegdist2_: " << maxsegdist2_ << std::endl;
-//  std::cout << "distancelimit: " << distancelimit << std::endl;
-//
-//  for (int i=0;i<2;i++)
-//  {
-//    std::cout << "endpoints1[i]" << endpoints1[i] << std::endl;
-//    std::cout << "endpoints2[i]" << endpoints2[i] << std::endl;
-//  }
-
   int numseg1 = (int)endpoints1.size()-1;
   int numseg2 = (int)endpoints2.size()-1;
 
@@ -1790,8 +1898,11 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetCloseSegments( const st
           segmentdata(1)=1000.0;    //eta1_seg
           segmentdata(2)=1000.0;    //eta2_seg
 
-          //Add new small angle pair since we always have: DELTASMALLANGLE > ANGLETOL and DELTALARGEANGLE > ANGLETOL
-          closesmallanglesegments[std::make_pair(i,j)]=segmentdata;
+          //Add new small angle pair
+          if(fabs(angle)<=deltasmallangle_)
+            closesmallanglesegments[std::make_pair(i,j)]=segmentdata;
+          if(fabs(angle)>=deltalargeangle_)
+            closelargeanglesegments[std::make_pair(i,j)]=segmentdata;
 
           //If the element lies on the boundary of a physical beam, we sort out the corresponding boundary segments
           if(endpoint_penalty)
@@ -1854,7 +1965,6 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::ClosestPointProjection( do
                                                                               std::pair<TYPE,TYPE>& solutionpoints,
                                                                               int segid1, int segid2)
 {
-  bool output=false;
 
   std::vector<std::pair<double,double> > startingpoints(0);
   bool validpairfound=false;
@@ -1884,7 +1994,6 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::ClosestPointProjection( do
 
   for (int numstartpoint=0;numstartpoint<(int)startingpoints.size();numstartpoint++)
   {
-
     // vectors for shape functions and their derivatives
     LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues> N1(true);        // = N1
     LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues> N2(true);        // = N2
@@ -2015,10 +2124,30 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::ClosestPointProjection( do
         residual0=residual;
 
       // check if Newton iteration has converged
-      if (BEAMCONTACT::CastToDouble(residual) < BEAMCONTACTTOL and fabs(eta1_old-BEAMCONTACT::CastToDouble(eta1))<XIETAITERATIVEDISPTOL and fabs(eta2_old-BEAMCONTACT::CastToDouble(eta2))<XIETAITERATIVEDISPTOL)
-      { converged=true;
-        break;
-      }
+      #ifndef RELBEAMCONTACTTOL
+        if (BEAMCONTACT::CastToDouble(residual) < BEAMCONTACTTOL and fabs(eta1_old-BEAMCONTACT::CastToDouble(eta1))<XIETAITERATIVEDISPTOL and fabs(eta2_old-BEAMCONTACT::CastToDouble(eta2))<XIETAITERATIVEDISPTOL)
+        {
+          converged=true;
+          break;
+        }
+      #else
+        if(residual0>1.0e-6)
+        {
+          if (BEAMCONTACT::CastToDouble(residual/residual0) < RELBEAMCONTACTTOL and fabs(eta1_old-BEAMCONTACT::CastToDouble(eta1))<XIETAITERATIVEDISPTOL and fabs(eta2_old-BEAMCONTACT::CastToDouble(eta2))<XIETAITERATIVEDISPTOL)
+          {
+            converged=true;
+            break;
+          }
+        }
+        else
+        {
+          if (BEAMCONTACT::CastToDouble(residual) < BEAMCONTACTTOL and fabs(eta1_old-BEAMCONTACT::CastToDouble(eta1))<XIETAITERATIVEDISPTOL and fabs(eta2_old-BEAMCONTACT::CastToDouble(eta2))<XIETAITERATIVEDISPTOL)
+          {
+            converged=true;
+            break;
+          }
+        }
+      #endif
 
       // evaluate Jacobian of f at current eta1, eta2
       // Note: Parallel elements can not be handled with this beam contact formulation;
@@ -2052,79 +2181,97 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::ClosestPointProjection( do
     }//for (int i=0;i<BEAMCONTACTMAXITER;++i)
       //**********************************************************************
 
-//    std::cout << "numstartpoint: " << numstartpoint << std::endl;
-//    std::cout << "iter: " << iter << std::endl;
-//    std::cout << "eta1: " << eta1 << std::endl;
-//    std::cout << "eta2: " << eta2 << std::endl;
-
     // Newton iteration unconverged after BEAMCONTACTMAXITER
     if (!converged)
     {
-      #ifdef CONVERGENCECONTROLE
-        dserror("Local Newton loop unconverged. Adapt segangle or the shift angles for large-anlge contact!");
-      #endif
+      //Initialize g_min with a very large value, at which no active conact should occur!
+      double g_min=1000*R2_;
+      if(CheckContactStatus(g_min) or CheckDampingStatus(g_min))
+        dserror("Are sure that contact should be active at such large gaps?");
 
-      if(output)
-      {
-        double angle=fabs(BEAMCONTACT::CalcAngle(BEAMCONTACT::CastToDouble<TYPE,3,1>(r1_xi),BEAMCONTACT::CastToDouble<TYPE,3,1>(r2_xi)));
+      double alpha_g_min=0.0;
+      //In case no valid point-to-line solution is found in () (pointtolinesolfound=false)
+      //it is assumed, that the distance between the segments is large enough such that no contact can occur.
+      bool pointtolinesolfound=false;
+      double eta1_min=0.0;
+      double eta2_min=0.0;
 
-        std::cout << "numstartpoint: " << numstartpoint << std::endl;
-        std::cout << "unconverged: " << iter << std::endl;
-        std::cout << "iter: " << iter << std::endl;
-        std::cout << "residual0: " << residual0 << std::endl;
-        std::cout << "lastresidual: " << lastresidual << std::endl;
-        std::cout << "residual: " << residual << std::endl;
-        std::cout << "eta1: " << eta1 << std::endl;
-        std::cout << "eta_left1: " << eta_left1 << std::endl;
-        std::cout << "eta_right1: " << eta_right1 << std::endl;
-        std::cout << "eta2: " << eta2 << std::endl;
-        std::cout << "eta_left2: " << eta_left2 << std::endl;
-        std::cout << "eta_right2: " << eta_right2 << std::endl;
-        std::cout << "gap: " << BEAMCONTACT::CastToDouble(gap) << std::endl;
-        std::cout << "angle: " << BEAMCONTACT::CastToDouble(angle) << std::endl;
-      }
+      CheckUnconvergedSegmentPair(eta_left1,eta_left2,l1,l2,eta1_min,eta2_min,g_min,alpha_g_min,pointtolinesolfound);
 
-      if(eta_left1<=eta1 and eta1<= eta_right1 and eta_left2<=eta2 and eta2<=eta_right2)
+      //Check, if we have found a valid point-to-line projection and if the solution is not a boundary minimum
+      if(pointtolinesolfound and eta1_min>(eta_left1-1.0e-10) and eta1_min<(eta_left1+l1+1.0e-10) and eta_left2 - XIETAITERATIVEDISPTOL <= eta2 and eta2 <= eta_right2 + XIETAITERATIVEDISPTOL)
       {
 
-        //Check, if we need smaller tolerance XIETAITERATIVEDISPTOL: this is only relevant for large-angle-contact pairs whose contact angle
-        //is larger than the lower shift angle!
-        if(fabs(residual) < BEAMCONTACTTOL or fabs(residual/residual0) < CRITICALRELNORM)
+        double perpshiftangle1 = bcparams_.get<double>("BEAMS_PERPSHIFTANGLE1")/180.0*M_PI;
+        //Here, we apply the conservative estimate that the closest-point gap is by 0.1*R2_ smaller than g_min
+        double g_min_estimate=g_min-0.1*R2_;
+
+        //TODO
+        if((CheckContactStatus(g_min_estimate) or CheckDampingStatus(g_min_estimate)) and fabs(alpha_g_min)>=perpshiftangle1)
         {
-          double angle=fabs(BEAMCONTACT::CalcAngle(BEAMCONTACT::CastToDouble<TYPE,3,1>(r1_xi),BEAMCONTACT::CastToDouble<TYPE,3,1>(r2_xi)));
-          double perpshiftangle1 = bcparams_.get<double>("BEAMS_PERPSHIFTANGLE1")/180.0*M_PI;
+          std::cout << std::endl << "Serious Warning!!!!! Local CPP not converged: CP-Approximation applied!" << std::endl;
+          std::cout << "element1_->Id(): " << element1_->Id() << std::endl;
+          std::cout << "element2_->Id(): " << element2_->Id() << std::endl;
+          std::cout << "R2_: " << R2_ << std::endl;
+          std::cout << "g_min: " << g_min << std::endl;
+          std::cout << "alpha_g_min: " << alpha_g_min/M_PI*180 << "°"<< std::endl;
+          std::cout << "numstartpoint: " << numstartpoint << std::endl;
+          std::cout << "iter: " << iter << std::endl;
+          std::cout << "residual0: " << residual0 << std::endl;
+          std::cout << "lastresidual: " << lastresidual << std::endl;
+          std::cout << "residual: " << residual << std::endl;
+          std::cout << "eta1_min: " << BEAMCONTACT::CastToDouble(eta1_min) << std::endl;
+          std::cout << "eta1: " << BEAMCONTACT::CastToDouble(eta1) << std::endl;
+          std::cout << "eta1_old: " << eta1_old << std::endl;
+          std::cout << "eta2_min: " << BEAMCONTACT::CastToDouble(eta2_min) << std::endl;
+          std::cout << "eta2: " << BEAMCONTACT::CastToDouble(eta2) << std::endl;
+          std::cout << "eta2_old: " << eta2_old << std::endl;
 
-          if(angle >=perpshiftangle1 and fabs(residual) < BEAMCONTACTTOL)
+          //We need here the original elements of the problem discretization in order to read out time-dependent
+          //element quantities (such as the current curvature) since element1_ and element2_ are pure copies of
+          //these elements generated once in the beginning of the simulation and which do therefore not contain
+          //the current values of such element quantities
+          DRT::Element* element1 = pdiscret_.lColElement(pdiscret_.ElementColMap()->LID(element1_->Id()));
+          DRT::Element* element2 = pdiscret_.lColElement(pdiscret_.ElementColMap()->LID(element2_->Id()));
+
+          const DRT::ElementType & eot = element1->ElementType();
+          if (eot == DRT::ELEMENTS::Beam3ebType::Instance())
           {
-            std::cout << std::setprecision(16) << "eta1: " << BEAMCONTACT::CastToDouble(eta1) << std::endl;
-            std::cout << std::setprecision(16) << "eta1_old: " << eta1_old << std::endl;
-            std::cout << std::setprecision(16) << "eta2: " << BEAMCONTACT::CastToDouble(eta2) << std::endl;
-            std::cout << std::setprecision(16) << "eta2_old: " << eta2_old << std::endl;
-            std::cout << "residual0: " << residual0 << std::endl;
-            std::cout << "lastresidual: " << lastresidual << std::endl;
-            std::cout << "residual: " << residual << std::endl;
-            std::cout << "iter: " << iter << std::endl;
+            const DRT::ELEMENTS::Beam3eb* beam3ebelement1 = dynamic_cast<const DRT::ELEMENTS::Beam3eb*>(element1);
+            double kappamax1 = beam3ebelement1->GetKappaMax();
+            const DRT::ELEMENTS::Beam3eb* beam3ebelement2 = dynamic_cast<const DRT::ELEMENTS::Beam3eb*>(element2);
+            double kappamax2 = beam3ebelement2->GetKappaMax();
 
-            std::cout << "fabs(eta1_old-BEAMCONTACT::CastToDouble(eta1)): " << fabs(eta1_old-BEAMCONTACT::CastToDouble(eta1)) << std::endl;
-            std::cout << "fabs(eta2_old-BEAMCONTACT::CastToDouble(eta2): " << fabs(eta2_old-BEAMCONTACT::CastToDouble(eta2)) << std::endl;
-            std::cout << "BEAMCONTACT::CastToDouble(residual) < BEAMCONTACTTOL: " << bool(BEAMCONTACT::CastToDouble(residual) < BEAMCONTACTTOL) << std::endl;
-            std::cout << "fabs(eta1_old-BEAMCONTACT::CastToDouble(eta1))<XIETAITERATIVEDISPTOL: " << bool(fabs(eta1_old-BEAMCONTACT::CastToDouble(eta1))<XIETAITERATIVEDISPTOL) << std::endl;
-            std::cout << "fabs(eta2_old-BEAMCONTACT::CastToDouble(eta2))<XIETAITERATIVEDISPTOL: " << bool(fabs(eta2_old-BEAMCONTACT::CastToDouble(eta2))<XIETAITERATIVEDISPTOL) << std::endl;
+            std::cout << "kappamax1: " << kappamax1 << std::endl;
+            std::cout << "kappamax2: " << kappamax2 << std::endl << std::endl;
 
-            std::cout << std::setprecision(16) << "XIETAITERATIVEDISPTOL: " << XIETAITERATIVEDISPTOL << std::endl;
-            dserror("Local Newton converged in residual norm but norm of xi- or eta increment too large, choose smaller value of XIETAITERATIVEDISPTOL!");
           }
 
-          if(angle >=perpshiftangle1 and fabs(residual/residual0) < CRITICALRELNORM)
-          {
-            std::cout << "iter: " << iter << std::endl;
-            std::cout << "residual0: " << residual0 << std::endl;
-            std::cout << "lastresidual: " << lastresidual << std::endl;
-            std::cout << "residual: " << residual << std::endl;
-            std::cout << "eta1: " << eta1 << std::endl;
-            std::cout << "eta2: " << eta2 << std::endl;
-            dserror("Relative CPP residual norm is smaller than 1.0e-08 but Newton is not converged. Adapt BEAMCONTACTTOL or the maximal number BEAMCONTACTMAXITER of iterations!");
-          }
+          //Apply Point-To-Line solution as approximation for CPP or...
+          #ifdef CPP_APPROX
+            eta1=eta1_min;
+            eta2=eta2_min;
+            gap=g_min;
+            double angle=alpha_g_min;
+
+            if(fabs(eta1-1.0)<1.1*XIETAITERATIVEDISPTOL or fabs(eta1+1.0)<1.1*XIETAITERATIVEDISPTOL or fabs(eta2-1.0)<1.1*XIETAITERATIVEDISPTOL or fabs(eta2+1.0)<1.1*XIETAITERATIVEDISPTOL)
+                dserror("|eta1|=1 or |eta2|=1, danger of multiple gauss point evaluation!");
+
+            double perpshiftangle1 = bcparams_.get<double>("BEAMS_PERPSHIFTANGLE1")/180.0*M_PI;
+
+            if((CheckContactStatus(gap) or CheckDampingStatus(gap)) and angle >=perpshiftangle1)
+              validpairfound=true;
+
+            solutionpoints.first=BEAMCONTACT::CastToDouble(eta1);
+            solutionpoints.second=BEAMCONTACT::CastToDouble(eta2);
+
+            break;
+
+          //... or abort simulation
+          #else
+            dserror("CPP is not converged, eventhough the corresponding closest point is active! "
+                    "Decrease the value of SEGANGLE or increase your shifting angles!");
+          #endif
         }
       }
 
@@ -2133,25 +2280,6 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::ClosestPointProjection( do
     }
     else
     {
-
-      if(output)
-      {
-        double angle=fabs(BEAMCONTACT::CalcAngle(BEAMCONTACT::CastToDouble<TYPE,3,1>(r1_xi),BEAMCONTACT::CastToDouble<TYPE,3,1>(r2_xi)));
-        std::cout << "numstartpoint: " << numstartpoint << std::endl;
-        std::cout << "converged: " << iter << std::endl;
-        std::cout << "iter: " << iter << std::endl;
-        std::cout << "residual0: " << residual0 << std::endl;
-        std::cout << "lastresidual: " << lastresidual << std::endl;
-        std::cout << "residual: " << residual << std::endl;
-        std::cout << "eta1: " << BEAMCONTACT::CastToDouble(eta1) << std::endl;
-        std::cout << "eta_left1: " << eta_left1 << std::endl;
-        std::cout << "eta_right1: " << eta_right1 << std::endl;
-        std::cout << "eta2: " << BEAMCONTACT::CastToDouble(eta2) << std::endl;
-        std::cout << "eta_left2: " << eta_left2 << std::endl;
-        std::cout << "eta_right2: " << eta_right2 << std::endl;
-        std::cout << "gap: " << BEAMCONTACT::CastToDouble(gap) << std::endl;
-        std::cout << "angle: " << BEAMCONTACT::CastToDouble(angle) << std::endl;
-      }
 
       //if we have already found a converged solution with valid closest points eta1 \in [eta_left1;eta_right1] and
       //eta2 \in [eta_left2;eta_right2], we can finish here and don't have to apply more starting points
@@ -2170,6 +2298,11 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::ClosestPointProjection( do
         if((CheckContactStatus(gap) or CheckDampingStatus(gap)) and angle >=perpshiftangle1)
           validpairfound=true;
 
+        //Here, we perform an additional security check: If a unique CCP solution exists, the Newton scheme should find it
+        //with the first starting point. Otherwise, the problem may be ill-conditioned!
+        if(validpairfound and numstartpoint!=0)
+          dserror("Valid CCP solution has not been found with the first starting point. Choose smaller value of SEGANGLE!");
+
         solutionpoints.first=BEAMCONTACT::CastToDouble(eta1);
         solutionpoints.second=BEAMCONTACT::CastToDouble(eta2);
 
@@ -2186,25 +2319,42 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::ClosestPointProjection( do
  *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
- |  Point-To-Line Projection                                 meier 10/14|
+ |  Closest Point-To-Line Projection                         meier 10/14|
  *----------------------------------------------------------------------*/
 template<const int numnodes , const int numnodalvalues>
 bool CONTACT::Beam3contact<numnodes, numnodalvalues>::PointToLineProjection(double& eta1_slave,
                                                                             double& eta_left2,
                                                                             double& l2,
                                                                             double& eta2_master,
+                                                                            double& gap,
+                                                                            double& alpha,
                                                                             bool& pairactive,
                                                                             bool smallanglepair,
-                                                                            bool invertpairs)
+                                                                            bool invertpairs,
+                                                                            bool orthogonalprojection)
 {
+
+  /* Attention: With the paramters invertpairs and orthogonalprojection, 4 different types of projections can be realized.
+   * The parameter invertpairs=true simply changes the meaning of eta1 and eta2 within this method, i.e. in this case the given
+   * parameter coordinate is eta2 of beam2 and the searched parameter is eta1 on beam1 while in the standard case eta1 is given
+   * and eta2 is searched. The parameter orthogonalprojection changes the projection method: In the standard case (orthogonalprojection=false),
+   * the orthogonality condition is satisfied at the projection side of the searched parameter (i.e. on beam2 if invertpairs=false or beam1 if inverpairs=true)
+   * while for orthogonalprojection=true the orthogonality condition is satisfied at the projection side of the given parameter
+   * (i.e. on beam1 if invertpairs=false or beam2 if inverpairs=true). This leads to the following four possible projections:
+   * |invertpairs|orthogonalprojection|given parameter|searched parameter|orthogonality condition satisfied on|
+   * |   false   |       false        |      eta1     |      eta2        |              beam2                 | -> default case
+   * |   true    |       false        |      eta2     |      eta1        |              beam1                 |
+   * |   false   |       true         |      eta1     |      eta2        |              beam1                 |
+   * |   true    |       true         |      eta2     |      eta1        |              beam2                 |
+   */
   std::vector<double> startingpoints(3,0.0);
-  double gap=0.0;
+  double gap_test=0.0;
   double eta_right2=eta_left2+l2;
 
   //We start with the segment midpoint, since there it is most likely to find a closest point solution within the segment
   startingpoints[0]=eta_left2+0.5*l2; //segment midpoint as starting point
   startingpoints[1]=eta_left2; //left segment point as starting point
-  startingpoints[2]=eta_left2+l2; //left segment point as starting point
+  startingpoints[2]=eta_left2+l2; //right segment point as starting point
 
   for (int numstartpoint=0;numstartpoint<(int)startingpoints.size();numstartpoint++)
   {
@@ -2308,7 +2458,7 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::PointToLineProjection(doub
       // Note: Even if automatic differentiation via FAD is applied, norm_delta_r has to be of type double
       // since this factor is needed for a pure scaling of the nonlinear CCP and has not to be linearized!
       double norm_delta_r = BEAMCONTACT::CastToDouble(BEAMCONTACT::VectorNorm<3>(delta_r));
-      gap=norm_delta_r-R1_-R2_;
+      gap_test=norm_delta_r-R1_-R2_;
 
       // The closer the beams get, the smaller is norm_delta_r, but
       // norm_delta_r is not allowed to be too small, else numerical problems occur.
@@ -2325,15 +2475,33 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::PointToLineProjection(doub
       }
 
       // evaluate f at current eta1, eta2
-      EvaluatePTLOrthogonalityCondition(f, delta_r, norm_delta_r, r2_xi);
+      EvaluatePTLOrthogonalityCondition(f, delta_r, norm_delta_r, r1_xi, r2_xi, orthogonalprojection);
 
-      TYPE jacobi2 = 1.0;
-      jacobi2 =  GetJacobi(element2_);
+      //The residual will be scaled with the length of the element whose tangent appears in the orthogonality conditions.
+      //Which of the two elements is relevant in this context depends of the parameters orthogonalprojection and invertpairs:
+      TYPE jacobi = 1.0;
+
+      if(invertpairs==false and orthogonalprojection==false)//default case
+      {
+        jacobi =  GetJacobi(element2_);
+      }
+      else if(invertpairs==false and orthogonalprojection==true)
+      {
+        jacobi =  GetJacobi(element1_);
+      }
+      else if(invertpairs==true and orthogonalprojection==false)
+      {
+        jacobi =  GetJacobi(element1_);
+      }
+      else if(invertpairs==true and orthogonalprojection==true)
+      {
+        jacobi =  GetJacobi(element2_);
+      }
+      jacobi =  GetJacobi(element2_);
 
       // compute the scalar residuum
-      // The residual is scaled with 1/element_length since an absolute
-      // residual norm is used as local CPP convergence criteria and r_xi scales with the element_length
-      residual = fabs((double)BEAMCONTACT::CastToDouble((TYPE)(f/jacobi2)));
+      // The residual is scaled with 1/element_length since r_xi scales with the element_length
+      residual = fabs((double)BEAMCONTACT::CastToDouble((TYPE)(f/jacobi)));
 
 //      std::cout << "iter: " << iter << std::endl;
 //      std::cout << "residual: " << residual << std::endl;
@@ -2353,14 +2521,31 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::PointToLineProjection(doub
         residual0=residual;
 
       // check if Newton iteration has converged
-      if (BEAMCONTACT::CastToDouble(residual) < BEAMCONTACTTOL and fabs(eta2_old-BEAMCONTACT::CastToDouble(eta2))<XIETAITERATIVEDISPTOL)
-      { converged=true;
-        break;
-      }
+      #ifndef RELBEAMCONTACTTOL
+        if (BEAMCONTACT::CastToDouble(residual) < BEAMCONTACTTOL and fabs(eta2_old-BEAMCONTACT::CastToDouble(eta2))<XIETAITERATIVEDISPTOL)
+        { converged=true;
+          break;
+        }
+      #else
+        if(residual0>1.0e-6)
+        {
+          if (BEAMCONTACT::CastToDouble(residual/residual0) < RELBEAMCONTACTTOL and fabs(eta2_old-BEAMCONTACT::CastToDouble(eta2))<XIETAITERATIVEDISPTOL)
+          { converged=true;
+            break;
+          }
+        }
+        else
+        {
+          if (BEAMCONTACT::CastToDouble(residual) < BEAMCONTACTTOL and fabs(eta2_old-BEAMCONTACT::CastToDouble(eta2))<XIETAITERATIVEDISPTOL)
+          { converged=true;
+            break;
+          }
+        }
+      #endif
 
       // evaluate Jacobian of f at current eta1, eta2
       // Note: It has to be checked, if the linearization is equal to zero;
-      bool validlinearization = EvaluateLinPTLOrthogonalityCondition(df, delta_r, norm_delta_r, r2_xi, r2_xixi);
+      bool validlinearization = EvaluateLinPTLOrthogonalityCondition(df, delta_r, norm_delta_r, r1_xi, r2_xi, r2_xixi, orthogonalprojection);
 
       if(!validlinearization)
         dserror("Linearization of point to line projection is zero, choose tighter search boxes!");
@@ -2387,46 +2572,16 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::PointToLineProjection(doub
     // Newton iteration unconverged after BEAMCONTACTMAXITER
     if (!converged)
     {
+      std::cout << "iter: " << iter << std::endl;
+      std::cout << "residual0: " << residual0 << std::endl;
+      std::cout << "lastresidual: " << lastresidual << std::endl;
+      std::cout << "residual: " << residual << std::endl;
+      std::cout << "eta2: " << BEAMCONTACT::CastToDouble(eta2) << std::endl;
+      std::cout << "eta2_old: " << eta2_old << std::endl;
 
-      #ifdef CONVERGENCECONTROLE
-        dserror("Local Newton loop unconverged. Adapt segangle or the shift angles for small-anlge contact!");
-      #endif
 
-      if(eta_left2<=eta2 and eta2<=eta_right2)
-      {
-        //Check, if we need smaller tolerance XIETAITERATIVEDISPTOL: this is only relevant for large-angle-contact pairs whose contact angle
-        //is larger than the lower shift angle!
-        if(fabs(residual) < BEAMCONTACTTOL or fabs(residual/residual0) < CRITICALRELNORM)
-        {
-          bool relevant_angle=true;
-          if(smallanglepair)
-          {
-            double angle=fabs(BEAMCONTACT::CalcAngle(BEAMCONTACT::CastToDouble<TYPE,3,1>(r1_xi),BEAMCONTACT::CastToDouble<TYPE,3,1>(r2_xi)));
-            double parshiftangle2 = bcparams_.get<double>("BEAMS_PARSHIFTANGLE2")/180.0*M_PI;
-            if(angle > parshiftangle2)
-              relevant_angle=false;
-          }
-
-          if(relevant_angle and fabs(residual) < BEAMCONTACTTOL)
-          {
-            std::cout << std::setprecision(16) << "eta2: " << BEAMCONTACT::CastToDouble(eta2) << std::endl;
-            std::cout << std::setprecision(16) << "eta2_old: " << eta2_old << std::endl;
-            std::cout << std::setprecision(16) << "XIETAITERATIVEDISPTOL: " << XIETAITERATIVEDISPTOL << std::endl;
-            dserror("Local Newton converged in residual norm but norm of eta increment too large, choose smaller value of XIETAITERATIVEDISPTOL!");
-          }
-
-          if(relevant_angle and fabs(residual/residual0) < CRITICALRELNORM)
-          {
-            std::cout << "iter: " << iter << std::endl;
-            std::cout << "residual0: " << residual0 << std::endl;
-            std::cout << "lastresidual: " << lastresidual << std::endl;
-            std::cout << "residual: " << residual << std::endl;
-            std::cout << "eta1: " << eta1 << std::endl;
-            std::cout << "eta2: " << eta2 << std::endl;
-            dserror("Relative CPP residual norm is smaller than 1.0e-08 but Newton is not converged. Adapt BEAMCONTACTTOL or the maximal number BEAMCONTACTMAXITER of iterations!");
-          }
-        }
-      }
+      //TODO:
+      dserror("Local Newton loop unconverged. Adapt segangle or the shift angles for small-anlge contact!");
 
       eta1 = 1e+12;
       eta2 = 1e+12;
@@ -2438,25 +2593,62 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::PointToLineProjection(doub
       if(eta_left2 - XIETAITERATIVEDISPTOL <= eta2 and eta2 <= eta_right2 + XIETAITERATIVEDISPTOL)
       {
 
-        if(fabs(eta2-1.0)<1.1*XIETAITERATIVEDISPTOL or fabs(eta2+1.0)<1.1*XIETAITERATIVEDISPTOL)
-          dserror("|eta2|=1, danger of multiple gauss point evaluation!");
+        if(fabs(eta2-1.0)<1.1*XIETAITERATIVEDISPTOL)
+        {
+          bool throw_error=true;
+
+          //There is no danger of multiple evaluation, if the considered node is a boundary node of the beam:
+          if((invertpairs==false and boundarynode2_.second) or (invertpairs==true and boundarynode1_.second))
+            throw_error=false;
+
+          if(throw_error)
+          {
+            std::cout << "ID1: " << element1_->Id() << std::endl;
+            std::cout << "ID2: " << element2_->Id() << std::endl;
+            std::cout << "eta1: " << eta1 << std::endl;
+            std::cout << "eta2: " << eta2 << std::endl;
+            //TODO: In some cases a warning is sufficient, but in general we need the dserror("");
+            std::cout << "Serious Warning!!!!! eta2=1, danger of multiple gauss point evaluation! " << std::endl;
+            //dserror("eta2=1, danger of multiple gauss point evaluation!");
+          }
+        }
+
+        if(fabs(eta2+1.0)<1.1*XIETAITERATIVEDISPTOL)
+        {
+          bool throw_error=true;
+
+          //There is no danger of multiple evaluation, if the considered node is a boundary node of the beam:
+          if((invertpairs==false and boundarynode2_.first) or (invertpairs==true and boundarynode1_.first))
+            throw_error=false;
+
+          if(throw_error)
+            dserror("eta2=-1, danger of multiple gauss point evaluation!");
+        }
 
         if(BEAMCONTACT::CastToDouble(BEAMCONTACT::VectorNorm<3>(r1_xi))<1.0e-8 or BEAMCONTACT::CastToDouble(BEAMCONTACT::VectorNorm<3>(r2_xi))<1.0e-8)
           dserror("Tangent vector of zero length, choose smaller time step!");
 
         bool relevant_angle=true;
+        double angle=fabs(BEAMCONTACT::CalcAngle(BEAMCONTACT::CastToDouble<TYPE,3,1>(r1_xi),BEAMCONTACT::CastToDouble<TYPE,3,1>(r2_xi)));
         if(smallanglepair)
         {
-          double angle=fabs(BEAMCONTACT::CalcAngle(BEAMCONTACT::CastToDouble<TYPE,3,1>(r1_xi),BEAMCONTACT::CastToDouble<TYPE,3,1>(r2_xi)));
           double parshiftangle2 = bcparams_.get<double>("BEAMS_PARSHIFTANGLE2")/180.0*M_PI;
+
           if(angle > parshiftangle2)
             relevant_angle=false;
         }
-
-        if((CheckContactStatus(gap) or CheckDampingStatus(gap)) and relevant_angle)
+        if((CheckContactStatus(gap_test) or CheckDampingStatus(gap_test)) and relevant_angle)
           pairactive=true;
 
         eta2_master=BEAMCONTACT::CastToDouble(eta2);
+
+        //Here, we perform an additional security check: If a unique CCP solution exists, the Newton scheme should find it
+        //with the first starting point. Otherwise, the problem may be ill-conditioned!
+        if(pairactive and numstartpoint!=0)
+          dserror("Valid Point-To-Line solution has not been found with the first starting point. Choose smaller value of SEGANGLE!");
+
+        gap=gap_test;
+        alpha=angle;
 
         //eta2 \in [eta_left2;eta_right2] --> true
         return true;
@@ -2471,6 +2663,129 @@ bool CONTACT::Beam3contact<numnodes, numnodalvalues>::PointToLineProjection(doub
 /*----------------------------------------------------------------------*
 |  end: Point-To-Line Projection
  *----------------------------------------------------------------------*/
+
+/*------------------------------------------------------------------------------------------*
+|  Determine minimal distance and contact angle for unconverged segment pair     meier 05/15|
+ *------------------------------------------------------------------------------------------*/
+template<const int numnodes , const int numnodalvalues>
+void CONTACT::Beam3contact<numnodes, numnodalvalues>::CheckUnconvergedSegmentPair( double& eta_left1,
+                                                                                   double& eta_left2,
+                                                                                   double& l1,
+                                                                                   double& l2,
+                                                                                   double& eta1_min,
+                                                                                   double& eta2_min,
+                                                                                   double& g_min,
+                                                                                   double& alpha_g_min,
+                                                                                   bool& pointtolinesolfound)
+{
+
+  //Calculate initial length of slave element
+  LINALG::TMatrix<double,3,1> lengthvec1(true);
+  for(int i=0;i<3;i++)
+  {
+    lengthvec1(i)=(element1_->Nodes())[0]->X()[i]-(element1_->Nodes())[1]->X()[i];
+  }
+  //length1 = physical length; l1=length in parameter space
+  double length1=lengthvec1.Norm2();
+
+  int n=1;
+  //subdivide the slave segment by n+1 test points until the distance between the
+  //test points is smaller than half of the cross-section radius
+  while(l1/2*length1/n>R2_/2)
+  {
+    n=2*n;
+  }
+
+  double eta1_closestpoint=0.0;
+  double eta2_closestpoint=0.0;
+
+  for(int i=0;i<n+1;i++)
+  {
+    double eta1_slave=eta_left1+i*l1/n;
+    double eta2_segleft=eta_left2;
+    double eta2_master = 0.0;
+    bool pairactive=false;
+    double gap=0.0;
+    double alpha=0.0;
+
+    bool solutionwithinsegment=PointToLineProjection(eta1_slave,eta2_segleft,l2,eta2_master,gap,alpha,pairactive,true);
+
+    if(solutionwithinsegment)
+    {
+      pointtolinesolfound=true;
+      if(gap<g_min)
+      {
+        g_min=gap;
+        alpha_g_min=alpha;
+        eta1_closestpoint=eta1_slave;
+        eta2_closestpoint=eta2_master;
+      } //search also for the second-smallest gap
+    }
+  }
+
+  bool cp_at_right_neighbor=false;
+
+  //if we have a boundary minimum on the left, we also investigate the left neighbor point
+  if(fabs(eta1_closestpoint-eta_left1)<1.0e-10)
+  {
+    double eta1_slave=eta_left1-l1/n;
+    double eta2_segleft=eta_left2;
+    double eta2_master = 0.0;
+    bool pairactive=false;
+    double gap=0.0;
+    double alpha=0.0;
+
+    bool solutionwithinsegment=PointToLineProjection(eta1_slave,eta2_segleft,l2,eta2_master,gap,alpha,pairactive,true);
+
+    if(solutionwithinsegment)
+    {
+      if(gap<g_min)
+      {
+        cp_at_right_neighbor=true;
+        g_min=gap;
+        alpha_g_min=alpha;
+        eta1_closestpoint=eta1_slave;
+        eta2_closestpoint=eta2_master;
+      } //search also for the second-smallest gap
+    }
+  }
+
+  //if we have a boundary minimum on the right, we also investigate the right neighbor point
+  if(fabs(eta1_closestpoint-(eta_left1+l1))<1.0e-10)
+  {
+    double eta1_slave=eta_left1+(n+1)*l1/n;
+    double eta2_segleft=eta_left2;
+    double eta2_master = 0.0;
+    bool pairactive=false;
+    double gap=0.0;
+    double alpha=0.0;
+
+    bool solutionwithinsegment=PointToLineProjection(eta1_slave,eta2_segleft,l2,eta2_master,gap,alpha,pairactive,true);
+
+    if(solutionwithinsegment)
+    {
+      if(gap<g_min)
+      {
+        if(cp_at_right_neighbor)
+          dserror("This should not happen, that we have a local minimum on the right and on the left neighbor!");
+
+        g_min=gap;
+        alpha_g_min=alpha;
+        eta1_closestpoint=eta1_slave;
+        eta2_closestpoint=eta2_master;
+      } //search also for the second-smallest gap
+    }
+  }
+
+
+  eta1_min=eta1_closestpoint;
+  eta2_min=eta2_closestpoint;
+
+  return;
+}
+/*------------------------------------------------------------------------------------------*
+|  end: Determine minimal distance and contact angle for unconverged segment pair
+ *------------------------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
  |  Compute contact forces                                   meier 10/14|
@@ -2639,11 +2954,9 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::EvaluateFcContact(Epetra_V
     {
       for (int j=0;j<3;++j)
       {
-        fc1(i) +=  (N1(j,i)*normal(j)*fp*ppfac*ppfac)*intfac;
+        fc1(i) +=  (N1(j,i)*normal(j)*fp*ppfac)*intfac;
       }
-      //std::cout << "fc1(i): " << fc1(i).val()<< std::endl;
-      fc1(i) +=  (2*ppfac*e*dppfac*delta_coscontactangle(i))*intfac;
-      //std::cout << "(2*ppfac*e*delta_coscontactangle(i))*intfac: "<< ((2*ppfac*e*delta_coscontactangle(i))*intfac).val() << std::endl;
+      fc1(i) +=  (e*dppfac*delta_coscontactangle(i))*intfac;
     }
 
     //********************************************************************
@@ -2656,11 +2969,9 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::EvaluateFcContact(Epetra_V
     {
       for (int j=0;j<3;++j)
       {
-        fc2(i) +=  (-N2(j,i)*normal(j)*fp*ppfac*ppfac)*intfac;
+        fc2(i) +=  (-N2(j,i)*normal(j)*fp*ppfac)*intfac;
       }
-      //std::cout << "fc2(i): " << fc2(i).val()<< std::endl;
-      fc2(i) +=  (2*ppfac*e*dppfac*delta_coscontactangle(dim1+i))*intfac;
-      //std::cout << "(2*ppfac*e*delta_coscontactangle(dim1+i))*intfac: "<< ((2*ppfac*e*delta_coscontactangle(dim1+i))*intfac).val() << std::endl;
+      fc2(i) +=  (e*dppfac*delta_coscontactangle(dim1+i))*intfac;
     }
     #endif
   }
@@ -3588,17 +3899,23 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::ComputeLinXiBound(LINALG::
     const int dim2 = 3*numnodes*numnodalvalues;
 
     // matrices to compute Lin_Xi and Lin_Eta
-    TYPE L(0.0);
-    LINALG::TMatrix<TYPE,1,dim1+dim2> B(true);
+    TYPE a_11(0.0);
+    LINALG::TMatrix<TYPE,2,dim1+dim2> B(true);
 
-    // compute L elementwise
-    L=BEAMCONTACT::ScalarProduct(r1_xi, r1_xi) + BEAMCONTACT::ScalarProduct(delta_r, r1_xixi);
+    a_11=BEAMCONTACT::ScalarProduct(r1_xi, r1_xi) + BEAMCONTACT::ScalarProduct(delta_r, r1_xixi);
+
+    #ifdef CHANGEENDPOINTPROJECTION
+    TYPE a_21(0.0);
+    a_21=BEAMCONTACT::ScalarProduct(r1_xi, r2_xi);
+    #endif
+
 
     for (int i=0;i<3;i++)
     {
       for (int j=0;j<dim1;j++)
       {
         B(0,j)+= -delta_r(i)*N1_xi(i,j) - r1_xi(i)*N1(i,j);
+        B(1,j)+= - r2_xi(i)*N1(i,j);
       }
     }
 
@@ -3607,14 +3924,23 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::ComputeLinXiBound(LINALG::
       for (int j=0;j<dim2;j++)
       {
         B(0,j+dim1)+= r1_xi(i)*N2(i,j);
+        B(1,j+dim1)+= -delta_r(i)*N2_xi(i,j) + r2_xi(i)*N2(i,j);
       }
     }
 
-    // finally the linearizations / directional derivatives
-    for (int i=0;i<dim1+dim2;i++)
-    {
-      delta_xi_bound(i) = B(0,i)/L;
-    }
+    #ifndef CHANGEENDPOINTPROJECTION
+      // finally the linearizations / directional derivatives in case the orthogonality condition is fulfilled on beam1
+      for (int i=0;i<dim1+dim2;i++)
+      {
+        delta_xi_bound(i) = B(0,i)/a_11;
+      }
+    #else
+      // finally the linearizations / directional derivatives in case the orthogonality condition is fulfilled on beam2
+      for (int i=0;i<dim1+dim2;i++)
+      {
+        delta_xi_bound(i) = B(1,i)/a_21;
+      }
+    #endif
 
   return;
 }
@@ -4104,7 +4430,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::AssembleShapefunctions(con
 }
 
 /*----------------------------------------------------------------------*
- | compute coordinate at given curve point                  meier 10/14|
+ | compute position at given curve point                  meier 10/14|
  *----------------------------------------------------------------------*/
 template<const int numnodes , const int numnodalvalues>
 LINALG::TMatrix<TYPE,3,1> CONTACT::Beam3contact<numnodes, numnodalvalues>::r(const TYPE& eta, DRT::Element* ele)
@@ -4142,11 +4468,11 @@ LINALG::TMatrix<TYPE,3,1> CONTACT::Beam3contact<numnodes, numnodalvalues>::r(con
   return r;
 }
 /*----------------------------------------------------------------------*
- | end: compute coordinate at given curve point              meier 02/14|
+ | end: compute position at given curve point              meier 02/14|
  *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
- | compute coordinate at given curve point                  meier 10/14|
+ | compute tangent at given curve point                  meier 10/14|
  *----------------------------------------------------------------------*/
 template<const int numnodes , const int numnodalvalues>
 LINALG::TMatrix<TYPE,3,1> CONTACT::Beam3contact<numnodes, numnodalvalues>::r_xi(const TYPE& eta, DRT::Element* ele)
@@ -4184,7 +4510,7 @@ LINALG::TMatrix<TYPE,3,1> CONTACT::Beam3contact<numnodes, numnodalvalues>::r_xi(
   return r_xi;
 }
 /*----------------------------------------------------------------------*
- | end: compute coordinate at given curve point              meier 02/14|
+ | end: compute tangent at given curve point              meier 02/14|
  *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
@@ -4371,16 +4697,29 @@ template<const int numnodes , const int numnodalvalues>
 void CONTACT::Beam3contact<numnodes, numnodalvalues>::EvaluatePTLOrthogonalityCondition(TYPE& f,
                                                                                         const LINALG::TMatrix<TYPE,3,1>& delta_r,
                                                                                         const double norm_delta_r,
-                                                                                        const LINALG::TMatrix<TYPE,3,1>& r2_xi)
+                                                                                        const LINALG::TMatrix<TYPE,3,1>& r1_xi,
+                                                                                        const LINALG::TMatrix<TYPE,3,1>& r2_xi,
+                                                                                        bool orthogonalprojection)
 {
   // reset f
   f=0.0;
 
   // evaluate f
-  for (int i=0;i<3;i++)
+  if(orthogonalprojection==false)//standard case
   {
-    f += -delta_r(i)*r2_xi(i) / norm_delta_r;
+    for (int i=0;i<3;i++)
+    {
+      f += -delta_r(i)*r2_xi(i) / norm_delta_r;
+    }
   }
+  else
+  {
+    for (int i=0;i<3;i++)
+    {
+      f += -delta_r(i)*r1_xi(i) / norm_delta_r;
+    }
+  }
+
 
   return;
 }
@@ -4395,17 +4734,29 @@ template<const int numnodes , const int numnodalvalues>
 bool CONTACT::Beam3contact<numnodes, numnodalvalues>::EvaluateLinPTLOrthogonalityCondition( TYPE& df,
                                                                                             const LINALG::TMatrix<TYPE,3,1>& delta_r,
                                                                                             const double norm_delta_r,
+                                                                                            const LINALG::TMatrix<TYPE,3,1>& r1_xi,
                                                                                             const LINALG::TMatrix<TYPE,3,1>& r2_xi,
-                                                                                            const LINALG::TMatrix<TYPE,3,1>& r2_xixi)
+                                                                                            const LINALG::TMatrix<TYPE,3,1>& r2_xixi,
+                                                                                            bool orthogonalprojection)
 
 {
   // reset df
   df=0.0;
 
   // evaluate df
-  for(int i=0;i<3;i++)
+  if(orthogonalprojection==false)//standard case
   {
-    df += (r2_xi(i)*r2_xi(i) - delta_r(i)*r2_xixi(i)) / norm_delta_r;
+    for(int i=0;i<3;i++)
+    {
+      df += (r2_xi(i)*r2_xi(i) - delta_r(i)*r2_xixi(i)) / norm_delta_r;
+    }
+  }
+  else
+  {
+    for(int i=0;i<3;i++)
+    {
+      df += r1_xi(i)*r2_xi(i) / norm_delta_r;
+    }
   }
 
   //check, if df=0: This can happen e.g. when the master beam 2 describes a circle geometry and the projectiong slave point
@@ -4447,6 +4798,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::ComputeNormal(LINALG::TMat
 
   TYPE gap=norm_delta_r - R1_ - R2_;
 
+  //TODO
   if (BEAMCONTACT::CastToDouble(gap)<-MAXPENETRATIONSAFETYFAC*(R1_+R2_) and numstep_>0)
   {
     std::cout << "element1_->Id(): " << element1_->Id() << std::endl;
@@ -4456,7 +4808,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::ComputeNormal(LINALG::TMat
     std::cout << "eta: " << variables->GetCP().second << std::endl;
     //std::cout << "angle: " << BEAMCONTACT::CastToDouble(BEAMCONTACT::CalcAngle(r1_xi,r2_xi) << std::endl;
     std::cout << "contacttype: " << contacttype << std::endl;
-    dserror("Gap too small, danger of penetration. Choose smaller time step!");
+    dserror("Gap too small, danger of penetration. Choose smaller time step or higher penalty!");
   }
 
   variables->SetGap(gap);
@@ -4633,6 +4985,16 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::SetClassVariables(Teuchos:
   cpvariables_.clear();
   gpvariables_.clear();
   epvariables_.clear();
+
+  double kappa_max = timeintparams.get<double>("kappa_max",-1.0);
+  if(kappa_max<0)
+    dserror("Maximal curvature should be a positive value!");
+
+  //TODO
+//  //Check, if maximal curvature bound is exceeded:
+//  double crosssection_to_curvature_ratio = max(R1_,R2_)*kappa_max;
+//  if(crosssection_to_curvature_ratio>MAXCROSSSECTIONTOCURVATURE)
+//    dserror("Curvature too large. Choose larger value MAXCROSSSECTIONTOCURVATURE and adapt shifting angles!");
 }
 /*----------------------------------------------------------------------*
  |  end: Set all class variables

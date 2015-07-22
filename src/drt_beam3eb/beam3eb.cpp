@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file beam3eb.H
+\file beam3eb.cpp
 
 \brief three dimensional nonlinear torsionless rod based on a C1 curve
 
@@ -128,7 +128,9 @@ Eint_(0.0),
 L_(LINALG::Matrix<3,1>(true)),
 P_(LINALG::Matrix<3,1>(true)),
 t0_(LINALG::Matrix<3,2>(true)),
-t_(LINALG::Matrix<3,2>(true))
+t_(LINALG::Matrix<3,2>(true)),
+kappa_max_(0.0),
+epsilon_max_(0.0)
 {
   #if defined(INEXTENSIBLE)
     if(ANSVALUES!=3 or NODALDOFS!=2)
@@ -151,11 +153,12 @@ DRT::ELEMENTS::Beam3eb::Beam3eb(const DRT::ELEMENTS::Beam3eb& old) :
  Ekin_(old.Ekin_),
  Eint_(old.Eint_),
  Tref_(old.Tref_),
- LengthRef_(old.LengthRef_),
  L_(old.L_),
  P_(old.P_),
  t0_(old.t0_),
- t_(old.t_)
+ t_(old.t_),
+ kappa_max_(old.kappa_max_),
+ epsilon_max_(old.epsilon_max_)
 {
   return;
 }
@@ -225,11 +228,14 @@ void DRT::ELEMENTS::Beam3eb::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,Ekin_);
   AddtoPack(data,Eint_);
   AddtoPack(data,Tref_);
-  AddtoPack(data,LengthRef_);
   AddtoPack<3,1>(data,L_);
   AddtoPack<3,1>(data,P_);
   AddtoPack<3,2>(data,t0_);
   AddtoPack<3,2>(data,t_);
+  AddtoPack(data,kappa_max_);
+  //AddtoPack(data,epsilon_max_);
+
+
 
   return;
 }
@@ -261,11 +267,12 @@ void DRT::ELEMENTS::Beam3eb::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,Ekin_);
   ExtractfromPack(position,data,Eint_);
   ExtractfromPack(position,data,Tref_);
-  ExtractfromPack(position,data,LengthRef_);
   ExtractfromPack<3,1>(position,data,L_);
   ExtractfromPack<3,1>(position,data,P_);
   ExtractfromPack<3,2>(position,data,t0_);
   ExtractfromPack<3,2>(position,data,t_);
+  ExtractfromPack(position,data,kappa_max_);
+  //ExtractfromPack(position,data,epsilon_max_);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -369,7 +376,6 @@ void DRT::ELEMENTS::Beam3eb::SetUpReferenceGeometry(const std::vector<double>& x
               Tref_[node](dof) =  xrefe[3+dof] - xrefe[dof];
             }
             norm2 = Tref_[node].Norm2();
-            LengthRef_= norm2;
             Tref_[node].Scale(1/norm2);
 
             for (int i=0;i<3;i++)
@@ -479,12 +485,6 @@ int DRT::ELEMENTS::Beam3ebType::Initialize(DRT::Discretization& dis)
 std::vector<LINALG::Matrix<3,1> > DRT::ELEMENTS::Beam3eb::Tref() const
 {
   return Tref_;
-}
-
-double DRT::ELEMENTS::Beam3eb::LengthRef() const
-{
-
-  return LengthRef_;
 }
 
 double DRT::ELEMENTS::Beam3eb::jacobi() const

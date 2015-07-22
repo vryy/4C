@@ -253,6 +253,22 @@ public:
   };
 
   /*!
+    Not needed for beam3contactnew variables
+  */
+  double GetUnscaledPerpEnergy()
+  {
+    return 0.0;
+  };
+
+  /*!
+    Not needed for beam3contactnew variables
+  */
+  double GetUnscaledParallelEnergy()
+  {
+    return 0.0;
+  };
+
+  /*!
   \brief Get normal vector of last time step
   */
   LINALG::TMatrix<TYPE, 3, 1>* GetNormalOld()

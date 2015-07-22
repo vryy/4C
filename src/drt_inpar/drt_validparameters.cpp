@@ -2160,7 +2160,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("BEAMS_BTSPH","No","decide, if also the contact between beams and spheres is possible",
                                yesnotuple,yesnovalue,&beamcontact);
 
-  setStringToIntegralParameter<int>("BEAMS_ENDPOINTPENALTY","Yes","Additional consideration of endpoint-line and endpoint-endpoint contacts",
+  setStringToIntegralParameter<int>("BEAMS_ENDPOINTPENALTY","No","Additional consideration of endpoint-line and endpoint-endpoint contacts",
                                  yesnotuple,yesnovalue,&beamcontact);
 
   setStringToIntegralParameter<int>("BEAMS_SMOOTHING","None","Application of smoothed tangent field",

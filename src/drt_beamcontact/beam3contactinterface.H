@@ -156,6 +156,16 @@ public:
   */
   virtual double GetEnergy()=0;
 
+  /*!
+    \Get energy of perp penalty contact without transition factor contribution.
+  */
+  virtual double GetUnscaledPerpEnergy()=0;
+
+  /*!
+    \Get energy of parallel penalty contact without transition factor contribution.
+  */
+  virtual double GetUnscaledParallelEnergy()=0;
+
   virtual bool FirstTimeStep()=0;
 
   /*!

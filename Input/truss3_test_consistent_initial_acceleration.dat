@@ -55,7 +55,6 @@ NORMCOMBI_RESFDISP              And
 TOLDISP                         1.0E-12
 TOLRES                          1.0E-12
 MAXITER                         100
-RESEVRYERGY                     1
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 ALPHA_F         0.5

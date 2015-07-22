@@ -296,6 +296,11 @@ public:
   double GetTotEnergy() {return totpenaltyenergy_; };
 
   /*!
+  \brief Get total contact work of penalty approach
+  */
+  double GetTotWork() {return totpenaltywork_; };
+
+  /*!
   \brief Read restart
   */
   void ReadRestart(IO::DiscretizationReader& reader);
@@ -476,6 +481,9 @@ private:
   //! total contact energy (of elastic penalty forces)
   double totpenaltyenergy_;
 
+  //! total contact work (of penalty forces) -> does not work for restart up to now!
+  double totpenaltywork_;
+
   //! current displacement vector
   Teuchos::RCP<Epetra_Vector> dis_;
 
@@ -484,6 +492,8 @@ private:
 
   //! inf-norm of dis_ - dis_old_
   double maxdeltadisp_;
+
+  double totalmaxdeltadisp_;
 
   //! parameters of the potential law to be applied: Phi(r)~ \sum_i (k_i * r^(-m_i))
   Teuchos::RCP<std::vector<double> > ki_;
@@ -509,6 +519,12 @@ private:
 
   // accumulated evaluation time of all contact pairs of total simulation time
   double contactevaluationtime_;
+
+  // maximum curvature occuring in one of the potential contact elements
+  double global_kappa_max_;
+
+  //output file counter needed for PRINTGAPSOVERLENGTHFILE
+  int step_;
 
   //@}
 

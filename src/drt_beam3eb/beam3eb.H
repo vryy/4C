@@ -259,9 +259,28 @@ public:
     return Izz_;
   }
 
+  /*!
+   \brief Get jacobian this element
+   */
   const double& GetJacobi() const
   {
     return jacobi_;
+  }
+
+  /*!
+   \brief Get maximal bending curvature occuring in this element
+   */
+  const double& GetKappaMax() const
+  {
+    return kappa_max_;
+  }
+
+  /*!
+   \brief Get maximal axial tension occuring in this element
+   */
+  const double& GetEpsilonMax() const
+  {
+    return epsilon_max_;
   }
 
   /*!
@@ -311,11 +330,6 @@ public:
   \brief get reference triad i.e. Tref_
   */
   std::vector<LINALG::Matrix<3,1> > Tref() const;
-
-  /*!
-  \brief get reference length i.e. LengthRef_
-  */
-  double LengthRef() const;
 
   /*!
   \brief get jacobi factor jacobi_
@@ -510,13 +524,11 @@ private:
 
   //! internal energy
   double Eint_;
+  //! internal energy stemming from axial tension
+  double Eint_axial_;
 
   //! Matrix holding tangents at each node in reference configuration
   std::vector<LINALG::Matrix<3,1> > Tref_;
-
-  //! Length of element in reference configuration
-  double LengthRef_;
-
   //! angular momentum of the element
   LINALG::Matrix<3,1> L_;
   //! linear momentum of the element
@@ -525,6 +537,10 @@ private:
   LINALG::Matrix<3,2> t0_;
   //! nodal tangents of current time step (necessary for PTC scheme)
   LINALG::Matrix<3,2> t_;
+  //! norm of maximal curvature occuring in this element
+  double kappa_max_;
+  //! norm of maximal axial tension occuring in this element
+  double epsilon_max_;
 
 
 #if NODALDOFS == 3

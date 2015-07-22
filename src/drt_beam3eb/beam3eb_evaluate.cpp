@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file beam3eb.H
+\file beam3eb_evaluate.cpp
 
 \brief three dimensional nonlinear torsionless rod based on a C1 curve
 
@@ -168,7 +168,7 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
     case calc_struct_energy:
       elevec1(0)=Eint_;
       //elevec1(1)=Ekin_;
-      //elevec1(2)=P_(0);
+      //elevec1(2)=Eint_axial_;
       //elevec1(3)=P_(1);
       //elevec1(4)=P_(2);
       //elevec1(5)=L_(0);
@@ -565,9 +565,12 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
     NodeShift<nnode,3>(params,disp);
 
   Eint_=0.0;
+  Eint_axial_=0.0;
   Ekin_=0.0;
   L_.Clear();
   P_.Clear();
+  kappa_max_=0.0;
+  epsilon_max_=0.0;
 
 #ifdef SIMPLECALC
 {
@@ -1606,7 +1609,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
         #else
           for (int i=0;i<nnode*dofpn;i++)
           {
-            Res_tension_ANS_fad(i)+=lin_epsilon_ANS_fad(i)*ym * crosssec_ * wgt*epsilon_ANS_fad;
+            Res_tension_ANS_fad(i)+=lin_epsilon_ANS_fad(i)*jacobi_*ym * crosssec_ * wgt*epsilon_ANS_fad;
           }
         #endif
         for (int i=0;i<nnode*dofpn;i++)
@@ -1782,14 +1785,28 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
     } //if (force != NULL)
 
     #ifdef ANS_BEAM3EB
+
       double kappa_quad = (rxxrxx/rxrx-pow(rxrxx,2)/pow(rxrx,2))/pow(jacobi_,2);
   //    if(kappa_quad>0)
   //      std::cout << std::setprecision(16) << "kappa: " << sqrt(kappa_quad) << std::endl;
 
-      Eint_+=0.5*wgt*jacobi_*ym * crosssec_ * pow(epsilon_ANS,2);
-      Eint_+=0.5*wgt*jacobi_*ym *Izz_ * kappa_quad;
-    #endif
+      if(kappa_quad<0)
+        kappa_quad=-kappa_quad;
 
+      Eint_+=0.5*wgt*jacobi_*ym * crosssec_ * pow(epsilon_ANS,2);
+      Eint_axial_+=0.5*wgt*jacobi_*ym * crosssec_ * pow(epsilon_ANS,2);
+      Eint_+=0.5*wgt*jacobi_*ym *Izz_ * kappa_quad;
+
+      //determine maximal curvature
+      if(sqrt(kappa_quad)>kappa_max_)
+        kappa_max_=sqrt(kappa_quad);
+
+      double epsilon_norm=sqrt(pow(epsilon_ANS,2));
+
+      //determine maximal axial tension
+      if(epsilon_norm>epsilon_max_)
+        epsilon_max_=epsilon_norm;
+    #endif
   } //for(int numgp=0; numgp < gausspoints.nquad; numgp++)
 
   std::vector<double > myvel(12,0.0);
@@ -1931,7 +1948,6 @@ internalforces_ = *force;
     #endif
     CalcBrownian<nnode,3,6,4>(params,vel,disp,stiffmatrix,force);
   }
-
 
   return;
 

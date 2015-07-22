@@ -378,7 +378,7 @@ void DRT::ELEMENTS::Truss3::t3_energy(Teuchos::ParameterList&   params,
     std::vector<double>&      disp,
     Epetra_SerialDenseVector* intenergy)
 {
-  dserror("This method is yet to be configured for bio-polymer networks!");
+  //dserror("This method is yet to be configured for bio-polymer networks!");
   /* read material parameters using structure _MATERIAL which is defined by inclusion of      /
    / "../drt_lib/drt_timecurve.H"; note: material parameters have to be read in the evaluation /
    / function instead of e.g. Truss3_input.cpp or within the Truss3Register class since it is not/
