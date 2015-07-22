@@ -37,7 +37,7 @@ class ScaTraEleCalcPoro : public virtual ScaTraEleCalc<distype>
 {
 protected:
   /// (private) protected constructor, since we are a Singleton.
-  ScaTraEleCalcPoro(const int numdofpernode,const int numscal);
+  ScaTraEleCalcPoro(const int numdofpernode,const int numscal,const std::string& disname);
 
   private:
   typedef ScaTraEleCalc<distype> my;

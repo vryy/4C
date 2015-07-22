@@ -32,6 +32,7 @@ namespace DRT
       static ScaTraEleBoundaryCalcLoma<distype>* Instance(
           const int numdofpernode,
           const int numscal,
+          const std::string& disname,
           bool create=true
           );
 
@@ -60,7 +61,8 @@ namespace DRT
       //! private constructor for singletons
       ScaTraEleBoundaryCalcLoma(
           const int numdofpernode,
-          const int numscal
+          const int numscal,
+          const std::string& disname
           );
 
       //! evaluate loma thermal press

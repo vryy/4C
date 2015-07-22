@@ -33,14 +33,14 @@ protected:
   /// (private) protected constructor, since we are a Singleton.
   /// this constructor is called from a derived class
   /// -> therefore, it has to be protected instead of private
-  ScaTraEleParameterLsReinit();
+  ScaTraEleParameterLsReinit(const std::string& disname);
 
 public:
 
   virtual ~ScaTraEleParameterLsReinit() {}
 
   /// Singleton access method
-  static ScaTraEleParameterLsReinit* Instance( bool create=true );
+  static ScaTraEleParameterLsReinit* Instance( const std::string& disname, bool create=true );
 
   /// called upon destruction
   virtual void Done();

@@ -31,7 +31,7 @@ DRT::ELEMENTS::ScaTraEleCalcStd<distype,probdim>* DRT::ELEMENTS::ScaTraEleCalcSt
   if(create)
   {
     if(instances.find(disname) == instances.end())
-      instances[disname] = new ScaTraEleCalcStd<distype,probdim>(numdofpernode,numscal);
+      instances[disname] = new ScaTraEleCalcStd<distype,probdim>(numdofpernode,numscal,disname);
   }
 
   else if(instances.find(disname) != instances.end())
@@ -67,8 +67,8 @@ void DRT::ELEMENTS::ScaTraEleCalcStd<distype,probdim>::Done()
  | private constructor for singletons                        fang 02/15 |
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype,int probdim>
-DRT::ELEMENTS::ScaTraEleCalcStd<distype,probdim>::ScaTraEleCalcStd(const int numdofpernode,const int numscal)
-  : DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ScaTraEleCalc(numdofpernode,numscal)
+DRT::ELEMENTS::ScaTraEleCalcStd<distype,probdim>::ScaTraEleCalcStd(const int numdofpernode,const int numscal,const std::string& disname)
+  : DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ScaTraEleCalc(numdofpernode,numscal,disname)
 {
   return;
 }

@@ -45,7 +45,7 @@ DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype> * DRT::ELEMENTS::ScaTraEleCalcLsRe
   if(create)
   {
     if(instances.find(disname) == instances.end())
-      instances[disname] = new ScaTraEleCalcLsReinit<distype>(numdofpernode,numscal);
+      instances[disname] = new ScaTraEleCalcLsReinit<distype>(numdofpernode,numscal,disname);
   }
 
   else if(instances.find(disname) != instances.end())
@@ -81,13 +81,14 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Done()
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::ScaTraEleCalcLsReinit(
     const int numdofpernode,
-    const int numscal
+    const int numscal,
+    const std::string& disname
     ) :
-    DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode,numscal),
+    DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode,numscal,disname),
     ephizero_(my::numscal_)  // size of vector
 {
   // set appropriate parameter list
-  my::scatrapara_ = DRT::ELEMENTS::ScaTraEleParameterLsReinit::Instance();
+  my::scatrapara_ = DRT::ELEMENTS::ScaTraEleParameterLsReinit::Instance(disname);
   // set appropriate diffusion manager
   my::diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManagerLsReinit<my::nsd_>(my::numscal_));
   // set appropriate internal variable manager

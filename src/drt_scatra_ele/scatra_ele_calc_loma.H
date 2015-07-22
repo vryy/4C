@@ -43,7 +43,8 @@ private:
     //! private constructor for singletons
     ScaTraEleCalcLoma(
         const int numdofpernode,
-        const int numscal
+        const int numscal,
+        const std::string& disname
         );
 
     typedef ScaTraEleCalc<distype> my;

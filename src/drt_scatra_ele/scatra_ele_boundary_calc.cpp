@@ -41,9 +41,9 @@ Maintainer: Andreas Ehrl
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ScaTraEleBoundaryCalc(const int numdofpernode, const int numscal)
- : scatraparamstimint_(DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance()), // params for time integration
-   scatraparams_(DRT::ELEMENTS::ScaTraEleParameterStd::Instance()),
+DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ScaTraEleBoundaryCalc(const int numdofpernode, const int numscal, const std::string& disname)
+ : scatraparamstimint_(DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(disname)), // params for time integration
+   scatraparams_(DRT::ELEMENTS::ScaTraEleParameterStd::Instance(disname)),
    numdofpernode_(numdofpernode),
    numscal_(numscal),
    xyze_(true),  // initialize to zero

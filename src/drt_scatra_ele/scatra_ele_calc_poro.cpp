@@ -50,7 +50,7 @@ DRT::ELEMENTS::ScaTraEleCalcPoro<distype> * DRT::ELEMENTS::ScaTraEleCalcPoro<dis
   if(create)
   {
     if(instances.find(disname) == instances.end())
-      instances[disname] = new ScaTraEleCalcPoro<distype>(numdofpernode,numscal);
+      instances[disname] = new ScaTraEleCalcPoro<distype>(numdofpernode,numscal,disname);
   }
 
   else if(instances.find(disname) != instances.end())
@@ -85,8 +85,11 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::Done()
  |                                                           vuong 07/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ScaTraEleCalcPoro(const int numdofpernode,const int numscal)
-  : DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode,numscal),
+DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ScaTraEleCalcPoro(\
+    const int numdofpernode,
+    const int numscal,
+    const std::string& disname)
+  : DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode,numscal,disname),
     xyze0_(true),
     eporosity_(true),
     isnodalporosity_(false)

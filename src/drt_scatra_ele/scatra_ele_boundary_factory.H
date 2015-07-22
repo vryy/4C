@@ -42,7 +42,8 @@ public:
   static ScaTraBoundaryInterface* ProvideImpl(const DRT::Element* ele,
                                               const enum INPAR::SCATRA::ImplType impltype,
                                               const int numdofpernode,
-                                              const int numscal);
+                                              const int numscal,
+                                              const std::string& disname);
 
 private:
 
@@ -51,7 +52,8 @@ private:
   static ScaTraBoundaryInterface* DefineProblemType(
       const enum INPAR::SCATRA::ImplType impltype,
       const int numdofpernode,
-      const int numscal
+      const int numscal,
+      const std::string& disname
       );
 }; // class ScaTraBoundaryFactory
 } // namespace ELEMENTS

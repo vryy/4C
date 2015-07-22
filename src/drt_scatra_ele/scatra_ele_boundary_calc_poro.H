@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_ele_boundary_calc_std.H
+\file scatra_ele_boundary_calc_poro.H
 
 \brief evaluation of scatra boundary terms at integration points
 
@@ -32,7 +32,11 @@ class ScaTraEleBoundaryCalcPoro : public ScaTraEleBoundaryCalc<distype>
 public:
 
   /// Singleton access method
-  static ScaTraEleBoundaryCalcPoro<distype> * Instance(const int numdofpernode, const int numscal, bool create=true );
+  static ScaTraEleBoundaryCalcPoro<distype> * Instance(
+      const int numdofpernode,
+      const int numscal,
+      const std::string& disname,
+      bool create=true );
 
   /// Empty destructor
   virtual ~ScaTraEleBoundaryCalcPoro() {};
@@ -42,7 +46,7 @@ public:
 
 private:
   /// private constructor since we are singleton
-  ScaTraEleBoundaryCalcPoro(const int numdofpernode, const int numscal);
+  ScaTraEleBoundaryCalcPoro(const int numdofpernode, const int numscal,const std::string& disname);
 
   //! evaluate action
   int EvaluateAction(

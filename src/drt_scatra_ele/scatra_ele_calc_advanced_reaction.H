@@ -32,7 +32,7 @@ class ScaTraEleCalcAdvReac : public virtual ScaTraEleCalc<distype,probdim>
 {
 protected:
     /// (private) protected constructor, since we are a Singleton.
-  ScaTraEleCalcAdvReac(const int numdofpernode,const int numscal);
+  ScaTraEleCalcAdvReac(const int numdofpernode,const int numscal,const std::string& disname);
 
 private:
 

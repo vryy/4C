@@ -29,10 +29,10 @@
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
-DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype,probdim>::ScaTraEleCalcCardiacMonodomain(const int numdofpernode,const int numscal)
-  : DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ScaTraEleCalc(numdofpernode,numscal),
-    DRT::ELEMENTS::ScaTraEleCalcAniso<distype,probdim>::ScaTraEleCalcAniso(numdofpernode,numscal),
-    DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::ScaTraEleCalcAdvReac(numdofpernode,numscal)
+DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype,probdim>::ScaTraEleCalcCardiacMonodomain(const int numdofpernode,const int numscal,const std::string& disname)
+  : DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ScaTraEleCalc(numdofpernode,numscal,disname),
+    DRT::ELEMENTS::ScaTraEleCalcAniso<distype,probdim>::ScaTraEleCalcAniso(numdofpernode,numscal,disname),
+    DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::ScaTraEleCalcAdvReac(numdofpernode,numscal,disname)
 {
 
 }
@@ -51,7 +51,7 @@ DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype,probdim> * DRT::ELEMENTS::
   if(create)
   {
     if(instances.find(disname) == instances.end())
-      instances[disname] = new ScaTraEleCalcCardiacMonodomain<distype,probdim>(numdofpernode,numscal);
+      instances[disname] = new ScaTraEleCalcCardiacMonodomain<distype,probdim>(numdofpernode,numscal,disname);
   }
 
   else if(instances.find(disname) != instances.end())

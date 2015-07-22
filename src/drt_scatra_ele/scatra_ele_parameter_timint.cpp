@@ -26,23 +26,29 @@ Maintainer: Andreas Ehrl
 //----------------------------------------------------------------------*/
 //    definition of the instance
 //----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraEleParameterTimInt* DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance( bool create )
+DRT::ELEMENTS::ScaTraEleParameterTimInt* DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance( const std::string& disname, bool create )
 {
-  static ScaTraEleParameterTimInt* instance;
-  if ( create )
+  static std::map<std::string,ScaTraEleParameterTimInt* >  instances;
+
+  if(create)
   {
-    if ( instance==NULL )
-    {
-      instance = new ScaTraEleParameterTimInt();
-    }
+    if(instances.find(disname) == instances.end())
+      instances[disname] = new ScaTraEleParameterTimInt();
   }
-  else
+
+  else if(instances.find(disname) != instances.end())
   {
-    if ( instance!=NULL )
-      delete instance;
-    instance = NULL;
+    for( std::map<std::string,ScaTraEleParameterTimInt* >::iterator i=instances.begin(); i!=instances.end(); ++i )
+     {
+      delete i->second;
+      i->second = NULL;
+     }
+
+    instances.clear();
+    return NULL;
   }
-  return instance;
+
+  return instances[disname];
 }
 
 //----------------------------------------------------------------------*/
@@ -52,7 +58,7 @@ void DRT::ELEMENTS::ScaTraEleParameterTimInt::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-    Instance( false );
+    Instance( "", false );
 }
 
 //----------------------------------------------------------------------*/

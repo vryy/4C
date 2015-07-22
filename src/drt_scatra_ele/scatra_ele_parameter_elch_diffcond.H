@@ -32,7 +32,7 @@ namespace DRT
       virtual ~ScaTraEleParameterElchDiffCond(){return;};
 
       //! singleton access method
-      static ScaTraEleParameterElchDiffCond* Instance(bool create=true);
+      static ScaTraEleParameterElchDiffCond* Instance(const std::string& disname,bool create=true);
 
       //! singleton destruction
       virtual void Done();
@@ -54,7 +54,7 @@ namespace DRT
     private:
 
       //! private constructor for singletons
-      ScaTraEleParameterElchDiffCond();
+      ScaTraEleParameterElchDiffCond(const std::string& disname);
 
       //! flag if current is used as a solution variable
       bool cursolvar_;

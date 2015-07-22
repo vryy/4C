@@ -29,7 +29,7 @@ DRT::ELEMENTS::MeshfreeScaTraCellCalcStd<distype> * DRT::ELEMENTS::MeshfreeScaTr
   if(create)
   {
     if(instances.find(disname) == instances.end())
-      instances[disname] = new MeshfreeScaTraCellCalcStd<distype>(numdofpernode,numscal);
+      instances[disname] = new MeshfreeScaTraCellCalcStd<distype>(numdofpernode,numscal,disname);
   }
 
   else if(instances.find(disname) != instances.end())
@@ -62,8 +62,8 @@ void DRT::ELEMENTS::MeshfreeScaTraCellCalcStd<distype>::Done()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::MeshfreeScaTraCellCalcStd<distype>::MeshfreeScaTraCellCalcStd(const int numdofpernode,const int numscal)
-  : DRT::ELEMENTS::MeshfreeScaTraCellCalc<distype>::MeshfreeScaTraCellCalc(numdofpernode,numscal)
+DRT::ELEMENTS::MeshfreeScaTraCellCalcStd<distype>::MeshfreeScaTraCellCalcStd(const int numdofpernode,const int numscal,const std::string& disname)
+  : DRT::ELEMENTS::MeshfreeScaTraCellCalc<distype>::MeshfreeScaTraCellCalc(numdofpernode,numscal,disname)
 {
 }
 

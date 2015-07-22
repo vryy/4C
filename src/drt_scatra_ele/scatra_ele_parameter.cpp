@@ -27,7 +27,7 @@ Maintainer: Andreas Ehrl
 //----------------------------------------------------------------------*/
 //    constructor
 //----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraEleParameter::ScaTraEleParameter()
+DRT::ELEMENTS::ScaTraEleParameter::ScaTraEleParameter(const std::string& disname)
  :is_ale_(false),
   is_conservative_(false),
   writeflux_(INPAR::SCATRA::flux_no),
@@ -70,7 +70,7 @@ DRT::ELEMENTS::ScaTraEleParameter::ScaTraEleParameter()
   turbinflow_(false)
 {
   // we have to know the time parameters here to check for illegal combinations
-  scatraparatimint_ = DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance();
+  scatraparatimint_ = DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(disname);
 
   return;
 }

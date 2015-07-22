@@ -34,7 +34,7 @@ class ScaTraEleCalcChemoReac : public ScaTraEleCalcChemo<distype,probdim>, publi
 {
 private:
   //! private constructor, since we are a Singleton.
-  ScaTraEleCalcChemoReac(const int numdofpernode,const int numscal);
+  ScaTraEleCalcChemoReac(const int numdofpernode,const int numscal,const std::string& disname);
 
   typedef ScaTraEleCalc<distype,probdim> my;
   typedef ScaTraEleCalcChemo<distype,probdim> chemo;

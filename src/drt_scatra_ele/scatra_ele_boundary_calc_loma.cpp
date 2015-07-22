@@ -35,24 +35,31 @@ template<DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>* DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::Instance(
     const int numdofpernode,
     const int numscal,
+    const std::string& disname,
     bool create
     )
 {
-  static ScaTraEleBoundaryCalcLoma<distype>* instance;
+  static std::map<std::string,ScaTraEleBoundaryCalcLoma<distype>* >  instances;
 
   if(create)
   {
-    if(instance == NULL)
-      instance = new ScaTraEleBoundaryCalcLoma<distype>(numdofpernode,numscal);
+    if(instances.find(disname) == instances.end())
+      instances[disname] = new ScaTraEleBoundaryCalcLoma<distype>(numdofpernode,numscal,disname);
   }
 
-  else if(instance != NULL)
+  else if(instances.find(disname) != instances.end())
   {
-    delete instance;
-    instance = NULL;
+    for( typename std::map<std::string,ScaTraEleBoundaryCalcLoma<distype>* >::iterator i=instances.begin(); i!=instances.end(); ++i )
+     {
+      delete i->second;
+      i->second = NULL;
+     }
+
+    instances.clear();
+    return NULL;
   }
 
-  return instance;
+  return instances[disname];
 }
 
 
@@ -63,7 +70,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::Done()
 {
   // delete singleton
-  Instance(0,0,false);
+  Instance(0,0,"",false);
 
   return;
 }
@@ -75,10 +82,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::Done()
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::ScaTraEleBoundaryCalcLoma(
     const int numdofpernode,
-    const int numscal
+    const int numscal,
+    const std::string& disname
     ) :
     // constructor of base class
-    my::ScaTraEleBoundaryCalc(numdofpernode,numscal)
+    my::ScaTraEleBoundaryCalc(numdofpernode,numscal,disname)
 {
   return;
 }

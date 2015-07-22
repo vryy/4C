@@ -33,6 +33,7 @@ namespace DRT
       static ScaTraEleBoundaryCalcElchElectrode<distype>* Instance(
           const int numdofpernode,
           const int numscal,
+          const std::string& disname,
           bool create=true
           );
 
@@ -45,7 +46,7 @@ namespace DRT
     protected:
 
       //! protected constructor for singletons
-      ScaTraEleBoundaryCalcElchElectrode(const int numdofpernode,const int numscal);
+      ScaTraEleBoundaryCalcElchElectrode(const int numdofpernode,const int numscal, const std::string& disname);
 
       //! evaluate scatra-scatra interface coupling condition
       virtual void EvaluateS2ICoupling(

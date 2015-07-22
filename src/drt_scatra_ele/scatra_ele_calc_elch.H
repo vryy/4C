@@ -37,7 +37,7 @@ protected:
   /// protected constructor, since we are a singleton
   /// this constructor is called from a derived class
   /// -> therefore, it has to be protected instead of private
-  ScaTraEleCalcElch(const int numdofpernode,const int numscal);
+  ScaTraEleCalcElch(const int numdofpernode,const int numscal,const std::string& disname);
 
   typedef ScaTraEleCalc<distype> my;
 

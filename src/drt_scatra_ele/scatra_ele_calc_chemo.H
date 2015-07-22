@@ -30,7 +30,7 @@ class ScaTraEleCalcChemo : public virtual ScaTraEleCalc<distype,probdim>
 {
 protected:
     //! (private) protected constructor, since we are a Singleton.
-  ScaTraEleCalcChemo(const int numdofpernode,const int numscal);
+  ScaTraEleCalcChemo(const int numdofpernode,const int numscal,const std::string& disname);
 
 private:
 

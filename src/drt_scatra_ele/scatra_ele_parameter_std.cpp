@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_ele_parameter_std.H
+\file scatra_ele_parameter_std.cpp
 
 \brief Setting of general scatra parameter for element evaluation
 
@@ -18,23 +18,29 @@ Maintainer: Andreas Ehrl
 //----------------------------------------------------------------------*/
 //    definition of the instance
 //----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraEleParameterStd* DRT::ELEMENTS::ScaTraEleParameterStd::Instance( bool create )
+DRT::ELEMENTS::ScaTraEleParameterStd* DRT::ELEMENTS::ScaTraEleParameterStd::Instance( const std::string& disname, bool create )
 {
-  static ScaTraEleParameterStd* instance;
-  if ( create )
+  static std::map<std::string,ScaTraEleParameterStd* >  instances;
+
+  if(create)
   {
-    if ( instance==NULL )
-    {
-      instance = new ScaTraEleParameterStd();
-    }
+    if(instances.find(disname) == instances.end())
+      instances[disname] = new ScaTraEleParameterStd(disname);
   }
-  else
+
+  else if(instances.find(disname) != instances.end())
   {
-    if ( instance!=NULL )
-      delete instance;
-    instance = NULL;
+    for( std::map<std::string,ScaTraEleParameterStd* >::iterator i=instances.begin(); i!=instances.end(); ++i )
+     {
+      delete i->second;
+      i->second = NULL;
+     }
+
+    instances.clear();
+    return NULL;
   }
-  return instance;
+
+  return instances[disname];
 }
 
 //----------------------------------------------------------------------*/
@@ -44,14 +50,14 @@ void DRT::ELEMENTS::ScaTraEleParameterStd::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-    Instance( false );
+    Instance( "",false );
 }
 
 //----------------------------------------------------------------------*/
 //    constructor
 //----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraEleParameterStd::ScaTraEleParameterStd()
-  : DRT::ELEMENTS::ScaTraEleParameter::ScaTraEleParameter()
+DRT::ELEMENTS::ScaTraEleParameterStd::ScaTraEleParameterStd(const std::string& disname)
+  : DRT::ELEMENTS::ScaTraEleParameter::ScaTraEleParameter(disname)
 {
 }
 

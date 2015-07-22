@@ -53,7 +53,7 @@ DRT::ELEMENTS::ScaTraEleCalcChemo<distype,probdim> * DRT::ELEMENTS::ScaTraEleCal
   if(create)
   {
     if(instances.find(disname) == instances.end())
-      instances[disname] = new ScaTraEleCalcChemo<distype,probdim>(numdofpernode,numscal);
+      instances[disname] = new ScaTraEleCalcChemo<distype,probdim>(numdofpernode,numscal,disname);
   }
 
   else if(instances.find(disname) != instances.end())
@@ -87,8 +87,8 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype,probdim>::Done()
  *  constructor---------------------------                              |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
-DRT::ELEMENTS::ScaTraEleCalcChemo<distype,probdim>::ScaTraEleCalcChemo(const int numdofpernode,const int numscal)
-  : DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ScaTraEleCalc(numdofpernode,numscal),
+DRT::ELEMENTS::ScaTraEleCalcChemo<distype,probdim>::ScaTraEleCalcChemo(const int numdofpernode,const int numscal,const std::string& disname)
+  : my::ScaTraEleCalc(numdofpernode,numscal,disname),
     numcondchemo_(-1),
     pair_(0),
     chemocoeff_(0)

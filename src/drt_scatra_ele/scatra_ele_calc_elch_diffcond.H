@@ -34,7 +34,7 @@ class ScaTraEleCalcElchDiffCond : public ScaTraEleCalcElchElectrode<distype>
 private:
 
   /// private constructor, since we are a Singleton.
-  ScaTraEleCalcElchDiffCond(const int numdofpernode,const int numscal);
+  ScaTraEleCalcElchDiffCond(const int numdofpernode,const int numscal,const std::string& disname);
 
   typedef ScaTraEleCalc<distype> my;
   typedef ScaTraEleCalcElch<distype> myelch;

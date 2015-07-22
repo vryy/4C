@@ -27,7 +27,8 @@ namespace DRT
     class ScaTraEleDiffManagerElch;
 
     // class implementation
-    template<DRT::Element::DiscretizationType distype> class ScaTraEleUtilsElch
+    template<DRT::Element::DiscretizationType distype>
+    class ScaTraEleUtilsElch
     {
       private:
 

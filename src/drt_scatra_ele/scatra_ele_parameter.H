@@ -42,7 +42,7 @@ protected:
   /// (private) protected constructor, since we are a Singleton.
   /// this constructor is called from a derived class
   /// -> therefore, it has to be protected instead of private
-  ScaTraEleParameter();
+  ScaTraEleParameter(const std::string& disname);
 
 public:
 

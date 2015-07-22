@@ -31,10 +31,10 @@
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
-DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype,probdim>::ScaTraEleCalcChemoReac(const int numdofpernode,const int numscal)
-  : DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ScaTraEleCalc(numdofpernode,numscal),
-    DRT::ELEMENTS::ScaTraEleCalcChemo<distype,probdim>::ScaTraEleCalcChemo(numdofpernode,numscal),
-    DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::ScaTraEleCalcAdvReac(numdofpernode,numscal)
+DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype,probdim>::ScaTraEleCalcChemoReac(const int numdofpernode,const int numscal,const std::string& disname)
+  : DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ScaTraEleCalc(numdofpernode,numscal,disname),
+    DRT::ELEMENTS::ScaTraEleCalcChemo<distype,probdim>::ScaTraEleCalcChemo(numdofpernode,numscal,disname),
+    DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::ScaTraEleCalcAdvReac(numdofpernode,numscal,disname)
 {
 
 }
@@ -53,7 +53,7 @@ DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype,probdim> * DRT::ELEMENTS::ScaTraEl
   if(create)
   {
     if(instances.find(disname) == instances.end())
-      instances[disname] = new ScaTraEleCalcChemoReac<distype>(numdofpernode,numscal);
+      instances[disname] = new ScaTraEleCalcChemoReac<distype>(numdofpernode,numscal,disname);
   }
 
   else if(instances.find(disname) != instances.end())

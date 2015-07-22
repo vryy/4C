@@ -47,7 +47,7 @@ DRT::ELEMENTS::ScaTraEleCalcLoma<distype> * DRT::ELEMENTS::ScaTraEleCalcLoma<dis
   if(create)
   {
     if(instances.find(disname) == instances.end())
-      instances[disname] = new ScaTraEleCalcLoma<distype>(numdofpernode,numscal);
+      instances[disname] = new ScaTraEleCalcLoma<distype>(numdofpernode,numscal,disname);
   }
 
   else if(instances.find(disname) != instances.end())
@@ -83,9 +83,10 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::Done()
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::ScaTraEleCalcLoma(
     const int numdofpernode,
-    const int numscal
+    const int numscal,
+    const std::string& disname
     ) :
-    DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode,numscal),
+    DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode,numscal,disname),
     ephiam_(my::numscal_),
     densgradfac_(my::numscal_,0.0),
     thermpressnp_(0.0),

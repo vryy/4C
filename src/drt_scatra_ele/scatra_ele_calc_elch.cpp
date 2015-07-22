@@ -19,8 +19,8 @@ Maintainer: Andreas Ehrl
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ScaTraEleCalcElch<distype>::ScaTraEleCalcElch(const int numdofpernode,const int numscal)
-  : DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode,numscal),
+DRT::ELEMENTS::ScaTraEleCalcElch<distype>::ScaTraEleCalcElch(const int numdofpernode,const int numscal,const std::string& disname)
+  : DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode,numscal,disname),
     utils_(DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::Instance(numdofpernode,numscal)),
     epotnp_(my::numscal_)
 {
@@ -28,7 +28,7 @@ DRT::ELEMENTS::ScaTraEleCalcElch<distype>::ScaTraEleCalcElch(const int numdofper
   my::diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManagerElch(my::numscal_));
 
   // replace standard scatra parameter list by elch parameter list
-  my::scatrapara_ = DRT::ELEMENTS::ScaTraEleParameterElch::Instance();
+  my::scatrapara_ = DRT::ELEMENTS::ScaTraEleParameterElch::Instance(disname);
 
   // safety check
   if(not my::scatraparatimint_->IsIncremental())

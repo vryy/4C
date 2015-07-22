@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_ele_boundary_calc_std.cpp
+\file scatra_ele_boundary_calc_poro.cpp
 
 \brief evaluation of scatra boundary terms at integration points
 
@@ -30,23 +30,34 @@
  |  Singleton access method                               hemmler 07/14 |
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype> * DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::Instance(const int numdofpernode, const int numscal, bool create )
+DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype> * DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::Instance(
+    const int numdofpernode,
+    const int numscal,
+    const std::string& disname,
+    bool create
+    )
 {
-  static ScaTraEleBoundaryCalcPoro<distype> * instance;
-  if ( create )
+  static std::map<std::string,ScaTraEleBoundaryCalcPoro<distype>* >  instances;
+
+  if(create)
   {
-    if ( instance==NULL )
-    {
-      instance = new ScaTraEleBoundaryCalcPoro<distype>(numdofpernode, numscal);
-    }
+    if(instances.find(disname) == instances.end())
+      instances[disname] = new ScaTraEleBoundaryCalcPoro<distype>(numdofpernode,numscal,disname);
   }
-  else
+
+  else if(instances.find(disname) != instances.end())
   {
-    if ( instance!=NULL )
-      delete instance;
-    instance = NULL;
+    for( typename std::map<std::string,ScaTraEleBoundaryCalcPoro<distype>* >::iterator i=instances.begin(); i!=instances.end(); ++i )
+     {
+      delete i->second;
+      i->second = NULL;
+     }
+
+    instances.clear();
+    return NULL;
   }
-  return instance;
+
+  return instances[disname];
 }
 
 /*----------------------------------------------------------------------*
@@ -57,7 +68,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-    Instance( 0, 0, false );
+    Instance( 0, 0, "", false );
 }
 
 
@@ -65,8 +76,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::Done()
  |  Private constructor                                   hemmler 07/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::ScaTraEleBoundaryCalcPoro(const int numdofpernode, const int numscal)
-  : DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ScaTraEleBoundaryCalc(numdofpernode,numscal)
+DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::ScaTraEleBoundaryCalcPoro(const int numdofpernode, const int numscal,const std::string& disname)
+  : DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ScaTraEleBoundaryCalc(numdofpernode,numscal,disname)
 {
   return;
 }

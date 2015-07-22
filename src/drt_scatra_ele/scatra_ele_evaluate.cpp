@@ -53,35 +53,35 @@ void DRT::ELEMENTS::TransportType::PreEvaluate(DRT::Discretization&             
   {
   case SCATRA::set_general_scatra_parameter:
   {
-    DRT::ELEMENTS::ScaTraEleParameterStd::Instance()->SetElementGeneralParameters(p);
+    DRT::ELEMENTS::ScaTraEleParameterStd::Instance(dis.Name())->SetElementGeneralParameters(p);
 
     break;
   }
 
   case SCATRA::set_turbulence_scatra_parameter:
   {
-    DRT::ELEMENTS::ScaTraEleParameterStd::Instance()->SetElementTurbulenceParameters(p);
+    DRT::ELEMENTS::ScaTraEleParameterStd::Instance(dis.Name())->SetElementTurbulenceParameters(p);
 
     break;
   }
 
   case SCATRA::set_time_parameter:
   {
-    DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance()->SetElementTimeParameter(p);
+    DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(dis.Name())->SetElementTimeParameter(p);
 
     break;
   }
 
   case SCATRA::set_mean_Cai:
   {
-    DRT::ELEMENTS::ScaTraEleParameterStd::Instance()->SetCsgsPhi(p.get<double>("meanCai"));
+    DRT::ELEMENTS::ScaTraEleParameterStd::Instance(dis.Name())->SetCsgsPhi(p.get<double>("meanCai"));
 
     break;
   }
 
   case SCATRA::set_lsreinit_scatra_parameter:
   {
-    DRT::ELEMENTS::ScaTraEleParameterLsReinit* scatrapara = DRT::ELEMENTS::ScaTraEleParameterLsReinit::Instance();
+    DRT::ELEMENTS::ScaTraEleParameterLsReinit* scatrapara = DRT::ELEMENTS::ScaTraEleParameterLsReinit::Instance(dis.Name());
     // set general parameters first
     scatrapara->SetElementGeneralParameters(p);
     // set additional problem-dependent parameters
@@ -92,13 +92,13 @@ void DRT::ELEMENTS::TransportType::PreEvaluate(DRT::Discretization&             
 
   case SCATRA::set_elch_scatra_parameter:
   {
-    DRT::ELEMENTS::ScaTraEleParameterElch::Instance()->SetElementGeneralParameters(p);
+    DRT::ELEMENTS::ScaTraEleParameterElch::Instance(dis.Name())->SetElementGeneralParameters(p);
     break;
   }
 
   case SCATRA::set_diffcond_scatra_parameter:
   {
-    DRT::ELEMENTS::ScaTraEleParameterElchDiffCond::Instance()->SetElementGeneralParameters(p);
+    DRT::ELEMENTS::ScaTraEleParameterElchDiffCond::Instance(dis.Name())->SetElementGeneralParameters(p);
     break;
   }
 

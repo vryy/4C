@@ -30,7 +30,7 @@ DRT::ELEMENTS::ScaTraEleCalcLS<distype> * DRT::ELEMENTS::ScaTraEleCalcLS<distype
   if(create)
   {
     if(instances.find(disname) == instances.end())
-      instances[disname] = new ScaTraEleCalcLS<distype>(numdofpernode,numscal);
+      instances[disname] = new ScaTraEleCalcLS<distype>(numdofpernode,numscal,disname);
   }
 
   else if(instances.find(disname) != instances.end())
@@ -66,9 +66,10 @@ void DRT::ELEMENTS::ScaTraEleCalcLS<distype>::Done()
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleCalcLS<distype>::ScaTraEleCalcLS(
     const int numdofpernode,
-    const int numscal
+    const int numscal,
+    const std::string& disname
     ) :
-    DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode,numscal)
+    DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode,numscal,disname)
 {
   // safety check
   if(my::scatrapara_->RBSubGrVel())

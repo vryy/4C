@@ -34,7 +34,7 @@ namespace DRT
       virtual ~ScaTraEleParameterElch(){return;};
 
       //! singleton access method
-      static ScaTraEleParameterElch* Instance(bool create=true);
+      static ScaTraEleParameterElch* Instance(const std::string& disname, bool create=true);
 
       //! singleton destruction
       virtual void Done();
@@ -57,7 +57,7 @@ namespace DRT
     protected:
 
       //! protected constructor for singletons
-      ScaTraEleParameterElch();
+      ScaTraEleParameterElch(const std::string& disname);
 
       //! equation used for closing of the elch-system
       enum INPAR::ELCH::EquPot equpot_;

@@ -44,11 +44,11 @@ Maintainer: Andreas Ehrl
  * Constructor
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
-DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ScaTraEleCalc(const int numdofpernode, const int numscal)
+DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ScaTraEleCalc(const int numdofpernode, const int numscal, const std::string& disname)
   : numdofpernode_(numdofpernode),
     numscal_(numscal),
-    scatrapara_(DRT::ELEMENTS::ScaTraEleParameterStd::Instance()),            // standard parameter list
-    scatraparatimint_(DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance()),   // time integration parameter list
+    scatrapara_(DRT::ELEMENTS::ScaTraEleParameterStd::Instance(disname)),            // standard parameter list
+    scatraparatimint_(DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(disname)),   // time integration parameter list
     diffmanager_(Teuchos::rcp(new ScaTraEleDiffManager(numscal_))),           // diffusion manager for diffusivity / diffusivities (in case of systems) or thermal conductivity/specific heat (in case of loma)
     reamanager_(Teuchos::rcp(new ScaTraEleReaManager(numscal_))),             // reaction manager
     ephin_(numscal_),   // size of vector

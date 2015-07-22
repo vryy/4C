@@ -47,7 +47,7 @@ namespace DRT
       protected:
 
         //! protected constructor for singletons
-        ScaTraEleCalcStd(const int numdofpernode,const int numscal);
+        ScaTraEleCalcStd(const int numdofpernode,const int numscal,const std::string& disname);
     };
   }
 }

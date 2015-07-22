@@ -33,45 +33,46 @@ Maintainer: Andreas Ehrl
 DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::ProvideImpl(const DRT::Element* ele,
                                                                                           const enum INPAR::SCATRA::ImplType impltype,
                                                                                           const int numdofpernode,
-                                                                                          const int numscal)
+                                                                                          const int numscal,
+                                                                                          const std::string& disname)
 {
   switch(ele->Shape())
   {
   case DRT::Element::quad4:
   {
-    return DefineProblemType<DRT::Element::quad4>(impltype,numdofpernode,numscal);
+    return DefineProblemType<DRT::Element::quad4>(impltype,numdofpernode,numscal,disname);
   }
   case DRT::Element::quad8:
   {
-    return DefineProblemType<DRT::Element::quad8>(impltype,numdofpernode,numscal);
+    return DefineProblemType<DRT::Element::quad8>(impltype,numdofpernode,numscal,disname);
   }
   case DRT::Element::quad9:
   {
-    return DefineProblemType<DRT::Element::quad9>(impltype,numdofpernode,numscal);
+    return DefineProblemType<DRT::Element::quad9>(impltype,numdofpernode,numscal,disname);
   }
   case DRT::Element::tri3:
   {
-    return DefineProblemType<DRT::Element::tri3>(impltype,numdofpernode,numscal);
+    return DefineProblemType<DRT::Element::tri3>(impltype,numdofpernode,numscal,disname);
   }
   case DRT::Element::tri6:
   {
-    return DefineProblemType<DRT::Element::tri6>(impltype,numdofpernode,numscal);
+    return DefineProblemType<DRT::Element::tri6>(impltype,numdofpernode,numscal,disname);
   }
   case DRT::Element::line2:
   {
-    return DefineProblemType<DRT::Element::line2>(impltype,numdofpernode,numscal);
+    return DefineProblemType<DRT::Element::line2>(impltype,numdofpernode,numscal,disname);
   }
   case DRT::Element::line3:
   {
-    return DefineProblemType<DRT::Element::line3>(impltype,numdofpernode,numscal);
+    return DefineProblemType<DRT::Element::line3>(impltype,numdofpernode,numscal,disname);
   }
   case DRT::Element::nurbs3:    // 1D nurbs boundary element
   {
-    return DefineProblemType<DRT::Element::nurbs3>(impltype,numdofpernode,numscal);
+    return DefineProblemType<DRT::Element::nurbs3>(impltype,numdofpernode,numscal,disname);
   }
   case DRT::Element::nurbs9:    // 2D nurbs boundary element
   {
-    return DefineProblemType<DRT::Element::nurbs9>(impltype,numdofpernode,numscal);
+    return DefineProblemType<DRT::Element::nurbs9>(impltype,numdofpernode,numscal,disname);
   }
   default:
   {
@@ -91,7 +92,8 @@ template<DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::DefineProblemType(
     const enum INPAR::SCATRA::ImplType impltype,
     const int numdofpernode,
-    const int numscal
+    const int numscal,
+    const std::string& disname
     )
 {
   switch(impltype)
@@ -104,7 +106,7 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::De
   case INPAR::SCATRA::impltype_cardiac_monodomain:
   case INPAR::SCATRA::impltype_levelset:
   {
-    return DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype>::Instance(numdofpernode,numscal);
+    return DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype>::Instance(numdofpernode,numscal,disname);
     break;
   }
   case INPAR::SCATRA::impltype_thermo_elch_electrode:
@@ -121,12 +123,12 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::De
   }
   case INPAR::SCATRA::impltype_loma:
   {
-    return DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::Instance(numdofpernode,numscal);
+    return DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::Instance(numdofpernode,numscal,disname);
     break;
   }
   case INPAR::SCATRA::impltype_elch_electrode:
   {
-    return DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::Instance(numdofpernode,numscal);
+    return DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::Instance(numdofpernode,numscal,disname);
     break;
   }
   case INPAR::SCATRA::impltype_elch_electrode_thermo:
@@ -137,7 +139,7 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::De
   }
   case INPAR::SCATRA::impltype_elch_diffcond:
   {
-    return DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::Instance(numdofpernode,numscal);
+    return DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::Instance(numdofpernode,numscal,disname);
     break;
   }
   case INPAR::SCATRA::impltype_elch_diffcond_thermo:
@@ -148,13 +150,13 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::De
   }
   case INPAR::SCATRA::impltype_elch_NP:
   {
-    return DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype>::Instance(numdofpernode,numscal);
+    return DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype>::Instance(numdofpernode,numscal,disname);
     break;
   }
   case INPAR::SCATRA::impltype_poro:
   case INPAR::SCATRA::impltype_pororeac:
     {
-    return DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::Instance(numdofpernode,numscal);
+    return DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::Instance(numdofpernode,numscal,disname);
     break;
     }
   default:

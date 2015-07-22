@@ -134,9 +134,6 @@ public:
   //! initialization procedure before the first time step is done
   virtual void PrepareFirstTimeStep() = 0;
 
-  //! prepare evaluate if one has more than one scatra discretization
-  void PrepareEvaluateWithMultipleScatraFields () const;
-
   //! preparations for solve
   virtual void PrepareLinearSolve();
 

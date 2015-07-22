@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_ele_parameter_elch.cpp
+\file scatra_ele_parameter_elch_diffcond.cpp
 
 \brief element parameter class for electrochemistry problems governed by diffusion-conduction formulation
 
@@ -19,23 +19,29 @@ Maintainer: Rui Fang
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 02/15 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraEleParameterElchDiffCond* DRT::ELEMENTS::ScaTraEleParameterElchDiffCond::Instance(bool create)
+DRT::ELEMENTS::ScaTraEleParameterElchDiffCond* DRT::ELEMENTS::ScaTraEleParameterElchDiffCond::Instance(const std::string& disname, bool create)
 {
-  static ScaTraEleParameterElchDiffCond* instance;
+  static std::map<std::string,ScaTraEleParameterElchDiffCond* >  instances;
 
   if(create)
   {
-    if(instance == NULL)
-      instance = new ScaTraEleParameterElchDiffCond();
+    if(instances.find(disname) == instances.end())
+      instances[disname] = new ScaTraEleParameterElchDiffCond(disname);
   }
 
-  else if(instance != NULL)
+  else if(instances.find(disname) != instances.end())
   {
-    delete instance;
-    instance = NULL;
+    for( std::map<std::string,ScaTraEleParameterElchDiffCond* >::iterator i=instances.begin(); i!=instances.end(); ++i )
+     {
+      delete i->second;
+      i->second = NULL;
+     }
+
+    instances.clear();
+    return NULL;
   }
 
-  return instance;
+  return instances[disname];
 }
 
 
@@ -45,7 +51,7 @@ DRT::ELEMENTS::ScaTraEleParameterElchDiffCond* DRT::ELEMENTS::ScaTraEleParameter
 void DRT::ELEMENTS::ScaTraEleParameterElchDiffCond::Done()
 {
   // delete singleton
-  Instance(false);
+  Instance( "", false);
 
   return;
 }
@@ -54,8 +60,8 @@ void DRT::ELEMENTS::ScaTraEleParameterElchDiffCond::Done()
 /*----------------------------------------------------------------------*
  | private constructor for singletons                        fang 02/15 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraEleParameterElchDiffCond::ScaTraEleParameterElchDiffCond()
-  : DRT::ELEMENTS::ScaTraEleParameterElch::ScaTraEleParameterElch(),
+DRT::ELEMENTS::ScaTraEleParameterElchDiffCond::ScaTraEleParameterElchDiffCond(const std::string& disname)
+  : DRT::ELEMENTS::ScaTraEleParameterElch::ScaTraEleParameterElch(disname),
   cursolvar_(false),
   diffusioncoefbased_(true),
   newmanconsta_(2.),

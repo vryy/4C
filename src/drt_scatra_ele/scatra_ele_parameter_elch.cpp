@@ -20,23 +20,29 @@ Maintainer: Rui Fang
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 02/15 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraEleParameterElch* DRT::ELEMENTS::ScaTraEleParameterElch::Instance(bool create)
+DRT::ELEMENTS::ScaTraEleParameterElch* DRT::ELEMENTS::ScaTraEleParameterElch::Instance(const std::string& disname,bool create)
 {
-  static ScaTraEleParameterElch* instance;
+  static std::map<std::string,ScaTraEleParameterElch* >  instances;
 
   if(create)
   {
-    if(instance == NULL)
-      instance = new ScaTraEleParameterElch();
+    if(instances.find(disname) == instances.end())
+      instances[disname] = new ScaTraEleParameterElch(disname);
   }
 
-  else if(instance != NULL)
+  else if(instances.find(disname) != instances.end())
   {
-    delete instance;
-    instance = NULL;
+    for( std::map<std::string,ScaTraEleParameterElch* >::iterator i=instances.begin(); i!=instances.end(); ++i )
+     {
+      delete i->second;
+      i->second = NULL;
+     }
+
+    instances.clear();
+    return NULL;
   }
 
-  return instance;
+  return instances[disname];
 }
 
 
@@ -46,7 +52,7 @@ DRT::ELEMENTS::ScaTraEleParameterElch* DRT::ELEMENTS::ScaTraEleParameterElch::In
 void DRT::ELEMENTS::ScaTraEleParameterElch::Done()
 {
   // delete singleton
-  Instance(false);
+  Instance("",false);
 
   return;
 }
@@ -54,8 +60,8 @@ void DRT::ELEMENTS::ScaTraEleParameterElch::Done()
 /*----------------------------------------------------------------------*
  | protected constructor for singletons                      fang 02/15 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraEleParameterElch::ScaTraEleParameterElch()
-  : DRT::ELEMENTS::ScaTraEleParameter::ScaTraEleParameter(),
+DRT::ELEMENTS::ScaTraEleParameterElch::ScaTraEleParameterElch(const std::string& disname)
+  : DRT::ELEMENTS::ScaTraEleParameter::ScaTraEleParameter(disname),
   equpot_(INPAR::ELCH::equpot_undefined),
   faraday_(INPAR::ELCH::faraday_const),
   epsilon_(INPAR::ELCH::epsilon_const),

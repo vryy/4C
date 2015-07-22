@@ -53,7 +53,7 @@ DRT::ELEMENTS::ScaTraEleCalcAniso<distype,probdim> * DRT::ELEMENTS::ScaTraEleCal
   if(create)
   {
     if(instances.find(disname) == instances.end())
-      instances[disname] = new ScaTraEleCalcAniso<distype,probdim>(numdofpernode,numscal);
+      instances[disname] = new ScaTraEleCalcAniso<distype,probdim>(numdofpernode,numscal,disname);
   }
 
   else if(instances.find(disname) != instances.end())
@@ -86,8 +86,8 @@ void DRT::ELEMENTS::ScaTraEleCalcAniso<distype,probdim>::Done()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
-DRT::ELEMENTS::ScaTraEleCalcAniso<distype,probdim>::ScaTraEleCalcAniso(const int numdofpernode,const int numscal)
-  : DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ScaTraEleCalc(numdofpernode,numscal)
+DRT::ELEMENTS::ScaTraEleCalcAniso<distype,probdim>::ScaTraEleCalcAniso(const int numdofpernode,const int numscal,const std::string& disname)
+  : DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ScaTraEleCalc(numdofpernode,numscal,disname)
 {
   // get diffusion manager for anisotropic diffusivity / diffusivities (in case of systems)
   my::diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManagerAniso<my::nsd_>(my::numscal_));

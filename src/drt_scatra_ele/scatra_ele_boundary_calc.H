@@ -73,7 +73,7 @@ class ScaTraEleBoundaryCalc: public ScaTraBoundaryInterface
 public:
 
   //! Constructor
-  ScaTraEleBoundaryCalc(const int numdofpernode, const int numscal);
+  ScaTraEleBoundaryCalc(const int numdofpernode, const int numscal, const std::string& disname);
 
   //! number of element nodes (nomenclature: T. Hughes, The finite element method)
   static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;

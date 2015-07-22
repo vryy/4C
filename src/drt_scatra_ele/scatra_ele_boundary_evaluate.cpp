@@ -19,6 +19,8 @@ Maintainer: Andreas Ehrl
 #include "scatra_ele_parameter_elch.H"
 #include "scatra_ele.H"
 
+#include "../drt_lib/drt_discret.H"
+
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                             gjb 01/09 |
@@ -89,7 +91,7 @@ int DRT::ELEMENTS::TransportBoundary::Evaluate(
   // If this element has special features/ methods that do not fit in the
   // generalized implementation class, you have to do a switch here in order to
   // call element-specific routines
-  return DRT::ELEMENTS::ScaTraBoundaryFactory::ProvideImpl(this,ParentElement()->ImplType(),numdofpernode,numscal)->Evaluate(
+  return DRT::ELEMENTS::ScaTraBoundaryFactory::ProvideImpl(this,ParentElement()->ImplType(),numdofpernode,numscal,discretization.Name())->Evaluate(
       this,
       params,
       discretization,

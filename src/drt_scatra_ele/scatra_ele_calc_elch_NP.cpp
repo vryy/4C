@@ -33,7 +33,7 @@ DRT::ELEMENTS::ScaTraEleCalcElchNP<distype> * DRT::ELEMENTS::ScaTraEleCalcElchNP
   if(create)
   {
     if(instances.find(disname) == instances.end())
-      instances[disname] = new ScaTraEleCalcElchNP<distype>(numdofpernode,numscal);
+      instances[disname] = new ScaTraEleCalcElchNP<distype>(numdofpernode,numscal,disname);
   }
 
   else if(instances.find(disname) != instances.end())
@@ -66,8 +66,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::Done()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::ScaTraEleCalcElchNP(const int numdofpernode,const int numscal)
-  : DRT::ELEMENTS::ScaTraEleCalcElch<distype>::ScaTraEleCalcElch(numdofpernode,numscal),
+DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::ScaTraEleCalcElchNP(const int numdofpernode,const int numscal,const std::string& disname)
+  : DRT::ELEMENTS::ScaTraEleCalcElch<distype>::ScaTraEleCalcElch(numdofpernode,numscal,disname),
     migrationstab_(true)
 {
   // replace elch internal variable manager by internal variable manager for Nernst-Planck formulation

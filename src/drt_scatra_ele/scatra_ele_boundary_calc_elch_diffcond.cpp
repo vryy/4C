@@ -34,24 +34,31 @@ template<DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>* DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::Instance(
     const int numdofpernode,
     const int numscal,
+    const std::string& disname,
     bool create
     )
 {
-  static ScaTraEleBoundaryCalcElchDiffCond<distype>* instance;
+  static std::map<std::string,ScaTraEleBoundaryCalcElchDiffCond<distype>* >  instances;
 
   if(create)
   {
-    if(instance == NULL)
-      instance = new ScaTraEleBoundaryCalcElchDiffCond<distype>(numdofpernode,numscal);
+    if(instances.find(disname) == instances.end())
+      instances[disname] = new ScaTraEleBoundaryCalcElchDiffCond<distype>(numdofpernode,numscal,disname);
   }
 
-  else if(instance != NULL)
+  else if(instances.find(disname) != instances.end())
   {
-    delete instance;
-    instance = NULL;
+    for( typename std::map<std::string,ScaTraEleBoundaryCalcElchDiffCond<distype>* >::iterator i=instances.begin(); i!=instances.end(); ++i )
+     {
+      delete i->second;
+      i->second = NULL;
+     }
+
+    instances.clear();
+    return NULL;
   }
 
-  return instance;
+  return instances[disname];
 }
 
 /*----------------------------------------------------------------------*
@@ -61,7 +68,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::Done()
 {
   // delete singleton
-  Instance(0,0,false);
+  Instance(0,0,"",false);
 
   return;
 }
@@ -71,14 +78,14 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::Done()
  | private constructor for singletons                        fang 02/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::ScaTraEleBoundaryCalcElchDiffCond(const int numdofpernode,const int numscal)
+DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::ScaTraEleBoundaryCalcElchDiffCond(const int numdofpernode,const int numscal,const std::string& disname)
   : // constructor of base class
-    myelectrode::ScaTraEleBoundaryCalcElchElectrode(numdofpernode,numscal),
+    myelectrode::ScaTraEleBoundaryCalcElchElectrode(numdofpernode,numscal,disname),
     // initialization of diffusion manager
     dmedc_(Teuchos::rcp(new ScaTraEleDiffManagerElchDiffCond(my::numscal_)))
 {
   // replace standard electrochemistry parameter class by electrochemistry parameter class for diffusion-conduction formulation
-  my::scatraparams_ = DRT::ELEMENTS::ScaTraEleParameterElchDiffCond::Instance();
+  my::scatraparams_ = DRT::ELEMENTS::ScaTraEleParameterElchDiffCond::Instance(disname);
 
   return;
 }

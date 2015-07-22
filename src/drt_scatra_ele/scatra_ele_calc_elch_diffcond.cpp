@@ -35,7 +35,7 @@ DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype> * DRT::ELEMENTS::ScaTraEleCalc
   if(create)
   {
     if(instances.find(disname) == instances.end())
-      instances[disname] = new ScaTraEleCalcElchDiffCond<distype>(numdofpernode,numscal);
+      instances[disname] = new ScaTraEleCalcElchDiffCond<distype>(numdofpernode,numscal,disname);
   }
 
   else if(instances.find(disname) != instances.end())
@@ -70,8 +70,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::Done()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::ScaTraEleCalcElchDiffCond(const int numdofpernode,const int numscal) :
-  DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::ScaTraEleCalcElchElectrode(numdofpernode,numscal),
+DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::ScaTraEleCalcElchDiffCond(const int numdofpernode,const int numscal, const std::string& disname) :
+  DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::ScaTraEleCalcElchElectrode(numdofpernode,numscal,disname),
   diffcondmat_(INPAR::ELCH::diffcondmat_undefined),
   ecurnp_(true)
 {
@@ -79,7 +79,7 @@ DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::ScaTraEleCalcElchDiffCond(con
   my::diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManagerElchDiffCond(my::numscal_));
 
   // replace standard elch parameter list by elch parameter list for diffusion-conduction formulation
-  my::scatrapara_ = DRT::ELEMENTS::ScaTraEleParameterElchDiffCond::Instance();
+  my::scatrapara_ = DRT::ELEMENTS::ScaTraEleParameterElchDiffCond::Instance(disname);
 
   // replace internal variable manager for electrodes by internal variable manager for diffusion-conduction formulation
   my::scatravarmanager_ = Teuchos::rcp(new ScaTraEleInternalVariableManagerElchDiffCond<my::nsd_, my::nen_>(my::numscal_,ElchPara()));

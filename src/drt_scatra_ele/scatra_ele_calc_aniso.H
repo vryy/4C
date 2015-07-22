@@ -33,7 +33,7 @@ namespace DRT
       /// (private) protected constructor, since we are a Singleton.
       /// this constructor is called from a derived class
       /// -> therefore, it has to be protected instead of private
-      ScaTraEleCalcAniso(const int numdofpernode,const int numscal);
+      ScaTraEleCalcAniso(const int numdofpernode,const int numscal,const std::string& disname);
 
     private:
 

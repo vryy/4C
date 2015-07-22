@@ -155,7 +155,7 @@ protected:
    * \brief Standard Constructor, private since we are Singleton
    *///                                                  (private) nis Jan14
   /*------------------------------------------------------------------------*/
-  MeshfreeScaTraCellCalc(const int numdofpernode, const int numscal);
+  MeshfreeScaTraCellCalc(const int numdofpernode, const int numscal, const std::string& disname);
 
   /*========================================================================*/
   //! @name Auxiliary method - private

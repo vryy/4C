@@ -76,7 +76,7 @@ namespace ELEMENTS
     /// (private) protected constructor, since we are a Singleton.
     /// this constructor is called from a derived class
     /// -> therefore, it has to be protected instead of private
-    ScaTraEleCalc(const int numdofpernode,const int numscal);
+    ScaTraEleCalc(const int numdofpernode,const int numscal, const std::string& disname);
 
   public:
 

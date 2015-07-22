@@ -35,7 +35,7 @@ namespace DRT
       /// (private) protected constructor, since we are a Singleton.
       /// this constructor is called from a derived class
       /// -> therefore, it has to be protected instead of private
-      ScaTraEleCalcCardiacMonodomain(const int numdofpernode,const int numscal);
+      ScaTraEleCalcCardiacMonodomain(const int numdofpernode,const int numscal,const std::string& disname);
 
       typedef ScaTraEleCalc<distype,probdim> my;
       typedef ScaTraEleCalcAniso<distype,probdim> aniso;

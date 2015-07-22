@@ -898,27 +898,6 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
 } // ScaTraTimIntImpl::PrepareTimeStep
 
 
-/*---------------------------------------------------------------------------------------*
- | prepare evaluate if one has more than one scatra discretization  (public) thon 06/15  |
- *---------------------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::PrepareEvaluateWithMultipleScatraFields() const
-{
-  //TODO: We would be happy if we don't need this function. But therefore one would probably have to
-  // extend the singleton principle for the ele_calc_classes :-(
-
-  // We could have more than one scatra discretization. But if one calls an Evaluate() routine one does
-  // always end up in the same ele_calc class (they are accessed via the static Instance() function,
-  // i.e. they are singletons). So we always have to reset all the parameter who differ between the different
-  // discretizations before we call an Evaluate(). For now these are 'just' the stabilization
-  // parameters, hence we must be able to reset them.
-
-  //Set GeneralParameters (i.e. stabilization parameters and some more) as they are specified in the
-  //parameter list
-  SetElementGeneralParameters(false);
-
-}
-
-
 /*----------------------------------------------------------------------*
  | preparations for solve                                (public) mr.x  |
  *----------------------------------------------------------------------*/

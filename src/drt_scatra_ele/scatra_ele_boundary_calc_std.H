@@ -32,7 +32,11 @@ class ScaTraEleBoundaryCalcStd : public ScaTraEleBoundaryCalc<distype>
 public:
 
   /// Singleton access method
-  static ScaTraEleBoundaryCalcStd<distype> * Instance(const int numdofpernode, const int numscal, bool create=true );
+  static ScaTraEleBoundaryCalcStd<distype> * Instance(
+      const int numdofpernode,
+      const int numscal,
+      const std::string& disname,
+      bool create=true );
 
   /// Empty destructor
   virtual ~ScaTraEleBoundaryCalcStd(){return;};
@@ -42,7 +46,7 @@ public:
 
 private:
   /// private constructor since we are singleton
-  ScaTraEleBoundaryCalcStd(const int numdofpernode, const int numscal);
+  ScaTraEleBoundaryCalcStd(const int numdofpernode, const int numscal, const std::string& disname);
 }; // class ScaTraEleBoundaryCalcStd
 } //namsepace ELEMENTS
 } // namespace DRT

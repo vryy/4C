@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-  \file meshfree_scatra_impl.cpp
+  \file meshfree_scatra_cell_calc.cpp
 
   \brief Internal implementation of meshfree scalar transport cells
 
@@ -37,7 +37,7 @@
  |  ctor                                                 (public) nis Mar12 |
  *--------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::MeshfreeScaTraCellCalc<distype>::MeshfreeScaTraCellCalc(const int numdofpernode, const int numscal)
+DRT::ELEMENTS::MeshfreeScaTraCellCalc<distype>::MeshfreeScaTraCellCalc(const int numdofpernode, const int numscal, const std::string& disname)
 : numdofpernode_(numdofpernode),
   numscal_(numscal),
   nen_(),
@@ -68,8 +68,8 @@ DRT::ELEMENTS::MeshfreeScaTraCellCalc<distype>::MeshfreeScaTraCellCalc(const int
 {
 
 // get parameter lists
-  scatrapara_ = DRT::ELEMENTS::ScaTraEleParameterStd::Instance();
-  scatraparatimint_ = DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance();
+  scatrapara_ = DRT::ELEMENTS::ScaTraEleParameterStd::Instance(disname);
+  scatraparatimint_ = DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(disname);
 
   return;
 }

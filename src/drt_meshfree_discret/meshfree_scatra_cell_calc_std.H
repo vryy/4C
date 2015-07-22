@@ -27,7 +27,7 @@ template<DRT::Element::DiscretizationType distype>
 class MeshfreeScaTraCellCalcStd : public MeshfreeScaTraCellCalc<distype>
 {
   /// private constructor, since we are a Singleton.
-  MeshfreeScaTraCellCalcStd(const int numdofpernode,const int numscal);
+  MeshfreeScaTraCellCalcStd(const int numdofpernode,const int numscal,const std::string& disname);
 
   typedef MeshfreeScaTraCellCalc<distype> my;
 

@@ -19,23 +19,29 @@ Maintainer: Ursula Rasthofer
 //----------------------------------------------------------------------*/
 //    definition of the instance
 //----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraEleParameterLsReinit* DRT::ELEMENTS::ScaTraEleParameterLsReinit::Instance( bool create )
+DRT::ELEMENTS::ScaTraEleParameterLsReinit* DRT::ELEMENTS::ScaTraEleParameterLsReinit::Instance( const std::string& disname, bool create )
 {
-  static ScaTraEleParameterLsReinit* instance;
-  if ( create )
+  static std::map<std::string,ScaTraEleParameterLsReinit* >  instances;
+
+  if(create)
   {
-    if ( instance==NULL )
-    {
-      instance = new ScaTraEleParameterLsReinit();
-    }
+    if(instances.find(disname) == instances.end())
+      instances[disname] = new ScaTraEleParameterLsReinit(disname);
   }
-  else
+
+  else if(instances.find(disname) != instances.end())
   {
-    if ( instance!=NULL )
-      delete instance;
-    instance = NULL;
+    for( std::map<std::string,ScaTraEleParameterLsReinit* >::iterator i=instances.begin(); i!=instances.end(); ++i )
+     {
+      delete i->second;
+      i->second = NULL;
+     }
+
+    instances.clear();
+    return NULL;
   }
-  return instance;
+
+  return instances[disname];
 }
 
 //----------------------------------------------------------------------*/
@@ -45,14 +51,14 @@ void DRT::ELEMENTS::ScaTraEleParameterLsReinit::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-    Instance( false );
+    Instance( "", false );
 }
 
 //----------------------------------------------------------------------*/
 //    constructor
 //----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraEleParameterLsReinit::ScaTraEleParameterLsReinit()
-  : DRT::ELEMENTS::ScaTraEleParameter::ScaTraEleParameter(),
+DRT::ELEMENTS::ScaTraEleParameterLsReinit::ScaTraEleParameterLsReinit(const std::string& disname)
+  : DRT::ELEMENTS::ScaTraEleParameter::ScaTraEleParameter(disname),
     reinittype_(INPAR::SCATRA::reinitaction_none),
     signtype_(INPAR::SCATRA::signtype_nonsmoothed),
     charelelengthreinit_(INPAR::SCATRA::root_of_volume_reinit),

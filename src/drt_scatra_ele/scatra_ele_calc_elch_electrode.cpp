@@ -33,7 +33,7 @@ DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>* DRT::ELEMENTS::ScaTraEleCalc
   if(create)
   {
     if(instances.find(disname) == instances.end())
-      instances[disname] = new ScaTraEleCalcElchElectrode<distype>(numdofpernode,numscal);
+      instances[disname] = new ScaTraEleCalcElchElectrode<distype>(numdofpernode,numscal,disname);
   }
 
   else if(instances.find(disname) != instances.end())
@@ -69,8 +69,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::Done()
  | protected constructor for singletons                      fang 02/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::ScaTraEleCalcElchElectrode(const int numdofpernode,const int numscal) :
-  myelch::ScaTraEleCalcElch(numdofpernode,numscal)
+DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::ScaTraEleCalcElchElectrode(const int numdofpernode,const int numscal,const std::string& disname) :
+  myelch::ScaTraEleCalcElch(numdofpernode,numscal,disname)
 {
   // replace elch diffusion manager by diffusion manager for electrodes
   my::diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManagerElchElectrode(my::numscal_));

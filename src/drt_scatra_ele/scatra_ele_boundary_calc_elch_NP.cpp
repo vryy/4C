@@ -27,24 +27,31 @@ template<DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype>* DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype>::Instance(
     const int numdofpernode,
     const int numscal,
+    const std::string& disname,
     bool create
     )
 {
-  static ScaTraEleBoundaryCalcElchNP<distype>* instance;
+  static std::map<std::string,ScaTraEleBoundaryCalcElchNP<distype>* >  instances;
 
   if(create)
   {
-    if(instance == NULL)
-      instance = new ScaTraEleBoundaryCalcElchNP<distype>(numdofpernode,numscal);
+    if(instances.find(disname) == instances.end())
+      instances[disname] = new ScaTraEleBoundaryCalcElchNP<distype>(numdofpernode,numscal,disname);
   }
 
-  else if(instance != NULL)
+  else if(instances.find(disname) != instances.end())
   {
-    delete instance;
-    instance = NULL;
+    for( typename std::map<std::string,ScaTraEleBoundaryCalcElchNP<distype>* >::iterator i=instances.begin(); i!=instances.end(); ++i )
+     {
+      delete i->second;
+      i->second = NULL;
+     }
+
+    instances.clear();
+    return NULL;
   }
 
-  return instance;
+  return instances[disname];
 }
 
 /*----------------------------------------------------------------------*
@@ -54,7 +61,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype>::Done()
 {
   // delete singleton
-  Instance(0,0,false);
+  Instance(0,0,"",false);
 
   return;
 }
@@ -64,9 +71,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype>::Done()
  | private constructor for singletons                        fang 02/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype>::ScaTraEleBoundaryCalcElchNP(const int numdofpernode,const int numscal)
+DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype>::ScaTraEleBoundaryCalcElchNP(const int numdofpernode,const int numscal, const std::string& disname)
   : // constructor of base class
-    myelch::ScaTraEleBoundaryCalcElch(numdofpernode,numscal)
+    myelch::ScaTraEleBoundaryCalcElch(numdofpernode,numscal,disname)
 {
   return;
 }

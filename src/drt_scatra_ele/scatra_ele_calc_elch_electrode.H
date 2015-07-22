@@ -61,7 +61,7 @@ namespace DRT
       protected:
 
         //! protected constructor for singletons
-        ScaTraEleCalcElchElectrode(const int numdofpernode,const int numscal);
+        ScaTraEleCalcElchElectrode(const int numdofpernode,const int numscal,const std::string& disname);
 
         //! destructor
         virtual ~ScaTraEleCalcElchElectrode(){return;}

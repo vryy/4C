@@ -39,7 +39,7 @@ private:
 public:
 
   //! Singleton access method
-  static ScaTraEleParameterTimInt* Instance(bool create=true);
+  static ScaTraEleParameterTimInt* Instance(const std::string& disname, bool create=true);
 
   //! Singleton destruction method called from global problem
   void Done();

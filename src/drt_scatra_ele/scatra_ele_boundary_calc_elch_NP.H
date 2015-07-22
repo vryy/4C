@@ -33,6 +33,7 @@ namespace DRT
       static ScaTraEleBoundaryCalcElchNP<distype>* Instance(
           const int numdofpernode,
           const int numscal,
+          const std::string& disname,
           bool create=true
           );
 
@@ -45,7 +46,7 @@ namespace DRT
     private:
 
       //! private constructor for singletons
-      ScaTraEleBoundaryCalcElchNP(const int numdofpernode,const int numscal);
+      ScaTraEleBoundaryCalcElchNP(const int numdofpernode,const int numscal, const std::string& disname);
 
       //! evaluate Neumann boundary condition
       int EvaluateNeumann(

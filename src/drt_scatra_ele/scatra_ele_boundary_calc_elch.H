@@ -44,7 +44,7 @@ namespace DRT
     protected:
 
       //! protected constructor for singletons
-      ScaTraEleBoundaryCalcElch(const int numdofpernode,const int numscal);
+      ScaTraEleBoundaryCalcElch(const int numdofpernode,const int numscal, const std::string& disname);
 
       //! evaluate action
       int EvaluateAction(

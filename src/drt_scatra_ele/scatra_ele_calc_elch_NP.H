@@ -48,7 +48,7 @@ private:
   typedef ScaTraEleCalcElch<distype> myelch;
 
   /// private constructor, since we are a Singleton.
-  ScaTraEleCalcElchNP(const int numdofpernode,const int numscal);
+  ScaTraEleCalcElchNP(const int numdofpernode,const int numscal,const std::string& disname);
 
   /*========================================================================*/
   //! @name general framework

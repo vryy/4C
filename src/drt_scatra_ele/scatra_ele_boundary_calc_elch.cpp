@@ -24,15 +24,18 @@ Maintainer: Andreas Ehrl
  | protected constructor for singletons                      fang 01/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ScaTraEleBoundaryCalcElch(const int numdofpernode, const int numscal) :
+DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ScaTraEleBoundaryCalcElch(
+    const int numdofpernode,
+    const int numscal,
+    const std::string& disname) :
   // constructor of base class
-  my::ScaTraEleBoundaryCalc(numdofpernode,numscal),
+  my::ScaTraEleBoundaryCalc(numdofpernode,numscal,disname),
 
   // instance of utility class supporting element evaluation
   utils_(ScaTraEleUtilsElch<distype>::Instance(numdofpernode,numscal))
 {
   // replace parameter class for standard scalar transport by parameter class for electrochemistry problems
-  my::scatraparams_ = DRT::ELEMENTS::ScaTraEleParameterElch::Instance();
+  my::scatraparams_ = DRT::ELEMENTS::ScaTraEleParameterElch::Instance(disname);
 
   return;
 }

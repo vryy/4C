@@ -45,12 +45,12 @@ void DRT::ELEMENTS::MeshfreeTransportType::PreEvaluate(
 
   if (action == SCATRA::set_general_scatra_parameter)
   {
-    DRT::ELEMENTS::ScaTraEleParameterStd* scatrapara = DRT::ELEMENTS::ScaTraEleParameterStd::Instance();
+    DRT::ELEMENTS::ScaTraEleParameterStd* scatrapara = DRT::ELEMENTS::ScaTraEleParameterStd::Instance(dis.Name());
     scatrapara->SetElementGeneralParameters(p);
   }
   else if (action == SCATRA::set_time_parameter)
   {
-    DRT::ELEMENTS::ScaTraEleParameterTimInt* scatrapara = DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance();
+    DRT::ELEMENTS::ScaTraEleParameterTimInt* scatrapara = DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(dis.Name());
     scatrapara->SetElementTimeParameter(p);
   }
 

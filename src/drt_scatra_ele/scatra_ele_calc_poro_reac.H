@@ -30,7 +30,7 @@ class ScaTraEleCalcPoroReac : public ScaTraEleCalcPoro<distype>, public ScaTraEl
 {
 private:
   /// private constructor, since we are a Singleton.
-  ScaTraEleCalcPoroReac(const int numdofpernode,const int numscal);
+  ScaTraEleCalcPoroReac(const int numdofpernode,const int numscal,const std::string& disname);
 
   typedef ScaTraEleCalc<distype> my;
   typedef ScaTraEleCalcPoro<distype> poro;
