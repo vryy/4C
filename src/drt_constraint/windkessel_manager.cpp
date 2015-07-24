@@ -629,76 +629,76 @@ void UTILS::WindkesselManager::PrintPresFlux() const
       if (wk_std_->HaveWindkessel())
       {
         printf("Windkessel output id%2d:\n",currentID[i]);
-        printf("%2d p: %10.5e \n",currentID[i],(*wkdofmredundant)[i]);
-        printf("%2d V: %10.5e \n",currentID[i],(*vmredundant)[i]);
+        printf("%2d p: %10.10e \n",currentID[i],(*wkdofmredundant)[i]);
+        printf("%2d V: %10.10e \n",currentID[i],(*vmredundant)[i]);
         if(enhanced_output_)
         {
-          printf("%2d dp/dt: %10.5e \n",currentID[i],(*dwkdofmredundant)[i]);
-          printf("%2d q: %10.5e \n",currentID[i],(*Qmredundant)[i]);
-          printf("%2d dq/dt: %10.5e \n",currentID[i],(*dQmredundant)[i]);
-          printf("%2d d2q/dt2: %10.5e \n",currentID[i],(*ddQmredundant)[i]);
+          printf("%2d dp/dt: %10.10e \n",currentID[i],(*dwkdofmredundant)[i]);
+          printf("%2d q: %10.10e \n",currentID[i],(*Qmredundant)[i]);
+          printf("%2d dq/dt: %10.10e \n",currentID[i],(*dQmredundant)[i]);
+          printf("%2d d2q/dt2: %10.10e \n",currentID[i],(*ddQmredundant)[i]);
         }
       }
       if (wk_heartvalvearterial_->HaveWindkessel())
       {
         printf("Windkessel output id%2d:\n",currentID[i]);
-        printf("%2d p_v: %10.5e \n",currentID[i],(*wkdofmredundant)[2*i]);
-        printf("%2d p_ar: %10.5e \n",currentID[i],(*wkdofmredundant)[2*i+1]);
-        printf("%2d V_v: %10.5e \n",currentID[i],(*vmredundant)[2*i]);
+        printf("%2d p_v: %10.10e \n",currentID[i],(*wkdofmredundant)[2*i]);
+        printf("%2d p_ar: %10.10e \n",currentID[i],(*wkdofmredundant)[2*i+1]);
+        printf("%2d V_v: %10.10e \n",currentID[i],(*vmredundant)[2*i]);
         if(enhanced_output_)
         {
-          printf("%2d dp_v/dt: %10.5e \n",currentID[i],(*dwkdofmredundant)[2*i]);
-          printf("%2d dp_ar/dt: %10.5e \n",currentID[i],(*dwkdofmredundant)[2*i+1]);
-          printf("%2d q: %10.5e \n",currentID[i],(*Qmredundant)[2*i]);
-          printf("%2d dq/dt: %10.5e \n",currentID[i],(*dQmredundant)[2*i]);
-          printf("%2d d2q/dt2: %10.5e \n",currentID[i],(*ddQmredundant)[2*i]);
+          printf("%2d dp_v/dt: %10.10e \n",currentID[i],(*dwkdofmredundant)[2*i]);
+          printf("%2d dp_ar/dt: %10.10e \n",currentID[i],(*dwkdofmredundant)[2*i+1]);
+          printf("%2d q: %10.10e \n",currentID[i],(*Qmredundant)[2*i]);
+          printf("%2d dq/dt: %10.10e \n",currentID[i],(*dQmredundant)[2*i]);
+          printf("%2d d2q/dt2: %10.10e \n",currentID[i],(*ddQmredundant)[2*i]);
         }
       }
       if (wk_heartvalvearterial_proxdist_->HaveWindkessel())
       {
         printf("Windkessel output id%2d:\n",currentID[i]);
-        printf("%2d p_v: %10.5e \n",currentID[i],(*wkdofmredundant)[4*i]);
-        printf("%2d p_ar_prox: %10.5e \n",currentID[i],(*wkdofmredundant)[4*i+1]);
-        printf("%2d q_ar_prox: %10.5e \n",currentID[i],(*wkdofmredundant)[4*i+2]);
-        printf("%2d p_ar_dist: %10.5e \n",currentID[i],(*wkdofmredundant)[4*i+3]);
+        printf("%2d p_v: %10.10e \n",currentID[i],(*wkdofmredundant)[4*i]);
+        printf("%2d p_ar_prox: %10.10e \n",currentID[i],(*wkdofmredundant)[4*i+1]);
+        printf("%2d q_ar_prox: %10.10e \n",currentID[i],(*wkdofmredundant)[4*i+2]);
+        printf("%2d p_ar_dist: %10.10e \n",currentID[i],(*wkdofmredundant)[4*i+3]);
         printf("%2d V_v: %10.5e \n",currentID[i],(*vmredundant)[4*i]);
         if(enhanced_output_)
         {
-          printf("%2d dp_v/dt: %10.5e \n",currentID[i],(*dwkdofmredundant)[4*i]);
-          printf("%2d dp_ar_prox/dt: %10.5e \n",currentID[i],(*dwkdofmredundant)[4*i+1]);
-          printf("%2d dq_ar_prox/dt: %10.5e \n",currentID[i],(*dwkdofmredundant)[4*i+2]);
-          printf("%2d dp_ar_dist/dt: %10.5e \n",currentID[i],(*dwkdofmredundant)[4*i+3]);
+          printf("%2d dp_v/dt: %10.10e \n",currentID[i],(*dwkdofmredundant)[4*i]);
+          printf("%2d dp_ar_prox/dt: %10.10e \n",currentID[i],(*dwkdofmredundant)[4*i+1]);
+          printf("%2d dq_ar_prox/dt: %10.10e \n",currentID[i],(*dwkdofmredundant)[4*i+2]);
+          printf("%2d dp_ar_dist/dt: %10.10e \n",currentID[i],(*dwkdofmredundant)[4*i+3]);
         }
       }
       if (wk_heartvalvecardiovascular_full_->HaveWindkessel())
       {
         printf("Windkessel output id%2d:\n",currentID[i]);
-        printf("%2d p_at: %10.5e \n",currentID[i],(*wkdofmredundant)[8*i]);
-        printf("%2d q_vin: %10.5e \n",currentID[i],(*wkdofmredundant)[8*i+1]);
-        printf("%2d q_vout: %10.5e \n",currentID[i],(*wkdofmredundant)[8*i+2]);
-        printf("%2d p_v: %10.5e \n",currentID[i],(*wkdofmredundant)[8*i+3]);
-        printf("%2d p_ar: %10.5e \n",currentID[i],(*wkdofmredundant)[8*i+4]);
-        printf("%2d q_ar: %10.5e \n",currentID[i],(*wkdofmredundant)[8*i+5]);
-        printf("%2d p_ven: %10.5e \n",currentID[i],(*wkdofmredundant)[8*i+6]);
-        printf("%2d q_ven: %10.5e \n",currentID[i],(*wkdofmredundant)[8*i+7]);
-        printf("%2d V_at: %10.5e \n",currentID[i],(*compvolmredundant)[8*i+0]);
-        printf("%2d V_v: %10.5e \n",currentID[i],(*vmredundant)[8*i+2]);
-        printf("%2d V_ar: %10.5e \n",currentID[i],(*compvolmredundant)[8*i+1]);
-        printf("%2d V_ven: %10.5e \n",currentID[i],(*compvolmredundant)[8*i+2]);
+        printf("%2d p_at: %10.10e \n",currentID[i],(*wkdofmredundant)[8*i]);
+        printf("%2d q_vin: %10.10e \n",currentID[i],(*wkdofmredundant)[8*i+1]);
+        printf("%2d q_vout: %10.10e \n",currentID[i],(*wkdofmredundant)[8*i+2]);
+        printf("%2d p_v: %10.10e \n",currentID[i],(*wkdofmredundant)[8*i+3]);
+        printf("%2d p_ar: %10.10e \n",currentID[i],(*wkdofmredundant)[8*i+4]);
+        printf("%2d q_ar: %10.10e \n",currentID[i],(*wkdofmredundant)[8*i+5]);
+        printf("%2d p_ven: %10.10e \n",currentID[i],(*wkdofmredundant)[8*i+6]);
+        printf("%2d q_ven: %10.10e \n",currentID[i],(*wkdofmredundant)[8*i+7]);
+        printf("%2d V_at: %10.10e \n",currentID[i],(*compvolmredundant)[8*i+0]);
+        printf("%2d V_v: %10.10e \n",currentID[i],(*vmredundant)[8*i+2]);
+        printf("%2d V_ar: %10.10e \n",currentID[i],(*compvolmredundant)[8*i+1]);
+        printf("%2d V_ven: %10.10e \n",currentID[i],(*compvolmredundant)[8*i+2]);
         if(enhanced_output_)
         {
-          printf("%2d dp_at/dt: %10.5e \n",currentID[i],(*dwkdofmredundant)[8*i]);
-          printf("%2d dq_vin/dt: %10.5e \n",currentID[i],(*dwkdofmredundant)[8*i+1]);
-          printf("%2d dq_vout/dt: %10.5e \n",currentID[i],(*dwkdofmredundant)[8*i+2]);
-          printf("%2d dp_v/dt: %10.5e \n",currentID[i],(*dwkdofmredundant)[8*i+3]);
-          printf("%2d dp_ar/dt: %10.5e \n",currentID[i],(*dwkdofmredundant)[8*i+4]);
-          printf("%2d dq_ar/dt: %10.5e \n",currentID[i],(*dwkdofmredundant)[8*i+5]);
-          printf("%2d dp_ven/dt: %10.5e \n",currentID[i],(*dwkdofmredundant)[8*i+6]);
-          printf("%2d dq_ven/dt: %10.5e \n",currentID[i],(*dwkdofmredundant)[8*i+7]);
+          printf("%2d dp_at/dt: %10.10e \n",currentID[i],(*dwkdofmredundant)[8*i]);
+          printf("%2d dq_vin/dt: %10.10e \n",currentID[i],(*dwkdofmredundant)[8*i+1]);
+          printf("%2d dq_vout/dt: %10.10e \n",currentID[i],(*dwkdofmredundant)[8*i+2]);
+          printf("%2d dp_v/dt: %10.10e \n",currentID[i],(*dwkdofmredundant)[8*i+3]);
+          printf("%2d dp_ar/dt: %10.10e \n",currentID[i],(*dwkdofmredundant)[8*i+4]);
+          printf("%2d dq_ar/dt: %10.10e \n",currentID[i],(*dwkdofmredundant)[8*i+5]);
+          printf("%2d dp_ven/dt: %10.10e \n",currentID[i],(*dwkdofmredundant)[8*i+6]);
+          printf("%2d dq_ven/dt: %10.10e \n",currentID[i],(*dwkdofmredundant)[8*i+7]);
         }
       }
     }
-    printf("total time: %10.5e \n",totaltime_);
+    printf("total time: %10.10e \n",totaltime_);
   }
 
   return;
