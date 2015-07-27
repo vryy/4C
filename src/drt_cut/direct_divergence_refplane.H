@@ -68,6 +68,11 @@ private:
   bool isAllProjectedCornersInsideEle( std::vector<double>& RefPlaneEqn );
 
   /*!
+  \brief Scale the given equation of plane
+   */
+  void scaleEquationOfPlane( std::vector<double>& RefPlaneEqn );
+
+  /*!
   \brief Class used to sort maps in descending order
    */
   struct compareClass

@@ -119,6 +119,9 @@ bool GEO::CUT::DirectDivergenceGlobalRefplane::DiagonalBasedRef( std::vector<dou
   {
     std::vector<Point*> ptl = *itd;
     std::vector<double> RefPlaneTemp = KERNEL::EqnPlaneOfPolygon( ptl );
+
+    scaleEquationOfPlane( RefPlaneTemp );
+
     if( fabs(RefPlaneTemp[0]) < REF_PLANE_DIRDIV )
       continue;
 
@@ -167,6 +170,7 @@ bool GEO::CUT::DirectDivergenceGlobalRefplane::SideBasedRef( std::vector<double>
       ptside.push_back( (*itn)->point() );
 
     std::vector<double> RefPlaneTemp = KERNEL::EqnPlaneOfPolygon( ptside );
+    scaleEquationOfPlane( RefPlaneTemp );
     if( fabs(RefPlaneTemp[0]) < REF_PLANE_DIRDIV )
       continue;
 
@@ -181,7 +185,7 @@ bool GEO::CUT::DirectDivergenceGlobalRefplane::SideBasedRef( std::vector<double>
   for( std::multimap<double,std::pair<std::vector<double>,std::vector<Point*> > >::iterator it = side_data.begin();
                                                                                            it != side_data.end(); it++ )
   {
-    std::vector<double> RefPlaneEqn = it->second.first;
+    RefPlaneEqn = it->second.first;
     bool isWithin = isAllProjectedCornersInsideEle( RefPlaneEqn );
     if( isWithin )
     {
@@ -225,4 +229,12 @@ bool GEO::CUT::DirectDivergenceGlobalRefplane::isAllProjectedCornersInsideEle( s
   return true;
 }
 
-
+/*----------------------------------------------------------------------------------------------------------*
+ * Scale the equation of plane to enable comparison of normals                                  sudhakar 07/15
+ *----------------------------------------------------------------------------------------------------------*/
+void GEO::CUT::DirectDivergenceGlobalRefplane::scaleEquationOfPlane( std::vector<double>& RefPlaneEqn )
+{
+  double scale = sqrt(pow( RefPlaneEqn[0], 2.0 ) + pow( RefPlaneEqn[1], 2.0 ) + pow( RefPlaneEqn[2], 2.0 ));
+  for( unsigned i=0; i<4; i++ )
+    RefPlaneEqn[i] /= scale;
+}
