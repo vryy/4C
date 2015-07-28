@@ -869,7 +869,7 @@ Teuchos::RCP<std::vector<double> > FLD::XFluidFluid::EvaluateErrorComparedToAnal
   if (myrank_ == 0)
   {
     {
-      cout.precision(8);
+      std::cout.precision(8);
       IO::cout << IO::endl << "---- error norm for analytical solution Nr. "
            <<  DRT::INPUT::get<INPAR::FLUID::CalcError>(*params_,"calculate error")
            <<  " ----------" << IO::endl;

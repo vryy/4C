@@ -206,7 +206,7 @@ Teuchos::RCP<LINALG::SparseOperator> FLD::Meshtying::Setup(std::vector<int> coup
     // fixing length of nullspace for block matrix (solver/preconditioner ML)
     if(msht_ ==INPAR::FLUID::condensed_bmat_merged)
     {
-      string inv="BMatMerged";
+      std::string inv="BMatMerged";
       const Epetra_Map& oldmap = *(dofrowmap_);
       const Epetra_Map& newmap = *(mergedmap_);
       solver_.FixMLNullspace(&inv[0],oldmap, newmap, solver_.Params());
@@ -1604,4 +1604,3 @@ void FLD::FluidImplicitTimeInt::PrintAbsoluteL2Norm(Teuchos::RCP<Epetra_Vector>&
   return;
 }
   */
-

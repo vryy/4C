@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file fluidwomersleycondition.cpp
+\file fluid_volumetric_surfaceFlow_condition.cpp
 \brief evaluation of womersley flow bc
 
 <pre>
@@ -752,22 +752,22 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvalLocalNormalizedRadii(
         if (!isBorderNode)
         {
 
-	  double cos_rl = v_right.Dot(v_left);
-	  double cos_r  = v_right.Dot(c_cnd );
+          double cos_rl = v_right.Dot(v_left);
+          double cos_r  = v_right.Dot(c_cnd );
 
-	  double angle_rl = 0.0;
+          double angle_rl = 0.0;
           double angle_r  = 0.0;
-	  double border_raduis = 0.0;
+          double border_raduis = 0.0;
 
-	  if (cos_r>=1.0 || cos_r<=-1.0)
+          if (cos_r>=1.0 || cos_r<=-1.0)
           {
             border_raduis = R_r;
           }
-	  else if (cos_rl>=1.0 || cos_rl<=-1.0)
+          else if (cos_rl>=1.0 || cos_rl<=-1.0)
           {
             border_raduis = R_l;
           }
-	  else
+          else
           {
             angle_rl = acos(v_right.Dot(v_left));
             angle_r  = acos(v_right.Dot(c_cnd ));
@@ -1527,10 +1527,10 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::CorrectFlowRate
   ExportAndSetBoundaryValues(correction_velnp,drt_velocities_,"velaf");
 
   double corrective_flowrate = this->FlowRateCalculation(eleparams,time,ds_condname,action,condid_);
-  cout<<"+------- corrective_flowrate -------+"<<endl;
-  cout<<"|      Q_corr: "<<corrective_flowrate <<endl;
-  cout<<"+-----------------------------------+"<<endl;
-//  cout<<*correction_velnp<<endl;
+  std::cout<<"+------- corrective_flowrate -------+"<<std::endl;
+  std::cout<<"|      Q_corr: "<<corrective_flowrate <<std::endl;
+  std::cout<<"+-----------------------------------+"<<std::endl;
+//  std::cout<<*correction_velnp<<endl;
   //  discret_->ClearState();
 
   if (action == FLD::calc_flowrate)
@@ -2247,7 +2247,7 @@ void FLD::UTILS::TotalTractionCorrector::EvaluateVelocities(Teuchos::RCP<Epetra_
 #endif
 
       flowrate =    mapiter->second->FluidVolumetricSurfaceFlowBc::FlowRateCalculation(eleparams, time,"TotalTractionCorrectionCond",FLD::calc_flowrate,mapiter->first);
-      cout<<"Traction Corrector_1: Q="<<flowrate<<endl;
+      std::cout<<"Traction Corrector_1: Q="<<flowrate<<std::endl;
     }
 
     mapiter->second->FluidVolumetricSurfaceFlowBc::EvaluateVelocities(flowrate,"TotalTractionCorrectionCond",time);

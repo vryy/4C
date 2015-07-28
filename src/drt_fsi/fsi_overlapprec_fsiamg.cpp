@@ -496,7 +496,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
       Teuchos::ParameterList pushlist(sparams_.sublist("smoother: ifpack list"));
       char levelstr[11];
       sprintf(levelstr,"(level %d)",i);
-      Teuchos::ParameterList& subp = sparams_.sublist("smoother: list "+(string)levelstr);
+      Teuchos::ParameterList& subp = sparams_.sublist("smoother: list "+std::string(levelstr));
       std::string type = "";
       SelectMLAPISmoother(type,i,subp,p,pushlist);
       if (type=="ILU")
@@ -543,7 +543,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
       Teuchos::ParameterList pushlist(fparams_.sublist("smoother: ifpack list"));
       char levelstr[11];
       sprintf(levelstr,"(level %d)",i);
-      Teuchos::ParameterList& subp = fparams_.sublist("smoother: list "+(string)levelstr);
+      Teuchos::ParameterList& subp = fparams_.sublist("smoother: list "+std::string(levelstr));
       std::string type = "";
       SelectMLAPISmoother(type,i,subp,p,pushlist);
       if (blocksmoother_[i] == "Schur") // Schur Complement block smoother
@@ -614,7 +614,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
       Teuchos::ParameterList pushlist(aparams_.sublist("smoother: ifpack list"));
       char levelstr[11];
       sprintf(levelstr,"(level %d)",i);
-      Teuchos::ParameterList& subp = aparams_.sublist("smoother: list "+(string)levelstr);
+      Teuchos::ParameterList& subp = aparams_.sublist("smoother: list "+std::string(levelstr));
       std::string type = "";
       SelectMLAPISmoother(type,i,subp,p,pushlist);
       if (type=="ILU")
@@ -1491,4 +1491,3 @@ const char* FSI::OverlappingBlockMatrixFSIAMG::Label() const
   }
   return "Unknown strategy in FSI::OverlappingBlockMatrixFSIAMG";
 }
-

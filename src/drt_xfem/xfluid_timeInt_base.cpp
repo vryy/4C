@@ -1,5 +1,5 @@
 /*!------------------------------------------------------------------------------------------------*
-\file timeInt.cpp
+\file xfluid_timeInt_base.cpp
 
 \brief provides the basic class for XFEM-time-integration, e.g. for Semi-Lagrangean methods
 
@@ -646,6 +646,16 @@ void XFEM::XFLUID_TIMEINT_BASE::evalShapeAndDeriv(
 
   return;
 }; // end template evalShapeAndDeriv
+
+
+
+// explicit instantiations of this function...
+template void XFEM::XFLUID_TIMEINT_BASE::evalShapeAndDeriv<8,DRT::Element::hex8>(DRT::Element*, LINALG::Matrix<3,1>&,
+    LINALG::Matrix<3,3>&, LINALG::Matrix<8,1>&, LINALG::Matrix<3,8>&, bool) const;
+template void XFEM::XFLUID_TIMEINT_BASE::evalShapeAndDeriv<20,DRT::Element::hex20>(DRT::Element*, LINALG::Matrix<3,1>&,
+    LINALG::Matrix<3,3>&, LINALG::Matrix<20,1>&, LINALG::Matrix<3,20>&, bool) const;
+template void XFEM::XFLUID_TIMEINT_BASE::evalShapeAndDeriv<4,DRT::Element::tet4>(DRT::Element*, LINALG::Matrix<3,1>&,
+    LINALG::Matrix<3,3>&, LINALG::Matrix<4,1>&, LINALG::Matrix<3,4>&, bool) const;
 
 
 
@@ -3473,6 +3483,3 @@ void XFEM::XFLUID_STD::exportFinalData()
     discret_->Comm().Barrier();
   } // end loop over processors
 } // end exportfinalData
-
-
-

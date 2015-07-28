@@ -302,7 +302,7 @@ public:
   \brief Print solver configuration (ostream << also supported)
 
   */
-  virtual void Print(ostream& os) const;
+  virtual void Print(std::ostream& os) const;
 
   /*!
   \brief Get communicator
@@ -395,6 +395,6 @@ double Condest(
 
 
 // << operator
-ostream& operator << (ostream& os, const LINALG::Solver& solver);
+std::ostream& operator << (std::ostream& os, const LINALG::Solver& solver);
 
 #endif  // #ifndef LINALG_SOLVER_H

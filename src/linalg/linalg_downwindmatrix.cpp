@@ -263,10 +263,10 @@ void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
 
 
   if (!A.Comm().MyPID() && outlevel_)
-    cout << "                Downwinding Setup time "
-         << time.ElapsedTime() << " s\n"
-         << "                nv " << nv_
-         << " np " << np_ << " bs " << bs_ << " tau " << tau_ << endl;
+    std::cout << "                Downwinding Setup time "
+              << time.ElapsedTime() << " s\n"
+              << "                nv " << nv_
+              << " np " << np_ << " bs " << bs_ << " tau " << tau_ << std::endl;
 
 #if 0 // for debugging and viz of matrix data
   // reindex the graph to see how it looks like then
@@ -320,11 +320,11 @@ void LINALG::DownwindMatrix::DownwindBeyWittum(const Epetra_CrsMatrix& nnodegrap
   {
     nnodegraph.Comm().Barrier();
     if (!myrank)
-    cout << "                Downwinding:" << endl;
+      std::cout << "                Downwinding:" << std::endl;
     nnodegraph.Comm().Barrier();
-    cout << "                Proc " << myrank
-         << " lastindex " << index.MyLength()
-         << " lastdownwind " << nf << endl;
+    std::cout << "                Proc " << myrank
+              << " lastindex " << index.MyLength()
+              << " lastdownwind " << nf << std::endl;
   }
 
   // number everything that's left over in old order
@@ -367,12 +367,12 @@ void LINALG::DownwindMatrix::DownwindHackbusch(const Epetra_CrsMatrix& nnodegrap
   {
     nnodegraph.Comm().Barrier();
     if (!myrank)
-    cout << "                Downwinding:" << endl;
+      std::cout << "                Downwinding:" << std::endl;
     nnodegraph.Comm().Barrier();
-    cout << "                Proc " << myrank
-         << " lastindex " << index.MyLength()
-         << " lastdownwind " << nf-1
-         << " lastupwind " << nl+1 << endl;
+    std::cout << "                Proc " << myrank
+              << " lastindex " << index.MyLength()
+              << " lastdownwind " << nf-1
+              << " lastupwind " << nl+1 << std::endl;
   }
   // number everything that's left over in old order
   for (int i=0; i<nnodegraph.NumMyRows(); ++i)
@@ -391,7 +391,7 @@ void LINALG::DownwindMatrix::DownwindHackbusch(const Epetra_CrsMatrix& nnodegrap
 void LINALG::DownwindMatrix::SetF(const int i, int& nf, Epetra_IntVector& index,
                                   const Epetra_CrsMatrix& graph, int rec)
 {
-  //cout << "SetF::Recursion " << rec << "\n"; fflush(stdout);
+  //std::cout << "SetF::Recursion " << rec << "\n"; fflush(stdout);
   const Epetra_Map& rowmap = graph.RowMap();
   const Epetra_Map& colmap = graph.ColMap();
   const int gi = rowmap.GID(i);
@@ -413,7 +413,7 @@ void LINALG::DownwindMatrix::SetF(const int i, int& nf, Epetra_IntVector& index,
   }
   if (allhaveindex)
   {
-    //cout << "F: Setting new index " << nf << " to old index " << i << endl; cout.flush();
+    //std::cout << "F: Setting new index " << nf << " to old index " << i << std::endl; std::cout.flush();
     index[i] = nf;
     ++nf;
     for (int k=0; k<graph.NumMyRows(); ++k)
@@ -433,7 +433,7 @@ void LINALG::DownwindMatrix::SetF(const int i, int& nf, Epetra_IntVector& index,
 void LINALG::DownwindMatrix::SetL(const int i, int& nl, Epetra_IntVector& index,
                                   const Epetra_CrsMatrix& graph,int rec)
 {
-  //cout << "SetL::Recursion " << rec << "\n"; fflush(stdout);
+  //std::cout << "SetL::Recursion " << rec << "\n"; fflush(stdout);
   const Epetra_Map& rowmap = graph.RowMap();
   const Epetra_Map& colmap = graph.ColMap();
   int numentries;
@@ -454,7 +454,7 @@ void LINALG::DownwindMatrix::SetL(const int i, int& nl, Epetra_IntVector& index,
   }
   if (allhaveindex)
   {
-    //cout << "L: Setting new index " << nl << " to old index " << i << endl; cout.flush();
+    //std::cout << "L: Setting new index " << nl << " to old index " << i << std::endl; std::cout.flush();
     index[i] = nl;
     --nl;
     int numentries;
@@ -475,8 +475,3 @@ void LINALG::DownwindMatrix::SetL(const int i, int& nl, Epetra_IntVector& index,
 
   return;
 }
-
-
-
-
-

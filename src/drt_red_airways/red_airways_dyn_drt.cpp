@@ -116,13 +116,13 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
   //Maximum number of iterations
   airwaystimeparams.set                  ("maximum iteration steps" ,rawdyn.get<int>("MAXITERATIONS"));
   //SolveScatra
-  if (rawdyn.get<string>("SOLVESCATRA")=="yes")
+  if (rawdyn.get<std::string>("SOLVESCATRA")=="yes")
     airwaystimeparams.set                  ("SolveScatra" ,true);
   else
     airwaystimeparams.set                  ("SolveScatra" ,false);
 
   //Adjust acini volume with pre-stress condition
-  if (rawdyn.get<string>("CALCV0PRESTRESS")=="yes")
+  if (rawdyn.get<std::string>("CALCV0PRESTRESS")=="yes")
   {
     airwaystimeparams.set                  ("CalcV0PreStress" ,true);
     airwaystimeparams.set                  ("transpulmpress"          ,rawdyn.get<double>("TRANSPULMPRESS"));
@@ -211,4 +211,3 @@ void redairway_tissue_dyn()
   DRT::Problem::Instance()->TestAll(actdis->Comm());
 
 }
-

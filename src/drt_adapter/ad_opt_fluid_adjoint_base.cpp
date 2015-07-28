@@ -190,7 +190,7 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
 
   // ---------------------------------------------- nonlinear iteration
   // type of predictor
-  fluidadjointtimeparams->set<string>          ("predictor"                 ,fdyn.get<std::string>("PREDICTOR"));
+  fluidadjointtimeparams->set<std::string>     ("predictor"                 ,fdyn.get<std::string>("PREDICTOR"));
   // set linearisation scheme
   fluidadjointtimeparams->set<int>("Linearisation", DRT::INPUT::IntegralValue<INPAR::FLUID::LinearisationAction>(fdyn,"NONLINITER"));
   // maximum number of nonlinear iteration steps
@@ -198,7 +198,7 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   // stop nonlinear iteration when both incr-norms are below this bound
   fluidadjointtimeparams->set<double>          ("tolerance for nonlin iter" ,fdyn.get<double>("CONVTOL"));
   // set convergence check
-  fluidadjointtimeparams->set<string>          ("CONVCHECK"  ,fdyn.get<std::string>("CONVCHECK"));
+  fluidadjointtimeparams->set<std::string>     ("CONVCHECK"  ,fdyn.get<std::string>("CONVCHECK"));
   // set adaptive linear solver tolerance
 
   // ---------------------------------------------- objective variables
@@ -235,7 +235,7 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   fluidadjointtimeparams->set<int>("opti testcase",DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiCase>(prbdyn.sublist("TOPOLOGY OPTIMIZER"),"TESTCASE"));
 
   // -------------------------- potential nonlinear boundary conditions
-  fluidadjointtimeparams->set<string> ("Nonlinear boundary conditions",fdyn.get<std::string>("NONLINEARBC"));
+  fluidadjointtimeparams->set<std::string> ("Nonlinear boundary conditions",fdyn.get<std::string>("NONLINEARBC"));
 
   // -----------------------sublist containing stabilization parameters
   fluidadjointtimeparams->sublist("RESIDUAL-BASED STABILIZATION")=fdyn.sublist("RESIDUAL-BASED STABILIZATION");
@@ -313,4 +313,3 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
 
   return;
 }
-

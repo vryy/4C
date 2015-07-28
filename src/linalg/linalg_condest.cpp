@@ -97,9 +97,9 @@ double LINALG::Condest(
     if (MaxIters > iterlimit and Matrix.Comm().MyPID() == 0)
     {
 //      MaxIters_mod = iterlimit;
-      cout << endl << "Krylov space size: " << MaxIters_mod << endl;
-      cout << "Warning! Large MaxIters means a large Krylov subspace for GMRES -> you might run out of memory." << endl;
-      cout << "Continuing with MaxIters = " << MaxIters_mod << endl;
+      std::cout << std::endl << "Krylov space size: " << MaxIters_mod << std::endl;
+      std::cout << "Warning! Large MaxIters means a large Krylov subspace for GMRES -> you might run out of memory." << std::endl;
+      std::cout << "Continuing with MaxIters = " << MaxIters_mod << std::endl;
     }
     Solver.SetAztecOption(AZ_kspace,MaxIters_mod); // Krylov space is set to iteration number !!!
     Solver.SetAztecOption(AZ_precond,AZ_dom_decomp);
@@ -114,4 +114,3 @@ double LINALG::Condest(
   return(ConditionNumberEstimate);
 
 }
-

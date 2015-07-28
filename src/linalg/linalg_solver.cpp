@@ -121,7 +121,7 @@ void LINALG::Solver::Reset()
 /*----------------------------------------------------------------------*
  |  << operator                                              mwgee 02/07|
  *----------------------------------------------------------------------*/
-ostream& operator << (ostream& os, const LINALG::Solver& solver)
+std::ostream& operator << (std::ostream& os, const LINALG::Solver& solver)
 {
   solver.Print(os);
   return os;
@@ -130,7 +130,7 @@ ostream& operator << (ostream& os, const LINALG::Solver& solver)
 /*----------------------------------------------------------------------*
  |  print solver (public)                                    mwgee 02/07|
  *----------------------------------------------------------------------*/
-void LINALG::Solver::Print(ostream& os) const
+void LINALG::Solver::Print(std::ostream& os) const
 {
   if (Comm().MyPID()==0)
   {
@@ -159,7 +159,7 @@ void LINALG::Solver::AdaptTolerance(const double desirednlnres,
   {
     if (!azlist.isParameter("AZ_tol"))
     {
-      cout << azlist;
+      std::cout << azlist;
       dserror("No Aztec tolerance in ParameterList");
     }
     azlist.set<double>("AZ_tol save",azlist.get<double>("AZ_tol",1.e-8));
@@ -498,7 +498,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateAztecToStratimikos(const T
   case INPAR::SOLVER::azsolv_TFQMR:    aztec.set("Aztec Solver","TFQMR");    break;
   default:
   {
-    cout << "flag " << DRT::INPUT::IntegralValue<INPAR::SOLVER::AzSolverType>(inparams,"AZSOLVE") << endl;
+    std::cout << "flag " << DRT::INPUT::IntegralValue<INPAR::SOLVER::AzSolverType>(inparams,"AZSOLVE") << std::endl;
     dserror("Unknown solver for Stratimikos_Aztec");            break;
   }
   }
@@ -559,7 +559,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBelosToStratimikos(const T
   break;
   default:
   {
-    cout << "flag " << DRT::INPUT::IntegralValue<INPAR::SOLVER::AzSolverType>(inparams,"AZSOLVE") << endl;
+    std::cout << "flag " << DRT::INPUT::IntegralValue<INPAR::SOLVER::AzSolverType>(inparams,"AZSOLVE") << std::endl;
     dserror("Unknown solver for Stratimikos_Belos");            break;
   }
   }
@@ -843,7 +843,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
   {
     char levelstr[11];
     sprintf(levelstr,"(level %d)",i);
-    Teuchos::ParameterList& smolevelsublist = mllist.sublist("smoother: list "+(string)levelstr);
+    Teuchos::ParameterList& smolevelsublist = mllist.sublist("smoother: list "+std::string(levelstr));
     int type = 0;
     double damp = 0.0;
     if (i==0)
@@ -884,7 +884,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
       }
       else
       {
-        cout << "WARNING: cannot set parameters for Downwinding Gauss Seidel" << endl;
+        std::cout << "WARNING: cannot set parameters for Downwinding Gauss Seidel" << std::endl;
       }
       {
         Teuchos::ParameterList& ifpacklist = mllist.sublist("smoother: ifpack list");
@@ -1001,7 +1001,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
     }
     else
     {
-      cout << "WARNING: cannot set parameters for Downwinding Gauss Seidel" << endl;
+      std::cout << "WARNING: cannot set parameters for Downwinding Gauss Seidel" << std::endl;
     }
     {
       Teuchos::ParameterList& ifpacklist = mllist.sublist("smoother: ifpack list");
@@ -1184,7 +1184,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(const Teuchos:
                                        beloslist.set("Flexible Gmres",true);    break;
   default:
   {
-    cout << "flag " << DRT::INPUT::IntegralValue<INPAR::SOLVER::AzSolverType>(inparams,"AZSOLVE") << endl;
+    std::cout << "flag " << DRT::INPUT::IntegralValue<INPAR::SOLVER::AzSolverType>(inparams,"AZSOLVE") << std::endl;
     dserror("Unknown solver for Belos");            break;
   }
   }
@@ -1219,7 +1219,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(const Teuchos:
     beloslist.set("Preconditioner Type","point relaxation");
     beloslist.set<bool>("downwinding",true);
     beloslist.set<double>("downwinding tau",inparams.get<double>("DWINDTAU"));
-    cout << "warning: downwinding not supported?" << endl;
+    std::cout << "warning: downwinding not supported?" << std::endl;
     break;
   case INPAR::SOLVER::azprec_LU:
     // using ifpack
@@ -1454,7 +1454,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
     case INPAR::SOLVER::azsolv_TFQMR:    azlist.set("AZ_solver",AZ_tfqmr);    break;
     default:
     {
-      cout << "flag " << DRT::INPUT::IntegralValue<INPAR::SOLVER::AzSolverType>(inparams,"AZSOLVE") << endl;
+      std::cout << "flag " << DRT::INPUT::IntegralValue<INPAR::SOLVER::AzSolverType>(inparams,"AZSOLVE") << std::endl;
       dserror("Unknown solver for AztecOO");            break;
     }
     }
@@ -1704,4 +1704,3 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
   //================================================================== deliver
   return outparams;
 }
-

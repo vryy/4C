@@ -378,12 +378,12 @@ void FLD::CombustFluidImplicitTimeInt::Init()
     if (myrank_ == 0)
     {
       // Output
-      cout << "Fine-scale subgrid-viscosity approach based on AVM3: ";
-      cout << &endl << &endl;
-      cout << fssgv_;
-      cout << " with Smagorinsky constant Cs= ";
-      cout << Cs_ ;
-      cout << &endl << &endl << &endl;
+      std::cout << "Fine-scale subgrid-viscosity approach based on AVM3: ";
+      std::cout << std::endl << std::endl;
+      std::cout << fssgv_;
+      std::cout << " with Smagorinsky constant Cs= ";
+      std::cout << Cs_ ;
+      std::cout << std::endl << std::endl << std::endl;
     }
   }
 
@@ -6212,4 +6212,3 @@ Teuchos::RCP<const Epetra_Vector> FLD::CombustFluidImplicitTimeInt::ReadPhinp(in
     const Teuchos::RCP<Epetra_Vector> phinpcol = Teuchos::rcp(new Epetra_Vector(*discret_->NodeColMap()));
     LINALG::Export(*phinprow,*phinpcol);
     return phinpcol; }
-

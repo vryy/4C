@@ -1314,7 +1314,7 @@ void STR::TimInt::UpdateStepContactVUM()
       {
         std::cout
             << "***** WARNING: VelUpdate ONLY for contact force evaluated at the end time -> skipping ****"
-            << endl;
+            << std::endl;
         return;
       }
 
@@ -1344,7 +1344,7 @@ void STR::TimInt::UpdateStepContactVUM()
       {
         std::cout
             << "***** WARNING: VelUpdate ONLY for Gen-alpha and GEMM -> skipping ****"
-            << endl;
+            << std::endl;
         return;
       }
 
@@ -1372,7 +1372,7 @@ void STR::TimInt::UpdateStepContactVUM()
       {
         std::cout
             << "***** WARNING: VelUpdate ONLY for lumped mass matrix -> skipping ****"
-            << endl;
+            << std::endl;
         return;
       }
       Teuchos::RCP<LINALG::SparseMatrix> Mass = Teuchos::rcp_dynamic_cast<
@@ -1549,7 +1549,7 @@ void STR::TimInt::UpdateStepContactVUM()
             (*w)[i] = (1 - tolerance) * (*wtemp2)[i];
             std::cout
                 << "***** WARNING: VelUpdate is not able to compensate the gain of energy****"
-                << endl;
+                << std::endl;
           }
         }
       }
@@ -1725,7 +1725,7 @@ void STR::TimInt::UpdateStepContactVUM()
         {
           std::cout
               << "***** WARNING: VelUpdate is not able to converge -> skipping ****"
-              << endl;
+              << std::endl;
           return;
         }
       }

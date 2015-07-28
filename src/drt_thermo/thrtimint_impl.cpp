@@ -985,8 +985,8 @@ void THR::TimIntImpl::FDCheck()
 
   Teuchos::RCP<LINALG::SparseMatrix> tang_copy
     = Teuchos::rcp(new LINALG::SparseMatrix(tang_->EpetraMatrix(),Copy));
-  std::cout << "\n****************** THR finite difference check ******************" << endl;
-  std::cout << "thermo field has " << dofs << " DOFs"<< endl;
+  std::cout << "\n****************** THR finite difference check ******************" << std::endl;
+  std::cout << "thermo field has " << dofs << " DOFs"<< std::endl;
 
   // loop over columns
   // in case of pure thermal problem, start at 0,

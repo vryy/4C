@@ -1244,7 +1244,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(Teuchos::RCP<Teuchos::Paramet
   cfls_->NormInf(&cflmax);
 
   if (!myrank_)
-    cout<<"MAX CFL NUMBER IS!!!"<<cflmax<<endl;
+    std::cout<<"MAX CFL NUMBER IS!!!"<<cflmax<<std::endl;
   }
 
   //---------------------------------------------------------------------

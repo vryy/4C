@@ -416,7 +416,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
     fluidtimeparams->sublist("XFLUID DYNAMIC/GENERAL")       = xfdyn.sublist("GENERAL");
     fluidtimeparams->sublist("XFLUID DYNAMIC/STABILIZATION") = xfdyn.sublist("STABILIZATION");
 
-    fluidtimeparams->sublist("XFLUID DYNAMIC/GENERAL").set<string>("MONOLITHIC_XFFSI_APPROACH",xfdyn.sublist("GENERAL").get<std::string>("MONOLITHIC_XFFSI_APPROACH"));
+    fluidtimeparams->sublist("XFLUID DYNAMIC/GENERAL").set<std::string>("MONOLITHIC_XFFSI_APPROACH",xfdyn.sublist("GENERAL").get<std::string>("MONOLITHIC_XFFSI_APPROACH"));
     fluidtimeparams->sublist("XFLUID DYNAMIC/GENERAL").set<double>("XFLUIDFLUID_SEARCHRADIUS",  xfdyn.sublist("GENERAL").get<double>("XFLUIDFLUID_SEARCHRADIUS"));
 
   }
@@ -1161,8 +1161,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
   SetGeneralParameters(fluidtimeparams,prbdyn,fdyn);
 
   // overwrite canonical flow parameters by inflow type
-  fluidtimeparams->sublist("TURBULENCE MODEL").set<string>("CANONICAL_FLOW",fdyn.sublist("TURBULENT INFLOW").get<std::string>("CANONICAL_INFLOW"));
-  fluidtimeparams->sublist("TURBULENCE MODEL").set<string>("HOMDIR",fdyn.sublist("TURBULENT INFLOW").get<std::string>("INFLOW_HOMDIR"));
+  fluidtimeparams->sublist("TURBULENCE MODEL").set<std::string>("CANONICAL_FLOW",fdyn.sublist("TURBULENT INFLOW").get<std::string>("CANONICAL_INFLOW"));
+  fluidtimeparams->sublist("TURBULENCE MODEL").set<std::string>("HOMDIR",fdyn.sublist("TURBULENT INFLOW").get<std::string>("INFLOW_HOMDIR"));
   fluidtimeparams->sublist("TURBULENCE MODEL").set<int>("DUMPING_PERIOD",fdyn.sublist("TURBULENT INFLOW").get<int>("INFLOW_DUMPING_PERIOD"));
   fluidtimeparams->sublist("TURBULENCE MODEL").set<int>("SAMPLING_START",fdyn.sublist("TURBULENT INFLOW").get<int>("INFLOW_SAMPLING_START"));
   fluidtimeparams->sublist("TURBULENCE MODEL").set<int>("SAMPLING_STOP",fdyn.sublist("TURBULENT INFLOW").get<int>("INFLOW_SAMPLING_STOP"));
@@ -1283,7 +1283,7 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
 
   // ---------------------------------------------- nonlinear iteration
   // type of predictor
-  fluidtimeparams->set<string>          ("predictor"                 ,fdyn.get<std::string>("PREDICTOR"));
+  fluidtimeparams->set<std::string>     ("predictor"                 ,fdyn.get<std::string>("PREDICTOR"));
   // set linearisation scheme
   fluidtimeparams->set<int>("Linearisation", DRT::INPUT::IntegralValue<INPAR::FLUID::LinearisationAction>(fdyn,"NONLINITER"));
   // set bool flag "Newton true or false" for combustion formulation and XFEM
@@ -1296,7 +1296,7 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
   // stop nonlinear iteration when both incr-norms are below this bound
   fluidtimeparams->set<double>          ("tolerance for nonlin iter" ,fdyn.get<double>("CONVTOL"));
   // set convergence check
-  fluidtimeparams->set<string>          ("CONVCHECK"  ,fdyn.get<std::string>("CONVCHECK"));
+  fluidtimeparams->set<std::string>     ("CONVCHECK"  ,fdyn.get<std::string>("CONVCHECK"));
   // set recomputation of residual after solution has convergenced
   fluidtimeparams->set<bool>            ("INCONSISTENT_RESIDUAL",DRT::INPUT::IntegralValue<int>(fdyn,"INCONSISTENT_RESIDUAL")==1);
   // set solver for L2 projection of gradients for reconstruction of consistent residual
@@ -1346,13 +1346,13 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
   fluidtimeparams->set<int>("eval err for analyt sol", initfield);
 
   // ------------------------------------------ form of convective term
-  fluidtimeparams->set<string> ("form of convective term", fdyn.get<std::string>("CONVFORM"));
+  fluidtimeparams->set<std::string> ("form of convective term", fdyn.get<std::string>("CONVFORM"));
 
   // -------------------------- potential nonlinear boundary conditions
-  fluidtimeparams->set<string> ("Nonlinear boundary conditions",fdyn.get<std::string>("NONLINEARBC"));
+  fluidtimeparams->set<std::string> ("Nonlinear boundary conditions",fdyn.get<std::string>("NONLINEARBC"));
 
   // ------------------------------------ potential reduced_D 3D coupling method
-  fluidtimeparams->set<string> ("Strong 3D_redD coupling",fdyn.get<std::string>("STRONG_REDD_3D_COUPLING_TYPE"));
+  fluidtimeparams->set<std::string> ("Strong 3D_redD coupling",fdyn.get<std::string>("STRONG_REDD_3D_COUPLING_TYPE"));
 
   //--------------------------------------  mesh tying for fluid
   fluidtimeparams->set<int>("MESHTYING",
@@ -1382,7 +1382,7 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
     fluidtimeparams->sublist("TURBULENT INFLOW")=fdyn.sublist("TURBULENT INFLOW");
     fluidtimeparams->sublist("WALL MODEL")=fdyn.sublist("WALL MODEL");
 
-    fluidtimeparams->sublist("TURBULENCE MODEL").set<string>("statistics outfile",DRT::Problem::Instance()->OutputControlFile()->FileName());
+    fluidtimeparams->sublist("TURBULENCE MODEL").set<std::string>("statistics outfile",DRT::Problem::Instance()->OutputControlFile()->FileName());
   }
 
   // ---------------------------parallel evaluation

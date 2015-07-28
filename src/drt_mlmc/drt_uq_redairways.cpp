@@ -163,7 +163,7 @@ void UQ::UQ_REDAIRWAYS::Integrate()
 
     //prestress parameters
     //Adjust acini volume with pre-stress condition
-    if (rawdyn.get<string>("CALCV0PRESTRESS")=="yes")
+    if (rawdyn.get<std::string>("CALCV0PRESTRESS")=="yes")
     airwaystimeparams.set ("CalcV0PreStress" ,true);
     else
     airwaystimeparams.set ("CalcV0PreStress" ,false);

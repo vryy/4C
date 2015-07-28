@@ -65,7 +65,7 @@ void DRT::NURBS::apply_nurbs_initial_condition(
   const int myrank  = dis.Comm().MyPID();
 
   if(myrank==0)
-    cout<<"\nSolver tolerance for least squares problem set to "<<newtol<<" (orig: "<<origtol<<")";
+    std::cout<<"\nSolver tolerance for least squares problem set to "<<newtol<<" (orig: "<<origtol<<")";
 
   apply_nurbs_initial_condition_solve(
       dis  ,
@@ -575,5 +575,3 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(
 
   return;
 }
-
-

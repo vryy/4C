@@ -557,7 +557,7 @@ void POROELAST::PoroBase::CheckForPoroConditions()
 /*----------------------------------------------------------------------*
  |                                                        vuong 01/12   |
  *----------------------------------------------------------------------*/
-void POROELAST::PoroBase::CalculateSurfPoro(const string& condstring)
+void POROELAST::PoroBase::CalculateSurfPoro(const std::string& condstring)
 {
   //check if the condition exists
   std::vector<DRT::Condition*> surfporo;
@@ -718,4 +718,3 @@ Teuchos::RCP<LINALG::SparseMatrix> POROELAST::NoPenetrationConditionHandle::Stru
   }
   return Teuchos::null;
 }
-

@@ -277,11 +277,11 @@ void FLD::XFluid::SetXFluidParams()
 
   // set flag if any edge-based fluid stabilization has to integrated as std or gp stabilization
   {
-    bool edge_based = (      params_->sublist("RESIDUAL-BASED STABILIZATION").get<string>("STABTYPE")=="edge_based"
-                          or params_->sublist("EDGE-BASED STABILIZATION").get<string>("EOS_PRES")        != "none"
-                          or params_->sublist("EDGE-BASED STABILIZATION").get<string>("EOS_CONV_STREAM") != "none"
-                          or params_->sublist("EDGE-BASED STABILIZATION").get<string>("EOS_CONV_CROSS")  != "none"
-                          or params_->sublist("EDGE-BASED STABILIZATION").get<string>("EOS_DIV")         != "none");
+    bool edge_based = (      params_->sublist("RESIDUAL-BASED STABILIZATION").get<std::string>("STABTYPE")=="edge_based"
+                             or params_->sublist("EDGE-BASED STABILIZATION").get<std::string>("EOS_PRES")        != "none"
+                             or params_->sublist("EDGE-BASED STABILIZATION").get<std::string>("EOS_CONV_STREAM") != "none"
+                             or params_->sublist("EDGE-BASED STABILIZATION").get<std::string>("EOS_CONV_CROSS")  != "none"
+                             or params_->sublist("EDGE-BASED STABILIZATION").get<std::string>("EOS_DIV")         != "none");
 
     // set flag if a viscous or transient (1st or 2nd order) ghost-penalty stabiliation due to Nitsche's method has to be integrated
     bool ghost_penalty= (    (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"GHOST_PENALTY_STAB")
@@ -294,8 +294,8 @@ void FLD::XFluid::SetXFluidParams()
 
   if(myrank_ == 0)
   {
-    std::cout<<"\nVolume:   Gauss point generating method = "<< params_xfem.get<string>("VOLUME_GAUSS_POINTS_BY");
-    std::cout<<"\nBoundary: Gauss point generating method = "<< params_xfem.get<string>("BOUNDARY_GAUSS_POINTS_BY") << "\n\n";
+    std::cout<<"\nVolume:   Gauss point generating method = "<< params_xfem.get<std::string>("VOLUME_GAUSS_POINTS_BY");
+    std::cout<<"\nBoundary: Gauss point generating method = "<< params_xfem.get<std::string>("BOUNDARY_GAUSS_POINTS_BY") << "\n\n";
   }
 
   // set XFEM-related parameters on element level
@@ -1475,27 +1475,27 @@ Teuchos::RCP<std::vector<double> > FLD::XFluid::EvaluateErrorComparedToAnalytica
     if (myrank_ == 0)
     {
       {
-        cout.precision(8);
-        cout << endl << "---- error norm for analytical solution Nr. "
+        std::cout.precision(8);
+        IO::cout << IO::endl << "---- error norm for analytical solution Nr. "
              <<  DRT::INPUT::get<INPAR::FLUID::CalcError>(*params_,"calculate error")
-             <<  " ----------" << endl;
-        cout << "-------------- domain error norms -----------------------"       << endl;
-        cout << "|| u - u_h ||_L2(Omega)                          =  " << dom_err_vel_L2                     << endl;
-        cout << "|| grad( u - u_h ) ||_L2(Omega)                  =  " << dom_err_vel_H1_semi                << endl;
-        cout << "|| u - u_h ||_H1(Omega)                          =  " << dom_err_vel_H1                     << endl;
-        cout << "|| p - p_h ||_L2(Omega)                          =  " << dom_err_pre_L2                     << endl;
-        cout << "---------viscosity-scaled domain error norms ------------"       << endl;
-        cout << "|| nu^(+1/2) grad( u - u_h ) ||_L2(Omega)        =  " << dom_err_vel_H1_semi_nu_scaled      << endl;
-        cout << "|| nu^(-1/2) (p - p_h) ||_L2(Omega)              =  " << dom_err_pre_L2_nu_scaled           << endl;
-        cout << "---------------------------------------------------------"       << endl;
-        cout << "-------------- interface/boundary error norms -----------"       << endl;
-        cout << "|| nu^(+1/2) (u - u*) ||_H1/2(Gamma)             =  " << interf_err_Honehalf                << endl;
-        cout << "|| nu^(+1/2) grad( u - u_h )*n ||_H-1/2(Gamma)   =  " << interf_err_Hmonehalf_u             << endl;
-        cout << "|| nu^(-1/2) (p - p_h)*n ||_H-1/2(Gamma)         =  " << interf_err_Hmonehalf_p             << endl;
-        cout << "---------------------------------------------------------"       << endl;
-        cout << "-------------- Error on Functionals from solution  ------------"       << endl;
-        cout << " | sin(x) ( u,x - u,x exact ) |                  = " << (*glob_dom_norms)[6]             <<endl;
-        cout << "---------------------------------------------------------"       << endl;
+             <<  " ----------" << IO::endl;
+        IO::cout << "-------------- domain error norms -----------------------"       << IO::endl;
+        IO::cout << "|| u - u_h ||_L2(Omega)                          =  " << dom_err_vel_L2                     << IO::endl;
+        IO::cout << "|| grad( u - u_h ) ||_L2(Omega)                  =  " << dom_err_vel_H1_semi                << IO::endl;
+        IO::cout << "|| u - u_h ||_H1(Omega)                          =  " << dom_err_vel_H1                     << IO::endl;
+        IO::cout << "|| p - p_h ||_L2(Omega)                          =  " << dom_err_pre_L2                     << IO::endl;
+        IO::cout << "---------viscosity-scaled domain error norms ------------"       << IO::endl;
+        IO::cout << "|| nu^(+1/2) grad( u - u_h ) ||_L2(Omega)        =  " << dom_err_vel_H1_semi_nu_scaled      << IO::endl;
+        IO::cout << "|| nu^(-1/2) (p - p_h) ||_L2(Omega)              =  " << dom_err_pre_L2_nu_scaled           << IO::endl;
+        IO::cout << "---------------------------------------------------------"       << IO::endl;
+        IO::cout << "-------------- interface/boundary error norms -----------"       << IO::endl;
+        IO::cout << "|| nu^(+1/2) (u - u*) ||_H1/2(Gamma)             =  " << interf_err_Honehalf                << IO::endl;
+        IO::cout << "|| nu^(+1/2) grad( u - u_h )*n ||_H-1/2(Gamma)   =  " << interf_err_Hmonehalf_u             << IO::endl;
+        IO::cout << "|| nu^(-1/2) (p - p_h)*n ||_H-1/2(Gamma)         =  " << interf_err_Hmonehalf_p             << IO::endl;
+        IO::cout << "---------------------------------------------------------"       << IO::endl;
+        IO::cout << "-------------- Error on Functionals from solution  ------------"       << IO::endl;
+        IO::cout << " | sin(x) ( u,x - u,x exact ) |                  = " << (*glob_dom_norms)[6]             << IO::endl;
+        IO::cout << "---------------------------------------------------------"       << IO::endl;
       }
 
       // append error of the last time step to the error file
@@ -2165,7 +2165,7 @@ void FLD::XFluid::Solve()
 //    const double tmp = std::abs(std::log10(cond_number*1.11022e-16));
 //    const int sign_digits = (int)floor(tmp);
 //    if (!myrank_)
-//      cout << " cond est: " << std::scientific << cond_number << ", max.sign.digits: " << sign_digits;
+//      IO::cout << " cond est: " << std::scientific << cond_number << ", max.sign.digits: " << sign_digits;
 //#endif
 
 
@@ -2187,7 +2187,7 @@ void FLD::XFluid::Solve()
       // print matrix in matlab format
 
             // matrix printing options (DEBUGGING!)
-      cout << "print matrix in matlab format to sparsematrix.mtl";
+      IO::cout << "print matrix in matlab format to sparsematrix.mtl";
 
             Teuchos::RCP<LINALG::SparseMatrix> A = state_->SystemMatrix();
             if (A != Teuchos::null)
@@ -2207,7 +2207,7 @@ void FLD::XFluid::Solve()
               LINALG::PrintBlockMatrixInMatlabFormat(fname,*(A));
             }
 
-            cout << " ...done" << endl;
+            IO::cout << " ...done" << IO::endl;
             // ScaleLinearSystem();  // still experimental (gjb 04/10)
 #endif
 
@@ -2769,7 +2769,7 @@ void FLD::XFluid::TimeUpdate()
 
   Teuchos::ParameterList *  stabparams=&(params_->sublist("RESIDUAL-BASED STABILIZATION"));
 
-  if(stabparams->get<string>("TDS") == "time_dependent")
+  if(stabparams->get<std::string>("TDS") == "time_dependent")
   { dserror("check this implementation");
     const double tcpu=Teuchos::Time::wallTime();
 
@@ -4619,10 +4619,10 @@ void FLD::XFluid::ReadRestart(int step)
 
 
 #if(0)
-  std::cout << "velnp_ " << *(state_->velnp_) << endl;
-  std::cout << "veln_ "  << *(state_->veln_)  << endl;
-  std::cout << "accnp_ " << *(state_->accnp_) << endl;
-  std::cout << "accn_ "  << *(state_->accn_)  << endl;
+  std::cout << "velnp_ " << *(state_->velnp_) << std::endl;
+  std::cout << "veln_ "  << *(state_->veln_)  << std::endl;
+  std::cout << "accnp_ " << *(state_->accnp_) << std::endl;
+  std::cout << "accn_ "  << *(state_->accn_)  << std::endl;
 #endif
 
   // set element time parameter after restart:
@@ -5196,5 +5196,3 @@ void FLD::XFluid::CalculateAcceleration(
 
   return;
 }
-
-

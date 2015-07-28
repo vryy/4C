@@ -762,13 +762,13 @@ void LINALG::SymmetricEigen(Epetra_SerialDenseMatrix& A,
   else
   {
     if (info > 0)
-      cout
+      std::cout
           << "Lapack algorithm syevd failed: "
           << info
           << " off-diagonal elements of intermediate tridiagonal form did not converge to zero"
-          << endl;
+          << std::endl;
     if (info < 0)
-      cout << "Illegal value in Lapack syevd call" << endl;
+      std::cout << "Illegal value in Lapack syevd call" << std::endl;
   }
 
   return;
@@ -819,8 +819,8 @@ double LINALG::GeneralizedEigen(Epetra_SerialDenseMatrix& A,
   dgeqp3(&N, &N, b, &LDB, jpvt, tau, work1, &lwork1, &info);
 
   if (info < 0)
-    cout << "Lapack algorithm dgeqp3: The " << info
-        << "-th argument had an illegal value" << endl;
+    std::cout << "Lapack algorithm dgeqp3: The " << info
+              << "-th argument had an illegal value" << std::endl;
 
   // calculate the matrix Q from multiplying householder transformations
   // Q = H(1)*H(2) ... H(k)
@@ -923,8 +923,8 @@ double LINALG::GeneralizedEigen(Epetra_SerialDenseMatrix& A,
       &info);
 
   if (info < 0)
-    cout << "Lapack algorithm dgghrd: The " << info
-        << "-th argument had an illegal value" << endl;
+    std::cout << "Lapack algorithm dgghrd: The " << info
+              << "-th argument had an illegal value" << std::endl;
 
   //--------------------------------------------------------
   // STEP 3
@@ -963,18 +963,18 @@ double LINALG::GeneralizedEigen(Epetra_SerialDenseMatrix& A,
       ALPHAI, BETA, q_2, &LDQ, z_2, &LDZ, work, &lwork, &info);
 
   if (info < 0)
-    cout << "Lapack algorithm dhgeqz: The " << info
-        << "-th argument haa an illegal value!" << endl;
+    std::cout << "Lapack algorithm dhgeqz: The " << info
+        << "-th argument haa an illegal value!" << std::endl;
   else if (info > N)
-    cout
+    std::cout
         << "Lapack algorithm dhgeqz: The QZ iteration did not converge. (H,T) is not in Schur Form, but the Eigenvalues should be correct!"
-        << endl;
+        << std::endl;
 
-  /*cout << "--------Final----------" << endl;
-   cout << std::setprecision(16) << "A 2" << A_new << endl;
-   cout << std::setprecision(16) <<  "B 2" << tmpB << endl;
-   cout << std::setprecision(16) << "Q 2 " << Q_2 << endl;
-   cout << std::setprecision(16) << "Z 2 " << Z_2 << endl;*/
+  /*cout << "--------Final----------" << std::endl;
+   std::cout << std::setprecision(16) << "A 2" << A_new << std::endl;
+   std::cout << std::setprecision(16) <<  "B 2" << tmpB << std::endl;
+   std::cout << std::setprecision(16) << "Q 2 " << Q_2 << std::endl;
+   std::cout << std::setprecision(16) << "Z 2 " << Z_2 << std::endl;*/
 
   double maxlambda = 0.;
   for (int i = 0; i < N; ++i)
@@ -982,12 +982,12 @@ double LINALG::GeneralizedEigen(Epetra_SerialDenseMatrix& A,
     if (BETA[i] > 1e-13)
     {
       // Eigenvalues:
-      // cout << "lambda " << i << ":  " <<  ALPHAR[i]/BETA[i] << endl;
+      // std::cout << "lambda " << i << ":  " <<  ALPHAR[i]/BETA[i] << std::endl;
       maxlambda = std::max(ALPHAR[i] / BETA[i], maxlambda);
     }
     if (ALPHAI[i] > 1e-12)
     {
-      cout << " Warning: you have an imaginary EW " << ALPHAI[i] << endl;
+      std::cout << " Warning: you have an imaginary EW " << ALPHAI[i] << std::endl;
     }
   }
   return maxlambda;
@@ -1321,14 +1321,14 @@ bool LINALG::SplitMatrix2x2(Teuchos::RCP<LINALG::SparseMatrix> A,
       A->Split<DefaultBlockMatrixStrategy>(domain, range);
 
 #if 0 // debugging
-  cout << "A00\n" << (*Ablock)(0,0);
-  cout << "A10\n" << (*Ablock)(1,0);
-  cout << "A01\n" << (*Ablock)(0,1);
-  cout << "A11\n" << (*Ablock)(1,1);
-  cout << "A->Range\n" << A->RangeMap();
-  cout << "A->Domain\n" << A->DomainMap();
-  cout << "A11domainmap\n" << *A11domainmap;
-  cout << "A22domainmap\n" << *A22domainmap;
+  std::cout << "A00\n" << (*Ablock)(0,0);
+  std::cout << "A10\n" << (*Ablock)(1,0);
+  std::cout << "A01\n" << (*Ablock)(0,1);
+  std::cout << "A11\n" << (*Ablock)(1,1);
+  std::cout << "A->Range\n" << A->RangeMap();
+  std::cout << "A->Domain\n" << A->DomainMap();
+  std::cout << "A11domainmap\n" << *A11domainmap;
+  std::cout << "A22domainmap\n" << *A22domainmap;
 #endif
 
   Ablock->Complete();
@@ -1553,7 +1553,7 @@ void LINALG::PrintMatrixInMatlabFormat(std::string fname,
           os << std::setw(10) << Indices[j] + 1; // increase index by one for matlab
           os << std::setw(30) << std::setprecision(16) << std::scientific
               << Values[j];
-          os << endl;
+          os << std::endl;
         }
       }
 
@@ -1606,7 +1606,7 @@ void LINALG::PrintSerialDenseMatrixInMatlabFormat(std::string fname,
       os << std::setw(10) << j + 1; // increase index by one for matlab
       os << std::setw(30) << std::setprecision(16) << std::scientific
           << A(i, j);
-      os << endl;
+      os << std::endl;
     }
   }
 
@@ -1691,7 +1691,7 @@ void LINALG::PrintVectorInMatlabFormat(std::string fname,
           }
 
           os << std::setw(30) << std::setprecision(16) << A_Pointers[0][iii]; // print out values of 1. vector (only Epetra_Vector supported, no Multi_Vector)
-          os << endl;
+          os << std::endl;
         }
       }
       os << std::flush;
@@ -1752,7 +1752,7 @@ void LINALG::PrintMapInMatlabFormat(std::string fname, const Epetra_Map& map,
             os << std::setw(10) << MyGlobalElements1[i] + 1 << "/"
                 << std::setw(10) << ii;
           }
-          os << endl;
+          os << std::endl;
         }
       }
       os << std::flush;
@@ -2036,4 +2036,3 @@ void LINALG::AllToAllCommunication(const Epetra_Comm& comm,
 
 #endif // PARALLEL
 }
-
