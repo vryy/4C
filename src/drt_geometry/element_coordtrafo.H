@@ -738,11 +738,16 @@ static inline bool currentToVolumeElementCoordinatesT(
   // if you want to use this function you can remove the dserror, but please check carefully if it works properly
   // REMARK: tested this method for quite a while and seems to be fine now (28.11.2012 ghamm)
 //  dserror("This function seems to deliver wrong results! Check carefully before use or use a different function, e.g. GEO::CUT::Position");
+  // REMARK: Added a scaling of the function -> biggest entry is 1 and thus this function should work for elements far away
+  //         from the origin as well. (27.07.2015 winter & seitz)
 
+  // number space dimensions for element
+  const size_t dim = DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
 
-  const int dim = 3;
+  // number of nodes of element
+  const size_t nen = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
   bool nodeWithinElement = true;
-  const int maxiter = 20;
+  const int maxiter = 20;//40;
   double residual = 1.0;
 
   static LINALG::Matrix<3,3> A;
@@ -760,19 +765,51 @@ static inline bool currentToVolumeElementCoordinatesT(
   }
   else
   {
-    // either get good initial guess and continue or 
+    // either get good initial guess and continue or
     // leave here when outside (which is just an approximation and can be incorrect)
     nodeWithinElement = FastInitialGuess<DISTYPE>(xyze, x, xsi);
     if(nodeWithinElement == false)
       return nodeWithinElement;
   }
 
-  updateRHSForNWE<DISTYPE,dim>(b, xsi, x, xyze);
+  //Scale the problem before attempting Newton iteration.
+  //  This is necessary if elements are "far" away from the origin.
+  //Eq that is solved:
+  //  (x_GP  - N(xi) * xyze )*Row_Scaling = 0
+
+  //Row_Scaling is a diagonal scaling matrix to transform the system
+  //   to scale each row to [-1,1]
+
+  //               |s_1  0   0 |
+  // Row_Scaling = | 0  s_2  0 |
+  //               | 0   0  s_3|
+
+  LINALG::Matrix<3,1> scale_vector;
+//  for(int i=0; i<(int)xyze.N(); ++i)
+//    for(int j=0; j<(int)xyze.M(); ++j)
+  for(int i=0; i<(int)nen; ++i)
+    for(int j=0; j<(int)dim; ++j)
+      scale_vector(j) = std::max(scale_vector(j),fabs(xyze(j,i)));
+
+  V3 x_scaled(x);
+  M1 xyze_scaled(xyze);
+
+  for(int j=0; j<(int)dim; ++j)
+  {
+    scale_vector(j) = 1/scale_vector(j);
+    for(int i=0; i<(int)nen; ++i)
+    {
+      xyze_scaled(j,i) *= scale_vector(j);
+    }
+    x_scaled(j) *= scale_vector(j);
+  }
+
+   updateRHSForNWE<DISTYPE,dim>(b, xsi, x_scaled, xyze_scaled);
 
   int iter = 0;
   while(residual > GEO::TOL14)
   {
-    updateAForNWE<DISTYPE,dim>( A, xsi, xyze);
+    updateAForNWE<DISTYPE,dim>( A, xsi, xyze_scaled);
 
     double det = LINALG::gaussElimination<true,3>(A, b, dx);
 
@@ -782,7 +819,7 @@ static inline bool currentToVolumeElementCoordinatesT(
     }
 
     xsi += dx;
-    updateRHSForNWE<DISTYPE,dim>(b, xsi, x, xyze);
+    updateRHSForNWE<DISTYPE,dim>(b, xsi, x_scaled, xyze_scaled);
 
     residual = b.Norm2();
     iter++;
@@ -822,6 +859,7 @@ bool currentToVolumeElementCoordinates(
     bool                                    fastinitguess = false)
 {
     bool nodeWithinElement = false;
+
     switch (distype)
     {
     case DRT::Element::hex8:
