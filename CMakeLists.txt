@@ -610,6 +610,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/ad_fld_moving_boundary.cpp
   src/drt_adapter/ad_fld_poro.cpp
   src/drt_adapter/ad_fld_fluid_fsi.cpp
+  src/drt_adapter/ad_fld_fluid_ac_fsi.cpp
   src/drt_adapter/ad_fld_fluid_fpsi.cpp
   src/drt_adapter/ad_fld_fluid_fluid_fsi.cpp
   src/drt_adapter/ad_fld_fluid_xfem.cpp
@@ -1053,6 +1054,7 @@ set(OBJS_DRT_FS3I
   src/drt_fs3i/fps3i_partitioned_1wc.cpp
   src/drt_fs3i/fs3i_partitioned_2wc.cpp
   src/drt_fs3i/ac_fsi.cpp
+  src/drt_fs3i/ac_fsi_ls.cpp
   src/drt_fs3i/biofilm_fsi.cpp
   src/drt_fs3i/biofilm_fsi_utils.cpp
   src/drt_fs3i/aero_tfsi.cpp

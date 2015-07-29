@@ -700,7 +700,7 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
   {
     if (isimpedancebc_)
     {
-      impedancebc_->PrepareTimeStepImpedance(time_);
+      impedancebc_->PrepareTimeStepImpedances(time_);
     }
   }
 
@@ -3091,9 +3091,8 @@ void FLD::FluidImplicitTimeInt::TimeUpdateNonlinearBC()
     if (alefluid_)
       discret_->SetState("dispnp", dispn_);
 
-    //do update flowrates and resulting pressures
-    impedancebc_->FlowRateCalculation(time_,dta_);
-    impedancebc_->OutflowBoundary(time_,dta_);
+    //do time update of impedance conditions
+    impedancebc_->TimeUpdateImpedances(time_,dta_);
 
     // get the parameters needed to be optimized
     Teuchos::ParameterList WkOpt_params;

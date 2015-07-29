@@ -6103,17 +6103,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   // Periodicity of the FSI problem
   DoubleParameter("PERIODICITY",-1.0,"Periodicity of the FSI problem",&fs3idynac);
 
-  // Periodicity of the FSI problem
-  IntParameter("PERIODS_TO_STEADY_STATE",-1.0,"Periods after FSI problem is steady state",&fs3idynac);
+  // relative tolerance for the WK of the fluid sub-problem. Determines if the fsi problem is already periodic
+  DoubleParameter("WINDKESSEL_REL_TOL",1.0e-6,"Periods after FSI problem is steady state",&fs3idynac);
 
-  // Periodicity of the FSI problem
-  IntParameter("PERIODS_TO_FSI_UPDATE",-1.0,"Periods after FSI problem is steady state",&fs3idynac);
-
-  // Periodicity of the FSI problem
-  DoubleParameter("FSI_UPDATE_TOL",-1.0,"Tolerance to determine the time to recalculate a FSI period",&fs3idynac);
+  // relative tolerance for the fluid scatra. Determines if the fluid scatra is already periodic
+  DoubleParameter("FLUID_SCATRA_REL_TOL",1.0e-6,"Periods after FSI problem is steady state",&fs3idynac);
 
   //Restart from FSI instead of FS3I
-  BoolParameter("RESTART_FROM_PART_FSI","no","restart from fsi instead of fs3i",&fs3idynac);
+  BoolParameter("RESTART_FROM_PART_FSI","no","restart from partitioned fsi problem (e.g. prestress calculations) instead of fs3i",&fs3idynac);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& lomacontrol = list->sublist(

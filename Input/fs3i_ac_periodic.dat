@@ -49,7 +49,7 @@ WRITE_TO_SCREEN                 Yes
 ----------------------------------------------------------------FS3I DYNAMIC
 MAXTIME                         10000.0
 TIMESTEP                        0.01 //0.01
-NUMSTEP                         10
+NUMSTEP                         20
 RESTARTEVRY                     1
 UPRES                           1
 INF_PERM                        no //yes
@@ -74,17 +74,16 @@ COUPALGO                        fs3i_SequStagg //fs3i_IterStagg //
 CONVTOL                         1e-03
 ITEMAX                          20
 ----------------------------------------------------------------FS3I DYNAMIC/AC
-FSI_STEPS_PER_SCATRA_STEP       2
-PERIODICITY                     0.03
-PERIODS_TO_STEADY_STATE         1
-//PERIODSTOFSIUPDATE              2
-//FSIUPDATETOL                    0.1
+FSI_STEPS_PER_SCATRA_STEP       1
+PERIODICITY                     0.05
+WINDKESSEL_REL_TOL              5.0e-2 //1.0e-3
+FLUID_SCATRA_REL_TOL            1.0e-3
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 CALCERROR                       No
 CONVFORM                        conservative
 GAMMA                           0.5
-INITFUNCNO                      -1
-INITIALFIELD                    zero_field //field_by_function //
+INITFUNCNO                      2
+INITIALFIELD                    field_by_function //zero_field //
 MAXTIME                         10000
 NUMSTEP                         10
 OUTMEAN                         No
@@ -103,20 +102,21 @@ WRITEFLUX                       No
 NEUMANNINFLOW                   Yes
 LINEAR_SOLVER                   -1
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
-ABSTOLRES                       1e-07
+ABSTOLRES                       1e-08
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
-CONVTOL                         1e-07
+CONVTOL                         1e-08
 EXPLPREDICT                     no
 ITEMAX                          10
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
-ASSUGRDIFF                      no
-CONSISTENCY                     no
-DEFINITION_ASSGD                artificial_linear
-DEFINITION_TAU                  Franca_Valentin
+STABTYPE                        SUPG // no_stabilization // GLS //
+DEFINITION_TAU                  Codina // Shakib_Hughes_Codina // Franca_Madureira_Valentin // Exact_1D // Franca_Valentin // Taylor_Hughes_Zarins //
+CHARELELENGTH                   volume_equivalent_diameter //streamlength
+ASSUGRDIFF                      no // Yes //
+DEFINITION_ASSGD                Codina_nonlinear // YZbeta_nonlinear // Tezduyar_Park_86_nonlinear_wo_phizero // doCarmo_Galeao_91_nonlinear // Almeida_Silva_97_nonlinear // Tezduyar_Park_86_nonlinear // Hughes_etal_86_nonlinear // artificial_linear
+CONSISTENCY                     no //L2_projection_lumped //
 EVALUATION_MAT                  integration_point //element_center
 EVALUATION_TAU                  integration_point //element_center
-STABTYPE                        no_stabilization // GLS // SUPG
 SUGRVEL                         no
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 NUMSTEP                         3000
@@ -512,40 +512,44 @@ MAT 2 MAT_ElastHyper NUMMAT 2 MATIDS 21 22 DENS 1.0e-3
 MAT 21 ELAST_IsoYeoh C1 1.74e5 C2 1.88e6 C3 0
 MAT 22 ELAST_VolOgden KAPPA 2.2116e6 BETA -2.0
 MAT 10 MAT_Struct_StVenantKirchhoff YOUNG 1 NUE 0.0 DENS 1.0 THEXPANS 0.0
-MAT 11 MAT_matlist LOCAL No NUMMAT 2 MATIDS 111 112 END //structure_scatra
+MAT 11 MAT_matlist LOCAL No NUMMAT 2 MATIDS 111 112 END //fluid_scatra
 MAT 111 MAT_scatra DIFFUSIVITY 100.0
-MAT 112 MAT_scatra DIFFUSIVITY 10.0
+MAT 112 MAT_scatra DIFFUSIVITY 0.01
 MAT 12 MAT_matlist LOCAL No NUMMAT 2 MATIDS 121 122 END //structure_scatra
 MAT 121 MAT_scatra DIFFUSIVITY 50.0
-MAT 122 MAT_scatra DIFFUSIVITY 5.0
+MAT 122 MAT_scatra DIFFUSIVITY 0.01
 -----------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 10
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra1 TAR_MAT 11
 SRC_FIELD structure SRC_MAT 2 TAR_FIELD scatra2 TAR_MAT 12
 -------------------------------------------------------------CURVE1
-CURVE 1 on EXPR FUNC ((1-cos(2*pi*t/0.03))*0.5) t1 0.00 t2 1.0
+CURVE 1 on EXPR FUNC ((1-cos(2*pi*t/0.1))*0.5) t1 0.0 t2 0.04999
+CURVE 1 on EXPR FUNC (1.5-cos(2*pi*t/0.05)*0.5) t1 0.05 t2 100.0
 -------------------------------------------------------------CURVE2
 -------------------------------------------------------------CURVE3
 -------------------------------------------------------------CURVE4
 -------------------------------------------------------------FUNCT1
-FUNCT1 EXPR 0 0 0 FUNCTION ((1-(((x)^2+(y)^2)^4)/(18^8)))
+FUNCT 1 EXPR 0 0 0 FUNCTION ((1-(((x)^2+(y)^2)^4)/(18^8)))
 -------------------------------------------------------------FUNCT2
-//FUNCT2 EXPR 0 0 0 FUNCTION 0.000
+FUNCT 2 COMPONENT 0 EXPR 0 0 0 FUNCTION 0.9
+FUNCT 2 COMPONENT 1 EXPR 0 0 0 FUNCTION 0.9
 -------------------------------------------------------------FUNCT3
 -------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra2 NODE 4146 QUANTITY phi VALUE 1.91042878572866531e-01 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 4146 QUANTITY dispx VALUE 8.02158433712410121e-03 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 4146 QUANTITY dispy VALUE 3.32459885442214480e-03 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 4146 QUANTITY dispz VALUE 2.88540105589232170e-03 TOLERANCE 1e-6
-SCATRA DIS scatra1 NODE 39 QUANTITY phi VALUE  1.19624793048975313e+01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 39 QUANTITY velx VALUE -2.25305465749809891e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 39 QUANTITY vely VALUE 1.12410669892200499e+00 TOLERANCE 1e-6
-FLUID DIS fluid NODE 39 QUANTITY velz VALUE 2.29141167531510009e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 39 QUANTITY pressure VALUE 8.87995112488098357e+02 TOLERANCE 1e-6
-ALE DIS ale NODE 39 QUANTITY dispx VALUE -2.51942881578187238e-03 TOLERANCE 1e-6
-ALE DIS ale NODE 39 QUANTITY dispy VALUE 1.25727062463195753e-02 TOLERANCE 1e-6
-ALE DIS ale NODE 39 QUANTITY dispz VALUE 2.56359304872611762e-03 TOLERANCE 1e-6
+SCATRA DIS scatra2 NODE 4146 QUANTITY phi VALUE 3.33944745765558738e-10 TOLERANCE 1e-6
+SCATRA DIS scatra2 NODE 4146 QUANTITY phi2 VALUE 3.33944745765558738e-10 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 4146 QUANTITY dispx VALUE 3.57437213453521210e-02 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 4146 QUANTITY dispy VALUE 1.48136496664971890e-02 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 4146 QUANTITY dispz VALUE 1.21602861527677960e-02 TOLERANCE 1e-6
+SCATRA DIS scatra1 NODE 39 QUANTITY phi VALUE  8.41709415026929308e-01 TOLERANCE 1e-6
+SCATRA DIS scatra1 NODE 39 QUANTITY phi2 VALUE 2.93441144435179990e-01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 39 QUANTITY velx VALUE 3.35833795436195515e-01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 39 QUANTITY vely VALUE -1.67666023526182317e+00 TOLERANCE 1e-6
+FLUID DIS fluid NODE 39 QUANTITY velz VALUE -2.64789033332654133e-01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 39 QUANTITY pressure VALUE 4.14465469249819398e+03 TOLERANCE 1e-6
+ALE DIS ale NODE 39 QUANTITY dispx VALUE -1.18755829287931474e-02TOLERANCE 1e-6
+ALE DIS ale NODE 39 QUANTITY dispy VALUE 5.92865230816048139e-02 TOLERANCE 1e-6
+ALE DIS ale NODE 39 QUANTITY dispz VALUE 1.01224027729554869e-02 TOLERANCE 1e-6
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  4
@@ -585,14 +589,6 @@ E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // DLINE  1
 // // fluid_inflow_line
 // E 1 - 1
-// -------------------------------------DESIGN LINE DIRICH CONDITIONS
-// DLINE  1
-// fluid_inflow_line
-// E 1 - NUMDOF 4 ONOFF 1 1 1 0  VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-// // structure_inflow_line
-// E 3 - NUMDOF 4 ONOFF 0 0 0 0  VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-// // structure_outflow_line
-// E 4 - NUMDOF 4 ONOFF 0 0 0 0  VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  2
 // fluid_inflow_line
@@ -604,10 +600,10 @@ DSURF  2
 // structure_wall_all
 E 13 - SPRING_STIFF_TENS 50000.0 SPRING_STIFF_COMP 50000.0 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.0 DIRECTION refsurfnormal COUPLING none
 E 13 - SPRING_STIFF_TENS 5000.0 SPRING_STIFF_COMP 5000.0 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.0 DIRECTION all COUPLING none
-// ----------------------------------DESIGN SURF IMPEDANCE CONDITIONS
-// DSURF  1
-// // fluid_outflow_all
-// E 3 - 1 timeperiod  1.0 windkessel termradius 5.0 R1 0.01 R2 0.01 C 0.01 stiffness 1.0 H1 0.1 H2 0.2 H3 0.3
+ ----------------------------------DESIGN SURF IMPEDANCE CONDITIONS
+DSURF  1
+// fluid_outflow_all
+E 3 - 1 timeperiod  0.05 windkessel termradius 5.0 R1 0.01 R2 0.01 C 0.01 stiffness 1.0 H1 0.1 H2 0.2 H3 0.3
 --------------------------FLUID NEUMANN INFLOW SURF CONDITIONS
 DSURF  1
 // fluid_outflow_all
@@ -629,25 +625,25 @@ E 6 - 1
 --------------------------------------DESIGN SCATRA COUPLING SURF CONDITIONS
 DSURF                           2
 // fluid_fsi_all
-E 5 - NUMSCAL 2 ONOFF 1 1 COUPID 1 PERMCOEF 1000.0 CONDUCT 0.0 FILTR 0.0 WSSONOFF 1 WSSCOEFFS 1.0 1.0 1.0
+E 5 - NUMSCAL 2 ONOFF 1 1 COUPID 1 PERMCOEF 0.00001 CONDUCT 0.0 FILTR 0.0 WSSONOFF 1 WSSCOEFFS 1.0 1.0 1.0
 // // fluid_fsi_no_line
 // E 6 - COUPID 1 FIELDNUM 1 PERMCOEF 1.0
 // structure_fsi_all
-E 11 - NUMSCAL 2 ONOFF 1 1 COUPID 1 PERMCOEF 1000.0 CONDUCT 0.0 FILTR 0.0 WSSONOFF 1 WSSCOEFFS 1.0 1.0 1.0
+E 11 - NUMSCAL 2 ONOFF 1 1 COUPID 1 PERMCOEF 0.00001 CONDUCT 0.0 FILTR 0.0 WSSONOFF 1 WSSCOEFFS 1.0 1.0 1.0
 // // structure_fsi_no_line
 // E 12 - COUPID 1 FIELDNUM 2 PERMCOEF 1.0
 -------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
 DSURF  2
-//fluid_inflow_no_line
-E 2 - NUMDOF 2 ONOFF 1 1 VAL 50.0 50.0 CURVE 1 1 FUNCT 1 1
-// structure_inflow_all
-E 7 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE 1 1 FUNCT 0 0
+//fluid_inflow_all
+E 1 - NUMDOF 2 ONOFF 1 1 VAL 1.0 1.0 CURVE none none FUNCT 0 0
+// structure_inflow_no_lineall
+E 8 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
 -------------------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
 DLINE  2
 // fluid_inflow_line
-E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE 1 1 FUNCT 0 0
+E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
 // structure_inflow_line
-E 3 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE 1 1 FUNCT 0 0
+E 3 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
 -------------------------------------DESIGN FLUID STRESS CALC SURF CONDITIONS
 DSURF  1
 // fluid_fsi_all

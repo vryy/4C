@@ -61,6 +61,7 @@ Maintainer: Ulrich Kuettler
 #include "ad_fld_fluid_fluid_fsi.H"
 #include "ad_fld_fluid_fpsi.H"
 #include "ad_fld_fluid_fsi.H"
+#include "ad_fld_fluid_ac_fsi.H"
 #include "ad_fld_lung.H"
 #include "ad_fld_poro.H"
 #include "ad_fld_fluid_xfsi.H"
@@ -908,7 +909,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
       else
         dserror("Unknown time integration for this fluid problem type\n");
 
-      fluid_ = Teuchos::rcp(new FluidFSI(tmpfluid,actdis,solver,fluidtimeparams,output,isale,dirichletcond));
+      fluid_ = Teuchos::rcp(new FluidACFSI(tmpfluid,actdis,solver,fluidtimeparams,output,isale,dirichletcond));
     }
     break;
     case prb_fsi_redmodels:

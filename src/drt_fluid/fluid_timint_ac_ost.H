@@ -1,14 +1,16 @@
 /*!----------------------------------------------------------------------
 \file fluid_timint_ac_ost.H
-\brief
 
-<pre>
-   Maintainer: Moritz Thon
-               thon@mhpc.mw.tum.de
-               http://www.mhpc.mw.tum.de
-               089 - 289-10364
-</pre>
-*----------------------------------------------------------------------*/
+\brief OST time integrator for FS3I-AC problems. Is in diamond inhertance with TimIntOneStepTheta and TimIntAC.
+
+\date 2015-07-29
+
+\maintainer Moritz Thon
+            thon@mhpc.mw.tum.de
+            089/289-10364
+
+\level 3
+----------------------------------------------------------------------*/
 
 #ifndef FLD_TIMINT_AC_OST_H
 #define FLD_TIMINT_AC_OST_H
@@ -33,10 +35,7 @@ public:
   /// Destructor
   virtual ~TimIntACOst();
 
-  /*!
-  \brief read restart data
-
-  */
+  /// read restart data
   virtual void ReadRestart(int step);
 
 protected:

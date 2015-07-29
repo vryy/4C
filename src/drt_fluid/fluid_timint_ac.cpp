@@ -1,21 +1,20 @@
 /*!----------------------------------------------------------------------
 \file fluid_timint_ac.cpp
-\brief
+\brief Fluid time integrator for FS3I-AC problems
 
-Fluid time integrator for FS3I-AC problems
+\date 2015-07-29
 
-<pre>
-   Maintainer: Moritz Thon
-               thon@mhpc.mw.tum.de
-               http://www.mhpc.mw.tum.de
-               089 - 289-10364
-</pre>
-*/
-/*----------------------------------------------------------------------*/
+\maintainer Moritz Thon
+            thon@mhpc.mw.tum.de
+            089/289-10364
+
+\level 3
+----------------------------------------------------------------------*/
 
 #include "fluid_timint_ac.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"
+
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     Thon 12/14 |
@@ -86,4 +85,13 @@ void FLD::TimIntAC::Output()
     }
   }
   return;
+}
+
+/*----------------------------------------------------------------------*
+ | time update of stresses                                   Thon 07/15 |
+ *----------------------------------------------------------------------*/
+void FLD::TimIntAC::TimeUpdateStresses()
+{
+  stressmanager_->GetStresses(trueresidual_,dta_);
+  //Note: we do the time update of wss from inside the ac-fsi framework!
 }

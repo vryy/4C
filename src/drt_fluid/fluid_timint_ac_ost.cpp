@@ -1,14 +1,16 @@
 /*!----------------------------------------------------------------------
 \file fluid_timint_ac_ost.cpp
-\brief
 
-<pre>
-   Maintainer: Moritz Thon
-               thon@mhpc.mw.tum.de
-               http://www.mhpc.mw.tum.de
-               089 - 289-10364
-</pre>
-*----------------------------------------------------------------------*/
+\brief OST time integrator for FS3I-AC problems. Is in diamond inhertance with TimIntOneStepTheta and TimIntAC.
+
+\date 2015-07-29
+
+\maintainer Moritz Thon
+            thon@mhpc.mw.tum.de
+            089/289-10364
+
+\level 3
+----------------------------------------------------------------------*/
 
 #include "fluid_timint_ac_ost.H"
 

@@ -194,9 +194,6 @@ namespace ADAPTER {
     ///Calculate WSS vector
     virtual Teuchos::RCP<Epetra_Vector> CalculateWallShearStresses();
 
-    ///Reset mean WSS vector in StressManager
-    virtual void ResetHistoryVectors( );
-
   protected:
 
     /// create conditioned dof-map extractor for the fluid

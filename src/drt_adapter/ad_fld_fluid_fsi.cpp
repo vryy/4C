@@ -649,11 +649,6 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFSI::CalculateWallShearStresses()
   return wss;
 }
 
-void ADAPTER::FluidFSI::ResetHistoryVectors( )
-{
-  fluidimpl_->StressManager()->ResetHistoryVectors( );
-}
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 double ADAPTER::FluidFSI::CalculateErrorNorm(const Epetra_Vector& vec,

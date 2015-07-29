@@ -75,7 +75,12 @@ public:
   /*!
     \brief Wrapper for FluidImpedacnceBc::TimeUpdateImpedance
     */
-  void PrepareTimeStepImpedance(const double time);
+  void PrepareTimeStepImpedances(const double time);
+
+  /*!
+  \brief Wrap for time update of impedance conditions
+  */
+  void TimeUpdateImpedances(const double time, const double dta);
 
   /*!
   \brief Wrapper for FluidImpedacnceBc::Impedances
@@ -191,10 +196,15 @@ protected:
     \brief compute convolution integral and apply pressure
     to elements
   */
-  void OutflowBoundary(
+  double OutflowBoundary(
       const double time,
       const double dta,
       const int condid );
+
+  /*!
+    \brief Update flowrate and pressure vector
+  */
+  void TimeUpdateImpedance(const double time, const double pressure);
 
   /*!
     \brief Time update impedance conditions
