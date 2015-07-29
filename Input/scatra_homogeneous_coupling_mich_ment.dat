@@ -55,7 +55,7 @@ SOLVERTYPE                      nonlinear // linear_full
 TIMEINTEGR                      One_Step_Theta //Gen_Alpha
 MAXTIME                         1.0
 NUMSTEP                         500
-TIMESTEP                        0.00001 //7.716049383e-10//[]=month // 2.314814815e-8//[]=day //5.55555556e-7//[]=h //0.002//[]=s //1.0e-3//[]=2s //3.3333333333333e-5//[]=min //
+TIMESTEP                        0.002
 THETA                           0.5
 ALPHA_M                         0.833333333333330
 ALPHA_F                         0.666666666666660
@@ -83,7 +83,7 @@ MESHTYING                       no
 LINEAR_SOLVER                   1
 //FDCHECK                         local
 ---------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
-ITEMAX                          10
+ITEMAX                          3
 CONVTOL                         1e-10
 EXPLPREDICT                     no
 ABSTOLRES                       1e-14
@@ -219,30 +219,9 @@ MAT 16 MAT_scatra DIFFUSIVITY 0.0
 //MAT 71 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 -1 -2 1 0 0 0 REACCOEFF 1.0 COUPLING simple_multiplicative
 //MAT 72 MAT_scatra_reaction NUMSCAL 9 STOICH 1 2 0 0 0 0 0 0 0 REACCOEFF 3.0 COUPLING constant
 //MAT 73 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 0 0 0 -1 -2 1 REACCOEFF 1.0 COUPLING michaelis_menten ROLE 0 0 0 0 0 0 -1 -1 0
-// []=s
-//MAT 71 MAT_scatra_reaction NUMSCAL 9 STOICH -1 -2 3 0 0 0 0 0 0 REACCOEFF 1.5 COUPLING michaelis_menten ROLE -1 1.2 0 0 0 0 0 0 0
-//MAT 72 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 -1 -2 1 0 0 0 REACCOEFF 2.0 COUPLING michaelis_menten ROLE 0 0 0 +1 0 +2 0 0 0
-//MAT 73 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 0 0 0 -5 1 7 REACCOEFF -10.0 COUPLING michaelis_menten ROLE 0 0 0 0 0 0 -5 1 7
-// []=2s
-//MAT 71 MAT_scatra_reaction NUMSCAL 9 STOICH -1 -2 3 0 0 0 0 0 0 REACCOEFF 3.0 COUPLING michaelis_menten ROLE -1 1.2 0 0 0 0 0 0 0
-//MAT 72 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 -1 -2 1 0 0 0 REACCOEFF 4.0 COUPLING michaelis_menten ROLE 0 0 0 +1 0 +2 0 0 0
-//MAT 73 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 0 0 0 -5 1 7 REACCOEFF -20.0 COUPLING michaelis_menten ROLE 0 0 0 0 0 0 -5 1 7
-// []=min
-//MAT 71 MAT_scatra_reaction NUMSCAL 9 STOICH -1 -2 3 0 0 0 0 0 0 REACCOEFF 90.0 COUPLING michaelis_menten ROLE -1 1.2 0 0 0 0 0 0 0
-//MAT 72 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 -1 -2 1 0 0 0 REACCOEFF 120.0 COUPLING michaelis_menten ROLE 0 0 0 +1 0 +2 0 0 0
-//MAT 73 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 0 0 0 -5 1 7 REACCOEFF -600.0 COUPLING michaelis_menten ROLE 0 0 0 0 0 0 -5 1 7
-// []=h
-//MAT 71 MAT_scatra_reaction NUMSCAL 9 STOICH -1 -2 3 0 0 0 0 0 0 REACCOEFF 5400.0 COUPLING michaelis_menten ROLE -1 1.2 0 0 0 0 0 0 0
-//MAT 72 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 -1 -2 1 0 0 0 REACCOEFF 7200.0 COUPLING michaelis_menten ROLE 0 0 0 +1 0 +2 0 0 0
-//MAT 73 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 0 0 0 -5 1 7 REACCOEFF -36000.0 COUPLING michaelis_menten ROLE 0 0 0 0 0 0 -5 1 7
-// []=day
-//MAT 71 MAT_scatra_reaction NUMSCAL 9 STOICH -1 -2 3 0 0 0 0 0 0 REACCOEFF 129600.0 COUPLING michaelis_menten ROLE -1 1.2 0 0 0 0 0 0 0
-//MAT 72 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 -1 -2 1 0 0 0 REACCOEFF 172800.0 COUPLING michaelis_menten ROLE 0 0 0 +1 0 +2 0 0 0
-//MAT 73 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 0 0 0 -5 1 7 REACCOEFF -864000.0 COUPLING michaelis_menten ROLE 0 0 0 0 0 0 -5 1 7
-// []=month
-MAT 71 MAT_scatra_reaction NUMSCAL 9 STOICH -1 -2 3 0 0 0 0 0 0 REACCOEFF 3888000.0 COUPLING michaelis_menten ROLE -1 1.2 0 0 0 0 0 0 0
-MAT 72 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 -1 -2 1 0 0 0 REACCOEFF 5184000.0 COUPLING michaelis_menten ROLE 0 0 0 +1 0 +2 0 0 0
-MAT 73 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 0 0 0 -5 1 7 REACCOEFF -25920000.0 COUPLING michaelis_menten ROLE 0 0 0 0 0 0 -5 1 7
+MAT 71 MAT_scatra_reaction NUMSCAL 9 STOICH -1 -2 3 0 0 0 0 0 0 REACCOEFF 1.5 COUPLING michaelis_menten ROLE -1 1.2 0 0 0 0 0 0 0
+MAT 72 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 -1 -2 1 0 0 0 REACCOEFF 2.0 COUPLING michaelis_menten ROLE 0 0 0 +1 0 +2 0 0 0
+MAT 73 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 0 0 0 -5 1 7 REACCOEFF -10.0 COUPLING michaelis_menten ROLE 0 0 0 0 0 0 -5 1 7
 -------------------------------------------------------------CURVE1
 -------------------------------------------------------------CURVE2
 -------------------------------------------------------------CURVE3
