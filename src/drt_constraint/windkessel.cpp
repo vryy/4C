@@ -1806,10 +1806,11 @@ void UTILS::Windkessel::EvaluateHeartValveCardiovascularFullWindkessel(
     double E_at_m = theta * E_at_n + (1.-theta) * E_at_;
 
     double C_ar = windkesselcond_[condID]->GetDouble("C_ar");
-    double C_ven = windkesselcond_[condID]->GetDouble("C_ven");
     double R_ar = windkesselcond_[condID]->GetDouble("R_ar");
-    double R_ven = windkesselcond_[condID]->GetDouble("R_ven");
     double L_ar = windkesselcond_[condID]->GetDouble("L_ar");
+    double Z_ar = windkesselcond_[condID]->GetDouble("Z_ar");
+    double C_ven = windkesselcond_[condID]->GetDouble("C_ven");
+    double R_ven = windkesselcond_[condID]->GetDouble("R_ven");
     double L_ven = windkesselcond_[condID]->GetDouble("L_ven");
 
     double p_ar_0 = windkesselcond_[condID]->GetDouble("p_ar_0");
@@ -1832,8 +1833,10 @@ void UTILS::Windkessel::EvaluateHeartValveCardiovascularFullWindkessel(
 
     // end-point values at t_{n+1}
     double p_at_n = 0.;
+    double q_vout_n = 0.;
     // values at t_{n}
     double p_at_ = 0.;
+    double q_vout_ = 0.;
     // mid-point values at t_{n+\theta}
     double p_v_m = 0.;
     double p_at_m = 0.;
@@ -1853,8 +1856,10 @@ void UTILS::Windkessel::EvaluateHeartValveCardiovascularFullWindkessel(
 
       //extract values of dof vector wkdofn
       p_at_n = (*sysvec7)[numdof_per_cond*condID+0];
+      q_vout_n = (*sysvec7)[numdof_per_cond*condID+2];
       //extract values of dof vector wkdof
       p_at_ = (*sysvec8)[numdof_per_cond*condID+0];
+      q_vout_ = (*sysvec8)[numdof_per_cond*condID+2];
       //extract values of dof vector wkdofm
       p_at_m = (*sysvec6)[numdof_per_cond*condID+0];
       q_vin_m = (*sysvec6)[numdof_per_cond*condID+1];
@@ -1909,13 +1914,13 @@ void UTILS::Windkessel::EvaluateHeartValveCardiovascularFullWindkessel(
       factor_wkdof[4] = 0.;
       factor_dwkdof[4] = C_ar;
       factor_Q[4] = 0.;
-      factor_1[4] = -q_vout_m + q_ar_m;
+      factor_1[4] = -q_vout_m + q_ar_m - C_ar*Z_ar * (q_vout_n - q_vout_)/ts_size;
 
       //arterial linear momentum balance
       factor_wkdof[5] = 1.;
       factor_dwkdof[5] = L_ar/R_ar;
       factor_Q[5] = 0.;
-      factor_1[5] = (p_ven_m-p_ar_m)/R_ar;
+      factor_1[5] = (p_ven_m-p_ar_m + Z_ar*q_vout_m)/R_ar;
 
       //venous mass balance
       factor_wkdof[6] = 0.;
@@ -1992,11 +1997,12 @@ void UTILS::Windkessel::EvaluateHeartValveCardiovascularFullWindkessel(
 
       //arterial mass balance
       wkstiff(4,4) = C_ar/ts_size;
-      wkstiff(4,2) = -theta;
+      wkstiff(4,2) = -theta - C_ar*Z_ar/ts_size;
       wkstiff(4,5) = theta;
 
       //arterial linear momentum balance
       wkstiff(5,5) = L_ar/(R_ar*ts_size) + theta;
+      wkstiff(5,2) = Z_ar * theta/R_ar;
       wkstiff(5,4) = -theta/R_ar;
       wkstiff(5,6) = theta/R_ar;
 

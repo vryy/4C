@@ -4349,6 +4349,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(windkesselheartvalvecardiovascularfullcond,"C_ar"); // arterial compliance
   AddNamedReal(windkesselheartvalvecardiovascularfullcond,"R_ar"); // arterial resistance
   AddNamedReal(windkesselheartvalvecardiovascularfullcond,"L_ar"); // arterial inertance
+  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"Z_ar"); // arterial characteristic impedance
   AddNamedReal(windkesselheartvalvecardiovascularfullcond,"C_ven"); // venous compliance
   AddNamedReal(windkesselheartvalvecardiovascularfullcond,"R_ven"); // venous resistance
   AddNamedReal(windkesselheartvalvecardiovascularfullcond,"L_ven"); // venous inertance
