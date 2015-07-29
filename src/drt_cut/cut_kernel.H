@@ -3,6 +3,7 @@
 
 #include "cut_tolerance.H"
 #include "cut_utils.H"
+#include "cut_enum.H"
 
 #include "../linalg/linalg_gauss.H"
 
@@ -162,7 +163,7 @@ namespace GEO
       \brief Check whether the polygon defined by the set of points is convex
        */
       std::vector<int> CheckConvexity( const std::vector<Point*>& ptlist,
-                                       std::string& geoType,
+                                       GEO::CUT::FacetShape& geomType,
                                        bool InSplit = true,
                                        bool DeleteInlinePts = false );
 

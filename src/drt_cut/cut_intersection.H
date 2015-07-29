@@ -469,7 +469,7 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::Intersect(
           lineendpoint_xsi[lp] = xsi_;
         }
         if (zeroarea)
-          dserror("zeroarea handling for quad4 not implemented yet (not expected to happen here, as it should just occure in the triangulation procedure!)");
+          std::runtime_error("zeroarea handling for quad4 not implemented yet (not expected to happen here, as it should just occure in the triangulation procedure!)");
       }
       else
         dserror("Intersection Error: Other surfaces than tri3 and quad4 are not supported to avoid huge problems!!!");

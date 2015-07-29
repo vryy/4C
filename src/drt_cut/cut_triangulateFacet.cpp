@@ -36,12 +36,12 @@ void GEO::CUT::TriangulateFacet::SplitFacet()
     split_.clear();
 
     // get concave (reflex) points of polygon
-    std::string geoType;
+    GEO::CUT::FacetShape geoType;
     std::vector<int> ptConcavity = KERNEL::CheckConvexity(  ptlist_, geoType );
 
     // a convex polygon or a polygon with only one concave point can be
     // very easily split
-    if( geoType=="convex" || geoType=="1ptConcave" )
+    if( geoType==GEO::CUT::Convex or geoType==GEO::CUT::SinglePtConcave )
     {
       SplitConvex_1ptConcave_Facet( ptConcavity );
     }
@@ -71,19 +71,19 @@ void GEO::CUT::TriangulateFacet::Split4nodeFacet( std::vector<Point*> &poly,
   if( poly.size()!=4 )
     dserror("This is not a 4 noded facet");
 
-  std::string geoType;
+  GEO::CUT::FacetShape geoType;
   std::vector<int> ptConcavity = KERNEL::CheckConvexity(  poly, geoType );
 
   int indStart=0;
 
   // convex quad can be directly added
-  if( geoType=="convex" )
+  if( geoType==GEO::CUT::Convex )
   {
     split_.push_back( poly );
     return;
   }
   // concave quad is split into two tri cells
-  else if( geoType=="1ptConcave" )
+  else if( geoType==GEO::CUT::SinglePtConcave )
   {
     indStart = ptConcavity[0];
 
@@ -359,7 +359,7 @@ void GEO::CUT::TriangulateFacet::SplitGeneralFacet( std::vector<int> ptConcavity
     else
     {
       ptConcavity.clear();
-      std::string geoType;
+      GEO::CUT::FacetShape geoType;
 
       ptConcavity = KERNEL::CheckConvexity(  ptlist_, geoType );
 
@@ -437,7 +437,7 @@ void GEO::CUT::TriangulateFacet::EarClipping( std::vector<int> ptConcavity,   //
     }
 
     ptConcavity.clear();
-    std::string geoType;
+    GEO::CUT::FacetShape geoType;
 
     ptConcavity = KERNEL::CheckConvexity( ptlist_, geoType, true, DeleteInlinePts );
   }
@@ -548,7 +548,7 @@ void GEO::CUT::TriangulateFacet::EarClipping( std::vector<int> ptConcavity,   //
       break;
     }
 
-    std::string str1;
+    GEO::CUT::FacetShape str1;
     ptConcavity.clear();
     ptConcavity = KERNEL::CheckConvexity(  ptlist_, str1, true, DeleteInlinePts ); // concave points for the new polygon
 
@@ -567,7 +567,21 @@ void GEO::CUT::TriangulateFacet::EarClipping( std::vector<int> ptConcavity,   //
     }
     if ( split_size == split_.size() )
     {
-      throw std::runtime_error( "Ear clipping: no progress in the triangulation" );
+      BoundingBox bb;
+      std::cout<<"The facet points are as follows\n";
+      for( std::vector<Point*>::iterator it = ptlist_.begin(); it != ptlist_.end(); it++ )
+      {
+        Point* pp = *it;
+        const double * xp = pp->X();
+        bb.AddPoint( xp );
+        std::cout<<xp[0]<<" "<<xp[1]<<" "<<xp[2]<<"\n";
+      }
+      std::cout<<"Bounding box details:\n";
+      std::cout<<"dx = "<<fabs(bb.maxx()-bb.minx())<<"\n";
+      std::cout<<"dy = "<<fabs(bb.maxy()-bb.miny())<<"\n";
+      std::cout<<"dz = "<<fabs(bb.maxz()-bb.minz())<<"\n";
+      dserror( "Ear clipping: no progress in the triangulation" );
+
     }
   }
 }
@@ -758,7 +772,7 @@ void GEO::CUT::TriangulateFacet::EarClippingWithHoles( Side * parentside )
         potentuallyvisiblepoint(2,0) = 0;
       }
   // 6) Reflex points in triangle
-      std::string geoType;
+      GEO::CUT::FacetShape geoType;
       std::vector<int> reflexmaincyclepointids = KERNEL::CheckConvexity( ptlist_, geoType, false, false );
       for ( std::vector<int>::iterator i=reflexmaincyclepointids.begin(); i!=reflexmaincyclepointids.end(); ++i )
       {

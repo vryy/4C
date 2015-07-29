@@ -11,6 +11,7 @@ equations
 #include<vector>
 #include "facet_integration.H"
 #include "cut_volumecell.H"
+#include "cut_enum.H"
 
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensematrix.H"
@@ -117,7 +118,7 @@ namespace GEO
         \brief Check whether the intersection point, which is in the plane containing the facet, actually lies with
         in the facet area
         */
-        int pnpoly(const std::vector<std::vector<double> > & xp, const LINALG::Matrix<3,1> & pt,std::string projType);
+        int pnpoly(const std::vector<std::vector<double> > & xp, const LINALG::Matrix<3,1> & pt, GEO::CUT::ProjectionDirection projType);
 
         /*!
         \brief Adds linear combination of first order base function to the moment fitting system of equations

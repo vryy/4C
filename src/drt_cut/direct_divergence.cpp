@@ -167,7 +167,6 @@ void GEO::CUT::DirectDivergence::ListFacets( std::vector<plain_facet_set::const_
 
         // for any other cut facet, make sure when it is extended over the whole
         // volumecell, it falls within the background element --> inside internal points
-        //TODO: check this in global coordinates
         else
         {
           double x1=0.0,x2=0.0,x3=0.0,x4=0.0;
@@ -531,6 +530,17 @@ void GEO::CUT::DirectDivergence::DebugVolume( const DRT::UTILS::GaussIntegration
   }
 #endif
   volcell_->SetVolume(volGlobal);
+
+  if(isnan(volGlobal))
+  {
+    std::cout<<"-------------------------------------------------------------\n";
+    std::cout<<"There are two possible sources of this problem \n";
+    std::cout<<"1. divCells created from facet may fall on a line. Print the main Gauss points from GEO::CUT::FacetIntegration::DivergenceIntegrationRule(),"
+        " if this is the case, all points belong to a particular divCells have NaN weights\n";
+    std::cout<<"2. GLOBAL::: The reference plane is not correctly chosen. Print the equation of reference plane and if the first component "
+        "is close to zero, then the volume is infinity. Check GEO::CUT::DirectDivergenceGlobalRefplane::GetReferencePlane() \n";
+    throw std::runtime_error("Volume is not a number.");
+  }
 }
 
 /*--------------------------------------------------------------------------------------------------------------*

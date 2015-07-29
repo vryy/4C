@@ -9,6 +9,7 @@ equations
 #define LINE_INTEGRATION_H
 
 #include<vector>
+#include "cut_enum.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 
 #include "../../src/drt_fem_general/drt_utils_gausspoints.H"
@@ -37,7 +38,7 @@ class LineIntegration
     /*!
     \brief Choose the base function to be integrated
     */
-    void set_integ_type(std::string inttype){intType_ = inttype;}
+    void set_integ_type(GEO::CUT::ProjectionDirection inttype){intType_ = inttype;}
 
     /*!
     \brief Transform the Gauss integration point available in the limit (-1,1) to the actual line coordinates
@@ -68,7 +69,7 @@ class LineIntegration
     bool bcellInt_;
 
     //! over which plane (x, y or z) boundarycell has to be projected when performing boundarycell integration
-    std::string intType_;
+    GEO::CUT::ProjectionDirection intType_;
 };
 
 #endif

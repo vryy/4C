@@ -176,7 +176,7 @@ bool GEO::CUT::KERNEL::IsOnLine( Point* & pt1, Point* & pt2, Point* & pt3, bool 
       Intially the polygon is projected into the given plane
 *----------------------------------------------------------------------------------------------------------*/
 std::vector<int> GEO::CUT::KERNEL::CheckConvexity( const std::vector<Point*>& ptlist,
-                                                   std::string& geomType,
+                                                   GEO::CUT::FacetShape& geomType,
                                                    bool InSplit,
                                                    bool DeleteInlinePts )
 {
@@ -286,12 +286,12 @@ std::vector<int> GEO::CUT::KERNEL::CheckConvexity( const std::vector<Point*>& pt
     }
   }
 
-  if( leftind.size()==0 || rightind.size()==0 )
-    geomType = "convex";
-  else if( leftind.size()==1 || rightind.size()==1 )
-    geomType = "1ptConcave";
+  if( leftind.size()==0 or rightind.size()==0 )
+    geomType = GEO::CUT::Convex;
+  else if( leftind.size()==1 or rightind.size()==1 )
+    geomType = GEO::CUT::SinglePtConcave;
   else
-    geomType = "concave";
+    geomType = GEO::CUT::Concave;
 
   // if the points are ordered acw, right-turning points are concave points, and vice versa
   if( isClockwise )
@@ -551,7 +551,7 @@ bool GEO::CUT::KERNEL::PtInsideQuad( std::vector<Point*> quad, Point* check )
     dserror( "expecting a Quad" );
 
   std::vector<int> concavePts;
-  std::string str1;
+  GEO::CUT::FacetShape str1;
 
   concavePts = CheckConvexity(  quad, str1 );
 

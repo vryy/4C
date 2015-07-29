@@ -13,6 +13,7 @@ equations
 #include "least_squares.H"
 #include "cut_boundingbox.H"
 #include "cut_options.H"
+#include "cut_enum.H"
 #include <Epetra_MultiVector.h>
 
 
@@ -536,16 +537,16 @@ int GEO::CUT::VolumeIntegration::pnpoly(int npol, std::vector<double>xp, std::ve
 
 *--------------------------------------------------------------------------------------------------------------------*/
 int GEO::CUT::VolumeIntegration::pnpoly(const std::vector<std::vector<double> > & xp, const LINALG::Matrix<3,1> & pt,
-                                        std::string projType)
+                                        GEO::CUT::ProjectionDirection projType)
 {
   int npol = xp.size();
   int ind1=1,ind2=2;
-  if( projType=="y" )
+  if( projType==GEO::CUT::proj_y )
   {
     ind1 = 2;
     ind2 = 0;
   }
-  else if( projType=="z" )
+  else if( projType==GEO::CUT::proj_z )
   {
     ind1 = 0;
     ind2 = 1;
@@ -1141,7 +1142,7 @@ std::string GEO::CUT::VolumeIntegration::IsPointInside( LINALG::Matrix<3,1> & rs
     Facet *fe = *XFacets[i];
     std::vector<std::vector<double> > cornersLocal;
     fe->CornerPointsLocal(elem1_,cornersLocal);
-    int cutno = pnpoly( cornersLocal, rst, "x" );
+    int cutno = pnpoly( cornersLocal, rst, GEO::CUT::proj_x );
     if( cutno==1 )
     {
       // find x-value of intersection point, (yInt,zInt) = (y,z) of given pt
@@ -1172,7 +1173,7 @@ std::string GEO::CUT::VolumeIntegration::IsPointInside( LINALG::Matrix<3,1> & rs
         Facet *fe = *NotXFacets[i];
         std::vector<std::vector<double> > cornersLocal;
         fe->CornerPointsLocal(elem1_,cornersLocal);
-        int cutno = pnpoly( cornersLocal, rst, "y" );
+        int cutno = pnpoly( cornersLocal, rst, GEO::CUT::proj_y );
         if( cutno==1 ) // make sure pt is within facet area
         {
           return "onBoundary";
@@ -1187,7 +1188,7 @@ std::string GEO::CUT::VolumeIntegration::IsPointInside( LINALG::Matrix<3,1> & rs
         Facet *fe = *NotXFacets[i];
         std::vector<std::vector<double> > cornersLocal;
         fe->CornerPointsLocal(elem1_, cornersLocal);
-        int cutno = pnpoly( cornersLocal, rst, "z" );
+        int cutno = pnpoly( cornersLocal, rst, GEO::CUT::proj_z );
         if( cutno==1 )
         {
           return "onBoundary";

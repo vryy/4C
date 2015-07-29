@@ -384,7 +384,7 @@ bool GEO::CUT::FacetIntegration::IsClockwiseOrdering()
                   equation of this form is used to replace x in the line integral
 *------------------------------------------------------------------------------------------------*/
 std::vector<double> GEO::CUT::FacetIntegration::compute_alpha( std::vector<double> & eqn_plane,
-                                                               std::string intType )
+                                                               GEO::CUT::ProjectionDirection intType )
 {
   std::vector<double> alfa(3);
   double a = eqn_plane[0];
@@ -393,19 +393,19 @@ std::vector<double> GEO::CUT::FacetIntegration::compute_alpha( std::vector<doubl
   double d = eqn_plane[3];
 
 
-  if(intType=="x")
+  if(intType==GEO::CUT::proj_x)
   {
     alfa[0] = d/a;
     alfa[1] = -1.0*b/a;
     alfa[2] = -1.0*c/a;
   }
-  else if(intType=="y")
+  else if(intType==GEO::CUT::proj_y)
   {
     alfa[0] = d/b;
     alfa[1] = -1.0*c/b;
     alfa[2] = -1.0*a/b;
   }
-  else if(intType=="z")
+  else if(intType==GEO::CUT::proj_z)
   {
     alfa[0] = d/c;
     alfa[1] = -1.0*a/c;
@@ -422,18 +422,18 @@ std::vector<double> GEO::CUT::FacetIntegration::compute_alpha( std::vector<doubl
 /*---------------------------------------------------------------------------------*
       return the absolute normal of the facet in a particular direction
 *----------------------------------------------------------------------------------*/
-double GEO::CUT::FacetIntegration::getNormal(std::string intType)
+double GEO::CUT::FacetIntegration::getNormal(GEO::CUT::ProjectionDirection intType)
 {
   double normalScale=0.0;
   for(unsigned i=0;i<3;i++)
     normalScale += eqn_plane_[i]*eqn_plane_[i];
   normalScale = sqrt(normalScale);
 
-  if(intType=="x")
+  if(intType==GEO::CUT::proj_x)
     return eqn_plane_[0]/normalScale;
-  else if(intType=="y")
+  else if(intType==GEO::CUT::proj_y)
     return eqn_plane_[1]/normalScale;
-  else if(intType=="z")
+  else if(intType==GEO::CUT::proj_z)
     return eqn_plane_[2]/normalScale;
   else
   {
@@ -482,7 +482,7 @@ double GEO::CUT::FacetIntegration::integrate_facet()
     if(bcellInt_==false)
     {
       std::vector<double> alpha;
-      alpha = compute_alpha(eqn_plane_,"x");
+      alpha = compute_alpha(eqn_plane_,GEO::CUT::proj_x);
       for(std::vector<std::vector<double> >::const_iterator k=cornersLocal.begin();k!=cornersLocal.end();k++)
       {
         const std::vector<double> coords1 = *k;
@@ -512,51 +512,51 @@ double GEO::CUT::FacetIntegration::integrate_facet()
     {
 //to reduce the truncation error introduced during the projection of plane,
 //the plane, along which the normal component is maximum, is chosen
-      std::string projType;
+      GEO::CUT::ProjectionDirection projType;
       if(fabs(eqn_plane_[0])<1e-8)
       {
         if(fabs(eqn_plane_[1])<1e-8)
-          projType = "z";
+          projType = GEO::CUT::proj_z;
         else if(fabs(eqn_plane_[2])<1e-8)
-          projType = "y";
+          projType = GEO::CUT::proj_y;
         else
         {
           if(fabs(eqn_plane_[1])>fabs(eqn_plane_[2]))
-            projType = "y";
+            projType = GEO::CUT::proj_y;
           else
-            projType = "z";
+            projType = GEO::CUT::proj_z;
         }
       }
       else if(fabs(eqn_plane_[1])<1e-8)
       {
         if(fabs(eqn_plane_[2])<1e-8)
-          projType = "x";
+          projType = GEO::CUT::proj_x;
         else
         {
           if(fabs(eqn_plane_[0])>fabs(eqn_plane_[2]))
-            projType = "x";
+            projType = GEO::CUT::proj_x;
           else
-            projType = "z";
+            projType = GEO::CUT::proj_z;
         }
       }
       else if(fabs(eqn_plane_[2])<1e-8)
       {
         if(fabs(eqn_plane_[1])>fabs(eqn_plane_[0]))
-          projType = "y";
+          projType = GEO::CUT::proj_y;
         else
-          projType = "x";
+          projType = GEO::CUT::proj_x;
       }
       else
       {
         if(fabs(eqn_plane_[0])>=fabs(eqn_plane_[1]) && fabs(eqn_plane_[0])>=fabs(eqn_plane_[2]))
-          projType = "x";
+          projType = GEO::CUT::proj_x;
         else if(fabs(eqn_plane_[1])>=fabs(eqn_plane_[2]) && fabs(eqn_plane_[1])>=fabs(eqn_plane_[0]))
-          projType = "y";
+          projType = GEO::CUT::proj_y;
         else
-          projType = "z";
+          projType = GEO::CUT::proj_z;
       }
 
-      if(projType!="x" && projType!="y" && projType!="z")
+      if(projType!=GEO::CUT::proj_x and projType!=GEO::CUT::proj_y and projType!=GEO::CUT::proj_z)
       {
         dserror("projection plane is not defined");
         exit(1);
@@ -582,7 +582,7 @@ double GEO::CUT::FacetIntegration::integrate_facet()
 *------------------------------------------------------------------------------------------------*/
 void GEO::CUT::FacetIntegration::BoundaryFacetIntegration( const std::vector<std::vector<double> > & cornersLocal,
                                                            double &facet_integ,
-                                                           std::string intType )
+                                                           GEO::CUT::ProjectionDirection intType )
 {
   std::vector<double> alpha;
   double abs_normal=0.0;
@@ -600,11 +600,11 @@ void GEO::CUT::FacetIntegration::BoundaryFacetIntegration( const std::vector<std
 
     //first index decides the x or y coordinate, second index decides the start point or end point
     LINALG::Matrix<2,2> coordLine;
-    if(intType=="x")
+    if(intType==GEO::CUT::proj_x)
     {
       if(k==cornersLocal.begin())
       {
-        alpha = compute_alpha(eqn_plane_,"x");
+        alpha = compute_alpha(eqn_plane_,GEO::CUT::proj_x);
         abs_normal = getNormal(intType);
       }
   //The facet is projected over y-z plane and then the integration is performed
@@ -616,14 +616,14 @@ void GEO::CUT::FacetIntegration::BoundaryFacetIntegration( const std::vector<std
       coordLine(1,1) = coords2[2];
 
       LineIntegration line1(coordLine,inte_num_,alpha,bcellInt_);
-      line1.set_integ_type("x");
+      line1.set_integ_type(GEO::CUT::proj_x);
       facet_integ += line1.integrate_line();
     }
-    else if(intType=="y")
+    else if(intType==GEO::CUT::proj_y)
     {
       if(k==cornersLocal.begin())
       {
-        alpha = compute_alpha(eqn_plane_,"y");
+        alpha = compute_alpha(eqn_plane_,GEO::CUT::proj_y);
         abs_normal = getNormal(intType);
       }
   //The facet is projected over y-z plane and then the integration is performed
@@ -634,15 +634,15 @@ void GEO::CUT::FacetIntegration::BoundaryFacetIntegration( const std::vector<std
       coordLine(0,1) = coords2[2];
       coordLine(1,1) = coords2[0];
       LineIntegration line1(coordLine,inte_num_,alpha,bcellInt_);
-      line1.set_integ_type("y");
+      line1.set_integ_type(GEO::CUT::proj_y);
       facet_integ += line1.integrate_line();
     }
 
-    else if(intType=="z")
+    else if(intType==GEO::CUT::proj_z)
     {
       if(k==cornersLocal.begin())
       {
-        alpha = compute_alpha(eqn_plane_,"z");
+        alpha = compute_alpha(eqn_plane_,GEO::CUT::proj_z);
         abs_normal = getNormal(intType);
       }
   //The facet is projected over y-z plane and then the integration is performed
@@ -653,7 +653,7 @@ void GEO::CUT::FacetIntegration::BoundaryFacetIntegration( const std::vector<std
       coordLine(0,1) = coords2[0];
       coordLine(1,1) = coords2[1];
       LineIntegration line1(coordLine,inte_num_,alpha,bcellInt_);
-      line1.set_integ_type("z");
+      line1.set_integ_type(GEO::CUT::proj_z);
       facet_integ += line1.integrate_line();
     }
     else
@@ -680,7 +680,7 @@ void GEO::CUT::FacetIntegration::DivergenceIntegrationRule( Mesh &mesh,
   //the last two parameters has no influence when called from the first parameter is set to true
   GenerateDivergenceCells( true, mesh, divCells );
 
-  double normalX = getNormal("x");//make sure eqn of plane is available before calling this
+  double normalX = getNormal(GEO::CUT::proj_x);//make sure eqn of plane is available before calling this
 
   if(clockwise_) //because if ordering is clockwise the contribution of this facet must be subtracted
     normalX = -1.0*normalX;
@@ -717,6 +717,9 @@ void GEO::CUT::FacetIntegration::DivergenceIntegrationRule( Mesh &mesh,
 #endif
 
     DRT::UTILS::GaussIntegration gi_temp = DRT::UTILS::GaussIntegration( bcell->Shape(), 7 );
+
+    if( bcell->Area() < REF_AREA_BCELL )
+      continue;
 
     for ( DRT::UTILS::GaussIntegration::iterator iquad=gi_temp.begin(); iquad!=gi_temp.end(); ++iquad )
     {

@@ -184,7 +184,7 @@ public:
   /// Returns sides that are connected at this node
   const plain_side_set & Sides () const { return point_->CutSides(); }
 
-  /// get all elements adjacent to this node's point
+  /// get all cut elements adjacent to this node's point
   const plain_element_set & Elements() const { return point_->Elements(); }
 
 

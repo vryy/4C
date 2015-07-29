@@ -9,6 +9,7 @@ equations
 
 #include "cut_element.H"
 #include "cut_mesh.H"
+#include "cut_enum.H"
 
 namespace GEO
 {
@@ -78,18 +79,18 @@ namespace GEO
         /*
         \brief Compute the function which replaces "x" when projecting the facet into coordinate plane
         */
-        std::vector<double> compute_alpha(std::vector<double> & eqn_plane,std::string intType);
+        std::vector<double> compute_alpha(std::vector<double> & eqn_plane,GEO::CUT::ProjectionDirection intType);
 
         /*!
         \brief Get normal of the considered facet in a particular coordinate direction defined by intType
         */
-        double getNormal(std::string intType);
+        double getNormal(GEO::CUT::ProjectionDirection intType);
 
         /*!
         \brief Perform integration of base functions over boundarycells
         */
         void BoundaryFacetIntegration(const std::vector<std::vector<double> > & cornersLocal,double& facet_integ,
-                                      std::string intType);
+                                      GEO::CUT::ProjectionDirection intType);
 
         /*!
         \brief Generate boundary cells for the considered facet. May need to perform triangulatio

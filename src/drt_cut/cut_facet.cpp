@@ -424,9 +424,6 @@ void GEO::CUT::Facet::CreateTriangulation( Mesh & mesh, const std::vector<Point*
   // But we have no choice in the case of concave polyhedra
   else
   {
-    if( ParentSide()->IsCut() and ParentSide()->IsLevelSetSide() )
-      dserror("done");
-
     triangulation_.clear();
     std::vector<Point*> pts( points );
     std::vector<int> ptc;
@@ -1236,10 +1233,10 @@ void GEO::CUT::Facet::SplitFacet( const std::vector<Point*> & points )
 *------------------------------------------------------------------------*/
 bool GEO::CUT::Facet::isConvex()
 {
- std::string geoType;
+ GEO::CUT::FacetShape geoType;
  std::vector<int> ptConcavity = KERNEL::CheckConvexity( corner_points_, geoType, false, false );
 
- if( geoType == "convex" )
+ if( geoType == GEO::CUT::Convex )
    return true;
 
  return false;

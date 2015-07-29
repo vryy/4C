@@ -41,40 +41,40 @@ double LineIntegration::integrate_line()
   if (fabs(normal(0,0))<TOL_LINE_NORMAL)
     return 0.0;
 
-      double inte = 0.0;
+  double inte = 0.0;
 
-    //8 is the order of Gauss integration used in the line integration
-    //since we integrate 6th order polynomial in volume, 8th order must be used for line
-    DRT::UTILS::GaussIntegration gi( DRT::Element::line2, 8 );
+  //8 is the order of Gauss integration used in the line integration
+  //since we integrate 6th order polynomial in volume, 8th order must be used for line
+  DRT::UTILS::GaussIntegration gi( DRT::Element::line2, 8 );
 
-    for ( DRT::UTILS::GaussIntegration::iterator iquad=gi.begin(); iquad!=gi.end(); ++iquad )
+  for ( DRT::UTILS::GaussIntegration::iterator iquad=gi.begin(); iquad!=gi.end(); ++iquad )
+  {
+    const LINALG::Matrix<1,1> eta( iquad.Point() );
+    double weight = iquad.Weight();
+    LINALG::Matrix<2,1>normaltemp,actCoord;
+    double drs=0.0;
+    Transform(end_pts_,eta(0,0),actCoord,normaltemp,drs);
+
+    if(bcellInt_==false)  //integration over volumecell
     {
-      const LINALG::Matrix<1,1> eta( iquad.Point() );
-      double weight = iquad.Weight();
-      LINALG::Matrix<2,1>normaltemp,actCoord;
-      double drs=0.0;
-      Transform(end_pts_,eta(0,0),actCoord,normaltemp,drs);
-
-      if(bcellInt_==false)  //integration over volumecell
-      {
-        double linein = base_func_line_int(actCoord, inte_num_,alpha_);
-        inte = inte+weight*linein*drs;
-      }
-      else                 // integration over boundarycell
-      {
-        double linein=0.0;
-        if(intType_=="x")
-          linein = base_func_surfX(actCoord,inte_num_,alpha_);
-        else if(intType_=="y")
-          linein = base_func_surfY(actCoord,inte_num_,alpha_);
-        else if(intType_=="z")
-          linein = base_func_surfZ(actCoord,inte_num_,alpha_);
-        else
-          dserror("Integration type unspecified");
-        inte = inte+weight*linein*drs;
-      }
+      double linein = base_func_line_int(actCoord, inte_num_,alpha_);
+      inte = inte+weight*linein*drs;
     }
-    inte = inte*normal(0,0);
+    else                 // integration over boundarycell
+    {
+      double linein=0.0;
+      if(intType_==GEO::CUT::proj_x)
+        linein = base_func_surfX(actCoord,inte_num_,alpha_);
+      else if(intType_==GEO::CUT::proj_y)
+        linein = base_func_surfY(actCoord,inte_num_,alpha_);
+      else if(intType_==GEO::CUT::proj_z)
+        linein = base_func_surfZ(actCoord,inte_num_,alpha_);
+      else
+        dserror("Integration type unspecified");
+      inte = inte+weight*linein*drs;
+    }
+  }
+  inte = inte*normal(0,0);
 
   return inte;
 }
