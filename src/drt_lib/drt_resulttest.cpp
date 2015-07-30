@@ -316,6 +316,17 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
     .AddOptionalNamedString("NAME")
     ;
 
+  DRT::INPUT::LineDefinition red_airway_ele;
+    red_airway_ele
+    .AddTag("RED_AIRWAY")
+    .AddNamedString("DIS")
+    .AddNamedInt("ELEMENT")
+    .AddNamedString("QUANTITY")
+    .AddNamedDouble("VALUE")
+    .AddNamedDouble("TOLERANCE")
+    .AddOptionalNamedString("NAME")
+    ;
+
   DRT::INPUT::LineDefinition art_net;
   art_net
     .AddTag("ARTNET")
@@ -443,6 +454,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
   lines->Add(scatra);
   lines->Add(scatra_special);
   lines->Add(red_airway);
+  lines->Add(red_airway_ele);
   lines->Add(art_net);
   lines->Add(fld_adj);
   lines->Add(opti_node);
