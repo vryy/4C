@@ -563,11 +563,23 @@ void GEO::CUT::ParentIntersection::Cut_Finalize( bool include_inner,
 
   Mesh & m = NormalMesh();
 
+//  //FOR CURRENT DEBUG!
+//  std::cout << "WARNING: DIRECT DIVERGENCE IS FORCED FOR ALL PROBLEMS!" << std::endl;
+//  VCellgausstype = INPAR::CUT::VCellGaussPts_DirectDivergence;
+#ifdef DEBUGCUTLIBRARY
+  include_inner = true; //Needed for debugging the volume
+#endif
+
   if(VCellgausstype==INPAR::CUT::VCellGaussPts_Tessellation)
   {
     TEUCHOS_FUNC_TIME_MONITOR( "XFEM::FluidWizard::Cut::Tessellation" );
     m.CreateIntegrationCells( 0 ,tetcellsonly ); // boundary cells will be created within TetMesh.CreateElementTets
     //m.RemoveEmptyVolumeCells();
+
+//    // Test and Debug:
+//    m.TestElementVolume( true, VCellgausstype );
+//    m.TestFacetArea();
+//    DebugCut(m);
 
 #ifdef DEBUGCUTLIBRARY
     //m.TestVolumeSurface(); //Broken test, needs to be fixed for proper usage.
@@ -576,7 +588,8 @@ void GEO::CUT::ParentIntersection::Cut_Finalize( bool include_inner,
     m.SimplifyIntegrationCells();
 
 #ifdef DEBUGCUTLIBRARY
-    m.TestElementVolume( true );
+    m.TestElementVolume( true, VCellgausstype );
+    DebugCut(m);
 #endif
   }
   else if(VCellgausstype==INPAR::CUT::VCellGaussPts_MomentFitting)
@@ -591,8 +604,13 @@ void GEO::CUT::ParentIntersection::Cut_Finalize( bool include_inner,
   {
     TEUCHOS_FUNC_TIME_MONITOR( "XFEM::FluidWizard::Cut::DirectDivergence" );
     m.DirectDivergenceGaussRule(include_inner, BCellgausstype);
-#ifdef DEBUGCUTLIBRARY
+
+//    m.TestElementVolume( true, VCellgausstype );
 //    m.TestFacetArea();
+
+#ifdef DEBUGCUTLIBRARY
+    m.TestElementVolume( true, VCellgausstype );
+    m.TestFacetArea();
 #endif
   }
   else
@@ -1002,3 +1020,77 @@ void GEO::CUT::ParentIntersection::Status(INPAR::CUT::VCellGaussPts gausstype)
 #endif
 }
 
+/*
+ * If the cut is done by Tesselation then the volume of the volumecells,
+ *   can be compared to DirectDivergence.
+ */
+void GEO::CUT::ParentIntersection::DebugCut(Mesh &m)
+{
+  // TEST IF VOLUMES PREDICTED OF CELLS ARE SAME:
+   //###########################################################
+   std::vector<double> tessVol,dirDivVol;
+   double diff_tol = 10*BASICTOL;//1e-20; //How sharp to test for.
+
+   const std::list<Teuchos::RCP<VolumeCell> >  & other_cells = m.VolumeCells();
+
+   for ( std::list<Teuchos::RCP<VolumeCell> >::const_iterator i=other_cells.begin();
+       i!=other_cells.end();
+       ++i )
+   {
+     GEO::CUT::VolumeCell * vc = &**i;
+     tessVol.push_back(vc->Volume());
+
+     // TEST THAT TESSELATION DOES NOT HAVE EMPTY VolumeCells.
+     //++++++++++++++++++++
+//     const GEO::CUT::plain_integrationcell_set & integrationcells = vc->IntegrationCells();
+
+//     if(integrationcells.size()==0)
+//     {
+//       throw std::runtime_error("VolumeCell contains 0 integration cells.");
+//     }
+     //++++++++++++++++++++
+   }
+   //------------------------------------------------------
+
+   //Cut with DirectDivergence as well
+   for ( std::list<Teuchos::RCP<VolumeCell> >::const_iterator i=other_cells.begin();
+       i!=other_cells.end();
+       ++i )
+   {
+     GEO::CUT::VolumeCell * vc = &**i;
+     vc->DirectDivergenceGaussRule(vc->ParentElement(),m,true,INPAR::CUT::BCellGaussPts_DirectDivergence);
+     dirDivVol.push_back(vc->Volume());
+   }
+
+   // Test Direct Divergence against Tesselation
+   //------------------------------------------------------
+   bool error = false;
+   double sumtessvol = 1.0;
+   for(unsigned i=0;i<tessVol.size();i++)
+     sumtessvol+=tessVol[i];
+
+   //Estimate the total volume of a element...
+   sumtessvol = sumtessvol/(tessVol.size()/2.0);
+
+   std::cout << "Tolerance: " << diff_tol*sumtessvol << std::endl;
+   std::cout<<"the volumes predicted by\n Tessellation \t DirectDivergence\n";
+   for(unsigned i=0;i<tessVol.size();i++)
+   {
+     std::cout<< std::setprecision(17) << std::scientific << tessVol[i]<<"\t"<<dirDivVol[i];//<<"\n";
+     if( fabs(tessVol[i]-dirDivVol[i]) > diff_tol*(sumtessvol)) // (1e-8) diff_tol*(sumtessvol)) // Is the relative difference greater than the Tolerance?
+     {
+       std::cout << "\t difference: " << fabs(tessVol[i]-dirDivVol[i]);// << "\n";
+       error = true;
+     }
+     else if(isnan(tessVol[i]) or isnan(dirDivVol[i]))
+       error = true;
+     std::cout << "\n";
+   }
+   if(error)
+   {
+     throw std::runtime_error("Volume predicted by one of the methods is wrong.");
+     //std::cout << "Volume predicted by one of the methods is wrong." << std::endl;
+   }
+   //------------------------------------------------------
+   //###########################################################
+}

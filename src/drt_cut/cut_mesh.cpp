@@ -1514,21 +1514,21 @@ void GEO::CUT::Mesh::SimplifyIntegrationCells()
 /*-------------------------------------------------------------------------------------*
  * test if for all elements the element volume is equal to the volume of all integration cells
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::Mesh::TestElementVolume( bool fatal )
+void GEO::CUT::Mesh::TestElementVolume( bool fatal, INPAR::CUT::VCellGaussPts VCellGP )
 {
   for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
         i!=elements_.end();
         ++i )
   {
     Element & e = *i->second;
-    TestElementVolume( e.Shape(), e, fatal );
+    TestElementVolume( e.Shape(), e, fatal, VCellGP );
   }
   for ( std::map<int, Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
         i!=shadow_elements_.end();
         ++i )
   {
     Element & e = *i->second;
-    TestElementVolume( e.Shape(), e, fatal );
+    TestElementVolume( e.Shape(), e, fatal, VCellGP );
   }
 }
 
@@ -1537,15 +1537,20 @@ void GEO::CUT::Mesh::TestElementVolume( bool fatal )
  * Find the difference between the volume of background element and the sum of volume
  * of all integration cells. There should be no difference between these two
  *-------------------------------------------------------------------------------------*/
-void GEO::CUT::Mesh::TestElementVolume( DRT::Element::DiscretizationType shape, Element & e, bool fatal )
+void GEO::CUT::Mesh::TestElementVolume( DRT::Element::DiscretizationType shape, Element & e, bool fatal, INPAR::CUT::VCellGaussPts VCellGP )
 {
   if ( e.IsCut() )
   {
     const std::vector<Node*> & nodes = e.Nodes();
     Epetra_SerialDenseMatrix xyze( 3, nodes.size() );
+    double max_norm = 0.0;
     for ( unsigned i=0; i<nodes.size(); ++i )
     {
       nodes[i]->Coordinates( &xyze( 0, i ) );
+      LINALG::Matrix<3,1> vec;
+      nodes[i]->Coordinates( &vec(0,0) );
+      if(vec.Norm2() > max_norm)
+        max_norm = vec.Norm2();
     }
 
     double ev = GEO::ElementVolume( e.Shape(), xyze );
@@ -1556,19 +1561,40 @@ void GEO::CUT::Mesh::TestElementVolume( DRT::Element::DiscretizationType shape, 
     double cv = 0;
     double ba = 0;
     const plain_volumecell_set & cells = e.VolumeCells();
-    for ( plain_volumecell_set::const_iterator i=cells.begin(); i!=cells.end(); ++i )
+    if(VCellGP == INPAR::CUT::VCellGaussPts_Tessellation)
     {
-      VolumeCell * vc = *i;
-      numic += vc->IntegrationCells().size();
-      numgp += vc->NumGaussPoints( shape );
-      cv += vc->Volume();
-
-      const plain_boundarycell_set & bcells = vc->BoundaryCells();
-      numbc += bcells.size();
-      for ( plain_boundarycell_set::const_iterator i=bcells.begin(); i!=bcells.end(); ++i )
+      for ( plain_volumecell_set::const_iterator i=cells.begin(); i!=cells.end(); ++i )
       {
-        BoundaryCell * bc = *i;
-        ba += bc->Area();
+        VolumeCell * vc = *i;
+        numic += vc->IntegrationCells().size();
+        numgp += vc->NumGaussPoints( shape );
+        cv += vc->Volume();
+
+        const plain_boundarycell_set & bcells = vc->BoundaryCells();
+        numbc += bcells.size();
+        for ( plain_boundarycell_set::const_iterator i=bcells.begin(); i!=bcells.end(); ++i )
+        {
+          BoundaryCell * bc = *i;
+          ba += bc->Area();
+        }
+      }
+    }
+    else if(VCellGP == INPAR::CUT::VCellGaussPts_DirectDivergence)
+    {
+      for ( plain_volumecell_set::const_iterator i=cells.begin(); i!=cells.end(); ++i )
+      {
+        VolumeCell * vc = *i;
+        //numic += vc->IntegrationCells().size();
+//        numgp += vc-> //vc->NumGaussPoints( shape );
+        cv += vc->Volume();
+
+        const plain_boundarycell_set & bcells = vc->BoundaryCells();
+        numbc += bcells.size();
+        for ( plain_boundarycell_set::const_iterator i=bcells.begin(); i!=bcells.end(); ++i )
+        {
+          BoundaryCell * bc = *i;
+          ba += bc->Area();
+        }
       }
     }
 
@@ -1630,15 +1656,18 @@ void GEO::CUT::Mesh::TestElementVolume( DRT::Element::DiscretizationType shape, 
 //              << "\n";
 //#endif
 
-    if ( fatal and fabs( volume_error ) > 1e-5 )
+
+//    if ( fatal and fabs( volume_error ) > 1e-5 )       //Normal test...
+    if(fatal and fabs( ev-cv )/(max_norm) > LINSOLVETOL)
     {
       std::stringstream err;
-      err << " !!!!!!!!!!! volume test failed: !!!!!!!!!!!!!!!"
+      err << std::setprecision(10) << " !!!!! volume test failed: !!!!! "
           << "eleID=" << e.Id() << "  "
           << "ve=" << ev << "  "
           << "vc=" << cv << "  "
           << "vd= "<< ev-cv << "  "
-          << "err=" << volume_error;
+          << "err=" << volume_error << "  "
+          << "tol=" << LINSOLVETOL*max_norm;
       std::cout << err.str() << std::endl;
 
 #ifdef DEBUGCUTLIBRARY
@@ -1657,8 +1686,8 @@ void GEO::CUT::Mesh::TestElementVolume( DRT::Element::DiscretizationType shape, 
 #endif
 
     //Cut test is written for level-set cases as well.
-    if(LINSOLVETOL>volume_error)
-      throw std::runtime_error( err.str() );
+//    if(LINSOLVETOL < fabs( volume_error ) )
+    throw std::runtime_error( err.str() );
 
     }
   }

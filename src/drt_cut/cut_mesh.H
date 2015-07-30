@@ -275,13 +275,13 @@ public:
   void SimplifyIntegrationCells();
 
   /// test if for all elements the element volume is equal to the volume of all integration cells
-  void TestElementVolume( bool fatal );
+  void TestElementVolume( bool fatal, INPAR::CUT::VCellGaussPts VCellGP = INPAR::CUT::VCellGaussPts_Tessellation);
 
   /*!
   \brief Find the difference between the volume of background element and the sum of volume of all integration cells. There should
   be no difference between these two
    */
-  void TestElementVolume( DRT::Element::DiscretizationType shape, Element & e, bool fatal );
+  void TestElementVolume( DRT::Element::DiscretizationType shape, Element & e, bool fatal, INPAR::CUT::VCellGaussPts VCellGP);
 
 
   /*========================================================================*/

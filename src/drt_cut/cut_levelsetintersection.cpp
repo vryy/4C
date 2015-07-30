@@ -119,7 +119,7 @@ void GEO::CUT::LevelSetIntersection::Cut_Mesh( bool screenoutput )
  * standard Cut routine for two phase flow and combustion where dofsets and node positions        *
  * have not to be computed, standard cut for cut_test (Only used for cut test)       winter 08/14 *
  *------------------------------------------------------------------------------------------------*/
-void GEO::CUT::LevelSetIntersection::Cut( bool include_inner, bool screenoutput )
+void GEO::CUT::LevelSetIntersection::Cut( bool include_inner, bool screenoutput, INPAR::CUT::VCellGaussPts VCellGP )
 {
   //######################################################################################
   //STEP 1/3 CUT THE MESH
@@ -158,7 +158,7 @@ void GEO::CUT::LevelSetIntersection::Cut( bool include_inner, bool screenoutput 
   m.DumpGmshIntegrationCells( "integrationcells.pos" );
 #endif
 
-  m.TestElementVolume( true );
+  m.TestElementVolume( true, VCellGP );
 
 #ifdef DEBUGCUTLIBRARY
  // m.TestVolumeSurface(); //Broken test, needs to be fixed for proper usage.

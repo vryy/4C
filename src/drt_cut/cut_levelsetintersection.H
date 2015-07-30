@@ -60,7 +60,7 @@ public:
   /*!
   \brief Performs all the level set cut operations including find positions and triangulation. (Used for the test cases)
    */
-  void Cut( bool include_inner=true, bool screenoutput = false );
+  void Cut( bool include_inner=true, bool screenoutput = false, INPAR::CUT::VCellGaussPts VCellGP=INPAR::CUT::VCellGaussPts_Tessellation);
 
 
 

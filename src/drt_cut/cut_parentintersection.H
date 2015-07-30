@@ -265,6 +265,10 @@ public:
 
 protected:
 
+  /*!
+  \brief Compares Tesselation and DirectDivergence Cut.
+   */
+  void DebugCut(Mesh& m);
 
   /*========================================================================*/
   //! @name private class variables
