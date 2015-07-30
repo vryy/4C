@@ -96,6 +96,8 @@ public:
    */
   void GenerateBoundaryCells(Mesh &mesh, const GEO::CUT::Point::PointPosition posi, Element *elem,int BaseNos, INPAR::CUT::BCellGaussPts BCellgausstype);
 
+  void GenerateBoundaryCellsLevelSetSide(Mesh &mesh, const GEO::CUT::Point::PointPosition posi, Element *elem, Facet *facet,int BaseNos, INPAR::CUT::BCellGaussPts BCellgausstype);
+
   /*!
   \brief Get the boundarycells generated from this volumecell
      get a map of boundary cells for all cutting sides, key= side-Id, value= vector of boundary cells

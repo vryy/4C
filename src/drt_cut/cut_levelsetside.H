@@ -3,6 +3,9 @@
 
 #include "cut_side.H"
 
+// Use derivatives of LevelSet field to determine the Cut configuration
+#define USE_PHIDERIV_FOR_CUT_DETERMINATION
+
 namespace GEO
 {
   namespace CUT

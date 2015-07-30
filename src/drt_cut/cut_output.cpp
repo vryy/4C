@@ -20,6 +20,12 @@ Maintainer: Sudhakar
 #include "cut_edge.H"
 #include "cut_point.H"
 
+//Needed for LS info.
+#include "cut_facet.H"
+#include "cut_kernel.H"
+#include "cut_volumecell.H"
+#include "cut_boundarycell.H"
+
 //#include "../drt_lib/drt_globalproblem.H"
 //#include "../drt_io/io_control.H"
 
@@ -162,10 +168,28 @@ void GEO::CUT::OUTPUT::GmshCompleteCutElement( std::ofstream & file, Element * e
   for( plain_side_set::const_iterator its = cutsides.begin(); its != cutsides.end(); its++ )
   {
     const Side * s = *its;
-//    if(not (*its)->IsLevelSetSide())
     GmshSideDump( file, s );
   }
   file<<"};";
+
+  if(ele->HasLevelSetSide())
+  {
+    file << "View \"LevelSetValues\" {\n";
+    GEO::CUT::OUTPUT::GmshLevelSetValueDump(file,ele,true); //true -> dumps LS values at nodes as well.
+    file << "};\n";
+
+    file << "View \"LevelSetGradient\" {\n";
+    GEO::CUT::OUTPUT::GmshLevelSetGradientDump(file,ele);
+    file << "};\n";
+
+    file << "View \"LevelSetOrientation\" {\n";
+    GEO::CUT::OUTPUT::GmshLevelSetOrientationDump(file,ele);
+    file << "};\n";
+
+    file << "View \"LevelSetZeroShape\" {\n";
+    GEO::CUT::OUTPUT::GmshLevelSetValueZeroSurfaceDump(file,ele);
+    file << "};\n";
+  }
 }
 
 /*--------------------------------------------------------------------------------------*
@@ -242,6 +266,401 @@ void GEO::CUT::OUTPUT::GmshPointDump( std::ofstream & file, GEO::CUT::Point*  po
 {
   GmshPointDump(file,point, point->Position());
 }
+
+/*--------------------------------------------------------------------------------------*
+ * Write Level Set Gradient for given Element
+ *
+ * The gradients are written at the midpoint of the facets and if the facet is triangulated,
+ * also in the midpoint of the triangles.
+ *                                                                           winter 07/15
+ *--------------------------------------------------------------------------------------*/
+void GEO::CUT::OUTPUT::GmshLevelSetGradientDump( std::ofstream & file, Element * ele )
+{
+  const plain_facet_set facets = ele->Facets();
+  for(plain_facet_set::const_iterator j=facets.begin();j!=facets.end();j++)
+  {
+    Facet *facet = *j;
+
+    std::vector<double> normal_triag_midp;
+    if(facet->OnCutSide())
+    {
+      LINALG::Matrix<3,1> facet_triang_midpoint_coord(true);
+
+      if(facet->IsTriangulated())
+      {
+        std::vector<std::vector<Point*> > facet_triang = facet->Triangulation();
+        Point* facet_triang_midpoint = (facet_triang[0])[0];
+
+        facet_triang_midpoint->Coordinates(&facet_triang_midpoint_coord(0,0));
+        normal_triag_midp = ele->GetLevelSetGradient(facet_triang_midpoint_coord);
+
+        for(std::vector<std::vector<Point*> >::iterator k=facet_triang.begin(); k!=facet_triang.end();k++)
+        {
+          std::vector<Point*> facet_triang_tri = *k;
+
+          LINALG::Matrix<3,1> cur;
+          LINALG::Matrix<3,1> f_triang_tri_midp(true);
+          for( std::vector<Point*>::iterator i=facet_triang_tri.begin();i!=facet_triang_tri.end();i++ )
+          {
+            Point* p1 = *i;
+            p1->Coordinates(cur.A());
+            f_triang_tri_midp.Update(1.0,cur,1.0);
+          }
+          f_triang_tri_midp.Scale(1.0/facet_triang_tri.size());
+
+          std::vector<double> normal = ele->GetLevelSetGradient(f_triang_tri_midp);
+
+          GmshVector(file,f_triang_tri_midp,normal,true);
+        }
+      }
+      else
+      {
+        LINALG::Matrix<3,1> cur;
+        std::vector<Point*> pts =facet->Points();
+        for( std::vector<Point*>::iterator i=pts.begin();i!=pts.end();i++ )
+        {
+          Point* p1 = *i;
+          p1->Coordinates(cur.A());
+          facet_triang_midpoint_coord.Update(1.0,cur,1.0);
+        }
+        facet_triang_midpoint_coord.Scale(1.0/pts.size());
+        normal_triag_midp = ele->GetLevelSetGradient(facet_triang_midpoint_coord);
+      }
+
+      std::vector<double> normal = ele->GetLevelSetGradient(facet_triang_midpoint_coord);
+      GmshVector(file,facet_triang_midpoint_coord,normal,true);
+
+      //Write Corner-points of LS:
+      std::vector<Point*> cornerpts = facet->CornerPoints();
+      for(std::vector<Point*>::iterator i=cornerpts.begin();i!=cornerpts.end();i++)
+      {
+        LINALG::Matrix<3,1> cornercoord;
+        Point* p1 = *i;
+        p1->Coordinates(cornercoord.A());
+        std::vector<double> normal = ele->GetLevelSetGradient(cornercoord);
+
+        GmshVector(file,cornercoord,normal,true);
+      }
+    }
+  }
+}
+
+/*--------------------------------------------------------------------------------------*
+ * Write Level Set Values for given Element
+ *
+ * The LS-value written at the midpoint of the facets and if the facet is triangulated,
+ * also in the midpoint of the triangles.
+ * Values at the nodes are also written.
+ *                                                                           winter 07/15
+ *--------------------------------------------------------------------------------------*/
+void GEO::CUT::OUTPUT::GmshLevelSetValueDump( std::ofstream & file, Element * ele, bool dumpnodevalues )
+{
+  const plain_facet_set facets = ele->Facets();
+  for(plain_facet_set::const_iterator j=facets.begin();j!=facets.end();j++)
+  {
+    Facet *facet = *j;
+
+    if(facet->OnCutSide())
+    {
+      LINALG::Matrix<3,1> facet_triang_midpoint_coord(true);
+
+      if(facet->IsTriangulated())
+      {
+        std::vector<std::vector<Point*> > facet_triang = facet->Triangulation();
+        for(std::vector<std::vector<Point*> >::iterator k=facet_triang.begin(); k!=facet_triang.end();k++)
+        {
+          std::vector<Point*> facet_triang_tri = *k;
+
+          LINALG::Matrix<3,1> cur;
+          LINALG::Matrix<3,1> f_triang_tri_midp(true);
+          for( std::vector<Point*>::iterator i=facet_triang_tri.begin();i!=facet_triang_tri.end();i++ )
+          {
+            Point* p1 = *i;
+            p1->Coordinates(cur.A());
+            f_triang_tri_midp.Update(1.0,cur,1.0);
+          }
+          f_triang_tri_midp.Scale(1.0/facet_triang_tri.size());
+
+          double ls_value = ele->GetLevelSetValue(f_triang_tri_midp);
+          GmshScalar(file, f_triang_tri_midp, ls_value);
+
+        }
+        Point* facet_triang_midpoint = (facet_triang[0])[0];
+        facet_triang_midpoint->Coordinates(&facet_triang_midpoint_coord(0,0));
+      }
+      else
+      {
+        LINALG::Matrix<3,1> cur;
+        std::vector<Point*> pts =facet->Points();
+        for( std::vector<Point*>::iterator i=pts.begin();i!=pts.end();i++ )
+        {
+          Point* p1 = *i;
+          p1->Coordinates(cur.A());
+          facet_triang_midpoint_coord.Update(1.0,cur,1.0);
+        }
+        facet_triang_midpoint_coord.Scale(1.0/pts.size());
+      }
+
+      double ls_value = ele->GetLevelSetValue(facet_triang_midpoint_coord);
+      GmshScalar(file, facet_triang_midpoint_coord, ls_value);
+
+    }
+  }
+
+  if(dumpnodevalues)
+  {
+    std::vector<Node*> nodes = ele->Nodes();
+    for( std::vector<Node*>::iterator j=nodes.begin();j!=nodes.end();j++ )
+    {
+      Node* node = *j;
+      LINALG::Matrix<3,1> node_coord(true);
+      node->Coordinates(&node_coord(0,0));
+
+      GmshScalar(file, node_coord, node->LSV());
+    }
+  }
+}
+
+/*--------------------------------------------------------------------------------------*
+ * Write Level Set Values for given Element
+ *
+ * The LS-value written at the midpoint of the facets and if the facet is triangulated,
+ * also in the midpoint of the triangles.
+ * Values at the nodes are also written.
+ *                                                                           winter 07/15
+ *--------------------------------------------------------------------------------------*/
+void GEO::CUT::OUTPUT::GmshLevelSetValueZeroSurfaceDump( std::ofstream & file, Element * ele)
+{
+  std::vector<double> lsv_value(8);
+
+  std::vector<Node*> nodes = ele->Nodes();
+  int mm=0;
+  for( std::vector<Node*>::iterator j=nodes.begin();j!=nodes.end();j++ )
+  {
+    Node* node = *j;
+    lsv_value[mm] = node->LSV();
+    mm++;
+  }
+
+  double lsv_max = lsv_value[0];
+  double lsv_min = lsv_value[0];
+
+  for(unsigned l=1; l<lsv_value.size(); l++)
+  {
+    if(lsv_max<lsv_value[l])
+      lsv_max = lsv_value[l];
+
+    if(lsv_min>lsv_value[l])
+      lsv_min = lsv_value[l];
+  }
+
+  //localcoord [-1,-1,-1] x [1,1,1]
+  int z_sp =150;
+  int y_sp =150;
+  int x_sp =150;
+
+
+  double fac = 5*1e-3;
+  double tolerance = (lsv_max-lsv_min)*fac;//(0.001;
+
+//  double* x(3);
+  LINALG::Matrix<3,1> coord;
+
+  for(int i = 0; i < x_sp; i++)
+  {
+    //std::cout << "i: " << i << std::endl;
+    coord(0,0) = -1.0 + (2.0/(double(x_sp)-1))*double(i);
+    for(int j = 0; j < y_sp; j++)
+    {
+      //std::cout << "j: " << j << std::endl;
+      coord(1,0) = -1.0 + (2.0/(double(y_sp)-1))*double(j);
+
+      for(int k = 0; k < z_sp; k++)
+      {
+        //std::cout << "k: " << k << std::endl;
+        coord(2,0) = -1.0 + (2.0/(double(z_sp)-1))*double(k);
+
+        double ls_value = ele->GetLevelSetValue(coord,true);
+        if(fabs(ls_value) < tolerance )
+        {
+          LINALG::Matrix<3,1> coord_global;
+          ele->GlobalCoordinates(coord,coord_global);
+          GmshScalar(file, coord_global, ls_value);
+        }
+      }
+    }
+  }
+}
+
+
+/*--------------------------------------------------------------------------------------*
+ * Write Level Set Gradient Orientation of Boundary-Cell Normal and LevelSet
+ *                                                                           winter 07/15
+ *--------------------------------------------------------------------------------------*/
+void GEO::CUT::OUTPUT::GmshLevelSetOrientationDump( std::ofstream & file, Element * ele)
+{
+  const plain_volumecell_set volcells = ele->VolumeCells();
+  for(plain_volumecell_set::const_iterator i=volcells.begin();i!=volcells.end();i++)
+  {
+    VolumeCell *volcell = *i;
+
+    if(volcell->Position()==GEO::CUT::Point::inside)
+      continue;
+
+    //    const plain_facet_set facets = volcells->Facets();
+
+    volcell->BoundaryCells();
+    plain_boundarycell_set bc_cells = volcell->BoundaryCells();
+    for ( plain_boundarycell_set::iterator j=bc_cells.begin();
+        j!=bc_cells.end();
+        ++j )
+    {
+      BoundaryCell * bc = *j;
+
+      //      Facet *facet = *bc->GetFacet();
+      LINALG::Matrix<3,1> midpoint_bc;
+      bc->ElementCenter(midpoint_bc);
+
+      LINALG::Matrix<3,1> normal_bc;
+      LINALG::Matrix<2,1> xsi;
+      bc->Normal(xsi,normal_bc);
+
+      std::vector<std::vector<double> > coords_bc = bc->CoordinatesV();
+      //const Epetra_SerialDenseMatrix ls_coordEp = bc->Coordinates();
+      LINALG::Matrix<3,1> ls_coord(true);
+      ls_coord(0,0) = coords_bc[1][0];
+      ls_coord(1,0) = coords_bc[1][1];
+      ls_coord(2,0) = coords_bc[1][2];
+
+      std::vector<double> normal_ls = ele->GetLevelSetGradient(ls_coord);
+
+      double dotProduct = normal_ls[0]*normal_bc(0,0) + normal_ls[1]*normal_bc(1,0) + normal_ls[2]*normal_bc(2,0);
+      GmshScalar(file,midpoint_bc,dotProduct/fabs(dotProduct));
+
+    }
+  }
+}
+
+/*!
+\brief Write Eqn of plane normal for facet (used for DirectDivergence).
+ */
+
+void GEO::CUT::OUTPUT::GmshEqnPlaneNormalDump(std::ofstream & file, Element * ele, bool normalize)
+{
+  const plain_facet_set facets = ele->Facets();
+  for(plain_facet_set::const_iterator j=facets.begin();j!=facets.end();j++)
+  {
+    Facet *facet = *j;
+    GmshEqnPlaneNormalDump(file, facet, normalize);
+  }
+}
+
+/*!
+\brief Write Eqn of plane normal for all facets (used for DirectDivergence).
+ */
+
+void GEO::CUT::OUTPUT::GmshEqnPlaneNormalDump(std::ofstream & file, Facet * facet, bool normalize)
+{
+  LINALG::Matrix<3,1> facet_triang_midpoint_coord(true);
+  std::vector<Point*> f_cornpts = facet->CornerPoints();
+  std::vector<double> eqn_plane = GetEqOfPlane(f_cornpts);
+
+  if(facet->IsTriangulated())
+  {
+    std::vector<std::vector<Point*> > facet_triang = facet->Triangulation();
+    Point* facet_triang_midpoint = (facet_triang[0])[0];
+    facet_triang_midpoint->Coordinates(&facet_triang_midpoint_coord(0,0));
+
+    for(std::vector<std::vector<Point*> >::iterator k=facet_triang.begin(); k!=facet_triang.end();k++)
+    {
+      std::vector<Point*> facet_triang_tri = *k;
+
+      LINALG::Matrix<3,1> cur;
+      LINALG::Matrix<3,1> f_triang_tri_midp(true);
+      for( std::vector<Point*>::iterator i=facet_triang_tri.begin();i!=facet_triang_tri.end();i++ )
+      {
+        Point* p1 = *i;
+        p1->Coordinates(cur.A());
+        f_triang_tri_midp.Update(1.0,cur,1.0);
+      }
+      f_triang_tri_midp.Scale(1.0/facet_triang_tri.size());
+
+      GmshVector(file,f_triang_tri_midp,GetEqOfPlane(facet_triang_tri),normalize);
+    }
+  }
+  else
+  {
+    LINALG::Matrix<3,1> cur;
+    std::vector<Point*> pts =facet->Points();
+    for( std::vector<Point*>::iterator i=pts.begin();i!=pts.end();i++ )
+    {
+      Point* p1 = *i;
+      p1->Coordinates(cur.A());
+      facet_triang_midpoint_coord.Update(1.0,cur,1.0);
+    }
+    facet_triang_midpoint_coord.Scale(1.0/pts.size());
+  }
+
+  GmshVector(file,facet_triang_midpoint_coord,eqn_plane,normalize);
+}
+
+
+
+void GEO::CUT::OUTPUT::GmshScalar( std::ofstream & file, LINALG::Matrix<3,1> coord, double scalar)
+{
+  file << "SP(";
+  file << coord( 0, 0 ) << ","
+      << coord( 1, 0 ) << ","
+      << coord( 2, 0 );
+  file << "){";
+  file << scalar;
+  file << "};\n";
+}
+
+void GEO::CUT::OUTPUT::GmshVector( std::ofstream & file, LINALG::Matrix<3,1> coord, std::vector<double> vector, bool normalize)
+{
+  file << "VP(";
+  file << coord( 0, 0 ) << ","
+      << coord( 1, 0 ) << ","
+      << coord( 2, 0 );
+  file << "){";
+
+  if(normalize)
+  {
+    double norm2 = vector[0]*vector[0] + vector[1]*vector[1] + vector[2]*vector[2];
+    double norm = sqrt(norm2);
+    file << vector[0]/norm << "," << vector[1]/norm << "," << vector[2]/norm;
+  }
+  else
+    file << vector[0] << "," << vector[1] << "," << vector[2];
+  file << "};\n";
+}
+
+
+std::vector<double> GEO::CUT::OUTPUT::GetEqOfPlane(std::vector<Point*> pts)
+{
+  int mm = 0;
+
+  std::vector< std::vector<double> > corners( pts.size() );
+
+  for(std::vector<Point*>::iterator k=pts.begin(); k!=pts.end();k++)
+  {
+    Point* p1 = *k;
+    LINALG::Matrix<3,1> cur;
+    p1->Coordinates(cur.A());
+
+    std::vector<double> pt(3);
+
+    pt[0] = cur(0,0);
+    pt[1] = cur(1,0);
+    pt[2] = cur(2,0);
+
+    corners[mm] = pt;
+    mm++;
+  }
+  return KERNEL::EqnPlaneOfPolygon( corners );
+}
+
 
 /*-------------------------------------------------------------------------------*
  * Write cuttest for this element!                                     ager 04/15

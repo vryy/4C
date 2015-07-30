@@ -62,8 +62,6 @@ public:
    */
   void Cut( bool include_inner=true, bool screenoutput = false, INPAR::CUT::VCellGaussPts VCellGP=INPAR::CUT::VCellGaussPts_Tessellation);
 
-
-
   /*========================================================================*/
   //! @name Add functionality for elements
   /*========================================================================*/

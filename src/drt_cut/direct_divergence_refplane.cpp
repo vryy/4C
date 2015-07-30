@@ -23,7 +23,11 @@ std::vector<double> GEO::CUT::DirectDivergenceGlobalRefplane::GetReferencePlane(
 
 
   if( elem1_->Shape() != DRT::Element::hex8 )
-    dserror("Currently can handle only hexagonal family\n");
+  {
+    std::cout << "Element Shape: " << elem1_->Shape() << std::endl;
+    throw std::runtime_error("Currently can handle only hexagonal family\n");
+    //dserror("Currently can handle only hexagonal family\n");
+  }
 
   std::vector<double> RefPlaneEqn( 4, 0.0 );
 

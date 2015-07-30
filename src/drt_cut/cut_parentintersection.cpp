@@ -603,6 +603,11 @@ void GEO::CUT::ParentIntersection::Cut_Finalize( bool include_inner,
   else if(VCellgausstype==INPAR::CUT::VCellGaussPts_DirectDivergence)
   {
     TEUCHOS_FUNC_TIME_MONITOR( "XFEM::FluidWizard::Cut::DirectDivergence" );
+
+#ifndef LOCAL
+    if(myrank_==0)
+      std::cout << "\t DirectDivergence Cut with Global configuration!" << std::endl;
+#endif
     m.DirectDivergenceGaussRule(include_inner, BCellgausstype);
 
 //    m.TestElementVolume( true, VCellgausstype );

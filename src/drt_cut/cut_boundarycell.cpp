@@ -154,6 +154,78 @@ void GEO::CUT::ArbitraryBoundaryCell::DumpGmsh( std::ofstream & file, int * valu
 //  dserror("not implemented");
 }
 
+void GEO::CUT::Tri3BoundaryCell::DumpGmshNormal( std::ofstream & file )
+{
+
+  file.precision(16);
+
+  file << "VP(";
+  LINALG::Matrix<3,1> midpoint_triag(true);
+  for ( int i=0; i<3; ++i )
+  {
+    LINALG::Matrix<3,1> cur(true);
+    cur(0,0) = xyz_(0,i);
+    cur(1,0) = xyz_(1,i);
+    cur(2,0) = xyz_(2,i);
+    midpoint_triag.Update(1.0,cur,1.0);
+  }
+
+  midpoint_triag.Scale(1.0/3.0);
+  file << midpoint_triag(0,0) << ","
+      << midpoint_triag(1,0) << ","
+      << midpoint_triag(2,0);
+  file << "){";
+
+  //Choose midpoint of triangle as normal for now. Not best choice possibly.
+  LINALG::Matrix<2,1> eta;
+  eta(0,0) = 0.5;
+  eta(1,0) = 0.5;
+  LINALG::Matrix<3,1> normal;
+  this->Normal(eta, normal);
+  file << normal( 0 ) << "," << normal( 1 ) << "," << normal( 2 );
+
+  file << "};\n";
+}
+
+void GEO::CUT::Quad4BoundaryCell::DumpGmshNormal( std::ofstream & file )
+{
+  file.precision(16);
+
+    file << "VP(";
+    LINALG::Matrix<3,1> midpoint_quad(true);
+    for ( int i=0; i<4; ++i )
+    {
+      LINALG::Matrix<3,1> cur(true);
+      cur(0,0) = xyz_(0,i);
+      cur(1,0) = xyz_(1,i);
+      cur(2,0) = xyz_(2,i);
+      midpoint_quad.Update(1.0,cur,1.0);
+    }
+
+    midpoint_quad.Scale(1.0/4.0);
+    file << midpoint_quad(0,0) << ","
+        << midpoint_quad(1,0) << ","
+        << midpoint_quad(2,0);
+    file << "){";
+
+    //Choose midpoint of triangle as normal for now. Not best choice possibly.
+    LINALG::Matrix<2,1> eta;
+    eta(0,0) = 0.5;
+    eta(1,0) = 0.5;
+    LINALG::Matrix<3,1> normal;
+    this->Normal(eta, normal);
+    file << normal( 0 ) << "," << normal( 1 ) << "," << normal( 2 );
+
+    file << "};\n";
+}
+
+void GEO::CUT::ArbitraryBoundaryCell::DumpGmshNormal( std::ofstream & file )
+{
+  //TO DO: implement gmsh output for arbitrarily shaped bcell
+//  dserror("not implemented");
+}
+
+
 void GEO::CUT::Tri3BoundaryCell::Normal( const LINALG::Matrix<2,1> & xsi, LINALG::Matrix<3,1> & normal ) const
 {
 #if 1
@@ -317,4 +389,21 @@ void GEO::CUT::BoundaryCell::Print()
   {
     std::cout<< "pID: " << points_()[i]->Id() << ", coord: " << xyz_(0,i)<<"\t"<<xyz_(1,i)<<"\t"<<xyz_(2,i)<<"\n";
   }
+}
+
+/*------------------------------------------------------------------------*
+ * To make it easier with DD data structures (should be removed at some point)
+ *                               winter 07/2015
+ *------------------------------------------------------------------------*/
+const std::vector<std::vector<double> > GEO::CUT::BoundaryCell::CoordinatesV()
+{
+  std::vector<std::vector<double> > corners;
+  for(std::vector<Point*> ::const_iterator j=points_().begin();
+      j!=points_().end(); ++j )
+  {
+    std::vector<double> cornerLocal(3);
+    cornerLocal.assign((*j)->X(), (*j)->X() + 3);
+    corners.push_back(cornerLocal);
+  }
+  return corners;
 }

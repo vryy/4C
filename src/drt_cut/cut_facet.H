@@ -254,6 +254,9 @@ public:
   /// Return true is the facet is convex shaped
   bool isConvex();
 
+  /// Belongs to a LevelSetSide
+  bool BelongsToLevelSetSide();
+
 private:
 
   Facet( const Facet & );

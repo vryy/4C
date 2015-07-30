@@ -55,6 +55,11 @@ public:
   virtual void DumpGmsh( std::ofstream & file, int * value=NULL ) = 0;
 
   /*!
+  \brief Writes the geometry of boundarycell, and the constant scalar "value" in GMSH format
+   */
+  virtual void DumpGmshNormal( std::ofstream & file ) = 0;
+
+  /*!
   \brief Returns the area of tri3 and quad4 boundarycell
    */
   virtual double Area() = 0;
@@ -83,6 +88,11 @@ public:
   \brief Get the coodinates of the corner points of boundarycell
    */
   const Epetra_SerialDenseMatrix & Coordinates() const { return xyz_; }
+
+  /*!
+  \brief Get the coodinates of the corner points of boundarycell
+   */
+  const std::vector<std::vector<double> > CoordinatesV();
 
   /*!
   \brief Get the Facet which represent the boundarycell
@@ -252,7 +262,9 @@ public:
 
   virtual void DumpGmsh( std::ofstream & file, int * value=NULL );
 
-  virtual double Area() { return MyArea<DRT::Element::tri3>(); }
+  virtual void DumpGmshNormal( std::ofstream & file );
+
+  virtual double Area() { return MyAreaTri(); }//MyArea<DRT::Element::tri3>(); }
 
   virtual void ElementCenter(LINALG::Matrix<3,1> & midpoint);
 
@@ -261,6 +273,43 @@ public:
   virtual DRT::UTILS::GaussIntegration gaussRule();
 
   virtual LINALG::Matrix<3,1> GetNormalVector();
+
+  double MyAreaTri()
+  {
+    const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement;
+
+    const std::vector<Point*> points = this->Points();
+
+    // create planes consisting of 3 nodes each
+    LINALG::Matrix<numnodes,1> p0( points[0]->X() );
+    LINALG::Matrix<numnodes,1> p1( points[1]->X() );
+    LINALG::Matrix<numnodes,1> p2( points[2]->X() );
+
+    LINALG::Matrix<numnodes,1> v01;
+    LINALG::Matrix<numnodes,1> v02;
+    LINALG::Matrix<numnodes,1> v12;
+
+    v01.Update( 1, p1, -1, p0, 0 );
+    v02.Update( 1, p2, -1, p0, 0 );
+    v12.Update( 1, p1, -1, p2, 0 );
+
+
+    double a=v01.Norm2();
+    double b=v02.Norm2();
+    double c=v12.Norm2();
+
+    //Herons formula:
+//    sqrt((a+(b+c))(c-(a-b))(c+(a-b))(a+(b-c)))/4
+//    double s=0.5*(v01.Norm2() + v02.Norm2() + v12.Norm2());
+//    double area = sqrt( s*(s-v01.Norm2())*(s-v02.Norm2())*(s-v12.Norm2()) );
+
+    double area = 0.25*sqrt((a+(b+c))*(c-(a-b))*(c+(a-b))*(a+(b-c)));
+
+    // Alternative options:
+    //  - cross-product (see cut_tetmesh.cpp in IsValidTet())
+
+    return area;
+  }
 
 protected:
 
@@ -282,6 +331,8 @@ public:
   virtual int CubatureDegree( DRT::Element::DiscretizationType elementshape ) const { return 20; }
 
   virtual void DumpGmsh( std::ofstream & file, int * value=NULL );
+
+  virtual void DumpGmshNormal( std::ofstream & file );
 
   virtual double Area() { return MyArea<DRT::Element::quad4>(); }
 
@@ -316,6 +367,8 @@ public:
   virtual int CubatureDegree( DRT::Element::DiscretizationType elementshape ) const {  return 0; }
 
   virtual void DumpGmsh( std::ofstream & file, int * value=NULL );
+
+  virtual void DumpGmshNormal( std::ofstream & file );
 
   virtual double Area() { return 0.0;}
 

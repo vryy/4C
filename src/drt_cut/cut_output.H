@@ -80,6 +80,42 @@ void GmshPointDump( std::ofstream & file, GEO::CUT::Point*  point,int idx);
 void GmshPointDump( std::ofstream & file, GEO::CUT::Point*  point);
 
 /*!
+\brief Write level set value on cut surface (information taken from facet).
+ */
+void GmshLevelSetValueDump( std::ofstream & file, Element * ele, bool dumpnodevalues=false );
+
+/*!
+\brief Write level set gradient on cut surface (information taken from facet).
+ */
+void GmshLevelSetGradientDump( std::ofstream & file, Element * ele );
+
+/*!
+\brief Write level set value on cut surface (information taken from facet).
+ */
+void GmshLevelSetValueZeroSurfaceDump( std::ofstream & file, Element * ele);
+
+/*!
+ * Write Level Set Gradient Orientation of Boundary-Cell Normal and LevelSet
+ */
+void GmshLevelSetOrientationDump( std::ofstream & file, Element * ele );
+
+/*!
+\brief Write Eqn of plane normal for all facets (used for DirectDivergence).
+*/
+void GmshEqnPlaneNormalDump(std::ofstream & file, Element * ele, bool normalize = false );
+void GmshEqnPlaneNormalDump(std::ofstream & file, Facet * facet, bool normalize = false);
+/*!
+\brief Get equation of plane as implemented in DirectDivergence routine.
+ */
+std::vector<double> GetEqOfPlane(std::vector<Point*> pts);
+
+/*!
+\brief Simplify output of for normal output options.
+ */
+void GmshScalar(std::ofstream & file, LINALG::Matrix<3,1> coord, double scalar);
+void GmshVector(std::ofstream & file, LINALG::Matrix<3,1> coord, std::vector<double> vector, bool normalize=false);
+
+/*!
 \brief Write cuttest for this element!
 */
 void GmshElementCutTest( std::ofstream & file, GEO::CUT::Element* ele, bool haslevelsetside=false);

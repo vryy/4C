@@ -700,7 +700,7 @@ void GEO::CUT::VolumeCell::DumpGmsh( std::ofstream& file )
     for( plain_facet_set::const_iterator j=facete.begin(); j!=facete.end(); j++ )
     {
       Facet * ref = *j;
-#ifdef LOCAL
+#ifndef OUTPUT_GLOBAL_DIVERGENCE_CELLS
       std::vector<std::vector<double> > corners;
       ref->CornerPointsLocal(ParentElement(), corners);
 #else
@@ -935,6 +935,13 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells( Mesh &mesh,
     if( fac->OnCutSide() == false )             //we need boundary cells only for the cut facets
       continue;
 
+    // For LevelSetSides generate Boundary Cells in own way.
+    if(fac->BelongsToLevelSetSide())
+    {
+      GenerateBoundaryCellsLevelSetSide(mesh,posi,elem,fac,BaseNos,BCellgausstype);
+      continue;
+    }
+
     //--------------------------------------------------------------------
     // Normal vector from parent side is used to identify whether normals
     // from facet is in appropriate direction or not
@@ -999,7 +1006,7 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells( Mesh &mesh,
    if(corners.size()==3)
    {
      double areaCell = GEO::CUT::KERNEL::getAreaTri( corners );
-     if( areaCell < REF_AREA_BCELL )
+     if( areaCell < REF_AREA_BCELL ) //What is this Ref_AREA_CELL TOLERANCE?! Make it viable for GLOBAL!!!
        continue;
      NewTri3Cell( mesh, fac, corners );
    }
@@ -1103,6 +1110,163 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells( Mesh &mesh,
   }
 }
 
+/*--------------------------------------------------------------------------------------------*
+                 Generate boundary cells for facet cut by level set side
+
+               COMMENT:  Might need to rethink BC-creation, as it generates a lot of tris now.
+                         Could probably be enough with quads some times?
+*---------------------------------------------------------------------------------------------*/
+void GEO::CUT::VolumeCell::GenerateBoundaryCellsLevelSetSide( Mesh &mesh,
+                                                  const GEO::CUT::Point::PointPosition posi,
+                                                  Element *elem,
+                                                  Facet *fac,
+                                                  int BaseNos,
+                                                  INPAR::CUT::BCellGaussPts BCellgausstype)
+{
+  if(not fac->BelongsToLevelSetSide())
+    dserror("Why would you call BC-creation for LS-Side without a LS side?");
+
+  if(BCellgausstype==INPAR::CUT::BCellGaussPts_MomentFitting)
+    dserror("Not supported for BC-Cell creation for LevelSetSides.");
+
+  // Is the facet split/triangulated and if it consists of 4 corners is it planar.
+  //  Then decompose and create Boundary Cells from triangulation/split.
+  //  Otherwise, create quad4/tri3 boundary cell.
+  bool istriangulated = (fac->IsTriangulated() or fac->IsFacetSplit());
+  bool notsimpleshape  = !(fac->CornerPoints().size() == 4 and (fac->IsPlanar(mesh, fac->CornerPoints())));
+
+  //UNCOMMENT THIS FOR ONLY TRIANGLES ON SURFACE!
+  //DO FULL TRIANGULATION OF BC-SURFACE
+  //---------------------------------------
+//  if(fac->CornerPoints().size()>3)
+//  {
+////    std::cout << "fac->CornerPoints().size()>3?!" << std::endl;
+//    if(not fac->IsTriangulated())
+//    {
+////      std::cout << "not fac->IsTriangulated()" << std::endl;
+//      fac->DoTriangulation(mesh,fac->Points());  //triangulate everything!
+////      std::cout << "fac->IsTriangulated(): " << fac->IsTriangulated() << std::endl;
+//    }
+//  }
+//  notsimpleshape = true; //Create BC from triangulation solely
+//  istriangulated = true;
+  //---------------------------------------
+
+//  if( (fac->IsTriangulated() or fac->IsFacetSplit()) and (fac->CornerPoints().size() == 4 and !(fac->IsPlanar(mesh, fac->CornerPoints())))  )
+  if(istriangulated and notsimpleshape)
+  {
+    std::vector<std::vector<Point*> > facet_triang;
+    if(fac->IsTriangulated())
+      facet_triang = fac->Triangulation();
+    else
+      facet_triang  = fac->GetSplitCells();
+
+    for ( std::vector<std::vector<Point*> >::const_iterator j=facet_triang.begin();
+        j!=facet_triang.end(); ++j )
+    {
+      std::vector<Point*> tri = *j;
+      std::vector<Point*> tri_temp(tri);  //could be quad?
+
+      //    // when finding eqn of plane for the facet, inline points should not be taken
+      //    CUT::KERNEL::DeleteInlinePts( cornersTemp );
+
+      std::vector<double> fac_tri_normal(4);
+      fac_tri_normal = KERNEL::EqnPlaneOfPolygon( tri_temp );
+
+      LINALG::Matrix<3,1> ls_coord(tri_temp[1]->X());
+      const std::vector<double> fac_ls_normal = elem->GetLevelSetGradient(ls_coord);//fac->GetLevelSetFacetNormal(elem);
+      double dotProduct = fac_tri_normal[0]*fac_ls_normal[0] + fac_tri_normal[1]*fac_ls_normal[1] + fac_tri_normal[2]*fac_ls_normal[2];
+      if(posi == GEO::CUT::Point::outside)
+      {
+        if(dotProduct > 0.0)
+        {
+          std::reverse(tri_temp.begin(),tri_temp.end());
+        }
+      }
+      else if(posi == GEO::CUT::Point::inside)
+      {
+        if(dotProduct < 0.0) // ( < ) should be correct solution.
+          std::reverse(tri_temp.begin(),tri_temp.end());
+      }
+      if(tri_temp.size()==3)
+      {
+        double areaCell = GEO::CUT::KERNEL::getAreaTri( tri_temp );
+        if( areaCell < REF_AREA_BCELL )
+        {
+          std::cout << "BCell NOT ADDED! areaCell: " << areaCell << std::endl;
+          continue;
+        }
+        NewTri3Cell(mesh,fac,tri_temp);
+      }
+      else if(tri_temp.size()==4)
+      {
+        double areaCell = GEO::CUT::KERNEL::getAreaConvexQuad( tri_temp );
+        if( areaCell < REF_AREA_BCELL )
+        {
+          std::cout << "BCell NOT ADDED! areaCell: " << areaCell << std::endl;
+          continue;
+        }
+        NewQuad4Cell(mesh,fac,tri_temp);
+      }
+      else
+        dserror("Triangulation created neither tri3 or quad4");
+    }
+  }
+  else
+  {
+    //For non-triangulated facets-> i.e. planar quad4 or tri3. (does quad4 exist here?)
+
+    std::vector<Point*> tri = fac->CornerPoints();
+    std::vector<Point*> tri_temp(tri);  //could be quad?
+
+
+    //    // when finding eqn of plane for the facet, inline points should not be taken
+    //    CUT::KERNEL::DeleteInlinePts( cornersTemp );
+
+    //Fix normal direction
+    std::vector<double> fac_tri_normal(4);
+    fac_tri_normal = KERNEL::EqnPlaneOfPolygon( tri_temp );
+
+    LINALG::Matrix<3,1> ls_coord(tri_temp[1]->X());
+    const std::vector<double> fac_ls_normal = elem->GetLevelSetGradient(ls_coord);//fac->GetLevelSetFacetNormal(elem);
+    double dotProduct = fac_tri_normal[0]*fac_ls_normal[0] + fac_tri_normal[1]*fac_ls_normal[1] + fac_tri_normal[2]*fac_ls_normal[2];
+    if(posi == GEO::CUT::Point::outside)
+    {
+      if(dotProduct > 0.0)
+      {
+        std::reverse(tri_temp.begin(),tri_temp.end());
+      }
+    }
+    else if(posi == GEO::CUT::Point::inside)
+    {
+      if(dotProduct < 0.0) // ( < ) should be correct solution.
+        std::reverse(tri_temp.begin(),tri_temp.end());
+    }
+
+    //Add boundary cell
+    if(tri_temp.size()==3)
+    {
+      double areaCell = GEO::CUT::KERNEL::getAreaTri( tri_temp );
+      if( areaCell < REF_AREA_BCELL )
+      {
+        std::cout << "BCell NOT ADDED! areaCell: " << areaCell << std::endl;
+      }
+      NewTri3Cell(mesh,fac,tri_temp);
+    }
+    else if(tri_temp.size()==4)
+    {
+      double areaCell = GEO::CUT::KERNEL::getAreaConvexQuad( tri_temp );
+      if( areaCell < REF_AREA_BCELL )
+      {
+        std::cout << "BCell NOT ADDED! areaCell: " << areaCell << std::endl;
+      }
+      NewQuad4Cell(mesh,fac,tri_temp);
+    }
+    else
+      dserror("Triangulation created neither tri3 or quad4");
+  }
+}
+
 /*--------------------------------------------------------------------------------------------------------*
     This is to check whether the corner points of the cut side facet is aligned to give outward normal
 *---------------------------------------------------------------------------------------------------------*/
@@ -1197,6 +1361,7 @@ void GEO::CUT::VolumeCell::MomentFitGaussWeights(Element *elem,
                                                  bool include_inner,
                                                  INPAR::CUT::BCellGaussPts BCellgausstype)
 {
+#ifdef LOCAL
   //position is used to decide whether the ordering of points are in clockwise or not
   const GEO::CUT::Point::PointPosition posi = Position();
 
@@ -1220,6 +1385,14 @@ void GEO::CUT::VolumeCell::MomentFitGaussWeights(Element *elem,
   GenerateBoundaryCells( mesh, posi, elem, BaseNos, BCellgausstype );
 
   //std::cout<<"MOMENT FITTING ::: Number of points = "<<weights_.Length()<<"\n";
+#else
+
+  //std::cout << "DirectDivergence Is Used!!!! MomFitting not functional in Global coordinates. " << std::endl;
+
+  std::cout << "MomFitting not functional in Global coordinates. NOTHING IS DONE!" << std::endl;
+
+//  DirectDivergenceGaussRule( elem, mesh, include_inner, BCellgausstype );
+#endif
 }
 
 /*---------------------------------------------------------------------------------------------------------------*
@@ -1243,6 +1416,7 @@ void GEO::CUT::VolumeCell::DirectDivergenceGaussRule( Element *elem,
   if( posi == Point::inside and include_inner==false )
     return;
 
+  //If the Volume Cell consists of less than 4 facets, it can't span a volume in 3D.
   if( Facets().size() < 4 )
     return;
 

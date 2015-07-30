@@ -960,7 +960,7 @@ void GEO::CUT::TetMesh::TestUsedPoints( const std::vector<std::vector<int> > & t
 */
 void GEO::CUT::TetMesh::FixBrokenTets()
 {
-#ifdef DEBUGCUTLIBRARY
+#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
   int counter=0;
 #endif
   for ( std::vector<std::vector<int> >::iterator i=tets_.begin();
@@ -1019,7 +1019,7 @@ void GEO::CUT::TetMesh::FixBrokenTets()
     double min_dist_in_tet = temp.MinValue();
     //We want to test with this one I think... But might lead to problems.
     double tolerance = LINSOLVETOL*max_dist_to_orgin;
-#ifdef DEBUGCUTLIBRARY
+#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
     double vol_tet = distance / 6.0;
 #endif
 #else
@@ -1044,7 +1044,7 @@ void GEO::CUT::TetMesh::FixBrokenTets()
     if ( min_dist_in_tet < tolerance )
     {
       accept_tets_[i - tets_.begin()] = false;
-#ifdef DEBUGCUTLIBRARY
+#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
       std::cout << "Removed tet(" << counter << ") , with volume: " << vol_tet << std::endl;
 #endif
     }
@@ -1052,7 +1052,7 @@ void GEO::CUT::TetMesh::FixBrokenTets()
     if ( fabs( vol_tet ) < VOLUMETOL )
     {
       accept_tets_[i - tets_.begin()] = false;
-#ifdef DEBUGCUTLIBRARY
+#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
       std::cout << "Removed tet(" << counter << ") , with volume: " << vol_tet << std::endl;
 #endif
     }
@@ -1063,7 +1063,7 @@ void GEO::CUT::TetMesh::FixBrokenTets()
 #endif
 
 
-#ifdef DEBUGCUTLIBRARY
+#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
     // Is the TET accepted/rejected in the new framework but rejected/accepted in the old?
     if( (min_dist_in_tet < tolerance) != (fabs( vol_tet ) < VOLUMETOL))
     {
@@ -1085,7 +1085,7 @@ void GEO::CUT::TetMesh::FixBrokenTets()
     {
       std::swap( t[1], t[3] );
     }
-#ifdef DEBUGCUTLIBRARY
+#ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
     counter++;
 #endif
   }

@@ -160,6 +160,7 @@ bool GEO::CUT::LevelSetSide::FindAmbiguousCutLines( Mesh & mesh, Element * eleme
     }
     case 4:
     {
+      //First, check if all cutpoints cut the edges of the side-element.
       std::vector<Point*> edge_points;
       edge_points.reserve( 4 );
       const std::vector<Edge*> & edges = side.Edges();
@@ -229,11 +230,62 @@ bool GEO::CUT::LevelSetSide::FindAmbiguousCutLines( Mesh & mesh, Element * eleme
         return false;
       }
 
+#ifdef USE_PHIDERIV_FOR_CUT_DETERMINATION
+        LINALG::Matrix<3,1> coords0;
+        bool connect01and23;
+
+        edge_points[0]->Coordinates(&coords0(0,0));
+        std::vector<double> grad_phi0 = element->GetLevelSetGradient(coords0);
+
+        LINALG::Matrix<3,1> coords1;
+        edge_points[1]->Coordinates(&coords1(0,0));
+        std::vector<double> grad_phi1 = element->GetLevelSetGradient(coords1);
+
+        double dotProduct01 = grad_phi0[0]*grad_phi1[0] + grad_phi0[1]*grad_phi1[1] + grad_phi0[2]*grad_phi1[2];
+
+        LINALG::Matrix<3,1> coords2;
+        edge_points[2]->Coordinates(&coords2(0,0));
+        std::vector<double> grad_phi2 = element->GetLevelSetGradient(coords2);
+
+        LINALG::Matrix<3,1> coords3;
+        edge_points[3]->Coordinates(&coords3(0,0));
+        std::vector<double> grad_phi3 = element->GetLevelSetGradient(coords3);
+
+        double dotProduct23 = grad_phi2[0]*grad_phi3[0] + grad_phi2[1]*grad_phi3[1] + grad_phi2[2]*grad_phi3[2];
+
+        double dotProduct;
+
+        if(fabs(dotProduct01)>fabs(dotProduct23))
+          dotProduct = dotProduct01;
+        else
+          dotProduct = dotProduct23;
+
+#ifdef DEBUGCUTLIBRARY
+        std::cout << "dotProduct01: " << dotProduct01 << ", dotProduct23 " << dotProduct23 << std::endl;
+        if(dotProduct01*dotProduct23 < 0.0)
+          std::cout << "WARNING: dotProduct not unique!!!" << std::endl;
+#endif
+
+        if ( dotProduct > 0.0 )
+          connect01and23 = true;
+        else
+          connect01and23 = false;
+#endif
+
       if ( lsv( 0 ) <= 0 and
            lsv( 1 ) >= 0 and
            lsv( 2 ) <= 0 and
            lsv( 3 ) >= 0 )
       {
+#ifdef USE_PHIDERIV_FOR_CUT_DETERMINATION
+#ifdef DEBUGCUTLIBRARY
+        if(negativemiddle != connect01and23)
+          std::cout << "Changed from previous configuration of midpoint evaluation!" << std::endl;
+#endif
+
+        negativemiddle = connect01and23;
+#endif
+
         if ( negativemiddle )
         {
           mesh.NewLine( edge_points[0], edge_points[1], &side, this, element );
@@ -251,6 +303,14 @@ bool GEO::CUT::LevelSetSide::FindAmbiguousCutLines( Mesh & mesh, Element * eleme
                 lsv( 2 ) >= 0 and
                 lsv( 3 ) <= 0 )
       {
+#ifdef USE_PHIDERIV_FOR_CUT_DETERMINATION
+#ifdef DEBUGCUTLIBRARY
+        if(negativemiddle == connect01and23)
+          std::cout << "Changed from previous configuration of midpoint evaluation!" << std::endl;
+#endif
+
+        negativemiddle = !connect01and23;
+#endif
         if ( negativemiddle )
         {
           mesh.NewLine( edge_points[0], edge_points[3], &side, this, element );

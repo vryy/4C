@@ -11,6 +11,8 @@ equations
 #include "cut_mesh.H"
 #include "cut_enum.H"
 
+//#define DIRECTDIV_EXTENDED_DEBUG_OUTPUT
+
 namespace GEO
 {
   namespace CUT
@@ -70,6 +72,13 @@ namespace GEO
         void DivergenceIntegrationRule( Mesh &mesh,
             Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> & cgp );
 
+        /*!
+        \brief Generate Gaussian points over the considered facet by triangulating it. This is used when
+        DirectDivergence option is used for Gauss point generation
+        */
+        void DivergenceIntegrationRuleNew( Mesh &mesh,
+            Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> & cgp );
+
       private:
         /*!
         \brief Check whether the vertices numbering of the facet is clockwise
@@ -95,7 +104,18 @@ namespace GEO
         /*!
         \brief Generate boundary cells for the considered facet. May need to perform triangulatio
         */
-        void GenerateDivergenceCells(bool divergenceRule,Mesh &mesh, std::list<Teuchos::RCP<BoundaryCell> > & divCells);
+        void GenerateDivergenceCells(bool divergenceRule,
+                                     Mesh &mesh,
+                                     std::list<Teuchos::RCP<BoundaryCell> > & divCells);
+
+        /*!
+        \brief Generate boundary cells for the considered facet. May need to perform triangulatio
+        */
+        void GenerateDivergenceCellsNew(bool                                   divergenceRule,
+                                     Mesh                                   &mesh,
+                                     std::list<Teuchos::RCP<BoundaryCell> > &divCells,
+                                     const std::vector<Point*>              &cornersGlobal);
+
 
         /*!
         \brief Temporarily create Tri3 cell. This is not stored in Mesh

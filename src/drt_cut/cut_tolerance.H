@@ -18,10 +18,8 @@
 
 #define REFERENCETOL (BASICTOL*10.0) //tolerance to check coordinates in the relative coordinate system (assumtion is that abs(max(value)) = 1.0)!
 
-
-#define VOLUMETOL   1e-14  // JUST FOR TESSILATION: the tolerance when created integration cells are discarded, the boundary cell however will be created
-
-
+// Not in use anymore.
+#define VOLUMETOL   1e-14  // JUST FOR TESSELATION: the tolerance when created integration cells are discarded, the boundary cell however will be created
 
 // special tolerances for some special cut situations --> we should define them relative to our BASICTOL!!!
 
@@ -61,7 +59,7 @@
 
 // If the area of boundarycell is less than this value, then it is eliminated from boundary integration
 // Such small area can lead to zero or a very small negative value in the boundary cell mapping's Jacobian
-#define REF_AREA_BCELL 1e-13
+#define REF_AREA_BCELL 1e-13 //Make it viable for GLOBAL!!!
 
 // If the distance of the line between the main Gauss points and its projected point is less than
 // this value, then this main Gauss point is not considered

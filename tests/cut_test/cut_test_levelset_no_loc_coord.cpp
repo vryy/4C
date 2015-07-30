@@ -22,20 +22,290 @@
 
 #include <iterator>
 
-#define PRERCISION24
+#define PRECISION24
 //#define GMSH_OUTPUT_LSNOLOC_CUT_TEST
+
+Epetra_SerialDenseMatrix GetLocalHex8Coords()
+{
+  Epetra_SerialDenseMatrix xyze( 3, 8 );
+
+  xyze( 0, 0 ) = -1;
+  xyze( 1, 0 ) = -1;
+  xyze( 2, 0 ) = -1;
+
+  xyze( 0, 1 ) =  1;
+  xyze( 1, 1 ) = -1;
+  xyze( 2, 1 ) = -1;
+
+  xyze( 0, 2 ) =  1;
+  xyze( 1, 2 ) =  1;
+  xyze( 2, 2 ) = -1;
+
+  xyze( 0, 3 ) = -1;
+  xyze( 1, 3 ) =  1;
+  xyze( 2, 3 ) = -1;
+
+  xyze( 0, 4 ) = -1;
+  xyze( 1, 4 ) = -1;
+  xyze( 2, 4 ) =  1;
+
+  xyze( 0, 5 ) =  1;
+  xyze( 1, 5 ) = -1;
+  xyze( 2, 5 ) =  1;
+
+  xyze( 0, 6 ) =  1;
+  xyze( 1, 6 ) =  1;
+  xyze( 2, 6 ) =  1;
+
+  xyze( 0, 7 ) = -1;
+  xyze( 1, 7 ) =  1;
+  xyze( 2, 7 ) =  1;
+
+  return xyze;
+}
+
+
+GEO::CUT::CombIntersection Cut_With_Tesselation(std::vector<int> nids,std::vector<double> lsvs,Epetra_SerialDenseMatrix xyze, std::string testname)
+{
+  //non-planar cut surface
+  GEO::CUT::CombIntersection ci(-1);
+  ci.AddLevelSetSide(1);
+
+  ci.AddElement( 1, nids, xyze, DRT::Element::hex8, &lsvs[0], false );
+
+  ci.Cut(true);
+
+  ci.NormalMesh().FindLSNodePositions();
+  ci.NormalMesh().FindNodalDOFSets( true );
+
+  ci.Cut_Finalize( true, INPAR::CUT::VCellGaussPts_Tessellation, INPAR::CUT::BCellGaussPts_Tessellation, false, true );
+  std::cout << "TESSELATION, Cut without error." << std::endl;
+
+#ifdef GMSH_OUTPUT_LSNOLOC_CUT_TEST
+  //Gmsh-output Tesselation
+  ci.NormalMesh().DumpGmsh(testname+"_tes.CUT.pos");
+  ci.NormalMesh().DumpGmshVolumeCells(testname+"_tes.CUT_volumecells.pos",true);
+  ci.DumpGmshIntegrationCells(testname+"_tes.CUT_integrationcells.pos");
+#endif
+
+  return ci;
+}
+
+GEO::CUT::CombIntersection Cut_With_DirectDivergence(std::vector<int> nids,std::vector<double> lsvs,Epetra_SerialDenseMatrix xyze, std::string testname)
+{
+  //non-planar cut surface
+  GEO::CUT::CombIntersection ci(-1);
+  ci.AddLevelSetSide(1);
+
+  ci.AddElement( 1, nids, xyze, DRT::Element::hex8, &lsvs[0], false );
+
+  ci.Cut(true);
+
+  ci.NormalMesh().FindLSNodePositions();
+  ci.NormalMesh().FindNodalDOFSets( true );
+
+  ci.Cut_Finalize( true, INPAR::CUT::VCellGaussPts_DirectDivergence, INPAR::CUT::BCellGaussPts_Tessellation, false, true );
+  std::cout << "DIRECT DIVERGENCE, Cut without error." << std::endl;
+
+#ifdef GMSH_OUTPUT_LSNOLOC_CUT_TEST
+  //Gmsh-output DD
+  ci.NormalMesh().DumpGmsh(testname+"_dd.CUT.pos");
+  ci.NormalMesh().DumpGmshVolumeCells(testname+"_dd.CUT_volumecells.pos",true);
+  //ci.DumpGmshIntegrationCells(testname+"_dd.CUT_integrationcells.pos");
+#endif
+
+  return ci;
+}
+
+
+void Test_LevelSetCut_Tesselation_and_DD(std::vector<int> nids,std::vector<double> lsvs,Epetra_SerialDenseMatrix xyze, std::string testname)
+{
+  //non-planar cut surface
+  GEO::CUT::CombIntersection ci(-1);
+  GEO::CUT::CombIntersection cidd(-1);
+  ci.AddLevelSetSide(1);
+  cidd.AddLevelSetSide(1);
+
+  ci.AddElement( 1, nids, xyze, DRT::Element::hex8, &lsvs[0], false );
+  cidd.AddElement( 1, nids, xyze, DRT::Element::hex8, &lsvs[0], false );
+
+  ci.Cut(true);
+  cidd.Cut(true);
+
+  ci.NormalMesh().FindLSNodePositions();
+  ci.NormalMesh().FindNodalDOFSets( true );
+  cidd.NormalMesh().FindLSNodePositions();
+  cidd.NormalMesh().FindNodalDOFSets( true );
+
+  ci.Cut_Finalize( true, INPAR::CUT::VCellGaussPts_Tessellation, INPAR::CUT::BCellGaussPts_Tessellation, false, true );
+  std::cout << "TESSELATION, Cut without error." << std::endl;
+  cidd.Cut_Finalize( true, INPAR::CUT::VCellGaussPts_DirectDivergence, INPAR::CUT::BCellGaussPts_Tessellation, false, true );
+  std::cout << "DIRECT DIVERGENCE, Cut without error." << std::endl;
+
+#ifdef GMSH_OUTPUT_LSNOLOC_CUT_TEST
+  //Gmsh-output Tesselation
+  ci.NormalMesh().DumpGmsh(testname+"_tes.CUT.pos");
+  ci.NormalMesh().DumpGmshVolumeCells(testname+"_tes.CUT_volumecells.pos",true);
+  ci.DumpGmshIntegrationCells(testname+"_tes.CUT_integrationcells.pos");
+  //Gmsh-output DD
+  cidd.NormalMesh().DumpGmsh(testname+"_dd.CUT.pos");
+  cidd.NormalMesh().DumpGmshVolumeCells(testname+"_dd.CUT_volumecells.pos",true);
+  //ci.DumpGmshIntegrationCells(testname+"_dd.CUT_integrationcells.pos");
+#endif
+
+
+  // TEST IF VOLUMES PREDICTED OF CELLS ARE SAME:
+  //###########################################################
+  std::vector<double> tessVol,dirDivVol;
+
+  // Sum Tessellation volume of test
+  const std::list<Teuchos::RCP<GEO::CUT::VolumeCell> > & other_cells = ci.NormalMesh().VolumeCells();
+  std::cout << "# Volume Cells Tesselation: " << other_cells.size() << std::endl;
+  int iteration_VC = 0;
+  for ( std::list<Teuchos::RCP<GEO::CUT::VolumeCell> >::const_iterator i=other_cells.begin();
+      i!=other_cells.end();
+      ++i )
+  {
+    GEO::CUT::VolumeCell * vc = &**i;
+    tessVol.push_back(vc->Volume());
+
+    // TEST THAT TESSELATION DOES NOT HAVE EMPTY VolumeCells.
+    //++++++++++++++++++++
+    iteration_VC++;
+    std::cout << "VC(" << iteration_VC << "):" << std::endl;
+
+    const GEO::CUT::plain_integrationcell_set & integrationcells = vc->IntegrationCells();
+    std::cout << "Has #IC=" << integrationcells.size() << std::endl;
+
+    if(integrationcells.size()==0)
+    {
+      throw std::runtime_error("VolumeCell contains 0 integration cells.");
+    }
+    //++++++++++++++++++++
+  }
+  //------------------------------------------------------
+
+  // Sum Direct Divergence of test
+  const std::list<Teuchos::RCP<GEO::CUT::VolumeCell> > & other_cellsdd = cidd.NormalMesh().VolumeCells();
+  std::cout << "# Volume Cells Direct Divergence: " << other_cellsdd.size() << std::endl;
+  for ( std::list<Teuchos::RCP<GEO::CUT::VolumeCell> >::const_iterator idd=other_cellsdd.begin();
+      idd!=other_cellsdd.end();
+      ++idd )
+  {
+    GEO::CUT::VolumeCell * vc = &**idd;
+    dirDivVol.push_back(vc->Volume());
+  }
+  //------------------------------------------------------
+
+
+  // Test Direct Divergence against Tesselation
+  //------------------------------------------------------
+  bool error = false;
+  std::cout<<"the volumes predicted by\n tessellation \t DirectDivergence\n";
+  for(unsigned i=0;i<tessVol.size();i++)
+  {
+    std::cout<<tessVol[i]<<"\t"<<dirDivVol[i]<<"\n";
+    if( fabs(tessVol[i]-dirDivVol[i])>1e-9 )
+      error = true;
+  }
+  if(error)
+  {
+    throw std::runtime_error("Volume predicted by one of the methods is wrong.");
+  }
+  //------------------------------------------------------
+  //###########################################################
+}
+
+
+void Test_LevelSetCut_Tesselation_and_DD_same_VC(std::vector<int> nids,std::vector<double> lsvs,Epetra_SerialDenseMatrix xyze, std::string testname)
+{
+  GEO::CUT::CombIntersection ci = Cut_With_Tesselation(nids,lsvs,xyze,testname);
+
+  // TEST IF VOLUMES PREDICTED OF CELLS ARE SAME:
+  //###########################################################
+  std::vector<double> tessVol,dirDivVol;
+  double diff_tol = BASICTOL;//1e-20; //How sharp to test for.
+
+  // Sum Tessellation volume of test
+  const std::list<Teuchos::RCP<GEO::CUT::VolumeCell> > & other_cells = ci.NormalMesh().VolumeCells();
+  std::cout << "# Volume Cells Tesselation: " << other_cells.size() << std::endl;
+  int iteration_VC = 0;
+  for ( std::list<Teuchos::RCP<GEO::CUT::VolumeCell> >::const_iterator i=other_cells.begin();
+      i!=other_cells.end();
+      ++i )
+  {
+    GEO::CUT::VolumeCell * vc = &**i;
+    tessVol.push_back(vc->Volume());
+
+    // TEST THAT TESSELATION DOES NOT HAVE EMPTY VolumeCells.
+    //++++++++++++++++++++
+    iteration_VC++;
+    std::cout << "VC(" << iteration_VC << "):" << std::endl;
+
+    const GEO::CUT::plain_integrationcell_set & integrationcells = vc->IntegrationCells();
+    std::cout << "Has #IC=" << integrationcells.size() << std::endl;
+
+    if(integrationcells.size()==0)
+    {
+      throw std::runtime_error("VolumeCell contains 0 integration cells.");
+    }
+    //++++++++++++++++++++
+  }
+  //------------------------------------------------------
+
+  //Cut with DirectDivergence as well
+  int counter = 1;
+  for ( std::list<Teuchos::RCP<GEO::CUT::VolumeCell> >::const_iterator i=other_cells.begin();
+      i!=other_cells.end();
+      ++i )
+  {
+    GEO::CUT::VolumeCell * vc = &**i;
+//    std::cout << "DIRCETDIVERGENCE CUTTING VOLUMECELL #" << counter <<  ".....!" << std::endl;
+//    std::cout << "Volumecell Position: " << vc->Position() << std::endl;
+    vc->DirectDivergenceGaussRule(vc->ParentElement(),ci.NormalMesh(),true,INPAR::CUT::BCellGaussPts_DirectDivergence);
+//    std::cout << "DIRCETDIVERGENCE CUT VOLUMECELL #" << counter <<  " WITHOUT ERROR!" << std::endl << std::endl;
+    counter++;
+    dirDivVol.push_back(vc->Volume());
+  }
+
+  // Test Direct Divergence against Tesselation
+  //------------------------------------------------------
+  bool error = false;
+  double sumtessvol = 0.0;
+  for(unsigned i=0;i<tessVol.size();i++)
+    sumtessvol+=tessVol[i];
+
+  std::cout << "Tolerance: " << diff_tol*sumtessvol << std::endl;
+
+  std::cout<<"the volumes predicted by\n Tessellation \t DirectDivergence\n";
+  for(unsigned i=0;i<tessVol.size();i++)
+  {
+    std::cout<< std::setprecision(17) << std::scientific << tessVol[i]<<"\t"<<dirDivVol[i];//<<"\n";
+    if( fabs(tessVol[i]-dirDivVol[i]) > diff_tol*(sumtessvol) ) // Is the relative difference greater than the Tolerance?
+    {
+      std::cout << "\t difference: " << fabs(tessVol[i]-dirDivVol[i]);// << "\n";
+      error = true;
+    }
+    else if(isnan(tessVol[i]) or isnan(dirDivVol[i]))
+      error = true;
+    std::cout << "\n";
+  }
+  if(error)
+  {
+    throw std::runtime_error("Volume predicted by one of the methods is wrong.");
+  }
+  //------------------------------------------------------
+  //###########################################################
+}
 
 void test_ls_hex8_magnus1()
 {
-
-  GEO::CUT::CombIntersection ci(-1);
-  ci.AddLevelSetSide(1);
 
   // simple hex8 element
   std::vector<int> nids( 8 );
   std::vector<double> lsvs( 8 );
   Epetra_SerialDenseMatrix xyze( 3, 8 );
-  Epetra_SerialDenseMatrix xyze_local( 3, 8 );
+  //Epetra_SerialDenseMatrix xyze_local( 3, 8 );
 
 
   for ( int i=0; i<8; ++i )
@@ -43,39 +313,7 @@ void test_ls_hex8_magnus1()
     nids[i] = i;
   }
 
-  xyze_local( 0, 0 ) = -1;
-  xyze_local( 1, 0 ) = -1;
-  xyze_local( 2, 0 ) = -1;
-
-  xyze_local( 0, 1 ) =  1;
-  xyze_local( 1, 1 ) = -1;
-  xyze_local( 2, 1 ) = -1;
-
-  xyze_local( 0, 2 ) =  1;
-  xyze_local( 1, 2 ) =  1;
-  xyze_local( 2, 2 ) = -1;
-
-  xyze_local( 0, 3 ) = -1;
-  xyze_local( 1, 3 ) =  1;
-  xyze_local( 2, 3 ) = -1;
-
-  xyze_local( 0, 4 ) = -1;
-  xyze_local( 1, 4 ) = -1;
-  xyze_local( 2, 4 ) =  1;
-
-  xyze_local( 0, 5 ) =  1;
-  xyze_local( 1, 5 ) = -1;
-  xyze_local( 2, 5 ) =  1;
-
-  xyze_local( 0, 6 ) =  1;
-  xyze_local( 1, 6 ) =  1;
-  xyze_local( 2, 6 ) =  1;
-
-  xyze_local( 0, 7 ) = -1;
-  xyze_local( 1, 7 ) =  1;
-  xyze_local( 2, 7 ) =  1;
-
-#ifdef PRERCISION24
+#ifdef PRECISION24
   std::cout << "Precision 24" << std::endl;
 
   //eleID=47018 (precision 24)
@@ -169,59 +407,17 @@ void test_ls_hex8_magnus1()
 #endif
 
 
-  ci.AddElement( 1, nids, xyze, DRT::Element::hex8, &lsvs[0], false );
-  //ci.AddElement( 1, nids, xyze_local, DRT::Element::hex8, &lsvs[0], false );
+  std::string testname("xxx_cut_test_ls_hex8_magnus1");
 
-  ci.Cut(true);
-  //ci.PrintCellStats();
-
-  ci.NormalMesh().FindLSNodePositions();
-  ci.NormalMesh().FindNodalDOFSets( true );
-
-  ci.Cut_Finalize( true, INPAR::CUT::VCellGaussPts_Tessellation, INPAR::CUT::BCellGaussPts_Tessellation, false, true );
-
-   //Gmsh-output
-#ifdef GMSH_OUTPUT_LSNOLOC_CUT_TEST
-  ci.NormalMesh().DumpGmsh("xxx_cut_test_ls_hex8_magnus1.CUT.pos");
-  ci.NormalMesh().DumpGmshVolumeCells("xxx_cut_test_ls_hex8_magnus1.CUT_volumecells.pos",true);
-  ci.DumpGmshIntegrationCells("xxx_cut_test_ls_hex8_magnus1.CUT_integrationcells.pos");
+#ifdef LOCAL_COORDS
+  Test_LevelSetCut_Tesselation_and_DD_same_VC(nids, lsvs, GetLocalHex8Coords(), testname);
+#else
+  Test_LevelSetCut_Tesselation_and_DD_same_VC(nids, lsvs, xyze, testname);
 #endif
-
-  const std::list<Teuchos::RCP<GEO::CUT::VolumeCell> > & other_cells = ci.NormalMesh().VolumeCells();
-  std::cout << "# Volume Cells: " << other_cells.size() << std::endl;
-
-  int iteration_VC = 0;
-  for ( std::list<Teuchos::RCP<GEO::CUT::VolumeCell> >::const_iterator i=other_cells.begin();
-      i!=other_cells.end();
-      ++i )
-  {
-    iteration_VC++;
-    GEO::CUT::VolumeCell * vc = &**i;
-    const GEO::CUT::plain_integrationcell_set & integrationcells = vc->IntegrationCells();
-
-    std::cout << "VC(" << iteration_VC << "):" << std::endl;
-    std::cout << "Has #IC=" << integrationcells.size() << std::endl;
-
-    if(integrationcells.size()==0)
-    {
-      throw std::runtime_error("VolumeCell contains 0 integration cells.");
-    }
-
-//    for ( GEO::CUT::plain_integrationcell_set::const_iterator i=integrationcells.begin();
-//        i!=integrationcells.end();
-//        ++i )
-//    {
-//      GEO::CUT::IntegrationCell * ic = *i;
-//    }
-  }
 }
 
 void test_ls_hex8_magnus2()
 {
-
-  //non-planar cut surface
-  GEO::CUT::CombIntersection ci(-1);
-  ci.AddLevelSetSide(1);
 
   // simple hex8 element
   std::vector<int> nids( 8 );
@@ -234,7 +430,7 @@ void test_ls_hex8_magnus2()
   }
 
   //  //eleID=43985  ve=0.000125  vc=0.000124881  vd= 1.18574e-07  err=0.00094859
-#ifdef PRERCISION24
+#ifdef PRECISION24
   std::cout << "Precision 24" << std::endl;
 
   xyze(  0,0 ) = 0.350000000000000088817842;
@@ -323,57 +519,19 @@ void test_ls_hex8_magnus2()
   lsvs[7] =-0.02830094339716971;
 #endif
 
-  ci.AddElement( 1, nids, xyze, DRT::Element::hex8, &lsvs[0], false );
-  ci.Cut(true);
-  //ci.PrintCellStats();
+  std::string testname("xxx_cut_test_ls_hex8_magnus2");
 
-  ci.NormalMesh().FindLSNodePositions();
-  ci.NormalMesh().FindNodalDOFSets( true );
-
-  ci.Cut_Finalize( true, INPAR::CUT::VCellGaussPts_Tessellation, INPAR::CUT::BCellGaussPts_Tessellation, false, true );
-
-#ifdef GMSH_OUTPUT_LSNOLOC_CUT_TEST
-   //Gmsh-output
-  ci.NormalMesh().DumpGmsh("xxx_cut_test_ls_hex8_magnus2.CUT.pos");
-  ci.NormalMesh().DumpGmshVolumeCells("xxx_cut_test_ls_hex8_magnus2.CUT_volumecells.pos",true);
-  ci.DumpGmshIntegrationCells("xxx_cut_test_ls_hex8_magnus2.CUT_integrationcells.pos");
+#ifdef LOCAL_COORDS
+  Test_LevelSetCut_Tesselation_and_DD_same_VC(nids, lsvs, GetLocalHex8Coords(), testname);
+#else
+  Test_LevelSetCut_Tesselation_and_DD_same_VC(nids, lsvs, xyze, testname);
 #endif
 
-  const std::list<Teuchos::RCP<GEO::CUT::VolumeCell> > & other_cells = ci.NormalMesh().VolumeCells();
-  std::cout << "# Volume Cells: " << other_cells.size() << std::endl;
-
-  int iteration_VC = 0;
-  for ( std::list<Teuchos::RCP<GEO::CUT::VolumeCell> >::const_iterator i=other_cells.begin();
-      i!=other_cells.end();
-      ++i )
-  {
-    iteration_VC++;
-    std::cout << "VC(" << iteration_VC << "):" << std::endl;
-    GEO::CUT::VolumeCell * vc = &**i;
-
-    const GEO::CUT::plain_integrationcell_set & integrationcells = vc->IntegrationCells();
-    std::cout << "Has #IC=" << integrationcells.size() << std::endl;
-
-    if(integrationcells.size()==0)
-    {
-      throw std::runtime_error("VolumeCell contains 0 integration cells.");
-    }
-
-//    for ( GEO::CUT::plain_integrationcell_set::const_iterator i=integrationcells.begin();
-//        i!=integrationcells.end();
-//        ++i )
-//    {
-//      GEO::CUT::IntegrationCell * ic = *i;
-//    }
-  }
 }
 
 
 void test_ls_hex8_magnus3()
 {
-
-  GEO::CUT::CombIntersection ci(-1);
-  ci.AddLevelSetSide(1);
 
   // simple hex8 element
   std::vector<int> nids( 8 );
@@ -386,7 +544,7 @@ void test_ls_hex8_magnus3()
   }
 
   //eleID = 45458 prec:24
-#ifdef PRERCISION24
+#ifdef PRECISION24
   std::cout << "Precision 24" << std::endl;
 
   xyze(  0,0 ) = 0.40000000000000002220446;
@@ -475,57 +633,18 @@ void test_ls_hex8_magnus3()
   lsvs[7] =-0.01523201425836712;
 #endif
 
-  ci.AddElement( 1, nids, xyze, DRT::Element::hex8, &lsvs[0], false );
-  ci.Cut(true);
-  //ci.PrintCellStats();
+  std::string testname("xxx_cut_test_ls_hex8_magnus3");
 
-  ci.NormalMesh().FindLSNodePositions();
-  ci.NormalMesh().FindNodalDOFSets( true );
-
-  ci.Cut_Finalize( true, INPAR::CUT::VCellGaussPts_Tessellation, INPAR::CUT::BCellGaussPts_Tessellation, false, true );
-
-#ifdef GMSH_OUTPUT_LSNOLOC_CUT_TEST
-   //Gmsh-output
-  ci.NormalMesh().DumpGmsh("xxx_cut_test_ls_hex8_magnus3.CUT.pos");
-  ci.NormalMesh().DumpGmshVolumeCells("xxx_cut_test_ls_hex8_magnus3.CUT_volumecells.pos",true);
-  ci.DumpGmshIntegrationCells("xxx_cut_test_ls_hex8_magnus3.CUT_integrationcells.pos");
+#ifdef LOCAL_COORDS
+  Test_LevelSetCut_Tesselation_and_DD_same_VC(nids, lsvs, GetLocalHex8Coords(), testname);
+#else
+  Test_LevelSetCut_Tesselation_and_DD_same_VC(nids, lsvs, xyze, testname);
 #endif
 
-  const std::list<Teuchos::RCP<GEO::CUT::VolumeCell> > & other_cells = ci.NormalMesh().VolumeCells();
-  std::cout << "# Volume Cells: " << other_cells.size() << std::endl;
-
-  int iteration_VC = 0;
-  for ( std::list<Teuchos::RCP<GEO::CUT::VolumeCell> >::const_iterator i=other_cells.begin();
-      i!=other_cells.end();
-      ++i )
-  {
-    iteration_VC++;
-    std::cout << "VC(" << iteration_VC << "):" << std::endl;
-    GEO::CUT::VolumeCell * vc = &**i;
-
-    const GEO::CUT::plain_integrationcell_set & integrationcells = vc->IntegrationCells();
-    std::cout << "Has #IC=" << integrationcells.size() << std::endl;
-
-    if(integrationcells.size()==0)
-    {
-      throw std::runtime_error("VolumeCell contains 0 integration cells.");
-    }
-
-//    for ( GEO::CUT::plain_integrationcell_set::const_iterator i=integrationcells.begin();
-//        i!=integrationcells.end();
-//        ++i )
-//    {
-//      GEO::CUT::IntegrationCell * ic = *i;
-//    }
-  }
 }
 
 void test_ls_hex8_magnus4()
 {
-
-  //non-planar cut surface
-  GEO::CUT::CombIntersection ci(-1);
-  ci.AddLevelSetSide(1);
 
   // simple hex8 element
   std::vector<int> nids( 8 );
@@ -537,7 +656,7 @@ void test_ls_hex8_magnus4()
     nids[i] = i;
   }
 
-#ifdef PRERCISION24
+#ifdef PRECISION24
   std::cout << "Precision 24" << std::endl;
   // ELEID: 37941 PREC:24
   xyze(  0,0 ) = 0.15000000000000002220446;
@@ -626,59 +745,20 @@ void test_ls_hex8_magnus4()
   lsvs[7] =-0.00502525316941671;
 #endif
 
-  ci.AddElement( 1, nids, xyze, DRT::Element::hex8, &lsvs[0], false );
 
-  ci.Cut(true);
-  //ci.PrintCellStats();
 
-  ci.NormalMesh().FindLSNodePositions();
-  ci.NormalMesh().FindNodalDOFSets( true );
+  std::string testname("xxx_cut_test_ls_hex8_magnus4");
 
-  ci.Cut_Finalize( true, INPAR::CUT::VCellGaussPts_Tessellation, INPAR::CUT::BCellGaussPts_Tessellation, false, true );
-
-#ifdef GMSH_OUTPUT_LSNOLOC_CUT_TEST
-   //Gmsh-output
-  ci.NormalMesh().DumpGmsh("xxx_cut_test_ls_hex8_magnus4.CUT.pos");
-  ci.NormalMesh().DumpGmshVolumeCells("xxx_cut_test_ls_hex8_magnus4.CUT_volumecells.pos",true);
-  ci.DumpGmshIntegrationCells("xxx_cut_test_ls_hex8_magnus4.CUT_integrationcells.pos");
+#ifdef LOCAL_COORDS
+  Test_LevelSetCut_Tesselation_and_DD_same_VC(nids, lsvs, GetLocalHex8Coords(), testname);
+#else
+  Test_LevelSetCut_Tesselation_and_DD_same_VC(nids, lsvs, xyze, testname);
 #endif
 
-  const std::list<Teuchos::RCP<GEO::CUT::VolumeCell> > & other_cells = ci.NormalMesh().VolumeCells();
-  std::cout << "# Volume Cells: " << other_cells.size() << std::endl;
-
-  int iteration_VC = 0;
-  for ( std::list<Teuchos::RCP<GEO::CUT::VolumeCell> >::const_iterator i=other_cells.begin();
-      i!=other_cells.end();
-      ++i )
-  {
-    iteration_VC++;
-    std::cout << "VC(" << iteration_VC << "):" << std::endl;
-    GEO::CUT::VolumeCell * vc = &**i;
-
-    const GEO::CUT::plain_integrationcell_set & integrationcells = vc->IntegrationCells();
-    std::cout << "Has #IC=" << integrationcells.size() << std::endl;
-
-    if(integrationcells.size()==0)
-    {
-      throw std::runtime_error("VolumeCell contains 0 integration cells.");
-    }
-
-//    for ( GEO::CUT::plain_integrationcell_set::const_iterator i=integrationcells.begin();
-//        i!=integrationcells.end();
-//        ++i )
-//    {
-//      GEO::CUT::IntegrationCell * ic = *i;
-//    }
-  }
 }
 
 void test_ls_hex8_magnus5()
 {
-
-  //non-planar cut surface
-  GEO::CUT::CombIntersection ci(-1);
-  ci.AddLevelSetSide(1);
-
   // simple hex8 element
   std::vector<int> nids( 8 );
   std::vector<double> lsvs( 8 );
@@ -689,11 +769,11 @@ void test_ls_hex8_magnus5()
     nids[i] = i;
   }
 
-#ifdef PRERCISION24
+#ifdef PRECISION24
   std::cout << "Precision 24" << std::endl;
   // ELEID: 37941 PREC:24
-//  WARNING: One Volume-cell is empty!!
-//   !!!!!!!!!!! volume test failed: !!!!!!!!!!!!!!!eleID=22974  ve=0.000125  vc=0.000117163  vd= 7.83715e-06  err=0.0626972
+  //  WARNING: One Volume-cell is empty!!
+  //   !!!!!!!!!!! volume test failed: !!!!!!!!!!!!!!!eleID=22974  ve=0.000125  vc=0.000117163  vd= 7.83715e-06  err=0.0626972
   xyze(  0,0 ) = -0.299999999999999933386619;
   xyze(  1,0 ) = -0.300000000000000044408921;
   xyze(  2,0 ) = 0.300000000000000044408921;
@@ -778,50 +858,13 @@ void test_ls_hex8_magnus5()
   lsvs[7] =-0.03631907522521477;
 #endif
 
-  ci.AddElement( 1, nids, xyze, DRT::Element::hex8, &lsvs[0], false );
+  std::string testname("xxx_cut_test_ls_hex8_magnus5");
 
-  ci.Cut(true);
-  //ci.PrintCellStats();
-
-  ci.NormalMesh().FindLSNodePositions();
-  ci.NormalMesh().FindNodalDOFSets( true );
-
-  ci.Cut_Finalize( true, INPAR::CUT::VCellGaussPts_Tessellation, INPAR::CUT::BCellGaussPts_Tessellation, false, true );
-
-#ifdef GMSH_OUTPUT_LSNOLOC_CUT_TEST
-   //Gmsh-output
-  ci.NormalMesh().DumpGmsh("xxx_cut_test_ls_hex8_magnus5.CUT.pos");
-  ci.NormalMesh().DumpGmshVolumeCells("xxx_cut_test_ls_hex8_magnus5.CUT_volumecells.pos",true);
-  ci.DumpGmshIntegrationCells("xxx_cut_test_ls_hex8_magnus5.CUT_integrationcells.pos");
+#ifdef LOCAL_COORDS
+  Test_LevelSetCut_Tesselation_and_DD_same_VC(nids, lsvs, GetLocalHex8Coords(), testname);
+#else
+  Test_LevelSetCut_Tesselation_and_DD_same_VC(nids, lsvs, xyze, testname);
 #endif
-
-  const std::list<Teuchos::RCP<GEO::CUT::VolumeCell> > & other_cells = ci.NormalMesh().VolumeCells();
-  std::cout << "# Volume Cells: " << other_cells.size() << std::endl;
-
-  int iteration_VC = 0;
-  for ( std::list<Teuchos::RCP<GEO::CUT::VolumeCell> >::const_iterator i=other_cells.begin();
-      i!=other_cells.end();
-      ++i )
-  {
-    iteration_VC++;
-    std::cout << "VC(" << iteration_VC << "):" << std::endl;
-    GEO::CUT::VolumeCell * vc = &**i;
-
-    const GEO::CUT::plain_integrationcell_set & integrationcells = vc->IntegrationCells();
-    std::cout << "Has #IC=" << integrationcells.size() << std::endl;
-
-    if(integrationcells.size()==0)
-    {
-      throw std::runtime_error("VolumeCell contains 0 integration cells.");
-    }
-
-//    for ( GEO::CUT::plain_integrationcell_set::const_iterator i=integrationcells.begin();
-//        i!=integrationcells.end();
-//        ++i )
-//    {
-//      GEO::CUT::IntegrationCell * ic = *i;
-//    }
-  }
 }
 
 
@@ -829,10 +872,6 @@ void test_ls_hex8_magnus5()
 
 void test_ls_hex8_magnus12()
 {
-
-  //non-planar cut surface
-  GEO::CUT::CombIntersection ci(-1);
-  ci.AddLevelSetSide(1);
 
   // simple hex8 element
   std::vector<int> nids( 8 );
@@ -879,93 +918,91 @@ void test_ls_hex8_magnus12()
   xyze_local( 2, 7 ) =  1;
 
 
- //Test with local coord.
+  //Test with local coord.
+  //  //eleID=47018 (precision 16)
+  //  xyze(  0,0 ) = 0.45;
+  //  xyze(  1,0 ) = -0.2500000000000001;
+  //  xyze(  2,0 ) = 0.09999999999999995;
+  //
+  //  xyze(  0,1 ) = 0.45;
+  //  xyze(  1,1 ) = -0.25;
+  //  xyze(  2,1 ) = 0.04999999999999986;
+  //
+  //  xyze(  0,2 ) = 0.4500000000000001;
+  //  xyze(  1,2 ) = -0.2000000000000001;
+  //  xyze(  2,2 ) = 0.04999999999999988;
+  //
+  //  xyze(  0,3 ) = 0.45;
+  //  xyze(  1,3 ) = -0.2000000000000001;
+  //  xyze(  2,3 ) = 0.09999999999999992;
+  //
+  //  xyze(  0,4 ) = 0.5;
+  //  xyze(  1,4 ) = -0.25;
+  //  xyze(  2,4 ) = 0.1;
+  //
+  //  xyze(  0,5 ) = 0.5;
+  //  xyze(  1,5 ) = -0.25;
+  //  xyze(  2,5 ) = 0.04999999999999992;
+  //
+  //  xyze(  0,6 ) = 0.5000000000000001;
+  //  xyze(  1,6 ) = -0.2;
+  //  xyze(  2,6 ) = 0.04999999999999993;
+  //
+  //  xyze(  0,7 ) = 0.5;
+  //  xyze(  1,7 ) = -0.2000000000000001;
+  //  xyze(  2,7 ) = 0.09999999999999998;
+
+  //  lsvs[0] =0.02440442408507582;
+  //  lsvs[1] =0.01720402163943002;
+  //  lsvs[2] =-0.005025253169416655;
+  //  lsvs[3] =0.002493781056044475;
+  //  lsvs[4] =0.06789083458002731;
+  //  lsvs[5] =0.06124860801609122;
+  //  lsvs[6] =0.04083269131959844;
+  //  lsvs[7] =0.04772255750516619;
 
 
-//  //eleID=47018 (precision 16)
-//  xyze(  0,0 ) = 0.45;
-//  xyze(  1,0 ) = -0.2500000000000001;
-//  xyze(  2,0 ) = 0.09999999999999995;
-//
-//  xyze(  0,1 ) = 0.45;
-//  xyze(  1,1 ) = -0.25;
-//  xyze(  2,1 ) = 0.04999999999999986;
-//
-//  xyze(  0,2 ) = 0.4500000000000001;
-//  xyze(  1,2 ) = -0.2000000000000001;
-//  xyze(  2,2 ) = 0.04999999999999988;
-//
-//  xyze(  0,3 ) = 0.45;
-//  xyze(  1,3 ) = -0.2000000000000001;
-//  xyze(  2,3 ) = 0.09999999999999992;
-//
-//  xyze(  0,4 ) = 0.5;
-//  xyze(  1,4 ) = -0.25;
-//  xyze(  2,4 ) = 0.1;
-//
-//  xyze(  0,5 ) = 0.5;
-//  xyze(  1,5 ) = -0.25;
-//  xyze(  2,5 ) = 0.04999999999999992;
-//
-//  xyze(  0,6 ) = 0.5000000000000001;
-//  xyze(  1,6 ) = -0.2;
-//  xyze(  2,6 ) = 0.04999999999999993;
-//
-//  xyze(  0,7 ) = 0.5;
-//  xyze(  1,7 ) = -0.2000000000000001;
-//  xyze(  2,7 ) = 0.09999999999999998;
+  //  //eleID=47018 (precision 24)
+  //  xyze(  0,0 ) = 0.449999999999999955591079;
+  //  xyze(  1,0 ) = -0.250000000000000055511151;
+  //  xyze(  2,0 ) = 0.0999999999999999500399639;
+  //
+  //  xyze(  0,1 ) = 0.449999999999999955591079;
+  //  xyze(  1,1 ) = -0.25;
+  //  xyze(  2,1 ) = 0.0499999999999998639976795;
+  //
+  //  xyze(  0,2 ) = 0.450000000000000066613381;
+  //  xyze(  1,2 ) = -0.200000000000000066613381;
+  //  xyze(  2,2 ) = 0.0499999999999998778754673;
+  //
+  //  xyze(  0,3 ) = 0.449999999999999955591079;
+  //  xyze(  1,3 ) = -0.200000000000000066613381;
+  //  xyze(  2,3 ) = 0.0999999999999999222843883;
+  //
+  //  xyze(  0,4 ) = 0.5;
+  //  xyze(  1,4 ) = -0.25;
+  //  xyze(  2,4 ) = 0.100000000000000005551115;
+  //
+  //  xyze(  0,5 ) = 0.5;
+  //  xyze(  1,5 ) = -0.25;
+  //  xyze(  2,5 ) = 0.0499999999999999195088307;
+  //
+  //  xyze(  0,6 ) = 0.500000000000000111022302;
+  //  xyze(  1,6 ) = -0.199999999999999983346655;
+  //  xyze(  2,6 ) = 0.0499999999999999333866185;
+  //
+  //  xyze(  0,7 ) = 0.5;
+  //  xyze(  1,7 ) = -0.200000000000000066613381;
+  //  xyze(  2,7 ) = 0.0999999999999999777955395;
 
-//  lsvs[0] =0.02440442408507582;
-//  lsvs[1] =0.01720402163943002;
-//  lsvs[2] =-0.005025253169416655;
-//  lsvs[3] =0.002493781056044475;
-//  lsvs[4] =0.06789083458002731;
-//  lsvs[5] =0.06124860801609122;
-//  lsvs[6] =0.04083269131959844;
-//  lsvs[7] =0.04772255750516619;
-
-
-//  //eleID=47018 (precision 24)
-//  xyze(  0,0 ) = 0.449999999999999955591079;
-//  xyze(  1,0 ) = -0.250000000000000055511151;
-//  xyze(  2,0 ) = 0.0999999999999999500399639;
-//
-//  xyze(  0,1 ) = 0.449999999999999955591079;
-//  xyze(  1,1 ) = -0.25;
-//  xyze(  2,1 ) = 0.0499999999999998639976795;
-//
-//  xyze(  0,2 ) = 0.450000000000000066613381;
-//  xyze(  1,2 ) = -0.200000000000000066613381;
-//  xyze(  2,2 ) = 0.0499999999999998778754673;
-//
-//  xyze(  0,3 ) = 0.449999999999999955591079;
-//  xyze(  1,3 ) = -0.200000000000000066613381;
-//  xyze(  2,3 ) = 0.0999999999999999222843883;
-//
-//  xyze(  0,4 ) = 0.5;
-//  xyze(  1,4 ) = -0.25;
-//  xyze(  2,4 ) = 0.100000000000000005551115;
-//
-//  xyze(  0,5 ) = 0.5;
-//  xyze(  1,5 ) = -0.25;
-//  xyze(  2,5 ) = 0.0499999999999999195088307;
-//
-//  xyze(  0,6 ) = 0.500000000000000111022302;
-//  xyze(  1,6 ) = -0.199999999999999983346655;
-//  xyze(  2,6 ) = 0.0499999999999999333866185;
-//
-//  xyze(  0,7 ) = 0.5;
-//  xyze(  1,7 ) = -0.200000000000000066613381;
-//  xyze(  2,7 ) = 0.0999999999999999777955395;
-////
-//  lsvs[0] =0.024404424085075815398227;
-//  lsvs[1] =0.0172040216394300227165104;
-//  lsvs[2] =-0.00502525316941665467496136;
-//  lsvs[3] =0.00249378105604447508625299;
-//  lsvs[4] =0.0678908345800273149706072;
-//  lsvs[5] =0.0612486080160912216285851;
-//  lsvs[6] =0.0408326913195984353421863;
-//  lsvs[7] =0.0477225575051661854431018;
+  //  lsvs[0] =0.024404424085075815398227;
+  //  lsvs[1] =0.0172040216394300227165104;
+  //  lsvs[2] =-0.00502525316941665467496136;
+  //  lsvs[3] =0.00249378105604447508625299;
+  //  lsvs[4] =0.0678908345800273149706072;
+  //  lsvs[5] =0.0612486080160912216285851;
+  //  lsvs[6] =0.0408326913195984353421863;
+  //  lsvs[7] =0.0477225575051661854431018;
 
 
   // 7: (0.5, -0.2, 0.1)
@@ -988,57 +1025,21 @@ void test_ls_hex8_magnus12()
     xyze_scaled(2,i) = 2.0*(xyze(2,i)-z_mid)/delh;
   }
 
+  std::string testname("xxx_cut_test_ls_hex8_magnus12");
 
+  //Only works for Tesselation as in this config the VC is undefined.
+  //Cut_With_Tesselation(nids, lsvs, xyze_local, testname);
 
-//  ci.AddElement( 1, nids, xyze, DRT::Element::hex8, &lsvs[0], false );
-//  ci.AddElement( 1, nids, xyze_scaled, DRT::Element::hex8, &lsvs[0], false );
-  ci.AddElement( 1, nids, xyze_local, DRT::Element::hex8, &lsvs[0], false );
-
-  std::vector<double> tessVol,momFitVol,dirDivVol;
-
-
-  ci.Cut(true);
-  //ci.PrintCellStats();
-  //GEO::CUT::Mesh mesh = ci.NormalMesh();
-
-  ci.NormalMesh().FindLSNodePositions();
-  ci.NormalMesh().FindNodalDOFSets( true );
-
-  ci.Cut_Finalize( true, INPAR::CUT::VCellGaussPts_Tessellation, INPAR::CUT::BCellGaussPts_Tessellation, false, true );
-
-#ifdef GMSH_OUTPUT_LSNOLOC_CUT_TEST
-   //Gmsh-output
-  ci.NormalMesh().DumpGmsh("xxx_cut_test_ls_hex8_magnus12.CUT.pos");
-  ci.NormalMesh().DumpGmshVolumeCells("xxx_cut_test_ls_hex8_magnus12.CUT_volumecells.pos",true);
-  ci.DumpGmshIntegrationCells("xxx_cut_test_ls_hex8_magnus12.CUT_integrationcells.pos");
-#endif
-
-  const std::list<Teuchos::RCP<GEO::CUT::VolumeCell> > & other_cells = ci.NormalMesh().VolumeCells();
-  std::cout << "# Volume Cells: " << other_cells.size() << std::endl;
-
-  int iteration_VC = 0;
-
-  for ( std::list<Teuchos::RCP<GEO::CUT::VolumeCell> >::const_iterator i=other_cells.begin();
-      i!=other_cells.end();
-      ++i )
-  {
-    iteration_VC++;
-    std::cout << "VC(" << iteration_VC << "):" << std::endl;
-    GEO::CUT::VolumeCell * vc = &**i;
-
-    const GEO::CUT::plain_integrationcell_set & integrationcells = vc->IntegrationCells();
-    std::cout << "Has #IC=" << integrationcells.size() << std::endl;
-
-  }
+  //#ifdef LOCAL_COORDS
+  //  Test_LevelSetCut_Tesselation_and_DD_same_VC(nids, lsvs, xyze_local, testname);
+  //#else
+  //  Test_LevelSetCut_Tesselation_and_DD_same_VC(nids, lsvs, xyze_local, testname);
+  //#endif
 }
 
 // From variable surface tension problem in Combust!
 void test_ls_hex8_magnus6()
 {
-
-  //non-planar cut surface
-  GEO::CUT::CombIntersection ci(-1);
-  ci.AddLevelSetSide(1);
 
   // simple hex8 element
   std::vector<int> nids( 8 );
@@ -1050,7 +1051,7 @@ void test_ls_hex8_magnus6()
     nids[i] = i;
   }
 
-#ifdef PRERCISION24
+#ifdef PRECISION24
   std::cout << "Precision 24" << std::endl;
   //!!!!!!!!!!! volume test failed: !!!!!!!!!!!!!!!eleID=1  ve=9.86254e-13  vc=9.28731e-13  vd= 5.75238e-14  err=0.0583255
   xyze(  0,0 ) = 0.00129103448275862077096465;
@@ -1136,52 +1137,189 @@ void test_ls_hex8_magnus6()
   lsvs[7] =-0.03631907522521477;
 #endif
 
-  ci.AddElement( 1, nids, xyze, DRT::Element::hex8, &lsvs[0], false );
+  std::string testname("xxx_cut_test_ls_hex8_magnus6");
 
-  ci.Cut(true);
-  //ci.PrintCellStats();
-
-  ci.NormalMesh().FindLSNodePositions();
-  ci.NormalMesh().FindNodalDOFSets( true );
-
-  ci.Cut_Finalize( true, INPAR::CUT::VCellGaussPts_Tessellation, INPAR::CUT::BCellGaussPts_Tessellation, false, true );
-
-#ifdef GMSH_OUTPUT_LSNOLOC_CUT_TEST
-   //Gmsh-output
-  ci.NormalMesh().DumpGmsh("xxx_cut_test_ls_hex8_magnus6.CUT.pos");
-  ci.NormalMesh().DumpGmshVolumeCells("xxx_cut_test_ls_hex8_magnus6.CUT_volumecells.pos",true);
-  ci.DumpGmshIntegrationCells("xxx_cut_test_ls_hex8_magnus6.CUT_integrationcells.pos");
+#ifdef LOCAL_COORDS
+  Test_LevelSetCut_Tesselation_and_DD_same_VC(nids, lsvs, GetLocalHex8Coords(), testname);
+#else
+  Test_LevelSetCut_Tesselation_and_DD(nids, lsvs, xyze, testname);
 #endif
+}
 
-  const std::list<Teuchos::RCP<GEO::CUT::VolumeCell> > & other_cells = ci.NormalMesh().VolumeCells();
-  std::cout << "# Volume Cells: " << other_cells.size() << std::endl;
+void test_ls_hex8_tes_dd_simple()
+{
 
-  int iteration_VC = 0;
+  // simple hex8 element
+  std::vector<int> nids( 8 );
+  std::vector<double> lsvs( 8, -1 );
+  Epetra_SerialDenseMatrix xyze( 3, 8 );
+
+  for ( int i=0; i<8; ++i )
+  {
+    nids[i] = i;
+  }
+
+  //lsvs[2] = -.99981;
+
+  //  lsvs[0] = 0.5;
+  //  lsvs[1] = 0.43;
+  //  lsvs[4] = -0.4123;
+  //  lsvs[5] = -0.900091;
+
+  //    lsvs[0] = 1.0;
+  //    lsvs[3] = 0.0;
+  //    lsvs[4] = 1.0;
+  //    lsvs[7] = 0.0;
+  //    lsvs[1] = 0.0;
+  //    lsvs[5] = 0.0;
+
+
+  lsvs[0] = 1.0;
+
+  //  std::fill( &lsvs[0], &lsvs[4],   1. );
+  //  std::fill( &lsvs[4], &lsvs[8],  -1. );
+
+  xyze( 0, 0 ) = 0;
+  xyze( 1, 0 ) = 0;
+  xyze( 2, 0 ) = 0;
+
+  xyze( 0, 1 ) = 1;
+  xyze( 1, 1 ) = 0;
+  xyze( 2, 1 ) = 0;
+
+  xyze( 0, 2 ) = 1;
+  xyze( 1, 2 ) = 1;
+  xyze( 2, 2 ) = 0;
+
+  xyze( 0, 3 ) = 0;
+  xyze( 1, 3 ) = 1;
+  xyze( 2, 3 ) = 0;
+
+  xyze( 0, 4 ) = 0;
+  xyze( 1, 4 ) = 0;
+  xyze( 2, 4 ) = 1;
+
+  xyze( 0, 5 ) = 1;
+  xyze( 1, 5 ) = 0;
+  xyze( 2, 5 ) = 1;
+
+  xyze( 0, 6 ) = 1;
+  xyze( 1, 6 ) = 1;
+  xyze( 2, 6 ) = 1;
+
+  xyze( 0, 7 ) = 0;
+  xyze( 1, 7 ) = 1;
+  xyze( 2, 7 ) = 1;
+
+  std::string testname("xxx_cut_test_ls_hex8_magnus_simple");
+
+#ifdef LOCAL_COORDS
+  Test_LevelSetCut_Tesselation_and_DD_same_VC(nids, lsvs, GetLocalHex8Coords(), testname);
+#else
+  Test_LevelSetCut_Tesselation_and_DD_same_VC(nids, lsvs, xyze, testname);
+#endif
+}
+
+
+void test_ls_mesh_hex8_simple()
+{
+
+  // simple hex8 element
+  std::vector<int> nids( 8 );
+  std::vector<double> lsvs( 8, -1 );
+  Epetra_SerialDenseMatrix xyze( 3, 8 );
+
+
+  GEO::CUT::MeshIntersection intersection;
+  std::vector<int> nids_mesh;
+
+  int sidecount = 0;
+  {
+    Epetra_SerialDenseMatrix tri3_xyze( 3, 3 );
+
+    tri3_xyze(0,2) = -1.0;
+    tri3_xyze(1,2) = 0.0;
+    tri3_xyze(2,2) = -1.0;
+    tri3_xyze(0,1) = -1.0;
+    tri3_xyze(1,1) = -1.0;
+    tri3_xyze(2,1) = 0.0;
+    tri3_xyze(0,0) = 0.0;
+    tri3_xyze(1,0) = -1.0;
+    tri3_xyze(2,0) = -1.0;
+    nids_mesh.clear();
+    nids_mesh.push_back( 761 );
+    nids_mesh.push_back( 857 );
+    nids_mesh.push_back( 859 );
+    intersection.AddCutSide( ++sidecount, nids_mesh, tri3_xyze, DRT::Element::tri3 );
+  }
+
+  for ( int i=0; i<8; ++i )
+  {
+    nids[i] = i;
+  }
+
+  //CUT WITH MESH
+  intersection.AddElement( 1, nids, GetLocalHex8Coords(), DRT::Element::hex8 );
+
+  intersection.Status();
+  intersection.Cut( true, INPAR::CUT::VCellGaussPts_Tessellation );
+
+  std::vector<double> tessVol,dirDivVol;
+
+  GEO::CUT::Mesh mesh = intersection.NormalMesh();
+  const std::list<Teuchos::RCP<GEO::CUT::VolumeCell> > & other_cells = mesh.VolumeCells();
   for ( std::list<Teuchos::RCP<GEO::CUT::VolumeCell> >::const_iterator i=other_cells.begin();
       i!=other_cells.end();
       ++i )
   {
-    iteration_VC++;
-    std::cout << "VC(" << iteration_VC << "):" << std::endl;
     GEO::CUT::VolumeCell * vc = &**i;
-
-    const GEO::CUT::plain_integrationcell_set & integrationcells = vc->IntegrationCells();
-    std::cout << "Has #IC=" << integrationcells.size() << std::endl;
-
-    if(integrationcells.size()==0)
-    {
-      throw std::runtime_error("VolumeCell contains 0 integration cells.");
-    }
-
-//    for ( GEO::CUT::plain_integrationcell_set::const_iterator i=integrationcells.begin();
-//        i!=integrationcells.end();
-//        ++i )
-//    {
-//      GEO::CUT::IntegrationCell * ic = *i;
-//    }
+    tessVol.push_back(vc->Volume());
   }
-}
 
+  int counter=1;
+  for ( std::list<Teuchos::RCP<GEO::CUT::VolumeCell> >::const_iterator i=other_cells.begin();
+      i!=other_cells.end();
+      ++i )
+  {
+    GEO::CUT::VolumeCell * vc = &**i;
+    std::cout << "DIRCETDIVERGENCE CUTTING VOLUMECELL USING MESH #" << counter <<  ".....!" << std::endl;
+    std::cout << "Volumecell Position: " << vc->Position() << std::endl;
+    vc->DirectDivergenceGaussRule(vc->ParentElement(),mesh,true,INPAR::CUT::BCellGaussPts_DirectDivergence);
+    std::cout << "DIRCETDIVERGENCE CUT VOLUMECELL USING MESH #" << counter <<  " WITHOUT ERROR!" << std::endl << std::endl;
+    counter++;
+    dirDivVol.push_back(vc->Volume());
+  }
+
+  // Test Direct Divergence against Tesselation
+  //------------------------------------------------------
+  bool error = false;
+  std::cout<<"the volumes predicted by\n Tessellation \t DirectDivergence\n";
+  for(unsigned i=0;i<tessVol.size();i++)
+  {
+    std::cout<<tessVol[i]<<"\t"<<dirDivVol[i]<<"\n";
+    if( fabs(tessVol[i]-dirDivVol[i])>1e-9 )
+      error = true;
+  }
+  if(error)
+  {
+    throw std::runtime_error("Volume predicted by one of the methods is wrong.");
+    //dserror("volume predicted by either one of the method is wrong");
+  }
+  //------------------------------------------------------
+  //###########################################################
+
+  //CUT WITH LEVELSET in similar configuration.
+
+  lsvs[0] = 1.0;
+
+  std::string testname("xxx_cut_test_ls_hex8_magnus_ls_and_mesh");
+
+#ifdef LOCAL_COORDS
+  Test_LevelSetCut_Tesselation_and_DD_same_VC(nids, lsvs, GetLocalHex8Coords(), testname);
+#else //So far no Global Coord test.
+  Test_LevelSetCut_Tesselation_and_DD_same_VC(nids, lsvs, GetLocalHex8Coords(), testname);
+#endif
+}
 
 // See what happens
 void test_ls_hex8_experiment_magnus()
@@ -1199,24 +1337,24 @@ void test_ls_hex8_experiment_magnus()
     nids[i] = i;
   }
 
-//  lsvs[0] =  1;
-//  lsvs[1] =  1;
-//  lsvs[2] =  -1;
-//  lsvs[3] =  -1;
-//  lsvs[4] =  1;
-//  lsvs[5] =  -1;
-//  lsvs[6] =  1;
-//  lsvs[7] =  -1;
+  //  lsvs[0] =  1;
+  //  lsvs[1] =  1;
+  //  lsvs[2] =  -1;
+  //  lsvs[3] =  -1;
+  //  lsvs[4] =  1;
+  //  lsvs[5] =  -1;
+  //  lsvs[6] =  1;
+  //  lsvs[7] =  -1;
 
   //TEST:
-    lsvs[0] =  1;
-    lsvs[1] =  -1;
-    lsvs[2] =  1;
-    lsvs[3] =  1;
-    lsvs[4] =  1;
-    lsvs[5] =  1;
-    lsvs[6] =  1;
-    lsvs[7] =  -1;
+  lsvs[0] =  1;
+  lsvs[1] =  -1;
+  lsvs[2] =  1;
+  lsvs[3] =  1;
+  lsvs[4] =  1;
+  lsvs[5] =  1;
+  lsvs[6] =  1;
+  lsvs[7] =  -1;
 
   xyze( 0, 0 ) = -1;
   xyze( 1, 0 ) = -1;
@@ -1250,24 +1388,32 @@ void test_ls_hex8_experiment_magnus()
   xyze( 1, 7 ) =  1;
   xyze( 2, 7 ) =  1;
 
+  std::string testname("xxx_cut_test_ls_hex8_experiment");
+
+  //Test_LevelSetCut_Tesselation_and_DD(nids, lsvs, xyze, testname);
+
+
   ci.AddElement( 1, nids, xyze, DRT::Element::hex8, &lsvs[0], false );
 
   ci.Cut(true);
   //ci.PrintCellStats();
 
-//  ci.NormalMesh().FindLSNodePositions();
-//  ci.NormalMesh().FindNodalDOFSets( true );
+  //  ci.NormalMesh().FindLSNodePositions();
+  //  ci.NormalMesh().FindNodalDOFSets( true );
 
   ci.FindNodePositions();
 
+  //Changed to DD
   ci.Cut_Finalize( true, INPAR::CUT::VCellGaussPts_Tessellation, INPAR::CUT::BCellGaussPts_Tessellation, false, true );
+  //ci.Cut_Finalize( true, INPAR::CUT::VCellGaussPts_DirectDivergence, INPAR::CUT::BCellGaussPts_Tessellation, false, true );
 
-#ifdef GMSH_OUTPUT_LSNOLOC_CUT_TEST
-   //Gmsh-output
+
+//#ifdef GMSH_OUTPUT_LSNOLOC_CUT_TEST
+  //Gmsh-output
   ci.NormalMesh().DumpGmsh("xxx_cut_test_ls_hex8_magnus6.CUT.pos");
   ci.NormalMesh().DumpGmshVolumeCells("xxx_cut_test_ls_hex8_magnus6.CUT_volumecells.pos",true);
   ci.DumpGmshIntegrationCells("xxx_cut_test_ls_hex8_magnus6.CUT_integrationcells.pos");
-#endif
+//#endif
 
   const std::list<Teuchos::RCP<GEO::CUT::VolumeCell> > & other_cells = ci.NormalMesh().VolumeCells();
   std::cout << "# Volume Cells: " << other_cells.size() << std::endl;
@@ -1288,17 +1434,67 @@ void test_ls_hex8_experiment_magnus()
     {
       throw std::runtime_error("VolumeCell contains 0 integration cells.");
     }
-
-//    for ( GEO::CUT::plain_integrationcell_set::const_iterator i=integrationcells.begin();
-//        i!=integrationcells.end();
-//        ++i )
-//    {
-//      GEO::CUT::IntegrationCell * ic = *i;
-//    }
   }
 }
 
+// This one will fail in GLOBAL DirectDiv configuration.
+void test_ls_hex8_magnus7()
+{
 
+    std::vector<int> nids;
+
+    std::vector<double> lsvs(8);
+    lsvs[0] = 0.0280187;
+    lsvs[1] = 0.0280187;
+    lsvs[2] = 0.016173;
+    lsvs[3] = 0.016173;
+    lsvs[4] = 0.0123106;
+    lsvs[5] = 0.0123106;
+    lsvs[6] = -8.6e-09;
+    lsvs[7] = -8.6e-09;
+
+    Epetra_SerialDenseMatrix hex8_xyze( 3, 8 );
+
+      nids.clear();
+    hex8_xyze(0,0) = -0.34;
+    hex8_xyze(1,0) = -0.26;
+    hex8_xyze(2,0) = 0.025;
+    nids.push_back( 0 );
+    hex8_xyze(0,1) = -0.34;
+    hex8_xyze(1,1) = -0.26;
+    hex8_xyze(2,1) = -0.025;
+    nids.push_back( 1 );
+    hex8_xyze(0,2) = -0.34;
+    hex8_xyze(1,2) = -0.24;
+    hex8_xyze(2,2) = -0.025;
+    nids.push_back( 2 );
+    hex8_xyze(0,3) = -0.34;
+    hex8_xyze(1,3) = -0.24;
+    hex8_xyze(2,3) = 0.025;
+    nids.push_back( 3 );
+    hex8_xyze(0,4) = -0.32;
+    hex8_xyze(1,4) = -0.26;
+    hex8_xyze(2,4) = 0.025;
+    nids.push_back( 4 );
+    hex8_xyze(0,5) = -0.32;
+    hex8_xyze(1,5) = -0.26;
+    hex8_xyze(2,5) = -0.025;
+    nids.push_back( 5 );
+    hex8_xyze(0,6) = -0.32;
+    hex8_xyze(1,6) = -0.24;
+    hex8_xyze(2,6) = -0.025;
+    nids.push_back( 6 );
+    hex8_xyze(0,7) = -0.32;
+    hex8_xyze(1,7) = -0.24;
+    hex8_xyze(2,7) = 0.025;
+    nids.push_back( 7 );
+
+    std::string testname("xxx_cut_test_ls_hex8_magnus7");
+
+    //Test_LevelSetCut_Tesselation_and_DD(nids, lsvs, hex8_xyze, testname);
+
+    Cut_With_DirectDivergence(nids,lsvs,hex8_xyze,testname);
+}
 
 //void test_ls_hex8_magnus4()
 //{

@@ -10,6 +10,9 @@ equations
 #include "cut_element.H"
 #include "cut_volumecell.H"
 
+// Choose whether to output divirgence cell information in global coordinates (for easier comparison to Tesselation).
+#define OUTPUT_GLOBAL_DIVERGENCE_CELLS
+
 namespace GEO
 {
   namespace CUT

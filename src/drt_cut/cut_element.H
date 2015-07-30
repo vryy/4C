@@ -149,6 +149,26 @@ public:
    */
   void DirectDivergenceGaussRule( Mesh & mesh, bool include_inner, INPAR::CUT::BCellGaussPts Bcellgausstype );
 
+  /*!
+  \brief Return the level set value at the given global coordinate which has to be INSIDE the element.
+   */
+  const double GetLevelSetValue( const LINALG::Matrix<3,1> x_element, bool islocal = false);
+
+  /*!
+  \brief Return the level set gradient at the given global coordinate which has to be INSIDE the element.
+         Comment:
+         Might need to add a similar function for cut_side as it uses the LevelSetGradient information to determine
+         cut cases with 4 nodes on a side. Right now this function is called.
+   */
+  const std::vector<double> GetLevelSetGradient( const LINALG::Matrix<3,1> x_element, bool islocal=false);
+  const std::vector<double> GetLevelSetGradientInLocalCoords( const LINALG::Matrix<3,1> x_element, bool islocal=false);
+
+  /*!
+    \brief Does the element contain a level set side.
+   */
+  bool HasLevelSetSide();
+
+
   /// After the integration and boundary cells have been created, there might
   /// still be some empty volume cells. Those are artificial cells with zero
   /// volume and need to be removed from their elements, before we count nodal

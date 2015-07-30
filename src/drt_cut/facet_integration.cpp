@@ -14,6 +14,10 @@ equations
 #include "cut_options.H"
 //#include "cut_point.H"
 
+#ifdef DEBUGCUTLIBRARY
+#include "cut_output.H"
+#endif
+
 #include <Teuchos_TimeMonitor.hpp>
 
 
@@ -87,56 +91,93 @@ void GEO::CUT::FacetIntegration::IsClockwise( const std::vector<double> & eqn_pl
                                               const std::vector<std::vector<double> > & cornersLocal )
 {
   orderingComputed_ = true;
-  clockwise_ = 0;
+  clockwise_ = false;
 
 #if 1
   bool iscut = face1_->OnCutSide();
+
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Case 1: Facet is formed from the cut side
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   if(iscut)
   {
     Side* parent = face1_->ParentSide();
-    const std::vector<Node*> &par_nodes = parent->Nodes();
-    std::vector<std::vector<double> > corners(par_nodes.size());
-    int mm=0;
-    for(std::vector<Node*>::const_iterator i=par_nodes.begin();i!=par_nodes.end();i++)
-    {
-      Node *nod = *i;
-      double x1[3];
-      nod->Coordinates(x1);
-
-      std::vector<double> pt_local(3);
-#ifdef LOCAL
-      LINALG::Matrix<3,1> glo,loc;
-
-      for(int nodno=0;nodno<3;nodno++)
-        glo(nodno,0) = x1[nodno];
-       elem1_->LocalCoordinates(glo,loc);
-
-       pt_local[0] = loc(0,0);
-       pt_local[1] = loc(1,0);
-       pt_local[2] = loc(2,0);
-#else
-       pt_local[0] = x1[0];
-       pt_local[1] = x1[1];
-       pt_local[2] = x1[2];
-#endif
-
-       corners[mm] = pt_local;
-       mm++;
-    }
-
-    std::vector<double> eqn_par = equation_plane(corners);
 
     double dotProduct = 0.0;
+
+    if(not face1_->BelongsToLevelSetSide())
+    {
+      const std::vector<Node*> &par_nodes = parent->Nodes();
+      std::vector<std::vector<double> > corners(par_nodes.size());
+      int mm=0;
+      for(std::vector<Node*>::const_iterator i=par_nodes.begin();i!=par_nodes.end();i++)
+      {
+        Node *nod = *i;
+        double x1[3];
+        nod->Coordinates(x1);
+
+        std::vector<double> pt_local(3);
 #ifdef LOCAL
-    dotProduct = eqn_plane[0]*eqn_par[0];
+        LINALG::Matrix<3,1> glo,loc;
+
+        for(int nodno=0;nodno<3;nodno++)
+          glo(nodno,0) = x1[nodno];
+        elem1_->LocalCoordinates(glo,loc);
+
+        pt_local[0] = loc(0,0);
+        pt_local[1] = loc(1,0);
+        pt_local[2] = loc(2,0);
 #else
-    dotProduct = eqn_plane[0]*eqn_par[0] +
-                 eqn_plane[1]*eqn_par[1] +
-                 eqn_plane[2]*eqn_par[2];
+        pt_local[0] = x1[0];
+        pt_local[1] = x1[1];
+        pt_local[2] = x1[2];
 #endif
+
+        corners[mm] = pt_local;
+        mm++;
+      }
+
+      std::vector<double> eqn_par = equation_plane(corners);
+
+#ifdef LOCAL
+      dotProduct = eqn_plane[0]*eqn_par[0];
+#else
+     dotProduct = eqn_plane[0]*eqn_par[0] +
+         eqn_plane[1]*eqn_par[1] +
+         eqn_plane[2]*eqn_par[2];
+#endif
+    }
+    else //If the facet is on a cut-side which also is a level set side.
+    {
+      std::vector<double> phi_deriv1;
+
+      LINALG::Matrix<3,1> coord;
+
+      //First entry is midpoint of triangulation!!
+      //Third entry could possibly be a concave poin (take care of in Triangulation of Facet).
+      // Thus-> Choose second entry, which should be "safe".
+      coord(0,0)= cornersLocal[1][0];
+      coord(1,0)= cornersLocal[1][1];
+      coord(2,0)= cornersLocal[1][2];
+#ifdef LOCAL
+      phi_deriv1 = elem1_->GetLevelSetGradientInLocalCoords(coord, true);
+#else
+      phi_deriv1 = elem1_->GetLevelSetGradient(coord, false);
+#endif
+
+      dotProduct = eqn_plane[0]*phi_deriv1[0] +
+                   eqn_plane[1]*phi_deriv1[1] +
+                   eqn_plane[2]*phi_deriv1[2];
+
+#ifdef DIRECTDIV_EXTENDED_DEBUG_OUTPUT
+      std::cout << "cornersLocalFacetForGrad: " << cornersLocal[1][0] << ", " << cornersLocal[1][1] << ", " << cornersLocal[1][2] << std::endl;
+      std::cout << "phi_deriv1: " << phi_deriv1[0] << ", " << phi_deriv1[1] << ", " << phi_deriv1[2] << std::endl;
+      std::cout << "eqn_plane_IC: " << eqn_plane[0] << ", " << eqn_plane[1] << ", " << eqn_plane[2] << std::endl;
+
+      std::cout << "dotProduct: " << dotProduct << std::endl;
+      std::cout << "position_ : " << position_ << std::endl;
+#endif
+    }
 
     // We use the fact that the normal to any cut side is always pointing towards fluid domain
     if( position_ == CUT::Point::inside )
@@ -685,11 +726,40 @@ void GEO::CUT::FacetIntegration::DivergenceIntegrationRule( Mesh &mesh,
   if(clockwise_) //because if ordering is clockwise the contribution of this facet must be subtracted
     normalX = -1.0*normalX;
 
+#ifdef DIRECTDIV_EXTENDED_DEBUG_OUTPUT
+  static int mm = 0;
+  std::stringstream str;
+  str << "divCell" << mm << ".pos";
+  std::ofstream file( str.str().c_str() );
+  file << "View \"" << "FacetBCellInfo" << "\" {\n";
+#endif
+  int zz=0;
   for ( std::list<Teuchos::RCP<BoundaryCell> >::iterator i=divCells.begin();
                 i!=divCells.end();
                 ++i )
   {
     BoundaryCell * bcell = &**i;
+
+#ifdef DIRECTDIV_EXTENDED_DEBUG_OUTPUT
+    if(face1_->IsFacetSplit())
+    {
+      std::vector<std::vector<Point*> > facetSplit = face1_->GetSplitCells();
+      for(std::vector<std::vector<Point*> >::iterator k = facetSplit.begin();
+                                             k!=facetSplit.end();
+                                             k++)
+      {
+        std::cout << "Split cell output." << std::endl;
+        GEO::CUT::OUTPUT::GmshTriSideDump(file,*k);
+      }
+    }
+    else
+      GEO::CUT::OUTPUT::GmshTriSideDump(file,bcell->Points());
+
+    LINALG::Matrix<3,1> midpt;
+    bcell->ElementCenter(midpt);
+    GEO::CUT::OUTPUT::GmshVector(file,midpt,GEO::CUT::OUTPUT::GetEqOfPlane(bcell->Points()), true);
+#endif
+
 
 #if 0//DEBUGCUTLIBRARY //write separate file for each bcell along with the distribution of Gauss points
     static int facetno = 0;
@@ -759,7 +829,12 @@ void GEO::CUT::FacetIntegration::DivergenceIntegrationRule( Mesh &mesh,
       mm++;
 #endif
     }
+    zz++;
   }
+#ifdef DIRECTDIV_EXTENDED_DEBUG_OUTPUT
+  file << "};\n";
+  mm++;
+#endif
 }
 
 /*-----------------------------------------------------------------------------------------------------*
@@ -767,7 +842,7 @@ void GEO::CUT::FacetIntegration::DivergenceIntegrationRule( Mesh &mesh,
 *------------------------------------------------------------------------------------------------------*/
 void GEO::CUT::FacetIntegration::GenerateDivergenceCells( bool divergenceRule, //if called to generate direct divergence rule
                                                           Mesh &mesh,
-                                                          std::list<Teuchos::RCP<BoundaryCell> >& divCells )
+                                                          std::list<Teuchos::RCP<BoundaryCell> >& divCells)
 {
 #ifdef LOCAL
   std::vector<std::vector<double> > cornersLocal;
@@ -814,10 +889,12 @@ void GEO::CUT::FacetIntegration::GenerateDivergenceCells( bool divergenceRule, /
       std::vector<std::vector<Point*> > split;
 
       // if the facet is warped, do centre point triangulation --> reduced error (??)
-      if( not face1_->IsPlanar( mesh, face1_->CornerPoints() ) )
+      if( not face1_->IsPlanar( mesh, face1_->CornerPoints() ) or face1_->BelongsToLevelSetSide() )
       {
         if(!face1_->IsTriangulated())
+        {
           face1_->DoTriangulation( mesh, corners );
+        }
         split  = face1_->Triangulation();
       }
       // the facet is not warped
@@ -825,7 +902,9 @@ void GEO::CUT::FacetIntegration::GenerateDivergenceCells( bool divergenceRule, /
       {
 #if 1 // split facet
         if( !face1_->IsFacetSplit() )
+        {
           face1_->SplitFacet( corners );
+        }
         split = face1_->GetSplitCells();
         splitMethod = "split";
 #endif
@@ -846,15 +925,16 @@ void GEO::CUT::FacetIntegration::GenerateDivergenceCells( bool divergenceRule, /
                                                               j!=split.end(); ++j )
       {
         const std::vector<Point*> & tri = *j;
-        if(tri.size()==3)
-          TemporaryTri3(tri, divCells);
-        else if(tri.size()==4) // split algorithm always gives convex quad
-          TemporaryQuad4(tri, divCells);
-        else
-        {
-          std::cout<<"number of sides = "<<tri.size();
-          dserror("Splitting created neither tri3 or quad4");
-        }
+
+          if(tri.size()==3)
+            TemporaryTri3(tri, divCells);
+          else if(tri.size()==4) // split algorithm always gives convex quad
+            TemporaryQuad4(tri, divCells);
+          else
+          {
+            std::cout<<"number of sides = "<<tri.size();
+            dserror("Splitting created neither tri3 or quad4");
+          }
       }
 
 #ifdef DEBUGCUTLIBRARY // check the area of facet computed from splitting and triangulation
@@ -1034,3 +1114,375 @@ void GEO::CUT::FacetIntegration::DebugAreaCheck( std::list<Teuchos::RCP<Boundary
 }
 
 
+/*-------------------------------------------------------------------------------------------------*
+      Generate integration rule for the facet if the divergence theorem is used      Sudhakar 03/12
+      directly to generate Gauss integration rule for the facet
+*--------------------------------------------------------------------------------------------------*/
+void GEO::CUT::FacetIntegration::DivergenceIntegrationRuleNew( Mesh &mesh,
+                                                            Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> & cgp )
+{
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::FacetIntegration::DivergenceIntegrationRule" );
+
+  std::list<Teuchos::RCP<BoundaryCell> > divCells;
+
+  //the last two parameters has no influence when called from the first parameter is set to true
+  std::vector<std::vector<double> >        eqn_plane_divCell;
+
+  //If the facet is not planar it will be triangulated in DirectDivergence::ListFacets().
+  // Might want to split the facet for the case it is a planar quad -> less divCells.
+  if(face1_->CornerPoints().size()>3 and face1_->BelongsToLevelSetSide())
+    face1_->DoTriangulation(mesh,face1_->CornerPoints());
+
+  if((face1_->IsTriangulated() or face1_->IsFacetSplit()) and face1_->BelongsToLevelSetSide())
+  {
+    std::vector<std::vector<Point*> > facet_triang;
+    if(face1_->IsTriangulated())
+      facet_triang = face1_->Triangulation();
+    else
+      facet_triang  = face1_->GetSplitCells();
+#ifdef DIRECTDIV_EXTENDED_DEBUG_OUTPUT
+    std::cout << "TRIANGULATED OR SPLIT FACET!" << std::endl;
+#endif
+
+    unsigned counterDivCells =0;
+    for ( std::vector<std::vector<Point*> >::const_iterator j=facet_triang.begin();
+        j!=facet_triang.end(); ++j )
+    {
+      GenerateDivergenceCellsNew(true,mesh,divCells,*j);
+      while(counterDivCells < divCells.size())
+      {
+        counterDivCells++;
+        eqn_plane_divCell.push_back(eqn_plane_);
+      }
+    }
+  }
+  else
+  {
+    //OLD IMPLEMENTATION!
+    //Maybe triangulate for cut side?
+#ifdef DIRECTDIV_EXTENDED_DEBUG_OUTPUT
+    std::cout << "NOT TRIANGULATED FACET." << std::endl;
+#endif
+
+    GenerateDivergenceCellsNew(true,mesh,divCells,face1_->CornerPoints());
+    //GenerateDivergenceCells(true,mesh,divCells);
+    for(unsigned i=0; i<divCells.size(); i++)
+    {
+      eqn_plane_divCell.push_back(eqn_plane_);
+    }
+  }
+
+  //SAFETY-CHECK
+#ifdef DEBUGCUTLIBRARY
+  if(eqn_plane_divCell.size() != divCells.size())
+  {
+    std::cout << "FINAL!: " << std::endl;
+    std::vector<std::vector<double> > cornersLocal;
+    face1_->CornerPointsLocal(elem1_,cornersLocal);
+    for( std::vector<std::vector<double> >::const_iterator j=cornersLocal.begin();
+                                           j!=cornersLocal.end(); ++j)
+    {
+      std::cout << "cornerLocalFacet: " << (*j)[0] << ", " << (*j)[1] << ", " << (*j)[2] << std::endl;
+    }
+    std::cout << "eqn_plane_divCell.size(): " << eqn_plane_divCell.size() << std::endl;
+    std::cout << "divCells.size():  " << divCells.size() << std::endl;
+    //dserror("Something wrong with divCell and clockwise assignment");
+    throw std::runtime_error("Something wrong with divCell and clockwise assignment.");
+  }
+#endif
+
+  double normalX;
+
+#ifdef DIRECTDIV_EXTENDED_DEBUG_OUTPUT
+  static int mm = 0;
+  std::stringstream str;
+  str << "divCell" << mm << ".pos";
+  std::ofstream file( str.str().c_str() );
+  file << "View \"" << "FacetBCellInfo" << "\" {\n";
+#endif
+  int zz=0;
+  for ( std::list<Teuchos::RCP<BoundaryCell> >::iterator i=divCells.begin();
+                i!=divCells.end();
+                ++i )
+  {
+    BoundaryCell * bcell = &**i;
+
+    //Get equation of plane for divergence Cell.
+    std::vector<double> eqn_plane_bcell = eqn_plane_divCell[zz];
+
+    double normalScale=0.0;
+    for(unsigned i=0;i<3;i++)
+      normalScale += eqn_plane_bcell[i]*eqn_plane_bcell[i];
+    normalScale = sqrt(normalScale);
+    normalX = eqn_plane_bcell[0]/normalScale;
+
+#ifdef DIRECTDIV_EXTENDED_DEBUG_OUTPUT
+    if(face1_->IsFacetSplit())
+    {
+      std::vector<std::vector<Point*> > facetSplit = face1_->GetSplitCells();
+      for(std::vector<std::vector<Point*> >::iterator k = facetSplit.begin();
+                                             k!=facetSplit.end();
+                                             k++)
+      {
+        LINALG::Matrix<3,1> midpt(true);
+
+        std::vector<std::vector<double> > corners_split;
+        for(std::vector<Point*>::iterator l = (*k).begin();
+                                                     l!=(*k).end();
+                                                     l++)
+        {
+          const double* coords = (*l)->X();
+          midpt(0,0) += coords[0];
+          midpt(1,0) += coords[1];
+          midpt(2,0) += coords[2];
+        }
+
+        midpt.Scale(1.0/(*k).size());
+
+//        bcell->ElementCenter(midpt);
+        GEO::CUT::OUTPUT::GmshTriSideDump(file,*k);
+        GEO::CUT::OUTPUT::GmshVector(file,midpt,GEO::CUT::OUTPUT::GetEqOfPlane(*k), true);
+      }
+    }
+    else
+    {
+      LINALG::Matrix<3,1> midpt(true);
+      bcell->ElementCenter(midpt);
+      GEO::CUT::OUTPUT::GmshTriSideDump(file,bcell->Points());
+      GEO::CUT::OUTPUT::GmshVector(file,midpt,GEO::CUT::OUTPUT::GetEqOfPlane(bcell->Points()), true);
+    }
+#endif
+
+
+#if 0//DEBUGCUTLIBRARY //write separate file for each bcell along with the distribution of Gauss points
+    static int facetno = 0;
+    facetno++;
+    std::stringstream str;
+    str << "facetid" << facetno << ".pos";
+    std::ofstream file( str.str().c_str() );
+
+    const std::vector<Point*> ptl = bcell->Points();
+    int mm=0;
+    for( unsigned ii=0;ii<ptl.size();ii++ )
+    {
+      Point* pt1 = ptl[ii];
+      LINALG::Matrix<3,1> global1,local1;
+      pt1->Coordinates(global1.A());
+      elem1_->LocalCoordinates( global1, local1 );
+      //file<<"Point("<<mm<<")="<<"{"<<local1(0,0)<<","<<local1(1,0)<<","<<local1(2,0)<<"};\n";
+      file<<"Point("<<mm<<")="<<"{"<<global1(0,0)<<","<<global1(1,0)<<","<<global1(2,0)<<"};\n";
+      mm++;
+    }
+    for( unsigned ii=0;ii<ptl.size();ii++ )
+    {
+      file<<"Line("<<ii<<")="<<"{"<<ii<<","<<(ii+1)%ptl.size()<<"};\n";
+    }
+#endif
+
+    DRT::UTILS::GaussIntegration gi_temp = DRT::UTILS::GaussIntegration( bcell->Shape(), 7 );
+
+    if( bcell->Area() < REF_AREA_BCELL )
+      continue;
+
+    for ( DRT::UTILS::GaussIntegration::iterator iquad=gi_temp.begin(); iquad!=gi_temp.end(); ++iquad )
+    {
+      double drs = 0.0;
+      LINALG::Matrix<3,1> x_gp_loc(true), normal(true);
+      const LINALG::Matrix<2,1> eta( iquad.Point() );
+
+      switch ( bcell->Shape() )
+      {
+        case DRT::Element::tri3:
+        {
+#ifdef LOCAL
+          bcell->TransformLocalCoords<DRT::Element::tri3>(elem1_,eta, x_gp_loc, normal, drs, true);
+#else
+          bcell->Transform<DRT::Element::tri3>( eta, x_gp_loc, normal, drs );
+#endif
+          break;
+        }
+        case DRT::Element::quad4:
+        {
+#ifdef LOCAL
+          bcell->TransformLocalCoords<DRT::Element::quad4>(elem1_,eta, x_gp_loc, normal, drs, true);
+#else
+          bcell->Transform<DRT::Element::quad4>( eta, x_gp_loc, normal, drs );
+#endif
+          break;
+        }
+        default:
+          throw std::runtime_error( "unsupported integration cell type" );
+      }
+      double wei = iquad.Weight()*drs*normalX;
+
+      cgp->Append( x_gp_loc, wei );
+
+#if 0//DEBUGCUTLIBRARY //write separate file for each bcell along with the distribution of Gauss points (contd...)
+      file<<"Point("<<mm<<")="<<"{"<<x_gp_loc(0,0)<<","<<x_gp_loc(1,0)<<","<<x_gp_loc(2,0)<<"};\n";
+      mm++;
+#endif
+    }
+    zz++; //Iterator of divCells.
+  }
+#ifdef DIRECTDIV_EXTENDED_DEBUG_OUTPUT
+  file << "};\n";
+  mm++;
+#endif
+}
+
+void GEO::CUT::FacetIntegration::GenerateDivergenceCellsNew(bool       divergenceRule,
+                             Mesh                                      &mesh,
+                             std::list<Teuchos::RCP<BoundaryCell> >    & divCells,
+                             const std::vector<Point*>&                cornersGlobal)
+{
+//First convert format...
+#ifdef LOCAL
+  std::vector<std::vector<double> > cornersLocal;//(cornersGlobal.size(),3);
+  std::vector<std::vector<double> > cornersGlobalVec;//(cornersGlobal.size(),3);
+
+  for(std::vector<Point*> ::const_iterator j=cornersGlobal.begin();
+      j!=cornersGlobal.end(); ++j )
+  {
+
+    LINALG::Matrix<3,1> cornersLocMatrix;
+    LINALG::Matrix<3,1> cornersGloMatrix((*j)->X());
+
+    elem1_->LocalCoordinates(cornersGloMatrix,cornersLocMatrix);
+
+    std::vector<double> cornerLocal(3);
+    cornerLocal[0] = cornersLocMatrix(0,0);
+    cornerLocal[1] = cornersLocMatrix(1,0);
+    cornerLocal[2] = cornersLocMatrix(2,0);
+    cornersLocal.push_back(cornerLocal);
+
+//    std::cout << "cornerLocal: " << cornerLocal[0] << ", " << cornerLocal[1] << ", " << cornerLocal[2] << std::endl;
+
+    std::vector<double> cornerGlobal(3);
+    cornerGlobal[0] = cornersGloMatrix(0,0);
+    cornerGlobal[1] = cornersGloMatrix(1,0);
+    cornerGlobal[2] = cornersGloMatrix(2,0);
+    cornersGlobalVec.push_back(cornerGlobal);
+  }
+#else
+  std::vector<std::vector<double> > cornersGlobalVec;//(cornersGlobal.size(),3);
+
+  for(std::vector<Point*> ::const_iterator j=cornersGlobal.begin();
+      j!=cornersGlobal.end(); ++j )
+  {
+    LINALG::Matrix<3,1> cornersGloMatrix((*j)->X());
+
+    std::vector<double> cornerGlobal(3);
+    cornerGlobal[0] = cornersGloMatrix(0,0);
+    cornerGlobal[1] = cornersGloMatrix(1,0);
+    cornerGlobal[2] = cornersGloMatrix(2,0);
+    cornersGlobalVec.push_back(cornerGlobal);
+  }
+  std::vector<std::vector<double> > cornersLocal = cornersGlobalVec; //face1_->CornerPointsGlobal(elem1_);
+#endif
+
+  //Equation of plane for triangulated/split facet or full facet
+  eqn_plane_ = equation_plane(cornersLocal);
+
+// the face is in the x-y or in y-z plane which will not be considered when divergence theorem is applied
+  if(divergenceRule)
+  {
+    if(fabs(eqn_plane_[0])<TOL_EQN_PLANE)
+    {
+      for(std::vector<std::vector<double> > ::const_iterator j=cornersLocal.begin();
+          j!=cornersLocal.end(); ++j )
+      {
+        std::cout << "cornerLocal: " << (*j)[0] << ", " << (*j)[1] << ", " << (*j)[2] << std::endl;
+      }
+      std::cout << "eqn_plane_: " << eqn_plane_[0] << ", " << eqn_plane_[1] << ", " << eqn_plane_[2] << ", " << eqn_plane_[3] << std::endl;
+      std::cout << "RETURN BECAUSE eqn_plane_ too small in x-dir." << std::endl;
+      return;
+    }
+  }
+
+  if( !divergenceRule && !face1_->OnCutSide() )
+    return;
+
+  IsClockwise(eqn_plane_,cornersLocal);
+
+  std::vector<Point*> corners = cornersGlobal;
+
+  if(clockwise_)
+  {
+    std::reverse(corners.begin(),corners.end());
+    //CHANGE SIGN For equation of plane.
+    eqn_plane_[0] = -eqn_plane_[0];
+    eqn_plane_[1] = -eqn_plane_[1];
+    eqn_plane_[2] = -eqn_plane_[2];
+    eqn_plane_[3] = -eqn_plane_[3];
+  }
+
+  if(divergenceRule)
+  {
+    //-----------------------------------------------------------------
+    // only facets with 3 corners are considered as the special case and a Tri3 is created directly.
+    // we cannot directly create a Quad4 by checking the number of corners, because it can be a
+    // concave facet with 4 corners for which Gaussian rules are not available
+    //-----------------------------------------------------------------
+    if(corners.size()==3)
+    {
+      TemporaryTri3(corners, divCells);
+    }
+    else //split the aribtrary noded facet into cells
+    {
+      std::string splitMethod;
+
+      std::vector<std::vector<Point*> > split;
+
+      // if the facet is warped, do centre point triangulation --> reduced error (??)
+      if( not face1_->IsPlanar( mesh, face1_->CornerPoints() ) )
+      {
+        if(!face1_->IsTriangulated())
+          face1_->DoTriangulation( mesh, corners );
+        split  = face1_->Triangulation();
+      }
+      // the facet is not warped
+      else
+      {
+#if 1 // split facet
+        if( !face1_->IsFacetSplit() )
+          face1_->SplitFacet( corners );
+        split = face1_->GetSplitCells();
+        splitMethod = "split";
+#endif
+
+#if 0 // triangulate facet
+        //std::cout<<"!!! WARNING !!! Facets are triangulated instead of getting splitted ---> more Gauss points\n";
+        TriangulateFacet tf( corners );
+
+        std::vector<int> ptconc;
+        tf.EarClipping( ptconc, true );
+
+        split = tf.GetSplitCells();
+        splitMethod = "triangulation";
+#endif
+      }
+
+      for ( std::vector<std::vector<Point*> >::const_iterator j=split.begin();
+                                                              j!=split.end(); ++j )
+      {
+        const std::vector<Point*> & tri = *j;
+        if(tri.size()==3)
+          TemporaryTri3(tri, divCells);
+        else if(tri.size()==4) // split algorithm always gives convex quad
+          TemporaryQuad4(tri, divCells);
+        else
+        {
+          std::cout<<"number of sides = "<<tri.size();
+          dserror("Splitting created neither tri3 or quad4");
+        }
+      }
+
+#ifdef DEBUGCUTLIBRARY // check the area of facet computed from splitting and triangulation
+  if(splitMethod=="split")
+  {
+    DebugAreaCheck( divCells, splitMethod, mesh );
+  }
+#endif
+    }
+  }
+}

@@ -50,13 +50,18 @@ Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::DirectDivergence::VCIntegrationR
 
   Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> cgp = Teuchos::rcp( new DRT::UTILS::CollectedGaussPoints(0) );
 
+#ifdef DIRECTDIV_EXTENDED_DEBUG_OUTPUT
+  std::cout << "Number of facets: " << volcell_->Facets().size() << std::endl;
+  std::cout << "Size of facetIterator: " << facetIterator.size() << std::endl;
+#endif
+
   for( unsigned i=0;i<facetIterator.size();i++ )
   {
     plain_facet_set::const_iterator iter = facetIterator[i];
     Facet * fe = *iter;
     FacetIntegration faee1(fe,elem1_,position_,false,false);
 
-    faee1.DivergenceIntegrationRule( mesh_, cgp );
+    faee1.DivergenceIntegrationRuleNew( mesh_, cgp );
   }
 
 #if 0 //integrate specified functions using the Gaussian rule generated -- used in postprocessing
@@ -95,11 +100,12 @@ void GEO::CUT::DirectDivergence::ListFacets( std::vector<plain_facet_set::const_
   {
     Facet *fe = *i;
     const std::vector<Point*>& corn = fe->CornerPoints();
-    bool isPlanar = fe->IsPlanar( mesh_, corn );
+    bool isPlanar = fe->IsPlanar( mesh_, corn ); //triangulates non-planar facets.
 
-    if ( isPlanar == false )
+    if ( (isPlanar == false) ) //and !(fe->BelongsToLevelSetSide()) )
     {
       warpFac.push_back(i);
+#ifdef DIRECTDIV_EXTENDED_DEBUG_OUTPUT
       std::cout<<"encountered a WARPED side\n";
 
       std::cout << "side-Id() "<< fe->SideId() << std::endl;
@@ -109,6 +115,8 @@ void GEO::CUT::DirectDivergence::ListFacets( std::vector<plain_facet_set::const_
       for(unsigned j=0; j< corn.size(); j++)
         corn[j]->Print(std::cout);
 
+      std::cout << std::endl;
+#endif
     }
   }
 
@@ -128,7 +136,7 @@ void GEO::CUT::DirectDivergence::ListFacets( std::vector<plain_facet_set::const_
     eqnAllFacets[index] = RefPlaneTemp;
 
     // consider only facet whose x-direction normal componenet is non-zero
-    if( fabs(RefPlaneTemp[0])>TOL_EQN_PLANE )
+    if( fabs(RefPlaneTemp[0])>TOL_EQN_PLANE ) //This could give issues with non-planar facets?
     {
       TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::DirectDivergence::ListFacets-tmp1" );
 
@@ -272,10 +280,21 @@ void GEO::CUT::DirectDivergence::DivengenceCellsGMSH( const DRT::UTILS::GaussInt
   sideno++;
 
   std::stringstream str;
-  str << "divergenceCells" << sideno << ".pos";
+  str << "divergenceCells" << sideno << "_" << this->elem1_->Id() << ".pos";
   std::ofstream file( str.str().c_str() );
 
   volcell_->DumpGmsh( file );
+
+#ifdef OUTPUT_GLOBAL_DIVERGENCE_CELLS
+  const plain_facet_set & facete = volcell_->Facets();
+  file<<"View \"EqnOfPlaneNormals \" {\n";
+  for( plain_facet_set::const_iterator j=facete.begin(); j!=facete.end(); j++ )
+  {
+    //Writes only for GLOBAL Coordinates!
+    GEO::CUT::OUTPUT::GmshEqnPlaneNormalDump(file,*j,true);
+  }
+  file<<"};\n";
+#endif
 
   //-----------------------------------------------------------------------
   // write main Gauss points
@@ -284,7 +303,13 @@ void GEO::CUT::DirectDivergence::DivengenceCellsGMSH( const DRT::UTILS::GaussInt
   for ( DRT::UTILS::GaussIntegration::iterator iquad=gpv.begin(); iquad!=gpv.end(); ++iquad )
   {
     const LINALG::Matrix<3,1> etaFacet( iquad.Point() );
+#ifndef OUTPUT_GLOBAL_DIVERGENCE_CELLS
     file<<"SP("<<etaFacet(0,0)<<","<<etaFacet(1,0)<<","<<etaFacet(2,0)<<","<<"1"<<"){0.0};"<<std::endl;
+#else
+    LINALG::Matrix<3,1> etaGlobal;
+    elem1_->GlobalCoordinates(etaFacet,etaGlobal);
+    file<<"SP("<<etaGlobal(0,0)<<","<<etaGlobal(1,0)<<","<<etaGlobal(2,0)<<","<<"1"<<"){0.0};"<<std::endl;
+#endif
   }
   file<<"};\n";
   file<<"View[PostProcessing.NbViews-1].ColorTable = { {0,100,0} };\n"; // Changing color to red
@@ -320,8 +345,12 @@ void GEO::CUT::DirectDivergence::DivengenceCellsGMSH( const DRT::UTILS::GaussInt
   if( isRef_ )
   {
     std::vector<std::vector<double> > corners;
+#ifndef OUTPUT_GLOBAL_DIVERGENCE_CELLS
     refFacet_->CornerPointsLocal(elem1_,corners);
-    //std::vector<std::vector<double> > corners = refFacet_->CornerPointsGlobal(elem1_);
+#else
+    corners = refFacet_->CornerPointsGlobal(elem1_);
+#endif
+//    std::vector<std::vector<double> > corners = refFacet_->CornerPointsGlobal(elem1_);
     for( unsigned i=0;i<corners.size();i++ )
     {
       const std::vector<double> coords1 = corners[i];
@@ -514,10 +543,16 @@ void GEO::CUT::DirectDivergence::DebugVolume( const DRT::UTILS::GaussIntegration
     }
 
     mesh_.DebugDump(elem1_,__FILE__,__LINE__);
-    dserror("negative volume predicted by the DirectDivergence integration rule; volume = %0.20f",TotalInteg);
+    std::cout << "volume: " << TotalInteg << std::endl;
+    throw std::runtime_error("negative volume predicted by the DirectDivergence integration rule;");
+//    dserror("negative volume predicted by the DirectDivergence integration rule; volume = %0.20f",TotalInteg);
   }
 
 #ifdef DEBUGCUTLIBRARY //check the volume with the moment fitting and check the values
+#ifdef LOCAL
+#ifdef OUTPUT_GLOBAL_DIVERGENCE_CELLS
+  std::cout << "Check volumecell with moment-fitting." << std::endl;
+#endif
   VolumeIntegration vi( volcell_, elem1_, volcell_->Position(), 1);
   Epetra_SerialDenseVector volMom = vi.compute_rhs_moment();
   volMom(0) = volcell_->Volume();
@@ -526,11 +561,15 @@ void GEO::CUT::DirectDivergence::DebugVolume( const DRT::UTILS::GaussIntegration
   {
     std::cout<<"comparison of volume prediction\n";
     std::cout<<std::setprecision(15)<<volGlobal<<"\t"<<volMom(0)<<"\n";
-    dserror("volume prediction is wrong");
+    //dserror("volume prediction is wrong");
+    throw std::runtime_error("DirectDiv and Momfitting are not producing same volumes!");
+    //std::cout << "DirectDiv and Momfitting are not producing same volumes!" << std::endl;
   }
 #endif
-  volcell_->SetVolume(volGlobal);
+#endif
 
+  volcell_->SetVolume(volGlobal);
+//  volcell_->SetVolume(TotalInteg);
   if(isnan(volGlobal))
   {
     std::cout<<"-------------------------------------------------------------\n";

@@ -305,7 +305,10 @@ public:
   /// Write full Gmsh Output
   void DumpGmsh( std::string name );
 
-  /// ?
+  /*!
+  \brief Output information about the volume cell.
+  If the cut has a level set side. Also write output for level set values and gradients.
+   */
   void DumpGmshVolumeCells( std::string name, bool include_inner );
 
   /// ?

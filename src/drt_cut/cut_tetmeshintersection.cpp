@@ -98,7 +98,7 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( Options & options,
 
       //Is this facet a LevelSetSide or is it Triangulated
       // add this to triangulated and the new nodes to nodemap
-      if ( f->ParentSide()->IsLevelSetSide() or f->IsTriangulated() )
+      if ( f->BelongsToLevelSetSide() or f->IsTriangulated() )
       {
         triangulated.push_back( f );
         PointSet points;

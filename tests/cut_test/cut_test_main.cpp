@@ -185,6 +185,7 @@ void test_ls_hex8_touch();
 void test_ls_hex8_between();
 void test_ls_hex8_experiment();
 void test_ls_hex8_experiment_magnus();
+void test_ls_mesh_hex8_simple(); //Same cut with LS and mesh
 void test_ls_hex8_magnus1();  //Loss of volume-cell     (prec 24)
 void test_ls_hex8_magnus12(); //Not loss of volume cell (prec 16)
 void test_ls_hex8_magnus2();
@@ -192,6 +193,8 @@ void test_ls_hex8_magnus3();
 void test_ls_hex8_magnus4();
 void test_ls_hex8_magnus5();  //Qhull QbB input fail in sphere
 void test_ls_hex8_magnus6();  //Variable surftens issue with Combust -> Issue with cut in local coord
+void test_ls_hex8_magnus7();  //Problem with Global Cut with DD
+void test_ls_hex8_tes_dd_simple();
 
 
 void test_quad4_surface_mesh_cut();
@@ -521,7 +524,11 @@ int main( int argc, char ** argv )
   functable["tet10_quad9_simple"] = test_tet10_quad9_simple;
   functable["tet10_quad9_moved"] = test_tet10_quad9_moved;
   functable["tet4_quad4_double"] = test_tet4_quad4_double;
+#ifdef LOCAL
   functable["tet4_tri3_double"] = test_tet4_tri3_double;
+#else
+  std::cout << "functable[tet4_tri3_double] = test_tet4_tri3_double; RUNS INTO DSERROR IN GLOBAL CONFIGURATION!" << std::endl;
+#endif
   functable["benedikt1"] = test_benedikt1;
 
   functable["ls_hex8_florian1"] = test_ls_hex8_florian1;
@@ -554,6 +561,7 @@ int main( int argc, char ** argv )
   functable["ls_hex8_between"] = test_ls_hex8_between;
   functable["ls_hex8_experiment"] = test_ls_hex8_experiment;
   functable["ls_hex8_experiment_magnus"] = test_ls_hex8_experiment_magnus;
+  functable["ls_mesh_hex8_simple"] = test_ls_mesh_hex8_simple;
   functable["ls_hex8_magnus1"] = test_ls_hex8_magnus1;
   functable["ls_hex8_magnus12"] = test_ls_hex8_magnus12;
   functable["ls_hex8_magnus2"] = test_ls_hex8_magnus2;
@@ -561,6 +569,8 @@ int main( int argc, char ** argv )
   functable["ls_hex8_magnus4"] = test_ls_hex8_magnus4;
   functable["ls_hex8_magnus5"] = test_ls_hex8_magnus5;
   functable["ls_hex8_magnus6"] = test_ls_hex8_magnus6;
+  functable["ls_hex8_magnus7"] = test_ls_hex8_magnus7; //Issues in Global Cut for DD
+  functable["ls_hex8_tes_dd_simple"] = test_ls_hex8_tes_dd_simple;
 
   functable["quad4_surface_mesh_cut"] = test_quad4_surface_mesh_cut;
   functable["hex8_quad4_double_cut"] = test_hex8_quad4_double_cut;

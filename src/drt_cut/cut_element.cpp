@@ -284,7 +284,6 @@ void GEO::CUT::Element::MakeCutLines(Mesh & mesh, Creator & creator)
   for (plain_side_set::iterator i = cut_faces_.begin(); i != cut_faces_.end();
       ++i)
   {
-    //Comment: For LevelSet cuts, this loop is entered only from TetMeshIntersection.
     Side & cut_side = **i;
 
     bool cut = false;
@@ -1171,7 +1170,7 @@ void GEO::CUT::Element::CreateIntegrationCells(Mesh & mesh, int count, bool tetc
       throw std::runtime_error("no holes in cut facet possible");
     //f->GetAllPoints( mesh, cut_points, f->OnCutSide() );
 #if 1
-    f->GetAllPoints(mesh, cut_points, f->ParentSide()->IsLevelSetSide() and f->OnCutSide());
+    f->GetAllPoints(mesh, cut_points, f->BelongsToLevelSetSide() and f->OnCutSide());
 #else
     f->GetAllPoints( mesh, cut_points, false );
 #endif
@@ -1647,4 +1646,179 @@ void GEO::CUT::Element::DirectDivergenceGaussRule(Mesh & mesh,
     VolumeCell *cell1 = *i;
     cell1->DirectDivergenceGaussRule(this, mesh, include_inner, Bcellgausstype);
   }
+}
+
+/*---------------------------------------------------------------------------------------------------------*
+ * Return the level set gradient for a given coordinate.
+ * Make sure coordinates are inside the element!                                               winter 07/15
+ *---------------------------------------------------------------------------------------------------------*/
+const double GEO::CUT::Element::GetLevelSetValue( const LINALG::Matrix<3,1> x_global, bool islocal)
+{
+  LINALG::Matrix<3,1> xsi;
+  if(not islocal)
+    this->LocalCoordinates(x_global,xsi);
+  else
+    xsi = x_global;
+
+  //FOR NOW HARDCODED Hex8. Can be changed -> Provide cut_element.H with template should be no prob at all.
+  //const int nsd = 3;
+  const int numnode = 8;
+  LINALG::Matrix<numnode,1> funct;
+
+  if(this->Shape()!= DRT::Element::hex8)
+    dserror("Elements other than Hex8 are not supported as of now.");
+
+  DRT::UTILS::shape_function_3D(funct,xsi(0),xsi(1),xsi(2),this->Shape());
+
+  const std::vector<Node*> ele_node = this->Nodes();
+
+  //Extract Level Set values from element.
+  LINALG::Matrix<numnode,1> escaa;
+  int mm=0;
+  for(std::vector<Node*>::const_iterator i=ele_node.begin();i!=ele_node.end();i++)
+  {
+    Node *nod = *i;
+    escaa(mm,0)=nod->LSV();
+    mm++;
+  }
+
+  return funct.Dot(escaa);
+
+}
+
+/*---------------------------------------------------------------------------------------------------------*
+ * Return the level set value for a given coordinate.
+ * Make sure coordinates are inside the element!
+ *
+ * This function is necessary because the orientation of a facet is not considered in its creation,
+ * this could be solved by introducing this information earlier in the facet creation.
+ * For example:
+ *  o Get cut_node and its two edges on the cut_side. Calculate the cross-product
+ *                                                       -> Get the orientation of the node.
+ *  o Compare to LS info from its two edges which are not on a cut_side.
+ *  o Make sure, the facet is created according to the calculated orientation.
+ *                                                                                             winter 07/15
+ *---------------------------------------------------------------------------------------------------------*/
+const std::vector<double>  GEO::CUT::Element::GetLevelSetGradient( const LINALG::Matrix<3,1> x_global, bool islocal)
+{
+  LINALG::Matrix<3,1> xsi;
+  if(not islocal)
+  {
+    this->LocalCoordinates(x_global,xsi);
+  }
+  else
+  {
+    xsi=x_global;
+  }
+
+  //FOR NOW HARDCODED Hex8. Can be changed -> Provide cut_element.H with template should be no prob at all.
+  const int nsd = 3;
+  const int numnode = 8;
+  LINALG::Matrix<nsd,numnode> deriv1;
+
+  if(this->Shape()!= DRT::Element::hex8)
+    dserror("Elements other than Hex8 are not supported as of now.");
+
+  DRT::UTILS::shape_function_3D_deriv1(deriv1,xsi(0),xsi(1),xsi(2),this->Shape());
+
+  //Calculate global derivatives
+  //----------------------------------
+  LINALG::Matrix<nsd,numnode> xyze;
+  this->Coordinates(&xyze(0,0));
+  LINALG::Matrix<nsd,nsd> xjm;
+  LINALG::Matrix<nsd,nsd> xji;
+  LINALG::Matrix<nsd,numnode> derxy;
+  xjm.MultiplyNT(deriv1,xyze);
+  double det = xji.Invert(xjm);
+
+  if (det < 1E-16)
+    dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", this->Id(), det);
+
+  // compute global first derivates
+  derxy.Multiply(xji,deriv1);
+  //----------------------------------
+
+  const std::vector<Node*> ele_node = this->Nodes();
+
+  //Extract Level Set values from element.
+  LINALG::Matrix<1,numnode> escaa;
+  int mm=0;
+  for(std::vector<Node*>::const_iterator i=ele_node.begin();i!=ele_node.end();i++)
+  {
+    Node *nod = *i;
+    escaa(0,mm)=nod->LSV();
+    mm++;
+  }
+  LINALG::Matrix<nsd,1> phi_deriv1;
+  phi_deriv1.MultiplyNT(derxy,escaa);
+
+  std::vector<double> normal_facet(3);
+  normal_facet[0] = phi_deriv1(0,0);
+  normal_facet[1] = phi_deriv1(1,0);
+  normal_facet[2] = phi_deriv1(2,0);
+
+  return normal_facet;
+}
+
+/*---------------------------------------------------------------------------------------------------------*
+ * Return the level set value for a given coordinate.
+ * Make sure coordinates are inside the element!                                               winter 07/15
+ *---------------------------------------------------------------------------------------------------------*/
+const std::vector<double>  GEO::CUT::Element::GetLevelSetGradientInLocalCoords( const LINALG::Matrix<3,1> x_global, bool islocal)
+{
+  LINALG::Matrix<3,1> xsi;
+  if(not islocal)
+  {
+    this->LocalCoordinates(x_global,xsi);
+  }
+  else
+  {
+    xsi=x_global;
+  }
+
+  //FOR NOW HARDCODED Hex8. Can be changed -> Provide cut_element.H with template should be no prob at all.
+  const int nsd = 3;
+  const int numnode = 8;
+  LINALG::Matrix<nsd,numnode> deriv1;
+
+  if(this->Shape()!= DRT::Element::hex8)
+    dserror("Elements other than Hex8 are not supported as of now.");
+
+  DRT::UTILS::shape_function_3D_deriv1(deriv1,xsi(0),xsi(1),xsi(2),this->Shape());
+
+  const std::vector<Node*> ele_node = this->Nodes();
+
+  //Extract Level Set values from element.
+  LINALG::Matrix<1,numnode> escaa;
+  int mm=0;
+  for(std::vector<Node*>::const_iterator i=ele_node.begin();i!=ele_node.end();i++)
+  {
+    Node *nod = *i;
+    escaa(0,mm)=nod->LSV();
+    mm++;
+  }
+  LINALG::Matrix<nsd,1> phi_deriv1;
+  phi_deriv1.MultiplyNT(deriv1,escaa);
+
+  std::vector<double> normal_facet(3);
+  normal_facet[0] = phi_deriv1(0,0);
+  normal_facet[1] = phi_deriv1(1,0);
+  normal_facet[2] = phi_deriv1(2,0);
+
+  return normal_facet;
+}
+
+
+bool GEO::CUT::Element::HasLevelSetSide()
+{
+  const plain_facet_set facets = this->Facets();
+  for(plain_facet_set::const_iterator j=facets.begin();j!=facets.end();j++)
+  {
+    Facet *facet = *j;
+    if(facet->BelongsToLevelSetSide())
+    {
+      return true;
+    }
+  }
+  return false;
 }

@@ -387,7 +387,9 @@ void GEO::CUT::Facet::CreateTriangulation( Mesh & mesh, const std::vector<Point*
   // This is not completely correct but since we use a single levelset side for each element
   // (even though the levelset can break into two), we get some weird facet shapes.
   // This procedure seems to give better result even if the facet is concave in such cases
-  if( isConvex() or ParentSide()->IsLevelSetSide() )
+  GEO::CUT::FacetShape geoType;
+  std::vector<int> concave_ids = KERNEL::CheckConvexity( corner_points_, geoType, false, false );
+  if( (geoType == GEO::CUT::Concave) or BelongsToLevelSetSide() )
   {
     std::vector<Point*> pts( points );
     //Find the middle point
@@ -400,6 +402,8 @@ void GEO::CUT::Facet::CreateTriangulation( Mesh & mesh, const std::vector<Point*
       avg.Update(1.0,cur,1.0);
     }
     avg.Scale(1.0/pts.size());
+    // One could create a better approx for the "midpoint" here parsing information from the levelset
+    //  and thus finding the zero level set easier. Might be worthwhile testing.
     Point * p_mid = mesh.NewPoint( avg.A(), NULL, ParentSide(),0.0); //change tolerance here intelligently !!! - basically there is no reason why I'd like to merge here!
     p_mid->Position( Position() );
     p_mid->Register( this );
@@ -413,8 +417,36 @@ void GEO::CUT::Facet::CreateTriangulation( Mesh & mesh, const std::vector<Point*
       Point* pt1 = pts[i];
       Point* pt2 = pts[(i+1)%pts.size()];
 
-      newtri[1] = pt1;
-      newtri[2] = pt2;
+      //For LevelSet, make sure to orient a concave point on the 2nd entry of the triangulation.
+      //  This assumption is necessary for Direct Divergence to work correctly.
+      if(!BelongsToLevelSetSide())
+      {
+        newtri[1] = pt1;
+        newtri[2] = pt2;
+      }
+      else
+      {
+        bool reverse_order = false;
+        for(std::vector<int>::iterator j=concave_ids.begin();
+            j!=concave_ids.end();
+            ++j)
+        {
+          if((*j)==i)
+            reverse_order=true;
+        }
+        if(!reverse_order)
+        {
+          newtri[1] = pt1;
+          newtri[2] = pt2;
+        }
+        else
+        {
+//          std::cout << "ORDER REVERSED!" << std::endl;
+          newtri[2] = pt1;
+          newtri[1] = pt2;
+        }
+      }
+
       triangulation_.push_back(newtri);
     }
   }
@@ -551,7 +583,7 @@ void GEO::CUT::Facet::GetLines( std::map<std::pair<Point*, Point*>, plain_facet_
   // We are interested in the surrounding lines of the facet. Thus the
   // internal lines that result from a triangulation are not wanted
   // here. (There are no other facets connected to any of our internal lines.)
-  //if ( this->ParentSide()->IsLevelSetSide() and  IsTriangulated() )
+  //if ( this->BelongsToLevelSetSide() and  IsTriangulated() )
   if ( IsTriangulated() )
   {
     for ( std::vector<std::vector<Point*> >::iterator i=triangulation_.begin();
@@ -1240,6 +1272,11 @@ bool GEO::CUT::Facet::isConvex()
    return true;
 
  return false;
+}
+
+bool GEO::CUT::Facet::BelongsToLevelSetSide()
+{
+  return parentside_->IsLevelSetSide();
 }
 
  /*-----------------------------------------------------------------------*

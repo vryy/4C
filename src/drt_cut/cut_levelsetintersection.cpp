@@ -149,16 +149,26 @@ void GEO::CUT::LevelSetIntersection::Cut( bool include_inner, bool screenoutput,
 //######################################################################################
   //STEP 3/3 FINALIZE, ASSIGN INTEGRATIONRULES
 //######################################################################################
-  m.CreateIntegrationCells( 0 );
+
+//  VCellGP=INPAR::CUT::VCellGaussPts_DirectDivergence;
+//  std::cout << "VCellGP: " << VCellGP << std::endl;
+
+  if(VCellGP == INPAR::CUT::VCellGaussPts_Tessellation)
+    m.CreateIntegrationCells( 0 );
+  else
+    m.DirectDivergenceGaussRule(true, INPAR::CUT::BCellGaussPts_Tessellation);
+
+  m.TestElementVolume( true, VCellGP);
+
   //m.RemoveEmptyVolumeCells();
 
 #ifdef DEBUGCUTLIBRARY
   m.DumpGmsh( "mesh.pos" );
-//  m.DumpGmshVolumeCells( "volumecells" );
+  m.DumpGmshVolumeCells( "volumecells.pos", true );
   m.DumpGmshIntegrationCells( "integrationcells.pos" );
 #endif
 
-  m.TestElementVolume( true, VCellGP );
+  //m.TestElementVolume( true, VCellGP );
 
 #ifdef DEBUGCUTLIBRARY
  // m.TestVolumeSurface(); //Broken test, needs to be fixed for proper usage.
@@ -166,6 +176,17 @@ void GEO::CUT::LevelSetIntersection::Cut( bool include_inner, bool screenoutput,
   //  thus this makes it likely that the cut is sensitive to 10^-11? Why?
   m.TestFacetArea();
 #endif
+
+  // Test if the volume-cell integration of DD and Tes are producing the same volumes
+#ifdef DEBUGCUTLIBRARY
+  {
+    if(VCellGP == INPAR::CUT::VCellGaussPts_Tessellation)
+    {
+      DebugCut(m);
+    }
+  }
+#endif
+
 
 //######################################################################################
 

@@ -1693,7 +1693,6 @@ void GEO::CUT::Mesh::TestElementVolume( DRT::Element::DiscretizationType shape, 
   }
 }
 
-
 /*-------------------------------------------------------------------------------------*
  * ?
  *-------------------------------------------------------------------------------------*/
@@ -2072,16 +2071,78 @@ void GEO::CUT::Mesh::DumpGmsh( std::string name )
   {
     Facet &  f = **i;
     PointSet points;
-    for (unsigned j = 0; j<f.Triangulation().size() ; ++j)
+    if(f.IsTriangulated())
     {
-      GEO::CUT::OUTPUT::GmshTriSideDump(file, f.Triangulation()[j]);
+      for (unsigned j = 0; j<f.Triangulation().size() ; ++j)
+      {
+        GEO::CUT::OUTPUT::GmshTriSideDump(file, f.Triangulation()[j]);
+      }
     }
+    else if (f.BelongsToLevelSetSide())
+    {
+      GEO::CUT::OUTPUT::GmshTriSideDump(file, f.CornerPoints());
+    }
+
   }
   file << "};\n";
   }
+
+
+  //#############write level set information from cut if level set side exists ################
+  bool haslevelsetside = false;
+  //Does one element have a level set side?
+  for(std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
+      i!=elements_.end();i++)
+  {
+    Element* ele = &*i->second;
+    haslevelsetside = ele->HasLevelSetSide();
+    if(haslevelsetside)
+      break;
+  }
+
+  if(haslevelsetside)
+  {
+    file << "View \"LevelSetValues\" {\n";
+    for(std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
+        i!=elements_.end();i++)
+    {
+      Element* ele = &*i->second;
+      GEO::CUT::OUTPUT::GmshLevelSetValueDump(file,ele);
+    }
+    file << "};\n";
+
+    file << "View \"LevelSetGradient\" {\n";
+    for(std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
+        i!=elements_.end();i++)
+    {
+      Element* ele = &*i->second;
+      GEO::CUT::OUTPUT::GmshLevelSetGradientDump(file,ele);
+    }
+    file << "};\n";
+
+    file << "View \"LevelSetOrientation\" {\n";
+    for(std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
+        i!=elements_.end();i++)
+    {
+      Element* ele = &*i->second;
+      GEO::CUT::OUTPUT::GmshLevelSetOrientationDump(file,ele);
+    }
+    file << "};\n";
+
+#ifdef DEBUGCUTLIBRARY
+    file << "View \"LevelSetZeroShape\" {\n";
+    for(std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
+        i!=elements_.end();i++)
+    {
+      Element* ele = &*i->second;
+      GEO::CUT::OUTPUT::GmshLevelSetValueZeroSurfaceDump(file,ele);
+    }
+    file << "};\n";
+#endif
+
+  }
+
 }
-
-
 
 /*-------------------------------------------------------------------------------------*
  * ?
@@ -2217,6 +2278,60 @@ void GEO::CUT::Mesh::DumpGmshVolumeCells( std::string name, bool include_inner )
     file << "SP(" << x[0] << "," << x[1] << "," << x[2] << "){" <<  p->Position() << "};\n";
   }
   file << "};\n";
+
+
+  //Does there exist a Level Set cut side?
+  bool haslevelsetside = false;
+  for(std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
+      i!=elements_.end();i++)
+  {
+    Element* ele = &*i->second;
+    haslevelsetside = ele->HasLevelSetSide();
+
+    if(haslevelsetside)
+      break;
+  }
+
+  if(haslevelsetside)
+  {
+    file << "View \"LevelSetValues\" {\n";
+    for(std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
+        i!=elements_.end();i++)
+    {
+      Element* ele = &*i->second;
+      GEO::CUT::OUTPUT::GmshLevelSetValueDump(file,ele);
+    }
+    file << "};\n";
+
+    file << "View \"LevelSetGradient\" {\n";
+    for(std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
+        i!=elements_.end();i++)
+    {
+      Element* ele = &*i->second;
+      GEO::CUT::OUTPUT::GmshLevelSetGradientDump(file,ele);
+    }
+    file << "};\n";
+
+    file << "View \"LevelSetOrientation\" {\n";
+    for(std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
+        i!=elements_.end();i++)
+    {
+      Element* ele = &*i->second;
+      GEO::CUT::OUTPUT::GmshLevelSetOrientationDump(file,ele);
+    }
+    file << "};\n";
+
+#ifdef DEBUGCUTLIBRARY
+    file << "View \"LevelSetZeroShape\" {\n";
+    for(std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
+        i!=elements_.end();i++)
+    {
+      Element* ele = &*i->second;
+      GEO::CUT::OUTPUT::GmshLevelSetValueZeroSurfaceDump(file,ele);
+    }
+    file << "};\n";
+#endif
+  }
 }
 
 
@@ -2237,16 +2352,52 @@ void GEO::CUT::Mesh::DumpGmshIntegrationCells( std::string name )
   }
   file << "};\n";
 
+  //Write BCs for outside VolumeCell:
   file << "View \"BoundaryCells\" {\n";
-  for ( std::list<Teuchos::RCP<BoundaryCell> >::iterator i=boundarycells_.begin();
-        i!=boundarycells_.end();
-        ++i )
+  for ( std::list<Teuchos::RCP<VolumeCell> >::iterator i=cells_.begin();
+      i!=cells_.end();
+      ++i )
   {
-    BoundaryCell * bc = &**i;
-    if ( bc->IsValid() )
-      bc->DumpGmsh( file );
+    VolumeCell * volcell = &**i;
+    if(volcell->Position()==GEO::CUT::Point::outside)
+    {
+      plain_boundarycell_set bc_cells = volcell->BoundaryCells();
+      for ( plain_boundarycell_set::iterator j=bc_cells.begin();
+          j!=bc_cells.end();
+          ++j )
+      {
+        BoundaryCell * bc = *j;
+        if(bc->IsValid())
+          bc->DumpGmsh(file);
+      }
+    }
   }
   file << "};\n";
+
+  //Write BCs for inside VolumeCell:
+  file << "View \"BoundaryCellsNormal\" {\n";
+  for ( std::list<Teuchos::RCP<VolumeCell> >::iterator i=cells_.begin();
+      i!=cells_.end();
+      ++i )
+  {
+    VolumeCell * volcell = &**i;
+    if(volcell->Position()==GEO::CUT::Point::outside)
+    {
+      plain_boundarycell_set bc_cells = volcell->BoundaryCells();
+      for ( plain_boundarycell_set::iterator j=bc_cells.begin();
+            j!=bc_cells.end();
+            ++j )
+      {
+        BoundaryCell * bc = *j;
+        if(bc->IsValid())
+          bc->DumpGmshNormal(file);
+      }
+    }
+  }
+
+
+  file << "};\n";
+
 }
 
 
@@ -2290,15 +2441,75 @@ void GEO::CUT::Mesh::DumpGmshVolumeCells( std::string name )
   file << "};\n";
 
   file << "View \"BoundaryCells\" {\n";
+  bool haslevelsetside = false;
   for ( std::list<Teuchos::RCP<BoundaryCell> >::iterator i=boundarycells_.begin();
         i!=boundarycells_.end();
         ++i )
   {
     BoundaryCell * bc = &**i;
-    if ( bc->IsValid() )
+
+    if(bc->GetFacet()->BelongsToLevelSetSide())
+      haslevelsetside = true;
+
+     if ( bc->IsValid() )
       bc->DumpGmsh( file );
   }
   file << "};\n";
+
+  if(haslevelsetside)
+  {
+    file << "View \"LevelSetInfoOnFacet\" {\n";
+    for(std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
+        i!=elements_.end();i++)
+    {
+      Element* ele = &*i->second;
+      const plain_facet_set facets = ele->Facets();
+      for(plain_facet_set::const_iterator j=facets.begin();j!=facets.end();j++)
+      {
+        Facet *facet = *j;
+
+        if(facet->OnCutSide())
+        {
+          LINALG::Matrix<3,1> facet_triang_midpoint_coord(true);
+
+          if(facet->IsTriangulated())
+          {
+            std::vector<std::vector<Point*> > facet_triang = facet->Triangulation();
+            Point* facet_triang_midpoint = (facet_triang[0])[0];
+
+            //Choose midpoint of facet?
+            facet_triang_midpoint->Coordinates(&facet_triang_midpoint_coord(0,0));
+          }
+          else
+          {
+            LINALG::Matrix<3,1> cur;
+            std::vector<Point*> pts =facet->Points();
+            for( std::vector<Point*>::iterator i=pts.begin();i!=pts.end();i++ )
+            {
+              Point* p1 = *i;
+              p1->Coordinates(cur.A());
+              facet_triang_midpoint_coord.Update(1.0,cur,1.0);
+            }
+            facet_triang_midpoint_coord.Scale(1.0/pts.size());
+          }
+
+          file << "VT(";
+          file << facet_triang_midpoint_coord( 0, 0 ) << ","
+              << facet_triang_midpoint_coord( 1, 0 ) << ","
+              << facet_triang_midpoint_coord( 2, 0 );
+
+          file << "){";
+
+          std::vector<double> normal = ele->GetLevelSetGradient(facet_triang_midpoint_coord);//facet->GetLevelSetFacetNormal(ele);
+          file << normal[0] << "," << normal[1] << "," << normal[2];
+
+          file << "};\n";
+        }
+      }
+    }
+  }
+  file << "};\n";
+
 }
 
 /*-------------------------------------------------------------------------------------*
