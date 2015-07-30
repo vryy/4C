@@ -4,11 +4,11 @@
 \brief
 
 <pre>
-Maintainer: Mahmoud Ismail
-            ismail@lnm.mw.tum.de
+Maintainer: Christian Roth
+            roth@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15268
-            </pre>
+            089 - 289-15255
+</pre>
 
 *----------------------------------------------------------------------*/
 
@@ -26,6 +26,9 @@ DRT::ELEMENTS::RedInterAcinarDepType& DRT::ELEMENTS::RedInterAcinarDepType::Inst
   return instance_;
 }
 
+/*----------------------------------------------------------------------*
+ |  Create                                                              |
+ *----------------------------------------------------------------------*/
 DRT::ParObject* DRT::ELEMENTS::RedInterAcinarDepType::Create( const std::vector<char> & data )
 {
   DRT::ELEMENTS::RedInterAcinarDep* object = new DRT::ELEMENTS::RedInterAcinarDep(-1,-1);
@@ -34,6 +37,9 @@ DRT::ParObject* DRT::ELEMENTS::RedInterAcinarDepType::Create( const std::vector<
 }
 
 
+/*----------------------------------------------------------------------*
+ |  Create                                                              |
+ *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RedInterAcinarDepType::Create( const std::string eletype,
                                                             const std::string eledistype,
                                                             const int id,
@@ -48,6 +54,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RedInterAcinarDepType::Create( const s
 }
 
 
+/*----------------------------------------------------------------------*
+ |  Create                                                              |
+ *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RedInterAcinarDepType::Create( const int id, const int owner )
 {
   Teuchos::RCP<DRT::Element> ele =  Teuchos::rcp(new DRT::ELEMENTS::RedInterAcinarDep(id,owner));
@@ -55,13 +64,16 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RedInterAcinarDepType::Create( const i
 }
 
 
-void DRT::ELEMENTS::RedInterAcinarDepType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+/*----------------------------------------------------------------------*
+ |  SetupElementDefinition                                              |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::RedInterAcinarDepType::SetupElementDefinition(std::map<std::string,std::map<std::string,
+                                                                  DRT::INPUT::LineDefinition> > & definitions)
 {
   std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["RED_ACINAR_INTER_DEP"];
 
-  defs["LINE2"]
-    .AddIntVector("LINE2",2)
-    ;
+  defs["LINE2"].AddIntVector("LINE2",2)
+               .AddNamedInt("MAT");
 }
 
 
@@ -90,7 +102,7 @@ generation_(old.generation_)
 }
 
 /*----------------------------------------------------------------------*
- |  Deep copy this instance of RedInterAcinarDep and return pointer             |
+ |  Deep copy this instance of RedInterAcinarDep and return pointer     |
  |  to it                                                      (public) |
  |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
@@ -112,10 +124,11 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::RedInterAcinarDep::Shape() const
   case  3: return line3;
   default:
     dserror("unexpected number of nodes %d", NumNode());
-    break;
+  break;
   }
   return dis_none;
 }
+
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
@@ -132,7 +145,6 @@ void DRT::ELEMENTS::RedInterAcinarDep::Pack(DRT::PackBuffer& data) const
 
   // add base class Element
   Element::Pack(data);
-
 
   std::map<std::string,double>::const_iterator it;
 
@@ -200,7 +212,7 @@ DRT::ELEMENTS::RedInterAcinarDep::~RedInterAcinarDep()
 
 
 /*----------------------------------------------------------------------*
- |  print this element (public)                             ismail 01/10|
+ |  Print this element (public)                             ismail 01/10|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::RedInterAcinarDep::Print(std::ostream& os) const
 {
@@ -210,26 +222,12 @@ void DRT::ELEMENTS::RedInterAcinarDep::Print(std::ostream& os) const
   return;
 }
 
+
 /*----------------------------------------------------------------------*
  |  Return names of visualization data                     ismail 01/10 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::RedInterAcinarDep::VisNames(std::map<std::string,int>& names)
 {
-
-#if 0
-  // see whether we have additional data for visualization in our container
-  std::ostringstream temp;
-  temp << 1;
-
-  // in flow of volumetric flow profile
-  std::string name = "flow_in";
-  names.insert(std::pair<std::string,int>(name,1));
-
-  // out flow of volumetric flow profile
-  name = "flow_out";
-  names.insert(std::pair<std::string,int>(name,1));
-#endif
-
   return;
 }
 
@@ -244,7 +242,6 @@ bool DRT::ELEMENTS::RedInterAcinarDep::VisData(const std::string& name, std::vec
 
   return false;
 }
-
 
 
 /*----------------------------------------------------------------------*
@@ -264,6 +261,7 @@ void DRT::ELEMENTS::RedInterAcinarDep::getParams(std::string name, double & var)
 
 }
 
+
 /*----------------------------------------------------------------------*
  |  Get element parameters (public)                        ismail 03/11 |
  *----------------------------------------------------------------------*/
@@ -282,8 +280,9 @@ void DRT::ELEMENTS::RedInterAcinarDep::getParams(std::string name, int & var)
 
 }
 
+
 /*----------------------------------------------------------------------*
- |  get vector of lines              (public)              ismail  02/13|
+ |  Get vector of lines (public)                           ismail  02/13|
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::RedInterAcinarDep::Lines()
 {
@@ -294,7 +293,6 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::RedInterAcinarDep::Lines
   // have become illegal and you will get a nice segmentation fault ;-)
 
   // so we have to allocate new line elements:
-
   if (NumLine()>1) // 1D boundary element and 2D/3D parent element
   {
     dserror("RED_AIRWAY element must have one and only one line");

@@ -4606,13 +4606,13 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          true,
                                          DRT::Condition::Line));
 
-  raw_volPpl_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("TYPE", "Exponential",
-                                                                      Teuchos::tuple<std::string>("Exponential","Polynomial"),
-                                                                      Teuchos::tuple<std::string>("Exponential","Polynomial"),
+  raw_volPpl_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("TYPE", "Linear_Exponential",
+                                                                      Teuchos::tuple<std::string>("Linear_Polynomial","Linear_Exponential","Linear_Ogden","Nonlinear_Polynomial","Nonlinear_Exponential","Nonlinear_Ogden"),
+                                                                      Teuchos::tuple<std::string>("Linear_Polynomial","Linear_Exponential","Linear_Ogden","Nonlinear_Polynomial","Nonlinear_Exponential","Nonlinear_Ogden"),
                                                                       true)));
 
   AddNamedReal(raw_volPpl_bc,"TLC");
-  AddNamedReal(raw_volPpl_bc,"VFR");
+  AddNamedReal(raw_volPpl_bc,"RV");
 
   AddNamedReal(raw_volPpl_bc,"P_PLEURAL_0");
   AddNamedReal(raw_volPpl_bc,"P_PLEURAL_LIN");

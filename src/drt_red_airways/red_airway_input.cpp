@@ -151,9 +151,14 @@ bool DRT::ELEMENTS::RedInterAcinarDep::ReadElement(const std::string& eletype,
   if (ndim!=3)
     dserror("Problem defined as %dd, but found Reduced dimensional INTER ACINAR DEPENDENCE element.",ndim);
 
-  // read number of material model
+  // set generation
   const int generation = -2;
   generation_                       = generation;
+
+  //Read number of material model
+  int material = 0;
+  linedef->ExtractInt("MAT",material);
+  SetMaterial(material);
 
 
   return true;

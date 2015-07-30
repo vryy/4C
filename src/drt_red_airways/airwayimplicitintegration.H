@@ -79,9 +79,8 @@ namespace AIRWAY
 {
 
 /*!
-\brief time integration for reduced dimesnional airway network problems
+\brief time integration for reduced dimensional airway network problems
 
-\author ismail (ismail@lnm.mw.tum.de)
 */
 class RedAirwayImplicitTimeInt
 {
@@ -127,8 +126,7 @@ public:
   \brief Do one step time integration (time loop)
 
   */
-  void OneStepTimeLoop(bool CoupledTo3D = false, Teuchos::RCP<Teuchos::ParameterList> CouplingParams = Teuchos::null);
-
+  void TimeStep(bool CoupledTo3D = false, Teuchos::RCP<Teuchos::ParameterList> CouplingParams = Teuchos::null);
 
   /*!
   \brief Integrate one step
@@ -161,7 +159,6 @@ public:
 
   /*!
     \brief build linear system matrix and rhs
-
 
     \param vel new guess at velocity, cross-sectional area, and pressure
   */
@@ -199,10 +196,16 @@ public:
   void Output  (bool               CoupledTo3D = false,
                 Teuchos::RCP<Teuchos::ParameterList> CouplingParams = Teuchos::null);
 
-  // Output for UQ problemtype
+  /*!
+  \brief Output for UQ problemtype
+
+  */
   void OutputUQ(Teuchos::RCP<Teuchos::ParameterList> CouplingParams);
 
-  // Adjust acini_volume with psrestress
+  /*!
+  \brief Adjust acini_volume with prestress
+
+  */
   void ComputeVol0ForPreStress();
 
   /*!
@@ -213,6 +216,7 @@ public:
 
   /*!
   \brief Evaluate the error residual
+
   */
   void EvalResidual(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams);
 
@@ -262,12 +266,14 @@ public:
   Teuchos::RCP<DRT::Discretization > Discretization() { return discret_; }
 
   double  Dt()   const { return dta_; }
-
   double  Time() const { return time_; }
   int     Step() const { return step_; }
 
   int     Itemax() const { return params_.get<int>("max nonlin iter steps"); }
   void    SetItemax(int itemax) { params_.set<int>("max nonlin iter steps", itemax); }
+
+  /// Return elemental acini volume
+  Teuchos::RCP<Epetra_Vector> AciniVolume(){ return acini_e_volumenp_; }
 
   //@}
 

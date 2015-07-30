@@ -1,13 +1,16 @@
 
 /*!----------------------------------------------------------------------
 \file inter_acinar_dep_evaluate.cpp
-\brief
+\brief Templated Evaluate file for inter-acinar linker element containing
+       the action types for an reduced inter-acinar linker element
+       RedInterAcinarDep. The actual implementation of the routines called
+       during the possible actions is contained in inter_acinar_dep_impl.cpp
 
 <pre>
-Maintainer: Mahmoud Ismail
-            ismail@lnm.mw.tum.de
+Maintainer: Christian Roth
+            roth@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15268
+            089 - 289-15255
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -31,7 +34,7 @@ using namespace DRT::UTILS;
 
 
 /*---------------------------------------------------------------------*
- |evaluate the element (public)                            ismail 09/12|
+ |Evaluate the element (public)                            ismail 09/12|
  *---------------------------------------------------------------------*/
 int DRT::ELEMENTS::RedInterAcinarDep::Evaluate(Teuchos::ParameterList& params,
                                        DRT::Discretization&      discretization,
@@ -80,13 +83,13 @@ int DRT::ELEMENTS::RedInterAcinarDep::Evaluate(Teuchos::ParameterList& params,
   {
 
     char errorout[200];
-    sprintf(errorout,"Unknown type of action (%s) for reduced dimensional acinus",action.c_str());
+    sprintf(errorout,"Unknown type of action (%s) for inter-acinar linker element",action.c_str());
 
     dserror(errorout);
   }
 
 /*
-Here must add the steps for evaluating an element
+  Here one must add the steps for evaluating an element
 */
   Teuchos::RCP<MAT::Material> mat = Material();
 
@@ -94,7 +97,7 @@ Here must add the steps for evaluating an element
   {
   case calc_sys_matrix_rhs:
   {
-        return DRT::ELEMENTS::RedInterAcinarDepImplInterface::Impl(this)->Evaluate(this,
+    return DRT::ELEMENTS::RedInterAcinarDepImplInterface::Impl(this)->Evaluate(this,
                                                                                params,
                                                                                discretization,
                                                                                lm,
@@ -131,7 +134,7 @@ Here must add the steps for evaluating an element
                                                                                   mat);
 
   }
-    break;
+  break;
   case calc_flow_rates:
   {
   }
@@ -187,7 +190,8 @@ Here must add the steps for evaluating an element
   }
   break;
   default:
-    dserror("Unkown type of action for reduced dimensional acinuss");
+    dserror("Unknown type of action for reduced dimensional acinuss");
+  break;
   }// end of switch(act)
 
   return 0;
@@ -204,6 +208,7 @@ int DRT::ELEMENTS::RedInterAcinarDep::EvaluateNeumann(Teuchos::ParameterList& pa
   return 0;
 }
 
+
 /*----------------------------------------------------------------------*
  |  do nothing (public)                                     ismail 09/12|
  |                                                                      |
@@ -219,7 +224,10 @@ int DRT::ELEMENTS::RedInterAcinarDep::EvaluateDirichlet(Teuchos::ParameterList& 
 }
 
 
-// get optimal gaussrule for discretization type
+/*----------------------------------------------------------------------*
+ | Get optimal gaussrule for discretisation type                        |
+ |                                                                      |
+ *----------------------------------------------------------------------*/
 GaussRule1D DRT::ELEMENTS::RedInterAcinarDep::getOptimalGaussrule(const DiscretizationType& distype)
 {
 
@@ -228,18 +236,22 @@ GaussRule1D DRT::ELEMENTS::RedInterAcinarDep::getOptimalGaussrule(const Discreti
     {
     case line2:
       rule = DRT::UTILS::intrule_line_2point;
-      break;
+    break;
     case line3:
       rule = DRT::UTILS::intrule_line_3point;
-      break;
+    break;
     default:
-    dserror("unknown number of nodes for gaussrule initialization");
+      dserror("Unknown number of nodes for Gaussrule initialization in inter-acinar linker.");
+    break;
     }
   return rule;
 }
 
 
-// check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are necessary
+/*----------------------------------------------------------------------*
+ | Check, whether higher order derivatives for shape functions          |
+ | (dxdx, dxdy, ...) are necessary|                                     |
+ *----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::RedInterAcinarDep::isHigherOrderElement(
   const DRT::Element::DiscretizationType  distype) const
 {
@@ -248,13 +260,13 @@ bool DRT::ELEMENTS::RedInterAcinarDep::isHigherOrderElement(
   {
     case line3:
       hoel = true;
-      break;
+    break;
     case line2:
        hoel = false;
-       break;
+    break;
     default:
       dserror("distype unknown!");
+    break;
   }
   return hoel;
 }
-

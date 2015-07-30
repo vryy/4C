@@ -4,9 +4,11 @@
 // http://www.lnm.mw.tum.de
 // 089 - 289-25255
 //
+-----------------------------------------------------------------------TITLE
+Single NeoHookean acinus with NeoHookean-type pleural pressure condition.
 ----------------------------------------------------------------PROBLEM SIZE
-ELEMENTS                        2
-NODES                           3
+ELEMENTS                        1
+NODES                           2
 DIM                             3
 MATERIALS                       1
 NUMDF                           1
@@ -17,42 +19,55 @@ RESTART                         0
 -----------------------------------------REDUCED DIMENSIONAL AIRWAYS DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      OneStepTheta
-NUMSTEP                         500
-TIMESTEP                        2.0e-3
+NUMSTEP                         20
+TIMESTEP                        5.0e-2
 RESTARTEVRY                     1
 UPRES                           1
-SOLVERTYPE                      Nonlinear
+SOLVERTYPE                      Nonlinear                       // Linear Nonlinear
 MAXITERATIONS                   40
-TOLERANCE                       1E-7
+TOLERANCE                       1.0E-8
 --------------------------------------------------------------------SOLVER 1
 NAME                            Reduced_dimensional_Airways_Solver
 SOLVER                          UMFPACK
 ----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         2
-NDLINE                          0
+NDPOINT                         4
+NDLINE                          2
 NDSURF                          0
 NDVOL                           0
 -------------------------------------------------------------------MATERIALS
-MAT 2 MAT_0D_MAXWELL_ACINUS_EXPONENTIAL Stiffness1 14647.5 Stiffness2 5352.59 Viscosity1 3285.38 Viscosity2 188.023
+MAT 1 MAT_fluid DYNVISCOSITY 0.00001523 DENSITY 0.000001176 GAMMA 1.0
+MAT 2 MAT_0D_MAXWELL_ACINUS_NEOHOOKEAN Stiffness1 1.0 Stiffness2 1.0 Viscosity1 1.0 Viscosity2 1.0
+MAT 3 MAT_0D_MAXWELL_ACINUS_NEOHOOKEAN Stiffness1 0.0 Stiffness2 0.0 Viscosity1 0.0 Viscosity2 0.0
 ----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC 500*(1-cos(pi*t)) t1 0.0 t2 1.0
+CURVE1 on EXPR FUNC t t1 0.0 t2 2.0
 ----------------------------------------------------------------------CURVE2
 ----------------------------------------------------------------------CURVE3
 ----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------CURVE5
 -------------------------DESIGN NODE Reduced D AIRWAYS PRESCRIBED CONDITIONS
 DPOINT                          2
-E 1 -     flow 1.0 1 none none
-E 2 - pressure 0.0000 1 none none
+E 1 - pressure 1.0 1 none none
+E 2 - VolumeDependentPleuralPressure 0.0 1 none none
+---------------DESIGN LINE REDUCED D AIRWAYS EVALUATE LUNG VOLUME CONDITIONS
+DLINE                           1
+E 1 -
+-----DESIGN LINE REDUCED D AIRWAYS VOL DEPENDENT PLEURAL PRESSURE CONDITIONS
+DLINE                           1
+E 2 - Linear_Polynomial TLC 0.0 RV 1.0 P_PLEURAL_0 0.0 P_PLEURAL_LIN 1.0 P_PLEURAL_NONLIN 0.0 TAU 0.0 1.0 none
 --------------------------------------------------REDUCED D AIRWAYS ELEMENTS
-1 RED_ACINUS LINE2  1  2 MAT 2 TYPE Exponential AcinusVolume 523.6 AlveolarDuctVolume 0.0372 E1_0 6449.0  E1_LIN 33557.7 E1_EXP 6.5158 TAU 47.9892 Area 1.0
+1 RED_ACINUS LINE2 1 2 MAT 2 TYPE NeoHookean AcinusVolume 1.0 AlveolarDuctVolume 1.0 Area 1.0
 -----------------------------------------------------------------NODE COORDS
-NODE 1 COORD 10.00 0.000 0.000
-NODE 2 COORD 12.00 2.000 0.000
+NODE 1 COORD 3.0 0.0 0.0
+NODE 2 COORD 5.0 2.0 0.0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
 NODE 2 DNODE 2
+---------------------------------------------------------DLINE-NODE TOPOLOGY
+NODE 1 DLINE 1
+NODE 2 DLINE 1
+NODE 2 DLINE 2
 ----------------------------------------------------------RESULT DESCRIPTION
-RED_AIRWAY DIS red_airway NODE 1 QUANTITY pressure VALUE 4.09883655583699067e+02 TOLERANCE 1.0e-6
+RED_AIRWAY DIS red_airway NODE 2 QUANTITY pressure VALUE 4.81258869171142800e-01 TOLERANCE 1e-9
+RED_AIRWAY DIS red_airway ELEMENT 1 QUANTITY acini_volume VALUE 1.50623707771301296e+00 TOLERANCE 1.0e-6
 -------------------------------------------------------------------------END
 //                              END

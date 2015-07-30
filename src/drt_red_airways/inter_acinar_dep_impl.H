@@ -6,10 +6,10 @@
 \brief Internal implementation of inter_acinar_dep_impl element
 
 <pre>
-Maintainer: Mahmoud Ismail
-            ismail@lnm.mw.tum.de
+Maintainer: Christian Roth
+            roth@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15268
+            089 - 289-15255
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -82,17 +82,17 @@ namespace ELEMENTS
                                   std::vector<int>&            lm,
                                   Teuchos::RCP<MAT::Material>   material) = 0;
 
-    /// Internal implementation class for acinus element
+    /// Internal implementation class for inter-acinar linker element
     static RedInterAcinarDepImplInterface* Impl(DRT::ELEMENTS::RedInterAcinarDep* acinus);
 
   };
 
 
-  /// Internal acinus implementation
+  /// Internal inter-acinar linker implementation
   /*!
     This internal class keeps all the working arrays needed to
-    calculate the acinus element. Additionally the method Sysmat()
-    provides a clean and fast element implementation.
+    calculate the inter-acinar linker element. Additionally the
+    method Sysmat() provides a clean and fast element implementation.
 
     <h3>Purpose</h3>
 
@@ -113,7 +113,7 @@ namespace ELEMENTS
 
     /// Evaluate
     /*!
-      The evaluate function for the general acinus case.
+      The evaluate function for the general inter-acinar linker case.
      */
     virtual int Evaluate(RedInterAcinarDep*        ele,
                          Teuchos::ParameterList&   params,
@@ -153,7 +153,7 @@ namespace ELEMENTS
                                     Teuchos::RCP<MAT::Material>   mat);
 
     /*!
-      \brief get the initial values of the degrees of freedome at the node
+      \brief get the initial values of the degrees of freedom at the node
 
       \param ele              (i) the element those matrix is calculated
       \param eqnp             (i) nodal volumetric flow rate at n+1
@@ -174,7 +174,7 @@ namespace ELEMENTS
                          Teuchos::RCP<const MAT::Material>        material);
 
     /*!
-     \Essential functions to compute the results of essentail matrices
+     \Essential functions to compute the results of essential matrices
     */
     virtual void CalcFlowRates(RedInterAcinarDep*            ele,
                                Teuchos::ParameterList&       params,

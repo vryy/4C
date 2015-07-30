@@ -30,14 +30,11 @@ namespace DRT
 
 namespace AIRWAY{
 
-// forward declaration
+// Forward declaration
 class RedAirwayImplicitTimeInt;
 
 /*!
   \brief red_airways specific result test class
-
-  \author Mahmoud Ismail
-  \date 04/11
 */
 class RedAirwayResultTest : public DRT::ResultTest
 {
@@ -51,13 +48,19 @@ public:
 
   virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
+  /*!
+    Element test routine, our version of element value tests
+  */
+      virtual void TestElement(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
+
 private:
 
   /// Teuchos::RCP to scalar transport discretization
   Teuchos::RCP<DRT::Discretization> dis_;
-  /// Teuchos::RCP to solution vector
+  /// Teuchos::RCP to nodal solution vector
   Teuchos::RCP<Epetra_Vector>       mysol_;
-
+  /// Teuchos::RCP to element solution vector
+  Teuchos::RCP<Epetra_Vector>       myelemsol_;
 };
 
 } // namespace AIRWAY

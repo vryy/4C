@@ -1,7 +1,10 @@
 
 /*!----------------------------------------------------------------------
 \file acinus_evaluate.cpp
-\brief
+\brief Templated Evaluate file for acinus element containing the action
+       types for an reduced acinus element RedAcinus. The actual
+       implementation of the routines called during the possible actions
+       is contained in inter_acinus_impl.cpp
 
 <pre>
 Maintainer: Christian Roth
@@ -11,7 +14,6 @@ Maintainer: Christian Roth
 </pre>
 
 *----------------------------------------------------------------------*/
-
 
 #include "red_airway.H"
 #include "acinus_impl.H"

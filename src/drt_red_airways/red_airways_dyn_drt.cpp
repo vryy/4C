@@ -33,8 +33,7 @@ Maintainer: Christian Roth
 /*----------------------------------------------------------------------*
  * Main control routine for reduced dimensional airway network including|
  * various solvers                                                      |
- *                                                                      |
- *                                                                      |
+ *                                                                      ||
  *----------------------------------------------------------------------*/
 void dyn_red_airways_drt()
 {
@@ -77,8 +76,8 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
     DRT::INPUT::PrintDefaultParameters(IO::cout, rawdyn);
   }
 
-  // 4. Create a solver
-  //Get the solver number
+  // 4. Create a linear solver
+  //Get the solver number for the LINEAR_SOLVER
   const int linsolvernumber = rawdyn.get<int>("LINEAR_SOLVER");
   //Check if the present solver has a valid solver number
   if (linsolvernumber == (-1))

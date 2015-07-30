@@ -2,13 +2,14 @@
 /*!
 \file inter_acinar_dep_impl.cpp
 
-\brief Internal implementation of RedAcinus element
+\brief Internal implementation of RedInterAcinarDep element. Routines
+       from inter_acinar_dep_evaluate are re-implemented here.
 
 <pre>
-Maintainer: Mahmoud Ismail
-            ismail@lnm.mw.tum.de
+Maintainer: Christian Roth
+            roth@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15268
+            089 - 289-15255
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -17,7 +18,6 @@ Maintainer: Mahmoud Ismail
 
 #include "acinus_impl.H"
 #include "inter_acinar_dep_impl.H"
-
 
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/maxwell_0d_acinus.H"
@@ -33,6 +33,7 @@ Maintainer: Mahmoud Ismail
 
 
 /*----------------------------------------------------------------------*
+ |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::RedInterAcinarDepImplInterface* DRT::ELEMENTS::RedInterAcinarDepImplInterface::Impl(DRT::ELEMENTS::RedInterAcinarDep* red_acinus)
 {
@@ -49,14 +50,14 @@ DRT::ELEMENTS::RedInterAcinarDepImplInterface* DRT::ELEMENTS::RedInterAcinarDepI
   }
   default:
     dserror("shape %d (%d nodes) not supported", red_acinus->Shape(), red_acinus->NumNode());
+  break;
   }
   return NULL;
 }
 
 
-
 /*----------------------------------------------------------------------*
-  | constructor (public)                                    ismail 01/10 |
+ | Constructor (public)                                    ismail 01/10 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::InterAcinarDepImpl<distype>::InterAcinarDepImpl()
@@ -64,89 +65,79 @@ DRT::ELEMENTS::InterAcinarDepImpl<distype>::InterAcinarDepImpl()
 
 }
 
+
 /*----------------------------------------------------------------------*
- | evaluate (public)                                       ismail 01/10 |
+ | Evaluate (public)                                       ismail 01/10 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::InterAcinarDepImpl<distype>::Evaluate(
-  RedInterAcinarDep*         ele,
-  Teuchos::ParameterList&    params,
-  DRT::Discretization&       discretization,
-  std::vector<int>&          lm,
-  Epetra_SerialDenseMatrix&  elemat1_epetra,
-  Epetra_SerialDenseMatrix&  elemat2_epetra,
-  Epetra_SerialDenseVector&  elevec1_epetra,
-  Epetra_SerialDenseVector&  elevec2_epetra,
-  Epetra_SerialDenseVector&  elevec3_epetra,
-  Teuchos::RCP<MAT::Material> mat)
+int DRT::ELEMENTS::InterAcinarDepImpl<distype>::Evaluate(RedInterAcinarDep*         ele,
+                                                         Teuchos::ParameterList&    params,
+                                                         DRT::Discretization&       discretization,
+                                                         std::vector<int>&          lm,
+                                                         Epetra_SerialDenseMatrix&  elemat1_epetra,
+                                                         Epetra_SerialDenseMatrix&  elemat2_epetra,
+                                                         Epetra_SerialDenseVector&  elevec1_epetra,
+                                                         Epetra_SerialDenseVector&  elevec2_epetra,
+                                                         Epetra_SerialDenseVector&  elevec3_epetra,
+                                                         Teuchos::RCP<MAT::Material> mat)
 {
 
-#if 0
-  double N0 = double(ele->Nodes()[0]->NumElement());
-  double N1 = double(ele->Nodes()[1]->NumElement());
-  elemat1_epetra(0,0) =  1.0/(N0-1.0);
-  elemat1_epetra(0,1) = -1.0/(N0-1.0);
-  elemat1_epetra(1,0) = -1.0/(N1-1.0);
-  elemat1_epetra(1,1) =  1.0/(N1-1.0);
-  elevec1_epetra.Scale(0.0);
-#else
   // Get the vector with inter-acinar linkers
   Teuchos::RCP<const Epetra_Vector> ial  = discretization.GetState("intr_ac_link");
 
-  // extract local values from the global vectors
+  // Extract local values from the global vectors
   std::vector<double> myial(lm.size());
   DRT::UTILS::ExtractMyValues(*ial,myial,lm);
 
-  Sysmat (myial, elemat1_epetra, elevec1_epetra);
-#endif
+  // Calculate the system matrix for inter-acinar linkers
+  Sysmat(myial, elemat1_epetra, elevec1_epetra);
 
   return 0;
 }
 
 
 /*----------------------------------------------------------------------*
- |  calculate element matrix and right hand side (private)  ismail 01/10|
+ | Initial routine, sets generation number for inter-acinar linker      |
+ | element to -2.0 and sets the number of linkers per node in this      |
+ | element to 1.0. The final sum of linkers for each node is auto-      |
+ | matically evaluated during the assembly process later.               |
+ |                                              (private)  ismail 01/10 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::InterAcinarDepImpl<distype>::Initial(
-  RedInterAcinarDep*                     ele,
-  Teuchos::ParameterList&                params,
-  DRT::Discretization&                   discretization,
-  std::vector<int>&                      lm,
-  Epetra_SerialDenseVector&              n_intr_acn_l,
-  Teuchos::RCP<const MAT::Material>      material)
+void DRT::ELEMENTS::InterAcinarDepImpl<distype>::Initial(RedInterAcinarDep*                     ele,
+                                                         Teuchos::ParameterList&                params,
+                                                         DRT::Discretization&                   discretization,
+                                                         std::vector<int>&                      lm,
+                                                         Epetra_SerialDenseVector&              n_intr_acn_l,
+                                                         Teuchos::RCP<const MAT::Material>      material)
 {
 
   Teuchos::RCP<Epetra_Vector> generations   = params.get<Teuchos::RCP<Epetra_Vector> >("generations");
 
-  //--------------------------------------------------------------------
-  // get the generation numbers
-  //--------------------------------------------------------------------
-  //  if(myrank == ele->Owner())
-  {
-    int    gid = ele->Id();
-    double val = -2.0;
-    generations->ReplaceGlobalValues(1,&val,&gid);
+  // Set the generation number for the inter-acinar linker element to -2.0
+  int    gid = ele->Id();
+  double val = -2.0;
+  generations->ReplaceGlobalValues(1,&val,&gid);
 
-    // In this element,
-    // each node of an inter acinar linker has one linker.
-    // Final sum of linkers for each node is automatically evaluated
-    // during the assembly process.
-    n_intr_acn_l(0) = 1.0;
-    n_intr_acn_l(1) = 1.0;
-  }
+  // In this element, each node of an inter-acinar linker element has
+  // one linker. The final sum of linkers for each node is automatically
+  // evaluated during the assembly process.
+  n_intr_acn_l(0) = 1.0;
+  n_intr_acn_l(1) = 1.0;
 
 }//InterAcinarDepImpl::Initial
 
+
 /*----------------------------------------------------------------------*
- |  calculate element matrix and right hand side (private)  ismail 01/10|
- |                                                                      |
+ | Calculate element matrix and right hand side (private). The system   |
+ | matrix of an inter-acinar linker element is +/-1/(number of linkers  |
+ | per node). The right hand side is zero.                              |
+ |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::InterAcinarDepImpl<distype>::Sysmat(
-  std::vector<double>&                     ial,
-  Epetra_SerialDenseMatrix&                sysmat,
-  Epetra_SerialDenseVector&                rhs)
+void DRT::ELEMENTS::InterAcinarDepImpl<distype>::Sysmat(std::vector<double>&                     ial,
+                                                        Epetra_SerialDenseMatrix&                sysmat,
+                                                        Epetra_SerialDenseVector&                rhs)
 {
   // Get the number of inter_acinar linkers on the 1st node (N0)
   double N0 = ial[0];
@@ -154,68 +145,61 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::Sysmat(
   double N1 = ial[1];
   if (N0 > 0)
   {
-  sysmat(0,0) =  1.0/(N0);
-  sysmat(0,1) = -1.0/(N0);
+    sysmat(0,0) =  1.0/(N0);
+    sysmat(0,1) = -1.0/(N0);
   }
   if (N1 > 0)
   {
-  sysmat(1,0) = -1.0/(N1);
-  sysmat(1,1) =  1.0/(N1);
+    sysmat(1,0) = -1.0/(N1);
+    sysmat(1,1) =  1.0/(N1);
   }
   rhs.Scale(0.0);
 }
+
 
 /*----------------------------------------------------------------------*
  |  Evaluate the values of the degrees of freedom           ismail 04/13|
  |  at terminal nodes.                                                  |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(
-  RedInterAcinarDep*           ele,
-  Teuchos::ParameterList&      params,
-  DRT::Discretization&         discretization,
-  std::vector<int>&            lm,
-  Epetra_SerialDenseVector&    rhs,
-  Teuchos::RCP<MAT::Material>   material)
+void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcinarDep*           ele,
+                                                                    Teuchos::ParameterList&      params,
+                                                                    DRT::Discretization&         discretization,
+                                                                    std::vector<int>&            lm,
+                                                                    Epetra_SerialDenseVector&    rhs,
+                                                                    Teuchos::RCP<MAT::Material>   material)
 {
   const int   myrank  = discretization.Comm().MyPID();
 
-  // get total time
+  // Get total time
   const double time = params.get<double>("total time");
 
-  // get time-step size
-  //  const double dt = params.get<double>("time step size");
-
-  // the number of nodes
+  // Get the number of nodes
   const int numnode = lm.size();
   std::vector<int>::iterator it_vcr;
 
+  // Get state for pressure
   Teuchos::RCP<const Epetra_Vector> pnp  = discretization.GetState("pnp");
-
   if (pnp==Teuchos::null)
     dserror("Cannot get state vectors 'pnp'");
 
-  // extract local values from the global vectors
+  // Extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
   DRT::UTILS::ExtractMyValues(*pnp,mypnp,lm);
 
-  // create objects for element arrays
+  // Create objects for element arrays
   Epetra_SerialDenseVector epnp(numnode);
 
-  //get time step size
-  //  const double dt = params.get<double>("time step size");
-
-  //get all values at the last computed time step
+  // Get all values at the last computed time step
   for (int i=0;i<numnode;++i)
   {
-    // split area and volumetric flow rate, insert into element arrays
+    // Split area and volumetric flow rate, insert into element arrays
     epnp(i)    = mypnp[i];
   }
 
-  // ---------------------------------------------------------------------------------
-  // Resolve the BCs
-  // ---------------------------------------------------------------------------------
-
+  /**
+   * Resolve the BCs
+   **/
   for(int i = 0; i<ele->NumNode(); i++)
   {
     if (ele->Nodes()[i]->Owner()== myrank)
@@ -230,15 +214,13 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(
           // Get the type of prescribed bc
           Bc = *(condition->Get<std::string>("boundarycond"));
 
-
           const  std::vector<int>*    curve  = condition->Get<std::vector<int>    >("curve");
           double curvefac = 1.0;
           const  std::vector<double>* vals   = condition->Get<std::vector<double> >("val");
           const std::vector<int>*     functions = condition->Get<std::vector<int> >("funct");
 
-          // -----------------------------------------------------------------
           // Read in the value of the applied BC
-          // -----------------------------------------------------------------
+          // Get factor of first CURVE
           if((*curve)[0]>=0)
           {
             curvefac = DRT::Problem::Instance()->Curve((*curve)[0]).f(time);
@@ -249,7 +231,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(
             dserror("no boundary condition defined!");
             exit(1);
           }
-
+          // Get factor of FUNCT
           int functnum = -1;
           if (functions) functnum = (*functions)[0];
           else functnum = -1;
@@ -260,18 +242,17 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(
             functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(0,(ele->Nodes()[i])->X(),time,NULL);
           }
 
-          // get curve2
+          // Get factor of second CURVE
           int curve2num = -1;
           double curve2fac = 1.0;
           if (curve) curve2num = (*curve)[1];
           if (curve2num>=0 )
             curve2fac = DRT::Problem::Instance()->Curve(curve2num).f(time);
 
+          // Add first_CURVE + FUNCTION * second_CURVE
           BCin += functionfac*curve2fac;
 
-          // -----------------------------------------------------------------------------
-          // get the local id of the node to whome the bc is prescribed
-          // -----------------------------------------------------------------------------
+          //Get the local id of the node to whom the bc is prescribed
           int local_id =  discretization.NodeRowMap()->LID(ele->Nodes()[i]->Id());
           if (local_id< 0 )
           {
@@ -283,6 +264,9 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(
         {
 
         }
+        /**
+         * For pressure or VolumeDependentPleuralPressure bc
+         **/
         if (Bc == "pressure" || Bc == "VolumeDependentPleuralPressure")
         {
           Teuchos::RCP<Epetra_Vector> bcval  = params.get<Teuchos::RCP<Epetra_Vector> >("bcval");
@@ -304,51 +288,83 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(
               double curvefac = 1.0;
               const  std::vector<double>* vals   = pplCond->Get<std::vector<double> >("val");
 
-              // -----------------------------------------------------------------
               // Read in the value of the applied BC
-              //
-              // -----------------------------------------------------------------
               if((*curve)[0]>=0)
               {
                 curvefac = DRT::Problem::Instance()->Curve((*curve)[0]).f(time);
               }
 
+              // Get parameters for VolumeDependentPleuralPressure condition
               std::string ppl_Type = *(pplCond->Get<std::string>("TYPE"));
-
               double ap = pplCond->GetDouble("P_PLEURAL_0");
               double bp = pplCond->GetDouble("P_PLEURAL_LIN");
               double cp = pplCond->GetDouble("P_PLEURAL_NONLIN");
               double dp = pplCond->GetDouble("TAU");
-              double RV    = pplCond->GetDouble("VFR");
+              double RV    = pplCond->GetDouble("RV");
               double TLC   = pplCond->GetDouble("TLC");
-              const double lungVolumenp = params.get<double>("lungVolume_n");
-              const double vitalCap = lungVolumenp- RV;
-              const double TLCnp= vitalCap/(TLC-RV);
 
-
-              if (ppl_Type == "Exponential")
+              //Safety check: in case of polynomial TLC is not used
+              if (((ppl_Type == "Linear_Polynomial") or (ppl_Type == "Nonlinear_Polynomial"))
+                and (TLC != 0.0))
               {
+                dserror("TLC is not used for the following type of VolumeDependentPleuralPressure BC: %s.\n Set TLC = 0.0",ppl_Type.c_str());
+              }
+              //Safety check: in case of Ogden TLC, P_PLEURAL_0, and P_PLEURAL_LIN
+              if ((ppl_Type == "Nonlinear_Ogden")
+                and ((TLC != 0.0) or (ap != 0.0) or (bp != 0.0) or (dp == 0.0)))
+              {
+                dserror("Parameters are not set correctly for Nonlinear_Ogden. Only P_PLEURAL_NONLIN, TAU and RV are used. Set all others to zero. TAU is not allowed to be zero.");
+              }
+
+              if (ppl_Type == "Linear_Polynomial")
+              {
+                const double lungVolumenp = params.get<double>("lungVolume_n");
+                Pp_np = ap + bp*(lungVolumenp-RV) + cp*pow((lungVolumenp-RV),dp);
+              }
+              else if (ppl_Type == "Linear_Exponential")
+              {
+                const double lungVolumenp = params.get<double>("lungVolume_n");
+                const double TLCnp= (lungVolumenp-RV)/(TLC-RV);
                 Pp_np = ap +  bp*TLCnp+ cp*exp(dp*TLCnp);
               }
-              else if (ppl_Type == "Polynomial")
+              else if (ppl_Type == "Linear_Ogden")
               {
-                Pp_np = -pow(1.0/(TLCnp+RV/(TLC-RV)),dp)*cp + bp*TLCnp + ap;
+                const double lungVolumenp = params.get<double>("lungVolume_n");
+                Pp_np = RV / lungVolumenp * cp / dp *(1-pow(RV/lungVolumenp,dp));
+              }
+              else if (ppl_Type == "Nonlinear_Polynomial")
+              {
+                const double lungVolumenp = params.get<double>("lungVolume_np");
+                Pp_np = ap + bp*(lungVolumenp-RV) + cp*pow((lungVolumenp-RV),dp);
+              }
+              else if (ppl_Type == "Nonlinear_Exponential")
+              {
+                const double lungVolumenp = params.get<double>("lungVolume_np");
+                const double TLCnp= (lungVolumenp-RV)/(TLC-RV);
+                Pp_np = ap +  bp*TLCnp+ cp*exp(dp*TLCnp);
+              }
+              else if (ppl_Type == "Nonlinear_Ogden")
+              {
+                const double lungVolumenp = params.get<double>("lungVolume_np");
+                Pp_np = RV / lungVolumenp * cp / dp *(1-pow(RV/lungVolumenp,dp));
               }
               else
               {
                 dserror("Unknown volume pleural pressure type: %s",ppl_Type.c_str());
               }
               Pp_np *= curvefac*((*vals)[0]);
+
             }
             else
             {
               std::cout << "Node " << ele->Nodes()[i]->Id()+1 << "is not on corresponding DLINE " << std::endl;
               dserror("No volume dependent pleural pressure condition was defined");
             }
+
             BCin += Pp_np;
           }
 
-          // set pressure at node i
+          // Set pressure at node i
           int    gid;
           double val;
 
@@ -363,23 +379,19 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(
         }
         else
         {
-          dserror("precribed [%s] is not defined for reduced-inter-acinar-linkers",Bc.c_str());
+          dserror("Prescribed [%s] is not defined for reduced-inter-acinar linkers",Bc.c_str());
           exit(1);
         }
-
       }
+      /**
+       * If the node is a terminal node, but no b.c is prescribed to it
+       * then a zero output pressure is assumed
+       **/
       else
       {
-        // ---------------------------------------------------------------
-        // If the node is a terminal node, but no b.c is prescribed to it
-        // then a zero output pressure is assumed
-        // ---------------------------------------------------------------
         if (ele->Nodes()[i]->NumElement() == 1)
         {
-          // -------------------------------------------------------------
-          // get the local id of the node to whome the bc is prescribed
-          // -------------------------------------------------------------
-
+          // Get the local id of the node to whom the bc is prescribed
           int local_id =  discretization.NodeRowMap()->LID(ele->Nodes()[i]->Id());
           if (local_id< 0 )
           {
@@ -396,8 +408,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(
             exit(1);
           }
 
-
-          // set pressure at node i
+          // Set pressure at node i
           int    gid;
           double val;
 
@@ -416,8 +427,8 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(
 
 
 /*----------------------------------------------------------------------*
- |  Evaluate the values of the degrees of freedom           ismail 01/10|
- |  at terminal nodes.                                                  |
+ |  CalcFlowRates                                                       |
+ |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::InterAcinarDepImpl<distype>::CalcFlowRates(
@@ -433,18 +444,17 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::CalcFlowRates(
 
 }
 
+
 /*----------------------------------------------------------------------*
  |  Get the coupled the values on the coupling interface    ismail 07/10|
  |  of the 3D/reduced-D problem                                         |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::InterAcinarDepImpl<distype>::GetCoupledValues(
-  RedInterAcinarDep*      ele,
-  Teuchos::ParameterList& params,
-  DRT::Discretization&    discretization,
-  std::vector<int>&       lm,
-  Teuchos::RCP<MAT::Material>      material)
+void DRT::ELEMENTS::InterAcinarDepImpl<distype>::GetCoupledValues(RedInterAcinarDep*      ele,
+                                                                  Teuchos::ParameterList& params,
+                                                                  DRT::Discretization&    discretization,
+                                                                  std::vector<int>&       lm,
+                                                                  Teuchos::RCP<MAT::Material>      material)
 {
 
 }
-
