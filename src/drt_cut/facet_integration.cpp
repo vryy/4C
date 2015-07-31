@@ -1379,8 +1379,9 @@ void GEO::CUT::FacetIntegration::GenerateDivergenceCellsNew(bool       divergenc
 // the face is in the x-y or in y-z plane which will not be considered when divergence theorem is applied
   if(divergenceRule)
   {
-    if(fabs(eqn_plane_[0])<TOL_EQN_PLANE)
+    if(fabs(eqn_plane_[0])<TOL_EQN_PLANE/10.0)
     {
+#ifdef DIRECTDIV_EXTENDED_DEBUG_OUTPUT
       for(std::vector<std::vector<double> > ::const_iterator j=cornersLocal.begin();
           j!=cornersLocal.end(); ++j )
       {
@@ -1388,6 +1389,7 @@ void GEO::CUT::FacetIntegration::GenerateDivergenceCellsNew(bool       divergenc
       }
       std::cout << "eqn_plane_: " << eqn_plane_[0] << ", " << eqn_plane_[1] << ", " << eqn_plane_[2] << ", " << eqn_plane_[3] << std::endl;
       std::cout << "RETURN BECAUSE eqn_plane_ too small in x-dir." << std::endl;
+#endif
       return;
     }
   }

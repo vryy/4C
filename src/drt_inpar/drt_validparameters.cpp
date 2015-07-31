@@ -5250,7 +5250,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
    setStringToIntegralParameter<int>("SURFTENSAPPROX","surface_tension_approx_none","Type of surface tension approximation",
        tuple<std::string>(
            "surface_tension_approx_none",                         //none
-           //"surface_tension_approx_fixed_curvature",              //prescribed curvature
+           "surface_tension_approx_fixed_curvature",              //prescribed curvature, gamma = curv*gamma
            //"surface_tension_approx_divgrad",                      //calcs curvature at GP using the smoothed grad_phi and smoothed grad_phi for normal  //Do Not Migrate.
            "surface_tension_approx_divgrad_normal",               //calcs curvature at GP using the smoothed grad_phi and normal on Boundary Cell for normal
            "surface_tension_approx_nodal_curvature",              //calcs curvature at nodes and normal on Boundary Cell for normal
@@ -5258,7 +5258,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
            //"surface_tension_approx_laplacebeltrami_smoothed"),    //         Laplace-Beltrami, includes additional projection based on the smoothed normal (see e.g. Gross, Reusken 2009)
            tuple<int>(
                INPAR::TWOPHASE::surface_tension_approx_none,
-               //INPAR::TWOPHASE::surface_tension_approx_fixed_curvature,
+               INPAR::TWOPHASE::surface_tension_approx_fixed_curvature,
                //INPAR::TWOPHASE::surface_tension_approx_divgrad,
                INPAR::TWOPHASE::surface_tension_approx_divgrad_normal,
                INPAR::TWOPHASE::surface_tension_approx_nodal_curvature,

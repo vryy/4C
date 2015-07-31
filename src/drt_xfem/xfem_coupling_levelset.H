@@ -504,6 +504,8 @@ public:
   )
   {
 
+    //Maybe instead of ifs -> template the functions with surftensapprox_.
+
     if(not (surftensapprox_==INPAR::TWOPHASE::surface_tension_approx_laplacebeltrami))
     {
 
@@ -511,12 +513,15 @@ public:
       // n = n^m = n^+
       // [sigma*n] = gamma * curv * n   with curv = div(grad(phi)/||grad(phi)||)
 
+      if(surftensapprox_==INPAR::TWOPHASE::surface_tension_approx_fixed_curvature)
+      {
+        itraction_jump.Update(surf_coeff,normal,0.0);
+        return;
+      }
+
       // Calculations for evaluation of curvature
       double curvature_int = 0.0;
       EvaluateCurvature<DISTYPE>(curvature_int,eid,funct,derxy);
-
-//      //WARNING CURVATURE IS FIXED!!!!!!!!!!!
-//      curvature_int = 1/(0.5*0.5);
 
       itraction_jump.Update(curvature_int * surf_coeff, normal, 0.0);
     }

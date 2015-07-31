@@ -363,9 +363,11 @@ void XFEM::LevelSetCouplingTwoPhase::SetLevelSetField(
   if (curvatureaf!=Teuchos::null and smoothed_gradphiaf!=Teuchos::null)
     if(not (surftensapprox_== INPAR::TWOPHASE::surface_tension_approx_laplacebeltrami
             and laplacebeltrami_ == INPAR::TWOPHASE::matrix_non_smoothed )
+            and !(surftensapprox_==INPAR::TWOPHASE::surface_tension_approx_fixed_curvature)
+            and !(surftensapprox_==INPAR::TWOPHASE::surface_tension_approx_none)
             )
     {
-      dserror("You can not both have a nodal curvature and a smoothed_gradphinp prescribed at once.");
+      dserror("You can not both have a nodal curvature and a smoothed_gradphinp empty at once with this configuration.");
     }
 
 //---------------------------------------------- // SAFETY CHECK
