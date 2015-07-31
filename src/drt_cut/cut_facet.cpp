@@ -413,7 +413,7 @@ void GEO::CUT::Facet::CreateTriangulation( Mesh & mesh, const std::vector<Point*
     triangulation_.clear();
     std::vector<Point*> newtri(3);
     newtri[0] = p_mid;
-    for( int i=0;i<pts.size();i++ )
+    for( int i=0;i<(int)pts.size();i++ )
     {
       Point* pt1 = pts[i];
       Point* pt2 = pts[(i+1)%pts.size()];
