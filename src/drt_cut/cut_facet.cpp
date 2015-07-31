@@ -389,7 +389,7 @@ void GEO::CUT::Facet::CreateTriangulation( Mesh & mesh, const std::vector<Point*
   // This procedure seems to give better result even if the facet is concave in such cases
   GEO::CUT::FacetShape geoType;
   std::vector<int> concave_ids = KERNEL::CheckConvexity( corner_points_, geoType, false, false );
-  if( (geoType == GEO::CUT::Concave) or BelongsToLevelSetSide() )
+  if( (geoType == GEO::CUT::Convex) or BelongsToLevelSetSide() )
   {
     std::vector<Point*> pts( points );
     //Find the middle point
@@ -441,7 +441,6 @@ void GEO::CUT::Facet::CreateTriangulation( Mesh & mesh, const std::vector<Point*
         }
         else
         {
-//          std::cout << "ORDER REVERSED!" << std::endl;
           newtri[2] = pt1;
           newtri[1] = pt2;
         }

@@ -733,7 +733,6 @@ void GEO::CUT::FacetIntegration::DivergenceIntegrationRule( Mesh &mesh,
   std::ofstream file( str.str().c_str() );
   file << "View \"" << "FacetBCellInfo" << "\" {\n";
 #endif
-  int zz=0;
   for ( std::list<Teuchos::RCP<BoundaryCell> >::iterator i=divCells.begin();
                 i!=divCells.end();
                 ++i )
@@ -829,7 +828,6 @@ void GEO::CUT::FacetIntegration::DivergenceIntegrationRule( Mesh &mesh,
       mm++;
 #endif
     }
-    zz++;
   }
 #ifdef DIRECTDIV_EXTENDED_DEBUG_OUTPUT
   file << "};\n";
@@ -889,12 +887,10 @@ void GEO::CUT::FacetIntegration::GenerateDivergenceCells( bool divergenceRule, /
       std::vector<std::vector<Point*> > split;
 
       // if the facet is warped, do centre point triangulation --> reduced error (??)
-      if( not face1_->IsPlanar( mesh, face1_->CornerPoints() ) or face1_->BelongsToLevelSetSide() )
+      if( not face1_->IsPlanar( mesh, face1_->CornerPoints() ) )
       {
         if(!face1_->IsTriangulated())
-        {
           face1_->DoTriangulation( mesh, corners );
-        }
         split  = face1_->Triangulation();
       }
       // the facet is not warped
@@ -902,9 +898,7 @@ void GEO::CUT::FacetIntegration::GenerateDivergenceCells( bool divergenceRule, /
       {
 #if 1 // split facet
         if( !face1_->IsFacetSplit() )
-        {
           face1_->SplitFacet( corners );
-        }
         split = face1_->GetSplitCells();
         splitMethod = "split";
 #endif
@@ -925,16 +919,15 @@ void GEO::CUT::FacetIntegration::GenerateDivergenceCells( bool divergenceRule, /
                                                               j!=split.end(); ++j )
       {
         const std::vector<Point*> & tri = *j;
-
-          if(tri.size()==3)
-            TemporaryTri3(tri, divCells);
-          else if(tri.size()==4) // split algorithm always gives convex quad
-            TemporaryQuad4(tri, divCells);
-          else
-          {
-            std::cout<<"number of sides = "<<tri.size();
-            dserror("Splitting created neither tri3 or quad4");
-          }
+        if(tri.size()==3)
+          TemporaryTri3(tri, divCells);
+        else if(tri.size()==4) // split algorithm always gives convex quad
+          TemporaryQuad4(tri, divCells);
+        else
+        {
+          std::cout<<"number of sides = "<<tri.size();
+          dserror("Splitting created neither tri3 or quad4");
+        }
       }
 
 #ifdef DEBUGCUTLIBRARY // check the area of facet computed from splitting and triangulation

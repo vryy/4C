@@ -550,7 +550,7 @@ void GEO::CUT::DirectDivergence::DebugVolume( const DRT::UTILS::GaussIntegration
 
 #ifdef DEBUGCUTLIBRARY //check the volume with the moment fitting and check the values
 #ifdef LOCAL
-#ifdef OUTPUT_GLOBAL_DIVERGENCE_CELLS
+#ifdef DIRECTDIV_EXTENDED_DEBUG_OUTPUT
   std::cout << "Check volumecell with moment-fitting." << std::endl;
 #endif
   VolumeIntegration vi( volcell_, elem1_, volcell_->Position(), 1);
