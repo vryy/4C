@@ -18,13 +18,16 @@ class TriangulateFacet
 {
 public:
   /*!
-  \brief Constructor
+  \brief Constructor for a facet without holes
    */
   TriangulateFacet( std::vector<Point*> ptlist )
     :ptlist_(ptlist)
     {
     }
 
+  /*!
+  \brief Constructor for a facet with holes
+   */
   TriangulateFacet( std::vector<Point*> ptlist, std::vector<std::vector<Point*> > inlists )
     :ptlist_(ptlist)
     {
@@ -91,8 +94,13 @@ private:
    */
   bool HasTwoContinuousConcavePts( std::vector<int> ptConcavity );
 
+  //! Corner points of the facet
   std::vector<Point*> ptlist_;
+
+  //! Points describing holes in this facet
   std::list<std::vector<Point*> > inlists_;
+
+  //! Holds the split Tri and Quad cells
   std::vector<std::vector<Point*> > split_;
 };
 }

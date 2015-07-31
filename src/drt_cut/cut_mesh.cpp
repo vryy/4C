@@ -1671,6 +1671,8 @@ void GEO::CUT::Mesh::TestElementVolume( DRT::Element::DiscretizationType shape, 
       std::cout << err.str() << std::endl;
 
 #ifdef DEBUGCUTLIBRARY
+    if(VCellGP == INPAR::CUT::VCellGaussPts_Tessellation)
+    {
     std::cout << "#vc=" << cells.size()
               << " #ic=" << numic
               << " #bc=" << numbc
@@ -1683,6 +1685,7 @@ void GEO::CUT::Mesh::TestElementVolume( DRT::Element::DiscretizationType shape, 
               << " \t-- "
               << ba
               << "\n";
+    }
 #endif
 
     //Cut test is written for level-set cases as well.

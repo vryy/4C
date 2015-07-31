@@ -387,9 +387,10 @@ void GEO::CUT::Facet::CreateTriangulation( Mesh & mesh, const std::vector<Point*
   // This is not completely correct but since we use a single levelset side for each element
   // (even though the levelset can break into two), we get some weird facet shapes.
   // This procedure seems to give better result even if the facet is concave in such cases
+  // Also we assume that the levelset facet never contains a hole --> May be in future changes?
   GEO::CUT::FacetShape geoType;
   std::vector<int> concave_ids = KERNEL::CheckConvexity( corner_points_, geoType, false, false );
-  if( (geoType == GEO::CUT::Convex) or BelongsToLevelSetSide() )
+  if( ((geoType == GEO::CUT::Convex) or BelongsToLevelSetSide()) and ( not HasHoles() ) )
   {
     std::vector<Point*> pts( points );
     //Find the middle point
@@ -412,7 +413,7 @@ void GEO::CUT::Facet::CreateTriangulation( Mesh & mesh, const std::vector<Point*
     triangulation_.clear();
     std::vector<Point*> newtri(3);
     newtri[0] = p_mid;
-    for( unsigned i=0;i<pts.size();i++ )
+    for( int i=0;i<pts.size();i++ )
     {
       Point* pt1 = pts[i];
       Point* pt2 = pts[(i+1)%pts.size()];
@@ -456,12 +457,28 @@ void GEO::CUT::Facet::CreateTriangulation( Mesh & mesh, const std::vector<Point*
   else
   {
     triangulation_.clear();
-    std::vector<Point*> pts( points );
-    std::vector<int> ptc;
-    GEO::CUT::TriangulateFacet tf( pts );
-    tf.EarClipping( ptc, true, true );
+    std::vector<Point*> facetpts( points );
 
-    triangulation_ = tf.GetSplitCells();
+    if( not HasHoles() )
+    {
+      std::vector<int> ptc;
+      GEO::CUT::TriangulateFacet tf( facetpts );
+      tf.EarClipping( ptc, true, true );
+      triangulation_ = tf.GetSplitCells();
+    }
+    else
+    {
+      std::vector<std::vector<Point*> > holepts;
+      for ( plain_facet_set::iterator ifacet=holes_.begin(); ifacet!=holes_.end(); ++ifacet )
+      {
+        holepts.push_back( (*ifacet)->corner_points_ );
+      }
+      GEO::CUT::TriangulateFacet tf( facetpts, holepts );
+      tf.EarClippingWithHoles( parentside_ );
+      triangulation_ = tf.GetSplitCells();
+    }
+
+
   }
 
 #endif
@@ -1252,11 +1269,25 @@ const std::vector<std::vector<double> > GEO::CUT::Facet::CornerPointsGlobal( Ele
 /*-----------------------------------------------------------------------*
           Split the facet into a number of tri and quad cells
 *------------------------------------------------------------------------*/
-void GEO::CUT::Facet::SplitFacet( const std::vector<Point*> & points )
+void GEO::CUT::Facet::SplitFacet( const std::vector<Point*> & facetpts )
 {
- TriangulateFacet tf( points );
- tf.SplitFacet();
- splitCells_ = tf.GetSplitCells();
+ if( not this->HasHoles() )
+ {
+   TriangulateFacet tf( facetpts );
+   tf.SplitFacet();
+   splitCells_ = tf.GetSplitCells();
+ }
+ else
+ {
+   std::vector<std::vector<Point*> > holepts;
+   for ( plain_facet_set::iterator ifacet=holes_.begin(); ifacet!=holes_.end(); ++ifacet )
+   {
+     holepts.push_back( (*ifacet)->corner_points_ );
+   }
+   GEO::CUT::TriangulateFacet tf( facetpts, holepts );
+   tf.EarClippingWithHoles( parentside_ );
+   splitCells_ = tf.GetSplitCells();
+ }
 }
 
 /*-----------------------------------------------------------------------*
@@ -1264,6 +1295,10 @@ void GEO::CUT::Facet::SplitFacet( const std::vector<Point*> & points )
 *------------------------------------------------------------------------*/
 bool GEO::CUT::Facet::isConvex()
 {
+
+  if( this->HasHoles() )
+    return false;
+
  GEO::CUT::FacetShape geoType;
  std::vector<int> ptConcavity = KERNEL::CheckConvexity( corner_points_, geoType, false, false );
 

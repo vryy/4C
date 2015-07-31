@@ -689,7 +689,7 @@ void GEO::CUT::VolumeCell::TestSurface()
 }
 
 /*-------------------------------------------------------------------------------------*
-                Write the volumecell details for visualization
+                Write the bounding lines of volumecell details for visualization
                 Gausspoints of moment fitting are not included
 *--------------------------------------------------------------------------------------*/
 void GEO::CUT::VolumeCell::DumpGmsh( std::ofstream& file )
@@ -719,6 +719,66 @@ void GEO::CUT::VolumeCell::DumpGmsh( std::ofstream& file )
     file<<"View[PostProcessing.NbViews-1].Light=0;\n";    // Disable the lighting
     file<<"View[PostProcessing.NbViews-1].ShowScale=0;\n";  // Disable legend
     file<<"View[PostProcessing.NbViews-1].LineWidth = 3.0;"; // increase line width
+}
+
+/*---------------------------------------------------------------------------------------*
+ * Write the geometry of the volumecell based on facet surfaces                  sudhakar 07/15
+ * Can be used to check if the geometry of vc is correct or not
+ *---------------------------------------------------------------------------------------*/
+void GEO::CUT::VolumeCell::DumpGmshSolid( std::ofstream& file, Mesh & mesh )
+{
+  const plain_facet_set & facete = Facets();
+  file<<"View \"Volume Cell \" {\n";
+  for( plain_facet_set::const_iterator j=facete.begin(); j!=facete.end(); j++ )
+  {
+    Facet * fac = *j;
+    std::vector<Point*> corners = fac->CornerPoints();
+
+    if( corners.size() == 3 )
+    {
+      file<<"ST(";
+      for( unsigned ipt = 0; ipt < corners.size(); ipt++ )
+      {
+        Point* pt = corners[ipt];
+        const double *x = pt->X();
+        file<<x[0]<<","<<x[1]<<","<<x[2];
+        if( ipt != (corners.size()-1) )
+          file<<",";
+      }
+      file<<"){0.0,0.0,0.0};\n";
+    }
+    else
+    {
+      if(!fac->IsTriangulated())
+        fac->DoTriangulation( mesh, corners );
+      const std::vector<std::vector<Point*> > & triangulation = fac->Triangulation();
+
+      for ( std::vector<std::vector<Point*> >::const_iterator j=triangulation.begin();
+                                j!=triangulation.end(); ++j )
+      {
+        std::vector<Point*> tri = *j;
+
+        if( tri.size() == 3 )
+          file<<"ST(";
+        else
+          file<<"SQ(";
+
+        for( unsigned ipt = 0; ipt < tri.size(); ipt++ )
+        {
+          Point* pt = tri[ipt];
+          const double *x = pt->X();
+          file<<x[0]<<","<<x[1]<<","<<x[2];
+          if( ipt != (tri.size()-1) )
+            file<<",";
+        }
+        if( tri.size() == 3 )
+          file<<"){0.0,0.0,0.0};\n";
+        else
+          file<<"){0.0,0.0,0.0,0.0};\n";
+      }
+    }
+  }
+  file<<"};\n";
 }
 
 /*--------------------------------------------------------------------------------------------------------*

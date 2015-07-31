@@ -285,6 +285,10 @@ void GEO::CUT::DirectDivergence::DivengenceCellsGMSH( const DRT::UTILS::GaussInt
 
   volcell_->DumpGmsh( file );
 
+  // Activate this if you think that something is wrong with the shape of vc
+  // But it is always in global coordinates
+  //volcell_->DumpGmshSolid( file, mesh_ );
+
 #ifdef OUTPUT_GLOBAL_DIVERGENCE_CELLS
   const plain_facet_set & facete = volcell_->Facets();
   file<<"View \"EqnOfPlaneNormals \" {\n";
@@ -381,6 +385,9 @@ void GEO::CUT::DirectDivergence::DivengenceCellsGMSH( const DRT::UTILS::GaussInt
 
   GEO::CUT::OUTPUT::GmshCompleteCutElement( file, elem1_ );
   volcell_->DumpGmsh( file );
+
+  // Activate this if you doubt that something is wrong with the vc
+  //volcell_->DumpGmshSolid( file, mesh_ );
 
   /*//-----------------------------------------------------------------------
   // Line joining main Gauss points to reference point

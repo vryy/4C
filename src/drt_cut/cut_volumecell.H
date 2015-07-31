@@ -211,9 +211,14 @@ public:
   void DumpGmshGaussPointsTessellation();
 
   /*!
-  \brief Write Geometry of volumecell into GMSH output
+  \brief Write Geometry of volumecell as lines into GMSH output
    */
   void DumpGmsh(std::ofstream& filename);
+
+  /*!
+  \brief Write geometry of volumecell as solid objects instead of lines
+   */
+  void DumpGmshSolid(std::ofstream& filename, Mesh& mesh);
 
   /*!
   \brief return the integration rule for this volumecell when MomentFitting or DirectDivergence is used
