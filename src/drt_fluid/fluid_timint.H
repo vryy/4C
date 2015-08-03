@@ -293,7 +293,7 @@ public:
   virtual void ApplyExternalForces(Teuchos::RCP<Epetra_MultiVector> fext) { dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
 
   /// apply external forces to the fluid
-  virtual void AddContributionToNeumannLoads(const Teuchos::RCP<const Epetra_Vector> contributing_vector) { dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
+  virtual void AddContributionToExternalLoads(const Teuchos::RCP<const Epetra_Vector> contributing_vector) { dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
 
   /// expand dirichlet set
   virtual void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd) { dserror("Not implemented in the base class, may be overridden by a subclass."); return; };

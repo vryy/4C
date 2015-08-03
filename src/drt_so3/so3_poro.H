@@ -191,7 +191,7 @@ public:
     Epetra_SerialDenseVector&     elevec3           ///< vector to be filled by element
   );
 
-  void PreEvaluate
+  virtual void PreEvaluate
     (
       Teuchos::ParameterList& params,             ///< ParameterList for communication between control routine and elements
       DRT::Discretization&      discretization,   ///< pointer to discretization for de-assembly
@@ -350,7 +350,8 @@ protected:
     calc_struct_stress,
     calc_struct_multidofsetcoupling,//!< structure-fluid coupling: internal force, stiffness for poroelasticity (structural part)
     calc_struct_poroscatracoupling,
-    postprocess_stress
+    postprocess_stress,
+    interpolate_porosity_to_given_point
   };
 
   //! container containing all kind of solid3 thisandthat

@@ -16,16 +16,11 @@ DIM           3
 -----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
 NUMSTRUCDIS                     1
-NUMALEDIS                       0
-NUMARTNETDIS                    0
-NUMTHERMDIS                     0
-NUMAIRWAYSDIS                   0
 --------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Immersed_CellMigration
 RESTART                         0
 SHAPEFCT                        Polynomial
 RANDSEED                        -1
-
 -----------------------------------------------------------------IO
 OUTPUT_BIN                      yes
 STRUCT_DISP                     yes
@@ -39,8 +34,8 @@ DYNAMICTYP                      OneStepTheta
 NORM_DISP                       Abs
 NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              And
-TOLDISP                         1.0E-07
-TOLRES                          1.0E-07
+TOLDISP                         1.0E-08
+TOLRES                          1.0E-08
 MAXITER                         50
 TIMESTEP                        0.5
 RESULTSEVRY                     1
@@ -55,15 +50,15 @@ COUPALGO                        poro_monolithic
 PHYSICAL_TYPE                   Poro_P1
 MATCHINGGRID                    yes
 ITEMAX                          20
-ITEMIN                          1
+ITEMIN                          2
 MAXTIME                         8
 NORMCOMBI_RESFINC               And
 NORM_INC                        AbsGlobal
 NORM_RESF                       AbsGlobal
 NUMSTEP                         10
 RESTARTEVRY                     5
-TOLRES_GLOBAL                   1e-07
-TOLINC_GLOBAL                   1e-06
+TOLRES_GLOBAL                   1e-08
+TOLINC_GLOBAL                   1e-07
 VECTORNORM_RESF                 L2
 VECTORNORM_INC                  L2
 TIMESTEP                        0.5
@@ -75,7 +70,7 @@ TIMESTEP                        0.5
 NONLINITER                      Newton
 ITEMAX                          6
 CONVCHECK                       L_2_norm
-CONVTOL                         1.0E-07
+CONVTOL                         1.0E-08
 START_THETA                     1.00
 INITIALFIELD                    zero_field
 PHYSICAL_TYPE                   Incompressible
@@ -86,28 +81,40 @@ GAMMA                           1.0
 THETA                           1.0
 INCONSISTENT_RESIDUAL           yes
 RESTARTEVRY                     1000
-----------------------------------FLUID DYNAMIC/POROUS-FLOW STABILIZATION
-CROSS-STRESS                    no_cross
-GRAD_DIV                        no
-DEFINITION_TAU                  Franca_Madureira_Valentin_Badia_Codina
-EVALUATION_MAT                  integration_point
-EVALUATION_TAU                  integration_point
-PSPG                            yes //yes no_pspg
-REYNOLDS-STRESS                 no_reynolds
-RSTAB                           rstab_gls //rstab_gls no_rstab
-STABTYPE                        residual_based //residual_based no_stabilization
-SUPG                            no
+----------------------------FLUID DYNAMIC/POROUS-FLOW STABILIZATION
+STAB_BIOT                       No
+STAB_BIOT_SCALING               1
+STABTYPE                        residual_based
+INCONSISTENT                    No
 TDS                             quasistatic
 TRANSIENT                       no_transient
+PSPG                            Yes
+SUPG                            yes
+GRAD_DIV                        no // not implemented for poro
 VSTAB                           no_vstab
+RSTAB                           no_rstab
+CROSS-STRESS                    no_cross
+REYNOLDS-STRESS                 no_reynolds
+DEFINITION_TAU                  Franca_Madureira_Valentin_Badia_Codina
+CHARELELENGTH_U                 streamlength
+CHARELELENGTH_PC                volume_equivalent_diameter
+EVALUATION_TAU                  integration_point
+EVALUATION_MAT                  integration_point
+LOMA_CONTI_SUPG                 No
+LOMA_CONTI_CROSS_STRESS         no_cross
+LOMA_CONTI_REYNOLDS_STRESS      no_reynolds
 -----------------------------------------------------------------CELL DYNAMIC
 MIGRATIONTYPE                   ameboid
-MAXTIME                         1.5
+COUPALGO                        iter_stagg_AITKEN_rel_param
+ECM_INTERACTION                 no
+MAXTIME                         1.2
 TIMESTEP                        0.5
 NUMSTEP                         3
 UPRES                           1
 RESTARTEVRY                     1000
-COUPALGO                        iter_stagg_AITKEN_rel_param
+ECM_FIBER_RADIUS                100.0
+PENALTY_START                   1000
+BDRY_GP_NUM                     8 // 3: 8 gp 8:125 gp in Boundary
 ----------------------------------------------------IMMERSED METHOD
 COUPALGO                        partitioned
 SCHEME                          dirichletneumann
@@ -127,7 +134,7 @@ PREDICTOR                       d(n)
 COUPVARIABLE                    Displacement
 COUPMETHOD                      immersed
 BASETOL                         0.001
-CONVTOL                         1e-07
+CONVTOL                         1e-06
 RELAX                           1.0
 MAXOMEGA                        0
 ITEMAX                          12
@@ -163,7 +170,7 @@ CONSISTENCY                     no
 DEFINITION_ASSGD                artificial_linear
 DEFINITION_TAU                  Franca_Valentin
 EVALUATION_MAT                  integration_point
-EVALUATION_TAU                  element_center
+EVALUATION_TAU                  integration_point
 STABTYPE                        no_stabilization
 SUGRVEL                         no
 --------------------------------------------------------------------SOLVER 1
@@ -199,15 +206,15 @@ FUNCT2 EXPR 0 0.0 0 FUNCTION 0.8
 -------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
 // nodes 11917 and 11918 are at the obstacle upstream tip and should yield same results
-STRUCTURE DIS cell NODE 11917 QUANTITY dispx VALUE 1.37651179608370717e-02 TOLERANCE 1e-10
-STRUCTURE DIS cell NODE 11918 QUANTITY dispx VALUE 1.37651179608364194e-02 TOLERANCE 1e-10
-STRUCTURE DIS cell NODE 11917 QUANTITY dispy VALUE -9.90452735390379840e-03 TOLERANCE 1e-10
-STRUCTURE DIS cell NODE 11918 QUANTITY dispy VALUE -9.90452735390384524e-03 TOLERANCE 1e-10
-STRUCTURE DIS cell NODE 12229 QUANTITY dispx VALUE  3.04935058500174078e-03 TOLERANCE 1e-10
-FLUID DIS porofluid NODE 11330 QUANTITY velx VALUE 7.57561626205112026e-01 TOLERANCE 1e-9
-FLUID DIS porofluid NODE 11330 QUANTITY vely VALUE 2.15348442433115544e-01 TOLERANCE 1e-8
-FLUID DIS porofluid NODE 12768 QUANTITY velx VALUE 5.29670777077083516e-02 TOLERANCE 1e-8
-FLUID DIS porofluid NODE 12768 QUANTITY vely VALUE 2.56227004209753306e-01 TOLERANCE 1e-8
+STRUCTURE DIS cell NODE 11917 QUANTITY dispx VALUE 1.37698365686369697e-02 TOLERANCE 1e-10
+STRUCTURE DIS cell NODE 11918 QUANTITY dispx VALUE 1.37698365686377139e-02 TOLERANCE 1e-10
+STRUCTURE DIS cell NODE 11917 QUANTITY dispy VALUE -9.90030394823490818e-03 TOLERANCE 1e-10
+STRUCTURE DIS cell NODE 11918 QUANTITY dispy VALUE -9.90030394823486828e-03 TOLERANCE 1e-10
+STRUCTURE DIS cell NODE 12229 QUANTITY dispx VALUE  3.04958179656927538e-03 TOLERANCE 1e-10
+FLUID DIS porofluid NODE 11330 QUANTITY velx VALUE 7.57560461406807439e-01 TOLERANCE 1e-9
+FLUID DIS porofluid NODE 11330 QUANTITY vely VALUE 2.15356109467739726e-01 TOLERANCE 1e-8
+FLUID DIS porofluid NODE 12768 QUANTITY velx VALUE 5.29710549935429875e-02 TOLERANCE 1e-8
+FLUID DIS porofluid NODE 12768 QUANTITY vely VALUE 2.56227748571459191e-01 TOLERANCE 1e-8
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 1
 NDLINE  0
@@ -216,7 +223,7 @@ NDVOL   3
 --------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL   2
 // ecm_volume
-E 1 - NUMDOF 6 ONOFF 1 1 1 1 0 0 VAL 0.0 0.0 0.0 0.8 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.8 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 // cell_volume
 E 2 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 // searchbox

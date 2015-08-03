@@ -158,6 +158,12 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::EvaluateService(
       return InterpolateVelocityToNode(params, ele, discretization, lm, elevec1, elevec2);
     }
     break;
+    case FLD::calc_artificial_velocity_divergence:
+    {
+      // interpolate structural velocity to given point
+      return CalcArtificialVelocityDivergence(params, ele, discretization, lm, elevec1);
+    }
+    break;
     case FLD::interpolate_pressure_to_given_point:
     {
       // interpolate pressure to given point
@@ -3322,13 +3328,14 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityToNode(
   nodalrefcoords[6].push_back(1.0);  nodalrefcoords[6].push_back(1.0);  nodalrefcoords[6].push_back(1.0);
   nodalrefcoords[7].push_back(-1.0); nodalrefcoords[7].push_back(1.0);  nodalrefcoords[7].push_back(1.0);
 
-  // get structure search tree
+  // get immersed structure search tree
   Teuchos::RCP<GEO::SearchTree> struct_searchtree = params.get<Teuchos::RCP<GEO::SearchTree> >("structsearchtree_rcp");
 
   // search tree related stuff
   std::map<int,LINALG::Matrix<3,1> >* currpositions_struct = params.get<std::map<int,LINALG::Matrix<3,1> >* >("currpositions_struct");
 
   std::map<int,std::set<int> > curr_subset_of_structdis;
+
   {
     //TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::InterpolateVelocityToNode() - search in searchtree");
     // search radius (diagonal length of targetele)
@@ -3344,13 +3351,13 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityToNode(
   }
 
   bool match = false;
-  bool alreadymatched = false;
+  int  matchnum = 0;
   ////////////////////////////////////////////////////////////////////
   ///
   /// LOOP OVER ALL NODES OF THIS ELEMENT
   ///
   ///////////////////////////////////////////////////////////////////
-  for (int node=0; node<this->nen_; node++)
+  for (int node=0; node<nen_; node++)
   {
     std::vector<double> backgrdxi(nsd_);
     backgrdxi[0] = nodalrefcoords[node][0];
@@ -3360,7 +3367,6 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityToNode(
   if(static_cast<IMMERSED::ImmersedNode* >(ele->Nodes()[node])->IsMatched())
   {
     match = true;
-    alreadymatched = true;
   }
 
   IMMERSED::InterpolateToBackgrdIntPointFAST  <DRT::Element::hex8,  // source
@@ -3379,34 +3385,32 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityToNode(
 
   if(match)
   {
+    matchnum++;
     static_cast<IMMERSED::ImmersedNode* >(ele->Nodes()[node])->SetIsMatched(1);
     immersedele->SetHasProjectedDirichlet(1);
 
     for(int i=0; i<nsd_;++i)
     {
-      if(vel[i]>1e-15 and vel[i]<minvalidvel and detectvelsignificance)
+      if(detectvelsignificance and vel[i]>1e-15 and vel[i]<minvalidvel)
       {
         //std::cout<<" UNREASONABLY LOW VELOCITIES DETECTED :"<<vel[i]<<"<"<<minvalidvel<<" REGULARIZE VELOCITY INTERPOLATION ..."<<std::endl;
         // set velocity of node to value of old timestep
         vel[i]=myvalues[i+(node*numdofpernode_)];
       }
-
       elevec1_epetra((node*numdofpernode_)+i) += vel[i];
     }
-
-    // set a pressure value (affects fluid only if pressure dof is included in dirichlet map)
-    elevec1_epetra((node*numdofpernode_)+nsd_) = vel[nsd_];
-
-    // only elements who really interpolate are set as IsImmersed
-    if(!alreadymatched)
-      immersedele -> SetIsImmersed(1);
-  }
+  } // if match
 
   // reset match to false and check next node in the following loop execution
   match = false;
-  alreadymatched = false;
 
   }
+
+  // set ele immersed if all nodes lie underneath the immersed dis (i.e. matched = true)
+  if(matchnum==nen_)
+    immersedele -> SetIsImmersed(1);
+  else if (matchnum < nen_ and matchnum > 0)
+    immersedele -> SetIsImmersedBoundary(1);
 
   return 0;
 }
@@ -3473,6 +3477,117 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolatePressureToPoint(
 
   return 0;
 }
+
+/*-----------------------------------------------------------------------------*
+ | Integrate velocity divergence                                 rauch 05/2014 |
+ | Works only for Cell Migration Simulation (poro-immersed)                    |
+ |    CALC:   /                                                                |
+ |           /                                                                 |
+ |           |                                                                 |
+ |           | div(u)*phi dv                                                   |
+ |           |                                                                 |
+ |          /                                                                  |
+ |         / d V_t                                                             |
+ |                                                                             |
+ | phi: porosity                                                               |
+ | u  : fluid velocity                                                         |
+ |                                                                             |
+ *-----------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcArtificialVelocityDivergence(
+    Teuchos::ParameterList&              params,
+    DRT::ELEMENTS::Fluid*                ele,
+    DRT::Discretization &                discretization,
+    const std::vector<int> &             lm,
+    Epetra_SerialDenseVector&            elevec1_epetra) // vectofill
+    {
+
+  // cast to immersed ele
+  DRT::ELEMENTS::FluidImmersedBase* immersedele = dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(ele);
+
+  // only if all nodes are underneath the immersed dis (source/sink is fixed)
+  if(immersedele->IsImmersed())
+  {
+    // set element id
+    eid_ = ele->Id();
+
+    // extract element porosities from structure discretization
+    const Teuchos::RCP<DRT::Discretization> structuredis  = DRT::Problem::Instance()->GetDis("structure");
+    const Teuchos::RCP<const Epetra_Vector> dispnp = structuredis->GetState("dispnp");
+    if(dispnp == Teuchos::null)
+      dserror("Could not get state 'dispnp' from structural discretization");
+    std::vector<double> mydispnp(lm.size());
+    DRT::Element* structele = structuredis->gElement(eid_);
+    DRT::Element::LocationArray la(1);
+    structele->LocationVector(*structuredis,la,false);
+
+    DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,la[0].lm_);
+
+    // extract fluid state
+    LINALG::Matrix<nsd_,nen_> evelaf(true);
+    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &evelaf, NULL,"velnp");
+
+
+    // get geometry and update if necessary
+
+    // get node coordinates
+    GEO::fillInitialPositionArray<distype,nsd_, LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+
+//    if (ele->IsAle())
+//    {
+//      LINALG::Matrix<nsd_,nen_>       edispnp(true);
+//      ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &edispnp, NULL,"dispnp");
+//
+//      // get new node positions for isale
+//      xyze_ += edispnp;
+//    }
+
+    double porosity = 1234.0;
+    static double rhsfac = DRT::ELEMENTS::FluidEleParameterTimInt::Instance()->TimeFacRhs();
+
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Integrate source/sink for continuity equation over the element
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+
+    // loop over all integration points
+    // ---------------------------------------------------------------------------
+    // Integration loop
+    // ---------------------------------------------------------------------------
+    for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints_.begin(); iquad!=intpoints_.end(); ++iquad )
+    {
+      // evaluate shape functions and derivatives at integration point
+      EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(),iquad.Weight());
+
+      porosity = 0.0;
+      // evaluate porosity at current integration point
+      for(int node=0; node<nen_;++node)
+      {
+        porosity += funct_(node) * mydispnp[node*4+3];
+      }
+
+      // get velocity at integration point
+      // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+      vderxy_.MultiplyNT(evelaf,derxy_);
+
+      vdiv_= 0.0;
+      for (int idim = 0; idim <nsd_; ++idim)
+      {
+        vdiv_ += vderxy_(idim, idim);
+      }
+
+      for(int node=0;node<nen_;++node)
+      {
+        elevec1_epetra((node*numdofpernode_)+nsd_) += vdiv_*fac_*funct_(node)*porosity*rhsfac;
+      }
+
+    }
+
+  }// if isimmersed
+
+  return 0;
+    }
 
 /*-----------------------------------------------------------------------------*
  | Calculate channel statistics                                     bk 05/2014 |
@@ -4366,9 +4481,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcMassFlowPeriodicHill(
   if(reset_isimmersed)
   {
     immersedele->SetIsImmersed(0);
+    immersedele->SetIsImmersedBoundary(0);
   }
-
-  immersedele->SetIsImmersedBoundary(0);
 
   if(reset_hasprojecteddirichlet)
   {

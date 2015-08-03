@@ -560,7 +560,7 @@ void GlobalToLocal(
      // solve equation
      if (abs(xjm.Determinant())<1e-15)
      {
-       std::cout << "WARNING !!! jacobi determinant singular!" << std::endl;
+       std::cout << "WARNING !!! jacobi determinant singular! In GlobalToLocal(...)" << std::endl;
        std::cout << "JAC= " << xjm.Determinant() << std::endl;
        std::cout << "CONVERGED= " << converged << std::endl;
 //       dserror("*** WARNING: jacobi singular ***");
@@ -676,7 +676,7 @@ void GlobalToCurrentLocal(
      // solve equation
      if (abs(xjm.Determinant())<1e-15)
      {
-       std::cout << "WARNING !!! jacobi determinant singular!" << std::endl;
+       std::cout << "WARNING !!! jacobi determinant singular! In GlobalToCurrentLocal(...)" << std::endl;
        std::cout << "JAC= " << xjm.Determinant() << std::endl;
        std::cout << "CONVERGED= " << converged << std::endl;
 //       dserror("*** WARNING: jacobi singular ***");

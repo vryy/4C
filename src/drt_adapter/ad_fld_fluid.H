@@ -226,7 +226,7 @@ namespace ADAPTER {
     virtual void ApplyExternalForces(Teuchos::RCP<Epetra_MultiVector> fext) = 0;
 
     /// apply contribution to neumann loads of the fluid (similar to ApplyExternalForces but without residual scaling)
-    virtual void AddContributionToNeumannLoads(const Teuchos::RCP<const Epetra_Vector> contributing_vector) = 0;
+    virtual void AddContributionToExternalLoads(const Teuchos::RCP<const Epetra_Vector> contributing_vector) = 0;
 
     /// expand dirichlet set
     virtual void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd) = 0;

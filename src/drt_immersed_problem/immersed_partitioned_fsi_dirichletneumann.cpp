@@ -357,20 +357,20 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::FluidOp(Teuchos::RCP<Epetra_Ve
     MBFluidField()->FluidField()->ExtractVelocityPart(fluid_artificial_velocity)->Norm2(&normofvelocities);
 
     // apply pressure neumann based on divergence of structural field above fluid nodes
-    Teuchos::RCP<const Epetra_Vector> fluid_artificial_veldiv = MBFluidField()->FluidField()->ExtractPressurePart(fluid_artificial_velocity);
-    double normofdivergence;
-    fluid_artificial_veldiv->Norm2(&normofdivergence);
+    //Teuchos::RCP<const Epetra_Vector> fluid_artificial_veldiv = MBFluidField()->FluidField()->ExtractPressurePart(fluid_artificial_velocity);
+    //double normofdivergence;
+    //fluid_artificial_veldiv->Norm2(&normofdivergence);
 
     if(myrank_ == 0)
     {
       std::cout<<"###   Norm of Dirichlet Values:   "<<std::setprecision(7)<<normofvelocities<<std::endl;
-      std::cout<<"###   Norm of transferred divergence of structural velocity:   "<<std::setprecision(10)<<normofdivergence<<std::endl;
+      std::cout<<"###   Norm of transferred divergence of structural velocity:   "<<std::setprecision(10)<<"not used"<<std::endl;
       std::cout<<"################################################################################################"<<std::endl;
     }
 
 
     // solve fluid
-    MBFluidField()->FluidField()->AddContributionToNeumannLoads(fluid_artificial_veldiv);
+    //MBFluidField()->FluidField()->AddContributionToExternalLoads(fluid_artificial_veldiv);
     MBFluidField()->NonlinearSolve(Teuchos::null,Teuchos::null);
 
     // remove immersed dirichlets from dbcmap of fluid (may be different in next iteration)

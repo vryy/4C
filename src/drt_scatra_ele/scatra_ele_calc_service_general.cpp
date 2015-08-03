@@ -680,7 +680,26 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
 
     break;
   }
+  case SCATRA::calc_immersed_phi_at_given_point:
+  {
 
+    // need current solution
+    Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+    if(phinp==Teuchos::null)
+      dserror("failed to get state phinp for action 'calc_immersed_phi_at_given_point'");
+
+    // extract local values from the global vector
+    std::vector<double> myphinp(lm.size());
+    DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
+
+    // fill element arrays
+    for (int i=0;i<nen_;++i)
+    {
+      ephinp_[1](i) = myphinp[1+(i*numdofpernode_)];
+    } // for i
+
+    break;
+  }
   default:
   {
     dserror("Not acting on this action. Forgot implementation?");

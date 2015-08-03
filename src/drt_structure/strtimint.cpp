@@ -58,6 +58,7 @@ Maintainer: Alexander Popp
 #include "../drt_constraint/springdashpot.H"
 #include "../drt_beamcontact/beam3contact_manager.H"
 #include "../drt_patspec/patspec.H"
+#include "../drt_immersed_problem/immersed_field_exchange_manager.H"
 #include "../drt_statmech/statmech_manager.H"
 #include "../drt_plastic_ssn/plastic_ssn_manager.H"
 #include "../drt_stru_multi/microstatic.H"
@@ -2182,6 +2183,7 @@ void STR::TimInt::OutputStep(bool forced_writerestart)
   if (writeresultsevery_ and (step_%writeresultsevery_ == 0))
   {
     OutputPatspec();
+    OutputCell();
   }
 
   // what's next?
@@ -3148,6 +3150,19 @@ void STR::TimInt::OutputPatspec()
   if (DRT::INPUT::IntegralValue<int>(patspec,"PATSPEC"))
   {
     PATSPEC::PatspecOutput(output_,discret_,pslist_);
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* output cell specific stuff */
+void STR::TimInt::OutputCell()
+{
+  if(porositysplitter_==Teuchos::null and DRT::Problem::Instance()->ProblemType() == prb_immersed_cell)
+  {
+    output_->WriteVector("cell_penalty_traction",Teuchos::rcp_static_cast<Epetra_MultiVector>(DRT::ImmersedFieldExchangeManager::Instance()->GetPointerToECMPenaltyTraction()));
+    output_->WriteVector("cell_penalty_gap",Teuchos::rcp_static_cast<Epetra_MultiVector>(DRT::ImmersedFieldExchangeManager::Instance()->GetPointerToGap()));
+    output_->WriteVector("cell_nodal_normals",Teuchos::rcp_static_cast<Epetra_MultiVector>(DRT::ImmersedFieldExchangeManager::Instance()->GetPointerToCurrentNodalNormals()));
   }
   return;
 }

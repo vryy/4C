@@ -6895,11 +6895,23 @@ void FLD::FluidImplicitTimeInt::ExplicitPredictor()
 }
 
 /*----------------------------------------------------------------------------*
- * Add vector to neumann loads being applied to rhs before solve  rauch 12/14 |
+ * Add vector to external loads being applied to rhs before solve  rauch 12/14 |
+ *                                                                             |
+ * external_loads_ may have been built before by method ApplyExternalForces()  |
  *----------------------------------------------------------------------------*/
-void FLD::FluidImplicitTimeInt::AddContributionToNeumannLoads(const Teuchos::RCP<const Epetra_Vector> contributing_vector)
+void FLD::FluidImplicitTimeInt::AddContributionToExternalLoads(const Teuchos::RCP<const Epetra_Vector> contributing_vector)
 {
-  neumann_loads_->Update(1.0,*contributing_vector,1.0);
+  /// important note:
+  /// will be scaled with 1.0/ResidualScaling() when applied in
+  /// void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
+  if(external_loads_ == Teuchos::null)
+    external_loads_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
+
+  int err = external_loads_->Update(1.0,*contributing_vector,1.0);
+
+  if(err!=0)
+    dserror(" Epetra_Vector update threw error code %i ",err);
+
   return;
 }
 

@@ -113,6 +113,11 @@ void StructureFilter::WriteAllResults(PostField* field)
   //additional output for tsi (non-matching grid)
   writer_->WriteResult("struct_temperature", "struct_temperature", nodebased, 1);
 
+  //additional output for cell migration simulation
+  writer_->WriteResult("cell_penalty_traction", "penalty_traction", dofbased, field->problem()->num_dim());
+  writer_->WriteResult("cell_penalty_gap", "cell_penalty_gap", dofbased, field->problem()->num_dim());
+  writer_->WriteResult("cell_nodal_normals", "cell_nodal_normals", dofbased, field->problem()->num_dim());
+
   WriteElementResults(field); //To comment
   if (stresstype_!="none")
   {

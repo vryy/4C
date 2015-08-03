@@ -785,6 +785,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
     case FLD::calc_fluidfrac_projection:
     case FLD::interpolate_velgrad_to_given_point:
     case FLD::interpolate_velocity_to_given_point:
+    case FLD::calc_artificial_velocity_divergence:
     case FLD::interpolate_pressure_to_given_point:
     case FLD::calc_turbulence_statistics:
     case FLD::xwall_l2_projection:

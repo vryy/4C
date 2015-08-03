@@ -176,6 +176,13 @@ public:
   //! initialize the inverse of the jacobian and its determinant in the material configuration
   virtual void InitElement();
 
+  virtual void PreEvaluate
+    (
+      Teuchos::ParameterList& params,             ///< ParameterList for communication between control routine and elements
+      DRT::Discretization&      discretization,   ///< pointer to discretization for de-assembly
+      DRT::Element::LocationArray& la             ///< location array for de-assembly
+    );
+
 protected:
 
   //! don't want = operator
@@ -283,6 +290,9 @@ protected:
                                       LINALG::Matrix<my::numdof_, (my::numdim_ + 1) * my::numnod_>* sub_stiff
                                           );
 
+  Teuchos::RCP<LINALG::Matrix<my::numnod_,1> > init_porosity_;
+
+  bool is_init_porosity_;
 };//class So3_Poro_P1
 
 

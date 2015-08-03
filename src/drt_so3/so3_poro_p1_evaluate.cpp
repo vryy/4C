@@ -93,6 +93,7 @@ int DRT::ELEMENTS::So3_Poro_P1< so3_ele, distype>::Evaluate(Teuchos::ParameterLi
   std::string action = params.get<std::string>("action","none");
   if (action == "none") dserror("No action supplied");
   else if (action=="calc_struct_multidofsetcoupling")   act = my::calc_struct_multidofsetcoupling;
+  else if (action=="interpolate_porosity_to_given_point") act = my::interpolate_porosity_to_given_point;
 
   // what should the element do
   switch(act)
@@ -101,21 +102,45 @@ int DRT::ELEMENTS::So3_Poro_P1< so3_ele, distype>::Evaluate(Teuchos::ParameterLi
   // off diagonal terms in stiffness matrix for monolithic coupling
   case my::calc_struct_multidofsetcoupling:
   {
+    //in some cases we need to write/change some data before evaluating
+    PreEvaluate(params,
+                discretization,
+                la);
+
     MyEvaluate(params,
-                      discretization,
-                      la,
-                      elemat1_epetra,
-                      elemat2_epetra,
-                      elevec1_epetra,
-                      elevec2_epetra,
-                      elevec3_epetra);
+              discretization,
+              la,
+              elemat1_epetra,
+              elemat2_epetra,
+              elevec1_epetra,
+              elevec2_epetra,
+              elevec3_epetra);
+  }
+  break;
+  case my::interpolate_porosity_to_given_point:
+  {
+    // given point
+    std::vector<LINALG::Matrix<my::numdim_,1> > xsi(1);
+    (xsi[0])(0,0)=elevec2_epetra(0);
+    (xsi[0])(1,0)=elevec2_epetra(1);
+    (xsi[0])(2,0)=elevec2_epetra(2);
+
+    //  evalulate shape functions at given point
+    LINALG::Matrix<my::numnod_,1> shapefct;
+    DRT::UTILS::shape_function<distype>(xsi[0],shapefct);
+
+    LINALG::Matrix<my::numdim_,my::numnod_> mydisp(true);
+    LINALG::Matrix<my::numnod_,1> myporosity(true);
+    my::ExtractValuesFromGlobalVector(discretization,0,la[0].lm_, NULL, &myporosity,"displacement");
+
+    elevec1_epetra(0)=shapefct.Dot(myporosity);
   }
   break;
   //==================================================================================
   default:
   {
     //in some cases we need to write/change some data before evaluating
-    my::PreEvaluate(params,
+    PreEvaluate(params,
                 discretization,
                 la);
 
@@ -194,6 +219,26 @@ int DRT::ELEMENTS::So3_Poro_P1< so3_ele, distype>::Evaluate(Teuchos::ParameterLi
   } // action
 
   return 0;
+}
+
+/*----------------------------------------------------------------------*
+ |  preevaluate the element (public)                    vuong 03/12      |
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::PreEvaluate(Teuchos::ParameterList& params,
+                                        DRT::Discretization&      discretization,
+                                        DRT::Element::LocationArray& la)
+{
+  my::PreEvaluate(params,discretization,la);
+
+  if (discretization.HasState(0,"displacement") and (not is_init_porosity_) )
+  {
+    init_porosity_=Teuchos::rcp(new LINALG::Matrix<my::numnod_,1>(true));
+    my::ExtractValuesFromGlobalVector(discretization,0,la[0].lm_, NULL, &(*init_porosity_),"displacement");
+    is_init_porosity_=true;
+  }
+
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -614,10 +659,15 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::GaussPointLoopP1(
     double    dW_dJ   = 0.0;
     double    dW_dp   = 0.0;
     double    W       = 0.0;
+
+    if(init_porosity_==Teuchos::null)
+      dserror("Failed to create vector of nodal intial porosity");
+    double init_porosity = shapefct.Dot(*init_porosity_);
     my::structmat_->ConstitutiveDerivatives(params,
                                       press,
                                       J,
                                       porosity,
+                                      init_porosity,
                                       &dW_dp, //dW_dp not needed
                                       &dW_dphi,
                                       &dW_dJ,
@@ -935,10 +985,12 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::GaussPointLoopP1OD(
     }//darcy-brinkman
 
     double    dW_dp   = 0.0;
+    double init_porosity = shapefct.Dot(*init_porosity_);
     my::structmat_->ConstitutiveDerivatives(params,
                                       press,
                                       J,
                                       porosity,
+                                      init_porosity,
                                       &dW_dp,
                                       NULL, // not needed
                                       NULL, // not needed

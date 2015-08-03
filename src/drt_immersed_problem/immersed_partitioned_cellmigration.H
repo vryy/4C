@@ -1,5 +1,5 @@
   /*!----------------------------------------------------------------------
-\file immersed_partitioned_fsi_dirichletneumann.H
+\file immersed_partitioned_cellmigration.H
 
 \brief partitioned immersed fsi algorithm for dirichlet-neumann coupling (volume dirichlet coupling)
 
@@ -14,6 +14,7 @@ Maintainers: Andreas Rauch
 #define IMMERSED_PARTITIONED_CELLMIGRATION_H
 
 #include "immersed_partitioned.H"
+#include "immersed_field_exchange_manager.H"
 
 /*----------------------------------------------------------------------*
  | forward declarations                                                  |
@@ -54,6 +55,9 @@ public:
   //Teuchos::RCP<POROELAST::Monolithic> PoroField(){return poroelast_subproblem_;};
   Teuchos::RCP<POROELAST::PORO_SCATRA_Base> PoroField(){return poroelast_subproblem_;};
 
+  /// read restart
+  virtual void ReadRestart(int step);
+
 protected:
 
   /// composed FSI operator
@@ -88,14 +92,14 @@ protected:
   /// add immersed dirichlet values from immersed dis to systemvector of background dis
   void DoImmersedDirichletCond(Teuchos::RCP<Epetra_Vector> statevector, Teuchos::RCP<Epetra_Vector> dirichvals, Teuchos::RCP<Epetra_Map> dbcmap);
 
+  /// zero out the cell-ecm inteaction forces at the leading edge
+  //void DeleteForceAtLeadingEdge(Teuchos::RCP<Epetra_Vector> force);
+
   /// prepare the immersed solve
   void PrepareImmersedOp();
 
   /// prepare the background solve
   void PrepareBackgroundOp();
-
-  /// dummy read restart
-  virtual void ReadRestart(int step){dserror("NOT PROPERLY IMPLEMENTED YET!!"); return;};
 
   /// prepare output of data to HD
   virtual void PrepareOutput();
@@ -112,12 +116,28 @@ protected:
   /// setup poro algorithm (coupling, combined dofmaps, etc.)
   void SetupPoroAlgorithm();
 
+  /// extract the pressure part
+  void ExtractPressurePart();
+
+  /// extract the pressure part
+  virtual void SetFieldDt();
+
+  /// check input vector for negatives and set them zero
+  //void PreventInterfacePullingTraction(Teuchos::RCP<Epetra_Vector> increment_vector,
+  //                                     Teuchos::RCP<Epetra_Vector> total_vector);
+
   //! @name Various global vectors
   //@{
   Teuchos::RCP<Epetra_Vector> porofluid_artificial_velocity_;//!< background velocity interpolated from immersed dis
+  Teuchos::RCP<Epetra_Vector> porofluid_artificial_source_;  //!< background mass change interpolated from immersed dis
   Teuchos::RCP<Epetra_Vector> poroscatra_segregated_phi_;    //!< background phi interpolated from immersed dis
   Teuchos::RCP<Epetra_Vector> cell_bdry_traction_;           //!< boundary traction rhs on immersed cell
+  Teuchos::RCP<Epetra_Vector> cell_penalty_traction_;        //!< boundary traction rhs on immersed cell from cell-ecm interaction
+  Teuchos::RCP<Epetra_Vector> cell_delta_penalty_traction_;  //!< boundary traction rhs on immersed cell from cell-ecm interaction
+  Teuchos::RCP<Epetra_Vector> cell_delta_penalty_traction_old_;  //!< boundary traction rhs on immersed cell from cell-ecm interaction of previous iteration
   Teuchos::RCP<Epetra_Vector> cell_bdry_traction_old_;       //!< old boundary traction rhs on immersed cell
+  Teuchos::RCP<Epetra_Vector> penalty_gap_;
+  Teuchos::RCP<Epetra_Vector> curr_nodal_normals_;
   //@}
 
   //! @name Pointers to Discretizations
@@ -152,12 +172,25 @@ protected:
   /// pointer to global problem
   DRT::Problem* globalproblem_;
 
+  /// various other parameters
   bool displacementcoupling_;
   bool multicellmigration_;
   int migrationtype_;
   double segregationconstant_;
   int segregationtype_;
   int segregationby_;
+  double penalty_start_; //!< start penalty parameter at the beginning of each timestep
+  double penalty_init_;  //!< init penalty parameter
+  bool initialize_cell_;
+  double timestep_;
+  double initial_timestep_;
+  int initialization_steps_;
+  bool ecm_interaction_;
+  int continued_steps_;
+  double nu_; //<- AITKEN relaxation parameter
+
+
+  DRT::ImmersedFieldExchangeManager* exchange_manager_ ;
 
   //! @name Search Trees
     //@{

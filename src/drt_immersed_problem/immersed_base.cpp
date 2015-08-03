@@ -1066,6 +1066,7 @@ void IMMERSED::ImmersedBase::EvaluateInterpolationCondition
   const double time = params.get("total time",-1.0);
   if (time<0.0) usetime = false;
 
+  params.set<int>("dummy_call",0);
 
   DRT::Element::LocationArray la(evaldis->NumDofSets());
 
@@ -1122,10 +1123,14 @@ void IMMERSED::ImmersedBase::EvaluateInterpolationCondition
         std::cout<<"PROC "<<evaldis->Comm().MyPID()<<": mygeometrysize = "<<mygeometrysize<<" maxgeometrysize = "<<maxgeometrysize<<std::endl;
 #endif
 
+
         // enter loop on every proc until the last proc evaluated his last geometry element
         // because there is communication happening inside
         for (int i=0;i<maxgeometrysize;++i)
         {
+          if(i>=mygeometrysize)
+            params.set<int>("dummy_call",1);
+
           // get element location vector and ownerships
           // the LocationVector method will return the the location vector
           // of the dofs this condition is meant to assemble into.
@@ -1148,6 +1153,8 @@ void IMMERSED::ImmersedBase::EvaluateInterpolationCondition
               strategy.Elevector3());
           if (err) dserror("error while evaluating elements");
 
+          // assemble every element contribution only once
+          // do not assemble after dummy call for internal communication
           if(i<mygeometrysize)
           {
             // assembly

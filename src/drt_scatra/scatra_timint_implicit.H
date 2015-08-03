@@ -147,6 +147,14 @@ public:
     step_ = step;
   };
 
+  //! set time and step value
+  virtual void SetDt(
+    const double dt //!< new time increment
+    )
+  {
+    dta_ = dt;
+  };
+
   //! do explicit predictor step (-> better starting value for nonlinear solver)
   virtual void ExplicitPredictor() = 0;
 

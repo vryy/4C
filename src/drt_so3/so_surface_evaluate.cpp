@@ -31,6 +31,7 @@ Maintainer: Michael Gee
 #include "../drt_mat/structporo.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_immersed_problem/immersed_base.H"
+#include "../drt_immersed_problem/immersed_field_exchange_manager.H"
 #include "../drt_crack/crackUtils.H"
 
 using UTILS::SurfStressManager;
@@ -696,6 +697,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
   else if (action=="calc_cur_normal_at_point")     act = StructuralSurface::calc_cur_normal_at_point;
   else if (action=="calc_cur_nodal_normals")       act = StructuralSurface::calc_cur_nodal_normals;
   else if (action=="calc_fluid_traction")          act = StructuralSurface::calc_fluid_traction;
+  else if (action=="calc_ecm_traction")            act = StructuralSurface::calc_ecm_traction;
   else if (action=="mark_immersed_elements")       act = StructuralSurface::mark_immersed_elements;
   else
   {
@@ -1493,7 +1495,6 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
       xrefe(0,i) = x[0];
       xrefe(1,i) = x[1];
       xrefe(2,i) = x[2];
-//      std::cout<<"PROC "<<Comm.MyPID()<<" : xrefe "<<xrefe(0,i)<<" "<<xrefe(1,i)<<" "<<xrefe(2,i)<<std::endl;
     }
 
     // update element geometry (parent ele)
@@ -1507,12 +1508,10 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
       parent_xrefe(0,i) = x[0];
       parent_xrefe(1,i) = x[1];
       parent_xrefe(2,i) = x[2];
-//      std::cout<<"PROC "<<Comm.MyPID()<<" : xrefe "<<parent_xrefe(0,i)<<" "<<parent_xrefe(1,i)<<" "<<parent_xrefe(2,i)<<std::endl;
 
       parent_xcurr(0,i) = parent_xrefe(0,i) + parenteledisp[i*numdofpernode+0];
       parent_xcurr(1,i) = parent_xrefe(1,i) + parenteledisp[i*numdofpernode+1];
       parent_xcurr(2,i) = parent_xrefe(2,i) + parenteledisp[i*numdofpernode+2];
-//      std::cout<<"PROC "<<Comm.MyPID()<<" : disp "<< parenteledisp[i*numdofpernode+0]<<" "<< parenteledisp[i*numdofpernode+1]<<" "<< parenteledisp[i*numdofpernode+2]<<std::endl;
     }
 
     // get coordinates of gauss points w.r.t. local parent coordinate system
@@ -1685,6 +1684,667 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
 
     }// gauss point loop
   }
+  break;
+  case calc_ecm_traction:
+  {
+    DRT::Problem* globalproblem = DRT::Problem::Instance();
+    std::string backgrddisname(params.get<std::string>("backgrddisname"));
+    std::string immerseddisname(params.get<std::string>("immerseddisname"));
+    int during_init = params.get<int>("during_init",0);
+    ////////////////////////////////////////////////////////////////////////////
+    // rauch 05/15 for immersed cell migration
+    //
+    // this action integrates the ecm interaction force over the structural surface.
+    //
+    // CALC:   /
+    //        /
+    //        |
+    //        | f(phi) da
+    //        |
+    //       /
+    //      / d B_t
+    //
+    // phi : porosity at integration point
+    // f(phi) : modeled interaction force depending on porosity phi
+    //
+//#define VELOCITYDEPENENCY // todo get disp_old and build scalarproduct_sip with incrementvector d_n+1 - dn !!!
+//#define ECM_INTERACTION_SIMPLE
+    /////////////////////////////////////////////////////////////////////////////
+
+    // get exchange manager pointer
+    DRT::ImmersedFieldExchangeManager* immersedmanager = DRT::ImmersedFieldExchangeManager::Instance();
+    //Teuchos::RCP<Epetra_Vector> cell_penalty_traction = immersedmanager->GetPointerToECMPenaltyTraction();
+    //Teuchos::RCP<Epetra_Vector> cell_current_nodal_normals = immersedmanager->GetPointerToCurrentNodalNormals();
+    std::map<int,std::vector<LINALG::Matrix<3,1> > >* penalty_traction_at_gp = immersedmanager->GetPointerToPenaltyTractionAtGPMap();
+
+    int isdummycall = params.get<int>("dummy_call");
+
+    std::map<int,std::vector<double> >* porosity_at_gp_ = immersedmanager->GetPointerToPorosityAtGP();
+    std::map<int,std::vector<double> >* porosity_at_gp_old = immersedmanager->GetPointerToPorosityAtGPOldTimestep();
+
+    // DEBUG output
+    //std::cout<<(porosity_at_gp_->at(this->Id()))[3]<<std::endl;
+
+    // get integration rule
+    const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<DRT::Element::quad4>::rule);
+
+    double tol = 1.0e-06;
+
+    Teuchos::RCP<DRT::Discretization> backgrddis  = globalproblem->GetDis(backgrddisname);
+    Teuchos::RCP<DRT::Discretization> immerseddis = globalproblem->GetDis(immerseddisname);
+
+    // experimental pre cmbe
+    Teuchos::RCP<DRT::Discretization> scatradis  = globalproblem->GetDis("scatra");
+
+#ifdef DEBUG
+    if(backgrddis == Teuchos::null)
+      dserror("Pointer to background dis empty. Correct disname in parameter list 'params'?");
+    if(immerseddis == Teuchos::null)
+      dserror("Pointer to immersed dis empty. Correct disname in parameter list 'params'?");
+#endif
+
+    const int nen = NumNode();
+    const int parent_nen = this->ParentElement()->NumNode();
+    const int numdofpernode = NumDofPerNode(*(Nodes()[0]));
+    const int globdim = globalproblem->NDim();
+
+    bool is_leadingedge_or_rear=false;
+    //bool contains_leading_edge_node = false;
+
+    if(not during_init)
+    {
+      int num_conditioned_nodes = 0;
+      std::multimap<std::string,Teuchos::RCP<DRT::Condition> >::iterator condition_iterator;
+      static std::multimap<std::string,Teuchos::RCP<DRT::Condition> > conditions = immerseddis->GetAllConditions();
+      DRT::Node** bdrynodes = Nodes();
+
+      for (condition_iterator=conditions.begin(); condition_iterator!=conditions.end(); ++condition_iterator)
+      {
+        if(condition_iterator->first == (std::string)"SurfaceNeumann")
+        {
+          for(int numnode = 0; numnode < nen; numnode++)
+          {
+            bool containsnode = condition_iterator->second->ContainsNode(bdrynodes[0]->Id());
+            if(containsnode)
+              num_conditioned_nodes++;
+            else
+              break;
+          }
+        } // if surfaceneumann condition
+      } // loop over all conditions
+
+      if(num_conditioned_nodes==nen)
+      {
+        is_leadingedge_or_rear=true;
+      }
+      else if(num_conditioned_nodes>0 and num_conditioned_nodes<nen)
+      {
+        //contains_leading_edge_node = true;
+      }
+      ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    } // not during init
+
+    LINALG::Matrix<2,4> deriv;
+    LINALG::Matrix<1,4> funct;
+    LINALG::Matrix<1,8> parent_funct;
+    LINALG::Matrix<3,8> parent_deriv;
+    LINALG::Matrix<3,8> parent_deriv_notrafo;
+
+    // get parent location matrix
+    Element::LocationArray parent_la(immerseddis->NumDofSets());
+    this->ParentElement()->LocationVector(*immerseddis,parent_la,false);
+
+    // get structural state and element displacements of cell (parent element)
+    Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("displacement");
+#ifdef DEBUG
+    if (dispnp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
+#endif
+    std::vector<double> parenteledisp(lm.size());
+    std::vector<double> bdryeledisp(lm.size());
+    //std::vector<double> bdryeletraction(lm.size());
+    std::vector<double> bdryelenodalnormals(lm.size());
+    DRT::UTILS::ExtractMyValues(*dispnp,bdryeledisp,lm);
+    DRT::UTILS::ExtractMyValues(*dispnp,parenteledisp,parent_la[0].lm_);
+    //DRT::UTILS::ExtractMyValues(*cell_penalty_traction,bdryeletraction,lm);
+    //DRT::UTILS::ExtractMyValues(*cell_current_nodal_normals,bdryelenodalnormals,lm);
+
+    // geometry (surface ele)
+    LINALG::Matrix<3,4> xrefe; // material coord. of element
+    LINALG::Matrix<3,4> xcurr; // spatial  coord. of element
+
+    DRT::Node** nodes = this->Nodes();
+    for (int i=0; i<nen; ++i)
+    {
+      const double* x = nodes[i]->X();
+      xrefe(0,i) = x[0];
+      xrefe(1,i) = x[1];
+      xrefe(2,i) = x[2];
+    }
+
+    for (int i=0; i<nen; ++i)
+    {
+      xcurr(0,i) = xrefe(0,i) + bdryeledisp[i*numdofpernode+0];
+      xcurr(1,i) = xrefe(1,i) + bdryeledisp[i*numdofpernode+1];
+      xcurr(2,i) = xrefe(2,i) + bdryeledisp[i*numdofpernode+2];
+    }
+
+    // update element geometry (parent ele)
+    LINALG::Matrix<3,8> parent_xrefe; // material coord. of element
+    LINALG::Matrix<3,8> parent_xcurr; // current  coord. of element
+
+    nodes = this->ParentElement()->Nodes();
+    for (int i=0; i<parent_nen; ++i)
+    {
+      const double* x = nodes[i]->X();
+      parent_xrefe(0,i) = x[0];
+      parent_xrefe(1,i) = x[1];
+      parent_xrefe(2,i) = x[2];
+
+      parent_xcurr(0,i) = parent_xrefe(0,i) + parenteledisp[i*numdofpernode+0];
+      parent_xcurr(1,i) = parent_xrefe(1,i) + parenteledisp[i*numdofpernode+1];
+      parent_xcurr(2,i) = parent_xrefe(2,i) + parenteledisp[i*numdofpernode+2];
+
+    }
+
+//    // DEBUG output
+//    for(int lm_it=0;lm_it<lm.size();lm_it++)
+//    {
+//      if(lm[lm_it]>80231 and lm[lm_it]<80244)
+//      {
+//        std::cout<<"PROC "<<backgrddis->Comm().MyPID()<<": Bdry Ele with GID="<<this->Id()<<" owner="<<this->Owner()<<"peleid="<<this->ParentElementId()<<" peleowner="<<this->ParentElement()->Owner()<<" has dof="<<lm[lm_it]<<" at pos of node 0=["<<xcurr(0,0)<<" "<<xcurr(1,0)<<" "<<xcurr(2,0)<<"]"<<std::endl;
+//      }
+//    }
+
+    // get coordinates of gauss points w.r.t. local parent coordinate system
+    LINALG::SerialDenseMatrix parent_xi(intpoints.IP().nquad,globdim);
+    Epetra_SerialDenseMatrix derivtrafo(3,3);
+
+    DRT::UTILS::BoundaryGPToParentGP<3>(
+        parent_xi,
+        derivtrafo,
+        intpoints,
+        DRT::Element::hex8,
+        DRT::Element::quad4,
+        this->FaceParentNumber());
+
+
+#ifdef VELOCITYDEPENENCY
+    LINALG::Matrix<3,4> velcurr; // current velocity at t_{n+1}
+    LINALG::Matrix<3,4> dispcurr; // current displacement at t_{n+1}
+    if(not during_init)
+    {
+      // get structural state and element velocity of cell (parent element)
+      Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
+#ifdef DEBUG
+      if (velnp==Teuchos::null) dserror("Cannot get state vector 'velnp'");
+#endif
+
+      std::vector<double> bdryelevelnp(lm.size());
+      DRT::UTILS::ExtractMyValues(*velnp,bdryelevelnp,lm);
+
+      for (int i=0; i<nen; ++i)
+      {
+        velcurr(0,i) = bdryelevelnp[i*numdofpernode+0];
+        velcurr(1,i) = bdryelevelnp[i*numdofpernode+1];
+        velcurr(2,i) = bdryelevelnp[i*numdofpernode+2];
+
+        dispcurr(0,i) = bdryeledisp[i*numdofpernode+0];
+        dispcurr(1,i) = bdryeledisp[i*numdofpernode+1];
+        dispcurr(2,i) = bdryeledisp[i*numdofpernode+2];
+      }
+    }
+#endif
+
+
+    ////////////////////////////////////////////////////////////////////
+    /////   gauss point loop
+    LINALG::Matrix<3,1> spatial_coord_gp;
+    ///////////////////////////////////////////////////////////////////
+    for (int gp=0; gp<intpoints.IP().nquad; gp++)
+    {
+      std::vector<double> bdryxi(globdim-1);
+      bdryxi[0] = intpoints.IP().qxg[gp][0];
+      bdryxi[1] = intpoints.IP().qxg[gp][1];
+
+      std::vector<double> porosity_gp(1);
+      porosity_gp[0]=-1234.0;
+
+
+      // experimental pre cmbe
+      if (during_init)
+      {
+      int action = 81311;
+      IMMERSED::InterpolateToImmersedIntPoint <DRT::Element::hex8,  // source
+                                               DRT::Element::quad4> // target
+                                                           (backgrddis,
+                                                            immerseddis,
+                                                            *this,
+                                                            bdryxi,
+                                                            bdryeledisp,
+                                                            action,
+                                                            porosity_gp // result
+                                                           );
+      }
+      else
+      {
+        int action = 813112;
+        IMMERSED::InterpolateToImmersedIntPoint <DRT::Element::hex8,  // source
+                                                 DRT::Element::quad4> // target
+                                                             (scatradis, // experimental pre cmbe // backgrddis
+                                                              immerseddis,
+                                                              *this,
+                                                              bdryxi,
+                                                              bdryeledisp,
+                                                              action,
+                                                              porosity_gp // result
+                                                             );
+      }
+
+      if(porosity_gp[0]==-1234.0)
+        dserror("interpolation of porosity failed");
+      // DEBUG output
+      //std::cout<<porosity_gp[0]<<std::endl;
+
+      // porosity_new - porosity_old
+      double delta_porosity_at_gp = porosity_gp[0]-(porosity_at_gp_old->at(this->Id()))[gp];
+      if(abs(delta_porosity_at_gp)<tol)
+        delta_porosity_at_gp = 0.0;
+
+      if(abs(immersedmanager->GetDeltaPorosityMax())<abs(delta_porosity_at_gp))
+      immersedmanager->SetDeltaPorosityMax(delta_porosity_at_gp);
+
+      // fill map of porosities (will be used to update porosity of old timestep after convergence in global algorithm)
+      (porosity_at_gp_->at(this->Id()))[gp] = porosity_gp[0];
+
+
+        // get shape functions and derivatives in the plane of the element
+      DRT::UTILS::shape_function_2D(funct,bdryxi[0],bdryxi[1],Shape());
+      DRT::UTILS::shape_function_2D_deriv1(deriv,bdryxi[0],bdryxi[1],Shape());
+
+      DRT::UTILS::shape_function_3D(parent_funct,parent_xi(gp,0),parent_xi(gp,1),parent_xi(gp,2),this->ParentElement()->Shape());
+      DRT::UTILS::shape_function_3D_deriv1(parent_deriv_notrafo,parent_xi(gp,0),parent_xi(gp,1),parent_xi(gp,2),this->ParentElement()->Shape());
+
+      ////////////////////////////////////////////////////
+      // calc unitnormal N in material configuration
+      ///////////////////////////////////////////////////
+      LINALG::Matrix<3,1> unitnormal;
+      std::vector<double> normal(globdim);
+
+      // note that the length of this normal is the area dA
+
+      // compute dXYZ / drs
+      LINALG::Matrix<2,3> dxyzdrs;
+      dxyzdrs.MultiplyNT(deriv,xrefe); // to calculate unitnormal in current config. argument must be xcurr (xrefe instead)
+
+      normal[0] = dxyzdrs(0,1) * dxyzdrs(1,2) - dxyzdrs(0,2) * dxyzdrs(1,1);
+      normal[1] = dxyzdrs(0,2) * dxyzdrs(1,0) - dxyzdrs(0,0) * dxyzdrs(1,2);
+      normal[2] = dxyzdrs(0,0) * dxyzdrs(1,1) - dxyzdrs(0,1) * dxyzdrs(1,0);
+
+      LINALG::Matrix<2,2> metrictensor;
+      metrictensor.MultiplyNT(dxyzdrs,dxyzdrs);
+      double detA = sqrt( metrictensor(0,0)*metrictensor(1,1)-metrictensor(0,1)*metrictensor(1,0) );
+
+      for(int i=0;i<globdim;++i)
+        unitnormal(i,0)=normal[i];
+      const double norm2 = unitnormal.Norm2();
+      unitnormal.Scale(1.0/norm2);
+
+      // get space point from where line is originatin
+      spatial_coord_gp.MultiplyNT(xcurr,funct);
+
+      // initialize pore (void) diameter
+      double voiddiameter = -1234.0;
+      //double voiddiameter_old = -1234.0;
+      ///////////////////////////////////////////////////////////////
+      //
+      // Calculate pore diameter from local porosity
+      //
+      // Model descriptions:
+      //
+      // 1) Chaterjee2012:
+      //
+      //    Assumptions: ECM is isotropic and homogenuous.
+      //    R := uniform fiber radius.
+      //    phi := porosity (void fraction)
+      //    Eta := solid fraction (1 - phi)
+      //    alpha = ln(1/(1-Eta)) = ln(1/phi)
+      //    <r> := mean pore radius
+      //    <r^2> := mean squared pore radius
+      //
+      //    <r>  = (R/2.0)*(sqrt(pi*alpha)/Eta)*(1.0-Erf(sqrt(alpha))
+      //    <r^2>= R^2*alpha*((1.0-eta)/eta)^2*(1.0-exp(alpha)*sqrt(pi*alpha)*(1.0-Erf(sqrt(alpha))))
+      //
+      ///////////////////////////////////////////////////////////////
+      static double R = DRT::Problem::Instance()->CellMigrationParams().get<double>("ECM_FIBER_RADIUS");
+      double penalty = params.get<double>("penalty",-1234.0);
+      if(penalty == -1234.0)
+        dserror("could not get penalty parameter from parameter list");
+      double Eta = 1.0 - porosity_gp[0];
+      double alpha = log(1.0/(1.0-Eta));
+
+      //double Eta_old = 1.0 - (porosity_at_gp_old->at(this->Id()))[gp];
+      //double alpha_old = log(1.0/(1.0-Eta_old));
+
+      // 2 x equation (5) in Chaterjee2012
+      voiddiameter = (R)*(sqrt(PI*alpha)/Eta)*(1.0-erf(sqrt(alpha)));
+      //voiddiameter_old = (R)*(sqrt(PI*alpha_old)/Eta_old)*(1.0-erf(sqrt(alpha_old)));
+
+      double gpweight = intpoints.IP().qwgt[gp];
+
+            /* inverse of the Jacobian matrix:
+            **            [ x_,r  y_,r  z_,r ]^-1
+            **     J^-1 = [ x_,s  y_,s  z_,s ]
+            **            [ x_,t  y_,t  z_,t ]
+            */
+            // compute derivatives N_XYZ at gp w.r.t. material coordinates
+            // by N_XYZ = J^-1 * N_rst
+            LINALG::Matrix<3,3> invJ(true);
+            LINALG::Matrix<3,8> N_XYZ(true);
+            invJ.MultiplyNT(parent_deriv_notrafo,parent_xrefe);
+            invJ.Invert();
+            N_XYZ.Multiply(invJ,parent_deriv_notrafo);
+
+      // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
+      LINALG::Matrix<3,3> defgrd_inv;
+      // deformation gradient
+      defgrd_inv.MultiplyNT(parent_xcurr,N_XYZ);
+      // Jacobian determinant
+      double J = defgrd_inv.Determinant();
+      // invert deformation gradient
+      defgrd_inv.Invert();
+
+      LINALG::Matrix<3,1> tempvec;
+      tempvec.MultiplyTN(defgrd_inv,unitnormal);
+
+      // searchdirection is showing inwards the discretization (inward normal in !!! current !!! configuration)
+      LINALG::Matrix<3,1> searchdirection(tempvec);
+      const double norm2_currnormal = searchdirection.Norm2();
+      searchdirection.Scale(-1.0/norm2_currnormal);
+
+      double gap = 0.0;
+      double celldiameter = -1234.0;
+      double eps = 2.0e-06;
+
+#ifdef ECM_INTERACTION_SIMPLE
+      double simple_ecm_traction_norm=-1234.0;
+      double slope = -1234.0;
+      if(during_init)
+      {
+#endif
+      //std::cout<<"PROC "<<backgrddis->Comm().MyPID()<<": Evaluate cell diameter from point ["<<spatial_coord_gp(0)<<" "<<spatial_coord_gp(1)<<" "<<spatial_coord_gp(2)<<"] on ele with GID="<<Id()<<std::endl;
+      // get intersection point of cell interface and line: x(xi_gp) - unitnormal * lambda (i.e. 'space point' + 'direction' * 'free parameter')
+      celldiameter = IMMERSED::IntersectLineWithBoundary<DRT::Element::quad4, // source
+                                          DRT::Element::quad4> // target
+                                         (immerseddis,
+                                          dispnp,
+                                          params,
+                                          searchdirection,
+                                          spatial_coord_gp,
+                                          "FSICoupling",
+                                          -1);
+
+      // DEBUG safety check
+      if(celldiameter==-1234.0)
+      {
+        std::cout<<"PROC "<<backgrddis->Comm().MyPID()<<": Warning! Evaluation of cell diameter failed!\n"
+                                                  "        Pertubate space point by very small value and repeat evaluation."<<std::endl;
+        //dserror("evaluation of cell diameter failed");
+        spatial_coord_gp(0)+=eps;
+        spatial_coord_gp(1)+=eps;
+        spatial_coord_gp(2)+=eps;
+        // get intersection point of cell interface and line: x(xi_gp) - unitnormal * lambda (i.e. 'space point' + 'direction' * 'free parameter')
+        // returns cell diameter perpendicular to spatial_coord_gp
+        celldiameter = IMMERSED::IntersectLineWithBoundary<DRT::Element::quad4, // source
+                                            DRT::Element::quad4> // target
+                                           (immerseddis,
+                                            dispnp,
+                                            params,
+                                            searchdirection,
+                                            spatial_coord_gp,
+                                            "FSICoupling",
+                                            -1);
+        if(celldiameter==-1234.0)
+          std::cout<<"Warning! Found no intersection for evaluation of cell diameter!"<<std::endl;
+
+        celldiameter = voiddiameter;
+      }
+
+      // calculate gap
+      gap = voiddiameter - celldiameter;
+      if(abs(gap)<tol)
+        gap=0.0;
+
+#ifdef ECM_INTERACTION_SIMPLE
+      }
+      else if (not during_init)
+      {
+        gap = 0.0;
+        slope = immersedmanager->GetSimpleECMInteractionConstant();
+        simple_ecm_traction_norm = slope*(1.0-porosity_gp[0]);
+        //std::cout<<"simple_ecm_traction_norm="<<simple_ecm_traction_norm<<std::endl;
+      }
+#endif
+
+      double multiplicator = -1234.0;
+#ifdef VELOCITYDEPENENCY
+      double scalarproduct =  1234.0;
+      double scalarproduct_disp =  1234.0;
+      if(not during_init)
+      {
+        LINALG::Matrix<3,1> velnp_gp;
+        LINALG::Matrix<3,1> dispnp_gp;
+        LINALG::Matrix<3,1> unit_inward_normal(tempvec);
+        double tempvec_norm = tempvec.Norm2();
+        unit_inward_normal.Scale(-1.0/tempvec_norm);
+
+        // get velocity at gp
+        // get space point from where line is originating
+        velnp_gp.MultiplyNT(velcurr,funct);
+        dispnp_gp.MultiplyNT(dispcurr,funct);
+
+        // test if velocity has component in direction of outward normal
+        scalarproduct = tempvec.Dot(velnp_gp);
+        scalarproduct_disp = unit_inward_normal.Dot(dispnp_gp); // component of displacement in direction inward normal (positive)
+
+        // interface is moving in negative outward normal direction
+        if(scalarproduct<-1.0e-06 and abs(delta_porosity_at_gp)>0.0)
+        {
+          multiplicator = 0.0;
+          // effective gap
+          gap = ((voiddiameter-voiddiameter_old)/2.0) + scalarproduct_disp; //deltaD_void/2.0 + scalarproduct_disp (zero if change in void space is equal to displacement)
+          std::cout<<"Id()="<<Id()<<"  voiddiameter="<<voiddiameter<<"  voiddiameter_old="<<voiddiameter_old<<"  scalarprod="<<scalarproduct_disp<<std::endl;
+        }
+        else
+          multiplicator=1.0;
+      }
+      else
+        multiplicator=1.0;
+#else
+      multiplicator=1.0;
+#endif
+
+          if(multiplicator==-1234.0)
+            dserror("determination of variable multiplicator failed");
+
+
+
+// defines for penalty ecm force
+#define SMOOTHED_PENALTY
+#define LOG_LAW
+//#define POLYNOMIAL_LAW
+//#define LINEAR_LAW
+
+#ifndef SMOOTHED_PENALTY
+      // fill element vector
+      for(int node = 0; node < nen; node++)
+      {
+        for (int dof=0;dof<globdim;dof++)
+        {
+          if (gap<0.0)
+            elevector1(node*numdofpernode+dof) += (gpweight*detA)*J*penalty*gap*tempvec(dof)*funct(node);
+          else
+            elevector1(node*numdofpernode+dof) += 0.0;
+        }
+      }
+#else
+
+      //////////////////////////////////////////////////////////////////////////////////////////////
+      // project traction vector at integration point (gp) to current normal at integration point
+      //////////////////////////////////////////////////////////////////////////////////////////////
+      LINALG::Matrix<3,1> previous_traction_gp(true);
+      LINALG::Matrix<3,1> current_traction_gp(true);
+      //LINALG::Matrix<3,1> unit_normal(tempvec);
+      double norm_tempvec = tempvec.Norm2();
+      //unit_normal.Scale(1.0/norm_tempvec);
+
+      previous_traction_gp.Update((penalty_traction_at_gp->at(Id())).at(gp));
+      double norm_previous_traction_gp = previous_traction_gp.Norm2();
+
+      current_traction_gp.Update(-norm_previous_traction_gp,tempvec);
+      //std::cout<<"norm_previous_traction_gp="<<norm_previous_traction_gp<<std::endl;
+      //std::cout<<"norm_tempvec="<<norm_tempvec<<std::endl;
+
+      // now curr_tract_gp contains traction in direct. of new normal
+      ///////////////////////////////////////////////////////////////////////////////////////////////
+
+      double gap_max=0.9*celldiameter;
+
+      double delta_penalty_force = -1234.0;
+
+#ifdef LOG_LAW
+      // logarithmic law
+      //std::cout<<"PROC "<<backgrddis->Comm().MyPID()<<" gap_max = "<<std::setprecision(6)<<gap_max<<"for ele with GID="<<Id()<<std::endl;
+      delta_penalty_force = log((1.0/gap_max)*gap+1.0) * penalty; // < 0.0 if celldiameter > voiddiameter
+#endif
+
+#ifdef POLYNOMIAL_LAW
+      // polynomial (gap^3 + gap) law
+      delta_penalty_force = ((1.0/(2.0*gap_max))*(pow(gap,3)) + ((1.0/(gap_max))*gap)) * penalty; // < 0.0 if celldiameter > voiddiameter
+#endif
+
+#ifdef LINEAR_LAW
+      // linear gap law
+      delta_penalty_force = gap * penalty;
+#endif
+
+      if(not is_leadingedge_or_rear and (not during_init))
+      {
+        if     (gap<0.0 and delta_porosity_at_gp<0.0)  // cell > void ; new_void < old_void
+          delta_penalty_force+=0.0; // compress
+        else if(gap>0.0 and delta_porosity_at_gp<0.0)  // cell < void ; new_void < old_void
+          delta_penalty_force=0.0; // relax
+        else if(gap<0.0 and delta_porosity_at_gp==0.0) // cell > void ; new_void = old_void
+          delta_penalty_force=0.0; // no change in porosity -> already equilibrium force on surface
+        else if(gap>0.0 and delta_porosity_at_gp==0.0) // cell < void ; new_void = old_void
+          delta_penalty_force=0.0; // no change in porosity -> already equilibrium force on surface
+        else if(gap<0.0 and delta_porosity_at_gp>0.0)  // cell > void ; new_void > old_void
+          delta_penalty_force+=0.0;
+        else if(gap>0.0 and delta_porosity_at_gp>0.0)  // cell < void ; new_void > old_void
+          delta_penalty_force=0.0; // relax
+      }
+      else if(not is_leadingedge_or_rear and during_init) // cell initialization
+        delta_penalty_force+=0.0;
+      else if(is_leadingedge_or_rear and (not during_init)) // do not load leading edge
+      {
+#ifdef ECM_INTERACTION_SIMPLE
+        simple_ecm_traction_norm = slope*(1.0-0.8);
+#endif
+        delta_penalty_force=0.0;
+      }
+      else if (is_leadingedge_or_rear and during_init)
+        dserror("ERROR : is_leadingedge_or_rear == true during cell initialization");
+
+
+      // total current traction at gp may not be pulling traction
+#ifdef ECM_INTERACTION_SIMPLE
+      if(during_init)
+      {
+#endif
+
+      if((-norm_previous_traction_gp+delta_penalty_force)<1.0e-12 and not isdummycall) // traction equal or less than zero (good case)
+        current_traction_gp.Update(delta_penalty_force,tempvec,1.0);
+      else if((-norm_previous_traction_gp+delta_penalty_force)>1.0e-12) // new traction would be pulling traction (bad case)
+        current_traction_gp.PutScalar(0.0);    // -> set traction zero
+
+#ifdef ECM_INTERACTION_SIMPLE
+      }
+      else if(not during_init)
+      {
+        current_traction_gp.PutScalar(0.0); // safety
+        current_traction_gp.Update(-simple_ecm_traction_norm,tempvec);
+      }
+#endif
+
+      // fill element vector
+      for(int node = 0; node < nen; node++)
+      {
+        for (int dof=0;dof<globdim;dof++)
+        {
+            elevector1(node*numdofpernode+dof) += (gpweight*detA)*J*current_traction_gp(dof)*funct(node); // compress
+        } // fill vector dof-loop
+
+        // fill gap vector to visualize gap over interface in the global algorithm
+        if(not is_leadingedge_or_rear)
+        {
+          elevector2(node*numdofpernode+0) += delta_porosity_at_gp;
+          elevector2(node*numdofpernode+1) += (gpweight*detA)*J*gap*funct(node)*multiplicator;
+          elevector2(node*numdofpernode+2) += multiplicator;
+        }
+
+      } // fill vector node-loop
+#endif // SMOOTHED_PENALTY
+
+      /////////////////////////
+      //// UPDATE
+      /////////////////////////
+#ifdef ECM_INTERACTION_SIMPLE
+      if(during_init)
+      {
+#endif
+
+        // update current traction at current gp
+        ((penalty_traction_at_gp->at(Id())).at(gp)).Update((1.0/norm_tempvec),current_traction_gp); // curr_tract_gp contains old force in new normal direction + delta force -> total force
+
+#ifdef ECM_INTERACTION_SIMPLE
+      }
+      else if (not during_init)
+        ((penalty_traction_at_gp->at(Id())).at(gp)).PutScalar(0.0); // needed no more after init
+#endif
+
+
+      if(abs(delta_penalty_force)>1.0e-08 and (not is_leadingedge_or_rear))
+      {
+        // only gaps that contribute to force are reported
+
+        if(immersedmanager->GetGapMax()<gap)
+        {
+          immersedmanager->SetGapMax(gap);
+          immersedmanager->SetMaxGapSpacePoint(spatial_coord_gp);
+          LINALG::Matrix<3,1> aux_vec(true);
+          aux_vec.Update(1.0,spatial_coord_gp,gap,searchdirection);
+          immersedmanager->SetMaxGapSearchDirection(aux_vec);
+        }
+
+        if(immersedmanager->GetGapMin()>gap)
+        {
+          immersedmanager->SetGapMin(gap);
+          immersedmanager->SetMinGapSpacePoint(spatial_coord_gp);
+          LINALG::Matrix<3,1> aux_vec(true);
+          aux_vec.Update(1.0,spatial_coord_gp,gap,searchdirection);
+          immersedmanager->SetMinGapSearchDirection(aux_vec);
+        }
+
+
+        if(immersedmanager->GetVoidMax()<voiddiameter)
+          immersedmanager->SetVoidMax(voiddiameter);
+
+        if(immersedmanager->GetVoidMin()>voiddiameter)
+          immersedmanager->SetVoidMin(voiddiameter);
+
+      }
+
+    } // gp loop
+  } // calc_ecm_traction
   break;
   case mark_immersed_elements:
   {

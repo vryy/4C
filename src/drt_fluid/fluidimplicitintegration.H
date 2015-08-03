@@ -891,8 +891,8 @@ public:
   ///< Print stabilization details to screen
   virtual void PrintStabilizationDetails() const;
 
-  ///< Add contribution to Neumann load vector (neumann_loads_)
-  void AddContributionToNeumannLoads(const Teuchos::RCP<const Epetra_Vector> contributing_vector);
+  ///< Add contribution to external load vector ( add possibly pre-existing external_loads_);
+  void AddContributionToExternalLoads(const Teuchos::RCP<const Epetra_Vector> contributing_vector);
 
 protected:
 

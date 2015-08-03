@@ -930,145 +930,131 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       }
     }
 
-    double infnorm = myvelocitynp.NormInf();
-    if(infnorm < 1e-14)
-    {
-      for(int node=0;node<NUMNOD_SOH8;++node)
-      {
-        for(int dim=0;dim<NUMDIM_SOH8;++dim)
-        {
-          myvelocitynp(node,dim) = myveln[node*3+dim];//(mydispnp[node*3+dim] - mydispn[node*3+dim])/(theta*dt) - (1.0/theta -1.0)*myveln[node*3+dim];
-        }
-      }
-    }
-
-    //std::cout<<"myvelocitynp:\n"<<myvelocitynp<<std::endl;
-
     LINALG::Matrix<3,1> result;
     result.MultiplyTN(myvelocitynp,shapefcts[0]);
     for(int i=0;i<3;++i)
       elevec1_epetra(i) = result(i,0);
 
 
-    ///////////////////////////////////////////////////////
-    // divergence of velocity part
-    //
-    // calc \dot{J}/J = \dot{det(F)}/det(F)
-    //
-    // Calc time derivative with one-step-theta
-    //
-    ///////////////////////////////////////////////////////
-
-    // update element geometry
-    LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;     // reference coord. of element
-    LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xcurr;     // current coord. of element
-    LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xcurr_old; // spatial coordinate of element at old timestep
-
-
-    DRT::Node** nodes = Nodes();
-    for (int i=0; i<NUMNOD_SOH8; ++i)
-    {
-      const double* X = nodes[i]->X();
-      xrefe(i,0) = X[0];
-      xrefe(i,1) = X[1];
-      xrefe(i,2) = X[2];
-
-      xcurr(i,0) = xrefe(i,0) + mydispnp[i*NODDOF_SOH8+0];
-      xcurr(i,1) = xrefe(i,1) + mydispnp[i*NODDOF_SOH8+1];
-      xcurr(i,2) = xrefe(i,2) + mydispnp[i*NODDOF_SOH8+2];
-
-      xcurr_old(i,0) = xrefe(i,0) + mydispn[i*NODDOF_SOH8+0];
-      xcurr_old(i,1) = xrefe(i,1) + mydispn[i*NODDOF_SOH8+1];
-      xcurr_old(i,2) = xrefe(i,2) + mydispn[i*NODDOF_SOH8+2];
-    }
-
-    // fill derivatives of nodal shape functions at point
-
-    std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs(1);
-
-    (derivs[0])(0,0) = -(1.0-s[0])*(1.0-t[0])*0.125;
-    (derivs[0])(0,1) =  (1.0-s[0])*(1.0-t[0])*0.125;
-    (derivs[0])(0,2) =  (1.0+s[0])*(1.0-t[0])*0.125;
-    (derivs[0])(0,3) = -(1.0+s[0])*(1.0-t[0])*0.125;
-    (derivs[0])(0,4) = -(1.0-s[0])*(1.0+t[0])*0.125;
-    (derivs[0])(0,5) =  (1.0-s[0])*(1.0+t[0])*0.125;
-    (derivs[0])(0,6) =  (1.0+s[0])*(1.0+t[0])*0.125;
-    (derivs[0])(0,7) = -(1.0+s[0])*(1.0+t[0])*0.125;
-
-    // df wrt to s for each node(0..7) at each gp [0]
-    (derivs[0])(1,0) = -(1.0-r[0])*(1.0-t[0])*0.125;
-    (derivs[0])(1,1) = -(1.0+r[0])*(1.0-t[0])*0.125;
-    (derivs[0])(1,2) =  (1.0+r[0])*(1.0-t[0])*0.125;
-    (derivs[0])(1,3) =  (1.0-r[0])*(1.0-t[0])*0.125;
-    (derivs[0])(1,4) = -(1.0-r[0])*(1.0+t[0])*0.125;
-    (derivs[0])(1,5) = -(1.0+r[0])*(1.0+t[0])*0.125;
-    (derivs[0])(1,6) =  (1.0+r[0])*(1.0+t[0])*0.125;
-    (derivs[0])(1,7) =  (1.0-r[0])*(1.0+t[0])*0.125;
-
-    // df wrt to t for each node(0..7) at each gp [0]
-    (derivs[0])(2,0) = -(1.0-r[0])*(1.0-s[0])*0.125;
-    (derivs[0])(2,1) = -(1.0+r[0])*(1.0-s[0])*0.125;
-    (derivs[0])(2,2) = -(1.0+r[0])*(1.0+s[0])*0.125;
-    (derivs[0])(2,3) = -(1.0-r[0])*(1.0+s[0])*0.125;
-    (derivs[0])(2,4) =  (1.0-r[0])*(1.0-s[0])*0.125;
-    (derivs[0])(2,5) =  (1.0+r[0])*(1.0-s[0])*0.125;
-    (derivs[0])(2,6) =  (1.0+r[0])*(1.0+s[0])*0.125;
-    (derivs[0])(2,7) =  (1.0-r[0])*(1.0+s[0])*0.125;
-
-
-    LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> N_XYZ;
-
-    // build deformation gradient wrt to spatial configuration
-    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrdnp(true);
-    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrdnp_inv(true);
-    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrdn(true);
-    //double detFnp;
-    //double detFn;
-    //double detF_dot;
-
-    /* get the inverse of the Jacobian matrix which looks like:
-     **            [ x_,r  y_,r  z_,r ]^-1
-     **     J^-1 = [ x_,s  y_,s  z_,s ]
-     **            [ x_,t  y_,t  z_,t ]
-     */
-    // compute derivatives N_XYZ at gp w.r.t. material coordinates
-    // by N_XYZ = J^-1 * N_rst
-    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> invJ;
-
-    invJ.Multiply(derivs[0],xrefe);
-    invJ.Invert();
-    N_XYZ.Multiply(invJ,derivs[0]);
-
-    defgrdnp.MultiplyTT(xcurr,N_XYZ);
-    defgrdnp_inv.Invert(defgrdnp);
-    //detFnp = defgrdnp.Determinant();
-
-    defgrdn.MultiplyTT(xcurr_old,N_XYZ);
-    //detFn = defgrdn.Determinant();
-
-    //detF_dot = (detFnp - detFn)/dt;
-
-    // evaluate divergence of structural velocity
-    double velocitydivergence = 0.0;
-
-    // div(v) = N_A,I (dX_I/dx_i) v_Ai
-    for(int I=0;I<NUMDIM_SOH8;++I)
-    {
-      for(int A=0;A<NUMNOD_SOH8;++A)
-      {
-        for(int i=0;i<NUMDIM_SOH8;++i)
-        {
-          velocitydivergence += N_XYZ(I,A) * ( defgrdnp_inv(I,i)*myvelocitynp(A,i) );
-        }
-      }
-    }
-
-    //std::cout<<"N_XYZ:\n"<<N_XYZ<<std::endl;
-    //std::cout<<"defgrdnp_inv:\n"<<defgrdnp_inv<<std::endl;
+//    ///////////////////////////////////////////////////////
+//    // divergence of velocity part
+//    //
+//    // calc \dot{J}/J = \dot{det(F)}/det(F)
+//    //
+//    // Calc time derivative with one-step-theta
+//    //
+//    ///////////////////////////////////////////////////////
+//
+//    // update element geometry
+//    LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;     // reference coord. of element
+//    LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xcurr;     // current coord. of element
+//    LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xcurr_old; // spatial coordinate of element at old timestep
+//
+//
+//    DRT::Node** nodes = Nodes();
+//    for (int i=0; i<NUMNOD_SOH8; ++i)
+//    {
+//      const double* X = nodes[i]->X();
+//      xrefe(i,0) = X[0];
+//      xrefe(i,1) = X[1];
+//      xrefe(i,2) = X[2];
+//
+//      xcurr(i,0) = xrefe(i,0) + mydispnp[i*NODDOF_SOH8+0];
+//      xcurr(i,1) = xrefe(i,1) + mydispnp[i*NODDOF_SOH8+1];
+//      xcurr(i,2) = xrefe(i,2) + mydispnp[i*NODDOF_SOH8+2];
+//
+//      xcurr_old(i,0) = xrefe(i,0) + mydispn[i*NODDOF_SOH8+0];
+//      xcurr_old(i,1) = xrefe(i,1) + mydispn[i*NODDOF_SOH8+1];
+//      xcurr_old(i,2) = xrefe(i,2) + mydispn[i*NODDOF_SOH8+2];
+//    }
+//
+//    // fill derivatives of nodal shape functions at point
+//
+//    std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs(1);
+//
+//    (derivs[0])(0,0) = -(1.0-s[0])*(1.0-t[0])*0.125;
+//    (derivs[0])(0,1) =  (1.0-s[0])*(1.0-t[0])*0.125;
+//    (derivs[0])(0,2) =  (1.0+s[0])*(1.0-t[0])*0.125;
+//    (derivs[0])(0,3) = -(1.0+s[0])*(1.0-t[0])*0.125;
+//    (derivs[0])(0,4) = -(1.0-s[0])*(1.0+t[0])*0.125;
+//    (derivs[0])(0,5) =  (1.0-s[0])*(1.0+t[0])*0.125;
+//    (derivs[0])(0,6) =  (1.0+s[0])*(1.0+t[0])*0.125;
+//    (derivs[0])(0,7) = -(1.0+s[0])*(1.0+t[0])*0.125;
+//
+//    // df wrt to s for each node(0..7) at each gp [0]
+//    (derivs[0])(1,0) = -(1.0-r[0])*(1.0-t[0])*0.125;
+//    (derivs[0])(1,1) = -(1.0+r[0])*(1.0-t[0])*0.125;
+//    (derivs[0])(1,2) =  (1.0+r[0])*(1.0-t[0])*0.125;
+//    (derivs[0])(1,3) =  (1.0-r[0])*(1.0-t[0])*0.125;
+//    (derivs[0])(1,4) = -(1.0-r[0])*(1.0+t[0])*0.125;
+//    (derivs[0])(1,5) = -(1.0+r[0])*(1.0+t[0])*0.125;
+//    (derivs[0])(1,6) =  (1.0+r[0])*(1.0+t[0])*0.125;
+//    (derivs[0])(1,7) =  (1.0-r[0])*(1.0+t[0])*0.125;
+//
+//    // df wrt to t for each node(0..7) at each gp [0]
+//    (derivs[0])(2,0) = -(1.0-r[0])*(1.0-s[0])*0.125;
+//    (derivs[0])(2,1) = -(1.0+r[0])*(1.0-s[0])*0.125;
+//    (derivs[0])(2,2) = -(1.0+r[0])*(1.0+s[0])*0.125;
+//    (derivs[0])(2,3) = -(1.0-r[0])*(1.0+s[0])*0.125;
+//    (derivs[0])(2,4) =  (1.0-r[0])*(1.0-s[0])*0.125;
+//    (derivs[0])(2,5) =  (1.0+r[0])*(1.0-s[0])*0.125;
+//    (derivs[0])(2,6) =  (1.0+r[0])*(1.0+s[0])*0.125;
+//    (derivs[0])(2,7) =  (1.0-r[0])*(1.0+s[0])*0.125;
+//
+//
+//    LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> N_XYZ;
+//
+//    // build deformation gradient wrt to spatial configuration
+//    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrdnp(true);
+//    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrdnp_inv(true);
+//    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrdn(true);
+//    double detFnp;
+//    //double detFn;
+//    //double detF_dot;
+//
+//    /* get the inverse of the Jacobian matrix which looks like:
+//     **            [ x_,r  y_,r  z_,r ]^-1
+//     **     J^-1 = [ x_,s  y_,s  z_,s ]
+//     **            [ x_,t  y_,t  z_,t ]
+//     */
+//    // compute derivatives N_XYZ at gp w.r.t. material coordinates
+//    // by N_XYZ = J^-1 * N_rst
+//    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> invJ;
+//
+//    invJ.Multiply(derivs[0],xrefe);
+//    invJ.Invert();
+//    N_XYZ.Multiply(invJ,derivs[0]);
+//
+//    defgrdnp.MultiplyTT(xcurr,N_XYZ);
+//    defgrdnp_inv.Invert(defgrdnp);
+//    detFnp = defgrdnp.Determinant();
+//
+//    defgrdn.MultiplyTT(xcurr_old,N_XYZ);
+//    //detFn = defgrdn.Determinant();
+//
+//    //detF_dot = (detFnp - detFn)/dt;
+//
+//    // evaluate divergence of structural velocity
+//    double velocitydivergence = 0.0;
+//
+//    // div(v) = N_A,I (dX_I/dx_i) v_Ai
+//    for(int I=0;I<NUMDIM_SOH8;++I)
+//    {
+//      for(int A=0;A<NUMNOD_SOH8;++A)
+//      {
+//        for(int i=0;i<NUMDIM_SOH8;++i)
+//        {
+//          velocitydivergence += N_XYZ(I,A) * ( defgrdnp_inv(I,i)*myvelocitynp(A,i) )*0.8*detFnp;
+//        }
+//      }
+//    }
+//
+//    //std::cout<<"N_XYZ:\n"<<N_XYZ<<std::endl;
+//    //std::cout<<"defgrdnp_inv:\n"<<defgrdnp_inv<<std::endl;
 
     //velocitydivergence = detF_dot/detFn;
     // vector to fill
-    elevec1_epetra(3) = velocitydivergence;
+    elevec1_epetra(3) = 0.0;//velocitydivergence;
   }
   break;
 
@@ -3371,7 +3357,7 @@ void DRT::ELEMENTS::So_hex8::EvaluateFiniteDifferenceMaterialTangent(
   stiffmatrix_analytical.MultiplyTN(detJ_w, bop, cb, 1.0);
 #endif
 
-  const double delta = charelelength*1.0e-8;
+  const double delta = charelelength*1.0e-08;
 
   // matrices and vectors
   LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDOF_SOH8> cb_fd(true);

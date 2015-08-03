@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file immersed_paritioned.H
+\file immersed_partitioned.H
 
 \brief base class for all partitioned immersed algorithms
 
@@ -45,6 +45,8 @@ public:
     virtual void CouplingOp(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag);
 
 protected:
+
+    virtual void SetFieldDt(){};
 
     virtual void PrepareTimeStep(){};
 

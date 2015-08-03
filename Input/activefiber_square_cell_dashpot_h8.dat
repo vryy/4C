@@ -53,7 +53,7 @@ MAXITER                         50
 MINITER                         0
 ITERNORM                        L2
 // FOLLOWING PARAMS IMPORTANT FOR CELL
-NLNSOL                          lsnewton
+NLNSOL                          lsnewton //lsnewton fullnewton
 ALPHA_LS                        0.5
 MATERIALTANGENT                 finitedifferences
 PREDICT                         ConstVel

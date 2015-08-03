@@ -26,7 +26,9 @@
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::So3_Poro_P1(int id, int owner):
-So3_Poro<so3_ele,distype>(id,owner)
+So3_Poro<so3_ele,distype>(id,owner),
+init_porosity_(Teuchos::null),
+is_init_porosity_(false)
 {
   return;
 }
@@ -38,7 +40,9 @@ So3_Poro<so3_ele,distype>(id,owner)
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::So3_Poro_P1(const DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>& old):
-So3_Poro<so3_ele,distype>(old)
+So3_Poro<so3_ele,distype>(old),
+init_porosity_(old.init_porosity_),
+is_init_porosity_(old.is_init_porosity_)
 {
   return;
 }
@@ -69,6 +73,11 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::Pack(DRT::PackBuffer& data) co
   int type = UniqueParObjectId();
   so3_ele::AddtoPack(data,type);
 
+  data.AddtoPack<int>(is_init_porosity_);
+
+  if (is_init_porosity_)
+    DRT::ParObject::AddtoPack<my::numnod_,1>(data,*init_porosity_);
+
   // add base class Element
   my::Pack(data);
 
@@ -88,6 +97,13 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::Unpack(const std::vector<char>
   int type = 0;
   so3_ele::ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  is_init_porosity_ = DRT::ParObject::ExtractInt(position,data);
+
+  //init_porosity_ = Teuchos::rcp(new LINALG::Matrix<my::numnod_,1>(true));
+  if(is_init_porosity_)
+    DRT::ParObject::ExtractfromPack<my::numnod_,1>(position,data,*init_porosity_);
+
 
   // extract base class Element
   std::vector<char> basedata(0);

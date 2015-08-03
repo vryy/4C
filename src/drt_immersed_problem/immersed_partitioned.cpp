@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file immersed_paritioned.cpp
+\file immersed_partitioned.cpp
 
 \brief base class for all partitioned immersed algorithms
 
@@ -81,6 +81,9 @@ void IMMERSED::ImmersedPartitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Int
 
   while (NotFinished())
   {
+    // set time step size for this step
+    SetFieldDt();
+
     // Increment all field counters and predict field values whenever
     // appropriate.
     PrepareTimeStep();

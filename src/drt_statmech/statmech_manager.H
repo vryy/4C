@@ -1001,6 +1001,8 @@ protected:
   void DBCCreateMap(Teuchos::RCP<std::set<int> >       dbcgids,
                     Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor);
 
+  void SetTimen(double time){ timen_ = time;  return;};
+
   /******************Begin methods for statmech_polymerization.cpp*****************/
 
   /* create barbed and pointed end node sets of filaments  */
@@ -1365,6 +1367,7 @@ protected:
   std::vector<std::vector<int> > nbcnodesets_;
   //! \brief flag signaling the use of the initially found DBC node set throughout the simulation
   bool useinitdbcset_;
+  double timen_;
 }; // class StatMechManager
 }
 

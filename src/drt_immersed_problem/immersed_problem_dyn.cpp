@@ -186,6 +186,13 @@ void immersed_problem_drt()
       Teuchos::RCP<IMMERSED::ImmersedPartitionedCellMigration> algo =
           Teuchos::rcp(new IMMERSED::ImmersedPartitionedCellMigration(comm));
 
+      const int restart = DRT::Problem::Instance()->Restart();
+      if (restart)
+      {
+        // read the restart information, set vectors and variables
+        algo->ReadRestart(restart);
+      }
+
       algo->SetupImmersedDiscretization();
       algo->SetupBackgroundDiscretization();
 

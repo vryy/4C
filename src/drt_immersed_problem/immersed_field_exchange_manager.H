@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file immersed_field_exchange_manager.H
 
-\brief manage access to and provide data in immersed problems
+\brief manage access to and provide data globally in immersed problems
 
 <pre>
 Maintainers: Andreas Rauch
@@ -15,12 +15,21 @@ Maintainers: Andreas Rauch
 #define IMMERSED_FIELD_EXCHANGE_MANAGER_H
 
 #include "../drt_lib/drt_singletondestruction.H"
+#include <map>
+#include "Teuchos_RCP.hpp"
+#include "Epetra_MultiVector.h"
 #include <cstdlib>
+#include "../linalg/linalg_fixedsizematrix.H"
 
-namespace IMMERSED
+namespace GEO
+{
+class SearchTree;
+}
+
+namespace DRT
 {
 
-class ImmersedFieldExchangeManager
+class ImmersedFieldExchangeManager : public DRT::SingletonDestruction
 {
 
 public:
@@ -33,18 +42,150 @@ public:
   /// called upon destruction
   virtual void Done();
 
+  Teuchos::RCP<GEO::SearchTree> immersed_SearchTree_;
+  std::map<int,LINALG::Matrix<3,1> >* currpositions_immerseddis_;
+  int check_counter_;
+  int num_isimmersedbry_;
+  int numnlniter_;
+  double gap_max_;
+  double gap_min_;
+  double void_min_;
+  double void_max_;
+  double delta_porosity_max_;
+  double simple_ecm_interaction_constant;
+  std::map<int,std::vector<double> > porosity_at_gp_;
+  std::map<int,std::vector<double> > porosity_at_gp_old_timestep_;
+  std::map<int,std::vector<LINALG::Matrix<3,1> > > penalty_traction_at_gp_;
+  Teuchos::RCP<Epetra_Vector> points_to_ecm_penalty_traction_;
+  Teuchos::RCP<Epetra_Vector> points_to_ecm_penalty_gap_;
+  Teuchos::RCP<Epetra_Vector> cell_current_nodal_normals_;
+  LINALG::Matrix<3,1> max_gap_searchdirection_;
+  LINALG::Matrix<3,1> max_gap_spacepoint_;
+  LINALG::Matrix<3,1> min_gap_searchdirection_;
+  LINALG::Matrix<3,1> min_gap_spacepoint_;
+
+  bool isinitialized_;
+
+  std::map<int,std::vector<double> > porositiy_old_;
+
+  void SetIsInitialized(bool trueorfalse){isinitialized_=trueorfalse; return;};
+
+  bool IsInitialized(){return isinitialized_;};
+
+  void SetImmersedSearchTree(Teuchos::RCP<GEO::SearchTree> immersed_SearchTree)
+  {
+    immersed_SearchTree_ = immersed_SearchTree;
+    return;
+  };
+
+  Teuchos::RCP<GEO::SearchTree>  GetImmersedSearchTree()
+  {
+    return immersed_SearchTree_;
+  };
+
+  void SetCurrentPositionsImmersedDis(std::map<int,LINALG::Matrix<3,1> >& currpositions_immerseddis)
+  {
+    currpositions_immerseddis_ = &(currpositions_immerseddis);
+    return;
+  };
+
+  std::map<int,LINALG::Matrix<3,1> >* GetCurrentPositionsImmersedDis()
+  {
+    return currpositions_immerseddis_;
+  };
+
+  void IncrementCheckCounter(){check_counter_++; return;};
+
+  int GetCheckCounter(){return check_counter_;};
+
+  void SetCheckCounter(int value){check_counter_=value; return;};
+
+  void IncrementNumIsImmersedBoundary(){num_isimmersedbry_++; return;};
+
+   int GetNumIsImmersedBoundary(){return num_isimmersedbry_;};
+
+   void SetNumIsImmersedBoundary(int value){num_isimmersedbry_=value; return;};
+
+   void SetOldPorosity(int eid, int gpnum, double porosity){porositiy_old_.at(eid); return;};
+
+   void SetGapMax(double value){gap_max_=value; return;};
+
+   void SetGapMin(double value){gap_min_=value; return;};
+
+   double GetGapMax(){return gap_max_;};
+
+   double GetGapMin(){return gap_min_;};
+
+   void SetVoidMax(double value){void_max_=value; return;};
+
+   void SetVoidMin(double value){void_min_=value; return;};
+
+   double GetVoidMax(){return void_max_;};
+
+   double GetVoidMin(){return void_min_;};
+
+   void SetDeltaPorosityMax(double value){delta_porosity_max_=value; return;};
+
+   double GetDeltaPorosityMax(){return delta_porosity_max_;};
+
+   std::map<int,std::vector<double> >* GetPointerToPorosityAtGP(){return &porosity_at_gp_;};
+
+   std::map<int,std::vector<double> >* GetPointerToPorosityAtGPOldTimestep(){return &porosity_at_gp_old_timestep_;};
+
+   void UpdatePorosityAtGPOldTimestep(){ porosity_at_gp_old_timestep_ = porosity_at_gp_; return;};
+
+   void InitializePorosityAtGPMap();
+
+   void SetPointerToECMPenaltyTraction(const Teuchos::RCP<Epetra_Vector> vector){points_to_ecm_penalty_traction_=vector; return;};
+
+   Teuchos::RCP<Epetra_Vector> GetPointerToECMPenaltyTraction(){return points_to_ecm_penalty_traction_;};
+
+   std::map<int,std::vector<LINALG::Matrix<3,1> > >* GetPointerToPenaltyTractionAtGPMap(){return &penalty_traction_at_gp_;};
+
+   void SetPointerToGap(const Teuchos::RCP<Epetra_Vector> vector){points_to_ecm_penalty_gap_=vector; return;};
+
+   Teuchos::RCP<Epetra_Vector> GetPointerToGap(){return points_to_ecm_penalty_gap_;};
+
+   void SetPointerToCurrentNodalNormals(const Teuchos::RCP<Epetra_Vector> vector){cell_current_nodal_normals_=vector; return;};
+
+   Teuchos::RCP<Epetra_Vector> GetPointerToCurrentNodalNormals(){return cell_current_nodal_normals_;};
+
+   void SetMaxGapSearchDirection(const LINALG::Matrix<3,1> vector){max_gap_searchdirection_=vector; return;};
+
+   void SetMinGapSearchDirection(const LINALG::Matrix<3,1> vector){min_gap_searchdirection_=vector; return;};
+
+   void SetMaxGapSpacePoint(const LINALG::Matrix<3,1> vector){max_gap_spacepoint_=vector; return;};
+
+   void SetMinGapSpacePoint(const LINALG::Matrix<3,1> vector){min_gap_spacepoint_=vector; return;};
+
+   const LINALG::Matrix<3,1>* GetMaxGapSearchDirection(){return &max_gap_searchdirection_;};
+
+   const LINALG::Matrix<3,1>* GetMinGapSearchDirection(){return &min_gap_searchdirection_;};
+
+   const LINALG::Matrix<3,1>* GetMaxGapSpacePoint(){return &max_gap_spacepoint_;};
+
+   const LINALG::Matrix<3,1>* GetMinGapSpacePoint(){return &min_gap_spacepoint_;};
+
+   void SetSimpleECMInteractionConstant(double value){simple_ecm_interaction_constant = value; return;};
+
+   double GetSimpleECMInteractionConstant(){return simple_ecm_interaction_constant;};
+
+
 private:
 
   // none
 
-protected:
+private:
 
   /// protected Constructor since we are a Singleton.
   ImmersedFieldExchangeManager();
 
-};
+  static DRT::ImmersedFieldExchangeManager* instance_;
 
-}
+
+}; // class ImmersedFieldExchangeManager
+
+} // namespace DRT
 
 
 #endif

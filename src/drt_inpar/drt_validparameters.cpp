@@ -7579,7 +7579,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    tuple<int>(0,1),
                                    &immersedpart);
 
-      setStringToIntegralParameter<int>("COUPMETHOD","conforming",
+      setStringToIntegralParameter<int>("COUPMETHOD","immersed",
                                    "Coupling Method Mortar (mtr) or conforming nodes at interface",
                                    tuple<std::string>(
                                      "MTR",
@@ -7675,6 +7675,28 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                      INPAR::CELL::segregation_law_forcedependent),
                                      &celldyn);
 
+      setStringToIntegralParameter<int>(
+                                   "INITIALIZE_CELL","no",
+                                   "Use first time step as pre-simulation to initialize Cell",
+                                   tuple<std::string>(
+                                     "no",
+                                     "yes"),
+                                     tuple<int>(
+                                     0,
+                                     1),
+                                     &celldyn);
+
+      setStringToIntegralParameter<int>(
+                                   "ECM_INTERACTION","yes",
+                                   "Switch on/off cell-ecm interaction model",
+                                   tuple<std::string>(
+                                     "no",
+                                     "yes"),
+                                     tuple<int>(
+                                     0,
+                                     1),
+                                     &celldyn);
+
       DoubleParameter("SEGREGATION_CONST",0.0,"basic constant for segregation equation",&celldyn);
 
       IntParameter("NUMSTEP",200,"Total number of Timesteps",&celldyn);
@@ -7682,7 +7704,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       IntParameter("RESTARTEVRY",1,"Increment for writing restart",&celldyn);
 
       DoubleParameter("TIMESTEP",0.1,"Time increment dt",&celldyn);
+      DoubleParameter("INITIAL_TIMESTEP",0.1,"Time increment dt for first time step (pre-simulation)",&celldyn);
       DoubleParameter("MAXTIME",1000.0,"Total simulation time",&celldyn);
+
+      DoubleParameter("PENALTY_INIT",100.0,"Penalty parameter for the celll initialization",&celldyn);
+      DoubleParameter("PENALTY_START",100.0,"Penalty parameter at the beginning of each time step",&celldyn);
+      DoubleParameter("ECM_FIBER_RADIUS",0.3,"Average radius of ECM fibers",&celldyn);
+
+      IntParameter("INITIALIZATION_STEPS",1,"Num of time steps for initialization (pre-simulation)",&celldyn);
+      IntParameter("BDRY_GP_NUM",2,"Number of integration pints in one direction in IsImmersedBoundary() elements (e.g. 2x2x2)",&celldyn);
 
   /*----------------------------------------------------------------------*/
     Teuchos::ParameterList& fpsidyn = list->sublist(

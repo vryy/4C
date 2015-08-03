@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file immersed_base.cpp
+\file immersed_base.H
 
 \brief base class for all immersed algorithms
 
@@ -32,6 +32,10 @@ Maintainers: Andreas Rauch
 #include "../drt_geometry/searchtree_geometry_service.H"
 
 #include "../drt_inpar/inpar_fluid.H"
+
+// experimental pre cmbe
+#include "../drt_scatra_ele/scatra_ele_action.H"
+
 
 namespace DRT{
   class Discretization;
@@ -98,7 +102,9 @@ public:
       const int condid
   );
 
+
 };// class ImmersedBase
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -171,7 +177,7 @@ public:
     xvec[2]=x[2];
 
     // vector to fill by sourcedis->Evaluate (needs to be resized in calc class)
-    Teuchos::RCP<Epetra_SerialDenseVector> vectofill = Teuchos::rcp(new Epetra_SerialDenseVector(6));
+    Teuchos::RCP<Epetra_SerialDenseVector> vectofill = Teuchos::rcp(new Epetra_SerialDenseVector(targetdata.size()));
     (*vectofill)(0)=-1234.0;
 
     // save parameter space coordinate in serial dense vector
@@ -283,8 +289,6 @@ public:
 
               sourceele = curr->second.getRawPtr();
 
-              // parameter list
-              params.set<int>("action", action);
               // fill locationarray
               DRT::Element::LocationArray sourcela(1);
               sourceele->LocationVector(*sourcedis,sourcela,false);
@@ -363,7 +367,17 @@ public:
 
 
             // evaluate and perform action handed in to this function
-            params.set<int>("action", action);
+              if(action == 81311)
+              { // experimental pre cmbe
+                params.set<std::string>("action","interpolate_porosity_to_given_point");
+
+              }
+              else if(action == 813112)
+              {
+                params.set<int>("action",(int)SCATRA::calc_immersed_phi_at_given_point);
+              }
+              else
+                params.set<int>("action", action);
             params.set<int>("Physical Type",INPAR::FLUID::poro_p1);
             if(validsource)
             {
@@ -375,13 +389,23 @@ public:
               sourceele->Evaluate(params,*sourcedis,sourcela,dummy1,dummy2,*vectofill ,*xi_dense,dummy3);
               matched = 1;
 
-              Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::FluidImmersedBase>(curr->second)->SetIsImmersedBoundary(1);
+//              Teuchos::RCP<DRT::ELEMENTS::FluidImmersedBase> immersedele =
+//              Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::FluidImmersedBase>(curr->second);
+//              if(immersedele != Teuchos::null)
+//                immersedele->SetIsImmersedBoundary(1);
 
               //std::cout<<"Tgt. Ele: "<<targetele.Id()<<" lies in src. ele: "<<curr->second->Id()<<" at  pos. ["<<std::setprecision(5)<<xvec[0]<<" "<<xvec[1]<<" "<<xvec[2]<<"]"<<std::endl;
 
-              DRT::Node** nodes = curr->second->Nodes();
-              for(int node=0;node<curr->second->NumNode();++node)
-                static_cast<IMMERSED::ImmersedNode* >(nodes[node])->SetIsImmersedBoundary(1);
+//              DRT::Node** nodes = curr->second->Nodes();
+//              IMMERSED::ImmersedNode* immersednode;
+//              for(int node=0;node<curr->second->NumNode();++node)
+//              {
+//                immersednode = dynamic_cast<IMMERSED::ImmersedNode* >(nodes[node]);
+//                if(immersednode != NULL)
+//                  immersednode->SetIsImmersedBoundary(1);
+//                else {
+//                  break;}
+//              }
 
               break; // break loop over all source eles
             }
@@ -481,6 +505,7 @@ public:
 
     // now every proc should store the requested quantities in vectofill for his targetxi
     // time to return that stuff
+
     for(int dim=0;dim<datalength;++dim)
       targetdata[dim]=(*vectofill)(dim);
 
@@ -1336,14 +1361,23 @@ public:
               Epetra_SerialDenseMatrix dummy2;
               Epetra_SerialDenseVector dummy3;
 
+              if(action != "none")
               // evaluate and perform action handed in to this function
               sourceele->Evaluate(params,*sourcedis,la,dummy1,dummy2,*vectofill ,*xi_dense,dummy3);
+              else
+              {
+                 for(int dim=0;dim<datalength;++dim)
+                   (*vectofill)(dim)=0.0;
+              }
 
               break; // break loop over all source elements
             }// if match
 
             if(closele == (curr_subset_of_structdis.end()--) and eleIter == ((closele->second).end()--) and matched == 0 and irobin == (numproc-1)) // this point lies not within discretization at all
-            {(*vectofill)(0)=0.0;(*vectofill)(1)=0.0;(*vectofill)(2)=0.0;(*vectofill)(3)=0.0;}
+            {
+              for(int dim=0;dim<datalength;++dim)
+                (*vectofill)(dim)=0.0;
+            }
           }// loop over all seachbox elements
         }// loop over closeele set
       }// enter loop only if point not yet matched
@@ -1426,6 +1460,235 @@ public:
 
 
     return err;
+  };
+
+
+  /*----------------------------------------------------------------------*/
+  /*----------------------------------------------------------------------*/
+  template < DRT::Element::DiscretizationType sourcedistype,
+  DRT::Element::DiscretizationType targetdistype >
+  double IntersectLineWithBoundary
+  (
+      Teuchos::RCP<DRT::Discretization> evaldis,
+      const Teuchos::RCP<const Epetra_Vector> dispnp,
+      Teuchos::ParameterList& params,
+      LINALG::Matrix<3,1>& searchdirection,
+      LINALG::Matrix<3,1>& spacepoint,
+      const std::string& condstring,
+      const int condid
+  )
+  {
+    // is to be set 1 if intersection is found
+    int matched = 0;
+
+    // result variable
+    double tempresult = -1234.0;
+
+# ifdef DEBUG
+    if (!(evaldis->Filled()) ) dserror("FillComplete() was not called");
+    if (!(evaldis->HaveDofs())) dserror("AssignDegreesOfFreedom() was not called");
+# endif
+
+    // get communicator
+    const Epetra_Comm& comm = evaldis->Comm();
+
+    // declarations and definitions for round robin loop
+    int numproc  = comm.NumProc();
+    static const int myrank   = comm.MyPID();                     // myrank
+    static const int torank   = (myrank + 1) % numproc;           // sends to
+    static const int fromrank = (myrank + numproc - 1) % numproc; // recieves from
+
+    int owner = myrank;
+
+    DRT::Element::LocationArray la(evaldis->NumDofSets());
+
+    std::multimap<std::string,Teuchos::RCP<DRT::Condition> >::iterator fool;
+
+    //----------------------------------------------------------------------
+    // loop through conditions and evaluate them if they match the criterion
+    //----------------------------------------------------------------------
+    for (fool=evaldis->GetAllConditions().begin(); fool!=evaldis->GetAllConditions().end(); ++fool)
+    {
+      if (fool->first == condstring)
+      {
+        DRT::Condition& cond = *(fool->second);
+        if (condid == -1 || condid ==cond.GetInt("ConditionID"))
+        {
+          // get geometry
+          std::map<int,Teuchos::RCP<DRT::Element> >& geom = cond.Geometry();
+          // DEBUG check
+          if (geom.empty()) dserror("evaluation of condition with empty geometry on proc %d",evaldis->Comm().MyPID());
+
+          // define iterator over surface geometry elements
+          std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
+
+          // loop over all geometry elements and check for intersection with
+          // boundary along search direction
+          LINALG::Matrix<3,1> p;
+          LINALG::Matrix<3,1> m1;
+          LINALG::Matrix<3,1> m2;
+          LINALG::Matrix<3,3> A;
+          LINALG::Matrix<3,1> b;
+          LINALG::Matrix<3,1> parameters;
+          double determinant = -1234.0;
+
+          // round robin loop
+          for (int irobin = 0; irobin < numproc; ++irobin)
+          {
+            std::vector<char> sdata;
+            std::vector<char> rdata;
+
+            // if the spacepoint on the calling proc has not yet been matched
+            // to a point on the opposite surface (in inward normal direction) ...
+            // if matched == 1 then tempresult is already correct
+            if (matched == 0)
+            {
+              // ... loop over all geometry elements on this proc
+              for (curr=geom.begin(); curr!=geom.end(); ++curr)
+              {
+                // get nodes
+                DRT::Node** bdrynodes = curr->second->Nodes();
+                const double* X0 = bdrynodes[0]->X();
+                const double* X1 = bdrynodes[1]->X();
+                const double* X3 = bdrynodes[3]->X();
+
+                // get location vector
+                curr->second->LocationVector(*evaldis,la,false,condstring,params);
+                // extract  bdry ele displacements
+                std::vector<double> bdryeledisp(la[0].lm_.size());
+                DRT::UTILS::ExtractMyValues(*dispnp,bdryeledisp,la[0].lm_);
+
+                // target ele space point p is curr. pos. of node 0
+                // from this point a aux plane is built
+                // warping of the element is neglected
+                p(0,0) = X0[0] + bdryeledisp[0*3 + 0];
+                p(1,0) = X0[1] + bdryeledisp[0*3 + 1];
+                p(2,0) = X0[2] + bdryeledisp[0*3 + 2];
+
+                // direction vector m1 is vector from node 0 to node 1
+                // first vector to span the aux plane
+                m1(0,0) = X1[0]+bdryeledisp[1*3 + 0] - p(0,0);
+                m1(1,0) = X1[1]+bdryeledisp[1*3 + 1] - p(1,0);
+                m1(2,0) = X1[2]+bdryeledisp[1*3 + 2] - p(2,0);
+
+                // direction vector m1 is vector from node 0 to node 3
+                // second vector to span the aux plane
+                m2(0,0) = X3[0]+bdryeledisp[3*3 + 0] - p(0,0);
+                m2(1,0) = X3[1]+bdryeledisp[3*3 + 1] - p(1,0);
+                m2(2,0) = X3[2]+bdryeledisp[3*3 + 2] - p(2,0);
+
+                // fill matrix A = [m1,m2,-searchdirection]
+                A(0,0) = m1(0);
+                A(1,0) = m1(1);
+                A(2,0) = m1(2);
+
+                A(0,1) = m2(0);
+                A(1,1) = m2(1);
+                A(2,1) = m2(2);
+
+                A(0,2) = -searchdirection(0);
+                A(1,2) = -searchdirection(1);
+                A(2,2) = -searchdirection(2);
+
+                determinant=A.Invert();
+
+                // vector b = spacepoint - p
+                b.Update(1.0,spacepoint,-1.0,p,0.0);
+
+                // solve for parameters
+                parameters.Multiply(A,b);
+                tempresult = parameters(2,0);
+
+                double eps = 1.0e-06;
+
+                // parameters(2,0) is the length of the line intersecting the surface vis-a-vis the spacepoint
+                if( tempresult>1e-04 and (parameters(0,0)<(1.0+eps) and parameters(0,0)>(0.0-eps)) and (parameters(1,0)<(1.0+eps) and parameters(1,0)>(0.0-eps)) )
+                {
+                  matched = 1;
+                  if(abs(determinant)<1e-08)
+                    dserror("determinant close to zero or negative! det=%f",determinant);
+                  break;
+                }
+
+              } // loop over all geometry elements
+            } // only if not yet matched
+
+            // send data around to the other procs if there are any
+            if(comm.NumProc() > 1)
+            {
+              DRT::Exporter exporter(comm);
+
+              // ---- pack data for sending -----
+              {
+                DRT::PackBuffer data;
+                data.StartPacking();
+                {
+                  data.AddtoPack(matched); //< owner already found matching point vis-a-vis spacepoint
+                  data.AddtoPack(owner);   //< myrank = owner of data
+                  DRT::ParObject::AddtoPack<3,1>(data,searchdirection); //< searchdirection of owner
+                  DRT::ParObject::AddtoPack<3,1>(data, spacepoint);     //< spacepoint of owner
+
+                  data.AddtoPack(tempresult);
+                }
+
+                std::swap(sdata, data());
+              }
+              //---------------------------------
+
+              // ---- send ----
+              MPI_Request request;
+              exporter.ISend(myrank, torank, &(sdata[0]), (int)sdata.size(), 1234, request);
+
+              // ---- receive ----
+              int length = rdata.size();
+              int tag = -1;
+              int from = -1;
+              exporter.ReceiveAny(from,tag,rdata,length);
+              if (tag != 1234 or from != fromrank)
+                dserror("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank, myrank, from, myrank);
+
+              // ---- unpack data -----
+              std::vector<char>::size_type position = 0;
+              matched    = DRT::ParObject::ExtractInt(position,rdata);
+              owner      = DRT::ParObject::ExtractInt(position,rdata);
+              DRT::ParObject::ExtractfromPack<3,1>(position,rdata,searchdirection);
+              DRT::ParObject::ExtractfromPack<3,1>(position,rdata,spacepoint);
+
+              tempresult = DRT::ParObject::ExtractDouble(position,rdata);
+
+              // wait for all communication to finish
+              exporter.Wait(request);
+              comm.Barrier();
+            } // only if numproc > 1
+
+//            if(irobin == numproc-1 and matched == 0 )
+//            {
+//              // DEBUG output
+//              std::cout<<"parameters:"<<parameters<<std::endl;
+//              std::cout<<"m1"<<m1<<std::endl;
+//              std::cout<<"m2"<<m2<<std::endl;
+//              std::cout<<"searchdirection"<<searchdirection<<std::endl;
+//              std::cout<<"spacepoint"<<spacepoint<<std::endl;
+//              std::cout<<"p"<<p<<std::endl;
+//              b(0,0)=p(0,0)+parameters(0,0)*m1(0,0)+parameters(1,0)*m2(0,0);
+//              b(1,0)=p(1,0)+parameters(0,0)*m1(1,0)+parameters(1,0)*m2(1,0);
+//              b(2,0)=p(2,0)+parameters(0,0)*m1(2,0)+parameters(1,0)*m2(2,0);
+//              std::cout<<"intersectionpoint: "<<b<<std::endl;
+//              b.Update(-1.0,spacepoint,1.0);
+//              std::cout<<"connectingvector "<<b<<"\n with length: "<<b.Norm2()<<std::endl;
+//                std::cout<<"Warning! Found no intersection for evaluation of cell diameter!"<<std::endl;
+//            }
+          } // robin loop
+
+          // if not matched after round robin loop, something went wrong
+          if(matched == 0)
+            std::cout<<"No intersection for evaluation of cell diameter on rank "<<myrank<<std::endl;
+
+        } // if check of condid successful
+      } // if condstring found
+    } //for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
+
+    return tempresult;
   };
 
 

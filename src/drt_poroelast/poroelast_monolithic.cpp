@@ -578,9 +578,6 @@ void POROELAST::Monolithic::SetupRHS(bool firstcall)
 void POROELAST::Monolithic::PrepareTimeStep()
 {
   PoroBase::PrepareTimeStep();
-
-  //---------------------------------------- initialise equilibrium loop and norms
-  SetupNewton();
 }
 
 
@@ -1073,7 +1070,7 @@ void POROELAST::Monolithic::PrintNewtonIterTextStream(std::ostringstream& oss)
  *----------------------------------------------------------------------*/
 void POROELAST::Monolithic::PrintNewtonConv()
 {
-  // somebody did the door
+  //std::cout<<"Monolithic Porous Medium solver converged in "<<iter_<<" iterations."<<std::endl;
   return;
 }
 

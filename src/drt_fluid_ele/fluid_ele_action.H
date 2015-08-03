@@ -65,6 +65,7 @@ enum Action {
     calc_volume,
     interpolate_velocity_to_given_point,
     interpolate_velgrad_to_given_point,
+    calc_artificial_velocity_divergence,
     interpolate_pressure_to_given_point,
     xwall_l2_projection,
     xwall_calc_mk,

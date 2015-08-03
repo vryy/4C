@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file immersed_field_exchange_manager.cpp
 
-\brief manage access to and provide data in immersed problems
+\brief manage access to and provide data globally in immersed problems
 
 <pre>
 Maintainers: Andreas Rauch
@@ -11,33 +11,39 @@ Maintainers: Andreas Rauch
 </pre>
 *----------------------------------------------------------------------*/
 #include "immersed_field_exchange_manager.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_discret.H"
+
+///----------------------------------------------------------------------*/
+/// the instance
+///----------------------------------------------------------------------*/
+DRT::ImmersedFieldExchangeManager* DRT::ImmersedFieldExchangeManager::instance_;
 
 //----------------------------------------------------------------------*/
 //    definition of the instance
 //----------------------------------------------------------------------*/
-IMMERSED::ImmersedFieldExchangeManager*  IMMERSED::ImmersedFieldExchangeManager::Instance( bool create )
+DRT::ImmersedFieldExchangeManager*  DRT::ImmersedFieldExchangeManager::Instance( bool create )
 {
-  static ImmersedFieldExchangeManager* instance;
   if ( create )
   {
-    if ( instance==NULL )
+    if ( instance_==NULL )
     {
-      instance = new ImmersedFieldExchangeManager();
+      instance_ = new ImmersedFieldExchangeManager();
     }
   }
   else
   {
-    if ( instance!=NULL )
-      delete instance;
-    instance = NULL;
+    if ( instance_!=NULL )
+      delete instance_;
+    instance_ = NULL;
   }
-  return instance;
+  return instance_;
 }
 
 //----------------------------------------------------------------------*/
 //    destruction method
 //----------------------------------------------------------------------*/
-void IMMERSED::ImmersedFieldExchangeManager::Done()
+void DRT::ImmersedFieldExchangeManager::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
@@ -47,9 +53,56 @@ void IMMERSED::ImmersedFieldExchangeManager::Done()
 //----------------------------------------------------------------------*/
 //    constructor
 //----------------------------------------------------------------------*/
-IMMERSED::ImmersedFieldExchangeManager::ImmersedFieldExchangeManager()
+DRT::ImmersedFieldExchangeManager::ImmersedFieldExchangeManager()
 {
-  // empty
+
+  check_counter_=0;
+  num_isimmersedbry_=0;
+  gap_max_=0.0;
+  gap_min_=0.0;
+  void_min_=0.0;
+  void_max_=0.0;
+  delta_porosity_max_=0.0;
+  points_to_ecm_penalty_traction_ = Teuchos::null;
+  isinitialized_=false;
 }
 
+void DRT::ImmersedFieldExchangeManager::InitializePorosityAtGPMap()
+{
 
+  DRT::Condition* mycondition = DRT::Problem::Instance()->GetDis("cell")->GetCondition("FSICoupling");
+  if(mycondition == NULL)
+    dserror("Failed to get condition FSICoupling");
+  std::map<int,Teuchos::RCP<DRT::Element> > mygeometry = mycondition->Geometry();
+  int mygeometrysize = mygeometry.size();
+  if(mygeometrysize==0)
+    dserror("My geometry is empty");
+
+//  // DEBUG output
+//  for (std::map<int,Teuchos::RCP<DRT::Element> >::iterator it=mygeometry.begin(); it!=mygeometry.end(); ++it)
+//     std::cout <<"PROC "<<DRT::Problem::Instance()->GetDis("cell")->Comm().MyPID()<<": "<< it->first << " => " << it->second->Id() << '\n';
+
+  for (std::map<int,Teuchos::RCP<DRT::Element> >::iterator it=mygeometry.begin(); it!=mygeometry.end(); ++it)
+  {
+    // vector o the 4 gp values of the porosity for element with key id
+    std::vector<double> vectortoinsert(4);
+    std::vector<LINALG::Matrix<3,1> > vectorofmatricestoinsert(4);
+    for(int gp=0;gp<4;++gp)
+    {
+      LINALG::Matrix<3,1> matrixtoinsert(true);
+      vectorofmatricestoinsert[gp] = matrixtoinsert;
+    }
+    vectortoinsert[0]=0.8;
+    vectortoinsert[1]=0.8;
+    vectortoinsert[2]=0.8;
+    vectortoinsert[3]=0.8;
+
+    int id = it->second->Id();
+
+    porosity_at_gp_.insert( std::pair<int,std::vector<double> >(id,vectortoinsert) );
+    porosity_at_gp_old_timestep_.insert( std::pair<int,std::vector<double> >(id,vectortoinsert) );
+    penalty_traction_at_gp_.insert( std::pair<int,std::vector<LINALG::Matrix<3,1> > >(id,vectorofmatricestoinsert) );
+  }
+
+  return;
+}

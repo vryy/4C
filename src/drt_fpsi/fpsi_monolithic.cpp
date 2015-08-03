@@ -145,6 +145,7 @@ void FPSI::MonolithicBase::PrepareTimeStep()
   PrintHeader();
 
   PoroField()   ->PrepareTimeStep();
+  PoroField()   ->SetupNewton();
   FluidField()  ->PrepareTimeStep();
   AleField()    ->PrepareTimeStep();
 }

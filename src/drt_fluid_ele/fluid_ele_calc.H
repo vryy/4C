@@ -227,6 +227,18 @@ public:
       Epetra_SerialDenseVector&            elevec2_epetra
       );
 
+  /*! \brief Integrate the divergence of the velocity field for immersed cell migration
+   *
+   *  \author rauch \date 05/2014
+   */
+  int CalcArtificialVelocityDivergence(
+      Teuchos::ParameterList&              params,
+      DRT::ELEMENTS::Fluid*                ele,
+      DRT::Discretization &                discretization,
+      const std::vector<int> &             lm,
+      Epetra_SerialDenseVector&            elevec1_epetra
+      );
+
   /*! \brief Interpolate pressure to given point
    *
    *  \author ghamm \date 06/2015

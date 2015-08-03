@@ -101,12 +101,15 @@ TRANSIENT                       no_transient
 VSTAB                           no_vstab
 -----------------------------------------------------------------CELL DYNAMIC
 MIGRATIONTYPE                   ameboid
+ECM_INTERACTION                 no
 MAXTIME                         0.02
 TIMESTEP                        0.01
 NUMSTEP                         2
 UPRES                           1
 RESTARTEVRY                     1
 COUPALGO                        iter_stagg_fixed_rel_param
+ECM_FIBER_RADIUS                100.0 // very large -> no ecm interaction
+PENALTY_START                   1000
 ----------------------------------------------------IMMERSED METHOD
 COUPALGO                        partitioned
 SCHEME                          dirichletneumann
