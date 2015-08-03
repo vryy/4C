@@ -261,37 +261,18 @@ void MAT::ViscoElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
   MAT::ElastHyper::Setup(numgp, linedef);
 
   // Initialise/allocate history variables 09/13
-  histscgcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<6,1> >);
-  histscglast_=Teuchos::rcp(new std::vector<LINALG::Matrix<6,1> >);
-  histmodrcgcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<6,1> >);
-  histmodrcglast_=Teuchos::rcp(new std::vector<LINALG::Matrix<6,1> >);
-  histstresscurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  histstresslast_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  histartstresscurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  histartstresslast_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-
   const LINALG::Matrix<6,1> emptyvec(true);
-  histscgcurr_->resize(numgp);
-  histscglast_->resize(numgp);
-  histmodrcgcurr_->resize(numgp);
-  histmodrcglast_->resize(numgp);
-  histstresscurr_->resize(numgp);
-  histstresslast_->resize(numgp);
-  histartstresscurr_->resize(numgp);
-  histartstresslast_->resize(numgp);
+  LINALG::Matrix<6,1> idvec(true); for(int i=0;i<3;++i) idvec(i)=1.;
 
-  for (int j=0; j<numgp; ++j)
-  {
-    histscgcurr_->at(j) = emptyvec;
-    histscglast_->at(j) = emptyvec;
-    histmodrcgcurr_->at(j) = emptyvec;
-    histmodrcglast_->at(j) = emptyvec;
-    histstresscurr_->at(j) = emptyvec;
-    histstresslast_->at(j) = emptyvec;
-    histartstresscurr_->at(j) = emptyvec;
-    histartstresslast_->at(j) = emptyvec;
+  histscgcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<6,1> >(numgp,idvec));
+  histscglast_=Teuchos::rcp(new std::vector<LINALG::Matrix<6,1> >(numgp,idvec));
+  histmodrcgcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<6,1> >(numgp,idvec));
+  histmodrcglast_=Teuchos::rcp(new std::vector<LINALG::Matrix<6,1> >(numgp,idvec));
+  histstresscurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >(numgp,emptyvec));
+  histstresslast_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >(numgp,emptyvec));
+  histartstresscurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >(numgp,emptyvec));
+  histartstresslast_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >(numgp,emptyvec));
 
-  }
   isinitvis_ = true;
 
   return;
@@ -303,37 +284,18 @@ void MAT::ViscoElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 void MAT::ViscoElastHyper::ResetAll(const int numgp)
 {
   // Initialise/allocate history variables 09/13
-
-  histscgcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<6,1> >);
-  histscglast_=Teuchos::rcp(new std::vector<LINALG::Matrix<6,1> >);
-  histmodrcgcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<6,1> >);
-  histmodrcglast_=Teuchos::rcp(new std::vector<LINALG::Matrix<6,1> >);
-  histstresscurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  histstresslast_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  histartstresscurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  histartstresslast_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-
   const LINALG::Matrix<6,1> emptyvec(true);
-  histscgcurr_->resize(numgp);
-  histscglast_->resize(numgp);
-  histmodrcgcurr_->resize(numgp);
-  histmodrcglast_->resize(numgp);
-  histstresscurr_->resize(numgp);
-  histstresslast_->resize(numgp);
-  histartstresscurr_->resize(numgp);
-  histartstresslast_->resize(numgp);
+  LINALG::Matrix<6,1> idvec(true); for(int i=0;i<3;++i) idvec(i)=1.;
 
-  for (int j=0; j<numgp; ++j)
-  {
-    histscgcurr_->at(j) = emptyvec;
-    histscglast_->at(j) = emptyvec;
-    histmodrcgcurr_->at(j) = emptyvec;
-    histmodrcglast_->at(j) = emptyvec;
-    histstresscurr_->at(j) = emptyvec;
-    histstresslast_->at(j) = emptyvec;
-    histartstresscurr_->at(j) = emptyvec;
-    histartstresslast_->at(j) = emptyvec;
-  }
+  histscgcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<6,1> >(numgp,idvec));
+  histscglast_=Teuchos::rcp(new std::vector<LINALG::Matrix<6,1> >(numgp,idvec));
+  histmodrcgcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<6,1> >(numgp,idvec));
+  histmodrcglast_=Teuchos::rcp(new std::vector<LINALG::Matrix<6,1> >(numgp,idvec));
+  histstresscurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >(numgp,emptyvec));
+  histstresslast_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >(numgp,emptyvec));
+  histartstresscurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >(numgp,emptyvec));
+  histartstresslast_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >(numgp,emptyvec));
+
   isinitvis_ = true;
 
   return ;
@@ -353,24 +315,13 @@ void MAT::ViscoElastHyper::Update()
   histartstresslast_=histartstresscurr_;
 
   const LINALG::Matrix<6,1> emptyvec(true);
-  histscgcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<6,1> >);
-  histmodrcgcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<6,1> >);
-  histstresscurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  histartstresscurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-
+  LINALG::Matrix<6,1> idvec(true); for(int i=0;i<3;++i) idvec(i)=1.;
   const int numgp=histscglast_->size();
-  histscgcurr_->resize(numgp);
-  histmodrcgcurr_->resize(numgp);
-  histstresscurr_->resize(numgp);
-  histartstresscurr_->resize(numgp);
 
-  for (int j=0; j<numgp; ++j)
-  {
-    histscgcurr_->at(j) = emptyvec;
-    histmodrcgcurr_->at(j) = emptyvec;
-    histstresscurr_->at(j) = emptyvec;
-    histartstresscurr_->at(j) = emptyvec;
-  }
+  histscgcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<6,1> >(numgp,idvec));
+  histmodrcgcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<6,1> >(numgp,idvec));
+  histstresscurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >(numgp,emptyvec));
+  histartstresscurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >(numgp,emptyvec));
 
   return;
 }
@@ -545,8 +496,8 @@ void MAT::ViscoElastHyper::EvaluateKinQuantVis(
   LINALG::Matrix<6,1> modrcglast (histmodrcglast_->at(gp));
 
   // Update history of Cauchy-Green Tensor
-  histscgcurr_->at(gp) = scg;// principal material: store \dot{C}
-  histmodrcgcurr_->at(gp) = modrcg;// decoupled material: store \overline{\dot{C}}
+  histscgcurr_->at(gp) = scg;// principal material: store C^{n}
+  histmodrcgcurr_->at(gp) = modrcg;// decoupled material: store \overline{C}^{n}
 
   // rate of Cauchy-Green Tensor
   // REMARK: strain-like 6-Voigt vector
@@ -557,14 +508,6 @@ void MAT::ViscoElastHyper::EvaluateKinQuantVis(
   modrcgrate.Update(1.0,modrcg,1.0);// decoupled material: \overline{\dot{C}} = \frac{\overline{C}^n - \overline{C}^{n-1}}{\Delta t}
   modrcgrate.Update(-1.0,modrcglast,1.0);
   modrcgrate.Scale(1/dt);
-
-  // in the first time step, set rcgrate and modrcgrate to zero (--> first time step is just hyperelastic, not viscous)
-  const LINALG::Matrix<6,1> emptyvec(true);
-  if(scglast == emptyvec)
-  {
-    scgrate = emptyvec;
-    modrcgrate = emptyvec;
-  }
 
   // invariants
   // -------------------------------------------------------------------
