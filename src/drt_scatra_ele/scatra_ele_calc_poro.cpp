@@ -521,7 +521,7 @@ const bool                      inverting
   // integration loop
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
-    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+    const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
 
     //calculate gauss point porosity from fluid and solid and (potentially) scatra solution
     ComputePorosity(ele);
