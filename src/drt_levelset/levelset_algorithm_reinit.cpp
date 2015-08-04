@@ -63,18 +63,21 @@ void SCATRA::LevelSetAlgorithm::ReinitEq()
 }
 
 
-/*----------------------------------------------------------------------*
- | set element parameters for reinitialization equation rasthofer 12/13 |
- *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::SetReinitializationElementParameters()
+/*-------------------------------------------------------------------*
+ | set element parameters for reinitialization equation   fang 08/15 |
+ *-------------------------------------------------------------------*/
+void SCATRA::LevelSetAlgorithm::SetReinitializationElementParameters(bool calcinitialtimederivative) const
 {
+  // create element parameter list
   Teuchos::ParameterList eleparams;
 
+  // set action for elements
   eleparams.set<int>("action",SCATRA::set_lsreinit_scatra_parameter);
 
-  // reinitialization equation id given in convective form
-  // ale is not intended here
+  // reinitialization equation is given in convective form
   eleparams.set<int>("convform",INPAR::SCATRA::convform_convective);
+
+  // no ALE intended
   eleparams.set("isale",false);
 
   // parameters for stabilization, which are the same as for the level-set equation (if turned on)
@@ -83,11 +86,18 @@ void SCATRA::LevelSetAlgorithm::SetReinitializationElementParameters()
   // set flag for writing the flux vector fields
   eleparams.set<int>("writeflux",writeflux_);
 
-  //! set vector containing ids of scalars for which flux vectors are calculated
+  // set vector containing IDs of scalars for which flux vectors are calculated
   eleparams.set<Teuchos::RCP<std::vector<int> > >("writefluxids",writefluxids_);
 
-  // set level-set reitialization specific parameters
+  // set level-set reinitialization specific parameters
   eleparams.sublist("REINITIALIZATION") = levelsetparams_->sublist("REINITIALIZATION");
+
+  // turn off stabilization and artificial diffusivity when calculating initial time derivative
+  if(calcinitialtimederivative)
+  {
+    eleparams.sublist("REINITIALIZATION").set<std::string>("STABTYPEREINIT","no_stabilization");
+    eleparams.sublist("REINITIALIZATION").set<std::string>("ARTDIFFREINIT","no");
+  }
 
   // parameters for finite difference check
   eleparams.set<int>("fdcheck",fdcheck_);

@@ -144,7 +144,7 @@ namespace SCATRA
     void Reinitialization();
 
     /// set element parameters for reinitialization equation
-    void SetReinitializationElementParameters();
+    void SetReinitializationElementParameters(bool calcinitialtimederivative = false) const;
 
     // -----------------------------------------------------------------
     // Reconstructing nodal curvature

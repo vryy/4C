@@ -102,52 +102,8 @@ void SCATRA::LevelSetTimIntOneStepTheta::PrepareFirstTimeStep()
     TimIntOneStepTheta::PrepareFirstTimeStep();
   else
   {
-    // set required general parameters
-    Teuchos::ParameterList eleparams;
-
-    eleparams.set<int>("action",SCATRA::set_lsreinit_scatra_parameter);
-
-    // reinitialization equation id given in convective form
-    // ale is not intended here
-    eleparams.set<int>("convform",INPAR::SCATRA::convform_convective);
-    eleparams.set("isale",false);
-
-    // set flag for writing the flux vector fields
-    eleparams.set<int>("writeflux",writeflux_);
-
-    //! set vector containing ids of scalars for which flux vectors are calculated
-    eleparams.set<Teuchos::RCP<std::vector<int> > >("writefluxids",writefluxids_);
-
-    // parameters for stabilization
-    eleparams.sublist("stabilization") = params_->sublist("STABILIZATION");
-
-    // set level-set reitialization specific parameters
-    eleparams.sublist("REINITIALIZATION") = levelsetparams_->sublist("REINITIALIZATION");
-    // turn off stabilization
-    Teuchos::setStringToIntegralParameter<int>("STABTYPEREINIT",
-          "no_stabilization",
-          "type of stabilization (if any)",
-          Teuchos::tuple<std::string>("no_stabilization"),
-          Teuchos::tuple<std::string>("Do not use any stabilization"),
-          Teuchos::tuple<int>(
-              INPAR::SCATRA::stabtype_no_stabilization),
-              &eleparams.sublist("REINITIALIZATION"));
-    // turn off artificial diffusion
-    Teuchos::setStringToIntegralParameter<int>("ARTDIFFREINIT",
-            "no",
-            "potential incorporation of all-scale subgrid diffusivity (a.k.a. discontinuity-capturing) term",
-            Teuchos::tuple<std::string>("no"),
-            Teuchos::tuple<std::string>("no artificial diffusion"),
-            Teuchos::tuple<int>(INPAR::SCATRA::artdiff_none),
-            &eleparams.sublist("REINITIALIZATION"));
-
-    // parameters for finite difference check
-    eleparams.set<int>("fdcheck",INPAR::SCATRA::fdcheck_none);
-    eleparams.set<double>("fdcheckeps",fdcheckeps_);
-    eleparams.set<double>("fdchecktol",fdchecktol_);
-
-    // call standard loop over elements
-    discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+    // set element parameters with stabilization and artificial diffusivity deactivated
+    SetReinitializationElementParameters(true);
 
     // note: time-integration parameter list has not to be overwritten here, since we rely on incremental solve
     //       as already set in PrepareTimeLoopReinit()
