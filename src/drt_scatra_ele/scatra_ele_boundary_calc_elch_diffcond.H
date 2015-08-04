@@ -84,7 +84,7 @@ namespace DRT
 
       //! evaluate scatra-scatra interface coupling condition
       void EvaluateS2ICoupling(
-          const DRT::Element*         ele,              ///< current boundary element
+          const DRT::FaceElement*     ele,              ///< current boundary element
           Teuchos::ParameterList&     params,           ///< parameter list
           DRT::Discretization&        discretization,   ///< discretization
           std::vector<int>&           lm,               ///< location vector

@@ -82,7 +82,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::ScaTraEleBoundaryCal
  *-------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoupling(
-    const DRT::Element*         ele,              ///< current boundary element
+    const DRT::FaceElement*     ele,              ///< current boundary element
     Teuchos::ParameterList&     params,           ///< parameter list
     DRT::Discretization&        discretization,   ///< discretization
     std::vector<int>&           lm,               ///< location vector

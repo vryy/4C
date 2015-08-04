@@ -271,7 +271,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateElchBoun
  *-------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateS2ICoupling(
-    const DRT::Element*         ele,              ///< current boundary element
+    const DRT::FaceElement*     ele,              ///< current boundary element
     Teuchos::ParameterList&     params,           ///< parameter list
     DRT::Discretization&        discretization,   ///< discretization
     std::vector<int>&           lm,               ///< location vector
@@ -281,10 +281,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateS2ICoupl
     )
 {
   // get material of parent element
-  const DRT::FaceElement* faceele = dynamic_cast<const DRT::FaceElement*>(ele);
-  if (faceele == 0)
-    dserror("Invalid element type, expected face element");
-  Teuchos::RCP<MAT::Material> material = faceele->ParentElement()->Material();
+  Teuchos::RCP<MAT::Material> material = ele->ParentElement()->Material();
 
   // safety check
   if(material->MaterialType() != INPAR::MAT::m_elchmat)
