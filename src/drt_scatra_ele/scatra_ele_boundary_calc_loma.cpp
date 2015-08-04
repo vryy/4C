@@ -101,7 +101,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::EvaluateAction(
     Teuchos::ParameterList&             params,
     DRT::Discretization&                discretization,
     SCATRA::BoundaryAction              action,
-    std::vector<int>&                   lm,
+    DRT::Element::LocationArray&        la,
     Epetra_SerialDenseMatrix&           elemat1_epetra,
     Epetra_SerialDenseMatrix&           elemat2_epetra,
     Epetra_SerialDenseVector&           elevec1_epetra,
@@ -118,7 +118,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::EvaluateAction(
         ele,
         params,
         discretization,
-        lm
+        la[0].lm_
         );
 
     break;
@@ -131,7 +131,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::EvaluateAction(
         params,
         discretization,
         action,
-        lm,
+        la,
         elemat1_epetra,
         elemat2_epetra,
         elevec1_epetra,

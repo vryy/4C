@@ -1088,7 +1088,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcInitialTimeDerivative(
     //----------------------------------------------------------------------
     // get material parameters (evaluation at integration point)
     //----------------------------------------------------------------------
-    if (scatrapara_->MatGP()) GetMaterialParams(ele,densn,densnp,densam,visc);
+    if (scatrapara_->MatGP()) GetMaterialParams(ele,densn,densnp,densam,visc,iquad);
 
     //------------ get values of variables at integration point
     for (int k=0;k<numscal_;++k) // deal with a system of transported scalars

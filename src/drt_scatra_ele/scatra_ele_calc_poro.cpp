@@ -12,6 +12,7 @@
  </pre>
  *----------------------------------------------------------------------*/
 
+#include "scatra_ele_calc_poro.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
@@ -22,18 +23,10 @@
 #include "../drt_mat/scatra_mat.H"
 #include "../drt_mat/matlist.H"
 
-//#include "scatra_ele_parameter.H"
-//
-//#include "../drt_nurbs_discret/drt_nurbs_utils.H"
-//#include "../drt_geometry/position_array.H"
-//
-//#include "scatra_ele_action.H"
-//#include "scatra_ele.H"
-
 #include "scatra_ele.H"
 #include "scatra_ele_parameter_timint.H"
 
-#include "scatra_ele_calc_poro.H"
+#include "../drt_lib/standardtypes_cpp.H"  // for EPS13 and so on
 
 /*----------------------------------------------------------------------*
  |                                                           vuong 07/14 |
@@ -172,6 +165,74 @@ DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ScaTraEleCalcPoro(\
 //}
 
 /*----------------------------------------------------------------------*
+ | evaluate action                                          vuong 07/15 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::EvaluateAction(
+    DRT::Element*                 ele,
+    Teuchos::ParameterList&       params,
+    DRT::Discretization&          discretization,
+    const SCATRA::Action&         action,
+    DRT::Element::LocationArray&  la,
+    Epetra_SerialDenseMatrix&     elemat1_epetra,
+    Epetra_SerialDenseMatrix&     elemat2_epetra,
+    Epetra_SerialDenseVector&     elevec1_epetra,
+    Epetra_SerialDenseVector&     elevec2_epetra,
+    Epetra_SerialDenseVector&     elevec3_epetra
+    )
+{
+  // determine and evaluate action
+  switch(action)
+  {
+  case SCATRA::calc_mean_scalars:
+  {
+    // get flag for inverting
+    bool inverting = params.get<bool>("inverting");
+
+    // need current scalar vector
+    // -> extract local values from the global vectors
+    Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+    if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
+    std::vector<double> myphinp(la[0].lm_.size());
+    DRT::UTILS::ExtractMyValues(*phinp,myphinp,la[0].lm_);
+
+    // fill all element arrays
+    for (int i=0;i<my::nen_;++i)
+    {
+      for (int k = 0; k< my::numscal_; ++k)
+      {
+        // split for each transported scalar, insert into element arrays
+        my::ephinp_[k](i,0) = myphinp[k+(i*my::numdofpernode_)];
+      }
+    } // for i
+
+    ExtractElementAndNodeValuesPoro(ele,params,discretization,la);
+
+    // calculate scalars and domain integral
+    CalculateScalars(ele,elevec1_epetra,inverting);
+
+    break;
+  }
+  default:
+    return my::EvaluateAction(
+              ele,
+              params,
+              discretization,
+              action,
+              la,
+              elemat1_epetra,
+              elemat2_epetra,
+              elevec1_epetra,
+              elevec2_epetra,
+              elevec3_epetra
+              );
+    break;
+  }
+
+  return 0;
+}
+
+/*----------------------------------------------------------------------*
  | read element coordinates                                 vuong 10/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
@@ -193,6 +254,22 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ReadElementCoordinates(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 const std::vector<double> DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ExtractElementAndNodeValues(
+    DRT::Element*                 ele,
+    Teuchos::ParameterList&       params,
+    DRT::Discretization&          discretization,
+    DRT::Element::LocationArray&  la
+)
+{
+  ExtractElementAndNodeValuesPoro(ele,params,discretization,la);
+
+  return my::ExtractElementAndNodeValues(ele,params,discretization,la);
+}
+
+/*----------------------------------------------------------------------*
+ | extract element based or nodal values                     ehrl 12/13 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ExtractElementAndNodeValuesPoro(
     DRT::Element*                 ele,
     Teuchos::ParameterList&       params,
     DRT::Discretization&          discretization,
@@ -230,8 +307,6 @@ const std::vector<double> DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ExtractElem
   }
   else
     isnodalporosity_=false;
-
-  return my::ExtractElementAndNodeValues(ele,params,discretization,la);
 }
 
 /*----------------------------------------------------------------------*
@@ -429,6 +504,64 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ComputePorosity(
   return;
 }
 
+/*----------------------------------------------------------------------*
+|  calculate scalar(s) and domain integral                  vuong 07/15|
+| (overwrites method in ScaTraEleCalc)                                 |
+*----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::CalculateScalars(
+const DRT::Element*             ele,
+Epetra_SerialDenseVector&       scalars,
+const bool                      inverting
+  )
+{
+  // integration points and weights
+  const DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  // integration loop
+  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+  {
+    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+
+    //calculate gauss point porosity from fluid and solid and (potentially) scatra solution
+    ComputePorosity(ele);
+
+    const double porosity = DiffManager()->GetPorosity();
+
+    // calculate integrals of (inverted) scalar(s) and domain
+    if (inverting)
+    {
+      for (int i=0; i<my::nen_; i++)
+      {
+        const double fac_funct_i = fac*my::funct_(i)/porosity;
+        for (int k = 0; k < my::numscal_; k++)
+        {
+          if (std::abs(my::ephinp_[k](i,0))> EPS14)
+            scalars[k] += fac_funct_i/my::ephinp_[k](i,0);
+          else
+            dserror("Division by zero");
+        }
+        // for domain volume
+        scalars[my::numscal_] += fac_funct_i;
+      }
+    }
+    else
+    {
+      for (int i=0; i<my::nen_; i++)
+      {
+        const double fac_funct_i = fac*my::funct_(i)*porosity;
+        for (int k = 0; k < my::numscal_; k++)
+        {
+          scalars[k] += fac_funct_i*my::ephinp_[k](i,0);
+        }
+        // for domain volume
+        scalars[my::numscal_] += fac_funct_i;
+      }
+    }
+  } // loop over integration points
+
+  return;
+} // ScaTraEleCalc::CalculateScalars
 
 // template classes
 

@@ -71,6 +71,20 @@ public:
 
 protected:
 
+  //! evaluate action
+  virtual int EvaluateAction(
+      DRT::Element*                 ele,
+      Teuchos::ParameterList&       params,
+      DRT::Discretization&          discretization,
+      const SCATRA::Action&         action,
+      DRT::Element::LocationArray&  la,
+      Epetra_SerialDenseMatrix&     elemat1_epetra,
+      Epetra_SerialDenseMatrix&     elemat2_epetra,
+      Epetra_SerialDenseVector&     elevec1_epetra,
+      Epetra_SerialDenseVector&     elevec2_epetra,
+      Epetra_SerialDenseVector&     elevec3_epetra
+      );
+
 //   int EvaluateODMesh(  DRT::Element*                 ele,
 //                        Teuchos::ParameterList&       params,
 //                        DRT::Discretization &         discretization,
@@ -113,6 +127,15 @@ protected:
   //! extract element based or nodal values
   //  return extracted values of phinp
   virtual const std::vector<double> ExtractElementAndNodeValues(
+      DRT::Element*                 ele,
+      Teuchos::ParameterList&       params,
+      DRT::Discretization&          discretization,
+      DRT::Element::LocationArray&  la
+  );
+
+  //! extract element based or nodal values
+  //  return extracted values of phinp
+  virtual void ExtractElementAndNodeValuesPoro(
       DRT::Element*                 ele,
       Teuchos::ParameterList&       params,
       DRT::Discretization&          discretization,
@@ -163,6 +186,13 @@ protected:
                    double& densam   //!< density at t_(n+alpha_M));
                    );
 
+  //! calculate scalar(s) and domain integral
+  virtual void CalculateScalars(
+    const DRT::Element*             ele,       //!< the element we are dealing with
+    Epetra_SerialDenseVector&       scalars,   //!< scalar to be computed
+    const bool                      inverting  //!< bool indicating inversion
+  );
+
   //! get poro diffusion manager
   Teuchos::RCP<ScaTraEleDiffManagerPoro> DiffManager(){return Teuchos::rcp_static_cast<ScaTraEleDiffManagerPoro>(my::diffmanager_);};
 
@@ -176,7 +206,7 @@ protected:
   //! nodal porosity values at t_(n+1)
   LINALG::Matrix<my::nen_,1> eporosity_;
 
-  //! porosity at gauss point
+  //! flag indacting a node based porosity
   bool isnodalporosity_;
 };
 

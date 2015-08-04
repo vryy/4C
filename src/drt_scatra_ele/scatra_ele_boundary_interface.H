@@ -21,6 +21,7 @@ Maintainer: Andreas Ehrl
 #include "Epetra_SerialDenseMatrix.h"
 
 #include "../drt_lib/drt_singletondestruction.H"
+#include "../drt_lib/drt_element.H"
 
 namespace DRT
 {
@@ -52,7 +53,7 @@ class TransportBoundary;
       DRT::FaceElement*                   ele,
       Teuchos::ParameterList&             params,
       DRT::Discretization&                discretization,
-      std::vector<int>&                   lm,
+      DRT::Element::LocationArray&        la,
       Epetra_SerialDenseMatrix&           elemat1,
       Epetra_SerialDenseMatrix&           elemat2,
       Epetra_SerialDenseVector&           elevec1,
@@ -65,7 +66,7 @@ class TransportBoundary;
         Teuchos::ParameterList&             params,
         DRT::Discretization&                discretization,
         DRT::Condition&                     condition,
-        std::vector<int>&                   lm,
+        DRT::Element::LocationArray&        la,
         Epetra_SerialDenseVector&           elevec1,
         const double                        scalar
     ) = 0;

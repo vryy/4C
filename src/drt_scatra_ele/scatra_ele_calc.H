@@ -298,7 +298,7 @@ namespace ELEMENTS
         );
 
     //! calculate scalar(s) and domain integral
-    void CalculateScalars(
+    virtual void CalculateScalars(
       const DRT::Element*             ele,       //!< the element we are dealing with
       Epetra_SerialDenseVector&       scalars,   //!< scalar to be computed
       const bool                      inverting  //!< bool indicating inversion

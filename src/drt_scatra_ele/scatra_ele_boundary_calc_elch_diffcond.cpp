@@ -100,7 +100,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateNeumann(
     Teuchos::ParameterList&             params,
     DRT::Discretization&                discretization,
     DRT::Condition&                     condition,
-    std::vector<int>&                   lm,
+    DRT::Element::LocationArray&        la,
     Epetra_SerialDenseVector&           elevec1,
     const double                        scalar
     )
@@ -131,7 +131,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateNeumann(
     dserror("Invalid material!");
 
   // call base class routine
-  my::EvaluateNeumann(ele,params,discretization,condition,lm,elevec1,dmedc_->GetPhasePoro(0));
+  my::EvaluateNeumann(ele,params,discretization,condition,la,elevec1,dmedc_->GetPhasePoro(0));
 
   // add boundary flux contributions to potential equation
   switch(ElchParams()->EquPot())

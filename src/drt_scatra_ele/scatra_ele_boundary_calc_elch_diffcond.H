@@ -59,7 +59,7 @@ namespace DRT
           Teuchos::ParameterList&             params,
           DRT::Discretization&                discretization,
           DRT::Condition&                     condition,
-          std::vector<int>&                   lm,
+          DRT::Element::LocationArray&        la,
           Epetra_SerialDenseVector&           elevec1,
           const double                        scalar
       );

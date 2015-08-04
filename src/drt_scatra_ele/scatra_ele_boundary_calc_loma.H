@@ -48,7 +48,7 @@ namespace DRT
           Teuchos::ParameterList&             params,
           DRT::Discretization&                discretization,
           SCATRA::BoundaryAction              action,
-          std::vector<int>&                   lm,
+          DRT::Element::LocationArray&        la,
           Epetra_SerialDenseMatrix&           elemat1_epetra,
           Epetra_SerialDenseMatrix&           elemat2_epetra,
           Epetra_SerialDenseVector&           elevec1_epetra,

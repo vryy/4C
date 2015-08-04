@@ -77,7 +77,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::Done()
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::ScaTraEleBoundaryCalcPoro(const int numdofpernode, const int numscal,const std::string& disname)
-  : DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ScaTraEleBoundaryCalc(numdofpernode,numscal,disname)
+  : DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ScaTraEleBoundaryCalc(numdofpernode,numscal,disname),
+    xyze0_(true),
+    eporosity_(true),
+    eprenp_(true),
+    isnodalporosity_(false)
 {
   return;
 }
@@ -91,7 +95,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::EvaluateAction(
     Teuchos::ParameterList&             params,
     DRT::Discretization&                discretization,
     SCATRA::BoundaryAction              action,
-    std::vector<int>&                   lm,
+    DRT::Element::LocationArray&        la,
     Epetra_SerialDenseMatrix&           elemat1_epetra,
     Epetra_SerialDenseMatrix&           elemat2_epetra,
     Epetra_SerialDenseVector&           elevec1_epetra,
@@ -105,13 +109,15 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::EvaluateAction(
   case SCATRA::bd_calc_fps3i_surface_permeability:
   case SCATRA::bd_calc_fs3i_surface_permeability:
   case SCATRA::bd_calc_Neumann:
+  case SCATRA::bd_calc_normal_vectors:
+  case SCATRA::bd_integrate_shape_functions:
   {
     my::EvaluateAction(
         ele,
         params,
         discretization,
         action,
-        lm,
+        la,
         elemat1_epetra,
         elemat2_epetra,
         elevec1_epetra,
@@ -120,14 +126,162 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::EvaluateAction(
         );
     break;
   }
+  case SCATRA::bd_add_convective_mass_flux:
+  {
+    //calculate integral of convective mass/heat flux
+    // NOTE: since results are added to a global vector via normal assembly
+    //       it would be wrong to suppress results for a ghosted boundary!
+
+    // get actual values of transported scalars
+    Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+    if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
+
+    // extract local values from the global vector
+    std::vector<double> ephinp(la[0].lm_.size());
+    DRT::UTILS::ExtractMyValues(*phinp,ephinp,la[0].lm_);
+
+    // get velocity values at nodes
+    const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("velocity field",Teuchos::null);
+
+    // we deal with a (nsd_+1)-dimensional flow field
+    LINALG::Matrix<my::nsd_+1,my::nen_>  evel(true);
+    DRT::UTILS::ExtractMyNodeBasedValues(ele,evel,velocity,my::nsd_+1);
+
+    {
+      const Teuchos::RCP<Epetra_MultiVector> pre = params.get< Teuchos::RCP<Epetra_MultiVector> >("pressure field");
+      LINALG::Matrix<1,my::nen_> eprenp;
+      DRT::UTILS::ExtractMyNodeBasedValues(ele,eprenp,pre,1);
+
+      //pressure values
+      for (int i=0;i<my::nen_;++i)
+      {
+        eprenp_(i) = eprenp(0,i);
+      }
+
+      // this is a hack. Check if the structure (assumed to be the dofset 1) has more DOFs than dimension. If so,
+      // we assume that this is the porosity
+      if( discretization.NumDof(1,ele->Nodes()[0])==my::nsd_+2 )
+      {
+        isnodalporosity_=true;
+
+        Teuchos::RCP<const Epetra_Vector> disp= discretization.GetState(1,"displacement");
+
+        if(disp!=Teuchos::null)
+        {
+          std::vector<double> mydisp(la[1].lm_.size());
+          DRT::UTILS::ExtractMyValues(*disp,mydisp,la[1].lm_);
+
+          for (int inode=0; inode<my::nen_; ++inode)  // number of nodes
+            eporosity_(inode,0) = mydisp[my::nsd_+1+(inode*(my::nsd_+2))];
+        }
+        else
+          dserror("Cannot get state vector displacement");
+      }
+      else
+        isnodalporosity_=false;
+    }
+
+    // for the moment we ignore the return values of this method
+    CalcConvectiveFlux(ele,ephinp,evel,elevec1_epetra);
+    //vector<double> locfluxintegral = CalcConvectiveFlux(ele,ephinp,evel,elevec1_epetra);
+    //std::cout<<"locfluxintegral[0] = "<<locfluxintegral[0]<<std::endl;
+
+    break;
+  }
   default:
   {
-    dserror("Invalid action parameter!");
+    dserror("Invalid action parameter nr. %i!",action);
     break;
   }
   } // switch(action)
 
   return 0;
+}
+
+/*----------------------------------------------------------------------*
+ | calculate integral of convective flux across boundary    vuong 07/15 |
+ | (overwrites method in ScaTraEleBoundaryCalc)                         |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+std::vector<double> DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::CalcConvectiveFlux(
+    const DRT::FaceElement*                     ele,
+    const std::vector<double>&                  ephinp,
+    const LINALG::Matrix<my::nsd_+1,my::nen_>&  evelnp,
+    Epetra_SerialDenseVector&                   erhs
+)
+{
+  // integration points and weights
+  const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  // define vector for scalar values at nodes
+  LINALG::Matrix<my::nen_,1> phinod(true);
+
+  std::vector<double> integralflux(my::numscal_);
+
+  // loop over all scalars
+  for(int k=0;k<my::numscal_;++k)
+  {
+    integralflux[k] = 0.0;
+
+    // compute scalar values at nodes
+    for (int inode=0; inode< my::nen_;++inode)
+    {
+      phinod(inode) = ephinp[inode*my::numdofpernode_+k];
+    }
+
+    // loop over all integration points
+    for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+    {
+
+      const double fac = my::EvalShapeFuncAndIntFac(intpoints,iquad,&(this->normal_));
+
+      const double porosity = ComputePorosity(ele);
+
+      // get velocity at integration point
+      my::velint_.Multiply(evelnp,my::funct_);
+
+      // normal velocity (note: normal_ is already a unit(!) normal)
+      const double normvel = my::velint_.Dot(my::normal_);
+
+      // scalar at integration point
+      const double phi = my::funct_.Dot(phinod);
+
+      const double val = porosity*phi*normvel*fac;
+      integralflux[k] += val;
+      // add contribution to provided vector (distribute over nodes using shape fct.)
+      for (int vi=0; vi<my::nen_; ++vi)
+      {
+        const int fvi = vi*my::numdofpernode_+k;
+        erhs[fvi] += val*my::funct_(vi);
+      }
+    }
+  }
+
+  return integralflux;
+
+} //ScaTraEleBoundaryCalcPoro<distype>::ConvectiveFlux
+
+
+/*----------------------------------------------------------------------*
+ |  get the material constants  (protected)                  vuong 10/14|
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+double DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::ComputePorosity(
+    const DRT::FaceElement* ele       //!< the element we are dealing with
+  )
+{
+  double porosity=0.0;
+
+  if(isnodalporosity_)
+  {
+    porosity = eporosity_.Dot(my::funct_);
+  }
+  else
+  {
+    dserror("porosity calculation not yet implemented for non-node-based porosity!");
+  }
+
+  return porosity;
 }
 
 

@@ -123,7 +123,7 @@ int DRT::ELEMENTS::Transport::Evaluate(
     Epetra_SerialDenseVector& elevec2,
     Epetra_SerialDenseVector& elevec3)
 {
-  dserror("not implemented");
+  dserror("not implemented. Use the Evaluate() method with Location Array instead!");
   return -1;
 }
 

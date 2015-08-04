@@ -228,7 +228,7 @@ public:
     std::vector<std::string>& condnames,   //!< ?
     const bool           writetofile, //!< ?
     const int            num=0,       //!< field number
-    bool                 fixtotflux=0 //!< always calculate flux_total_boundary
+    bool                 fixtotflux=false //!< always calculate flux_total_boundary
   );
 
   //! calculate error compared to analytical solution

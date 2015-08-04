@@ -77,17 +77,6 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::SetupCalc(DRT::FaceElement*  
   // get node coordinates (we have a nsd_+1 dimensional domain!)
   GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,nen_> >(ele,xyze_);
 
-  // get additional state vector for ALE case: grid displacement
-  if(scatraparams_->IsAle())
-  {
-    const Teuchos::RCP<Epetra_MultiVector> dispnp = params.get< Teuchos::RCP<Epetra_MultiVector> >("dispnp",Teuchos::null);
-    if (dispnp==Teuchos::null) dserror("Cannot get state vector 'dispnp'");
-    DRT::UTILS::ExtractMyNodeBasedValues(ele,edispnp_,dispnp,nsd_+1);
-    // add nodal displacements
-    xyze_ += edispnp_;
-  }
-  else edispnp_.Clear();
-
   // Now do the nurbs specific stuff (for isogeometric elements)
   if(DRT::NURBS::IsNurbs(distype))
   {
@@ -103,7 +92,6 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::SetupCalc(DRT::FaceElement*  
   return 0;
 }
 
-
 /*----------------------------------------------------------------------*
  | evaluate element                                          fang 02/15 |
  *----------------------------------------------------------------------*/
@@ -112,7 +100,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::Evaluate(
     DRT::FaceElement*                   ele,
     Teuchos::ParameterList&             params,
     DRT::Discretization&                discretization,
-    std::vector<int>&                   lm,
+    DRT::Element::LocationArray&        la,
     Epetra_SerialDenseMatrix&           elemat1_epetra,
     Epetra_SerialDenseMatrix&           elemat2_epetra,
     Epetra_SerialDenseVector&           elevec1_epetra,
@@ -120,20 +108,27 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::Evaluate(
     Epetra_SerialDenseVector&           elevec3_epetra
 )
 {
-  // check for the action parameter
-  const SCATRA::BoundaryAction action = DRT::INPUT::get<SCATRA::BoundaryAction>(params,"action");
 
-  // setup
+  //--------------------------------------------------------------------------------
+  // preparations for element
+  //--------------------------------------------------------------------------------
   if(SetupCalc(ele,params,discretization) == -1)
     return 0;
 
+  //--------------------------------------------------------------------------------
+  // extract element based or nodal values
+  //--------------------------------------------------------------------------------
+  ExtractElementAndNodeValues(ele,params,discretization,la);
+
+  // check for the action parameter
+  const SCATRA::BoundaryAction action = DRT::INPUT::get<SCATRA::BoundaryAction>(params,"action");
   // evaluate action
   EvaluateAction(
       ele,
       params,
       discretization,
       action,
-      lm,
+      la,
       elemat1_epetra,
       elemat2_epetra,
       elevec1_epetra,
@@ -144,6 +139,26 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::Evaluate(
   return 0;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ExtractElementAndNodeValues(
+    DRT::FaceElement*             ele,
+    Teuchos::ParameterList&       params,
+    DRT::Discretization&          discretization,
+    DRT::Element::LocationArray&  la)
+{
+  // get additional state vector for ALE case: grid displacement
+  if(scatraparams_->IsAle())
+  {
+    const Teuchos::RCP<Epetra_MultiVector> dispnp = params.get< Teuchos::RCP<Epetra_MultiVector> >("dispnp",Teuchos::null);
+    if (dispnp==Teuchos::null) dserror("Cannot get state vector 'dispnp'");
+    DRT::UTILS::ExtractMyNodeBasedValues(ele,edispnp_,dispnp,nsd_+1);
+    // add nodal displacements
+    xyze_ += edispnp_;
+  }
+  else edispnp_.Clear();
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -153,7 +168,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
     Teuchos::ParameterList&           params,
     DRT::Discretization&              discretization,
     SCATRA::BoundaryAction            action,
-    std::vector<int>&                 lm,
+    DRT::Element::LocationArray&      la,
     Epetra_SerialDenseMatrix&         elemat1_epetra,
     Epetra_SerialDenseMatrix&         elemat2_epetra,
     Epetra_SerialDenseVector&         elevec1_epetra,
@@ -161,6 +176,8 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
     Epetra_SerialDenseVector&         elevec3_epetra
 )
 {
+  std::vector<int>& lm = la[0].lm_;
+
   switch (action)
   {
   case SCATRA::bd_calc_normal_vectors:
@@ -184,7 +201,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
     if(condition == NULL)
       dserror("Cannot access Neumann boundary condition!");
 
-    EvaluateNeumann(ele,params,discretization,*condition,lm,elevec1_epetra,1.);
+    EvaluateNeumann(ele,params,discretization,*condition,la,elevec1_epetra,1.);
 
     break;
   }
@@ -511,7 +528,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateNeumann(
     Teuchos::ParameterList&             params,
     DRT::Discretization&                discretization,
     DRT::Condition&                     condition,
-    std::vector<int>&                   lm,
+    DRT::Element::LocationArray&        la,
     Epetra_SerialDenseVector&           elevec1,
     const double                        scalar
     )
@@ -823,7 +840,7 @@ const double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::GetDensity(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 std::vector<double> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcConvectiveFlux(
-    const DRT::Element*                 ele,
+    const DRT::FaceElement*             ele,
     const std::vector<double>&          ephinp,
     const LINALG::Matrix<nsd_+1,nen_>&  evelnp,
     Epetra_SerialDenseVector&           erhs
@@ -882,7 +899,7 @@ std::vector<double> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcConvectiv
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ConvectiveHeatTransfer(
-    const DRT::Element*                 ele,
+    const DRT::FaceElement*             ele,
     Teuchos::RCP<const MAT::Material>   material,
     const std::vector<double>&          ephinp,
     Epetra_SerialDenseMatrix&           emat,
@@ -1092,7 +1109,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::GetConstNormal(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICoupling(
-    const DRT::Element*         ele,              ///< current boundary element
+    const DRT::FaceElement*     ele,             ///< current boundary element
     Teuchos::ParameterList&     params,           ///< parameter list
     DRT::Discretization&        discretization,   ///< discretization
     std::vector<int>&           lm,               ///< location vector
@@ -1200,7 +1217,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICoupling(
  *----------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcBoundaryIntegral(
-    const DRT::Element*         ele,     //!< the element we are dealing with
+    const DRT::FaceElement*     ele,     //!< the element we are dealing with
     Epetra_SerialDenseVector&   scalar   //!< result vector for scalar integral to be computed
     )
 {
@@ -1282,7 +1299,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcRobinBoundary(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateSurfacePermeability(
-        const DRT::Element*        ele,    ///< current boundary element
+        const DRT::FaceElement*    ele,    ///< current boundary element
         const std::vector<double>& ephinp, ///< scalar values at element nodes
         const std::vector<double>& f_wss,  ///< factor for WSS at element nodes
         Epetra_SerialDenseMatrix&  emat,   ///< element-matrix
@@ -1374,7 +1391,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateSurfacePermeability(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateKedemKatchalsky(
-    const DRT::Element*        ele,         ///< the actual boundary element
+    const DRT::FaceElement*    ele,         ///< the actual boundary element
     const std::vector<double>& ephinp,      ///< scalar values at element nodes
     const std::vector<double>& epressure,   ///< pressure values at element nodes
     const std::vector<double>& ephibar,     ///< mean concentration values at element nodes
@@ -1491,7 +1508,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateKedemKatchalsky(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::IntegrateShapeFunctions(
-    const DRT::Element*        ele,
+    const DRT::FaceElement*    ele,
     Teuchos::ParameterList&    params,
     Epetra_SerialDenseVector&  elevec1,
     const bool                 addarea

@@ -21,7 +21,6 @@ Maintainer: Andreas Ehrl
 
 #include "../drt_lib/drt_discret.H"
 
-
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                             gjb 01/09 |
  *----------------------------------------------------------------------*/
@@ -29,6 +28,23 @@ int DRT::ELEMENTS::TransportBoundary::Evaluate(
     Teuchos::ParameterList&   params,
     DRT::Discretization&      discretization,
     std::vector<int>&         lm,
+    Epetra_SerialDenseMatrix& elemat1,
+    Epetra_SerialDenseMatrix& elemat2,
+    Epetra_SerialDenseVector& elevec1,
+    Epetra_SerialDenseVector& elevec2,
+    Epetra_SerialDenseVector& elevec3)
+{
+  dserror("not implemented. Use the Evaluate() method with Location Array instead!");
+  return -1;
+}
+
+/*----------------------------------------------------------------------*
+ |  evaluate the element (public)                             gjb 01/09 |
+ *----------------------------------------------------------------------*/
+int DRT::ELEMENTS::TransportBoundary::Evaluate(
+    Teuchos::ParameterList&   params,
+    DRT::Discretization&      discretization,
+    LocationArray&            la,
     Epetra_SerialDenseMatrix& elemat1,
     Epetra_SerialDenseMatrix& elemat2,
     Epetra_SerialDenseVector& elevec1,
@@ -95,7 +111,7 @@ int DRT::ELEMENTS::TransportBoundary::Evaluate(
       this,
       params,
       discretization,
-      lm,
+      la,
       elemat1,
       elemat2,
       elevec1,
@@ -119,8 +135,14 @@ int DRT::ELEMENTS::TransportBoundary::EvaluateNeumann(
   // add Neumann boundary condition to parameter list
   params.set<DRT::Condition*>("condition",&condition);
 
+  //build location array from location vector
+  //(this a little ugly. one could fix this by introducing a EvaluateNeumann() method
+  // with LocationArray as input in the DRT::Element ...)
+  LocationArray la(1);
+  la[0].lm_ = lm;
+
   // evaluate boundary element
-  return Evaluate(params,discretization,lm,*elemat1,*elemat1,elevec1,elevec1,elevec1);
+  return Evaluate(params,discretization,la,*elemat1,*elemat1,elevec1,elevec1,elevec1);
 }
 
 

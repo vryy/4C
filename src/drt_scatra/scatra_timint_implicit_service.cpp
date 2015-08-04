@@ -310,6 +310,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       // provide velocity field
       // (export to column map necessary for parallel evaluation)
       discret_->AddMultiVectorToParameterList(params,"velocity field",convel_);
+      discret_->AddMultiVectorToParameterList(params,"pressure field",pre_);
 
       //provide displacement field in case of ALE
       if (isale_)
@@ -572,6 +573,7 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialTimeDerivative()
   eleparams.set<int>("action",SCATRA::calc_initial_time_deriv);
   discret_->AddMultiVectorToParameterList(eleparams,"convective velocity field",convel_);
   discret_->AddMultiVectorToParameterList(eleparams,"velocity field",vel_);
+  discret_->AddMultiVectorToParameterList(eleparams,"pressure field",pre_);
   if(isale_)
     discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
   AddProblemSpecificParametersAndVectors(eleparams);
@@ -691,6 +693,9 @@ void SCATRA::ScaTraTimIntImpl::OutputMeanScalars(const int num)
     // provide displacement field in case of ALE
     if (isale_)
       discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+
+    discret_->AddMultiVectorToParameterList(eleparams,"velocity field",convel_);
+    discret_->AddMultiVectorToParameterList(eleparams,"pressure field",pre_);
 
     // evaluate integrals of scalar(s) and domain
     Teuchos::RCP<Epetra_SerialDenseVector> scalars

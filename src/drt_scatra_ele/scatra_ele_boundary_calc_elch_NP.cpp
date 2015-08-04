@@ -88,13 +88,13 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype>::EvaluateNeumann(
     Teuchos::ParameterList&             params,
     DRT::Discretization&                discretization,
     DRT::Condition&                     condition,
-    std::vector<int>&                   lm,
+    DRT::Element::LocationArray&        la,
     Epetra_SerialDenseVector&           elevec1,
     const double                        scalar
     )
 {
   // call base class routine
-  my::EvaluateNeumann(ele,params,discretization,condition,lm,elevec1,scalar);
+  my::EvaluateNeumann(ele,params,discretization,condition,la,elevec1,scalar);
 
   // add boundary flux contributions to potential equation
   switch(myelch::ElchParams()->EquPot())

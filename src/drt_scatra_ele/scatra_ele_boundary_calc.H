@@ -128,17 +128,26 @@ public:
                  Teuchos::ParameterList&           params,
                  DRT::Discretization&              discretization);
 
-  //! evaluate element
-  int Evaluate(
-      DRT::FaceElement*                   ele,
-      Teuchos::ParameterList&             params,
-      DRT::Discretization&                discretization,
-      std::vector<int>&                   lm,
-      Epetra_SerialDenseMatrix&           elemat1_epetra,
-      Epetra_SerialDenseMatrix&           elemat2_epetra,
-      Epetra_SerialDenseVector&           elevec1_epetra,
-      Epetra_SerialDenseVector&           elevec2_epetra,
-      Epetra_SerialDenseVector&           elevec3_epetra
+  //! extract element based or nodal values
+  //  return extracted values of phinp
+  virtual void ExtractElementAndNodeValues(
+    DRT::FaceElement*             ele,
+    Teuchos::ParameterList&       params,
+    DRT::Discretization&          discretization,
+    DRT::Element::LocationArray&  la
+  );
+
+  //! Evaluate the element (using location array)
+  virtual int Evaluate(
+      DRT::FaceElement*             ele,
+      Teuchos::ParameterList&       params,
+      DRT::Discretization&          discretization,
+      DRT::Element::LocationArray&  la,
+      Epetra_SerialDenseMatrix&     elemat1_epetra,
+      Epetra_SerialDenseMatrix&     elemat2_epetra,
+      Epetra_SerialDenseVector&     elevec1_epetra,
+      Epetra_SerialDenseVector&     elevec2_epetra,
+      Epetra_SerialDenseVector&     elevec3_epetra
       );
 
   //! evaluate action
@@ -147,7 +156,7 @@ public:
       Teuchos::ParameterList&             params,
       DRT::Discretization&                discretization,
       SCATRA::BoundaryAction              action,
-      std::vector<int>&                   lm,
+      DRT::Element::LocationArray&        la,
       Epetra_SerialDenseMatrix&           elemat1_epetra,
       Epetra_SerialDenseMatrix&           elemat2_epetra,
       Epetra_SerialDenseVector&           elevec1_epetra,
@@ -161,7 +170,7 @@ public:
       Teuchos::ParameterList&             params,
       DRT::Discretization&                discretization,
       DRT::Condition&                     condition,
-      std::vector<int>&                   lm,
+      DRT::Element::LocationArray&        la,
       Epetra_SerialDenseVector&           elevec1,
       const double                        scalar
       );
@@ -189,7 +198,7 @@ public:
 
   //! evaluate scatra-scatra interface coupling condition
   virtual void EvaluateS2ICoupling(
-      const DRT::Element*         ele,              ///< current boundary element
+      const DRT::FaceElement*     ele,              ///< current boundary element
       Teuchos::ParameterList&     params,           ///< parameter list
       DRT::Discretization&        discretization,   ///< discretization
       std::vector<int>&           lm,               ///< location vector
@@ -200,14 +209,14 @@ public:
 
   //! calculate boundary integral, i.e., surface area of boundary element
   void CalcBoundaryIntegral(
-      const DRT::Element*         ele,     //!< the element we are dealing with
+      const DRT::FaceElement*     ele,     //!< the element we are dealing with
       Epetra_SerialDenseVector&   scalar   //!< result vector for scalar integral to be computed
       );
 
 
   //! evaluate Kedem-Katchalsky interface condition
   void EvaluateKedemKatchalsky(
-      const DRT::Element*        ele,         ///< the actual boundary element
+      const DRT::FaceElement*    ele,         ///< the actual boundary element
       const std::vector<double>& ephinp,      ///< scalar values at element nodes
       const std::vector<double>& epressure,   ///< pressure values at element nodes
       const std::vector<double>& ephibar,     ///< mean concentration values at element nodes
@@ -222,7 +231,7 @@ public:
 
   //! integral of shape functions over boundary surface
   void IntegrateShapeFunctions(
-      const DRT::Element*       ele,    ///< the actual boundary element
+      const DRT::FaceElement*   ele,    ///< the actual boundary element
       Teuchos::ParameterList&   params, ///< the parameter list
       Epetra_SerialDenseVector& elevec1,///< result vector (to be assembled)
       const bool                addarea ///< flag for area calculation
@@ -230,7 +239,7 @@ public:
 
   //! evaluate surface/interface permeability
   void EvaluateSurfacePermeability(
-      const DRT::Element*        ele,    ///< current boundary element
+      const DRT::FaceElement*    ele,    ///< current boundary element
       const std::vector<double>& ephinp, ///< scalar values at element nodes
       const std::vector<double>& f_wss,  ///< factor for WSS at element nodes
       Epetra_SerialDenseMatrix&  emat,   ///< element-matrix
@@ -240,8 +249,8 @@ public:
   );
 
   //! compute integral of convective mass/heat flux over boundary surface
-  std::vector<double> CalcConvectiveFlux(
-      const DRT::Element*                 ele,
+  virtual std::vector<double> CalcConvectiveFlux(
+      const DRT::FaceElement*             ele,
       const std::vector<double>&          ephinp,
       const LINALG::Matrix<nsd_+1,nen_>&  evelnp,
       Epetra_SerialDenseVector&           erhs);
@@ -271,7 +280,7 @@ public:
 
   //! calculate boundary condition due to convective heat transfer
   void ConvectiveHeatTransfer(
-      const DRT::Element*                 ele,
+      const DRT::FaceElement*             ele,
       Teuchos::RCP<const MAT::Material>   material,
       const std::vector<double>&          ephinp,
       Epetra_SerialDenseMatrix&           emat,
