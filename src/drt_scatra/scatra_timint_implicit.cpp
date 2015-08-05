@@ -910,9 +910,6 @@ void SCATRA::ScaTraTimIntImpl::PrepareLinearSolve()
   // call elements to calculate system matrix and rhs and assemble
   AssembleMatAndRHS();
 
-  // potential residual scaling and potential addition of Neumann terms
-  ScalingAndNeumann();
-
   // apply Dirichlet boundary conditions
   ApplyDirichletToSystem();
 }

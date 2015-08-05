@@ -60,8 +60,8 @@ NUMSTEP                         10
 OUTMEAN                         No
 OUTPUT_GMSH                     No
 RESTARTEVRY                     1
-SKIPINITDER                     no
-SOLVERTYPE                      nonlinear
+SKIPINITDER                     no //yes
+SOLVERTYPE                      linear_incremental
 THETA                           0.5
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.1
@@ -125,34 +125,17 @@ ML_SMOTIMES                     1 1 1 1 1
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 // MAT 1 MAT_matlist LOCAL No NUMMAT 2 MATIDS 21 22 END
-MAT 1 MAT_matlist_reactions LOCAL No NUMMAT 8 MATIDS 21 22 23 24 25 26 27 28 NUMREAC 1 REACIDS 31 END
-MAT 21 MAT_scatra DIFFUSIVITY 0.0000001
-MAT 22 MAT_scatra DIFFUSIVITY 0.0000001
-MAT 23 MAT_scatra DIFFUSIVITY 0.0000001
-MAT 24 MAT_scatra DIFFUSIVITY 0.0000001
-MAT 25 MAT_scatra DIFFUSIVITY 0.0000001
-MAT 26 MAT_scatra DIFFUSIVITY 0.0000001
-MAT 27 MAT_scatra DIFFUSIVITY 0.0000001
-MAT 28 MAT_scatra DIFFUSIVITY 0.0000001
-MAT 29 MAT_scatra DIFFUSIVITY 0.0000001
-MAT 31 MAT_scatra_reaction NUMSCAL 8 STOICH -1 1 0 0 0 0 0 0 REACCOEFF 1.0 COUPLING simple_multiplicative
+MAT 1 MAT_matlist LOCAL No NUMMAT 2 MATIDS 21 22 END
+MAT 21 MAT_scatra DIFFUSIVITY 1.0000001
+MAT 22 MAT_scatra DIFFUSIVITY 1.0000001
 --------------------------------------------------------CLONING MATERIAL MAP
 ----------------------------------------------------------------------CURVE1
-CURVE 1 on EXPR FUNC ((1-cos(2*pi*t))*0.5) t1 0.00 t2 1.0
-CURVE 1 on EXPR FUNC (1.0) t1 1.00 t2 1000.0
 ----------------------------------------------------------------------CURVE2
-CURVE 2 on EXPR FUNC (1) t1 0.00 t2 1000.0
 ----------------------------------------------------------------------CURVE3
 ----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
-FUNCT 1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION    1.0
-FUNCT 1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION    1.0
-FUNCT 1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION    2.0
-FUNCT 1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION    2.0
-FUNCT 1 COMPONENT 4 EXPR 0 0.0 0 FUNCTION    3.0
-FUNCT 1 COMPONENT 5 EXPR 0 0.0 0 FUNCTION    3.0
-FUNCT 1 COMPONENT 6 EXPR 0 0.0 0 FUNCTION    4.0
-FUNCT 1 COMPONENT 7 EXPR 0 0.0 0 FUNCTION    4.0
+FUNCT 1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION    0.0
+FUNCT 1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION    0.0
 ----------------------------------------------------------------------FUNCT2
 FUNCT 2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION    0.0
 FUNCT 2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION    0.0
@@ -160,22 +143,10 @@ FUNCT 2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION    0.0
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 100 QUANTITY phi VALUE 4.28088826163973257e-01 TOLERANCE 1e-7
-SCATRA DIS scatra NODE 100 QUANTITY phi2 VALUE 1.76328702476718746e+00 TOLERANCE 1e-7
-SCATRA DIS scatra NODE 100 QUANTITY phi3 VALUE 2.00000000000000000e+00 TOLERANCE 1e-7
-SCATRA DIS scatra NODE 100 QUANTITY phi4 VALUE 2.09568792546558136e+00 TOLERANCE 1e-7
-SCATRA DIS scatra NODE 100 QUANTITY phi5 VALUE 3.00000000000000000e+00 TOLERANCE 1e-7
-SCATRA DIS scatra NODE 100 QUANTITY phi6 VALUE 3.00000000000000000e+00 TOLERANCE 1e-7
-SCATRA DIS scatra NODE 100 QUANTITY phi7 VALUE 4.02392198136198065e+00 TOLERANCE 1e-7
-SCATRA DIS scatra NODE 100 QUANTITY phi8 VALUE 4.02392198136197976e+00 TOLERANCE 1e-7
-SCATRA DIS scatra NODE 200 QUANTITY phi VALUE 1.55762991981837351e-01 TOLERANCE 1e-7
-SCATRA DIS scatra NODE 200 QUANTITY phi2 VALUE 1.17441184111929764e+00 TOLERANCE 1e-7
-SCATRA DIS scatra NODE 200 QUANTITY phi3 VALUE 2.00000000000000000e+00 TOLERANCE 1e-7
-SCATRA DIS scatra NODE 200 QUANTITY phi4 VALUE 1.66508741655056736e+00 TOLERANCE 1e-7
-SCATRA DIS scatra NODE 200 QUANTITY phi5 VALUE 3.00000000000000000e+00 TOLERANCE 1e-7
-SCATRA DIS scatra NODE 200 QUANTITY phi6 VALUE 3.00000000000000000e+00 TOLERANCE 1e-7
-SCATRA DIS scatra NODE 200 QUANTITY phi7 VALUE 3.91627185414680312e+00 TOLERANCE 1e-7
-SCATRA DIS scatra NODE 200 QUANTITY phi8 VALUE 3.91627185414680179e+00 TOLERANCE 1e-7
+SCATRA DIS scatra NODE 100 QUANTITY phi VALUE 8.50156319517213044e-01 TOLERANCE 1e-7
+SCATRA DIS scatra NODE 100 QUANTITY phi2 VALUE 4.25078159758606522e-01 TOLERANCE 1e-7
+SCATRA DIS scatra NODE 200 QUANTITY phi VALUE 9.10697451383487344e-01 TOLERANCE 1e-7
+SCATRA DIS scatra NODE 200 QUANTITY phi2 VALUE 4.55348725691743672e-01 TOLERANCE 1e-7
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         8
 NDLINE                          9
@@ -184,7 +155,7 @@ NDVOL                           1
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 // // left surface curve  x y z 0 0 0 Val1 Val2 Val3 0 0 0 Live Mid/orthopreassure Mid
-E 1 - NUMDOF 8 ONOFF 1 1 0 1 0 0 1 1 VAL 1.0 1.0 1.0 1.0 0.5 0.5 0.5 0.5 CURVE 2 2 2 2 1 1 1 1 FUNCT 0 0 0 0 0 0 0 0
+E 1 - NUMDOF 2 ONOFF 1 1 VAL 1.0 0.5 CURVE none none FUNCT 0 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 181 DNODE 1
 NODE 1 DNODE 2
