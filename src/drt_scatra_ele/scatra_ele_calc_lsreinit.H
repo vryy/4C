@@ -206,9 +206,6 @@ private:
   //! get diffusion manager for reinitialization
   Teuchos::RCP<ScaTraEleDiffManagerLsReinit<my::nsd_> > DiffManager(){return Teuchos::rcp_static_cast<ScaTraEleDiffManagerLsReinit<my::nsd_> >(my::diffmanager_);};
 
-  //! get parameter list for reinitialization
-  ScaTraEleParameterLsReinit* LsReinitPara(){return static_cast<ScaTraEleParameterLsReinit*>(my::scatrapara_);};
-
   //! get internal variable manager for reinitialization
   Teuchos::RCP<ScaTraEleInternalVariableManagerLsReinit<my::nsd_,my::nen_> > VarManager(){return Teuchos::rcp_static_cast<ScaTraEleInternalVariableManagerLsReinit<my::nsd_,my::nen_> >(my::scatravarmanager_);};
 
@@ -219,6 +216,8 @@ private:
   //! scalar at before reinitialization
   std::vector<LINALG::Matrix<my::nen_,1> > ephizero_;
 
+  //! parameter class for reinitialization
+  const ScaTraEleParameterLsReinit* lsreinitparams_;
 };
 
 

@@ -2,7 +2,12 @@
 /*!
 \file scatra_ele_parameter_elch.H
 
-\brief element parameter class for electrochemistry problems
+\brief singleton class holding all static electrochemistry parameters required for element evaluation
+
+This singleton class holds all static electrochemistry parameters required for element evaluation. All parameters are
+usually set only once at the beginning of a simulation, namely during initialization of the global time integrator,
+and then never touched again throughout the simulation. This parameter class needs to coexist with the general parameter
+class holding all general static parameters required for scalar transport element evaluation.
 
 <pre>
 Maintainer: Rui Fang
@@ -17,60 +22,65 @@ Maintainer: Rui Fang
 
 #include "../drt_inpar/inpar_elch.H"
 
-#include "scatra_ele_parameter.H"
+#include "scatra_ele_parameter_base.H"
 
 namespace DRT
 {
   namespace ELEMENTS
   {
     // class implementation
-    class ScaTraEleParameterElch : public ScaTraEleParameter
+    class ScaTraEleParameterElch : public ScaTraEleParameterBase
     {
-      typedef DRT::ELEMENTS::ScaTraEleParameter my;
+      public:
 
-    public:
+        //! destructor
+        virtual ~ScaTraEleParameterElch(){return;};
 
-      //! destructor
-      virtual ~ScaTraEleParameterElch(){return;};
+        //! singleton access method
+        static ScaTraEleParameterElch* Instance(
+            const std::string&   disname,        //!< name of discretization
+            bool                 create = true   //!< creation/destruction flag
+            );
 
-      //! singleton access method
-      static ScaTraEleParameterElch* Instance(const std::string& disname, bool create=true);
+        //! singleton destruction
+        virtual void Done();
 
-      //! singleton destruction
-      virtual void Done();
+        //! set parameters
+        void SetParameters(
+            Teuchos::ParameterList& parameters   //!< parameter list
+            );
 
-      //! set parameters for electrochemistry problems
-      virtual void SetElementGeneralParameters(Teuchos::ParameterList& params);
+        //! return type of closing equation for electric potential
+        const INPAR::ELCH::EquPot EquPot() const {return equpot_;};
 
-      //! return type of closing equation for electric potential
-      const INPAR::ELCH::EquPot EquPot() const {return equpot_;};
+        //! return Faraday constant
+        const double Faraday() const {return faraday_;};
 
-      //! return Faraday constant
-      const double Faraday() const {return faraday_;};
+        //! return dielectric constant
+        const double Epsilon() const {return epsilon_;};
 
-      //! return dielectric constant
-      const double Epsilon() const {return epsilon_;};
+        //! return constant F/RT
+        const double FRT() const {return frt_;};
 
-      //! return constant F/RT
-      const double FRT() const {return frt_;};
+      private:
 
-    protected:
+        //! private constructor for singletons
+        ScaTraEleParameterElch(
+            const std::string& disname   //!< name of discretization
+            );
 
-      //! protected constructor for singletons
-      ScaTraEleParameterElch(const std::string& disname);
+        //! equation used for closing of the elch-system
+        enum INPAR::ELCH::EquPot equpot_;
 
-      //! equation used for closing of the elch-system
-      enum INPAR::ELCH::EquPot equpot_;
+        //! Faraday constant
+        const double faraday_;
 
-      //! Faraday constant
-      const double faraday_;
+        //! dielectric constant
+        const double epsilon_;
 
-      //! dielectric constant
-      const double epsilon_;
-
-      //! pre-calculation of regularly used constant F/RT
-      //! (a division is much more expensive than a multiplication)
-      double frt_;
+        //! pre-calculation of regularly used constant F/RT
+        //! (a division is much more expensive than a multiplication)
+        double frt_;
     };
   } // namespace ELEMENTS
 } // namespace DRT

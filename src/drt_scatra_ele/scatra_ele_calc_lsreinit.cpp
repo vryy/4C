@@ -16,8 +16,9 @@ Maintainer: Ursula Rasthofer
 #include "scatra_ele_calc_lsreinit.H"
 
 #include "scatra_ele.H"
-#include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_parameter_lsreinit.H"
+#include "scatra_ele_parameter_std.H"
+#include "scatra_ele_parameter_timint.H"
 
 #include "../drt_geometry/position_array.H"
 #include "../drt_lib/drt_utils.H"
@@ -85,18 +86,22 @@ DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::ScaTraEleCalcLsReinit(
     const std::string& disname
     ) :
     DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode,numscal,disname),
-    ephizero_(my::numscal_)  // size of vector
+    ephizero_(my::numscal_),  // size of vector
+    lsreinitparams_(DRT::ELEMENTS::ScaTraEleParameterLsReinit::Instance(disname)) // parameter class
 {
-  // set appropriate parameter list
-  my::scatrapara_ = DRT::ELEMENTS::ScaTraEleParameterLsReinit::Instance(disname);
   // set appropriate diffusion manager
   my::diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManagerLsReinit<my::nsd_>(my::numscal_));
   // set appropriate internal variable manager
   my::scatravarmanager_ = Teuchos::rcp(new ScaTraEleInternalVariableManagerLsReinit<my::nsd_,my::nen_>(my::numscal_));
 
-  // safety check
+  // safety checks
   if(my::scatrapara_->RBSubGrVel())
     dserror("CalcSubgrVelocityLevelSet not available anymore");
+  if(lsreinitparams_->ArtDiff() != INPAR::SCATRA::artdiff_none)
+  {
+    if(not my::scatrapara_->MatGP() or not my::scatrapara_->TauGP())
+     dserror("Evaluation of material and stabilization parameters need to be done at the integration points for reinitialization due to artificial diff!");
+  }
 
   return;
 }
@@ -141,7 +146,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Evaluate(
   } // for i
 
   // distinguish reinitalization
-  switch (dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->ReinitType())
+  switch(lsreinitparams_->ReinitType())
   {
     case INPAR::SCATRA::reinitaction_sussman:
     {
@@ -171,7 +176,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Evaluate(
         } // for k
       } // for i
 
-      if(LsReinitPara()->UseProjectedVel())
+      if(lsreinitparams_->UseProjectedVel())
       {
         // get velocity at nodes (pre-computed via L2 projection)
         const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("reinitialization velocity field");
@@ -197,7 +202,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Evaluate(
       if (tmp != allcells->end())
         boundaryIntCells = tmp->second;
 
-      if(LsReinitPara()->Project())
+      if(lsreinitparams_->Project())
       {
         const Teuchos::RCP<Epetra_MultiVector> gradphi = params.get< Teuchos::RCP<Epetra_MultiVector> >("gradphi");
         DRT::UTILS::ExtractMyNodeBasedValues(ele,my::econvelnp_,gradphi,my::nsd_);
@@ -511,7 +516,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatHyperbolic(
       LINALG::Matrix<my::nsd_,1> convelint(true);
 
       // switch type for velocity field
-      if (not LsReinitPara()->UseProjectedVel())
+      if (not lsreinitparams_->UseProjectedVel())
       {
 #ifndef USE_PHIN_FOR_VEL
         // gradient of current scalar value at element center
@@ -659,7 +664,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatHyperbolic(
 #endif
 
     // switch type for velocity field
-    if (not LsReinitPara()->UseProjectedVel())
+    if (not lsreinitparams_->UseProjectedVel())
     {
 #ifndef USE_PHIN_FOR_VEL
       // get norm
@@ -751,7 +756,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatHyperbolic(
     // calculation of artificial diffusion
     //--------------------------------------------------------------------
 
-    if (LsReinitPara()->ArtDiff()
+    if (lsreinitparams_->ArtDiff()
         != INPAR::SCATRA::artdiff_none)
     {
       // residual of reinit eq
@@ -764,7 +769,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatHyperbolic(
       // additionally stored in subgrid diffusion coefficient
       my::CalcArtificialDiff(vol,0,1.0,convelint,gradphinp,conv_phi,scatrares,tau);
 
-      if (LsReinitPara()->ArtDiff()
+      if (lsreinitparams_->ArtDiff()
           == INPAR::SCATRA::artdiff_crosswind)
         DiffManager()->SetVelocityForCrossWindDiff(convelint);
 
@@ -813,7 +818,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatHyperbolic(
 
     // subgrid-scale velocity (dummy)
     LINALG::Matrix<my::nen_,1> sgconv(true);
-    if (LsReinitPara()->LinForm() == INPAR::SCATRA::newton)
+    if (lsreinitparams_->LinForm() == INPAR::SCATRA::newton)
     {
       if (my::scatrapara_->StabType()!=INPAR::SCATRA::stabtype_no_stabilization)
         my::CalcMatMassStab(emat,0,taufac,1.0,1.0,sgconv,diff);
@@ -823,12 +828,12 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatHyperbolic(
     // 2) element matrix: convective term in convective form
     //----------------------------------------------------------------
 
-    if (LsReinitPara()->LinForm() == INPAR::SCATRA::newton)
+    if (lsreinitparams_->LinForm() == INPAR::SCATRA::newton)
       my::CalcMatConv(emat,0,timefacfac,1.0,sgconv);
 
     // convective stabilization of convective term (in convective form)
     // transient stabilization of convective term (in convective form)
-    if (LsReinitPara()->LinForm() == INPAR::SCATRA::newton)
+    if (lsreinitparams_->LinForm() == INPAR::SCATRA::newton)
     {
       if(my::scatrapara_->StabType()!=INPAR::SCATRA::stabtype_no_stabilization)
         my::CalcMatTransConvDiffStab(emat,0,timetaufac,1.0,sgconv,diff);
@@ -836,7 +841,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatHyperbolic(
 
 
     // calculation of diffusive element matrix
-    if (LsReinitPara()->ArtDiff()
+    if (lsreinitparams_->ArtDiff()
         != INPAR::SCATRA::artdiff_none)
 #ifndef MODIFIED_EQ
       CalcMatDiff(emat,0,dtfac); //implicit treatment
@@ -870,7 +875,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatHyperbolic(
     my::CalcRHSConv(erhs,0,rhsfac);
 
     // linearization of diffusive term
-    if (LsReinitPara()->ArtDiff()
+    if (lsreinitparams_->ArtDiff()
         != INPAR::SCATRA::artdiff_none)
 #ifndef MODIFIED_EQ
       CalcRHSDiff(erhs,0,dtfac,gradphinp);  //implicit treatment
@@ -914,7 +919,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatElliptic(
 
     // gradient of current scalar value at integration point
     LINALG::Matrix<my::nsd_,1> gradphinp(true);
-    if (LsReinitPara()->Project())
+    if (lsreinitparams_->Project())
       gradphinp.Multiply(my::econvelnp_,my::funct_);
     else
       gradphinp.Multiply(my::derxy_,my::ephinp_[0]);
@@ -934,7 +939,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatElliptic(
 
     // calculate nonlinear diffusivity
     double diff = 0.0;
-    switch (LsReinitPara()->DiffFct())
+    switch (lsreinitparams_->DiffFct())
     {
       case INPAR::SCATRA::hyperbolic:
       {
@@ -1033,27 +1038,27 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SignFunction(
   )
 {
   // compute interface thickness
-  const double epsilon = LsReinitPara()->InterfaceThicknessFac() * charelelength;
+  const double epsilon = lsreinitparams_->InterfaceThicknessFac() * charelelength;
 
-  if (LsReinitPara()->SignType()
+  if (lsreinitparams_->SignType()
       == INPAR::SCATRA::signtype_nonsmoothed)
   {
     if      (phizero < 0.0) sign_phi = -1.0;
     else if (phizero > 0.0) sign_phi = +1.0;
     else                    sign_phi =  0.0;
   }
-  else if (LsReinitPara()->SignType()
+  else if (lsreinitparams_->SignType()
            == INPAR::SCATRA::signtype_SussmanSmerekaOsher1994)
   {
     sign_phi = phizero/sqrt(phizero*phizero + epsilon*epsilon);
   }
-  else if (LsReinitPara()->SignType()
+  else if (lsreinitparams_->SignType()
            == INPAR::SCATRA::signtype_PengEtAl1999)
   {
     const double grad_norm_phi = gradphi.Norm2();
     sign_phi = phi/sqrt(phi*phi + epsilon*epsilon * grad_norm_phi*grad_norm_phi);
   }
-  else if (LsReinitPara()->SignType()
+  else if (lsreinitparams_->SignType()
            == INPAR::SCATRA::signtype_SussmanFatemi1999)
   {
     if(fabs(epsilon) < 1e-15) dserror("divide by zero in evaluate for smoothed sign function");
@@ -1078,7 +1083,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::DerivSignFunction(
   )
 {
   // compute interface thickness
-  const double epsilon = LsReinitPara()->InterfaceThicknessFac() * charelelength;
+  const double epsilon = lsreinitparams_->InterfaceThicknessFac() * charelelength;
 
   if (phizero < -epsilon)       deriv_sign = 0.0;
   else if (phizero > epsilon)   deriv_sign = 0.0;
@@ -1103,7 +1108,7 @@ double DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::CalcCharEleLengthReinit(
   //---------------------------------------------------------------------
   // select from various definitions for characteristic element length
   //---------------------------------------------------------------------
-  switch (LsReinitPara()->CharEleLengthReinit())
+  switch (lsreinitparams_->CharEleLengthReinit())
   {
     // a) streamlength due to Kees et al. (2011)
     case INPAR::SCATRA::streamlength_reinit:
@@ -1399,7 +1404,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::CalcPenaltyTerm(
       // evaluate mat and rhs
       //--------------------------------------------------------------------------------------------
       // caution density of original function is replaced by penalty parameter here
-      my::CalcMatMass(emat,0,fac,LsReinitPara()->PenaltyPara());
+      my::CalcMatMass(emat,0,fac,lsreinitparams_->PenaltyPara());
 
       }// loop Gaussian points
 

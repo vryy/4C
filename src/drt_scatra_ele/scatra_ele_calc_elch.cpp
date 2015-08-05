@@ -13,6 +13,8 @@ Maintainer: Andreas Ehrl
 */
 /*--------------------------------------------------------------------------*/
 #include "scatra_ele_calc_elch.H"
+#include "scatra_ele_parameter_std.H"
+#include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_utils_elch.H"
 
 
@@ -21,14 +23,12 @@ Maintainer: Andreas Ehrl
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleCalcElch<distype>::ScaTraEleCalcElch(const int numdofpernode,const int numscal,const std::string& disname)
   : DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode,numscal,disname),
+    elchparams_(DRT::ELEMENTS::ScaTraEleParameterElch::Instance(disname)),   // parameter class for electrochemistry problems
     utils_(DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::Instance(numdofpernode,numscal)),
     epotnp_(my::numscal_)
 {
   // replace standard scatra diffusion manager by elch diffusion manager
   my::diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManagerElch(my::numscal_));
-
-  // replace standard scatra parameter list by elch parameter list
-  my::scatrapara_ = DRT::ELEMENTS::ScaTraEleParameterElch::Instance(disname);
 
   // safety check
   if(not my::scatraparatimint_->IsIncremental())

@@ -52,7 +52,7 @@ namespace MESHFREE
 
 namespace ELEMENTS
 {
-  class ScaTraEleParameter;
+  class ScaTraEleParameterStd;
   class ScaTraEleParameterTimInt;
 
 /*--------------------------------------------------------------------------*/
@@ -228,7 +228,7 @@ protected:
   /*========================================================================*/
 
   //! pointer to parameter lists
-  DRT::ELEMENTS::ScaTraEleParameter* scatrapara_;
+  DRT::ELEMENTS::ScaTraEleParameterStd* scatrapara_;
   //! pointer to parameter list for time integration
   DRT::ELEMENTS::ScaTraEleParameterTimInt* scatraparatimint_;
 

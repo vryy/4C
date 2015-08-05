@@ -15,9 +15,9 @@ Maintainer: Andreas Ehrl
 
 #include "scatra_ele.H"
 
-#include "scatra_ele_parameter.H"
 #include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
+#include "scatra_ele_parameter_turbulence.H"
 
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 
@@ -48,6 +48,7 @@ DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ScaTraEleCalc(const int numdofper
   : numdofpernode_(numdofpernode),
     numscal_(numscal),
     scatrapara_(DRT::ELEMENTS::ScaTraEleParameterStd::Instance(disname)),            // standard parameter list
+    turbparams_(DRT::ELEMENTS::ScaTraEleParameterTurbulence::Instance(disname)),            // turbulence parameter list
     scatraparatimint_(DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(disname)),   // time integration parameter list
     diffmanager_(Teuchos::rcp(new ScaTraEleDiffManager(numscal_))),           // diffusion manager for diffusivity / diffusivities (in case of systems) or thermal conductivity/specific heat (in case of loma)
     reamanager_(Teuchos::rcp(new ScaTraEleReaManager(numscal_))),             // reaction manager
@@ -79,6 +80,13 @@ DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ScaTraEleCalc(const int numdofper
     scatravarmanager_(Teuchos::rcp(new ScaTraEleInternalVariableManager<nsd_,nen_>(numscal_)))   // internal variable manager
 {
   dsassert(nsd_ >= nsd_ele_,"problem dimension has to be equal or larger than the element dimension!");
+
+  // safety checks related with turbulence
+  if(scatrapara_->ASSGD() and turbparams_->FSSGD())
+    dserror("No combination of all-scale and fine-scale subgrid-diffusivity approach currently possible!");
+  if(turbparams_->BD_Gp() and not scatrapara_->MatGP())
+    dserror("Evaluation of B and D at Gauss point should always be combined with material evaluation at Gauss point!");
+
   return;
 }
 
@@ -163,7 +171,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Evaluate(
   // output values of Prt, diffeff and Cs_delta_sq_Prt (channel flow only)
   // ---------------------------------------------------------------------
 
-  if (scatrapara_->TurbModel() == INPAR::FLUID::dynamic_smagorinsky and scatrapara_->CsAv())
+  if (turbparams_->TurbModel() == INPAR::FLUID::dynamic_smagorinsky and turbparams_->CsAv())
   {
     Teuchos::ParameterList& turbulencelist = params.sublist("TURBULENCE MODEL");
     StoreModelParametersForOutput(ele,ele->Owner() == discretization.Comm().MyPID(),turbulencelist,nlayer);
@@ -304,7 +312,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ExtractTurbulenceApproach(
   int&                       nlayer
 )
 {
-  if (scatrapara_->TurbModel()!=INPAR::FLUID::no_model or (scatraparatimint_->IsIncremental() and scatrapara_->FSSGD()))
+  if (turbparams_->TurbModel()!=INPAR::FLUID::no_model or (scatraparatimint_->IsIncremental() and turbparams_->FSSGD()))
   {
     // do some checks first
     if (numscal_!=1 or numdofpernode_!=1)
@@ -312,10 +320,10 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ExtractTurbulenceApproach(
   }
 
   // set turbulent Prandt number to value given in parameterlist
-  tpn_ = scatrapara_->TPN();
+  tpn_ = turbparams_->TPN();
 
   // if we have a dynamic model,we overwrite this value by a local element-based one here
-  if (scatrapara_->TurbModel() == INPAR::FLUID::dynamic_smagorinsky)
+  if (turbparams_->TurbModel() == INPAR::FLUID::dynamic_smagorinsky)
   {
     Teuchos::ParameterList& turbulencelist = params.sublist("TURBULENCE MODEL");
     // remark: for dynamic estimation, this returns (Cs*h)^2 / Pr_t
@@ -324,14 +332,14 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ExtractTurbulenceApproach(
     tpn_ = (*ele_prt)[id];
 
     // when no averaging was done, we just keep the calculated (clipped) value
-    if (scatrapara_->CsAv())
+    if (turbparams_->CsAv())
       GetMeanPrtOfHomogenousDirection(params.sublist("TURBULENCE MODEL"),nlayer);
   }
 
   // get fine-scale values
   if ((scatraparatimint_->IsIncremental() and
-      (scatrapara_->WhichFssgd() == INPAR::SCATRA::fssugrdiff_smagorinsky_all or scatrapara_->WhichFssgd() == INPAR::SCATRA::fssugrdiff_smagorinsky_small))
-      or scatrapara_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
+      (turbparams_->WhichFssgd() == INPAR::SCATRA::fssugrdiff_smagorinsky_all or turbparams_->WhichFssgd() == INPAR::SCATRA::fssugrdiff_smagorinsky_small))
+      or turbparams_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
   {
     // get fine scale scalar field
     Teuchos::RCP<const Epetra_Vector> gfsphinp = discretization.GetState("fsphinp");
@@ -350,7 +358,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ExtractTurbulenceApproach(
     }
 
     // get fine-scale velocity at nodes
-    if (scatrapara_->WhichFssgd() == INPAR::SCATRA::fssugrdiff_smagorinsky_small or scatrapara_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
+    if (turbparams_->WhichFssgd() == INPAR::SCATRA::fssugrdiff_smagorinsky_small or turbparams_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
     {
       const Teuchos::RCP<Epetra_MultiVector> fsvelocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("fine-scale velocity field");
       DRT::UTILS::ExtractMyNodeBasedValues(ele,efsvel_,fsvelocity,nsd_);
@@ -420,15 +428,15 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
     {
       // calculation of all-scale subgrid diffusivity (by, e.g.,
       // Smagorinsky model) at element center
-      if (scatrapara_->TurbModel() == INPAR::FLUID::smagorinsky
-          or scatrapara_->TurbModel() == INPAR::FLUID::dynamic_smagorinsky
-          or scatrapara_->TurbModel() == INPAR::FLUID::dynamic_vreman)
+      if (turbparams_->TurbModel() == INPAR::FLUID::smagorinsky
+          or turbparams_->TurbModel() == INPAR::FLUID::dynamic_smagorinsky
+          or turbparams_->TurbModel() == INPAR::FLUID::dynamic_vreman)
       {
         CalcSubgrDiff(visc,vol,k,densnp);
       }
 
       // calculation of fine-scale artificial subgrid diffusivity at element center
-      if (scatrapara_->FSSGD()) CalcFineScaleSubgrDiff(sgdiff,subgrdiff,ele,vol,k,densnp,diffmanager_->GetIsotropicDiff(k),convelint);
+      if (turbparams_->FSSGD()) CalcFineScaleSubgrDiff(sgdiff,subgrdiff,ele,vol,k,densnp,diffmanager_->GetIsotropicDiff(k),convelint);
 
       // calculation of stabilization parameter at element center
       CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp,convelint,vol);
@@ -442,9 +450,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
   LINALG::Matrix<nsd_,1> B_mfs(true);
   // coefficient D of fine-scale scalar
   double D_mfs = 0.0;
-  if (scatrapara_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
+  if (turbparams_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
   {
-    if (not scatrapara_->BD_Gp())
+    if (not turbparams_->BD_Gp())
     {
       // make sure to get material parameters at element center
       // hence, determine them if not yet available
@@ -487,7 +495,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
 
     // get fine-scale velocity and its derivatives at integration point
     LINALG::Matrix<nsd_,1> fsvelint(true);
-    if (scatrapara_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
+    if (turbparams_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
       fsvelint.Multiply(efsvel_,funct_);
 
     // loop all scalars
@@ -499,7 +507,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
 
       // compute gradient of fine-scale part of scalar value
       LINALG::Matrix<nsd_,1> fsgradphi(true);
-      if (scatrapara_->FSSGD())
+      if (turbparams_->FSSGD())
         fsgradphi.Multiply(derxy_,fsphinp_[k]);
 
       // compute rhs containing bodyforce (divided by specific heat capacity) and,
@@ -540,9 +548,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
 
         // calculation of all-scale subgrid diffusivity (by, e.g.,
         // Smagorinsky model) at element center
-        if (scatrapara_->TurbModel() == INPAR::FLUID::smagorinsky
-            or scatrapara_->TurbModel() == INPAR::FLUID::dynamic_smagorinsky
-            or scatrapara_->TurbModel() == INPAR::FLUID::dynamic_vreman)
+        if (turbparams_->TurbModel() == INPAR::FLUID::smagorinsky
+            or turbparams_->TurbModel() == INPAR::FLUID::dynamic_smagorinsky
+            or turbparams_->TurbModel() == INPAR::FLUID::dynamic_vreman)
         {
           CalcSubgrDiff(visc,vol,k,densnp);
 
@@ -551,7 +559,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
         }
 
         // calculation of fine-scale artificial subgrid diffusivity at element center
-        if (scatrapara_->FSSGD()) CalcFineScaleSubgrDiff(sgdiff,subgrdiff,ele,vol,k,densnp,diffmanager_->GetIsotropicDiff(k),scatravarmanager_->ConVel());
+        if (turbparams_->FSSGD()) CalcFineScaleSubgrDiff(sgdiff,subgrdiff,ele,vol,k,densnp,diffmanager_->GetIsotropicDiff(k),scatravarmanager_->ConVel());
 
         // calculation of subgrid-scale velocity at integration point if required
         if (scatrapara_->RBSubGrVel())
@@ -587,9 +595,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
       double mfsvdiv(0.0);
       double mfssgphi(0.0);
       LINALG::Matrix<nsd_,1> mfsggradphi(true);
-      if (scatrapara_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
+      if (turbparams_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
       {
-        if (scatrapara_->BD_Gp())
+        if (turbparams_->BD_Gp())
           // calculate model coefficients
           CalcBAndDForMultifracSubgridScales(B_mfs,D_mfs,vol,k,densnp,diffmanager_->GetIsotropicDiff(k),visc,scatravarmanager_->ConVel(),fsvelint);
 
@@ -597,7 +605,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
         for (int idim=0; idim<nsd_; idim++)
           mfsgvelint(idim,0) = fsvelint(idim,0) * B_mfs(idim,0);
         // required for conservative formulation in the context of passive scalar transport
-        if (scatrapara_->MfsConservative() or scatrapara_->IsConservative())
+        if (turbparams_->MfsConservative() or scatrapara_->IsConservative())
         {
           // get divergence of subgrid-scale velocity
           LINALG::Matrix<nsd_,nsd_> mfsvderxy;
@@ -735,13 +743,13 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
       //----------------------------------------------------------------
       // fine-scale subgrid-diffusivity term on right hand side
       //----------------------------------------------------------------
-      if (scatraparatimint_->IsIncremental() and scatrapara_->FSSGD())
+      if (scatraparatimint_->IsIncremental() and turbparams_->FSSGD())
         CalcRHSFSSGD(erhs,k,rhsfac,sgdiff,fsgradphi);
 
       //---------------------------------------------------------------
       // multifractal subgrid-scale modeling on right hand side only
       //---------------------------------------------------------------
-      if (scatraparatimint_->IsIncremental() and scatrapara_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
+      if (scatraparatimint_->IsIncremental() and turbparams_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
         CalcRHSMFS(erhs,k,rhsfac,densnp,mfsggradphi,mfsgvelint,mfssgphi,mfsvdiv);
 
     }// end loop all scalars
@@ -842,7 +850,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::OtherNodeBasedSourceTerms(
 {
   // set externally calculated source term instead of body force by volume
   // Neumann boundary condition of input file
-  if (scatrapara_->ScalarForcing()==INPAR::FLUID::scalarforcing_isotropic)
+  if (turbparams_->ScalarForcing()==INPAR::FLUID::scalarforcing_isotropic)
   {
     // extract additional local values from global vector
     Teuchos::RCP<const Epetra_Vector> source = discretization.GetState("forcing");
@@ -860,7 +868,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::OtherNodeBasedSourceTerms(
     } // for i
   }
   // special forcing mean scalar gradient
-  else if (scatrapara_->ScalarForcing()==INPAR::FLUID::scalarforcing_mean_scalar_gradient)
+  else if (turbparams_->ScalarForcing()==INPAR::FLUID::scalarforcing_mean_scalar_gradient)
   {
     // get mean-scalar gradient
     const double grad_phi = params.sublist("TURBULENCE MODEL").get<double>("MEAN_SCALAR_GRADIENT");
@@ -1204,8 +1212,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::MatScaTra(
   reamanager_->SetReaCoeff(actmat->ReaCoeff(leleid),k);
 
   // in case of multifractal subgrid-scales, read Schmidt number
-  if (scatrapara_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales or scatrapara_->RBSubGrVel()
-      or scatrapara_->TurbModel() == INPAR::FLUID::dynamic_smagorinsky)
+  if (turbparams_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales or scatrapara_->RBSubGrVel()
+      or turbparams_->TurbModel() == INPAR::FLUID::dynamic_smagorinsky)
   {
     //access fluid discretization
     Teuchos::RCP<DRT::Discretization> fluiddis = Teuchos::null;
@@ -2108,7 +2116,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcRHSMFS(
 
    // conservative formulation
    double conserv = 0.0;
-   if (scatrapara_->MfsConservative() or scatrapara_->IsConservative())
+   if (turbparams_->MfsConservative() or scatrapara_->IsConservative())
    {
      double convdiv = 0.0;
      GetDivergence(convdiv,econvelnp_);

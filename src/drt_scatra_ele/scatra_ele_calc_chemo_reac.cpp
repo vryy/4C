@@ -15,8 +15,6 @@
 
 #include "scatra_ele_calc_chemo_reac.H"
 
-#include "scatra_ele_parameter.H"
-
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_element.H"

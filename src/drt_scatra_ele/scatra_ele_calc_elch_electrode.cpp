@@ -13,6 +13,7 @@ Maintainer: Rui Fang
 */
 /*--------------------------------------------------------------------------*/
 #include "scatra_ele_calc_elch_electrode.H"
+#include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_utils_elch_electrode.H"
 
 #include "../drt_mat/material.H"
@@ -76,7 +77,7 @@ DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::ScaTraEleCalcElchElectrode(c
   my::diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManagerElchElectrode(my::numscal_));
 
   // replace elch internal variable manager by internal variable manager for electrodes
-  my::scatravarmanager_ = Teuchos::rcp(new ScaTraEleInternalVariableManagerElchElectrode<my::nsd_, my::nen_>(my::numscal_,myelch::ElchPara()));
+  my::scatravarmanager_ = Teuchos::rcp(new ScaTraEleInternalVariableManagerElchElectrode<my::nsd_, my::nen_>(my::numscal_,myelch::elchparams_));
 
   // replace elch utility class by utility class for electrodes
   myelch::utils_ = DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::Instance(numdofpernode,numscal);

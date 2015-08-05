@@ -15,14 +15,18 @@ Maintainer: Ursula Rasthofer/Volker Gravemeier
 
 #include "scatra_ele_calc_loma.H"
 #include "scatra_ele.H"
-#include "scatra_ele_parameter.H"
+#include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
+#include "scatra_ele_parameter_turbulence.H"
+
+#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 
 #include "../drt_geometry/position_array.H"
+
+#include "../drt_inpar/inpar_fluid.H"
+
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
-#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
-#include "../drt_nurbs_discret/drt_nurbs_utils.H"
 
 #include "../drt_mat/mixfrac.H"
 #include "../drt_mat/sutherland.H"
@@ -32,6 +36,7 @@ Maintainer: Ursula Rasthofer/Volker Gravemeier
 #include "../drt_mat/ferech_pv.H"
 #include "../drt_mat/yoghurt.H"
 
+#include "../drt_nurbs_discret/drt_nurbs_utils.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -98,7 +103,7 @@ DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::ScaTraEleCalcLoma(
   my::reamanager_ = Teuchos::rcp(new ScaTraEleReaManagerLoma(my::numscal_));
 
   // safety check
-  if(my::scatrapara_->MfsConservative())
+  if(my::turbparams_->MfsConservative())
     dserror("Conservative formulation not supported for loma!");
 
   return;
@@ -188,7 +193,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatMixFrac(
 
   // get also fluid viscosity if subgrid-scale velocity is to be included
   // or multifractal subgrid-scales are used
-  if (my::scatrapara_->RBSubGrVel() or my::scatrapara_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
+  if (my::scatrapara_->RBSubGrVel() or my::turbparams_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
     visc = actmat->ComputeViscosity(mixfracnp);
 
   return;
@@ -247,7 +252,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatSutherland(
 
   // get also fluid viscosity if subgrid-scale velocity is to be included
   // or multifractal subgrid-scales are used
-  if (my::scatrapara_->RBSubGrVel() or my::scatrapara_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
+  if (my::scatrapara_->RBSubGrVel() or my::turbparams_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
     visc = actmat->ComputeViscosity(tempnp);
 
   return;
@@ -319,7 +324,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatArrheniusPV(
 
   // get also fluid viscosity if subgrid-scale velocity is to be included
   // or multifractal subgrid-scales are used
-  if (my::scatrapara_->RBSubGrVel() or my::scatrapara_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
+  if (my::scatrapara_->RBSubGrVel() or my::turbparams_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
     visc = actmat->ComputeViscosity(tempnp);
 
   return;
@@ -379,7 +384,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatArrheniusSpec(
 
   // get also fluid viscosity if subgrid-scale velocity is to be included
   // or multifractal subgrid-scales are used
-  if (my::scatrapara_->RBSubGrVel() or my::scatrapara_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
+  if (my::scatrapara_->RBSubGrVel() or my::turbparams_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
     visc = actmat->ComputeViscosity(tempnp);
 
   return;
@@ -449,7 +454,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatArrheniusTemp(
 
   // get also fluid viscosity if subgrid-scale velocity is to be included
   // or multifractal subgrid-scales are used
-  if (my::scatrapara_->RBSubGrVel() or my::scatrapara_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
+  if (my::scatrapara_->RBSubGrVel() or my::turbparams_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
     visc = actmat->ComputeViscosity(tempnp);
 
   return;
@@ -520,7 +525,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatFerechPV(
 
    // get also fluid viscosity if subgrid-scale velocity is to be included
    // or multifractal subgrid-scales are used
-   if (my::scatrapara_->RBSubGrVel() or my::scatrapara_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
+   if (my::scatrapara_->RBSubGrVel() or my::turbparams_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
      visc = actmat->ComputeViscosity(tempnp);
 
   return;
@@ -557,7 +562,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatYoghurt(
 
   // get also fluid viscosity if subgrid-scale velocity is to be included
   // or multifractal subgrid-scales are used
-  if (my::scatrapara_->RBSubGrVel() or my::scatrapara_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
+  if (my::scatrapara_->RBSubGrVel() or my::turbparams_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
   {
     // compute temperature at n+1 or n+alpha_F and check whether it is positive
     const double tempnp = my::funct_.Dot(my::ephinp_[0]);

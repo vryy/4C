@@ -2,7 +2,12 @@
 /*!
 \file scatra_ele_parameter_elch.cpp
 
-\brief element parameter class for electrochemistry problems
+\brief singleton class holding all static electrochemistry parameters required for element evaluation
+
+This singleton class holds all static electrochemistry parameters required for element evaluation. All parameters are
+usually set only once at the beginning of a simulation, namely during initialization of the global time integrator,
+and then never touched again throughout the simulation. This parameter class needs to coexist with the general parameter
+class holding all general static parameters required for scalar transport element evaluation.
 
 <pre>
 Maintainer: Rui Fang
@@ -20,28 +25,36 @@ Maintainer: Rui Fang
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 02/15 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraEleParameterElch* DRT::ELEMENTS::ScaTraEleParameterElch::Instance(const std::string& disname,bool create)
+DRT::ELEMENTS::ScaTraEleParameterElch* DRT::ELEMENTS::ScaTraEleParameterElch::Instance(
+    const std::string&   disname,   //!< name of discretization
+    bool                 create     //!< creation/destruction flag
+    )
 {
-  static std::map<std::string,ScaTraEleParameterElch* >  instances;
+  // each discretization is associated with exactly one instance of this class according to a static map
+  static std::map<std::string,ScaTraEleParameterElch*> instances;
 
+  // check whether instance already exists for current discretization, and perform instantiation if not
   if(create)
   {
     if(instances.find(disname) == instances.end())
       instances[disname] = new ScaTraEleParameterElch(disname);
   }
 
+  // destruct instance
   else if(instances.find(disname) != instances.end())
   {
-    for( std::map<std::string,ScaTraEleParameterElch* >::iterator i=instances.begin(); i!=instances.end(); ++i )
-     {
+    for(std::map<std::string,ScaTraEleParameterElch*>::iterator i=instances.begin(); i!=instances.end(); ++i)
+    {
       delete i->second;
       i->second = NULL;
-     }
+    }
 
     instances.clear();
+
     return NULL;
   }
 
+  // return existing or newly created instance
   return instances[disname];
 }
 
@@ -57,38 +70,36 @@ void DRT::ELEMENTS::ScaTraEleParameterElch::Done()
   return;
 }
 
+
 /*----------------------------------------------------------------------*
  | protected constructor for singletons                      fang 02/15 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraEleParameterElch::ScaTraEleParameterElch(const std::string& disname)
-  : DRT::ELEMENTS::ScaTraEleParameter::ScaTraEleParameter(disname),
-  equpot_(INPAR::ELCH::equpot_undefined),
-  faraday_(INPAR::ELCH::faraday_const),
-  epsilon_(INPAR::ELCH::epsilon_const),
-  frt_(0.)
+DRT::ELEMENTS::ScaTraEleParameterElch::ScaTraEleParameterElch(
+    const std::string& disname   //!< name of discretization
+    ) :
+    equpot_(INPAR::ELCH::equpot_undefined),
+    faraday_(INPAR::ELCH::faraday_const),
+    epsilon_(INPAR::ELCH::epsilon_const),
+    frt_(0.)
 {
   return;
 }
 
-/*----------------------------------------------------------------------*
- | set parameters for electrochemistry problems              fang 02/15 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraEleParameterElch::SetElementGeneralParameters(Teuchos::ParameterList& params)
-{
-  // call base class routine
-  my::SetElementGeneralParameters(params);
 
+/*----------------------------------------------------------------------*
+ | set parameters                                            fang 02/15 |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::ScaTraEleParameterElch::SetParameters(
+    Teuchos::ParameterList& parameters   //!< parameter list
+    )
+{
   // type of closing equation for electric potential
-  equpot_ = DRT::INPUT::get<INPAR::ELCH::EquPot>(params, "equpot");
+  equpot_ = DRT::INPUT::get<INPAR::ELCH::EquPot>(parameters, "equpot");
   if(equpot_ == INPAR::ELCH::equpot_undefined)
     dserror("Invalid type of closing equation for electric potential!");
 
   // get parameter F/RT
-  frt_ = params.get<double>("frt");
-
-  // safety check - only stabilization of SUPG-type available
-  if ((stabtype_ !=INPAR::SCATRA::stabtype_no_stabilization) and (stabtype_ !=INPAR::SCATRA::stabtype_SUPG))
-    dserror("Only SUPG-type stabilization available for ELCH.");
+  frt_ = parameters.get<double>("frt");
 
   return;
 }

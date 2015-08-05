@@ -12,13 +12,14 @@ Maintainer: Andreas Ehrl
 </pre>
 */
 /*--------------------------------------------------------------------------*/
-#include "../drt_mat/material.H"
-
-#include "scatra_ele.H"
 #include "scatra_ele_calc_elch_NP.H"
+#include "scatra_ele.H"
+#include "scatra_ele_parameter_std.H"
+#include "scatra_ele_parameter_timint.H"
 
 #include "../drt_lib/standardtypes_cpp.H"  // for EPS13 and so on
 
+#include "../drt_mat/material.H"
 
 /*----------------------------------------------------------------------------------------------------------*
  | validity check with respect to input parameters, degrees of freedom, number of scalars etc.   fang 02/15 |
@@ -28,11 +29,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CheckElchElementParameter(
     DRT::Element*              ele   //!< current element
 )
 {
-  // safety checks
+  // check material
   if(ele->Material()->MaterialType() != INPAR::MAT::m_matlist)
     dserror("Invalid material type!");
 
-  switch(myelch::ElchPara()->EquPot())
+  // check type of closing equation
+  switch(myelch::elchparams_->EquPot())
   {
   case INPAR::ELCH::equpot_enc:
   case INPAR::ELCH::equpot_enc_pde:
@@ -49,6 +51,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CheckElchElementParameter(
     break;
   }
   }
+
+  // check stabilization
+  if(my::scatrapara_->StabType() != INPAR::SCATRA::stabtype_no_stabilization and my::scatrapara_->StabType() != INPAR::SCATRA::stabtype_SUPG)
+    dserror("Only SUPG-type stabilization available for electrochemistry problems governed by Nernst-Planck formulation!");
 
   return;
 }

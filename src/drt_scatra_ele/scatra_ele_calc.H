@@ -28,8 +28,9 @@ namespace DRT
 namespace ELEMENTS
 {
   // forward declarations
-  class ScaTraEleParameter;
+  class ScaTraEleParameterStd;
   class ScaTraEleParameterTimInt;
+  class ScaTraEleParameterTurbulence;
 
   class ScaTraEleDiffManager;
   class ScaTraEleReaManager;
@@ -1029,9 +1030,11 @@ namespace ELEMENTS
     //! @name parameter lists
     /*========================================================================*/
 
-    //! pointer to parameter lists
-    DRT::ELEMENTS::ScaTraEleParameter* scatrapara_;
-    //! pointer to parameter list for time integration
+    //! pointer to general scalar transport parameter class
+    DRT::ELEMENTS::ScaTraEleParameterStd* scatrapara_;
+    //! pointer to turbulence parameter class
+    DRT::ELEMENTS::ScaTraEleParameterTurbulence* turbparams_;
+    //! pointer to time integration parameter class
     DRT::ELEMENTS::ScaTraEleParameterTimInt* scatraparatimint_;
 
     /*========================================================================*/

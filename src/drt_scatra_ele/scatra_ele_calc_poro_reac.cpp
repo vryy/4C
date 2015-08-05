@@ -11,6 +11,9 @@
                089 - 289-10364
  </pre>
  *----------------------------------------------------------------------*/
+#include "scatra_ele_calc_poro_reac.H"
+#include "scatra_ele_parameter_std.H"
+
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_element.H"
@@ -18,9 +21,6 @@
 #include "../drt_mat/structporo.H"
 #include "../drt_mat/structporo_reaction_ecm.H"
 #include "../drt_mat/scatra_mat.H"
-
-#include "scatra_ele_parameter.H"
-#include "scatra_ele_calc_poro_reac.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

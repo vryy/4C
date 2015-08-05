@@ -15,7 +15,6 @@ Maintainer: Andreas Ehrl
 
 #include "scatra_ele_calc.H"
 
-#include "scatra_ele_parameter.H"
 #include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
 

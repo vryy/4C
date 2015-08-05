@@ -17,7 +17,6 @@
 
 #include "scatra_ele.H"
 
-#include "scatra_ele_parameter.H"
 #include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
 

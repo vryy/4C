@@ -2,7 +2,12 @@
 /*!
 \file scatra_ele_parameter_elch_diffcond.H
 
-\brief element parameter class for electrochemistry problems governed by diffusion-conduction formulation
+\brief singleton class holding all static diffusion-conduction parameters required for element evaluation
+
+This singleton class holds all static diffusion-conduction parameters required for element evaluation. All parameters
+are usually set only once at the beginning of a simulation, namely during initialization of the global time integrator,
+and then never touched again throughout the simulation. This parameter class needs to coexist with more general parameter
+classes holding additional static parameters required for scalar transport element evaluation.
 
 <pre>
 Maintainer: Rui Fang
@@ -15,64 +20,74 @@ Maintainer: Rui Fang
 #ifndef SCATRA_ELE_PARAMETER_ELCH_DIFFCOND_H
 #define SCATRA_ELE_PARAMETER_ELCH_DIFFCOND_H
 
-#include "scatra_ele_parameter_elch.H"
+#include "scatra_ele_parameter_base.H"
+
+#include <string>
 
 namespace DRT
 {
   namespace ELEMENTS
   {
+    // forward declaration
+    class ScaTraEleParameterStd;
+
     // class implementation
-    class ScaTraEleParameterElchDiffCond : public ScaTraEleParameterElch
+    class ScaTraEleParameterElchDiffCond : public ScaTraEleParameterBase
     {
-      typedef DRT::ELEMENTS::ScaTraEleParameterElch myelch;
+      public:
 
-    public:
+        //! destructor
+        virtual ~ScaTraEleParameterElchDiffCond(){return;};
 
-      //! destructor
-      virtual ~ScaTraEleParameterElchDiffCond(){return;};
+        //! singleton access method
+        static ScaTraEleParameterElchDiffCond* Instance(
+            const std::string&   disname,        //!< name of discretization
+            bool                 create = true   //!< creation/destruction flag
+            );
 
-      //! singleton access method
-      static ScaTraEleParameterElchDiffCond* Instance(const std::string& disname,bool create=true);
+        //! singleton destruction
+        virtual void Done();
 
-      //! singleton destruction
-      virtual void Done();
+        //! set parameters
+        void SetParameters(
+            Teuchos::ParameterList& parameters   //!< parameter list
+            );
 
-      //! set parameters for electrochemistry problems with diffusion-conduction formulation
-      void SetElementGeneralParameters(Teuchos::ParameterList& params);
+        //! return flag for current as solution variable
+        const bool CurSolVar() const {return cursolvar_;};
 
-      //! return flag for current as solution variable
-      const bool CurSolVar() const {return cursolvar_;};
+        //! return flag for diffusion potential
+        const bool DiffusionCoeffBased() const {return diffusioncoefbased_;};
 
-      //! return flag for diffusion potential
-      const bool DiffusionCoeffBased() const {return diffusioncoefbased_;};
+        //! return Newman constants
+        const double NewmanConstA() const {return newmanconsta_;};
+        const double NewmanConstB() const {return newmanconstb_;};
+        const double NewmanConstC() const {return newmanconstc_;};
 
-      //! return Newman constants
-      const double NewmanConstA() const {return newmanconsta_;};
-      const double NewmanConstB() const {return newmanconstb_;};
-      const double NewmanConstC() const {return newmanconstc_;};
+      private:
 
-    private:
+        //! private constructor for singletons
+        ScaTraEleParameterElchDiffCond(
+            const std::string& disname   //!< name of discretization
+            );
 
-      //! private constructor for singletons
-      ScaTraEleParameterElchDiffCond(const std::string& disname);
+        //! flag if current is used as a solution variable
+        bool cursolvar_;
 
-      //! flag if current is used as a solution variable
-      bool cursolvar_;
+        //! mat_diffcond: flag if diffusion potential is based on diffusion coefficients or transference number
+        bool diffusioncoefbased_;
 
-      //! mat_diffcond: flag if diffusion potential is based on diffusion coefficients or transference number
-      bool diffusioncoefbased_;
-
-      //! switch for dilute and concentrated solution theory (diffusion potential in current equation):
-      //!    A          B
-      //!   |--|  |----------|
-      //!   z_1 + (z_2 - z_1) t_1
-      //! ------------------------ (RT/F kappa 1/c_k grad c_k)
-      //!      z_1 z_2
-      //!     |________|
-      //!         C
-      double newmanconsta_;
-      double newmanconstb_;
-      double newmanconstc_;
+        //! switch for dilute and concentrated solution theory (diffusion potential in current equation):
+        //!    A          B
+        //!   |--|  |----------|
+        //!   z_1 + (z_2 - z_1) t_1
+        //! ------------------------ (RT/F kappa 1/c_k grad c_k)
+        //!      z_1 z_2
+        //!     |________|
+        //!         C
+        double newmanconsta_;
+        double newmanconstb_;
+        double newmanconstc_;
     };
   } // namespace ELEMENTS
 } // namespace DRT

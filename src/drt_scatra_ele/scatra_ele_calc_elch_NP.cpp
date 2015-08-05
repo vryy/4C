@@ -13,6 +13,8 @@ Maintainer: Andreas Ehrl
 */
 /*--------------------------------------------------------------------------*/
 #include "scatra_ele_calc_elch_NP.H"
+#include "scatra_ele_parameter_std.H"
+#include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_utils_elch.H"
 
 #include "../drt_lib/drt_discret.H"
@@ -71,7 +73,7 @@ DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::ScaTraEleCalcElchNP(const int numdo
     migrationstab_(true)
 {
   // replace elch internal variable manager by internal variable manager for Nernst-Planck formulation
-  my::scatravarmanager_ = Teuchos::rcp(new ScaTraEleInternalVariableManagerElchNP<my::nsd_, my::nen_>(my::numscal_,myelch::ElchPara()));
+  my::scatravarmanager_ = Teuchos::rcp(new ScaTraEleInternalVariableManagerElchNP<my::nsd_, my::nen_>(my::numscal_,myelch::elchparams_));
 
   return;
 }
@@ -147,7 +149,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
   //-------------------------------------------------------------------------------------------
 
   // element matrix: standard Galerkin terms from governing equation for electric potential field
-  switch(myelch::ElchPara()->EquPot())   // determine type of equation used for electric potential field
+  switch(myelch::elchparams_->EquPot())   // determine type of equation used for electric potential field
   {
   case INPAR::ELCH::equpot_enc:
   {
@@ -166,7 +168,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
   }
   case INPAR::ELCH::equpot_poisson:
   {
-    CalcMatPotEquPoisson(emat,k,fac,myelch::ElchPara()->Epsilon(),myelch::ElchPara()->Faraday());
+    CalcMatPotEquPoisson(emat,k,fac,myelch::elchparams_->Epsilon(),myelch::elchparams_->Faraday());
     break;
   }
   case INPAR::ELCH::equpot_laplace:
@@ -230,7 +232,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
   //----------------------------------------------------------------------------
 
   // element rhs: standard Galerkin terms from governing equation for electric potential field
-  switch(myelch::ElchPara()->EquPot())   // determine type of equation used for electric potential field
+  switch(myelch::elchparams_->EquPot())   // determine type of equation used for electric potential field
   {
   case INPAR::ELCH::equpot_enc:
   {
@@ -249,7 +251,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
   }
   case INPAR::ELCH::equpot_poisson:
   {
-    CalcRhsPotEquPoisson(erhs,k,fac,myelch::ElchPara()->Epsilon(),myelch::ElchPara()->Faraday(),VarManager()->Phinp(k),VarManager()->GradPot());
+    CalcRhsPotEquPoisson(erhs,k,fac,myelch::elchparams_->Epsilon(),myelch::elchparams_->Faraday(),VarManager()->Phinp(k),VarManager()->GradPot());
     break;
   }
   case INPAR::ELCH::equpot_laplace:
@@ -262,7 +264,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
     dserror ("Closing equation for electric potential not recognized!");
     break;
   }
-  } // end switch(myelch::ElchPara()->EquPot())
+  } // end switch(myelch::elchparams_->EquPot())
   return;
 }
 
@@ -284,7 +286,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhsOutsideScalarLoop
   //-------------------------------------------------------------------------------------------
 
   // element matrix: standard Galerkin terms from governing equation for electric potential field
-  switch(myelch::ElchPara()->EquPot())   // determine type of equation used for electric potential field
+  switch(myelch::elchparams_->EquPot())   // determine type of equation used for electric potential field
   {
   case INPAR::ELCH::equpot_enc:
   case INPAR::ELCH::equpot_enc_pde:
@@ -304,7 +306,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhsOutsideScalarLoop
     dserror("Closing equation for electric potential not recognized!");
     break;
   }
-  } // end switch(myelch::ElchPara()->EquPot())
+  } // end switch(myelch::elchparams_->EquPot())
 
   //----------------------------------------------------------------------------
   // 5) element right hand side vector (negative residual of nonlinear problem):
@@ -312,7 +314,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhsOutsideScalarLoop
   //----------------------------------------------------------------------------
 
   // element rhs: standard Galerkin terms from governing equation for electric potential field
-  switch(myelch::ElchPara()->EquPot())   // determine type of equation used for electric potential field
+  switch(myelch::elchparams_->EquPot())   // determine type of equation used for electric potential field
   {
   case INPAR::ELCH::equpot_enc:
   case INPAR::ELCH::equpot_enc_pde:
@@ -332,7 +334,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhsOutsideScalarLoop
     dserror("Closing equation for electric potential not recognized!");
     break;
   }
-  } // end switch(myelch::ElchPara()->EquPot())
+  } // end switch(myelch::elchparams_->EquPot())
   return;
 }
 
@@ -882,8 +884,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CorrectionForFluxAcrossDC(
   Epetra_SerialDenseMatrix&   emat,
   Epetra_SerialDenseVector&   erhs)
 {
-  if((myelch::ElchPara()->EquPot() == INPAR::ELCH::equpot_enc_pde) or
-     (myelch::ElchPara()->EquPot() == INPAR::ELCH::equpot_enc_pde_elim))
+  if((myelch::elchparams_->EquPot() == INPAR::ELCH::equpot_enc_pde) or
+     (myelch::elchparams_->EquPot() == INPAR::ELCH::equpot_enc_pde_elim))
   {
     // get dirichlet toggle from the discretization
     Teuchos::RCP<const Epetra_Vector> dctoggle = discretization.GetState("dctoggle");
@@ -979,7 +981,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::Materials(
   )
 {
   if(material->MaterialType() == INPAR::MAT::m_ion)
-    myelch::utils_->MatIon(material,k,myelch::ElchPara()->EquPot(),myelch::DiffManager());
+    myelch::utils_->MatIon(material,k,myelch::elchparams_->EquPot(),myelch::DiffManager());
   else
     dserror("Material type is not supported");
 

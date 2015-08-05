@@ -16,8 +16,8 @@
 #include "meshfree_scatra_cell_interface.H"       // DRT::ELEMENTS::MeshfreeScaTraImplInterface
 
 #include "../drt_scatra_ele/scatra_ele_action.H"
-#include "../drt_scatra_ele/scatra_ele_parameter.H"
 #include "../drt_scatra_ele/scatra_ele_parameter_std.H"
+#include "../drt_scatra_ele/scatra_ele_parameter_timint.H"
 #include "../drt_scatra_ele/scatra_ele_factory.H"
 #include "../drt_scatra_ele/scatra_ele_calc_utils.H"
 
@@ -44,15 +44,9 @@ void DRT::ELEMENTS::MeshfreeTransportType::PreEvaluate(
   const SCATRA::Action action = DRT::INPUT::get<SCATRA::Action>(p,"action");
 
   if (action == SCATRA::set_general_scatra_parameter)
-  {
-    DRT::ELEMENTS::ScaTraEleParameterStd* scatrapara = DRT::ELEMENTS::ScaTraEleParameterStd::Instance(dis.Name());
-    scatrapara->SetElementGeneralParameters(p);
-  }
+    DRT::ELEMENTS::ScaTraEleParameterStd::Instance(dis.Name())->SetParameters(p);
   else if (action == SCATRA::set_time_parameter)
-  {
-    DRT::ELEMENTS::ScaTraEleParameterTimInt* scatrapara = DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(dis.Name());
-    scatrapara->SetElementTimeParameter(p);
-  }
+    DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(dis.Name())->SetParameters(p);
 
   return;
 }

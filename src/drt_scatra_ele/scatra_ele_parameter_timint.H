@@ -2,92 +2,81 @@
 /*!
 \file scatra_ele_parameter_timint.H
 
-\brief Setting of time-integration parameters in scatra element evaluation
+\brief singleton class holding all static time integration parameters required for scalar transport element evaluation
 
-This class provides the scatra element parameter for the time integration,
-which are unique and equal for every scatra in the problem. Time integration
-with different parameters in more than one scatra field is not yet supported.
+This singleton class holds all static time integration parameters required for scalar transport element evaluation. All
+parameters are usually set only once at the beginning of a simulation, namely during initialization of the global
+time integrator, and then never touched again throughout the simulation. This parameter class needs to coexist with
+the general parameter class holding all general static parameters required for scalar transport element evaluation.
 
 <pre>
-Maintainer: Andreas Ehrl
-            ehrl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15252
+Maintainer: Rui Fang
+            fang@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+            089-289-15251
 </pre>
 */
 /*----------------------------------------------------------------------*/
-
 #ifndef SCATRA_ELE_PARAMETER_TIMINT_H
 #define SCATRA_ELE_PARAMETER_TIMINT_H
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "../drt_lib/drt_singletondestruction.H"
+#include "scatra_ele_parameter_base.H"
 
 namespace DRT
 {
-namespace ELEMENTS
-{
+  namespace ELEMENTS
+  {
+    /// Evaluation of general parameters (constant over time)
+    class ScaTraEleParameterTimInt : public ScaTraEleParameterBase
+    {
+      public:
 
-/// Evaluation of general parameters (constant over time)
-class ScaTraEleParameterTimInt : public DRT::SingletonDestruction
-{
-private:
+        //! singleton access method
+        static ScaTraEleParameterTimInt* Instance(
+            const std::string&   disname,        //!< name of discretization
+            bool                 create = true   //!< creation/destruction flag
+            );
 
-  // private constructor
-  ScaTraEleParameterTimInt();
+        //! Singleton destruction method called from global problem
+        void Done();
 
-public:
+        //! dtor
+        ~ScaTraEleParameterTimInt() {}
 
-  //! Singleton access method
-  static ScaTraEleParameterTimInt* Instance(const std::string& disname, bool create=true);
+        //! set parameters
+        void SetParameters(
+            Teuchos::ParameterList& parameters   //!< parameter list
+            );
 
-  //! Singleton destruction method called from global problem
-  void Done();
+        //! print parameters to screen
+        void PrintScaTraTimeParameter();
 
-  //! dtor
-  ~ScaTraEleParameterTimInt() {}
+        const bool IsGenAlpha() const {return is_genalpha_;};
+        const bool IsStationary() const {return is_stationary_;};
+        const bool IsIncremental() const {return is_incremental_;};
+        const double Time() const {return time_;};
+        const double Dt() const {return dt_;};
+        const double TimeFac() const {return timefac_;};
+        const double TimeFacRhs() const {return timefacrhs_;};
+        const double TimeFacRhsTau() const {return timefacrhstau_;};
+        const double AlphaF() const {return alphaF_;};
 
-  //! time parameter are set
-  void SetElementTimeParameter(Teuchos::ParameterList& params    //> parameter list
-      );
+      private:
 
-  //! print parameter to screen
-  void PrintScaTraTimeParameter();
+        //! private constructor for singletons
+        ScaTraEleParameterTimInt();
 
-  bool IsGenAlpha(){return is_genalpha_;};
-  bool IsStationary(){return is_stationary_;};
-  bool IsIncremental(){return is_incremental_;};
-  double Time(){return time_;};
-  double Dt(){return dt_;};
-  double TimeFac(){return timefac_;};
-  double TimeFacRhs(){return timefacrhs_;};
-  double TimeFacRhsTau(){return timefacrhstau_;};
-  double AlphaF(){return alphaF_;};
-
-
-private:
-
-  bool is_genalpha_;
-  bool is_stationary_;
-  bool is_incremental_;
-  double time_;
-  double dt_;
-  double timefac_;
-  double timefacrhs_;
-  double timefacrhstau_;
-//  theta_(0.0),
-//  omtheta_(0.0),
-//  gamma_(0.0),
-  double alphaF_;
-//  alphaM_(0.0),
-//  afgdt_(1.0),
-//  timefacrhs_(1.0),
-//  timefacpre_(1.0)
-
-
-}; // class ScaTraEleParameterTimInt
-
-} // namespace ELEMENTS
+        bool is_genalpha_;
+        bool is_stationary_;
+        bool is_incremental_;
+        double time_;
+        double dt_;
+        double timefac_;
+        double timefacrhs_;
+        double timefacrhstau_;
+        double alphaF_;
+    }; // class ScaTraEleParameterTimInt
+  } // namespace ELEMENTS
 } // namespace DRT
-
 #endif

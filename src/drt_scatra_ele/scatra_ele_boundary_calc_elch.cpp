@@ -14,6 +14,7 @@ Maintainer: Andreas Ehrl
 /*----------------------------------------------------------------------*/
 #include "scatra_ele_boundary_calc_elch.H"
 #include "scatra_ele_parameter_elch.H"
+#include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_utils_elch.H"
 
 #include "../drt_lib/drt_discret.H"
@@ -31,12 +32,12 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ScaTraEleBoundaryCalcElch(
   // constructor of base class
   my::ScaTraEleBoundaryCalc(numdofpernode,numscal,disname),
 
+  // instance of parameter class for electrochemistry problems
+  elchparams_(DRT::ELEMENTS::ScaTraEleParameterElch::Instance(disname)),
+
   // instance of utility class supporting element evaluation
   utils_(ScaTraEleUtilsElch<distype>::Instance(numdofpernode,numscal))
 {
-  // replace parameter class for standard scalar transport by parameter class for electrochemistry problems
-  my::scatraparams_ = DRT::ELEMENTS::ScaTraEleParameterElch::Instance(disname);
-
   return;
 }
 
@@ -191,7 +192,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcElchBoundaryKinetics
   }
 
   // access input parameter
-  const double frt = ElchParams()->FRT();
+  const double frt = elchparams_->FRT();
   if (frt<=0.0)
     dserror("A negative factor frt is not possible by definition");
 
@@ -334,7 +335,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcNernstLinearization(
               " the number of ionic species %d", (*stoich).size(), my::numscal_);
 
     // access input parameter
-    const double frt = ElchParams()->FRT();
+    const double frt = elchparams_->FRT();
     if (frt<0.0)
       dserror("A negative factor frt is not possible by definition");
 

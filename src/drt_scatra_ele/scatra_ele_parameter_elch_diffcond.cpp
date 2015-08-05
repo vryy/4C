@@ -2,7 +2,12 @@
 /*!
 \file scatra_ele_parameter_elch_diffcond.cpp
 
-\brief element parameter class for electrochemistry problems governed by diffusion-conduction formulation
+\brief singleton class holding all static diffusion-conduction parameters required for element evaluation
+
+This singleton class holds all static diffusion-conduction parameters required for element evaluation. All parameters
+are usually set only once at the beginning of a simulation, namely during initialization of the global time integrator,
+and then never touched again throughout the simulation. This parameter class needs to coexist with more general parameter
+classes holding additional static parameters required for scalar transport element evaluation.
 
 <pre>
 Maintainer: Rui Fang
@@ -12,35 +17,50 @@ Maintainer: Rui Fang
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#include "../drt_lib/drt_dserror.H"
-
 #include "scatra_ele_parameter_elch_diffcond.H"
+#include "scatra_ele_parameter_std.H"
+
+#include <map>
+#include <Teuchos_ParameterList.hpp>
+
+#include "../drt_inpar/inpar_elch.H"
+#include "../drt_inpar/inpar_parameterlist_utils.H"
+
+#include "../drt_lib/drt_dserror.H"
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 02/15 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraEleParameterElchDiffCond* DRT::ELEMENTS::ScaTraEleParameterElchDiffCond::Instance(const std::string& disname, bool create)
+DRT::ELEMENTS::ScaTraEleParameterElchDiffCond* DRT::ELEMENTS::ScaTraEleParameterElchDiffCond::Instance(
+    const std::string&   disname,   //!< name of discretization
+    bool                 create     //!< creation/destruction flag
+    )
 {
-  static std::map<std::string,ScaTraEleParameterElchDiffCond* >  instances;
+  // each discretization is associated with exactly one instance of this class according to a static map
+  static std::map<std::string,ScaTraEleParameterElchDiffCond*> instances;
 
+  // check whether instance already exists for current discretization, and perform instantiation if not
   if(create)
   {
     if(instances.find(disname) == instances.end())
       instances[disname] = new ScaTraEleParameterElchDiffCond(disname);
   }
 
+  // destruct instance
   else if(instances.find(disname) != instances.end())
   {
-    for( std::map<std::string,ScaTraEleParameterElchDiffCond* >::iterator i=instances.begin(); i!=instances.end(); ++i )
-     {
+    for(std::map<std::string,ScaTraEleParameterElchDiffCond*>::iterator i=instances.begin(); i!=instances.end(); ++i)
+    {
       delete i->second;
       i->second = NULL;
-     }
+    }
 
     instances.clear();
+
     return NULL;
   }
 
+  // return existing or newly created instance
   return instances[disname];
 }
 
@@ -60,36 +80,28 @@ void DRT::ELEMENTS::ScaTraEleParameterElchDiffCond::Done()
 /*----------------------------------------------------------------------*
  | private constructor for singletons                        fang 02/15 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraEleParameterElchDiffCond::ScaTraEleParameterElchDiffCond(const std::string& disname)
-  : DRT::ELEMENTS::ScaTraEleParameterElch::ScaTraEleParameterElch(disname),
-  cursolvar_(false),
-  diffusioncoefbased_(true),
-  newmanconsta_(2.),
-  newmanconstb_(-2.),
-  newmanconstc_(-1.)
+DRT::ELEMENTS::ScaTraEleParameterElchDiffCond::ScaTraEleParameterElchDiffCond(
+    const std::string& disname   //!< name of discretization
+    ) :
+    cursolvar_(false),
+    diffusioncoefbased_(true),
+    newmanconsta_(2.),
+    newmanconstb_(-2.),
+    newmanconstc_(-1.)
 {
   return;
 }
 
 
-/*-------------------------------------------------------------------------------------------------*
- | set parameters for electrochemistry problems with diffusion-conduction formulation   fang 02/15 |
- *-------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraEleParameterElchDiffCond::SetElementGeneralParameters(Teuchos::ParameterList& params)
+/*---------------------------------------------------------------------*
+ | set parameters                                           fang 02/15 |
+ *---------------------------------------------------------------------*/
+void DRT::ELEMENTS::ScaTraEleParameterElchDiffCond::SetParameters(
+    Teuchos::ParameterList& parameters   //!< parameter list
+    )
 {
-  // call base class routine
-  myelch::SetElementGeneralParameters(params);
-
-  // safety checks
-  if(stabtype_ !=INPAR::SCATRA::stabtype_no_stabilization or whichtau_ != INPAR::SCATRA::tau_zero)
-    dserror("No stabilization available for the diffusion-conduction formulation \n"
-            "since we had no problems so far.");
-  if (mat_gp_ == false or tau_gp_ == false)
-    dserror("Since most of the materials of the Diffusion-conduction formulation depend on the concentration,\n"
-            "an evaluation of the material and the stabilization parameter at the element center is disabled.");
-
   // access parameter sublist for diffusion-conduction formulation
-  Teuchos::ParameterList& diffcondparams = params.sublist("DIFFCOND");
+  Teuchos::ParameterList& diffcondparams = parameters.sublist("DIFFCOND");
 
   // flag if current is used as a solution variable
   cursolvar_ = DRT::INPUT::IntegralValue<int>(diffcondparams,"CURRENT_SOLUTION_VAR");

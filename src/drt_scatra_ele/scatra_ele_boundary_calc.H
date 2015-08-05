@@ -64,7 +64,7 @@ namespace DRT
 
 namespace ELEMENTS
 {
-class ScaTraEleParameter;
+class ScaTraEleParameterStd;
 class ScaTraEleParameterTimInt;
 
 template<DRT::Element::DiscretizationType distype>
@@ -333,7 +333,7 @@ public:
   //! pointer to parameter list for time integration
   DRT::ELEMENTS::ScaTraEleParameterTimInt* scatraparamstimint_;
   //! pointer to parameter list
-  DRT::ELEMENTS::ScaTraEleParameter* scatraparams_;
+  DRT::ELEMENTS::ScaTraEleParameterStd* scatraparams_;
 
    //! number of dof per node
   const int numdofpernode_;

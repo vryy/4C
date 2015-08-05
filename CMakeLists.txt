@@ -1110,12 +1110,12 @@ set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra_ele/scatra_ele_calc_chemo_reac.cpp
   src/drt_scatra_ele/scatra_ele_calc_poro_reac.cpp
   src/drt_scatra_ele/scatra_ele_calc_utils.cpp
-  src/drt_scatra_ele/scatra_ele_parameter.cpp
   src/drt_scatra_ele/scatra_ele_parameter_std.cpp
   src/drt_scatra_ele/scatra_ele_parameter_lsreinit.cpp
   src/drt_scatra_ele/scatra_ele_parameter_elch.cpp
   src/drt_scatra_ele/scatra_ele_parameter_elch_diffcond.cpp
   src/drt_scatra_ele/scatra_ele_parameter_timint.cpp
+  src/drt_scatra_ele/scatra_ele_parameter_turbulence.cpp
   src/drt_scatra_ele/scatra_ele_calc_service_general.cpp
   src/drt_scatra_ele/scatra_ele_calc_service_stabilization.cpp
   src/drt_scatra_ele/scatra_ele_calc_service_turbulence.cpp

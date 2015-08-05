@@ -2,97 +2,106 @@
 /*!
 \file scatra_ele_parameter_timint.cpp
 
-\brief Setting of time-integration parameters in scatra element evaluation
+\brief singleton class holding all static time integration parameters required for scalar transport element evaluation
 
-This class provides the scatra element parameter for the time integration,
-which are unique and equal for every scatra in the problem. Time integration
-with different parameters in more than one scatra field is not yet supported.
+This singleton class holds all static time integration parameters required for scalar transport element evaluation. All
+parameters are usually set only once at the beginning of a simulation, namely during initialization of the global
+time integrator, and then never touched again throughout the simulation. This parameter class needs to coexist with
+the general parameter class holding all general static parameters required for scalar transport element evaluation.
 
 <pre>
-Maintainer: Andreas Ehrl
-            ehrl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15252
+Maintainer: Rui Fang
+            fang@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+            089-289-15251
 </pre>
 */
 /*----------------------------------------------------------------------*/
-
-//#include <string>
-//#include <iostream>
-//#include "../drt_io/io_pstream.H"
 #include "../drt_lib/drt_dserror.H"
 #include "scatra_ele_parameter_timint.H"
 
-//----------------------------------------------------------------------*/
-//    definition of the instance
-//----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraEleParameterTimInt* DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance( const std::string& disname, bool create )
+/*----------------------------------------------------------------------*
+ | singleton access method                                   fang 08/15 |
+ *----------------------------------------------------------------------*/
+DRT::ELEMENTS::ScaTraEleParameterTimInt* DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(
+    const std::string&   disname,   //!< name of discretization
+    bool                 create     //!< creation/destruction flag
+    )
 {
-  static std::map<std::string,ScaTraEleParameterTimInt* >  instances;
+  // each discretization is associated with exactly one instance of this class according to a static map
+  static std::map<std::string,ScaTraEleParameterTimInt*> instances;
 
+  // check whether instance already exists for current discretization, and perform instantiation if not
   if(create)
   {
     if(instances.find(disname) == instances.end())
       instances[disname] = new ScaTraEleParameterTimInt();
   }
 
+  // destruct instance
   else if(instances.find(disname) != instances.end())
   {
     for( std::map<std::string,ScaTraEleParameterTimInt* >::iterator i=instances.begin(); i!=instances.end(); ++i )
-     {
+    {
       delete i->second;
       i->second = NULL;
-     }
+    }
 
     instances.clear();
+
     return NULL;
   }
 
+  // return existing or newly created instance
   return instances[disname];
 }
 
-//----------------------------------------------------------------------*/
-//    destruction method
-//----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*
+ | singleton destruction                                     fang 08/15 |
+ *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::ScaTraEleParameterTimInt::Done()
 {
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-    Instance( "", false );
+  // delete singleton
+  Instance("",false);
+
+  return;
 }
 
-//----------------------------------------------------------------------*/
-// private constructor of ScaTraEleParameterTimInt
-//----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraEleParameterTimInt::ScaTraEleParameterTimInt()
-  :
-//  set_general_fluid_timeparameter_(false),
-  is_genalpha_(false),
-  is_stationary_(false),
-  is_incremental_(false),
-  time_(-1.0),
-  dt_(0.0),
-  timefac_(0.0),
-  timefacrhs_(0.0),
-  timefacrhstau_(0.0),
-  alphaF_(0.0)
+
+/*----------------------------------------------------------------------*
+ | private constructor for singletons                        fang 08/15 |
+ *----------------------------------------------------------------------*/
+DRT::ELEMENTS::ScaTraEleParameterTimInt::ScaTraEleParameterTimInt() :
+    is_genalpha_(false),
+    is_stationary_(false),
+    is_incremental_(false),
+    time_(-1.0),
+    dt_(0.0),
+    timefac_(0.0),
+    timefacrhs_(0.0),
+    timefacrhstau_(0.0),
+    alphaF_(0.0)
 {
-
+  return;
 }
+
 
 //----------------------------------------------------------------------*/
 // set time parameters which are equal for every fluid  rasthofer 11/13 |
 //----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraEleParameterTimInt::SetElementTimeParameter( Teuchos::ParameterList& params )
+void DRT::ELEMENTS::ScaTraEleParameterTimInt::SetParameters(
+    Teuchos::ParameterList& parameters   //!< parameter list
+    )
 {
   // get control parameters
-  is_stationary_  = params.get<bool>("using stationary formulation");
-  is_genalpha_    = params.get<bool>("using generalized-alpha time integration");
-  is_incremental_ = params.get<bool>("incremental solver");
+  is_stationary_  = parameters.get<bool>("using stationary formulation");
+  is_genalpha_    = parameters.get<bool>("using generalized-alpha time integration");
+  is_incremental_ = parameters.get<bool>("incremental solver");
 
   // get current time and time-step length
-  time_ = params.get<double>("total time");
-  dt_   = params.get<double>("time-step length");
+  time_ = parameters.get<double>("total time");
+  dt_   = parameters.get<double>("time-step length");
 
   // get time factor and alpha_F if required
   // one-step-Theta:    timefac = theta*dt
@@ -116,11 +125,11 @@ void DRT::ELEMENTS::ScaTraEleParameterTimInt::SetElementTimeParameter( Teuchos::
 
   if (not is_stationary_)
   {
-    timefac_ = params.get<double>("time factor");
+    timefac_ = parameters.get<double>("time factor");
 
     if (is_genalpha_)
     {
-      alphaF_ = params.get<double>("alpha_F");
+      alphaF_ = parameters.get<double>("alpha_F");
       timefac_ *= alphaF_;
     }
     if (timefac_ < 0.0) dserror("time factor is negative.");
@@ -151,6 +160,7 @@ void DRT::ELEMENTS::ScaTraEleParameterTimInt::SetElementTimeParameter( Teuchos::
 
   return;
 }
+
 
 //----------------------------------------------------------------------*/
 // print fluid time parameter to screen                 rasthofer 11/13 |

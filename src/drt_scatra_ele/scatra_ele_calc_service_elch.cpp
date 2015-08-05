@@ -16,6 +16,8 @@ Maintainer: Andreas Ehrl
 #include "scatra_ele.H"
 #include "scatra_ele_action.H"
 #include "scatra_ele_parameter_elch.H"
+#include "scatra_ele_parameter_std.H"
+#include "scatra_ele_parameter_timint.H"
 
 #include "../drt_geometry/position_array.H"
 #include "../drt_lib/drt_discret.H"  // for time curve in body force
@@ -139,8 +141,8 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateAction(
       SetInternalVariablesForMatAndRHS();
 
       // access control parameter for flux calculation
-      INPAR::SCATRA::FluxType fluxtype = ElchPara()->WriteFlux();
-      Teuchos::RCP<std::vector<int> > writefluxids = ElchPara()->WriteFluxIds();
+      INPAR::SCATRA::FluxType fluxtype = my::scatrapara_->WriteFlux();
+      Teuchos::RCP<std::vector<int> > writefluxids = my::scatrapara_->WriteFluxIds();
 
       // do a loop for systems of transported scalars
       for (std::vector<int>::iterator it = writefluxids->begin(); it!=writefluxids->end(); ++it)
@@ -242,7 +244,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateAction(
     // elevec1_epetra(numscal_-1): conductivity of ionic species (numscal_-1)
     // elevec1_epetra(numscal_):   conductivity of the electrolyte solution (sum_k sigma(k))
     // elevec1_epetra(numscal_+1): domain integral
-    CalculateConductivity(ele,ElchPara()->EquPot(), elevec1_epetra, effCond, specresist);
+    CalculateConductivity(ele,elchparams_->EquPot(), elevec1_epetra, effCond, specresist);
     break;
   }
 

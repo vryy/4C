@@ -2,45 +2,57 @@
 /*!
 \file scatra_ele_parameter_lsreinit.cpp
 
-\brief Setting of scatra parameter for element evaluation of reinitialization equation
+\brief singleton class holding all static levelset reinitialization parameters required for element evaluation
+
+This singleton class holds all static levelset reinitialization parameters required for element evaluation. All
+parameters are usually set only once at the beginning of a simulation, namely during initialization of the global
+time integrator, and then never touched again throughout the simulation. This parameter class needs to coexist with
+the general parameter class holding all general static parameters required for scalar transport element evaluation.
 
 <pre>
-Maintainer: Ursula Rasthofer
-            rasthofer@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15236
+Maintainer: Rui Fang
+            fang@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+            089-289-15251
 </pre>
 */
 /*----------------------------------------------------------------------*/
-
 #include "scatra_ele_parameter_lsreinit.H"
 #include "../drt_lib/drt_dserror.H"
 
 //----------------------------------------------------------------------*/
 //    definition of the instance
 //----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraEleParameterLsReinit* DRT::ELEMENTS::ScaTraEleParameterLsReinit::Instance( const std::string& disname, bool create )
+DRT::ELEMENTS::ScaTraEleParameterLsReinit* DRT::ELEMENTS::ScaTraEleParameterLsReinit::Instance(
+    const std::string&   disname,   //!< name of discretization
+    bool                 create     //!< creation/destruction flag
+    )
 {
-  static std::map<std::string,ScaTraEleParameterLsReinit* >  instances;
+  // each discretization is associated with exactly one instance of this class according to a static map
+  static std::map<std::string,ScaTraEleParameterLsReinit*> instances;
 
+  // check whether instance already exists for current discretization, and perform instantiation if not
   if(create)
   {
     if(instances.find(disname) == instances.end())
       instances[disname] = new ScaTraEleParameterLsReinit(disname);
   }
 
+  // destruct instance
   else if(instances.find(disname) != instances.end())
   {
-    for( std::map<std::string,ScaTraEleParameterLsReinit* >::iterator i=instances.begin(); i!=instances.end(); ++i )
-     {
+    for(std::map<std::string,ScaTraEleParameterLsReinit*>::iterator i=instances.begin(); i!=instances.end(); ++i)
+    {
       delete i->second;
       i->second = NULL;
-     }
+    }
 
     instances.clear();
+
     return NULL;
   }
 
+  // return existing or newly created instance
   return instances[disname];
 }
 
@@ -57,8 +69,9 @@ void DRT::ELEMENTS::ScaTraEleParameterLsReinit::Done()
 //----------------------------------------------------------------------*/
 //    constructor
 //----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraEleParameterLsReinit::ScaTraEleParameterLsReinit(const std::string& disname)
-  : DRT::ELEMENTS::ScaTraEleParameter::ScaTraEleParameter(disname),
+DRT::ELEMENTS::ScaTraEleParameterLsReinit::ScaTraEleParameterLsReinit(
+    const std::string& disname   //!< name of discretization
+    ) :
     reinittype_(INPAR::SCATRA::reinitaction_none),
     signtype_(INPAR::SCATRA::signtype_nonsmoothed),
     charelelengthreinit_(INPAR::SCATRA::root_of_volume_reinit),
@@ -76,83 +89,55 @@ DRT::ELEMENTS::ScaTraEleParameterLsReinit::ScaTraEleParameterLsReinit(const std:
 
 
 //----------------------------------------------------------------------*
-//  set reinitialization specific parameters            rasthofer 12/13 |
+//  set parameters                                      rasthofer 12/13 |
 //----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraEleParameterLsReinit::SetElementLsReinitScaTraParameter(
-  Teuchos::ParameterList& params)
+void DRT::ELEMENTS::ScaTraEleParameterLsReinit::SetParameters(
+    Teuchos::ParameterList& parameters   //!< parameter list
+    )
 {
   // get reinitialization parameters list
-  Teuchos::ParameterList& reinitlist = params.sublist("REINITIALIZATION");
+  Teuchos::ParameterList& reinitlist = parameters.sublist("REINITIALIZATION");
+
   // reinitialization strategy
   reinittype_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::ReInitialAction>(reinitlist, "REINITIALIZATION");
+
   // get signum function
   signtype_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::SmoothedSignType>(reinitlist, "SMOOTHED_SIGN_TYPE");
+
   // characteristic element length for signum function
   charelelengthreinit_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::CharEleLengthReinit>(reinitlist, "CHARELELENGTHREINIT");
+
   // interface thickness for signum function
   interfacethicknessfac_ = reinitlist.get<double>("INTERFACE_THICKNESS");
+
   // form of linearization for nonlinear terms
   linform_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::LinReinit>(reinitlist, "LINEARIZATIONREINIT");
 
   // set form of velocity evaluation
   INPAR::SCATRA::VelReinit velreinit = DRT::INPUT::IntegralValue<INPAR::SCATRA::VelReinit>(reinitlist, "VELREINIT");
-  if (velreinit == INPAR::SCATRA::vel_reinit_node_based) useprojectedreinitvel_ = true;
+  if(velreinit == INPAR::SCATRA::vel_reinit_node_based)
+    useprojectedreinitvel_ = true;
 
-  // get definition for stabilization parameter tau (get definition of tau before stabtype is set,
-  // otherwise tau_zero in case of stabtype_no_stabilization (calc initial phidt) will be overwritten)
-  whichtau_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::TauType>(reinitlist,"DEFINITION_TAU_REINIT");
-
-  // overwrite stabilization type
-  stabtype_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::StabType>(reinitlist,"STABTYPEREINIT");
-  switch(stabtype_)
-  {
-  case INPAR::SCATRA::stabtype_no_stabilization:
-    whichtau_ = INPAR::SCATRA::tau_zero;
-    break;
-  case INPAR::SCATRA::stabtype_SUPG:
-    diffreastafac_ = 0.0;
-    break;
-  case INPAR::SCATRA::stabtype_GLS:
-    diffreastafac_ = 1.0;
-    break;
-  case INPAR::SCATRA::stabtype_USFEM:
-    diffreastafac_ = -1.0;
-    break;
-  default:
-    dserror("unknown definition for stabilization parameter");
-    break;
-  }
-
-  // set flags for subgrid-scale velocity and artificial diffusion term
-  // (default: "false" for both flags)
-  sgvel_ = false;
+  // set flag for artificial diffusion term
   artdiff_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::ArtDiff>(reinitlist,"ARTDIFFREINIT");
-
-  // select type of artificial diffusion if included
-  whichassgd_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::AssgdType>(reinitlist,"DEFINITION_ARTDIFFREINIT");
-
-  // check for illegal combinations
-  if (artdiff_ != INPAR::SCATRA::artdiff_none)
-  {
-    // check for matching flags
-    if (not mat_gp_ or not tau_gp_)
-     dserror("Evaluation of material and stabilization parameters need to be done at the integration points for reinitialization");
-    // due to artificial diff
-  }
 
   // set penalty parameter for elliptic reinitialization
   alphapen_ = reinitlist.get<double>("PENALTY_PARA");
+
   // get diffusivity function
   difffct_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::DiffFunc>(reinitlist, "DIFF_FUNC");
 
   // L2-projection
   project_ = DRT::INPUT::IntegralValue<bool>(reinitlist,"PROJECTION");
+
   // diffusion for L2-projection
   projectdiff_ = reinitlist.get<double>("PROJECTION_DIFF");
   if (projectdiff_ < 0.0)
     dserror("Diffusivity has to be positive!");
+
   // lumping for L2-projection
   lumping_ = DRT::INPUT::IntegralValue<bool>(reinitlist,"LUMPING");
+
   // check for illegal combination
   if (projectdiff_ > 0.0 and lumping_ == true)
     dserror("Illegal combination!");
@@ -164,4 +149,3 @@ void DRT::ELEMENTS::ScaTraEleParameterLsReinit::SetElementLsReinitScaTraParamete
 
   return;
 }
-

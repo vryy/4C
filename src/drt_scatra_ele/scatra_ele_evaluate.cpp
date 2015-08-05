@@ -17,12 +17,12 @@ Maintainer: Andreas Ehrl
 #include "scatra_ele_interface.H"
 #include "scatra_ele_action.H"
 
-#include "scatra_ele_parameter.H"
-#include "scatra_ele_parameter_timint.H"
-#include "scatra_ele_parameter_std.H"
-#include "scatra_ele_parameter_lsreinit.H"
 #include "scatra_ele_parameter_elch.H"
 #include "scatra_ele_parameter_elch_diffcond.H"
+#include "scatra_ele_parameter_lsreinit.H"
+#include "scatra_ele_parameter_std.H"
+#include "scatra_ele_parameter_timint.H"
+#include "scatra_ele_parameter_turbulence.H"
 
 #include "scatra_ele_calc_utils.H"
 
@@ -53,52 +53,63 @@ void DRT::ELEMENTS::TransportType::PreEvaluate(DRT::Discretization&             
   {
   case SCATRA::set_general_scatra_parameter:
   {
-    DRT::ELEMENTS::ScaTraEleParameterStd::Instance(dis.Name())->SetElementGeneralParameters(p);
+    DRT::ELEMENTS::ScaTraEleParameterStd::Instance(dis.Name())->SetParameters(p);
 
     break;
   }
 
   case SCATRA::set_turbulence_scatra_parameter:
   {
-    DRT::ELEMENTS::ScaTraEleParameterStd::Instance(dis.Name())->SetElementTurbulenceParameters(p);
+    DRT::ELEMENTS::ScaTraEleParameterTurbulence::Instance(dis.Name())->SetParameters(p);
 
     break;
   }
 
   case SCATRA::set_time_parameter:
   {
-    DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(dis.Name())->SetElementTimeParameter(p);
+    DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(dis.Name())->SetParameters(p);
 
     break;
   }
 
   case SCATRA::set_mean_Cai:
   {
-    DRT::ELEMENTS::ScaTraEleParameterStd::Instance(dis.Name())->SetCsgsPhi(p.get<double>("meanCai"));
+    DRT::ELEMENTS::ScaTraEleParameterTurbulence::Instance(dis.Name())->SetCsgsPhi(p.get<double>("meanCai"));
 
     break;
   }
 
   case SCATRA::set_lsreinit_scatra_parameter:
   {
-    DRT::ELEMENTS::ScaTraEleParameterLsReinit* scatrapara = DRT::ELEMENTS::ScaTraEleParameterLsReinit::Instance(dis.Name());
     // set general parameters first
-    scatrapara->SetElementGeneralParameters(p);
-    // set additional problem-dependent parameters
-    scatrapara->SetElementLsReinitScaTraParameter(p);
+    DRT::ELEMENTS::ScaTraEleParameterStd::Instance(dis.Name())->SetParameters(p);
+
+    // set additional, problem-dependent parameters
+    DRT::ELEMENTS::ScaTraEleParameterLsReinit::Instance(dis.Name())->SetParameters(p);
 
     break;
   }
 
   case SCATRA::set_elch_scatra_parameter:
   {
-    DRT::ELEMENTS::ScaTraEleParameterElch::Instance(dis.Name())->SetElementGeneralParameters(p);
+    // set general parameters first
+    DRT::ELEMENTS::ScaTraEleParameterStd::Instance(dis.Name())->SetParameters(p);
+
+    // set additional, problem-dependent parameters
+    DRT::ELEMENTS::ScaTraEleParameterElch::Instance(dis.Name())->SetParameters(p);
+
     break;
   }
 
   case SCATRA::set_diffcond_scatra_parameter:
   {
-    DRT::ELEMENTS::ScaTraEleParameterElchDiffCond::Instance(dis.Name())->SetElementGeneralParameters(p);
+    // set general parameters first
+    DRT::ELEMENTS::ScaTraEleParameterStd::Instance(dis.Name())->SetParameters(p);
+
+    // set additional, problem-dependent parameters
+    DRT::ELEMENTS::ScaTraEleParameterElch::Instance(dis.Name())->SetParameters(p);
+    DRT::ELEMENTS::ScaTraEleParameterElchDiffCond::Instance(dis.Name())->SetParameters(p);
+
     break;
   }
 

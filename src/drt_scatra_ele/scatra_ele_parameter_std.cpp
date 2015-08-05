@@ -2,63 +2,209 @@
 /*!
 \file scatra_ele_parameter_std.cpp
 
-\brief Setting of general scatra parameter for element evaluation
+\brief singleton class holding all static parameters required for the evaluation of a standard scalar transport element
+
+This singleton class holds all static parameters required for the evaluation of a standard scalar transport element,
+e.g., stabilization parameters and finite difference check parameters. All parameters are usually set only once at
+the beginning of a simulation, namely during initialization of the global time integrator, and then never touched again
+throughout the simulation. Enhanced scalar transport problems, such as electrochemistry and levelset problems, instantiate
+additional, problem specific singleton classes holding additional static parameters required for element evaluation. These
+additional singleton classes are not meant to be derived from, but rather to coexist with this general class.
 
 <pre>
-Maintainer: Andreas Ehrl
-            ehrl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15252
+Maintainer: Rui Fang
+            fang@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+            089-289-15251
 </pre>
 */
 /*----------------------------------------------------------------------*/
-
 #include "scatra_ele_parameter_std.H"
+#include "scatra_ele_parameter_timint.H"
 
-//----------------------------------------------------------------------*/
-//    definition of the instance
-//----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraEleParameterStd* DRT::ELEMENTS::ScaTraEleParameterStd::Instance( const std::string& disname, bool create )
+#include "../drt_lib/drt_dserror.H"
+
+/*----------------------------------------------------------------------*
+ | singleton access method                             thon/vuong 07/15 |
+ *----------------------------------------------------------------------*/
+DRT::ELEMENTS::ScaTraEleParameterStd* DRT::ELEMENTS::ScaTraEleParameterStd::Instance(
+    const std::string&   disname,   //!< name of discretization
+    bool                 create     //!< creation/destruction flag
+    )
 {
-  static std::map<std::string,ScaTraEleParameterStd* >  instances;
+  // each discretization is associated with exactly one instance of this class according to a static map
+  static std::map<std::string,ScaTraEleParameterStd*> instances;
 
+  // check whether instance already exists for current discretization, and perform instantiation if not
   if(create)
   {
     if(instances.find(disname) == instances.end())
       instances[disname] = new ScaTraEleParameterStd(disname);
   }
 
+  // destruct instance
   else if(instances.find(disname) != instances.end())
   {
-    for( std::map<std::string,ScaTraEleParameterStd* >::iterator i=instances.begin(); i!=instances.end(); ++i )
-     {
+    for(std::map<std::string,ScaTraEleParameterStd*>::iterator i=instances.begin(); i!=instances.end(); ++i)
+    {
       delete i->second;
       i->second = NULL;
-     }
+    }
 
     instances.clear();
+
     return NULL;
   }
 
+  // return existing or newly created instance
   return instances[disname];
 }
 
-//----------------------------------------------------------------------*/
-//    destruction method
-//----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*
+ | singleton destruction                                     fang 08/15 |
+ *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::ScaTraEleParameterStd::Done()
 {
-  // delete this pointer! Afterwards we have to go! But since this is a
-  // cleanup call, we can do it this way.
-    Instance( "",false );
+  // delete singleton
+  Instance("",false);
+
+  return;
 }
 
-//----------------------------------------------------------------------*/
-//    constructor
-//----------------------------------------------------------------------*/
-DRT::ELEMENTS::ScaTraEleParameterStd::ScaTraEleParameterStd(const std::string& disname)
-  : DRT::ELEMENTS::ScaTraEleParameter::ScaTraEleParameter(disname)
+/*----------------------------------------------------------------------*
+ | private constructor for singletons                        fang 08/15 |
+ *----------------------------------------------------------------------*/
+DRT::ELEMENTS::ScaTraEleParameterStd::ScaTraEleParameterStd(
+    const std::string& disname   //!< name of discretization
+    ) :
+    is_ale_(false),
+    is_conservative_(false),
+    writeflux_(INPAR::SCATRA::flux_no),
+    writefluxids_(Teuchos::null),
+    fdcheck_(INPAR::SCATRA::fdcheck_none),
+    fdcheckeps_(0.),
+    fdchecktol_(0.),
+    stabtype_(INPAR::SCATRA::stabtype_no_stabilization),
+    whichtau_(INPAR::SCATRA::tau_zero),
+    charelelength_(INPAR::SCATRA::streamlength),
+    diffreastafac_(0.0),
+    sgvel_(false),
+    assgd_(false),
+    whichassgd_(INPAR::SCATRA::assgd_artificial),
+    tau_gp_(false),
+    mat_gp_(false),
+    // we have to know the time parameters here to check for illegal combinations
+    scatraparatimint_(DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(disname))
 {
+  return;
 }
 
 
+/*----------------------------------------------------------------------*
+ | set parameters                                            ehrl 04/10 |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::ScaTraEleParameterStd::SetParameters(
+    Teuchos::ParameterList& parameters   //!< parameter list
+    )
+{
+  // set ale case
+  is_ale_ = parameters.get<bool>("isale",false);
+
+  // set flag for conservative form
+  const INPAR::SCATRA::ConvForm convform =
+    DRT::INPUT::get<INPAR::SCATRA::ConvForm>(parameters, "convform");
+
+  is_conservative_ = false;
+  if (convform ==INPAR::SCATRA::convform_conservative) is_conservative_ = true;
+
+  // flag for writing the flux vector fields
+  writeflux_ =  DRT::INPUT::get<INPAR::SCATRA::FluxType>(parameters, "writeflux");
+
+  //! vector containing ids of scalars for which flux vectors are calculated
+  if (writeflux_ != INPAR::SCATRA::flux_no)
+    writefluxids_ =  parameters.get<Teuchos::RCP<std::vector<int> > >("writeflux_ids");
+
+  // set parameters for stabilization
+  Teuchos::ParameterList& stablist = parameters.sublist("stabilization");
+
+  // get definition for stabilization parameter tau
+  whichtau_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::TauType>(stablist,"DEFINITION_TAU");
+
+  // set correct stationary definition for stabilization parameter automatically
+  // and ensure that exact stabilization parameter is only used in stationary case
+  if (scatraparatimint_->IsStationary())
+  {
+    if (whichtau_ == INPAR::SCATRA::tau_taylor_hughes_zarins)
+      whichtau_ = INPAR::SCATRA::tau_taylor_hughes_zarins_wo_dt;
+    else if (whichtau_ == INPAR::SCATRA::tau_franca_valentin)
+      whichtau_ = INPAR::SCATRA::tau_franca_valentin_wo_dt;
+    else if (whichtau_ == INPAR::SCATRA::tau_shakib_hughes_codina)
+      whichtau_ = INPAR::SCATRA::tau_shakib_hughes_codina_wo_dt;
+    else if (whichtau_ == INPAR::SCATRA::tau_codina)
+      whichtau_ = INPAR::SCATRA::tau_codina_wo_dt;
+    else if (whichtau_ == INPAR::SCATRA::tau_franca_madureira_valentin)
+      whichtau_ = INPAR::SCATRA::tau_franca_madureira_valentin_wo_dt;
+  }
+  else
+  {
+    if (whichtau_ == INPAR::SCATRA::tau_exact_1d)
+      dserror("exact stabilization parameter only available for stationary case");
+  }
+
+  // get characteristic element length for stabilization parameter definition
+  charelelength_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::CharEleLength>(stablist,"CHARELELENGTH");
+
+  // set (sign) factor for diffusive and reactive stabilization terms
+  // (factor is zero for SUPG) and overwrite tau definition when there
+  // is no stabilization
+  stabtype_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::StabType>(stablist,"STABTYPE");
+  switch(stabtype_)
+  {
+  case INPAR::SCATRA::stabtype_no_stabilization:
+    whichtau_ = INPAR::SCATRA::tau_zero;
+    break;
+  case INPAR::SCATRA::stabtype_SUPG:
+    diffreastafac_ = 0.0;
+    break;
+  case INPAR::SCATRA::stabtype_GLS:
+    diffreastafac_ = 1.0;
+    break;
+  case INPAR::SCATRA::stabtype_USFEM:
+    diffreastafac_ = -1.0;
+    break;
+  default:
+    dserror("unknown definition for stabilization parameter");
+    break;
+  }
+
+  // set flags for subgrid-scale velocity and all-scale subgrid-diffusivity term
+  // (default: "false" for both flags)
+  sgvel_ = DRT::INPUT::IntegralValue<int>(stablist,"SUGRVEL");
+  assgd_ = DRT::INPUT::IntegralValue<int>(stablist,"ASSUGRDIFF");
+
+  // select type of all-scale subgrid diffusivity if included
+  whichassgd_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::AssgdType>(stablist,"DEFINITION_ASSGD");
+
+  // set flags for potential evaluation of tau and material law at int. point
+  const INPAR::SCATRA::EvalTau tauloc = DRT::INPUT::IntegralValue<INPAR::SCATRA::EvalTau>(stablist,"EVALUATION_TAU");
+  tau_gp_ = (tauloc == INPAR::SCATRA::evaltau_integration_point); // set true/false
+
+  const INPAR::SCATRA::EvalMat matloc = DRT::INPUT::IntegralValue<INPAR::SCATRA::EvalMat>(stablist,"EVALUATION_MAT");
+  mat_gp_ = (matloc == INPAR::SCATRA::evalmat_integration_point); // set true/false
+
+  // check for illegal combinations
+  if (sgvel_ or assgd_)
+  {
+    // check for matching flags
+    if (not mat_gp_ or not tau_gp_)
+     dserror("Evaluation of material and stabilization parameters need to be done at the integration points if subgrid-scale velocity is included!");
+  }
+
+  // get quantities for finite difference check
+  fdcheck_ = DRT::INPUT::get<INPAR::SCATRA::FDCheck>(parameters,"fdcheck");
+  fdcheckeps_ = parameters.get<double>("fdcheckeps");
+  fdchecktol_ = parameters.get<double>("fdchecktol");
+
+  return;
+}

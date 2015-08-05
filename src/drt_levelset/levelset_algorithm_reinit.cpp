@@ -104,6 +104,12 @@ void SCATRA::LevelSetAlgorithm::SetReinitializationElementParameters(bool calcin
   eleparams.set<double>("fdcheckeps",fdcheckeps_);
   eleparams.set<double>("fdchecktol",fdchecktol_);
 
+  // overwrite some values in general stabilization parameter list by modified values in levelset reinitialization parameter list
+  eleparams.sublist("stabilization").set<std::string>("DEFINITION_TAU",eleparams.sublist("REINITIALIZATION").get<std::string>("DEFINITION_TAU_REINIT"));
+  eleparams.sublist("stabilization").set<std::string>("STABTYPE",eleparams.sublist("REINITIALIZATION").get<std::string>("STABTYPEREINIT"));
+  eleparams.sublist("stabilization").set<std::string>("SUGRVEL","no");
+  eleparams.sublist("stabilization").set<std::string>("DEFINITION_ASSGD",eleparams.sublist("REINITIALIZATION").get<std::string>("DEFINITION_ARTDIFFREINIT"));
+
   // call standard loop over elements
   discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 

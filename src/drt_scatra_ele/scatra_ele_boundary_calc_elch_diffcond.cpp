@@ -12,6 +12,11 @@ Maintainer: Rui Fang
 </pre>
  */
 /*----------------------------------------------------------------------*/
+#include "scatra_ele_boundary_calc_elch_diffcond.H"
+#include "scatra_ele.H"
+#include "scatra_ele_calc_elch_diffcond.H" // for diffusion manager
+#include "scatra_ele_parameter_timint.H"
+
 #include "../drt_inpar/inpar_s2i.H"
 
 #include "../drt_lib/drt_discret.H"
@@ -22,10 +27,6 @@ Maintainer: Rui Fang
 #include "../drt_mat/ion.H"
 #include "../drt_mat/material.H"
 #include "../drt_mat/newman.H"
-
-#include "scatra_ele.H"
-#include "scatra_ele_calc_elch_diffcond.H" // for diffusion manager
-#include "scatra_ele_boundary_calc_elch_diffcond.H"
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 02/15 |
@@ -84,9 +85,6 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::ScaTraEleBoundaryCalc
     // initialization of diffusion manager
     dmedc_(Teuchos::rcp(new ScaTraEleDiffManagerElchDiffCond(my::numscal_)))
 {
-  // replace standard electrochemistry parameter class by electrochemistry parameter class for diffusion-conduction formulation
-  my::scatraparams_ = DRT::ELEMENTS::ScaTraEleParameterElchDiffCond::Instance(disname);
-
   return;
 }
 
@@ -134,7 +132,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateNeumann(
   my::EvaluateNeumann(ele,params,discretization,condition,la,elevec1,dmedc_->GetPhasePoro(0));
 
   // add boundary flux contributions to potential equation
-  switch(ElchParams()->EquPot())
+  switch(myelch::elchparams_->EquPot())
   {
   case INPAR::ELCH::equpot_divi:
   {
@@ -228,7 +226,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateElchBoun
   myelch::EvaluateElchBoundaryKinetics(ele,emat,erhs,ephinp,ehist,timefac,material,cond,nume,stoich,kinetics,pot0,frt,scalar);
 
   // compute matrix and residual contributions arising from closing equation for electric potential
-  switch(ElchParams()->EquPot())
+  switch(myelch::elchparams_->EquPot())
   {
   case INPAR::ELCH::equpot_enc:
   {
@@ -260,7 +258,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateElchBoun
     dserror("Unknown closing equation for electric potential!");
     break;
   }
-  } // switch(ElchParams()->EquPot())
+  } // switch(myelch::elchparams_->EquPot())
 
   return;
 } // DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateElchBoundaryKinetics
@@ -335,7 +333,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateS2ICoupl
   if(reactivespecies > 1)
     dserror("Charge transfer at electrode-electrolyte interface must not involve more than one reactive species!");
   const double faraday = INPAR::ELCH::faraday_const;
-  const double frt = myelch::ElchParams()->FRT();
+  const double frt = myelch::elchparams_->FRT();
   if(frt <= 0.)
     dserror("Factor F/RT is negative!");
   const double alphaa = s2icondition->GetDouble("alpha_a");
@@ -431,7 +429,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateS2ICoupl
     } // loop over integration points
 
     // compute matrix and rhs contributions arising from closing equation for electric potential
-    switch(ElchParams()->EquPot())
+    switch(myelch::elchparams_->EquPot())
     {
     case INPAR::ELCH::equpot_enc:
     {
@@ -564,7 +562,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EquilibriumPoten
       if((int) coefficients->size() != numcoeff)
         dserror("Length of Redlich-Kister coefficient vector doesn't match prescribed number of coefficients!");
       const double faraday = INPAR::ELCH::faraday_const;
-      const double frt = myelch::ElchParams()->FRT();
+      const double frt = myelch::elchparams_->FRT();
       const double cmax = condition->GetDouble("c_max");
 
       // intercalation fraction at electrode surface

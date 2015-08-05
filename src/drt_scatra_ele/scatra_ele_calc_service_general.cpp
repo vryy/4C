@@ -14,13 +14,11 @@ Maintainer: Andreas Ehrl
 /*----------------------------------------------------------------------*/
 
 #include "scatra_ele_calc.H"
-
 #include "scatra_ele.H"
 #include "scatra_ele_action.H"
-
-#include "scatra_ele_parameter.H"
 #include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
+#include "scatra_ele_parameter_turbulence.H"
 
 #include "../drt_lib/drt_utils.H"
 #include "../drt_nurbs_discret/drt_nurbs_utils.H"
@@ -338,20 +336,20 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
       }
     }
 
-    if (scatrapara_->TurbModel() != INPAR::FLUID::multifractal_subgrid_scales)
+    if (turbparams_->TurbModel() != INPAR::FLUID::multifractal_subgrid_scales)
       dserror("Multifractal_Subgrid_Scales expected");
 
     double Cai = 0.0;
     double vol = 0.0;
     // calculate Cai and volume, do not include elements of potential inflow section
-    if (scatrapara_->AdaptCsgsPhi() and scatrapara_->Nwl() and (not SCATRA::InflowElement(ele)))
+    if (turbparams_->AdaptCsgsPhi() and turbparams_->Nwl() and (not SCATRA::InflowElement(ele)))
     {
       // use one-point Gauss rule to do calculations at the element center
       DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToStabGaussRule<distype>::rule);
       vol = EvalShapeFuncAndDerivsAtIntPoint(intpoints,0);
 
       // adopt integration points and weights for gauss point evaluation of B
-      if (scatrapara_->BD_Gp())
+      if (turbparams_->BD_Gp())
       {
         const DRT::UTILS::IntPointsAndWeights<nsd_ele_> gauss_intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
         intpoints = gauss_intpoints;

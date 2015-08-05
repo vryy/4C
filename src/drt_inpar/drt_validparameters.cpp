@@ -5794,6 +5794,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "Definition of (all-scale) subgrid diffusivity",
                                tuple<std::string>(
                                  "artificial_linear",
+                                 "artificial_linear_reinit",
                                  "Hughes_etal_86_nonlinear",
                                  "Tezduyar_Park_86_nonlinear",
                                  "Tezduyar_Park_86_nonlinear_wo_phizero",
@@ -5803,6 +5804,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Codina_nonlinear"),
                                tuple<std::string>(
                                  "classical linear artificial subgrid-diffusivity",
+                                 "simple linear artificial subgrid-diffusivity const*h",
                                  "nonlinear isotropic according to Hughes et al. (1986)",
                                  "nonlinear isotropic according to Tezduyar and Park (1986)",
                                  "nonlinear isotropic according to Tezduyar and Park (1986) without user parameter phi_zero",
@@ -5812,6 +5814,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "nonlinear isotropic according to Codina")  ,
                                 tuple<int>(
                                     INPAR::SCATRA::assgd_artificial,
+                                    INPAR::SCATRA::assgd_lin_reinit,
                                     INPAR::SCATRA::assgd_hughes,
                                     INPAR::SCATRA::assgd_tezduyar,
                                     INPAR::SCATRA::assgd_tezduyar_wo_phizero,

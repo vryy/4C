@@ -418,9 +418,6 @@ private:
   //! get diffusion manager for diffusion-conduction formulation
   Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> DiffManager(){return Teuchos::rcp_static_cast<ScaTraEleDiffManagerElchDiffCond>(my::diffmanager_);};
 
-  //! get elch parameter list for diffusion-conduction formulation
-  ScaTraEleParameterElchDiffCond* ElchPara(){return static_cast<ScaTraEleParameterElchDiffCond*>(my::scatrapara_);};
-
   //! get internal variable manager for diffusion-conduction formulation
   Teuchos::RCP<ScaTraEleInternalVariableManagerElchDiffCond<my::nsd_,my::nen_> > VarManager(){return Teuchos::rcp_static_cast<ScaTraEleInternalVariableManagerElchDiffCond<my::nsd_,my::nen_> >(my::scatravarmanager_);};
 
@@ -429,6 +426,9 @@ private:
 
   //! flag for used element formulation (material based)
   INPAR::ELCH::DiffCondMat diffcondmat_;
+
+  //! parameter class for diffusion-conduction formulation
+  const ScaTraEleParameterElchDiffCond* diffcondparams_;
 
   //! nodal current density values at t_(n+1) or t_(n+alpha_F)
   LINALG::Matrix<my::nsd_,my::nen_> ecurnp_;
@@ -657,8 +657,13 @@ class ScaTraEleInternalVariableManagerElchDiffCond : public ScaTraEleInternalVar
     typedef ScaTraEleInternalVariableManagerElch<NSD,NEN> vmelch;
     typedef ScaTraEleInternalVariableManagerElchElectrode<NSD,NEN> vmelectrode;
 
-    ScaTraEleInternalVariableManagerElchDiffCond(int numscal,DRT::ELEMENTS::ScaTraEleParameterElchDiffCond* elchpara):
-      ScaTraEleInternalVariableManagerElchElectrode<NSD,NEN>(numscal,elchpara),
+    ScaTraEleInternalVariableManagerElchDiffCond(
+        int numscal,
+        const DRT::ELEMENTS::ScaTraEleParameterElch* elchparams,
+        const DRT::ELEMENTS::ScaTraEleParameterElchDiffCond* diffcondparams
+        ):
+      ScaTraEleInternalVariableManagerElchElectrode<NSD,NEN>(numscal,elchparams),
+      diffcondparams_(diffcondparams),
       rtf_(0.),
       rtffc_(0.),
       invval_(numscal),
@@ -690,7 +695,7 @@ class ScaTraEleInternalVariableManagerElchDiffCond : public ScaTraEleInternalVar
       rtf_ = 1./vmelch::frt_;
 
       // set constant parameter RT/(F^2*Newman_const_C)
-      rtffc_ = rtf_*vmelectrode::invf_/static_cast<DRT::ELEMENTS::ScaTraEleParameterElchDiffCond*>(vmelch::parameters_)->NewmanConstC();
+      rtffc_ = rtf_*vmelectrode::invf_/diffcondparams_->NewmanConstC();
 
       // constant material-depending variables
       for(int k=0; k<vm::numscal_; ++k)
@@ -735,7 +740,10 @@ class ScaTraEleInternalVariableManagerElchDiffCond : public ScaTraEleInternalVar
     //! return divergence of current density
     const double CurDiv(){return curdiv_;};
 
-  protected:
+  private:
+
+    //! parameter class for diffusion-conduction formulation
+    const DRT::ELEMENTS::ScaTraEleParameterElchDiffCond* diffcondparams_;
 
   /*========================================================================*/
   //! @name constant internal variables

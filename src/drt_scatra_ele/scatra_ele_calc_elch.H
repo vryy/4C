@@ -235,8 +235,8 @@ protected:
   //! get elch diffusion manager
   Teuchos::RCP<ScaTraEleDiffManagerElch> DiffManager(){return Teuchos::rcp_static_cast<ScaTraEleDiffManagerElch>(my::diffmanager_);};
 
-  //! get elch parameter list
-  ScaTraEleParameterElch* ElchPara(){return static_cast<ScaTraEleParameterElch*>(my::scatrapara_);};
+  //! parameter class for electrochemistry problems
+  const ScaTraEleParameterElch* elchparams_;
 
   //! utility class supporting element evaluation
   DRT::ELEMENTS::ScaTraEleUtilsElch<distype>* utils_;
@@ -308,7 +308,7 @@ class ScaTraEleInternalVariableManagerElch : public ScaTraEleInternalVariableMan
 
   public:
 
-    ScaTraEleInternalVariableManagerElch(int numscal,DRT::ELEMENTS::ScaTraEleParameterElch* elchpara):
+    ScaTraEleInternalVariableManagerElch(int numscal,const DRT::ELEMENTS::ScaTraEleParameterElch* elchpara):
       ScaTraEleInternalVariableManager<NSD, NEN>(numscal),
       parameters_(elchpara),
       frt_(0.),
@@ -384,7 +384,7 @@ class ScaTraEleInternalVariableManagerElch : public ScaTraEleInternalVariableMan
   protected:
 
     //! parameter class for electrochemistry problems
-    DRT::ELEMENTS::ScaTraEleParameterElch* parameters_;
+    const DRT::ELEMENTS::ScaTraEleParameterElch* parameters_;
 
   /*========================================================================*/
   //! @name constant internal variables

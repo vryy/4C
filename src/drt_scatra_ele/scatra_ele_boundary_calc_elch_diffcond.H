@@ -118,9 +118,6 @@ namespace DRT
           double&                               epdderiv         //! derivative of equilibrium electric potential difference to be computed at current Gauss point
       ) const;
 
-      //! return parameter class for electrochemistry problems governed by diffusion-conduction formulation
-      const DRT::ELEMENTS::ScaTraEleParameterElchDiffCond* ElchParams() const {return static_cast<DRT::ELEMENTS::ScaTraEleParameterElchDiffCond*>(my::scatraparams_);};
-
       //! diffusion manager
       Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> dmedc_;
     }; // class ScaTraEleBoundaryCalcElchDiffCond

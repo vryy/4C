@@ -272,7 +272,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::CalcElePenaltyParameter(
   double& penalty)
 {
   // safety check
-  if (dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->SignType()
+  if (lsreinitparams_->SignType()
            != INPAR::SCATRA::signtype_SussmanFatemi1999)
     dserror("Penalty method only for smoothed sign function: SussmanFatemi1999!");
 
@@ -453,7 +453,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatNodalVel(
 
     // get velocity at element center
     LINALG::Matrix<my::nsd_,1> convelint(true);
-    if (dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->ReinitType() == INPAR::SCATRA::reinitaction_sussman)
+    if (lsreinitparams_->ReinitType() == INPAR::SCATRA::reinitaction_sussman)
     {
       // get sign function
       double signphi = 0.0;
@@ -473,10 +473,10 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatNodalVel(
     //------------------------------------------------
     // should not be used together with lumping
     // prevented by dserror in lsreinit parameters
-    if (dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->ProjectDiff()>0.0)
+    if (lsreinitparams_->ProjectDiff()>0.0)
     {
       const double diff =
-        (dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->ProjectDiff())
+        (lsreinitparams_->ProjectDiff())
         *charelelength*charelelength;
       my::diffmanager_->SetIsotropicDiff(diff,0);
       my::CalcMatDiff(emat,0,fac);
@@ -486,7 +486,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatNodalVel(
     // element rhs
     //------------------------------------------------
     // distinguish reinitialization
-    switch (dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->ReinitType())
+    switch (lsreinitparams_->ReinitType())
     {
       case INPAR::SCATRA::reinitaction_sussman:
       {
@@ -503,7 +503,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatNodalVel(
   } // loop Gauss points
 
   // do lumping: row sum
-  if (dynamic_cast<DRT::ELEMENTS::ScaTraEleParameterLsReinit*>(my::scatrapara_)->Lumping())
+  if (lsreinitparams_->Lumping())
   {
     for (int vi=0; vi<my::nen_; ++vi)
     {

@@ -131,11 +131,11 @@ namespace DRT
           const int                                  k           //! species number
       ) const = 0;
 
-      //! return parameter class for electrochemistry problems
-      const DRT::ELEMENTS::ScaTraEleParameterElch* ElchParams() const {return static_cast<DRT::ELEMENTS::ScaTraEleParameterElch*>(my::scatraparams_);};
+      //! parameter class for electrochemistry problems
+      const DRT::ELEMENTS::ScaTraEleParameterElch* elchparams_;
 
       //! utility class supporting element evaluation
-      DRT::ELEMENTS::ScaTraEleUtilsElch<distype>* utils_;
+      const DRT::ELEMENTS::ScaTraEleUtilsElch<distype>* utils_;
     }; // class ScaTraEleBoundaryCalcElch
   } // namespace ELEMENTS
 } // namespace DRT

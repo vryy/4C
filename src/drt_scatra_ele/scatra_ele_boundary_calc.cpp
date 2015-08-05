@@ -17,6 +17,11 @@ Maintainer: Andreas Ehrl
 // the shifted version of Butler-Volmer is activated if the define-flag ButlerVolmer_Shifted is on
 // define-flag PERCENT: how much is the curve shifted
 
+#include "scatra_ele_boundary_calc.H"
+#include "scatra_ele.H"
+#include "scatra_ele_parameter_std.H"
+#include "scatra_ele_parameter_timint.H"
+
 #include <cstdlib>
 
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
@@ -33,10 +38,6 @@ Maintainer: Andreas Ehrl
 #include "../drt_mat/thermostvenantkirchhoff.H"
 
 #include "../drt_nurbs_discret/drt_nurbs_utils.H"
-
-#include "scatra_ele.H"
-#include "scatra_ele_parameter_std.H"
-#include "scatra_ele_boundary_calc.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
