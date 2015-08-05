@@ -100,9 +100,11 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::Unpack(const std::vector<char>
 
   is_init_porosity_ = DRT::ParObject::ExtractInt(position,data);
 
-  //init_porosity_ = Teuchos::rcp(new LINALG::Matrix<my::numnod_,1>(true));
   if(is_init_porosity_)
+  {
+    init_porosity_ = Teuchos::rcp(new LINALG::Matrix<my::numnod_,1>(true));
     DRT::ParObject::ExtractfromPack<my::numnod_,1>(position,data,*init_porosity_);
+  }
 
 
   // extract base class Element
