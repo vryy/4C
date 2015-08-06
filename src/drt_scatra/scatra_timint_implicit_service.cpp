@@ -609,7 +609,7 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialTimeDerivative()
 
   // final screen output
   if(myrank_ == 0)
-    std::cout << "done!" << std::endl << std::endl;
+    std::cout << "done!" << std::endl;
 
   return;
 } // SCATRA::ScaTraTimIntImpl::CalcInitialTimeDerivative

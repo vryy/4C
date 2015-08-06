@@ -50,7 +50,7 @@ WRITE_TO_SCREEN                 Yes
 MAXTIME                         10000.0
 TIMESTEP                        0.01 //0.01
 NUMSTEP                         3
-RESTARTEVRY                     2
+RESTARTEVRY                     1
 UPRES                           1
 INF_PERM                        No
 SCATRA_SOLVERTYPE               nonlinear //linear
@@ -75,6 +75,7 @@ ITEMAX                          20
 ----------------------------------------------------------------FS3I DYNAMIC/AC
 FSI_STEPS_PER_SCATRA_STEP       2
 PERIODICITY                     0.02
+LARGE_TIMESCALE_TIMESTEP        1.0
 //PERIODSTOSTEADYSTATE            2
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 CALCERROR                       No

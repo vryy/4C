@@ -606,17 +606,13 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
 
 
   // time of restart
-  double t = reader.ReadDouble("time");
+  double time = reader.ReadDouble("time");
 
   // -------------------------------------------------------------------
   // Read in the pressure values and the pressure difference
   // -------------------------------------------------------------------
   stream4 << "pressuresId"<<condnum;
   stream5 << "pressuresposId" << condnum;
-
-  // read in pressure difference
-  dpstream <<"dP"<<condnum;
-  dP_ = reader.ReadDouble(dpstream.str());
 
   // read in pressures
   reader.ReadRedundantDoubleVector(pressures_ ,stream4.str());
@@ -634,7 +630,7 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
   // evaluate the new pressure vector
   int np_pos = 0;
   Teuchos::RCP<std::vector<double> > np = Teuchos::rcp(new std::vector<double>(nPSize,0.0));
-  this->interpolate(pressures_,np,pressurespos_,np_pos,t);
+  this->interpolate(pressures_,np,pressurespos_,np_pos,time);
 
   // store new values in class
   pressurespos_ = np_pos;
@@ -693,23 +689,33 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
     // evaluate the new flow rate vector
     int nfr_pos = 0;
     Teuchos::RCP<std::vector<double> > nfr = Teuchos::rcp(new std::vector<double>(nQSize,0.0));
-    this->interpolate(flowrates_,nfr,flowratespos_,nfr_pos,t);
+    this->interpolate(flowrates_,nfr,flowratespos_,nfr_pos,time);
     // store new values in class
     flowratespos_ = nfr_pos;
     flowrates_    = nfr;
 
     // finally, recompute the outflow boundary condition from last step
     // this way the vector need not to be stored
-    OutflowBoundary(t,ndta,condnum);
-  }
+    OutflowBoundary(time,ndta,condnum);
 
-  // compute the relative error
-  if (WKrelerror_ == 100.0) //if we just intialized the class (in context of AC-FS3I this is not guaranteed!)
-  {
-    if ( (*pressures_)[0] != 0.0 )
-      WKrelerror_ = dP_ /(*pressures_)[0];
+    //get pressure difference and relative error
+    if ( abs(WKrelerror_ -100.0) < 1e-14 and abs(dP_) < 1e-14) //if we just initialized the class (in context of AC-FS3I this is not guaranteed!)
+    {
+      // read in pressure difference
+      dpstream <<"dP"<<condnum;
+      dP_ = reader.ReadDouble(dpstream.str());
+
+      // compute the relative error
+      if ( (*pressures_)[0] != 0.0 )
+        WKrelerror_ = dP_ /(*pressures_)[0];
+      else
+        WKrelerror_ = dP_;
+    }
     else
-      WKrelerror_ = dP_;
+    {
+      dP_ = 0.0;
+      WKrelerror_= 0.0;
+    }
   }
 
   return;
@@ -1091,15 +1097,15 @@ void FLD::UTILS::FluidImpedanceBc::TimeUpdateImpedance(const double time, const 
     // replace the element that was computed exactly a cycle ago
     int pos = pressurespos_ % (cyclesteps_);
 
+    dP_ = pressure - (*pressures_)[pos];
+
+    if ( pressures_->at(pos) != 0.0 )
+      WKrelerror_ = dP_ /(*pressures_)[pos];
+    else
+      WKrelerror_ = dP_;
+
     if (pos == 0)
     {
-      dP_ = pressure - (*pressures_)[pos];
-
-      if ( pressures_->at(pos) != 0.0 )
-        WKrelerror_ = dP_ /(*pressures_)[pos];
-      else
-        WKrelerror_ = dP_;
-
       endOfCycle_ = true;
     }
     else

@@ -857,6 +857,8 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   // set part of the rhs vector belonging to the old timestep
   // -------------------------------------------------------------------
   SetOldPartOfRighthandside();
+  //TODO (Thon): We do not really want to call SetElementTimeParameter() every time step.
+  // But for now we just do it since "total time" has to be changed in the parameter class..
   SetElementTimeParameter();
 
   // -------------------------------------------------------------------
@@ -2546,7 +2548,7 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
     AVM3Scaling(eleparams);
 
   // potential residual scaling and potential addition of Neumann terms
-  ScalingAndNeumann();
+  ScalingAndNeumann(); //TODO: do we have to call this function twice??
 
   // evaluate solution-depending boundary and interface conditions
   EvaluateSolutionDependingConditions(sysmat_,residual_);

@@ -167,7 +167,7 @@ private:
     /// return role in coupling
     std::vector<double>* Couprole() const { return (std::vector<double>*)params_->couprole_;}
 
-    /// densification coefficient
+    /// delayed reaction start coefficient
     double ReacStart() const { return params_->reacstart_; }
 
     /// Return quick accessible material parameter data

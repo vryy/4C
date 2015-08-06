@@ -139,20 +139,20 @@ public:
 
   //! set time and step value
   virtual void SetTimeStep(
-    const double time, //!< new time value
-    const int step     //!< new step value
-    )
+      const double newtime, //!< new time value
+      const int newstep     //!< new step value
+      )
   {
-    time_ = time;
-    step_ = step;
+    time_ = newtime;
+    step_ = newstep;
   };
 
-  //! set time and step value
-  virtual void SetDt(
-    const double dt //!< new time increment
-    )
+  //! set timestep value
+  virtual void SetDt( const double newdt )
   {
-    dta_ = dt;
+    dta_=newdt;
+    //We have to set the newdt in the ele_calc's as well:
+    SetElementTimeParameter();
   };
 
   //! do explicit predictor step (-> better starting value for nonlinear solver)

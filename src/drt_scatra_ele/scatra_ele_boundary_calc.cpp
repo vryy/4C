@@ -1369,11 +1369,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateSurfacePermeability(
 
         // rhs
         const double vrhs = facfac * facWSS * perm * phi;
-//        std::cout<<"k= "<<k<<std::endl;
-//        std::cout<<"perm= "<<perm<<std::endl;
-//        std::cout<<"phi= "<<phi<<std::endl;
-//        std::cout<<"facWSS= "<<facWSS<<std::endl;
-//        std::cout<<"vrhs= "<<vrhs<<"\n"<<std::endl;
+
         for (int vi=0; vi<nen_; ++vi)
         {
           const int fvi = vi*numdofpernode_+k;

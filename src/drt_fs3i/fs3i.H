@@ -93,7 +93,7 @@ namespace FS3I
     //! update ScaTra solution vectors (new time step)
     void UpdateScatraFields();
 
-    //! evalute, solver and iteratively update coupled ScaTra problem
+    //! evaluate, solve and iteratively update coupled ScaTra problem
     void ScatraEvaluateSolveIterUpdate();
 
     //! @name monolithic ScaTra problem
@@ -164,23 +164,29 @@ namespace FS3I
     /// coupling matrices (in case of surface permeability)
     std::vector<Teuchos::RCP<LINALG::SparseMatrix> > scatracoupmat_;
 
-    /// zero vector (needed for application of Dirichlet BC on
-    /// coupling vector)
-    std::vector<Teuchos::RCP<Epetra_Vector> > scatrazeros_;
-
-    /// flag for infinite surface permeability
-    bool infperm_;
-
     /// scatra solver
     Teuchos::RCP<LINALG::Solver> scatrasolver_;
 
-    //! @name  control parameters for time-integration scheme
-    int step_;
-    int numstep_;
+    /// flag for infinite surface permeability
+    const bool infperm_;
 
-    double dt_;
+    /// @name  control parameters for time-integration scheme
+
+    /// maximal simulation time
+    const double timemax_;
+
+    /// number of steps to simulate
+    const int numstep_;
+
+    /// timestep
+    const double dt_;
+
+    /// current time
     double time_;
-    double timemax_;
+
+    ///current step
+    int step_;
+
     //@}
   private:
 

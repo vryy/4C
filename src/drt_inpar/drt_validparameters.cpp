@@ -6107,13 +6107,22 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("PERIODICITY",-1.0,"Periodicity of the FSI problem",&fs3idynac);
 
   // relative tolerance for the WK of the fluid sub-problem. Determines if the fsi problem is already periodic
-  DoubleParameter("WINDKESSEL_REL_TOL",1.0e-6,"Periods after FSI problem is steady state",&fs3idynac);
+  DoubleParameter("WINDKESSEL_REL_TOL",1.0e-6,"Tolerance for the fluid windkessel to decide if the FSI problem is periodic",&fs3idynac);
 
   // relative tolerance for the fluid scatra. Determines if the fluid scatra is already periodic
-  DoubleParameter("FLUID_SCATRA_REL_TOL",1.0e-6,"Periods after FSI problem is steady state",&fs3idynac);
+  DoubleParameter("FLUID_SCATRA_REL_TOL",1.0e-6,"Tolerance for the fluid scatra field to decide if it is periodic",&fs3idynac);
+
+  // realtive tolerance for the structure scatra field to decide if a growth update is necessary
+  DoubleParameter("GROWTH_TOL",1.0e-6,"Tolerance for the structure scatra field to decide if a growth update is necessary",&fs3idynac);
+
+  // realtive tolerance for the structure scatra field to decide if a FSI update is necessary
+  DoubleParameter("FSI_UPDATE_TOL",1.0e-5,"Tolerance for the structure scatra field to decide if a FSI update is necessary",&fs3idynac);
+
+  // time step of the large time scale
+  DoubleParameter("LARGE_TIMESCALE_TIMESTEP",-1.0,"time step of the large time scale",&fs3idynac);
 
   //Restart from FSI instead of FS3I
-  BoolParameter("RESTART_FROM_PART_FSI","no","restart from partitioned fsi problem (e.g. prestress calculations) instead of fs3i",&fs3idynac);
+  BoolParameter("RESTART_FROM_PART_FSI","no","restart from partitioned fsi problem (e.g. from prestress calculations) instead of fs3i",&fs3idynac);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& lomacontrol = list->sublist(

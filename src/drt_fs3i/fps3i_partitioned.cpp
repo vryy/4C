@@ -392,12 +392,6 @@ void FS3I::PartFPS3I::SetupSystem()
       Teuchos::RCP<LINALG::SparseMatrix> scatracoupmat =
         Teuchos::rcp(new LINALG::SparseMatrix(*(scatraglobalex_->Map(i)),27,false,true));
       scatracoupmat_.push_back(scatracoupmat);
-
-
-      Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-      const Epetra_Map* dofrowmap = scatra->ScaTraField()->Discretization()->DofRowMap();
-      Teuchos::RCP<Epetra_Vector> zeros = LINALG::CreateVector(*dofrowmap,true);
-      scatrazeros_.push_back(zeros);
     }
   }
   // create scatra block matrix
@@ -661,7 +655,9 @@ void FS3I::PartFPS3I::EvaluateScatraFields()
       scatra->KedemKatchalsky(coupmat,coupforce);
 
       // apply Dirichlet boundary conditions to coupling matrix and vector
-      Teuchos::RCP<Epetra_Vector> zeros = scatrazeros_[i];
+      const Epetra_Map* dofrowmap = scatravec_[i]->ScaTraField()->Discretization()->DofRowMap();
+      Teuchos::RCP<Epetra_Vector> zeros = LINALG::CreateVector(*dofrowmap,true);
+
       const Teuchos::RCP<const LINALG::MapExtractor> dbcmapex = scatra->DirichMaps();
       const Teuchos::RCP< const Epetra_Map > dbcmap = dbcmapex->CondMap();
       coupmat->ApplyDirichlet(*dbcmap,false);

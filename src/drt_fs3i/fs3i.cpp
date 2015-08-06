@@ -50,33 +50,19 @@ Maintainers: Moritz Thon & Andre Hemmler
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FS3I::FS3I_Base::FS3I_Base()
+  : infperm_(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->FS3IDynamicParams(),"INF_PERM")),
+    timemax_(DRT::Problem::Instance()->FS3IDynamicParams().get<double>("MAXTIME")),
+    numstep_(DRT::Problem::Instance()->FS3IDynamicParams().get<int>("NUMSTEP")),
+    dt_(DRT::Problem::Instance()->FS3IDynamicParams().get<double>("TIMESTEP")),
+    time_(0.0),
+    step_(0)
 {
-  DRT::Problem* problem = DRT::Problem::Instance();
-  //---------------------------------------------------------------------
-  // read in and set private members of FS3I problem
-  //---------------------------------------------------------------------
-  const Teuchos::ParameterList& fs3idyn = problem->FS3IDynamicParams();
-  dt_      = fs3idyn.get<double>("TIMESTEP");
-  numstep_ = fs3idyn.get<int>("NUMSTEP");
-  timemax_ = fs3idyn.get<double>("MAXTIME");
-
-  infperm_ = DRT::INPUT::IntegralValue<int>(fs3idyn,"INF_PERM");
-
-
-  //---------------------------------------------------------------------
-  // initialize step and time
-  //---------------------------------------------------------------------
-  step_ = 0;
-  time_ = 0.;
-
-
   scatracoup_ = Teuchos::rcp(new ADAPTER::Coupling());
   scatraglobalex_ = Teuchos::rcp(new LINALG::MultiMapExtractor());
   sbbtransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowColTransform());
   sbitransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform());
   sibtransform_ = Teuchos::rcp(new FSI::UTILS::MatrixColTransform());
   fbitransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform());
-
 }
 
 
@@ -376,12 +362,13 @@ void FS3I::FS3I_Base::EvaluateScatraFields()
       scatra->SurfacePermeability(coupmat,coupforce);
 
       // apply Dirichlet boundary conditions to coupling matrix and vector
-      Teuchos::RCP<Epetra_Vector> zeros = scatrazeros_[i];
+      const Epetra_Map* dofrowmap = scatravec_[i]->ScaTraField()->Discretization()->DofRowMap();
+      Teuchos::RCP<Epetra_Vector> zeros = LINALG::CreateVector(*dofrowmap,true);
+
       const Teuchos::RCP<const LINALG::MapExtractor> dbcmapex = scatra->DirichMaps();
       const Teuchos::RCP< const Epetra_Map > dbcmap = dbcmapex->CondMap();
       coupmat->ApplyDirichlet(*dbcmap,false);
       LINALG::ApplyDirichlettoSystem(coupforce,zeros,*dbcmap);
-
     }
   }
 }

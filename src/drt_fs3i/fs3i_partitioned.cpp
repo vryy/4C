@@ -235,9 +235,6 @@ Teuchos::ParameterList& FS3I::PartFS3I::ManipulateDt(const Teuchos::ParameterLis
   if (fsisubcycles != 1) //if we have subcycling for ac_fsi
   {
     timeparams.set<double>("TIMESTEP", fs3idyn.get<double>("TIMESTEP")/fsisubcycles);
-    timeparams.set<int>("NUMSTEP", fs3idyn.get<int>("NUMSTEP")*fsisubcycles);
-    timeparams.set<int>("UPRES", fs3idyn.get<int>("UPRES")*fsisubcycles);
-    timeparams.set<int>("RESTARTEVRY", fs3idyn.get<int>("RESTARTEVRY")*fsisubcycles);
   }
   return timeparams;
 }
@@ -332,11 +329,6 @@ void FS3I::PartFS3I::SetupSystem()
       Teuchos::RCP<LINALG::SparseMatrix> scatracoupmat =
         Teuchos::rcp(new LINALG::SparseMatrix(*(scatraglobalex_->Map(i)),27,false,true));
       scatracoupmat_.push_back(scatracoupmat);
-
-      Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-      const Epetra_Map* dofrowmap = scatra->ScaTraField()->Discretization()->DofRowMap();
-      Teuchos::RCP<Epetra_Vector> zeros = LINALG::CreateVector(*dofrowmap,true);
-      scatrazeros_.push_back(zeros);
     }
   }
 
@@ -374,14 +366,13 @@ void FS3I::PartFS3I::SetupSystem()
   if (linsolvernumber == (-1))
     dserror("no linear solver defined for FS3I problems. Please set COUPLED_LINEAR_SOLVER in FS3I DYNAMIC to a valid number!");
 
-  const Teuchos::ParameterList& coupledscatrasolvparams =
-    DRT::Problem::Instance()->SolverParams(linsolvernumber);
-  const int solvertype =
-    DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(coupledscatrasolvparams,"SOLVER");
+  const Teuchos::ParameterList& coupledscatrasolvparams = DRT::Problem::Instance()->SolverParams(linsolvernumber);
+
+  const int solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(coupledscatrasolvparams,"SOLVER");
   if (solvertype != INPAR::SOLVER::aztec_msr)
     dserror("aztec solver expected");
-  const int azprectype =
-    DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(coupledscatrasolvparams,"AZPREC");
+
+  const int azprectype = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(coupledscatrasolvparams,"AZPREC");
   if (azprectype != INPAR::SOLVER::azprec_BGS2x2)
     dserror("Block Gauss-Seidel preconditioner expected");
 
@@ -397,7 +388,7 @@ void FS3I::PartFS3I::SetupSystem()
 
   // check if the linear solver has a valid solver number
   if (linsolver1number == (-1))
-    dserror("no linear solver defined for fluid ScalarTransport solver. Please set LINEAR_SOLVER2 in FS3I DYNAMIC to a valid number!");
+    dserror("no linear solver defined for fluid ScalarTransport solver. Please set LINEAR_SOLVER1 in FS3I DYNAMIC to a valid number!");
   if (linsolver2number == (-1))
     dserror("no linear solver defined for structural ScalarTransport solver. Please set LINEAR_SOLVER2 in FS3I DYNAMIC to a valid number!");
 

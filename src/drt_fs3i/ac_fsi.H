@@ -46,17 +46,20 @@ namespace FS3I
     ///flag whether small time scale time loop should be finished
     bool SmallTimeScaleLoopNotFinished();
 
+    ///Prepare small time scale time step
+    void SmallTimeScalePrepareTimeStep();
+
     ///Prepare time step
-    void PrepareTimeStep();
+    void PrepareTimeStep(){dserror("This function is not implemented! Use SmallTimeScalePrepareTimeStep() or LargeTimeScalePrepareTimeStep() instead!");};
 
     ///OuterLoop
-    void OuterLoop();
+    void SmallTimeScaleOuterLoop();
 
     ///OuterLoop for sequentially staggered FS3I scheme
-    void OuterLoopSequStagg();
+    void SmallTimeScaleOuterLoopSequStagg();
 
     ///OuterLoop for iterative staggered FS3I scheme
-    void OuterLoopIterStagg();
+    void SmallTimeScaleOuterLoopIterStagg();
 
     ///Do a single fsi step (including all subcycles)
     void DoFSIStep();
@@ -70,7 +73,7 @@ namespace FS3I
     void DoFSIStepStandard();
 
     ///Do a fsi step with subcycling
-    void DoFSIStepSubcycled();
+    void DoFSIStepSubcycled( const int subcyclingsteps );
 
     ///Get fsi solution from one period before
     void DoFSIStepPeriodic();
@@ -85,13 +88,13 @@ namespace FS3I
     void SetTimeStepInFSI(const double time, const int step);
 
     ///Do a single scatra step
-    void DoScatraStep();
+    void SmallTimeScaleDoScatraStep();
 
     ///Decide if fluid scatra problem is steady state
-    void IsScatraSteady();
+    void IsScatraPeriodic();
 
-    ///Update and output everything
-    void UpdateAndOutput();
+    ///Update and output the small time scale
+    void SmallTimeScaleUpdateAndOutput();
 
     ///Write FSI output
     void FsiOutput();
@@ -105,11 +108,49 @@ namespace FS3I
     /// extract Wall Shear Stresses at the interface
     void ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector> >& wss);
 
+    //--------------------------------------------------------------------
+    /// @name  control routines for the large time scale
+    //--------------------------------------------------------------------
+
     ///timeloop for large time scales
     void LargeTimeScaleLoop();
 
+    ///Prepare the large time scale loop
+    void PrepareLargeTimeScaleLoop();
+
+    ///Finish the large time scale loop
+    void FinishLargeTimeScaleLoop();
+
     ///flag whether large time scale time loop should be finished
     bool LargeTimeScaleLoopNotFinished();
+
+    ///Prepare large time scale time step
+    void LargeTimeScalePrepareTimeStep();
+
+    ///OuterLoop for sequentially staggered FS3I scheme
+    void LargeTimeScaleOuterLoop();
+
+    ///Do a large time scale structe scatra step
+    void DoStructScatraStep();
+
+    ///evaluate, solver and iteratively update structure scalar problem
+    void StructScatraEvaluateSolveIterUpdate();
+
+    ///check convergence of structure scatra field
+    bool StructScatraConvergenceCheck(const int itnum);
+
+    ///Do the structure scatra displacments need to update
+    bool DoesGrowthNeedsUpdate();
+
+    ///update the structure scatra displacments due to growth
+    void LargeTimeScaleDoGrowthUpdate();
+
+    ///Update and output the large time scale
+    void LargeTimeScaleUpdateAndOutput();
+    //@}
+
+    ///Build map extractor which extracts the j-th dof
+    std::vector<Teuchos::RCP<LINALG::MapExtractor> > BuildMapExtractor();
 
   private:
 
@@ -119,22 +160,33 @@ namespace FS3I
     const Teuchos::RCP<Epetra_Vector> fluidincrement_;
     /// ale increment vector
     const Teuchos::RCP<Epetra_Vector> aleincrement_;
-    /// phinp vector of the last period
-    const Teuchos::RCP<Epetra_Vector> phinp_lp_;
+    /// fluid phinp vector of the last period
+    const Teuchos::RCP<Epetra_Vector> fluidphinp_lp_;
+    /// structurephinp vector at the beginning of the large time scale loop
+    const Teuchos::RCP<Epetra_Vector> structurephinp_bltsl_;
+    /// structurephinp vector after the last growth update
+    const Teuchos::RCP<Epetra_Vector> structurephinp_blgu_;
+
     ///WSS vector of the last period
     const Teuchos::RCP<Epetra_Vector> WallShearStress_lp_;
 
-    ///do how many fsi time steps in comparison to the scalars time steps
-    const int fsiperssisteps_;
-
     ///time of one fsi period, e.g. time of a heart cycle
     const double fsiperiod_;
+
+    ///time step for the large time scale problem
+    const double dt_large_;
 
     ///flag iff fsi subproblem is periodic
     bool fsiisperiodic_;
 
     ///flag iff fluid scatra subproblem is periodic
     bool scatraisperiodic_;
+
+    ///flag iff fluid scatra subproblem is periodic
+    bool fsineedsupdate_;
+
+    ///Extract the j-th out of numscal_ dof
+    std::vector<Teuchos::RCP<LINALG::MapExtractor> > extractjthscalar_;
   };
 
 }
