@@ -119,7 +119,7 @@ DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::ScaTraEleCalcElchDiffCond(con
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhs(
     Epetra_SerialDenseMatrix&     emat,         //!< element matrix to calculate
-    Epetra_SerialDenseVector&     erhs,         //!< element rhs to calculate+
+    Epetra_SerialDenseVector&     erhs,         //!< element rhs to calculate
     const int                     k,            //!< index of current scalar
     const double                  fac,          //!< domain-integration factor
     const double                  timefacfac,   //!< domain-integration factor times time-integration factor
@@ -1289,7 +1289,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::GetMaterialParams(
     // set factor F/RT at integration point
     VarManager()->SetFRT();
 
-    // evaluate electrode material
+    // evaluate electrolyte material
     Utils()->MatElchMat(material,concentrations,INPAR::ELCH::faraday_const*VarManager()->FRT(),myelch::elchparams_->EquPot(),DiffManager(),diffcondmat_);
   }
 

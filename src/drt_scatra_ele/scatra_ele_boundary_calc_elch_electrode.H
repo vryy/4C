@@ -64,6 +64,14 @@ namespace DRT
           const Teuchos::RCP<const MAT::Material>&   material,   //! element material
           const int                                  k           //! species number
       ) const;
+
+      //! equilibrium electric potential difference at electrode-electrolyte interface
+      void EquilibriumPotentialDifference(
+          const Teuchos::RCP<DRT::Condition>&   condition,       //! boundary condition
+          const double&                         eslavephiint,   //! concentration of intercalated Lithium at electrode surface at current Gauss point
+          double&                               epd,             //! equilibrium electric potential difference to be computed at current Gauss point
+          double&                               epdderiv         //! derivative of equilibrium electric potential difference to be computed at current Gauss point
+      ) const;
     }; // class ScaTraEleBoundaryCalcElchElectrode
   } // namespace ELEMENTS
 } // namespace DRT

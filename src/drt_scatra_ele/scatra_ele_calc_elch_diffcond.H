@@ -63,7 +63,7 @@ private:
   //! calculate contributions to matrix and rhs (inside of loop over all scalars)
   void CalcMatAndRhs(
       Epetra_SerialDenseMatrix&     emat,         //!< element matrix to calculate
-      Epetra_SerialDenseVector&     erhs,         //!< element rhs to calculate+
+      Epetra_SerialDenseVector&     erhs,         //!< element rhs to calculate
       const int                     k,            //!< index of current scalar
       const double                  fac,          //!< domain-integration factor
       const double                  timefacfac,   //!< domain-integration factor times time-integration factor

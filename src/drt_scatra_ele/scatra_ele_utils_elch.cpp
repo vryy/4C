@@ -839,7 +839,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
     overpotentialint += eta * fac;
     electdiffpotint += epd*fac;
     opencircuitpotint += ocp*fac;
-    currentintegral += i0 * expterm * fac; // the negative(!) normal flux density
+    currentintegral += scalar*i0*expterm*fac; // the negative(!) normal flux density
     shapefuncint += fac;
     shapefuncint_porous += fac*scalar;
     concentrationint += conint[k]*fac;
@@ -899,7 +899,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
     overpotentialint += eta * fac;
     electdiffpotint += epd*fac;
     opencircuitpotint += ocp*fac;
-    currentintegral += i0 * pow(conint[k]/refcon,gamma)*(alphaa*frt*eta) * fac; // the negative(!) normal flux density
+    currentintegral += scalar*i0*pow(conint[k]/refcon,gamma)*(alphaa*frt*eta)*fac; // the negative(!) normal flux density
     shapefuncint += fac;
     shapefuncint_porous += fac*scalar;
     concentrationint += conint[k]*fac;
@@ -1023,7 +1023,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
       dserror("NaN detected in electrode status calculation");
 
     // compute integrals
-    currentintegral += scalar* nume*faraday*((k_a*expterma*pow_conint_p)-(k_c*exptermc*pow_conint_q))*fac;
+    currentintegral += scalar*nume*faraday*((k_a*expterma*pow_conint_p)-(k_c*exptermc*pow_conint_q))*fac;
     shapefuncint += fac;
     shapefuncint_porous += fac*scalar;
     electpotentialint += elepot * fac;
