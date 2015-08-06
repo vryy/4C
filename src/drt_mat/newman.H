@@ -13,11 +13,9 @@ Maintainer: Andreas Ehrl
 #ifndef NEWMAN_H
 #define NEWMAN_H
 
-#include "../drt_lib/drt_parobjectfactory.H"
+#include "elchsinglemat.H"
 
-#include "electrode.H"
-#include "material.H"
-#include "matpar_parameter.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 
 namespace MAT
 {
@@ -25,7 +23,7 @@ namespace MAT
   {
     /*----------------------------------------------------------------------*/
     /// material parameters for convection-diffusion
-    class Newman : public Electrode
+    class Newman : public ElchSingleMat
     {
     public:
 
@@ -88,7 +86,7 @@ namespace MAT
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for the material properties of an ion species in an electrolyte solution
-  class Newman : public Electrode
+  class Newman : public ElchSingleMat
   {
   public:
 

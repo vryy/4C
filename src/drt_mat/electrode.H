@@ -15,17 +15,16 @@ Maintainer: Rui Fang
 #ifndef ELECTRODE_H
 #define ELECTRODE_H
 
-#include "../drt_lib/drt_parobjectfactory.H"
+#include "elchsinglemat.H"
 
-#include "material.H"
-#include "matpar_parameter.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 
 namespace MAT
 {
   namespace PAR
   {
     //! parameters for electrode material
-    class Electrode : public Parameter
+    class Electrode : public ElchSingleMat
     {
       public:
 
@@ -39,35 +38,6 @@ namespace MAT
 
         //! create instance of electrode material
         virtual Teuchos::RCP<MAT::Material> CreateMaterial();
-
-        //! @name parameters for electrode material
-        //@{
-        //! curve number for diffusion coefficient
-        const int diffcurve_;
-
-        //! number of parameters for diffusion coefficient
-        const int diffparanum_;
-
-        //! parameters for diffusion coefficient
-        const std::vector<double> diffpara_;
-
-        //! curve number for conductivity
-        const int condcurve_;
-
-        //! number of parameters for conductivity
-        const int condparanum_;
-
-        //! parameters for conductivity
-        const std::vector<double> condpara_;
-        //@}
-
-      protected:
-
-        //! check whether number of parameters is consistent with curve number
-        void CheckProvidedParams(
-            const int                    functnr,
-            const std::vector<double>&   functparams
-            );
     };  // class MAT::PAR::Electrode
   } // namespace PAR
 
@@ -91,7 +61,7 @@ namespace MAT
 
   /*----------------------------------------------------------------------*/
   //! wrapper for electrode material
-  class Electrode : public Material
+  class Electrode : public ElchSingleMat
   {
     public:
 
@@ -142,45 +112,7 @@ namespace MAT
       //! clone electrode material
       virtual Teuchos::RCP<Material> Clone() const {return Teuchos::rcp(new Electrode(*this));};
 
-      //! compute diffusion coefficient according to curve number
-      const double ComputeDiffusionCoefficient (const double cint) const;
-
-      //! compute first derivative of diffusion coefficient according to curve number
-      const double ComputeFirstDerivDiffCoeff (const double cint) const;
-
-      //! compute conductivity according to curve number
-      const double ComputeConductivity (const double cint) const ;
-
-      //! compute first derivative of conductivity according to curve number
-      const double ComputeFirstDerivCond(const double cint) const;
-
     protected:
-
-      //! return curve number for diffusion coefficient
-      const int DiffCurve() const {return params_->diffcurve_;};
-
-      //! return curve number for conductivity
-      const int CondCurve() const {return params_->condcurve_;};
-
-      //! return parameters for diffusion coefficient
-      const std::vector<double>& DiffParams() const {return params_->diffpara_;};
-
-      //! return parameters for conductivity
-      const std::vector<double>& CondParams() const {return params_->condpara_;};
-
-      //! evaluate value of predefined function
-      const double EvalFunctValue(
-          const int                    functnr,
-          const double                 cint,
-          const std::vector<double>&   functparams
-          ) const;
-
-      //! evaluate first derivative of predefined function
-      const double EvalFirstDerivFunctValue(
-          const int                    functnr,
-          const double                 cint,
-          const std::vector<double>&   functparams
-          ) const;
 
       //! return material parameters
       virtual MAT::PAR::Parameter* Parameter() const {return params_;}

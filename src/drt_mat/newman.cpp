@@ -25,7 +25,7 @@ Maintainer: Andreas Ehrl
 MAT::PAR::Newman::Newman(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
-: Electrode(matdata),
+: ElchSingleMat(matdata),
   valence_(matdata->GetDouble("VALENCE")),
   transnrcurve_(matdata->GetInt("TRANSNR")),
   thermfaccurve_(matdata->GetInt("THERMFAC")),
@@ -63,18 +63,19 @@ DRT::ParObject* MAT::NewmanType::Create( const std::vector<char> & data )
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::Newman::Newman()
-  : params_(NULL)
+MAT::Newman::Newman() :
+    params_(NULL)
 {
+  return;
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::Newman::Newman(MAT::PAR::Newman* params)
-  : Electrode(params),
+MAT::Newman::Newman(MAT::PAR::Newman* params) :
     params_(params)
 {
+  return;
 }
 
 
@@ -91,11 +92,11 @@ void MAT::Newman::Pack(DRT::PackBuffer& data) const
 
   // matid
   int matid = -1;
-  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
+  if(params_ != NULL)
+    matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data,matid);
 
-  // add base class material
-  Electrode::Pack(data);
+  return;
 }
 
 
@@ -104,10 +105,12 @@ void MAT::Newman::Pack(DRT::PackBuffer& data) const
 void MAT::Newman::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
+
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+  if(type != UniqueParObjectId())
+    dserror("wrong instance type data");
 
   // matid and recover params_
   int matid;
@@ -124,13 +127,10 @@ void MAT::Newman::Unpack(const std::vector<char>& data)
         dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
     }
 
-  // extract base class material
-  std::vector<char> basedata(0);
-  ExtractfromPack(position,data,basedata);
-  Electrode::Unpack(basedata);
-
-  if (position != data.size())
+  if(position != data.size())
     dserror("Mismatch in size of data %d <-> %d",data.size(),position);
+
+  return;
 }
 
 

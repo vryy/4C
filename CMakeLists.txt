@@ -470,6 +470,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/elasthyper.cpp
   src/drt_mat/elchmat.cpp
   src/drt_mat/elchphase.cpp
+  src/drt_mat/elchsinglemat.cpp
   src/drt_mat/electrode.cpp
   src/drt_mat/ferech_pv.cpp
   src/drt_mat/fluidporo.cpp
