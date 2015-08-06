@@ -57,9 +57,9 @@ AZPREC                          AMGnxn
 AMGNXN_TYPE                     XML
 AMGNXN_XML_FILE                 elch_3D_tet4_s2i_butlervolmer_BGS-AMG_3x3.xml
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_electrode DIFFCOEF -1 COND -1 DIFF_PARA_NUM 1 DIFF_PARA 2.e-10 COND_PARA_NUM 1 COND_PARA 1.e5 END
+MAT 1 MAT_electrode DIFFCOEF -1 COND -1 DIFF_PARA_NUM 1 DIFF_PARA 2.e-10 COND_PARA_NUM 1 COND_PARA 1.e5 C_MAX 16.1 OCP_MODEL Redlich-Kister OCP_PARA_NUM 16 OCP_PARA 1.1652e4 -3.268e3 3.955e3 -4.573e3 6.147e3 -3.339e3 1.117e4 2.997e2 -4.866e4 1.362e2 1.373e5 -2.129e4 -1.722e5 3.956e4 9.302e4 -3.280e4 END
 MAT 2 MAT_elchmat NUMDOF 2 NUMSCAL 1 NUMPHASE 1 PHASEIDS 4 END
-MAT 3 MAT_electrode DIFFCOEF -1 COND -1 DIFF_PARA_NUM 1 DIFF_PARA 3.7e-10 COND_PARA_NUM 1 COND_PARA 1.e4 END
+MAT 3 MAT_electrode DIFFCOEF -1 COND -1 DIFF_PARA_NUM 1 DIFF_PARA 3.7e-10 COND_PARA_NUM 1 COND_PARA 1.e4 C_MAX 23.9 OCP_MODEL Redlich-Kister OCP_PARA_NUM 21 OCP_PARA 3.954616e5 -7.676e4 3.799e4 -2.873e4 1.169e4 1.451e4 -8.938e4 1.671e5 -7.236e4 -1.746e5 -4.067e5 9.534e5 5.897e5 -7.455e5 -1.102e6 -2.927e5 7.214e5 9.029e5 -1.599e5 6.658e5 -1.084e6 END
 MAT 4 MAT_elchphase EPSILON 1.0 TORTUOSITY 1.0 NUMMAT 1 MATIDS 5 END
 MAT 5 MAT_newman VALENCE 1.0 DIFFCOEF -1 TRANSNR -1 THERMFAC 0 COND -11 DIFF_PARA_NUM 1 DIFF_PARA 2.6e-4 TRANS_PARA_NUM 1 TRANS_PARA 0.363 COND_PARA_NUM 3 COND_PARA 1.58e3 0.85 1.4 END
 ----------------------------------------------------------------------FUNCT1
@@ -115,8 +115,8 @@ E 2 - ScaTra 2
 E 3 - ScaTra 3
 ---------------------------------DESIGN S2I COUPLING SURF CONDITIONS / SLAVE
 DSURF                           2
-E 2 - KineticModel Butler-Volmer numscal 1 stoichiometries -1 e- 1 k_r 4.52e-5 alpha_a 0.5 alpha_c 0.5 c_max 16.1 EquilibriumPotentialDifference Redlich-Kister DeltaG 1.1652e4 numcoeff 15 coefficients -3.268e3 3.955e3 -4.573e3 6.147e3 -3.339e3 1.117e4 2.997e2 -4.866e4 1.362e2 1.373e5 -2.129e4 -1.722e5 3.956e4 9.302e4 -3.280e4
-E 5 - KineticModel Butler-Volmer numscal 1 stoichiometries -1 e- 1 k_r 2.07e-5 alpha_a 0.5 alpha_c 0.5 c_max 23.9 EquilibriumPotentialDifference Redlich-Kister DeltaG 3.954616e5 numcoeff 20 coefficients -7.676e4 3.799e4 -2.873e4 1.169e4 1.451e4 -8.938e4 1.671e5 -7.236e4 -1.746e5 -4.067e5 9.534e5 5.897e5 -7.455e5 -1.102e6 -2.927e5 7.214e5 9.029e5 -1.599e5 6.658e5 -1.084e6
+E 2 - KineticModel Butler-Volmer numscal 1 stoichiometries -1 e- 1 k_r 4.52e-5 alpha_a 0.5 alpha_c 0.5
+E 5 - KineticModel Butler-Volmer numscal 1 stoichiometries -1 e- 1 k_r 2.07e-5 alpha_a 0.5 alpha_c 0.5
 --------------------------------DESIGN S2I COUPLING SURF CONDITIONS / MASTER
 DSURF                           2
 E 3 -

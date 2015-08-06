@@ -483,15 +483,29 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   {
     Teuchos::RCP<MaterialDefinition> matelectrode = Teuchos::rcp(new MaterialDefinition("MAT_electrode","electrode material",INPAR::MAT::m_electrode));
 
-    // mandatory parameters
+    // diffusivity and electronic conductivity
     AddNamedInt(matelectrode,"DIFFCOEF","curve number for diffusion coefficient");
     AddNamedInt(matelectrode,"COND","curve number for electronic conductivity");
 
-    // optional parameters for concentration dependency
+    // optional parameters for concentration dependency of diffusivity and electronic conductivity
     AddNamedInt(matelectrode,"DIFF_PARA_NUM","number of parameters for diffusion coefficient",0,true);
     AddNamedRealVector(matelectrode,"DIFF_PARA","parameters for diffusion coefficient","DIFF_PARA_NUM",0.0,true);
     AddNamedInt(matelectrode,"COND_PARA_NUM","number of parameters for electronic conductivity",0,true);
     AddNamedRealVector(matelectrode,"COND_PARA","parameters for electronic conductivity","COND_PARA_NUM",0.0,true);
+
+    // saturation value of intercalated Lithium concentration
+    AddNamedReal(matelectrode,"C_MAX","saturation value of intercalated Lithium concentration");
+
+    // model for half cell open circuit potential of electrode
+    AddNamedString(matelectrode,"OCP_MODEL","model for half cell open circuit potential of electrode","none");
+
+    // number of parameters underlying half cell open circuit potential model
+    AddNamedInt(matelectrode,"OCP_PARA_NUM","number of parameters underlying half cell open circuit potential model");
+
+    // parameters underlying half cell open circuit potential model
+    AddNamedRealVector(matelectrode,"OCP_PARA","parameters underlying half cell open circuit potential model","OCP_PARA_NUM");
+
+    // end of input line
     AddNamedSeparator(matelectrode,"END","indicating end of line");
 
     // add electrode material to global list of valid materials

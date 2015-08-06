@@ -1006,54 +1006,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
           butlervolmer.push_back(Teuchos::rcp(new RealConditionComponent("alpha_a")));
           butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("alpha_c")));
           butlervolmer.push_back(Teuchos::rcp(new RealConditionComponent("alpha_c")));
-          butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("c_max")));
-          butlervolmer.push_back(Teuchos::rcp(new RealConditionComponent("c_max")));
-
-          // models for equilibrium electric potential difference at electrode-electrolyte interface
-          std::vector<Teuchos::RCP<CondCompBundle> > epdmodels;
-          {
-            {
-              // constant equilibrium electric potential difference
-              std::vector<Teuchos::RCP<ConditionComponent> > constepd;
-              constepd.push_back(Teuchos::rcp(new SeparatorConditionComponent("epd")));
-              constepd.push_back(Teuchos::rcp(new RealConditionComponent("epd")));
-              epdmodels.push_back(Teuchos::rcp(new CondCompBundle("Constant",constepd,INPAR::S2I::epd_const)));
-            }
-
-            {
-              // Redlich-Kister expansion
-              std::vector<Teuchos::RCP<ConditionComponent> > redlichkister;
-              redlichkister.push_back(Teuchos::rcp(new SeparatorConditionComponent("DeltaG")));
-              redlichkister.push_back(Teuchos::rcp(new RealConditionComponent("DeltaG")));
-              redlichkister.push_back(Teuchos::rcp(new SeparatorConditionComponent("numcoeff")));           // total number of Redlich-Kister coefficients
-              std::vector<Teuchos::RCP<SeparatorConditionComponent> > intsepcomp;                           // empty vector --> no separators for integer vectors needed
-              std::vector<Teuchos::RCP<IntVectorConditionComponent> > intvectcomp;                          // empty vector --> no integer vectors needed
-              std::vector<Teuchos::RCP<SeparatorConditionComponent> > realsepcomp;
-              realsepcomp.push_back(Teuchos::rcp(new SeparatorConditionComponent("coefficients")));         // string separator in front of real Redlich-Kister coefficient vector in input file line
-              std::vector<Teuchos::RCP<RealVectorConditionComponent> > realvectcomp;
-              realvectcomp.push_back(Teuchos::rcp(new RealVectorConditionComponent("coefficients",0)));     // real vector of Redlich-Kister coefficients
-              redlichkister.push_back(Teuchos::rcp(new IntRealBundle(
-                  "coefficients",
-                  Teuchos::rcp(new IntConditionComponent("numcoeff")),
-                  intsepcomp,
-                  intvectcomp,
-                  realsepcomp,
-                  realvectcomp
-              )));
-              epdmodels.push_back(Teuchos::rcp(new CondCompBundle("Redlich-Kister",redlichkister,INPAR::S2I::epd_redlichkister)));
-            }
-          }
-
-          // insert models for equilibrium electric potential difference into vector with Butler-Volmer condition components
-          butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("EquilibriumPotentialDifference")));
-          butlervolmer.push_back(Teuchos::rcp(new CondCompBundleSelector(
-              "models for equilibrium electric potential difference",
-              Teuchos::rcp(new StringConditionComponent(
-                 "epd model",
-                 "Constant",
-                 Teuchos::tuple<std::string>("Constant","Redlich-Kister"),
-                 Teuchos::tuple<int>(INPAR::S2I::epd_const,INPAR::S2I::epd_redlichkister))),
-              epdmodels)));
 
           kineticmodels.push_back(Teuchos::rcp(new CondCompBundle("Butler-Volmer",butlervolmer,INPAR::S2I::kinetics_butlervolmer)));
         }

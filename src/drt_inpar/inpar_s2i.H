@@ -37,13 +37,6 @@ namespace INPAR
       kinetics_butlervolmer
     };
 
-    //! models for equilibrium electric potential difference
-    enum EpdModels
-    {
-      epd_const,
-      epd_redlichkister
-    };
-
     //! type of global system matrix in global system of equations
     enum MatrixType
     {

@@ -23,6 +23,13 @@ namespace MAT
 {
   namespace PAR
   {
+    //! models for half cell open circuit potential of electrode
+    enum OCPModels
+    {
+      ocp_undefined,
+      ocp_redlichkister
+    };
+
     //! parameters for electrode material
     class Electrode : public ElchSingleMat
     {
@@ -38,6 +45,26 @@ namespace MAT
 
         //! create instance of electrode material
         virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
+        //! @name parameters for electrode material
+        //! @{
+        //! saturation value of intercalated Lithium concentration
+        const double cmax_;
+
+        //! model for half cell open circuit potential
+        const OCPModels ocpmodel_;
+
+        //! number of parameters underlying half cell open circuit potential model
+        const int ocpparanum_;
+
+        //! parameters underlying half cell open circuit potential model
+        const std::vector<double> ocppara_;
+        //! @}
+
+      private:
+
+        //! convert string to model for half cell open circuit potential
+        const OCPModels StringToOCPModel(const std::string& ocpmodelstring) const;
     };  // class MAT::PAR::Electrode
   } // namespace PAR
 
@@ -111,6 +138,23 @@ namespace MAT
 
       //! clone electrode material
       virtual Teuchos::RCP<Material> Clone() const {return Teuchos::rcp(new Electrode(*this));};
+
+      //! return saturation value of intercalated Lithium concentration
+      const double CMax() const {return params_->cmax_;};
+
+      //! compute half cell open circuit potential
+      const double ComputeOpenCircuitPotential(
+          const double concentration,   //!< concentration
+          const double faraday,         //!< Faraday constant
+          const double frt              //!< factor F/RT
+          ) const;
+
+      //! compute first derivative of half cell open circuit potential with respect to concentration
+      const double ComputeFirstDerivOpenCircuitPotential(
+          const double concentration,   //!< concentration
+          const double faraday,         //!< Faraday constant
+          const double frt              //!< factor F/RT
+          ) const;
 
     protected:
 

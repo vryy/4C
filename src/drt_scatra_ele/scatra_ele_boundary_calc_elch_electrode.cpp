@@ -21,7 +21,7 @@ Maintainer: Rui Fang
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 
-#include "../drt_mat/material.H"
+#include "../drt_mat/electrode.H"
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 02/15 |
@@ -100,8 +100,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
     Epetra_SerialDenseVector&   eslaveresidual    ///< element residual for slave side
     )
 {
-  // check material of parent element
-  if(ele->ParentElement()->Material()->MaterialType() != INPAR::MAT::m_electrode)
+  // access material of parent element
+  Teuchos::RCP<const MAT::Electrode> matelectrode = Teuchos::rcp_dynamic_cast<const MAT::Electrode>(ele->ParentElement()->Material());
+
+  // safety check
+  if(matelectrode == Teuchos::null)
     dserror("Invalid electrode material for scatra-scatra interface coupling!");
 
   // get global and interface state vectors
@@ -160,7 +163,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
   const double kr = s2icondition->GetDouble("k_r");
   if(kr < 0.)
     dserror("Charge transfer constant k_r is negative!");
-  const double cmax = s2icondition->GetDouble("c_max");
+  const double cmax = matelectrode->CMax();
   if(cmax < 1.e-12)
     dserror("Saturation value c_max of intercalated Lithium concentration is too small!");
 
@@ -194,9 +197,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
       const double emasterpotint = my::funct_.Dot(emasterpotnp);
 
       // equilibrium electric potential difference and its derivative w.r.t. concentration at electrode surface
-      double epd(0.);
-      double epdderiv(0.);
-      EquilibriumPotentialDifference(s2icondition,eslavephiint,epd,epdderiv);
+      const double epd = matelectrode->ComputeOpenCircuitPotential(eslavephiint,faraday,frt);
+      const double epdderiv = matelectrode->ComputeFirstDerivOpenCircuitPotential(eslavephiint,faraday,frt);
 
       // electrode-electrolyte overpotential at integration point
       const double eta = eslavepotint-emasterpotint-epd;
@@ -311,69 +313,6 @@ const double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::GetVale
 
   return 0.;
 }
-
-
-/*-------------------------------------------------------------------------------------------*
- | equilibrium electric potential difference at electrode-electrolyte interface   fang 01/15 |
- *-------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EquilibriumPotentialDifference(
-    const Teuchos::RCP<DRT::Condition>&   condition,       //! boundary condition
-    const double&                         eslavephiint,   //! concentration of intercalated Lithium at electrode surface at current Gauss point
-    double&                               epd,             //! equilibrium electric potential difference to be computed at current Gauss point
-    double&                               epdderiv         //! derivative of equilibrium electric potential difference to be computed at current Gauss point
-    ) const
-{
-  // access model for equilibrium electric potential difference
-  const int epdmodel = condition->GetInt("epd model");
-
-  // compute corresponding equilibrium electric potential difference
-  switch(epdmodel)
-  {
-    // Redlich-Kister expansion
-    case INPAR::S2I::epd_redlichkister:
-    {
-      // extract relevant parameters from boundary condition
-      const double DeltaG = condition->GetDouble("DeltaG");
-      const int numcoeff = condition->GetInt("numcoeff");
-      const std::vector<double>* coefficients = condition->GetMutable<std::vector<double> >("coefficients");
-      if((int) coefficients->size() != numcoeff)
-        dserror("Length of Redlich-Kister coefficient vector doesn't match prescribed number of coefficients!");
-      const double faraday = INPAR::ELCH::faraday_const;
-      const double frt = myelch::elchparams_->FRT();
-      const double cmax = condition->GetDouble("c_max");
-
-      // intercalation fraction at electrode surface
-      double X = eslavephiint/cmax;
-
-      // need to avoid intercalation fraction of exactly 0.5 due to singularity in Redlich-Kister expansion
-      if(X == 0.5)
-        X = 0.499999;
-
-      // equilibrium electric potential difference according to Redlich-Kister expansion
-      epd = DeltaG + faraday/frt*log((1.-X)/X);
-      for(int i=0; i<numcoeff; ++i)
-        epd += (*coefficients)[i]*(pow(2.*X-1.,i+1)-2.*i*X*(1.-X)*pow(2.*X-1.,i-1));
-      epd /= faraday;
-
-      // derivative of equilibrium electric potential difference w.r.t. concentration at electrode surface
-      epdderiv = faraday/(2.*frt*X*(X-1.));
-      for(int i=0; i<numcoeff; ++i)
-        epdderiv += (*coefficients)[i]*((2.*i+1.)*pow(2.*X-1.,i)+2.*X*i*(X-1.)*(i-1.)*pow(2.*X-1.,i-2));
-      epdderiv *= 2./(faraday*cmax);
-
-      break;
-    }
-
-    default:
-    {
-      dserror("Unknown model for equilibrium electric potential difference!");
-      break;
-    }
-  }
-
-  return;
-} // DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EquilibriumPotentialDifference
 
 
 /*----------------------------------------------------------------------*
