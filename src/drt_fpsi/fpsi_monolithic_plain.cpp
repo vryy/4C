@@ -256,8 +256,8 @@ void FPSI::Monolithic_Plain::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
   const int &aidx_fpsi = ALE::UTILS::MapExtractor::cond_fpsi;
 
   // FPSI Couplings
-  const ADAPTER::Coupling& coupsa_fpsi =
-      FPSICoupl()->PoroStructureAleCoupling();
+  const ADAPTER::Coupling& coupsa_fpsi = FPSICoupl()->PoroStructureAleCoupling();
+  const ADAPTER::Coupling& coupsf_fpsi = FPSICoupl()->PoroStructureFluidCoupling();
 
   //General Couplings
   const ADAPTER::Coupling& coupfa = FluidAleCoupling();
@@ -385,38 +385,71 @@ void FPSI::Monolithic_Plain::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
 
       // add fluid_ale block ii and gi
       // those two blocks are not condensed since they belong to the columns of the inner ale dofs
-      (*couplingcoltransform_)(FluidField()->BlockSystemMatrix()->FullRowMap(),
-          FluidField()->BlockSystemMatrix()->FullColMap(), fluidalematrix_ii,
+      (*couplingcoltransform_)(
+          FluidField()->BlockSystemMatrix()->FullRowMap(),
+          FluidField()->BlockSystemMatrix()->FullColMap(),
+          fluidalematrix_ii,
           1.0, ADAPTER::CouplingMasterConverter(coupfa), // row converter: important to use slave converter
-          mat.Matrix(fluid_block_, ale_i_block_), false, // bool exactmatch = true (default)
+          mat.Matrix(fluid_block_, ale_i_block_),
+          false, // bool exactmatch = true (default)
           true);
 
       if (FSI_Interface_exists_)
       {
         LINALG::SparseMatrix& fluidalematrix_gg_fsi =
-            fluidalematrix->Matrix(fidx_fsi, fidx_fsi);
+            fluidalematrix->Matrix(FPSI::UTILS::MapExtractor::cond_fsi,FPSI::UTILS::MapExtractor::cond_fsi);
         LINALG::SparseMatrix& fluidalematrix_gi_fsi =
-            fluidalematrix->Matrix(fidx_fsi, fidx_other);
+            fluidalematrix->Matrix(FPSI::UTILS::MapExtractor::cond_fsi,FPSI::UTILS::MapExtractor::cond_other);
         LINALG::SparseMatrix& fluidalematrix_ig_fsi =
-            fluidalematrix->Matrix(fidx_other, fidx_fsi);
+            fluidalematrix->Matrix(FPSI::UTILS::MapExtractor::cond_other,FPSI::UTILS::MapExtractor::cond_fsi);
+
+        LINALG::SparseMatrix& fluidalematrix_gfsigfpsi =
+            fluidalematrix->Matrix(FPSI::UTILS::MapExtractor::cond_fsi,FPSI::UTILS::MapExtractor::cond_fpsi);
+        LINALG::SparseMatrix& fluidalematrix_gfpsigfsi =
+            fluidalematrix->Matrix(FPSI::UTILS::MapExtractor::cond_fpsi,FPSI::UTILS::MapExtractor::cond_fsi);
+
 
         (*figtransform1_)(FluidField()->BlockSystemMatrix()->FullRowMap(),
-            FluidField()->BlockSystemMatrix()->FullColMap(),
-            fluidalematrix_ig_fsi, 1.0,
-            ADAPTER::CouplingSlaveConverter(coupsf_fsi),
-            mat.Matrix(fluid_block_, poro_block_), false, // bool exactmatch = true (default)
-            true);
+                  FluidField()->BlockSystemMatrix()->FullColMap(),
+                 fluidalematrix_ig_fsi,
+                 1.0,
+                 ADAPTER::CouplingSlaveConverter(coupsf_fsi),
+                 mat.Matrix(fluid_block_,poro_block_),
+                 false, // bool exactmatch = true (default)
+                 true);
+
+        (*figtransform2_)(FluidField()->BlockSystemMatrix()->FullRowMap(),
+                  FluidField()->BlockSystemMatrix()->FullColMap(),
+                 fluidalematrix_gfpsigfsi,
+                 1.0,
+                 ADAPTER::CouplingSlaveConverter(coupsf_fsi),
+                 mat.Matrix(fluid_block_,poro_block_),
+                 false,
+                 true);
 
         (*fggtransform_)(fluidalematrix_gg_fsi,
-            (1.0 - stiparam) / (1.0 - ftiparam) * scale,
-            ADAPTER::CouplingSlaveConverter(coupsf_fsi),
-            ADAPTER::CouplingSlaveConverter(coupsf_fsi), *p, false, true);
+                 (1.0-stiparam)/(1.0-ftiparam)*scale,
+                 ADAPTER::CouplingSlaveConverter(coupsf_fsi),
+                 ADAPTER::CouplingSlaveConverter(coupsf_fsi),
+                 *p,
+                 false,
+                 true);
+
+        (*fggtransform2_)(fluidalematrix_gfsigfpsi,
+                 (1.0-stiparam)/(1.0-ftiparam)*scale,
+                 ADAPTER::CouplingSlaveConverter(coupsf_fsi),
+                 ADAPTER::CouplingSlaveConverter(coupsf_fpsi),
+                 *p,
+                 false,
+                 true);
 
         (*fmgitransform_)(fluidalematrix_gi_fsi,
-            (1.0 - stiparam) / (1.0 - ftiparam) * scale,
-            ADAPTER::CouplingSlaveConverter(coupsf_fsi),
-            ADAPTER::CouplingMasterConverter(coupfa),
-            mat.Matrix(poro_block_, ale_i_block_), false, true);
+                (1.0-stiparam)/(1.0-ftiparam)*scale,
+                ADAPTER::CouplingSlaveConverter(coupsf_fsi),
+                ADAPTER::CouplingMasterConverter(coupfa),
+                mat.Matrix(poro_block_,ale_i_block_),
+                false,
+                true);
       }
     }
     else // if shapederivatives = no in FluidDynamics section in dat-file
