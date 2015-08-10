@@ -1815,6 +1815,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
  *----------------------------------------------------------------------*/
 void AIRWAY::RedAirwayImplicitTimeInt::OutputUQ(Teuchos::RCP<Teuchos::ParameterList> CouplingParams)
 {
+#ifdef HAVE_FFTW
   // Calculate total lung volume
 
 
@@ -1951,7 +1952,10 @@ void AIRWAY::RedAirwayImplicitTimeInt::OutputUQ(Teuchos::RCP<Teuchos::ParameterL
     myfile.close();
   }
   discret_->Comm().Barrier();
- }
+#else
+  dserror("Requires FFTW");
+#endif
+}
 
 
 /*----------------------------------------------------------------------*
