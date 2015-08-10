@@ -35,17 +35,18 @@
 //lib includes
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_condition_selector.H"
 
 
-Teuchos::RCP<FPSI::UTILS> FPSI::UTILS::instance_;
+Teuchos::RCP<FPSI::Utils> FPSI::Utils::instance_;
 
 /*----------------------------------------------------------------------/
 | Instance method for singleton class                            rauch  |
 /----------------------------------------------------------------------*/
-Teuchos::RCP<FPSI::UTILS> FPSI::UTILS::Instance()
+Teuchos::RCP<FPSI::Utils> FPSI::Utils::Instance()
 {
   if (instance_ == Teuchos::null)
-    instance_ = Teuchos::rcp(new UTILS());
+    instance_ = Teuchos::rcp(new Utils());
 
   return instance_;
 }
@@ -53,7 +54,7 @@ Teuchos::RCP<FPSI::UTILS> FPSI::UTILS::Instance()
 /*----------------------------------------------------------------------/
 | Setup Discretization                                           rauch  |
 /----------------------------------------------------------------------*/
-Teuchos::RCP<FPSI::FPSI_Base> FPSI::UTILS::SetupDiscretizations(
+Teuchos::RCP<FPSI::FPSI_Base> FPSI::Utils::SetupDiscretizations(
     const Epetra_Comm& comm,
     const Teuchos::ParameterList& fpsidynparams,
     const Teuchos::ParameterList& poroelastdynparams)
@@ -210,7 +211,7 @@ Teuchos::RCP<FPSI::FPSI_Base> FPSI::UTILS::SetupDiscretizations(
 /*---------------------------------------------------------------------------/
 | Setup Local Interface Facing Element Map (for parallel distr.)      rauch  |
 /---------------------------------------------------------------------------*/
-void FPSI::UTILS::SetupLocalInterfaceFacingElementMap(
+void FPSI::Utils::SetupLocalInterfaceFacingElementMap(
     DRT::Discretization& masterdis,
     const DRT::Discretization& slavedis,
     const std::string& condname,
@@ -504,7 +505,7 @@ void FPSI::UTILS::SetupLocalInterfaceFacingElementMap(
 /*---------------------------------------------------------------------------/
 | Redistribute Interface (for parallel distr.)                        rauch  |
 /---------------------------------------------------------------------------*/
-void FPSI::UTILS::RedistributeInterface(
+void FPSI::Utils::RedistributeInterface(
     Teuchos::RCP<DRT::Discretization> masterdis,
     Teuchos::RCP<const DRT::Discretization> slavedis,
     const std::string& condname,
@@ -660,7 +661,7 @@ void FPSI::UTILS::RedistributeInterface(
 /*---------------------------------------------------------------------------/
 | Setup Interface Map (for parallel distr.)                           rauch  |
 /---------------------------------------------------------------------------*/
-void FPSI::UTILS::SetupInterfaceMap(const Epetra_Comm& comm,
+void FPSI::Utils::SetupInterfaceMap(const Epetra_Comm& comm,
     Teuchos::RCP<DRT::Discretization> structdis,
     Teuchos::RCP<DRT::Discretization> porofluiddis,
     Teuchos::RCP<DRT::Discretization> fluiddis,
@@ -675,4 +676,59 @@ void FPSI::UTILS::SetupInterfaceMap(const Epetra_Comm& comm,
       *Fluid_PoroFluid_InterfaceMap);
 
   return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FPSI::UTILS::MapExtractor::Setup(const DRT::Discretization& dis, bool withpressure, bool overlapping)
+{
+  const int ndim = DRT::Problem::Instance()->NDim();
+  DRT::UTILS::MultiConditionSelector mcs;
+  mcs.SetOverlapping(overlapping); //defines if maps can overlap
+  mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"FSICoupling",0,ndim+withpressure)));
+  mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"FPSICoupling",0,ndim+withpressure)));
+  mcs.SetupExtractor(dis,*dis.DofRowMap(),*this);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FPSI::UTILS::MapExtractor::Setup(
+    Teuchos::RCP<const Epetra_Map>& additionalothermap,
+    const FPSI::UTILS::MapExtractor& extractor)
+{
+  // build the new othermap
+  std::vector<Teuchos::RCP<const Epetra_Map> > othermaps;
+  othermaps.push_back(additionalothermap);
+  othermaps.push_back(extractor.OtherMap());
+
+  if (LINALG::MultiMapExtractor::IntersectMaps(othermaps)->NumGlobalElements() > 0)
+    dserror("Failed to add dofmap of foreign discretization to OtherMap. Detected overlap.");
+
+  Teuchos::RCP<const Epetra_Map> mergedothermap = LINALG::MultiMapExtractor::MergeMaps(othermaps);
+
+  // the vector of maps for the new map extractor consists of othermap at position 0
+  // followed by the maps of conditioned DOF
+  std::vector<Teuchos::RCP<const Epetra_Map> > maps;
+  // append the merged other map at first position
+  maps.push_back(mergedothermap);
+
+  // append the condition maps subsequently
+  for (int i=1; i< extractor.NumMaps(); ++i)
+    maps.push_back(extractor.Map(i));
+
+  // merge
+  Teuchos::RCP<const Epetra_Map> fullmap = LINALG::MultiMapExtractor::MergeMaps(maps);
+
+  LINALG::MultiMapExtractor::Setup(* fullmap, maps);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<std::set<int> > FPSI::UTILS::MapExtractor::ConditionedElementMap(const DRT::Discretization& dis) const
+{
+  Teuchos::RCP<std::set<int> > condelements  = DRT::UTILS::ConditionedElementMap(dis,"FSICoupling");
+  Teuchos::RCP<std::set<int> > condelements2 = DRT::UTILS::ConditionedElementMap(dis,"FPSICoupling");
+  std::copy(condelements2->begin(),condelements2->end(),
+            std::inserter(*condelements,condelements->begin()));
+  return condelements;
 }

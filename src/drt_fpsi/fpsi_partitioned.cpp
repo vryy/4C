@@ -16,6 +16,7 @@ Maintainer: Andreas Rauch
 #include "../drt_structure/stru_aux.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_io/io_control.H"
+#include "../drt_lib/drt_condition_selector.H"
 
 // FPSI includes
 #include "fpsi_utils.H"
@@ -59,27 +60,36 @@ FPSI::Partitioned::Partitioned(const Epetra_Comm& comm,
   // Interface coupling
   coupsf_ = Teuchos::rcp(new ADAPTER::Coupling());
   if (DRT::INPUT::IntegralValue<int>(timeparams,"COUPMETHOD"))
-    {
-      matchingnodes_ = true;
-      const int ndim = DRT::Problem::Instance()->NDim();
-      coupsf_->SetupConditionCoupling(*poroelast_subproblem_->StructureField()->Discretization(),            //masterdis (const)
-                                       poroelast_subproblem_->StructureField()->Interface()->FPSICondMap(),   //mastercondmap
-                                      *fluid_subproblem_->Discretization(),                                  //slavedis (const)
-                                       fluid_subproblem_->Interface()->FSICondMap(),                          //slavecondmap
-                                      "FPSICoupling",                                                        //condname
-                                       ndim);
-      //numdof
+  {
+    const int ndim = DRT::Problem::Instance()->NDim();
 
-      if (coupsf_->MasterDofMap()->NumGlobalElements()==0)
-        dserror("No nodes in matching FPSI interface. Empty FPSI coupling condition?");
-    }
-    else
+    Teuchos::RCP<DRT::Discretization> porostructdis = poroelast_subproblem_->StructureField()->Discretization();
+    LINALG::MapExtractor porostruct_extractor;
     {
-      matchingnodes_ = false;
-      dserror("COUPMETHOD not set in Input !!! Set COUPMETHOD in FPSI Dynamic !!!"
-              "\n Partitioned standard FSI uses Mortar-Coupling instead.\n"
-              "However, that doesn't work here  :-P ... so far ...");
+      DRT::UTILS::MultiConditionSelector mcs;
+      mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(*porostructdis,"FPSICoupling",0,ndim)));
+      mcs.SetupExtractor(*porostructdis,*(porostructdis->DofRowMap()),porostruct_extractor);
     }
+
+    matchingnodes_ = true;
+    coupsf_->SetupConditionCoupling(*poroelast_subproblem_->StructureField()->Discretization(),            //masterdis (const)
+                                     porostruct_extractor.CondMap(),   //mastercondmap
+                                    *fluid_subproblem_->Discretization(),                                  //slavedis (const)
+                                     fluid_subproblem_->Interface()->FSICondMap(),                          //slavecondmap
+                                    "FPSICoupling",                                                        //condname
+                                     ndim);
+    //numdof
+
+    if (coupsf_->MasterDofMap()->NumGlobalElements()==0)
+      dserror("No nodes in matching FPSI interface. Empty FPSI coupling condition?");
+  }
+  else
+  {
+    matchingnodes_ = false;
+    dserror("COUPMETHOD not set in Input !!! Set COUPMETHOD in FPSI Dynamic !!!"
+            "\n Partitioned standard FSI uses Mortar-Coupling instead.\n"
+            "However, that doesn't work here  :-P ... so far ...");
+  }
 
 }
 
@@ -216,7 +226,7 @@ void FPSI::Partitioned::RedistributeInterface()
 {
   DRT::Problem* problem = DRT::Problem::Instance();
   const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
-  Teuchos::RCP<FPSI::UTILS> FPSI_UTILS = FPSI::UTILS::Instance();
+  Teuchos::RCP<FPSI::Utils> FPSI_UTILS = FPSI::Utils::Instance();
 
   if(comm.NumProc() > 1) //if we have more than one processor, we need to redistribute at the FPSI interface
   {

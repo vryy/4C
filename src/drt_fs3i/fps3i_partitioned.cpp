@@ -90,7 +90,7 @@ FS3I::PartFPS3I::PartFPS3I(const Epetra_Comm& comm)
     dserror("Please set \"TIMESTEP\" in \"POROELASTICITY DYNAMIC\" to the same value as in \"FPSI DYNAMIC\"!");
   }
 
-  Teuchos::RCP<FPSI::UTILS> FPSI_UTILS = FPSI::UTILS::Instance();
+  Teuchos::RCP<FPSI::Utils> FPSI_UTILS = FPSI::Utils::Instance();
 
   //##################    2.- Creation of Poroelastic + Fluid problem. (Discretization called inside)     //##################
   Teuchos::RCP<FPSI::FPSI_Base> fpsi_algo = Teuchos::null;
@@ -704,16 +704,16 @@ void FS3I::PartFPS3I::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector> >
   //      them explicitly in the poro field
 
   // extract FPSI-Interface from fluid field
-  WallShearStress = fpsi_->FluidField()->FPSIInterface()->ExtractFPSICondVector(WallShearStress);
+  WallShearStress = fpsi_->FPSICoupl()->FluidFpsiVelPresExtractor()->ExtractCondVector(WallShearStress);
 
   // replace global fluid interface dofs through porofluid interface dofs
   WallShearStress = fpsi_->FPSICoupl()->iFluidToPorofluid(WallShearStress);
 
   // insert porofluid interface entries into vector with full porofluid length
-  Teuchos::RCP<Epetra_Vector> porofluid = LINALG::CreateVector(*(fpsi_->PoroField()->Interface().FullMap()),true);
+  Teuchos::RCP<Epetra_Vector> porofluid = LINALG::CreateVector(*(fpsi_->PoroField()->Extractor()->FullMap()),true);
 
   //Parameter int block of function InsertVector: (0: inner dofs of structure, 1: interface dofs of structure, 2: inner dofs of porofluid, 3: interface dofs of porofluid )
-  fpsi_->PoroField()->Interface().InsertVector(WallShearStress,3,porofluid);
+  fpsi_->FPSICoupl()->PoroExtractor()->InsertVector(WallShearStress,3,porofluid);
   wss.push_back(porofluid);
 }
 

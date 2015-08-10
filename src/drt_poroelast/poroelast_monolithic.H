@@ -230,11 +230,6 @@ namespace POROELAST
       //Setup solver for monolithic system
       virtual bool SetupSolver();
 
-      const LINALG::MultiMapExtractor& Interface() const
-      {
-        return porointerfacedofmap_;
-      }
-
     protected:
 
       void Aitken();
@@ -314,10 +309,6 @@ namespace POROELAST
 
       //! dof row map splitted in (field) blocks
       Teuchos::RCP<LINALG::MultiMapExtractor> blockrowdofmap_;
-
-      //! dof row map splitted in inner structure (0), struct interface (1)
-      //! inner porofluid (0) and porofluidinterface (1)
-      LINALG::MultiMapExtractor porointerfacedofmap_;
 
       //! dirichlet map of monolithic system
       Teuchos::RCP<Epetra_Map> combinedDBCMap_;

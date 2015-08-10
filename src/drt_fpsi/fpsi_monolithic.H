@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fpsi_monolithic.h
+\file fpsi_monolithic.H
 
 \brief General framework for monolithic fpsi solution schemes
 
@@ -258,9 +258,6 @@ public:
 
   void SetConductivity(double conduct);
 
-  // extractor to communicate between (fluid + fluid_fpsi) + fsi map and block mapss
-  const LINALG::MultiMapExtractor& Extractor_FluidFPSI_FSI() const { return fluidfpsi_fsi_rowdofmap_; }
-
   //external acces to rhs vector (used by xfpsi)
   Teuchos::RCP<Epetra_Vector>& RHS() {return rhs_;} //TodoAge: will be removed again!
 
@@ -272,8 +269,6 @@ protected:
   LINALG::MultiMapExtractor     blockrowdofmap_;
   // dof row map (not splitted)
   Teuchos::RCP<Epetra_Map>      fullmap_;
-  // (fluid + fluid_fpsi) + fsi map splitted in (field) blocks
-  LINALG::MultiMapExtractor     fluidfpsi_fsi_rowdofmap_;
   // increment between Newton steps k and k+1
   Teuchos::RCP<Epetra_Vector>   iterinc_;
   Teuchos::RCP<Epetra_Vector>   iterincold_;

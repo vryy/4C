@@ -370,29 +370,6 @@ void POROELAST::Monolithic::ExtractFieldVectors(
 void POROELAST::Monolithic::SetupSystem()
 {
 
-  if(PoroBase::PartOfMultifieldProblem_)
-  {
-    std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces_fpsi;
-
-    //Split PoroField into:
-    //                      --> Structure (inside + FSI-Interface)
-    //                      --> Structure FPSI-Interface
-    //                      --> Fluid (inside + FSI-Interface)
-    //                      --> Fluid FPSI-Interface
-
-    Teuchos::RCP<const Epetra_Map> s_other_map = LINALG::MergeMap(StructureField()->Interface()->Map(STR::AUX::MapExtractor::cond_other),StructureField()->Interface()->Map(STR::AUX::MapExtractor::cond_fsi));
-    vecSpaces_fpsi.push_back(s_other_map); //other map
-    vecSpaces_fpsi.push_back(StructureField()->Interface()->Map(STR::AUX::MapExtractor::cond_fpsi)); //FPSICoupling
-    Teuchos::RCP<const Epetra_Map> f_other_map = LINALG::MergeMap(FluidField()->FPSIInterface()->Map(FLD::UTILS::MapExtractor::cond_other),FluidField()->FPSIInterface()->Map(FLD::UTILS::MapExtractor::cond_fsi));
-    vecSpaces_fpsi.push_back(f_other_map); //other map
-    vecSpaces_fpsi.push_back(FluidField()->FPSIInterface()->Map(FLD::UTILS::MapExtractor::cond_fpsi)); //FPSICoupling
-
-    fullmap_ = LINALG::MultiMapExtractor::MergeMaps(vecSpaces_fpsi);
-    // full Poroelasticity-blockmap
-    porointerfacedofmap_.Setup(*fullmap_, vecSpaces_fpsi);
-  }
-
-
   {
     // -------------------------------------------------------------create combined map
     std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;

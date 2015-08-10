@@ -29,7 +29,6 @@ namespace UTILS
       cond_total_traction_corrector = 5,
       cond_mortar                   = 6,
       cond_au                       = 7,
-      cond_fpsi                     = 8
     };
 
     /// setup the whole thing
@@ -59,7 +58,6 @@ namespace UTILS
     MAP_EXTRACTOR_VECTOR_METHODS(TotalTractionCorrectionCond,cond_total_traction_corrector)
     MAP_EXTRACTOR_VECTOR_METHODS(MortarCond,cond_mortar)
     MAP_EXTRACTOR_VECTOR_METHODS(AUCond, cond_au)
-    MAP_EXTRACTOR_VECTOR_METHODS(FPSICond,cond_fpsi)
   };
 
   /// specific MultiMapExtractor to handle the part of fluid with Krylov space projection

@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ad_fld_fluid_fsi.cpp
+\file ad_fld_fluid_fpsi.cpp
 
 \brief Fluid field adapter for fpsi
 
@@ -17,7 +17,11 @@ Maintainer: Andreas Rauch
 #include "ad_fld_fluid_fpsi.H"
 #include "ad_fld_fluid_fsi.H"
 
+#include "../drt_fpsi/fpsi_utils.H"
+
+#include "../drt_fluid/fluidimplicitintegration.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
+
 
 /* constructor */
 ADAPTER::FluidFPSI::FluidFPSI(Teuchos::RCP<Fluid> fluid,
@@ -53,3 +57,22 @@ void ADAPTER::FluidFPSI::SetupInterface()
   interface_->Setup(*dis_,false,true); //create overlapping maps for fpsi problem
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ADAPTER::FluidFPSI::UseBlockMatrix(
+    bool splitmatrix,
+    Teuchos::RCP<FPSI::UTILS::MapExtractor>const& shapederivSplitter)
+{
+  Teuchos::RCP<std::set<int> > condelements = Interface()->ConditionedElementMap(*Discretization());
+  Teuchos::RCP<std::set<int> > condelements_shape = shapederivSplitter->ConditionedElementMap(*Discretization());
+  fluidimpl_->UseBlockMatrix(condelements,*Interface(),*Interface(),condelements_shape,*shapederivSplitter,*shapederivSplitter,splitmatrix);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ADAPTER::FluidFPSI::UseBlockMatrix(
+    bool splitmatrix)
+{
+  Teuchos::RCP<std::set<int> > condelements = Interface()->ConditionedElementMap(*Discretization());
+  fluidimpl_->UseBlockMatrix(condelements,*Interface(),*Interface(),condelements,*Interface(),*Interface(),splitmatrix);
+}

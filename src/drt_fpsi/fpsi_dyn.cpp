@@ -1,5 +1,5 @@
 /*!------------------------------------------------------------------------------------------------*
- \file fpsi.cpp
+ \file fpsi_dyn.cpp
 
  \brief control routine of fluid-porous-structure-interaction problems
 
@@ -84,7 +84,7 @@ void fpsi_drt()
   const Teuchos::ParameterList& fpsidynparams       = problem->FPSIDynamicParams();
   const Teuchos::ParameterList& poroelastdynparams  = problem->PoroelastDynamicParams();
 
-  Teuchos::RCP<FPSI::UTILS> FPSI_UTILS = FPSI::UTILS::Instance();
+  Teuchos::RCP<FPSI::Utils> FPSI_UTILS = FPSI::Utils::Instance();
 
   //3.- Creation of Poroelastic + Fluid problem. (Discretization called inside)
   Teuchos::RCP<FPSI::FPSI_Base> fpsi = Teuchos::null;
@@ -101,8 +101,8 @@ void fpsi_drt()
   fpsi->RedistributeInterface();
 
   //////////////////////////////////
- //4.- Run of the actual problem.//
-//////////////////////////////////
+  //4.- Run of the actual problem.//
+  //////////////////////////////////
 
   // 4.1.- Coupling and creation of combined dofmap
   fpsi->SetupSystem();

@@ -82,7 +82,7 @@ FPSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
   coupfa_fsi_ = Teuchos::rcp(new ADAPTER::Coupling());
   icoupfa_fsi_ = Teuchos::rcp(new ADAPTER::Coupling());
 
-  Teuchos::RCP<FPSI::UTILS> FPSI_UTILS = FPSI::UTILS::Instance();
+  Teuchos::RCP<FPSI::Utils> FPSI_UTILS = FPSI::Utils::Instance();
 
   Fluid_PoroFluid_InterfaceMap = FPSI_UTILS->Get_Fluid_PoroFluid_InterfaceMap();
   PoroFluid_Fluid_InterfaceMap = FPSI_UTILS->Get_PoroFluid_Fluid_InterfaceMap();
@@ -120,7 +120,7 @@ void FPSI::MonolithicBase::RedistributeInterface()
 {
   DRT::Problem* problem = DRT::Problem::Instance();
   const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
-  Teuchos::RCP<FPSI::UTILS> FPSI_UTILS = FPSI::UTILS::Instance();
+  Teuchos::RCP<FPSI::Utils> FPSI_UTILS = FPSI::Utils::Instance();
 
   if(comm.NumProc() > 1) //if we have more than one processor, we need to redistribute at the FPSI interface
   {
@@ -874,7 +874,7 @@ void FPSI::Monolithic::BuildConvergenceNorms()
   rhs_porofluid  = PoroField()->Extractor()->ExtractVector(rhs_poro, 1);
   rhs_porofluidvelocity = PoroField()->FluidField()->ExtractVelocityPart(rhs_porofluid);
   rhs_porofluidpressure = PoroField()->FluidField()->ExtractPressurePart(rhs_porofluid);
-  rhs_porointerface     = PoroField()->FluidField()->FPSIInterface()->ExtractFPSICondVector(rhs_porofluid);
+  rhs_porointerface     = FPSICoupl()->PoroFluidFpsiVelPresExtractor()->ExtractCondVector(rhs_porofluid);
 
   rhs_fluid             = Extractor().ExtractVector(rhs_, fluid_block_);
 //  Teuchos::RCP<const Epetra_Vector> rhs_fullfluid = Teuchos::rcp(new Epetra_Vector(*FluidField()->DofRowMap()));
@@ -883,8 +883,7 @@ void FPSI::Monolithic::BuildConvergenceNorms()
 
   rhs_fluidvelocity     = FluidField()->ExtractVelocityPart(rhs_fluid);
   rhs_fluidpressure     = FluidField()->ExtractPressurePart(rhs_fluid);
-  rhs_fluidinterface    = FluidField()->FPSIInterface()->ExtractFPSICondVector(rhs_fluid);
-
+  rhs_fluidinterface    = FPSICoupl()->FluidFpsiVelPresExtractor()->ExtractCondVector(rhs_fluid);
 
   rhs_ale               = Extractor().ExtractVector(rhs_, ale_i_block_);//Extractor().ExtractVector(rhs_, 2);
 
@@ -936,7 +935,7 @@ if (islinesearch_ == false)
   iterincporofluid         = PoroField()->Extractor()->ExtractVector(iterincporo,1);
   iterincporofluidvelocity = PoroField() ->FluidField()->ExtractVelocityPart(iterincporofluid);
   iterincporofluidpressure = PoroField() ->FluidField()->ExtractPressurePart(iterincporofluid);
-  iterincporointerface     = PoroField() ->Interface().ExtractVector(iterincporo,3);
+  iterincporointerface     = FPSICoupl() ->PoroExtractor()->ExtractVector(iterincporo,3);
 
   iterincfluid             = Extractor().ExtractVector(iterinc_, fluid_block_);
 
@@ -946,7 +945,7 @@ if (islinesearch_ == false)
 
   iterincfluidvelocity     = FluidField()->ExtractVelocityPart(iterincfluid);
   iterincfluidpressure     = FluidField()->ExtractPressurePart(iterincfluid);
-  iterincfluidinterface    = FluidField()->FPSIInterface()->ExtractFPSICondVector(iterincfluid);
+  iterincfluidinterface    = FPSICoupl()->FluidFpsiVelPresExtractor()->ExtractCondVector(iterincfluid);
 
   iterincale               = Extractor().ExtractVector(iterinc_, ale_i_block_);
 

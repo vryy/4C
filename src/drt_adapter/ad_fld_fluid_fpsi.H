@@ -19,6 +19,14 @@ Maintainer: Andreas Rauch
 
 #include "ad_fld_fluid_fsi.H"
 
+namespace FPSI
+{
+namespace UTILS
+{
+  class MapExtractor;
+}
+}
+
 namespace ADAPTER {
 
   /*! \brief Fluid field adapter for fpsi
@@ -47,6 +55,11 @@ namespace ADAPTER {
     virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& FPSIInterface() const { return fpsiinterface_; }
 
     virtual void SetupInterface();
+
+    virtual void UseBlockMatrix(bool splitmatrix);
+    virtual void UseBlockMatrix(
+        bool splitmatrix,
+        Teuchos::RCP<FPSI::UTILS::MapExtractor>const& shapederivSplitter);
 
   protected:
 

@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fpsi_monolithic_plain.h
+\file fpsi_monolithic_plain.H
 
 \brief Solve FPSI problem with matching grids using a monolithic scheme
        in its plain form without any fancy splitting and condensation stuff
@@ -88,14 +88,6 @@ namespace FPSI
            maps must be row maps by themselves and must not contain identical GIDs.
            */
     void SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map> >& maps);
-
-    //! set fluid fluidfpsi_fsi dof row map
-            /*!
-            A subclass calls this method (from its constructor) and thereby
-            defines the number of blocks, their maps and the block order. The block
-            maps must be row maps by themselves and must not contain identical GIDs.
-            */
-    void SetFluidFPSI_FSIDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map> >& maps);
 
     /// extract the three field vectors from a given composed vector
     void ExtractFieldVectors(
