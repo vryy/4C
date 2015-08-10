@@ -809,10 +809,21 @@ public:
   virtual Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape(std::string condname);
 
   /// switch fluid field to block matrix
-  virtual void UseBlockMatrix(Teuchos::RCP<std::set<int> > condelements,
-                      const LINALG::MultiMapExtractor& domainmaps,
-                      const LINALG::MultiMapExtractor& rangemaps,
-                      bool splitmatrix=true);
+  virtual void UseBlockMatrix(Teuchos::RCP<std::set<int> > condelements,   ///< conditioned elements of fluid
+                      const LINALG::MultiMapExtractor& domainmaps,         ///< domain maps for split of fluid matrix
+                      const LINALG::MultiMapExtractor& rangemaps,          ///< range maps for split of fluid matrix
+                      bool splitmatrix=true                                ///< flag for split of matrices
+                      );
+
+  /// switch fluid field to block matrix (choose maps for shape derivatives separately)
+  virtual void UseBlockMatrix(Teuchos::RCP<std::set<int> > condelements,   ///< conditioned elements of fluid
+                      const LINALG::MultiMapExtractor& domainmaps,         ///< domain maps for split of fluid matrix
+                      const LINALG::MultiMapExtractor& rangemaps,          ///< range maps for split of fluid matrix
+                      Teuchos::RCP<std::set<int> >     condelements_shape, ///< conditioned elements
+                      const LINALG::MultiMapExtractor& domainmaps_shape,   ///< domain maps for split of shape deriv. matrix
+                      const LINALG::MultiMapExtractor& rangemaps_shape,    ///< domain maps for split of shape deriv. matrix
+                      bool splitmatrix=true                                ///< flag for split of matrices
+                      );
 
   /// linear solve with prescribed dirichlet conditions and without history
   /*!

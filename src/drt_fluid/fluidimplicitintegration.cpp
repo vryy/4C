@@ -5207,6 +5207,25 @@ void FLD::FluidImplicitTimeInt::UseBlockMatrix(Teuchos::RCP<std::set<int> >     
                                                const LINALG::MultiMapExtractor& rangemaps,
                                                bool splitmatrix)
 {
+  UseBlockMatrix( condelements,
+                  domainmaps,
+                  rangemaps,
+                  condelements,
+                  domainmaps,
+                  rangemaps,
+                  splitmatrix);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FLD::FluidImplicitTimeInt::UseBlockMatrix(Teuchos::RCP<std::set<int> >     condelements,
+                                               const LINALG::MultiMapExtractor& domainmaps,
+                                               const LINALG::MultiMapExtractor& rangemaps,
+                                               Teuchos::RCP<std::set<int> >     condelements_shape,
+                                               const LINALG::MultiMapExtractor& domainmaps_shape,
+                                               const LINALG::MultiMapExtractor& rangemaps_shape,
+                                               bool splitmatrix)
+{
   Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy> > mat;
 
   if (splitmatrix)
@@ -5224,8 +5243,8 @@ void FLD::FluidImplicitTimeInt::UseBlockMatrix(Teuchos::RCP<std::set<int> >     
   if (params_->get<bool>("shape derivatives"))
   {
     // allocate special mesh moving matrix
-    mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
-    mat->SetCondElements(condelements);
+    mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(domainmaps_shape,rangemaps_shape,108,false,true));
+    mat->SetCondElements(condelements_shape);
     shapederivatives_ = mat;
   }
 }
