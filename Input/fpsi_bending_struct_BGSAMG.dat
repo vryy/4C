@@ -1,8 +1,15 @@
+//
+// Maintainer: Anh-Tu Vuong
+// vuong@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+//
+//
 ==================================================================
                   General Data File BACI
 ==================================================================
 -------------------------------------------------------------TITLE
-created by pre_exodus
+Test for amg block preconditioner for fpsi
+should give the same results as fpsi_bending_struct.dat
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS    3200
 NODES       4430
