@@ -529,7 +529,7 @@ void FS3I::FS3I_Base::SetupCoupledScatraMatrix()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FS3I::FS3I_Base::Scatra2ToScatra1(Teuchos::RCP<Epetra_Vector> iv)
+Teuchos::RCP<Epetra_Vector> FS3I::FS3I_Base::Scatra2ToScatra1 (Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return scatracoup_->SlaveToMaster(iv);
 }
@@ -537,7 +537,7 @@ Teuchos::RCP<Epetra_Vector> FS3I::FS3I_Base::Scatra2ToScatra1(Teuchos::RCP<Epetr
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FS3I::FS3I_Base::Scatra1ToScatra2(Teuchos::RCP<Epetra_Vector> iv)
+Teuchos::RCP<Epetra_Vector> FS3I::FS3I_Base::Scatra1ToScatra2 (Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return scatracoup_->MasterToSlave(iv);
 }

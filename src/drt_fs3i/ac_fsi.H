@@ -64,16 +64,16 @@ namespace FS3I
     ///Do a single fsi step (including all subcycles)
     void DoFSIStep();
 
-    void UpdateSmallTimeScale();
+    void IsSmallTimeScalePeriodic();
 
     ///Decide if fsi problem is already periodic
     void IsFsiPeriodic();
 
     ///Do a standard fsi step
-    void DoFSIStepStandard();
+    void DoFSIStepStandard( const int callnum=1 );
 
     ///Do a fsi step with subcycling
-    void DoFSIStepSubcycled( const int subcyclingsteps );
+    void DoFSIStepSubcycled( const int subcyclingsteps, const int callnum=1 );
 
     ///Get fsi solution from one period before
     void DoFSIStepPeriodic();
@@ -151,6 +151,12 @@ namespace FS3I
 
     ///Build map extractor which extracts the j-th dof
     std::vector<Teuchos::RCP<LINALG::MapExtractor> > BuildMapExtractor();
+
+    ///Compare if two doubles are relatively zero
+    bool IsRealtiveEqualTo(const double A, const double B, const double Ref=1.0);
+
+    ///Compare if A mod B is relatively equal to zero
+    bool ModuloIsRealtiveZero(const double A, const double B, const double Ref=1.0);
 
   private:
 

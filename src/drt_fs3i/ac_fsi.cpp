@@ -112,10 +112,10 @@ FS3I::ACFSI::ACFSI(const Epetra_Comm& comm)
     }
   }
 
-  if ( ((fmod(fsiperiod_+1e-12,dt_)-1e-12)/fsiperiod_) >= 1e-14 )
+  if ( not ModuloIsRealtiveZero(fsiperiod_,dt_,fsiperiod_) )
     dserror("Choose a time step such that TIMESTEP = PERIODIC / n with n being an integer!");
 
-  if ( (abs(fmod(dt_large_+1e-11,fsiperiod_)-1e-11)/dt_large_) >= 1e-14  )
+  if ( not ModuloIsRealtiveZero(dt_large_,fsiperiod_,dt_large_) )
       dserror("Choose LARGE_TIMESCALE_TIMESTEP as a multiple of PERIODICITY!");
 
   if (infperm_)
@@ -212,11 +212,15 @@ void FS3I::ACFSI::ReadRestart()
 void FS3I::ACFSI::Timeloop()
 {
   // output of initial state
-//  UpdateAndOutput(); //TODO: Get this to work
+//  fsi_->PrepareOutput();
+//  FsiOutput();
+  ScatraOutput();
 
+  // prepare time loop
   fsi_->PrepareTimeloop();
   SetVelocityFields(); //doing this we can use the flag SKIPINITDER
 
+  // do time loop
   while (NotFinished())
   {
     SmallTimeScaleLoop();
@@ -239,9 +243,13 @@ void FS3I::ACFSI::SmallTimeScaleLoop()
 
   while (SmallTimeScaleLoopNotFinished())
   {
+  //Do a time step
   SmallTimeScalePrepareTimeStep();
   SmallTimeScaleOuterLoop();
   SmallTimeScaleUpdateAndOutput();
+
+  //Update the isperiodic_ flags
+  IsSmallTimeScalePeriodic();
   }
 }
 
@@ -263,7 +271,7 @@ void FS3I::ACFSI::SmallTimeScalePrepareTimeStep()
   //Print to screen
   if (Comm().MyPID()==0)
   {
-    std::cout << "\n\n"<< "TIME:  "    << std::scientific <<std::setprecision(6)<< time_ << "/" << std::scientific << timemax_
+    std::cout << "\n\n"<< "TIME:  "    << std::scientific <<std::setprecision(8)<< time_ << "/" << std::scientific << timemax_
              << "     DT = " << std::scientific << dt_
              << "     STEP = " << std::setw(4) << step_ << "/" << std::setw(4) << numstep_
              << "\n\n";
@@ -344,11 +352,11 @@ void FS3I::ACFSI::SmallTimeScaleOuterLoopIterStagg()
     const int fsiperssisteps = DRT::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<int>("FSI_STEPS_PER_SCATRA_STEP");
     if (fsiperssisteps == 1) //no subcycling
     {
-      DoFSIStepStandard();
+      DoFSIStepStandard(itnum);
     }
     else //subcycling
     {
-      DoFSIStepSubcycled(fsiperssisteps);
+      DoFSIStepSubcycled(fsiperssisteps,itnum);
     }
     //periodical repetition is not allowed, since we want to converge the problems
 
@@ -384,9 +392,9 @@ void FS3I::ACFSI::DoFSIStep()
   }
 }
 
-void FS3I::ACFSI::UpdateSmallTimeScale()
+void FS3I::ACFSI::IsSmallTimeScalePeriodic()
 {
-  if ( step_>1 and (fmod(time_+ 1e-12,fsiperiod_)-1e-12) <= 1e-14 ) //we only do these things if we are at the end of an fsi cycles
+  if ( step_>1 and ModuloIsRealtiveZero(time_,fsiperiod_,time_) )
   {
     // Check fsi periodicity
     IsFsiPeriodic();
@@ -423,7 +431,7 @@ void FS3I::ACFSI::IsFsiPeriodic()
 /*----------------------------------------------------------------------*
  | Do a standard fsi step                                    Thon 12/14 |
  *----------------------------------------------------------------------*/
-void FS3I::ACFSI::DoFSIStepStandard()
+void FS3I::ACFSI::DoFSIStepStandard(const int callnum)
 {
   if (Comm().MyPID()==0)
   {
@@ -431,13 +439,13 @@ void FS3I::ACFSI::DoFSIStepStandard()
                "\n                               FSI SOLVER "
                "\n************************************************************************"<<std::endl;
   }
-  fsi_->TimeStep(fsi_);
+  fsi_->TimeStep(fsi_,callnum);
 }
 
 /*----------------------------------------------------------------------*
  | Do a fsi step with subcycling                             Thon 12/14 |
  *----------------------------------------------------------------------*/
-void FS3I::ACFSI::DoFSIStepSubcycled( const int subcyclingsteps )
+void FS3I::ACFSI::DoFSIStepSubcycled( const int subcyclingsteps, const int callnum )
 {
   double subcyclingiter = 0;
   while (subcyclingiter < subcyclingsteps)
@@ -460,14 +468,14 @@ void FS3I::ACFSI::DoFSIStepSubcycled( const int subcyclingsteps )
                <<"\n************************************************************************"<<std::endl;
     }
 
-    fsi_->TimeStep(fsi_); //all necessary changes for the fsi problem (i.e. adapting dt) has already been done in PartFS3I::ManipulateDt()
+    fsi_->TimeStep(fsi_,callnum); //all necessary changes for the fsi problem (i.e. adapting dt) has already been done in PartFS3I::ManipulateDt()
   }
 
   // do time and step in fsi (including subfields) and fs3i match after we will have called SmallTimeScaleUpdateAndOutput()
-  if ( abs(fsi_->FluidField()->Time() - time_)/time_ > 1e-14 )
+  if ( not IsRealtiveEqualTo(fsi_->FluidField()->Time(),time_,time_) )
     dserror("After the subcycling the fsi time and fs3i time do not match anymore!");
 
-  if ( abs((fsi_->Step() -step_)) > 1e-14 )
+  if ( not IsRealtiveEqualTo( fsi_->FluidField()->Step(),step_,step_) )
     dserror("After the subcycling the fsi step and fs3i step do not match anymore!");
 }
 
@@ -495,10 +503,6 @@ void FS3I::ACFSI::DoFSIStepPeriodic()
   //do the reading
   fsi_->ReadRestart(previousperiodstep ); //ReadRestartfromTime()
 
-  //AC-FSI specific input
-  IO::DiscretizationReader reader = IO::DiscretizationReader(fsi_->FluidField()->Discretization(),previousperiodstep);
-  reader.ReadVector(WallShearStress_lp_, "wss");
-
   //we first fix the grid velocity of the fluid. This calculation is normally done
   //in ADAPTER::FluidFSI::ApplyMeshDisplacement(), but since we never call this function
   //we have to call it ourself
@@ -513,10 +517,10 @@ void FS3I::ACFSI::DoFSIStepPeriodic()
  *--------------------------------------------------------------------------------------*/
 double FS3I::ACFSI::GetStepOfPreviousPeriodAndPrepareReading(const int actstep,const double acttime)
 {
-  if ( abs(fmod(fsiperiod_+1e-12,dt_)-1e-12) > 1e-14 )
+  if ( not ModuloIsRealtiveZero(fsiperiod_,dt_,fsiperiod_) )
     dserror("PERIODICITY should be an multiple of TIMESTEP!");
 
-  const int previousperiodstep = actstep- (fsiperiod_/dt_ ); //here we assume a constant timestep over the last period
+  const int previousperiodstep = actstep- round(fsiperiod_/dt_ ); //here we assume a constant timestep over the last period
 
   //Is this the right step? Let's check:
   {
@@ -536,7 +540,7 @@ double FS3I::ACFSI::GetStepOfPreviousPeriodAndPrepareReading(const int actstep,c
     double previousperiodtime = reader.ReadDouble("time");
 
     //Now check if the candidate is right
-    if ( (abs((previousperiodtime + fsiperiod_) - acttime)/acttime) > 1e-10 ) //iff the diffeence is too large
+    if ( not IsRealtiveEqualTo(previousperiodtime + fsiperiod_,acttime,acttime) )
       dserror("You can't change your TIMESTEP when you are within the FSI PERIODIC cycle!");
   }
 
@@ -682,9 +686,6 @@ void FS3I::ACFSI::SmallTimeScaleUpdateAndOutput()
   //Scatra update and output
   UpdateScatraFields();
   ScatraOutput();
-
-  //Update the steady state flags
-  UpdateSmallTimeScale();
 }
 
 /*----------------------------------------------------------------------*
@@ -906,12 +907,12 @@ void FS3I::ACFSI::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector> >& ws
     if (fluid == Teuchos::null)
       dserror("Dynamic cast to ADAPTER::FluidFSI failed!");
 
-    if ( step_>1 and (fmod(time_ - dt_ + 1e-12,fsiperiod_)-1e-12) <= 1e-14 ) //iff WallShearStress_ has been updated last step
+    if ( step_>1 and ModuloIsRealtiveZero(time_-dt_,fsiperiod_,time_) )
       {
         fluid->ResetHistoryVectors( ); //Reset StressManager
         if (Comm().MyPID()==0)
         {
-        std::cout<<"Reseting stress manager"<<std::endl;
+        std::cout<<"\nReseting stress manager"<<std::endl;
         }
       }
 
@@ -923,7 +924,7 @@ void FS3I::ACFSI::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector> >& ws
       WallShearStress_lp_->Update(1.0,*WallShearStress,0.0); //Update
       break;
     case INPAR::FLUID::wss_mean: //we use the mean WSS from the last period..
-      if ( step_>1 and (fmod(time_+ 1e-12,fsiperiod_)-1e-12) <= 1e-14 ) //..and update the mean wss vector iff a new period has started
+      if ( step_>1 and ModuloIsRealtiveZero(time_,fsiperiod_,time_) )
       {
         WallShearStress_lp_->Update(1.0,*WallShearStress,0.0); //Update
         if (Comm().MyPID()==0)
@@ -931,7 +932,7 @@ void FS3I::ACFSI::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector> >& ws
           std::cout<<"\nUpdating mean wss vector in ac-fs3i"<<std::endl;
         }
         //Note: we can not reset the stress manager here, since we first need to write its data, to be able to restart.
-        //Hence the correct order is: 1. Calculate WSS; 2. Write fluid output; 3. Reset stress Manager
+        //Hence the correct order is: 1. Calculate WSS; 2. Write fluid output; 3. Reset stress Manager(in next time step)
       }
       break;
     default:

@@ -119,9 +119,9 @@ namespace FS3I
     //! set-up of global matrix of the monolithic ScaTra problem
     void SetupCoupledScatraMatrix();
 
-    Teuchos::RCP<Epetra_Vector> Scatra2ToScatra1(Teuchos::RCP<Epetra_Vector> iv);
+    Teuchos::RCP<Epetra_Vector> Scatra2ToScatra1 (Teuchos::RCP<const Epetra_Vector> iv) const;
 
-    Teuchos::RCP<Epetra_Vector> Scatra1ToScatra2(Teuchos::RCP<Epetra_Vector> iv);
+    Teuchos::RCP<Epetra_Vector> Scatra1ToScatra2 (Teuchos::RCP<const Epetra_Vector> iv) const;
 
     //! linear solution of monolithic ScaTra problem
     void LinearSolveScatra();

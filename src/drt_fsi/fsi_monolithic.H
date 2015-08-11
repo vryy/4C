@@ -288,7 +288,7 @@ namespace FSI
     //! do new time step
     //!
     //! return error code that indicates whether the nonlinear solver converged or not
-    virtual void TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);
+    virtual void TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface, const int callnum=1);
 
     //@}
 

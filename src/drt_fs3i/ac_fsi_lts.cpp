@@ -66,14 +66,9 @@ void FS3I::ACFSI::PrepareLargeTimeScaleLoop()
                "\n                         LARGE TIME SCALE LOOP"
                "\n************************************************************************"<<std::endl;
   }
-  //we are now at the beginning of a new period and from now on calculate multiple cycles at ones. Hence
-//  time_+=dt_;
+
   //Set large time scale time step in the struct scatra field
   scatravec_[1]->ScaTraField()->SetDt( dt_large_ );
-
-  //Set
-  SetMeshDisp();
-  SetWallShearStresses();
 
   //Set zeros velocities since we assume that the large time scale can not see the deformation of the small time scale
   Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(fsi_->StructureField()->Velnp()->Map(),true));
@@ -83,6 +78,8 @@ void FS3I::ACFSI::PrepareLargeTimeScaleLoop()
                                          Teuchos::null,
                                          Teuchos::null,
                                          fsi_->StructureField()->Discretization() );
+
+  fsineedsupdate_=false;
 
   // Save the phinp vector at the beginning of the large time scale loop in
   // in order to estimate the so far induced growth
@@ -105,7 +102,7 @@ void FS3I::ACFSI::FinishLargeTimeScaleLoop()
   // We do not modify the step_ counter; we just keep counting..
 
   SetTimeStepInFSI(time_,step_);
-  // we now hav to fix the time_ and step_ of the structure field, since this is not shiftet
+  // we now have to fix the time_ and step_ of the structure field, since this is not shifted
   // in PrepareTimeStep(), but in Update() which we here will not call. So..
   fsi_->StructureField()->SetTime(time_);
   fsi_->StructureField()->SetTimen(time_+fsi_->StructureField()->Dt());
@@ -114,10 +111,13 @@ void FS3I::ACFSI::FinishLargeTimeScaleLoop()
 
   scatravec_[0]->ScaTraField()->SetTimeStep(time_,step_);
 
+  //clean up large time scale loop
+  structurephinp_bltsl_->PutScalar(0.0);
+  structurephinp_blgu_->PutScalar(0.0);
+
   //we start with a clean small time scale loop
   fsiisperiodic_ = false;
   scatraisperiodic_ = false;
-
 }
 
 /*----------------------------------------------------------------------*
@@ -140,7 +140,7 @@ void FS3I::ACFSI::LargeTimeScalePrepareTimeStep()
   //Print to screen
   if (Comm().MyPID()==0)
   {
-    std::cout << "\n\n"<< "TIME:  "    << std::scientific <<std::setprecision(6)<< time_ << "/" << std::scientific << timemax_
+    std::cout << "\n\n"<< "TIME:  "    << std::scientific <<std::setprecision(8)<< time_ << "/" << std::scientific << timemax_
              << "     DT = " << std::scientific << dt_large_
              << "     STEP = " << std::setw(4) << step_ << "/" << std::setw(4) << numstep_
              << "\n\n";
@@ -458,6 +458,15 @@ bool FS3I::ACFSI::DoesGrowthNeedsUpdate()
  *-------------------------------------------------------------------------*/
 void FS3I::ACFSI::LargeTimeScaleDoGrowthUpdate()
 {
+  const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> fluidscatra = scatravec_[0]->ScaTraField();
+  const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> structurescatra = scatravec_[1]->ScaTraField();
+
+  // Note: we never do never proceed with time_ and step_, so this really just about updating the growth, i.e.
+  // the displacments of the structure scatra fiels
+
+  //----------------------------------------------------------------------
+  // print to screen
+  //----------------------------------------------------------------------
   if (Comm().MyPID()==0)
   {
     std::cout<<"\n************************************************************************"
@@ -465,18 +474,39 @@ void FS3I::ACFSI::LargeTimeScaleDoGrowthUpdate()
                "\n************************************************************************"<<std::endl;
   }
 
-  // Note: we never do a time update, so this really just about updating the growth, i.e.
-  // the displacments of the structure scata fiels
 
+  //----------------------------------------------------------------------
+  // finish present structure scatra time step (no output)
+  //----------------------------------------------------------------------
+  structurescatra->Update(1);
+
+  //----------------------------------------------------------------------
+  // Switch time step of structure scatra
+  //----------------------------------------------------------------------
   //Switch back the time step to do the update with the same (small) timestep as the fsi (subcycling time step possible!)
-  scatravec_[1]->ScaTraField()->SetDt( dt_ );
+  structurescatra->SetDt( dt_ );
 
-  //update the times and steps
+  //----------------------------------------------------------------------
+  // Prepare time steps
+  //----------------------------------------------------------------------
+  // fsi problem
+  fsi_->PrepareTimeStep();
+  //scatra fields
+  fluidscatra->PrepareTimeStep();
+  structurescatra->PrepareTimeStep();
+
+  //----------------------------------------------------------------------
+  // Fix time_ and step_ counters
+  //----------------------------------------------------------------------
+  // fsi problem
   SetTimeStepInFSI(time_,step_);
+  //scatra fields
+  fluidscatra->SetTimeStep(time_,step_);
+  structurescatra->SetTimeStep(time_,step_);
 
-  scatravec_[0]->ScaTraField()->SetTimeStep(time_,step_);
-
-  //we do some loops to reach the equilibrium
+  //----------------------------------------------------------------------
+  // do the growth update
+  //----------------------------------------------------------------------
   //NOTE: in there SetFSISolution() does not mess up our WSS since fsiisperiodic_ == true! But let's check for safety
   if ( not fsiisperiodic_)
     dserror("Here fsiisperiodic_ must be true to not mess up the WSS in ExtractWSS()");
@@ -484,33 +514,36 @@ void FS3I::ACFSI::LargeTimeScaleDoGrowthUpdate()
   //the actuall calculations
   SmallTimeScaleOuterLoopIterStagg();
 
-  //write fsi and fluid scatra output. Structure scatra output is done later anyways
-  //FSI update and output
+  //----------------------------------------------------------------------
+  // write the output
+  //----------------------------------------------------------------------
+  //write fsi output. Scatra outputs are done later
+  // fsi output
   fsi_->PrepareOutput();
   fsi_->Update();
   FsiOutput();
+  //fluid scatra update. Structure scatra is done later
+  fluidscatra->Update(0);
 
-  //fluid scatra update and output. structure scatra is done later
-  scatravec_[0]->ScaTraField()->Update(0);
-  scatravec_[0]->ScaTraField()->Output(0);
-
-
-  //Now set everything back:
-  scatravec_[1]->ScaTraField()->SetDt( dt_large_ );
-
-  SetMeshDisp(); //just for safety
+  //----------------------------------------------------------------------
+  // Switch back time step and velocity field
+  //----------------------------------------------------------------------
+  //Now set the time step back:
+  structurescatra->SetDt( dt_large_ );
 
   //Set zeros velocities since we assume that the large time scale can not see the deformation of the small time scale
   Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(fsi_->StructureField()->Velnp()->Map(),true));
-  scatravec_[1]->ScaTraField()->SetVelocityField(zeros,
-                                         Teuchos::null,
-                                         zeros,
-                                         Teuchos::null,
-                                         Teuchos::null,
-                                         fsi_->StructureField()->Discretization() );
+  structurescatra->SetVelocityField(zeros,
+                                    Teuchos::null,
+                                    zeros,
+                                    Teuchos::null,
+                                    Teuchos::null,
+                                    fsi_->StructureField()->Discretization() );
 
-  //update the check vector
-  *structurephinp_blgu_ = *scatravec_[1]->ScaTraField()->Phinp();
+  //----------------------------------------------------------------------
+  // Update growth check vector
+  //----------------------------------------------------------------------
+  *structurephinp_blgu_ = *structurescatra->Phinp();
 }
 
 /*----------------------------------------------------------------------*
@@ -521,6 +554,16 @@ void FS3I::ACFSI::LargeTimeScaleUpdateAndOutput()
   //keep fsi time and fluid scatra field up to date
   SetTimeStepInFSI(time_,step_);
   scatravec_[0]->ScaTraField()->SetTimeStep(time_,step_);
+
+  //write fsi and fluid scatra output. Structure scatra output is done later anyways
+  //FSI update and output
+//  fsi_->PrepareOutput();
+//  fsi_->Update();
+//  FsiOutput();
+
+  //fluid scatra update and output. structure scatra is done later
+//  scatravec_[0]->ScaTraField()->Update(0);
+  scatravec_[0]->ScaTraField()->Output(0);
 
   //now update and output the structure scatra field
   scatravec_[1]->ScaTraField()->Update(1);
@@ -587,13 +630,26 @@ std::vector<Teuchos::RCP<LINALG::MapExtractor> > FS3I::ACFSI::BuildMapExtractor(
                                   dis->Comm()));
     otherdofmapvec.clear();
 
-//    std::vector<Teuchos::RCP<const Epetra_Map> > maps( 2 );
-//    maps[0] = otherdofmap;
-//    maps[1] = conddofmap;
     Teuchos::RCP<LINALG::MapExtractor> getjdof= Teuchos::rcp(new LINALG::MapExtractor);
     getjdof->Setup(*dis->DofRowMap(),conddofmap,otherdofmap);
     extractjthscalar.push_back(getjdof);
   }
 
   return extractjthscalar;
+}
+
+/*----------------------------------------------------------------------*
+ | Compare if two doubles are relatively equal               Thon 08/15 |
+ *----------------------------------------------------------------------*/
+bool FS3I::ACFSI::IsRealtiveEqualTo(const double A, const double B, const double Ref)
+{
+  return ( (std::abs(A-B)/Ref) < 1e-12 );
+}
+
+/*----------------------------------------------------------------------*
+ | Compare if A mod B is relatively equal to zero            Thon 08/15 |
+ *----------------------------------------------------------------------*/
+bool FS3I::ACFSI::ModuloIsRealtiveZero(const double value, const double modulo, const double Ref)
+{
+  return IsRealtiveEqualTo(fmod(value+modulo/2,modulo)-modulo/2,0.0,Ref);
 }

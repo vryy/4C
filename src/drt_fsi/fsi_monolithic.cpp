@@ -539,7 +539,7 @@ void FSI::Monolithic::PrepareTimeloop()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::Monolithic::TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface)
+void FSI::Monolithic::TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface, const int callnum)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::TimeStep");
 
@@ -567,8 +567,11 @@ void FSI::Monolithic::TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Requir
   // Single field predictors have been applied, so store the structural
   // interface displacement increment due to predictor or inhomogeneous
   // Dirichlet boundary conditions
-  ddgpred_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->ExtractInterfaceDispnp()));
-  ddgpred_->Update(-1.0, *StructureField()->ExtractInterfaceDispn(), 1.0);
+  if (callnum == 1)
+  {
+    ddgpred_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->ExtractInterfaceDispnp()));
+    ddgpred_->Update(-1.0, *StructureField()->ExtractInterfaceDispn(), 1.0);
+  }
 
   // start time measurement
   Teuchos::RCP<Teuchos::TimeMonitor> timemonitor = Teuchos::rcp(new Teuchos::TimeMonitor(timer,true));
