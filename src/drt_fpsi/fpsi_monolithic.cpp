@@ -87,13 +87,10 @@ FPSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
   Fluid_PoroFluid_InterfaceMap = FPSI_UTILS->Get_Fluid_PoroFluid_InterfaceMap();
   PoroFluid_Fluid_InterfaceMap = FPSI_UTILS->Get_PoroFluid_Fluid_InterfaceMap();
 
-  // build a proxy of the fluid discretization for the structure field
-  aledofset = Teuchos::null;
-  aledofset = AleField()->WriteAccessDiscretization()->GetDofSetProxy();
-
-  if (FluidField()->Discretization()->AddDofSet(aledofset) != 1)
+  // build a proxy of the fluid discretization for the ale field
+  if (FluidField()->Discretization()->AddDofSet(AleField()->WriteAccessDiscretization()->GetDofSetProxy()) != 1)
   {
-    dserror("Yippie-ei-yeah ... Schweinebacke ... ");
+    dserror("unexpected numbers of dofsets in fluid field");
   }
 } // MonolithicBase
 
@@ -235,45 +232,45 @@ FPSI::Monolithic::Monolithic(const Epetra_Comm& comm,
       islinesearch_(false),
       firstcall_(true)
 {
- // Setup linear solver
- bool builtsolver = false;
- builtsolver = FPSI::Monolithic::SetupSolver();
- if(builtsolver == false)
-   dserror("Setup of linear solver failed ... Roundhouse-Kick!");
+  // Setup linear solver
+  bool builtsolver = false;
+  builtsolver = FPSI::Monolithic::SetupSolver();
+  if(builtsolver == false)
+    dserror("Setup of linear solver failed ... Roundhouse-Kick!");
 
- const Teuchos::ParameterList& sdynparams = DRT::Problem::Instance()->StructuralDynamicParams();
- solveradapttol_= (DRT::INPUT::IntegralValue<int>(sdynparams, "ADAPTCONV") == 1);
- solveradaptolbetter_ = (sdynparams.get<double> ("ADAPTCONV_BETTER"));
+  const Teuchos::ParameterList& sdynparams = DRT::Problem::Instance()->StructuralDynamicParams();
+  solveradapttol_= (DRT::INPUT::IntegralValue<int>(sdynparams, "ADAPTCONV") == 1);
+  solveradaptolbetter_ = (sdynparams.get<double> ("ADAPTCONV_BETTER"));
 
- //hydraulic conductivity (needed for coupling in case of probtype fps3i)
- //is overwritten in class fs3i
- conductivity_=0.0;
+  //hydraulic conductivity (needed for coupling in case of probtype fps3i)
+  //is overwritten in class fs3i
+  conductivity_=0.0;
 
- // Check if FSI-Interface exists and set flag
- // Will be used to jump over all sections, which are just for FSI condensation procedure required!
+  // Check if FSI-Interface exists and set flag
+  // Will be used to jump over all sections, which are just for FSI condensation procedure required!
 
- if (FluidField()->Interface()->Map(FLD::UTILS::MapExtractor::cond_fsi)->NumGlobalElements())
- {
-   FSI_Interface_exists_ = true;
-   if (comm.MyPID() == 0)
-     std::cout << "FPSI Calculation will be performed with FSI - Interface!" << std::endl;
- }
- else
- {
-   FSI_Interface_exists_ = false;
-   if (comm.MyPID() == 0)
-     std::cout << "FPSI Calculation will skip all FSI parts as there is no FSI - Interface!" << std::endl;
- }
+  if (FluidField()->Interface()->Map(FLD::UTILS::MapExtractor::cond_fsi)->NumGlobalElements())
+  {
+    FSI_Interface_exists_ = true;
+    if (comm.MyPID() == 0)
+      std::cout << "FPSI Calculation will be performed with FSI - Interface!" << std::endl;
+  }
+  else
+  {
+    FSI_Interface_exists_ = false;
+    if (comm.MyPID() == 0)
+      std::cout << "FPSI Calculation will skip all FSI parts as there is no FSI - Interface!" << std::endl;
+  }
 
- // Check for valid predictors
- if (sdynparams.get<std::string>("PREDICT") != "ConstDis")
-   dserror("No Structural Predictor for FPSI implemented at the moment, choose <PREDICT = ConstDis> in you .dat file! \n --> Or feel free to add the missing terms coming from the predictors to BACI!");
+  // Check for valid predictors
+  if (sdynparams.get<std::string>("PREDICT") != "ConstDis")
+    dserror("No Structural Predictor for FPSI implemented at the moment, choose <PREDICT = ConstDis> in you .dat file! \n --> Or feel free to add the missing terms coming from the predictors to BACI!");
 
-const Teuchos::ParameterList& fdynparams = DRT::Problem::Instance()->FluidDynamicParams();
- if (fdynparams.get<std::string>("PREDICTOR") != "steady_state")
-    dserror("No Fluid Predictor for FPSI implemented at the moment, choose <PREDICTOR = steady_state> in you .dat file! \n --> Or feel free to add the missing terms coming from the predictors to BACI!");
+  const Teuchos::ParameterList& fdynparams = DRT::Problem::Instance()->FluidDynamicParams();
+  if (fdynparams.get<std::string>("PREDICTOR") != "steady_state")
+     dserror("No Fluid Predictor for FPSI implemented at the moment, choose <PREDICTOR = steady_state> in you .dat file! \n --> Or feel free to add the missing terms coming from the predictors to BACI!");
 
- active_FD_check_ = false; //to avoid adding RHS of firstiter moreoften!
+  active_FD_check_ = false; //to avoid adding RHS of firstiter moreoften!
 }
 
 /*----------------------------------------------------------------------*/
@@ -321,12 +318,12 @@ void FPSI::Monolithic::SetupSystem_FSI()
   ADAPTER::Coupling& icoupfa_fsi = InterfaceFluidAleCoupling_FSI();
 
   // structure to fluid
-    coupsf_fsi.SetupConditionCoupling(*PoroField()->StructureField()->Discretization(),
-                                 PoroField()->StructureField()->Interface()->FSICondMap(),
-                                *FluidField()->Discretization(),
-                                 FluidField()->Interface()->FSICondMap(),
-                                "FSICoupling",
-                                 ndim);
+  coupsf_fsi.SetupConditionCoupling(*PoroField()->StructureField()->Discretization(),
+                               PoroField()->StructureField()->Interface()->FSICondMap(),
+                              *FluidField()->Discretization(),
+                               FluidField()->Interface()->FSICondMap(),
+                              "FSICoupling",
+                               ndim);
   // structure to ale
   coupsa_fsi.SetupConditionCoupling(*PoroField()->StructureField()->Discretization(),
                                  PoroField()->StructureField()->Interface()->FSICondMap(),
@@ -430,27 +427,27 @@ void FPSI::Monolithic::TimeStep()
   }// end loop
 
   // correct iteration counter
-    iter_ -= 1;
+  iter_ -= 1;
 
-    // test whether max iterations was hit
-    if ( (Converged()) and (Comm().MyPID()==0) )
-    {
-      if (linesearch_counter > 0.5)
-        std::cout<<"            Evaluation of residual with scaled increment yields: " << normofrhs_ << std::endl;
-      islinesearch_ = false;
-      linesearch_counter=0.;
-    }
-    else if (iter_ >= maximumiterations_)
-    {
-      dserror("Newton found no convergence in %d iterations", iter_);
-    }
+  // test whether max iterations was hit
+  if ( (Converged()) and (Comm().MyPID()==0) )
+  {
+    if (linesearch_counter > 0.5)
+      std::cout<<"            Evaluation of residual with scaled increment yields: " << normofrhs_ << std::endl;
+    islinesearch_ = false;
+    linesearch_counter=0.;
+  }
+  else if (iter_ >= maximumiterations_)
+  {
+    dserror("Newton found no convergence in %d iterations", iter_);
+  }
 
-    PoroField()->RecoverLagrangeMultiplierAfterTimeStep();
+  PoroField()->RecoverLagrangeMultiplierAfterTimeStep();
 
-    // recover Lagrange multiplier \lambda_{\Gamma} at the interface at the end of each time step
-    // (i.e. condensed traction/forces onto the structure) needed for rhs in next time step
-    if (FSI_Interface_exists_)
-      RecoverLagrangeMultiplier(); //LagrangeMultiplier of the FSI interface!
+  // recover Lagrange multiplier \lambda_{\Gamma} at the interface at the end of each time step
+  // (i.e. condensed traction/forces onto the structure) needed for rhs in next time step
+  if (FSI_Interface_exists_)
+    RecoverLagrangeMultiplier(); //LagrangeMultiplier of the FSI interface!
 }
 
 /*----------------------------------------------------------------------*/
@@ -472,18 +469,19 @@ void FPSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
 
   Teuchos::RCP<const Epetra_Vector> sx;
   Teuchos::RCP<const Epetra_Vector> fx;
+  Teuchos::RCP<const Epetra_Vector> pfx;
   Teuchos::RCP<const Epetra_Vector> ax;
 
   if (x!=Teuchos::null)
   {
-    ExtractFieldVectors(x,sx,fx,ax, (iter_ == 1 and !active_FD_check_) );
+    ExtractFieldVectors(x,sx,pfx,fx,ax, (iter_ == 1 and !active_FD_check_) );
   }
   else
   {
     dserror("No existing increment vector !");
   }
 
-  PoroField() -> Evaluate(sx, iter_ == 1);
+  PoroField() -> Evaluate(sx, pfx);
 
   Teuchos::RCP<Epetra_Vector> porointerfacedisplacements_FPSI = FPSICoupl()->iPorostructToAle(PoroField() -> StructureField() -> ExtractInterfaceDispnp(true));
   AleField()  -> ApplyInterfaceDisplacements(porointerfacedisplacements_FPSI);
@@ -533,72 +531,72 @@ bool FPSI::Monolithic::SetupSolver()
 
 #ifdef FPSIDIRECTSOLVE
 
-    const int linsolvernumber = fpsidynamicparams.get<int>("LINEAR_SOLVER");
-    if (linsolvernumber == (-1))
-      dserror("No linear solver defined for FPSI problem. Please set LINEAR_SOLVER in FPSI DYNAMIC to a valid number !");
+  const int linsolvernumber = fpsidynamicparams.get<int>("LINEAR_SOLVER");
+  if (linsolvernumber == (-1))
+    dserror("No linear solver defined for FPSI problem. Please set LINEAR_SOLVER in FPSI DYNAMIC to a valid number !");
 
-    const Teuchos::ParameterList& solverparams =
-        DRT::Problem::Instance()->SolverParams(linsolvernumber);
-    const int solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(
-        solverparams, "SOLVER");
-    if (solvertype != INPAR::SOLVER::umfpack)
-      dserror("umfpack solver expected but received any other type !");
+  const Teuchos::ParameterList& solverparams =
+      DRT::Problem::Instance()->SolverParams(linsolvernumber);
+  const int solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(
+      solverparams, "SOLVER");
+  if (solvertype != INPAR::SOLVER::umfpack)
+    dserror("umfpack solver expected but received any other type !");
 
-    solver_ = Teuchos::rcp(new LINALG::Solver(solverparams,
-                                              Comm(),
-                                              DRT::Problem::Instance()->ErrorFile()->Handle())
-                                             );
+  solver_ = Teuchos::rcp(new LINALG::Solver(solverparams,
+                                            Comm(),
+                                            DRT::Problem::Instance()->ErrorFile()->Handle())
+                                           );
+
 #else
     dserror("Only direct solver implemented so far !");
 #endif //#ifdef FPSIDIRECTSOLVE
 
-    // Get the parameters for the Newton iteration
-    maximumiterations_ = fpsidynamicparams.get<int> ("ITEMAX");
-    minimumiterations_ = fpsidynamicparams.get<int> ("ITEMIN");
-    normtypeinc_ = DRT::INPUT::IntegralValue<INPAR::FPSI::ConvergenceNorm>(
-        fpsidynamicparams, "NORM_INC");
-    normtypefres_ = DRT::INPUT::IntegralValue<INPAR::FPSI::ConvergenceNorm>(
-        fpsidynamicparams, "NORM_RESF");
-    combinedconvergence_ = DRT::INPUT::IntegralValue<INPAR::FPSI::BinaryOp>(
-        fpsidynamicparams, "NORMCOMBI_RESFINC");
+  // Get the parameters for the Newton iteration
+  maximumiterations_ = fpsidynamicparams.get<int> ("ITEMAX");
+  minimumiterations_ = fpsidynamicparams.get<int> ("ITEMIN");
+  normtypeinc_ = DRT::INPUT::IntegralValue<INPAR::FPSI::ConvergenceNorm>(
+      fpsidynamicparams, "NORM_INC");
+  normtypefres_ = DRT::INPUT::IntegralValue<INPAR::FPSI::ConvergenceNorm>(
+      fpsidynamicparams, "NORM_RESF");
+  combinedconvergence_ = DRT::INPUT::IntegralValue<INPAR::FPSI::BinaryOp>(
+      fpsidynamicparams, "NORMCOMBI_RESFINC");
 
-    //toleranceiterinc_        = fpsidynamicparams.get<double> ("INCTOL");
-    //toleranceresidualforces_ = fpsidynamicparams.get<double> ("RESTOL");
+  //toleranceiterinc_        = fpsidynamicparams.get<double> ("INCTOL");
+  //toleranceresidualforces_ = fpsidynamicparams.get<double> ("RESTOL");
 
+  {
+    std::istringstream tolresstream(Teuchos::getNumericStringParameter(fpsidynamicparams,"RESTOL"));
+    double word;
+    while (tolresstream >> word)
     {
-      std::istringstream tolresstream(Teuchos::getNumericStringParameter(fpsidynamicparams,"RESTOL"));
-      double word;
-      while (tolresstream >> word)
-      {
-        toleranceresidualforceslist_.push_back(word);
-      }
-      toleranceresidualforces_ = toleranceresidualforceslist_[0];
-
-      std::istringstream tolincstream(Teuchos::getNumericStringParameter(fpsidynamicparams,"INCTOL"));
-      while (tolincstream >> word)
-      {
-        toleranceiterinclist_.push_back(word);
-      }
-      toleranceiterinc_ = toleranceiterinclist_[0];
+      toleranceresidualforceslist_.push_back(word);
     }
+    toleranceresidualforces_ = toleranceresidualforceslist_[0];
 
-    DRT::Problem* problem = DRT::Problem::Instance();
-    const Teuchos::ParameterList& fpsidynparams = problem->FPSIDynamicParams();
-    linesearch_ = DRT::INPUT::IntegralValue<int>(fpsidynparams,"LineSearch");
-    if(linesearch_==1)
-      dserror("Parameter 'LineSearch' is set to 'Yes' in the FPSI Dynamic section in your input-file.  \n"
-              "Though the framework for a line search algorithm is implemented in fpsi_monolithic.cpp, \n"
-              "a proper routine to reset the participating single fields is still required. In Chuck's \n"
-              "experimental baci this was solved by performing an evaluate with the negative increment.\n"
-              "However this has not yet been committed.\n");
-    linesearch_counter = 0.;
+    std::istringstream tolincstream(Teuchos::getNumericStringParameter(fpsidynamicparams,"INCTOL"));
+    while (tolincstream >> word)
+    {
+      toleranceiterinclist_.push_back(word);
+    }
+    toleranceiterinc_ = toleranceiterinclist_[0];
+  }
 
-    return true;
+  DRT::Problem* problem = DRT::Problem::Instance();
+  const Teuchos::ParameterList& fpsidynparams = problem->FPSIDynamicParams();
+  linesearch_ = DRT::INPUT::IntegralValue<int>(fpsidynparams,"LineSearch");
+  if(linesearch_==1)
+    dserror("Parameter 'LineSearch' is set to 'Yes' in the FPSI Dynamic section in your input-file.  \n"
+            "Though the framework for a line search algorithm is implemented in fpsi_monolithic.cpp, \n"
+            "a proper routine to reset the participating single fields is still required. In Chuck's \n"
+            "experimental baci this was solved by performing an evaluate with the negative increment.\n"
+            "However this has not yet been committed.\n");
+  linesearch_counter = 0.;
+
+  return true;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-
 void FPSI::Monolithic::LinearSolve()
 {
 
@@ -622,15 +620,15 @@ void FPSI::Monolithic::LinearSolve()
 
   if (FSI_Interface_exists_)
   {
-  //remove entries in condensed dofs from matrix and rhs...
-  LINALG::ApplyDirichlettoSystem(
-      sparse,
-      iterinc_,
-      rhs_,
-      Teuchos::null,
-      zeros_,
-      *FluidField()->Interface()->FSICondMap()
-      );
+    //remove entries in condensed dofs from matrix and rhs...
+    LINALG::ApplyDirichlettoSystem(
+        sparse,
+        iterinc_,
+        rhs_,
+        Teuchos::null,
+        zeros_,
+        *FluidField()->Interface()->FSICondMap()
+        );
   }
 
   LINALG::ApplyDirichlettoSystem(
@@ -642,93 +640,104 @@ void FPSI::Monolithic::LinearSolve()
       *CombinedDBCMap()
       );
 
-    ///////////////////////////////////////////////////////
-    // begin linesearch_      ///////////////////////////////
-    ///////////////////////////////////////////////////////
-    if (linesearch_ and iter_ > 1)
+  //line search
+  if (linesearch_)
+    LineSearch(sparse);
+  else
+  {
+    // standard solver call
+    solver_->Solve(sparse->EpetraOperator(), iterinc_, rhs_, true, iter_ == 1);
+  }
+
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FPSI::Monolithic::LineSearch(Teuchos::RCP<LINALG::SparseMatrix>& sparse)
+{
+
+  // Note: the line search code seems to be experimental and is not
+  // working properly (perhaps just a sign is wrong somewhere ...)
+  // I would not recommend to use it without thorough testing
+  // vuong 08/15
+
+  if(iter_ > 1)
+  {
+    rhs_ -> Norm2(&normofrhs_);
+    if (normofrhs_ - normofrhsold_ > 1e-13)
     {
-      rhs_ -> Norm2(&normofrhs_);
-      if (normofrhs_ - normofrhsold_ > 1e-13)
-      {
-        if (linesearch_counter > 0.5)
-          std::cout<<"            Evaluation of residual with bisected increment yields: "<<normofrhs_<<std::endl;
+      if (linesearch_counter > 0.5)
+        std::cout<<"            Evaluation of residual with bisected increment yields: "<<normofrhs_<<std::endl;
 
-        islinesearch_ = true;
-        iterinc_ -> Update(pow(0.5,(linesearch_counter)),*iterincold_,0.0);
-        linesearch_counter = linesearch_counter + 1.0;
-        std::cout<<"linesearch_ : "<<std::setprecision(1)<<static_cast<int>(linesearch_counter+0.5)<<" iterinc_ multiplied by "<<std::setprecision(4)<<pow(0.5,linesearch_counter)<<"   residual = "<<normofrhs_<<" > "<<normofrhsold_<<std::endl;
+      islinesearch_ = true;
+      iterinc_ -> Update(pow(0.5,(linesearch_counter)),*iterincold_,0.0);
+      linesearch_counter = linesearch_counter + 1.0;
+      std::cout<<"linesearch_ : "<<std::setprecision(1)<<static_cast<int>(linesearch_counter+0.5)<<" iterinc_ multiplied by "<<std::setprecision(4)<<pow(0.5,linesearch_counter)<<"   residual = "<<normofrhs_<<" > "<<normofrhsold_<<std::endl;
 
-        // substract the old interinc_ from all fields (undo the update)
-        Teuchos::RCP<Epetra_Vector> sx;
-        Teuchos::RCP<Epetra_Vector> fx;
-        Teuchos::RCP<const Epetra_Vector> constsx;
-        Teuchos::RCP<const Epetra_Vector> constfx;
-        Teuchos::RCP<const Epetra_Vector> ax;
+      // substract the old interinc_ from all fields (undo the update)
+      Teuchos::RCP<Epetra_Vector> sx;
+      Teuchos::RCP<Epetra_Vector> pfx;
+      Teuchos::RCP<Epetra_Vector> fx;
+      Teuchos::RCP<const Epetra_Vector> constsx;
+      Teuchos::RCP<const Epetra_Vector> constfpx;
+      Teuchos::RCP<const Epetra_Vector> constfx;
+      Teuchos::RCP<const Epetra_Vector> ax;
 
-        sx = Teuchos::rcp(new Epetra_Vector(*PoroField()->DofRowMap(), true));
-        fx = Teuchos::rcp(new Epetra_Vector(*FluidField()->DofRowMap(), true));
+      sx = Teuchos::rcp(new Epetra_Vector(*PoroField()->StructureField()->DofRowMap(), true));
+      pfx = Teuchos::rcp(new Epetra_Vector(*PoroField()->FluidField()->DofRowMap(), true));
+      fx = Teuchos::rcp(new Epetra_Vector(*FluidField()->DofRowMap(), true));
 
-        ExtractFieldVectors(iterinc_,constsx,constfx,ax,iter_==1);
-        iterinc_ -> Norm2(&normofiterinc_);
-        std::cout<<"            Norm of step back: "<<normofiterinc_<<std::endl;
-        //PoroField()  ->ResetNewton(sx);
-        //FluidField() ->ResetNewton(fx);
-        sx -> Update(1.0,*constsx,0.0);
-        fx -> Update(1.0,*constfx,0.0);
-        sx -> Scale(-1.0);
-        fx -> Scale(-1.0);
-        PoroField()  ->Evaluate(sx);
-        FluidField() ->UpdateNewton(Teuchos::rcp_dynamic_cast<const Epetra_Vector>(fx));
-        //AleField()   ->ResetNewton(ax);
+      ExtractFieldVectors(iterinc_,constsx,constfpx,constfx,ax,iter_==1);
+      iterinc_ -> Norm2(&normofiterinc_);
+      std::cout<<"            Norm of step back: "<<normofiterinc_<<std::endl;
+      //PoroField()  ->ResetNewton(sx);
+      //FluidField() ->ResetNewton(fx);
+      sx -> Update(1.0,*constsx,0.0);
+      pfx -> Update(1.0,*constfpx,0.0);
+      fx -> Update(1.0,*constfx,0.0);
+      sx -> Scale(-1.0);
+      pfx -> Scale(-1.0);
+      fx -> Scale(-1.0);
+      PoroField()  ->Evaluate(sx,pfx);
+      FluidField() ->UpdateNewton(Teuchos::rcp_dynamic_cast<const Epetra_Vector>(fx));
+      //AleField()   ->ResetNewton(ax);
 
-        FluidField()->ApplyMeshDisplacement(meshdispold_);
-        AleField()  ->ApplyInterfaceDisplacements(porointerfacedisplacementsold_);
+      FluidField()->ApplyMeshDisplacement(meshdispold_);
+      AleField()  ->ApplyInterfaceDisplacements(porointerfacedisplacementsold_);
 
 
-        // set iterinc_ to a fraction of the old iterinc_
-        iterinc_ -> Update(pow(0.5,linesearch_counter),*iterincold_,0.0);
-        iterinc_ -> Norm2(&normofiterinc_);
-        std::cout<<"            Norm of old increment: "<<normofiterincold_<<"  Norm of bisected increment: "<<normofiterinc_<<std::endl;
+      // set iterinc_ to a fraction of the old iterinc_
+      iterinc_ -> Update(pow(0.5,linesearch_counter),*iterincold_,0.0);
+      iterinc_ -> Norm2(&normofiterinc_);
+      std::cout<<"            Norm of old increment: "<<normofiterincold_<<"  Norm of bisected increment: "<<normofiterinc_<<std::endl;
 
-      }
-      else
-      {
-        islinesearch_ = false;
-        if (linesearch_counter > 0.5)
-          std::cout<<"            Evaluation of residual with bisected increment yields: "<<normofrhs_<<std::endl;
-        linesearch_counter = 0.0;
-      }
     }
-    // end linesearch_
-
-    // prepare linesearch_
-    // copy the old iterinc_ before new solve
-    if (linesearch_ and islinesearch_ == false)
+    else
     {
-      rhsold_ =  LINALG::CreateVector(*DofRowMap(), true);
-      rhsold_ -> Update(1.0,*rhs_,0.0);
-      rhsold_ -> Norm2(&normofrhsold_);
-      if (abs(normofrhs_ - normofrhsold_) > 1.e-12 and iter_>1)
-        dserror(" wrong copy of rhs_ ");
+      islinesearch_ = false;
+      if (linesearch_counter > 0.5)
+        std::cout<<"            Evaluation of residual with bisected increment yields: "<<normofrhs_<<std::endl;
+      linesearch_counter = 0.0;
     }
-    // end prepare linesearch_
+  }
 
+  // prepare linesearch_
+  // copy the old iterinc_ before new solve
+  if (linesearch_ and islinesearch_ == false)
+  {
+    rhsold_ =  LINALG::CreateVector(*DofRowMap(), true);
+    rhsold_ -> Update(1.0,*rhs_,0.0);
+    rhsold_ -> Norm2(&normofrhsold_);
+    if (abs(normofrhs_ - normofrhsold_) > 1.e-12 and iter_>1)
+      dserror(" wrong copy of rhs_ ");
+  }
+  // end prepare linesearch_
 
-//  std::cout<<"iterinc_ before solve(): \n"<<*iterinc_<<std::endl;
   // standard solver call
   if (islinesearch_ == false)
   {
-    // transpose sysmat to file
-
-//    std::cout << "RHS: " << std::endl;
-//    rhs_->Print(std::cout);
-
     solver_->Solve(sparse->EpetraOperator(), iterinc_, rhs_, true, iter_ == 1);
   }
-//  std::cout<<"iterinc_ after solve(): \n"<<*iterinc_<<std::endl;
-//  std::cout<<"Full Monolithic RHS of FPSI Problem : \n"<<*rhs_<<std::endl;
-//  rhs_->Norm2(&normofrhs_);
-//  std::cout<<"Norm of RHS: "<<normofrhs_<<std::endl;
 
   if (islinesearch_ ==  false)
   {
@@ -753,14 +762,15 @@ void FPSI::Monolithic::LinearSolve()
   }
 
   if (linesearch_ and islinesearch_ == false)
-      {
-        iterincold_ =  LINALG::CreateVector(*DofRowMap(), true);
-        iterincold_ -> Update(1.0,*iterinc_,0.0);
-        iterincold_ -> Norm2(&normofiterincold_);
-      }
-
+  {
+    iterincold_ =  LINALG::CreateVector(*DofRowMap(), true);
+    iterincold_ -> Update(1.0,*iterinc_,0.0);
+    iterincold_ -> Norm2(&normofiterincold_);
+  }
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> FPSI::Monolithic::CombinedDBCMap()
 {
   const Teuchos::RCP<const Epetra_Map> scondmap =
@@ -852,11 +862,11 @@ bool FPSI::Monolithic::Converged()
 }  // Converged()
 
 
-
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void FPSI::Monolithic::BuildConvergenceNorms()
 {
   rhs_->Norm2(&normofrhs_);
-  Teuchos::RCP<const Epetra_Vector> rhs_poro;
   Teuchos::RCP<const Epetra_Vector> rhs_fluid;
   Teuchos::RCP<const Epetra_Vector> rhs_fluidvelocity;
   Teuchos::RCP<const Epetra_Vector> rhs_fluidpressure;
@@ -869,9 +879,8 @@ void FPSI::Monolithic::BuildConvergenceNorms()
   Teuchos::RCP<const Epetra_Vector> rhs_ale;
 
 
-  rhs_poro              = Extractor().ExtractVector(rhs_, poro_block_);
-  rhs_porostruct = PoroField()->Extractor()->ExtractVector(rhs_poro, 0);
-  rhs_porofluid  = PoroField()->Extractor()->ExtractVector(rhs_poro, 1);
+  rhs_porostruct = Extractor().ExtractVector(rhs_, structure_block_);
+  rhs_porofluid  = Extractor().ExtractVector(rhs_, porofluid_block_);
   rhs_porofluidvelocity = PoroField()->FluidField()->ExtractVelocityPart(rhs_porofluid);
   rhs_porofluidpressure = PoroField()->FluidField()->ExtractPressurePart(rhs_porofluid);
   rhs_porointerface     = FPSICoupl()->PoroFluidFpsiVelPresExtractor()->ExtractCondVector(rhs_porofluid);
@@ -914,11 +923,9 @@ void FPSI::Monolithic::BuildConvergenceNorms()
   sqrtna_ = sqrt(sqrtna_);
   sqrtnall_ = sqrt(sqrtnall_);
 
+  if (islinesearch_ == false)
+    iterinc_->Norm2(&normofiterinc_);
 
-if (islinesearch_ == false)
-  iterinc_->Norm2(&normofiterinc_);
-
-  Teuchos::RCP<const Epetra_Vector> iterincporo;
   Teuchos::RCP<const Epetra_Vector> iterincporostruct;
   Teuchos::RCP<const Epetra_Vector> iterincporofluid;
   Teuchos::RCP<const Epetra_Vector> iterincfluid;
@@ -930,12 +937,11 @@ if (islinesearch_ == false)
   Teuchos::RCP<const Epetra_Vector> iterincporointerface;
   Teuchos::RCP<const Epetra_Vector> iterincfluidinterface;
 
-  iterincporo              = Extractor().ExtractVector(iterinc_, poro_block_);
-  iterincporostruct        = PoroField()->Extractor()->ExtractVector(iterincporo,0);
-  iterincporofluid         = PoroField()->Extractor()->ExtractVector(iterincporo,1);
+  iterincporostruct        = Extractor().ExtractVector(iterinc_, structure_block_);
+  iterincporofluid         = Extractor().ExtractVector(iterinc_, porofluid_block_);
   iterincporofluidvelocity = PoroField() ->FluidField()->ExtractVelocityPart(iterincporofluid);
   iterincporofluidpressure = PoroField() ->FluidField()->ExtractPressurePart(iterincporofluid);
-  iterincporointerface     = FPSICoupl() ->PoroExtractor()->ExtractVector(iterincporo,3);
+  iterincporointerface     = FPSICoupl() ->PoroFluidFpsiVelPresExtractor()->ExtractCondVector(iterincporofluid);
 
   iterincfluid             = Extractor().ExtractVector(iterinc_, fluid_block_);
 
@@ -949,7 +955,6 @@ if (islinesearch_ == false)
 
   iterincale               = Extractor().ExtractVector(iterinc_, ale_i_block_);
 
-  iterincporo              ->Norm2(&normofiterincporo_);
   iterincporostruct        ->Norm2(&normofiterincporostruct_);
   iterincporofluid         ->Norm2(&normofiterincporofluid_);
   iterincporofluidvelocity ->Norm2(&normofiterincporofluidvelocity_);
@@ -1006,6 +1011,8 @@ if (islinesearch_ == false)
   return;
 }//BuildConvergenceNorms
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void FPSI::Monolithic::PrintNewtonIter()
 {
   // print to standard out
@@ -1028,6 +1035,8 @@ void FPSI::Monolithic::PrintNewtonIter()
   return;
 } // PrintNewtonIter()
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void FPSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
 {
   // open outstringstream
@@ -1251,56 +1260,58 @@ void FPSI::Monolithic::PrintNewtonIterText(FILE* ofile)
 
 }  // PrintN
 
-//
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void FPSI::Monolithic::SetupNewton()
 {
   // initialise equilibrium loop and norms
-    iter_ = 1;
-    normofrhs_                      = 0.0;
-    normofiterinc_                  = 0.0;
-    normrhsfluid_                   = 0.0;
-    normofiterincfluid_             = 0.0;
-    normrhsfluidvelocity_           = 0.0;
-    normofiterincfluidvelocity_     = 0.0;
-    normrhsporostruct_              = 0.0;
-    normofiterincporostruct_        = 0.0;
-    normofiterincporofluid_         = 0.0;
-    normrhsfluidpressure_           = 0.0;
-    normofiterincfluidpressure_     = 0.0;
-    normrhsporofluidvelocity_       = 0.0;
-    normofiterincporofluidvelocity_ = 0.0;
-    normrhsporofluidpressure_       = 0.0;
-    normofiterincporofluidpressure_ = 0.0;
-    normrhsporointerface_           = 0.0;
-    normofiterincporointerface_     = 0.0;
-    normrhsfluidinterface_          = 0.0;
-    normofiterincfluidinterface_    = 0.0;
-    sqrtnall_                       = 1;
-    sqrtnfv_                        = 1;
-    sqrtnfp_                        = 1;
-    sqrtnpfv_                       = 1;
-    sqrtnpfp_                       = 1;
-    sqrtnps_                        = 1;
-    sqrtna_                         = 1;
-    norm1_alldof_                   = 1.0;
-    norm1_fv_                       = 1.0;
-    norm1_fp_                       = 1.0;
-    norm1_pfv_                      = 1.0;
-    norm1_pfp_                      = 1.0;
-    norm1_ps_                       = 1.0;
-    norm1_a_                        = 1.0;
+  iter_ = 1;
+  normofrhs_                      = 0.0;
+  normofiterinc_                  = 0.0;
+  normrhsfluid_                   = 0.0;
+  normofiterincfluid_             = 0.0;
+  normrhsfluidvelocity_           = 0.0;
+  normofiterincfluidvelocity_     = 0.0;
+  normrhsporostruct_              = 0.0;
+  normofiterincporostruct_        = 0.0;
+  normofiterincporofluid_         = 0.0;
+  normrhsfluidpressure_           = 0.0;
+  normofiterincfluidpressure_     = 0.0;
+  normrhsporofluidvelocity_       = 0.0;
+  normofiterincporofluidvelocity_ = 0.0;
+  normrhsporofluidpressure_       = 0.0;
+  normofiterincporofluidpressure_ = 0.0;
+  normrhsporointerface_           = 0.0;
+  normofiterincporointerface_     = 0.0;
+  normrhsfluidinterface_          = 0.0;
+  normofiterincfluidinterface_    = 0.0;
+  sqrtnall_                       = 1;
+  sqrtnfv_                        = 1;
+  sqrtnfp_                        = 1;
+  sqrtnpfv_                       = 1;
+  sqrtnpfp_                       = 1;
+  sqrtnps_                        = 1;
+  sqrtna_                         = 1;
+  norm1_alldof_                   = 1.0;
+  norm1_fv_                       = 1.0;
+  norm1_fp_                       = 1.0;
+  norm1_pfv_                      = 1.0;
+  norm1_pfp_                      = 1.0;
+  norm1_ps_                       = 1.0;
+  norm1_a_                        = 1.0;
 
 
-    // incremental solution vector with length of all dofs
-    iterinc_ =  LINALG::CreateVector(*DofRowMap(), true);
-    iterinc_ -> PutScalar(0.0);
+  // incremental solution vector with length of all dofs
+  iterinc_ =  LINALG::CreateVector(*DofRowMap(), true);
+  iterinc_ -> PutScalar(0.0);
 
-    // a zero vector of full length
-    zeros_ = LINALG::CreateVector(*DofRowMap(), true);
-    zeros_->PutScalar(0.0);
+  // a zero vector of full length
+  zeros_ = LINALG::CreateVector(*DofRowMap(), true);
+  zeros_->PutScalar(0.0);
 }
 
-
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void FPSI::Monolithic::FPSIFDCheck()
 {
   //FD check is nice to check your linearisations, but be aware that we did not linearize following terms:
@@ -1598,6 +1609,8 @@ void FPSI::Monolithic::ExtractColumnsfromSparse(Teuchos::RCP<Epetra_CrsMatrix> s
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void FPSI::Monolithic::SetConductivity(double conduct)
 {
   if (FPSICoupl() != Teuchos::null)

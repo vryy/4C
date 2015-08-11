@@ -243,9 +243,8 @@ void FPSI::Utils::SetupLocalInterfaceFacingElementMap(
   if (!condition_exists)
     return;
 
-  std::map<int, Teuchos::RCP<DRT::Element> >& slavegeom = slavecond->Geometry();
-  std::map<int, Teuchos::RCP<DRT::Element> >& mastergeom =
-      mastercond->Geometry();
+  std::map<int, Teuchos::RCP<DRT::Element> >& slavegeom  = slavecond->Geometry();
+  std::map<int, Teuchos::RCP<DRT::Element> >& mastergeom = mastercond->Geometry();
 
   std::map<int, Teuchos::RCP<DRT::Element> >::iterator curr;
   std::multimap<int, double> slaveinterfaceelementidentificationmap;

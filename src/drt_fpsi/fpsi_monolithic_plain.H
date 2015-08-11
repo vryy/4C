@@ -93,6 +93,7 @@ namespace FPSI
     void ExtractFieldVectors(
         Teuchos::RCP<const Epetra_Vector> x,   ///< composed vector that contains all field vectors
         Teuchos::RCP<const Epetra_Vector>& sx, ///< structural displacements
+        Teuchos::RCP<const Epetra_Vector>& pfx,///< fluid velocities and pressure
         Teuchos::RCP<const Epetra_Vector>& fx, ///< fluid velocities and pressure
         Teuchos::RCP<const Epetra_Vector>& ax,  ///< ale displacements
         bool firstiter_                        ///< firstiteration?
@@ -103,8 +104,9 @@ namespace FPSI
     /// build block vector from field vectors
     void SetupVector(
         Epetra_Vector &f,                       ///< composed vector that contains all field vectors
-        Teuchos::RCP<const Epetra_Vector> sv,   ///< structural fluid dofs
-        Teuchos::RCP<const Epetra_Vector> fv,   ///< fluid velocties and pressure
+        Teuchos::RCP<const Epetra_Vector> sv,   ///< structural dofs
+        Teuchos::RCP<const Epetra_Vector> pfv,  ///< poro fluid velocities and pressure
+        Teuchos::RCP<const Epetra_Vector> fv,   ///< fluid velocities and pressure
         Teuchos::RCP<const Epetra_Vector> av,   ///< ale displacements
         double fluidscale                       ///< residual scaling for fluid
     );
@@ -128,6 +130,7 @@ namespace FPSI
     Teuchos::RCP<FSI::UTILS::MatrixRowTransform>     fgitransform2_; //g_fsi || F->S transform (FSI)
     Teuchos::RCP<FSI::UTILS::MatrixRowTransform>     Cfgtransform_; //full FluidField || F->S transform (FSI)
     Teuchos::RCP<FSI::UTILS::MatrixRowTransform>     Cfptransform_; //full FluidField || F->S transform (FSI)
+    Teuchos::RCP<FSI::UTILS::MatrixRowTransform>     Cfptransform2_; //full FluidField || F->S transform (FSI)
 
     Teuchos::RCP<FSI::UTILS::MatrixColTransform>     figtransform1_; //for Row/Col-Map for Full - FluidField & F->S transform (FSI)
     Teuchos::RCP<FSI::UTILS::MatrixColTransform>     figtransform2_; //for Row/Col-Map for Full - FluidField & F->S transform (FSI)

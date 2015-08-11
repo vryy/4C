@@ -91,22 +91,24 @@ class FPSICoupling
     //! @name access coupling matrixes
 
     //Poro-Poro Coupling Matrix
-    LINALG::SparseMatrix& C_pp() {return *c_pp_;}
+    LINALG::BlockSparseMatrixBase& C_pp() {return *c_pp_;}
     //Fluid-Fluid Coupling Matrix
     LINALG::BlockSparseMatrixBase& C_ff() {return *c_ff_;} //blockmatrix for condensation!!!
     //Poro-Fluid Coupling Matrix
-    LINALG::SparseMatrix& C_pf() {return *c_pf_;}
+    LINALG::BlockSparseMatrixBase& C_pf() {return *c_pf_;}
     //Fluid-Poro Coupling Matrix
-    LINALG::SparseMatrix& C_fp() {return *c_fp_;}
+    LINALG::BlockSparseMatrixBase& C_fp() {return *c_fp_;}
     //Poro-Ale Coupling Matrix
-    LINALG::SparseMatrix& C_pa() {return *c_pa_;}
+    LINALG::BlockSparseMatrixBase& C_pa() {return *c_pa_;}
     //Fluid-Ale Coupling Matrix
     LINALG::SparseMatrix& C_fa() {return *c_fa_;}
 
     //@}
 
-    //Poro Coupling RHS
-    Teuchos::RCP<Epetra_Vector>& RHS_p() {return c_rhs_p_;}
+    //Poro Coupling RHS (structure)
+    Teuchos::RCP<Epetra_Vector>& RHS_s() {return c_rhs_s_;}
+    //Poro Coupling RHS (fluid)
+    Teuchos::RCP<Epetra_Vector>& RHS_pf() {return c_rhs_pf_;}
     //Fluid Coupling RHS
     Teuchos::RCP<Epetra_Vector>& RHS_f() {return c_rhs_f_;}
 
@@ -178,20 +180,21 @@ class FPSICoupling
     Teuchos::RCP<ADAPTER::AleFpsiWrapper>     ale_;
 
     //Poro-Poro Coupling Matrix
-    Teuchos::RCP<LINALG::SparseMatrix> c_pp_;
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> c_pp_;
     //Fluid-Fluid Coupling Matrix
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> c_ff_;
     //Poro-Fluid Coupling Matrix
-    Teuchos::RCP<LINALG::SparseMatrix> c_pf_;
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> c_pf_;
     //Fluid-Poro Coupling Matrix
-    Teuchos::RCP<LINALG::SparseMatrix> c_fp_;
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> c_fp_;
     //Poro-Ale Coupling Matrix
-    Teuchos::RCP<LINALG::SparseMatrix> c_pa_;
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> c_pa_;
     //Fluid-Ale Coupling Matrix
     Teuchos::RCP<LINALG::SparseMatrix> c_fa_; //block matrix to cut out just ale other block (-->interface (fpsi & fsi) is condensed to structural dofs!)
 
     //Poro Coupling RHS
-    Teuchos::RCP<Epetra_Vector> c_rhs_p_;
+    Teuchos::RCP<Epetra_Vector> c_rhs_s_;
+    Teuchos::RCP<Epetra_Vector> c_rhs_pf_;
     //Fluid Coupling RHS
     Teuchos::RCP<Epetra_Vector> c_rhs_f_;
 
@@ -210,7 +213,7 @@ class FPSICoupling
     //extractor for fpsi condition from (poro) structure
     Teuchos::RCP<LINALG::MapExtractor> porostruct_extractor_;
     //! dof row map splitted in inner structure (0), struct interface (1)
-    //! inner porofluid (0) and porofluidinterface (1)
+    //! inner porofluid (2) and porofluidinterface (3)
     Teuchos::RCP<LINALG::MultiMapExtractor> poro_extractor_;
     Teuchos::RCP<FPSI::UTILS::MapExtractor> fluid_fsifpsi_extractor_;
 

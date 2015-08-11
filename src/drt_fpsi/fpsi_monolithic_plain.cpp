@@ -76,6 +76,7 @@ FPSI::Monolithic_Plain::Monolithic_Plain(const Epetra_Comm& comm,
   fgitransform2_           = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
   Cfgtransform_           = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
   Cfptransform_           = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
+  Cfptransform2_           = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
 
   figtransform1_           = Teuchos::rcp(new FSI::UTILS::MatrixColTransform);
   figtransform2_           = Teuchos::rcp(new FSI::UTILS::MatrixColTransform);
@@ -139,24 +140,28 @@ void FPSI::Monolithic_Plain::SetupSystem()
   // create combined map
   std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
 
-  vecSpaces.push_back(PoroField()->DofRowMap());
+  vecSpaces.push_back(PoroField()->Extractor()->Map(0));
+
+  vecSpaces.push_back(PoroField()->Extractor()->Map(1));
 
   vecSpaces.push_back(FluidField()->DofRowMap());
 
-  vecSpaces.push_back(AleField()      ->Interface()->OtherMap());
+  vecSpaces.push_back(AleField()  ->Interface()->OtherMap());
 
   //Modify block_numbers manually according to vecSpaces.push_back order!
-  poro_block_               = 0;
-  fluid_block_              = 1;
-  ale_i_block_              = 2;
+  structure_block_          = 0;
+  porofluid_block_          = 1;
+  fluid_block_              = 2;
+  ale_i_block_              = 3;
 
-  if(vecSpaces[poro_block_]->NumGlobalElements()==0)
-    dserror("Poro: Hey I just met you and this is crazy, but here's my number "
-            "so call me maybe ... !\n (0) 89 289 15300");
+  if(vecSpaces[structure_block_]->NumGlobalElements()==0)
+    dserror("No inner poro structure equations. Splitting not possible.");
+  if(vecSpaces[porofluid_block_]->NumGlobalElements()==0)
+    dserror("No inner poro fluid equations. Splitting not possible.");
   if(vecSpaces[fluid_block_]->NumGlobalElements()==0)
-    dserror("No inner fluid equations. Splitting not possible. Roundhouse-Kick!");
+    dserror("No inner fluid equations. Splitting not possible.");
   if(vecSpaces[ale_i_block_]->NumGlobalElements()==0)
-    dserror("ALE ?! Roundhouse-Kick!");
+    dserror("No inner ale equations. Splitting not possible.");
   // merge maps and create full monolithic FPSI-DofRowMap
   SetDofRowMaps(vecSpaces);
 
@@ -206,8 +211,11 @@ void FPSI::Monolithic_Plain::SetupRHS(bool firstcall)
 
   firstcall_ = firstcall;
 
+  PoroField()->SetupRHS(firstcall_);
+
   SetupVector(*rhs_,
-              PoroField() ->RHS(),
+              PoroField()->Extractor()->ExtractVector(PoroField()->RHS(),0),
+              PoroField()->Extractor()->ExtractVector(PoroField()->RHS(),1),
               FluidField()->RHS(),
               AleField()  ->RHS(),
               FluidField()->ResidualScaling());
@@ -230,12 +238,7 @@ void FPSI::Monolithic_Plain::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
   mat.UnComplete(); //basically makes no sense as all blocks will be assigned later!!!
 
   // get single field block matrices
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> pbm =
-      PoroField()->BlockSystemMatrix();
-
-  // Todo: use only blockmatrix pbm instead of sparse matrix
-  // vuong 08/14
-  Teuchos::RCP<LINALG::SparseMatrix> p = PoroField()->SystemMatrix();
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> p = PoroField()->BlockSystemMatrix();
   p->UnComplete();
 
   const Teuchos::RCP<LINALG::SparseMatrix> f =
@@ -292,19 +295,25 @@ void FPSI::Monolithic_Plain::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
   // build block matrix
   /*----------------------------------------------------------------------*/
   //insert poro
-  mat.Assign(poro_block_, poro_block_, View, *p);
+  mat.Assign(structure_block_, structure_block_, View, p->Matrix(0, 0));
+  mat.Assign(structure_block_, porofluid_block_, View, p->Matrix(0, 1));
+  mat.Assign(porofluid_block_, porofluid_block_, View, p->Matrix(1, 1));
+  mat.Assign(porofluid_block_, structure_block_, View, p->Matrix(1, 0));
 
   //Assign fii + Coupling Parts
   mat.Assign(fluid_block_, fluid_block_, View, *f);
 
   //Assign C_fp
-  mat.Assign(fluid_block_, poro_block_, View, FPSICoupl()->C_fp());
+  mat.Assign(fluid_block_, structure_block_, View, FPSICoupl()->C_fp().Matrix(0, 0));
+  mat.Assign(fluid_block_, porofluid_block_, View, FPSICoupl()->C_fp().Matrix(0, 1));
 
   //Assign C_pf
-  mat.Assign(poro_block_, fluid_block_, View, FPSICoupl()->C_pf());
+  mat.Assign(structure_block_, fluid_block_, View, FPSICoupl()->C_pf().Matrix(0, 0));
+  mat.Assign(porofluid_block_, fluid_block_, View, FPSICoupl()->C_pf().Matrix(1, 0));
 
   //Assign C_pa
-  mat.Assign(poro_block_, ale_i_block_, View, FPSICoupl()->C_pa());
+  mat.Assign(structure_block_, ale_i_block_, View, FPSICoupl()->C_pa().Matrix(0, 0));
+  mat.Assign(porofluid_block_, ale_i_block_, View, FPSICoupl()->C_pa().Matrix(1, 0));
 
   //Assign C_fa
   mat.Assign(fluid_block_, ale_i_block_, View, FPSICoupl()->C_fa());
@@ -314,10 +323,15 @@ void FPSI::Monolithic_Plain::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
   LINALG::SparseMatrix& ai_gfpsi = a->Matrix(aidx_other, aidx_fpsi);
 
   // create transformation object for the ale condensation
-  (*aigtransform2_)(a->FullRowMap(), a->FullColMap(), ai_gfpsi, 1.,
+  (*aigtransform2_)(
+      a->FullRowMap(),
+      a->FullColMap(),
+      ai_gfpsi,
+      1.,
       ADAPTER::CouplingSlaveConverter(coupsa_fpsi),
-      //*laig);
-      mat.Matrix(ale_i_block_, poro_block_), true, false); //Add
+      mat.Matrix(ale_i_block_, structure_block_),
+      true,
+      false); //Add
 
   mat.Assign(ale_i_block_, ale_i_block_, View, aii);
 
@@ -343,17 +357,25 @@ void FPSI::Monolithic_Plain::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
 //                         true,
 //                         true); //not required anymore --> done at (1)
 
-    (*fgitransform1_)(fgi, (1.0 - stiparam) / (1.0 - ftiparam) * scale,
+    (*fgitransform1_)(
+        fgi,
+        (1.0 - stiparam) / (1.0 - ftiparam) * scale,
         ADAPTER::CouplingSlaveConverter(coupsf_fsi),
-        mat.Matrix(poro_block_, fluid_block_), true); //Assign
+        mat.Matrix(structure_block_, fluid_block_),
+        true); //Assign
 
     // Insert ale: Aii, Aig and Ai_gFPSI--> g is on the FSI-Interface
 
     LINALG::SparseMatrix& aig = a->Matrix(aidx_other, aidx_fsi);
 
-    (*aigtransform_)(a->FullRowMap(), a->FullColMap(), aig, 1.,
+    (*aigtransform_)(
+        a->FullRowMap(),
+        a->FullColMap(),
+        aig,
+        1.,
         ADAPTER::CouplingSlaveConverter(coupsa_fsi),
-        mat.Matrix(ale_i_block_, poro_block_), true); //as just fsi part is transfered
+        mat.Matrix(ale_i_block_, structure_block_),
+        true); //as just fsi part is transfered
 
   }
 
@@ -370,10 +392,6 @@ void FPSI::Monolithic_Plain::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
       FluidField()->ShapeDerivatives();
   if (Teuchos::getIntegralValue<int>(fpsidynparams, "USESHAPEDERIVATIVES"))
   {
-//
-    // extract submatrices
-//
-//
     if (fluidalematrix != Teuchos::null)
     {
       //There is no fpsi-fsi overlap in the block matrixes, all dofs which are on both interfaces belong
@@ -409,47 +427,52 @@ void FPSI::Monolithic_Plain::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
             fluidalematrix->Matrix(FPSI::UTILS::MapExtractor::cond_fpsi,FPSI::UTILS::MapExtractor::cond_fsi);
 
 
-        (*figtransform1_)(FluidField()->BlockSystemMatrix()->FullRowMap(),
-                  FluidField()->BlockSystemMatrix()->FullColMap(),
-                 fluidalematrix_ig_fsi,
-                 1.0,
-                 ADAPTER::CouplingSlaveConverter(coupsf_fsi),
-                 mat.Matrix(fluid_block_,poro_block_),
-                 false, // bool exactmatch = true (default)
-                 true);
+        (*figtransform1_)(
+            FluidField()->BlockSystemMatrix()->FullRowMap(),
+            FluidField()->BlockSystemMatrix()->FullColMap(),
+            fluidalematrix_ig_fsi,
+            1.0,
+            ADAPTER::CouplingSlaveConverter(coupsf_fsi),
+            mat.Matrix(fluid_block_,structure_block_),
+            false, // bool exactmatch = true (default)
+            true);
 
-        (*figtransform2_)(FluidField()->BlockSystemMatrix()->FullRowMap(),
-                  FluidField()->BlockSystemMatrix()->FullColMap(),
-                 fluidalematrix_gfpsigfsi,
-                 1.0,
-                 ADAPTER::CouplingSlaveConverter(coupsf_fsi),
-                 mat.Matrix(fluid_block_,poro_block_),
-                 false,
-                 true);
+        (*figtransform2_)(
+            FluidField()->BlockSystemMatrix()->FullRowMap(),
+            FluidField()->BlockSystemMatrix()->FullColMap(),
+            fluidalematrix_gfpsigfsi,
+            1.0,
+            ADAPTER::CouplingSlaveConverter(coupsf_fsi),
+            mat.Matrix(fluid_block_,structure_block_),
+            false,
+            true);
 
-        (*fggtransform_)(fluidalematrix_gg_fsi,
-                 (1.0-stiparam)/(1.0-ftiparam)*scale,
-                 ADAPTER::CouplingSlaveConverter(coupsf_fsi),
-                 ADAPTER::CouplingSlaveConverter(coupsf_fsi),
-                 *p,
-                 false,
-                 true);
+        (*fggtransform_)(
+            fluidalematrix_gg_fsi,
+            (1.0-stiparam)/(1.0-ftiparam)*scale,
+            ADAPTER::CouplingSlaveConverter(coupsf_fsi),
+            ADAPTER::CouplingSlaveConverter(coupsf_fsi),
+            mat.Matrix(structure_block_, structure_block_),
+            false,
+            true);
 
-        (*fggtransform2_)(fluidalematrix_gfsigfpsi,
-                 (1.0-stiparam)/(1.0-ftiparam)*scale,
-                 ADAPTER::CouplingSlaveConverter(coupsf_fsi),
-                 ADAPTER::CouplingSlaveConverter(coupsf_fpsi),
-                 *p,
-                 false,
-                 true);
+        (*fggtransform2_)(
+            fluidalematrix_gfsigfpsi,
+            (1.0-stiparam)/(1.0-ftiparam)*scale,
+            ADAPTER::CouplingSlaveConverter(coupsf_fsi),
+            ADAPTER::CouplingSlaveConverter(coupsf_fpsi),
+            mat.Matrix(structure_block_, structure_block_),
+            false,
+            true);
 
-        (*fmgitransform_)(fluidalematrix_gi_fsi,
-                (1.0-stiparam)/(1.0-ftiparam)*scale,
-                ADAPTER::CouplingSlaveConverter(coupsf_fsi),
-                ADAPTER::CouplingMasterConverter(coupfa),
-                mat.Matrix(poro_block_,ale_i_block_),
-                false,
-                true);
+        (*fmgitransform_)(
+            fluidalematrix_gi_fsi,
+            (1.0-stiparam)/(1.0-ftiparam)*scale,
+            ADAPTER::CouplingSlaveConverter(coupsf_fsi),
+            ADAPTER::CouplingMasterConverter(coupfa),
+            mat.Matrix(structure_block_,ale_i_block_),
+            false,
+            true);
       }
     }
     else // if shapederivatives = no in FluidDynamics section in dat-file
@@ -471,39 +494,57 @@ void FPSI::Monolithic_Plain::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
     //Compete for the Matrix Transformation Object (Already everything filled into the pf part!)
 
     //Add (Tau * Fig) to Structural Column (condensation of fluid velocities) ... done here to catch also FPSI-Coupling terms (for overlapping FSI/FPSI Interfaces)
-    (*figtransform3_)(FluidField()->BlockSystemMatrix()->FullRowMap(),
-        FluidField()->BlockSystemMatrix()->FullColMap(), *f, timescale,
+    (*figtransform3_)(
+        FluidField()->BlockSystemMatrix()->FullRowMap(),
+        FluidField()->BlockSystemMatrix()->FullColMap(),
+        mat.Matrix(fluid_block_, fluid_block_),
+        timescale,
         ADAPTER::CouplingSlaveConverter(coupsf_fsi),
-        mat.Matrix(fluid_block_, poro_block_), //--> goes into C_fp()
+        mat.Matrix(fluid_block_, structure_block_), //--> goes into C_fp()
         false, //no exactmatch! (just FSI Part should be extracted)
         true); //Add
 
     //Complete for the Matrix Transformation Object (Already everything filled into the pf part!)
-    FPSICoupl()->C_fa().Complete(*AleField()->Interface()->OtherMap(),
-        *FluidField()->DofRowMap());
-    (*Cfgtransform_)(FPSICoupl()->C_fa(),
+    FPSICoupl()->C_fa().Complete(*AleField()->Interface()->OtherMap(),*FluidField()->DofRowMap());
+
+    (*Cfgtransform_)(
+        FPSICoupl()->C_fa(),
         (1.0 - stiparam) / (1.0 - ftiparam) * scale,
         ADAPTER::CouplingSlaveConverter(coupsf_fsi),
-        mat.Matrix(poro_block_, ale_i_block_), true); //Addmatrix
+        mat.Matrix(structure_block_, ale_i_block_),
+        true); //Addmatrix
+
+
 
     //-->(1)
     //add C_fp into structural equation from adding lagranean multiplier (just in case of overlapping interfaces)
-    FPSICoupl()->C_fp().Complete(*PoroField()->DofRowMap(),
-        *FluidField()->DofRowMap());
+    FPSICoupl()->C_fp().Complete();
+
     (*Cfptransform_)(
-        FPSICoupl()->C_fp(), //--> also the coupling terms from c_ff are inside here!!!
+        FPSICoupl()->C_fp().Matrix(0,0), //--> also the coupling terms from c_ff are inside here!!!
         (1.0 - stiparam) / (1.0 - ftiparam) * scale,
         ADAPTER::CouplingSlaveConverter(coupsf_fsi),
-        mat.Matrix(poro_block_, poro_block_), true); //Addmatrix
+        mat.Matrix(structure_block_, structure_block_),
+        true); //Addmatrix
 
-    FPSICoupl()->C_pf().Complete(
-        FluidField()->BlockSystemMatrix()->FullColMap(),
-        *PoroField()->DofRowMap());
-    (*figtransform4_)(FluidField()->BlockSystemMatrix()->FullRowMap(),
-        FluidField()->BlockSystemMatrix()->FullColMap(), FPSICoupl()->C_pf(),
-        timescale * 0, ADAPTER::CouplingSlaveConverter(coupsf_fsi),
-        mat.Matrix(poro_block_, poro_block_), false, //no exactmatch! (just FSI Part should be extracted)
-        true); //Add
+    (*Cfptransform2_)(
+        FPSICoupl()->C_fp().Matrix(0,1), //--> also the coupling terms from c_ff are inside here!!!
+        (1.0 - stiparam) / (1.0 - ftiparam) * scale,
+        ADAPTER::CouplingSlaveConverter(coupsf_fsi),
+        mat.Matrix(structure_block_, porofluid_block_),
+        true); //Addmatrix
+
+    //FPSICoupl()->C_pf().Complete();
+    //TODO: scaled by zero??
+//    (*figtransform4_)(
+//        FluidField()->BlockSystemMatrix()->FullRowMap(),
+//        FluidField()->BlockSystemMatrix()->FullColMap(),
+//        FPSICoupl()->C_pf(),
+//        timescale * 0,
+//        ADAPTER::CouplingSlaveConverter(coupsf_fsi),
+//        mat.Matrix(poro_block_, poro_block_),
+//        false, //no exactmatch! (just FSI Part should be extracted)
+//        true); //Add
   }
 
 //    //+++ part in the f...Matrix from overlap will be removed by ApplyDBC of condensed velocity DOFS in LinearSolve()!
@@ -549,6 +590,7 @@ void FPSI::Monolithic_Plain::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
 /*----------------------------------------------------------------------*/
 void FPSI::Monolithic_Plain::SetupVector(Epetra_Vector &f,
                                          Teuchos::RCP<const Epetra_Vector> sv,
+                                         Teuchos::RCP<const Epetra_Vector> pfv,
                                          Teuchos::RCP<const Epetra_Vector> fv,
                                          Teuchos::RCP<const Epetra_Vector> av,
                                          double fluidscale)
@@ -567,24 +609,28 @@ void FPSI::Monolithic_Plain::SetupVector(Epetra_Vector &f,
 
   if (FSI_Interface_exists_) //in case FSI interface exists, add term from condensation to RHS
   {
-  // add fluid interface values to structure vector
-  Teuchos::RCP<Epetra_Vector> fcvgfsi = FluidField()->Interface()->ExtractFSICondVector(fv);
-  fcvgfsi->Update(1.0,*(FluidField()->Interface()->ExtractFSICondVector(FPSICoupl()->RHS_f())),1.0); //add rhs contribution of fpsi coupling rhs
+    // add fluid interface values to structure vector
+    Teuchos::RCP<Epetra_Vector> fcvgfsi = FluidField()->Interface()->ExtractFSICondVector(fv);
+    fcvgfsi->Update(1.0,*(FluidField()->Interface()->ExtractFSICondVector(FPSICoupl()->RHS_f())),1.0); //add rhs contribution of fpsi coupling rhs
 
-  Teuchos::RCP<Epetra_Vector> modsv = PoroField()->StructureField()->Interface()->InsertFSICondVector(FluidToStruct_FSI(fcvgfsi)); //(fvg)fg -> (fvg)sg -> (fvg)s
-  Teuchos::RCP<Epetra_Vector> mmodsv = PoroField()->Extractor()->InsertVector(modsv,0); //(fvg)s -> (fvg)p
+    Teuchos::RCP<Epetra_Vector> modsv = PoroField()->StructureField()->Interface()->InsertFSICondVector(FluidToStruct_FSI(fcvgfsi)); //(fvg)fg -> (fvg)sg -> (fvg)s
 
-  mmodsv->Update(1.0, *sv, (1.0-stiparam)/(1.0-ftiparam)*fluidscale);
+    modsv->Update(1.0, *sv, (1.0-stiparam)/(1.0-ftiparam)*fluidscale);
 
-  Extractor().InsertVector(*mmodsv,poro_block_,f);  // add poroelast contributions to 'f'
+    Extractor().InsertVector(*modsv,structure_block_,f);  // add poroelast contributions to 'f'
+    Extractor().InsertVector(*pfv,porofluid_block_,f);
   }
   else
-    Extractor().InsertVector(*sv,poro_block_,f);  // add poroelast contributions to 'f'
+  {
+    Extractor().InsertVector(*sv,structure_block_,f);  // add poroelast contributions to 'f'
+    Extractor().InsertVector(*pfv,porofluid_block_,f);
+  }
 
   Teuchos::RCP<Epetra_Vector> aov = AleField()->Interface()->ExtractOtherVector(av);
   Extractor().InsertVector(*aov,ale_i_block_,f);  // add ALE contributions to 'f'
 
-  Extractor().AddVector(*FPSICoupl()->RHS_p(),poro_block_,f,1.0);
+  Extractor().AddVector(*FPSICoupl()->RHS_s(),structure_block_,f,1.0);
+  Extractor().AddVector(*FPSICoupl()->RHS_pf(),porofluid_block_,f,1.0);
   Extractor().AddVector(*FPSICoupl()->RHS_f(),fluid_block_,f,1.0);
 }
 
@@ -601,11 +647,11 @@ void FPSI::Monolithic_Plain::SetupRHSLambda(Epetra_Vector& f)
 
     // project Lagrange multiplier field onto the master interface DOFs and consider temporal scaling
     Teuchos::RCP<Epetra_Vector> lambdafull = PoroField()->StructureField()->Interface()->InsertFSICondVector(FluidToStruct_FSI(lambda_)); //(lambda)fg -> (lambda)sg -> (lambda)s
-    Teuchos::RCP<Epetra_Vector> lambdafull_p = PoroField()->Extractor()->InsertVector(lambdafull,0); //(lambda)s -> (lambda)p
-    lambdafull_p->Scale(stiparam-(ftiparam*(1.0-stiparam))/(1.0-ftiparam));
+    lambdafull->Scale(stiparam-(ftiparam*(1.0-stiparam))/(1.0-ftiparam));
 
     // add Lagrange multiplier
-    Extractor().AddVector(*lambdafull_p,poro_block_,f);
+    Extractor().AddVector(*lambdafull,structure_block_,f);
+
   }
   return;
 }
@@ -813,7 +859,8 @@ void FPSI::Monolithic_Plain::SetupRHSFirstIter(Epetra_Vector& f)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FPSI::Monolithic_Plain::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
-                                                 Teuchos::RCP<const Epetra_Vector>& px,
+                                                 Teuchos::RCP<const Epetra_Vector>& sx,
+                                                 Teuchos::RCP<const Epetra_Vector>& pfx,
                                                  Teuchos::RCP<const Epetra_Vector>& fx,
                                                  Teuchos::RCP<const Epetra_Vector>& ax,  ///< ale displacements
                                                  bool firstiter_)                       ///< firstiteration?
@@ -821,85 +868,89 @@ void FPSI::Monolithic_Plain::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vecto
   TEUCHOS_FUNC_TIME_MONITOR("FPSI::Monolithic_Plain::ExtractFieldVectors");
 
   // porous medium
-  px = Extractor().ExtractVector(x,poro_block_);
-  Teuchos::RCP<Epetra_Vector> sx = PoroField()->Extractor()->ExtractVector(px,0); //Extract structural dofs
+  sx = Extractor().ExtractVector(x, structure_block_);
+  pfx = Extractor().ExtractVector(x, porofluid_block_);
 
   // extract inner ALE solution increment
-   Teuchos::RCP<const Epetra_Vector> aox = Extractor().ExtractVector(x,ale_i_block_);
+  Teuchos::RCP<const Epetra_Vector> aox = Extractor().ExtractVector(x,ale_i_block_);
 
-   // put inner --- ALE solution together
-   Teuchos::RCP<Epetra_Vector> a = AleField()->Interface()->InsertOtherVector(aox);
-   //AleField()->Interface()->InsertFPSICondVector(acx_fpsi, a); //Already done by Ale().ApplyInterfaceDisplacements()
-   //AleField()->Interface()->InsertFSICondVector(acx_fsi, a); //Already done by Ale().ApplyInterfaceDisplacements()
-   ax = a; //displacement on the interace is zero!!!
+  // put inner --- ALE solution together
+  Teuchos::RCP<Epetra_Vector> a = AleField()->Interface()->InsertOtherVector(aox);
+  //AleField()->Interface()->InsertFPSICondVector(acx_fpsi, a); //Already done by Ale().ApplyInterfaceDisplacements()
+  //AleField()->Interface()->InsertFSICondVector(acx_fsi, a); //Already done by Ale().ApplyInterfaceDisplacements()
+  ax = a; //displacement on the interace is zero!!!
 
-   // ---------------------------------------------------------------------------
-   // process fluid unknowns
-   // ---------------------------------------------------------------------------
-   // extract inner fluid solution increment from NOX increment
-   Teuchos::RCP<Epetra_Vector> f = Extractor().ExtractVector(x,fluid_block_);
-   #ifdef FLUIDSPLITAMG
-     fox = FluidField()->Interface()->ExtractOtherVector(fox);
-   #endif
+  // ---------------------------------------------------------------------------
+  // process fluid unknowns
+  // ---------------------------------------------------------------------------
+  // extract inner fluid solution increment from NOX increment
+  Teuchos::RCP<Epetra_Vector> f = Extractor().ExtractVector(x, fluid_block_);
+#ifdef FLUIDSPLITAMG
+  fox = FluidField()->Interface()->ExtractOtherVector(fox);
+#endif
 
-   if (FSI_Interface_exists_)
-   {
-   // convert structure solution increment to ALE solution increment at the interface
+  if (FSI_Interface_exists_)
+  {
+    // convert structure solution increment to ALE solution increment at the interface
 
-   Teuchos::RCP<Epetra_Vector> scx_fsi = PoroField()->StructureField()->Interface()->ExtractFSICondVector(sx);
-   if (firstiter_) //to consider also DBC on Structure!!!
-   {
-     Teuchos::RCP<Epetra_Vector> dispnfsi = PoroField()->StructureField()->Interface()->ExtractFSICondVector(PoroField()->StructureField()->Dispn());
-     Teuchos::RCP<Epetra_Vector> dispnpfsi = PoroField()->StructureField()->Interface()->ExtractFSICondVector(PoroField()->StructureField()->Dispnp());
-     scx_fsi->Update(1.0,*dispnpfsi,-1.0,*dispnfsi,1.0);
-   }
+    Teuchos::RCP<Epetra_Vector> scx_fsi = PoroField()->StructureField()->Interface()->ExtractFSICondVector(sx);
+    if (firstiter_) //to consider also DBC on Structure!!!
+    {
+      Teuchos::RCP<Epetra_Vector> dispnfsi =
+          PoroField()->StructureField()->Interface()->ExtractFSICondVector(PoroField()->StructureField()->Dispn());
+      Teuchos::RCP<Epetra_Vector> dispnpfsi =
+          PoroField()->StructureField()->Interface()->ExtractFSICondVector(PoroField()->StructureField()->Dispnp());
+      scx_fsi->Update(1.0, *dispnpfsi, -1.0, *dispnfsi, 1.0);
+    }
 
-   Teuchos::RCP<const Epetra_Vector> acx_fsi = StructToAle_FSI(scx_fsi);
+    Teuchos::RCP<const Epetra_Vector> acx_fsi = StructToAle_FSI(scx_fsi);
 
-   // convert ALE solution increment to fluid solution increment at the interface
-   Teuchos::RCP<Epetra_Vector> fcx_fsi = AleToFluidInterface_FSI(acx_fsi);
+    // convert ALE solution increment to fluid solution increment at the interface
+    Teuchos::RCP<Epetra_Vector> fcx_fsi = AleToFluidInterface_FSI(acx_fsi);
 
-   if (firstiter_)
-     FluidField()->DisplacementToVelocity(fcx_fsi); // Delta u(n+1,i+1) = fac * (Delta d(n+1,i+1) - dt * u(n))
-   else
-     fcx_fsi->Scale(FluidField()->TimeScaling()); // Delta u(n+1,i+1) = fac * (Delta d(n+1,i+1)
+    if (firstiter_)
+      FluidField()->DisplacementToVelocity(fcx_fsi); // Delta u(n+1,i+1) = fac * (Delta d(n+1,i+1) - dt * u(n))
+    else
+      fcx_fsi->Scale(FluidField()->TimeScaling()); // Delta u(n+1,i+1) = fac * (Delta d(n+1,i+1)
 
-   FluidField()->Interface()->InsertFSICondVector(fcx_fsi, f);
-   // ---------------------------------------------------------------------------
+    FluidField()->Interface()->InsertFSICondVector(fcx_fsi, f);
+    // ---------------------------------------------------------------------------
 
-   // Store field vectors to know them later on as previous quantities
-   // inner ale displacement increment
-   // interface structure displacement increment
-   if (disgprev_ != Teuchos::null)
-     ddginc_->Update(1.0, *scx_fsi, -1.0, *disgprev_, 0.0);        // compute current iteration increment
-   else
-     ddginc_ = Teuchos::rcp(new Epetra_Vector(*scx_fsi));                   // first iteration increment
+    // Store field vectors to know them later on as previous quantities
+    // inner ale displacement increment
+    // interface structure displacement increment
+    if (disgprev_ != Teuchos::null)
+      ddginc_->Update(1.0, *scx_fsi, -1.0, *disgprev_, 0.0); // compute current iteration increment
+    else
+      ddginc_ = Teuchos::rcp(new Epetra_Vector(*scx_fsi)); // first iteration increment
 
-   disgprev_ = scx_fsi;                                            // store current step increment
-   // ------------------------------------
+    disgprev_ = scx_fsi; // store current step increment
+    // ------------------------------------
 
-   }
+  }
 
-   Teuchos::RCP<Epetra_Vector> fox = FPSICoupl()->FluidFsiFpsiExtractor()->ExtractVector(f,0);
+  Teuchos::RCP<Epetra_Vector> fox =
+      FPSICoupl()->FluidFsiFpsiExtractor()->ExtractVector(f, 0);
 
-   fx = f;
-   // inner ale displacement increment
-   if (solialeprev_ != Teuchos::null)
-     ddialeinc_->Update(1.0, *aox, -1.0, *solialeprev_, 0.0);  // compute current iteration increment
-   else
-     ddialeinc_ = Teuchos::rcp(new Epetra_Vector(*aox));                // first iteration increment
+  fx = f;
+  // inner ale displacement increment
+  if (solialeprev_ != Teuchos::null)
+    ddialeinc_->Update(1.0, *aox, -1.0, *solialeprev_, 0.0); // compute current iteration increment
+  else
+    ddialeinc_ = Teuchos::rcp(new Epetra_Vector(*aox)); // first iteration increment
 
-   solialeprev_ = aox;                                         // store current step increment
-   // ------------------------------------
+  solialeprev_ = aox; // store current step increment
+  // ------------------------------------
 
-   // fluid solution increment
-   if (soliprev_ != Teuchos::null)                             // compute current iteration increment
-     duiinc_->Update(1.0, *fox, -1.0, *soliprev_, 0.0);
-   else                                                        // first iteration increment
-     duiinc_ =  Teuchos::rcp(new Epetra_Vector(*fox));
-                                                               // store current step increment
-   soliprev_ = fox;
-   // ------------------------------------
+  // fluid solution increment
+  if (soliprev_ != Teuchos::null) // compute current iteration increment
+    duiinc_->Update(1.0, *fox, -1.0, *soliprev_, 0.0);
+  else
+    // first iteration increment
+    duiinc_ = Teuchos::rcp(new Epetra_Vector(*fox));
+  // store current step increment
+  soliprev_ = fox;
+  // ------------------------------------
 
 }
 
