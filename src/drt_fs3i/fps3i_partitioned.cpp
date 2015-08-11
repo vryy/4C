@@ -331,6 +331,7 @@ void FS3I::PartFPS3I::SetupSystem()
 
   // Setup FPSI system
   fpsi_->SetupSystem();
+  fpsi_->SetupSolver();
 
   /*----------------------------------------------------------------------*/
   /*                  General set up for scalar fields                    */

@@ -23,6 +23,9 @@ namespace FPSI
     /// setup
     virtual void SetupSystem() = 0;
 
+    /// setup solver
+    virtual void SetupSolver() = 0;
+
     /// timeloop of coupled problem
     virtual void Timeloop() = 0;
 

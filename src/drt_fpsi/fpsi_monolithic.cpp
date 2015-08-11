@@ -223,6 +223,7 @@ FPSI::Monolithic::Monolithic(const Epetra_Comm& comm,
                              const Teuchos::ParameterList& fpsidynparams,
                              const Teuchos::ParameterList& poroelastdynparams)
     : MonolithicBase(comm,fpsidynparams,poroelastdynparams),
+      directsolve_(true),
       printscreen_(true),
       printiter_(true),
       printerrfile_(true),
@@ -232,11 +233,6 @@ FPSI::Monolithic::Monolithic(const Epetra_Comm& comm,
       islinesearch_(false),
       firstcall_(true)
 {
-  // Setup linear solver
-  bool builtsolver = false;
-  builtsolver = FPSI::Monolithic::SetupSolver();
-  if(builtsolver == false)
-    dserror("Setup of linear solver failed ... Roundhouse-Kick!");
 
   const Teuchos::ParameterList& sdynparams = DRT::Problem::Instance()->StructuralDynamicParams();
   solveradapttol_= (DRT::INPUT::IntegralValue<int>(sdynparams, "ADAPTCONV") == 1);
@@ -524,12 +520,10 @@ void FPSI::Monolithic::TestResults(const Epetra_Comm& comm)
 //<<<<<<<<<<<<<<                    solver                >>>>>>>>>>>>>>>>>>>>
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-bool FPSI::Monolithic::SetupSolver()
+void FPSI::Monolithic::SetupSolver()
 {
 
   const Teuchos::ParameterList& fpsidynamicparams = DRT::Problem::Instance()->FPSIDynamicParams();
-
-#ifdef FPSIDIRECTSOLVE
 
   const int linsolvernumber = fpsidynamicparams.get<int>("LINEAR_SOLVER");
   if (linsolvernumber == (-1))
@@ -539,17 +533,19 @@ bool FPSI::Monolithic::SetupSolver()
       DRT::Problem::Instance()->SolverParams(linsolvernumber);
   const int solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(
       solverparams, "SOLVER");
-  if (solvertype != INPAR::SOLVER::umfpack)
-    dserror("umfpack solver expected but received any other type !");
 
-  solver_ = Teuchos::rcp(new LINALG::Solver(solverparams,
-                                            Comm(),
-                                            DRT::Problem::Instance()->ErrorFile()->Handle())
-                                           );
+  directsolve_ = (   solvertype == INPAR::SOLVER::umfpack
+                  or solvertype == INPAR::SOLVER::superlu
+                  or solvertype == INPAR::SOLVER::amesos_klu_nonsym);
 
-#else
-    dserror("Only direct solver implemented so far !");
-#endif //#ifdef FPSIDIRECTSOLVE
+  if(directsolve_)
+    solver_ = Teuchos::rcp(new LINALG::Solver(solverparams,
+                                              Comm(),
+                                              DRT::Problem::Instance()->ErrorFile()->Handle())
+                                             );
+  else
+    // create a linear solver
+    CreateLinearSolver();
 
   // Get the parameters for the Newton iteration
   maximumiterations_ = fpsidynamicparams.get<int> ("ITEMAX");
@@ -592,7 +588,156 @@ bool FPSI::Monolithic::SetupSolver()
             "However this has not yet been committed.\n");
   linesearch_counter = 0.;
 
-  return true;
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | create linear solver                                   vuong 08/15 |
+ *----------------------------------------------------------------------*/
+void FPSI::Monolithic::CreateLinearSolver()
+{
+  // get dynamic section
+  const Teuchos::ParameterList& fpsidyn = DRT::Problem::Instance()->FPSIDynamicParams();
+
+  // get the linear solver number
+  const int linsolvernumber = fpsidyn.get<int>("LINEAR_SOLVER");
+  if (linsolvernumber == (-1))
+    dserror("No linear solver defined for FPSI problem. Please set LINEAR_SOLVER in FPSI DYNAMIC to a valid number !");
+
+  // get parameter list of structural dynamics
+  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  // use solver blocks for structure
+  // get the solver number used for structural solver
+  const int slinsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
+  // check if the structural solver has a valid solver number
+  if (slinsolvernumber == (-1))
+    dserror("no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL DYNAMIC to a valid number!");
+
+  // get parameter list of fluid dynamics
+  const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
+  // use solver blocks for fluid
+  // get the solver number used for fluid solver
+  const int flinsolvernumber = fdyn.get<int>("LINEAR_SOLVER");
+  // check if the fluid solver has a valid solver number
+  if (flinsolvernumber == (-1))
+    dserror("no linear solver defined for fluid field. Please set LINEAR_SOLVER in FLUID DYNAMIC to a valid number!");
+
+  // get parameter list of structural dynamics
+  const Teuchos::ParameterList& aledyn = DRT::Problem::Instance()->AleDynamicParams();
+  // use solver blocks for structure
+  // get the solver number used for structural solver
+  const int alinsolvernumber = aledyn.get<int>("LINEAR_SOLVER");
+  // check if the structural solver has a valid solver number
+  if (alinsolvernumber == (-1))
+    dserror("no linear solver defined for ALE field. Please set LINEAR_SOLVER in ALE DYNAMIC to a valid number!");
+
+  // get solver parameter list of linear Poroelasticity solver
+  const Teuchos::ParameterList& fpsisolverparams
+    = DRT::Problem::Instance()->SolverParams(linsolvernumber);
+
+  const int solvertype
+    = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(
+        fpsisolverparams,
+        "SOLVER"
+        );
+
+  if (solvertype != INPAR::SOLVER::aztec_msr &&
+      solvertype != INPAR::SOLVER::belos)
+  {
+    std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
+    std::cout << " Note: the BGS2x2 preconditioner now "                  << std::endl;
+    std::cout << " uses the structural solver and fluid solver blocks"  << std::endl;
+    std::cout << " for building the internal inverses"                    << std::endl;
+    std::cout << " Remove the old BGS PRECONDITIONER BLOCK entries "      << std::endl;
+    std::cout << " in the dat files!"                                     << std::endl;
+    std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
+    dserror("aztec solver expected");
+  }
+  const int azprectype
+    = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(
+        fpsisolverparams,
+        "AZPREC"
+        );
+
+  // plausibility check
+  switch (azprectype)
+  {
+    case INPAR::SOLVER::azprec_AMGnxn:
+      {
+        // no plausibility checks here
+        // if you forget to declare an xml file you will get an error message anyway
+      }
+      break;
+    default:
+      dserror("AMGnxn preconditioner expected");
+      break;
+  }
+
+  solver_ = Teuchos::rcp(new LINALG::Solver(
+                         fpsisolverparams,
+                         Comm(),
+                         DRT::Problem::Instance()->ErrorFile()->Handle()
+                         )
+                     );
+
+  // use solver blocks for structure and fluid
+  const Teuchos::ParameterList& ssolverparams = DRT::Problem::Instance()->SolverParams(slinsolvernumber);
+  const Teuchos::ParameterList& fsolverparams = DRT::Problem::Instance()->SolverParams(flinsolvernumber);
+  const Teuchos::ParameterList& asolverparams = DRT::Problem::Instance()->SolverParams(alinsolvernumber);
+
+  //for now, use same solver parameters for poro fluid and free fluid
+
+  // poro/structure
+  solver_->PutSolverParamsToSubParams("Inverse1", ssolverparams);
+  // poro fluid
+  solver_->PutSolverParamsToSubParams("Inverse2", fsolverparams);
+  // fluid
+  solver_->PutSolverParamsToSubParams("Inverse3", fsolverparams);
+  // ale
+  solver_->PutSolverParamsToSubParams("Inverse4", asolverparams);
+
+  // prescribe rigid body modes
+  PoroField()->StructureField()->Discretization()->ComputeNullSpaceIfNecessary(
+                                       solver_->Params().sublist("Inverse1")
+                                       );
+  PoroField()->FluidField()->Discretization()->ComputeNullSpaceIfNecessary(
+                                       solver_->Params().sublist("Inverse2")
+                                       );
+  FluidField()->Discretization()->ComputeNullSpaceIfNecessary(
+                                    solver_->Params().sublist("Inverse3")
+                                    );
+  AleField()->WriteAccessDiscretization()->ComputeNullSpaceIfNecessary(
+                                    solver_->Params().sublist("Inverse4")
+                                    );
+
+  // fixing length of Inverse1 nullspace (solver/preconditioner ML)
+  {
+    std::string inv="Inverse1";
+    const Epetra_Map& oldmap = *(PoroField()->StructureField()->DofRowMap());
+    const Epetra_Map& newmap = systemmatrix_->Matrix(structure_block_,structure_block_).EpetraMatrix()->RowMap();
+    solver_->FixMLNullspace(&inv[0],oldmap, newmap, solver_->Params().sublist("Inverse1"));
+  }
+  // fixing length of Inverse2 nullspace (solver/preconditioner ML)
+  {
+    std::string inv="Inverse2";
+    const Epetra_Map& oldmap = *(PoroField()->FluidField()->DofRowMap());;
+    const Epetra_Map& newmap = systemmatrix_->Matrix(porofluid_block_,porofluid_block_).EpetraMatrix()->RowMap();
+    solver_->FixMLNullspace(&inv[0],oldmap, newmap, solver_->Params().sublist("Inverse2"));
+  }
+  // fixing length of Inverse3 nullspace (solver/preconditioner ML)
+  {
+    std::string inv="Inverse3";
+    const Epetra_Map& oldmap = *(FluidField()->DofRowMap());
+    const Epetra_Map& newmap = systemmatrix_->Matrix(fluid_block_,fluid_block_).EpetraMatrix()->RowMap();
+    solver_->FixMLNullspace(&inv[0],oldmap, newmap, solver_->Params().sublist("Inverse3"));
+  }
+  // fixing length of Inverse4 nullspace (solver/preconditioner ML)
+  {
+    std::string inv="Inverse4";
+    const Epetra_Map& oldmap = *(AleField()->DofRowMap());;
+    const Epetra_Map& newmap = systemmatrix_->Matrix(ale_i_block_,ale_i_block_).EpetraMatrix()->RowMap();
+    solver_->FixMLNullspace(&inv[0],oldmap, newmap, solver_->Params().sublist("Inverse4"));
+  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -613,40 +758,70 @@ void FPSI::Monolithic::LinearSolve()
       FPSIFDCheck();
   }
 
-  Teuchos::RCP<LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
-
   iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
   PoroField()->ClearPoroIterinc();
 
-  if (FSI_Interface_exists_)
+  if(directsolve_)
   {
-    //remove entries in condensed dofs from matrix and rhs...
+    Teuchos::RCP<LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
+
+    if (FSI_Interface_exists_)
+    {
+      //remove entries in condensed dofs from matrix and rhs...
+      LINALG::ApplyDirichlettoSystem(
+          sparse,
+          iterinc_,
+          rhs_,
+          Teuchos::null,
+          zeros_,
+          *FluidField()->Interface()->FSICondMap()
+          );
+    }
+
     LINALG::ApplyDirichlettoSystem(
         sparse,
         iterinc_,
         rhs_,
         Teuchos::null,
         zeros_,
-        *FluidField()->Interface()->FSICondMap()
+        *CombinedDBCMap()
         );
+
+    //line search
+    if (linesearch_)
+      LineSearch(sparse);
+    else
+    {
+      // standard solver call
+      solver_->Solve(sparse->EpetraOperator(), iterinc_, rhs_, true, iter_ == 1);
+    }
   }
-
-  LINALG::ApplyDirichlettoSystem(
-      sparse,
-      iterinc_,
-      rhs_,
-      Teuchos::null,
-      zeros_,
-      *CombinedDBCMap()
-      );
-
-  //line search
-  if (linesearch_)
-    LineSearch(sparse);
   else
   {
+    if (FSI_Interface_exists_)
+    {
+      //remove entries in condensed dofs from matrix and rhs...
+      LINALG::ApplyDirichlettoSystem(
+          systemmatrix_,
+          iterinc_,
+          rhs_,
+          Teuchos::null,
+          zeros_,
+          *FluidField()->Interface()->FSICondMap()
+          );
+    }
+
+    LINALG::ApplyDirichlettoSystem(
+        systemmatrix_,
+        iterinc_,
+        rhs_,
+        Teuchos::null,
+        zeros_,
+        *CombinedDBCMap()
+        );
+
     // standard solver call
-    solver_->Solve(sparse->EpetraOperator(), iterinc_, rhs_, true, iter_ == 1);
+    solver_->Solve(systemmatrix_->EpetraOperator(), iterinc_, rhs_, true, iter_ == 1);
   }
 
 }

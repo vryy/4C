@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file fpsi_paritioned.H
+\file fpsi_partitioned.H
 
 
 <pre>
@@ -42,6 +42,8 @@ namespace FPSI
     void RedistributeInterface();
 
     void SetupSystem();
+
+    void SetupSolver(){return;};
 //
 
 //

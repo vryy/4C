@@ -2003,6 +2003,9 @@ baci_test(fsi_lung_mono_amgnxn 2 "")
 baci_test(poro_3D_hex8_amgnxn_BGSAMG 2 "")
 baci_test(poro_3D_hex8_p1 2 5)
 
+# fpsi using the AMGnxn framework
+baci_test(fpsi_bending_struct_BGSAMG 2 "")
+
 # electrochemistry using the AMGnxn framework
 baci_test(elch_3D_tet4_s2i_butlervolmer_BGS-AMG_3x3 3 "")
 baci_test(elch_3D_tet4_s2i_butlervolmer_BGS-AMG_4x4 3 "")

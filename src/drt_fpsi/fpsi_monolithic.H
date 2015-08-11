@@ -229,6 +229,9 @@ public:
   //! access system matrix
   virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const = 0;
 
+  /// setup solver
+  virtual void SetupSolver();
+
   /// Recover the Lagrange multiplier at the interface   mayr.mt (03/2012)
   virtual void RecoverLagrangeMultiplier()
   {
@@ -256,8 +259,8 @@ public:
   //! solve using line search method
   void LineSearch(Teuchos::RCP<LINALG::SparseMatrix>& sparse);
 
-  //! setup linear solver
-  bool SetupSolver();
+  //! create linear solver (setup of parameter lists, etc...)
+  void CreateLinearSolver();
 
   //! build convergence norms after solve
   void BuildConvergenceNorms();
@@ -353,6 +356,9 @@ protected:
   int ale_i_block_;
 
 private:
+
+  //! flag for direct solver of linear system
+  bool directsolve_;
 
   enum INPAR::FPSI::ConvergenceNorm normtypeinc_;
   enum INPAR::FPSI::ConvergenceNorm normtypefres_;

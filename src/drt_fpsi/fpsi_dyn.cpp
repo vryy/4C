@@ -106,6 +106,8 @@ void fpsi_drt()
 
   // 4.1.- Coupling and creation of combined dofmap
   fpsi->SetupSystem();
+  // setup the linear solver, if necessary
+  fpsi->SetupSolver();
   // 4.2.- Solve the whole problem
   fpsi->Timeloop();
   Teuchos::TimeMonitor::summarize();
