@@ -82,7 +82,8 @@ FS3I::ACFSI::ACFSI(const Epetra_Comm& comm)
   //Some AC FSI specific testings:
 
   const Teuchos::ParameterList& fs3idyn = DRT::Problem::Instance()->FS3IDynamicParams();
-//  const Teuchos::ParameterList& fs3idynac = fs3idyn.sublist("AC");
+  const Teuchos::ParameterList& fs3idynpart = fs3idyn.sublist("PARTITIONED");
+  const Teuchos::ParameterList& fs3idynac = fs3idyn.sublist("AC");
 
   if ( fs3idyn.get<int>("UPRES") != 1 )
     dserror("If you want the fsi problem to be periodically repeated from some point, you have to have UPRES set to 1!");
@@ -120,6 +121,27 @@ FS3I::ACFSI::ACFSI(const Epetra_Comm& comm)
 
   if (infperm_)
     dserror("AC-FS3I does have a finite interface permeability. So set INF_PERM to NO!");
+
+  const int fsiperssisteps = fs3idynac.get<int>("FSI_STEPS_PER_SCATRA_STEP");
+  const INPAR::FS3I::SolutionSchemeOverFields couplingalgo = DRT::INPUT::IntegralValue<INPAR::FS3I::SolutionSchemeOverFields>(fs3idynpart,"COUPALGO");
+  const double wk_rel_tol = fs3idynac.get<double>("WINDKESSEL_REL_TOL");
+
+  if (couplingalgo == INPAR::FS3I::fs3i_IterStagg and fsiperssisteps != 1)
+    dserror("In an iteratively staggered FS3I scheme subcycling is not supported!");
+
+  if (couplingalgo == INPAR::FS3I::fs3i_IterStagg and not IsRealtiveEqualTo(wk_rel_tol,-1.0,1.0) )
+    dserror("In an iteratively staggered FS3I scheme periodical repetition of the fsi problem is not supported!");
+
+  if ( not IsRealtiveEqualTo(dt_,fsiperssisteps*fsi_->FluidField()->Dt(),1.0) )
+    dserror("Your fluid time step does not match!");
+  if ( not IsRealtiveEqualTo(dt_,fsiperssisteps*fsi_->StructureField()->Dt(),1.0) )
+    dserror("Your structure time step does not match!");
+  if ( not IsRealtiveEqualTo(dt_,fsiperssisteps*fsi_->AleField()->Dt(),1.0) )
+    dserror("Your ale time step does not match!");
+  if ( not IsRealtiveEqualTo(dt_,scatravec_[0]->ScaTraField()->Dt(),1.0) )
+    dserror("Your fluid scatra time step does not match!");
+  if ( not IsRealtiveEqualTo(dt_,scatravec_[1]->ScaTraField()->Dt(),1.0) )
+    dserror("Your structure scatra time step does not match!");
 }
 
 /*----------------------------------------------------------------------*
@@ -293,7 +315,7 @@ void FS3I::ACFSI::SmallTimeScaleOuterLoop()
 {
   const Teuchos::ParameterList& fs3idynpart = DRT::Problem::Instance()->FS3IDynamicParams().sublist("PARTITIONED");
   // get coupling algorithm from input file
-  INPAR::FS3I::SolutionSchemeOverFields couplingalgo = DRT::INPUT::IntegralValue<INPAR::FS3I::SolutionSchemeOverFields>(fs3idynpart,"COUPALGO");
+  const INPAR::FS3I::SolutionSchemeOverFields couplingalgo = DRT::INPUT::IntegralValue<INPAR::FS3I::SolutionSchemeOverFields>(fs3idynpart,"COUPALGO");
 
   switch (couplingalgo)
   {
@@ -349,15 +371,8 @@ void FS3I::ACFSI::SmallTimeScaleOuterLoopIterStagg()
 
     SetStructScatraSolution();
 
-    const int fsiperssisteps = DRT::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<int>("FSI_STEPS_PER_SCATRA_STEP");
-    if (fsiperssisteps == 1) //no subcycling
-    {
-      DoFSIStepStandard(itnum);
-    }
-    else //subcycling
-    {
-      DoFSIStepSubcycled(fsiperssisteps,itnum);
-    }
+    DoFSIStepStandard(itnum);
+    //subcycling is not allowed, since we use this function for the growth update. Nevertheless it should work..
     //periodical repetition is not allowed, since we want to converge the problems
 
     SetFSISolution();
@@ -414,7 +429,7 @@ void FS3I::ACFSI::IsFsiPeriodic()
   Teuchos::RCP<ADAPTER::FluidACFSI> fluid = Teuchos::rcp_dynamic_cast<ADAPTER::FluidACFSI>( fsi_->FluidField() );
   std::vector<double> wk_rel_errors = fluid->GetWindkesselErrors();
 
-  double wk_rel_tol = DRT::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<double>("WINDKESSEL_REL_TOL");
+  const double wk_rel_tol = DRT::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<double>("WINDKESSEL_REL_TOL");
 
   for (unsigned int i=0; i<wk_rel_errors.size(); i++)
   {
@@ -445,9 +460,9 @@ void FS3I::ACFSI::DoFSIStepStandard(const int callnum)
 /*----------------------------------------------------------------------*
  | Do a fsi step with subcycling                             Thon 12/14 |
  *----------------------------------------------------------------------*/
-void FS3I::ACFSI::DoFSIStepSubcycled( const int subcyclingsteps, const int callnum )
+void FS3I::ACFSI::DoFSIStepSubcycled( const int subcyclingsteps)
 {
-  double subcyclingiter = 0;
+  int subcyclingiter = 0;
   while (subcyclingiter < subcyclingsteps)
   {
     subcyclingiter++;
@@ -457,7 +472,7 @@ void FS3I::ACFSI::DoFSIStepSubcycled( const int subcyclingsteps, const int calln
       fsi_->PrepareOutput();    //... will do this in UpdateAndOutput()
       fsi_->Update();           //... will do this in UpdateAndOutput()
       fsi_->PrepareTimeStep();  //... have already done this in PrepareTimeStep()
-      //now fix the step_ counter. When subcycling the fsi subproblem we did not want to proceed the step_ AND the time, but just the time_.
+      //now fix the step_ counter. When subcycling the fsi subproblem we do not want to proceed the step_ AND the time_, but just the time_.
       SetTimeStepInFSI(fsi_->FluidField()->Time(),step_);
     }
 
@@ -468,7 +483,7 @@ void FS3I::ACFSI::DoFSIStepSubcycled( const int subcyclingsteps, const int calln
                <<"\n************************************************************************"<<std::endl;
     }
 
-    fsi_->TimeStep(fsi_,callnum); //all necessary changes for the fsi problem (i.e. adapting dt) has already been done in PartFS3I::ManipulateDt()
+    fsi_->TimeStep(fsi_); //all necessary changes for the fsi problem (i.e. adapting dt) has already been done in PartFS3I::ManipulateDt()
   }
 
   // do time and step in fsi (including subfields) and fs3i match after we will have called SmallTimeScaleUpdateAndOutput()

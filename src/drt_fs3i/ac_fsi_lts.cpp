@@ -484,7 +484,9 @@ void FS3I::ACFSI::LargeTimeScaleDoGrowthUpdate()
   // Switch time step of structure scatra
   //----------------------------------------------------------------------
   //Switch back the time step to do the update with the same (small) timestep as the fsi (subcycling time step possible!)
-  structurescatra->SetDt( dt_ );
+  const double dt_fluid = fsi_->FluidField()->Dt();
+  fluidscatra->SetDt( dt_fluid );
+  structurescatra->SetDt( dt_fluid );
 
   //----------------------------------------------------------------------
   // Prepare time steps
@@ -529,6 +531,7 @@ void FS3I::ACFSI::LargeTimeScaleDoGrowthUpdate()
   // Switch back time step and velocity field
   //----------------------------------------------------------------------
   //Now set the time step back:
+  fluidscatra->SetDt( dt_ );
   structurescatra->SetDt( dt_large_ );
 
   //Set zeros velocities since we assume that the large time scale can not see the deformation of the small time scale
