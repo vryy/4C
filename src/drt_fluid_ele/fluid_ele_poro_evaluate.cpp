@@ -16,6 +16,7 @@
 #include "fluid_ele_poro.H"
 #include "fluid_ele_action.H"
 #include "fluid_ele_parameter_poro.H"
+#include "fluid_ele_poro_immersed.H"
 
 #include "fluid_ele_factory.H"
 #include "fluid_ele_interface.H"
@@ -75,7 +76,15 @@ int DRT::ELEMENTS::FluidPoro::Evaluate( Teuchos::ParameterList&   params,
   switch(params.get<int>("Physical Type",INPAR::FLUID::physicaltype_undefined))
   {
   case INPAR::FLUID::poro:              impltype = "poro";                break;
-  case INPAR::FLUID::poro_p1:           impltype = "poro_p1";             break;
+  case INPAR::FLUID::poro_p1:
+  {
+    DRT::ELEMENTS::FluidPoroImmersed* immersedele_poro = dynamic_cast<DRT::ELEMENTS::FluidPoroImmersed*>(this);
+    if(immersedele_poro)//not a standard immersed element and the node row maps don't know it's nodes
+      impltype = "poro_p1_immersed";
+    else
+      impltype = "poro_p1";
+  }
+    break;
   case INPAR::FLUID::poro_p2:           impltype = "poro_p2";             break;
   default: dserror("invalid physical type for porous fluid!");  break;
   }

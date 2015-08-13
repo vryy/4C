@@ -227,6 +227,20 @@ public:
       Epetra_SerialDenseVector&            elevec2_epetra
       );
 
+  /*! \brief Interpolate velocity to given point
+   *
+   *  \author rauch \date 07/2015
+   */
+  int CorrectImmersedBoundVelocities(
+      Teuchos::ParameterList&              params,
+      DRT::ELEMENTS::Fluid*                ele,
+      DRT::Discretization &                discretization,
+      const std::vector<int> &             lm,
+      Teuchos::RCP<MAT::Material> &        mat,
+      Epetra_SerialDenseVector&            elevec1_epetra,
+      Epetra_SerialDenseVector&            elevec2_epetra
+      );
+
   /*! \brief Integrate the divergence of the velocity field for immersed cell migration
    *
    *  \author rauch \date 05/2014
@@ -256,10 +270,6 @@ public:
    *  \author rauch \date 05/2014
    */
   int ResetImmersedEle(
-      DRT::ELEMENTS::Fluid*                ele,
-      Teuchos::ParameterList&              params
-      );
-  int ResetImmersedPoroEle(
       DRT::ELEMENTS::Fluid*                ele,
       Teuchos::ParameterList&              params
       );
@@ -842,7 +852,7 @@ protected:
       const LINALG::Matrix<nsd_,nen_>& eveln);   ///< velocity at time n+alpha_f / n+1
 
   //! compute residual of momentum equation and subgrid-scale velocity
-  void ComputeSubgridScaleVelocity(const LINALG::Matrix<nsd_,nen_>& eaccam,  ///< acceleration at time n+alpha_M
+  virtual void ComputeSubgridScaleVelocity(const LINALG::Matrix<nsd_,nen_>& eaccam,  ///< acceleration at time n+alpha_M
                                    double &                         fac1,    ///< factor for old s.-s. velocities
                                    double &                         fac2,    ///< factor for old s.-s. accelerations
                                    double &                         fac3,    ///< factor for residual in current s.-s. velocities
@@ -867,7 +877,7 @@ protected:
     );
 
   //! Provide linearization of Garlerkin momentum residual with respect to the velocities
-  void LinGalMomResU(
+  virtual void LinGalMomResU(
       LINALG::Matrix<nsd_*nsd_,nen_> &  lin_resM_Du,    ///< linearisation of the Garlerkin momentum residual
       const double &                    timefacfac      ///< = timefac x fac
       );
@@ -961,7 +971,7 @@ protected:
     );
 
   //! Compute element matrix entries: conservative formulation
-  void ConservativeFormulation(
+  virtual void ConservativeFormulation(
     LINALG::Matrix<nen_*nsd_,nen_*nsd_> &  estif_u,      ///< block (weighting function v x u)
     LINALG::Matrix<nsd_,nen_> &            velforce,     ///< rhs forces velocity
     const double &                         timefacfac,   ///< = timefac x fac
@@ -1380,7 +1390,7 @@ protected:
 
   //! Compute element matrix and rhs entries: inertia, convective andyn
   //! reactive terms of the Galerkin part
-  void InertiaConvectionReactionGalPart(
+  virtual void InertiaConvectionReactionGalPart(
     LINALG::Matrix<nen_*nsd_,nen_*nsd_> &  estif_u,        ///< block (weighting function v x u)
     LINALG::Matrix<nsd_,nen_> &            velforce,       ///< rhs forces velocity
     LINALG::Matrix<nsd_*nsd_,nen_> &       lin_resM_Du,    ///< linearisation of the Garlerkin momentum residual
@@ -1418,7 +1428,7 @@ protected:
     );
 
   //! Compute element matrix entries: continuity terms of the Garlerkin part and rhs
-  void ContinuityGalPart(
+  virtual void ContinuityGalPart(
     LINALG::Matrix<nen_, nen_*nsd_> &  estif_q_u,    ///< block (weighting function q x u)
     LINALG::Matrix<nen_,1> &           preforce,     ///< rhs forces pressure
     const double &                     timefacfac,   ///< = timefac x fac

@@ -7542,6 +7542,17 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    &immersedmethod);
 
     setStringToIntegralParameter<int>(
+                                 "CORRECT_BOUNDARY_VELOCITIES","no",
+                                 "correct velocities in fluid elements cut by surface of immersed structure",
+                                 tuple<std::string>(
+                                   "yes",
+                                   "no"),
+                                   tuple<int>(
+                                   1,
+                                   0),
+                                   &immersedmethod);
+
+    setStringToIntegralParameter<int>(
                                  "TIMESTATS","everyiter",
                                  "summarize time monitor every nln iteration",
                                  tuple<std::string>(
@@ -7556,6 +7567,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     DoubleParameter("VEL_RELAX"  ,1.0,"Velocity Relaxation Parameter",&immersedmethod);
     DoubleParameter("FLD_SRCHRADIUS_FAC",1.0,"fac times fluid ele. diag. length",&immersedmethod);
     DoubleParameter("STRCT_SRCHRADIUS_FAC",0.5,"fac times structure bounding box diagonal",&immersedmethod);
+    IntParameter("NUM_GP_FLUID_BOUND",8,"number of gp in fluid elements cut by surface of immersed structure (higher number yields better mass conservation)",&immersedmethod);
 
     /*----------------------------------------------------------------------*/
     /* parameters for paritioned immersed solvers */
@@ -7724,7 +7736,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       DoubleParameter("ECM_FIBER_RADIUS",0.3,"Average radius of ECM fibers",&celldyn);
 
       IntParameter("INITIALIZATION_STEPS",1,"Num of time steps for initialization (pre-simulation)",&celldyn);
-      IntParameter("BDRY_GP_NUM",2,"Number of integration pints in one direction in IsImmersedBoundary() elements (e.g. 2x2x2)",&celldyn);
 
   /*----------------------------------------------------------------------*/
     Teuchos::ParameterList& fpsidyn = list->sublist(

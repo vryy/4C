@@ -85,24 +85,59 @@ public:
 
   virtual void SetIsImmersed(int isimmersed){is_immersed_ = isimmersed;};
 
-  virtual void SetIsImmersedBoundary(int isimmersedboundary){is_immersed_bdry_ = isimmersedboundary;};
+  virtual void SetBoundaryIsImmersed(int IsBoundaryImmersed){is_immersed_bdry_ = IsBoundaryImmersed;};
 
   virtual void SetHasProjectedDirichlet(int has_projected_dirichletvalues){has_projected_dirichletvalues_ = has_projected_dirichletvalues;};
 
+  virtual void SetIntPointHasProjectedDivergence(int gp, int intpoint_has_projected_divergence){intpoint_has_projected_divergence_->at(gp) = intpoint_has_projected_divergence;};
+
+  virtual void StoreProjectedIntPointDivergence(int gp, double projected_intpoint_divergence){stored_projected_intpoint_divergence_->at(gp) = projected_intpoint_divergence;};
+
   virtual int IsImmersed(){return is_immersed_;};
 
-  virtual int IsImmersedBoundary(){return is_immersed_bdry_;};
+  virtual int IsBoundaryImmersed(){return is_immersed_bdry_;};
 
   virtual int HasProjectedDirichlet(){return has_projected_dirichletvalues_;};
+
+  virtual int IntPointHasProjectedDivergence(int gp){return intpoint_has_projected_divergence_->at(gp);};
+
+  virtual double ProjectedIntPointDivergence(int gp){return stored_projected_intpoint_divergence_->at(gp);};
+
+  virtual Teuchos::RCP<std::vector<int> > GetRCPIntPointHasProjectedDivergence(){return intpoint_has_projected_divergence_;};
+
+  virtual Teuchos::RCP<std::vector<double> > GetRCPProjectedIntPointDivergence(){return stored_projected_intpoint_divergence_;};
+
+  virtual void ConstructElementRCP(int size){
+    if(intpoint_has_projected_divergence_ == Teuchos::null)
+      intpoint_has_projected_divergence_   = Teuchos::rcp(new std::vector<int>(size,0));
+    else
+      intpoint_has_projected_divergence_->resize(size,0);
+
+    if(stored_projected_intpoint_divergence_ == Teuchos::null)
+      stored_projected_intpoint_divergence_= Teuchos::rcp(new std::vector<double>(size,0.0));
+    else
+      stored_projected_intpoint_divergence_->resize(size,0.0);
+   };
+
+  virtual void DestroyElementRCP(){
+   intpoint_has_projected_divergence_->clear();
+   stored_projected_intpoint_divergence_->clear();
+
+   if(intpoint_has_projected_divergence_->size() > 0)
+     dserror("intpoint_has_projected_divergence_ not cleared properly");
+
+   if(stored_projected_intpoint_divergence_->size() > 0)
+     dserror("stored_projected_intpoint_divergence_ not cleared properly");
+  };
 
   virtual void VisIsImmersed(std::map<std::string,int>& names)
   {
     names.insert(std::pair<std::string,int>("IsImmersed",1));
     return; }
 
-  virtual void VisIsImmersedBoundary(std::map<std::string,int>& names)
+  virtual void VisIsBoundaryImmersed(std::map<std::string,int>& names)
   {
-    names.insert(std::pair<std::string,int>("IsImmersedBoundary",1));
+    names.insert(std::pair<std::string,int>("IsBoundaryImmersed",1));
     return; }
 
   /*!
@@ -134,10 +169,10 @@ public:
         data[0] = IsImmersed();
         return true;
       }
-      if (name=="IsImmersedBoundary")
+      if (name=="IsBoundaryImmersed")
           {
             if ((int)data.size()<1) dserror("Size mismatch");
-            data[0] = IsImmersedBoundary();
+            data[0] = IsBoundaryImmersed();
             return true;
           }
     if (name=="EleGId")
@@ -179,6 +214,8 @@ private:
   int is_immersed_bdry_;
   int has_projected_dirichletvalues_;
   std::vector<int> matchednodes_;
+  Teuchos::RCP<std::vector<int> >    intpoint_has_projected_divergence_;     // 1000 max number of gp
+  Teuchos::RCP<std::vector<double> > stored_projected_intpoint_divergence_;  // 1000 max number of gp
 
 };
 }

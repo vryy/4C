@@ -718,7 +718,7 @@ protected:
     \param ppmat          (o) element matrix (pressure - pressure weighting) to be filled
     \param preforce       (o) element rhs vector to be filled
    * */
-  void EvaluatePressureEquationNonTransient(
+  virtual void EvaluatePressureEquationNonTransient(
       Teuchos::ParameterList&                       params,
       const double&                                 timefacfacpre,
       const double&                                 rhsfac,

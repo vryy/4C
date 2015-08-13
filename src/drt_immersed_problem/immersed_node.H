@@ -120,17 +120,12 @@ public:
   /*!
   \brief immersed rauch
   */
-  void SetIsImmersedBoundary(int isimmersedboundary) { isimmersedboundary_=isimmersedboundary; }
-
-  /*!
-  \brief immersed rauch
-  */
   int IsMatched() const { return ismatched_; }
 
   /*!
   \brief immersed rauch
   */
-  int IsImmersedBoundary()  const { return isimmersedboundary_; }
+  int IsBoundaryImmersed()  const { return IsBoundaryImmersed_; }
 
 
   /*!
@@ -141,7 +136,7 @@ public:
 protected:
 
   int ismatched_;
-  int isimmersedboundary_;
+  int IsBoundaryImmersed_;
 
 }; // class ImmersedNode
 } // namespace IMMERSED

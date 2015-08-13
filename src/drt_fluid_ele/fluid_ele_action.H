@@ -67,6 +67,7 @@ enum Action {
     interpolate_velgrad_to_given_point,
     calc_artificial_velocity_divergence,
     interpolate_pressure_to_given_point,
+    correct_immersed_fluid_bound_vel,
     xwall_l2_projection,
     xwall_calc_mk,
     tauw_via_gradient,

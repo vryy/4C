@@ -1,7 +1,7 @@
   /*!----------------------------------------------------------------------
 \file immersed_partitioned_fsi_dirichletneumann.H
 
-\brief partitioned immersed fsi algorithm for dirichlet-neumann coupling (volume dirichlet coupling)
+\brief partitioned immersed fsi algorithm for neumann-(dirichlet-neumann) like coupling
 
 <pre>
 Maintainers: Andreas Rauch
@@ -111,6 +111,8 @@ protected:
   bool relaxforceglobally_;
   bool relaxvelglobally_;
   int coupalgo_;
+  int correct_boundary_velocities_;
+  int degree_gp_fluid_bound_;
 
 
   Teuchos::RCP<FLD::FluidImplicitTimeInt> fluidimpltimeint_;

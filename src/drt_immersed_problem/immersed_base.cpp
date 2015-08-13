@@ -31,759 +31,759 @@ IMMERSED::ImmersedBase::ImmersedBase()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::vector<int> IMMERSED::ImmersedBase::DetermineImmersionDomain(Teuchos::RCP<DRT::Discretization> backgrounddis, Teuchos::RCP<DRT::Discretization> immerseddis,DRT::AssembleStrategy* strategy, bool firstcall)
-{
-# ifdef DEBUG
-  int notconvergedcounter = 0;
-# endif
-
-  if(backgrounddis->Comm().MyPID() == 0)
-  {
-    std::cout<<"################################################################################################"<<std::endl;
-    std::cout<<"###   Determine " << backgrounddis->Name() <<" elements in which the "<<immerseddis->Name()<<" is immersed ..."<<std::endl;
-    std::cout<<"################################################################################################"<<std::endl;
-  }
-
-  std::set<int> nodeset;
-
-  // get gids of column elements of backgrounddis
-  const Epetra_Map* backgroundelecolmap = backgrounddis->ElementColMap();
-  int myglobalcolelementsize = backgroundelecolmap->NumMyElements();
-  std::vector<int> myglobalcolelements(myglobalcolelementsize);
-  backgroundelecolmap->MyGlobalElements(&myglobalcolelements[0]);
-
-  // pointer to background element
-  Teuchos::RCP<DRT::Element> ele;
-
-  // get possible elements being intersected by immersed structure
-  DRT::Condition* searchbox = backgrounddis->GetCondition("ImmersedSearchbox");
-  std::map<int,Teuchos::RCP<DRT::Element> >& searchboxgeom = searchbox->Geometry();
-
-  // get node ids of immersed discretization
-  const Epetra_Map* nodecolmap = immerseddis->NodeColMap();
-  int mynoderowmapsize = nodecolmap ->NumMyElements();
-  std::vector<int> myglobalelements(mynoderowmapsize);
-  nodecolmap->MyGlobalElements(&myglobalelements[0]);
-
-  std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
-  std::vector<int> lm;
-  std::vector<int> lmowner;
-  std::vector<int> lmstride;
-  std::vector<double> my_displacements_np;
-  double xi[DRT::Problem::Instance()->NDim()];
-  double x [DRT::Problem::Instance()->NDim()];
-  int inode = 0;
-
-  Teuchos::RCP<const Epetra_Vector> displacements_np;
-  if(firstcall)
-    displacements_np = Teuchos::rcp(new const Epetra_Vector(*immerseddis->DofColMap(),true));
-  else
-    displacements_np = immerseddis->GetState("dispnp");
-
-  //std::cout<<*immerseddis->DofRowMap()<<std::endl;
-  /////////////////////////////////////////////////////
-  // loop over all immersed nodes
-  /////////////////////////////////////////////////////
-  for(int i=0;i<mynoderowmapsize;i++)
-  {//std::cout<<"i="<<i<<std::endl;
-    DRT::Node* immersednode = immerseddis->gNode(myglobalelements[i]);
-
-#ifdef DEBUG
-    if(immersednode == NULL)
-      dserror("Could not get node with GID %d",immersednode->Id());
-#endif
-    // get initial coordinates and arbitrary [0]-th adjacent element to this node
-    const double* X = immersednode -> X();
-    DRT::Element* adjacentelement = immersednode->Elements()[0];
-
-#ifdef DEBUG
-    if(adjacentelement == NULL)
-      dserror("Could not get adjacent element to node with GID %d",immersednode->Id());
-#endif
-
-    // get data from adjacent element
-    adjacentelement->LocationVector(*immerseddis,lm,lmowner,lmstride);
-    my_displacements_np.resize(lm.size());
-
-#ifdef DEBUG
-    if((int)my_displacements_np.size() != adjacentelement->NumNode()*immerseddis->NumDof(immersednode))
-      dserror("my_displacements_np has less capacity than the numnode*numdofpernode");
-#endif
-
-    // get displacements from adjacent element
-    DRT::UTILS::ExtractMyValues(*displacements_np,my_displacements_np,lm);
-
-    // get node id on adjacentelement of immersednode
-    for (int j=0;j<adjacentelement->NumNode();++j)
-    {
-      if (adjacentelement->NodeIds()[j]==immersednode->Id())
-        inode = j;
-    }
-
-    // update node position X -> x
-    {
-      for (int idof=0;idof<DRT::Problem::Instance()->NDim();++idof)
-      {
-        x[idof] = X[idof] + my_displacements_np[inode*immerseddis->NumDof(immersednode)+idof];
-      }
-    }
-    lmowner.clear();
-    lmstride.clear();
-    lm.clear();
-
-    ////////////////////////////////////////////
-    // loop over all background elements
-    //
-    //
-    ////////////////////////////////////////////
-    for (curr=searchboxgeom.begin(); curr!=searchboxgeom.end(); ++curr)
-    {
-      bool converged = false;
-      //std::cout<<"PROC "<<backgrounddis->Comm().MyPID()<<" : "<<colele<<std::endl;
-      ele=curr->second;
-
-      // get shape
-      DRT::Element::DiscretizationType distype = immerseddis->gElement(0)->Shape();
-
-      switch(distype)
-      {
-      case DRT::Element::hex8 :
-      {
-        MORTAR::UTILS::GlobalToLocal<DRT::Element::hex8>(*ele,&x[0],&xi[0],converged);
-        break;
-      }
-      default:
-      {
-        dserror("DISTYPE NOT SUPPORTED YET. PLEASE CREATE ENTRY IN THIS SWITCH-CASE STATEMENT");
-        break;
-      }
-      }
-
-# ifdef DEBUG
-      if(!converged)
-      {
-        notconvergedcounter ++;
-//        std::cout<<" Map immersed node with GID "<<immerseddis->gNode(myglobalelements[i])->Id()<<" to element with GID "<<curr->second->Id()<<std::endl;
-//        dserror("MAPPING FROM IMMERSED NODE TO BACKGROUNDELEMENT DID NOT CONVERGE");
-      }
-# endif
-
-      if ((abs(xi[0])-1.0)<1e-12 and (abs(xi[1])-1.0)<1e-12 and (abs(xi[2])-1.0)<1e-12)
-      {
-        // -> node i lies in element background element
-        Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::FluidImmersedBase>(ele)->SetIsImmersed(1);
-
-        // fill nodeset with node ids of background eles
-        const int* nodes;
-        nodes = ele->NodeIds();
-        for(int k=0;k<ele->NumNode();++k)
-        {
-          nodeset.insert(nodes[k]);
-        }
-      }
-
-    }// loop over background elements in searchbox
-  }// loop over immersed nodes
-
-  std::vector<int> nodevector(nodeset.size()); // variable to return
-  std::copy(nodeset.begin(), nodeset.end(), nodevector.begin());
-
-
-# ifdef DEBUG
-    std::cout<<"PROC "<<backgrounddis->Comm().MyPID()<<" "<<notconvergedcounter<<" mappings did not converge"<<std::endl;
-    std::cout<<"PROC "<<backgrounddis->Comm().MyPID()<<" : searchboxgeom.size() = "<<searchboxgeom.size()<<std::endl;
-    std::cout<<"PROC "<<backgrounddis->Comm().MyPID()<<" : identified "<<nodeset.size()<<" nodes in immersion domain."<<std::endl;
-    if(nodeset.size() != nodevector.size())
-      dserror("nodeset and nodevector must have same size");
-#endif
-
-  return nodevector;
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-std::vector<int> IMMERSED::ImmersedBase::DetermineImmersionBoundaryDomain(Teuchos::RCP<DRT::Discretization> backgrounddis,
-                                                                          Teuchos::RCP<DRT::Discretization> immerseddis,
-                                                                          const std::string& condname,
-                                                                          bool gpversion,
-                                                                          bool firstcall,
-                                                                          const Teuchos::RCP<std::map<int,Teuchos::RCP<std::map<int,Teuchos::RCP<std::vector<double> > > > > >& gpmap)
-{
-# ifdef DEBUG
-  int notconvergedcounter = 0;
-# endif
-
-  if(backgrounddis->Comm().MyPID() == 0)
-  {
-    std::cout<<"################################################################################################"<<std::endl;
-    std::cout<<"###   Determine " << backgrounddis->Name() <<" elements in which the "<<immerseddis->Name()<<" boundary is immersed ..."<<std::endl;
-    std::cout<<"################################################################################################"<<std::endl;
-  }
-
-  std::set<int> nodeset;
-  double xigp = 0.577350269; // 1/sqrt(3)
-
-  const Epetra_Comm& comm = backgrounddis->Comm();
-
-  DRT::Condition* immersedcond = immerseddis->GetCondition(condname);
-  std::map<int,Teuchos::RCP<DRT::Element> >& immersedgeom = immersedcond->Geometry();
-
-  // get gids of column elements of backgrounddis
-  const Epetra_Map* backgroundelecolmap = backgrounddis->ElementColMap();
-  int myglobalcolelementsize = backgroundelecolmap->NumMyElements();
-  std::vector<int> myglobalcolelements(myglobalcolelementsize);
-  backgroundelecolmap->MyGlobalElements(&myglobalcolelements[0]);
-
-  // get possible elements being intersected by immersed structure
-  DRT::Condition* searchbox = backgrounddis->GetCondition("ImmersedSearchbox");
-  std::map<int,Teuchos::RCP<DRT::Element> >& searchboxgeom = searchbox->Geometry();
-
-  std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
-  std::map<int,Teuchos::RCP<DRT::Element> >::iterator geomcurr;
-  std::vector<int> lm;
-  std::vector<int> lmowner;
-  std::vector<int> lmstride;
-  std::vector<double> my_displacements_np;
-  double xi[DRT::Problem::Instance()->NDim()];
-  double x [DRT::Problem::Instance()->NDim()];
-  int inode = 0;
-
-  Teuchos::RCP<const Epetra_Vector> displacements_np;
-  if(firstcall)
-    displacements_np = Teuchos::rcp(new const Epetra_Vector(*immerseddis->DofColMap(),true));
-  else
-    displacements_np = immerseddis->GetState("dispnp");
-
-
-  if (gpversion == false)
-  {
-    std::set<int> boundarynodeids;
-
-    //////////////////////////////////////////////////////////////////////////////////////////////////
-    // loop over all immersed boundary geometry and fill vector with unique node ids
-    // and fill vector with global coordinates of element integration points
-    /////////////////////////////////////////////////////////////////////////////////////////////////
-    for (geomcurr=immersedgeom.begin(); geomcurr!=immersedgeom.end(); ++geomcurr)
-    {
-      for (int i=0;i<geomcurr->second->NumNode();++i)
-      {
-        DRT::Node* immersednode = geomcurr->second->Nodes()[i];
-        if(immersednode == NULL)
-          dserror("Could not get node with GID %d",immersednode->Id());
-        boundarynodeids.insert(immersednode->Id());
-      }
-    }
-    // gather global vector from proc local vectors
-    LINALG::GatherAll(boundarynodeids,comm);
-
-    std::vector<int> boundarynodevector(boundarynodeids.size());
-    std::copy(boundarynodeids.begin(), boundarynodeids.end(), boundarynodevector.begin());
-
-#ifdef DEBUG
-    int mysize = boundarynodevector.size();
-    int globalsize = 0;
-    comm.SumAll(&mysize,&globalsize,1);
-    std::cout<<"PROC "<<comm.MyPID()<<" : "<< "local number of bundarynodes = "<<mysize<<std::endl;
-    std::cout<<"PROC "<<comm.MyPID()<<" : "<< "global number of bundarynodes = "<<globalsize<<std::endl;
-    std::cout<<"PROC "<<comm.MyPID()<<" : "<< "global number of gathererd bundarynodes = "<<boundarynodeids.size()<<std::endl;
-#endif
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-
-    std::vector<int> boundaryelementids;
-    std::vector<int> boundaryelementinpointglobalcoords;
-
-    /////////////////////////////////////////////////////
-    // loop over all immersed boundary nodes
-    /////////////////////////////////////////////////////
-    for(int i=0;i< (int)boundarynodeids.size();i++)
-    {
-      DRT::Node* immersednode = immerseddis->gNode(boundarynodevector[i]);
-      if(immersednode == NULL)
-        dserror("Could not get node with GID %d",immersednode->Id());
-      const double* X = immersednode -> X();
-      DRT::Element* adjacentelement = immersednode->Elements()[0];
-      if(adjacentelement == NULL)
-        dserror("Could not get adjacent element to node with GID %d",immersednode->Id());
-
-      adjacentelement->LocationVector(*immerseddis,lm,lmowner,lmstride);
-      my_displacements_np.resize(lm.size());
-      if((int)my_displacements_np.size() != adjacentelement->NumNode()*immerseddis->NumDof(immersednode))
-        dserror("my_displacements_np has less capacity than the numnode*numdofpernode");
-      DRT::UTILS::ExtractMyValues(*displacements_np,my_displacements_np,lm);
-
-      // get node id on adjacentelement of immersednode
-      for (int j=0;j<adjacentelement->NumNode();++j)
-      {
-        if (adjacentelement->NodeIds()[j]==immersednode->Id())
-          inode = j;
-      }
-      // update node position X -> x of boundary element
-      {
-        for (int idof=0;idof<DRT::Problem::Instance()->NDim();++idof)
-        {
-          x[idof] = X[idof] + my_displacements_np[inode*immerseddis->NumDof(immersednode)+idof];
-        }
-      }
-      lmowner.clear();
-      lmstride.clear();
-      lm.clear();
-
-      ////////////////////////////////////////////
-      // loop over all background elements
-      ////////////////////////////////////////////
-      for (curr=searchboxgeom.begin(); curr!=searchboxgeom.end(); ++curr)
-      {
-        bool converged = false;
-
-        DRT::Element::DiscretizationType distype = immerseddis->gElement(0)->Shape();
-        switch(distype)
-        {
-        case DRT::Element::hex8 :
-        {
-          MORTAR::UTILS::GlobalToLocal<DRT::Element::hex8>(*(curr->second),&x[0],&xi[0],converged);
-          break;
-        }
-        default:
-        {
-          dserror("DISTYPE NOT SUPPORTED YET. PLEASE CREATE ENTRY IN THIS SWITCH-CASE STATEMENT");
-          break;
-        }
-        }
-
-# ifdef DEBUG
-        if(!converged)
-        {
-          notconvergedcounter ++;
-          //        std::cout<<" Map immersed node with GID "<<immerseddis->gNode(myglobalelements[i])->Id()<<" to element with GID "<<curr->second->Id()<<std::endl;
-          //        dserror("MAPPING FROM IMMERSED NODE TO BACKGROUNDELEMENT DID NOT CONVERGE");
-        }
-# endif
-
-        if ((abs(xi[0])-1.0)<1e-12 and (abs(xi[1])-1.0)<1e-12 and (abs(xi[2])-1.0)<1e-12)
-        {// node i lies in element curr
-          Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::FluidImmersedBase>(curr->second)->SetIsImmersedBoundary(1);
-          const int* nodes;
-          nodes = curr->second->NodeIds();
-          for(int k=0;k<curr->second->NumNode();++k)
-          {
-            nodeset.insert(nodes[k]);
-          }
-        }
-      }// loop over background elements in searchbox
-    }// loop over immersed nodes
-  }// gpversion = false
-
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // alternative loop
-  // gpversion : checks not for nodes in background elements , but for integration points of boundary elements in background elements
-  //
-  //                           | xi_2
-  //                           |
-  //              _____________|______________
-  //             |             |              |
-  //             |             |              |
-  //             |     1       |         2    |
-  //             |     X       |         X    |
-  //             |             |              |
-  //             |             |              |
-  //      _____________________|______________|_______ xi_1
-  //             |             |              |
-  //             |             |              |
-  //             |     4       |         3    |
-  //             |     X       |         X    |
-  //             |             |              |
-  //             |             |              |
-  //             |_____________|______________|
-  //                           |
-  //
-  else if (gpversion == true)
-  {
-    // key is element id, entries are vectors with current positions of bdry int points
-    std::multimap<int,std::vector<double> > mygeometrygpcurrentposition;
-
-    const int numproc  = comm.NumProc();
-    const int myrank   = comm.MyPID();                     // me
-    const int torank   = (myrank + 1) % numproc;           // to
-    const int fromrank = (myrank + numproc - 1) % numproc; // from
-
-    DRT::Exporter exporter(comm);
-
-    int mygeomsize = immersedgeom.size();
-    int maxsize = -1;
-    comm.MaxAll(&mygeomsize,&maxsize,1);
-    geomcurr=immersedgeom.begin();
-    /////////////////////////////////////////////////////
-    // loop over all immersed boundary elements
-    /////////////////////////////////////////////////////
-    //for (geomcurr=immersedgeom.begin(); geomcurr!=immersedgeom.end(); ++geomcurr)
-    for(int geomcount=0;geomcount<maxsize;++geomcount)
-    {
-      if(geomcurr != immersedgeom.end())
-      {
-        Teuchos::RCP<DRT::Element> immersedelement = geomcurr->second;
-        if(immersedelement == Teuchos::null)
-          dserror("Could not get element with GID %d",immersedelement->Id());
-
-        immersedelement->LocationVector(*immerseddis,lm,lmowner,lmstride);
-        my_displacements_np.resize(lm.size());
-        DRT::UTILS::ExtractMyValues(*displacements_np,my_displacements_np,lm);
-
-        ////////////////////////////////////////////////////////
-        // loop over all gps of immersed element on every proc
-        ////////////////////////////////////////////////////////
-        for(int gp = 0; gp < 4; gp++)
-        {
-          double xibdry[2];
-
-          if(gp==0)       {xibdry[0]=( xigp); xibdry[1]=( xigp);}
-          else if (gp==1) {xibdry[0]=( xigp); xibdry[1]=(-xigp);}
-          else if (gp==2) {xibdry[0]=(-xigp); xibdry[1]=(-xigp);}
-          else if (gp==3) {xibdry[0]=(-xigp); xibdry[1]=( xigp);}
-
-          DRT::Element::DiscretizationType distype = immersedelement->Shape();
-          switch(distype)
-          {
-          case DRT::Element::quad4 :
-          {
-            MORTAR::UTILS::LocalToCurrentGlobal<DRT::Element::quad4>(*immersedelement,3,&xibdry[0],my_displacements_np,&x[0]);
-            std::vector<double> xvec(4);
-            xvec[0]=x[0];
-            xvec[1]=x[1];
-            xvec[2]=x[2];
-            xvec[3]=(double)gp; // gp id
-            mygeometrygpcurrentposition.insert(std::pair<int,std::vector<double> >(geomcurr->second->Id(),xvec));
-            break;
-          }
-          default:
-          {
-            dserror("DISTYPE NOT SUPPORTED YET. PLEASE CREATE ENTRY IN THIS SWITCH-CASE STATEMENT");
-            break;
-          }
-          }
-        }
-      }// if mypid has still an element "geomcount" to send around
-
-      ///////////////////////////////////////////////////////////////////////////////////////////
-      /////////
-      /////////     round robin loop
-      /////////
-      ///////// in the end each rank should store the same mygeometrygpcurrentposition multimap
-      /////////
-      ///////////////////////////////////////////////////////////////////////////////////////////
-      //////////////////////////
-      // preparation
-      //////////////////////////
-      int idtosend = geomcurr->first;
-      std::vector<std::vector<double> >gpstosend;
-
-      std::multimap<int,std::vector<double> >::iterator fit = mygeometrygpcurrentposition.find(idtosend);
-      std::pair <std::multimap<int,std::vector<double> >::iterator, std::multimap<int,std::vector<double> >::iterator> range;
-      range = mygeometrygpcurrentposition.equal_range(fit->first);
-      for (std::multimap<int,std::vector<double> >::iterator it=range.first; it!=range.second; ++it)
-      {
-        std::vector<double> gpstosendcoords;
-        for(int dim=0;dim<3;++dim)
-          gpstosendcoords.push_back(it->second[dim]);
-        gpstosendcoords.push_back(it->second[3]); // gp id
-        gpstosend.push_back(gpstosendcoords);
-      }
-//      std::cout<<"PROC "<<myrank<<" idtosend "<<idtosend<<std::endl;
-//      for (int gp=0;gp<(int)gpstosend.size();++gp)
-//      {
-//        std::cout<<"PROC "<<myrank<<" gpstosend : ";
-//        for(int dim=0;dim<(int)gpstosend[gp].size();++dim)
-//        {
-//          std::cout<<gpstosend[gp][dim];
-//        }
-//        std::cout<<" "<<std::endl;
-//      }
-
-      //////////////////////////////////
-      // actual loop
-      /////////////////////////////////
-      for (int irobin = 0; irobin < numproc-1; ++irobin)
-      {
-        std::vector<char> sdata;
-        std::vector<char> rdata;
-        int recievedid;
-        std::vector<std::vector<double> > recievedgps;
-
-        // ---- pack data for sending -----
-        {
-          DRT::PackBuffer data;
-          data.StartPacking();
-          data.AddtoPack(idtosend);
-          {
-            for(int count=0;count<(int)gpstosend.size();++count)
-            {
-              for(int dim=0;dim<3;++dim)
-              {
-                data.AddtoPack(gpstosend[count][dim]);
-              }
-              data.AddtoPack((int)gpstosend[count][3]); // gp id
-            }
-          }
-          std::swap(sdata, data());
-        }
-
-        // ---- send ----
-        MPI_Request request;
-        exporter.ISend(myrank, torank, &(sdata[0]), (int)sdata.size(), 1234, request);
-
-        // ---- receive ----
-        int length = rdata.size();
-        int tag = -1;
-        int from = -1;
-        exporter.ReceiveAny(from,tag,rdata,length);
-        if (tag != 1234 or from != fromrank)
-          dserror("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank, myrank, from, myrank);
-
-        // ---- unpack data -----
-        std::vector<char>::size_type position = 0;
-        recievedid = DRT::ParObject::ExtractInt(position,rdata);
-        while (position < rdata.size())
-        {
-          std::vector<double> gpcoord;
-          gpcoord.push_back(DRT::ParObject::ExtractDouble(position,rdata));
-          gpcoord.push_back(DRT::ParObject::ExtractDouble(position,rdata));
-          gpcoord.push_back(DRT::ParObject::ExtractDouble(position,rdata));
-          gpcoord.push_back((double)DRT::ParObject::ExtractInt(position,rdata));
-          recievedgps.push_back(gpcoord);
-        }
-//        std::cout<<"PROC: "<<comm.MyPID()<<"  Recieved Id -> "<<recievedid<<std::endl;
-
-        idtosend = recievedid;
-        gpstosend.swap(recievedgps);
+//std::vector<int> IMMERSED::ImmersedBase::DetermineImmersionDomain(Teuchos::RCP<DRT::Discretization> backgrounddis, Teuchos::RCP<DRT::Discretization> immerseddis,DRT::AssembleStrategy* strategy, bool firstcall)
+//{
+//# ifdef DEBUG
+//  int notconvergedcounter = 0;
+//# endif
 //
-//        std::cout<<"PROC "<<myrank<<" idtosend "<<idtosend<<std::endl;
-//        for (int gp=0;gp<(int)gpstosend.size();++gp)
-//        {
-//          std::cout<<"PROC "<<myrank<<" gpstosend : ";
-//          for(int dim=0;dim<(int)gpstosend[gp].size();++dim)
-//          {
-//            std::cout<<gpstosend[gp][dim];
-//          }
-//          std::cout<<" "<<std::endl;
-//        }
-
-        // wait for all communication to finish
-        exporter.Wait(request);
-        comm.Barrier();
-
-        if(!immersedgeom.count(recievedid) and !mygeometrygpcurrentposition.count(recievedid))
-        {
-          mygeometrygpcurrentposition.insert(std::pair<int,std::vector<double> >(idtosend,gpstosend[0]));
-          mygeometrygpcurrentposition.insert(std::pair<int,std::vector<double> >(idtosend,gpstosend[1]));
-          mygeometrygpcurrentposition.insert(std::pair<int,std::vector<double> >(idtosend,gpstosend[2]));
-          mygeometrygpcurrentposition.insert(std::pair<int,std::vector<double> >(idtosend,gpstosend[3]));
-        }
-
-        } // end for irobin
-
-      if(geomcurr != immersedgeom.end())
-      {
-        geomcurr++;
-      }
-    } // end loop over all immersed boundary elements
-
-//    ////////////////////////////////////////////////////////
-//    // OUTPUT geometrycurentpositions to all procs
-//    ////////////////////////////////////////////////////////
-//    if(comm.MyPID()==-1)
+//  if(backgrounddis->Comm().MyPID() == 0)
+//  {
+//    std::cout<<"################################################################################################"<<std::endl;
+//    std::cout<<"###   Determine " << backgrounddis->Name() <<" elements in which the "<<immerseddis->Name()<<" is immersed ..."<<std::endl;
+//    std::cout<<"################################################################################################"<<std::endl;
+//  }
+//
+//  std::set<int> nodeset;
+//
+//  // get gids of column elements of backgrounddis
+//  const Epetra_Map* backgroundelecolmap = backgrounddis->ElementColMap();
+//  int myglobalcolelementsize = backgroundelecolmap->NumMyElements();
+//  std::vector<int> myglobalcolelements(myglobalcolelementsize);
+//  backgroundelecolmap->MyGlobalElements(&myglobalcolelements[0]);
+//
+//  // pointer to background element
+//  Teuchos::RCP<DRT::Element> ele;
+//
+//  // get possible elements being intersected by immersed structure
+//  DRT::Condition* searchbox = backgrounddis->GetCondition("ImmersedSearchbox");
+//  std::map<int,Teuchos::RCP<DRT::Element> >& searchboxgeom = searchbox->Geometry();
+//
+//  // get node ids of immersed discretization
+//  const Epetra_Map* nodecolmap = immerseddis->NodeColMap();
+//  int mynoderowmapsize = nodecolmap ->NumMyElements();
+//  std::vector<int> myglobalelements(mynoderowmapsize);
+//  nodecolmap->MyGlobalElements(&myglobalelements[0]);
+//
+//  std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
+//  std::vector<int> lm;
+//  std::vector<int> lmowner;
+//  std::vector<int> lmstride;
+//  std::vector<double> my_displacements_np;
+//  double xi[DRT::Problem::Instance()->NDim()];
+//  double x [DRT::Problem::Instance()->NDim()];
+//  int inode = 0;
+//
+//  Teuchos::RCP<const Epetra_Vector> displacements_np;
+//  if(firstcall)
+//    displacements_np = Teuchos::rcp(new const Epetra_Vector(*immerseddis->DofColMap(),true));
+//  else
+//    displacements_np = immerseddis->GetState("dispnp");
+//
+//  //std::cout<<*immerseddis->DofRowMap()<<std::endl;
+//  /////////////////////////////////////////////////////
+//  // loop over all immersed nodes
+//  /////////////////////////////////////////////////////
+//  for(int i=0;i<mynoderowmapsize;i++)
+//  {//std::cout<<"i="<<i<<std::endl;
+//    DRT::Node* immersednode = immerseddis->gNode(myglobalelements[i]);
+//
+//#ifdef DEBUG
+//    if(immersednode == NULL)
+//      dserror("Could not get node with GID %d",immersednode->Id());
+//#endif
+//    // get initial coordinates and arbitrary [0]-th adjacent element to this node
+//    const double* X = immersednode -> X();
+//    DRT::Element* adjacentelement = immersednode->Elements()[0];
+//
+//#ifdef DEBUG
+//    if(adjacentelement == NULL)
+//      dserror("Could not get adjacent element to node with GID %d",immersednode->Id());
+//#endif
+//
+//    // get data from adjacent element
+//    adjacentelement->LocationVector(*immerseddis,lm,lmowner,lmstride);
+//    my_displacements_np.resize(lm.size());
+//
+//#ifdef DEBUG
+//    if((int)my_displacements_np.size() != adjacentelement->NumNode()*immerseddis->NumDof(immersednode))
+//      dserror("my_displacements_np has less capacity than the numnode*numdofpernode");
+//#endif
+//
+//    // get displacements from adjacent element
+//    DRT::UTILS::ExtractMyValues(*displacements_np,my_displacements_np,lm);
+//
+//    // get node id on adjacentelement of immersednode
+//    for (int j=0;j<adjacentelement->NumNode();++j)
 //    {
-//      std::multimap<int,std::vector<double> >::iterator fit = mygeometrygpcurrentposition.begin(); // iterator to my first element of local multimap
-//      int mysize = mygeometrygpcurrentposition.size();
-//      for (int i=0; i<mysize; ++i)
-//      {
-//        std::pair <std::multimap<int,std::vector<double> >::iterator, std::multimap<int,std::vector<double> >::iterator> range;
-//        range = mygeometrygpcurrentposition.equal_range(fit->first);
+//      if (adjacentelement->NodeIds()[j]==immersednode->Id())
+//        inode = j;
+//    }
 //
-//        std::cout<<"PROC: "<<comm.MyPID()<<" ID: "<<fit->first<<" IntPoints: ";
-//        for (std::multimap<int,std::vector<double> >::iterator it=range.first; it!=range.second; ++it)
-//        {
-//          //[coord_1, coord_2, coord_3, gp_id]
-//          std::cout<<" "<<std::setprecision(6)<<it->second[0]<<" "<<std::setprecision(6)<<it->second[1]<<" "<<std::setprecision(6)<<it->second[2]<<" ID "<<(int)it->second[3]<<"|";
-//        }
-//        std::cout<<""<<std::endl;
-//        fit++;
+//    // update node position X -> x
+//    {
+//      for (int idof=0;idof<DRT::Problem::Instance()->NDim();++idof)
+//      {
+//        x[idof] = X[idof] + my_displacements_np[inode*immerseddis->NumDof(immersednode)+idof];
 //      }
 //    }
-//    comm.Barrier();
-//    dserror("");
-
-# ifdef DEBUG
-    std::cout<<"PROC "<<comm.MyPID()<<" : size of mygeometrygpcurrentposition : "<<mygeometrygpcurrentposition.size()<<std::endl;
-# endif
-
-    //////////////////////////////////////////////////////////////////////
-    // loop over all background elements
-    //
-    // determine background elements in which there are int points of
-    // the boundary of the immersed dis
-    //
-    /////////////////////////////////////////////////////////////////////
-    for (curr=searchboxgeom.begin(); curr!=searchboxgeom.end(); ++curr)
-    {
-      int immersedeleid=-1;
-      int recentimmersedeleid=-1;
-
-      for(std::multimap<int,std::vector<double> >::iterator fit=mygeometrygpcurrentposition.begin();fit!=mygeometrygpcurrentposition.end();++fit)
-      {
-        immersedeleid = fit->first;
-
-        // immerse ele id already stored in gpmap
-        if(immersedeleid == recentimmersedeleid)
-//=======
+//    lmowner.clear();
+//    lmstride.clear();
+//    lm.clear();
+//
+//    ////////////////////////////////////////////
+//    // loop over all background elements
+//    //
+//    //
+//    ////////////////////////////////////////////
+//    for (curr=searchboxgeom.begin(); curr!=searchboxgeom.end(); ++curr)
+//    {
+//      bool converged = false;
+//      //std::cout<<"PROC "<<backgrounddis->Comm().MyPID()<<" : "<<colele<<std::endl;
+//      ele=curr->second;
+//
+//      // get shape
+//      DRT::Element::DiscretizationType distype = immerseddis->gElement(0)->Shape();
+//
+//      switch(distype)
+//      {
+//      case DRT::Element::hex8 :
+//      {
+//        MORTAR::UTILS::GlobalToLocal<DRT::Element::hex8>(*ele,&x[0],&xi[0],converged);
+//        break;
+//      }
+//      default:
+//      {
+//        dserror("DISTYPE NOT SUPPORTED YET. PLEASE CREATE ENTRY IN THIS SWITCH-CASE STATEMENT");
+//        break;
+//      }
+//      }
+//
+//# ifdef DEBUG
+//      if(!converged)
+//      {
+//        notconvergedcounter ++;
+////        std::cout<<" Map immersed node with GID "<<immerseddis->gNode(myglobalelements[i])->Id()<<" to element with GID "<<curr->second->Id()<<std::endl;
+////        dserror("MAPPING FROM IMMERSED NODE TO BACKGROUNDELEMENT DID NOT CONVERGE");
+//      }
+//# endif
+//
 //      if ((abs(xi[0])-1.0)<1e-12 and (abs(xi[1])-1.0)<1e-12 and (abs(xi[2])-1.0)<1e-12)
-//      {// node i lies in element curr
-//        Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::FluidImmersedBase>(curr->second)->SetIsImmersedBoundary(1);
+//      {
+//        // -> node i lies in element background element
+//        Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::FluidImmersedBase>(ele)->SetIsImmersed(1);
+//
+//        // fill nodeset with node ids of background eles
 //        const int* nodes;
-//        nodes = curr->second->NodeIds();
-//        for(int k=0;k<curr->second->NumNode();++k)
-//>>>>>>> .r19849
-        {
-          // do nothing because background ele already in map and immersedele already in map (makes no sense) multimap issue wich is to be surveyed in the future
-        }
-        else
-        {
-          double gpid = -111.;
-          std::pair <std::multimap<int,std::vector<double> >::iterator, std::multimap<int,std::vector<double> >::iterator> range;
-          range = mygeometrygpcurrentposition.equal_range(fit->first);
-          for (std::multimap<int,std::vector<double> >::iterator it=range.first; it!=range.second; ++it)
-          {
-            bool converged = false;
-
-            x[0]=it->second[0];
-            x[1]=it->second[1];
-            x[2]=it->second[2];
-
-            DRT::Element::DiscretizationType distype = immerseddis->gElement(0)->Shape();
-            switch(distype)
-            {
-            case DRT::Element::hex8 :
-            {
-              MORTAR::UTILS::GlobalToLocal<DRT::Element::hex8>(*(curr->second),&x[0],&xi[0],converged);
-              break;
-            }
-            default:
-            {
-              dserror("DISTYPE NOT SUPPORTED YET. PLEASE CREATE ENTRY IN THIS SWITCH-CASE STATEMENT");
-              break;
-            }
-            }
-
-# ifdef DEBUG
-            if(!converged)
-            {
-              notconvergedcounter ++;
-              //        std::cout<<" Map immersed node with GID "<<immerseddis->gNode(myglobalelements[i])->Id()<<" to element with GID "<<curr->second->Id()<<std::endl;
-              //        dserror("MAPPING FROM IMMERSED NODE TO BACKGROUNDELEMENT DID NOT CONVERGE");
-            }
-# endif
-
-            if ((abs(xi[0])-1.0)<1e-12 and (abs(xi[1])-1.0)<1e-12 and (abs(xi[2])-1.0)<1e-12)
-            {// gp lies in element curr
-              if (Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::FluidImmersedBase>(curr->second)->IsImmersedBoundary()==0)
-              {
-                Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::FluidImmersedBase>(curr->second)->SetIsImmersedBoundary(1);
-                const int* nodes;
-                nodes = curr->second->NodeIds();
-                for(int k=0;k<curr->second->NumNode();++k)
-                {
-                  nodeset.insert(nodes[k]);
-                }
-              }
-
-              // here the gpmap is filled. it is needed outside this function to interpolate
-              // the background quantities to the gauss point coordinates in the background
-              // parameter space.
-              if (gpmap != Teuchos::null)
-              {
-                if(gpmap->find(curr->second->Id())==gpmap->end()) // id not yet in map
-                {
-                  Teuchos::RCP<std::vector<double> > tempvec = Teuchos::rcp(new std::vector<double> );
-                  Teuchos::RCP<std::map<int, Teuchos::RCP<std::vector<double> > > > tempgpmap = Teuchos::rcp(new std::map<int, Teuchos::RCP<std::vector<double> > >);
-                  tempgpmap->insert(std::pair<int,Teuchos::RCP<std::vector<double> > >(immersedeleid,tempvec));
-                  gpmap->insert(std::pair<int,Teuchos::RCP<std::map<int,Teuchos::RCP<std::vector<double> > > > >(curr->second->Id(),tempgpmap));
-                }
-                else if(gpmap->at(curr->second->Id())->find(immersedeleid)==gpmap->at(curr->second->Id())->end())
-                {
-                  Teuchos::RCP<std::vector<double> > tempvec = Teuchos::rcp(new std::vector<double>);
-                  gpmap->at(curr->second->Id())->insert(std::pair<int,Teuchos::RCP<std::vector<double> > >(immersedeleid,tempvec));;
-                }
-
-                gpid=it->second[3];
-                gpmap->at(curr->second->Id())->at(immersedeleid)->push_back(xi[0]);
-                gpmap->at(curr->second->Id())->at(immersedeleid)->push_back(xi[1]);
-                gpmap->at(curr->second->Id())->at(immersedeleid)->push_back(xi[2]);
-                gpmap->at(curr->second->Id())->at(immersedeleid)->push_back(gpid);
-
-                recentimmersedeleid = immersedeleid;
-              }
-            }// if not yet in map
-          }// lies in element?
-        }// loop over range of key
-      }// loop over all map keys
-    }// loop over background elements in searchbox
-  } // gpversion = true
-
-  std::vector<int> nodevector(nodeset.size()); // variable to return
-  std::copy(nodeset.begin(), nodeset.end(), nodevector.begin());
-
-
-# ifdef DEBUG
-    std::cout<<"PROC "<<comm.MyPID()<<" "<<notconvergedcounter<<" mappings did not converge"<<std::endl;
-    std::cout<<"PROC "<<comm.MyPID()<<" : searchboxgeom.size() = "<<searchboxgeom.size()<<std::endl;
-    std::cout<<"PROC "<<comm.MyPID()<<" : immersedgeom.size() = "<<immersedgeom.size()<<std::endl;
-    std::cout<<"PROC "<<comm.MyPID()<<" : identified "<<nodeset.size()<<" nodes in immersion domain."<<std::endl;
-    if(nodeset.size() != nodevector.size())
-      dserror("nodeset and nodevector must have same size");
-    if (gpmap != Teuchos::null)
-    {
-      std::cout<<"PROC "<<comm.MyPID()<<" : size of gpmap = "<<gpmap->size()<<std::endl;
-//      /////////////////////////////////////////////////
-//      ////
-//      ////  display gpmap
-//      ////
-//      /////////////////////////////////////////////////
-//      int i = 0;
-//      int gpcounter = 0;
-//      int immersedcounter = 0;
-//      std::map<int,Teuchos::RCP<std::vector<double> > >::iterator curr;
-//      std::map<int,Teuchos::RCP<std::map<int,Teuchos::RCP<std::vector<double> > > > >::iterator backgrdcurr;
-//      for(backgrdcurr=gpmap->begin();backgrdcurr!=gpmap->end();++backgrdcurr)
-//      { ++i;
-//        std::cout<<"PROC "<<comm.MyPID()<<": gpmap->at("<<backgrdcurr->first<<") (entry " <<i<<") :"<<std::endl;
-//        for(curr=backgrdcurr->second->begin();curr!=backgrdcurr->second->end();++curr)
+//        nodes = ele->NodeIds();
+//        for(int k=0;k<ele->NumNode();++k)
 //        {
-//          ++immersedcounter;
-//          std::cout<<"    immersedeleid: "<<curr->first<<" with gp coords : [";
-//          for(int k=0;k<(int)curr->second->size();++k)
-//          {
-//            ++gpcounter;
-//            if(k>0 and k%4==3)
-//              std::cout<<" gpID: "<<(int)curr->second->at(k)<<"] [";
-//            else
-//              std::cout<<curr->second->at(k)<<" ";
-//          }
-//          std::cout<<"\n "<<std::endl;
+//          nodeset.insert(nodes[k]);
 //        }
 //      }
-//      std::cout<<"DISPLAYED "<<i<<" BACKGROUND ELEMENT IDs"<<std::endl;
-//      std::cout<<"DISPLAYED "<<gpcounter/4<<" GAUSS POINT COORDS"<<std::endl;
-//      std::cout<<"DISPLAYED "<<immersedcounter<<" IMMERSED ELEMENTS"<<std::endl;
+//
+//    }// loop over background elements in searchbox
+//  }// loop over immersed nodes
+//
+//  std::vector<int> nodevector(nodeset.size()); // variable to return
+//  std::copy(nodeset.begin(), nodeset.end(), nodevector.begin());
+//
+//
+//# ifdef DEBUG
+//    std::cout<<"PROC "<<backgrounddis->Comm().MyPID()<<" "<<notconvergedcounter<<" mappings did not converge"<<std::endl;
+//    std::cout<<"PROC "<<backgrounddis->Comm().MyPID()<<" : searchboxgeom.size() = "<<searchboxgeom.size()<<std::endl;
+//    std::cout<<"PROC "<<backgrounddis->Comm().MyPID()<<" : identified "<<nodeset.size()<<" nodes in immersion domain."<<std::endl;
+//    if(nodeset.size() != nodevector.size())
+//      dserror("nodeset and nodevector must have same size");
+//#endif
+//
+//  return nodevector;
+//}
 
-    }
 
-    comm.Barrier();
-
-#endif
-
-  return nodevector;
-}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+//std::vector<int> IMMERSED::ImmersedBase::DetermineImmersionBoundaryDomain(Teuchos::RCP<DRT::Discretization> backgrounddis,
+//                                                                          Teuchos::RCP<DRT::Discretization> immerseddis,
+//                                                                          const std::string& condname,
+//                                                                          bool gpversion,
+//                                                                          bool firstcall,
+//                                                                          const Teuchos::RCP<std::map<int,Teuchos::RCP<std::map<int,Teuchos::RCP<std::vector<double> > > > > >& gpmap)
+//{
+//# ifdef DEBUG
+//  int notconvergedcounter = 0;
+//# endif
+//
+//  if(backgrounddis->Comm().MyPID() == 0)
+//  {
+//    std::cout<<"################################################################################################"<<std::endl;
+//    std::cout<<"###   Determine " << backgrounddis->Name() <<" elements in which the "<<immerseddis->Name()<<" boundary is immersed ..."<<std::endl;
+//    std::cout<<"################################################################################################"<<std::endl;
+//  }
+//
+//  std::set<int> nodeset;
+//  double xigp = 0.577350269; // 1/sqrt(3)
+//
+//  const Epetra_Comm& comm = backgrounddis->Comm();
+//
+//  DRT::Condition* immersedcond = immerseddis->GetCondition(condname);
+//  std::map<int,Teuchos::RCP<DRT::Element> >& immersedgeom = immersedcond->Geometry();
+//
+//  // get gids of column elements of backgrounddis
+//  const Epetra_Map* backgroundelecolmap = backgrounddis->ElementColMap();
+//  int myglobalcolelementsize = backgroundelecolmap->NumMyElements();
+//  std::vector<int> myglobalcolelements(myglobalcolelementsize);
+//  backgroundelecolmap->MyGlobalElements(&myglobalcolelements[0]);
+//
+//  // get possible elements being intersected by immersed structure
+//  DRT::Condition* searchbox = backgrounddis->GetCondition("ImmersedSearchbox");
+//  std::map<int,Teuchos::RCP<DRT::Element> >& searchboxgeom = searchbox->Geometry();
+//
+//  std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
+//  std::map<int,Teuchos::RCP<DRT::Element> >::iterator geomcurr;
+//  std::vector<int> lm;
+//  std::vector<int> lmowner;
+//  std::vector<int> lmstride;
+//  std::vector<double> my_displacements_np;
+//  double xi[DRT::Problem::Instance()->NDim()];
+//  double x [DRT::Problem::Instance()->NDim()];
+//  int inode = 0;
+//
+//  Teuchos::RCP<const Epetra_Vector> displacements_np;
+//  if(firstcall)
+//    displacements_np = Teuchos::rcp(new const Epetra_Vector(*immerseddis->DofColMap(),true));
+//  else
+//    displacements_np = immerseddis->GetState("dispnp");
+//
+//
+//  if (gpversion == false)
+//  {
+//    std::set<int> boundarynodeids;
+//
+//    //////////////////////////////////////////////////////////////////////////////////////////////////
+//    // loop over all immersed boundary geometry and fill vector with unique node ids
+//    // and fill vector with global coordinates of element integration points
+//    /////////////////////////////////////////////////////////////////////////////////////////////////
+//    for (geomcurr=immersedgeom.begin(); geomcurr!=immersedgeom.end(); ++geomcurr)
+//    {
+//      for (int i=0;i<geomcurr->second->NumNode();++i)
+//      {
+//        DRT::Node* immersednode = geomcurr->second->Nodes()[i];
+//        if(immersednode == NULL)
+//          dserror("Could not get node with GID %d",immersednode->Id());
+//        boundarynodeids.insert(immersednode->Id());
+//      }
+//    }
+//    // gather global vector from proc local vectors
+//    LINALG::GatherAll(boundarynodeids,comm);
+//
+//    std::vector<int> boundarynodevector(boundarynodeids.size());
+//    std::copy(boundarynodeids.begin(), boundarynodeids.end(), boundarynodevector.begin());
+//
+//#ifdef DEBUG
+//    int mysize = boundarynodevector.size();
+//    int globalsize = 0;
+//    comm.SumAll(&mysize,&globalsize,1);
+//    std::cout<<"PROC "<<comm.MyPID()<<" : "<< "local number of bundarynodes = "<<mysize<<std::endl;
+//    std::cout<<"PROC "<<comm.MyPID()<<" : "<< "global number of bundarynodes = "<<globalsize<<std::endl;
+//    std::cout<<"PROC "<<comm.MyPID()<<" : "<< "global number of gathererd bundarynodes = "<<boundarynodeids.size()<<std::endl;
+//#endif
+//
+//    ///////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//    std::vector<int> boundaryelementids;
+//    std::vector<int> boundaryelementinpointglobalcoords;
+//
+//    /////////////////////////////////////////////////////
+//    // loop over all immersed boundary nodes
+//    /////////////////////////////////////////////////////
+//    for(int i=0;i< (int)boundarynodeids.size();i++)
+//    {
+//      DRT::Node* immersednode = immerseddis->gNode(boundarynodevector[i]);
+//      if(immersednode == NULL)
+//        dserror("Could not get node with GID %d",immersednode->Id());
+//      const double* X = immersednode -> X();
+//      DRT::Element* adjacentelement = immersednode->Elements()[0];
+//      if(adjacentelement == NULL)
+//        dserror("Could not get adjacent element to node with GID %d",immersednode->Id());
+//
+//      adjacentelement->LocationVector(*immerseddis,lm,lmowner,lmstride);
+//      my_displacements_np.resize(lm.size());
+//      if((int)my_displacements_np.size() != adjacentelement->NumNode()*immerseddis->NumDof(immersednode))
+//        dserror("my_displacements_np has less capacity than the numnode*numdofpernode");
+//      DRT::UTILS::ExtractMyValues(*displacements_np,my_displacements_np,lm);
+//
+//      // get node id on adjacentelement of immersednode
+//      for (int j=0;j<adjacentelement->NumNode();++j)
+//      {
+//        if (adjacentelement->NodeIds()[j]==immersednode->Id())
+//          inode = j;
+//      }
+//      // update node position X -> x of boundary element
+//      {
+//        for (int idof=0;idof<DRT::Problem::Instance()->NDim();++idof)
+//        {
+//          x[idof] = X[idof] + my_displacements_np[inode*immerseddis->NumDof(immersednode)+idof];
+//        }
+//      }
+//      lmowner.clear();
+//      lmstride.clear();
+//      lm.clear();
+//
+//      ////////////////////////////////////////////
+//      // loop over all background elements
+//      ////////////////////////////////////////////
+//      for (curr=searchboxgeom.begin(); curr!=searchboxgeom.end(); ++curr)
+//      {
+//        bool converged = false;
+//
+//        DRT::Element::DiscretizationType distype = immerseddis->gElement(0)->Shape();
+//        switch(distype)
+//        {
+//        case DRT::Element::hex8 :
+//        {
+//          MORTAR::UTILS::GlobalToLocal<DRT::Element::hex8>(*(curr->second),&x[0],&xi[0],converged);
+//          break;
+//        }
+//        default:
+//        {
+//          dserror("DISTYPE NOT SUPPORTED YET. PLEASE CREATE ENTRY IN THIS SWITCH-CASE STATEMENT");
+//          break;
+//        }
+//        }
+//
+//# ifdef DEBUG
+//        if(!converged)
+//        {
+//          notconvergedcounter ++;
+//          //        std::cout<<" Map immersed node with GID "<<immerseddis->gNode(myglobalelements[i])->Id()<<" to element with GID "<<curr->second->Id()<<std::endl;
+//          //        dserror("MAPPING FROM IMMERSED NODE TO BACKGROUNDELEMENT DID NOT CONVERGE");
+//        }
+//# endif
+//
+//        if ((abs(xi[0])-1.0)<1e-12 and (abs(xi[1])-1.0)<1e-12 and (abs(xi[2])-1.0)<1e-12)
+//        {// node i lies in element curr
+//          Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::FluidImmersedBase>(curr->second)->SetBoundaryIsImmersed(1);
+//          const int* nodes;
+//          nodes = curr->second->NodeIds();
+//          for(int k=0;k<curr->second->NumNode();++k)
+//          {
+//            nodeset.insert(nodes[k]);
+//          }
+//        }
+//      }// loop over background elements in searchbox
+//    }// loop over immersed nodes
+//  }// gpversion = false
+//
+//  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//  // alternative loop
+//  // gpversion : checks not for nodes in background elements , but for integration points of boundary elements in background elements
+//  //
+//  //                           | xi_2
+//  //                           |
+//  //              _____________|______________
+//  //             |             |              |
+//  //             |             |              |
+//  //             |     1       |         2    |
+//  //             |     X       |         X    |
+//  //             |             |              |
+//  //             |             |              |
+//  //      _____________________|______________|_______ xi_1
+//  //             |             |              |
+//  //             |             |              |
+//  //             |     4       |         3    |
+//  //             |     X       |         X    |
+//  //             |             |              |
+//  //             |             |              |
+//  //             |_____________|______________|
+//  //                           |
+//  //
+//  else if (gpversion == true)
+//  {
+//    // key is element id, entries are vectors with current positions of bdry int points
+//    std::multimap<int,std::vector<double> > mygeometrygpcurrentposition;
+//
+//    const int numproc  = comm.NumProc();
+//    const int myrank   = comm.MyPID();                     // me
+//    const int torank   = (myrank + 1) % numproc;           // to
+//    const int fromrank = (myrank + numproc - 1) % numproc; // from
+//
+//    DRT::Exporter exporter(comm);
+//
+//    int mygeomsize = immersedgeom.size();
+//    int maxsize = -1;
+//    comm.MaxAll(&mygeomsize,&maxsize,1);
+//    geomcurr=immersedgeom.begin();
+//    /////////////////////////////////////////////////////
+//    // loop over all immersed boundary elements
+//    /////////////////////////////////////////////////////
+//    //for (geomcurr=immersedgeom.begin(); geomcurr!=immersedgeom.end(); ++geomcurr)
+//    for(int geomcount=0;geomcount<maxsize;++geomcount)
+//    {
+//      if(geomcurr != immersedgeom.end())
+//      {
+//        Teuchos::RCP<DRT::Element> immersedelement = geomcurr->second;
+//        if(immersedelement == Teuchos::null)
+//          dserror("Could not get element with GID %d",immersedelement->Id());
+//
+//        immersedelement->LocationVector(*immerseddis,lm,lmowner,lmstride);
+//        my_displacements_np.resize(lm.size());
+//        DRT::UTILS::ExtractMyValues(*displacements_np,my_displacements_np,lm);
+//
+//        ////////////////////////////////////////////////////////
+//        // loop over all gps of immersed element on every proc
+//        ////////////////////////////////////////////////////////
+//        for(int gp = 0; gp < 4; gp++)
+//        {
+//          double xibdry[2];
+//
+//          if(gp==0)       {xibdry[0]=( xigp); xibdry[1]=( xigp);}
+//          else if (gp==1) {xibdry[0]=( xigp); xibdry[1]=(-xigp);}
+//          else if (gp==2) {xibdry[0]=(-xigp); xibdry[1]=(-xigp);}
+//          else if (gp==3) {xibdry[0]=(-xigp); xibdry[1]=( xigp);}
+//
+//          DRT::Element::DiscretizationType distype = immersedelement->Shape();
+//          switch(distype)
+//          {
+//          case DRT::Element::quad4 :
+//          {
+//            MORTAR::UTILS::LocalToCurrentGlobal<DRT::Element::quad4>(*immersedelement,3,&xibdry[0],my_displacements_np,&x[0]);
+//            std::vector<double> xvec(4);
+//            xvec[0]=x[0];
+//            xvec[1]=x[1];
+//            xvec[2]=x[2];
+//            xvec[3]=(double)gp; // gp id
+//            mygeometrygpcurrentposition.insert(std::pair<int,std::vector<double> >(geomcurr->second->Id(),xvec));
+//            break;
+//          }
+//          default:
+//          {
+//            dserror("DISTYPE NOT SUPPORTED YET. PLEASE CREATE ENTRY IN THIS SWITCH-CASE STATEMENT");
+//            break;
+//          }
+//          }
+//        }
+//      }// if mypid has still an element "geomcount" to send around
+//
+//      ///////////////////////////////////////////////////////////////////////////////////////////
+//      /////////
+//      /////////     round robin loop
+//      /////////
+//      ///////// in the end each rank should store the same mygeometrygpcurrentposition multimap
+//      /////////
+//      ///////////////////////////////////////////////////////////////////////////////////////////
+//      //////////////////////////
+//      // preparation
+//      //////////////////////////
+//      int idtosend = geomcurr->first;
+//      std::vector<std::vector<double> >gpstosend;
+//
+//      std::multimap<int,std::vector<double> >::iterator fit = mygeometrygpcurrentposition.find(idtosend);
+//      std::pair <std::multimap<int,std::vector<double> >::iterator, std::multimap<int,std::vector<double> >::iterator> range;
+//      range = mygeometrygpcurrentposition.equal_range(fit->first);
+//      for (std::multimap<int,std::vector<double> >::iterator it=range.first; it!=range.second; ++it)
+//      {
+//        std::vector<double> gpstosendcoords;
+//        for(int dim=0;dim<3;++dim)
+//          gpstosendcoords.push_back(it->second[dim]);
+//        gpstosendcoords.push_back(it->second[3]); // gp id
+//        gpstosend.push_back(gpstosendcoords);
+//      }
+////      std::cout<<"PROC "<<myrank<<" idtosend "<<idtosend<<std::endl;
+////      for (int gp=0;gp<(int)gpstosend.size();++gp)
+////      {
+////        std::cout<<"PROC "<<myrank<<" gpstosend : ";
+////        for(int dim=0;dim<(int)gpstosend[gp].size();++dim)
+////        {
+////          std::cout<<gpstosend[gp][dim];
+////        }
+////        std::cout<<" "<<std::endl;
+////      }
+//
+//      //////////////////////////////////
+//      // actual loop
+//      /////////////////////////////////
+//      for (int irobin = 0; irobin < numproc-1; ++irobin)
+//      {
+//        std::vector<char> sdata;
+//        std::vector<char> rdata;
+//        int recievedid;
+//        std::vector<std::vector<double> > recievedgps;
+//
+//        // ---- pack data for sending -----
+//        {
+//          DRT::PackBuffer data;
+//          data.StartPacking();
+//          data.AddtoPack(idtosend);
+//          {
+//            for(int count=0;count<(int)gpstosend.size();++count)
+//            {
+//              for(int dim=0;dim<3;++dim)
+//              {
+//                data.AddtoPack(gpstosend[count][dim]);
+//              }
+//              data.AddtoPack((int)gpstosend[count][3]); // gp id
+//            }
+//          }
+//          std::swap(sdata, data());
+//        }
+//
+//        // ---- send ----
+//        MPI_Request request;
+//        exporter.ISend(myrank, torank, &(sdata[0]), (int)sdata.size(), 1234, request);
+//
+//        // ---- receive ----
+//        int length = rdata.size();
+//        int tag = -1;
+//        int from = -1;
+//        exporter.ReceiveAny(from,tag,rdata,length);
+//        if (tag != 1234 or from != fromrank)
+//          dserror("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank, myrank, from, myrank);
+//
+//        // ---- unpack data -----
+//        std::vector<char>::size_type position = 0;
+//        recievedid = DRT::ParObject::ExtractInt(position,rdata);
+//        while (position < rdata.size())
+//        {
+//          std::vector<double> gpcoord;
+//          gpcoord.push_back(DRT::ParObject::ExtractDouble(position,rdata));
+//          gpcoord.push_back(DRT::ParObject::ExtractDouble(position,rdata));
+//          gpcoord.push_back(DRT::ParObject::ExtractDouble(position,rdata));
+//          gpcoord.push_back((double)DRT::ParObject::ExtractInt(position,rdata));
+//          recievedgps.push_back(gpcoord);
+//        }
+////        std::cout<<"PROC: "<<comm.MyPID()<<"  Recieved Id -> "<<recievedid<<std::endl;
+//
+//        idtosend = recievedid;
+//        gpstosend.swap(recievedgps);
+////
+////        std::cout<<"PROC "<<myrank<<" idtosend "<<idtosend<<std::endl;
+////        for (int gp=0;gp<(int)gpstosend.size();++gp)
+////        {
+////          std::cout<<"PROC "<<myrank<<" gpstosend : ";
+////          for(int dim=0;dim<(int)gpstosend[gp].size();++dim)
+////          {
+////            std::cout<<gpstosend[gp][dim];
+////          }
+////          std::cout<<" "<<std::endl;
+////        }
+//
+//        // wait for all communication to finish
+//        exporter.Wait(request);
+//        comm.Barrier();
+//
+//        if(!immersedgeom.count(recievedid) and !mygeometrygpcurrentposition.count(recievedid))
+//        {
+//          mygeometrygpcurrentposition.insert(std::pair<int,std::vector<double> >(idtosend,gpstosend[0]));
+//          mygeometrygpcurrentposition.insert(std::pair<int,std::vector<double> >(idtosend,gpstosend[1]));
+//          mygeometrygpcurrentposition.insert(std::pair<int,std::vector<double> >(idtosend,gpstosend[2]));
+//          mygeometrygpcurrentposition.insert(std::pair<int,std::vector<double> >(idtosend,gpstosend[3]));
+//        }
+//
+//        } // end for irobin
+//
+//      if(geomcurr != immersedgeom.end())
+//      {
+//        geomcurr++;
+//      }
+//    } // end loop over all immersed boundary elements
+//
+////    ////////////////////////////////////////////////////////
+////    // OUTPUT geometrycurentpositions to all procs
+////    ////////////////////////////////////////////////////////
+////    if(comm.MyPID()==-1)
+////    {
+////      std::multimap<int,std::vector<double> >::iterator fit = mygeometrygpcurrentposition.begin(); // iterator to my first element of local multimap
+////      int mysize = mygeometrygpcurrentposition.size();
+////      for (int i=0; i<mysize; ++i)
+////      {
+////        std::pair <std::multimap<int,std::vector<double> >::iterator, std::multimap<int,std::vector<double> >::iterator> range;
+////        range = mygeometrygpcurrentposition.equal_range(fit->first);
+////
+////        std::cout<<"PROC: "<<comm.MyPID()<<" ID: "<<fit->first<<" IntPoints: ";
+////        for (std::multimap<int,std::vector<double> >::iterator it=range.first; it!=range.second; ++it)
+////        {
+////          //[coord_1, coord_2, coord_3, gp_id]
+////          std::cout<<" "<<std::setprecision(6)<<it->second[0]<<" "<<std::setprecision(6)<<it->second[1]<<" "<<std::setprecision(6)<<it->second[2]<<" ID "<<(int)it->second[3]<<"|";
+////        }
+////        std::cout<<""<<std::endl;
+////        fit++;
+////      }
+////    }
+////    comm.Barrier();
+////    dserror("");
+//
+//# ifdef DEBUG
+//    std::cout<<"PROC "<<comm.MyPID()<<" : size of mygeometrygpcurrentposition : "<<mygeometrygpcurrentposition.size()<<std::endl;
+//# endif
+//
+//    //////////////////////////////////////////////////////////////////////
+//    // loop over all background elements
+//    //
+//    // determine background elements in which there are int points of
+//    // the boundary of the immersed dis
+//    //
+//    /////////////////////////////////////////////////////////////////////
+//    for (curr=searchboxgeom.begin(); curr!=searchboxgeom.end(); ++curr)
+//    {
+//      int immersedeleid=-1;
+//      int recentimmersedeleid=-1;
+//
+//      for(std::multimap<int,std::vector<double> >::iterator fit=mygeometrygpcurrentposition.begin();fit!=mygeometrygpcurrentposition.end();++fit)
+//      {
+//        immersedeleid = fit->first;
+//
+//        // immerse ele id already stored in gpmap
+//        if(immersedeleid == recentimmersedeleid)
+////=======
+////      if ((abs(xi[0])-1.0)<1e-12 and (abs(xi[1])-1.0)<1e-12 and (abs(xi[2])-1.0)<1e-12)
+////      {// node i lies in element curr
+////        Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::FluidImmersedBase>(curr->second)->SetBoundaryIsImmersed(1);
+////        const int* nodes;
+////        nodes = curr->second->NodeIds();
+////        for(int k=0;k<curr->second->NumNode();++k)
+////>>>>>>> .r19849
+//        {
+//          // do nothing because background ele already in map and immersedele already in map (makes no sense) multimap issue wich is to be surveyed in the future
+//        }
+//        else
+//        {
+//          double gpid = -111.;
+//          std::pair <std::multimap<int,std::vector<double> >::iterator, std::multimap<int,std::vector<double> >::iterator> range;
+//          range = mygeometrygpcurrentposition.equal_range(fit->first);
+//          for (std::multimap<int,std::vector<double> >::iterator it=range.first; it!=range.second; ++it)
+//          {
+//            bool converged = false;
+//
+//            x[0]=it->second[0];
+//            x[1]=it->second[1];
+//            x[2]=it->second[2];
+//
+//            DRT::Element::DiscretizationType distype = immerseddis->gElement(0)->Shape();
+//            switch(distype)
+//            {
+//            case DRT::Element::hex8 :
+//            {
+//              MORTAR::UTILS::GlobalToLocal<DRT::Element::hex8>(*(curr->second),&x[0],&xi[0],converged);
+//              break;
+//            }
+//            default:
+//            {
+//              dserror("DISTYPE NOT SUPPORTED YET. PLEASE CREATE ENTRY IN THIS SWITCH-CASE STATEMENT");
+//              break;
+//            }
+//            }
+//
+//# ifdef DEBUG
+//            if(!converged)
+//            {
+//              notconvergedcounter ++;
+//              //        std::cout<<" Map immersed node with GID "<<immerseddis->gNode(myglobalelements[i])->Id()<<" to element with GID "<<curr->second->Id()<<std::endl;
+//              //        dserror("MAPPING FROM IMMERSED NODE TO BACKGROUNDELEMENT DID NOT CONVERGE");
+//            }
+//# endif
+//
+//            if ((abs(xi[0])-1.0)<1e-12 and (abs(xi[1])-1.0)<1e-12 and (abs(xi[2])-1.0)<1e-12)
+//            {// gp lies in element curr
+//              if (Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::FluidImmersedBase>(curr->second)->IsBoundaryImmersed()==0)
+//              {
+//                Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::FluidImmersedBase>(curr->second)->SetBoundaryIsImmersed(1);
+//                const int* nodes;
+//                nodes = curr->second->NodeIds();
+//                for(int k=0;k<curr->second->NumNode();++k)
+//                {
+//                  nodeset.insert(nodes[k]);
+//                }
+//              }
+//
+//              // here the gpmap is filled. it is needed outside this function to interpolate
+//              // the background quantities to the gauss point coordinates in the background
+//              // parameter space.
+//              if (gpmap != Teuchos::null)
+//              {
+//                if(gpmap->find(curr->second->Id())==gpmap->end()) // id not yet in map
+//                {
+//                  Teuchos::RCP<std::vector<double> > tempvec = Teuchos::rcp(new std::vector<double> );
+//                  Teuchos::RCP<std::map<int, Teuchos::RCP<std::vector<double> > > > tempgpmap = Teuchos::rcp(new std::map<int, Teuchos::RCP<std::vector<double> > >);
+//                  tempgpmap->insert(std::pair<int,Teuchos::RCP<std::vector<double> > >(immersedeleid,tempvec));
+//                  gpmap->insert(std::pair<int,Teuchos::RCP<std::map<int,Teuchos::RCP<std::vector<double> > > > >(curr->second->Id(),tempgpmap));
+//                }
+//                else if(gpmap->at(curr->second->Id())->find(immersedeleid)==gpmap->at(curr->second->Id())->end())
+//                {
+//                  Teuchos::RCP<std::vector<double> > tempvec = Teuchos::rcp(new std::vector<double>);
+//                  gpmap->at(curr->second->Id())->insert(std::pair<int,Teuchos::RCP<std::vector<double> > >(immersedeleid,tempvec));;
+//                }
+//
+//                gpid=it->second[3];
+//                gpmap->at(curr->second->Id())->at(immersedeleid)->push_back(xi[0]);
+//                gpmap->at(curr->second->Id())->at(immersedeleid)->push_back(xi[1]);
+//                gpmap->at(curr->second->Id())->at(immersedeleid)->push_back(xi[2]);
+//                gpmap->at(curr->second->Id())->at(immersedeleid)->push_back(gpid);
+//
+//                recentimmersedeleid = immersedeleid;
+//              }
+//            }// if not yet in map
+//          }// lies in element?
+//        }// loop over range of key
+//      }// loop over all map keys
+//    }// loop over background elements in searchbox
+//  } // gpversion = true
+//
+//  std::vector<int> nodevector(nodeset.size()); // variable to return
+//  std::copy(nodeset.begin(), nodeset.end(), nodevector.begin());
+//
+//
+//# ifdef DEBUG
+//    std::cout<<"PROC "<<comm.MyPID()<<" "<<notconvergedcounter<<" mappings did not converge"<<std::endl;
+//    std::cout<<"PROC "<<comm.MyPID()<<" : searchboxgeom.size() = "<<searchboxgeom.size()<<std::endl;
+//    std::cout<<"PROC "<<comm.MyPID()<<" : immersedgeom.size() = "<<immersedgeom.size()<<std::endl;
+//    std::cout<<"PROC "<<comm.MyPID()<<" : identified "<<nodeset.size()<<" nodes in immersion domain."<<std::endl;
+//    if(nodeset.size() != nodevector.size())
+//      dserror("nodeset and nodevector must have same size");
+//    if (gpmap != Teuchos::null)
+//    {
+//      std::cout<<"PROC "<<comm.MyPID()<<" : size of gpmap = "<<gpmap->size()<<std::endl;
+////      /////////////////////////////////////////////////
+////      ////
+////      ////  display gpmap
+////      ////
+////      /////////////////////////////////////////////////
+////      int i = 0;
+////      int gpcounter = 0;
+////      int immersedcounter = 0;
+////      std::map<int,Teuchos::RCP<std::vector<double> > >::iterator curr;
+////      std::map<int,Teuchos::RCP<std::map<int,Teuchos::RCP<std::vector<double> > > > >::iterator backgrdcurr;
+////      for(backgrdcurr=gpmap->begin();backgrdcurr!=gpmap->end();++backgrdcurr)
+////      { ++i;
+////        std::cout<<"PROC "<<comm.MyPID()<<": gpmap->at("<<backgrdcurr->first<<") (entry " <<i<<") :"<<std::endl;
+////        for(curr=backgrdcurr->second->begin();curr!=backgrdcurr->second->end();++curr)
+////        {
+////          ++immersedcounter;
+////          std::cout<<"    immersedeleid: "<<curr->first<<" with gp coords : [";
+////          for(int k=0;k<(int)curr->second->size();++k)
+////          {
+////            ++gpcounter;
+////            if(k>0 and k%4==3)
+////              std::cout<<" gpID: "<<(int)curr->second->at(k)<<"] [";
+////            else
+////              std::cout<<curr->second->at(k)<<" ";
+////          }
+////          std::cout<<"\n "<<std::endl;
+////        }
+////      }
+////      std::cout<<"DISPLAYED "<<i<<" BACKGROUND ELEMENT IDs"<<std::endl;
+////      std::cout<<"DISPLAYED "<<gpcounter/4<<" GAUSS POINT COORDS"<<std::endl;
+////      std::cout<<"DISPLAYED "<<immersedcounter<<" IMMERSED ELEMENTS"<<std::endl;
+//
+//    }
+//
+//    comm.Barrier();
+//
+//#endif
+//
+//  return nodevector;
+//}
 
 
 /*----------------------------------------------------------------------*/
@@ -870,47 +870,48 @@ void IMMERSED::ImmersedBase::CreateGhosting(const Teuchos::RCP<DRT::Discretizati
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IMMERSED::ImmersedBase::CreateVolumeCondition(Teuchos::RCP<DRT::Discretization> dis, std::vector<int> dvol_fenode, DRT::Condition::ConditionType condtype, std::string condname)
-{
-  // determine id of condition
-  std::multimap<std::string,Teuchos::RCP<DRT::Condition> > allconditions;
-  allconditions = dis->GetAllConditions();
-  int id = (int)allconditions.size();
-  id += 1;
+//void IMMERSED::ImmersedBase::CreateVolumeCondition(Teuchos::RCP<DRT::Discretization> dis, std::vector<int> dvol_fenode, DRT::Condition::ConditionType condtype, std::string condname)
+//{
+//  // determine id of condition
+//  std::multimap<std::string,Teuchos::RCP<DRT::Condition> > allconditions;
+//  allconditions = dis->GetAllConditions();
+//  int id = (int)allconditions.size();
+//  id += 1;
+//
+//  // build condition
+//  bool buildgeometry = true; // needed for now to check number of elements in neumannnaumann.cpp
+//  Teuchos::RCP<DRT::Condition> condition =
+//          Teuchos::rcp(new DRT::Condition(id,condtype,buildgeometry,DRT::Condition::Volume));
+//
+//  // add nodes to conditions
+//   condition->Add("Node Ids",dvol_fenode);
+//
+//   // add condition to discretization
+//   dis->SetCondition(condname,condition);
+//
+//   // fill complete if necessary
+//   if (!dis->Filled())
+//     dis -> FillComplete();
+//
+//   //debug
+//#ifdef DEBUG
+//   std::cout<<"PROC "<<dis->Comm().MyPID()<<" : Number of conditioned elements: "<<dis->GetCondition(condname)->Geometry().size()<<" ("<<condname<<")"<<std::endl;
+//#endif
+//
+//}
 
-  // build condition
-  bool buildgeometry = true; // needed for now to check number of elements in neumannnaumann.cpp
-  Teuchos::RCP<DRT::Condition> condition =
-          Teuchos::rcp(new DRT::Condition(id,condtype,buildgeometry,DRT::Condition::Volume));
-
-  // add nodes to conditions
-   condition->Add("Node Ids",dvol_fenode);
-
-   // add condition to discretization
-   dis->SetCondition(condname,condition);
-
-   // fill complete if necessary
-   if (!dis->Filled())
-     dis -> FillComplete();
-
-   //debug
-#ifdef DEBUG
-   std::cout<<"PROC "<<dis->Comm().MyPID()<<" : Number of conditioned elements: "<<dis->GetCondition(condname)->Geometry().size()<<" ("<<condname<<")"<<std::endl;
-#endif
-
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void IMMERSED::ImmersedBase::UpdateVolumeCondition(Teuchos::RCP<DRT::Discretization> dis, std::vector<int> dvol_fenode, DRT::Condition::ConditionType condtype, std::string condname)
-{
-
-}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IMMERSED::ImmersedBase::EvaluateWithInternalCommunication(Teuchos::RCP<DRT::Discretization> dis,
+//void IMMERSED::ImmersedBase::UpdateVolumeCondition(Teuchos::RCP<DRT::Discretization> dis, std::vector<int> dvol_fenode, DRT::Condition::ConditionType condtype, std::string condname)
+//{
+//
+//}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedBase::EvaluateWithInternalCommunication(Teuchos::ParameterList& params,
+                                                               Teuchos::RCP<DRT::Discretization> dis,
                                                                DRT::AssembleStrategy* strategy,
                                                                std::map<int,std::set<int> >& elementstoeval,
                                                                Teuchos::RCP<GEO::SearchTree> structsearchtree,
@@ -935,7 +936,6 @@ void IMMERSED::ImmersedBase::EvaluateWithInternalCommunication(Teuchos::RCP<DRT:
       int row = strategy->FirstDofSet();
       int col = strategy->SecondDofSet();
 
-      Teuchos::ParameterList params;
       params.set<int>("action",action);
       params.set<Teuchos::RCP<GEO::SearchTree> >("structsearchtree_rcp",structsearchtree);
       params.set<std::map<int,LINALG::Matrix<3,1> >* >("currpositions_struct",&currpositions_struct);
@@ -960,7 +960,7 @@ void IMMERSED::ImmersedBase::EvaluateWithInternalCommunication(Teuchos::RCP<DRT:
             strategy->Elevector3());
       else
       {
-        if(immersedelebase->IsImmersedBoundary())
+        if(immersedelebase->IsBoundaryImmersed())
           immersedelebase->Evaluate(params,*dis,la[0].lm_,
               strategy->Elematrix1(),
               strategy->Elematrix2(),
@@ -1021,7 +1021,7 @@ void IMMERSED::ImmersedBase::EvaluateScaTraWithInternalCommunication(Teuchos::RC
             strategy->Elevector3());
       else
       {
-        if(immersedelebase->IsImmersedBoundary())
+        if(immersedelebase->IsBoundaryImmersed())
           ele->Evaluate(params,*dis,la,
               strategy->Elematrix1(),
               strategy->Elematrix2(),

@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file immersed_partitioned_fsi_dirichletneumann.cpp
 
-\brief partitioned immersed fsi algorithm for neumann-neumann like coupling (volume force coupling)
+\brief partitioned immersed fsi algorithm for neumann-(dirichlet-neumann) like coupling
 
 <pre>
 Maintainers: Andreas Rauch
@@ -89,6 +89,23 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::ImmersedPartitionedFSIDirichle
   else
     dserror("Unknown definition of COUPALGO in FSI DYNAMIC section for Immersed FSI.");
 
+
+  // get integration rule for fluid elements cut by structural boundary
+  int num_gp_fluid_bound = globalproblem_->ImmersedMethodParams().get<int>("NUM_GP_FLUID_BOUND");
+  if(num_gp_fluid_bound == 8)
+    degree_gp_fluid_bound_ = 3;
+  else if (num_gp_fluid_bound == 64)
+    degree_gp_fluid_bound_ = 7;
+  else if (num_gp_fluid_bound == 125)
+    degree_gp_fluid_bound_ = 9;
+  else if (num_gp_fluid_bound == 343)
+    degree_gp_fluid_bound_ = 13;
+  else if (num_gp_fluid_bound == 729)
+    degree_gp_fluid_bound_ = 17;
+  else if (num_gp_fluid_bound == 1000)
+    degree_gp_fluid_bound_ = 19;
+  else
+    dserror("Invalid value for parameter NUM_GP_FLUID_BOUND (valid parameters are 8, 64, 125, 343, 729 and 1000).");
 
   // get coupling variable
   displacementcoupling_ = globalproblem_->FSIDynamicParams().sublist("PARTITIONED SOLVER").get<std::string>("COUPVARIABLE") == "Displacement";
@@ -178,8 +195,7 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::FSIOp(const Epetra_Vector
 
     // reset element and node information about immersed method
     params.set<int>("action",FLD::reset_immersed_ele);
-    params.set<int>("reset_isimmersed",0);
-    params.set<int>("reset_hasprojecteddirichlet",0);
+    params.set<int>("intpoints_fluid_bound",degree_gp_fluid_bound_);
     MBFluidField()->Discretization()->Evaluate(params);
 
     ////////////////////
@@ -188,27 +204,6 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::FSIOp(const Epetra_Vector
     Teuchos::RCP<Epetra_Vector> idispnp =
     StructOp(struct_bdry_traction_, fillFlag);
 
-// DEBUG option:
-// Allows to write a certain nonlinear iteration step
-// no matter if it is really converged or not.
-//#ifdef DEBUG
-//    //////////////////////////////
-//    // DEBUG (dummy zero residual)
-//    /////////////////////////////
-//    int steptowrite = 2;
-//
-//    if ((FSI::Partitioned::IterationCounter())[0] == steptowrite)
-//    {
-//      Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(F.Map(),true));
-//      F.Update(1.0,*zeros,0.0);
-//    }
-//    else
-//    {
-//      Teuchos::RCP<Epetra_Vector> ones = Teuchos::rcp(new Epetra_Vector(F.Map(),true));
-//      ones->PutScalar(1.0);
-//      F.Update(1.0,*ones,0.0);
-//    }
-//#else
   int err = F.Update(1.0, *idispnp, -1.0, *idispn, 0.0);
 
   if(err != 0)
@@ -240,12 +235,11 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::FSIOp(const Epetra_Vector
 
     // reset element and node information about immersed method
     params.set<int>("action",FLD::reset_immersed_ele);
-    params.set<int>("reset_isimmersed",0);
-    params.set<int>("reset_hasprojecteddirichlet",0);
+    params.set<int>("intpoints_fluid_bound",degree_gp_fluid_bound_);
     MBFluidField()->Discretization()->Evaluate(params);
 
     ///////////////////////////////////////////////////
-    // CALL StructOp again to recalculate tractions (only tractions due to StructOp( , User))
+    // CALL StructOp again to recalculate tractions for convergence check (no application to structure, no structure solve due to StructOp( , User))
     //////////////////////////////////////////////////
     const Teuchos::RCP<Epetra_Vector> iforcenp = Teuchos::rcp(new Epetra_Vector(*(StructureField()->DofRowMap()),true));
     StructOp(iforcenp, User);
@@ -292,6 +286,8 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::FluidOp(Teuchos::RCP<Epetra_Ve
 {
   // print
   FSI::Partitioned::FluidOp(fluid_artificial_velocity,fillFlag);
+  Teuchos::ParameterList params;
+  params.set<int>("intpoints_fluid_bound",degree_gp_fluid_bound_);
 
   if (fillFlag==User)
   {
@@ -339,7 +335,8 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::FluidOp(Teuchos::RCP<Epetra_Ve
     }
 
     if(curr_subset_of_fluiddis_.empty()==false)
-      EvaluateWithInternalCommunication(MBFluidField()->Discretization(),
+      EvaluateWithInternalCommunication(params,
+                                        MBFluidField()->Discretization(),
                                         &fluid_vol_strategy,
                                         curr_subset_of_fluiddis_,
                                         structure_SearchTree_,
@@ -352,14 +349,9 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::FluidOp(Teuchos::RCP<Epetra_Ve
 
     // apply immersed dirichlets
     DoImmersedDirichletCond(MBFluidField()->FluidField()->WriteAccessVelnp(),fluid_artificial_velocity, dbcmap_immersed_);
-
     double normofvelocities;
     MBFluidField()->FluidField()->ExtractVelocityPart(fluid_artificial_velocity)->Norm2(&normofvelocities);
 
-    // apply pressure neumann based on divergence of structural field above fluid nodes
-    //Teuchos::RCP<const Epetra_Vector> fluid_artificial_veldiv = MBFluidField()->FluidField()->ExtractPressurePart(fluid_artificial_velocity);
-    //double normofdivergence;
-    //fluid_artificial_veldiv->Norm2(&normofdivergence);
 
     if(myrank_ == 0)
     {
@@ -368,14 +360,64 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::FluidOp(Teuchos::RCP<Epetra_Ve
       std::cout<<"################################################################################################"<<std::endl;
     }
 
-
     // solve fluid
-    //MBFluidField()->FluidField()->AddContributionToExternalLoads(fluid_artificial_veldiv);
     MBFluidField()->NonlinearSolve(Teuchos::null,Teuchos::null);
 
     // remove immersed dirichlets from dbcmap of fluid (may be different in next iteration)
     Teuchos::rcp_dynamic_cast<ADAPTER::FluidImmersed >(MBFluidField())->RemoveDirichCond(dbcmap_immersed_);
 
+
+    //************************************************************************
+    // Correct velocity in nodes of fluid elements cut by the structural surface (fluid is solved second time with different dirichlet values)
+    //************************************************************************
+    correct_boundary_velocities_= (DRT::INPUT::IntegralValue<int>(globalproblem_->ImmersedMethodParams(), "CORRECT_BOUNDARY_VELOCITIES"));
+
+    if (correct_boundary_velocities_)
+    {
+      if(myrank_ == 0)
+      {
+        std::cout<<"\nCorrection step "<<std::endl;
+        std::cout<<"################################################################################################"<<std::endl;
+        std::cout<<"###   Correct Velocity in fluid boundary elements "<<std::endl;
+      }
+
+      // current fluid velocity of above solution step (needed for velocity correction)
+      MBFluidField()->Discretization()->SetState(0,"velnp",Teuchos::rcp_dynamic_cast<ADAPTER::FluidImmersed >(MBFluidField())->FluidField()->Velnp());
+
+      // calculate new dirichlet velocities for fluid elements cut by structure
+      EvaluateWithInternalCommunication(params,
+                                        MBFluidField()->Discretization(),
+                                        &fluid_vol_strategy,
+                                        curr_subset_of_fluiddis_,
+                                        structure_SearchTree_,
+                                        currpositions_struct_,
+                                        (int)FLD::correct_immersed_fluid_bound_vel,
+                                        true);
+
+      // Build new dirich map
+      BuildImmersedDirichMap(MBFluidField()->Discretization(), dbcmap_immersed_, MBFluidField()->FluidField()->GetDBCMapExtractor()->CondMap());
+      Teuchos::rcp_dynamic_cast<ADAPTER::FluidImmersed >(MBFluidField())->AddDirichCond(dbcmap_immersed_);
+
+      // apply new dirichlets after velocity correction
+      DoImmersedDirichletCond(MBFluidField()->FluidField()->WriteAccessVelnp(),fluid_artificial_velocity_, dbcmap_immersed_);
+      double normofnewvelocities;
+      MBFluidField()->FluidField()->ExtractVelocityPart(fluid_artificial_velocity)->Norm2(&normofnewvelocities);
+
+      if(myrank_ == 0)
+      {
+        std::cout<<"###   Norm of new Dirichlet Values:   "<<std::setprecision(7)<<normofnewvelocities<<std::endl;
+        std::cout<<"################################################################################################"<<std::endl;
+      }
+
+      // Solve fluid again with new dirichlet values
+      MBFluidField()->NonlinearSolve(Teuchos::null,Teuchos::null);
+
+      // remove immersed dirichlets from dbcmap of fluid (may be different in next time step)
+      Teuchos::rcp_dynamic_cast<ADAPTER::FluidImmersed >(MBFluidField())->RemoveDirichCond(dbcmap_immersed_);
+
+    }
+
+    // set max number of Newton iterations
     MBFluidField()->SetItemax(itemax);
   }
 
@@ -513,13 +555,13 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::InitialGuess()
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::BuildImmersedDirichMap(Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<Epetra_Map>& dirichmap,const Teuchos::RCP<const Epetra_Map>& dirichmap_original)
 {
-  const Epetra_Map* elerowmap = dis->ElementRowMap();
+  const Epetra_Map* elecolmap = dis->ElementColMap();
   std::vector<int> mydirichdofs(0);
 
-  for(int i=0; i<elerowmap->NumMyElements(); ++i)
+  for(int i=0; i<elecolmap->NumMyElements(); ++i)
   {
     // dynamic_cast necessary because virtual inheritance needs runtime information
-    DRT::ELEMENTS::FluidImmersedBase* immersedele = dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(dis->gElement(elerowmap->GID(i)));
+    DRT::ELEMENTS::FluidImmersedBase* immersedele = dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(dis->gElement(elecolmap->GID(i)));
     if(immersedele->HasProjectedDirichlet())
     {
       DRT::Node** nodes = immersedele->Nodes();
@@ -536,7 +578,7 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::BuildImmersedDirichMap(Te
           }
 
           // include also pressure dof if node does not belong to a boundary background element
-          //if((nodes[inode]->IsImmersedBoundary())==0)
+          //if((nodes[inode]->IsBoundaryImmersed())==0)
           //  mydirichdofs.push_back(dofs[3]);
         }
       }
@@ -635,8 +677,6 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::PrepareFluidOp()
   TEUCHOS_FUNC_TIME_MONITOR("IMMERSED::PrepareFluidOp()");
 
   structdis_->SetState(0,"displacement",StructureField()->Dispnp());
-  structdis_->SetState(0,"displacement_old",StructureField()->Dispn());
-  structdis_->SetState(0,"velocity_old",StructureField()->Veln());
   structdis_->SetState(0,"velocity",StructureField()->Velnp());
   fluiddis_ ->SetState(0,"veln",Teuchos::rcp_dynamic_cast<ADAPTER::FluidImmersed >(MBFluidField())->FluidField()->Veln());
 

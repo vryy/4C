@@ -157,6 +157,24 @@ IMMERSED::ImmersedPartitionedCellMigration::ImmersedPartitionedCellMigration(con
   initialization_steps_=globalproblem_->CellMigrationParams().get<int>("INITIALIZATION_STEPS");
 
   ecm_interaction_=DRT::INPUT::IntegralValue<int>(globalproblem_->CellMigrationParams(),"ECM_INTERACTION");
+
+  // get integration rule for fluid elements cut by structural boundary
+  int num_gp_fluid_bound = globalproblem_->ImmersedMethodParams().get<int>("NUM_GP_FLUID_BOUND");
+  if(num_gp_fluid_bound == 8)
+    degree_gp_fluid_bound_ = 3;
+  else if (num_gp_fluid_bound == 64)
+    degree_gp_fluid_bound_ = 7;
+  else if (num_gp_fluid_bound == 125)
+    degree_gp_fluid_bound_ = 9;
+  else if (num_gp_fluid_bound == 343)
+    degree_gp_fluid_bound_ = 13;
+  else if (num_gp_fluid_bound == 729)
+    degree_gp_fluid_bound_ = 17;
+  else if (num_gp_fluid_bound == 1000)
+    degree_gp_fluid_bound_ = 19;
+  else
+    dserror("Invalid value for parameter NUM_GP_FLUID_BOUND (valid parameters are 8, 64, 125, 343, 729 and 1000).");
+
 }
 
 /*----------------------------------------------------------------------*/
@@ -175,6 +193,7 @@ void IMMERSED::ImmersedPartitionedCellMigration::CouplingOp(const Epetra_Vector 
   Teuchos::ParameterList params;
   params.set<int>("action",FLD::reset_immersed_ele);
   params.set<int>("Physical Type", poroelast_subproblem_->FluidField()->PhysicalType());
+  params.set<int>("intpoints_fluid_bound",degree_gp_fluid_bound_);
   backgroundfluiddis_->Evaluate(params);
 
 
@@ -192,8 +211,6 @@ void IMMERSED::ImmersedPartitionedCellMigration::CouplingOp(const Epetra_Vector 
 
     // reset element and node information about immersed method
     params.set<int>("action",FLD::reset_immersed_ele);
-    params.set<int>("reset_isimmersed",0);
-    params.set<int>("reset_hasprojecteddirichlet",0);
     poroelast_subproblem_->FluidField()->Discretization()->Evaluate(params);
 
     }
@@ -233,8 +250,7 @@ void IMMERSED::ImmersedPartitionedCellMigration::CouplingOp(const Epetra_Vector 
 
       // reset element and node information about immersed method
       params.set<int>("action",FLD::reset_immersed_ele);
-      params.set<int>("reset_isimmersed",0);
-      params.set<int>("reset_hasprojecteddirichlet",0);
+      params.set<int>("intpoints_fluid_bound",degree_gp_fluid_bound_);
       backgroundfluiddis_->Evaluate(params);
     }
 
@@ -288,6 +304,8 @@ void IMMERSED::ImmersedPartitionedCellMigration::BackgroundOp(Teuchos::RCP<Epetr
 {
   // print
   IMMERSED::ImmersedPartitioned::BackgroundOp(backgrd_dirichlet_values,fillFlag);
+  Teuchos::ParameterList params;
+  params.set<int>("intpoints_fluid_bound",degree_gp_fluid_bound_);
 
   if (fillFlag==User)
   {
@@ -331,7 +349,8 @@ void IMMERSED::ImmersedPartitionedCellMigration::BackgroundOp(Teuchos::RCP<Epetr
     }
 
     if(curr_subset_of_backgrounddis_.empty()==false)
-      EvaluateWithInternalCommunication(backgroundfluiddis_,
+      EvaluateWithInternalCommunication(params,
+                                        backgroundfluiddis_,
                                         &fluid_vol_strategy,
                                         curr_subset_of_backgrounddis_,
                                         cell_SearchTree_, currpositions_cell_,
@@ -460,9 +479,9 @@ void IMMERSED::ImmersedPartitionedCellMigration::BackgroundOp(Teuchos::RCP<Epetr
     exchange_manager_->SetImmersedSearchTree(cell_SearchTree_);
     exchange_manager_->SetCurrentPositionsImmersedDis(currpositions_cell_);
     exchange_manager_->SetCheckCounter(0);
-    exchange_manager_->SetNumIsImmersedBoundary(0);
+    //exchange_manager_->SetNumIsImmersedBoundary(0);
     poroelast_subproblem_->Solve();
-    std::cout<<"Matched "<<exchange_manager_->GetCheckCounter()<<" integration points in "<<exchange_manager_->GetNumIsImmersedBoundary()<<" IsImmersedBoundary() elements on PROC "<<myrank_<<". "<<std::endl;
+    //std::cout<<"Matched "<<exchange_manager_->GetCheckCounter()<<" integration points in "<<exchange_manager_->GetNumIsImmersedBoundary()<<" IsImmersedBoundary() elements on PROC "<<myrank_<<". "<<std::endl;
 
     // remove immersed dirichlets from dbcmap of fluid (and scatra) (may be different in next iteration)
     poroelast_subproblem_->FluidField() ->RemoveDirichCond(dbcmap_immersed_);
@@ -772,7 +791,7 @@ void IMMERSED::ImmersedPartitionedCellMigration::BuildImmersedDirichMap(Teuchos:
           }
 
           // include also pressure dof if node does not belong to a boundary background element
-          //if((nodes[inode]->IsImmersedBoundary())==0)
+          //if((nodes[inode]->IsBoundaryImmersed())==0)
           //  mydirichdofs.push_back(dofs[3]);
         }
       }
@@ -1055,7 +1074,9 @@ void IMMERSED::ImmersedPartitionedCellMigration::Output()
   cellstructure_->Output();
   poroelast_subproblem_->Output();
 
-  std::cout<<" Number of unconverged steps: "<<continued_steps_<<"\n"<<std::endl;
+  if(myrank_==0)
+    std::cout<<" Number of unconverged steps: "<<continued_steps_<<"\n"<<std::endl;
+
   return;
 }
 

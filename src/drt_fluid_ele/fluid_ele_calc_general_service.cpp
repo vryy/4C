@@ -158,6 +158,12 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::EvaluateService(
       return InterpolateVelocityToNode(params, ele, discretization, lm, elevec1, elevec2);
     }
     break;
+    case FLD::correct_immersed_fluid_bound_vel:
+    {
+      // correct immersed velocities for fluid boundary elements
+      return CorrectImmersedBoundVelocities(params, ele, discretization, lm, mat, elevec1, elevec2);
+    }
+    break;
     case FLD::calc_artificial_velocity_divergence:
     {
       // interpolate structural velocity to given point
@@ -3279,12 +3285,19 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityToNode(
     Epetra_SerialDenseVector&            elevec2_epetra  // given point in parameter space coordinates
     )
 {
+  //----------------------------------------------------------------------
+  //  two major things are done here
+  //  1) interpolation of structural velocity to fluid nodes covered by immersed structure
+  //  2) interpolation of structural divergence to fluid integration points covered by immersed structure
+  //----------------------------------------------------------------------
+
   DRT::ELEMENTS::FluidImmersedBase* immersedele = dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(ele);
 
   DRT::Problem* globalproblem = DRT::Problem::Instance();
   std::string backgrddisname(discretization.Name());
   std::string immerseddisname(params.get<std::string>("immerseddisname"));
 
+  // get input parameter
   static double fsiconvtol = globalproblem->FSIDynamicParams().sublist("PARTITIONED SOLVER").get<double>("CONVTOL");
   static double timestepsize = globalproblem->FSIDynamicParams().get<double>("TIMESTEP");
   static double minvalidvel = (fsiconvtol/timestepsize)*0.9;
@@ -3294,6 +3307,12 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityToNode(
 
   const Teuchos::RCP<DRT::Discretization> backgrddis  = globalproblem->GetDis(backgrddisname);
   const Teuchos::RCP<DRT::Discretization> immerseddis = globalproblem->GetDis(immerseddisname);
+
+  // numgp in cut boundary elements
+  static int num_gp_fluid_bound = globalproblem->ImmersedMethodParams().get<int>("NUM_GP_FLUID_BOUND");
+
+  // degree of gp in cut boundary elements
+  int degree_gp_fluid_bound = params.get("intpoints_fluid_bound",0);
 
   Teuchos::RCP<const Epetra_Vector> state;
   std::vector<double> myvalues(1);
@@ -3308,7 +3327,9 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityToNode(
     DRT::UTILS::ExtractMyValues(*state,myvalues,la[0].lm_);
   }
 
-  std::vector<double> vel(numdofpernode_);
+  // initialize vectors for interpolation
+  std::vector<double> vel(numdofpernode_); // dofs 0,1,2
+  std::vector<double> div(numdofpernode_); // dof  3
 
   // fluid target elements have no displacements. fill dummy vector.
   std::vector<double> targeteledisp(nsd_*nen_);
@@ -3352,11 +3373,15 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityToNode(
 
   bool match = false;
   int  matchnum = 0;
-  ////////////////////////////////////////////////////////////////////
-  ///
-  /// LOOP OVER ALL NODES OF THIS ELEMENT
-  ///
-  ///////////////////////////////////////////////////////////////////
+
+  /********************************************************************************/
+  // 1) Interpolation of structural velocity
+  //    (loop over all nodes of this element)
+  /********************************************************************************/
+
+  // in first step only velocity is interpolated
+  bool vel_calculation = true;
+
   for (int node=0; node<nen_; node++)
   {
     std::vector<double> backgrdxi(nsd_);
@@ -3369,19 +3394,20 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityToNode(
     match = true;
   }
 
-  IMMERSED::InterpolateToBackgrdIntPointFAST  <DRT::Element::hex8,  // source
-                                               DRT::Element::hex8>  // target
+  IMMERSED::InterpolateToBackgrdPoint  <DRT::Element::hex8,                       // source/structure
+                                        DRT::Element::hex8>                       // target/fluid
                                                        (curr_subset_of_structdis,
-                                                        immerseddis, // source
-                                                        backgrddis,  // target
+                                                        immerseddis,              // source/structure
+                                                        backgrddis,               // target/fluid
                                                         *ele,
                                                         backgrdxi,
                                                         targeteledisp,
                                                         action,
-                                                        vel, // result
+                                                        vel,                      // result
                                                         match,
-                                                        false // do no communication. immerseddis is ghosted. every proc finds an immersed element to
-                                                       );     // interpolate to its backgrd nodes.
+                                                        vel_calculation,
+                                                        false                     // do no communication. immerseddis is ghosted. every proc finds an immersed element to
+                                                       );                         // interpolate to its backgrd nodes.
 
   if(match)
   {
@@ -3404,16 +3430,256 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityToNode(
   // reset match to false and check next node in the following loop execution
   match = false;
 
-  }
+  } // loop over all nodes of this element
 
-  // set ele immersed if all nodes lie underneath the immersed dis (i.e. matched = true)
+  // set ele "IsImmersed" if all nodes lie underneath the immersed dis (i.e. matched = true)
   if(matchnum==nen_)
     immersedele -> SetIsImmersed(1);
+  // set ele "IsBoundaryImmersed" if 1<=x<8 nodes lie underneath the immersed dis ("HasProjectedDirichlet" is conjunction of "IsImmersed" and "IsBoundaryImmersed")
   else if (matchnum < nen_ and matchnum > 0)
-    immersedele -> SetIsImmersedBoundary(1);
+  {
+    immersedele -> SetBoundaryIsImmersed(1);
+
+    immersedele -> ConstructElementRCP(num_gp_fluid_bound);
+
+    // DEBUG test
+    if(immersedele->GetRCPProjectedIntPointDivergence()==Teuchos::null)
+      dserror("construction of ProjectedIntPointDivergence failed");
+    if((int)(immersedele->GetRCPProjectedIntPointDivergence()->size())!=num_gp_fluid_bound)
+      dserror("size of ProjectedIntPointDivergence should be equal numgp in cut element = %d",num_gp_fluid_bound);
+
+    // DEBUG test
+    if(immersedele->GetRCPIntPointHasProjectedDivergence()==Teuchos::null)
+      dserror("construction of IntPointHasProjectedDivergence failed");
+    if((int)(immersedele->GetRCPIntPointHasProjectedDivergence()->size())!=num_gp_fluid_bound)
+      dserror("size of IntPointHasProjectedDivergence should be equal numgp in cut element = %d",num_gp_fluid_bound);
+  }
+
+
+  /********************************************************************************/
+  // 2) Interpolation of structural divergence
+  //    (loop over all int points of elements set as "BoundaryIsImmersed")
+  /********************************************************************************/
+
+  // only velocity divergence needs to be calculated and interpolated here
+  vel_calculation = false;
+  // get integration rule of fluid element
+  const DRT::UTILS::GaussIntegration intpoints_fluid_bound(distype,degree_gp_fluid_bound);
+
+  if (degree_gp_fluid_bound)
+  {
+    if (immersedele->IsBoundaryImmersed())
+    {
+      for ( DRT::UTILS::GaussIntegration::const_iterator iquad=intpoints_fluid_bound.begin(); iquad!=intpoints_fluid_bound.end(); ++iquad )
+      {
+        std::vector<double> backgrdxi(nsd_);
+        backgrdxi[0] = iquad.Point()[0];
+        backgrdxi[1] = iquad.Point()[1];
+        backgrdxi[2] = iquad.Point()[2];
+
+      bool gp_has_projected_divergence = false;
+      if(immersedele->GetRCPIntPointHasProjectedDivergence() != Teuchos::null)
+        if(immersedele->GetRCPIntPointHasProjectedDivergence()->size() > 0)
+          gp_has_projected_divergence = (int)immersedele->IntPointHasProjectedDivergence(*iquad);
+
+      if(gp_has_projected_divergence)
+      {
+        match = true;
+      }
+
+      IMMERSED::InterpolateToBackgrdPoint  <DRT::Element::hex8,                       // source/structure
+                                            DRT::Element::hex8>                       // target/fluid
+                                                           (curr_subset_of_structdis,
+                                                            immerseddis,              // source/structure
+                                                            backgrddis,               // target/fluid
+                                                            *ele,
+                                                            backgrdxi,
+                                                            targeteledisp,
+                                                            action,
+                                                            div,                      // result (in dof 3)
+                                                            match,
+                                                            vel_calculation,
+                                                            false                     // do no communication. immerseddis is ghosted. every proc finds an immersed element to
+                                                           );                         // interpolate to its backgrd nodes.
+
+      //
+      if(match)
+      {
+        immersedele->SetIntPointHasProjectedDivergence(*iquad,1);
+        immersedele->StoreProjectedIntPointDivergence(*iquad,div[nsd_]);
+      }
+
+      // reset match to false and check next int point in the following loop execution
+      match = false;
+
+      } // loop over int points
+    }
+  }
 
   return 0;
 }
+
+/*-----------------------------------------------------------------------------*
+ | Correct Immersed Boundary Velocities                          rauch 07/2015 |
+ *-----------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CorrectImmersedBoundVelocities(
+    Teuchos::ParameterList&              params,
+    DRT::ELEMENTS::Fluid*                ele,
+    DRT::Discretization &                discretization, // fluid
+    const std::vector<int> &             lm,
+    Teuchos::RCP<MAT::Material> &        mat,
+    Epetra_SerialDenseVector&            elevec1_epetra, // vectofill
+    Epetra_SerialDenseVector&            elevec2_epetra
+    )
+{
+  // cast fluid element to immersed element to get/store immersed information
+  DRT::ELEMENTS::FluidImmersedBase* immersedele = dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(ele);
+
+  // get global problem
+  DRT::Problem* globalproblem = DRT::Problem::Instance();
+
+  // get factor for search radius
+  static double searchradiusfac = globalproblem->ImmersedMethodParams().get<double>("FLD_SRCHRADIUS_FAC");
+
+  // get discretizations
+  const Teuchos::RCP<DRT::Discretization> fluid_dis  = globalproblem->GetDis("fluid");
+  const Teuchos::RCP<DRT::Discretization> struct_dis = globalproblem->GetDis("structure");
+
+  // get element velocity at time n+1
+  LINALG::Matrix<nsd_,nen_> evelnp;
+  Teuchos::RCP<const Epetra_Vector> state;
+  std::vector<double> myvalues(1);
+  state = discretization.GetState("velnp");
+
+  // fill locationarray
+  DRT::Element::LocationArray la(1);
+  ele->LocationVector(discretization,la,false);
+
+  // extract local values of the global vectors
+  myvalues.resize(la[0].lm_.size());
+  DRT::UTILS::ExtractMyValues(*state,myvalues,la[0].lm_);
+
+  // split velocity and pressure
+  for (int inode=0; inode<nen_; ++inode)
+  {
+    for(int idim=0; idim<nsd_; ++idim)
+    {
+      evelnp(idim,inode) = myvalues[idim+(inode*numdofpernode_)];
+    }
+  }
+
+  // initialize local position and velocity of closest point on structural surface that needs to be found
+  std::vector<double> closest_point_xi(nsd_);
+  std::vector<double> vel(nsd_);
+
+  // fluid target elements have no displacements (fixed grid), fill dummy vector.
+  std::vector<double> targeteledisp(nsd_*nen_);
+  for(int i=0;i<nsd_*nen_;++i)
+    targeteledisp[i]=0.0;
+
+  // set action for structure evaluation
+  const std::string action="interpolate_velocity_to_given_point";
+
+  // parameter space coordinates of nodes 0 to 7 according to global report
+  std::vector<std::vector<double> >nodalrefcoords(8);
+  nodalrefcoords[0].push_back(-1.0); nodalrefcoords[0].push_back(-1.0); nodalrefcoords[0].push_back(-1.0);
+  nodalrefcoords[1].push_back(1.0);  nodalrefcoords[1].push_back(-1.0); nodalrefcoords[1].push_back(-1.0);
+  nodalrefcoords[2].push_back(1.0);  nodalrefcoords[2].push_back(1.0);  nodalrefcoords[2].push_back(-1.0);
+  nodalrefcoords[3].push_back(-1.0); nodalrefcoords[3].push_back(1.0);  nodalrefcoords[3].push_back(-1.0);
+  nodalrefcoords[4].push_back(-1.0); nodalrefcoords[4].push_back(-1.0); nodalrefcoords[4].push_back(1.0);
+  nodalrefcoords[5].push_back(1.0);  nodalrefcoords[5].push_back(-1.0); nodalrefcoords[5].push_back(1.0);
+  nodalrefcoords[6].push_back(1.0);  nodalrefcoords[6].push_back(1.0);  nodalrefcoords[6].push_back(1.0);
+  nodalrefcoords[7].push_back(-1.0); nodalrefcoords[7].push_back(1.0);  nodalrefcoords[7].push_back(1.0);
+
+  // get structure search tree
+  Teuchos::RCP<GEO::SearchTree> struct_searchtree = params.get<Teuchos::RCP<GEO::SearchTree> >("structsearchtree_rcp");
+
+  // search tree related stuff
+  std::map<int,LINALG::Matrix<3,1> >* currpositions_struct = params.get<std::map<int,LINALG::Matrix<3,1> >* >("currpositions_struct");
+
+  // get relevant structure elements
+  std::map<int,std::set<int> > curr_subset_of_structdis;
+  {
+    // search radius (diagonal length of fluid element)
+    double radius = sqrt(pow(ele->Nodes()[1]->X()[0]-ele->Nodes()[7]->X()[0],2)+pow(ele->Nodes()[1]->X()[1]-ele->Nodes()[7]->X()[1],2)+pow(ele->Nodes()[1]->X()[2]-ele->Nodes()[7]->X()[2],2));
+    LINALG::Matrix<3,1> searchcenter; // center of fluid element
+    searchcenter(0)=ele->Nodes()[1]->X()[0]+(ele->Nodes()[7]->X()[0] - ele->Nodes()[1]->X()[0])*0.5;
+    searchcenter(1)=ele->Nodes()[1]->X()[1]+(ele->Nodes()[7]->X()[1] - ele->Nodes()[1]->X()[1])*0.5;
+    searchcenter(2)=ele->Nodes()[1]->X()[2]+(ele->Nodes()[7]->X()[2] - ele->Nodes()[1]->X()[2])*0.5;
+
+    // search for immersed elements within a certain radius around the search center node
+    curr_subset_of_structdis = struct_searchtree->searchElementsInRadius(*struct_dis,*currpositions_struct,searchcenter,radius*searchradiusfac,0);
+  }
+
+  //*********************************
+  // loop over all nodes
+  //*********************************
+
+  bool match = false;
+  for (int node=0; node<this->nen_; node++)
+    {
+      std::vector<double> backgrdfluidxi(nsd_);
+      backgrdfluidxi[0] = nodalrefcoords[node][0];
+      backgrdfluidxi[1] = nodalrefcoords[node][1];
+      backgrdfluidxi[2] = nodalrefcoords[node][2];
+
+    if(static_cast<IMMERSED::ImmersedNode* >(ele->Nodes()[node])->IsMatched())
+    {
+      match = true;
+    }
+
+    IMMERSED::FindClosestStructureSurfacePoint  <DRT::Element::quad4,                 // structure
+                                                 DRT::Element::hex8>                  // fluid
+                                                         (curr_subset_of_structdis,   // relevant struct elements
+                                                          struct_dis,                 // structure discretization
+                                                          fluid_dis,                  // fluid discretization
+                                                          *ele,                       // fluid element
+                                                          backgrdfluidxi,             // space coordinate of node
+                                                          targeteledisp,              // fluid displacements (zero)
+                                                          action,                     // action for structure evaluation
+                                                          vel,                        // velocity result
+                                                          closest_point_xi,           // xi position of closest point
+                                                          match,                      // found a closest point
+                                                          false                       // do no communication. struct_dis is ghosted. every proc finds an immersed element to interpolate to its backgrd nodes
+                                                          );
+
+    // only if closest point lies in this element match=true, otherwise this node is matched by another element
+    if(match)
+    {
+      // if closest point to node lying in this element is found, node is set matched to indicate that now has an dirichlet value
+      static_cast<IMMERSED::ImmersedNode* >(ele->Nodes()[node])->SetIsMatched(1);
+      // this is done before anyway, but doesn't hurt here
+      immersedele->SetHasProjectedDirichlet(1);
+
+      // evaluate shape function of respective node in the closest structure point (has to  lie in the current fluid element)
+      LINALG::Matrix<nen_,1> shapefunct;
+      double weight = 0.0;
+
+      // get position of closest point in local coordinates of fluid element
+      LINALG::Matrix<nsd_,1> xi;
+      for(int i=0;i<nsd_;++i)
+        xi(i) = closest_point_xi[i];
+
+      // evaluate shape functions at closest point
+      DRT::UTILS::shape_function<distype>(xi,shapefunct);
+      weight = shapefunct(node,0);
+
+      // calculate new node velocities by weighting the influence of Navier Stokes solution and interpolation via distance of closest point to this node
+      for(int idim=0; idim<nsd_;++idim)
+      {
+        elevec1_epetra((node*numdofpernode_)+idim) = weight*vel[idim] + (1.0 - weight)*evelnp(idim,node);
+      }
+    } // end if match
+
+    // reset match to false and check next node in the following loop execution
+    match = false;
+
+    } // end loop over all nodes
+
+  return 0;
+
+} // CorrectImmersedBoundVelocities()
 
 /*---------------------------------------------------------------------*
  | Action type: interpolate_pressure_to_given_point                    |
@@ -4461,40 +4727,26 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcMassFlowPeriodicHill(
       Teuchos::ParameterList&         params
      )
   {
-  //  // DEBUG
-  //  static int firstelelid = ele->LID();
+
   DRT::ELEMENTS::FluidImmersedBase* immersedele = dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(ele);
 
-  int reset_isimmersed = params.get("reset_isimmersed",1);
-  int reset_hasprojecteddirichlet = params.get("reset_hasprojecteddirichlet",1);
+  // reset element information
+  immersedele->SetIsImmersed(0);
+  immersedele->SetBoundaryIsImmersed(0);
+  immersedele->SetHasProjectedDirichlet(0);
 
-//  // DEBUG output
-//  if(reset_isimmersed == 1 and reset_hasprojecteddirichlet == 1 and ele->LID()==firstelelid)
-//  {
-//    std::cout<<"\n Reset all information in fluid elements ... \n"<<std::endl;
-//  }
-//  else if(reset_isimmersed == 0 and reset_hasprojecteddirichlet == 0 and ele->LID() == firstelelid)
-//  {
-//      std::cout<<"\n Reset all information in fluid elements EXCEPT 'IsImmersed' ... \n"<<std::endl;
-//  }
-
-  if(reset_isimmersed)
-  {
-    immersedele->SetIsImmersed(0);
-    immersedele->SetIsImmersedBoundary(0);
-  }
-
-  if(reset_hasprojecteddirichlet)
-  {
-    immersedele->SetHasProjectedDirichlet(0);
-  }
-
+  // reset element node information
   DRT::Node** nodes = immersedele->Nodes();
   for(int i=0;i<immersedele->NumNode();++i)
   {
     static_cast<IMMERSED::ImmersedNode* >(nodes[i])->SetIsMatched(0);
-    static_cast<IMMERSED::ImmersedNode* >(nodes[i])->SetIsImmersedBoundary(0);
   }
+
+  // reset element int point information
+  if(immersedele->GetRCPProjectedIntPointDivergence() != Teuchos::null)
+    immersedele->DestroyElementRCP();
+
+
 
   return 0;
 }

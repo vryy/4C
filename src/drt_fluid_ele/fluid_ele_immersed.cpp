@@ -56,7 +56,9 @@ Fluid(id,owner),
 FluidImmersedBase(id,owner),
 is_immersed_(0),
 is_immersed_bdry_(0),
-has_projected_dirichletvalues_(0)
+has_projected_dirichletvalues_(0),
+intpoint_has_projected_divergence_(Teuchos::null),
+stored_projected_intpoint_divergence_(Teuchos::null)
 {
 }
 
@@ -68,8 +70,9 @@ Fluid(old),
 FluidImmersedBase(old),
 is_immersed_       (old.is_immersed_     ),
 is_immersed_bdry_  (old.is_immersed_bdry_),
-has_projected_dirichletvalues_ (old.has_projected_dirichletvalues_)
-
+has_projected_dirichletvalues_ (old.has_projected_dirichletvalues_),
+intpoint_has_projected_divergence_(Teuchos::null),
+stored_projected_intpoint_divergence_(Teuchos::null)
 {
   return;
 }

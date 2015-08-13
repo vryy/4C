@@ -62,7 +62,7 @@ class FluidEleCalcPoroP1 : public FluidEleCalcPoro<distype>
 {
   typedef FluidEleCalcPoro<distype> my;
 
-private:
+protected:
 
   /// private Constructor since we are a Singleton.
   FluidEleCalcPoroP1();

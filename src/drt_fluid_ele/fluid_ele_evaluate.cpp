@@ -21,6 +21,7 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 #include "fluid_ele_interface.H"
 #include "fluid_ele_parameter.H"
 #include "fluid_ele_parameter_std.H"
+#include "fluid_ele_immersed.H"
 #include "fluid_ele_parameter_poro.H"
 #include "fluid_ele_parameter_xfem.H"
 #include "fluid_ele_parameter_timint.H"
@@ -140,6 +141,11 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
   {
   case INPAR::FLUID::loma:    impltype = "loma";    break;
   }
+
+  DRT::ELEMENTS::FluidImmersed* immersedele = dynamic_cast<DRT::ELEMENTS::FluidImmersed*>(this);
+  if(immersedele)//not a standard immersed element and the node row maps don't know it's nodes
+    impltype = "std_immersed";
+
 
   DRT::ELEMENTS::FluidXWall* xwallele=dynamic_cast<DRT::ELEMENTS::FluidXWall*>(this);
   if(xwallele)//not a xwall element and the node row maps don't know it's nodes
@@ -787,6 +793,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
     case FLD::interpolate_velocity_to_given_point:
     case FLD::calc_artificial_velocity_divergence:
     case FLD::interpolate_pressure_to_given_point:
+    case FLD::correct_immersed_fluid_bound_vel:
     case FLD::calc_turbulence_statistics:
     case FLD::xwall_l2_projection:
     case FLD::xwall_calc_mk:

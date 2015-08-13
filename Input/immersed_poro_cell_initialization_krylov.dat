@@ -33,6 +33,7 @@ FORCE_RELAX                     1
 VEL_RELAX                       1
 FLD_SRCHRADIUS_FAC              1
 STRCT_SRCHRADIUS_FAC            0.5
+NUM_GP_FLUID_BOUND              8
 ---------------------------------IMMERSED METHOD/PARTITIONED SOLVER
 PARTITIONED                     DirichletNeumann
 PREDICTOR                       d(n)
@@ -62,7 +63,6 @@ MAXTIME                         7.0
 PENALTY_INIT                    100.0
 PENALTY_START                   250.0
 ECM_FIBER_RADIUS                3.5
-BDRY_GP_NUM                     8
 -------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      OneStepTheta
 RESULTSEVRY                     1

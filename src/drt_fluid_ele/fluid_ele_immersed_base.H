@@ -86,25 +86,43 @@ public:
 
   virtual void SetIsImmersed(int isimmersed){dserror("not implemented in base class");};
 
-  virtual void SetIsImmersedBoundary(int isimmersedboundary){dserror("not implemented in base class");};
+  virtual void SetBoundaryIsImmersed(int IsBoundaryImmersed){dserror("not implemented in base class");};
 
   virtual void SetHasProjectedDirichlet(int has_projected_dirichletvalues){dserror("not implemented in base class");};
 
+  virtual void SetIntPointHasProjectedDivergence(int gp, int intpoint_has_projected_divergence){dserror("not implemented in base class");};
+
+  virtual void StoreProjectedIntPointDivergence(int gp, double projected_intpoint_divergence){dserror("not implemented in base class");};
+
   virtual int IsImmersed(){dserror("not implemented in base class"); return -1234;};
 
-  virtual int IsImmersedBoundary(){dserror("not implemented in base class"); return -1234;};
+  virtual int IsBoundaryImmersed(){dserror("not implemented in base class"); return -1234;};
 
   virtual int HasProjectedDirichlet(){dserror("not implemented in base class"); return -1234;};
+
+  virtual int IntPointHasProjectedDivergence(int gp){dserror("not implemented in base class"); return -1234;};
+
+  virtual double ProjectedIntPointDivergence(int gp){dserror("not implemented in base class"); return -1234.0;};
+
+  virtual Teuchos::RCP<std::vector<int> > GetRCPIntPointHasProjectedDivergence(){dserror("not implemented in base class"); return Teuchos::null;};
+
+  virtual Teuchos::RCP<std::vector<double> > GetRCPProjectedIntPointDivergence(){dserror("not implemented in base class"); return Teuchos::null;};
 
   virtual void VisIsImmersed(std::map<std::string,int>& names)
   {
     dserror("not implemented in base class");
     return; }
 
-  virtual void VisIsImmersedBoundary(std::map<std::string,int>& names)
+  virtual void VisIsBoundaryImmersed(std::map<std::string,int>& names)
   {
     dserror("not implemented in base class");
     return; }
+
+  virtual void ConstructElementRCP(int size)
+  { dserror("not implemented in base class"); return;};
+
+  virtual void DestroyElementRCP()
+  { dserror("not implemented in base class"); return;};
 
   /*!
   \brief Query data to be visualized using BINIO of a given name

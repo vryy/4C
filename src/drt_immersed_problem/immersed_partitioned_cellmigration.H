@@ -188,6 +188,7 @@ protected:
   bool ecm_interaction_;
   int continued_steps_;
   double nu_; //<- AITKEN relaxation parameter
+  int degree_gp_fluid_bound_; //<- number of integration points in fluid elements cut by structural boundary
 
 
   DRT::ImmersedFieldExchangeManager* exchange_manager_ ;

@@ -34,7 +34,7 @@ DRT::ParObject* IMMERSED::ImmersedNodeType::Create( const std::vector<char> & da
 IMMERSED::ImmersedNode::ImmersedNode(int id, const double* coords, const int owner) :
 DRT::Node(id,coords,owner),
 ismatched_(false),
-isimmersedboundary_(false)
+IsBoundaryImmersed_(false)
 {
 }
 
@@ -44,7 +44,7 @@ isimmersedboundary_(false)
 IMMERSED::ImmersedNode::ImmersedNode(const IMMERSED::ImmersedNode& old) :
 DRT::Node(old),
 ismatched_(old.ismatched_),
-isimmersedboundary_(old.isimmersedboundary_)
+IsBoundaryImmersed_(old.IsBoundaryImmersed_)
 {
 
   dserror("ERROR: ImmersedNode copy-ctor has not been used before. Be careful when using it.");
@@ -88,7 +88,7 @@ void IMMERSED::ImmersedNode::Print(std::ostream& os) const
   os << "Immersed ";
   DRT::Node::Print(os);
 
-  if (IsImmersedBoundary()) os << " Immersed Boundary  ";
+  if (IsBoundaryImmersed()) os << " Immersed Boundary  ";
   else                      os << " NOT Immersed Boundary ";
 
   if (IsMatched()) os << " Matched ";
@@ -113,8 +113,8 @@ void IMMERSED::ImmersedNode::Pack(DRT::PackBuffer& data) const
   // add base class DRT::Node
   DRT::Node::Pack(data);
 
-  // add isimmersedboundary_
-  AddtoPack(data,isimmersedboundary_);
+  // add IsBoundaryImmersed_
+  AddtoPack(data,IsBoundaryImmersed_);
   // add ismatched_
   AddtoPack(data,ismatched_);
 
@@ -141,7 +141,7 @@ void IMMERSED::ImmersedNode::Unpack(const std::vector<char>& data)
   DRT::Node::Unpack(basedata);
 
   // isimersedboundary_
-  isimmersedboundary_ = ExtractInt(position,data);
+  IsBoundaryImmersed_ = ExtractInt(position,data);
   // ismatched_
   ismatched_ = ExtractInt(position,data);
 
