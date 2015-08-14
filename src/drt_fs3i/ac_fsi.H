@@ -70,7 +70,7 @@ namespace FS3I
     void IsFsiPeriodic();
 
     ///Do a standard fsi step
-    void DoFSIStepStandard( const int callnum=1 );
+    void DoFSIStepStandard();
 
     ///Do a fsi step with subcycling
     void DoFSIStepSubcycled( const int subcyclingsteps);

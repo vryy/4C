@@ -371,7 +371,7 @@ void FS3I::ACFSI::SmallTimeScaleOuterLoopIterStagg()
 
     SetStructScatraSolution();
 
-    DoFSIStepStandard(itnum);
+    DoFSIStepStandard();
     //subcycling is not allowed, since we use this function for the growth update. Nevertheless it should work..
     //periodical repetition is not allowed, since we want to converge the problems
 
@@ -446,7 +446,7 @@ void FS3I::ACFSI::IsFsiPeriodic()
 /*----------------------------------------------------------------------*
  | Do a standard fsi step                                    Thon 12/14 |
  *----------------------------------------------------------------------*/
-void FS3I::ACFSI::DoFSIStepStandard(const int callnum)
+void FS3I::ACFSI::DoFSIStepStandard()
 {
   if (Comm().MyPID()==0)
   {
@@ -454,7 +454,7 @@ void FS3I::ACFSI::DoFSIStepStandard(const int callnum)
                "\n                               FSI SOLVER "
                "\n************************************************************************"<<std::endl;
   }
-  fsi_->TimeStep(fsi_,callnum);
+  fsi_->TimeStep(fsi_);
 }
 
 /*----------------------------------------------------------------------*

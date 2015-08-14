@@ -121,9 +121,14 @@ void FSI::MonolithicBase::ReadRestart(int step)
 /*----------------------------------------------------------------------------*/
 void FSI::MonolithicBase::PrepareTimeStep()
 {
-  PrepareTimeStepFSI();
+  IncrementTimeAndStep();
+  PrintHeader();
+
   PrepareTimeStepPreconditioner();
   PrepareTimeStepFields();
+
+  //Note: it's important to first prepare the single fields and than the fsi problem
+  PrepareTimeStepFSI();
 
   return;
 }
@@ -132,8 +137,8 @@ void FSI::MonolithicBase::PrepareTimeStep()
 /*----------------------------------------------------------------------------*/
 void FSI::MonolithicBase::PrepareTimeStepFSI()
 {
-  IncrementTimeAndStep();
-  PrintHeader();
+  ddgpred_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->ExtractInterfaceDispnp()));
+  ddgpred_->Update(-1.0, *StructureField()->ExtractInterfaceDispn(), 1.0);
 
   return;
 }
@@ -539,7 +544,7 @@ void FSI::Monolithic::PrepareTimeloop()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::Monolithic::TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface, const int callnum)
+void FSI::Monolithic::TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::TimeStep");
 
@@ -567,11 +572,6 @@ void FSI::Monolithic::TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Requir
   // Single field predictors have been applied, so store the structural
   // interface displacement increment due to predictor or inhomogeneous
   // Dirichlet boundary conditions
-  if (callnum == 1)
-  {
-    ddgpred_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->ExtractInterfaceDispnp()));
-    ddgpred_->Update(-1.0, *StructureField()->ExtractInterfaceDispn(), 1.0);
-  }
 
   // start time measurement
   Teuchos::RCP<Teuchos::TimeMonitor> timemonitor = Teuchos::rcp(new Teuchos::TimeMonitor(timer,true));
@@ -1067,14 +1067,6 @@ bool FSI::BlockMonolithic::computePreconditioner(const Epetra_Vector &x,
   }
 
   return true;
-}
-
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
-void FSI::BlockMonolithic::PrepareTimeStep()
-{
-  FSI::MonolithicBase::PrepareTimeStep();
-  PrepareTimeStepPreconditioner();
 }
 
 /*----------------------------------------------------------------------------*/

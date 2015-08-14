@@ -110,7 +110,7 @@ namespace FSI
 
     //! @name Time loop building blocks
 
-    /// start a new time step
+    /// prepare time step for the whole fsi problem (including sub problems)
     virtual void PrepareTimeStep();
 
     /// take current results for converged and save for next time step
@@ -144,13 +144,13 @@ namespace FSI
 
   protected:
 
-    //! Prepare FSI algorithm for new time step
+    //! Prepare time steps for the fsi problem
     virtual void PrepareTimeStepFSI();
 
     //! Prepare preconditioner for new time step
     virtual void PrepareTimeStepPreconditioner() = 0;
 
-    //! Prepare fields for new time step
+    //! Prepare time steps for the sub problems, i.e. fluid, structure, ale
     virtual void PrepareTimeStepFields();
 
     /// underlying structure of the FSI problem
@@ -288,7 +288,7 @@ namespace FSI
     //! do new time step
     //!
     //! return error code that indicates whether the nonlinear solver converged or not
-    virtual void TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface, const int callnum=1);
+    virtual void TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);
 
     //@}
 
@@ -964,9 +964,6 @@ namespace FSI
 
     /// the composed system matrix
     virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const = 0;
-
-    /// start a new time step
-    virtual void PrepareTimeStep();
 
   protected:
 
