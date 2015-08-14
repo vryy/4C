@@ -43,9 +43,6 @@ namespace POROELAST
   /// type of time discretization for continuity equation
   enum TimeDisTypeConti
   {
-//    OneWay,
- //   SequStagg,
- //   IterStagg,
     porosity,
     pressure
   };

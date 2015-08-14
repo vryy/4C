@@ -39,19 +39,19 @@ public:
   void SetElementPoroParameter( Teuchos::ParameterList& params, int myrank);
 
   //! print parameter to screen
-  void PrintFluidParameterPoro();
+  void PrintFluidParameterPoro() const;
 
   //! partial integration of porosity gradient in continuity equation
-  bool PoroContiPartInt(){return poro_conti_partint_;};
+  const bool PoroContiPartInt() const {return poro_conti_partint_;};
 
   //! biot stabilization
-  bool StabBiot(){return stab_biot_;};
+  const bool StabBiot() const {return stab_biot_;};
 
   //! scaling factor for biot stabilization
-  double StabBiotScaling(){return stab_biot_scaling_;};
+  const double StabBiotScaling() const {return stab_biot_scaling_;};
 
   //! type of time discretization for continuity equation
-  INPAR::POROELAST::TimeDisTypeConti TimeDisTypeConti(){return time_distype_conti_;};
+  const INPAR::POROELAST::TimeDisTypeConti TimeDisTypeConti() const {return time_distype_conti_;};
 
 
 private:

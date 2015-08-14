@@ -1059,41 +1059,9 @@ void POROELAST::Monolithic::ApplyStrCouplMatrix(
 )
 {
   k_sf->Zero();
-  const Teuchos::ParameterList& sdynparams
-  = DRT::Problem::Instance()->StructuralDynamicParams();
 
   // create the parameters for the discretization
   Teuchos::ParameterList sparams;
-
-  switch (strmethodname_)
-  {
-   case  INPAR::STR::dyna_statics :
-   {
-     sparams.set("theta", 1.0);
-   // continue
-   break;
-   }
-  case INPAR::STR::dyna_onesteptheta:
-  {
-    double theta = sdynparams.sublist("ONESTEPTHETA").get<double> ("THETA");
-    sparams.set("theta", theta);
-    break;
-  }
-    // TODO: time factor for genalpha
-    /*
-     case INPAR::STR::dyna_genalpha :
-     {
-     double alphaf_ = sdynparams.sublist("GENALPHA").get<double>("ALPHA_F");
-     // K_Teffdyn(T_n+1) = (1-alphaf_) . kst
-     // Lin(dT_n+1-alphaf_/ dT_n+1) = (1-alphaf_)
-     k_st->Scale(1.0 - alphaf_);
-     }*/
-  default:
-  {
-    dserror("Don't know what to do... only one-step theta time integration implemented");
-    break;
-  }
-  } // end of switch(strmethodname_)
 
   const std::string action = "calc_struct_multidofsetcoupling";
   sparams.set("action", action);
@@ -1122,6 +1090,9 @@ void POROELAST::Monolithic::ApplyStrCouplMatrix(
   StructureField()->Discretization()->EvaluateCondition( sparams, structuralstrategy,"PoroCoupling" );
   //StructureField()->Discretization()->Evaluate( sparams, structuralstrategy);
   StructureField()->Discretization()->ClearState();
+
+  //scale with time integration factor
+  k_sf->Scale(1.0-StructureField()->TimIntParam());
 
   return;
 }    // ApplyStrCouplMatrix()
@@ -1154,18 +1125,20 @@ void POROELAST::Monolithic::ApplyFluidCouplMatrix(
   FluidField()->Discretization()->SetState(0,"gridvn",FluidField()->GridVeln());
   FluidField()->Discretization()->SetState(0,"veln",FluidField()->Veln());
   FluidField()->Discretization()->SetState(0,"accnp",FluidField()->Accnp());
+  FluidField()->Discretization()->SetState(0,"accam",FluidField()->Accam());
+  FluidField()->Discretization()->SetState(0,"accn",FluidField()->Accn());
 
   FluidField()->Discretization()->SetState(0,"scaaf",FluidField()->Scaaf());
 
   FluidField()->Discretization()->SetState(0,"hist",FluidField()->Hist());
 
   // set scheme-specific element parameters and vector values
-  //TODO
-  //if (is_genalpha_)
-  //    discret_->SetState("velaf",velaf_);
-  //else
+  if (FluidField()->TimIntScheme() == INPAR::FLUID::timeint_npgenalpha or
+      FluidField()->TimIntScheme() == INPAR::FLUID::timeint_npgenalpha)
+    FluidField()->Discretization()->SetState(0,"velaf",FluidField()->Velaf());
+  else
+    FluidField()->Discretization()->SetState(0,"velaf",FluidField()->Velnp());
 
-  FluidField()->Discretization()->SetState(0,"velaf",FluidField()->Velnp());
   FluidField()->Discretization()->SetState(0,"velnp",FluidField()->Velnp());
 
   // build specific assemble strategy for the fluid-mechanical system matrix

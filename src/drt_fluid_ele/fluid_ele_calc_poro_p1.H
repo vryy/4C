@@ -134,54 +134,6 @@ public:
                              const DRT::UTILS::GaussIntegration & intpoints);
 
 protected:
-    /*!
-      \brief evaluate function for Fluid element for porous flow
-
-      Specific evaluate function without any knowledge about DRT objects. This
-      way the element evaluation is independent of the specific mesh storage.
-
-      \param params           (i) element parameter list
-      \param ebofoaf          (i) body force at n+alpha_F/n+1
-      \param elemat1          (o) element matrix to be filled
-      \param elevec1          (o) element rhs vector to be filled
-      \param evelaf           (i) nodal velocities at n+alpha_F/n+1
-      \param epreaf           (i) nodal pressure at n+alpha_F/n+1
-      \param evelnp           (i) nodal velocities at n+1 (np_genalpha)
-      \param eprenp           (i) nodal pressure at n+alpha_F/n+1
-      \param epren            (i) nodal pressure at n
-      \param emhist           (i) time rhs for momentum equation
-      \param echist           (i) time rhs for continuity equation
-      \param epressnp_timederiv (i) nodal pressure time derivative at n+alpha_F/n+1
-      \param eaccam           (i) nodal accelerations at n+alpha_M
-      \param edispnp          (i) nodal displacements at n+1 (on moving mesh)
-      \param edispn           (i) nodal displacements at n (on moving mesh)
-      \param egridv           (i) grid velocity at n+1
-      \param escaaf           (i) nodal scalar at n+alpha_F/n+1
-      \param material         (i) fluid material
-      \param isale            (i) ALE flag
-      \param intpoints        (i) Gaussian integration points
-     */
-    int Evaluate( Teuchos::ParameterList&                                         params,
-                  const LINALG::Matrix<my::nsd_,my::nen_> &                       ebofoaf,
-                  LINALG::Matrix<(my::nsd_+1)*my::nen_,(my::nsd_+1)*my::nen_> &   elemat1,
-                  LINALG::Matrix<(my::nsd_+1)*my::nen_,1> &                       elevec1,
-                  const LINALG::Matrix<my::nsd_,my::nen_> &                       evelaf,
-                  const LINALG::Matrix<my::nen_,1>    &                           epreaf,
-                  const LINALG::Matrix<my::nsd_,my::nen_> &                       evelnp,
-                  const LINALG::Matrix<my::nen_,1>    &                           eprenp,
-                  const LINALG::Matrix<my::nen_,1>    &                           epren,
-                  const LINALG::Matrix<my::nsd_,my::nen_> &                       emhist,
-                  const LINALG::Matrix<my::nen_,1>&                               echist,
-                  const LINALG::Matrix<my::nen_,1>    &                           epressnp_timederiv,
-                  const LINALG::Matrix<my::nsd_,my::nen_> &                       eaccam,
-                  const LINALG::Matrix<my::nsd_,my::nen_> &                       edispnp,
-                  const LINALG::Matrix<my::nsd_,my::nen_> &                       edispn,
-                  const LINALG::Matrix<my::nsd_,my::nen_> &                       egridv,
-                  const LINALG::Matrix<my::nen_,1>&                               escaaf,
-                  const LINALG::Matrix<my::nen_,1>&                               eporositynp,
-                  Teuchos::RCP<MAT::Material>                                     mat,
-                  bool                                                            isale,
-                  const DRT::UTILS::GaussIntegration &                            intpoints);
 
     /*!
       \brief evaluate function for Fluid element for porous flow
@@ -197,6 +149,7 @@ protected:
           \param evelnp           (i) nodal velocities at n+1 (np_genalpha)
           \param eprenp           (i) nodal pressure at n+alpha_F/n+1
           \param epressnp_timederiv (i) nodal pressure time derivative at n+alpha_F/n+1
+          \param eaccam           (i) nodal accelerations at n+alpha_M
           \param edispnp          (i) nodal displacements at n+1 (on moving mesh)
           \param egridv           (i) grid velocity at n+1
           \param escaaf           (i) nodal scalar at n+alpha_F/n+1
@@ -218,6 +171,9 @@ protected:
         const LINALG::Matrix<my::nsd_,my::nen_> &                         emhist,
         const LINALG::Matrix<my::nen_,1>&                                 echist,
         const LINALG::Matrix<my::nen_, 1> &                               epressnp_timederiv,
+        const LINALG::Matrix<my::nen_, 1> &                               epressam_timederiv,
+        const LINALG::Matrix<my::nen_, 1> &                               epressn_timederiv,
+        const LINALG::Matrix<my::nsd_,my::nen_> &                         eaccam,
         const LINALG::Matrix<my::nsd_, my::nen_> &                        edispnp,
         const LINALG::Matrix<my::nsd_, my::nen_> &                        edispn,
         const LINALG::Matrix<my::nsd_, my::nen_> &                        egridv,
@@ -237,6 +193,7 @@ protected:
       \param epreaf           (i) nodal pressure at n+alpha_F/n+1
       \param eprenp           (i) nodal pressure at n+alpha_F/n+1
       \param epressnp_timederiv (i) nodal pressure time derivative at n+alpha_F/n+1
+      \param eaccam           (i) nodal accelerations at n+alpha_M
       \param edispnp          (i) nodal displacements at n+1 (on moving mesh)
       \param egridv           (i) grid velocity at n+1
       \param escaaf           (i) nodal scalar at n+alpha_F/n+1
@@ -258,6 +215,9 @@ protected:
         const LINALG::Matrix<my::nsd_,my::nen_> &                       emhist,
         const LINALG::Matrix<my::nen_,1>&                               echist,
         const LINALG::Matrix<my::nen_, 1> &                             epressnp_timederiv,
+        const LINALG::Matrix<my::nen_, 1> &                             epressam_timederiv,
+        const LINALG::Matrix<my::nen_, 1> &                             epressn_timederiv,
+        const LINALG::Matrix<my::nsd_,my::nen_> &                       eaccam,
         const LINALG::Matrix<my::nsd_, my::nen_>&                       edispnp,
         const LINALG::Matrix<my::nsd_, my::nen_>&                       edispn,
         const LINALG::Matrix<my::nsd_, my::nen_>&                       egridv,
@@ -279,6 +239,7 @@ protected:
       \param epreaf             (i) nodal pressure at n+alpha_F/n+1
       \param eprenp             (i) nodal pressure at n+alpha_F/n+1
       \param epressnp_timederiv (i) nodal pressure time derivative at n+alpha_F/n+1
+      \param eaccam             (i) nodal accelerations at n+alpha_M
       \param edispnp            (i) nodal displacements at n+1 (on moving mesh)
       \param egridv             (i) grid velocity at n+1
       \param escaaf             (i) nodal scalar at n+alpha_F/n+1
@@ -303,6 +264,9 @@ protected:
                             const LINALG::Matrix<my::nsd_,my::nen_> &                       emhist,
                             const LINALG::Matrix<my::nen_,1>&                               echist,
                             const LINALG::Matrix<my::nen_, 1> &                             epressnp_timederiv,
+                            const LINALG::Matrix<my::nen_, 1> &                             epressam_timederiv,
+                            const LINALG::Matrix<my::nen_, 1> &                             epressn_timederiv,
+                            const LINALG::Matrix<my::nsd_,my::nen_>&                        eaccam,
                             const LINALG::Matrix<my::nsd_, my::nen_>&                       edispnp,
                             const LINALG::Matrix<my::nsd_, my::nen_>&                       edispn,
                             const LINALG::Matrix<my::nsd_, my::nen_>&                       egridv,

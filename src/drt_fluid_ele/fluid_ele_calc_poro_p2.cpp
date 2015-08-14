@@ -159,9 +159,19 @@ int DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::Evaluate(
       &echist, "hist");
 
   static LINALG::Matrix<my::nsd_, my::nen_> eaccam(true);
+  static LINALG::Matrix<my::nen_,1> epressam_timederiv(true);
   eaccam.Clear();
-  my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &eaccam,
-      NULL, "accam");
+  epressam_timederiv.Clear();
+
+  if (my::fldparatimint_->IsGenalpha())
+    my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &eaccam,
+        &epressam_timederiv, "accam");
+
+  static LINALG::Matrix<my::nen_,1> epressn_timederiv(true);
+  epressn_timederiv.Clear();
+  if (my::fldparatimint_->IsGenalpha())
+    my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, NULL,
+        &epressn_timederiv, "accn");
 
   static LINALG::Matrix<my::nen_, 1> epren(true);
   epren.Clear();
@@ -227,6 +237,8 @@ int DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::Evaluate(
                   emhist,
                   echist,
                   epressnp_timederiv,
+                  epressam_timederiv,
+                  epressn_timederiv,
                   eaccam,
                   edispnp,
                   edispn,
@@ -310,6 +322,21 @@ int DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::EvaluateOD(
   this->ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &eveln,
       &epren, "veln");
 
+  static LINALG::Matrix<my::nsd_, my::nen_> eaccam(true);
+  static LINALG::Matrix<my::nen_,1> epressam_timederiv(true);
+  eaccam.Clear();
+  epressam_timederiv.Clear();
+
+  if (my::fldparatimint_->IsGenalpha())
+    my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &eaccam,
+        &epressam_timederiv, "accam");
+
+  static LINALG::Matrix<my::nen_,1> epressn_timederiv(true);
+  epressn_timederiv.Clear();
+  if (my::fldparatimint_->IsGenalpha())
+    my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, NULL,
+        &epressn_timederiv, "accn");
+
   LINALG::Matrix<my::nen_, 1> epressnp_timederiv(true);
   this->ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, NULL,
       &epressnp_timederiv, "accnp");
@@ -374,6 +401,9 @@ int DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::EvaluateOD(
         eprenp,
         epren,
         epressnp_timederiv,
+        epressam_timederiv,
+        epressn_timederiv,
+        eaccam,
         edispnp,
         edispn,
         egridv,

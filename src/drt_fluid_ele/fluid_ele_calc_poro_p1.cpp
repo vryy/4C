@@ -165,9 +165,19 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::Evaluate(
       &echist, "hist");
 
   static LINALG::Matrix<my::nsd_, my::nen_> eaccam(true);
+  static LINALG::Matrix<my::nen_,1> epressam_timederiv(true);
   eaccam.Clear();
-  my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &eaccam,
-      NULL, "accam");
+  epressam_timederiv.Clear();
+
+  if (my::fldparatimint_->IsGenalpha())
+    my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &eaccam,
+        &epressam_timederiv, "accam");
+
+  static LINALG::Matrix<my::nen_,1> epressn_timederiv(true);
+  epressn_timederiv.Clear();
+  if (my::fldparatimint_->IsGenalpha())
+    my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, NULL,
+        &epressn_timederiv, "accn");
 
   static LINALG::Matrix<my::nen_, 1> epren(true);
   epren.Clear();
@@ -184,9 +194,6 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::Evaluate(
   static LINALG::Matrix<my::nen_,1> escaaf(true);
   escaaf.Clear();
   my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, NULL, &escaaf,"scaaf");
-
-  if (not FluidEleCalc<distype>::fldparatimint_->IsGenalpha())
-    eaccam.Clear();
 
   // ---------------------------------------------------------------------
   // get additional state vectors for ALE case: grid displacement and vel.
@@ -243,6 +250,8 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::Evaluate(
                   emhist,
                   echist,
                   epressnp_timederiv,
+                  epressam_timederiv,
+                  epressn_timederiv,
                   eaccam,
                   edispnp,
                   edispn,
@@ -473,6 +482,21 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluateOD(
     this->ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &eveln,
         &epren, "veln");
 
+  static LINALG::Matrix<my::nsd_, my::nen_> eaccam(true);
+  static LINALG::Matrix<my::nen_,1> epressam_timederiv(true);
+  eaccam.Clear();
+  epressam_timederiv.Clear();
+
+  if (my::fldparatimint_->IsGenalpha())
+    my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &eaccam,
+        &epressam_timederiv, "accam");
+
+  static LINALG::Matrix<my::nen_,1> epressn_timederiv(true);
+  epressn_timederiv.Clear();
+  if (my::fldparatimint_->IsGenalpha())
+    my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, NULL,
+        &epressn_timederiv, "accn");
+
   LINALG::Matrix<my::nen_, 1> epressnp_timederiv(true);
   this->ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, NULL,
       &epressnp_timederiv, "accnp");
@@ -526,6 +550,9 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluateOD(
       emhist,
       echist,
       epressnp_timederiv,
+      epressam_timederiv,
+      epressn_timederiv,
+      eaccam,
       edispnp,
       edispn,
       egridv,
@@ -557,6 +584,9 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluateOD(
     const LINALG::Matrix<my::nsd_,my::nen_> &                         emhist,
     const LINALG::Matrix<my::nen_,1>&                                 echist,
     const LINALG::Matrix<my::nen_, 1> &                               epressnp_timederiv,
+    const LINALG::Matrix<my::nen_, 1> &                               epressam_timederiv,
+    const LINALG::Matrix<my::nen_, 1> &                               epressn_timederiv,
+    const LINALG::Matrix<my::nsd_,my::nen_> &                         eaccam,
     const LINALG::Matrix<my::nsd_, my::nen_> &                        edispnp,
     const LINALG::Matrix<my::nsd_, my::nen_> &                        edispn,
     const LINALG::Matrix<my::nsd_, my::nen_> &                        egridv,
@@ -594,6 +624,9 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluateOD(
       emhist,
       echist,
       epressnp_timederiv,
+      epressam_timederiv,
+      epressn_timederiv,
+      eaccam,
       edispnp,
       edispn,
       egridv,
@@ -625,6 +658,9 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::SysmatOD(
     const LINALG::Matrix<my::nsd_,my::nen_> &                       emhist,
     const LINALG::Matrix<my::nen_,1>&                               echist,
     const LINALG::Matrix<my::nen_, 1> &                             epressnp_timederiv,
+    const LINALG::Matrix<my::nen_, 1> &                             epressam_timederiv,
+    const LINALG::Matrix<my::nen_, 1> &                             epressn_timederiv,
+    const LINALG::Matrix<my::nsd_,my::nen_> &                       eaccam,
     const LINALG::Matrix<my::nsd_, my::nen_>&                       edispnp,
     const LINALG::Matrix<my::nsd_, my::nen_>&                       edispn,
     const LINALG::Matrix<my::nsd_, my::nen_>&                       egridv,
@@ -641,12 +677,17 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::SysmatOD(
   //  preliminary definitions and evaluations
   //------------------------------------------------------------------------
   // definition of matrices
-  LINALG::Matrix<my::nen_ * my::nsd_, my::nen_ * my::nsd_> ecoupl_u(true); // coupling matrix for momentum equation
-  LINALG::Matrix<my::nen_, my::nen_ * my::nsd_> ecoupl_p(true); // coupling matrix for continuity equation
+  static LINALG::Matrix<my::nen_ * my::nsd_, my::nen_ * my::nsd_> ecoupl_u(true); // coupling matrix for momentum equation
+  static LINALG::Matrix<my::nen_, my::nen_ * my::nsd_> ecoupl_p(true); // coupling matrix for continuity equation
   //LINALG::Matrix<(my::nsd_ + 1) * my::nen_, my::nen_ * my::nsd_> emesh(true); // linearisation of mesh motion
 
-  LINALG::Matrix<my::nen_ * my::nsd_, my::nen_> ecouplp1_u(true); // coupling matrix for momentum equation
-  LINALG::Matrix<my::nen_, my::nen_> ecouplp1_p(true); // coupling matrix for continuity equation
+  static LINALG::Matrix<my::nen_ * my::nsd_, my::nen_> ecouplp1_u(true); // coupling matrix for momentum equation
+  static LINALG::Matrix<my::nen_, my::nen_> ecouplp1_p(true); // coupling matrix for continuity equation
+
+  ecoupl_u.Clear();
+  ecoupl_p.Clear();
+  ecouplp1_u.Clear();
+  ecouplp1_p.Clear();
 
   //material coordinates xyze0
   my::xyze0_ = my::xyze_;
@@ -675,6 +716,9 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::SysmatOD(
                        emhist,
                        echist,
                        epressnp_timederiv,
+                       epressam_timederiv,
+                       epressn_timederiv,
+                       eaccam,
                        edispnp,
                        edispn,
                        egridv,
@@ -785,6 +829,9 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
                         const LINALG::Matrix<my::nsd_,my::nen_> &                       emhist,
                         const LINALG::Matrix<my::nen_,1>&                               echist,
                         const LINALG::Matrix<my::nen_, 1> &                             epressnp_timederiv,
+                        const LINALG::Matrix<my::nen_, 1> &                             epressam_timederiv,
+                        const LINALG::Matrix<my::nen_, 1> &                             epressn_timederiv,
+                        const LINALG::Matrix<my::nsd_,my::nen_>&                        eaccam,
                         const LINALG::Matrix<my::nsd_, my::nen_>&                       edispnp,
                         const LINALG::Matrix<my::nsd_, my::nen_>&                       edispn,
                         const LINALG::Matrix<my::nsd_, my::nen_>&                       egridv,
@@ -831,6 +878,9 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
           eprenp,
           epren,
           epressnp_timederiv,
+          epressam_timederiv,
+          epressn_timederiv,
+          eaccam,
           edispnp,
           edispn,
           egridv,

@@ -222,6 +222,8 @@ protected:
       const LINALG::Matrix<my::nsd_,my::nen_> &                       emhist,
       const LINALG::Matrix<my::nen_,1>&                               echist,
       const LINALG::Matrix<my::nen_,1>    &                           epressnp_timederiv,
+      const LINALG::Matrix<my::nen_,1>    &                           epressam_timederiv,
+      const LINALG::Matrix<my::nen_,1>    &                           epressn_timederiv,
       const LINALG::Matrix<my::nsd_,my::nen_> &                       eaccam,
       const LINALG::Matrix<my::nsd_,my::nen_> &                       edispnp,
       const LINALG::Matrix<my::nsd_,my::nen_> &                       edispn,
@@ -251,6 +253,7 @@ protected:
           \param eprenp           (i) nodal pressure at n+1
           \param epren            (i) nodal pressure at n
           \param epressnp_timederiv (i) nodal pressure time derivative at n+alpha_F/n+1
+          \param eaccam           (i) nodal accelerations at n+alpha_M
           \param edispnp          (i) nodal displacements at n+1 (on moving mesh)
           \param edispn           (i) nodal displacements at n (on moving mesh)
           \param egridv           (i) grid velocity at n+1
@@ -273,6 +276,9 @@ protected:
       const LINALG::Matrix<my::nen_, 1> &                               eprenp,
       const LINALG::Matrix<my::nen_, 1> &                               epren,
       const LINALG::Matrix<my::nen_, 1> &                               epressnp_timederiv,
+      const LINALG::Matrix<my::nen_,1>    &                             epressam_timederiv,
+      const LINALG::Matrix<my::nen_,1>    &                             epressn_timederiv,
+      const LINALG::Matrix<my::nsd_,my::nen_>&                          eaccam,
       const LINALG::Matrix<my::nsd_, my::nen_> &                        edispnp,
       const LINALG::Matrix<my::nsd_, my::nen_> &                        edispn,
       const LINALG::Matrix<my::nsd_, my::nen_> &                        egridv,
@@ -328,6 +334,8 @@ protected:
       const LINALG::Matrix<my::nsd_,my::nen_>&                      emhist,
       const LINALG::Matrix<my::nen_,1>&                             echist,
       const LINALG::Matrix<my::nen_,1>    &                         epressnp_timederiv,
+      const LINALG::Matrix<my::nen_,1>    &                         epressam_timederiv,
+      const LINALG::Matrix<my::nen_,1>    &                         epressn_timederiv,
       const LINALG::Matrix<my::nsd_,my::nen_>&                      edispnp,
       const LINALG::Matrix<my::nsd_,my::nen_>&                      edispn,
       const LINALG::Matrix<my::nsd_,my::nen_>&                      egridv,
@@ -351,6 +359,7 @@ protected:
     \param epreaf           (i) nodal pressure at n+alpha_F/n+1
     \param eprenp           (i) nodal pressure at n+alpha_F/n+1
     \param epren            (i) nodal pressure at n
+    \param eaccam           (i) nodal accelerations at n+alpha_M
     \param epressnp_timederiv (i) nodal pressure time derivative at n+alpha_F/n+1
     \param edispnp          (i) nodal displacements at n+1 (on moving mesh)
     \param edispn           (i) nodal displacements at n (on moving mesh)
@@ -375,7 +384,10 @@ protected:
       const LINALG::Matrix<my::nen_, 1>&                              epreaf,
       const LINALG::Matrix<my::nen_, 1>&                              eprenp,
       const LINALG::Matrix<my::nen_, 1>&                              epren,
+      const LINALG::Matrix<my::nsd_,my::nen_>&                        eaccam,
       const LINALG::Matrix<my::nen_, 1> &                             epressnp_timederiv,
+      const LINALG::Matrix<my::nen_,1>    &                           epressam_timederiv,
+      const LINALG::Matrix<my::nen_,1>    &                           epressn_timederiv,
       const LINALG::Matrix<my::nsd_, my::nen_>&                       edispnp,
       const LINALG::Matrix<my::nsd_, my::nen_>&                       edispn,
       const LINALG::Matrix<my::nsd_, my::nen_>&                       egridv,
@@ -740,6 +752,7 @@ protected:
     \param epreaf             (i) nodal pressure at n+alpha_F/n+1
     \param eprenp             (i) nodal pressure at n+alpha_F/n+1
     \param epressnp_timederiv (i) nodal pressure time derivative at n+alpha_F/n+1
+    \param eaccam             (i) nodal accelerations at n+alpha_M
     \param edispnp            (i) nodal displacements at n+1 (on moving mesh)
     \param egridv             (i) grid velocity at n+1
     \param escaaf             (i) nodal scalar at n+alpha_F/n+1
@@ -765,6 +778,9 @@ protected:
       const LINALG::Matrix<my::nen_, 1>&                              eprenp,
       const LINALG::Matrix<my::nen_, 1>&                              epren,
       const LINALG::Matrix<my::nen_, 1> &                             epressnp_timederiv,
+      const LINALG::Matrix<my::nen_, 1> &                             epressam_timederiv,
+      const LINALG::Matrix<my::nen_, 1> &                             epressn_timederiv,
+      const LINALG::Matrix<my::nsd_,my::nen_>&                        eaccam,
       const LINALG::Matrix<my::nsd_, my::nen_>&                       edispnp,
       const LINALG::Matrix<my::nsd_,my::nen_>&                        edispn,
       const LINALG::Matrix<my::nsd_, my::nen_>&                       egridv,
@@ -794,6 +810,7 @@ protected:
     \param eprenp             (i) nodal pressure at n+alpha_F/n+1
     \param epren              (i) nodal pressure at n
     \param epressnp_timederiv (i) nodal pressure time derivative at n+alpha_F/n+1
+    \param eaccam             (i) nodal accelerations at n+alpha_M
     \param edispnp            (i) nodal displacements at n+1 (on moving mesh)
     \param edispn             (i) nodal displacements at n
     \param egridv             (i) grid velocity at n+1
@@ -816,6 +833,9 @@ protected:
       const LINALG::Matrix<my::nen_, 1>&                              eprenp,
       const LINALG::Matrix<my::nen_, 1>&                              epren,
       const LINALG::Matrix<my::nen_, 1> &                             epressnp_timederiv,
+      const LINALG::Matrix<my::nen_, 1> &                             epressam_timederiv,
+      const LINALG::Matrix<my::nen_, 1> &                             epressn_timederiv,
+      const LINALG::Matrix<my::nsd_,my::nen_>&                        eaccam,
       const LINALG::Matrix<my::nsd_, my::nen_>&                       edispnp,
       const LINALG::Matrix<my::nsd_, my::nen_>&                       edispn,
       const LINALG::Matrix<my::nsd_, my::nen_>&                       egridv,
@@ -858,6 +878,9 @@ protected:
       const LINALG::Matrix<my::nen_, 1>&                              eprenp,
       const LINALG::Matrix<my::nen_, 1>&                              epren,
       const LINALG::Matrix<my::nen_, 1> &                             epressnp_timederiv,
+      const LINALG::Matrix<my::nen_, 1> &                             epressam_timederiv,
+      const LINALG::Matrix<my::nen_, 1> &                             epressn_timederiv,
+      const LINALG::Matrix<my::nsd_,my::nen_>&                        eaccam,
       const LINALG::Matrix<my::nsd_, my::nen_>&                       edispnp,
       const LINALG::Matrix<my::nsd_, my::nen_>&                       egridv,
       const LINALG::Matrix<my::nsd_, my::nen_>&                       egridvn,
@@ -895,6 +918,9 @@ protected:
       const LINALG::Matrix<my::nen_, 1>&                              eprenp,
       const LINALG::Matrix<my::nen_, 1>&                              epren,
       const LINALG::Matrix<my::nen_, 1> &                             epressnp_timederiv,
+      const LINALG::Matrix<my::nen_, 1> &                             epressam_timederiv,
+      const LINALG::Matrix<my::nen_, 1> &                             epressn_timederiv,
+      const LINALG::Matrix<my::nsd_,my::nen_>&                        eaccam,
       const LINALG::Matrix<my::nsd_, my::nen_>&                       edispnp,
       const LINALG::Matrix<my::nsd_, my::nen_>&                       edispn,
       const LINALG::Matrix<my::nsd_, my::nen_>&                       egridv,
@@ -1010,7 +1036,7 @@ protected:
       );
 
   virtual int ComputeVolume(
-      Teuchos::ParameterList&         params,
+      Teuchos::ParameterList&         params,           //< paramters
       DRT::ELEMENTS::Fluid*           ele,              //< current fluid element
       DRT::Discretization&            discretization,   //< fluid discretization
       std::vector<int>&               lm,               //< location vector for DOF management
@@ -1063,6 +1089,8 @@ protected:
   LINALG::Matrix<my::nsd_,my::nen_> xyze0_;
   /// node coordinates at time n
   LINALG::Matrix<my::nsd_,my::nen_> xyzeold_;
+  //! global derivatives of shape functions w.r.t x,y,z at time n
+  LINALG::Matrix<my::nsd_,my::nen_> derxyold_;
 
   //! vector containing all values from previous timelevel n for continuity equation
   double histcon_;
@@ -1070,7 +1098,9 @@ protected:
   //! porosity at gauss point (time step n+1)
   double             porosity_;
   //! porosity at gauss point (time step n)
-  double             porosityold_;
+  double             porosityn_;
+  //! time derivative of porosity at gauss point (time step n+1 or n+\alpha_M)
+  double             porositydot_;
   //! porosity gradient w.r.t. spatial coordinates at gauss point
   LINALG::Matrix<my::nsd_,1>             grad_porosity_;
   //! porosity gradient w.r.t. reference coordinates at gauss point
@@ -1101,8 +1131,12 @@ protected:
   double press_;
   //! fluid pressure at gauss point (time step n)
   double pressn_;
-  //! fluid pressure time derivative at gauss point
+  //! fluid pressure time derivative at gauss point (time step n+1 or n+\alpha_M)
   double pressdot_;
+//  //! fluid pressure time derivative at gauss point (time step n)
+//  double pressdotn_;
+  //! fluid pressure time derivative at gauss point (time step n+1)
+  //double pressdotnp_;
   //! fluid pressure gradient w.r.t to paramter space coordinates at gauss point
   LINALG::Matrix<my::nsd_,1> refgradp_;
   //! spatial gradient of fluid pressure gauss point at time step n

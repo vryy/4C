@@ -750,26 +750,15 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::coupling_poroelast(
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
-
-  GaussPointLoopOD( params,
-                         xrefe,
-                         xcurr,
-                         disp,
-                         vel,
-                         evelnp,
-                         epreaf,
-                         stiffmatrix );
-
-  if (stiffmatrix != NULL)
-  {
-    //TODO
-    // build tangent coupling matrix : effective dynamic stiffness coupling matrix
-    //    K_{Teffdyn} = 1/dt C
-    //                + theta K_{T}
-    const double theta = params.get<double>("theta");
-
-    stiffmatrix->Scale(theta);
-  }
+  if(stiffmatrix!=NULL)
+    GaussPointLoopOD(  params,
+                       xrefe,
+                       xcurr,
+                       disp,
+                       vel,
+                       evelnp,
+                       epreaf,
+                       stiffmatrix);
 
   return;
 

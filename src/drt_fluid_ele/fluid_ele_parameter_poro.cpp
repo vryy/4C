@@ -94,7 +94,7 @@ void DRT::ELEMENTS::FluidEleParameterPoro::SetElementPoroParameter( Teuchos::Par
 //----------------------------------------------------------------------*/
 // print fluid parameter to screen                          rauch 11/13 |
 //----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidEleParameterPoro::PrintFluidParameterPoro()
+void DRT::ELEMENTS::FluidEleParameterPoro::PrintFluidParameterPoro() const
 {
   std::cout << std::endl << "|-----------------------------------------------------------------------------" << std::endl;
   std::cout << "|  Poro Fluid parameter: " << std::endl;

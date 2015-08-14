@@ -842,21 +842,15 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::coupling_poroelast(
 
   if (stiffmatrix != NULL )
   {
-    //TODO theta should be on time integrator level
-    // build tangent coupling matrix : effective dynamic stiffness coupling matrix
-    //    K_{Teffdyn} = 1/dt C
-    //                + theta K_{T}
-    const double theta = params.get<double>("theta");
-
     for (int k=0; k<my::numnod_; k++)
       for(int l=0; l<(my::numdim_+1); l++)
         for (int i=0; i<my::numnod_; i++)
           for(int j=0; j<my::numdim_; j++)
-            (*stiffmatrix)(i*noddof_+j,k*(my::numdim_+1)+l) += theta * ecoupl(i*my::numdim_+j,k*(my::numdim_+1)+l);
+            (*stiffmatrix)(i*noddof_+j,k*(my::numdim_+1)+l) += ecoupl(i*my::numdim_+j,k*(my::numdim_+1)+l);
 
     for (int ui=0; ui<my::numnod_; ++ui)
       for (int ni=0; ni<my::numnod_; ++ni)
-        (*stiffmatrix)( noddof_*ui+my::numdim_ , (my::numdim_+1)*ni+my::numdim_ ) += theta * ecoupl_p1_p( ui , ni);
+        (*stiffmatrix)( noddof_*ui+my::numdim_ , (my::numdim_+1)*ni+my::numdim_ ) += ecoupl_p1_p( ui , ni);
   }
 
   return;

@@ -1033,29 +1033,19 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::coupling_poroelast(
     }
   }
 
-  LINALG::Matrix<numdof_,(numdim_+1)*numnod_> ecoupl(true);
-
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
-  GaussPointLoopOD( params,
-                         xrefe,
-                         xcurr,
-                         disp,
-                         vel,
-                         evelnp,
-                         epreaf,
-                         NULL,
-                         ecoupl );
-
-  if (stiffmatrix != NULL)
-  {//todo
-    // build tangent coupling matrix : effective dynamic stiffness coupling matrix
-    //    K_{Teffdyn} = 1/dt C
-    //                + theta K_{T}
-    double theta = params.get<double>("theta");
-    stiffmatrix->Update(theta,ecoupl,1.0);
-  }
+  if(stiffmatrix!=NULL)
+    GaussPointLoopOD(  params,
+                       xrefe,
+                       xcurr,
+                       disp,
+                       vel,
+                       evelnp,
+                       epreaf,
+                       NULL,
+                       *stiffmatrix);
 
   return;
 

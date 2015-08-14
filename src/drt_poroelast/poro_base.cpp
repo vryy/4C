@@ -153,9 +153,13 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm,
     if ( not (
                    (structtimealgo == INPAR::STR::dyna_onesteptheta and fluidtimealgo == INPAR::FLUID::timeint_one_step_theta)
                or (structtimealgo == INPAR::STR::dyna_statics and fluidtimealgo == INPAR::FLUID::timeint_stationary)
+               or (structtimealgo == INPAR::STR::dyna_genalpha and (fluidtimealgo == INPAR::FLUID::timeint_afgenalpha or fluidtimealgo == INPAR::FLUID::timeint_npgenalpha))
              )
        )
-      dserror("porous media problem is limited in functionality (only one-step-theta scheme and stationary case possible)");
+      dserror("porous media problem is limited in functionality (only one-step-theta scheme, stationary and (af)genalpha case possible)");
+
+    if(fluidtimealgo == INPAR::FLUID::timeint_npgenalpha)
+      dserror("npgenalpha time integration for porous fluid is possibly not valid. Either check the theory or use afgenalpha instead!");
 
     if(structtimealgo == INPAR::STR::dyna_onesteptheta and fluidtimealgo == INPAR::FLUID::timeint_one_step_theta)
     {
