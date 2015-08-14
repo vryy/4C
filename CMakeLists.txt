@@ -1197,6 +1197,7 @@ set(OBJS_DRT_FLUID
   src/drt_fluid/fluid_timint_loma_bdf2.cpp
   src/drt_fluid/fluid_timint_loma.cpp
   src/drt_fluid/fluid_timint_ost.cpp
+  src/drt_fluid/fluid_timint_poro_genalpha.cpp
   src/drt_fluid/fluid_timint_poro_ost.cpp
   src/drt_fluid/fluid_timint_poro_stat.cpp
   src/drt_fluid/fluid_timint_poro.cpp

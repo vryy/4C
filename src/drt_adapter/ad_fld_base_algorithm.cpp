@@ -35,6 +35,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_fluid/fluid_timint_loma_genalpha.H"
 #include "../drt_fluid/fluid_timint_loma_ost.H"
 #include "../drt_fluid/fluid_timint_loma_bdf2.H"
+#include "../drt_fluid/fluid_timint_poro_genalpha.H"
 #include "../drt_fluid/fluid_timint_poro_ost.H"
 #include "../drt_fluid/fluid_timint_poro_stat.H"
 #include "../drt_fluid/fluid_timint_ac_ost.H"
@@ -964,6 +965,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
           tmpfluid = Teuchos::rcp(new FLD::TimIntPoroStat(actdis, solver, fluidtimeparams, output, isale));
         else if(timeint == INPAR::FLUID::timeint_one_step_theta)
           tmpfluid = Teuchos::rcp(new FLD::TimIntPoroOst(actdis, solver, fluidtimeparams, output, isale));
+        else if(timeint == INPAR::FLUID::timeint_afgenalpha or
+            timeint == INPAR::FLUID::timeint_npgenalpha)
+          tmpfluid = Teuchos::rcp(new FLD::TimIntPoroGenAlpha(actdis, solver, fluidtimeparams, output, isale));
         else
           dserror("Unknown time integration for this fluid problem type\n");
         fluid_ = Teuchos::rcp(new FluidPoro(tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond));
