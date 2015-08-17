@@ -1809,8 +1809,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalErrorComparedToAnalytSolu
 
         // integrate delta scalar derivative for H1-error norm
         errors(k*numscal_+1) += deltagradphi.Dot(deltagradphi)*fac;
-        // integrate analytical scalar for H1 norm
-        errors(k*numscal_+3) += deltaphi*deltaphi*fac;
+        // integrate analytical scalar derivative for H1 norm
+        errors(k*numscal_+3) += gradphi_exact.Dot(gradphi_exact)*fac;
       }
     } // loop over integration points
 
