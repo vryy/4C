@@ -239,7 +239,7 @@ private:
   std::map<int, std::vector<int> > stochparamap_r_field_;
 
   /*!
-  \brief map of matids to the id ofthe  stochastic parameter
+  \brief map of matids to the id of the  stochastic parameter
   e.g.  < 1 ; (0 , 1)>
         < 2 ; (2)>
   thereby if say matid 1 represents AAAneohook with two stochastic
@@ -262,7 +262,7 @@ private:
   std::map<int, std::vector<int> > stochparamap_r_var_;
 
   /*!
-  \brief map of matids to the id ofthe  stochastic parameter
+  \brief map of matids to the id of the  stochastic parameter
    e.g.  < 1 ; (0 , 1)>
          < 2 ; (2)>
   thereby if say matid 1 represents AAAneohook with two stochastic

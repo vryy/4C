@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file mc_var_thickness_manager.H
+\file mc_var_thickness_manager.cpp
 \brief class to modify wall thickness of cardiovascular structures on the fly
 
 <pre>
@@ -59,7 +59,6 @@ UQ::MCVarThicknessManager::MCVarThicknessManager(
     my_uncertain_nodes_delta_pos_(),
     org_geom_(Teuchos::null),
     initial_wall_thickness_(-1.0),
-    use_mean_field_from_cond_(false),
     start_rand_geo_above_bif_(false),
     z_pos_start_rf_(-10e12),
     transition_width_(0.0),
@@ -83,8 +82,6 @@ UQ::MCVarThicknessManager::MCVarThicknessManager(
      DRT::Problem::Instance()->MultiLevelMonteCarloParams();
 
   initial_wall_thickness_ = mlmcp.get<double>("INITIALTHICKNESS");
-  use_mean_field_from_cond_ = DRT::INPUT::IntegralValue<int>(mlmcp,
-     "MEAN_GEO_FROM_ALE_POINTDBC");
 
   start_rand_geo_above_bif_ = DRT::INPUT::IntegralValue<int>(mlmcp,
      "START_RF_ABOVE_BIFURCATION");
@@ -154,7 +151,7 @@ UQ::MCVarThicknessManager::MCVarThicknessManager(
   }
 
   // store point dbc in maps
-  if (uncertain_nodes_condition.size() && use_mean_field_from_cond_)
+  if (uncertain_nodes_condition.size() && randomfield_->HasSpatialMedian())
   {
     // loop all point conditions
     for (int i = 0; i < (int) uncertain_nodes_condition.size(); ++i)
@@ -223,8 +220,8 @@ UQ::MCVarThicknessManager::MCVarThicknessManager(
       dserror("Number of point Dirichlet conditions does not match number of nodes in Uncertain Surface condition" );
 
   }
-  // we do not use ALE DBC to get a spatially dependend mean for the rf
-  else if (!uncertain_nodes_condition.size() && !use_mean_field_from_cond_)
+  // we do not use ALE DBC to get a spatially dependend median for the rf
+  else if (!uncertain_nodes_condition.size() && !randomfield_->HasSpatialMedian())
   {
     my_uncert_nnodes_=uncert_surface.at(0)->Nodes()->size();
          //
@@ -278,7 +275,7 @@ UQ::MCVarThicknessManager::MCVarThicknessManager(
   }
   else
   {
-    dserror("Found ale dbc's while use_mean_field_from_cond_ is off! Fix your input file ");
+    dserror("Found ale dbc's while randomfield_->HasSpatialMedian() is false! Fix your input file ");
   }
 
   // check whether we have an ale point db condition on all nodes in uncertain Surface
@@ -508,7 +505,7 @@ void UQ::MCVarThicknessManager::ComputeNewAleDBCFromRF()
         my_uncertain_nodes_org_pos_.at((my_uncert_nodeids_)[i]));
 
     double rf_thick = 0.0;
-    if (use_mean_field_from_cond_)
+    if (randomfield_->HasSpatialMedian())
     {
       // evaluate random field
       rf_thick = randomfield_->EvalFieldAtLocation(nodepos,
@@ -760,7 +757,7 @@ double UQ::MCVarThicknessManager::EvalThicknessAtLocation(
     } // end of loop over 26 adjacent bins
   }
 
-  if(use_mean_field_from_cond_)
+  if(randomfield_->HasSpatialMedian())
   {
     rf_thick = randomfield_->EvalFieldAtLocation(
         my_uncertain_nodes_org_pos_.at(closest_uncertain_node_.find(ele_GID)->second),

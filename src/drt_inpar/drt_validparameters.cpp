@@ -1631,10 +1631,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       "Do consider random geometry/wall thickness", yesnotuple, yesnovalue,
       &mlmcp);
 
-  // For variable geometry/wall thickness
-  setStringToIntegralParameter<int>("MEAN_GEO_FROM_ALE_POINTDBC", "No",
-      "Read in mean from point dbc conds", yesnotuple, yesnovalue, &mlmcp);
-
   IntParameter("NUMALESTEPS", 1,
       "How many ALE steps do we want to use to compute uncertain geometry",
       &mlmcp);
@@ -9210,6 +9206,11 @@ void DRT::INPUT::SetValidRandomFieldParameters(Teuchos::ParameterList& list)
                                     yesnotuple,yesnovalue,&list);
    DoubleParameter("LOWERBOUND",1.5,"Lower cutoff value",&list);
    DoubleParameter("UPPERBOUND",1.5,"Uower cutoff value",&list);
+
+   // do have a locally varying mean/median value for the field
+    setStringToIntegralParameter<int>("SPATIAL_VARIABLE_MEDIAN","No",
+                                     "Field has spatially varying median value",
+                                     yesnotuple,yesnovalue,&list);
 }
 
 
@@ -9250,6 +9251,8 @@ void DRT::INPUT::SetValidRandomVariableParameters(Teuchos::ParameterList& list)
                                     yesnotuple,yesnovalue,&list);
    DoubleParameter("LOWERBOUND",1.5,"Lower cutoff value",&list);
    DoubleParameter("UPPERBOUND",1.5,"Upper cutoff value",&list);
+
+
 }
 
 

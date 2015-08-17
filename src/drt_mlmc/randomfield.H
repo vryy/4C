@@ -90,6 +90,7 @@ public:
 
   const bool IsBounded() {return is_bounded_; }
 
+  const bool HasSpatialMedian() {return has_spatially_variable_median_; }
 
   //!brief get min corner of bounding box
   std::vector<double> GetMinBB() {return bb_min_;}
@@ -128,6 +129,9 @@ protected:
  };
  //! \brief target marginal pdf of random field
  PROBABILITY_DISTRIBUTIONS marginal_pdf_;
+
+ //! brief field has spatially varying median
+ bool has_spatially_variable_median_;
 
 private:
 

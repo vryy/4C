@@ -198,8 +198,8 @@ private:
   //! brief initial wall thickness (asssumed uniform on geometry)
   double initial_wall_thickness_;
 
-  //! brief Use mean local wall thickness based on condition input
-  bool use_mean_field_from_cond_;
+  //! brief use median local wall thickness based on condition input
+  bool use_median_field_from_cond_;
 
   //! brief start random geometry above bifurcation of AAA only
   bool start_rand_geo_above_bif_;

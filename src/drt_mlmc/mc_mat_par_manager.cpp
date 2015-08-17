@@ -406,7 +406,7 @@ void UQ::MCMatParManager::SetParamsRedAirways(double para_cont_parameter)
             Teuchos::RCP<MAT::Maxwell_0d_acinus_Ogden> mymat = Teuchos::rcp_dynamic_cast<MAT::Maxwell_0d_acinus_Ogden>(discret_->gElement(eleDID)->Material(j));
 
             // it iterator over number of RF per element, meaning stochastic parameters for element,
-            // in this case now, only kappa is evaluted using RF, so only one RF per element.
+            // in this case now, only kappa is evaluated using RF, so only one RF per element.
             // loop the parameters to be optimized
             std::vector<int> actparams = stochparamap_r_field_.at(stochparamap_r_field_.find(discret_->gElement(eleDID)->Material(j)->Parameter()->Id())->first);
             std::vector<int>::const_iterator it;

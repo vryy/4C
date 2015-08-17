@@ -37,6 +37,8 @@ UQ::RandomField::RandomField(Teuchos::RCP<DRT::Discretization> discret, const Te
  // init largest_length
  ComputeBoundingBox(discret);
 
+ has_spatially_variable_median_=DRT::INPUT::IntegralValue<int>(rfp ,"SPATIAL_VARIABLE_MEDIAN");
+
 }
 
 void UQ::RandomField::ComputeBoundingBox(Teuchos::RCP<DRT::Discretization> discret)
