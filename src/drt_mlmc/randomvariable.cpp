@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file drt_uq_dyn.cpp
-\brief  Uncertainty Quantification
+\file randomvariable.cpp
+\brief class for generating random variables
 
 <pre>
 Maintainer: Jonas Biehler
@@ -128,6 +128,8 @@ double UQ::RandomVariable::EvalVariable( const double paracont_parameter,
   }
   if(writetofile)
   {
+    if (myrank_ == 0)
+    {
     std::stringstream filename_helper;
     filename_helper << "RandomVariable_" << Id_ << ".txt";
     std::ofstream File;
@@ -135,10 +137,28 @@ double UQ::RandomVariable::EvalVariable( const double paracont_parameter,
     // use at() to get an error massage just in case
     File << std::setprecision (9) << temp_rv_val<< std::endl;
     File.close();
+    }
   }
   if(output)
     dserror("Not implemented yet");
+
+  physical_value_=temp_rv_val;
   return temp_rv_val;
+}
+
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void UQ::RandomVariable::WriteRandomVariablesToFile(std::string filename, int numrun)
+{
+  const char * c = filename.c_str();
+  if (myrank_ == 0)
+  {
+    std::ofstream File;
+    File.open(c,std::ios::app);
+    File << "run: "<< numrun << " val: " << std::setprecision (9) << physical_value_ << std::endl;
+    File.close();
+  }
 }
 
 #endif

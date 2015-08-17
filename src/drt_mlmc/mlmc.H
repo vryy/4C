@@ -238,6 +238,11 @@ public:
       Teuchos::RCP<std::vector <std::vector<double > > > my_output_elements_c_strains,
       Teuchos::RCP<std::vector <std::vector<double > > > my_output_elements_mat_params);
 
+  //! \brief compute von mises stress on the fly and write to file
+  void ExportElementVonMisesStressAndWriteToFile(Teuchos::RCP<const Epetra_Map> OutputMap,
+        std::vector <int> * output_elements,
+        Teuchos::RCP<std::vector <std::vector<double > > >   my_output_elements_von_mises_stresses);
+
   //! \brief write some info about parametercontinuation scheme to file
   void WriteParamContInfoToFile(Teuchos::RCP<std::vector <int> > paramcont_info);
 

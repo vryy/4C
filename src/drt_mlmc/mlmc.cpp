@@ -233,8 +233,8 @@ void UQ::MLMC::Integrate()
       case INPAR::STR::dyna_euma:
       case INPAR::STR::dyna_euimsto:
       {
-        // instead of calling dyn_nlnstructural_drt(); here build the adapter here so that we have acces to the results
-        // What follows is basicaly a copy of whats usually in dyn_nlnstructural_drt();
+        // instead of calling dyn_nlnstructural_drt(); here build the adapter here so that we have access to the results
+        // What follows is basically a copy of what's usually in dyn_nlnstructural_drt();
         // access the structural discretization
         Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
         // create an adapterbase and adapter
@@ -288,8 +288,27 @@ void UQ::MLMC::Integrate()
     EvalDisAtEleCenters(displacements,INPAR::STR::stress_cauchy  ,INPAR::STR::strain_ea,&my_output_elements_,my_output_elements_c_disp,my_output_elements_c_stresses,my_output_elements_c_strains,my_output_elements_mat_params);
     ExportEleDataAndWriteToFile(OutputMap_,INPAR::STR::stress_cauchy,INPAR::STR::strain_ea,&my_output_elements_,my_output_elements_c_disp,my_output_elements_c_stresses,my_output_elements_c_strains,my_output_elements_mat_params);
 
-    // Evaluate Peak stress and strain vallues
+    // Evaluate Peak stress and strain values
     EvalPeakWallStress(displacements, INPAR::STR::stress_cauchy,INPAR::STR::strain_ea );
+
+    // begining of very ugly
+    // we might also want von mises data for specific elements
+    Teuchos::RCP< std::vector <double> > vonMisesStress_2 = Teuchos::rcp(new std::vector<double > );
+    Teuchos::RCP<std::vector <std::vector<double > > >  vonMisesStress_scaled_2 = Teuchos::rcp(new std::vector <std::vector<double > >);
+    std::vector<double> temp(1,0);
+
+
+   //compute von mises stress only for those
+    CalcVonMises(my_output_elements_c_stresses,vonMisesStress_2);
+    for(unsigned int i=0; i<my_output_elements_.size();i++)
+    {
+     temp.at(0)=(vonMisesStress_2->at(i));
+     vonMisesStress_scaled_2->push_back(temp);
+    }
+    discret_->Comm().Barrier();
+    ExportElementVonMisesStressAndWriteToFile(OutputMap_,&my_output_elements_,vonMisesStress_scaled_2);
+    // end of very ugly
+
 
 
     // write random variables to file for regression
@@ -392,8 +411,8 @@ void UQ::MLMC::IntegrateNoReset()
       case INPAR::STR::dyna_euma:
       case INPAR::STR::dyna_euimsto:
       {
-        // instead of calling dyn_nlnstructural_drt(); here build the adapter here so that we have acces to the results
-        // What follows is basicaly a copy of whats usually in dyn_nlnstructural_drt();
+        // instead of calling dyn_nlnstructural_drt(); here build the adapter here so that we have access to the results
+        // What follows is basically a copy of what's usually in dyn_nlnstructural_drt();
         // create an adapterbase and adapter
         // access the structural discretization
         Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
@@ -509,6 +528,7 @@ void UQ::MLMC::IntegrateNoReset()
 /* Compute von Mises stress and Strain by mere Scaling based on wall thickness*/
 void UQ::MLMC::IntegrateScaleByThickness()
 {
+  //TODO error check whether we have stoch thickness
   const int myrank = discret_->Comm().MyPID();
 
   const Teuchos::ParameterList& mlmcp = DRT::Problem::Instance()->MultiLevelMonteCarloParams();
@@ -578,7 +598,7 @@ void UQ::MLMC::IntegrateScaleByThickness()
 
           // for first run do normal integration
           //my_matpar_manager_->SetUpStochMats((random_seed+(unsigned int)numb_run_),0.0,false);
-
+          //TODO biehler add error message
           if(stoch_wall_thickness_)
           {
            //my_thickness_manager_->SetUpThickness((random_seed+(unsigned int)numb_run_),0.0,false);
@@ -630,10 +650,6 @@ void UQ::MLMC::IntegrateScaleByThickness()
           for(unsigned int i=0; i<my_wall_elements_.size();i++)
           {
             double scaling = my_thickness_manager_->InitialThickness()/(my_thickness_manager_->EvalThicknessAtLocation(my_wall_elements_.at(i),1.0));
-             //IO::cout << "InitialThickness " << my_thickness_manager_->InitialThickness() << IO::endl;
-             //IO::cout << "my_thickness_manager_->EvalThicknessAtLocation " << my_thickness_manager_->EvalThicknessAtLocation(my_loc,1.0) << IO::endl;
-             //IO::cout << "scaling " << scaling << IO::endl;
-             //IO::cout << "break " << IO::endl;
              //IO::cout << "EleGID" << my_wall_elements_.at(i) << "Closest node ID "<< my_thickness_manager_->EvalThicknessAtLocation(my_wall_elements_.at(i),1.0) << IO::endl;
              vonMisesStress_scaled->push_back(vonMisesStress->at(i)*scaling);
           }
@@ -656,7 +672,7 @@ void UQ::MLMC::IntegrateScaleByThickness()
           Teuchos::RCP<std::list<std::pair <int , double > > > peak_vals = Teuchos::rcp(new std::list<std::pair <int , double  > >);
           Teuchos::RCP<std::list<std::pair <int , double > > > quantile99_vals = Teuchos::rcp(new std::list<std::pair <int , double  > >);
 
-
+          //TODO biehler it might make sense to add 99.9 quantile here
           ComputePeakAndQuantile(vonMisesStress_scaled,&my_wall_elements_,temp_peak,temp_quantile99);
           peak_vals->push_back(*temp_peak);
           quantile99_vals->push_back(*temp_quantile99);
@@ -678,6 +694,39 @@ void UQ::MLMC::IntegrateScaleByThickness()
           quantile99_vals->push_back(*temp_quantile99);
 
           ExportPeakStressDataAndWriteToFile(peak_vals,quantile99_vals);
+
+
+          // we might also want von mises data for specific elements
+
+          // Eval some wall elements on proc
+          Teuchos::RCP<std::vector <std::vector<double > > > my_output_elements_c_disp_2 =Teuchos::rcp(new std::vector <std::vector<double > >);
+          Teuchos::RCP<std::vector <std::vector<double > > > my_output_elements_c_stresses_2 =Teuchos::rcp(new std::vector <std::vector<double > >);
+          Teuchos::RCP<std::vector <std::vector<double > > > my_output_elements_c_strains_2 =Teuchos::rcp(new std::vector <std::vector<double > >);
+          Teuchos::RCP<std::vector <std::vector<double > > > my_output_elements_mat_params_2 =Teuchos::rcp(new std::vector <std::vector<double > >);
+
+          Teuchos::RCP< std::vector <double> > vonMisesStress_2 = Teuchos::rcp(new std::vector<double > );
+          Teuchos::RCP<std::vector <std::vector<double > > >  vonMisesStress_scaled_2 = Teuchos::rcp(new std::vector <std::vector<double > >);
+          std::vector<double> temp(1,0);
+          EvalDisAtEleCenters(cont_disn_init_,
+              INPAR::STR::stress_cauchy,
+              INPAR::STR::strain_ea,
+              &my_output_elements_,
+              my_output_elements_c_disp_2,
+              my_output_elements_c_stresses_2,
+              my_output_elements_c_strains_2,
+              my_output_elements_mat_params_2);
+
+         //compute von mises stress only for those
+          CalcVonMises(my_output_elements_c_stresses_2,vonMisesStress_2);
+          for(unsigned int i=0; i<my_output_elements_.size();i++)
+          {
+           double scaling = my_thickness_manager_->InitialThickness()/(my_thickness_manager_->EvalThicknessAtLocation(my_output_elements_.at(i),1.0));
+           temp.at(0)=(vonMisesStress_2->at(i)*scaling);
+           vonMisesStress_scaled_2->push_back(temp);
+          }
+          discret_->Comm().Barrier();
+          ExportElementVonMisesStressAndWriteToFile(OutputMap_,&my_output_elements_,vonMisesStress_scaled_2);
+
         }
 
 
@@ -1423,6 +1472,67 @@ void UQ::MLMC::ExportEleDataAndWriteToFile(Teuchos::RCP<const Epetra_Map> Output
   }
   discret_->Comm().Barrier();
 }
+
+void UQ::MLMC::ExportElementVonMisesStressAndWriteToFile(Teuchos::RCP<const Epetra_Map> OutputMap,
+      std::vector <int> * output_elements,
+      Teuchos::RCP<std::vector <std::vector<double > > >   my_output_elements_von_mises_stresses)
+{
+  // now we need to setup a map
+  // set up map <int,DRT::CONTAINER>
+  std::map<int,Teuchos::RCP <DRT::Container> >my_output_element_map;
+  for(unsigned int i = 0; i<output_elements->size(); i++)
+  {
+    // put all the stuff into container
+    Teuchos::RCP<DRT::Container> mycontainer = Teuchos::rcp(new DRT::Container);
+    mycontainer->Add("von_m_stresses",(my_output_elements_von_mises_stresses->at(i)));
+    my_output_element_map.insert( std::pair <int,Teuchos::RCP< DRT::Container> >(output_elements->at(i),mycontainer) );
+  }
+  // build exporter
+  DRT::Exporter myexporter(*(discret_->ElementRowMap()),*OutputMap,discret_->Comm());
+  // this actually transfers everything to proc 0
+  myexporter.Export(my_output_element_map);
+
+  if (discret_->Comm().MyPID()==0)
+  {
+    std::map<int,Teuchos::RCP <DRT::Container> >::iterator myit;
+    for ( myit=my_output_element_map.begin() ; myit != my_output_element_map.end(); myit++ )
+    {
+      // get back all the data
+      const std::vector<double> *  von_mises_stresses = myit->second()->Get< std::vector <double> >("von_m_stresses");
+
+
+    // assemble name for outputfile
+    std::stringstream outputfile2;
+
+    outputfile2 << filename_ << "_statistics_output_" << start_run_ << "_von_mises_stress_EleId_"<< myit->first << ".txt";
+    std::string name2 = outputfile2.str();;
+    // file to write output
+    std::ofstream File;
+    if (numb_run_ == 0 || numb_run_ == start_run_)
+    {
+      File.open(name2.c_str(),std::ios::out);
+      if (File.is_open())
+      {
+        File << "runid "<< " von mises"
+            << std::endl;
+        File.close();
+      }
+      else
+      {
+        dserror("Unable to open statistics output file");
+      }
+     }
+    // reopen in append mode
+    File.open(name2.c_str(),std::ios::app);
+    File << numb_run_ << "  " ;
+    File << von_mises_stresses->at(0) << std::endl;
+    File.close();
+    }
+  }
+  discret_->Comm().Barrier();
+}
+
+
 void UQ::MLMC::WriteParamContInfoToFile(
       Teuchos::RCP<std::vector <int> > paramcont_info)
 {

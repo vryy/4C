@@ -116,11 +116,10 @@ public:
   void WriteRandomVariablesToFile(std::string filename, int numrun);
 
   /*!
-  \brief return number of physical parameters which are uncertain
-
+  \brief return number of physical parameters which are modeled by a random field
   */
   int NumPhysStochParams(){
-    return numstochparams_r_field_+numstochparams_r_var_;};
+    return numstochparams_r_field_;};
 
 
 private:

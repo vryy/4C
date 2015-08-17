@@ -54,10 +54,10 @@ void MAT::PAR::Parameter::SetParameter(int parametername,Teuchos::RCP<Epetra_Vec
   {
     matparams_.at(parametername) = Teuchos::rcp(new Epetra_Vector (*myparameter));
   }
-  // we had elementwise matparameter and want constant, thats  not ok
+  // we had elementwise matparameter and want constant, thats OK, simply set same value in all entries
   else if(length_old > 1 && (length_new ==1 ) )
   {
-    dserror("You cannot go back from elementwise parametrisation to constant parametrisation Size mismatch ");
+    matparams_.at(parametername)->PutScalar((*myparameter)[0]);
   }
   // we had elementwise matparameter and elementwise but there is  size mismatch, thats  not ok
   else if(length_old > 1 && (length_old !=length_new ) )

@@ -1,5 +1,5 @@
 /*!-----------------------------------------------------------------------------
-\file   * randomvariable.H
+\file   randomvariable.H
 \brief Class for generating random variables
 
 
@@ -76,6 +76,14 @@ public:
                       const bool output);
 
   /*!
+  //! \brief write random field to file
+
+  \param filename        (in): string containing filename including path
+
+  */
+  void WriteRandomVariablesToFile(std::string filename, int numrun);
+
+  /*!
   \brief tell me is random variable is gaussian
 
   */
@@ -136,8 +144,11 @@ private:
   Teuchos::RCP<
       boost::variate_generator<randnumgen&, boost::normal_distribution<> > > normalgen_;
 
-  //! \brief current value of random variable
+  //! \brief current value of underlying gaussian random variable
   double value_;
+
+  //! \brief current value of physical parameter
+  double physical_value_;
 
   //! \brief deterministic value to use for parameter continuation
   double det_value_paracont_;

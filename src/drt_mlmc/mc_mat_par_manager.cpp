@@ -528,6 +528,12 @@ void UQ::MCMatParManager::WriteRandomVariablesToFile(std::string filename,
     ss << ".txt";
     randomfields_[i]->WriteRandomVariablesToFile(ss.str());
   }
+  for(int i=0;i<numstochparams_r_var_;i++)
+  {
+    std::stringstream ss;
+    ss << filename << "_random_variable_" << i+1 << ".txt";
+    randomvariables_[i]->WriteRandomVariablesToFile(ss.str(),numrun);
+  }
 }
 
 

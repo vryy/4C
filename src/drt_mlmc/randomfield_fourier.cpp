@@ -355,7 +355,6 @@ void UQ::RandomFieldFourier::WriteRandomVariablesToFile(std::string filename)
   const char * c = filename.c_str();
   if (myrank_ == 0)
   {
-    IO::cout << "test " << filename << IO::endl;
     std::ofstream File;
     File.open(c,std::ios::out);
 
