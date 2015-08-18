@@ -64,7 +64,7 @@ public:
   //! \brief get value of random field at a specific location
   virtual double EvalFieldAtLocation(
       const std::vector<double> location,
-      const double local_mean,
+      const double local_median,
       const double paracont_parameter,
       const bool writetofile,
       const bool output

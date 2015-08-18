@@ -179,7 +179,6 @@ START_RUN                       0
 PARAMLIST_R_FIELD               1 BETA
 NUMCONTSTEPS                    2
 RANDOMGEOMETRY                  yes
-MEAN_GEO_FROM_ALE_POINTDBC      yes
 WRITE_RV_TO_FILE                no
 OUTPUT_ELEMENT_IDS              104
 INITIALTHICKNESS                1.0
@@ -225,6 +224,7 @@ CALC_METHOD                     FOURIER
 KAPPA_U                         0.2
 NONGAUSSPARAM1                   0.3
 NONGAUSSPARAM2                  0.6
+SPATIAL_VARIABLE_MEDIAN         yes
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_AAANeoHooke YOUNG 0.3544 BETA 4.61 NUE 0.49 DENS 1.0e-7
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 10 NUE 0.3 DENS 1 THEXPANS 0.0

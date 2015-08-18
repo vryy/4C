@@ -88,20 +88,18 @@ void UQ::UQ_REDAIRWAYS::Integrate()
   {
     if (myrank == 0)
     {
-      IO::cout << GREEN_LIGHT "================================================================================" << IO::endl;
-      IO::cout << "                            UQ USING MONTE CARLO                              " << IO::endl;
-      IO::cout << "                              RUN: " << numb_run_ << "  of  " << numruns << IO::endl;
-      IO::cout << "================================================================================" END_COLOR << IO::endl;
+      IO::cout << "================================================================================" << IO::endl;
+      IO::cout << "                            UQ USING MONTE CARLO                              "   << IO::endl;
+      IO::cout << "                              RUN: " << numb_run_ << "  of  " << numruns          << IO::endl;
+      IO::cout << "================================================================================" << IO::endl;
     }
     const double t1 = Teuchos::Time::wallTime();
 
     my_matpar_manager_->SetUpStochMats((random_seed+(unsigned int)numb_run_),1.0,false);
-
     const double t2 = Teuchos::Time::wallTime();
     discret_->Comm().Barrier();
 
     discret_->Writer()->NewResultFile(filename_,(numb_run_));
-
     // -------------------------------------------------------------------
     // context for output and restart
     // -------------------------------------------------------------------
@@ -217,10 +215,10 @@ void UQ::UQ_REDAIRWAYS::Integrate()
       if(!discret_->Comm().MyPID())
       {
         IO::cout<<"\n=================Time  Measurement================"<<IO::endl;
-        IO::cout<<"Setup Stochastic Material:\t" <<std::setprecision(4)<<t2-t1<<"\ts"<<IO::endl;
-        IO::cout<<"Forward Solve  :\t" <<std::setprecision(4)<<t4-t3<<"\ts"<<IO::endl;
-        IO::cout<<"Total Wall Time After " << numb_run_ << " runs:\t" <<std::setprecision(4)<<t5-t0<<"\ts"<<IO::endl;
-        IO::cout<<"=================================================="<<IO::endl;
+        IO::cout<<"Setup Stochastic Material:\t"                        << std::setprecision(4)<<t2-t1<<"\ts"<<IO::endl;
+        IO::cout<<"Forward Solve  :\t" <<std::setprecision(4)<<t4-t3    <<"\ts"<<IO::endl;
+        IO::cout<<"Total Wall Time After " << numb_run_ << " runs:\t"   <<std::setprecision(4)<<t5-t0<<"\ts"<<IO::endl;
+        IO::cout<<"=================================================="  <<IO::endl;
       }
     }
   }while (numb_run_< numruns);

@@ -270,8 +270,7 @@ double UQ::RandomFieldFourier::EvalFieldAtLocation(const std::vector<double> loc
 {
   // safety check
   if(mean_!=0)
-    dserror("Local mean can be used only in combination with global mean=0.");
-
+    dserror("Local median can be used only in combination with global mean=0.");
 
   double tempgp = 0.0;
   double temp_rf_val = -1.0;

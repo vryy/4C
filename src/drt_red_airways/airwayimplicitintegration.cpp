@@ -349,7 +349,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Integrate(bool CoupledTo3D,
  | Prestress the lung to a given transpulmonary pressure given in the .dat file|
  | This will shink the lung before the first timestep in such a way that the   |
  | volume of each acinus reaches the given volume in the .dat file when p_tp is|
- | applied                                                       mundt 05/2015 |
+ | applied                                                        roth 05/2015 |
  *-----------------------------------------------------------------------------*/
 void AIRWAY::RedAirwayImplicitTimeInt::ComputeVol0ForPreStress()
 {

@@ -39,6 +39,7 @@ discret_(discret),
 numstochparams_r_field_(0),
 numstochparams_r_var_(0),
 params_r_field_(Teuchos::null),
+params_r_field_median_(Teuchos::null),
 params_r_var_(Teuchos::null)
 {
   if (not discret_->Filled() || not discret_->HaveDofs())
@@ -50,6 +51,10 @@ params_r_var_(Teuchos::null)
 
   if(numstochparams_r_field_)
   params_r_field_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementColMap()),
+      numstochparams_r_field_,true));
+
+  if(numstochparams_r_field_)
+  params_r_field_median_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementColMap()),
       numstochparams_r_field_,true));
 
   // create map with one redundant entry on each proc
@@ -92,6 +97,8 @@ params_r_var_(Teuchos::null)
       nummyparams++;
     }
   }
+  // commpute median value once and for all
+  ComputeMedianMatParamsMultivectorFromRandomFields();
 }
 
 
@@ -227,7 +234,6 @@ void UQ::MCMatParManager::InitStochParaMaps()
 void UQ::MCMatParManager::ComputeMatParamsMultivectorFromRandomFields(
     const double para_cont_parameter)
 {
-
   Teuchos::RCP<Epetra_MultiVector> params = Teuchos::rcp(
       new Epetra_MultiVector(*(discret_->ElementRowMap()),
           numstochparams_r_field_, false));
@@ -262,14 +268,32 @@ void UQ::MCMatParManager::ComputeMatParamsMultivectorFromRandomFields(
         ele_center_temp.push_back(ele_center[2]);
         ele_center_temp.push_back(ele_center[2]);
         // compute random field values an store in params vector
-        (*params)[*it][i] = randomfields_[*it]->EvalFieldAtLocation(
+        if(!randomfields_[*it]->HasSpatialMedian())
+        {
+          (*params)[*it][i] = randomfields_[*it]->EvalFieldAtLocation(
             ele_center_temp, para_cont_parameter, false, false);
+        }
+        else // we should actuall never go in here because only spectral field has 2d implementation
+        {
+          (*params)[*it][i] = randomfields_[*it]->EvalFieldAtLocation(
+            ele_center_temp, (*params_r_field_median_)[*it][i],para_cont_parameter, false, false);
+        }
       }
-      else
+      else // i.e. dim == 3
       {
         // compute random field values an store in params vector
-        (*params)[*it][i] = randomfields_[*it]->EvalFieldAtLocation(ele_center,
+        if(!randomfields_[*it]->HasSpatialMedian())
+        {
+          (*params)[*it][i] = randomfields_[*it]->EvalFieldAtLocation(ele_center,
             para_cont_parameter, false, false);
+        }
+        else
+        {
+          (*params)[*it][i] = randomfields_[*it]->EvalFieldAtLocation(
+              ele_center, (*params_r_field_median_)[*it][i],
+              para_cont_parameter, false, false);
+        }
+
       }
     }// eof loop over stoch material parameters
   } // eof loop over RowElements
@@ -308,6 +332,79 @@ void UQ::MCMatParManager::ComputeMatParamsMultivectorFromRandomVariables(
           para_cont_parameter, false, false);
     } // eof loop over stoch material parameters
   }
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void UQ::MCMatParManager::ComputeMedianMatParamsMultivectorFromRandomFields()
+{
+  // must have EleRowMap layout
+  for (int i=0; i< (discret_->NumMyRowElements()); i++)
+  {
+    // check whether Element has this material
+    DRT::Element* actele;
+    actele = discret_->lRowElement(i);
+    int elematid = actele->Material()->Parameter()->Id();
+    // if this material is not material stochastic skip rest of for loop ()
+    if (stochparamap_r_field_.find(elematid) == stochparamap_r_field_.end() )
+      continue;
+
+    std::vector<int> actparapos = stochparamap_r_field_.at( elematid );
+    std::vector<int> actparapos2 = stochparaid_r_field_.at( elematid );
+
+    // quick error check
+    if(actparapos.size()!=actparapos2.size())
+      dserror("Size mismatch cannot continue");
+
+    // depending on forward problem, call either red_airways or structure specific function
+    const Teuchos::ParameterList& mlmcp = DRT::Problem::Instance()->MultiLevelMonteCarloParams();
+    INPAR::MLMC::FWDProblem fwdprb = DRT::INPUT::IntegralValue<INPAR::MLMC::FWDProblem>(mlmcp,"FWDPROBLEM");
+
+    if(fwdprb == INPAR::MLMC::structure)
+    {
+      std::vector<int>::const_iterator it;
+      std::vector<int>::const_iterator it2;
+      it2=actparapos2.begin();
+      for ( it=actparapos.begin(); it!=actparapos.end(); it++)
+      {
+        //IO::cout << "beta?" << actele->Material()->Parameter()->GetParameter(*it,actele->Id()) << IO::endl;
+        (*params_r_field_median_)[*it2][i]=actele->Material()->Parameter()->GetParameter(*it,actele->Id());
+        it2++;
+      }// eof loop over stoch material parameters
+    }
+    else if(fwdprb == INPAR::MLMC::red_airways)
+    {
+      switch (actele->Material()->MaterialType())
+      {
+      case INPAR::MAT::m_0d_maxwell_acinus_ogden:
+      {
+        Teuchos::RCP<MAT::Maxwell_0d_acinus_Ogden> mymat = Teuchos::rcp_dynamic_cast<MAT::Maxwell_0d_acinus_Ogden>(actele->Material());
+
+        // it iterator over number of RF per element, meaning stochastic parameters for element,
+        // in this case now, only kappa is evaluated using RF, so only one RF per element.
+        // loop the parameters to be optimized
+        std::vector<int> actparams = stochparamap_r_field_.at(stochparamap_r_field_.find(actele->Material()->Parameter()->Id())->first);
+        if(actparams.size()!=1)
+          dserror("actparams.size() has to be one for red_airway problems");
+        (*params_r_field_median_)[*actparams.begin()][i]=mymat->GetParams("kappa");
+        break;
+      }
+      default:
+      {
+        dserror("Material not implemented yet for stochastic parameter setting");
+        break;
+      }
+
+      }//end switch
+    }
+    else
+    {
+      dserror("UQ is currently only implemented for structure and red_airways problems");
+    }
+  } // eof loop over RowElements
+
+  discret_->Comm().Barrier();
+
 }
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -386,34 +483,27 @@ void UQ::MCMatParManager::SetParamsRedAirways(double para_cont_parameter)
   {
     // updates params_r_field_
     ComputeMatParamsMultivectorFromRandomFields(para_cont_parameter);
-
     // loop over number of elements (on processor) -- the material class has element specific parameters
     for (int i=0; i< (discret_->NumMyColElements()); i++)
     {
-      int eleDID = discret_->ElementColMap()->GID(i); // get global element ID
-      int num_mymat = discret_->gElement(eleDID)->NumMaterial(); // get the number of element materials
-
-      // loop over number of element materials
-      for (int j=0; j<num_mymat; j++)
-      {
+      // get global element ID
+      int eleGID = discret_->ElementColMap()->GID(i);
         // is this material a stochastic material, global material id needed
-        if (stochparamap_r_field_.find(discret_->gElement(eleDID)->Material(j)->Parameter()->Id()) != stochparamap_r_field_.end() )
+        if (stochparamap_r_field_.find(discret_->gElement(eleGID)->Material()->Parameter()->Id()) != stochparamap_r_field_.end() )
         {
-          switch (discret_->gElement(eleDID)->Material(j)->MaterialType())
+          switch (discret_->gElement(eleGID)->Material()->MaterialType())
           {
           case INPAR::MAT::m_0d_maxwell_acinus_ogden:
           {
-            Teuchos::RCP<MAT::Maxwell_0d_acinus_Ogden> mymat = Teuchos::rcp_dynamic_cast<MAT::Maxwell_0d_acinus_Ogden>(discret_->gElement(eleDID)->Material(j));
+            Teuchos::RCP<MAT::Maxwell_0d_acinus_Ogden> mymat = Teuchos::rcp_dynamic_cast<MAT::Maxwell_0d_acinus_Ogden>(discret_->gElement(eleGID)->Material());
 
             // it iterator over number of RF per element, meaning stochastic parameters for element,
             // in this case now, only kappa is evaluated using RF, so only one RF per element.
             // loop the parameters to be optimized
-            std::vector<int> actparams = stochparamap_r_field_.at(stochparamap_r_field_.find(discret_->gElement(eleDID)->Material(j)->Parameter()->Id())->first);
-            std::vector<int>::const_iterator it;
-            for ( it=actparams.begin(); it!=actparams.end(); it++)
-            {
-              mymat->SetParams("kappa",(*params_r_field_)[*it][i]);
-            }
+            std::vector<int> actparams = stochparamap_r_field_.at(stochparamap_r_field_.find(discret_->gElement(eleGID)->Material()->Parameter()->Id())->first);
+            if(actparams.size()!=1)
+              dserror("actparams.size() has to be one for red_airway problems");
+            mymat->SetParams("kappa",(*params_r_field_)[*actparams.begin()][i]);
             break;
           }
           default:
@@ -421,11 +511,8 @@ void UQ::MCMatParManager::SetParamsRedAirways(double para_cont_parameter)
             dserror("Material not implemented yet for stochastic parameter setting");
             break;
           }
-
           }//end switch
-
         }// end if stochastic
-      }// end loop element materials
     }// end loop elements
   }//end if
 
@@ -435,6 +522,7 @@ void UQ::MCMatParManager::SetParamsRedAirways(double para_cont_parameter)
   // do we have quantities modeled as random variables ?
   if(numstochparams_r_var_)
   {
+    dserror("Untested, check for correct implementation before use");
     ComputeMatParamsMultivectorFromRandomVariables(para_cont_parameter);
     // loop over number of elements (on processor) -- the material class has element specific parameters
     for (int i=0; i< (discret_->NumMyColElements()); i++)
@@ -565,7 +653,7 @@ void UQ::MCMatParManager::SetUpStochMats(unsigned int myseed,
   if(!reuse_rf)
     CreateNewRealizationOfRandomQuantities(myseed);
 
-  // depending on forward problem, call either red_airwaz or structure specific function
+  // depending on forward problem, call either red_airways or structure specific function
   const Teuchos::ParameterList& mlmcp = DRT::Problem::Instance()->MultiLevelMonteCarloParams();
   INPAR::MLMC::FWDProblem fwdprb = DRT::INPUT::IntegralValue<INPAR::MLMC::FWDProblem>(mlmcp,"FWDPROBLEM");
 

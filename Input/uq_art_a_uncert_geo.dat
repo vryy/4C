@@ -167,7 +167,6 @@ START_RUN                       0
 PARAMLIST_R_FIELD               1 BETA
 NUMCONTSTEPS                    2
 RANDOMGEOMETRY                  yes
-MEAN_GEO_FROM_ALE_POINTDBC      no
 WRITE_RV_TO_FILE                no
 OUTPUT_ELEMENT_IDS              104
 INITIALTHICKNESS                1.0

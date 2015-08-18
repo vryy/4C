@@ -17,11 +17,7 @@ REDUCED_OUTPUT                  no
 START_RUN                       0
 PARAMLIST_R_FIELD               2 KAPPA
 NUMCONTSTEPS                    2
-RANDOMGEOMETRY                  yes
-MEAN_GEO_FROM_ALE_POINTDBC      no
-WRITE_RV_TO_FILE                no
 OUTPUT_ELEMENT_IDS              104
-INITIALTHICKNESS                1.0
 ------------------------------------------------------------RANDOM FIELD 1
 ACTIVE                          YES
 CORRLENGTH                      5
@@ -35,7 +31,6 @@ BOUNDED                         YES
 LOWERBOUND                      800
 UPPERBOUND                      4500
 PERIODICITY_FOURIER             20
-CONTBLENDVALUE                  1.5
 FOURIER_TRUNCATION_THRESHOLD    200
 SPECTRAL_MATCHING               no
 -----------------------------------------REDUCED DIMENSIONAL AIRWAYS DYNAMIC

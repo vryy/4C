@@ -176,6 +176,15 @@ private:
       const double para_cont_parameter);
 
   /*!
+  \brief Compute median material parameter multivector
+
+  Compute multivector with ele col layout which contains the values
+  of the median of the uncertain material parameters computed by random fields
+
+  */
+  void ComputeMedianMatParamsMultivectorFromRandomFields();
+
+  /*!
   \brief create random field objects
 
   create random field objects for MC based on input file specifications
@@ -220,13 +229,6 @@ private:
 
   //! \brief number of stochastic material parameters modelled as random variable
   int numstochparams_r_var_;
-
-  //! map of names for each material parameter
-  //! key: matid, value: value-enum
-  //! value is of enum type and can be used to set the respective material
-  //! parameter directly
-  //! e.g. < 1 ; ( youngs, beta)>
-  //!      < 2 ; ( k1 , k2 )>
 
   /*!
   \brief map of names for each material parameter
@@ -274,9 +276,11 @@ private:
    */
   std::map<int,std::vector<int> > stochparaid_r_var_;
 
-
   //! actual set of material parameters in elementwise column map layout for random fields
   Teuchos::RCP<Epetra_MultiVector> params_r_field_;
+
+  //! actual set of median material parameters in elementwise column map layout for random fields
+  Teuchos::RCP<Epetra_MultiVector> params_r_field_median_;
 
   //! actual set of material parameters in for random variables. thus each vector has only one entry
   Teuchos::RCP<Epetra_MultiVector> params_r_var_;
