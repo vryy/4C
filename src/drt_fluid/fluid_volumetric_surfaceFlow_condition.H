@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file fluidwomersleycondition.H
+\file fluid_volumetric_surfaceFlow_condition.H
 \brief Method to deal with womersley flow profiles
 
 <pre>
@@ -58,7 +58,6 @@ public:
   \brief Standard Constructor
   */
   FluidVolumetricSurfaceFlowWrapper( Teuchos::RCP<DRT::Discretization>  actdis,
-                                     IO::DiscretizationWriter& output,
                                      double dta);
 
   /*!
@@ -110,12 +109,6 @@ private:
   //! fluid discretization
   Teuchos::RCP<DRT::Discretization>      discret_;
 
-  //! output
-  IO::DiscretizationWriter&     output_;
-
-  //!
-  Teuchos::RCP<Epetra_Vector>            womersleyvbc_;
-
   //!
   Teuchos::RCP<FLD::UTILS::MapExtractor> womersley_mp_extractor_;
 
@@ -132,7 +125,6 @@ public:
   */
 
   TotalTractionCorrector( Teuchos::RCP<DRT::Discretization>  actdis,
-                          IO::DiscretizationWriter& output,
                           double dta);
 
   /*!
@@ -193,9 +185,6 @@ private:
   //! fluid discretization
   Teuchos::RCP<DRT::Discretization>      discret_;
 
-  //! output
-  IO::DiscretizationWriter&     output_;
-
   //!
   Teuchos::RCP<Epetra_Vector>            tractionvbc_;
 
@@ -226,10 +215,9 @@ public:
   \brief Standard Constructor
   */
   FluidVolumetricSurfaceFlowBc( Teuchos::RCP<DRT::Discretization>  actdis,
-                                IO::DiscretizationWriter& output,
                                 double                    dta,
-                                std::string                    ds_condname,
-                                std::string                    dl_condname,
+                                std::string               ds_condname,
+                                std::string               dl_condname,
                                 int                       condid,
                                 int                       surf_numcond,
                                 int                       line_numcond);
@@ -277,33 +265,19 @@ public:
                                int                           condnum  ,
                                Teuchos::RCP<Epetra_Map> &             cond_dofrowmap);
 
-
-
-#if 0
-  /*!
-  \brief Broadcast node information over all processors
-  */
-  void BroadcastNodeInformation(Teuchos::RCP<DRT::Discretization>  dis,
-                                std::string                    noderowmap,
-                                int                       condid,
-                                int                       condnum,
-                                Teuchos::RCP<Epetra_Map>           cond_noderowmap);
-#endif
-
   /*!
   \brief Evaluate velocities
   */
-  void EvaluateVelocities(double             flowrate,
-                          std::string             ds_condname,
-                          double             time);
+  void EvaluateVelocities(const double             flowrate,
+                          const std::string        ds_condname,
+                          const double             time);
 
 
   /*!
   \brief Evaluate flowrate
   */
-  double EvaluateFlowrate(//Teuchos::RCP<Epetra_Vector> bcdof,
-                          std::string             ds_condname,
-                          double             time);
+  double EvaluateFlowrate(const std::string        ds_condname,
+                          const double             time);
 
 
   /*!
@@ -434,10 +408,6 @@ private:
 
   std::string PrebiasingFlag(){ return prebiasing_flag_;}
 
-protected:
-
-  Teuchos::RCP<Epetra_Vector> womersleybc_;
-
 private:
 
   //! ID of present condition
@@ -462,23 +432,17 @@ private:
   double dta_;
 
   //! the processor ID from the communicator
-  int                           myrank_;
+  int myrank_;
 
   //! fluid discretization
-  Teuchos::RCP<DRT::Discretization>      discret_;
-
-  //! output
-  IO::DiscretizationWriter&     output_;
+  Teuchos::RCP<DRT::Discretization> discret_;
 
   //! Flowrate array for Womersley conditions
-  Teuchos::RCP<std::vector<double> >     flowrates_;
+  Teuchos::RCP<std::vector<double> > flowrates_;
 
   //! Position at which the next element should be replaced
   //! initialised to zero as the first element will be replaced first
   int flowratespos_;
-
-  //! Number of time steps which fit (exactly) into one period
-  int cyclesteps_;
 
   //! center of mass coordinates
   Teuchos::RCP<std::vector<double> >     cmass_;
@@ -513,9 +477,6 @@ private:
   //! A map of only condition velocites
   Teuchos::RCP<Epetra_Vector> cond_traction_vel_;
 
-  //! A correction factor that will scale the velocities to the correct volumetric-flow-rate
-  double correction_factor_;
-
   //! initial area of the codition surface
   double area_;
 
@@ -533,12 +494,6 @@ private:
 
   //! is +1 if inflow, else -1
   double flow_dir_;
-
-  //! flag to compute the avarage surface normal
-  bool computeNormal_;
-
-  //! flag to compute the surface center of mass
-  bool computeCenterMass_;
 
   //! flag to correct the flowprofile
   bool correct_flow_;

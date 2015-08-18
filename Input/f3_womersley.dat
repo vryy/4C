@@ -159,7 +159,7 @@ DSURF                           1
 E 3 - 1 timeperiod 1.0 windkessel termradius 5.0 R1 0.11 R2 2.2 C 0.6 stiffness 1.0 H1 0.1 H2 0.2 H3 0.3
 --------------------------------------DESIGN SURF VOLUMETRIC FLOW CONDITIONS
 DSURF                           1
-E 1 - 1 WOMERSLEY NOTPREBIASED InFlow WithCorrection Period 1.0 Order 2 Harmonics 16 -1.0 1 SelfEvaluateNormal 0.0 0.0 0.0 SelfEvaluateCenterOfMass 0.0 0.0 0.0
+E 1 - 1 WOMERSLEY NOTPREBIASED InFlow WithCorrection Period 1.0 Order 2 Harmonics 16 Val -1.0 Curve 1 SelfEvaluateNormal 0.0 0.0 0.0 SelfEvaluateCenterOfMass 0.0 0.0 0.0
 ------------------------------------DESIGN LINE VOLUMETRIC FLOW BORDER NODES
 DLINE                           1
 E 1 - 1

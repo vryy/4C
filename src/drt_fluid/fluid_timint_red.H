@@ -98,14 +98,6 @@ public:
   virtual void SetupMeshtying();
 
   /*!
-  \brief update iterative increment
-
-  */
-  virtual void UpdateIterIncrementally(
-    Teuchos::RCP<const Epetra_Vector> vel  //!< input residual velocities
-    );
-
-  /*!
   \brief update configuration and output to file/screen
 
   */

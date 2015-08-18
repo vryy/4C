@@ -60,7 +60,7 @@ void FLD::TimIntRedModels::Init()
     discret_->SetState("dispnp", dispn_);
   }
 
-  vol_surf_flow_bc_     = Teuchos::rcp(new UTILS::FluidVolumetricSurfaceFlowWrapper(discret_, *output_, dta_) );
+  vol_surf_flow_bc_ = Teuchos::rcp(new UTILS::FluidVolumetricSurfaceFlowWrapper(discret_, dta_) );
 
   // evaluate the map of the womersley bcs
   vol_surf_flow_bc_ -> EvaluateMapExtractor(vol_flow_rates_bc_extractor_);
@@ -121,7 +121,7 @@ void FLD::TimIntRedModels::Init()
     zeros_->PutScalar(0.0); // just in case of change
   }
 
-  traction_vel_comp_adder_bc_ = Teuchos::rcp(new UTILS::TotalTractionCorrector(discret_, *output_, dta_) );
+  traction_vel_comp_adder_bc_ = Teuchos::rcp(new UTILS::TotalTractionCorrector(discret_, dta_) );
 
 
   // ------------------------------------------------------------------------------
@@ -349,33 +349,6 @@ void FLD::TimIntRedModels::SetupMeshtying()
       dserror("Think about your flow rate defined on the interal interface!!\n"
               "It is working qualitatively!!");
   }
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | do some additional steps in UpdateIterIncrementally          bk 12/13|
- *----------------------------------------------------------------------*/
-void FLD::TimIntRedModels::UpdateIterIncrementally(
-  Teuchos::RCP<const Epetra_Vector> vel)  //!< input residual velocities
-
-{
-  FluidImplicitTimeInt::UpdateIterIncrementally(vel);
-  // set the new solution we just got
-  if (vel != Teuchos::null)
-  {
-
-    Teuchos::RCP<Epetra_Vector> aux = LINALG::CreateVector(
-        *(discret_->DofRowMap(0)), true);
-
-    *aux=*velnp_;
-    //
-    vol_flow_rates_bc_extractor_->InsertVolumetricSurfaceFlowCondVector(
-        vol_flow_rates_bc_extractor_->ExtractVolumetricSurfaceFlowCondVector(
-            velnp_), aux);
-    *velnp_=*aux;
-
-  }
-
   return;
 }
 

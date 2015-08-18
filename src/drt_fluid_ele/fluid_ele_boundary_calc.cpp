@@ -1630,7 +1630,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PressureBoundaryIntegral(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CenterOfMassCalculation(
-  DRT::ELEMENTS::FluidBoundary*    ele,
+  DRT::ELEMENTS::FluidBoundary*     ele,
   Teuchos::ParameterList&           params,
   DRT::Discretization&              discretization,
   std::vector<int>&                 lm)
@@ -1640,7 +1640,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CenterOfMassCalculation(
   // This calculates the integrated the pressure from the
   // the actual pressure values
   //------------------------------------------------------------------
-#if 1
+
   // get integration rule
   const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
@@ -1723,7 +1723,6 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CenterOfMassCalculation(
   // set new center of mass
   params.set("total area", area+elem_area);
 
-#endif
 }//DRT::ELEMENTS::FluidSurface::CenterOfMassCalculation
 
 

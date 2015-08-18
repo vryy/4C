@@ -4631,13 +4631,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(volumetric_surface_flow_cond,"Period");
   AddNamedInt (volumetric_surface_flow_cond,"Order");
   AddNamedInt (volumetric_surface_flow_cond,"Harmonics");
-
-  std::vector<Teuchos::RCP<ConditionComponent> > inflowprofilecomponents;
-  inflowprofilecomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("val",1)));
-  inflowprofilecomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("curve",1,true,true)));
-  for (unsigned i=0; i<inflowprofilecomponents.size(); ++i)
-    volumetric_surface_flow_cond->AddComponent(inflowprofilecomponents[i]);
-
+  AddNamedReal(volumetric_surface_flow_cond,"Val");
+  AddNamedInt (volumetric_surface_flow_cond,"Curve");
 
   volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new StringConditionComponent("NORMAL", "SelfEvaluateNormal",
                                                                                        Teuchos::tuple<std::string>("SelfEvaluateNormal","UsePrescribedNormal"),
@@ -4714,12 +4709,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(total_traction_correction_cond,"Period");
   AddNamedInt (total_traction_correction_cond,"Order");
   AddNamedInt (total_traction_correction_cond,"Harmonics");
-
-  std::vector<Teuchos::RCP<ConditionComponent> > flowbiasingcomponents;
-  flowbiasingcomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("val",1)));
-  flowbiasingcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("curve",1,true,true)));
-  for (unsigned i=0; i<flowbiasingcomponents.size(); ++i)
-  total_traction_correction_cond->AddComponent(flowbiasingcomponents[i]);
+  AddNamedReal(total_traction_correction_cond,"Val");
+  AddNamedInt (total_traction_correction_cond,"Curve");
 
   total_traction_correction_cond->AddComponent(Teuchos::rcp(new StringConditionComponent("NORMAL", "SelfEvaluateNormal",
                                                                                          Teuchos::tuple<std::string>("SelfEvaluateNormal","UsePrescribedNormal"),
