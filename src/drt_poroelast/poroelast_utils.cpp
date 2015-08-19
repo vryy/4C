@@ -92,6 +92,7 @@ bool POROELAST::UTILS::CheckPoroP1(
   //all poro-p1 elements need to be listed here
   if(
       actele->ElementType() == DRT::ELEMENTS::So_hex8PoroP1Type::Instance()  or
+      actele->ElementType() == DRT::ELEMENTS::So_tet4PoroP1Type::Instance()  or
       actele->ElementType() == DRT::ELEMENTS::WallQuad4PoroP1Type::Instance() or
       actele->ElementType() == DRT::ELEMENTS::WallTri3PoroP1Type::Instance() or
       actele->ElementType() == DRT::ELEMENTS::WallQuad9PoroP1Type::Instance()

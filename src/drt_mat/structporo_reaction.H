@@ -144,6 +144,10 @@ namespace MAT
         return dphiDphiref_*refporositydot_;
       }
 
+      /// Return material density (if provided by the specific material)
+      virtual double Density() const {if(refporosity_==1.0) return mat_->Density();
+      else return ( (1.0-refporosity_) * mat_->Density());};
+
       /// compute current porosity and save it
       void ComputePorosity(  Teuchos::ParameterList& params, ///< (i) element parameter list
                              double press,                  ///< (i) pressure at gauss point
