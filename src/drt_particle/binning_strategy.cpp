@@ -889,8 +889,6 @@ void BINSTRATEGY::BinningStrategy::CreateXAABB(
   double& cutoff
   )
 {
-  if(DRT::Problem::Instance()->NDim() != 3)
-    dserror("only implemented for 3D");
 
   double locmaxcutoff = 0.0;
   // initialize XAABB as rectangle around the first node of dis
