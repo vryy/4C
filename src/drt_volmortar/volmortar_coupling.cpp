@@ -882,13 +882,13 @@ void VOLMORTAR::VolMortarCoupl::EvaluateSegments()
   /**************************************************
    * loop over all slave elements                   *
    **************************************************/
-  for (int i = 0; i < dis1_->NumMyRowElements(); ++i)
+  for (int i = 0; i < dis1_->NumMyColElements(); ++i)
   {
     //output of coupling status
     //PrintStatus(i);
 
     //get slave element
-    DRT::Element* Aele = dis1_->lRowElement(i);
+    DRT::Element* Aele = dis1_->lColElement(i);
 
     // get found elements from other discr.
     std::vector<int> found = Search(*Aele, SearchTreeB, CurrentDOPsB);

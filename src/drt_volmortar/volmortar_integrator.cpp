@@ -805,6 +805,10 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateCells2D(
       for (int j=0;j<ns_;++j)
       {
         DRT::Node* cnode = sele.Nodes()[j];
+
+        if (cnode->Owner() != slavedis->Comm().MyPID())
+          continue;
+
         int nsdof=slavedis->NumDof(1,cnode);
 
         //loop over slave dofs
