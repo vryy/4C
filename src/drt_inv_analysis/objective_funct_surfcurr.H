@@ -142,6 +142,14 @@ private:
   //! <facet gid, facet center <cx, cy, cz> >
   std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > center_t_;
 
+  //! data map containing target normals
+  //! <facet gid, facet normal <nx, ny, nz> >
+  std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > normal_t_distr_;
+
+  //! data map containing target centers
+  //! <facet gid, facet center <cx, cy, cz> >
+  std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > center_t_distr_;
+
   //! data map containing source normals
   //! <facet gid, facet normal <nx, ny, nz> >
   std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > normal_s_;
@@ -154,6 +162,16 @@ private:
 
   //! data map containing each source facets dof gids
   std::map<int, std::vector<int> > facetdofmap_;
+
+  //! data map containing source normals
+  //! <facet gid, facet normal <nx, ny, nz> >
+  std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > normal_s_distr_;
+
+  //! data map containing source centers
+  std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > center_s_distr_;
+
+  //! data map containing each source facets dof gids
+  std::map<int, std::vector<int> > facetdofmap_distr_;
 
   //! squared scale of the kernel
   double sigmaW2_;
@@ -222,7 +240,7 @@ private:
   inline double kernel(Epetra_SerialDenseMatrix x, Epetra_SerialDenseMatrix y);
 
   //! derivativ of the gauss kernel wrt the dofs of the facet x (fid=0) or y (fid=1)
-  Epetra_SerialDenseMatrix kernelderiv(Epetra_SerialDenseMatrix x, Epetra_SerialDenseMatrix y, int fid);
+  inline Epetra_SerialDenseMatrix kernelderiv(Epetra_SerialDenseMatrix x, Epetra_SerialDenseMatrix y);
 
   //! dot product of Epetra_SerialDenseMatrices
   inline double dotp(Epetra_SerialDenseMatrix x, Epetra_SerialDenseMatrix y);
@@ -232,9 +250,6 @@ private:
 
   //! debug printout: data map to screen
   void PrintDataToScreen(std::map<int,std::vector<int> > data);
-
-  //! debug printout: Epetra Vector to screen with precision
-  void PrintDataToScreen(Epetra_Vector& vec);
 
 public:
 

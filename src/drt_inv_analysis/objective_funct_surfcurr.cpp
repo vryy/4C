@@ -16,6 +16,9 @@ Maintainer: Sebastian Kehl
 #include "../drt_io/io_control.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_inpar/inpar_parameterlist_utils.H"
+#include "../drt_io/io_pstream.H"
+
+#include <ctime>
 
 
 /*----------------------------------------------------------------------*/
@@ -100,8 +103,8 @@ int INVANA::ObjectiveFunctSurfCurrRepresentation::FindStep(double time)
 /* Evaluate value of the objective function                  keh 11/13  */
 /*----------------------------------------------------------------------*/
 void INVANA::ObjectiveFunctSurfCurrRepresentation::Evaluate(Teuchos::RCP<Epetra_Vector> state,
-                                                                 double time,
-                                                                 double& val)
+    double time,
+    double& val)
 {
   int step = FindStep(time); // not needed so far
   if (step == -1)
@@ -112,11 +115,21 @@ void INVANA::ObjectiveFunctSurfCurrRepresentation::Evaluate(Teuchos::RCP<Epetra_
   //so far only the case were one single "measurement" for the final timestep of the simulation is considered
   sourcedis_->SetState("displacements", state);
 
+  std::clock_t start;
+  double duration;
+
+  start = std::clock();
+
   for(int i=0; i<(int)currents_[0].size(); ++i)
   {
     // evaluate every single surface combination
     val+=currents_[0][i]->WSpaceNorm();
   }
+
+  duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
+
+  if (sourcedis_->Comm().MyPID()==0)
+    IO::cout << "SURFACE CURRENT function evaluation took: " << duration << " seconds" << IO::endl;
 }
 
 /*----------------------------------------------------------------------*/
@@ -124,8 +137,8 @@ void INVANA::ObjectiveFunctSurfCurrRepresentation::Evaluate(Teuchos::RCP<Epetra_
 /* w.r.t the displacements                                   keh 11/13  */
 /*----------------------------------------------------------------------*/
 void INVANA::ObjectiveFunctSurfCurrRepresentation::EvaluateGradient(Teuchos::RCP<Epetra_Vector> state,
-                                                                         double time,
-                                                                         Teuchos::RCP<Epetra_Vector> gradient)
+    double time,
+    Teuchos::RCP<Epetra_Vector> gradient)
 {
   int step = FindStep(time); // not needed so far
   if (step == -1)
@@ -135,11 +148,21 @@ void INVANA::ObjectiveFunctSurfCurrRepresentation::EvaluateGradient(Teuchos::RCP
 
   sourcedis_->SetState("displacements", state);
 
+  std::clock_t start;
+  double duration;
+
+  start = std::clock();
+
   for(int i=0; i<(int)currents_[0].size(); ++i)
   {
     // evaluate every single surface combination
     currents_[0][i]->GradientWSpaceNorm(gradient);
   }
+
+  duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
+
+  if (sourcedis_->Comm().MyPID()==0)
+    IO::cout << "SURFACE CURRENT gradient evaluation took: " << duration << " seconds" << IO::endl;
 }
 
 void INVANA::ObjectiveFunctSurfCurrRepresentation::SetScale(double sigmaW)
@@ -155,9 +178,9 @@ void INVANA::ObjectiveFunctSurfCurrRepresentation::SetScale(double sigmaW)
 /* standard constructor for a surface current                keh 11/13  */
 /*----------------------------------------------------------------------*/
 INVANA::ObjectiveFunctSurfCurr::ObjectiveFunctSurfCurr(Teuchos::RCP<DRT::Discretization> sourcedis,
-                                                            Teuchos::RCP<DRT::Discretization> targetdis,
-                                                            DRT::Condition* sourcecond,
-                                                            DRT::Condition* targetcond):
+    Teuchos::RCP<DRT::Discretization> targetdis,
+    DRT::Condition* sourcecond,
+    DRT::Condition* targetcond):
 sourcedis_(sourcedis),
 targetdis_(targetdis),
 sourcecond_(sourcecond),
@@ -180,26 +203,28 @@ targetmapred_(Teuchos::null)
   targetmap_ = Teuchos::rcp(new Epetra_Map(SetupConditionMap(targetcond_, targetdis_)));
 
   // compute the all reduced maps for data communication
-  sourcemapred_ = LINALG::AllreduceEMap(*sourcemap_,0);
-  targetmapred_ = LINALG::AllreduceEMap(*targetmap_,0);
+  // completely redundant maps on every proc
+  sourcemapred_ = LINALG::AllreduceEMap(*sourcemap_);
+  targetmapred_ = LINALG::AllreduceEMap(*targetmap_);
 
   //complete evaluation of the target data can be done here once
   ComputeNormalCenterMaterialConfig(targetcond_,targetdis_,&normal_t_,&center_t_);
 
-  // "allreduce" target data to proc0 here already, since it is the same throughout
+  normal_t_distr_=normal_t_;
+  center_t_distr_=center_t_;
+  // "allreduce" target data to all procs here already, since it is the same throughout
   DRT::Exporter ex(*targetmap_,*targetmapred_,targetdis_->Comm());
-  ex.Export(normal_t_);
-  ex.Export(center_t_);
+  ex.Export(normal_t_distr_);
+  ex.Export(center_t_distr_);
 
   // precompute structural integrity component of the functional
-  structinttarget_=Convolute(normal_t_,center_t_,normal_t_,center_t_);
+  structinttarget_=Convolute(normal_t_,center_t_,normal_t_distr_,center_t_distr_);
 
 }
 
 /*----------------------------------------------------------------------*/
-/* buid unique map of tris in conditions                     keh 11/13  */
-/*----------------------------------------------------------------------*/
-const Epetra_Map INVANA::ObjectiveFunctSurfCurr::SetupConditionMap(DRT::Condition* cond, Teuchos::RCP<DRT::Discretization> dis)
+const Epetra_Map INVANA::ObjectiveFunctSurfCurr::SetupConditionMap(
+    DRT::Condition* cond, Teuchos::RCP<DRT::Discretization> dis)
 {
   // get total number of elements in this condition
   int lnumele = cond->Geometry().size();
@@ -245,10 +270,11 @@ const Epetra_Map INVANA::ObjectiveFunctSurfCurr::SetupConditionMap(DRT::Conditio
   return elemap;
 }
 
+/*----------------------------------------------------------------------*/
 void  INVANA::ObjectiveFunctSurfCurr::ComputeNormalCenterMaterialConfig(DRT::Condition* cond,
-                                                                             Teuchos::RCP<DRT::Discretization> discret,
-                                                                             std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >* normals,
-                                                                             std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >* centers)
+    Teuchos::RCP<DRT::Discretization> discret,
+    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >* normals,
+    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >* centers)
 {
   //clear data maps
   normals->clear();
@@ -264,9 +290,14 @@ void  INVANA::ObjectiveFunctSurfCurr::ComputeNormalCenterMaterialConfig(DRT::Con
   std::map<int,Teuchos::RCP<DRT::Element> >::iterator ele;
   for (ele=geom.begin(); ele != geom.end(); ++ele)
   {
-    DRT::Element* element = ele->second.get();
+    Teuchos::RCP<DRT::Element> element = ele->second;
     int numnodes = element->NumNode();
     int egid = element->Id();
+
+    // only proceed in case this element has a row element parent:
+    Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(element,true);
+    if ( discret->ElementRowMap()->LID( faceele->ParentElement()->Id() ) == -1 )
+      continue;
 
     // fill maps of normals and centers with data:
     // case tri  -> no special treatment
@@ -325,13 +356,14 @@ void  INVANA::ObjectiveFunctSurfCurr::ComputeNormalCenterMaterialConfig(DRT::Con
   }
 }
 
+/*----------------------------------------------------------------------*/
 void  INVANA::ObjectiveFunctSurfCurr::ComputeNormalCenterSpatialConfig(DRT::Condition* cond,
-                                                                            Teuchos::RCP<DRT::Discretization> discret,
-                                                                            std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >* normals,
-                                                                            std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >* centers,
-                                                                            std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >* derivnormal,
-                                                                            std::map<int, std::vector<int> >* facetdofmap,
-                                                                            bool wantderiv)
+    Teuchos::RCP<DRT::Discretization> discret,
+    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >* normals,
+    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >* centers,
+    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >* derivnormal,
+    std::map<int, std::vector<int> >* facetdofmap,
+    bool wantderiv)
 {
   // clear data maps
   normals->clear();
@@ -356,9 +388,14 @@ void  INVANA::ObjectiveFunctSurfCurr::ComputeNormalCenterSpatialConfig(DRT::Cond
   std::map<int,Teuchos::RCP<DRT::Element> >::iterator ele;
   for (ele=geom.begin(); ele != geom.end(); ++ele)
   {
-    DRT::Element* element = ele->second.get();
+    Teuchos::RCP<DRT::Element> element = ele->second;
     int numnodes = element->NumNode();
     int egid = element->Id();
+
+    // only proceed in case this element has a row element parent:
+    Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(element,true);
+    if ( discret->ElementRowMap()->LID( faceele->ParentElement()->Id() ) == -1 )
+      continue;
 
     //get this element's dofs
     DRT::Element::LocationArray la(discret->NumDofSets());
@@ -468,9 +505,10 @@ void  INVANA::ObjectiveFunctSurfCurr::ComputeNormalCenterSpatialConfig(DRT::Cond
   }
 }
 
+/*----------------------------------------------------------------------*/
 void INVANA::ObjectiveFunctSurfCurr::ComputeNormalCenter(LINALG::SerialDenseMatrix& x,
-                                                              Epetra_SerialDenseMatrix& n,
-                                                              Epetra_SerialDenseMatrix& c)
+    Epetra_SerialDenseMatrix& n,
+    Epetra_SerialDenseMatrix& c)
 {
   // normal
   n(0,0)=0.5*((x(2,1)-x(0,1))*(x(0,2)-x(1,2))-(x(2,2)-x(0,2))*(x(0,1)-x(1,1)));
@@ -484,11 +522,12 @@ void INVANA::ObjectiveFunctSurfCurr::ComputeNormalCenter(LINALG::SerialDenseMatr
 
 }
 
+/*----------------------------------------------------------------------*/
 void INVANA::ObjectiveFunctSurfCurr::ComputeNormalDeriv(LINALG::SerialDenseMatrix& x,
-                                                             Epetra_SerialDenseMatrix& dn)
+                                                        Epetra_SerialDenseMatrix& dn)
 {
-  // derivative of normal (wich is the cross product of vector made up from point coordinates in x, see function
-  // ComputeNormalCenter) wrt the single dofs
+  // derivative of normal (wich is the cross product of vector made up from point
+  // coordinates in x, see function ComputeNormalCenter) wrt the single dofs
   // -> a 3by9 matrix [dN/du1 dN/du2 ... dN/du9]
 
   // dofs of the first node
@@ -568,52 +607,41 @@ void INVANA::ObjectiveFunctSurfCurr::PrintDataToScreen(std::map<int,std::vector<
   }
 }
 
-void INVANA::ObjectiveFunctSurfCurr::PrintDataToScreen(Epetra_Vector& vec)
-{
-  std::cout << "print values of EpetraVector " << std::endl;
-  for (int i=0; i<vec.MyLength(); i++)
-  {
-    printf("mypid: %2d %10.8e \n", vec.Comm().MyPID(), vec[i]);
-  }
-}
-
 double INVANA::ObjectiveFunctSurfCurr::Convolute(std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& n1,
-                                                      std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& c1,
-                                                      std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& n2,
-                                                      std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& c2)
+    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& c1,
+    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& n2,
+    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& c2)
 {
   double val = 0.0;
 
-  if (sourcedis_->Comm().MyPID()==0)
+  std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >::iterator ito;
+  std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >::iterator iti;
+  //Epetra_SerialDenseMatrix dum(3,1);
+  for (ito=n1.begin(); ito!=n1.end(); ++ito)
   {
-    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >::iterator ito;
-    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >::iterator iti;
-    //Epetra_SerialDenseMatrix dum(3,1);
-    for (ito=n1.begin(); ito!=n1.end(); ++ito)
+    for (iti=n2.begin(); iti!=n2.end(); ++iti)
     {
-      for (iti=n2.begin(); iti!=n2.end(); ++iti)
-      {
-        double dot = dotp(*(ito->second),*(iti->second));
-        val+=dot*kernel(*c2[iti->first], *c1[ito->first]);
-      }
+      double dot = dotp(*(ito->second),*(iti->second));
+      val+=dot*kernel(*c2[iti->first], *c1[ito->first]);
     }
   }
 
-  sourcedis_->Comm().Broadcast(&val,1,0);
+  double gval=0.0;
+  sourcedis_->Comm().SumAll(&val,&gval,1);
 
-  return val;
+  return gval;
 }
 
 void INVANA::ObjectiveFunctSurfCurr::DerivComponent2(Teuchos::RCP<Epetra_Vector> lgradient,
-                                                          std::map<int,std::vector<int> >& facetdofmap,
-                                                          std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& n1,
-                                                          std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& c1,
-                                                          std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& n2,
-                                                          std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& c2)
+    std::map<int,std::vector<int> >& facetdofmap,
+    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& n1,
+    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& c1,
+    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& n2,
+    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& c2)
 {
-  if (sourcedis_->Comm().MyPID()==0)
-  {
     Epetra_SerialDenseMatrix dum(9,1);
+    double dot;
+    int err;
 
     std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >::iterator ito;
     std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >::iterator iti;
@@ -621,37 +649,35 @@ void INVANA::ObjectiveFunctSurfCurr::DerivComponent2(Teuchos::RCP<Epetra_Vector>
     {
       for (iti=n2.begin(); iti!=n2.end(); ++iti)
       {
-        double dot = dum.DOT(3,(*(ito->second))[0],(*(iti->second))[0],1,1);
+        dot = dum.DOT(3,(*(ito->second))[0],(*(iti->second))[0],1,1);
 
         // for the dofs of the inner loop facet
-        dum = kernelderiv(*c2[iti->first], *c1[ito->first],0);
+        dum = kernelderiv(*c2[iti->first], *c1[ito->first]);
         dum.Scale(dot);
         //add result to the corresponding entries in the global gradient vector
-        int err = lgradient->SumIntoGlobalValues(9,dum[0],facetdofmap[iti->first].data());
+        err = lgradient->SumIntoGlobalValues(9,dum[0],facetdofmap[iti->first].data());
         if (err)
           dserror("one of these gids not living on this proc");
 
         // for the dofs of the outer loop facet
-        dum = kernelderiv(*c2[iti->first], *c1[ito->first],1);
-        dum.Scale(dot);
+        //dum = kernelderiv(*c1[ito->first],*c2[iti->first]);
+        //dum.Scale(dot);
+        dum.Scale(-1.0);
         //add result to the corresponding entries in the global gradient vector
         err = lgradient->SumIntoGlobalValues(9,dum[0],facetdofmap[ito->first].data());
         if (err)
           dserror("one of these gids not living on this proc");
       }
     }
-  }
 }
 
 void INVANA::ObjectiveFunctSurfCurr::DerivComponent3(Teuchos::RCP<Epetra_Vector> lgradient,
-                                                          std::map<int,std::vector<int> >& facetdofmap,
-                                                          std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& n1,
-                                                          std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& c1,
-                                                          std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& n2,
-                                                          std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& c2)
+    std::map<int,std::vector<int> >& facetdofmap,
+    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& n1,
+    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& c1,
+    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& n2,
+    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& c2)
 {
-  if (sourcedis_->Comm().MyPID()==0)
-  {
     Epetra_SerialDenseMatrix dum(9,1);
 
     std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >::iterator ito;
@@ -663,7 +689,7 @@ void INVANA::ObjectiveFunctSurfCurr::DerivComponent3(Teuchos::RCP<Epetra_Vector>
         double dot = dum.DOT(3,(*(ito->second))[0],(*(iti->second))[0],1,1);
 
         // for the dofs of the outer loop facet
-        dum = kernelderiv(*c2[iti->first], *c1[ito->first],1);
+        dum = kernelderiv(*c1[ito->first],*c2[iti->first]);
         dum.Scale(dot);
         //add result to the corresponding entries in the global gradient vector
         int err = lgradient->SumIntoGlobalValues(9,dum[0],facetdofmap[ito->first].data());
@@ -671,18 +697,15 @@ void INVANA::ObjectiveFunctSurfCurr::DerivComponent3(Teuchos::RCP<Epetra_Vector>
           dserror("one of these gids not living on this proc");
       }
     }
-  }
 }
 
 void INVANA::ObjectiveFunctSurfCurr::DerivComponent1(Teuchos::RCP<Epetra_Vector> lgradient,
-                                                          std::map<int,std::vector<int> >& facetdofmap,
-                                                          std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& dn1,
-                                                          std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& c1,
-                                                          std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& n2,
-                                                          std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& c2)
+    std::map<int,std::vector<int> >& facetdofmap,
+    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& dn1,
+    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& c1,
+    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& n2,
+    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& c2)
 {
-  if (sourcedis_->Comm().MyPID()==0)
-  {
     Epetra_SerialDenseMatrix dum(9,1);
 
     std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >::iterator ito;
@@ -700,7 +723,6 @@ void INVANA::ObjectiveFunctSurfCurr::DerivComponent1(Teuchos::RCP<Epetra_Vector>
           dserror("one of these gids not living on this proc");
       }
     }
-  }
 }
 
 double INVANA::ObjectiveFunctSurfCurr::WSpaceNorm()
@@ -712,19 +734,21 @@ double INVANA::ObjectiveFunctSurfCurr::WSpaceNorm()
   ComputeNormalCenterSpatialConfig(sourcecond_,sourcedis_,&normal_s_,&center_s_,&derivnormal_s_,&facetdofmap_,false);
 
   //communicate the data maps to proc0
+  normal_s_distr_=normal_s_;
+  center_s_distr_=center_s_;
   DRT::Exporter ex(*sourcemap_,*sourcemapred_,sourcedis_->Comm());
-  ex.Export(normal_s_);
-  ex.Export(center_s_);
+  ex.Export(normal_s_distr_);
+  ex.Export(center_s_distr_);
 
   //do the looping and plug result into val.
-  val+=Convolute(normal_s_,center_s_,normal_s_,center_s_);
-  val-=2*Convolute(normal_s_,center_s_,normal_t_,center_t_);
+  val+=Convolute(normal_s_,center_s_,normal_s_distr_,center_s_distr_);
+  val-=2*Convolute(normal_s_,center_s_,normal_t_distr_,center_t_distr_);
 
   //scaling by number of surface elements in source and target
   if (scaling_)
   {
-    double fac = normal_s_.size()+normal_t_.size();
-    sourcedis_->Comm().Broadcast(&fac,1,0);
+    double fac = normal_s_distr_.size()+normal_t_distr_.size();
+    //sourcedis_->Comm().Broadcast(&fac,1,0);
     val=val/fac;
   }
 
@@ -733,62 +757,64 @@ double INVANA::ObjectiveFunctSurfCurr::WSpaceNorm()
 
 void INVANA::ObjectiveFunctSurfCurr::GradientWSpaceNorm(Teuchos::RCP<Epetra_MultiVector> gradient)
 {
-  // we need a dof row map reduced to proc0 to be able to fill gradient data into the correct
-  // global dof and then distribute it afterwards
-  Teuchos::RCP<Epetra_Map> dofrowmapred =  LINALG::AllreduceEMap(*(sourcedis_->DofRowMap()),0);
-
-  // the gradient living on proc0 only
+  //all reduced to all procs
+  Teuchos::RCP<Epetra_Map> dofrowmapred =  LINALG::AllreduceEMap(*(sourcedis_->DofRowMap()));
   Teuchos::RCP<Epetra_Vector> lgradient = Teuchos::rcp(new Epetra_Vector(*dofrowmapred,true));
-  // temporal helpers
-  Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*dofrowmapred,true));
-  Teuchos::RCP<Epetra_Vector> tempdist = Teuchos::rcp(new Epetra_Vector(*(sourcedis_->DofRowMap()),false));
+
+  // parallel distributed but overlapping
+  Teuchos::RCP<Epetra_Vector> ggradient = Teuchos::rcp(new Epetra_Vector(*(sourcedis_->DofColMap()),true));
+  Teuchos::RCP<Epetra_Vector> tempdist = Teuchos::rcp(new Epetra_Vector(*(sourcedis_->DofColMap()),true));
+
 
   // evaluate centers, normals and derivatives of the source in the spatial configuration
   ComputeNormalCenterSpatialConfig(sourcecond_,sourcedis_,&normal_s_,&center_s_,&derivnormal_s_,&facetdofmap_,true);
 
-  //PrintDataToScreen(facetdofmap_);
-
-  //communicate the data maps to proc0
+  //communicate the data maps to all procs
+  normal_s_distr_=normal_s_;
+  center_s_distr_=center_s_;
+  facetdofmap_distr_=facetdofmap_;
   DRT::Exporter ex(*sourcemap_,*sourcemapred_,sourcedis_->Comm());
-  ex.Export(normal_s_);
-  ex.Export(center_s_);
-  ex.Export(derivnormal_s_);
-  ex.Export(facetdofmap_);
-
-  //maps of the target already live on proc0 since construction
+  ex.Export(normal_s_distr_);
+  ex.Export(center_s_distr_);
+  ex.Export(facetdofmap_distr_);
 
   // compute the different summands making up the gradient
-  DerivComponent1(lgradient,facetdofmap_,derivnormal_s_,center_s_,normal_s_,center_s_);
-  //DerivComponent1(lgradient,facetdofmap_,derivnormal_s_,center_s_,normal_s_,center_s_);
-  lgradient->Scale(2.0);
-  DerivComponent2(lgradient,facetdofmap_,normal_s_,center_s_,normal_s_,center_s_);
-  DerivComponent1(temp,facetdofmap_,derivnormal_s_,center_s_,normal_t_,center_t_);
-  lgradient->Update(-2.0,*temp,1.0);
-  temp->PutScalar(0.0);
-  DerivComponent3(temp,facetdofmap_,normal_s_,center_s_,normal_t_,center_t_);
-  lgradient->Update(-2.0,*temp,1.0);
+  DerivComponent1(ggradient,facetdofmap_,derivnormal_s_,center_s_,normal_s_distr_,center_s_distr_);
+  ggradient->Scale(2.0);
 
-  //PrintDataToScreen(*lgradient);
+  DerivComponent1(tempdist,facetdofmap_,derivnormal_s_,center_s_,normal_t_distr_,center_t_distr_);
+  ggradient->Update(-2.0,*tempdist,1.0);
 
-  LINALG::Export(*lgradient, *tempdist);
-// !!!!!!!!!!! THE ADD COMBO METHOD DOES NOT WORK!!!!!!!!!!!!!!!
-// SO ONE CAN USE THE LINALG VERSION BUT THAT NEED AOTHER TEMPORAL VECTOR SINCE ONLY "INSERT" IS PROVIDED
-//  // import the gradient according to the global problems dofrowmap
-//  Epetra_Import im = Epetra_Import(gradient->Map(),*dofrowmapred);
-//  int err = (*gradient)(vind)->Import(*lgradient,im,Insert);
-//  if (err)
-//    dserror("Gradient distribution failed");
+  DerivComponent2(lgradient,facetdofmap_distr_,normal_s_,center_s_,normal_s_distr_,center_s_distr_);
+
+  tempdist->PutScalar(0.0);
+  DerivComponent3(tempdist,facetdofmap_,normal_s_,center_s_,normal_t_distr_,center_t_distr_);
+  ggradient->Update(-2.0,*tempdist,1.0);
+
+  Epetra_Export exporter1(lgradient->Map(), gradient->Map());
+  Teuchos::RCP<Epetra_MultiVector> tmp1 = Teuchos::rcp(new Epetra_Vector(gradient->Map(),true));
+  int err1 = tmp1->Export(*lgradient, exporter1, Add); //!!! add off proc components
+  if (err1)
+    dserror("export to supposedly unique gradient layout failed");
+
+  Epetra_Export exporter2(ggradient->Map(), gradient->Map());
+  Teuchos::RCP<Epetra_MultiVector> tmp2 = Teuchos::rcp(new Epetra_Vector(gradient->Map(),true));
+  int err2 = tmp2->Export(*ggradient, exporter2, Add); //!!! add off proc components
+  if (err2)
+    dserror("export to supposedly unique gradient layout failed");
+
+  tmp1->Update(1.0,*tmp2,1.0);
 
   //scaling
   double fac=1.0;
   if (scaling_)
   {
-   fac = normal_s_.size()+normal_t_.size();
-   sourcedis_->Comm().Broadcast(&fac,1,0);
+   fac = normal_s_distr_.size()+normal_t_distr_.size();
+   //sourcedis_->Comm().Broadcast(&fac,1,0);
   }
 
   // set into the gradient (update here, since there migth be other pairs of surfaces which contribute)
-  gradient->Update(1.0/fac,*tempdist,1.0);
+  gradient->Update(1.0/fac,*tmp1,1.0);
 
 }
 
@@ -797,14 +823,13 @@ inline double INVANA::ObjectiveFunctSurfCurr::kernel(Epetra_SerialDenseMatrix x,
   return exp(-((x(0,0)-y(0,0))*(x(0,0)-y(0,0))+(x(1,0)-y(1,0))*(x(1,0)-y(1,0))+(x(2,0)-y(2,0))*(x(2,0)-y(2,0)))/sigmaW2_);
 }
 
-Epetra_SerialDenseMatrix INVANA::ObjectiveFunctSurfCurr::kernelderiv(Epetra_SerialDenseMatrix x, Epetra_SerialDenseMatrix y, int fid)
+inline Epetra_SerialDenseMatrix INVANA::ObjectiveFunctSurfCurr::kernelderiv(Epetra_SerialDenseMatrix x, Epetra_SerialDenseMatrix y)
 {
-  double val=-(2.0/(3.0*sigmaW2_))*kernel(x,y);
+  double val=-(2.0/(3.0*sigmaW2_))*kernel(x,y); // factor 3 comes since we want derivatives wrt nodal dofs but x is the center
 
   Epetra_SerialDenseMatrix deriv(9,1);
-  Epetra_SerialDenseMatrix diff = x;
-  y.Scale(-1.0);
-  diff+=y;
+  LINALG::SerialDenseMatrix diff = x;
+  diff.Update(-1.0,y,1.0);
 
   for (int i=0; i<3; i++)
   {
@@ -813,12 +838,7 @@ Epetra_SerialDenseMatrix INVANA::ObjectiveFunctSurfCurr::kernelderiv(Epetra_Seri
     deriv(i*3+2,0) = diff(2,0);
   }
 
-  if (fid==0)
-    deriv.Scale(val);
-  else if (fid==1)
-    deriv.Scale(-val);
-  else
-    dserror("give fid as 0 or 1 only!");
+  deriv.Scale(val);
 
   return deriv;
 }
