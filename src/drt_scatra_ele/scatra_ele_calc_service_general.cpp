@@ -20,6 +20,8 @@ Maintainer: Andreas Ehrl
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_parameter_turbulence.H"
 
+#include "../drt_fem_general/drt_utils_boundary_integration.H"
+
 #include "../drt_lib/drt_utils.H"
 #include "../drt_nurbs_discret/drt_nurbs_utils.H"
 #include "../drt_geometry/position_array.H"
@@ -1781,11 +1783,20 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalErrorComparedToAnalytSolu
 
         if(gradphi_exact_vec.size())
         {
-          for (int dim=0; dim<nsd_; ++dim)
-            gradphi_exact(dim)=gradphi_exact_vec[0][dim];
+          if(nsd_==nsd_ele_)
+            for (int dim=0; dim<nsd_; ++dim)
+              gradphi_exact(dim)=gradphi_exact_vec[0][dim];
+          else
+          {
+            std::cout<<"Warning: Gradient of analytical solution cannot be evaluated correctly for transport on curved surfaces!"<<std::endl;
+            gradphi_exact.Clear();
+          }
         }
         else
+        {
+          std::cout<<"Warning: Gradient of analytical solution was not evaluated!"<<std::endl;
           gradphi_exact.Clear();
+        }
 
         // error at gauss point
         deltaphi = phinp - phi_exact;
@@ -1814,6 +1825,72 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalErrorComparedToAnalytSolu
       }
     } // loop over integration points
 
+  }
+  break;
+
+  case INPAR::SCATRA::calcerror_spherediffusion:
+  {
+    // analytical solution
+    double  phi_exact(0.0);
+    double  deltaphi(0.0);
+    //! spatial gradient of current scalar value
+    LINALG::Matrix<nsd_,1>  gradphi(true);
+    LINALG::Matrix<nsd_,1>  gradphi_exact(true);
+    LINALG::Matrix<nsd_,1>  deltagradphi(true);
+
+    // start loop over integration points
+    for (int iquad=0;iquad<intpoints.IP().nquad;iquad++)
+    {
+      const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+
+      // get coordinates at integration point
+      // gp reference coordinates
+      LINALG::Matrix<nsd_,1> xyzint(true);
+      xyzint.Multiply(xyze_,funct_);
+
+      for(int k=0;k<numscal_;k++)
+      {
+        const double x = xyzint(0);
+        const double y = xyzint(1);
+        const double z = xyzint(2);
+
+        // scalar at integration point at time step n+1
+        const double phinp = funct_.Dot(ephinp_[k]);
+        // spatial gradient of current scalar value
+        gradphi.Multiply(derxy_,ephinp_[k]);
+
+        phi_exact = exp(-6*t)*x*y+10;
+
+        gradphi_exact(0)=(1.0-2.0*x*x)*y*exp(-6.0*t);
+        gradphi_exact(1)=(1.0-2.0*y*y)*x*exp(-6.0*t);
+        gradphi_exact(2)=-2.0*x*y*z*exp(-6.0*t);
+
+        // error at gauss point
+        deltaphi = phinp - phi_exact;
+        deltagradphi.Update(1.0,gradphi,-1.0,gradphi_exact);
+
+        // 0: delta scalar for L2-error norm
+        // 1: delta scalar for H1-error norm
+        // 2: analytical scalar for L2 norm
+        // 3: analytical scalar for H1 norm
+
+        // the error for the L2 and H1 norms are evaluated at the Gauss point
+
+        // integrate delta scalar for L2-error norm
+        errors(k*numscal_+0) += deltaphi*deltaphi*fac;
+        // integrate delta scalar for H1-error norm
+        errors(k*numscal_+1) += deltaphi*deltaphi*fac;
+        // integrate analytical scalar for L2 norm
+        errors(k*numscal_+2) += phi_exact*phi_exact*fac;
+        // integrate analytical scalar for H1 norm
+        errors(k*numscal_+3) += phi_exact*phi_exact*fac;
+
+        // integrate delta scalar derivative for H1-error norm
+        errors(k*numscal_+1) += deltagradphi.Dot(deltagradphi)*fac;
+        // integrate analytical scalar derivative for H1 norm
+        errors(k*numscal_+3) += gradphi_exact.Dot(gradphi_exact)*fac;
+      }
+    } // loop over integration points
   }
   break;
   default: dserror("Unknown analytical solution!"); break;

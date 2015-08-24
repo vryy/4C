@@ -5566,14 +5566,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Kwok_Wu",
                                  "ConcentricCylinders",
                                  "Electroneutrality",
-                                 "error_by_function"
+                                 "error_by_function",
+                                 "SphereDiffusion"
                                  ),
                                tuple<int>(
                                    INPAR::SCATRA::calcerror_no,
                                    INPAR::SCATRA::calcerror_Kwok_Wu,
                                    INPAR::SCATRA::calcerror_cylinder,
                                    INPAR::SCATRA::calcerror_electroneutrality,
-                                   INPAR::SCATRA::calcerror_byfunction
+                                   INPAR::SCATRA::calcerror_byfunction,
+                                   INPAR::SCATRA::calcerror_spherediffusion
                                    ),
                                &scatradyn);
 
