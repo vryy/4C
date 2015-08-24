@@ -15,9 +15,8 @@ Maintainer: Sebastian Kehl
 /*----------------------------------------------------------------------*/
 
 #include "ad_str_invana.H"
-#include "../drt_lib/drt_utils_timintmstep.H"
+#include "../drt_lib/drt_discret.H"
 #include "../drt_inpar/inpar_structure.H"
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -28,48 +27,56 @@ sdis_(Teuchos::null),
 svel_(Teuchos::null),
 singlesteponly_(false)
 {
-  stime_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<double>(0, 0, 0.0));
-  // initialize to zero!! ResizeStorage only initializes the new vectors
-  sdis_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
-  svel_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+  // initialize storage
+  stime_ = Teuchos::rcp(new std::map<int,double>);
+  sdis_ = Teuchos::rcp(new std::map<int,Epetra_Vector>);
+  svel_ = Teuchos::rcp(new std::map<int,Epetra_Vector>);
 }
 
 /*----------------------------------------------------------------------*/
 /* Resizing of multi-step quantities */
 void ADAPTER::StructureInvana::ResizeStorage()
 {
-  // resize storage
-  stime_->Resize(-(Step()-1), 0, 0.0);
-  // -> time is already stored for the next time step
-  sdis_->Resize(-(Step()-1), 0, DofRowMapView(), true);
-  svel_->Resize(-(Step()-1), 0, DofRowMapView(), true);
-
   return;
 }
 
-void ADAPTER::StructureInvana::SetTimeStepStateOld(double time, int step,
+void ADAPTER::StructureInvana::SetTimeStepStateOld(double time,
+    int step,
     Teuchos::RCP<Epetra_Vector> disp,
     Teuchos::RCP<Epetra_Vector> vel)
 {
   singlesteponly_=true;
-  SetTimen(time);
+
+  // ------- TIME STEP HACKS
+  // set timen_ lower to pass NotFinished()
+  SetTimen(time-Dt());
+
+  // set (*time_)[0] to have the input target parameter "time"
+  // after the Adaptivity's PrepareTimeStep-hack  which is
+  // called during Predict()
+  SetTime(time-Dt());
+  // ------- TIME STEP HACKS
+
   SetStepn(step);
-  WriteAccessDispnp()->Update(1.0,*disp,0.0);
-  WriteAccessVelnp()->Update(1.0,*vel,0.0);
+
+  // here one has to set into (*dis_)(0) since in Predict
+  // disn_ is updated from (*dis_)(0) depending on predictortype
+  WriteAccessDispn()->Update(1.0,*disp,0.0);
+  WriteAccessVeln()->Update(1.0,*vel,0.0);
 
   // to stop after this step:
-  double timemax=time+Dt();
-  SetTimeEnd(timemax);
+  SetTimeEnd(time);
 }
 
 void ADAPTER::StructureInvana::PrePredict()
 {
   if (singlesteponly_)
   {
-    // do what was not done in the update of the previous
-    // loop during a standard integrate()-call since we only
-    // do this timestep
-    Update();
+    // set the correct internal variables for timestep Step()
+    Teuchos::ParameterList p;
+    p.set("timestep", Step()); // Step() gives the target step
+    p.set("action","calc_struct_recover_istep");
+    Discretization()->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   }
 
   return;
@@ -77,9 +84,20 @@ void ADAPTER::StructureInvana::PrePredict()
 
 void ADAPTER::StructureInvana::PostPredict()
 {
-  ResizeStorage();
 
   return;
+}
+
+void ADAPTER::StructureInvana::PreUpdate()
+{
+  // do the update of the internal variables history before
+  // quantities are prepared for the next target time step
+  // via Update()
+  Teuchos::ParameterList p;
+  p.set("timestep", Step());
+  p.set("action","calc_struct_store_istep");
+  Discretization()->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+
 }
 
 void ADAPTER::StructureInvana::PostUpdate()
@@ -87,10 +105,10 @@ void ADAPTER::StructureInvana::PostUpdate()
   // state and time was already updated so Dispn() and Veln()
   // (pointing to "(*state_)(0)") give the results of
   // this time step
-  sdis_->UpdateSteps(*Dispn());
-  svel_->UpdateSteps(*Veln());
-  stime_->UpdateSteps(TimeOld());
+  sdis_->insert(std::make_pair(StepOld(),*Dispn()));
+  svel_->insert(std::make_pair(StepOld(),*Veln()));
+  (*stime_)[StepOld()]=TimeOld();
+
 
   return;
 }
-

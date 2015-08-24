@@ -80,6 +80,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
   else if (action=="calc_struct_fsiload")                         act = So_hex8::calc_struct_fsiload;
   else if (action=="calc_struct_update_istep")                    act = So_hex8::calc_struct_update_istep;
   else if (action=="calc_struct_reset_istep")                     act = So_hex8::calc_struct_reset_istep;
+  else if (action=="calc_struct_store_istep")                     act = So_hex8::calc_struct_store_istep;
+  else if (action=="calc_struct_recover_istep")                   act = So_hex8::calc_struct_recover_istep;
   else if (action=="calc_struct_reset_all")                       act = So_hex8::calc_struct_reset_all;
   else if (action=="calc_struct_energy")                          act = So_hex8::calc_struct_energy;
   else if (action=="calc_struct_errornorms")                      act = So_hex8::calc_struct_errornorms;
@@ -419,6 +421,50 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       }
       // Reset of history (if needed)
       SolidMaterial()->ResetStep();
+    }
+    break;
+
+    //==================================================================================
+    case calc_struct_store_istep:
+    {
+      int timestep = params.get<int>("timestep",-1);
+
+      if (timestep == -1)
+        dserror("Provide timestep number to be stored");
+
+      // EAS
+      if (eastype_ != soh8_easnone)
+        dserror("Storage of EAS stuff must be implemented first");
+
+      // due to the multiplicativity and futility to redo prestress steps
+      // other than the last one, no need to store/recover anything
+      // ... but keep in mind
+      if (pstype_ != INPAR::STR::prestress_none) {}
+
+      // Material
+      SolidMaterial()->StoreHistory(timestep);
+    }
+    break;
+
+    //==================================================================================
+    case calc_struct_recover_istep:
+    {
+      int timestep = params.get<int>("timestep",-1);
+
+      if (timestep == -1)
+        dserror("Provide timestep number of the timestep to be recovered");
+
+      // EAS
+      if (eastype_ != soh8_easnone)
+        dserror("Recpvery of EAS stuff must be implemented first");
+
+      // due to the multiplicativity and futility to redo prestress steps
+      // other than the last one, no need to store/recover anything
+      // ... but keep in mind
+      if (pstype_ != INPAR::STR::prestress_none) {}
+
+      // Material
+      SolidMaterial()->SetHistory(timestep);
     }
     break;
 

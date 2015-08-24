@@ -148,13 +148,13 @@ protected:
   //! get inital guess from underlying optimization problem
   void SetInitialGuess();
 
-  //! Evaluate the objective function
-  /*!
-    \param Out
-    val - to be filled with the value of the objective function.
-    \param Out
-    gradient - to be filled with the gradient of the objective function
-  */
+  /*! \brieff Evaluate the objective function
+   *
+   * \param Out
+   * val - to be filled with the value of the objective function.
+   * \param Out
+   * gradient - to be filled with the gradient of the objective function
+   */
   void Evaluate(double* val, Teuchos::RCP<Epetra_MultiVector> gradient);
 
   //! upate Gradient: push current to old
@@ -163,10 +163,10 @@ protected:
   //! upate objective function value: push current to old
   void UpdateObjFunctValue(){objval_o_=objval_;}
 
-  //! update the solution (and push current to old)
-   /*!
-     \param In
-     toadd - (properly scaled) step to be added to the solution vector
+  /*! \brief update the solution (and push current to old)
+   *
+   * \param In
+   * toadd - (properly scaled) step to be added to the solution vector
    */
   void UpdateSolution(const Epetra_MultiVector& toadd);
 
@@ -176,8 +176,9 @@ protected:
   //! question if base class is initialized
   bool IsInit(){return isinit_;}
 
-  /*----------------------------------------------------------------------*/
-  //! access to input and output
+
+  //! @name access to input and output
+  //@{
 
   //! a reference to the file to restart from
   const Teuchos::RCP<IO::InputControl> RestartFromFile(){return inputfile_;}
@@ -185,8 +186,11 @@ protected:
   //! a reference to the discretization writer
   const Teuchos::RCP<IO::DiscretizationWriter> Writer(){return output_;}
 
-  /*----------------------------------------------------------------------*/
-  //! members directly accessible to derived classes
+  //@}
+
+
+  //! @name members directly accessible from derived classes
+  //@{
 
   //! number of vectors in the multivector
   int numvecs_;
@@ -211,6 +215,8 @@ protected:
 
   //! current convergence criterion value
   double convcritc_;
+
+  //@}
 
 private:
 

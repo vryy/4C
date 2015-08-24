@@ -33,6 +33,7 @@ Maintainer: Sebastian Kehl
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_timintmstep.H"
+#include "../drt_lib/drt_parobject.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_inpar/inpar_statinvanalysis.H"
 #include "../drt_inpar/drt_validparameters.H"
@@ -46,6 +47,7 @@ Maintainer: Sebastian Kehl
 INVANA::InvanaAugLagr::InvanaAugLagr():
   InvanaBase(),
 dis_(Teuchos::null),
+elementdata_(Teuchos::null),
 disdual_(Teuchos::null),
 disdualp_(Teuchos::null),
 timestep_(0.0),
@@ -63,8 +65,12 @@ itertopc_(10)
   timestep_ = sdyn.get<double>("TIMESTEP");
 
   // prestress stuff
-  pstype_ = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn,"PRESTRESS");
-  pstime_ = sdyn.get<double>("PRESTRESSTIME");
+  pstype_ = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(invp,"PRESTRESS");
+  if (pstype_==INPAR::STR::prestress_mulf)
+    pstime_ = sdyn.get<double>("PRESTRESSTIME");
+
+  if (pstype_==INPAR::STR::prestress_id)
+    dserror("prestress_id is not implemented yet for the adjoint formulation");
 
   // initialize the vector of time steps according to the structural dynamic params
   time_.resize(msteps_,0.0);
@@ -74,7 +80,7 @@ itertopc_(10)
   fprestart_ = invp.get<int>("FPRESTART");
   itertopc_ = invp.get<int>("ITERTOPC");
 
-  fpcounter=0;
+  fpcounter_=0;
 
 }
 
@@ -114,27 +120,40 @@ void INVANA::InvanaAugLagr::Setup()
   // give the discretization another controlfile for output
   Discret()->Writer()->SetOutput(controlfile);
 
+  // tweak new input control file for the forward problem. Due to how the restart
+  // works in the field it must be set to the globalproblem
+  Teuchos::RCP<IO::InputControl> inputcontrolfile =
+      Teuchos::rcp(new IO::InputControl(filenameout,Discret()->Comm()));
+
+  DRT::Problem::Instance()->SetInputControlFile(inputcontrolfile);
+
+
+
   return;
 }
 
 /*----------------------------------------------------------------------*/
 /* MStep EpetraVector to EpetraMultiVector                   keh 10/13  */
 /*----------------------------------------------------------------------*/
-void INVANA::InvanaAugLagr::MStepEpetraToEpetraMulti(Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > mstepvec,
-                                                            Teuchos::RCP<Epetra_MultiVector> multivec)
+void INVANA::InvanaAugLagr::MStepEpetraToEpetraMulti(Teuchos::RCP<std::map<int, Epetra_Vector> > mstepvec,
+                                                     Teuchos::RCP<Epetra_MultiVector> multivec)
 {
-  for (int i=0; i<msteps_; i++)
-    (*multivec)(i)->Update(1.0, *(*mstepvec)(-(msteps_-i-1)),0.0);
+  multivec->Scale(0.0);
+  std::map<int,Epetra_Vector>::iterator curr;
+  for (curr=mstepvec->begin(); curr!=mstepvec->end(); curr++)
+    (*multivec)(curr->first-1)->Update(1.0, curr->second,0.0);
 }
 
 /*----------------------------------------------------------------------*/
 /* Mstep double to std::vector<double>                       keh 10/13  */
 /*----------------------------------------------------------------------*/
-void INVANA::InvanaAugLagr::MStepDToStdVecD(Teuchos::RCP<DRT::UTILS::TimIntMStep<double> > mstepvec,
+void INVANA::InvanaAugLagr::MStepDToStdVecD(Teuchos::RCP<std::map<int, double> > mstepvec,
                                                  std::vector<double>* stdvec)
 {
-  for (int i=0; i<msteps_; i++)
-    (*stdvec)[i] = *(*mstepvec)(-(msteps_-i-1));
+  stdvec->resize(msteps_,0.0);
+  std::map<int,double>::iterator curr;
+  for (curr=mstepvec->begin(); curr!=mstepvec->end(); curr++)
+    (*stdvec)[curr->first-1] = curr->second;
 
 }
 
@@ -160,15 +179,14 @@ void INVANA::InvanaAugLagr::SolveForwardProblem()
           Teuchos::rcp_dynamic_cast<ADAPTER::StructureInvana>(adapterbase.StructureField());
 
       // do restart but the one which is explicitly given in the INVERSE ANALYSIS section
-      if (fprestart_)
+      // and only if we are not in parameter continuation mode
+      if (fprestart_ and Optimizer()->Runc()<=itertopc_)
       {
-        dserror("Restarting from within a timestep of the forward problem needs some tweaking first!");
         structadaptor->ReadRestart(fprestart_);
       }
 
       if (Optimizer()->Runc()>itertopc_)
       {
-        std::vector<double> mtime = ObjectiveFunct()->MeasuredTime();
         for (int i=0; i<(int)time_.size(); i++)
         {
           //find whether measurements exist for this simulation timestep
@@ -177,9 +195,9 @@ void INVANA::InvanaAugLagr::SolveForwardProblem()
           // do this step only in case of measurements or when it is the last prestress step
           if (mstep!=-1 or (time_[i]>pstime_-structadaptor->Dt() and time_[i]<pstime_))
           {
-            structadaptor->SetTimeStepStateOld(time_[i]-structadaptor->Dt(),i,
+            structadaptor->SetTimeStepStateOld(time_[i],i+1,
                 Teuchos::rcp((*dis_)(i),false),
-                Teuchos::rcp((*dis_)(i),false)); // veln is not used so far so just put disn
+                Teuchos::rcp((*dis_)(i),false));  // veln is not used so far so just put disn
 
             structadaptor->Integrate();
           }
@@ -211,7 +229,7 @@ void INVANA::InvanaAugLagr::SolveForwardProblem()
       break;
   }
 
-  fpcounter+=1;
+  fpcounter_+=1;
   return;
 }
 
@@ -266,7 +284,9 @@ void INVANA::InvanaAugLagr::SolveAdjointProblem()
 /*----------------------------------------------------------------------*/
 void INVANA::InvanaAugLagr::Evaluate(const Epetra_MultiVector& sol, double* val, Teuchos::RCP<Epetra_MultiVector> gradient)
 {
+  //if (Optimizer()->Runc()<=itertopc_)
   Matman()->ReplaceParams(sol);
+
   if (Optimizer()->Runc()<=itertopc_)
     ResetDiscretization();
 
@@ -279,10 +299,10 @@ void INVANA::InvanaAugLagr::Evaluate(const Epetra_MultiVector& sol, double* val,
     {
       SolveAdjointProblem();
       EvaluateGradient(sol,gradient);
-      //gradient->Print(std::cout);
-      //EvaluateGradientFD(sol,gradient);
-      //gradient->Print(std::cout);
-      //exit(0);
+//      gradient->Print(std::cout);
+//      EvaluateGradientFD(sol,gradient);
+//      gradient->Print(std::cout);
+//      exit(0);
     }
   }
 }
@@ -301,9 +321,15 @@ void INVANA::InvanaAugLagr::EvaluateGradient(const Epetra_MultiVector& sol, Teuc
   //loop the time steps
   for (int j=0; j<msteps_; j++)
   {
+    int mstep=ObjectiveFunct()->FindStep(time_[j]);
+    if (mstep == -1)
+      continue;
+
     Discret()->SetState(0, "displacement", Teuchos::rcp((*dis_)(j),false));
     Discret()->SetState(0, "residual displacement", zeros);
     Discret()->SetState(0, "dual displacement", Teuchos::rcp((*disdual_)(j),false));
+    SetTimeStepHistory(j+1);
+
     Matman()->AddEvaluate(time_[j], gradient);
 
     Discret()->ClearState();
@@ -314,11 +340,12 @@ void INVANA::InvanaAugLagr::EvaluateGradient(const Epetra_MultiVector& sol, Teuc
       Discret()->SetState(0, "displacement", Teuchos::rcp((*dis_)(stepps-1),false));
       Discret()->SetState(0, "residual displacement", zeros);
       Discret()->SetState(0, "dual displacement", Teuchos::rcp((*disdualp_)(j),false));
+      SetTimeStepHistory(stepps);
+
       Matman()->AddEvaluate(time_[stepps-1], gradient);
     }
   }
   Matman()->Finalize(gradient);
-
 
   if (Regman() != Teuchos::null)
     Regman()->EvaluateGradient(sol,gradient);
@@ -348,7 +375,7 @@ void INVANA::InvanaAugLagr::EvaluateGradientFD(const Epetra_MultiVector& sol, Te
 
   //do the perturbation loop
   double alpha=1.0e-7;
-  double beta=1.0e-12;
+  double beta=1.0e-7;
   double dp=0.0; // perturbation parameter
   double val_p;
   for (int j=0; j<params_0->MyLength(); j++)
@@ -372,6 +399,15 @@ void INVANA::InvanaAugLagr::ResetDiscretization()
 {
   Teuchos::ParameterList p;
   p.set("action","calc_struct_reset_all");
+  Discret()->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+}
+
+
+void INVANA::InvanaAugLagr::SetTimeStepHistory(int timestep)
+{
+  Teuchos::ParameterList p;
+  p.set("timestep", timestep);
+  p.set("action","calc_struct_recover_istep");
   Discret()->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 }
 

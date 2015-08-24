@@ -79,6 +79,9 @@ protected:
   //! Reset discretization
   void ResetDiscretization();
 
+  //! set element data time step history
+  void SetTimeStepHistory(int timestep);
+
   //! Evaluate the objective functions gradient w.r.t the material parameters
   void EvaluateGradient(const Epetra_MultiVector& sol, Teuchos::RCP<Epetra_MultiVector> gradient);
 
@@ -91,15 +94,18 @@ protected:
 private:
 
   //! MStep EpetraVector to EpetraMultiVector
-  void MStepEpetraToEpetraMulti(Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > mstepvec,
+  void MStepEpetraToEpetraMulti(Teuchos::RCP<std::map<int,Epetra_Vector> > mstepvec,
                                 Teuchos::RCP<Epetra_MultiVector> multivec);
 
   //! Mstep double to std::vector<double>
-  void MStepDToStdVecD(Teuchos::RCP<DRT::UTILS::TimIntMStep<double> > mstepvec,
+  void MStepDToStdVecD(Teuchos::RCP<std::map<int, double> > mstepvec,
                        std::vector<double>*  stdvec);
 
   //! primal variables (displacements)
   Teuchos::RCP<Epetra_MultiVector> dis_;
+
+  //! element data stored for time steps
+  Teuchos::RCP<DRT::UTILS::TimIntMStep<std::vector<char> > > elementdata_;
 
   //! dual variables (lagrange multiplier)
   Teuchos::RCP<Epetra_MultiVector> disdual_;
@@ -116,7 +122,14 @@ private:
   //! number of simulation steps in the forward problem
   int msteps_;
 
-  //! prestress type
+  /*! \brief prestress type
+   *
+   * This is the prestress type explicitly given in the inverse analysis section
+   * Depending on the type of meterial parameters to be opimized, there might be
+   * no need for an adjoint prestressing method although the forward problem is
+   * prestressed.
+   *
+   */
   INPAR::STR::PreStress pstype_;
 
   //! prestress time
@@ -125,7 +138,7 @@ private:
   //! restart of the forward problem
   int fprestart_;
 
-  int fpcounter;
+  int fpcounter_;
 
   //! number of optimization algorithm iterations
   //! before using parameter continuation

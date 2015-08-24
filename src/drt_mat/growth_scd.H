@@ -158,7 +158,6 @@ namespace MAT
     (
         double* theta,
         LINALG::Matrix<6,1>* dthetadC,
-        Teuchos::RCP<MAT::So3Material> matelastic,
         const LINALG::Matrix<3,3>* defgrd,
         const LINALG::Matrix<6,1>* glstrain,
         Teuchos::ParameterList& params,
@@ -173,11 +172,8 @@ namespace MAT
     /// Return theta at gauss-point
     double Gettheta_atgp(int gp) const { return (*theta_)[gp];}
 
-//    // Return thetaold
-//    double Getthetaold_atgp(int gp) const {return (*thetaold_)[gp];}
-
     // Return thetaold at gauss-point
-    double Getthetaold_atgp(int gp) const {return (*thetaold_)[gp];}
+    double Getthetaold_atgp(int gp) const {return ThetaOld()->at(gp);}
 
     /// Return time derivate of theta at gauss-point
     double Getdtheta_atgp(int gp) const {return (*dtheta_)[gp];}
@@ -187,9 +183,6 @@ namespace MAT
 
     /// Return mandel stress
     Teuchos::RCP<std::vector<double> > Getmandel() const {return mandel_;}
-
-    /// Return elastic material
-    Teuchos::RCP<MAT::Material> Matelastic() const { return matelastic_; }
 
     /// Return quick accessible material parameter data
     MAT::PAR::GrowthScd* Parameter() const { return paramsScd_; }

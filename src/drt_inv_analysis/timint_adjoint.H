@@ -106,6 +106,9 @@ protected:
   //! update state
   virtual void UpdateStepState();
 
+  //! set time step history
+  void SetTimeStepHistory(int timestep);
+
   //! create a linear solver according to sdyn section
   void CreateLinearSolver(const Teuchos::ParameterList& sdyn);
 

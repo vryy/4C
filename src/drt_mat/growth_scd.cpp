@@ -285,13 +285,12 @@ void MAT::GrowthScd::Evaluate
   //store dtheta
   const double dt = params.get<double>("delta time",-1.0);
   for (unsigned i=0; i<theta_->size(); i++)
-    (*dtheta_)[i] = ((*theta_)[i]-(*thetaold_)[i])/dt;
+    (*dtheta_)[i] = ((*theta_)[i]-(*ThetaOld())[i])/dt;
 }
 
 // evaluate the volumetric growth factor theta
 void MAT::GrowthScd::EvaluateGrowth(double* theta,
                       LINALG::Matrix<6,1>* dthetadC,
-                      Teuchos::RCP<MAT::So3Material> matelastic,
                       const LINALG::Matrix<3,3>* defgrd,
                       const LINALG::Matrix<6,1>* glstrain,
                       Teuchos::ParameterList& params,
@@ -308,7 +307,7 @@ void MAT::GrowthScd::EvaluateGrowth(double* theta,
   fac=rearate * concentration_/(satcoeff+concentration_);
 
   Parameter()->growthlaw_->SetFactor(fac);
-  GrowthMandel::EvaluateGrowth(theta,dthetadC,matelastic_,defgrd, glstrain,params,eleGID);
+  GrowthMandel::EvaluateGrowth(theta,dthetadC,defgrd,glstrain,params,eleGID);
 
   return;
 }
@@ -693,7 +692,7 @@ void MAT::GrowthScdACRadial::Evaluate
     // evaluation of the volumetric growth factor and its derivative wrt cauchy-green
     //--------------------------------------------------------------------------------------
     LINALG::Matrix<6,1> dthetadC(true);
-    GrowthMandel::EvaluateGrowth(&theta,&dthetadC,matelastic_,defgrd, glstrain,params,eleGID);
+    GrowthMandel::EvaluateGrowth(&theta,&dthetadC,defgrd,glstrain,params,eleGID);
 
     // store theta
     theta_->at(gp) = theta;
@@ -738,7 +737,7 @@ void MAT::GrowthScdACRadial::Evaluate
     LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatdach(true);
     LINALG::Matrix<NUM_STRESS_3D, 1> Sdachvec(true);
     // elastic 2 PK stress and constitutive matrix
-    matelastic_->Evaluate(&defgrddach,
+    Matelastic()->Evaluate(&defgrddach,
                           &glstraindach,
                           params,
                           &Sdachvec,
@@ -899,7 +898,7 @@ void MAT::GrowthScdACRadial::Evaluate
     LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatdach(true);
     LINALG::Matrix<NUM_STRESS_3D, 1> Sdachvec(true);
     // elastic 2 PK stress and constitutive matrix
-    matelastic_->Evaluate(&defgrddach,
+    Matelastic()->Evaluate(&defgrddach,
                           &glstraindach,
                           params,
                           &Sdachvec,
@@ -931,7 +930,7 @@ void MAT::GrowthScdACRadial::Evaluate
   }
   else //no growth has happened jet
   {
-    matelastic_->Evaluate(defgrd, glstrain, params, stress, cmat, eleGID); //evaluate the standard material
+    Matelastic()->Evaluate(defgrd, glstrain, params, stress, cmat, eleGID); //evaluate the standard material
   }
 
 }

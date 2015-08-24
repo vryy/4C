@@ -26,6 +26,7 @@ Maintainer: Sebastian Kehl
 namespace DRT
 {
   class Discretization;
+  class Element;
 }
 
 namespace LINALG
@@ -129,13 +130,13 @@ public:
   virtual void Finalize(Teuchos::RCP<Epetra_MultiVector> dfint) = 0;
 
   //! evaluate derivative of the residual force vector w.r.t to the material parameters using FD
-  void EvaluateFD(Teuchos::RCP<Epetra_MultiVector> dfint);
+  void AddEvaluateFD(double time, Teuchos::RCP<Epetra_MultiVector> dfint);
 
   //! update optimization parameters
   void ReplaceParams(const Epetra_MultiVector& toreplace);
 
   //! return material parameters
-  Teuchos::RCP<Epetra_MultiVector> GetMatParams(){SetParams(); return params_;}
+  Teuchos::RCP<Epetra_MultiVector> GetMatParams();
 
   //! return optimization parameters for initial guess
   const Epetra_MultiVector& InitialParams(){return *optparams_initial_;}
@@ -191,6 +192,9 @@ protected:
 
   const std::map<int,std::vector<int> >& ParaPos(){return parapos_;}
 
+  //! return the material to be optimized for this element, -1 otherwise
+  int ElementOptMat(DRT::Element* ele);
+
   //! actual set of material parameters in some parametrization layout
   Teuchos::RCP<Epetra_MultiVector> optparams_;
 
@@ -236,6 +240,16 @@ private:
     graph - a reference to itself to be passed to the optimization algorithm.
   */
   virtual void FillAdjacencyMatrix(const Epetra_Map& paramrowmap, Teuchos::RCP<Epetra_CrsMatrix> graph);
+
+  /*! \brief push params_ to the elements
+   *
+   * set the material parameters stored in params_ to the MAT::Par classes
+   * used by the element's materials.
+   *
+   * \author kehl
+   * \date 07/15
+   */
+  void PushParamsToElements();
 
   //! discretization for convenience
   Teuchos::RCP<DRT::Discretization> discret_;

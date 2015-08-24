@@ -13,6 +13,9 @@
 
 #include "growth_law.H"
 #include "matpar_material.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_discret.H"
+#include "../drt_comm/comm_utils.H"
 
 
 /*----------------------------------------------------------------------------*/
@@ -60,7 +63,7 @@ MAT::GrowthLawDyn::GrowthLawDyn(MAT::PAR::Parameter* params)
 void MAT::GrowthLawDyn::Evaluate(double* thetainit,
                                  const double& thetaold,
                                  LINALG::Matrix<6,1>* dthetadC,
-                                 Teuchos::RCP<MAT::So3Material> matelastic,
+                                 MAT::Growth& matgrowth,
                                  const LINALG::Matrix<3,3>* defgrd,
                                  const LINALG::Matrix<6,1>* glstrain,
                                  Teuchos::ParameterList& params,
@@ -99,9 +102,8 @@ void MAT::GrowthLawDyn::Evaluate(double* thetainit,
   glstraindach -= Id;
   glstraindach.Scale(0.5);
   // elastic 2 PK stress and constitutive matrix
-  matelastic->Evaluate(&defgrddach,
+  matgrowth.EvaluateElastic(&defgrddach,
       &glstraindach,
-      params,
       &Sdach,
       &cmatelastic,
       eleGID);
@@ -157,9 +159,8 @@ void MAT::GrowthLawDyn::Evaluate(double* thetainit,
       glstraindach.Scale(0.5);
       cmatelastic.Scale(0.0);
       Sdach.Scale(0.0);
-      matelastic->Evaluate(&defgrddach,
+      matgrowth.EvaluateElastic(&defgrddach,
           &glstraindach,
-          params,
           &Sdach,
           &cmatelastic,
           eleGID);
@@ -217,14 +218,26 @@ void MAT::GrowthLawDyn::Evaluate(double* thetainit,
 void MAT::GrowthLawDyn::EvaluateNonLinMass(double* theta,
                                            const double& thetaold,
                                            LINALG::Matrix<6,1>* linmass_disp,
-                                           Teuchos::RCP<MAT::So3Material> matelastic,
+                                           MAT::Growth& matgrowth,
                                            const LINALG::Matrix<3,3>* defgrd,
                                            const LINALG::Matrix<6,1>* glstrain,
                                            Teuchos::ParameterList& params,
                                            const int eleGID )
 {
-  Evaluate(theta,thetaold,linmass_disp,matelastic,defgrd,glstrain,params,eleGID);
-  linmass_disp->Scale(3.0*(*theta)*(*theta)*matelastic->Density());
+  Evaluate(theta,thetaold,linmass_disp,matgrowth,defgrd,glstrain,params,eleGID);
+  linmass_disp->Scale(3.0*(*theta)*(*theta)*matgrowth.Matelastic()->Density());
+}
+
+/*----------------------------------------------------------------------------*/
+void MAT::GrowthLawDyn::EvaluatePDeriv(double* thetainit,
+                                       const double& thetaold,
+                                       Teuchos::RCP<MAT::So3Material> matelastic,
+                                       const LINALG::Matrix<3,3>* defgrd,
+                                       const LINALG::Matrix<6,1>* glstrain,
+                                       Teuchos::ParameterList& params,
+                                       const int eleGID)
+{
+  dserror("this must still be implemented for dynamic type growth laws");
 }
 
 /*----------------------------------------------------------------------------*/
@@ -243,7 +256,7 @@ MAT::GrowthLawStatic::GrowthLawStatic(MAT::PAR::Parameter* params)
 void MAT::GrowthLawStatic::EvaluateNonLinMass(double* theta,
                                               const double& thetaold,
                                               LINALG::Matrix<6,1>* linmass_disp,
-                                              Teuchos::RCP<MAT::So3Material> matelastic,
+                                              MAT::Growth& matgrowth,
                                               const LINALG::Matrix<3,3>* defgrd,
                                               const LINALG::Matrix<6,1>* glstrain,
                                               Teuchos::ParameterList& params,
@@ -251,6 +264,18 @@ void MAT::GrowthLawStatic::EvaluateNonLinMass(double* theta,
 {
   // this is a static growth law
   linmass_disp->Clear();
+}
+
+/*----------------------------------------------------------------------------*/
+void MAT::GrowthLawStatic::EvaluatePDeriv(double* thetainit,
+                                          const double& thetaold,
+                                          Teuchos::RCP<MAT::So3Material> matelastic,
+                                          const LINALG::Matrix<3,3>* defgrd,
+                                          const LINALG::Matrix<6,1>* glstrain,
+                                          Teuchos::ParameterList& params,
+                                          const int eleGID)
+{
+  dserror("use implementation of a specific growth law overwriting this function");
 }
 
 /*----------------------------------------------------------------------------*/
@@ -665,10 +690,20 @@ Teuchos::RCP<MAT::GrowthLaw> MAT::PAR::GrowthLawConst::CreateGrowthLaw()
 MAT::PAR::GrowthLawConst::GrowthLawConst(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
-: Parameter(matdata),
-  thetarate_(matdata->GetDouble("THETARATE"))
+: Parameter(matdata)
 {
 
+  Epetra_Map dummy_map(1,1,0,*(DRT::Problem::Instance()->GetNPGroup()->LocalComm()));
+  for(int i=first ; i<=last; i++)
+  {
+    matparams_.push_back(Teuchos::rcp(new Epetra_Vector(dummy_map,true)));
+  }
+  matparams_.at(thetarate)->PutScalar(matdata->GetDouble("THETARATE"));
+}
+
+void MAT::PAR::GrowthLawConst::OptParams(std::map<std::string,int>* pnames)
+{
+  pnames->insert(std::pair<std::string,int>("THETARATE", thetarate));
 }
 
 /*----------------------------------------------------------------------------*/
@@ -687,18 +722,40 @@ MAT::GrowthLawConst::GrowthLawConst(MAT::PAR::GrowthLawConst* params)
 void MAT::GrowthLawConst::Evaluate(double* theta,
                                 const double& thetaold,
                                 LINALG::Matrix<6,1>* dthetadC,
-                                Teuchos::RCP<MAT::So3Material> matelastic,
+                                MAT::Growth& matgrowth,
                                 const LINALG::Matrix<3,3>* defgrd,
                                 const LINALG::Matrix<6,1>* glstrain,
                                 Teuchos::ParameterList& params,
                                 const int eleGID)
 {
   double dt = params.get<double>("delta time", -1.0);
-  *theta = thetaold + Parameter()->thetarate_*dt;
+  int eleID = DRT::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(eleGID);
+  *theta = thetaold + Parameter()->GetParameter(Parameter()->thetarate,eleID)*dt;
+  //*theta = Parameter()->GetParameter(Parameter()->thetarate,eleID);
 
   dthetadC->Scale(0.0);
 
   return;
+}
+
+/*----------------------------------------------------------------------------*/
+void MAT::GrowthLawConst::EvaluatePDeriv(double* theta,
+                                         const double& thetaold,
+                                         Teuchos::RCP<MAT::So3Material> matelastic,
+                                         const LINALG::Matrix<3,3>* defgrd,
+                                         const LINALG::Matrix<6,1>* glstrain,
+                                         Teuchos::ParameterList& params,
+                                         const int eleGID)
+{
+  double dt = params.get<double>("delta time", -1.0);
+
+  int deriv = params.get<int>("matparderiv",-1);
+  if (deriv == Parameter()->thetarate)
+  {
+    *theta = dt;
+  }
+  else if(deriv == -1)
+    dserror("you should only end up here with a valid matparderiv flag!");
 }
 
 
@@ -750,7 +807,7 @@ MAT::GrowthLawAC::GrowthLawAC(MAT::PAR::GrowthLawAC* params)
 void MAT::GrowthLawAC::Evaluate(double* theta,
                                 const double& thetaold,
                                 LINALG::Matrix<6,1>* dthetadC,
-                                Teuchos::RCP<MAT::So3Material> matelastic,
+                                MAT::Growth& matgrowth,
                                 const LINALG::Matrix<3,3>* defgrd,
                                 const LINALG::Matrix<6,1>* glstrain,
                                 Teuchos::ParameterList& params,
@@ -816,7 +873,7 @@ MAT::GrowthLawACRadial::GrowthLawACRadial(MAT::PAR::GrowthLawAC* params)
 void MAT::GrowthLawACRadial::Evaluate(double* theta,
                                       const double& thetaold,
                                       LINALG::Matrix<6,1>* dthetadC,
-                                      Teuchos::RCP<MAT::So3Material> matelastic,
+                                      MAT::Growth& matgrowth,
                                       const LINALG::Matrix<3,3>* defgrd,
                                       const LINALG::Matrix<6,1>* glstrain,
                                       Teuchos::ParameterList& params,

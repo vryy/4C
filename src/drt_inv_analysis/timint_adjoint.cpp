@@ -195,6 +195,7 @@ void STR::TimIntAdjoint::EvaluateStiff()
 
   //set time point
   p.set("total time", timen_);
+  p.set("delta time", dt_);
 
   discret_->ClearState();
   discret_->SetState(0,"residual displacement", zeros_);
@@ -282,6 +283,9 @@ void STR::TimIntAdjoint::PrepareStep()
   rhsn_->Update(-1.0,*(*rhs_)(steprhsn_),0.0);
   // !!! rhs is the optimality condition differentiated w.r.t the displacement; so it has to be
   //multiplied by -1 to be the correct rhsn_ for the dual problem
+
+  // set internal history needed for this timestep
+  SetTimeStepHistory(stepn_);
 
   // get stiffness matrix according to stepn_
   EvaluateStiff();
@@ -386,16 +390,19 @@ void STR::TimIntAdjoint::GetDBCMap()
 /*----------------------------------------------------------------------*/
 void STR::TimIntAdjoint::PrintLogo()
 {
-  IO::cout << "--------------------------------------------------" << IO::endl;
-  IO::cout << "--   Welcome to the adjoint time integration    --" << IO::endl;
-  IO::cout << "--------------------------------------------------" << IO::endl;
+  if (discret_->Comm().MyPID()==0)
+  {
+    IO::cout << "--------------------------------------------------" << IO::endl;
+    IO::cout << "--   Welcome to the adjoint time integration    --" << IO::endl;
+    IO::cout << "--------------------------------------------------" << IO::endl;
+  }
+  return;
 }
 
-
-
-
-
-
-
-
-
+void STR::TimIntAdjoint::SetTimeStepHistory(int timestep)
+{
+  Teuchos::ParameterList p;
+  p.set("timestep", timestep);
+  p.set("action","calc_struct_recover_istep");
+  discret_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+}

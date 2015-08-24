@@ -25,6 +25,9 @@ Maintainer: Sebastian Kehl
 #include "../drt_mat/matpar_bundle.H"
 #include "../linalg/linalg_utils.H"
 
+#include "../drt_mat/growth_ip.H"
+#include "../drt_mat/growth_law.H"
+
 /*----------------------------------------------------------------------*/
 /* constructor                                               keh 10/13  */
 /*----------------------------------------------------------------------*/
@@ -65,6 +68,7 @@ void INVANA::MatParManager::InitParams()
     {
       case INPAR::MAT::m_aaaneohooke:
       case INPAR::MAT::m_scatra:
+      case INPAR::MAT::m_growth_const:
       {
         std::vector<int>::const_iterator jt;
         for (jt = it->second.begin(); jt != it->second.end(); jt++)
@@ -162,8 +166,6 @@ void INVANA::MatParManager::SetupMatOptMap()
 /*----------------------------------------------------------------------*/
 void INVANA::MatParManager::SetParams()
 {
-  const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
-
   // get the actual set of elementwise material parameters from the derived classes
   Teuchos::RCP<Epetra_MultiVector> getparams = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementRowMap()),numparams_,false));
   FillParameters(getparams);
@@ -171,11 +173,20 @@ void INVANA::MatParManager::SetParams()
   // export to column layout to be able to run column elements
   LINALG::Export(*getparams,*params_);
 
+  // set parameters to the elements
+  PushParamsToElements();
+}
+
+/*----------------------------------------------------------------------*/
+void INVANA::MatParManager::PushParamsToElements()
+{
+  const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
+
   Teuchos::RCP<Epetra_MultiVector> tmp = Teuchos::rcp(new Epetra_MultiVector(*params_));
   if (metaparams_)
   {
-    params_->PutScalar(0.1);
-    params_->Multiply(0.5,*tmp,*tmp,1.0);
+    tmp->PutScalar(0.1);
+    tmp->Multiply(0.5,*params_,*params_,1.0);
   }
 
   //loop materials to be optimized
@@ -189,9 +200,29 @@ void INVANA::MatParManager::SetParams()
     std::vector<int>::const_iterator it;
     for ( it=actparams.begin(); it!=actparams.end(); it++)
     {
-      actmat->Parameter()->SetParameter(*it,Teuchos::rcp((*params_)( parapos_.at(curr->first).at(it-actparams.begin()) ),false));
+      actmat->Parameter()->SetParameter(*it,Teuchos::rcp((*tmp)( parapos_.at(curr->first).at(it-actparams.begin()) ),false));
     }
   }//loop optimized materials
+}
+
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_MultiVector> INVANA::MatParManager::GetMatParams()
+{
+  // get the actual set of elementwise material parameters from the derived classes
+  Teuchos::RCP<Epetra_MultiVector> getparams = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementRowMap()),numparams_,false));
+  FillParameters(getparams);
+
+  // export to column layout to be able to run column elements
+  LINALG::Export(*getparams,*params_);
+
+  Teuchos::RCP<Epetra_MultiVector> tmp = Teuchos::rcp(new Epetra_MultiVector(*params_));
+  if (metaparams_)
+  {
+    tmp->PutScalar(0.1);
+    tmp->Multiply(0.5,*params_,*params_,1.0);
+  }
+
+  return tmp;
 }
 
 /*----------------------------------------------------------------------*/
@@ -243,9 +274,12 @@ void INVANA::MatParManager::AddEvaluate(double time, Teuchos::RCP<Epetra_MultiVe
   discret_->Comm().Barrier();
   LINALG::Export(*getparams,*params_);
 
+  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  double dt= sdyn.get<double>("TIMESTEP");
+
   // the reason not to do this loop via a discretizations evaluate call is that if done as is,
   // all elements have to be looped only once and evaluation is done only in case when an
-  // element really has materials with parameters to be optimized. And "Nachdifferenzieren"
+  // element really has materials with parameters to be optimized. And the chain-rule application
   // with respect to the parameters to be optimized can be done without setting up the whole
   // gradient dR/dp_m and postmultiply it with dp_m\dp_o
   // with R: Residual forces; p_m: material params; p_o parametrization of p_m
@@ -254,14 +288,15 @@ void INVANA::MatParManager::AddEvaluate(double time, Teuchos::RCP<Epetra_MultiVe
   {
     DRT::Element* actele;
     actele = discret_->lRowElement(i);
-    int elematid = actele->Material()->Parameter()->Id();
+    int elematid = ElementOptMat(actele);
 
-    if (paramap_.find(elematid) == paramap_.end() )
+    if (elematid == -1 )
       continue;
 
     // list to define routines at elementlevel
     Teuchos::ParameterList p;
     p.set("total time", time);
+    p.set("delta time", dt);
 
     std::vector<int> actparams = paramap_.at( elematid );
     std::vector<int>::const_iterator it;
@@ -271,15 +306,15 @@ void INVANA::MatParManager::AddEvaluate(double time, Teuchos::RCP<Epetra_MultiVe
       p.set("matparderiv", *it);
 
       //initialize element vectors
-      int ndof = actele->NumNode()*3;
+      DRT::Element::LocationArray la(discret_->NumDofSets());
+      actele->LocationVector(*discret_,la,false);
+      int ndof = la[0].lm_.size();
       Epetra_SerialDenseMatrix elematrix1(ndof,ndof,false);
       Epetra_SerialDenseMatrix elematrix2(ndof,ndof,false);
       Epetra_SerialDenseVector elevector1(ndof);
       Epetra_SerialDenseVector elevector2(ndof);
       Epetra_SerialDenseVector elevector3(ndof);
 
-      DRT::Element::LocationArray la(discret_->NumDofSets());
-      actele->LocationVector(*discret_,la,false);
       actele->Evaluate(p,*discret_,la,elematrix1,elematrix2,elevector1,elevector2,elevector3);
 
       // dont forget product rule in case of parametrized material parameters!
@@ -290,7 +325,7 @@ void INVANA::MatParManager::AddEvaluate(double time, Teuchos::RCP<Epetra_MultiVe
       }
 
       // dualstate^T*(dR/dp_m)
-      for (int l=0; l<(int)la[0].lm_.size(); l++)
+      for (int l=0; l<ndof; l++)
       {
         int lid=disdual->Map().LID(la[0].lm_.at(l));
         if (lid==-1) dserror("not found on this processor");
@@ -312,45 +347,59 @@ void INVANA::MatParManager::AddEvaluate(double time, Teuchos::RCP<Epetra_MultiVe
 /*----------------------------------------------------------------------*/
 /* evaluate gradient based on FD                             keh 01/14  */
 /*----------------------------------------------------------------------*/
-void INVANA::MatParManager::EvaluateFD(Teuchos::RCP<Epetra_MultiVector> dfint)
+void INVANA::MatParManager::AddEvaluateFD(double time,Teuchos::RCP<Epetra_MultiVector> dfint)
 {
   if (discret_->Comm().NumProc()>1) dserror("this does probably not run in parallel");
 
-  Epetra_MultiVector paramsbak(*params_);
-
   Teuchos::RCP<const Epetra_Vector> disdual = discret_->GetState("dual displacement");
 
-  for (int i=0; i<discret_->NumMyColElements(); i++)
+  // get the actual set of elementwise material parameters from the derived classes
+  Teuchos::RCP<Epetra_MultiVector> getparams = Teuchos::rcp(new Epetra_MultiVector(*(discret_->ElementRowMap()),numparams_,false));
+  FillParameters(getparams);
+
+  // export to column layout to be able to run column elements
+  discret_->Comm().Barrier();
+  LINALG::Export(*getparams,*params_);
+
+  // a backup copy
+  Epetra_MultiVector paramsbak(*params_);
+
+  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  double dt= sdyn.get<double>("TIMESTEP");
+
+  for (int i=0; i<discret_->NumMyRowElements(); i++)
   {
     DRT::Element* actele;
-    actele = discret_->lColElement(i);
-    int elematid = actele->Material()->Parameter()->Id();
+    actele = discret_->lRowElement(i);
+    int elematid = ElementOptMat(actele);
 
-    if (paramap_.find(elematid) == paramap_.end() )
+    if (elematid == -1 )
       continue;
 
     // list to define routines at elementlevel
     Teuchos::ParameterList p;
+    p.set("total time", time);
+    p.set("delta time", dt);
 
     std::vector<int> actparams = paramap_.at( elematid );
     std::vector<int>::const_iterator it;
     for ( it=actparams.begin(); it!=actparams.end(); it++)
     {
-      p.set("action", "calc_struct_internalforce");
+      p.set("action", "calc_struct_nlnstiff");
 
       double pa=1.0e-6;
       double pb=1.0e-12;
 
       //initialize element vectors
-      int ndof = actele->NumNode()*3;
+      DRT::Element::LocationArray la(discret_->NumDofSets());
+      actele->LocationVector(*discret_,la,false);
+      int ndof = la[0].lm_.size();
       Epetra_SerialDenseMatrix elematrix1(ndof,ndof,false);
       Epetra_SerialDenseMatrix elematrix2(ndof,ndof,false);
       Epetra_SerialDenseVector elevector1(ndof);
       Epetra_SerialDenseVector elevector2(ndof);
       Epetra_SerialDenseVector elevector3(ndof);
 
-      DRT::Element::LocationArray la(discret_->NumDofSets());
-      actele->LocationVector(*discret_,la,false);
 
       double actp = (*(*params_)( parapos_.at(elematid).at(it-actparams.begin()) ))[actele->LID()];
       double perturb = actp + pb + actp*pa;
@@ -359,20 +408,26 @@ void INVANA::MatParManager::EvaluateFD(Teuchos::RCP<Epetra_MultiVector> dfint)
       {
         if (j==1)
         {
-          params_->ReplaceGlobalValue(actele->LID(),parapos_.at(elematid).at(it-actparams.begin()),perturb);
-          SetParams();
+          params_->ReplaceMyValue(actele->LID(),parapos_.at(elematid).at(it-actparams.begin()),perturb);
+          PushParamsToElements();
         }
 
         if (j==0)
-          actele->Evaluate(p,*discret_,la,elematrix1,elematrix2,elevector1,elevector2,elevector3);
+        {
+          actele->Evaluate(p,*discret_,la,elematrix1,elematrix2,elevector1,elevector2,elevector2);
+          //elevector1.Print(std::cout);
+        }
         else if(j==1)
+        {
           actele->Evaluate(p,*discret_,la,elematrix1,elematrix2,elevector3,elevector2,elevector2);
+          //elevector3.Print(std::cout);
+        }
 
         //reset params
         if (j==1)
         {
           params_->Update(1.0,paramsbak,0.0);
-          SetParams();
+          PushParamsToElements();
         }
       }
 
@@ -380,14 +435,6 @@ void INVANA::MatParManager::EvaluateFD(Teuchos::RCP<Epetra_MultiVector> dfint)
       elevector1.Scale(-1.0);
       elevector1 += elevector3;
       elevector1.Scale(1.0/(pb+actp*pa));
-
-      // dont forget product rule in case of parametrized material parameters!
-      if (metaparams_)
-      {
-        dserror("verify this first for the FD-version");
-        double val1 = (*(*params_)( parapos_.at(elematid).at(it-actparams.begin()) ))[actele->LID()];
-        elevector1.Scale(val1);
-      }
 
       //reuse elevector2
       for (int l=0; l<(int)la[0].lm_.size(); l++)
@@ -398,9 +445,9 @@ void INVANA::MatParManager::EvaluateFD(Teuchos::RCP<Epetra_MultiVector> dfint)
       }
       double val2 = elevector2.Dot(elevector1);
 
-      int success = dfint->SumIntoMyValue(actele->LID(),parapos_.at(elematid).at(it-actparams.begin()),val2);
-      if (success!=0) dserror("gid %d is not on this processor", actele->LID());
-
+      // Assemble the final gradient; this is parametrization class business
+      // (i.e contraction to (optimization)-parameter space:
+      ContractGradient(dfint,val2,actele->Id(),parapos_.at(elematid).at(it-actparams.begin()), it-actparams.begin());
 
     }//loop this elements material parameters (only the ones to be optimized)
 
@@ -442,6 +489,29 @@ int INVANA::MatParManager::GetParameterLocation(int eleid, std::string name)
   }
 
 return loc;
+}
+
+/*----------------------------------------------------------------------*/
+/* does this element has optimizable materials                keh 7/15  */
+/*----------------------------------------------------------------------*/
+int INVANA::MatParManager::ElementOptMat(DRT::Element* ele)
+{
+  int elematid = ele->Material()->Parameter()->Id();
+
+  if (paramap_.find(elematid) == paramap_.end() )
+  {
+    MAT::PAR::Growth* mgrowth = dynamic_cast<MAT::PAR::Growth*>(ele->Material()->Parameter());
+    if (mgrowth==NULL)
+      return -1;
+
+    int mgrowthid = mgrowth->growthlaw_->Parameter()->Id();
+    if (paramap_.find(mgrowthid) == paramap_.end() )
+        return -1;
+    else
+      elematid=mgrowthid;
+  }
+
+  return elematid;
 
 }
 

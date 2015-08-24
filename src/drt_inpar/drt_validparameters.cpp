@@ -1466,6 +1466,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   // parameter continuation in the forward problem
   IntParameter("ITERTOPC",10,"iterations before parameter continuation in the forward problem",&statinvp);
 
+  // give prestressing method to be used for the adjoint formulation
+  setStringToIntegralParameter<int>("PRESTRESS","none","prestressing takes values none mulf id",
+                               tuple<std::string>("none","None","NONE",
+                                                  "mulf","Mulf","MULF",
+                                                  "id","Id","ID"),
+                               tuple<int>(INPAR::STR::prestress_none,INPAR::STR::prestress_none,INPAR::STR::prestress_none,
+                                          INPAR::STR::prestress_mulf,INPAR::STR::prestress_mulf,INPAR::STR::prestress_mulf,
+                                          INPAR::STR::prestress_id,INPAR::STR::prestress_id,INPAR::STR::prestress_id),
+                               &statinvp);
+
   // stepsize for deterministic gradient based schemes
   DoubleParameter("STEPSIZE",1.0,"stepsize for the gradient descent scheme",&statinvp);
 
@@ -1475,7 +1485,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   // weight of the regularization
   DoubleParameter("REG_WEIGHT",0.1,"weight of the regularization",&statinvp);
 
-  // regulaization of the totalvariation functional
+  // regularization of the totalvariation functional
   DoubleParameter("TVD_EPS",0.001,"differentiation epsilon for total variation",&statinvp);
 
   // number of optimization steps

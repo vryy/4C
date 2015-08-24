@@ -75,7 +75,7 @@ namespace MAT
      * \param Out
      * dthetadC - derivative of theta wrt the chauchy green tensor
      * \param In
-     * matelastic - an elastic material
+     * matgrowth - a reference to a growth material
      * \param In
      * defgrad - the deformation gradient
      * \param In
@@ -91,7 +91,7 @@ namespace MAT
     virtual void Evaluate(double* theta,
         const double& thetaold,
         LINALG::Matrix<6,1>* dthetadC,
-        Teuchos::RCP<MAT::So3Material> matelastic,
+        MAT::Growth& matgrowth,
         const LINALG::Matrix<3,3>* defgrd,
         const LINALG::Matrix<6,1>* glstrain,
         Teuchos::ParameterList& params,
@@ -104,7 +104,7 @@ namespace MAT
      * \param Out
      * linmass_disp - the mass linearization
      * \param In
-     * matelastic - an elastic material
+     * matgrowth - a reference to a growth material
      * \param In
      * defgrad - the deformation gradient
      * \param In
@@ -120,6 +120,34 @@ namespace MAT
     virtual void EvaluateNonLinMass(double* theta,
         const double& thetaold,
         LINALG::Matrix<6,1>* linmass_disp,
+        MAT::Growth& matgrowth,
+        const LINALG::Matrix<3,3>* defgrd,
+        const LINALG::Matrix<6,1>* glstrain,
+        Teuchos::ParameterList& params,
+        const int eleGID ) = 0;
+
+    /*! \brief derivative of theta wrt parameters
+     *
+     * \param Out
+     * theta - theta diff. wrt. parameters given in params
+     * \param Out
+     * dthetadC - derivative of theta wrt the chauchy green tensor
+     * \param In
+     * matelastic - an elastic material
+     * \param In
+     * defgrad - the deformation gradient
+     * \param In
+     * glstrain - the green lagrange strains
+     * \param In
+     * params - a parameter list as handed in from the element
+     * \param In
+     * eleGID - the calling element's GID
+     *
+     *  \author kehl
+     * \date 07/2015
+     */
+    virtual void EvaluatePDeriv(double* theta,
+        const double& thetaold,
         Teuchos::RCP<MAT::So3Material> matelastic,
         const LINALG::Matrix<3,3>* defgrd,
         const LINALG::Matrix<6,1>* glstrain,
@@ -240,7 +268,7 @@ namespace MAT
      * \param Out
      * dthetadC - derivative of theta wrt the chauchy green tensor
      * \param In
-     * matelastic - an elastic material
+     * matgrowth - a reference to a growth material
      * \param In
      * defgrad - the deformation gradient
      * \param In
@@ -256,7 +284,7 @@ namespace MAT
     virtual void Evaluate(double* theta,
         const double& thetaold,
         LINALG::Matrix<6,1>* dthetadC,
-        Teuchos::RCP<MAT::So3Material> matelastic,
+        MAT::Growth& matgrowth,
         const LINALG::Matrix<3,3>* defgrd,
         const LINALG::Matrix<6,1>* glstrain,
         Teuchos::ParameterList& params,
@@ -269,7 +297,7 @@ namespace MAT
      * \param Out
      * linmass_disp - the mass linearization
      * \param In
-     * matelastic - an elastic material
+     * matgrowth - a reference to a growth material
      * \param In
      * defgrad - the deformation gradient
      * \param In
@@ -285,6 +313,34 @@ namespace MAT
     virtual void EvaluateNonLinMass(double* theta,
         const double& thetaold,
         LINALG::Matrix<6,1>* linmass_disp,
+        MAT::Growth& matgrowth,
+        const LINALG::Matrix<3,3>* defgrd,
+        const LINALG::Matrix<6,1>* glstrain,
+        Teuchos::ParameterList& params,
+        const int eleGID );
+
+    /*! \brief derivative of theta wrt parameters
+     *
+     * \param Out
+     * theta - theta diff. wrt. parameters given in params
+     * \param Out
+     * dthetadC - derivative of theta wrt the chauchy green tensor
+     * \param In
+     * matelastic - an elastic material
+     * \param In
+     * defgrad - the deformation gradient
+     * \param In
+     * glstrain - the green lagrange strains
+     * \param In
+     * params - a parameter list as handed in from the element
+     * \param In
+     * eleGID - the calling element's GID
+     *
+     *  \author kehl
+     * \date 07/2015
+     */
+    virtual void EvaluatePDeriv(double* theta,
+        const double& thetaold,
         Teuchos::RCP<MAT::So3Material> matelastic,
         const LINALG::Matrix<3,3>* defgrd,
         const LINALG::Matrix<6,1>* glstrain,
@@ -398,7 +454,7 @@ namespace MAT
      * \param Out
      * dthetadC - derivative of theta wrt the chauchy green tensor
      * \param In
-     * matelastic - an elastic material
+     * matgrowth - a reference to a growth material
      * \param In
      * defgrad - the deformation gradient
      * \param In
@@ -414,7 +470,7 @@ namespace MAT
     virtual void Evaluate(double* theta,
         const double& thetaold,
         LINALG::Matrix<6,1>* dthetadC,
-        Teuchos::RCP<MAT::So3Material> matelastic,
+        MAT::Growth& matgrowth,
         const LINALG::Matrix<3,3>* defgrd,
         const LINALG::Matrix<6,1>* glstrain,
         Teuchos::ParameterList& params,
@@ -427,7 +483,7 @@ namespace MAT
      * \param Out
      * linmass_disp - the mass linearization
      * \param In
-     * matelastic - an elastic material
+     * matgrowth - a reference to a growth material
      * \param In
      * defgrad - the deformation gradient
      * \param In
@@ -443,6 +499,34 @@ namespace MAT
     virtual void EvaluateNonLinMass(double* theta,
         const double& thetaold,
         LINALG::Matrix<6,1>* linmass_disp,
+        MAT::Growth& matgrowth,
+        const LINALG::Matrix<3,3>* defgrd,
+        const LINALG::Matrix<6,1>* glstrain,
+        Teuchos::ParameterList& params,
+        const int eleGID );
+
+    /*! \brief derivative of theta wrt parameters
+     *
+     * \param Out
+     * theta - theta diff. wrt. parameters given in params
+     * \param Out
+     * dthetadC - derivative of theta wrt the chauchy green tensor
+     * \param In
+     * matelastic - an elastic material
+     * \param In
+     * defgrad - the deformation gradient
+     * \param In
+     * glstrain - the green lagrange strains
+     * \param In
+     * params - a parameter list as handed in from the element
+     * \param In
+     * eleGID - the calling element's GID
+     *
+     *  \author kehl
+     * \date 07/2015
+     */
+    virtual void EvaluatePDeriv(double* theta,
+        const double& thetaold,
         Teuchos::RCP<MAT::So3Material> matelastic,
         const LINALG::Matrix<3,3>* defgrd,
         const LINALG::Matrix<6,1>* glstrain,
@@ -865,8 +949,8 @@ namespace MAT
 
       /// @name material parameters
       //@{
-      /// growth factor rate given via input
-      const double thetarate_;
+      //! enum for mapping between material parameter and entry in Parameter::matparams_
+      enum matparamnames_ {thetarate, first=thetarate, last=thetarate};
       //@}
 
       /// create material instance of matching type with my parameters
@@ -874,6 +958,9 @@ namespace MAT
 
       /// create growth law instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::GrowthLaw> CreateGrowthLaw();
+
+      /// given names of optimizable material parameters upon request
+      void OptParams(std::map<std::string, int>* pnames);
 
     };  // class Growth
 
@@ -901,7 +988,7 @@ namespace MAT
        * \param Out
        * dthetadC - derivative of theta wrt the chauchy green tensor
        * \param In
-       * matelastic - an elastic material
+       * matgrowth - a reference to a growth material
        * \param In
        * defgrad - the deformation gradient
        * \param In
@@ -917,6 +1004,34 @@ namespace MAT
       virtual void Evaluate(double* theta,
           const double& thetaold,
           LINALG::Matrix<6,1>* dthetadC,
+          MAT::Growth& matgrowth,
+          const LINALG::Matrix<3,3>* defgrd,
+          const LINALG::Matrix<6,1>* glstrain,
+          Teuchos::ParameterList& params,
+          const int eleGID );
+
+      /*! \brief derivative of theta wrt parameters
+       *
+       * \param Out
+       * theta - theta diff. wrt. parameters given in params
+       * \param Out
+       * dthetadC - derivative of theta wrt the chauchy green tensor
+       * \param In
+       * matelastic - an elastic material
+       * \param In
+       * defgrad - the deformation gradient
+       * \param In
+       * glstrain - the green lagrange strains
+       * \param In
+       * params - a parameter list as handed in from the element
+       * \param In
+       * eleGID - the calling element's GID
+       *
+       *  \author kehl
+       * \date 07/2015
+       */
+      virtual void EvaluatePDeriv(double* theta,
+          const double& thetaold,
           Teuchos::RCP<MAT::So3Material> matelastic,
           const LINALG::Matrix<3,3>* defgrd,
           const LINALG::Matrix<6,1>* glstrain,
@@ -992,7 +1107,7 @@ class GrowthLawAC: public GrowthLawStatic
      * \param Out
      * dthetadC - derivative of theta wrt the chauchy green tensor
      * \param In
-     * matelastic - an elastic material
+     * matgrowth - a reference to a growth material
      * \param In
      * defgrad - the deformation gradient
      * \param In
@@ -1008,7 +1123,7 @@ class GrowthLawAC: public GrowthLawStatic
     virtual void Evaluate(double* theta,
         const double& thetaold,
         LINALG::Matrix<6,1>* dthetadC,
-        Teuchos::RCP<MAT::So3Material> matelastic,
+        MAT::Growth& matgrowth,
         const LINALG::Matrix<3,3>* defgrd,
         const LINALG::Matrix<6,1>* glstrain,
         Teuchos::ParameterList& params,
@@ -1070,7 +1185,7 @@ class GrowthLawAC: public GrowthLawStatic
      * \param Out
      * dthetadC - derivative of theta wrt the chauchy green tensor
      * \param In
-     * matelastic - an elastic material
+     * matgrowth - a reference to a growth material
      * \param In
      * defgrad - the deformation gradient
      * \param In
@@ -1086,7 +1201,7 @@ class GrowthLawAC: public GrowthLawStatic
     virtual void Evaluate(double* theta,
         const double& thetaold,
         LINALG::Matrix<6,1>* dthetadC,
-        Teuchos::RCP<MAT::So3Material> matelastic,
+        MAT::Growth& matgrowth,
         const LINALG::Matrix<3,3>* defgrd,
         const LINALG::Matrix<6,1>* glstrain,
         Teuchos::ParameterList& params,

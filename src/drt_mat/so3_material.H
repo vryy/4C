@@ -99,6 +99,14 @@ namespace MAT
     virtual void ResetAll(int numgp)
     { /* do nothing for simple material models */ };
 
+    /// Store internal history variables to be eventually reset at some point
+    virtual void StoreHistory(int timestep)
+    { /* do nothing for simple material models */ }
+
+    /// Set history variables from time point given as input
+    virtual void SetHistory(int timestep)
+    { /* do nothing for simple material models */ }
+
     //@}
 
     //! @name Visualization methods
@@ -114,6 +122,10 @@ namespace MAT
     /// Return visualization data
     virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleId)
     { /* do nothing for simple material models */ return false; };
+
+    //@}
+
+    //! @name Query methods
 
     /// Return whether the material requires the deformation gradient for its evaluation
     virtual bool NeedsDefgrd()

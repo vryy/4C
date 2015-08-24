@@ -46,9 +46,9 @@ void INVANA::MatParManagerPerElement::Setup()
   {
     DRT::Element* actele;
     actele = Discret()->lRowElement(i);
-    int elematid = actele->Material()->Parameter()->Id();
+    int elematid = ElementOptMat(actele);
 
-    if (ParaMap().find(elematid) == ParaMap().end() )
+    if ( elematid == -1 )
       continue;
 
     std::vector<int> actparapos = ParaPos().at( elematid );

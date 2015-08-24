@@ -33,6 +33,8 @@ namespace ADAPTER
 
     virtual void PostPredict();
 
+    virtual void PreUpdate();
+
     virtual void PostUpdate();
 
     //! prepare timestep to be integrated
@@ -41,25 +43,28 @@ namespace ADAPTER
         Teuchos::RCP<Epetra_Vector> disp,
         Teuchos::RCP<Epetra_Vector> vel);
 
-    Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > DispSteps(){return sdis_;}
+    Teuchos::RCP<std::map<int,Epetra_Vector> > DispSteps(){return sdis_;}
 
-    Teuchos::RCP<DRT::UTILS::TimIntMStep<double> > TimeSteps(){return stime_;}
-
+    Teuchos::RCP<std::map<int, double> > TimeSteps(){return stime_;}
 
   private:
 
     /// resize storage of quantities to be passed out of the time integrator
     void ResizeStorage();
 
-    //* Storage of quantities:
+    //! @name Storage of states
+    //@{
+
     //! time_
-    Teuchos::RCP<DRT::UTILS::TimIntMStep<double> > stime_;
+    Teuchos::RCP<std::map<int, double> > stime_;
 
     //! displacements
-    Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > sdis_;
+    Teuchos::RCP<std::map<int,Epetra_Vector> > sdis_;
 
     //! veclocities
-    Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > svel_;
+    Teuchos::RCP<std::map<int,Epetra_Vector> > svel_;
+
+    //@}
 
     //! integrate single step only
     bool singlesteponly_;

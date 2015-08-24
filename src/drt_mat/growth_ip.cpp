@@ -15,7 +15,7 @@
 #include "growth_law.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
-#include "../drt_lib/drt_utils_factory.H"  // for function Factory in Unpack
+#include "../drt_lib/drt_utils_factory.H"
 
 
 /*----------------------------------------------------------------------------*/
@@ -120,20 +120,26 @@ Teuchos::RCP<MAT::Material> MAT::PAR::Growth::CreateMaterial()
 
 /*----------------------------------------------------------------------------*/
 MAT::Growth::Growth()
-  : theta_(Teuchos::null),  //initialized in Growth::Unpack
-    matelastic_(Teuchos::null),  //initialized in Growth::Unpack
+  : theta_(Teuchos::null),
     isinit_(false),
-    params_(NULL)
+    params_(NULL),
+    matelastic_(Teuchos::null),
+    paramselast_(),
+    thetaold_(Teuchos::null),
+    histdata_()
 {
 }
 
 
 /*----------------------------------------------------------------------------*/
 MAT::Growth::Growth(MAT::PAR::Growth* params)
-  : theta_(Teuchos::null),  //initialized in Growth::Setup
-    matelastic_(Teuchos::null),  //initialized in Growth::Setup
+  : theta_(Teuchos::null),
     isinit_(false),
-    params_(params)
+    params_(params),
+    matelastic_(Teuchos::null),
+    paramselast_(),
+    thetaold_(Teuchos::null),
+    histdata_()
 {
 }
 
@@ -164,8 +170,11 @@ void MAT::Growth::Pack(DRT::PackBuffer& data) const
   // Pack internal variables
   for (int gp = 0; gp < numgp; ++gp)
   {
+    AddtoPack(data,thetaold_->at(gp));
     AddtoPack(data,theta_->at(gp));
   }
+
+  AddtoPack(data,histdata_);
 
   // Pack data of elastic material
   if (matelastic_!=Teuchos::null) {
@@ -211,11 +220,19 @@ void MAT::Growth::Unpack(const std::vector<char>& data)
 
   // unpack growth internal variables
   theta_ = Teuchos::rcp(new std::vector<double> (numgp));
-  for (int gp = 0; gp < numgp; ++gp) {
+  thetaold_ = Teuchos::rcp(new std::vector<double> (numgp));
+  for (int gp = 0; gp < numgp; ++gp)
+  {
     double a;
+    ExtractfromPack(position,data,a);
+    thetaold_->at(gp) = a;
     ExtractfromPack(position,data,a);
     theta_->at(gp) = a;
   }
+
+  std::vector<char> tmp(0);
+  ExtractfromPack(position,data,tmp);
+  histdata_.Unpack(tmp);
 
   // Unpack data of elastic material (these lines are copied from drt_element.cpp)
   std::vector<char> dataelastic;
@@ -244,14 +261,20 @@ void MAT::Growth::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
     dserror("This function should just be called, if the material is jet not initialized.");
 
   theta_ = Teuchos::rcp(new std::vector<double> (numgp));
+  thetaold_ = Teuchos::rcp(new std::vector<double> (numgp));
   for (int j=0; j<numgp; ++j)
   {
     theta_->at(j) = 1.0;
+    thetaold_->at(j) = 1.0;
   }
 
   // Setup of elastic material
   matelastic_ = Teuchos::rcp_dynamic_cast<MAT::So3Material>(MAT::Material::Factory(params_->idmatelastic_));
   matelastic_->Setup(numgp, linedef);
+
+  // Setup of history container with empty data
+  std::map<int,std::vector<double> > data;
+  histdata_.Add("thetaold",data);
 
   isinit_ = true;
   return;
@@ -262,8 +285,13 @@ void MAT::Growth::ResetAll(const int numgp)
 {
   for (int j=0; j<numgp; ++j)
   {
+    thetaold_->at(j) = 1.0;
     theta_->at(j) = 1.0;
   }
+
+  // overwrite history with empty data
+  std::map<int,std::vector<double> > data;
+  histdata_.Add("thetaold",data);
 
   matelastic_->ResetAll(numgp);
 }
@@ -271,13 +299,48 @@ void MAT::Growth::ResetAll(const int numgp)
 /*----------------------------------------------------------------------------*/
 void MAT::Growth::Update()
 {
+  const int histsize = theta_->size();
+  for (int i=0; i<histsize; i++)
+  {
+    thetaold_->at(i) = theta_->at(i);
+  }
+
   matelastic_->Update();
 }
 
 /*----------------------------------------------------------------------------*/
 void MAT::Growth::ResetStep()
 {
+  dserror("you need a backup of thetaold_ to be able to reset!");
   matelastic_->ResetStep();
+}
+
+void MAT::Growth::StoreHistory(int timestep)
+{
+  std::map<int,std::vector<double> >* access;
+  access = histdata_.GetMutable<std::map<int,std::vector<double> > >("thetaold");
+  (*access)[timestep] = *thetaold_;
+}
+
+void MAT::Growth::SetHistory(int timestep)
+{
+  const std::map<int,std::vector<double> >* read;
+  read = histdata_.Get<std::map<int,std::vector<double> > >("thetaold");
+
+  if (read->find(timestep) != read->end())
+    *thetaold_ = read->at(timestep);
+  else
+    dserror("there is no data to reset for step %d",timestep);
+}
+
+/*----------------------------------------------------------------------------*/
+void MAT::Growth::EvaluateElastic(const LINALG::Matrix<3, 3>* defgrd,
+    const LINALG::Matrix<6, 1>* glstrain,
+    LINALG::Matrix<6, 1>* stress,
+    LINALG::Matrix<6, 6>* cmat,
+    const int eleGID)
+{
+  Matelastic()->Evaluate(defgrd, glstrain, paramselast_, stress, cmat, eleGID);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -287,7 +350,7 @@ void MAT::GrowthMandel::VisNames(std::map<std::string,int>& names)
   names[fiber] = 1;
   fiber = "Mandel";
   names[fiber] = 1;
-  matelastic_->VisNames(names);
+  Matelastic()->VisNames(names);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -313,7 +376,7 @@ bool MAT::GrowthMandel::VisData(const std::string& name, std::vector<double>& da
   }
   else
   {
-    return matelastic_->VisData(name, data, numgp, eleID);
+    return Matelastic()->VisData(name, data, numgp, eleID);
   }
   return true;
 }
@@ -332,8 +395,7 @@ DRT::ParObject* MAT::GrowthMandelType::Create( const std::vector<char> & data )
 /*----------------------------------------------------------------------------*/
 MAT::GrowthMandel::GrowthMandel()
   : Growth(),
-    thetaold_(Teuchos::null),  //initialized in Growth::Setup
-    mandel_(Teuchos::null),  //initialized in Growth::Setup
+    mandel_(Teuchos::null),
     paramsMandel_(NULL)
 {
 }
@@ -341,20 +403,24 @@ MAT::GrowthMandel::GrowthMandel()
 /*----------------------------------------------------------------------------*/
 MAT::GrowthMandel::GrowthMandel(MAT::PAR::Growth* params)
   : Growth(params),
-    thetaold_(Teuchos::null),  //initialized in Growth::Setup
-    mandel_(Teuchos::null),  //initialized in Growth::Setup
+    mandel_(Teuchos::null),
     paramsMandel_(params)
 {
 }
 
 /*----------------------------------------------------------------------------*/
 void MAT::GrowthMandel::Evaluate( const LINALG::Matrix<3, 3>* defgrd,
-                            const LINALG::Matrix<6, 1>* glstrain,
-                            Teuchos::ParameterList& params,
-                            LINALG::Matrix<6, 1>* stress,
-                            LINALG::Matrix<6, 6>* cmat,
-                            const int eleGID)
+    const LINALG::Matrix<6, 1>* glstrain,
+    Teuchos::ParameterList& params,
+    LINALG::Matrix<6, 1>* stress,
+    LINALG::Matrix<6, 6>* cmat,
+    const int eleGID)
 {
+  //modify the parameter list to be passed to the elastic material
+  Teuchos::ParameterList paramselast(params);
+  paramselast.remove("matparderiv",false);
+  SetParamsElast(paramselast);
+
   // get gauss point number
   const int gp = params.get<int>("gp", -1);
   if (gp == -1)
@@ -379,12 +445,12 @@ void MAT::GrowthMandel::Evaluate( const LINALG::Matrix<3, 3>* defgrd,
 
   if (time > starttime + eps && time <= endtime + eps)
   {
-    double theta = thetaold_->at(gp);
+    double theta = ThetaOld()->at(gp);
     //--------------------------------------------------------------------------------------
     // evaluation of the volumetric growth factor and its derivative wrt cauchy-green
     //--------------------------------------------------------------------------------------
     LINALG::Matrix<6,1> dthetadC(true);
-    EvaluateGrowth(&theta,&dthetadC,matelastic_,defgrd, glstrain,params,eleGID);
+    EvaluateGrowth(&theta,&dthetadC,defgrd,glstrain,params,eleGID);
 
     //--------------------------------------------------------------------------------------
     // call material law with elastic part of defgr and elastic part of glstrain
@@ -412,12 +478,11 @@ void MAT::GrowthMandel::Evaluate( const LINALG::Matrix<3, 3>* defgrd,
     // elastic 2 PK stress and constitutive matrix
     LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatelastic(true);
     LINALG::Matrix<NUM_STRESS_3D, 1> Sdach(true);
-    matelastic_->Evaluate(&defgrddach,
-                          &glstraindach,
-                          params,
-                          &Sdach,
-                          &cmatelastic,
-                          eleGID);
+    EvaluateElastic(&defgrddach,
+                    &glstraindach,
+                    &Sdach,
+                    &cmatelastic,
+                    eleGID);
 
 
     // 2PK stress S = F_g^-1 Sdach F_g^-T
@@ -435,9 +500,25 @@ void MAT::GrowthMandel::Evaluate( const LINALG::Matrix<3, 3>* defgrd,
                                   + cmatelastic(i, 4) * C(4) + cmatelastic(i, 5) * C(5);
 
       for (int j = 0; j < 6; j++)
-      {
         (*cmat)(i, j) =  cmatelastic(i, j) - 2.0/theta *(2.0 * S(i) + cmatelasCi) * dthetadC(j);
-      }
+    }
+
+    int deriv = params.get<int>("matparderiv",-1);
+    if (deriv != -1)
+    {
+      LINALG::Matrix<NUM_STRESS_3D, 1> cmatelasC(true);
+      for (int i = 0; i < NUM_STRESS_3D; i++)
+       {
+         cmatelasC(i,0) = cmatelastic(i, 0) * C(0) + cmatelastic(i, 1) * C(1)
+                       + cmatelastic(i, 2) * C(2) + cmatelastic(i, 3) * C(3)
+                       + cmatelastic(i, 4) * C(4) + cmatelastic(i, 5) * C(5);
+       }
+
+      stress->Update(1.0,cmatelasC,2.0);
+      double dthetadp;
+      Parameter()->growthlaw_->EvaluatePDeriv(&dthetadp,ThetaOld()->at(gp),Matelastic(),defgrd, glstrain,params,eleGID);
+      stress->Scale(-dthetadp/theta);
+
     }
 
     // store theta
@@ -477,12 +558,11 @@ void MAT::GrowthMandel::Evaluate( const LINALG::Matrix<3, 3>* defgrd,
     glstraindach -= Id;
     glstraindach.Scale(0.5);
     // elastic 2 PK stress and constitutive matrix
-    matelastic_->Evaluate( &defgrddach,
-                           &glstraindach,
-                           params,
-                           &Sdach,
-                           &cmatelastic,
-                           eleGID);
+    EvaluateElastic(&defgrddach,
+                    &glstraindach,
+                    &Sdach,
+                    &cmatelastic,
+                    eleGID);
 
     // 2PK stress S = F_g^-1 Sdach F_g^-T
     LINALG::Matrix<NUM_STRESS_3D, 1> S(Sdach);
@@ -502,7 +582,7 @@ void MAT::GrowthMandel::Evaluate( const LINALG::Matrix<3, 3>* defgrd,
   }
   else
   {
-    matelastic_->Evaluate(defgrd, glstrain, params, stress, cmat, eleGID);
+    EvaluateElastic(defgrd, glstrain, stress, cmat, eleGID);
     // build identity tensor I
     LINALG::Matrix<NUM_STRESS_3D, 1> Id(true);
     for (int i = 0; i < 3; i++)
@@ -521,7 +601,6 @@ void MAT::GrowthMandel::Evaluate( const LINALG::Matrix<3, 3>* defgrd,
 /*----------------------------------------------------------------------------*/
 void MAT::GrowthMandel::EvaluateGrowth(double* theta,
                       LINALG::Matrix<6,1>* dthetadC,
-                      Teuchos::RCP<MAT::So3Material> matelastic,
                       const LINALG::Matrix<3,3>* defgrd,
                       const LINALG::Matrix<6,1>* glstrain,
                       Teuchos::ParameterList& params,
@@ -532,32 +611,30 @@ void MAT::GrowthMandel::EvaluateGrowth(double* theta,
   if (gp == -1)
     dserror("no Gauss point number provided in material");
 
-  double thetaold = thetaold_->at(gp);
+  double thetaold = ThetaOld()->at(gp);
 
-  Parameter()->growthlaw_->Evaluate(theta,thetaold,dthetadC,matelastic_,defgrd, glstrain,params,eleGID);
+  MAT::Growth* matgrowth = this;
+  Parameter()->growthlaw_->Evaluate(theta,thetaold,dthetadC,*matgrowth,defgrd,glstrain,params,eleGID);
 }
 
 /*----------------------------------------------------------------------------*/
 void MAT::GrowthMandel::ResetAll(const int numgp)
 {
   for (int j=0; j<numgp; ++j)
-  {
-    thetaold_->at(j) = 1.0;
     mandel_->at(j) = 0.0;
-  }
 
   MAT::Growth::ResetAll(numgp);
 }
 
 /*----------------------------------------------------------------------------*/
+void MAT::GrowthMandel::ResetStep()
+{
+  MAT::Growth::ResetStep();
+}
+
+/*----------------------------------------------------------------------------*/
 void MAT::GrowthMandel::Update()
 {
-  const int histsize = theta_->size();
-  for (int i=0; i<histsize; i++)
-  {
-    thetaold_->at(i) = theta_->at(i);
-  }
-
   MAT::Growth::Update();
 }
 
@@ -582,9 +659,10 @@ void MAT::GrowthMandel::EvaluateNonLinMass( const LINALG::Matrix<3, 3>* defgrd,
       dserror("no Gauss point number provided in material");
 
     double theta = theta_->at(gp);
-    double thetaold = thetaold_->at(gp);
+    double thetaold = ThetaOld()->at(gp);
 
-    Parameter()->growthlaw_->EvaluateNonLinMass(&theta,thetaold,linmass_disp,matelastic_,defgrd, glstrain,params,eleGID);
+    MAT::Growth* matgrowth = this;
+    Parameter()->growthlaw_->EvaluateNonLinMass(&theta,thetaold,linmass_disp,*matgrowth,defgrd, glstrain,params,eleGID);
     linmass_vel->Clear();
   }
   else
@@ -620,7 +698,6 @@ void MAT::GrowthMandel::Pack(DRT::PackBuffer& data) const
   // Pack internal variables
   for (int gp = 0; gp < numgp; ++gp)
   {
-    AddtoPack(data,thetaold_->at(gp));
     AddtoPack(data,mandel_->at(gp));
   }
 
@@ -667,13 +744,10 @@ void MAT::GrowthMandel::Unpack(const std::vector<char>& data)
   }
 
   // unpack growth internal variables
-  thetaold_ = Teuchos::rcp(new std::vector<double> (numgp));
   mandel_ = Teuchos::rcp(new std::vector<double> (numgp));
   for (int gp = 0; gp < numgp; ++gp)
   {
     double a;
-    ExtractfromPack(position,data,a);
-    thetaold_->at(gp) = a;
     ExtractfromPack(position,data,a);
     mandel_->at(gp) = a;
   }
@@ -693,13 +767,9 @@ void MAT::GrowthMandel::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------------*/
 void MAT::GrowthMandel::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 {
-  thetaold_ = Teuchos::rcp(new std::vector<double> (numgp));
   mandel_ = Teuchos::rcp(new std::vector<double> (numgp));
   for (int j=0; j<numgp; ++j)
-  {
-    thetaold_->at(j) = 1.0;
     mandel_->at(j) = 0.0;
-  }
 
   //setup base class
   Growth::Setup(numgp, linedef);

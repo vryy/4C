@@ -23,11 +23,14 @@
 #include "so3_material.H"
 #include "matpar_parameter.H"
 #include "../drt_lib/drt_parobjectfactory.H"
+#include "../drt_lib/drt_container.H"
+
+/*------------------------------------------------------------------------*/
+/* forward declarations */
 
 namespace MAT
 {
-/*------------------------------------------------------------------------*/
-/* forward declarations */
+
 class GrowthLaw;
 
   namespace PAR
@@ -152,6 +155,12 @@ class GrowthLaw;
     /// Reset time step
     virtual void ResetStep();
 
+    /// Store history/internal variables
+    virtual void StoreHistory(int timestep);
+
+    /// Set history/internal variables
+    virtual void SetHistory(int timestep);
+
 
     //! @name Evaluation methods
     //@{
@@ -205,6 +214,28 @@ class GrowthLaw;
                           LINALG::Matrix<6,1>* linmass_disp,
                           LINALG::Matrix<6,1>* linmass_vel,
                           const int eleGID) = 0;
+
+    /*! \brief Evaluate elastic material stresses and cmat
+     *
+     * \param In
+     * defgrd - deformation gradient
+     * \param In
+     * glstrain - green lagrange strain
+     * \param Out
+     * stress - stresses from material evaluation
+     * \param Out
+     * cmat - material stiffness matrix
+     * \param In
+     * eleGID - the calling element's GID
+     *
+     *  \author kehl
+     * \date 06/2015
+     */
+    virtual void EvaluateElastic(const LINALG::Matrix<3,3>* defgrd,
+                                 const LINALG::Matrix<6,1>* glstrain,
+                                 LINALG::Matrix<6,1>* stress,
+                                 LINALG::Matrix<6,6>* cmat,
+                                 const int eleGID );
     //@}
 
 
@@ -226,14 +257,25 @@ class GrowthLaw;
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Growth* Parameter() const { return params_; }
 
+    /// access to the elastic material
+    const Teuchos::RCP<MAT::So3Material> Matelastic() {return matelastic_;}
+
+    // read access to thetaold_
+    Teuchos::RCP<const std::vector<double> > ThetaOld() const {return thetaold_;}
+
+    //@}
+
+    //! @name Set methods
+    //@{
+
+    void SetParamsElast(Teuchos::ParameterList& params) {paramselast_=params;}
+
     //@}
 
   protected:
 
     /// growth stretch
     Teuchos::RCP<std::vector<double> > theta_;
-    /// elastic material
-    Teuchos::RCP<MAT::So3Material> matelastic_;
 
     /// indicates if material is initialized
     bool isinit_;
@@ -242,6 +284,18 @@ class GrowthLaw;
 
     /// my material parameters
     MAT::PAR::Growth* params_;
+
+    /// elastic material
+    Teuchos::RCP<MAT::So3Material> matelastic_;
+
+    /// parameter list for the evaluation of the elastic material
+    Teuchos::ParameterList paramselast_;
+
+    /// growth stretch at the time step before
+    Teuchos::RCP<std::vector<double> > thetaold_;
+
+    /// data container to store and recall history data
+    DRT::Container histdata_;
 
   }; //class Growth
 
@@ -331,6 +385,18 @@ class GrowthLaw;
     /// Reset internal variables to state in the beginning of the computation (needed for inverse analysis)
     virtual void ResetAll(int numgp);
 
+    /*! \brief Reset internal variables such that the step can be repeated
+     *
+     * In this case it is necessary to reset thetaold_ since it refers to to last step
+     * and is updated upon calling Update at the end of the time step so if this step
+     * is repeated thetaold_ is already theta giving different results. This is necessary
+     * for inverse methods and i guess also time step adaptivity
+     *
+     * \author kehl
+     * \date 07/2015
+     */
+    virtual void ResetStep();
+
     /// Update
     virtual void Update();
 
@@ -418,7 +484,6 @@ class GrowthLaw;
      */
     virtual void EvaluateGrowth(double* theta,
                                 LINALG::Matrix<6,1>* dthetadC,
-                                Teuchos::RCP<MAT::So3Material> matelastic,
                                 const LINALG::Matrix<3,3>* defgrd,
                                 const LINALG::Matrix<6,1>* glstrain,
                                 Teuchos::ParameterList& params,
@@ -436,8 +501,6 @@ class GrowthLaw;
 
   protected:
 
-    /// growth stretch old time step
-    Teuchos::RCP<std::vector<double> > thetaold_;
     /// mandel stress
     Teuchos::RCP<std::vector<double> > mandel_;
 

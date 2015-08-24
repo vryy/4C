@@ -45,6 +45,7 @@ isinit_(false)
   return;
 }
 
+/*----------------------------------------------------------------------*/
 void INVANA::OptimizerBase::Init(Teuchos::RCP<Epetra_Map> layoutrowmap, Teuchos::RCP<Epetra_Map> layoutcolmap, int numvecs, Teuchos::RCP<InvanaBase> optprob)
 {
   numvecs_=numvecs;
@@ -73,24 +74,25 @@ void INVANA::OptimizerBase::Init(Teuchos::RCP<Epetra_Map> layoutrowmap, Teuchos:
 
 }
 
+/*----------------------------------------------------------------------*/
 void INVANA::OptimizerBase::SetInitialGuess()
 {
   sol_->Scale(1.0,optprob_->InitialGuess());
 }
 
+/*----------------------------------------------------------------------*/
 void INVANA::OptimizerBase::Evaluate(double* val, Teuchos::RCP<Epetra_MultiVector> gradient)
 {
   optprob_->Evaluate(*sol_,val,gradient);
 }
 
+/*----------------------------------------------------------------------*/
 void INVANA::OptimizerBase::UpdateSolution(const Epetra_MultiVector& toadd)
 {
   sol_o_->Scale(1.0, *sol_);
   sol_->Update(1.0,toadd,1.0);
 }
 
-/*----------------------------------------------------------------------*/
-/* reset to last set of material parameters                  keh 03/14  */
 /*----------------------------------------------------------------------*/
 void INVANA::OptimizerBase::UndoUpdateSolution()
 {
