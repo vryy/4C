@@ -429,6 +429,12 @@ namespace ADAPTER {
     /// write access to extract velocities at \f$t^{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelnp() = 0;
 
+    /// write access to extract displacements at \f$t^{n}\f$
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispn() = 0;
+
+    /// write access to extract velocities at \f$t^{n}\f$
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessVeln() = 0;
+
     //@}
 
     /// extract rhs (used to calculate reaction force for post-processing)

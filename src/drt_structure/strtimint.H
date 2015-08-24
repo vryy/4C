@@ -872,6 +872,12 @@ namespace STR
     //! write access to velocities at \f$t_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelnp() { return VelNew(); }
 
+    /// write access to displacements at \f$t^{n+1}\f$
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispn() { return Dis(); }
+
+    //! write access to velocities at \f$t_{n+1}\f$
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessVeln() { return Vel(); }
+
     //@}
 
     //! @name TSI specific methods

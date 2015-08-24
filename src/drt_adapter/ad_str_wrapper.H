@@ -396,6 +396,14 @@ namespace ADAPTER
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelnp()
     { return structure_->WriteAccessVelnp(); }
 
+    /// write access to extract displacements at \f$t^{n}\f$
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispn()
+    { return structure_->WriteAccessDispn(); }
+
+    /// write access to extract velocities at \f$t^{n}\f$
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessVeln()
+    { return structure_->WriteAccessVelnp(); }
+
     //@}
 
     /// extract rhs (used to calculate reaction force for post-processing)
