@@ -1124,6 +1124,7 @@ namespace ELEMENTS
     /*========================================================================*/
 
     int eid_;
+    DRT::Element* ele_;
 
     //! variable manager for Gauss point values
     Teuchos::RCP<ScaTraEleInternalVariableManager<nsd_,nen_> > scatravarmanager_;
@@ -1322,9 +1323,9 @@ namespace ELEMENTS
     //! return convective velocity
     virtual const double& Phin(const int k) const {return phin_[k];};
     //! return convective velocity
-    virtual const LINALG::Matrix<NSD,1>& ConVel() const {return convelint_;};
+    virtual const LINALG::Matrix<NSD,1>& ConVel(const int k=0) const {return convelint_;};
     //! return convective part in convective form
-    virtual const LINALG::Matrix<NEN,1>& Conv() const {return conv_;};
+    virtual const LINALG::Matrix<NEN,1>& Conv(const int k=0) const {return conv_;};
     //! return spatial gradient of all scalar values
     virtual const std::vector<LINALG::Matrix<NSD,1> >& GradPhi() const {return gradphi_;};
     //! return spatial gradient of current scalar value

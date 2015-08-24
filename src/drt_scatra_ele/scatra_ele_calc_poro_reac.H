@@ -26,10 +26,10 @@ namespace ELEMENTS
 {
 
 template<DRT::Element::DiscretizationType distype>
-class ScaTraEleCalcPoroReac : public ScaTraEleCalcPoro<distype>, public ScaTraEleCalcAdvReac<distype>
+class ScaTraEleCalcPoroReac : virtual public ScaTraEleCalcPoro<distype>, virtual public ScaTraEleCalcAdvReac<distype>
 {
-private:
-  /// private constructor, since we are a Singleton.
+protected:
+  /// protected constructor, since we are a Singleton.
   ScaTraEleCalcPoroReac(const int numdofpernode,const int numscal,const std::string& disname);
 
   typedef ScaTraEleCalc<distype> my;
@@ -75,17 +75,6 @@ protected:
 
   //! material ScaTra
   virtual void MatScaTra(
-    const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
-    const int                               k,        //!< id of current scalar
-    double&                                 densn,    //!< density at t_(n)
-    double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
-    double&                                 densam,   //!< density at t_(n+alpha_M)
-    double&                                 visc,      //!< fluid viscosity
-    const int                               iquad=-1   //!< id of current gauss point (default = -1)
-  );
-
-  //! material ScaTra
-  virtual void MatPoroECM(
     const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
     const int                               k,        //!< id of current scalar
     double&                                 densn,    //!< density at t_(n)

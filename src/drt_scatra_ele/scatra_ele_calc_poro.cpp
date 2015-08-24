@@ -367,7 +367,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::MatScaTra(
     dserror("no gauss point given for evaluation of scatra material. Check your input file.");
 
   //read the porosity from the diffusion manager
-  const double porosity = DiffManager()->GetPorosity();
+  const double porosity = DiffManager()->GetPorosity(k);
 
   const Teuchos::RCP<const MAT::ScatraMat>& actmat
     = Teuchos::rcp_dynamic_cast<const MAT::ScatraMat>(material);
@@ -455,7 +455,6 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ComputePorosity(
     xjm0.MultiplyNT(my::deriv_,xyze0_);
 
     // inverse of transposed jacobian "ds/dX"
-    LINALG::Matrix<my::nsd_,my::nsd_> xji0(true);
     const double det0= xjm0.Determinant();
 
     my::xjm_.MultiplyNT(my::deriv_,my::xyze_);
@@ -479,9 +478,14 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ComputePorosity(
       dserror("cast to MAT::StructPoro failed!");
 
     //just evaluate the first scalar (used only in case of reactive porosity)
-    //TODO: extend to multiple scalars
-    const double phinp = my::ephinp_[0].Dot(my::funct_);
-    params.set<double>("scalar",phinp);
+    Teuchos::RCP<std::vector<double> > scalars = Teuchos::rcp(new std::vector<double>(0));
+    for(int k=0;k<my::numscal_;++k)
+    {
+      const double phinp = my::ephinp_[k].Dot(my::funct_);
+      scalars->push_back(phinp);
+    }
+    params.set<Teuchos::RCP<std::vector<double> > >("scalar",scalars);
+
     params.set<double>("delta time",my::scatraparatimint_->Dt());
 
     //use structure material to evaluate porosity
@@ -526,18 +530,17 @@ const bool                      inverting
     //calculate gauss point porosity from fluid and solid and (potentially) scatra solution
     ComputePorosity(ele);
 
-    const double porosity = DiffManager()->GetPorosity();
-
     // calculate integrals of (inverted) scalar(s) and domain
     if (inverting)
     {
       for (int i=0; i<my::nen_; i++)
       {
-        const double fac_funct_i = fac*my::funct_(i)/porosity;
+        const double fac_funct_i = fac*my::funct_(i);
         for (int k = 0; k < my::numscal_; k++)
         {
+          const double porosity = DiffManager()->GetPorosity(k);
           if (std::abs(my::ephinp_[k](i,0))> EPS14)
-            scalars[k] += fac_funct_i/my::ephinp_[k](i,0);
+            scalars[k] += fac_funct_i/(my::ephinp_[k](i,0)*porosity);
           else
             dserror("Division by zero");
         }
@@ -549,10 +552,11 @@ const bool                      inverting
     {
       for (int i=0; i<my::nen_; i++)
       {
-        const double fac_funct_i = fac*my::funct_(i)*porosity;
+        const double fac_funct_i = fac*my::funct_(i);
         for (int k = 0; k < my::numscal_; k++)
         {
-          scalars[k] += fac_funct_i*my::ephinp_[k](i,0);
+          const double porosity = DiffManager()->GetPorosity(k);
+          scalars[k] += fac_funct_i*my::ephinp_[k](i,0)*porosity;;
         }
         // for domain volume
         scalars[my::numscal_] += fac_funct_i;

@@ -215,6 +215,10 @@ protected:
   This class keeps all poro-specific transport parameter needed for the evaluation of an element. The
   ScaTraEleDiffManagerPoro is derived from the standard ScaTraEleDiffManager.
 */
+
+////TODO: HACK
+//const int NO_CONVECTION_NR = 20;
+
 class ScaTraEleDiffManagerPoro : public ScaTraEleDiffManager
 {
   public:
@@ -231,15 +235,76 @@ class ScaTraEleDiffManagerPoro : public ScaTraEleDiffManager
       porosity_=porosity;
     }
 
-    double GetPorosity() const
+    double GetPorosity(const int k) const
     {
-      return porosity_;
+//      if(k<NO_CONVECTION_NR)
+        return porosity_;
+//      else
+//        return 1.0;
     }
 
   protected:
 
     //! porosity at gauss point
     double porosity_;
+};
+
+template<int NSD, int NEN>
+class ScaTraEleInternalVariableManagerPoro : public ScaTraEleInternalVariableManager<NSD, NEN>
+{
+  typedef ScaTraEleInternalVariableManager<NSD, NEN> my;
+
+public:
+
+  ScaTraEleInternalVariableManagerPoro(int numscal):
+    ScaTraEleInternalVariableManager<NSD, NEN>(numscal),
+    zeroconvel_(true),
+    zeroconv_(true),
+    zero_(0.0)
+  {return;}
+
+  virtual ~ScaTraEleInternalVariableManagerPoro(){};
+
+  /*========================================================================*/
+  //! @name return methods for internal variables
+  /*========================================================================*/
+
+  //! return convective velocity
+  virtual const LINALG::Matrix<NSD,1>& ConVel(const int k) const
+  {
+//    if(k<NO_CONVECTION_NR)
+//    {
+      return my::convelint_;
+//    }
+//    else
+//      return zeroconvel_;
+  };
+  //! return convective part in convective form
+  virtual const LINALG::Matrix<NEN,1>& Conv(const int k) const
+  {
+//    if(k<NO_CONVECTION_NR)
+//    {
+      return my::conv_;
+//    }
+//    else
+//      return zeroconv_;
+  };
+
+  //! return convective term of current scalar value
+  virtual const double& ConvPhi(const int k) const
+  {
+//    if(k<NO_CONVECTION_NR)
+//    {
+      return my::conv_phi_[k];
+//    }
+//    else
+//      return zero_;
+  };
+
+private:
+  LINALG::Matrix<NSD,1> zeroconvel_;
+  LINALG::Matrix<NEN,1> zeroconv_;
+  double zero_;
 };
 
 }

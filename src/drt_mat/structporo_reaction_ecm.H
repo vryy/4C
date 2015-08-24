@@ -174,7 +174,9 @@ namespace MAT
 
     protected:
 
-      virtual void Reaction(double cnp, double porosity,Teuchos::ParameterList& params);
+      virtual void Reaction(Teuchos::RCP<std::vector<double> >& scalars,
+                            double porosity,
+                            Teuchos::ParameterList& params);
 
       double refporosity_old_;
 

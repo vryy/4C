@@ -101,7 +101,7 @@
 
     <Parameter name="numDesiredLevel"          type="int"      value="3"/>
     <Parameter name="maxCoarseSize"            type="int"      value="1"/>
-    <Parameter name="verbosity"                type="string"   value="Low"/>
+    <Parameter name="verbosity"                type="string"   value="None"/>
 
     <ParameterList name="All">
       <Parameter name="startLevel"             type="int"      value="0"/>
@@ -193,7 +193,7 @@
 
     <Parameter name="numDesiredLevel"          type="int"      value="3"/>
     <Parameter name="maxCoarseSize"            type="int"      value="1"/>
-    <Parameter name="verbosity"                type="string"   value="Low"/>
+    <Parameter name="verbosity"                type="string"   value="None"/>
 
     <ParameterList name="All">
       <Parameter name="startLevel"             type="int"      value="0"/>

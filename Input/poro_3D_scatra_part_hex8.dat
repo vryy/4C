@@ -10,7 +10,10 @@
 General Data File CCARAT
 ==================================================================
 -----------------------------------------------------------------------TITLE
-created by pre_exodus
+Test 3D scalar transport within porous medium
+- partitioned
+- standard poro elements (darcy)
+- hex8 elements
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        125
 NODES                           216

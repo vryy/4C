@@ -220,14 +220,16 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   // scalar transport material (with potential reaction coefficient)
   {
     Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("MAT_scatraPoroECM",
+      = Teuchos::rcp(new MaterialDefinition("MAT_scatra_reaction_poro",
                                             "scalar transport material",
-                                            INPAR::MAT::m_scatra_poroECM));
+                                            INPAR::MAT::m_scatra_reaction_poroECM));
 
-    AddNamedReal(m,"DIFFUSIVITY","kinematic diffusivity");
-    AddNamedReal(m,"REACOEFF","reaction coefficient",0.0,true);
-    AddNamedReal(m,"SCNUM","schmidt number",0.0,true);
-    AddNamedReal(m,"DENSIFICATION","densification coefficient",0.0,true);
+    AddNamedInt(m,"NUMSCAL","number of reactions for these elements");
+    AddNamedIntVector(m,"STOICH","advanced reaction list","NUMSCAL");
+    AddNamedReal(m,"REACCOEFF","reaction coefficient");
+    AddNamedString(m,"COUPLING","type of coupling", "no_coupling",false);
+    AddNamedRealVector(m,"ROLE","role in michaelis-menten like reactions","NUMSCAL",-1.0,true);
+    AddNamedReal(m,"REACSTART","starting point of reaction",-1.0,true);
 
     AppendMaterialDefinition(matlist,m);
   }

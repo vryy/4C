@@ -26,6 +26,8 @@
 
 #include "../drt_mat/fluidporo.H"
 #include "../drt_mat/structporo.H"
+#include "../drt_mat/matlist.H"
+#include "../drt_mat/matlist_reactions.H"
 
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
@@ -55,17 +57,31 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::PreEvaluate(Teuchos::ParameterList& par
           = discretization.GetState(2,"scalar");
 
         // extract local values of the global vectors
-        Teuchos::RCP<std::vector<double> >myscalar = Teuchos::rcp(new std::vector<double>(la[2].lm_.size()) );
-        DRT::UTILS::ExtractMyValues(*scalarnp,*myscalar,la[2].lm_);
+        std::vector<double> myscalar (la[2].lm_.size());
+        DRT::UTILS::ExtractMyValues(*scalarnp,myscalar,la[2].lm_);
 
-        double scalar = 0.0;
-        for(unsigned int i=0; i<myscalar->size(); i++)
-           scalar += myscalar->at(i)/myscalar->size();
-//        const int dof = 0;
-//        for(int i=0; i<numnod_; i++)
-//          scalar += myscalar->at(i*numscal_+dof)/numnod_;
-        //params.set<Teuchos::RCP<std::vector<double> > >("scalar",mytemp);
-        params.set<double>("scalar",scalar);
+        if(NumMaterial()<2)
+          dserror("no second material defined for Wall poro element!");
+        Teuchos::RCP<MAT::Material> scatramat = Material(2);
+
+        int numscal=1;
+        if( scatramat->MaterialType() == INPAR::MAT::m_matlist or
+            scatramat->MaterialType() == INPAR::MAT::m_matlist_reactions
+            )
+        {
+          Teuchos::RCP<MAT::MatList> matlist = Teuchos::rcp_dynamic_cast<MAT::MatList>(scatramat);
+          numscal = matlist->NumMat();
+        }
+
+        Teuchos::RCP<std::vector<double> > scalar = Teuchos::rcp( new std::vector<double>(numscal,0.0) );
+        if((int)myscalar.size() != numscal*numnod_)
+          dserror("sizes do not match!");
+
+        for(int i=0; i<numnod_; i++)
+          for(int j=0; j<numscal; j++)
+            scalar->at(j) += myscalar[numscal*i+j]/numnod_;
+
+        params.set("scalar",scalar);
       }
     }
     else

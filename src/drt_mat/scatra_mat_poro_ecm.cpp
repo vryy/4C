@@ -25,7 +25,7 @@
 MAT::PAR::ScatraMatPoroECM::ScatraMatPoroECM(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
-: ScatraMat(matdata)
+: ScatraReactionMat(matdata)
 {
 }
 
@@ -48,7 +48,8 @@ DRT::ParObject* MAT::ScatraMatPoroECMType::Create( const std::vector<char> & dat
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::ScatraMatPoroECM::ScatraMatPoroECM()
-  : params_(NULL)
+  : params_(NULL),
+    reaccoeff_(0.0)
 {
 }
 
@@ -56,10 +57,76 @@ MAT::ScatraMatPoroECM::ScatraMatPoroECM()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::ScatraMatPoroECM::ScatraMatPoroECM(MAT::PAR::ScatraMatPoroECM* params)
-  :   ScatraMat(params),
+  :   ScatraReactionMat(params),
       params_(params)
 {
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ScatraMatPoroECM::Pack(DRT::PackBuffer& data) const
+{
+  DRT::PackBuffer::SizeMarker sm(data);
+  sm.Insert();
 
+  // pack type of this instance of ParObject
+  int type = UniqueParObjectId();
+  AddtoPack(data, type);
 
+  // matid
+  int matid = -1;
+  if (params_ != NULL)
+    matid = params_->Id(); // in case we are in post-process mode
+  AddtoPack(data, matid);
+
+  // reaccoeff_
+  AddtoPack(data,reaccoeff_);
+
+  // add base class material
+  ScatraReactionMat::Pack(data);
+
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ScatraMatPoroECM::Unpack(const std::vector<char>& data)
+{
+  std::vector<char>::size_type position = 0;
+  // extract type
+  int type = 0;
+  ExtractfromPack(position, data, type);
+  if (type != UniqueParObjectId())
+    dserror("wrong instance type data");
+
+  // matid
+  int matid;
+  ExtractfromPack(position,data,matid);
+  params_ = NULL;
+  if (DRT::Problem::Instance()->Materials() != Teuchos::null)
+    if (DRT::Problem::Instance()->Materials()->Num() != 0)
+    {
+      const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+      MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      if (mat->Type() == MaterialType())
+        params_ = static_cast<MAT::PAR::ScatraMatPoroECM*>(mat);
+      else
+        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
+    }
+
+  // reaccoeff_
+  ExtractfromPack(position,data,reaccoeff_);
+
+  // extract base class material
+  std::vector<char> basedata(0);
+  ExtractfromPack(position,data,basedata);
+  ScatraReactionMat::Unpack(basedata);
+
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ScatraMatPoroECM::ComputeReacCoeff(double structenergy)
+{
+  reaccoeff_ = params_->reaccoeff_*exp(-1.0*structenergy);
+  return;
+}

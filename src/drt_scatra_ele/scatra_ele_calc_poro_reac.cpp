@@ -96,7 +96,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::GetMaterialParams(
   //call poro base class to compute porosity
   poro::ComputePorosity(ele);
 
-  //call advreac base class to evaluate porosity
+  //call advreac base class
   advreac::GetMaterialParams(ele,densn,densnp,densam,visc,iquad);
 
   return;
@@ -121,9 +121,6 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::Materials(
   case INPAR::MAT::m_scatra:
     MatScaTra(material,k,densn,densnp,densam,visc,iquad);
     break;
-  case INPAR::MAT::m_scatra_poroECM:
-    MatPoroECM(material,k,densn,densnp,densam,visc,iquad);
-    break;
   default:
     dserror("Material type %i is not supported",material->MaterialType());
    break;
@@ -146,47 +143,6 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::MatScaTra(
   )
 {
   poro::MatScaTra(material,k,densn,densnp,densam,visc,iquad);
-
-  return;
-} // ScaTraEleCalcPoroReac<distype>::MatScaTra
-
-/*----------------------------------------------------------------------*
- |  Material ScaTra                                          thon 02/14 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::MatPoroECM(
-  const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
-  const int                               k,        //!< id of current scalar
-  double&                                 densn,    //!< density at t_(n)
-  double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
-  double&                                 densam,   //!< density at t_(n+alpha_M)
-  double&                                 visc,     //!< fluid viscosity
-  const int                               iquad     //!< id of current gauss point
-  )
-{
-  MatScaTra(material,k,densn,densnp,densam,visc,iquad);
-
-  //Todo: clean up
-  //access structure discretization
-  Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
-  structdis = DRT::Problem::Instance()->GetDis("structure");
-  //get corresponding fluid element (it has the same global ID as the scatra element)
-  DRT::Element* structele = structdis->gElement(my::eid_);
-  if (structele == NULL)
-    dserror("Structure element %i not on local processor", my::eid_);
-
-  const Teuchos::RCP<const MAT::StructPoroReactionECM>& structmat
-            = Teuchos::rcp_dynamic_cast<const MAT::StructPoroReactionECM>(structele->Material());
-  if(structmat == Teuchos::null)
-    dserror("invalid structure material for reactive poroelasticity model for ECM");
-
-  // dynamic cast to Advanced_Reaction-specific reaction manager
-  Teuchos::RCP<ScaTraEleReaManagerAdvReac> reamanageradvreac = advreac::ReaManager();
-
-  const double porosity = poro::DiffManager()->GetPorosity();
-  const double bodyforce = structmat->BodyForceTerm(porosity);
-  const double bodyforce_old = reamanageradvreac->GetReaBodyForce(k);
-  reamanageradvreac->AddToReaBodyForce(bodyforce_old+bodyforce,k);
 
   return;
 } // ScaTraEleCalcPoroReac<distype>::MatScaTra

@@ -3461,11 +3461,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<std::string>(
                                  "Undefined",
                                  "Poroscatra",
-                                 "Poro_Scatra_Reaction"),
+                                 "Poro_Scatra_Reaction",
+                                 "Poro_Scatra_Reaction_ECM"),
                                tuple<int>(
                                  INPAR::SCATRA::impltype_undefined,
                                  INPAR::SCATRA::impltype_poro,
-                                 INPAR::SCATRA::impltype_pororeac),
+                                 INPAR::SCATRA::impltype_pororeac,
+                                 INPAR::SCATRA::impltype_pororeacECM),
                                  &poroscatradyn);
 
   /*----------------------------------------------------------------------*/

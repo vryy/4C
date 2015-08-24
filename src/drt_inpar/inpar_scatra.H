@@ -185,6 +185,7 @@ namespace INPAR
       impltype_poro,
       impltype_advreac,
       impltype_pororeac,
+      impltype_pororeacECM,
       impltype_aniso,
       impltype_std_meshfree,
       impltype_cardiac_monodomain,

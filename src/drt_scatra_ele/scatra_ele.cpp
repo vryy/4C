@@ -366,18 +366,17 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
       for (int ii=0; ii<numdofpernode_; ++ii)
       {
         // In the context of reactions the only valid material combination is m_matlist and m_scatra
-        if( actmat->MaterialById(actmat->MatID(ii))->MaterialType() != INPAR::MAT::m_scatra and
-            actmat->MaterialById(actmat->MatID(ii))->MaterialType() != INPAR::MAT::m_scatra_poroECM
-          )
-          dserror("The material Mat_matlist_reaction only supports MAT_scatra and m_scatra_poroECM as valid main Material");
+        if( actmat->MaterialById(actmat->MatID(ii))->MaterialType() != INPAR::MAT::m_scatra)
+          dserror("The material Mat_matlist_reaction only supports MAT_scatra as valid main Material");
       }
 
       int numreac = actmat->NumReac();
       for (int jj=0; jj<numreac; ++jj)
       {
         // In the context of reactions the only valid material combination is m_matlist and m_scatra_reaction
-        if(actmat->MaterialById(actmat->ReacID(jj))->MaterialType() != INPAR::MAT::m_scatra_reaction)
-          dserror("The material MAT_matlist_reaction only supports MAT_scatra_reaction as valid reaction Material");
+        if(actmat->MaterialById(actmat->ReacID(jj))->MaterialType() != INPAR::MAT::m_scatra_reaction and
+           actmat->MaterialById(actmat->ReacID(jj))->MaterialType() != INPAR::MAT::m_scatra_reaction_poroECM)
+          dserror("The material MAT_matlist_reaction only supports MAT_scatra_reaction and MAT_scatra_reaction_poro as valid reaction Material");
 
         // some safty check for the MAT_scatra_reaction materials
         const Teuchos::RCP<const MAT::ScatraReactionMat>& reacmat = Teuchos::rcp_static_cast<const MAT::ScatraReactionMat>(actmat->MaterialById(actmat->ReacID(jj)));

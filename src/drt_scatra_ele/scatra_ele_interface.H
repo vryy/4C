@@ -21,12 +21,12 @@ Maintainer: Andreas Ehrl
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_SerialDenseMatrix.h"
 #include "../drt_lib/drt_singletondestruction.H"
+#include "../drt_lib/drt_element.H"
 
 namespace DRT
 {
   class Discretization;
   class Element;
-  class LocationArray;
 
 namespace ELEMENTS
 {

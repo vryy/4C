@@ -152,41 +152,27 @@ void MAT::StructPoroReactionECM::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::StructPoroReactionECM::Reaction(double cnp,
+void MAT::StructPoroReactionECM::Reaction(Teuchos::RCP<std::vector<double> >& scalars,
                                           double porosity,
                                           Teuchos::ParameterList& params)
 {
   double dt = params.get<double>("delta time",-1.0);
   //double time = params.get<double>("total time",-1.0);
 
-//  if(time==-1.0)
-//    dserror("time step or total time not available");
+  //concentration MMP2
+  //double mmp2 = scalars->at(0);
+  //concentration C1
+  double c1 = scalars->at(3);
 
   if(dt < 0.0)
     dserror("time step not available");
 
-  double theta = 0.66;
-
-  double k_on_m2c1 = 1.0;
-  double k_off_m2c1 = 1.0;
-
-  double k_on_c1 = 1.0;
-  double k_off_c1 = 1.0;
-
-  conc_m2c1_ = (  conc_m2c1_old_
-               + dt*theta * k_on_m2c1*porosity*(1.0-porosity)*cnp
-               - dt*(1.0-theta)*conc_m2c1dot_old_
-               )/(1.0+dt*theta*k_off_m2c1);
-
-  conc_m2c1dot_ = k_on_m2c1*porosity*cnp - k_off_m2c1 *conc_m2c1_;
-
-  refporosity_ =  refporosity_old_
-               - dt*theta * ( - k_on_c1*porosity*(1.0-porosity)*cnp + k_off_c1*conc_m2c1_ )
-               + dt*(1.0-theta)*refporositydot_old_
-               ;
+  double c1_init = 1.0;
 
   //Todo: multiply by J!
-  refporositydot_ = - k_on_c1*porosity*(1.0-porosity)*cnp + k_off_c1 *conc_m2c1_;
+  refporosity_ = params_->initporosity_ * exp( 0.1*(c1_init-c1) );
+  refporositydot_ = (refporosity_ - refporosity_old_)/dt;
+
 
 }
 
@@ -217,8 +203,6 @@ void MAT::StructPoroReactionECM::VisNames(std::map<std::string,int>& names)
 {
   //call base class
   StructPoroReaction::VisNames(names);
-  std::string name = "concentration_M2C1";
-  names[name] = 1; // scalar
 }
 
 /*----------------------------------------------------------------------*
@@ -228,12 +212,6 @@ bool MAT::StructPoroReactionECM::VisData(const std::string& name, std::vector<do
   //call base class
   if (StructPoroReaction::VisData(name,data,numgp,eleID))
     return true;
-  else if (name=="concentration_M2C1")
-  {
-    if ((int)data.size()!=1) dserror("size mismatch");
-    data[0] = conc_m2c1_;
-    return true;
-  }
   return false;
 }
 

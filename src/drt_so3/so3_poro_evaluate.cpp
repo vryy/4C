@@ -24,6 +24,8 @@
 
 #include "../drt_mat/fluidporo.H"
 #include "../drt_mat/structporo.H"
+#include "../drt_mat/matlist.H"
+#include "../drt_mat/matlist_reactions.H"
 
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
@@ -51,26 +53,38 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::PreEvaluate(Teuchos::ParameterLis
   {
     if(la.Size()>2)
     {
-      //ask for the number ofs dofs of second dofset (fluid)
-      const int numdofpernode = discretization.NumDof(1,Nodes()[0]);
-
-      if (la[1].Size() != numnod_*numdofpernode)
-        dserror("calc_struct_nlnstiff: Location vector length for velocities does not match!");
-
-      if (discretization.HasState(1,"scalar"))
+      if (discretization.HasState(2,"scalar"))
       {
         // check if you can get the scalar state
         Teuchos::RCP<const Epetra_Vector> scalarnp
-          = discretization.GetState(1,"scalar");
-
-        if (scalarnp==Teuchos::null)
-          dserror("calc_struct_nlnstiff: Cannot get state vector 'fluidvel' ");
+          = discretization.GetState(2,"scalar");
 
         // extract local values of the global vectors
-        Teuchos::RCP<std::vector<double> >myscalar = Teuchos::rcp(new std::vector<double>(la[1].lm_.size()) );
-        DRT::UTILS::ExtractMyValues(*scalarnp,*myscalar,la[1].lm_);
+        std::vector<double> myscalar (la[2].lm_.size());
+        DRT::UTILS::ExtractMyValues(*scalarnp,myscalar,la[2].lm_);
 
-        params.set<Teuchos::RCP<std::vector<double> > >("scalar",myscalar);
+        if(so3_ele::NumMaterial()<2)
+          dserror("no second material defined for Wall poro element!");
+        Teuchos::RCP<MAT::Material> scatramat = so3_ele::Material(2);
+
+        int numscal=1;
+        if( scatramat->MaterialType() == INPAR::MAT::m_matlist or
+            scatramat->MaterialType() == INPAR::MAT::m_matlist_reactions
+            )
+        {
+          Teuchos::RCP<MAT::MatList> matlist = Teuchos::rcp_dynamic_cast<MAT::MatList>(scatramat);
+          numscal = matlist->NumMat();
+        }
+
+        Teuchos::RCP<std::vector<double> > scalar = Teuchos::rcp( new std::vector<double>(numscal,0.0) );
+        if((int)myscalar.size() != numscal*numnod_)
+          dserror("sizes do not match!");
+
+        for(int i=0; i<numnod_; i++)
+          for(int j=0; j<numscal; j++)
+            scalar->at(j) += myscalar[numscal*i+j]/numnod_;
+
+        params.set("scalar",scalar);
       }
     }
     else

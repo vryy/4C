@@ -249,7 +249,7 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     MAT::PAR::ScatraMat* params = static_cast<MAT::PAR::ScatraMat*>(curmat->Parameter());
     return params->CreateMaterial();
   }
-  case INPAR::MAT::m_scatra_poroECM:
+  case INPAR::MAT::m_scatra_reaction_poroECM:
   {
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::ScatraMatPoroECM(curmat));

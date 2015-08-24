@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file StructPoroReaction_reaction.cpp
+ \file structporo_reaction.cpp
 
  \brief wrapper for structure material of porous media including reactive reference porosity
 
@@ -148,8 +148,8 @@ void MAT::StructPoroReaction::ComputePorosity( Teuchos::ParameterList& params,
                                        bool save)
 {
   //evaluate change of reference porosity due to reaction
-  double cnp = params.get<double>("scalar");
-  Reaction(cnp,porosity,params);
+  Teuchos::RCP<std::vector<double> > scalars = params.get<Teuchos::RCP<std::vector<double> > >("scalar");
+  Reaction(scalars,porosity,params);
 
   //call base class to compute porosity
   StructPoro::ComputePorosity(
@@ -183,8 +183,8 @@ void MAT::StructPoroReaction::ConstitutiveDerivatives(Teuchos::ParameterList& pa
     dserror("porosity equals zero!! Wrong initial porosity?");
 
   //evaluate change of reference porosity due to reaction
-  double cnp = params.get<double>("scalar");
-  Reaction(cnp,porosity,params);
+  Teuchos::RCP<std::vector<double> > scalars = params.get<Teuchos::RCP<std::vector<double> > >("scalar");
+  Reaction(scalars,porosity,params);
 
   //call base class
   StructPoro::ConstitutiveDerivatives(params,
@@ -202,23 +202,30 @@ void MAT::StructPoroReaction::ConstitutiveDerivatives(Teuchos::ParameterList& pa
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::StructPoroReaction::Reaction(double cnp,
+void MAT::StructPoroReaction::Reaction(Teuchos::RCP<std::vector<double> >& scalars,
                                        double porosity,
                                        Teuchos::ParameterList& params)
 {
   //double dt = params.get<double>("delta time",-1.0);
   double time = params.get<double>("total time",-1.0);
 
-  if(time==-1.0)
-    return;
-//    dserror("time step or total time not available");
+  //only use first scalar for this type of reaction
+  double cnp = scalars->at(0);
 
- // double k = 1.0;
-  double tau = 200.0*cnp;///(cnp+k); 20.0/(20*cnp+1.0)
-  double limitporosity = 0.45; //0.8;
+  if(time!=-1.0)
+  {
+   // double k = 1.0;
+    double tau = 200.0*cnp;///(cnp+k); 20.0/(20*cnp+1.0)
+    double limitporosity = 0.45; //0.8;
 
-  refporosity_= limitporosity - (limitporosity - params_->initporosity_)* exp(-1.0*time/tau);
-  refporositydot_= (limitporosity - params_->initporosity_)/tau * exp(-1.0*time/tau);
+    refporosity_= limitporosity - (limitporosity - params_->initporosity_)* exp(-1.0*time/tau);
+    refporositydot_= (limitporosity - params_->initporosity_)/tau * exp(-1.0*time/tau);
+  }
+  else //(time==-1.0) -> time not set (this happens during setup-> no reaction)
+  {
+    //do nothing
+  }
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -237,10 +244,6 @@ void MAT::StructPoroReaction::Evaluate(const LINALG::Matrix<3,3>* defgrd,    ///
                         stress,
                         cmat,
                         eleGID);
-
-  //evaluate change of reference porosity due to reaction
-  double cnp = params.get<double>("scalar");
-  Reaction(cnp,-1.0,params);
 
   //scale stresses and cmat
   stress->Scale((1.0-refporosity_)/(1.0-params_->initporosity_));

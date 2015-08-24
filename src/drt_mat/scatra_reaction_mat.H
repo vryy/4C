@@ -156,7 +156,7 @@ private:
     int NumScal() const { return params_->numscal_; }
 
     /// return reaction coefficient
-    double ReacCoeff() const { return params_->reaccoeff_; }
+    virtual double ReacCoeff() const { return params_->reaccoeff_; }
 
     /// return stoichometrie
     std::vector<int>* Stoich() const { return (std::vector<int>*)params_->stoich_; }

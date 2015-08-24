@@ -1611,8 +1611,10 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(
      porosity_=0.0;
 
      // compute scalar at n+alpha_F or n+1
+     Teuchos::RCP<std::vector<double> > scalars = Teuchos::rcp(new std::vector<double>(0));
      const double scalaraf = my::funct_.Dot(escaaf);
-     params.set<double>("scalar",scalaraf);
+     scalars->push_back(scalaraf);
+     params.set<Teuchos::RCP<std::vector<double> > >("scalar",scalars);
 
      ComputePorosity(  params,
                        press_,
@@ -2305,8 +2307,11 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoopOD(
     porosity_=0.0;
 
     // compute scalar at n+alpha_F or n+1
+    Teuchos::RCP<std::vector<double> > scalars = Teuchos::rcp(new std::vector<double>(0));
     const double scalaraf = my::funct_.Dot(escaaf);
-    params.set<double>("scalar",scalaraf);
+    scalars->push_back(scalaraf);
+    params.set<Teuchos::RCP<std::vector<double> > >("scalar",scalars);
+
     ComputePorosity(  params,
                       press_,
                       J_,

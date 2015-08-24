@@ -1110,6 +1110,7 @@ set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra_ele/scatra_ele_calc_chemo.cpp
   src/drt_scatra_ele/scatra_ele_calc_chemo_reac.cpp
   src/drt_scatra_ele/scatra_ele_calc_poro_reac.cpp
+  src/drt_scatra_ele/scatra_ele_calc_poro_reac_ECM.cpp
   src/drt_scatra_ele/scatra_ele_calc_utils.cpp
   src/drt_scatra_ele/scatra_ele_parameter_std.cpp
   src/drt_scatra_ele/scatra_ele_parameter_lsreinit.cpp

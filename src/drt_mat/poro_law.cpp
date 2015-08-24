@@ -272,7 +272,7 @@ void MAT::PAR::PoroLawConstant::ConstitutiveDerivatives(
     double*    dW_dJ,
     double*    W)
 {
-  if(W)       *W       = 0.0;
+  if(W)       *W       = porosity-refporosity;
   if(dW_dp)   *dW_dp   = 0.0;
   if(dW_dphi) *dW_dphi = 1.0;
   if(dW_dJ)   *dW_dJ   = 0.0;
