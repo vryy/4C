@@ -210,6 +210,26 @@ public:
   void Add(const std::string& name, Teuchos::RCP<std::vector<double> > data);
 
   /*!
+  \brief Add a map of vectors of doubles to the container
+
+  \param name : Name of data to store data with
+  \param data : map of vector of doubles to be added
+
+  \note If record with name name already exists, it will be overwritten
+  */
+  void Add(const std::string& name, const std::map<int,std::vector<double> >& data);
+
+   /*!
+  \brief Add Teuchos::rcp to map of vector of doubles to the container
+
+  \param name : Name of data to store data with
+  \param data : Teuchos::rcp to map of vector of doubles to be added
+
+  \note If record with name name already exists, it will be overwritten
+  */
+  void Add(const std::string& name, Teuchos::RCP<std::map<int, std::vector<double> > > data);
+
+  /*!
   \brief Add a string to the container
 
   \param name : Name of data to store data with
@@ -439,7 +459,7 @@ public:
   */
   void Clear()
   {
-    intdata_.clear(); doubledata_.clear(); stringdata_.clear(); matdata_.clear();
+    intdata_.clear(); doubledata_.clear(); mapdata_.clear(); stringdata_.clear(); matdata_.clear();
     return;
   }
 
@@ -457,6 +477,11 @@ public:
             std::map<std::string,Teuchos::RCP<std::vector<double> > >::const_iterator>
   DoubleRange()
   { return std::make_pair( doubledata_.begin(), doubledata_.end() ); }
+
+  std::pair<std::map<std::string,Teuchos::RCP<std::map<int,std::vector<double> > > >::const_iterator,
+            std::map<std::string,Teuchos::RCP<std::map<int,std::vector<double> > > >::const_iterator>
+  MapRange()
+  { return std::make_pair( mapdata_.begin(), mapdata_.end() ); }
 
   std::pair<std::map<std::string,std::string>::const_iterator,
             std::map<std::string,std::string>::const_iterator>
@@ -483,13 +508,16 @@ private:  // these methods are for PURE internal use
 protected:
 
   //! a map to store integer data in
-  std::map<std::string,Teuchos::RCP<std::vector<int> > >             intdata_;
+  std::map<std::string,Teuchos::RCP<std::vector<int> > >        intdata_;
 
   //! a map to store double data in
-  std::map<std::string,Teuchos::RCP<std::vector<double> > >          doubledata_;
+  std::map<std::string,Teuchos::RCP<std::vector<double> > >     doubledata_;
+
+  //! a map to store maps of stl vector data
+  std::map<std::string,Teuchos::RCP<std::map<int,std::vector<double> > > >     mapdata_;
 
   //! a map to store string data in
-  std::map<std::string,std::string>                         stringdata_;
+  std::map<std::string,std::string>                             stringdata_;
 
   //! a map to store matrices in
   std::map<std::string,Teuchos::RCP<Epetra_SerialDenseMatrix> > matdata_;

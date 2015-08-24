@@ -53,6 +53,10 @@ stringdata_(old.stringdata_)
   for (dfool=old.doubledata_.begin(); dfool!=old.doubledata_.end(); ++dfool)
     doubledata_[dfool->first] = Teuchos::rcp(new std::vector<double>(*(dfool->second)));
 
+  std::map<std::string,Teuchos::RCP<std::map<int,std::vector<double> > > >::const_iterator mfool;
+  for (mfool=old.mapdata_.begin(); mfool!=old.mapdata_.end(); ++mfool)
+    mapdata_[mfool->first] = Teuchos::rcp(new std::map<int, std::vector<double> >(*(mfool->second)));
+
   std::map<std::string,Teuchos::RCP<Epetra_SerialDenseMatrix> >::const_iterator curr;
   for (curr=old.matdata_.begin();curr!=old.matdata_.end(); ++curr)
     matdata_[curr->first] = Teuchos::rcp(new Epetra_SerialDenseMatrix(*(curr->second)));
@@ -103,6 +107,7 @@ void DRT::Container::Pack(DRT::PackBuffer& data) const
   // no. of objects in maps
   const int indatasize = intdata_.size();
   const int doubledatasize = doubledata_.size();
+  const int mapdatasize = mapdata_.size();
   const int stringdatasize = stringdata_.size();
   const int matdatasize = matdata_.size();
 
@@ -113,6 +118,8 @@ void DRT::Container::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,indatasize);
   // doubledatasize
   AddtoPack(data,doubledatasize);
+  // mapdatasize
+  AddtoPack(data,mapdatasize);
   // stringdatasize
   AddtoPack(data,stringdatasize);
   // matdatasize
@@ -130,6 +137,13 @@ void DRT::Container::Pack(DRT::PackBuffer& data) const
   {
     AddtoPack(data,dcurr->first);
     AddtoPack(data,*(dcurr->second));
+  }
+  // iterate though mapdata_ and add to pack
+  std::map<std::string,Teuchos::RCP<std::map<int,std::vector<double> > > >::const_iterator mpcurr;
+  for (mpcurr = mapdata_.begin(); mpcurr != mapdata_.end(); ++mpcurr)
+  {
+    AddtoPack(data,mpcurr->first);
+    AddtoPack(data,*(mpcurr->second));
   }
   // iterate through stringdata_ and add to pack
   std::map<std::string,std::string>::const_iterator scurr;
@@ -169,6 +183,9 @@ void DRT::Container::Unpack(const std::vector<char>& data)
   // extract no. objects in doubledata_
   int doubledatasize = 0;
   ExtractfromPack(position,data,doubledatasize);
+  // extract no. objects in mapdata_
+  int mapdatasize = 0;
+  ExtractfromPack(position,data,mapdatasize);
   // extract no. objects in stringdata_
   int stringdatasize = 0;
   ExtractfromPack(position,data,stringdatasize);
@@ -192,6 +209,16 @@ void DRT::Container::Unpack(const std::vector<char>& data)
     std::string key;
     ExtractfromPack(position,data,key);
     std::vector<double> value(0);
+    ExtractfromPack(position,data,value);
+    Add(key,value);
+  }
+
+  // iterate though records of doubledata_ and extract
+  for (int i=0; i<mapdatasize; ++i)
+  {
+    std::string key;
+    ExtractfromPack(position,data,key);
+    std::map<int,std::vector<double> > value;
     ExtractfromPack(position,data,value);
     Add(key,value);
   }
@@ -245,6 +272,20 @@ void DRT::Container::Print(std::ostream& os) const
     std::vector<double>& data = *(dcurr->second);
     os << dcurr->first << " : ";
     for (int i=0; i<(int)data.size(); ++i) os << data[i] << " ";
+    //os << endl;
+  }
+
+  std::map<std::string,Teuchos::RCP<std::map<int,std::vector<double> > > >::const_iterator mcurr;
+  for (mcurr = mapdata_.begin(); mcurr != mapdata_.end(); ++mcurr)
+  {
+    std::map<int, std::vector<double> >& data = *(mcurr->second);
+    os << mcurr->first << " : ";
+    std::map<int,std::vector<double> >::const_iterator micurr;
+    for (micurr=data.begin(); micurr !=data.end(); ++micurr)
+    {
+      os << micurr->first << " : ";
+      for (int i=0; i<(int)micurr->second.size(); ++i) os << micurr->second[i] << " ";
+    }
     //os << endl;
   }
 
@@ -312,6 +353,26 @@ void DRT::Container::Add(const std::string& name, const double* data, const int 
 void DRT::Container::Add(const std::string& name, Teuchos::RCP<std::vector<double> > data)
 {
   doubledata_[name] = data;
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Add stuff to the container                                 (public) |
+ |                                                           kehl 08/15 |
+ *----------------------------------------------------------------------*/
+void DRT::Container::Add(const std::string& name, Teuchos::RCP<std::map<int,std::vector<double> > > data)
+{
+  mapdata_[name] = data;
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Add stuff to the container                                 (public) |
+ |                                                           kehl 08/15 |
+ *----------------------------------------------------------------------*/
+void DRT::Container::Add(const std::string& name, const std::map<int,std::vector<double> >& data)
+{
+  mapdata_[name] = Teuchos::rcp(new std::map<int,std::vector<double> >(data));
   return;
 }
 
@@ -386,6 +447,13 @@ void DRT::Container::Delete(const std::string& name)
     return;
   }
 
+  std::map<std::string,Teuchos::RCP<std::map<int,std::vector<double> > > >::iterator mcurr = mapdata_.find(name);
+  if (mcurr != mapdata_.end())
+  {
+    mapdata_.erase(name);
+    return;
+  }
+
   std::map<std::string,std::string>::iterator scurr = stringdata_.find(name);
   if (scurr != stringdata_.end())
   {
@@ -440,6 +508,17 @@ namespace DRT
       return dcurr->second.get();
     else return NULL;
   }
+  /*----------------------------------------------------------------------*
+   |  Get a std::map<int,std::vector<double>> specialization     (public) |
+   |                                                           kehl 08/15 |
+   *----------------------------------------------------------------------*/
+    template<> const std::map<int, std::vector<double> >* Container::Get(const std::string& name) const
+    {
+      std::map<std::string,Teuchos::RCP<std::map<int,std::vector<double> > > >::const_iterator mcurr = mapdata_.find(name);
+      if (mcurr != mapdata_.end())
+        return mcurr->second.get();
+      else return NULL;
+    }
 /*----------------------------------------------------------------------*
  |  Get a string specialization                                (public) |
  |                                                            gee 02/07 |
@@ -512,6 +591,17 @@ namespace DRT
     std::map<std::string,Teuchos::RCP<std::vector<double> > >::iterator dcurr = doubledata_.find(name);
     if (dcurr != doubledata_.end())
       return dcurr->second.get();
+    else return NULL;
+  }
+/*----------------------------------------------------------------------*
+ |  Get a std::vector<double> specialization                   (public) |
+ |                                                            gee 02/07 |
+ *----------------------------------------------------------------------*/
+  template<> std::map<int,std::vector<double> >* Container::GetMutable(const std::string& name)
+  {
+    std::map<std::string,Teuchos::RCP<std::map<int,std::vector<double> > > >::iterator mcurr = mapdata_.find(name);
+    if (mcurr != mapdata_.end())
+      return mcurr->second.get();
     else return NULL;
   }
 /*----------------------------------------------------------------------*
