@@ -47,6 +47,7 @@ TARGETDISCRETIZATION            invana_arch_surfcurr_prestress_pc_target.dat
 SIZESTORAGE                     100
 METAPARAMS                      yes
 KERNELSCALE                     1.0
+PRESTRESS                       mulf
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
