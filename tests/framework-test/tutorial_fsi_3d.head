@@ -1,0 +1,2456 @@
+//
+-----------------------------------------------------DISCRETISATION
+//
+// Number of meshes in fluid field
+NUMFLUIDDIS                     1
+//
+// Number of meshes in structural field
+NUMSTRUCDIS                     1
+//
+// Number of meshes in ale field
+NUMALEDIS                       1
+//
+// Number of meshes in arterial network field
+NUMARTNETDIS                    1
+//
+// Number of meshes in thermal field
+NUMTHERMDIS                     1
+//
+// Number of meshes in reduced dimensional airways network field
+NUMAIRWAYSDIS                   1
+//
+--------------------------------------------------------PROBLEM TYP
+//
+//     Acoustics
+//     AeroCode_Thermo_Fluid_Structure_Interaction
+//     Ale
+//     ArterialNetwork
+//     Atherosclerosis_Fluid_Structure_Interaction
+//     Biofilm_Fluid_Structure_Interaction
+//     Cardiac_Monodomain
+//     Cavitation
+//     Combustion
+//     Crack
+//     Electrochemistry
+//     Fluid
+//     Fluid_Ale
+//     Fluid_Freesurface
+//     Fluid_Poro_Structure_Interaction_XFEM
+//     Fluid_Porous_Structure_Interaction
+//     Fluid_Porous_Structure_Scalar_Scalar_Interaction
+//     Fluid_RedModels
+//     Fluid_Structure_Crack_Interaction
+//     Fluid_Structure_Interaction
+//     Fluid_Structure_Interaction_Lung
+//     Fluid_Structure_Interaction_RedModels
+//     Fluid_Structure_Interaction_XFEM
+//     Fluid_Top_Opt
+//     Fluid_XFEM
+//     Fluid_XFEM_LevelSet
+//     Gas_Fluid_Structure_Interaction
+//     Immersed_ALE_FSI
+//     Immersed_CellMigration
+//     Immersed_FSI
+//     Inverse_Analysis
+//     Level_Set
+//     Low_Mach_Number_Flow
+//     NP_Supporting_Procs
+//     Particle
+//     Poroelastic_scalar_transport
+//     Poroelasticity
+//     RedAirways_Tissue
+//     ReducedDimensionalAirWays
+//     Scalar_Thermo_Interaction
+//     Scalar_Transport
+//     StatMech
+//     Structure
+//     Structure_Ale
+//     Structure_Scalar_Interaction
+//     Thermo
+//     Thermo_Fluid_Structure_Interaction
+//     Thermo_Structure_Interaction
+//     Two_Phase_Flow
+//     UQ
+PROBLEMTYP                      Fluid_Structure_Interaction
+//
+RESTART                         0
+//
+// Used defined restart time
+RESTARTTIME                     -1
+//
+// Defines the function spaces for the spatial approximation
+//     Polynomial,Nurbs,Meshfree,HDG
+SHAPEFCT                        Polynomial
+//
+// Set the random seed. If < 0 use current time.
+RANDSEED                        -1
+//
+
+-----------------------------------------------------------------IO
+//
+//     Yes,No,yes,no,YES,NO
+OUTPUT_GMSH                     No
+//
+// Do you want to have binary output?
+//     Yes,No,yes,no,YES,NO
+OUTPUT_BIN                      yes
+//
+// Do you desire structural displ. output every Newton iteration
+//     Yes,No,yes,no,YES,NO
+OUTPUT_EVERY_ITER               no
+//
+// Add an output name affix by introducing a additional number
+OEI_FILE_COUNTER                0
+//
+// Output of displacements
+//     Yes,No,yes,no,YES,NO
+STRUCT_DISP                     Yes
+//
+// Output of velocity and acceleration
+//     Yes,No,yes,no,YES,NO
+STRUCT_VEL_ACC                  No
+//
+// Output of strain energy
+//     Yes,No,yes,no,YES,NO
+STRUCT_SE                       No
+//
+// Output of stress
+//     No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
+STRUCT_STRESS                   No
+//
+//     No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
+STRUCT_COUPLING_STRESS          No
+//
+// Output of strains
+//     No,no,NO,Yes,yes,YES,EA,ea,GL,gl,LOG,log
+STRUCT_STRAIN                   No
+//
+//     No,no,NO,Yes,yes,YES,EA,ea,GL,gl
+STRUCT_PLASTIC_STRAIN           No
+//
+//     Yes,No,yes,no,YES,NO
+STRUCT_SURFACTANT               No
+//
+//     Yes,No,yes,no,YES,NO
+FLUID_SOL                       Yes
+//
+//     Yes,No,yes,no,YES,NO
+FLUID_STRESS                    No
+//
+//     Yes,No,yes,no,YES,NO
+FLUID_WALL_SHEAR_STRESS         No
+//
+//     Yes,No,yes,no,YES,NO
+FLUID_ELEDATA_EVRY_STEP         No
+//
+//     Yes,No,yes,no,YES,NO
+FLUID_VIS                       No
+//
+//     Yes,No,yes,no,YES,NO
+THERM_TEMPERATURE               No
+//
+//     None,No,NO,no,Current,Initial
+THERM_HEATFLUX                  None
+//
+//     None,No,NO,no,Current,Initial
+THERM_TEMPGRAD                  None
+//
+// Amount of timesteps written to a single result file
+FILESTEPS                       1000
+//
+// Print to screen every n step
+STDOUTEVRY                      1
+//
+// Write screen output
+//     Yes,No,yes,no,YES,NO
+WRITE_TO_SCREEN                 Yes
+//
+// Write the output into a file
+//     Yes,No,yes,no,YES,NO
+WRITE_TO_FILE                   No
+//
+// Put a <GroupID>: in front of every line
+//     Yes,No,yes,no,YES,NO
+PREFIX_GROUP_ID                 No
+//
+// Only the specified procs will write output
+LIMIT_OUTP_TO_PROC              -1
+//
+// number of nodal clouds
+-------------------------------------------------DESIGN DESCRIPTION
+//
+// number of points
+NDPOINT                         0
+//
+// number of line clouds
+NDLINE                          0
+//
+// number of surface clouds
+NDSURF                          0
+//
+// number of volume clouds
+NDVOL                           0
+//
+// number of particle clouds
+NDPARTICLE                      0
+//
+-------------------------------------------------STRUCTURAL DYNAMIC
+//
+// type of time integration control
+//     Statics
+//     GenAlpha
+//     OneStepTheta
+//     GEMM
+//     ExplicitEuler
+//     CentrDiff
+//     AdamsBashforth2
+//     EulerMaruyama
+//     EulerImpStoch
+//     StatMech
+DYNAMICTYP                      GenAlpha
+//
+// prestressing takes values none mulf id
+//     none,None,NONE,mulf,Mulf,MULF,id,Id,ID
+PRESTRESS                       none
+//
+// time to switch from pre to post stressing
+PRESTRESSTIME                   0
+//
+// save displacements and contact forces every RESULTSEVRY steps
+RESULTSEVRY                     1
+//
+// write system energies every requested step
+RESEVRYERGY                     0
+//
+// write restart possibility every RESTARTEVRY steps
+RESTARTEVRY                     1
+//
+// time step size
+TIMESTEP                        0.05
+//
+// maximum number of steps
+NUMSTEP                         200
+//
+// maximum time
+MAXTIME                         5
+//
+// type of damping: (1) Rayleigh damping matrix and use it from M_DAMP x M + K_DAMP x K, (2) Material based and calculated in elements
+//     no,No,NO,yes,Yes,YES,Rayleigh,Material,BrownianMotion
+DAMPING                         No
+//
+M_DAMP                          -1
+//
+K_DAMP                          -1
+//
+// tolerance in the displacement norm for the newton iteration
+TOLDISP                         1e-10
+//
+// type of norm for displacement convergence check
+//     Abs,Rel,Mix
+NORM_DISP                       Abs
+//
+// tolerance in the residual norm for the newton iteration
+TOLRES                          1e-08
+//
+// type of norm for residual convergence check
+//     Abs,Rel,Mix
+NORM_RESF                       Abs
+//
+// tolerance in pressure norm for the newton iteration
+TOLPRE                          1e-08
+//
+// type of norm for pressure convergence check
+//     Abs
+NORM_PRES                       Abs
+//
+// tolerance in the incompressible residual norm for the newton iteration
+TOLINCO                         1e-08
+//
+// type of norm for incompressible residual convergence check
+//     Abs
+NORM_INCO                       Abs
+//
+// binary operator to combine pressure and displacement values
+//     And,Or
+NORMCOMBI_DISPPRES              And
+//
+// binary operator to combine force and incompressible residual
+//     And,Or
+NORMCOMBI_RESFINCO              And
+//
+// binary operator to combine displacement and residual force values
+//     And,Or
+NORMCOMBI_RESFDISP              And
+//
+// Scaled director conditioning for thin shell structures
+//     no,No,NO,Symmetric,Right
+STC_SCALING                     no
+//
+// number of STC layers for multilayer case
+STC_LAYER                       1
+//
+// pseudo time step for pseudo transient continuation (PTC) stabilized Newton procedure
+PTCDT                           0.1
+//
+// tolerance in the constr error norm for the newton iteration
+TOLCONSTR                       1e-08
+//
+// maximum number of iterations allowed for Newton-Raphson iteration before failure
+MAXITER                         50
+//
+// minimum number of iterations to be done within Newton-Raphson loop
+MINITER                         0
+//
+// type of norm to be applied to residuals
+//     L1,L2,Rms,Inf
+ITERNORM                        L2
+//
+// What to do with time integration when Newton-Raphson iteration failed
+//     stop
+//     continue
+//     repeat_step
+//     halve_step
+//     adapt_step
+//     rand_adapt_step
+//     rand_adapt_step_ele_err
+//     repeat_simulation
+DIVERCONT                       stop
+//
+// Nonlinear solution technique
+//     vague
+//     fullnewton
+//     modnewton
+//     lsnewton
+//     ptc
+//     newtonlinuzawa
+//     augmentedlagrange
+//     NoxNewtonLineSearch
+//     noxgeneral
+//     NLNSOL
+NLNSOL                          fullnewton
+//
+// maximum number of line search steps
+LSMAXITER                       30
+//
+// step reduction factor alpha in (Newton) line search scheme
+ALPHA_LS                        0.5
+//
+// sufficient descent factor in (Newton) line search scheme
+SIGMA_LS                        0.0001
+//
+// way of evaluating the constitutive matrix
+//     analytical,finitedifferences
+MATERIALTANGENT                 analytical
+//
+// load, disp, arc1, arc2 control
+//     load,Load,disp,Disp,Displacement,arc1,Arc1,arc2,Arc2
+CONTROLTYPE                     load
+//
+// for methods other than load control: [node(fortran numbering)] [dof(c-numbering)] [curve(fortran numbering)]
+CONTROLNODE                     -1 -1 -1
+//
+// Use linearization of external follower load in Newton
+//     Yes,No,yes,no,YES,NO
+LOADLIN                         yes
+//
+// Application of nonlinear inertia terms
+//     No,no,Standard,standard,Rotations,rotations
+MASSLIN                         No
+//
+// Type of predictor
+//     Vague
+//     ConstDis
+//     ConstVel
+//     ConstAcc
+//     ConstDisVelAcc
+//     TangDis
+//     ConstDisPres
+//     ConstDisVelAccPres
+PREDICT                         ConstDis
+//
+// Parameter for Uzawa algorithm dealing with lagrange multipliers
+UZAWAPARAM                      1
+//
+// Tolerance for iterative solve with Uzawa algorithm
+UZAWATOL                        1e-08
+//
+// maximum number of iterations allowed for uzawa algorithm before failure going to next newton step
+UZAWAMAXITER                    50
+//
+//     uzawa,simple,direct
+UZAWAALGO                       direct
+//
+// Switch on adaptive control of linear solver tolerance for nonlinear solution
+//     Yes,No,yes,no,YES,NO
+ADAPTCONV                       No
+//
+// The linear solver shall be this much better than the current nonlinear residual in the nonlinear convergence limit
+ADAPTCONV_BETTER                0.1
+//
+// Lump the mass matrix for explicit time integration
+//     Yes,No,yes,no,YES,NO
+LUMPMASS                        No
+//
+// Use the modified explicit Euler time integration scheme
+//     Yes,No,yes,no,YES,NO
+MODIFIEDEXPLEULER               Yes
+//
+// number of linear solver used for structural problems
+LINEAR_SOLVER                   3
+//
+// Use temperature-dependent Young's modulus
+//     Yes,No,yes,no,YES,NO
+YOUNG_IS_TEMP_DEPENDENT         No
+//
+// How the geometry is specified
+//     full,box,file
+GEOMETRY                        full
+//
+----------------------------------------STRUCTURAL DYNAMIC/GENALPHA
+//
+// mid-average type of internal forces
+//     Vague,ImrLike,TrLike
+GENAVG                          TrLike
+//
+// Generalised-alpha factor in (0,1/2]
+BETA                            0.25
+//
+// Generalised-alpha factor in (0,1]
+GAMMA                           0.5
+//
+// Generalised-alpha factor in [0,1)
+ALPHA_M                         0.5
+//
+// Generalised-alpha factor in [0,1)
+ALPHA_F                         0.5
+//
+----------------------------------------------------MORTAR COUPLING
+//
+// Type of employed set of shape functions
+//     Dual,dual,Standard,standard,std,PetrovGalerkin,petrovgalerkin,pg
+LM_SHAPEFCN                     Dual
+//
+// Type of contact search
+//     BruteForce
+//     bruteforce
+//     BruteForceEleBased
+//     bruteforceelebased
+//     BinaryTree
+//     Binarytree
+//     binarytree
+SEARCH_ALGORITHM                Binarytree
+//
+// Radius / Bounding volume inflation for contact search
+SEARCH_PARAM                    0.3
+//
+// If chosen auxiliary position is used for computing dops
+//     Yes,No,yes,no,YES,NO
+SEARCH_USE_AUX_POS              Yes
+//
+// Type of LM interpolation for quadratic FE
+//     undefined,quad,quadratic,pwlin,piecewiselinear,lin,linear
+LM_QUAD                         undefined
+//
+// If chosen, multipliers are removed from crosspoints / edge nodes
+//     Yes,No,yes,no,YES,NO
+CROSSPOINTS                     No
+//
+// If chosen consistent dual shape functions are calculated
+//     Yes,No,yes,no,YES,NO
+LM_DUAL_CONSISTENT              Yes
+//
+// If chosen a nodal scaling factor is calculated for each LM
+//     Yes,No,yes,no,YES,NO
+LM_NODAL_SCALE                  No
+//
+// If chosen hermite interface smoothing is activated for line2 elements
+//     Yes,No,yes,no,YES,NO
+HERMITE_SMOOTHING               No
+//
+// Type of mesh relocation
+//     Initial,initial,Every_Timestep,every_timestep,No,no
+MESH_RELOCATION                 Initial
+//
+// Type of redundancy in interface storage
+//     All,all,Master,master,None,none
+REDUNDANT_STORAGE               Master
+//
+// Type of parallel interface evaluation
+//     rg
+//     redundant_ghosting
+//     ghosting
+//     rre
+//     roundrobinevaluate
+//     RoundRobinEvaluate
+//     rrg
+//     roundrobinghost
+//     RoundRobinGhost
+//     bs
+//     binningstrategy
+//     binning
+PARALLEL_STRATEGY               redundant_ghosting
+//
+// Type of redistribution algorithm
+//     None,none,No,no,Static,static,Dynamic,dynamic
+PARALLEL_REDIST                 Static
+//
+// Type of meshtying/contact algorithm
+//     mortar,Mortar,nts,NTS
+ALGORITHM                       Mortar
+//
+// Maximum value of load balance measure before parallel redistribution
+MAX_BALANCE                     2
+//
+// Minimum no. of elements per processor for parallel redistribution
+MIN_ELEPROC                     0
+//
+// Type of numerical integration scheme
+//     Segments,segments,Elements,elements,Elements_BS,elements_BS
+INTTYPE                         Segments
+//
+// Number of employed integration points per dimension
+NUMGP_PER_DIM                   0
+//
+// Type of triangulation for segment-based integration
+//     Delaunay,delaunay,Center,center
+TRIANGULATION                   Delaunay
+//
+------------------------------------------------------FLUID DYNAMIC
+//
+// Physical Type
+//     Incompressible
+//     Artificial_compressibility
+//     Varying_density
+//     Loma
+//     Boussinesq
+//     Topology_optimization
+//     Stokes
+//     Oseen
+PHYSICAL_TYPE                   Incompressible
+//
+// number of linear solver used for fluid dynamics
+LINEAR_SOLVER                   2
+//
+// number of linear solver used for fluid dynamics (ONLY NECESSARY FOR BlockGaussSeidel solver block within fluid mehstying case any more!!!!)
+SIMPLER_SOLVER                  -1
+//
+// which type of stresses and wss
+//     Standard,Aggregation,Mean
+WSS_TYPE                        Standard
+//
+// Set ML-solver number for smoothing of residual-based calculated wallshearstress via plain aggregation.
+WSS_ML_AGR_SOLVER               -1
+//
+// Time Integration Scheme
+//     Stationary,Np_Gen_Alpha,Af_Gen_Alpha,One_Step_Theta,BDF2
+TIMEINTEGR                      One_Step_Theta
+//
+// One step theta option for time discretization of continuity eq. and pressure
+//     Cont_normal_Press_normal,Cont_impl_Press_normal,Cont_impl_Press_impl
+OST_CONT_PRESS                  Cont_normal_Press_normal
+//
+// How the geometry is specified
+//     full,box,file
+GEOMETRY                        full
+//
+// Nonlinear iteration scheme
+//     fixed_point_like,Newton
+NONLINITER                      fixed_point_like
+//
+// Predictor for first guess in nonlinear iteration
+//     steady_state
+//     zero_acceleration
+//     constant_acceleration
+//     constant_increment
+//     explicit_second_order_midpoint
+//     TangVel
+PREDICTOR                       steady_state
+//
+// norm for convergence check
+//     L_2_norm
+CONVCHECK                       L_2_norm
+//
+// do not evaluate residual after solution has converged (->faster)
+//     Yes,No,yes,no,YES,NO
+INCONSISTENT_RESIDUAL           No
+//
+// Initial field for fluid problem
+//     zero_field
+//     field_by_function
+//     disturbed_field_from_function
+//     FLAME_VORTEX_INTERACTION
+//     BELTRAMI-FLOW
+//     KIM-MOIN-FLOW
+//     BOCHEV-TEST
+//     hit_comte_bellot_corrsin_initial_field
+//     forced_hit_simple_algebraic_spectrum
+//     forced_hit_numeric_spectrum
+//     forced_hit_passive
+INITIALFIELD                    zero_field
+//
+// function number of Oseen advective field
+OSEENFIELDFUNCNO                -1
+//
+// Calculate lift and drag forces along specified boundary
+//     Yes,No,yes,no,YES,NO
+LIFTDRAG                        No
+//
+// form of convective term
+//     convective,conservative
+CONVFORM                        convective
+//
+// Flag to activate check for potential nonlinear boundary conditions
+//     no,yes
+NONLINEARBC                     no
+//
+// Flag to (de)activate mesh tying algorithm
+//     no,Condensed_Smat,Condensed_Bmat,Condensed_Bmat_merged
+MESHTYING                       no
+//
+// scheme for determination of gridvelocity from displacements
+//     BE,BDF2,OST
+GRIDVEL                         BE
+//
+// all dof (incl. pressure) are coupled
+//     Yes,No,yes,no,YES,NO
+ALLDOFCOUPLED                   Yes
+//
+// Flag to (de)activate error calculations
+//     no
+//     beltrami_flow
+//     channel2D
+//     gravitation
+//     shear_flow
+//     jeffery_hamel_flow
+//     byfunct
+//     beltrami_stat_stokes
+//     beltrami_stat_navier_stokes
+//     beltrami_instat_stokes
+//     beltrami_instat_navier_stokes
+//     kimmoin_stat_stokes
+//     kimmoin_stat_navier_stokes
+//     kimmoin_instat_stokes
+//     kimmoin_instat_navier_stokes
+//     fsi_fluid_pusher
+//     topopt_channel
+CALCERROR                       no
+//
+// Function for Error Calculation
+CALCERRORFUNCNO                 -1
+//
+// Switch on SIMPLE family of solvers, only works with block preconditioners like CheapSIMPLE!
+//     Yes,No,yes,no,YES,NO
+SIMPLER                         no
+//
+// Switch on adaptive control of linear solver tolerance for nonlinear solution
+//     Yes,No,yes,no,YES,NO
+ADAPTCONV                       yes
+//
+// The linear solver shall be this much better than the current nonlinear residual in the nonlinear convergence limit
+ADAPTCONV_BETTER                0.1
+//
+// Scale blocks of matrix with row infnorm?
+//     Yes,No,yes,no,YES,NO
+INFNORMSCALING                  no
+//
+// write output to gmsh files
+//     Yes,No,yes,no,YES,NO
+GMSH_OUTPUT                     No
+//
+// Compute divergence of velocity field at the element center
+//     Yes,No,yes,no,YES,NO
+COMPUTE_DIVU                    No
+//
+// Compute kinetic energy at the end of each time step and write it to file.
+//     Yes,No,yes,no,YES,NO
+COMPUTE_EKIN                    No
+//
+// Solve the Navier-Stokes equation with the new One Step Theta algorithm
+//     Yes,No,yes,no,YES,NO
+NEW_OST                         No
+//
+// Increment for writing solution
+UPRES                           1
+//
+// Increment for writing restart
+RESTARTEVRY                     20
+//
+// Total number of Timesteps
+NUMSTEP                         1
+//
+// steady state check every step
+STEADYSTEP                      -1
+//
+// Number of Steps for Starting Scheme
+NUMSTASTEPS                     0
+//
+// Function for Initial Starting Field
+STARTFUNCNO                     -1
+//
+// max. number of nonlin. iterations
+ITEMAX                          10
+//
+// max number of nonlinear iterations for initial stationary solution
+INITSTATITEMAX                  5
+//
+// Time increment dt
+TIMESTEP                        0.01
+//
+// Total simulation time
+MAXTIME                         1000
+//
+// Time integration factor
+ALPHA_M                         1
+//
+// Time integration factor
+ALPHA_F                         1
+//
+// Time integration factor
+GAMMA                           1
+//
+// Time integration factor
+THETA                           0.66
+//
+// Tolerance for convergence check
+CONVTOL                         1e-06
+//
+// Tolerance for steady state check
+STEADYTOL                       1e-06
+//
+// Time integration factor for starting scheme
+START_THETA                     1
+//
+// Flag to (de)activate potential Strong 3D redD coupling
+//     no,yes
+STRONG_REDD_3D_COUPLING_TYPE    no
+//
+// Number of linear solver used for L2 projection
+VELGRAD_PROJ_SOLVER             -1
+//
+// Flag to (de)activate gradient reconstruction.
+//     none,superconvergent_patch_recovery,L2_projection
+VELGRAD_PROJ_METHOD             none
+//
+-------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+//
+// Apply (un)stabilized fluid formulation
+//     no_stabilization,residual_based,edge_based,pressure_projection
+STABTYPE                        residual_based
+//
+// residual based without second derivatives (i.e. only consistent for tau->0, but faster)
+//     Yes,No,yes,no,YES,NO
+INCONSISTENT                    No
+//
+// residual computed with a reconstruction of the second derivatives via projection or superconvergent patch recovery
+//     Yes,No,yes,no,YES,NO
+Reconstruct_Sec_Der             No
+//
+// Flag to allow time dependency of subscales for residual-based stabilization.
+//     quasistatic,time_dependent
+TDS                             quasistatic
+//
+// Specify how to treat the transient term.
+//     no_transient,yes_transient,transient_complete
+TRANSIENT                       no_transient
+//
+// Flag to (de)activate PSPG stabilization.
+//     Yes,No,yes,no,YES,NO
+PSPG                            Yes
+//
+// Flag to (de)activate SUPG stabilization.
+//     Yes,No,yes,no,YES,NO
+SUPG                            Yes
+//
+// Flag to (de)activate grad-div term.
+//     Yes,No,yes,no,YES,NO
+GRAD_DIV                        Yes
+//
+// Flag to (de)activate viscous term in residual-based stabilization.
+//     no_vstab,vstab_gls,vstab_gls_rhs,vstab_usfem,vstab_usfem_rhs
+VSTAB                           no_vstab
+//
+// Flag to (de)activate reactive term in residual-based stabilization.
+//     no_rstab,rstab_gls,rstab_usfem
+RSTAB                           no_rstab
+//
+// Flag to (de)activate cross-stress term -> residual-based VMM.
+//     no_cross,yes_cross,cross_rhs
+CROSS-STRESS                    no_cross
+//
+// Flag to (de)activate Reynolds-stress term -> residual-based VMM.
+//     no_reynolds,yes_reynolds,reynolds_rhs
+REYNOLDS-STRESS                 no_reynolds
+//
+// Definition of tau_M and Tau_C
+//     Taylor_Hughes_Zarins
+//     Taylor_Hughes_Zarins_wo_dt
+//     Taylor_Hughes_Zarins_Whiting_Jansen
+//     Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt
+//     Taylor_Hughes_Zarins_scaled
+//     Taylor_Hughes_Zarins_scaled_wo_dt
+//     Franca_Barrenechea_Valentin_Frey_Wall
+//     Franca_Barrenechea_Valentin_Frey_Wall_wo_dt
+//     Shakib_Hughes_Codina
+//     Shakib_Hughes_Codina_wo_dt
+//     Codina
+//     Codina_wo_dt
+//     Codina_convscaled
+//     Franca_Madureira_Valentin_Badia_Codina
+//     Franca_Madureira_Valentin_Badia_Codina_wo_dt
+//     Hughes_Franca_Balestra_wo_dt
+DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
+//
+// Characteristic element length for tau_Mu
+//     streamlength,volume_equivalent_diameter,root_of_volume
+CHARELELENGTH_U                 streamlength
+//
+// Characteristic element length for tau_Mp/tau_C
+//     streamlength,volume_equivalent_diameter,root_of_volume
+CHARELELENGTH_PC                volume_equivalent_diameter
+//
+// Location where tau is evaluated
+//     element_center,integration_point
+EVALUATION_TAU                  element_center
+//
+// Location where material law is evaluated
+//     element_center,integration_point
+EVALUATION_MAT                  element_center
+//
+// Flag to (de)activate SUPG stabilization in loma continuity equation.
+//     Yes,No,yes,no,YES,NO
+LOMA_CONTI_SUPG                 No
+//
+// Flag to (de)activate cross-stress term loma continuity equation-> residual-based VMM.
+//     no_cross,yes_cross,cross_rhs
+LOMA_CONTI_CROSS_STRESS         no_cross
+//
+// Flag to (de)activate Reynolds-stress term loma continuity equation-> residual-based VMM.
+//     no_reynolds,yes_reynolds,reynolds_rhs
+LOMA_CONTI_REYNOLDS_STRESS      no_reynolds
+//
+--------------------------------------------------------ALE DYNAMIC
+//
+TIMESTEP                        0.1
+//
+NUMSTEP                         41
+//
+MAXTIME                         4
+//
+// ale mesh movement algorithm
+//     solid,laplace,springs
+ALE_TYPE                        solid
+//
+// Maximum number of newton iterations.
+MAXITER                         1
+//
+// Absolute tolerance for length scaled L2 residual norm
+TOLRES                          1e-06
+//
+// Absolute tolerance for length scaled L2 increment norm
+TOLDISP                         1e-06
+//
+NUM_INITSTEP                    0
+//
+// write restart data every RESTARTEVRY steps
+RESTARTEVRY                     1
+//
+// write results every RESULTSTEVRY steps
+RESULTSEVRY                     0
+//
+// What to do if nonlinear solver does not converge?
+//     stop,continue
+DIVERCONT                       continue
+//
+// number of linear solver used for ale problems...
+LINEAR_SOLVER                   1
+//
+// control parameters for scalar transport problems
+--------------------------------------------------------FSI DYNAMIC
+//
+// Iteration Scheme over the fields
+//     basic_sequ_stagg
+//     iter_stagg_fixed_rel_param
+//     iter_stagg_AITKEN_rel_param
+//     iter_stagg_steep_desc
+//     iter_stagg_NLCG
+//     iter_stagg_MFNK_FD
+//     iter_stagg_MFNK_FSI
+//     iter_stagg_MPE
+//     iter_stagg_RRE
+//     iter_monolithicfluidsplit
+//     iter_monolithicstructuresplit
+//     iter_lung_monolithicstructuresplit
+//     iter_lung_monolithicfluidsplit
+//     iter_xfem_monolithic
+//     pseudo_structure
+//     iter_constr_monolithicfluidsplit
+//     iter_constr_monolithicstructuresplit
+//     iter_mortar_monolithicstructuresplit
+//     iter_mortar_monolithicfluidsplit
+//     iter_fluidfluid_monolithicstructuresplit
+//     iter_fluidfluid_monolithicfluidsplit
+//     iter_fluidfluid_monolithicstructuresplit_nonox
+//     iter_fluidfluid_monolithicfluidsplit_nonox
+COUPALGO                        iter_stagg_AITKEN_rel_param
+//
+// Output of unconverged interface values during FSI iteration.
+// There will be a new control file for each time step.
+// This might be helpful to understand the coupling iteration.
+//     No,Yes,no,yes,NO,YES,Interface,Preconditioner,All
+DEBUGOUTPUT                     No
+//
+// Second order displacement-velocity conversion at the interface.
+//     Yes,No,yes,no,YES,NO
+SECONDORDER                     No
+//
+// Total number of Timesteps
+NUMSTEP                         50
+//
+// Increment for writing solution
+UPRES                           1
+//
+// Increment for writing restart
+RESTARTEVRY                     1
+//
+// Time increment dt
+TIMESTEP                        0.1
+//
+// Total simulation time
+MAXTIME                         1000
+//
+// Projection method to use for sliding FSI.
+//     None,Curr,Ref,RotZ,RotZSphere
+SLIDEALEPROJ                    None
+//
+// Project velocity into divergence-free subspace for partitioned fsi
+//     Yes,No,yes,no,YES,NO
+DIVPROJECTION                   no
+//
+--------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
+//
+// Include linearization with respect to mesh movement in Navier Stokes equation.
+//     Yes,No,yes,no,YES,NO
+SHAPEDERIVATIVES                No
+//
+// Write artificial interface energie due to temporal discretization to file
+//     Yes,No,yes,no,YES,NO
+ENERGYFILE                      No
+//
+// Maximum allowed number of nonlinear iterations
+ITEMAX                          100
+//
+// Scale Blocks with row infnorm?
+//     Yes,No,yes,no,YES,NO
+INFNORMSCALING                  Yes
+//
+// Symmetric block GS preconditioner or ordinary GS
+//     Yes,No,yes,no,YES,NO
+SYMMETRICPRECOND                No
+//
+// Number of iterations in one time step reusing the preconditioner before rebuilding it
+PRECONDREUSE                    0
+//
+// Enforce rebuilding the preconditioner at the beginning of every time step
+//     Yes,No,yes,no,YES,NO
+REBUILDPRECEVERYSTEP            Yes
+//
+// Linear solver algorithm for monolithic block system in monolithic FSI.
+// Most of the time preconditioned Krylov is the right thing to choose. But there are
+// block Gauss-Seidel methods as well.
+//     PreconditionedKrylov,FSIAMG,AMGnxn
+LINEARBLOCKSOLVER               PreconditionedKrylov
+//
+// run analysis on fsiamg multigrid scheme
+//     Yes,No,yes,no,YES,NO
+FSIAMGANALYZE                   No
+//
+// Relaxation factor for Richardson iteration on structural block in MFSI block preconditioner
+// FSIAMG: each number belongs to a level
+// PreconditiondKrylov: only first number is used for finest level
+STRUCTPCOMEGA                   1.0 1.0 1.0 1.0
+//
+// Number of Richardson iterations on structural block in MFSI block preconditioner
+// FSIAMG: each number belongs to a level
+// PreconditiondKrylov: only first number is used for finest level
+STRUCTPCITER                    1 1 1 1
+//
+// Relaxation factor for Richardson iteration on fluid block in MFSI block preconditioner
+// FSIAMG: each number belongs to a level
+// PreconditiondKrylov: only first number is used for finest level
+FLUIDPCOMEGA                    1.0 1.0 1.0 1.0
+//
+// Number of Richardson iterations on fluid block in MFSI block preconditioner
+// FSIAMG: each number belongs to a level
+// PreconditiondKrylov: only first number is used for finest level
+FLUIDPCITER                     1 1 1 1
+//
+// Relaxation factor for Richardson iteration on ale block in MFSI block preconditioner
+// FSIAMG: each number belongs to a level
+// PreconditiondKrylov: only first number is used for finest level
+ALEPCOMEGA                      1.0 1.0 1.0 1.0
+//
+// Number of Richardson iterations on ale block in MFSI block preconditioner
+// FSIAMG: each number belongs to a level
+// PreconditiondKrylov: only first number is used for finest level
+ALEPCITER                       1 1 1 1
+//
+// Relaxation factor for Richardson iteration on whole MFSI block preconditioner
+// FSIAMG: each number belongs to a level
+// PreconditiondKrylov: only first number is used for finest level
+PCOMEGA                         1.0 1.0 1.0
+//
+// Number of Richardson iterations on whole MFSI block preconditioner
+// FSIAMG: each number belongs to a level
+// PreconditiondKrylov: only first number is used for finest level
+PCITER                          1 1 1
+//
+// Type of block smoother, can be BGS or Schur
+BLOCKSMOOTHER                   BGS BGS BGS
+//
+// Damping factor for Schur complement construction
+SCHUROMEGA                      0.001 0.01 0.1
+//
+// Required distance for adaptive convergence check in Newton-type FSI.
+// This is the improvement we want to achieve in the linear extrapolation of the
+// adaptive convergence check. Set to zero to avoid the adaptive check altogether.
+ADAPTIVEDIST                    0
+//
+// Basic tolerance for adaptive convergence check in monolithic FSI.
+// This tolerance will be used for the linear solve of the FSI block system.
+// The linear convergence test will always use the relative residual norm (AZ_r0).
+// Not to be confused with the Newton tolerance (CONVTOL) that applies
+// to the nonlinear convergence test using a absolute residual norm.
+BASETOL                         0.001
+//
+// Nonlinear tolerance for lung/constraint/fluid-fluid FSI
+CONVTOL                         1e-06
+//
+// type of norm for primary variables convergence check
+//     Abs,Rel,Mix
+NORM_INC                        Rel
+//
+// type of norm for residual convergence check
+//     Abs,Rel,Mix
+NORM_RESF                       Rel
+//
+// binary operator to combine primary variables and residual force values
+//     And
+NORMCOMBI_RESFINC               And
+//
+// Absolute tolerance for structure displacement residual in L2-norm
+TOL_DIS_RES_L2                  1e-06
+//
+// Absolute tolerance for structure displacement residual in Inf-norm
+TOL_DIS_RES_INF                 1e-06
+//
+// Absolute tolerance for structure displacement increment in L2-norm
+TOL_DIS_INC_L2                  1e-06
+//
+// Absolute tolerance for structure displacement increment in Inf-norm
+TOL_DIS_INC_INF                 1e-06
+//
+// Absolute tolerance for interface residual in L2-norm
+TOL_FSI_RES_L2                  1e-06
+//
+// Absolute tolerance for interface residual in Inf-norm
+TOL_FSI_RES_INF                 1e-06
+//
+// Absolute tolerance for interface increment in L2-norm
+TOL_FSI_INC_L2                  1e-06
+//
+// Absolute tolerance for interface increment in Inf-norm
+TOL_FSI_INC_INF                 1e-06
+//
+// Absolute tolerance for fluid pressure residual in L2-norm
+TOL_PRE_RES_L2                  1e-06
+//
+// Absolute tolerance for fluid pressure residual in Inf-norm
+TOL_PRE_RES_INF                 1e-06
+//
+// Absolute tolerance for fluid pressure increment in L2-norm
+TOL_PRE_INC_L2                  1e-06
+//
+// Absolute tolerance for fluid pressure increment in Inf-norm
+TOL_PRE_INC_INF                 1e-06
+//
+// Absolute tolerance for fluid velocity residual in L2-norm
+TOL_VEL_RES_L2                  1e-06
+//
+// Absolute tolerance for fluid velocity residual in Inf-norm
+TOL_VEL_RES_INF                 1e-06
+//
+// Absolute tolerance for fluid velocity increment in L2-norm
+TOL_VEL_INC_L2                  1e-06
+//
+// Absolute tolerance for fluid velocity increment in Inf-norm
+TOL_VEL_INC_INF                 1e-06
+//
+-------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
+//
+// Coupling strategies for partitioned FSI solvers.
+//     DirichletNeumann,DirichletNeumannSlideALE
+PARTITIONED                     DirichletNeumann
+//
+// Predictor for interface displacements
+//     d(n)
+//     d(n)+dt*(1.5*v(n)-0.5*v(n-1))
+//     d(n)+dt*v(n)
+//     d(n)+dt*v(n)+0.5*dt^2*a(n)
+PREDICTOR                       d(n)
+//
+// Coupling variable at the interface
+//     Displacement,Force
+COUPVARIABLE                    Displacement
+//
+// Coupling Method Mortar (mtr) or conforming nodes at interface
+//     MTR,Mtr,mtr,conforming,immersed
+COUPMETHOD                      conforming
+//
+// Basic tolerance for adaptive convergence check in monolithic FSI.
+// This tolerance will be used for the linear solve of the FSI block system.
+// The linear convergence test will always use the relative residual norm (AZ_r0).
+// Not to be confused with the Newton tolerance (CONVTOL) that applies
+// to the nonlinear convergence test using a absolute residual norm.
+BASETOL                         0.001
+//
+// Tolerance for iteration over fields in case of partitioned scheme
+CONVTOL                         1e-06
+//
+// fixed relaxation parameter for partitioned FSI solvers
+RELAX                           1
+//
+// largest omega allowed for Aitken relaxation (0.0 means no constraint)
+MAXOMEGA                        0
+//
+// Maximum number of iterations over fields
+ITEMAX                          100
+//
+-----------------------------------------------------------SOLVER 1
+//
+// The solver to attack the system of linear equations arising of FE approach with.
+//     Amesos_KLU_sym
+//     Amesos_KLU_nonsym
+//     Superlu
+//     Aztec_MSR
+//     LAPACK_sym
+//     LAPACK_nonsym
+//     UMFPACK
+//     Belos
+//     Stratimikos_Amesos
+//     Stratimikos_Aztec
+//     Stratimikos_Belos
+//     undefined
+SOLVER                          UMFPACK
+//
+-----------------------------------------------------------SOLVER 2
+//
+// The solver to attack the system of linear equations arising of FE approach with.
+//     Amesos_KLU_sym
+//     Amesos_KLU_nonsym
+//     Superlu
+//     Aztec_MSR
+//     LAPACK_sym
+//     LAPACK_nonsym
+//     UMFPACK
+//     Belos
+//     Stratimikos_Amesos
+//     Stratimikos_Aztec
+//     Stratimikos_Belos
+//     undefined
+SOLVER                          Aztec_MSR
+//
+// Type of linear solver algorithm to use.
+//     CG,GMRES,GMRESR,CGS,TFQMR,BiCGSTAB,LU,FGMRES
+AZSOLVE                         GMRES
+//
+// Type of internal preconditioner to use.
+// Note! this preconditioner will only be used if the input operator
+// supports the Epetra_RowMatrix interface and the client does not pass
+// in an external preconditioner!
+//     none
+//     ILU
+//     ILUT
+//     Jacobi
+//     SymmGaussSeidel
+//     Least_Squares
+//     Neumann
+//     ICC
+//     LU
+//     RILU
+//     ML
+//     MLFLUID
+//     MLFLUID2
+//     MLAPI
+//     GaussSeidel
+//     DownwindGaussSeidel
+//     BGS2x2
+//     BGSnxn
+//     TekoSIMPLE
+//     CheapSIMPLE
+//     MueLu_sym
+//     MueLu_nonsym
+//     MueLu_contact
+//     MueLu_contact2
+//     MueLu_contactSP
+//     MueLu_contactPenalty
+//     AMGnxn
+//     Chebyshev
+AZPREC                          ILU
+//
+// The amount of overlap used for the ifpack "ilu" and "ilut" preconditioners.
+IFPACKOVERLAP                   0
+//
+// The amount of fill allowed for the internal "ilu" preconditioner.
+IFPACKGFILL                     0
+//
+// The amount of fill allowed for an internal "ilut" preconditioner.
+IFPACKFILL                      1
+//
+// Combine mode for Ifpack Additive Schwarz
+//     Add,Insert,Zero
+IFPACKCOMBINE                   Add
+//
+// The tolerance below which an entry from the factors of an internal "ilut"
+// preconditioner will be dropped.
+AZDROP                          0
+//
+// The order for of the polynomials used for the "Polynomial" and
+// "Least-squares Polynomial" internal preconditioners.
+AZPOLY                          3
+//
+// The maximum size of the Krylov subspace used with "GMRES" before
+// a restart is performed.
+AZSUB                           50
+//
+// The convergence test to use for terminating the iterative solver.
+//     AZ_r0
+//     AZ_rhs
+//     AZ_Anorm
+//     AZ_noscaled
+//     AZ_sol
+//     AZ_weighted
+//     AZ_expected_values
+//     AZTECOO_conv_test
+//     AZ_inf_noscaled
+AZCONV                          AZ_r0
+//
+// The number of iterations between each output of the solver's progress.
+AZOUTPUT                        0
+//
+// how often to recompute some preconditioners
+AZREUSE                         0
+//
+// max iterations
+AZITER                          1000
+//
+// unused
+AZGRAPH                         0
+//
+AZBDIAG                         0
+//
+// tolerance in (un)scaled residual
+AZTOL                           1e-08
+//
+// damping for GaussSeidel and jacobi type methods
+AZOMEGA                         0
+//
+// threshold tau for downwinding
+DWINDTAU                        1.5
+//
+// scaling of the system
+//     none,sym,infnorm
+AZSCAL                          none
+//
+// ML print-out level (0-10)
+ML_PRINT                        0
+//
+// ML stop coarsening when coarse ndof smaller then this
+ML_MAXCOARSESIZE                5000
+//
+// ML max number of levels
+ML_MAXLEVEL                     5
+//
+// objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
+ML_AGG_SIZE                     27
+//
+// damping fine grid
+ML_DAMPFINE                     1
+//
+// damping med grids
+ML_DAMPMED                      1
+//
+// damping coarse grid
+ML_DAMPCOARSE                   1
+//
+// damping factor for prolongator smoother (usually 1.33 or 0.0)
+ML_PROLONG_SMO                  0
+//
+// threshold for prolongator smoother/aggregation
+ML_PROLONG_THRES                0
+//
+// no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_SMOTIMES                     1 1 1 1 1
+//
+//     UC,METIS,VBMETIS,MIS
+ML_COARSEN                      UC
+//
+//     SGS
+//     Jacobi
+//     Chebychev
+//     MLS
+//     ILU
+//     KLU
+//     Superlu
+//     GS
+//     DGS
+//     Umfpack
+//     BS
+//     SIMPLE
+//     SIMPLEC
+//     IBD
+//     Uzawa
+ML_SMOOTHERFINE                 ILU
+//
+//     SGS
+//     Jacobi
+//     Chebychev
+//     MLS
+//     ILU
+//     KLU
+//     Superlu
+//     GS
+//     DGS
+//     Umfpack
+//     BS
+//     SIMPLE
+//     SIMPLEC
+//     IBD
+//     Uzawa
+ML_SMOOTHERMED                  ILU
+//
+//     SGS
+//     Jacobi
+//     Chebychev
+//     MLS
+//     ILU
+//     KLU
+//     Superlu
+//     GS
+//     DGS
+//     Umfpack
+//     BS
+//     SIMPLE
+//     SIMPLEC
+//     IBD
+//     Uzawa
+ML_SMOOTHERCOARSE               Umfpack
+//
+//     SGS,Jacobi,Chebychev,ILU,GS
+MueLu_INITSMOOTHER              SGS
+//
+// sub solver/smoother block number (SIMPLE/C: used for prediction of primary variable on all levels, BS: used for fine and intermedium BraessSarazin (BS) level smoother)
+SUB_SOLVER1                     -1
+//
+// sub solver/smoother block number (SIMPLE/C: used for SchurComplement eq. on all levels, BS: used for coarse BraessSarazin (BS) level smoother)
+SUB_SOLVER2                     -1
+//
+// number of sweeps for adaptive SA smoother (initialization phase). For Chebyshev it is used as polynomial degree
+MueLu_INITSMOO_SWEEPS           1
+//
+// damping parameter for adaptive SA smoother (initialization phase). For Chebyshev it is used as alpha parameter
+MueLu_INITSMOO_DAMPING          1
+//
+// Minimal objective size of an aggregate (to influence the coarsening rate)
+MueLu_MIN_AGG_SIZE              6
+//
+// activate rebalancing using Zoltan/Isorropia
+//     NO,No,no,YES,Yes,yes
+MueLu_REBALANCE                 No
+//
+// maximum allowed nonzero imbalance factor
+MueLu_REBALANCE_NONZEROIMBALANCE 1.2
+//
+// minimum numbers of rows per processor before rebalancing is necessary
+MueLu_REBALANCE_MINROWS         1000
+//
+// Reuse strategy in MueLu contact preconditioner 2.
+// The options are 'none', 'Ptent' and 'full'.
+// 'full' means: reuse the full multigrid hierarchy.
+// 'Ptent': reuse aggregates and nonsmoothed transfer operator.
+// The MueLu_Reuse parameter only makes sense together with AZREUSE.
+//     nothing,Ptent,full
+MueLu_REUSE                     nothing
+//
+// BGS2x2 flip order parameter
+//     block0_block1_order,block1_block0_order
+BGS2X2_FLIPORDER                block0_block1_order
+//
+// damping parameter for BGS2X2 preconditioner
+BGS2X2_GLOBAL_DAMPING           1
+//
+// damping parameter for BGS2X2 preconditioner block1
+BGS2X2_BLOCK1_DAMPING           1
+//
+// damping parameter for BGS2X2 preconditioner block2
+BGS2X2_BLOCK2_DAMPING           1
+//
+// allow linear solver to permute linear system to improve properties of linear system for iterative methods.
+//     none,Algebraic,algebraic,Local,local
+PERMUTE_SYSTEM                  none
+//
+// matrix rows with diagEntry/maxEntry<nonDiagDominanceRatio are marked to be significantly non-diagonal dominant (default: 1.0 = mark all non-diagonal dominant rows)
+NON_DIAGDOMINANCE_RATIO         1
+//
+// verbosity level (0=no output,... 10=extreme), for Belos only
+VERBOSITY                       0
+//
+// xml file for stratimikos parameters
+STRATIMIKOS_XMLFILE             none
+//
+// User specified name for solver block
+NAME                            Fluid solver
+//
+// damping parameter for SIMPLE preconditioner
+SIMPLE_DAMPING                  1
+//
+// Name of the pre-built preconditioner to be used. If set to"XML" the preconditioner is defined using a xml file
+AMGNXN_TYPE                     AMG(BGS)
+//
+// xml file defining the AMGnxn preconditioner
+AMGNXN_XML_FILE                 none
+//
+// solver parameters for solver block 3
+-----------------------------------------------------------SOLVER 3
+//
+// The solver to attack the system of linear equations arising of FE approach with.
+//     Amesos_KLU_sym
+//     Amesos_KLU_nonsym
+//     Superlu
+//     Aztec_MSR
+//     LAPACK_sym
+//     LAPACK_nonsym
+//     UMFPACK
+//     Belos
+//     Stratimikos_Amesos
+//     Stratimikos_Aztec
+//     Stratimikos_Belos
+//     undefined
+SOLVER                          UMFPACK
+//
+----------------------------------------------------------MATERIALS
+MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1000.0 NUE 0.3 DENS 500
+MAT 2 MAT_fluid DYNVISCOSITY 0.01 DENSITY 1.0
+MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 500.0 NUE 0.3 DENS 500
+
+//
+// Newtonian fluid
+//    DYNVISCOSITY                  dynamic viscosity
+//    DENSITY                       spatial mass density
+//    GAMMA          (optional)     surface tension coefficient
+//MAT 0   MAT_fluid   DYNVISCOSITY 0 DENSITY 0 GAMMA 0
+//
+// fluid with non-linear viscosity according to Carreau-Yasuda
+//    NU_0                          zero-shear viscosity
+//    NU_INF                        infinite-shear viscosity
+//    LAMBDA                        characteristic time
+//    APARAM                        constant parameter
+//    BPARAM                        constant parameter
+//    DENSITY                       density
+//MAT 0   MAT_carreauyasuda   NU_0 0 NU_INF 0 LAMBDA 0 APARAM 0 BPARAM 0 DENSITY 0
+//
+// fluid with nonlinear viscosity according to a modified power law
+//    MCONS                         consistency
+//    DELTA                         safety factor
+//    AEXP                          exponent
+//    DENSITY                       density
+//MAT 0   MAT_modpowerlaw   MCONS 0 DELTA 0 AEXP 0 DENSITY 0
+//
+// fluid with non-linear viscosity according to Herschel-Bulkley
+//    TAU_0                         yield stress
+//    KFAC                          constant factor
+//    NEXP                          exponent
+//    MEXP                          exponent
+//    LOLIMSHEARRATE                lower limit of shear rate
+//    UPLIMSHEARRATE                upper limit of shear rate
+//    DENSITY                       density
+//MAT 0   MAT_herschelbulkley   TAU_0 0 KFAC 0 NEXP 0 MEXP 0 LOLIMSHEARRATE 0 UPLIMSHEARRATE 0 DENSITY 0
+//
+// yoghurt-type fluid with nonlinear viscosity
+//    SHC                           specific heat capacity at constant pressure (J/(kg*K))
+//    DENSITY                       density
+//    THERMCOND                     thermal conductivity (J/(m*K*s))
+//    STRAINRATEEXP                 exponent of strain-rate term
+//    PREEXCON                      pre-exponential constant (1/s)
+//    ACTENERGY                     activation energy (J/kg)
+//    GASCON                        specific gas constant R (J/(kg*K))
+//    DELTA                         safety factor
+//MAT 0   MAT_yoghurt   SHC 0 DENSITY 0 THERMCOND 0 STRAINRATEEXP 0 PREEXCON 0 ACTENERGY 0 GASCON 0 DELTA 0
+//
+// permeability for flow in porous media
+//    TYPE                          Problem type: Darcy or Darcy-Stokes
+//    DYNVISCOSITY                  dynamic viscosity
+//    DENSITY                       density
+//    PERMEABILITY                  permeability of medium
+//MAT 0   MAT_permeable   TYPE Darcy-Stokes DYNVISCOSITY 0 DENSITY 0 PERMEABILITY 0
+//
+// Cavitation fluid
+//    DYNVISCOSITY                  dynamic viscosity
+//    DENSITY                       spatial mass density
+//MAT 0   MAT_cavitation   DYNVISCOSITY 0 DENSITY 0
+//
+// scalar transport material
+//    DIFFUSIVITY                   kinematic diffusivity
+//    REACOEFF       (optional)     reaction coefficient
+//    SCNUM          (optional)     schmidt number
+//    FLDDENSITY     (optional)     fluid density
+//    DENSIFICATION  (optional)     densification coefficient
+//MAT 0   MAT_scatra   DIFFUSIVITY 0 REACOEFF 0 SCNUM 0 FLDDENSITY 0 DENSIFICATION 0
+//
+// scalar transport material
+//    DIFFUSIVITY                   kinematic diffusivity
+//    REACOEFF       (optional)     reaction coefficient
+//    SCNUM          (optional)     schmidt number
+//    FLDDENSITY     (optional)     fluid density
+//    DENSIFICATION  (optional)     densification coefficient
+//MAT 0   MAT_scatraPoroECM   DIFFUSIVITY 0 REACOEFF 0 SCNUM 0 FLDDENSITY 0 DENSIFICATION 0
+//
+// advanced reaction material
+//    NUMSCAL                       number of reactions for these elements
+//    STOICH                        advanced reaction list
+//    REACCOEFF                     reaction coefficient
+//    COUPLING                      type of coupling
+//    ROLE           (optional)     role in michaelis-menten like reactions
+//    REACSTART      (optional)     starting point of reaction
+//MAT 0   MAT_scatra_reaction   NUMSCAL 0 STOICH  REACCOEFF 0 COUPLING no_coupling ROLE  REACSTART -1
+//
+// anisotropic scalar transport material
+//    DIFF1                         kinematic diffusivity component 1
+//    DIFF2                         kinematic diffusivity component 2
+//    DIFF3                         kinematic diffusivity component 3
+//    REACOEFF       (optional)     reaction coefficient
+//MAT 0   MAT_scatra_aniso   DIFF1 0 DIFF2 0 DIFF3 0 REACOEFF 0
+//
+// Myocard muscle material
+//    DIFF1                         conductivity in fiber direction
+//    DIFF2                         conductivity perpendicular to fiber direction
+//    DIFF3                         conductivity perpendicular to fiber direction
+//    PERTUBATION_DERIV               pertubation for calculation of reaction coefficient derivative
+//    MODEL                         Model type: MV, FHN, TNNP, SAN or INADA
+//    TISSUE                        Tissue type: M, ENDO, EPI, AN, N or NH
+//    TIME_SCALE                    Scale factor for time units of Model
+//MAT 0   MAT_myocard   DIFF1 0 DIFF2 0 DIFF3 0 PERTUBATION_DERIV 0 MODEL MV TISSUE M TIME_SCALE 0
+//
+// material according to mixture-fraction approach
+//    KINVISC                       kinematic viscosity
+//    KINDIFF                       kinematic diffusivity
+//    EOSFACA                       equation-of-state factor a
+//    EOSFACB                       equation-of-state factor b
+//MAT 0   MAT_mixfrac   KINVISC 0 KINDIFF 0 EOSFACA 0 EOSFACB 0
+//
+// material according to Sutherland law
+//    REFVISC                       reference dynamic viscosity (kg/(m*s))
+//    REFTEMP                       reference temperature (K)
+//    SUTHTEMP                      Sutherland temperature (K)
+//    SHC                           specific heat capacity at constant pressure (J/(kg*K))
+//    PRANUM                        Prandtl number
+//    THERMPRESS                    (initial) thermodynamic pressure (J/m^3)
+//    GASCON                        specific gas constant R (J/(kg*K))
+//MAT 0   MAT_sutherland   REFVISC 0 REFTEMP 0 SUTHTEMP 0 SHC 0 PRANUM 0 THERMPRESS 0 GASCON 0
+//
+// Arrhenius-type chemical kinetics (species)
+//    REFVISC                       reference dynamic viscosity (kg/(m*s))
+//    REFTEMP                       reference temperature (K)
+//    SUTHTEMP                      Sutherland temperature (K)
+//    SCHNUM                        Schmidt number
+//    PREEXCON                      pre-exponential constant (1/s)
+//    TEMPEXP                       exponent of temperature dependence
+//    ACTEMP                        activation temperature (K)
+//    GASCON                        specific gas constant R (J/(kg*K))
+//MAT 0   MAT_arrhenius_spec   REFVISC 0 REFTEMP 0 SUTHTEMP 0 SCHNUM 0 PREEXCON 0 TEMPEXP 0 ACTEMP 0 GASCON 0
+//
+// Arrhenius-type chemical kinetics (temperature)
+//    REFVISC                       reference dynamic viscosity (kg/(m*s))
+//    REFTEMP                       reference temperature (K)
+//    SUTHTEMP                      Sutherland temperature (K)
+//    SHC                           specific heat capacity at constant pressure (J/(kg*K))
+//    PRANUM                        Prandtl number
+//    REAHEAT                       heat of reaction per unit mass (J/kg)
+//    PREEXCON                      pre-exponential constant (1/s)
+//    TEMPEXP                       exponent of temperature dependence
+//    ACTEMP                        activation temperature (K)
+//    GASCON                        specific gas constant R (J/(kg*K))
+//MAT 0   MAT_arrhenius_temp   REFVISC 0 REFTEMP 0 SUTHTEMP 0 SHC 0 PRANUM 0 REAHEAT 0 PREEXCON 0 TEMPEXP 0 ACTEMP 0 GASCON 0
+//
+// material with Arrhenius-type chemical kinetics (progress variable)
+//    REFVISC                       reference dynamic viscosity (kg/(m*s))
+//    REFTEMP                       reference temperature (K)
+//    SUTHTEMP                      Sutherland temperature (K)
+//    PRANUM                        Prandtl number
+//    PREEXCON                      pre-exponential constant (1/s)
+//    TEMPEXP                       exponent of temperature dependence
+//    ACTEMP                        activation temperature (K)
+//    UNBSHC                        specific heat capacity of unburnt phase (J/(kg*K))
+//    BURSHC                        specific heat capacity of burnt phase (J/(kg*K))
+//    UNBTEMP                       temperature of unburnt phase (K)
+//    BURTEMP                       temperature of burnt phase (K)
+//    UNBDENS                       density of unburnt phase (kg/m�)
+//    BURDENS                       density of burnt phase (kg/m�)
+//MAT 0   MAT_arrhenius_pv   REFVISC 0 REFTEMP 0 SUTHTEMP 0 PRANUM 0 PREEXCON 0 TEMPEXP 0 ACTEMP 0 UNBSHC 0 BURSHC 0 UNBTEMP 0 BURTEMP 0 UNBDENS 0 BURDENS 0
+//
+// material with Ferziger-Echekki (1993) chemical kinetics (progress variable)
+//    REFVISC                       reference dynamic viscosity (kg/(m*s))
+//    REFTEMP                       reference temperature (K)
+//    SUTHTEMP                      Sutherland temperature (K)
+//    PRANUM                        Prandtl number
+//    REACRATECON                   reaction-rate constant (1/s)
+//    PVCRIT                        critical value of progress variable
+//    UNBSHC                        specific heat capacity of unburnt phase (J/(kg*K))
+//    BURSHC                        specific heat capacity of burnt phase (J/(kg*K))
+//    UNBTEMP                       temperature of unburnt phase (K)
+//    BURTEMP                       temperature of burnt phase (K)
+//    UNBDENS                       density of unburnt phase (kg/m�)
+//    BURDENS                       density of burnt phase (kg/m�)
+//    MOD                           modification factor (0.0=original, 1.0=modified)
+//MAT 0   MAT_ferech_pv   REFVISC 0 REFTEMP 0 SUTHTEMP 0 PRANUM 0 REACRATECON 0 PVCRIT 0 UNBSHC 0 BURSHC 0 UNBTEMP 0 BURTEMP 0 UNBDENS 0 BURDENS 0 MOD 0
+//
+// material parameters for ion species in electrolyte solution
+//    DIFFUSIVITY                   kinematic diffusivity
+//    VALENCE                       valence (= charge number)
+//    DENSIFICATION  (optional)     densification coefficient
+//    ELIM_DIFFUSIVITY(optional)     kinematic diffusivity of elim. species
+//    ELIM_VALENCE   (optional)     valence of elim. species
+//MAT 0   MAT_ion   DIFFUSIVITY 0 VALENCE 0 DENSIFICATION 0 ELIM_DIFFUSIVITY 0 ELIM_VALENCE 0
+//
+// material parameters for ion species in electrolyte solution
+//    VALENCE                       valence (= charge number)
+//    DIFFCOEF                      curve number for diffusion coefficient
+//    TRANSNR                       curve number for transference number
+//    THERMFAC                      curve number for thermodynamic factor
+//    COND                          curve number for conductivity
+//    DIFF_PARA_NUM  (optional)     number of parameters for diffusion coefficient
+//    DIFF_PARA      (optional)     parameters for diffusion coefficient
+//    TRANS_PARA_NUM (optional)     number of parameters for transference number
+//    TRANS_PARA     (optional)     parameters for transference number
+//    THERM_PARA_NUM (optional)     number of parameters for thermodynamic factor
+//    THERM_PARA     (optional)     parameters for thermodynamic factor
+//    COND_PARA_NUM  (optional)     number of parameters for conductivity
+//    COND_PARA      (optional)     parameters for conductivity
+//    END                           indicating end of line
+//MAT 0   MAT_newman   VALENCE 0 DIFFCOEF 0 TRANSNR 0 THERMFAC 0 COND 0 DIFF_PARA_NUM 0 DIFF_PARA  TRANS_PARA_NUM 0 TRANS_PARA  THERM_PARA_NUM 0 THERM_PARA  COND_PARA_NUM 0 COND_PARA  END
+//
+// electrode material
+//    DIFFCOEF                      curve number for diffusion coefficient
+//    COND                          curve number for electronic conductivity
+//    DIFF_PARA_NUM  (optional)     number of parameters for diffusion coefficient
+//    DIFF_PARA      (optional)     parameters for diffusion coefficient
+//    COND_PARA_NUM  (optional)     number of parameters for electronic conductivity
+//    COND_PARA      (optional)     parameters for electronic conductivity
+//    END                           indicating end of line
+//MAT 0   MAT_electrode   DIFFCOEF 0 COND 0 DIFF_PARA_NUM 0 DIFF_PARA  COND_PARA_NUM 0 COND_PARA  END
+//
+// list/collection of materials, i.e. material IDs
+//    LOCAL                         individual materials allocated per element or only at global scope
+//    NUMMAT                        number of materials in list
+//    MATIDS                        the list material IDs
+//    END                           indicating end of line
+//MAT 0   MAT_matlist   LOCAL No NUMMAT 0 MATIDS  END
+//
+// list/collection of materials, i.e. material IDs and list of reactions
+//    LOCAL                         individual materials allocated per element or only at global scope
+//    NUMMAT                        number of materials in list
+//    MATIDS                        the list material IDs
+//    NUMREAC                       number of reactions for these elements
+//    REACIDS                       advanced reaction list
+//    END                           indicating end of line
+//MAT 0   MAT_matlist_reactions   LOCAL No NUMMAT 0 MATIDS  NUMREAC 0 REACIDS  END
+//
+// specific list/collection of species and phases for elch applications
+//    NUMDOF                        number of dof's per node
+//    NUMSCAL                       number of transported scalars per node
+//    NUMPHASE                      number of phases in electrolyte
+//    PHASEIDS                      the list phasel IDs
+//    END                           indicating end of line
+//MAT 0   MAT_elchmat   NUMDOF 0 NUMSCAL 0 NUMPHASE 0 PHASEIDS  END
+//
+// material parameters for ion species in electrolyte solution
+//    EPSILON                       porousity of the phase
+//    TORTUOSITY                    porousity of the phase
+//    NUMMAT                        number of materials in electrolyte
+//    MATIDS                        the list phasel IDs
+//    END                           indicating end of line
+//MAT 0   MAT_elchphase   EPSILON 0 TORTUOSITY 0 NUMMAT 0 MATIDS  END
+//
+// de St.Venant--Kirchhoff material
+//    YOUNG                         Young's modulus
+//    NUE                           Poisson's ratio
+//    DENS                          mass density
+//    THEXPANS       (optional)     coefficient of linear thermal expansion
+//MAT 0   MAT_Struct_StVenantKirchhoff   YOUNG 0 NUE 0 DENS 0 THEXPANS 0
+//
+// Thermo St.Venant--Kirchhoff material
+//    YOUNGNUM                      number of Young's modulus in list
+//    YOUNG                         Young's modulus
+//    NUE                           Poisson's ratio
+//    DENS                          mass density
+//    THEXPANS                      coefficient of linear thermal expansion
+//    CAPA                          capacity
+//    CONDUCT                       conductivity
+//    INITTEMP                      initial temperature
+//MAT 0   MAT_Struct_ThrStVenantK   YOUNGNUM 0 YOUNG  NUE 0 DENS 0 THEXPANS 0 CAPA 0 CONDUCT 0 INITTEMP 0
+//
+// Thermo-elastic St.Venant Kirchhoff / plastic von Mises material
+//    YOUNG                         Young's modulus
+//    NUE                           Poisson's ratio
+//    DENS                          mass density
+//    THEXPANS                      coefficient of linear thermal expansion
+//    INITTEMP                      initial temperature
+//    YIELD                         yield stress
+//    ISOHARD                       isotropic hardening modulus
+//    KINHARD                       kinematic hardening modulus
+//    SAMPLENUM                     number of stress-strain pairs in list
+//    SIGMA_Y                       yield stress
+//    EPSBAR_P                      accumulated plastic strain corresponding to SIGMA_Y
+//    TOL                           tolerance for local Newton iteration
+//MAT 0   MAT_Struct_ThrPlasticLinElast   YOUNG 0 NUE 0 DENS 0 THEXPANS 0 INITTEMP 0 YIELD 0 ISOHARD 0 KINHARD 0 SAMPLENUM 0 SIGMA_Y  EPSBAR_P  TOL 0
+//
+// Thermo-hyperelastic / finite strain plastic von Mises material
+//    YOUNG                         Young's modulus
+//    NUE                           Poisson's ratio
+//    DENS                          mass density
+//    CTE            (optional)     coefficient of thermal expansion
+//    INITTEMP       (optional)     initial, reference temperature
+//    YIELD                         initial yield stress
+//    ISOHARD        (optional)     isotropic hardening modulus
+//    SATHARDENING   (optional)     saturation hardening
+//    HARDEXPO       (optional)     hardening exponent
+//    YIELDSOFT      (optional)     yield stress softening
+//    HARDSOFT       (optional)     hardening softening
+//    TOL            (optional)     tolerance for local Newton iteration
+//MAT 0   MAT_Struct_ThrPlasticHyperElast   YOUNG 0 NUE 0 DENS 0 CTE 0 INITTEMP 0 YIELD 0 ISOHARD 0 SATHARDENING 0 HARDEXPO 0 YIELDSOFT 0 HARDSOFT 0 TOL 1e-08
+//
+// hyperelastic / finite strain plastic von Mises material
+//    YOUNG                         Young's modulus
+//    NUE                           Poisson's ratio
+//    DENS                          mass density
+//    YIELD                         yield stress
+//    ISOHARD                       isotropic hardening modulus
+//    SATHARDENING                  saturation hardening
+//    HARDEXPO                      hardening exponent
+//    VISC           (optional)     VISCOSITY
+//    RATE_DEPENDENCY(optional)     rate dependency
+//MAT 0   MAT_Struct_PlasticNlnLogNeoHooke   YOUNG 0 NUE 0 DENS 0 YIELD 0 ISOHARD 0 SATHARDENING 0 HARDEXPO 0 VISC 0 RATE_DEPENDENCY 0
+//
+// elastic St.Venant Kirchhoff / plastic von Mises material
+//    YOUNG                         Young's modulus
+//    NUE                           Poisson's ratio
+//    DENS                          mass density
+//    YIELD                         yield stress
+//    ISOHARD                       isotropic hardening modulus
+//    KINHARD                       kinematic hardening modulus
+//    TOL                           tolerance for local Newton iteration
+//MAT 0   MAT_Struct_PlasticLinElast   YOUNG 0 NUE 0 DENS 0 YIELD 0 ISOHARD 0 KINHARD 0 TOL 0
+//
+// Robinson's visco-plastic material
+//    KIND                          kind of Robinson material
+//    YOUNGNUM                      number of Young's modulus in list
+//    YOUNG                         Young's modulus
+//    NUE                           Poisson's ratio
+//    DENS                          mass density
+//    THEXPANS                      coefficient of linear thermal expansion
+//    INITTEMP                      initial temperature
+//    HRDN_FACT                     hardening factor 'A'
+//    HRDN_EXPO                     hardening power 'n'
+//    SHRTHRSHLDNUM                 number of shear stress threshold 'K^2'in list
+//    SHRTHRSHLD                    Bingam-Prager shear stress threshold 'K^2'
+//    RCVRY                         recovery factor 'R_0'
+//    ACTV_ERGY                     activation energy 'Q_0'
+//    ACTV_TMPR                     activation temperature 'T_0'
+//    G0                            'G_0'
+//    M_EXPO                        'm'
+//    BETANUM                       number of 'beta' in list
+//    BETA                          beta
+//    H_FACT                        'H'
+//MAT 0   MAT_Struct_Robinson   KIND arya_narloyz YOUNGNUM 0 YOUNG  NUE 0 DENS 0 THEXPANS 0 INITTEMP 0 HRDN_FACT 0 HRDN_EXPO 0 SHRTHRSHLDNUM 0 SHRTHRSHLD  RCVRY 0 ACTV_ERGY 0 ACTV_TMPR 0 G0 0 M_EXPO 0 BETANUM 0 BETA  H_FACT 0
+//
+// elasto-plastic von Mises material with ductile damage
+//    YOUNG                         Young's modulus
+//    NUE                           Poisson's ratio
+//    DENS                          mass density
+//    SAMPLENUM                     number of stress-strain pairs in list
+//    SIGMA_Y                       yield stress
+//    EPSBAR_P                      accumulated plastic strain corresponding to SIGMA_Y
+//    DAMDEN                        denominator of damage evoluation law
+//    DAMEXP                        exponent of damage evoluation law
+//    DAMTHRESHOLD                  damage threshold
+//    KINHARD                       kinematic hardening modulus, stress-like variable
+//    KINHARD_REC                   recovery factor, scalar-valued variable
+//    SATHARDENING                  saturation hardening
+//    HARDEXPO                      hardening exponent
+//    TOL                           tolerance for local Newton iteration
+//MAT 0   MAT_Struct_Damage   YOUNG 0 NUE 0 DENS 0 SAMPLENUM 0 SIGMA_Y  EPSBAR_P  DAMDEN 0 DAMEXP 0 DAMTHRESHOLD 0 KINHARD 0 KINHARD_REC 0 SATHARDENING 0 HARDEXPO 0 TOL 0
+//
+// aneurysm wall material according to Raghavan and Vorp [2000]
+//    YOUNG                         Young's modulus
+//    BETA                          2nd parameter
+//    NUE                           Poisson's ratio
+//    DENS                          mass density
+//MAT 0   MAT_Struct_AAANeoHooke   YOUNG 0 BETA 0 NUE 0 DENS 0
+//
+// aneurysm wall material according to Raghavan and Vorp [2000] with stochastic modelling of beta
+//    YOUNG                         Young's modulus
+//    BETA                          2nd parameter
+//    NUE                           Poisson's ratio
+//    DENS                          mass density
+//MAT 0   MAT_Struct_AAANeoHookeStopro   YOUNG 0 BETA 0 NUE 0 DENS 0
+//
+// AAA thrombus material according to GASSER [2008]
+//    DENS                          mass density
+//    VOL                           Type of volumetric Strain Energy Density (OSM,SuBa,SiTa)
+//    NUE                           Poisson's ratio (0.49)
+//    BETA                          empiric constant for OSM (-2.0)
+//    CLUM                          luminal stiffness parameter (2.62e3)
+//    CMED                          medial stiffness parameter (2.62e3)
+//    CABLUM                        abluminal stiffness parameter (2.62e3)
+//MAT 0   MAT_Struct_AAAGasser   DENS 0 VOL OSM NUE 0 BETA 0 CLUM 0 CMED 0 CABLUM 0
+//
+// aneurysm wall material according to Raghavan and Vorp [2000] with damage
+//    BULK                          Bulk's modulus
+//    ALPHA                         1nd parameter,alpha
+//    BETA                          2nd parameter,beta
+//    EQSTRMIN                      equivalent strain initial damage
+//    A                             1st parameter, a
+//    B                             2nd parameter, b
+//    DENS                          mass density
+//MAT 0   MAT_Raghavan_Damage   BULK 0 ALPHA 0 BETA 0 EQSTRMIN 0 A 0 B 0 DENS 0
+//
+// aneurysm wall material according to Mixed Effects Model
+//    AGE                           age
+//    REFDIA                        subrenal diameter
+//    NUE                           Poisson's ratio
+//    DENS                          mass density
+//MAT 0   MAT_Struct_AAA_MixedEffects   AGE 0 REFDIA 0 NUE 0 DENS 0
+//
+// visco-elastic neo-Hookean material law
+//    YOUNGS_SLOW                   ???
+//    POISSON                       ???
+//    DENS                          ???
+//    YOUNGS_FAST                   ???
+//    RELAX                         ???
+//    THETA                         ???
+//MAT 0   MAT_VISCONEOHOOKE   YOUNGS_SLOW 0 POISSON 0 DENS 0 YOUNGS_FAST 0 RELAX 0 THETA 0
+//
+// visco-elastic anisotropic fibre material law
+//    KAPPA                         dilatation modulus
+//    MUE                           Shear Modulus
+//    DENS                          Density
+//    K1                            Parameter for linear fiber stiffness
+//    K2                            Parameter for exponetial fiber stiffness
+//    GAMMA                         angle between fibers
+//    BETA_ISO                      ratio between elasticities in generalized Maxweel body
+//    BETA_ANISO                    ratio between elasticities in generalized Maxweel body
+//    RELAX_ISO                     isotropic relaxation time
+//    RELAX_ANISO                   anisotropic relaxation time
+//    MINSTRETCH                    minimal principal stretch fibers do respond to
+//    ELETHICKDIR                   Element thickness direction applies also to fibers (only sosh)
+//MAT 0   MAT_VISCOANISO   KAPPA 0 MUE 0 DENS 0 K1 0 K2 0 GAMMA 0 BETA_ISO 0 BETA_ANISO 0 RELAX_ISO 0 RELAX_ANISO 0 MINSTRETCH 0 ELETHICKDIR 0
+//
+// Structural micro-scale approach: material parameters are calculated from microscale simulation
+//    MICROFILE                     inputfile for microstructure
+//    MICRODIS_NUM                  Number of microscale discretization
+//    INITVOL        (optional)     Initial volume of RVE
+//MAT 0   MAT_Struct_Multiscale   MICROFILE filename.dat MICRODIS_NUM 0 INITVOL 0
+//
+// list/collection of hyperelastic materials, i.e. material IDs
+//    NUMMAT                        number of materials/potentials in list
+//    MATIDS                        the list material/potential IDs
+//    DENS                          material mass density
+//MAT 0   MAT_ElastHyper   NUMMAT 0 MATIDS  DENS 0
+//
+// Viscohyperelastic material compatible with the collection of hyperelastic materials
+//    NUMMAT                        number of materials/potentials in list
+//    MATIDS                        the list material/potential IDs
+//    DENS                          material mass density
+//MAT 0   MAT_ViscoElastHyper   NUMMAT 0 MATIDS  DENS 0
+//
+// list/collection of hyperelastic materials, i.e. material IDs
+//    NUMMAT                        number of materials/potentials in list
+//    MATIDS                        the list material/potential IDs
+//    DENS                          material mass density
+//    INITYIELD                     initial yield stress
+//    ISOHARD        (optional)     linear isotropic hardening modulus
+//    EXPISOHARD     (optional)     nonlinear isotropic hardening exponent
+//    INFYIELD       (optional)     saturation yield stress for nonlinear isotropic hardening
+//    KINHARD        (optional)     linear kinematic hardening modulus
+//    VISC           (optional)     Visco-Plasticity parameter 'eta' in Perzyna model
+//    RATE_DEPENDENCY(optional)     Visco-Plasticity parameter 'eta' in Perzyna model
+//    VISC_SOFT      (optional)     Visco-Plasticity temperature dependency (eta = eta_0 * (1-(T-T_0)*x)
+//    PL_SPIN_CHI    (optional)     Plastic spin coupling parameter chi (often called eta)
+//    rY_11          (optional)     relative yield stress in fiber1-direction (Y_11/Y_0)
+//    rY_22          (optional)     relative yield stress in fiber2-direction (Y_22/Y_0)
+//    rY_33          (optional)     relative yield stress in fiber3-direction (Y_33/Y_0)
+//    rY_12          (optional)     relative shear yield stress in 12-direction (Y_12/Y_0)
+//    rY_23          (optional)     relative shear yield stress in 23-direction (Y_23/Y_0)
+//    rY_13          (optional)     relative shear yield stress in 13-direction (Y_13/Y_0)
+//    CTE            (optional)     coefficient of thermal expansion
+//    INITTEMP       (optional)     initial, reference temperature
+//    YIELDSOFT      (optional)     yield stress softening
+//    HARDSOFT       (optional)     hardening softening
+//MAT 0   MAT_PlasticElastHyper   NUMMAT 0 MATIDS  DENS 0 INITYIELD 0 ISOHARD 0 EXPISOHARD 0 INFYIELD 0 KINHARD 0 VISC 0 RATE_DEPENDENCY 1 VISC_SOFT 0 PL_SPIN_CHI 0 rY_11 0 rY_22 0 rY_33 0 rY_12 0 rY_23 0 rY_13 0 CTE 0 INITTEMP 0 YIELDSOFT 0 HARDSOFT 0
+//
+// logarithmic neo-Hooke material acc. to Bonet and Wood
+//    MODE                          parameter set: YN (Young's modulus and Poisson's ration) or Lame (mue and lambda)
+//    C1                            E or mue
+//    C2                            nue or lambda
+//MAT 0   ELAST_CoupLogNeoHooke   MODE YN C1 0 C2 0
+//
+// Saint-Venant-Kirchhoff as elastic summand
+//    YOUNG                         Young's modulus
+//    NUE                           Poisson's ratio
+//MAT 0   ELAST_CoupSVK   YOUNG 0 NUE 0
+//
+// mixed logarithmic neo-Hooke material
+//    MODE                          parameter set: YN (Young's modulus and Poisson's ration) or Lame (mue and lambda)
+//    C1                            E or mue
+//    C2                            nue or lambda
+//MAT 0   ELAST_CoupLogMixNeoHooke   MODE YN C1 0 C2 0
+//
+// compressible, isochoric exponential material law for soft tissue
+//    A                             material constant
+//    B                             material constant linear I_1
+//    C                             material constant linear J
+//MAT 0   ELAST_CoupExpPol   A 0 B 0 C 0
+//
+// compressible neo-Hooke material acc. to Holzapfel
+//    YOUNG          (optional)     Young's modulus
+//    NUE            (optional)     Poisson's ratio
+//MAT 0   ELAST_CoupNeoHooke   YOUNG 0 NUE 0
+//
+// Mooney - Rivlin material acc. to Holzapfel
+//    C1             (optional)     material constant
+//    C2             (optional)     material constant
+//    C3             (optional)     material constant
+//MAT 0   ELAST_CoupMooneyRivlin   C1 0 C2 0 C3 0
+//
+// Blatz and Ko material acc. to Holzapfel
+//    MUE                           Shear modulus
+//    NUE                           Poisson's ratio
+//    F                             interpolation parameter
+//MAT 0   ELAST_CoupBlatzKo   MUE 0 NUE 0 F 0
+//
+// isochoric part of  neo-Hooke material acc. to Holzapfel
+//    MUE                           Shear modulus
+//MAT 0   ELAST_IsoNeoHooke   MUE 0
+//
+// isochoric and volumetric part of HU dependent neo-Hooke material
+//    ALPHA_MAX
+//    CT_MIN
+//    CT_MAX
+//    NUE
+//    BETA
+//MAT 0   ELAST_IsoVolHUDependentNeoHooke   ALPHA_MAX 0 CT_MIN 0 CT_MAX 0 NUE 0 BETA 0
+//
+// isochoric and volumetric part of AAAGasser material (thrombus)
+//    CLUM                          luminal stiffness parameter (2.62e3)
+//    CMED                          medial stiffness parameter (2.62e3)
+//    CABLUM                        abluminal stiffness parameter (2.62e3)
+//    NUE
+//    BETA
+//    MULUM          (optional)     mu for luminal pdf, irrelevant for deterministic analysis
+//    MUMED          (optional)     mu for medial pdf, irrelevant for deterministic analysis
+//    MUABLUM        (optional)     mu for abluminal pdf, irrelevant for deterministic analysis
+//    SIGMALUM       (optional)     std for luminal pdf, irrelevant for deterministic analysis
+//    SIGMAMED       (optional)     std for medial pdf, irrelevant for deterministic analysis
+//    SIGMAABLUM     (optional)     std for abluminal pdf, irrelevant for deterministic analysis
+//MAT 0   ELAST_IsoVolAAAGasser   CLUM 0 CMED 0 CABLUM 0 NUE 0 BETA 0 MULUM 0 MUMED 0 MUABLUM 0 SIGMALUM 0 SIGMAMED 0 SIGMAABLUM 0
+//
+// isochoric part of  Yeoh material acc. to Holzapfel
+//    C1                            Linear modulus
+//    C2                            Quadratic modulus
+//    C3                            Cubic modulus
+//MAT 0   ELAST_IsoYeoh   C1 0 C2 0 C3 0
+//
+// isochoric part of quadratic material
+//    C                             material parameter
+//MAT 0   ELAST_IsoQuad   C 0
+//
+// isochoric part of cubic material
+//    C                             material parameter
+//MAT 0   ELAST_IsoCub   C 0
+//
+// isochoric part of general power material
+//    C                             material parameter
+//    D                             exponent
+//MAT 0   ELAST_Iso1Pow   C 0 D 0
+//
+// isochoric part of general power material
+//    C                             material parameter
+//    D                             exponent
+//MAT 0   ELAST_Iso2Pow   C 0 D 0
+//
+// part of general power material
+//    C                             material parameter
+//    D                             exponent
+//MAT 0   ELAST_Coup1Pow   C 0 D 0
+//
+// part of general power material
+//    C                             material parameter
+//    D                             exponent
+//MAT 0   ELAST_Coup2Pow   C 0 D 0
+//
+// isochoric part of  exponential material acc. to Holzapfel
+//    K1                            material parameter
+//    K2                            material parameter
+//    C                             exponent
+//MAT 0   ELAST_IsoExpoPow   K1 0 K2 0 C 0
+//
+// isochoric part of  Mooney-Rivlin material acc. to Holzapfel
+//    C1                            Linear modulus for first invariant
+//    C2                            Linear modulus for second invariant
+//MAT 0   ELAST_IsoMooneyRivlin   C1 0 C2 0
+//
+// test material to test elasthyper-toolbox
+//    C1                            Modulus for first invariant
+//    C2                            Modulus for second invariant
+//MAT 0   ELAST_IsoTestMaterial   C1 0 C2 0
+//
+// volumetric part of  SussmanBathe material
+//    KAPPA                         dilatation modulus
+//MAT 0   ELAST_VolSussmanBathe   KAPPA 0
+//
+// Penalty formulation for the volumetric part
+//    EPSILON                       penalty parameter
+//    GAMMA                         penalty parameter
+//MAT 0   ELAST_VolPenalty   EPSILON 0 GAMMA 0
+//
+// Ogden formulation for the volumetric part
+//    KAPPA                         dilatation modulus
+//    BETA                          empiric constant
+//MAT 0   ELAST_VolOgden   KAPPA 0 BETA 0
+//
+// anisotropic part with one exp. fiber
+//    K1                            linear constant
+//    K2                            exponential constant
+//    GAMMA                         angle
+//    K1COMP                        linear constant
+//    K2COMP                        exponential constant
+//    INIT           (optional)     initialization modus for fiber alignment
+//    ADAPT_ANGLE    (optional)     adapt angle during remodeling
+//MAT 0   ELAST_CoupAnisoExpo   K1 0 K2 0 GAMMA 0 K1COMP 0 K2COMP 0 INIT 1 ADAPT_ANGLE No
+//
+// anisotropic part with one pow-like fiber
+//    K                             linear constant
+//    D1                            exponential constant for fiber invariant
+//    D2                            exponential constant for system
+//    ACTIVETHRES    (optional)     Deformation threshold for activating fibers. Default: 1.0 (off at compression); If 0.0 (always active)
+//    FIBER          (optional)     Number of the fiber family contained in the element
+//    GAMMA          (optional)     angle
+//    INIT           (optional)     initialization modus for fiber alignment
+//    ADAPT_ANGLE    (optional)     adapt angle during remodeling
+//MAT 0   ELAST_CoupAnisoPow   K 0 D1 0 D2 0 ACTIVETHRES 1 FIBER 1 GAMMA 0 INIT 1 ADAPT_ANGLE No
+//
+// anisotropic part with two exp. fibers
+//    A4                            linear anisotropic constant for fiber 1
+//    B4                            exponential anisotropic constant for fiber 1
+//    A6                            linear anisotropic constant for fiber 2
+//    B6                            exponential anisotropic constant for fiber 2
+//    A8                            linear anisotropic constant for fiber 1 relating fiber 2
+//    B8                            exponential anisotropic constant for fiber 1 relating fiber 2
+//    GAMMA                         angle
+//    INIT           (optional)     initialization modus for fiber alignment
+//    FIB_COMP       (optional)     fibers support compression: yes (true) or no (false)
+//    ADAPT_ANGLE    (optional)     adapt angle during remodeling
+//MAT 0   ELAST_CoupAnisoExpoTwoCoup   A4 0 B4 0 A6 0 B6 0 A8 0 B8 0 GAMMA 0 INIT 1 FIB_COMP Yes ADAPT_ANGLE No
+//
+// anisotropic part with one neo Hookean fiber
+//    C                             linear constant
+//    GAMMA                         angle
+//    INIT           (optional)     initialization modus for fiber alignment
+//    ADAPT_ANGLE    (optional)     adapt angle during remodeling
+//MAT 0   ELAST_CoupAnisoNeoHooke   C 0 GAMMA 0 INIT 1 ADAPT_ANGLE No
+//
+// anisotropic part with one neo Hookean fiber with coefficient given by a simplification of the activation-contraction law of Bestel-Clement-Sorine-2001
+//    SIGMA                         Contractility (maximal stress)
+//    TAUC0                         Initial value for the active stress
+//    MAX_ACTIVATION                Maximal value for the rescaled activation
+//    MIN_ACTIVATION                Minimal value for the rescaled activation
+//    SOURCE_ACTIVATION               Where the activation comes from: 0=scatra , >0 Id for FUNCT
+//    ACTIVATION_THRES               Threshold for activation (contraction starts when activation function is larger than this value, relaxes otherwise)
+//    GAMMA          (optional)     azimuth angle
+//    THETA          (optional)     polar angle
+//    INIT           (optional)     initialization mode for fiber alignment
+//    ADAPT_ANGLE    (optional)     adapt angle during remodeling
+//MAT 0   ELAST_CoupAnisoNeoHooke_ActiveStress   SIGMA 0 TAUC0 0 MAX_ACTIVATION 0 MIN_ACTIVATION 0 SOURCE_ACTIVATION 0 ACTIVATION_THRES 0 GAMMA 0 THETA 0 INIT 1 ADAPT_ANGLE No
+//
+// anisotropic part with one neo Hookean fiber with variable coefficient
+//    C                             linear constant
+//    SOURCE_ACTIVATION               Where the activation comes from: 0=scatra , >0 Id for FUNCT
+//    GAMMA          (optional)     azimuth angle
+//    THETA          (optional)     polar angle
+//    INIT           (optional)     initialization mode for fiber alignment
+//    ADAPT_ANGLE    (optional)     adapt angle during remodeling
+//MAT 0   ELAST_CoupAnisoNeoHooke_VarProp   C 0 SOURCE_ACTIVATION 0 GAMMA 0 THETA 0 INIT 1 ADAPT_ANGLE No
+//
+// anisotropic part with one exp. fiber
+//    K1                            linear constant
+//    K2                            exponential constant
+//    GAMMA                         angle
+//    K1COMP                        linear constant
+//    K2COMP                        exponential constant
+//    INIT           (optional)     initialization modus for fiber alignment
+//    ADAPT_ANGLE    (optional)     adapt angle during remodeling
+//MAT 0   ELAST_IsoAnisoExpo   K1 0 K2 0 GAMMA 0 K1COMP 0 K2COMP 0 INIT 1 ADAPT_ANGLE No
+//
+// anisotropic part with one exp. fiber with isotropic fiber dispersion
+//    K1                            linear constant
+//    K2                            exponential constant
+//    GAMMA                         angle
+//    K1COMP                        linear constant
+//    K2COMP                        exponential constant
+//    INIT           (optional)     initialization modus for fiber alignment
+//    ADAPT_ANGLE    (optional)     adapt angle during remodeling
+//    KAPPA                         fiber dispersion constant
+//MAT 0   ELAST_IsoAnisoExpoDispersion   K1 0 K2 0 GAMMA 0 K1COMP 0 K2COMP 0 INIT 1 ADAPT_ANGLE No KAPPA 0
+//
+// Varga material acc. to Holzapfel
+//    MUE                           Shear modulus
+//    BETA                          'Anti-modulus'
+//MAT 0   ELAST_CoupVarga   MUE 0 BETA 0
+//
+// Isochoric Varga material acc. to Holzapfel
+//    MUE                           Shear modulus
+//    BETA                          'Anti-modulus'
+//MAT 0   ELAST_IsoVarga   MUE 0 BETA 0
+//
+// Isotropic viscous contribution of myocardial matrix
+//    N                             material parameter
+//MAT 0   VISCO_CoupMyocard   N 0
+//
+// Isochoric rate dependent viscous material
+//    N                             material parameter
+//MAT 0   VISCO_IsoRateDep   N 0
+//
+// Viscous contribution according to SLS-Model
+//    TAU                           relaxation parameter
+//    BETA                          emphasis of viscous to elastic part
+//MAT 0   VISCO_GenMax   TAU 0 BETA 0
+//
+// artery with constant properties
+//    VISCOSITY                     viscosity of blood
+//    DENS                          density of blood
+//    YOUNG                         artery Youngs modulus of elasticity
+//    NUE                           Poissons ratio of artery fiber
+//    DIAM                          artery initial diameter
+//    TH                            artery thickness
+//    PEXT1                         artery fixed external pressure 1
+//    PEXT2                         artery fixed external pressure 2
+//MAT 0   MAT_CNST_ART   VISCOSITY 0 DENS 0 YOUNG 0 NUE 0 DIAM 0 TH 0 PEXT1 0 PEXT2 0
+//
+// isotropic (linear) Fourier's law of heat conduction
+//    CAPA                          capacity
+//    CONDUCT                       conductivity
+//MAT 0   THERM_FourierIso   CAPA 0 CONDUCT 0
+//
+// volumetric growth
+//    GROWTHLAW                     number of growth law in input file
+//    IDMATELASTIC                  number of elastic material in input file: MAT IDMATELASTIC ...
+//    STARTTIME                     start growth after this time
+//    ENDTIME                       end growth after this time
+//    TOL                           tolerance for local Newton iteration
+//MAT 0   MAT_GrowthVolumetric   GROWTHLAW 0 IDMATELASTIC 0 STARTTIME 0 ENDTIME 0 TOL 0
+//
+// integration point based and scalar dependent growth
+//    GROWTHLAW                     growth function: linear(Default) or exponential
+//    IDMATELASTIC                  number of elastic material in input file: MAT IDMATELASTIC ...
+//    STARTTIME                     start growth after this time
+//    ENDTIME                       end growth after this time
+//    TOL            (optional)     tolerance for local Newton iteration
+//    REARATE        (optional)     substrate uptake rate coefficient
+//    SATCOEFF       (optional)     saturation coefficient for concentration dependent growth law
+//    GROWTHCOUPL    (optional)     Coupling between stress dependent growth and reaction dependent growth
+//MAT 0   MAT_GrowthVolumetricScd   GROWTHLAW 0 IDMATELASTIC 0 STARTTIME 0 ENDTIME 0 TOL 1e-06 REARATE -1 SATCOEFF -1 GROWTHCOUPL ScaleConc
+//
+// linear growth law
+//    THETAPLUS                     maximal growth stretch
+//    KPLUS                         growth law parameter kthetaplus
+//    MPLUS                         growth law parameter mthetaplus
+//    THETAMINUS                    minimal growth stretch
+//    KMINUS                        growth law parameter kthetaminus
+//    MMINUS                        growth law parameter mthetaminus
+//    HOMMANDEL                     homeostatic value for mandelstress
+//MAT 0   MAT_GrowthLinear   THETAPLUS 0 KPLUS 0 MPLUS 0 THETAMINUS 0 KMINUS 0 MMINUS 0 HOMMANDEL 0
+//
+// exponential growth law
+//    MANDEL                        reference value for mandelstress
+//MAT 0   MAT_GrowthExponential   MANDEL 0
+//
+// scalar depended volumetric growth
+//    SCALAR1                       number of first growth inducing scalar
+//    ALPHA                         volume per first scalar's mass density
+//    SCALAR2        (optional)     number of second growth inducing scalar
+//    BETA           (optional)     volume per second scalar's mass density
+//MAT 0   MAT_GrowthAC   SCALAR1 0 ALPHA 0 SCALAR2 1 BETA 0
+//
+// scalar depended growth in radial direction
+//    SCALAR1                       number of first growth inducing scalar
+//    ALPHA                         volume per first scalar's mass density
+//    SCALAR2        (optional)     number of second growth inducing scalar
+//    BETA           (optional)     volume per second scalar's mass density
+//MAT 0   MAT_GrowthACRadial   SCALAR1 0 ALPHA 0 SCALAR2 1 BETA 0
+//
+// growth and remodeling of arteries
+//    DENS                          Density
+//    MUE                           Shear Modulus
+//    NUE                           Poisson's ratio
+//    PHIE                          mass fraction of elastin
+//    PREELA                        prestretch of elastin
+//    K1                            Parameter for linear collagen fiber stiffness
+//    K2                            Parameter for exponential collagen fiber stiffness
+//    NUMHOM                        Number of homeostatic parameters
+//    PRECOLL                       prestretch of collagen fibers
+//    DAMAGE                        damage stretch of collagen fibers
+//    K1M                           Parameter for linear smooth muscle fiber stiffness
+//    K2M                           Parameter for exponential smooth muscle fiber stiffness
+//    PHIM                          mass fraction of smooth muscle
+//    PREMUS                        prestretch of smooth muscle fibers
+//    SMAX                          maximal active stress
+//    KAPPA                         dilatation modulus
+//    LIFETIME                      lifetime of collagen fibers
+//    GROWTHFAC                     growth factor for stress
+//    HOMSTR                        homeostatic target value of scalar stress measure
+//    SHEARGROWTHFAC                growth factor for shear
+//    HOMRAD                        homeostatic target value of inner radius
+//    STARTTIME                     at this time turnover of collagen starts
+//    INTEGRATION                   time integration scheme (Explicit, Implicit)
+//    TOL                           tolerance for local Newton iteration, only for implicit integration
+//    GROWTHFORCE                   driving force of growth (Single, All, ElaCol)
+//    ELASTINDEGRAD                 how elastin is degraded (None, Rectangle, Time)
+//    MASSPROD                      how mass depends on driving force (Lin, CosCos)
+//    INITSTRETCH                   how to set stretches in the beginning (None, Homeo, UpdatePrestretch)
+//    CURVE                         number of timecurve for increase of prestretch in time
+//    DEGOPTION                     which degradation function (Lin, Cos, Exp, ExpVar)
+//    MAXMASSPRODFAC                maximal factor of mass production
+//    ELASTINFAC     (optional)     factor for elastin content
+//    STOREHISTORY   (optional)     store all history variables, not recommended for forward simulations
+//MAT 0   MAT_ConstraintMixture   DENS 0 MUE 0 NUE 0 PHIE 0 PREELA 0 K1 0 K2 0 NUMHOM 1 PRECOLL  DAMAGE 0 K1M 0 K2M 0 PHIM 0 PREMUS 0 SMAX 0 KAPPA 0 LIFETIME 0 GROWTHFAC 0 HOMSTR  SHEARGROWTHFAC 0 HOMRAD 0 STARTTIME 0 INTEGRATION Explicit TOL 0 GROWTHFORCE Single ELASTINDEGRAD None MASSPROD Lin INITSTRETCH None CURVE 0 DEGOPTION Lin MAXMASSPRODFAC 0 ELASTINFAC 0 STOREHISTORY No
+//
+// biofilm material
+//    DIFFUSIVITY                   kinematic diffusivity
+//    REARATE                       substrate uptake rate coefficient
+//    SATCOEFF                      substrate saturation coefficient
+//MAT 0   MAT_biofilm   DIFFUSIVITY 0 REARATE 0 SATCOEFF 0
+//
+// optimization material
+//    MINPORO                       minimal porosity
+//    MAXPORO                       maximal porosity
+//    SMEARFAC                      smearing factor
+//MAT 0   MAT_opti   MINPORO 0 MAXPORO 0 SMEARFAC 0
+//
+// wrapper for structure porelastic material
+//    MATID                         ID of structure material
+//    POROLAWID                     ID of porosity law
+//    INITPOROSITY                  initial porosity of porous medium
+//MAT 0   MAT_StructPoro   MATID 0 POROLAWID 0 INITPOROSITY 0
+//
+// linear consitutive law for porosity
+//    BULKMODULUS                   bulk modulus of porous medium
+//MAT 0   MAT_PoroLawLinear   BULKMODULUS 0
+//
+// constant consitutive law for porosity
+//MAT 0   MAT_PoroLawConstant
+//
+// NeoHookean-like consitutive law for porosity
+//    BULKMODULUS                   bulk modulus of porous medium
+//    PENALTYPARAMETER               penalty paramter of porous medium
+//MAT 0   MAT_PoroLawNeoHooke   BULKMODULUS 0 PENALTYPARAMETER 0
+//
+// wrapper for structure porelastic material with reaction
+//    MATID                         ID of structure material
+//    POROLAWID                     ID of porosity law
+//    INITPOROSITY                  initial porosity of porous medium
+//MAT 0   MAT_StructPoroReaction   MATID 0 POROLAWID 0 INITPOROSITY 0
+//
+// wrapper for structure porelastic material with reaction
+//    MATID                         ID of structure material
+//    POROLAWID                     ID of porosity law
+//    INITPOROSITY                  initial porosity of porous medium
+//MAT 0   MAT_StructPoroReactionECM   MATID 0 POROLAWID 0 INITPOROSITY 0
+//
+// flow in deformable porous media
+//    DYNVISCOSITY                  dynamic viscosity
+//    DENSITY                       density
+//    PERMEABILITY                  permeability of medium
+//    TYPE                          Problem type: Darcy or Darcy-Brinkman
+//    PERMEABILITYFUNCTION(optional)     Permeability function: Const(Default) or Kozeny_Carman
+//MAT 0   MAT_FluidPoro   DYNVISCOSITY 0 DENSITY 0 PERMEABILITY 0 TYPE Darcy PERMEABILITYFUNCTION Const
+//
+// elastic spring
+//    STIFFNESS                     spring constant
+//    DENS                          density
+//MAT 0   MAT_Struct_Spring   STIFFNESS 0 DENS 0
+//
+// 0D acinar material
+//    Stiffness1                    first stiffness
+//    Stiffness2                    second stiffness
+//    Viscosity1                    first viscosity
+//    Viscosity2                    second viscosity
+//MAT 0   MAT_0D_MAXWELL_ACINUS   Stiffness1 0 Stiffness2 0 Viscosity1 0 Viscosity2 0
+//
+// 0D acinar material neohookean
+//    Stiffness1                    first stiffness
+//    Stiffness2                    second stiffness
+//    Viscosity1                    first viscosity
+//    Viscosity2                    second viscosity
+//MAT 0   MAT_0D_MAXWELL_ACINUS_NEOHOOKEAN   Stiffness1 0 Stiffness2 0 Viscosity1 0 Viscosity2 0
+//
+// 0D acinar material exponential
+//    Stiffness1                    first stiffness
+//    Stiffness2                    second stiffness
+//    Viscosity1                    first viscosity
+//    Viscosity2                    second viscosity
+//MAT 0   MAT_0D_MAXWELL_ACINUS_EXPONENTIAL   Stiffness1 0 Stiffness2 0 Viscosity1 0 Viscosity2 0
+//
+// 0D acinar material doubleexponential
+//    Stiffness1                    first stiffness
+//    Stiffness2                    second stiffness
+//    Viscosity1                    first viscosity
+//    Viscosity2                    second viscosity
+//MAT 0   MAT_0D_MAXWELL_ACINUS_DOUBLEEXPONENTIAL   Stiffness1 0 Stiffness2 0 Viscosity1 0 Viscosity2 0
+//
+// 0D acinar material ogden
+//    Stiffness1                    first stiffness
+//    Stiffness2                    second stiffness
+//    Viscosity1                    first viscosity
+//    Viscosity2                    second viscosity
+//MAT 0   MAT_0D_MAXWELL_ACINUS_OGDEN   Stiffness1 0 Stiffness2 0 Viscosity1 0 Viscosity2 0
+//
+// 0D O2 hemoglobin saturation material
+//    PerVolumeBlood                how much of blood satisfies this rule (usually 100ml)
+//    O2SaturationPerVolBlood               O2 saturation per volume blood (In healthy blood 21.36ml/100ml of blood)
+//    PressureHalf                  PO2 of 50% saturated O2 (In healthy blood 26mmHg)
+//    Power                         Power of the Sigmoidal saturation curve (2.5)
+//    NumberOfO2PerVO2               Number of O2 moles per unit volume of O2
+//MAT 0   MAT_0D_O2_HEMOGLOBIN_SATURATION   PerVolumeBlood 0 O2SaturationPerVolBlood 0 PressureHalf 0 Power 0 NumberOfO2PerVO2 0
+//
+// 0D O2 air saturation material
+//    AtmosphericPressure               The atmospheric pressure
+//    NumberOfO2PerVO2               Number of O2 moles per unit volume of O2
+//MAT 0   MAT_0D_O2_AIR_SATURATION   AtmosphericPressure 0 NumberOfO2PerVO2 0
+//
+// particle material
+//    DENSITY                       mass density
+//    INITRADIUS                    initial radius of particle
+//    NUE            (optional)     poisson ratio
+//    YOUNG          (optional)     youngs modulus
+//MAT 0   MAT_Particle   DENSITY 0 INITRADIUS 0 NUE 0 YOUNG 0
+//
+// nutrientdiff material
+//    DIFFUSIVITY                   kinematic diffusivity
+//    STRDENSITY                    density of structure material
+//    REARATE                       substrate uptake rate coefficient
+//    SATCOEFF                      substrate saturation coefficient
+//    SOURCEMASS     (optional)     source mass term
+//MAT 0   MAT_Scatra_GrowthScd   DIFFUSIVITY 0 STRDENSITY 0 REARATE 0 SATCOEFF 0 SOURCEMASS Standard
+//
+// acoustic material
+//    DENSITY                       mass density
+//    C                             speed of sound
+//MAT 0   MAT_Acoustic   DENSITY 0 C 0
+//
+// acoustic solid material
+//    DENSITY                       mass density
+//    C                             speed of sound
+//    VISC                          viscosity mu
+//MAT 0   MAT_AcousticSol   DENSITY 0 C 0 VISC 0
+//
+// active fiber formation for the modeling of living cells
+//    DENS                          Density
+//    DECAY                         decay constant of activation signal
+//    IDMATPASSIVE                  number of passive material in input file: MAT IDMATPASSIVE ...
+//    KFOR                          formation rate parameter kforwards
+//    KBACK                         dissociation parameter kbackwards
+//    KVAR                          fiber rate sensitivity
+//    SIGMAX                        maximum tension exerted by stress fibres
+//    EPSNULL                       reference strain rate of cross-bridge dynamics law
+//MAT 0   MAT_ACTIVEFIBER   DENS 0 DECAY 0 IDMATPASSIVE 0 KFOR 0 KBACK 0 KVAR 0 SIGMAX 0 EPSNULL 0
+-----------------------------------------------CLONING MATERIAL MAP
+SRC_FIELD fluid SRC_MAT 2 TAR_FIELD ale TAR_MAT 3
+// SRC_FIELD '' SRC_MAT 0 TAR_FIELD '' TAR_MAT 0
+-------------------------------------------------------------CURVE1
+ CURVE 1 on EXPR FUNC (1-cos(2*t*pi/5)) t1 0.0 t2 5.0
+-------------------------------------------------------------CURVE2
+-------------------------------------------------------------CURVE3
+-------------------------------------------------------------CURVE4
+// CURVE 0 on Polygonal T 0 BYSTEP No 0 0  BYABSTIME Yes 0 0  FACTOR 0 0
+// CURVE 0 on Polygonal T 0 BYABSTIME Yes 0 0  FACTOR 0 0
+// CURVE 0 on Explicit FUNC '' c1 0 c2 0
+// CURVE 0 on EXPR FUNC '' t1 0 t2 0
+// CURVE 0 on LungSinus Frequ 0 pPEEP 0 Phase 0
+// CURVE 0 on PhysiologicalWaveform InterpolType '' Period 0 Flowrate 0 Samplingpoints 0 Arrayread [...]
+// CURVE 0 on PeriodicRepetition Period 0 t1 0 t2 0
+// CURVE 0 on File PathToFile ''
+-------------------------------------------------------------FUNCT1
+FUNCT 1 EXPR 0 0 0 FUNCTION 10*(y-1)
+-------------------------------------------------------------FUNCT2
+-------------------------------------------------------------FUNCT3
+-------------------------------------------------------------FUNCT4
+// FUNCT 0 LINE_LIN 0 0 0 0 0 0 0 0
+// FUNCT 0 LINE_QUAD 0 0 0 0 0 0
+// FUNCT 0 RADIUS_LIN 0 0 0 0 0 0 0 0
+// FUNCT 0 RADIUS_QUAD 0 0 0 0 0 0
+// FUNCT 0 BELTRAMI
+// FUNCT 0 KIM-MOIN
+// FUNCT 0 BOCHEV-UP
+// FUNCT 0 BOCHEV-RHS
+// FUNCT 0 BELTRAMI-UP MAT 0 ISSTAT 0
+// FUNCT 0 BELTRAMI-GRADU MAT 0 ISSTAT 0
+// FUNCT 0 BELTRAMI-RHS MAT 0 ISSTAT 0 ISSTOKES 0
+// FUNCT 0 KIMMOIN-UP MAT 0 ISSTAT 0
+// FUNCT 0 KIMMOIN-GRADU MAT 0 ISSTAT 0
+// FUNCT 0 KIMMOIN-RHS MAT 0 ISSTAT 0 ISSTOKES 0
+// FUNCT 0 TURBBOULAYER
+// FUNCT 0 TURBBOULAYER-BFS
+// FUNCT 0 TURBBOULAYERORACLES
+// FUNCT 0 JEFFERY-HAMEL
+// FUNCT 0 WOMERSLEY Local 0 MAT 0 CURVE 0 FSI ''
+// FUNCT 0 WOMERSLEY Local 0 Radius 0 MAT 0 CURVE 0
+// FUNCT 0 CYLINDER_3D 0
+// FUNCT 0 ZALESAKSDISK
+// FUNCT 0 CIRCULARFLAME2
+// FUNCT 0 CIRCULARFLAME3
+// FUNCT 0 CIRCULARFLAME4
+// FUNCT 0 DAMBREAKOBSTACLE
+// FUNCT 0 COLLAPSINGWATERCOLUMN
+// FUNCT 0 COLLAPSINGWATERCOLUMNCOARSE
+// FUNCT 0 IMPACTDROP
+// FUNCT 0 FORWARDFACINGSTEP
+// FUNCT 0 BUBBLES
+// FUNCT 0 ORACLESGFUNC
+// FUNCT 0 ROTATINGCONE
+// FUNCT 0 LEVELSETCUTTEST
+// FUNCT 0 CONTROLLEDROTATION FILE '' TYPE '' ORIGIN 0 0 0
+// FUNCT 0 ACCELERATIONPROFILE FILE ''
+// FUNCT 0 RAMPTOVALUE VALUE 0 STARTTIME 0 DURATION 0 TYPE ''
+// FUNCT 0 NODENORMAL GEOMETRY '' ORIGIN 0 0 0  RADIUS 0 CYLINDERHEIGHT 0 ORIENTATION 0 0 0  CASSINIA 0
+// FUNCT 0 ROTATIONVECTORFORNORMALSYSTEM FUNCTFORGEOMETRY 0
+// FUNCT 0 COMPONENT 0 EXPR 0 0 0  FUNCTION ''
+// FUNCT 0 EXPR 0 0 0  FUNCTION ''
+-------------------------------------------------RESULT DESCRIPTION
+// STRUCTURE DIS '' NODE 0 QUANTITY '' VALUE 0 TOLERANCE 0 [ NAME '' ]
+// FLUID DIS '' NODE 0 QUANTITY '' VALUE 0 TOLERANCE 0 [ NAME '' ]
+// FLUID DIS '' ELEMENT 0 QUANTITY '' VALUE 0 TOLERANCE 0 [ NAME '' ]
+// ALE DIS '' NODE 0 QUANTITY '' VALUE 0 TOLERANCE 0 [ NAME '' ]
+// THERMAL DIS '' NODE 0 QUANTITY '' VALUE 0 TOLERANCE 0 [ NAME '' ]
+// SCATRA DIS '' NODE 0 QUANTITY '' VALUE 0 TOLERANCE 0 [ NAME '' ]
+// SCATRA SPECIAL QUANTITY '' VALUE 0 TOLERANCE 0 [ NAME '' ]
+// RED_AIRWAY DIS '' NODE 0 QUANTITY '' VALUE 0 TOLERANCE 0 [ NAME '' ]
+// ARTNET DIS '' NODE 0 QUANTITY '' VALUE 0 TOLERANCE 0 [ NAME '' ]
+// ADJOINT DIS '' NODE 0 QUANTITY '' VALUE 0 TOLERANCE 0 [ NAME '' ]
+// OPTI DIS '' NODE 0 QUANTITY '' VALUE 0 TOLERANCE 0 [ NAME '' ]
+// OPTI DIS '' ELEMENT 0 QUANTITY '' VALUE 0 TOLERANCE 0 [ NAME '' ]
+// FSI NODE 0 QUANTITY '' VALUE 0 TOLERANCE 0 [ NAME '' ]
+// FSI SPECIAL QUANTITY '' VALUE 0 TOLERANCE 0 [ NAME '' ]
+// INVANA DIS '' ELEMENT 0 QUANTITY '' VALUE 0 TOLERANCE 0 [ NAME '' ]
+// INVANA SPECIAL QUANTITY '' VALUE 0 TOLERANCE 0 [ NAME '' ]
+// PARTICLE DIS '' NODE 0 QUANTITY '' VALUE 0 TOLERANCE 0 [ NAME '' ]
+// ACOUSTIC DIS '' NODE 0 QUANTITY '' VALUE 0 TOLERANCE 0 [ NAME '' ]
+// ACOUSTIC_INVANA DIS '' ELEMENT 0 QUANTITY '' VALUE 0 TOLERANCE 0 [ NAME '' ]

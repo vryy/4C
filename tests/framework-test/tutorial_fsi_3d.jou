@@ -1,0 +1,140 @@
+reset
+$=======================Define parameters
+# {Depth=0.05}
+# {Width=1.0}
+# {BottomHeight=0.002}
+# {CavityHeight=1.0}
+# {InflowHeight=0.1}
+# {MeshDepth=1}
+# {MeshWidth=32}
+# {MeshBottomHeight=1}
+# {MeshCavityHeight=32}
+# {MeshInflowHeight=7}
+
+$$GEOMETRY
+$=====================Create Bottom
+brick x {Width} y {BottomHeight} z {Depth}
+volume 1 move x {Width/2} y {-BottomHeight/2} z {-Depth/2}
+$=====================Create Fluid Part
+$ cavity + inflow
+brick x {Width} y {CavityHeight+InflowHeight} z {Depth}
+align volume 2 surface 9 with surface 5
+$ divide cavity and inflow region
+webcut volume 2 with plane yplane offset {CavityHeight} imprint merge
+$$MESHING
+$=======================Mesh Bottom
+curve 3 interval {MeshBottomHeight}
+curve 3 scheme equal
+mesh curve 3
+curve 2 interval {MeshWidth}
+curve 2 scheme equal
+mesh curve 2
+curve 11 interval {MeshDepth}
+curve 11 scheme equal
+mesh curve 11
+mesh volume 1
+$=======================Mesh Cavity
+curve 29 interval {MeshCavityHeight}
+curve 29 scheme equal
+mesh curve 29
+curve 16 interval {MeshWidth}
+curve 16 scheme equal
+mesh curve 16
+curve 21 interval {MeshDepth}
+curve 21 scheme equal
+mesh curve 21
+mesh volume 2
+$=======================Mesh Inflow
+curve 40 interval {MeshInflowHeight}
+curve 40 scheme equal
+mesh curve 40
+mesh volume 3
+$$EXODUS - definitions
+$=======================Structure
+block 1 volume 1
+block 1 name "flexible bottom"
+nodeset 1 surface 4
+nodeset 1 name "structure surface left"
+nodeset 2 surface 6
+nodeset 2 name "structure surface right"
+nodeset 3 surface 1
+nodeset 3 name "structure surface front"
+nodeset 4 surface 2
+nodeset 4 name "structure surface back"
+nodeset 5 surface 5
+nodeset 5 name "structure coupling surface"
+nodeset 6 curve 3
+nodeset 6 name "structure edge front left"
+nodeset 7 curve 7
+nodeset 7 name "structure edge back left"
+nodeset 8 curve 5
+nodeset 8 name "structure edge back right"
+nodeset 9 curve 1
+nodeset 9 name "structure edge front right"
+$=======================Fluid
+block 2 volume 2 3
+block 2 name "fluid"
+nodeset 10 surface 15
+nodeset 10 name "cavity wall left"
+nodeset 11 surface 17
+nodeset 11 name "cavity wall right"
+nodeset 12 surface 14 21
+nodeset 12 name "fluid wall front"
+nodeset 13 surface 16 20
+nodeset 13 name "fluid wall back"
+nodeset 14 surface 9
+nodeset 14 name "fluid coupling surface"
+nodeset 15 surface 11
+nodeset 15 name "lid"
+nodeset 16 surface 22
+nodeset 16 name "inflow"
+nodeset 17 surface 19
+nodeset 17 name "outflow"
+nodeset 18 curve 29
+nodeset 18 name "cavity edge front left"
+nodeset 19 curve 31
+nodeset 19 name "cavity edge back left"
+nodeset 20 curve 32
+nodeset 20 name "cavity edge back right"
+nodeset 21 curve 30
+nodeset 21 name "cavity edge front right"
+nodeset 22 curve 16
+nodeset 22 name "cavity edge front bottom"
+nodeset 23 curve 18
+nodeset 23 name "cavity edge back bottom"
+nodeset 24 curve 21
+nodeset 24 name "cavity edge left bottom"
+nodeset 25 curve 22
+nodeset 25 name "cavity edge right bottom"
+nodeset 26 curve 26
+nodeset 26 name "cavity-inflow edge"
+nodeset 27 curve 40
+nodeset 27 name "inflow edge front"
+nodeset 28 curve 39
+nodeset 28 name "inflow edge back"
+nodeset 29 curve 23
+nodeset 29 name "lid edge left"
+nodeset 30 curve 14
+nodeset 30 name "lid edge front"
+nodeset 31 curve 20
+nodeset 31 name "lid edge back"
+nodeset 32 vertex 12
+nodeset 32 name "cavity vertex front left bottom"
+nodeset 33 vertex 15
+nodeset 33 name "cavity vertex back left bottom"
+nodeset 34 vertex 14
+nodeset 34 name "cavity vertex back right bottom"
+nodeset 35 vertex 9
+nodeset 35 name "cavity vertex front right bottom"
+nodeset 36 vertex 19
+nodeset 36 name "cavity-inflow vertex front 1"
+nodeset 37 vertex 17
+nodeset 37 name "cavity-inflow vertex front 2"
+nodeset 38 vertex 11
+nodeset 38 name "lid vertex front left"
+nodeset 39 vertex 16
+nodeset 39 name "lid vertex back left"
+
+$======================= export mesh
+export mesh "xxx_tutorial_fsi_3d.e" block all dimension 3 overwrite
+

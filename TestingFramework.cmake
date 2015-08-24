@@ -1951,6 +1951,7 @@ baci_test(activefiber_fsi_cell_rheotaxis_mono_h8 2 "")
 # testing the whole framework: from cubit via pre_exodus and baci to the post-filter:
 baci_framework_test(tutorial_fluid 2)
 baci_framework_test(tutorial_fsi 2)
+baci_framework_test(tutorial_fsi_3d 2)
 
 # cut test
 cut_test(2)
