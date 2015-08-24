@@ -38,9 +38,10 @@ namespace DRT
 
         //! singleton access method
         static ScaTraEleUtilsElchDiffCond<distype>* Instance(
-            const int numdofpernode,
-            const int numscal,
-            bool create=true
+            const int numdofpernode,      ///< number of degrees of freedom per node
+            const int numscal,            ///< number of transported scalars per node
+            const std::string& disname,   ///< name of discretization
+            bool create=true              ///< creation/destruction flag
             );
 
         //! singleton destruction
@@ -76,7 +77,11 @@ namespace DRT
       private:
 
         //! private constructor for singletons
-        ScaTraEleUtilsElchDiffCond(const int numdofpernode, const int numscal);
+        ScaTraEleUtilsElchDiffCond(
+            const int numdofpernode,     ///< number of degrees of freedom per node
+            const int numscal,           ///< number of transported scalars per node
+            const std::string& disname   ///< name of discretization
+            );
 
         //! destructor
         virtual ~ScaTraEleUtilsElchDiffCond(){return;};

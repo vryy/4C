@@ -49,6 +49,7 @@ enum Action {
   calc_error,                      // calc_error,
   calc_elch_conductivity,          // calc_elch_conductivity,
   calc_elch_electrode_soc,         // calculate electrode state of charge
+  calc_elch_boundary_kinetics_point,// evaluate electrode kinetics point conditions
   calc_elch_domain_kinetics,       // calculate electrode kinetics in domain
   calc_scatra_box_filter,          // calc_scatra_box_filter,
   calc_turbulent_prandtl_number,   // calc_turbulent_prandtl_number

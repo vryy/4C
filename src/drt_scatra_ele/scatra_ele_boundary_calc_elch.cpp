@@ -36,7 +36,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ScaTraEleBoundaryCalcElch(
   elchparams_(DRT::ELEMENTS::ScaTraEleParameterElch::Instance(disname)),
 
   // instance of utility class supporting element evaluation
-  utils_(ScaTraEleUtilsElch<distype>::Instance(numdofpernode,numscal))
+  utils_(ScaTraEleUtilsElch<distype>::Instance(numdofpernode,numscal,disname))
 {
   return;
 }
@@ -122,17 +122,17 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateAction(
 
 
 /*----------------------------------------------------------------------*
- | evaluate electrode kinetics boundary condition                 ehrl  |
+ | process an electrode kinetics boundary condition          fang 08/15 |
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcElchBoundaryKinetics(
-    DRT::FaceElement*                 ele,
-    Teuchos::ParameterList&           params,
-    DRT::Discretization&              discretization,
-    std::vector<int>&                 lm,
-    Epetra_SerialDenseMatrix&         elemat1_epetra,
-    Epetra_SerialDenseVector&         elevec1_epetra,
-    const double                      scalar
+    DRT::FaceElement*           ele,              ///< current element
+    Teuchos::ParameterList&     params,           ///< parameter list
+    DRT::Discretization&        discretization,   ///< discretization
+    std::vector<int>&           lm,               ///< location vector
+    Epetra_SerialDenseMatrix&   elemat1_epetra,   ///< element matrix
+    Epetra_SerialDenseVector&   elevec1_epetra,   ///< element right-hand side vector
+    const double                scalar            ///< scaling factor for element matrix and right-hand side contributions
     )
 {
   // get actual values of transported scalars
@@ -270,7 +270,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcElchBoundaryKinetics
         dserror("time factor is negative.");
     }
 
-    ElectrodeStatus(
+    EvaluateElectrodeStatus(
         ele,
         elevec1_epetra,
         params,
@@ -286,7 +286,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcElchBoundaryKinetics
         scalar
         );
   }
-}
+
+  return;
+} // DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcElchBoundaryKinetics
 
 
 /*----------------------------------------------------------------------*
@@ -470,24 +472,24 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcCellVoltage(
 
 
 /*----------------------------------------------------------------------*
- | evaluate an electrode kinetics boundary condition (private) gjb 01/09|
+ | evaluate an electrode kinetics boundary condition          gjb 01/09 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElchBoundaryKinetics(
-    const DRT::Element*                 ele,        ///< the actual boundary element
-    Epetra_SerialDenseMatrix&           emat,       ///< element-matrix
-    Epetra_SerialDenseVector&           erhs,       ///< element-rhs
-    const std::vector<double>&          ephinp,     ///< actual conc. and pot. values
-    const std::vector<double>&          ehist,      ///< element history vector
+    const DRT::Element*                 ele,        ///< current element
+    Epetra_SerialDenseMatrix&           emat,       ///< element matrix
+    Epetra_SerialDenseVector&           erhs,       ///< element right-hand side vector
+    const std::vector<double>&          ephinp,     ///< nodal values of concentration and electric potential
+    const std::vector<double>&          ehist,      ///< nodal history vector
     double                              timefac,    ///< time factor
-    Teuchos::RCP<const MAT::Material>   material,   ///< the material
-    Teuchos::RCP<DRT::Condition>        cond,       ///< the condition
+    Teuchos::RCP<const MAT::Material>   material,   ///< material
+    Teuchos::RCP<DRT::Condition>        cond,       ///< electrode kinetics boundary condition
     const int                           nume,       ///< number of transferred electrons
     const std::vector<int>              stoich,     ///< stoichiometry of the reaction
     const int                           kinetics,   ///< desired electrode kinetics model
-    const double                        pot0,       ///< actual electrode potential on metal side
+    const double                        pot0,       ///< electrode potential on metal side
     const double                        frt,        ///< factor F/RT
-    const double                        scalar      ///< scaling factor for element matrix and residual contributions
+    const double                        scalar      ///< scaling factor for element matrix and right-hand side contributions
 )
 {
   // for pre-multiplication of i0 with 1/(F z_k)
@@ -557,7 +559,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElchBoundaryKine
           timefac,
           fac,
           my::funct_,
-          material,
           cond,
           nume,
           stoich,
@@ -577,23 +578,23 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElchBoundaryKine
 
 
 /*----------------------------------------------------------------------*
- | calculate electrode kinetics status information             gjb 01/09|
+ | evaluate electrode kinetics status information             gjb 01/09 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
-    const DRT::Element*           ele,        ///< the actual boundary element
-    Epetra_SerialDenseVector&     scalars,    ///< scalars to be computed
-    Teuchos::ParameterList&       params,     ///< the parameter list
-    Teuchos::RCP<DRT::Condition>  cond,       ///< the condition
-    const std::vector<double>&    ephinp,     ///< current conc. and potential values
-    const std::vector<double>&    ephidtnp,   ///< time derivative vector evaluated at t_{n+1}
-    const int                     kinetics,   ///< desired electrode kinetics model
-    const std::vector<int>        stoich,     ///< stoichiometry of the reaction
-    const int                     nume,       ///<  number of transferred electrons
-    const double                  pot0,       ///< actual electrode potential on metal side at t_{n+1}
-    const double                  frt,        ///< factor F/RT
-    const double                  timefac,    ///< factor due to time discretization
-    const double                  scalar      ///< scaling factor for current related quantities
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElectrodeStatus(
+    const DRT::Element*            ele,        ///< current element
+    Epetra_SerialDenseVector&      scalars,    ///< scalars to be integrated
+    Teuchos::ParameterList&        params,     ///< parameter list
+    Teuchos::RCP<DRT::Condition>   cond,       ///< condition
+    const std::vector<double>&     ephinp,     ///< nodal values of concentration and electric potential
+    const std::vector<double>&     ephidtnp,   ///< nodal time derivative vector
+    const int                      kinetics,   ///< desired electrode kinetics model
+    const std::vector<int>         stoich,     ///< stoichiometry of the reaction
+    const int                      nume,       ///< number of transferred electrons
+    const double                   pot0,       ///< electrode potential on metal side
+    const double                   frt,        ///< factor F/RT
+    const double                   timefac,    ///< time factor
+    const double                   scalar      ///< scaling factor for current related quantities
 )
 {
   // Warning:
@@ -685,7 +686,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus(
             " Statistics could not be evaluated");
 
   return;
-} // DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ElectrodeStatus
+} // DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElectrodeStatus
 
 
 /*----------------------------------------------------------------------*

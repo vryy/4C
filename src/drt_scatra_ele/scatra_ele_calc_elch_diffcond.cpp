@@ -86,7 +86,7 @@ DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::ScaTraEleCalcElchDiffCond(con
   my::scatravarmanager_ = Teuchos::rcp(new ScaTraEleInternalVariableManagerElchDiffCond<my::nsd_, my::nen_>(my::numscal_,myelch::elchparams_,diffcondparams_));
 
   // replace utility class for electrodes by utility class for diffusion-conduction formulation
-  myelch::utils_ = DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::Instance(numdofpernode,numscal);
+  myelch::utils_ = DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::Instance(numdofpernode,numscal,disname);
 
   // safety check for closing equation
   switch(myelch::elchparams_->EquPot())

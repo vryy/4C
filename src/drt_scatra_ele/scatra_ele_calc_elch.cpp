@@ -24,7 +24,7 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleCalcElch<distype>::ScaTraEleCalcElch(const int numdofpernode,const int numscal,const std::string& disname)
   : DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode,numscal,disname),
     elchparams_(DRT::ELEMENTS::ScaTraEleParameterElch::Instance(disname)),   // parameter class for electrochemistry problems
-    utils_(DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::Instance(numdofpernode,numscal)),
+    utils_(DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::Instance(numdofpernode,numscal,disname)),
     epotnp_(my::numscal_)
 {
   // replace standard scatra diffusion manager by elch diffusion manager

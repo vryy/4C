@@ -364,7 +364,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcElchDomainKinetics(
           ephinp,
           ehist,
           timefac,
-          material,
           cond,
           nume,
           *stoich,
@@ -401,7 +400,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcElchDomainKinetics(
         dserror("time factor is negative.");
     }
 
-    ElectrodeStatus(
+    EvaluateElectrodeStatus(
         ele,
         elevec1_epetra,
         params,
@@ -432,7 +431,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::EvaluateElchDomainKineti
     const std::vector<double>&          ephinp,     ///< actual conc. and pot. values
     const std::vector<double>&          ehist,      ///< element history vector
     double                              timefac,    ///< time factor
-    Teuchos::RCP<const MAT::Material>   material,   ///< the material
     Teuchos::RCP<DRT::Condition>        cond,       ///< the condition
     const int                           nume,       ///< number of transferred electrons
     const std::vector<int>              stoich,     ///< stoichiometry of the reaction
@@ -504,7 +502,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::EvaluateElchDomainKineti
           timefac,
           fac,
           my::funct_,
-          material,
           cond,
           nume,
           stoich,
@@ -562,7 +559,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::EvaluateElchDomainKineti
  | calculate electrode domain kinetics status information         fang 07/15 |
  *---------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::ElectrodeStatus(
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::EvaluateElectrodeStatus(
     const DRT::Element*           ele,        ///< the actual boundary element
     Epetra_SerialDenseVector&     scalars,    ///< scalars to be computed
     Teuchos::ParameterList&       params,     ///< the parameter list
@@ -662,7 +659,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::ElectrodeStatus(
             " Statistics could not be evaluated");
 
   return;
-} // DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::ElectrodeStatus
+} // DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::EvaluateElectrodeStatus
 
 
 /*-----------------------------------------------------------------------------------------*

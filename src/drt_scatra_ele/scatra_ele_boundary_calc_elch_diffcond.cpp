@@ -82,6 +82,91 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::ScaTraEleBoundaryCalc
 
 
 /*----------------------------------------------------------------------*
+ | evaluate action                                           fang 08/15 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateAction(
+    DRT::FaceElement*              ele,
+    Teuchos::ParameterList&        params,
+    DRT::Discretization&           discretization,
+    SCATRA::BoundaryAction         action,
+    DRT::Element::LocationArray&   la,
+    Epetra_SerialDenseMatrix&      elemat1_epetra,
+    Epetra_SerialDenseMatrix&      elemat2_epetra,
+    Epetra_SerialDenseVector&      elevec1_epetra,
+    Epetra_SerialDenseVector&      elevec2_epetra,
+    Epetra_SerialDenseVector&      elevec3_epetra
+)
+{
+  // extract location vector associated with primary dofset
+  std::vector<int>& lm = la[0].lm_;
+
+  // determine and evaluate action
+  switch(action)
+  {
+  case SCATRA::bd_calc_elch_boundary_kinetics:
+  {
+    // access material of parent element
+    Teuchos::RCP<MAT::Material> material = ele->ParentElement()->Material();
+
+    // extract porosity from material and store in diffusion manager
+    if(material->MaterialType() == INPAR::MAT::m_elchmat)
+    {
+      const MAT::ElchMat* elchmat = static_cast<const MAT::ElchMat*>(material.get());
+
+      for(int iphase=0; iphase<elchmat->NumPhase(); ++iphase)
+      {
+        Teuchos::RCP<const MAT::Material> phase = elchmat->PhaseById(elchmat->PhaseID(iphase));
+
+        if(phase->MaterialType() == INPAR::MAT::m_elchphase)
+          dmedc_->SetPhasePoro((static_cast<const MAT::ElchPhase*>(phase.get()))->Epsilon(),iphase);
+
+        else
+          dserror("Invalid material!");
+      }
+    }
+
+    else
+      dserror("Invalid material!");
+
+    // process electrode kinetics boundary condition
+    myelch::CalcElchBoundaryKinetics(
+        ele,
+        params,
+        discretization,
+        lm,
+        elemat1_epetra,
+        elevec1_epetra,
+        dmedc_->GetPhasePoro(0)
+        );
+
+    break;
+  }
+
+  default:
+  {
+    myelch::EvaluateAction(
+        ele,
+        params,
+        discretization,
+        action,
+        la,
+        elemat1_epetra,
+        elemat2_epetra,
+        elevec1_epetra,
+        elevec2_epetra,
+        elevec3_epetra
+        );
+
+   break;
+  }
+  } // switch action
+
+  return 0;
+}
+
+
+/*----------------------------------------------------------------------*
  | evaluate Neumann boundary condition                       fang 02/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
@@ -152,66 +237,24 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateNeumann(
 
 
 /*----------------------------------------------------------------------*
- | evaluate electrode kinetics boundary condition            fang 02/15 |
- *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::CalcElchBoundaryKinetics(
-    DRT::FaceElement*                 ele,
-    Teuchos::ParameterList&           params,
-    DRT::Discretization&              discretization,
-    std::vector<int>&                 lm,
-    Epetra_SerialDenseMatrix&         elemat1_epetra,
-    Epetra_SerialDenseVector&         elevec1_epetra,
-    const double                      scalar
-    )
-{
-  Teuchos::RCP<MAT::Material> material = ele->ParentElement()->Material();
-
-  if(material->MaterialType() == INPAR::MAT::m_elchmat)
-  {
-    const MAT::ElchMat* elchmat = static_cast<const MAT::ElchMat*>(material.get());
-
-    for(int iphase=0; iphase<elchmat->NumPhase(); ++iphase)
-    {
-      Teuchos::RCP<const MAT::Material> phase = elchmat->PhaseById(elchmat->PhaseID(iphase));
-
-      if(phase->MaterialType() == INPAR::MAT::m_elchphase)
-        dmedc_->SetPhasePoro((static_cast<const MAT::ElchPhase*>(phase.get()))->Epsilon(),iphase);
-
-      else
-        dserror("Invalid material!");
-    }
-  }
-
-  else
-    dserror("Invalid material!");
-
-  // call base class routine
-  myelch::CalcElchBoundaryKinetics(ele,params,discretization,lm,elemat1_epetra,elevec1_epetra,dmedc_->GetPhasePoro(0));
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- | evaluate electrode kinetics boundary condition            fang 02/15 |
+ | evaluate an electrode kinetics boundary condition         fang 02/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateElchBoundaryKinetics(
-    const DRT::Element*                 ele,        ///< the actual boundary element
-    Epetra_SerialDenseMatrix&           emat,       ///< element-matrix
-    Epetra_SerialDenseVector&           erhs,       ///< element-rhs
-    const std::vector<double>&          ephinp,     ///< actual conc. and pot. values
-    const std::vector<double>&          ehist,      ///< element history vector
+    const DRT::Element*                 ele,        ///< current element
+    Epetra_SerialDenseMatrix&           emat,       ///< element matrix
+    Epetra_SerialDenseVector&           erhs,       ///< element right-hand side vector
+    const std::vector<double>&          ephinp,     ///< nodal values of concentration and electric potential
+    const std::vector<double>&          ehist,      ///< nodal history vector
     double                              timefac,    ///< time factor
-    Teuchos::RCP<const MAT::Material>   material,   ///< the material
-    Teuchos::RCP<DRT::Condition>        cond,       ///< the condition
+    Teuchos::RCP<const MAT::Material>   material,   ///< material
+    Teuchos::RCP<DRT::Condition>        cond,       ///< electrode kinetics boundary condition
     const int                           nume,       ///< number of transferred electrons
     const std::vector<int>              stoich,     ///< stoichiometry of the reaction
     const int                           kinetics,   ///< desired electrode kinetics model
-    const double                        pot0,       ///< actual electrode potential on metal side
+    const double                        pot0,       ///< electrode potential on metal side
     const double                        frt,        ///< factor F/RT
-    const double                        scalar      ///< scaling factor for element matrix and residual contributions
+    const double                        scalar      ///< scaling factor for element matrix and right-hand side contributions
 )
 {
   // call base class routine

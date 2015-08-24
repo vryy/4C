@@ -203,6 +203,12 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
       const std::string                      condstring      //!< name of condition to be evaluated
   );
 
+  //! evaluate point boundary conditions for electrode kinetics
+  void EvaluateElectrodeBoundaryKineticsPointConditions(
+      Teuchos::RCP<LINALG::SparseOperator>   systemmatrix,   //!< global system matrix
+      Teuchos::RCP<Epetra_Vector>            rhs             //!< global right-hand side vector
+  );
+
   //! Add Linearization for Nernst-BC
   void  LinearizationNernstCondition();
 

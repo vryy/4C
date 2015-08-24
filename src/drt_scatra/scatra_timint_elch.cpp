@@ -566,9 +566,6 @@ void SCATRA::ScaTraTimIntElch::OutputSingleElectrodeInfo(
 
   eleparams.set("calc_status",true); // just want to have a status output!
 
-  // parameters for Elch/DiffCond formulation
-  eleparams.sublist("DIFFCOND") = elchparams_->sublist("DIFFCOND");
-
   //provide displacement field in case of ALE
   if (isale_)
     discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
@@ -1768,9 +1765,6 @@ void SCATRA::ScaTraTimIntElch::EvaluateElectrodeKineticsConditions(
   else
     dserror("Illegal action for electrode kinetics evaluation!");
 
-  // parameters for Elch/DiffCond formulation
-  condparams.sublist("DIFFCOND") = elchparams_->sublist("DIFFCOND");
-
   if (isale_)   // provide displacement field in case of ALE
     discret_->AddMultiVectorToParameterList(condparams,"dispnp",dispnp_);
 
@@ -1787,6 +1781,119 @@ void SCATRA::ScaTraTimIntElch::EvaluateElectrodeKineticsConditions(
 
   return;
 } // ScaTraTimIntElch::EvaluateElectrodeKineticsConditions
+
+
+/*----------------------------------------------------------------------------*
+ | evaluate point boundary conditions for electrode kinetics       fang 07/15 |
+ *----------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElch::EvaluateElectrodeBoundaryKineticsPointConditions(
+    Teuchos::RCP<LINALG::SparseOperator>   systemmatrix,   //!< global system matrix
+    Teuchos::RCP<Epetra_Vector>            rhs             //!< global right-hand side vector
+)
+{
+  // time measurement
+  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'ElchBoundaryKineticsPoint'");
+
+  // remove state vectors from discretization
+  discret_->ClearState();
+
+  // create parameter list
+  Teuchos::ParameterList condparams;
+
+  // set action for elements
+  condparams.set<int>("action",SCATRA::calc_elch_boundary_kinetics_point);
+
+  // provide displacement field in case of ALE
+  if(isale_)
+    discret_->AddMultiVectorToParameterList(condparams,"dispnp",dispnp_);
+
+  // set state vectors according to time-integration scheme
+  AddTimeIntegrationSpecificVectors();
+
+  // extract electrode kinetics point boundary conditions from discretization
+  std::vector<DRT::Condition*> conditions;
+  discret_->GetCondition("ElchBoundaryKineticsPoint",conditions);
+
+  // loop over all electrode kinetics point boundary conditions
+  for(unsigned icond=0; icond<conditions.size(); ++icond)
+  {
+    // extract nodal cloud of current condition
+    const std::vector<int>* nodeids = conditions[icond]->Nodes();
+
+    // safety checks
+    if(!nodeids)
+      dserror("Electrode kinetics point boundary condition doesn't have nodal cloud!");
+    if(nodeids->size() != 1)
+      dserror("Electrode kinetics point boundary condition must be associated with exactly one node!");
+
+    // extract global ID of current node
+    const int nodeid = (*nodeids)[0];
+
+    // consider node only if it is owned by current processor
+    if(discret_->NodeRowMap()->MyGID(nodeid))
+    {
+      // get node
+      DRT::Node* node = discret_->gNode(nodeid);
+
+      // safety checks
+      if(node != NULL)
+        dserror("Cannot find node with global ID %d on discretization!",nodeid);
+      if(node->NumElement() != 1)
+        dserror("Electrode kinetics point boundary condition must be specified on boundary node with exactly one attached element!");
+
+      // get element attached to node
+      DRT::Element* element = node->Elements()[0];
+
+      // determine location information
+      DRT::Element::LocationArray la(discret_->NumDofSets());
+      element->LocationVector(*discret_,la,false);
+
+      // initialize element matrix
+      const int size = (int) la[0].lm_.size();
+      Epetra_SerialDenseMatrix elematrix;
+      if(elematrix.M() != size)
+        elematrix.Shape(size,size);
+      else
+        memset(elematrix.A(),0,size*size*sizeof(double));
+
+      // initialize element right-hand side vector
+      Epetra_SerialDenseVector elevector;
+      if(elevector.Length() != size)
+        elevector.Size(size);
+      else
+        memset(elevector.Values(),0,size*sizeof(double));
+
+      // dummy matrix and right-hand side vector
+      Epetra_SerialDenseMatrix elematrix_dummy;
+      Epetra_SerialDenseVector elevector_dummy;
+
+      // evaluate electrode kinetics point boundary conditions
+      const int error = element->Evaluate(
+          condparams,
+          *discret_,
+          la,
+          elematrix,
+          elematrix_dummy,
+          elevector,
+          elevector_dummy,
+          elevector_dummy
+          );
+
+      // safety check
+      if(error)
+        dserror("Element with global ID %d returned error code %d on processor %d!",element->Id(),error,discret_->Comm().MyPID());
+
+      // assemble element matrix and right-hand side vector into global system of equations
+      sysmat_->Assemble(element->Id(),la[0].stride_,elematrix,la[0].lm_,la[0].lmowner_);
+      LINALG::Assemble(*residual_,elevector,la[0].lm_,la[0].lmowner_);
+    }
+  }
+
+  // remove state vectors from discretization
+  discret_->ClearState();
+
+  return;
+} // SCATRA::ScaTraTimIntElch::EvaluateElectrodeBoundaryKineticsPointConditions
 
 
 /*----------------------------------------------------------------------*
@@ -1833,10 +1940,16 @@ void SCATRA::ScaTraTimIntElch::EvaluateSolutionDependingConditions(
 )
 {
   // evaluate domain conditions for electrode kinetics
-  EvaluateElectrodeKineticsConditions(systemmatrix,rhs,"ElchDomainKinetics");
+  if(discret_->GetCondition("ElchDomainKinetics") != NULL)
+    EvaluateElectrodeKineticsConditions(systemmatrix,rhs,"ElchDomainKinetics");
 
   // evaluate boundary conditions for electrode kinetics
-  EvaluateElectrodeKineticsConditions(systemmatrix,rhs,"ElchBoundaryKinetics");
+  if(discret_->GetCondition("ElchBoundaryKinetics") != NULL)
+    EvaluateElectrodeKineticsConditions(systemmatrix,rhs,"ElchBoundaryKinetics");
+
+  // evaluate point boundary conditions for electrode kinetics
+  if(discret_->GetCondition("ElchBoundaryKineticsPoint") != NULL)
+    EvaluateElectrodeBoundaryKineticsPointConditions(systemmatrix,rhs);
 
   // call base class routine
   ScaTraTimIntImpl::EvaluateSolutionDependingConditions(systemmatrix,rhs);

@@ -39,9 +39,10 @@ namespace DRT
 
         //! singleton access method
         static ScaTraEleUtilsElch<distype>* Instance(
-            const int numdofpernode,
-            const int numscal,
-            bool create=true
+            const int numdofpernode,      ///< number of degrees of freedom per node
+            const int numscal,            ///< number of transported scalars per node
+            const std::string& disname,   ///< name of discretization
+            bool create=true              ///< creation/destruction flag
             );
 
         //! singleton destruction
@@ -58,7 +59,6 @@ namespace DRT
             const double                                  timefac,    ///< time factor
             const double                                  fac,        ///< Gauss integration factor
             const LINALG::Matrix<nen_,1>&                 funct,      ///< shape functions at int. point
-            const Teuchos::RCP<const MAT::Material>&      material,   ///< material
             const Teuchos::RCP<DRT::Condition>&           cond,       ///< condition
             const int                                     nume,       ///< number of transferred electrons
             const std::vector<int>&                       stoich,     ///< stoichiometry of the reaction
@@ -69,7 +69,7 @@ namespace DRT
             const double                                  fns,        ///< factor fns = s_k / (nume * faraday * (-1))
             const double                                  scalar,     ///< scaling factor for element matrix and right-hand side vector contributions
             const int                                     k           ///< index of evaluated scalar
-        ) const;
+            ) const;
 
         //! evaluate electrode kinetics status information at integration point on domain or boundary element
         void EvaluateElectrodeStatusAtIntegrationPoint(
@@ -91,7 +91,7 @@ namespace DRT
             const double                                  fac,        ///< integration factor
             const double                                  scalar,     ///< scaling factor for current related quantities
             const int                                     k           ///< index of evaluated scalar
-        ) const;
+            ) const;
 
         //! evaluate ion material
         void MatIon(
@@ -99,12 +99,16 @@ namespace DRT
             const int                                       k,            //!< ID of ion material
             const INPAR::ELCH::EquPot                       equpot,       //!< type of closing equation for electric potential
             const Teuchos::RCP<ScaTraEleDiffManagerElch>&   diffmanager   //!< diffusion manager
-        );
+            );
 
       protected:
 
         //! protected constructor for singletons
-        ScaTraEleUtilsElch(const int numdofpernode, const int numscal);
+        ScaTraEleUtilsElch(
+            const int numdofpernode,     ///< number of degrees of freedom per node
+            const int numscal,           ///< number of transported scalars per node
+            const std::string& disname   ///< name of discretization
+            );
 
         //! destructor
         virtual ~ScaTraEleUtilsElch(){return;};

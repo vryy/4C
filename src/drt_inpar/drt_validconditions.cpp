@@ -3537,10 +3537,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
     Teuchos::RCP<ConditionDefinition> electrodeboundarykineticspoint =
         Teuchos::rcp(new ConditionDefinition("ELECTRODE BOUNDARY KINETICS POINT CONDITIONS",
-                                             "ElchBoundaryKinetics",
+                                             "ElchBoundaryKineticsPoint",
                                              "point electrode boundary kinetics",
                                              DRT::Condition::ElchBoundaryKinetics,
-                                             true,
+                                             false,
                                              DRT::Condition::Point));
 
     Teuchos::RCP<ConditionDefinition> electrodeboundarykineticsline =

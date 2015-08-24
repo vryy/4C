@@ -315,7 +315,6 @@ private:
       const std::vector<double>&          ephinp,     ///< actual conc. and pot. values
       const std::vector<double>&          ehist,      ///< element history vector
       double                              timefac,    ///< time factor
-      Teuchos::RCP<const MAT::Material>   material,   ///< the material
       Teuchos::RCP<DRT::Condition>        cond,       ///< the condition
       const int                           nume,       ///< number of transferred electrons
       const std::vector<int>              stoich,     ///< stoichiometry of the reaction
@@ -396,7 +395,7 @@ private:
       Epetra_SerialDenseVector&         elevec1_epetra
   );
 
-  void ElectrodeStatus(
+  void EvaluateElectrodeStatus(
       const DRT::Element*           ele,        ///< the actual boundary element
       Epetra_SerialDenseVector&     scalars,    ///< scalars to be computed
       Teuchos::ParameterList&       params,     ///< the parameter list
@@ -410,7 +409,6 @@ private:
       const double                  frt,        ///< factor F/RT
       const double                  timefac     ///< factor due to time discretization
       );
-
 
   //! set internal variables for diffusion-conduction formulation
   void SetInternalVariablesForMatAndRHS();

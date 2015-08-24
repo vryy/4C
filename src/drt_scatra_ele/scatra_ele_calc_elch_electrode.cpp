@@ -80,7 +80,7 @@ DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::ScaTraEleCalcElchElectrode(c
   my::scatravarmanager_ = Teuchos::rcp(new ScaTraEleInternalVariableManagerElchElectrode<my::nsd_, my::nen_>(my::numscal_,myelch::elchparams_));
 
   // replace elch utility class by utility class for electrodes
-  myelch::utils_ = DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::Instance(numdofpernode,numscal);
+  myelch::utils_ = DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::Instance(numdofpernode,numscal,disname);
 
   return;
 }

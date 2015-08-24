@@ -248,6 +248,23 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateAction(
     break;
   }
 
+  case SCATRA::calc_elch_boundary_kinetics_point:
+  {
+    // TODO: implement and activate!
+
+//    CalcElchBoundaryKinetics(
+//        ele,
+//        params,
+//        discretization,
+//        la[0].lm_,
+//        elemat1_epetra,
+//        elevec1_epetra,
+//        1.
+//        );
+
+    break;
+  }
+
   default:
   {
     my::EvaluateAction(ele,

@@ -53,6 +53,20 @@ namespace DRT
       /// private constructor for singletons
       ScaTraEleBoundaryCalcElchDiffCond(const int numdofpernode,const int numscal,const std::string& disname);
 
+      //! evaluate action
+      int EvaluateAction(
+          DRT::FaceElement*              ele,
+          Teuchos::ParameterList&        params,
+          DRT::Discretization&           discretization,
+          SCATRA::BoundaryAction         action,
+          DRT::Element::LocationArray&   la,
+          Epetra_SerialDenseMatrix&      elemat1_epetra,
+          Epetra_SerialDenseMatrix&      elemat2_epetra,
+          Epetra_SerialDenseVector&      elevec1_epetra,
+          Epetra_SerialDenseVector&      elevec2_epetra,
+          Epetra_SerialDenseVector&      elevec3_epetra
+          );
+
       //! evaluate Neumann boundary condition
       int EvaluateNeumann(
           DRT::FaceElement*                   ele,
@@ -64,23 +78,23 @@ namespace DRT
           const double                        scalar
       );
 
-      //! evaluate electrode kinetics boundary condition
+      //! evaluate an electrode kinetics boundary condition
       void EvaluateElchBoundaryKinetics(
-          const DRT::Element*                 ele,        ///< the actual boundary element
-          Epetra_SerialDenseMatrix&           emat,       ///< element-matrix
-          Epetra_SerialDenseVector&           erhs,       ///< element-rhs
-          const std::vector<double>&          ephinp,     ///< actual conc. and pot. values
-          const std::vector<double>&          ehist,      ///< element history vector
+          const DRT::Element*                 ele,        ///< current element
+          Epetra_SerialDenseMatrix&           emat,       ///< element matrix
+          Epetra_SerialDenseVector&           erhs,       ///< element right-hand side vector
+          const std::vector<double>&          ephinp,     ///< nodal values of concentration and electric potential
+          const std::vector<double>&          ehist,      ///< nodal history vector
           double                              timefac,    ///< time factor
-          Teuchos::RCP<const MAT::Material>   material,   ///< the material
-          Teuchos::RCP<DRT::Condition>        cond,       ///< the condition
+          Teuchos::RCP<const MAT::Material>   material,   ///< material
+          Teuchos::RCP<DRT::Condition>        cond,       ///< electrode kinetics boundary condition
           const int                           nume,       ///< number of transferred electrons
           const std::vector<int>              stoich,     ///< stoichiometry of the reaction
           const int                           kinetics,   ///< desired electrode kinetics model
-          const double                        pot0,       ///< actual electrode potential on metal side
+          const double                        pot0,       ///< electrode potential on metal side
           const double                        frt,        ///< factor F/RT
-          const double                        scalar      ///< scaling factor for element matrix and residual contributions
-      );
+          const double                        scalar      ///< scaling factor for element matrix and right-hand side contributions
+          );
 
       //! evaluate scatra-scatra interface coupling condition
       void EvaluateS2ICoupling(
@@ -91,17 +105,6 @@ namespace DRT
           Epetra_SerialDenseMatrix&   eslavematrix,     ///< element matrix for slave side
           Epetra_SerialDenseMatrix&   emastermatrix,    ///< element matrix for master side
           Epetra_SerialDenseVector&   eslaveresidual    ///< element residual for slave side
-      );
-
-      //! evaluate electrode kinetics boundary condition
-      void CalcElchBoundaryKinetics(
-          DRT::FaceElement*                 ele,
-          Teuchos::ParameterList&           params,
-          DRT::Discretization&              discretization,
-          std::vector<int>&                 lm,
-          Epetra_SerialDenseMatrix&         elemat1_epetra,
-          Epetra_SerialDenseVector&         elevec1_epetra,
-          const double                      scalar
       );
 
       //! extract valence of species k from element material
