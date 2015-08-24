@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file POROELAST.cpp
+ \file poro_scatra_part.cpp
 
  \brief  scalar transport in porous media
 
@@ -23,9 +23,9 @@
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
-POROELAST::PORO_SCATRA_Part::PORO_SCATRA_Part(const Epetra_Comm& comm,
+POROELAST::PoroScatraPart::PoroScatraPart(const Epetra_Comm& comm,
     const Teuchos::ParameterList& timeparams):
-    PORO_SCATRA_Base(comm,timeparams)
+    PoroScatraBase(comm,timeparams)
 {
 
 }

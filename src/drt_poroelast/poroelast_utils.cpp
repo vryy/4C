@@ -255,14 +255,14 @@ Teuchos::RCP<POROELAST::PoroBase> POROELAST::UTILS::CreatePoroAlgorithm(
 /*----------------------------------------------------------------------*
  | setup PoroScatra algorithm                                            |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<POROELAST::PORO_SCATRA_Base> POROELAST::UTILS::CreatePoroScatraAlgorithm(
+Teuchos::RCP<POROELAST::PoroScatraBase> POROELAST::UTILS::CreatePoroScatraAlgorithm(
     const Teuchos::ParameterList& timeparams,
     const Epetra_Comm& comm)
 {
   DRT::Problem* problem = DRT::Problem::Instance();
 
-  // create an empty PORO_SCATRA_Base instance
-  Teuchos::RCP<POROELAST::PORO_SCATRA_Base> algo = Teuchos::null;
+  // create an empty PoroScatraBase instance
+  Teuchos::RCP<POROELAST::PoroScatraBase> algo = Teuchos::null;
 
   //Parameter reading
   const Teuchos::ParameterList& params = problem->PoroScatraControlParams();
@@ -273,22 +273,22 @@ Teuchos::RCP<POROELAST::PORO_SCATRA_Base> POROELAST::UTILS::CreatePoroScatraAlgo
   {
   case INPAR::PORO_SCATRA::Monolithic:
   {
-    algo = Teuchos::rcp(new POROELAST::PORO_SCATRA_Mono(comm, timeparams));
+    algo = Teuchos::rcp(new POROELAST::PoroScatraMono(comm, timeparams));
     break;
   }
   case INPAR::PORO_SCATRA::Part_ScatraToPoro:
   {
-    algo = Teuchos::rcp(new POROELAST::PORO_SCATRA_Part_1WC_ScatraToPoro(comm, timeparams));
+    algo = Teuchos::rcp(new POROELAST::PoroScatraPart1WCScatraToPoro(comm, timeparams));
     break;
   }
   case INPAR::PORO_SCATRA::Part_PoroToScatra:
   {
-    algo = Teuchos::rcp(new POROELAST::PORO_SCATRA_Part_1WC_PoroToScatra(comm, timeparams));
+    algo = Teuchos::rcp(new POROELAST::PoroScatraPart1WCPoroToScatra(comm, timeparams));
     break;
   }
   case INPAR::PORO_SCATRA::Part_TwoWay:
   {
-    algo = Teuchos::rcp(new POROELAST::PORO_SCATRA_Part_2WC(comm, timeparams));
+    algo = Teuchos::rcp(new POROELAST::PoroScatraPart2WC(comm, timeparams));
     break;
   }
   }

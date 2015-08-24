@@ -21,16 +21,16 @@
 
 namespace POROELAST
 {
-  class PORO_SCATRA_Part_2WC : public PORO_SCATRA_Part
+  class PoroScatraPart2WC : public PoroScatraPart
   {
   public:
 
     //!explicit constructor
-    explicit PORO_SCATRA_Part_2WC(const Epetra_Comm& comm,
+    explicit PoroScatraPart2WC(const Epetra_Comm& comm,
         const Teuchos::ParameterList& timeparams);
 
     //!virtual destructor
-    virtual ~PORO_SCATRA_Part_2WC(){};
+    virtual ~PoroScatraPart2WC(){};
 
     //!full time loop
     virtual void Timeloop();

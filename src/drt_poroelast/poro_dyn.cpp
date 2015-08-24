@@ -1,5 +1,5 @@
 /*!------------------------------------------------------------------------------------------------*
- \file poroelast.cpp
+ \file poro_dyn.cpp
 
  \brief control routine of poroelasticity problems
 
@@ -87,7 +87,7 @@ void poro_scatra_drt()
   POROELAST::UTILS::SetupPoroScatraDiscretizations(comm);
 
   //3.- Creation of Poroelastic + Scalar_Transport problem. (Discretization called inside)
-  Teuchos::RCP<POROELAST::PORO_SCATRA_Base> poro_scatra = POROELAST::UTILS::CreatePoroScatraAlgorithm(poroscatradynparams, comm);
+  Teuchos::RCP<POROELAST::PoroScatraBase> poro_scatra = POROELAST::UTILS::CreatePoroScatraAlgorithm(poroscatradynparams, comm);
 
   //3.1- Read restart if needed. (Discretization called inside)
   const int restart = problem->Restart();

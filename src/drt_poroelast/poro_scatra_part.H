@@ -42,16 +42,16 @@ namespace POROELAST
 namespace POROELAST
 {
   /// partitioned algorithm for scalar transport in porous media
-  class PORO_SCATRA_Part: public PORO_SCATRA_Base
+  class PoroScatraPart: public PoroScatraBase
   {
   public:
 
     ///Constructor
-    explicit PORO_SCATRA_Part(const Epetra_Comm& comm,
+    explicit PoroScatraPart(const Epetra_Comm& comm,
         const Teuchos::ParameterList& timeparams);
 
     ///destructor
-    virtual ~PORO_SCATRA_Part()
+    virtual ~PoroScatraPart()
     {
     }
     ;

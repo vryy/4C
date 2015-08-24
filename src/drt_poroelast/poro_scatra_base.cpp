@@ -37,13 +37,12 @@
 /*----------------------------------------------------------------------*
  |                                                         vuong 05/13  |
  *----------------------------------------------------------------------*/
-POROELAST::PORO_SCATRA_Base::PORO_SCATRA_Base(const Epetra_Comm& comm,
+POROELAST::PoroScatraBase::PoroScatraBase(const Epetra_Comm& comm,
     const Teuchos::ParameterList& timeparams):
     AlgorithmBase(comm, timeparams),
     matchinggrid_(DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->PoroScatraControlParams(),"MATCHINGGRID"))
 {
   DRT::Problem* problem = DRT::Problem::Instance();
-
   const Teuchos::ParameterList& scatradyn  = problem->ScalarTransportDynamicParams();
 
   //do some checks
@@ -71,21 +70,221 @@ POROELAST::PORO_SCATRA_Base::PORO_SCATRA_Base(const Epetra_Comm& comm,
   }
 
   // Create the two uncoupled subproblems.
+  //1. poro problem
   poro_ = POROELAST::UTILS::CreatePoroAlgorithm(timeparams, comm);
+
+  // the problem is two way coupled, thus each discretization must know the other discretization
+  Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis("structure");
+  Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis("porofluid");
+  Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis("scatra");
+  AddDofSets(structdis,fluiddis,scatradis);
+
   // get the solver number used for ScalarTransport solver
   const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
+  //2. scatra problem
   scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(timeparams,true,"scatra",problem->SolverParams(linsolvernumber)));
 
-  if(matchinggrid_)
+}
+
+/*----------------------------------------------------------------------*
+ |                                                         vuong 05/13  |
+ *----------------------------------------------------------------------*/
+void POROELAST::PoroScatraBase::SetupSystem()
+{
+  poro_->SetupSystem();
+}
+
+/*----------------------------------------------------------------------*
+ |                                                         vuong 05/13  |
+ *----------------------------------------------------------------------*/
+void POROELAST::PoroScatraBase::TestResults(const Epetra_Comm& comm)
+{
+  DRT::Problem* problem = DRT::Problem::Instance();
+
+  problem->AddFieldTest(poro_->StructureField()->CreateFieldTest());
+  problem->AddFieldTest(poro_->FluidField()->CreateFieldTest());
+  problem->AddFieldTest(scatra_->CreateScaTraFieldTest());
+  problem->TestAll(comm);
+}
+
+/*----------------------------------------------------------------------*
+ |                                                         vuong 05/13  |
+ *----------------------------------------------------------------------*/
+void POROELAST::PoroScatraBase::SetPoroSolution()
+{
+  SetMeshDisp();
+  SetVelocityFields();
+}
+
+/*----------------------------------------------------------------------*
+ |                                                         vuong 05/13  |
+ *----------------------------------------------------------------------*/
+void POROELAST::PoroScatraBase::SetScatraSolution()
+{
+  Teuchos::RCP<const Epetra_Vector> phinp_s    = Teuchos::null;
+  Teuchos::RCP<const Epetra_Vector> phin_s     = Teuchos::null;
+  Teuchos::RCP<const Epetra_Vector> phinp_f    = Teuchos::null;
+  Teuchos::RCP<const Epetra_Vector> phin_f     = Teuchos::null;
+  Teuchos::RCP<const Epetra_Vector> phidtnp    = Teuchos::null;
+
+  if( matchinggrid_ )
   {
-    // the problem is two way coupled, thus each discretization must know the other discretization
-    AddDofSets();
+    phinp_s   = scatra_->ScaTraField()->Phinp();
+    phinp_f   = phinp_s;
+    phin_s    = scatra_->ScaTraField()->Phin();
+    phin_f    = phin_s;
+    phidtnp   = scatra_->ScaTraField()->Phidtnp();
   }
   else
   {
-    Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis("structure");
-    Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis("porofluid");
-    Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis("scatra");
+    phinp_s   = volcoupl_structurescatra_->ApplyVectorMapping12(scatra_->ScaTraField()->Phinp());
+    phinp_f   = volcoupl_fluidscatra_->ApplyVectorMapping12(scatra_->ScaTraField()->Phinp());
+    phin_s    = volcoupl_structurescatra_->ApplyVectorMapping12(scatra_->ScaTraField()->Phin());
+    phin_f    = volcoupl_fluidscatra_->ApplyVectorMapping12(scatra_->ScaTraField()->Phin());
+    phidtnp   = volcoupl_fluidscatra_->ApplyVectorMapping12(scatra_->ScaTraField()->Phidtnp());
+  }
+
+  //porous structure
+  poro_->StructureField()->Discretization()->SetState(2,"scalar",phinp_s);
+  poro_->StructureField()->Discretization()->SetState(2,"scalarn",phin_s);
+
+  //porous fluid
+  poro_->FluidField()->SetIterScalarFields(
+                                            phinp_f,
+                                            phin_f,
+                                            phidtnp,
+                                            scatra_->ScaTraField()->Discretization()
+                                            //poro_->FluidField()->Discretization()
+                                            );
+}
+
+/*----------------------------------------------------------------------*
+ |                                                         vuong 05/13  |
+ *----------------------------------------------------------------------*/
+void POROELAST::PoroScatraBase::SetVelocityFields()
+{
+  Teuchos::RCP<const Epetra_Vector> convel    = Teuchos::null;
+  Teuchos::RCP<const Epetra_Vector> velnp     = Teuchos::null;
+
+  if( matchinggrid_ )
+  {
+    convel   = poro_->FluidField()->ConvectiveVel();
+    velnp    = poro_->FluidField()->Velnp();
+  }
+  else
+  {
+    convel   = volcoupl_fluidscatra_->ApplyVectorMapping21(poro_->FluidField()->ConvectiveVel());
+    velnp    = volcoupl_fluidscatra_->ApplyVectorMapping21(poro_->FluidField()->Velnp());
+  }
+
+  scatra_->ScaTraField()->SetVelocityField(
+      convel, //convective vel.
+      Teuchos::null, //acceleration
+      velnp, //velocity
+      Teuchos::null, //fsvel
+      Teuchos::null, //dofset
+      scatra_->ScaTraField()->Discretization(), //discretization
+      true, //set pressure
+      2//dof set
+      );
+}
+
+/*----------------------------------------------------------------------*
+ |                                                         vuong 05/13  |
+ *----------------------------------------------------------------------*/
+void POROELAST::PoroScatraBase::SetMeshDisp()
+{
+  Teuchos::RCP<const Epetra_Vector> dispnp    = Teuchos::null;
+
+  if( matchinggrid_ )
+  {
+    dispnp   = poro_->FluidField()->Dispnp();
+  }
+  else
+  {
+    dispnp   = volcoupl_fluidscatra_->ApplyVectorMapping21(FluidField()->Dispnp());
+  }
+
+  scatra_->ScaTraField()->ApplyMeshMovement(
+      dispnp,
+      //poro_->FluidField()->Discretization()
+      scatra_->ScaTraField()->Discretization(),
+      2
+      );
+
+  Teuchos::RCP<const Epetra_Vector> sdispnp    = Teuchos::null;
+
+  if( matchinggrid_ )
+  {
+    sdispnp   = StructureField()->Dispnp();
+  }
+  else
+  {
+    sdispnp   = volcoupl_structurescatra_->ApplyVectorMapping21(StructureField()->Dispnp());
+  }
+
+  scatra_->ScaTraField()->Discretization()->SetState(1,"displacement",sdispnp);
+}
+
+/*----------------------------------------------------------------------*
+ |                                                         vuong 05/13  |
+ *----------------------------------------------------------------------*/
+void POROELAST::PoroScatraBase::AddDofSets(
+    Teuchos::RCP<DRT::Discretization> structdis,
+    Teuchos::RCP<DRT::Discretization> fluiddis,
+    Teuchos::RCP<DRT::Discretization> scatradis,
+    bool replace)
+{
+  if(matchinggrid_)
+  {
+    // the problem is two way coupled, thus each discretization must know the other discretization
+    Teuchos::RCP<DRT::DofSet> structdofset = Teuchos::null;
+    Teuchos::RCP<DRT::DofSet> fluiddofset = Teuchos::null;
+    Teuchos::RCP<DRT::DofSet> scatradofset = Teuchos::null;
+
+    if(PoroField()->HasSubmeshes())
+    {
+      // build a proxy of the structure discretization for the scatra field
+      structdofset = structdis->GetDofSetSubProxy();
+      // build a proxy of the fluid discretization for the scatra field
+      fluiddofset = fluiddis->GetDofSetSubProxy();
+      // build a proxy of the scatra discretization for the structure/fluid field
+      scatradofset = scatradis->GetDofSetSubProxy();
+    }
+    else
+    {
+      // build a proxy of the structure discretization for the scatra field
+      structdofset = structdis->GetDofSetProxy();
+      // build a proxy of the fluid discretization for the scatra field
+      fluiddofset = fluiddis->GetDofSetProxy();
+      // build a proxy of the fluid discretization for the structure/fluid field
+      scatradofset = scatradis->GetDofSetProxy();
+    }
+
+    if(not replace)
+    {
+      // check if ScatraField has 2 discretizations, so that coupling is possible
+      if (scatradis->AddDofSet(structdofset) != 1)
+        dserror("unexpected dof sets in scatra field");
+      if (scatradis->AddDofSet(fluiddofset) != 2)
+        dserror("unexpected dof sets in scatra field");
+      if (structdis->AddDofSet(scatradofset)!=2)
+        dserror("unexpected dof sets in structure field");
+      if (fluiddis->AddDofSet(scatradofset)!=2)
+        dserror("unexpected dof sets in fluid field");
+    }
+    else
+    {
+      scatradis->ReplaceDofSet(1,structdofset);
+      scatradis->ReplaceDofSet(2,fluiddofset);
+      structdis->ReplaceDofSet(2,scatradofset);
+      fluiddis->ReplaceDofSet(2,scatradofset);
+    }
+  }
+  else
+  {
+    if(replace)
+      dserror("restart for non-matching poro-scatra not yet tested. Feel free to try");
 
     //first call FillComplete for single discretizations.
     //This way the physical dofs are numbered successively
@@ -94,11 +293,11 @@ POROELAST::PORO_SCATRA_Base::PORO_SCATRA_Base(const Epetra_Comm& comm,
     scatradis->FillComplete();
 
     //build auxiliary dofsets, i.e. pseudo dofs on each discretization
-    const int ndofpernode_fluid = DRT::Problem::Instance()->NDim()+1;
+    const int ndofpernode_fluid = fluiddis->NumDof(0,fluiddis->lRowNode(0));
     const int ndofperelement_fluid  = 0;
-    const int ndofpernode_struct = DRT::Problem::Instance()->NDim(); //Todo: what if more dofs?
+    const int ndofpernode_struct = structdis->NumDof(0,structdis->lRowNode(0));
     const int ndofperelement_struct = 0;
-    const int ndofpernode_scatra = 1; //Todo: what if more dofs?
+    const int ndofpernode_scatra = scatradis->NumDof(0,scatradis->lRowNode(0));
     const int ndofperelement_scatra = 0;
     if (structdis->BuildDofSetAuxProxy(ndofpernode_scatra, ndofperelement_scatra, 0, true ) != 2)
       dserror("unexpected dof sets in structure field");
@@ -143,187 +342,5 @@ POROELAST::PORO_SCATRA_Base::PORO_SCATRA_Base(const Epetra_Comm& comm,
                                   &dofsets12_fluidscatra,
                                   &dofsets21_fluidscatra,
                                   Teuchos::null);
-  }
-}
-
-/*----------------------------------------------------------------------*
- |                                                         vuong 05/13  |
- *----------------------------------------------------------------------*/
-void POROELAST::PORO_SCATRA_Base::SetupSystem()
-{
-  poro_->SetupSystem();
-}
-
-/*----------------------------------------------------------------------*
- |                                                         vuong 05/13  |
- *----------------------------------------------------------------------*/
-void POROELAST::PORO_SCATRA_Base::TestResults(const Epetra_Comm& comm)
-{
-  DRT::Problem* problem = DRT::Problem::Instance();
-
-  problem->AddFieldTest(poro_->StructureField()->CreateFieldTest());
-  problem->AddFieldTest(poro_->FluidField()->CreateFieldTest());
-  problem->AddFieldTest(scatra_->CreateScaTraFieldTest());
-  problem->TestAll(comm);
-}
-
-/*----------------------------------------------------------------------*
- |                                                         vuong 05/13  |
- *----------------------------------------------------------------------*/
-void POROELAST::PORO_SCATRA_Base::SetPoroSolution()
-{
-  SetMeshDisp();
-  SetVelocityFields();
-}
-
-/*----------------------------------------------------------------------*
- |                                                         vuong 05/13  |
- *----------------------------------------------------------------------*/
-void POROELAST::PORO_SCATRA_Base::SetScatraSolution()
-{
-  Teuchos::RCP<const Epetra_Vector> phinp_s    = Teuchos::null;
-  Teuchos::RCP<const Epetra_Vector> phin_s     = Teuchos::null;
-  Teuchos::RCP<const Epetra_Vector> phinp_f    = Teuchos::null;
-  Teuchos::RCP<const Epetra_Vector> phin_f     = Teuchos::null;
-  Teuchos::RCP<const Epetra_Vector> phidtnp    = Teuchos::null;
-
-  if( matchinggrid_ )
-  {
-    phinp_s   = scatra_->ScaTraField()->Phinp();
-    phinp_f   = phinp_s;
-    phin_s    = scatra_->ScaTraField()->Phin();
-    phin_f    = phin_s;
-    phidtnp   = scatra_->ScaTraField()->Phidtnp();
-  }
-  else
-  {
-    phinp_s   = volcoupl_structurescatra_->ApplyVectorMapping12(scatra_->ScaTraField()->Phinp());
-    phinp_f   = volcoupl_fluidscatra_->ApplyVectorMapping12(scatra_->ScaTraField()->Phinp());
-    phin_s    = volcoupl_structurescatra_->ApplyVectorMapping12(scatra_->ScaTraField()->Phin());
-    phin_f    = volcoupl_fluidscatra_->ApplyVectorMapping12(scatra_->ScaTraField()->Phin());
-    phidtnp   = volcoupl_fluidscatra_->ApplyVectorMapping12(scatra_->ScaTraField()->Phidtnp());
-  }
-
-  //porous structure
-  poro_->StructureField()->Discretization()->SetState(2,"scalar",phinp_s);
-  poro_->StructureField()->Discretization()->SetState(2,"scalarn",phin_s);
-
-  //porous fluid
-  poro_->FluidField()->SetIterScalarFields(
-                                            phinp_f,
-                                            phin_f,
-                                            phidtnp,
-                                            scatra_->ScaTraField()->Discretization());
-}
-
-/*----------------------------------------------------------------------*
- |                                                         vuong 05/13  |
- *----------------------------------------------------------------------*/
-void POROELAST::PORO_SCATRA_Base::SetVelocityFields()
-{
-  Teuchos::RCP<const Epetra_Vector> convel    = Teuchos::null;
-  Teuchos::RCP<const Epetra_Vector> velnp     = Teuchos::null;
-
-  if( matchinggrid_ )
-  {
-    convel   = poro_->FluidField()->ConvectiveVel();
-    velnp    = poro_->FluidField()->Velnp();
-  }
-  else
-  {
-    convel   = volcoupl_fluidscatra_->ApplyVectorMapping21(poro_->FluidField()->ConvectiveVel());
-    velnp    = volcoupl_fluidscatra_->ApplyVectorMapping21(poro_->FluidField()->Velnp());
-  }
-
-  scatra_->ScaTraField()->SetVelocityField(
-      convel, //convective vel.
-      Teuchos::null, //acceleration
-      velnp, //velocity
-      Teuchos::null, //fsvel
-      Teuchos::null, //dofset
-      scatra_->ScaTraField()->Discretization(), //discretization
-      true, //set pressure
-      2//dof set
-      );
-}
-
-/*----------------------------------------------------------------------*
- |                                                         vuong 05/13  |
- *----------------------------------------------------------------------*/
-void POROELAST::PORO_SCATRA_Base::SetMeshDisp()
-{
-  Teuchos::RCP<const Epetra_Vector> dispnp    = Teuchos::null;
-
-  if( matchinggrid_ )
-  {
-    dispnp   = poro_->FluidField()->Dispnp();
-  }
-  else
-  {
-    dispnp   = volcoupl_fluidscatra_->ApplyVectorMapping21(poro_->FluidField()->Dispnp());
-  }
-
-  scatra_->ScaTraField()->ApplyMeshMovement(
-      dispnp,
-      poro_->FluidField()->Discretization());
-
-  scatra_->ScaTraField()->Discretization()->SetState(1,"displacement",StructureField()->Dispnp());
-}
-
-/*----------------------------------------------------------------------*
- |                                                         vuong 05/13  |
- *----------------------------------------------------------------------*/
-void POROELAST::PORO_SCATRA_Base::AddDofSets(bool replace)
-{
-  if(not matchinggrid_)
-    return;
-
-  // the problem is two way coupled, thus each discretization must know the other discretization
-  Teuchos::RCP<DRT::DofSet> structdofset = Teuchos::null;
-  Teuchos::RCP<DRT::DofSet> fluiddofset = Teuchos::null;
-  Teuchos::RCP<DRT::DofSet> scatradofset = Teuchos::null;
-
-  //get discretizations
-  Teuchos::RCP<DRT::Discretization> structdis = PoroField()->StructureField()->Discretization();
-  Teuchos::RCP<DRT::Discretization> fluiddis = PoroField()->FluidField()->Discretization();
-  Teuchos::RCP<DRT::Discretization> scatradis = ScaTraField()->Discretization();
-
-  if(PoroField()->HasSubmeshes())
-  {
-    // build a proxy of the structure discretization for the scatra field
-    structdofset = structdis->GetDofSetSubProxy();
-    // build a proxy of the fluid discretization for the scatra field
-    fluiddofset = fluiddis->GetDofSetSubProxy();
-    // build a proxy of the scatra discretization for the structure/fluid field
-    scatradofset = scatradis->GetDofSetSubProxy();
-  }
-  else
-  {
-    // build a proxy of the structure discretization for the scatra field
-    structdofset = structdis->GetDofSetProxy();
-    // build a proxy of the fluid discretization for the scatra field
-    fluiddofset = fluiddis->GetDofSetProxy();
-    // build a proxy of the fluid discretization for the structure/fluid field
-    scatradofset = scatradis->GetDofSetProxy();
-  }
-
-  if(not replace)
-  {
-    // check if ScatraField has 2 discretizations, so that coupling is possible
-    if (scatradis->AddDofSet(structdofset) != 1)
-      dserror("unexpected dof sets in scatra field");
-    if (scatradis->AddDofSet(fluiddofset) != 2)
-      dserror("unexpected dof sets in scatra field");
-    if (structdis->AddDofSet(scatradofset)!=2)
-      dserror("unexpected dof sets in structure field");
-    if (fluiddis->AddDofSet(scatradofset)!=2)
-      dserror("unexpected dof sets in fluid field");
-  }
-  else
-  {
-    scatradis->ReplaceDofSet(1,structdofset);
-    scatradis->ReplaceDofSet(2,fluiddofset);
-    structdis->ReplaceDofSet(2,scatradofset);
-    fluiddis->ReplaceDofSet(2,scatradofset);
   }
 }

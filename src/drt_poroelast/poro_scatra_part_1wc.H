@@ -20,12 +20,12 @@
 
 namespace POROELAST
 {
-  class PORO_SCATRA_Part_1WC : public PORO_SCATRA_Part
+  class PoroScatraPart1WC : public PoroScatraPart
   {
   public:
-    explicit PORO_SCATRA_Part_1WC(const Epetra_Comm& comm,
+    explicit PoroScatraPart1WC(const Epetra_Comm& comm,
         const Teuchos::ParameterList& timeparams):
-        PORO_SCATRA_Part(comm,timeparams){};
+        PoroScatraPart(comm,timeparams){};
 
     //! solve one time step of porous media problem
     void DoPoroStep();
@@ -46,15 +46,15 @@ namespace POROELAST
 
   };
 
-  class PORO_SCATRA_Part_1WC_PoroToScatra : public PORO_SCATRA_Part_1WC
+  class PoroScatraPart1WCPoroToScatra : public PoroScatraPart1WC
   {
   public:
     //! constructor
-    explicit PORO_SCATRA_Part_1WC_PoroToScatra(const Epetra_Comm& comm,
+    explicit PoroScatraPart1WCPoroToScatra(const Epetra_Comm& comm,
         const Teuchos::ParameterList& timeparams);
 
     //! virtual destructor
-    virtual ~PORO_SCATRA_Part_1WC_PoroToScatra(){};
+    virtual ~PoroScatraPart1WCPoroToScatra(){};
 
     //! actual time loop
     void Timeloop();
@@ -67,15 +67,15 @@ namespace POROELAST
 
   };
 
-  class PORO_SCATRA_Part_1WC_ScatraToPoro : public PORO_SCATRA_Part_1WC
+  class PoroScatraPart1WCScatraToPoro : public PoroScatraPart1WC
   {
   public:
     //! constructor
-    explicit PORO_SCATRA_Part_1WC_ScatraToPoro(const Epetra_Comm& comm,
+    explicit PoroScatraPart1WCScatraToPoro(const Epetra_Comm& comm,
         const Teuchos::ParameterList& timeparams);
 
     //! virtual destructor
-    virtual ~PORO_SCATRA_Part_1WC_ScatraToPoro(){};
+    virtual ~PoroScatraPart1WCScatraToPoro(){};
 
     //! actual time loop
     void Timeloop();

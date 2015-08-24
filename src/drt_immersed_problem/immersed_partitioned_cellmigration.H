@@ -22,7 +22,7 @@ Maintainers: Andreas Rauch
 namespace POROELAST
 {
   //class Monolithic;
-  class PORO_SCATRA_Base;
+  class PoroScatraBase;
 }
 
 namespace ADAPTER
@@ -53,7 +53,7 @@ public:
 
   /// access to field Poro
   //Teuchos::RCP<POROELAST::Monolithic> PoroField(){return poroelast_subproblem_;};
-  Teuchos::RCP<POROELAST::PORO_SCATRA_Base> PoroField(){return poroelast_subproblem_;};
+  Teuchos::RCP<POROELAST::PoroScatraBase> PoroField(){return poroelast_subproblem_;};
 
   /// read restart
   virtual void ReadRestart(int step);
@@ -163,7 +163,7 @@ protected:
 
   /// poroelast subproblem
   //Teuchos::RCP<POROELAST::Monolithic>       poroelast_subproblem_;
-  Teuchos::RCP<POROELAST::PORO_SCATRA_Base> poroelast_subproblem_;
+  Teuchos::RCP<POROELAST::PoroScatraBase> poroelast_subproblem_;
 
   /// basic information for parallelism
   int myrank_;

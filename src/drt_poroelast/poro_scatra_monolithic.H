@@ -48,15 +48,15 @@ namespace LINALG
 namespace POROELAST
 {
   /// base class of all monolithic porous media - scalar transport - interaction algorithms
-  class PORO_SCATRA_Mono: public PORO_SCATRA_Base
+  class PoroScatraMono: public PoroScatraBase
   {
   public:
     /// create using a Epetra_Comm
-    explicit PORO_SCATRA_Mono(const Epetra_Comm& comm,
+    explicit PoroScatraMono(const Epetra_Comm& comm,
         const Teuchos::ParameterList& timeparams);// Problem builder
 
     /// virtual destructor
-    virtual ~PORO_SCATRA_Mono(){};
+    virtual ~PoroScatraMono(){};
 
     //! Main time loop.
     virtual void Timeloop();
@@ -313,7 +313,7 @@ namespace POROELAST
     //! flag for direct solver
     bool directsolve_;
 
-  };//class PORO_SCATRA_Mono
+  };//class PoroScatraMono
 
 }//namespace POROELAST
 

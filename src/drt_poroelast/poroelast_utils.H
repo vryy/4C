@@ -50,7 +50,7 @@ namespace MAT
 namespace POROELAST
 {
   class PoroBase;
-  class PORO_SCATRA_Base;
+  class PoroScatraBase;
 
   //! coupling types of porous media problem
   enum coupltype
@@ -85,7 +85,7 @@ namespace POROELAST
                              );
 
     /// create solution algorithm depending on input file
-    Teuchos::RCP<POROELAST::PORO_SCATRA_Base> CreatePoroScatraAlgorithm(
+    Teuchos::RCP<POROELAST::PoroScatraBase> CreatePoroScatraAlgorithm(
                              const Teuchos::ParameterList& timeparams, //!< problem parameters (i)
                              const Epetra_Comm& comm //!< communicator(i)
                              );

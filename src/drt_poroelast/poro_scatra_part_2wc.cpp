@@ -29,15 +29,15 @@
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
-POROELAST::PORO_SCATRA_Part_2WC::PORO_SCATRA_Part_2WC(const Epetra_Comm& comm,
+POROELAST::PoroScatraPart2WC::PoroScatraPart2WC(const Epetra_Comm& comm,
     const Teuchos::ParameterList& timeparams)
-  : PORO_SCATRA_Part(comm, timeparams),
+  : PoroScatraPart(comm, timeparams),
     scaincnp_(Teuchos::rcp(new Epetra_Vector(*(ScaTraField()->Phinp())))),
     structincnp_(Teuchos::rcp(new Epetra_Vector(*(PoroField()->StructureField()()->Dispnp())))),
     fluidincnp_(Teuchos::rcp(new Epetra_Vector(*(PoroField()->FluidField()()->Velnp()))))
 {
   if(comm.MyPID()==0)
-    std::cout<<"\n Create PORO_SCATRA_Part_2WC algorithm ... \n"<<std::endl;
+    std::cout<<"\n Create PoroScatraPart2WC algorithm ... \n"<<std::endl;
 
   const Teuchos::ParameterList& params = DRT::Problem::Instance()->PoroScatraControlParams();
   // Get the parameters for the ConvergenceCheck
@@ -48,7 +48,7 @@ POROELAST::PORO_SCATRA_Part_2WC::PORO_SCATRA_Part_2WC(const Epetra_Comm& comm,
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
-void POROELAST::PORO_SCATRA_Part_2WC::Timeloop()
+void POROELAST::PoroScatraPart2WC::Timeloop()
 {
   //InitialCalculations();
 
@@ -70,7 +70,7 @@ void POROELAST::PORO_SCATRA_Part_2WC::Timeloop()
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
-void POROELAST::PORO_SCATRA_Part_2WC::ReadRestart(int restart)
+void POROELAST::PoroScatraPart2WC::ReadRestart(int restart)
 {
   // read restart information, set vectors and variables
   // (Note that dofmaps might have changed in a redistribution call!)
@@ -84,7 +84,10 @@ void POROELAST::PORO_SCATRA_Part_2WC::ReadRestart(int restart)
 
     //in case of submeshes, we need to rebuild the subproxies, also (they are reset during restart)
     if(PoroField()->HasSubmeshes())
-      AddDofSets(true);
+      AddDofSets(StructureField()->Discretization(),
+                 FluidField()->Discretization(),
+                 ScaTraField()->Discretization(),
+                 true);
 
     // the variables need to be set on other field
     SetScatraSolution();
@@ -96,23 +99,29 @@ void POROELAST::PORO_SCATRA_Part_2WC::ReadRestart(int restart)
 
     //in case of submeshes, we need to rebuild the subproxies, also (they are reset during restart)
     if(PoroField()->HasSubmeshes())
-      AddDofSets(true);
+      AddDofSets(StructureField()->Discretization(),
+                 FluidField()->Discretization(),
+                 ScaTraField()->Discretization(),
+                 true);
 
     SetTimeStep(PoroField()->Time(), restart);
 
-    // Material pointers to other field were deleted during ReadRestart().
-    // They need to be reset.
-    POROELAST::UTILS::SetMaterialPointersMatchingGrid(PoroField()->StructureField()->Discretization(),
-                                                      ScaTraField()->Discretization());
-    POROELAST::UTILS::SetMaterialPointersMatchingGrid(PoroField()->FluidField()->Discretization(),
-                                                      ScaTraField()->Discretization());
+    if(matchinggrid_)
+    {
+      // Material pointers to other field were deleted during ReadRestart().
+      // They need to be reset.
+      POROELAST::UTILS::SetMaterialPointersMatchingGrid(PoroField()->StructureField()->Discretization(),
+                                                        ScaTraField()->Discretization());
+      POROELAST::UTILS::SetMaterialPointersMatchingGrid(PoroField()->FluidField()->Discretization(),
+                                                        ScaTraField()->Discretization());
+    }
   }
 }
 
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
-void POROELAST::PORO_SCATRA_Part_2WC::DoPoroStep()
+void POROELAST::PoroScatraPart2WC::DoPoroStep()
 {
   if (Comm().MyPID() == 0)
   {
@@ -127,7 +136,7 @@ void POROELAST::PORO_SCATRA_Part_2WC::DoPoroStep()
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
-void POROELAST::PORO_SCATRA_Part_2WC::DoScatraStep()
+void POROELAST::PoroScatraPart2WC::DoScatraStep()
 {
   if (Comm().MyPID() == 0)
   {
@@ -145,11 +154,12 @@ void POROELAST::PORO_SCATRA_Part_2WC::DoScatraStep()
 /*----------------------------------------------------------------------*/
 //prepare time step                                        vuong 08/13  |
 /*----------------------------------------------------------------------*/
-void POROELAST::PORO_SCATRA_Part_2WC::PrepareTimeStep()
+void POROELAST::PoroScatraPart2WC::PrepareTimeStep()
 {
   // the global control routine has its own time_ and step_ variables, as well as the single fields
   // keep them in sinc!
   IncrementTimeAndStep();
+  PrintHeader();
 
   SetPoroSolution();
   ScaTraField()->PrepareTimeStep();
@@ -165,7 +175,7 @@ void POROELAST::PORO_SCATRA_Part_2WC::PrepareTimeStep()
 /*----------------------------------------------------------------------*
  |                                                   rauch/vuong 04/15  |
  *----------------------------------------------------------------------*/
-void POROELAST::PORO_SCATRA_Part_2WC::PrepareOutput()
+void POROELAST::PoroScatraPart2WC::PrepareOutput()
 {
   PoroField()-> PrepareOutput();
 }
@@ -173,7 +183,7 @@ void POROELAST::PORO_SCATRA_Part_2WC::PrepareOutput()
 /*----------------------------------------------------------------------*
  |                                                   rauch/vuong 04/15  |
  *----------------------------------------------------------------------*/
-void POROELAST::PORO_SCATRA_Part_2WC::Update()
+void POROELAST::PoroScatraPart2WC::Update()
 {
   PoroField()-> Update();
   ScaTraField()->Update();
@@ -184,7 +194,7 @@ void POROELAST::PORO_SCATRA_Part_2WC::Update()
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
-void POROELAST::PORO_SCATRA_Part_2WC::Output()
+void POROELAST::PoroScatraPart2WC::Output()
 {
   PoroField()-> Output();
   ScaTraField()->Output();
@@ -194,7 +204,7 @@ void POROELAST::PORO_SCATRA_Part_2WC::Output()
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
-void POROELAST::PORO_SCATRA_Part_2WC::Solve()
+void POROELAST::PoroScatraPart2WC::Solve()
 {
   int  itnum = 0;
   bool stopnonliniter = false;
@@ -238,7 +248,7 @@ void POROELAST::PORO_SCATRA_Part_2WC::Solve()
 /*----------------------------------------------------------------------*
  | convergence check for both fields (scatra & poro) (copied from tsi)
  *----------------------------------------------------------------------*/
-bool POROELAST::PORO_SCATRA_Part_2WC::ConvergenceCheck(int itnum)
+bool POROELAST::PoroScatraPart2WC::ConvergenceCheck(int itnum)
 {
 
   // convergence check based on the scalar increment

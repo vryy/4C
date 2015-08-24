@@ -42,15 +42,15 @@ namespace ADAPTER
 namespace POROELAST
 {
   /// base class of algorithms for scalar transport in porous media
-  class PORO_SCATRA_Base : public ADAPTER::AlgorithmBase
+  class PoroScatraBase : public ADAPTER::AlgorithmBase
   {
   public:
     /// create using a Epetra_Comm
-    explicit PORO_SCATRA_Base(const Epetra_Comm& comm,
+    explicit PoroScatraBase(const Epetra_Comm& comm,
         const Teuchos::ParameterList& timeparams);// Problem builder
 
     /// virtual destructor
-    virtual ~PORO_SCATRA_Base(){};
+    virtual ~PoroScatraBase(){};
 
     //! Main time loop.
     virtual void Timeloop()=0;
@@ -108,7 +108,10 @@ namespace POROELAST
 
   protected:
     //!setup up of dofsets for two way coupling
-    void AddDofSets(bool replace = false);
+    void AddDofSets(Teuchos::RCP<DRT::Discretization> structdis,
+                    Teuchos::RCP<DRT::Discretization> fluiddis,
+                    Teuchos::RCP<DRT::Discretization> scatradis,
+                    bool replace = false);
 
     //! Pointer to the porous media problem. (drt_poroelastic)
     Teuchos::RCP<POROELAST::PoroBase> poro_;
