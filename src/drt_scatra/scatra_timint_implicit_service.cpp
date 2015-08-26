@@ -1215,10 +1215,7 @@ void SCATRA::ScaTraTimIntImpl::OutputFlux(Teuchos::RCP<Epetra_MultiVector> flux)
       err += fluxk->ReplaceMyValue(i,2,zvalue);
       if (err!=0) dserror("Detected error in ReplaceMyValue");
     }
-    if (numdofpernode_==1)
-      output_->WriteVector("flux", fluxk, IO::DiscretizationWriter::nodevector);
-    else
-      output_->WriteVector(name, fluxk, IO::DiscretizationWriter::nodevector);
+    output_->WriteVector(name, fluxk, IO::DiscretizationWriter::nodevector);
   }
   // that's it
   return;
