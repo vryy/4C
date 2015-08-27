@@ -148,8 +148,7 @@ void MAT::StructPoroReaction::ComputePorosity( Teuchos::ParameterList& params,
                                        bool save)
 {
   //evaluate change of reference porosity due to reaction
-  Teuchos::RCP<std::vector<double> > scalars = params.get<Teuchos::RCP<std::vector<double> > >("scalar");
-  Reaction(scalars,porosity,params);
+  Reaction(porosity,params);
 
   //call base class to compute porosity
   StructPoro::ComputePorosity(
@@ -183,8 +182,7 @@ void MAT::StructPoroReaction::ConstitutiveDerivatives(Teuchos::ParameterList& pa
     dserror("porosity equals zero!! Wrong initial porosity?");
 
   //evaluate change of reference porosity due to reaction
-  Teuchos::RCP<std::vector<double> > scalars = params.get<Teuchos::RCP<std::vector<double> > >("scalar");
-  Reaction(scalars,porosity,params);
+  Reaction(porosity,params);
 
   //call base class
   StructPoro::ConstitutiveDerivatives(params,
@@ -202,10 +200,14 @@ void MAT::StructPoroReaction::ConstitutiveDerivatives(Teuchos::ParameterList& pa
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::StructPoroReaction::Reaction(Teuchos::RCP<std::vector<double> >& scalars,
-                                       double porosity,
+void MAT::StructPoroReaction::Reaction(double porosity,
                                        Teuchos::ParameterList& params)
 {
+  if(params.getEntryRCP("scalar")==Teuchos::null)
+   return;
+
+  Teuchos::RCP<std::vector<double> > scalars = params.get<Teuchos::RCP<std::vector<double> > >("scalar");
+
   //double dt = params.get<double>("delta time",-1.0);
   double time = params.get<double>("total time",-1.0);
 

@@ -69,15 +69,15 @@ POROELAST::PoroScatraBase::PoroScatraBase(const Epetra_Comm& comm,
 //      dserror("Calculation of initial time derivative not yet supported for scalar transport in porous media. Set 'SKIPINITDER' to 'yes' in the SCALAR TRANSPORT DYNAMIC section! ");
   }
 
-  // Create the two uncoupled subproblems.
-  //1. poro problem
-  poro_ = POROELAST::UTILS::CreatePoroAlgorithm(timeparams, comm);
-
   // the problem is two way coupled, thus each discretization must know the other discretization
   Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis("structure");
   Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis("porofluid");
   Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis("scatra");
-  AddDofSets(structdis,fluiddis,scatradis);
+  SetupCoupling(structdis,fluiddis,scatradis);
+
+  // Create the two uncoupled subproblems.
+  //1. poro problem
+  poro_ = POROELAST::UTILS::CreatePoroAlgorithm(timeparams, comm);
 
   // get the solver number used for ScalarTransport solver
   const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
@@ -229,11 +229,10 @@ void POROELAST::PoroScatraBase::SetMeshDisp()
 /*----------------------------------------------------------------------*
  |                                                         vuong 05/13  |
  *----------------------------------------------------------------------*/
-void POROELAST::PoroScatraBase::AddDofSets(
+void POROELAST::PoroScatraBase::ReplaceDofSets(
     Teuchos::RCP<DRT::Discretization> structdis,
     Teuchos::RCP<DRT::Discretization> fluiddis,
-    Teuchos::RCP<DRT::Discretization> scatradis,
-    bool replace)
+    Teuchos::RCP<DRT::Discretization> scatradis)
 {
   if(matchinggrid_)
   {
@@ -261,63 +260,28 @@ void POROELAST::PoroScatraBase::AddDofSets(
       scatradofset = scatradis->GetDofSetProxy();
     }
 
-    if(not replace)
-    {
-      // check if ScatraField has 2 discretizations, so that coupling is possible
-      if (scatradis->AddDofSet(structdofset) != 1)
-        dserror("unexpected dof sets in scatra field");
-      if (scatradis->AddDofSet(fluiddofset) != 2)
-        dserror("unexpected dof sets in scatra field");
-      if (structdis->AddDofSet(scatradofset)!=2)
-        dserror("unexpected dof sets in structure field");
-      if (fluiddis->AddDofSet(scatradofset)!=2)
-        dserror("unexpected dof sets in fluid field");
-    }
-    else
-    {
-      scatradis->ReplaceDofSet(1,structdofset);
-      scatradis->ReplaceDofSet(2,fluiddofset);
-      structdis->ReplaceDofSet(2,scatradofset);
-      fluiddis->ReplaceDofSet(2,scatradofset);
-    }
+    scatradis->ReplaceDofSet(1,structdofset);
+    scatradis->ReplaceDofSet(2,fluiddofset);
+    structdis->ReplaceDofSet(2,scatradofset);
+    fluiddis->ReplaceDofSet(2,scatradofset);
   }
   else
   {
-    if(replace)
-      dserror("restart for non-matching poro-scatra not yet tested. Feel free to try");
+    dserror("restart for non-matching poro-scatra not yet tested. Feel free to try");
+  }
+}
 
-    //first call FillComplete for single discretizations.
-    //This way the physical dofs are numbered successively
-    structdis->FillComplete();
-    fluiddis->FillComplete();
-    scatradis->FillComplete();
-
-    //build auxiliary dofsets, i.e. pseudo dofs on each discretization
-    const int ndofpernode_fluid = fluiddis->NumDof(0,fluiddis->lRowNode(0));
-    const int ndofperelement_fluid  = 0;
-    const int ndofpernode_struct = structdis->NumDof(0,structdis->lRowNode(0));
-    const int ndofperelement_struct = 0;
-    const int ndofpernode_scatra = scatradis->NumDof(0,scatradis->lRowNode(0));
-    const int ndofperelement_scatra = 0;
-    if (structdis->BuildDofSetAuxProxy(ndofpernode_scatra, ndofperelement_scatra, 0, true ) != 2)
-      dserror("unexpected dof sets in structure field");
-    if (fluiddis->BuildDofSetAuxProxy(ndofpernode_scatra, ndofperelement_scatra, 0, true) != 2)
-      dserror("unexpected dof sets in fluid field");
-    if (scatradis->BuildDofSetAuxProxy(ndofpernode_struct, ndofperelement_struct, 0, true) != 1)
-      dserror("unexpected dof sets in scatra field");
-    if (scatradis->BuildDofSetAuxProxy(ndofpernode_fluid, ndofperelement_fluid, 0, true) != 2)
-      dserror("unexpected dof sets in scatra field");
-
-    //call AssignDegreesOfFreedom also for auxiliary dofsets
-    //note: the order of FillComplete() calls determines the gid numbering!
-    // 1. structure dofs
-    // 2. fluiddis dofs
-    // 3. scatradis dofs
-    // 4. auxiliary dofs
-    structdis->FillComplete(true, false,false);
-    fluiddis->FillComplete(true, false,false);
-    scatradis->FillComplete(true, false,false);
-
+/*----------------------------------------------------------------------*
+ |                                                         vuong 05/13  |
+ *----------------------------------------------------------------------*/
+void POROELAST::PoroScatraBase::SetupCoupling(
+    Teuchos::RCP<DRT::Discretization> structdis,
+    Teuchos::RCP<DRT::Discretization> fluiddis,
+    Teuchos::RCP<DRT::Discretization> scatradis
+    )
+{
+  if(not matchinggrid_)
+  {
     // Scheme: non matching meshes --> volumetric mortar coupling...
     volcoupl_structurescatra_=Teuchos::rcp(new ADAPTER::MortarVolCoupl() );
     volcoupl_fluidscatra_=Teuchos::rcp(new ADAPTER::MortarVolCoupl() );

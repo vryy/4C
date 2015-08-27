@@ -158,6 +158,42 @@ void POROELAST::UTILS::SetupPoro()
 
     //set material pointers
     POROELAST::UTILS::SetMaterialPointersMatchingGrid(structdis,fluiddis);
+
+    // if one discretization is a subset of the other, they will differ in node number (and element number)
+    // we assume matching grids for the overlapping part here
+    const Epetra_Map* structnodecolmap = structdis->NodeColMap();
+    const Epetra_Map* fluidnodecolmap = fluiddis->NodeColMap();
+
+    const int numglobalstructnodes = structnodecolmap->NumGlobalElements();
+    const int numglobalfluidnodes = fluidnodecolmap->NumGlobalElements();
+
+    // the problem is two way coupled, thus each discretization must know the other discretization
+    Teuchos::RCP<DRT::DofSet> structdofset = Teuchos::null;
+    Teuchos::RCP<DRT::DofSet> fluiddofset = Teuchos::null;
+
+    /* When coupling porous media with a pure structure we will have two discretizations
+     * of different size. In this case we need a special proxy, which can handle submeshes.
+     */
+    if(numglobalstructnodes != numglobalfluidnodes)
+    {
+      // build a proxy of the structure discretization for the fluid field (the structure disc. is the bigger one)
+      structdofset = structdis->GetDofSetSubProxy();
+      // build a proxy of the fluid discretization for the structure field
+      fluiddofset = fluiddis->GetDofSetSubProxy();
+    }
+    else
+    {
+      // build a proxy of the structure discretization for the fluid field
+      structdofset = structdis->GetDofSetProxy();
+      // build a proxy of the fluid discretization for the structure field
+      fluiddofset = fluiddis->GetDofSetProxy();
+    }
+
+    // check if FluidField has 2 discretizations, so that coupling is possible
+    if (fluiddis->AddDofSet(structdofset) != 1)
+      dserror("unexpected dof sets in fluid field");
+    if (structdis->AddDofSet(fluiddofset)!=1)
+      dserror("unexpected dof sets in structure field");
   }
   else
   {
@@ -655,7 +691,61 @@ void POROELAST::UTILS::SetupPoroScatraDiscretizations(const Epetra_Comm& comm)
     // assign materials. Order is important here!
     POROELAST::UTILS::SetMaterialPointersMatchingGrid(structdis,scatradis);
     POROELAST::UTILS::SetMaterialPointersMatchingGrid(fluiddis,scatradis);
+
+    // the problem is two way coupled, thus each discretization must know the other discretization
+    Teuchos::RCP<DRT::DofSet> structdofset = Teuchos::null;
+    Teuchos::RCP<DRT::DofSet> fluiddofset = Teuchos::null;
+    Teuchos::RCP<DRT::DofSet> scatradofset = Teuchos::null;
+
+    // build a proxy of the structure discretization for the scatra field
+    structdofset = structdis->GetDofSetProxy();
+    // build a proxy of the fluid discretization for the scatra field
+    fluiddofset = fluiddis->GetDofSetProxy();
+    // build a proxy of the fluid discretization for the structure/fluid field
+    scatradofset = scatradis->GetDofSetProxy();
+
+    // check if ScatraField has 2 discretizations, so that coupling is possible
+    if (scatradis->AddDofSet(structdofset) != 1)
+      dserror("unexpected dof sets in scatra field");
+    if (scatradis->AddDofSet(fluiddofset) != 2)
+      dserror("unexpected dof sets in scatra field");
+    if (structdis->AddDofSet(scatradofset)!=2)
+      dserror("unexpected dof sets in structure field");
+    if (fluiddis->AddDofSet(scatradofset)!=2)
+      dserror("unexpected dof sets in fluid field");
   }
-//  else
-//  dserror("Structure AND ScaTra discretization present. This is not supported.");
+  else
+  {
+    //first call FillComplete for single discretizations.
+    //This way the physical dofs are numbered successively
+    structdis->FillComplete();
+    fluiddis->FillComplete();
+    scatradis->FillComplete();
+
+    //build auxiliary dofsets, i.e. pseudo dofs on each discretization
+    const int ndofpernode_fluid = fluiddis->NumDof(0,fluiddis->lRowNode(0));
+    const int ndofperelement_fluid  = 0;
+    const int ndofpernode_struct = structdis->NumDof(0,structdis->lRowNode(0));
+    const int ndofperelement_struct = 0;
+    const int ndofpernode_scatra = scatradis->NumDof(0,scatradis->lRowNode(0));
+    const int ndofperelement_scatra = 0;
+    if (structdis->BuildDofSetAuxProxy(ndofpernode_scatra, ndofperelement_scatra, 0, true ) != 2)
+      dserror("unexpected dof sets in structure field");
+    if (fluiddis->BuildDofSetAuxProxy(ndofpernode_scatra, ndofperelement_scatra, 0, true) != 2)
+      dserror("unexpected dof sets in fluid field");
+    if (scatradis->BuildDofSetAuxProxy(ndofpernode_struct, ndofperelement_struct, 0, true) != 1)
+      dserror("unexpected dof sets in scatra field");
+    if (scatradis->BuildDofSetAuxProxy(ndofpernode_fluid, ndofperelement_fluid, 0, true) != 2)
+      dserror("unexpected dof sets in scatra field");
+
+    //call AssignDegreesOfFreedom also for auxiliary dofsets
+    //note: the order of FillComplete() calls determines the gid numbering!
+    // 1. structure dofs
+    // 2. fluiddis dofs
+    // 3. scatradis dofs
+    // 4. auxiliary dofs
+    structdis->FillComplete(true, false,false);
+    fluiddis->FillComplete(true, false,false);
+    scatradis->FillComplete(true, false,false);
+  }
 }

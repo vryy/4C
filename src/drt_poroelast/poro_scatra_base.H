@@ -108,10 +108,14 @@ namespace POROELAST
 
   protected:
     //!setup up of dofsets for two way coupling
-    void AddDofSets(Teuchos::RCP<DRT::Discretization> structdis,
+    void ReplaceDofSets(Teuchos::RCP<DRT::Discretization> structdis,
                     Teuchos::RCP<DRT::Discretization> fluiddis,
-                    Teuchos::RCP<DRT::Discretization> scatradis,
-                    bool replace = false);
+                    Teuchos::RCP<DRT::Discretization> scatradis);
+
+    //!setup up coupling objects if necessary
+    void SetupCoupling(Teuchos::RCP<DRT::Discretization> structdis,
+                       Teuchos::RCP<DRT::Discretization> fluiddis,
+                       Teuchos::RCP<DRT::Discretization> scatradis);
 
     //! Pointer to the porous media problem. (drt_poroelastic)
     Teuchos::RCP<POROELAST::PoroBase> poro_;

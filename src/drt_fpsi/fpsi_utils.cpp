@@ -125,27 +125,8 @@ Teuchos::RCP<FPSI::FPSI_Base> FPSI::Utils::SetupDiscretizations(
    them.
 
    */
-  structdis->FillComplete(true, true, true);
-  if (structdis->NumGlobalNodes() == 0)
-  {
-    dserror("Structure discretization is empty! Damn it!");
-  }
-
-  porofluiddis->FillComplete(true, true, true);
-
-  if (porofluiddis->NumGlobalNodes() == 0)
-  {
-    // Create the fluid discretization within the porous medium
-    DRT::UTILS::CloneDiscretization<POROELAST::UTILS::PoroelastCloneStrategy>(
-        structdis, porofluiddis);
-
-    //set material pointers
-    POROELAST::UTILS::SetMaterialPointersMatchingGrid(structdis, porofluiddis);
-  }
-  else
-  {
-    dserror("Porofluiddis already exists! That's quite impossible!");
-  }
+  // setup of the discretizations, including clone strategy
+  POROELAST::UTILS::SetupPoro();
 
   fluiddis->FillComplete(true, true, true);
   aledis->FillComplete(true, true, true);

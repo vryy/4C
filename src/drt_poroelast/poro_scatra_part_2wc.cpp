@@ -84,10 +84,10 @@ void POROELAST::PoroScatraPart2WC::ReadRestart(int restart)
 
     //in case of submeshes, we need to rebuild the subproxies, also (they are reset during restart)
     if(PoroField()->HasSubmeshes())
-      AddDofSets(StructureField()->Discretization(),
-                 FluidField()->Discretization(),
-                 ScaTraField()->Discretization(),
-                 true);
+      ReplaceDofSets(
+          StructureField()->Discretization(),
+          FluidField()->Discretization(),
+          ScaTraField()->Discretization());
 
     // the variables need to be set on other field
     SetScatraSolution();
@@ -99,10 +99,10 @@ void POROELAST::PoroScatraPart2WC::ReadRestart(int restart)
 
     //in case of submeshes, we need to rebuild the subproxies, also (they are reset during restart)
     if(PoroField()->HasSubmeshes())
-      AddDofSets(StructureField()->Discretization(),
-                 FluidField()->Discretization(),
-                 ScaTraField()->Discretization(),
-                 true);
+      ReplaceDofSets(
+          StructureField()->Discretization(),
+          FluidField()->Discretization(),
+          ScaTraField()->Discretization());
 
     SetTimeStep(PoroField()->Time(), restart);
 

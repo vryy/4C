@@ -236,7 +236,7 @@ namespace POROELAST
       void SetupCoupling();
 
       //! add dof set of structure/fluid discretization to fluid/structure discretization
-      void AddDofSets(bool replace =false);
+      void ReplaceDofSets();
 
       //! check for special poro conditions and set bools
       void CheckForPoroConditions();

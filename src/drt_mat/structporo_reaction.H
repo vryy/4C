@@ -215,8 +215,7 @@ namespace MAT
 
     protected:
 
-      virtual void Reaction(Teuchos::RCP<std::vector<double> >& scalars,
-                            double porosity,
+      virtual void Reaction(double porosity,
                             Teuchos::ParameterList& params);
 
       /// my material parameters

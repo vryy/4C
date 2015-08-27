@@ -115,10 +115,8 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm,
   // For this we use DofSetProxies and coupling objects which are setup here
   SetupCoupling();
 
-  if(matchinggrid_)
-    AddDofSets();
-  else
-    submeshes_=false;
+  if(submeshes_)
+    ReplaceDofSets();
 
   //extractor for constraints on structure phase
   //
@@ -208,7 +206,7 @@ void POROELAST::PoroBase::ReadRestart(const int step)
 
     //in case of submeshes, we need to rebuild the subproxies, also (they are reset during restart)
     if(submeshes_)
-      AddDofSets(true);
+      ReplaceDofSets();
 
     // apply current velocity and pressures to structure
     SetFluidSolution();
@@ -221,7 +219,7 @@ void POROELAST::PoroBase::ReadRestart(const int step)
 
     //in case of submeshes, we need to rebuild the subproxies, also (they are reset during restart)
     if(submeshes_)
-      AddDofSets(true);
+      ReplaceDofSets();
 
     //set the current time in the algorithm (taken from fluid field)
     SetTimeStep(FluidField()->Time(), step);
@@ -493,7 +491,7 @@ void POROELAST::PoroBase::SetupCoupling()
 /*----------------------------------------------------------------------*
  |                                                        vuong 01/12   |
  *----------------------------------------------------------------------*/
-void POROELAST::PoroBase::AddDofSets(bool replace)
+void POROELAST::PoroBase::ReplaceDofSets()
 {
   // the problem is two way coupled, thus each discretization must know the other discretization
   Teuchos::RCP<DRT::DofSet> structdofset = Teuchos::null;
@@ -521,19 +519,8 @@ void POROELAST::PoroBase::AddDofSets(bool replace)
     fluiddofset = fluiddis->GetDofSetProxy();
   }
 
-  if(not replace)
-  {
-    // check if FluidField has 2 discretizations, so that coupling is possible
-    if (fluiddis->AddDofSet(structdofset) != 1)
-      dserror("unexpected dof sets in fluid field");
-    if (structdis->AddDofSet(fluiddofset)!=1)
-      dserror("unexpected dof sets in structure field");
-  }
-  else
-  {
-    fluiddis->ReplaceDofSet(1,structdofset);
-    structdis->ReplaceDofSet(1,fluiddofset);
-  }
+  fluiddis->ReplaceDofSet(1,structdofset);
+  structdis->ReplaceDofSet(1,fluiddofset);
 }
 
 /*----------------------------------------------------------------------*

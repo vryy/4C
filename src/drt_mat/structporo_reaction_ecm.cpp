@@ -152,10 +152,15 @@ void MAT::StructPoroReactionECM::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::StructPoroReactionECM::Reaction(Teuchos::RCP<std::vector<double> >& scalars,
-                                          double porosity,
-                                          Teuchos::ParameterList& params)
+void MAT::StructPoroReactionECM::Reaction(
+      double porosity,
+      Teuchos::ParameterList& params)
 {
+  if(params.getEntryRCP("scalar")==Teuchos::null)
+   return;
+
+  Teuchos::RCP<std::vector<double> > scalars = params.get<Teuchos::RCP<std::vector<double> > >("scalar");
+
   double dt = params.get<double>("delta time",-1.0);
   //double time = params.get<double>("total time",-1.0);
 
