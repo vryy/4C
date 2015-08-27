@@ -1201,7 +1201,7 @@ void IO::DiscretizationWriter::WriteElementData(bool writeowner)
         {
           // write information fo immersed method
           dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(dis_->lRowElement(i))->VisIsImmersed(names);
-          dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(dis_->lRowElement(i))->VisIsImmersedBoundary(names);
+          dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(dis_->lRowElement(i))->VisIsBoundaryImmersed(names);
         }
       }
     }
