@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file fluidrmeshtying.H
+\file fluid_meshtying.H
 
 \brief Methods to apply meshtying to fluid and scatra systems
 
@@ -180,9 +180,11 @@ class Meshtying
                                  const Teuchos::RCP<Epetra_Vector>&            residual,  ///> residual established by the element routine
                                  const Teuchos::RCP<Epetra_Vector>&            velnp);  ///> current velocity vector
 
-    //! Split sparse matrix and save blocks in a std::vector<Teuchos::RCP<Epetra_Vector> >
-    void SplitMatrix(Teuchos::RCP<LINALG::SparseOperator>                matrix,         ///> sysmat established by the element routine
-                     std::vector<Teuchos::RCP<LINALG::SparseMatrix> >&   splitmatrix);   ///> container for the split blocks
+    //! split sparse global system matrix into 3x3 block sparse matrix associated with interior, master, and slave dofs
+    void SplitMatrix(
+        Teuchos::RCP<LINALG::SparseOperator>           matrix,       //!< original sparse global system matrix before split
+        Teuchos::RCP<LINALG::BlockSparseMatrixBase>&   splitmatrix   //!< resulting block sparse matrix after split
+        );
 
     //! Split vector and save parts in a std::vector<Teuchos::RCP<Epetra_Vector> >
     void SplitVector(Teuchos::RCP<Epetra_Vector>                   vector,           ///> vector to split
@@ -198,9 +200,10 @@ class Meshtying
     void CondensationOperationSparseMatrix(
         const Teuchos::RCP<LINALG::SparseOperator>&              sysmat,       ///> sysmat established by the element routine
         const Teuchos::RCP<Epetra_Vector>&                       residual,     ///> residual established by the element routine
-        const std::vector<Teuchos::RCP<LINALG::SparseMatrix> >&  splitmatrix,  ///> container with split original sysmat
+        const Teuchos::RCP<LINALG::BlockSparseMatrixBase>&       splitmatrix,  ///> container with split original sysmat
         const std::vector<Teuchos::RCP<Epetra_Vector> >&         splitres,     ///> container with split original residual
-        const std::vector<Teuchos::RCP<Epetra_Vector> >&         splitvel);    ///> container with split velocity vector
+        const std::vector<Teuchos::RCP<Epetra_Vector> >&         splitvel      ///> container with split velocity vector
+        );
 
     //! Condensation operation for a block matrix (including ALE case):
     /// the original blocks (nn, nm, mn, mm) are manipulated directly;

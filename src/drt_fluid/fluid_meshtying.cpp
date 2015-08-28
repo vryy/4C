@@ -665,7 +665,7 @@ void FLD::Meshtying::CondensationSparseMatrix(
   /**********************************************************************/
 
   // container for split matrix and vector
-  std::vector<Teuchos::RCP<LINALG::SparseMatrix> > splitmatrix(9);
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> splitmatrix;
   std::vector<Teuchos::RCP<Epetra_Vector> > splitres(3);
   std::vector<Teuchos::RCP<Epetra_Vector> > splitvel(3);
 
@@ -714,62 +714,34 @@ void FLD::Meshtying::CondensationBlockMatrix(
 }
 
 
-/*-------------------------------------------------------*/
-/*  Split Sparse Matrix                    ehrl (04/11)  */
-/*-------------------------------------------------------*/
+/*------------------------------------------------------------------------------------------------------------------------------*
+ | split sparse global system matrix into 3x3 block sparse matrix associated with interior, master, and slave dofs   fang 08/15 |
+ *------------------------------------------------------------------------------------------------------------------------------*/
 void FLD::Meshtying::SplitMatrix(
-    Teuchos::RCP<LINALG::SparseOperator>               matrix,
-    std::vector<Teuchos::RCP<LINALG::SparseMatrix> >&  splitmatrix)
+    Teuchos::RCP<LINALG::SparseOperator>           matrix,       //!< original sparse global system matrix before split
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase>&   splitmatrix   //!< resulting block sparse matrix after split
+    )
 {
   TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  2.1)   - Split Matrix");
 
-  // cast Teuchos::RCP<LINALG::SparseOperator> to a Teuchos::RCP<LINALG::SparseMatrix>
-  Teuchos::RCP<LINALG::SparseMatrix> matrixnew = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(matrix);
+  // initialize map extractor for matrix splitting
+  std::vector<Teuchos::RCP<const Epetra_Map> > fluidmaps;
+  fluidmaps.push_back(gndofrowmap_);
+  fluidmaps.push_back(gmdofrowmap_);
+  fluidmaps.push_back(gsdofrowmap_);
+  LINALG::MultiMapExtractor extractor(*dofrowmap_,fluidmaps);
+  extractor.CheckForValidMapExtractor();
 
-  /**********************************************************************/
-  /* Split kteff into 3x3 block matrix                                  */
-  /**********************************************************************/
+  // perform matrix splitting
+  // -------------------
+  // | knn | knm | kns |
+  // | kmn | kmm | kms |
+  // | ksn | ksm | kss |
+  // -------------------
+  splitmatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(matrix)->Split<LINALG::DefaultBlockMatrixStrategy>(extractor,extractor);
 
-  // we want to split k into 3 groups s,m,n = 9 blocks
-  Teuchos::RCP<LINALG::SparseMatrix> kss, ksm, ksn, kms, kmm, kmn, kns, knm, knn;
-
-  // temporarily we need the blocks ksmsm, ksmn, knsm
-  // (FIXME: because a direct SplitMatrix3x3 is still missing!)
-  Teuchos::RCP<LINALG::SparseMatrix> ksmsm, ksmn, knsm;
-
-  // some temporary Teuchos::RCPs
-  Teuchos::RCP<Epetra_Map> tempmap;
-  Teuchos::RCP<LINALG::SparseMatrix> tempmtx1;
-  Teuchos::RCP<LINALG::SparseMatrix> tempmtx2;
-  Teuchos::RCP<LINALG::SparseMatrix> tempmtx3;
-
-  // split into interface and domain dof's
-  LINALG::SplitMatrix2x2(matrixnew,gsmdofrowmap_,gndofrowmap_,gsmdofrowmap_,gndofrowmap_,ksmsm,ksmn,knsm,knn);
-
-  // further splits into slave part + master part
-  LINALG::SplitMatrix2x2(ksmsm,gsdofrowmap_,gmdofrowmap_,gsdofrowmap_,gmdofrowmap_,kss,ksm,kms,kmm);
-
-  // tempmap and tempmtx1 are dummy matrixes
-  LINALG::SplitMatrix2x2(ksmn,gsdofrowmap_,gmdofrowmap_,gndofrowmap_,tempmap,ksn,tempmtx1,kmn,tempmtx2);
-  // tempmap and tempmtx1 are dummy matrixes
-  LINALG::SplitMatrix2x2(knsm,gndofrowmap_,tempmap,gsdofrowmap_,gmdofrowmap_,kns,knm,tempmtx1,tempmtx2);
-
-  // splitmatrix[ii]
-  // -------------------------------
-  // | knn [0] | knm [1] | kns [2] |
-  // | kmn [3] | kmm [4] | kms [5] |
-  // | ksn [6] | ksm [7] | kss [8] |
-  // -------------------------------
-
-  splitmatrix[0]=knn;      // -------------------------------
-  splitmatrix[1]=knm;      // | knn (0) | knm (1) | kns (2) |
-  splitmatrix[2]=kns;      // | kmn (3) | kmm (4) | kms (5) |
-  splitmatrix[3]=kmn;      // | ksn (6) | ksm (7) | kss (8) |
-  splitmatrix[4]=kmm;      // -------------------------------
-  splitmatrix[5]=kms;
-  splitmatrix[6]=ksn;
-  splitmatrix[7]=ksm;
-  splitmatrix[8]=kss;
+  // finalize resulting block sparse matrix
+  splitmatrix->Complete();
 
   return;
 }
@@ -838,11 +810,12 @@ void FLD::Meshtying::SplitVectorBasedOn3x3(Teuchos::RCP<Epetra_Vector>   orgvect
 /* (including ALE case   vg 01/14)                       */
 /*-------------------------------------------------------*/
 void FLD::Meshtying::CondensationOperationSparseMatrix(
-    const Teuchos::RCP<LINALG::SparseOperator>&              sysmat,
-    const Teuchos::RCP<Epetra_Vector>&                       residual,
-    const std::vector<Teuchos::RCP<LINALG::SparseMatrix> >&  splitmatrix,
-    const std::vector<Teuchos::RCP<Epetra_Vector> >&         splitres,
-    const std::vector<Teuchos::RCP<Epetra_Vector> >&         splitvel)
+    const Teuchos::RCP<LINALG::SparseOperator>&              sysmat,       ///> sysmat established by the element routine
+    const Teuchos::RCP<Epetra_Vector>&                       residual,     ///> residual established by the element routine
+    const Teuchos::RCP<LINALG::BlockSparseMatrixBase>&       splitmatrix,  ///> container with split original sysmat
+    const std::vector<Teuchos::RCP<Epetra_Vector> >&         splitres,     ///> container with split original residual
+    const std::vector<Teuchos::RCP<Epetra_Vector> >&         splitvel      ///> container with split velocity vector
+    )
 {
   TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  2.3)   - Condensation Operation");
 
@@ -863,12 +836,12 @@ void FLD::Meshtying::CondensationOperationSparseMatrix(
   // |  0  |  0  | 1  |
   // ------------------
 
-  // splitmatrix[ii]
-  // -------------------------------
-  // | knn [0] | knm [1] | kns [2] |
-  // | kmn [3] | kmm [4] | kms [5] |
-  // | ksn [6] | ksm [7] | kss [8] |
-  // -------------------------------
+  // splitmatrix
+  // -------------------
+  // | knn | knm | kns |
+  // | kmn | kmm | kms |
+  // | ksn | ksm | kss |
+  // -------------------
 
   // DIRECTMANIPULATION:
   // the sysmat is manipulated directly with out changing the graph
@@ -918,17 +891,17 @@ void FLD::Meshtying::CondensationOperationSparseMatrix(
   /*--------------------------------------------------------------------*/
   // Part nn
   /*--------------------------------------------------------------------*/
-  sysmat->Add(*(splitmatrix[0]),false,1.0,0.0);
+  sysmat->Add(splitmatrix->Matrix(0,0),false,1.0,0.0);
 
   /*--------------------------------------------------------------------*/
   // Part nm
   /*--------------------------------------------------------------------*/
   // knm: add kns*P
   Teuchos::RCP<LINALG::SparseMatrix> knm_mod = Teuchos::rcp(new LINALG::SparseMatrix(*gndofrowmap_,100));
-  knm_mod->Add(*(splitmatrix[1]),false,1.0,1.0);
-  Teuchos::RCP<LINALG::SparseMatrix> knm_add = MLMultiply(*(splitmatrix[2]),false,*P,false,false,false,true);
+  knm_mod->Add(splitmatrix->Matrix(0,1),false,1.0,1.0);
+  Teuchos::RCP<LINALG::SparseMatrix> knm_add = MLMultiply(splitmatrix->Matrix(0,2),false,*P,false,false,false,true);
   knm_mod->Add(*knm_add,false,1.0,1.0);
-  knm_mod->Complete((splitmatrix[1])->DomainMap(),(splitmatrix[1])->RowMap());
+  knm_mod->Complete(splitmatrix->Matrix(0,1).DomainMap(),splitmatrix->Matrix(0,1).RowMap());
 
   sysmat->Add(*knm_mod,false,1.0,1.0);
 
@@ -940,10 +913,10 @@ void FLD::Meshtying::CondensationOperationSparseMatrix(
   /*--------------------------------------------------------------------*/
   // kmn: add P^T*ksn
   Teuchos::RCP<LINALG::SparseMatrix> kmn_mod = Teuchos::rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
-  kmn_mod->Add(*(splitmatrix[3]),false,1.0,1.0);
-  Teuchos::RCP<LINALG::SparseMatrix> kmn_add = MLMultiply(*P,true,*(splitmatrix[6]),false,false,false,true);
+  kmn_mod->Add(splitmatrix->Matrix(1,0),false,1.0,1.0);
+  Teuchos::RCP<LINALG::SparseMatrix> kmn_add = MLMultiply(*P,true,splitmatrix->Matrix(2,0),false,false,false,true);
   kmn_mod->Add(*kmn_add,false,1.0,1.0);
-  kmn_mod->Complete((splitmatrix[3])->DomainMap(),(splitmatrix[3])->RowMap());
+  kmn_mod->Complete(splitmatrix->Matrix(1,0).DomainMap(),splitmatrix->Matrix(1,0).RowMap());
 
   sysmat->Add(*kmn_mod,false,1.0,1.0);
 
@@ -952,11 +925,11 @@ void FLD::Meshtying::CondensationOperationSparseMatrix(
   /*--------------------------------------------------------------------*/
   // kms: add P^T*kss, kmm: add kms*P + kmm
   Teuchos::RCP<LINALG::SparseMatrix> kmm_mod = Teuchos::rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
-  kmm_mod->Add(*(splitmatrix[4]),false,1.0,1.0);
-  Teuchos::RCP<LINALG::SparseMatrix> kms = MLMultiply(*P,true,*(splitmatrix[8]),false,false,false,true);
+  kmm_mod->Add(splitmatrix->Matrix(1,1),false,1.0,1.0);
+  Teuchos::RCP<LINALG::SparseMatrix> kms = MLMultiply(*P,true,splitmatrix->Matrix(2,2),false,false,false,true);
   Teuchos::RCP<LINALG::SparseMatrix> kmm_add = MLMultiply(*kms,false,*P,false,false,false,true);
   kmm_mod->Add(*kmm_add,false,1.0,1.0);
-  kmm_mod->Complete((splitmatrix[4])->DomainMap(),(splitmatrix[4])->RowMap());
+  kmm_mod->Complete(splitmatrix->Matrix(1,1).DomainMap(),splitmatrix->Matrix(1,1).RowMap());
 
   sysmat->Add(*kmm_mod,false,1.0,1.0);
 
@@ -980,8 +953,8 @@ void FLD::Meshtying::CondensationOperationSparseMatrix(
   // Part nm
   /*--------------------------------------------------------------------*/
   // knm: add kns*P
-  Teuchos::RCP<LINALG::SparseMatrix> knm_add = MLMultiply(*(splitmatrix[2]),false,*P,false,false,false,true);
-  knm_add->Complete((splitmatrix[1])->DomainMap(),(splitmatrix[1])->RowMap());
+  Teuchos::RCP<LINALG::SparseMatrix> knm_add = MLMultiply(splitmatrix->Matrix(0,2),false,*P,false,false,false,true);
+  knm_add->Complete(splitmatrix->Matrix(0,1).DomainMap(),splitmatrix->Matrix(0,1).RowMap());
   sysmat->Add(*knm_add,false,1.0,1.0);
 
   if (dconmaster_==true and firstnonliniter_==true)
@@ -991,8 +964,8 @@ void FLD::Meshtying::CondensationOperationSparseMatrix(
   // Part mn
   /*--------------------------------------------------------------------*/
   // kmn: add P^T*ksn
-  Teuchos::RCP<LINALG::SparseMatrix> kmn_add = MLMultiply(*P,true,*(splitmatrix[6]),false,false,false,true);
-  kmn_add->Complete((splitmatrix[3])->DomainMap(),(splitmatrix[3])->RowMap());
+  Teuchos::RCP<LINALG::SparseMatrix> kmn_add = MLMultiply(*P,true,splitmatrix->Matrix(2,0),false,false,false,true);
+  kmn_add->Complete(splitmatrix->Matrix(1,0).DomainMap(),splitmatrix->Matrix(1,0).RowMap());
   sysmat->Add(*kmn_add,false,1.0,1.0);
 
   /*--------------------------------------------------------------------*/
@@ -1000,10 +973,10 @@ void FLD::Meshtying::CondensationOperationSparseMatrix(
   /*--------------------------------------------------------------------*/
   // kms: add P^T*kss, kmm: add kms*P + kmm
   Teuchos::RCP<LINALG::SparseMatrix> kmm_mod = Teuchos::rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
-  Teuchos::RCP<LINALG::SparseMatrix> kms = MLMultiply(*P,true,*(splitmatrix[8]),false,false,false,true);
+  Teuchos::RCP<LINALG::SparseMatrix> kms = MLMultiply(*P,true,splitmatrix->Matrix(2,2),false,false,false,true);
   Teuchos::RCP<LINALG::SparseMatrix> kmm_add = MLMultiply(*kms,false,*P,false,false,false,true);
   kmm_mod->Add(*kmm_add,false,1.0,1.0);
-  kmm_mod->Complete((splitmatrix[4])->DomainMap(),(splitmatrix[4])->RowMap());
+  kmm_mod->Complete(splitmatrix->Matrix(1,1).DomainMap(),splitmatrix->Matrix(1,1).RowMap());
 
   sysmat->Add(*kmm_mod,false,1.0,1.0);
 
@@ -1011,11 +984,11 @@ void FLD::Meshtying::CondensationOperationSparseMatrix(
     kmm_mod->Multiply(false,*(splitdcmaster[1]),*dcmm);
 
   // Dangerous??: Get zero in block ... by subtracting
-  sysmat->Add(*splitmatrix[2],false,-1.0, 1.0);
-  sysmat->Add(*splitmatrix[5],false,-1.0, 1.0);
-  sysmat->Add(*splitmatrix[6],false,-1.0, 1.0);
-  sysmat->Add(*splitmatrix[7],false,-1.0, 1.0);
-  sysmat->Add(*splitmatrix[8],false,-1.0, 1.0);
+  sysmat->Add(splitmatrix->Matrix(0,2),false,-1.0, 1.0);
+  sysmat->Add(splitmatrix->Matrix(1,2),false,-1.0, 1.0);
+  sysmat->Add(splitmatrix->Matrix(2,0),false,-1.0, 1.0);
+  sysmat->Add(splitmatrix->Matrix(2,1),false,-1.0, 1.0);
+  sysmat->Add(splitmatrix->Matrix(2,2),false,-1.0, 1.0);
 
   Teuchos::RCP<Epetra_Vector> ones = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   Teuchos::RCP<LINALG::SparseMatrix> onesdiag;
@@ -1039,17 +1012,17 @@ void FLD::Meshtying::CondensationOperationSparseMatrix(
   /*--------------------------------------------------------------------*/
   // Part nn
   /*--------------------------------------------------------------------*/
-  sysmatnew->Add(*(splitmatrix[0]),false,1.0,1.0);
+  sysmatnew->Add(splitmatrix->Matrix(0,0),false,1.0,1.0);
 
   /*--------------------------------------------------------------------*/
   // Part nm
   /*--------------------------------------------------------------------*/
   // knm: add kns*P
   Teuchos::RCP<LINALG::SparseMatrix> knm_mod = Teuchos::rcp(new LINALG::SparseMatrix(*gndofrowmap_,100));
-  knm_mod->Add(*(splitmatrix[1]),false,1.0,1.0);
-  Teuchos::RCP<LINALG::SparseMatrix> knm_add = MLMultiply(*(splitmatrix[2]),false,*P,false,false,false,true);
+  knm_mod->Add(splitmatrix->Matrix(0,1),false,1.0,1.0);
+  Teuchos::RCP<LINALG::SparseMatrix> knm_add = MLMultiply(splitmatrix->Matrix(0,2),false,*P,false,false,false,true);
   knm_mod->Add(*knm_add,false,1.0,1.0);
-  knm_mod->Complete((splitmatrix[1])->DomainMap(),(splitmatrix[1])->RowMap());
+  knm_mod->Complete(splitmatrix->Matrix(0,1).DomainMap(),splitmatrix->Matrix(0,1).RowMap());
 
   sysmatnew->Add(*knm_mod,false,1.0,1.0);
 
@@ -1061,10 +1034,10 @@ void FLD::Meshtying::CondensationOperationSparseMatrix(
   /*--------------------------------------------------------------------*/
   // kmn: add P^T*ksn
   Teuchos::RCP<LINALG::SparseMatrix> kmn_mod = Teuchos::rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
-  kmn_mod->Add(*(splitmatrix[3]),false,1.0,1.0);
-  Teuchos::RCP<LINALG::SparseMatrix> kmn_add = MLMultiply(*P,true,*(splitmatrix[6]),false,false,false,true);
+  kmn_mod->Add(splitmatrix->Matrix(1,0),false,1.0,1.0);
+  Teuchos::RCP<LINALG::SparseMatrix> kmn_add = MLMultiply(*P,true,splitmatrix->Matrix(2,0),false,false,false,true);
   kmn_mod->Add(*kmn_add,false,1.0,1.0);
-  kmn_mod->Complete((splitmatrix[3])->DomainMap(),(splitmatrix[3])->RowMap());
+  kmn_mod->Complete(splitmatrix->Matrix(1,0).DomainMap(),splitmatrix->Matrix(1,0).RowMap());
 
   sysmatnew->Add(*kmn_mod,false,1.0,1.0);
 
@@ -1073,11 +1046,11 @@ void FLD::Meshtying::CondensationOperationSparseMatrix(
   /*--------------------------------------------------------------------*/
   // kms: add P^T*kss, kmm: add kms*P + kmm
   Teuchos::RCP<LINALG::SparseMatrix> kmm_mod = Teuchos::rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
-  kmm_mod->Add(*(splitmatrix[4]),false,1.0,1.0);
-  Teuchos::RCP<LINALG::SparseMatrix> kms = MLMultiply(*P,true,*(splitmatrix[8]),false,false,false,true);
+  kmm_mod->Add(splitmatrix->Matrix(1,1),false,1.0,1.0);
+  Teuchos::RCP<LINALG::SparseMatrix> kms = MLMultiply(*P,true,splitmatrix->Matrix(2,2),false,false,false,true);
   Teuchos::RCP<LINALG::SparseMatrix> kmm_add = MLMultiply(*kms,false,*P,false,false,false,true);
   kmm_mod->Add(*kmm_add,false,1.0,1.0);
-  kmm_mod->Complete((splitmatrix[4])->DomainMap(),(splitmatrix[4])->RowMap());
+  kmm_mod->Complete(splitmatrix->Matrix(1,1).DomainMap(),splitmatrix->Matrix(1,1).RowMap());
 
   sysmatnew->Add(*kmm_mod,false,1.0,1.0);
 
@@ -1138,8 +1111,8 @@ void FLD::Meshtying::CondensationOperationSparseMatrix(
 
 
   // r_n: add K_ns*vp_i^s
-  Teuchos::RCP<LINALG::SparseMatrix> knm = Teuchos::rcp(new LINALG::SparseMatrix(*(splitmatrix[2])));
-  //LINALG::SparseMatrix& knm = *(splitmatrix[2]);
+  Teuchos::RCP<LINALG::SparseMatrix> knm = Teuchos::rcp(new LINALG::SparseMatrix(splitmatrix->Matrix(0,2)));
+  //LINALG::SparseMatrix& knm = splitmatrix->Matrix(0,2);
   Teuchos::RCP<Epetra_Vector> fn_mod = Teuchos::rcp(new Epetra_Vector(*gndofrowmap_,true));
   knm->Multiply(false,*(splitvel[2]),*fn_mod);
 
@@ -1443,21 +1416,21 @@ void FLD::Meshtying::OutputSetUp()
 void FLD::Meshtying::OutputSparseMatrixSplit(
     Teuchos::RCP<LINALG::SparseOperator>                conmat)
 {
-  std::vector<Teuchos::RCP<LINALG::SparseMatrix> > matrixsplit(9);
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> splitmatrix;
 
-  SplitMatrix(conmat,matrixsplit);
+  SplitMatrix(conmat,splitmatrix);
 
-  std::cout << "Teil nn " << std::endl << *(matrixsplit[0]) << std::endl;
-  std::cout << "Teil nm: " << std::endl << *(matrixsplit[1]) << std::endl;
-  std::cout << "Teil ns: " << std::endl << *(matrixsplit[2]) << std::endl;
+  std::cout << "Teil nn " << std::endl << splitmatrix->Matrix(0,0) << std::endl;
+  std::cout << "Teil nm: " << std::endl << splitmatrix->Matrix(0,1) << std::endl;
+  std::cout << "Teil ns: " << std::endl << splitmatrix->Matrix(0,2) << std::endl;
 
-  std::cout << "Teil mn: " << std::endl << *(matrixsplit[3]) << std::endl;
-  std::cout << "Teil mm: " << std::endl << *(matrixsplit[4]) << std::endl;
-  std::cout << "Teil ms: " << std::endl << *(matrixsplit[5]) << std::endl;
+  std::cout << "Teil mn: " << std::endl << splitmatrix->Matrix(1,0) << std::endl;
+  std::cout << "Teil mm: " << std::endl << splitmatrix->Matrix(1,1) << std::endl;
+  std::cout << "Teil ms: " << std::endl << splitmatrix->Matrix(1,2) << std::endl;
 
-  std::cout << "Teil sn: " << std::endl << *(matrixsplit[6]) << std::endl;
-  std::cout << "Teil sm: " << std::endl << *(matrixsplit[7]) << std::endl;
-  std::cout << "Teil ss: " << std::endl << *(matrixsplit[8]) << std::endl;
+  std::cout << "Teil sn: " << std::endl << splitmatrix->Matrix(2,0) << std::endl;
+  std::cout << "Teil sm: " << std::endl << splitmatrix->Matrix(2,1) << std::endl;
+  std::cout << "Teil ss: " << std::endl << splitmatrix->Matrix(2,2) << std::endl;
 
   dserror("Matrix output finished");
 
