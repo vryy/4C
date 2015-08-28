@@ -200,7 +200,7 @@ void test_sud_sc1()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true, "Tessellation" );
+  intersection.CutTest_Cut( true, "Tessellation" );
 
   std::vector<double> tessVol,momFitVol,dirDivVol;
 

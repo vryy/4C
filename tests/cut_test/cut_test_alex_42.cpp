@@ -181,7 +181,7 @@ void test_alex42()
 
 
   intersection.Status();
-  intersection.Cut( true, INPAR::CUT::VCellGaussPts_Tessellation );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_Tessellation );
 
   std::vector<double> tessVol,momFitVol,dirDivVol;
 
@@ -211,7 +211,7 @@ void test_alex42()
            ++i )
    {
      GEO::CUT::VolumeCell * vc = &**i;
-     vc->DirectDivergenceGaussRule(vc->ParentElement(),mesh,true,INPAR::CUT::BCellGaussPts_DirectDivergence);
+     vc->DirectDivergenceGaussRule(vc->ParentElement(),mesh,true,INPAR::CUT::BCellGaussPts_Tessellation);
      dirDivVol.push_back(vc->Volume());
    }
 

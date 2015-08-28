@@ -158,10 +158,11 @@ void test_hex8_quad4_qhull1()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
+//INFO: This Cut test will not work with DD in LOCAL, as the hex8 does not fullfill the restrictions of this method!
 void test_hex8_quad4_alex1()
 {
   GEO::CUT::MeshIntersection intersection;
@@ -227,7 +228,7 @@ void test_hex8_quad4_alex1()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -303,7 +304,7 @@ void test_hex8_quad4_alex2()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -393,7 +394,7 @@ void test_hex8_quad4_alex3()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -483,7 +484,7 @@ void test_hex8_quad4_alex4()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
   intersection.PrintCellStats();
 }
@@ -560,7 +561,7 @@ void test_hex8_quad4_alex5()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -636,7 +637,7 @@ void test_hex8_quad4_alex6()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -712,7 +713,7 @@ void test_hex8_quad4_alex7()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -788,7 +789,7 @@ void test_hex8_quad4_alex8()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -874,10 +875,10 @@ void test_tet4_quad4_alex9()
 
 #if 0
   GEO::CUT::TetMeshIntersection tmi( tets, accept_tets, points, cut_sides );
-  tmi.Cut();
+  tmi.CutTest_Cut();
 #else
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 #endif
 }
@@ -964,10 +965,10 @@ void test_tet4_quad4_alex10()
 
 #if 0
   GEO::CUT::TetMeshIntersection tmi( tets, accept_tets, points, cut_sides );
-  tmi.Cut();
+  tmi.CutTest_Cut();
 #else
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 #endif
 }
@@ -1043,7 +1044,7 @@ void test_tet4_quad4_alex11()
   intersection.AddElement( 1, nids, tet4_xyze, DRT::Element::tet4 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -1140,7 +1141,7 @@ void test_hex8_quad4_alex12()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -1230,7 +1231,7 @@ void test_hex8_quad4_alex13()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -1320,7 +1321,7 @@ void test_hex8_quad4_alex14()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -1452,7 +1453,7 @@ void test_hex8_quad4_alex15()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -1569,7 +1570,7 @@ void test_tet4_quad4_alex16()
   intersection.AddElement( 1, nids, tet4_xyze, DRT::Element::tet4 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -1673,7 +1674,7 @@ void test_hex8_quad4_alex17()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -1749,7 +1750,7 @@ void test_hex8_quad4_alex18()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -1825,7 +1826,7 @@ void test_hex8_quad4_alex19()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -1901,7 +1902,7 @@ void test_hex8_quad4_alex20()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -1991,7 +1992,7 @@ void test_hex8_quad4_alex21()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -2067,7 +2068,7 @@ void test_hex8_quad4_alex22()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -2171,7 +2172,7 @@ void test_hex8_quad4_alex23()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -2247,7 +2248,7 @@ void test_hex8_quad4_alex24()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -2337,7 +2338,7 @@ void test_hex8_quad4_alex25()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -2427,7 +2428,7 @@ void test_hex8_quad4_alex26()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -2503,7 +2504,7 @@ void test_hex8_quad4_alex27()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -2593,7 +2594,7 @@ void test_hex8_quad4_alex28()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -2669,7 +2670,7 @@ void test_hex8_quad4_alex29()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -2745,7 +2746,7 @@ void test_hex8_quad4_alex30()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true,INPAR::CUT::VCellGaussPts_Tessellation);
   intersection.Status();
 }
 
@@ -2821,7 +2822,7 @@ void test_hex8_quad4_alex31()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -2897,7 +2898,7 @@ void test_hex8_quad4_alex32()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -2973,7 +2974,7 @@ void test_hex8_quad4_alex33()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true ,INPAR::CUT::VCellGaussPts_DirectDivergence, INPAR::CUT::BCellGaussPts_Tessellation);
+  intersection.CutTest_Cut( true ,INPAR::CUT::VCellGaussPts_DirectDivergence, INPAR::CUT::BCellGaussPts_Tessellation);
   intersection.Status();
 }
 
@@ -3049,7 +3050,7 @@ void test_hex8_quad4_alex34()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -3125,7 +3126,7 @@ void test_hex8_quad4_alex35()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -3229,7 +3230,7 @@ void test_hex8_quad4_alex36()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -3313,7 +3314,7 @@ void test_hex8_quad4_alex37()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -3403,7 +3404,7 @@ void test_hex8_quad4_alex38()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -3475,7 +3476,7 @@ void test_hex8_tri3_ursula1()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -3585,7 +3586,7 @@ void test_hex8_quad4_axel7()
   intersection.AddElement( 1, nids, tet4_xyze, DRT::Element::tet4 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -3661,7 +3662,7 @@ void test_hex8_quad4_axel6()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -3737,7 +3738,7 @@ void test_hex8_quad4_axel5()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true , INPAR::CUT::VCellGaussPts_Tessellation);
   intersection.Status();
 }
 
@@ -3813,7 +3814,7 @@ void test_hex8_quad4_axel4()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -3889,7 +3890,7 @@ void test_hex8_quad4_axel3()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -3965,7 +3966,7 @@ void test_hex8_quad4_axel2()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -4041,7 +4042,7 @@ void test_hex8_quad4_axel1()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
   intersection.Status();
 }
 
@@ -4146,7 +4147,7 @@ void test_hex8_quad4_shadan5()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -4272,7 +4273,7 @@ void test_hex8_quad4_shadan4()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -4376,7 +4377,7 @@ void test_hex8_quad4_shadan3()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -4466,7 +4467,7 @@ void test_hex8_quad4_shadan2()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -4773,10 +4774,11 @@ void test_hex8_quad4_shadan1()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
+//INFO: This Cut test will not work with DD in LOCAL, as the hex8 does not fullfill the restrictions of this method!
 void test_hex8_quad4_mesh_many()
 {
   GEO::CUT::MeshIntersection intersection;
@@ -4918,9 +4920,10 @@ void test_hex8_quad4_mesh_many()
 
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
 }
 
+//INFO: This Cut test will not work with DD in LOCAL, as the hex8 does not fullfill the restrictions of this method!
 void test_hex8_quad4_mesh_edgecut()
 {
   GEO::CUT::MeshIntersection intersection;
@@ -5022,9 +5025,10 @@ void test_hex8_quad4_mesh_edgecut()
 
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
 }
 
+//INFO: This Cut test will not work with DD in LOCAL, as the hex8 does not fullfill the restrictions of this method!
 void test_hex8_quad4_mesh_edgecut2()
 {
   GEO::CUT::MeshIntersection intersection;
@@ -5086,7 +5090,7 @@ void test_hex8_quad4_mesh_edgecut2()
 
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
 }
 
 void test_hex8_quad4_mesh_inner()
@@ -5150,7 +5154,7 @@ void test_hex8_quad4_mesh_inner()
 
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
 }
 
 void test_hex27_quad9_simple()
@@ -5198,7 +5202,7 @@ void test_hex27_quad9_simple()
 
   intersection.AddElement( 1, nids, hex27_xyze, DRT::Element::hex27 );
 
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
 }
 
 void test_hex20_quad9_simple()
@@ -5246,7 +5250,7 @@ void test_hex20_quad9_simple()
 
   intersection.AddElement( 1, nids, hex20_xyze, DRT::Element::hex20 );
 
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
 }
 
 void test_hex20_quad9_moved()
@@ -5303,7 +5307,7 @@ void test_hex20_quad9_moved()
 
   intersection.AddElement( 1, nids, hex20_xyze, DRT::Element::hex20 );
 
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true ,INPAR::CUT::VCellGaussPts_Tessellation,INPAR::CUT::BCellGaussPts_Tessellation,true,true);
 }
 
 void test_tet10_quad9_simple()
@@ -5351,7 +5355,7 @@ void test_tet10_quad9_simple()
 
   intersection.AddElement( 1, nids, tet10_xyze, DRT::Element::tet10 );
 
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
 }
 
 void test_tet10_quad9_moved()
@@ -5408,7 +5412,7 @@ void test_tet10_quad9_moved()
 
   intersection.AddElement( 1, nids, tet10_xyze, DRT::Element::tet10 );
 
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
 }
 
 void test_tet4_quad4_double()
@@ -5460,7 +5464,7 @@ void test_tet4_quad4_double()
   intersection.AddElement( 1, nids, tet4_xyze, DRT::Element::tet4 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 
@@ -5511,9 +5515,9 @@ void test_tet4_tri3_double()
   intersection.AddElement( 1, nids, tet4_xyze, DRT::Element::tet4 );
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
-
+  std::cout << __LINE__ << std::endl;
   std::vector<double> tessVol,momFitVol,dirDivVol;
 
   GEO::CUT::Mesh mesh = intersection.NormalMesh();
@@ -5526,31 +5530,9 @@ void test_tet4_tri3_double()
     tessVol.push_back(vc->Volume());
   }
 
-  intersection.Status();
-
-  for ( std::list<Teuchos::RCP<GEO::CUT::VolumeCell> >::const_iterator i=other_cells.begin();
-        i!=other_cells.end();
-        ++i )
-  {
-    GEO::CUT::VolumeCell * vc = &**i;
-    vc->MomentFitGaussWeights(vc->ParentElement(),mesh,true,INPAR::CUT::BCellGaussPts_Tessellation);
-    momFitVol.push_back(vc->Volume());
-  }
-
-  for ( std::list<Teuchos::RCP<GEO::CUT::VolumeCell> >::const_iterator i=other_cells.begin();
-           i!=other_cells.end();
-           ++i )
-   {
-     GEO::CUT::VolumeCell * vc = &**i;
-     vc->DirectDivergenceGaussRule(vc->ParentElement(),mesh,true,INPAR::CUT::BCellGaussPts_DirectDivergence);
-     dirDivVol.push_back(vc->Volume());
-   }
-
-  std::cout<<"the volumes predicted by\n tessellation \t MomentFitting \t DirectDivergence\n";
+  std::cout<<"the volumes predicted by\n tessellation ";
   for(unsigned i=0;i<tessVol.size();i++)
   {
-    std::cout<<tessVol[i]<<"\t"<<momFitVol[i]<<"\t"<<dirDivVol[i]<<"\n";
-//    if( fabs(tessVol[i]-momFitVol[i])>1e-9 || fabs(dirDivVol[i]-momFitVol[i])>1e-5 )
- //     dserror("volume predicted by either one of the method is wrong");
+    std::cout<<tessVol[i]<<"\n";
   }
 }

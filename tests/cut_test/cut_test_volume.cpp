@@ -166,6 +166,6 @@ void test_cut_volumes3()
 #endif
 
   w.Status();
-  w.Cut();
+  w.CutTest_Cut();
 }
 

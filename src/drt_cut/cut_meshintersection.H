@@ -78,7 +78,7 @@ public:
   /*========================================================================*/
 
   /// standard cut routine for non-parallel frameworks and cuttest
-  void Cut( bool include_inner,
+  void CutTest_Cut( bool include_inner,
             INPAR::CUT::VCellGaussPts VCellgausstype = INPAR::CUT::VCellGaussPts_Tessellation,
             INPAR::CUT::BCellGaussPts BCellgausstype = INPAR::CUT::BCellGaussPts_Tessellation,
             bool tetcellsonly=true,

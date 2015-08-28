@@ -142,9 +142,11 @@ void GEO::CUT::MeshIntersection::BuildStaticSearchTree()
 /*------------------------------------------------------------------------------------------------*
  * standard Cut routine for two phase flow and combustion via COMBUST-code                        *
  * where dofsets and node positions                                                               *
- * have not to be computed, standard cut for cut_test                                schott 03/12 *
+ * have not to be computed, standard cut for cut_test                                             *
+ * !!!IS JUST USED FOR CUT TESTS                                                                  *
+ *                                                                                   schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-void GEO::CUT::MeshIntersection::Cut(
+void GEO::CUT::MeshIntersection::CutTest_Cut(
     bool include_inner,
     INPAR::CUT::VCellGaussPts VCellgausstype,
     INPAR::CUT::BCellGaussPts BCellgausstype,

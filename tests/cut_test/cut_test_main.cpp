@@ -154,6 +154,7 @@ void test_tet10_quad9_moved();
 void test_tet4_quad4_double();
 void test_tet4_tri3_double();
 void test_benedikt1();
+void test_christoph_1();
 
 void test_ls_hex8_florian1();
 void test_ls_hex8_florian2();
@@ -271,17 +272,26 @@ typedef void ( *testfunct )();
 
 int runtests( char ** argv, const std::map<std::string, testfunct> & functable, std::string testname )
 {
-  if ( testname == "(all)" )
+  bool select_testcases = testname.find("(R)") != std::string::npos;
+  int counter = 0;
+  if (select_testcases)
+    testname.erase(0,3);
+
+  if ( testname == "(all)" || select_testcases)
   {
     std::vector<std::string> failures;
     std::vector<std::string> msgs;
 
     for ( std::map<std::string, testfunct>::const_iterator i=functable.begin(); i!=functable.end(); ++i )
     {
-      std::cout << "Testing " << i->first << " ...\n";
       try
       {
-        ( *i->second )();
+        if (!select_testcases || i->first.find(testname) != std::string::npos)
+        {
+          std::cout << "Testing " << i->first << " ...\n";
+          counter++;
+          ( *i->second )();
+        }
       }
       catch ( std::runtime_error & err )
       {
@@ -293,7 +303,7 @@ int runtests( char ** argv, const std::map<std::string, testfunct> & functable, 
 
     if ( failures.size() > 0 )
     {
-      std::cout << "\n" << failures.size() << " out of " << functable.size() << " tests failed.\n";
+      std::cout << "\n" << failures.size() << " out of " << counter << " tests failed.\n";
       for ( std::vector<std::string>::iterator i=failures.begin(); i!=failures.end(); ++i )
       {
         std::string & txt = *i;
@@ -306,7 +316,7 @@ int runtests( char ** argv, const std::map<std::string, testfunct> & functable, 
     }
     else
     {
-      std::cout << "\nall " << functable.size() << " tests succeeded.\n";
+      std::cout << "\nall " << counter << " tests succeeded.\n";
     }
     return failures.size();
   }
@@ -530,6 +540,7 @@ int main( int argc, char ** argv )
   std::cout << "functable[tet4_tri3_double] = test_tet4_tri3_double; RUNS INTO DSERROR IN GLOBAL CONFIGURATION!" << std::endl;
 #endif
   functable["benedikt1"] = test_benedikt1;
+  functable["test_christoph_1"] = test_christoph_1;
 
   functable["ls_hex8_florian1"] = test_ls_hex8_florian1;
   functable["ls_hex8_florian2"] = test_ls_hex8_florian2;
@@ -602,7 +613,8 @@ int main( int argc, char ** argv )
   std::string indent = "\t\t\t\t\t";
   std::stringstream doc;
   doc << "Available tests:\n"
-      << indent << "(all)\n";
+      << indent << "(all)\n"
+      << indent << "put '(R)' in front of parts of a testname to test all matching cut_tests (e.g. (R)sc)!\n";
   for ( std::map<std::string, testfunct>::iterator i=functable.begin(); i!=functable.end(); ++i )
   {
     const std::string & name = i->first;

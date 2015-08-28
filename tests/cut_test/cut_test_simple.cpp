@@ -243,7 +243,7 @@ void test_hex8_tet4()
   w.CreateQuad4( xyze );
 
   w.Status();
-  w.Cut();
+  w.CutTest_Cut();
 }
 
 void test_hex8_hex8()
@@ -253,7 +253,7 @@ void test_hex8_hex8()
   w.CreateHex8();
   w.CreateHex8Sides( 0.5, 0.5, 0.5 );
   w.Status();
-  w.Cut();
+  w.CutTest_Cut();
 }
 
 void test_hex8_touch()
@@ -286,7 +286,7 @@ void test_hex8_touch()
   w.CreateQuad4( xyze );
 
   w.Status();
-  w.Cut();
+  w.CutTest_Cut();
 }
 
 void test_hex8_touch2()
@@ -296,7 +296,7 @@ void test_hex8_touch2()
   w.CreateHex8();
   w.CreateHex8Sides( 1, 0.5, 0.5 );
   w.Status();
-  w.Cut();
+  w.CutTest_Cut();
 }
 
 void test_hex8_schraeg()
@@ -326,7 +326,7 @@ void test_hex8_schraeg()
   w.CreateQuad4( xyze );
 
   w.Status();
-  w.Cut();
+  w.CutTest_Cut();
 }
 
 void test_hex8_quad4_woelbung()
@@ -356,7 +356,7 @@ void test_hex8_quad4_woelbung()
   w.CreateQuad4( xyze );
 
   w.Status();
-  w.Cut();
+  w.CutTest_Cut();
   w.AssumeVolumeCells( 2 );
 }
 
@@ -407,7 +407,7 @@ void test_hex8_tet4_touch()
   w.CreateQuad4( xyze );
 
   w.Status();
-  w.Cut();
+  w.CutTest_Cut(true); //as cut_sides are just touching!!
 }
 
 void test_hex8_tet4_touch2()
@@ -437,7 +437,7 @@ void test_hex8_tet4_touch2()
   w.CreateTet4Sides( xyze );
 
   w.Status();
-  w.Cut();
+  w.CutTest_Cut(true);
 }
 
 void test_hex8_mesh()
@@ -780,7 +780,7 @@ void test_hex8_wedge6()
   w.CreateWedge6Sides( xyze );
 
   w.Status();
-  w.Cut();
+  w.CutTest_Cut();
 }
 
 void test_hex8_quad4_touch()
@@ -810,7 +810,7 @@ void test_hex8_quad4_touch()
   w.CreateQuad4( xyze );
 
   w.Status();
-  w.Cut();
+  w.CutTest_Cut(true);
 }
 
 void test_hex8_quad4_touch2()
@@ -840,7 +840,7 @@ void test_hex8_quad4_touch2()
   w.CreateQuad4( xyze );
 
   w.Status();
-  w.Cut();
+  w.CutTest_Cut(true);
 }
 
 void test_hex8_quad4_touch3()
@@ -870,7 +870,7 @@ void test_hex8_quad4_touch3()
   w.CreateQuad4( xyze );
 
   w.Status();
-  w.Cut();
+  w.CutTest_Cut(true);
 }
 
 void test_hex8_quad4_cut()
@@ -900,7 +900,7 @@ void test_hex8_quad4_cut()
   w.CreateQuad4( xyze );
 
   w.Status();
-  w.Cut();
+  w.CutTest_Cut();
 }
 
 void test_hex8_quad4_gedreht()
@@ -934,7 +934,7 @@ void test_hex8_quad4_gedreht()
   w.CreateQuad4Mesh( 2, 2 );
 
   w.Status();
-  w.Cut();
+  w.CutTest_Cut();
 }
 
 void test_hex8_hex8_durchstoss()
@@ -1002,7 +1002,7 @@ void test_hex8_hex8_durchstoss()
 #endif
 
   w.Status();
-  w.Cut();
+  w.CutTest_Cut();
 }
 
 void test_hex8_hex8_onside()
@@ -1065,10 +1065,10 @@ void test_hex8_hex8_onside()
   xyze( 1, 3 ) = -0.1;
   xyze( 2, 3 ) =  0.1;
 
-  w.CreateQuad4( xyze );
 
+  w.CreateQuad4( xyze );
   w.Status();
-  w.Cut();
+  w.CutTest_Cut();
 }
 
 void test_hex8_hex8_internal()
@@ -1146,7 +1146,7 @@ void test_hex8_hex8_internal()
   w.CreateHex8Sides( xyze );
 
   w.Status();
-  w.Cut();
+  w.CutTest_Cut();
 }
 
 void test_hex8_hex8_sideintersection()
@@ -1244,7 +1244,7 @@ void test_hex8_hex8_sideintersection()
   w.CreateQuad4( xyze );
 
   w.Status();
-  w.Cut();
+  w.CutTest_Cut();
 }
 
 void test_hex8_hex8_inside()
@@ -1322,7 +1322,7 @@ void test_hex8_hex8_inside()
   w.CreateHex8Sides( xyze );
 
   w.Status();
-  w.Cut();
+  w.CutTest_Cut();
 }
 
 void test_hex8_quad4_schnitt()
@@ -1352,7 +1352,7 @@ void test_hex8_quad4_schnitt()
   w.CreateQuad4( xyze );
 
   w.Status();
-  w.Cut();
+  w.CutTest_Cut();
 }
 
 void test_hex8_quad4_touch4()
@@ -1382,7 +1382,7 @@ void test_hex8_quad4_touch4()
   w.CreateQuad4( xyze );
 
   w.Status();
-  w.Cut();
+  w.CutTest_Cut();
 }
 
 void test_hex8_quad4_touch5()
@@ -1412,7 +1412,7 @@ void test_hex8_quad4_touch5()
   w.CreateQuad4( xyze );
 
   w.Status();
-  w.Cut();
+  w.CutTest_Cut();
 }
 
 void test_hex8_quad4_touch6()
@@ -1462,7 +1462,7 @@ void test_hex8_quad4_touch6()
   w.CreateQuad4( xyze );
 
   w.Status();
-  w.Cut();
+  w.CutTest_Cut();
 }
 
 void test_hex8_quad4_touch7()
@@ -1492,7 +1492,7 @@ void test_hex8_quad4_touch7()
   w.CreateQuad4( xyze );
 
   w.Status();
-  w.Cut();
+  w.CutTest_Cut();
 }
 
 #if 0

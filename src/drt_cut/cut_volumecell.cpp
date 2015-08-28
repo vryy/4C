@@ -1059,7 +1059,7 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells( Mesh &mesh,
    if(rever)                                       // normal from facet is in wrong direction
    {
      std::reverse(corners.begin(),corners.end());  // change ordering to correct this
-     std::reverse(cornersTemp.begin(),cornersTemp.end());
+     std::reverse(cornersTemp.begin(),cornersTemp.end()); //Todo: Ager ... I don't understand the sense of this cornersTemp???
    }
 
    //if no of corners are 3 or 4, just add them as boundary integrationcells directly
@@ -1529,7 +1529,7 @@ void GEO::CUT::VolumeCell::DirectDivergenceGaussRule( Element *elem,
 #endif
  }
   // generate boundary cells -- when using tessellation this is automatically done
-  GenerateBoundaryCells( mesh, posi, elem, 0, INPAR::CUT::BCellGaussPts_Tessellation );
+  GenerateBoundaryCells( mesh, Position(), elem, 0, BCellgausstype );
 }
 
 /*----------------------------------------------------------------------------------------------------*

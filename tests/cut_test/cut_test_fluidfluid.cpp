@@ -354,7 +354,7 @@ void test_fluidfluid()
   loader.GetCutNode( -23, 0.150888, -0.1, -0.0258883, 0 );
   loader.GetCutNode( -24, 0.0883883, -0.0116117, -0.0883883, 0 );
 
-  loader.Cut( true );
+  loader.CutTest_Cut( true );
 }
 
 
@@ -430,5 +430,5 @@ void test_fluidfluid2()
   loader.GetNode( 31, 0.75, 0.75, 0.025, 0 );
   loader.CreateElement( 8, 21, 20, 22, 23, 29, 28, 30, 31, DRT::Element::hex8 );
 
-  loader.Cut( true );
+  loader.CutTest_Cut( true );
 }

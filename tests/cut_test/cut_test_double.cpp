@@ -13,7 +13,7 @@ void test_quad4_surface_mesh_cut()
   create_quad4_cylinder_mesh( intersection, 0., 0., 60, 10 );
   create_quad4_cylinder_mesh( intersection, 0.5, 0., 60, 10 );
 
-  intersection.SelfCut();
+  intersection.SelfCutTest_Cut();
   intersection.Status();
 #endif
 }
@@ -71,9 +71,9 @@ void test_hex8_quad4_double_cut()
   //GEO::CUT::Side* quad4_2 =
   create_quad4( cut_mesh2, xyze );
 
-  //intersection.SelfCut();
+  //intersection.SelfCutTest_Cut();
   intersection.Status();
 
   //OutputGenerator generator;
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
 }

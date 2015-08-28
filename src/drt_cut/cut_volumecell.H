@@ -83,7 +83,7 @@ public:
   /*!
   \brief Construct the Gaussian quadrature rule by triangulating the facets of volumecell and applying divergence theorem
    */
-  void DirectDivergenceGaussRule(Element *elem, Mesh & mesh, bool include_inner, INPAR::CUT::BCellGaussPts BCellgausstype );
+  void DirectDivergenceGaussRule(Element *elem, Mesh & mesh, bool include_inner, INPAR::CUT::BCellGaussPts BCellgausstype = INPAR::CUT::BCellGaussPts_Tessellation );
 
   /*!
   \brief Project the integration rule generated w.r to the global coordinates of the element to its local coordinate system

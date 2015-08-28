@@ -255,7 +255,7 @@ void test_benedikt1()
   intersection.AddElement( eid, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true, INPAR::CUT::VCellGaussPts_Tessellation );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_Tessellation );
 
   std::vector<double> tessVol,momFitVol,dirDivVol;
 
@@ -284,7 +284,7 @@ void test_benedikt1()
            ++i )
    {
      GEO::CUT::VolumeCell * vc = &**i;
-     vc->DirectDivergenceGaussRule(vc->ParentElement(),mesh,true,INPAR::CUT::BCellGaussPts_DirectDivergence);
+     vc->DirectDivergenceGaussRule(vc->ParentElement(),mesh,true,INPAR::CUT::BCellGaussPts_Tessellation);
      dirDivVol.push_back(vc->Volume());
    }
 

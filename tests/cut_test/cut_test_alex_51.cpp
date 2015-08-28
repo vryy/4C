@@ -13,7 +13,7 @@
 #include "../../src/drt_cut/cut_volumecell.H"
 
 #include "../../src/drt_fem_general/drt_utils_local_connectivity_matrices.H"
-        
+
 void test_alex51()
 {
   GEO::CUT::MeshIntersection intersection;
@@ -234,7 +234,7 @@ void test_alex51()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true, INPAR::CUT::VCellGaussPts_Tessellation );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_Tessellation );
 
   std::vector<double> tessVol,momFitVol,dirDivVol;
 
@@ -263,7 +263,7 @@ void test_alex51()
            ++i )
    {
      GEO::CUT::VolumeCell * vc = &**i;
-     vc->DirectDivergenceGaussRule(vc->ParentElement(),mesh,true,INPAR::CUT::BCellGaussPts_DirectDivergence);
+     vc->DirectDivergenceGaussRule(vc->ParentElement(),mesh,true,INPAR::CUT::BCellGaussPts_Tessellation);
      dirDivVol.push_back(vc->Volume());
    }
 

@@ -262,7 +262,7 @@ void Test_LevelSetCut_Tesselation_and_DD_same_VC(std::vector<int> nids,std::vect
     GEO::CUT::VolumeCell * vc = &**i;
 //    std::cout << "DIRCETDIVERGENCE CUTTING VOLUMECELL #" << counter <<  ".....!" << std::endl;
 //    std::cout << "Volumecell Position: " << vc->Position() << std::endl;
-    vc->DirectDivergenceGaussRule(vc->ParentElement(),ci.NormalMesh(),true,INPAR::CUT::BCellGaussPts_DirectDivergence);
+    vc->DirectDivergenceGaussRule(vc->ParentElement(),ci.NormalMesh(),true,INPAR::CUT::BCellGaussPts_Tessellation);
 //    std::cout << "DIRCETDIVERGENCE CUT VOLUMECELL #" << counter <<  " WITHOUT ERROR!" << std::endl << std::endl;
     counter++;
     dirDivVol.push_back(vc->Volume());
@@ -1262,7 +1262,7 @@ void test_ls_mesh_hex8_simple()
   intersection.AddElement( 1, nids, GetLocalHex8Coords(), DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true, INPAR::CUT::VCellGaussPts_Tessellation );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_Tessellation );
 
   std::vector<double> tessVol,dirDivVol;
 
@@ -1284,7 +1284,7 @@ void test_ls_mesh_hex8_simple()
     GEO::CUT::VolumeCell * vc = &**i;
     std::cout << "DIRCETDIVERGENCE CUTTING VOLUMECELL USING MESH #" << counter <<  ".....!" << std::endl;
     std::cout << "Volumecell Position: " << vc->Position() << std::endl;
-    vc->DirectDivergenceGaussRule(vc->ParentElement(),mesh,true,INPAR::CUT::BCellGaussPts_DirectDivergence);
+    vc->DirectDivergenceGaussRule(vc->ParentElement(),mesh,true,INPAR::CUT::BCellGaussPts_Tessellation);
     std::cout << "DIRCETDIVERGENCE CUT VOLUMECELL USING MESH #" << counter <<  " WITHOUT ERROR!" << std::endl << std::endl;
     counter++;
     dirDivVol.push_back(vc->Volume());
@@ -1604,7 +1604,7 @@ void test_ls_hex8_magnus7()
 //  lsvs[7] =-0.0050252531694167101861126;
 //
 //  lsi.AddElement( 1, nids, xyze, DRT::Element::hex8, &lsvs[0]  );
-//  lsi.Cut(true,true);
+//  lsi.Cutest_Cut(true,true);
 //
 //  lsi.PrintCellStats();
 //  GEO::CUT::Mesh mesh = lsi.NormalMesh();

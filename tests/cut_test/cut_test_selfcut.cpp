@@ -110,7 +110,7 @@ void test_hex8quad4selfcut20()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
 }
 
 void test_hex8quad4selfcut21()
@@ -209,7 +209,7 @@ void test_hex8quad4selfcut21()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
 
 }
 
@@ -309,7 +309,7 @@ void test_hex8quad4selfcut22()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
 
 
 }
@@ -410,7 +410,7 @@ void test_hex8quad4selfcut23()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
 
 }
 
@@ -510,7 +510,7 @@ void test_hex8quad4selfcut24()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
 
 }
 
@@ -637,7 +637,7 @@ void test_hex8quad4selfcut30()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
 
 }
 
@@ -764,7 +764,7 @@ void test_hex8quad4selfcut31()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
 
 }
 
@@ -891,7 +891,7 @@ void test_hex8quad4selfcut32()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
 
 }
 
@@ -1018,7 +1018,7 @@ void test_hex8quad4selfcut33()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
 
 }
 
@@ -1145,7 +1145,7 @@ void test_hex8quad4selfcut34()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
 
 }
 
@@ -1272,7 +1272,7 @@ void test_hex8quad4selfcut35()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
 
 }
 
@@ -1399,7 +1399,7 @@ void test_hex8quad4selfcut36()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
 
 }
 
@@ -1526,7 +1526,7 @@ void test_hex8quad4selfcut37()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
 
 }
 
@@ -1653,7 +1653,7 @@ void test_hex8quad4selfcut38()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
 
 }
 
@@ -1780,8 +1780,8 @@ void test_hex8quad4selfcut39()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-//  intersection.Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
-  intersection.Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
+//  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
 
 }
 
@@ -1935,7 +1935,23 @@ void test_hex8quad4selfcut41()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_Tessellation );
+
+
+  std::vector<double> dirdivVol;
+
+  GEO::CUT::Mesh mesh = intersection.NormalMesh();
+  const std::list<Teuchos::RCP<GEO::CUT::VolumeCell> > & other_cells = mesh.VolumeCells();
+  for ( std::list<Teuchos::RCP<GEO::CUT::VolumeCell> >::const_iterator i=other_cells.begin();
+        i!=other_cells.end();
+        ++i )
+  {
+    GEO::CUT::VolumeCell * vc = &**i;
+    dirdivVol.push_back(vc->Volume());
+  }
+
+  for (uint i = 0; i < dirdivVol.size(); ++i)
+    std::cout << "volume is: " << dirdivVol[i] << std::endl;
 
 }
 
@@ -2089,7 +2105,22 @@ void test_hex8quad4selfcut42()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
+
+  std::vector<double> dirdivVol;
+
+  GEO::CUT::Mesh mesh = intersection.NormalMesh();
+  const std::list<Teuchos::RCP<GEO::CUT::VolumeCell> > & other_cells = mesh.VolumeCells();
+  for ( std::list<Teuchos::RCP<GEO::CUT::VolumeCell> >::const_iterator i=other_cells.begin();
+        i!=other_cells.end();
+        ++i )
+  {
+    GEO::CUT::VolumeCell * vc = &**i;
+    dirdivVol.push_back(vc->Volume());
+  }
+
+  for (uint i = 0; i < dirdivVol.size(); ++i)
+    std::cout << "volume is: " << dirdivVol[i] << std::endl;
 
 }
 
@@ -2243,7 +2274,7 @@ void test_hex8quad4selfcut43()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
 
 }
 
@@ -2424,7 +2455,7 @@ void test_hex8quad4selfcut51()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
 
 }
 
@@ -2605,7 +2636,7 @@ void test_hex8quad4selfcut52()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
 
 }
 
@@ -2786,7 +2817,7 @@ void test_hex8quad4selfcut53()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
 
 }
 
@@ -2994,7 +3025,7 @@ void test_hex8quad4selfcut61()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
 
 }
 
@@ -3202,7 +3233,7 @@ void test_hex8quad4selfcut62()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
 
 }
 
@@ -3410,7 +3441,23 @@ void test_hex8quad4selfcut63()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_Tessellation );
+
+
+  std::vector<double> dirdivVol;
+
+  GEO::CUT::Mesh mesh = intersection.NormalMesh();
+  const std::list<Teuchos::RCP<GEO::CUT::VolumeCell> > & other_cells = mesh.VolumeCells();
+  for ( std::list<Teuchos::RCP<GEO::CUT::VolumeCell> >::const_iterator i=other_cells.begin();
+        i!=other_cells.end();
+        ++i )
+  {
+    GEO::CUT::VolumeCell * vc = &**i;
+    dirdivVol.push_back(vc->Volume());
+  }
+
+  for (uint i = 0; i < dirdivVol.size(); ++i)
+    std::cout << "volume is: " << dirdivVol[i] << std::endl;
 
 }
 
@@ -3618,7 +3665,7 @@ void test_hex8quad4selfcut64()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_Tessellation );
 
 }
 
@@ -3826,7 +3873,7 @@ void test_hex8quad4selfcut65()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
 
 }
 
@@ -4034,7 +4081,7 @@ void test_hex8quad4selfcut66()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
 
 }
 
@@ -4269,7 +4316,7 @@ void test_hex8quad4selfcut71()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
 
   std::vector<double> tessVol,momFitVol,dirDivVol;
 
@@ -4299,7 +4346,7 @@ void test_hex8quad4selfcut71()
            ++i )
    {
      GEO::CUT::VolumeCell * vc = &**i;
-     vc->DirectDivergenceGaussRule(vc->ParentElement(),mesh,true,INPAR::CUT::BCellGaussPts_DirectDivergence);
+     vc->DirectDivergenceGaussRule(vc->ParentElement(),mesh,true,INPAR::CUT::BCellGaussPts_Tessellation);
      dirDivVol.push_back(vc->Volume());
    }
 
@@ -4544,7 +4591,7 @@ void test_hex8quad4selfcut72()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
 
 }
 
@@ -4806,7 +4853,7 @@ void test_hex8quad4selfcut81()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
 
 }
 
@@ -5068,7 +5115,7 @@ void test_hex8quad4selfcut82()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
 
 }
 
@@ -5331,7 +5378,7 @@ void test_hex8quad4selfcut83()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
 
 }
 
@@ -5594,7 +5641,7 @@ void test_hex8quad4selfcut84()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
 
 }
 
@@ -5857,7 +5904,7 @@ void test_hex8quad4selfcut85()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
 
 }
 
@@ -6120,7 +6167,7 @@ void test_hex8quad4selfcut86()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
 
 }
 
@@ -6409,7 +6456,7 @@ void test_hex8quad4selfcut91()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
 
 }
 
@@ -6698,7 +6745,7 @@ void test_hex8quad4selfcut92()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_DirectDivergence );
 
 }
 
@@ -6801,7 +6848,7 @@ void test_hex8quad4alignedEdges()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  intersection.Cut( true, INPAR::CUT::VCellGaussPts_Tessellation );
+  intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_Tessellation );
 
   std::vector<double> tessVol,momFitVol,dirDivVol;
 

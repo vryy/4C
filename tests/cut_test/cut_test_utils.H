@@ -49,7 +49,7 @@ public:
 
   void CreateQuad4Mesh( int rows, int cols );
 
-  void Cut();
+  void CutTest_Cut( bool include_inner = true);
 
   void Status();
 

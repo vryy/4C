@@ -846,7 +846,7 @@ void test_alex53()
   intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
 
   intersection.Status();
-  /*intersection.Cut( true, INPAR::CUT::VCellGaussPts_Tessellation );
+  /*intersection.CutTest_Cut( true, INPAR::CUT::VCellGaussPts_Tessellation );
 
   std::vector<double> tessVol,momFitVol;
 
@@ -876,7 +876,7 @@ void test_alex53()
       dserror("The volumes calculated by momentFitting and Tessellation are not the same");
   }*/
 
-/*  if ( not intersection.CutMesh().DetectSelfCut() )
+/*  if ( not intersection.CutMesh().DetectSelfCutTest_Cut() )
   {
     throw std::runtime_error( "self cut expected" );
   }*/

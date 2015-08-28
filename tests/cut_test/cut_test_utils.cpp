@@ -292,7 +292,7 @@ void cutmesh( GEO::CUT::Mesh & mesh )
              ++i )
    {
      GEO::CUT::VolumeCell * vc = &**i;
-     vc->DirectDivergenceGaussRule(vc->ParentElement(),mesh,true,INPAR::CUT::BCellGaussPts_DirectDivergence);
+     vc->DirectDivergenceGaussRule(vc->ParentElement(),mesh,true,INPAR::CUT::BCellGaussPts_Tessellation);
      dirDivVol.push_back(vc->Volume());
    }*/
 
@@ -341,7 +341,7 @@ void cutmesh( GEO::CUT::Mesh & mesh )
              ++i )
      {
        GEO::CUT::VolumeCell * vc = &**i;
-       vc->DirectDivergenceGaussRule(vc->ParentElement(),mesh,true,INPAR::CUT::BCellGaussPts_DirectDivergence);
+       vc->DirectDivergenceGaussRule(vc->ParentElement(),mesh,true,INPAR::CUT::BCellGaussPts_Tessellation);
        dirDivVol.push_back(vc->Volume());
      }
 
@@ -512,9 +512,9 @@ void SimpleWrapper::Status()
   mesh_->Status();
 }
 
-void SimpleWrapper::Cut()
+void SimpleWrapper::CutTest_Cut( bool include_inner)
 {
-  mesh_->Cut( true );
+  mesh_->CutTest_Cut( include_inner,INPAR::CUT::VCellGaussPts_Tessellation,INPAR::CUT::BCellGaussPts_Tessellation,true,true);
 }
 
 void SimpleWrapper::CreateElement( DRT::Element::DiscretizationType distype, const Epetra_SerialDenseMatrix & xyze )

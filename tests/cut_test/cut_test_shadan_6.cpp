@@ -12,7 +12,7 @@
 #include "../../src/drt_cut/cut_options.H"
 
 #include "../../src/drt_fem_general/drt_utils_local_connectivity_matrices.H"
-        
+
 void test_shadan6()
 {
   GEO::CUT::MeshIntersection intersection;
@@ -439,7 +439,7 @@ void test_shadan6()
 
 
   intersection.Status();
-  intersection.Cut( true );
+  intersection.CutTest_Cut( true );
   intersection.Status();
 }
 

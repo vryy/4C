@@ -1665,7 +1665,7 @@ void test_ls_hex8_between()
     //std::cout << "\n";
 
     lsi.AddElement( e, nids, xyze, DRT::Element::hex8, &lsvs[0] );
-    lsi.Cut();
+    lsi.Cut(true, false, INPAR::CUT::VCellGaussPts_DirectDivergence);
   }
 }
 
