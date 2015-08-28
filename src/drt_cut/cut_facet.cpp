@@ -167,6 +167,22 @@ void GEO::CUT::Facet::GetAllPoints( Mesh & mesh, PointSet & cut_points, bool dot
 
 void GEO::CUT::Facet::AddHole( Facet * hole )
 {
+  double dot = 1.0;
+  while (dot > 0)
+  {
+    std::vector<double> eqn_plane_hole = KERNEL::EqnPlaneOfPolygon( hole->points_ );
+    std::vector<double> eqn_plane_facet = KERNEL::EqnPlaneOfPolygon( corner_points_ );
+    dot = 0.0;
+    for (unsigned int dim = 0; dim < 3; ++dim)
+      dot += eqn_plane_hole[dim]*eqn_plane_facet[dim];
+    if (dot > 0) //if this happens we get problems with the ear clipping algorithm for triangulation
+    {
+      std::reverse(hole->corner_points_.begin(), hole->corner_points_.end());
+      std::reverse(hole->points_.begin(), hole->points_.end());
+      std::cout << RED <<  "WARNING:: Facet::AddHole: points_ and hole->points_ are not alighned correct (other direction)! " << END_COLOR << std::endl;
+    }
+  }
+
   for ( std::vector<Point*>::iterator i=hole->points_.begin(); i!=hole->points_.end(); ++i )
   {
     Point * p = *i;

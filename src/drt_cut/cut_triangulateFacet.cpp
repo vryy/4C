@@ -631,7 +631,7 @@ void GEO::CUT::TriangulateFacet::EarClippingWithHoles( Side * parentside )
       k[0] = k[0] + 1;
       k[1] = 1;
     }
-// 2) Holecyclepoint with the maximum x-value
+// 2) Holecyclepoint with the maximum r-value
     double maximumxvalue = -1;
     std::vector<int> maximumxvalueid(2);
     for( std::map<std::vector<int>, LINALG::Matrix<3,1> >::iterator i=localholecyclespoints.begin(); i!=localholecyclespoints.end(); ++i )

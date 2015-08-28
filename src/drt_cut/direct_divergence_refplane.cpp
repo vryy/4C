@@ -118,6 +118,7 @@ bool GEO::CUT::DirectDivergenceGlobalRefplane::DiagonalBasedRef( std::vector<dou
   diagonals.push_back( diag );
 
   double xnormal = 0.0;
+  bool found_refplane = false;
   for( std::vector<std::vector<Point*> >::iterator itd = diagonals.begin();
                                                    itd != diagonals.end(); itd++ )
   {
@@ -129,24 +130,29 @@ bool GEO::CUT::DirectDivergenceGlobalRefplane::DiagonalBasedRef( std::vector<dou
     if( fabs(RefPlaneTemp[0]) < REF_PLANE_DIRDIV )
       continue;
 
-    double fac = sqrt( pow(RefPlaneTemp[0],2)+pow(RefPlaneTemp[1],2)+pow(RefPlaneTemp[2],2) );
-    double xn = fabs(RefPlaneTemp[0]) / fac;
-    if( xn > xnormal )
+    //---
+    // STEP 2: Project all the corner points of the Hex element onto the reference plane.
+    // If all these projected points are within the background element, then we consider this as a possible reference plane!
+    if  (isAllProjectedCornersInsideEle( RefPlaneTemp ))
     {
-      xnormal = xn;
-      RefPlaneEqn = RefPlaneTemp;
-      refPtsGmsh_ = ptl;
+      double fac = sqrt( pow(RefPlaneTemp[0],2)+pow(RefPlaneTemp[1],2)+pow(RefPlaneTemp[2],2) );
+      //---
+      //STEP 3: Take the reference plane with biggest component in x-direction of the normal vector!
+      double xn = fabs(RefPlaneTemp[0]) / fac;
+      if( xn > xnormal )
+      {
+        xnormal = xn;
+        RefPlaneEqn = RefPlaneTemp;
+        refPtsGmsh_ = ptl;
+        found_refplane = true;
+      }
     }
   }
 
   //---
-  // STEP 2: Project all the corner points of the Hex element onto the reference plane.
-  // If all these projected points are within the background element, then we have the right choice
-  // of reference plane
-  //---
-  bool isWithin = isAllProjectedCornersInsideEle( RefPlaneEqn );
-
-  return isWithin;
+  //Basically using a diagonal reference plane should be enought, otherwise we have to look into that again!
+  if (!found_refplane) dserror("Couldn't find a diagonal reference plane with all gausspoints inside!!!");
+  return found_refplane;
 }
 
 /*-------------------------------------------------------------------------------------------------------*
@@ -227,7 +233,8 @@ bool GEO::CUT::DirectDivergenceGlobalRefplane::isAllProjectedCornersInsideEle( s
     elem1_->LocalCoordinates( xyz_proj, rst_proj );
 
     // Check whether the local coordinate of the projected point is within the specified limits
-    if( fabs(rst_proj(0,0)) > 1.0+1e-8 )
+   if( fabs(rst_proj(0,0)) > 1.0+1e-8 or fabs(rst_proj(1,0)) > 1.0+1e-8 or fabs(rst_proj(2,0)) > 1.0+1e-8 or
+       isnan(rst_proj(0,0)) or isnan(rst_proj(1,0)) or isnan(rst_proj(2,0)))
       return false;
   }
   return true;

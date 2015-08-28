@@ -1034,7 +1034,7 @@ void GEO::CUT::ParentIntersection::DebugCut(Mesh &m)
   // TEST IF VOLUMES PREDICTED OF CELLS ARE SAME:
    //###########################################################
    std::vector<double> tessVol,dirDivVol;
-   double diff_tol = 10*BASICTOL;//1e-20; //How sharp to test for.
+   double diff_tol = 10000*BASICTOL;//1e-20; //How sharp to test for.
 
    const std::list<Teuchos::RCP<VolumeCell> >  & other_cells = m.VolumeCells();
 
@@ -1063,7 +1063,7 @@ void GEO::CUT::ParentIntersection::DebugCut(Mesh &m)
        ++i )
    {
      GEO::CUT::VolumeCell * vc = &**i;
-     vc->DirectDivergenceGaussRule(vc->ParentElement(),m,true,INPAR::CUT::BCellGaussPts_DirectDivergence);
+     vc->DirectDivergenceGaussRule(vc->ParentElement(),m,true);
      dirDivVol.push_back(vc->Volume());
    }
 
