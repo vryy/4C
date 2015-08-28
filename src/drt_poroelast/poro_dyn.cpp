@@ -22,6 +22,8 @@
 #include "poro_base.H"
 #include "poro_scatra_base.H"
 #include "poroelast_utils.H"
+#include "poroelast_utils_setup.H"
+#include "poro_utils_clonestrategy.H"
 
 #include "../drt_inpar/inpar_poroelast.H"
 
@@ -43,7 +45,7 @@ void poroelast_drt()
   if (comm.MyPID()==0) POROELAST::PrintLogo();
 
   // setup of the discretizations, including clone strategy
-  POROELAST::UTILS::SetupPoro();
+  POROELAST::UTILS::SetupPoro<POROELAST::UTILS::PoroelastCloneStrategy>();
 
   // access the problem-specific parameter list
   const Teuchos::ParameterList& poroelastdyn =
@@ -84,7 +86,7 @@ void poro_scatra_drt()
   //2.- Parameter reading
   const Teuchos::ParameterList& poroscatradynparams = problem->PoroScatraControlParams();
 
-  POROELAST::UTILS::SetupPoroScatraDiscretizations(comm);
+  POROELAST::UTILS::SetupPoroScatraDiscretizations<POROELAST::UTILS::PoroelastCloneStrategy,POROELAST::UTILS::PoroScatraCloneStrategy>(comm);
 
   //3.- Creation of Poroelastic + Scalar_Transport problem. (Discretization called inside)
   Teuchos::RCP<POROELAST::PoroScatraBase> poro_scatra = POROELAST::UTILS::CreatePoroScatraAlgorithm(poroscatradynparams, comm);

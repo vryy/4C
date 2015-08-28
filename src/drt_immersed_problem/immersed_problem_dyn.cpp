@@ -25,6 +25,7 @@ Maintainers: Andreas Rauch
 
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_poroelast/poroelast_utils.H"
+#include "../drt_poroelast/poroelast_utils_setup.H"
 #include "../drt_poroelast/poroelast_monolithic.H"
 #include "../drt_poroelast/poro_scatra_part_2wc.H"
 #include "../drt_poroelast/poro_utils_clonestrategy.H"
@@ -136,50 +137,9 @@ void immersed_problem_drt()
     }// case prb_immersed_fsi
     case prb_immersed_cell:
     {
-      // fill discretizations
-      Teuchos::RCP<DRT::Discretization> structdis    = problem->GetDis("structure");
-      Teuchos::RCP<DRT::Discretization> porofluiddis = problem->GetDis("porofluid");
-      Teuchos::RCP<DRT::Discretization> scatradis    = problem->GetDis("scatra");
-
-      structdis   ->FillComplete(true,true,true);
-      porofluiddis->FillComplete(true,true,true);
-
-      if (porofluiddis->NumGlobalNodes() == 0)
-      {
-        // Create the fluid discretization within the porous medium
-        DRT::UTILS::CloneDiscretization<POROELAST::UTILS::PoroelastImmersedCloneStrategy>(structdis,porofluiddis);
-
-        //set material pointers
-        POROELAST::UTILS::SetMaterialPointersMatchingGrid(structdis,porofluiddis);
-      }
-      else
-      {
-        dserror("Porofluiddis already exists! That's quite impossible!");
-      }
-
-      scatradis->FillComplete(true,true,true);
-
-      if (scatradis->NumGlobalNodes()==0)
-      {
-        // fill scatra discretization by cloning structure discretization
-        DRT::UTILS::CloneDiscretization<POROELAST::UTILS::PoroScatraCloneStrategy>(structdis,scatradis);
-
-        // set implementation type
-        for(int i=0; i<scatradis->NumMyColElements(); ++i)
-        {
-          DRT::ELEMENTS::Transport* element = dynamic_cast<DRT::ELEMENTS::Transport*>(scatradis->lColElement(i));
-          if(element == NULL)
-            dserror("Invalid element type!");
-          else
-            element->SetImplType(DRT::INPUT::IntegralValue<INPAR::SCATRA::ImplType>(problem->PoroScatraControlParams(),"SCATRATYPE"));
-        }
-
-        // assign materials. Order is important here!
-        POROELAST::UTILS::SetMaterialPointersMatchingGrid(structdis,scatradis);
-        POROELAST::UTILS::SetMaterialPointersMatchingGrid(porofluiddis,scatradis);
-      }
-      else
-      dserror("Structure AND ScaTra discretization present. This is not supported.");
+      //use PoroelastImmersedCloneStrategy to build FluidPoroImmersed elements
+      POROELAST::UTILS::SetupPoroScatraDiscretizations
+        <POROELAST::UTILS::PoroelastImmersedCloneStrategy,POROELAST::UTILS::PoroScatraCloneStrategy>(comm);
 
       problem->GetDis("cell")->FillComplete(true,true,true);
 

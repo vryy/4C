@@ -15,6 +15,7 @@ Maintainers: Andreas Rauch
 #include "../linalg/linalg_utils.H"
 
 #include "../drt_poroelast/poro_scatra_base.H"
+#include "../drt_poroelast/poroelast_utils_setup.H"
 
 #include "../drt_adapter/ad_fld_poro.H"
 #include "../drt_adapter/ad_str_fpsiwrapper.H" //< type of poro structure

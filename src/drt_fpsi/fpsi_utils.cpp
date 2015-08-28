@@ -23,6 +23,7 @@
 #include "fpsi_monolithic_plain.H"
 
 //POROELAST includes
+#include "../drt_poroelast/poroelast_utils_setup.H"
 #include "../drt_poroelast/poro_utils_clonestrategy.H"
 
 //FSI includes
@@ -126,7 +127,7 @@ Teuchos::RCP<FPSI::FPSI_Base> FPSI::Utils::SetupDiscretizations(
 
    */
   // setup of the discretizations, including clone strategy
-  POROELAST::UTILS::SetupPoro();
+  POROELAST::UTILS::SetupPoro<POROELAST::UTILS::PoroelastCloneStrategy>();
 
   fluiddis->FillComplete(true, true, true);
   aledis->FillComplete(true, true, true);
