@@ -151,7 +151,8 @@ void GEO::CUT::MeshIntersection::CutTest_Cut(
     INPAR::CUT::VCellGaussPts VCellgausstype,
     INPAR::CUT::BCellGaussPts BCellgausstype,
     bool tetcellsonly,
-    bool screenoutput)
+    bool screenoutput,
+    bool do_Cut_Positions_Dofsets)
 {
   Status();
 
@@ -168,7 +169,11 @@ void GEO::CUT::MeshIntersection::CutTest_Cut(
   Cut_MeshIntersection( screenoutput);
 
   // determine inside-outside position and dofset-data, parallel communication if required
-  Cut_Positions_Dofsets( include_inner, screenoutput );
+  // if false, position of the volumecell will be evaluated in direct divergence algorithm as it is just required there for a cut test!
+  if (do_Cut_Positions_Dofsets)//for most of the cuttest this will not work (still no error is thrown!), as there is no enclosed cut boundary!!!
+  {
+    Cut_Positions_Dofsets( include_inner, screenoutput );
+  }
 
   // create integration points and/or subtetrahedralization
   Cut_Finalize( include_inner, VCellgausstype, BCellgausstype, tetcellsonly, screenoutput);

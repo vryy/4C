@@ -512,9 +512,9 @@ void SimpleWrapper::Status()
   mesh_->Status();
 }
 
-void SimpleWrapper::CutTest_Cut( bool include_inner)
+void SimpleWrapper::CutTest_Cut( bool include_inner, bool do_Cut_Positions_Dofsets)
 {
-  mesh_->CutTest_Cut( include_inner,INPAR::CUT::VCellGaussPts_Tessellation,INPAR::CUT::BCellGaussPts_Tessellation,true,true);
+  mesh_->CutTest_Cut( include_inner,INPAR::CUT::VCellGaussPts_Tessellation,INPAR::CUT::BCellGaussPts_Tessellation,true,true,do_Cut_Positions_Dofsets);
 }
 
 void SimpleWrapper::CreateElement( DRT::Element::DiscretizationType distype, const Epetra_SerialDenseMatrix & xyze )

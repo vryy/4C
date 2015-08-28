@@ -82,7 +82,8 @@ public:
             INPAR::CUT::VCellGaussPts VCellgausstype = INPAR::CUT::VCellGaussPts_Tessellation,
             INPAR::CUT::BCellGaussPts BCellgausstype = INPAR::CUT::BCellGaussPts_Tessellation,
             bool tetcellsonly=true,
-            bool screenoutput=true);
+            bool screenoutput=true,
+            bool do_Cut_Positions_Dofsets = false); //for cuttest with closed cutsides this option can be activated, otherwise this will fail!
 
   /// handles cut sides which cut each other
   void Cut_SelfCut( bool include_inner,bool screenoutput=true);

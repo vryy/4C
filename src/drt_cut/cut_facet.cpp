@@ -8,6 +8,8 @@
 #include "cut_options.H"
 #include "cut_triangulateFacet.H"
 
+#include "../drt_lib/drt_colors.H"
+
 GEO::CUT::Facet::Facet( Mesh & mesh, const std::vector<Point*> & points, Side * side, bool cutsurface )
   : points_( points ),
     parentside_( side ),
@@ -780,6 +782,127 @@ bool GEO::CUT::Facet::Touches( Facet * f )
       return true;
     }
   }
+  return false;
+}
+
+/*----------------------------------------------------------------------------------------------------*
+ * If this Facet has a CommonEdge with another facet, based on this edge the point ordering is checked
+ *                                                                                           ager 08/15
+ *----------------------------------------------------------------------------------------------------*/
+bool GEO::CUT::Facet::HaveConsistantNormal(Facet *f, bool& result)
+{
+  //1// create map which stores references to all points cycles, which should be matched!
+  //(this function uses the fact, that ordering of the points in holes is opposite to the ordering of the outer points cycle!)
+  std::map<std::vector<Point*>* , std::vector<Point*>* > matchingcycles;
+  matchingcycles[&(corner_points_)] = &(f->corner_points_); //outer points cycles
+  if (HasHoles()) //outer point cycle with inner hole point cycles
+  {
+    for (plain_facet_set::iterator hole = holes_.begin(); hole != holes_.end(); ++hole)
+    {
+      matchingcycles[&((*hole)->corner_points_)] = &(f->corner_points_);
+    }
+  }
+  if(f->HasHoles())
+  {
+    for (plain_facet_set::iterator hole = f->holes_.begin(); hole != f->holes_.end(); ++hole)
+    {
+      matchingcycles[&(corner_points_)] = &((*hole)->corner_points_);
+    }
+  }
+  if(HasHoles() && f->HasHoles()) //inner hole point cycles
+  {
+    for (plain_facet_set::iterator hole = holes_.begin(); hole != holes_.end(); ++hole)
+    {
+      for (plain_facet_set::iterator fhole = f->holes_.begin(); fhole != f->holes_.end(); ++fhole)
+      {
+        matchingcycles[&((*hole)->corner_points_)] = &((*fhole)->corner_points_);
+      }
+    }
+  }
+
+  for (std::map<std::vector<Point*>* , std::vector<Point*>* >::iterator cyclepair = matchingcycles.begin(); cyclepair != matchingcycles.end(); ++ cyclepair)
+  {
+    std::vector<Point*>& points1 = *(cyclepair->first);
+    std::vector<Point*>& points2 = *(cyclepair->second);
+
+    //2// find the corner points which are matching and store the local idx in a map<int,int>
+    std::map<unsigned int,unsigned int> matchingppoints;
+
+    for (unsigned int i = 0; i < points1.size(); i++ )
+    {
+      for (unsigned int j = 0; j < points2.size(); j++)
+      {
+        if (points1[i] == points2[j])
+        {
+          matchingppoints[i] = j;
+        }
+      }
+    }
+
+    //3// if there are more than 2 matching points, remove points at the end of the common edge(s)!
+    if (matchingppoints.size() > 2)
+    {
+      std::cout << RED << "WARNING: Got " << matchingppoints.size() << " common points of two facets! --> but just two points are used to check the orientation!"
+      << "-- if you see any problems, look into this!" << END_COLOR << std::endl;
+
+      std::map<unsigned int,unsigned int>::iterator bmatchingppoints1 = matchingppoints.begin();
+      std::map<unsigned int,unsigned int>::iterator bmatchingppoints2 = matchingppoints.begin();
+      unsigned int inlinecounter = 0;
+      bmatchingppoints2++;
+      while (matchingppoints.size() > 2)
+      {
+
+        if ((abs((bmatchingppoints1->first +1)%(points1.size()) - bmatchingppoints2->first) != 0 &&
+            abs((bmatchingppoints2->first +1)%(points1.size()) - bmatchingppoints1->first) != 0) || inlinecounter > matchingppoints.size())
+        {
+          matchingppoints.erase(bmatchingppoints1);
+          bmatchingppoints1 = matchingppoints.begin();
+          bmatchingppoints2 = matchingppoints.begin();
+          bmatchingppoints2++;
+          inlinecounter = 0;
+          continue;
+        }
+        else //in case all points are anyway on a line, it does not matter which point we delete!
+        {
+          inlinecounter++;
+        }
+        bmatchingppoints1++;
+        bmatchingppoints2++;
+        if (bmatchingppoints1 == matchingppoints.end()) bmatchingppoints1 = matchingppoints.begin();
+        if (bmatchingppoints2 == matchingppoints.end()) bmatchingppoints2 = matchingppoints.begin();
+      }
+    }
+
+    //4// we have two common points left and check based on this information the orientation of the facets!
+    if (matchingppoints.size() == 2)
+    {
+
+      std::map<unsigned int,unsigned int>::iterator bmatchingppoints = matchingppoints.begin();
+      bmatchingppoints++;
+
+
+      bool firstordering = false; //ordering of this facet
+      if ((matchingppoints.begin()->first +1)%(points1.size()) == bmatchingppoints->first)
+        firstordering = true;
+      else if((matchingppoints.begin()->first) == (bmatchingppoints->first+1)%(points1.size()))
+        firstordering = false;
+      else
+        dserror("Is there a point between the matched edges?");
+
+      bool secondordering = false; //ordering of the facet given as parameter
+      if ((matchingppoints.begin()->second +1)%(points2.size()) == bmatchingppoints->second)
+        secondordering = true;
+      else if((matchingppoints.begin()->second) == (bmatchingppoints->second+1)%(points2.size()))
+        secondordering = false;
+      else
+        dserror("Is there a point between the matched edges?");
+
+      //ordering of the edge hast to be different, if the facets are ordered equal and vice versa!
+      result  = !(firstordering == secondordering);
+      return true;
+    }
+  }
+  //nowhere 2 common points in any cycle found --> facets have no common edge!
   return false;
 }
 

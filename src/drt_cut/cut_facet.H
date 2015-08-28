@@ -127,6 +127,12 @@ public:
 
   bool Touches( Facet * f );
 
+  /*!
+  \brief If this Facet has a CommonEdge with another facet, based on this edge the point ordering is checked
+  */
+  bool HaveConsistantNormal( Facet *f, //f ... facetpointer to facet to compare with!
+                             bool& result); //result == true --> normal points in the same direction!
+
   VolumeCell * Neighbor( VolumeCell * cell );
 
   void Neighbors( Point * p,

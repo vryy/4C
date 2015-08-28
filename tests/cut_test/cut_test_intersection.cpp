@@ -5307,7 +5307,7 @@ void test_hex20_quad9_moved()
 
   intersection.AddElement( 1, nids, hex20_xyze, DRT::Element::hex20 );
 
-  intersection.CutTest_Cut( true ,INPAR::CUT::VCellGaussPts_Tessellation,INPAR::CUT::BCellGaussPts_Tessellation,true,true);
+  intersection.CutTest_Cut( true ,INPAR::CUT::VCellGaussPts_Tessellation,INPAR::CUT::BCellGaussPts_Tessellation,true,true,true);
 }
 
 void test_tet10_quad9_simple()

@@ -241,6 +241,11 @@ public:
   const std::set<int> & VolumeCellPointIds();
 
   /*!
+  \brief | Find Position of the Volumecell based on the orientation of the cut_sides
+  */
+  bool SetPositionCutSideBased();
+
+  /*!
   \brief Chcek whether this point is inside, outside or on boundary of this this volumecell.
   The output std::string will be either "outside", "inside" or "onBoundary"
    */

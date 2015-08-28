@@ -407,7 +407,7 @@ void test_hex8_tet4_touch()
   w.CreateQuad4( xyze );
 
   w.Status();
-  w.CutTest_Cut(true); //as cut_sides are just touching!!
+  w.CutTest_Cut(true,true); //as cut_sides are just touching!!
 }
 
 void test_hex8_tet4_touch2()
@@ -437,7 +437,7 @@ void test_hex8_tet4_touch2()
   w.CreateTet4Sides( xyze );
 
   w.Status();
-  w.CutTest_Cut(true);
+  w.CutTest_Cut(true, true);
 }
 
 void test_hex8_mesh()
@@ -810,7 +810,7 @@ void test_hex8_quad4_touch()
   w.CreateQuad4( xyze );
 
   w.Status();
-  w.CutTest_Cut(true);
+  w.CutTest_Cut(true, true);
 }
 
 void test_hex8_quad4_touch2()
@@ -840,7 +840,7 @@ void test_hex8_quad4_touch2()
   w.CreateQuad4( xyze );
 
   w.Status();
-  w.CutTest_Cut(true);
+  w.CutTest_Cut(true, true);
 }
 
 void test_hex8_quad4_touch3()
@@ -870,7 +870,7 @@ void test_hex8_quad4_touch3()
   w.CreateQuad4( xyze );
 
   w.Status();
-  w.CutTest_Cut(true);
+  w.CutTest_Cut(true, true);
 }
 
 void test_hex8_quad4_cut()
