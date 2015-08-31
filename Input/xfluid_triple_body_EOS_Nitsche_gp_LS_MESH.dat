@@ -78,7 +78,7 @@ GMSH_SOL_OUT                    yes
 GMSH_DISCRET_OUT                yes
 GMSH_CUT_OUT                    yes
 GMSH_EOS_OUT                    yes
-VOLUME_GAUSS_POINTS_BY          Tessellation
+VOLUME_GAUSS_POINTS_BY          DirectDivergence//Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 MAX_NUM_DOFSETS                 4
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
