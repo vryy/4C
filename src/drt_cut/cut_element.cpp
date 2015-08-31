@@ -150,7 +150,7 @@ std::vector<GEO::CUT::Node*> GEO::CUT::Element::getQuadCorners()
 }
 
 /*--------------------------------------------------------------------*
- *            cut this element with given cut_side
+ *            cut this element with given cut_side ... Called by Tetmeshintersection and LS!!!!!! but not for normal meshintersection!!!
  *--------------------------------------------------------------------*/
 bool GEO::CUT::Element::Cut(Mesh & mesh, Side & cut_side, int recursion)
 {
@@ -301,6 +301,8 @@ void GEO::CUT::Element::MakeCutLines(Mesh & mesh, Creator & creator)
     }
 
     // find lines inside the element
+    //here lines are constructed, which are based on edges of the cut side
+    //and not directly part of an intersection!
     const std::vector<Edge*> & side_edges = cut_side.Edges();
     for (std::vector<Edge*>::const_iterator i = side_edges.begin();
         i != side_edges.end(); ++i)
@@ -344,9 +346,7 @@ bool GEO::CUT::Element::FindCutLines(Mesh & mesh, Side & ele_side,
   TEUCHOS_FUNC_TIME_MONITOR(
       "GEO::CUT --- 4/6 --- Cut_MeshIntersection --- FindCutLines");
 
-  bool cut = ele_side.FindCutLines(mesh, this, cut_side);
-  bool reverse_cut = cut_side.FindCutLines(mesh, this, ele_side);
-  return cut or reverse_cut;
+  return  ele_side.FindCutLines(mesh, this, cut_side);
 }
 
 /*------------------------------------------------------------------------------------------*
@@ -1094,6 +1094,7 @@ void GEO::CUT::Element::GetBoundaryCells(plain_boundarycell_set & bcells)
 
 /*------------------------------------------------------------------------------------------*
  * Get cutpoints of this element, returns also all touch-points
+ * (Remark: be aware of the fact, that you will just get cut_points, which lie on an edge of this element!!!)
  *------------------------------------------------------------------------------------------*/
 void GEO::CUT::Element::GetCutPoints(PointSet & cut_points)
 {

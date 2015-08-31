@@ -223,12 +223,30 @@ public:
 
   virtual Facet * FindFacet(const std::vector<Point*> & facet_points);
 
+  /*!
+   \brief Find Cut Lines for two Cut Sides, which have more than two common cut points!
+  (This happens if the cutsides are in the same plane !)
+   */
+  virtual bool FindTouchingCutLines(Mesh & mesh, Element * element,
+      Side & side, const PointSet & cut);
+
+  /*!
+   \brief Find Cut Lines for two Cut Sides specially based on a discretization, which have more than two common cut points!
+  (This happens if the cutsides are in the same plane or due to numerical tolerances!
+   */
   virtual bool FindAmbiguousCutLines(Mesh & mesh, Element * element,
       Side & side, const PointSet & cut);
 
-  virtual void GetBoundaryCells(plain_boundarycell_set & bcells);
+  /*!
+   \brief Create lines based on cut points arising from an intersection, which should basically be a straight line!
+   Due to numeric precition and finally merging of Points this can happen!
+   The approach is to create a vector, which points in direction of the line and the sort all points along this
+   vector, and connect the points in this sorted order!
+   */
+  virtual bool FindAmbiguousCutLinesonEdge( Mesh & mesh, Element * element,
+      Side & side, const PointSet & cut );
 
-  virtual void CreateMissingLines(Creator & creator, Element * element);
+  virtual void GetBoundaryCells(plain_boundarycell_set & bcells);
 
   void Print();
 
@@ -261,7 +279,7 @@ public:
   bool FindCutLines(Mesh & mesh, Element * element, Side & other);
 
   /*!
-   \brief Get (not calculate) all the cut points between this edge and "other"
+   \brief Get (not calculate) all the cut points between this side and "other"
    */
   void GetCutPoints(Element * element, Side & other, PointSet & cuts);
 

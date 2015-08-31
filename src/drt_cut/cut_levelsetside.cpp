@@ -106,6 +106,14 @@ GEO::CUT::Facet * GEO::CUT::LevelSetSide::FindFacet( const std::vector<Point*> &
 
 bool GEO::CUT::LevelSetSide::FindAmbiguousCutLines( Mesh & mesh, Element * element, Side & side, const PointSet & cut )
 {
+  // More that two cut points shows a touch.
+  //
+  //1// If all nodes are catched and nothing else, the cut surface has hit this
+  // surface exactly. No need to cut anything. However, the surface might be
+  // required for integration.
+  if (GEO::CUT::Side::FindTouchingCutLines(mesh,element,side,cut))
+    return true;
+
   switch ( side.Shape() )
   {
   case DRT::Element::tri3:
