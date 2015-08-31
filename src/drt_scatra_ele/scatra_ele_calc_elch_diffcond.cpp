@@ -174,22 +174,22 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhs(
   {
     //    i)  conduction term + ohmic overpotential
     //        (w_k, - t_k kappa nabla phi /(z_k F))
-    CalcMatCondOhm(emat,k,timefacfac,VarManager()->InvFVal(k),VarManager()->GradPot());
+    CalcMatCondOhm(emat,k,timefacfac,DiffManager()->InvFVal(k),VarManager()->GradPot());
 
     //    ii) conduction term + concentration overpotential
     //        (w_k, - t_k RT/F kappa (thermfactor) f(t_k) nabla ln c_k /(z_k F))
     if(diffcondmat_==INPAR::ELCH::diffcondmat_newman)
-      CalcMatCondConc(emat,k,timefacfac,VarManager()->RTFFCVal(k),diffcondparams_->NewmanConstA(),diffcondparams_->NewmanConstB(),VarManager()->GradPhi(k),VarManager()->ConIntInv());
+      CalcMatCondConc(emat,k,timefacfac,VarManager()->RTFFC()/DiffManager()->GetValence(k),diffcondparams_->NewmanConstA(),diffcondparams_->NewmanConstB(),VarManager()->GradPhi(k),VarManager()->ConIntInv());
   }
   // equation for current is solved independently
   else
   {
     // current term (with current as a solution variable)
-    CalcMatCond(emat,k,timefacfac,VarManager()->InvFVal(k),VarManager()->CurInt());
+    CalcMatCond(emat,k,timefacfac,DiffManager()->InvFVal(k),VarManager()->CurInt());
 
     // this coupling term cancels out for a 2 equation system
     if(diffcondmat_==INPAR::ELCH::diffcondmat_ion)
-      CalcMatCondDiff(emat,k,timefacfac,VarManager()->InvFVal(k),VarManager()->GradPhi());
+      CalcMatCondDiff(emat,k,timefacfac,DiffManager()->InvFVal(k),VarManager()->GradPhi());
   } // end if(not diffcondparams_->CurSolVar())
 
   //---------------------------------------------------------------------
@@ -233,16 +233,16 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhs(
 
   if(not diffcondparams_->CurSolVar())
   {
-    CalcRhsCondOhm(erhs,k,rhsfac,VarManager()->InvFVal(k),VarManager()->GradPot());
+    CalcRhsCondOhm(erhs,k,rhsfac,DiffManager()->InvFVal(k),VarManager()->GradPot());
 
     // if(diffcondmat_==INPAR::ELCH::diffcondmat_ion): all terms cancel out
     if(diffcondmat_==INPAR::ELCH::diffcondmat_newman)
-      CalcRhsCondConc(erhs,k,rhsfac,VarManager()->RTFFCVal(k),diffcondparams_->NewmanConstA(),diffcondparams_->NewmanConstB(),VarManager()->GradPhi(k),VarManager()->ConIntInv());
+      CalcRhsCondConc(erhs,k,rhsfac,VarManager()->RTFFC()/DiffManager()->GetValence(k),diffcondparams_->NewmanConstA(),diffcondparams_->NewmanConstB(),VarManager()->GradPhi(k),VarManager()->ConIntInv());
   }
   // equation for current is solved independently
   else
   {
-    CalcRhsCond(erhs,k,rhsfac,VarManager()->InvFVal(k),VarManager()->CurInt());
+    CalcRhsCond(erhs,k,rhsfac,DiffManager()->InvFVal(k),VarManager()->CurInt());
 
     if(diffcondmat_==INPAR::ELCH::diffcondmat_ion)
       CalcRhsCondDiff(erhs,k,rhsfac,VarManager()->GradPhi());
@@ -303,7 +303,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhsOutsideScal
         CalcMatPotEquDiviConc(emat,k,timefacfac,VarManager()->RTFFC(),VarManager()->RTF(),VarManager()->InvF(),diffcondparams_->NewmanConstA(),diffcondparams_->NewmanConstB(),VarManager()->GradPhi(k),VarManager()->ConIntInv(k));
 
         //
-        CalcRhsPotEquDiviConc(erhs,k,rhsfac,VarManager()->RTF(),VarManager()->InvFVal(),VarManager()->RTFFC(),diffcondparams_->NewmanConstA(),diffcondparams_->NewmanConstB(),VarManager()->GradPhi(k),VarManager()->ConIntInv(k));
+        CalcRhsPotEquDiviConc(erhs,k,rhsfac,VarManager()->RTF(),DiffManager()->InvFVal(),VarManager()->RTFFC(),diffcondparams_->NewmanConstA(),diffcondparams_->NewmanConstB(),VarManager()->GradPhi(k),VarManager()->ConIntInv(k));
       }
     }
     // 3b)  ENC
@@ -340,7 +340,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhsOutsideScal
     CalcMatCurEquOhm(emat,timefacfac,VarManager()->InvF(),VarManager()->GradPot());
 
     // (xsi, -D(RT/F kappa (thermfactor) f(t_k) nabla ln c_k))
-    CalcMatCurEquConc(emat,timefacfac,VarManager()->RTF(),VarManager()->RTFFC(),VarManager()->InvFVal(),diffcondparams_->NewmanConstA(),diffcondparams_->NewmanConstB(),VarManager()->GradPhi(),VarManager()->ConIntInv());
+    CalcMatCurEquConc(emat,timefacfac,VarManager()->RTF(),VarManager()->RTFFC(),DiffManager()->InvFVal(),diffcondparams_->NewmanConstA(),diffcondparams_->NewmanConstB(),VarManager()->GradPhi(),VarManager()->ConIntInv());
 
     // (xsi_i,Di)
     CalcRhsCurEquCur(erhs,rhsfac,VarManager()->InvF(),VarManager()->CurInt());
@@ -349,7 +349,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhsOutsideScal
     CalcRhsCurEquOhm(erhs,rhsfac,VarManager()->InvF(),VarManager()->GradPot());
 
     // (xsi, -D(RT/F kappa (thermfactor) f(t_k) nabla ln c_k))
-    CalcRhsCurEquConc(erhs,rhsfac,VarManager()->RTF(),VarManager()->InvFVal(),VarManager()->RTFFC(),diffcondparams_->NewmanConstA(),diffcondparams_->NewmanConstB(),VarManager()->GradPhi(),VarManager()->ConIntInv());
+    CalcRhsCurEquConc(erhs,rhsfac,VarManager()->RTF(),DiffManager()->InvFVal(),VarManager()->RTFFC(),diffcondparams_->NewmanConstA(),diffcondparams_->NewmanConstB(),VarManager()->GradPhi(),VarManager()->ConIntInv());
 
   //------------------------------------------------------------------------------------------
   // 3)   governing equation for the electric potential field and current (incl. rhs-terms)
@@ -1279,20 +1279,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::GetMaterialParams(
   // extract material from element
   Teuchos::RCP<MAT::Material> material = ele->Material();
 
+  // evaluate electrolyte material
   if (material->MaterialType() == INPAR::MAT::m_elchmat)
-  {
-    // compute concentrations of all species at integration point
-    std::vector<double> concentrations(my::numscal_,0.);
-    for(int k=0; k<my::numscal_; ++k)
-      concentrations[k] = my::funct_.Dot(my::ephinp_[k]);
-
-    // set factor F/RT at integration point
-    VarManager()->SetFRT();
-
-    // evaluate electrolyte material
-    Utils()->MatElchMat(material,concentrations,INPAR::ELCH::faraday_const*VarManager()->FRT(),myelch::elchparams_->EquPot(),DiffManager(),diffcondmat_);
-  }
-
+    Utils()->MatElchMat(material,VarManager(),DiffManager(),diffcondmat_);
   else
     dserror("Invalid material type!");
 

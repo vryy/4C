@@ -441,7 +441,8 @@ class ScaTraEleDiffManagerElchDiffCond : public ScaTraEleDiffManagerElchElectrod
 {
   public:
 
-    typedef ScaTraEleDiffManagerElchElectrode dm;
+    typedef ScaTraEleDiffManagerElch dmelch;
+    typedef ScaTraEleDiffManagerElchElectrode dmelectrode;
 
     ScaTraEleDiffManagerElchDiffCond(int numscal) :
     ScaTraEleDiffManagerElchElectrode(numscal),
@@ -449,6 +450,8 @@ class ScaTraEleDiffManagerElchDiffCond : public ScaTraEleDiffManagerElchElectrod
     derivtransnum_(numscal,std::vector<double>(numscal,0.0)),
     thermfac_(1.0),
     derivthermfac_(numscal,0.0),
+    invval_(numscal,0.),
+    invfval_(numscal,0.),
     // In the moment, we have only one phase but the framework is flexible
     eps_(1,1.0),
     tort_(1,1.0)
@@ -459,6 +462,19 @@ class ScaTraEleDiffManagerElchDiffCond : public ScaTraEleDiffManagerElchElectrod
     /*========================================================================*/
     //! @name access methods for transport parameter
     /*========================================================================*/
+
+    //! set valence and related parameters for single ionic species
+    void SetValence(const double valence,const int k)
+    {
+      // call base class routine
+      dmelch::SetValence(valence,k);
+
+      // set additional parameters involving inverse of valence
+      invval_[k] = 1./valence;
+      invfval_[k] = 1./INPAR::ELCH::faraday_const/valence;
+
+      return;
+    };
 
     //! Set transference numbers with respect to single ionic species
     void SetTransNum(const double transnum,const int k)
@@ -543,6 +559,9 @@ class ScaTraEleDiffManagerElchDiffCond : public ScaTraEleDiffManagerElchElectrod
       return;
     };
 
+    const double& InvFVal(const int k) const {return invfval_[k];};
+    const std::vector<double>& InvFVal() const {return invfval_;};
+
     /*========================================================================*/
     //! @name access methods for geometrical parameter
     /*========================================================================*/
@@ -579,7 +598,7 @@ class ScaTraEleDiffManagerElchDiffCond : public ScaTraEleDiffManagerElchElectrod
     void OutputTransportParams(const int numscal)
     {
       // call base class routine
-      dm::OutputTransportParams(numscal);
+      dmelectrode::OutputTransportParams(numscal);
 
       // additional outputs
       for(int k=0;k<numscal;++k)
@@ -631,8 +650,14 @@ class ScaTraEleDiffManagerElchDiffCond : public ScaTraEleDiffManagerElchElectrod
     //! derivative of thermodynamic factor with respect to concentrations
     std::vector<double> derivthermfac_;
 
+    //! constant parameters 1/(z_k)
+    std::vector<double> invval_;
+
+    //! constant parameters 1/(F z_k)
+    std::vector<double> invfval_;
+
     /*========================================================================*/
-    //! @name geometrical parameter of the porous medium
+    //! @name geometrical parameters of the porous medium
     /*========================================================================*/
 
     //! porosity
@@ -664,9 +689,6 @@ class ScaTraEleInternalVariableManagerElchDiffCond : public ScaTraEleInternalVar
       diffcondparams_(diffcondparams),
       rtf_(0.),
       rtffc_(0.),
-      invval_(numscal),
-      invfval_(numscal),
-      rtffcval_(numscal),
       curint_(true),
       curdiv_(0.)
     {return;}
@@ -695,14 +717,6 @@ class ScaTraEleInternalVariableManagerElchDiffCond : public ScaTraEleInternalVar
       // set constant parameter RT/(F^2*Newman_const_C)
       rtffc_ = rtf_*vmelectrode::invf_/diffcondparams_->NewmanConstC();
 
-      // constant material-depending variables
-      for(int k=0; k<vm::numscal_; ++k)
-      {
-        invval_[k] = 1./dmedc->GetValence(k);
-        invfval_[k] = vmelectrode::invf_/dmedc->GetValence(k);
-        rtffcval_[k] = rtffc_/dmedc->GetValence(k);
-      }
-
       curint_.Multiply(ecurnp,funct);
       // Calculate divergence of current desity
       // since it is a summation it is important to set curdiv to zero
@@ -723,11 +737,6 @@ class ScaTraEleInternalVariableManagerElchDiffCond : public ScaTraEleInternalVar
 
     const double RTF(){return rtf_;};
     const double RTFFC(){return rtffc_;};
-    const std::vector <double> InvVal(){return invval_;};
-    const double InvFVal(const int k){return invfval_[k];};
-    const std::vector <double> InvFVal(){return invfval_;};
-    const double RTFFCVal(const int k){return rtffcval_[k];};
-    const std::vector <double> RTFFCVal(){return rtffcval_;};
 
   /*========================================================================*/
   //! @name return methods for GP values
@@ -752,13 +761,6 @@ class ScaTraEleInternalVariableManagerElchDiffCond : public ScaTraEleInternalVar
     //! constant parameter RT/(F^2*Newman_const_C)
     //! attention: this is a newman specific parameter
     double rtffc_;
-    //! constant parameter 1/(z_k)
-    std::vector <double> invval_;
-    //! constant parameter 1/(F z_k)
-    std::vector <double> invfval_;
-    //! constant parameter RT/(F^2*Newman_const_C*z_k)
-    //! attention: this is a newman specific parameter
-    std::vector <double> rtffcval_;
 
   /*========================================================================*/
   //! @name internal variables evaluated at the Gauss point

@@ -123,7 +123,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::SysmatODMesh(
   // material parameter at the element center are also necessary
   // even if the stabilization parameter is evaluated at the element center
   if (not scatrapara_->MatGP())
+  {
+    SetInternalVariablesForMatAndRHS();
+
     GetMaterialParams(ele,densn,densnp,densam,visc);
+  }
 
   //----------------------------------------------------------------------
   // calculation of subgrid diffusivity and stabilization parameter(s)
@@ -143,13 +147,13 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::SysmatODMesh(
   {
     const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
 
+    SetInternalVariablesForMatAndRHS();
+
     //----------------------------------------------------------------------
     // get material parameters (evaluation at integration point)
     //----------------------------------------------------------------------
     if (scatrapara_->MatGP())
       GetMaterialParams(ele,densn,densnp,densam,visc,iquad);
-
-    SetInternalVariablesForMatAndRHS();
 
     // velocity divergence required for conservative form
     double vdiv(0.0);
@@ -308,7 +312,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::SysmatODFluid(
   // material parameter at the element center are also necessary
   // even if the stabilization parameter is evaluated at the element center
   if (not scatrapara_->MatGP())
+  {
+    SetInternalVariablesForMatAndRHS();
+
     GetMaterialParams(ele,densn,densnp,densam,visc);
+  }
 
   //----------------------------------------------------------------------
   // calculation of subgrid diffusivity and stabilization parameter(s)
@@ -332,7 +340,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::SysmatODFluid(
     // get material parameters (evaluation at integration point)
     //----------------------------------------------------------------------
     if (scatrapara_->MatGP())
+    {
+      SetInternalVariablesForMatAndRHS();
+
       GetMaterialParams(ele,densn,densnp,densam,visc,iquad);
+    }
 
     // get velocity at integration point
     //LINALG::Matrix<nsd_,1> velint(true);

@@ -182,7 +182,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalErrorComparedToAnalytSoluti
   double visc(0.0);
 
   // get material parameter (constants values)
-  this->GetMaterialParams(ele,densn,densnp,densam,visc);
+  SetInternalVariablesForMatAndRHS();
+  GetMaterialParams(ele,densn,densnp,densam,visc);
 
   // integration points and weights
   // more GP than usual due to (possible) cos/exp fcts in analytical solutions

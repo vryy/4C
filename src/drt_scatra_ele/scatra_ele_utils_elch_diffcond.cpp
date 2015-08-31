@@ -92,12 +92,10 @@ DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::ScaTraEleUtilsElchDiffCond(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatElchMat(
-    const Teuchos::RCP<const MAT::Material>                 material,         //!< electrolyte material
-    const std::vector<double>&                              concentrations,   //!< concentrations
-    const double                                            ffrt,             //!< factor F²/RT
-    const INPAR::ELCH::EquPot                               equpot,           //!< type of closing equation for electric potential
-    const Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>&   diffmanager,      //!< diffusion manager
-    INPAR::ELCH::DiffCondMat&                               diffcondmat       //!< ion type
+    const Teuchos::RCP<const MAT::Material>                                                         material,      //!< electrolyte material
+    const Teuchos::RCP<ScaTraEleInternalVariableManagerElchDiffCond<myelch::nsd_,myelch::nen_> >&   varmanager,    //!< internal variable manager
+    const Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>&                                           diffmanager,   //!< diffusion manager
+    INPAR::ELCH::DiffCondMat&                                                                       diffcondmat    //!< ion type
     )
 {
   // cast material to electrolyte material
@@ -112,7 +110,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatElchMat(
 
   if(elchphase->MaterialType() == INPAR::MAT::m_elchphase)
     // evaluate electrolyte phase
-    MatElchPhase(elchphase,concentrations,ffrt,equpot,diffmanager,diffcondmat);
+    MatElchPhase(elchphase,varmanager,diffmanager,diffcondmat);
   else
     dserror("Invalid material type!");
 
@@ -124,12 +122,10 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatElchMat(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatElchPhase(
-    const Teuchos::RCP<const MAT::Material>                 material,         //!< electrolyte phase
-    const std::vector<double>&                              concentrations,   //!< concentrations
-    const double                                            ffrt,             //!< factor F²/RT
-    const INPAR::ELCH::EquPot                               equpot,           //!< type of closing equation for electric potential
-    const Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>&   diffmanager,      //!< diffusion manager
-    INPAR::ELCH::DiffCondMat&                               diffcondmat       //!< ion type
+    const Teuchos::RCP<const MAT::Material>                                                         material,      //!< electrolyte phase
+    const Teuchos::RCP<ScaTraEleInternalVariableManagerElchDiffCond<myelch::nsd_,myelch::nen_> >&   varmanager,    //!< internal variable manager
+    const Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>&                                           diffmanager,   //!< diffusion manager
+    INPAR::ELCH::DiffCondMat&                                                                       diffcondmat    //!< ion type
     )
 {
   // cast material to electrolyte phase
@@ -158,7 +154,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatElchPhase(
         diffcondmat = INPAR::ELCH::diffcondmat_newman;
 
         // evaluate Newman material
-        MatNewman(material,concentrations[0],diffmanager);
+        MatNewman(material,varmanager->Phinp(0),diffmanager);
 
         break;
       }
@@ -168,13 +164,13 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatElchPhase(
         // set ion type
         diffcondmat = INPAR::ELCH::diffcondmat_ion;
 
-        myelch::MatIon(material,imat,equpot,diffmanager);
+        myelch::MatIon(material,imat,varmanager->ElchParams()->EquPot(),diffmanager);
 
         // calculation of conductivity and transference number based on diffusion coefficient and valence
         if(imat == matelchphase->NumMat()-1)
         {
-          diffmanager->CalcConductivity(matelchphase->NumMat(),ffrt,concentrations);
-          diffmanager->CalcTransNum(matelchphase->NumMat(),concentrations);
+          diffmanager->CalcConductivity(matelchphase->NumMat(),INPAR::ELCH::faraday_const*varmanager->FRT(),varmanager->Phinp());
+          diffmanager->CalcTransNum(matelchphase->NumMat(),varmanager->Phinp());
         }
 
         break;

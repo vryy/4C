@@ -1401,6 +1401,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::StoreModelParametersForOutpu
           // fluid viscosity
           double visc(0.0);
 
+          SetInternalVariablesForMatAndRHS();
+
           GetMaterialParams(ele,densn,densnp,densam,visc);
 
           CalcSubgrDiff(visc,vol,0,densnp);
@@ -1609,7 +1611,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDissipation(
   // material parameter at the element center are also necessary
   // even if the stabilization parameter is evaluated at the element center
   if (not scatrapara_->MatGP() or scatrapara_->TauGP())
+  {
+    SetInternalVariablesForMatAndRHS();
+
     GetMaterialParams(ele,densn,densnp,densam,visc);
+  }
 
   //----------------------------------------------------------------------
   // calculation of subgrid diffusivity and stabilization parameter(s)
@@ -1661,7 +1667,12 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDissipation(
     {
       // make sure to get material parameters at element center
       // hence, determine them if not yet available
-      if (scatrapara_->MatGP()) GetMaterialParams(ele,densn,densnp,densam,visc);
+      if (scatrapara_->MatGP())
+      {
+        SetInternalVariablesForMatAndRHS();
+
+        GetMaterialParams(ele,densn,densnp,densam,visc);
+      }
       // provide necessary velocities and gradients at element center
       // get velocity at element center
       LINALG::Matrix<nsd_,1> convelint(true);
@@ -1695,10 +1706,10 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDissipation(
     // get material parameters (evaluation at integration point)
     //----------------------------------------------------------------------
 
+    SetInternalVariablesForMatAndRHS();
+
     if (scatrapara_->MatGP())
       GetMaterialParams(ele,densn,densnp,densam,visc);
-
-    SetInternalVariablesForMatAndRHS();
 
     // get velocity at integration point
     const LINALG::Matrix<nsd_,1>& convelint = scatravarmanager_->ConVel();

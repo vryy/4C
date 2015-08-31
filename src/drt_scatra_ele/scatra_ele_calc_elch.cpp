@@ -113,9 +113,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Sysmat(
   //----------------------------------------------------------------------
   const double vol = my::EvalShapeFuncAndDerivsAtEleCenter();
 
-  //-------------------------------------------------------------------------
-  // get material and stabilization parameters (evaluation at element center)
-  //-------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------------------------
+  // calculate material and stabilization parameters (one per transported scalar) at element center
+  //-----------------------------------------------------------------------------------------------
   // density at t_(n)
   double densn(1.0);
   // density at t_(n+1) or t_(n+alpha_F)
@@ -126,22 +126,20 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Sysmat(
   // fluid viscosity
   double visc(0.0);
 
-  // material parameter at element center
-  if ((not my::scatrapara_->MatGP()) or (not my::scatrapara_->TauGP()))
-    this->GetMaterialParams(ele,densn,densnp,densam,visc);
-
-  //----------------------------------------------------------------------------------
-  // calculate stabilization parameters (one per transported scalar) at element center
-  //----------------------------------------------------------------------------------
+  // stabilization variables
   std::vector<double> tau(my::numscal_,0.);
-  std::vector<LINALG::Matrix<my::nen_,1> > tauderpot(my::numscal_);
+  std::vector<LINALG::Matrix<my::nen_,1> > tauderpot(my::numscal_,LINALG::Matrix<my::nen_,1>(true));
 
-  if (not my::scatrapara_->TauGP())
+  if(not my::scatrapara_->MatGP() or not my::scatrapara_->TauGP())
   {
     // set internal variables at element center
     SetInternalVariablesForMatAndRHS();
 
-    PrepareStabilization(tau,tauderpot,densnp,vol);
+    // material parameters at element center
+    GetMaterialParams(ele,densn,densnp,densam,visc);
+
+    if(not my::scatrapara_->TauGP())
+      PrepareStabilization(tau,tauderpot,densnp,vol);
   }
 
   //----------------------------------------------------------------------
@@ -154,13 +152,13 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Sysmat(
   {
     const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
 
+    SetInternalVariablesForMatAndRHS();
+
     //----------------------------------------------------------------------
     // get material parameters (evaluation at integration point)
     //----------------------------------------------------------------------
     if (my::scatrapara_->MatGP())
-      this->GetMaterialParams(ele,densn,densnp,densam,visc,iquad);
-
-    SetInternalVariablesForMatAndRHS();
+      GetMaterialParams(ele,densn,densnp,densam,visc,iquad);
 
     //-------------------------------------------------------------------------------------
     // calculate stabilization parameters (one per transported scalar) at integration point

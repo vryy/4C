@@ -458,7 +458,13 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
     {
       // make sure to get material parameters at element center
       // hence, determine them if not yet available
-      if (scatrapara_->MatGP()) GetMaterialParams(ele,densn,densnp,densam,visc);
+      if (scatrapara_->MatGP())
+      {
+        SetInternalVariablesForMatAndRHS();
+
+        GetMaterialParams(ele,densn,densnp,densam,visc);
+      }
+
       // provide necessary velocities and gradients at element center
       // get velocity at element center
       LINALG::Matrix<nsd_,1> convelint(true);

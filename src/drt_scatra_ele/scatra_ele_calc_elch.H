@@ -139,6 +139,16 @@ protected:
     Epetra_SerialDenseVector&                  subgrdiff     //!< subgrid-diff.-scaling vector
   );
 
+  //! get material parameters
+  virtual void GetMaterialParams(
+    const DRT::Element*                  ele,           //!< the element we are dealing with
+    double&                              densn,         //!< density at t_(n)
+    double&                              densnp,        //!< density at t_(n+1) or t_(n+alpha_F)
+    double&                              densam,        //!< density at t_(n+alpha_M)
+    double&                              visc,          //!< fluid viscosity
+    const int                            iquad=-1       //!< id of current gauss point (default = -1)
+  ) = 0;
+
   /*========================================================================*/
   //! @name stabilization and related functions
   /*========================================================================*/
@@ -263,7 +273,7 @@ class ScaTraEleDiffManagerElch : public ScaTraEleDiffManager
     ~ScaTraEleDiffManagerElch(){};
 
     //! Set valence of the single ionic species
-    void SetValence(const double valence,const int k)
+    virtual void SetValence(const double valence,const int k)
     {
       valence_[k]=valence;
       return;
@@ -380,6 +390,9 @@ class ScaTraEleInternalVariableManagerElch : public ScaTraEleInternalVariableMan
 
       return;
     }
+
+    //! return parameter class
+    const DRT::ELEMENTS::ScaTraEleParameterElch* ElchParams() const {return parameters_;};
 
   protected:
 

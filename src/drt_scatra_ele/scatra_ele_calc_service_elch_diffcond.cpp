@@ -731,9 +731,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalculateFlux(
     // diffusive flux contribution
     q.Update(-DiffManager()->GetIsotropicDiff(k)*DiffManager()->GetPhasePoroTort(0),VarManager()->GradPhi(k),1.0);
     // flux due to ohmic overpotential
-    q.Update(-DiffManager()->GetTransNum(k)*VarManager()->InvFVal(k)*DiffManager()->GetCond()*DiffManager()->GetPhasePoroTort(0),VarManager()->GradPot(),1.0);
+    q.Update(-DiffManager()->GetTransNum(k)*DiffManager()->InvFVal(k)*DiffManager()->GetCond()*DiffManager()->GetPhasePoroTort(0),VarManager()->GradPot(),1.0);
     // flux due to concentration overpotential
-    q.Update(-DiffManager()->GetTransNum(k)*VarManager()->RTFFCVal(k)*DiffManager()->GetCond()*DiffManager()->GetPhasePoroTort(0)*DiffManager()->GetThermFac()*(diffcondparams_->NewmanConstA()+(diffcondparams_->NewmanConstB()*DiffManager()->GetTransNum(k)))*VarManager()->ConIntInv(k),VarManager()->GradPhi(k),1.0);
+    q.Update(-DiffManager()->GetTransNum(k)*VarManager()->RTFFC()/DiffManager()->GetValence(k)*DiffManager()->GetCond()*DiffManager()->GetPhasePoroTort(0)*DiffManager()->GetThermFac()*(diffcondparams_->NewmanConstA()+(diffcondparams_->NewmanConstB()*DiffManager()->GetTransNum(k)))*VarManager()->ConIntInv(k),VarManager()->GradPhi(k),1.0);
     break;
   default:
     dserror("received illegal flag inside flux evaluation for whole domain"); break;
@@ -840,7 +840,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalErrorComparedToAnalyt
   double visc(0.0);
 
   // get material parameter (constants values)
-  this->GetMaterialParams(ele,densn,densnp,densam,visc);
+  SetInternalVariablesForMatAndRHS();
+  GetMaterialParams(ele,densn,densnp,densam,visc);
 
   // integration points and weights
   // more GP than usual due to (possible) cos/exp fcts in analytical solutions

@@ -1318,9 +1318,11 @@ namespace ELEMENTS
   //! @name return methods for internal variables
   /*========================================================================*/
 
-    //! return convective velocity
+    //! return scalar values at t_(n+1) or t_(n+alpha_F)
+    virtual const std::vector<double>& Phinp() const {return phinp_;};
+    //! return scalar value at t_(n+1) or t_(n+alpha_F)
     virtual const double& Phinp(const int k) const {return phinp_[k];};
-    //! return convective velocity
+    //! return scalar value at t_(n)
     virtual const double& Phin(const int k) const {return phin_[k];};
     //! return convective velocity
     virtual const LINALG::Matrix<NSD,1>& ConVel(const int k=0) const {return convelint_;};

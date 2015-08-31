@@ -119,7 +119,11 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateAction(
 
     // material parameter at the element center
     if (not my::scatrapara_->MatGP())
-      this->GetMaterialParams(ele,densn,densnp,densam,visc);
+    {
+      SetInternalVariablesForMatAndRHS();
+
+      GetMaterialParams(ele,densn,densnp,densam,visc);
+    }
 
     //----------------------------------------------------------------------
     // integration loop for one element
@@ -131,14 +135,14 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateAction(
     {
       const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
 
+      // set internal variables
+      SetInternalVariablesForMatAndRHS();
+
       //----------------------------------------------------------------------
       // get material parameters (evaluation at integration point)
       //----------------------------------------------------------------------
       if (my::scatrapara_->MatGP())
-        this->GetMaterialParams(ele,densn,densnp,densam,visc,iquad);
-
-      // set internal variables
-      SetInternalVariablesForMatAndRHS();
+        GetMaterialParams(ele,densn,densnp,densam,visc,iquad);
 
       // access control parameter for flux calculation
       INPAR::SCATRA::FluxType fluxtype = my::scatrapara_->WriteFlux();
@@ -318,11 +322,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateConductivity(
     // fluid viscosity
     double visc(0.0);
 
-    // material parameter at integration point
-    this->GetMaterialParams(ele,densn,densnp,densam,visc,iquad);
-
     // set internal variables at integration point
     SetInternalVariablesForMatAndRHS();
+
+    // material parameter at integration point
+    GetMaterialParams(ele,densn,densnp,densam,visc,iquad);
 
     // calculate integrals of (inverted) scalar(s) and domain
     for (int i=0; i<my::nen_; i++)

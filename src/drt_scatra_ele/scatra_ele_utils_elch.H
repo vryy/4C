@@ -30,10 +30,13 @@ namespace DRT
     template<DRT::Element::DiscretizationType distype>
     class ScaTraEleUtilsElch
     {
-      private:
+      protected:
 
         //! number of element nodes
         static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+
+        //! number of space dimensions
+        static const int nsd_ = DRT::UTILS::DisTypeToDim<distype>::dim;
 
       public:
 

@@ -375,6 +375,9 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
         // fluid viscosity
         double visc(0.0);
 
+        // set internal variables
+        SetInternalVariablesForMatAndRHS();
+
         // get material
         GetMaterialParams(ele,densn,densnp,densam,visc);
 
@@ -1057,6 +1060,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcInitialTimeDerivative(
 
   if (not scatrapara_->MatGP() or not scatrapara_->TauGP())
   {
+    SetInternalVariablesForMatAndRHS();
+
     GetMaterialParams(ele,densn,densnp,densam,visc);
 
     if (not scatrapara_->TauGP())
@@ -1085,6 +1090,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcInitialTimeDerivative(
   {
     const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
 
+    SetInternalVariablesForMatAndRHS();
+
     //----------------------------------------------------------------------
     // get material parameters (evaluation at integration point)
     //----------------------------------------------------------------------
@@ -1093,8 +1100,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcInitialTimeDerivative(
     //------------ get values of variables at integration point
     for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
     {
-      SetInternalVariablesForMatAndRHS();
-
       // get phi at integration point for all scalars
       const double& phiint = scatravarmanager_->Phinp(k);
 
@@ -1268,7 +1273,12 @@ const int                       k
   double visc(0.0);
 
   // get material parameters (evaluation at element center)
-  if (not scatrapara_->MatGP()) GetMaterialParams(ele,densn,densnp,densam,visc);
+  if (not scatrapara_->MatGP())
+  {
+    SetInternalVariablesForMatAndRHS();
+
+    GetMaterialParams(ele,densn,densnp,densam,visc);
+  }
 
   // integration rule
   const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
@@ -1280,7 +1290,12 @@ const int                       k
     const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
 
     // get material parameters (evaluation at integration point)
-    if (scatrapara_->MatGP()) GetMaterialParams(ele,densn,densnp,densam,visc);
+    if (scatrapara_->MatGP())
+    {
+      SetInternalVariablesForMatAndRHS();
+
+      GetMaterialParams(ele,densn,densnp,densam,visc);
+    }
 
     // get velocity at integration point
     LINALG::Matrix<nsd_,1> velint(true);
