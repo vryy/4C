@@ -18,7 +18,6 @@ Maintainer: Benedikt Schott
 
 #include "cut_mesh.H"
 
-#include "cut_creator.H"
 #include "cut_point_impl.H"
 #include "cut_levelsetside.H"
 #include "cut_boundarycell.H"
@@ -30,7 +29,6 @@ Maintainer: Benedikt Schott
 #include "../drt_geometry/element_volume.H"
 
 // search
-//#include "../drt_geometry/bvtree.H"
 #include "../drt_geometry/searchtree.H"
 
 #include "../drt_lib/drt_colors.H"
@@ -845,7 +843,6 @@ void GEO::CUT::Mesh::MakeCutLines()
 {
   TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 4/6 --- Cut_MeshIntersection --- MakeCutLines" );
 
-  Creator creator; //Todo: Remove me as I'm not used
   for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
         i!=elements_.end();
         ++i )
@@ -853,7 +850,7 @@ void GEO::CUT::Mesh::MakeCutLines()
     Element & e = *i->second;
     try
     {
-      e.MakeCutLines( *this, creator );
+      e.MakeCutLines( *this);
     }
     catch ( std::runtime_error & err )
     {
@@ -868,7 +865,7 @@ void GEO::CUT::Mesh::MakeCutLines()
     Element & e = *i->second;
     try
     {
-      e.MakeCutLines( *this, creator );
+      e.MakeCutLines( *this);
     }
     catch ( std::runtime_error & err )
     {
@@ -876,8 +873,6 @@ void GEO::CUT::Mesh::MakeCutLines()
       throw;
     }
   }
-
-  creator.Execute( *this );
 }
 
 

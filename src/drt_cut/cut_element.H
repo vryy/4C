@@ -17,7 +17,6 @@ namespace CUT
   class VolumeCell;
   class IntegrationCell;
   class BoundaryCell;
-  class Creator;
   class Node;
 
 
@@ -117,7 +116,7 @@ public:
   /*!
   \brief Create cut lines over this element by connecting appropriate cut points
   */
-  void MakeCutLines( Mesh & mesh, Creator & creator );
+  void MakeCutLines( Mesh & mesh);
 
   /*!
   \brief Create facets

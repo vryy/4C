@@ -3,7 +3,6 @@
 #include "cut_tetmesh.H"
 #include "cut_options.H"
 #include "cut_integrationcellcreator.H"
-#include "cut_volumecellgenerator.H"
 #include "cut_facetgraph.H"
 #include "cut_output.H"
 
@@ -279,14 +278,12 @@ bool GEO::CUT::Element::FindCutPoints(Mesh & mesh, Side & cut_side,
  * After all cut points are found, create cut lines for this element by
  * connecting appropriate cut points
  *---------------------------------------------------------------------------*/
-void GEO::CUT::Element::MakeCutLines(Mesh & mesh, Creator & creator)
+void GEO::CUT::Element::MakeCutLines(Mesh & mesh)
 {
   for (plain_side_set::iterator i = cut_faces_.begin(); i != cut_faces_.end();
       ++i)
   {
     Side & cut_side = **i;
-
-    bool cut = false;
 
     const std::vector<Side*> & sides = Sides();
     // create cut lines over each side of background element
@@ -294,10 +291,7 @@ void GEO::CUT::Element::MakeCutLines(Mesh & mesh, Creator & creator)
         ++i)
     {
       Side * s = *i;
-      if (FindCutLines(mesh, *s, cut_side))
-      {
-        cut = true;
-      }
+      FindCutLines(mesh, *s, cut_side);
     }
 
     // find lines inside the element
@@ -311,12 +305,6 @@ void GEO::CUT::Element::MakeCutLines(Mesh & mesh, Creator & creator)
       std::vector<Point*> line;
       e->CutPointsInside(this, line);
       mesh.NewLinesBetween(line, &cut_side, NULL, this);
-    }
-
-    if (cut)
-    {
-      // create any remaining cut lines
-      //side.CreateMissingLines( creator, this );
     }
   }
 }
@@ -673,90 +661,6 @@ void GEO::CUT::Element::FindNodePositions()
   } // loop nodes
 #endif
 }
-
-// Uli's original version
-//
-//void GEO::CUT::Element::FindNodePositions()
-//{
-//  LINALG::Matrix<3,1> xyz;
-//  LINALG::Matrix<3,1> rst;
-//
-//  const std::vector<Node*> & nodes = Nodes();
-//  for ( std::vector<Node*>::const_iterator i=nodes.begin(); i!=nodes.end(); ++i )
-//  {
-//    Node * n = *i;
-//    Point * p = n->point();
-//    Point::PointPosition pos = p->Position();
-//    if ( pos==Point::undecided )
-//    {
-//      bool done = false;
-//      const plain_facet_set & facets = p->Facets();
-//      for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
-//      {
-//        Facet * f = *i;
-//        for ( plain_side_set::const_iterator i=cut_faces_.begin(); i!=cut_faces_.end(); ++i )
-//        {
-//          Side * s = *i;
-//
-//          // Only take a side that belongs to one of this points facets and
-//          // shares a cut edge with this point. If there are multiple cut
-//          // sides within the element (facets), only the close one will always
-//          // give the right direction.
-//          if ( f->IsCutSide( s ) and p->CommonCutEdge( s )!=NULL )
-//          {
-//            if ( p->IsCut( s ) )
-//            {
-//              p->Position( Point::oncutsurface );
-//            }
-//            else
-//            {
-//              p->Coordinates( xyz.A() );
-//              s->LocalCoordinates( xyz, rst );
-//              double d = rst( 2, 0 );
-//              if ( fabs( d ) > MINIMALTOL )
-//              {
-//                if ( d > 0 )
-//                {
-//                  p->Position( Point::outside );
-//                }
-//                else
-//                {
-//                  p->Position( Point::inside );
-//                }
-//              }
-//              else
-//              {
-//                // within the cut plane but not cut by the side
-//                break;
-//              }
-//            }
-//            done = true;
-//            break;
-//          }
-//        }
-//        if ( done )
-//          break;
-//      }
-//      if ( p->Position()==Point::undecided )
-//      {
-//        // Still undecided! No facets with cut side attached! Will be set in a
-//        // minute.
-//      }
-//    }
-//    else if ( pos==Point::outside or pos==Point::inside )
-//    {
-//      // The nodal position is already known. Set it to my facets. If the
-//      // facets are already set, this will not have much effect anyway. But on
-//      // multiple cuts we avoid unset facets this way.
-//      const plain_facet_set & facets = p->Facets();
-//      for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
-//      {
-//        Facet * f = *i;
-//        f->Position( pos );
-//      }
-//    }
-//  }
-//}
 
 /*------------------------------------------------------------------------------------------*
  *  main routine to compute the position based on the angle between the line-vec (p-c) and an appropriate cut-side
@@ -1291,22 +1195,9 @@ void GEO::CUT::Element::MakeVolumeCells(Mesh & mesh)
 #endif
 #endif
 
-#if 0
-  VolumeCellGenerator vcg( sides_, facets_ );
-  vcg.CreateVolumeCells( mesh, this, cells_ );
-#else
-
-#if 1
   FacetGraph fg(sides_, facets_);
   fg.CreateVolumeCells(mesh, this, cells_);
-#endif
 
-#if 0
-  volumecellCreator vcc( facets_ );
-  vcc.createCells( mesh, this, cells_ );
-#endif
-
-#endif
 }
 
 bool GEO::CUT::ConcreteElement<DRT::Element::tet4>::PointInside(Point* p)

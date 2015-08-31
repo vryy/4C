@@ -1866,7 +1866,6 @@ set(OBJS_DRT_CUT
   src/drt_cut/cut_boundarycell.cpp
   src/drt_cut/cut_boundingbox.cpp
   src/drt_cut/cut_coloredgraph.cpp
-  src/drt_cut/cut_creator.cpp
   src/drt_cut/cut_cycle.cpp
   src/drt_cut/direct_divergence.cpp
   src/drt_cut/direct_divergence_refplane.cpp
@@ -1900,7 +1899,6 @@ set(OBJS_DRT_CUT
   src/drt_cut/cut_tetmeshintersection.cpp
   src/drt_cut/cut_triangulateFacet.cpp
   src/drt_cut/cut_volumecell.cpp
-  src/drt_cut/cut_volumecellgenerator.cpp
   src/drt_cut/line_integration.cpp
   src/drt_cut/facet_integration.cpp
   src/drt_cut/boundarycell_integration.cpp

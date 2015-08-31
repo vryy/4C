@@ -347,8 +347,3 @@ bool GEO::CUT::LevelSetSide::FindAmbiguousCutLines( Mesh & mesh, Element * eleme
     throw std::runtime_error( "unsupported side shape" );
   }
 }
-
-void GEO::CUT::LevelSetSide::CreateMissingLines( Creator & creator, Element * element )
-{
-  // do not create missing lines in levelset cuts
-}

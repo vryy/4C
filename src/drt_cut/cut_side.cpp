@@ -5,7 +5,6 @@
 #include "cut_facet.H"
 #include "cut_point_impl.H"
 #include "cut_pointgraph.H"
-#include "cut_creator.H"
 
 #include <string>
 #include <stack>

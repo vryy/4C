@@ -18,7 +18,6 @@ class Facet;
 class LineSegment;
 class BoundaryCell;
 class LineSegmentList;
-class Creator;
 class Cycle;
 
 /*!

@@ -75,8 +75,6 @@ public:
 
   virtual bool FindAmbiguousCutLines( Mesh & mesh, Element * element, Side & side, const PointSet & cut );
 
-  virtual void CreateMissingLines( Creator & creator, Element * element );
-
   // a levelset-side returns true
   virtual bool IsLevelSetSide(){return true;};
 };

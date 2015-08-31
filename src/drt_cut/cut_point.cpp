@@ -224,7 +224,7 @@ double GEO::CUT::Point::t( Edge* edge )
     {
       std::stringstream str;
       str << "point not on edge, no edge position: "
-          << x.Norm2() << "\n"
+          << x.Norm2() << " (Tol = "<< Tolerance()+ p1->Tolerance() + p2->Tolerance() << ")"<< "\n"
           << x
           << x1
           << x2 << "\n";
