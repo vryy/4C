@@ -57,10 +57,6 @@ MAT::StructPoroReactionECM::StructPoroReactionECM(MAT::PAR::StructPoroReactionEC
   StructPoroReaction(params),
   refporosity_old_(-1.0),
   refporositydot_old_(0.0),
-  conc_m2c1_(0.0),
-  conc_m2c1_old_(0.0),
-  conc_m2c1dot_(0.0),
-  conc_m2c1dot_old_(0.0),
   params_(params)
 {
 }
@@ -94,14 +90,6 @@ void MAT::StructPoroReactionECM::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, refporosity_old_);
   // refporositydot_old_
   AddtoPack(data, refporositydot_old_);
-  // conc_m2c1_
-  AddtoPack(data, conc_m2c1_);
-  // conc_m2c1_old_
-  AddtoPack(data, conc_m2c1_old_);
-  // conc_m2c1dot_
-  AddtoPack(data, conc_m2c1dot_);
-  // conc_m2c1dot_old_
-  AddtoPack(data, conc_m2c1dot_old_);
 
   // add base class material
   StructPoroReaction::Pack(data);
@@ -136,11 +124,6 @@ void MAT::StructPoroReactionECM::Unpack(const std::vector<char>& data)
 
   ExtractfromPack(position,data,refporosity_old_);
   ExtractfromPack(position,data,refporositydot_old_);
-  ExtractfromPack(position,data,conc_m2c1_);
-  ExtractfromPack(position,data,conc_m2c1_old_);
-  ExtractfromPack(position,data,conc_m2c1dot_);
-  ExtractfromPack(position,data,conc_m2c1dot_old_);
-
 
   // extract base class material
   std::vector<char> basedata(0);
@@ -183,21 +166,10 @@ void MAT::StructPoroReactionECM::Reaction(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::StructPoroReactionECM::BodyForceTerm(double porosity) const
-{
-  double k_on_m2c1 = 1.0;
-  double bodyforce = k_on_m2c1 * (1.0-porosity) * conc_m2c1_;
-  return bodyforce;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void MAT::StructPoroReactionECM::Update()
 {
   refporosity_old_ = refporosity_;
   refporositydot_old_ = refporositydot_;
-  conc_m2c1_old_ = conc_m2c1_;
-  conc_m2c1dot_old_ = conc_m2c1dot_;
 
   StructPoroReaction::Update();
 }

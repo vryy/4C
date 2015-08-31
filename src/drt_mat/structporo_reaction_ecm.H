@@ -160,34 +160,27 @@ namespace MAT
       /// Update of GP data (e.g., history variables)
       virtual void Update();
 
-      double BodyForceTerm(double porosity) const;
-
       //! @name Visualization methods
 
-      // Return names of visualization data
+      /// Return names of visualization data
       virtual void VisNames(std::map<std::string,int>& names);
 
-      // Return visualization data
+      /// Return visualization data
       virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
 
       //@}
 
     protected:
 
+      /// evaluate reaction (changes reference porosity)
       virtual void Reaction(double porosity,
                             Teuchos::ParameterList& params);
 
+      /// reference porosity of last time step
       double refporosity_old_;
 
+      /// time derivative of reference porosity of last time step
       double refporositydot_old_;
-
-      ///reference porosity
-      double conc_m2c1_;
-
-      double conc_m2c1_old_;
-
-      double conc_m2c1dot_;
-      double conc_m2c1dot_old_;
 
       /// my material parameters
       MAT::PAR::StructPoroReactionECM* params_;

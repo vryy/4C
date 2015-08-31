@@ -78,7 +78,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::Done()
  |                                                           vuong 07/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ScaTraEleCalcPoro(\
+DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ScaTraEleCalcPoro(
     const int numdofpernode,
     const int numscal,
     const std::string& disname)
