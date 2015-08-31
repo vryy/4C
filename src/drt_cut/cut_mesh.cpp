@@ -33,6 +33,8 @@ Maintainer: Benedikt Schott
 //#include "../drt_geometry/bvtree.H"
 #include "../drt_geometry/searchtree.H"
 
+#include "../drt_lib/drt_colors.H"
+
 /*-------------------------------------------------------------------------------------*
  * constructor
  *-------------------------------------------------------------------------------------*/
@@ -579,9 +581,10 @@ void GEO::CUT::Mesh::BuildStaticSearchTree()
 
 }
 
-/*-----------------------------------------------------------------*
- * Cuts the background elements of the mesh with all the cut sides *
- *-----------------------------------------------------------------*/
+/*---------------------------------------------------------------------*
+ * Cuts the background elements of the mesh with all the cut sides     *
+ * Called by Tetmeshintersection (but not for normal meshintersection) *
+ *---------------------------------------------------------------------*/
 void GEO::CUT::Mesh::Cut( Mesh & mesh, plain_element_set & elements_done, int recursion )
 {
   TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 6/6 --- Cut_Finalize --- CUT (incl. tetmesh-cut)" );
@@ -605,7 +608,8 @@ void GEO::CUT::Mesh::Cut( Mesh & mesh, plain_element_set & elements_done, int re
 
 /*------------------------------------------------------------------------*
  * Cuts the background elements of the mesh with this considered cut side *
- *------------------------------------------------------------------------*/
+ * Called by Tetmeshintersection (but not for normal meshintersection)    *
+ *-----------------------------------------------------------------------*/
 void GEO::CUT::Mesh::Cut( Side & side, const plain_element_set & done, plain_element_set & elements_done, int recursion )
 {
   BoundingBox sidebox( side ); // define a bounding box around the maybe twisted side to determine a preselection of cutting sides and elements
@@ -841,7 +845,7 @@ void GEO::CUT::Mesh::MakeCutLines()
 {
   TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 4/6 --- Cut_MeshIntersection --- MakeCutLines" );
 
-  Creator creator;
+  Creator creator; //Todo: Remove me as I'm not used
   for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
         i!=elements_.end();
         ++i )
@@ -1352,6 +1356,7 @@ void GEO::CUT::Mesh::CreateIntegrationCells( int count, bool tetcellsonly )
     catch ( std::runtime_error & err )
     {
       if( count > 0 )
+        //dserror("Error occurred in a recursive call i.e. in a call from TetMeshIntersection.");
         std::cout << "Error occurred in a recursive call i.e. in a call from TetMeshIntersection." << std::endl;
 
       DebugDump(&e,__FILE__,__LINE__);
@@ -1693,6 +1698,12 @@ void GEO::CUT::Mesh::TestElementVolume( DRT::Element::DiscretizationType shape, 
     throw std::runtime_error( err.str() );
 
     }
+    else
+    {
+#if DEBUGCUTLIBRARY
+      std::cout << GREEN << "Passed Element Volume Test!" << END_COLOR << std::endl;
+#endif
+    }
   }
 }
 
@@ -1937,165 +1948,88 @@ void GEO::CUT::Mesh::DumpGmsh( std::string name )
  // file.precision(32); //higher precicion!
 
   //###############write all elements & shadow elements###############
-  if ( elements_.size() > 0 )
+  if ( elements_.size() > 0 || shadow_elements_.size() > 0)
   {
-  file << "View \"" << "Elements" << "\" {\n";
-    for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
-          i!=elements_.end();
-          ++i )
-    {
-      Element & e = *i->second;
-      GEO::CUT::OUTPUT::GmshElementDump( file, &e );
-    }
-    for ( std::map<int, Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
-          i!=shadow_elements_.end();
-          ++i )
-    {
-      Element & e = *i->second;
-      GEO::CUT::OUTPUT::GmshElementDump( file, &e );
-    }
-  file << "};\n";
+    GEO::CUT::OUTPUT::GmshNewSection(file,"Elements");
+    for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin(); i!=elements_.end(); ++i )
+      GEO::CUT::OUTPUT::GmshElementDump( file, &(*i->second) );
+
+    for ( std::map<int, Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin(); i!=shadow_elements_.end();++i )
+      GEO::CUT::OUTPUT::GmshElementDump( file, &(*i->second) );
+    GEO::CUT::OUTPUT::GmshEndSection(file);
   }
 
   //###############write all sides###############
   if (sides_.size() > 0)
   {
-  file << "View \"" << "Sides" << "\" {\n";
-    for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=sides_.begin();
-          i!=sides_.end();
-          ++i )
-    {
-      Side & s = *i->second;
-//      if(not s.IsLevelSetSide())
-//      {
-      GEO::CUT::OUTPUT::GmshSideDump( file, &s );
-//      }
-    }
-  file << "};\n";
+    GEO::CUT::OUTPUT::GmshNewSection(file,"Sides");
+    for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=sides_.begin(); i!=sides_.end(); ++i )
+      GEO::CUT::OUTPUT::GmshSideDump( file, &(*i->second) );
+    GEO::CUT::OUTPUT::GmshEndSection(file);
   }
 
   //###############write all nodes###############
   if (sides_.size() > 0)
   {
-    file << "View \"" << "Nodes" << "\" {\n";
-    for ( std::map<int, Teuchos::RCP<Node> >::iterator i=nodes_.begin();
-          i!=nodes_.end();
-          ++i )
-    {
-      Node & n = *i->second;
-      GEO::CUT::OUTPUT::GmshNodeDump( file, &n );
-    }
-  file << "};\n";
+    GEO::CUT::OUTPUT::GmshNewSection(file,"Nodes");
+    for ( std::map<int, Teuchos::RCP<Node> >::iterator i=nodes_.begin(); i!=nodes_.end(); ++i )
+      GEO::CUT::OUTPUT::GmshNodeDump( file, &(*i->second) );
+    GEO::CUT::OUTPUT::GmshEndSection(file);
   }
 
   //###############write all points in pointpool###############
   if (pp_->GetPoints().size() > 0)
   {
-    file << "View \"" << "Points" << "\" {\n";
-
+    GEO::CUT::OUTPUT::GmshNewSection(file,"PoolPoints");
     const RCPPointSet & points = pp_->GetPoints();
-
     for ( RCPPointSet::const_iterator i= points.begin() ; i != points.end(); ++i )
-    {
-      //double tol = (*(pp_->GetPoints()[i])).Tolerance();
-      //int tolval = tol*100/BASICTOL;
-//      GEO::CUT::OUTPUT::GmshPointDump( file, &(*(*i)), tolval );
-      GEO::CUT::OUTPUT::GmshPointDump( file, &(*(*i)));
-    }
-  file << "};\n";
+      GEO::CUT::OUTPUT::GmshPointDump( file, &(*(*i)),(*i)->Id());
+    GEO::CUT::OUTPUT::GmshEndSection(file);
   }
 
   //###############write all edges###############
   if (edges_.size() > 0)
   {
-    file << "View \"" << "Edges" << "\" {\n";
-    for ( std::map<plain_int_set, Teuchos::RCP<Edge> >::iterator i=edges_.begin();
-          i!=edges_.end();
-          ++i )
-    {
-      Edge & e = *i->second;
-      GEO::CUT::OUTPUT::GmshEdgeDump( file, &e );
-    }
-  file << "};\n";
+    GEO::CUT::OUTPUT::GmshNewSection(file,"Edges");
+    for ( std::map<plain_int_set, Teuchos::RCP<Edge> >::iterator i=edges_.begin(); i!=edges_.end(); ++i )
+      GEO::CUT::OUTPUT::GmshEdgeDump( file, &(*i->second) );
+    GEO::CUT::OUTPUT::GmshEndSection(file);
   }
 
   //###############write all lines###############
   if (lines_.size() > 0)
   {
-    file << "View \"" << "Lines" << "\" {\n";
-    for ( std::list<Teuchos::RCP<Line > >::iterator i=lines_.begin();
-          i!=lines_.end();
-          ++i )
-    {
-      Line &  l = **i;
-      GEO::CUT::OUTPUT::GmshLineDump( file, &l );
-    }
-  file << "};\n";
+    GEO::CUT::OUTPUT::GmshNewSection(file,"Lines");
+    for ( std::list<Teuchos::RCP<Line > >::iterator i=lines_.begin(); i!=lines_.end(); ++i )
+      GEO::CUT::OUTPUT::GmshLineDump( file, &(**i) );
+    GEO::CUT::OUTPUT::GmshEndSection(file);
   }
 
   //###############write all facets (or bacially the facet points)###############
   if (facets_.size() > 0)
   {
-    file << "View \"" << "Facet_Points" << "\" {\n";
-    for ( std::list<Teuchos::RCP<Facet > >::iterator i=facets_.begin();
-          i!=facets_.end();
-          ++i )
-    {
-      Facet &  f = **i;
-      for (uint pidx = 0; pidx < f.Points().size(); ++pidx)
-      {
-        GEO::CUT::OUTPUT::GmshPointDump( file, f.Points()[pidx], f.SideId());
-      }
-    }
-  file << "};\n";
+    GEO::CUT::OUTPUT::GmshNewSection(file,"Facet_Points");
+    for ( std::list<Teuchos::RCP<Facet > >::iterator i=facets_.begin(); i!=facets_.end(); ++i )
+      GEO::CUT::OUTPUT::GmshFacetDump(file,&(**i),"points");
+    GEO::CUT::OUTPUT::GmshEndSection(file);
 
-  //###############write all triangulated facets (or bacially the facet points)###############
-  file << "View \"" << "Facet_Triangulated" << "\" {\n";
-  for ( std::list<Teuchos::RCP<Facet > >::iterator i=facets_.begin();
-        i!=facets_.end();
-        ++i )
-  {
-    Facet &  f = **i;
-    PointSet points;
-    f.TriangulationPoints(points);
-
-    for(PointSet::iterator p = points.begin(); p!=points.end(); p++)
-    {
-      GEO::CUT::OUTPUT::GmshPointDump( file, *p, f.SideId());
-    }
-  }
-  file << "};\n";
+  //###############write all facets (or bacially the facet lines)###############
+    GEO::CUT::OUTPUT::GmshNewSection(file,"Facet_Lines");
+    for ( std::list<Teuchos::RCP<Facet > >::iterator i=facets_.begin(); i!=facets_.end(); ++i )
+      GEO::CUT::OUTPUT::GmshFacetDump(file,&(**i),"lines");
+    GEO::CUT::OUTPUT::GmshEndSection(file);
 
   //###############write all triangulated facets ###############
-  file << "View \"" << "Facets" << "\" {\n";
-  for ( std::list<Teuchos::RCP<Facet > >::iterator i=facets_.begin();
-        i!=facets_.end();
-        ++i )
-  {
-    Facet &  f = **i;
-    PointSet points;
-    if(f.IsTriangulated())
-    {
-      for (unsigned j = 0; j<f.Triangulation().size() ; ++j)
-      {
-        GEO::CUT::OUTPUT::GmshTriSideDump(file, f.Triangulation()[j]);
-      }
-    }
-    else if (f.BelongsToLevelSetSide())
-    {
-      GEO::CUT::OUTPUT::GmshTriSideDump(file, f.CornerPoints());
-    }
-
+  GEO::CUT::OUTPUT::GmshNewSection(file,"Facets");
+  for ( std::list<Teuchos::RCP<Facet > >::iterator i=facets_.begin(); i!=facets_.end(); ++i )
+    GEO::CUT::OUTPUT::GmshFacetDump(file,&(**i),"sides");
+  GEO::CUT::OUTPUT::GmshEndSection(file);
   }
-  file << "};\n";
-  }
-
 
   //#############write level set information from cut if level set side exists ################
   bool haslevelsetside = false;
   //Does one element have a level set side?
-  for(std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
-      i!=elements_.end();i++)
+  for(std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin(); i!=elements_.end();i++)
   {
     Element* ele = &*i->second;
     haslevelsetside = ele->HasLevelSetSide();
@@ -2105,46 +2039,28 @@ void GEO::CUT::Mesh::DumpGmsh( std::string name )
 
   if(haslevelsetside)
   {
-    file << "View \"LevelSetValues\" {\n";
-    for(std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
-        i!=elements_.end();i++)
-    {
-      Element* ele = &*i->second;
-      GEO::CUT::OUTPUT::GmshLevelSetValueDump(file,ele);
-    }
-    file << "};\n";
+    GEO::CUT::OUTPUT::GmshNewSection(file,"LevelSetValues");
+    for(std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin(); i!=elements_.end();i++)
+      GEO::CUT::OUTPUT::GmshLevelSetValueDump(file,&(*i->second));
+    GEO::CUT::OUTPUT::GmshEndSection(file);
 
-    file << "View \"LevelSetGradient\" {\n";
-    for(std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
-        i!=elements_.end();i++)
-    {
-      Element* ele = &*i->second;
-      GEO::CUT::OUTPUT::GmshLevelSetGradientDump(file,ele);
-    }
-    file << "};\n";
+    GEO::CUT::OUTPUT::GmshNewSection(file,"LevelSetGradient");
+    for(std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin(); i!=elements_.end();i++)
+      GEO::CUT::OUTPUT::GmshLevelSetGradientDump(file,&(*i->second));
+    GEO::CUT::OUTPUT::GmshEndSection(file);
 
-    file << "View \"LevelSetOrientation\" {\n";
-    for(std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
-        i!=elements_.end();i++)
-    {
-      Element* ele = &*i->second;
-      GEO::CUT::OUTPUT::GmshLevelSetOrientationDump(file,ele);
-    }
-    file << "};\n";
+    GEO::CUT::OUTPUT::GmshNewSection(file,"LevelSetOrientation");
+    for(std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin(); i!=elements_.end();i++)
+      GEO::CUT::OUTPUT::GmshLevelSetOrientationDump(file,&(*i->second));
+    GEO::CUT::OUTPUT::GmshEndSection(file);
 
 #ifdef DEBUGCUTLIBRARY
     file << "View \"LevelSetZeroShape\" {\n";
-    for(std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
-        i!=elements_.end();i++)
-    {
-      Element* ele = &*i->second;
-      GEO::CUT::OUTPUT::GmshLevelSetValueZeroSurfaceDump(file,ele);
-    }
-    file << "};\n";
+    for(std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin(); i!=elements_.end();i++)
+      GEO::CUT::OUTPUT::GmshLevelSetValueZeroSurfaceDump(file,&(*i->second));
+    GEO::CUT::OUTPUT::GmshEndSection(file);
 #endif
-
   }
-
 }
 
 /*-------------------------------------------------------------------------------------*
