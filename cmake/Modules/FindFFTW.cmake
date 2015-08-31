@@ -17,11 +17,12 @@ FIND_PATH(FFTW_INCLUDE_DIR fftw3.h
   /usr/include
 )
 
-FIND_LIBRARY(FFTW_LIBRARY libfftw3.a 
+FIND_LIBRARY(FFTW_LIBRARY fftw3
   ${LIB_INSTALL_DIR}
   ${FFTW_LIBRARY_DIR}
   /usr/local/lib
   /usr/lib
+  /usr/lib64
 )
 
 SET( FFTW_INCLUDE_DIRS ${FFTW_INCLUDE_DIR})
