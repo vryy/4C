@@ -2003,22 +2003,40 @@ void GEO::CUT::Mesh::DumpGmsh( std::string name )
   //###############write all facets (or bacially the facet points)###############
   if (facets_.size() > 0)
   {
-    GEO::CUT::OUTPUT::GmshNewSection(file,"Facet_Points");
-    for ( std::list<Teuchos::RCP<Facet > >::iterator i=facets_.begin(); i!=facets_.end(); ++i )
-      GEO::CUT::OUTPUT::GmshFacetDump(file,&(**i),"points");
-    GEO::CUT::OUTPUT::GmshEndSection(file);
+//    GEO::CUT::OUTPUT::GmshNewSection(file,"Facet_Points");
+//    for ( std::list<Teuchos::RCP<Facet > >::iterator i=facets_.begin(); i!=facets_.end(); ++i )
+//      GEO::CUT::OUTPUT::GmshFacetDump(file,&(**i),"points");
+//    GEO::CUT::OUTPUT::GmshEndSection(file);
 
-  //###############write all facets (or bacially the facet lines)###############
+    //###############write all facets (or bacially the facet lines)###############
     GEO::CUT::OUTPUT::GmshNewSection(file,"Facet_Lines");
     for ( std::list<Teuchos::RCP<Facet > >::iterator i=facets_.begin(); i!=facets_.end(); ++i )
       GEO::CUT::OUTPUT::GmshFacetDump(file,&(**i),"lines");
     GEO::CUT::OUTPUT::GmshEndSection(file);
 
-  //###############write all triangulated facets ###############
-  GEO::CUT::OUTPUT::GmshNewSection(file,"Facets");
-  for ( std::list<Teuchos::RCP<Facet > >::iterator i=facets_.begin(); i!=facets_.end(); ++i )
-    GEO::CUT::OUTPUT::GmshFacetDump(file,&(**i),"sides");
-  GEO::CUT::OUTPUT::GmshEndSection(file);
+    //###############write all triangulated facets ###############
+    GEO::CUT::OUTPUT::GmshNewSection(file,"Facets");
+    for ( std::list<Teuchos::RCP<Facet > >::iterator i=facets_.begin(); i!=facets_.end(); ++i )
+      GEO::CUT::OUTPUT::GmshFacetDump(file,&(**i),"sides");
+    GEO::CUT::OUTPUT::GmshEndSection(file);
+
+    //###############write all cut facets all ###############
+    GEO::CUT::OUTPUT::GmshNewSection(file,"cut_Facets");
+    for ( std::list<Teuchos::RCP<Facet > >::iterator i=facets_.begin(); i!=facets_.end(); ++i )
+    {
+      if ((*i)->ParentSide()->IsCutSide())
+        GEO::CUT::OUTPUT::GmshFacetDump(file,&(**i),"sides",true);
+    }
+    GEO::CUT::OUTPUT::GmshEndSection(file);
+
+    //###############write all triangulated facets all ###############
+    GEO::CUT::OUTPUT::GmshNewSection(file,"ele_Facets");
+    for ( std::list<Teuchos::RCP<Facet > >::iterator i=facets_.begin(); i!=facets_.end(); ++i )
+    {
+      if (!(*i)->ParentSide()->IsCutSide())
+        GEO::CUT::OUTPUT::GmshFacetDump(file,&(**i),"sides",true);
+    }
+    GEO::CUT::OUTPUT::GmshEndSection(file);
   }
 
   //#############write level set information from cut if level set side exists ################

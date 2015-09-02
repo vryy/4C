@@ -252,10 +252,38 @@ void GEO::CUT::OUTPUT::GmshCompleteCutElement( std::ofstream & file, Element * e
   // write details of background element
   GmshNewSection( file, "Element");
   GmshElementDump( file, ele, to_local);
-  GmshEndSection( file);
+
+  // write details of points
+  GmshNewSection( file, "Points",true);
+  const std::vector<Point*> & ps = ele->Points();
+  for( std::vector<Point*>::const_iterator its = ps.begin(); its != ps.end(); its++ )
+    GmshPointDump(file,*its,to_local,ele);
 
   // write details of cut sides
-  GmshNewSection( file, "Cut sides");
+  GmshNewSection( file, "Cut_Facets",true);
+  const plain_facet_set & facets = ele->Facets();
+  for( plain_facet_set::const_iterator its = facets.begin(); its != facets.end(); its++ )
+  {
+    if ((*its)->ParentSide()->IsCutSide())
+      GmshFacetDump(file,*its,"sides",true,to_local, ele);
+  }
+
+  // write details of cut sides
+  GmshNewSection( file, "Ele_Facets",true);
+  for( plain_facet_set::const_iterator its = facets.begin(); its != facets.end(); its++ )
+  {
+    if (!(*its)->ParentSide()->IsCutSide())
+      GmshFacetDump(file,*its,"sides",true,to_local, ele);
+  }
+
+  // write details of volumecells
+  GmshNewSection( file, "Volumecells",true);
+  const plain_volumecell_set & vcs = ele->VolumeCells();
+  for( plain_volumecell_set::const_iterator its = vcs.begin(); its != vcs.end(); its++ )
+    GmshVolumecellDump(file,*its,"sides",true,to_local, ele);
+
+  // write details of cut sides
+  GmshNewSection( file, "Cut sides",true);
   const plain_side_set & cutsides = ele->CutSides();
   for( plain_side_set::const_iterator its = cutsides.begin(); its != cutsides.end(); its++ )
     GmshSideDump( file, *its, to_local, ele );
@@ -265,17 +293,14 @@ void GEO::CUT::OUTPUT::GmshCompleteCutElement( std::ofstream & file, Element * e
   {
     GmshNewSection( file, "LevelSetValues");
     GmshLevelSetValueDump(file,ele,true, to_local); //true -> dumps LS values at nodes as well.
-    GmshEndSection( file);
 
-    GmshNewSection( file, "LevelSetGradient");
+    GmshNewSection( file, "LevelSetGradient",true);
     GmshLevelSetGradientDump(file,ele, to_local);
-    GmshEndSection( file);
 
-    GmshNewSection( file, "LevelSetOrientation");
+    GmshNewSection( file, "LevelSetOrientation",true);
     GmshLevelSetOrientationDump(file,ele, to_local);
-    GmshEndSection( file);
 
-    GmshNewSection( file, "LevelSetZeroShape");
+    GmshNewSection( file, "LevelSetZeroShape",true);
     GmshLevelSetValueZeroSurfaceDump(file,ele, to_local);
     GmshEndSection( file);
   }
@@ -294,21 +319,21 @@ void GEO::CUT::OUTPUT::GmshLineDump( std::ofstream & file, GEO::CUT::Line*  line
  *--------------------------------------------------------------------------------------*/
 void GEO::CUT::OUTPUT::GmshLineDump( std::ofstream & file, GEO::CUT::Point* p1, GEO::CUT::Point* p2, bool to_local, Element* ele)
 {
-     GmshLineDump(  file, p1, p2, p1->Id(), to_local, ele);
+     GmshLineDump(  file, p1, p2, p1->Id(), p2->Id(), to_local, ele);
 }
 
 /*--------------------------------------------------------------------------------------*
  * Write GMSH output of given line                                           ager 08/15
  *--------------------------------------------------------------------------------------*/
-void GEO::CUT::OUTPUT::GmshLineDump( std::ofstream & file, GEO::CUT::Point* p1, GEO::CUT::Point* p2 ,int idx, bool to_local, Element* ele)
+void GEO::CUT::OUTPUT::GmshLineDump( std::ofstream & file, GEO::CUT::Point* p1, GEO::CUT::Point* p2 ,int idx1,int idx2, bool to_local, Element* ele)
 {
      file << "SL (";
      GmshWriteCoords( file, p1, to_local, ele);
      file << ",";
      GmshWriteCoords( file, p2, to_local, ele);
      file << "){";
-     file << idx<< ",";
-     file << idx;
+     file << idx1<< ",";
+     file << idx2;
      file << "};\n";
 }
 
@@ -837,17 +862,33 @@ void GEO::CUT::OUTPUT::GmshElementCutTest( std::ofstream & file, GEO::CUT::Eleme
   file << "" << "\n";
   file << "void test_bacigenerated_" << ele->Id() << "()" << "\n";
   file << "{" << "\n";
-  file << "  //GEO::CUT::MeshIntersection intersection;" << "\n";
-  file << "  GEO::CUT::CombIntersection intersection(-1);" << "\n";
+  if(not haslevelsetside)
+    file << "  GEO::CUT::MeshIntersection intersection;" << "\n";
+  else
+    file << "  GEO::CUT::CombIntersection intersection(-1);" << "\n";
   file << "  std::vector<int> nids;" << "\n";
   file << "" << "\n";
   file << "  int sidecount = 0;" << "\n";
   file << "  std::vector<double> lsvs("<<ele->Nodes().size()<<");" << "\n";
 
+  // --- get all neighboring elements and cutsides
+  plain_element_set eles;
+  plain_side_set csides;
+  for (std::vector<Side*>::const_iterator sit = ele->Sides().begin(); sit != ele->Sides().end(); ++sit)
+  {
+    for (plain_element_set::const_iterator eit = (*sit)->Elements().begin(); eit != (*sit)->Elements().end(); ++eit)
+    {
+      eles.insert(*eit);
+      for (plain_side_set::const_iterator csit = (*eit)->CutSides().begin(); csit != (*eit)->CutSides().end(); ++csit)
+        csides.insert(*csit);
+    }
+  }
+
+
   if(not haslevelsetside)
   {
     // -- 2 -- add sides -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-    const plain_side_set & cutsides = ele->CutSides();
+    const plain_side_set & cutsides = csides;
     for (plain_side_set::const_iterator i = cutsides.begin(); i != cutsides.end();++i)
     {
       file << "  {" << "\n";
@@ -881,30 +922,37 @@ void GEO::CUT::OUTPUT::GmshElementCutTest( std::ofstream & file, GEO::CUT::Eleme
   }
 
   // -- 3 -- add background element -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-  file << "  {" << "\n";
-  file << "  Epetra_SerialDenseMatrix hex" << ele->Nodes().size() <<"_xyze( 3, " << ele->Nodes().size() << " );" << "\n";
-  file << "" << "\n";
-  file << "    nids.clear();" << "\n";
-  for (uint i = 0; i < ele->Nodes().size(); ++i)
+  const plain_element_set & elements = eles;
+  for (plain_element_set::const_iterator eit = elements.begin(); eit != elements.end(); ++eit)
   {
-    for (uint dim = 0; dim < 3; ++dim)
+    Element* aele = *eit;
+    file << "  {" << "\n";
+    file << "  Epetra_SerialDenseMatrix hex" << aele->Nodes().size() <<"_xyze( 3, " << aele->Nodes().size() << " );" << "\n";
+    file << "" << "\n";
+    file << "    nids.clear();" << "\n";
+    for (uint i = 0; i < aele->Nodes().size(); ++i)
     {
-      file << "  hex8_xyze(" << dim << "," << i << ") = " << ele->Nodes()[i]->point()->X()[dim] << ";" << "\n";
+      for (uint dim = 0; dim < 3; ++dim)
+      {
+        file << "  hex8_xyze(" << dim << "," << i << ") = " << aele->Nodes()[i]->point()->X()[dim] << ";" << "\n";
+      }
+      file << "  nids.push_back( " << aele->Nodes()[i]->Id() << " );" << "\n";
     }
-    file << "  nids.push_back( " << ele->Nodes()[i]->Id() << " );" << "\n";
+    file << "" << "\n";
+    if(not haslevelsetside)
+      file << "  intersection.AddElement( " << aele->Id() << ", nids, hex8_xyze, DRT::Element::hex8);" << "\n";
+    else
+      file << "  intersection.AddElement( " << aele->Id() << ", nids, hex8_xyze, DRT::Element::hex8, &lsvs[0], false );" << "\n";
+    file << "  }" << "\n";
+    file << "" << "\n";
   }
-  file << "" << "\n";
-  file << "  intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8, &lsvs[0], false );" << "\n";
-  file << "" << "\n";
   file << "  intersection.Status();" << "\n";
   file << "" << "\n";
-  //file << "  intersection.Cut( true, INPAR::CUT::VCellGaussPts_Tessellation );" << "\n";
-  file << "  intersection.Cut( true);" << "\n";
+  file << "  intersection.CutTest_Cut( true);" << "\n";
   file << "  intersection.Cut_Finalize( true, INPAR::CUT::VCellGaussPts_Tessellation, INPAR::CUT::BCellGaussPts_Tessellation, false, true );" << "\n";
-  file << "  }" << "\n";
   file << "" << "\n";
 
-  if(not haslevelsetside)
+  if(not haslevelsetside && 0)
   {
     // -- 4 -- compare integration methods -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
     file << "  std::vector<double> tessVol,momFitVol,dirDivVol;" << "\n";
@@ -950,7 +998,7 @@ void GEO::CUT::OUTPUT::GmshElementCutTest( std::ofstream & file, GEO::CUT::Eleme
     file << "      dserror(\"volume predicted by either one of the method is wrong\");" << "\n";
     file << "      }" << "\n";
     file << "    }" << "\n";
+  }
     file << "}" << "\n";
     std::cout << "done " << std::endl;
-  }
 }

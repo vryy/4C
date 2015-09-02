@@ -76,7 +76,7 @@ void GmshLineDump( std::ofstream & file, GEO::CUT::Line*  line, bool to_local = 
 
 void GmshLineDump( std::ofstream & file, GEO::CUT::Point* p1, GEO::CUT::Point* p2, bool to_local = false, Element* ele = NULL);
 
-void GmshLineDump( std::ofstream & file, GEO::CUT::Point* p1, GEO::CUT::Point* p2, int idx, bool to_local = false, Element* ele = NULL);
+void GmshLineDump( std::ofstream & file, GEO::CUT::Point* p1, GEO::CUT::Point* p2, int idx1, int idx2, bool to_local = false, Element* ele = NULL);
 
 /*!
 \brief Write output of a edge
