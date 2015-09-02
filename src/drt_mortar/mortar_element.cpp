@@ -1788,7 +1788,7 @@ void MORTAR::MortarElement::NodeLinearization(std::vector<std::vector<GEN::paire
   for (int in=0; in<NumNode(); ++in)
   {
     MORTAR::MortarNode* mrtrnode = dynamic_cast<MORTAR::MortarNode*>(Nodes()[in]);
-    for (int dim=0; dim<3; ++dim)
+    for (int dim=0; dim<Dim(); ++dim)
       nodelin[in][dim][mrtrnode->Dofs()[dim]]+=1.;
   }
 }

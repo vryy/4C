@@ -450,6 +450,42 @@ public:
   }
 
   /*!
+  \brief Return spatial dimension
+
+  */
+  virtual int Dim()
+  {
+    switch(Shape())
+    {
+    case DRT::Element::line2:
+    case DRT::Element::nurbs2:
+    case DRT::Element::line3:
+    case DRT::Element::nurbs3:
+    {
+      // this is a 2-D problem
+      return 2;
+      break;
+    }
+    case DRT::Element::tri3:
+    case DRT::Element::quad4:
+    case DRT::Element::quad8:
+    case DRT::Element::quad9:
+    case DRT::Element::nurbs9:
+    case DRT::Element::tri6:
+    {
+      // this is a 3-D problem
+      return 3;
+      break;
+    }
+    default:
+    {
+      dserror("ERROR: Unknown mortar element type identifier");
+      return 0;
+    }
+    }
+  }
+
+  /*!
   \brief Return nurbs (true) or not-nurbs (false) status
 
   */
