@@ -88,16 +88,10 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateAction(
     std::vector<double> myphinp(la[0].lm_.size());
     DRT::UTILS::ExtractMyValues(*phinp,myphinp,la[0].lm_);
 
-    // fill all element arrays
+    // fill element array
     for (int i=0;i<my::nen_;++i)
-    {
-      for (int k = 0;k<my::numscal_; ++k)
-      {
-        // split for each transported scalar, insert into element arrays
+      for (int k = 0;k<my::numdofpernode_; ++k)
         my::ephinp_[k](i,0) = myphinp[k+(i*my::numdofpernode_)];
-      }
-      epotnp_(i) = myphinp[i*my::numdofpernode_+my::numscal_];
-    } // for i
 
     //----------------------------------------------------------------------
     // calculation of element volume both for tau at ele. cent. and int. pt.
@@ -202,17 +196,10 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateAction(
     std::vector<double> myphinp(la[0].lm_.size());
     DRT::UTILS::ExtractMyValues(*phinp,myphinp,la[0].lm_);
 
-    // fill element arrays
+    // fill element array
     for (int i=0;i<my::nen_;++i)
-    {
-      // split for each transported scalar, insert into element arrays
-      for (int k = 0; k< my::numscal_; ++k)
-      {
+      for (int k = 0; k< my::numdofpernode_; ++k)
         my::ephinp_[k](i) = myphinp[k+(i*my::numdofpernode_)];
-      }
-      // get values for el. potential at element nodes
-      epotnp_(i) = myphinp[i*my::numdofpernode_+my::numscal_];
-    } // for i
 
     CalErrorComparedToAnalytSolution(
       ele,
@@ -436,13 +423,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::FDCheck(
   std::cout << "FINITE DIFFERENCE CHECK FOR ELEMENT " << ele->Id();
 
   // make a copy of state variables to undo perturbations later
-  std::vector<LINALG::Matrix<my::nen_,1> > ephinp_original(my::numscal_);
-  for(int k=0; k<my::numscal_; ++k)
+  std::vector<LINALG::Matrix<my::nen_,1> > ephinp_original(my::numdofpernode_);
+  for(int k=0; k<my::numdofpernode_; ++k)
     for(int i=0; i<my::nen_; ++i)
       ephinp_original[k](i,0) = my::ephinp_[k](i,0);
-  LINALG::Matrix<my::nen_,1> epotnp_original(true);
-  for(int i=0; i<my::nen_; ++i)
-    epotnp_original(i) = epotnp_(i);
 
   // generalized-alpha time integration requires a copy of history variables as well
   std::vector<LINALG::Matrix<my::nen_,1> > ehist_original(my::numscal_);
@@ -479,11 +463,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::FDCheck(
       subgrdiff_dummy.Scale(0.0);
 
       // fill state vectors with original state variables
-      for(int k=0; k<my::numscal_; ++k)
+      for(int k=0; k<my::numdofpernode_; ++k)
         for(int i=0; i<my::nen_; ++i)
           my::ephinp_[k](i,0) = ephinp_original[k](i,0);
-      for(int i=0; i<my::nen_; ++i)
-        epotnp_(i) = epotnp_original(i);
       if(my::scatraparatimint_->IsGenAlpha())
         for(int k=0; k<my::numscal_; ++k)
           for(int i=0; i<my::nen_; ++i)
@@ -492,29 +474,16 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::FDCheck(
       // impose perturbation
       if(my::scatraparatimint_->IsGenAlpha())
       {
-        // perturbation on concentration
+        // perturbation of phi(n+alphaF), not of phi(n+1) => scale epsilon by factor alphaF
+        my::ephinp_[idof](inode,0) += my::scatraparatimint_->AlphaF() * my::scatrapara_->FDCheckEps();
+
+        // perturbation of phi(n+alphaF) by alphaF*epsilon corresponds to perturbation of phidtam (stored in ehist_)
+        // by alphaM*epsilon/(gamma*dt); note: alphaF/timefac = alphaM/(gamma*dt)
         if(idof < my::numscal_)
-        {
-          // perturbation of phi(n+alphaF), not of phi(n+1) => scale epsilon by factor alphaF
-          my::ephinp_[idof](inode,0) += my::scatraparatimint_->AlphaF() * my::scatrapara_->FDCheckEps();
-
-          // perturbation of phi(n+alphaF) by alphaF*epsilon corresponds to perturbation of phidtam (stored in ehist_)
-          // by alphaM*epsilon/(gamma*dt); note: alphaF/timefac = alphaM/(gamma*dt)
           my::ehist_[idof](inode,0) += my::scatraparatimint_->AlphaF() / my::scatraparatimint_->TimeFac() * my::scatrapara_->FDCheckEps();
-        }
-
-        // perturbation on electric potential
-        else
-          epotnp_(inode) += my::scatraparatimint_->AlphaF() * my::scatrapara_->FDCheckEps();
       }
       else
-      {
-        // perturbation on concentration
-        if(idof < my::numscal_)
-          my::ephinp_[idof](inode,0) += my::scatrapara_->FDCheckEps();
-        else
-          epotnp_(inode) += my::scatrapara_->FDCheckEps();
-      }
+        my::ephinp_[idof](inode,0) += my::scatrapara_->FDCheckEps();
 
       // calculate element right-hand side vector for perturbed state
       Sysmat(ele,emat_dummy,erhs_perturbed,subgrdiff_dummy);
@@ -613,11 +582,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::FDCheck(
     std::cout << " --> PASSED WITH MAXIMUM ABSOLUTE ERROR " << maxabserr << " AND MAXIMUM RELATIVE ERROR " << maxrelerr << std::endl;
 
   // undo perturbations of state variables
-  for(int k=0; k<my::numscal_; ++k)
+  for(int k=0; k<my::numdofpernode_; ++k)
     for(int i=0; i<my::nen_; ++i)
       my::ephinp_[k](i,0) = ephinp_original[k](i,0);
-  for(int i=0; i<my::nen_; ++i)
-    epotnp_(i) = epotnp_original(i);
   if(my::scatraparatimint_->IsGenAlpha())
     for(int k=0; k<my::numscal_; ++k)
       for(int i=0; i<my::nen_; ++i)

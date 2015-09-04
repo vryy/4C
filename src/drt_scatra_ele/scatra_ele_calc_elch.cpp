@@ -24,8 +24,7 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleCalcElch<distype>::ScaTraEleCalcElch(const int numdofpernode,const int numscal,const std::string& disname)
   : DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode,numscal,disname),
     elchparams_(DRT::ELEMENTS::ScaTraEleParameterElch::Instance(disname)),   // parameter class for electrochemistry problems
-    utils_(DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::Instance(numdofpernode,numscal,disname)),
-    epotnp_(my::numscal_)
+    utils_(DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::Instance(numdofpernode,numscal,disname))
 {
   // replace standard scatra diffusion manager by elch diffusion manager
   my::diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManagerElch(my::numscal_));
@@ -71,29 +70,6 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Evaluate(
   CorrectionForFluxAcrossDC(discretization,la[0].lm_,elemat1_epetra,elevec1_epetra);
 
   return 0;
-}
-
-
-/*-----------------------------------------------------------------------------------------*
- | extract element based or nodal values and return extracted values of phinp   fang 02/15 |
- *-----------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-const std::vector<double>  DRT::ELEMENTS::ScaTraEleCalcElch<distype>::ExtractElementAndNodeValues(
-    DRT::Element*                 ele,
-    Teuchos::ParameterList&       params,
-    DRT::Discretization&          discretization,
-    DRT::Element::LocationArray&  la
-)
-{
-  // call base class routine
-  const std::vector<double> myphinp = my::ExtractElementAndNodeValues(ele,params,discretization,la);
-
-  // get electric potential at element nodes
-  for (int ien=0;ien<my::nen_;++ien)
-    epotnp_(ien) = myphinp[ien*my::numdofpernode_+my::numscal_];
-
-  // return extracted values of phinp
-  return myphinp;
 }
 
 

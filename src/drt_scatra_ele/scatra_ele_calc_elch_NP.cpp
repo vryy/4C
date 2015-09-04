@@ -366,7 +366,7 @@ double DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRes(
     my::GetLaplacianStrongForm(laplace);
 
     diffphi = myelch::DiffManager()->GetIsotropicDiff(k)*laplace.Dot(my::ephinp_[k]);
-    reamigphi = -frt*myelch::DiffManager()->GetIsotropicDiff(k)*myelch::DiffManager()->GetValence(k)*laplace.Dot(myelch::epotnp_)*conint;
+    reamigphi = -frt*myelch::DiffManager()->GetIsotropicDiff(k)*myelch::DiffManager()->GetValence(k)*laplace.Dot(my::ephinp_[my::numscal_])*conint;
   }
 
   if(my::scatraparatimint_->IsStationary())
@@ -463,7 +463,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatConvStab(
 
         // 4) reactive term due to migration
         // 4a) linearization w.r.t. concentration c_k
-        matvalconc -= timetaufac_conv_eff_vi*frt*myelch::DiffManager()->GetIsotropicDiff(k)*myelch::DiffManager()->GetValence(k)*laplace.Dot(myelch::epotnp_)*my::funct_(ui);
+        matvalconc -= timetaufac_conv_eff_vi*frt*myelch::DiffManager()->GetIsotropicDiff(k)*myelch::DiffManager()->GetValence(k)*laplace.Dot(my::ephinp_[my::numscal_])*my::funct_(ui);
 
         // 4b) linearization w.r.t. electric potential Phi
         matvalpot -= timetaufac_conv_eff_vi_conint_k_frt_valence_k*myelch::DiffManager()->GetIsotropicDiff(k)*laplace(ui);

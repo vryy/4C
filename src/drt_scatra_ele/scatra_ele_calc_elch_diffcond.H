@@ -323,14 +323,6 @@ private:
       const double                        frt         ///< factor F/RT
   );
 
-  //! extract element based or nodal values and return extracted values of phinp
-  const std::vector<double> ExtractElementAndNodeValues(
-      DRT::Element*                 ele,
-      Teuchos::ParameterList&       params,
-      DRT::Discretization&          discretization,
-      DRT::Element::LocationArray&  la
-  );
-
   //! validity check for all elements with respect to
   //! formulation-specific parameter, degree's of freedom, number of scalars, ...
   void CheckElchElementParameter(
@@ -427,9 +419,6 @@ private:
 
   //! parameter class for diffusion-conduction formulation
   const ScaTraEleParameterElchDiffCond* diffcondparams_;
-
-  //! nodal current density values at t_(n+1) or t_(n+alpha_F)
-  LINALG::Matrix<my::nsd_,my::nen_> ecurnp_;
 };
 
 
@@ -689,8 +678,7 @@ class ScaTraEleInternalVariableManagerElchDiffCond : public ScaTraEleInternalVar
       diffcondparams_(diffcondparams),
       rtf_(0.),
       rtffc_(0.),
-      curint_(true),
-      curdiv_(0.)
+      curint_(true)
     {return;}
 
     virtual ~ScaTraEleInternalVariableManagerElchDiffCond(){return;};
@@ -699,17 +687,15 @@ class ScaTraEleInternalVariableManagerElchDiffCond : public ScaTraEleInternalVar
     void SetInternalVariablesElchDiffCond(
         LINALG::Matrix<NEN,1>&                           funct,       //!< array for shape functions
         LINALG::Matrix<NSD,NEN>&                         derxy,       //!< global derivatives of shape functions w.r.t x,y,z
-        std::vector<LINALG::Matrix<NEN,1> >&             ephinp,      //!< nodal concentration values at t_(n+1) or t_(n+alpha_F)
-        std::vector<LINALG::Matrix<NEN,1> >&             ephin,       //!< nodal electric potential values at t_(n+1) or t_(n+alpha_F)
-        LINALG::Matrix<NEN,1>&                           epotnp,      //!< nodal electric potential values at t_(n+1) or t_(n+alpha_F)
+        std::vector<LINALG::Matrix<NEN,1> >&             ephinp,      //!< nodal state variables at t_(n+1) or t_(n+alpha_F)
+        std::vector<LINALG::Matrix<NEN,1> >&             ephin,       //!< nodal state variables at t_(n)
         LINALG::Matrix<NSD,NEN>&                         econvelnp,   //!< nodal convective velocity values at t_(n+1) or t_(n+alpha_F)
         std::vector<LINALG::Matrix<NEN,1> >&             ehist,       //!< history vector of transported scalars
-        Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>   dmedc,       //!< diffusion manager
-        LINALG::Matrix<NSD,NEN>&                         ecurnp       //!< nodal current density values at t_(n+1) or t_(n+alpha_F)
+        Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>   dmedc        //!< diffusion manager
     )
     {
       // set internal variables in base variable manager
-      vmelectrode::SetInternalVariablesElchElectrode(funct,derxy,ephinp,ephin,epotnp,econvelnp,ehist,dmedc);
+      vmelectrode::SetInternalVariablesElchElectrode(funct,derxy,ephinp,ephin,econvelnp,ehist,dmedc);
 
       // set constant parameter RT/F
       rtf_ = 1./vmelch::frt_;
@@ -717,16 +703,9 @@ class ScaTraEleInternalVariableManagerElchDiffCond : public ScaTraEleInternalVar
       // set constant parameter RT/(F^2*Newman_const_C)
       rtffc_ = rtf_*vmelectrode::invf_/diffcondparams_->NewmanConstC();
 
-      curint_.Multiply(ecurnp,funct);
-      // Calculate divergence of current desity
-      // since it is a summation it is important to set curdiv to zero
-      curdiv_=0.0;
-      for (int idim = 0; idim <NSD; ++idim)
-      {
-        LINALG::Matrix<NSD,NSD> curderxy(true);
-        curderxy.MultiplyNT(ecurnp,derxy);
-        curdiv_ += curderxy(idim, idim);
-      }
+      if(diffcondparams_->CurSolVar())
+        for(unsigned idim=0; idim<NSD; ++idim)
+          curint_(idim,0) = ephinp[vm::numscal_+1+idim].Dot(funct);
 
       return;
     };
@@ -743,9 +722,7 @@ class ScaTraEleInternalVariableManagerElchDiffCond : public ScaTraEleInternalVar
   /*========================================================================*/
 
     //! return current density at GP
-    const LINALG::Matrix<NSD,1> CurInt(){return curint_;};
-    //! return divergence of current density
-    const double CurDiv(){return curdiv_;};
+    const LINALG::Matrix<NSD,1>& CurInt(){return curint_;};
 
   private:
 
@@ -768,8 +745,6 @@ class ScaTraEleInternalVariableManagerElchDiffCond : public ScaTraEleInternalVar
 
     //! current density at Gauss point
     LINALG::Matrix<NSD,1> curint_;
-    //! divergence of current density at GP
-    double curdiv_;
 }; // class ScaTraEleInternalVariableManagerElchDiffCond
 } // namespace ELEMENTS
 } // namespace DRT

@@ -330,16 +330,15 @@ namespace DRT
         void SetInternalVariablesElchElectrode(
             LINALG::Matrix<NEN,1>&                            funct,       //!< array for shape functions
             LINALG::Matrix<NSD,NEN>&                          derxy,       //!< global derivatives of shape functions w.r.t x,y,z
-            std::vector<LINALG::Matrix<NEN,1> >&              ephinp,      //!< nodal concentration values at t_(n+1) or t_(n+alpha_F)
-            std::vector<LINALG::Matrix<NEN,1> >&              ephin,       //!< nodal electric potential values at t_(n+1) or t_(n+alpha_F)
-            LINALG::Matrix<NEN,1>&                            epotnp,      //!< nodal electric potential values at t_(n+1) or t_(n+alpha_F)
+            std::vector<LINALG::Matrix<NEN,1> >&              ephinp,      //!< nodal state variables at t_(n+1) or t_(n+alpha_F)
+            std::vector<LINALG::Matrix<NEN,1> >&              ephin,       //!< nodal state variables at t_(n)
             LINALG::Matrix<NSD,NEN>&                          econvelnp,   //!< nodal convective velocity values at t_(n+1) or t_(n+alpha_F)
             std::vector<LINALG::Matrix<NEN,1> >&              ehist,       //!< history vector of transported scalars
             Teuchos::RCP<ScaTraEleDiffManagerElchElectrode>   dmedc        //!< diffusion manager
         )
         {
           // set internal variables in base variable manager
-          vmelch::SetInternalVariablesElch(funct,derxy,ephinp,ephin,epotnp,econvelnp,ehist);
+          vmelch::SetInternalVariablesElch(funct,derxy,ephinp,ephin,econvelnp,ehist);
 
           return;
         };

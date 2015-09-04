@@ -253,7 +253,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ReadElementCoordinates(
  | extract element based or nodal values                     ehrl 12/13 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-const std::vector<double> DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ExtractElementAndNodeValues(
+void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ExtractElementAndNodeValues(
     DRT::Element*                 ele,
     Teuchos::ParameterList&       params,
     DRT::Discretization&          discretization,
@@ -262,7 +262,9 @@ const std::vector<double> DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ExtractElem
 {
   ExtractElementAndNodeValuesPoro(ele,params,discretization,la);
 
-  return my::ExtractElementAndNodeValues(ele,params,discretization,la);
+  my::ExtractElementAndNodeValues(ele,params,discretization,la);
+
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -307,6 +309,8 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ExtractElementAndNodeValuesPoro(
   }
   else
     isnodalporosity_=false;
+
+  return;
 }
 
 /*----------------------------------------------------------------------*

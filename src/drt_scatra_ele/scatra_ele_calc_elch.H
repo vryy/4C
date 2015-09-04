@@ -82,14 +82,6 @@ protected:
   //! @name general framework
   /*========================================================================*/
 
-  //! extract element based or nodal values and return extracted values of phinp
-  virtual const std::vector<double> ExtractElementAndNodeValues(
-      DRT::Element*                 ele,
-      Teuchos::ParameterList&       params,
-      DRT::Discretization&          discretization,
-      DRT::Element::LocationArray&  la
-  );
-
   //! Prepare everything what is needed in CallMatAndRhs() to calculate the sysmat and the rhs
   void Sysmat(
     DRT::Element*                         ele,       //!< the element we are dealing with
@@ -250,9 +242,6 @@ protected:
 
   //! utility class supporting element evaluation
   DRT::ELEMENTS::ScaTraEleUtilsElch<distype>* utils_;
-
-  //! electric potential
-  LINALG::Matrix<my::nen_,1> epotnp_;
 };
 
 
@@ -334,9 +323,8 @@ class ScaTraEleInternalVariableManagerElch : public ScaTraEleInternalVariableMan
     void SetInternalVariablesElch(
       LINALG::Matrix<NEN,1>&                 funct,       //!< array for shape functions
       LINALG::Matrix<NSD,NEN>&               derxy,       //!< global derivatives of shape functions w.r.t x,y,z
-      std::vector<LINALG::Matrix<NEN,1> >&   ephinp,      //!< nodal concentration values at t_(n+1) or t_(n+alpha_F)
-      std::vector<LINALG::Matrix<NEN,1> >&   ephin,       //!< nodal electric potential values at t_(n+1) or t_(n+alpha_F)
-      LINALG::Matrix<NEN,1>&                 epotnp,      //!< nodal electric potential values at t_(n+1) or t_(n+alpha_F)
+      std::vector<LINALG::Matrix<NEN,1> >&   ephinp,      //!< nodal state variables at t_(n+1) or t_(n+alpha_F)
+      std::vector<LINALG::Matrix<NEN,1> >&   ephin,       //!< nodal state variables at t_(n)
       LINALG::Matrix<NSD,NEN>&               econvelnp,   //!< nodal convective velocity values at t_(n+1) or t_(n+alpha_F)
       std::vector<LINALG::Matrix<NEN,1> >&   ehist        //!< history vector of transported scalars
     )
@@ -356,7 +344,7 @@ class ScaTraEleInternalVariableManagerElch : public ScaTraEleInternalVariableMan
         conintinv_[k] = 1/my::phinp_[k];
 
       // calculate gradient of electric potential at GP at t_(n+1) or t_(n+alpha_F)
-      gradpot_.Multiply(derxy,epotnp);
+      gradpot_.Multiply(derxy,ephinp[my::numscal_]);
 
       // set factor F/RT
       SetFRT();

@@ -344,7 +344,8 @@ class ScaTraEleInternalVariableManagerElchNP : public ScaTraEleInternalVariableM
 {
   public:
 
-    typedef ScaTraEleInternalVariableManagerElch<NSD,NEN> vm;
+    typedef ScaTraEleInternalVariableManager<NSD,NEN> vm;
+    typedef ScaTraEleInternalVariableManagerElch<NSD,NEN> vmelch;
 
     ScaTraEleInternalVariableManagerElchNP(int numscal,const DRT::ELEMENTS::ScaTraEleParameterElch* elchpara) :
       ScaTraEleInternalVariableManagerElch<NSD,NEN>(numscal,elchpara),
@@ -362,21 +363,20 @@ class ScaTraEleInternalVariableManagerElchNP : public ScaTraEleInternalVariableM
     void SetInternalVariablesElchNP(
         LINALG::Matrix<NEN,1>&                 funct,       //!< array for shape functions
         LINALG::Matrix<NSD,NEN>&               derxy,       //!< global derivatives of shape functions w.r.t x,y,z
-        std::vector<LINALG::Matrix<NEN,1> >&   ephinp,      //!< nodal concentration values at t_(n+1) or t_(n+alpha_F)
-        std::vector<LINALG::Matrix<NEN,1> >&   ephin,       //!< nodal electric potential values at t_(n+1) or t_(n+alpha_F)
-        LINALG::Matrix<NEN,1>&                 epotnp,      //!< nodal electric potential values at t_(n+1) or t_(n+alpha_F)
+        std::vector<LINALG::Matrix<NEN,1> >&   ephinp,      //!< nodal state variables at t_(n+1) or t_(n+alpha_F)
+        std::vector<LINALG::Matrix<NEN,1> >&   ephin,       //!< nodal state variables at t_(n)
         LINALG::Matrix<NSD,NEN>&               econvelnp,   //!< nodal convective velocity values at t_(n+1) or t_(n+alpha_F)
         std::vector<LINALG::Matrix<NEN,1> >&   ehist        //!< history vector of transported scalars
     )
     {
       // set internal variables in base variable manager
-      vm::SetInternalVariablesElch(funct,derxy,ephinp,ephin,epotnp,econvelnp,ehist);
+      vmelch::SetInternalVariablesElch(funct,derxy,ephinp,ephin,econvelnp,ehist);
 
       // migration velocity vector (divided by D_k*z_k) at t_(n+1) or t_(n+alpha_F): -F/(RT) \grad{\Phi}
-      migvelint_.Multiply(-vm::frt_,derxy,epotnp);
+      migvelint_.Multiply(-vmelch::frt_,derxy,ephinp[vm::numscal_]);
 
       // convective part of migration term (divided by D_k*z_k): -F/(RT) \grad{\Phi}*\grad{N}
-      migconv_.MultiplyTN(-vm::frt_,derxy,vm::gradpot_);
+      migconv_.MultiplyTN(-vmelch::frt_,derxy,vmelch::gradpot_);
 
       return;
     };

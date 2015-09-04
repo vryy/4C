@@ -152,7 +152,7 @@ const DRT::Element*        ele
  | extract element based or nodal values and return extracted values of phinp   fang 02/15 |
  *-----------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-const std::vector<double>  DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::ExtractElementAndNodeValues(
+void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::ExtractElementAndNodeValues(
     DRT::Element*                 ele,
     Teuchos::ParameterList&       params,
     DRT::Discretization&          discretization,
@@ -186,7 +186,9 @@ const std::vector<double>  DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::ExtractEle
     thermpressam_ = params.get<double>("thermodynamic pressure at n+alpha_M");
 
   // call base class routine
-  return my::ExtractElementAndNodeValues(ele,params,discretization,la);
+  my::ExtractElementAndNodeValues(ele,params,discretization,la);
+
+  return;
 }
 
 

@@ -76,8 +76,7 @@ DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::ScaTraEleCalcElchDiffCond(con
   DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::ScaTraEleCalcElchElectrode(numdofpernode,numscal,disname),
   diffcondmat_(INPAR::ELCH::diffcondmat_undefined),
   // parameter class for diffusion-conduction formulation
-  diffcondparams_(DRT::ELEMENTS::ScaTraEleParameterElchDiffCond::Instance(disname)),
-  ecurnp_(true)
+  diffcondparams_(DRT::ELEMENTS::ScaTraEleParameterElchDiffCond::Instance(disname))
 {
   // replace diffusion manager for electrodes by diffusion manager for diffusion-conduction formulation
   my::diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManagerElchDiffCond(my::numscal_));

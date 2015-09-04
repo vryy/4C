@@ -662,40 +662,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::EvaluateElectrodeStatus(
 } // DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::EvaluateElectrodeStatus
 
 
-/*-----------------------------------------------------------------------------------------*
- | extract element based or nodal values and return extracted values of phinp   fang 01/15 |
- *-----------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-const std::vector<double> DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::ExtractElementAndNodeValues(
-    DRT::Element*                 ele,
-    Teuchos::ParameterList&       params,
-    DRT::Discretization&          discretization,
-    DRT::Element::LocationArray&  la
-    )
-{
-  // call base class routine
-  const std::vector<double> myphinp = myelch::ExtractElementAndNodeValues(ele,params,discretization,la);
-
-  // get current density at element nodes if required
-  if(diffcondparams_->CurSolVar())
-  {
-    // get values for current at element nodes
-    for (int ien=0;ien<my::nen_;++ien)
-    {
-      for(int idim=0; idim<my::nsd_; ++idim)
-      {
-        //current is stored after potential
-        ecurnp_(idim,ien) = myphinp[ien*my::numdofpernode_+(my::numscal_+1)+idim];
-      }
-    }
-  }
-  else
-    ecurnp_.Clear();
-
-  return myphinp;
-}
-
-
 /*----------------------------------------------------------------------*
   |  calculate weighted mass flux (no reactive flux so far)     ae 05/15|
   *----------------------------------------------------------------------*/
@@ -882,7 +848,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalErrorComparedToAnalyt
       conint(0) = my::funct_.Dot(my::ephinp_[0]);
 
       // get el. potential solution at integration point
-      potint = my::funct_.Dot(myelch::epotnp_);
+      potint = my::funct_.Dot(my::ephinp_[my::numscal_]);
 
       // get global coordinate of integration point
       xint.Multiply(my::xyze_,my::funct_);
@@ -952,7 +918,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::SetInternalVariablesForMatAndRHS()
 {
   // set internal variables
-  VarManager()->SetInternalVariablesElchDiffCond(my::funct_,my::derxy_,my::ephinp_,my::ephin_,myelch::epotnp_,my::econvelnp_,my::ehist_,DiffManager(),ecurnp_);
+  VarManager()->SetInternalVariablesElchDiffCond(my::funct_,my::derxy_,my::ephinp_,my::ephin_,my::econvelnp_,my::ehist_,DiffManager());
 
   return;
 }

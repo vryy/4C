@@ -176,7 +176,7 @@ namespace ELEMENTS
 
     //! extract element based or nodal values
     //  return extracted values of phinp
-    virtual const std::vector<double> ExtractElementAndNodeValues(
+    virtual void ExtractElementAndNodeValues(
       DRT::Element*                 ele,
       Teuchos::ParameterList&       params,
       DRT::Discretization&          discretization,
@@ -1050,9 +1050,9 @@ namespace ELEMENTS
     //! @name scalar degrees of freedom and related
     /*========================================================================*/
 
-    //! scalar at t_(n)
+    //! state variables at t_(n)
     std::vector<LINALG::Matrix<nen_,1> > ephin_;
-    //! scalar at t_(n+1) or t_(n+alpha_F)
+    //! state variables at t_(n+1) or t_(n+alpha_F)
     std::vector<LINALG::Matrix<nen_,1> > ephinp_;
     //! history vector of transported scalars
     std::vector<LINALG::Matrix<nen_,1> > ehist_;

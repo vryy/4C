@@ -151,14 +151,17 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::MatScaTra(
  | extract element based or nodal values                     vuong 04/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-const std::vector<double> DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::ExtractElementAndNodeValues(
+void DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::ExtractElementAndNodeValues(
     DRT::Element*                 ele,
     Teuchos::ParameterList&       params,
     DRT::Discretization&          discretization,
     DRT::Element::LocationArray&  la
 )
 {
-  return poro::ExtractElementAndNodeValues(ele,params,discretization,la);
+  // call base class routine
+  poro::ExtractElementAndNodeValues(ele,params,discretization,la);
+
+  return;
 }
 
 // template classes

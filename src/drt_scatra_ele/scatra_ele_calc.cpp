@@ -52,10 +52,10 @@ DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ScaTraEleCalc(const int numdofper
     scatraparatimint_(DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(disname)),   // time integration parameter list
     diffmanager_(Teuchos::rcp(new ScaTraEleDiffManager(numscal_))),           // diffusion manager for diffusivity / diffusivities (in case of systems) or thermal conductivity/specific heat (in case of loma)
     reamanager_(Teuchos::rcp(new ScaTraEleReaManager(numscal_))),             // reaction manager
-    ephin_(numscal_),   // size of vector
-    ephinp_(numscal_),  // size of vector
-    ehist_(numscal_),   // size of vector
-    fsphinp_(numscal_), // size of vector
+    ephin_(numscal_,LINALG::Matrix<nen_,1>(true)),   // size of vector
+    ephinp_(numdofpernode_,LINALG::Matrix<nen_,1>(true)),  // size of vector
+    ehist_(numscal_,LINALG::Matrix<nen_,1>(true)),   // size of vector
+    fsphinp_(numscal_,LINALG::Matrix<nen_,1>(true)), // size of vector
     evelnp_(true),      // initialized to zero
     econvelnp_(true),   // initialized to zero
     efsvel_(true),      // initialized to zero
@@ -186,7 +186,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Evaluate(
  | extract element based or nodal values                     ehrl 12/13 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
-const std::vector<double>  DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ExtractElementAndNodeValues(
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ExtractElementAndNodeValues(
     DRT::Element*                 ele,
     Teuchos::ParameterList&       params,
     DRT::Discretization&          discretization,
@@ -255,7 +255,7 @@ const std::vector<double>  DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Extrac
   // fill all element arrays
   for (int i=0;i<nen_;++i)
   {
-    for (int k = 0; k< numscal_; ++k)
+    for (int k = 0; k< numdofpernode_; ++k)
     {
       // split for each transported scalar, insert into element arrays
       ephinp_[k](i,0) = myphinp[k+(i*numdofpernode_)];
@@ -297,8 +297,7 @@ const std::vector<double>  DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Extrac
   //--------------------------------------------------------------------------------
   OtherNodeBasedSourceTerms(lm,discretization,params);
 
-  // return extracted values of phinp
-  return myphinp;
+  return;
 }
 
 

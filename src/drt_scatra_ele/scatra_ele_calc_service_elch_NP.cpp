@@ -227,7 +227,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalErrorComparedToAnalytSoluti
       }
 
       // get el. potential solution at integration point
-      potint = my::funct_.Dot(myelch::epotnp_);
+      potint = my::funct_.Dot(my::ephinp_[my::numscal_]);
 
       // get global coordinate of integration point
       xint.Multiply(my::xyze_,my::funct_);
@@ -320,7 +320,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalErrorComparedToAnalytSoluti
       }
 
       // get el. potential solution at integration point
-      const double potint = my::funct_.Dot(myelch::epotnp_);
+      const double potint = my::funct_.Dot(my::ephinp_[my::numscal_]);
 
       // get global coordinate of integration point
       xint.Multiply(my::xyze_,my::funct_);
@@ -389,7 +389,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::SetInternalVariablesForMatAndRHS()
 {
   // set internal variables
-  VarManager()->SetInternalVariablesElchNP(my::funct_,my::derxy_,my::ephinp_,my::ephin_,myelch::epotnp_,my::econvelnp_,my::ehist_);
+  VarManager()->SetInternalVariablesElchNP(my::funct_,my::derxy_,my::ephinp_,my::ephin_,my::econvelnp_,my::ehist_);
 
   return;
 }
