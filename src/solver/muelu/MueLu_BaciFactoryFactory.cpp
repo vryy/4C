@@ -1,8 +1,10 @@
+// header
+
+#ifdef HAVE_MueLu
+
 #include "MueLu_ExplicitInstantiation.hpp"
 
 #include "MueLu_BaciFactoryFactory_def.hpp"
-
-#ifdef HAVE_MueLu
 
 #ifdef HAVE_MUELU_INST_DOUBLE_INT_INT
 template class MueLu::BaciFactoryFactory<double, int, int>;
