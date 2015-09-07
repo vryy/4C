@@ -55,7 +55,8 @@ void CONTACT::CoLagrangeStrategy::Initialize()
   if (constr_direction_==INPAR::CONTACT::constr_xyz)
   {
     // (re)setup global tangent matrix
-    tmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gactivedofs_,3));
+    if (!friction_)
+      tmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gactivedofs_,3));
 
     // (re)setup global normal matrix
     if (regularized_)
@@ -96,7 +97,8 @@ void CONTACT::CoLagrangeStrategy::Initialize()
   else
   {
     // (re)setup global tangent matrix
-    tmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gactivet_,3));
+    if (!friction_)
+      tmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gactivet_,3));
 
     // (re)setup global normal matrix
     if (regularized_)
@@ -182,7 +184,6 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
   /**********************************************************************/
   for (int i=0; i<(int)interface_.size(); ++i)
   {
-    interface_[i]->AssembleTN(tmatrix_,Teuchos::null);
     interface_[i]->AssembleS(*smatrix_);
     interface_[i]->AssembleLinDM(*lindmatrix_,*linmmatrix_);
     interface_[i]->AssembleLinStick(*linstickLM_,*linstickDIS_,*linstickRHS_);
@@ -192,14 +193,10 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
   }
   if (constr_direction_==INPAR::CONTACT::constr_xyz)
   {
-    tmatrix_->Complete(*gactivedofs_,*gactivedofs_);
     smatrix_->Complete(*gsmdofrowmap_,*gactivedofs_);
   }
   else
   {
-    // FillComplete() global matrix T
-    tmatrix_->Complete(*gactivedofs_,*gactivet_);
-
     // FillComplete() global matrix S
     smatrix_->Complete(*gsmdofrowmap_,*gactiven_);
   }
