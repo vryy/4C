@@ -1,0 +1,62 @@
+/*
+ * str_predict_factory.cpp
+ *
+ *  Created on: Aug 31, 2015
+ *      Author: hiermeier
+ */
+
+
+#include "str_predict_factory.H"
+
+// supported predictor classes
+#include "str_predict_constdisvelaccpress.H"
+#include "str_predict_tangdis.H"
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+STR::PREDICT::Factory::Factory()
+{
+  // empty
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<STR::PREDICT::Generic>  STR::PREDICT::Factory::BuildPredictor(
+    const INPAR::STR::PredEnum& predType) const
+{
+  Teuchos::RCP<STR::PREDICT::Generic> predictor = Teuchos::null;
+
+  switch (predType)
+  {
+    case INPAR::STR::pred_constdis:
+    case INPAR::STR::pred_constvel:
+    case INPAR::STR::pred_constacc:
+    case INPAR::STR::pred_constdisvelacc:
+    case INPAR::STR::pred_constdispres:
+    case INPAR::STR::pred_constdisvelaccpres:
+      predictor = Teuchos::rcp(new STR::PREDICT::ConstDisVelAccPress());
+      break;
+    case INPAR::STR::pred_tangdis:
+      predictor = Teuchos::rcp(new STR::PREDICT::TangDis());
+      break;
+    case INPAR::STR::pred_vague:
+    default:
+      dserror("Unknown predictor type!");
+      break;
+  }
+
+  return predictor;
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<STR::PREDICT::Generic>  STR::PREDICT::BuildPredictor(
+    const INPAR::STR::PredEnum& predType)
+{
+  Factory factory;
+  return factory.BuildPredictor(predType);
+}
+
