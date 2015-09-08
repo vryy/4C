@@ -21,6 +21,7 @@ Maintainer: Michael Gee
 
 #ifdef PARALLEL
 #include "Epetra_MpiComm.h"
+#include <Epetra_LinearProblem.h>
 #else
 #include "Epetra_SerialComm.h"
 #endif
@@ -276,6 +277,22 @@ int LINALG::Solver::Solve(
 {
   Setup( matrix, x, b, refactor, reset, projector);
   return Solve();
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int LINALG::Solver::NoxSolve(
+    Epetra_LinearProblem&             linProblem,
+    bool                              refactor           ,
+    bool                              reset              ,
+    Teuchos::RCP<LINALG::KrylovProjector> projector)
+{
+  Teuchos::RCP<Epetra_Operator>     matrix = Teuchos::rcp(linProblem.GetOperator(),false);
+  Teuchos::RCP<Epetra_MultiVector>  x      = Teuchos::rcp(linProblem.GetLHS(),false);
+  Teuchos::RCP<Epetra_MultiVector>  b      = Teuchos::rcp(linProblem.GetRHS(),false);
+
+  return this->Solve(matrix,x,b,refactor,reset,projector);
 }
 
 

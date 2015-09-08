@@ -28,9 +28,11 @@ Maintainer: Michael Gee
 
 #include "linalg_multiply.H"  // contains MLMultiply
 
+// forward declarations
+class Epetra_LinearProblem;
+
 namespace LINALG
 {
-// forward declarations
 class SparseMatrix;
 class SparseOperator;
 class DownwindMatrix;
@@ -164,6 +166,30 @@ public:
     bool                     refactor                            ,
     bool                     reset   = false                     ,
     Teuchos::RCP<LINALG::KrylovProjector> projector = Teuchos::null);
+
+  /*!
+  \brief Solve system of equations in one go (NOX)
+
+  Calls the related Solve function. The only difference is the input
+  as Epetra_LinearSystem.
+
+  \param linProblem (in/out): linear Problem wrapper. Includes
+                              --> system of equations
+                              --> initial guess on input, solution on output
+                              --> right hand side vector
+                              if project!=false it might be modified if not orthognal
+                              to matrix kernel.
+  \param refactor   (in)    : flag indicating whether system should be refactorized
+  \param reset      (in)    : flag indicating whether all data from previous solves
+                              should be recalculated including preconditioners
+  \param projector  (in)    : Krylov space projector - Teuchos::null is no
+                              projection desired
+  */
+  int NoxSolve(
+      Epetra_LinearProblem&             linProblem               ,
+      bool                              refactor                 ,
+      bool                              reset   = false          ,
+      Teuchos::RCP<LINALG::KrylovProjector> projector=Teuchos::null);
 
   /*!
   \brief Reset the solver and clear data

@@ -317,6 +317,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadSection("--STRUCT NOX", *list);
   reader.ReadSection("--STRUCT NOX/Direction", *list);
   reader.ReadSection("--STRUCT NOX/Direction/Newton", *list);
+  reader.ReadSection("--STRUCT NOX/Direction/Newton/Linear Solver", *list);
   reader.ReadSection("--STRUCT NOX/Direction/Steepest Descent", *list);
   reader.ReadSection("--STRUCT NOX/Line Search", *list);
   reader.ReadSection("--STRUCT NOX/Line Search/Full Step", *list);
@@ -325,6 +326,8 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadSection("--STRUCT NOX/Line Search/More'-Thuente", *list);
   reader.ReadSection("--STRUCT NOX/Trust Region", *list);
   reader.ReadSection("--STRUCT NOX/Printing", *list);
+  reader.ReadSection("--STRUCT NOX/Status Test", *list);
+  reader.ReadSection("--STRUCT NOX/Solver Options", *list);
 
   // read in solver sections
   // Note: the maximum number of solver blocks in dat files is hardwired here.

@@ -1180,6 +1180,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "augmentedlagrange",
                                  "NoxNewtonLineSearch",
                                  "noxgeneral",
+                                 "noxnln",
                                  "NLNSOL"),
                                tuple<int>(
                                  INPAR::STR::soltech_vague,
@@ -1191,6 +1192,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::STR::soltech_newtonuzawanonlin,
                                  INPAR::STR::soltech_noxnewtonlinesearch,
                                  INPAR::STR::soltech_noxgeneral,
+                                 INPAR::STR::soltech_nox_nln,
                                  INPAR::STR::soltech_nlnsol),
                                &sdyn);
 
@@ -9151,6 +9153,52 @@ void DRT::INPUT::SetValidNoxParameters(Teuchos::ParameterList& list)
     BoolParameter("Stepper Parameters","Yes","",&printing);
     */
     BoolParameter("Debug","No","",&printing);
+  }
+
+  // sub-list "Status Test"
+  Teuchos::ParameterList& statusTest = list.sublist("Status Test",false,"");
+  SetPrintEqualSign(statusTest,true);
+
+  {
+    StringParameter("XML File", "none", "Filename of XML file with configuration of nox status test", &statusTest);
+  }
+
+  // sub-list "Solver Options"
+  Teuchos::ParameterList& solverOptions = list.sublist("Solver Options",false,"");
+  SetPrintEqualSign(solverOptions,true);
+
+  {
+      Teuchos::Array<std::string> meritFct = Teuchos::tuple<std::string>(
+        "Sum of Squares",
+        "Lagrangian");
+      Teuchos::setStringToIntegralParameter<int>(
+        "Merit Function","Sum of Squares","",
+        meritFct,Teuchos::tuple<int>( 0, 1),
+        &solverOptions);
+
+      Teuchos::Array<std::string> scTestType = Teuchos::tuple<std::string>(
+        "Complete",
+        "Minimal",
+        "None");
+      Teuchos::setStringToIntegralParameter<int>(
+        "Status Test Check Type","Minimal","",
+        scTestType,Teuchos::tuple<int>( 0, 1, 2),
+        &solverOptions);
+  }
+
+  // sub-sub-sub-list "Linear Solver"
+  Teuchos::ParameterList& linearSolver = newton.sublist("Linear Solver",false,"");
+  SetPrintEqualSign(linearSolver,true);
+
+  {
+    // convergence criteria adaptivity
+    BoolParameter("Adaptive Control","No",
+        "Switch on adaptive control of linear solver tolerance for nonlinear solution",
+         &linearSolver);
+    DoubleParameter("Adaptive Control Objective",0.1,"The linear solver shall be this much better than the current nonlinear residual in the nonlinear convergence limit",&linearSolver);
+    BoolParameter("Zero Initial Guess","Yes","Zero out the delta X vector if requested.",&linearSolver);
+    BoolParameter("Computing Scaling Manually","No","Allows the manually scaling of your linear system (not supported at the moment).",&linearSolver);
+    BoolParameter("Output Solver Details","Yes","Switch the linear solver output on and off.",&linearSolver);
   }
 }
 
