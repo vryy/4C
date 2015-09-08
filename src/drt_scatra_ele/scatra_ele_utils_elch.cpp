@@ -686,7 +686,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
   // current integrals: (i = epsilon i^E ) is calculated in case of porous media
   double currentintegral(0.);
   double currentdlintegral(0.);
-  double shapefuncint(0.);
+  double boundaryint(0.);
   double electpotentialint(0.);
   double overpotentialint(0.);
   double electdiffpotint(0.);
@@ -694,7 +694,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
   double concentrationint(0.);
   double currderiv(0.);
   double currentresidual(0.);
-  double shapefuncint_porous(0.);
+  double boundaryint_porous(0.);
 
   // concentration of active species at integration point
   std::vector<double> conint(numscal_,0.0);
@@ -791,8 +791,8 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
     electdiffpotint += epd*fac;
     opencircuitpotint += ocp*fac;
     currentintegral += scalar*i0*expterm*fac; // the negative(!) normal flux density
-    shapefuncint += fac;
-    shapefuncint_porous += fac*scalar;
+    boundaryint += fac;
+    boundaryint_porous += fac*scalar;
     concentrationint += scalar*conint[k]*fac;
 
     // tangent and rhs (= negative residual) for galvanostatic equation
@@ -855,8 +855,8 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
     electdiffpotint += epd*fac;
     opencircuitpotint += ocp*fac;
     currentintegral += scalar*i0*expterm*fac; // the negative(!) normal flux density
-    shapefuncint += fac;
-    shapefuncint_porous += fac*scalar;
+    boundaryint += fac;
+    boundaryint_porous += fac*scalar;
     concentrationint += conint[k]*fac;
 
     // tangent and rhs (= negative residual) for galvanostatic equation
@@ -915,8 +915,8 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
     electdiffpotint += epd*fac;
     opencircuitpotint += ocp*fac;
     currentintegral += scalar*i0*pow(conint[k]/refcon,gamma)*(alphaa*frt*eta)*fac; // the negative(!) normal flux density
-    shapefuncint += fac;
-    shapefuncint_porous += fac*scalar;
+    boundaryint += fac;
+    boundaryint_porous += fac*scalar;
     concentrationint += conint[k]*fac;
 
     // tangent and rhs (= negative residual) for galvanostatic equation
@@ -1039,8 +1039,8 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
 
     // compute integrals
     currentintegral += scalar*nume*faraday*((k_a*expterma*pow_conint_p)-(k_c*exptermc*pow_conint_q))*fac;
-    shapefuncint += fac;
-    shapefuncint_porous += fac*scalar;
+    boundaryint += fac;
+    boundaryint_porous += fac*scalar;
     electpotentialint += elepot * fac;
     overpotentialint += eta * fac;
     electdiffpotint += epd*fac;
@@ -1140,8 +1140,8 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
     electdiffpotint += epd*fac;
     opencircuitpotint += ocp*fac;
     currentintegral += scalar*i0*(concterma*expterma-conctermc*exptermc)*fac; // the negative(!) normal flux density
-    shapefuncint += fac;
-    shapefuncint_porous += fac*scalar;
+    boundaryint += fac;
+    boundaryint_porous += fac*scalar;
     concentrationint += conint[k]*fac;  //concentration-output for the first species only
 
     // tangent and rhs (= negative residual) for galvanostatic equation
@@ -1159,12 +1159,12 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
 
     // compute integrals
     overpotentialint += potint * fac;
-    shapefuncint += fac;
-    shapefuncint_porous += fac*scalar;
+    boundaryint += fac;
+    boundaryint_porous += fac*scalar;
     concentrationint += conint[k]*fac;
 
-    opencircuitpotint+= e0 + (log(concentrationint/shapefuncint/c0))/(frt*nume);
-    opencircuitpotint*=shapefuncint;
+    opencircuitpotint+= e0 + (log(concentrationint/boundaryint/c0))/(frt*nume);
+    opencircuitpotint*=boundaryint;
     break;
   }
 
@@ -1178,7 +1178,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
   // add contributions from current integration point into result vector
   scalars(0) += currentintegral;
   scalars(1) += currentdlintegral;
-  scalars(2) += shapefuncint;
+  scalars(2) += boundaryint;
   scalars(3) += electpotentialint;
   scalars(4) += overpotentialint;
   scalars(5) += electdiffpotint;
@@ -1186,7 +1186,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
   scalars(7) += concentrationint;
   scalars(8) += currderiv;
   scalars(9) += currentresidual;
-  scalars(10) += shapefuncint_porous;
+  scalars(10) += boundaryint_porous;
 
   return;
 } // DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegrationPoint

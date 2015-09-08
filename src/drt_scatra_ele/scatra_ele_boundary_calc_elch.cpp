@@ -47,38 +47,23 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::ScaTraEleBoundaryCalcElch(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateAction(
-    DRT::FaceElement*                   ele,
-    Teuchos::ParameterList&             params,
-    DRT::Discretization&                discretization,
-    SCATRA::BoundaryAction              action,
-    DRT::Element::LocationArray&        la,
-    Epetra_SerialDenseMatrix&           elemat1_epetra,
-    Epetra_SerialDenseMatrix&           elemat2_epetra,
-    Epetra_SerialDenseVector&           elevec1_epetra,
-    Epetra_SerialDenseVector&           elevec2_epetra,
-    Epetra_SerialDenseVector&           elevec3_epetra
-)
+    DRT::FaceElement*              ele,              //!< boundary element
+    Teuchos::ParameterList&        params,           //!< parameter list
+    DRT::Discretization&           discretization,   //!< discretization
+    SCATRA::BoundaryAction         action,           //!< action
+    DRT::Element::LocationArray&   la,               //!< location array
+    Epetra_SerialDenseMatrix&      elemat1_epetra,   //!< element matrix 1
+    Epetra_SerialDenseMatrix&      elemat2_epetra,   //!< element matrix 2
+    Epetra_SerialDenseVector&      elevec1_epetra,   //!< element right-hand side vector 1
+    Epetra_SerialDenseVector&      elevec2_epetra,   //!< element right-hand side vector 2
+    Epetra_SerialDenseVector&      elevec3_epetra    //!< element right-hand side vector 3
+    )
 {
   std::vector<int>&                 lm = la[0].lm_;
 
   // determine and evaluate action
   switch(action)
   {
-  case SCATRA::bd_calc_elch_boundary_kinetics:
-  {
-    CalcElchBoundaryKinetics(
-        ele,
-        params,
-        discretization,
-        lm,
-        elemat1_epetra,
-        elevec1_epetra,
-        1.
-        );
-
-    break;
-  }
-
   case SCATRA::bd_calc_elch_linearize_nernst:
   {
     CalcNernstLinearization(ele,
@@ -448,15 +433,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcCellVoltage(
 
     // calculate potential and domain integrals
     for (int vi=0; vi<my::nen_; ++vi)
-    {
-      const double funct_vi_fac = my::funct_(vi)*fac;
-
       // potential integral
-      intpotential += funct_vi_fac*epotnp(vi,0);
+      intpotential += epotnp(vi,0)*my::funct_(vi)*fac;
 
-      // domain integral
-      intdomain += funct_vi_fac;
-    }
+    // domain integral
+    intdomain += fac;
   } // loop over integration points
 
   // safety check
@@ -606,7 +587,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateElectrodeStatus(
   // necessary to perform galvanostatic simulations, for instance.
   // Think about: double layer effects for genalpha time-integration scheme
 
-  // if zero=1=true, the current flow across the electrode is zero (comparable to do-nothing Neuman condition)
+  // if zero=1=true, the current flow across the electrode is zero (comparable to do-nothing Neumann condition)
   // but the electrode status is evaluated
   const int zerocur = cond->GetInt("zero_cur");
 

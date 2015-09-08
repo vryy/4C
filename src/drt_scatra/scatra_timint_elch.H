@@ -95,19 +95,29 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   //! output electrode boundary status information to screen and file
   void OutputElectrodeInfoBoundary();
 
-  //! output of electrode information for a single boundary condition
-  void OutputSingleElectrodeInfo(
-      DRT::Condition*     condition,          //!< condition to be evaluated
-      const int           condid,             //!< ID of condition to be evaluated
-      const std::string   condstring,         //!< name of condition to be evaluated
-      const bool          print,              //!< flag for output to screen and file
-      double&             currentsum,         //!< net current involving all conditions (out)
-      double&             currtangent,        //!< tangent of current w.r.t. electrode potential (out)
-      double&             currresidual,       //!< negative residual of current equation (out)
-      double&             electrodeint,       //!< physical dimensions of the electrode region (out)
-      double&             electrodepot,       //!< electrode potential on electrode side (out)
-      double&             meanoverpot         //!< mean overpotential (out)
-  );
+  //! evaluate status information on single line or surface electrode
+  Teuchos::RCP<Epetra_SerialDenseVector> EvaluateSingleElectrodeInfo(
+      const unsigned      condid,      //!< ID of condition to be evaluated
+      const std::string   condstring   //!< name of condition to be evaluated
+      );
+
+  //! evaluate status information on single point electrode
+  Teuchos::RCP<Epetra_SerialDenseVector> EvaluateSingleElectrodeInfoPoint(
+      Teuchos::RCP<DRT::Condition>   condition   //!< condition to be evaluated
+      );
+
+  //! post-process status information on single electrode
+  void PostProcessSingleElectrodeInfo(
+      Epetra_SerialDenseVector&   scalars,        //!< scalar quantities associated with electrode status information (in)
+      const unsigned              id,             //!< electrode ID (in)
+      const bool                  print,          //!< flag for output to screen and file (in)
+      double&                     currentsum,     //!< net current involving all conditions (out)
+      double&                     currtangent,    //!< tangent of current w.r.t. electrode potential (out)
+      double&                     currresidual,   //!< negative residual of current equation (out)
+      double&                     electrodeint,   //!< physical dimensions of the electrode region (out)
+      double&                     electrodepot,   //!< electrode potential on electrode side (out)
+      double&                     meanoverpot     //!< mean overpotential (out)
+      );
 
   //! output electrode interior status information to screen and files
   void OutputElectrodeInfoInterior();

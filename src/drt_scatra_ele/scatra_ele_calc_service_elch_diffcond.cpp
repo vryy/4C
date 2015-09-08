@@ -196,6 +196,45 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::EvaluateAction(
   // determine and evaluate action
   switch(action)
   {
+  case SCATRA::calc_elch_boundary_kinetics_point:
+  {
+    // access material of parent element
+    Teuchos::RCP<MAT::Material> material = ele->Material();
+
+    // extract porosity from material and store in diffusion manager
+    if(material->MaterialType() == INPAR::MAT::m_elchmat)
+    {
+      const MAT::ElchMat* elchmat = static_cast<const MAT::ElchMat*>(material.get());
+
+      for(int iphase=0; iphase<elchmat->NumPhase(); ++iphase)
+      {
+        Teuchos::RCP<const MAT::Material> phase = elchmat->PhaseById(elchmat->PhaseID(iphase));
+
+        if(phase->MaterialType() == INPAR::MAT::m_elchphase)
+          DiffManager()->SetPhasePoro((static_cast<const MAT::ElchPhase*>(phase.get()))->Epsilon(),iphase);
+
+        else
+          dserror("Invalid material!");
+      }
+    }
+
+    else
+      dserror("Invalid material!");
+
+    // process electrode boundary kinetics point condition
+    myelch::CalcElchBoundaryKineticsPoint(
+        ele,
+        params,
+        discretization,
+        la[0].lm_,
+        elemat1_epetra,
+        elevec1_epetra,
+        DiffManager()->GetPhasePoro(0)
+        );
+
+    break;
+  }
+
   case SCATRA::calc_elch_domain_kinetics:
   {
     CalcElchDomainKinetics(
@@ -418,6 +457,68 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcElchDomainKinetics(
 
   return;
 }
+
+
+/*----------------------------------------------------------------------*
+ | evaluate an electrode boundary kinetics point condition   fang 08/15 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::EvaluateElchBoundaryKineticsPoint(
+    const DRT::Element*                 ele,        ///< current element
+    Epetra_SerialDenseMatrix&           emat,       ///< element matrix
+    Epetra_SerialDenseVector&           erhs,       ///< element right-hand side vector
+    const std::vector<double>&          ephinp,     ///< nodal values of concentration and electric potential
+    const std::vector<double>&          ehist,      ///< nodal history vector
+    double                              timefac,    ///< time factor
+    Teuchos::RCP<DRT::Condition>        cond,       ///< electrode kinetics boundary condition
+    const int                           nume,       ///< number of transferred electrons
+    const std::vector<int>              stoich,     ///< stoichiometry of the reaction
+    const int                           kinetics,   ///< desired electrode kinetics model
+    const double                        pot0,       ///< electrode potential on metal side
+    const double                        frt,        ///< factor F/RT
+    const double                        scalar      ///< scaling factor for element matrix and right-hand side contributions
+)
+{
+  // call base class routine
+  myelch::EvaluateElchBoundaryKineticsPoint(ele,emat,erhs,ephinp,ehist,timefac,cond,nume,stoich,kinetics,pot0,frt,scalar);
+
+  // compute matrix and residual contributions arising from closing equation for electric potential
+  switch(myelch::elchparams_->EquPot())
+  {
+  case INPAR::ELCH::equpot_enc:
+  {
+    // do nothing, since no boundary integral present
+    break;
+  }
+
+  case INPAR::ELCH::equpot_divi:
+  {
+    for(int k=0; k<my::numscal_; ++k)
+    {
+      for (int vi=0; vi<my::nen_; ++vi)
+      {
+        for (int ui=0; ui<my::nen_; ++ui)
+        {
+          emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+k) += nume*emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k);
+          emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+my::numscal_) += nume*emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+my::numscal_);
+        }
+
+        erhs[vi*my::numdofpernode_+my::numscal_] += nume*erhs[vi*my::numdofpernode_+k];
+      }
+    }
+
+    break;
+  }
+
+  default:
+  {
+    dserror("Unknown closing equation for electric potential!");
+    break;
+  }
+  } // switch(myelch::elchparams_->EquPot())
+
+  return;
+} // DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::EvaluateElchBoundaryKineticsPoint
 
 
 /*----------------------------------------------------------------------*

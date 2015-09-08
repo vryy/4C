@@ -149,15 +149,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalculateElectrodeSOC(
 
     // calculate concentration and domain integrals
     for (int vi=0; vi<my::nen_; ++vi)
-    {
-      const double funct_vi_fac = my::funct_(vi)*fac;
-
       // concentration integral
-      intconcentration += funct_vi_fac*my::ephinp_[0](vi,0);
+      intconcentration += my::ephinp_[0](vi,0)*my::funct_(vi)*fac;
 
-      // domain integral
-      intdomain += funct_vi_fac;
-    }
+    // domain integral
+    intdomain += fac;
   } // loop over integration points
 
   // safety check

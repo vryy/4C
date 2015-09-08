@@ -80,6 +80,64 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype>::ScaTraEleBoundaryCalcElchNP
 
 
 /*----------------------------------------------------------------------*
+ | evaluate action                                           fang 08/15 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype>::EvaluateAction(
+    DRT::FaceElement*              ele,              //!< boundary element
+    Teuchos::ParameterList&        params,           //!< parameter list
+    DRT::Discretization&           discretization,   //!< discretization
+    SCATRA::BoundaryAction         action,           //!< action
+    DRT::Element::LocationArray&   la,               //!< location array
+    Epetra_SerialDenseMatrix&      elemat1_epetra,   //!< element matrix 1
+    Epetra_SerialDenseMatrix&      elemat2_epetra,   //!< element matrix 2
+    Epetra_SerialDenseVector&      elevec1_epetra,   //!< element right-hand side vector 1
+    Epetra_SerialDenseVector&      elevec2_epetra,   //!< element right-hand side vector 2
+    Epetra_SerialDenseVector&      elevec3_epetra    //!< element right-hand side vector 3
+)
+{
+  // determine and evaluate action
+  switch(action)
+  {
+  case SCATRA::bd_calc_elch_boundary_kinetics:
+  {
+    myelch::CalcElchBoundaryKinetics(
+        ele,
+        params,
+        discretization,
+        la[0].lm_,
+        elemat1_epetra,
+        elevec1_epetra,
+        1.
+        );
+
+    break;
+  }
+
+  default:
+  {
+    myelch::EvaluateAction(
+        ele,
+        params,
+        discretization,
+        action,
+        la,
+        elemat1_epetra,
+        elemat2_epetra,
+        elevec1_epetra,
+        elevec2_epetra,
+        elevec3_epetra
+        );
+
+   break;
+  }
+  } // switch action
+
+  return 0;
+} // DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype>::EvaluateAction
+
+
+/*----------------------------------------------------------------------*
  | evaluate Neumann boundary condition                       fang 02/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>

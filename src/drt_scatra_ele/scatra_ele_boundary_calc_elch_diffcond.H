@@ -55,16 +55,16 @@ namespace DRT
 
       //! evaluate action
       int EvaluateAction(
-          DRT::FaceElement*              ele,
-          Teuchos::ParameterList&        params,
-          DRT::Discretization&           discretization,
-          SCATRA::BoundaryAction         action,
-          DRT::Element::LocationArray&   la,
-          Epetra_SerialDenseMatrix&      elemat1_epetra,
-          Epetra_SerialDenseMatrix&      elemat2_epetra,
-          Epetra_SerialDenseVector&      elevec1_epetra,
-          Epetra_SerialDenseVector&      elevec2_epetra,
-          Epetra_SerialDenseVector&      elevec3_epetra
+          DRT::FaceElement*              ele,              //!< boundary element
+          Teuchos::ParameterList&        params,           //!< parameter list
+          DRT::Discretization&           discretization,   //!< discretization
+          SCATRA::BoundaryAction         action,           //!< action
+          DRT::Element::LocationArray&   la,               //!< location array
+          Epetra_SerialDenseMatrix&      elemat1_epetra,   //!< element matrix 1
+          Epetra_SerialDenseMatrix&      elemat2_epetra,   //!< element matrix 2
+          Epetra_SerialDenseVector&      elevec1_epetra,   //!< element right-hand side vector 1
+          Epetra_SerialDenseVector&      elevec2_epetra,   //!< element right-hand side vector 2
+          Epetra_SerialDenseVector&      elevec3_epetra    //!< element right-hand side vector 3
           );
 
       //! evaluate Neumann boundary condition

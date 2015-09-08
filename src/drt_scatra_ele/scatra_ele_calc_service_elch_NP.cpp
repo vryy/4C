@@ -61,6 +61,95 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CheckElchElementParameter(
 
 
 /*----------------------------------------------------------------------*
+ | evaluate an electrode boundary kinetics point condition   fang 09/15 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::EvaluateElchBoundaryKineticsPoint(
+    const DRT::Element*                 ele,        ///< current element
+    Epetra_SerialDenseMatrix&           emat,       ///< element matrix
+    Epetra_SerialDenseVector&           erhs,       ///< element right-hand side vector
+    const std::vector<double>&          ephinp,     ///< nodal values of concentration and electric potential
+    const std::vector<double>&          ehist,      ///< nodal history vector
+    double                              timefac,    ///< time factor
+    Teuchos::RCP<DRT::Condition>        cond,       ///< electrode kinetics boundary condition
+    const int                           nume,       ///< number of transferred electrons
+    const std::vector<int>              stoich,     ///< stoichiometry of the reaction
+    const int                           kinetics,   ///< desired electrode kinetics model
+    const double                        pot0,       ///< electrode potential on metal side
+    const double                        frt,        ///< factor F/RT
+    const double                        scalar      ///< scaling factor for element matrix and right-hand side contributions
+)
+{
+  // call base class routine
+  myelch::EvaluateElchBoundaryKineticsPoint(ele,emat,erhs,ephinp,ehist,timefac,cond,nume,stoich,kinetics,pot0,frt,scalar);
+
+  // compute matrix and residual contributions arising from closing equation for electric potential
+  switch(myelch::elchparams_->EquPot())
+  {
+  case INPAR::ELCH::equpot_enc:
+  {
+    // do nothing, since no boundary integral present
+    break;
+  }
+
+  case INPAR::ELCH::equpot_enc_pde:
+  case INPAR::ELCH::equpot_enc_pde_elim:
+  {
+    for(int k=0; k<my::numscal_; ++k)
+    {
+      for(int vi=0; vi<my::nen_; ++vi)
+      {
+        for(int ui=0; ui<my::nen_; ++ui)
+        {
+          emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+k) += nume*emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k);
+          emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+my::numscal_) += nume*emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+my::numscal_);
+        }
+
+        erhs[vi*my::numdofpernode_+my::numscal_] += nume*erhs[vi*my::numdofpernode_+k];
+      }
+    }
+
+    break;
+  }
+
+  // need special treatment for Laplace equation due to missing scaling with inverse of Faraday constant
+  case INPAR::ELCH::equpot_laplace:
+  {
+    for(int k=0; k<my::numscal_; ++k)
+    {
+      for(int vi=0; vi<my::nen_; ++vi)
+      {
+        for(int ui=0; ui<my::nen_; ++ui)
+        {
+          emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+k) += INPAR::ELCH::faraday_const*nume*emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k);
+          emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+my::numscal_) += INPAR::ELCH::faraday_const*nume*emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+my::numscal_);
+        }
+
+        erhs[vi*my::numdofpernode_+my::numscal_] += INPAR::ELCH::faraday_const*nume*erhs[vi*my::numdofpernode_+k];
+      }
+    }
+
+    break;
+  }
+
+  case INPAR::ELCH::equpot_poisson:
+  {
+    dserror("Poisson equation combined with electrode boundary conditions not implemented!");
+    break;
+  }
+
+  default:
+  {
+    dserror("Unknown closing equation for electric potential!");
+    break;
+  }
+  } // switch(myelch::elchparams_->EquPot())
+
+  return;
+} // DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::EvaluateElchBoundaryKineticsPoint
+
+
+/*----------------------------------------------------------------------*
  * Get Conductivity
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>

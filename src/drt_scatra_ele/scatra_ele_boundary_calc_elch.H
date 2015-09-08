@@ -48,34 +48,34 @@ namespace DRT
 
       //! evaluate action
       virtual int EvaluateAction(
-          DRT::FaceElement*              ele,
-          Teuchos::ParameterList&        params,
-          DRT::Discretization&           discretization,
-          SCATRA::BoundaryAction         action,
-          DRT::Element::LocationArray&   la,
-          Epetra_SerialDenseMatrix&      elemat1_epetra,
-          Epetra_SerialDenseMatrix&      elemat2_epetra,
-          Epetra_SerialDenseVector&      elevec1_epetra,
-          Epetra_SerialDenseVector&      elevec2_epetra,
-          Epetra_SerialDenseVector&      elevec3_epetra
+          DRT::FaceElement*              ele,              //!< boundary element
+          Teuchos::ParameterList&        params,           //!< parameter list
+          DRT::Discretization&           discretization,   //!< discretization
+          SCATRA::BoundaryAction         action,           //!< action
+          DRT::Element::LocationArray&   la,               //!< location array
+          Epetra_SerialDenseMatrix&      elemat1_epetra,   //!< element matrix 1
+          Epetra_SerialDenseMatrix&      elemat2_epetra,   //!< element matrix 2
+          Epetra_SerialDenseVector&      elevec1_epetra,   //!< element right-hand side vector 1
+          Epetra_SerialDenseVector&      elevec2_epetra,   //!< element right-hand side vector 2
+          Epetra_SerialDenseVector&      elevec3_epetra    //!< element right-hand side vector 3
           );
 
       //! evaluate an electrode kinetics boundary condition
       virtual void EvaluateElchBoundaryKinetics(
-         const DRT::Element*                 ele,        ///< current element
-         Epetra_SerialDenseMatrix&           emat,       ///< element matrix
-         Epetra_SerialDenseVector&           erhs,       ///< element right-hand side vector
-         const std::vector<double>&          ephinp,     ///< nodal values of concentration and electric potential
-         const std::vector<double>&          ehist,      ///< nodal history vector
-         double                              timefac,    ///< time factor
-         Teuchos::RCP<const MAT::Material>   material,   ///< material
-         Teuchos::RCP<DRT::Condition>        cond,       ///< electrode kinetics boundary condition
-         const int                           nume,       ///< number of transferred electrons
-         const std::vector<int>              stoich,     ///< stoichiometry of the reaction
-         const int                           kinetics,   ///< desired electrode kinetics model
-         const double                        pot0,       ///< electrode potential on metal side
-         const double                        frt,        ///< factor F/RT
-         const double                        scalar      ///< scaling factor for element matrix and right-hand side contributions
+          const DRT::Element*                 ele,        ///< current element
+          Epetra_SerialDenseMatrix&           emat,       ///< element matrix
+          Epetra_SerialDenseVector&           erhs,       ///< element right-hand side vector
+          const std::vector<double>&          ephinp,     ///< nodal values of concentration and electric potential
+          const std::vector<double>&          ehist,      ///< nodal history vector
+          double                              timefac,    ///< time factor
+          Teuchos::RCP<const MAT::Material>   material,   ///< material
+          Teuchos::RCP<DRT::Condition>        cond,       ///< electrode kinetics boundary condition
+          const int                           nume,       ///< number of transferred electrons
+          const std::vector<int>              stoich,     ///< stoichiometry of the reaction
+          const int                           kinetics,   ///< desired electrode kinetics model
+          const double                        pot0,       ///< electrode potential on metal side
+          const double                        frt,        ///< factor F/RT
+          const double                        scalar      ///< scaling factor for element matrix and right-hand side contributions
           );
 
       //! process an electrode kinetics boundary condition

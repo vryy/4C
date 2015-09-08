@@ -73,6 +73,8 @@ void SCATRA::ScaTraTimIntElchOST::OutputRestart()
     // define a vector with all electrode kinetics BCs
     std::vector<DRT::Condition*> cond;
     discret_->GetCondition("ElchBoundaryKinetics",cond);
+    if(!cond.size())
+      discret_->GetCondition("ElchBoundaryKineticsPoint",cond);
 
     int condid_cathode = elchparams_->get<int>("GSTATCONDID_CATHODE");
 
@@ -128,6 +130,8 @@ void SCATRA::ScaTraTimIntElchOST::ReadRestart(int step)
     // define a vector with all electrode kinetics BCs
     std::vector<DRT::Condition*> cond;
     discret_->GetCondition("ElchBoundaryKinetics",cond);
+    if(!cond.size())
+      discret_->GetCondition("ElchBoundaryKineticsPoint",cond);
 
     int condid_cathode = elchparams_->get<int>("GSTATCONDID_CATHODE");
     std::vector<DRT::Condition*>::iterator fool;
@@ -190,6 +194,8 @@ void SCATRA::ScaTraTimIntElchOST::ElectrodeKineticsTimeUpdate()
 
     std::vector<DRT::Condition*> cond;
     discret_->GetCondition("ElchBoundaryKinetics",cond);
+    if(!cond.size())
+      discret_->GetCondition("ElchBoundaryKineticsPoint",cond);
     for (size_t i=0; i < cond.size(); i++) // we update simply every condition!
     {
       {
@@ -213,6 +219,8 @@ void SCATRA::ScaTraTimIntElchOST::ComputeTimeDerivPot0(const bool init)
 {
   std::vector<DRT::Condition*> cond;
   discret_->GetCondition("ElchBoundaryKinetics",cond);
+  if(!cond.size())
+    discret_->GetCondition("ElchBoundaryKineticsPoint",cond);
   int numcond = cond.size();
 
   for(int icond = 0; icond < numcond; icond++)
@@ -270,6 +278,8 @@ void SCATRA::ScaTraTimIntElchOST::SetOldPartOfRighthandside()
   {
     std::vector<DRT::Condition*> cond;
     discret_->GetCondition("ElchBoundaryKinetics",cond);
+    if(!cond.size())
+      discret_->GetCondition("ElchBoundaryKineticsPoint",cond);
     for (size_t i=0; i < cond.size(); i++) // we update simply every condition!
     {
       // prepare "old part of rhs" for galvanostatic equation (to be used at this time step)
@@ -343,6 +353,8 @@ void SCATRA::ScaTraTimIntElchBDF2::OutputRestart()
     // define a vector with all electrode kinetics BCs
     std::vector<DRT::Condition*> cond;
     discret_->GetCondition("ElchBoundaryKinetics",cond);
+    if(!cond.size())
+      discret_->GetCondition("ElchBoundaryKineticsPoint",cond);
 
     int condid_cathode = elchparams_->get<int>("GSTATCONDID_CATHODE");
 
@@ -395,6 +407,8 @@ void SCATRA::ScaTraTimIntElchBDF2::ReadRestart(int step)
     // define a vector with all electrode kinetics BCs
     std::vector<DRT::Condition*> cond;
     discret_->GetCondition("ElchBoundaryKinetics",cond);
+    if(!cond.size())
+      discret_->GetCondition("ElchBoundaryKineticsPoint",cond);
 
     int condid_cathode = elchparams_->get<int>("GSTATCONDID_CATHODE");
     std::vector<DRT::Condition*>::iterator fool;
@@ -456,6 +470,8 @@ void SCATRA::ScaTraTimIntElchBDF2::ElectrodeKineticsTimeUpdate()
 
     std::vector<DRT::Condition*> cond;
     discret_->GetCondition("ElchBoundaryKinetics",cond);
+    if(!cond.size())
+      discret_->GetCondition("ElchBoundaryKineticsPoint",cond);
     for (size_t i=0; i < cond.size(); i++) // we update simply every condition!
     {
       {
@@ -479,6 +495,8 @@ void SCATRA::ScaTraTimIntElchBDF2::ComputeTimeDerivPot0(const bool init)
 {
   std::vector<DRT::Condition*> cond;
   discret_->GetCondition("ElchBoundaryKinetics",cond);
+  if(!cond.size())
+    discret_->GetCondition("ElchBoundaryKineticsPoint",cond);
   int numcond = cond.size();
 
   for(int icond = 0; icond < numcond; icond++)
@@ -520,6 +538,8 @@ void SCATRA::ScaTraTimIntElchBDF2::SetOldPartOfRighthandside()
   {
     std::vector<DRT::Condition*> cond;
     discret_->GetCondition("ElchBoundaryKinetics",cond);
+    if(!cond.size())
+      discret_->GetCondition("ElchBoundaryKineticsPoint",cond);
     for (size_t i=0; i < cond.size(); i++) // we update simply every condition!
       // prepare "old part of rhs" for galvanostatic equation (to be used at next time step)
     {
@@ -601,6 +621,8 @@ void SCATRA::ScaTraTimIntElchGenAlpha::OutputRestart()
     // define a vector with all electrode kinetics BCs
     std::vector<DRT::Condition*> cond;
     discret_->GetCondition("ElchBoundaryKinetics",cond);
+    if(!cond.size())
+      discret_->GetCondition("ElchBoundaryKineticsPoint",cond);
 
     int condid_cathode = elchparams_->get<int>("GSTATCONDID_CATHODE");
 
@@ -644,6 +666,8 @@ void SCATRA::ScaTraTimIntElchGenAlpha::ReadRestart(int step)
      // define a vector with all electrode kinetics BCs
      std::vector<DRT::Condition*> cond;
      discret_->GetCondition("ElchBoundaryKinetics",cond);
+     if(!cond.size())
+       discret_->GetCondition("ElchBoundaryKineticsPoint",cond);
 
      int condid_cathode = elchparams_->get<int>("GSTATCONDID_CATHODE");
      std::vector<DRT::Condition*>::iterator fool;
@@ -700,6 +724,8 @@ void SCATRA::ScaTraTimIntElchGenAlpha::ElectrodeKineticsTimeUpdate()
 
     std::vector<DRT::Condition*> cond;
     discret_->GetCondition("ElchBoundaryKinetics",cond);
+    if(!cond.size())
+      discret_->GetCondition("ElchBoundaryKineticsPoint",cond);
     for (size_t i=0; i < cond.size(); i++) // we update simply every condition!
     {
       {
@@ -721,6 +747,8 @@ void SCATRA::ScaTraTimIntElchGenAlpha::ComputeTimeDerivPot0(const bool init)
 {
   std::vector<DRT::Condition*> cond;
   discret_->GetCondition("ElchBoundaryKinetics",cond);
+  if(!cond.size())
+    discret_->GetCondition("ElchBoundaryKineticsPoint",cond);
   int numcond = cond.size();
 
   for(int icond = 0; icond < numcond; icond++)
@@ -827,6 +855,8 @@ void SCATRA::ScaTraTimIntElchStationary::OutputRestart()
     // define a vector with all electrode kinetics BCs
     std::vector<DRT::Condition*> cond;
     discret_->GetCondition("ElchBoundaryKinetics",cond);
+    if(!cond.size())
+      discret_->GetCondition("ElchBoundaryKineticsPoint",cond);
 
     int condid_cathode = elchparams_->get<int>("GSTATCONDID_CATHODE");
 
@@ -867,6 +897,8 @@ void SCATRA::ScaTraTimIntElchStationary::ReadRestart(int step)
     // define a vector with all electrode kinetics BCs
     std::vector<DRT::Condition*> cond;
     discret_->GetCondition("ElchBoundaryKinetics",cond);
+    if(!cond.size())
+      discret_->GetCondition("ElchBoundaryKineticsPoint",cond);
 
     int condid_cathode = elchparams_->get<int>("GSTATCONDID_CATHODE");
     std::vector<DRT::Condition*>::iterator fool;
@@ -912,6 +944,8 @@ void SCATRA::ScaTraTimIntElchStationary::ComputeTimeDerivPot0(const bool init)
 {
   std::vector<DRT::Condition*> cond;
   discret_->GetCondition("ElchBoundaryKinetics",cond);
+  if(!cond.size())
+    discret_->GetCondition("ElchBoundaryKineticsPoint",cond);
   int numcond = cond.size();
 
   for(int icond = 0; icond < numcond; icond++)

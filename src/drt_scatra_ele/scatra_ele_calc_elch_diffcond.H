@@ -307,6 +307,23 @@ private:
       Epetra_SerialDenseVector&     elevec3_epetra
   );
 
+  //! evaluate an electrode boundary kinetics point condition
+  void EvaluateElchBoundaryKineticsPoint(
+      const DRT::Element*                 ele,        ///< current element
+      Epetra_SerialDenseMatrix&           emat,       ///< element matrix
+      Epetra_SerialDenseVector&           erhs,       ///< element right-hand side vector
+      const std::vector<double>&          ephinp,     ///< nodal values of concentration and electric potential
+      const std::vector<double>&          ehist,      ///< nodal history vector
+      double                              timefac,    ///< time factor
+      Teuchos::RCP<DRT::Condition>        cond,       ///< electrode kinetics boundary condition
+      const int                           nume,       ///< number of transferred electrons
+      const std::vector<int>              stoich,     ///< stoichiometry of the reaction
+      const int                           kinetics,   ///< desired electrode kinetics model
+      const double                        pot0,       ///< electrode potential on metal side
+      const double                        frt,        ///< factor F/RT
+      const double                        scalar      ///< scaling factor for element matrix and right-hand side contributions
+      );
+
   //! evaluate electrode kinetics domain condition
   void EvaluateElchDomainKinetics(
       const DRT::Element*                 ele,        ///< the actual boundary element
