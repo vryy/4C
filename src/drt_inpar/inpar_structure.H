@@ -31,6 +31,45 @@ namespace INPAR
 
     /// @name Time integration
     //@{
+    /// Type of the used models/conditions
+    /// necessary for the model evaluator
+    enum ModelType
+    {
+      model_structure,          ///< evaluate the structural model
+      model_meshtying_contact,  ///< evaluate the meshtying or/and contact model
+      model_windkessel,         ///< evaluate the windkessel model
+      model_springdashpot,      ///< evaluate the springdashpot model
+      model_lag_pen_constraint  ///< evaluate the Lagrange or/and penalty enforced constraint models
+    };
+
+    /// Map model type to string
+    static inline const std::string ModelTypeString
+    (
+      const enum ModelType name  ///< enum to convert
+    )
+    {
+      switch (name)
+      {
+      case model_structure :
+        return "Structure";
+        break;
+      case model_meshtying_contact :
+        return "Meshtying/Contact";
+        break;
+      case model_windkessel :
+        return "Windkessel";
+        break;
+      case model_springdashpot :
+        return "Spring Dashpot";
+        break;
+      case model_lag_pen_constraint :
+        return "Lagrange/penalty constraint";
+        break;
+      default :
+        dserror("Cannot make std::string for model type %d", name);
+        return "";
+      }
+    };
 
     /// Type of time integrator including statics
     enum DynamicType
@@ -175,6 +214,7 @@ namespace INPAR
       soltech_noxnewtonlinesearch,///< Line search Newton
                                   ///< utilizing NOX
       soltech_noxgeneral,         ///< non-linear solution with NOX
+      soltech_nox_nln,            ///< non-linear solution with NOX (new)
       soltech_nlnsol              ///< nonlinear solver toolbox
     };
 
@@ -212,6 +252,9 @@ namespace INPAR
         break;
       case soltech_noxgeneral :
         return "noxgeneral";
+        break;
+      case soltech_nox_nln :
+        return "nox_nln";
         break;
       case soltech_ptc :
         return "ptc";
