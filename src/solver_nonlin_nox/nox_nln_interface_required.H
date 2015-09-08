@@ -1,0 +1,61 @@
+/*-----------------------------------------------------------*/
+/*!
+\file nox_nln_interface_required.H
+
+\maintainer Michael Hiermeier
+
+\date Jun 29, 2015
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
+
+#ifndef NOX_NLN_INTERFACE_REQUIRED_H_
+#define NOX_NLN_INTERFACE_REQUIRED_H_
+
+#include <NOX_Epetra_Interface_Required.H>    // base class
+#include <NOX_Abstract_Vector.H>
+#include "nox_nln_statustest_factory.H"
+
+namespace NOX {
+namespace NLN {
+namespace Interface {
+  class Required : public NOX::Epetra::Interface::Required
+  {
+  public:
+    //! Constructor
+    Required() {};
+
+    //! Destructor
+    virtual ~Required() {};
+
+    //! returns the right-hand-side norms of the primary DoF fields
+    virtual double GetPrimaryRHSNorms(
+        const NOX::NLN::StatusTest::QuantityType& checkQuantity,
+        const NOX::Abstract::Vector::NormType& type = NOX::Abstract::Vector::TwoNorm,
+        const bool& isScaled = false) const = 0;
+
+    //! Returns the Root Mean Squares (abbr.: RMS) of the primary solution updates
+    virtual double GetPrimarySolutionUpdateRMS(
+        const double& aTol, const double& rTol,
+        const NOX::NLN::StatusTest::QuantityType& checkQuantity,
+        const bool& disable_implicit_weighting = false) const = 0;
+
+    //! compute and return some energy representative
+    virtual const double GetObjectiveModelValue(const std::string& name) const = 0;
+
+    //! calculate characteristic/reference norms for forces
+    virtual double CalcRefNormForce() = 0;
+
+    //! update the internal variables of the required interface (e.g. displacements)
+    virtual void SetPrimarySolution(const NOX::Epetra::Vector& xOld,
+        const NOX::Epetra::Vector& d,
+        const double& step) = 0;
+  };
+} // namespace Interface
+} // namespace STR
+} // namespace NOX
+
+
+#endif /* NOX_NLN_INTERFACE_REQUIRED_H_ */

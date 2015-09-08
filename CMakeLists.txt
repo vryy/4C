@@ -1648,6 +1648,36 @@ set(OBJS_SOLVER_NONLIN
   src/solver_nonlin/nln_utils_debugwriter.cpp
 )
 
+set(OBJS_SOLVER_NONLIN_NOX
+  src/solver_nonlin_nox/nox_nln_aux.cpp
+  src/solver_nonlin_nox/nox_nln_globaldata.cpp
+  src/solver_nonlin_nox/nox_nln_prepostoperator.cpp
+  src/solver_nonlin_nox/nox_nln_problem_factory.cpp
+  src/solver_nonlin_nox/nox_nln_problem.cpp
+  src/solver_nonlin_nox/nox_nln_linearsystem.cpp
+  src/solver_nonlin_nox/nox_nln_linearsystem_factory.cpp
+  src/solver_nonlin_nox/nox_nln_group.cpp
+  src/solver_nonlin_nox/nox_nln_linesearch_factory.cpp
+  src/solver_nonlin_nox/nox_nln_direction_factory.cpp
+  src/solver_nonlin_nox/nox_nln_meritfunction_factory.cpp
+  src/solver_nonlin_nox/nox_nln_solver_factory.cpp
+  src/solver_nonlin_nox/nox_nln_solver_linesearchbased.cpp
+  src/solver_nonlin_nox/nox_nln_constraint_problem.cpp
+  src/solver_nonlin_nox/nox_nln_constraint_group.cpp
+  src/solver_nonlin_nox/nox_nln_linesearch_backtrack.cpp
+  src/solver_nonlin_nox/nox_nln_meritfunction_lagrangian.cpp
+  src/solver_nonlin_nox/nox_nln_direction_newton.cpp
+  src/solver_nonlin_nox/nox_nln_statustest_factory.cpp
+  src/solver_nonlin_nox/nox_nln_statustest_combo.cpp
+  src/solver_nonlin_nox/nox_nln_statustest_normf.cpp
+  src/solver_nonlin_nox/nox_nln_statustest_normwrms.cpp
+  src/solver_nonlin_nox/nox_nln_inner_statustest_factory.cpp
+  src/solver_nonlin_nox/nox_nln_inner_statustest_generic.cpp
+  src/solver_nonlin_nox/nox_nln_inner_statustest_armijo.cpp
+  src/drt_structure_new/nox_nln_str_linearsystem.cpp
+  src/drt_contact_aug/nox_nln_contact_linearsystem.cpp
+)
+
 set(OBJS_DRT_CONSTRAINT
   src/drt_constraint/constraint.cpp
   src/drt_constraint/constraint_manager.cpp
@@ -2316,6 +2346,7 @@ add_library(libsolver ${OBJS_SOLVER})
 
 # nonlinear solver objects
 add_library(nlnsolver ${OBJS_SOLVER_NONLIN})
+add_library(nlnsolver_nox ${OBJS_SOLVER_NONLIN_NOX})
 
 string(TOLOWER ${CMAKE_BUILD_TYPE} BUILD_TYPE)
 set(baciname baci-${BUILD_TYPE})
@@ -2346,6 +2377,7 @@ target_link_libraries (${baciname}
   drt_mat
   drt_lib_utils
   nlnsolver
+  nlnsolver_nox
   libsolver
   linalg
   drt_comm

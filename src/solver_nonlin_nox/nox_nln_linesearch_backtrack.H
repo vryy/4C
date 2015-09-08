@@ -1,0 +1,121 @@
+/*-----------------------------------------------------------*/
+/*!
+\file nox_nln_linesearch_backtrack.H
+
+\maintainer Michael Hiermeier
+
+\date Jun 11, 2015
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
+
+#ifndef NOX_NLN_LINESEARCH_BACKTRACK_H_
+#define NOX_NLN_LINESEARCH_BACKTRACK_H_
+
+#include "nox_nln_linesearch_generic.H" // base class
+#include "nox_nln_inner_statustest_generic.H"
+
+#include <NOX_StatusTest_Generic.H>
+
+// forward declaration
+namespace NOX {
+  class Utils;
+namespace MeritFunction {
+  class Generic;
+}
+namespace StatusTest {
+  class Generic;
+}
+
+namespace NLN {
+namespace INNER {
+namespace StatusTest {
+  class Generic;
+} // namespace StatusTest
+} // namespace INNER
+namespace LineSearch {
+  class Backtrack : public Generic
+  {
+  public:
+    //! Constructor
+    Backtrack(const Teuchos::RCP<NOX::GlobalData>& gd,
+        const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> innerTests,
+        Teuchos::ParameterList& params);
+
+    //! Destructor
+    virtual ~Backtrack() {};
+
+    bool reset(const Teuchos::RCP<NOX::GlobalData>& gd,
+           Teuchos::ParameterList& params);
+
+    void reset();
+
+    // derived
+    bool compute(NOX::Abstract::Group& newgrp, double& step,
+             const NOX::Abstract::Vector& dir,
+             const NOX::Solver::Generic& s);
+
+    //! @name Access functionality
+    //@{
+    //! get the number of line search iterations
+    virtual const int& GetNumIterations() const;
+
+    //! get the merit function
+    virtual const NOX::MeritFunction::Generic& GetMeritFunction() const;
+
+    //! get the current search direction
+    virtual const NOX::Abstract::Vector& GetSearchDirection() const;
+
+    //! get current step length
+    const double& GetStepLength() const;
+
+    //@}
+  protected:
+    // print inner status test results
+    void PrintUpdate();
+
+  private:
+    //! throw NOX error
+    void throwError(
+        const std::string& functionName,
+        const std::string& errorMsg) const;
+
+  private:
+    //! inner iteration counter
+    int lsIters_;
+
+    //! Printing Utilities
+    Teuchos::RCP<NOX::Utils> utils_;
+
+    //! Merit function
+    Teuchos::RCP<NOX::MeritFunction::Generic> meritFunctionPtr_;
+
+    //! Current step
+    double step_;
+
+    //! Default step
+    double defaultStep_;
+
+    //! line search reduction factor
+    double reductionFactor_;
+
+    //! inner status test checktype
+    NOX::StatusTest::CheckType checkType_;
+
+    //! inner status type
+    NOX::NLN::INNER::StatusTest::StatusType status_;
+
+    //! search direction
+    Teuchos::RCP<const NOX::Abstract::Vector> searchDirectionPtr_;
+
+    //! line search stopping tests
+    Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> innerTestsPtr_;
+  };
+} // namespace LineSearch
+} // namespace NLN
+} // namespace NOX
+
+
+#endif /* NOX_NLN_LINESEARCH_BACKTRACK_H_ */

@@ -1,0 +1,83 @@
+/*-----------------------------------------------------------*/
+/*!
+\file nox_nln_solver_factory.H
+
+\maintainer Michael Hiermeier
+
+\date Jun 11, 2015
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
+
+#ifndef NOX_NLN_SOLVER_FACTORY_H_
+#define NOX_NLN_SOLVER_FACTORY_H_
+
+#include <Teuchos_RCP.hpp>
+#include "nox_nln_globaldata.H"
+
+// forward declaration
+namespace NOX {
+namespace Abstract {
+  class Group;
+} // namespace Abstract
+
+namespace StatusTest {
+  class Generic;
+} // namespace StatusTest
+
+namespace Solver {
+  class Generic;
+} // namespace Solver
+
+namespace NLN {
+namespace INNER {
+namespace StatusTest {
+  class Generic;
+} // namespace StatusTest
+} // namespace INNER
+
+namespace Solver{
+  /*! \brief %Modified Factory class to control the creation of solvers derived from the NOX::Solver::Generic object.
+
+  \author Michael Hiermeier
+  */
+
+  class Factory
+  {
+
+  public:
+
+    //! Constructor.
+    Factory();
+
+    //! Destructor.
+    ~Factory() {};
+
+    Teuchos::RCP<NOX::Solver::Generic>
+    BuildSolver(const Teuchos::RCP<NOX::Abstract::Group>& grp,
+        const Teuchos::RCP<NOX::StatusTest::Generic>& outerTests,
+        const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests,
+        const Teuchos::RCP<NOX::NLN::GlobalData>& params);
+
+  };
+
+  /*! \brief Nonmember helper function for the NOX::Constraint::Solver::Factory.
+
+  \relates NOX::NLNSOL::Constraint::Solver::Factory
+
+  */
+
+  Teuchos::RCP<NOX::Solver::Generic>
+  BuildSolver(const Teuchos::RCP<NOX::Abstract::Group>& grp,
+      const Teuchos::RCP<NOX::StatusTest::Generic>& outerTests,
+      const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests,
+      const Teuchos::RCP<NOX::NLN::GlobalData>& params);
+
+}  // namespace NLN
+}  // namespace Solver
+}  // namespace NOX
+
+
+#endif /* NOX_NLN_SOLVER_FACTORY_H_ */
