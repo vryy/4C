@@ -1502,27 +1502,12 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDissipation(
   Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
   if (hist==Teuchos::null || phinp==Teuchos::null)
     dserror("Cannot get state vector 'hist' and/or 'phinp'");
-  std::vector<double> myhist(lm.size());
-  std::vector<double> myphinp(lm.size());
-  DRT::UTILS::ExtractMyValues(*hist,myhist,lm);
-  DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*hist,ehist_,lm);
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*phinp,ephinp_,lm);
 
-  // fill all element arrays
-  for (int i=0;i<nen_;++i)
-  {
-    for (int k = 0; k< numscal_; ++k)
-    {
-      // split for each transported scalar, insert into element arrays
-      ephinp_[k](i,0) = myphinp[k+(i*numdofpernode_)];
-      ephin_[k](i,0) = 0.0; //reset to zero; used in GetMaterialParams if not incremental
-                            //-> used to calculate densn which is not required here
-    }
-    for (int k = 0; k< numscal_; ++k)
-    {
-      // the history vectors contains information of time step t_n
-      ehist_[k](i,0) = myhist[k+(i*numdofpernode_)];
-    }
-  } // for i
+  // reset to zero; used in GetMaterialParams if not incremental -> used to calculate densn which is not required here
+  for (int k=0; k<numdofpernode_; ++k)
+    ephin_[k].Clear();
 
   // get fine-scale values
   if (turbparams_->WhichFssgd() == INPAR::SCATRA::fssugrdiff_smagorinsky_small
@@ -1532,17 +1517,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDissipation(
     Teuchos::RCP<const Epetra_Vector> gfsphinp = discretization.GetState("fsphinp");
     if (gfsphinp==Teuchos::null) dserror("Cannot get state vector 'fsphinp'");
 
-    std::vector<double> myfsphinp(lm.size());
-    DRT::UTILS::ExtractMyValues(*gfsphinp,myfsphinp,lm);
-
-    for (int i=0;i<nen_;++i)
-    {
-      for (int k = 0; k< numscal_; ++k)
-      {
-        // split for each transported scalar, insert into element arrays
-        fsphinp_[k](i,0) = myfsphinp[k+(i*numdofpernode_)];
-      }
-    }
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*gfsphinp,fsphinp_,lm);
 
     // get fine-scale velocity at nodes
     const Teuchos::RCP<Epetra_MultiVector> fsvelocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("fine-scale velocity field");

@@ -37,7 +37,7 @@ namespace UTILS
   has to be in column map style.
 
   \param global (in): global distributed vector with values to be extracted
-  \param local (out): vector holding values extracted from global
+  \param local (out): vector or matrix holding values extracted from global
   \param lm     (in): vector containing global ids to be extracted. Size of lm
                       determines number of values to be extracted.
   */
@@ -46,6 +46,62 @@ namespace UTILS
   void ExtractMyValues(const Epetra_Vector& global, Epetra_SerialDenseVector& local, const std::vector<int>& lm);
 
   void ExtractMyValues(const Epetra_MultiVector& global, std::vector<double>& local, const std::vector<int>& lm);
+
+  template <class matrix>
+  void ExtractMyValues(const Epetra_Vector& global, std::vector<matrix>& local, const std::vector<int>& lm)
+  {
+    // safety check
+    if (local[0].N() != 1 or local.size()*(unsigned)local[0].M() != lm.size())
+      dserror("Received matrix vector of wrong size!");
+
+    // loop over all nodes of current element
+    for (int inode=0; inode<(int)local[0].M(); ++inode)
+    {
+      // loop over all dofs of current node
+      for (unsigned idof=0; idof<local.size(); ++idof)
+      {
+        // extract local ID of current dof
+        const int lid = global.Map().LID(lm[inode*local.size()+idof]);
+
+        // safety check
+        if (lid<0)
+          dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",global.Comm().MyPID(),lm[inode*local.size()+idof]);
+
+        // store current dof in local matrix vector
+        local[idof](inode,0) = global[lid];
+      }
+    }
+
+    return;
+  }
+
+  template <class matrix>
+  void ExtractMyValues(const Epetra_Vector& global, matrix& local, const std::vector<int>& lm)
+  {
+    // safety check
+    if ((unsigned)(local.M()*local.N()) != lm.size())
+      dserror("Received matrix of wrong size!");
+
+    // loop over all nodes of current element
+    for (int inode=0; inode<(int)local.N(); ++inode)
+    {
+      // loop over all dofs of current node
+      for (int idof=0; idof<(int)local.M(); ++idof)
+      {
+        // extract local ID of current dof
+        const int lid = global.Map().LID(lm[inode*local.M()+idof]);
+
+        // safety check
+        if (lid<0)
+          dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",global.Comm().MyPID(),lm[inode*local.M()+idof]);
+
+        // store current dof in local matrix
+        local(idof,inode) = global[lid];
+      }
+    }
+
+    return;
+  }
 
   /// Locally extract a subset of values from a (column)-nodemap-based Epetra_MultiVector
   /*  \author henke

@@ -132,18 +132,8 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Evaluate(
 
   Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
   if (phinp==Teuchos::null)
-      dserror("Cannot get state vector 'phinp'");
-  std::vector<double> myphinp(lm.size());
-  DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
-  // fill all element arrays
-  for (int i=0;i<my::nen_;++i)
-  {
-    for (int k = 0; k< my::numscal_; ++k)
-    {
-      // split for each transported scalar, insert into element arrays
-      my::ephinp_[k](i,0) = myphinp[k+(i*my::numdofpernode_)];
-    } // for k
-  } // for i
+    dserror("Cannot get state vector 'phinp'");
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*phinp,my::ephinp_,lm);
 
   // distinguish reinitalization
   switch(lsreinitparams_->ReinitType())
@@ -156,25 +146,9 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Evaluate(
       Teuchos::RCP<const Epetra_Vector> phizero = discretization.GetState("phizero");
       if (hist==Teuchos::null || phinp==Teuchos::null || phin==Teuchos::null || phizero==Teuchos::null)
         dserror("Cannot get state vector 'hist' and/or 'phin' and/or 'phizero'");
-      std::vector<double> myhist(lm.size());
-      std::vector<double> myphin(lm.size());
-      std::vector<double> myphizero(lm.size());
-      DRT::UTILS::ExtractMyValues(*hist,myhist,lm);
-      DRT::UTILS::ExtractMyValues(*phin,myphin,lm);
-      DRT::UTILS::ExtractMyValues(*phizero,myphizero,lm);
-
-      // fill all element arrays
-      for (int i=0;i<my::nen_;++i)
-      {
-        for (int k = 0; k< my::numscal_; ++k)
-        {
-          // split for each transported scalar, insert into element arrays
-          my::ephin_[k](i,0) = myphin[k+(i*my::numdofpernode_)];
-          ephizero_[k](i,0) = myphizero[k+(i*my::numdofpernode_)];
-          // the history vector contains information of time step t_n
-          my::ehist_[k](i,0) = myhist[k+(i*my::numdofpernode_)];
-        } // for k
-      } // for i
+      DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*phin,my::ephin_,lm);
+      DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*phizero,ephizero_,lm);
+      DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*hist,my::ehist_,lm);
 
       if(lsreinitparams_->UseProjectedVel())
       {

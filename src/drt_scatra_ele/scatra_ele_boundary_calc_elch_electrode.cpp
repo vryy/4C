@@ -114,25 +114,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
     dserror("Cannot get state vector \"phinp\" or \"imasterphinp\"!");
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
-  std::vector<double> eslavephinpvec(lm.size());
-  DRT::UTILS::ExtractMyValues(*phinp,eslavephinpvec,lm);
-  std::vector<LINALG::Matrix<my::nen_,1> > eslavephinp(my::numscal_);
-  LINALG::Matrix<my::nen_,1> eslavepotnp(true);
-  std::vector<double> emasterphinpvec(lm.size());
-  DRT::UTILS::ExtractMyValues(*imasterphinp,emasterphinpvec,lm);
-  std::vector<LINALG::Matrix<my::nen_,1> > emasterphinp(my::numscal_);
-  LINALG::Matrix<my::nen_,1> emasterpotnp(true);
-  for(int inode=0; inode<my::nen_; ++inode)
-  {
-    for(int k=0; k<my::numscal_; ++k)
-    {
-      eslavephinp[k](inode,0) = eslavephinpvec[inode*my::numdofpernode_+k];
-      emasterphinp[k](inode,0) = emasterphinpvec[inode*my::numdofpernode_+k];
-    }
-
-    eslavepotnp(inode,0) = eslavephinpvec[inode*my::numdofpernode_+my::numscal_];
-    emasterpotnp(inode,0) = emasterphinpvec[inode*my::numdofpernode_+my::numscal_];
-  }
+  std::vector<LINALG::Matrix<my::nen_,1> > eslavephinp(my::numdofpernode_,LINALG::Matrix<my::nen_,1>(true));
+  std::vector<LINALG::Matrix<my::nen_,1> > emasterphinp(my::numdofpernode_,LINALG::Matrix<my::nen_,1>(true));
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*phinp,eslavephinp,lm);
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*imasterphinp,emasterphinp,lm);
 
   // get current scatra-scatra interface coupling condition
   Teuchos::RCP<DRT::Condition> s2icondition = params.get<Teuchos::RCP<DRT::Condition> >("condition");
@@ -192,9 +177,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
 
       // evaluate dof values at current integration point on present and opposite side of scatra-scatra interface
       const double eslavephiint = my::funct_.Dot(eslavephinp[k]);
-      const double eslavepotint = my::funct_.Dot(eslavepotnp);
+      const double eslavepotint = my::funct_.Dot(eslavephinp[my::numscal_]);
       const double emasterphiint = my::funct_.Dot(emasterphinp[k]);
-      const double emasterpotint = my::funct_.Dot(emasterpotnp);
+      const double emasterpotint = my::funct_.Dot(emasterphinp[my::numscal_]);
 
       // equilibrium electric potential difference and its derivative w.r.t. concentration at electrode surface
       const double epd = matelectrode->ComputeOpenCircuitPotential(eslavephiint,faraday,frt);

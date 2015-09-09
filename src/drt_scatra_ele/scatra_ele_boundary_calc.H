@@ -216,17 +216,17 @@ public:
 
   //! evaluate Kedem-Katchalsky interface condition
   void EvaluateKedemKatchalsky(
-      const DRT::FaceElement*    ele,         ///< the actual boundary element
-      const std::vector<double>& ephinp,      ///< scalar values at element nodes
-      const std::vector<double>& epressure,   ///< pressure values at element nodes
-      const std::vector<double>& ephibar,     ///< mean concentration values at element nodes
-      const std::vector<double>& f_wss,       ///< factor for WSS at element nodes
-      Epetra_SerialDenseMatrix&  emat,        ///< element-matrix
-      Epetra_SerialDenseVector&  erhs,        ///< element-rhs
-      const std::vector<int>*    onoff,       ///<flag for dofs to be considered by membrane equations of Kedem and Katchalsky
-      const double               perm,        ///< surface/interface permeability coefficient
-      const double               conductivity,///< hydraulic conductivity at interface
-      const double               sigma ///< Staverman filtration coefficient at interface
+      const DRT::FaceElement*                       ele,            ///< the actual boundary element
+      const std::vector<LINALG::Matrix<nen_,1> >&   ephinp,         ///< scalar values at element nodes
+      const std::vector<LINALG::Matrix<nen_,1> >&   epressure,      ///< pressure values at element nodes
+      const std::vector<LINALG::Matrix<nen_,1> >&   ephibar,        ///< mean concentration values at element nodes
+      const std::vector<double>&                    f_wss,          ///< factor for WSS at element nodes
+      Epetra_SerialDenseMatrix&                     emat,           ///< element-matrix
+      Epetra_SerialDenseVector&                     erhs,           ///< element-rhs
+      const std::vector<int>*                       onoff,          ///<flag for dofs to be considered by membrane equations of Kedem and Katchalsky
+      const double                                  perm,           ///< surface/interface permeability coefficient
+      const double                                  conductivity,   ///< hydraulic conductivity at interface
+      const double                                  sigma           ///< Staverman filtration coefficient at interface
   );
 
   //! integral of shape functions over boundary surface
@@ -239,21 +239,22 @@ public:
 
   //! evaluate surface/interface permeability
   void EvaluateSurfacePermeability(
-      const DRT::FaceElement*    ele,    ///< current boundary element
-      const std::vector<double>& ephinp, ///< scalar values at element nodes
-      const std::vector<double>& f_wss,  ///< factor for WSS at element nodes
-      Epetra_SerialDenseMatrix&  emat,   ///< element-matrix
-      Epetra_SerialDenseVector&  erhs,   ///< element-rhs
-      const std::vector<int>*    onoff,  ///<flag for dofs to be considered by membrane equations of Kedem and Katchalsky
-      const double               perm    ///< surface/interface permeability coefficient
-  );
+      const DRT::FaceElement*                       ele,      ///< current boundary element
+      const std::vector<LINALG::Matrix<nen_,1> >&   ephinp,   ///< scalar values at element nodes
+      const std::vector<double>&                    f_wss,    ///< factor for WSS at element nodes
+      Epetra_SerialDenseMatrix&                     emat,     ///< element-matrix
+      Epetra_SerialDenseVector&                     erhs,     ///< element-rhs
+      const std::vector<int>*                       onoff,    ///<flag for dofs to be considered by membrane equations of Kedem and Katchalsky
+      const double                                  perm      ///< surface/interface permeability coefficient
+      );
 
   //! compute integral of convective mass/heat flux over boundary surface
   virtual std::vector<double> CalcConvectiveFlux(
-      const DRT::FaceElement*             ele,
-      const std::vector<double>&          ephinp,
-      const LINALG::Matrix<nsd_+1,nen_>&  evelnp,
-      Epetra_SerialDenseVector&           erhs);
+      const DRT::FaceElement*                       ele,
+      const std::vector<LINALG::Matrix<nen_,1> >&   ephinp,
+      const LINALG::Matrix<nsd_+1,nen_>&            evelnp,
+      Epetra_SerialDenseVector&                     erhs
+      );
 
   //! Compute a constant normal vector for a boundary element
   void GetConstNormal(
@@ -273,20 +274,20 @@ public:
 
   //! get density at integration point
   virtual const double GetDensity(
-      Teuchos::RCP<const MAT::Material>   material,
-      const std::vector<double>&          ephinp,
-      const LINALG::Matrix<nen_,1>&       phinod
+      Teuchos::RCP<const MAT::Material>             material,
+      const std::vector<LINALG::Matrix<nen_,1> >&   ephinp,
+      const int                                     k
       );
 
   //! calculate boundary condition due to convective heat transfer
   void ConvectiveHeatTransfer(
-      const DRT::FaceElement*             ele,
-      Teuchos::RCP<const MAT::Material>   material,
-      const std::vector<double>&          ephinp,
-      Epetra_SerialDenseMatrix&           emat,
-      Epetra_SerialDenseVector&           erhs,
-      const double                        heatranscoeff,
-      const double                        surtemp
+      const DRT::FaceElement*                       ele,
+      Teuchos::RCP<const MAT::Material>             material,
+      const std::vector<LINALG::Matrix<nen_,1> >&   ephinp,
+      Epetra_SerialDenseMatrix&                     emat,
+      Epetra_SerialDenseVector&                     erhs,
+      const double                                  heatranscoeff,
+      const double                                  surtemp
       );
 
   /*!

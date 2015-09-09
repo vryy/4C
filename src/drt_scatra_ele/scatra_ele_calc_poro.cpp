@@ -193,18 +193,7 @@ int DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::EvaluateAction(
     // -> extract local values from the global vectors
     Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
     if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
-    std::vector<double> myphinp(la[0].lm_.size());
-    DRT::UTILS::ExtractMyValues(*phinp,myphinp,la[0].lm_);
-
-    // fill all element arrays
-    for (int i=0;i<my::nen_;++i)
-    {
-      for (int k = 0; k< my::numscal_; ++k)
-      {
-        // split for each transported scalar, insert into element arrays
-        my::ephinp_[k](i,0) = myphinp[k+(i*my::numdofpernode_)];
-      }
-    } // for i
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*phinp,my::ephinp_,la[0].lm_);
 
     ExtractElementAndNodeValuesPoro(ele,params,discretization,la);
 

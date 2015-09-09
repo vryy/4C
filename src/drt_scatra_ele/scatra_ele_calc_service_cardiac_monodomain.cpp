@@ -97,18 +97,7 @@ int DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype,probdim>::EvaluateActi
         Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
         if (phinp==Teuchos::null)
           dserror("Cannot get state vector 'phinp'");
-        std::vector<double> myphinp(lm.size());
-        DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
-
-        // fill all element arrays
-        for (int i=0;i<my::nen_;++i)
-        {
-          for (int k = 0; k< my::numscal_; ++k)
-          {
-            // split for each transported scalar, insert into element arrays
-            my::ephinp_[k](i,0) = myphinp[k+(i*my::numdofpernode_)];
-          }
-        }
+        DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*phinp,my::ephinp_,lm);
 
         my::EvalShapeFuncAndDerivsAtEleCenter();
 

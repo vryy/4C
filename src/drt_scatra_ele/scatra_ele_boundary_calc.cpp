@@ -232,8 +232,8 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
     if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
 
     // extract local values from global vector
-    std::vector<double> ephinp(lm.size());
-    DRT::UTILS::ExtractMyValues(*phinp,ephinp,lm);
+    std::vector<LINALG::Matrix<nen_,1> > ephinp(numdofpernode_,LINALG::Matrix<nen_,1>(true));
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*phinp,ephinp,lm);
 
     // get condition
     Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition> >("condition");
@@ -328,8 +328,8 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
       dserror("Cannot get state vector 'WallShearStress'");
 
     // extract local values from global vector
-    std::vector<double> ephinp(lm.size());
-    DRT::UTILS::ExtractMyValues(*phinp,ephinp,lm);
+    std::vector<LINALG::Matrix<nen_,1> > ephinp(numdofpernode_,LINALG::Matrix<nen_,1>(true));
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*phinp,ephinp,lm);
     std::vector<double> ewss(lm.size());
     DRT::UTILS::ExtractMyValues(*wss,ewss,lm);
 
@@ -396,15 +396,14 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
       dserror("Cannot get state vector 'MeanConcentration'");
 
     // extract local values from global vector
-    std::vector<double> ephinp(lm.size());
-    DRT::UTILS::ExtractMyValues(*phinp,ephinp,lm);
+    std::vector<LINALG::Matrix<nen_,1> > ephinp(numdofpernode_,LINALG::Matrix<nen_,1>(true));
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*phinp,ephinp,lm);
+    std::vector<LINALG::Matrix<nen_,1> > epressure(numdofpernode_,LINALG::Matrix<nen_,1>(true));
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*pressure,epressure,lm);
+    std::vector<LINALG::Matrix<nen_,1> > ephibar(numdofpernode_,LINALG::Matrix<nen_,1>(true));
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*phibar,ephibar,lm);
     std::vector<double> ewss(lm.size());
     DRT::UTILS::ExtractMyValues(*wss,ewss,lm);
-    std::vector<double> epressure(lm.size());
-    DRT::UTILS::ExtractMyValues(*pressure,epressure,lm);
-    std::vector<double> ephibar(lm.size());
-    DRT::UTILS::ExtractMyValues(*phibar,ephibar,lm);
-
 
     // get current condition
     Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition> >("condition");
@@ -457,8 +456,8 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
     if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
 
     // extract local values from the global vector
-    std::vector<double> ephinp(lm.size());
-    DRT::UTILS::ExtractMyValues(*phinp,ephinp,lm);
+    std::vector<LINALG::Matrix<nen_,1> > ephinp(numdofpernode_,LINALG::Matrix<nen_,1>(true));
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*phinp,ephinp,lm);
 
     // get velocity values at nodes
     const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("velocity field",Teuchos::null);
@@ -688,8 +687,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::NeumannInflow(
   if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
 
   // extract local values from global vector
-  std::vector<double> ephinp(lm.size());
-  DRT::UTILS::ExtractMyValues(*phinp,ephinp,lm);
+  std::vector<LINALG::Matrix<nen_,1> > ephinp(numdofpernode_,LINALG::Matrix<nen_,1>(true));
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*phinp,ephinp,lm);
 
   // get velocity values at nodes
   const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("convective velocity field",Teuchos::null);
@@ -711,18 +710,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::NeumannInflow(
   // integration points and weights
   const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
-  // define vector for scalar values at nodes
-  LINALG::Matrix<nen_,1> phinod(true);
-
   // loop over all scalars
   for(int k=0;k<numdofpernode_;++k)
   {
-    // compute scalar values at nodes
-    for (int inode=0; inode< nen_;++inode)
-    {
-      phinod(inode) = ephinp[inode*numdofpernode_+k];
-    }
-
     // loop over all integration points
     for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
     {
@@ -737,7 +727,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::NeumannInflow(
       if (normvel<-0.0001)
       {
         // set density to 1.0
-        double dens = GetDensity(material,ephinp,phinod);
+        double dens = GetDensity(material,ephinp,k);
 
         // integration factor for left-hand side
         const double lhsfac = dens*normvel*scatraparamstimint_->TimeFac()*fac;
@@ -767,7 +757,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::NeumannInflow(
         }
 
         // scalar at integration point
-        const double phi = funct_.Dot(phinod);
+        const double phi = funct_.Dot(ephinp[k]);
 
         // rhs
         const double vrhs = rhsfac*phi;
@@ -790,9 +780,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::NeumannInflow(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 const double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::GetDensity(
-    Teuchos::RCP<const MAT::Material>   material,
-    const std::vector<double>&          ephinp,
-    const LINALG::Matrix<nen_,1>&       phinod
+    Teuchos::RCP<const MAT::Material>             material,
+    const std::vector<LINALG::Matrix<nen_,1> >&   ephinp,
+    const int                                     k
     )
 {
   // initialization
@@ -841,17 +831,14 @@ const double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::GetDensity(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 std::vector<double> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcConvectiveFlux(
-    const DRT::FaceElement*             ele,
-    const std::vector<double>&          ephinp,
-    const LINALG::Matrix<nsd_+1,nen_>&  evelnp,
-    Epetra_SerialDenseVector&           erhs
+    const DRT::FaceElement*                       ele,
+    const std::vector<LINALG::Matrix<nen_,1> >&   ephinp,
+    const LINALG::Matrix<nsd_+1,nen_>&            evelnp,
+    Epetra_SerialDenseVector&                     erhs
 )
 {
   // integration points and weights
   const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
-
-  // define vector for scalar values at nodes
-  LINALG::Matrix<nen_,1> phinod(true);
 
   std::vector<double> integralflux(numscal_);
 
@@ -859,12 +846,6 @@ std::vector<double> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcConvectiv
   for(int k=0;k<numscal_;++k)
   {
     integralflux[k] = 0.0;
-
-    // compute scalar values at nodes
-    for (int inode=0; inode< nen_;++inode)
-    {
-      phinod(inode) = ephinp[inode*numdofpernode_+k];
-    }
 
     // loop over all integration points
     for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
@@ -878,7 +859,7 @@ std::vector<double> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcConvectiv
       const double normvel = velint_.Dot(normal_);
 
       // scalar at integration point
-      const double phi = funct_.Dot(phinod);
+      const double phi = funct_.Dot(ephinp[k]);
 
       const double val = phi*normvel*fac;
       integralflux[k] += val;
@@ -900,30 +881,21 @@ std::vector<double> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcConvectiv
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ConvectiveHeatTransfer(
-    const DRT::FaceElement*             ele,
-    Teuchos::RCP<const MAT::Material>   material,
-    const std::vector<double>&          ephinp,
-    Epetra_SerialDenseMatrix&           emat,
-    Epetra_SerialDenseVector&           erhs,
-    const double                        heatranscoeff,
-    const double                        surtemp
+    const DRT::FaceElement*                       ele,
+    Teuchos::RCP<const MAT::Material>             material,
+    const std::vector<LINALG::Matrix<nen_,1> >&   ephinp,
+    Epetra_SerialDenseMatrix&                     emat,
+    Epetra_SerialDenseVector&                     erhs,
+    const double                                  heatranscoeff,
+    const double                                  surtemp
     )
 {
   // integration points and weights
   const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
-  // define vector for scalar values at nodes
-  LINALG::Matrix<nen_,1> phinod(true);
-
   // loop over all scalars
   for(int k=0;k<numdofpernode_;++k)
   {
-    // compute scalar values at nodes
-    for (int inode=0; inode< nen_;++inode)
-    {
-      phinod(inode) = ephinp[inode*numdofpernode_+k];
-    }
-
     // loop over all integration points
     for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
     {
@@ -973,7 +945,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ConvectiveHeatTransfer(
       }
 
       // scalar at integration point
-      const double phi = funct_.Dot(phinod);
+      const double phi = funct_.Dot(ephinp[k]);
 
       // rhs
       const double vrhs = rhsfac*(phi-surtemp);
@@ -1126,20 +1098,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICoupling(
     dserror("Cannot get state vector 'phinp' or 'imasterphinp'!");
 
   // extract local nodal values on present and opposite sides of scatra-scatra interface
-  std::vector<double> eslavephinpvec(lm.size());
-  DRT::UTILS::ExtractMyValues(*phinp,eslavephinpvec,lm);
   std::vector<LINALG::Matrix<nen_,1> > eslavephinp(numscal_);
-  std::vector<double> emasterphinpvec(lm.size());
-  DRT::UTILS::ExtractMyValues(*imasterphinp,emasterphinpvec,lm);
   std::vector<LINALG::Matrix<nen_,1> > emasterphinp(numscal_);
-  for(int inode=0; inode<nen_; ++inode)
-  {
-    for(int k=0; k<numscal_; ++k)
-    {
-      eslavephinp[k](inode,0) = eslavephinpvec[inode*numscal_+k];
-      emasterphinp[k](inode,0) = emasterphinpvec[inode*numscal_+k];
-    }
-  }
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*phinp,eslavephinp,lm);
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*imasterphinp,emasterphinp,lm);
 
   // get current scatra-scatra interface coupling condition
   Teuchos::RCP<DRT::Condition> s2icondition = params.get<Teuchos::RCP<DRT::Condition> >("condition");
@@ -1300,21 +1262,18 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcRobinBoundary(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateSurfacePermeability(
-        const DRT::FaceElement*    ele,    ///< current boundary element
-        const std::vector<double>& ephinp, ///< scalar values at element nodes
-        const std::vector<double>& f_wss,  ///< factor for WSS at element nodes
-        Epetra_SerialDenseMatrix&  emat,   ///< element-matrix
-        Epetra_SerialDenseVector&  erhs,   ///< element-rhs
-        const std::vector<int>*    onoff,  ///<flag for dofs to be considered by membrane equations of Kedem and Katchalsky
-        const double               perm    ///< surface/interface permeability coefficient
+    const DRT::FaceElement*                       ele,      ///< current boundary element
+    const std::vector<LINALG::Matrix<nen_,1> >&   ephinp,   ///< scalar values at element nodes
+    const std::vector<double>&                    f_wss,    ///< factor for WSS at element nodes
+    Epetra_SerialDenseMatrix&                     emat,     ///< element-matrix
+    Epetra_SerialDenseVector&                     erhs,     ///< element-rhs
+    const std::vector<int>*                       onoff,    ///<flag for dofs to be considered by membrane equations of Kedem and Katchalsky
+    const double                                  perm      ///< surface/interface permeability coefficient
     )
 {
 
   // integration points and weights
   const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
-
-  // define vector for scalar values at nodes
-  LINALG::Matrix<nen_,1> phinod(true);
 
   // define vector for wss concentration values at nodes
   LINALG::Matrix<nen_,1> fwssnod(true);
@@ -1327,9 +1286,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateSurfacePermeability(
     {
       for (int inode = 0; inode < nen_; ++inode)
       {
-        // get scalar values at nodes
-        phinod(inode) = ephinp[inode * numdofpernode_ + k];
-
         // get factor for WSS influence at nodes
         fwssnod(inode) = f_wss[inode * numdofpernode_ + k];
       }
@@ -1347,7 +1303,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateSurfacePermeability(
           dserror("EvaluateSurfacePermeability: Requested scheme not yet implemented");
 
         // scalar at integration point
-        const double phi = funct_.Dot(phinod);
+        const double phi = funct_.Dot(ephinp[k]);
 
         // mean concentration at integration point
         const double facWSS = funct_.Dot(fwssnod);
@@ -1388,31 +1344,22 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateSurfacePermeability(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateKedemKatchalsky(
-    const DRT::FaceElement*    ele,         ///< the actual boundary element
-    const std::vector<double>& ephinp,      ///< scalar values at element nodes
-    const std::vector<double>& epressure,   ///< pressure values at element nodes
-    const std::vector<double>& ephibar,     ///< mean concentration values at element nodes
-    const std::vector<double>& f_wss,       ///< factor for WSS at element nodes
-    Epetra_SerialDenseMatrix&  emat,        ///< element-matrix
-    Epetra_SerialDenseVector&  erhs,        ///< element-rhs
-    const std::vector<int>*    onoff,       ///<flag for dofs to be considered by membrane equations of Kedem and Katchalsky
-    const double               perm,        ///< surface/interface permeability coefficient
-    const double               conductivity,///< hydraulic conductivity at interface
-    const double               sigma ///< Staverman filtration coefficient at interface
+    const DRT::FaceElement*                       ele,            ///< the actual boundary element
+    const std::vector<LINALG::Matrix<nen_,1> >&   ephinp,         ///< scalar values at element nodes
+    const std::vector<LINALG::Matrix<nen_,1> >&   epressure,      ///< pressure values at element nodes
+    const std::vector<LINALG::Matrix<nen_,1> >&   ephibar,        ///< mean concentration values at element nodes
+    const std::vector<double>&                    f_wss,          ///< factor for WSS at element nodes
+    Epetra_SerialDenseMatrix&                     emat,           ///< element-matrix
+    Epetra_SerialDenseVector&                     erhs,           ///< element-rhs
+    const std::vector<int>*                       onoff,          ///<flag for dofs to be considered by membrane equations of Kedem and Katchalsky
+    const double                                  perm,           ///< surface/interface permeability coefficient
+    const double                                  conductivity,   ///< hydraulic conductivity at interface
+    const double                                  sigma           ///< Staverman filtration coefficient at interface
     )
 {
 
   // integration points and weights
   const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
-
-  // define vector for scalar values at nodes
-  LINALG::Matrix<nen_,1> phinod(true);
-
-  // define vector for pressure values at nodes
-  LINALG::Matrix<nen_,1> pnod(true);
-
-  // define vector for mean concentration values at nodes
-  LINALG::Matrix<nen_,1> phibarnod(true);
 
   // define vector for wss concentration values at nodes
   LINALG::Matrix<nen_,1> fwssnod(true);
@@ -1425,15 +1372,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateKedemKatchalsky(
     {
       for (int inode = 0; inode < nen_; ++inode)
       {
-        // get scalar values at nodes
-        phinod(inode) = ephinp[inode * numdofpernode_ + k];
-
-        // get pressure values at nodes
-        pnod(inode) = epressure[inode * numdofpernode_ + k];
-
-        // get mean concentrations at nodes
-        phibarnod(inode) = ephibar[inode * numdofpernode_ + k];
-
         // get factor for WSS influence at nodes
         fwssnod(inode) = f_wss[inode * numdofpernode_ + k];
       }
@@ -1451,13 +1389,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateKedemKatchalsky(
           dserror("Kedem-Katchalsky: Requested time integration scheme not yet implemented");
 
         // scalar at integration point
-        const double phi = funct_.Dot(phinod);
+        const double phi = funct_.Dot(ephinp[k]);
 
         // pressure at integration point
-        const double p = funct_.Dot(pnod);
+        const double p = funct_.Dot(epressure[k]);
 
         // mean concentration at integration point
-        const double phibar = funct_.Dot(phibarnod);
+        const double phibar = funct_.Dot(ephibar[k]);
 
         // mean concentration at integration point
         const double facWSS = funct_.Dot(fwssnod);
@@ -1631,22 +1569,15 @@ template <DRT::Element::DiscretizationType bdistype,
   if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
 
   // extract local values from global vectors for parent element
-  std::vector<double> myphinp(plm.size());
-  DRT::UTILS::ExtractMyValues(*phinp,myphinp,plm);
-
   // matrix and vector definition
   LINALG::Matrix<pnsd,pnen>       evelnp;
   std::vector<LINALG::Matrix<pnen,1> > ephinp(numscal_);
 
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<pnen,1> >(*phinp,ephinp,plm);
+
   // insert into element arrays
   for (int i=0;i<pnen;++i)
   {
-    for (int k = 0; k< numscal_; ++k)
-    {
-      // split for each tranported scalar, insert into element arrays
-      ephinp[k](i,0) = myphinp[k+(i*numdofpernode_)];
-    }
-
     // insert velocity field into element array
     for (int idim=0 ; idim < pnsd; idim++)
     {
@@ -2321,27 +2252,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ReinitCharacteristicGalerkin
   if (phinp==Teuchos::null) dserror("Cannot get state vector 'phin'");
 
   // extract local values from global vectors for parent element
-  std::vector<double> myphinp(plm.size());
-  DRT::UTILS::ExtractMyValues(*phinp,myphinp,plm);
-
-  std::vector<double> myphin(plm.size());
-  DRT::UTILS::ExtractMyValues(*phin,myphin,plm);
-
-  //    // matrix and vector definition
-  //    LINALG::Matrix<pnsd,pnen>       evelnp;
   std::vector<LINALG::Matrix<pnen,1> > ephinp(numscal_);
   std::vector<LINALG::Matrix<pnen,1> > ephin(numscal_);
-
-  // insert into element arrays
-  for (int i=0;i<pnen;++i)
-  {
-    for (int k = 0; k< numscal_; ++k)
-    {
-      // split for each tranported scalar, insert into element arrays
-      ephinp[k](i,0) = myphinp[k+(i*numdofpernode_)];
-      ephin[k](i,0)  = myphin[k+(i*numdofpernode_)];
-    }
-  }
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<pnen,1> >(*phinp,ephinp,plm);
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<pnen,1> >(*phin,ephin,plm);
 
   //------------------------------------------------------------------------
   // preliminary definitions for integration loop

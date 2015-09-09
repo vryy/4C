@@ -56,9 +56,8 @@ namespace DRT
             const DRT::Element*                           ele,        ///< current element
             Epetra_SerialDenseMatrix&                     emat,       ///< element matrix
             Epetra_SerialDenseVector&                     erhs,       ///< element right-hand side vector
-            const std::vector<LINALG::Matrix<nen_,1> >&   conreact,   ///< concentration values of reactive species at element nodes
-            const LINALG::Matrix<nen_,1>&                 pot,        ///< el. potential values at element nodes
-            const LINALG::Matrix<nen_,1>&                 phihist,    ///< element history vector for potential at electrode
+            const std::vector<LINALG::Matrix<nen_,1> >&   ephinp,     ///< state variables at element nodes
+            const std::vector<LINALG::Matrix<nen_,1> >&   ehist,      ///< history variables at element nodes
             const double                                  timefac,    ///< time factor
             const double                                  fac,        ///< Gauss integration factor
             const LINALG::Matrix<nen_,1>&                 funct,      ///< shape functions at int. point
@@ -80,9 +79,8 @@ namespace DRT
             Epetra_SerialDenseVector&                     scalars,    ///< scalars to be computed
             const Teuchos::ParameterList&                 params,     ///< parameter list
             const Teuchos::RCP<DRT::Condition>&           cond,       ///< condition
-            const std::vector<LINALG::Matrix<nen_,1> >&   conreact,   ///< concentration values of reactive species at element nodes
-            const LINALG::Matrix<nen_,1>&                 pot,        ///< potential vector
-            const LINALG::Matrix<nen_,1>&                 potdtnp,    ///< potential derivative vector
+            const std::vector<LINALG::Matrix<nen_,1> >&   ephinp,     ///< nodal values of concentration and electric potential
+            const std::vector<LINALG::Matrix<nen_,1> >&   ephidtnp,   ///< nodal time derivative vector
             const LINALG::Matrix<nen_,1>&                 funct,      ///< shape functions at integration point
             const int                                     zerocur,    ///< flag for zero current
             const int                                     kinetics,   ///< desired electrode kinetics model

@@ -173,14 +173,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::CalcLomaThermPress(
   Epetra_SerialDenseVector evel((my::nsd_+1)*nenparent);
   DRT::UTILS::ExtractMyNodeBasedValues(parentele,evel,velocity,my::nsd_+1);
 
-  // get values of scalar
-  Teuchos::RCP<const Epetra_Vector> phinp  = discretization.GetState("phinp");
-  if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
-
-  // extract local values from the global vectors for the parent(!) element
-  std::vector<double> myphinp(lmparent.size());
-  DRT::UTILS::ExtractMyValues(*phinp,myphinp,lmparent);
-
   // define vector for normal diffusive and velocity fluxes
   std::vector<double> mynormdiffflux(lm.size());
   std::vector<double> mynormvel(lm.size());
@@ -254,9 +246,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::NeumannInflow(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 const double DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::GetDensity(
-    Teuchos::RCP<const MAT::Material>   material,
-    const std::vector<double>&          ephinp,
-    const LINALG::Matrix<my::nen_,1>&   phinod
+    Teuchos::RCP<const MAT::Material>                 material,
+    const std::vector<LINALG::Matrix<my::nen_,1> >&   ephinp,
+    const int                                         k
     )
 {
   // initialization
@@ -273,14 +265,8 @@ const double DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::GetDensity(
 
     if (actmat->MaterialById(lastmatid)->MaterialType() == INPAR::MAT::m_arrhenius_temp)
     {
-      // compute temperature values at nodes (always last scalar)
-      LINALG::Matrix<my::nen_,1> tempnod(true);
-      for (int inode=0; inode<my::nen_; ++inode)
-      {
-        tempnod(inode) = ephinp[(inode+1)*my::numdofpernode_-1];
-      }
       // compute temperature and check whether it is positive
-      const double temp = my::funct_.Dot(tempnod);
+      const double temp = my::funct_.Dot(ephinp[my::numscal_-1]);
       if (temp < 0.0)
         dserror("Negative temperature in ScaTra Arrhenius temperature density evaluation on boundary!");
 
@@ -295,7 +281,7 @@ const double DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::GetDensity(
   case INPAR::MAT::m_mixfrac:
   {
     // compute density based on mixture fraction
-    density = static_cast<const MAT::MixFrac*>(material.get())->ComputeDensity(my::funct_.Dot(phinod));
+    density = static_cast<const MAT::MixFrac*>(material.get())->ComputeDensity(my::funct_.Dot(ephinp[k]));
 
     break;
   }
@@ -303,7 +289,7 @@ const double DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::GetDensity(
   case INPAR::MAT::m_sutherland:
   {
     // compute temperature and check whether it is positive
-    const double temp = my::funct_.Dot(phinod);
+    const double temp = my::funct_.Dot(ephinp[k]);
     if (temp < 0.0)
       dserror("Negative temperature in ScaTra Sutherland density evaluation on boundary!");
 
@@ -316,7 +302,7 @@ const double DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::GetDensity(
   case INPAR::MAT::m_arrhenius_pv:
   {
     // compute density based on progress variable
-    density = static_cast<const MAT::ArrheniusPV*>(material.get())->ComputeDensity(my::funct_.Dot(phinod));
+    density = static_cast<const MAT::ArrheniusPV*>(material.get())->ComputeDensity(my::funct_.Dot(ephinp[k]));
 
     break;
   }
@@ -324,7 +310,7 @@ const double DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::GetDensity(
   case INPAR::MAT::m_ferech_pv:
   {
     // compute density based on progress variable
-    density = static_cast<const MAT::FerEchPV*>(material.get())->ComputeDensity(my::funct_.Dot(phinod));
+    density = static_cast<const MAT::FerEchPV*>(material.get())->ComputeDensity(my::funct_.Dot(ephinp[k]));
 
     break;
   }

@@ -88,18 +88,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
     // -> extract local values from global vectors
     Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
     if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
-    std::vector<double> myphinp(lm.size());
-    DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
-
-    // fill all element arrays
-    for (int i=0;i<nen_;++i)
-    {
-      for (int k = 0; k< numscal_; ++k)
-      {
-        // split for each transported scalar, insert into element arrays
-        ephinp_[k](i,0) = myphinp[k+(i*numdofpernode_)];
-      }
-    } // for i
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*phinp,ephinp_,lm);
 
     // access control parameter for flux calculation
     INPAR::SCATRA::FluxType fluxtype = scatrapara_->WriteFlux();
@@ -137,18 +126,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
     // -> extract local values from the global vectors
     Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
     if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
-    std::vector<double> myphinp(lm.size());
-    DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
-
-    // fill all element arrays
-    for (int i=0;i<nen_;++i)
-    {
-      for (int k = 0; k< numscal_; ++k)
-      {
-        // split for each transported scalar, insert into element arrays
-        ephinp_[k](i,0) = myphinp[k+(i*numdofpernode_)];
-      }
-    } // for i
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*phinp,ephinp_,lm);
 
     // calculate scalars and domain integral
     CalculateScalars(ele,elevec1_epetra,inverting);
@@ -326,17 +304,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
     Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
     if (phinp==Teuchos::null)
       dserror("Cannot get state vector 'phinp'");
-    std::vector<double> myphinp(lm.size());
-    DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
-    // fill all element arrays
-    for (int i=0;i<nen_;++i)
-    {
-      for (int k = 0; k< numscal_; ++k)
-      {
-        // split for each transported scalar, insert into element arrays
-        ephinp_[k](i,0) = myphinp[k+(i*numdofpernode_)];
-      }
-    }
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*phinp,ephinp_,lm);
 
     if (turbparams_->TurbModel() != INPAR::FLUID::multifractal_subgrid_scales)
       dserror("Multifractal_Subgrid_Scales expected");
@@ -498,18 +466,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
     // -> extract local values from the global vectors
     Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
     if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
-    std::vector<double> myphinp(lm.size());
-    DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
-
-    // fill all element arrays
-    for (int i=0;i<nen_;++i)
-    {
-      for (int k = 0; k< numscal_; ++k)
-      {
-        // split for each transported scalar, insert into element arrays
-        ephinp_[k](i,0) = myphinp[k+(i*numdofpernode_)];
-      }
-    } // for i
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*phinp,ephinp_,lm);
 
     CalcGradientAtNodes(ele, elemat1_epetra, elevec1_epetra, elevec2_epetra, elevec3_epetra);
 
@@ -532,8 +489,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
       Teuchos::RCP<const Epetra_Vector> gradphinp_z = discretization.GetState("gradphinp_z");
       if (phinp==Teuchos::null) dserror("Cannot get state vector 'gradphinp_z'");
 
-      std::vector<double> myphinp(lm.size());
-      DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
+      DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*phinp,ephinp_,lm);
 
       std::vector<double> mygradphinp_x(lm.size());
       DRT::UTILS::ExtractMyValues(*gradphinp_x,mygradphinp_x,lm);
@@ -552,7 +508,6 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
         for (int k = 0; k< numscal_; ++k)
         {
           // split for each transported scalar, insert into element arrays
-          ephinp_[k](i,0) = myphinp[k+(i*numdofpernode_)];
           egradphinp[k](i,0) = mygradphinp_x[k+(i*numdofpernode_)];
           egradphinp[k](i,1) = mygradphinp_y[k+(i*numdofpernode_)];
           egradphinp[k](i,2) = mygradphinp_z[k+(i*numdofpernode_)];
@@ -584,18 +539,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
         // -> extract local values from the global vectors
         Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
         if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
-        std::vector<double> myphinp(lm.size());
-        DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
-
-        // fill all element arrays
-        for (int i=0;i<nen_;++i)
-        {
-          for (int k = 0; k< numscal_; ++k)
-          {
-            // split for each transported scalar, insert into element arrays
-            ephinp_[k](i,0) = myphinp[k+(i*numdofpernode_)];
-          }
-        } // for i
+        DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*phinp,ephinp_,lm);
 
         // calculate momentum vector and volume for element.
         CalculateMomentumAndVolume(ele,elevec1_epetra,interface_thickness);
@@ -645,20 +589,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
     // need current solution
     Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
     if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
-
-    // extract local values from the global vector
-    std::vector<double> myphinp(lm.size());
-    DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
-
-    // fill element arrays
-    for (int i=0;i<nen_;++i)
-    {
-      // split for each transported scalar, insert into element arrays
-      for (int k = 0; k< numscal_; ++k)
-      {
-        ephinp_[k](i) = myphinp[k+(i*numdofpernode_)];
-      }
-    } // for i
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*phinp,ephinp_,lm);
 
     CalErrorComparedToAnalytSolution(
       ele,
@@ -692,14 +623,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
       dserror("failed to get state phinp for action 'calc_immersed_phi_at_given_point'");
 
     // extract local values from the global vector
-    std::vector<double> myphinp(lm.size());
-    DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
-
-    // fill element arrays
-    for (int i=0;i<nen_;++i)
-    {
-      ephinp_[1](i) = myphinp[1+(i*numdofpernode_)];
-    } // for i
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*phinp,ephinp_,lm);
 
     break;
   }
@@ -948,10 +872,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcBoxFilter(
   Teuchos::RCP<const Epetra_Vector> scalar = discretization.GetState("scalar");
   if (scalar == Teuchos::null)
     dserror("Cannot get scalar!");
-  std::vector<double> myscalar(lm.size());
-  DRT::UTILS::ExtractMyValues(*scalar,myscalar,lm);
-  for (int i=0;i<nen_;++i)
-      ephinp_[0](i,0) = myscalar[i];
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*scalar,ephinp_,lm);
+
   // velocity field
   const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("velocity");
   DRT::UTILS::ExtractMyNodeBasedValues(ele,evelnp_,velocity,nsd_);

@@ -52,10 +52,10 @@ DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ScaTraEleCalc(const int numdofper
     scatraparatimint_(DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(disname)),   // time integration parameter list
     diffmanager_(Teuchos::rcp(new ScaTraEleDiffManager(numscal_))),           // diffusion manager for diffusivity / diffusivities (in case of systems) or thermal conductivity/specific heat (in case of loma)
     reamanager_(Teuchos::rcp(new ScaTraEleReaManager(numscal_))),             // reaction manager
-    ephin_(numscal_,LINALG::Matrix<nen_,1>(true)),   // size of vector
+    ephin_(numdofpernode_,LINALG::Matrix<nen_,1>(true)),   // size of vector
     ephinp_(numdofpernode_,LINALG::Matrix<nen_,1>(true)),  // size of vector
-    ehist_(numscal_,LINALG::Matrix<nen_,1>(true)),   // size of vector
-    fsphinp_(numscal_,LINALG::Matrix<nen_,1>(true)), // size of vector
+    ehist_(numdofpernode_,LINALG::Matrix<nen_,1>(true)),   // size of vector
+    fsphinp_(numdofpernode_,LINALG::Matrix<nen_,1>(true)), // size of vector
     evelnp_(true),      // initialized to zero
     econvelnp_(true),   // initialized to zero
     efsvel_(true),      // initialized to zero
@@ -247,25 +247,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ExtractElementAndNodeValues(
 
   //values of scatra field are always in first dofset
   const std::vector<int>&    lm = la[0].lm_;
-  std::vector<double> myhist(lm.size());
-  std::vector<double> myphinp(lm.size());
-  DRT::UTILS::ExtractMyValues(*hist,myhist,lm);
-  DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
-
-  // fill all element arrays
-  for (int i=0;i<nen_;++i)
-  {
-    for (int k = 0; k< numdofpernode_; ++k)
-    {
-      // split for each transported scalar, insert into element arrays
-      ephinp_[k](i,0) = myphinp[k+(i*numdofpernode_)];
-    }
-    for (int k = 0; k< numscal_; ++k)
-    {
-      // the history vectors contains information of time step t_n
-      ehist_[k](i,0) = myhist[k+(i*numdofpernode_)];
-    }
-  } // for i
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*hist,ehist_,lm);
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*phinp,ephinp_,lm);
 
   if (scatraparatimint_->IsGenAlpha() and not scatraparatimint_->IsIncremental())
   {
@@ -273,17 +256,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ExtractElementAndNodeValues(
     Teuchos::RCP<const Epetra_Vector> phin = discretization.GetState("phin");
     if (phin==Teuchos::null) dserror("Cannot get state vector 'phin'");
     std::vector<double> myphin(lm.size());
-    DRT::UTILS::ExtractMyValues(*phin,myphin,lm);
-
-    // fill element array
-    for (int i=0;i<nen_;++i)
-    {
-      for (int k = 0; k< numscal_; ++k)
-      {
-        // split for each transported scalar, insert into element arrays
-        ephin_[k](i,0) = myphin[k+(i*numdofpernode_)];
-      }
-    } // for i
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*phin,ephin_,lm);
   }
 
   // ---------------------------------------------------------------------
@@ -346,17 +319,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ExtractTurbulenceApproach(
     Teuchos::RCP<const Epetra_Vector> gfsphinp = discretization.GetState("fsphinp");
     if (gfsphinp==Teuchos::null) dserror("Cannot get state vector 'fsphinp'");
 
-    std::vector<double> myfsphinp(lm.size());
-    DRT::UTILS::ExtractMyValues(*gfsphinp,myfsphinp,lm);
-
-    for (int i=0;i<nen_;++i)
-    {
-      for (int k = 0; k< numscal_; ++k)
-      {
-        // split for each transported scalar, insert into element arrays
-        fsphinp_[k](i,0) = myfsphinp[k+(i*numdofpernode_)];
-      }
-    }
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*gfsphinp,fsphinp_,lm);
 
     // get fine-scale velocity at nodes
     if (turbparams_->WhichFssgd() == INPAR::SCATRA::fssugrdiff_smagorinsky_small or turbparams_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
@@ -861,18 +824,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::OtherNodeBasedSourceTerms(
   {
     // extract additional local values from global vector
     Teuchos::RCP<const Epetra_Vector> source = discretization.GetState("forcing");
-    std::vector<double> mysource(lm.size());
-    DRT::UTILS::ExtractMyValues(*source,mysource,lm);
-
-    // fill element array
-    for (int i=0;i<nen_;++i)
-    {
-      for (int k = 0; k< numdofpernode_; ++k)
-      {
-        // split for each transported scalar, insert into element arrays
-        bodyforce_[k](i,0) = mysource[k+(i*numdofpernode_)];
-      }
-    } // for i
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*source,bodyforce_,lm);
   }
   // special forcing mean scalar gradient
   else if (turbparams_->ScalarForcing()==INPAR::FLUID::scalarforcing_mean_scalar_gradient)

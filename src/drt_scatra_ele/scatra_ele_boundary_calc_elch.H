@@ -62,20 +62,20 @@ namespace DRT
 
       //! evaluate an electrode kinetics boundary condition
       virtual void EvaluateElchBoundaryKinetics(
-          const DRT::Element*                 ele,        ///< current element
-          Epetra_SerialDenseMatrix&           emat,       ///< element matrix
-          Epetra_SerialDenseVector&           erhs,       ///< element right-hand side vector
-          const std::vector<double>&          ephinp,     ///< nodal values of concentration and electric potential
-          const std::vector<double>&          ehist,      ///< nodal history vector
-          double                              timefac,    ///< time factor
-          Teuchos::RCP<const MAT::Material>   material,   ///< material
-          Teuchos::RCP<DRT::Condition>        cond,       ///< electrode kinetics boundary condition
-          const int                           nume,       ///< number of transferred electrons
-          const std::vector<int>              stoich,     ///< stoichiometry of the reaction
-          const int                           kinetics,   ///< desired electrode kinetics model
-          const double                        pot0,       ///< electrode potential on metal side
-          const double                        frt,        ///< factor F/RT
-          const double                        scalar      ///< scaling factor for element matrix and right-hand side contributions
+          const DRT::Element*                               ele,        ///< current element
+          Epetra_SerialDenseMatrix&                         emat,       ///< element matrix
+          Epetra_SerialDenseVector&                         erhs,       ///< element right-hand side vector
+          const std::vector<LINALG::Matrix<my::nen_,1> >&   ephinp,     ///< nodal values of concentration and electric potential
+          const std::vector<LINALG::Matrix<my::nen_,1> >&   ehist,      ///< nodal history vector
+          double                                            timefac,    ///< time factor
+          Teuchos::RCP<const MAT::Material>                 material,   ///< material
+          Teuchos::RCP<DRT::Condition>                      cond,       ///< electrode kinetics boundary condition
+          const int                                         nume,       ///< number of transferred electrons
+          const std::vector<int>                            stoich,     ///< stoichiometry of the reaction
+          const int                                         kinetics,   ///< desired electrode kinetics model
+          const double                                      pot0,       ///< electrode potential on metal side
+          const double                                      frt,        ///< factor F/RT
+          const double                                      scalar      ///< scaling factor for element matrix and right-hand side contributions
           );
 
       //! process an electrode kinetics boundary condition
@@ -91,19 +91,19 @@ namespace DRT
 
       //! evaluate electrode kinetics status information
       void EvaluateElectrodeStatus(
-          const DRT::Element*            ele,        ///< current element
-          Epetra_SerialDenseVector&      scalars,    ///< scalars to be integrated
-          Teuchos::ParameterList&        params,     ///< parameter list
-          Teuchos::RCP<DRT::Condition>   cond,       ///< condition
-          const std::vector<double>&     ephinp,     ///< nodal values of concentration and electric potential
-          const std::vector<double>&     ephidtnp,   ///< nodal time derivative vector
-          const int                      kinetics,   ///< desired electrode kinetics model
-          const std::vector<int>         stoich,     ///< stoichiometry of the reaction
-          const int                      nume,       ///< number of transferred electrons
-          const double                   pot0,       ///< electrode potential on metal side
-          const double                   frt,        ///< factor F/RT
-          const double                   timefac,    ///< time factor
-          const double                   scalar      ///< scaling factor for current related quantities
+          const DRT::Element*                               ele,        ///< current element
+          Epetra_SerialDenseVector&                         scalars,    ///< scalars to be integrated
+          Teuchos::ParameterList&                           params,     ///< parameter list
+          Teuchos::RCP<DRT::Condition>                      cond,       ///< condition
+          const std::vector<LINALG::Matrix<my::nen_,1> >&   ephinp,     ///< nodal values of concentration and electric potential
+          const std::vector<LINALG::Matrix<my::nen_,1> >&   ephidtnp,   ///< nodal time derivative vector
+          const int                                         kinetics,   ///< desired electrode kinetics model
+          const std::vector<int>                            stoich,     ///< stoichiometry of the reaction
+          const int                                         nume,       ///< number of transferred electrons
+          const double                                      pot0,       ///< electrode potential on metal side
+          const double                                      frt,        ///< factor F/RT
+          const double                                      timefac,    ///< time factor
+          const double                                      scalar      ///< scaling factor for current related quantities
           );
 
       //! evaluate linearization of nernst equation

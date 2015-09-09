@@ -137,8 +137,8 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::EvaluateAction(
     if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
 
     // extract local values from the global vector
-    std::vector<double> ephinp(la[0].lm_.size());
-    DRT::UTILS::ExtractMyValues(*phinp,ephinp,la[0].lm_);
+    std::vector<LINALG::Matrix<my::nen_,1> > ephinp(my::numdofpernode_,LINALG::Matrix<my::nen_,1>(true));
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*phinp,ephinp,la[0].lm_);
 
     // get velocity values at nodes
     const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("velocity field",Teuchos::null);
@@ -204,17 +204,14 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::EvaluateAction(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 std::vector<double> DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::CalcConvectiveFlux(
-    const DRT::FaceElement*                     ele,
-    const std::vector<double>&                  ephinp,
-    const LINALG::Matrix<my::nsd_+1,my::nen_>&  evelnp,
-    Epetra_SerialDenseVector&                   erhs
+    const DRT::FaceElement*                           ele,
+    const std::vector<LINALG::Matrix<my::nen_,1> >&   ephinp,
+    const LINALG::Matrix<my::nsd_+1,my::nen_>&        evelnp,
+    Epetra_SerialDenseVector&                         erhs
 )
 {
   // integration points and weights
   const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
-
-  // define vector for scalar values at nodes
-  LINALG::Matrix<my::nen_,1> phinod(true);
 
   std::vector<double> integralflux(my::numscal_);
 
@@ -222,12 +219,6 @@ std::vector<double> DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::CalcConve
   for(int k=0;k<my::numscal_;++k)
   {
     integralflux[k] = 0.0;
-
-    // compute scalar values at nodes
-    for (int inode=0; inode< my::nen_;++inode)
-    {
-      phinod(inode) = ephinp[inode*my::numdofpernode_+k];
-    }
 
     // loop over all integration points
     for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
@@ -244,7 +235,7 @@ std::vector<double> DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::CalcConve
       const double normvel = my::velint_.Dot(my::normal_);
 
       // scalar at integration point
-      const double phi = my::funct_.Dot(phinod);
+      const double phi = my::funct_.Dot(ephinp[k]);
 
       const double val = porosity*phi*normvel*fac;
       integralflux[k] += val;

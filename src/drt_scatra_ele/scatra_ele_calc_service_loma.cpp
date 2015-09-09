@@ -54,18 +54,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::EvaluateAction(
       // extract additional local values from global vector
       Teuchos::RCP<const Epetra_Vector> phiam = discretization.GetState("phiam");
       if (phiam==Teuchos::null) dserror("Cannot get state vector 'phiam'");
-      std::vector<double> myphiam(lm.size());
-      DRT::UTILS::ExtractMyValues(*phiam,myphiam,lm);
-
-      // fill element array
-      for (int i=0;i<my::nen_;++i)
-      {
-        for (int k = 0; k< my::numscal_; ++k)
-        {
-          // split for each transported scalar, insert into element arrays
-          ephiam_[k](i,0) = myphiam[k+(i*my::numdofpernode_)];
-        }
-       } // for i
+      DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*phiam,ephiam_,lm);
     }
   }
 
@@ -165,18 +154,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::ExtractElementAndNodeValues(
     // extract local values from global vector
     Teuchos::RCP<const Epetra_Vector> phiam = discretization.GetState("phiam");
     if (phiam==Teuchos::null) dserror("Cannot get state vector 'phiam'");
-    std::vector<double> myphiam(la[0].lm_.size());
-    DRT::UTILS::ExtractMyValues(*phiam,myphiam,la[0].lm_);
-
-    // fill element array
-    for (int i=0;i<my::nen_;++i)
-    {
-      for (int k = 0; k< my::numscal_; ++k)
-      {
-        // split for each transported scalar, insert into element arrays
-        ephiam_[k](i,0) = myphiam[k+(i*my::numdofpernode_)];
-      }
-    } // for i
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*phiam,ephiam_,la[0].lm_);
   }
 
   // get thermodynamic pressure

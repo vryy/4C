@@ -129,10 +129,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalculateElectrodeSOC(
     dserror("Cannot get state vector \"phinp\"!");
 
   // extract local nodal values from global state vector
-  std::vector<double> ephinpvec(lm.size());
-  DRT::UTILS::ExtractMyValues(*phinp,ephinpvec,lm);
-  for(int inode = 0; inode < my::nen_; ++inode)
-    my::ephinp_[0](inode,0) = ephinpvec[inode*my::numdofpernode_];
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*phinp,my::ephinp_,lm);
 
   // initialize variables for concentration and domain integrals
   double intconcentration(0.);

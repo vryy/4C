@@ -61,10 +61,11 @@ public:
 protected:
   //! compute integral of convective mass/heat flux over boundary surface
   virtual std::vector<double> CalcConvectiveFlux(
-      const DRT::FaceElement*                     ele,
-      const std::vector<double>&                  ephinp,
-      const LINALG::Matrix<my::nsd_+1,my::nen_>&  evelnp,
-      Epetra_SerialDenseVector&                   erhs);
+      const DRT::FaceElement*                           ele,
+      const std::vector<LINALG::Matrix<my::nen_,1> >&   ephinp,
+      const LINALG::Matrix<my::nsd_+1,my::nen_>&        evelnp,
+      Epetra_SerialDenseVector&                         erhs
+      );
 
   //! compute porosity based on solid, fluid and (potentially) scatra solution
   virtual double ComputePorosity(

@@ -59,22 +59,11 @@ int DRT::ELEMENTS::ScaTraEleCalcLS<distype>::EvaluateAction(
     Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
     if (phizero==Teuchos::null or phinp==Teuchos::null)
       dserror("Cannot get state vector 'phizero' and/ or 'phinp'!");
-    std::vector<double> myphizero(lm.size());
-    std::vector<double> myphinp(lm.size());
-    DRT::UTILS::ExtractMyValues(*phizero,myphizero,lm);
-    DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
 
-    // fill all element arrays
     std::vector<LINALG::Matrix<my::nen_,1> > ephizero(my::numscal_);
-    for (int i=0;i<my::nen_;++i)
-    {
-      for (int k = 0; k< my::numscal_; ++k)
-      {
-        // split for each transported scalar, insert into element arrays
-        ephizero[k](i,0) = myphizero[k+(i*my::numdofpernode_)];
-        my::ephinp_[k](i,0) = myphinp[k+(i*my::numdofpernode_)];
-      } // for k
-    } // for i
+
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*phinp,my::ephinp_,lm);
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*phizero,ephizero,lm);
 
     // check if length suffices
     if (elevec1_epetra.Length() < 1) dserror("Result vector too short");
