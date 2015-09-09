@@ -82,7 +82,7 @@ POROELAST::PoroScatraBase::PoroScatraBase(const Epetra_Comm& comm,
   // get the solver number used for ScalarTransport solver
   const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
   //2. scatra problem
-  scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(timeparams,true,"scatra",problem->SolverParams(linsolvernumber)));
+  scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(timeparams,scatradyn,problem->SolverParams(linsolvernumber),"scatra",true));
 
 }
 

@@ -131,13 +131,13 @@ STI::Algorithm::Algorithm(
     dserror("Must have incremental solution approach for scatra-thermo interaction!");
 
   // initialize scatra time integrator
-  scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(*fieldparameters_,false,"scatra",solverparams))->ScaTraField();
+  scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(*fieldparameters_,*fieldparameters_,solverparams))->ScaTraField();
 
   // modify field parameters for thermo field
   ModifyFieldParametersForThermoField();
 
   // initialize thermo time integrator
-  thermo_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(*fieldparameters_,false,"thermo",solverparams))->ScaTraField();
+  thermo_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(*fieldparameters_,*fieldparameters_,solverparams,"thermo"))->ScaTraField();
 
   return;
 } // STI::Algorithm::Algorithm

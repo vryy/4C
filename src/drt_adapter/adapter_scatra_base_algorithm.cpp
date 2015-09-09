@@ -52,11 +52,12 @@ Maintainer: Georg Bauer
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
-    const Teuchos::ParameterList& prbdyn,
-    bool isale,
-    const std::string disname,
-    const Teuchos::ParameterList& solverparams
-)
+    const Teuchos::ParameterList&   prbdyn,         ///< parameter list for global problem
+    const Teuchos::ParameterList&   scatradyn,      ///< parameter list for scalar transport subproblem
+    const Teuchos::ParameterList&   solverparams,   ///< parameter list for scalar transport solver
+    const std::string&              disname,        ///< name of scalar transport discretization
+    const bool                      isale           ///< ALE flag
+    )
 {
   // setup scalar transport algorithm (overriding some dynamic parameters
   // with values specified in given problem-dependent ParameterList prbdyn)
@@ -82,12 +83,6 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   // -------------------------------------------------------------------
   Teuchos::RCP<IO::DiscretizationWriter> output = actdis->Writer();
   output->WriteMesh(0,0.0);
-
-  // -------------------------------------------------------------------
-  // set some pointers and variables
-  // -------------------------------------------------------------------
-  const Teuchos::ParameterList& scatradyn =
-    DRT::Problem::Instance()->ScalarTransportDynamicParams();
 
   // -------------------------------------------------------------------
   // create a solver

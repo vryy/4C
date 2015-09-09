@@ -49,11 +49,12 @@ namespace ADAPTER {
 
     /// constructor
     explicit ScaTraBaseAlgorithm(
-        const Teuchos::ParameterList& prbdyn, ///< problem-dependent parameters
-        const bool isale,                     ///< do we need the ALE formulation?
-        const std::string disname,             ///< scatra discretization number
-        const Teuchos::ParameterList& solverparams ///< BACI solver block parameter list from dat file (default: fluid scatra solver)
-    );
+        const Teuchos::ParameterList&   prbdyn,               ///< parameter list for global problem
+        const Teuchos::ParameterList&   scatradyn,            ///< parameter list for scalar transport subproblem
+        const Teuchos::ParameterList&   solverparams,         ///< parameter list for scalar transport solver
+        const std::string&              disname = "scatra",   ///< name of scalar transport discretization
+        const bool                      isale = false         ///< ALE flag
+        );
 
     /// virtual destructor to support polymorph destruction
     virtual ~ScaTraBaseAlgorithm(){};

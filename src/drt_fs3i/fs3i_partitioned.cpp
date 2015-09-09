@@ -205,9 +205,9 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
     dserror("no linear solver defined for structural ScalarTransport solver. Please set LINEAR_SOLVER2 in FS3I DYNAMIC to a valid number!");
 
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> fluidscatra =
-    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(fs3idyn,true,"scatra1",problem->SolverParams(linsolver1number)));
+    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(fs3idyn,problem->ScalarTransportDynamicParams(),problem->SolverParams(linsolver1number),"scatra1",true));
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> structscatra =
-    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(fs3idyn,true,"scatra2",problem->SolverParams(linsolver2number)));
+    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(fs3idyn,problem->ScalarTransportDynamicParams(),problem->SolverParams(linsolver2number),"scatra2",true));
 
   scatravec_.push_back(fluidscatra);
   scatravec_.push_back(structscatra);

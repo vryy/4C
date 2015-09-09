@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file loma_dyn.H
+\file loma_dyn.cpp
 \brief Control routine for low-Mach-number flow module.
 
 
@@ -86,7 +86,7 @@ void loma_dyn(int restart)
       dserror("no linear solver defined for LOMA problem. Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
 
     // create instance of scalar transport basis algorithm (no fluid discretization)
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(lomacontrol,false,"scatra",DRT::Problem::Instance()->SolverParams(linsolvernumber)));
+    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(lomacontrol,scatradyn,DRT::Problem::Instance()->SolverParams(linsolvernumber)));
 
     // read restart information
     if (restart) (scatraonly->ScaTraField())->ReadRestart(restart);

@@ -246,7 +246,7 @@ void acoustics_drt()
             dserror("no linear solver defined for SCALAR_TRANSPORT problem. Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
 
           // create instance of scalar transport basis algorithm (empty fluid discretization)
-          Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(scatradyn,false,"scatra",DRT::Problem::Instance()->SolverParams(linsolvernumber)));
+          Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(scatradyn,scatradyn,DRT::Problem::Instance()->SolverParams(linsolvernumber)));
 
           // set velocity field
           //(this is done only once. Time-dependent velocity fields are not supported)

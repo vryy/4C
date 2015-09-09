@@ -82,6 +82,7 @@ FS3I::PartFPS3I::PartFPS3I(const Epetra_Comm& comm)
   const Teuchos::ParameterList& fs3idyn = problem->FS3IDynamicParams();
   const Teuchos::ParameterList& fpsidynparams       = problem->FPSIDynamicParams();
   const Teuchos::ParameterList& poroelastdynparams  = problem->PoroelastDynamicParams();
+  const Teuchos::ParameterList& scatradyn = problem->ScalarTransportDynamicParams();
 
   double dt_fpsi = fpsidynparams.get<double>("TIMESTEP");
   double dt_poroelast = poroelastdynparams.get<double>("TIMESTEP");
@@ -205,9 +206,9 @@ FS3I::PartFPS3I::PartFPS3I(const Epetra_Comm& comm)
   if (linsolver2number == (-1))
     dserror("no linear solver defined for structural ScalarTransport solver. Please set LINEAR_SOLVER2 in FS3I DYNAMIC to a valid number!");
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> fluidscatra =
-    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(fs3idyn,true,"scatra1",problem->SolverParams(linsolver1number)));
+    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(fs3idyn,scatradyn,problem->SolverParams(linsolver1number),"scatra1",true));
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> structscatra =
-    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(fs3idyn,true,"scatra2",problem->SolverParams(linsolver2number)));
+    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(fs3idyn,scatradyn,problem->SolverParams(linsolver2number),"scatra2",true));
 
   scatravec_.push_back(fluidscatra);
   scatravec_.push_back(structscatra);
@@ -217,7 +218,6 @@ FS3I::PartFPS3I::PartFPS3I(const Epetra_Comm& comm)
   //---------------------------------------------------------------------
   const Teuchos::ParameterList& structdyn = problem->StructuralDynamicParams();
   const Teuchos::ParameterList& fluiddyn  = problem->FluidDynamicParams();
-  const Teuchos::ParameterList& scatradyn = problem->ScalarTransportDynamicParams();
   // check consistency of time-integration schemes in input file
   // (including parameter theta itself in case of one-step-theta scheme)
   // and rule out unsupported versions of generalized-alpha time-integration

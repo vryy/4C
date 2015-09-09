@@ -74,7 +74,7 @@ SSI::SSI_Base::SSI_Base(const Epetra_Comm& comm,
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
       Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(structparams, const_cast<Teuchos::ParameterList&>(structparams), structdis));
   structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::Structure>(structure->StructureField());
-  scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(scatraparams,isale,"scatra", problem->SolverParams(linsolvernumber)));
+  scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(scatraparams,scatraparams,problem->SolverParams(linsolvernumber),"scatra",isale));
   zeros_ = LINALG::CreateVector(*structure_->DofRowMap(), true);
 
 }

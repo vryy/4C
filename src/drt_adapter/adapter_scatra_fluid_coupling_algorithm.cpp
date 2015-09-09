@@ -38,7 +38,7 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
     )
 :  AlgorithmBase(comm,prbdyn),
    FluidBaseAlgorithm(prbdyn,DRT::Problem::Instance()->FluidDynamicParams(),"fluid",isale,false), // false -> no immediate initialization of fluid time integration
-   ScaTraBaseAlgorithm(prbdyn,isale,disname,solverparams), // false -> no ALE in scatra algorithm
+   ScaTraBaseAlgorithm(prbdyn,DRT::Problem::Instance()->ScalarTransportDynamicParams(),solverparams,disname,isale), // false -> no ALE in scatra algorithm
    params_(prbdyn)
 {
   // check whether fluid and scatra discret still have the same maps

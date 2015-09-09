@@ -69,7 +69,7 @@ void levelset_dyn(int restart)
     dserror("no linear solver defined for SCALAR_TRANSPORT problem. Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
 
   // create instance of scalar transport basis algorithm (empty fluid discretization)
-  Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatrabase = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(levelsetcontrol,false,"scatra",DRT::Problem::Instance()->SolverParams(linsolvernumber)));
+  Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatrabase = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(levelsetcontrol,scatradyn,DRT::Problem::Instance()->SolverParams(linsolvernumber)));
 
   // get pointer to time integrator
   Teuchos::RCP<SCATRA::ScaTraTimIntImpl> levelsetalgo = scatrabase->ScaTraField();
