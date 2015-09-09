@@ -116,7 +116,7 @@ void STR::TIMINT::BaseDataGlobalState::Setup()
       //Since our element evaluate routine is only designed for two input matrices
       //(stiffness and damping or stiffness and mass) its not possible, to have nonlinear
       //inertia forces AND material damping.
-      dserror("So far its not possible to model nonlinear inertia forces and damping!");
+      dserror("So far it is not possible to model nonlinear inertia forces and damping!");
     }
   }
 
@@ -231,13 +231,9 @@ STR::TIMINT::BaseDataSDyn::BaseDataSDyn()
       dampm_(-1.0),
       masslintype_(INPAR::STR::ml_none),
       modeltypes_(Teuchos::null),
-      modelevaluators_(Teuchos::null),
-      linsolvers_(Teuchos::null),
       dynType_(INPAR::STR::dyna_statics),
       preStressType_(INPAR::STR::prestress_none),
-      nlnSolverType_(INPAR::STR::soltech_vague),
-      implint_(Teuchos::null),
-      nlnsolvers_(Teuchos::null)
+      nlnSolverType_(INPAR::STR::soltech_vague)
 {
   // empty constructor
 }
@@ -248,8 +244,7 @@ STR::TIMINT::BaseDataSDyn::BaseDataSDyn()
 void STR::TIMINT::BaseDataSDyn::Init(
     const Teuchos::RCP<DRT::Discretization> discret,
     const Teuchos::ParameterList& sDynParams,
-    const std::vector<const enum INPAR::STR::ModelType>& modeltypes,
-    std::map<const enum INPAR::STR::ModelType,Teuchos::RCP<LINALG::Solver> >& linsolvers
+    const Teuchos::RCP<std::vector<const enum INPAR::STR::ModelType> > modeltypes
     )
 {
   // We have to call Setup() after Init()
@@ -285,13 +280,7 @@ void STR::TIMINT::BaseDataSDyn::Init(
   // initialize model evaluator control parameters
   // ----------------------------------------------------------
   {
-    modeltypes_ = Teuchos::rcpFromRef(modeltypes);
-  }
-  // ----------------------------------------------------------
-  // initialize linear solver parameters
-  // ----------------------------------------------------------
-  {
-    linsolvers_ = Teuchos::rcpFromRef(linsolvers);
+    modeltypes_ = modeltypes;
   }
   // ----------------------------------------------------------
   // initialize implicit variables
@@ -327,9 +316,12 @@ void STR::TIMINT::BaseDataSDyn::Setup()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::TIMINT::Base::Base() :
+  isInit_(false),
+  isSetup_(false),
   dataIO_(Teuchos::null),
   dataSDyn_(Teuchos::null),
-  dataGlobalState_(Teuchos::null)
+  dataGlobalState_(Teuchos::null),
+  linsolvers_(Teuchos::null)
 {
   // empty constructor
 }
@@ -338,36 +330,22 @@ STR::TIMINT::Base::Base() :
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Base::Init(
-    const Teuchos::ParameterList& IOParams,
-    const Teuchos::ParameterList& sDynParams,
-    const Teuchos::ParameterList& xParams,
-    const Teuchos::RCP<DRT::Discretization> discret,
-    const std::vector<const enum INPAR::STR::ModelType>& modeltypes,
-    std::map<const enum INPAR::STR::ModelType,Teuchos::RCP<LINALG::Solver> >& linsolvers,
-    Teuchos::RCP<IO::DiscretizationWriter> output
-)
+    const Teuchos::RCP<STR::TIMINT::BaseDataIO> dataio,
+    const Teuchos::RCP<STR::TIMINT::BaseDataSDyn> datasdyn,
+    const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> dataglobalstate,
+    const Teuchos::RCP<std::map<const enum INPAR::STR::ModelType,Teuchos::RCP<LINALG::Solver> > > linsolvers
+    )
 {
   // We need to call Setup() after Init()
   isSetup_ = false;
 
-  // ----------------------------------------------------------
-  // initialize/setup the input/output data container
-  // ----------------------------------------------------------
-  dataIO_ = Teuchos::rcp(new BaseDataIO());
-  dataIO_->Init(IOParams,sDynParams,xParams,output);
-  dataIO_->Setup();
-  // ----------------------------------------------------------
-  // initialize/setup the structural dynamics data container
-  // ----------------------------------------------------------
-  dataSDyn_ = Teuchos::rcp(new BaseDataSDyn());
-  dataSDyn_->Init(discret,sDynParams,modeltypes,linsolvers);
-  dataSDyn_->Setup();
-  // ----------------------------------------------------------
-  // initialize/setup the global state data container
-  // ----------------------------------------------------------
-  dataGlobalState_ = Teuchos::rcp(new BaseDataGlobalState());
-  dataGlobalState_->Init(discret,dataSDyn_);
-  dataGlobalState_->Setup();
+  // initilize the data container ptrs
+  dataIO_ = dataio;
+  dataSDyn_ = datasdyn;
+  dataGlobalState_ = dataglobalstate;
+
+  // initialize the linear solvers ptr
+  linsolvers_ = linsolvers;
 
   // set isInit flag
   isInit_ = true;

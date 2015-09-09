@@ -43,6 +43,46 @@ namespace TIMINT {
   protected:
     virtual void Setup();
 
+    STR::IMPLICIT::Generic& ImplInt()
+    {
+      CheckInitSetup();
+      return *implint_;
+    };
+
+    Teuchos::RCP<STR::IMPLICIT::Generic> ImplIntPtr()
+    {
+      CheckInitSetup();
+      return implint_;
+    };
+
+    std::map<INPAR::STR::ModelType, Teuchos::RCP<STR::MODELEVALUATOR::Generic> >& ModelEvaluators()
+    {
+      CheckInitSetup();
+      return *modelevaluators_;
+    }
+
+    Teuchos::RCP<std::map<INPAR::STR::ModelType, Teuchos::RCP<STR::MODELEVALUATOR::Generic> > > ModelEvaluatorsPtr()
+    {
+      CheckInitSetup();
+      return modelevaluators_;
+    }
+
+    STR::NLN::SOLVER::Generic& NlnSolver()
+    {
+      CheckInitSetup();
+      return *nlnsolver_;
+    };
+
+    Teuchos::RCP<STR::NLN::SOLVER::Generic> NlnSolverPtr()
+    {
+      CheckInitSetup();
+      return nlnsolver_;
+    };
+
+  private:
+    Teuchos::RCP<STR::IMPLICIT::Generic> implint_;
+    Teuchos::RCP<std::map<INPAR::STR::ModelType, Teuchos::RCP<STR::MODELEVALUATOR::Generic> > > modelevaluators_;
+    Teuchos::RCP<STR::NLN::SOLVER::Generic> nlnsolver_;
   };
 } // namespace TIMINT
 } // namespace STR

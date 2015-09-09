@@ -30,7 +30,7 @@ Teuchos::RCP<STR::NLN::SOLVER::Generic> STR::NLN::SOLVER::Factory::BuildNlnSolve
 {
   Teuchos::RCP<STR::NLN::SOLVER::Generic> nlnSolver = Teuchos::null;
 
-  switch (nlnSolver)
+  switch (nlnSolType)
   {
     case INPAR::STR::soltech_newtonfull:
       nlnSolver = Teuchos::rcp(new STR::NLN::SOLVER::FullNewton());

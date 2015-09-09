@@ -11,8 +11,15 @@
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::TIMINT::Implicit::Implicit() : STR::TIMINT::Base(),
-  nlnSolver_(Teuchos::null)
+
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+STR::TIMINT::Implicit::Implicit()
+    : implint_(Teuchos::null),
+      modelevaluators_(Teuchos::null),
+      nlnsolver_(Teuchos::null)
 {
   // empty
 }
@@ -34,19 +41,19 @@ void STR::TIMINT::Implicit::Setup()
       DataSDyn().GetDynamicType();
   const enum INPAR::STR::PreStress& preStressType =
       DataSDyn().GetPreStressType();
-  implInt_ = STR::IMPLICIT::BuildImplicitIntegrator(dynType,preStressType);
+  implint_ = STR::IMPLICIT::BuildImplicitIntegrator(dynType,preStressType);
 
   // ---------------------------------------------
   // build model evaluator
   // ---------------------------------------------
-  modelEvalMap_ = STR::MODELEVALUATOR::BuildModelEvaluator();
+  modelevaluators_ = STR::MODELEVALUATOR::BuildModelEvaluator();
 
   // ---------------------------------------------
   // build nonlinear solver
   // ---------------------------------------------
   const enum INPAR::STR::NonlinSolTech& nlnSolverType =
       DataSDyn().GetNlnSolverType();
-  nlnSolver_ = STR::NLN::SOLVER::BuildNlnSolver(nlnSolverType);
+  nlnsolver_ = STR::NLN::SOLVER::BuildNlnSolver(nlnSolverType);
 
   // set isSetup flag
   isSetup_ = true;

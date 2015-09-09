@@ -153,8 +153,7 @@ namespace TIMINT {
     virtual void Init(
         const Teuchos::RCP<DRT::Discretization> discret,
         const Teuchos::ParameterList& sDynParams,
-        const std::vector<const enum INPAR::STR::ModelType>& modeltypes,
-        std::map<const enum INPAR::STR::ModelType,Teuchos::RCP<LINALG::Solver> >& linsolvers);
+        const Teuchos::RCP<std::vector<const enum INPAR::STR::ModelType> > modeltypes);
 
     virtual void Setup();
 
@@ -261,45 +260,6 @@ namespace TIMINT {
       return *modeltypes_;
     };
 
-    //! Return map of the current models
-    const std::map<const enum INPAR::STR::ModelType, Teuchos::RCP<STR::ModelEvaluator::Generic> >& GetModelEvaluators() const
-    {
-      CheckInitSetup();
-      return modelevaluators_;
-    };
-    //@}
-
-    //! @name Get linear solver parameters (read only access)
-    //@{
-    const std::map<const enum INPAR::STR::ModelType,Teuchos::RCP<LINALG::Solver> > GetLinSolvers() const
-    {
-      CheckInitSetup();
-      return *linsolvers_;
-    };
-    //@}
-
-    //! @name Get implicit time integrator parameters (read only access)
-    //@{
-    //! Return specific implicit time integrator pointer
-    //! NOTE: Only filled for the implicit case.
-    const STR::IMPLICIT::Generic& GetImplicitIntegrator() const
-    {
-      CheckInitSetup();
-      if (implint_.is_null())
-        dserror("Implicit Integrator is not initialized!");
-      return *implint_;
-    };
-
-    //! non-linear solver pointer
-    //! NOTE: Only filled for the implicit case
-    const STR::NLN::SOLVER::Generic& GetNlnSolvers() const
-    {
-      CheckInitSetup();
-      if (nlnsolvers_.is_null())
-        dserror("Non-linear solvers are not initialized!");
-      return *nlnsolvers_;
-    };
-
     //@}
 
     //! @name Get mutable general control parameters (read and write access)
@@ -372,15 +332,6 @@ namespace TIMINT {
     };
     //@}
 
-    //! @name Get mutable linear solver parameters (read and write access)
-    //@{
-    std::map<const enum INPAR::STR::ModelType,Teuchos::RCP<LINALG::Solver> > GetMutableLinSolvers()
-    {
-      CheckInitSetup();
-      return *linsolvers_;
-    };
-    //@}
-
     //! @name Get mutable mass and inertia control parameters (read and write access)
     //@{
     //! Return mass linearization type
@@ -400,36 +351,6 @@ namespace TIMINT {
     {
       CheckInitSetup();
       return *modeltypes_;
-    };
-
-    //! Return map of the current models
-    std::map<const enum INPAR::STR::ModelType, Teuchos::RCP<STR::MODELEVALUATOR::Generic> >& GetMutableModelEvaluators()
-    {
-      CheckInitSetup();
-      return modelevaluators_;
-    };
-    //@}
-
-    //! @name Get implicit time integrator parameters (read and write access)
-    //@{
-    //! Return specific implicit time integrator pointer
-    //! NOTE: Only filled for the implicit case.
-    STR::IMPLICIT::Generic& GetMutableImplicitIntegrator()
-    {
-      CheckInitSetup();
-      if (implint_.is_null())
-        dserror("Implicit Integrator is not initialized!");
-      return *implint_;
-    };
-
-    //! non-linear solver pointer
-    //! NOTE: Only filled for the implicit case
-    STR::NLN::SOLVER::Generic& GetMutableNlnSolvers()
-    {
-      CheckInitSetup();
-      if (nlnsolvers_.is_null())
-        dserror("Non-linear solvers are not initialized!");
-      return *nlnsolvers_;
     };
 
     //@}
@@ -488,16 +409,6 @@ namespace TIMINT {
     //! current active model types for the model evaluator
     Teuchos::RCP<const std::vector<const enum INPAR::STR::ModelType> > modeltypes_;
 
-    //! model evaluators corresponding to the model types (see variable modeltypes_)
-    //! NOTE: This variable is initialized in the ex-/implicit time integrator function!
-    std::map<const enum INPAR::STR::ModelType, Teuchos::RCP<STR::MODELEVALUATOR::Generic> > modelevaluators_;
-    //@}
-
-    //! @name Linear solver parameters
-    //@{
-
-    //! map of all necessary linear solvers (corresponding to the active model types)
-    Teuchos::RCP<std::map<const enum INPAR::STR::ModelType,Teuchos::RCP<LINALG::Solver> > > linsolvers_;
     //@}
 
     //! @name implicit and explicit time integrator parameters
@@ -514,14 +425,6 @@ namespace TIMINT {
 
     //! type of nonlinear solver
     enum INPAR::STR::NonlinSolTech nlnSolverType_;
-
-    //! specific implicit time integrator pointer
-    //! NOTE: Only filled for the implicit case.
-    Teuchos::RCP<STR::IMPLICIT::Generic> implint_;
-
-    //! non-linear solver pointer
-    //! NOTE: Only filled for the implicit case
-    Teuchos::RCP<STR::NLN::SOLVER::Generic> nlnsolvers_;
 
     //@}
   };  // BaseDataSDyn
@@ -815,14 +718,11 @@ namespace TIMINT {
     Teuchos::RCP<const BaseDataSDyn> DataSDyn() const;
 
     virtual void Init(
-        const Teuchos::ParameterList& ioparams,
-        const Teuchos::ParameterList& sdynparams,
-        const Teuchos::ParameterList& xparams,
-        const Teuchos::RCP<DRT::Discretization> discret,
-        const std::vector<const enum INPAR::STR::ModelType>& modeltypes,
-        std::map<const enum INPAR::STR::ModelType, Teuchos::RCP<LINALG::Solver> >& linsolvers,
-        Teuchos::RCP<IO::DiscretizationWriter> output
-    );
+        const Teuchos::RCP<STR::TIMINT::BaseDataIO> dataio,
+        const Teuchos::RCP<STR::TIMINT::BaseDataSDyn> datasdyn,
+        const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> dataglobalstate,
+        const Teuchos::RCP<std::map<const enum INPAR::STR::ModelType,Teuchos::RCP<LINALG::Solver> > > linsolvers
+        );
 
     virtual void Setup() = 0;
 
@@ -832,17 +732,44 @@ namespace TIMINT {
 
     const bool& IsSetup() const { return isSetup_; };
 
+    virtual void CheckInitSetup() const
+    {
+      if (!IsInit() or !IsSetup())
+        dserror("Call Init() and Setup() first!");
+    }
+
+    virtual void CheckInit() const
+    {
+      if (not IsInit())
+        dserror("Call Init() first!");
+    }
+
     // Get internal TimIntBase data for global state quantities (read and write access)
     BaseDataGlobalState& DataGlobalState()
-    { return *dataGlobalState_; };
+    {
+      CheckInit();
+      return *dataGlobalState_;
+    };
 
     // Get internal TimIntBase data for io quantities (read and write access)
     BaseDataIO& DataIO()
-    { return *dataIO_; };
+    {
+      CheckInit();
+      return *dataIO_;
+    };
 
     // Get internal TimIntBase data for struct dynamics quantitites (read and write access)
     BaseDataSDyn& DataSDyn()
-    { return *dataSDyn_; };
+    {
+      CheckInit();
+      return *dataSDyn_;
+    };
+
+    std::map<const enum INPAR::STR::ModelType,Teuchos::RCP<LINALG::Solver> >& LinSolvers()
+    {
+      CheckInit();
+      return *linsolvers_;
+    }
 
   protected:
     bool isInit_;
@@ -850,10 +777,13 @@ namespace TIMINT {
     bool isSetup_;
 
   private:
-
+    // pointer to the different data containers
     Teuchos::RCP<BaseDataIO>          dataIO_;
     Teuchos::RCP<BaseDataSDyn>        dataSDyn_;
     Teuchos::RCP<BaseDataGlobalState> dataGlobalState_;
+
+    // pointer to the linear solvers map
+    Teuchos::RCP<std::map<const enum INPAR::STR::ModelType,Teuchos::RCP<LINALG::Solver> > > linsolvers_;
   };  // class Base
 } // namespace TIMINT
 } // namespace STR

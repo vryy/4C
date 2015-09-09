@@ -31,7 +31,7 @@ Teuchos::RCP<STR::IMPLICIT::Generic> STR::IMPLICIT::Factory::BuildImplicitIntegr
   Teuchos::RCP<STR::IMPLICIT::Generic> implIntegrator = Teuchos::null;
 
   // check if we have a problem that needs to be prestressed
-  if (preStressType==INPAR::STR::prestress_mulf || preStressType==INPAR::STR::prestress_id)
+  if (preStressType==INPAR::STR::prestress_mulf or preStressType==INPAR::STR::prestress_id)
   {
     implIntegrator = Teuchos::rcp(new STR::IMPLICIT::PreStress());
     return implIntegrator;
