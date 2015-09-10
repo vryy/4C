@@ -2,8 +2,8 @@
 \file drt_utils_bspline.H
 
 <pre>
-Maintainer: Peter Gamnitzer
-            gamnitzer@lnm.mw.tum.de
+Maintainer: Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15235
 </pre>
@@ -374,7 +374,7 @@ public:
   //--------------------------------------------------
   /*! \brief Compute ldofid's Bspline value at point x
              In addiditon, compute its first and
-	     second derivative
+             second derivative
 
   \param bsplineval  double  (o)
                      bspline value
@@ -390,13 +390,13 @@ public:
 
   \param ldofid      int     (i)
                      which bspline to evaluate,
-	 	     ldofid is the local dof id,
-	 	     i.e. the number of the
-		     bspline we want to evaluate.
-		     0 is the leftmost nonzero
-		     bspline, degree the right
-		     most. All of them have
-		     degree+1 nonzero intervals
+                     ldofid is the local dof id,
+                     i.e. the number of the
+                     bspline we want to evaluate.
+                     0 is the leftmost nonzero
+                     bspline, degree the right
+                     most. All of them have
+                     degree+1 nonzero intervals
 
    (Recursion) formulas:
 
@@ -461,13 +461,13 @@ public:
 
 
         N(0,1)  N(1,1)   N(2,1)             p == 1   +--
-          |       /|       / 			       |
-          |      / |      / 			       | branch
-          |     /  |     /  			       |
-          |    /   |    /   			       | for second
-          |   /    |   /    			       |
-          |  /     |  /     			       | derivatives
-          | /      | /      			       |
+          |       /|       /                         |
+          |      / |      /                          | branch
+          |     /  |     /                           |
+          |    /   |    /                            | for second
+          |   /    |   /                             |
+          |  /     |  /                              | derivatives
+          | /      | /                               |
         N(0,2)  N(1,2)                      p == 2   +--
 
 
