@@ -18,14 +18,18 @@ namespace PREDICT {
   class Factory
   {
   public:
+    //! constructor
     Factory() {};
 
+    //! destructor
     virtual ~Factory() {};
 
-    Teuchos::RCP<STR::PREDICT::Generic>  BuildPredictor(const INPAR::STR::PredEnum& predType) const;
+    //! build the desired predictor
+    Teuchos::RCP<STR::PREDICT::Generic>  BuildPredictor(const enum INPAR::STR::PredEnum& predType) const;
   };
 
-  Teuchos::RCP<STR::PREDICT::Generic> BuildPredictor(const INPAR::STR::PredEnum& predType);
+  //! non-member function
+  Teuchos::RCP<STR::PREDICT::Generic> BuildPredictor(const enum INPAR::STR::PredEnum& predType);
 } // namespace PREDICT
 } // namespace STR
 

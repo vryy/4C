@@ -19,6 +19,23 @@ namespace IMPLICIT {
     //! destructor
     virtual ~Generic() {};
 
+    void Init();
+
+    void Setup();
+
+  protected:
+    //! returns init state
+    const bool& IsInit() const { return isInit_; };
+
+    //! returns setup state
+    const bool& IsSetup() const { return isSetup_; };
+
+protected:
+    //! indicates if the Init() function has been called
+    bool isInit_;
+
+    //! indicates if the Setup() function has been called
+    bool isSetup_;
 
   };
 } // namespace IMPLICIT

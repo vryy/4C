@@ -21,11 +21,15 @@ namespace ModelEvaluator {
 namespace NLN {
 namespace SOLVER {
   class Generic;
+namespace INTERFACE {
+  class Required;
+} // namespace INTERFACE
 } // namespace SOLVER
 } // namespace NLN
 
 namespace TIMINT {
-  class Implicit : public Base
+  class Implicit : public Base,
+                   public STR::NLN::SOLVER::INTERFACE::Required
   {
   public:
     //! constructor
@@ -34,11 +38,7 @@ namespace TIMINT {
     //! destructor
     virtual ~Implicit() {};
 
-    virtual void IntegrateStep();
-
-    void CreateNlnSolver();
-
-    void CreatePredictor();
+    virtual int IntegrateStep();
 
   protected:
     virtual void Setup();
@@ -49,23 +49,35 @@ namespace TIMINT {
       return *implint_;
     };
 
-    Teuchos::RCP<STR::IMPLICIT::Generic> ImplIntPtr()
+    const Teuchos::RCP<STR::IMPLICIT::Generic> ImplIntPtr()
     {
       CheckInitSetup();
       return implint_;
     };
 
-    std::map<INPAR::STR::ModelType, Teuchos::RCP<STR::MODELEVALUATOR::Generic> >& ModelEvaluators()
+    std::map<const enum INPAR::STR::ModelType, Teuchos::RCP<STR::MODELEVALUATOR::Generic> >& ModelEvaluators()
     {
       CheckInitSetup();
       return *modelevaluators_;
     }
 
-    Teuchos::RCP<std::map<INPAR::STR::ModelType, Teuchos::RCP<STR::MODELEVALUATOR::Generic> > > ModelEvaluatorsPtr()
+    const Teuchos::RCP<std::map<const enum INPAR::STR::ModelType, Teuchos::RCP<STR::MODELEVALUATOR::Generic> > > ModelEvaluatorsPtr()
     {
       CheckInitSetup();
       return modelevaluators_;
     }
+
+    STR::PREDICT::Generic& Predictor()
+    {
+      CheckInitSetup();
+      return *predictor_;
+    };
+
+    const Teuchos::RCP<STR::NLN::SOLVER::Generic> PredictorPtr()
+    {
+      CheckInitSetup();
+      return predictor_;
+    };
 
     STR::NLN::SOLVER::Generic& NlnSolver()
     {
@@ -73,15 +85,23 @@ namespace TIMINT {
       return *nlnsolver_;
     };
 
-    Teuchos::RCP<STR::NLN::SOLVER::Generic> NlnSolverPtr()
+    const Teuchos::RCP<STR::NLN::SOLVER::Generic> NlnSolverPtr()
     {
       CheckInitSetup();
       return nlnsolver_;
     };
 
   private:
+    //! ptr to the implicit time integrator object
     Teuchos::RCP<STR::IMPLICIT::Generic> implint_;
-    Teuchos::RCP<std::map<INPAR::STR::ModelType, Teuchos::RCP<STR::MODELEVALUATOR::Generic> > > modelevaluators_;
+
+    //! ptr to the model evaluator map
+    Teuchos::RCP<std::map<const enum INPAR::STR::ModelType, Teuchos::RCP<STR::MODELEVALUATOR::Generic> > > modelevaluators_;
+
+    //! ptr to the predictor object
+    Teuchos::RCP<STR::PREDICT::Generic> predictor_;
+
+    //! ptr to the non-linear solver object
     Teuchos::RCP<STR::NLN::SOLVER::Generic> nlnsolver_;
   };
 } // namespace TIMINT

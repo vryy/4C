@@ -55,9 +55,9 @@ namespace TIMINT {
     //! @name variables for internal use only
     //@{
 
-    bool isInit_;
+    bool isinit_;
 
-    bool isSetup_;
+    bool issetup_;
     //@}
 
   private:
@@ -151,18 +151,21 @@ namespace TIMINT {
     virtual ~BaseDataSDyn() {};
 
     virtual void Init(
-        const Teuchos::RCP<DRT::Discretization> discret,
-        const Teuchos::ParameterList& sDynParams,
-        const Teuchos::RCP<std::vector<const enum INPAR::STR::ModelType> > modeltypes);
+            const Teuchos::RCP<DRT::Discretization> discret,
+            const Teuchos::ParameterList& sDynParams,
+            const Teuchos::ParameterList& xparams,
+            const Teuchos::RCP<std::vector<const enum INPAR::STR::ModelType> > modeltypes,
+            const Teuchos::RCP<std::map<const enum INPAR::STR::ModelType,Teuchos::RCP<LINALG::Solver> > > linsolvers
+            );
 
     virtual void Setup();
 
   protected:
-    virtual const bool& IsInit() const { return isInit_; };
+    virtual const bool& IsInit() const { return isinit_; };
 
-    virtual const bool& IsSetup() const { return isSetup_; };
+    virtual const bool& IsSetup() const { return issetup_; };
 
-    virtual const void CheckInitSetup() const
+    virtual void CheckInitSetup() const
     {
       if (!IsInit() or !IsSetup())
         dserror("Call Init() and Setup() first!");
@@ -198,24 +201,50 @@ namespace TIMINT {
     const enum INPAR::STR::DynamicType& GetDynamicType() const
     {
       CheckInitSetup();
-      return dynType_;
+      return dyntype_;
     };
 
     //! Return prestress type
     const enum INPAR::STR::PreStress& GetPreStressType() const
     {
       CheckInitSetup();
-      return preStressType_;
+      return prestresstype_;
+    };
+
+    //! Return predictor type
+    const enum INPAR::STR::PredEnum& GetPredictorType() const
+    {
+      CheckInitSetup();
+      return predtype_;
     };
 
     //! Return nonlinear solver type
     const enum INPAR::STR::NonlinSolTech& GetNlnSolverType() const
     {
       CheckInitSetup();
-      return nlnSolverType_;
+      return nlnsolvertype_;
     };
 
+    //! Return nox parameters
+    const Teuchos::ParameterList& GetNoxParams() const
+    {
+      CheckInitSetup();
+      return *noxparams_;
+    }
+
     //@}
+
+    //! @name Get mutable linear solver variables (read and write access)
+    //@{
+
+    //! Return linear solvers pointer
+    const std::map<const enum INPAR::STR::ModelType,Teuchos::RCP<LINALG::Solver> >& GetLinSolvers() const
+    {
+      CheckInitSetup();
+      return *linsolvers_;
+    }
+    //@}
+
 
     //! @name Get damping control parameters (read only access)
     //@{
@@ -254,7 +283,7 @@ namespace TIMINT {
     //! @name Get model evaluator control parameters (read only access)
     //@{
     //! Return types of the current models
-    const std::vector<const enum INPAR::STR::ModelType> GetModelType() const
+    const std::vector<const enum INPAR::STR::ModelType>& GetModelType() const
     {
       CheckInitSetup();
       return *modeltypes_;
@@ -289,26 +318,58 @@ namespace TIMINT {
     enum INPAR::STR::PreStress& GetMutablePreStressType()
     {
       CheckInitSetup();
-      return preStressType_;
+      return prestresstype_;
+    };
+
+    //! Return predictor type
+    enum INPAR::STR::PredEnum& GetMutablePredictorType()
+    {
+      CheckInitSetup();
+      return predtype_;
     };
 
     //! Return dynamic type
     enum INPAR::STR::DynamicType& GetMutableDynamicType()
     {
       CheckInitSetup();
-      return dynType_;
+      return dyntype_;
     };
 
     //! Return nonlinear solver type
     enum INPAR::STR::NonlinSolTech& GetMutableNlnSolverType()
     {
       CheckInitSetup();
-      return nlnSolverType_;
+      return nlnsolvertype_;
     };
+
+    //! Return nox parameters
+    Teuchos::ParameterList& GetMutableNoxParams()
+    {
+      CheckInitSetup();
+      return *noxparams_;
+    }
 
     //@}
 
-    //! @name Get mutable damping control parameters (read only access)
+    //! @name Get mutable linear solver variables (read and write access)
+    //@{
+    //! Return linear solvers pointer
+    Teuchos::RCP<std::map<const enum INPAR::STR::ModelType,Teuchos::RCP<LINALG::Solver> > > GetLinSolversPtr()
+    {
+      CheckInitSetup();
+      return linsolvers_;
+    }
+
+    //! Return linear solvers pointer
+    std::map<const enum INPAR::STR::ModelType,Teuchos::RCP<LINALG::Solver> >& GetMutableLinSolvers()
+    {
+      CheckInitSetup();
+      return *linsolvers_;
+    }
+    //@}
+
+
+    //! @name Get mutable damping control parameters (read and write access)
     //@{
     //! Return damping type
     enum INPAR::STR::DampKind& GetMutableDampingType()
@@ -358,10 +419,11 @@ namespace TIMINT {
   protected:
     //! @name variables for internal use only
     //@{
+    //! init flag
+    bool isinit_;
 
-    bool isInit_;
-
-    bool isSetup_;
+    //! setup flag
+    bool issetup_;
     //@}
 
   private:
@@ -414,18 +476,30 @@ namespace TIMINT {
     //! @name implicit and explicit time integrator parameters
     //@{
     //! dynamic type
-    enum INPAR::STR::DynamicType dynType_;
+    enum INPAR::STR::DynamicType dyntype_;
 
     //@}
 
     //! @name implicit time integrator parameters
     //@{
     //! type of pre-stressing
-    enum INPAR::STR::PreStress preStressType_;
+    enum INPAR::STR::PreStress prestresstype_;
+
+    //! type of the predictor
+    enum INPAR::STR::PredEnum predtype_;
 
     //! type of nonlinear solver
-    enum INPAR::STR::NonlinSolTech nlnSolverType_;
+    enum INPAR::STR::NonlinSolTech nlnsolvertype_;
 
+    //! nox parameters list
+    Teuchos::RCP<Teuchos::ParameterList> noxparams_;
+    //@}
+
+    //! @name linear solver variables
+    //@{
+
+    // pointer to the linear solvers map
+    Teuchos::RCP<std::map<const enum INPAR::STR::ModelType,Teuchos::RCP<LINALG::Solver> > > linsolvers_;
     //@}
   };  // BaseDataSDyn
 
@@ -438,9 +512,22 @@ namespace TIMINT {
       virtual ~BaseDataGlobalState() {};
 
       void Init(const Teuchos::RCP<DRT::Discretization> discret,
-                const Teuchos::RCP<const BaseDataSDyn> dataSDyn);
+                const Teuchos::RCP<const BaseDataSDyn> datasdyn);
 
       void Setup();
+
+    protected:
+      const bool& IsInit() const
+      { return isinit_; };
+
+      const bool& IsSetup() const
+      { return issetup_; };
+
+      virtual void CheckInitSetup() const
+      {
+        if (!IsInit() or !IsSetup())
+          dserror("Call Init() and Setup() first!");
+      }
 
     public:
       //! @name Get general purpose algorithm members (read only access)
@@ -448,15 +535,50 @@ namespace TIMINT {
 
       //! attached discretisation
       Teuchos::RCP<const DRT::Discretization> GetDiscret()
-      { return discret_; };
+      {
+        CheckInitSetup();
+        return discret_;
+      };
 
       //! communicator
       Teuchos::RCP<const Epetra_Comm> GetComm()
-      { return comm_; };
+      {
+        CheckInitSetup();
+        return comm_;
+      };
 
       //! ID of actual processor in parallel
       const int GetMyRank()
-      { return myRank_; };
+      {
+        CheckInitSetup();
+        return myRank_;
+      };
+
+      //@}
+
+      //! @name Get discretization related stuff (read only access)
+      //@{
+
+      //! dof map of vector of unknowns
+      Teuchos::RCP<const Epetra_Map> DofRowMap() const
+      {
+          const Epetra_Map* dofrowmap = discret_->DofRowMap();
+          return Teuchos::rcp(new Epetra_Map(*dofrowmap));
+      }
+
+      //! dof map of vector of unknowns
+      //! method for multiple dofsets
+      Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds) const
+      {
+        const Epetra_Map* dofrowmap = discret_->DofRowMap(nds);
+        return Teuchos::rcp(new Epetra_Map(*dofrowmap));
+      }
+
+      //! view of dof map of vector of unknowns
+      const Epetra_Map* DofRowMapView() const
+      {
+        return discret_->DofRowMap();
+      }
 
       //@}
 
@@ -465,27 +587,45 @@ namespace TIMINT {
 
       //! Return target time \f$t_{n+1}\f$
       const double& GetTimeNp() const
-      { return timenp_; };
+      {
+        CheckInitSetup();
+        return timenp_;
+      };
 
       //! Return time for lin solver
       const double& GetLinearSolverTime() const
-      { return dtsolve_; };
+      {
+        CheckInitSetup();
+        return dtsolve_;
+      };
 
       //! Return element evaluation time
       const double& GetElementEvaluationTime() const
-      { return dtele_; };
+      {
+        CheckInitSetup();
+        return dtele_;
+      };
 
       //! Return time \f$t_{n}\f$ of last converged step
       Teuchos::RCP<const DRT::UTILS::TimIntMStep<double> > GetTimeN() const
-      { return timen_; };
+      {
+        CheckInitSetup();
+        return timen_;
+      };
 
       //! Return time step size \f$\Delta t\f$
       Teuchos::RCP<const DRT::UTILS::TimIntMStep<double> > GetDeltaTime() const
-      { return dt_; };
+      {
+        CheckInitSetup();
+        return dt_;
+      };
 
       //! Return timer for solution technique
       Teuchos::RCP<const Epetra_Time>  GetTimer() const
-      { return timer_; };
+      {
+        CheckInitSetup();
+        return timer_;
+      };
 
       //@}
 
@@ -494,27 +634,45 @@ namespace TIMINT {
 
       //! Return displacements \f$D_{n+1}\f$
       Teuchos::RCP<const Epetra_Vector> GetDisNp() const
-      { return disnp_; }
+      {
+        CheckInitSetup();
+        return disnp_;
+      }
 
       //! Return displacements \f$D_{n}\f$
       Teuchos::RCP<const Epetra_Vector> GetDisN() const
-      { return (*dis_)(0); }
+      {
+        CheckInitSetup();
+        return (*dis_)(0);
+      }
 
       //! Return velocities \f$V_{n+1}\f$
       Teuchos::RCP<const Epetra_Vector> GetVelNp() const
-      { return velnp_; }
+      {
+        CheckInitSetup();
+        return velnp_;
+      }
 
       //! Return velocities \f$V_{n}\f$
       Teuchos::RCP<const Epetra_Vector> GetVelN() const
-      { return (*vel_)(0); }
+      {
+        CheckInitSetup();
+        return (*vel_)(0);
+      }
 
       //! Return accelerations \f$A_{n+1}\f$
       Teuchos::RCP<const Epetra_Vector> GetAccNp() const
-      { return accnp_; }
+      {
+        CheckInitSetup();
+        return accnp_;
+      }
 
       //! Return accelerations \f$A_{n}\f$
       Teuchos::RCP<const Epetra_Vector> GetAccN() const
-      { return (*acc_)(0); }
+      {
+        CheckInitSetup();
+        return (*acc_)(0);
+      }
 
       //@}
 
@@ -523,27 +681,45 @@ namespace TIMINT {
 
       //! Return target time \f$t_{n+1}\f$
       double& GetMutableTimeNp()
-      { return timenp_; };
+      {
+        CheckInitSetup();
+        return timenp_;
+      };
 
       //! Return time for lin solver
       double& GetMutableLinearSolverTime()
-      { return dtsolve_; };
+      {
+        CheckInitSetup();
+        return dtsolve_;
+      };
 
       //! Return element evaluation time
       double& GetMutableElementEvaluationTime()
-      { return dtele_; };
+      {
+        CheckInitSetup();
+        return dtele_;
+      };
 
       //! Return time \f$t_{n}\f$ of last converged step
       Teuchos::RCP<DRT::UTILS::TimIntMStep<double> >& GetMutableTimeN()
-      { return timen_; };
+      {
+        CheckInitSetup();
+        return timen_;
+      };
 
       //! Return time step size \f$\Delta t\f$
       Teuchos::RCP<DRT::UTILS::TimIntMStep<double> >& GetMutableDeltaTime()
-      { return dt_; };
+      {
+        CheckInitSetup();
+        return dt_;
+      };
 
       //! Return timer for solution technique
       Teuchos::RCP<Epetra_Time>& GetMutableTimer()
-      { return timer_; };
+      {
+        CheckInitSetup();
+        return timer_;
+      };
 
       //@}
 
@@ -552,45 +728,58 @@ namespace TIMINT {
 
       //! Return displacements \f$D_{n+1}\f$
       Teuchos::RCP<Epetra_Vector>& GetMutableDisNp()
-      { return disnp_; }
+      {
+        CheckInitSetup();
+        return disnp_;
+      }
 
       //! Return displacements \f$D_{n}\f$
       Teuchos::RCP<Epetra_Vector> GetMutableDisN()
-      { return (*dis_)(0); }
+      {
+        CheckInitSetup();
+        return (*dis_)(0);
+      }
 
       //! Return velocities \f$V_{n+1}\f$
       Teuchos::RCP<Epetra_Vector>& GetMutableVelNp()
-      { return velnp_; }
+      {
+        CheckInitSetup();
+        return velnp_;
+      }
 
       //! Return velocities \f$V_{n}\f$
       Teuchos::RCP<Epetra_Vector> GetMutableVelN()
-      { return (*vel_)(0); }
+      {
+        CheckInitSetup();
+        return (*vel_)(0);
+      }
 
       //! Return accelerations \f$A_{n+1}\f$
       Teuchos::RCP<Epetra_Vector>& GetMutableAccNp()
-      { return accnp_; }
+      {
+        CheckInitSetup();
+        return accnp_;
+      }
 
       //! Return accelerations \f$A_{n}\f$
       Teuchos::RCP<Epetra_Vector> GetMutableAccN()
-      { return (*acc_)(0); }
+      {
+        CheckInitSetup();
+        return (*acc_)(0);
+      }
 
       //@}
-
-    protected:
-      const bool& IsInit();
-
-      const bool& IsSetup();
 
     protected:
       //! @name variables for internal use only
       //@{
 
-      bool isInit_;
+      bool isinit_;
 
-      bool isSetup_;
+      bool issetup_;
 
       // read only access
-      Teuchos::RCP<const BaseDataSDyn> dataSDyn_;
+      Teuchos::RCP<const BaseDataSDyn> datasdyn_;
       //@}
 
     private:
@@ -720,17 +909,16 @@ namespace TIMINT {
     virtual void Init(
         const Teuchos::RCP<STR::TIMINT::BaseDataIO> dataio,
         const Teuchos::RCP<STR::TIMINT::BaseDataSDyn> datasdyn,
-        const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> dataglobalstate,
-        const Teuchos::RCP<std::map<const enum INPAR::STR::ModelType,Teuchos::RCP<LINALG::Solver> > > linsolvers
+        const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> dataglobalstate
         );
 
     virtual void Setup() = 0;
 
   protected:
 
-    const bool& IsInit() const { return isInit_; };
+    const bool& IsInit() const { return isinit_; };
 
-    const bool& IsSetup() const { return isSetup_; };
+    const bool& IsSetup() const { return issetup_; };
 
     virtual void CheckInitSetup() const
     {
@@ -748,42 +936,51 @@ namespace TIMINT {
     BaseDataGlobalState& DataGlobalState()
     {
       CheckInit();
-      return *dataGlobalState_;
+      return *dataglobalstate_;
+    };
+
+    const Teuchos::RCP<BaseDataGlobalState>& DataGlobalStatePtr()
+    {
+      CheckInit();
+      return dataglobalstate_;
     };
 
     // Get internal TimIntBase data for io quantities (read and write access)
     BaseDataIO& DataIO()
     {
       CheckInit();
-      return *dataIO_;
+      return *dataio_;
+    };
+
+    const Teuchos::RCP<BaseDataIO>& DataIOPtr()
+    {
+      CheckInit();
+      return dataio_;
     };
 
     // Get internal TimIntBase data for struct dynamics quantitites (read and write access)
     BaseDataSDyn& DataSDyn()
     {
       CheckInit();
-      return *dataSDyn_;
+      return *datasdyn_;
     };
 
-    std::map<const enum INPAR::STR::ModelType,Teuchos::RCP<LINALG::Solver> >& LinSolvers()
+    const Teuchos::RCP<BaseDataSDyn>& DataSDynPtr()
     {
       CheckInit();
-      return *linsolvers_;
-    }
+      return datasdyn_;
+    };
 
   protected:
-    bool isInit_;
+    bool isinit_;
 
-    bool isSetup_;
+    bool issetup_;
 
   private:
     // pointer to the different data containers
-    Teuchos::RCP<BaseDataIO>          dataIO_;
-    Teuchos::RCP<BaseDataSDyn>        dataSDyn_;
-    Teuchos::RCP<BaseDataGlobalState> dataGlobalState_;
-
-    // pointer to the linear solvers map
-    Teuchos::RCP<std::map<const enum INPAR::STR::ModelType,Teuchos::RCP<LINALG::Solver> > > linsolvers_;
+    Teuchos::RCP<BaseDataIO>          dataio_;
+    Teuchos::RCP<BaseDataSDyn>        datasdyn_;
+    Teuchos::RCP<BaseDataGlobalState> dataglobalstate_;
   };  // class Base
 } // namespace TIMINT
 } // namespace STR

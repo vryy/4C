@@ -24,6 +24,8 @@ namespace MODELEVALUATOR{
     //! destructor
     virtual ~Structure(){};
 
+    virtual void Setup();
+
     virtual void ApplyForce(
         Teuchos::ParameterList& p,
         const Teuchos::RCP<Epetra_Vector>& fresnp,

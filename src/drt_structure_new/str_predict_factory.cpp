@@ -24,7 +24,7 @@ STR::PREDICT::Factory::Factory()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<STR::PREDICT::Generic>  STR::PREDICT::Factory::BuildPredictor(
-    const INPAR::STR::PredEnum& predType) const
+    const enum INPAR::STR::PredEnum& predType) const
 {
   Teuchos::RCP<STR::PREDICT::Generic> predictor = Teuchos::null;
 
@@ -54,7 +54,7 @@ Teuchos::RCP<STR::PREDICT::Generic>  STR::PREDICT::Factory::BuildPredictor(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<STR::PREDICT::Generic>  STR::PREDICT::BuildPredictor(
-    const INPAR::STR::PredEnum& predType)
+    const enum INPAR::STR::PredEnum& predType)
 {
   Factory factory;
   return factory.BuildPredictor(predType);

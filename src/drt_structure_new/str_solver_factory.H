@@ -53,7 +53,7 @@ namespace SOLVER {
     Teuchos::RCP<LINALG::Solver> BuildSpringDashpotLinSolver(
         const Teuchos::ParameterList& sdyn,
         DRT::Discretization& actdis) const;
-  };
+  }; // class Factory
 
   //! non-member function
   Teuchos::RCP<std::map<const enum INPAR::STR::ModelType, Teuchos::RCP<LINALG::Solver> > >

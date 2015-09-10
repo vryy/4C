@@ -208,7 +208,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
   // ------------------------------------------------
   Teuchos::RCP<STR::TIMINT::BaseDataSDyn> datasdyn =
       Teuchos::rcp(new STR::TIMINT::BaseDataSDyn());
-  datasdyn->Init(actdis_,*sdyn_,modeltypes);
+  datasdyn->Init(actdis_,*sdyn_,*xparams,modeltypes,linsolvers);
   datasdyn->Setup();
 
   // ------------------------------------------------
@@ -222,8 +222,9 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
   // ------------------------------------------------
   // Build time integrator
   // ------------------------------------------------
-  Teuchos::RCP<STR::TIMINT::Base> timint = STR::TIMINT::BuildTimeIntegrator(*sdyn_);
-  timint->Init(dataio,datasdyn,dataglobalstate,linsolvers);
+  Teuchos::RCP<STR::TIMINT::Base> timint =
+      STR::TIMINT::BuildTimeIntegrator(*sdyn_);
+  timint->Init(dataio,datasdyn,dataglobalstate);
   timint->Setup();
 
   // ------------------------------------------------

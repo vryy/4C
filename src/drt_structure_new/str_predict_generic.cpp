@@ -20,14 +20,14 @@ type_(INPAR::STR::pred_vague)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::PREDICT::Generic::Init(const INPAR::STR::PredEnum& type)
+void STR::PREDICT::Generic::Init(const enum INPAR::STR::PredEnum& type)
 {
-  isSetup_ = false;
+  issetup_ = false;
 
   // initialize the predictor type
   type_ = type;
 
-  isInit_ = true;
+  isinit_ = true;
 
   return;
 }
