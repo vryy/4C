@@ -22,15 +22,16 @@ Maintainers: Andreas Rauch
 #include "../drt_inpar/inpar_immersed.H"
 #include "../drt_adapter/ad_fld_poro.H"
 #include "../drt_adapter/ad_str_fpsiwrapper.H"
+#include "../drt_adapter/ad_str_fsiwrapper_immersed.H"
+
+#include "../drt_fsi/fsi_utils.H"
+#include "../drt_ale/ale_utils_clonestrategy.H"
 
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_poroelast/poroelast_utils.H"
 #include "../drt_poroelast/poroelast_utils_setup.H"
 #include "../drt_poroelast/poroelast_monolithic.H"
 #include "../drt_poroelast/poro_scatra_part_2wc.H"
-#include "../drt_poroelast/poro_utils_clonestrategy.H"
-
-#include "../drt_scatra_ele/scatra_ele.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -94,12 +95,35 @@ void immersed_problem_drt()
 
       break;
     }// case prb_immersed_fsi
-    case prb_immersed_ale_fsi: // is to be implemented soon, current SA by Sebastian Fritsch
+    case prb_immersed_ale_fsi:
     {
       // fill discretizations
       problem->GetDis("structure")->FillComplete();
       problem->GetDis("fluid")    ->FillComplete();
+      problem->GetDis("ale")      ->FillComplete();
 
+      // get discretizations
+      Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis("fluid");
+      Teuchos::RCP<DRT::Discretization> aledis = problem->GetDis("ale");
+
+      // create ale elements if the ale discretization is empty
+      if (aledis->NumGlobalNodes()==0)
+      {
+        DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis,aledis);
+        // setup material in every ALE element
+        Teuchos::ParameterList params;
+        params.set<std::string>("action", "setup_material");
+        aledis->Evaluate(params);
+      }
+      else  // filled ale discretization
+      {
+        if (!FSI::UTILS::FluidAleNodesDisjoint(fluiddis,aledis))
+          dserror("Fluid and ALE nodes have the same node numbers. "
+              "This it not allowed since it causes problems with Dirichlet BCs. "
+              "Use either the ALE cloning functionality or ensure non-overlapping node numbering!");
+      }
+
+      // create algorithm
       Teuchos::RCP<IMMERSED::ImmersedPartitionedFSIDirichletNeumann> algo = Teuchos::null;
       if(scheme == INPAR::IMMERSED::dirichletneumann)
         algo = Teuchos::rcp(new IMMERSED::ImmersedPartitionedFSIDirichletNeumannALE(comm));

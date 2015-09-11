@@ -31,6 +31,7 @@ IMMERSED::ImmersedPartitioned::ImmersedPartitioned(const Epetra_Comm& comm)
 {
   const Teuchos::ParameterList& immerseddyn   = DRT::Problem::Instance()->ImmersedMethodParams();
   SetDefaultParameters(immerseddyn,noxparameterlist_);
+  noxparameterlist_.print();
 
 }// ImmersedPartitioned constructor
 
@@ -390,6 +391,7 @@ void IMMERSED::ImmersedPartitioned::SetDefaultParameters(const Teuchos::Paramete
 
       lineSearchParams.set("Method", "Full Step");
       lineSearchParams.sublist("Full Step").set("Full Step", immersedpart.get<double>("RELAX"));
+      std::cout<<"RELAX = "<<immersedpart.get<double>("RELAX")<<std::endl;
       break;
     }
     case INPAR::CELL::cell_iter_stagg_AITKEN_rel_param:

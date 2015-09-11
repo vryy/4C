@@ -27,7 +27,8 @@ namespace POROELAST
 
 namespace ADAPTER
 {
-  class FSIStructureWrapper;
+  class FPSIStructureWrapper;
+  class FSIStructureWrapperImmersed;
 }
 
 /*----------------------------------------------------------------------*/
@@ -49,7 +50,7 @@ public:
   void SetupBackgroundDiscretization();
 
   /// access to field cell
-  Teuchos::RCP< ::ADAPTER::FSIStructureWrapper> CellField(){return cellstructure_;};
+  Teuchos::RCP< ::ADAPTER::FSIStructureWrapperImmersed> CellField(){return cellstructure_;};
 
   /// access to field Poro
   //Teuchos::RCP<POROELAST::Monolithic> PoroField(){return poroelast_subproblem_;};
@@ -159,7 +160,10 @@ protected:
   //@}
 
   /// cell structure of the immersed problem
-  Teuchos::RCP< ::ADAPTER::FSIStructureWrapper>    cellstructure_;
+  Teuchos::RCP< ::ADAPTER::FSIStructureWrapperImmersed>    cellstructure_;
+
+  /// poro structure of the immersed problem
+  Teuchos::RCP< ::ADAPTER::FPSIStructureWrapper>            porostructure_;
 
   /// poroelast subproblem
   //Teuchos::RCP<POROELAST::Monolithic>       poroelast_subproblem_;

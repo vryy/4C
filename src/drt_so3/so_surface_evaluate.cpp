@@ -2080,7 +2080,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
                                           params,
                                           searchdirection,
                                           spatial_coord_gp,
-                                          "FSICoupling",
+                                          "IMMERSEDCoupling",
                                           -1);
 
       // DEBUG safety check
@@ -2101,7 +2101,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
                                             params,
                                             searchdirection,
                                             spatial_coord_gp,
-                                            "FSICoupling",
+                                            "IMMERSEDCoupling",
                                             -1);
         if(celldiameter==-1234.0)
           std::cout<<"Warning! Found no intersection for evaluation of cell diameter!"<<std::endl;

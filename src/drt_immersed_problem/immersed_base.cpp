@@ -1176,3 +1176,51 @@ void IMMERSED::ImmersedBase::EvaluateInterpolationCondition
   } //for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
   return;
 }
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedBase::SearchPotentiallyCoveredBackgrdElements(
+        std::map<int,std::set<int> >* current_subset_tofill,
+        Teuchos::RCP<GEO::SearchTree> backgrd_SearchTree,
+        const DRT::Discretization& dis,
+        const std::map<int, LINALG::Matrix<3, 1> >& currentpositions,
+        const LINALG::Matrix<3, 1>& point,
+        const double radius,
+        const int label)
+{
+
+  *current_subset_tofill = backgrd_SearchTree->searchElementsInRadius(dis,currentpositions,point,radius,label);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedBase::EvaluateSubsetElements(Teuchos::ParameterList& params,
+                                                    Teuchos::RCP<DRT::Discretization> dis,
+                                                    std::map<int,std::set<int> >& elementstoeval,
+                                                    int action)
+{
+  // pointer to element
+  DRT::Element* ele;
+
+  // initialize location array
+  DRT::Element::LocationArray la(1);
+
+  for(std::map<int, std::set<int> >::const_iterator closele = elementstoeval.begin(); closele != elementstoeval.end(); closele++)
+  {
+    for(std::set<int>::const_iterator eleIter = (closele->second).begin(); eleIter != (closele->second).end(); eleIter++)
+    {
+        ele = dis->gElement(*eleIter);
+
+        Epetra_SerialDenseMatrix dummymatrix;
+        Epetra_SerialDenseVector dummyvector;
+        ele->Evaluate(params,*dis,la,dummymatrix,dummymatrix,dummyvector,dummyvector,dummyvector);
+
+
+    }
+  }
+
+  return;
+}

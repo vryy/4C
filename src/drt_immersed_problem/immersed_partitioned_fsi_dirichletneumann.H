@@ -32,6 +32,10 @@ namespace Teuchos
   class Time;
 }
 
+namespace ADAPTER
+{
+  class FSIStructureWrapperImmersed;
+}
 
 namespace IMMERSED {
 
@@ -67,8 +71,38 @@ protected:
   /// add immersed dirichlet values from immersed dis to systemvector of background dis
   void DoImmersedDirichletCond(Teuchos::RCP<Epetra_Vector> statevector, Teuchos::RCP<Epetra_Vector> dirichvals, Teuchos::RCP<Epetra_Map> dbcmap);
 
+  /// set state necessary state vectors
+  virtual void SetStatesFluidOP();
+
+  /// set state necessary state vectors
+  virtual void SetStatesStructOP();
+
+  /// update nodal positions of fluid nodes (stored in this class)
+  virtual void UpdateCurrentPositionsFluidNodes(){/* fixed grid */ return;};
+
+  /// call the nonlinear fluid solver
+  virtual void SolveFluid();
+
+  /// call the nonlinear structural solver
+  virtual void SolveStruct();
+
   /// determine elements cut by the boundary
   void PrepareFluidOp();
+
+  /// call to special extraction method
+  virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispnp();
+
+  /// call to special application of interface forces
+  virtual void ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector> full_traction_vec);
+
+  /// call to special routine that adds dirichlet values to fluid field
+  virtual void AddDirichCond();
+
+  /// call to special routine that removes dirichlet values from fluid field
+  virtual void RemoveDirichCond();
+
+  /// calc the fsi residual
+  virtual int CalcResidual(Epetra_Vector &F, const Teuchos::RCP<Epetra_Vector> newstate , const Teuchos::RCP<Epetra_Vector> oldstate);
 
 
   //! @name Various global forces
@@ -77,6 +111,7 @@ protected:
   Teuchos::RCP<Epetra_Vector> struct_bdry_traction_;     //!< bdry traction rhs on struct FSI surface
   Teuchos::RCP<Epetra_Vector> struct_bdry_traction_old_; //!< bdry traction rhs on struct FSI surface
   Teuchos::RCP<Epetra_Vector> fluid_artificial_velocity_;//!< background velocity interpolated from immersed dis
+  Teuchos::RCP<Epetra_Vector> fluid_artificial_velocity_old_;//!< background velocity interpolated from immersed dis
   Teuchos::RCP<const Epetra_Map> dbcmap_ordinary_;       //!< dirichlet bc map before consideration of immersed values
   Teuchos::RCP<Epetra_Map> dbcmap_immersed_;             //!< dirichlet bc map of immersed values
   Teuchos::RCP<Epetra_Vector> ffsi_;                     //!< body force vector being applied to fluid field
@@ -118,6 +153,8 @@ protected:
   Teuchos::RCP<FLD::FluidImplicitTimeInt> fluidimpltimeint_;
   Teuchos::RCP<DRT::Discretization> fluiddis_;
   Teuchos::RCP<DRT::Discretization> structdis_;
+
+  Teuchos::RCP<ADAPTER::FSIStructureWrapperImmersed> immersedstructure_;
 
 };// class ImmersedFSI
 } // namspace IMMERSED

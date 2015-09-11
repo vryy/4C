@@ -3110,6 +3110,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityGradientAnd
   LINALG::Matrix<nsd_,nsd_> dudxioJinv;
   // material coord. of element
   LINALG::Matrix<nsd_,nen_> xrefe;
+  // current coord. of element
+  LINALG::Matrix<nsd_,nen_> xcurr;
   // element velocity at time n+1
   LINALG::Matrix<nsd_,nen_> evelnp;
   // element pressure at time n+1
@@ -3136,6 +3138,9 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityGradientAnd
   else
     dserror("no support for discretization guaranteed. check for valid material.");
 
+  // determine whether fluid mesh is deformable or not
+  static int isALE = (DRT::Problem::Instance()->ProblemType()==prb_immersed_ale_fsi);
+
   // resize vector to the size of the nsd_ times nsd_ independent entries of the velocity gradient du/dx and the pressure
   // causes seg fault -> therefore commented; needs to be investigated. elevec1 is directly built with a size of 10 for now
   //elevec1_epetra.Resize(nsd_*nsd_+1);
@@ -3155,12 +3160,14 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityGradientAnd
 #ifdef DEBUG
   if(state == Teuchos::null)
     dserror("Cannot get state vector %s", "velnp");
-  //if(ele->IsAle() )
-    //dserror("Ale not supported, yet. Make sure to add displacements to xrefe.");
 #endif
 
-  // update element geometry (for now xrefe=X and no xcurr present)
+  if(isALE)
   {
+    // update fluid displacements
+    LINALG::Matrix<nsd_,nen_>       edispnp(true);
+    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &edispnp, NULL,"dispnp");
+
     DRT::Node** nodes = ele->Nodes();
     for (int inode=0;inode<nen_;++inode)
     {
@@ -3168,8 +3175,25 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityGradientAnd
       {
         const double* x = nodes[inode]->X();
         xrefe(idof,inode) = x[idof];
+        xcurr(idof,inode) = x[idof]+edispnp(idof,inode);
       }
     }
+  }
+  else
+  {
+    // do not update element geometry (here xrefe=X and no xcurr present)
+    {
+      DRT::Node** nodes = ele->Nodes();
+      for (int inode=0;inode<nen_;++inode)
+      {
+        for (int idof=0;idof<nsd_;++idof)
+        {
+          const double* x = nodes[inode]->X();
+          xrefe(idof,inode) = x[idof];
+        }
+      }
+    }
+    xcurr = xrefe;
   }
 
   // get Jacobian matrix and determinant w.r.t. spatial configuration
@@ -3181,7 +3205,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityGradientAnd
   //   |  x_1,2  x_2,2  x_3,2  | = xjm  = --------
   //   |_ x_1,3  x_2,3  x_3,3 _|           d s_j
   //    _
-  xjm.MultiplyNT(pderiv_loc,xrefe); // xcurr=xrefe -> dX/ds
+  xjm.MultiplyNT(pderiv_loc,xcurr); // xcurr=xrefe -> dX/ds
 
   // inverse of transposed jacobian "ds/dx" (xjm) -> here: ds/dX
 
@@ -3291,50 +3315,50 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityToNode(
   //  2) interpolation of structural divergence to fluid integration points covered by immersed structure
   //----------------------------------------------------------------------
 
+  // cast currently evaluated element to Immersed type element
   DRT::ELEMENTS::FluidImmersedBase* immersedele = dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(ele);
-
+  // get pointer to the global problem
   DRT::Problem* globalproblem = DRT::Problem::Instance();
+  // get the discretization names
   std::string backgrddisname(discretization.Name());
   std::string immerseddisname(params.get<std::string>("immerseddisname"));
 
-  // get input parameter
-  static double fsiconvtol = globalproblem->FSIDynamicParams().sublist("PARTITIONED SOLVER").get<double>("CONVTOL");
-  static double timestepsize = globalproblem->FSIDynamicParams().get<double>("TIMESTEP");
-  static double minvalidvel = (fsiconvtol/timestepsize)*0.9;
-
   static double searchradiusfac = globalproblem->ImmersedMethodParams().get<double>("FLD_SRCHRADIUS_FAC");
-  static int detectvelsignificance = (DRT::INPUT::IntegralValue<int>(globalproblem->ImmersedMethodParams(), "DETECT_VEL_SIGNIFICANCE") == 1);
 
   const Teuchos::RCP<DRT::Discretization> backgrddis  = globalproblem->GetDis(backgrddisname);
   const Teuchos::RCP<DRT::Discretization> immerseddis = globalproblem->GetDis(immerseddisname);
 
   // numgp in cut boundary elements
   static int num_gp_fluid_bound = globalproblem->ImmersedMethodParams().get<int>("NUM_GP_FLUID_BOUND");
-
   // degree of gp in cut boundary elements
   int degree_gp_fluid_bound = params.get("intpoints_fluid_bound",0);
 
-  Teuchos::RCP<const Epetra_Vector> state;
-  std::vector<double> myvalues(1);
-  if(detectvelsignificance)
-  {
-    state = discretization.GetState("veln");
-    // fill locationarray
-    DRT::Element::LocationArray la(1);
-    ele->LocationVector(discretization,la,false);
-    // extract local values of the global vectors
-    myvalues.resize(la[0].lm_.size());
-    DRT::UTILS::ExtractMyValues(*state,myvalues,la[0].lm_);
-  }
+  // determine whether fluid mesh is deformable or not
+  static int isALE = (globalproblem->ProblemType()==prb_immersed_ale_fsi);
 
   // initialize vectors for interpolation
   std::vector<double> vel(numdofpernode_); // dofs 0,1,2
   std::vector<double> div(numdofpernode_); // dof  3
 
-  // fluid target elements have no displacements. fill dummy vector.
+
   std::vector<double> targeteledisp(nsd_*nen_);
-  for(int i=0;i<nsd_*nen_;++i)
-    targeteledisp[i]=0.0;
+
+  // update fluid displacements
+  if(isALE)
+  {
+    LINALG::Matrix<nsd_,nen_>       edispnp(true);
+    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &edispnp, NULL,"dispnp");
+
+    for(int node=0;node<nen_;++node)
+      for(int dof=0; dof<nsd_;++dof)
+        targeteledisp[node*nsd_+dof] = edispnp(dof,node);
+  }
+  else
+  {
+    // fluid target elements have no displacements in standard case. fill dummy vector.
+    for(int i=0;i<nsd_*nen_;++i)
+      targeteledisp[i]=0.0;
+  }
 
   const std::string action="interpolate_velocity_to_given_point";
 
@@ -3355,20 +3379,33 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityToNode(
   // search tree related stuff
   std::map<int,LINALG::Matrix<3,1> >* currpositions_struct = params.get<std::map<int,LINALG::Matrix<3,1> >* >("currpositions_struct");
 
+  // subset of strucutral elements immersed near the current fluid element
   std::map<int,std::set<int> > curr_subset_of_structdis;
 
   {
     //TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::InterpolateVelocityToNode() - search in searchtree");
-    // search radius (diagonal length of targetele)
-    double radius = sqrt(pow(ele->Nodes()[1]->X()[0]-ele->Nodes()[7]->X()[0],2)+pow(ele->Nodes()[1]->X()[1]-ele->Nodes()[7]->X()[1],2)+pow(ele->Nodes()[1]->X()[2]-ele->Nodes()[7]->X()[2],2));
+    // search radius (diagonal length of targetele (current fluid ele) )
+    double radius = 0.0;
     LINALG::Matrix<3,1> searchcenter; // center of fluid ele
-    searchcenter(0)=ele->Nodes()[1]->X()[0]+(ele->Nodes()[7]->X()[0] - ele->Nodes()[1]->X()[0])*0.5;
-    searchcenter(1)=ele->Nodes()[1]->X()[1]+(ele->Nodes()[7]->X()[1] - ele->Nodes()[1]->X()[1])*0.5;
-    searchcenter(2)=ele->Nodes()[1]->X()[2]+(ele->Nodes()[7]->X()[2] - ele->Nodes()[1]->X()[2])*0.5;
+    if(isALE)
+    {
+      LINALG::Matrix<nsd_,nen_>       edispnp(true);
+      ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &edispnp, NULL,"dispnp");
 
+      radius = sqrt(pow((ele->Nodes()[1]->X()[0]+edispnp(0,1))-(ele->Nodes()[7]->X()[0]+edispnp(0,7)),2)+pow((ele->Nodes()[1]->X()[1]+edispnp(1,1))-(ele->Nodes()[7]->X()[1]+edispnp(1,7)),2)+pow((ele->Nodes()[1]->X()[2]+edispnp(2,1))-(ele->Nodes()[7]->X()[2]+edispnp(2,7)),2));
+      searchcenter(0)=(ele->Nodes()[1]->X()[0]+edispnp(0,1))+((ele->Nodes()[7]->X()[0]+edispnp(0,7))- (ele->Nodes()[1]->X()[0]+edispnp(0,1)))*0.5;
+      searchcenter(1)=(ele->Nodes()[1]->X()[1]+edispnp(1,1))+((ele->Nodes()[7]->X()[1]+edispnp(1,7))- (ele->Nodes()[1]->X()[1]+edispnp(1,1)))*0.5;
+      searchcenter(2)=(ele->Nodes()[1]->X()[2]+edispnp(2,1))+((ele->Nodes()[7]->X()[2]+edispnp(2,7))- (ele->Nodes()[1]->X()[2]+edispnp(2,1)))*0.5;
+    }
+    else
+    {
+      radius = sqrt(pow(ele->Nodes()[1]->X()[0]-ele->Nodes()[7]->X()[0],2)+pow(ele->Nodes()[1]->X()[1]-ele->Nodes()[7]->X()[1],2)+pow(ele->Nodes()[1]->X()[2]-ele->Nodes()[7]->X()[2],2));
+      searchcenter(0)=ele->Nodes()[1]->X()[0]+(ele->Nodes()[7]->X()[0] - ele->Nodes()[1]->X()[0])*0.5;
+      searchcenter(1)=ele->Nodes()[1]->X()[1]+(ele->Nodes()[7]->X()[1] - ele->Nodes()[1]->X()[1])*0.5;
+      searchcenter(2)=ele->Nodes()[1]->X()[2]+(ele->Nodes()[7]->X()[2] - ele->Nodes()[1]->X()[2])*0.5;
+    }
     // search for immersed elements within a certain radius around the searchcenter node
     curr_subset_of_structdis = struct_searchtree->searchElementsInRadius(*immerseddis,*currpositions_struct,searchcenter,radius*searchradiusfac,0);
-
   }
 
   bool match = false;
@@ -3417,12 +3454,6 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityToNode(
 
     for(int i=0; i<nsd_;++i)
     {
-      if(detectvelsignificance and vel[i]>1e-15 and vel[i]<minvalidvel)
-      {
-        //std::cout<<" UNREASONABLY LOW VELOCITIES DETECTED :"<<vel[i]<<"<"<<minvalidvel<<" REGULARIZE VELOCITY INTERPOLATION ..."<<std::endl;
-        // set velocity of node to value of old timestep
-        vel[i]=myvalues[i+(node*numdofpernode_)];
-      }
       elevec1_epetra((node*numdofpernode_)+i) += vel[i];
     }
   } // if match

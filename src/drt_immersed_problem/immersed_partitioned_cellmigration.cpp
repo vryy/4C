@@ -18,7 +18,8 @@ Maintainers: Andreas Rauch
 #include "../drt_poroelast/poroelast_utils_setup.H"
 
 #include "../drt_adapter/ad_fld_poro.H"
-#include "../drt_adapter/ad_str_fpsiwrapper.H" //< type of poro structure
+#include "../drt_adapter/ad_str_fpsiwrapper.H"
+#include "../drt_adapter/ad_str_fsiwrapper_immersed.H"
 
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_scatra_ele/scatra_ele_action.H"
@@ -86,16 +87,20 @@ IMMERSED::ImmersedPartitionedCellMigration::ImmersedPartitionedCellMigration(con
   // setup the relaxation parameters
   SetupRelaxation();
 
-  // build field structure
+  // build field  cell structure
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> cellstructure =
         Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(globalproblem_->CellMigrationParams(), const_cast<Teuchos::ParameterList&>(globalproblem_->StructuralDynamicParams()), immerseddis_));
-    cellstructure_ = Teuchos::rcp_dynamic_cast< ::ADAPTER::FSIStructureWrapper>(cellstructure->StructureField());
+    cellstructure_ = Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapperImmersed>(cellstructure->StructureField());
+    if(cellstructure_==Teuchos::null)
+      dserror("dynamic cast from Structure to FSIStructureWrapperImmersed failed");
     if(myrank_==0)
       std::cout<<"Created Field Cell Structure ..."<<std::endl;
 
   // create instance of poroelast subproblem
   //poroelast_subproblem_ = Teuchos::rcp(new POROELAST::Monolithic(comm, globalproblem_->PoroelastDynamicParams()));
   poroelast_subproblem_ = POROELAST::UTILS::CreatePoroScatraAlgorithm(globalproblem_->PoroScatraControlParams(),Comm());
+  // set pointer to poro fpsi structure
+  porostructure_ = poroelast_subproblem_->PoroField()->StructureField();
   // setup of poro monolithic algorithm
   SetupPoroAlgorithm();
   if(myrank_==0)
@@ -261,7 +266,7 @@ void IMMERSED::ImmersedPartitionedCellMigration::CouplingOp(const Epetra_Vector 
     const Teuchos::RCP<Epetra_Vector> iforcenp = Teuchos::rcp(new Epetra_Vector(*(cellstructure_->DofRowMap()),true));
     ImmersedOp(iforcenp, User);
 
-    int err = F.Update(1.0, *(cellstructure_->Interface()->ExtractFSICondVector(iforcenp)), -1.0, *iforcen, 0.0);
+    int err = F.Update(1.0, *(cellstructure_->Interface()->ExtractIMMERSEDCondVector(iforcenp)), -1.0, *iforcen, 0.0);
 
     if(err != 0)
       dserror("Vector update of FSI-residual returned err=%d",err);
@@ -370,7 +375,7 @@ void IMMERSED::ImmersedPartitionedCellMigration::BackgroundOp(Teuchos::RCP<Epetr
 //    /////////////////////////////////////////////////////////////////////////////////////
 //    //  Apply Source values to rhs of background fluid
 //    //
-//    backgroundstructuredis_->SetState(0,"dispnp",poroelast_subproblem_->StructureField()->Dispnp());
+//    backgroundstructuredis_->SetState(0,"dispnp",porostructure_->Dispnp());
 //    backgroundfluiddis_->SetState(0,"velnp",poroelast_subproblem_->FluidField()->Velnp());
 //
 //    if(curr_subset_of_backgrounddis_.empty()==false)
@@ -531,7 +536,7 @@ IMMERSED::ImmersedPartitionedCellMigration::ImmersedOp(Teuchos::RCP<Epetra_Vecto
       std::cout<<"###   Calculate Boundary Tractions on Cell for Initial Guess or Convergence Check ...      "<<std::endl;
 
     }
-    EvaluateInterpolationCondition( immerseddis_, params, struct_bdry_strategy,"FSICoupling", -1 );
+    EvaluateInterpolationCondition( immerseddis_, params, struct_bdry_strategy,"IMMERSEDCoupling", -1 );
     bdry_traction->Update(1.0,*cell_penalty_traction_,1.0);
 
     double normorstructbdrytraction;
@@ -582,7 +587,7 @@ IMMERSED::ImmersedPartitionedCellMigration::ImmersedOp(Teuchos::RCP<Epetra_Vecto
           std::cout<<"###   Interpolate fluid stresses to structural surface and calculate tractions                  "<<std::endl;
 
         }
-        EvaluateInterpolationCondition( immerseddis_, params, cell_fld_bdry_strategy, "FSICoupling", -1 );
+        EvaluateInterpolationCondition( immerseddis_, params, cell_fld_bdry_strategy, "IMMERSEDCoupling", -1 );
 
         bdry_traction->Norm2(&normofstructbdrytraction);
         if(myrank_ == 0)
@@ -609,7 +614,7 @@ IMMERSED::ImmersedPartitionedCellMigration::ImmersedOp(Teuchos::RCP<Epetra_Vecto
 //      );
 //
 //      params.set<std::string>("action","calc_cur_nodal_normals");
-//      EvaluateInterpolationCondition( immerseddis_, params, cell_str_nodal_normal_strategy, "FSICoupling", -1 );
+//      EvaluateInterpolationCondition( immerseddis_, params, cell_str_nodal_normal_strategy, "IMMERSEDCoupling", -1 );
 
       DRT::AssembleStrategy cell_str_bdry_strategy(
           0,              // struct dofset for row
@@ -644,7 +649,7 @@ IMMERSED::ImmersedPartitionedCellMigration::ImmersedOp(Teuchos::RCP<Epetra_Vecto
 
       params.set<double>("penalty",penalty);
       params.set<int>("during_init",initialize_cell_);
-      EvaluateInterpolationCondition( immerseddis_, params, cell_str_bdry_strategy, "FSICoupling", -1 );
+      EvaluateInterpolationCondition( immerseddis_, params, cell_str_bdry_strategy, "IMMERSEDCoupling", -1 );
 
 //      if(!initialize_cell_ and (IterationCounter()[0])>1)
 //      {
@@ -718,12 +723,12 @@ IMMERSED::ImmersedPartitionedCellMigration::ImmersedOp(Teuchos::RCP<Epetra_Vecto
       std::cout<<"Selective velocity relaxation not implemented yet. Parameter VEL_RELAX = "<<velrelax_<<" has no effect."<<std::endl;
 
     // prescribe neumann values at structural boundary dofs
-    cellstructure_->ApplyInterfaceForces(cellstructure_->Interface()->ExtractFSICondVector(*bdry_traction));
+    cellstructure_->ApplyImmersedInterfaceForces(Teuchos::null,cellstructure_->Interface()->ExtractIMMERSEDCondVector(*bdry_traction));
 
     // solve
     cellstructure_->Solve();
 
-    return cellstructure_->ExtractInterfaceDispnp();
+    return cellstructure_->ExtractImmersedInterfaceDispnp();
   }
 }
 
@@ -751,14 +756,14 @@ Teuchos::RCP<Epetra_Vector>
 IMMERSED::ImmersedPartitionedCellMigration::InitialGuess()
 {
   if(displacementcoupling_)
-    return cellstructure_->PredictInterfaceDispnp();
+    return cellstructure_->PredictImmersedInterfaceDispnp();
   else // FORCE COUPLING
   {
     immerseddis_->SetState(0,"displacement",cellstructure_->Dispnp());
     cell_bdry_traction_old_ = Teuchos::rcp(new Epetra_Vector(*(cellstructure_->DofRowMap()),true));
     ImmersedOp(cell_bdry_traction_old_, User);
 
-    return cellstructure_->Interface()->ExtractFSICondVector(cell_bdry_traction_old_);
+    return cellstructure_->Interface()->ExtractIMMERSEDCondVector(cell_bdry_traction_old_);
   }
 }
 
@@ -955,7 +960,7 @@ void IMMERSED::ImmersedPartitionedCellMigration::SetupBackgroundDiscretization()
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedPartitionedCellMigration::PrepareImmersedOp()
 {
-  backgroundstructuredis_->SetState(0,"displacement",poroelast_subproblem_->StructureField()->Dispnp());
+  backgroundstructuredis_->SetState(0,"displacement",porostructure_->Dispnp());
   immerseddis_->SetState(0,"velnp",cellstructure_->Velnp());
 
   return;
@@ -1164,7 +1169,7 @@ void IMMERSED::ImmersedPartitionedCellMigration::SetFieldDt()
     poroelast_subproblem_->SetDt(initial_timestep_);
     poroelast_subproblem_->PoroField()->SetDt(initial_timestep_);
     poroelast_subproblem_->FluidField()->SetDt(initial_timestep_);
-    poroelast_subproblem_->StructureField()->SetDt(initial_timestep_);
+    porostructure_->SetDt(initial_timestep_);
     poroelast_subproblem_->ScaTraField()->SetDt(initial_timestep_);
     cellstructure_->SetDt(initial_timestep_);
   }
@@ -1181,7 +1186,7 @@ void IMMERSED::ImmersedPartitionedCellMigration::SetFieldDt()
     poroelast_subproblem_->SetDt(timestep_);
     poroelast_subproblem_->PoroField()->SetDt(timestep_);
     poroelast_subproblem_->FluidField()->SetDt(timestep_);
-    poroelast_subproblem_->StructureField()->SetDt(timestep_);
+    porostructure_->SetDt(timestep_);
     poroelast_subproblem_->ScaTraField()->SetDt(timestep_);
     cellstructure_->SetDt(timestep_);
     initialize_cell_ = 0;

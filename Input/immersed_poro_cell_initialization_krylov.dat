@@ -323,7 +323,7 @@ E 2 - Porosity 1
 E 3 - Porosity 2
 // channel_volume
 //E 1 - Porosity 1
--------------------------------DESIGN FSI COUPLING SURF CONDITIONS
+-------------------------------DESIGN IMMERSED COUPLING SURF CONDITIONS
 DSURF  1
 // cylinder_interface
 E 5 - 1

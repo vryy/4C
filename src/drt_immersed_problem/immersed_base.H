@@ -103,6 +103,24 @@ public:
       const int condid
   );
 
+  /*----------------------------------------------------------------------*
+   * search in search tree for background elements in radius              |
+   *                                                          rauch 09/15 |
+   *----------------------------------------------------------------------*/
+  void SearchPotentiallyCoveredBackgrdElements(
+          std::map<int,std::set<int> >* current_subset_tofill,
+          Teuchos::RCP<GEO::SearchTree> backgrd_SearchTree,
+          const DRT::Discretization& dis,
+          const std::map<int, LINALG::Matrix<3, 1> >& currentpositions,
+          const LINALG::Matrix<3, 1>& point,
+          const double radius,
+          const int label);
+
+  void EvaluateSubsetElements(Teuchos::ParameterList& params,
+                              Teuchos::RCP<DRT::Discretization> dis,
+                              std::map<int,std::set<int> >& elementstoeval,
+                              int action);
+
 
 };// class ImmersedBase
 
@@ -154,6 +172,9 @@ public:
 
     // pointer to background element
     DRT::Element* sourceele;
+
+    // sourceele displacements
+    std::vector<double> myvalues;
 
     // declare vector of global current coordinates
     double x [globdim];
@@ -265,8 +286,28 @@ public:
           {
             bool converged = false;
 
-            // get parameter space coords xi in source element
-            MORTAR::UTILS::GlobalToLocal<sourcedistype>(*(curr->second),&xvec[0],&xi(0),converged);
+            if(problem->ProblemType()==prb_immersed_ale_fsi)
+            {
+              Teuchos::RCP<const Epetra_Vector> state = sourcedis->GetState("velnp");
+
+              DRT::Element::LocationArray la(1);
+              curr->second->LocationVector(*sourcedis,la,false);
+              // extract local values of the global vectors
+              myvalues.resize(la[0].lm_.size());
+              DRT::UTILS::ExtractMyValues(*state,myvalues,la[0].lm_);
+              double sourceeledisp[24];
+              for(int node=0;node<8;++node)
+                for(int dof=0; dof<3;++dof)
+                  sourceeledisp[node*3+dof]=myvalues[node*4+dof];
+
+              // get parameter space coords xi in source element of global point xvec of target element
+              MORTAR::UTILS::GlobalToCurrentLocal<sourcedistype>(*(curr->second),&sourceeledisp[0],&xvec[0],&xi(0),converged);
+            }
+            else
+            {
+              // get parameter space coords xi in source element of global point xvec of target element
+              MORTAR::UTILS::GlobalToLocal<sourcedistype>(*(curr->second),&xvec[0],&xi(0),converged);
+            }
 
 //  # ifdef DEBUG
 //          if(!converged)
@@ -312,11 +353,21 @@ public:
                 std::vector<double> distances(sourceele->NumNode());
                 for(int sourcenode=0; sourcenode<sourceele->NumNode(); sourcenode++)
                 {
-                  const double* X;
-                  X = sourceele->Nodes()[sourcenode]->X();
+                  if(problem->ProblemType()==prb_immersed_ale_fsi)
+                  {
+                    const double* X;
+                    X = sourceele->Nodes()[sourcenode]->X();
 
-                  distances[sourcenode] = sqrt(pow(xvec[0]-X[0],2)+pow(xvec[1]-X[1],2)+pow(xvec[2]-X[2],2));
+                    distances[sourcenode] = sqrt(pow(xvec[0]-(X[0]+myvalues[sourcenode*4+0]),2)+pow(xvec[1]-(X[1]+myvalues[sourcenode*4+1]),2)+pow(xvec[2]-(X[2]+myvalues[sourcenode*4+2]),2));
 
+                  }
+                  else
+                  {
+                    const double* X;
+                    X = sourceele->Nodes()[sourcenode]->X();
+
+                    distances[sourcenode] = sqrt(pow(xvec[0]-X[0],2)+pow(xvec[1]-X[1],2)+pow(xvec[2]-X[2],2));
+                  }
                 }
 
                 // get max. distance and corresponding index of src node
@@ -332,12 +383,26 @@ public:
                 }
 
                 const double* X;
-                X = sourceele->Nodes()[maxdistanceindex]->X();
-                // build vector directed from targetele point (xvec) to sourceel node (X)
+                double x[3];
+                if(problem->ProblemType()==prb_immersed_ale_fsi)
+                {
+                  X = sourceele->Nodes()[maxdistanceindex]->X();
+                  x[0] = X[0]+myvalues[maxdistanceindex*4+0];
+                  x[1] = X[1]+myvalues[maxdistanceindex*4+1];
+                  x[2] = X[2]+myvalues[maxdistanceindex*4+2];
+                }
+                else
+                {
+                  x[0] = sourceele->Nodes()[maxdistanceindex]->X()[0];
+                  x[1] = sourceele->Nodes()[maxdistanceindex]->X()[1];
+                  x[2] = sourceele->Nodes()[maxdistanceindex]->X()[2];
+                }
+
+                // build vector directed from targetele point (xvec) to sourceele node (X)
                 // xvec should not lie at same ele surface as sourcenode
-                (*vector)(0) = X[0]-xvec[0];
-                (*vector)(1) = X[1]-xvec[1];
-                (*vector)(2) = X[2]-xvec[2];
+                (*vector)(0) = x[0]-xvec[0];
+                (*vector)(1) = x[1]-xvec[1];
+                (*vector)(2) = x[2]-xvec[2];
                 vector->Scale(vector->Norm2());
 
                 // build scalar product between normal and vector
@@ -1610,10 +1675,10 @@ public:
             // loop over all searchbox elements
             for(std::set<int>::const_iterator eleIter = (closele->second).begin(); eleIter != (closele->second).end(); eleIter++)
             {
-              // only surface elements (with fsi coupling condition) are relevant to find closest structure point
+              // only surface elements (with immersed coupling condition) are relevant to find closest structure point
               std::vector<Teuchos::RCP<DRT::Element> > surface_eles = structdis->gElement(*eleIter)->Surfaces();
 
-              // loop over surface element, find the elements with FSICoupling condition
+              // loop over surface element, find the elements with IMMERSEDCoupling condition
               for (std::vector<Teuchos::RCP<DRT::Element> >::iterator surfIter = surface_eles.begin(); surfIter != surface_eles.end(); ++surfIter)
               {
                 // pointer to current surface element
@@ -1628,12 +1693,12 @@ public:
                 for (int surfnode = 0; surfnode < structele->NumNode(); ++surfnode)
                 {
                   DRT::Node* checkNode = NodesPtr[surfnode];
-                  // check whether a FSICoupling condition is active on this node
-                  if (checkNode->GetCondition("FSICoupling") != NULL)
+                  // check whether a IMMERSEDCoupling condition is active on this node
+                  if (checkNode->GetCondition("IMMERSEDCoupling") != NULL)
                     ++numfsinodes;
                 }
 
-                // only surface elements with FSICoupling condition are relevant (all nodes of this element have fsi condition)
+                // only surface elements with IMMERSEDCoupling condition are relevant (all nodes of this element have fsi condition)
                 if (numfsinodes==structele->NumNode())
                 {
                   // get displacements and velocities of structure dis

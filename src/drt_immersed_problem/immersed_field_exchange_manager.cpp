@@ -70,9 +70,9 @@ DRT::ImmersedFieldExchangeManager::ImmersedFieldExchangeManager()
 void DRT::ImmersedFieldExchangeManager::InitializePorosityAtGPMap()
 {
 
-  DRT::Condition* mycondition = DRT::Problem::Instance()->GetDis("cell")->GetCondition("FSICoupling");
+  DRT::Condition* mycondition = DRT::Problem::Instance()->GetDis("cell")->GetCondition("IMMERSEDCoupling");
   if(mycondition == NULL)
-    dserror("Failed to get condition FSICoupling");
+    dserror("Failed to get condition IMMERSEDCoupling");
   std::map<int,Teuchos::RCP<DRT::Element> > mygeometry = mycondition->Geometry();
   int mygeometrysize = mygeometry.size();
   if(mygeometrysize==0)
