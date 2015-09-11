@@ -178,6 +178,7 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn,
   case prb_gas_fsi:
   case prb_ac_fsi:
   case prb_biofilm_fsi:
+  case prb_immersed_ale_fsi:
   {
     const Teuchos::ParameterList& fsidyn =
         DRT::Problem::Instance()->FSIDynamicParams();

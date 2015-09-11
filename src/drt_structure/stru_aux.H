@@ -51,7 +51,8 @@ namespace AUX
       cond_lung_asi  = 2,
       cond_bio_gr    = 3,
       cond_ale_wear  = 4,
-      cond_fpsi      = 5
+      cond_fpsi      = 5,
+      cond_immersed  = 6
     };
 
     /// setup the whole thing
@@ -66,6 +67,7 @@ namespace AUX
     MAP_EXTRACTOR_VECTOR_METHODS(BioGrCond,cond_bio_gr)
     MAP_EXTRACTOR_VECTOR_METHODS(AleWearCond,cond_ale_wear)
     MAP_EXTRACTOR_VECTOR_METHODS(FPSICond,cond_fpsi)
+    MAP_EXTRACTOR_VECTOR_METHODS(IMMERSEDCond,cond_immersed)
 
   };
 }

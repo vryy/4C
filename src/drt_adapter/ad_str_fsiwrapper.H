@@ -87,8 +87,6 @@ namespace ADAPTER
     /// the interface map setup for interface <-> full translation
     Teuchos::RCP<STR::AUX::MapExtractor> interface_;
 
-  private:
-
     /// predictor type
     int predictor_;
 

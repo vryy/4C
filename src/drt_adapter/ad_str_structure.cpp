@@ -22,6 +22,7 @@ Maintainer: Georg Hammerl
 #include "ad_str_redairway.H"
 #include "ad_str_fsi_crack.H"
 #include "ad_str_fpsiwrapper.H"
+#include "ad_str_fsiwrapper_immersed.H"
 #include "ad_str_statmech.H"
 #include "ad_str_invana.H"
 
@@ -449,8 +450,6 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
     switch(probtype)
     {
     case prb_fsi:
-    case prb_immersed_fsi:
-    case prb_immersed_ale_fsi:
     case prb_fsi_redmodels:
     case prb_fsi_lung:
     case prb_gas_fsi:
@@ -482,6 +481,13 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
       }
     }
     break;
+    case prb_immersed_fsi:
+    case prb_immersed_ale_fsi:
+    case prb_immersed_cell:
+    {
+      structure_ = Teuchos::rcp(new FSIStructureWrapperImmersed(Teuchos::rcp(new StructureNOXCorrectionWrapper(tmpstr))));
+    }
+    break;
     case prb_fsi_crack:
     {
       structure_ = Teuchos::rcp(new FSICrackingStructure(Teuchos::rcp(new FSIStructureWrapper(Teuchos::rcp(new StructureNOXCorrectionWrapper(tmpstr))))));
@@ -497,7 +503,6 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
     case prb_fpsi:
     case prb_fps3i:
     case prb_fpsi_xfem:
-    case prb_immersed_cell:
     {
       const Teuchos::ParameterList& porodyn = problem->PoroelastDynamicParams();
       const INPAR::POROELAST::SolutionSchemeOverFields coupling =

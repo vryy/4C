@@ -1923,14 +1923,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          true,
                                          DRT::Condition::Surface));
 
-  Teuchos::RCP<ConditionDefinition> surfimmersedfsi =
-    Teuchos::rcp(new ConditionDefinition("DESIGN IMMERSED FSI COUPLING SURF CONDITIONS",
-                                         "IMMERSEDFSICoupling",
-                                         "IMMERSED FSI Coupling",
-                                         DRT::Condition::IMMERSEDFSICoupling,
-                                         true,
-                                         DRT::Condition::Surface));
-
   for (unsigned i=0; i<fsicomponents.size(); ++i)
   {
     linefsi->AddComponent(fsicomponents[i]);
@@ -2025,6 +2017,37 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          DRT::Condition::Volume));
 
   condlist.push_back(immersedsearchbox);
+
+  /*--------------------------------------------------------------------*/
+    // IMMERSED COUPLING
+
+  std::vector<Teuchos::RCP<ConditionComponent> > immersedcomponents;
+
+  immersedcomponents.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
+
+  Teuchos::RCP<ConditionDefinition> lineimmersed =
+    Teuchos::rcp(new ConditionDefinition("DESIGN IMMERSED COUPLING LINE CONDITIONS",
+                                         "IMMERSEDCoupling",
+                                         "IMMERSED Coupling",
+                                         DRT::Condition::IMMERSEDCoupling,
+                                         true,
+                                         DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> surfimmersed =
+    Teuchos::rcp(new ConditionDefinition("DESIGN IMMERSED COUPLING SURF CONDITIONS",
+                                         "IMMERSEDCoupling",
+                                         "IMMERSED Coupling",
+                                         DRT::Condition::IMMERSEDCoupling,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  for (unsigned i=0; i<immersedcomponents.size(); ++i)
+  {
+    lineimmersed->AddComponent(immersedcomponents[i]);
+    surfimmersed->AddComponent(immersedcomponents[i]);
+  }
+
+  condlist.push_back(lineimmersed);
+  condlist.push_back(surfimmersed);
 
   /*--------------------------------------------------------------------*/
   // FREESURF

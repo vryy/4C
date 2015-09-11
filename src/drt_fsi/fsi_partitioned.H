@@ -162,6 +162,9 @@ protected:
   /// access to iteration counter
   virtual std::vector<int> IterationCounter(){return counter_;};
 
+  /// extract idispn_ iveln_
+  virtual void ExtractPreviousInterfaceSolution();
+
 private:
 
   /// create linear solver framework
@@ -177,9 +180,6 @@ private:
 
   /// setup list with default parameters
   virtual void SetDefaultParameters(const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list);
-
-  /// extract idispn_ iveln_
-  virtual void ExtractPreviousInterfaceSolution();
 
   /// interface displacement from time step begin
   Teuchos::RCP<Epetra_Vector> idispn_;

@@ -606,6 +606,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_coupling_volmortar.cpp
   src/drt_adapter/ad_fld_fluid.cpp
   src/drt_adapter/ad_fld_fluid_ale.cpp
+  src/drt_adapter/ad_fld_fluid_ale_immersed.cpp
   src/drt_adapter/ad_fld_base_algorithm.cpp
   src/drt_adapter/ad_fld_lung.cpp
   src/drt_adapter/ad_fld_moving_boundary.cpp
@@ -633,6 +634,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/ad_str_wrapper.cpp
   src/drt_adapter/ad_str_fsiwrapper.cpp
   src/drt_adapter/ad_str_fpsiwrapper.cpp
+  src/drt_adapter/ad_str_fsiwrapper_immersed.cpp
   src/drt_adapter/ad_str_fsi_timint_adaptive.cpp
   src/drt_adapter/ad_str_fsi_crack.cpp
   src/drt_adapter/ad_str_timeloop.cpp

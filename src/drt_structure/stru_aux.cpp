@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file structure_utils.cpp
+\file stru_aux.cpp
 
 \brief structure-specific utils and auxiliary functions
 
@@ -79,6 +79,7 @@ void STR::AUX::MapExtractor::Setup(const DRT::Discretization& dis, const Epetra_
   mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"BioGrCoupling",0,ndim)));
   mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"AleWear",0,ndim)));
   mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"FPSICoupling",0,ndim)));
+  mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"IMMERSEDCoupling",0,ndim)));
 
   mcs.SetupExtractor(dis,fullmap,*this);
 }
@@ -93,6 +94,8 @@ Teuchos::RCP<std::set<int> > STR::AUX::MapExtractor::ConditionedElementMap(const
   Teuchos::RCP<std::set<int> > condelements3 = DRT::UTILS::ConditionedElementMap(dis,"BioGrCoupling");
   Teuchos::RCP<std::set<int> > condelements4 = DRT::UTILS::ConditionedElementMap(dis,"AleWear");
   Teuchos::RCP<std::set<int> > condelements5 = DRT::UTILS::ConditionedElementMap(dis,"FPSICoupling");
+  Teuchos::RCP<std::set<int> > condelements6 = DRT::UTILS::ConditionedElementMap(dis,"IMMERSEDCoupling");
+
 
   std::copy(condelements2->begin(),condelements2->end(),
             std::inserter(*condelements,condelements->begin()));
