@@ -26,7 +26,7 @@ void  STR::PREDICT::ConstDisVelAccPress::Setup()
 
   // nothing to do till now
 
-  isSetup_ = true;
+  issetup_ = true;
 
   return;
 }
@@ -34,7 +34,7 @@ void  STR::PREDICT::ConstDisVelAccPress::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::PREDICT::ConstDisVelAccPress::PredictStep()
+void STR::PREDICT::ConstDisVelAccPress::Predict()
 {
   return;
 }

@@ -11,8 +11,21 @@
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::TIMINT::Explicit::Explicit() :
-STR::TIMINT::Base()
+STR::TIMINT::Explicit::Explicit()
+    : STR::TIMINT::Base()
 {
+  // empty
+}
 
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::Explicit::Setup()
+{
+  // safety check
+  if (!IsInit())
+    dserror("Init() has not been called, yet!");
+
+  // set isSetup flag
+  issetup_ = true;
 }

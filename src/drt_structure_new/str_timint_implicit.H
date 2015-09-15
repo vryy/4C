@@ -9,15 +9,16 @@
 #define STR_TIMINT_IMPLICIT_H_
 
 #include "str_timint_base.H"
+#include "str_nln_solver_interface_required.H"
 
 // forward declarations ...
 namespace STR {
 namespace IMPLICIT {
   class Generic;
 } // namespace IMPLICIT
-namespace ModelEvaluator {
+namespace PREDICT{
   class Generic;
-} // namespace  ModelEvaluator
+} // namespace PREDICT
 namespace NLN {
 namespace SOLVER {
   class Generic;
@@ -40,6 +41,14 @@ namespace TIMINT {
 
     virtual int IntegrateStep();
 
+    virtual INPAR::STR::ConvergenceStatus Solve();
+
+    //! Return the rhs-vector (negative sign for Newton is already included.)
+    Teuchos::RCP<const Epetra_Vector> RHS()
+    {
+      return rhs_;
+    }
+
   protected:
     virtual void Setup();
 
@@ -55,25 +64,13 @@ namespace TIMINT {
       return implint_;
     };
 
-    std::map<const enum INPAR::STR::ModelType, Teuchos::RCP<STR::MODELEVALUATOR::Generic> >& ModelEvaluators()
-    {
-      CheckInitSetup();
-      return *modelevaluators_;
-    }
-
-    const Teuchos::RCP<std::map<const enum INPAR::STR::ModelType, Teuchos::RCP<STR::MODELEVALUATOR::Generic> > > ModelEvaluatorsPtr()
-    {
-      CheckInitSetup();
-      return modelevaluators_;
-    }
-
     STR::PREDICT::Generic& Predictor()
     {
       CheckInitSetup();
       return *predictor_;
     };
 
-    const Teuchos::RCP<STR::NLN::SOLVER::Generic> PredictorPtr()
+    const Teuchos::RCP<STR::PREDICT::Generic> PredictorPtr()
     {
       CheckInitSetup();
       return predictor_;
@@ -91,12 +88,28 @@ namespace TIMINT {
       return nlnsolver_;
     };
 
+    //! Prepare time step
+    virtual void PrepareTimeStep()
+    {
+      // update end time \f$t_{n+1}\f$ of this time step to cope with time step size adaptivity
+      DataGlobalStatePtr()->SetTimenp(DataGlobalStatePtr()->GetUpdatedTime());
+
+      // things that need to be done before Predict
+      PrePredict();
+
+      // TODO prepare contact for new time step
+      // PrepareStepContact();
+      Predictor().Predict();
+
+      // things that need to be done after Predict
+      PostPredict();
+
+      return;
+    }
+
   private:
     //! ptr to the implicit time integrator object
     Teuchos::RCP<STR::IMPLICIT::Generic> implint_;
-
-    //! ptr to the model evaluator map
-    Teuchos::RCP<std::map<const enum INPAR::STR::ModelType, Teuchos::RCP<STR::MODELEVALUATOR::Generic> > > modelevaluators_;
 
     //! ptr to the predictor object
     Teuchos::RCP<STR::PREDICT::Generic> predictor_;

@@ -18,7 +18,7 @@ void  STR::PREDICT::TangDis::Setup()
 
   // nothing to do till now
 
-  isSetup_ = true;
+  issetup_ = true;
 
   return;
 }
@@ -26,7 +26,7 @@ void  STR::PREDICT::TangDis::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::PREDICT::TangDis::PredictStep()
+void STR::PREDICT::TangDis::Predict()
 {
   return;
 }

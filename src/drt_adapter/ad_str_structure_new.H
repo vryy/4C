@@ -8,6 +8,25 @@
 #ifndef AD_STR_STRUCTURE_NEW_H_
 #define AD_STR_STRUCTURE_NEW_H_
 
+#include "../drt_inpar/inpar_structure.H"
+#include "ad_field.H"
+
+
+namespace Teuchos{
+  class ParameterList;
+}
+namespace STR{
+namespace TIMINT{
+  class Base;
+}
+}
+namespace LINALG{
+  class Solver;
+}
+namespace DRT{
+  class Discretization;
+}
+
 namespace ADAPTER {
 
   class StructureNew : public Field
@@ -64,7 +83,7 @@ namespace ADAPTER {
         const Teuchos::ParameterList& sdyn,
         const Teuchos::ParameterList& xparams,
         const Teuchos::ParameterList& timeadaptivity,
-        Teuchos::RCP<STR::TimInt> timint);
+        Teuchos::RCP<STR::TIMINT::Base> timint);
 
     // create the adaptive time integrator wrapper
     void CreateAdaptiveWrapper(
@@ -72,10 +91,10 @@ namespace ADAPTER {
         const Teuchos::ParameterList& sdyn,
         const Teuchos::ParameterList& xparams,
         const Teuchos::ParameterList& taflags,
-        Teuchos::RCP<STR::TimInt> timint);
+        Teuchos::RCP<STR::TIMINT::Base> timint);
 
     // create the time integrator wrapper
-    void CreateWrapper(Teuchos::RCP<STR::TimInt> timint);
+    void CreateWrapper(Teuchos::RCP<STR::TIMINT::Base> timint);
 
     /// create linear solver for contact/meshtying problems
     /** \param Teuchos::RCP<DRT::Discretization> the discretization class with the corresponding structural elements

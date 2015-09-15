@@ -33,13 +33,17 @@ namespace MODELEVALUATOR {
   {
   public:
     //! constructor
-    Generic() {};
+    Generic()
+    {
+      isinit_ = false;
+      issetup_ = false;
+    };
 
     //! destructor
     virtual ~Generic() {};
 
     //! initialize the class variables
-    virtual void Init();
+    virtual void Init() = 0;
 
     //! setup class variables
     virtual void Setup() = 0;
@@ -71,7 +75,7 @@ namespace MODELEVALUATOR {
         Teuchos::RCP<const Epetra_Vector> disnp,
         Teuchos::RCP<const Epetra_Vector> disn = Teuchos::null) = 0;
 
-  private:
+  protected:
     //! init flag
     bool isinit_;
 

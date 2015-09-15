@@ -14,12 +14,15 @@
 // forward declaration
 class Epetra_Vector;
 class Epetra_Time;
+class Epetra_Map;
 
 namespace Teuchos {
   class ParameterList;
 }
 namespace LINALG {
   class SparseOperator;
+  class SparseMatrix;
+  class BlockSparseMatrixBase;
 }
 namespace IO {
   class DiscretizationWriter;
@@ -29,6 +32,9 @@ namespace DRT {
 }
 
 namespace STR {
+namespace MODELEVALUATOR {
+  class Generic;
+} // namespace  ModelEvaluator
 namespace TIMINT {
   class BaseDataIO
   {
@@ -273,7 +279,7 @@ namespace TIMINT {
     //! @name Get mass and inertia control parameters (read only access)
     //@{
     //! Return mass linearization type
-    const double& GetMassLinType() const
+    const enum INPAR::STR::MassLin& GetMassLinType() const
     {
       CheckInitSetup();
       return masslintype_;
@@ -396,7 +402,7 @@ namespace TIMINT {
     //! @name Get mutable mass and inertia control parameters (read and write access)
     //@{
     //! Return mass linearization type
-    double& GetMutableMassLinType()
+    enum INPAR::STR::MassLin& GetMutableMassLinType()
     {
       CheckInitSetup();
       return masslintype_;
@@ -469,7 +475,7 @@ namespace TIMINT {
     //@{
 
     //! current active model types for the model evaluator
-    Teuchos::RCP<const std::vector<const enum INPAR::STR::ModelType> > modeltypes_;
+    Teuchos::RCP<std::vector<const enum INPAR::STR::ModelType> > modeltypes_;
 
     //@}
 
@@ -560,26 +566,14 @@ namespace TIMINT {
       //@{
 
       //! dof map of vector of unknowns
-      Teuchos::RCP<const Epetra_Map> DofRowMap() const
-      {
-          const Epetra_Map* dofrowmap = discret_->DofRowMap();
-          return Teuchos::rcp(new Epetra_Map(*dofrowmap));
-      }
+      Teuchos::RCP<const Epetra_Map> DofRowMap() const;
 
       //! dof map of vector of unknowns
       //! method for multiple dofsets
-      Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds) const
-      {
-        const Epetra_Map* dofrowmap = discret_->DofRowMap(nds);
-        return Teuchos::rcp(new Epetra_Map(*dofrowmap));
-      }
+      Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds) const;
 
       //! view of dof map of vector of unknowns
-      const Epetra_Map* DofRowMapView() const
-      {
-        return discret_->DofRowMap();
-      }
-
+      const Epetra_Map* DofRowMapView() const;
       //@}
 
       //! @name Get general control parameters (read only access)
@@ -590,6 +584,13 @@ namespace TIMINT {
       {
         CheckInitSetup();
         return timenp_;
+      };
+
+      //! Return time step index for \f$t_{n+1}\f$
+      const int& GetStepNp() const
+      {
+        CheckInitSetup();
+        return stepnp_;
       };
 
       //! Return time for lin solver
@@ -676,6 +677,29 @@ namespace TIMINT {
 
       //@}
 
+      //! @name Get system matrices (read only access)
+      //@{
+      Teuchos::RCP<const LINALG::SparseOperator> GetStiffMatrix() const
+      {
+        CheckInitSetup();
+        return stiff_;
+      }
+
+      //! mass matrix (constant)
+      Teuchos::RCP<const LINALG::SparseOperator> GetMassMatrix() const
+      {
+        CheckInitSetup();
+        return mass_;
+      }
+
+      //! damping matrix
+      Teuchos::RCP<const LINALG::SparseOperator> GetDampMatrix() const
+      {
+        CheckInitSetup();
+        return damp_;
+      }
+      //@}
+
       //! @name Get mutable general control parameters (read and write access)
       //@{
 
@@ -684,6 +708,13 @@ namespace TIMINT {
       {
         CheckInitSetup();
         return timenp_;
+      };
+
+      //! Return time step index for \f$t_{n+1}\f$
+      int& GetMutableStepNp()
+      {
+        CheckInitSetup();
+        return stepnp_;
       };
 
       //! Return time for lin solver
@@ -770,6 +801,53 @@ namespace TIMINT {
 
       //@}
 
+      //! @name Get mutable system matrices
+      //@{
+      Teuchos::RCP<LINALG::SparseOperator> GetMutableStiffMatrix()
+      {
+        CheckInitSetup();
+        return stiff_;
+      }
+
+      //! mass matrix (constant)
+      Teuchos::RCP<LINALG::SparseOperator> GetMutableMassMatrix()
+      {
+        CheckInitSetup();
+        return mass_;
+      }
+
+      //! damping matrix
+      Teuchos::RCP<LINALG::SparseOperator> GetMutableDampMatrix()
+      {
+        CheckInitSetup();
+        return damp_;
+      }
+      //@}
+
+      //! @name Set general control parameters
+      //@{
+      //! Sets the current time \f$t_{n}\f$
+      virtual void SetTimen(const double time)
+      {
+        CheckInitSetup();
+        (*timen_)[0]=time;
+      }
+
+      //! Sets the target time \f$t_{n+1}\f$ of this time step
+      virtual void SetTimenp(const double time)
+      {
+        CheckInitSetup();
+        timenp_ = time;
+      }
+
+      //@}
+
+      virtual const double GetUpdatedTime()
+      {
+        CheckInitSetup();
+        return (*timen_)[0] + (*dt_)[0];
+      }
+
     protected:
       //! @name variables for internal use only
       //@{
@@ -838,7 +916,6 @@ namespace TIMINT {
 
       //! @name System matrices
       //@{
-      //! holds eventually effective stiffness TODO
       Teuchos::RCP<LINALG::SparseOperator> stiff_;
 
       //! mass matrix (constant)
@@ -871,7 +948,7 @@ namespace TIMINT {
     //! destructor
     virtual ~Base() {};
 
-    virtual void IntegrateStep() = 0;
+    virtual int IntegrateStep() = 0;
 
     /// wrapper for things that should be done before PrepareTimeStep is called
     virtual void PrePredict() {};
@@ -913,6 +990,17 @@ namespace TIMINT {
         );
 
     virtual void Setup() = 0;
+
+    //! Read restart values
+    void ReadRestart
+    (
+      const int step //!< restart step
+    );
+
+    // TODO
+    //! Calculate all output quantities depending on the constitutive model
+    //  (and, hence, on a potential material history)
+    void PrepareOutput(){return;};
 
   protected:
 
@@ -971,16 +1059,45 @@ namespace TIMINT {
       return datasdyn_;
     };
 
+    std::map<const enum INPAR::STR::ModelType, Teuchos::RCP<STR::MODELEVALUATOR::Generic> >& ModelEvaluators()
+    {
+      CheckInitSetup();
+      return *modelevaluators_;
+    }
+
+    const Teuchos::RCP<std::map<const enum INPAR::STR::ModelType, Teuchos::RCP<STR::MODELEVALUATOR::Generic> > > ModelEvaluatorsPtr()
+    {
+      CheckInitSetup();
+      return modelevaluators_;
+    }
+
+    //! @name Derived field accessor functions
+    //!@{
+    // Get dof map of vector of unknowns
+    virtual Teuchos::RCP<const Epetra_Map> DofRowMap();
+
+    // Return stiffness matrix as LINALG::SparseMatrix
+    virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
+
+    // Return stiffness matrix as LINALG::BlockSparseMatrixBase
+    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
+
+    //!@}
+
   protected:
     bool isinit_;
 
     bool issetup_;
 
   private:
-    // pointer to the different data containers
+    //! pointer to the different data containers
     Teuchos::RCP<BaseDataIO>          dataio_;
     Teuchos::RCP<BaseDataSDyn>        datasdyn_;
     Teuchos::RCP<BaseDataGlobalState> dataglobalstate_;
+
+    //! ptr to the model evaluator map
+    Teuchos::RCP<std::map<const enum INPAR::STR::ModelType, Teuchos::RCP<STR::MODELEVALUATOR::Generic> > > modelevaluators_;
+
   };  // class Base
 } // namespace TIMINT
 } // namespace STR

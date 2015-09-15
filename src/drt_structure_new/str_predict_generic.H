@@ -8,6 +8,8 @@
 #ifndef STR_PREDICT_GENERIC_H_
 #define STR_PREDICT_GENERIC_H_
 
+#include "../drt_inpar/inpar_structure.H"
+
 namespace STR {
 namespace PREDICT {
   class Generic
@@ -30,7 +32,7 @@ namespace PREDICT {
       virtual const std::string& Name() const;
 
       //! Calculate the specific predictor step
-      void Predict() = 0;
+      virtual void Predict() = 0;
 
   protected:
       //! returns init state

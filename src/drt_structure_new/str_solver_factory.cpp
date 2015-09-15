@@ -8,8 +8,14 @@
 #include "str_solver_factory.H"
 
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_globalproblem.H"
+
 #include "../linalg/linalg_solver.H"
+
+#include "../drt_io/io_control.H"
+
 #include "../drt_inpar/inpar_structure.H"
+#include "../drt_inpar/inpar_contact.H"
 
 #include <Teuchos_ParameterList.hpp>
 

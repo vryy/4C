@@ -7,7 +7,6 @@
 
 #include "ad_str_structure_new.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../drt_inpar/inpar_structure.H"
 
 
 /*----------------------------------------------------------------------------*
@@ -260,7 +259,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
   actdis_->GetCondition("Mortar", mtcond);
   if (mtcond.size())
     have_meshtying = true;
-  if (have_contact and have_meshtying)
+  if (have_contact or have_meshtying)
     modeltypes.push_back(INPAR::STR::model_meshtying_contact);
   // ------------------------------------------------
   // check for windkessel conditions
@@ -470,7 +469,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetStructure(
     const Teuchos::ParameterList& sdyn,
     const Teuchos::ParameterList& xparams,
     const Teuchos::ParameterList& taflags,
-    Teuchos::RCP<STR::TimInt> timint)
+    Teuchos::RCP<STR::TIMINT::Base> timint)
 {
   // create a adaptive wrapper
   CreateAdaptiveWrapper(ioflags,sdyn,xparams,taflags,timint);
@@ -493,7 +492,7 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateAdaptiveWrapper(
     const Teuchos::ParameterList& sdyn,
     const Teuchos::ParameterList& xparams,
     const Teuchos::ParameterList& taflags,
-    Teuchos::RCP<STR::TimInt> timint)
+    Teuchos::RCP<STR::TIMINT::Base> timint)
 {
   // get the problem instance and the problem type
   DRT::Problem* problem = DRT::Problem::Instance();
@@ -540,7 +539,7 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateAdaptiveWrapper(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(
-    Teuchos::RCP<STR::TimInt> timint)
+    Teuchos::RCP<STR::TIMINT::Base> timint)
 {
   // get the problem instance and the problem type
   DRT::Problem* problem = DRT::Problem::Instance();

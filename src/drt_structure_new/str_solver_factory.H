@@ -9,7 +9,17 @@
 #define STR_SOLVER_FACTORY_H_
 
 #include <Teuchos_RCP.hpp>
+#include "../drt_inpar/inpar_structure.H"
 
+namespace LINALG{
+  class Solver;
+}
+namespace DRT{
+class Discretization;
+}
+namespace Teuchos{
+class ParameterList;
+}
 namespace STR {
 namespace SOLVER {
   class Factory

@@ -6,15 +6,19 @@
  */
 
 #include "str_timint_implicit.H"
-#include "str_nln_solver_factory.H"
+#include "str_impl_generic.H"
 #include "str_predict_generic.H"
+#include "str_nln_solver_generic.H"
 
+// factories
+#include "str_predict_factory.H"
+#include "str_nln_solver_factory.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::TIMINT::Implicit::Implicit()
-    : implint_(Teuchos::null),
-      modelevaluators_(Teuchos::null),
+    : STR::TIMINT::Base(),
+      implint_(Teuchos::null),
       nlnsolver_(Teuchos::null)
 {
   // empty
@@ -42,18 +46,6 @@ void STR::TIMINT::Implicit::Setup()
   implint_->Setup();
 
   // ---------------------------------------------
-  // build model evaluator
-  // ---------------------------------------------
-  modelevaluators_ = STR::MODELEVALUATOR::BuildModelEvaluators(DataSDyn().GetModelType());
-
-  std::map<const enum INPAR::STR::ModelType, Teuchos::RCP<STR::MODELEVALUATOR::Generic> >::iterator me_iter;
-  for (me_iter=modelevaluators_->begin();me_iter!=modelevaluators_->end();++me_iter)
-  {
-    me_iter->second->Init();
-    me_iter->second>Setup();
-  }
-
-  // ---------------------------------------------
   // build predictor
   // ---------------------------------------------
   const enum INPAR::STR::PredEnum& predtype =
@@ -68,7 +60,7 @@ void STR::TIMINT::Implicit::Setup()
   const enum INPAR::STR::NonlinSolTech& nlnSolverType =
       DataSDyn().GetNlnSolverType();
   nlnsolver_ = STR::NLN::SOLVER::BuildNlnSolver(nlnSolverType);
-  nlnsolver_->Init(DataSDynPtr(), DataGlobalStatePtr(), Teuchos::rcp(this,false));
+  nlnsolver_->Init(DataGlobalStatePtr(), DataSDynPtr(), Teuchos::rcp(this,false));
   nlnsolver_->Setup();
 
   // set isSetup flag
@@ -82,20 +74,18 @@ void STR::TIMINT::Implicit::Setup()
  *----------------------------------------------------------------------------*/
 int STR::TIMINT::Implicit::IntegrateStep()
 {
-  PreSolve();
-
-  // ---------------------------------------------
-  // Give a first educated guess
-  // ---------------------------------------------
+  // do the predictor step
   Predictor().Predict();
+  return Solve();
+}
 
-  // ---------------------------------------------
-  // Solve the nonlinear problem
-  // ---------------------------------------------
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::Solve()
+{
+  // reset the non-linear solver
   NlnSolver().Reset();
-  int error = NlnSolver().Solve();
-
-  PostSolve();
-
-  return error;
+  // solve the non-linear problem
+  return NlnSolver().Solve();
 }

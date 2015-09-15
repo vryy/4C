@@ -24,6 +24,8 @@ namespace MODELEVALUATOR{
     //! destructor
     virtual ~Structure(){};
 
+    virtual void Init();
+
     virtual void Setup();
 
     virtual void ApplyForce(

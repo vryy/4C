@@ -7,16 +7,20 @@
 
 
 #include "str_timint_base.H"
+#include "str_model_evaluator_factory.H"
+#include "str_model_evaluator_generic.H"
 
 #include "../drt_lib/drt_utils_timintmstep.H"
-#include "../linalg/linalg_utils.H"
 #include "../drt_inpar/inpar_parameterlist_utils.H"
+
+#include "../linalg/linalg_blocksparsematrix.H"
+#include "../linalg/linalg_utils.H"
 
 #include <Teuchos_ParameterList.hpp>
 
 #include <Epetra_Vector.h>
 #include <Epetra_Time.h>
-
+#include <Epetra_Map.h>
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -169,7 +173,7 @@ void STR::TIMINT::BaseDataSDyn::Init(
   // initialize the mass and inertia control parameters
   // ----------------------------------------------------------
   {
-    masslintype_ = DRT::INPUT::IntegralValue<INPAR::STR::DampKind>(sDynParams,"MASSLIN");
+    masslintype_ = DRT::INPUT::IntegralValue<INPAR::STR::MassLin>(sDynParams,"MASSLIN");
   }
   // ----------------------------------------------------------
   // initialize model evaluator control parameters
@@ -331,12 +335,39 @@ void STR::TIMINT::BaseDataGlobalState::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> STR::TIMINT::BaseDataGlobalState::DofRowMap() const
+{
+    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+    return Teuchos::rcp(new Epetra_Map(*dofrowmap));
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> STR::TIMINT::BaseDataGlobalState::DofRowMap(unsigned nds) const
+{
+  const Epetra_Map* dofrowmap = discret_->DofRowMap(nds);
+  return Teuchos::rcp(new Epetra_Map(*dofrowmap));
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+const Epetra_Map* STR::TIMINT::BaseDataGlobalState::DofRowMapView() const
+{
+  return discret_->DofRowMap();
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 STR::TIMINT::Base::Base()
     : isinit_(false),
       issetup_(false),
       dataio_(Teuchos::null),
       datasdyn_(Teuchos::null),
-      dataglobalstate_(Teuchos::null)
+      dataglobalstate_(Teuchos::null),
+      modelevaluators_(Teuchos::null)
 {
   // empty constructor
 }
@@ -350,17 +381,98 @@ void STR::TIMINT::Base::Init(
     const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> dataglobalstate
     )
 {
+  // ---------------------------------------------
   // We need to call Setup() after Init()
+  // ---------------------------------------------
   issetup_ = false;
 
+  // ---------------------------------------------
   // initilize the data container ptrs
+  // ---------------------------------------------
   dataio_ = dataio;
   datasdyn_ = datasdyn;
   dataglobalstate_ = dataglobalstate;
 
+  // ---------------------------------------------
+  // build model evaluator
+  // ---------------------------------------------
+  modelevaluators_ = STR::MODELEVALUATOR::BuildModelEvaluators(DataSDyn().GetModelType());
+
+  std::map<const enum INPAR::STR::ModelType, Teuchos::RCP<STR::MODELEVALUATOR::Generic> >::iterator me_iter;
+  for (me_iter=ModelEvaluatorsPtr()->begin();me_iter!=ModelEvaluatorsPtr()->end();++me_iter)
+  {
+    me_iter->second->Init();
+    me_iter->second>Setup();
+  }
+
+  // ---------------------------------------------
   // set isInit flag
+  // ---------------------------------------------
   isinit_ = true;
 
   // good bye
   return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/* Read and set restart values */
+void STR::TIMINT::Base::ReadRestart
+(
+  const int step
+)
+{
+  IO::DiscretizationReader reader(DataGlobalStatePtr()->GetDiscret(), step);
+  if (step != reader.ReadInt("step"))
+    dserror("Time step on file not equal to given step");
+
+//  step_ = step;
+//  stepn_ = step_ + 1;
+//  time_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<double>(0, 0, reader.ReadDouble("time")));
+//  timen_ = (*time_)[0] + (*dt_)[0];
+
+
+  // TODO: restart for model--evaluators...
+
+//  ReadRestartState();
+//
+//  ReadRestartConstraint();
+//  ReadRestartWindkessel();
+//  ReadRestartContactMeshtying();
+//  ReadRestartBeamContact();
+//  ReadRestartStatMech();
+//  ReadRestartSurfstress();
+//  ReadRestartMultiScale();
+//  ReadRestartCrack();
+//
+//  ReadRestartForce();
+
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> STR::TIMINT::Base::DofRowMap()
+{
+  CheckInitSetup();
+  const Epetra_Map* dofrowmap = DataGlobalStatePtr()->GetDiscret()->DofRowMap();
+  return Teuchos::rcp(new Epetra_Map(*dofrowmap));
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::SparseMatrix> STR::TIMINT::Base::SystemMatrix()
+{
+  CheckInitSetup();
+  return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(DataGlobalState().GetMutableStiffMatrix());
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::BlockSparseMatrixBase> STR::TIMINT::Base::BlockSystemMatrix()
+{
+  CheckInitSetup();
+  return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(DataGlobalState().GetMutableStiffMatrix());
 }

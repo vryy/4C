@@ -22,7 +22,7 @@ namespace PREDICT {
     virtual ~ConstDisVelAccPress() {};
 
     //! do the class specific predictor step
-    void PredictStep();
+    virtual void Predict();
 
   protected:
     //! setup class specific stuff

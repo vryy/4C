@@ -7,6 +7,7 @@
 
 #include "str_timint_factory.H"
 
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_structure.H"
 
 #include <Teuchos_ParameterList.hpp>

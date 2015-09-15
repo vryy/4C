@@ -11,6 +11,7 @@
 // supported model evaluators
 #include "str_model_evaluator_structure.H"
 
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::MODELEVALUATOR::Factory::Factory()
@@ -47,7 +48,6 @@ STR::MODELEVALUATOR::Factory::BuildModelEvaluators(
         break;
     }
   }
-
 
   return models;
 }
