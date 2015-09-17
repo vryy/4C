@@ -55,6 +55,7 @@ FSI::OverlappingBlockMatrixFSIAMG::OverlappingBlockMatrixFSIAMG(
                                                     std::vector<int>& aiterations,
                                                     int analyze,
                                                     INPAR::FSI::LinearBlockSolver strategy,
+                                                    INPAR::FSI::FsiVerbosity verbosity,
                                                     FILE* err)
   : OverlappingBlockMatrix(Teuchos::null,
                            maps,
@@ -90,7 +91,8 @@ siterations_(siterations),
 fomega_(fomega),
 fiterations_(fiterations),
 aomega_(aomega),
-aiterations_(aiterations)
+aiterations_(aiterations),
+verbosity_(verbosity)
 {
   if (strategy_!= INPAR::FSI::FSIAMG &&
       strategy_!= INPAR::FSI::PreconditionedKrylov)
@@ -197,18 +199,21 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
     maxnlevel_=1;
   }
 
-  if (!myrank) printf("       -----------------------------------------------------------------------\n");
-  if (!myrank && strategy_==INPAR::FSI::FSIAMG)
+  if (!myrank && verbosity_ == 0)
   {
-    printf("       Setting up AMG(BGS): snlevel %d fnlevel %d anlevel %d minnlevel %d maxnlevel %d\n",
-           snlevel_,fnlevel_,anlevel_,minnlevel_,maxnlevel_);
-    fflush(stdout);
-  }
-  else if (!myrank && strategy_==INPAR::FSI::PreconditionedKrylov)
-  {
-    printf("       Setting up BGS(AMG): snlevel %d fnlevel %d anlevel %d minnlevel %d maxnlevel %d\n",
-           snlevel_,fnlevel_,anlevel_,minnlevel_,maxnlevel_);
-    fflush(stdout);
+    printf("       -----------------------------------------------------------------------\n");
+    if (strategy_==INPAR::FSI::FSIAMG)
+    {
+      printf("       Setting up AMG(BGS): snlevel %d fnlevel %d anlevel %d minnlevel %d maxnlevel %d\n",
+             snlevel_,fnlevel_,anlevel_,minnlevel_,maxnlevel_);
+      fflush(stdout);
+    }
+    else if (strategy_==INPAR::FSI::PreconditionedKrylov)
+    {
+      printf("       Setting up BGS(AMG): snlevel %d fnlevel %d anlevel %d minnlevel %d maxnlevel %d\n",
+             snlevel_,fnlevel_,anlevel_,minnlevel_,maxnlevel_);
+      fflush(stdout);
+    }
   }
 
   // check whether we have enough iteration and damping factors
@@ -276,7 +281,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   {
     // fine space matching Epetra objects
     MLAPI::Space finespace(structInnerOp.RowMap());
-    if (!myrank) printf("       Structure: NumGlobalElements fine level %d\n",structInnerOp.RowMap().NumGlobalElements());
+    if (!myrank && verbosity_ == 0) printf("       Structure: NumGlobalElements fine level %d\n",structInnerOp.RowMap().NumGlobalElements());
 
     // extract transfer operator P,R from ML
     MLAPI::Space fspace;
@@ -333,7 +338,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   {
     // fine space matching Epetra objects
     MLAPI::Space finespace(fluidInnerOp.RowMap());
-    if (!myrank) printf("       Fluid    : NumGlobalElements fine level %d\n",fluidInnerOp.RowMap().NumGlobalElements());
+    if (!myrank && verbosity_ == 0) printf("       Fluid    : NumGlobalElements fine level %d\n",fluidInnerOp.RowMap().NumGlobalElements());
 
     // extract transfer operator P,R from ML
     MLAPI::Space fspace;
@@ -391,7 +396,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   {
     // fine space matching Epetra objects
     MLAPI::Space finespace(aleInnerOp.RowMap());
-    if (!myrank) printf("       Ale      : NumGlobalElements fine level %d\n",aleInnerOp.RowMap().NumGlobalElements());
+    if (!myrank && verbosity_ == 0) printf("       Ale      : NumGlobalElements fine level %d\n",aleInnerOp.RowMap().NumGlobalElements());
 
     // extract transfer operator P,R from ML
     MLAPI::Space fspace;
@@ -662,7 +667,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   }
 
   //-------------------------------------------------------------- timing
-  if (!myrank)
+  if (!myrank && verbosity_ == 0)
   {
     printf("       -----------------------------------------------------------------------\n");
     printf("       Additional AMG(BGS/Schur)/ BGS(AMG) setup time %10.5e [s]\n",etime.ElapsedTime());

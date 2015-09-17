@@ -53,6 +53,9 @@ namespace NOX
       /// improvement factor
       double better_;
 
+      /// verbosity level of FSI algorithm
+      int verbosity_;
+
       std::vector<double> cresiduals_;
       std::vector<double> dresiduals_;
     };

@@ -127,6 +127,15 @@ namespace INPAR
       divcont_revert_dt           ///< revert time step size to previous one
     };
 
+    /// Handling of non-converged nonlinear solver
+    enum FsiVerbosity
+    {
+      fsiverbosity_full       = 0,               ///< write everything
+      fsiverbosity_medium     = 1,           ///< write only nonlinear solver status
+      fsiverbosity_low        = 2,           ///< write only nonlinear solver status
+      fsiverbosity_subproblem = 3,         ///< output for FSI as a subfield
+    };
+
     //@}
 
   }  // namespace FSI

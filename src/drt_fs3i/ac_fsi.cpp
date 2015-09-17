@@ -234,8 +234,8 @@ void FS3I::ACFSI::ReadRestart()
 void FS3I::ACFSI::Timeloop()
 {
   // output of initial state
-//  fsi_->PrepareOutput();
-//  FsiOutput();
+//   fsi_->PrepareOutput();
+//   FsiOutput();
   ScatraOutput();
 
   // prepare time loop
@@ -258,9 +258,9 @@ void FS3I::ACFSI::SmallTimeScaleLoop()
   //print info
   if (Comm().MyPID()==0)
   {
-    std::cout<<"\n************************************************************************"
+    std::cout<<"\n\n************************************************************************"
                "\n                         SMALL TIME SCALE LOOP"
-               "\n************************************************************************\n"<<std::endl;
+               "\n************************************************************************"<<std::endl;
   }
 
   while (SmallTimeScaleLoopNotFinished())
@@ -293,7 +293,7 @@ void FS3I::ACFSI::SmallTimeScalePrepareTimeStep()
   //Print to screen
   if (Comm().MyPID()==0)
   {
-    std::cout << "\n\n"<< "TIME:  "    << std::scientific <<std::setprecision(8)<< time_ << "/" << std::scientific << timemax_
+    std::cout << "\n"<< "TIME:  "    << std::scientific <<std::setprecision(8)<< time_ << "/" << std::scientific << timemax_
              << "     DT = " << std::scientific << dt_
              << "     STEP = " << std::setw(4) << step_ << "/" << std::setw(4) << numstep_
              << "\n\n";
@@ -434,7 +434,7 @@ void FS3I::ACFSI::IsFsiPeriodic()
   for (unsigned int i=0; i<wk_rel_errors.size(); i++)
   {
     if (Comm().MyPID()==0)
-      std::cout<<std::scientific<<std::setprecision(2)<<"The "<<i+1<<"-th Windkessel has an relative error of "<<abs(wk_rel_errors[i])<<std::endl;
+      std::cout<<"\n"<<std::scientific<<std::setprecision(2)<<"The "<<i+1<<"-th Windkessel has an relative error of "<<abs(wk_rel_errors[i])<<std::endl;
 
     if ( abs(wk_rel_errors[i]) > wk_rel_tol)
       fsiisperiodic_ = false;

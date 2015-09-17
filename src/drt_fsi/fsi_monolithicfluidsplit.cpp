@@ -916,25 +916,30 @@ void FSI::MonolithicFluidSplit::UnscaleSolution(LINALG::BlockSparseMatrixBase& m
   sr->Norm2(&ns);
   fr->Norm2(&nf);
   ar->Norm2(&na);
-  Utils()->out() << std::scientific
-                 << "\nlinear solver quality:\n"
-                 << "L_2-norms:\n"
-                 << END_COLOR "   |r|=" YELLOW << n
-                 << END_COLOR "   |rs|=" YELLOW << ns
-                 << END_COLOR "   |rf|=" YELLOW << nf
-                 << END_COLOR "   |ra|=" YELLOW << na
-                 << END_COLOR "\n";
+  if (verbosity_ == 0)
+  {
+    Utils()->out() << std::scientific
+           << "\nlinear solver quality:\n"
+           << "L_2-norms:\n"
+           << END_COLOR "   |r|=" YELLOW << n
+           << END_COLOR "   |rs|=" YELLOW << ns
+           << END_COLOR "   |rf|=" YELLOW << nf
+           << END_COLOR "   |ra|=" YELLOW << na
+           << END_COLOR "\n";
+  }
   r.NormInf(&n);
   sr->NormInf(&ns);
   fr->NormInf(&nf);
   ar->NormInf(&na);
-  Utils()->out() << "L_inf-norms:\n"
+  if (verbosity_ == 0)
+  {
+    Utils()->out() << "L_inf-norms:\n"
                  << END_COLOR "   |r|=" YELLOW << n
                  << END_COLOR "   |rs|=" YELLOW << ns
                  << END_COLOR "   |rf|=" YELLOW << nf
                  << END_COLOR "   |ra|=" YELLOW << na
                  << END_COLOR "\n";
-
+  }
   Utils()->out().flags(flags);
 
   if (StructureField()->GetSTCAlgo() != INPAR::STR::stc_none)
@@ -1365,7 +1370,8 @@ void FSI::MonolithicFluidSplit::ReadRestart(int step)
 void FSI::MonolithicFluidSplit::PrepareTimeStep()
 {
   IncrementTimeAndStep();
-  PrintHeader();
+  if (verbosity_ < 3)
+    PrintHeader();
 
   PrepareTimeStepPreconditioner();
 

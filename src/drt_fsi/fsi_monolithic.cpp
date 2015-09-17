@@ -24,8 +24,6 @@ Maintainer: Matthias Mayr
 #include "fsi_nox_newton.H"
 #include "fsi_statustest.H"
 
-#include "../drt_inpar/inpar_fsi.H"
-
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_blocksparsematrix.H"
@@ -65,7 +63,8 @@ FSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
   : AlgorithmBase(comm,timeparams),
     isadastructure_(false),
     isadafluid_(false),
-    isadasolver_(false)
+    isadasolver_(false),
+    verbosity_(DRT::INPUT::IntegralValue<INPAR::FSI::FsiVerbosity>(DRT::Problem::Instance()->FSIDynamicParams(),"VERBOSITY"))
 {
 
   // access the structural discretization
@@ -122,8 +121,8 @@ void FSI::MonolithicBase::ReadRestart(int step)
 void FSI::MonolithicBase::PrepareTimeStep()
 {
   IncrementTimeAndStep();
-  PrintHeader();
-
+  if (verbosity_ < 3)
+    PrintHeader();
   PrepareTimeStepPreconditioner();
   PrepareTimeStepFields();
 
@@ -562,6 +561,73 @@ void FSI::Monolithic::TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Requir
   Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
   printParams.set("MyPID", Comm().MyPID());
 
+  switch (verbosity_)
+  {
+  case INPAR::FSI::fsiverbosity_full:
+  {
+    printParams.set("Output Information",
+                    NOX::Utils::Error |
+                    NOX::Utils::Warning |
+                    NOX::Utils::OuterIteration |
+                    NOX::Utils::InnerIteration |
+                    //NOX::Utils::Parameters |
+                    NOX::Utils::Details | //weg damit!
+                    NOX::Utils::OuterIterationStatusTest |
+                    NOX::Utils::LinearSolverDetails | //weg damit!
+                    NOX::Utils::TestDetails |
+                    NOX::Utils::StepperIteration |
+                    NOX::Utils::StepperDetails |
+                    NOX::Utils::StepperParameters |
+                    NOX::Utils::Debug |
+                    0);
+    break;
+  }
+  case INPAR::FSI::fsiverbosity_medium:
+  {
+    printParams.set("Output Information",
+                    NOX::Utils::Error |
+                    NOX::Utils::Warning |
+                    NOX::Utils::OuterIteration |
+                    NOX::Utils::InnerIteration |
+                    //NOX::Utils::Parameters |
+                    //NOX::Utils::Details | //weg damit!
+                    NOX::Utils::OuterIterationStatusTest |
+                    NOX::Utils::LinearSolverDetails | //weg damit!
+                    NOX::Utils::TestDetails |
+                    NOX::Utils::StepperIteration |
+                    NOX::Utils::StepperDetails |
+                    NOX::Utils::StepperParameters |
+                    NOX::Utils::Debug |
+                    0);
+    break;
+  }
+  case INPAR::FSI::fsiverbosity_low:
+  case INPAR::FSI::fsiverbosity_subproblem:
+  {
+    printParams.set("Output Information",
+                    NOX::Utils::Error |
+                    NOX::Utils::Warning |
+//                    NOX::Utils::OuterIteration |
+//                    NOX::Utils::InnerIteration |
+//                    //NOX::Utils::Parameters |
+//  //                  NOX::Utils::Details |
+                    NOX::Utils::OuterIterationStatusTest |
+//  //                  NOX::Utils::LinearSolverDetails |
+//                    NOX::Utils::TestDetails |
+//                    NOX::Utils::StepperIteration |
+//                    NOX::Utils::StepperDetails |
+//                    NOX::Utils::StepperParameters |
+                    NOX::Utils::Debug |
+                    0);
+    break;
+  }
+  default:
+  {
+    dserror("Verbosity level not supported!");
+    break;
+  }
+  }
+
   Teuchos::Time timer("time step timer");
 
   if (sdbg_ != Teuchos::null)
@@ -780,18 +846,21 @@ void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   // only. But the Jacobian is stored internally and will be returned
   // later on without looking at x again!
 
-  Utils()->out() << "\nEvaluate elements\n";
+  if (verbosity_ < 2)
+    Utils()->out() << "\nEvaluate elements\n";
 
   {
     Epetra_Time ts(Comm());
     StructureField()->Evaluate(sx);
-    Utils()->out() << "structure: " << ts.ElapsedTime() << " sec\n";
+    if (verbosity_ < 2)
+      Utils()->out() << "structure: " << ts.ElapsedTime() << " sec\n";
   }
 
   {
     Epetra_Time ta(Comm());
     AleField()->Evaluate(ax);
-    Utils()->out() << "ale      : " << ta.ElapsedTime() << " sec\n";
+    if (verbosity_ < 2)
+      Utils()->out() << "ale      : " << ta.ElapsedTime() << " sec\n";
   }
 
   // transfer the current ale mesh positions to the fluid field
@@ -799,12 +868,14 @@ void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   FluidField()->ApplyMeshDisplacement(fluiddisp);
 
   {
-    Epetra_Time tf(Comm());
+     Epetra_Time tf(Comm());
     FluidField()->Evaluate(fx);
-    Utils()->out() << "fluid    : " << tf.ElapsedTime() << " sec\n";
+    if (verbosity_ < 2)
+      Utils()->out() << "fluid    : " << tf.ElapsedTime() << " sec\n";
   }
 
-  Utils()->out() << "\n";
+  if (verbosity_ < 2)
+    Utils()->out() << "\n";
 }
 
 /*----------------------------------------------------------------------------*/
@@ -893,6 +964,7 @@ void FSI::Monolithic::SetDefaultParameters(const Teuchos::ParameterList& fsidyn,
   // adaptive tolerance settings for linear solver
   lsParams.set<double>("base tolerance",fsimono.get<double>("BASETOL")); // relative tolerance
   lsParams.set<double>("adaptive distance",fsimono.get<double>("ADAPTIVEDIST")); // adaptive distance
+  lsParams.set<int>("verbosity", verbosity_); // verbosity level of FSI algorithm
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1172,6 +1244,7 @@ void FSI::BlockMonolithic::CreateSystemMatrix(Teuchos::RCP<FSI::OverlappingBlock
                                    apciter,
                                    DRT::INPUT::IntegralValue<int>(fsimono,"FSIAMGANALYZE"),
                                    linearsolverstrategy,
+                                   verbosity_,
                                    DRT::Problem::Instance()->ErrorFile()->Handle()));
     break;
   case INPAR::FSI::AMGnxn:

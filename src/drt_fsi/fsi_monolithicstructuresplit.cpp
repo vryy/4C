@@ -852,7 +852,9 @@ void FSI::MonolithicStructureSplit::UnscaleSolution(LINALG::BlockSparseMatrixBas
   sr->Norm2(&ns);
   fr->Norm2(&nf);
   ar->Norm2(&na);
-  Utils()->out() << std::scientific
+  if (verbosity_ == 0)
+  {
+    Utils()->out() << std::scientific
                  << "\nlinear solver quality:\n"
                  << "L_2-norms:\n"
                  << END_COLOR "   |r|=" YELLOW << n
@@ -860,16 +862,20 @@ void FSI::MonolithicStructureSplit::UnscaleSolution(LINALG::BlockSparseMatrixBas
                  << END_COLOR "   |rf|=" YELLOW << nf
                  << END_COLOR "   |ra|=" YELLOW << na
                  << END_COLOR "\n";
+  }
   r.NormInf(&n);
   sr->NormInf(&ns);
   fr->NormInf(&nf);
   ar->NormInf(&na);
-  Utils()->out() << "L_inf-norms:\n"
+  if (verbosity_ == 0)
+  {
+    Utils()->out() << "L_inf-norms:\n"
                  << END_COLOR "   |r|=" YELLOW << n
                  << END_COLOR "   |rs|=" YELLOW << ns
                  << END_COLOR "   |rf|=" YELLOW << nf
                  << END_COLOR "   |ra|=" YELLOW << na
                  << END_COLOR "\n";
+  }
 
   Utils()->out().flags(flags);
 }
@@ -964,7 +970,7 @@ FSI::MonolithicStructureSplit::CreateStatusTest(Teuchos::ParameterList& nlParams
 
   // create Norm-objects for each norm that has to be tested
   Teuchos::RCP<NOX::FSI::PartialNormF> structureDisp_L2 =
-    Teuchos::rcp(new NOX::FSI::PartialNormF("DISPL residual",
+      Teuchos::rcp(new NOX::FSI::PartialNormF("DISPL residual",
                                             Extractor(),0,
                                             nlParams.get<double>("Tol dis res L2"),
                                             NOX::Abstract::Vector::TwoNorm,

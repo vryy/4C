@@ -7157,6 +7157,20 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int> ("DIVPROJECTION", "no", "Project velocity into divergence-free subspace for partitioned fsi",
                                      yesnotuple,yesnovalue,&fsidyn);
 
+  setStringToIntegralParameter<int>("VERBOSITY","full",
+                                 "Verbosity of the FSI problem.",
+                                 tuple<std::string>(
+                                     "full",
+                                     "medium",
+                                     "low",
+                                     "subproblem"),
+                                 tuple<int>(
+                                     INPAR::FSI::fsiverbosity_full,
+                                     INPAR::FSI::fsiverbosity_medium,
+                                     INPAR::FSI::fsiverbosity_low,
+                                     INPAR::FSI::fsiverbosity_subproblem),
+                                 &fsidyn);
+
   BoolParameter("MATCHGRID_FLUIDALE","Yes","is matching grid (fluid-ale)",&fsidyn);
 
   /*----------------------------------------------------------------------*/

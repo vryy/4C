@@ -25,6 +25,8 @@ Maintainer: Matthias Mayr
 #include "fsi_monolithicinterface.H"
 #include "../linalg/linalg_mapextractor.H"
 
+#include "../drt_inpar/inpar_fsi.H"
+
 /// forward declarations
 namespace ADAPTER
 {
@@ -211,6 +213,14 @@ namespace FSI
     bool isadastructure_; ///< Time step size adaptivity based on structure?
     bool isadafluid_;     ///< Time step size adaptivity based on fluid?
     bool isadasolver_;    ///< Time step size adaptivity based on solver convergence?
+
+    //@}
+
+    //! @name output related stuff
+    //@{
+
+    /// verbosity level of FSI algorithm
+    const INPAR::FSI::FsiVerbosity verbosity_;
 
     //@}
 
