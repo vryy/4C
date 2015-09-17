@@ -144,9 +144,6 @@ public:
 
 protected:
 
-  /// bio related special (in/outflow) boundaries
-  Teuchos::RCP<UTILS::FluidVolumetricSurfaceFlowWrapper> vol_surf_flow_bc_;
-
   /// bio related special (in/outflow) traction velocity component adder
   Teuchos::RCP<UTILS::TotalTractionCorrector> traction_vel_comp_adder_bc_;
 
@@ -162,11 +159,14 @@ protected:
   /// 1D arterial network time integration
   Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>   airway_imp_timeInt_;
 
+  /// bio related special (in/outflow) boundaries
+  Teuchos::RCP<UTILS::FluidVolumetricSurfaceFlowWrapper> vol_surf_flow_bc_;
+
   /// maps for womersley flow profile which is applied as a Dirichlet condition
-  Teuchos::RCP<Epetra_Map>                    vol_surf_flow_bcmaps_;
+  Teuchos::RCP<Epetra_Map>                    vol_surf_flow_bc_maps_;
 
   /// maps for extracting Dirichlet and free DOF sets
-  Teuchos::RCP<FLD::UTILS::MapExtractor> vol_flow_rates_bc_extractor_;
+  Teuchos::RCP<FLD::UTILS::VolumetricFlowMapExtractor> vol_flow_rates_bc_extractor_;
 
   /// flag for potential 3D Reduced_D coupling
   bool strong_redD_3d_coupling_;

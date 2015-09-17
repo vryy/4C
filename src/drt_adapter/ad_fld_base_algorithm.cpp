@@ -585,21 +585,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
             " --> If you want to use this conditions change Problemtyp to Fluid_RedModels or Fluid_Structure_Interaction_RedModels. \n"
             " --> If you don't want to use this condition comment the respective bcFluid section." );
       }
-      if (prb_fsi_redmodels == probtype)
-        {
-          const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
-          const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
-          if (coupling == fsi_iter_monolithicfluidsplit)
-            {
-              dserror("ERROR: Volumetric infow condition in Fluid_Structure_Interaction_RedModels seems not to work with FSI fluidsplit. Don't know why, but you can go and fix it!");
-            }
-        }
   }
-
-//  if ( prb_fluid_redmodels != probtype)
-//  {
-//
-//  }
 
   // -------------------------------------------------------------------
   // additional parameters and algorithm call depending on respective

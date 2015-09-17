@@ -32,13 +32,13 @@ FLD::TimIntRedModels::TimIntRedModels(
         const Teuchos::RCP<IO::DiscretizationWriter>& output,
         bool                                          alefluid /*= false*/)
     : FluidImplicitTimeInt(actdis,solver,params,output,alefluid),
-      vol_surf_flow_bc_(Teuchos::null),
       traction_vel_comp_adder_bc_(Teuchos::null),
       coupled3D_redDbc_art_(Teuchos::null),
       ART_exp_timeInt_(Teuchos::null),
       coupled3D_redDbc_airways_(Teuchos::null),
       airway_imp_timeInt_(Teuchos::null),
-      vol_surf_flow_bcmaps_(Teuchos::null),
+      vol_surf_flow_bc_(Teuchos::null),
+      vol_surf_flow_bc_maps_(Teuchos::null),
       vol_flow_rates_bc_extractor_(Teuchos::null),
       strong_redD_3d_coupling_(false)
 {
@@ -63,10 +63,10 @@ void FLD::TimIntRedModels::Init()
   vol_surf_flow_bc_ = Teuchos::rcp(new UTILS::FluidVolumetricSurfaceFlowWrapper(discret_, dta_) );
 
   // evaluate the map of the womersley bcs
-  vol_surf_flow_bc_ -> EvaluateMapExtractor(vol_flow_rates_bc_extractor_);
-  vol_surf_flow_bc_ -> EvaluateCondMap(vol_surf_flow_bcmaps_);
-  // Evaluate the womersley velocities
-  vol_surf_flow_bc_->EvaluateVelocities(velnp_,time_);
+  vol_flow_rates_bc_extractor_ = Teuchos::rcp(new FLD::UTILS::VolumetricFlowMapExtractor());
+  vol_flow_rates_bc_extractor_->Setup(*discret_);
+  vol_surf_flow_bc_maps_ = Teuchos::rcp(new Epetra_Map(*(vol_flow_rates_bc_extractor_->VolumetricSurfaceFlowCondMap())));
+
   // -------------------------------------------------------------------
   // Initialize the reduced models
   // -------------------------------------------------------------------
@@ -339,15 +339,11 @@ void FLD::TimIntRedModels::SetupMeshtying()
   // but:       The resulting inflow rate (based on the area)
   //            as well as the profile will be different
   //            since it is based on a different surface discretization!!
-  if(vol_surf_flow_bcmaps_->NumGlobalElements() != 0)
-  {
-    meshtying_->CheckOverlappingBC(vol_surf_flow_bcmaps_);
-    meshtying_->DirichletOnMaster(vol_surf_flow_bcmaps_);
 
-    if(myrank_==0)
-      std::cout << "Think about your flow rate defined on the interal interface!!" << std::endl << std::endl;
-      dserror("Think about your flow rate defined on the interal interface!!\n"
-              "It is working qualitatively!!");
+  if(vol_surf_flow_bc_maps_->NumGlobalElements() != 0)
+  {
+    meshtying_->CheckOverlappingBC(vol_surf_flow_bc_maps_);
+    meshtying_->DirichletOnMaster(vol_surf_flow_bc_maps_);
   }
   return;
 }
@@ -408,7 +404,7 @@ void FLD::TimIntRedModels::InsertVolumetricSurfaceFlowCondVector(Teuchos::RCP<Ep
 
   // -------------------------------------------------------------------
   // take surface volumetric flow rate into account
-  //    Teuchos::RCP<Epetra_Vector> temp_vec = Teuchos::rcp(new Epetra_Vector(*vol_surf_flow_bcmaps_,true));
+  //    Teuchos::RCP<Epetra_Vector> temp_vec = Teuchos::rcp(new Epetra_Vector(*vol_surf_flow_bc_maps_,true));
   //    vol_surf_flow_bc_->InsertCondVector( *temp_vec , *residual_);
   // -------------------------------------------------------------------
   vol_flow_rates_bc_extractor_->InsertVolumetricSurfaceFlowCondVector(
@@ -445,7 +441,7 @@ void FLD::TimIntRedModels::AVM3Preparation()
   AVM3AssembleMatAndRHS(eleparams);
 
   // apply Womersley as a Dirichlet BC
-  LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(vol_surf_flow_bcmaps_));
+  LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(vol_surf_flow_bc_maps_));
 
   // get scale-separation matrix
   AVM3GetScaleSeparationMatrix();
@@ -459,10 +455,10 @@ void FLD::TimIntRedModels::AVM3Preparation()
 void FLD::TimIntRedModels::CustomSolve(Teuchos::RCP<Epetra_Vector> relax)
 {
   // apply Womersley as a Dirichlet BC
-  LINALG::ApplyDirichlettoSystem(incvel_,residual_,relax,*(vol_surf_flow_bcmaps_));
+  LINALG::ApplyDirichlettoSystem(incvel_,residual_,relax,*(vol_surf_flow_bc_maps_));
 
   // apply Womersley as a Dirichlet BC
-  sysmat_->ApplyDirichlet(*(vol_surf_flow_bcmaps_));
+  sysmat_->ApplyDirichlet(*(vol_surf_flow_bc_maps_));
 
   return;
 }
@@ -514,7 +510,7 @@ void FLD::TimIntRedModels::AssembleMatAndRHS()
   if (shapederivatives_ != Teuchos::null)
   {
     // apply the womersley bc as a dirichlet bc
-    shapederivatives_->ApplyDirichlet(*(vol_surf_flow_bcmaps_),false);
+    shapederivatives_->ApplyDirichlet(*(vol_surf_flow_bc_maps_),false);
   }
 
   return;
@@ -530,14 +526,14 @@ void FLD::TimIntRedModels::ApplyDirichletToSystem()
 
   if (LocsysManager() != Teuchos::null) {
     // apply Womersley as a Dirichlet BC
-    LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,locsysman_->Trafo(),zeros_,*(vol_surf_flow_bcmaps_));
+    LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,locsysman_->Trafo(),zeros_,*(vol_surf_flow_bc_maps_));
 
   }
   else
   {
 
     // apply Womersley as a Dirichlet BC
-    LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(vol_surf_flow_bcmaps_));
+    LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(vol_surf_flow_bc_maps_));
 
   }
   return;

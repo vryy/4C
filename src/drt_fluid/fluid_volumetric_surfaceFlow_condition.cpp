@@ -41,10 +41,6 @@ FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::FluidVolumetricSurfaceFlowWrapper
   // extract the womersley boundary dof
   //--------------------------------------------------------------------
 
-  // get the fluid map extractor
-  womersley_mp_extractor_ = Teuchos::rcp(new FLD::UTILS::MapExtractor());
-  womersley_mp_extractor_->Setup(*actdis);
-
   // Get the surfaces to whome the Womersley flow profile must be applied
   std::vector<DRT::Condition*> womersleycond;
   discret_->GetCondition("VolumetricSurfaceFlowCond",womersleycond);
@@ -156,8 +152,8 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::ReadRestart( IO::Discretizat
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::EvaluateVelocities(Teuchos::RCP<Epetra_Vector> velocities,
-                                                                       double             time)
+void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::EvaluateVelocities(const Teuchos::RCP<Epetra_Vector> velocities,
+                                                                       const double                      time)
 {
   std::map<const int, Teuchos::RCP<class FluidVolumetricSurfaceFlowBc> >::iterator mapiter;
 
@@ -178,35 +174,6 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::EvaluateVelocities(Teuchos::
 
   return;
 
-}
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | Evaluate the dof map of the womersley conditions        ismail 10/10 |
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::EvaluateCondMap(Teuchos::RCP<Epetra_Map> &  bcmap )
-{
-  bcmap =   Teuchos::rcp(new Epetra_Map(*(womersley_mp_extractor_->VolumetricSurfaceFlowCondMap())));
-}
-
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | Evaluate the map extractor of the womersley conditions  ismail 10/10 |
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::EvaluateMapExtractor(Teuchos::RCP<FLD::UTILS::MapExtractor>&  mapextractor )
-{
-  mapextractor =   Teuchos::rcp(new FLD::UTILS::MapExtractor(*(womersley_mp_extractor_)));
 }
 
 
@@ -1369,11 +1336,11 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::Velocities(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::UTILS::FluidVolumetricSurfaceFlowBc::CorrectFlowRate
-( Teuchos::ParameterList  eleparams,
-  std::string             ds_condname,
- FLD::BoundaryAction action,
- double             time,
- bool               force_correction)
+( const Teuchos::ParameterList  eleparams,
+  const std::string             ds_condname,
+  const FLD::BoundaryAction     action,
+  const double                  time,
+  const bool                    force_correction)
 {
 
   if(!force_correction)
@@ -1503,7 +1470,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::CorrectFlowRate
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::FluidVolumetricSurfaceFlowBc::SetVelocities(Teuchos::RCP<Epetra_Vector> velocities)
+void FLD::UTILS::FluidVolumetricSurfaceFlowBc::SetVelocities(const Teuchos::RCP<Epetra_Vector> velocities)
 {
   for (int lid = 0; lid <cond_velocities_->MyLength();lid++)
   {
@@ -2063,10 +2030,6 @@ FLD::UTILS::TotalTractionCorrector::TotalTractionCorrector(Teuchos::RCP<DRT::Dis
   // extract the womersley boundary dof
   //--------------------------------------------------------------------
 
-  // get the fluid map extractor
-  traction_mp_extractor_ = Teuchos::rcp(new FLD::UTILS::MapExtractor());
-  traction_mp_extractor_->Setup(*actdis);
-
   // Get the surfaces to whome the traction flow profile must be applied
   std::vector<DRT::Condition*> tractioncond;
   discret_->GetCondition("TotalTractionCorrectionCond",tractioncond);
@@ -2170,36 +2133,6 @@ void FLD::UTILS::TotalTractionCorrector::EvaluateVelocities(Teuchos::RCP<Epetra_
 
   return;
 
-}
-
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | Evaluate the dof map of the womersley conditions        ismail 04/11 |
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::TotalTractionCorrector::EvaluateCondMap(Teuchos::RCP<Epetra_Map> &  bcmap )
-{
-  bcmap =   Teuchos::rcp(new Epetra_Map(*(traction_mp_extractor_->TotalTractionCorrectionCondMap())));
-}
-
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | Evaluate the map extractor of the womersley conditions  ismail 04/11 |
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::TotalTractionCorrector::EvaluateMapExtractor(Teuchos::RCP<FLD::UTILS::MapExtractor>&  mapextractor )
-{
-  mapextractor =   Teuchos::rcp(new FLD::UTILS::MapExtractor(*(traction_mp_extractor_)));
 }
 
 

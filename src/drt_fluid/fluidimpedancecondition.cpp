@@ -412,7 +412,7 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(const Teuchos::RCP<DRT::Discretiz
   cyclesteps_   = (int)(period_/dta+0.5);
   flowratespos_ = 0;
   pressurespos_ = 0;
-  dP_           = 0.0;
+  dP_           = 100.0;
   WKrelerror_   = 100.0; //we don't know the relative error jet, hence we assume it to be huge
   dta_          = dta;
 
@@ -699,7 +699,7 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
     OutflowBoundary(time,ndta,condnum);
 
     //get pressure difference and relative error
-    if ( abs(WKrelerror_ -100.0) < 1e-14 and abs(dP_) < 1e-14) //if we just initialized the class (in context of AC-FS3I this is not guaranteed!)
+    if ( abs(WKrelerror_ -100.0) < 1e-14 and abs(dP_ - 100.0) < 1e-14) //if we just initialized the class (in context of AC-FS3I this is not guaranteed!)
     {
       // read in pressure difference
       dpstream <<"dP"<<condnum;

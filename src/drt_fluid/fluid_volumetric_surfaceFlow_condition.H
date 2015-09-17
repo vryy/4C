@@ -45,8 +45,6 @@ namespace UTILS
 /*!
 \brief Womersley boundary condition wrapper
 this class is meant to do some organisation stuff
-
-\author ismail (ismail@lnm.mw.tum.de)
 */
 class FluidVolumetricSurfaceFlowWrapper
 {
@@ -69,19 +67,11 @@ public:
   /*!
   \brief Wrapper for FluidVolumetricSurfaceFlowBc::EvaluateVelocities
   */
-  void EvaluateVelocities(Teuchos::RCP<Epetra_Vector> bcdof,
-                          double             time);
+  void EvaluateVelocities(const Teuchos::RCP<Epetra_Vector> velocities,
+                          const double                      time);
 
-  /*!
-  \brief Wrapper for FluidVolumetricSurfaceFlowBc::EvaluateVelocities
-  */
-  void EvaluateCondMap(Teuchos::RCP<Epetra_Map> &   bcmap );
 
   void InsertCondVector(Epetra_Vector & vec1, Epetra_Vector & vec2);
-  /*!
-  \brief Returns the map extractor of the conditions
-  */
-  void EvaluateMapExtractor(Teuchos::RCP<FLD::UTILS::MapExtractor>&  mapextractor );
 
   /*!
   \brief Wrapper for FluidVolumetricSurfaceFlowBc::UpdateResidual
@@ -108,9 +98,6 @@ private:
 
   //! fluid discretization
   Teuchos::RCP<DRT::Discretization>      discret_;
-
-  //!
-  Teuchos::RCP<FLD::UTILS::MapExtractor> womersley_mp_extractor_;
 
 }; // class FluidWomersleyWrapper
 
@@ -142,22 +129,11 @@ public:
                           double             dta);
 
   /*!
-  \brief Wrapper for FluidVolumetricSurfaceFlowBc::EvaluateVelocities
-  */
-  void EvaluateCondMap(Teuchos::RCP<Epetra_Map> &   bcmap );
-
-  /*!
   \brief export and set boundary values
   */
   void ExportAndSetBoundaryValues(Teuchos::RCP<Epetra_Vector> source,
                                   Teuchos::RCP<Epetra_Vector> target,
                                   std::string              name);
-
-
-  /*!
-  \brief Returns the map extractor of the conditions
-  */
-  void EvaluateMapExtractor(Teuchos::RCP<FLD::UTILS::MapExtractor>&  mapextractor );
 
   /*!
   \brief Wrapper for FluidVolumetricSurfaceFlowBc::UpdateResidual
@@ -184,12 +160,6 @@ private:
 
   //! fluid discretization
   Teuchos::RCP<DRT::Discretization>      discret_;
-
-  //!
-  Teuchos::RCP<Epetra_Vector>            tractionvbc_;
-
-  //!
-  Teuchos::RCP<FLD::UTILS::MapExtractor> traction_mp_extractor_;
 
 }; // class TotalTractionCorrector
 
@@ -315,11 +285,11 @@ public:
   /*!
   \brief Corrects the flow rate
   */
-  void CorrectFlowRate(Teuchos::ParameterList eleparams,
-                       std::string             ds_condname,
-                       FLD::BoundaryAction action,
-                       double             time,
-                       bool               force_correction=false);
+  void CorrectFlowRate(const Teuchos::ParameterList  eleparams,
+                       const std::string             ds_condname,
+                       const FLD::BoundaryAction     action,
+                       const double                  time,
+                       const bool                    force_correction);
 
   /*!
   \brief Calculate the Flowrate on a boundary
@@ -330,7 +300,7 @@ public:
   /*!
   \brief Calculate the Flowrate on a boundary
   */
-  void SetVelocities(Teuchos::RCP<Epetra_Vector> velocities);
+  void SetVelocities(const Teuchos::RCP<Epetra_Vector> velocities);
 
   /*!
   \brief Reset condition velocities

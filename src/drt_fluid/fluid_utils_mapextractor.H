@@ -25,10 +25,8 @@ namespace UTILS
       cond_fsi                      = 1,
       cond_fs                       = 2,
       cond_lung_asi                 = 3,
-      cond_vol_surf_flow            = 4,
-      cond_total_traction_corrector = 5,
-      cond_mortar                   = 6,
-      cond_au                       = 7,
+      cond_mortar                   = 4,
+      cond_au                       = 5
     };
 
     /// setup the whole thing
@@ -54,10 +52,25 @@ namespace UTILS
     MAP_EXTRACTOR_VECTOR_METHODS(FSICond,cond_fsi)
     MAP_EXTRACTOR_VECTOR_METHODS(FSCond, cond_fs)
     MAP_EXTRACTOR_VECTOR_METHODS(LungASICond,cond_lung_asi)
-    MAP_EXTRACTOR_VECTOR_METHODS(VolumetricSurfaceFlowCond,cond_vol_surf_flow)
-    MAP_EXTRACTOR_VECTOR_METHODS(TotalTractionCorrectionCond,cond_total_traction_corrector)
     MAP_EXTRACTOR_VECTOR_METHODS(MortarCond,cond_mortar)
     MAP_EXTRACTOR_VECTOR_METHODS(AUCond, cond_au)
+  };
+
+  /// specific MultiMapExtractor to handle the part of fluid with volumetric surface flow condition
+  class VolumetricFlowMapExtractor : public LINALG::MultiMapExtractor
+  {
+  public:
+
+    enum {
+      cond_other     = 0,
+      cond_vol_surf_flow       = 1
+    };
+
+    /// setup the whole thing
+    void Setup(const DRT::Discretization& dis);
+
+    MAP_EXTRACTOR_VECTOR_METHODS(Other,  cond_other)
+    MAP_EXTRACTOR_VECTOR_METHODS(VolumetricSurfaceFlowCond,cond_vol_surf_flow)
   };
 
   /// specific MultiMapExtractor to handle the part of fluid with Krylov space projection

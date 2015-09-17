@@ -17,8 +17,6 @@ void FLD::UTILS::MapExtractor::Setup(const DRT::Discretization& dis, bool withpr
   mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"FSICoupling",0,ndim+withpressure)));
   mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"FREESURFCoupling",0,ndim+withpressure)));
   mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"StructAleCoupling",0,ndim+withpressure)));
-  mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"VolumetricSurfaceFlowCond",0,ndim+withpressure)));
-  mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"TotalTractionCorrectionCond",0,ndim+withpressure)));
   mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"Mortar",0,ndim+withpressure)));
   mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"ALEUPDATECoupling",0,ndim+withpressure)));
   mcs.SetupExtractor(dis,*dis.DofRowMap(),*this);
@@ -61,10 +59,8 @@ Teuchos::RCP<std::set<int> > FLD::UTILS::MapExtractor::ConditionedElementMap(con
   Teuchos::RCP<std::set<int> > condelements  = DRT::UTILS::ConditionedElementMap(dis,"FSICoupling");
   Teuchos::RCP<std::set<int> > condelements2 = DRT::UTILS::ConditionedElementMap(dis,"FREESURFCoupling");
   Teuchos::RCP<std::set<int> > condelements3 = DRT::UTILS::ConditionedElementMap(dis,"StructAleCoupling");
-  Teuchos::RCP<std::set<int> > condelements4 = DRT::UTILS::ConditionedElementMap(dis,"VolumetricSurfaceFlowCond");
-  Teuchos::RCP<std::set<int> > condelements6 = DRT::UTILS::ConditionedElementMap(dis,"TotalTractionCorrectionCond");
-  Teuchos::RCP<std::set<int> > condelements5 = DRT::UTILS::ConditionedElementMap(dis,"Mortar");
-  Teuchos::RCP<std::set<int> > condelements7 = DRT::UTILS::ConditionedElementMap(dis,"ALEUPDATECoupling");
+  Teuchos::RCP<std::set<int> > condelements4 = DRT::UTILS::ConditionedElementMap(dis,"Mortar");
+  Teuchos::RCP<std::set<int> > condelements5 = DRT::UTILS::ConditionedElementMap(dis,"ALEUPDATECoupling");
   std::copy(condelements2->begin(),condelements2->end(),
             std::inserter(*condelements,condelements->begin()));
   std::copy(condelements3->begin(),condelements3->end(),
@@ -73,9 +69,16 @@ Teuchos::RCP<std::set<int> > FLD::UTILS::MapExtractor::ConditionedElementMap(con
             std::inserter(*condelements,condelements->begin()));
   std::copy(condelements5->begin(),condelements5->end(),
             std::inserter(*condelements,condelements->begin()));
-  std::copy(condelements7->begin(),condelements7->end(),
-              std::inserter(*condelements,condelements->begin()));
   return condelements;
+}
+
+void FLD::UTILS::VolumetricFlowMapExtractor::Setup(const DRT::Discretization& dis)
+{
+  const int ndim = DRT::Problem::Instance()->NDim();
+  DRT::UTILS::MultiConditionSelector mcs;
+  mcs.SetOverlapping(true); //defines if maps can overlap
+  mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"VolumetricSurfaceFlowCond",0,ndim)));
+  mcs.SetupExtractor(dis,*dis.DofRowMap(),*this);
 }
 
 /*----------------------------------------------------------------------*/
