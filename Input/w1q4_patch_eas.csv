@@ -1,0 +1,6 @@
+"displacement:0","displacement:1","displacement:2","nodal_GL_strains_xyz:0","nodal_GL_strains_xyz:1","nodal_GL_strains_xyz:2","nodal_GL_strains_xyz:3","nodal_GL_strains_xyz:4","nodal_GL_strains_xyz:5","nodal_cauchy_stresses_xyz:0","nodal_cauchy_stresses_xyz:1","nodal_cauchy_stresses_xyz:2","nodal_cauchy_stresses_xyz:3","nodal_cauchy_stresses_xyz:4","nodal_cauchy_stresses_xyz:5","Points:0","Points:1","Points:2"
+0,0,0,0.019619,4.0637e-17,0,2.0217e-17,0,0,2,3.9862e-15,0,2.1803e-15,0,0,0,0,0
+0.009715,4.0434e-17,0,0.019619,-1.5166e-16,0,4.8152e-17,0,0,2,-1.4877e-14,0,4.9766e-15,0,0,0.5,0,0
+0,0,0,0.019619,2.0318e-17,0,1.0108e-17,0,0,2,1.9931e-15,0,1.0108e-15,0,0,0,0.5,0
+0,0,0,0.019619,0,0,-2.3716e-33,0,0,2,0,0,-2.4018e-31,0,0,0,1,0
+0.01943,9.4614e-17,0,0.019619,0,0,-1.1699e-16,0,0,2,-4.8215e-30,0,-1.1274e-14,0,0,1,1,0

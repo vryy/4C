@@ -1,5 +1,5 @@
 # Script for comparing result of the parellel and serial post processing by the post_drt_ensight filter
-# 
+#
 # Maintainer: A. Nagler
 
 from paraview import servermanager as sm
@@ -16,7 +16,7 @@ if sm.vtkSMProxyManager.GetVersionMajor() <= 3:
   #p2 = ['nodal_EA_strains_xyz', '1']
   #p3 = ['nodal_cauchy_stresses_xyz', '1']
 
-  c1 = ['element_EA_strains_xyz', '0'] 
+  c1 = ['element_EA_strains_xyz', '0']
   c2 = ['element_cauchy_stresses_xyz', '0']
 
   ens_reader1.CaseFileName = sys.argv[1]
@@ -56,9 +56,16 @@ if sm.vtkSMProxyManager.GetVersionMajor() <= 3:
   head2   = csv_reader2.next()
   index2  = head1.index('Points:0')
 
+  # read in of reference file
+  ref_sortlist_name = sys.argv[3]
+  csv_reader_ref = csv.reader(open(ref_sortlist_name,'r'), delimiter = ',')
+  head_ref   = csv_reader_ref.next()
+  index_ref  = head_ref.index('Points:0')
+
   # sorting of data according to xyz coodinates of the Points
   sortlist1 = sorted(csv_reader1, key = operator.itemgetter(index1, index1 + 1, index1 + 2))
   sortlist2 = sorted(csv_reader2, key = operator.itemgetter(index2, index2 + 1, index2 + 2))
+  sortlist_ref = sorted(csv_reader_ref, key = operator.itemgetter(index_ref, index_ref + 1, index_ref + 2))
 
   # comparison
   for ele1, ele2 in zip(sortlist1, sortlist2):
@@ -66,8 +73,15 @@ if sm.vtkSMProxyManager.GetVersionMajor() <= 3:
 	  print 'csv lists are not equal for: '
 	  print ele1
 	  print ele2
-	  sys.exit(1)      
+	  sys.exit(1)
   print 'files are identical'
+
+  # verification of results
+  for ref_line in sortlist_ref:
+    if not ref_line in sortlist1:
+      print 'results in csv lists are NOT correct'
+      sys.exit(1)
+  print'results in csv lists are correct'
 
 else:
   sm.Connect()
@@ -78,7 +92,7 @@ else:
   #p2 = ['nodal_EA_strains_xyz', '1']
   #p3 = ['nodal_cauchy_stresses_xyz', '1']
 
-  c1 = ['element_EA_strains_xyz', '0'] 
+  c1 = ['element_EA_strains_xyz', '0']
   c2 = ['element_cauchy_stresses_xyz', '0']
 
   ens_reader1.CaseFileName = sys.argv[1]
@@ -118,9 +132,16 @@ else:
   head2   = csv_reader2.next()
   index2  = head1.index('Points:0')
 
+  # read in of reference file
+  ref_sortlist_name = sys.argv[3]
+  csv_reader_ref = csv.reader(open(ref_sortlist_name,'r'), delimiter = ',')
+  head_ref   = csv_reader_ref.next()
+  index_ref  = head_ref.index('Points:0')
+
   # sorting of data according to xyz coodinates of the Points
   sortlist1 = sorted(csv_reader1, key = operator.itemgetter(index1, index1 + 1, index1 + 2))
   sortlist2 = sorted(csv_reader2, key = operator.itemgetter(index2, index2 + 1, index2 + 2))
+  sortlist_ref = sorted(csv_reader_ref, key = operator.itemgetter(index_ref, index_ref + 1, index_ref + 2))
 
   # comparison
   for ele1, ele2 in zip(sortlist1, sortlist2):
@@ -128,5 +149,12 @@ else:
 	  print 'csv lists are not equal for: '
 	  print ele1
 	  print ele2
-	  sys.exit(1)      
+	  sys.exit(1)
   print 'files are identical'
+
+  # verification of results
+  for ref_line in sortlist_ref:
+    if not ref_line in sortlist1:
+      print 'results in csv lists are NOT correct'
+      sys.exit(1)
+  print'results in csv lists are correct'
