@@ -243,9 +243,9 @@ E 4 - pressure 0.0   1 0
 ------------------DESIGN SURF TOTAL TRACTION CORRECTION CONDITIONS
 DSURF  2
 // fluid_inflow_surf
-E 1 - 1 POLYNOMIAL NOTPREBIASED InFlow  WithOutCorrection Period 1.0 Order 2 Harmonics 32 1.5E4  1 SelfEvaluateNormal 0.0 0.0 1.0 SelfEvaluateCenterOfMass 0.0 0.0 0.0
+E 1 - 1 POLYNOMIAL NOTPREBIASED InFlow  WithOutCorrection Period 1.0 Order 2 Harmonics 32 Val 1.5E4 Curve 1 SelfEvaluateNormal 0.0 0.0 1.0 SelfEvaluateCenterOfMass 0.0 0.0 0.0
 // fluid_outflow_surf
-E 2 - 2 POLYNOMIAL NOTPREBIASED OutFlow WithOutCorrection Period 1.0 Order 2 Harmonics 32 1.5E4  1 SelfEvaluateNormal 0.0 0.0 1.0 SelfEvaluateCenterOfMass 0.0 0.0 0.0
+E 2 - 2 POLYNOMIAL NOTPREBIASED OutFlow WithOutCorrection Period 1.0 Order 2 Harmonics 32 Val 1.5E4 Curve 1 SelfEvaluateNormal 0.0 0.0 1.0 SelfEvaluateCenterOfMass 0.0 0.0 0.0
 ----------------DESIGN LINE TOTAL TRACTION CORRECTION BORDER NODES
 DLINE  2
 // fluid_inflow_ring_NoDBC_slave
