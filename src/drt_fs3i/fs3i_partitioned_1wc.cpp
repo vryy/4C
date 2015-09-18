@@ -43,6 +43,8 @@ FS3I::PartFS3I_1WC::PartFS3I_1WC(const Epetra_Comm& comm)
 void FS3I::PartFS3I_1WC::Timeloop()
 {
   // output of initial state
+  fsi_->PrepareOutput();
+  fsi_->Output();
   ScatraOutput();
 
   fsi_->PrepareTimeloop();

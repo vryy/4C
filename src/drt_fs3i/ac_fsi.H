@@ -169,9 +169,9 @@ namespace FS3I
     /// fluid phinp vector of the last period
     const Teuchos::RCP<Epetra_Vector> fluidphinp_lp_;
     /// structurephinp vector at the beginning of the large time scale loop
-    const Teuchos::RCP<Epetra_Vector> structurephinp_bltsl_;
-    /// structurephinp vector after the last growth update
-    const Teuchos::RCP<Epetra_Vector> structurephinp_blgu_;
+    const Teuchos::RCP<Epetra_Vector> structurephinp_blts_;
+    /// growth update counter
+    int growth_updates_counter_;
 
     ///WSS vector of the last period
     const Teuchos::RCP<Epetra_Vector> WallShearStress_lp_;
@@ -192,7 +192,7 @@ namespace FS3I
     bool fsineedsupdate_;
 
     ///Extract the j-th out of numscal_ dof
-    std::vector<Teuchos::RCP<LINALG::MapExtractor> > extractjthscalar_;
+    const std::vector<Teuchos::RCP<LINALG::MapExtractor> > extractjthscalar_;
   };
 
 }

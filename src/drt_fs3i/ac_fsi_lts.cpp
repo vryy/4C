@@ -80,11 +80,11 @@ void FS3I::ACFSI::PrepareLargeTimeScaleLoop()
                                          fsi_->StructureField()->Discretization() );
 
   fsineedsupdate_=false;
+  growth_updates_counter_ = 0;
 
   // Save the phinp vector at the beginning of the large time scale loop in
   // in order to estimate the so far induced growth
-  *structurephinp_bltsl_ = *scatravec_[1]->ScaTraField()->Phinp();
-  *structurephinp_blgu_ = *scatravec_[1]->ScaTraField()->Phinp();
+  *structurephinp_blts_ = *scatravec_[1]->ScaTraField()->Phinp();
 }
 
 /*----------------------------------------------------------------------*
@@ -110,10 +110,6 @@ void FS3I::ACFSI::FinishLargeTimeScaleLoop()
   fsi_->StructureField()->SetStepn(step_+1);
 
   scatravec_[0]->ScaTraField()->SetTimeStep(time_,step_);
-
-  //clean up large time scale loop
-  structurephinp_bltsl_->PutScalar(0.0);
-  structurephinp_blgu_->PutScalar(0.0);
 
   //we start with a clean small time scale loop
   fsiisperiodic_ = false;
@@ -350,9 +346,15 @@ bool FS3I::ACFSI::DoesGrowthNeedsUpdate()
 
   Teuchos::RCP<MAT::Material> structurematerial = structuredis->gElement(GID)->Material();;
 
-  if ( structurematerial->MaterialType() == INPAR::MAT::m_growth_volumetric_scd )
+  if ( structurematerial->MaterialType() != INPAR::MAT::m_growth_volumetric_scd )
   {
-    //get alpha and growth inducing scalar.
+    dserror("In AC-FS3I we want growth, so use a growth material like MAT_GrowthVolumetricScd!");
+  }
+  else
+  {
+    //----------------------------------------------------------------------------------------------------
+    //get alpha and growth inducing scalar
+    //----------------------------------------------------------------------------------------------------
     double alpha = 0.0;
     int sc1 = 1;
 
@@ -391,64 +393,48 @@ bool FS3I::ACFSI::DoesGrowthNeedsUpdate()
     }
     //Puh! That was exhausting. But we have to keep going.
 
+    //----------------------------------------------------------------------------------------------------
+    // get the approx. increase of volume due to growth since the beginning of the large time scale loop
+    //----------------------------------------------------------------------------------------------------
     const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra = scatravec_[1]->ScaTraField(); //structure scatra
     const Teuchos::RCP<const Epetra_Vector> phinp = scatra->Phinp(); //fluidscatra
 
-    //first we check the error, iff we need a growth update
+    //build difference vector with the reference
+    const Teuchos::RCP<Epetra_Vector> phidiff_bltsl_ = LINALG::CreateVector(*scatra->DofRowMap(),true);
+    phidiff_bltsl_->Update(1.0,*phinp,-1.0,*structurephinp_blts_,0.0);
+
+    //Extract the dof of interest
+    Teuchos::RCP<Epetra_Vector> phidiff_bltsl_j = extractjthscalar_[sc1-1]->ExtractCondVector(phidiff_bltsl_);
+
+    //get the maximum
+    double max_phidiff_bltsl = 0.0;
+    phidiff_bltsl_j->MaxValue(&max_phidiff_bltsl);
+
+    if (Comm().MyPID()==0)
+      std::cout<<std::scientific<<std::setprecision(2)<<" The maximal local growth since the beginning of the large time scale loop is "<<alpha*max_phidiff_bltsl<<std::endl;
+
+    //----------------------------------------------------------------------------------------------------
+    // now the actual comparison
+    //----------------------------------------------------------------------------------------------------
+    const int growth_updates = DRT::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<int>("GROWTH_UPDATES");
+    const double fsi_update_tol = DRT::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<double>("FSI_UPDATE_TOL");
+
+    // some safety check
+    if (growth_updates_counter_ > growth_updates)
+      dserror("It should not be possible to have done so much growth updates. Sorry!");
+
+    //do we need a growth update?
+    if ( max_phidiff_bltsl * alpha >= (growth_updates_counter_+1) / (double)growth_updates * fsi_update_tol )
     {
-      const Teuchos::RCP<Epetra_Vector> phidiff_blgu = LINALG::CreateVector(*scatra->DofRowMap(),true);
-
-      //build difference vector with the reference
-      phidiff_blgu->Update(1.0,*phinp,-1.0,*structurephinp_blgu_,0.0);
-
-      //Extract the dof of interest
-      Teuchos::RCP<Epetra_Vector> phidiff_blgu_j = extractjthscalar_[sc1-1]->ExtractCondVector(phidiff_blgu);
-
-      //get the maximum
-      double max_phidiff_blgu = 0.0;
-      phidiff_blgu_j->MaxValue(&max_phidiff_blgu);
-
-      if (Comm().MyPID()==0)
-        std::cout<<std::scientific<<std::setprecision(2)<<" The maximal local growth since the last growth update is "<<alpha*max_phidiff_blgu<<std::endl;
-
-      //now the actual comparison:
-      const double growth_tol = DRT::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<double>("GROWTH_TOL");
-
-      if (max_phidiff_blgu * alpha >= growth_tol)
-      {
-        growthneedsupdate = true;
-      }
+      growthneedsupdate = true;
     }
 
-    //now check the error, iff we need a small time scale update
+    //are we done with the curren large time scale loop?
+    if (max_phidiff_bltsl * alpha >= fsi_update_tol)
     {
-      const Teuchos::RCP<Epetra_Vector> phidiff_bltsl_ = LINALG::CreateVector(*scatra->DofRowMap(),true);
-
-      //build difference vector with the reference
-      phidiff_bltsl_->Update(1.0,*phinp,-1.0,*structurephinp_bltsl_,0.0);
-
-      //Extract the dof of interest
-      Teuchos::RCP<Epetra_Vector> phidiff_bltsl_j = extractjthscalar_[sc1-1]->ExtractCondVector(phidiff_bltsl_);
-
-      //get the maximum
-      double max_phidiff_bltsl = 0.0;
-      phidiff_bltsl_j->MaxValue(&max_phidiff_bltsl);
-
-      if (Comm().MyPID()==0)
-        std::cout<<std::scientific<<std::setprecision(2)<<" The maximal local growth since the beginning of the large time scale loop is "<<alpha*max_phidiff_bltsl<<std::endl;
-
-      //now the actual comparison:
-      const double fsi_update_tol = DRT::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<double>("FSI_UPDATE_TOL");
-
-      if (max_phidiff_bltsl * alpha >= fsi_update_tol)
-      {
-        growthneedsupdate = true; //we want to update the displacements before we go back to the small time scale
-        fsineedsupdate_ = true;
-      }
+      fsineedsupdate_ = true;
     }
   }
-  else
-    dserror("In AC-FS3I we want growth, so use a growth material like MAT_GrowthVolumetricScd!");
 
   return growthneedsupdate;
 }
@@ -544,9 +530,9 @@ void FS3I::ACFSI::LargeTimeScaleDoGrowthUpdate()
                                     fsi_->StructureField()->Discretization() );
 
   //----------------------------------------------------------------------
-  // Update growth check vector
+  // higher growth counter
   //----------------------------------------------------------------------
-  *structurephinp_blgu_ = *structurescatra->Phinp();
+  growth_updates_counter_++;
 }
 
 /*----------------------------------------------------------------------*

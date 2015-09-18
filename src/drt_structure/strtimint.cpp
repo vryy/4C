@@ -2282,7 +2282,8 @@ void STR::TimInt::OutputRestart
   else
   {
     // write restart output, please
-    output_->WriteMesh(step_, (*time_)[0]);
+    if (step_ != 0)
+      output_->WriteMesh(step_, (*time_)[0]);
     output_->NewStep(step_, (*time_)[0]);
     output_->WriteVector("displacement", (*dis_)(0));
     if( dismat_!=Teuchos::null )

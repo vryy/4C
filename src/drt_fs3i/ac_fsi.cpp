@@ -60,9 +60,9 @@ FS3I::ACFSI::ACFSI(const Epetra_Comm& comm)
    fluidincrement_(LINALG::CreateVector(*fsi_->FluidField()->DofRowMap(0),true)),
    aleincrement_(LINALG::CreateVector(*fsi_->AleField()->DofRowMap(),true)),
    fluidphinp_lp_(LINALG::CreateVector(*scatravec_[0]->ScaTraField()->DofRowMap()/**scatrafieldexvec_[0]->Map(1)*/,true)),
-   structurephinp_bltsl_(LINALG::CreateVector(*scatravec_[1]->ScaTraField()->DofRowMap(),true)),
-   structurephinp_blgu_(LINALG::CreateVector(*scatravec_[1]->ScaTraField()->DofRowMap(),true)),
+   structurephinp_blts_(LINALG::CreateVector(*scatravec_[1]->ScaTraField()->DofRowMap(),true)),
    WallShearStress_lp_(LINALG::CreateVector(*fsi_->FluidField()->DofRowMap(0),true)),
+   growth_updates_counter_(0),
    fsiperiod_(DRT::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<double>("PERIODICITY") ),
    dt_large_(DRT::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<double>("LARGE_TIMESCALE_TIMESTEP")),
    fsiisperiodic_(false),
@@ -234,8 +234,8 @@ void FS3I::ACFSI::ReadRestart()
 void FS3I::ACFSI::Timeloop()
 {
   // output of initial state
-//   fsi_->PrepareOutput();
-//   FsiOutput();
+  fsi_->PrepareOutput();
+  FsiOutput();
   ScatraOutput();
 
   // prepare time loop

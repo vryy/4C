@@ -78,7 +78,7 @@ FSI_STEPS_PER_SCATRA_STEP       1
 PERIODICITY                     0.03
 WINDKESSEL_REL_TOL              3.0e-2
 FLUID_SCATRA_REL_TOL            3.0e-1
-GROWTH_TOL                      2.0e-2
+GROWTH_UPDATES                  1
 FSI_UPDATE_TOL                  1.0e-3
 LARGE_TIMESCALE_TIMESTEP        60.0
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC

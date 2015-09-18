@@ -26,6 +26,7 @@ Maintainer: Alexander Popp
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "prestress.H"
+#include "inversedesign.H"
 #include "../drt_patspec/patspec.H"
 
 /*----------------------------------------------------------------------*
@@ -68,6 +69,8 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
   else if (action=="multi_readrestart")                           act = So_hex8fbar::multi_readrestart;
   else if (action=="multi_calc_dens")                             act = So_hex8fbar::multi_calc_dens;
   else if (action=="calc_struct_prestress_update")                act = So_hex8fbar::prestress_update;
+  else if (action=="calc_struct_inversedesign_update")            act = So_hex8fbar::inversedesign_update;
+  else if (action=="calc_struct_inversedesign_switch")            act = So_hex8fbar::inversedesign_switch;
   else dserror("Unknown type of action for So_hex8fbar");
 
   // check for patient specific data
@@ -364,10 +367,23 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
 
     //==================================================================================
     case inversedesign_update:
-      dserror("The sohex8fbar element does not support inverse design analysis");
+    {
+      time_ = params.get<double>("total time");
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp==Teuchos::null) dserror("Cannot get displacement state");
+      std::vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      invdesign_->soh8_StoreMaterialConfiguration(this,mydisp);
+      invdesign_->IsInit() = true; // this is to make the restart work
+    }
     break;
-
-
+    //==================================================================================
+    case inversedesign_switch:
+    {
+      time_ = params.get<double>("total time");
+    }
+    break;
+    //==================================================================================
     // read restart of microscale
     case multi_readrestart:
     {

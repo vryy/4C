@@ -15,6 +15,16 @@ macro (baci_test arg nproc restart)
   endif ()
 endmacro (baci_test)
 
+# Restart test case from test case priviously run
+macro (baci_test_restartonly arg nproc restart)
+  if (${restart})
+    add_test(NAME ${arg}-p${nproc}-restart
+      COMMAND ${MPI_DIR}/bin/mpirun -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx restart=${restart})
+  endif (${restart})
+
+  set_tests_properties ( ${arg}-p${nproc}-restart PROPERTIES TIMEOUT 1000)
+endmacro (baci_test_restartonly)
+
 # Run test case for nested parallelism
 macro (baci_test_Nested_Par arg1 arg2 restart)
   add_test(NAME ${arg1}-nestedPar
@@ -777,18 +787,20 @@ baci_test(fs_wuerfel_tet 1 "")
 baci_test(fs_wuerfel_tet 2 "")
 baci_test(fs3i_aero_tfsi_flat_plate 1 "")
 baci_test(fs3i_aero_tfsi_flat_plate 2 "")
-baci_test(fs3i_biogr 1 "")
-baci_test(fs3i_biogr 2 "")
+baci_test(fs3i_ac_prestress 5 "")
+baci_test_restartonly(fs3i_ac_restart_from_prestress 5 "3") #this one MUST be placed behind test case 'fs3i_ac_prestress'
+baci_test(fs3i_mult_scalar_windkessel_reac 1 "")
+baci_test(fs3i_mult_scalar_windkessel_reac 4 "")
 baci_test(fs3i_ac 2 "")
 baci_test(fs3i_ac 4 "2")
 baci_test(fs3i_ac_periodic 5 "14")
-baci_test(fs3i_mult_scalar_windkessel_reac 1 "")
-baci_test(fs3i_mult_scalar_windkessel_reac 4 "")
 baci_test(fs3i_part_1wc_finperm 1 10)
 baci_test(fs3i_part_1wc_finperm 2 10)
 baci_test(fs3i_part_1wc_infperm 1 10)
 baci_test(fs3i_part_1wc_infperm 2 10)
 baci_test(fsci_simp_salz_syst 3 "")
+baci_test(fs3i_biogr 1 "")
+baci_test(fs3i_biogr 2 "")
 baci_test(fsi_dc_mono_fs_ada_ab2_ab2 2 "")
 baci_test(fsi_dc_mono_fs_ga_ga 1 8)
 baci_test(fsi_dc_mono_fs_ga_ga 2 8)

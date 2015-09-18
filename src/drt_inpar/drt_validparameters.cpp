@@ -6124,8 +6124,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   // relative tolerance for the fluid scatra. Determines if the fluid scatra is already periodic
   DoubleParameter("FLUID_SCATRA_REL_TOL",-1.0,"Tolerance for the fluid scatra field to decide if it is periodic",&fs3idynac);
 
-  // realtive tolerance for the structure scatra field to decide if a growth update is necessary
-  DoubleParameter("GROWTH_TOL",-1.0,"Tolerance for the structure scatra field to decide if a growth update is necessary",&fs3idynac);
+  // amount of growth updates in the large time scale loop
+  IntParameter("GROWTH_UPDATES",1.0,"Amount of growth updates in the large time scale loop",&fs3idynac);
 
   // realtive tolerance for the structure scatra field to decide if a FSI update is necessary
   DoubleParameter("FSI_UPDATE_TOL",-1.0,"Tolerance for the structure scatra field to decide if a FSI update is necessary",&fs3idynac);
