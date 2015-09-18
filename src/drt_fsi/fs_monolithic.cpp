@@ -351,6 +351,7 @@ void FSI::MonolithicMainFS::SetDefaultParameters(const Teuchos::ParameterList& f
   // adaptive tolerance settings for linear solver
   lsParams.set<double>("base tolerance",fsimono.get<double>("BASETOL")); // relative tolerance
   lsParams.set<double>("adaptive distance",fsimono.get<double>("ADAPTIVEDIST")); // adaptive distance
+  lsParams.set<int>("verbosity", DRT::INPUT::IntegralValue<INPAR::FSI::FsiVerbosity>(fsidyn,"VERBOSITY")); // verbosity level of FSI algorithm
 
 }
 
