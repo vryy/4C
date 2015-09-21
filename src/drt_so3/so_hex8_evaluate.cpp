@@ -906,7 +906,19 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
     //==================================================================================
   case interpolate_velocity_to_point:
   {
+    static bool is_immersed_ale_fsi = (DRT::Problem::Instance()->ProblemType() == prb_immersed_ale_fsi);
+    static DRT::Condition* porocondition = discretization.GetCondition("PoroCoupling");
+    bool is_ale_structure = false;
+    if(is_immersed_ale_fsi)
+    {
+        if(porocondition->Geometry().find(Id()) != porocondition->Geometry().end())
+        {
+          is_ale_structure = true;
+        }
+    }
 
+    if(is_ale_structure == false)
+    {
     // get displacements and extract values of this element (set in PrepareFluidOp())
     Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("displacement");
     Teuchos::RCP<const Epetra_Vector> velnp  = discretization.GetState("velocity");
@@ -1036,6 +1048,15 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       // vector to fill
       elevec1_epetra(3) = velocitydivergence;
     }
+    } // if immersed structure
+    else
+    {
+        for(int i=0;i<3;++i)
+          elevec1_epetra(i) = -12345.0;
+
+        elevec1_epetra(3) = -12345.0;
+
+    } // fsi structure
 
   }
   break;

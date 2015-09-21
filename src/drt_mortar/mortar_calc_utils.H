@@ -597,10 +597,11 @@ void GlobalToLocal(
 template<DRT::Element::DiscretizationType distype>
 void GlobalToCurrentLocal(
     DRT::Element& ele,   // element (input)
-    double* targetdisp,
+    const double* targetdisp,
     double* xgl,         // global position (input)
     double* xi,
-    bool& converged)     // converged solution ?
+    bool& converged,
+    double& residual)     // converged solution ?
 {
    static const int numnod = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
    static const int ndim   = DRT::UTILS::DisTypeToDim<distype>::dim;
@@ -628,7 +629,7 @@ void GlobalToCurrentLocal(
 
    //************************************************
    //loop
-   while (!converged and j<10)
+   while (!converged and j<50)
    {
      //reset matrices
      xjm.Clear();
@@ -652,10 +653,6 @@ void GlobalToCurrentLocal(
          for(int l=0;l<ndim;++l)
            xjm(p,l) += deriv(l,k) * xref(p,k);
 
-     // rhs of (linearized equation)
-     for(int p=0;p<ndim;++p)
-       rhs[p]=0.0;
-
      for(int p=0;p<ndim;++p)
        rhs[p] = -xgl[p];
 
@@ -666,8 +663,8 @@ void GlobalToCurrentLocal(
      double norm = 0.0;
      for(int p=0;p<ndim;++p)
        norm += rhs[p]*rhs[p];
-
-     if (sqrt(norm)<1e-12)
+       residual = sqrt(norm);
+     if (residual<1e-13)
        converged = true;
 
      if(converged == true)

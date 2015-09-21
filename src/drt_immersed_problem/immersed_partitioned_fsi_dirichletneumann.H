@@ -75,6 +75,9 @@ protected:
   virtual void SetStatesFluidOP();
 
   /// set state necessary state vectors
+  virtual void SetStatesVelocityCorrection();
+
+  /// set state necessary state vectors
   virtual void SetStatesStructOP();
 
   /// update nodal positions of fluid nodes (stored in this class)

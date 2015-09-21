@@ -260,7 +260,7 @@ public:
     std::map<int,Teuchos::RCP<DRT::Element> >& searchboxgeom = searchbox->Geometry();
     int mysearchboxgeomsize = searchboxgeom.size();
 
-
+    // round robin loop
     for (int irobin = 0; irobin < numproc; ++irobin)
     {
       std::vector<char> sdata;
@@ -285,10 +285,11 @@ public:
           if(curr->second->Owner()==myrank)
           {
             bool converged = false;
+            double residual = -1234.0;
 
             if(problem->ProblemType()==prb_immersed_ale_fsi)
             {
-              Teuchos::RCP<const Epetra_Vector> state = sourcedis->GetState("velnp");
+              Teuchos::RCP<const Epetra_Vector> state = sourcedis->GetState("dispnp");
 
               DRT::Element::LocationArray la(1);
               curr->second->LocationVector(*sourcedis,la,false);
@@ -300,136 +301,179 @@ public:
                 for(int dof=0; dof<3;++dof)
                   sourceeledisp[node*3+dof]=myvalues[node*4+dof];
 
+              // node 1  and node 7 coords of current source element (diagonal points)
+              const double* X1 = curr->second->Nodes()[1]->X();
+              double x1[3];
+              x1[0]=X1[0]+sourceeledisp[1*3+0];
+              x1[1]=X1[1]+sourceeledisp[1*3+1];
+              x1[2]=X1[2]+sourceeledisp[1*3+2];
+              const double* X7 = curr->second->Nodes()[7]->X();
+              double diagonal = sqrt(pow(X1[0]-X7[0],2)+pow(X1[1]-X7[1],2)+pow(X1[2]-X7[2],2));
+
+              // calc distance of current target point to arbitrary node (e.g. node 1) of curr source element
+              double distance = sqrt(pow(x1[0]-xvec[0],2)+pow(x1[1]-xvec[1],2)+pow(x1[2]-xvec[2],2));
+
               // get parameter space coords xi in source element of global point xvec of target element
-              MORTAR::UTILS::GlobalToCurrentLocal<sourcedistype>(*(curr->second),&sourceeledisp[0],&xvec[0],&xi(0),converged);
+              // NOTE: if the target point xvec is very far away from the source element curr
+              //       it is unnecessary to jump into this functon and invoke a newton iteration.
+              // Therfore: only call GlobalToCurrentLocal if distance is smaller than fac*characteristic element length
+              if(distance < 1.5*diagonal)
+              {
+                MORTAR::UTILS::GlobalToCurrentLocal<sourcedistype>(*(curr->second),&sourceeledisp[0],&xvec[0],&xi(0),converged,residual);
+                if(converged == false)
+                {
+//                  std::cout<<"Warning!! GlobalToCurrentLocal() in InterpolateToImmersedIntPoint() did not converge! res ="<<std::setprecision(12)<<residual<<"\n "
+//                  "Source Element ID = "<<curr->second->Id()<<
+//                  "  d="<<distance<<" < "<<"  diagonal="<<diagonal<<"\n"
+//                  "pos target point = ["<<xvec[0]<<" "<<xvec[1]<<" "<<xvec[2]<<"] "<<
+//                  "xi in source ele="<<xi<<std::endl;
+                  xi(0)=2.0; xi(1)=2.0; xi(2)=2.0;
+                }
+              }
+              else
+              {
+                xi(0)=2.0; xi(1)=2.0; xi(2)=2.0;
+              }
             }
             else
             {
-              // get parameter space coords xi in source element of global point xvec of target element
-              MORTAR::UTILS::GlobalToLocal<sourcedistype>(*(curr->second),&xvec[0],&xi(0),converged);
-            }
+              // node 1  and node 7 coords of current source element (diagonal points)
+              const double* X1 = curr->second->Nodes()[1]->X();
+              const double* X7 = curr->second->Nodes()[7]->X();
+              double diagonal = sqrt(pow(X1[0]-X7[0],2)+pow(X1[1]-X7[1],2)+pow(X1[2]-X7[2],2));
 
-//  # ifdef DEBUG
-//          if(!converged)
-//          {
-//            dserror("MAPPING FROM SOURCE POINT TO TARGET DID NOT CONVERGE");
-//          }
-//  # endif
+              // calc distance of current target point to arbitrary node (e.g. node 1) of curr source element
+              double distance = sqrt(pow(X1[0]-xvec[0],2)+pow(X1[1]-xvec[1],2)+pow(X1[2]-xvec[2],2));
+
+              if(distance<1.5*diagonal)
+              {
+                // get parameter space coords xi in source element of global point xvec of target element
+                MORTAR::UTILS::GlobalToLocal<sourcedistype>(*(curr->second),&xvec[0],&xi(0),converged);
+                if(converged==false)
+                {
+                  xi(0)=2.0; xi(1)=2.0; xi(2)=2.0;
+                }
+              }
+              else
+              {
+                xi(0)=2.0; xi(1)=2.0; xi(2)=2.0;
+              }
+            }
 
             /////////////////////////////////////////////////
             ////
             ////     MATCH
             ////
             /////////////////////////////////////////////////
-            double tol = 1e-12;
-            if ((abs(xi(0))-1.0)<tol and (abs(xi(1))-1.0)<tol and (abs(xi(2))-1.0)<tol)
-            { // given point lies in element curr
-
-              bool validsource = true;
-              double scalarproduct= 0.0;
-              Teuchos::RCP<Epetra_SerialDenseVector> vector;
-
-              sourceele = curr->second.getRawPtr();
-
-              // fill locationarray
-              DRT::Element::LocationArray sourcela(1);
-              sourceele->LocationVector(*sourcedis,sourcela,false);
+            double tol = 1e-13;
+            sourceele = curr->second.getRawPtr();
+            bool validsource = false;
+            // given point lies in element curr
+            if (abs(xi(0))<(1.0-tol) and abs(xi(1))<(1.0-tol) and abs(xi(2))<(1.0-tol))
+            {
+              validsource = true;
 
               (*xi_dense)(0)=xi(0);
               (*xi_dense)(1)=xi(1);
               (*xi_dense)(2)=xi(2);
+            }
+            // does targetpoint lie on any element edge?
+            // targetpoint lies within tolerance away from any element edge
+            // only the sourceele located outward from the boundary should interpolate
+            else if(( abs((abs(xi(0))-1.0))<=tol ) // at xi_0 surface
+                or  ( abs((abs(xi(1))-1.0))<=tol ) // at xi_1 surface
+                or  ( abs((abs(xi(2))-1.0))<=tol ) // at xi_2 surface
+                   )
+            {
+              double scalarproduct= 0.0;
+              Teuchos::RCP<Epetra_SerialDenseVector> vector;
 
-              // does targetpoint lie on an element edge?
-              // only the sourceele located outward from the boundary should interpolate
-              if( (abs(xi(0))<(1.0+tol) and abs(xi(0))>(1.0-tol)) or (abs(xi(1))<(1.0+tol) and abs(xi(1))>(1.0-tol)) or (abs(xi(2))<(1.0+tol) and abs(xi(2))>(1.0-tol)))
+              // get nodal coords of source ele
+              vector = Teuchos::rcp(new Epetra_SerialDenseVector(3));
+              std::vector<double> distances(sourceele->NumNode());
+
+              // loop over source element nodes and calc distance from targetpoint to those nodes
+              for(int sourcenode=0; sourcenode<sourceele->NumNode(); sourcenode++)
               {
-                //              // calc sourcele diagonal length
-                //              const double* X0 = sourceele->Nodes()[0]->X();
-                //              const double* X6 = sourceele->Nodes()[1]->X();
-                //              double srcelediaglength = sqrt(pow(X0[0]-X6[0],2)+pow(X0[1]-X6[1],2)+pow(X0[2]-X6[2],2));
-
-                // get nodal coords of source ele
-                vector = Teuchos::rcp(new Epetra_SerialDenseVector(3));
-                std::vector<double> distances(sourceele->NumNode());
-                for(int sourcenode=0; sourcenode<sourceele->NumNode(); sourcenode++)
-                {
-                  if(problem->ProblemType()==prb_immersed_ale_fsi)
-                  {
-                    const double* X;
-                    X = sourceele->Nodes()[sourcenode]->X();
-
-                    distances[sourcenode] = sqrt(pow(xvec[0]-(X[0]+myvalues[sourcenode*4+0]),2)+pow(xvec[1]-(X[1]+myvalues[sourcenode*4+1]),2)+pow(xvec[2]-(X[2]+myvalues[sourcenode*4+2]),2));
-
-                  }
-                  else
-                  {
-                    const double* X;
-                    X = sourceele->Nodes()[sourcenode]->X();
-
-                    distances[sourcenode] = sqrt(pow(xvec[0]-X[0],2)+pow(xvec[1]-X[1],2)+pow(xvec[2]-X[2],2));
-                  }
-                }
-
-                // get max. distance and corresponding index of src node
-                int maxdistanceindex = -1;
-                double maxvalue = 0.0;
-                for(int i=0; i<(int)distances.size();++i)
-                {
-                  if(distances[i]>maxvalue)
-                  {
-                    maxvalue = distances[i];
-                    maxdistanceindex = i;
-                  }
-                }
-
-                const double* X;
-                double x[3];
                 if(problem->ProblemType()==prb_immersed_ale_fsi)
                 {
-                  X = sourceele->Nodes()[maxdistanceindex]->X();
-                  x[0] = X[0]+myvalues[maxdistanceindex*4+0];
-                  x[1] = X[1]+myvalues[maxdistanceindex*4+1];
-                  x[2] = X[2]+myvalues[maxdistanceindex*4+2];
+                  const double* X;
+                  X = sourceele->Nodes()[sourcenode]->X();
+
+                  distances[sourcenode] = sqrt(pow(xvec[0]-(X[0]+myvalues[sourcenode*4+0]),2)+pow(xvec[1]-(X[1]+myvalues[sourcenode*4+1]),2)+pow(xvec[2]-(X[2]+myvalues[sourcenode*4+2]),2));
+
                 }
                 else
                 {
-                  x[0] = sourceele->Nodes()[maxdistanceindex]->X()[0];
-                  x[1] = sourceele->Nodes()[maxdistanceindex]->X()[1];
-                  x[2] = sourceele->Nodes()[maxdistanceindex]->X()[2];
+                  const double* X;
+                  X = sourceele->Nodes()[sourcenode]->X();
+
+                  distances[sourcenode] = sqrt(pow(xvec[0]-X[0],2)+pow(xvec[1]-X[1],2)+pow(xvec[2]-X[2],2));
                 }
+              }
 
-                // build vector directed from targetele point (xvec) to sourceele node (X)
-                // xvec should not lie at same ele surface as sourcenode
-                (*vector)(0) = x[0]-xvec[0];
-                (*vector)(1) = x[1]-xvec[1];
-                (*vector)(2) = x[2]-xvec[2];
-                vector->Scale(vector->Norm2());
+              // get max. distance and corresponding index of src node
+              int maxdistanceindex = -1;
+              double maxvalue = 0.0;
+              for(int i=0; i<(int)distances.size();++i)
+              {
+                if(distances[i]>maxvalue)
+                {
+                  maxvalue = distances[i];
+                  maxdistanceindex = i;
+                }
+              }
 
-                // build scalar product between normal and vector
-                scalarproduct = (*vector)(0) * normal_vec[0] + (*vector)(1) * normal_vec[1] + (*vector)(2) * normal_vec[2];
+              const double* X;
+              double x[3];
+              if(problem->ProblemType()==prb_immersed_ale_fsi)
+              {
+                X = sourceele->Nodes()[maxdistanceindex]->X();
+                x[0] = X[0]+myvalues[maxdistanceindex*4+0];
+                x[1] = X[1]+myvalues[maxdistanceindex*4+1];
+                x[2] = X[2]+myvalues[maxdistanceindex*4+2];
+              }
+              else
+              {
+                x[0] = sourceele->Nodes()[maxdistanceindex]->X()[0];
+                x[1] = sourceele->Nodes()[maxdistanceindex]->X()[1];
+                x[2] = sourceele->Nodes()[maxdistanceindex]->X()[2];
+              }
 
-                if(scalarproduct > 0.0)
-                  validsource = true;
-                else
-                  validsource = false;
+              // build vector directed from targetele point (xvec) to sourceele node (X)
+              // xvec should not lie at same ele surface as sourcenode
+              (*vector)(0) = x[0]-xvec[0];
+              (*vector)(1) = x[1]-xvec[1];
+              (*vector)(2) = x[2]-xvec[2];
+              vector->Scale(vector->Norm2());
+
+              // build scalar product between normal and vector
+              scalarproduct = (*vector)(0) * normal_vec[0] + (*vector)(1) * normal_vec[1] + (*vector)(2) * normal_vec[2];
+
+              if(scalarproduct > tol)
+                validsource = true;
+              else
+                validsource = false;
+
+              std::cout<<"WARNING !! Immersed point is lying on element edge! validsource="<<validsource<<"for eleid="<<sourceele->Id()<<std::endl;
 
 #ifdef DEBUG
-                if(abs(scalarproduct) < 1e-13 and validsource)
-                {
-                  std::cout<<"scalarproduct = "<<scalarproduct<<std::endl;
-                  dserror("normal vec and vec from point to node perpendicular.\n"
-                      "no robust determination of outward lying src ele possible");
-                }
-                if(abs(scalarproduct) < -1e-12 and validsource)
-                {
-                  std::cout<<"scalarproduct = "<<scalarproduct<<std::endl;
-                  dserror("normal vec and vec from point to node have no sharp angle.\n"
-                      "no robust determination of outward laying src ele possible");
-                }
+              if(abs(scalarproduct) < 1e-13 and validsource)
+              {
+                std::cout<<"scalarproduct = "<<scalarproduct<<std::endl;
+                dserror("normal vec and vec from point to node perpendicular.\n"
+                    "no robust determination of outward lying src ele possible");
+              }
+              if(abs(scalarproduct) < -1e-12 and validsource)
+              {
+                std::cout<<"scalarproduct = "<<scalarproduct<<std::endl;
+                dserror("normal vec and vec from point to node have no sharp angle.\n"
+                    "no robust determination of outward laying src ele possible");
+              }
 #endif
 
-                //count++;
-              } // if on element edge
+              //count++;
+            } // if on element edge
 
 
             // evaluate and perform action handed in to this function
@@ -452,6 +496,10 @@ public:
 //              std::cout<<"normal: ["<<normal_vec[0]<<" "<<normal_vec[1]<<" "<<normal_vec[2]<<"]"<<std::endl;
 //              std::cout<<"vector: "<<*vector<<std::endl;
 //              std::cout<<"scalarproduct: "<<scalarproduct<<std::endl;
+
+              // fill locationarray
+              DRT::Element::LocationArray sourcela(1);
+              sourceele->LocationVector(*sourcedis,sourcela,false);
               sourceele->Evaluate(params,*sourcedis,sourcela,dummy1,dummy2,*vectofill ,*xi_dense,dummy3);
               matched = 1;
 
@@ -460,10 +508,10 @@ public:
               // only possible and reasonable if current element is fluid element
               if(immersedele != Teuchos::null)
               {
-                immersedele->SetBoundaryIsImmersed(1);
+                //std::cout<<"ID="<<immersedele->Id()<<"  scalarprod="<<std::setprecision(10)<<scalarproduct<<std::endl;
+                immersedele->SetBoundaryIsImmersed(2);
                 immersedele->ConstructElementRCP(problem->ImmersedMethodParams().get<int>("NUM_GP_FLUID_BOUND"));
               }
-
 
               // DEBUG output
               //std::cout<<"Tgt. Ele: "<<targetele.Id()<<" lies in src. ele: "<<curr->second->Id()<<" at  pos. ["<<std::setprecision(5)<<xvec[0]<<" "<<xvec[1]<<" "<<xvec[2]<<"]"<<std::endl;
@@ -474,7 +522,6 @@ public:
               matched = 0;
 
           } // if myrank == owner of searchbox ele and proc has searchbox ele
-          }// if match
         }// loop over all seachbox elements
       }// enter loop only if point not yet matched
       /////////////////////////////////////////////////////////////////////
@@ -554,7 +601,10 @@ public:
       if(mysearchboxgeomsize>0)
       {
         if(curr==(searchboxgeom.end()--) and irobin == (numproc-1) and matched == 0)
+        {
+          std::cout<<"target position = ["<<xvec[0]<<" "<<xvec[1]<<" "<<xvec[2]<<"]"<<std::endl;
           dserror("could not match given point on any proc. Element(0)=%f",(*vectofill)(0));
+        }
       }
 
     } // end for irobin
@@ -1330,6 +1380,7 @@ public:
           {
             //std::cout<<"tgtele "<<targetele.Id()<<": "<<*eleIter<<std::endl;
             bool converged = false;
+            double residual = -1234.0;
             sourceele = sourcedis->gElement(*eleIter);
 
             // get parameter space coords xi in source element
@@ -1338,14 +1389,14 @@ public:
             DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,la[0].lm_);
 
             std::vector<double> targeteleposition1(3);
-            targeteleposition1[0]=(targetele.Nodes())[1]->X()[0];
-            targeteleposition1[1]=(targetele.Nodes())[1]->X()[1];
-            targeteleposition1[2]=(targetele.Nodes())[1]->X()[2];
+            targeteleposition1[0]=(targetele.Nodes())[1]->X()[0]+targetedisp[1*3+0];
+            targeteleposition1[1]=(targetele.Nodes())[1]->X()[1]+targetedisp[1*3+1];
+            targeteleposition1[2]=(targetele.Nodes())[1]->X()[2]+targetedisp[1*3+2];
 
             std::vector<double> targeteleposition7(3);
-            targeteleposition7[0]=(targetele.Nodes())[7]->X()[0];
-            targeteleposition7[1]=(targetele.Nodes())[7]->X()[1];
-            targeteleposition7[2]=(targetele.Nodes())[7]->X()[2];
+            targeteleposition7[0]=(targetele.Nodes())[7]->X()[0]+targetedisp[7*3+0];
+            targeteleposition7[1]=(targetele.Nodes())[7]->X()[1]+targetedisp[7*3+1];
+            targeteleposition7[2]=(targetele.Nodes())[7]->X()[2]+targetedisp[7*3+2];
 
             double diagonaltargetelelength = sqrt(pow(targeteleposition1[0]-targeteleposition7[0],2)+pow(targeteleposition1[1]-targeteleposition7[1],2)+pow(targeteleposition1[2]-targeteleposition7[2],2));
 
@@ -1360,7 +1411,7 @@ public:
             // only try to match given target point and sourceele if sourceele is in vicinity of target point
             if(dist < 1.6*diagonaltargetelelength)
             {
-              MORTAR::UTILS::GlobalToCurrentLocal<sourcedistype>(*sourceele,&mydispnp[0],&xvec[0],&xi(0),converged);
+              MORTAR::UTILS::GlobalToCurrentLocal<sourcedistype>(*sourceele,&mydispnp[0],&xvec[0],&xi(0),converged,residual);
               if(converged==false)
               {
                 xi(0) = 2.0; xi(1) = 2.0; xi(2) = 2.0;
@@ -1402,8 +1453,8 @@ public:
             ////     MATCH
             ////
             /////////////////////////////////////////////////
-            double tol = 1e-11;
-            if ((abs(xi(0))-1.0)<tol and (abs(xi(1))-1.0)<tol and (abs(xi(2))-1.0)<tol)
+            double tol = 1e-12;
+            if ( abs(xi(0))<=(1.0+tol) and abs(xi(1))<=(1.0+tol) and abs(xi(2))<=(1.0+tol))
             { // given point lies in element curr
               matched = 1;
               match = true;
@@ -1441,10 +1492,11 @@ public:
               break; // break loop over all source elements
             }// if match
 
-            if(closele == (curr_subset_of_structdis.end()--) and eleIter == ((closele->second).end()--) and matched == 0 and irobin == (numproc-1)) // this point lies not within discretization at all
+            // given targetpoint point lies not underneath source discretization at all
+            if(closele == (curr_subset_of_structdis.end()--) and eleIter == ((closele->second).end()--) and matched == 0 and irobin == (numproc-1))
             {
               for(int dim=0;dim<datalength;++dim)
-                (*vectofill)(dim)=0.0;
+                (*vectofill)(dim)=-12345.0;
             }
           }// loop over all seachbox elements
         }// loop over closeele set
@@ -1597,6 +1649,9 @@ public:
 
       if(doCommunication==false)
         numproc=1;
+
+      DRT::Node** fluidnode = fluidele.Nodes();
+      double char_fld_ele_length = sqrt(pow(fluidnode[1]->X()[0]-fluidnode[7]->X()[0],2)+pow(fluidnode[1]->X()[1]-fluidnode[7]->X()[1],2)+pow(fluidnode[1]->X()[2]-fluidnode[7]->X()[2],2));
 
       // get current displacements and velocities of structure discretization
       Teuchos::RCP<const Epetra_Vector> dispnp = structdis->GetState("displacement");
@@ -1782,7 +1837,7 @@ public:
 
                     }
                   } // end loop over int points
-                } // end if fsi cpupling
+                } // end if fsi coupling
               } // end loop over all surface elements
             }// loop over all seachbox elements
           }// loop over closeele set
@@ -1793,17 +1848,31 @@ public:
             xvec[idim] = pos_to_store[idim];
 
           bool converged = false;
-          // get local coordinates of closest structural surface point in fluid element parameter space
-          MORTAR::UTILS::GlobalToLocal<fluiddistype>(fluidele,&xvec[0],&fluid_xi(0),converged);
+          double residual = -1234.0;
 
-          if(converged==false)
+          if(stored_dist < 1.5*char_fld_ele_length)
+          {
+            // get local coordinates of closest structural surface point in fluid element parameter space
+            if(problem->ProblemType()==prb_immersed_ale_fsi)
+              MORTAR::UTILS::GlobalToCurrentLocal<fluiddistype>(fluidele,&fluideledisp[0],&xvec[0],&fluid_xi(0),converged,residual);
+            else
+              MORTAR::UTILS::GlobalToLocal<fluiddistype>(fluidele,&xvec[0],&fluid_xi(0),converged);
+
+            if(converged==false)
+            {
+              std::cout<<"WARNING!! GlobalToCurrentLocal() did not converge in FindClosestStructureSurfacePoint( \n"
+                  "xi="<<fluid_xi<<std::endl;
+              fluid_xi(0) = 2.0; fluid_xi(1) = 2.0; fluid_xi(2) = 2.0;
+            }
+          }
+          else
           {
             fluid_xi(0) = 2.0; fluid_xi(1) = 2.0; fluid_xi(2) = 2.0;
           }
 
           // check if closest point lies in current fluid element
-          double tol = 1e-11;
-          if ((abs(fluid_xi(0))-1.0)<tol and (abs(fluid_xi(1))-1.0)<tol and (abs(fluid_xi(2))-1.0)<tol)
+          double tol = 1e-13;
+          if ( abs(fluid_xi(0))<(1.0+tol) and abs(fluid_xi(1))<(1.0+tol) and abs(fluid_xi(2))<(1.0+tol) )
           { // given point lies current fluid element
             matched = 1;
             match = true;

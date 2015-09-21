@@ -3445,6 +3445,9 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityToNode(
                                                         vel_calculation,
                                                         false                     // do no communication. immerseddis is ghosted. every proc finds an immersed element to
                                                        );                         // interpolate to its backgrd nodes.
+  // under fsi structure NOT under immersed structure !
+  if(vel[0]==-12345.0 and vel[1]==-12345.0)
+    match=false;
 
   if(match)
   {
@@ -3470,10 +3473,10 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityToNode(
   else if (matchnum < nen_ and matchnum > 0)
   {
     immersedele -> SetBoundaryIsImmersed(1);
-
     immersedele -> ConstructElementRCP(num_gp_fluid_bound);
 
     // DEBUG test
+#ifdef DEBUG
     if(immersedele->GetRCPProjectedIntPointDivergence()==Teuchos::null)
       dserror("construction of ProjectedIntPointDivergence failed");
     if((int)(immersedele->GetRCPProjectedIntPointDivergence()->size())!=num_gp_fluid_bound)
@@ -3484,6 +3487,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityToNode(
       dserror("construction of IntPointHasProjectedDivergence failed");
     if((int)(immersedele->GetRCPIntPointHasProjectedDivergence()->size())!=num_gp_fluid_bound)
       dserror("size of IntPointHasProjectedDivergence should be equal numgp in cut element = %d",num_gp_fluid_bound);
+# endif
   }
 
 
@@ -3532,8 +3536,10 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityToNode(
                                                             vel_calculation,
                                                             false                     // do no communication. immerseddis is ghosted. every proc finds an immersed element to
                                                            );                         // interpolate to its backgrd nodes.
+      // under fsi structure NOT under immersed structure !
+      if(div[3]==-12345.0)
+        match=false;
 
-      //
       if(match)
       {
         immersedele->SetIntPointHasProjectedDivergence(*iquad,1);
@@ -3567,6 +3573,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CorrectImmersedBoundVelocities
   // cast fluid element to immersed element to get/store immersed information
   DRT::ELEMENTS::FluidImmersedBase* immersedele = dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(ele);
 
+  if(immersedele->IsBoundaryImmersed())
+  {
   // get global problem
   DRT::Problem* globalproblem = DRT::Problem::Instance();
 
@@ -3576,6 +3584,9 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CorrectImmersedBoundVelocities
   // get discretizations
   const Teuchos::RCP<DRT::Discretization> fluid_dis  = globalproblem->GetDis("fluid");
   const Teuchos::RCP<DRT::Discretization> struct_dis = globalproblem->GetDis("structure");
+
+  // determine whether fluid mesh is deformable or not
+  static int isALE = (globalproblem->ProblemType()==prb_immersed_ale_fsi);
 
   // get element velocity at time n+1
   LINALG::Matrix<nsd_,nen_> evelnp;
@@ -3604,10 +3615,24 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CorrectImmersedBoundVelocities
   std::vector<double> closest_point_xi(nsd_);
   std::vector<double> vel(nsd_);
 
-  // fluid target elements have no displacements (fixed grid), fill dummy vector.
+
   std::vector<double> targeteledisp(nsd_*nen_);
-  for(int i=0;i<nsd_*nen_;++i)
-    targeteledisp[i]=0.0;
+
+  // update fluid displacements
+  if(isALE)
+  {
+    LINALG::Matrix<nsd_,nen_>       edispnp(true);
+    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &edispnp, NULL,"dispnp");
+
+    for(int node=0;node<nen_;++node)
+      for(int dof=0; dof<nsd_;++dof)
+        targeteledisp[node*nsd_+dof] = edispnp(dof,node);
+  }
+  else
+  {
+    for(int i=0;i<nsd_*nen_;++i)
+      targeteledisp[i]=0.0;
+  }
 
   // set action for structure evaluation
   const std::string action="interpolate_velocity_to_given_point";
@@ -3707,7 +3732,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CorrectImmersedBoundVelocities
     match = false;
 
     } // end loop over all nodes
-
+  } // if fluid element has immersed boundary
   return 0;
 
 } // CorrectImmersedBoundVelocities()
@@ -4758,7 +4783,6 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcMassFlowPeriodicHill(
       Teuchos::ParameterList&         params
      )
   {
-
   DRT::ELEMENTS::FluidImmersedBase* immersedele = dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(ele);
 
   // reset element information

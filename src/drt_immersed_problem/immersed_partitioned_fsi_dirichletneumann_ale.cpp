@@ -50,6 +50,17 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumannALE::SetStatesFluidOP()
   // for FluidOP
   structdis_->SetState(0,"displacement",immersedstructure_->Dispnp());
   structdis_->SetState(0,"velocity",immersedstructure_->Velnp());
+  fluiddis_ ->SetState(0,"dispnp",MBFluidField()->FluidField()->Dispnp());
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedPartitionedFSIDirichletNeumannALE::SetStatesVelocityCorrection()
+{
+  fluiddis_->SetState(0,"velnp",MBFluidField()->FluidField()->Velnp());
+  fluiddis_->SetState(0,"dispnp",MBFluidField()->FluidField()->Dispnp());
 
   return;
 }
@@ -59,7 +70,6 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumannALE::SetStatesFluidOP()
 void IMMERSED::ImmersedPartitionedFSIDirichletNeumannALE::SetStatesStructOP()
 {
   // for StructOP
-  structdis_->SetState(0,"displacement",immersedstructure_->Dispnp());
   fluiddis_->SetState(0,"velnp",MBFluidField()->FluidField()->Velnp());
   fluiddis_ ->SetState(0,"dispnp",MBFluidField()->FluidField()->Dispnp());
 
@@ -76,24 +86,13 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumannALE::InitialGuess()
     return immersedstructure_->PredictFullInterfaceDispnp();
   else
   {
-    // set states
-    fluiddis_ ->SetState(0,"velnp",Teuchos::rcp_dynamic_cast<ADAPTER::FluidAle >(MBFluidField())->FluidField()->Velnp());
-    fluiddis_ ->SetState(0,"veln",Teuchos::rcp_dynamic_cast<ADAPTER::FluidAle >(MBFluidField())->FluidField()->Veln());
-    fluiddis_ ->SetState(0,"dispnp",MBFluidField()->FluidField()->Dispnp());
-    structdis_->SetState(0,"displacement",     immersedstructure_->Dispnp());
 
-    struct_bdry_traction_old_ = Teuchos::rcp(new Epetra_Vector(*(immersedstructure_->DofRowMap()),true));
+    //struct_bdry_traction_old_ = Teuchos::rcp(new Epetra_Vector(*(immersedstructure_->DofRowMap()),true));
     Teuchos::RCP<Epetra_Vector> combined_traction = Teuchos::rcp(new Epetra_Vector(*(immersedstructure_->CombinedInterface()->FullMap()),true));
 
-    StructOp(struct_bdry_traction_old_, User);
-
     // insert Immersed and FSI vector to combined vector (vector of whole interface)
-    immersedstructure_->CombinedInterface()->InsertOtherVector(immersedstructure_->Interface()->ExtractIMMERSEDCondVector(struct_bdry_traction_old_),combined_traction);
-    immersedstructure_->CombinedInterface()->InsertCondVector(immersedstructure_->Interface()->ExtractFSICondVector(struct_bdry_traction_old_),combined_traction);
-
-    // clear states
-    fluiddis_->ClearState();
-    structdis_->ClearState();
+    immersedstructure_->CombinedInterface()->InsertOtherVector(immersedstructure_->Interface()->ExtractIMMERSEDCondVector(struct_bdry_traction_),combined_traction);
+    immersedstructure_->CombinedInterface()->InsertCondVector(FluidToStruct(MBFluidField()->ExtractInterfaceForces()),combined_traction);
 
     return combined_traction;
   }
@@ -130,12 +129,7 @@ Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitionedFSIDirichletNeumannALE:
 {
   if(fillFlag==User)
   {
-    // immersed part
-    IMMERSED::ImmersedPartitionedFSIDirichletNeumann::StructOp(struct_bdry_traction,fillFlag);
-
-    // add FSI part
-    immersedstructure_->Interface()->AddFSICondVector(FluidToStruct(MBFluidField()->ExtractInterfaceForces()),struct_bdry_traction);
-
+    dserror("fillFlag==User not implemented");
     return Teuchos::null;
   }
   else
@@ -144,7 +138,7 @@ Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitionedFSIDirichletNeumannALE:
     IMMERSED::ImmersedPartitionedFSIDirichletNeumann::StructOp(struct_bdry_traction,fillFlag);
 
     // add FSI part
-    immersedstructure_->Interface()->AddFSICondVector(FluidToStruct(MBFluidField()->ExtractInterfaceForces()),struct_bdry_traction);
+    immersedstructure_->CombinedInterface()->AddCondVector(FluidToStruct(MBFluidField()->ExtractInterfaceForces()),struct_bdry_traction);
 
     // solve the structure
     IMMERSED::ImmersedPartitionedFSIDirichletNeumann::SolveStruct();
@@ -161,9 +155,9 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumannALE::UpdateCurrentPositions
     Teuchos::RCP<const Epetra_Vector> displacements = fluid_->FluidField()->Dispnp();
 
    // update positions
-   for (int lid = 0; lid < fluiddis_->NumMyRowNodes(); ++lid)
+   for (int lid = 0; lid < fluiddis_->NumMyColNodes(); ++lid)
    {
-     const DRT::Node* node = fluiddis_->lRowNode(lid);
+     const DRT::Node* node = fluiddis_->lColNode(lid);
      LINALG::Matrix<3,1> currpos;
      std::vector<int> dofstoextract(4);
      std::vector<double> mydisp(4);
@@ -193,7 +187,7 @@ Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitionedFSIDirichletNeumannALE:
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedPartitionedFSIDirichletNeumannALE::ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector> full_traction_vec)
 {
-  immersedstructure_->ApplyImmersedInterfaceForces(FluidToStruct(MBFluidField()->ExtractInterfaceForces()),immersedstructure_->Interface()->ExtractIMMERSEDCondVector(*full_traction_vec));
+  immersedstructure_->ApplyImmersedInterfaceForces(FluidToStruct(MBFluidField()->ExtractInterfaceForces()),immersedstructure_->CombinedInterface()->ExtractOtherVector(*full_traction_vec));
 
   return;
 }
@@ -226,6 +220,7 @@ int IMMERSED::ImmersedPartitionedFSIDirichletNeumannALE::CalcResidual(Epetra_Vec
   immersedstructure_->CombinedInterface()->InsertCondVector(immersedstructure_->Interface()->ExtractFSICondVector(newstate),combined_newstate_);
 
   int err = F.Update(1.0, *combined_newstate_, -1.0, *oldstate, 0.0);
+
 
   return err;
 }

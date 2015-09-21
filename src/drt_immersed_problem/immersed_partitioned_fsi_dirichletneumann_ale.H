@@ -32,6 +32,9 @@ public:
   /// set necessary pointers to state vectors
   virtual void SetStatesFluidOP();
 
+  /// set state necessary state vectors
+  virtual void SetStatesVelocityCorrection();
+
   /// set necessary pointers to state vectors
   virtual void SetStatesStructOP();
 
