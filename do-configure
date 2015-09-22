@@ -10,6 +10,7 @@ BUILD_TYPE="RELEASE"
 TRILINOS_BUILD_TYPE="release"
 COVERAGE=0
 USE_ACML=0
+USE_DEAL=0
 USE_FORCEBUILD=0
 TRILINOS_EXPERIMENTAL=0  # use experimental Trilinos version
 ADDITIONAL_TESTS_PATH=""
@@ -25,7 +26,7 @@ SHARED_LIBS=OFF
 # version, though). This can then give per-line cost information
 # using 'valgrind --tool=callgrind ./baci-relwithdebinfo input output'
 
-OPTIONS=`getopt -o hc:daef -l help,config:,additionaltests:,debug,trilinos-debug,profiling,coverage,useACML,experimental,forceBuild -- "$@"`
+OPTIONS=`getopt -o hc:daef -l help,config:,additionaltests:,debug,trilinos-debug,profiling,coverage,useDEAL,useACML,experimental,forceBuild -- "$@"`
 
 [ $? -ne 0 ] && exit 1
 
@@ -34,7 +35,7 @@ eval set -- $OPTIONS
 while true; do
   case "$1" in
     -h|--help) 
-      echo "usage: do-configure [--debug] [--trilinos-debug] [--profiling] [--coverage] [--experimental] [--useACML] [--config=configurationfile] [--additionaltests=testfile]"
+      echo "usage: do-configure [--debug] [--trilinos-debug] [--profiling] [--coverage] [--experimental] [--useDEAL] [--useACML] [--config=configurationfile] [--additionaltests=testfile]"
       exit 1
       ;;
     -c|--config) 
@@ -59,6 +60,9 @@ while true; do
       ;;
     -e|--experimental)
       TRILINOS_EXPERIMENTAL=1
+      ;;
+    --useDEAL)
+      USE_DEAL=1
       ;;
     -a|--useACML)
       USE_ACML=1
