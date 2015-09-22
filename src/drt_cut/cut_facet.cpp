@@ -868,8 +868,8 @@ bool GEO::CUT::Facet::HaveConsistantNormal(Facet *f, bool& result)
       while (matchingppoints.size() > 2)
       {
 
-        if ((abs((bmatchingppoints1->first +1)%(points1.size()) - bmatchingppoints2->first) != 0 &&
-            abs((bmatchingppoints2->first +1)%(points1.size()) - bmatchingppoints1->first) != 0) || inlinecounter > matchingppoints.size())
+        if ((((bmatchingppoints1->first +1)%(points1.size()) != bmatchingppoints2->first) &&
+            ((bmatchingppoints2->first +1)%(points1.size()) != bmatchingppoints1->first)) || inlinecounter > matchingppoints.size())
         {
           matchingppoints.erase(bmatchingppoints1);
           bmatchingppoints1 = matchingppoints.begin();
