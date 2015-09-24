@@ -831,7 +831,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
   LINALG::Matrix<nen_,3> xcurr(false);      // x, current  coord. of element
   LINALG::Matrix<nen_,3> xcurrrate(false);  // x, rate of current  coord. of element
   LINALG::Matrix<nen_,1> etemp(false);      // vector of the current element temperatures
-  LINALG::Matrix<nen_,1> res_T(false);      // vector of the current element residual temperatures
+  LINALG::Matrix<nen_,1> res_T(true);      // vector of the current element residual temperatures
 
   DRT::Node** nodes = Nodes();
   for (int i=0; i<nen_; ++i)

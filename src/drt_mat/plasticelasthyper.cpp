@@ -1935,8 +1935,8 @@ void MAT::PlasticElastHyper::EvaluateIsotropicPrincElast(
 
   // constitutive tensor
   cmatisoprinc.MultiplyNT(delta(0),Cpi,Cpi,1.);
-  cmatisoprinc.MultiplyNT(delta(1),CpiCCpi,ircg,1.);
-  cmatisoprinc.MultiplyNT(delta(1),ircg,CpiCCpi,1.);
+  cmatisoprinc.MultiplyNT(delta(1),CpiCCpi,Cpi,1.);
+  cmatisoprinc.MultiplyNT(delta(1),Cpi,CpiCCpi,1.);
   cmatisoprinc.MultiplyNT(delta(2),Cpi,ircg,1.);
   cmatisoprinc.MultiplyNT(delta(2),ircg,Cpi,1.);
   cmatisoprinc.MultiplyNT(delta(3),CpiCCpi,CpiCCpi,1.);
