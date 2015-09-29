@@ -38,10 +38,10 @@ STEPSIZE                        1.0
 CONVTOL                         1.0e-16
 PARAMETRIZATION                 uniform
 REGULARIZATION                  tikhonov
-REG_WEIGHT                      0.0
+REG_WEIGHT_TIKH                 0.0
 OBJECTIVEFUNCT                  displacements
 SIZESTORAGE                     100
-METAPARAMS                      no
+METAPARAMS                      none
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics

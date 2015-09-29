@@ -23,16 +23,26 @@
 
 /*----------------------------------------------------------------------*/
 /* constructor */
-INVANA::RegularizationTikhonov::RegularizationTikhonov( const Teuchos::ParameterList& invp) :
-  RegularizationBase(invp)
+INVANA::RegularizationTikhonov::RegularizationTikhonov() :
+  RegularizationBase()
+{}
+
+void INVANA::RegularizationTikhonov::Setup(const Teuchos::ParameterList& invp)
 {
+  weight_ = invp.get<double>("REG_WEIGHT_TIKH");
+  meanvalue_ = invp.get<double>("MEAN_VAL_TIKH");
   return;
 }
 
 void INVANA::RegularizationTikhonov::Evaluate(const Epetra_MultiVector& theta, double* value)
 {
   double val = 0.0;
-  INVANA::MVNorm(theta, *(connectivity_->MapExtractor()->FullMap()), 2, &val);
+
+  Epetra_MultiVector meanvaluevector(*connectivity_->MapExtractor()->FullMap(),theta.NumVectors());
+  meanvaluevector.PutScalar(meanvalue_);
+  meanvaluevector.Update(1.0,theta,-1.0);
+
+  INVANA::MVNorm(meanvaluevector, *(connectivity_->MapExtractor()->FullMap()), 2, &val);
   *value += 0.5 * weight_ * val * val;
 
   return;
@@ -40,7 +50,12 @@ void INVANA::RegularizationTikhonov::Evaluate(const Epetra_MultiVector& theta, d
 
 void INVANA::RegularizationTikhonov::EvaluateGradient(const Epetra_MultiVector& theta, Teuchos::RCP<Epetra_MultiVector> gradient)
 {
-  gradient->Update(weight_, theta, 1.0);
+  Epetra_MultiVector meanvaluevector(*connectivity_->MapExtractor()->FullMap(),theta.NumVectors());
+  meanvaluevector.PutScalar(meanvalue_);
+  meanvaluevector.Update(1.0,theta,-1.0);
 
+  gradient->Update(weight_, meanvaluevector, 1.0);
+
+  return;
 }
 

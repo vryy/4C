@@ -31,17 +31,16 @@ namespace INVANA
 
 class RegularizationTikhonov: public RegularizationBase
 {
-
 public:
 
   //! constructor
-  RegularizationTikhonov(const Teuchos::ParameterList& invp);
+  RegularizationTikhonov();
 
   //! destructor
   virtual ~RegularizationTikhonov(){};
 
   //! setup of the class content (nothing to be done here)
-  virtual void Setup(){return;}
+  virtual void Setup(const Teuchos::ParameterList& invp);
 
   //! evaluate value of the regularization functional
   /*!
@@ -61,6 +60,10 @@ public:
   */
   virtual void EvaluateGradient(const Epetra_MultiVector& theta, Teuchos::RCP<Epetra_MultiVector> gradient);
 
+private:
+
+  //! mean value (shift from parabola about meanvalue along the parameter axis
+  double meanvalue_;
 };
 
 }

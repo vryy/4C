@@ -189,7 +189,12 @@ void INVANA::MatParManagerPerElement::FillAdjacencyMatrix(const Epetra_Map& para
     if (nele != faces.size()) dserror("number of surfaces or lines does not match!");
 
     // get the surface/line elements for area computation
-    std::vector<Teuchos::RCP<DRT::Element> >  surfs = ele->Surfaces();
+    std::vector<Teuchos::RCP<DRT::Element> >  surfs;
+    if (ele->NumSurface() > 1)
+      surfs = ele->Surfaces();
+    else if (ele->NumSurface() == 1)
+      surfs = ele->Lines();
+    else dserror("creating internal faces for 1D elements (would be points) not implemented yet");
 
     // get nodes of each of this element's face
     for (unsigned int iele = 0; iele < nele; iele++)
@@ -206,7 +211,7 @@ void INVANA::MatParManagerPerElement::FillAdjacencyMatrix(const Epetra_Map& para
 
       //get the area of this face
       Teuchos::ParameterList p;
-      p.set("action", "calc_struct_area");
+      SetAction(p);
       p.set("area",0.0);
       DRT::Element::LocationArray la(Discret()->NumDofSets());
       surfs[iele]->LocationVector(*Discret(),la,false);
@@ -350,5 +355,14 @@ void INVANA::MatParManagerPerElement::FillAdjacencyMatrix(const Epetra_Map& para
     }
   }
 
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* set the action for the boundary evaluation          schoeder 09/15   */
+/*----------------------------------------------------------------------*/
+void INVANA::MatParManagerPerElement::SetAction(Teuchos::ParameterList& p)
+{
+  p.set("action","calc_struct_area");
   return;
 }

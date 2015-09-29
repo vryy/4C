@@ -1450,7 +1450,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::IntegrateShapeFunctions(
 )
 {
   // access boundary area variable with its actual value
-  double boundaryint = params.get<double>("boundaryint");
+  double boundaryint = params.get<double>("area");
 
   bool outputall = false;
   if(params.isParameter("alldof"))
@@ -1484,7 +1484,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::IntegrateShapeFunctions(
   } //loop over integration points
 
   // add contribution to the global value
-  params.set<double>("boundaryint",boundaryint);
+  params.set<double>("area",boundaryint);
 
   return;
 

@@ -51,10 +51,10 @@ LS_STEPLENGTHRED                0.5
 -------------------------------------------------------STAT INVERSE ANALYSIS
 PARAMLIST                       2 REAC
 PARAMETRIZATION                 elementwise
-METAPARAMS                      no
+METAPARAMS                      none
 SIZESTORAGE                     10
 REGULARIZATION                  none
-REG_WEIGHT                      0.1
+REG_WEIGHT_TIKH                 0.0
 TVD_EPS                         0.001
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   2

@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file regularization_base.H
+\file regularization_base.cpp
 
 <pre>
 Maintainer: Sebastian Kehl
@@ -20,18 +20,15 @@ Maintainer: Sebastian Kehl
 
 /*----------------------------------------------------------------------*/
 /* constructor */
-INVANA::RegularizationBase::RegularizationBase(const Teuchos::ParameterList& invp) :
+INVANA::RegularizationBase::RegularizationBase() :
 discret_(Teuchos::null),
 connectivity_(Teuchos::null),
 weight_(0.0)
-{
-  weight_ = invp.get<double>("REG_WEIGHT");
-
-  return;
-}
+{}
 
 void INVANA::RegularizationBase::Init(Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<ConnectivityData> connectivity)
 {
   discret_=discret;
   connectivity_=connectivity;
+  return;
 }

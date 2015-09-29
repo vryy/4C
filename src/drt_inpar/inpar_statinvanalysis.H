@@ -26,7 +26,8 @@ namespace INPAR
     {
       stat_inv_reg_none,              // nothing defined
       stat_inv_reg_tikhonov,          // thikonov regularization
-      stat_inv_reg_totalvariation,
+      stat_inv_reg_totalvariation,    // total variation diminishing regularization
+      stat_inv_reg_tvdtikh            // tvd and tikhonov regularization
     };
 
     // Parametrization of material parameters
@@ -53,6 +54,14 @@ namespace INPAR
       stat_inv_obj_none,         // none
       stat_inv_obj_disp,         // based on per dof displacement measurements
       stat_inv_obj_surfcurr      // based on a current representation of surfaces
+    };
+
+    /// Type of the metaparameterization
+    enum StatInvMetaParamsType
+    {
+      stat_inv_meta_none,        // no meta parameterization
+      stat_inv_meta_quad,        // parabolic meta parametrization
+      stat_inv_meta_arctan       // arcus tangens meta parametrization
     };
 
   }  // namespace INVANA

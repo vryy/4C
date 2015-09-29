@@ -37,6 +37,7 @@ Maintainer: Svenja Schoeder
 #include "../drt_inv_analysis/regularization_base.H"
 #include "../drt_inv_analysis/regularization_tikhonov.H"
 #include "../drt_inv_analysis/regularization_totalvariation.H"
+#include "../drt_inv_analysis/regularization_tvdtikh.H"
 #include "../drt_inpar/inpar_statinvanalysis.H"
 #include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_sparsematrix.H"
@@ -44,6 +45,7 @@ Maintainer: Svenja Schoeder
 #include "Epetra_SerialDenseSolver.h"
 
 #include <Teuchos_TimeMonitor.hpp>
+#include <Teuchos_ParameterList.hpp>
 
 
 /*----------------------------------------------------------------------*/
@@ -127,7 +129,7 @@ ACOU::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> scatradis,
   ComputeNodeBasedVectors();
 
   // create material manager
-  const Teuchos::ParameterList& invp = DRT::Problem::Instance()->StatInverseAnalysisParams();
+  const Teuchos::ParameterList& invp = DRT::Problem::Instance()->StatInverseAnalysisParams(); // TODO override PARAMLIST for acoustic matman
   switch(DRT::INPUT::IntegralValue<INPAR::INVANA::StatInvMatParametrization>(invp,"PARAMETRIZATION"))
   {
     case INPAR::INVANA::stat_inv_mp_elementwise:
@@ -146,6 +148,7 @@ ACOU::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> scatradis,
       dserror("choose a valid method of parametrizing the material parameter field");
     break;
   }
+  matman_->Init(invp);
   matman_->Setup();
 
   // create regularization manager
@@ -155,12 +158,17 @@ ACOU::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> scatradis,
     break;
   case INPAR::INVANA::stat_inv_reg_tikhonov:
   {
-    regman_ = Teuchos::rcp(new INVANA::RegularizationTikhonov(invp));
+    regman_ = Teuchos::rcp(new INVANA::RegularizationTikhonov());
     break;
   }
   case INPAR::INVANA::stat_inv_reg_totalvariation:
   {
-    regman_ = Teuchos::rcp(new INVANA::RegularizationTotalVariation(invp));
+    regman_ = Teuchos::rcp(new INVANA::RegularizationTotalVariation());
+    break;
+  }
+  case INPAR::INVANA::stat_inv_reg_tvdtikh:
+  {
+    regman_ = Teuchos::rcp(new INVANA::RegularizationTotalVariationTikhonov());
     break;
   }
   default:
@@ -170,7 +178,7 @@ ACOU::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> scatradis,
   if (regman_!=Teuchos::null)
   {
     regman_->Init(scatra_discret_,matman_->GetConnectivityData());
-    regman_->Setup();
+    regman_->Setup(invp);
   }
 
   ssize_ =  invp.get<int>("SIZESTORAGE");
@@ -1328,7 +1336,6 @@ void ACOU::InvAnalysis::FD_GradientCheck()
       pn = p+p*perturba+perturbb;
       std::cout<<"p "<<p<<" disturbed "<<pn<<std::endl;
       perturb->ReplaceGlobalValue(j+matman_->ParamLayoutMap()->MinAllGID(),i,pn);
-      perturb->Print(std::cout);
       matman_->ReplaceParams(*perturb);
 
       SolveStandardProblemScatra();
@@ -1370,7 +1377,7 @@ bool ACOU::InvAnalysis::UpdateParameters()
     ComputeDirection();
   }
 
-  if(iter_==0 || opti_ == INPAR::ACOU::inv_gd) // in the first iteration the lbfgs does not know how long the step should be, gradient descent should always do scaled step length
+  if( (iter_==0 || opti_ == INPAR::ACOU::inv_gd) && normgrad0_>1.e-7) // in the first iteration the lbfgs does not know how long the step should be, gradient descent should always do scaled step length
     d_->Scale(1.0/normgrad0_*double(objgrad_->Map().NumGlobalElements()));
 
   // output for small problems

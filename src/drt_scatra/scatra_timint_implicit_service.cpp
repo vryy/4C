@@ -379,7 +379,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       const int numfluxeval=numscal_+addflux;
 
       // calculate integral of shape functions over indicated boundary and it's area
-      params.set("boundaryint",0.0);
+      params.set("area",0.0);
       params.set<int>("action",SCATRA::bd_integrate_shape_functions);
 
       //provide displacement field in case of ALE
@@ -438,7 +438,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       }
 
       // get area of the boundary on this proc
-      double boundaryint = params.get<double>("boundaryint");
+      double boundaryint = params.get<double>("area");
 
       // care for the parallel case
       std::vector<double> parnormfluxintegral(numfluxeval);

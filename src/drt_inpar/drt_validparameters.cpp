@@ -1419,18 +1419,20 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   // want some regularization
   setStringToIntegralParameter<int>("REGULARIZATION","none",
-                                    "want regularization? ('tikhonov', 'totalvariation,'none')",
+                                    "want regularization? ('tikhonov', 'totalvariation', 'tvdtikh', 'none')",
                                     tuple<std::string>(
                                       "none",
                                       "tikhonov",
-                                      "totalvariation"),
+                                      "totalvariation",
+                                      "tvdtikh"),
                                     tuple<int>(
                                       INPAR::INVANA::stat_inv_reg_none,
                                       INPAR::INVANA::stat_inv_reg_tikhonov,
-                                      INPAR::INVANA::stat_inv_reg_totalvariation),
+                                      INPAR::INVANA::stat_inv_reg_totalvariation,
+                                      INPAR::INVANA::stat_inv_reg_tvdtikh),
                                     &statinvp);
 
-  // want some regularization
+  // objective function
   setStringToIntegralParameter<int>("OBJECTIVEFUNCT","none",
                                     "choose type of objective function ('displacements', 'surfcurr')",
                                     tuple<std::string>(
@@ -1484,8 +1486,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   // convergence criterion tolerance
   DoubleParameter("CONVTOL",1.0e-06,"stop optimizaiton iterations for convergence criterion below this value",&statinvp);
 
-  // weight of the regularization
-  DoubleParameter("REG_WEIGHT",0.1,"weight of the regularization",&statinvp);
+  // weight of the Tikhonov regularization
+  DoubleParameter("REG_WEIGHT_TIKH",0.1,"weight of the tikhonov regularization",&statinvp);
+
+  // mean value of the Tikhonov regularization
+  DoubleParameter("MEAN_VAL_TIKH",0.0,"mean value for tikhonov regularization",&statinvp);
+
+  // weight of the total variation diminishing regularization
+  DoubleParameter("REG_WEIGHT_TVD",0.1,"weight of the total variation regularization",&statinvp);
 
   // regularization of the totalvariation functional
   DoubleParameter("TVD_EPS",0.001,"differentiation epsilon for total variation",&statinvp);
@@ -1494,7 +1502,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("SIZESTORAGE",20,"number of vectors to keep in storage; defaults to 20 (lbfgs usage only)",&statinvp);
 
   // meta parametrization of material parameters
-  BoolParameter("METAPARAMS","Yes","want metaparametrization of material parameters to kept them in range?", &statinvp);
+  setStringToIntegralParameter<int>("METAPARAMS","none",
+                                    "choose type of metaparametrization (none/quad/arctan)",
+                                    tuple<std::string>(
+                                      "none",
+                                      "quad",
+                                      "arctan"),
+                                    tuple<int>(
+                                      INPAR::INVANA::stat_inv_meta_none,
+                                      INPAR::INVANA::stat_inv_meta_quad,
+                                      INPAR::INVANA::stat_inv_meta_arctan),
+                                    &statinvp);
+
 
   // scale of the kernel functions used in surface currents
   DoubleParameter("KERNELSCALE", -1.0, "scale of the kernel function", &statinvp);

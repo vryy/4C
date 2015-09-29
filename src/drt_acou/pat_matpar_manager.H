@@ -51,10 +51,8 @@ public:
   //! evaluate derivative of the residual force vector w.r.t to the material parameters using duals
   void AddEvaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint);
 
+  virtual void SetAction(Teuchos::ParameterList& p);
 private:
-
-  //! build a graph of elements in the optimization parameter vector
-  void FillAdjacencyMatrix(const Epetra_Map& paramrowmap, Teuchos::RCP<Epetra_CrsMatrix> graph);
 
   bool scalegradele_;
 };

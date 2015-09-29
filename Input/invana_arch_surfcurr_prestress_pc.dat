@@ -39,13 +39,13 @@ STEPSIZE                        1.0
 CONVTOL                         1.0e-8
 PARAMETRIZATION                 elementwise
 REGULARIZATION                  totalvariation
-REG_WEIGHT                      0.0001
+REG_WEIGHT_TVD                  0.0001
 TVD_EPS                         1.0e-2
 OBJECTIVEFUNCT                  surfcurr
 OBJECTIVEFUNCTSCAL              yes
 TARGETDISCRETIZATION            invana_arch_surfcurr_prestress_pc_target.dat
 SIZESTORAGE                     100
-METAPARAMS                      yes
+METAPARAMS                      quad
 KERNELSCALE                     1.0
 PRESTRESS                       mulf
 ----------------------------------------------------------STRUCTURAL DYNAMIC

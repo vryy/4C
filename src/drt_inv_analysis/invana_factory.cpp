@@ -21,6 +21,7 @@ Maintainer: Sebastian Kehl
 #include "regularization_base.H"
 #include "regularization_tikhonov.H"
 #include "regularization_totalvariation.H"
+#include "regularization_tvdtikh.H"
 #include "optimizer_factory.H"
 #include "../drt_inpar/inpar_statinvanalysis.H"
 #include "../drt_lib/drt_dserror.H"
@@ -78,6 +79,7 @@ Teuchos::RCP<INVANA::InvanaBase> INVANA::InvanaFactory::Create(Teuchos::RCP<DRT:
       dserror("choose a valid method of parametrizing the material parameter field");
       break;
   }
+  matman->Init(invp);
   matman->Setup();
 
   // regularization!
@@ -88,19 +90,24 @@ Teuchos::RCP<INVANA::InvanaBase> INVANA::InvanaFactory::Create(Teuchos::RCP<DRT:
       break;
     case INPAR::INVANA::stat_inv_reg_tikhonov:
     {
-      regman = Teuchos::rcp(new INVANA::RegularizationTikhonov(invp));
+      regman = Teuchos::rcp(new INVANA::RegularizationTikhonov());
     }
     break;
     case INPAR::INVANA::stat_inv_reg_totalvariation:
     {
-      regman = Teuchos::rcp(new INVANA::RegularizationTotalVariation(invp));
+      regman = Teuchos::rcp(new INVANA::RegularizationTotalVariation());
+    }
+    break;
+    case INPAR::INVANA::stat_inv_reg_tvdtikh:
+    {
+      regman = Teuchos::rcp(new INVANA::RegularizationTotalVariationTikhonov());
     }
     break;
   }
   if (regman!=Teuchos::null)
   {
     regman->Init(discret,matman->GetConnectivityData());
-    regman->Setup();
+    regman->Setup(invp);
   }
 
   // optimization algorithm

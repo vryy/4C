@@ -29,21 +29,18 @@ Maintainer: Sebastian Kehl
 /*----------------------------------------------------------------------*/
 /* standard constructor                                     keh 10/14   */
 /*----------------------------------------------------------------------*/
-INVANA::RegularizationTotalVariation::RegularizationTotalVariation(const Teuchos::ParameterList& invp) :
-  RegularizationBase(invp),
-eps_(invp.get<double>("TVD_EPS")),
-adjacency_(Teuchos::null)
-{
-  return;
-}
+INVANA::RegularizationTotalVariation::RegularizationTotalVariation() :
+  RegularizationBase()
+{}
 
 /*----------------------------------------------------------------------*/
 /* Setup                                                    keh 10/14   */
 /*----------------------------------------------------------------------*/
-void INVANA::RegularizationTotalVariation::Setup()
+void INVANA::RegularizationTotalVariation::Setup(const Teuchos::ParameterList& invp)
 {
   adjacency_ = connectivity_->AdjacencyMatrix();
-
+  eps_ = invp.get<double>("TVD_EPS");
+  weight_ = invp.get<double>("REG_WEIGHT_TVD");
   return;
 }
 

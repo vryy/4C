@@ -53,7 +53,7 @@ class RegularizationBase
 public:
 
   //! constructor
-  RegularizationBase(const Teuchos::ParameterList& invp);
+  RegularizationBase();
 
   //! destructor
   virtual ~RegularizationBase() { ; };
@@ -63,10 +63,10 @@ public:
       \param In
       mapxtractor - a mapextractor to extract possible blocks of parameters to be regularized independently
    */
-  void Init(Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<ConnectivityData> connectivity);
+  virtual void Init(Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<ConnectivityData> connectivity);
 
   //! Setup of the derived classes
-  virtual void Setup() = 0;
+  virtual void Setup(const Teuchos::ParameterList& invp) = 0;
 
   //! evaluate value of the regularization functional
   /*!

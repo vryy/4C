@@ -18,9 +18,11 @@ Maintainer: Sebastian Kehl
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "Teuchos_RCP.hpp"
+#include "Teuchos_ParameterList.hpp"
 #include "Epetra_MultiVector.h"
 #include "Epetra_Map.h"
 #include "Epetra_CrsGraph.h"
+#include "../drt_inpar/inpar_statinvanalysis.H"
 
 // forward declarations
 namespace DRT
@@ -119,7 +121,10 @@ public:
   //! return number of vectors of the optimization parameter vector layout
   virtual int NumVectors() {return 1;}
 
-  //! Setup specific parametrization layout
+  //! init function for base class
+  void Init(const Teuchos::ParameterList& invp);
+
+  //! Setup specific parametrization layout for derived classes
   virtual void Setup() = 0;
 
   //! evaluate derivative of the residual force vector w.r.t to the material parameters using duals
@@ -154,7 +159,7 @@ public:
   int GetParameterLocation(int eleid, std::string name);
 
   /*----------------------------------------------------------------------*/
-  //! functions to go away! only used by ACOU inverse analysis
+  //! functions only used by ACOU inverse analysis
 
   //! Return optimization parameters
   const Teuchos::RCP<Epetra_MultiVector> GetParams(){return optparams_;}
@@ -216,6 +221,9 @@ protected:
   /*----------------------------------------------------------------------*/
   //! functions used by the derived classes
 
+  //! Return const pointer to parameters without to call export etc
+  const Teuchos::RCP<Epetra_MultiVector> GetMatParamsVec(){return params_;}
+
   //! Return number of physically different parameters
   int NumParams(){ return numparams_; };
 
@@ -225,10 +233,16 @@ protected:
   //! initialze vector of optimization parameters ("global routine")
   void InitParams();
 
+  //! Return const pointer to parameters without to call export etc
+  Teuchos::RCP<Epetra_MultiVector> WriteParamsVec(){return params_;}
+
+  //! inidicates meta parametrization of the material parameters. Hard coded: \f$ p_m = 0.5*p_o^2+0.1\f$
+  INPAR::INVANA::StatInvMetaParamsType metaparams_;
+
 private:
 
   //! setup paramap_, parapos_ from input and check for validity
-  void SetupMatOptMap();
+  void SetupMatOptMap(const Teuchos::ParameterList& invp);
 
   //! build a graph of elements in the optimization parameter vector
   /*!
@@ -251,6 +265,18 @@ private:
    */
   void PushParamsToElements();
 
+  //! map of matids to parameter-ids for the material parameter vector<BR>
+  //! e.g.  < 1 ; (0 , 1)> <BR>
+  //!       < 2 ; (2 , 3)> <BR>
+  //! wrt the above example this means youngs is stored in vector 0, beta in vector 1, k1 in vector 3, etc.
+  std::map<int,std::vector<int> > parapos_;
+
+  //! actual set of material parameters in elecolmap layout
+  Teuchos::RCP<Epetra_MultiVector> params_;
+
+  //! number of physically different material parameters
+  int numparams_;
+
   //! discretization for convenience
   Teuchos::RCP<DRT::Discretization> discret_;
 
@@ -261,28 +287,11 @@ private:
   //!      < 2 ; ( k1 , k2 )>
   std::map<int, std::vector<int> > paramap_;
 
-  //! map of matids to parameter-ids for the material parameter vector<BR>
-  //! e.g.  < 1 ; (0 , 1)> <BR>
-  //!       < 2 ; (2 , 3)> <BR>
-  //! wrt the above example this means youngs is stored in vector 0, beta in vector 1, k1 in vector 3, etc.
-  std::map<int,std::vector<int> > parapos_;
-
   //! map of parameter block ids to local parameter block ids, i.e. ids per material <BR>
   //! for  the above examle this would be\n
   //!       < (0 , 0); (1 , 1); (2 , 0);(3 , 1) >
   //! wrt the above example this means youngs is stored in vector 0, beta in vector 1, k1 in vector 3, etc.
   std::map<int,int> paraposGIDtoLID_;
-
-  //! number of physically different material parameters
-  int numparams_;
-
-  //! actual set of material parameters in elecolmap layout
-  Teuchos::RCP<Epetra_MultiVector> params_;
-
-  //! inidicates meta parametrization of the material parameters. Hard coded: \f$ p_m = 0.5*p_o^2+0.1\f$
-  bool metaparams_;
-
-
 };
 }  // namespace INVANA
 

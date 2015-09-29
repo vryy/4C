@@ -69,13 +69,13 @@ namespace INVANA
   public:
 
     //! constructor
-    RegularizationTotalVariation(const Teuchos::ParameterList& invp);
+    RegularizationTotalVariation();
 
     //! destructor
     virtual ~RegularizationTotalVariation() {}
 
     //! setup of the class content
-    virtual void Setup();
+    virtual void Setup(const Teuchos::ParameterList& invp);
 
     //! evaluate value of the regularization functional
     /*!
