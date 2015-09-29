@@ -136,6 +136,8 @@ void LINALG::SOLVER::DirectSolver::Setup( Teuchos::RCP<Epetra_Operator> matrix,
 
   if (reset or refactor or not IsFactored())
   {
+    amesos_ = Teuchos::null;
+
     reindexer_ = Teuchos::rcp(new EpetraExt::LinearProblem_Reindex(NULL));
 
     if ( solvertype_=="klu" )
@@ -210,7 +212,3 @@ int LINALG::SOLVER::DirectSolver::Solve()
   // direct solver does not support errorcodes
   return 0;
 }
-
-
-
-
