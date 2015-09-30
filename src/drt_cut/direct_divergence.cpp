@@ -102,7 +102,7 @@ void GEO::CUT::DirectDivergence::ListFacets( std::vector<plain_facet_set::const_
     const std::vector<Point*>& corn = fe->CornerPoints();
     bool isPlanar = fe->IsPlanar( mesh_, corn ); //triangulates non-planar facets.
 
-    if ( (isPlanar == false) ) //and !(fe->BelongsToLevelSetSide()) )
+    if ( isPlanar == false ) //and !(fe->BelongsToLevelSetSide()) )
     {
       warpFac.push_back(i);
 #ifdef DIRECTDIV_EXTENDED_DEBUG_OUTPUT

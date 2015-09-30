@@ -13,7 +13,7 @@ Maintainers: Andreas Rauch
 
 
 #ifndef FLUID_ELE_CALC_PORO_P1_IMMERSED_H_
-#define FLUID_ELE_CALC_IMMERSED_PORO_P1_IMMERSED_H_
+#define FLUID_ELE_CALC_PORO_P1_IMMERSED_H_
 
 #include "fluid_ele_calc_poro_p1.H"
 

@@ -316,7 +316,7 @@ void XFLUIDLEVELSET::Algorithm::SetScaTraValuesInFluid()
     }
     else if(surftensapprox_==INPAR::TWOPHASE::surface_tension_approx_laplacebeltrami)
     {
-      if(not laplacebeltrami_==INPAR::TWOPHASE::matrix_non_smoothed)
+      if(not (laplacebeltrami_==INPAR::TWOPHASE::matrix_non_smoothed))
         smoothedgradphi = ScaTraField()->GetSmoothedGradientAtNodes(ScaTraField()->Phinp());
     }
 

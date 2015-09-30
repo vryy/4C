@@ -396,7 +396,7 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::Intersect(
 
   for (uint lp = 0; lp < 2 ; ++lp) //loop over line endpoints!
   {
-    GEO::CUT::Point * actpoint;
+    GEO::CUT::Point * actpoint = 0;
     if (lp == 0)
       actpoint = edge_.BeginNode()->point();
     else if(lp == 1)

@@ -4108,7 +4108,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcDivEps(
         double sum1 = (evelgradderxy(nsd_idim,0) + evelgradderxy(nsd_idim+1,1)
                      + evelgradderxy(nsd_idim+2,2))/prefac;
         // interpolate mixed terms
-        double sum2;
+        double sum2 = 0.0;
         switch (idim)
         {
         case 0:
@@ -4140,7 +4140,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcDivEps(
         // select diagonal entries (u,xx + u,yy)
         double sum1 = (evelgradderxy(nsd_idim,0) + evelgradderxy(nsd_idim+1,1))/prefac;
         // interpolate mixed terms
-        double sum2;
+        double sum2 = 0.0;
         switch (idim)
         {
         case 0:

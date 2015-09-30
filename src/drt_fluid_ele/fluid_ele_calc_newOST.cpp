@@ -1106,7 +1106,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcDivEps(
           // uy,xy
           sum2 = 0.5 * (evelgradderxy(2,1) + evelgradderxy(3,0));
         }
-        else if (idim==1)
+        else
         {
           // ux,xy
           sum2 = 0.5 * (evelgradderxy(1,0) + evelgradderxy(0,1));
@@ -1166,7 +1166,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcDivEps(
           // uy,xy
           sum2 = 0.5 * (evelgradderxy(2,1) + evelgradderxy(3,0));
         }
-        else if (idim==1)
+        else
         {
           // ux,xy
           sum2 = 0.5 * (evelgradderxy(1,0) + evelgradderxy(0,1));
