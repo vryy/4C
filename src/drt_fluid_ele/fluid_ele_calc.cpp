@@ -4097,6 +4097,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcDivEps(
     // not symmetric!
     LINALG::Matrix<nsd_*nsd_,nsd_> evelgradderxy;
     evelgradderxy.MultiplyNT(evelafgrad_,derxy_);
+    evelgradderxy.Scale(prefac);
     if (nsd_==3)
     {
       // assemble div epsilon(evelaf)
@@ -4108,20 +4109,23 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcDivEps(
                      + evelgradderxy(nsd_idim+2,2))/prefac;
         // interpolate mixed terms
         double sum2;
-        if (idim==0)
+        switch (idim)
         {
+        case 0:
           // uy,xy + uz,xz
           sum2 = 0.5 * (evelgradderxy(3,1) + evelgradderxy(4,0) + evelgradderxy(6,2) + evelgradderxy(8,0));
-        }
-        else if (idim==1)
-        {
+          break;
+        case 1:
           // ux,xy + uz,yz
           sum2 = 0.5 * (evelgradderxy(1,0) + evelgradderxy(0,1) + evelgradderxy(7,2) + evelgradderxy(8,1));
-        }
-        else
-        {
+          break;
+        case 2:
           // ux,xz + uy,yz
           sum2 = 0.5 * (evelgradderxy(2,0) + evelgradderxy(0,2) + evelgradderxy(5,1) + evelgradderxy(4,2));
+          break;
+        default:
+          dserror("only 3d");
+          break;
         }
         // assemble each row of div epsilon(evelaf)
         visc_old_(idim) = 0.5 * (sum1 + evelgradderxy(nsd_idim+idim,idim) + sum2);
@@ -4137,16 +4141,21 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcDivEps(
         double sum1 = (evelgradderxy(nsd_idim,0) + evelgradderxy(nsd_idim+1,1))/prefac;
         // interpolate mixed terms
         double sum2;
-        if (idim==0)
+        switch (idim)
         {
+        case 0:
           // uy,xy
           sum2 = 0.5 * (evelgradderxy(2,1) + evelgradderxy(3,0));
-        }
-        else if (idim==1)
-        {
+          break;
+        case 1:
           // ux,xy
           sum2 = 0.5 * (evelgradderxy(1,0) + evelgradderxy(0,1));
+          break;
+        default:
+          dserror("only 2d");
+          break;
         }
+
         // assemble each row of div epsilon(evelaf)
         visc_old_(idim) = 0.5 * (sum1 + evelgradderxy(nsd_idim+idim,idim) + sum2);
       }
