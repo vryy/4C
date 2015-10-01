@@ -58,6 +58,11 @@ namespace NONLINCG
     beta_hestenesstiefel ///< Hestenes-Stiefel:
   };
 } // namespace NONLINCG
+
+
+/// set the nonlinear solver parameters
+void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
 } // namespace NLNSOL
 } // namespace INPAR
 

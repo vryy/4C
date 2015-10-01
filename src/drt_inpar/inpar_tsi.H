@@ -155,6 +155,9 @@ namespace TSI
 
   //@}
 
+  /// set the tsi parameters
+  void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
 
 }  // namespace TSI
 

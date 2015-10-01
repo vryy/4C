@@ -16,6 +16,9 @@ Maintainer: Andreas Rauch
 
 #include "inpar_parameterlist_utils.H"
 
+// forward declaration
+namespace DRT { namespace INPUT { class ConditionDefinition; } }
+
 /*----------------------------------------------------------------------*
  | Coupling Methods                                                                  |
  *----------------------------------------------------------------------*/
@@ -60,6 +63,12 @@ namespace FPSI
     fluid,
     porofluid
   };
+
+  /// set the fpsi parameters
+  void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
+  /// set specific fpsi conditions
+  void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist);
 
 }  // namespace FPSI
 

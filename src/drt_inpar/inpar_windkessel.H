@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_windkesseö.H
+\file inpar_windkessel.H
 
 <pre>
 Maintainer: Marc Hirschvogel
@@ -16,6 +16,9 @@ Maintainer: Marc Hirschvogel
 
 #include "inpar_parameterlist_utils.H"
 
+// forward declaration
+namespace DRT { namespace INPUT { class ConditionDefinition; } }
+
 namespace INPAR
 {
 
@@ -28,6 +31,12 @@ namespace WINDKESSEL
     windksolve_direct, ///< build monolithic windkessel-structural system
     windksolve_simple  ///< use simple preconditioner for iterative solve
   };
+
+  /// set the windkessel parameters
+  void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
+  /// set specific windkessel conditions
+  void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist);
 
 }// namespace WINDKESSEL
 }// namespace INPAR

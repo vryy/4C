@@ -52,7 +52,10 @@ namespace INPAR
     couplingtype_coninter    ///< consist. interpolation
   };
 
-  } //namespace volmortae
+  /// set the volmortar parameters
+  void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
+  } //namespace volmortar
 } //namespace inpar
 
 #endif /* INPAR_VOLMORTAR_H_ */

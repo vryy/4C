@@ -15,12 +15,12 @@ Maintainer: Lena Yoshihara
 #define REDAIRWAYTISSUE_H
 
 #include "../drt_adapter/adapter_algorithmbase.H"
-#include "../drt_inpar/inpar_artnet.H"
 #include "red_airway_resulttest.H"
 #include "../drt_lib/drt_resulttest.H"
 
 #include <Teuchos_RCP.hpp>
 #include "Epetra_Vector.h"
+#include "../drt_inpar/inpar_bio.H"
 
 
 // forward declarations

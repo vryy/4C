@@ -16,6 +16,9 @@ Maintainer: Andreas Ehrl
 
 #include "inpar_parameterlist_utils.H"
 
+// forward declaration
+namespace DRT { namespace INPUT { class ConditionDefinition; } }
+
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
@@ -235,6 +238,14 @@ namespace INPAR
       computeintegrals_initial,
       computeintegrals_repeated
     };
+
+
+    /// set the scatra parameters
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
+    /// set additional scatra conditions
+    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist);
+
   }  // namespace SCATRA
 }  // namespace INPAR
 

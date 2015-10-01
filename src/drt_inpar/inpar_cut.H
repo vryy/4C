@@ -53,6 +53,9 @@ namespace INPAR
     NDS_Strategy_full                           ///< full strategy based on found connections of volume-cells in support of the nodal shape function
   };
 
+  /// set the cut parameters
+  void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
   }  // namespace CUT
 
 }  // namespace INPAR

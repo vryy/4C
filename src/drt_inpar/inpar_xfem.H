@@ -15,6 +15,9 @@ Maintainer: Benedikt Schott
 
 #include "inpar_parameterlist_utils.H"
 
+// forward declaration
+namespace DRT { namespace INPUT { class ConditionDefinition; class ConditionComponent; } }
+
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
@@ -176,6 +179,14 @@ namespace INPAR
       CouplingCond_LEVELSET_TWOPHASE,
       CouplingCond_LEVELSET_COMBUSTION
     };
+
+    /// set the xfem parameters
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
+    /// set specific xfem conditions
+    void SetValidConditions(const std::vector<Teuchos::RCP<DRT::INPUT::ConditionComponent> > &dirichletbundcomponents,
+                            const std::vector<Teuchos::RCP<DRT::INPUT::ConditionComponent> > &neumanncomponents,
+                            std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist);
 
   }  // namespace XFEM
 

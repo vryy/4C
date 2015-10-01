@@ -171,6 +171,9 @@ namespace INPAR
       weight_intersection_visc_based_harmonic
     };
 
+    /// set the combust parameters
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
   }  // namespace COMBUST
 
 }  // namespace INPAR

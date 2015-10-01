@@ -117,6 +117,9 @@ namespace POROELAST
   //@}
 
 
+  /// set the poroelast parameters
+  void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
 }  // namespace POROELAST
 
 }  // namespace INPAR

@@ -29,6 +29,9 @@ namespace INPAR
       beampot_vol           ///< volume potential
     };
 
+    /// set the beam potentail parameters
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
   }  // namespace BEAMPOTENTIAL
 
 }  // namespace INPAR

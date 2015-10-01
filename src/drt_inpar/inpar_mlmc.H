@@ -52,6 +52,11 @@ namespace INPAR
         red_airways, // reduced airwarys problem
     };
     /// To be filled with input params
+
+
+    /// set the mlmc parameters
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
   }  // namespace MLMC
 
 }  // namespace INPAR

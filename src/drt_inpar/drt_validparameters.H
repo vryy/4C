@@ -77,21 +77,6 @@ namespace INPUT {
   /// construct list with all parameters and documentation
   Teuchos::RCP<const Teuchos::ParameterList> ValidParameters();
 
-  /// set parameters read by our solvers
-  void SetValidSolverParameters(Teuchos::ParameterList& list);
-
-  /// set parameters for time adaptivity
-  void SetValidTimeAdaptivityParameters(Teuchos::ParameterList& list);
-
-  /// set parameters for NOX non-linear solution technique
-  void SetValidNoxParameters(Teuchos::ParameterList& list);
-
-  /// set parameters for random field generation in UQ
-  void SetValidRandomFieldParameters(Teuchos::ParameterList& list);
-
-  /// set parameters for random field generation in UQ
-  void SetValidRandomVariableParameters(Teuchos::ParameterList& list);
-
   /// print all parameters that have a default value
   void PrintDefaultParameters(IO::Pstream& stream, const Teuchos::ParameterList& list);
 

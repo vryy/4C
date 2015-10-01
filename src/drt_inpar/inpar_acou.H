@@ -15,6 +15,9 @@ Maintainer: Svenja Schoeder
 
 #include "inpar_parameterlist_utils.H"
 
+// forward declaration
+namespace DRT { namespace INPUT { class ConditionDefinition; } }
+
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
@@ -61,6 +64,12 @@ namespace INPAR
       inv_lbfgs,        // limited memory BFGS
       inv_gd            // gradient descent
     };
+
+    /// Defines all valid parameters for acou problem
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
+    /// set specific acou conditions
+    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist);
 
   } // namespace ACOU
 } // namespace INPAR

@@ -3,10 +3,9 @@
 \file inpar_solver.H
 
 <pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
+Maintainer: Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15239
 </pre>
 */
 
@@ -119,6 +118,9 @@ namespace INPAR
         Reuse_Ptent,     /// < try to reuse non-smoothed tentative prolongator (prerequisite AZREUSE > 1 appropriately set)
         Reuse_full       /// < try to reuse full multigrid hierarchy (this is exactly the behaviour as we expect it from AZREUSE)
     };
+
+    /// set the parameters for the linear solver
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
   }  // namespace SOLVER
 

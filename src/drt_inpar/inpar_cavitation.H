@@ -16,6 +16,9 @@ Maintainer: Georg Hammerl
 
 #include "inpar_parameterlist_utils.H"
 
+// forward declaration
+namespace DRT { namespace INPUT { class ConditionDefinition; } }
+
 /*----------------------------------------------------------------------*/
 
 namespace INPAR
@@ -60,6 +63,13 @@ namespace INPAR
       particle_wall,
       undefined
     };
+
+    /// set the particle parameters
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
+    /// set the particle conditions
+    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist);
+
   }
 
   /// Input parameters for cavitation
@@ -83,6 +93,8 @@ namespace INPAR
       gaussian_integration
     };
 
+    /// set the cavitation parameters
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
   }  // namespace CAVITATION
 

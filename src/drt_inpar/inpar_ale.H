@@ -15,6 +15,9 @@
 
 #include "inpar_parameterlist_utils.H"
 
+// forward declaration
+namespace DRT { namespace INPUT { class ConditionDefinition; } }
+
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
@@ -39,6 +42,11 @@ namespace INPAR
     divcont_continue ///< continue nevertheless
   };
 
+  /// Defines all valid parameters for acou problem
+  void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
+  /// Defines ale specific conditions
+  void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist);
 
   }  // namespace ALE
 

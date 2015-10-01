@@ -22,6 +22,9 @@ Maintainer: Caroline Danowski
 #include "../drt_lib/drt_dserror.H"
 #include "inpar_parameterlist_utils.H"
 
+// forward declaration
+namespace DRT { namespace INPUT { class ConditionDefinition; } }
+
 
 /*----------------------------------------------------------------------*
  |                                                           dano 06/09 |
@@ -363,6 +366,12 @@ namespace THR
     no_error_calculation,
     calcerror_byfunct
   };
+
+  /// set the thermo parameters
+  void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
+  /// set thermo specific conditions
+  void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist);
 
 }  // namespace THR
 

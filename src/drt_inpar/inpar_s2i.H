@@ -54,6 +54,11 @@ namespace INPAR
       equilibration_columns,
       equilibration_full
     };
+
+
+    /// set the s2i parameters
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
   } // namespace S2I
 } // namespace INPAR
 #endif // #ifndef INPAR_S2I_H

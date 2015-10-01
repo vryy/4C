@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_artnet.H
+\file inpar_bio.H
 
 Maintainer: Mahmoud Ismail
             ismail@lnm.mw.tum.de
@@ -14,6 +14,9 @@ Maintainer: Mahmoud Ismail
 #define INPAR_ARTNET_H
 
 #include "inpar_parameterlist_utils.H"
+
+// forward declaration
+namespace DRT { namespace INPUT { class ConditionDefinition; } }
 
 /*----------------------------------------------------------------------*/
 
@@ -57,6 +60,12 @@ typedef enum _RED_AIRWAYS_DYNTYPE
 
 namespace INPAR
 {
+  namespace ARTDYN
+  {
+    /// set the arterial dynamic parameters
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+  }
+
   namespace ARTNET
   {
     /*!----------------------------------------------------------------------
@@ -75,6 +84,39 @@ namespace INPAR
       SD
     };
 
+    /// set the artnet parameters
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
+    /// set specific artnet conditions
+    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist);
+
+  }
+
+  namespace BIOFILM
+  {
+    /// set the biofilm parameters
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
+    /// set specific biofilm conditions
+    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist);
+  }
+
+  namespace PATSPEC
+  {
+    /// set the patient specific parameters
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
+    /// set specific patspec conditions (AAA)
+    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist);
+  }
+
+  namespace REDAIRWAYS
+  {
+    /// set the reduced airways parameters
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
+    /// set specific reduced airways conditions
+    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist);
   }
 }  // namespace INPAR
 

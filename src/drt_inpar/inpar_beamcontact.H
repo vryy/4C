@@ -69,6 +69,9 @@ namespace INPAR
       boct_spbb        ///< spherical bounding boxes
     };
 
+    /// set the beam contact parameters
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
   }  // namespace BEAMCONTACT
 
 }  // namespace INPAR

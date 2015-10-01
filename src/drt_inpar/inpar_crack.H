@@ -17,6 +17,9 @@ Maintainer: sudhakar
 
 #include "inpar_parameterlist_utils.H"
 
+// forward declaration
+namespace DRT { namespace INPUT { class ConditionDefinition; } }
+
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
@@ -54,6 +57,12 @@ namespace INPAR
       displacementCorrelation,
       J_Integral
     };
+
+    /// set the crack parameters
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
+    /// set specific crack conditions
+    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist);
 
   }  // namespace CRACK
 

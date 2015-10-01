@@ -1,7 +1,7 @@
 /*!------------------------------------------------------------------------------------------------*
 \file inpar_fs3i.H
 
-\brief
+\brief Input parameters for fs3i
 
 <pre>
 Maintainer: Thon Moritz
@@ -40,6 +40,8 @@ namespace FS3I
 //    fs3i_Monolithic
   };
 
+  /// set the fs3i parameters
+  void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
 }  // namespace FS3I
 

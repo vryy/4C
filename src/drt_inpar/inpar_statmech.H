@@ -119,6 +119,10 @@ namespace INPAR
       filamentmodel_std, /// < standard filament type
       filamentmodel_helical /// < filament with helical orientation of binding spots
     };
+
+    /// set the statmech parameters
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
   }  // namespace STATMECH
 
 }  // namespace INPAR

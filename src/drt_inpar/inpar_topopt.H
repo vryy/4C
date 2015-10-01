@@ -1,7 +1,7 @@
 /*!------------------------------------------------------------------------------------------------*
 \file inpar_topopt.H
 
-\brief
+\brief Input parameters for topopt
 
 <pre>
 Maintainer: Martin Winklmaier
@@ -15,7 +15,7 @@ Maintainer: Martin Winklmaier
 #ifndef INPAR_TOPOPT_H_
 #define INPAR_TOPOPT_H_
 
-
+#include <Teuchos_ParameterList.hpp>
 
 namespace INPAR
 {
@@ -126,6 +126,10 @@ namespace INPAR
       optitest_quad_poro,
       optitest_cub_poro
     };
+
+    /// set the topopt parameters
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
   }
 }
 #endif /* INPAR_TOPOPT_H_ */

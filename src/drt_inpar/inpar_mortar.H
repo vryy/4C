@@ -14,6 +14,9 @@ Maintainer: Alexander Popp
 
 #include "inpar_parameterlist_utils.H"
 
+// forward declaration
+namespace DRT { namespace INPUT { class ConditionDefinition; } }
+
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
@@ -111,6 +114,13 @@ namespace INPAR
       triangulation_center,   ///< simpler center-based triangulation (see e.g. Popp et al. 2010)
       triangulation_delaunay  ///< delaunay triangulation
     };
+
+    /// set the mortar parameters
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
+    /// set specific mortar conditions
+    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist);
+
   }  // namespace MORTAR
 
 }  // namespace INPAR

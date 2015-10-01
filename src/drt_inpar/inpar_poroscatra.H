@@ -36,6 +36,9 @@ namespace PORO_SCATRA
  //   Monolithic
   };
 
+  /// set the poroscatra parameters
+  void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
 }  // namespace PORO_SCATRA
 
 }  // namespace INPAR

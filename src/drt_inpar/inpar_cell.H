@@ -60,6 +60,9 @@ typedef enum _SEGREGATION_LAW_TYPE
   segregation_law_forcedependent=2
 } SEGREGATION_LAW_TYPE;
 
+/// set the cell parameters
+void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
 } // CELL
 } // INPAR
 /*----------------------------------------------------------------------*/

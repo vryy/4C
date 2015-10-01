@@ -67,6 +67,9 @@ namespace INPAR
 //      weight_intersection_visc_based_harmonic
 //    };
 
+    /// set the twophase parameters
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
   }  // namespace TWOPHASE
 
 }  // namespace INPAR

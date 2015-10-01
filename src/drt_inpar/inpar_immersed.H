@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_fpsi.H
+\file inpar_immersed.H
 
 <pre>
 Maintainer: Andreas Rauch
@@ -15,6 +15,9 @@ Maintainer: Andreas Rauch
 #define INPAR_IMMERSED_H_
 
 #include "inpar_parameterlist_utils.H"
+
+// forward declaration
+namespace DRT { namespace INPUT { class ConditionDefinition; } }
 
 namespace INPAR
 {
@@ -60,6 +63,13 @@ enum _IMMERSED_RELAXATIONPARAM
   fixed,
   aitken
 };
+
+
+/// set the immersed parameters
+void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
+/// set specific immersed conditions
+void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist);
 
 }// namespace IMMERSED
 }// namespace INPAR

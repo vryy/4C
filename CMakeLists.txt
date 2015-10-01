@@ -681,7 +681,47 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/drt_validconditions.cpp
   src/drt_inpar/drt_validmaterials.cpp
   src/drt_inpar/drt_validparameters.cpp
+  src/drt_inpar/inpar_acou.cpp
+  src/drt_inpar/inpar_ale.cpp
+  src/drt_inpar/inpar_beamcontact.cpp
+  src/drt_inpar/inpar_beampotential.cpp
+  src/drt_inpar/inpar_bio.cpp
+  src/drt_inpar/inpar_cavitation.cpp
+  src/drt_inpar/inpar_cell.cpp
+  src/drt_inpar/inpar_combust.cpp
+  src/drt_inpar/inpar_contact.cpp
+  src/drt_inpar/inpar_crack.cpp
+  src/drt_inpar/inpar_elch.cpp
+  src/drt_inpar/inpar_fluid.cpp
+  src/drt_inpar/inpar_fpsi.cpp
+  src/drt_inpar/inpar_fs3i.cpp
+  src/drt_inpar/inpar_fsi.cpp
+  src/drt_inpar/inpar_immersed.cpp
+  src/drt_inpar/inpar_invanalysis.cpp
+  src/drt_inpar/inpar_levelset.cpp
+  src/drt_inpar/inpar_meshfree.cpp
+  src/drt_inpar/inpar_mlmc.cpp
+  src/drt_inpar/inpar_mortar.cpp
+  src/drt_inpar/inpar_poroelast.cpp
+  src/drt_inpar/inpar_poroscatra.cpp
+  src/drt_inpar/inpar_potential.cpp
   src/drt_inpar/inpar_problemtype.cpp
+  src/drt_inpar/inpar_s2i.cpp
+  src/drt_inpar/inpar_scatra.cpp
+  src/drt_inpar/inpar_searchtree.cpp
+  src/drt_inpar/inpar_solver.cpp
+  src/drt_inpar/inpar_solver_nonlin.cpp
+  src/drt_inpar/inpar_ssi.cpp
+  src/drt_inpar/inpar_statmech.cpp
+  src/drt_inpar/inpar_structure.cpp
+  src/drt_inpar/inpar_thermo.cpp
+  src/drt_inpar/inpar_topopt.cpp
+  src/drt_inpar/inpar_tsi.cpp
+  src/drt_inpar/inpar_twophase.cpp
+  src/drt_inpar/inpar_volmortar.cpp
+  src/drt_inpar/inpar_wear.cpp
+  src/drt_inpar/inpar_windkessel.cpp
+  src/drt_inpar/inpar_xfem.cpp
 )
 set(OBJS_DRT_ARTNET
   src/drt_art_net/art_net_dyn_drt.cpp

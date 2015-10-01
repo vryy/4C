@@ -30,6 +30,9 @@ namespace INPAR
       Quadtree2D
     };
 
+    /// set the searchtree parameters
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
   }  // namespace GEO
 
 }  // namespace INPAR

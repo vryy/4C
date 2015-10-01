@@ -15,6 +15,9 @@ Maintainer: Matthias Mayr
 
 #include "inpar_parameterlist_utils.H"
 
+// forward declaration
+namespace DRT { namespace INPUT { class ConditionDefinition; } }
+
 /*----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*/
@@ -137,6 +140,12 @@ namespace INPAR
     };
 
     //@}
+
+    /// set the fsi parameters
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
+    /// set specific fsi conditions
+    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist);
 
   }  // namespace FSI
 

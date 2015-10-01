@@ -21,6 +21,9 @@ Maintainer: Burkhard Bornemann
 /* headers */
 #include "../drt_lib/drt_dserror.H"
 
+// forward declaration
+namespace DRT { namespace INPUT { class ConditionDefinition; } }
+
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
@@ -547,6 +550,12 @@ namespace INPAR
       kinem_nonlinearTotLag ///< nonlinear kinematics Total Lagrange
     };
     //@}
+
+    /// set the structure parameters
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
+    /// set structure-specific conditions
+    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist);
 
   }  // namespace STR
 

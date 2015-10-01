@@ -17,6 +17,9 @@ Maintainer: Ursula Rasthofer
 
 #include "inpar_parameterlist_utils.H"
 
+// forward declaration
+namespace DRT { namespace INPUT { class ConditionDefinition; } }
+
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
@@ -379,7 +382,19 @@ namespace INPAR
       gradreco_l2
     };
 
+    /// set the fluid parameters
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
+    /// set fluid-specific conditions
+    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist);
+
   }  // namespace FLUID
+
+  namespace LOMA
+  {
+    /// set the low mach number parameters
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+  }
 
 }  // namespace INPAR
 

@@ -15,6 +15,9 @@ Maintainer: Ursula Mayer
 
 #include "inpar_parameterlist_utils.H"
 
+// forward declaration
+namespace DRT { namespace INPUT { class ConditionDefinition; } }
+
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
@@ -42,7 +45,7 @@ namespace INPAR
       approximation_surface,    ///< surface approximation
       approximation_point       ///< point approximation
     };
-    
+
     /// Type of analytical solution
     /// (this enum represents the input file parameter ANALYTICALSOLUTION)
     enum SolutionType
@@ -51,10 +54,16 @@ namespace INPAR
       solution_sphere,        ///< sphere analytical solution
       solution_membrane       ///< membrane analytical solution
     };
+
+    /// set the potential parameters
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
+    /// set specific potential conditions
+    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist);
+
   }  // namespace POTENTIAL
 
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef INPAR_POTENTIAL_H
-

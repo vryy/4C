@@ -17,6 +17,9 @@ Maintainer: Ursula Rasthofer
 
 #include "inpar_parameterlist_utils.H"
 
+// forward declaration
+namespace DRT { namespace INPUT { class ConditionDefinition; } }
+
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
@@ -124,6 +127,15 @@ namespace INPAR
 
   }  // namespace PARTICLE
 
+
+  namespace LEVELSET
+  {
+    /// set the levelset parameters
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
+    /// set specific level set conditions
+    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist);
+  }
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/

@@ -15,6 +15,9 @@ Maintainer: Michael Gee
 
 #include "inpar_parameterlist_utils.H"
 
+// forward declaration
+namespace DRT { namespace INPUT { class ConditionDefinition; } }
+
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
@@ -38,6 +41,16 @@ namespace INPAR
       };
 
   }  // namespace STR
+
+  namespace INVANA
+  {
+    /// set the invana parameters
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
+    /// set specific inverse analysis conditions
+    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist);
+
+  }
 
 }  // namespace INPAR
 

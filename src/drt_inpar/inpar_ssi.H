@@ -17,6 +17,9 @@ Maintainer: Anh-Tu Vuong
 
 #include "inpar_parameterlist_utils.H"
 
+// forward declaration
+namespace DRT { namespace INPUT { class ConditionDefinition; } }
+
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
@@ -43,6 +46,12 @@ namespace SSI
     //Monolithic
   };
 
+
+  /// set the ssi parameters
+  void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
+  /// set specific ssi conditions
+  void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist);
 
 }  // namespace SSI
 

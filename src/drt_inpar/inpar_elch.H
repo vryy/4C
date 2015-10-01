@@ -16,6 +16,9 @@ Maintainer: Andreas Ehrl
 
 #include "inpar_parameterlist_utils.H"
 
+// forward declaration
+namespace DRT { namespace INPUT { class ConditionDefinition; } }
+
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
@@ -65,6 +68,12 @@ namespace INPAR
 
   // permittivität (not a general definition, but only once used)
   const double epsilon_const = 1.e-4;
+
+  /// set the elch parameters
+  void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
+  /// set specific elch conditions
+  void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist);
 
   }  // namespace ELCH
 

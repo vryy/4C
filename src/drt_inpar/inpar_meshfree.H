@@ -80,6 +80,9 @@ namespace MESHFREE
   };
 
 
+  /// set the meshfree parameters
+  void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
 }  // namespace MESHFREE
 
 }  // namespace INPAR

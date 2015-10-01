@@ -104,6 +104,9 @@ namespace INPAR
       other                  ///< other problemtypes
     };
 
+    /// set the contact parameters
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
   }  // namespace CONTACT
 
 }  // namespace INPAR

@@ -93,6 +93,9 @@ namespace INPAR
       wear_se_mat,   ///< shape evolution in material conf.
       wear_se_sp     ///< shape evolution in spat. conf.
     };
+
+    /// set the wear parameters
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
   }  // namespace WEAR
 }  // namespace INPAR
 
