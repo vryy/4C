@@ -40,7 +40,7 @@ DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>* DRT::ELEMENTS::ScaTraEleUti
   }
 
   // destruct instance
-  else if(instances.find(disname) != instances.end())
+  else
   {
     for(typename std::map<std::string,ScaTraEleUtilsElchElectrode<distype>*>::iterator i=instances.begin(); i!=instances.end(); ++i)
     {

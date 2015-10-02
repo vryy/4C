@@ -49,7 +49,7 @@ DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype> * DRT::ELEMENTS::ScaTraEleCalcLsRe
       instances[disname] = new ScaTraEleCalcLsReinit<distype>(numdofpernode,numscal,disname);
   }
 
-  else if(instances.find(disname) != instances.end())
+  else
   {
     for( typename std::map<std::string,ScaTraEleCalcLsReinit<distype>* >::iterator i=instances.begin(); i!=instances.end(); ++i )
      {

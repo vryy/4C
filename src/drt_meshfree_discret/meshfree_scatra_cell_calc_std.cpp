@@ -32,7 +32,7 @@ DRT::ELEMENTS::MeshfreeScaTraCellCalcStd<distype> * DRT::ELEMENTS::MeshfreeScaTr
       instances[disname] = new MeshfreeScaTraCellCalcStd<distype>(numdofpernode,numscal,disname);
   }
 
-  else if(instances.find(disname) != instances.end())
+  else
   {
     for( typename std::map<std::string,MeshfreeScaTraCellCalcStd<distype>* >::iterator i=instances.begin(); i!=instances.end(); ++i )
      {

@@ -47,7 +47,7 @@ DRT::ELEMENTS::ScaTraEleParameterElchDiffCond* DRT::ELEMENTS::ScaTraEleParameter
   }
 
   // destruct instance
-  else if(instances.find(disname) != instances.end())
+  else
   {
     for(std::map<std::string,ScaTraEleParameterElchDiffCond*>::iterator i=instances.begin(); i!=instances.end(); ++i)
     {

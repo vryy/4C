@@ -41,7 +41,7 @@ DRT::ELEMENTS::ScaTraEleParameterElch* DRT::ELEMENTS::ScaTraEleParameterElch::In
   }
 
   // destruct instance
-  else if(instances.find(disname) != instances.end())
+  else
   {
     for(std::map<std::string,ScaTraEleParameterElch*>::iterator i=instances.begin(); i!=instances.end(); ++i)
     {

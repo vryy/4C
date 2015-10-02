@@ -42,7 +42,7 @@ DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>* DRT::ELEMENTS::ScaTraEleUtil
   }
 
   // destruct instance
-  else if(instances.find(disname) != instances.end())
+  else
   {
     for(typename std::map<std::string,ScaTraEleUtilsElchDiffCond<distype>*>::iterator i=instances.begin(); i!=instances.end(); ++i)
     {

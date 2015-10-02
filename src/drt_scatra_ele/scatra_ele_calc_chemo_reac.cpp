@@ -54,7 +54,7 @@ DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype,probdim> * DRT::ELEMENTS::ScaTraEl
       instances[disname] = new ScaTraEleCalcChemoReac<distype>(numdofpernode,numscal,disname);
   }
 
-  else if(instances.find(disname) != instances.end())
+  else
   {
     for( typename std::map<std::string,ScaTraEleCalcChemoReac<distype>* >::iterator i=instances.begin(); i!=instances.end(); ++i )
      {

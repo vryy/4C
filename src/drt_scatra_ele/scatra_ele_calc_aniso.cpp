@@ -55,7 +55,7 @@ DRT::ELEMENTS::ScaTraEleCalcAniso<distype,probdim> * DRT::ELEMENTS::ScaTraEleCal
       instances[disname] = new ScaTraEleCalcAniso<distype,probdim>(numdofpernode,numscal,disname);
   }
 
-  else if(instances.find(disname) != instances.end())
+  else
   {
     for( typename std::map<std::string,ScaTraEleCalcAniso<distype,probdim>* >::iterator i=instances.begin(); i!=instances.end(); ++i )
      {

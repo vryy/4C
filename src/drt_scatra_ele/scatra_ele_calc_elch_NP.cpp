@@ -38,7 +38,7 @@ DRT::ELEMENTS::ScaTraEleCalcElchNP<distype> * DRT::ELEMENTS::ScaTraEleCalcElchNP
       instances[disname] = new ScaTraEleCalcElchNP<distype>(numdofpernode,numscal,disname);
   }
 
-  else if(instances.find(disname) != instances.end())
+  else
   {
     for( typename std::map<std::string,ScaTraEleCalcElchNP<distype>* >::iterator i=instances.begin(); i!=instances.end(); ++i )
      {

@@ -45,7 +45,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype> * DRT::ELEMENTS::ScaTraEleBoun
       instances[disname] = new ScaTraEleBoundaryCalcPoro<distype>(numdofpernode,numscal,disname);
   }
 
-  else if(instances.find(disname) != instances.end())
+  else
   {
     for( typename std::map<std::string,ScaTraEleBoundaryCalcPoro<distype>* >::iterator i=instances.begin(); i!=instances.end(); ++i )
      {

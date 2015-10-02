@@ -57,7 +57,7 @@ DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype> * DRT::ELEMENTS::ScaTraEleCalcP
       instances[disname] = new ScaTraEleCalcPoroReacECM<distype>(numdofpernode,numscal,disname);
   }
 
-  else if(instances.find(disname) != instances.end())
+  else
   {
     for( typename std::map<std::string,ScaTraEleCalcPoroReacECM<distype>* >::iterator i=instances.begin(); i!=instances.end(); ++i )
      {

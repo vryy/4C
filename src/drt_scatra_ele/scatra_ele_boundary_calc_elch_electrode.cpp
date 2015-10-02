@@ -42,7 +42,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>* DRT::ELEMENTS::ScaTr
       instances[disname] = new ScaTraEleBoundaryCalcElchElectrode<distype>(numdofpernode,numscal,disname);
   }
 
-  else if(instances.find(disname) != instances.end())
+  else
   {
     for( typename std::map<std::string,ScaTraEleBoundaryCalcElchElectrode<distype>* >::iterator i=instances.begin(); i!=instances.end(); ++i )
      {

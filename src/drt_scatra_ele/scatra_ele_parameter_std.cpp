@@ -43,7 +43,7 @@ DRT::ELEMENTS::ScaTraEleParameterStd* DRT::ELEMENTS::ScaTraEleParameterStd::Inst
   }
 
   // destruct instance
-  else if(instances.find(disname) != instances.end())
+  else
   {
     for(std::map<std::string,ScaTraEleParameterStd*>::iterator i=instances.begin(); i!=instances.end(); ++i)
     {

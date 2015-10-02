@@ -126,7 +126,7 @@ DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim> * DRT::ELEMENTS::ScaTraEleC
       instances[disname] = new ScaTraEleCalcAdvReac<distype,probdim>(numdofpernode,numscal,disname);
   }
 
-  else if(instances.find(disname) != instances.end())
+  else
   {
     for( typename std::map<std::string,ScaTraEleCalcAdvReac<distype,probdim>* >::iterator i=instances.begin(); i!=instances.end(); ++i )
      {

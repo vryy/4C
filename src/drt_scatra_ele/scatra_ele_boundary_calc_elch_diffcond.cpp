@@ -39,7 +39,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>* DRT::ELEMENTS::ScaTra
       instances[disname] = new ScaTraEleBoundaryCalcElchDiffCond<distype>(numdofpernode,numscal,disname);
   }
 
-  else if(instances.find(disname) != instances.end())
+  else
   {
     for( typename std::map<std::string,ScaTraEleBoundaryCalcElchDiffCond<distype>* >::iterator i=instances.begin(); i!=instances.end(); ++i )
      {
