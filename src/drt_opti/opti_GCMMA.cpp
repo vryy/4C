@@ -482,9 +482,9 @@ void OPTI::GCMMA::Asymptotes()
       double val = (*xval-*xold)*(*xold-*xold2);
 
       double fac = 1.0;
-      if (val<-1e-9)
+      if (val<0)
         fac = gamma_down_;
-      else if (val>1e-9)
+      else if (val>0)
         fac = gamma_up_;
 
       *asy_min = *xval - fac*(*xold-*asy_min);
