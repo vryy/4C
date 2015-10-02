@@ -72,15 +72,6 @@ public:
   MortarNodeDataContainer();
 
   /*!
-   \brief Destructor
-
-   */
-  virtual ~MortarNodeDataContainer()
-  {
-    return;
-  }
-
-  /*!
    \brief Pack this class so that it can be communicated
 
    This function packs the datacontainer. This is only called
@@ -88,7 +79,7 @@ public:
    class exists.
 
    */
-  virtual void Pack(DRT::PackBuffer& data) const;
+  void Pack(DRT::PackBuffer& data) const;
 
   /*!
    \brief Unpack data from a vector into this class
@@ -98,7 +89,7 @@ public:
    class exists.
 
    */
-  virtual void Unpack(std::vector<char>::size_type& position,
+  void Unpack(std::vector<char>::size_type& position,
       const std::vector<char>& data);
 
   //@}
@@ -108,7 +99,7 @@ public:
   /*!
    \brief Return current nodal normal (only for slave side!) (length 3)
    */
-  virtual double* n()
+  double* n()
   {
     return n_;
   }
@@ -116,7 +107,7 @@ public:
   /*!
    \brief Return current Lagrange mutliplier in step n+1 (only for slave side!) (length 3)
    */
-  virtual double* lm()
+  double* lm()
   {
     return lm_;
   }
@@ -124,7 +115,7 @@ public:
   /*!
    \brief Return old Lagrange mutliplier from step n (only for slave side!) (length 3)
    */
-  virtual double* lmold()
+  double* lmold()
   {
     return lmold_;
   }
@@ -132,7 +123,7 @@ public:
   /*!
    \brief Return Lagrange mutliplier from last Uzawa step (only for slave side!) (length 3)
    */
-  virtual double* lmuzawa()
+  double* lmuzawa()
   {
     return lmuzawa_;
   }
@@ -140,7 +131,7 @@ public:
   /*!
    \brief Return the 'D' map (vector) of this node
    */
-  virtual std::vector<GEN::pairedvector<int, double> >& GetD()
+  std::vector<GEN::pairedvector<int, double> >& GetD()
   {
     return drows_;
   }
@@ -148,7 +139,7 @@ public:
   /*!
    \brief Return the 'M' map (vector) of this node
    */
-  virtual std::vector<std::map<int, double> >& GetM()
+  std::vector<std::map<int, double> >& GetM()
   {
     return mrows_;
   }
@@ -156,7 +147,7 @@ public:
   /*!
    \brief Return the 'Mmod' map (vector) of this node
    */
-  virtual std::vector<std::map<int, double> >& GetMmod()
+  std::vector<std::map<int, double> >& GetMmod()
   {
     return mmodrows_;
   }
@@ -164,7 +155,7 @@ public:
   /*!
    \brief Return the scale factor of this node
    */
-  virtual double& GetScale()
+  double& GetScale()
   {
     return scalefac_;
   }
@@ -450,6 +441,8 @@ public:
    */
   inline MORTAR::MortarNodeDataContainer& MoData()
   {
+    if (modata_ == Teuchos::null)
+      dserror("No mortar data attached.");
     return *modata_;
   }
 

@@ -3185,7 +3185,9 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele,
     double fac_xmsl_b = 0.0;
     double fac_ymsl_b = 0.0;
 
-    double normal[2]={0.,0.};
+    // there are only actual 2 components for the normal in 2D but ComputeUnitNormalAtXi expects 3 components
+    // (otherwise invalid memory access)
+    double normal[3]={0.,0.,0.};
     sele.ComputeUnitNormalAtXi(psxia,normal);
     std::vector<GEN::pairedvector<int,double> > derivN;
     dynamic_cast<CONTACT::CoElement*>(&sele)->DerivUnitNormalAtXi(psxia,derivN);
@@ -3262,7 +3264,9 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele,
     double fac_xmsl_a = 0.0;
     double fac_ymsl_a = 0.0;
 
-    double normal[2]={0.,0.};
+    // there are only 2 actual components for the normal in 2D but ComputeUnitNormalAtXi expects 3 components
+    // (otherwise invalid memory access)
+    double normal[3]={0.,0.,0.};
     sele.ComputeUnitNormalAtXi(psxib,normal);
     std::vector<GEN::pairedvector<int,double> > derivN;
     dynamic_cast<CONTACT::CoElement*>(&sele)->DerivUnitNormalAtXi(psxib,derivN);
