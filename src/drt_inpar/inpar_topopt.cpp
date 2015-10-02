@@ -104,6 +104,15 @@ void INPAR::TOPOPT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   Teuchos::ParameterList& topoptoptimizer = topoptcontrol.sublist("TOPOLOGY OPTIMIZER",false,
       "control parameters for the optimizer of a topology optimization problem");
 
+  setStringToIntegralParameter<int>("GCMMA_SOLVER","original","type of solver for gcmma subproblem",
+      tuple<std::string>(
+          "original",
+          "gaussian"),
+          tuple<int>(
+              INPAR::TOPOPT::gcmma_solver_orig,
+              INPAR::TOPOPT::gcmma_solver_gauss),
+              &topoptcontrol);
+
   DoubleParameter("THETA",0.5,"theta for temporal integration of objective function",&topoptoptimizer);
   IntParameter("MAX_ITER",100,"Maximal number of optimization steps",&topoptoptimizer);
   IntParameter("MAX_GRAD_ITER",100,"Maximal number of optimization steps containing the gradient",&topoptoptimizer);
@@ -164,7 +173,7 @@ void INPAR::TOPOPT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   DoubleParameter("TOL_KKT",1.0e-5,"tolerance of optimization problem (for KKT-conditions)",&topoptoptimizer);
   DoubleParameter("TOL_SUB",1.0e-9,"tolerance of subproblem",&topoptoptimizer);
   BoolParameter("update_smooth","no","update smoothing parameter of impermeability function",&topoptoptimizer);
-  IntParameter("update_smooth_every_iter",100,"update smoothing parameter every numiter",&topoptoptimizer);
+  IntParameter("update_smooth_every_iter",50,"update smoothing parameter every numiter",&topoptoptimizer);
   DoubleParameter("update_smooth_fac",10.0,"update smoothing parameter factor",&topoptoptimizer);
 
   // output parameter
@@ -187,6 +196,8 @@ void INPAR::TOPOPT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   DoubleParameter("asymptotes_fac2",0.01,"factor for updating asymptotes",&topoptoptimizer);
   DoubleParameter("fac_x_boundaries",0.1,"unsensible factor for computation of boundaries for optimization variable",&topoptoptimizer);
   DoubleParameter("fac_sub_reg",0.001,"regularisation factor in subproblem",&topoptoptimizer);
+  DoubleParameter("GAMMA_UP",2.3,"controls maximum stepsize increase",&topoptoptimizer);
+  DoubleParameter("GAMMA_DOWN",0.7,"controls maximum stepsize decrease",&topoptoptimizer);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& topoptadjointfluiddyn = topoptcontrol.sublist("TOPOLOGY ADJOINT FLUID",false,

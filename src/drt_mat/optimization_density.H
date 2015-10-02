@@ -47,7 +47,10 @@ namespace MAT
       const double PoroBdUp() const {return poro_bd_up_;};
       const double SmearFac() const {return smear_fac_;};
 
-      void UpdateSmearFac(const double new_smearfac) {smear_fac_=new_smearfac;};
+      void UpdateSmearFac(const double new_smearfac) {
+        smear_fac_=new_smearfac;
+        std::cout << "smoothing factor updated to new value " << smear_fac_ << std::endl;
+      };
 
     private:
 

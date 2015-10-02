@@ -78,6 +78,13 @@ namespace INPAR
       dens_ele_based
     };
 
+    /// type of solver for GCMMA subproblem
+    enum SolverType
+    {
+      gcmma_solver_orig,
+      gcmma_solver_gauss
+    };
+
     /// initial field for optimization variable
     enum InitialDensityField
     {

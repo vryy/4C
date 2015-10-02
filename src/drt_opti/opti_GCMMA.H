@@ -239,6 +239,7 @@ namespace OPTI
 
     //! @name optimization variable data
     const INPAR::TOPOPT::DensityField dens_type_; /// type of optimization field
+    const INPAR::TOPOPT::SolverType solver_sub_; /// solver type for solution of subproblem
 
     Teuchos::RCP<Epetra_Vector> x_; /// current optimization variable
     Teuchos::RCP<Epetra_Vector> x_old_; /// last optimization variable
@@ -330,6 +331,8 @@ namespace OPTI
     const double asy_fac2_; /// factor for computation of moving asymptotes
     const double fac_x_bd_; /// factor for computation of boundaries for objective variables
     const double fac_sub_reg_; /// regularisation factor in subproblem
+    const double gamma_up_; /// factor for increasing u-x
+    const double gamma_down_; /// factor for decreasing u-x
     //@}
 
     const double facmin_; /// minimal coefficient in a denominator
