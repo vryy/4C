@@ -34,10 +34,10 @@ namespace DRT
 
         //! singleton access method
         static ScaTraEleUtilsElchElectrode<distype>* Instance(
-            const int numdofpernode,      ///< number of degrees of freedom per node
-            const int numscal,            ///< number of transported scalars per node
-            const std::string& disname,   ///< name of discretization
-            bool create=true              ///< creation/destruction flag
+            const int numdofpernode,                             ///< number of degrees of freedom per node
+            const int numscal,                                   ///< number of transported scalars per node
+            const std::string& disname,                          ///< name of discretization
+            const ScaTraEleUtilsElchElectrode* delete_me = NULL  ///< creation/destruction indication
             );
 
         //! singleton destruction

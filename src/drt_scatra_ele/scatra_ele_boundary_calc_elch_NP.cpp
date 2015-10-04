@@ -28,12 +28,12 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype>* DRT::ELEMENTS::ScaTraEleBou
     const int numdofpernode,
     const int numscal,
     const std::string& disname,
-    bool create
+    const ScaTraEleBoundaryCalcElchNP* delete_me
     )
 {
   static std::map<std::string,ScaTraEleBoundaryCalcElchNP<distype>* >  instances;
 
-  if(create)
+  if(delete_me == NULL)
   {
     if(instances.find(disname) == instances.end())
       instances[disname] = new ScaTraEleBoundaryCalcElchNP<distype>(numdofpernode,numscal,disname);
@@ -42,13 +42,12 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype>* DRT::ELEMENTS::ScaTraEleBou
   else
   {
     for( typename std::map<std::string,ScaTraEleBoundaryCalcElchNP<distype>* >::iterator i=instances.begin(); i!=instances.end(); ++i )
-     {
-      delete i->second;
-      i->second = NULL;
-     }
-
-    instances.clear();
-    return NULL;
+      if ( i->second == delete_me )
+      {
+        delete i->second;
+        instances.erase(i);
+        return NULL;
+      }
   }
 
   return instances[disname];
@@ -61,7 +60,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype>::Done()
 {
   // delete singleton
-  Instance(0,0,"",false);
+  Instance(0,0,"",this);
 
   return;
 }

@@ -23,12 +23,12 @@ DRT::ELEMENTS::ScaTraEleCalcStd<distype,probdim>* DRT::ELEMENTS::ScaTraEleCalcSt
     const int numdofpernode,
     const int numscal,
     const std::string& disname,
-    bool create
+    const ScaTraEleCalcStd* delete_me
     )
 {
   static std::map<std::string,ScaTraEleCalcStd<distype,probdim>* >  instances;
 
-  if(create)
+  if(delete_me == NULL)
   {
     if(instances.find(disname) == instances.end())
       instances[disname] = new ScaTraEleCalcStd<distype,probdim>(numdofpernode,numscal,disname);
@@ -36,14 +36,18 @@ DRT::ELEMENTS::ScaTraEleCalcStd<distype,probdim>* DRT::ELEMENTS::ScaTraEleCalcSt
 
   else
   {
+    // since we keep several instances around in the general case, we need to
+    // find which of the instances to delete with this call. This is done by
+    // letting the object to be deleted hand over the 'this' pointer, which is
+    // located in the map and deleted
     for( typename std::map<std::string,ScaTraEleCalcStd<distype,probdim>* >::iterator i=instances.begin(); i!=instances.end(); ++i )
-     {
-      delete i->second;
-      i->second = NULL;
-     }
-
-    instances.clear();
-    return NULL;
+      if ( i->second == delete_me )
+      {
+        delete i->second;
+        instances.erase(i);
+        return NULL;
+      }
+    dserror("Could not locate the desired instance. Internal error.");
   }
 
   return instances[disname];
@@ -57,7 +61,7 @@ template<DRT::Element::DiscretizationType distype,int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcStd<distype,probdim>::Done()
 {
   // delete instance
-  Instance(0,0,"",false);
+  Instance(0,0,"",this);
 
   return;
 }

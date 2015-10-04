@@ -38,7 +38,7 @@ namespace DRT
             const int numdofpernode,
             const int numscal,
             const std::string& disname,
-            bool create=true
+            const ScaTraEleCalcElchElectrode* delete_me = NULL
             );
 
         //! singleton destruction

@@ -36,7 +36,7 @@ public:
       const int numdofpernode,
       const int numscal,
       const std::string& disname,
-      bool create=true );
+      const ScaTraEleBoundaryCalcPoro* delete_me = NULL );
 
   /// Empty destructor
   virtual ~ScaTraEleBoundaryCalcPoro() {};

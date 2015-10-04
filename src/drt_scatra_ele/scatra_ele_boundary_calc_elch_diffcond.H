@@ -39,7 +39,7 @@ namespace DRT
           const int numdofpernode,
           const int numscal,
           const std::string& disname,
-          bool create=true
+          const ScaTraEleBoundaryCalcElchDiffCond *delete_me = NULL
           );
 
       //! destructor

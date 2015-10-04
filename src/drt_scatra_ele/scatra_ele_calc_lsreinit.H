@@ -51,7 +51,7 @@ public:
       const int numdofpernode,
       const int numscal,
       const std::string& disname,
-      bool create=true );
+      const ScaTraEleCalcLsReinit* delete_me = NULL );
 
   //! called upon destruction
   virtual void Done();
@@ -408,4 +408,3 @@ template<> struct CellTypeToOptGaussRule<DRT::Element::tri3>    {static const DR
 }
 
 #endif
-

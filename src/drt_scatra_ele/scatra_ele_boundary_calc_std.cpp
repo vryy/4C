@@ -34,11 +34,11 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype> * DRT::ELEMENTS::ScaTraEleBound
     const int numdofpernode,
     const int numscal,
     const std::string& disname,
-    bool create )
+    const ScaTraEleBoundaryCalcStd* delete_me )
 {
   static std::map<std::string,ScaTraEleBoundaryCalcStd<distype>* >  instances;
 
-  if(create)
+  if(delete_me == NULL)
   {
     if(instances.find(disname) == instances.end())
       instances[disname] = new ScaTraEleBoundaryCalcStd<distype>(numdofpernode,numscal,disname);
@@ -47,13 +47,12 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype> * DRT::ELEMENTS::ScaTraEleBound
   else
   {
     for( typename std::map<std::string,ScaTraEleBoundaryCalcStd<distype>* >::iterator i=instances.begin(); i!=instances.end(); ++i )
-     {
-      delete i->second;
-      i->second = NULL;
-     }
-
-    instances.clear();
-    return NULL;
+      if ( i->second == delete_me )
+      {
+        delete i->second;
+        instances.erase(i);
+        return NULL;
+      }
   }
 
   return instances[disname];
@@ -66,7 +65,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-    Instance( 0, 0, "", false );
+    Instance( 0, 0, "", this );
 }
 
 

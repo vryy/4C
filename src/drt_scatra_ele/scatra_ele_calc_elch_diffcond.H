@@ -49,7 +49,7 @@ public:
     const int numdofpernode,
     const int numscal,
     const std::string& disname,
-    bool create=true );
+    const ScaTraEleCalcElchDiffCond* delete_me = NULL );
 
   /// called upon destruction
   virtual void Done();

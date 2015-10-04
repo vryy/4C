@@ -46,7 +46,8 @@ public:
     const int numdofpernode,
     const int numscal,
     const std::string& disname,
-    bool create=true );
+    const ScaTraEleCalcAdvReac* delete_me = NULL  //!< creation/destruction indication
+    );
 
   /// called upon destruction
   virtual void Done();

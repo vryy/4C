@@ -40,8 +40,8 @@ namespace DRT
 
         //! singleton access method
         static ScaTraEleParameterTurbulence* Instance(
-            const std::string&   disname,        //!< name of discretization
-            bool                 create = true   //!< creation/destruction flag
+            const std::string&                  disname,            //!< name of discretization
+            const ScaTraEleParameterTurbulence* delete_me = NULL  //!< creation/destruction indication
             );
 
         //! singleton destruction

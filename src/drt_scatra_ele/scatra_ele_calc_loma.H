@@ -58,7 +58,7 @@ public:
       const int numdofpernode,
       const int numscal,
       const std::string& disname,
-      bool create=true );
+      const ScaTraEleCalcLoma* delete_me = NULL );
 
     /// called upon destruction
     virtual void Done();
@@ -282,4 +282,3 @@ class ScaTraEleReaManagerLoma : public ScaTraEleReaManager
 }
 
 #endif
-

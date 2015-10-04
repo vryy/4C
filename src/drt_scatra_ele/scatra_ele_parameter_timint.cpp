@@ -24,15 +24,15 @@ Maintainer: Rui Fang
  | singleton access method                                   fang 08/15 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ScaTraEleParameterTimInt* DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(
-    const std::string&   disname,   //!< name of discretization
-    bool                 create     //!< creation/destruction flag
+    const std::string&              disname,   //!< name of discretization
+    const ScaTraEleParameterTimInt* delete_me  //!< creation/destruction indication
     )
 {
   // each discretization is associated with exactly one instance of this class according to a static map
   static std::map<std::string,ScaTraEleParameterTimInt*> instances;
 
   // check whether instance already exists for current discretization, and perform instantiation if not
-  if(create)
+  if(delete_me == NULL)
   {
     if(instances.find(disname) == instances.end())
       instances[disname] = new ScaTraEleParameterTimInt();
@@ -42,14 +42,13 @@ DRT::ELEMENTS::ScaTraEleParameterTimInt* DRT::ELEMENTS::ScaTraEleParameterTimInt
   else
   {
     for( std::map<std::string,ScaTraEleParameterTimInt* >::iterator i=instances.begin(); i!=instances.end(); ++i )
-    {
-      delete i->second;
-      i->second = NULL;
-    }
-
-    instances.clear();
-
-    return NULL;
+      if (i->second == delete_me)
+      {
+        delete i->second;
+        instances.erase(i);
+        return NULL;
+      }
+    dserror("Could not locate the desired instance. Internal error.");
   }
 
   // return existing or newly created instance
@@ -63,7 +62,7 @@ DRT::ELEMENTS::ScaTraEleParameterTimInt* DRT::ELEMENTS::ScaTraEleParameterTimInt
 void DRT::ELEMENTS::ScaTraEleParameterTimInt::Done()
 {
   // delete singleton
-  Instance("",false);
+  Instance("",this);
 
   return;
 }
@@ -202,4 +201,3 @@ void DRT::ELEMENTS::ScaTraEleParameterTimInt::PrintScaTraTimeParameter()
 
   return;
 }
-

@@ -50,7 +50,7 @@ public:
     const int numdofpernode,
     const int numscal,
     const std::string& disname,
-    bool create=true );
+    const ScaTraEleCalcPoro* delete_me = NULL );
 
   /// called upon destruction
   virtual void Done();

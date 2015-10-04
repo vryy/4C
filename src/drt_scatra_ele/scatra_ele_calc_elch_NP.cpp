@@ -28,11 +28,11 @@ DRT::ELEMENTS::ScaTraEleCalcElchNP<distype> * DRT::ELEMENTS::ScaTraEleCalcElchNP
   const int numdofpernode,
   const int numscal,
   const std::string& disname,
-  bool create )
+  const ScaTraEleCalcElchNP* delete_me )
 {
   static std::map<std::string,ScaTraEleCalcElchNP<distype>* >  instances;
 
-  if(create)
+  if(delete_me == NULL)
   {
     if(instances.find(disname) == instances.end())
       instances[disname] = new ScaTraEleCalcElchNP<distype>(numdofpernode,numscal,disname);
@@ -41,13 +41,13 @@ DRT::ELEMENTS::ScaTraEleCalcElchNP<distype> * DRT::ELEMENTS::ScaTraEleCalcElchNP
   else
   {
     for( typename std::map<std::string,ScaTraEleCalcElchNP<distype>* >::iterator i=instances.begin(); i!=instances.end(); ++i )
-     {
-      delete i->second;
-      i->second = NULL;
-     }
-
-    instances.clear();
-    return NULL;
+      if ( i->second == delete_me )
+      {
+        delete i->second;
+        instances.erase(i);
+        return NULL;
+      }
+    dserror("Could not locate the desired instance. Internal error.");
   }
 
   return instances[disname];
@@ -61,7 +61,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
-  Instance( 0, 0, "", false );
+  Instance( 0, 0, "", this );
 }
 
 
@@ -1145,6 +1145,3 @@ template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::tet10>;
 //template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::wedge6>;
 template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::pyramid5>;
 //template class DRT::ELEMENTS::ScaTraEleCalcElchNP<DRT::Element::nurbs27>;
-
-
-

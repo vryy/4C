@@ -27,11 +27,11 @@ DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>* DRT::ELEMENTS::ScaTraEleCalc
     const int numdofpernode,
     const int numscal,
     const std::string& disname,
-    bool create )
+    const ScaTraEleCalcElchElectrode* delete_me )
 {
   static std::map<std::string,ScaTraEleCalcElchElectrode<distype>* >  instances;
 
-  if(create)
+  if(delete_me == NULL)
   {
     if(instances.find(disname) == instances.end())
       instances[disname] = new ScaTraEleCalcElchElectrode<distype>(numdofpernode,numscal,disname);
@@ -40,13 +40,13 @@ DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>* DRT::ELEMENTS::ScaTraEleCalc
   else
   {
     for( typename std::map<std::string,ScaTraEleCalcElchElectrode<distype>* >::iterator i=instances.begin(); i!=instances.end(); ++i )
-     {
-      delete i->second;
-      i->second = NULL;
-     }
-
-    instances.clear();
-    return NULL;
+      if ( i->second == delete_me )
+      {
+        delete i->second;
+        instances.erase(i);
+        return NULL;
+      }
+    dserror("Could not locate the desired instance. Internal error.");
   }
 
   return instances[disname];
@@ -60,7 +60,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::Done()
 {
   // delete singleton
-  Instance( 0, 0, "", false);
+  Instance( 0, 0, "", this);
 
   return;
 }

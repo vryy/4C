@@ -34,8 +34,8 @@ namespace DRT
 
         //! singleton access method
         static ScaTraEleParameterTimInt* Instance(
-            const std::string&   disname,        //!< name of discretization
-            bool                 create = true   //!< creation/destruction flag
+            const std::string&   disname,                     //!< name of discretization
+            const ScaTraEleParameterTimInt* delete_me = NULL  //!< creation/destruction indication
             );
 
         //! Singleton destruction method called from global problem
