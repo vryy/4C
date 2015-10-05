@@ -16,30 +16,30 @@
 
 #include "nox_nln_constraint_group.H"
 #include "nox_nln_interface_required.H"
+#include "nox_nln_aux.H"
 
 #include <NOX_Epetra_LinearSystem.H>
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::CONSTRAINT::Group::Group
-(
-  Teuchos::ParameterList& printParams,
-  const Teuchos::RCP<NOX::Epetra::Interface::Required>& i,
-  const NOX::Epetra::Vector& x,
-  const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys,
-  const Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required>& iConstr
-) : NOX::NLN::Group(printParams,i,x,linSys),
-  userConstraintInterfacePtr_(iConstr)
+NOX::NLN::CONSTRAINT::Group::Group(Teuchos::ParameterList& printParams,
+    const Teuchos::RCP<NOX::Epetra::Interface::Required>& i,
+    const NOX::Epetra::Vector& x,
+    const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys,
+    const std::map<NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> >& iConstr)
+    : NOX::NLN::Group(printParams,i,x,linSys),
+      userConstraintInterfaces_(iConstr)
 {
   return;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::CONSTRAINT::Group::Group(const NOX::NLN::CONSTRAINT::Group& source, CopyType type) :
-  NOX::NLN::Group(source,type),
-  userConstraintInterfacePtr_(source.userConstraintInterfacePtr_)
+NOX::NLN::CONSTRAINT::Group::Group(const NOX::NLN::CONSTRAINT::Group& source,
+    CopyType type)
+    : NOX::NLN::Group(source,type),
+      userConstraintInterfaces_(source.userConstraintInterfaces_)
 {
   // empty
 }
@@ -51,6 +51,49 @@ Teuchos::RCP<NOX::Abstract::Group> NOX::NLN::CONSTRAINT::Group::clone(CopyType t
   Teuchos::RCP<NOX::Abstract::Group> newgrp =
     Teuchos::rcp(new NOX::NLN::CONSTRAINT::Group(*this, type));
   return newgrp;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+const std::map<NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> >&
+    NOX::NLN::CONSTRAINT::Group::GetConstrInterfaces() const
+{
+  return userConstraintInterfaces_;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<const NOX::NLN::CONSTRAINT::Interface::Required>
+    NOX::NLN::CONSTRAINT::Group::GetConstraintInterfacePtr(
+    const NOX::NLN::SolutionType& soltype) const
+{
+  return GetConstraintInterfacePtr(soltype,true);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<const NOX::NLN::CONSTRAINT::Interface::Required>
+    NOX::NLN::CONSTRAINT::Group::GetConstraintInterfacePtr(
+    const NOX::NLN::SolutionType& soltype,
+    const bool& errflag) const
+{
+  Teuchos::RCP<const NOX::NLN::CONSTRAINT::Interface::Required> constrptr =
+      Teuchos::null;
+  std::map<NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::
+           Required> >::const_iterator it;
+  it = userConstraintInterfaces_.find(soltype);
+  if (errflag and it == userConstraintInterfaces_.end())
+  {
+    std::ostringstream msg;
+    msg << "The given NOX::NLN::SolutionType \""
+        << NOX::NLN::SolutionType2String(soltype)
+        << "\" could not be found!";
+    throwError("GetConstraintInterfacePtr",msg.str());
+  }
+  else if (it != userConstraintInterfaces_.end())
+    constrptr = it->second;
+
+  return constrptr;
 }
 
 /*----------------------------------------------------------------------------*
@@ -84,9 +127,11 @@ void NOX::NLN::CONSTRAINT::Group::computeX(
   // -------------------------------------
   // We have to remove the const state, because we want to change class variables
   // of the constraint interface class.
-  Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> iConstr =
-      Teuchos::rcp_const_cast<NOX::NLN::CONSTRAINT::Interface::Required>(GetConstrPtr());
-  iConstr->SetLagrangeMultiplier(grp.xVector,d,step);
+  std::map<NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> >::iterator it;
+  for (it=userConstraintInterfaces_.begin();it!=userConstraintInterfaces_.end();++it)
+  {
+    it->second->SetLagrangeMultiplier(grp.xVector,d,step);
+  }
   // -------------------------------------
   // Update the nox internal variables
   // and the primary variables
@@ -99,8 +144,8 @@ void NOX::NLN::CONSTRAINT::Group::computeX(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const std::vector<double> > NOX::NLN::CONSTRAINT::Group::GetRHSNorms(
-    const std::vector<NOX::NLN::StatusTest::QuantityType>& chQ,
     const std::vector<NOX::Abstract::Vector::NormType>& type,
+    const std::vector<NOX::NLN::StatusTest::QuantityType>& chQ,
     Teuchos::RCP<const std::vector<NOX::StatusTest::NormF::ScaleType> > scale
     ) const
 {
@@ -121,7 +166,11 @@ Teuchos::RCP<const std::vector<double> > NOX::NLN::CONSTRAINT::Group::GetRHSNorm
       continue;
     }
 
-    rval = userConstraintInterfacePtr_->GetConstraintRHSNorms(chQ[i],type[i],
+    enum NOX::NLN::SolutionType soltype =
+        NOX::NLN::AUX::ConvertQuantityType2SolutionType(chQ[i]);
+    Teuchos::RCP<const NOX::NLN::CONSTRAINT::Interface::Required> constrptr =
+        GetConstraintInterfacePtr(soltype);
+    rval = constrptr->GetConstraintRHSNorms(chQ[i],type[i],
         (*scale)[i]==NOX::StatusTest::NormF::Scaled);
     if (rval>=0.0)
       norms->push_back(rval);
@@ -159,7 +208,12 @@ Teuchos::RCP<std::vector<double> > NOX::NLN::CONSTRAINT::Group::GetSolutionUpdat
       continue;
     }
 
-    rval = userConstraintInterfacePtr_->GetLagrangeMultiplierUpdateRMS(
+    enum NOX::NLN::SolutionType soltype =
+        NOX::NLN::AUX::ConvertQuantityType2SolutionType(chQ[i]);
+    Teuchos::RCP<const NOX::NLN::CONSTRAINT::Interface::Required> constrptr =
+        GetConstraintInterfacePtr(soltype);
+
+    rval = constrptr->GetLagrangeMultiplierUpdateRMS(
         aTol[i],rTol[i],chQ[i],disable_implicit_weighting[i]);
     if (rval>=0)
       rms->push_back(rval);
@@ -175,6 +229,21 @@ Teuchos::RCP<std::vector<double> > NOX::NLN::CONSTRAINT::Group::GetSolutionUpdat
   }
 
   return rms;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+enum NOX::StatusTest::StatusType
+    NOX::NLN::CONSTRAINT::Group::GetActiveSetStatus(
+    const enum NOX::NLN::StatusTest::QuantityType& qtype,
+    int& activesetsize,
+    int& cyclesize) const
+{
+  enum NOX::NLN::SolutionType soltype =
+      NOX::NLN::AUX::ConvertQuantityType2SolutionType(qtype);
+
+  return GetConstraintInterfacePtr(soltype)->GetActiveSetStatus(
+      activesetsize,cyclesize);
 }
 
 /*----------------------------------------------------------------------*

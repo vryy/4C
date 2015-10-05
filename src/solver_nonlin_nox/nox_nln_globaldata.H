@@ -55,7 +55,15 @@ namespace Interface {
     // structural quantities
     sol_structure,
     // contact quantities
-    sol_contact
+    sol_contact,
+    // meshtying quantities
+    sol_meshtying,
+    // windkessel quantities
+    sol_windkessel,
+    // spring dashpot quantities
+    sol_springdashpot,
+    // Lagrange or/and penalty enforced constraint quantities
+    sol_lag_pen_constraint
   };
 
   //! Map quantity enum to std::string
@@ -69,6 +77,18 @@ namespace Interface {
     case sol_contact :
       return "Contact";
       break;
+    case sol_meshtying :
+      return "Meshtying";
+      break;
+    case sol_windkessel:
+      return "Windkessel";
+      break;
+    case sol_springdashpot:
+      return "Spring Dashpot";
+      break;
+    case sol_lag_pen_constraint:
+      return "Lagrange/Penalty Constraint";
+      break;
     case sol_unknown:
     default :
       return "unknown solution type";
@@ -78,13 +98,21 @@ namespace Interface {
   };
 
   //! Map quantity std::string to enum
-  inline SolutionType String2SolutionType(const std::string& name)
+  inline enum SolutionType String2SolutionType(const std::string& name)
   {
     SolutionType type = sol_unknown;
     if (name=="structure" or name=="Structure")
       type = sol_structure;
     else if (name=="contact" or name=="Contact")
       type = sol_contact;
+    else if (name=="Meshtying" or name=="meshtying")
+      type = sol_meshtying;
+    else if (name=="Windkessel")
+      type = sol_windkessel;
+    else if (name=="SpringDashpot")
+      type = sol_springdashpot;
+    else if (name=="Constraint")
+      type = sol_lag_pen_constraint;
 
     return type;
   };
@@ -129,21 +157,57 @@ namespace Interface {
     enum MeritFctName
     {
       //! sum of squares merit function
-      mrtfct_sumOfSquares,
+      mrtfct_sum_of_squares,
       //! lagrangian merit function
       mrtfct_lagrangian
     };
 
   public:
-    //! constructor
+    /*! CONSTRAINED OPTIMIZATION (standard constructor / most general case)
+     *  inclusive the constraint interfaces map
+     *  inclusive the pre-conditioner interface
+     */
     GlobalData(const Epetra_Comm& comm,
         const Teuchos::ParameterList& noxParams,
-        const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& linSolvers,
+        const std::map<enum NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& linSolvers,
         const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
         const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
-        const OptimizationProblemType& type = opt_unconstrained,
-        const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec=Teuchos::null,
-        const Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required>& iConstr=Teuchos::null);
+        const OptimizationProblemType& type,
+        const std::map<enum NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> >& iConstr,
+        const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec);
+
+    /*! CONSTRAINED OPTIMIZATION
+     * inclusive the constraint interfaces map
+     * without a pre-conditioner interface
+     */
+    GlobalData(const Epetra_Comm& comm,
+        const Teuchos::ParameterList& noxParams,
+        const std::map<enum NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& linSolvers,
+        const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
+        const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
+        const OptimizationProblemType& type,
+        const std::map<enum NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> >& iConstr);
+
+    /*! UNCONSTRAINED OPTIMIZATION
+     *  constructor without the constraint interface map (pure unconstrained optimization)
+     *  inclusive the pre-conditioner interface
+     */
+    GlobalData(const Epetra_Comm& comm,
+            const Teuchos::ParameterList& noxParams,
+            const std::map<enum NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& linSolvers,
+            const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
+            const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
+            const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec);
+
+    /*! UNCONSTRAINED OPTIMIZATION
+     *  constructor without the constraint interface map (pure unconstrained optimization)
+     *  without a pre-conditioner interface
+     */
+    GlobalData(const Epetra_Comm& comm,
+            const Teuchos::ParameterList& noxParams,
+            const std::map<enum NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& linSolvers,
+            const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
+            const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac);
 
     //! destructor
     virtual ~GlobalData() {};
@@ -183,7 +247,7 @@ namespace Interface {
     const bool& GetIsConstrained() const;
 
     // return linear solver vector
-    const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& GetLinSolvers();
+    const std::map<enum NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& GetLinSolvers();
 
     //! return the user-defined preconditioner interface
     const Teuchos::RCP<NOX::Epetra::Interface::Required> GetRequiredInterface();
@@ -195,7 +259,11 @@ namespace Interface {
     const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner> GetPreconditionerInterface();
 
     //! return the user-defined constraint interface
-    const Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> GetConstraintInterface();
+    const std::map<NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> >& GetConstraintInterfaces() const;
+
+  private:
+    //! check the constructor input
+    void CheckInput() const;
 
   private:
     Teuchos::RCP<const Epetra_Comm> comm_;
@@ -212,7 +280,7 @@ namespace Interface {
 
     Teuchos::RCP<NOX::Epetra::Interface::Preconditioner> iPrecPtr_;
 
-    Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> iConstrPtr_;
+    std::map<enum NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> > iConstr_;
 
     Teuchos::RCP<NOX::MeritFunction::Generic> mrtFctPtr_;
 

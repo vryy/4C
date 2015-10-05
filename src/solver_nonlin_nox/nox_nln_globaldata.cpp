@@ -34,24 +34,106 @@
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm,
-    const Teuchos::ParameterList& noxparams,
+    const Teuchos::ParameterList& noxParams,
     const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& linSolvers,
     const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
     const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
     const NOX::NLN::GlobalData::OptimizationProblemType& type,
-    const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
-    const Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required>& iConstr) :
-    comm_(Teuchos::rcp(& comm,false)),
-    nlnparams_(Teuchos::rcp(new Teuchos::ParameterList(noxparams))),
-    optType_(type),
-    linSolvers_(linSolvers),
-    iReqPtr_(iReq),
-    iJacPtr_(iJac),
-    iPrecPtr_(iPrec),
-    iConstrPtr_(iConstr),
-    mrtFctPtr_(Teuchos::null),
-    prePostOpPtr_(Teuchos::null),
-    isConstrained_(type!=opt_unconstrained)
+    const std::map<NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> >& iConstr,
+    const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec)
+    : comm_(Teuchos::rcp(& comm,false)),
+      nlnparams_(Teuchos::rcp(new Teuchos::ParameterList(noxParams))),
+      optType_(type),
+      linSolvers_(linSolvers),
+      iReqPtr_(iReq),
+      iJacPtr_(iJac),
+      iPrecPtr_(iPrec),
+      iConstr_(iConstr),
+      mrtFctPtr_(Teuchos::null),
+      prePostOpPtr_(Teuchos::null),
+      isConstrained_(type!=opt_unconstrained)
+{
+  CheckInput();
+  // do some setup things
+  Setup();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm,
+    const Teuchos::ParameterList& noxParams,
+    const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& linSolvers,
+    const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
+    const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
+    const OptimizationProblemType& type,
+    const std::map<NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> >& iConstr)
+    : comm_(Teuchos::rcp(& comm,false)),
+      nlnparams_(Teuchos::rcp(new Teuchos::ParameterList(noxParams))),
+      optType_(type),
+      linSolvers_(linSolvers),
+      iReqPtr_(iReq),
+      iJacPtr_(iJac),
+      iPrecPtr_(Teuchos::null),     // no pre-conditioner
+      iConstr_(iConstr),
+      mrtFctPtr_(Teuchos::null),
+      prePostOpPtr_(Teuchos::null),
+      isConstrained_(type!=opt_unconstrained)
+{
+  CheckInput();
+  // do some setup things
+  Setup();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm,
+    const Teuchos::ParameterList& noxParams,
+    const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& linSolvers,
+    const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
+    const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
+    const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec)
+    : comm_(Teuchos::rcp(& comm,false)),
+      nlnparams_(Teuchos::rcp(new Teuchos::ParameterList(noxParams))),
+      optType_(opt_unconstrained),
+      linSolvers_(linSolvers),
+      iReqPtr_(iReq),
+      iJacPtr_(iJac),
+      iPrecPtr_(iPrec),
+      mrtFctPtr_(Teuchos::null),
+      prePostOpPtr_(Teuchos::null),
+      isConstrained_(false)
+{
+  CheckInput();
+  // do some setup things
+  Setup();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm,
+    const Teuchos::ParameterList& noxParams,
+    const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& linSolvers,
+    const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
+    const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac)
+    : comm_(Teuchos::rcp(& comm,false)),
+      nlnparams_(Teuchos::rcp(new Teuchos::ParameterList(noxParams))),
+      optType_(opt_unconstrained),
+      linSolvers_(linSolvers),
+      iReqPtr_(iReq),
+      iJacPtr_(iJac),
+      iPrecPtr_(Teuchos::null),
+      mrtFctPtr_(Teuchos::null),
+      prePostOpPtr_(Teuchos::null),
+      isConstrained_(false)
+{
+  CheckInput();
+  // do some setup things
+  Setup();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void NOX::NLN::GlobalData::CheckInput() const
 {
   // short input check
   if (linSolvers_.size()==0)
@@ -59,15 +141,13 @@ NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm,
 
   typedef std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >::const_iterator CI;
   for (CI iter=linSolvers_.begin(); iter!=linSolvers_.end(); ++iter)
-    if (iter->second.is_null())
-    {
-      std::ostringstream msg;
-      msg << "The entry \"" << SolutionType2String(iter->first) << "\" of the linear solver vector is not initialized!";
-      dserror(msg.str());
-    }
-
-  // do some setup things
-  Setup();
+  if (iter->second.is_null())
+  {
+    std::ostringstream msg;
+    msg << "The entry \"" << SolutionType2String(iter->first) << "\" of the linear solver vector is not initialized!";
+    dserror(msg.str());
+  }
+  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -150,7 +230,7 @@ void NOX::NLN::GlobalData::SetSolverOptionParameters()
   // and insert it into the parameter list.
   Teuchos::ParameterList& solverOptionsList = nlnparams_->sublist("Solver Options");
 
-  // Pure reading access to the unfinished nox_nln_utils class
+  // Pure reading access to the unfinished nox_nln_globaldata class
   Teuchos::RCP<const NOX::NLN::GlobalData> nlnGlobalDataPtr = Teuchos::rcp(this,false);
   mrtFctPtr_ =
       NOX::NLN::MeritFunction::BuildMeritFunction(nlnGlobalDataPtr);
@@ -226,6 +306,8 @@ const NOX::Utils& NOX::NLN::GlobalData::GetNoxUtils() const
   return *noxUtils_;
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 const Teuchos::RCP<NOX::Utils>& NOX::NLN::GlobalData::GetNoxUtilsPtr() const
 {
   if (noxUtils_.is_null())
@@ -256,7 +338,8 @@ Teuchos::ParameterList& NOX::NLN::GlobalData::GetNlnParameterList()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Teuchos::RCP<Teuchos::ParameterList>& NOX::NLN::GlobalData::GetNlnParameterListPtr()
+const Teuchos::RCP<Teuchos::ParameterList>&
+    NOX::NLN::GlobalData::GetNlnParameterListPtr()
 {
   if (nlnparams_.is_null())
     dserror("nlnparams_ was not initialized!");
@@ -276,14 +359,16 @@ const Epetra_Comm& NOX::NLN::GlobalData::GetComm() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& NOX::NLN::GlobalData::GetLinSolvers()
+const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >&
+    NOX::NLN::GlobalData::GetLinSolvers()
 {
   return linSolvers_;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Teuchos::RCP<NOX::Epetra::Interface::Required> NOX::NLN::GlobalData::GetRequiredInterface()
+const Teuchos::RCP<NOX::Epetra::Interface::Required>
+    NOX::NLN::GlobalData::GetRequiredInterface()
 {
   if (iReqPtr_.is_null())
     dserror("Required interface pointer iReqPtr_ was not initialized!");
@@ -293,7 +378,8 @@ const Teuchos::RCP<NOX::Epetra::Interface::Required> NOX::NLN::GlobalData::GetRe
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Teuchos::RCP<NOX::Epetra::Interface::Jacobian> NOX::NLN::GlobalData::GetJacobianInterface()
+const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>
+    NOX::NLN::GlobalData::GetJacobianInterface()
 {
   if (iJacPtr_.is_null())
     dserror("Jacobian interface pointer iJacPtr_ was not initialized!");
@@ -302,22 +388,25 @@ const Teuchos::RCP<NOX::Epetra::Interface::Jacobian> NOX::NLN::GlobalData::GetJa
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner> NOX::NLN::GlobalData::GetPreconditionerInterface()
+const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>
+    NOX::NLN::GlobalData::GetPreconditionerInterface()
 {
-  // we allow a return value of Teuchos::NULL, because the preconditioner
-  // interface is in many case optional
-
+  /*
+   * We explicitly allow a return value of Teuchos::NULL, because the
+   * preconditioner interface is in many cases optional
+   */
   return iPrecPtr_;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> NOX::NLN::GlobalData::GetConstraintInterface()
+const std::map<NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> >&
+    NOX::NLN::GlobalData::GetConstraintInterfaces() const
 {
-  if (iConstrPtr_.is_null())
-    dserror("Constraint interface pointer iConstrPtr_ was not initialized!");
+  if (iConstr_.size()==0)
+    dserror("The constraint interface map is empty!");
 
-  return iConstrPtr_;
+  return iConstr_;
 }
 
 /*----------------------------------------------------------------------------*

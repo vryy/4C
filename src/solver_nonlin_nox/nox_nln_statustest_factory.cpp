@@ -20,7 +20,9 @@
 
 // different status tests
 #include "nox_nln_statustest_normf.H"
+#include "nox_nln_statustest_normincr.H"
 #include "nox_nln_statustest_normwrms.H"
+#include "nox_nln_statustest_activeset.H"
 #include "nox_nln_statustest_combo.H"
 
 
@@ -58,6 +60,10 @@ Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildOuter
     status_test = this->BuildNormFTest(p,u,true);
   else if (test_type == "NormWRMS")
     status_test = this->BuildNormWRMSTest(p, u);
+  else if (test_type == "NormIncr")
+    status_test = this->BuildNormIncrTest(p, u);
+  else if (test_type == "ActiveSet")
+    status_test = this->BuildActiveSetTest(p, u);
   else
   {
     status_test = noxfactory_->buildStatusTests(p,u,tagged_tests);
@@ -66,6 +72,14 @@ Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildOuter
   this->CheckAndTagTest(p, status_test, tagged_tests);
 
   return status_test;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildNormFTest(
+    Teuchos::ParameterList& p, const NOX::Utils& u) const
+{
+  return BuildNormFTest(p,u,false);
 }
 
 /*----------------------------------------------------------------------------*
@@ -87,9 +101,13 @@ Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildNormF
   int i=0;
   std::ostringstream quantity_string;
   quantity_string << "Quantity " << i;
-  while (p.isSublist(quantity_string.str()))
+  while ((i==0) or (p.isSublist(quantity_string.str())))
   {
-    Teuchos::ParameterList& ql = p.sublist(quantity_string.str(), true);
+    // If we use only one quantity per test, there is no need to define a
+    // extra sub-list.
+    Teuchos::ParameterList& ql = p;
+    if ((i!=0) or (p.isSublist(quantity_string.str())))
+      ql = p.sublist(quantity_string.str(), true);
 
     // ------------------------------------------
     // get the quantity type
@@ -116,7 +134,7 @@ Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildNormF
       std::string tol_type_string = ql.get("Tolerance Type","Absolute");
       if (tol_type_string == "Absolute")
         toltypes.push_back(NOX::StatusTest::NormF::Absolute);
-      else if (tol_type_string == "One Norm")
+      else if (tol_type_string == "Relative")
         toltypes.push_back(NOX::StatusTest::NormF::Relative);
       else
       {
@@ -183,6 +201,134 @@ Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildNormF
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildNormIncrTest(
+    Teuchos::ParameterList& p, const NOX::Utils& u) const
+{
+  // initialized to size zero
+  std::vector<double> tolerances = std::vector<double>(0);
+  std::vector<NOX::NLN::StatusTest::NormIncr::ToleranceType> toltypes =
+      std::vector<NOX::NLN::StatusTest::NormIncr::ToleranceType>(0);
+  std::vector<QuantityType> quantitytypes = std::vector<QuantityType>(0);
+  std::vector<NOX::Abstract::Vector::NormType> normtypes =
+      std::vector<NOX::Abstract::Vector::NormType>(0);
+  std::vector<NOX::NLN::StatusTest::NormIncr::ScaleType> scaletypes =
+        std::vector<NOX::NLN::StatusTest::NormIncr::ScaleType>(0);
+
+  // ------------------------------------------
+  // Get Alpha
+  // Minimum step size allowed during a
+  // line search for incr norm to be flagged
+  // as converged.
+  // ------------------------------------------
+  double alpha = p.get("Alpha", 1.0);
+
+  // ------------------------------------------
+  // Get Beta
+  // Maximum linear solve tolerance allowed
+  // for incr norm to be flagged as converged.
+  // ------------------------------------------
+  double beta = p.get("Beta", 0.5);
+
+  int i=0;
+  std::ostringstream quantity_string;
+  quantity_string << "Quantity " << i;
+  while ((i==0) or (p.isSublist(quantity_string.str())))
+  {
+    // If we use only one quantity per test, there is no need to define a
+    // extra sub-list.
+    Teuchos::ParameterList& ql = p;
+    if ((i!=0) or (p.isSublist(quantity_string.str())))
+      ql = p.sublist(quantity_string.str(), true);
+
+    // ------------------------------------------
+    // get the quantity type
+    // ------------------------------------------
+    std::string quantity_type_string = ql.get("Quantity Type","???");
+    QuantityType qType = String2QuantityType(quantity_type_string);
+    if (qType == quantity_unknown)
+    {
+      std::ostringstream msg;
+      msg << "The \"Quantity Type\" is a required parameter \n"
+          << "and the chosen option \"" << quantity_type_string << "\" is invalid!";
+      throwError("BuildNormIncrTest()",msg.str());
+    }
+    else
+      quantitytypes.push_back(qType);
+
+    // ------------------------------------------
+    // get the tolerance type
+    // ------------------------------------------
+    std::string tol_type_string = ql.get("Tolerance Type","Absolute");
+    if (tol_type_string == "Absolute")
+      toltypes.push_back(NOX::NLN::StatusTest::NormIncr::Absolute);
+    else if (tol_type_string == "Relative")
+      toltypes.push_back(NOX::NLN::StatusTest::NormIncr::Relative);
+    else
+    {
+      std::string msg = "\"Tolerance Type\" must be either \"Absolute\" or \"Relative\"!";
+      throwError("BuildNormIncrTest()",msg);
+    }
+
+    // ------------------------------------------
+    // get the tolerance
+    // ------------------------------------------
+    if (toltypes.at(i)==NOX::NLN::StatusTest::NormIncr::Absolute)
+      tolerances.push_back(ql.get("Tolerance",1.0e-8));
+    else
+      tolerances.push_back(ql.get("Tolerance",1.0e-5));
+
+    // ------------------------------------------
+    // get the norm type
+    // ------------------------------------------
+    std::string norm_type_string = ql.get("Norm Type", "Two Norm");
+    if (norm_type_string == "Two Norm")
+      normtypes.push_back(NOX::Abstract::Vector::TwoNorm);
+    else if (norm_type_string == "One Norm")
+      normtypes.push_back(NOX::Abstract::Vector::OneNorm);
+    else if (norm_type_string == "Max Norm")
+      normtypes.push_back(NOX::Abstract::Vector::MaxNorm);
+    else {
+      std::string msg = "\"Norm Type\" must be either \"Two Norm\", \"One Norm\", or \"Max Norm\"!";
+      throwError("BuildNormIncrTest()",msg);
+    }
+
+    // ------------------------------------------
+    // get the scale type
+    // ------------------------------------------
+    std::string scale_type_string = ql.get("Scale Type", "Unscaled");
+    if (scale_type_string == "Unscaled")
+      scaletypes.push_back(NOX::NLN::StatusTest::NormIncr::Unscaled);
+    else if (scale_type_string == "Scaled")
+      scaletypes.push_back(NOX::NLN::StatusTest::NormIncr::Scaled);
+    else {
+      std::string msg = "\"Scale Type\" must be either \"Unscaled\" or \"Scaled\"!";
+      throwError("BuildNormIncrTest()",msg);
+    }
+    // ------------------------------------------
+    // increase iterator
+    // ------------------------------------------
+    ++i;
+    quantity_string.str("");
+    quantity_string << "Quantity " << i;
+  } // loop over all quantity types
+
+  // build the normF status test
+  Teuchos::RCP<NOX::NLN::StatusTest::NormIncr> status_test =
+      Teuchos::rcp(new NOX::NLN::StatusTest::NormIncr(
+          quantitytypes,
+          toltypes,
+          tolerances,
+          normtypes,
+          scaletypes,
+          alpha,
+          beta,
+          &u));
+
+  return status_test;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildNormWRMSTest(
     Teuchos::ParameterList& p, const NOX::Utils& u) const
 {
@@ -213,9 +359,13 @@ Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildNormW
   int i=0;
   std::ostringstream quantity_string;
   quantity_string << "Quantity " << i;
-  while (p.isSublist(quantity_string.str()))
+  while ((i==0) or (p.isSublist(quantity_string.str())))
   {
-    Teuchos::ParameterList& ql = p.sublist(quantity_string.str(), true);
+    // If we use only one quantity per test, there is no need to define a
+    // extra sub-list.
+    Teuchos::ParameterList& ql = p;
+    if ((i!=0) or (p.isSublist(quantity_string.str())))
+      ql = p.sublist(quantity_string.str(), true);
 
     // ------------------------------------------
     // get the Quantity Type
@@ -286,6 +436,30 @@ Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildNormW
                    alpha,
                    beta,
                    disable_implicit_weighting));
+
+  return status_test;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildActiveSetTest(
+    Teuchos::ParameterList& p, const NOX::Utils& u) const
+{
+  // ------------------------------------------
+  // get the Quantity Type
+  // ------------------------------------------
+  std::string quantity_type_string = p.get("Quantity Type","???");
+  QuantityType qtype = String2QuantityType(quantity_type_string);
+  if (qtype == quantity_unknown)
+  {
+    std::ostringstream msg;
+    msg << "The \"Quantity Type\" is a required parameter \n"
+        << "and the chosen option \"" << quantity_type_string << "\" is invalid!";
+    throwError("BuildActiveSetTest()",msg.str());
+  }
+
+  Teuchos::RCP<NOX::NLN::StatusTest::ActiveSet> status_test =
+      Teuchos::rcp(new NOX::NLN::StatusTest::ActiveSet(qtype));
 
   return status_test;
 }

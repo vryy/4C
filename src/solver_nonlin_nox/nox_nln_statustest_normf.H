@@ -46,13 +46,12 @@ namespace StatusTest {
       const std::vector<NOX::StatusTest::NormF::ScaleType>& stype,
       const NOX::Utils* u = NULL);
 
-
     //! Destructor.
     virtual ~NormF() {};
 
     /* @name Accessor Functions
        Used to query current values of variables in the status test.
-    */
+     */
     //@{
     //! Returns the value of the F-norm of the corresponding quantity computed in the last call to checkStatus.
     virtual double GetNormF(const NOX::NLN::StatusTest::QuantityType& qType) const;
@@ -67,7 +66,6 @@ namespace StatusTest {
     virtual double GetInitialTolerance(const NOX::NLN::StatusTest::QuantityType& qType) const;
 
     //@}
-
 
     //! derived
     virtual NOX::StatusTest::StatusType checkStatus(
@@ -99,13 +97,13 @@ namespace StatusTest {
     //! number of status tests
     const std::size_t nChecks_;
 
-    //! enums of the quantities we want check
+    //! enums of the quantities we want to check
     std::vector<NOX::NLN::StatusTest::QuantityType> checkList_;
 
     //! global status
     NOX::StatusTest::StatusType gStatus_;
 
-    //! Status
+    //! local/entry-wise status
     std::vector<NOX::StatusTest::StatusType> status_;
 
     //! Type of norm to use

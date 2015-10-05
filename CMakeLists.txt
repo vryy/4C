@@ -627,6 +627,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_scatra_fluid_ale_coupling_algo.cpp
   src/drt_adapter/adapter_scatra_fluid_coupling_algorithm.cpp
   src/drt_adapter/ad_str_structure.cpp
+#  src/drt_adapter/ad_str_structure_new.cpp
   src/drt_adapter/ad_str_constr_merged.cpp
   src/drt_adapter/ad_str_lung.cpp
   src/drt_adapter/ad_str_redairway.cpp
@@ -1558,6 +1559,22 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure/stru_dyn_nln_drt.cpp
   src/drt_structure/stru_resulttest.cpp
   src/drt_structure/strtimint_statmech.cpp
+#  src/drt_structure_new/str_impl_factory.cpp
+#  src/drt_structure_new/str_model_evaluator_factory.cpp
+#  src/drt_structure_new/str_model_evaluator_structure.cpp
+#  src/drt_structure_new/str_nln_solver_factory.cpp
+#  src/drt_structure_new/str_nln_solver_generic.cpp
+#  src/drt_structure_new/str_nln_solver_fullnewton.cpp
+#  src/drt_structure_new/str_nln_solver_nox.cpp
+#  src/drt_structure_new/str_predict_factory.cpp
+#  src/drt_structure_new/str_predict_generic.cpp
+#  src/drt_structure_new/str_predict_constdisvelaccpress.cpp
+#  src/drt_structure_new/str_predict_tangdis.cpp
+#  src/drt_structure_new/str_solver_factory.cpp
+#  src/drt_structure_new/str_timint_factory.cpp
+#  src/drt_structure_new/str_timint_base.cpp
+#  src/drt_structure_new/str_timint_explicit.cpp
+#  src/drt_structure_new/str_timint_implicit.cpp
 )
 set(OBJS_POST_DRT_S8CONVERT
   src/post_s8convert/post_drt_s8convert.cpp
@@ -1713,7 +1730,9 @@ set(OBJS_SOLVER_NONLIN_NOX
   src/solver_nonlin_nox/nox_nln_statustest_factory.cpp
   src/solver_nonlin_nox/nox_nln_statustest_combo.cpp
   src/solver_nonlin_nox/nox_nln_statustest_normf.cpp
+  src/solver_nonlin_nox/nox_nln_statustest_normincr.cpp
   src/solver_nonlin_nox/nox_nln_statustest_normwrms.cpp
+  src/solver_nonlin_nox/nox_nln_statustest_activeset.cpp
   src/solver_nonlin_nox/nox_nln_inner_statustest_factory.cpp
   src/solver_nonlin_nox/nox_nln_inner_statustest_generic.cpp
   src/solver_nonlin_nox/nox_nln_inner_statustest_armijo.cpp

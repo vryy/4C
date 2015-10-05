@@ -19,6 +19,7 @@
 #include "nox_nln_globaldata.H"
 #include "nox_nln_statustest_factory.H"
 
+#include <NOX_StatusTest_Generic.H>
 #include <NOX_Abstract_Vector.H>
 
 
@@ -56,7 +57,7 @@ public:
   virtual const double GetConstrObjectiveModelValue(const NOX::NLN::GlobalData::MeritFctName& name) const = 0;
 
   //! Get the desired linearization terms of the objective model
-  virtual const std::vector<double>
+  virtual Teuchos::RCP<const std::vector<double> >
   GetLinearizedObjectiveModelTerms(const NOX::NLN::GlobalData::MeritFctName& name,
       const NOX::NLN::GlobalData::LinOrder& order=NOX::NLN::GlobalData::linorder_first,
       const NOX::NLN::GlobalData::LinType& type=NOX::NLN::GlobalData::lin_wrt_all_dofs) const = 0;
@@ -65,7 +66,7 @@ public:
   virtual const double GetInfeasibilityModelValue() const = 0;
 
   //! Get the desired linearization terms of the infeasibility model
-  virtual const std::vector<double>
+  virtual Teuchos::RCP<const std::vector<double> >
   GetLinearizedInfeasibilityModelTerms(
       const NOX::NLN::GlobalData::LinOrder& order=NOX::NLN::GlobalData::linorder_first,
       const NOX::NLN::GlobalData::LinType& type=NOX::NLN::GlobalData::lin_wrt_all_dofs) const = 0;
@@ -93,6 +94,14 @@ public:
       const NOX::NLN::StatusTest::QuantityType& checkQuantity,
       const bool& disable_implicit_weighting=false) const = 0;
 
+  //! Returns the active set status.
+  //! This is optional and only relevant for inequality constraint problems.
+  virtual enum NOX::StatusTest::StatusType GetActiveSetStatus(int& activesetsize,
+      int& cyclesize) const
+  {
+    return NOX::StatusTest::Unevaluated;
+  }
+
   //! @}
 
   //! Sets the Lagrange multipliers which are saved internally by the
@@ -100,28 +109,8 @@ public:
   virtual void SetLagrangeMultiplier(
       const NOX::Epetra::Vector& xOld,
       const NOX::Epetra::Vector& d,
-      const double& step) = 0;
-
-  //! Build the saddle point solution vector if a saddle point system has to be solved!
-  //! ToDo This function should be unnecessary after the up-coming cleaning week
-  inline virtual Teuchos::RCP<NOX::Epetra::Vector> BuildSaddlePointXVector(const NOX::Epetra::Vector& x1) const
-  {
-    if (IsCondensed())
-      dserror("BuildSaddlePointXVector() has to be implemented if no condensed system has to be solved!");
-
-    return Teuchos::null;
-  }
-
-  //! Initialize the saddle point system, if necessary
-  //! ToDo This function should be unnecessary after the up-coming cleaning week
-  inline virtual Teuchos::RCP<LINALG::SparseOperator> InitializeSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> A11) const
-  {
-    if (IsCondensed())
-      dserror("InitializeSaddlePointSystem() has to be implemented if no condensed system has to be solved!");
-
-    return Teuchos::null;
-  }
-
+      const double& step)
+  { /*will be deleted in a up-coming commit*/ };
 };
 } // end namespace Interface
 } // end namespace Constraint

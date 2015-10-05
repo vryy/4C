@@ -39,17 +39,24 @@ double NOX::NLN::MeritFunction::Lagrangian::computef(const NOX::Abstract::Group&
   }
 
   // cast the underlying nox-group to the constraint group
-  const NOX::NLN::CONSTRAINT::Group* coGrpPtr =
+  const NOX::NLN::CONSTRAINT::Group* constr_grp_ptr =
       dynamic_cast<const NOX::NLN::CONSTRAINT::Group*>(&grp);
-  if (coGrpPtr == NULL)
+  if (constr_grp_ptr == NULL)
   {
     throwError("computef()","Dynamic cast to NOX::NLN::Constraint::Group failed!");
   }
 
   // Get the structural energy
-  mrtFctVal = coGrpPtr->GetObjectiveModelValue("energy");
+  mrtFctVal = constr_grp_ptr->GetObjectiveModelValue("energy");
   // Get the part of the merit function, which is based on the constraint equations.
-  mrtFctVal += coGrpPtr->GetConstr().GetConstrObjectiveModelValue(nameAsEnum());
+  // Get the constraint interfaces map
+  const std::map<NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> >&
+      constr_interfaces = constr_grp_ptr->GetConstrInterfaces();
+  std::map<NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> >::const_iterator
+      constr_iter;
+  // loop over the second entries of the stl_map
+  for (constr_iter=constr_interfaces.begin();constr_iter!=constr_interfaces.end();++constr_iter)
+    mrtFctVal += constr_iter->second->GetConstrObjectiveModelValue(nameAsEnum());
 
   return mrtFctVal;
 }
@@ -66,23 +73,29 @@ double NOX::NLN::MeritFunction::Lagrangian::computeSlope(const NOX::Abstract::Ve
   }
 
   // cast the underlying nox-group to the constraint group
-  const NOX::NLN::CONSTRAINT::Group* coGrpPtr =
+  const NOX::NLN::CONSTRAINT::Group* constr_grp_ptr =
       dynamic_cast<const NOX::NLN::CONSTRAINT::Group*>(&grp);
-  if (coGrpPtr==NULL)
-  {
+  if (constr_grp_ptr==NULL)
     throwError("computeSlope()","Dynamic cast to NOX::NLN::Constraint::Group failed!");
-  }
 
-  // get the first order linearization terms of the Lagrangian objective model
-  const std::vector<double> firstOrderTerms =
-      coGrpPtr->GetConstr().GetLinearizedObjectiveModelTerms(nameAsEnum(),
-          NOX::NLN::GlobalData::linorder_first);
+  // Get the constraint interfaces map
+  const std::map<NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> >&
+      constr_interfaces = constr_grp_ptr->GetConstrInterfaces();
+  std::map<NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> >::const_iterator
+      constr_iter;
 
   // compute the slope
   double slope = 0.0;
-  for (std::size_t i=0;i<firstOrderTerms.size();++i)
-    slope += firstOrderTerms[i];
+  for (constr_iter=constr_interfaces.begin();constr_iter!=constr_interfaces.end();++constr_iter)
+  {
+    // get the first order linearization terms of the Lagrangian objective model
+    Teuchos::RCP<const std::vector<double> > firstOrderTerms =
+        constr_iter->second->GetLinearizedObjectiveModelTerms(nameAsEnum(),
+            NOX::NLN::GlobalData::linorder_first);
 
+    for (std::size_t i=0;i<firstOrderTerms->size();++i)
+      slope += firstOrderTerms->at(i);
+  }
   return slope;
 }
 
@@ -99,49 +112,57 @@ double NOX::NLN::MeritFunction::Lagrangian::computeSaddlePointModel(
   }
 
   // cast the underlying nox-group to the constraint group
-  const NOX::NLN::CONSTRAINT::Group* coGrpPtr =
+  const NOX::NLN::CONSTRAINT::Group* constr_grp_ptr =
       dynamic_cast<const NOX::NLN::CONSTRAINT::Group*>(&grp);
-  if (coGrpPtr==NULL)
+  if (constr_grp_ptr==NULL)
   {
     throwError("computeModel()","Dynamic cast to NOX::NLN::Constraint::Group failed!");
   }
 
   double model = 0.0;
-  // --------------------------------------------
-  // Get the 1st order linearization terms of the Lagrangian objective model
-  // w.r.t the primary degrees of freedom
-  // --------------------------------------------
-  const std::vector<double> pFirstOrderTerms =
-      coGrpPtr->GetConstr().GetLinearizedObjectiveModelTerms(nameAsEnum(),
-      NOX::NLN::GlobalData::linorder_first,
-      NOX::NLN::GlobalData::lin_wrt_primary_dofs);
+  // Get the constraint interfaces map
+    const std::map<NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> >&
+        constr_interfaces = constr_grp_ptr->GetConstrInterfaces();
+    std::map<NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> >::const_iterator
+        constr_iter;
+  for (constr_iter=constr_interfaces.begin();constr_iter!=constr_interfaces.end();++constr_iter)
+  {
+    // --------------------------------------------
+    // Get the 1st order linearization terms of the Lagrangian objective model
+    // w.r.t the primary degrees of freedom
+    // --------------------------------------------
+    Teuchos::RCP<const std::vector<double> > pFirstOrderTerms =
+        constr_iter->second->GetLinearizedObjectiveModelTerms(nameAsEnum(),
+        NOX::NLN::GlobalData::linorder_first,
+        NOX::NLN::GlobalData::lin_wrt_primary_dofs);
 
-  for (std::size_t i=0;i<pFirstOrderTerms.size();++i)
-    model += stepPV * pFirstOrderTerms[i];
+    for (std::size_t i=0;i<pFirstOrderTerms->size();++i)
+      model += stepPV * pFirstOrderTerms->at(i);
 
-  // --------------------------------------------
-  // Get the 1st order linearization terms of the Lagrangian objective model
-  // w.r.t the Lagrange multiplier degrees of freedom
-  // --------------------------------------------
-  const std::vector<double> lmFirstOrderTerms =
-      coGrpPtr->GetConstr().GetLinearizedObjectiveModelTerms(nameAsEnum(),
-      NOX::NLN::GlobalData::linorder_first,
-      NOX::NLN::GlobalData::lin_wrt_lagrange_multiplier_dofs);
+    // --------------------------------------------
+    // Get the 1st order linearization terms of the Lagrangian objective model
+    // w.r.t the Lagrange multiplier degrees of freedom
+    // --------------------------------------------
+    Teuchos::RCP<const std::vector<double> > lmFirstOrderTerms =
+        constr_iter->second->GetLinearizedObjectiveModelTerms(nameAsEnum(),
+        NOX::NLN::GlobalData::linorder_first,
+        NOX::NLN::GlobalData::lin_wrt_lagrange_multiplier_dofs);
 
-  for (std::size_t i=0;i<lmFirstOrderTerms.size();++i)
-    model += stepLM * lmFirstOrderTerms[i];
+    for (std::size_t i=0;i<lmFirstOrderTerms->size();++i)
+      model += stepLM * lmFirstOrderTerms->at(i);
 
-  // --------------------------------------------
-  // Get the 2nd order linearization terms of the Lagrangian objective model
-  // w.r.t the Lagrange multiplier AND primary degrees of freedom
-  // --------------------------------------------
-  const std::vector<double> pLmSecondOrderTerms =
-      coGrpPtr->GetConstr().GetLinearizedObjectiveModelTerms(nameAsEnum(),
-      NOX::NLN::GlobalData::linorder_second,
-      NOX::NLN::GlobalData::lin_wrt_mixed_dofs);
+    // --------------------------------------------
+    // Get the 2nd order linearization terms of the Lagrangian objective model
+    // w.r.t the Lagrange multiplier AND primary degrees of freedom
+    // --------------------------------------------
+    Teuchos::RCP<const std::vector<double> > pLmSecondOrderTerms =
+        constr_iter->second->GetLinearizedObjectiveModelTerms(nameAsEnum(),
+        NOX::NLN::GlobalData::linorder_second,
+        NOX::NLN::GlobalData::lin_wrt_mixed_dofs);
 
-  for (std::size_t i=0;i< pLmSecondOrderTerms.size();++i)
-    model += stepLM * stepPV * pLmSecondOrderTerms[i];
+    for (std::size_t i=0;i< pLmSecondOrderTerms->size();++i)
+      model += stepLM * stepPV * pLmSecondOrderTerms->at(i);
+  }
 
   return model;
 }

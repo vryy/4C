@@ -42,6 +42,18 @@ namespace Interface {
         const NOX::NLN::StatusTest::QuantityType& checkQuantity,
         const bool& disable_implicit_weighting = false) const = 0;
 
+    //! Returns the increment norm of the primary DoF fields
+    virtual double GetPrimarySolutionUpdateNorms(
+        const NOX::NLN::StatusTest::QuantityType& checkQuantity,
+        const NOX::Abstract::Vector::NormType& type = NOX::Abstract::Vector::TwoNorm,
+        const bool& isScaled = false) const = 0;
+
+    //! Returns the previous solution norm of primary DoF fields
+    virtual double GetPreviousPrimarySolutionNorms(
+        const NOX::NLN::StatusTest::QuantityType& checkQuantity,
+        const NOX::Abstract::Vector::NormType& type = NOX::Abstract::Vector::TwoNorm,
+        const bool& isScaled = false) const = 0;
+
     //! compute and return some energy representative
     virtual const double GetObjectiveModelValue(const std::string& name) const = 0;
 
@@ -49,9 +61,9 @@ namespace Interface {
     virtual double CalcRefNormForce() = 0;
 
     //! update the internal variables of the required interface (e.g. displacements)
-    virtual void SetPrimarySolution(const NOX::Epetra::Vector& xOld,
-        const NOX::Epetra::Vector& d,
-        const double& step) = 0;
+    virtual void SetPrimarySolution(const NOX::Abstract::Vector& xOld,
+        const NOX::Abstract::Vector& d,
+        const double& step) { /*will be deleted in a up-coming commit*/ };
   };
 } // namespace Interface
 } // namespace STR

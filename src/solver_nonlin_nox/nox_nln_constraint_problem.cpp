@@ -30,26 +30,7 @@ NOX::NLN::CONSTRAINT::NoxProblem::NoxProblem(Teuchos::RCP<NOX::NLN::GlobalData>&
     Teuchos::RCP<LINALG::SparseOperator> A11) :
     NOX::NLN::NoxProblem(nlnGlobalData,x,A11)
 {
-  Initialize(x,A11);
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void NOX::NLN::CONSTRAINT::NoxProblem::Initialize(Teuchos::RCP<Epetra_Vector>& x1,
-                                                  Teuchos::RCP<LINALG::SparseOperator> A11)
-{
-  // create a default saddle point system, if necessary
-  if (not GetConstrPtr()->IsCondensed())
-  {
-    xVector_ = GetConstrPtr()->BuildSaddlePointXVector(*x1);
-    jac_ = GetConstrPtr()->InitializeSaddlePointSystem(A11);
-  }
-  else
-  {
-    // ToDo Check if CreateView is sufficient
-    xVector_ =  Teuchos::rcp(new NOX::Epetra::Vector(x1,NOX::Epetra::Vector::CreateCopy));
-    jac_ = A11;
-  }
+  // Initialize is called in the base class.
 }
 
 /*----------------------------------------------------------------------------*
@@ -62,13 +43,13 @@ Teuchos::RCP<NOX::Abstract::Group> NOX::NLN::CONSTRAINT::NoxProblem::CreateNoxGr
       nlnGlobalData_->GetRequiredInterface();
 
   return Teuchos::rcp(new NOX::NLN::CONSTRAINT::Group(params.sublist("Printing"),
-    iReq,*xVector_, linSys,GetConstrPtr()));
+    iReq,*xVector_,linSys,GetConstrInterfaces()));
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required>
-NOX::NLN::CONSTRAINT::NoxProblem::GetConstrPtr() const
+const std::map<enum NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> >&
+NOX::NLN::CONSTRAINT::NoxProblem::GetConstrInterfaces() const
 {
-  return nlnGlobalData_->GetConstraintInterface();
+  return nlnGlobalData_->GetConstraintInterfaces();
 }

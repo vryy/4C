@@ -119,3 +119,38 @@ double NOX::NLN::AUX::GetNormFClassVariable(
   // default return
   return -1.0;
 }
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+enum NOX::NLN::SolutionType NOX::NLN::AUX::ConvertQuantityType2SolutionType(
+      const enum NOX::NLN::StatusTest::QuantityType& qtype)
+{
+  enum NOX::NLN::SolutionType soltype = NOX::NLN::sol_unknown;
+  switch(qtype)
+  {
+    case NOX::NLN::StatusTest::quantity_structure:
+    case NOX::NLN::StatusTest::quantity_eas:
+    case NOX::NLN::StatusTest::quantity_pressure:
+      soltype = NOX::NLN::sol_structure;
+      break;
+    case NOX::NLN::StatusTest::quantity_lag_pen_constraint:
+      soltype = NOX::NLN::sol_lag_pen_constraint;
+      break;
+    case NOX::NLN::StatusTest::quantity_contact:
+      soltype = NOX::NLN::sol_contact;
+      break;
+    case NOX::NLN::StatusTest::quantity_meshtying:
+      soltype = NOX::NLN::sol_meshtying;
+      break;
+    case NOX::NLN::StatusTest::quantity_windkessel:
+      soltype = NOX::NLN::sol_windkessel;
+      break;
+    case NOX::NLN::StatusTest::quantity_plasticity:
+    case NOX::NLN::StatusTest::quantity_unknown:
+    default:
+      dserror("Unknown conversion for the quantity type \"%s\".",
+          NOX::NLN::StatusTest::QuantityType2String(qtype).c_str());
+  }
+  // return the corresponding solution type
+  return soltype;
+}

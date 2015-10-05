@@ -242,6 +242,78 @@ Teuchos::RCP<std::vector<double> > NOX::NLN::Group::GetSolutionUpdateRMS(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+Teuchos::RCP<std::vector<double> > NOX::NLN::Group::GetSolutionUpdateNorms(
+    const std::vector<NOX::Abstract::Vector::NormType>& type,
+    const std::vector<StatusTest::QuantityType>& chQ,
+    Teuchos::RCP<const std::vector<StatusTest::NormIncr::ScaleType> > scale) const
+{
+  if (scale.is_null())
+    scale = Teuchos::rcp(new std::vector<StatusTest::NormIncr::ScaleType>(chQ.size(),
+        StatusTest::NormIncr::Unscaled));
+
+  Teuchos::RCP<std::vector<double> > norms = Teuchos::rcp(new std::vector<double>(0));
+
+  double rval = -1.0;
+  for (std::size_t i=0;i<chQ.size();++i)
+  {
+    rval = GetNlnReqInterfacePtr()->GetPrimarySolutionUpdateNorms(chQ[i],type[i],
+        (*scale)[i]==StatusTest::NormIncr::Scaled);
+    if (rval>=0.0)
+    {
+      norms->push_back(rval);
+    }
+    else
+    {
+      std::ostringstream msg;
+      msg << "The desired quantity"
+          " for the \"NormIncr\" Status Test could not be found! (enum="
+          << chQ[i] << " | " << NOX::NLN::StatusTest::QuantityType2String(chQ[i])
+          << ")" << std::endl;
+      throwError("GetSolutionUpdateNorms",msg.str());
+    }
+  }
+
+  return norms;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<std::vector<double> > NOX::NLN::Group::GetPreviousSolutionNorms(
+    const std::vector<NOX::Abstract::Vector::NormType>& type,
+    const std::vector<StatusTest::QuantityType>& chQ,
+    Teuchos::RCP<const std::vector<StatusTest::NormIncr::ScaleType> > scale) const
+{
+  if (scale.is_null())
+    scale = Teuchos::rcp(new std::vector<StatusTest::NormIncr::ScaleType>(chQ.size(),
+        StatusTest::NormIncr::Unscaled));
+
+  Teuchos::RCP<std::vector<double> > norms = Teuchos::rcp(new std::vector<double>(0));
+
+  double rval = -1.0;
+  for (std::size_t i=0;i<chQ.size();++i)
+  {
+    rval = GetNlnReqInterfacePtr()->GetPreviousPrimarySolutionNorms(chQ[i],type[i],
+        (*scale)[i]==StatusTest::NormIncr::Scaled);
+    if (rval>=0.0)
+    {
+      norms->push_back(rval);
+    }
+    else
+    {
+      std::ostringstream msg;
+      msg << "The desired quantity"
+          " for the \"NormIncr\" Status Test could not be found! (enum="
+          << chQ[i] << " | " << NOX::NLN::StatusTest::QuantityType2String(chQ[i])
+          << ")" << std::endl;
+      throwError("GetPreviousSolutionNorms",msg.str());
+    }
+  }
+
+  return norms;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 const double NOX::NLN::Group::GetObjectiveModelValue(const std::string& name) const
 {
   return GetNlnReqInterfacePtr()->GetObjectiveModelValue(name);

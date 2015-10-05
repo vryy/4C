@@ -20,6 +20,7 @@
 #include <NOX_StatusTest_NormF.H>
 
 #include "nox_nln_statustest_factory.H"
+#include "nox_nln_statustest_normincr.H"
 
 // forward declarations
 namespace NOX {
@@ -86,6 +87,18 @@ namespace Interface {
         const std::vector<double>& rTol,
         const std::vector<NOX::NLN::StatusTest::QuantityType>& chQ,
         const std::vector<bool>& disable_implicit_weighting) const;
+
+    //! returns the desired norm of the primary solution updates
+    virtual Teuchos::RCP<std::vector<double> > GetSolutionUpdateNorms(
+        const std::vector<NOX::Abstract::Vector::NormType>& type,
+        const std::vector<StatusTest::QuantityType>& chQ,
+        Teuchos::RCP<const std::vector<StatusTest::NormIncr::ScaleType> > scale = Teuchos::null) const;
+
+    //! returns the desired norm of the previous solution
+    virtual Teuchos::RCP<std::vector<double> > GetPreviousSolutionNorms(
+        const std::vector<NOX::Abstract::Vector::NormType>& type,
+        const std::vector<StatusTest::QuantityType>& chQ,
+        Teuchos::RCP<const std::vector<StatusTest::NormIncr::ScaleType> > scale) const;
 
     //! compute and return some energy representative
     virtual const double GetObjectiveModelValue(const std::string& name) const;

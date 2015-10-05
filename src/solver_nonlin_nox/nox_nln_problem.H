@@ -83,8 +83,7 @@ namespace StatusTest {
         Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTest) const;
 
     //! check final status of the non-linear solving procedure
-    virtual int CheckFinalStatus(const NOX::StatusTest::StatusType& finalStatus,
-        const bool& isAdaptiveTimeStep=false) const;
+    virtual void CheckFinalStatus(const NOX::StatusTest::StatusType& finalStatus) const;
 
   private:
     //! throw error

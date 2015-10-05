@@ -135,22 +135,16 @@ void NOX::NLN::NoxProblem::CreateStatusTests(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int NOX::NLN::NoxProblem::CheckFinalStatus(
-    const NOX::StatusTest::StatusType& finalStatus,
-    const bool& isAdaptiveTimeStep) const
+void NOX::NLN::NoxProblem::CheckFinalStatus(
+    const NOX::StatusTest::StatusType& finalStatus) const
 {
-  int rVal = 0;
-
-  if ((not isAdaptiveTimeStep) and
-      (finalStatus != NOX::StatusTest::Converged))
+  if (finalStatus != NOX::StatusTest::Converged)
   {
     throwError("CheckFinalStatus()",
         "The nonlinear solver did not converge!");
   }
-  else if (finalStatus != NOX::StatusTest::Converged)
-    rVal = -1;
 
-  return rVal;
+  return;
 }
 
 /*----------------------------------------------------------------------------*

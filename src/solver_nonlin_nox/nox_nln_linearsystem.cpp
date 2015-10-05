@@ -158,7 +158,7 @@ bool NOX::NLN::LinearSystem::applyJacobianInverse(
       &(result.getEpetraVector()),
       &(nonConstInput.getEpetraVector()));
 
-  // ************* Begin linear system scaling *******************
+  // ************* Begin linear system scaling *****************
   if ( !Teuchos::is_null(scaling_) ) {
 
     if ( !manualScaling_ )

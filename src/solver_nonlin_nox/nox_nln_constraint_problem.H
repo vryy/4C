@@ -38,15 +38,12 @@ namespace CONSTRAINT {
     //! destructor
     virtual ~NoxProblem() {};
 
-    // derived
-    virtual void Initialize(Teuchos::RCP<Epetra_Vector>& x1, Teuchos::RCP<LINALG::SparseOperator> A11);
-
     // create a nox group for constraint problems
     Teuchos::RCP<NOX::Abstract::Group> CreateNoxGroup(
         const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys) const;
 
-    //! Returns the constraint interface pointer
-    virtual const Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> GetConstrPtr() const;
+    //! Returns the constraint interfaces
+    virtual const std::map<NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> >& GetConstrInterfaces() const;
   };
 } // namespace CONSTRAINT
 } // namespace NLN
