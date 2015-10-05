@@ -34,12 +34,49 @@ namespace INPAR
 
     /// @name Time integration
     //@{
+    /// Active element technologies
+    enum EleTech
+    {
+      eletech_eas,        ///< EAS detected
+      eletech_fbar,       ///< FBAR detected
+      eletech_plasticity, ///< plasticity detected
+      eletech_pressure    ///< additional pressure degree of freedom
+    };
+
+    /// Map element technology to string
+    static inline const std::string EleTechString
+    (
+      const enum EleTech name  ///< enum to convert
+    )
+    {
+      switch (name)
+      {
+        case eletech_eas:
+          return "EAS";
+          break;
+        case eletech_fbar:
+          return "FBar";
+          break;
+        case eletech_plasticity:
+          return "plasticity";
+          break;
+        case eletech_pressure:
+          return "pressure";
+          break;
+        default :
+          dserror("Cannot make std::string for element technology %d", name);
+          break;
+      }
+      return "";
+    }
+
     /// Type of the used models/conditions
     /// necessary for the model evaluator
     enum ModelType
     {
       model_structure,          ///< evaluate the structural model
-      model_meshtying_contact,  ///< evaluate the meshtying or/and contact model
+      model_contact,            ///< evaluate the contact model
+      model_meshtying,          ///< evaluate the meshtying model
       model_windkessel,         ///< evaluate the windkessel model
       model_springdashpot,      ///< evaluate the springdashpot model
       model_lag_pen_constraint  ///< evaluate the Lagrange or/and penalty enforced constraint models
@@ -56,17 +93,20 @@ namespace INPAR
       case model_structure :
         return "Structure";
         break;
-      case model_meshtying_contact :
-        return "Meshtying/Contact";
+      case model_contact :
+        return "Contact";
+        break;
+      case model_meshtying :
+        return "Meshtying";
         break;
       case model_windkessel :
         return "Windkessel";
         break;
       case model_springdashpot :
-        return "Spring Dashpot";
+        return "SpringDashpot";
         break;
       case model_lag_pen_constraint :
-        return "Lagrange/penalty constraint";
+        return "Constraint";
         break;
       default :
         dserror("Cannot make std::string for model type %d", name);

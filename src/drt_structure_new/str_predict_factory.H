@@ -19,7 +19,7 @@ namespace PREDICT {
   {
   public:
     //! constructor
-    Factory() {};
+    Factory();
 
     //! destructor
     virtual ~Factory() {};

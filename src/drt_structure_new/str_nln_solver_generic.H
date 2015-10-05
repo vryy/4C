@@ -10,15 +10,17 @@
 
 #include <Teuchos_RCP.hpp>
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_inpar/inpar_structure.H"
 
 // forward declaration
 namespace STR {
+namespace TIMINT {
+  class Implicit;
+  class BaseDataGlobalState;
+  class BaseDataSDyn;
+} // namespace TIMINT
 namespace NLN {
 namespace SOLVER {
-namespace INTERFACE {
-  class Required;
-} // namespace INTERFACE
-
   class Generic
   {
   public:
@@ -31,7 +33,7 @@ namespace INTERFACE {
     //! initialization
     virtual void Init(const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> gstate,
         const Teuchos::RCP<STR::TIMINT::BaseDataSDyn> sdyn,
-        const Teuchos::RCP<STR::NLN::SOLVER::INTERFACE::Required> ireq);
+        const Teuchos::RCP<STR::TIMINT::Implicit> implicit);
 
     virtual void Setup() = 0;
 
@@ -39,7 +41,7 @@ namespace INTERFACE {
     virtual void Reset() = 0;
 
     //! Solve the non-linear problem
-    virtual void Solve() = 0;
+    virtual INPAR::STR::ConvergenceStatus Solve() = 0;
 
   protected:
     //! Returns true if Init() has been called
@@ -55,6 +57,60 @@ namespace INTERFACE {
     {
       if (!IsInit() or !IsSetup())
         dserror("Call Init() and Setup() first!");
+    }
+    virtual void CheckInit() const
+    {
+      if (!IsInit())
+        dserror("You have to call Init() first!");
+    }
+
+    // Returns the global state data container pointer
+    const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> DataGlobalStatePtr()
+    {
+      CheckInitSetup();
+      return gstate_;
+    }
+
+    // Returns the global state data container
+    STR::TIMINT::BaseDataGlobalState& DataGlobalState()
+    {
+      CheckInitSetup();
+      return *gstate_;
+    }
+
+    // Returns the structural dynamics data container pointer
+    const Teuchos::RCP<STR::TIMINT::BaseDataSDyn> DataSDynPtr()
+    {
+      CheckInitSetup();
+      return sdyn_;
+    }
+
+    // Returns the structural dynamics data container
+    const STR::TIMINT::BaseDataSDyn& DataSDyn() const
+    {
+      CheckInitSetup();
+      return *sdyn_;
+    }
+
+    // Returns the structural dynamics data container
+    STR::TIMINT::BaseDataSDyn& DataSDyn()
+    {
+      CheckInitSetup();
+      return *sdyn_;
+    }
+
+    // Returns the non-linear solver implicit time integration interface pointer
+    const Teuchos::RCP<STR::TIMINT::Implicit> ImplicitTimIntPtr()
+    {
+      CheckInitSetup();
+      return iimpl_;
+    }
+
+    // Returns the non-linear solver implicit time integration interface
+    STR::TIMINT::Implicit& ImplicitTimInt()
+    {
+      CheckInitSetup();
+      return *iimpl_;
     }
 
   protected:
@@ -72,7 +128,7 @@ namespace INTERFACE {
     Teuchos::RCP<STR::TIMINT::BaseDataSDyn> sdyn_;
 
     //! required interface pointer
-    Teuchos::RCP<STR::NLN::SOLVER::INTERFACE::Required> ireq_;
+    Teuchos::RCP<STR::TIMINT::Implicit> iimpl_;
   };
 } // namespace SOLVER
 } // namespace NLN

@@ -8,8 +8,10 @@
 #ifndef STR_TIMINT_IMPLICIT_H_
 #define STR_TIMINT_IMPLICIT_H_
 
-#include "str_timint_base.H"
-#include "str_nln_solver_interface_required.H"
+#include "str_timint_base.H"    // base class
+
+#include "../solver_nonlin_nox/nox_nln_interface_required.H"
+#include "../solver_nonlin_nox/nox_nln_interface_jacobian.H"
 
 // forward declarations ...
 namespace STR {
@@ -30,7 +32,8 @@ namespace INTERFACE {
 
 namespace TIMINT {
   class Implicit : public Base,
-                   public STR::NLN::SOLVER::INTERFACE::Required
+                   public NOX::NLN::Interface::Required,
+                   public NOX::NLN::Interface::Jacobian
   {
   public:
     //! constructor
@@ -43,11 +46,11 @@ namespace TIMINT {
 
     virtual INPAR::STR::ConvergenceStatus Solve();
 
-    //! Return the rhs-vector (negative sign for Newton is already included.)
-    Teuchos::RCP<const Epetra_Vector> RHS()
-    {
-      return rhs_;
-    }
+//    //! Return the rhs-vector (negative sign for Newton is already included.)
+//    Teuchos::RCP<const Epetra_Vector> RHS()
+//    {
+//      return rhs_;
+//    }
 
   protected:
     virtual void Setup();
@@ -89,23 +92,7 @@ namespace TIMINT {
     };
 
     //! Prepare time step
-    virtual void PrepareTimeStep()
-    {
-      // update end time \f$t_{n+1}\f$ of this time step to cope with time step size adaptivity
-      DataGlobalStatePtr()->SetTimenp(DataGlobalStatePtr()->GetUpdatedTime());
-
-      // things that need to be done before Predict
-      PrePredict();
-
-      // TODO prepare contact for new time step
-      // PrepareStepContact();
-      Predictor().Predict();
-
-      // things that need to be done after Predict
-      PostPredict();
-
-      return;
-    }
+    virtual void PrepareTimeStep();
 
   private:
     //! ptr to the implicit time integrator object

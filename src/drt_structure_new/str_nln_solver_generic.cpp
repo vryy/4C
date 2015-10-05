@@ -7,8 +7,7 @@
 
 #include "str_nln_solver_generic.H"
 
-#include "str_timint_base.H"
-#include "str_nln_solver_interface_required.H"
+#include "str_timint_implicit.H"
 
 
 /*----------------------------------------------------------------------------*
@@ -18,7 +17,7 @@ STR::NLN::SOLVER::Generic::Generic()
       issetup_(false),
       gstate_(Teuchos::null),
       sdyn_(Teuchos::null),
-      ireq_(Teuchos::null)
+      iimpl_(Teuchos::null)
 {
   // empty constructor
 }
@@ -26,16 +25,18 @@ STR::NLN::SOLVER::Generic::Generic()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::NLN::SOLVER::Generic::Init(const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> gstate,
+void STR::NLN::SOLVER::Generic::Init(
+    const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> gstate,
     const Teuchos::RCP<STR::TIMINT::BaseDataSDyn> sdyn,
-    const Teuchos::RCP<STR::NLN::SOLVER::INTERFACE::Required> ireq)
+    const Teuchos::RCP<STR::TIMINT::Implicit> implicit)
 {
   // We have to call Setup() after Init()
   issetup_ = false;
 
+  // initialize internal variables
   gstate_ = gstate;
   sdyn_ = sdyn;
-  ireq_ = ireq;
+  iimpl_ = implicit;
 
   isinit_ = true;
 

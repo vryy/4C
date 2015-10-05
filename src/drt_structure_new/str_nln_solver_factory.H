@@ -20,7 +20,7 @@ namespace SOLVER {
   {
   public:
     //! constructor
-    Factory() {};
+    Factory();
 
     //! destructor
     virtual ~Factory() {};

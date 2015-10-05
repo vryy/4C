@@ -6,7 +6,58 @@
  */
 
 #include "ad_str_structure_new.H"
+#include "ad_str_timint_adaptive.H"
+#include "ad_str_fsi_timint_adaptive.H"
+#include "ad_str_constr_merged.H"
+#include "ad_str_wrapper.H"
+#include "ad_str_lung.H"
+#include "ad_str_redairway.H"
+#include "ad_str_fsi_crack.H"
+#include "ad_str_fpsiwrapper.H"
+#include "ad_str_fsiwrapper_immersed.H"
+#include "ad_str_statmech.H"
+#include "ad_str_invana.H"
+
+#include "../drt_structure/strtimada_create.H"
+
+#include "../drt_crack/InsertCohesiveElements.H"
+
 #include "../drt_lib/drt_dserror.H"
+
+#include "../drt_structure_new/str_timint_factory.H"
+#include "../drt_structure_new/str_solver_factory.H"
+#include "../drt_structure_new/str_timint_base.H"
+
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_condition.H"
+
+#include "../drt_io/io.H"
+#include "../drt_io/io_control.H"
+#include "../drt_io/io_pstream.H"
+
+#include "../drt_mat/matpar_bundle.H"
+
+#include "../drt_inpar/inpar_crack.H"
+#include "../drt_inpar/inpar_fsi.H"
+#include "../drt_inpar/inpar_poroelast.H"
+#include "../drt_inpar/drt_validparameters.H"
+
+#include "../drt_so3/so_sh8p8.H"
+#include "../drt_so3/so3_ssn_plast_eletypes.H"
+#include "../drt_so3/so3_ssn_plast_sosh8.H"
+#include "../drt_so3/so3_ssn_plast_sosh18.H"
+#include "../drt_so3/so_hex8fbar.H"
+
+#include <Teuchos_TimeMonitor.hpp>
+#include <Teuchos_ParameterList.hpp>
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+ADAPTER::StructureNew::StructureNew()
+{
+  // empty constructor
+}
 
 
 /*----------------------------------------------------------------------------*
@@ -105,13 +156,22 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
   Teuchos::TimeMonitor monitor(*t);
 
   // ------------------------------------------------
-  // Setup a model type vector by checking
+  // Setup a model type set by checking
   // the different conditions
   // ------------------------------------------------
   // define and initial with default value
-  Teuchos::RCP<std::vector<const enum INPAR::STR::ModelType> > modeltypes =
-      Teuchos::rcp(new std::vector<const enum INPAR::STR::ModelType>(1,INPAR::STR::model_structure));
+  Teuchos::RCP<std::set<enum INPAR::STR::ModelType> > modeltypes =
+      Teuchos::rcp(new std::set<enum INPAR::STR::ModelType>());
+  modeltypes->insert(INPAR::STR::model_structure);
   SetModelTypes(*modeltypes);
+
+  // ------------------------------------------------
+  // Setup a element technology set by checking
+  // the elements of the discretization
+  // ------------------------------------------------
+  Teuchos::RCP<std::set<enum INPAR::STR::EleTech> > eletechs =
+      Teuchos::rcp(new std::set<enum INPAR::STR::EleTech>());
+  DetectElementTechnologies(*eletechs);
 
   // ------------------------------------------------
   // Here we read the discretization at the current
@@ -141,7 +201,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
   // ------------------------------------------------
   // Setup and create model specific linear solvers
   // ------------------------------------------------
-  Teuchos::RCP<std::map<const enum INPAR::STR::ModelType, Teuchos::RCP<LINALG::Solver> > > linsolvers =
+  Teuchos::RCP<std::map<enum INPAR::STR::ModelType, Teuchos::RCP<LINALG::Solver> > > linsolvers =
       STR::SOLVER::BuildLinSolvers(*modeltypes,*sdyn_,*actdis_);
 
   // ------------------------------------------------
@@ -207,7 +267,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
   // ------------------------------------------------
   Teuchos::RCP<STR::TIMINT::BaseDataSDyn> datasdyn =
       Teuchos::rcp(new STR::TIMINT::BaseDataSDyn());
-  datasdyn->Init(actdis_,*sdyn_,*xparams,modeltypes,linsolvers);
+  datasdyn->Init(actdis_,*sdyn_,*xparams,modeltypes,eletechs,linsolvers);
   datasdyn->Setup();
 
   // ------------------------------------------------
@@ -239,7 +299,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
-    std::vector<const enum INPAR::STR::ModelType>& modeltypes) const
+    std::set<enum INPAR::STR::ModelType>& modeltypes) const
 {
   if (not IsInit())
     dserror("You have to call Init() first!");
@@ -247,20 +307,16 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
   // ------------------------------------------------
   // check for meshtying and contact conditions
   // ------------------------------------------------
-  bool have_contact = false;
-  bool have_meshtying = false;
   // --- contact conditions
   std::vector<DRT::Condition*> ccond(0);
   actdis_->GetCondition("Contact",ccond);
   if (ccond.size())
-    have_contact = true;
+    modeltypes.insert(INPAR::STR::model_contact);
   // --- meshtying conditions
   std::vector<DRT::Condition*> mtcond(0);
   actdis_->GetCondition("Mortar", mtcond);
   if (mtcond.size())
-    have_meshtying = true;
-  if (have_contact or have_meshtying)
-    modeltypes.push_back(INPAR::STR::model_meshtying_contact);
+    modeltypes.insert(INPAR::STR::model_meshtying);
   // ------------------------------------------------
   // check for windkessel conditions
   // ------------------------------------------------
@@ -279,7 +335,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
       wkcond_heartvalvearterial.size() or
       wkcond_heartvalvearterial_proxdist.size() or
       wkcond_heartvalvecardiovascular_full.size())
-    modeltypes.push_back(INPAR::STR::model_windkessel);
+    modeltypes.insert(INPAR::STR::model_windkessel);
   // ------------------------------------------------
   // check for constraint conditions
   // ------------------------------------------------
@@ -321,16 +377,89 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
       )
     have_pen_constraint = true;
   if (have_lag_constraint or have_pen_constraint)
-    modeltypes.push_back(INPAR::STR::model_lag_pen_constraint);
+    modeltypes.insert(INPAR::STR::model_lag_pen_constraint);
   // ------------------------------------------------
   // check for spring dashpot conditions
   // ------------------------------------------------
   std::vector<DRT::Condition*> sdp_cond(0);
   actdis_->GetCondition("SpringDashpot",sdp_cond);
   if (sdp_cond.size())
-    modeltypes.push_back(INPAR::STR::model_springdashpot);
+    modeltypes.insert(INPAR::STR::model_springdashpot);
 
   // hopefully we haven't forgotten anything
+  return;
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void ADAPTER::StructureBaseAlgorithmNew::DetectElementTechnologies(
+    std::set<enum INPAR::STR::EleTech>& eletechs) const
+{
+  int isplasticity_local = 0;
+  int isplasticity_global = 0;
+
+  int iseas_local = 0;
+  int iseas_global = 0;
+
+  int isfbar_local = 0;
+  int isfbar_global = 0;
+
+  int ispressure_local = 0;
+  int ispressure_global = 0;
+
+  for (int i=0;i<actdis_->NumMyRowElements();++i)
+  {
+    DRT::Element* actele = actdis_->lRowElement(i);
+    // Detect plasticity
+    if (   actele->ElementType() == DRT::ELEMENTS::So_hex8PlastType::Instance()
+        || actele->ElementType() == DRT::ELEMENTS::So_hex27PlastType::Instance()
+        || actele->ElementType() == DRT::ELEMENTS::So_sh8PlastType::Instance()
+        || actele->ElementType() == DRT::ELEMENTS::So_hex18PlastType::Instance()
+        || actele->ElementType() == DRT::ELEMENTS::So_sh18PlastType::Instance()
+       )
+    {
+      isplasticity_local=true;
+      break;
+    }
+
+    // Detect EAS
+    DRT::ELEMENTS::So_base* so_base_ele = dynamic_cast<DRT::ELEMENTS::So_base*>(actele);
+    if (so_base_ele!=NULL)
+      if (so_base_ele->HaveEAS())
+        iseas_local = 1;
+
+    // Detect additional pressure dofs
+    if (actele->ElementType() == DRT::ELEMENTS::So_sh8p8Type::Instance())
+      ispressure_local = 1;
+
+    // Detect fbar
+    DRT::ELEMENTS::So_hex8fbar* so_hex8fbar_ele =
+        dynamic_cast<DRT::ELEMENTS::So_hex8fbar*>(actele);
+    if (so_hex8fbar_ele!=NULL)
+      isfbar_local = 1;
+  }
+
+  // plasticity - sum over all processors
+  actdis_->Comm().SumAll(&isplasticity_local,&isplasticity_global,1);
+  if (isplasticity_global>0)
+    eletechs.insert(INPAR::STR::eletech_plasticity);
+
+  // eas - sum over all processors
+  actdis_->Comm().SumAll(&iseas_local,&iseas_global,1);
+  if (iseas_global>0)
+    eletechs.insert(INPAR::STR::eletech_eas);
+
+  // pressure - sum over all processors
+  actdis_->Comm().SumAll(&ispressure_local,&ispressure_global,1);
+  if (ispressure_global>0)
+    eletechs.insert(INPAR::STR::eletech_pressure);
+
+  // fbar - sum over all processors
+  actdis_->Comm().SumAll(&isfbar_local,&isfbar_global,1);
+  if (isfbar_global>0)
+    eletechs.insert(INPAR::STR::eletech_fbar);
+
   return;
 }
 
@@ -563,8 +692,9 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(
 
       if ((actdis_->Comm()).MyPID()==0)
         IO::cout << "Using StructureNOXCorrectionWrapper()..." << IO::endl;
-
-      if (timint->HaveConstraint())
+      // Are there any constraint conditions active?
+      const std::set<INPAR::STR::ModelType>& modeltypes = timint->GetDataSDyn().GetModelTypes();
+      if (modeltypes.find(INPAR::STR::model_lag_pen_constraint)!=modeltypes.end())
       {
         if (coupling == fsi_iter_constr_monolithicstructuresplit or
             coupling == fsi_iter_constr_monolithicfluidsplit)
@@ -598,7 +728,9 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(
       const Teuchos::ParameterList& porodyn = problem->PoroelastDynamicParams();
       const INPAR::POROELAST::SolutionSchemeOverFields coupling =
             DRT::INPUT::IntegralValue<INPAR::POROELAST::SolutionSchemeOverFields>(porodyn, "COUPALGO");
-      if (timint->HaveConstraint())
+      // Are there any constraint conditions active?
+      const std::set<INPAR::STR::ModelType>& modeltypes = timint->GetDataSDyn().GetModelTypes();
+      if (modeltypes.find(INPAR::STR::model_lag_pen_constraint)!=modeltypes.end())
       {
         if (   coupling == INPAR::POROELAST::Monolithic_structuresplit
             or coupling == INPAR::POROELAST::Monolithic_fluidsplit

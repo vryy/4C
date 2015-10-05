@@ -36,17 +36,17 @@ Teuchos::RCP<STR::NLN::SOLVER::Generic> STR::NLN::SOLVER::Factory::BuildNlnSolve
       nlnSolver = Teuchos::rcp(new STR::NLN::SOLVER::FullNewton());
       break;
     case INPAR::STR::soltech_nlnsol:
-      nlnSolver = Teuchos::rcp(new STR::NLN::SOLVER::Nonlin());
+//      nlnSolver = Teuchos::rcp(new STR::NLN::SOLVER::Nonlin());
       break;
     case INPAR::STR::soltech_nox_nln:
       nlnSolver = Teuchos::rcp(new STR::NLN::SOLVER::Nox());
       break;
     case INPAR::STR::soltech_ptc:
-      nlnSolver = Teuchos::rcp(new STR::NLN::SOLVER::PTC());
+//      nlnSolver = Teuchos::rcp(new STR::NLN::SOLVER::PTC());
       break;
     case INPAR::STR::soltech_newtonuzawanonlin:
     case INPAR::STR::soltech_newtonuzawalin:
-      nlnSolver = Teuchos::rcp(new STR::NLN::SOLVER::Uzawa());
+//      nlnSolver = Teuchos::rcp(new STR::NLN::SOLVER::Uzawa());
       break;
     default:
       dserror("Solution technique \"%s\" is not implemented.",

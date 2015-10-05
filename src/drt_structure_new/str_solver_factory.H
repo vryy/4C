@@ -32,11 +32,10 @@ namespace SOLVER {
     virtual ~Factory(){};
 
     //! build the desired linear solvers
-    Teuchos::RCP<std::map<const enum INPAR::STR::ModelType, Teuchos::RCP<LINALG::Solver> > >
-        BuildLinSolvers(
-        const std::vector<const enum INPAR::STR::ModelType>& modeltypes,
-        const Teuchos::ParameterList& sdyn,
-        DRT::Discretization& actdis) const;
+    Teuchos::RCP<std::map<enum INPAR::STR::ModelType, Teuchos::RCP<LINALG::Solver> > >
+        BuildLinSolvers(const std::set<enum INPAR::STR::ModelType>& modeltypes,
+                        const Teuchos::ParameterList& sdyn,
+                        DRT::Discretization& actdis) const;
 
   private:
     //! create the structural linear solver (should be called by default)
@@ -66,11 +65,10 @@ namespace SOLVER {
   }; // class Factory
 
   //! non-member function
-  Teuchos::RCP<std::map<const enum INPAR::STR::ModelType, Teuchos::RCP<LINALG::Solver> > >
-      BuildLinSolvers(
-      const std::vector<const enum INPAR::STR::ModelType>& modeltypes,
-      const Teuchos::ParameterList& sdyn,
-      DRT::Discretization& actdis);
+  Teuchos::RCP<std::map<enum INPAR::STR::ModelType, Teuchos::RCP<LINALG::Solver> > >
+      BuildLinSolvers(const std::set<enum INPAR::STR::ModelType>& modeltypes,
+                      const Teuchos::ParameterList& sdyn,
+                      DRT::Discretization& actdis);
 
 } // namespace SOLVER
 } // namespace STR

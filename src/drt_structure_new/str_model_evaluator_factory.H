@@ -25,15 +25,15 @@ class Generic;
     //! destructor
     virtual ~Factory() {};
 
-    Teuchos::RCP<std::map<const enum INPAR::STR::ModelType, Teuchos::RCP<STR::MODELEVALUATOR::Generic> > >
-    BuildModelEvaluators(const std::vector<const enum INPAR::STR::ModelType>& modeltypes) const;
+    Teuchos::RCP<std::map<enum INPAR::STR::ModelType, Teuchos::RCP<STR::MODELEVALUATOR::Generic> > >
+    BuildModelEvaluators(const std::set<enum INPAR::STR::ModelType>& modeltypes) const;
 
   private:
   };  // class Factory
 
   //! non-member function
-  Teuchos::RCP<std::map<const enum INPAR::STR::ModelType, Teuchos::RCP<STR::MODELEVALUATOR::Generic> > >
-  BuildModelEvaluators(const std::vector<const enum INPAR::STR::ModelType>& modeltypes);
+  Teuchos::RCP<std::map<enum INPAR::STR::ModelType, Teuchos::RCP<STR::MODELEVALUATOR::Generic> > >
+  BuildModelEvaluators(const std::set<enum INPAR::STR::ModelType>& modeltypes);
 
 } // namespace MODELEVALUATOR
 } // namespace STR

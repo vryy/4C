@@ -10,11 +10,14 @@
 #include "str_model_evaluator_factory.H"
 #include "str_model_evaluator_generic.H"
 
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_timintmstep.H"
 #include "../drt_inpar/inpar_parameterlist_utils.H"
 
 #include "../linalg/linalg_blocksparsematrix.H"
 #include "../linalg/linalg_utils.H"
+
+#include "../drt_io/io.H"
 
 #include <Teuchos_ParameterList.hpp>
 
@@ -33,6 +36,7 @@ STR::TIMINT::BaseDataIO::BaseDataIO()
       gmsh_out_(false),
       printlogo_(false),
       printerrfile_(false),
+      printiter_(false),
       outputeveryiter_(false),
       writesurfactant_(false),
       writestate_(false),
@@ -67,9 +71,9 @@ void STR::TIMINT::BaseDataIO::Init(const Teuchos::ParameterList& ioparams,
   // We have to call Setup() after Init()
   issetup_ = false;
 
-  // ----------------------------------------------------------
+  // ---------------------------------------------------------------------------
   // initialize the printing and output parameters
-  // ----------------------------------------------------------
+  // ---------------------------------------------------------------------------
   {
     output_ = output;
     printscreen_ = ioparams.get<int>("STDOUTEVRY");
@@ -126,11 +130,52 @@ STR::TIMINT::BaseDataSDyn::BaseDataSDyn()
       dampm_(-1.0),
       masslintype_(INPAR::STR::ml_none),
       modeltypes_(Teuchos::null),
+      eletechs_(Teuchos::null),
       dyntype_(INPAR::STR::dyna_statics),
+      itermin_(-1),
+      itermax_(-1),
       prestresstype_(INPAR::STR::prestress_none),
+      predtype_(INPAR::STR::pred_vague),
       nlnsolvertype_(INPAR::STR::soltech_vague),
+      divergenceaction_(INPAR::STR::divcont_stop),
       noxparams_(Teuchos::null),
-      linsolvers_(Teuchos::null)
+      linsolvers_(Teuchos::null),
+      normtype_(INPAR::STR::norm_vague),
+      tol_disp_incr_(-1.0),
+      toltype_disp_incr_(INPAR::STR::convnorm_abs),
+      tol_fres_(-1.0),
+      toltype_fres_(INPAR::STR::convnorm_abs),
+      tol_pres_(-1.0),
+      toltype_pres_(INPAR::STR::convnorm_abs),
+      tol_inco_(-1.0),
+      toltype_inco_(INPAR::STR::convnorm_abs),
+      tol_plast_res_(-1.0),
+      toltype_plast_res_(INPAR::STR::convnorm_abs),
+      tol_plast_incr_(-1.0),
+      toltype_plast_incr_(INPAR::STR::convnorm_abs),
+      tol_eas_res_(-1.0),
+      toltype_eas_res_(INPAR::STR::convnorm_abs),
+      tol_eas_incr_(-1.0),
+      toltype_eas_incr_(INPAR::STR::convnorm_abs),
+      normcombo_disp_pres_(INPAR::STR::bop_and),
+      normcombo_fres_inco_(INPAR::STR::bop_and),
+      normcombo_fres_eas_res_(INPAR::STR::bop_and),
+      normcombo_disp_eas_incr_(INPAR::STR::bop_and),
+      normcombo_fres_plast_res_(INPAR::STR::bop_and),
+      normcombo_disp_plast_incr_(INPAR::STR::bop_and),
+      normcombo_fres_disp_(INPAR::STR::bop_and),
+      toltype_constr_res_(INPAR::STR::convnorm_abs),
+      tol_constr_res_(-1.0),
+      toltype_windk_res_(INPAR::STR::convnorm_abs),
+      tol_windk_res_(-1.0),
+      toltype_windk_incr_(INPAR::STR::convnorm_abs),
+      tol_windk_incr_(-1.0),
+      toltype_contact_res_(INPAR::STR::convnorm_abs),
+      tol_contact_res_(-1.0),
+      toltype_contact_lm_incr_(INPAR::STR::convnorm_abs),
+      tol_contact_lm_incr_(-1.0),
+      normcombo_fres_contact_res_(INPAR::STR::bop_and),
+      normcombo_disp_contact_lm_incr_(INPAR::STR::bop_and)
 {
   // empty constructor
 }
@@ -140,62 +185,147 @@ STR::TIMINT::BaseDataSDyn::BaseDataSDyn()
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::BaseDataSDyn::Init(
     const Teuchos::RCP<DRT::Discretization> discret,
-    const Teuchos::ParameterList& sDynParams,
+    const Teuchos::ParameterList& sdynparams,
     const Teuchos::ParameterList& xparams,
-    const Teuchos::RCP<std::vector<const enum INPAR::STR::ModelType> > modeltypes,
-    const Teuchos::RCP<std::map<const enum INPAR::STR::ModelType,Teuchos::RCP<LINALG::Solver> > > linsolvers
+    const Teuchos::RCP<std::set<enum INPAR::STR::ModelType> > modeltypes,
+    const Teuchos::RCP<std::set<enum INPAR::STR::EleTech> > eletechs,
+    const Teuchos::RCP<std::map<enum INPAR::STR::ModelType,Teuchos::RCP<LINALG::Solver> > > linsolvers
     )
 {
   // We have to call Setup() after Init()
   issetup_ = false;
 
-  // ----------------------------------------------------------
+  // ---------------------------------------------------------------------------
   // initialize general variables
-  // ----------------------------------------------------------
+  // ---------------------------------------------------------------------------
   {
-    timemax_ = sDynParams.get<double>("MAXTIME");
-    stepmax_ = sDynParams.get<int>("NUMSTEP");
+    timemax_ = sdynparams.get<double>("MAXTIME");
+    stepmax_ = sdynparams.get<int>("NUMSTEP");
 
     timer_ = Teuchos::rcp(new Epetra_Time(discret->Comm()));
 
     dyntype_ =
-        DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sDynParams, "DYNAMICTYP");
+        DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP");
   }
-  // ----------------------------------------------------------
+  // ---------------------------------------------------------------------------
   // initialize the damping control parameters
-  // ----------------------------------------------------------
+  // ---------------------------------------------------------------------------
   {
-    damptype_ = DRT::INPUT::IntegralValue<INPAR::STR::DampKind>(sDynParams,"DAMPING");
-    dampk_ = sDynParams.get<double>("K_DAMP");
-    dampm_ = sDynParams.get<double>("M_DAMP");
+    damptype_ = DRT::INPUT::IntegralValue<INPAR::STR::DampKind>(sdynparams,"DAMPING");
+    dampk_ = sdynparams.get<double>("K_DAMP");
+    dampm_ = sdynparams.get<double>("M_DAMP");
   }
-  // ----------------------------------------------------------
+  // ---------------------------------------------------------------------------
   // initialize the mass and inertia control parameters
-  // ----------------------------------------------------------
+  // ---------------------------------------------------------------------------
   {
-    masslintype_ = DRT::INPUT::IntegralValue<INPAR::STR::MassLin>(sDynParams,"MASSLIN");
+    masslintype_ = DRT::INPUT::IntegralValue<INPAR::STR::MassLin>(sdynparams,"MASSLIN");
   }
-  // ----------------------------------------------------------
+  // ---------------------------------------------------------------------------
   // initialize model evaluator control parameters
-  // ----------------------------------------------------------
+  // ---------------------------------------------------------------------------
   {
     modeltypes_ = modeltypes;
+    eletechs_   = eletechs;
   }
-  // ----------------------------------------------------------
+  // ---------------------------------------------------------------------------
   // initialize implicit variables
-  // ----------------------------------------------------------
+  // ---------------------------------------------------------------------------
   {
+    itermin_ = sdynparams.get<int>("MAXITER");
+    itermax_ = sdynparams.get<int>("MINITER");
     prestresstype_ =
-          DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sDynParams,"PRESTRESS");
+          DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdynparams,"PRESTRESS");
     nlnsolvertype_ =
-        DRT::INPUT::IntegralValue<INPAR::STR::NonlinSolTech>(sDynParams,"NLNSOL");
+        DRT::INPUT::IntegralValue<INPAR::STR::NonlinSolTech>(sdynparams,"NLNSOL");
     noxparams_ = Teuchos::rcp(new Teuchos::ParameterList(xparams.sublist("NOX")));
   }
-  // ----------------------------------------------------------
+  // ---------------------------------------------------------------------------
   // initialize linear solver variables
-  // ----------------------------------------------------------
+  // ---------------------------------------------------------------------------
   {
     linsolvers_ = linsolvers;
+  }
+  // ---------------------------------------------------------------------------
+  // initialize the status test control parameters
+  // ---------------------------------------------------------------------------
+  {
+    normtype_ = DRT::INPUT::IntegralValue<INPAR::STR::VectorNorm>(sdynparams,"ITERNORM");
+
+    // -------------------------------------------------------------------------
+    // primary variables
+    // -------------------------------------------------------------------------
+    tol_disp_incr_ = sdynparams.get<double>("TOLDISP");
+    toltype_disp_incr_ = DRT::INPUT::IntegralValue<INPAR::STR::ConvNorm>(
+        sdynparams,"NORM_DISP");
+
+    tol_fres_ = sdynparams.get<double>("TOLRES");
+    toltype_fres_ = DRT::INPUT::IntegralValue<INPAR::STR::ConvNorm>(
+        sdynparams,"NORM_RESF");
+
+    tol_pres_ = sdynparams.get<double>("TOLPRE");
+    toltype_pres_ = INPAR::STR::convnorm_abs;
+
+    tol_inco_ = sdynparams.get<double>("TOLINCO");
+    toltype_inco_ = INPAR::STR::convnorm_abs;
+
+    tol_plast_res_ = DRT::Problem::Instance()->
+        SemiSmoothPlastParams().get<double>("TOLPLASTCONSTR");
+    toltype_plast_res_ = INPAR::STR::convnorm_abs;
+
+    tol_plast_incr_ = DRT::Problem::Instance()->
+        SemiSmoothPlastParams().get<double>("TOLDELTALP");
+    toltype_plast_incr_ = INPAR::STR::convnorm_abs;
+
+    tol_eas_res_ = DRT::Problem::Instance()->
+        SemiSmoothPlastParams().get<double>("TOLEASRES");
+    toltype_eas_res_ = INPAR::STR::convnorm_abs;
+
+    tol_eas_incr_ = DRT::Problem::Instance()->
+        SemiSmoothPlastParams().get<double>("TOLEASINCR");
+    toltype_eas_incr_ = INPAR::STR::convnorm_abs;
+
+    normcombo_disp_pres_ = DRT::INPUT::IntegralValue<INPAR::STR::BinaryOp>(
+        sdynparams,"NORMCOMBI_DISPPRES");
+    normcombo_fres_inco_ = DRT::INPUT::IntegralValue<INPAR::STR::BinaryOp>(
+        sdynparams,"NORMCOMBI_RESFINCO");
+    normcombo_fres_plast_res_ = DRT::INPUT::IntegralValue<INPAR::STR::BinaryOp>(
+        DRT::Problem::Instance()->SemiSmoothPlastParams(),"NORMCOMBI_RESFPLASTCONSTR");
+    normcombo_disp_plast_incr_ = DRT::INPUT::IntegralValue<INPAR::STR::BinaryOp>(
+        DRT::Problem::Instance()->SemiSmoothPlastParams(),"NORMCOMBI_DISPPLASTINCR");
+    normcombo_fres_eas_res_ = DRT::INPUT::IntegralValue<INPAR::STR::BinaryOp>(
+        DRT::Problem::Instance()->SemiSmoothPlastParams(),"NORMCOMBI_EASRES");
+    normcombo_disp_eas_incr_ = DRT::INPUT::IntegralValue<INPAR::STR::BinaryOp>(
+        DRT::Problem::Instance()->SemiSmoothPlastParams(),"NORMCOMBI_EASINCR");
+    normcombo_fres_disp_ = DRT::INPUT::IntegralValue<INPAR::STR::BinaryOp>(
+        sdynparams,"NORMCOMBI_RESFDISP");
+
+    // -------------------------------------------------------------------------
+    // constraint variables
+    // -------------------------------------------------------------------------
+    tol_constr_res_ = sdynparams.get<double>("TOLCONSTR");
+    toltype_constr_res_ = INPAR::STR::convnorm_abs;
+
+    tol_windk_res_ = DRT::Problem::Instance()->
+        WindkesselStructuralParams().get<double>("TOLWINDKESSEL");
+    toltype_windk_res_ = INPAR::STR::convnorm_abs;
+
+    tol_windk_incr_ = DRT::Problem::Instance()->
+        WindkesselStructuralParams().get<double>("TOLWINDKESSELDOFINCR");
+    toltype_windk_incr_ = INPAR::STR::convnorm_abs;
+
+    tol_contact_res_ = DRT::Problem::Instance()->
+        ContactDynamicParams().get<double>("TOLCONTCONSTR");
+    toltype_contact_res_ = INPAR::STR::convnorm_abs;
+
+    tol_contact_lm_incr_ = DRT::Problem::Instance()->
+        ContactDynamicParams().get<double>("TOLLAGR");
+    toltype_contact_lm_incr_ = INPAR::STR::convnorm_abs;
+
+    normcombo_fres_contact_res_ = DRT::INPUT::IntegralValue<INPAR::STR::BinaryOp>(
+        DRT::Problem::Instance()->ContactDynamicParams(),"NORMCOMBI_RESFCONTCONSTR");
+    normcombo_disp_contact_lm_incr_ = DRT::INPUT::IntegralValue<INPAR::STR::BinaryOp>(
+        DRT::Problem::Instance()->ContactDynamicParams(),"NORMCOMBI_DISPLAGR");
   }
 
   isinit_ = true;
@@ -216,6 +346,277 @@ void STR::TIMINT::BaseDataSDyn::Setup()
 
   // Good bye
   return;
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+double STR::TIMINT::BaseDataSDyn::GetResTolerance(
+    const enum NOX::NLN::StatusTest::QuantityType& qtype) const
+{
+  switch (qtype)
+  {
+    case NOX::NLN::StatusTest::quantity_structure:
+      return tol_fres_;
+      break;
+    case NOX::NLN::StatusTest::quantity_contact:
+    case NOX::NLN::StatusTest::quantity_meshtying:
+      return tol_contact_res_;
+      break;
+    case NOX::NLN::StatusTest::quantity_windkessel:
+      return tol_windk_res_;
+      break;
+    case NOX::NLN::StatusTest::quantity_lag_pen_constraint:
+      return tol_constr_res_;
+      break;
+    case NOX::NLN::StatusTest::quantity_plasticity:
+      return tol_plast_res_;
+      break;
+    case NOX::NLN::StatusTest::quantity_pressure:
+      return tol_inco_;
+      break;
+    case NOX::NLN::StatusTest::quantity_eas:
+      return tol_eas_res_;
+      break;
+    default:
+      dserror("There is no residual tolerance for the given quantity type! "
+          "(quantity: %s)",NOX::NLN::StatusTest::QuantityType2String(qtype).c_str());
+      break;
+  }
+
+  return -1.0;
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+double STR::TIMINT::BaseDataSDyn::GetIncrTolerance(
+    const enum NOX::NLN::StatusTest::QuantityType& qtype) const
+{
+  switch (qtype)
+  {
+    case NOX::NLN::StatusTest::quantity_structure:
+      return tol_disp_incr_;
+      break;
+    case NOX::NLN::StatusTest::quantity_contact:
+    case NOX::NLN::StatusTest::quantity_meshtying:
+      return tol_contact_lm_incr_;
+      break;
+    case NOX::NLN::StatusTest::quantity_windkessel:
+      return tol_windk_incr_;
+      break;
+    case NOX::NLN::StatusTest::quantity_plasticity:
+      return tol_plast_incr_;
+      break;
+    case NOX::NLN::StatusTest::quantity_pressure:
+      return tol_pres_;
+      break;
+    case NOX::NLN::StatusTest::quantity_eas:
+      return tol_eas_incr_;
+      break;
+    default:
+      dserror("There is no increment tolerance for the given quantity type! "
+          "(quantity: %s)",NOX::NLN::StatusTest::QuantityType2String(qtype).c_str());
+      break;
+  }
+
+  return -1.0;
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+enum INPAR::STR::ConvNorm STR::TIMINT::BaseDataSDyn::GetResToleranceType(
+    const enum NOX::NLN::StatusTest::QuantityType& qtype) const
+{
+  switch (qtype)
+  {
+    case NOX::NLN::StatusTest::quantity_structure:
+      return toltype_fres_;
+      break;
+    case NOX::NLN::StatusTest::quantity_contact:
+    case NOX::NLN::StatusTest::quantity_meshtying:
+      return toltype_contact_res_;
+      break;
+    case NOX::NLN::StatusTest::quantity_windkessel:
+      return toltype_windk_res_;
+      break;
+    case NOX::NLN::StatusTest::quantity_lag_pen_constraint:
+      return toltype_constr_res_;
+      break;
+    case NOX::NLN::StatusTest::quantity_plasticity:
+      return toltype_plast_res_;
+      break;
+    case NOX::NLN::StatusTest::quantity_pressure:
+      return toltype_inco_;
+      break;
+    case NOX::NLN::StatusTest::quantity_eas:
+      return toltype_eas_res_;
+      break;
+    default:
+      dserror("There is no residual tolerance type for the given quantity type! "
+          "(quantity: %s)",NOX::NLN::StatusTest::QuantityType2String(qtype).c_str());
+      break;
+  }
+
+  return INPAR::STR::convnorm_abs;
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+enum INPAR::STR::ConvNorm STR::TIMINT::BaseDataSDyn::GetIncrToleranceType(
+    const enum NOX::NLN::StatusTest::QuantityType& qtype) const
+{
+  switch (qtype)
+  {
+    case NOX::NLN::StatusTest::quantity_structure:
+      return toltype_disp_incr_;
+      break;
+    case NOX::NLN::StatusTest::quantity_contact:
+    case NOX::NLN::StatusTest::quantity_meshtying:
+      return toltype_contact_lm_incr_;
+      break;
+    case NOX::NLN::StatusTest::quantity_windkessel:
+      return toltype_windk_incr_;
+      break;
+    case NOX::NLN::StatusTest::quantity_plasticity:
+      return toltype_plast_incr_;
+      break;
+    case NOX::NLN::StatusTest::quantity_pressure:
+      return toltype_pres_;
+      break;
+    case NOX::NLN::StatusTest::quantity_eas:
+      return toltype_eas_incr_;
+      break;
+    default:
+      dserror("There is no increment tolerance type for the given quantity type! "
+          "(quantity: %s)",NOX::NLN::StatusTest::QuantityType2String(qtype).c_str());
+      break;
+  }
+
+  return INPAR::STR::convnorm_abs;
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+enum INPAR::STR::BinaryOp STR::TIMINT::BaseDataSDyn::GetResComboType(
+    const enum NOX::NLN::StatusTest::QuantityType& qtype) const
+{
+  return GetResComboType(NOX::NLN::StatusTest::quantity_structure,qtype);
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+enum INPAR::STR::BinaryOp STR::TIMINT::BaseDataSDyn::GetResComboType(
+    const enum NOX::NLN::StatusTest::QuantityType& qtype_1,
+    const enum NOX::NLN::StatusTest::QuantityType& qtype_2) const
+{
+  // combination: STRUCTURE <--> PRESSURE
+  if ((qtype_1==NOX::NLN::StatusTest::quantity_structure and
+       qtype_2==NOX::NLN::StatusTest::quantity_pressure) or
+      (qtype_1==NOX::NLN::StatusTest::quantity_pressure and
+       qtype_2==NOX::NLN::StatusTest::quantity_structure))
+    return normcombo_fres_inco_;
+  // combination: STRUCTURE <--> EAS
+  else if ((qtype_1==NOX::NLN::StatusTest::quantity_structure and
+        qtype_2==NOX::NLN::StatusTest::quantity_eas) or
+       (qtype_1==NOX::NLN::StatusTest::quantity_eas and
+        qtype_2==NOX::NLN::StatusTest::quantity_structure))
+    return normcombo_fres_eas_res_;
+  // combination: STRUCTURE <--> PLASTICITY
+  else if ((qtype_1==NOX::NLN::StatusTest::quantity_structure and
+        qtype_2==NOX::NLN::StatusTest::quantity_plasticity) or
+       (qtype_1==NOX::NLN::StatusTest::quantity_plasticity and
+        qtype_2==NOX::NLN::StatusTest::quantity_structure))
+    return normcombo_fres_plast_res_;
+  // combination: STRUCTURE <--> CONTACT
+  else if ((qtype_1==NOX::NLN::StatusTest::quantity_structure and
+        qtype_2==NOX::NLN::StatusTest::quantity_contact) or
+       (qtype_1==NOX::NLN::StatusTest::quantity_contact and
+        qtype_2==NOX::NLN::StatusTest::quantity_structure))
+    return normcombo_fres_contact_res_;
+  // no combination was found
+  else
+    dserror("There is no combination type for the given quantity types! "
+        "(quantity_1: %s, quantity_2: %s)",
+        NOX::NLN::StatusTest::QuantityType2String(qtype_1).c_str(),
+        NOX::NLN::StatusTest::QuantityType2String(qtype_2).c_str());
+
+  return INPAR::STR::bop_and;
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+enum INPAR::STR::BinaryOp STR::TIMINT::BaseDataSDyn::GetIncrComboType(
+        const enum NOX::NLN::StatusTest::QuantityType& qtype) const
+{
+  return GetIncrComboType(NOX::NLN::StatusTest::quantity_structure,qtype);
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+enum INPAR::STR::BinaryOp STR::TIMINT::BaseDataSDyn::GetIncrComboType(
+    const enum NOX::NLN::StatusTest::QuantityType& qtype_1,
+    const enum NOX::NLN::StatusTest::QuantityType& qtype_2) const
+{
+  // combination: STRUCTURE <--> PRESSURE
+  if ((qtype_1==NOX::NLN::StatusTest::quantity_structure and
+       qtype_2==NOX::NLN::StatusTest::quantity_pressure) or
+      (qtype_1==NOX::NLN::StatusTest::quantity_pressure and
+       qtype_2==NOX::NLN::StatusTest::quantity_structure))
+    return normcombo_disp_pres_;
+  // combination: STRUCTURE <--> EAS
+  else if ((qtype_1==NOX::NLN::StatusTest::quantity_structure and
+        qtype_2==NOX::NLN::StatusTest::quantity_eas) or
+       (qtype_1==NOX::NLN::StatusTest::quantity_eas and
+        qtype_2==NOX::NLN::StatusTest::quantity_structure))
+    return normcombo_disp_eas_incr_;
+  // combination: STRUCTURE <--> PLASTICITY
+  else if ((qtype_1==NOX::NLN::StatusTest::quantity_structure and
+        qtype_2==NOX::NLN::StatusTest::quantity_plasticity) or
+       (qtype_1==NOX::NLN::StatusTest::quantity_plasticity and
+        qtype_2==NOX::NLN::StatusTest::quantity_structure))
+    return normcombo_disp_plast_incr_;
+  // combination: STRUCTURE <--> CONTACT
+  else if ((qtype_1==NOX::NLN::StatusTest::quantity_structure and
+        qtype_2==NOX::NLN::StatusTest::quantity_contact) or
+       (qtype_1==NOX::NLN::StatusTest::quantity_contact and
+        qtype_2==NOX::NLN::StatusTest::quantity_structure))
+    return normcombo_disp_contact_lm_incr_;
+  // no combination was found
+  else
+    dserror("There is no combination type for the given quantity types! "
+        "(quantity_1: %s, quantity_2: %s)",
+        NOX::NLN::StatusTest::QuantityType2String(qtype_1).c_str(),
+        NOX::NLN::StatusTest::QuantityType2String(qtype_2).c_str());
+
+  return INPAR::STR::bop_and;
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+enum INPAR::STR::BinaryOp STR::TIMINT::BaseDataSDyn::GetResIncrComboType(
+        const enum NOX::NLN::StatusTest::QuantityType& qtype_res,
+        const enum NOX::NLN::StatusTest::QuantityType& qtype_incr) const
+{
+  // combination: STRUCTURE (force/res) <--> STRUCTURE (displ/incr)
+  if ((qtype_res==NOX::NLN::StatusTest::quantity_structure and
+       qtype_incr==NOX::NLN::StatusTest::quantity_structure))
+    return normcombo_fres_disp_;
+  // no combination was found
+  else
+    dserror("There is no res-incr-combination type for the given quantity types! "
+        "(quantity_res: %s, quantity_incr: %s)",
+        NOX::NLN::StatusTest::QuantityType2String(qtype_res).c_str(),
+        NOX::NLN::StatusTest::QuantityType2String(qtype_incr).c_str());
+
+  return INPAR::STR::bop_and;
 }
 
 
@@ -396,13 +797,13 @@ void STR::TIMINT::Base::Init(
   // ---------------------------------------------
   // build model evaluator
   // ---------------------------------------------
-  modelevaluators_ = STR::MODELEVALUATOR::BuildModelEvaluators(DataSDyn().GetModelType());
+  modelevaluators_ = STR::MODELEVALUATOR::BuildModelEvaluators(DataSDyn().GetModelTypes());
 
-  std::map<const enum INPAR::STR::ModelType, Teuchos::RCP<STR::MODELEVALUATOR::Generic> >::iterator me_iter;
+  std::map<enum INPAR::STR::ModelType, Teuchos::RCP<STR::MODELEVALUATOR::Generic> >::iterator me_iter;
   for (me_iter=ModelEvaluatorsPtr()->begin();me_iter!=ModelEvaluatorsPtr()->end();++me_iter)
   {
     me_iter->second->Init();
-    me_iter->second>Setup();
+    me_iter->second->Setup();
   }
 
   // ---------------------------------------------
@@ -422,7 +823,11 @@ void STR::TIMINT::Base::ReadRestart
   const int step
 )
 {
-  IO::DiscretizationReader reader(DataGlobalStatePtr()->GetDiscret(), step);
+  // we have to remove the const state, because the IO-routine expects
+  // a non-const version.
+  Teuchos::RCP<DRT::Discretization> actdis =
+      Teuchos::rcp_const_cast<DRT::Discretization>(DataGlobalState().GetDiscret());
+  IO::DiscretizationReader reader(actdis, step);
   if (step != reader.ReadInt("step"))
     dserror("Time step on file not equal to given step");
 

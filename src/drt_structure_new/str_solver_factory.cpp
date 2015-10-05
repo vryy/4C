@@ -11,6 +11,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_utils.H"
 
 #include "../drt_io/io_control.H"
 
@@ -30,18 +31,18 @@ STR::SOLVER::Factory::Factory()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<std::map<const enum INPAR::STR::ModelType, Teuchos::RCP<LINALG::Solver> > >
+Teuchos::RCP<std::map<enum INPAR::STR::ModelType, Teuchos::RCP<LINALG::Solver> > >
     STR::SOLVER::Factory::BuildLinSolvers(
-    const std::vector<const enum INPAR::STR::ModelType>& modeltypes,
+    const std::set<enum INPAR::STR::ModelType>& modeltypes,
     const Teuchos::ParameterList& sdyn,
     DRT::Discretization& actdis)
     const
 {
   // create a new standard map
-  Teuchos::RCP<std::map<const enum INPAR::STR::ModelType, Teuchos::RCP<LINALG::Solver> > > linsolvers =
-      Teuchos::rcp(new std::map<const enum INPAR::STR::ModelType, Teuchos::RCP<LINALG::Solver> >());
+  Teuchos::RCP<std::map<enum INPAR::STR::ModelType, Teuchos::RCP<LINALG::Solver> > > linsolvers =
+      Teuchos::rcp(new std::map<enum INPAR::STR::ModelType, Teuchos::RCP<LINALG::Solver> >());
 
-  std::vector<const enum INPAR::STR::ModelType>::const_iterator mt_iter;
+  std::set<enum INPAR::STR::ModelType>::const_iterator mt_iter;
   // loop over all model types
   for (mt_iter = modeltypes.begin(); mt_iter != modeltypes.end(); ++mt_iter)
   {
@@ -50,7 +51,11 @@ Teuchos::RCP<std::map<const enum INPAR::STR::ModelType, Teuchos::RCP<LINALG::Sol
       case INPAR::STR::model_structure:
         (*linsolvers)[*mt_iter] = BuildStructureLinSolver(sdyn,actdis);
         break;
-      case INPAR::STR::model_meshtying_contact:
+      // ToDo Check if this makes sense for simulations where both, meshtying and
+      //      contact, are present. If we need two linsolvers, please adjust the
+      //      the implementation (maps for pre-conditioning, etc.).
+      case INPAR::STR::model_contact:
+      case INPAR::STR::model_meshtying:
         (*linsolvers)[*mt_iter] = BuildMeshtyingContactLinSolver(sdyn,actdis);
         break;
       case INPAR::STR::model_lag_pen_constraint:
@@ -321,9 +326,9 @@ Teuchos::RCP<LINALG::Solver> STR::SOLVER::Factory::BuildSpringDashpotLinSolver(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<std::map<const enum INPAR::STR::ModelType, Teuchos::RCP<LINALG::Solver> > >
+Teuchos::RCP<std::map<enum INPAR::STR::ModelType, Teuchos::RCP<LINALG::Solver> > >
     STR::SOLVER::BuildLinSolvers(
-    const std::vector<const enum INPAR::STR::ModelType>& modeltypes,
+    const std::set<enum INPAR::STR::ModelType>& modeltypes,
     const Teuchos::ParameterList& sdyn,
     DRT::Discretization& actdis)
 {

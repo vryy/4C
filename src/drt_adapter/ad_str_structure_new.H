@@ -32,6 +32,8 @@ namespace ADAPTER {
   class StructureNew : public Field
   {
   public:
+    StructureNew();
+
     /// virtual to get polymorph destruction
     virtual ~StructureNew();
   };  // class Structure
@@ -68,7 +70,11 @@ namespace ADAPTER {
 
     /// Set all found model types. This is e.g. necessary for the model evaluator.
     void SetModelTypes(
-        std::vector<const enum INPAR::STR::ModelType>& modeltypes) const;
+        std::set<enum INPAR::STR::ModelType>& modeltypes) const;
+
+    /// Set all found model types.
+    void DetectElementTechnologies(
+        std::set<enum INPAR::STR::EleTech>& eletechs) const;
 
     /// Set different time integrator specific parameters in the different parameter lists
     void SetParams(

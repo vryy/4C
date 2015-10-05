@@ -7,6 +7,7 @@
 
 #include "str_timint_implicit.H"
 #include "str_impl_generic.H"
+#include "str_impl_factory.H"
 #include "str_predict_generic.H"
 #include "str_nln_solver_generic.H"
 
@@ -65,6 +66,27 @@ void STR::TIMINT::Implicit::Setup()
 
   // set isSetup flag
   issetup_ = true;
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::Implicit::PrepareTimeStep()
+{
+  // update end time \f$t_{n+1}\f$ of this time step to cope with time step size adaptivity
+  DataGlobalStatePtr()->SetTimenp(DataGlobalStatePtr()->GetUpdatedTime());
+
+  // things that need to be done before Predict
+  PrePredict();
+
+  // TODO prepare contact for new time step
+  // PrepareStepContact();
+  Predictor().Predict();
+
+  // things that need to be done after Predict
+  PostPredict();
 
   return;
 }
