@@ -841,52 +841,61 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     dxyzdrs_n.MultiplyNT(my::deriv_,my::xyze_n_);
 
     // tangential surface vectors are columns of dxyzdrs
-    LINALG::Matrix<my::nsd_,1> tangential1(0.0);
-    LINALG::Matrix<my::nsd_,1> tangential2(0.0);
-    LINALG::Matrix<my::nsd_,1> tangential1_n(0.0);
-    LINALG::Matrix<my::nsd_,1> tangential2_n(0.0);
+    LINALG::Matrix<my::nsd_,1> tangential1(true);
+    LINALG::Matrix<my::nsd_,1> tangential2(true);
+    LINALG::Matrix<my::nsd_,1> tangential1_n(true);
+    LINALG::Matrix<my::nsd_,1> tangential2_n(true);
 
     for (int idof=0;idof<my::nsd_;idof++)
     {
       tangential1(idof,0) = dxyzdrs(0,idof);
-      tangential2(idof,0) = dxyzdrs(1,idof);
-
       tangential1_n(idof,0) = dxyzdrs_n(0,idof);
-      tangential2_n(idof,0) = dxyzdrs_n(1,idof);
     }
 
     normoftangential1 = tangential1.Norm2();
-    normoftangential2 = tangential2.Norm2();
     normoftangential1_n = tangential1_n.Norm2();
-    normoftangential2_n = tangential2_n.Norm2();
 
-    // normalize tengential vectors
+    // normalize tangential vectors
     tangential1.Scale(1/normoftangential1);
-    tangential2.Scale(1/normoftangential2);
 
     tangential1_n.Scale(1/normoftangential1_n);
-    tangential2_n.Scale(1/normoftangential2_n);
+
+    if(my::nsd_==3)
+    {
+      for (int idof=0;idof<my::nsd_;idof++)
+      {
+        tangential2(idof,0) = dxyzdrs(1,idof);
+        tangential2_n(idof,0) = dxyzdrs_n(1,idof);
+      }
+
+      normoftangential2 = tangential2.Norm2();
+      normoftangential2_n = tangential2_n.Norm2();
+
+      // normalize tangential vectors
+      tangential2.Scale(1/normoftangential2);
+
+      tangential2_n.Scale(1/normoftangential2_n);
+    }
 
     //                                                             I
     // calculate tangential structure velocity (gridvelocity) vs o t
     //
     // [my::nsd_ x 1] o [my::nsd_ x 1]
     //
-    LINALG::Matrix<1,1> tangentialvs1(true);
-    LINALG::Matrix<1,1> tangentialvs2(true);
-    tangentialvs1.MultiplyTN(gridvelint,tangential1);
-    tangentialvs2.MultiplyTN(gridvelint,tangential2);
+    double tangentialvs1 = 0.0;
+    double tangentialvs2 = 0.0;
+    tangentialvs1 = gridvelint.Dot(tangential1);
+    tangentialvs2 = gridvelint.Dot(tangential2);
 
     //                                          I
     // calculate tangential fluid velocity vf o t
     //
     // [my::nsd_ x 1] o [my::nsd_ x 1]
     //
-    LINALG::Matrix<1,1> tangentialvf1(true);
-    LINALG::Matrix<1,1> tangentialvf2(true);
-    tangentialvf1.MultiplyTN(my::velint_,tangential1);
-    tangentialvf2.MultiplyTN(my::velint_,tangential2);
-    //std::cout<<"Tangential Structure Velocity at integration point: \n"<<tangentialvs1<<endl;
+    double tangentialvf1 = 0.0;
+    double tangentialvf2 = 0.0;
+    tangentialvf1 = my::velint_.Dot(tangential1);
+    tangentialvf2 = my::velint_.Dot(tangential2);
 
     //  derivatives of surface tangentials with respect to mesh displacements
     //              I
@@ -911,22 +920,28 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     {
       // block diagonal entries
       for (int idof=0;idof<my::nsd_;++idof)
-      {
         tangentialderiv1(idof,(node*my::nsd_)+idof) = pderiv(0,node)/normoftangential1;
-        tangentialderiv2(idof,(node*my::nsd_)+idof) = pderiv(1,node)/normoftangential2;
-      }
 
       // terms from linearization of norm
       for (int idof=0;idof<my::nsd_;++idof)
-      {
         for (int idof2=0;idof2<my::nsd_;idof2++)
-        {
           tangentialderiv1(idof,(node*my::nsd_)+idof2) -= (tangential1(idof,0)*tangential1(idof2,0)*pderiv(0,node))/normoftangential1;
+    }
+    if(my::nsd_==3)
+    {
+      for (int node=0;node<nenparent;++node)
+      {
+        // block diagonal entries
+        for (int idof=0;idof<my::nsd_;++idof)
+          tangentialderiv2(idof,(node*my::nsd_)+idof) = pderiv(1,node)/normoftangential2;
 
-          tangentialderiv2(idof,(node*my::nsd_)+idof2) -= (tangential2(idof,0)*tangential2(idof2,0)*pderiv(1,node))/normoftangential2;
-        }
+        // terms from linearization of norm
+        for (int idof=0;idof<my::nsd_;++idof)
+          for (int idof2=0;idof2<my::nsd_;idof2++)
+            tangentialderiv2(idof,(node*my::nsd_)+idof2) -= (tangential2(idof,0)*tangential2(idof2,0)*pderiv(1,node))/normoftangential2;
       }
     }
+
     //          I        ___L=1___  __L=2___  ___ ...
     //        d t_j     /l=1 2 3  \/l=1 2 3 \/
     // vs_j --------- = [  x x x      x x x            ]
@@ -997,9 +1012,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
       for (int node=0;node<nenparent;++node)
       {
         normalderiv(0,my::nsd_*node)   += 0.;
-        normalderiv(0,my::nsd_*node+1) += my::deriv_(0,node);
+        normalderiv(0,my::nsd_*node+1) += pderiv(0,node) ;
 
-        normalderiv(1,my::nsd_*node)   += -my::deriv_(0,node);
+        normalderiv(1,my::nsd_*node)   += -pderiv(0,node) ;
         normalderiv(1,my::nsd_*node+1) += 0.;
       }
 
@@ -1016,9 +1031,17 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     //
     LINALG::Matrix<my::nsd_,1> normal(true);
 
-    normal(0,0) = dxyzdrs(0,1)*dxyzdrs(1,2) - dxyzdrs(0,2)*dxyzdrs(1,1);
-    normal(1,0) = dxyzdrs(0,2)*dxyzdrs(1,0) - dxyzdrs(0,0)*dxyzdrs(1,2);
-    normal(2,0) = dxyzdrs(0,0)*dxyzdrs(1,1) - dxyzdrs(0,1)*dxyzdrs(1,0);
+    if(my::nsd_ == 3)
+    {
+      normal(0,0) = dxyzdrs(0,1)*dxyzdrs(1,2) - dxyzdrs(0,2)*dxyzdrs(1,1);
+      normal(1,0) = dxyzdrs(0,2)*dxyzdrs(1,0) - dxyzdrs(0,0)*dxyzdrs(1,2);
+      normal(2,0) = dxyzdrs(0,0)*dxyzdrs(1,1) - dxyzdrs(0,1)*dxyzdrs(1,0);
+    }
+    else
+    {
+      normal(0,0) = dxyzdrs(0,1);
+      normal(1,0) = -dxyzdrs(0,0);
+    }
     // transformation factor for surface integrals without normal vector
     scalarintegraltransformfac = normal.Norm2(); // || x,r x x,s ||
 
@@ -1228,8 +1251,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
              */
             elemat1((inode*my::numdofpernode_)+idof2,(nnod*my::numdofpernode_)+my::nsd_) -=
                 ( // sign checked to be negative
-                    tangential1(idof2,0)*(tangentialvf1(0,0)-tangentialvs1(0,0)) +   // d phi / dpfpm
-                    tangential2(idof2,0)*(tangentialvf2(0,0)-tangentialvs2(0,0))
+                    tangential1(idof2,0)*(tangentialvf1-tangentialvs1) +   // d phi / dpfpm
+                    tangential2(idof2,0)*(tangentialvf2-tangentialvs2)
 
                 )*pfunct(inode)*tangentialfac*dphi_dp*my::fac_*timefac;//scalarintegraltransformfac;
 
@@ -1284,13 +1307,13 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
               {
                 elemat1((inode*my::numdofpernode_)+idof2,(nnod*my::nsd_)+idof3)  -=
                     ((
-                        tangential1(idof2,0)*(tangentialvs1(0,0) + porosityint*(tangentialvf1(0,0) - tangentialvs1(0,0)))+      // d ||n||/d d^L_l
-                        tangential2(idof2,0)*(tangentialvs2(0,0) + porosityint*(tangentialvf2(0,0) - tangentialvs2(0,0)))
+                        tangential1(idof2,0)*(tangentialvs1 + porosityint*(tangentialvf1 - tangentialvs1))+      // d ||n||/d d^L_l
+                        tangential2(idof2,0)*(tangentialvs2 + porosityint*(tangentialvf2 - tangentialvs2))
 
                     )*(linearizationofscalarintegraltransformfac(idof3,nnod)/my::drs_)*survivor(nnod) // -> survivor(nnod) in order to filter the entries which do not belong to the interface
                     +(
-                        tangentialderiv1(idof2,(nnod*my::nsd_)+idof3)*(porosityint*(tangentialvf1(0,0) - tangentialvs1(0,0)))+      // d t^i/d d^L_l
-                        tangentialderiv2(idof2,(nnod*my::nsd_)+idof3)*(porosityint*(tangentialvf2(0,0) - tangentialvs2(0,0)))
+                        tangentialderiv1(idof2,(nnod*my::nsd_)+idof3)*(porosityint*(tangentialvf1 - tangentialvs1))+      // d t^i/d d^L_l
+                        tangentialderiv2(idof2,(nnod*my::nsd_)+idof3)*(porosityint*(tangentialvf2 - tangentialvs2))
 
                     )*survivor(nnod)
                 +(
@@ -1304,8 +1327,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
 
                 )*pfunct(nnod)*timescale*porosityint
                 +(
-                    tangential1(idof2,0)*(tangentialvf1(0,0)-tangentialvs1(0,0)) +           // d phi / d d^L_l
-                    tangential2(idof2,0)*(tangentialvf2(0,0)-tangentialvs2(0,0))
+                    tangential1(idof2,0)*(tangentialvf1-tangentialvs1) +           // d phi / d d^L_l
+                    tangential2(idof2,0)*(tangentialvf2-tangentialvs2)
 
                 )*dphi_dJ*dJ_dds((nnod*my::nsd_)+idof3)
                 +(
@@ -1314,8 +1337,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
 
                 )*pfunct(nnod)*timescale
                 +(
-                    tangentialderiv1(idof2,(nnod*my::nsd_)+idof3)*tangentialvs1(0,0) +           // d t^i/d d^L_l (front term without phi)
-                    tangentialderiv2(idof2,(nnod*my::nsd_)+idof3)*tangentialvs2(0,0)
+                    tangentialderiv1(idof2,(nnod*my::nsd_)+idof3)*tangentialvs1 +           // d t^i/d d^L_l (front term without phi)
+                    tangentialderiv2(idof2,(nnod*my::nsd_)+idof3)*tangentialvs2
 
                 )*survivor(nnod)
                 +(
@@ -1348,13 +1371,13 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
                 elemat1((inode*my::numdofpernode_)+idof2,(nnod*my::numdofpernode_)+idof3) +=
 
                     ( (
-                        tangential1(idof2,0)*tangentialvf1(0,0)+      // d ||n||/d d^L_l
-                        tangential2(idof2,0)*tangentialvf2(0,0)
+                        tangential1(idof2,0)*tangentialvf1+      // d ||n||/d d^L_l
+                        tangential2(idof2,0)*tangentialvf2
 
                     )*(linearizationofscalarintegraltransformfac(idof3,nnod)/my::drs_)*survivor(nnod) // -> survivor(nnod) in order to filter the entries which do not belong to the interface
                     + (
-                        tangentialderiv1(idof2,(nnod*my::nsd_)+idof3)*tangentialvf1(0,0)+      // d t^i/d d^L_l
-                        tangentialderiv2(idof2,(nnod*my::nsd_)+idof3)*tangentialvf2(0,0)
+                        tangentialderiv1(idof2,(nnod*my::nsd_)+idof3)*tangentialvf1+      // d t^i/d d^L_l
+                        tangentialderiv2(idof2,(nnod*my::nsd_)+idof3)*tangentialvf2
 
                     )*survivor(nnod)
                     +(

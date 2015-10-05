@@ -415,7 +415,7 @@ void FPSI::Utils::SetupLocalInterfaceFacingElementMap(
           dim++;
         }
 
-        if (match == problem->NDim())
+        if (match == 3)
         {
           matchcurr = scurr->second;
           break;
