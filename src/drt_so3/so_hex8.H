@@ -189,11 +189,6 @@ public:
   virtual void Unpack(const std::vector<char>& data);
 
   /*!
-  \brief Does this element use EAS?
-  */
-  bool HaveEAS() {return (eastype_!=soh8_easnone);};
-
-  /*!
   \brief Destructor
 
   */
@@ -202,7 +197,10 @@ public:
   //@}
 
   //! @name Acess methods
-
+  /*!
+  \brief Does this element use EAS?
+  */
+  bool HaveEAS() const { return (eastype_!=soh8_easnone); };
 
   /*!
   \brief Get number of degrees of freedom of a certain node

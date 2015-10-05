@@ -136,6 +136,11 @@ public:
 
   //! @name Acess methods
 
+  /*!
+   \brief Does this element use EAS?
+   */
+  virtual bool HaveEAS() const { return (eastype_!=soshw6_easnone); };
+
 
   /*!
   \brief Print this element
@@ -164,7 +169,7 @@ public:
 
 private:
 
-  /*! \brief EAS technology enhanecement types of so_shw6
+  /*! \brief EAS technology enhancement types of so_shw6
    * Solid-Shell Wedge6 has EAS enhancement of GL-strains to avoid locking
    * \param soshw6_poissonthick: 1 parameter for correct kinematic of solid-shell,
    *                             allows linear strain in thick-dir

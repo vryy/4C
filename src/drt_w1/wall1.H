@@ -193,6 +193,10 @@ public:
 
   /// @name Acess methods
   //@{
+    /*!
+    \brief Does this element use EAS?
+    */
+    bool HaveEAS() const { return (eastype_!=eas_vague); };
 
   /// Get number of degrees of freedom of a certain node
   /// (implements pure virtual DRT::Element)

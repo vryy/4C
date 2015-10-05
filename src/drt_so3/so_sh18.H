@@ -134,6 +134,11 @@ public:
   //! @name Acess methods
 
   /*!
+   \brief Does this element use EAS?
+   */
+  virtual bool HaveEAS() const { return eas_; };
+
+  /*!
   \brief Print this element
   */
   void Print(std::ostream& os) const;

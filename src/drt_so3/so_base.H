@@ -89,6 +89,15 @@ public:
   }
 
   /*!
+  \brief Does this element use EAS?
+
+  ToDo: This function can be declared as pure virtual and each concrete derived
+        class has to implement this function. This can be done during the up-coming
+        cleaning procedure.                                      hiermeier 09/15
+  */
+  virtual bool HaveEAS() const { return false; };
+
+  /*!
   \brief Return the material of this element
 
   Note: The input parameter nummat is not the material number from input file
