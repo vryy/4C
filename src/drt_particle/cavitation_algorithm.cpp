@@ -1011,8 +1011,13 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
   {
     // divide nodal wise fluid forces by fluid fraction
     // due to the special choice of Euler-Lagrange coupling
-    const int numnodes = fluid_->Discretization()->NumMyRowNodes();
-    for(int i=0; i<numnodes; ++i)
+
+    int numentries = fluidfracnp_->MyLength();
+    if(numentries != fluidforces->MyLength())
+      dserror("dofrowmaps of equal size expected");
+    // only every 4th dof is of interest (pressure dof)
+    numentries *= 0.25;
+    for(int i=0; i<numentries; ++i)
     {
       // fluid fraction is stored in pressure dof
       const double invnodalfraction = 1.0 / (*fluidfracnp_)[i*4+3];
