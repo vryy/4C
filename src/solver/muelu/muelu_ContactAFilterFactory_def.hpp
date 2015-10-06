@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file MueLu_ContactAFilterFactory_def.hpp
+\file muelu_ContactAFilterFactory_def.hpp
 
 <pre>
 Maintainer: Dr.-Ing. Francesc Verdugo
@@ -30,17 +30,17 @@ Author: wiesner
 
 namespace MueLu {
 
-  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  ContactAFilterFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::ContactAFilterFactory()
+  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+  ContactAFilterFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::ContactAFilterFactory()
   {
 
   }
 
-  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  ContactAFilterFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::~ContactAFilterFactory() {}
+  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+  ContactAFilterFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::~ContactAFilterFactory() {}
 
-  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  Teuchos::RCP<const Teuchos::ParameterList> ContactAFilterFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::GetValidParameterList(const Teuchos::ParameterList& paramList) const {
+  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+  Teuchos::RCP<const Teuchos::ParameterList> ContactAFilterFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::GetValidParameterList(const Teuchos::ParameterList& paramList) const {
     Teuchos::RCP<Teuchos::ParameterList> validParamList = Teuchos::rcp(new Teuchos::ParameterList());
 
     validParamList->set< std::string >           ("Input matrix name", "A", "Name of input matrix. (default='A')");
@@ -58,8 +58,8 @@ namespace MueLu {
     return validParamList;
   }
 
-  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  void ContactAFilterFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::DeclareInput(Level &currentLevel) const {
+  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+  void ContactAFilterFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::DeclareInput(Level &currentLevel) const {
     const ParameterList & pL = GetParameterList();
     std::string inputName                        = pL.get<std::string> ("Input matrix name");
     Teuchos::RCP<const FactoryBase> inputFactory = GetFactory          ("Input matrix factory");
@@ -95,8 +95,8 @@ namespace MueLu {
     //currentLevel.DeclareInput(blockName2,blockFactory2.get(),this);
   }
 
-  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  void ContactAFilterFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::Build(Level & currentLevel) const {
+  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+  void ContactAFilterFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(Level & currentLevel) const {
     Monitor m(*this, "A filtering (contact)");
 
     const Teuchos::ParameterList & pL = GetParameterList();
@@ -216,7 +216,8 @@ namespace MueLu {
         Aout->insertGlobalValues(Ain->getRowMap()->getGlobalElement(row), indout.view(0,indout.size()), valout.view(0,valout.size()));
 
         // this is somewhat expensive, but do communication for debug output
-        double pPerCent = Teuchos::as<Scalar>(row) / Teuchos::as<Scalar>(numLocalRows);
+        double pPerCent = 0.0;
+        //double pPerCent = Teuchos::as<Scalar>(row) / Teuchos::as<Scalar>(numLocalRows);
 
         if(pPerCent > 0.9 && ba==false) { GetOStream(Statistics0, 0) << "+"; ba = true; }
         if(pPerCent > 0.8 && bb==false) { GetOStream(Statistics0, 0) << "+";  bb = true; }

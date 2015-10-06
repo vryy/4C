@@ -640,17 +640,17 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
 
     // use new Hierarchy::Setup routine
     if(maxLevels == 1) {
-      bIsLastLevel = H->Setup(0, Teuchos::null, vecManager[0].ptr(), Teuchos::null); // 1 level "multigrid" method
+      bIsLastLevel = H->Setup(0, Teuchos::null, vecManager[0], Teuchos::null); // 1 level "multigrid" method
     }
     else
     {
-      bIsLastLevel = H->Setup(0, Teuchos::null, vecManager[0].ptr(), vecManager[1].ptr()); // first (finest) level
+      bIsLastLevel = H->Setup(0, Teuchos::null, vecManager[0], vecManager[1]); // first (finest) level
       for(int i=1; i < maxLevels-1; i++) { // intermedium levels
         if(bIsLastLevel == true) break;
-        bIsLastLevel = H->Setup(i, vecManager[i-1].ptr(), vecManager[i].ptr(), vecManager[i+1].ptr());
+        bIsLastLevel = H->Setup(i, vecManager[i-1], vecManager[i], vecManager[i+1]);
       }
       if(bIsLastLevel == false) { // coarsest level
-          bIsLastLevel = H->Setup(maxLevels-1, vecManager[maxLevels-2].ptr(), vecManager[maxLevels-1].ptr(), Teuchos::null);
+          bIsLastLevel = H->Setup(maxLevels-1, vecManager[maxLevels-2], vecManager[maxLevels-1], Teuchos::null);
        }
     }
 
@@ -863,7 +863,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > LI
   smootherPrototype->AddFactoryManager(MBpred,0);
 
   // create SchurComp factory (SchurComplement smoother is provided by local FactoryManager)
-  Teuchos::RCP<SchurComplementFactory> SFact = Teuchos::rcp(new SchurComplementFactory());
+  Teuchos::RCP<MueLu::SchurComplementFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > SFact = Teuchos::rcp(new MueLu::SchurComplementFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node>());
   SFact->SetParameter("omega", Teuchos::ParameterEntry(1.0 /*omega*/)); // hard code Schur complement
   SFact->SetParameter("lumping", Teuchos::ParameterEntry(false /*bSimpleC*/)); // no lumping in Schur Complement approximation
   SFact->SetFactory("A", MueLu::NoFactory::getRCP());  // explicitly set AFact as input factory for SchurComplement (must be the blocked 2x2 operator)

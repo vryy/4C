@@ -15,18 +15,19 @@
 
 #include <Xpetra_BlockedCrsMatrix_fwd.hpp>
 
-#include "muelu/muelu_ContactSPAggregationFactory_fwd.hpp"
-#include "muelu/MueLu_MeshtyingSPAmalgamationFactory_fwd.hpp"
-#include "muelu/MueLu_ContactSPRepartitionInterface_fwd.hpp"
-
 #include <MueLu_Hierarchy.hpp> // for MueLu
 #include <MueLu_SmootherFactory.hpp>
 #include <MueLu_MapTransferFactory_fwd.hpp>
+#include <MueLu_SchurComplementFactory_fwd.hpp>
 
 
 // header files for default types, must be included after all other MueLu/Xpetra headers
 #include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
 #include <MueLu_UseShortNames.hpp>
+
+#include "muelu/muelu_ContactSPAggregationFactory_fwd.hpp"
+#include "muelu/MueLu_MeshtyingSPAmalgamationFactory_fwd.hpp"
+#include "muelu/MueLu_ContactSPRepartitionInterface_fwd.hpp"
 
 // BACI includes
 #include "../linalg/linalg_blocksparsematrix.H"

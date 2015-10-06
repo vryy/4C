@@ -30,24 +30,24 @@
 
 namespace MueLu {
 
-template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-MeshtyingSPAmalgamationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::MeshtyingSPAmalgamationFactory()
+template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+MeshtyingSPAmalgamationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::MeshtyingSPAmalgamationFactory()
 {
 
 }
 
-template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-Teuchos::RCP<const ParameterList> MeshtyingSPAmalgamationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::GetValidParameterList(const ParameterList& paramList) const {
+template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+Teuchos::RCP<const ParameterList> MeshtyingSPAmalgamationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::GetValidParameterList(const ParameterList& paramList) const {
   Teuchos::RCP<ParameterList> validParamList = rcp(new ParameterList());
   validParamList->set< Teuchos::RCP<const FactoryBase> >("A",              Teuchos::null, "Generating factory of the matrix A");
   return validParamList;
 }
 
-template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-MeshtyingSPAmalgamationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::~MeshtyingSPAmalgamationFactory() {}
+template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+MeshtyingSPAmalgamationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::~MeshtyingSPAmalgamationFactory() {}
 
-template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-void MeshtyingSPAmalgamationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::DeclareInput(Level &currentLevel) const {
+template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+void MeshtyingSPAmalgamationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::DeclareInput(Level &currentLevel) const {
   /*currentLevel.DeclareInput("A", AFact_.get(), this);
   currentLevel.DeclareInput("Aggregates", aggregatesFact_.get(), this);
   currentLevel.DeclareInput("UnAmalgamationInfo", amalgFact_.get(), this);
@@ -56,8 +56,8 @@ void MeshtyingSPAmalgamationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, L
   Input(currentLevel, "A"); // blocked A
 }
 
-template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-void MeshtyingSPAmalgamationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::Build(Level & currentLevel) const {
+template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+void MeshtyingSPAmalgamationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(Level & currentLevel) const {
   FactoryMonitor m(*this, "Build", currentLevel);
 
   Teuchos::RCP<Matrix> A = Get< Teuchos::RCP<Matrix> >(currentLevel, "A");
@@ -119,7 +119,8 @@ void MeshtyingSPAmalgamationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, L
   gNodeIds->erase(std::unique(gNodeIds->begin(), gNodeIds->end()), gNodeIds->end());
 
   // store (un)amalgamation information on current level
-  Teuchos::RCP<AmalgamationInfo> amalgamationData = rcp(new AmalgamationInfo(gNodeIds,colMap,fullblocksize, offset,blockid,nStridedOffset,stridedblocksize));
+  // TODO fix me
+  Teuchos::RCP<AmalgamationInfo> amalgamationData = Teuchos::null; //rcp(new AmalgamationInfo(gNodeIds,colMap,fullblocksize, offset,blockid,nStridedOffset,stridedblocksize));
   Set(currentLevel, "UnAmalgamationInfo", amalgamationData);
 
 }

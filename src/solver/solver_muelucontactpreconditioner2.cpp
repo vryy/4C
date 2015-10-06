@@ -765,17 +765,17 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
 
   // use new Hierarchy::Setup routine
   if(maxLevels == 1) {
-    bIsLastLevel = h->Setup(0, Teuchos::null, vecManager_[0].ptr(), Teuchos::null); // 1 level "multigrid" method
+    bIsLastLevel = h->Setup(0, Teuchos::null, vecManager_[0], Teuchos::null); // 1 level "multigrid" method
   }
   else
   {
-    bIsLastLevel = h->Setup(0, Teuchos::null, vecManager_[0].ptr(), vecManager_[1].ptr()); // first (finest) level
+    bIsLastLevel = h->Setup(0, Teuchos::null, vecManager_[0], vecManager_[1]); // first (finest) level
     for(int i=1; i < maxLevels-1; i++) { // intermedium levels
       if(bIsLastLevel == true) break;
-      bIsLastLevel = h->Setup(i, vecManager_[i-1].ptr(), vecManager_[i].ptr(), vecManager_[i+1].ptr());
+      bIsLastLevel = h->Setup(i, vecManager_[i-1], vecManager_[i], vecManager_[i+1]);
     }
     if(bIsLastLevel == false) { // coarsest level
-        bIsLastLevel = h->Setup(maxLevels-1, vecManager_[maxLevels-2].ptr(), vecManager_[maxLevels-1].ptr(), Teuchos::null);
+        bIsLastLevel = h->Setup(maxLevels-1, vecManager_[maxLevels-2], vecManager_[maxLevels-1], Teuchos::null);
      }
   }
 

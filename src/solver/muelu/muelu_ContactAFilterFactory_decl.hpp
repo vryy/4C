@@ -30,7 +30,7 @@ namespace MueLu {
 
 */
 
-template <class Scalar = double, class LocalOrdinal = int, class GlobalOrdinal = LocalOrdinal, class Node = Kokkos::DefaultNode::DefaultNodeType, class LocalMatOps = typename Kokkos::DefaultKernels<void,LocalOrdinal,Node>::SparseOps>
+template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
 class ContactAFilterFactory : public SingleLevelFactoryBase {
 #undef MUELU_CONTACTAFILTERFACTORY_SHORT
   #include "MueLu_UseShortNames.hpp"

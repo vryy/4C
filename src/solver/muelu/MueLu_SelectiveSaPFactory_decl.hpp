@@ -37,7 +37,7 @@ namespace MueLu {
     @ingroup MueLuTransferClasses
   */
 
-  template <class Scalar = double, class LocalOrdinal = int, class GlobalOrdinal = LocalOrdinal, class Node = Kokkos::DefaultNode::DefaultNodeType>
+  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
   class SelectiveSaPFactory : public PFactory {
 #undef MUELU_SELECTIVESAPFACTORY_SHORT
 #include "MueLu_UseShortNames.hpp"
@@ -103,7 +103,7 @@ namespace MueLu {
     //@}
 
   private:
-    Teuchos::RCP<Xpetra::Matrix<double, int, int> > MyTranspose(Teuchos::RCP<Xpetra::Matrix<double, int, int> > const &Op, bool const & optimizeTranspose) const;
+    Teuchos::RCP<Xpetra::Matrix<double, LocalOrdinal, GlobalOrdinal> > MyTranspose(Teuchos::RCP<Xpetra::Matrix<double, LocalOrdinal, GlobalOrdinal> > const &Op, bool const & optimizeTranspose) const;
     Teuchos::RCP<Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node> > FixAPproduct(Level &fineLevel, Level &coarseLevel,Teuchos::RCP<Matrix> & A, Teuchos::RCP<Matrix> & DinvAP) const;
   }; //class SelectiveSaPFactory
 

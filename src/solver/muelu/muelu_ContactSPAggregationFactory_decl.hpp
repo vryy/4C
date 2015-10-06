@@ -26,7 +26,7 @@ namespace MueLu {
 
   */
 
-  template <class Scalar = double, class LocalOrdinal = int, class GlobalOrdinal = LocalOrdinal, class Node = Kokkos::DefaultNode::DefaultNodeType>
+  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
   class ContactSPAggregationFactory : public SingleLevelFactoryBase {
 #undef MUELU_CONTACTSPAGGREGATIONFACTORY_SHORT
     #include "MueLu_UseShortNames.hpp"

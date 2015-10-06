@@ -152,7 +152,7 @@ namespace MueLu {
         }
 
         // sum up all entries in multipleColRequests over all processors
-        sumAll(A->getRowMap()->getComm(), (LocalOrdinal)bSkipDamping, globalbSkipDamping);
+        MueLu_sumAll(A->getRowMap()->getComm(), (LocalOrdinal)bSkipDamping, globalbSkipDamping);
 #endif
 
         Utils::MyOldScaleMatrix(*AP, diag, true, doFillComplete, optimizeStorage); //scale matrix with reciprocal of diag
@@ -342,7 +342,7 @@ namespace MueLu {
 
     // empty arrays to store column indices to override
     size_t maxNNz = DinvAP->getNodeMaxNumRowEntries();
-    Teuchos::Array<GlobalOrdinal> indout(maxNNz,0);
+    Teuchos::Array<LocalOrdinal> indout(maxNNz,0);
     Teuchos::Array<Scalar> valout(maxNNz,0.0);
     size_t curNNz = 0; // number nnz to be replaced in current row
 
@@ -374,7 +374,7 @@ namespace MueLu {
   }
 
   template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
-  Teuchos::RCP<Xpetra::Matrix<double, int, int> > SelectiveSaPFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::MyTranspose(Teuchos::RCP<Xpetra::Matrix<double, int, int> > const &Op, bool const & optimizeTranspose) const
+  Teuchos::RCP<Xpetra::Matrix<double, LocalOrdinal, GlobalOrdinal> > SelectiveSaPFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::MyTranspose(Teuchos::RCP<Xpetra::Matrix<double, LocalOrdinal, GlobalOrdinal> > const &Op, bool const & optimizeTranspose) const
   {
    Teuchos::TimeMonitor tm(*Teuchos::TimeMonitor::getNewTimer("My Transpose"));
 

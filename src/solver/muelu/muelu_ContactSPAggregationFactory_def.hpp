@@ -194,7 +194,7 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Bui
     }
   }
 
-  GlobalOrdinal lagrNodeId2dispNodeId_size = Teuchos::as<GlobalOrdinal>(local_lagrNodeId2dispNodeId.size());
+  int lagrNodeId2dispNodeId_size = Teuchos::as<int>(local_lagrNodeId2dispNodeId.size());
   Teuchos::reduceAll(*comm,Teuchos::REDUCE_MAX,lagrNodeId2dispNodeId_size,&local_lagrNodeId2dispNodeId[0],&lagrNodeId2dispNodeId[0]);
   Teuchos::reduceAll(*comm,Teuchos::REDUCE_MAX,lagrNodeId2dispNodeId_size,&local_lagrNodeId2dispAggId[0],&lagrNodeId2dispAggId[0]);
 

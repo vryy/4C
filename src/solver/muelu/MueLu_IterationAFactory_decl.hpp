@@ -39,7 +39,7 @@ namespace MueLu {
 
   */
 
-  template <class Scalar = double, class LocalOrdinal = int, class GlobalOrdinal = LocalOrdinal, class Node = Kokkos::DefaultNode::DefaultNodeType>
+  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
   class IterationAFactory : public SingleLevelFactoryBase {
 #undef MUELU_ITERATIONAFACTORY_SHORT
     #include "MueLu_UseShortNames.hpp"

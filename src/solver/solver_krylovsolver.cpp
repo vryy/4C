@@ -630,7 +630,7 @@ int LINALG::SOLVER::KrylovSolver::CountZerosOnDiagonal(const Teuchos::RCP<const 
   }
 
   // sum up all entries in multipleColRequests over all processors
-  sumAll(diagAVec->getMap()->getComm(), (LocalOrdinal)lNumZeros, gNumZeros);
+  MueLu_sumAll(diagAVec->getMap()->getComm(), (LocalOrdinal)lNumZeros, gNumZeros);
 
   return Teuchos::as<int>(gNumZeros);
 }
