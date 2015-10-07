@@ -159,7 +159,7 @@ if [[ ! "$CONFIGURATION_FILE" ]]; then
       if [ $TRILINOS_EXPERIMENTAL == 0 ]; then
         CONFIGURATION_FILE=$BACI_HOME/buildconfig/kaiser_Q12014_ACML_ompi162.config
       else 
-        CONFIGURATION_FILE=$BACI_HOME/buildconfig/kaiser_Q32014_ACML_ompi162.config
+        CONFIGURATION_FILE=$BACI_HOME/buildconfig/kaiser_Q12015_gcc48_ACML_ompi162.config
       fi
     fi
   elif [[ -f /etc/SuSE-release ]]; then
