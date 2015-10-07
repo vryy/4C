@@ -65,14 +65,6 @@ void INPAR::ACOU::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                     "Type of time integration scheme",
                     tuple<std::string>(
                     "impleuler",
-                    "trap",
-                    "dirk23",
-                    "dirk33",
-                    "dirk34",
-                    "dirk54",
-                    "bdf2",
-                    "bdf3",
-                    "bdf4",
                     "expleuler",
                     "classrk4",
                     "lsrk45reg2",
@@ -81,14 +73,6 @@ void INPAR::ACOU::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                     "ssprk"),
                     tuple<int>(
                     acou_impleuler,
-                    acou_trapezoidal,
-                    acou_dirk23,
-                    acou_dirk33,
-                    acou_dirk34,
-                    acou_dirk54,
-                    acou_bdf2,
-                    acou_bdf3,
-                    acou_bdf4,
                     acou_expleuler,
                     acou_classrk4,
                     acou_lsrk45reg2,
@@ -133,11 +117,19 @@ void INPAR::ACOU::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   DoubleParameter("LS_STEPLENGTHRED",0.5,"step length is multiplied by this value if line search not yet sufficient",&acou_inv);
   DoubleParameter("EPSILON",-1.0,"tolerated distance in which measured curve=nod curve",&acou_inv);
   BoolParameter("BACKPROJECTION","No","PreEstimation of material parameters with back projection",&acou_inv);
+  StringParameter("ACOUPARAMLIST","none","list of std::string of acoustical parameters to be optimized",&acou_inv);
+  BoolParameter("SUCCESSIVEUPDATE","No","Optical and acoustical parameters update simultaneous or successive",&acou_inv);
+  BoolParameter("SEGMENTATION","No","Update of material parameters in dependence, material identification",&acou_inv);
+  StringParameter("SEGMENTATIONMATS","none.material","Filename of file containing table of materials",&acou_inv);
+  DoubleParameter("ADAPTREGUPARAMS",0.0,"Adapt regularization paramaters for each iteration such that regularization contribution takes this relative value",&acou_inv);
+  StringParameter("TIKH_ACOU_PARAMS_BORDERS","0.0 0.0 0.0 0.0","lower and upper allowed value for rho and c (rho_min rho_max c_min c_max)",&acou_inv);
+  StringParameter("TIKH_OPTI_PARAMS_BORDERS","0.0 0.0 0.0 0.0","lower and upper allowed value for reac and D (reac_min reac_max D_min D_max)",&acou_inv);
+  DoubleParameter("EQUALITYPENALTY",1.0,"penalty coefficient for the equality constraint for segmentation",&acou_inv);
 
 }
 
 
-/// set specific mortar conditions
+/// set specific acoustic conditions
 void INPAR::ACOU::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist)
 {
   using namespace DRT::INPUT;

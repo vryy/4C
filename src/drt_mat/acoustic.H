@@ -43,18 +43,12 @@ public:
   /// destructor
   virtual ~AcousticMat() { ; }
 
-  /// @name material parameters
-  //@{
-
-  /// speed of sound
-  const double c_;
-  /// mass density
-  const double density_;
-
-  //@}
-
   /// create material instance of matching type with my parameters
   virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
+  void OptParams(std::map<std::string, int>* pnames);
+
+  enum matparamnames_{density, c, first=density, last=c};
 
 }; // class AcousticMat
 
@@ -134,13 +128,14 @@ public:
   /// return copy of this material object
   virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new AcousticMat( *this ) ); }
 
-
-
-  /// speed of sound
-  double SpeedofSound() const { return params_->c_; }
-
   /// density
-  virtual double Density() const { return params_->density_; }
+  double Density(int eleid=-1) const { return params_->GetParameter(params_->density,eleid); }
+
+  /// reaction coefficient
+  double SpeedofSound(int eleid=-1) const { return params_->GetParameter(params_->c,eleid); }
+
+
+
 
   /// Return quick accessible material parameter data
   virtual MAT::PAR::Parameter* Parameter() const { return params_; }

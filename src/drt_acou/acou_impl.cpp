@@ -19,6 +19,8 @@ Maintainer: Svenja Schoeder
 #include "../drt_io/io_control.H"
 #include "../drt_lib/drt_discret_hdg.H"
 #include "../drt_io/io.H"
+#include "../drt_mat/matpar_bundle.H"
+#include "../drt_mat/material.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -35,23 +37,29 @@ ACOU::AcouImplicitTimeInt::AcouImplicitTimeInt(
   sourcefuncno_   ((params_->get<int>("SOURCETERMFUNCNO"))-1),
   dtele_          (0.0),
   dtsolve_        (0.0),
-  writemonitor_   (DRT::INPUT::IntegralValue<bool>(*params_,"WRITEMONITOR")),
+  acouopt_        (params_->get<bool>("acouopt")),
+  outputcount_    (0),
   writestress_    (DRT::INPUT::IntegralValue<bool>(*params_,"WRITESTRESS")),
   errormaps_      (DRT::INPUT::IntegralValue<bool>(*params_,"ERRORMAPS")),
   padapttol_      (params_->get<double>("P_ADAPT_TOL")),
   calcerr_        (false),
-  allelesequal_   (DRT::INPUT::IntegralValue<bool>(*params_,"ALLELESEQUAL")),
-  adjoint_rhs_    (Teuchos::null)
+  allelesequal_   (DRT::INPUT::IntegralValue<bool>(*params_,"ALLELESEQUAL"))
 {
-  if(dtp_ == 0.0)  dserror("Can't work with time step size == 0.0");
-  if(padaptivity_==true && errormaps_==false) dserror("If you want to do p-adaptivity, you also have to set the flag ERRORMAPS to Yes");
-  if(padaptivity_==true && dyna_==INPAR::ACOU::acou_trapezoidal) dserror("p-adaptivity not implemented for trapezoidal time integration, use impl or dirk!");
-  if(padaptivity_==true && (dyna_==INPAR::ACOU::acou_dirk23 || dyna_==INPAR::ACOU::acou_dirk33 || dyna_==INPAR::ACOU::acou_dirk34 || dyna_==INPAR::ACOU::acou_dirk54 ))
-      dserror("p-adaptivity not yet implemented for dirk time integration!"); // TODO
-  if(padaptivity_==true && discret_->Comm().NumProc()>1) dserror("p-adaptivity does not yet work in parallel!"); // TODO
+  // some security checks
+  if(dtp_ == 0.0)
+    dserror("Can't work with time step size == 0.0");
+  if(padaptivity_==true && errormaps_==false)
+    dserror("If you want to do p-adaptivity, you also have to set the flag ERRORMAPS to Yes");
+  if(padaptivity_==true && discret_->Comm().NumProc()>1)
+    dserror("p-adaptivity does not yet work in parallel!"); // TODO
+  if(acouopt_ == true && uprestart_<=0)
+    dserror("for optimization with acoustical parameters, RESTARTEVRY must be >=1");
 
+  // service
   if(params_->get<int>("CALCERRORFUNCNO")>0)
     calcerr_ = true;
+  if(acouopt_&&adjoint_)
+    outputcount_ = params_->get<int>("outputcount");
 
   // get the dof map
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
@@ -59,36 +67,6 @@ ACOU::AcouImplicitTimeInt::AcouImplicitTimeInt(
   // create vector containing element based error values
   if(errormaps_)
     error_ = LINALG::CreateVector(*(discret_->ElementRowMap()),true);
-
-  if(adjoint_)
-  {
-    //adjoint_rhs_= params_->get<Teuchos::RCP<Epetra_MultiVector> >("rhsvec");
-    Teuchos::RCP<Epetra_MultiVector> rowadjointrhs = params_->get<Teuchos::RCP<Epetra_MultiVector> >("rhsvec");
-
-    // export this thing!!
-    const int * globeles = rowadjointrhs->Map().MyGlobalElements();
-    std::vector<int> glomapval;
-    std::vector<int> locmapval;
-
-    for(int j=0; j<discret_->Comm().NumProc(); ++j)
-    {
-      discret_->Comm().Barrier();
-      int numglobeles = rowadjointrhs->Map().NumMyElements();
-      discret_->Comm().Broadcast(&numglobeles,1,j);
-      locmapval.resize(numglobeles);
-      if(j == discret_->Comm().MyPID())
-        for(int i=0; i<numglobeles; ++i)
-          locmapval[i] = globeles[i];
-
-      discret_->Comm().Broadcast(&locmapval[0],numglobeles,j);
-      for(int i=0; i<numglobeles; ++i)
-        glomapval.push_back(locmapval[i]);
-    }
-    Teuchos::RCP<Epetra_Map> fullmap = Teuchos::rcp(new Epetra_Map(-1,glomapval.size(),&glomapval[0],0,discret_->Comm()));
-    adjoint_rhs_ =  Teuchos::rcp(new Epetra_MultiVector(*fullmap,rowadjointrhs->NumVectors(),true));
-    LINALG::Export(*rowadjointrhs,*adjoint_rhs_);
-    discret_->Comm().Barrier();
-  }
 
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
   zeros_   = LINALG::CreateVector(*dofrowmap,true);
@@ -130,7 +108,6 @@ ACOU::AcouImplicitTimeInt::~AcouImplicitTimeInt()
 void ACOU::AcouImplicitTimeInt::SetInitialZeroField()
 {
   velnp_->PutScalar(0.0);
-  veln_->PutScalar(0.0);
 
   ACOU::AcouTimeInt::SetInitialZeroField();
 
@@ -174,25 +151,8 @@ void ACOU::AcouImplicitTimeInt::SetInitialField(int startfuncno)
   }
   //if(err!=0) dserror("Could not replace all values");
 
-  veln_->Update(1.0,*velnp_,0.0);
-
   return;
 } // SetInitialField
-
-/*----------------------------------------------------------------------*
- | Initialization by given scatra solution vector (pub)  schoeder 01/14 |
- *----------------------------------------------------------------------*/
-void ACOU::AcouImplicitTimeInt::SetInitialPhotoAcousticField(
-                                                       Teuchos::RCP<Epetra_Vector> light,
-                                                       Teuchos::RCP<DRT::Discretization> scatradis,
-                                                       bool meshconform)
-{
-  ACOU::AcouTimeInt::SetInitialPhotoAcousticField(light,scatradis,meshconform);
-
-  veln_->Update(1.0,*velnp_,0.0);
-
-  return;
-} // SetInitialPhotoAcousticField
 
 /*----------------------------------------------------------------------*
  |  Time loop (public)                                   schoeder 01/14 |
@@ -210,6 +170,9 @@ void ACOU::AcouImplicitTimeInt::Integrate(Teuchos::RCP<Epetra_MultiVector> histo
 
   // evaluate error
   EvaluateErrorComparedToAnalyticalSol();
+
+  // intermediate integrate
+  IntermediateIntegrate();
 
   // call elements to calculate system matrix/rhs and assemble
   AssembleMatAndRHS();
@@ -229,9 +192,6 @@ void ACOU::AcouImplicitTimeInt::Integrate(Teuchos::RCP<Epetra_MultiVector> histo
     // solve
     Solve();
 
-    // update solution, current solution becomes old solution of next timestep
-    TimeUpdate();
-
     // p-adaptivity
     UpdatePolyAndState();
 
@@ -241,6 +201,8 @@ void ACOU::AcouImplicitTimeInt::Integrate(Teuchos::RCP<Epetra_MultiVector> histo
     // evaluate error
     EvaluateErrorComparedToAnalyticalSol();
 
+    // intermediate integrate
+    IntermediateIntegrate();
   } // while (step_<stepmax_ and time_<maxtime_)
 
   if (!myrank_) printf("\n");
@@ -257,12 +219,11 @@ void ACOU::AcouImplicitTimeInt::Solve()
   const double tcpusolve=Teuchos::Time::wallTime();
   solver_->Solve(sysmat_->EpetraOperator(),velnp_,residual_,true,false,Teuchos::null);
   dtsolve_ = Teuchos::Time::wallTime()-tcpusolve;
- // velnp_->Print(std::cout);
 
   // update interior variables
   UpdateInteriorVariablesAndAssemebleRHS();
-
   ApplyDirichletToSystem();
+
   return;
 } // Solve
 
@@ -298,11 +259,9 @@ void ACOU::AcouImplicitTimeInt::AssembleMatAndRHS()
   //----------------------------------------------------------------------
 
   // set general vector values needed by elements
-  discret_->ClearState();
-  if(!padaptivity_){
-  discret_->SetState("trace",velnp_);
-  discret_->SetState("trace_m",veln_);
-  }
+  discret_->ClearState(true);
+  if(!padaptivity_)
+    discret_->SetState("trace",velnp_);
 
   // set time step size
   eleparams.set<double>("dt",dtp_);
@@ -314,6 +273,7 @@ void ACOU::AcouImplicitTimeInt::AssembleMatAndRHS()
   eleparams.set<int>("sourcefuncno",sourcefuncno_);
   eleparams.set<bool>("resonly",resonly);
   eleparams.set<bool>("padaptivity",padaptivity_);
+  eleparams.set<int>("useacouoptvecs",-1);
   eleparams.set<int>("action",ACOU::calc_systemmat_and_residual);
   eleparams.set<INPAR::ACOU::DynamicType>("dynamic type",dyna_);
   eleparams.set<bool>("adjoint",adjoint_);
@@ -324,7 +284,7 @@ void ACOU::AcouImplicitTimeInt::AssembleMatAndRHS()
   eleparams.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
 
   discret_->Evaluate(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null);
-  discret_->ClearState();
+  discret_->ClearState(true);
 
   if(!resonly)
   {
@@ -360,18 +320,6 @@ void ACOU::AcouImplicitTimeInt::AssembleMatAndRHS()
 } // AssembleMatAndRHS
 
 /*----------------------------------------------------------------------*
- |  Update Vectors (public)                              schoeder 01/14 |
- *----------------------------------------------------------------------*/
-void ACOU::AcouImplicitTimeInt::TimeUpdate()
-{
-  TEUCHOS_FUNC_TIME_MONITOR("ACOU::AcouImplicitTimeInt::TimeUpdate");
-
-  veln_ ->Update(1.0,*velnp_,0.0);
-
-  return;
-} // TimeUpdate
-
-/*----------------------------------------------------------------------*
  | Update interior field and calculate residual (public) schoeder 01/14 |
  *----------------------------------------------------------------------*/
 void ACOU::AcouImplicitTimeInt::UpdateInteriorVariablesAndAssemebleRHS()
@@ -383,13 +331,12 @@ void ACOU::AcouImplicitTimeInt::UpdateInteriorVariablesAndAssemebleRHS()
   // get cpu time
   const double tcpu=Teuchos::Time::wallTime();
 
+  Teuchos::RCP<std::vector<double> > elevals;
+   if(errormaps_)
+     elevals = Teuchos::rcp(new std::vector<double>(discret_->NumGlobalElements(),0.0));
+
   // create parameterlist
   Teuchos::ParameterList eleparams;
-
-  discret_->SetState("trace",velnp_);
-  // fill in parameters and set states needed by elements
-  if(!padaptivity_) discret_->SetState("trace_m",veln_);
-
   eleparams.set<int>("sourcefuncno",sourcefuncno_);
   eleparams.set<double>("dt",dtp_);
   eleparams.set<double>("time",time_);
@@ -398,23 +345,24 @@ void ACOU::AcouImplicitTimeInt::UpdateInteriorVariablesAndAssemebleRHS()
   eleparams.set<bool>("errormaps",errormaps_);
   eleparams.set<bool>("padaptivity",padaptivity_);
   eleparams.set<double>("padaptivitytol",padapttol_);
+  eleparams.set<int>("useacouoptvecs",-1);
   eleparams.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
   eleparams.set<bool>("allelesequal",allelesequal_);
-
-  Teuchos::RCP<std::vector<double> > elevals;
-  if(errormaps_)
-    elevals = Teuchos::rcp(new std::vector<double>(discret_->NumGlobalElements(),0.0));
   eleparams.set<Teuchos::RCP<std::vector<double> > >("elevals",elevals);
-
   eleparams.set<int>("action",ACOU::update_secondary_solution_and_calc_residual);
   eleparams.set<INPAR::ACOU::DynamicType>("dynamic type",dyna_);
-
-  residual_->Scale(0.0);
+  bool calcgrad = acouopt_&&adjoint_;
+  if(step_==stepmax_+1||step_==int(maxtime_/dtp_)+1) calcgrad=false;
+  eleparams.set<bool>("calculategradient",calcgrad);
+  int offset = uprestart_-step_%uprestart_;
+  if(offset==uprestart_) offset = 0;
+  eleparams.set<int>("calcgradoffset",offset);
   eleparams.set<Teuchos::RCP<Epetra_MultiVector> >("adjointrhs",adjoint_rhs_);
   eleparams.set<int>("step",step_);
-  bool resonly = true;
-  eleparams.set<bool>("resonly",resonly);
+  eleparams.set<bool>("resonly",true);
 
+  residual_->Scale(0.0);
+  discret_->SetState("trace",velnp_);
   discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,residual_,Teuchos::null,Teuchos::null);
 
   // update the error vector
@@ -425,11 +373,11 @@ void ACOU::AcouImplicitTimeInt::UpdateInteriorVariablesAndAssemebleRHS()
       error_->ReplaceMyValue(el,0,localvals[error_->Map().GID(el)]);
   }
 
-  discret_->ClearState();
+  discret_->ClearState(true);
 
   // calculate source term for adjoint simulation
   if(adjoint_ && phys_==INPAR::ACOU::acou_lossless) // only needed for fluid, since the source term for the solid is calculated directly in the update routine
-  { // TODO
+  {
     std::string condname = "PressureMonitor";
     std::vector<DRT::Condition*> pressuremon;
     discret_->GetCondition(condname,pressuremon);
@@ -491,7 +439,172 @@ void ACOU::AcouImplicitTimeInt::UpdatePolyAndState()
 
   return;
 }
+/*----------------------------------------------------------------------*
+ |  Intermediate forward integration in adjoint run      schoeder 06/15 |
+ *----------------------------------------------------------------------*/
+void ACOU::AcouImplicitTimeInt::IntermediateIntegrate()
+{
+  // if this is no adjoint run or no acouopt_, return
+  if(acouopt_==false || adjoint_ == false)
+   return;
 
+  // if this is no "starting step", return
+  if(step_%uprestart_!=0)
+    return;
+
+  // save the trace field of the adjoint integration
+  Teuchos::RCP<Epetra_Vector> adjointvelnp = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap(0))));
+  adjointvelnp->Update(1.0,*velnp_,0.0);
+
+  // read the restart
+  double time = 0.0;
+  int restartstep = -1;
+  {
+    // determine "start" for the intermediate integration
+    restartstep = (stepmax_<(maxtime_/dtp_)) ? stepmax_ : (maxtime_/dtp_);
+    restartstep -= step_ + uprestart_;
+    if(restartstep < 0) return; // happens in the last adjoint step
+
+    // prepare and do the restart read
+    std::stringstream name;
+    name<< params_->get<std::string>("name");
+    name<<"_invforward_acou_run_"<<outputcount_;
+    Teuchos::RCP<IO::InputControl> inputfile = Teuchos::rcp(new IO::InputControl(name.str(), discret_->Comm()));
+    IO::DiscretizationReader reader(discret_,inputfile,restartstep);
+    time = reader.ReadDouble("time");
+
+    // read the trace field
+    reader.ReadVector(velnp_,"velnps");
+
+    // read the internal field
+    Teuchos::RCP<Epetra_Vector> intvelnp = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap(1))));
+    reader.ReadVector(intvelnp,"intvelnp");
+
+    // bring the internal field to the elements BUT DO NOT OVERWRITE THEIR FIELD VECTORS
+    Teuchos::ParameterList eleparams;
+    eleparams.set<int>("action",ACOU::ele_init_from_acouoptrestart);
+    eleparams.set<INPAR::ACOU::DynamicType>("dynamic type",dyna_);
+    eleparams.set<bool>("padaptivity",padaptivity_);
+    eleparams.set<int>("length",uprestart_+1); // +1 is for the last step
+    discret_->SetState(1,"intvelnp",intvelnp);
+    discret_->SetState("trace",velnp_);
+    discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+    discret_->ClearState(true);
+  }
+
+  // perform the time steps!
+  {
+    // first step with setup of system matrix
+    // reset residual
+    residual_->Scale(0.0);
+
+    // delete all entries of the system matrix
+    sysmat_->Zero();
+
+    // create the parameters for the discretization
+    Teuchos::ParameterList eleparams;
+    eleparams.set<double>("dt",dtp_);
+    eleparams.set<int>("sourcefuncno",sourcefuncno_);
+    eleparams.set<bool>("resonly",false);
+    eleparams.set<bool>("padaptivity",padaptivity_);
+    eleparams.set<int>("action",ACOU::calc_systemmat_and_residual);
+    eleparams.set<INPAR::ACOU::DynamicType>("dynamic type",dyna_);
+    eleparams.set<bool>("adjoint",false); // this is forward integration!
+    eleparams.set<int>("useacouoptvecs",0); // elements have to use the different vectors!!!
+    eleparams.set<double>("time",time);
+    eleparams.set<double>("timep",time+dtp_);
+    eleparams.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
+
+    // evaluate system matrix and residual
+    discret_->Evaluate(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null);
+    discret_->ClearState(true);
+
+    // add contribution to sysmat from absorbing boundary conditions
+    std::string condname = "Absorbing";
+    std::vector<DRT::Condition*> absorbingBC;
+    discret_->GetCondition(condname,absorbingBC);
+    if(absorbingBC.size())
+    {
+      eleparams.remove("action",false);
+      eleparams.set<int>("action",ACOU::calc_abc);
+      discret_->EvaluateCondition(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null,condname);
+    }
+
+    // sysmat is ready to go
+    sysmat_->Complete();
+
+    // apply the Dirichlet conditions (no function call due to different time)
+    {
+      Teuchos::ParameterList params;
+      params.set<double>("total time",time);
+      discret_->EvaluateDirichlet(params,zeros_,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+      LINALG::ApplyDirichlettoSystem(sysmat_,velnp_,residual_,Teuchos::null,zeros_,*(dbcmaps_->CondMap()));
+      zeros_->PutScalar(0.0);
+    }
+
+    // do the "time loop"
+    int maxstep = restartstep + uprestart_;
+    int minstep = restartstep;
+    while (restartstep<maxstep)
+    {
+      // increment time and step
+      restartstep++;
+      time += dtp_;
+
+      // output to screen
+      if(!myrank_) printf(">");
+
+      // solve
+      solver_->Solve(sysmat_->EpetraOperator(),velnp_,residual_,true,false,Teuchos::null);
+
+      // update interior variables and compute residual
+      {
+        // parameters
+        Teuchos::ParameterList eleparams;
+        eleparams.set<int>("sourcefuncno",sourcefuncno_);
+        eleparams.set<double>("dt",dtp_);
+        eleparams.set<double>("time",time);
+        eleparams.set<double>("timep",time+dtp_);
+        eleparams.set<bool>("adjoint",false);
+        eleparams.set<int>("useacouoptvecs",restartstep-minstep-1);
+        eleparams.set<bool>("errormaps",errormaps_);
+        eleparams.set<bool>("padaptivity",padaptivity_);
+        eleparams.set<double>("padaptivitytol",padapttol_);
+        eleparams.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
+        eleparams.set<bool>("allelesequal",allelesequal_);
+        eleparams.set<int>("action",ACOU::update_secondary_solution_and_calc_residual);
+        eleparams.set<INPAR::ACOU::DynamicType>("dynamic type",dyna_);
+        //eleparams.set<int>("step",restartstep);
+        eleparams.set<bool>("resonly",true);
+        eleparams.set<bool>("calculategradient",false);
+
+        // reset residual
+        residual_->Scale(0.0);
+
+        // evaluate
+        discret_->SetState("trace",velnp_);
+        discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,residual_,Teuchos::null,Teuchos::null);
+      }
+
+      // apply dirichlet
+      {
+        Teuchos::ParameterList params;
+        params.set<double>("total time",time);
+        discret_->EvaluateDirichlet(params,zeros_,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+        LINALG::ApplyDirichlettoSystem(sysmat_,velnp_,residual_,Teuchos::null,zeros_,*(dbcmaps_->CondMap()));
+        zeros_->PutScalar(0.0);
+      }
+    } // while (restartstep<restartstep+uprestart_)
+  }
+
+  // now the elements hold the correct state vectors
+  // act if nothing ever happened!
+  velnp_->Update(1.0,*adjointvelnp,0.0);
+  AssembleMatAndRHS();
+  ApplyDirichletToSystem();
+
+ return;
+}
 
 namespace
 {
@@ -517,6 +630,7 @@ namespace
     // call element routine for interpolate HDG to elements
     Teuchos::ParameterList params;
     params.set<int>("action",ACOU::interpolate_hdg_to_node);
+    params.set<int>("useacouoptvecs",-1);
     dis.SetState(0,"trace",traceValues);
     params.set<INPAR::ACOU::PhysicalType>("physical type",phys);
     params.set<bool>("padaptivity",padapt);
@@ -569,7 +683,7 @@ namespace
         (*velocity)[d][i] /= touchCount[i];
       (*tracevel)[i] /= touchCount[i];
     }
-    dis.ClearState();
+    dis.ClearState(true);
 
     return;
   } // getNodeVectorsHDG
@@ -660,7 +774,7 @@ namespace
       for (int d=0; d<6; ++d)
         (*velocitygradient)[d][i] /= touchCount[i];
     }
-    dis.ClearState();
+    dis.ClearState(true);
 
     return;
   } // getNodeVectorsHDGSolid
@@ -709,6 +823,7 @@ void ACOU::AcouImplicitTimeInt::Output(Teuchos::RCP<Epetra_MultiVector> history,
     eleparams.set<double>("dt",dtp_);
     eleparams.set<bool>("adjoint",adjoint_);
     eleparams.set<bool>("padaptivity",padaptivity_);
+    eleparams.set<int>("useacouoptvecs",-1);
     eleparams.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
 
     DRT::Element::LocationArray la(2);
@@ -769,7 +884,12 @@ void ACOU::AcouImplicitTimeInt::Output(Teuchos::RCP<Epetra_MultiVector> history,
     // step number and time
     output_->NewStep(step_,time_);
     // write element data only once
-    if (step_==0) output_->WriteElementData(true);
+    if (step_==0)
+    {
+      output_->WriteElementData(true);
+      if(phys_!=INPAR::ACOU::acou_solid)
+        OutputDensityAndSpeedOfSound();
+    }
 
     output_->WriteVector("velnp",interpolatedVelocity);
     output_->WriteVector("pressure",interpolatedPressure);
@@ -798,42 +918,6 @@ void ACOU::AcouImplicitTimeInt::Output(Teuchos::RCP<Epetra_MultiVector> history,
 } // Output
 
 /*----------------------------------------------------------------------*
- |  Fill touch count vec (needed for inverse analysis)   schoeder 04/14 |
- *----------------------------------------------------------------------*/
-void ACOU::AcouImplicitTimeInt::FillTouchCountVec(Teuchos::RCP<Epetra_Vector> touchcount)
-{
-  // absorbing boundary conditions
-  std::string condname = "PressureMonitor";
-  std::vector<DRT::Condition*> pressuremon;
-  discret_->GetCondition(condname,pressuremon);
-
-  std::vector<unsigned char> touchCount(touchcount->MyLength());
-
-  for(unsigned int i=0; i<pressuremon.size(); ++i)
-  {
-    std::map<int,Teuchos::RCP<DRT::Element> >& geom = pressuremon[i]->Geometry();
-    std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
-    for (curr=geom.begin(); curr!=geom.end(); ++curr)
-    {
-      for(int j=0; j<curr->second->NumNode(); ++j)
-      {
-        DRT::Node* node = curr->second->Nodes()[j];
-        const int localIndex = touchcount->Map().LID(node->Id());
-
-        if (localIndex < 0)
-          continue;
-
-        touchCount[localIndex]++;
-      }
-    }
-  }
-  for (int i=0; i<touchcount->MyLength(); ++i)
-    (*touchcount)[i] = 1.0/touchCount[i];
-
-  return;
-} // FillTouchCountVec
-
-/*----------------------------------------------------------------------*
  |  Output time step information (public)                schoeder 01/14 |
  *----------------------------------------------------------------------*/
 void ACOU::AcouImplicitTimeInt::OutputToScreen()
@@ -842,69 +926,18 @@ void ACOU::AcouImplicitTimeInt::OutputToScreen()
   if (!myrank_)
   {
     if(invana_)
-      printf(".");
+    {
+      if(adjoint_)
+        printf("<");
+      else
+        printf(">");
+    }
     else
       printf("TIME: %11.4E/%11.4E  DT = %11.4E %s STEP = %4d/%4d, ts=%10.3E, te=%10.3E \n",time_,maxtime_,dtp_,Name().c_str(),step_,stepmax_,dtsolve_,dtele_);
   }
 
   return;
 } // OutputToScreen
-
-/*----------------------------------------------------------------------*
- |  Calculate node based values (public)                 schoeder 01/14 |
- *----------------------------------------------------------------------*/
-void ACOU::AcouImplicitTimeInt::NodalPsiField(Teuchos::RCP<Epetra_Vector> outvec)
-{
-
-  // call element routine for interpolate HDG to elements
-  Teuchos::ParameterList params;
-  params.set<int>("action",ACOU::interpolate_psi_to_node);
-  discret_->SetState(0,"trace",velnp_);
-  params.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
-  params.set<double>("dt",dtp_);
-  params.set<bool>("padaptivity",false);
-
-  std::vector<int> dummy;
-  DRT::Element::LocationArray la(2);
-
-  Epetra_SerialDenseMatrix dummyMat;
-  Epetra_SerialDenseVector dummyVec;
-  Epetra_SerialDenseVector interpolVec;
-  std::vector<unsigned char> touchCount(outvec->MyLength());
-
-  outvec->PutScalar(0.);
-
-  for (int el=0; el<discret_->NumMyColElements();++el)
-  {
-    DRT::Element *ele = discret_->lColElement(el);
-    ele->LocationVector(*discret_,la,false);
-    if (interpolVec.M() == 0)
-      interpolVec.Resize(ele->NumNode());
-
-    ele->Evaluate(params,*discret_,la[0].lm_,dummyMat,dummyMat,interpolVec,dummyVec,dummyVec);
-
-    // sum values on nodes into vectors and record the touch count (build average of values)
-    for (int i=0; i<ele->NumNode(); ++i)
-    {
-      DRT::Node* node = ele->Nodes()[i];
-      const int localIndex = outvec->Map().LID(node->Id());
-
-      if (localIndex < 0)
-        continue;
-
-      touchCount[localIndex]++;
-      (*outvec)[localIndex] += interpolVec(i);
-    }
-
-  }
-
-  for (int i=0; i<outvec->MyLength(); ++i)
-    (*outvec)[i] /= touchCount[i];
-
-  discret_->ClearState();
-
-  return;
-} // NodalPsiField
 
 /*----------------------------------------------------------------------*
  |  Calculate node based values (public)                 schoeder 01/14 |
@@ -954,6 +987,7 @@ void ACOU::AcouImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
     params.set<bool>("padaptivity",padaptivity_);
     params.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
     params.set<int>("funct",params_->get<int>("CALCERRORFUNCNO"));
+    params.set<int>("useacouoptvecs",-1);
 
     discret_->SetState(0,"trace",velnp_);
 
@@ -961,7 +995,7 @@ void ACOU::AcouImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
 
     // call loop over elements (assemble nothing)
     discret_->EvaluateScalars(params, errors);
-    discret_->ClearState();
+    discret_->ClearState(true);
 
     // std::vector containing
     // [0]: L2 pressure error
@@ -1002,129 +1036,6 @@ void ACOU::AcouImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
         std::cout<<"time "<<time_<<" relative L2 velocity error "<<(*relerror)[1]<<" absolute L2 velocity error "<<sqrt((*errors)[2])<< " L2 velocity norm "<<sqrt((*errors)[3])<<std::endl;
         std::cout<<"time "<<time_<<" relative L2 velgradi error "<<(*relerror)[2]<<" absolute L2 velgradi error "<<sqrt((*errors)[4])<< " L2 velgradi norm "<<sqrt((*errors)[5])<<std::endl;
       }
-    }
-  }
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  InitMonitorFile                                      schoeder 04/14 |
- *----------------------------------------------------------------------*/
-void ACOU::AcouImplicitTimeInt::InitMonitorFile()
-{
-  if(writemonitor_)
-  {
-    FILE *fp = NULL;
-    if(myrank_==0)
-    {
-      std::string name = DRT::Problem::Instance()->OutputControlFile()->FileName();
-      name.append(".monitor");
-      fp = fopen(name.c_str(), "w");
-      if(fp == NULL)
-        dserror("Couldn't open file.");
-    }
-
-    //get condition
-    std::string condname="PressureMonitor";
-    std::vector<DRT::Condition*>pressuremon;
-    discret_->GetCondition(condname,pressuremon);
-    if(pressuremon.size()>1) dserror("write of monitor file only implemented for one pressure monitor condition");
-    const std::vector<int> pressuremonmics = *(pressuremon[0]->Nodes());
-
-    int mics=pressuremonmics.size();
-    int steps=0;
-    if(dtp_*stepmax_<maxtime_)
-      steps=stepmax_;
-    else
-      steps=maxtime_/dtp_+3; // first, last and int cut off
-
-    if(myrank_ == 0)
-    {
-      fprintf(fp,"steps %d ",steps);
-      fprintf(fp,"mics %d\n",mics);
-    }
-
-    int speakingproc=-1;
-    int helptospeak=-1;
-    const double* nod_coords;
-    double coords[3];
-
-    for(unsigned int n=0;n<pressuremonmics.size();++n)
-    {
-
-      if(discret_->HaveGlobalNode(pressuremonmics[n]))
-      {
-        helptospeak = myrank_;
-        nod_coords = discret_->gNode(pressuremonmics[n])->X();
-        coords[0]=nod_coords[0];
-        coords[1]=nod_coords[1];
-        coords[2]=nod_coords[2];
-      }
-      else
-        helptospeak = 0;
-      discret_->Comm().MaxAll(&helptospeak,&speakingproc,1);
-      discret_->Comm().Broadcast(coords,3,speakingproc);
-
-      if(myrank_==0)
-        fprintf(fp,"%e %e %e\n",coords[0],coords[1],coords[2]);
-    }
-    if(myrank_ == 0)
-    {
-      fprintf(fp,"#\n#\n#\n");
-      fclose(fp);
-    }
-  }
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  FillMonitorFile                                      schoeder 04/14 |
- *----------------------------------------------------------------------*/
-void ACOU::AcouImplicitTimeInt::FillMonitorFile(Teuchos::RCP<Epetra_Vector> ip)
-{
-  if(writemonitor_)
-  {
-    FILE *fp = NULL;
-    if(myrank_==0)
-    {
-     std::string name = DRT::Problem::Instance()->OutputControlFile()->FileName();
-     name.append(".monitor");
-     fp = fopen(name.c_str(), "a");
-    }
-
-    // get condition
-    std::string condname="PressureMonitor";
-    std::vector<DRT::Condition*>pressuremon;
-    discret_->GetCondition(condname,pressuremon);
-    const std::vector<int> pressuremonmics = *(pressuremon[0]->Nodes());
-    int mics=pressuremonmics.size();
-
-    if(myrank_==0) fprintf(fp,"%e ",time_);
-    int helptospeak=-1;
-    int speakingproc=-1;
-    double pressure = 0.0;
-
-    for(int n=0;n<mics;n++)
-    {
-      if(discret_->HaveGlobalNode(pressuremonmics[n]))
-      {
-        if(ip->Map().LID(pressuremonmics[n])>=0)
-        {
-          helptospeak=myrank_;
-          pressure=ip->operator [](ip->Map().LID(pressuremonmics[n]));
-        }
-      }
-      else
-        helptospeak = -1;
-      discret_->Comm().MaxAll(&helptospeak,&speakingproc,1);
-      discret_->Comm().Broadcast(&pressure,1,speakingproc);
-
-      if(myrank_==0) fprintf(fp,"%e ", pressure);
-    }
-    if(myrank_==0)
-    {
-      fprintf(fp,"\n");
-      fclose(fp);
     }
   }
   return;

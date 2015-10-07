@@ -22,15 +22,15 @@ namespace ACOU
 {
 
 /*----------------------------------------------------------------------*/
-class PatMatParManagerUniform : public INVANA::MatParManagerUniform
+class OptMatParManagerUniform : public INVANA::MatParManagerUniform
 {
 public:
 
   //! Constructor
-  PatMatParManagerUniform(Teuchos::RCP<DRT::Discretization> discret);
+  OptMatParManagerUniform(Teuchos::RCP<DRT::Discretization> discret);
 
   //! Destructor
-  ~PatMatParManagerUniform(){};
+  ~OptMatParManagerUniform(){};
 
   //! evaluate derivative of the residual force vector w.r.t to the material parameters using duals
   void AddEvaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint);
@@ -38,23 +38,68 @@ public:
 };
 
 /*----------------------------------------------------------------------*/
-class PatMatParManagerPerElement : public INVANA::MatParManagerPerElement
+class AcouMatParManagerUniform : public INVANA::MatParManagerUniform
 {
 public:
 
   //! Constructor
-  PatMatParManagerPerElement(Teuchos::RCP<DRT::Discretization> discret, bool scaleele);
+  AcouMatParManagerUniform(Teuchos::RCP<DRT::Discretization> discret);
 
   //! Destructor
-  ~PatMatParManagerPerElement(){};
+  ~AcouMatParManagerUniform(){};
 
   //! evaluate derivative of the residual force vector w.r.t to the material parameters using duals
   void AddEvaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint);
 
+};
+
+/*----------------------------------------------------------------------*/
+class OptMatParManagerPerElement : public INVANA::MatParManagerPerElement
+{
+public:
+
+  //! Constructor
+  OptMatParManagerPerElement(Teuchos::RCP<DRT::Discretization> discret, bool scaleele);
+
+  //! Destructor
+  ~OptMatParManagerPerElement(){};
+
+  //! evaluate derivative of the residual force vector w.r.t to the material parameters using duals
+  void AddEvaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint);
+
+  //! write parameter values to the correct positions in the given vector
+  void WriteValuesToVector(int elematid, int geleid, double valit0, double valit1, Teuchos::RCP<Epetra_MultiVector> params);
+
+  //! set action for evaluation of adjacency matrix
   virtual void SetAction(Teuchos::ParameterList& p);
+
 private:
 
   bool scalegradele_;
+};
+
+/*----------------------------------------------------------------------*/
+class AcouMatParManagerPerElement : public INVANA::MatParManagerPerElement
+{
+public:
+
+  //! Constructor
+  AcouMatParManagerPerElement(Teuchos::RCP<DRT::Discretization> discret);
+
+  //! Destructor
+  ~AcouMatParManagerPerElement(){};
+
+  //! evaluate derivative of the residual force vector w.r.t to the material parameters using duals
+  void AddEvaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint);
+
+  //! write parameter values to the correct positions in the given vector
+  void WriteValuesToVector(int elematid, int geleid, double valit0, double valit1, Teuchos::RCP<Epetra_MultiVector> params);
+
+  //! set action for evaluation of adjacency matrix
+  virtual void SetAction(Teuchos::ParameterList& p);
+
+private:
+
 };
 
 } // namespace ACOU

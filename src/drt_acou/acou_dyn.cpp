@@ -20,11 +20,7 @@ Maintainer: Svenja Schoeder
 #include "acou_ele.H"
 #include "acou_sol_ele.H"
 #include "acou_timeint.H"
-#include "acou_impl.H"
 #include "acou_impl_euler.H"
-#include "acou_impl_trap.H"
-#include "acou_impl_bdf.H"
-#include "acou_impl_dirk.H"
 #include "acou_inv_analysis.H"
 #include "acou_expl.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -149,6 +145,7 @@ void acoustics_drt()
   {
     params->set<bool>("invana",false);
     params->set<bool>("adjoint",false);
+    params->set<bool>("acouopt",false);
   }
 
   // set restart step if we do not perform inverse analysis
@@ -176,26 +173,6 @@ void acoustics_drt()
     case INPAR::ACOU::acou_impleuler:
     {
       acoualgo = Teuchos::rcp(new ACOU::TimIntImplEuler(acoudishdg,solver,params,output));
-      break;
-    }
-    case INPAR::ACOU::acou_trapezoidal:
-    {
-      acoualgo = Teuchos::rcp(new ACOU::TimIntImplTrap(acoudishdg,solver,params,output));
-      break;
-    }
-    case INPAR::ACOU::acou_bdf2:
-    case INPAR::ACOU::acou_bdf3:
-    case INPAR::ACOU::acou_bdf4:
-    {
-      acoualgo = Teuchos::rcp(new ACOU::TimIntImplBDF(acoudishdg,solver,params,output));
-      break;
-    }
-    case INPAR::ACOU::acou_dirk23:
-    case INPAR::ACOU::acou_dirk33:
-    case INPAR::ACOU::acou_dirk34:
-    case INPAR::ACOU::acou_dirk54:
-    {
-      acoualgo = Teuchos::rcp(new ACOU::TimIntImplDIRK(acoudishdg,solver,params,output));
       break;
     }
     case INPAR::ACOU::acou_expleuler:

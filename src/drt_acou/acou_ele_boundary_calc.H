@@ -60,7 +60,7 @@ public:
       Epetra_SerialDenseMatrix*  elemat1
   ) = 0;
 
-  virtual int Absorbing(
+  virtual int Evaluate(
       DRT::ELEMENTS::AcouBoundary*   ele,
       Teuchos::ParameterList&        params,
       DRT::Discretization&           discretization,
@@ -111,7 +111,7 @@ public:
                               Epetra_SerialDenseMatrix*  elemat1
                               );
 
-  virtual int Absorbing(
+  virtual int Evaluate(
       DRT::ELEMENTS::AcouBoundary*   ele,
       Teuchos::ParameterList&        params,
       DRT::Discretization&           discretization,

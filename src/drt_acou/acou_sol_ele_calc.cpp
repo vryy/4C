@@ -15,7 +15,6 @@ Maintainer: Svenja Schoeder
 #include "acou_sol_ele_calc.H"
 #include "acou_ele_calc.H"
 #include "acou_ele_action.H"
-#include "acou_utils.H"
 
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 
@@ -198,7 +197,6 @@ int DRT::ELEMENTS::AcouSolEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
       localSolver_->CondenseLocalPart(elemat1,dyna_);
     }
 
-    VectorHandling(ele,params,dt);
     localSolver_->ComputeResidual(params,elevec1,interiorGradVelnp_,interiorVelnp_,interiorPressnp_,traceVal_,dyna_);
 
    break;
@@ -352,73 +350,6 @@ void DRT::ELEMENTS::AcouSolEleCalc<distype>::ElementInit(DRT::ELEMENTS::Acou* el
   solele->eleinteriorGradVelnp_.Shape(shapes_->ndofs_ * nsd_* nsd_, 1);
   solele->eleinteriorVelnp_.Shape(shapes_->ndofs_ * nsd_, 1);
   solele->eleinteriorPressnp_.Shape(shapes_->ndofs_, 1);
-  solele->eleinteriorGradVeln_.Shape(shapes_->ndofs_ * nsd_* nsd_, 1);
-  solele->eleinteriorVeln_.Shape(shapes_->ndofs_ * nsd_, 1);
-  solele->eleinteriorPressn_.Shape(shapes_->ndofs_, 1);
-  switch (dyna_)
-  {
-  case INPAR::ACOU::acou_bdf4:
-    solele->eleinteriorGradVelnmmm_.Shape(shapes_->ndofs_ * nsd_* nsd_, 1);
-    solele->eleinteriorVelnmmm_.Shape(shapes_->ndofs_ * nsd_, 1);
-    solele->eleinteriorPressnmmm_.Shape(shapes_->ndofs_, 1); // no break here!
-  case INPAR::ACOU::acou_bdf3:
-    solele->eleinteriorGradVelnmm_.Shape(shapes_->ndofs_ * nsd_* nsd_, 1);
-    solele->eleinteriorVelnmm_.Shape(shapes_->ndofs_ * nsd_, 1);
-    solele->eleinteriorPressnmm_.Shape(shapes_->ndofs_, 1); // no break here!
-  case INPAR::ACOU::acou_bdf2:
-    solele->eleinteriorGradVelnm_.Shape(shapes_->ndofs_ * nsd_* nsd_, 1);
-    solele->eleinteriorVelnm_.Shape(shapes_->ndofs_ * nsd_, 1);
-    solele->eleinteriorPressnm_.Shape(shapes_->ndofs_, 1);
-    break; // here you go!
-  case INPAR::ACOU::acou_dirk23:
-    solele->elesp_.resize(2);
-    solele->eleyp_.resize(2);
-    solele->elefp_.resize(2);
-    solele->elesv_.resize(2);
-    solele->eleyv_.resize(2);
-    solele->elefv_.resize(2);
-    solele->elesgv_.resize(2);
-    solele->eleygv_.resize(2);
-    solele->elefgv_.resize(2);
-    break;
-  case INPAR::ACOU::acou_dirk33:
-  case INPAR::ACOU::acou_dirk34:
-    solele->elesv_.resize(3);
-    solele->eleyv_.resize(3);
-    solele->elefv_.resize(3);
-    solele->elesgv_.resize(3);
-    solele->eleygv_.resize(3);
-    solele->elefgv_.resize(3);
-    solele->elesp_.resize(3);
-    solele->eleyp_.resize(3);
-    solele->elefp_.resize(3);
-    break;
-  case INPAR::ACOU::acou_dirk54:
-    solele->elesv_.resize(5);
-    solele->eleyv_.resize(5);
-    solele->elefv_.resize(5);
-    solele->elesgv_.resize(5);
-    solele->eleygv_.resize(5);
-    solele->elefgv_.resize(5);
-    solele->elesp_.resize(5);
-    solele->eleyp_.resize(5);
-    solele->elefp_.resize(5);
-    break;
-  default:
-    break; // do nothing for impl and trap
-  }
-  for (unsigned int i = 0; i < solele->elesp_.size(); ++i) // zero size if not dirk
-  {
-    solele->elesp_[i].Shape(shapes_->ndofs_, 1);
-    solele->eleyp_[i].Shape(shapes_->ndofs_, 1);
-    solele->elefp_[i].Shape(shapes_->ndofs_, 1);
-    solele->elesv_[i].Shape(shapes_->ndofs_ * nsd_, 1);
-    solele->eleyv_[i].Shape(shapes_->ndofs_ * nsd_, 1);
-    solele->elefv_[i].Shape(shapes_->ndofs_ * nsd_, 1);
-    solele->elesgv_[i].Shape(shapes_->ndofs_ * nsd_* nsd_, 1);
-    solele->eleygv_[i].Shape(shapes_->ndofs_ * nsd_* nsd_, 1);
-    solele->elefgv_[i].Shape(shapes_->ndofs_ * nsd_* nsd_, 1);
-  }
 
   bool padaptivity = false;
   if(params.isParameter("padaptivity")) padaptivity = params.get<bool>("padaptivity");
@@ -427,116 +358,6 @@ void DRT::ELEMENTS::AcouSolEleCalc<distype>::ElementInit(DRT::ELEMENTS::Acou* el
 
   return;
 } // ElementInit
-
-
-/*----------------------------------------------------------------------*
- * VectorHandling
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::AcouSolEleCalc<distype>::
-VectorHandling(DRT::ELEMENTS::Acou   * ele,
-                   Teuchos::ParameterList&       params,
-                   double dt)
-{
-  if( dyna_ == INPAR::ACOU::acou_dirk23 ||
-      dyna_ == INPAR::ACOU::acou_dirk33 ||
-      dyna_ == INPAR::ACOU::acou_dirk34 ||
-      dyna_ == INPAR::ACOU::acou_dirk54 )
-  {
-    // when we are here, the time integrator is dirk, and we have to do the update things
-    DRT::ELEMENTS::AcouSol * solele = dynamic_cast<DRT::ELEMENTS::AcouSol*>(ele);
-
-    double dirk_a[6][6];
-    double dirk_b[6];
-    double dirk_c[6];
-    int dirk_q;
-    ACOU::FillDIRKValues(dyna_, dirk_a, dirk_b, dirk_c, dirk_q);
-    int stage = params.get<int>("stage");
-
-    if(stage == 0)
-    {
-      solele->eleinteriorPressnp_ = solele->eleinteriorPressn_;
-      solele->eleinteriorVelnp_ = solele->eleinteriorVeln_;
-      solele->eleinteriorGradVelnp_ = solele->eleinteriorGradVeln_;
-    }
-
-    Epetra_SerialDenseVector tempVecp1(shapes_->ndofs_);
-    Epetra_SerialDenseVector tempVecp2(shapes_->ndofs_);
-    Epetra_SerialDenseVector tempVecv1(shapes_->ndofs_ * nsd_);
-    Epetra_SerialDenseVector tempVecv2(shapes_->ndofs_ * nsd_);
-    Epetra_SerialDenseVector tempVecgv1(shapes_->ndofs_ * nsd_* nsd_);
-    Epetra_SerialDenseVector tempVecgv2(shapes_->ndofs_ * nsd_* nsd_);
-
-    solele->elesp_[stage] = solele->eleinteriorPressn_;
-    solele->elesp_[stage].Scale(1.0 / dt); // dt includes a_ii
-    solele->elesv_[stage] = solele->eleinteriorVeln_;
-    solele->elesv_[stage].Scale(1.0 / dt); // dt includes a_ii
-    solele->elesgv_[stage] = solele->eleinteriorGradVeln_;
-    solele->elesgv_[stage].Scale(1.0 / dt); // dt includes a_ii
-
-    for(int i=0; i<stage; ++i)
-    {
-      tempVecp1 = solele->elesp_[i];
-      tempVecp1.Scale(-1.0);
-      tempVecp2 = solele->eleyp_[i];
-      tempVecp2.Scale(1.0 / dt);
-      tempVecp1 += tempVecp2;
-      tempVecp1.Scale(dirk_a[stage][i] / dirk_a[stage][stage]);
-      solele->elesp_[stage] += tempVecp1;
-      tempVecv1 = solele->elesv_[i];
-      tempVecv1.Scale(-1.0);
-      tempVecv2 = solele->eleyv_[i];
-      tempVecv2.Scale(1.0 / dt);
-      tempVecv1 += tempVecv2;
-      tempVecv1.Scale(dirk_a[stage][i] / dirk_a[stage][stage]);
-      solele->elesv_[stage] += tempVecv1;
-      tempVecgv1 = solele->elesgv_[i];
-      tempVecgv1.Scale(-1.0);
-      tempVecgv2 = solele->eleygv_[i];
-      tempVecgv2.Scale(1.0 / dt);
-      tempVecgv1 += tempVecgv2;
-      tempVecgv1.Scale(dirk_a[stage][i] / dirk_a[stage][stage]);
-      solele->elesgv_[stage] += tempVecgv1;
-    }
-
-    // these vectors s are used for the calculation of the residual -> write them to used local solver variable
-    interiorPressnp_ = solele->elesp_[stage];
-    interiorVelnp_ = solele->elesv_[stage];
-    interiorGradVelnp_ = solele->elesgv_[stage];
-    interiorPressnp_.Scale(dt);
-    interiorVelnp_.Scale(dt);
-    interiorGradVelnp_.Scale(dt);
-  }
-  else if (dyna_ == INPAR::ACOU::acou_bdf2)
-  {
-    for (unsigned int i = 0; i < shapes_->ndofs_ * nsd_ * nsd_; ++i)
-      interiorGradVelnp_[i] = 4.0 / 3.0 * interiorGradVelnp_[i] - 1.0 / 3.0 * interiorGradVelnm_[i];
-    for (unsigned int i = 0; i < shapes_->ndofs_ * nsd_; ++i)
-      interiorVelnp_[i] = 4.0 / 3.0 * interiorVelnp_[i] - 1.0 / 3.0 * interiorVelnm_[i];
-    for (unsigned int i = 0; i < shapes_->ndofs_; ++i)
-      interiorPressnp_[i] = 4.0 / 3.0 * interiorPressnp_[i] - 1.0 / 3.0 * interiorPressnm_[i];
-  }
-  else if (dyna_ == INPAR::ACOU::acou_bdf3)
-  {
-    for (unsigned int i = 0; i < shapes_->ndofs_ * nsd_ * nsd_; ++i)
-      interiorGradVelnp_[i] = 18.0 / 11.0 * interiorGradVelnp_[i] - 9.0 / 11.0 * interiorGradVelnm_[i] + 2.0 / 11.0 * interiorGradVelnmm_[i];
-    for (unsigned int i = 0; i < shapes_->ndofs_ * nsd_; ++i)
-      interiorVelnp_[i] = 18.0 / 11.0 * interiorVelnp_[i] - 9.0 / 11.0 * interiorVelnm_[i] + 2.0 / 11.0 * interiorVelnmm_[i];
-    for (unsigned int i = 0; i < shapes_->ndofs_; ++i)
-      interiorPressnp_[i] = 18.0 / 11.0 * interiorPressnp_[i] - 9.0 / 11.0 * interiorPressnm_[i] + 2.0 / 11.0 * interiorPressnmm_[i];
-  }
-  else if (dyna_ == INPAR::ACOU::acou_bdf4)
-  {
-    for (unsigned int i = 0; i < shapes_->ndofs_ * nsd_ * nsd_; ++i)
-      interiorGradVelnp_[i] = 48.0 / 25.0 * interiorGradVelnp_[i] - 36.0 / 25.0 * interiorGradVelnm_[i] + 16.0 / 25.0 * interiorGradVelnmm_[i] - 3.0 / 25.0 * interiorGradVelnmmm_[i];
-    for (unsigned int i = 0; i < shapes_->ndofs_ * nsd_; ++i)
-      interiorVelnp_[i] = 48.0 / 25.0 * interiorVelnp_[i] - 36.0 / 25.0 * interiorVelnm_[i] + 16.0 / 25.0 * interiorVelnmm_[i] - 3.0 / 25.0 * interiorVelnmmm_[i];
-    for (unsigned int i = 0; i < shapes_->ndofs_; ++i)
-      interiorPressnp_[i] = 48.0 / 25.0 * interiorPressnp_[i] - 36.0 / 25.0 * interiorPressnm_[i] + 16.0 / 25.0 * interiorPressnmm_[i] - 3.0 / 25.0 * interiorPressnmmm_[i];
-  }
-
-  return;
-} // VectorHandling
 
 /*----------------------------------------------------------------------*
  * ProjectField
@@ -606,27 +427,6 @@ int DRT::ELEMENTS::AcouSolEleCalc<distype>::ProjectField(
         solele->eleinteriorGradVelnp_(j*shapes_->ndofs_+r) += localMat(r, j+nsd_+1); // velocity gradient
     }
   } // if (elevec2.M() > 0)
-
-  switch (dyna_)
-  {
-  case INPAR::ACOU::acou_bdf4:
-    solele->eleinteriorGradVelnmmm_ = solele->eleinteriorGradVelnp_;
-    solele->eleinteriorVelnmmm_ = solele->eleinteriorVelnp_;
-    solele->eleinteriorPressnmmm_ = solele->eleinteriorPressnp_; // no break here
-  case INPAR::ACOU::acou_bdf3:
-    solele->eleinteriorGradVelnmm_ = solele->eleinteriorGradVelnp_;
-    solele->eleinteriorVelnmm_ = solele->eleinteriorVelnp_;
-    solele->eleinteriorPressnmm_ = solele->eleinteriorPressnp_; // no break here
-  case INPAR::ACOU::acou_bdf2:
-    solele->eleinteriorGradVelnm_ = solele->eleinteriorGradVelnp_;
-    solele->eleinteriorVelnm_ = solele->eleinteriorVelnp_;
-    solele->eleinteriorPressnm_ = solele->eleinteriorPressnp_; // no break here                                          // here you go
-  default:
-    solele->eleinteriorGradVeln_ = solele->eleinteriorGradVelnp_;
-    solele->eleinteriorVeln_ = solele->eleinteriorVelnp_;
-    solele->eleinteriorPressn_ = solele->eleinteriorPressnp_;
-    break; // here you go
-  }
 
   //if(dyna_==INPAR::ACOU::acou_trapezoidal) // then we have to set the initial trace field, because the calculation of the residual in the first time step needs a correct trace field!
   {
@@ -866,19 +666,6 @@ int DRT::ELEMENTS::AcouSolEleCalc<distype>::ProjectOpticalField(
 
   } // if(meshconform)
 
-  switch(dyna_)
-  {
-  case INPAR::ACOU::acou_bdf4:
-    solele->eleinteriorPressnmmm_ = solele->eleinteriorPressnp_; // no break here
-  case INPAR::ACOU::acou_bdf3:
-    solele->eleinteriorPressnmm_ = solele->eleinteriorPressnp_; // no break here
-  case INPAR::ACOU::acou_bdf2:
-    solele->eleinteriorPressnm_ = solele->eleinteriorPressnp_; // no break here                                          // here you go
-  default:
-    solele->eleinteriorPressn_ = solele->eleinteriorPressnp_;
-    break;
-  }
-
   // trace variable (zero, because no memory, no time derivative)
   // dsassert(unsigned(elevec1.M()) == nfaces_*shapes_->nfdofs_*nsd_, "Wrong size in project vector 1");
   // elevec1.Scale(0.0);
@@ -991,37 +778,9 @@ ReadGlobalVectors(DRT::Element     * ele,
   reshapeMatrixIfNecessary(interiorVelnp_,shapes_->ndofs_*nsd_,1);
   reshapeMatrixIfNecessary(interiorPressnp_,shapes_->ndofs_,1);
 
-  reshapeMatrixIfNecessary(interiorGradVeln_,shapes_->ndofs_*nsd_*nsd_,1);
-  reshapeMatrixIfNecessary(interiorVeln_,shapes_->ndofs_*nsd_,1);
-  reshapeMatrixIfNecessary(interiorPressn_,shapes_->ndofs_,1);
-
-  reshapeMatrixIfNecessary(interiorGradVelnm_,shapes_->ndofs_*nsd_*nsd_,1);
-  reshapeMatrixIfNecessary(interiorVelnm_,shapes_->ndofs_*nsd_,1);
-  reshapeMatrixIfNecessary(interiorPressnm_,shapes_->ndofs_,1);
-
-  reshapeMatrixIfNecessary(interiorGradVelnmm_,shapes_->ndofs_*nsd_*nsd_,1);
-  reshapeMatrixIfNecessary(interiorVelnmm_,shapes_->ndofs_*nsd_,1);
-  reshapeMatrixIfNecessary(interiorPressnmm_,shapes_->ndofs_,1);
-
-  reshapeMatrixIfNecessary(interiorGradVelnmmm_,shapes_->ndofs_*nsd_*nsd_,1);
-  reshapeMatrixIfNecessary(interiorVelnmmm_,shapes_->ndofs_*nsd_,1);
-  reshapeMatrixIfNecessary(interiorPressnmmm_,shapes_->ndofs_,1);
-
   interiorGradVelnp_ = solele->eleinteriorGradVelnp_;
   interiorVelnp_ = solele->eleinteriorVelnp_;
   interiorPressnp_ = solele->eleinteriorPressnp_;
-  interiorGradVeln_ = solele->eleinteriorGradVeln_;
-  interiorVeln_ = solele->eleinteriorVeln_;
-  interiorPressn_ = solele->eleinteriorPressn_;
-  interiorGradVelnm_ = solele->eleinteriorGradVelnm_;
-  interiorVelnm_ = solele->eleinteriorVelnm_;
-  interiorPressnm_ = solele->eleinteriorPressnm_;
-  interiorGradVelnmm_ = solele->eleinteriorGradVelnmm_;
-  interiorVelnmm_ = solele->eleinteriorVelnmm_;
-  interiorPressnmm_ = solele->eleinteriorPressnmm_;
-  interiorGradVelnmmm_ = solele->eleinteriorGradVelnmmm_;
-  interiorVelnmmm_ = solele->eleinteriorVelnmmm_;
-  interiorPressnmmm_ = solele->eleinteriorPressnmmm_;
 
   // read the HDG solution vector (for traces)
   if(discretization.HasState("trace"))
@@ -1030,12 +789,6 @@ ReadGlobalVectors(DRT::Element     * ele,
     dsassert(lm.size() == traceVal_.size(), "Internal error");
     Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState("trace");
     DRT::UTILS::ExtractMyValues(*matrix_state,traceVal_,lm);
-  }
-  if(discretization.HasState("trace_m"))
-  {
-    traceValm_.resize(nfaces_*shapesface_->nfdofs_*nsd_);
-    Teuchos::RCP<const Epetra_Vector> matrix_state_m = discretization.GetState("trace_m");
-    DRT::UTILS::ExtractMyValues(*matrix_state_m,traceValm_,lm);
   }
 
   return;
@@ -1072,83 +825,6 @@ FillRestartVectors(DRT::Element           * ele,
     }
   }
 
-  {
-    Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1,"intveln");
-    Epetra_Vector& secondary = const_cast<Epetra_Vector&>(*matrix_state);
-    for(unsigned int i=0; i<shapes_->ndofs_; ++i)
-    {
-      interiorValnp[i] = interiorPressn_(i);
-      for(unsigned int d=0; d<nsd_; ++d)
-        interiorValnp[shapes_->ndofs_+i+d*shapes_->ndofs_] = interiorVeln_(i+d*shapes_->ndofs_);
-      for(unsigned int d=0; d<nsd_*nsd_; ++d)
-        interiorValnp[shapes_->ndofs_*(1+nsd_)+i+d*shapes_->ndofs_] = interiorGradVeln_(i+d*shapes_->ndofs_);
-    }
-    for (unsigned int i=0; i<localDofs.size(); ++i)
-    {
-      const int lid = intdofcolmap->LID(localDofs[i]);
-      secondary[lid] = interiorValnp[i];
-    }
-  }
-
-  // only do this if desired!
-  if(interiorPressnm_.M()>0 && discretization.HasState(1,"intvelnm"))
-  {
-    Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1,"intvelnm");
-    Epetra_Vector& secondary = const_cast<Epetra_Vector&>(*matrix_state);
-    for(unsigned int i=0; i<shapes_->ndofs_; ++i)
-    {
-      interiorValnp[i] = interiorPressnm_(i);
-      for(unsigned int d=0; d<nsd_; ++d)
-        interiorValnp[shapes_->ndofs_+i+d*shapes_->ndofs_] = interiorVelnm_(i+d*shapes_->ndofs_);
-      for(unsigned int d=0; d<nsd_*nsd_; ++d)
-        interiorValnp[shapes_->ndofs_*(1+nsd_)+i+d*shapes_->ndofs_] = interiorGradVelnm_(i+d*shapes_->ndofs_);
-    }
-    for (unsigned int i=0; i<localDofs.size(); ++i)
-    {
-      const int lid = intdofcolmap->LID(localDofs[i]);
-      secondary[lid] = interiorValnp[i];
-    }
-  }
-
-  // only do this if desired!
-  if(interiorPressnmm_.M()>0 && discretization.HasState(1,"intvelnmm"))
-  {
-    Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1,"intvelnmm");
-    Epetra_Vector& secondary = const_cast<Epetra_Vector&>(*matrix_state);
-    for(unsigned int i=0; i<shapes_->ndofs_; ++i)
-    {
-      interiorValnp[i] = interiorPressnmm_(i);
-      for(unsigned int d=0; d<nsd_; ++d)
-        interiorValnp[shapes_->ndofs_+i+d*shapes_->ndofs_] = interiorVelnmm_(i+d*shapes_->ndofs_);
-      for(unsigned int d=0; d<nsd_*nsd_; ++d)
-        interiorValnp[shapes_->ndofs_*(1+nsd_)+i+d*shapes_->ndofs_] = interiorGradVelnmm_(i+d*shapes_->ndofs_);
-    }
-    for (unsigned int i=0; i<localDofs.size(); ++i)
-    {
-      const int lid = intdofcolmap->LID(localDofs[i]);
-      secondary[lid] = interiorValnp[i];
-    }
-  }
-
-  // only do this if desired!
-  if(interiorPressnmmm_.M()>0 && discretization.HasState(1,"intvelnmmm"))
-  {
-    Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1,"intvelnmmm");
-    Epetra_Vector& secondary = const_cast<Epetra_Vector&>(*matrix_state);
-    for(unsigned int i=0; i<shapes_->ndofs_; ++i)
-    {
-      interiorValnp[i] = interiorPressnmmm_(i);
-      for(unsigned int d=0; d<nsd_; ++d)
-        interiorValnp[shapes_->ndofs_+i+d*shapes_->ndofs_] = interiorVelnmmm_(i+d*shapes_->ndofs_);
-      for(unsigned int d=0; d<nsd_*nsd_; ++d)
-        interiorValnp[shapes_->ndofs_*(1+nsd_)+i+d*shapes_->ndofs_] = interiorGradVelnmmm_(i+d*shapes_->ndofs_);
-    }
-    for (unsigned int i=0; i<localDofs.size(); ++i)
-    {
-      const int lid = intdofcolmap->LID(localDofs[i]);
-      secondary[lid] = interiorValnp[i];
-    }
-  }
   return;
 } // FillRestartVectors
 
@@ -1176,58 +852,6 @@ ElementInitFromRestart(DRT::Element           * ele,
       solele->eleinteriorGradVelnp_(i+d*shapes_->ndofs_) = interiorValnp[shapes_->ndofs_*(1+nsd_)+i+d*shapes_->ndofs_];
   }
 
-  intvel = discretization.GetState(1,"intveln");
-  DRT::UTILS::ExtractMyValues(*intvel,interiorValnp,localDofs1);
-  for(unsigned int i=0; i<shapes_->ndofs_; ++i)
-  {
-    solele->eleinteriorPressn_(i) = interiorValnp[i];
-     for(unsigned int d=0; d<nsd_; ++d)
-       solele->eleinteriorVeln_(i+d*shapes_->ndofs_) = interiorValnp[shapes_->ndofs_+i+d*shapes_->ndofs_];
-     for(unsigned int d=0; d<nsd_*nsd_; ++d)
-       solele->eleinteriorGradVeln_(i+d*shapes_->ndofs_) = interiorValnp[shapes_->ndofs_*(1+nsd_)+i+d*shapes_->ndofs_];
-  }
-
-  if(discretization.HasState(1,"intvelnm")&&solele->eleinteriorPressnm_.M()>0)
-  {
-    intvel = discretization.GetState(1,"intvelnm");
-    DRT::UTILS::ExtractMyValues(*intvel,interiorValnp,localDofs1);
-    for(unsigned int i=0; i<shapes_->ndofs_; ++i)
-    {
-      solele->eleinteriorPressnm_(i) = interiorValnp[i];
-       for(unsigned int d=0; d<nsd_; ++d)
-         solele->eleinteriorVelnm_(i+d*shapes_->ndofs_) = interiorValnp[shapes_->ndofs_+i+d*shapes_->ndofs_];
-       for(unsigned int d=0; d<nsd_*nsd_; ++d)
-         solele->eleinteriorGradVelnm_(i+d*shapes_->ndofs_) = interiorValnp[shapes_->ndofs_*(1+nsd_)+i+d*shapes_->ndofs_];
-    }
-  }
-
-  if(discretization.HasState(1,"intvelnmm")&&solele->eleinteriorPressnmm_.M()>0)
-  {
-    intvel = discretization.GetState(1,"intvelnmm");
-    DRT::UTILS::ExtractMyValues(*intvel,interiorValnp,localDofs1);
-    for(unsigned int i=0; i<shapes_->ndofs_; ++i)
-    {
-      solele->eleinteriorPressnmm_(i) = interiorValnp[i];
-       for(unsigned int d=0; d<nsd_; ++d)
-         solele->eleinteriorVelnmm_(i+d*shapes_->ndofs_) = interiorValnp[shapes_->ndofs_+i+d*shapes_->ndofs_];
-       for(unsigned int d=0; d<nsd_*nsd_; ++d)
-         solele->eleinteriorGradVelnmm_(i+d*shapes_->ndofs_) = interiorValnp[shapes_->ndofs_*(1+nsd_)+i+d*shapes_->ndofs_];
-    }
-  }
-
-  if(discretization.HasState(1,"intvelnmmm")&&solele->eleinteriorPressnmmm_.M()>0)
-  {
-    intvel = discretization.GetState(1,"intvelnmmm");
-    DRT::UTILS::ExtractMyValues(*intvel,interiorValnp,localDofs1);
-    for(unsigned int i=0; i<shapes_->ndofs_; ++i)
-    {
-      solele->eleinteriorPressnmmm_(i) = interiorValnp[i];
-       for(unsigned int d=0; d<nsd_; ++d)
-         solele->eleinteriorVelnmmm_(i+d*shapes_->ndofs_) = interiorValnp[shapes_->ndofs_+i+d*shapes_->ndofs_];
-       for(unsigned int d=0; d<nsd_*nsd_; ++d)
-         solele->eleinteriorGradVelnmmm_(i+d*shapes_->ndofs_) = interiorValnp[shapes_->ndofs_*(1+nsd_)+i+d*shapes_->ndofs_];
-    }
-  }
   return;
 } // ElementInitFromRestart
 
@@ -1547,21 +1171,12 @@ void DRT::ELEMENTS::AcouSolEleCalc<distype>::ComputeMatrices(const Teuchos::RCP<
   zeroMatrix(localSolver_->mmat);
   zeroMatrix(localSolver_->nmat);
 
-  switch(dyna_)
-  {
-  case INPAR::ACOU::acou_bdf4: dt *= 12.0/25.0; break;
-  case INPAR::ACOU::acou_bdf3: dt *= 6.0/11.0; break;
-  case INPAR::ACOU::acou_bdf2: dt *= 2.0/3.0; break;
-  default: break;
-  }
-
   localSolver_->ComputeInteriorMatrices();
   for (unsigned int face=0; face<nfaces_; ++face)
   {
     shapesface_->EvaluateFace(ele, face);
     localSolver_->ComputeFaceMatrices(face);
   }
-
 
   // scale the matrices
   localSolver_->amat.Scale(     1.0/dt );
@@ -1632,7 +1247,6 @@ ComputeInteriorMatrices()
       }
     }
   }
-
 
   // multiply matrices to perform summation over quadrature points
   for (unsigned int i=0; i<ndofs_; ++i)
@@ -1779,18 +1393,13 @@ void DRT::ELEMENTS::AcouSolEleCalc<distype>::LocalSolver::
 CondenseLocalPart(Epetra_SerialDenseMatrix &eleMat,
                   INPAR::ACOU::DynamicType dyna)
 {
-
-  double theta = 1.0;
-  if(dyna==INPAR::ACOU::acou_trapezoidal) theta = 0.66;
-
   Epetra_SerialDenseMatrix dinvamat(nsd_*ndofs_,nsd_*nsd_*ndofs_);
-  dinvamat.Multiply('N','N',theta,dmat,invamat,0.0);
+  dinvamat.Multiply('N','N',1.0,dmat,invamat,0.0);
 
   Epetra_SerialDenseMatrix ol(nsd_*ndofs_,nsd_*ndofs_);
   ol = ehatmat;
-  ol.Scale(theta);
   ol += emat;
-  ol.Multiply('N','N',-theta,dinvamat,bmat,1.0);
+  ol.Multiply('N','N',-1.0,dinvamat,bmat,1.0);
 
   Epetra_SerialDenseMatrix toinv((nsd_+1)*ndofs_,(nsd_+1)*ndofs_);
   for(unsigned int i=0; i<ndofs_; ++i)
@@ -1801,8 +1410,8 @@ CondenseLocalPart(Epetra_SerialDenseMatrix &eleMat,
       for(unsigned int d=0; d<nsd_; ++d)
       {
         toinv(d*ndofs_+i,d*ndofs_+j) = ol(d*ndofs_+i,d*ndofs_+j);
-        toinv(nsd_*ndofs_+i,d*ndofs_+j) = theta * hmat(i,d*ndofs_+j);
-        toinv(d*ndofs_+i,nsd_*ndofs_+j) = theta * fmat(d*ndofs_+i,j);
+        toinv(nsd_*ndofs_+i,d*ndofs_+j) = hmat(i,d*ndofs_+j);
+        toinv(d*ndofs_+i,nsd_*ndofs_+j) = fmat(d*ndofs_+i,j);
       }
     }
   }
@@ -1810,7 +1419,7 @@ CondenseLocalPart(Epetra_SerialDenseMatrix &eleMat,
 
   Epetra_SerialDenseMatrix tempmat1(nsd_*ndofs_,nsd_*shapesface_.nfdofs_*nfaces_);
   tempmat1 = gmat;
-  tempmat1.Multiply('N','N',-theta,dinvamat,cmat,theta);
+  tempmat1.Multiply('N','N',-1.0,dinvamat,cmat,1.0);
 
   for(unsigned int i=0; i<nsd_*shapesface_.nfdofs_*nfaces_; ++i)
     for(unsigned int j=0; j<nsd_*ndofs_; ++j)
@@ -1818,7 +1427,7 @@ CondenseLocalPart(Epetra_SerialDenseMatrix &eleMat,
 
   for(unsigned int i=0; i<nsd_*shapesface_.nfdofs_*nfaces_; ++i)
     for(unsigned int j=0; j<ndofs_; ++j)
-      rhsinv(nsd_*ndofs_+j,i) = theta * jmat(j,i);
+      rhsinv(nsd_*ndofs_+j,i) = jmat(j,i);
 
   // invert
   {
@@ -1834,21 +1443,21 @@ CondenseLocalPart(Epetra_SerialDenseMatrix &eleMat,
       tempmat1(j,i) = rhsinv(nsd_*ndofs_+j,i);
 
   eleMat = nmat;
-  eleMat.Multiply('N','N',-theta,mmat,tempmat1,theta);
+  eleMat.Multiply('N','N',-1.0,mmat,tempmat1,1.0);
 
   tempmat1.Shape(nsd_*ndofs_,nsd_*shapesface_.nfdofs_*nfaces_);
   for(unsigned int i=0; i<nsd_*shapesface_.nfdofs_*nfaces_; ++i)
     for(unsigned int j=0; j<nsd_*ndofs_; ++j)
       tempmat1(j,i) = rhsinv(j,i);
 
-  eleMat.Multiply('N','N',-theta,lmat,tempmat1,1.0);
+  eleMat.Multiply('N','N',-1.0,lmat,tempmat1,1.0);
 
   ol.Shape(nsd_*nsd_*ndofs_,nsd_*shapesface_.nfdofs_*nfaces_);
   ol = cmat;
-  ol.Multiply('N','N',-theta,bmat,tempmat1,theta);
+  ol.Multiply('N','N',-1.0,bmat,tempmat1,1.0);
   tempmat1.Shape(nsd_*nsd_*ndofs_,nsd_*shapesface_.nfdofs_*nfaces_);
   tempmat1.Multiply('N','N',1.0,invamat,ol,0.0);
-  eleMat.Multiply('N','N',-theta,kmat,tempmat1,1.0);
+  eleMat.Multiply('N','N',-1.0,kmat,tempmat1,1.0);
 
   return;
 } // CondenseLocalPart
@@ -1866,23 +1475,19 @@ ComputeResidual(Teuchos::ParameterList&           params,
                 std::vector<double>               traceVal,
                 INPAR::ACOU::DynamicType          dyna)
 {
-  double theta = 1.0;
-  if(dyna==INPAR::ACOU::acou_trapezoidal) theta = 0.66;
-
   Epetra_SerialDenseVector traceVal_SDV(nfaces_*shapesface_.nfdofs_*nsd_);
   for(unsigned i=0; i<nfaces_*shapesface_.nfdofs_*nsd_; ++i)
     traceVal_SDV(i) = traceVal[i];
 
   Epetra_SerialDenseMatrix dinvamat(nsd_*ndofs_,nsd_*nsd_*ndofs_);
-  dinvamat.Multiply('N','N',theta,dmat,invamat,0.0);
+  dinvamat.Multiply('N','N',1.0,dmat,invamat,0.0);
 
   Epetra_SerialDenseMatrix toinv((nsd_+1)*ndofs_,(nsd_+1)*ndofs_);
   {
     Epetra_SerialDenseMatrix ol(nsd_*ndofs_,nsd_*ndofs_);
     ol = ehatmat;
-    ol.Scale(theta);
     ol += emat;
-    ol.Multiply('N','N',-theta,dinvamat,bmat,1.0);
+    ol.Multiply('N','N',-1.0,dinvamat,bmat,1.0);
 
     for(unsigned int i=0; i<ndofs_; ++i)
     {
@@ -1892,8 +1497,8 @@ ComputeResidual(Teuchos::ParameterList&           params,
         for(unsigned int d=0; d<nsd_; ++d)
         {
           toinv(d*ndofs_+i,d*ndofs_+j) = ol(d*ndofs_+i,d*ndofs_+j);
-          toinv(nsd_*ndofs_+i,d*ndofs_+j) = theta * hmat(i,d*ndofs_+j);
-          toinv(d*ndofs_+i,nsd_*ndofs_+j) = theta * fmat(d*ndofs_+i,j);
+          toinv(nsd_*ndofs_+i,d*ndofs_+j) = hmat(i,d*ndofs_+j);
+          toinv(d*ndofs_+i,nsd_*ndofs_+j) = fmat(d*ndofs_+i,j);
         }
       }
     }
@@ -1904,24 +1509,16 @@ ComputeResidual(Teuchos::ParameterList&           params,
   // source term
   Epetra_SerialDenseVector dummy(nsd_*ndofs_);
   ComputeSource(params,dummy,ol);
-
   ol.Multiply('N','N',1.0,emat,interiorVeln,1.0);
-  ol.Multiply('N','N',-(1.0-theta),dmat,interiorGradVeln,1.0);
-  ol.Multiply('N','N',-(1.0-theta),ehatmat,interiorVeln,1.0);
-  ol.Multiply('N','N',-(1.0-theta),fmat,interiorPressn,1.0);
-  ol.Multiply('N','N',-(1.0-theta),gmat,traceVal_SDV,1.0);
+
   Epetra_SerialDenseVector tempvec1(nsd_*nsd_*ndofs_);
   tempvec1.Multiply('N','N',1.0,amat,interiorGradVeln,0.0);
-  tempvec1.Multiply('N','N',-(1.0-theta),bmat,interiorVeln,1.0);
-  tempvec1.Multiply('N','N',-(1.0-theta),cmat,traceVal_SDV,1.0);
   ol.Multiply('N','N',-1.0,dinvamat,tempvec1,1.0);
   for(unsigned int i=0; i<nsd_*ndofs_; ++i)
     rhsinv(i) = ol(i);
 
   ol.Resize(ndofs_);
   ol.Multiply('N','N',1.0,imat,interiorPressn,0.0);
-  ol.Multiply('N','N',-(1.0-theta),hmat,interiorVeln,1.0);
-  ol.Multiply('N','N',-(1.0-theta),jmat,traceVal_SDV,1.0);
   for(unsigned int i=0; i<ndofs_; ++i)
     rhsinv(nsd_*ndofs_+i) = ol(i);
 
@@ -1933,24 +1530,19 @@ ComputeResidual(Teuchos::ParameterList&           params,
     inverse.Solve();
   }
 
-  elevec.Multiply('N','N',-(1.0-theta),kmat,interiorGradVeln,0.0);
-  elevec.Multiply('N','N',-(1.0-theta),lmat,interiorVeln,1.0);
-  elevec.Multiply('N','N',-(1.0-theta),mmat,interiorPressn,1.0);
-  elevec.Multiply('N','N',-(1.0-theta),nmat,traceVal_SDV,1.0);
-
   for(unsigned int i=0; i<ndofs_; ++i)
     ol(i) = rhsinv(nsd_*ndofs_+i);
-  elevec.Multiply('N','N',-theta,mmat,ol,1.0);
+  elevec.Multiply('N','N',-1.0,mmat,ol,1.0);
 
   ol.Shape(nsd_*ndofs_,1);
   for(unsigned int i=0; i<nsd_*ndofs_; ++i)
     ol(i,0) = rhsinv(i);
-  elevec.Multiply('N','N',-theta,lmat,ol,1.0);
+  elevec.Multiply('N','N',-1.0,lmat,ol,1.0);
 
-  tempvec1.Multiply('N','N',-theta,bmat,ol,1.0);
+  tempvec1.Multiply('N','N',-1.0,bmat,ol,1.0);
   ol.Shape(nsd_*nsd_*ndofs_,1);
   ol.Multiply('N','N',1.0,invamat,tempvec1,0.0);
-  elevec.Multiply('N','N',-theta,kmat,ol,1.0);
+  elevec.Multiply('N','N',-1.0,kmat,ol,1.0);
 
   return;
 } // ComputeResidual
@@ -2377,94 +1969,13 @@ UpdateInteriorVariablesAndComputeResidual(Teuchos::ParameterList&    params,
 {
   DRT::ELEMENTS::AcouSol * solele = dynamic_cast<DRT::ELEMENTS::AcouSol*>(ele);
 
-  double theta = 1.0;
-  if(dyna_==INPAR::ACOU::acou_trapezoidal) theta = 0.66;
-  int stage = -1;
-
   Epetra_SerialDenseVector tempGradVelnp;
   Epetra_SerialDenseVector tempVelnp;
   Epetra_SerialDenseVector tempPressnp;
-  if (dyna_ == INPAR::ACOU::acou_bdf2)
-  {
-    tempGradVelnp.Shape(shapes_->ndofs_ * nsd_ * nsd_, 1);
-    tempGradVelnp = interiorGradVelnp_;
-    tempVelnp.Shape(shapes_->ndofs_ * nsd_, 1);
-    tempVelnp = interiorVelnp_;
-    tempPressnp.Shape(shapes_->ndofs_, 1);
-    tempPressnp = interiorPressnp_;
-    for (unsigned int i = 0; i < shapes_->ndofs_ * nsd_ * nsd_; ++i)
-      interiorGradVeln_[i] = interiorGradVelnp_[i] * 4.0 / 3.0 - interiorGradVelnm_[i] / 3.0;
-    for (unsigned int i = 0; i < shapes_->ndofs_ * nsd_; ++i)
-      interiorVeln_[i] = interiorVelnp_[i] * 4.0 / 3.0 - interiorVelnm_[i] / 3.0;
-    for (unsigned int i = 0; i < shapes_->ndofs_; ++i)
-      interiorPressn_[i] = interiorPressnp_[i] * 4.0 / 3.0 - interiorPressnm_[i] / 3.0;
-    dt *= 2.0 / 3.0;
-  }
-  else if (dyna_ == INPAR::ACOU::acou_bdf3)
-  {
-    tempGradVelnp.Shape(shapes_->ndofs_ * nsd_ * nsd_, 1);
-    tempGradVelnp = interiorGradVelnp_;
-    tempVelnp.Shape(shapes_->ndofs_ * nsd_, 1);
-    tempVelnp = interiorVelnp_;
-    tempPressnp.Shape(shapes_->ndofs_, 1);
-    tempPressnp = interiorPressnp_;
-    for (unsigned int i = 0; i < shapes_->ndofs_ * nsd_* nsd_; ++i)
-      interiorGradVeln_[i] = interiorVelnp_[i] * 18.0 / 11.0 - interiorGradVelnm_[i] * 9.0 / 11.0 + interiorGradVelnmm_[i] * 2.0 / 11.0;
-    for (unsigned int i = 0; i < shapes_->ndofs_ * nsd_; ++i)
-      interiorVeln_[i] = interiorVelnp_[i] * 18.0 / 11.0 - interiorVelnm_[i] * 9.0 / 11.0 + interiorVelnmm_[i] * 2.0 / 11.0;
-    for (unsigned int i = 0; i < shapes_->ndofs_; ++i)
-      interiorPressn_[i] = interiorPressnp_[i] * 18.0 / 11.0 - interiorPressnm_[i] * 9.0 / 11.0 + interiorPressnmm_[i] * 2.0 / 11.0;
-    dt *= 6.0 / 11.0;
-  }
-  else if (dyna_ == INPAR::ACOU::acou_bdf4)
-  {
-    tempGradVelnp.Shape(shapes_->ndofs_ * nsd_ * nsd_, 1);
-    tempGradVelnp = interiorGradVelnp_;
-    tempVelnp.Shape(shapes_->ndofs_ * nsd_, 1);
-    tempVelnp = interiorVelnp_;
-    tempPressnp.Shape(shapes_->ndofs_, 1);
-    tempPressnp = interiorPressnp_;
-    for (unsigned int i = 0; i < shapes_->ndofs_ * nsd_ * nsd_; ++i)
-      interiorGradVeln_[i] = interiorGradVelnp_[i] * 48.0 / 25.0 - interiorGradVelnm_[i] * 36.0 / 25.0 + interiorGradVelnmm_[i] * 16.0 / 25.0 - interiorGradVelnmmm_[i] * 3.0 / 25.0;
-    for (unsigned int i = 0; i < shapes_->ndofs_ * nsd_; ++i)
-      interiorVeln_[i] = interiorVelnp_[i] * 48.0 / 25.0 - interiorVelnm_[i] * 36.0 / 25.0 + interiorVelnmm_[i] * 16.0 / 25.0 - interiorVelnmmm_[i] * 3.0 / 25.0;
-    for (unsigned int i = 0; i < shapes_->ndofs_; ++i)
-      interiorPressn_[i] = interiorPressnp_[i] * 48.0 / 25.0 - interiorPressnm_[i] * 36.0 / 25.0 + interiorPressnmm_[i] * 16.0 / 25.0 - interiorPressnmmm_[i] * 3.0 / 25.0;
-    dt *= 12.0 / 25.0;
-  }
-  else if (dyna_ == INPAR::ACOU::acou_dirk23 ||
-           dyna_ == INPAR::ACOU::acou_dirk33 ||
-           dyna_ == INPAR::ACOU::acou_dirk34 ||
-           dyna_ == INPAR::ACOU::acou_dirk54)
-  {
-    // do the dirk
-    stage = params.get<int>("stage");
-
-    interiorGradVeln_ = solele->elesgv_[stage];
-    interiorVeln_ = solele->elesv_[stage];
-    interiorPressn_ = solele->elesp_[stage];
-    interiorGradVeln_.Scale(dt);
-    interiorVeln_.Scale(dt);
-    interiorPressn_.Scale(dt);
-  }
-  else
-  {
-    interiorGradVeln_ = interiorGradVelnp_;
-    interiorVeln_ = interiorVelnp_;
-    interiorPressn_ = interiorPressnp_;
-
-  }
 
   Epetra_SerialDenseVector traceVal_SDV(nfaces_*shapesface_->nfdofs_*nsd_);
   for(unsigned i=0; i<nfaces_*shapesface_->nfdofs_*nsd_; ++i)
     traceVal_SDV(i) = traceVal_[i];
-
-  Epetra_SerialDenseVector traceVal_SDV_m(nfaces_*shapesface_->nfdofs_*nsd_);
-  if(dyna_ == INPAR::ACOU::acou_trapezoidal)
-  {
-    for(unsigned i=0; i<nfaces_*shapesface_->nfdofs_*nsd_; ++i)
-      traceVal_SDV_m(i) = traceValm_[i];
-  }
 
   // *****************************************************
   // update interior variables first
@@ -2474,14 +1985,13 @@ UpdateInteriorVariablesAndComputeResidual(Teuchos::ParameterList&    params,
   Epetra_SerialDenseVector tempsource(nsd_*shapes_->ndofs_);
 
   Epetra_SerialDenseMatrix dinvamat(nsd_*shapes_->ndofs_,nsd_*nsd_*shapes_->ndofs_);
-  dinvamat.Multiply('N','N',theta,localSolver_->dmat,localSolver_->invamat,0.0);
+  dinvamat.Multiply('N','N',1.0,localSolver_->dmat,localSolver_->invamat,0.0);
 
   {
     Epetra_SerialDenseMatrix ol(nsd_*shapes_->ndofs_,nsd_*shapes_->ndofs_);
     ol = localSolver_->ehatmat;
-    ol.Scale(theta);
     ol += localSolver_->emat;
-    ol.Multiply('N','N',-theta,dinvamat,localSolver_->bmat,1.0);
+    ol.Multiply('N','N',-1.0,dinvamat,localSolver_->bmat,1.0);
 
     for(unsigned int i=0; i<shapes_->ndofs_; ++i)
     {
@@ -2491,8 +2001,8 @@ UpdateInteriorVariablesAndComputeResidual(Teuchos::ParameterList&    params,
         for(unsigned int d=0; d<nsd_; ++d)
         {
           toinv(d*shapes_->ndofs_+i,d*shapes_->ndofs_+j) = ol(d*shapes_->ndofs_+i,d*shapes_->ndofs_+j);
-          toinv(nsd_*shapes_->ndofs_+i,d*shapes_->ndofs_+j) = theta * localSolver_->hmat(i,d*shapes_->ndofs_+j);
-          toinv(d*shapes_->ndofs_+i,nsd_*shapes_->ndofs_+j) = theta * localSolver_->fmat(d*shapes_->ndofs_+i,j);
+          toinv(nsd_*shapes_->ndofs_+i,d*shapes_->ndofs_+j) = localSolver_->hmat(i,d*shapes_->ndofs_+j);
+          toinv(d*shapes_->ndofs_+i,nsd_*shapes_->ndofs_+j) = localSolver_->fmat(d*shapes_->ndofs_+i,j);
         }
       }
     }
@@ -2501,29 +2011,21 @@ UpdateInteriorVariablesAndComputeResidual(Teuchos::ParameterList&    params,
   // calculate rhs parts
   Epetra_SerialDenseVector ol(nsd_*shapes_->ndofs_);
   localSolver_->ComputeSource(params,ol,tempsource);
-  ol.Multiply('N','N',1.0,localSolver_->emat,interiorVeln_,1.0);
-  ol.Multiply('N','N',-(1.0-theta),localSolver_->dmat,interiorGradVeln_,1.0);
-  ol.Multiply('N','N',-(1.0-theta),localSolver_->ehatmat,interiorVeln_,1.0);
-  ol.Multiply('N','N',-(1.0-theta),localSolver_->fmat,interiorPressn_,1.0);
-  ol.Multiply('N','N',-(1.0-theta),localSolver_->gmat,traceVal_SDV_m,1.0);
-  ol.Multiply('N','N',-theta,localSolver_->gmat,traceVal_SDV,1.0);
+  ol.Multiply('N','N',1.0,localSolver_->emat,interiorVelnp_,1.0);
+  ol.Multiply('N','N',-1.0,localSolver_->gmat,traceVal_SDV,1.0);
 
 
   Epetra_SerialDenseVector tempvec1(nsd_*nsd_*shapes_->ndofs_);
-  tempvec1.Multiply('N','N',1.0,localSolver_->amat,interiorGradVeln_,0.0);
-  tempvec1.Multiply('N','N',-(1.0-theta),localSolver_->bmat,interiorVeln_,1.0);
-  tempvec1.Multiply('N','N',-(1.0-theta),localSolver_->cmat,traceVal_SDV_m,1.0);
-  tempvec1.Multiply('N','N',-theta,localSolver_->cmat,traceVal_SDV,1.0);
+  tempvec1.Multiply('N','N',1.0,localSolver_->amat,interiorGradVelnp_,0.0);
+  tempvec1.Multiply('N','N',-1.0,localSolver_->cmat,traceVal_SDV,1.0);
   ol.Multiply('N','N',-1.0,dinvamat,tempvec1,1.0);
   Epetra_SerialDenseVector rhsinv((nsd_+1)*shapes_->ndofs_);
   for(unsigned int i=0; i<nsd_*shapes_->ndofs_; ++i)
     rhsinv(i) = ol(i);
 
   ol.Shape(shapes_->ndofs_,1);
-  ol.Multiply('N','N',1.0,localSolver_->imat,interiorPressn_,0.0);
-  ol.Multiply('N','N',-(1.0-theta),localSolver_->hmat,interiorVeln_,1.0);
-  ol.Multiply('N','N',-(1.0-theta),localSolver_->jmat,traceVal_SDV_m,1.0);
-  ol.Multiply('N','N',-theta,localSolver_->jmat,traceVal_SDV,1.0);
+  ol.Multiply('N','N',1.0,localSolver_->imat,interiorPressnp_,0.0);
+  ol.Multiply('N','N',-1.0,localSolver_->jmat,traceVal_SDV,1.0);
   // add contribution from objective function in case of adjoint run
   localSolver_->ComputeSourcePressureMonitorVector(ele,params,ol);
   for(unsigned int i=0; i<shapes_->ndofs_; ++i)
@@ -2543,76 +2045,13 @@ UpdateInteriorVariablesAndComputeResidual(Teuchos::ParameterList&    params,
   for(unsigned int i=0; i<shapes_->ndofs_; ++i)
     interiorPressnp_(i) = sol(nsd_*shapes_->ndofs_+i);
 
-  tempvec1.Multiply('N','N',-theta,localSolver_->bmat,interiorVelnp_,1.0);
+  tempvec1.Multiply('N','N',-1.0,localSolver_->bmat,interiorVelnp_,1.0);
   interiorGradVelnp_.Multiply('N','N',1.0,localSolver_->invamat,tempvec1,0.0);
 
-  int dirk_q = -1;
   // tell this change in the interior variables the discretization
-  if(dyna_ == INPAR::ACOU::acou_dirk23 ||
-     dyna_ == INPAR::ACOU::acou_dirk33 ||
-     dyna_ == INPAR::ACOU::acou_dirk34 ||
-     dyna_ == INPAR::ACOU::acou_dirk54 )
-  {
-    double dirk_a[6][6];
-    double dirk_b[6];
-    double dirk_c[6];
-    ACOU::FillDIRKValues(dyna_, dirk_a, dirk_b, dirk_c, dirk_q);
-
-    solele->eleyp_[stage] = interiorPressnp_;
-    solele->eleyv_[stage] = interiorVelnp_;
-    solele->eleygv_[stage] = interiorGradVelnp_;
-
-    solele->elefp_[stage] = solele->eleinteriorPressn_;
-    solele->elefp_[stage].Scale(-1.0);
-    solele->elefp_[stage] += solele->eleyp_[stage];
-    solele->elefp_[stage].Scale(1.0 / dt); // dt includes a_ii
-    solele->elefv_[stage] = solele->eleinteriorVeln_;
-    solele->elefv_[stage].Scale(-1.0);
-    solele->elefv_[stage] += solele->eleyv_[stage];
-    solele->elefv_[stage].Scale(1.0 / dt);
-    solele->elefgv_[stage] = solele->eleinteriorGradVeln_;
-    solele->elefgv_[stage].Scale(-1.0);
-    solele->elefgv_[stage] += solele->eleygv_[stage];
-    solele->elefgv_[stage].Scale(1.0 / dt);
-
-    Epetra_SerialDenseVector tempVecp1(shapes_->ndofs_);
-    Epetra_SerialDenseVector tempVecv1(shapes_->ndofs_ * nsd_);
-    Epetra_SerialDenseVector tempVecgv1(shapes_->ndofs_ * nsd_ * nsd_);
-    for (int i = 0; i < stage; ++i)
-    {
-      tempVecp1 = solele->elefp_[i];
-      tempVecp1.Scale(-dirk_a[stage][i] / dirk_a[stage][stage]);
-      solele->elefp_[stage] += tempVecp1;
-      tempVecv1 = solele->elefv_[i];
-      tempVecv1.Scale(-dirk_a[stage][i] / dirk_a[stage][stage]);
-      solele->elefv_[stage] += tempVecv1;
-      tempVecgv1 = solele->elefgv_[i];
-      tempVecgv1.Scale(-dirk_a[stage][i] / dirk_a[stage][stage]);
-      solele->elefgv_[stage] += tempVecgv1;
-    }
-    tempVecp1 = solele->elefp_[stage];
-    tempVecp1.Scale(dt * dirk_b[stage] / dirk_a[stage][stage]);
-    solele->eleinteriorPressnp_ += tempVecp1;
-    tempVecv1 = solele->elefv_[stage];
-    tempVecv1.Scale(dt * dirk_b[stage] / dirk_a[stage][stage]);
-    solele->eleinteriorVelnp_ += tempVecv1;
-    tempVecgv1 = solele->elefgv_[stage];
-    tempVecgv1.Scale(dt * dirk_b[stage] / dirk_a[stage][stage]);
-    solele->eleinteriorGradVelnp_ += tempVecgv1;
-
-    if (stage == dirk_q - 1)
-    {
-      solele->eleinteriorPressn_ = solele->eleinteriorPressnp_;
-      solele->eleinteriorVeln_ = solele->eleinteriorVelnp_;
-      solele->eleinteriorGradVeln_ = solele->eleinteriorGradVelnp_;
-    }
-  } // if(dyna_ == INPAR::ACOU::acou_dirk?? )
-  else
-  {
-    solele->eleinteriorPressnp_ = interiorPressnp_;
-    solele->eleinteriorVelnp_ = interiorVelnp_;
-    solele->eleinteriorGradVelnp_ = interiorGradVelnp_;
-  }
+  solele->eleinteriorPressnp_ = interiorPressnp_;
+  solele->eleinteriorVelnp_ = interiorVelnp_;
+  solele->eleinteriorGradVelnp_ = interiorGradVelnp_;
 
   // *****************************************************
   // local postprocessing to calculate error maps
@@ -2632,7 +2071,7 @@ UpdateInteriorVariablesAndComputeResidual(Teuchos::ParameterList&    params,
 
     Teuchos::RCP<std::vector<double> > values = params.get<Teuchos::RCP<std::vector<double> > >("elevals");
     bool padaptivity = params.get<bool>("padaptivity");
-    if ((stage == -1 || stage == dirk_q - 1) && padaptivity) // time integrators or last stage of DIRK
+    if (padaptivity) // time integrators or last stage of DIRK
     {
       double padaptivitytol = params.get<double>("padaptivitytol");
       double delta_k = 0.0;
@@ -2663,130 +2102,12 @@ UpdateInteriorVariablesAndComputeResidual(Teuchos::ParameterList&    params,
   // compute residual second (reuse intermediate matrices)
   // *****************************************************
 
-  if (dyna_ == INPAR::ACOU::acou_dirk23 ||
-      dyna_ == INPAR::ACOU::acou_dirk33 ||
-      dyna_ == INPAR::ACOU::acou_dirk34 ||
-      dyna_ == INPAR::ACOU::acou_dirk54)
-  {
-    double dirk_a[6][6];
-    double dirk_b[6];
-    double dirk_c[6];
-    int dirk_q;
-    ACOU::FillDIRKValues(dyna_, dirk_a, dirk_b, dirk_c, dirk_q);
-
-    stage++;
-    if (stage == dirk_q)
-    {
-      stage = 0;
-      solele->eleinteriorPressnp_ = solele->eleinteriorPressn_;
-      solele->eleinteriorVelnp_ = solele->eleinteriorVeln_;
-      solele->eleinteriorGradVelnp_ = solele->eleinteriorGradVeln_;
-    }
-    Epetra_SerialDenseVector tempVecp1(shapes_->ndofs_);
-    Epetra_SerialDenseVector tempVecp2(shapes_->ndofs_);
-    Epetra_SerialDenseVector tempVecv1(shapes_->ndofs_ * nsd_);
-    Epetra_SerialDenseVector tempVecv2(shapes_->ndofs_ * nsd_);
-    Epetra_SerialDenseVector tempVecgv1(shapes_->ndofs_ * nsd_ * nsd_);
-    Epetra_SerialDenseVector tempVecgv2(shapes_->ndofs_ * nsd_ * nsd_);
-
-    solele->elesp_[stage] = solele->eleinteriorPressn_;
-    solele->elesp_[stage].Scale(1.0 / dt); // dt includes a_ii
-    solele->elesv_[stage] = solele->eleinteriorVeln_;
-    solele->elesv_[stage].Scale(1.0 / dt); // dt includes a_ii
-    solele->elesgv_[stage] = solele->eleinteriorGradVeln_;
-    solele->elesgv_[stage].Scale(1.0 / dt); // dt includes a_ii
-
-    for (int i = 0; i < stage; ++i)
-    {
-      tempVecp1 = solele->elesp_[i];
-      tempVecp1.Scale(-1.0);
-      tempVecp2 = solele->eleyp_[i];
-      tempVecp2.Scale(1.0 / dt);
-      tempVecp1 += tempVecp2;
-      tempVecp1.Scale(dirk_a[stage][i] / dirk_a[stage][stage]);
-      solele->elesp_[stage] += tempVecp1;
-      tempVecv1 = solele->elesv_[i];
-      tempVecv1.Scale(-1.0);
-      tempVecv2 = solele->eleyv_[i];
-      tempVecv2.Scale(1.0 / dt);
-      tempVecv1 += tempVecv2;
-      tempVecv1.Scale(dirk_a[stage][i] / dirk_a[stage][stage]);
-      solele->elesv_[stage] += tempVecv1;
-      tempVecgv1 = solele->elesgv_[i];
-      tempVecgv1.Scale(-1.0);
-      tempVecgv2 = solele->eleygv_[i];
-      tempVecgv2.Scale(1.0 / dt);
-      tempVecgv1 += tempVecgv2;
-      tempVecgv1.Scale(dirk_a[stage][i] / dirk_a[stage][stage]);
-      solele->elesgv_[stage] += tempVecgv1;
-    }
-
-    // these vectors s are used for the calculation of the residual -> write them to used local solver variable
-    interiorPressnp_ = solele->elesp_[stage];
-    interiorVelnp_ = solele->elesv_[stage];
-    interiorGradVelnp_ = solele->elesgv_[stage];
-    interiorPressnp_.Scale(dt);
-    interiorVelnp_.Scale(dt);
-    interiorGradVelnp_.Scale(dt);
-  }
-  else if (dyna_ == INPAR::ACOU::acou_bdf2)
-  {
-    for (unsigned int i = 0; i < shapes_->ndofs_ * nsd_ * nsd_; ++i)
-      interiorGradVelnp_[i] = 4.0 / 3.0 * interiorGradVelnp_[i] - 1.0 / 3.0 * tempGradVelnp[i];
-    for (unsigned int i = 0; i < shapes_->ndofs_ * nsd_; ++i)
-      interiorVelnp_[i] = 4.0 / 3.0 * interiorVelnp_[i] - 1.0 / 3.0 * tempVelnp[i];
-    for (unsigned int i = 0; i < shapes_->ndofs_; ++i)
-      interiorPressnp_[i] = 4.0 / 3.0 * interiorPressnp_[i] - 1.0 / 3.0 * tempPressnp[i];
-    solele->eleinteriorPressnm_ = tempPressnp;
-    solele->eleinteriorVelnm_ = tempVelnp;
-    solele->eleinteriorGradVelnm_ = tempGradVelnp;
-  }
-  else if (dyna_ == INPAR::ACOU::acou_bdf3)
-  {
-    for (unsigned int i = 0; i < shapes_->ndofs_ * nsd_ * nsd_; ++i)
-      interiorGradVelnp_[i] = 18.0 / 11.0 * interiorGradVelnp_[i] - 9.0 / 11.0 * tempGradVelnp[i] + 2.0 / 11.0 * interiorGradVelnm_[i];
-    for (unsigned int i = 0; i < shapes_->ndofs_ * nsd_; ++i)
-      interiorVelnp_[i] = 18.0 / 11.0 * interiorVelnp_[i] - 9.0 / 11.0 * tempVelnp[i] + 2.0 / 11.0 * interiorVelnm_[i];
-    for (unsigned int i = 0; i < shapes_->ndofs_; ++i)
-      interiorPressnp_[i] = 18.0 / 11.0 * interiorPressnp_[i] - 9.0 / 11.0 * tempPressnp[i] + 2.0 / 11.0 * interiorPressnm_[i];
-    solele->eleinteriorPressnmm_ = solele->eleinteriorPressnm_;
-    solele->eleinteriorPressnm_ = tempPressnp;
-    solele->eleinteriorVelnmm_ = solele->eleinteriorVelnm_;
-    solele->eleinteriorVelnm_ = tempVelnp;
-    solele->eleinteriorGradVelnmm_ = solele->eleinteriorGradVelnm_;
-    solele->eleinteriorGradVelnm_ = tempGradVelnp;
-  }
-  else if (dyna_ == INPAR::ACOU::acou_bdf4)
-  {
-    for (unsigned int i = 0; i < shapes_->ndofs_ * nsd_ * nsd_; ++i)
-      interiorGradVelnp_[i] = 48.0 / 25.0 * interiorGradVelnp_[i] - 36.0 / 25.0 * tempGradVelnp[i] + 16.0 / 25.0 * interiorGradVelnm_[i] - 3.0 / 25.0 * interiorGradVelnmm_[i];
-    for (unsigned int i = 0; i < shapes_->ndofs_ * nsd_; ++i)
-      interiorVelnp_[i] = 48.0 / 25.0 * interiorVelnp_[i] - 36.0 / 25.0 * tempVelnp[i] + 16.0 / 25.0 * interiorVelnm_[i] - 3.0 / 25.0 * interiorVelnmm_[i];
-    for (unsigned int i = 0; i < shapes_->ndofs_; ++i)
-      interiorPressnp_[i] = 48.0 / 25.0 * interiorPressnp_[i] - 36.0 / 25.0 * tempPressnp[i] + 16.0 / 25.0 * interiorPressnm_[i] - 3.0 / 25.0 * interiorPressnmm_[i];
-    solele->eleinteriorPressnmmm_ = solele->eleinteriorPressnmm_;
-    solele->eleinteriorPressnmm_ = solele->eleinteriorPressnm_;
-    solele->eleinteriorPressnm_ = tempPressnp;
-    solele->eleinteriorVelnmmm_ = solele->eleinteriorVelnmm_;
-    solele->eleinteriorVelnmm_ = solele->eleinteriorVelnm_;
-    solele->eleinteriorVelnm_ = tempVelnp;
-    solele->eleinteriorGradVelnmmm_ = solele->eleinteriorGradVelnmm_;
-    solele->eleinteriorGradVelnmm_ = solele->eleinteriorGradVelnm_;
-    solele->eleinteriorGradVelnm_ = tempGradVelnp;
-  }
-
   // calculate rhs parts
   ol.Shape(nsd_*shapes_->ndofs_,1);
   ol+=tempsource;
   ol.Multiply('N','N',1.0,localSolver_->emat,interiorVelnp_,1.0);
-  ol.Multiply('N','N',-(1.0-theta),localSolver_->dmat,interiorGradVelnp_,1.0);
-  ol.Multiply('N','N',-(1.0-theta),localSolver_->ehatmat,interiorVelnp_,1.0);
-  ol.Multiply('N','N',-(1.0-theta),localSolver_->fmat,interiorPressnp_,1.0);
-  ol.Multiply('N','N',-(1.0-theta),localSolver_->gmat,traceVal_SDV,1.0);
   tempvec1.Scale(0.0);
   tempvec1.Multiply('N','N',1.0,localSolver_->amat,interiorGradVelnp_,0.0);
-  tempvec1.Multiply('N','N',-(1.0-theta),localSolver_->bmat,interiorVelnp_,1.0);
-  tempvec1.Multiply('N','N',-(1.0-theta),localSolver_->cmat,traceVal_SDV,1.0);
   ol.Multiply('N','N',-1.0,dinvamat,tempvec1,1.0);
 
   for(unsigned int i=0; i<shapes_->ndofs_*nsd_; ++i)
@@ -2794,32 +2115,25 @@ UpdateInteriorVariablesAndComputeResidual(Teuchos::ParameterList&    params,
 
   ol.Resize(shapes_->ndofs_);
   ol.Multiply('N','N',1.0,localSolver_->imat,interiorPressnp_,0.0);
-  ol.Multiply('N','N',-(1.0-theta),localSolver_->hmat,interiorVelnp_,1.0);
-  ol.Multiply('N','N',-(1.0-theta),localSolver_->jmat,traceVal_SDV,1.0);
   localSolver_->ComputeSourcePressureMonitorVector(ele,params,ol);
   for(unsigned int i=0; i<shapes_->ndofs_; ++i)
     rhsinv(shapes_->ndofs_*nsd_+i) = ol(i);
 
   sol.Multiply('N','N',1.0,toinv,rhsinv,0.0);
 
-  elevec.Multiply('N','N',-(1.0-theta),localSolver_->kmat,interiorGradVelnp_,0.0);
-  elevec.Multiply('N','N',-(1.0-theta),localSolver_->lmat,interiorVelnp_,1.0);
-  elevec.Multiply('N','N',-(1.0-theta),localSolver_->mmat,interiorPressnp_,1.0);
-  elevec.Multiply('N','N',-(1.0-theta),localSolver_->nmat,traceVal_SDV,1.0);
-
   for(unsigned int i=0; i<shapes_->ndofs_; ++i)
     ol(i) = sol(nsd_*shapes_->ndofs_+i);
-  elevec.Multiply('N','N',-theta,localSolver_->mmat,ol,1.0);
+  elevec.Multiply('N','N',-1.0,localSolver_->mmat,ol,1.0);
 
   ol.Shape(shapes_->ndofs_*nsd_,1);
   for(unsigned int i=0; i<shapes_->ndofs_*nsd_; ++i)
     ol(i) = sol(i);
-  elevec.Multiply('N','N',-theta,localSolver_->lmat,ol,1.0);
+  elevec.Multiply('N','N',-1.0,localSolver_->lmat,ol,1.0);
 
-  tempvec1.Multiply('N','N',-theta,localSolver_->bmat,ol,1.0);
+  tempvec1.Multiply('N','N',-1.0,localSolver_->bmat,ol,1.0);
   ol.Shape(nsd_*nsd_*shapes_->ndofs_,1);
   ol.Multiply('N','N',1.0,localSolver_->invamat,tempvec1,0.0);
-  elevec.Multiply('N','N',-theta,localSolver_->kmat,ol,1.0);
+  elevec.Multiply('N','N',-1.0,localSolver_->kmat,ol,1.0);
 
   return;
 } // UpdateInteriorVariablesAndComputeResidual

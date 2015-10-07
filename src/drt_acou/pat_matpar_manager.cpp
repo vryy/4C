@@ -14,7 +14,8 @@ Maintainer: Svenja Schoeder
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "pat_matpar_manager.H"
-#include <math.h>
+#include "acou_ele.H"
+#include "acou_ele_action.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_mat/material.H"
@@ -26,19 +27,29 @@ Maintainer: Svenja Schoeder
 
 
 /*----------------------------------------------------------------------*/
-ACOU::PatMatParManagerUniform::PatMatParManagerUniform(Teuchos::RCP<DRT::Discretization> discret)
+ACOU::OptMatParManagerUniform::OptMatParManagerUniform(Teuchos::RCP<DRT::Discretization> discret)
 :MatParManagerUniform(discret)
 {}
 
 /*----------------------------------------------------------------------*/
-ACOU::PatMatParManagerPerElement::PatMatParManagerPerElement(Teuchos::RCP<DRT::Discretization> discret, bool scaleele)
+ACOU::AcouMatParManagerUniform::AcouMatParManagerUniform(Teuchos::RCP<DRT::Discretization> discret)
+:MatParManagerUniform(discret)
+{}
+
+/*----------------------------------------------------------------------*/
+ACOU::OptMatParManagerPerElement::OptMatParManagerPerElement(Teuchos::RCP<DRT::Discretization> discret, bool scaleele)
 :MatParManagerPerElement(discret)
 {
   scalegradele_ = scaleele;
 }
 
 /*----------------------------------------------------------------------*/
-void ACOU::PatMatParManagerUniform::AddEvaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint)
+ACOU::AcouMatParManagerPerElement::AcouMatParManagerPerElement(Teuchos::RCP<DRT::Discretization> discret)
+:MatParManagerPerElement(discret)
+{}
+
+/*----------------------------------------------------------------------*/
+void ACOU::OptMatParManagerUniform::AddEvaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint)
 {
   // get the actual set of elementwise material parameters from the derived classes
   Teuchos::RCP<Epetra_MultiVector> getparams = Teuchos::rcp(new Epetra_MultiVector(*(Discret()->ElementRowMap()),NumParams(),false));
@@ -134,7 +145,41 @@ void ACOU::PatMatParManagerUniform::AddEvaluate(double time, Teuchos::RCP<Epetra
 }
 
 /*----------------------------------------------------------------------*/
-void ACOU::PatMatParManagerPerElement::AddEvaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint)
+void ACOU::AcouMatParManagerUniform::AddEvaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint)
+{
+  // loop the row elements
+  for (int i=0; i<Discret()->NumMyRowElements(); i++)
+  {
+    DRT::Element* actele;
+    actele = Discret()->lRowElement(i);
+    int elematid = actele->Material()->Parameter()->Id();
+
+    if (ParaMap().find(elematid) == ParaMap().end() )
+    {
+      //std::cout<<"Warning, skipping elematid "<<elematid<<" in ele "<<actele->Id()<<std::endl;
+      continue;
+    }
+    const DRT::ELEMENTS::Acou * hdgele = dynamic_cast<const DRT::ELEMENTS::Acou*>(actele);
+    double val = 0.0;
+    std::vector<int> actparams = ParaMap().at( elematid );
+    std::vector<int>::const_iterator it;
+    for ( it=actparams.begin(); it!=actparams.end(); it++)
+    {
+      // get the correct value
+      if((*it) == 0)
+        val = hdgele->GetDensityGradient();
+      else if((*it) == 1)
+        val = hdgele->GetSoSGradient();
+      // write it to the gradient
+      ContractGradient(dfint,val,actele->Id(),ParaPos().at(elematid).at(it-actparams.begin()), it-actparams.begin());
+    }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+void ACOU::OptMatParManagerPerElement::AddEvaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint)
 {
   // get the actual set of elementwise material parameters from the derived classes
   Teuchos::RCP<Epetra_MultiVector> getparams = Teuchos::rcp(new Epetra_MultiVector(*(Discret()->ElementRowMap()),NumParams(),false));
@@ -154,13 +199,12 @@ void ACOU::PatMatParManagerPerElement::AddEvaluate(double time, Teuchos::RCP<Epe
 
     if (ParaMap().find(elematid) == ParaMap().end() )
     {
-      std::cout<<"Warning, skipping elematid "<<elematid<<" in ele "<<actele->Id()<<std::endl;
+      //std::cout<<"Warning, skipping elematid "<<elematid<<" in ele "<<actele->Id()<<std::endl;
       continue;
     }
     // list to define routines at elementlevel
     Teuchos::ParameterList p;
-
-    // this works if we optimize only with respect to reac
+    // set parameters
     p.set<bool>("signum_mu",actele->Material()->Parameter()->GetParameter(1,Discret()->ElementColMap()->LID(actele->Id()))<0.0);
     p.set<bool>("signum_D", actele->Material()->Parameter()->GetParameter(0,Discret()->ElementColMap()->LID(actele->Id()))<0.0);
     p.set<bool>("scaleele",scalegradele_);
@@ -231,8 +275,111 @@ void ACOU::PatMatParManagerPerElement::AddEvaluate(double time, Teuchos::RCP<Epe
 }
 
 /*----------------------------------------------------------------------*/
-void ACOU::PatMatParManagerPerElement::SetAction(Teuchos::ParameterList& p)
+void ACOU::AcouMatParManagerPerElement::AddEvaluate(double time, Teuchos::RCP<Epetra_MultiVector> dfint)
+{
+  // loop the row elements
+  for (int i=0; i<Discret()->NumMyRowElements(); i++)
+  {
+    DRT::Element* actele;
+    actele = Discret()->lRowElement(i);
+    int elematid = actele->Material()->Parameter()->Id();
+
+    if (ParaMap().find(elematid) == ParaMap().end() )
+    {
+      //std::cout<<"Warning, skipping elematid "<<elematid<<" in ele "<<actele->Id()<<std::endl;
+      continue;
+    }
+    const DRT::ELEMENTS::Acou * hdgele = dynamic_cast<const DRT::ELEMENTS::Acou*>(actele);
+    double val = 0.0;
+    std::vector<int> actparams = ParaMap().at( elematid );
+    std::vector<int>::const_iterator it;
+    for ( it=actparams.begin(); it!=actparams.end(); it++)
+    {
+      // get the correct value
+      if((*it) == 0)
+        val = hdgele->GetDensityGradient();
+      else if((*it) == 1)
+        val = hdgele->GetSoSGradient();
+
+      double val1 = 1.0;
+      switch(metaparams_)
+      {
+      case INPAR::INVANA::stat_inv_meta_quad:
+      {
+        val1 = (*(*GetMatParamsVec())( ParaPos().at(elematid).at(it-actparams.begin()) ))[actele->LID()];
+        break;
+      }
+      case INPAR::INVANA::stat_inv_meta_arctan:
+      {
+        val1 = (*(*GetMatParamsVec())( ParaPos().at(elematid).at(it-actparams.begin()) ))[actele->LID()];
+        val1 = 1./M_PI/(val1*val1+1.);
+        break;
+      }
+      case INPAR::INVANA::stat_inv_meta_none:
+        break;
+      default:
+        dserror("metaparams only implemented for none/quad/arctan");
+        break;
+      }
+      val *= val1;
+
+      // write it to the gradient
+      ContractGradient(dfint,val,actele->Id(),ParaPos().at(elematid).at(it-actparams.begin()), it-actparams.begin());
+    }
+  }
+
+  return;
+}
+
+//! write parameter values to the correct positions in the given vector
+void ACOU::OptMatParManagerPerElement::WriteValuesToVector(int elematid, int geleid, double valit0, double valit1, Teuchos::RCP<Epetra_MultiVector> params)
+{
+  std::vector<int> actparams = ParaMap().at( elematid );
+  std::vector<int>::const_iterator it;
+  double val = 0.0;
+  for ( it=actparams.begin(); it!=actparams.end(); it++)
+  {
+    // get the correct value
+    if((*it) == 0)
+      val = valit0;
+    else if((*it) == 1)
+      val = valit1;
+    // write it to the gradient
+    ContractGradient(params,val,geleid,ParaPos().at(elematid).at(it-actparams.begin()), it-actparams.begin());
+  }
+  return;
+}
+
+//! write parameter values to the correct positions in the given vector
+void ACOU::AcouMatParManagerPerElement::WriteValuesToVector(int elematid, int geleid, double valit0, double valit1, Teuchos::RCP<Epetra_MultiVector> params)
+{
+  std::vector<int> actparams = ParaMap().at( elematid );
+  std::vector<int>::const_iterator it;
+  double val = 0.0;
+  for ( it=actparams.begin(); it!=actparams.end(); it++)
+  {
+    // get the correct value
+    if((*it) == 0)
+      val = valit0;
+    else if((*it) == 1)
+      val = valit1;
+    // write it to the gradient
+    ContractGradient(params,val,geleid,ParaPos().at(elematid).at(it-actparams.begin()), it-actparams.begin());
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+void ACOU::OptMatParManagerPerElement::SetAction(Teuchos::ParameterList& p)
 {
   p.set<int>("action",SCATRA::bd_integrate_shape_functions);
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+void ACOU::AcouMatParManagerPerElement::SetAction(Teuchos::ParameterList& p)
+{
+  p.set<int>("action", ACOU::bd_integrate);
   return;
 }

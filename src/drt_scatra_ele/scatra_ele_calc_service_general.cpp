@@ -455,7 +455,10 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
 
     Epetra_SerialDenseVector temp(nen_);
     for(int i=0;i<nen_;++i) temp(i) = mydualphi[i];
-    elevec1_epetra.Multiply('N','N',sign_fac/(diffmanager_->GetIsotropicDiff(0)),stiffmat,temp,0.0);
+    if(diffmanager_->GetIsotropicDiff(0)==0.0)
+      elevec1_epetra.Scale(0.0);
+    else
+      elevec1_epetra.Multiply('N','N',sign_fac/(diffmanager_->GetIsotropicDiff(0)),stiffmat,temp,0.0);
 
     break;
   }

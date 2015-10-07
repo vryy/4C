@@ -18,6 +18,7 @@ Maintainer: Svenja Schoeder
 #include "../drt_lib/drt_discret_hdg.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"
+#include "../drt_io/io_control.H"
 #include "../drt_mat/scatra_mat.H"
 #include "../linalg/linalg_utils.H"
 
@@ -42,6 +43,7 @@ ACOU::AcouTimeInt::AcouTimeInt(
   padaptivity_    (DRT::INPUT::IntegralValue<bool>(*params_,"P_ADAPTIVITY")),
   adjoint_        (params_->get<bool>("adjoint")),
   myrank_         (actdis->Comm().MyPID()),
+  writemonitor_   (DRT::INPUT::IntegralValue<bool>(*params_,"WRITEMONITOR")),
   time_           (0.0),
   step_           (0),
   restart_        (params_->get<int>("restart")),
@@ -50,12 +52,43 @@ ACOU::AcouTimeInt::AcouTimeInt(
   uprestart_      (params_->get<int>("RESTARTEVRY", -1)),
   upres_          (params_->get<int>("UPRES", -1)),
   numdim_         (DRT::Problem::Instance()->NDim()),
-  dtp_            (params_->get<double>("TIMESTEP"))
+  dtp_            (params_->get<double>("TIMESTEP")),
+  adjoint_rhs_    (Teuchos::null)
 {
   // create the global trace vectors
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
   velnp_ = LINALG::CreateVector(*dofrowmap,true);
-  veln_  = LINALG::CreateVector(*dofrowmap,true);
+
+  if(adjoint_)
+  {
+    //adjoint_rhs_= params_->get<Teuchos::RCP<Epetra_MultiVector> >("rhsvec");
+    Teuchos::RCP<Epetra_MultiVector> rowadjointrhs = params_->get<Teuchos::RCP<Epetra_MultiVector> >("rhsvec");
+
+    // export this thing!!
+    const int * globeles = rowadjointrhs->Map().MyGlobalElements();
+    std::vector<int> glomapval;
+    std::vector<int> locmapval;
+
+    for(int j=0; j<discret_->Comm().NumProc(); ++j)
+    {
+      discret_->Comm().Barrier();
+      int numglobeles = rowadjointrhs->Map().NumMyElements();
+      discret_->Comm().Broadcast(&numglobeles,1,j);
+      locmapval.resize(numglobeles);
+      if(j == discret_->Comm().MyPID())
+        for(int i=0; i<numglobeles; ++i)
+          locmapval[i] = globeles[i];
+
+      discret_->Comm().Broadcast(&locmapval[0],numglobeles,j);
+      for(int i=0; i<numglobeles; ++i)
+        glomapval.push_back(locmapval[i]);
+    }
+    Teuchos::RCP<Epetra_Map> fullmap = Teuchos::rcp(new Epetra_Map(-1,glomapval.size(),&glomapval[0],0,discret_->Comm()));
+    adjoint_rhs_ =  Teuchos::rcp(new Epetra_MultiVector(*fullmap,rowadjointrhs->NumVectors(),true));
+    LINALG::Export(*rowadjointrhs,*adjoint_rhs_);
+    discret_->Comm().Barrier();
+  }
+
 } // AcouTimeInt
 
 /*----------------------------------------------------------------------*
@@ -370,18 +403,6 @@ void ACOU::AcouTimeInt::SetInitialPhotoAcousticField(Teuchos::RCP<Epetra_Vector>
         Epetra_SerialDenseVector tempvec(size);
         for(int j=0; j<size; ++j) tempvec(j) = pressvals[j];
         acouele->eleinteriorPressnp_=tempvec;
-        acouele->eleinteriorPressn_=tempvec;
-        switch(dyna_)
-        {
-        case INPAR::ACOU::acou_bdf4:
-          acouele->eleinteriorPressnmmm_ = tempvec; // no break here
-        case INPAR::ACOU::acou_bdf3:
-          acouele->eleinteriorPressnmm_  = tempvec; // no break here
-        case INPAR::ACOU::acou_bdf2:
-          acouele->eleinteriorPressnm_   = tempvec;
-          break;// here you go
-        default: break;
-        }
       }
     }
 
@@ -592,29 +613,21 @@ void ACOU::AcouTimeInt::WriteRestart()
     std::cout<<"======= Restart written in step "<<step_<<std::endl;
 
   output_->WriteVector("velnps", velnp_);
-  output_->WriteVector("veln", veln_);
 
   // write internal field for which we need to create and fill the corresponding vectors
   // since this requires some effort, the WriteRestart method should not be used excessively!
-  Teuchos::RCP<Epetra_Vector> intvelnp = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap(1))));
-  Teuchos::RCP<Epetra_Vector> intveln = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap(1))));
-  Teuchos::RCP<Epetra_Vector> intvelnm = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap(1))));
-
+  Teuchos::RCP<Epetra_Vector> intvelnp = Teuchos::rcp(new Epetra_Vector(*(discret_->DofColMap(1))));
   Teuchos::ParameterList eleparams;
   eleparams.set<int>("action",ACOU::fill_restart_vecs);
   eleparams.set<INPAR::ACOU::DynamicType>("dynamic type",dyna_);
   eleparams.set<bool>("padaptivity",padaptivity_);
-  discret_->SetState(1,"intvelnp",intvelnp);
-  discret_->SetState(1,"intveln",intveln);
-  discret_->SetState(1,"intvelnm",intvelnm);
+  eleparams.set<int>("useacouoptvecs",-6);
 
+  discret_->SetState(1,"intvelnp",intvelnp);
   discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  discret_->ClearState(true);
 
   output_->WriteVector("intvelnp",intvelnp);
-  output_->WriteVector("intveln",intveln);
-  output_->WriteVector("intvelnm",intvelnm);
-
-  discret_->ClearState();
 
   return;
 } // WriteRestart
@@ -628,37 +641,261 @@ void ACOU::AcouTimeInt::ReadRestart(int step)
   time_ = reader.ReadDouble("time");
   step_ = reader.ReadInt("step");
 
-  reader.ReadVector(velnp_,"velnps");
-  reader.ReadVector(veln_, "veln");
-
   Teuchos::RCP<Epetra_Vector> intvelnp = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap(1))));
-  Teuchos::RCP<Epetra_Vector> intveln = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap(1))));
-  Teuchos::RCP<Epetra_Vector> intvelnm = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap(1))));
   reader.ReadVector(intvelnp,"intvelnp");
-  reader.ReadVector(intveln ,"intveln");
-  reader.ReadVector(intvelnm ,"intvelnm");
+  reader.ReadVector(velnp_,"velnps");
 
   Teuchos::ParameterList eleparams;
   eleparams.set<int>("action",ACOU::ele_init_from_restart);
   eleparams.set<INPAR::ACOU::DynamicType>("dynamic type",dyna_);
   eleparams.set<bool>("padaptivity",padaptivity_);
   discret_->SetState(1,"intvelnp",intvelnp);
-  discret_->SetState(1,"intveln",intveln);
-  discret_->SetState(1,"intvelnm",intvelnm);
   discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-
-/*  Epetra_SerialDenseVector elevec;
-  Epetra_SerialDenseMatrix elemat;
-  DRT::Element::LocationArray la(2);
-  for (int el=0; el<discret_->NumMyColElements();++el)
-  {
-    DRT::Element *ele = discret_->lColElement(el);
-    ele->Evaluate(eleparams,*discret_,la[0].lm_,elemat,elemat,elevec,elevec,elevec);
-  }*/
-  discret_->ClearState();
+  discret_->ClearState(true);
 
   return;
 } // ReadRestart
+
+/*----------------------------------------------------------------------*
+ |  OutputDensityAndSpeedOfSound()                       schoeder 06/15 |
+ *----------------------------------------------------------------------*/
+void ACOU::AcouTimeInt::OutputDensityAndSpeedOfSound()
+{
+  // build the two vectors
+  Teuchos::RCP<Epetra_Vector> densvec = Teuchos::rcp(new Epetra_Vector(*(discret_->ElementRowMap()),false));
+  Teuchos::RCP<Epetra_Vector> cvec = Teuchos::rcp(new Epetra_Vector(*(discret_->ElementRowMap()),false));
+
+  for (int i=0; i<discret_->NumMyRowElements(); i++)
+  {
+    DRT::Element* actele;
+    actele = discret_->lRowElement(i);
+    double dens = actele->Material()->Parameter()->GetParameter(0,discret_->ElementColMap()->LID(actele->Id()));
+    double c = actele->Material()->Parameter()->GetParameter(1,discret_->ElementColMap()->LID(actele->Id()));
+    densvec->operator [](i) = dens;
+    cvec->operator [](i) = c;
+  }
+  output_->WriteVector("density",densvec);
+  output_->WriteVector("speedofsound",cvec);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Calculate node based values (public)                 schoeder 01/14 |
+ *----------------------------------------------------------------------*/
+void ACOU::AcouTimeInt::NodalPsiField(Teuchos::RCP<Epetra_Vector> outvec)
+{
+
+  // call element routine for interpolate HDG to elements
+  Teuchos::ParameterList params;
+  params.set<int>("action",ACOU::interpolate_psi_to_node);
+  discret_->SetState(0,"trace",velnp_);
+  params.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
+  params.set<INPAR::ACOU::DynamicType>("dynamic type",dyna_);
+  params.set<double>("dt",dtp_);
+  params.set<bool>("padaptivity",false);
+  params.set<int>("useacouoptvecs",-6);
+
+  std::vector<int> dummy;
+  DRT::Element::LocationArray la(2);
+
+  Epetra_SerialDenseMatrix dummyMat;
+  Epetra_SerialDenseVector dummyVec;
+  Epetra_SerialDenseVector interpolVec;
+  std::vector<unsigned char> touchCount(outvec->MyLength());
+
+  outvec->PutScalar(0.);
+
+  for (int el=0; el<discret_->NumMyColElements();++el)
+  {
+    DRT::Element *ele = discret_->lColElement(el);
+    ele->LocationVector(*discret_,la,false);
+    if (interpolVec.M() == 0)
+      interpolVec.Resize(ele->NumNode());
+
+    ele->Evaluate(params,*discret_,la[0].lm_,dummyMat,dummyMat,interpolVec,dummyVec,dummyVec);
+
+    // sum values on nodes into vectors and record the touch count (build average of values)
+    for (int i=0; i<ele->NumNode(); ++i)
+    {
+      DRT::Node* node = ele->Nodes()[i];
+      const int localIndex = outvec->Map().LID(node->Id());
+
+      if (localIndex < 0)
+        continue;
+
+      touchCount[localIndex]++;
+      (*outvec)[localIndex] += interpolVec(i);
+    }
+  }
+
+  for (int i=0; i<outvec->MyLength(); ++i)
+    (*outvec)[i] /= touchCount[i];
+
+  discret_->ClearState(true);
+
+  return;
+} // NodalPsiField
+
+/*----------------------------------------------------------------------*
+ |  Fill touch count vec (needed for inverse analysis)   schoeder 04/14 |
+ *----------------------------------------------------------------------*/
+void ACOU::AcouTimeInt::FillTouchCountVec(Teuchos::RCP<Epetra_Vector> touchcount)
+{
+  // absorbing boundary conditions
+  std::string condname = "PressureMonitor";
+  std::vector<DRT::Condition*> pressuremon;
+  discret_->GetCondition(condname,pressuremon);
+
+  std::vector<unsigned char> touchCount(touchcount->MyLength());
+
+  for(unsigned int i=0; i<pressuremon.size(); ++i)
+  {
+    std::map<int,Teuchos::RCP<DRT::Element> >& geom = pressuremon[i]->Geometry();
+    std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
+    for (curr=geom.begin(); curr!=geom.end(); ++curr)
+    {
+      for(int j=0; j<curr->second->NumNode(); ++j)
+      {
+        DRT::Node* node = curr->second->Nodes()[j];
+        const int localIndex = touchcount->Map().LID(node->Id());
+
+        if (localIndex < 0)
+          continue;
+
+        touchCount[localIndex]++;
+      }
+    }
+  }
+  for (int i=0; i<touchcount->MyLength(); ++i)
+    (*touchcount)[i] = 1.0/touchCount[i];
+
+  return;
+} // FillTouchCountVec
+
+
+/*----------------------------------------------------------------------*
+ |  InitMonitorFile                                      schoeder 04/14 |
+ *----------------------------------------------------------------------*/
+void ACOU::AcouTimeInt::InitMonitorFile()
+{
+  if(writemonitor_)
+  {
+    FILE *fp = NULL;
+    if(myrank_==0)
+    {
+      std::string name = DRT::Problem::Instance()->OutputControlFile()->FileName();
+      name.append(".monitor");
+      fp = fopen(name.c_str(), "w");
+      if(fp == NULL)
+        dserror("Couldn't open file.");
+    }
+
+    //get condition
+    std::string condname="PressureMonitor";
+    std::vector<DRT::Condition*>pressuremon;
+    discret_->GetCondition(condname,pressuremon);
+    if(pressuremon.size()>1) dserror("write of monitor file only implemented for one pressure monitor condition");
+    const std::vector<int> pressuremonmics = *(pressuremon[0]->Nodes());
+
+    int mics=pressuremonmics.size();
+    int steps=0;
+    if(dtp_*stepmax_<maxtime_)
+      steps=stepmax_;
+    else
+      steps=maxtime_/dtp_+3; // first, last and int cut off
+
+    if(myrank_ == 0)
+    {
+      fprintf(fp,"steps %d ",steps);
+      fprintf(fp,"mics %d\n",mics);
+    }
+
+    int speakingproc=-1;
+    int helptospeak=-1;
+    const double* nod_coords;
+    double coords[3];
+
+    for(unsigned int n=0;n<pressuremonmics.size();++n)
+    {
+
+      if(discret_->HaveGlobalNode(pressuremonmics[n]))
+      {
+        helptospeak = myrank_;
+        nod_coords = discret_->gNode(pressuremonmics[n])->X();
+        coords[0]=nod_coords[0];
+        coords[1]=nod_coords[1];
+        coords[2]=nod_coords[2];
+      }
+      else
+        helptospeak = 0;
+      discret_->Comm().MaxAll(&helptospeak,&speakingproc,1);
+      discret_->Comm().Broadcast(coords,3,speakingproc);
+
+      if(myrank_==0)
+        fprintf(fp,"%e %e %e\n",coords[0],coords[1],coords[2]);
+    }
+    if(myrank_ == 0)
+    {
+      fprintf(fp,"#\n#\n#\n");
+      fclose(fp);
+    }
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  FillMonitorFile                                      schoeder 04/14 |
+ *----------------------------------------------------------------------*/
+void ACOU::AcouTimeInt::FillMonitorFile(Teuchos::RCP<Epetra_Vector> ip)
+{
+  if(writemonitor_)
+  {
+    FILE *fp = NULL;
+    if(myrank_==0)
+    {
+     std::string name = DRT::Problem::Instance()->OutputControlFile()->FileName();
+     name.append(".monitor");
+     fp = fopen(name.c_str(), "a");
+    }
+
+    // get condition
+    std::string condname="PressureMonitor";
+    std::vector<DRT::Condition*>pressuremon;
+    discret_->GetCondition(condname,pressuremon);
+    const std::vector<int> pressuremonmics = *(pressuremon[0]->Nodes());
+    int mics=pressuremonmics.size();
+
+    if(myrank_==0) fprintf(fp,"%e ",time_);
+    int helptospeak=-1;
+    int speakingproc=-1;
+    double pressure = 0.0;
+
+    for(int n=0;n<mics;n++)
+    {
+      if(discret_->HaveGlobalNode(pressuremonmics[n]))
+      {
+        if(ip->Map().LID(pressuremonmics[n])>=0)
+        {
+          helptospeak=myrank_;
+          pressure=ip->operator [](ip->Map().LID(pressuremonmics[n]));
+        }
+      }
+      else
+        helptospeak = -1;
+      discret_->Comm().MaxAll(&helptospeak,&speakingproc,1);
+      discret_->Comm().Broadcast(&pressure,1,speakingproc);
+
+      if(myrank_==0) fprintf(fp,"%e ", pressure);
+    }
+    if(myrank_==0)
+    {
+      fprintf(fp,"\n");
+      fclose(fp);
+    }
+  }
+  return;
+}
 
 /*----------------------------------------------------------------------*
  |  Return discretization (public)                       schoeder 01/14 |

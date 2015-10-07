@@ -34,7 +34,7 @@ namespace DRT
 }
 namespace ACOU
 {
-  class AcouImplicitTimeInt;
+  class AcouTimeInt;
   class PatMatParManager;
 }
 namespace SCATRA
@@ -67,13 +67,16 @@ namespace DRT
 
 namespace ACOU
 {
+
+class PATLineSearch;
+
 /*====================================================================*/
 /*!
 * Inverse Analysis for Photoacoustics
 */
-
 class InvAnalysis
 {
+  friend class PATLineSearch;
 
 public:
 
@@ -110,7 +113,7 @@ private:
 
   //! scatra and acoustical base algorithms to work with
   Teuchos::RCP<SCATRA::TimIntStationary>  scatraalgo_;
-  Teuchos::RCP<ACOU::AcouImplicitTimeInt> acoualgo_;
+  Teuchos::RCP<ACOU::AcouTimeInt> acoualgo_;
 
   //! some things we need for the scatra and acou time integrators
   Teuchos::RCP<Teuchos::ParameterList>   scatraparams_;
@@ -125,31 +128,45 @@ private:
   INPAR::ACOU::DynamicType      dyna_;
   //! physical type
   INPAR::ACOU::PhysicalType     phys_;
-  //! optimization tyoe
+  //! optimization type
   INPAR::ACOU::OptimizationType opti_;
 
   //! processor id
   int myrank_;
 
   //! for iteration loop progress
-  double error_;         //! actual error
+  double error_;          //! actual error
+  double error_start_;    //! initial error
   double tol_;            //! prescribed error tolerance
   double tol_grad_;       //! prescribed norm of gradient tolerance
   int    iter_;           //! actual iteration number
   int    max_iter_;       //! maximal iteration number for inverse analysis
   int    max_ls_iter_;    //! maximal iteration number for line search
   int    output_count_;   //! auxiliary variable for nicely named output files
+  int    last_acou_out_;  //! last forward acoustic output count
   bool   fdcheck_;        //! flag indicating performance of finite difference check
   double ls_c_;           //! parameter for calculation of sufficient decrease condition
   double ls_rho_;         //! step length reduction given by this parameter
   double ls_gd_scal_;     //! factor for line search step length scaling
   bool   backprojection_; //! flag if material should be estimated with backprojection
+  bool   meshconform_;    //! is acoustical mesh conform with optical
 
   //! flag whether we want to do check for the gradient as convergence criteria
   bool calcacougrad_;
 
   //! gradient scaling
   bool scalegradele_;
+
+  //! flag indicating if acoustic material is also optimized
+  bool acouopt_;
+
+  //! bool indicating if segmentation is performed
+  bool segmentation_;
+  double penaltyparam_;
+
+  //! contribution from regularization
+  double adaptreguval_;
+  double reguweight_;
 
   //! container for right hand side values of acoustical adjoint problem
   Teuchos::RCP<Epetra_MultiVector> acou_rhs_;
@@ -161,8 +178,6 @@ private:
 
   //! list of observed node gids
   std::vector<int>                  nodes_;
-  std::vector<std::vector<double> > meascoords_;
-  Epetra_SerialDenseVector          mcurve_;
   Epetra_SerialDenseVector          nod_curve_interpol_;
   std::vector<double>               timesteps_;
 
@@ -174,31 +189,49 @@ private:
   Teuchos::RCP<Epetra_Vector> adjoint_phi_;
 
   //! material handling done by the MatParManager from Sebastian Kehl
-  Teuchos::RCP<INVANA::MatParManager> matman_;
+  Teuchos::RCP<INVANA::MatParManager> scatra_matman_;
+  //! material handler in case of acoustical variable materials
+  Teuchos::RCP<INVANA::MatParManager> acou_matman_;
 
   //!regularization done by the RegularizationBase from Sebastian Kehl
-  Teuchos::RCP<INVANA::RegularizationBase> regman_;
+  Teuchos::RCP<INVANA::RegularizationBase> scatra_regman_;
+  Teuchos::RCP<INVANA::RegularizationBase> acou_regman_;
 
   //! gradient of the objective function
-  Teuchos::RCP<Epetra_MultiVector> objgrad_;
+  Teuchos::RCP<Epetra_MultiVector> scatra_objgrad_;
+  Teuchos::RCP<Epetra_MultiVector> acou_objgrad_;
 
   //! previous gradient of the objective function
-  Teuchos::RCP<Epetra_MultiVector> objgrad_o_;
-
-  //! current direction of steepest descent maybe properly scaled by hessian approximation
-  Teuchos::RCP<Epetra_MultiVector> direction_;
+  Teuchos::RCP<Epetra_MultiVector> scatra_objgrad_o_;
+  Teuchos::RCP<Epetra_MultiVector> acou_objgrad_o_;
 
   //! current step based on direction direction_ scaled with a proper stepsize
-  Teuchos::RCP<Epetra_MultiVector> step_;
+  Teuchos::RCP<Epetra_MultiVector> scatra_step_;
+  Teuchos::RCP<Epetra_MultiVector> acou_step_;
 
   //! current direction of steepest descent maybe properly scaled by hessian approximation
-  Teuchos::RCP<Epetra_MultiVector> d_;
+  Teuchos::RCP<Epetra_MultiVector> scatra_d_;
+  Teuchos::RCP<Epetra_MultiVector> acou_d_;
+
+  //! vector holding the f values
+  Teuchos::RCP<Epetra_MultiVector> k_;
+
+  //! current direction of steepest descent for f
+  Teuchos::RCP<Epetra_MultiVector> k_d_;
+
+  //! current gradient for f
+  Teuchos::RCP<Epetra_MultiVector> k_objgrad_;
+
+  //! line search class
+  Teuchos::RCP<PATLineSearch> linesearch_;
 
   //! norm of the gradient at current iteration
-  double normgrad_;
+  double scatra_normgrad_;
+  double acou_normgrad_;
 
   //! norm of the gradient in first iteration
-  double normgrad0_;
+  double scatra_normgrad0_;
+  double acou_normgrad0_;
 
   //! maximum size of storage (number of multivectors)
   int ssize_;
@@ -207,19 +240,24 @@ private:
   int actsize_;
 
   //! storage of solution delta
-  Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > sstore_;
+  Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > scatra_sstore_;
+  Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > acou_sstore_;
 
   //! storage of gradient delta
-  Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > ystore_;
+  Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > scatra_ystore_;
+  Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > acou_ystore_;
 
   //! node based vector holding absorption coefficient
   Teuchos::RCP<Epetra_Vector> node_mu_a_;
 
-  //! time step size for acoustical simulations
+  //! acoustical time step
   double dtacou_;
 
   //! the objective function value
   double J_;
+
+  //! the initial objective function value
+  double J_start_;
 
   //! norm of the difference of old and new parameters (which can also be used as stopping criteria)
   double normdiffp_;
@@ -247,7 +285,6 @@ private:
 
   //! The underlying subproblems
   //@{
-
   //! optical forward problem
   void SolveStandardProblemScatra();
 
@@ -258,7 +295,7 @@ private:
   void SolveStandardProblemAcou();
 
   //! Calculate the value of the objective function (after solving the forward problem)
-  void CalculateObjectiveFunctionValue();
+  void CalculateObjectiveFunctionValue(bool first);
 
   //! Solve the acoustical adjoint problem
   void SolveAdjointAcouProblem();
@@ -284,9 +321,6 @@ private:
   //! Update the sought parameters, return argument is true if successful
   bool UpdateParameters();
 
-  //! Line search routine to solve the internal BFGS problem, return argument is true if successful
-  bool LineSearch();
-
   //! Calculate the error and the value of the objective function, update iteration count, update Gradient
   void CalculateStatsAndService();
 
@@ -297,7 +331,133 @@ private:
   bool ConvergenceCheck();
   //@}
 
+  struct Segmentation
+  {
+    // number of materials
+    unsigned int nummats;
+
+    // table holding the material values
+    std::vector<std::vector<double> > materialtable;
+
+    // penalty parameter
+    double penalty;
+
+    // pointer to the scatra and acoustic discretization
+    Teuchos::RCP<DRT::Discretization> scadisc;
+    Teuchos::RCP<DRT::DiscretizationHDG> acoudisc;
+
+    // constructor
+    Segmentation(std::string materialfilename,
+                 double penaltypara,
+                 Teuchos::RCP<DRT::Discretization> scatradiscretization,
+                 Teuchos::RCP<DRT::DiscretizationHDG> acoudiscretization);
+
+    // initialization of the parameters
+    void InitParameters(Teuchos::RCP<Epetra_MultiVector> concentrations,
+                        Teuchos::RCP<INVANA::MatParManager> scatramatman,
+                        Teuchos::RCP<INVANA::MatParManager> acoumatman,
+                        Teuchos::RCP<Epetra_MultiVector> scatraparams,
+                        Teuchos::RCP<Epetra_MultiVector> acouparams);
+
+    // get as input the current parameters and gradients
+    // use all of them to calculate the new step direction
+    // considering f
+    void CalculateGradient(
+        Teuchos::RCP<Epetra_MultiVector> sca_params,
+        Teuchos::RCP<Epetra_MultiVector> acou_params,
+        Teuchos::RCP<Epetra_MultiVector> sca_grad,
+        Teuchos::RCP<Epetra_MultiVector> acou_grad,
+        Teuchos::RCP<Epetra_MultiVector> f_params,
+        Teuchos::RCP<Epetra_MultiVector> f_grad);
+
+    // update of the parameters
+    void UpdateParameters(Teuchos::RCP<Epetra_MultiVector> k_p,
+                          Teuchos::RCP<INVANA::MatParManager> scatramatman,
+                          Teuchos::RCP<INVANA::MatParManager> acoumatman,
+                          Teuchos::RCP<Epetra_MultiVector> sca_p,
+                          Teuchos::RCP<Epetra_MultiVector> acou_p);
+  };
+
+  Teuchos::RCP<Segmentation> segmentationsolver_;
+
 }; // class InvAnalysis
+
+/// Line search class specific to PAT
+/*!
+    This is a class providing line search functionality. We do not use the standard
+    class from the nonlinear solver, since this one has to be suited to PAT needs, e.g.
+    to choose between simultaneous parameter update or acoustic / optic one after another.
+
+    This implementation is based on the description in the book "Numerical Optimization",
+    J. Nocedal, J. Wrigth, Chapter 3.5.
+
+    \author schoeder
+*/
+class PATLineSearch
+{
+
+public:
+
+  //! standard constructor
+  PATLineSearch(Teuchos::RCP<InvAnalysis> problem, bool successive);
+
+  //! initialization
+  void Init();
+
+  //! actual line search routine
+  bool Run();
+
+private:
+
+  //! pointer to the inverse problem
+  Teuchos::RCP<InvAnalysis> invproblem_;
+
+  //! maximum number of iterations
+  int itermax_;
+
+  //! maximal step length
+  double alpha_max_;
+
+  //! bool indicating if also acoustical parameters are optimized
+  bool acouopt_;
+
+  //! bool indicating if successive or simultaneous update is performed
+  bool successive_;
+
+  //! bool indicating if segmentation is performed
+  bool segmentation_;
+
+  //! setting at the beginning of an iteration
+  double J_0_;        //! initial objective function value
+  double normsca_0_;  //! initial norm of the scatra search (grad*dir)
+  double normacou_0_; //! initial norm of the acou search (grad*dir)
+  double normk_0_;    //! initial norm of f direction -(dir*dir)=grad*dir
+
+  //! variables during an iteration
+  double J_im1_;      //! previous objective function value
+  double alpha_x_;    //! the final step length
+  double alpha_i_;    //! the current step length
+  double alpha_im1_;  //! the previous step length
+  double normsca_;    //! norm of scatra search
+  double normacou_;   //! norm of acou search
+  double normk_;      //! norm of f search
+
+  //! parameters for the line search
+  double c1_;
+  double c2_;
+
+  //! zoom function
+  double Zoom(double alpha_lo, double alpha_hi, double J_0, double J_alpha_lo, double normphi_0, bool turn, bool sca, bool acou);
+
+  //! different run routines: successive or simultaneous
+  bool RunSuccessive();
+  bool RunSimultaneous();
+  bool RunSegmentation();
+
+  //! initial f values
+  Teuchos::RCP<Epetra_MultiVector> k_o_;
+
+}; // class PATLineSearch
 
 } // namespace ACOU
 

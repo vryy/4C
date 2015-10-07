@@ -35,6 +35,8 @@ class AcouExplicitTimeInt;
 
 using namespace dealii;
 
+template <typename Operator> class RungeKuttaIntegrator;
+
 template<int dim>
 class WaveEquationProblem
 {
@@ -47,14 +49,19 @@ public:
   ~WaveEquationProblem();
 
   // Integration, i.e. time loop
-  void run();
+  void run(Teuchos::RCP<Epetra_MultiVector> history, Teuchos::RCP<LINALG::MapExtractor> splitter);
 
   // preparation for output in baci format
   void write_deal_cell_values();
 
+  // evaluator
   Teuchos::RCP<WaveEquationOperationBase<dim> > evaluator;
 
+  // actual and previous pressure and velocity solution
   std::vector<parallel::distributed::Vector<value_type> > solutions, previous_solutions;
+
+  // vector of up_res solution vectors of pressure and velocity (for adjoint with acouopt)
+  std::vector<std::vector<parallel::distributed::Vector<value_type> > > stored_forward_solutions;
 
   // time step (public for adaption in base class)
   double time_step;
@@ -63,8 +70,8 @@ public:
   void set_time_and_step(double timein, int stepin);
 
 private:
-  void make_grid_and_dofs (Teuchos::RCP<DRT::DiscretizationHDG> discret);
-  void output_results (const unsigned int timestep_number);
+  void make_grid_and_dofs (Teuchos::RCP<DRT::DiscretizationHDG> discret, Teuchos::RCP<Epetra_MultiVector> adjoint_source);
+  void output_results (const unsigned int timestep_number, Teuchos::RCP<Epetra_MultiVector> history, Teuchos::RCP<LINALG::MapExtractor> splitter);
   void compute_post_pressure();
 
   parallel::distributed::Vector<value_type> post_pressure;
@@ -97,6 +104,12 @@ private:
 
   // pointer to the baci time integration (for baci output)
   Teuchos::RCP<ACOU::AcouExplicitTimeInt> bacitimeint;
+
+  // flags needed for image reconstruction
+  bool invana, adjoint, acouopt;
+
+  // forward time integration in the adjoint run
+  void intermediate_integrate(Teuchos::RCP<RungeKuttaIntegrator<WaveEquationOperationBase<dim> > > integrator);
 };
 
 class AcouExplicitTimeInt : public AcouTimeInt
@@ -130,13 +143,22 @@ public:
   void Integrate(Teuchos::RCP<Epetra_MultiVector> history = Teuchos::null, Teuchos::RCP<LINALG::MapExtractor> splitter = Teuchos::null);
 
   /// output routine: not inherited since it does something completely different than the one for the implicit integration
-  void Output();
+  virtual void Output(Teuchos::RCP<Epetra_MultiVector> history = Teuchos::null, Teuchos::RCP<LINALG::MapExtractor> splitter = Teuchos::null);
 
   /// Output nodal internal pressure field at new time step
   void NodalPressureField(Teuchos::RCP<Epetra_Vector> outvec);
 
   /// return the name of the time integration scheme
   std::string Name();
+
+  /// return the adjoint source vector
+  const Teuchos::RCP<Epetra_MultiVector> AdjointSourceVec() { return adjoint_rhs_; }
+
+  /// return the protected parameter list
+  const Teuchos::RCP<Teuchos::ParameterList> Params() { return params_; }
+
+  /// return the protected processor id
+  const int ProcId() { return myrank_; }
 
 private:
 
@@ -197,6 +219,13 @@ public:
   {
     dserror("Explicit time integration requires interface to deal.II package");
   }
+
+  /// output routine: not inherited since it does something completely different than the one for the implicit integration
+  virtual void Output(Teuchos::RCP<Epetra_MultiVector> history = Teuchos::null, Teuchos::RCP<LINALG::MapExtractor> splitter = Teuchos::null)
+  {
+    dserror("Explicit time integration requires interface to deal.II package");
+  }
+
 };
 
 }

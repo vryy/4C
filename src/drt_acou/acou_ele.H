@@ -355,31 +355,18 @@ public:
   Epetra_SerialDenseVector eleinteriorVelnp_;
   Epetra_SerialDenseVector eleinteriorPressnp_;
 
-  /// local values from interior solution vector (gradient, velocity) at n
-  Epetra_SerialDenseVector eleinteriorVeln_;
-  Epetra_SerialDenseVector eleinteriorPressn_;
-
-  /// local values from interior solution vector (gradient, velocity) at n-1 (BDF)
-  Epetra_SerialDenseVector eleinteriorVelnm_;
-  Epetra_SerialDenseVector eleinteriorPressnm_;
-
-  /// local values from interior solution vector (gradient, velocity) at n-2 (BDF)
-  Epetra_SerialDenseVector eleinteriorVelnmm_;
-  Epetra_SerialDenseVector eleinteriorPressnmm_;
-
-  /// local values from interior solution vector (gradient, velocity) at n-3 (BDF)
-  Epetra_SerialDenseVector eleinteriorVelnmmm_;
-  Epetra_SerialDenseVector eleinteriorPressnmmm_;
-
-  /// local values from interior solution vector (gradient, velocity) at DIRK stages
-  std::vector<Epetra_SerialDenseVector> elesp_;
-  std::vector<Epetra_SerialDenseVector> eleyp_;
-  std::vector<Epetra_SerialDenseVector> elefp_;
-  std::vector<Epetra_SerialDenseVector> elesv_;
-  std::vector<Epetra_SerialDenseVector> eleyv_;
-  std::vector<Epetra_SerialDenseVector> elefv_;
-
+  /// local values for acoustical parameter optimization
+  std::vector<Epetra_SerialDenseVector> eleintPressForward_;
+  std::vector<Epetra_SerialDenseVector> eleintVelForward_;
   //@}
+
+  double GetDensityGradient() const { return grad_rho_; }
+  double GetSoSGradient()     const { return grad_c_;   }
+
+  void AddToDensityGradient(double toadd) { grad_rho_ += toadd; return; }
+  void AddToSoSGradient(double toadd)     { grad_c_   += toadd; return; }
+
+  void InitDensityAndSoSGradient() { grad_rho_=0.0; grad_c_=0.0; return; }
 
 protected:
 
@@ -405,6 +392,10 @@ private:
 
   // stores the polynomial type (tensor product or complete polynomial)
   bool completepol_;
+
+  /// local contributions to the gradient in case of acoustical parameter optimization
+  double grad_c_;
+  double grad_rho_;
 
 }; // class Acou
 

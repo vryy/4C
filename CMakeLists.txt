@@ -1597,11 +1597,8 @@ set(OBJS_DRT_PARTICLE
 )
 set(OBJS_DRT_ACOU
   src/drt_acou/acou_dyn.cpp
-  src/drt_acou/acou_impl_bdf.cpp
-  src/drt_acou/acou_impl_dirk.cpp
   src/drt_acou/acou_impl_euler.cpp
   src/drt_acou/acou_impl.cpp
-  src/drt_acou/acou_impl_trap.cpp
   src/drt_acou/acou_timeint.cpp
   src/drt_acou/acou_inv_analysis.cpp
   src/drt_acou/acou_inv_resulttest.cpp
@@ -1620,7 +1617,6 @@ set(OBJS_DRT_ACOU_LIB
   src/drt_acou/acou_ele_intfaces_calc.cpp
   src/drt_acou/acou_sol_ele_calc.cpp
   src/drt_acou/acou_sol_ele.cpp
-  src/drt_acou/acou_utils.cpp
 )
 set(OBJS_LINALG
   src/linalg/linalg_ana.cpp

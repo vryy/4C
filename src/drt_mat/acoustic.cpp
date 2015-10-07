@@ -12,11 +12,10 @@ Maintainer: Svenja Schoeder
 /*----------------------------------------------------------------------*/
 
 #include <vector>
-#include <Epetra_SerialDenseMatrix.h>
-#include <Epetra_SerialDenseVector.h>
 #include "acoustic.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
+#include "../drt_comm/comm_utils.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -24,10 +23,17 @@ Maintainer: Svenja Schoeder
 MAT::PAR::AcousticMat::AcousticMat(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
-: Parameter(matdata),
-  c_(matdata->GetDouble("C")),
-  density_(matdata->GetDouble("DENSITY"))
+: Parameter(matdata)
 {
+  Epetra_Map dummy_map(1,1,0,*(DRT::Problem::Instance()->GetNPGroup()->LocalComm()));
+  for(int i=first ; i<=last; i++)
+  {
+    matparams_.push_back(Teuchos::rcp(new Epetra_Vector(dummy_map,true)));
+  }
+  matparams_.at(density)->PutScalar(matdata->GetDouble("DENSITY"));
+  matparams_.at(c)->PutScalar(matdata->GetDouble("C"));
+
+  return;
 }
 
 
@@ -37,6 +43,12 @@ Teuchos::RCP<MAT::Material> MAT::PAR::AcousticMat::CreateMaterial()
 }
 
 MAT::AcousticMatType MAT::AcousticMatType::instance_;
+
+void MAT::PAR::AcousticMat::OptParams(std::map<std::string,int>* pnames)
+{
+  pnames->insert(std::pair<std::string,int>("DENSITY", density));
+  pnames->insert(std::pair<std::string,int>("C", c));
+}
 
 DRT::ParObject* MAT::AcousticMatType::Create( const std::vector<char> & data )
 {

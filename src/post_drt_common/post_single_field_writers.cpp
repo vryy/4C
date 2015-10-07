@@ -303,6 +303,17 @@ void ScaTraFilter::WriteAllResults(PostField* field)
 
   writer_->WriteResult("rea_coeff","rea_coeff",elementbased,1);
   writer_->WriteResult("diff_coeff","diff_coeff",elementbased,1);
+  writer_->WriteResult("k_1","k_1",elementbased,1);
+  writer_->WriteResult("k_2","k_2",elementbased,1);
+  writer_->WriteResult("k_3","k_3",elementbased,1);
+  writer_->WriteResult("k_4","k_4",elementbased,1);
+  writer_->WriteResult("k_5","k_5",elementbased,1);
+  writer_->WriteResult("k_6","k_6",elementbased,1);
+  writer_->WriteResult("k_7","k_7",elementbased,1);
+  writer_->WriteResult("k_8","k_8",elementbased,1);
+  writer_->WriteResult("k_9","k_9",elementbased,1);
+  writer_->WriteResult("k_10","k_10",elementbased,1);
+  writer_->WriteResult("concentrationsum","concentrationsum",elementbased,1);
 
   // write element results (e.g. element owner)
   WriteElementResults(field);
@@ -420,6 +431,9 @@ void AcouFilter::WriteAllResults(PostField* field)
   writer_->WriteResult("pressure_avg", "pressure_avg", elementbased, 1);
   writer_->WriteResult("error", "error", elementbased, 1);
   writer_->WriteResult("degree", "degree", elementbased, 1);
+  writer_->WriteResult("density", "density", elementbased, 1);
+  writer_->WriteResult("speedofsound", "speedofsound", elementbased, 1);
+
   WriteElementResults(field);
 }
 

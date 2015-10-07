@@ -14,7 +14,10 @@ Maintainer: Svenja Schoeder
 
 #include "acou_ele_boundary_calc.H"
 #include "acou_ele.H"
+#include "acou_ele_action.H"
 #include "../drt_lib/drt_node.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_inpar/inpar_parameterlist_utils.H"
 
 
 /*----------------------------------------------------------------------*
@@ -144,7 +147,7 @@ int DRT::ELEMENTS::AcouBoundaryImpl<distype>::EvaluateNeumann(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::AcouBoundaryImpl<distype>::Absorbing(
+int DRT::ELEMENTS::AcouBoundaryImpl<distype>::Evaluate(
                               DRT::ELEMENTS::AcouBoundary*   ele,
                               Teuchos::ParameterList&        params,
                               DRT::Discretization&           discretization,
@@ -161,85 +164,144 @@ int DRT::ELEMENTS::AcouBoundaryImpl<distype>::Absorbing(
    * unknowns we build K with G as summand. Hence, we can just add the terms
    * resulting from this boundary condition to K (and hence G)
    */
-
-  const int* nodeids = ele->NodeIds();
-
-  DRT::Element* parent = ele->ParentElement();
-  DRT::FaceElement** faces = parent->Faces();
-  bool same = false;
-  for(int i=0; i<parent->NumFace(); ++i)
+  const ACOU::Action action = DRT::INPUT::get<ACOU::Action>(params, "action");
+  switch (action)
   {
-    const int* nodeidsfaces = faces[i]->NodeIds();
-
-    if( faces[i]->NumNode() != ele->NumNode() ) break;
-
-    for(int j=0; j<ele->NumNode(); ++j)
-    {
-      if(nodeidsfaces[j]==nodeids[j])
-        same = true;
-      else
-      {
-        same = false;
-        break;
-      }
-    }
-    if(same == true)
-    {
-      // i is the number we were searching for!!!!
-      params.set<int>("face",i);
-      ele->ParentElement()->Evaluate(params,discretization,lm,elemat1_epetra,elemat2_epetra,elevec1_epetra,elevec2_epetra,elevec3_epetra);
-      //break;
-    }
-  }
-  if(same == false && ( faces[0]->NumNode() != ele->NumNode() ) )
+  case ACOU::calc_abc:
+  case ACOU::calc_pressuremon:
   {
-    // in this case we have a three dimensional problem and the absorbing boundary condition on
-    // a line and not on a surface. hence, we have to evaluate the abc term only at a part of
-    // the face. here, we want to figure, which part!
-    int elenode = ele->NumNode();
-    int face = -1;
-    if(elenode != 2) dserror("absorbing line in 3d not implemented for higher order geometry approximation");
-    // find the first face which contains the line!
+    const int* nodeids = ele->NodeIds();
+
+    DRT::Element* parent = ele->ParentElement();
+    DRT::FaceElement** faces = parent->Faces();
+    bool same = false;
     for(int i=0; i<parent->NumFace(); ++i)
     {
       const int* nodeidsfaces = faces[i]->NodeIds();
 
-      int count = 0;
-      for(int j=0; j<faces[i]->NumNode(); ++j)
+      if( faces[i]->NumNode() != ele->NumNode() ) break;
+
+      for(int j=0; j<ele->NumNode(); ++j)
       {
-        for(int n=0; n<elenode; ++n)
+        if(nodeidsfaces[j]==nodeids[j])
+          same = true;
+        else
         {
-          count += ( nodeidsfaces[j] == nodeids[n] );
+          same = false;
+          break;
         }
       }
-      if(count == elenode)
+      if(same == true)
       {
-        same = true;
-        face = i;
+        // i is the number we were searching for!!!!
         params.set<int>("face",i);
-
-        const int* nodeidsface = faces[face]->NodeIds();
-        Teuchos::RCP<std::vector<int> > indices = Teuchos::rcp(new std::vector<int> (elenode));
-        for(int j=0; j<faces[face]->NumNode(); ++j)
-        {
-          for(int n=0; n<elenode; ++n)
-            if(nodeids[n] == nodeidsface[j]) (*indices)[n] = j;
-        }
-        params.set<Teuchos::RCP<std::vector<int> > >("nodeindices",indices);
         ele->ParentElement()->Evaluate(params,discretization,lm,elemat1_epetra,elemat2_epetra,elevec1_epetra,elevec2_epetra,elevec3_epetra);
+        //break;
       }
     }
-    if (same == false) dserror("no face contains absorbing line");
-    // now, we know which face contains the line, but we have to tell the element, which nodes we
-    // are talking about! therefore, we create a vector of ints and this vector stores the
-    // relevant nodes, for example: the line has two nodes, we store which position these nodes
-    // have in the face element
+    if(same == false && ( faces[0]->NumNode() != ele->NumNode() ) )
+    {
+      // in this case we have a three dimensional problem and the absorbing boundary condition on
+      // a line and not on a surface. hence, we have to evaluate the abc term only at a part of
+      // the face. here, we want to figure, which part!
+      int elenode = ele->NumNode();
+      int face = -1;
+      if(elenode != 2) dserror("absorbing line in 3d not implemented for higher order geometry approximation");
+      // find the first face which contains the line!
+      for(int i=0; i<parent->NumFace(); ++i)
+      {
+        const int* nodeidsfaces = faces[i]->NodeIds();
 
+        int count = 0;
+        for(int j=0; j<faces[i]->NumNode(); ++j)
+        {
+          for(int n=0; n<elenode; ++n)
+          {
+            count += ( nodeidsfaces[j] == nodeids[n] );
+          }
+        }
+        if(count == elenode)
+        {
+          same = true;
+          face = i;
+          params.set<int>("face",i);
+
+          const int* nodeidsface = faces[face]->NodeIds();
+          Teuchos::RCP<std::vector<int> > indices = Teuchos::rcp(new std::vector<int> (elenode));
+          for(int j=0; j<faces[face]->NumNode(); ++j)
+          {
+            for(int n=0; n<elenode; ++n)
+              if(nodeids[n] == nodeidsface[j]) (*indices)[n] = j;
+          }
+          params.set<Teuchos::RCP<std::vector<int> > >("nodeindices",indices);
+          ele->ParentElement()->Evaluate(params,discretization,lm,elemat1_epetra,elemat2_epetra,elevec1_epetra,elevec2_epetra,elevec3_epetra);
+        }
+      }
+      if (same == false) dserror("no face contains absorbing line");
+      // now, we know which face contains the line, but we have to tell the element, which nodes we
+      // are talking about! therefore, we create a vector of ints and this vector stores the
+      // relevant nodes, for example: the line has two nodes, we store which position these nodes
+      // have in the face element
+
+    }
+    //if (same == false)
+    //  dserror("either nodeids are sorted differently or a boundary element does not know to whom it belongs");
+    break;
   }
-  //if (same == false)
-  //  dserror("either nodeids are sorted differently or a boundary element does not know to whom it belongs");
+  case ACOU::bd_integrate:
+  case ACOU::calc_pmon_nodevals:
+  {
+
+    const int* nodeids = ele->NodeIds();
+
+    DRT::Element* parent = ele->ParentElement();
+    DRT::FaceElement** faces = parent->Faces();
+    bool same = false;
+    for(int i=0; i<parent->NumFace(); ++i)
+    {
+      const int* nodeidsfaces = faces[i]->NodeIds();
+
+      if( faces[i]->NumNode() != ele->NumNode() ) break;
+/*
+      for(int j=0; j<ele->NumNode(); ++j)
+      {
+        if(nodeidsfaces[j]==nodeids[j])
+          same = true;
+        else
+        {
+          same = false;
+          break;
+        }
+      }
+*/
+      int count = 0;
+      for(int j=0; j<ele->NumNode(); ++j)
+      {
+        for(int k=0; k<ele->NumNode(); ++k)
+        {
+          if(nodeidsfaces[j]==nodeids[k])
+            count++;
+        }
+      }
+      if(count==ele->NumNode())
+        same = true;
 
 
+      if(same == true)
+      {
+        // i is the number we were searching for!!!!
+        params.set<int>("face",i);
+        ele->ParentElement()->Evaluate(params,discretization,lm,elemat1_epetra,elemat2_epetra,elevec1_epetra,elevec2_epetra,elevec3_epetra);
+        break;
+      }
+    }
+
+    break;
+  }
+  default:
+    dserror("unknown action %d provided to AcouBoundaryImpl",action);
+    break;
+  }
   return 0;
 }
 

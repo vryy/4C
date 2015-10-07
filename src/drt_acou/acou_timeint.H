@@ -92,6 +92,18 @@ public:
   /// Output nodal internal pressure field at new time step
   virtual void NodalPressureField(Teuchos::RCP<Epetra_Vector> outvec) = 0;
 
+  /// output routine: not inherited since it does something completely different than the one for the implicit integration
+  virtual void Output(Teuchos::RCP<Epetra_MultiVector> history = Teuchos::null, Teuchos::RCP<LINALG::MapExtractor> splitter = Teuchos::null) = 0;
+
+  // output of material parameters for inverse analysis
+  void OutputDensityAndSpeedOfSound();
+
+  /// init a monitor file
+  void InitMonitorFile();
+
+  /// fill monitor file
+  void FillMonitorFile(Teuchos::RCP<Epetra_Vector> ip);
+
   /// print out user information
   void PrintInformationToScreen();
 
@@ -114,6 +126,12 @@ public:
   /// returns pointer to the discretization
   Teuchos::RCP<DRT::Discretization> Discretization();
 
+  /// Fill Touch Count Vector (needed for inverse analysis)
+  virtual void FillTouchCountVec(Teuchos::RCP<Epetra_Vector> touchcount);
+
+  /// Output nodal internal psi field at new time step
+  void NodalPsiField(Teuchos::RCP<Epetra_Vector> outvec);
+
   /// return the name of the time integration scheme
   virtual std::string Name() = 0;
 
@@ -128,10 +146,11 @@ protected:
   INPAR::ACOU::DynamicType dyna_;       /// time integration scheme
   INPAR::ACOU::PhysicalType phys_;      /// physical type
 
-  bool    invana_;                         /// flag indicating whether inverse analysis is performed
-  bool    padaptivity_;                    /// p-adaptivity flag
+  bool    invana_;                      /// flag indicating whether inverse analysis is performed
+  bool    padaptivity_;                 /// p-adaptivity flag
   bool    adjoint_;                     /// flag indicating whether this is standard or an adjoint solve
   int     myrank_;                      /// processor id
+  bool    writemonitor_;                /// flag indicating if a monitor file is written
 
   double  time_;                        /// physical time
   int     step_;                        /// time step
@@ -146,10 +165,11 @@ protected:
   int numdim_;                          /// number of spatial dimensions
   double dtp_;                          /// time step size
 
-  //! @name velocity at time n+1, and n
+  //! @name trace at time n+1
   Teuchos::RCP<Epetra_Vector>    velnp_;
-  Teuchos::RCP<Epetra_Vector>    veln_;
 
+  /// difference between measured and simulated pressure values; needed in case of adjoint problem solve
+  Teuchos::RCP<Epetra_MultiVector>    adjoint_rhs_;
 };
 
 } // namespace ACOU

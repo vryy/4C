@@ -59,16 +59,19 @@ namespace ELEMENTS
     virtual void ElementInit(DRT::ELEMENTS::Acou*                 ele,
                              Teuchos::ParameterList&              params);
 
+    /// projection of optical field
+    virtual void ElementAcouOptInit(DRT::ELEMENTS::Acou*                 ele,
+                             Teuchos::ParameterList&              params);
+
     /// map solution values to nodes
     void NodeBasedValues(DRT::ELEMENTS::Acou*                 ele,
                          Epetra_SerialDenseVector&            elevec1,
                          bool                                 padaptivity);
 
     /// map solution values to nodes
-    void NodeBasedPsi(const Teuchos::RCP<MAT::Material>    &mat,
-                      DRT::ELEMENTS::Acou*                 ele,
-                      Epetra_SerialDenseVector&            elevec1,
-                      double                               dt);
+    void NodeBasedPsi(Epetra_SerialDenseVector&            elevec1,
+                      double                               dt,
+                      double                               fac);
 
 
     ///Initialize the shape functions and solver to the given element (degree is runtime parameter)
@@ -133,20 +136,25 @@ namespace ELEMENTS
       void ComputeResidual(Teuchos::ParameterList&       params,
                            Epetra_SerialDenseVector          & eleVec,
                            Epetra_SerialDenseVector          & interiorVeln,
-                           Epetra_SerialDenseVector          & interiorPressn,
-                           std::vector<double>               traceVal);
+                           Epetra_SerialDenseVector          & interiorPressn);
 
       void ComputeSource(Teuchos::ParameterList&           params,
                          Epetra_SerialDenseVector          & interiorSourcen,
                          Epetra_SerialDenseVector          & interiorSourcenp);
 
       /// add terms corresponding to the absorbing boundary condition
-      void ComputeAbsorbingBC(DRT::ELEMENTS::Acou*        ele,
+      void ComputeAbsorbingBC(DRT::Discretization &       discretization,
+                              DRT::ELEMENTS::Acou*        ele,
                               Teuchos::ParameterList&     params,
                               Teuchos::RCP<MAT::Material> & mat,
                               int                         face,
                               Epetra_SerialDenseMatrix    &elemat,
                               int                          indexstart);
+
+      /// add terms corresponding to the absorbing boundary condition
+      void ComputeBoundaryIntegral(DRT::ELEMENTS::Acou*   ele,
+                              Teuchos::ParameterList&     params,
+                              int                         face);
 
       /// add terms corresponding to the absorbing boundary condition
       void ComputeSourcePressureMonitor(DRT::ELEMENTS::Acou*        ele,
@@ -167,21 +175,23 @@ namespace ELEMENTS
                                 int                          indexstart);
 
       /// calls local solver to compute matrices: internal and face
-      void ComputeMatrices(const Teuchos::RCP<MAT::Material> &mat,
+      void ComputeMatrices(DRT::Discretization &             discretization,
+                           const Teuchos::RCP<MAT::Material> &mat,
                            DRT::ELEMENTS::Acou &             ele,
                            double                            dt,
                            INPAR::ACOU::DynamicType          dyna,
                            bool                              adjoint);
 
       /// set up interior matrices
-      void ComputeInteriorMatrices(const Teuchos::RCP<MAT::Material> &mat,
-                                   double                            dt);
+      void ComputeInteriorMatrices(double                            dt,
+                                   double                            rho,
+                                   double                            c);
 
       /// set up face matrices
       void ComputeFaceMatrices(const int                          face,
-                               const Teuchos::RCP<MAT::Material>& mat,
                                double                             dt,
-                               int                                indexstart);
+                               int                                indexstart,
+                               double                             c);
 
       // condense the local matrix (involving cell velocity gradients, velocities and pressure) into
       // the element matrix for the trace and similarly for the residuals
@@ -262,6 +272,11 @@ namespace ELEMENTS
                                                    bool                              errormaps,
                                                    bool                              updateonly);
 
+    void ComputeGradientContribution(DRT::Discretization &             discretization,
+                                     DRT::ELEMENTS::Acou &             ele,
+                                     const Teuchos::RCP<MAT::Material> &mat,
+                                     int                               offset);
+
     /// projects field to new polynomial space
     void ProjectPadapField(DRT::ELEMENTS::Acou &             ele,
                            int                               newdeg);
@@ -279,7 +294,8 @@ namespace ELEMENTS
     void ReadGlobalVectors(DRT::Element     * ele,
                            DRT::Discretization    & discretization,
                            const std::vector<int> & lm,
-                           const bool               padaptivity);
+                           const bool               padaptivity,
+                           const int                acouopt);
 
     /// writes internal field to global vectors
     void FillRestartVectors(DRT::Element           * ele,
@@ -289,10 +305,10 @@ namespace ELEMENTS
     void ElementInitFromRestart(DRT::Element           * ele,
                                 DRT::Discretization    & discretization);
 
-    /// reads from global vectors
-    void VectorHandling(DRT::ELEMENTS::Acou*     ele,
-                        Teuchos::ParameterList&       params,
-                        double& dt);
+    /// writes internal field to global vectors
+    void ElementInitFromAcouOptRestart(DRT::Element    * ele,
+                                DRT::Discretization    & discretization,
+                                const std::vector<int> & lm);
 
     /// calculate error maps with local postprocessing
     double EstimateError(DRT::ELEMENTS::Acou & ele, Epetra_SerialDenseVector & p);
@@ -304,27 +320,10 @@ namespace ELEMENTS
     Teuchos::RCP<LocalSolver> localSolver_;
 
     std::vector<double> traceVal_;          /// extracted values from trace solution vector
-    std::vector<double> traceValm_;         /// extracted values from old trace
 
     /// local values from interior solution vector (gradient, velocity) at n+1
     Epetra_SerialDenseVector interiorVelnp_;
     Epetra_SerialDenseVector interiorPressnp_;
-
-    /// local values from interior solution vector (gradient, velocity) at n
-    Epetra_SerialDenseVector interiorVeln_;
-    Epetra_SerialDenseVector interiorPressn_;
-
-    /// local values from interior solution vector (gradient, velocity) at n-1
-    Epetra_SerialDenseVector interiorVelnm_;
-    Epetra_SerialDenseVector interiorPressnm_;
-
-    /// local values from interior solution vector (gradient, velocity) at n-2
-    Epetra_SerialDenseVector interiorVelnmm_;
-    Epetra_SerialDenseVector interiorPressnmm_;
-
-    /// local values from interior solution vector (gradient, velocity) at n-3
-    Epetra_SerialDenseVector interiorVelnmmm_;
-    Epetra_SerialDenseVector interiorPressnmmm_;
 
     /// time integration scheme
     INPAR::ACOU::DynamicType dyna_;

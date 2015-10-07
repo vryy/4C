@@ -49,9 +49,6 @@ public:
   /// set initial field by given function
   virtual void SetInitialField(int startfuncno);
 
-  /// set initial field by given light distribution
-  virtual void SetInitialPhotoAcousticField(Teuchos::RCP<Epetra_Vector> light, Teuchos::RCP<DRT::Discretization> scatradis, bool meshconform);
-
   /// run a complete simulation
   virtual void Integrate(Teuchos::RCP<Epetra_MultiVector> history = Teuchos::null, Teuchos::RCP<LINALG::MapExtractor> splitter = Teuchos::null);
 
@@ -64,11 +61,8 @@ public:
   /// apply Dirichlet boudnary conditions to system
   void ApplyDirichletToSystem();
 
-  /// update: current solution becomes old solution of next timestep
-  virtual void TimeUpdate();
-
   /// output
-  void Output(Teuchos::RCP<Epetra_MultiVector> history = Teuchos::null, Teuchos::RCP<LINALG::MapExtractor> splitter = Teuchos::null);
+  virtual void Output(Teuchos::RCP<Epetra_MultiVector> history = Teuchos::null, Teuchos::RCP<LINALG::MapExtractor> splitter = Teuchos::null);
 
   /// function to output user information
   void OutputToScreen();
@@ -85,20 +79,11 @@ public:
   /// Output nodal internal pressure field at new time step
   void NodalPressureField(Teuchos::RCP<Epetra_Vector> outvec);
 
-  /// Output nodal internal psi field at new time step
-  void NodalPsiField(Teuchos::RCP<Epetra_Vector> outvec);
-
   /// Fill Touch Count Vector (needed for inverse analysis)
-  void FillTouchCountVec(Teuchos::RCP<Epetra_Vector> touchcount);
+  //virtual void FillTouchCountVec(Teuchos::RCP<Epetra_Vector> touchcount);
 
   /// For result tests
   Teuchos::RCP<Epetra_Vector> Velnp()   { return velnp_; }
-
-  /// init a monitor file
-  void InitMonitorFile();
-
-  /// fill monitor file
-  void FillMonitorFile(Teuchos::RCP<Epetra_Vector> ip);
 
   /// return the name of the time integration scheme
   virtual std::string Name() = 0;
@@ -111,8 +96,9 @@ protected:
   double  dtele_;                       /// element evaluation time
   double  dtsolve_;                     /// solver time
 
-  bool writemonitor_;                   /// flag indicating if a monitor file is written
-  bool writestress_;                   /// flag indicating if a stresses or -if no- the displacment gradient is written to the output
+  bool acouopt_;                        /// is optimization also with respect to acoustical parameters?
+  int outputcount_;                     /// output count in inverse analysis
+  bool writestress_;                    /// flag indicating if a stresses or -if no- the displacment gradient is written to the output
   bool errormaps_;                      /// flag indicating whether error maps are calculated
   double padapttol_;                    /// p-adaptivity error tolerance
   bool calcerr_;                        /// flag for error calculation
@@ -130,11 +116,26 @@ protected:
   /// (standard) residual vector (rhs for the incremental form),
   Teuchos::RCP<Epetra_Vector>    residual_;
 
-  /// needed in case of adjoint problem solve
-  Teuchos::RCP<Epetra_MultiVector>    adjoint_rhs_;
-
   /// element based error vector, only if desired by user
   Teuchos::RCP<Epetra_Vector>    error_;
+
+  /// @name acoustical parameter optimization (forward run in adjoint run)
+  //@{
+
+  /// run a forward simulation during adjoint integration (for storage and optimization)
+  /*!
+    This function has to perform the following steps:
+    - clear the system matrix
+    - assemble forward system matrix
+    - read the corresponding restart from the forward simulation
+    - perform upres_ time steps and store the results
+    - clear the system matrix and assemble adjoint systemmatrix
+    - reset everything such that the standard time integration does not have to do anything
+  */
+  virtual void IntermediateIntegrate();
+
+  //@}
+
 };
 
 } // namespace ACOU

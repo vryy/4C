@@ -76,6 +76,7 @@ void INVANA::MatParManager::InitParams()
     case INPAR::MAT::m_aaaneohooke:
     case INPAR::MAT::m_scatra:
     case INPAR::MAT::m_growth_const:
+    case INPAR::MAT::m_acousticmat:
     {
       std::vector<int>::const_iterator jt;
       for (jt = it->second.begin(); jt != it->second.end(); jt++)
@@ -109,7 +110,7 @@ void INVANA::MatParManager::InitParams()
     }
     default:
       dserror("Material not provided by the Material Manager for Optimization");
-      break;
+    break;
     }
   }
 
@@ -373,7 +374,6 @@ void INVANA::MatParManager::AddEvaluate(double time, Teuchos::RCP<Epetra_MultiVe
       actele->Evaluate(p,*discret_,la,elematrix1,elematrix2,elevector1,elevector2,elevector3);
 
       // dont forget product rule in case of parametrized material parameters!
-
       double val1 = 1.0;
       switch(metaparams_)
       {

@@ -268,11 +268,6 @@ private:
   void ElementInitFromRestart(DRT::Element           * ele,
                               DRT::Discretization    & discretization);
 
-  /// reads from global vectors
-  void VectorHandling(DRT::ELEMENTS::Acou*     ele,
-                          Teuchos::ParameterList&       params,
-                          double dt);
-
   /// calculate error maps with local postprocessing
   double EstimateError(DRT::ELEMENTS::AcouSol & ele, Epetra_SerialDenseVector & L);
 
@@ -299,33 +294,11 @@ private:
   Teuchos::RCP<LocalSolver> localSolver_;
 
   std::vector<double> traceVal_;          /// extracted values from trace solution vector
-  std::vector<double> traceValm_;         /// extracted values from old trace
-
 
   /// local values from interior solution vector (gradient, velocity) at n+1
   Epetra_SerialDenseVector interiorGradVelnp_;
   Epetra_SerialDenseVector interiorVelnp_;
   Epetra_SerialDenseVector interiorPressnp_;
-
-  /// local values from interior solution vector (gradient, velocity) at n
-  Epetra_SerialDenseVector interiorGradVeln_;
-  Epetra_SerialDenseVector interiorVeln_;
-  Epetra_SerialDenseVector interiorPressn_;
-
-  /// local values from interior solution vector (gradient, velocity) at n-1
-  Epetra_SerialDenseVector interiorGradVelnm_;
-  Epetra_SerialDenseVector interiorVelnm_;
-  Epetra_SerialDenseVector interiorPressnm_;
-
-  /// local values from interior solution vector (gradient, velocity) at n-2
-  Epetra_SerialDenseVector interiorGradVelnmm_;
-  Epetra_SerialDenseVector interiorVelnmm_;
-  Epetra_SerialDenseVector interiorPressnmm_;
-
-  /// local values from interior solution vector (gradient, velocity) at n-3
-  Epetra_SerialDenseVector interiorGradVelnmmm_;
-  Epetra_SerialDenseVector interiorVelnmmm_;
-  Epetra_SerialDenseVector interiorPressnmmm_;
 
   /// time integration scheme
   INPAR::ACOU::DynamicType dyna_;

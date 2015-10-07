@@ -47,6 +47,7 @@ namespace ACOU
       typename MatrixFree<dim,Number>::AdditionalData additional_data;
 
       const Epetra_MpiComm* mpi_comm = dynamic_cast<const Epetra_MpiComm*>(&comm);
+
       if (mpi_comm == 0)
         dserror("The Epetra MPI communicator is not derived from Epetra_MpiComm. Fatal error.");
 
@@ -56,6 +57,7 @@ namespace ACOU
       additional_data.mapping_update_flags = (update_gradients | update_JxW_values |
                                               update_quadrature_points | update_normal_vectors |
                                               update_values);
+
       ConstraintMatrix dummy;
       dummy.close();
       MatrixFree<dim,Number> data;
@@ -73,39 +75,83 @@ WaveEquationOperation<dim,fe_degree>::
 WaveEquationOperation(const DoFHandler<dim> &dof_handler,
                       Teuchos::RCP<DRT::DiscretizationHDG> &discret,
                       Teuchos::RCP<Function<dim> > boundary_conditions,
-                      Teuchos::RCP<Function<dim> > source_term)
+                      Teuchos::RCP<Function<dim> > source_term,
+                      Teuchos::RCP<Epetra_MultiVector> source_adjoint)
   :
   data(internal::create_matrix_free<dim,value_type>(dof_handler, fe_degree,
                                                     discret->Comm())),
   time(0.),
   computing_times(3),
+  source_adjoint_meas(source_adjoint),
   dirichlet_boundary_conditions(boundary_conditions),
   source_term(source_term),
   mass_matrix_data(data)
 {
   densities.resize(data.n_macro_cells()+data.n_macro_ghost_cells());
   speeds.resize(data.n_macro_cells()+data.n_macro_ghost_cells());
+
   for (unsigned int i=0; i<data.n_macro_cells()+data.n_macro_ghost_cells(); ++i)
   {
     densities[i] = make_vectorized_array<value_type>(1.);
     speeds[i] = make_vectorized_array<value_type>(1.);
     for (unsigned int v=0; v<data.n_components_filled(i); ++v)
-      {
-        if (data.get_cell_iterator(i,v)->level() != 0)
-          dserror("Refined meshes currently not implemented!");
+    {
+      if (data.get_cell_iterator(i,v)->level() != 0)
+        dserror("Refined meshes currently not implemented!");
 
-        const int element_index = data.get_cell_iterator(i,v)->index();
-        Teuchos::RCP<MAT::Material> mat = discret->lColElement(element_index)->Material();
-        MAT::AcousticMat* actmat = static_cast<MAT::AcousticMat*>(mat.get());
+      const int element_index = data.get_cell_iterator(i,v)->index();
+      Teuchos::RCP<MAT::Material> mat = discret->lColElement(element_index)->Material();
+      MAT::AcousticMat* actmat = static_cast<MAT::AcousticMat*>(mat.get());
 
-        densities[i][v] = actmat->Density();
-        speeds[i][v] = actmat->SpeedofSound();
-      }
+      densities[i][v] = actmat->Density(element_index);
+      speeds[i][v] = actmat->SpeedofSound(element_index);
+    }
   }
 
-  ConditionalOStream pcout(std::cout, discret->Comm().MyPID() == 0);
-  data.print_memory_consumption(pcout);
+  // only in case of the adjoint run in inverse analysis
+  if(source_adjoint_meas!= Teuchos::null)
+  {
+    // create TableIndices with lengths for table rows and columns
+    TableIndices<3> table_indices_ids(data.n_macro_boundary_faces(),VectorizedArray<value_type>::n_array_elements,GeometryInfo<dim>::vertices_per_face);
+    TableIndices<4> table_indices_coords(data.n_macro_boundary_faces(),VectorizedArray<value_type>::n_array_elements,GeometryInfo<dim>::vertices_per_face,dim);
 
+    // resize (or init) the tables
+    table_node_ids.reinit(table_indices_ids);
+    table_node_coords.reinit(table_indices_coords);
+
+    for (unsigned int f=0; f<data.n_macro_boundary_faces(); ++f)
+      for (unsigned int v=0; v<VectorizedArray<value_type>::n_array_elements &&
+           data.faces[data.n_macro_inner_faces()+f].left_cell[v] !=
+               numbers::invalid_unsigned_int; ++v)
+      {
+        const unsigned int cell_index_non_vectorized = data.faces[data.n_macro_inner_faces()+f].left_cell[v];
+        const int element_index = data.get_cell_iterator(cell_index_non_vectorized / VectorizedArray<value_type>::n_array_elements,
+                                                         cell_index_non_vectorized % VectorizedArray<value_type>::n_array_elements)->index();
+        unsigned int count = 0;
+        for(int n=0; n<discret->lColElement(element_index)->NumNode(); ++n)
+        {
+          unsigned int global_node_id = discret->lColElement(element_index)->NodeIds()[n];
+          if(source_adjoint_meas->Map().LID(int(global_node_id))>=0)
+          {
+            table_node_ids(f,v,count) = global_node_id;
+            for(unsigned int d=0; d<dim; ++d)
+              table_node_coords(f,v,count,d) = discret->lColElement(element_index)->Nodes()[n]->X()[d];
+            count++;
+          }
+        }
+      }
+
+    // in case of acouopt, we need the following quantities:
+    densities_grad.resize(data.n_macro_cells()+data.n_macro_ghost_cells());
+    speeds_grad.resize(data.n_macro_cells()+data.n_macro_ghost_cells());
+    for (unsigned int i=0; i<data.n_macro_cells()+data.n_macro_ghost_cells(); ++i)
+    {
+      densities_grad[i] = make_vectorized_array<value_type>(0.);
+      speeds_grad[i] = make_vectorized_array<value_type>(0.);
+    }
+  }
+  //ConditionalOStream pcout(std::cout, discret->Comm().MyPID() == 0);
+  //data.print_memory_consumption(pcout);
 }
 
 
@@ -265,6 +311,7 @@ WaveEquationOperation<dim,fe_degree>::write_deal_cell_values(Teuchos::RCP<DRT::D
     cell->get_dof_indices(local_dof_indices);
     indices.insert(indices.end(), local_dof_indices.begin(), local_dof_indices.end());
   }
+
   IndexSet relevant_dofs(src[0].size());
   relevant_dofs.add_indices(indices.begin(), indices.end());
   relevant_dofs.compress();
@@ -412,8 +459,109 @@ WaveEquationOperation<dim,fe_degree>::write_deal_cell_values(Teuchos::RCP<DRT::D
 }
 
 template<int dim, int fe_degree>
+void
+WaveEquationOperation<dim,fe_degree>::
+compute_gradient_contributions(std::vector<parallel::distributed::Vector<value_type> > &fwnp,
+                               std::vector<parallel::distributed::Vector<value_type> > &fwn,
+                               std::vector<parallel::distributed::Vector<value_type> > &adnp)
+{
+  // we need the derivative of the mass matrix with respect to density and sound speed and have to buuild the scalar product with
+  // corresponding pressure and velocity values
+  FEEvaluation<dim,fe_degree,fe_degree+1,dim,value_type> adjoint_velocity(data);
+  FEEvaluation<dim,fe_degree,fe_degree+1,1,value_type>   adjoint_pressure(data);
+
+  FEEvaluation<dim,fe_degree,fe_degree+1,dim,value_type> forward_velocity(data);
+  FEEvaluation<dim,fe_degree,fe_degree+1,1,value_type>   forward_pressure(data);
+
+  // build difference vector
+  std::vector<parallel::distributed::Vector<value_type> > fw_diff;
+  fw_diff.resize(fwnp.size());
+  for(unsigned int i=0; i<fwnp.size(); ++i)
+  {
+    fw_diff[i] = fwnp[i];
+    fw_diff[i] -= fwn[i];
+  }
+
+  // build adjoint work vector
+  std::vector<parallel::distributed::Vector<value_type> > ad;
+  ad.resize(adnp.size());
+  for(unsigned int i=0; i<adnp.size(); ++i)
+    ad[i] = adnp[i];
+
+  for (unsigned int cell=0; cell<data.n_macro_cells()+data.n_macro_ghost_cells(); ++cell)
+  {
+    // read adjoint solution
+    adjoint_velocity.reinit(cell);
+    adjoint_velocity.read_dof_values(ad, 0);
+    adjoint_velocity.evaluate (true, false, false);
+
+    adjoint_pressure.reinit(cell);
+    adjoint_pressure.read_dof_values(ad, dim);
+    adjoint_pressure.evaluate(true, false, false);
+
+    // sort the correspondent values
+    for (unsigned int q=0; q<adjoint_velocity.n_q_points; ++q)
+    {
+      const Tensor<1,dim,VectorizedArray<value_type> > adjoint_velocity_value = adjoint_velocity.get_value(q);
+      const VectorizedArray<value_type> adjoint_pressure_value = adjoint_pressure.get_value(q);
+      adjoint_pressure.submit_value(adjoint_pressure_value,q);
+      adjoint_velocity.submit_value(adjoint_velocity_value,q);
+    }
+
+    // do integration of adjoint solution
+    adjoint_velocity.integrate (true, false);
+    adjoint_pressure.integrate(true, false);
+
+    // get the dof values of the forward solutions
+    forward_velocity.reinit(cell);
+    forward_velocity.read_dof_values(fw_diff,0);
+    forward_pressure.reinit(cell);
+    forward_pressure.read_dof_values(fw_diff,dim);
+
+    // get the material values
+    const VectorizedArray<value_type> rho_fac = 1./densities[cell]; //-1./densities[cell]/densities[cell]/speeds[cell]/speeds[cell];
+    const VectorizedArray<value_type> c_fac = 2./speeds[cell]; //-2./speeds[cell]/speeds[cell]/speeds[cell]/densities[cell];
+
+    // get the dof values of integrated adjoint solution and multiply with correspondent forward solutions
+    VectorizedArray<value_type> pressure_mass_mat_contrib = VectorizedArray<value_type>();
+    for(unsigned int dof=0; dof<adjoint_pressure.dofs_per_cell; ++dof)
+    {
+      for(unsigned int d=0; d<dim; ++d)
+        densities_grad[cell] += 1./densities[cell] * adjoint_velocity.get_dof_value(dof)[d] * forward_velocity.get_dof_value(dof)[d]; // factor is 1
+      pressure_mass_mat_contrib += adjoint_pressure.get_dof_value(dof) * forward_pressure.get_dof_value(dof);
+    }
+
+    speeds_grad[cell] -= c_fac * pressure_mass_mat_contrib;
+    densities_grad[cell] -= rho_fac * pressure_mass_mat_contrib;
+  }
+
+  return;
+}
+
+template<int dim, int fe_degree>
+void WaveEquationOperation<dim,fe_degree>::
+write_gradient_contributions(Teuchos::RCP<DRT::DiscretizationHDG> &discret, value_type dt) const
+{
+  for (unsigned int i=0; i<data.n_macro_cells()+data.n_macro_ghost_cells(); ++i)
+  {
+    for (unsigned int v=0; v<data.n_components_filled(i); ++v)
+    {
+      if (data.get_cell_iterator(i,v)->level() != 0)
+        dserror("Refined meshes currently not implemented!");
+
+      const int element_index = data.get_cell_iterator(i,v)->index();
+      DRT::ELEMENTS::Acou * acouele = dynamic_cast<DRT::ELEMENTS::Acou*>(discret->lColElement(element_index));
+
+      acouele->AddToDensityGradient((densities_grad[i][v])/dt);
+      acouele->AddToSoSGradient((speeds_grad[i][v])/dt);
+    }
+  }
+  return;
+}
+
+template<int dim, int fe_degree>
 void WaveEquationOperation<dim, fe_degree>::
-local_apply_domain(const MatrixFree<dim,value_type>                               &data,
+local_apply_domain(const MatrixFree<dim,value_type>                                &data,
                    std::vector<parallel::distributed::Vector<value_type> >         &dst,
                    const std::vector<parallel::distributed::Vector<value_type> >   &src,
                    const std::pair<unsigned int,unsigned int>                 &cell_range) const
@@ -454,10 +602,18 @@ local_apply_domain(const MatrixFree<dim,value_type>                             
           q_point[d] = q_points[d][n];
         rhs[n] = source_term->value(q_point);
       }
-      velocity.submit_value(-rho_inv*pressure_gradient,q);
 
       pressure.submit_value(c_sq*rhs,q);
-      pressure.submit_gradient(rho*c_sq*velocity_value,q);
+      if(this->adjoint_eval==false)
+      {
+        velocity.submit_value(-rho_inv*pressure_gradient,q);
+        pressure.submit_gradient(rho*c_sq*velocity_value,q);
+      }
+      else
+      {
+        velocity.submit_value(rho*c_sq*pressure_gradient,q);
+        pressure.submit_gradient(-rho_inv*velocity_value,q);
+      }
     }
 
     velocity.integrate (true, false);
@@ -476,7 +632,7 @@ WaveEquationOperation<dim,fe_degree>::
 local_apply_face (const MatrixFree<dim,value_type> &,
   std::vector<parallel::distributed::Vector<value_type> >        &dst,
   const std::vector<parallel::distributed::Vector<value_type> >  &src,
-  const std::pair<unsigned int,unsigned int>                &face_range) const
+  const std::pair<unsigned int,unsigned int>                     &face_range) const
 {
   // There is some overhead in the methods in FEEvaluation, so it is faster
   // to combine pressure and velocity in the same object and just combine
@@ -493,7 +649,7 @@ local_apply_face (const MatrixFree<dim,value_type> &,
     const VectorizedArray<value_type> rho_inv_plus = 1./rho_plus;
     const VectorizedArray<value_type> c_plus = phi.read_cell_data(speeds);
     const VectorizedArray<value_type> c_sq_plus = c_plus * c_plus;
-    const VectorizedArray<value_type> tau_plus = 1./c_plus;
+    const VectorizedArray<value_type> tau_plus = 1./c_plus/rho_plus;
 
     phi_neighbor.reinit(face);
     phi_neighbor.read_dof_values(src, 0);
@@ -502,7 +658,7 @@ local_apply_face (const MatrixFree<dim,value_type> &,
     const VectorizedArray<value_type> rho_inv_minus = 1./rho_minus;
     const VectorizedArray<value_type> c_minus = phi_neighbor.read_cell_data(speeds);
     const VectorizedArray<value_type> c_sq_minus = c_minus * c_minus;
-    const VectorizedArray<value_type> tau_minus = 1./c_minus;
+    const VectorizedArray<value_type> tau_minus = 1./c_minus/rho_minus;
 
     const VectorizedArray<value_type> tau_inv = 1./(tau_plus + tau_minus);
 
@@ -513,7 +669,7 @@ local_apply_face (const MatrixFree<dim,value_type> &,
       Tensor<1,dim+1,VectorizedArray<value_type> > val_plus = phi.get_value(q);
       Tensor<1,dim+1,VectorizedArray<value_type> > val_minus = phi_neighbor.get_value(q);
       Tensor<1,dim,VectorizedArray<value_type> > normal = phi.get_normal_vector(q);
-      VectorizedArray<value_type> normal_v_plus = val_plus[0]*normal[0];
+      VectorizedArray<value_type> normal_v_plus = val_plus[0] *normal[0];
       VectorizedArray<value_type> normal_v_minus = -val_minus[0]*normal[0];
       for (unsigned int d=1; d<dim; ++d)
       {
@@ -521,17 +677,37 @@ local_apply_face (const MatrixFree<dim,value_type> &,
         normal_v_minus -= val_minus[d] * normal[d];
       }
 
-      VectorizedArray<value_type> lambda = tau_inv*(rho_plus*normal_v_plus+rho_minus*normal_v_minus + tau_plus*val_plus[dim] + tau_minus*val_minus[dim]);
-      VectorizedArray<value_type> pres_diff_plus = (val_plus[dim]-lambda)*rho_inv_plus;
-      VectorizedArray<value_type> pres_diff_minus = (val_minus[dim]-lambda)*rho_inv_minus;
+      VectorizedArray<value_type> lambda;
+      VectorizedArray<value_type> pres_diff_plus;
+      VectorizedArray<value_type> pres_diff_minus;
+      if(this->adjoint_eval==false)
+      {
+        lambda = tau_inv*(normal_v_plus + normal_v_minus + tau_plus*val_plus[dim] + tau_minus*val_minus[dim]);
+        pres_diff_plus  = (val_plus[dim] - lambda)  * rho_inv_plus;
+        pres_diff_minus = (val_minus[dim] - lambda) * rho_inv_minus;
+      }
+      else
+      {
+        lambda = tau_inv*(rho_inv_plus*normal_v_plus + rho_inv_minus*normal_v_minus - tau_plus*rho_plus*c_sq_plus*val_plus[dim] - tau_minus*rho_minus*c_sq_minus*val_minus[dim]);
+        pres_diff_plus  = -rho_plus*c_sq_plus*val_plus[dim] - lambda ;
+        pres_diff_minus = -rho_minus*c_sq_minus*val_minus[dim] - lambda;
+      }
+
       for (unsigned int d=0; d<dim; ++d)
       {
         val_plus[d] = pres_diff_plus*normal[d];
         val_minus[d] = -pres_diff_minus*normal[d];
       }
-      val_plus[dim] = c_sq_plus * (-rho_plus*normal_v_plus + tau_plus * (lambda - val_plus[dim]));
-      val_minus[dim] = c_sq_minus * (-rho_minus*normal_v_minus + tau_minus * (lambda - val_minus[dim]));
-
+      if(this->adjoint_eval==false)
+      {
+        val_plus[dim] = -c_sq_plus * rho_plus * (normal_v_plus + tau_plus * (val_plus[dim] - lambda));
+        val_minus[dim] = -c_sq_minus * rho_minus * (normal_v_minus + tau_minus * (val_minus[dim] - lambda));
+      }
+      else
+      {
+        val_plus[dim] = -(-rho_inv_plus*normal_v_plus + tau_plus * (c_sq_plus*rho_plus*val_plus[dim] + lambda));
+        val_minus[dim] = -(-rho_inv_minus*normal_v_minus + tau_minus * (c_sq_minus*rho_minus*val_minus[dim] + lambda));
+      }
       phi.submit_value(val_plus, q);
       phi_neighbor.submit_value(val_minus, q);
     }
@@ -564,7 +740,7 @@ local_apply_boundary_face (const MatrixFree<dim,value_type> &,
     const VectorizedArray<value_type> rho_inv = 1./rho;
     const VectorizedArray<value_type> c_sq = phi.read_cell_data(speeds)*phi.read_cell_data(speeds);
     const VectorizedArray<value_type> c = phi.read_cell_data(speeds);
-    const VectorizedArray<value_type> tau = 1./phi.read_cell_data(speeds);
+    const VectorizedArray<value_type> tau = 1./phi.read_cell_data(speeds)/phi.read_cell_data(densities);
 
     const types::boundary_id boundary_index = this->data.get_boundary_indicator(face);
     const int int_boundary_id = int(boundary_index);
@@ -581,23 +757,98 @@ local_apply_boundary_face (const MatrixFree<dim,value_type> &,
       VectorizedArray<value_type> lambda;
 
       if(int_boundary_id==0) // absorbing boundary
-        lambda = tau/(tau+1./c)*p_plus + rho/(tau+1./c)*normal_v_plus;
-      else if(int_boundary_id==1) // free boundary
-        lambda = VectorizedArray<value_type>();
-      else if(int_boundary_id>=2) // dbcs
+        if(this->adjoint_eval==false)
+          lambda = tau/(tau+1./c/rho)*p_plus + 1./(tau+1./c/rho)*normal_v_plus;
+        else
+          lambda = 1./(tau+1./c/rho)*rho_inv*normal_v_plus - tau*rho*c_sq/(tau+1./c/rho)*p_plus;
+      else if(int_boundary_id==1) // monitored
       {
-        for (unsigned int v=0; v<VectorizedArray<value_type>::n_array_elements; ++v)
+        lambda = VectorizedArray<value_type>();
+
+        if(source_adjoint_meas!=Teuchos::null && this->adjoint_eval == true) // second query required for intermediate integration
         {
-          Point<dim> point;
-          for (unsigned int d=0; d<dim; ++d)
-            point[d] = q_point[d][v];
-          lambda[v] = dirichlet_boundary_conditions->value(point,int_boundary_id-2);
+          for (unsigned int v=0; v<VectorizedArray<value_type>::n_array_elements && data.faces[face].left_cell[v] != numbers::invalid_unsigned_int; ++v)
+          {
+            Point<dim> point;
+            for (unsigned int d=0; d<dim; ++d)
+              point[d] = q_point[d][v];
+
+            std::vector<value_type> node_values;
+            std::vector<std::vector<value_type> > node_coords;
+            node_coords.resize(GeometryInfo<dim>::vertices_per_face);
+            node_values.resize(GeometryInfo<dim>::vertices_per_face);
+            for(unsigned int n=0; n<GeometryInfo<dim>::vertices_per_face; ++n)
+            {
+              node_coords[n].resize(dim);
+              for(unsigned int d=0; d<dim; ++d)
+                node_coords[n][d] = table_node_coords(face-data.n_macro_inner_faces(),v,n,d);
+              int gid = table_node_ids(face-data.n_macro_inner_faces(),v,n);
+              int lid = source_adjoint_meas->Map().LID(gid);
+              node_values[n] =  source_adjoint_meas->operator ()(this->timestep_source_number)->operator [](lid);
+            }
+            lambda[v] -= 1.0/tau[v] * this->evaluate_source_adjoint(point,node_coords,node_values);
+          }
         }
       }
+      else if(int_boundary_id==2) // monitored and absorbing
+      {
+        if(this->adjoint_eval==false)
+          lambda = tau/(tau+1./c/rho)*p_plus + 1./(tau+1./c/rho)*normal_v_plus;
+        else
+          lambda = 1./(tau+1./c/rho)*rho_inv*normal_v_plus - tau*rho*c_sq/(tau+1./c/rho)*p_plus;
+        if(source_adjoint_meas!=Teuchos::null && this->adjoint_eval == true) // second query required for intermediate integration
+        {
+          for (unsigned int v=0; v<VectorizedArray<value_type>::n_array_elements && data.faces[face].left_cell[v] != numbers::invalid_unsigned_int; ++v)
+          {
+            Point<dim> point;
+            for (unsigned int d=0; d<dim; ++d)
+              point[d] = q_point[d][v];
 
-      for (unsigned int d=0; d<dim; ++d)
-        val_plus[d] = (p_plus-lambda)*rho_inv*normal[d];
-      val_plus[dim] = c_sq*(-rho*normal_v_plus+tau*(lambda - p_plus));
+            std::vector<value_type> node_values;
+            std::vector<std::vector<value_type> > node_coords;
+            node_coords.resize(GeometryInfo<dim>::vertices_per_face);
+            node_values.resize(GeometryInfo<dim>::vertices_per_face);
+            for(unsigned int n=0; n<GeometryInfo<dim>::vertices_per_face; ++n)
+            {
+              node_coords[n].resize(dim);
+              for(unsigned int d=0; d<dim; ++d)
+                node_coords[n][d] = table_node_coords(face-data.n_macro_inner_faces(),v,n,d);
+              int gid = table_node_ids(face-data.n_macro_inner_faces(),v,n);
+              int lid = source_adjoint_meas->Map().LID(gid);
+              node_values[n] =  source_adjoint_meas->operator ()(this->timestep_source_number)->operator [](lid);
+            }
+            lambda[v] -= 1.0/(tau[v]+1./c[v]/rho[v]) * this->evaluate_source_adjoint(point,node_coords,node_values);
+          }
+        }
+      }
+      else if(int_boundary_id==3) // free boundary
+        lambda = VectorizedArray<value_type>();
+      else if(int_boundary_id>=4) // dbcs
+      {
+        if(this->adjoint_eval==false)
+          for (unsigned int v=0; v<VectorizedArray<value_type>::n_array_elements; ++v)
+          {
+            Point<dim> point;
+            for (unsigned int d=0; d<dim; ++d)
+              point[d] = q_point[d][v];
+            lambda[v] = dirichlet_boundary_conditions->value(point,int_boundary_id-4);
+          }
+        else
+          lambda = VectorizedArray<value_type>();
+      }
+
+      if(this->adjoint_eval==false)
+      {
+        for (unsigned int d=0; d<dim; ++d)
+          val_plus[d] = (p_plus - lambda)*normal[d]*rho_inv;
+        val_plus[dim] = -c_sq*rho*(normal_v_plus - tau*(lambda - p_plus));
+      }
+      else
+      {
+        for (unsigned int d=0; d<dim; ++d)
+          val_plus[d] = -(lambda + rho*c_sq*p_plus)*normal[d];
+        val_plus[dim] = -(-rho_inv*normal_v_plus + tau*(lambda + rho*c_sq*p_plus));
+      }
       phi.submit_value(val_plus,q);
     }
     phi.integrate(true,false);
@@ -605,7 +856,38 @@ local_apply_boundary_face (const MatrixFree<dim,value_type> &,
   }
 }
 
+template <int dim, int fe_degree>
+typename WaveEquationOperationBase<dim>::value_type WaveEquationOperation<dim,fe_degree>::evaluate_source_adjoint(const Point<dim> &p, const std::vector<std::vector<value_type> > nodes, std::vector<value_type> values) const
+{
+  value_type result = 0.0;
+  value_type xyz[dim];
+  for(unsigned d=0; d<dim; ++d)
+    xyz[d] = p(d);
 
+  if(dim==2 && nodes.size()==2) // quad4 with line2 face element
+  {
+    value_type node_distance = std::sqrt( (nodes[0][0]-nodes[1][0])*(nodes[0][0]-nodes[1][0])
+                                        + (nodes[0][1]-nodes[1][1])*(nodes[0][1]-nodes[1][1]) );
+    value_type quad_distance = std::sqrt( (xyz[0]-nodes[0][0])*(xyz[0]-nodes[0][0])
+                                        + (xyz[1]-nodes[0][1])*(xyz[1]-nodes[0][1]) );
+
+    result = quad_distance/node_distance * values[1] + (node_distance-quad_distance)/node_distance * values[0];
+    result *= -1.0;
+    result *= 2.0/node_distance;
+
+    if(node_distance<quad_distance)
+    {
+      std::cout<<"punkt "<<xyz[0]<<" "<<xyz[1]<<" nodecoords "<<nodes[0][0]<<" "<<nodes[0][1]<<" "
+                                                                                 <<nodes[1][0]<<" "<<nodes[1][1]<<" "
+                                                                 <<" nodevals  "<<values[0]<<" "<<values[1]<<std::endl;
+      std::cout<<"wrong face!!!"<<std::endl<<std::endl;
+    }
+  }
+  else
+    dserror("not yet implemented");
+
+  return result;
+}
 
 template<int dim, int fe_degree>
 void WaveEquationOperation<dim, fe_degree>::
@@ -656,8 +938,6 @@ apply(const std::vector<parallel::distributed::Vector<value_type> >  &src,
   computing_times[1] += timer.wall_time();
   computing_times[2] += 1.;
 }
-
-
 
 // explicit instantiations
 template class WaveEquationOperation<2,1>;

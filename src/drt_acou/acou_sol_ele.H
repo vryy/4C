@@ -256,23 +256,6 @@ public:
   /// local values from interior solution vector (gradient of velocity) at n+1
   Epetra_SerialDenseVector eleinteriorGradVelnp_;
 
-  /// local values from interior solution vector (gradient of velocity) at n
-  Epetra_SerialDenseVector eleinteriorGradVeln_;
-
-  /// local values from interior solution vector (gradient of velocity) at n-1 (BDF)
-  Epetra_SerialDenseVector eleinteriorGradVelnm_;
-
-  /// local values from interior solution vector (gradient of velocity) at n-2 (BDF)
-  Epetra_SerialDenseVector eleinteriorGradVelnmm_;
-
-  /// local values from interior solution vector (gradient of velocity) at n-3 (BDF)
-  Epetra_SerialDenseVector eleinteriorGradVelnmmm_;
-
-  /// local values from interior solution vector (gradient of velocity) at DIRK stages
-  std::vector<Epetra_SerialDenseVector> elesgv_;
-  std::vector<Epetra_SerialDenseVector> eleygv_;
-  std::vector<Epetra_SerialDenseVector> elefgv_;
-
 protected:
 
   //! discretization type
