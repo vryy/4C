@@ -136,6 +136,56 @@ STR::TimIntImpl::TimIntImpl
   dti_(1.0/ptcdt_)
 {
 
+  // general variable verifications:
+  if (itermax_ < 0)
+    dserror("MAXITER has to be greater than or equal to zero. Fix your input file.");
+
+  if (itermin_ < 0)
+    dserror("MINITER has to be greater than or equal to zero. Fix your input file.");
+
+  if (toldisi_ <= 0)
+    dserror("TOLDISP has to be greater than zero. Fix your input file.");
+
+  if (tolfres_ <= 0)
+    dserror("TOLRES has to be greater than zero. Fix your input file.");
+
+  if (itermin_ > itermax_)
+    dserror("ITERMIN has to be smaller than or equal to ITERMAX. Fix your input file.");
+
+  if (tolpfres_ <= 0)
+    dserror("TOLINCO has to be greater than zero. Fix your input file.");
+
+  if (tolpres_ <= 0)
+    dserror("TOLPRE has to be greater than zero. Fix your input file.");
+
+  if (uzawaparam_ <= 0)
+    dserror("UZAWAPARAM has to be greater than zero. Fix your input file.");
+
+  if (uzawaitermax_ < 0)
+    dserror("UZAWAMAXITER has to be greater than or equal to zero. Fix your input file.");
+
+  if (tolcon_ <= 0)
+    dserror("TOLCONSTR has to be greater than zero. Fix your input file.");
+
+  if (tolwindk_ <= 0)
+    dserror("TOLWINDKESSEL has to be greater than zero. Fix your input file.");
+
+  if (tolwindkdofincr_ <= 0)
+    dserror("TOLWINDKESSELDOFINCR has to be greater than zero. Fix your input file.");
+
+  if ((alpha_ls_ <= 0) or (alpha_ls_ >= 1))
+    dserror("Valid interval for ALPHA_LS is (0,1). Fix your input file.");
+
+  if ((sigma_ls_ <= 0) or (sigma_ls_ >= 1))
+    dserror("Valid interval for SIGMA_LS is (0,1). Fix your input file.");
+
+  if (ls_maxiter_ < 0)
+    dserror("LSMAXITER has to be greater than or equal to zero. Fix your input file.");
+
+  if (ptcdt_ <= 0)
+    dserror("PTCDT has to be greater than zero. Fix your input file.");
+
+
   // verify: if system has constraints implemented with Lagrange multipliers,
   // then Uzawa-type solver is used
   if (conman_->HaveConstraintLagr())

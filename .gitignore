@@ -83,5 +83,8 @@ tags
 #vim
 *.swp
 
+#kate
+*~
+
 # Modules
 modules/contact_module/src/
