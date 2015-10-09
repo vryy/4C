@@ -1,7 +1,7 @@
 /*!------------------------------------------------------------------------------------------------*
 \file dofkey.cpp
 
-\brief 
+\brief
 
 <pre>
 Maintainer: Ursula Rasthofer
@@ -119,7 +119,12 @@ Maintainer: Ursula Rasthofer
 
     // check correct reading
     if (position != data.size())
+    {
+      // this dummy output prevents compilation errors with gcc 5.1 and optimization level -O3
+      std::cout << "Detected problem for type " << type << " gid " << gid_ << " field " << field
+                << " " << enrtype << " " << label << std::endl;
       dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+    }
 
     // create my enriched field
     fieldenr_ = FieldEnr(static_cast<PHYSICS::Field>( field ),Enrichment(static_cast<XFEM::Enrichment::EnrType>( enrtype ),label));
@@ -173,4 +178,3 @@ Maintainer: Ursula Rasthofer
     else
       return false;
   }
-
