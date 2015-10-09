@@ -11,7 +11,7 @@
 #include "str_model_evaluator_generic.H"
 
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils_timintmstep.H"
+#include "../drt_timestepping/timintmstep.H"
 #include "../drt_inpar/inpar_parameterlist_utils.H"
 
 #include "../linalg/linalg_blocksparsematrix.H"
@@ -694,11 +694,11 @@ void STR::TIMINT::BaseDataGlobalState::Setup()
   // setup state vectors
   // --------------------------------------
   // displacements D_{n}
-  dis_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+  dis_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
   // velocities V_{n}
-  vel_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+  vel_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
   // accelerations A_{n}
-  acc_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+  acc_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
 
   // displacements D_{n+1} at t_{n+1}
   disnp_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
@@ -833,7 +833,7 @@ void STR::TIMINT::Base::ReadRestart
 
 //  step_ = step;
 //  stepn_ = step_ + 1;
-//  time_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<double>(0, 0, reader.ReadDouble("time")));
+//  time_ = Teuchos::rcp(new TIMINT::TimIntMStep<double>(0, 0, reader.ReadDouble("time")));
 //  timen_ = (*time_)[0] + (*dt_)[0];
 
 

@@ -108,8 +108,8 @@ PARTICLE::TimInt::TimInt
   }
 
   // time state
-  time_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<double>(0, 0, 0.0));  // HERE SHOULD BE SOMETHING LIKE (particledynparams.get<double>("TIMEINIT"))
-  dt_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<double>(0, 0, particledynparams.get<double>("TIMESTEP")));
+  time_ = Teuchos::rcp(new TIMINT::TimIntMStep<double>(0, 0, 0.0));  // HERE SHOULD BE SOMETHING LIKE (particledynparams.get<double>("TIMEINIT"))
+  dt_ = Teuchos::rcp(new TIMINT::TimIntMStep<double>(0, 0, particledynparams.get<double>("TIMESTEP")));
   step_ = 0;
   timen_ = (*time_)[0] + (*dt_)[0];  // set target time to initial time plus step size
   stepn_ = step_ + 1;
@@ -135,11 +135,11 @@ void PARTICLE::TimInt::Init()
    }
 
    // displacements D_{n}
-   dis_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+   dis_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
    // velocities V_{n}
-   vel_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+   vel_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
    // accelerations A_{n}
-   acc_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+   acc_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
 
    // create empty interface force vector
    fifc_ = LINALG::CreateVector(*DofRowMapView(), true);
@@ -524,7 +524,7 @@ void PARTICLE::TimInt::ReadRestart
 
   step_ = step;
   stepn_ = step_ + 1;
-  time_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<double>(0, 0, reader.ReadDouble("time")));
+  time_ = Teuchos::rcp(new TIMINT::TimIntMStep<double>(0, 0, reader.ReadDouble("time")));
   timen_ = (*time_)[0] + (*dt_)[0];
 
   ReadRestartState();

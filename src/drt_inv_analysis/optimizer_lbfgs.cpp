@@ -18,7 +18,7 @@ Maintainer: Sebastian Kehl
 #include "../drt_io/io_control.H"
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils_timintmstep.H"
+#include "../drt_timestepping/timintmstep.H"
 #include "../drt_comm/comm_utils.H"
 #include "../drt_inpar/inpar_parameterlist_utils.H"
 
@@ -42,8 +42,8 @@ void INVANA::OptimizerLBFGS::Setup()
   ssize_=ssize_*numvecs_;
   actsize_=0;
 
-  sstore_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, &SolLayoutMap(), true));
-  ystore_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, &SolLayoutMap(), true));
+  sstore_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, &SolLayoutMap(), true));
+  ystore_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, &SolLayoutMap(), true));
 
   p_= Teuchos::rcp(new Epetra_MultiVector(SolLayoutMap(), numvecs_, true));
   step_= Teuchos::rcp(new Epetra_MultiVector(SolLayoutMap(), numvecs_, true));

@@ -22,7 +22,7 @@ Maintainer: Matthias Mayr
 #include "../drt_inpar/inpar_fsi.H"
 
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils_timintmstep.H"
+#include "../drt_timestepping/timintmstep.H"
 
 #include "../linalg/linalg_utils.H"
 
@@ -97,7 +97,7 @@ void FSI::Monolithic::InitTimIntAda(const Teuchos::ParameterList& fsidyn)
     if (sum > 1.01) { dserror("Sum of weights for dt: %f > 1.0", sum); }
   }
 
-  dt_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<double>(-avgweights_.size(), 1, 0.0));
+  dt_ = Teuchos::rcp(new TIMINT::TimIntMStep<double>(-avgweights_.size(), 1, 0.0));
   dt_->SetStep(1, Dt());
 
   //----------------------------------------------------------------------------

@@ -37,7 +37,6 @@ namespace DRT
   namespace UTILS
   {
     class LocsysManager;
-    template<typename > class TimIntMStep;
   }
 }
 
@@ -54,6 +53,11 @@ namespace LINALG
   class MapExtractor;
   class MultiMapExtractor;
   class Preconditioner;
+}
+
+namespace TIMINT
+{
+  template <typename> class TimIntMStep;
 }
 
 /*----------------------------------------------------------------------------*/

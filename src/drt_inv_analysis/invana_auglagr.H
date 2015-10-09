@@ -20,13 +20,11 @@
 #include "../drt_inpar/inpar_structure.H"
 
 // forward declarations
-namespace DRT
+namespace TIMINT
 {
-namespace UTILS
-{
-template<typename > class TimIntMStep;
+  template <typename> class TimIntMStep;
 }
-}
+
 
 namespace INVANA
 {
@@ -105,7 +103,7 @@ private:
   Teuchos::RCP<Epetra_MultiVector> dis_;
 
   //! element data stored for time steps
-  Teuchos::RCP<DRT::UTILS::TimIntMStep<std::vector<char> > > elementdata_;
+  Teuchos::RCP<TIMINT::TimIntMStep<std::vector<char> > > elementdata_;
 
   //! dual variables (lagrange multiplier)
   Teuchos::RCP<Epetra_MultiVector> disdual_;

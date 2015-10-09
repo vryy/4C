@@ -9,7 +9,7 @@
 #define STR_TI_TIMINT_H_
 
 #include "../drt_adapter/ad_str_structure_new.H"
-#include "../drt_lib/drt_utils_timintmstep.H"
+#include "../drt_timestepping/timintmstep.H"
 
 #include "../solver_nonlin_nox/nox_nln_statustest_factory.H"
 
@@ -862,14 +862,14 @@ namespace TIMINT {
       };
 
       //! Return time \f$t_{n}\f$ of last converged step
-      Teuchos::RCP<const DRT::UTILS::TimIntMStep<double> > GetTimeN() const
+      Teuchos::RCP<const TIMINT::TimIntMStep<double> > GetTimeN() const
       {
         CheckInitSetup();
         return timen_;
       };
 
       //! Return time step size \f$\Delta t\f$
-      Teuchos::RCP<const DRT::UTILS::TimIntMStep<double> > GetDeltaTime() const
+      Teuchos::RCP<const TIMINT::TimIntMStep<double> > GetDeltaTime() const
       {
         CheckInitSetup();
         return dt_;
@@ -986,14 +986,14 @@ namespace TIMINT {
       };
 
       //! Return time \f$t_{n}\f$ of last converged step
-      Teuchos::RCP<DRT::UTILS::TimIntMStep<double> >& GetMutableTimeN()
+      Teuchos::RCP<TIMINT::TimIntMStep<double> >& GetMutableTimeN()
       {
         CheckInitSetup();
         return timen_;
       };
 
       //! Return time step size \f$\Delta t\f$
-      Teuchos::RCP<DRT::UTILS::TimIntMStep<double> >& GetMutableDeltaTime()
+      Teuchos::RCP<TIMINT::TimIntMStep<double> >& GetMutableDeltaTime()
       {
         CheckInitSetup();
         return dt_;
@@ -1135,10 +1135,10 @@ namespace TIMINT {
       double timenp_;
 
       //! time \f$t_{n}\f$ of last converged step
-      Teuchos::RCP<DRT::UTILS::TimIntMStep<double> > timen_;
+      Teuchos::RCP<TIMINT::TimIntMStep<double> > timen_;
 
       //! time step size \f$\Delta t\f$
-      Teuchos::RCP<DRT::UTILS::TimIntMStep<double> > dt_;
+      Teuchos::RCP<TIMINT::TimIntMStep<double> > dt_;
 
       //! time step index \f$n\f$
       int stepn_;
@@ -1151,13 +1151,13 @@ namespace TIMINT {
       //@{
 
       //! global displacements \f${D}_{n}, D_{n-1}, ...\f$
-      Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > dis_;
+      Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > dis_;
 
       //! global velocities \f${V}_{n}, V_{n-1}, ...\f$
-      Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > vel_;
+      Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > vel_;
 
       //! global accelerations \f${A}_{n}, A_{n-1}, ...\f$
-      Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > acc_;
+      Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > acc_;
 
       //! global displacements \f${D}_{n+1}\f$ at \f$t_{n+1}\f$
       Teuchos::RCP<Epetra_Vector> disnp_;

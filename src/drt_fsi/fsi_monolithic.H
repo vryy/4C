@@ -37,14 +37,6 @@ namespace ADAPTER
   class StructureFSITimIntAda;
 }
 
-namespace DRT
-{
-  namespace UTILS
-  {
-    template <typename> class TimIntMStep;
-  }
-}
-
 namespace FSI
 {
   class FSIResultTest;
@@ -70,6 +62,11 @@ namespace NOX
     class AdaptiveNewtonNormF;
     class Group;
   }
+}
+
+namespace TIMINT
+{
+  template <typename> class TimIntMStep;
 }
 
 namespace FSI
@@ -812,7 +809,7 @@ namespace FSI
      *  The algorithm's marching time step size is still the one from
      *  ADAPTER::AlgorithmBase.
      */
-    Teuchos::RCP<DRT::UTILS::TimIntMStep<double> > dt_;
+    Teuchos::RCP<TIMINT::TimIntMStep<double> > dt_;
 
     int adaptstep_; ///< current number of adaption steps, i.e. repetitions of this time step
 

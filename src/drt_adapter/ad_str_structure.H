@@ -35,7 +35,6 @@ namespace DRT
   {
     class LocsysManager;
     class PlastSsnManager;
-    template <typename> class TimIntMStep;
   }
 }
 
@@ -68,6 +67,11 @@ namespace UTILS
 namespace STATMECH
 {
   class StatMechManager;
+}
+
+namespace TIMINT
+{
+  template <typename> class TimIntMStep;
 }
 
 namespace ADAPTER {

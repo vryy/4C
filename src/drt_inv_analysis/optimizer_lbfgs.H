@@ -14,12 +14,9 @@ Maintainer: Sebastian Kehl
 
 #include "optimizer_base.H"
 
-namespace DRT
+namespace TIMINT
 {
-  namespace UTILS
-  {
-    template <typename> class TimIntMStep;
-  }
+  template <typename> class TimIntMStep;
 }
 
 namespace INVANA
@@ -95,10 +92,10 @@ private:
   int actsize_;
 
   //! storage of solution delta
-  Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > sstore_;
+  Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > sstore_;
 
   //! storage of gradient delta
-  Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > ystore_;
+  Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > ystore_;
 
   //! current direction of steepest descent maybe properly scaled by hessian approximation
   Teuchos::RCP<Epetra_MultiVector> p_;

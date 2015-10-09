@@ -19,7 +19,7 @@ Maintainer: Georg Hammerl
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "../drt_adapter/adapter_particle.H"
-#include "../drt_lib/drt_utils_timintmstep.H"
+#include "../drt_timestepping/timintmstep.H"
 #include "../drt_inpar/inpar_cavitation.H"
 
 #include <Teuchos_RCP.hpp>
@@ -367,9 +367,9 @@ namespace PARTICLE
 
     //! @name General control parameters
     //@{
-    Teuchos::RCP<DRT::UTILS::TimIntMStep<double> > time_;  //!< time \f$t_{n}\f$ of last converged step
+    Teuchos::RCP<TIMINT::TimIntMStep<double> > time_;  //!< time \f$t_{n}\f$ of last converged step
     double timen_;  //!< target time \f$t_{n+1}\f$
-    Teuchos::RCP<DRT::UTILS::TimIntMStep<double> > dt_;  //!< time step size \f$\Delta t\f$
+    Teuchos::RCP<TIMINT::TimIntMStep<double> > dt_;  //!< time step size \f$\Delta t\f$
     double timemax_;  //!< final time \f$t_\text{fin}\f$
     int stepmax_;  //!< final step \f$N\f$
     int step_;  //!< time step index \f$n\f$
@@ -380,11 +380,11 @@ namespace PARTICLE
     //@{
 
     //! global displacements \f${D}_{n}, D_{n-1}, ...\f$
-    Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > dis_;
+    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > dis_;
     //! global velocities \f${V}_{n}, V_{n-1}, ...\f$
-    Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > vel_;
+    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > vel_;
     //! global accelerations \f${A}_{n}, A_{n-1}, ...\f$
-    Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > acc_;
+    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > acc_;
     //! global displacements \f${D}_{n+1}\f$ at \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> disn_;
     //! global velocities \f${V}_{n+1}\f$ at \f$t_{n+1}\f$
@@ -402,9 +402,9 @@ namespace PARTICLE
     //! moment of inertia of each particle at \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> inertia_;
     //! global angular-velocities \f${V}_{n}, V_{n-1}, ...\f$
-    Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > ang_vel_;
+    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > ang_vel_;
     //! global angular-accelerations \f${A}_{n}, A_{n-1}, ...\f$
-    Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > ang_acc_;
+    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > ang_acc_;
     //! global angular-velocities \f${V}_{n+1}\f$ at \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> ang_veln_;
     //! global angular-acceleration \f${A}_{n+1}\f$ at \f$t_{n+1}\f$

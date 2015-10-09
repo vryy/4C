@@ -28,7 +28,7 @@ Maintainer: Caroline Danowski
 
 #include "../drt_io/io_control.H"
 
-#include "../drt_lib/drt_utils_timintmstep.H"
+#include "../drt_timestepping/timintmstep.H"
 
 
 /*----------------------------------------------------------------------*
@@ -108,9 +108,9 @@ THR::TimInt::TimInt(
   }
 
   // time state
-  time_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<double>(0, 0, 0.0));
+  time_ = Teuchos::rcp(new TIMINT::TimIntMStep<double>(0, 0, 0.0));
   // HERE SHOULD BE SOMETHING LIKE (tdynparams.get<double>("TIMEINIT"))
-  dt_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<double>(0, 0, tdynparams.get<double>("TIMESTEP")));
+  dt_ = Teuchos::rcp(new TIMINT::TimIntMStep<double>(0, 0, tdynparams.get<double>("TIMESTEP")));
   step_ = 0;
   timen_ = (*time_)[0] + (*dt_)[0];  // set target time to initial time plus step size
   stepn_ = step_ + 1;
@@ -131,9 +131,9 @@ THR::TimInt::TimInt(
   }
 
   // temperatures T_{n}
-  temp_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, dofrowmap_, true));
+  temp_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, dofrowmap_, true));
   // temperature rates R_{n}
-  rate_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, dofrowmap_, true));
+  rate_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, dofrowmap_, true));
 
   // temperatures T_{n+1} at t_{n+1}
   tempn_ = LINALG::CreateVector(*dofrowmap_, true);
@@ -346,7 +346,7 @@ void THR::TimInt::ReadRestart(const int step)
 
   step_ = step;
   stepn_ = step_ + 1;
-  time_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<double>(0, 0, reader.ReadDouble("time")));
+  time_ = Teuchos::rcp(new TIMINT::TimIntMStep<double>(0, 0, reader.ReadDouble("time")));
   timen_ = (*time_)[0] + (*dt_)[0];
 
   ReadRestartState();

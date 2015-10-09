@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file drt_utils_timintmstep.H
+\file timintmstep.H
 
 \brief Multi-step functionalities for time integration
 
@@ -12,8 +12,8 @@ Maintainer: Matthias Mayr
 */
 
 /*----------------------------------------------------------------------*/
-#ifndef UTILS_TIMINTMSTEP_H
-#define UTILS_TIMINTMSTEP_H
+#ifndef TIMINTMSTEP_H
+#define TIMINTMSTEP_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -22,13 +22,11 @@ Maintainer: Matthias Mayr
 #include <Epetra_Vector.h>
 #include <Epetra_Map.h>
 
-#include "drt_dserror.H"
+#include "../drt_lib/drt_dserror.H"
 
 /*----------------------------------------------------------------------*/
-/* belongs to DRT::UTILS namespace */
-namespace DRT
-{
-namespace UTILS
+/* A collection of time integration utilities */
+namespace TIMINT
 {
   /*====================================================================*/
   /*!
@@ -424,8 +422,7 @@ namespace UTILS
     //@}
 
   };  // class TimIntMStep<Epetra_Vector>
-} // namespace UTILS
-} // namespace DRT
+} // namespace TIMINT
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef UTILS_TIMINTMSTEP_H
+#endif  // #ifndef TIMINTMSTEP_H

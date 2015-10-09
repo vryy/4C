@@ -22,7 +22,7 @@ Maintainer: Svenja Schoeder
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_discret_hdg.H"
-#include "../drt_lib/drt_utils_timintmstep.H"
+#include "../drt_timestepping/timintmstep.H"
 #include "../drt_scatra_ele/scatra_ele_action.H"
 #include "../drt_scatra/scatra_timint_stat.H"
 #include "../drt_io/io.H"
@@ -225,12 +225,12 @@ ACOU::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> scatradis,
     ssize_ *= scatra_matman_->NumVectors();
     actsize_ = 0;
 
-    scatra_sstore_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(-ssize_+1, 0, scatra_matman_->ParamLayoutMap().get(), true));
-    scatra_ystore_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(-ssize_+1, 0, scatra_matman_->ParamLayoutMap().get(), true));
+    scatra_sstore_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(-ssize_+1, 0, scatra_matman_->ParamLayoutMap().get(), true));
+    scatra_ystore_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(-ssize_+1, 0, scatra_matman_->ParamLayoutMap().get(), true));
     if(acouopt_)
     {
-      acou_sstore_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(-ssize_+1, 0, acou_matman_->ParamLayoutMap().get(), true));
-      acou_ystore_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(-ssize_+1, 0, acou_matman_->ParamLayoutMap().get(), true));
+      acou_sstore_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(-ssize_+1, 0, acou_matman_->ParamLayoutMap().get(), true));
+      acou_ystore_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(-ssize_+1, 0, acou_matman_->ParamLayoutMap().get(), true));
     }
   }
 

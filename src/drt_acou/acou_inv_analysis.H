@@ -56,13 +56,9 @@ namespace INVANA
   class RegularizationBase;
 }
 
-
-namespace DRT
+namespace TIMINT
 {
-  namespace UTILS
-  {
-    template <typename> class TimIntMStep;
-  }
+  template <typename> class TimIntMStep;
 }
 
 namespace ACOU
@@ -240,12 +236,12 @@ private:
   int actsize_;
 
   //! storage of solution delta
-  Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > scatra_sstore_;
-  Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > acou_sstore_;
+  Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > scatra_sstore_;
+  Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > acou_sstore_;
 
   //! storage of gradient delta
-  Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > scatra_ystore_;
-  Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > acou_ystore_;
+  Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > scatra_ystore_;
+  Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > acou_ystore_;
 
   //! node based vector holding absorption coefficient
   Teuchos::RCP<Epetra_Vector> node_mu_a_;

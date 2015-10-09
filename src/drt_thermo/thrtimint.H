@@ -27,7 +27,7 @@ Maintainer: Burkhard Bornemann
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils_timintmstep.H"
+#include "../drt_timestepping/timintmstep.H"
 
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
@@ -576,9 +576,9 @@ namespace THR
     //! @name General control parameters
     //@{
 
-    Teuchos::RCP<DRT::UTILS::TimIntMStep<double> > time_;  //!< time \f$t_{n}\f$ of last converged step
+    Teuchos::RCP<TIMINT::TimIntMStep<double> > time_;  //!< time \f$t_{n}\f$ of last converged step
     double timen_;  //!< target time \f$t_{n+1}\f$
-    Teuchos::RCP<DRT::UTILS::TimIntMStep<double> > dt_;  //!< time step size \f$\Delta t\f$
+    Teuchos::RCP<TIMINT::TimIntMStep<double> > dt_;  //!< time step size \f$\Delta t\f$
     double timemax_;  //!< final time \f$t_\text{fin}\f$
     int stepmax_;  //!< final step \f$N\f$
     int step_;  //!< time step index \f$n\f$
@@ -601,9 +601,9 @@ namespace THR
     //@{
 
     //! global temperatures \f${T}_{n}, T_{n-1}, ...\f$
-    Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > temp_;
+    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > temp_;
     //! global temperature rates \f${R}_{n}, R_{n-1}, ...\f$
-    Teuchos::RCP<DRT::UTILS::TimIntMStep<Epetra_Vector> > rate_;
+    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > rate_;
     Teuchos::RCP<Epetra_Vector> tempn_;  //!< global temperatures
                                          //!< \f${T}_{n+1}\f$
                                          //!< at \f$t_{n+1}\f$

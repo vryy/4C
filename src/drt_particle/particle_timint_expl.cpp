@@ -19,7 +19,7 @@ Maintainer: Georg Hammerl
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils_timintmstep.H"
+#include "../drt_timestepping/timintmstep.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -59,8 +59,8 @@ void PARTICLE::TimIntExpl::Init()
     // allocate vectors
     inertia_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
 
-    ang_vel_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
-    ang_acc_ = Teuchos::rcp(new DRT::UTILS::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+    ang_vel_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+    ang_acc_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
 
     ang_veln_ = LINALG::CreateVector(*DofRowMapView(),true);
     ang_accn_ = LINALG::CreateVector(*DofRowMapView(),true);
