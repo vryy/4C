@@ -33,6 +33,13 @@ Maintainer: Jonas Biehler
 
 #include <fstream>
 
+// disable boost long double functions because they do not work together with
+// valgrind. valgrind emulates long double as double and therefore some
+// routines inside boost do not converge to the expected precision, crashing
+// the program at the global initialization stage (before main()). we never
+// use <long double> distributions anyway, so no harm is caused by disabling
+// these methods.
+#define BOOST_MATH_NO_LONG_DOUBLE_MATH_FUNCTIONS
 
 #include <boost/math/distributions/beta.hpp> // for beta_distribution.
 #include <boost/math/distributions/normal.hpp> // for normal_distribution.
