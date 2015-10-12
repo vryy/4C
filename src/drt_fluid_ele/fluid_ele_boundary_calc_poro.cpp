@@ -728,15 +728,31 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     // check unitiy of  [xji] o [xjm]
     LINALG::Matrix<my::nsd_,my::nsd_> eye;
     eye.Multiply(xji,xjm);
-    if(abs(eye(0,0)-1.0) > 1e-11 or abs(eye(1,1)-1.0) > 1e-11 or abs(eye(2,2)-1.0) > 1e-11)
+    if(my::nsd_==3)
     {
-      std::cout<<eye<<std::endl;
-      dserror("matrix times its inverse is not equal identity ... that sucks !!!");
+      if(abs(eye(0,0)-1.0) > 1e-11 or abs(eye(1,1)-1.0) > 1e-11 or abs(eye(2,2)-1.0) > 1e-11)
+      {
+        std::cout<<eye<<std::endl;
+        dserror("matrix times its inverse is not equal identity ... that sucks !!!");
+      }
+      if(abs(eye(0,1)) > 1e-11 or abs(eye(0,2)) > 1e-11 or abs(eye(1,0)) > 1e-11 or abs(eye(1,2)) > 1e-11  or abs(eye(2,0)) > 1e-11  or abs(eye(2,1)) > 1e-11 )
+      {
+        std::cout<<eye<<std::endl;
+        dserror("matrix times its inverse is not equal identity ... that sucks !!!");
+      }
     }
-    if(abs(eye(0,1)) > 1e-11 or abs(eye(0,2)) > 1e-11 or abs(eye(1,0)) > 1e-11 or abs(eye(1,2)) > 1e-11  or abs(eye(2,0)) > 1e-11  or abs(eye(2,1)) > 1e-11 )
+    else if(my::nsd_==2)
     {
-      std::cout<<eye<<std::endl;
-      dserror("matrix times its inverse is not equal identity ... that sucks !!!");
+      if(abs(eye(0,0)-1.0) > 1e-11 or abs(eye(1,1)-1.0) > 1e-11)
+      {
+        std::cout<<eye<<std::endl;
+        dserror("matrix times its inverse is not equal identity ... that sucks !!!");
+      }
+      if(abs(eye(0,1)) > 1e-11 or abs(eye(1,0)) > 1e-11)
+      {
+        std::cout<<eye<<std::endl;
+        dserror("matrix times its inverse is not equal identity ... that sucks !!!");
+      }
     }
 #endif
 
