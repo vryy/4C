@@ -45,6 +45,8 @@ Maintainer: Matthias Mayr
 NLNSOL::FAS::NlnLevel::NlnLevel()
 : isinit_(false),
   issetup_(false),
+  levelid_(0),
+  numlevels_(0),
   A_(Teuchos::null),
   rop_(Teuchos::null),
   pop_(Teuchos::null),
