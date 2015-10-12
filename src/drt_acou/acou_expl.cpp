@@ -222,7 +222,8 @@ void AcouExplicitTimeInt::Output(Teuchos::RCP<Epetra_MultiVector> history, Teuch
     if (step_==0)
     {
       output_->WriteElementData(true);
-      OutputDensityAndSpeedOfSound();
+      if(invana_)
+        OutputDensityAndSpeedOfSound();
     }
   }
 
