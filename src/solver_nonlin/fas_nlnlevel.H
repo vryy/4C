@@ -88,7 +88,8 @@ namespace FAS
         Teuchos::RCP<const Epetra_CrsMatrix> P, ///< prolongation operator
         const Epetra_Comm& comm, ///< communicator
         const Teuchos::ParameterList& params, ///< parameter list
-        Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem ///< reference to nonlinear problem evaluator
+        Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem, ///< reference to nonlinear problem evaluator
+        Teuchos::RCP<const Epetra_MultiVector> nullspace = Teuchos::null ///< set of null space vectors
         );
 
     //! Setup
@@ -184,6 +185,9 @@ namespace FAS
     //! Get prolongation operator
     virtual Teuchos::RCP<const Epetra_CrsMatrix> GetPOp() const;
 
+    //! Get null space
+    virtual Teuchos::RCP<const Epetra_MultiVector> GetNullSpace() const;
+
     //! Get presmoother
     virtual Teuchos::RCP<NLNSOL::NlnOperatorBase> GetPreSmoother() const;
 
@@ -206,6 +210,9 @@ namespace FAS
 
     //! Prolongation operator set?
     virtual const bool HavePOp() const { return (not pop_.is_null()); }
+
+    //! Null space set?
+    virtual const bool HaveNullSpace() const { return (not nullspace_.is_null()); }
 
     //@}
 
@@ -296,6 +303,9 @@ namespace FAS
     //! Set prolongation operator
     virtual void SetPOp(Teuchos::RCP<const Epetra_CrsMatrix> P);
 
+    //! Set null space
+    virtual void SetNullSpace(Teuchos::RCP<const Epetra_MultiVector> nullspace);
+
     //! Init() has been called?
     bool isinit_;
 
@@ -365,6 +375,21 @@ namespace FAS
 
     //! Coarse level solver
     Teuchos::RCP<NLNSOL::NlnOperatorBase> coarsesolver_;
+
+    //@}
+
+    //! @name Debug tools
+    //@{
+
+    /*! \brief Set of null space vectors
+     *
+     *  The null space is needed for setup of the hierarchy only. However, for
+     *  debugging purposes we store it in the level. This can go away at some
+     *  point in future.
+     *
+     *  \author mayr.mt \date 10/2015
+     */
+    Teuchos::RCP<Epetra_MultiVector> nullspace_;
 
     //@}
   }; // class NlnLevel

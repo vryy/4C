@@ -58,7 +58,8 @@ NLNSOL::FAS::NlnLevel::NlnLevel()
   params_(Teuchos::null),
   presmoother_(Teuchos::null),
   postsmoother_(Teuchos::null),
-  coarsesolver_(Teuchos::null)
+  coarsesolver_(Teuchos::null),
+  nullspace_(Teuchos::null)
 {
   return;
 }
@@ -71,7 +72,8 @@ void NLNSOL::FAS::NlnLevel::Init(const int levelid,
     Teuchos::RCP<const Epetra_CrsMatrix> P,
     const Epetra_Comm& comm,
     const Teuchos::ParameterList& params,
-    Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem
+    Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem,
+    Teuchos::RCP<const Epetra_MultiVector> nullspace
     )
 {
   // store input arguments into member variables
@@ -80,6 +82,7 @@ void NLNSOL::FAS::NlnLevel::Init(const int levelid,
   SetMatrix(A);
   SetROp(R);
   SetPOp(P);
+  SetNullSpace(nullspace);
 
   comm_ = Teuchos::rcp(&comm, false);
   params_ = Teuchos::rcp(&params, false);
@@ -162,6 +165,18 @@ void NLNSOL::FAS::NlnLevel::SetPOp(Teuchos::RCP<const Epetra_CrsMatrix> myP)
 {
   if (not myP.is_null())
     pop_ = Teuchos::rcp(new Epetra_CrsMatrix(*myP));
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*/
+void NLNSOL::FAS::NlnLevel::SetNullSpace(
+    Teuchos::RCP<const Epetra_MultiVector> nullspace)
+{
+  if (not nullspace.is_null())
+    nullspace_ = Teuchos::rcp(new Epetra_MultiVector(*nullspace));
+  else
+    nullspace_ = Teuchos::null;
 
   return;
 }
@@ -473,6 +488,15 @@ Teuchos::RCP<const Epetra_CrsMatrix> NLNSOL::FAS::NlnLevel::GetPOp() const
   dsassert(HavePOp(), "Prolongation operator has not been set, yet.");
 
   return pop_;
+}
+
+/*----------------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_MultiVector>
+NLNSOL::FAS::NlnLevel::GetNullSpace() const
+{
+  dsassert(HaveNullSpace(), "Null space has not been set, yet.");
+
+  return nullspace_;
 }
 
 /*----------------------------------------------------------------------------*/
