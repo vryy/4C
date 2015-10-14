@@ -53,7 +53,7 @@ namespace Solver{
     Factory();
 
     //! Destructor.
-    ~Factory() {};
+    virtual ~Factory() {};
 
     Teuchos::RCP<NOX::Solver::Generic>
     BuildSolver(const Teuchos::RCP<NOX::Abstract::Group>& grp,

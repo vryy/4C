@@ -139,8 +139,12 @@ namespace StatusTest {
     Teuchos::RCP<NOX::StatusTest::Generic> BuildNormFTest(
             Teuchos::ParameterList& p, const NOX::Utils& u) const;
 
-    //! Build the NormIncr() status test
-    Teuchos::RCP<NOX::StatusTest::Generic> BuildNormIncrTest(
+    /*! \brief New implementation of the \c BuildNormUpdateTest function.
+     *
+     *  The underlying Status Test is capable of a variety of quantities at the same
+     *  time.
+     */
+    Teuchos::RCP<NOX::StatusTest::Generic> BuildNormUpdateTest(
         Teuchos::ParameterList& p, const NOX::Utils& u) const;
 
     /*! \brief New implementation of the \c BuildNormWRMSTest function.

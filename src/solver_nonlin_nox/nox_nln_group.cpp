@@ -245,11 +245,11 @@ Teuchos::RCP<std::vector<double> > NOX::NLN::Group::GetSolutionUpdateRMS(
 Teuchos::RCP<std::vector<double> > NOX::NLN::Group::GetSolutionUpdateNorms(
     const std::vector<NOX::Abstract::Vector::NormType>& type,
     const std::vector<StatusTest::QuantityType>& chQ,
-    Teuchos::RCP<const std::vector<StatusTest::NormIncr::ScaleType> > scale) const
+    Teuchos::RCP<const std::vector<StatusTest::NormUpdate::ScaleType> > scale) const
 {
   if (scale.is_null())
-    scale = Teuchos::rcp(new std::vector<StatusTest::NormIncr::ScaleType>(chQ.size(),
-        StatusTest::NormIncr::Unscaled));
+    scale = Teuchos::rcp(new std::vector<StatusTest::NormUpdate::ScaleType>(chQ.size(),
+        StatusTest::NormUpdate::Unscaled));
 
   Teuchos::RCP<std::vector<double> > norms = Teuchos::rcp(new std::vector<double>(0));
 
@@ -257,7 +257,7 @@ Teuchos::RCP<std::vector<double> > NOX::NLN::Group::GetSolutionUpdateNorms(
   for (std::size_t i=0;i<chQ.size();++i)
   {
     rval = GetNlnReqInterfacePtr()->GetPrimarySolutionUpdateNorms(chQ[i],type[i],
-        (*scale)[i]==StatusTest::NormIncr::Scaled);
+        (*scale)[i]==StatusTest::NormUpdate::Scaled);
     if (rval>=0.0)
     {
       norms->push_back(rval);
@@ -281,11 +281,11 @@ Teuchos::RCP<std::vector<double> > NOX::NLN::Group::GetSolutionUpdateNorms(
 Teuchos::RCP<std::vector<double> > NOX::NLN::Group::GetPreviousSolutionNorms(
     const std::vector<NOX::Abstract::Vector::NormType>& type,
     const std::vector<StatusTest::QuantityType>& chQ,
-    Teuchos::RCP<const std::vector<StatusTest::NormIncr::ScaleType> > scale) const
+    Teuchos::RCP<const std::vector<StatusTest::NormUpdate::ScaleType> > scale) const
 {
   if (scale.is_null())
-    scale = Teuchos::rcp(new std::vector<StatusTest::NormIncr::ScaleType>(chQ.size(),
-        StatusTest::NormIncr::Unscaled));
+    scale = Teuchos::rcp(new std::vector<StatusTest::NormUpdate::ScaleType>(chQ.size(),
+        StatusTest::NormUpdate::Unscaled));
 
   Teuchos::RCP<std::vector<double> > norms = Teuchos::rcp(new std::vector<double>(0));
 
@@ -293,7 +293,7 @@ Teuchos::RCP<std::vector<double> > NOX::NLN::Group::GetPreviousSolutionNorms(
   for (std::size_t i=0;i<chQ.size();++i)
   {
     rval = GetNlnReqInterfacePtr()->GetPreviousPrimarySolutionNorms(chQ[i],type[i],
-        (*scale)[i]==StatusTest::NormIncr::Scaled);
+        (*scale)[i]==StatusTest::NormUpdate::Scaled);
     if (rval>=0.0)
     {
       norms->push_back(rval);
@@ -302,7 +302,7 @@ Teuchos::RCP<std::vector<double> > NOX::NLN::Group::GetPreviousSolutionNorms(
     {
       std::ostringstream msg;
       msg << "The desired quantity"
-          " for the \"NormIncr\" Status Test could not be found! (enum="
+          " for the \"NormUpdate\" Status Test could not be found! (enum="
           << chQ[i] << " | " << NOX::NLN::StatusTest::QuantityType2String(chQ[i])
           << ")" << std::endl;
       throwError("GetPreviousSolutionNorms",msg.str());
@@ -325,9 +325,9 @@ void NOX::NLN::Group::throwError(
     const std::string& functionName,
     const std::string& errorMsg) const
 {
-  if (utils.isPrintType(NOX::Utils::Error)) {
-    utils.out() << "ERROR - NOX::NLN::Group::" << functionName
-     << " - " << errorMsg << std::endl;
-  }
-  throw "NOX Error";
+  std::ostringstream msg;
+  msg << "ERROR - NOX::NLN::Group::" << functionName
+      << " - " << errorMsg << std::endl;
+
+  dserror(msg.str());
 }

@@ -1,12 +1,12 @@
 /*
- * nox_nln_statustest_normincr.H
+ * nox_nln_statustest_normupdate.H
  *
  *  Created on: Sep 17, 2015
  *      Author: hiermeier
  */
 
-#ifndef SRC_SOLVER_NONLIN_NOX_NOX_NLN_STATUSTEST_NORMINCR_H_
-#define SRC_SOLVER_NONLIN_NOX_NOX_NLN_STATUSTEST_NORMINCR_H_
+#ifndef SRC_SOLVER_NONLIN_NOX_NOX_NLN_STATUSTEST_NORMUPDATE_H_
+#define SRC_SOLVER_NONLIN_NOX_NOX_NLN_STATUSTEST_NORMUPDATE_H_
 
 
 #include <NOX_StatusTest_Generic.H>
@@ -28,9 +28,10 @@ namespace StatusTest {
 
    Nevertheless, I want to give you the possibility to check the absolute and relative norm
    of the solution increment corresponding to the different quantities as well. This class is
-   leant on the NOX::NLN::StatusTest::NormF test and has an equivalent structure.
-   It is capable to handle a std::vector of increment norms. In this way it's easily possible
-   to check the norms of different quantities at once in a very general way.
+   leant on the NOX::NLN::StatusTest::NormF and NOX::NLN::StatusTest::NormWRMS test and has
+   an equivalent structure. It is capable to handle a std::vector of increment norms. In this
+   way it's easily possible to check the norms of different quantities at once in a very
+   general way.
 
    One difference to the NormF case is the calculation of the reference value. We use
    the following equation:
@@ -38,7 +39,7 @@ namespace StatusTest {
              $\frac{\| x_i^{(k+1)} - x_i^{(k)} \|}{\|x_i^{(k)}\|} \leq RTOL$
 
    */
-  class NormIncr : public NOX::StatusTest::Generic
+  class NormUpdate : public NOX::StatusTest::Generic
   {
   public:
     //! Type that determines whether to scale the norm by the problem size.
@@ -59,36 +60,18 @@ namespace StatusTest {
 
   public:
     //! Constructor.
-    NormIncr(
+    NormUpdate(
         const std::vector<NOX::NLN::StatusTest::QuantityType>& checkList,
-        const std::vector<NormIncr::ToleranceType>& toltype,
+        const std::vector<NormUpdate::ToleranceType>& toltype,
         const std::vector<double>& tolerance,
         const std::vector<NOX::Abstract::Vector::NormType>& ntype,
-        const std::vector<NormIncr::ScaleType>& stype,
+        const std::vector<NormUpdate::ScaleType>& stype,
         const double& alpha,
         const double& beta,
         const NOX::Utils* u = NULL);
 
     //! Destructor.
-    virtual ~NormIncr() {};
-
-    /* @name Accessor Functions
-       Used to query current values of variables in the status test.
-    */
-    //@{
-    //! Returns the value of the Increment-norm of the corresponding quantity computed in the last call to checkStatus.
-    virtual double GetNormIncr(const NOX::NLN::StatusTest::QuantityType& qType) const;
-
-    //! Returns the true tolerance of the corresponding quantity.
-    virtual double GetTrueTolerance(const NOX::NLN::StatusTest::QuantityType& qType) const;
-
-    //! Returns the specified tolerance set in the constructor for the corresponding quantity.
-    virtual double GetSpecifiedTolerance(const NOX::NLN::StatusTest::QuantityType& qType) const;
-
-    //! Returns the initial tolerance of the corresponding quantity.
-    virtual double GetInitialTolerance(const NOX::NLN::StatusTest::QuantityType& qType) const;
-
-    //@}
+    virtual ~NormUpdate() {};
 
     //! derived
     virtual NOX::StatusTest::StatusType checkStatus(
@@ -140,10 +123,10 @@ namespace StatusTest {
     std::vector<NOX::Abstract::Vector::NormType> normType_;
 
     //! Scaling to use
-    std::vector<NormIncr::ScaleType> scaleType_;
+    std::vector<NormUpdate::ScaleType> scaleType_;
 
     //! Tolerance type (i.e., relative or absolute)
-    std::vector<NormIncr::ToleranceType> toleranceType_;
+    std::vector<NormUpdate::ToleranceType> toleranceType_;
 
     //! Tolerance required for convergence.
     std::vector<double> specifiedTolerance_;
@@ -155,7 +138,7 @@ namespace StatusTest {
     std::vector<double> trueTolerance_;
 
     //! Norm of F to be compared to trueTolerance
-    Teuchos::RCP<const std::vector<double> > normIncr_;
+    Teuchos::RCP<const std::vector<double> > normUpdate_;
 
     //! Ostream used to print errors
     NOX::Utils utils_;
@@ -167,9 +150,9 @@ namespace StatusTest {
     bool printCriteria3Info_;
 
 
-  }; // class NormIncr
+  }; // class NormUpdate
 } // namespace StatusTest
 } // namespace NLN
 } // namespace NOX
 
-#endif /* SRC_SOLVER_NONLIN_NOX_NOX_NLN_STATUSTEST_NORMINCR_H_ */
+#endif /* SRC_SOLVER_NONLIN_NOX_NOX_NLN_STATUSTEST_NORMUPDATE_H_ */

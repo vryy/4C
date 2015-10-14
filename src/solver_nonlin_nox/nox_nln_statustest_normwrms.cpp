@@ -191,15 +191,14 @@ std::ostream& NOX::NLN::StatusTest::NormWRMS::print(
     stream << status_[i];
     stream << QuantityType2String(checkList_[i]) << "-";
     stream << "WRMS-Norm = " << NOX::Utils::sciformat((*normWRMS_)[i], 3) << " < " << tol_[i];
-    stream << std::endl;
   }
   if (printCriteria2Info_) {
-    stream << indent_string;
+    stream << std::endl << indent_string;
     stream << std::setw(13) << " ";
     stream << "(Min Step Size:  " << NOX::Utils::sciformat(computedStepSize_, 3) << " >= " << alpha_ << ")";
   }
   if (printCriteria3Info_) {
-    stream << indent_string;
+    stream << std::endl << indent_string;
     stream << std::setw(13) << " ";
     stream << "(Max Lin Solv Tol:  " << NOX::Utils::sciformat(achievedTol_, 3) << " < " << beta_ << ")";
   }

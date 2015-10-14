@@ -33,7 +33,7 @@ NOX::NLN::StatusTest::NormF::NormF(
     status_(std::vector<NOX::StatusTest::StatusType>(nChecks_,gStatus_)),
     normType_(ntype),
     scaleType_(stype),
-    toleranceType_(std::vector<NOX::StatusTest::NormF::ToleranceType>(nChecks_,NOX::StatusTest::NormF::Absolute)),
+    toleranceType_(toltype),
     specifiedTolerance_(tolerance),
     initialTolerance_(Teuchos::null),
     trueTolerance_(tolerance),

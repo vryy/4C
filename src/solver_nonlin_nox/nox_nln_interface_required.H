@@ -61,8 +61,8 @@ namespace Interface {
     virtual double CalcRefNormForce() = 0;
 
     //! update the internal variables of the required interface (e.g. displacements)
-    virtual void SetPrimarySolution(const NOX::Abstract::Vector& xOld,
-        const NOX::Abstract::Vector& d,
+    virtual void SetPrimarySolution(const NOX::Epetra::Vector& xOld,
+        const NOX::Epetra::Vector& d,
         const double& step) { /*will be deleted in a up-coming commit*/ };
   };
 } // namespace Interface

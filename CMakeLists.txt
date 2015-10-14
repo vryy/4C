@@ -1726,7 +1726,7 @@ set(OBJS_SOLVER_NONLIN_NOX
   src/solver_nonlin_nox/nox_nln_statustest_factory.cpp
   src/solver_nonlin_nox/nox_nln_statustest_combo.cpp
   src/solver_nonlin_nox/nox_nln_statustest_normf.cpp
-  src/solver_nonlin_nox/nox_nln_statustest_normincr.cpp
+  src/solver_nonlin_nox/nox_nln_statustest_normupdate.cpp
   src/solver_nonlin_nox/nox_nln_statustest_normwrms.cpp
   src/solver_nonlin_nox/nox_nln_statustest_activeset.cpp
   src/solver_nonlin_nox/nox_nln_inner_statustest_factory.cpp
@@ -1934,6 +1934,11 @@ set(OBJS_DRT_CONTACT_AUG
   src/drt_contact_aug/contact_augmented_interface.cpp
   src/drt_contact_aug/contact_augmented_interface_tools.cpp
   src/drt_contact_aug/contact_augmented_integrator.cpp
+#  src/drt_contact_aug/nln_contact_strategy.cpp
+#  src/drt_contact_aug/nln_contact_strategy_nox.cpp
+#  src/drt_contact_aug/nln_steepest_ascent_strategy.cpp
+#  src/drt_contact_aug/nln_augmented_strategy.cpp
+#  src/drt_contact_aug/nln_lagrange_strategy.cpp
 )
 set(OBJS_DRT_CRACK_LIB
   src/drt_crack/InsertCohesiveElements.cpp

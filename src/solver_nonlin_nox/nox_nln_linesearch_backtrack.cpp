@@ -93,8 +93,6 @@ bool NOX::NLN::LineSearch::Backtrack::compute
   const NOX::Abstract::Group& oldGrp = s.getPreviousSolutionGroup();
   // update the search direction pointer
   searchDirectionPtr_ = Teuchos::rcpFromRef(dir);
-  // the input variable step holds a reference to the member variable step_
-  step = step_;
   // initialize the inner status test
   // ----------------------------------------------------------------------
   // BE CAREFUL HERE:
@@ -172,7 +170,9 @@ bool NOX::NLN::LineSearch::Backtrack::compute
   else if (status_ == NOX::NLN::INNER::StatusTest::status_no_descent_direction)
     throwError("compute()","The given search direction is no descent direction!");
 
-//  throwError("compute()","You shall not pass.");
+  // Update the step variable of LineSearchBased class.
+  step = step_;
+
   return (status_ == NOX::NLN::INNER::StatusTest::status_converged ? true : false);
 }
 

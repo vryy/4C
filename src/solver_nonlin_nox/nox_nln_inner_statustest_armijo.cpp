@@ -172,7 +172,7 @@ std::ostream& NOX::NLN::INNER::StatusTest::Armijo::Print(std::ostream& stream, i
   stream << "(step = " << NOX::Utils::sciformat(step_,3);
   stream << ", slope = " << NOX::Utils::sciformat(slope_,3);
   if (not isMonotone_)
-    stream << ", mHS = " << maxHistSize_;
+    stream << ", history = " << maxHistSize_;
   stream << ")\n";
 
   return stream;
