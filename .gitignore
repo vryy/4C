@@ -16,8 +16,10 @@ DartConfiguration.tcl
 baci-release
 baci-debug
 post_drt_ensight
+!cmake/scripts/post_drt_ensight
 post_drt_generic
 post_drt_gid
+!cmake/scripts/post_drt_gid
 post_drt_monitor
 post_drt_s8convert
 pre_curve
