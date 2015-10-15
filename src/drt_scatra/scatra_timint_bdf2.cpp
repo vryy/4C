@@ -374,21 +374,3 @@ void SCATRA::TimIntBDF2::ReadRestart(int step)
 
   return;
 }
-
-
-/*----------------------------------------------------------------------*
- | initialization procedure before the first time step         gjb 07/08|
- *----------------------------------------------------------------------*/
-void SCATRA::TimIntBDF2::PrepareFirstTimeStep()
-{
-  ApplyDirichletBC(time_, phin_,Teuchos::null);
-  ApplyDirichletBC(time_, phinp_,Teuchos::null);
-  ApplyNeumannBC(neumann_loads_);
-
-  // compute initial field for electric potential (ELCH)
-  CalcInitialPotentialField();
-
-  return;
-}
-
-

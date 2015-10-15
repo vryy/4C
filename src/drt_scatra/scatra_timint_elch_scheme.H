@@ -54,6 +54,9 @@ public:
 
 protected:
 
+  //! calculate initial electric potential field
+  void CalcInitialPotentialField();
+
   //! write additional data required for restart
   void OutputRestart();
 
@@ -96,6 +99,9 @@ public:
   void ReadRestart(int step);
 
 protected:
+
+  //! calculate initial electric potential field
+  void CalcInitialPotentialField();
 
   //! write additional data required for restart
   void OutputRestart();
@@ -140,6 +146,9 @@ public:
 
 protected:
 
+  //! calculate initial electric potential field
+  void CalcInitialPotentialField();
+
   //! write additional data required for restart
   void OutputRestart();
 
@@ -179,6 +188,9 @@ public:
   void ReadRestart(int step);
 
 protected:
+
+  //! calculate initial electric potential field
+  void CalcInitialPotentialField();
 
   //! write additional data required for restart
   void OutputRestart();

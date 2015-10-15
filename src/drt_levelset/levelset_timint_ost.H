@@ -57,8 +57,8 @@ protected:
   /// Print information about current time step to screen (reimplementation for OST)
   void PrintTimeStepInfo();
 
-  /// Initialization procedure before the first time step
-  void PrepareFirstTimeStep();
+  /// calculate consistent initial scalar time derivatives in compliance with initial scalar field
+  void CalcInitialTimeDerivative();
 
   /// additional predictor not intended for level-set methods
   void ExplicitPredictor(){return;};

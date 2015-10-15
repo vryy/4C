@@ -149,7 +149,10 @@ void SCATRA::CaptureZeroLevelSet(
         break;
       }
       default:
+      {
         dserror("distype unknown for level set cut algorithm");
+        break;
+      }
       }
 
       //--------------------------------------------

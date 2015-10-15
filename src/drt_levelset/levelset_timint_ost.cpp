@@ -93,13 +93,14 @@ void SCATRA::LevelSetTimIntOneStepTheta::PrintTimeStepInfo()
 }
 
 
-/*----------------------------------------------------------------------*
- | Initialization procedure before the first time step  rasthofer 12/13 |
- -----------------------------------------------------------------------*/
-void SCATRA::LevelSetTimIntOneStepTheta::PrepareFirstTimeStep()
+/*-----------------------------------------------------------------------------------------------------------*
+ | calculate consistent initial scalar time derivatives in compliance with initial scalar field   fang 09/15 |
+ *-----------------------------------------------------------------------------------------------------------*/
+void SCATRA::LevelSetTimIntOneStepTheta::CalcInitialTimeDerivative()
 {
   if (not switchreinit_)
-    TimIntOneStepTheta::PrepareFirstTimeStep();
+    TimIntOneStepTheta::CalcInitialTimeDerivative();
+
   else
   {
     // set element parameters with stabilization and artificial diffusivity deactivated
@@ -109,7 +110,7 @@ void SCATRA::LevelSetTimIntOneStepTheta::PrepareFirstTimeStep()
     //       as already set in PrepareTimeLoopReinit()
 
     // compute time derivative of phi at pseudo-time tau=0
-    CalcInitialTimeDerivative();
+    ScaTraTimIntImpl::CalcInitialTimeDerivative();
 
     // eventually, undo changes in general parameter list
     SetReinitializationElementParameters();
@@ -197,7 +198,7 @@ void SCATRA::LevelSetTimIntOneStepTheta::UpdateState()
     SetElementTimeParameter(true);
 
     // compute time derivative at time n (and n+1)
-    CalcInitialTimeDerivative();
+    ScaTraTimIntImpl::CalcInitialTimeDerivative();
 
     // reset element time-integration parameters
     SetElementTimeParameter();

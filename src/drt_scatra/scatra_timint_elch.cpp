@@ -93,13 +93,6 @@ void SCATRA::ScaTraTimIntElch::Init()
   if ((numscal_ > 1) && (solvtype_!=INPAR::SCATRA::solvertype_nonlinear))
     dserror("Solver type has to be set to >>nonlinear<< for ion transport.");
 
-  // check validity of material and element formulation
-  Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action",SCATRA::check_scatra_element_parameter);
-  if(isale_)
-    discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
-  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-
   frt_ = INPAR::ELCH::faraday_const/(INPAR::ELCH::gas_const * elchparams_->get<double>("TEMPERATURE"));
 
   if (myrank_==0)
@@ -220,6 +213,21 @@ void SCATRA::ScaTraTimIntElch::NonlinearSolve()
 
 
 /*----------------------------------------------------------------------*
+ | assemble global system of equations                       fang 09/15 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElch::AssembleMatAndRHS()
+{
+  // check for zero or negative concentration values
+  CheckConcentrationValues(phinp_);
+
+  // call base class routine
+  ScaTraTimIntImpl::AssembleMatAndRHS();
+
+  return;
+} // SCATRA::ScaTraTimIntElch::AssembleMatAndRHS
+
+
+/*----------------------------------------------------------------------*
  | Calculate problem specific norm                            ehrl 01/14|
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::CalcProblemSpecificNorm(
@@ -252,6 +260,32 @@ void SCATRA::ScaTraTimIntElch::CalcProblemSpecificNorm(
 
   return;
 }
+
+
+/*------------------------------------------------------------------------------*
+ | initialization procedure prior to evaluation of first time step   fang 09/15 |
+ *------------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElch::PrepareFirstTimeStep()
+{
+  // check validity of element and material parameters
+  Teuchos::ParameterList eleparams;
+  eleparams.set<int>("action",SCATRA::check_scatra_element_parameter);
+  if(isale_)
+    discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+
+  // calculate initial electric potential field
+  if(DRT::INPUT::IntegralValue<int>(*elchparams_,"INITPOTCALC"))
+    CalcInitialPotentialField();
+
+  // call base class routine
+  ScaTraTimIntImpl::PrepareFirstTimeStep();
+
+  // initialize Nernst boundary conditions
+  InitNernstBC();
+
+  return;
+} // SCATRA::ScaTraTimIntElch::PrepareFirstTimeStep
 
 
 /*----------------------------------------------------------------------*
@@ -1333,181 +1367,178 @@ void SCATRA::ScaTraTimIntElch::AdaptNumScal()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
 {
-  if(DRT::INPUT::IntegralValue<int>(*elchparams_,"INITPOTCALC"))
+  // time measurement
+  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + calc initial potential field");
+
+  // safety checks
+  dsassert(step_ == 0, "Step counter is not zero!");
+  switch(equpot_)
   {
-    // time measurement
-    TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + calc initial potential field");
+  case INPAR::ELCH::equpot_divi:
+  case INPAR::ELCH::equpot_enc_pde:
+  case INPAR::ELCH::equpot_enc_pde_elim:
+  {
+    // These stationary closing equations for the electric potential are OK, since they explicitly contain the
+    // electric potential as variable and therefore can be solved for the initial electric potential.
+    break;
+  }
+  default:
+  {
+    // If the stationary closing equation for the electric potential does not explicitly contain the electric
+    // potential as variable, we obtain a zero block associated with the electric potential on the main diagonal
+    // of the global system matrix used below. This zero block makes the entire global system matrix singular!
+    // In this case, it would be possible to temporarily change the type of closing equation used, e.g., from
+    // INPAR::ELCH::equpot_enc to INPAR::ELCH::equpot_enc_pde. This should work, but has not been implemented yet.
+    dserror("Initial potential field cannot be computed for chosen closing equation for electric potential!");
+    break;
+  }
+  }
 
-    // safety checks
-    dsassert(step_ == 0, "Step counter is not zero!");
-    switch(equpot_)
+  // screen output
+  if (myrank_ == 0)
+  {
+    std::cout << "SCATRA: calculating initial field for electric potential" << std::endl;
+    PrintTimeStepInfo();
+    std::cout << "+------------+-------------------+--------------+--------------+" << std::endl;
+    std::cout << "|- step/max -|- tol      [norm] -|-- pot-res ---|-- pot-inc ---|" << std::endl;
+  }
+
+  // prepare Newton-Raphson iteration
+  iternum_ = 0;
+  const int    itermax = params_->sublist("NONLINEAR").get<int>("ITEMAX");
+  const double itertol = params_->sublist("NONLINEAR").get<double>("CONVTOL");
+  const double restol  = params_->sublist("NONLINEAR").get<double>("ABSTOLRES");
+
+  // start Newton-Raphson iteration
+  while(true)
+  {
+    // update iteration counter
+    iternum_++;
+
+    // check for non-positive concentration values
+    CheckConcentrationValues(phinp_);
+
+    // assemble global system matrix and residual vector
+    AssembleMatAndRHS();
+
+    // project residual, such that only part orthogonal to nullspace is considered
+    if (projector_!=Teuchos::null)
+      projector_->ApplyPT(*residual_);
+
+    // apply actual Dirichlet boundary conditions to system of equations
+    LINALG::ApplyDirichlettoSystem(sysmat_,increment_,residual_,zeros_,*(dbcmaps_->CondMap()));
+
+    // apply artificial Dirichlet boundary conditions to system of equations
+    // to hold initial concentrations constant when solving for initial potential field
+    LINALG::ApplyDirichlettoSystem(sysmat_,increment_,residual_,zeros_,*(splitter_->OtherMap()));
+
+    // calculate vector norms
+    // vector norms associated with concentration are not used, but still computed to avoid code redundancy
+    double dummy(0.);
+    double incpotnorm_L2(0.);
+    double potnorm_L2(0.);
+    double potresnorm(0.);
+    CalcProblemSpecificNorm(dummy,dummy,dummy,incpotnorm_L2,potnorm_L2,potresnorm,dummy);
+
+    // care for the case that nothing really happens in the potential field
+    if (potnorm_L2 < 1e-5)
+      potnorm_L2 = 1.0;
+
+    // first iteration step: solution increment is not yet available
+    if (iternum_ == 1)
     {
-    case INPAR::ELCH::equpot_divi:
-    case INPAR::ELCH::equpot_enc_pde:
-    case INPAR::ELCH::equpot_enc_pde_elim:
-    {
-      // These stationary closing equations for the electric potential are OK, since they explicitly contain the
-      // electric potential as variable and therefore can be solved for the initial electric potential.
-      break;
-    }
-    default:
-    {
-      // If the stationary closing equation for the electric potential does not explicitly contain the electric
-      // potential as variable, we obtain a zero block associated with the electric potential on the main diagonal
-      // of the global system matrix used below. This zero block makes the entire global system matrix singular!
-      // In this case, it would be possible to temporarily change the type of closing equation used, e.g., from
-      // INPAR::ELCH::equpot_enc to INPAR::ELCH::equpot_enc_pde. This should work, but has not been implemented yet.
-      dserror("Initial potential field cannot be computed for chosen closing equation for electric potential!");
-      break;
-    }
-    }
+      // print first line of convergence table to screen
+      if (myrank_ == 0)
+        std::cout << "|  " << std::setw(3) << iternum_ << "/" << std::setw(3) << itermax << "   | "
+                  << std::setw(10) << std::setprecision(3) << std::scientific << itertol << "[L_2 ]  | "
+                  << std::setw(10) << std::setprecision(3) << std::scientific << potresnorm << "   |      --      | (      --     ,te="
+                  << std::setw(10) << std::setprecision(3) << std::scientific << dtele_ << ")" << std::endl;
 
-    // screen output
-    if (myrank_ == 0)
-    {
-      std::cout << "SCATRA: calculating initial field for electric potential" << std::endl;
-      PrintTimeStepInfo();
-      std::cout << "+------------+-------------------+--------------+--------------+" << std::endl;
-      std::cout << "|- step/max -|- tol      [norm] -|-- pot-res ---|-- pot-inc ---|" << std::endl;
-    }
-
-    // prepare Newton-Raphson iteration
-    iternum_ = 0;
-    const int    itermax = params_->sublist("NONLINEAR").get<int>("ITEMAX");
-    const double itertol = params_->sublist("NONLINEAR").get<double>("CONVTOL");
-    const double restol  = params_->sublist("NONLINEAR").get<double>("ABSTOLRES");
-
-    // start Newton-Raphson iteration
-    while(true)
-    {
-      // update iteration counter
-      iternum_++;
-
-      // check for non-positive concentration values
-      CheckConcentrationValues(phinp_);
-
-      // assemble global system matrix and residual vector
-      AssembleMatAndRHS();
-
-      // project residual, such that only part orthogonal to nullspace is considered
-      if (projector_!=Teuchos::null)
-        projector_->ApplyPT(*residual_);
-
-      // apply actual Dirichlet boundary conditions to system of equations
-      LINALG::ApplyDirichlettoSystem(sysmat_,increment_,residual_,zeros_,*(dbcmaps_->CondMap()));
-
-      // apply artificial Dirichlet boundary conditions to system of equations
-      // to hold initial concentrations constant when solving for initial potential field
-      LINALG::ApplyDirichlettoSystem(sysmat_,increment_,residual_,zeros_,*(splitter_->OtherMap()));
-
-      // calculate vector norms
-      // vector norms associated with concentration are not used, but still computed to avoid code redundancy
-      double dummy(0.);
-      double incpotnorm_L2(0.);
-      double potnorm_L2(0.);
-      double potresnorm(0.);
-      CalcProblemSpecificNorm(dummy,dummy,dummy,incpotnorm_L2,potnorm_L2,potresnorm,dummy);
-
-      // care for the case that nothing really happens in the potential field
-      if (potnorm_L2 < 1e-5)
-        potnorm_L2 = 1.0;
-
-      // first iteration step: solution increment is not yet available
-      if (iternum_ == 1)
+      // absolute tolerance for deciding if residual is already zero
+      // prevents additional solver calls that will not improve the residual anymore
+      if(potresnorm < restol)
       {
-        // print first line of convergence table to screen
+        // print finish line of convergence table to screen
         if (myrank_ == 0)
-          std::cout << "|  " << std::setw(3) << iternum_ << "/" << std::setw(3) << itermax << "   | "
-                    << std::setw(10) << std::setprecision(3) << std::scientific << itertol << "[L_2 ]  | "
-                    << std::setw(10) << std::setprecision(3) << std::scientific << potresnorm << "   |      --      | (      --     ,te="
-                    << std::setw(10) << std::setprecision(3) << std::scientific << dtele_ << ")" << std::endl;
-
-        // absolute tolerance for deciding if residual is already zero
-        // prevents additional solver calls that will not improve the residual anymore
-        if(potresnorm < restol)
-        {
-          // print finish line of convergence table to screen
-          if (myrank_ == 0)
-            std::cout << "+------------+-------------------+--------------+--------------+" << std::endl << std::endl;
-
-          // abort Newton-Raphson iteration
-          break;
-        }
-      }
-
-      // later iteration steps: solution increment can be printed
-      else
-      {
-        // print current line of convergence table to screen
-        if (myrank_ == 0)
-          std::cout << "|  " << std::setw(3) << iternum_ << "/" << std::setw(3) << itermax << "   | "
-                    << std::setw(10) << std::setprecision(3) << std::scientific << itertol << "[L_2 ]  | "
-                    << std::setw(10) << std::setprecision(3) << std::scientific << potresnorm << "   | "
-                    << std::setw(10) << std::setprecision(3) << std::scientific << incpotnorm_L2/potnorm_L2 << "   | (ts="
-                    << std::setw(10) << std::setprecision(3) << std::scientific << dtsolve_ << ",te="
-                    << std::setw(10) << std::setprecision(3) << std::scientific << dtele_ << ")" << std::endl;
-
-        // convergence check
-        if((potresnorm <= itertol and incpotnorm_L2/potnorm_L2 <= itertol) or potresnorm < restol)
-        {
-          // print finish line of convergence table to screen
-          if (myrank_ == 0)
-            std::cout << "+------------+-------------------+--------------+--------------+" << std::endl << std::endl;
-
-          // abort Newton-Raphson iteration
-          break;
-        }
-      }
-
-      // warn if maximum number of iterations is reached without convergence
-      if(iternum_ == itermax)
-      {
-        if(myrank_ == 0)
-        {
-          std::cout << "+---------------------------------------------------------------+" << std::endl;
-          std::cout << "|            >>>>>> not converged!                              |" << std::endl;
-          std::cout << "+---------------------------------------------------------------+" << std::endl << std::endl;
-        }
+          std::cout << "+------------+-------------------+--------------+--------------+" << std::endl << std::endl;
 
         // abort Newton-Raphson iteration
         break;
       }
+    }
 
-      // safety checks
-      if(std::isnan(incpotnorm_L2) or std::isnan(potnorm_L2) or std::isnan(potresnorm))
-        dserror("calculated vector norm is NaN.");
-      if(std::isinf(incpotnorm_L2) or std::isinf(potnorm_L2) or std::isinf(potresnorm))
-        dserror("calculated vector norm is INF.");
+    // later iteration steps: solution increment can be printed
+    else
+    {
+      // print current line of convergence table to screen
+      if (myrank_ == 0)
+        std::cout << "|  " << std::setw(3) << iternum_ << "/" << std::setw(3) << itermax << "   | "
+                  << std::setw(10) << std::setprecision(3) << std::scientific << itertol << "[L_2 ]  | "
+                  << std::setw(10) << std::setprecision(3) << std::scientific << potresnorm << "   | "
+                  << std::setw(10) << std::setprecision(3) << std::scientific << incpotnorm_L2/potnorm_L2 << "   | (ts="
+                  << std::setw(10) << std::setprecision(3) << std::scientific << dtsolve_ << ",te="
+                  << std::setw(10) << std::setprecision(3) << std::scientific << dtele_ << ")" << std::endl;
 
-      // zero out increment vector
-      increment_->PutScalar(0.);
+      // convergence check
+      if((potresnorm <= itertol and incpotnorm_L2/potnorm_L2 <= itertol) or potresnorm < restol)
+      {
+        // print finish line of convergence table to screen
+        if (myrank_ == 0)
+          std::cout << "+------------+-------------------+--------------+--------------+" << std::endl << std::endl;
 
-      // store time before solving global system of equations
-      const double time = Teuchos::Time::wallTime();
+        // abort Newton-Raphson iteration
+        break;
+      }
+    }
 
-      // reprepare Krylov projection if required
-      if (updateprojection_)
-        UpdateKrylovSpaceProjection();
+    // warn if maximum number of iterations is reached without convergence
+    if(iternum_ == itermax)
+    {
+      if(myrank_ == 0)
+      {
+        std::cout << "+---------------------------------------------------------------+" << std::endl;
+        std::cout << "|            >>>>>> not converged!                              |" << std::endl;
+        std::cout << "+---------------------------------------------------------------+" << std::endl << std::endl;
+      }
 
-      // solve final system of equations incrementally
-      strategy_->Solve(solver_,sysmat_,increment_,residual_,phinp_,1,projector_);
+      // abort Newton-Raphson iteration
+      break;
+    }
 
-      // determine time needed for solving global system of equations
-      dtsolve_ = Teuchos::Time::wallTime()-time;
+    // safety checks
+    if(std::isnan(incpotnorm_L2) or std::isnan(potnorm_L2) or std::isnan(potresnorm))
+      dserror("calculated vector norm is NaN.");
+    if(std::isinf(incpotnorm_L2) or std::isinf(potnorm_L2) or std::isinf(potresnorm))
+      dserror("calculated vector norm is INF.");
 
-      // update electric potential degrees of freedom in initial state vector
-      splitter_->AddCondVector(splitter_->ExtractCondVector(increment_),phinp_);
+    // zero out increment vector
+    increment_->PutScalar(0.);
 
-      // copy initial state vector
-      phin_->Update(1.,*phinp_,0.);
+    // store time before solving global system of equations
+    const double time = Teuchos::Time::wallTime();
 
-      // update state vectors for intermediate time steps (only for generalized alpha)
-      ComputeIntermediateValues();
-    } // Newton-Raphson iteration
+    // reprepare Krylov projection if required
+    if (updateprojection_)
+      UpdateKrylovSpaceProjection();
 
-    // reset global system matrix and its graph, since we solved a very special problem with a special sparsity pattern
-    sysmat_->Reset();
-  } // if(DRT::INPUT::IntegralValue<int>(*elchparams_,"INITPOTCALC"))
+    // solve final system of equations incrementally
+    strategy_->Solve(solver_,sysmat_,increment_,residual_,phinp_,1,projector_);
+
+    // determine time needed for solving global system of equations
+    dtsolve_ = Teuchos::Time::wallTime()-time;
+
+    // update electric potential degrees of freedom in initial state vector
+    splitter_->AddCondVector(splitter_->ExtractCondVector(increment_),phinp_);
+
+    // copy initial state vector
+    phin_->Update(1.,*phinp_,0.);
+
+    // update state vectors for intermediate time steps (only for generalized alpha)
+    ComputeIntermediateValues();
+  } // Newton-Raphson iteration
+
+  // reset global system matrix and its graph, since we solved a very special problem with a special sparsity pattern
+  sysmat_->Reset();
 
   return;
 } // SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()

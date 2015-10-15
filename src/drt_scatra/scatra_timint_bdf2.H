@@ -96,8 +96,9 @@ protected:
   //! set time for evaluation of Neumann boundary conditions
   virtual void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params);
 
-  /// Initialization procedure before the first time step is done
-  void PrepareFirstTimeStep();
+  //! calculate consistent initial conditions in compliance with initial scalar field
+  //! this is not necessary for BDF2 time integration scheme
+  void CalcInitialTimeDerivative(){return;};
 
   /// Set the part of the righthandside belonging to the last timestep.
   virtual void SetOldPartOfRighthandside();

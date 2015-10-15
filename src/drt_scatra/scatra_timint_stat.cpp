@@ -246,19 +246,3 @@ void SCATRA::TimIntStationary::OutputRestart()
 
   return;
 }
-
-
-/*----------------------------------------------------------------------*
- | initialization procedure before first time step           fang 03/15 |
- *----------------------------------------------------------------------*/
-void SCATRA::TimIntStationary::PrepareFirstTimeStep()
-{
-  ApplyDirichletBC(time_, phin_,Teuchos::null);
-  ApplyDirichletBC(time_, phinp_,Teuchos::null);
-  ApplyNeumannBC(neumann_loads_);
-
-  // compute initial field for electric potential (ELCH)
-  CalcInitialPotentialField();
-
-  return;
-}

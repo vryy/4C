@@ -131,8 +131,8 @@ public:
   //! setup the variables to do a new time step
   virtual void PrepareTimeStep();
 
-  //! initialization procedure before the first time step is done
-  virtual void PrepareFirstTimeStep() = 0;
+  //! initialization procedure prior to evaluation of first time step
+  virtual void PrepareFirstTimeStep();
 
   //! preparations for solve
   virtual void PrepareLinearSolve();
@@ -382,9 +382,6 @@ public:
 
   /*--- calculate and update -----------------------------------------------*/
 
-  //! calculate initial time derivatives of state variables (only necessary for one step theta and generalized alpha)
-  void CalcInitialTimeDerivative();
-
   //! compute time derivative
   virtual void ComputeTimeDerivative() = 0;
 
@@ -463,25 +460,6 @@ public:
 
   //! return time for evaluation of elements
   const double DtEle(){return dtele_;};
-
-  /*========================================================================*/
-  //! @name Elch methods
-  /*========================================================================*/
-
-  /*--- set, prepare, and predict ------------------------------------------*/
-
-  //! Initialize Nernst-BC
-  virtual void InitNernstBC(){return;};
-
-  /*--- calculate and update -----------------------------------------------*/
-
-  //! calculate initial field for electric potential based on ion concentrations (ELCH)
-  virtual void CalcInitialPotentialField(){return;};
-
-  //! check for negative values of concentrations (ELCH)
-  virtual void CheckConcentrationValues(
-    Teuchos::RCP<Epetra_Vector> vec //!< current phi vector to be checked
-  ){return;};
 
   /*========================================================================*/
   //! @name turbulence and related
@@ -583,6 +561,10 @@ protected:
     const enum INPAR::SCATRA::FluxType fluxtype //!< switch for flux calculation
   );
 
+  //! calculate consistent initial scalar time derivatives in compliance with initial scalar field
+  //! this function is never called directly, but only via overloading
+  virtual void CalcInitialTimeDerivative();
+
   //! initialize meshtying strategy (including standard case without meshtying)
   virtual void CreateMeshtyingStrategy();
 
@@ -627,7 +609,7 @@ protected:
   );
 
   //! call elements to calculate system matrix and rhs and assemble
-  void AssembleMatAndRHS();
+  virtual void AssembleMatAndRHS();
 
   //! add parameters depending on the problem, i.e., loma, level-set, ...
   virtual void AddProblemSpecificParametersAndVectors(

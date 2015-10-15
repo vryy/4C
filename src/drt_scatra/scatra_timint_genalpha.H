@@ -115,8 +115,8 @@ protected:
   /// set time parameter for element evaluation applying an iterative backward Euler scheme
   virtual void SetElementTimeParameterBackwardEuler() const;
 
-  /// Initialization procedure before the first time step is done
-  void PrepareFirstTimeStep();
+  //! calculate consistent initial scalar time derivatives in compliance with initial scalar field
+  void CalcInitialTimeDerivative();
 
   /// Set the part of the righthandside belonging to the last timestep.
   virtual void SetOldPartOfRighthandside();

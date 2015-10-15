@@ -164,6 +164,9 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   //! @name general framework
   /*========================================================================*/
 
+  //! assemble global system of equations
+  void AssembleMatAndRHS();
+
   //! Calculate problem specific norm
   void CalcProblemSpecificNorm(
       double& conresnorm,
@@ -174,8 +177,8 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
       double& potresnorm,
       double& conresnorminf);
 
-  //! call evaluate routine
-  void Evaluate(Teuchos::ParameterList eleparams);
+  //! initialization procedure prior to evaluation of first time step
+  void PrepareFirstTimeStep();
 
   /*========================================================================*/
   //! @name ELCH methods
@@ -197,8 +200,9 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
 
   /*--- calculate and update -----------------------------------------------*/
 
-  //! calculate initial field for electric potential based on ion concentrations (ELCH)
-  void CalcInitialPotentialField();
+  //! calculate initial electric potential field
+  //! this function is never called directly, but only via overloading
+  virtual void CalcInitialPotentialField();
 
   //! computes different conductivity expressions for electrolyte solutions (ELCH)
   double  ComputeConductivity(bool effCond=false, bool specresist=false);

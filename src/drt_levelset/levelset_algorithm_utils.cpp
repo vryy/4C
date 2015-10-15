@@ -159,8 +159,8 @@ void SCATRA::LevelSetAlgorithm::MassConservationCheck(
     // compute mass loss
     if (initvolminus_ != 0.0)
     {
+      double massloss = -(1.-actvolminus/initvolminus_)*100.0;
 
-      double massloss = -(initvolminus_ - actvolminus) / initvolminus_ *100.0;
       // 'isnan' seems to work not reliably; error occurs in line above
       if (std::isnan(massloss))
         dserror("NaN detected in mass conservation check");

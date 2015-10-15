@@ -326,7 +326,11 @@ void SCATRA::LevelSetAlgorithm::PrepareTimeStepReinit()
 {
   // prepare first time step
   if (pseudostep_ == 0)
-    PrepareFirstTimeStep();
+  {
+    // TODO: Restructure enforcement of Dirichlet boundary conditions on phin_
+    ApplyDirichletBC(time_,phin_,Teuchos::null);
+    CalcInitialTimeDerivative();
+  }
 
   // increment time and step
   pseudostep_ += 1;
@@ -1156,7 +1160,10 @@ void SCATRA::LevelSetAlgorithm::FindFacingPatchProjCellSpace(
     break;
   }
   default:
+  {
     dserror("unknown type of boundary integration cell");
+    break;
+  }
   }
 
   // Newton iteration converged
@@ -1201,7 +1208,10 @@ void SCATRA::LevelSetAlgorithm::FindFacingPatchProjCellSpace(
     break;
   }
   default:
+  {
     dserror("unknown type of boundary integration cell");
+    break;
+  }
   }
 //  if (!converged)
 //  {

@@ -1069,7 +1069,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcInitialTimeDerivative(
       //----------------------------------------------------------------
       // element matrix: stabilization of transient term
       //----------------------------------------------------------------
-      // the stabilization term is deactivated in PrepareFirstTimeStep()
+      // the stabilization term is deactivated in CalcInitialTimeDerivative() on time integrator level
       if(scatrapara_->StabType()!=INPAR::SCATRA::stabtype_no_stabilization)
       {
         // subgrid-scale velocity (dummy)

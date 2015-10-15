@@ -834,18 +834,7 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   //                       initialization
   // -------------------------------------------------------------------
   if (step_ == 0)
-  {
-    // if initial velocity field has not been set here, the initial time derivative of phi will be
-    // calculated wrongly for some time integration schemes
-    if(not skipinitder_)
-    {
-      if (initialvelset_) PrepareFirstTimeStep();
-      else dserror("Initial velocity field has not been set");
-    }
-
-    // Initialize Nernst-BC
-    InitNernstBC();
-  }
+    PrepareFirstTimeStep();
 
   // -------------------------------------------------------------------
   //              set time dependent parameters
@@ -864,8 +853,8 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   // -------------------------------------------------------------------
   //         evaluate Dirichlet and Neumann boundary conditions
   // -------------------------------------------------------------------
-  // TODO: dirichlet auch im Fall von genalpha phinp
-  // neuman n + alfaf
+  // TODO: Dirichlet auch im Fall von genalpha phinp
+  // Neumann(n + alpha_f)
   ApplyDirichletBC(time_,phinp_,Teuchos::null);
   ApplyNeumannBC(neumann_loads_);
 
@@ -898,6 +887,30 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
 
   return;
 } // ScaTraTimIntImpl::PrepareTimeStep
+
+
+/*------------------------------------------------------------------------------*
+ | initialization procedure prior to evaluation of first time step   fang 09/15 |
+ *------------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::PrepareFirstTimeStep()
+{
+  if(not skipinitder_)
+  {
+    if(initialvelset_)
+    {
+      // TODO: Restructure enforcement of Dirichlet boundary conditions on phin_
+      ApplyDirichletBC(time_,phin_,Teuchos::null);
+      CalcInitialTimeDerivative();
+    }
+
+    // if initial velocity field has not been set here, the initial time derivative of phi will be
+    // calculated wrongly for some time integration schemes
+    else
+      dserror("Initial velocity field has not been set!");
+  }
+
+  return;
+} // SCATRA::ScaTraTimIntImpl::PrepareFirstTimeStep
 
 
 /*----------------------------------------------------------------------*
@@ -2681,9 +2694,6 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
   while(true)
   {
     iternum_++;
-
-    // check for negative/zero concentration values (in case of ELCH only)
-    CheckConcentrationValues(phinp_);
 
     // call elements to calculate system matrix and rhs and assemble
     AssembleMatAndRHS();

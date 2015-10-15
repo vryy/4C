@@ -551,6 +551,12 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialTimeDerivative()
   if(myrank_ == 0)
     std::cout << "SCATRA: calculating initial time derivative of state variables on discretization \"" << discret_->Name().c_str() << "\" (step " << Step() <<", time " << Time() << ") ... ... ";
 
+  // evaluate Dirichlet and Neumann boundary conditions at time t = 0 to ensure consistent computation of initial time derivative vector
+  // Dirichlet boundary conditions should be consistent with initial field
+  ApplyDirichletBC(time_,phinp_,Teuchos::null);
+  ComputeIntermediateValues();
+  ApplyNeumannBC(neumann_loads_);
+
   // In most cases, the history vector is entirely zero at this point, since this routine is called before the first time step.
   // However, in levelset simulations with reinitialization, this routine might be called before every single time step.
   // For this reason, the history vector needs to be manually set to zero here and restored at the end of this routine.

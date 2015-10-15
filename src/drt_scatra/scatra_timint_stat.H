@@ -91,8 +91,9 @@ protected:
   //! set time for evaluation of Neumann boundary conditions
   void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params);
 
-  //! initialization procedure before first time step
-  void PrepareFirstTimeStep();
+  //! calculate consistent initial conditions in compliance with initial scalar field
+  //! this is not necessary for stationary calculations
+  void CalcInitialTimeDerivative(){return;};
 
   /// Set the part of the righthandside belonging to the last timestep.
   void SetOldPartOfRighthandside();

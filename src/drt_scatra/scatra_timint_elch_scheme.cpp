@@ -59,6 +59,44 @@ SCATRA::ScaTraTimIntElchOST::~ScaTraTimIntElchOST()
 }
 
 
+/*--------------------------------------------------------------------------*
+ | calculate initial electric potential field                    fang 09/15 |
+ *--------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElchOST::CalcInitialPotentialField()
+{
+  // evaluate Dirichlet boundary conditions at time t=0
+  // the values should match your initial field at the boundary!
+  ApplyDirichletBC(time_,phin_,Teuchos::null);
+  ApplyDirichletBC(time_,phinp_,Teuchos::null);
+  ComputeIntermediateValues();
+
+  // evaluate Neumann boundary conditions at time t = 0
+  ApplyNeumannBC(neumann_loads_);
+
+  // standard general element parameters without stabilization
+  SetElementGeneralParameters(true);
+
+  // we also have to modify the time-parameter list (incremental solve)
+  // actually we do not need a time integration scheme for calculating the initial electric potential field,
+  // but the rhs of the standard element routine is used as starting point for this special system of equations.
+  // Therefore, the rhs vector has to be scaled correctly.
+  SetElementTimeParameter(true);
+
+  // deactivate turbulence settings
+  SetElementTurbulenceParameters(true);
+
+  // call core algorithm
+  ScaTraTimIntElch::CalcInitialPotentialField();
+
+  // and finally undo our temporary settings
+  SetElementGeneralParameters(false);
+  SetElementTimeParameter(false);
+  SetElementTurbulenceParameters(false);
+
+  return;
+}
+
+
 /*----------------------------------------------------------------------*
  | write additional data required for restart                 gjb 08/08 |
  *----------------------------------------------------------------------*/
@@ -339,6 +377,22 @@ SCATRA::ScaTraTimIntElchBDF2::~ScaTraTimIntElchBDF2()
 }
 
 
+/*-----------------------------------------------------------------------------------*
+ | calculate initial electric potential field                             fang 09/15 |
+ *-----------------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElchBDF2::CalcInitialPotentialField()
+{
+  ApplyDirichletBC(time_, phin_,Teuchos::null);
+  ApplyDirichletBC(time_, phinp_,Teuchos::null);
+  ApplyNeumannBC(neumann_loads_);
+
+  // call core algorithm
+  ScaTraTimIntElch::CalcInitialPotentialField();
+
+  return;
+}
+
+
 /*----------------------------------------------------------------------*
  | write additional data required for restart                 gjb 08/08 |
  *----------------------------------------------------------------------*/
@@ -607,6 +661,47 @@ SCATRA::ScaTraTimIntElchGenAlpha::~ScaTraTimIntElchGenAlpha()
 }
 
 
+/*---------------------------------------------------------------------------*
+ | calculate initial electric potential field                     fang 09/15 |
+ ----------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElchGenAlpha::CalcInitialPotentialField()
+{
+  // evaluate Dirichlet boundary conditions at time t = 0
+  // the values should match your initial field at the boundary!
+  ApplyDirichletBC(time_,phin_,Teuchos::null);
+  ApplyDirichletBC(time_,phinp_,Teuchos::null);
+  ComputeIntermediateValues();
+
+  // evaluate Neumann boundary conditions at time t = 0
+  ApplyNeumannBC(neumann_loads_);
+
+  // for calculation of initial electric potential field, we have to switch off all stabilization and
+  // turbulence modeling terms
+  // standard general element parameter without stabilization
+  SetElementGeneralParameters(true);
+
+  // we also have to modify the time-parameter list (incremental solve)
+  // actually we do not need a time integration scheme for calculating the initial electric potential field,
+  // but the rhs of the standard element routine is used as starting point for this special system of equations.
+  // Therefore, the rhs vector has to be scaled correctly.
+  // Since the genalpha scheme cannot be adapted easily, the backward Euler scheme is used instead.
+  SetElementTimeParameterBackwardEuler();
+
+  // deactivate turbulence settings
+  SetElementTurbulenceParameters(true);
+
+  // call core algorithm
+  ScaTraTimIntElch::CalcInitialPotentialField();
+
+  // and finally undo our temporary settings
+  SetElementGeneralParameters();
+  SetElementTimeParameter();
+  SetElementTurbulenceParameters();
+
+  return;
+}
+
+
 /*----------------------------------------------------------------------*
  | write additional data required for restart                 gjb 08/08 |
  *----------------------------------------------------------------------*/
@@ -837,6 +932,22 @@ void SCATRA::ScaTraTimIntElchStationary::Init()
 *-----------------------------------------------------------------------*/
 SCATRA::ScaTraTimIntElchStationary::~ScaTraTimIntElchStationary()
 {
+  return;
+}
+
+
+/*---------------------------------------------------------------------------*
+ | calculate initial electric potential field                     fang 09/15 |
+ *---------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElchStationary::CalcInitialPotentialField()
+{
+  ApplyDirichletBC(time_, phin_,Teuchos::null);
+  ApplyDirichletBC(time_, phinp_,Teuchos::null);
+  ApplyNeumannBC(neumann_loads_);
+
+  // call core algorithm
+  ScaTraTimIntElch::CalcInitialPotentialField();
+
   return;
 }
 

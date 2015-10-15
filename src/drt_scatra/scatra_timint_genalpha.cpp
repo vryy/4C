@@ -438,20 +438,11 @@ void SCATRA::TimIntGenAlpha::ReadRestart(int step)
 }
 
 
-/*----------------------------------------------------------------------*
- | Initialization procedure before the first time step         vg 11/08 |
- -----------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::PrepareFirstTimeStep()
+/*-----------------------------------------------------------------------------------------------------------*
+ | calculate consistent initial scalar time derivatives in compliance with initial scalar field   fang 09/15 |
+ ------------------------------------------------------------------------------------------------------------*/
+void SCATRA::TimIntGenAlpha::CalcInitialTimeDerivative()
 {
-  // evaluate Dirichlet boundary conditions at time t = 0
-  // the values should match your initial field at the boundary!
-  ApplyDirichletBC(time_,phin_,Teuchos::null);
-  ApplyDirichletBC(time_,phinp_,Teuchos::null);
-  ComputeIntermediateValues();
-
-  // evaluate Neumann boundary conditions at time t = 0
-  ApplyNeumannBC(neumann_loads_);
-
   // for calculation of initial time derivative, we have to switch off all stabilization and
   // turbulence modeling terms
   // standard general element parameter without stabilization
@@ -467,11 +458,8 @@ void SCATRA::TimIntGenAlpha::PrepareFirstTimeStep()
   // deactivate turbulence settings
   SetElementTurbulenceParameters(true);
 
-  // compute initial field for electric potential (ELCH)
-  CalcInitialPotentialField();
-
-  // compute time derivative of phi at time t=0
-  CalcInitialTimeDerivative();
+  // call core algorithm
+  ScaTraTimIntImpl::CalcInitialTimeDerivative();
 
   // and finally undo our temporary settings
   SetElementGeneralParameters();
