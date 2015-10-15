@@ -1,9 +1,15 @@
-/*
- * str_timint_base.cpp
- *
- *  Created on: Aug 13, 2015
- *      Author: farah
- */
+/*-----------------------------------------------------------*/
+/*!
+\file str_timint_base.cpp
+
+\maintainer Philipp Farah
+
+\date Aug 12, 2015
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
 
 
 #include "str_timint_base.H"
@@ -139,6 +145,7 @@ STR::TIMINT::BaseDataSDyn::BaseDataSDyn()
       nlnsolvertype_(INPAR::STR::soltech_vague),
       divergenceaction_(INPAR::STR::divcont_stop),
       noxparams_(Teuchos::null),
+      ptc_delta_init_(0.0),
       linsolvers_(Teuchos::null),
       normtype_(INPAR::STR::norm_vague),
       tol_disp_incr_(-1.0),
@@ -239,6 +246,7 @@ void STR::TIMINT::BaseDataSDyn::Init(
     nlnsolvertype_ =
         DRT::INPUT::IntegralValue<INPAR::STR::NonlinSolTech>(sdynparams,"NLNSOL");
     noxparams_ = Teuchos::rcp(new Teuchos::ParameterList(xparams.sublist("NOX")));
+    ptc_delta_init_ = sdynparams.get<double>("PTCDT");
   }
   // ---------------------------------------------------------------------------
   // initialize linear solver variables
@@ -694,11 +702,11 @@ void STR::TIMINT::BaseDataGlobalState::Setup()
   // setup state vectors
   // --------------------------------------
   // displacements D_{n}
-  dis_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+  dis_ = Teuchos::rcp(new ::TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
   // velocities V_{n}
-  vel_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+  vel_ = Teuchos::rcp(new ::TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
   // accelerations A_{n}
-  acc_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+  acc_ = Teuchos::rcp(new ::TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
 
   // displacements D_{n+1} at t_{n+1}
   disnp_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
@@ -720,9 +728,10 @@ void STR::TIMINT::BaseDataGlobalState::Setup()
     }
     else
     {
-      //Since our element evaluate routine is only designed for two input matrices
-      //(stiffness and damping or stiffness and mass) its not possible, to have nonlinear
-      //inertia forces AND material damping.
+      /* Since our element evaluate routine is only designed for two input matrices
+       * (stiffness and damping or stiffness and mass) its not possible, to have nonlinear
+       * inertia forces AND material damping.
+       */
       dserror("So far it is not possible to model nonlinear inertia forces and damping!");
     }
   }

@@ -40,13 +40,14 @@ namespace NOX {
     }
   }
 }
-
 namespace NOX {
 namespace NLN {
+namespace LinSystem {
+  class PrePostOperator;
+} // namespace LinSystem
   class LinearSystem : public NOX::Epetra::LinearSystem
   {
-  protected:
-
+  public:
     //! List of types of epetra objects that can be used for the Jacobian and/or Preconditioner.
     enum OperatorType {
       //! A LINALG_SparseOperator object.
@@ -83,21 +84,26 @@ namespace NLN {
       return "";
     };
 
+  protected:
     //! Source of the RowMatrix if using an AztecOO native preconditioner
-    enum PreconditionerMatrixSourceType {
+    enum PreconditionerMatrixSourceType
+    {
       UseJacobian,
-      SeparateMatrix};
+      SeparateMatrix
+    };
 
-    enum PreconditionerType {
+    enum PreconditionerType
+    {
       None,
       AztecOO,
       Ifpack,
       NewIfpack,
       ML,
-      UserDefined};
+      UserDefined
+    };
 
   public:
-    //! Constructor.
+    //! Standard constructor with full functionality.
     LinearSystem(Teuchos::ParameterList& printParams,
         Teuchos::ParameterList& linearSolverParams,
         const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& solvers,
@@ -107,7 +113,37 @@ namespace NLN {
         const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
         const Teuchos::RCP<LINALG::SparseOperator>& M,
         const NOX::Epetra::Vector& cloneVector,
-        const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject = Teuchos::null);
+        const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject);
+
+    //! Constructor without scaling object
+    LinearSystem(Teuchos::ParameterList& printParams,
+            Teuchos::ParameterList& linearSolverParams,
+            const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& solvers,
+            const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
+            const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
+            const Teuchos::RCP<LINALG::SparseOperator>& J,
+            const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
+            const Teuchos::RCP<LINALG::SparseOperator>& M,
+            const NOX::Epetra::Vector& cloneVector);
+
+    //! Constructor without preconditioner
+    LinearSystem(Teuchos::ParameterList& printParams,
+            Teuchos::ParameterList& linearSolverParams,
+            const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& solvers,
+            const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
+            const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
+            const Teuchos::RCP<LINALG::SparseOperator>& J,
+            const NOX::Epetra::Vector& cloneVector,
+            const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject);
+
+    //! Constructor without preconditioner and scaling object
+    LinearSystem(Teuchos::ParameterList& printParams,
+            Teuchos::ParameterList& linearSolverParams,
+            const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& solvers,
+            const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
+            const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
+            const Teuchos::RCP<LINALG::SparseOperator>& J,
+            const NOX::Epetra::Vector& cloneVector);
 
     //! Destructor.
     virtual ~LinearSystem(){};
@@ -154,10 +190,13 @@ namespace NLN {
     //! NOX::Epetra::Interface::Preconditioner accessor
     Teuchos::RCP<const NOX::Epetra::Interface::Preconditioner> getPrecInterface() const;
 
-    //! Return const Jacobian Epetra_Operator pointer
+    //! Returns Jacobian Epetra_Operator pointer
     Teuchos::RCP<const Epetra_Operator> getJacobianOperator() const;
 
     Teuchos::RCP<Epetra_Operator> getJacobianOperator();
+
+    //! Returns the operator type of the jacobian
+    const enum OperatorType& getJacobianOperatorType() const;
 
     //! Set the jacobian operator
     //! Derived function: Check if the input operator is a LINALG_SparseOperator
@@ -202,7 +241,7 @@ namespace NLN {
   protected:
     //! Returns the type of operator that is passed into the group constructors.
     /*! Uses dynamic casting to identify the underlying object type. */
-    virtual OperatorType getOperatorType(const LINALG::SparseOperator& op);
+    virtual OperatorType getOperatorType(const LINALG::SparseOperator& op) const;
 
     //! PURE VIRTUAL FUNCTIONS: These functions have to be defined in the derived
     //! problem specific subclasses.
@@ -280,6 +319,9 @@ namespace NLN {
 
     //! Stores the parameter "Compute Scaling Manually".
     bool manualScaling_;
+
+    //! Pointer to a user defined wrapped NOX::NLN::LinSystem::PrePostOp::Generic object.
+    Teuchos::RCP<NOX::NLN::LinSystem::PrePostOperator> prePostOperatorPtr_;
 
   };
 }

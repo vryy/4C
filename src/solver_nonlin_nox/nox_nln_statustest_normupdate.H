@@ -28,7 +28,7 @@ namespace StatusTest {
 
    Nevertheless, I want to give you the possibility to check the absolute and relative norm
    of the solution increment corresponding to the different quantities as well. This class is
-   leant on the NOX::NLN::StatusTest::NormF and NOX::NLN::StatusTest::NormWRMS test and has
+   leaned on the NOX::NLN::StatusTest::NormF and NOX::NLN::StatusTest::NormWRMS test and has
    an equivalent structure. It is capable to handle a std::vector of increment norms. In this
    way it's easily possible to check the norms of different quantities at once in a very
    general way.

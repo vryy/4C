@@ -39,7 +39,6 @@ NOX::NLN::StatusTest::NormUpdate::NormUpdate(
       printCriteria2Info_(false),
       printCriteria3Info_(false)
 {
-  std::cout << "NOX::NLN::StatusTest::NormUpdate::NormUpdate" << std::endl;
   if (u!=NULL)
     utils_ = *u;
 }

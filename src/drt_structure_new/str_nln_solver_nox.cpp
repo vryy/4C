@@ -1,9 +1,15 @@
-/*
- * str_nln_solver_nox.cpp
- *
- *  Created on: Sep 15, 2015
- *      Author: hiermeier
- */
+/*-----------------------------------------------------------*/
+/*!
+\file str_nln_solver_nox.cpp
+
+\maintainer Michael Hiermeier
+
+\date Sep 15, 2015
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
 
 #include "str_nln_solver_nox.H"       // class header
 #include "str_timint_implicit.H"
@@ -178,7 +184,7 @@ void STR::NLN::SOLVER::Nox::ConvertModelType2SolType()
 
     soltypes_.push_back(soltype);
     // copy the linsolver pointers into the new map
-    linsolvers_[soltype] = DataSDyn().GetMutableLinSolvers()[*mt_iter];
+    linsolvers_[soltype] = DataSDyn().GetLinSolvers().at(*mt_iter);
   }
 
   return;
@@ -245,9 +251,9 @@ void STR::NLN::SOLVER::Nox::Reset()
   // Create NOX control class: NoxProblem()
   // -------------------------------------------------------------------------
   // FixMe add the solution vector and the complete jacobian here!
-  Teuchos::RCP<Epetra_Vector> rhs = Teuchos::null;
+  Teuchos::RCP<Epetra_Vector> soln = Teuchos::null;
   Teuchos::RCP<LINALG::SparseOperator> jac = Teuchos::null;
-  problem_ = NOX::NLN::Problem::BuildNoxProblem(rhs,jac,nlnglobaldata_);
+  problem_ = NOX::NLN::Problem::BuildNoxProblem(soln,jac,nlnglobaldata_);
 
   // -------------------------------------------------------------------------
   // Create NOX linear system to provide access to Jacobian etc.

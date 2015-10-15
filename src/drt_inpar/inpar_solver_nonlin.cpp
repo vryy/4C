@@ -102,6 +102,41 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
         &steepestdescent);
   }
 
+  // sub-list "Pseudo Transient"
+  Teuchos::ParameterList& ptc=snox.sublist("Pseudo Transient",false,"");
+  SetPrintEqualSign(ptc,true);
+
+  {
+    DoubleParameter("deltaInit",1.0e-4,"Initial time step size",&ptc);
+    DoubleParameter("deltaMax",std::numeric_limits<double>::max(),"Maximum time step size.  If the new step size is greater than this value, the transient terms will be eliminated from the Newton interation resulting in a full Newton solve.",&ptc);
+    DoubleParameter("deltaMin",1.0e-5,"Minimum step size.",&ptc);
+    IntParameter("Maximum Number of Pseudo-Transient Iterations",std::numeric_limits<int>::max(),"",&ptc);
+    Teuchos::Array<std::string> time_step_control = Teuchos::tuple<std::string>(
+        "SER",
+        "Switched Evolution Relaxation"
+        "TTE",
+        "Temporal Truncation Error");
+    Teuchos::setStringToIntegralParameter<int>(
+        "Time Step Control","SER","",
+        time_step_control,Teuchos::tuple<int>( 0, 0, 1, 1 ),
+        &ptc);
+    Teuchos::Array<std::string> tsc_norm_type = Teuchos::tuple<std::string>(
+        "Two Norm",
+        "One Norm",
+        "Max Norm");
+    Teuchos::setStringToIntegralParameter<int>(
+        "Norm Type for TSC","Max Norm","Norm Type for the time step control",
+        tsc_norm_type,Teuchos::tuple<int>( 0, 1, 2 ),
+        &ptc);
+    Teuchos::Array<std::string> scaling_op = Teuchos::tuple<std::string>(
+        "Identity",
+        "CFL Diagonal");
+    Teuchos::setStringToIntegralParameter<int>(
+        "Scaling Type","Identity","Type of the scaling matrix for the PTC method.",
+        scaling_op,Teuchos::tuple<int>( 0, 1 ),
+        &ptc);
+  }
+
   // sub-list "Line Search"
   Teuchos::ParameterList& linesearch =snox.sublist("Line Search",false,"");
   SetPrintEqualSign(linesearch,true);

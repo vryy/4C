@@ -46,6 +46,11 @@ NOX::NLN::Solver::LineSearchBased::LineSearchBased
 void NOX::NLN::Solver::LineSearchBased::init(
     const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests)
 {
+  stepSize = 0.0;
+  nIter = 0;
+  status = NOX::StatusTest::Unconverged;
+  checkType = NOX::Solver::parseStatusTestCheckType(paramsPtr->sublist("Solver Options"));
+
   // NOTE: We use different factories at this point!
   lineSearchPtr = NOX::NLN::LineSearch::
       BuildLineSearch(globalDataPtr,innerTests,paramsPtr->sublist("Line Search"));

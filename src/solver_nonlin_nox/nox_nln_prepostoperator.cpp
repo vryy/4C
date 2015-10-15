@@ -32,19 +32,26 @@ NOX::NLN::PrePostOperator::PrePostOperator()
  *----------------------------------------------------------------------------*/
 void NOX::NLN::PrePostOperator::runPreIterate(const NOX::Solver::Generic& nlnSolver)
 {
+  // ToDo Use the getListPtr() routine of the NOX::Solver::Generic class
+  // and do a Teuchos::rcp_const_cast() instead!
   const NOX::NLN::Solver::LineSearchBased* lsSolver =
       dynamic_cast<const NOX::NLN::Solver::LineSearchBased*>(&nlnSolver);
 
   if (lsSolver == 0)
     dserror("runPreItertate - non-linear solver cast failed!");
 
-  // set the current number of nonlinear iterations
+  // Set the current number of nonlinear iterations
   // this is necessary for the linear solver in some cases (e.g. contact)
   const Teuchos::RCP<Teuchos::ParameterList>& params = lsSolver->GetMutableListPtr();
-  Teuchos::ParameterList& linearSolverParams = params->sublist("Direction",true).
-      sublist("Newton",true).sublist("Linear Solver",true);
-  linearSolverParams.set<int>("Number of Nonlinear Iterations",lsSolver->getNumIterations());
-
+  const std::string dir_method_str =
+      params->sublist("Direction").get<std::string>("Method");
+  if (params->sublist("Direction").isSublist(dir_method_str))
+    if (params->sublist("Direction").sublist(dir_method_str).isSublist("Linear Solver"))
+    {
+      Teuchos::ParameterList& linearSolverParams = params->sublist("Direction").
+          sublist(dir_method_str).sublist("Linear Solver");
+      linearSolverParams.set<int>("Number of Nonlinear Iterations",lsSolver->getNumIterations());
+    }
 
   return;
 }
@@ -53,6 +60,8 @@ void NOX::NLN::PrePostOperator::runPreIterate(const NOX::Solver::Generic& nlnSol
  *----------------------------------------------------------------------------*/
 void NOX::NLN::PrePostOperator::runPreSolve(const NOX::Solver::Generic& nlnSolver)
 {
+  // ToDo Use the getListPtr() routine of the NOX::Solver::Generic class
+  // and do a Teuchos::rcp_const_cast() instead!
   const NOX::NLN::Solver::LineSearchBased* lsSolver =
       dynamic_cast<const NOX::NLN::Solver::LineSearchBased*>(&nlnSolver);
 
@@ -61,26 +70,33 @@ void NOX::NLN::PrePostOperator::runPreSolve(const NOX::Solver::Generic& nlnSolve
 
   // set the wanted tolerance for the linear solver
   const Teuchos::RCP<Teuchos::ParameterList>& params = lsSolver->GetMutableListPtr();
-  Teuchos::ParameterList& linearSolverParams = params->sublist("Direction",true).
-      sublist("Newton",true).sublist("Linear Solver",true);
+  const std::string dir_method_str =
+      params->sublist("Direction").get<std::string>("Method");
+  if (params->sublist("Direction").isSublist(dir_method_str))
+    if (params->sublist("Direction").sublist(dir_method_str).isSublist("Linear Solver"))
+    {
+      Teuchos::ParameterList& linearSolverParams = params->sublist("Direction").
+          sublist(dir_method_str).sublist("Linear Solver");
 
-  // Find and get the "specified tolerance" of the structural normF test in the statusTest object
-  const NOX::StatusTest::Generic& statusTest = lsSolver->GetOuterStatusTest();
-  double wanted = NOX::NLN::AUX::GetNormFClassVariable(
-      statusTest,NOX::NLN::StatusTest::quantity_structure,"SpecifiedTolerance");
+      // Find and get the "specified tolerance" of the structural normF test in the statusTest object
+      const NOX::StatusTest::Generic& statusTest = lsSolver->GetOuterStatusTest();
+      double wanted = NOX::NLN::AUX::GetNormFClassVariable(
+          statusTest,NOX::NLN::StatusTest::quantity_structure,"SpecifiedTolerance");
 
-  if (wanted==-1.0)
-  {
-    lsSolver->GetUtils().err() << "\n*** WARNING ***\n"
-                               << "There is no NOX::NLN::StatusTest::NormF test for the structural\n"
-                               << "components. The \"Wanted Tolerance\" for the sublist\n"
-                               << "\"Linear Solver\" was set to its default value 1.0e-6!\n";
-
-    linearSolverParams.set<double>("Wanted Tolerance",1.0e-6);
-  }
-  else
-    linearSolverParams.set<double>("Wanted Tolerance",wanted);
-
+      if (wanted==-1.0)
+      {
+        if (lsSolver->GetUtils().isPrintType(NOX::Utils::Warning))
+        {
+          lsSolver->GetUtils().out() << "\n*** WARNING ***\n"
+              << "There is no NOX::NLN::StatusTest::NormF test for the structural\n"
+              << "components. The \"Wanted Tolerance\" for the sublist\n"
+              << "\"Linear Solver\" was set to its default value 1.0e-6!\n";
+        }
+        linearSolverParams.set<double>("Wanted Tolerance",1.0e-6);
+      }
+      else
+        linearSolverParams.set<double>("Wanted Tolerance",wanted);
+    }
   return;
 }
 

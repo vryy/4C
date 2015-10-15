@@ -1563,9 +1563,12 @@ set(OBJS_DRT_STRUCTURE
 #  src/drt_structure_new/str_model_evaluator_factory.cpp
 #  src/drt_structure_new/str_model_evaluator_structure.cpp
 #  src/drt_structure_new/str_nln_solver_factory.cpp
+#  src/drt_structure_new/str_nln_solver_utils.cpp
 #  src/drt_structure_new/str_nln_solver_generic.cpp
 #  src/drt_structure_new/str_nln_solver_fullnewton.cpp
 #  src/drt_structure_new/str_nln_solver_nox.cpp
+#  src/drt_structure_new/str_nln_solver_ptc.cpp
+#  src/drt_structure_new/str_nln_solver_nonlin.cpp
 #  src/drt_structure_new/str_predict_factory.cpp
 #  src/drt_structure_new/str_predict_generic.cpp
 #  src/drt_structure_new/str_predict_constdisvelaccpress.cpp
@@ -1712,12 +1715,14 @@ set(OBJS_SOLVER_NONLIN_NOX
   src/solver_nonlin_nox/nox_nln_problem.cpp
   src/solver_nonlin_nox/nox_nln_linearsystem.cpp
   src/solver_nonlin_nox/nox_nln_linearsystem_factory.cpp
+  src/solver_nonlin_nox/nox_nln_linearsystem_prepostoperator.cpp
   src/solver_nonlin_nox/nox_nln_group.cpp
   src/solver_nonlin_nox/nox_nln_linesearch_factory.cpp
   src/solver_nonlin_nox/nox_nln_direction_factory.cpp
   src/solver_nonlin_nox/nox_nln_meritfunction_factory.cpp
   src/solver_nonlin_nox/nox_nln_solver_factory.cpp
   src/solver_nonlin_nox/nox_nln_solver_linesearchbased.cpp
+  src/solver_nonlin_nox/nox_nln_solver_ptc.cpp
   src/solver_nonlin_nox/nox_nln_constraint_problem.cpp
   src/solver_nonlin_nox/nox_nln_constraint_group.cpp
   src/solver_nonlin_nox/nox_nln_linesearch_backtrack.cpp

@@ -1,9 +1,15 @@
-/*
- * str_nln_solver_nox.H
- *
- *  Created on: Aug 13, 2015
- *      Author: farah
- */
+/*-----------------------------------------------------------*/
+/*!
+\file str_nln_solver_nox.H
+
+\maintainer Michael Hiermeier
+
+\date Aug 13, 2015
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
 
 #ifndef STR_NLN_SOLVER_NOX_H_
 #define STR_NLN_SOLVER_NOX_H_

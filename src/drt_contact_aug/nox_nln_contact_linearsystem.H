@@ -27,7 +27,7 @@ namespace CONTACT {
   class LinearSystem : public NOX::NLN::LinearSystem
   {
   public:
-    //! Constructor.
+    //! Standard constructor with full functionality.
     LinearSystem(Teuchos::ParameterList& printParams,
         Teuchos::ParameterList& linearSolverParams,
         const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& solvers,
@@ -37,7 +37,37 @@ namespace CONTACT {
         const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
         const Teuchos::RCP<LINALG::SparseOperator>& M,
         const NOX::Epetra::Vector& cloneVector,
-        const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject = Teuchos::null);
+        const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject);
+
+    //! Constructor without scaling object
+    LinearSystem(Teuchos::ParameterList& printParams,
+            Teuchos::ParameterList& linearSolverParams,
+            const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& solvers,
+            const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
+            const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
+            const Teuchos::RCP<LINALG::SparseOperator>& J,
+            const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
+            const Teuchos::RCP<LINALG::SparseOperator>& M,
+            const NOX::Epetra::Vector& cloneVector);
+
+    //! Constructor without preconditioner
+    LinearSystem(Teuchos::ParameterList& printParams,
+            Teuchos::ParameterList& linearSolverParams,
+            const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& solvers,
+            const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
+            const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
+            const Teuchos::RCP<LINALG::SparseOperator>& J,
+            const NOX::Epetra::Vector& cloneVector,
+            const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject);
+
+    //! Constructor without preconditioner and scaling object
+    LinearSystem(Teuchos::ParameterList& printParams,
+            Teuchos::ParameterList& linearSolverParams,
+            const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& solvers,
+            const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
+            const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
+            const Teuchos::RCP<LINALG::SparseOperator>& J,
+            const NOX::Epetra::Vector& cloneVector);
 
     //! Destructor.
     virtual ~LinearSystem(){};
@@ -52,6 +82,9 @@ namespace CONTACT {
         Teuchos::RCP<LINALG::Solver>& currSolver);
 
     MORTAR::StrategyBase& GetStrategy();
+
+  protected:
+    virtual void Init();
 
   private:
     //! throws an error message

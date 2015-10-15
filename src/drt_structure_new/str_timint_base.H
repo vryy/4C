@@ -1,9 +1,15 @@
-/*
- * str_timint_base.H
- *
- *  Created on: Aug 12, 2015
- *      Author: farah
- */
+/*-----------------------------------------------------------*/
+/*!
+\file str_timint_base.H
+
+\maintainer Philipp Farah
+
+\date Aug 12, 2015
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
 
 #ifndef STR_TI_TIMINT_H_
 #define STR_TI_TIMINT_H_
@@ -55,10 +61,22 @@ namespace TIMINT {
 
     void Setup();
 
-  protected:
-    const bool& IsInit();
+    const bool& GetPrintIntermediateIterations() const
+    {
+      CheckInitSetup();
+      return printiter_;
+    }
 
-    const bool& IsSetup();
+  protected:
+    virtual const bool& IsInit() const { return isinit_; };
+
+    virtual const bool& IsSetup() const { return issetup_; };
+
+    virtual void CheckInitSetup() const
+    {
+      if (!IsInit() or !IsSetup())
+        dserror("Call Init() and Setup() first!");
+    }
 
   protected:
     //! @name variables for internal use only
@@ -264,6 +282,11 @@ namespace TIMINT {
       return *noxparams_;
     }
 
+    //! Returns the inital pseudo time step for the PTC method
+    const double& GetInitialPTCPseudoTimeStep() const
+    {
+      return ptc_delta_init_;
+    }
     //@}
 
     //! @name Get mutable linear solver variables (read only access)
@@ -627,6 +650,9 @@ namespace TIMINT {
 
     //! nox parameters list
     Teuchos::RCP<Teuchos::ParameterList> noxparams_;
+
+    //! initial pseudo time step for the pseudo transient continuation (PTC) method
+    double ptc_delta_init_;
     //@}
 
     //! @name linear solver variables
@@ -788,7 +814,7 @@ namespace TIMINT {
       //@{
 
       //! attached discretisation
-      Teuchos::RCP<const DRT::Discretization> GetDiscret()
+      Teuchos::RCP<const DRT::Discretization> GetDiscret() const
       {
         CheckInitSetup();
         return discret_;
@@ -801,14 +827,14 @@ namespace TIMINT {
         return comm_;
       };
 
-      const Epetra_Comm& GetComm()
+      const Epetra_Comm& GetComm() const
       {
         CheckInitSetup();
         return *comm_;
       };
 
       //! ID of actual processor in parallel
-      const int GetMyRank()
+      const int GetMyRank() const
       {
         CheckInitSetup();
         return myRank_;
@@ -862,14 +888,14 @@ namespace TIMINT {
       };
 
       //! Return time \f$t_{n}\f$ of last converged step
-      Teuchos::RCP<const TIMINT::TimIntMStep<double> > GetTimeN() const
+      Teuchos::RCP<const ::TIMINT::TimIntMStep<double> > GetTimeN() const
       {
         CheckInitSetup();
         return timen_;
       };
 
       //! Return time step size \f$\Delta t\f$
-      Teuchos::RCP<const TIMINT::TimIntMStep<double> > GetDeltaTime() const
+      Teuchos::RCP<const ::TIMINT::TimIntMStep<double> > GetDeltaTime() const
       {
         CheckInitSetup();
         return dt_;
@@ -986,14 +1012,14 @@ namespace TIMINT {
       };
 
       //! Return time \f$t_{n}\f$ of last converged step
-      Teuchos::RCP<TIMINT::TimIntMStep<double> >& GetMutableTimeN()
+      Teuchos::RCP<::TIMINT::TimIntMStep<double> >& GetMutableTimeN()
       {
         CheckInitSetup();
         return timen_;
       };
 
       //! Return time step size \f$\Delta t\f$
-      Teuchos::RCP<TIMINT::TimIntMStep<double> >& GetMutableDeltaTime()
+      Teuchos::RCP<::TIMINT::TimIntMStep<double> >& GetMutableDeltaTime()
       {
         CheckInitSetup();
         return dt_;
@@ -1135,10 +1161,10 @@ namespace TIMINT {
       double timenp_;
 
       //! time \f$t_{n}\f$ of last converged step
-      Teuchos::RCP<TIMINT::TimIntMStep<double> > timen_;
+      Teuchos::RCP<::TIMINT::TimIntMStep<double> > timen_;
 
       //! time step size \f$\Delta t\f$
-      Teuchos::RCP<TIMINT::TimIntMStep<double> > dt_;
+      Teuchos::RCP<::TIMINT::TimIntMStep<double> > dt_;
 
       //! time step index \f$n\f$
       int stepn_;
@@ -1151,13 +1177,13 @@ namespace TIMINT {
       //@{
 
       //! global displacements \f${D}_{n}, D_{n-1}, ...\f$
-      Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > dis_;
+      Teuchos::RCP<::TIMINT::TimIntMStep<Epetra_Vector> > dis_;
 
       //! global velocities \f${V}_{n}, V_{n-1}, ...\f$
-      Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > vel_;
+      Teuchos::RCP<::TIMINT::TimIntMStep<Epetra_Vector> > vel_;
 
       //! global accelerations \f${A}_{n}, A_{n-1}, ...\f$
-      Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > acc_;
+      Teuchos::RCP<::TIMINT::TimIntMStep<Epetra_Vector> > acc_;
 
       //! global displacements \f${D}_{n+1}\f$ at \f$t_{n+1}\f$
       Teuchos::RCP<Epetra_Vector> disnp_;

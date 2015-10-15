@@ -154,3 +154,23 @@ enum NOX::NLN::SolutionType NOX::NLN::AUX::ConvertQuantityType2SolutionType(
   // return the corresponding solution type
   return soltype;
 }
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+enum NOX::Abstract::Vector::NormType NOX::NLN::AUX::String2NormType(
+    const std::string& name)
+{
+  enum NOX::Abstract::Vector::NormType norm_type =
+      NOX::Abstract::Vector::TwoNorm;
+  if (boost::iequals(name,"Two Norm"))
+    norm_type = NOX::Abstract::Vector::TwoNorm;
+  else if (boost::iequals(name,"One Norm"))
+    norm_type = NOX::Abstract::Vector::OneNorm;
+  else if (boost::iequals(name,"Max Norm"))
+    norm_type = NOX::Abstract::Vector::MaxNorm;
+  else
+    dserror("Unknown conversion from STL_STRING to NormType enum for %s.",
+        name.c_str());
+
+  return norm_type;
+}

@@ -1,12 +1,17 @@
-/*
- * str_nln_solver_generic.cpp
- *
- *  Created on: Sep 10, 2015
- *      Author: hiermeier
- */
+/*-----------------------------------------------------------*/
+/*!
+\file str_nln_solver_generic.cpp
+
+\maintainer Michael Hiermeier
+
+\date Oct 9, 2015
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
 
 #include "str_nln_solver_generic.H"
-
 #include "str_timint_implicit.H"
 
 

@@ -1,25 +1,40 @@
-/*
- * str_nln_solver_PTC.H
- *
- *  Created on: Aug 13, 2015
- *      Author: farah
- */
+/*-----------------------------------------------------------*/
+/*!
+\file str_nln_solver_ptc.H
+
+\maintainer Michael Hiermeier
+
+\date Aug 13, 2015
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
 
 #ifndef STR_NLN_SOLVER_PTC_H_
 #define STR_NLN_SOLVER_PTC_H_
 
-#include "str_nln_solver_generic.H"
+#include "str_nln_solver_nox.H"   // base class
 
 namespace STR {
 namespace NLN {
 namespace SOLVER {
-  class PTC : public Generic
+  class PseudoTransient : public Nox
   {
   public:
-    PTC() {};
+    //! constructor
+    PseudoTransient();
 
-    virtual ~PTC() {};
-  };
+    //! destructor
+    virtual ~PseudoTransient() {};
+
+    // derived from the base class
+    virtual void Setup();
+
+  protected:
+    void SetPseudoTransientParams();
+
+  };  // class PTC
 } // namespace SOLVER
 } // namespace NLN
 } // namespace STR

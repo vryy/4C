@@ -37,14 +37,78 @@ NOX::NLN::CONTACT::LinearSystem::LinearSystem(Teuchos::ParameterList& printParam
     const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
     const Teuchos::RCP<LINALG::SparseOperator>& M,
     const NOX::Epetra::Vector& cloneVector,
-    const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject) :
-    NOX::NLN::LinearSystem(printParams,linearSolverParams,solvers,iReq,iJac,J,iPrec,M,cloneVector,scalingObject)
+    const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject)
+    : NOX::NLN::LinearSystem(printParams,linearSolverParams,solvers,iReq,iJac,J,iPrec,M,cloneVector,scalingObject),
+      strat_(Teuchos::null),
+      isMeshtying_(Teuchos::null),
+      isContact_(Teuchos::null)
 {
-  if (iPrec.is_null())
+  Init();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+NOX::NLN::CONTACT::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
+    Teuchos::ParameterList& linearSolverParams,
+    const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& solvers,
+    const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
+    const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
+    const Teuchos::RCP<LINALG::SparseOperator>& J,
+    const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
+    const Teuchos::RCP<LINALG::SparseOperator>& M,
+    const NOX::Epetra::Vector& cloneVector)
+    : NOX::NLN::LinearSystem(printParams,linearSolverParams,solvers,iReq,iJac,J,iPrec,M,cloneVector),
+      strat_(Teuchos::null),
+      isMeshtying_(Teuchos::null),
+      isContact_(Teuchos::null)
+{
+  Init();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+NOX::NLN::CONTACT::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
+    Teuchos::ParameterList& linearSolverParams,
+    const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& solvers,
+    const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
+    const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
+    const Teuchos::RCP<LINALG::SparseOperator>& J,
+    const NOX::Epetra::Vector& cloneVector,
+    const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject)
+    : NOX::NLN::LinearSystem(printParams,linearSolverParams,solvers,iReq,iJac,J,cloneVector,scalingObject),
+      strat_(Teuchos::null),
+      isMeshtying_(Teuchos::null),
+      isContact_(Teuchos::null)
+{
+  Init();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+NOX::NLN::CONTACT::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
+    Teuchos::ParameterList& linearSolverParams,
+    const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& solvers,
+    const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
+    const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
+    const Teuchos::RCP<LINALG::SparseOperator>& J,
+    const NOX::Epetra::Vector& cloneVector)
+    : NOX::NLN::LinearSystem(printParams,linearSolverParams,solvers,iReq,iJac,J,cloneVector),
+      strat_(Teuchos::null),
+      isMeshtying_(Teuchos::null),
+      isContact_(Teuchos::null)
+{
+  Init();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void NOX::NLN::CONTACT::LinearSystem::Init()
+{
+  if (precInterfacePtr_.is_null())
     throwError("LinearSystem","the preconditioner interface is not initialized!");
 
   Teuchos::RCP<NOX::NLN::CONTACT::Interface::Preconditioner> iCoPrec =
-      Teuchos::rcp_dynamic_cast<NOX::NLN::CONTACT::Interface::Preconditioner>(iPrec);
+      Teuchos::rcp_dynamic_cast<NOX::NLN::CONTACT::Interface::Preconditioner>(precInterfacePtr_);
 
   if (iCoPrec.is_null())
     throwError("NOX::CONTACT::LinearSystem::LinearSystem",
@@ -56,7 +120,6 @@ NOX::NLN::CONTACT::LinearSystem::LinearSystem(Teuchos::ParameterList& printParam
 
   // initialize strategy pointer
   strat_ = Teuchos::rcpFromRef(iCoPrec->GetStrategy());
-
 }
 
 /*----------------------------------------------------------------------*

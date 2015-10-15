@@ -33,8 +33,56 @@ NOX::NLN::STR::LinearSystem::LinearSystem(
     const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
     const Teuchos::RCP<LINALG::SparseOperator>& M,
     const NOX::Epetra::Vector& cloneVector,
-    const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject) :
-    NOX::NLN::LinearSystem(printParams,linearSolverParams,solvers,iReq,iJac,J,iPrec,M,cloneVector,scalingObject)
+    const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject)
+    : NOX::NLN::LinearSystem(printParams,linearSolverParams,solvers,iReq,iJac,J,iPrec,M,cloneVector,scalingObject)
+{
+  // empty constructor
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+NOX::NLN::STR::LinearSystem::LinearSystem(
+    Teuchos::ParameterList& printParams,
+    Teuchos::ParameterList& linearSolverParams,
+    const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& solvers,
+    const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
+    const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
+    const Teuchos::RCP<LINALG::SparseOperator>& J,
+    const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
+    const Teuchos::RCP<LINALG::SparseOperator>& M,
+    const NOX::Epetra::Vector& cloneVector)
+    : NOX::NLN::LinearSystem(printParams,linearSolverParams,solvers,iReq,iJac,J,iPrec,M,cloneVector)
+{
+  // empty constructor
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+NOX::NLN::STR::LinearSystem::LinearSystem(
+    Teuchos::ParameterList& printParams,
+    Teuchos::ParameterList& linearSolverParams,
+    const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& solvers,
+    const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
+    const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
+    const Teuchos::RCP<LINALG::SparseOperator>& J,
+    const NOX::Epetra::Vector& cloneVector,
+    const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject)
+    : NOX::NLN::LinearSystem(printParams,linearSolverParams,solvers,iReq,iJac,J,cloneVector,scalingObject)
+{
+  // empty constructor
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+NOX::NLN::STR::LinearSystem::LinearSystem(
+    Teuchos::ParameterList& printParams,
+    Teuchos::ParameterList& linearSolverParams,
+    const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& solvers,
+    const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
+    const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
+    const Teuchos::RCP<LINALG::SparseOperator>& J,
+    const NOX::Epetra::Vector& cloneVector)
+    : NOX::NLN::LinearSystem(printParams,linearSolverParams,solvers,iReq,iJac,J,cloneVector)
 {
   // empty constructor
 }

@@ -222,12 +222,13 @@ void NOX::NLN::GlobalData::SetPrintingParameters()
  *----------------------------------------------------------------------------*/
 void NOX::NLN::GlobalData::SetSolverOptionParameters()
 {
-  // NOX gives you the option to use a user defined merit function by inserting
-  // a Teuchos::RCP<NOX::MeritFunction::Generic> pointer into the parameter
-  // sublist "Solver Options". Since we are forced to use the
-  // NOX_GlobalData class, we have to use this to define our own merit functions
-  // by creating the particular class in the NOX::NLN::MeritFunction::Factory
-  // and insert it into the parameter list.
+  /* NOX gives you the option to use a user defined merit function by inserting
+   * a Teuchos::RCP<NOX::MeritFunction::Generic> pointer into the parameter
+   * sublist "Solver Options". Since we are forced to use the
+   * NOX_GlobalData class, we have to use this to define our own merit functions
+   * by creating the particular class in the NOX::NLN::MeritFunction::Factory
+   * and insert it into the parameter list.
+   */
   Teuchos::ParameterList& solverOptionsList = nlnparams_->sublist("Solver Options");
 
   // Pure reading access to the unfinished nox_nln_globaldata class
@@ -253,6 +254,12 @@ void NOX::NLN::GlobalData::SetSolverOptionParameters()
 void NOX::NLN::GlobalData::SetStatusTestParameters()
 {
   Teuchos::ParameterList& statusTestParams = nlnparams_->sublist("Status Test",true);
+
+  // check if the status test was already set via the dat-file
+  if (statusTestParams.isSublist("Outer Status Test") and
+      statusTestParams.sublist("Outer Status Test").numParams()!=0)
+    return;
+
   // initialize the sublist "Outer Status Test". This one has to be specified.
   Teuchos::ParameterList& outerStatusTestParams = statusTestParams.sublist("Outer Status Test",false);
 

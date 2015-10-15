@@ -15,7 +15,7 @@
 #define NOX_NLN_INTERFACE_REQUIRED_H_
 
 #include <NOX_Epetra_Interface_Required.H>    // base class
-#include <NOX_Abstract_Vector.H>
+#include <NOX_Epetra_Vector.H>
 #include "nox_nln_statustest_factory.H"
 
 namespace NOX {

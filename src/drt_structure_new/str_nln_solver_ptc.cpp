@@ -1,39 +1,36 @@
 /*-----------------------------------------------------------*/
 /*!
-\file str_nln_solver_fullnewton.cpp
+\file str_nln_solver_ptc.cpp
 
 \maintainer Michael Hiermeier
 
-\date Sep 18, 2015
+\date Oct 9, 2015
 
 \level 3
 
 */
 /*-----------------------------------------------------------*/
 
-#include "str_nln_solver_fullnewton.H"
+#include "str_nln_solver_ptc.H"   // class definition
+#include "str_nln_solver_utils.H"
 #include "str_timint_base.H"
 
-#include "str_nln_solver_utils.H"
-
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::NLN::SOLVER::FullNewton::FullNewton()
-    : Nox()
+STR::NLN::SOLVER::PseudoTransient::PseudoTransient()
 {
-  // empty
+  // empty constructor
 }
 
-
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::NLN::SOLVER::FullNewton::Setup()
+void STR::NLN::SOLVER::PseudoTransient::Setup()
 {
   CheckInit();
 
-  // setup the nox parameter list for a full Newton solution method
-  SetFullNewtonParams();
+  // setup the nox parameter list for a pseudo transient solution method
+  SetPseudoTransientParams();
 
   // Call the Setup() function of the base class
   // Note, that the issetup_ flag is also updated during this call.
@@ -45,22 +42,21 @@ void STR::NLN::SOLVER::FullNewton::Setup()
   return;
 }
 
-
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::NLN::SOLVER::FullNewton::SetFullNewtonParams()
+void STR::NLN::SOLVER::PseudoTransient::SetPseudoTransientParams()
 {
   CheckInit();
 
   // get the nox parameter list and set the necessary parameters for a
-  // full Newton solution procedure
+  // pseudo transient solution procedure
   Teuchos::ParameterList& p = DataSDyn().GetMutableNoxParams();
 
   // ---------------------------------------------------------------------------
-  // Set-up the full Newton method
+  // Set-up the pseudo transient method
   // ---------------------------------------------------------------------------
   // Non-linear solver
-  p.set("Nonlinear Solver","Line Search Based");
+  p.set("Nonlinear Solver","Pseudo Transient");
 
   // Direction
   Teuchos::ParameterList& pdir = p.sublist("Direction",true);
@@ -68,9 +64,8 @@ void STR::NLN::SOLVER::FullNewton::SetFullNewtonParams()
 
   // Line Search
   Teuchos::ParameterList& plinesearch = p.sublist("Line Search",true);
-  plinesearch.set("Method","Full Step");
 
-  // Line Search/Full Step
+  // Line Search/Full Step (line search is deactivated)
   Teuchos::ParameterList& pfullstep = plinesearch.sublist("Full Step",true);
   // check if the default value is set
   double fullstep = pfullstep.get<double>("Full Step");
@@ -83,6 +78,22 @@ void STR::NLN::SOLVER::FullNewton::SetFullNewtonParams()
         << " (default=1.0)"<< std::endl
         << markerline << std::endl;
   }
+  /* The following parameters create a NOX::NLN::Solver::PseudoTransient
+   * solver which is equivalent to the old BACI implementation.
+   *
+   * If you are keen on using the new features, please use the corresponding
+   * input section "STUCT NOX/Pseudo Transient" in your input file.
+   */
+  Teuchos::ParameterList& pptc = p.sublist("Pseudo Transient");
+
+  pptc.set<double>("deltaInit",DataSDyn().GetInitialPTCPseudoTimeStep());
+  pptc.set<double>("deltaMax",std::numeric_limits<double>::max());
+  pptc.set<double>("deltaMin",0.0);
+  pptc.set<int>("Maximum Number of Pseudo-Transient Iterations",
+      (DataSDyn().GetIterMax()+1));
+  pptc.set<std::string>("Time Step Control","SER");
+  pptc.set<std::string>("Norm Type for TSC","Max Norm");
+  pptc.set<std::string>("Scaling Type","Identity");
 
   // ---------------------------------------------------------------------------
   // STATUS TEST

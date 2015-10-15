@@ -92,8 +92,8 @@ namespace LineSearch {
     //! Merit function
     Teuchos::RCP<NOX::MeritFunction::Generic> meritFunctionPtr_;
 
-    //! Current step
-    double step_;
+    //! Current step pointer, points to the step variable of the NOX::NLN::Solver::LineSearchBased class
+    double* stepPtr_;
 
     //! Default step
     double defaultStep_;

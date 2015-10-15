@@ -20,6 +20,7 @@
 
 // Header files for different supported nonlinear solvers
 #include "nox_nln_solver_linesearchbased.H"
+#include "nox_nln_solver_ptc.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -47,6 +48,8 @@ NOX::NLN::Solver::Factory::BuildSolver(
 
   if ((method == "Newton") or (method == "Line Search Based"))
     solver = Teuchos::rcp(new NOX::NLN::Solver::LineSearchBased(grp,outerTests,innerTests,params));
+  else if (method == "Pseudo Transient")
+    solver = Teuchos::rcp(new NOX::NLN::Solver::PseudoTransient(grp,outerTests,innerTests,params));
   else if (not nlnGlobalData->GetIsConstrained())
   {
     // unconstrained problems are able to call the standard nox factory

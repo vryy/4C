@@ -1,9 +1,15 @@
-/*
- * str_predict_generic.H
- *
- *  Created on: Aug 13, 2015
- *      Author: farah
- */
+/*-----------------------------------------------------------*/
+/*!
+\file str_predict_generic.H
+
+\maintainer Philipp Farah
+
+\date Aug 13, 2015
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
 
 #ifndef STR_PREDICT_GENERIC_H_
 #define STR_PREDICT_GENERIC_H_
@@ -29,7 +35,7 @@ namespace PREDICT {
       const INPAR::STR::PredEnum& GetType() const { return type_; };
 
       //! returns the name of the used predictor
-      virtual const std::string& Name() const;
+      virtual const std::string Name() const;
 
       //! Calculate the specific predictor step
       virtual void Predict() = 0;

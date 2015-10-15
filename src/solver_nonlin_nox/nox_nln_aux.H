@@ -18,6 +18,8 @@
 #include "nox_nln_statustest_factory.H"
 #include "nox_nln_globaldata.H"
 
+#include <NOX_Abstract_Vector.H>
+
 // forward declaration
 class Epetra_Vector;
 
@@ -28,24 +30,24 @@ namespace StatusTest {
 namespace NLN {
 namespace AUX {
   /*! \brief Calculate the root mean square for the NOX status test
-   *
-   *  $ \delta_{rms} = \sqrt{\frac{1}{N} \sum\limits_{i=1}^{N} \left( \frac{x_{i}^{k} - x_{i}^{k-1}}{\mathcal{RTOL} | x_{i}^{k-1} | + \mathcal{ATOL}} \right)} $
-   *
-   *  \param atol  : absolute tolerance
-   *  \param rtol  : relative tolerance
-   *  \param xnew  : new / current iterate $x_{i}^{k}$
-   *  \param xincr : current step increment $x_{i}^{k} - x_{i}^{k-1}$
+
+      $ \delta_{rms} = \sqrt{\frac{1}{N} \sum\limits_{i=1}^{N} \left( \frac{x_{i}^{k} - x_{i}^{k-1}}{\mathcal{RTOL} | x_{i}^{k-1} | + \mathcal{ATOL}} \right)} $
+
+     \param atol  : absolute tolerance
+     \param rtol  : relative tolerance
+     \param xnew  : new / current iterate $x_{i}^{k}$
+     \param xincr : current step increment $x_{i}^{k} - x_{i}^{k-1}$
    */
   double RootMeanSquareNorm(const double& atol, const double& rtol,
       Teuchos::RCP<const Epetra_Vector> xnew, Teuchos::RCP<const Epetra_Vector> xincr,
       const bool& disable_implicit_weighting=false);
 
-  /*! Do a recursive search for a nox_nln_statustest_normf test in the StatusTest object
-   *  and return the class variable value of the desired quantity.
-   *
-   *  \param test              : StatusTest object which will be scanned.
-   *  \param qType             : Quantity type of the NormF test which we are looking for.
-   *  \param classVariableName : Name of the class variable which will be returned. (Type: double)
+  /*! \brief Do a recursive search for a nox_nln_statustest_normf test in the StatusTest object
+      and return the class variable value of the desired quantity.
+
+     \param test              : StatusTest object which will be scanned.
+     \param qType             : Quantity type of the NormF test which we are looking for.
+     \param classVariableName : Name of the class variable which will be returned. (Type: double)
    */
   double GetNormFClassVariable(
       const NOX::StatusTest::Generic& test,
@@ -53,11 +55,18 @@ namespace AUX {
       const std::string& classVariableName);
 
   /*! \brief Convert the quantity type to a solution type
-   *
-   *  \param qtype : Quantity type which has to be converted.
+
+     \param qtype : Quantity type which has to be converted.
    */
   enum NOX::NLN::SolutionType ConvertQuantityType2SolutionType(
       const enum NOX::NLN::StatusTest::QuantityType& qtype);
+
+  /*! \brief Map norm type stl_string to norm type enum
+
+     \param name : Name of the vector norm type.
+   */
+  enum NOX::Abstract::Vector::NormType String2NormType(
+      const std::string& name);
 
 } // namepsace AUX
 } // namespace NLN

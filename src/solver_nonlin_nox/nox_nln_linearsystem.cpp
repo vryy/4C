@@ -14,6 +14,7 @@
 #include "nox_nln_linearsystem.H"
 #include "nox_nln_interface_jacobian.H"
 #include "nox_nln_interface_required.H"
+#include "nox_nln_linearsystem_prepostoperator.H"
 
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_blocksparsematrix.H"
@@ -38,24 +39,133 @@ NOX::NLN::LinearSystem::LinearSystem(
     const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
     const Teuchos::RCP<LINALG::SparseOperator>& preconditioner,
     const NOX::Epetra::Vector& cloneVector,
-    const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject) :
-    linParams_(linearSolverParams),
-    utils_(printParams),
-    solvers_(solvers),
-    reqInterfacePtr_(iReq),
-    jacInterfacePtr_(iJac),
-    jacType_(LinalgSparseOperator),
-    jacPtr_(jacobian),
-    precInterfacePtr_(iPrec),
-    precType_(LinalgSparseOperator),
-    precPtr_(preconditioner),
-    precMatrixSource_(SeparateMatrix),
-    scaling_(scalingObject),
-    conditionNumberEstimate_(0.0),
-    timer_(cloneVector.getEpetraVector().Comm()),
-    timeCreatePreconditioner_(0.0),
-    timeApplyJacbianInverse_(0.0),
-    resNorm2_(0.0)
+    const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject)
+    : linParams_(linearSolverParams),
+      utils_(printParams),
+      solvers_(solvers),
+      reqInterfacePtr_(iReq),
+      jacInterfacePtr_(iJac),
+      jacType_(LinalgSparseOperator),
+      jacPtr_(jacobian),
+      precInterfacePtr_(iPrec),
+      precType_(LinalgSparseOperator),
+      precPtr_(preconditioner),
+      precMatrixSource_(SeparateMatrix),
+      scaling_(scalingObject),
+      conditionNumberEstimate_(0.0),
+      timer_(cloneVector.getEpetraVector().Comm()),
+      timeCreatePreconditioner_(0.0),
+      timeApplyJacbianInverse_(0.0),
+      resNorm2_(0.0),
+      prePostOperatorPtr_(Teuchos::null)
+{
+  // Jacobian operator is supplied
+  jacType_ = getOperatorType(*jacPtr_);
+
+  reset();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+NOX::NLN::LinearSystem::LinearSystem(
+    Teuchos::ParameterList& printParams,
+    Teuchos::ParameterList& linearSolverParams,
+    const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& solvers,
+    const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
+    const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
+    const Teuchos::RCP<LINALG::SparseOperator>& jacobian,
+    const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
+    const Teuchos::RCP<LINALG::SparseOperator>& preconditioner,
+    const NOX::Epetra::Vector& cloneVector)
+    : linParams_(linearSolverParams),
+      utils_(printParams),
+      solvers_(solvers),
+      reqInterfacePtr_(iReq),
+      jacInterfacePtr_(iJac),
+      jacType_(LinalgSparseOperator),
+      jacPtr_(jacobian),
+      precInterfacePtr_(iPrec),
+      precType_(LinalgSparseOperator),
+      precPtr_(preconditioner),
+      precMatrixSource_(SeparateMatrix),
+      scaling_(Teuchos::null),
+      conditionNumberEstimate_(0.0),
+      timer_(cloneVector.getEpetraVector().Comm()),
+      timeCreatePreconditioner_(0.0),
+      timeApplyJacbianInverse_(0.0),
+      resNorm2_(0.0),
+      prePostOperatorPtr_(Teuchos::null)
+{
+  // Jacobian operator is supplied
+  jacType_ = getOperatorType(*jacPtr_);
+
+  reset();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+NOX::NLN::LinearSystem::LinearSystem(
+    Teuchos::ParameterList& printParams,
+    Teuchos::ParameterList& linearSolverParams,
+    const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& solvers,
+    const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
+    const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
+    const Teuchos::RCP<LINALG::SparseOperator>& jacobian,
+    const NOX::Epetra::Vector& cloneVector,
+    const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject)
+    : linParams_(linearSolverParams),
+      utils_(printParams),
+      solvers_(solvers),
+      reqInterfacePtr_(iReq),
+      jacInterfacePtr_(iJac),
+      jacType_(LinalgSparseOperator),
+      jacPtr_(jacobian),
+      precInterfacePtr_(Teuchos::null),
+      precType_(LinalgSparseOperator),
+      precPtr_(Teuchos::null),
+      precMatrixSource_(SeparateMatrix),
+      scaling_(Teuchos::null),
+      conditionNumberEstimate_(0.0),
+      timer_(cloneVector.getEpetraVector().Comm()),
+      timeCreatePreconditioner_(0.0),
+      timeApplyJacbianInverse_(0.0),
+      resNorm2_(0.0),
+      prePostOperatorPtr_(Teuchos::null)
+{
+  // Jacobian operator is supplied
+  jacType_ = getOperatorType(*jacPtr_);
+
+  reset();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+NOX::NLN::LinearSystem::LinearSystem(
+    Teuchos::ParameterList& printParams,
+    Teuchos::ParameterList& linearSolverParams,
+    const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& solvers,
+    const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
+    const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
+    const Teuchos::RCP<LINALG::SparseOperator>& jacobian,
+    const NOX::Epetra::Vector& cloneVector)
+    : linParams_(linearSolverParams),
+      utils_(printParams),
+      solvers_(solvers),
+      reqInterfacePtr_(iReq),
+      jacInterfacePtr_(iJac),
+      jacType_(LinalgSparseOperator),
+      jacPtr_(jacobian),
+      precInterfacePtr_(Teuchos::null),
+      precType_(LinalgSparseOperator),
+      precPtr_(Teuchos::null),
+      precMatrixSource_(SeparateMatrix),
+      scaling_(Teuchos::null),
+      conditionNumberEstimate_(0.0),
+      timer_(cloneVector.getEpetraVector().Comm()),
+      timeCreatePreconditioner_(0.0),
+      timeApplyJacbianInverse_(0.0),
+      resNorm2_(0.0),
+      prePostOperatorPtr_(Teuchos::null)
 {
   // Jacobian operator is supplied
   jacType_ = getOperatorType(*jacPtr_);
@@ -74,11 +184,18 @@ void NOX::NLN::LinearSystem::reset()
   // Place linear solver details in the "Output" sublist of the
   // "Linear Solver" parameter list
   outputSolveDetails_ = linParams_.get("Output Solver Details", true);
+
+  // set the pre/post-operator
+  if (prePostOperatorPtr_.is_null())
+    prePostOperatorPtr_ =
+        Teuchos::rcp(new NOX::NLN::LinSystem::PrePostOperator(linParams_));
+  else
+    prePostOperatorPtr_->reset(linParams_);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::NLN::LinearSystem::OperatorType NOX::NLN::LinearSystem::getOperatorType(const LINALG::SparseOperator& op)
+NOX::NLN::LinearSystem::OperatorType NOX::NLN::LinearSystem::getOperatorType(const LINALG::SparseOperator& op) const
 {
   const Epetra_Operator* testOperator = 0;
 
@@ -135,13 +252,23 @@ bool NOX::NLN::LinearSystem::applyJacobianInverse(
     const NOX::Epetra::Vector& input,
           NOX::Epetra::Vector& result)
 {
+  /* Need non-const version of the input vector
+   * Epetra_LinearProblem requires non-const versions so we can perform
+   * scaling of the linear problem.
+   * Same is valid for the prePostOperator. We want to have the
+   * possibility to change the linear system. This is for example
+   * necessary for the PTC non-linear solver.
+   *
+   * NOTE: Alternatively it would be possible to parse the
+   * Epetra_LinearProblem object, but we want to stick to the LINALG
+   * derived objects outside of the linear solver.        hiermeier 09/15
+   */
+  NOX::Epetra::Vector& nonConstInput = const_cast<NOX::Epetra::Vector&>(input);
+
+  prePostOperatorPtr_->runPreApplyJacobianInverse(nonConstInput,*jacPtr_,*this);
 
   double startTime = timer_.WallTime();
 
-  // Need non-const version of the input vector
-  // Epetra_LinearProblem requires non-const versions so we can perform
-  // scaling of the linear problem.
-  NOX::Epetra::Vector& nonConstInput = const_cast<NOX::Epetra::Vector&>(input);
   // calculate the residual norm
   resNorm2_ = nonConstInput.norm(NOX::Abstract::Vector::TwoNorm);
 
@@ -151,24 +278,23 @@ bool NOX::NLN::LinearSystem::applyJacobianInverse(
 
   // Create Epetra linear problem object for the linear solve
   /* Note: We switch from LINALG_objects to pure Epetra_objects.
-     This is necessary for the linear solver.
-         LINALG::SparseMatrix ---> Epetra_CrsMatrix
+   * This is necessary for the linear solver.
+   *     LINALG::SparseMatrix ---> Epetra_CrsMatrix
    */
   Epetra_LinearProblem linProblem(&(*jacPtr_->EpetraOperator()),
       &(result.getEpetraVector()),
       &(nonConstInput.getEpetraVector()));
 
   // ************* Begin linear system scaling *****************
-  if ( !Teuchos::is_null(scaling_) ) {
-
+  if ( !Teuchos::is_null(scaling_) )
+  {
     if ( !manualScaling_ )
       scaling_->computeScaling(linProblem);
 
     scaling_->scaleLinearSystem(linProblem);
 
-    if (utils_.isPrintType(NOX::Utils::Details)) {
+    if (utils_.isPrintType(NOX::Utils::Details))
       utils_.out() << *scaling_ << std::endl;
-    }
   }
   // ************* End linear system scaling *******************
 
@@ -184,16 +310,18 @@ bool NOX::NLN::LinearSystem::applyJacobianInverse(
   if (iter==-10)
     throwError("applyJacobianInverse", "\"Number of Nonlinear Iterations\" was not specified");
 
-  int err = currSolver->NoxSolve(linProblem,true,iter==0);
-  if (err)
-    throwError("applyJacobianInverse", "linear solve failed");
+  if (currSolver->NoxSolve(linProblem,true,iter==0))
+      throwError("applyJacobianInverse", "linear solve failed");
 
-  // Unscale the linear system
+  // ************* Begin linear system unscaling *************
   if ( !Teuchos::is_null(scaling_) )
     scaling_->unscaleLinearSystem(linProblem);
+  // ************* End linear system unscaling ***************
 
   double endTime = timer_.WallTime();
   timeApplyJacbianInverse_ += (endTime - startTime);
+
+  prePostOperatorPtr_->runPostApplyJacobianInverse(nonConstInput,*jacPtr_,*this);
 
   return true;
 }
@@ -291,6 +419,13 @@ Teuchos::RCP<Epetra_Operator> NOX::NLN::LinearSystem::getJacobianOperator()
   return jacPtr_;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+const enum NOX::NLN::LinearSystem::OperatorType& NOX::NLN::LinearSystem::
+    getJacobianOperatorType() const
+{
+  return jacType_;
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

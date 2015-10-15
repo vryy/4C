@@ -18,7 +18,7 @@
 #include <NOX_Utils.H>
 #include <NOX_GlobalData.H>
 #include <NOX_Solver_Generic.H>
-#include <NOX_Abstract_Group.H>
+#include <NOX_Epetra_Group.H>
 
 #include <Teuchos_ParameterList.hpp>
 
@@ -27,9 +27,10 @@
 NOX::NLN::LineSearch::Backtrack::Backtrack(
     const Teuchos::RCP<NOX::GlobalData>& gd,
     const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> innerTests,
-          Teuchos::ParameterList& params) :
-    checkType_(NOX::StatusTest::Complete),
-    innerTestsPtr_(innerTests)
+          Teuchos::ParameterList& params)
+    : stepPtr_(NULL),
+      checkType_(NOX::StatusTest::Complete),
+      innerTestsPtr_(innerTests)
 {
   reset(gd, params);
 }
@@ -51,7 +52,6 @@ bool NOX::NLN::LineSearch::Backtrack::reset
   status_ = NOX::NLN::INNER::StatusTest::status_unevaluated;
 
   defaultStep_ = p.get("Default Step", 1.0);
-  step_ = defaultStep_;
   reductionFactor_ = p.get("Reduction Factor", 0.5);
   if ((reductionFactor_ <= 0.0)  || (reductionFactor_ >= 1.0))
   {
@@ -73,8 +73,6 @@ void NOX::NLN::LineSearch::Backtrack::reset()
 
   status_ = NOX::NLN::INNER::StatusTest::status_unevaluated;
 
-  step_ = defaultStep_;
-
   return;
 }
 
@@ -93,6 +91,10 @@ bool NOX::NLN::LineSearch::Backtrack::compute
   const NOX::Abstract::Group& oldGrp = s.getPreviousSolutionGroup();
   // update the search direction pointer
   searchDirectionPtr_ = Teuchos::rcpFromRef(dir);
+  // set the step pointer to the inserted step variable
+  stepPtr_ = &step;
+  // reset the step length
+  step = defaultStep_;
   // initialize the inner status test
   // ----------------------------------------------------------------------
   // BE CAREFUL HERE:
@@ -101,6 +103,15 @@ bool NOX::NLN::LineSearch::Backtrack::compute
   // want to access the jacobian, we have to use the oldGrp
   // (target of the copy process), instead.                hiermeier 08/15
   // ----------------------------------------------------------------------
+  // ToDo Check what is happening in the PTC case, since we call computeX once
+  // on the soln grp. Maybe this changes the ownership and we have to reset
+  // the ownership to the old grp before we can call the compute routine of the
+  // backtracking linesearch.
+  const NOX::Epetra::Group* epetraOldGrpPtr =
+        dynamic_cast<const NOX::Epetra::Group*>(&oldGrp);
+  if (not epetraOldGrpPtr->isJacobian())
+    throwError("compute()","Ownership changed unexpectedly!");
+
   status_ = innerTestsPtr_->CheckStatus(*this,oldGrp,checkType_);
   if ((status_ == NOX::NLN::INNER::StatusTest::status_converged) and
       (utils_->isPrintType(NOX::Utils::Warning)))
@@ -118,7 +129,7 @@ bool NOX::NLN::LineSearch::Backtrack::compute
   // -------------------------------------------------
   // update the solution vector and get a trial point
   // -------------------------------------------------
-  grp.computeX(oldGrp, dir, step_);
+  grp.computeX(oldGrp, dir, step);
 
   NOX::Abstract::Group::ReturnType rtype = grp.computeF();
   if (rtype != NOX::Abstract::Group::Ok)
@@ -143,12 +154,12 @@ bool NOX::NLN::LineSearch::Backtrack::compute
     // -------------------------------------------------
     // reduce step length
     // -------------------------------------------------
-    step_ *= reductionFactor_;
+    step *= reductionFactor_;
 
     // -------------------------------------------------
     // update the solution vector and get a trial point
     // -------------------------------------------------
-    grp.computeX(oldGrp, dir, step_);
+    grp.computeX(oldGrp, dir, step);
 
     rtype = grp.computeF();
     if (rtype != NOX::Abstract::Group::Ok)
@@ -169,9 +180,6 @@ bool NOX::NLN::LineSearch::Backtrack::compute
         "restoration phase is implemented!");
   else if (status_ == NOX::NLN::INNER::StatusTest::status_no_descent_direction)
     throwError("compute()","The given search direction is no descent direction!");
-
-  // Update the step variable of LineSearchBased class.
-  step = step_;
 
   return (status_ == NOX::NLN::INNER::StatusTest::status_converged ? true : false);
 }
@@ -209,7 +217,10 @@ const NOX::Abstract::Vector& NOX::NLN::LineSearch::Backtrack::GetSearchDirection
  *----------------------------------------------------------------------*/
 const double& NOX::NLN::LineSearch::Backtrack::GetStepLength() const
 {
-  return step_;
+  if (stepPtr_==NULL)
+    throwError("GetStepLength","Step pointer is NULL!");
+
+  return *stepPtr_;
 }
 
 /*----------------------------------------------------------------------*

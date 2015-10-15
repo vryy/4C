@@ -1,18 +1,25 @@
-/*
- * str_predict_generic.cpp
- *
- *  Created on: Sep 1, 2015
- *      Author: hiermeier
- */
+/*-----------------------------------------------------------*/
+/*!
+\file str_predict_generic.cpp
 
+\maintainer Philipp Farah
+
+\date Sep 1, 2015
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
 
 #include "str_predict_generic.H"
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::PREDICT::Generic::Generic() :
-type_(INPAR::STR::pred_vague)
+STR::PREDICT::Generic::Generic()
+    : isinit_(false),
+      issetup_(false),
+      type_(INPAR::STR::pred_vague)
 {
   // empty
 }
@@ -35,9 +42,7 @@ void STR::PREDICT::Generic::Init(const enum INPAR::STR::PredEnum& type)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const std::string& STR::PREDICT::Generic::Name() const
+const std::string STR::PREDICT::Generic::Name() const
 {
   return INPAR::STR::PredEnumString(type_);
 }
-
-
