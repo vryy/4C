@@ -133,7 +133,7 @@ void NLNSOL::NlnOperatorBase::PrintIterSummary(const int iter,
       and Params().get<bool>("Nonlinear Operator: Print Iterations"))
   {
     *getOStream() << LabelShort() << " iteration " << iter
-        << ": |f| = " << fnorm2
+        << ":\t|f| = " << std::scientific << std::setprecision(6) << fnorm2
         << std::endl;
   }
 }
