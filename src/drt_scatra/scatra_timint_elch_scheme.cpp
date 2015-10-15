@@ -250,6 +250,21 @@ void SCATRA::ScaTraTimIntElchOST::ElectrodeKineticsTimeUpdate()
 }
 
 
+/*----------------------------------------------------------------------*
+ | explicit predictor for nonlinear solver                   fang 10/15 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElchOST::ExplicitPredictor()
+{
+  // call base class routine
+  TimIntOneStepTheta::ExplicitPredictor();
+
+  // for the electric potential we just use the old values from the previous time step
+  splitter_->InsertCondVector(splitter_->ExtractCondVector(phin_),phinp_);
+
+  return;
+}
+
+
 /*-------------------------------------------------------------------------------------*
  | compute time derivative of applied electrode potential                   ehrl 08/13 |
  *-------------------------------------------------------------------------------------*/

@@ -63,6 +63,9 @@ protected:
   //! update time-dependent electrode state variables at the end of an time step
   void ElectrodeKineticsTimeUpdate();
 
+  //! explicit predictor for nonlinear solver
+  void ExplicitPredictor();
+
   //!  compute scalar time derivate parameters of the input voltage to compute double layer current densities
   void ComputeTimeDerivPot0(const bool init);
 
