@@ -74,7 +74,7 @@ MAT 3 ELAST_CoupNeoHooke YOUNG 77.0 NUE 0.3
 -------------------------------------------------------------FUNCT3
 -------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 2.96723497201516976e-03 TOLERANCE 1e-09
+STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 2.96734432550402284e-03 TOLERANCE 1e-09
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 8
 NDLINE  12
