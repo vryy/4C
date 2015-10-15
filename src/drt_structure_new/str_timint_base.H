@@ -1012,14 +1012,14 @@ namespace TIMINT {
       };
 
       //! Return time \f$t_{n}\f$ of last converged step
-      Teuchos::RCP<::TIMINT::TimIntMStep<double> >& GetMutableTimeN()
+      Teuchos::RCP< ::TIMINT::TimIntMStep<double> >& GetMutableTimeN()
       {
         CheckInitSetup();
         return timen_;
       };
 
       //! Return time step size \f$\Delta t\f$
-      Teuchos::RCP<::TIMINT::TimIntMStep<double> >& GetMutableDeltaTime()
+      Teuchos::RCP< ::TIMINT::TimIntMStep<double> >& GetMutableDeltaTime()
       {
         CheckInitSetup();
         return dt_;
@@ -1161,10 +1161,10 @@ namespace TIMINT {
       double timenp_;
 
       //! time \f$t_{n}\f$ of last converged step
-      Teuchos::RCP<::TIMINT::TimIntMStep<double> > timen_;
+      Teuchos::RCP< ::TIMINT::TimIntMStep<double> > timen_;
 
       //! time step size \f$\Delta t\f$
-      Teuchos::RCP<::TIMINT::TimIntMStep<double> > dt_;
+      Teuchos::RCP< ::TIMINT::TimIntMStep<double> > dt_;
 
       //! time step index \f$n\f$
       int stepn_;
@@ -1177,13 +1177,13 @@ namespace TIMINT {
       //@{
 
       //! global displacements \f${D}_{n}, D_{n-1}, ...\f$
-      Teuchos::RCP<::TIMINT::TimIntMStep<Epetra_Vector> > dis_;
+      Teuchos::RCP< ::TIMINT::TimIntMStep<Epetra_Vector> > dis_;
 
       //! global velocities \f${V}_{n}, V_{n-1}, ...\f$
-      Teuchos::RCP<::TIMINT::TimIntMStep<Epetra_Vector> > vel_;
+      Teuchos::RCP< ::TIMINT::TimIntMStep<Epetra_Vector> > vel_;
 
       //! global accelerations \f${A}_{n}, A_{n-1}, ...\f$
-      Teuchos::RCP<::TIMINT::TimIntMStep<Epetra_Vector> > acc_;
+      Teuchos::RCP< ::TIMINT::TimIntMStep<Epetra_Vector> > acc_;
 
       //! global displacements \f${D}_{n+1}\f$ at \f$t_{n+1}\f$
       Teuchos::RCP<Epetra_Vector> disnp_;
