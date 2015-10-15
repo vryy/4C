@@ -510,7 +510,7 @@ void NOX::NLN::LinSystem::PrePostOp::PseudoTransient::
     default:
     {
       dserror("Unsupported jacobian operator type: %s",
-          NOX::NLN::LinearSystem::OperatorType2String(jactype));
+          NOX::NLN::LinearSystem::OperatorType2String(jactype).c_str());
       break;
     }
   }

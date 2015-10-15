@@ -113,7 +113,7 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
     IntParameter("Maximum Number of Pseudo-Transient Iterations",std::numeric_limits<int>::max(),"",&ptc);
     Teuchos::Array<std::string> time_step_control = Teuchos::tuple<std::string>(
         "SER",
-        "Switched Evolution Relaxation"
+        "Switched Evolution Relaxation",
         "TTE",
         "Temporal Truncation Error");
     Teuchos::setStringToIntegralParameter<int>(
