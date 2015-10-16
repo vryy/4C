@@ -262,6 +262,18 @@ void SCATRA::ScaTraTimIntElch::CalcProblemSpecificNorm(
 }
 
 
+/*----------------------------------------------------------------------*
+ | prepare time loop                                         fang 10/15 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElch::PrepareTimeLoop()
+{
+  // call base class routine
+  ScaTraTimIntImpl::PrepareTimeLoop();
+
+  return;
+} // SCATRA::ScaTraTimIntElch::PrepareTimeLoop
+
+
 /*------------------------------------------------------------------------------*
  | initialization procedure prior to evaluation of first time step   fang 09/15 |
  *------------------------------------------------------------------------------*/

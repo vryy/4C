@@ -177,6 +177,9 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
       double& potresnorm,
       double& conresnorminf);
 
+  //! prepare time loop
+  void PrepareTimeLoop();
+
   //! initialization procedure prior to evaluation of first time step
   void PrepareFirstTimeStep();
 

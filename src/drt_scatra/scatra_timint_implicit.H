@@ -128,6 +128,9 @@ public:
   //! add global state vectors specific for time-integration scheme
   virtual void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver=false) = 0;
 
+  //! prepare time loop
+  virtual void PrepareTimeLoop();
+
   //! setup the variables to do a new time step
   virtual void PrepareTimeStep();
 

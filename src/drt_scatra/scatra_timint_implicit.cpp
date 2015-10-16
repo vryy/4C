@@ -823,6 +823,25 @@ void SCATRA::ScaTraTimIntImpl::SetElementTurbulenceParameters(bool calcinitialti
 /*--- set, prepare, and predict --------------------------------------------*/
 
 /*----------------------------------------------------------------------*
+ | prepare time loop                                         fang 10/15 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::PrepareTimeLoop()
+{
+  // provide information about initial field (do not do for restarts!)
+  if(step_ == 0)
+  {
+    // write out initial state
+    Output();
+
+    // compute error for problems with analytical solution (initial field!)
+    EvaluateErrorComparedToAnalyticalSol();
+  }
+
+  return;
+} // SCATRA::ScaTraTimIntImpl::PrepareTimeLoop
+
+
+/*----------------------------------------------------------------------*
  | setup the variables to do a new time step          (public)  vg 08/07|
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
@@ -1316,18 +1335,11 @@ int nds)
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::TimeLoop()
 {
-  // provide information about initial field (do not do for restarts!)
-  if (Step()==0)
-  {
-    // write out initial state
-    Output();
-
-    // compute error for problems with analytical solution (initial field!)
-    EvaluateErrorComparedToAnalyticalSol();
-  }
-
   // time measurement: time loop
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:  + time loop");
+
+  // prepare time loop
+  PrepareTimeLoop();
 
   while ((step_<stepmax_) and ((time_+ EPS12) < maxtime_))
   {
