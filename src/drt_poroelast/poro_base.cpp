@@ -414,11 +414,11 @@ void POROELAST::PoroBase::SetupCoupling()
 
   // if one discretization is a subset of the other, they will differ in node number (and element number)
   // we assume matching grids for the overlapping part here
-  const Epetra_Map* structnodecolmap = structdis->NodeColMap();
-  const Epetra_Map* fluidnodecolmap = fluiddis->NodeColMap();
+  const Epetra_Map* structnoderowmap = structdis->NodeRowMap();
+  const Epetra_Map* fluidnoderowmap = fluiddis->NodeRowMap();
 
-  const int numglobalstructnodes = structnodecolmap->NumGlobalElements();
-  const int numglobalfluidnodes = fluidnodecolmap->NumGlobalElements();
+  const int numglobalstructnodes = structnoderowmap->NumGlobalElements();
+  const int numglobalfluidnodes = fluidnoderowmap->NumGlobalElements();
 
   if(matchinggrid_)
   {
@@ -432,7 +432,7 @@ void POROELAST::PoroBase::SetupCoupling()
     submeshes_=false;
 
   const int ndim = DRT::Problem::Instance()->NDim();
-  const int numglobalstructdofs = structdis->DofColMap()->NumGlobalElements();
+  const int numglobalstructdofs = structdis->DofRowMap()->NumGlobalElements();
   if(numglobalstructdofs == numglobalstructnodes * ndim)
     porositydof_ = false;
   else
@@ -441,9 +441,6 @@ void POROELAST::PoroBase::SetupCoupling()
     porositysplitter_ = POROELAST::UTILS::BuildPoroSplitter(StructureField()->Discretization());
   }
 
-  // the fluid-structure coupling not always matches
-  const Epetra_Map* fluidnoderowmap = fluiddis->NodeRowMap();
-  const Epetra_Map* structurenoderowmap= structdis->NodeRowMap();
 
   coupfs_ = Teuchos::rcp(new ADAPTER::Coupling());
   int ndof = ndim;
@@ -468,7 +465,7 @@ void POROELAST::PoroBase::SetupCoupling()
     {
       coupfs_->SetupCoupling(*structdis,
                              *fluiddis,
-                             *structurenoderowmap,
+                             *structnoderowmap,
                              *fluidnoderowmap,
                              ndof,
                              not submeshes_);
