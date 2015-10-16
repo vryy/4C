@@ -1553,15 +1553,34 @@ void GEO::CUT::VolumeCell::DirectDivergenceGaussRule( Element * elem,
 void GEO::CUT::VolumeCell::ProjectGaussPointsToLocalCoodinates()
 {
   if( element_->Shape() != DRT::Element::hex8 )
-    dserror("Currently Direct divergence in global coordinates work only for hex8 elements\n");
+    dserror("Currently Direct divergence in global coordinates works only for hex8 elements\n");
 
   DRT::UTILS::GaussIntegration intpoints( gp_ );
 
-  if( element_->isShadow() )
+  if( element_->isShadow() && (element_->getQuadShape() == DRT::Element::hex20 || element_->getQuadShape() == DRT::Element::hex27))
   {
-    LINALG::Matrix<3, 20> xyze;
-    element_->CoordinatesQuad( xyze.A() );
-    gp_ = DRT::UTILS::GaussIntegration::ProjectGaussPointsGlobalToLocal<DRT::Element::hex20>( xyze, intpoints );
+    switch (element_->getQuadShape())
+    {
+    case DRT::Element::hex20:
+    {
+      LINALG::Matrix<3, 20> xyze;
+      element_->CoordinatesQuad( xyze.A() );
+      gp_ = DRT::UTILS::GaussIntegration::ProjectGaussPointsGlobalToLocal<DRT::Element::hex20>( xyze, intpoints );
+      break;
+    }
+    case DRT::Element::hex27:
+    {
+      LINALG::Matrix<3, 27> xyze;
+      element_->CoordinatesQuad( xyze.A() );
+      gp_ = DRT::UTILS::GaussIntegration::ProjectGaussPointsGlobalToLocal<DRT::Element::hex27>( xyze, intpoints );
+      break;
+    }
+    default:
+    {
+      dserror("Currently Direct divergence in global coordinates works only for hex8, hex20, hex27 elements\n");
+      break;
+    }
+    }
   }
   else
   {
