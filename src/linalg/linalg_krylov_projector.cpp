@@ -477,7 +477,7 @@ Teuchos::RCP<Epetra_MultiVector> LINALG::KrylovProjector::MultiplyMultiVecterDen
     for(int rr=0;rr<nsdim_;++rr)
     {
       // extract i-th (rr-th) vector of mvout
-      Epetra_Vector mvouti(View,*mvout,rr);
+      Epetra_Vector mvouti(::View,*mvout,rr);
       // loop over all vectors of mv
       for(int mm=0;mm<nsdim_;++mm)
       {
@@ -492,7 +492,7 @@ Teuchos::RCP<Epetra_MultiVector> LINALG::KrylovProjector::MultiplyMultiVecterDen
     for(int rr=0;rr<nsdim_;++rr)
     {
       // extract i-th (rr-th) vector of mvout
-      Epetra_Vector mvouti(View,*mvout,rr);
+      Epetra_Vector mvouti(::View,*mvout,rr);
       // loop over all vectors of mv
       for(int mm=0;mm<nsdim_;++mm)
       {

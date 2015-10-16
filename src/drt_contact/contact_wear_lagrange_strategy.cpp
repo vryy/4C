@@ -3736,10 +3736,10 @@ void CONTACT::WearLagrangeStrategy::BuildSaddlePointSystem(Teuchos::RCP<LINALG::
         trkdz->UnComplete();
         trkdz->Complete(*gmap,*ProblemDofs());
 
-        mat->Assign(0,0,View,*stiffmt);
-        mat->Assign(0,1,View,*trkdz);
-        mat->Assign(1,0,View,*trkgd);
-        mat->Assign(1,1,View,*trkgg);
+        mat->Assign(0,0,LINALG::View,*stiffmt);
+        mat->Assign(0,1,LINALG::View,*trkdz);
+        mat->Assign(1,0,LINALG::View,*trkgd);
+        mat->Assign(1,1,LINALG::View,*trkgg);
         mat->Complete();
       }
       // BOTH_SIDED DISCRETE WEAR
@@ -3777,10 +3777,10 @@ void CONTACT::WearLagrangeStrategy::BuildSaddlePointSystem(Teuchos::RCP<LINALG::
         trkdz->UnComplete();
         trkdz->Complete(*gmap,*ProblemDofs());
 
-        mat->Assign(0,0,View,*stiffmt);
-        mat->Assign(0,1,View,*trkdz);
-        mat->Assign(1,0,View,*trkgd);
-        mat->Assign(1,1,View,*trkgg);
+        mat->Assign(0,0,LINALG::View,*stiffmt);
+        mat->Assign(0,1,LINALG::View,*trkdz);
+        mat->Assign(1,0,LINALG::View,*trkgd);
+        mat->Assign(1,1,LINALG::View,*trkgg);
         mat->Complete();
       }
     }
@@ -3793,10 +3793,10 @@ void CONTACT::WearLagrangeStrategy::BuildSaddlePointSystem(Teuchos::RCP<LINALG::
       // build block matrix for SIMPLER
       blockMat = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(dommapext,rowmapext,81,false,false));
       Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > mat = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> >(blockMat);
-      mat->Assign(0,0,View,*stiffmt);
-      mat->Assign(0,1,View,*trkdz);
-      mat->Assign(1,0,View,*trkzd);
-      mat->Assign(1,1,View,*trkzz);
+      mat->Assign(0,0,LINALG::View,*stiffmt);
+      mat->Assign(0,1,LINALG::View,*trkdz);
+      mat->Assign(1,0,LINALG::View,*trkzd);
+      mat->Assign(1,1,LINALG::View,*trkzz);
       mat->Complete();
     }
 

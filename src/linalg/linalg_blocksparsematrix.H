@@ -53,7 +53,7 @@ class BlockSparseMatrixBase : public SparseOperator
   virtual ~BlockSparseMatrixBase() {}
 
   /// make a copy of me
-  virtual Teuchos::RCP<BlockSparseMatrixBase> Clone(Epetra_DataAccess access) = 0;
+  virtual Teuchos::RCP<BlockSparseMatrixBase> Clone(DataAccess access) = 0;
 
   /// setup of block preconditioners
   /*!
@@ -84,7 +84,7 @@ class BlockSparseMatrixBase : public SparseOperator
   /*!
     \note The maps of the block have to match the maps of the given matrix.
    */
-  void Assign(int r, int c, Epetra_DataAccess access, SparseMatrix& mat);
+  void Assign(int r, int c, DataAccess access, SparseMatrix& mat);
 
   //@}
 
@@ -297,7 +297,7 @@ public:
       bool explicitdirichlet=true,
       bool savegraph=false);
 
-  Teuchos::RCP<BlockSparseMatrixBase> Clone(Epetra_DataAccess access);
+  Teuchos::RCP<BlockSparseMatrixBase> Clone(DataAccess access);
 
   /// just a dummy that switches from strided assembly to standard assembly
   void Assemble(int eid,
@@ -480,7 +480,7 @@ Strategy((LINALG::BlockSparseMatrixBase&)(*this))
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <class Strategy>
-Teuchos::RCP<LINALG::BlockSparseMatrixBase> LINALG::BlockSparseMatrix<Strategy>::Clone(Epetra_DataAccess access)
+Teuchos::RCP<LINALG::BlockSparseMatrixBase> LINALG::BlockSparseMatrix<Strategy>::Clone(DataAccess access)
 {
   int npr                = Matrix(0,0).MaxNumEntries();
   bool explicitdirichlet = Matrix(0,0).ExplicitDirichlet();

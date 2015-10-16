@@ -25,6 +25,26 @@ namespace LINALG
   class BlockSparseMatrixBase;
   class SparseMatrixBase;
 
+  /*! \enum LINALG::DataAccess
+   *  \brief Handling of data access (Copy or View)
+   *
+   *  If set to LINALG::Copy, user data will be copied at construction.
+   *  If set to LINALG::View, user data will be encapsulated and used throughout
+   *  the life of the object.
+   *
+   *  \note A separate LINALG::DataAccess is necessary in order to resolve
+   *  possible ambiguity conflicts with the Epetra_DataAccess.
+   *
+   *  Use LINALG::DataAccess for construction of any LINALG matrix object.
+   *  Use plain 'Copy' or 'View' for construction of any Epetra matrix object.
+   *
+   *  \author mayr.mt \date 10/2015
+   */
+  enum DataAccess
+  {
+    Copy, ///< deep copy
+    View ///< reference to original data
+  };
 
   /// Linear operator interface enhanced for use in FE simulations
   /*!

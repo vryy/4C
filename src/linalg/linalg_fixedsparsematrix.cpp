@@ -14,7 +14,7 @@ void LINALG::FixedSparseMatrix::SetMatrix( Teuchos::RCP<Epetra_CrsGraph> graph )
   // Always create a FE matrix here. It does not hurt and allows better assembly.
   sysmat_ = Teuchos::rcp( new Epetra_FECrsMatrix( Copy, *graph ) );
 #endif
-  sysmat_ = Teuchos::rcp( new Epetra_CrsMatrix( Copy, *graph ) );
+  sysmat_ = Teuchos::rcp( new Epetra_CrsMatrix( ::Copy, *graph ) );
 }
 
 void LINALG::FixedSparseMatrix::Zero()

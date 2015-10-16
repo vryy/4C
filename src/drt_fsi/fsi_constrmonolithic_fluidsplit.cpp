@@ -229,7 +229,7 @@ void FSI::ConstrMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
 
   scon.Complete(*conman_->GetConstraintMap(),s->RangeMap());
 
-  mat.Assign(0,3,View,scon);
+  mat.Assign(0,3,LINALG::View,scon);
 
   /*----------------------------------------------------------------------*/
   // fluid part
@@ -248,7 +248,7 @@ void FSI::ConstrMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
                    true,
                    true);
 
-  mat.Assign(0,0,View,*s);
+  mat.Assign(0,0,LINALG::View,*s);
 
   (*fgitransform_)(fgi,
                    scale,
@@ -272,7 +272,7 @@ void FSI::ConstrMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
                    1.,
                    ADAPTER::CouplingSlaveConverter(coupsa),
                    mat.Matrix(2,0));
-  mat.Assign(2,2,View,aii);
+  mat.Assign(2,2,LINALG::View,aii);
 
   /*----------------------------------------------------------------------*/
   // add optional fluid linearization with respect to mesh motion block
@@ -330,7 +330,7 @@ void FSI::ConstrMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
 
   sconT_->Add(scon,true,1.0,0.0);
   sconT_->Complete(scon.RangeMap(),scon.DomainMap());
-  mat.Assign(3,0,View,*sconT_);
+  mat.Assign(3,0,LINALG::View,*sconT_);
 
   /*----------------------------------------------------------------------*/
   // done. make sure all blocks are filled.

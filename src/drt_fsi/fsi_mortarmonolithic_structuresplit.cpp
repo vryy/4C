@@ -705,7 +705,7 @@ void FSI::MortarMonolithicStructureSplit::SetupSystemMatrix(
   // Contributions to blocks in system matrix are listed separately.
   // Block numbering in comments ranges from (1,1) to (4,4).
 
-  mat.Assign(0,0,View,s->Matrix(0,0));
+  mat.Assign(0,0,LINALG::View,s->Matrix(0,0));
 
   // ----------Addressing contribution to block (1,3)
   Teuchos::RCP<LINALG::SparseMatrix> sig =
@@ -716,7 +716,7 @@ void FSI::MortarMonolithicStructureSplit::SetupSystemMatrix(
   lsig->Add(*sig, false, 1. / timescale, 0.0);
   lsig->Complete(f->DomainMap(), sig->RangeMap());
 
-  mat.Assign(0, 1, View, *lsig);
+  mat.Assign(0, 1, LINALG::View, *lsig);
 
   // ----------Addressing contribution to block (3,1)
   Teuchos::RCP<LINALG::SparseMatrix> sgi =
@@ -727,7 +727,7 @@ void FSI::MortarMonolithicStructureSplit::SetupSystemMatrix(
   lsgi->Add(*sgi, false, (1. - ftiparam) / ((1. - stiparam) * scale), 0.0);
   lsgi->Complete(sgi->DomainMap(), f->RangeMap());
 
-  mat.Assign(1, 0, View, *lsgi);
+  mat.Assign(1, 0, LINALG::View, *lsgi);
 
   // ----------Addressing contribution to block (3,3)
   Teuchos::RCP<LINALG::SparseMatrix> sgg =
@@ -735,7 +735,7 @@ void FSI::MortarMonolithicStructureSplit::SetupSystemMatrix(
   sgg = MLMultiply(*mortarp, true, *sgg, false, false, false, true);
 
   f->Add(*sgg, false, (1. - ftiparam) / ((1. - stiparam) * scale * timescale), 1.0);
-  mat.Assign(1, 1, View, *f);
+  mat.Assign(1, 1, LINALG::View, *f);
 
   (*aigtransform_)(a->FullRowMap(),
                    a->FullColMap(),
@@ -743,7 +743,7 @@ void FSI::MortarMonolithicStructureSplit::SetupSystemMatrix(
                    1./timescale,
                    ADAPTER::CouplingSlaveConverter(InterfaceFluidAleCoupling()),
                    mat.Matrix(2,1));
-  mat.Assign(2, 2, View, aii);
+  mat.Assign(2, 2, LINALG::View, aii);
 
   /*--------------------------------------------------------------------------*/
   // add optional fluid linearization with respect to mesh motion block

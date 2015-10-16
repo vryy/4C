@@ -368,9 +368,9 @@ void FSI::ConstrOverlappingBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_
       if (err) dserror("Epetra_MultiVector::Reciprocal (ale matrix) returned %d",err);
       LINALG::SparseMatrix invaleDiag(aleDiagVec);
 
-      invDiag.Assign(0,0,View,invstructDiag);
-      invDiag.Assign(1,1,View,invfluidDiag);
-      invDiag.Assign(2,2,View,invaleDiag);
+      invDiag.Assign(0,0,LINALG::View,invstructDiag);
+      invDiag.Assign(1,1,LINALG::View,invfluidDiag);
+      invDiag.Assign(2,2,LINALG::View,invaleDiag);
     }
     else if (prec_ == INPAR::FSI::Simplec)
     {
@@ -391,9 +391,9 @@ void FSI::ConstrOverlappingBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_
       if (err) dserror("Epetra_CrsMatrix::InvRowSums (ale matrix) returned %d",err);
       LINALG::SparseMatrix invaleDiag(aleDiagVec);
 
-      invDiag.Assign(0,0,View,invstructDiag);
-      invDiag.Assign(1,1,View,invfluidDiag);
-      invDiag.Assign(2,2,View,invaleDiag);
+      invDiag.Assign(0,0,LINALG::View,invstructDiag);
+      invDiag.Assign(1,1,LINALG::View,invfluidDiag);
+      invDiag.Assign(2,2,LINALG::View,invaleDiag);
     }
     else
       dserror("Unknown type of preconditioner for constraint fsi system");

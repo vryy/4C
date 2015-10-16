@@ -559,10 +559,10 @@ void FLD::Meshtying::SolveMeshtying(
 
       SplitVectorBasedOn3x3(residual, res);
       // assign blocks to the solution matrix
-      sysmatsolve->Assign(0,0, View, sysmatnew->Matrix(0,0));
-      sysmatsolve->Assign(0,1, View, sysmatnew->Matrix(0,1));
-      sysmatsolve->Assign(1,0, View, sysmatnew->Matrix(1,0));
-      sysmatsolve->Assign(1,1, View, sysmatnew->Matrix(1,1));
+      sysmatsolve->Assign(0,0, LINALG::View, sysmatnew->Matrix(0,0));
+      sysmatsolve->Assign(0,1, LINALG::View, sysmatnew->Matrix(0,1));
+      sysmatsolve->Assign(1,0, LINALG::View, sysmatnew->Matrix(1,0));
+      sysmatsolve->Assign(1,1, LINALG::View, sysmatnew->Matrix(1,1));
       sysmatsolve->Complete();
     }
 
@@ -604,10 +604,10 @@ void FLD::Meshtying::SolveMeshtying(
 
 
         // assign blocks to the solution matrix
-        sysmatsolve->Assign(0,0, View, sysmatnew->Matrix(0,0));
-        sysmatsolve->Assign(0,1, View, sysmatnew->Matrix(0,1));
-        sysmatsolve->Assign(1,0, View, sysmatnew->Matrix(1,0));
-        sysmatsolve->Assign(1,1, View, sysmatnew->Matrix(1,1));
+        sysmatsolve->Assign(0,0, LINALG::View, sysmatnew->Matrix(0,0));
+        sysmatsolve->Assign(0,1, LINALG::View, sysmatnew->Matrix(0,1));
+        sysmatsolve->Assign(1,0, LINALG::View, sysmatnew->Matrix(1,0));
+        sysmatsolve->Assign(1,1, LINALG::View, sysmatnew->Matrix(1,1));
         sysmatsolve->Complete();
 
         mergedmatrix = sysmatsolve->Merge();

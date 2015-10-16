@@ -192,7 +192,7 @@ void LINALG::SOLVER::AMGNXN::BlockedMatrix::Apply(const BlockedVector& in, Block
 /*------------------------------------------------------------------------------*/
 
 Teuchos::RCP<LINALG::BlockSparseMatrixBase>
-LINALG::SOLVER::AMGNXN::BlockedMatrix::GetBlockSparseMatrix(Epetra_DataAccess access)
+LINALG::SOLVER::AMGNXN::BlockedMatrix::GetBlockSparseMatrix(DataAccess access)
 {
 
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::AMGNXN::BlockedMatrix::GetBlockSparseMatrix");

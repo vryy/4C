@@ -120,7 +120,7 @@ class SparseMatrix : public SparseMatrixBase
      */
     SparseMatrix(
         Teuchos::RCP<Epetra_CrsMatrix>  matrix,
-        Epetra_DataAccess               access,
+        DataAccess               access,
         bool                            explicitdirichlet=true,
         bool                            savegraph=false,
         MatrixType                      matrixtype = CRS_MATRIX);
@@ -152,9 +152,7 @@ class SparseMatrix : public SparseMatrixBase
       \param mat matrix to assign from
       \param access how to treat this assignment: Copy or View
      */
-    SparseMatrix(
-        const SparseMatrix&     mat,
-        Epetra_DataAccess       access=Copy);
+    SparseMatrix(const SparseMatrix& mat, DataAccess access = Copy);
 
     /// Destructor
     virtual ~SparseMatrix();
@@ -180,7 +178,7 @@ class SparseMatrix : public SparseMatrixBase
       \param access how to treat this assignment: Copy or View
       \param mat matrix to assign from
      */
-    void Assign(Epetra_DataAccess access, const SparseMatrix& mat);
+    void Assign(DataAccess access, const SparseMatrix& mat);
 
     /** \name FE methods */
     //@{

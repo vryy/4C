@@ -95,7 +95,7 @@ namespace LINALG
 
           int GetNumCols() const {return cols_;}
 
-          virtual Teuchos::RCP<BlockSparseMatrixBase> GetBlockSparseMatrix(Epetra_DataAccess access);
+          virtual Teuchos::RCP<BlockSparseMatrixBase> GetBlockSparseMatrix(DataAccess access);
 
           void ParseBlocks(
               const std::string& block_string,

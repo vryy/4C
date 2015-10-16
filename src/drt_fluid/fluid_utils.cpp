@@ -520,7 +520,7 @@ void FLD::UTILS::StressManager::CalcSepEnr(
     // get plain aggregation Ptent
     Teuchos::RCP<Epetra_CrsMatrix> crsPtent;
     MLAPI::GetPtent(*sysmat2->EpetraMatrix(),mlparams,nullspace,crsPtent);
-    LINALG::SparseMatrix Ptent(crsPtent,View);
+    LINALG::SparseMatrix Ptent(crsPtent,LINALG::View);
 
     // compute scale-separation matrix: S = Ptent*Ptent^T
     SepEnr_ = LINALG::Multiply(Ptent,false,Ptent,true);

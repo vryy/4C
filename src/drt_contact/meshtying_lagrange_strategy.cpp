@@ -776,9 +776,9 @@ void CONTACT::MtLagrangeStrategy::BuildSaddlePointSystem(Teuchos::RCP<LINALG::Sp
     blockMat = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(mapext,mapext,81,false,false));
     Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > mat = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> >(blockMat);
 
-    mat->Assign(0, 0, View, *stiffmt);
-    mat->Assign(0, 1, View, *constrmt);
-    mat->Assign(1, 0, View, *trconstrmt);
+    mat->Assign(0, 0, LINALG::View, *stiffmt);
+    mat->Assign(0, 1, LINALG::View, *constrmt);
+    mat->Assign(1, 0, LINALG::View, *trconstrmt);
     mat->Complete();
 
     // we also need merged rhs here

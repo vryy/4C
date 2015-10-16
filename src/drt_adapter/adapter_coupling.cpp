@@ -614,7 +614,7 @@ Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::Coupling::MasterToPermMaster(const L
   permsm->FillComplete(sm.DomainMap(),*permmasterdofmap_);
 
   // create a SparseMatrix that wraps the new CrsMatrix.
-  return Teuchos::rcp(new LINALG::SparseMatrix(permsm,View,sm.ExplicitDirichlet(),sm.SaveGraph()));
+  return Teuchos::rcp(new LINALG::SparseMatrix(permsm,LINALG::View,sm.ExplicitDirichlet(),sm.SaveGraph()));
 }
 
 
@@ -647,7 +647,7 @@ Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::Coupling::SlaveToPermSlave(const LIN
   permsm->FillComplete(sm.DomainMap(),*permslavedofmap_);
 
   // create a SparseMatrix that wraps the new CrsMatrix.
-  return Teuchos::rcp(new LINALG::SparseMatrix(permsm,View,sm.ExplicitDirichlet(),sm.SaveGraph()));
+  return Teuchos::rcp(new LINALG::SparseMatrix(permsm,LINALG::View,sm.ExplicitDirichlet(),sm.SaveGraph()));
 }
 
 

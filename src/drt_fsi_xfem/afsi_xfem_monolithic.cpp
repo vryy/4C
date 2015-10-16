@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file fpsi_monolithic_xfem.cpp
+\file afsi_xfem_monolithic.cpp
 \brief  Control routine for monolithic eXtendedAleFluidStructureInteraction (XAFSI) solved via a classical Newton scheme
         taking into account changing fluid dofsets
 
@@ -105,7 +105,7 @@ FSI::MonolithicAFSI_XFEM::MonolithicAFSI_XFEM(const Epetra_Comm& comm,
    //ALE Condensation
    LINALG::SparseMatrix& aii = a->Matrix(aidx_other,aidx_other);
 
-   sysmat->Assign(ale_i_block_,ale_i_block_,View,aii);
+   sysmat->Assign(ale_i_block_,ale_i_block_,LINALG::View,aii);
 
    //  //////////////////////////////////////////////
    //  //////                                  //////

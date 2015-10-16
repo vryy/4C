@@ -592,7 +592,7 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
   // interface meshes.
   f->UnComplete();
 
-  mat.Assign(0,0,View,s->Matrix(0,0));
+  mat.Assign(0,0,LINALG::View,s->Matrix(0,0));
 
   (*sigtransform_)(s->FullRowMap(),
                    s->FullColMap(),
@@ -616,7 +616,7 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
 
   lsgi->Complete(s->Matrix(1,0).DomainMap(),f->RangeMap());
 
-  mat.Assign(1,0,View,*lsgi);
+  mat.Assign(1,0,LINALG::View,*lsgi);
 
   (*aigtransform_)(a->FullRowMap(),
                    a->FullColMap(),
@@ -624,7 +624,7 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
                    1./timescale,
                    ADAPTER::CouplingSlaveConverter(icoupfa),
                    mat.Matrix(2,1));
-  mat.Assign(2,2,View,aii);
+  mat.Assign(2,2,LINALG::View,aii);
 
   /*----------------------------------------------------------------------*/
   // add optional fluid linearization with respect to mesh motion block
@@ -661,7 +661,7 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
 
     lfmgi->Complete(aii.DomainMap(),f->RangeMap());
 
-    mat.Assign(1,2,View,*lfmgi);
+    mat.Assign(1,2,LINALG::View,*lfmgi);
   }
 
   // if there is a free surface
@@ -705,7 +705,7 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
   f->Complete();
 
   // finally assign fluid block
-  mat.Assign(1,1,View,*f);
+  mat.Assign(1,1,LINALG::View,*f);
 
   // done. make sure all blocks are filled.
   mat.Complete();

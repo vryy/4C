@@ -546,7 +546,7 @@ void LOMA::Algorithm::SetupMonoLomaMatrix()
   mat_ff->UnComplete();
 
   // assign matrix block
-  lomasystemmatrix_->Assign(0,0,View,*mat_ff);
+  lomasystemmatrix_->Assign(0,0,LINALG::View,*mat_ff);
 
   //----------------------------------------------------------------------
   // 2nd diagonal block (lower right): scatra weighting - scatra solution
@@ -558,7 +558,7 @@ void LOMA::Algorithm::SetupMonoLomaMatrix()
   mat_ss->UnComplete();
 
   // assign matrix block
-  lomasystemmatrix_->Assign(1,1,View,*mat_ss);
+  lomasystemmatrix_->Assign(1,1,LINALG::View,*mat_ss);
 
   // complete loma block matrix
   lomasystemmatrix_->Complete();
@@ -577,7 +577,7 @@ void LOMA::Algorithm::SetupMonoLomaMatrix()
   mat_fs->UnComplete();
 
   // assign matrix block
-  lomasystemmatrix_->Assign(0,1,View,*mat_fs);
+  lomasystemmatrix_->Assign(0,1,LINALG::View,*mat_fs);
 
   //----------------------------------------------------------------------
   // 2nd off-diagonal block (lower left): scatra weighting - fluid solution
@@ -594,7 +594,7 @@ void LOMA::Algorithm::SetupMonoLomaMatrix()
   mat_sf->UnComplete();
 
   // assign matrix block
-  lomasystemmatrix_->Assign(1,0,View,*mat_sf);
+  lomasystemmatrix_->Assign(1,0,LINALG::View,*mat_sf);
 
   // complete loma block matrix
   lomasystemmatrix_->Complete();

@@ -1141,7 +1141,7 @@ void TSI::Monolithic::SetupSystemMatrix()
   k_ss->UnComplete();
 
   // assign structure part to the TSI matrix
-  systemmatrix_->Assign(0,0,View,*k_ss);
+  systemmatrix_->Assign(0,0,LINALG::View,*k_ss);
 
   /*----------------------------------------------------------------------*/
   // structural block k_st (3nxn)
@@ -1202,7 +1202,7 @@ void TSI::Monolithic::SetupSystemMatrix()
   k_st_->UnComplete();
 
   // assign thermo part to the TSI matrix
-  systemmatrix_->Assign(0,1,View,*(k_st_));
+  systemmatrix_->Assign(0,1,LINALG::View,*(k_st_));
 
   /*----------------------------------------------------------------------*/
   // pure thermo part k_tt (nxn)
@@ -1219,7 +1219,7 @@ void TSI::Monolithic::SetupSystemMatrix()
   k_tt->UnComplete();
 
   // assign thermo part to the TSI matrix
-  systemmatrix_->Assign(1,1,View,*(k_tt));
+  systemmatrix_->Assign(1,1,LINALG::View,*(k_tt));
 
   /*----------------------------------------------------------------------*/
   // thermo part k_ts (nx3n)
@@ -1256,7 +1256,7 @@ void TSI::Monolithic::SetupSystemMatrix()
   // assign thermo part to the TSI matrix
   k_ts_->ApplyDirichlet(*ThermoField()->GetDBCMapExtractor()->CondMap(),false);
   k_ts_->UnComplete();
-  systemmatrix_->Assign(1,0,View,*k_ts_);
+  systemmatrix_->Assign(1,0,LINALG::View,*k_ts_);
 
   /*----------------------------------------------------------------------*/
   // done. make sure all blocks are filled.

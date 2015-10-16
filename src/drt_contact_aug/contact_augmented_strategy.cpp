@@ -686,10 +686,10 @@ void CONTACT::AugmentedLagrangeStrategy::BuildSaddlePointSystem(Teuchos::RCP<LIN
   // build block matrix for SIMPLER
   blockMat = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(dommapext,rowmapext,81,false,false));
   Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > mat = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> >(blockMat);
-  mat->Assign(0,0,View,*stiffmt);
-  mat->Assign(0,1,View,*trkdz);
-  mat->Assign(1,0,View,*trkzd);
-  mat->Assign(1,1,View,*trkzz);
+  mat->Assign(0,0,LINALG::View,*stiffmt);
+  mat->Assign(0,1,LINALG::View,*trkdz);
+  mat->Assign(1,0,LINALG::View,*trkzd);
+  mat->Assign(1,1,LINALG::View,*trkzz);
   mat->Complete();
 
   // we also need merged rhs here

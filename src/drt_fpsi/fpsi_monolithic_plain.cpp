@@ -295,28 +295,28 @@ void FPSI::Monolithic_Plain::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
   // build block matrix
   /*----------------------------------------------------------------------*/
   //insert poro
-  mat.Assign(structure_block_, structure_block_, View, p->Matrix(0, 0));
-  mat.Assign(structure_block_, porofluid_block_, View, p->Matrix(0, 1));
-  mat.Assign(porofluid_block_, porofluid_block_, View, p->Matrix(1, 1));
-  mat.Assign(porofluid_block_, structure_block_, View, p->Matrix(1, 0));
+  mat.Assign(structure_block_, structure_block_, LINALG::View, p->Matrix(0, 0));
+  mat.Assign(structure_block_, porofluid_block_, LINALG::View, p->Matrix(0, 1));
+  mat.Assign(porofluid_block_, porofluid_block_, LINALG::View, p->Matrix(1, 1));
+  mat.Assign(porofluid_block_, structure_block_, LINALG::View, p->Matrix(1, 0));
 
   //Assign fii + Coupling Parts
-  mat.Assign(fluid_block_, fluid_block_, View, *f);
+  mat.Assign(fluid_block_, fluid_block_, LINALG::View, *f);
 
   //Assign C_fp
-  mat.Assign(fluid_block_, structure_block_, View, FPSICoupl()->C_fp().Matrix(0, 0));
-  mat.Assign(fluid_block_, porofluid_block_, View, FPSICoupl()->C_fp().Matrix(0, 1));
+  mat.Assign(fluid_block_, structure_block_, LINALG::View, FPSICoupl()->C_fp().Matrix(0, 0));
+  mat.Assign(fluid_block_, porofluid_block_, LINALG::View, FPSICoupl()->C_fp().Matrix(0, 1));
 
   //Assign C_pf
-  mat.Assign(structure_block_, fluid_block_, View, FPSICoupl()->C_pf().Matrix(0, 0));
-  mat.Assign(porofluid_block_, fluid_block_, View, FPSICoupl()->C_pf().Matrix(1, 0));
+  mat.Assign(structure_block_, fluid_block_, LINALG::View, FPSICoupl()->C_pf().Matrix(0, 0));
+  mat.Assign(porofluid_block_, fluid_block_, LINALG::View, FPSICoupl()->C_pf().Matrix(1, 0));
 
   //Assign C_pa
-  mat.Assign(structure_block_, ale_i_block_, View, FPSICoupl()->C_pa().Matrix(0, 0));
-  mat.Assign(porofluid_block_, ale_i_block_, View, FPSICoupl()->C_pa().Matrix(1, 0));
+  mat.Assign(structure_block_, ale_i_block_, LINALG::View, FPSICoupl()->C_pa().Matrix(0, 0));
+  mat.Assign(porofluid_block_, ale_i_block_, LINALG::View, FPSICoupl()->C_pa().Matrix(1, 0));
 
   //Assign C_fa
-  mat.Assign(fluid_block_, ale_i_block_, View, FPSICoupl()->C_fa());
+  mat.Assign(fluid_block_, ale_i_block_, LINALG::View, FPSICoupl()->C_fa());
 
   //ALE Condensation
   LINALG::SparseMatrix& aii = a->Matrix(aidx_other, aidx_other);
@@ -333,7 +333,7 @@ void FPSI::Monolithic_Plain::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
       true,
       false); //Add
 
-  mat.Assign(ale_i_block_, ale_i_block_, View, aii);
+  mat.Assign(ale_i_block_, ale_i_block_, LINALG::View, aii);
 
   //Insert condensed Fluid Blocks: Fgg and Fgi (+ Fg_gFPSI) --> g is on the FSI-Interface
   if (FSI_Interface_exists_)

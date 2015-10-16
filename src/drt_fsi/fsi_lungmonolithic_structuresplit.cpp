@@ -323,7 +323,7 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMat
   /*----------------------------------------------------------------------*/
   // fluid part
 
-  mat.Assign(1,1,View,*f);
+  mat.Assign(1,1,LINALG::View,*f);
 
   // fluid linearization with respect to mesh motion block
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField()->ShapeDerivatives();
@@ -415,7 +415,7 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMat
   /*----------------------------------------------------------------------*/
   // fluid constraint part
 
-  mat.Assign(1,3,View,*FluidConstrMatrix_);
+  mat.Assign(1,3,LINALG::View,*FluidConstrMatrix_);
 
   /*----------------------------------------------------------------------*/
   // structure and additional structure part
@@ -438,7 +438,7 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMat
   LINALG::SparseMatrix& sgi = blocks->Matrix(1,0);
   LINALG::SparseMatrix& sgg = blocks->Matrix(1,1);
 
-  mat.Assign(0,0,View,sii);
+  mat.Assign(0,0,LINALG::View,sii);
 
   (*sigtransform_)(blocks->FullRowMap(),
                    blocks->FullColMap(),
@@ -480,7 +480,7 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMat
   LINALG::SparseMatrix& scii = structconstrblocks->Matrix(0,0);
   LINALG::SparseMatrix& scgi = structconstrblocks->Matrix(1,0);
 
-  mat.Assign(0,3,View,scii);
+  mat.Assign(0,3,LINALG::View,scii);
 
   // add interface part to fluid block
 
@@ -517,12 +517,12 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMat
                    1./timescale,
                    ADAPTER::CouplingSlaveConverter(*icoupfa_),
                    mat.Matrix(2,1));
-  mat.Assign(2,2,View,aii);
+  mat.Assign(2,2,LINALG::View,aii);
 
   /*----------------------------------------------------------------------*/
   // constraint part -> fluid
 
-  mat.Assign(3,1,View,*ConstrFluidMatrix_);
+  mat.Assign(3,1,LINALG::View,*ConstrFluidMatrix_);
 
   /*----------------------------------------------------------------------*/
   // constraint part -> structure
@@ -537,7 +537,7 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMat
   LINALG::SparseMatrix& csii = constrstructblocks->Matrix(0,0);
   LINALG::SparseMatrix& csig = constrstructblocks->Matrix(0,1);
 
-  mat.Assign(3,0,View,csii);
+  mat.Assign(3,0,LINALG::View,csii);
 
   mat.Matrix(3,1).UnComplete();
   (*csigtransform_)(*coupsf.MasterDofMap(),

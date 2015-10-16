@@ -169,17 +169,26 @@ public:
   /// convergence test for newton
   virtual const bool Converged(const int iter);
 
+  /// Evaluate all elements
   virtual void EvaluateElements();
 
+  /// Convert element action enum to std::string
   const std::string ElementActionString(
       const enum INPAR::ALE::AleDynamic name ///< enum to convert
       );
 
+  //! @name Preconditioning
+  //@{
+
+  /// access the preconditioner
   Teuchos::RCP<LINALG::Preconditioner> ConstPreconditioner();
 
+  /// create the preconditioner
   virtual void CreatePreconditioner(
       bool full = true ///< Sparsematrix (true) or Blocksparsematrix (false)
       );
+
+  //@}
 
   //! @name Time step helpers
 
@@ -189,6 +198,7 @@ public:
   /// start a new time step
   virtual void PrepareTimeStep();
 
+  /// Solve a single time step
   virtual void TimeStep(
       ALE::UTILS::MapExtractor::AleDBCSetType dbc_type = ALE::UTILS::MapExtractor::dbc_set_std
       );

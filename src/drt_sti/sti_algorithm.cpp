@@ -155,10 +155,10 @@ void STI::Algorithm::AssembleMatAndRHS()
   thermo_->PrepareLinearSolve();
 
   // build global system matrix
-  systemmatrix_->Assign(0,0,View,*scatra_->SystemMatrix());
-  systemmatrix_->Assign(0,1,View,*scatrathermoblock_);
-  systemmatrix_->Assign(1,0,View,*thermoscatrablock_);
-  systemmatrix_->Assign(1,1,View,*thermo_->SystemMatrix());
+  systemmatrix_->Assign(0,0,LINALG::View,*scatra_->SystemMatrix());
+  systemmatrix_->Assign(0,1,LINALG::View,*scatrathermoblock_);
+  systemmatrix_->Assign(1,0,LINALG::View,*thermoscatrablock_);
+  systemmatrix_->Assign(1,1,LINALG::View,*thermo_->SystemMatrix());
   systemmatrix_->Complete();
 
   // create full monolithic rhs vector

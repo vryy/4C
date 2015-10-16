@@ -66,7 +66,7 @@ public:
     EpetraExt::CrsMatrix_Reindex reindexer(*ndofrowmap_);
     Epetra_CrsMatrix& reA = reindexer(*Aorig);
     reA.FillComplete();
-    Teuchos::RCP<Epetra_CrsMatrix> dwA = Teuchos::rcp(new Epetra_CrsMatrix(Copy,DownwindRowMap(),reA.MaxNumEntries()));
+    Teuchos::RCP<Epetra_CrsMatrix> dwA = Teuchos::rcp(new Epetra_CrsMatrix(::Copy,DownwindRowMap(),reA.MaxNumEntries()));
     dwA->Export(reA,*sexporter_,Insert);
     if (!dwA->Filled()) dwA->FillComplete();
     return dwA;

@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_lung_overlapprec.H
+\file fsi_lung_overlapprec.cpp
 \brief BGS preconditioner for volume-coupled FSI
 
 <pre>
@@ -144,9 +144,9 @@ void FSI::LungOverlappingBlockMatrix::SetupPreconditioner()
     if (err) dserror("Epetra_MultiVector::Reciprocal (ale matrix) returned %d",err);
     LINALG::SparseMatrix invaleDiag(aleDiagVec);
 
-    invDiag_->Assign(0,0,View,invstructDiag);
-    invDiag_->Assign(1,1,View,invfluidDiag);
-    invDiag_->Assign(2,2,View,invaleDiag);
+    invDiag_->Assign(0,0,LINALG::View,invstructDiag);
+    invDiag_->Assign(1,1,LINALG::View,invfluidDiag);
+    invDiag_->Assign(2,2,LINALG::View,invaleDiag);
   }
   else if (prec_ == INPAR::FSI::Simplec)
   {
@@ -167,9 +167,9 @@ void FSI::LungOverlappingBlockMatrix::SetupPreconditioner()
     if (err) dserror("Epetra_CrsMatrix::InvRowSums (ale matrix) returned %d",err);
     LINALG::SparseMatrix invaleDiag(aleDiagVec);
 
-    invDiag_->Assign(0,0,View,invstructDiag);
-    invDiag_->Assign(1,1,View,invfluidDiag);
-    invDiag_->Assign(2,2,View,invaleDiag);
+    invDiag_->Assign(0,0,LINALG::View,invstructDiag);
+    invDiag_->Assign(1,1,LINALG::View,invfluidDiag);
+    invDiag_->Assign(2,2,LINALG::View,invaleDiag);
   }
   else
     dserror("Unknown type of preconditioner for constraint fsi system");

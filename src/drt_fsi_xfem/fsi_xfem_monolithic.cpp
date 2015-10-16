@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file fsi_monolithic_xfem.cpp
+\file fsi_xfem_monolithic.cpp
 \brief Control routine for monolithic FSI (XFSI) solved via a classical Newton scheme
        taking into account changing fluid dofsets
 
@@ -292,7 +292,7 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
   s->Scale(scaling_S);
 
   // assign the structure sysmat diagonal block
-  systemmatrix_->Assign(0,0,View,*s);
+  systemmatrix_->Assign(0,0,LINALG::View,*s);
 
 
   /*----------------------------------------------------------------------*/
@@ -340,7 +340,7 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
   f->Scale(scaling_F); //<  1/(theta_f*dt) = 1/weight(t^f_np)
 
   // assign the fluid diagonal block
-  systemmatrix_->Assign(1,1,View,*f);
+  systemmatrix_->Assign(1,1,LINALG::View,*f);
 
   //Add Coupling Sysmat in case of FPSI_XFEM or FSI_XFEM_ALE (Ale Matrix)!
   AddCouplingSysmat(systemmatrix_, s, f, scaling_S, scaling_F);

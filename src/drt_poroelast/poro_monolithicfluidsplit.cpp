@@ -338,7 +338,7 @@ void POROELAST::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
   mat.Matrix(1,0).Add(k_fs->Matrix(0,1),false,1.0,1.0);
 
   // pure structure part
-  mat.Assign(0,0,View,*s);
+  mat.Assign(0,0,LINALG::View,*s);
 
   // structure coupling part
   mat.Matrix(0,1).Add(k_sf->Matrix(0,0),false,1.0,0.0);

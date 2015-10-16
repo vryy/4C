@@ -280,7 +280,7 @@ Teuchos::RCP<LINALG::SparseMatrix> MORTAR::MatrixRowTransform(Teuchos::RCP<LINAL
   Teuchos::RCP<Epetra_CrsMatrix> permmat = Redistribute(*inmat,*newrowmap,inmat->DomainMap());
 
   // output matrix
-  Teuchos::RCP<LINALG::SparseMatrix> outmat = Teuchos::rcp(new LINALG::SparseMatrix(permmat,Copy,true));
+  Teuchos::RCP<LINALG::SparseMatrix> outmat = Teuchos::rcp(new LINALG::SparseMatrix(permmat,LINALG::Copy,true));
 
   return outmat;
 }
@@ -312,7 +312,7 @@ Teuchos::RCP<LINALG::SparseMatrix> MORTAR::MatrixRowColTransform(Teuchos::RCP<LI
   Teuchos::RCP<Epetra_CrsMatrix> permmat = Redistribute(*inmat,*newrowmap,*newdomainmap);
 
   // output matrix
-  Teuchos::RCP<LINALG::SparseMatrix> outmat = Teuchos::rcp(new LINALG::SparseMatrix(permmat,Copy,false));
+  Teuchos::RCP<LINALG::SparseMatrix> outmat = Teuchos::rcp(new LINALG::SparseMatrix(permmat,LINALG::Copy,false));
 
   return outmat;
 }

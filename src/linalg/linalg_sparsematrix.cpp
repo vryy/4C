@@ -30,7 +30,7 @@ LINALG::SparseMatrix::SparseMatrix(
     savegraph_(true),
     matrixtype_(CRS_MATRIX)
 {
-  sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,*crsgraph));
+  sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(::Copy,*crsgraph));
   graph_ = crsgraph;
   dbcmaps_ = dbcmaps;
 }
@@ -54,9 +54,9 @@ LINALG::SparseMatrix::SparseMatrix(
     dserror("Row map is not unique");
 
   if(matrixtype_ == CRS_MATRIX)
-    sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,rowmap,npr,false));
+    sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(::Copy,rowmap,npr,false));
   else if(matrixtype_ == FE_MATRIX)
-    sysmat_ = Teuchos::rcp(new Epetra_FECrsMatrix(Copy,rowmap,npr,false));
+    sysmat_ = Teuchos::rcp(new Epetra_FECrsMatrix(::Copy,rowmap,npr,false));
   else
     dserror("matrix type is not correct");
 }
@@ -66,7 +66,7 @@ LINALG::SparseMatrix::SparseMatrix(
  *----------------------------------------------------------------------*/
 LINALG::SparseMatrix::SparseMatrix(
     Teuchos::RCP<Epetra_CrsMatrix>  matrix,
-    Epetra_DataAccess               access,
+    DataAccess               access,
     bool                            explicitdirichlet,
     bool                            savegraph,
     MatrixType                      matrixtype)
@@ -104,7 +104,7 @@ LINALG::SparseMatrix::SparseMatrix(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-LINALG::SparseMatrix::SparseMatrix(const SparseMatrix& mat, Epetra_DataAccess access)
+LINALG::SparseMatrix::SparseMatrix(const SparseMatrix& mat, DataAccess access)
   : LINALG::SparseMatrixBase(mat),
     explicitdirichlet_(mat.explicitdirichlet_),
     savegraph_(mat.savegraph_),
@@ -146,9 +146,9 @@ LINALG::SparseMatrix::SparseMatrix(
     dserror("Row map is not unique");
 
   if(matrixtype_ == CRS_MATRIX)
-    sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,map,map,1,false));
+    sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(::Copy,map,map,1,false));
   else if(matrixtype_ == FE_MATRIX)
-    sysmat_ = Teuchos::rcp(new Epetra_FECrsMatrix(Copy,map,map,1,false));
+    sysmat_ = Teuchos::rcp(new Epetra_FECrsMatrix(::Copy,map,map,1,false));
   else
     dserror("matrix type is not correct");
 
@@ -199,9 +199,9 @@ LINALG::SparseMatrix& LINALG::SparseMatrix::operator=(const SparseMatrix& mat)
   else
   {
     if(matrixtype_ == CRS_MATRIX)
-      sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,mat.RowMap(),0,false));
+      sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(::Copy,mat.RowMap(),0,false));
     else if(matrixtype_ == FE_MATRIX)
-      sysmat_ = Teuchos::rcp(new Epetra_FECrsMatrix(Copy,mat.RowMap(),0,false));
+      sysmat_ = Teuchos::rcp(new Epetra_FECrsMatrix(::Copy,mat.RowMap(),0,false));
     else
       dserror("matrix type is not correct");
   }
@@ -217,7 +217,7 @@ LINALG::SparseMatrix& LINALG::SparseMatrix::operator=(const SparseMatrix& mat)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::SparseMatrix::Assign(Epetra_DataAccess access, const SparseMatrix& mat)
+void LINALG::SparseMatrix::Assign(DataAccess access, const SparseMatrix& mat)
 {
   if (access==Copy)
   {
@@ -263,9 +263,9 @@ void LINALG::SparseMatrix::Zero()
     // new matrix in memory at the same time!
     sysmat_ = Teuchos::null;
     if(matrixtype_ == CRS_MATRIX)
-      sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy, *graph_));
+      sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(::Copy, *graph_));
     else if(matrixtype_ == FE_MATRIX)
-      sysmat_ = Teuchos::rcp(new Epetra_FECrsMatrix(Copy, *graph_));
+      sysmat_ = Teuchos::rcp(new Epetra_FECrsMatrix(::Copy, *graph_));
     else
       dserror("matrix type is not correct");
 
@@ -296,9 +296,9 @@ void LINALG::SparseMatrix::Reset()
   // new matrix in memory at the same time!
   sysmat_ = Teuchos::null;
   if(matrixtype_ == CRS_MATRIX)
-    sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,rowmap,&numentries[0],false));
+    sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(::Copy,rowmap,&numentries[0],false));
   else if(matrixtype_ == FE_MATRIX)
-    sysmat_ = Teuchos::rcp(new Epetra_FECrsMatrix(Copy,rowmap,&numentries[0],false));
+    sysmat_ = Teuchos::rcp(new Epetra_FECrsMatrix(::Copy,rowmap,&numentries[0],false));
   else
     dserror("matrix type is not correct");
 
@@ -800,9 +800,9 @@ void LINALG::SparseMatrix::UnComplete()
 
   Teuchos::RCP<Epetra_CrsMatrix> mat = Teuchos::null;
   if(matrixtype_ == CRS_MATRIX)
-    mat = Teuchos::rcp(new Epetra_CrsMatrix(Copy,rowmap,&nonzeros[0],false));
+    mat = Teuchos::rcp(new Epetra_CrsMatrix(::Copy,rowmap,&nonzeros[0],false));
   else if(matrixtype_ == FE_MATRIX)
-    mat = Teuchos::rcp(new Epetra_FECrsMatrix(Copy,rowmap,&nonzeros[0],false));
+    mat = Teuchos::rcp(new Epetra_FECrsMatrix(::Copy,rowmap,&nonzeros[0],false));
   else
     dserror("matrix type is not correct");
 
@@ -869,9 +869,9 @@ void LINALG::SparseMatrix::ApplyDirichlet(
 
     Teuchos::RCP<Epetra_CrsMatrix> Anew = Teuchos::null;
     if(matrixtype_ == CRS_MATRIX)
-      Anew = Teuchos::rcp(new Epetra_CrsMatrix(Copy,rowmap,maxnumentries,false));
+      Anew = Teuchos::rcp(new Epetra_CrsMatrix(::Copy,rowmap,maxnumentries,false));
     else if(matrixtype_ == FE_MATRIX)
-      Anew = Teuchos::rcp(new Epetra_FECrsMatrix(Copy,rowmap,maxnumentries,false));
+      Anew = Teuchos::rcp(new Epetra_FECrsMatrix(::Copy,rowmap,maxnumentries,false));
     else
       dserror("matrix type is not correct");
 
@@ -1005,9 +1005,9 @@ void LINALG::SparseMatrix::ApplyDirichlet(const Epetra_Map& dbctoggle,
 
     Teuchos::RCP<Epetra_CrsMatrix> Anew = Teuchos::null;
     if(matrixtype_ == CRS_MATRIX)
-      Anew = Teuchos::rcp(new Epetra_CrsMatrix(Copy,rowmap,maxnumentries,false));
+      Anew = Teuchos::rcp(new Epetra_CrsMatrix(::Copy,rowmap,maxnumentries,false));
     else if(matrixtype_ == FE_MATRIX)
-      Anew = Teuchos::rcp(new Epetra_FECrsMatrix(Copy,rowmap,maxnumentries,false));
+      Anew = Teuchos::rcp(new Epetra_FECrsMatrix(::Copy,rowmap,maxnumentries,false));
     else
       dserror("matrix type is not correct");
 
@@ -1131,7 +1131,7 @@ void LINALG::SparseMatrix::ApplyDirichletWithTrafo(Teuchos::RCP<const LINALG::Sp
 
     // initialise matrix Anew with general size (rowmap x colmap)
     // in case of coupled problem (e.g. TSI) transform the rectangular off-diagonal block k_Td
-    Teuchos::RCP<Epetra_CrsMatrix> Anew = Teuchos::rcp(new Epetra_CrsMatrix(Copy,rowmap,colmap,maxnumentries,false));
+    Teuchos::RCP<Epetra_CrsMatrix> Anew = Teuchos::rcp(new Epetra_CrsMatrix(::Copy,rowmap,colmap,maxnumentries,false));
     std::vector<int> indices(maxnumentries,0);
     std::vector<double> values(maxnumentries,0.0);
     for (int i=0; i<nummyrows; ++i)
@@ -1356,12 +1356,12 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::SparseMatrix::Transpose()
   if(matrixtype_ == CRS_MATRIX)
   {
     Epetra_CrsMatrix* Aprime = &(dynamic_cast<Epetra_CrsMatrix&>(trans(*sysmat_)));
-    matrix = Teuchos::rcp(new SparseMatrix(Teuchos::rcp(Aprime,false),Copy,explicitdirichlet_,savegraph_));
+    matrix = Teuchos::rcp(new SparseMatrix(Teuchos::rcp(Aprime,false),LINALG::Copy,explicitdirichlet_,savegraph_));
   }
   else if(matrixtype_ == FE_MATRIX)
   {
     Epetra_CrsMatrix* Aprime = &(dynamic_cast<Epetra_CrsMatrix&>(trans(*sysmat_)));
-    matrix = Teuchos::rcp(new SparseMatrix(Teuchos::rcp(Aprime,false),Copy,explicitdirichlet_, savegraph_, FE_MATRIX));
+    matrix = Teuchos::rcp(new SparseMatrix(Teuchos::rcp(Aprime,false),LINALG::Copy,explicitdirichlet_, savegraph_, FE_MATRIX));
   }
   else
     dserror("matrix type is not correct");
@@ -1542,9 +1542,9 @@ void LINALG::SparseMatrix::Load(const Epetra_Comm& comm, std::string& filename)
     dserror( "failed to read rows and column counts" );
 
   if (matrixtype_ == CRS_MATRIX)
-    sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,rowmap,&offnum[0],false));
+    sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(::Copy,rowmap,&offnum[0],false));
   else if (matrixtype_ == FE_MATRIX)
-    sysmat_ = Teuchos::rcp(new Epetra_FECrsMatrix(Copy,rowmap,&offnum[0],false));
+    sysmat_ = Teuchos::rcp(new Epetra_FECrsMatrix(::Copy,rowmap,&offnum[0],false));
   else
     dserror("matrix type is not correct");
 

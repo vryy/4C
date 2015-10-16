@@ -258,13 +258,13 @@ void FSI::LungMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
   s.UnComplete();
   s.Add(AddStructConstrMatrix_->Matrix(0,0), false, 1.0, 1.0);
 
-  mat.Assign(0,0,View,s);
+  mat.Assign(0,0,LINALG::View,s);
 
   /*----------------------------------------------------------------------*/
   // structure constraint part
 
   LINALG::SparseMatrix scon = AddStructConstrMatrix_->Matrix(0,1);
-  mat.Assign(0,3,View,scon);
+  mat.Assign(0,3,LINALG::View,scon);
 
   /*----------------------------------------------------------------------*/
   // fluid part
@@ -481,7 +481,7 @@ void FSI::LungMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
   LINALG::SparseMatrix& aig = a->Matrix(0,1);
   LINALG::SparseMatrix& aiG = a->Matrix(0,3);
 
-  mat.Assign(2,2,View,aii);
+  mat.Assign(2,2,LINALG::View,aii);
 
   (*aigtransform_)(a->FullRowMap(),
                    a->FullColMap(),
@@ -502,7 +502,7 @@ void FSI::LungMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
   /*----------------------------------------------------------------------*/
   // constraint part -> structure
 
-  mat.Assign(3,0,View,AddStructConstrMatrix_->Matrix(1,0));
+  mat.Assign(3,0,LINALG::View,AddStructConstrMatrix_->Matrix(1,0));
 
   /*----------------------------------------------------------------------*/
   // constraint part -> fluid

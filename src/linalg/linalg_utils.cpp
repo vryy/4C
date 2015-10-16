@@ -33,7 +33,7 @@ Teuchos::RCP<Epetra_CrsMatrix> LINALG::CreateMatrix(const Epetra_Map& rowmap,
 {
   if (!rowmap.UniqueGIDs())
     dserror("Row map is not unique");
-  return Teuchos::rcp(new Epetra_CrsMatrix(Copy, rowmap, npr, false));
+  return Teuchos::rcp(new Epetra_CrsMatrix(::Copy, rowmap, npr, false));
 }
 /*----------------------------------------------------------------------*
  |  create a Epetra_Vector  (public)                         mwgee 12/06|
@@ -430,9 +430,9 @@ Teuchos::RCP<Epetra_CrsMatrix> LINALG::Multiply(const Epetra_CrsMatrix& A,
   // create resultmatrix with correct rowmap
   Epetra_CrsMatrix* C = NULL;
   if (!transA)
-    C = new Epetra_CrsMatrix(Copy, A.OperatorRangeMap(), guessnpr, false);
+    C = new Epetra_CrsMatrix(::Copy, A.OperatorRangeMap(), guessnpr, false);
   else
-    C = new Epetra_CrsMatrix(Copy, A.OperatorDomainMap(), guessnpr, false);
+    C = new Epetra_CrsMatrix(::Copy, A.OperatorDomainMap(), guessnpr, false);
 
   int err = EpetraExt::MatrixMatrix::Multiply(A, transA, B, transB, *C,
       complete);

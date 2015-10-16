@@ -826,10 +826,10 @@ int UTILS::WindkesselManager::Solve
   }
 
   // use BlockMatrix
-  blockmat->Assign(0,0,View,*mat_structstiff);
-  blockmat->Assign(1,0,View,*mat_dwindk_dd->Transpose());
-  blockmat->Assign(0,1,View,*mat_dstruct_dwkdof);
-  blockmat->Assign(1,1,View,*mat_windkstiff);
+  blockmat->Assign(0,0,LINALG::View,*mat_structstiff);
+  blockmat->Assign(1,0,LINALG::View,*mat_dwindk_dd->Transpose());
+  blockmat->Assign(0,1,LINALG::View,*mat_dstruct_dwkdof);
+  blockmat->Assign(1,1,LINALG::View,*mat_windkstiff);
   blockmat->Complete();
 
   //std::cout << "" << *mat_windkstiff << std::endl;

@@ -468,7 +468,7 @@ void FS3I::FS3I_Base::SetupCoupledScatraMatrix()
       scatra2->Split<LINALG::DefaultBlockMatrixStrategy>(*(scatrafieldexvec_[1]),*(scatrafieldexvec_[1]));
     blockscatra2->Complete();
 
-    scatrasystemmatrix_->Assign(1,1,View,blockscatra2->Matrix(0,0));
+    scatrasystemmatrix_->Assign(1,1,LINALG::View,blockscatra2->Matrix(0,0));
 
     (*sibtransform_)(blockscatra2->FullRowMap(),
                      blockscatra2->FullColMap(),
@@ -489,13 +489,13 @@ void FS3I::FS3I_Base::SetupCoupledScatraMatrix()
                      true);
 
     // fluid scatra
-    scatrasystemmatrix_->Assign(0,0,View,*scatra1);
+    scatrasystemmatrix_->Assign(0,0,LINALG::View,*scatra1);
   }
   else
   {
     // conventional contributions
-    scatrasystemmatrix_->Assign(0,0,View,*scatra1);
-    scatrasystemmatrix_->Assign(1,1,View,*scatra2);
+    scatrasystemmatrix_->Assign(0,0,LINALG::View,*scatra1);
+    scatrasystemmatrix_->Assign(1,1,LINALG::View,*scatra2);
 
     // additional contributions due to interface permeability (-> coupling terms)
     // contribution of the same field

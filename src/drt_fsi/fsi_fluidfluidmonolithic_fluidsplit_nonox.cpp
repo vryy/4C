@@ -458,7 +458,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::SetupSystemMatrix()
 
   lfgi->Complete(fgi.DomainMap(),s->RangeMap());
 
-  systemmatrix_->Assign(0,1,View,*lfgi);
+  systemmatrix_->Assign(0,1,LINALG::View,*lfgi);
 
   Teuchos::RCP<LINALG::SparseMatrix> lfig = Teuchos::rcp(new LINALG::SparseMatrix(fig.RowMap(),81,false));
   (*figtransform_)(f->FullRowMap(),
@@ -468,7 +468,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::SetupSystemMatrix()
                    ADAPTER::CouplingSlaveConverter(coupsf),
                    systemmatrix_->Matrix(1,0));
 
-  systemmatrix_->Assign(1,1,View,fii);
+  systemmatrix_->Assign(1,1,LINALG::View,fii);
 
   (*aigtransform_)( a->FullRowMap(),
                     a->FullColMap(),
@@ -477,7 +477,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::SetupSystemMatrix()
                     ADAPTER::CouplingSlaveConverter(coupsa),
                     systemmatrix_->Matrix(2,0));
 
-  systemmatrix_->Assign(2,2,View,aii);
+  systemmatrix_->Assign(2,2,LINALG::View,aii);
 
   /*----------------------------------------------------------------------*/
   // add optional blocks from fluid linearization with respect to mesh motion
@@ -532,12 +532,12 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::SetupSystemMatrix()
 
       lfmgi->Complete(aii.DomainMap(),s->RangeMap());
 
-      systemmatrix_->Assign(0,2,View,*lfmgi);
+      systemmatrix_->Assign(0,2,LINALG::View,*lfmgi);
     }
   }
 
   // finally assign structure block
-  systemmatrix_->Matrix(0,0).Assign(View,*s);
+  systemmatrix_->Matrix(0,0).Assign(LINALG::View,*s);
 
   // done. make sure all blocks are filled.
   systemmatrix_->Complete();

@@ -516,13 +516,13 @@ void POROELAST::Monolithic::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat
   k_ff->UnComplete();
 
   // assign structure part to the Poroelasticity matrix
-  mat.Assign(0, 0, View, *k_ss);
+  mat.Assign(0, 0, LINALG::View, *k_ss);
   // assign coupling part to the Poroelasticity matrix
-  mat.Assign(0, 1, View, *k_sf);
+  mat.Assign(0, 1, LINALG::View, *k_sf);
   // assign fluid part to the poroelasticity matrix
-  mat.Assign(1, 1, View, *k_ff);
+  mat.Assign(1, 1, LINALG::View, *k_ff);
   // assign coupling part to the Poroelasticity matrix
-  mat.Assign(1, 0, View, *k_fs);
+  mat.Assign(1, 0, LINALG::View, *k_fs);
 
   /*----------------------------------------------------------------------*/
   // done. make sure all blocks are filled.
@@ -1250,7 +1250,7 @@ void POROELAST::Monolithic::PoroFDCheck()
 
   Teuchos::RCP<LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
   Teuchos::RCP<LINALG::SparseMatrix> sparse_copy = Teuchos::rcp(
-      new LINALG::SparseMatrix(sparse->EpetraMatrix(),Copy));
+      new LINALG::SparseMatrix(sparse->EpetraMatrix(),LINALG::Copy));
 
   if (false)
   {
@@ -1345,7 +1345,7 @@ void POROELAST::Monolithic::PoroFDCheck()
   stiff_approx->FillComplete();
 
   Teuchos::RCP<LINALG::SparseMatrix> stiff_approx_sparse = Teuchos::null;
-  stiff_approx_sparse = Teuchos::rcp(new LINALG::SparseMatrix(stiff_approx,Copy));
+  stiff_approx_sparse = Teuchos::rcp(new LINALG::SparseMatrix(stiff_approx,LINALG::Copy));
 
   stiff_approx_sparse->Add(*sparse_copy, false, -1.0, 1.0);
 
@@ -2001,8 +2001,8 @@ void POROELAST::Monolithic::EvalPoroContact()
         costrategy.ApplyForceStiffCmtCoupled(StructureField()->WriteAccessDispnp(),k_ss,k_sf,rhs_s,Step(),iter_,false);
 
         //Assign modified matrixes & vectors
-        systemmatrix_->Assign(0,0,Copy,*Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(k_ss));
-        systemmatrix_->Assign(0,1,Copy,*Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(k_sf));
+        systemmatrix_->Assign(0,0,LINALG::Copy,*Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(k_ss));
+        systemmatrix_->Assign(0,1,LINALG::Copy,*Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(k_sf));
         Extractor()->InsertVector(rhs_s,0,rhs_);
 
         ///---Modify fluid matrix, coupling matrix k_fs and rhs of fluid
@@ -2020,8 +2020,8 @@ void POROELAST::Monolithic::EvalPoroContact()
           costrategy.EvaluatePoroNoPenContact(k_fs,f,frhs);
 
           //Assign modified matrixes & vectors
-          systemmatrix_->Assign(1,1,Copy,*f);
-          systemmatrix_->Assign(1,0,Copy,*k_fs);
+          systemmatrix_->Assign(1,1,LINALG::Copy,*f);
+          systemmatrix_->Assign(1,0,LINALG::Copy,*k_fs);
 
           Extractor()->InsertVector(*frhs, 1, *rhs_);
         }

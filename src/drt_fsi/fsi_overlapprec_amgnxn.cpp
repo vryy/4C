@@ -71,7 +71,7 @@ void FSI::OverlappingBlockMatrixAMGnxn::SetupPreconditioner()
   // Create own copy of the system matrix in order to allow reusing the preconditioner
   A_ = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(Teuchos::rcp(this,false));
   if(A_==Teuchos::null) dserror("We expect here a block matrix!");
-  A_ = A_->Clone(Copy);
+  A_ = A_->Clone(LINALG::Copy);
   A_->Complete();
 
   // Determine number of blocks

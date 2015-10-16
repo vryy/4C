@@ -796,10 +796,10 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(
     laig = LINALG::MLMultiply(*laig,false,*stcmat, false, false, false,true);
   }
 
-  mat.Assign(2,0,View,*laig);
+  mat.Assign(2,0,LINALG::View,*laig);
 
   // ---------Addressing contribution to block (4,4)
-  mat.Assign(2,2,View,aii);
+  mat.Assign(2,2,LINALG::View,aii);
 
   /*--------------------------------------------------------------------------*/
   // add optional fluid linearization with respect to mesh motion block
@@ -868,7 +868,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(
     if (stcalgo == INPAR::STR::stc_currsym)
       lfmgi = LINALG::MLMultiply(*stcmat, true, *lfmgi, false, true, true, false);
     lfmgi->Scale((1.-stiparam)/(1.-ftiparam));
-    mat.Assign(0,2,View,*lfmgi);
+    mat.Assign(0,2,LINALG::View,*lfmgi);
 
   }
 
@@ -886,7 +886,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(
     s->UnComplete();
   }
   // finally assign structure matrix to block (0,0)
-  mat.Assign(0,0,View,*s);
+  mat.Assign(0,0,LINALG::View,*s);
 
   // done. make sure all blocks are filled.
   mat.Complete();

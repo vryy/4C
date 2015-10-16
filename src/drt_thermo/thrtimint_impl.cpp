@@ -984,7 +984,7 @@ void THR::TimIntImpl::FDCheck()
     = LINALG::CreateMatrix((tang_->RowMap()), 81);
 
   Teuchos::RCP<LINALG::SparseMatrix> tang_copy
-    = Teuchos::rcp(new LINALG::SparseMatrix(tang_->EpetraMatrix(),Copy));
+    = Teuchos::rcp(new LINALG::SparseMatrix(tang_->EpetraMatrix(),LINALG::Copy));
   std::cout << "\n****************** THR finite difference check ******************" << std::endl;
   std::cout << "thermo field has " << dofs << " DOFs"<< std::endl;
 
@@ -1040,7 +1040,7 @@ void THR::TimIntImpl::FDCheck()
   tang_approx->FillComplete();
   // copy tang_approx
   Teuchos::RCP<LINALG::SparseMatrix> tang_approx_sparse
-    = Teuchos::rcp(new LINALG::SparseMatrix(tang_approx,Copy));
+    = Teuchos::rcp(new LINALG::SparseMatrix(tang_approx,LINALG::Copy));
   // tang_approx_sparse = tang_approx_sparse - tang_copy
   tang_approx_sparse->Add(*tang_copy, false, -1.0, 1.0);
 

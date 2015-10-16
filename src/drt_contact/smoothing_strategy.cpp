@@ -689,9 +689,9 @@ void CONTACT::SmoothingStrategy::BuildSaddlePointSystem(
     // build 2x2 block matrix for SIMPLER
     blockMat = Teuchos::rcp( new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(dommapext, rowmapext, 81, false, false));
     Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > mat = Teuchos::rcp_dynamic_cast< LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> >( blockMat);
-    mat->Assign(0, 0, View, *stiffmt);
-    mat->Assign(0, 1, View, *trkdm);
-    mat->Assign(1, 0, View, *trkmd);
+    mat->Assign(0, 0, LINALG::View, *stiffmt);
+    mat->Assign(0, 1, LINALG::View, *trkdm);
+    mat->Assign(1, 0, LINALG::View, *trkmd);
     mat->Complete();
 
     // we also need merged rhs here
@@ -923,10 +923,10 @@ void CONTACT::SmoothingStrategy::BuildSaddlePointSystem(
       // build 2x2 block matrix for SIMPLER
       blockMat = Teuchos::rcp( new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(dommapext, rowmapext, 81, false, false));
       Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > mat = Teuchos::rcp_dynamic_cast< LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> >( blockMat);
-      mat->Assign(0, 0, View, *stiffmt);
-      mat->Assign(0, 1, View, *trkdg);
-      mat->Assign(1, 0, View, *trkgd);
-      mat->Assign(1, 1, View, *trkgg);
+      mat->Assign(0, 0, LINALG::View, *stiffmt);
+      mat->Assign(0, 1, LINALG::View, *trkdg);
+      mat->Assign(1, 0, LINALG::View, *trkgd);
+      mat->Assign(1, 1, LINALG::View, *trkgg);
       mat->Complete();
 
       // we also need merged rhs here

@@ -5968,7 +5968,7 @@ void FLD::CombustFluidImplicitTimeInt::AVM3Preparation()
     // get plain aggregation Ptent
     Teuchos::RCP<Epetra_CrsMatrix> crsPtent;
     MLAPI::GetPtent(*SystemMatrix()->EpetraMatrix(),mlparams,nullspace,crsPtent);
-    LINALG::SparseMatrix Ptent(crsPtent,View);
+    LINALG::SparseMatrix Ptent(crsPtent,LINALG::View);
 
     // compute scale-separation matrix: S = I - Ptent*Ptent^T
     Sep_ = LINALG::Multiply(Ptent,false,Ptent,true);

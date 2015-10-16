@@ -68,7 +68,7 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::BlockSparseMatrixBase::Merge() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::BlockSparseMatrixBase::Assign(int r, int c, Epetra_DataAccess access, SparseMatrix& mat)
+void LINALG::BlockSparseMatrixBase::Assign(int r, int c, DataAccess access, SparseMatrix& mat)
 {
 #ifdef DEBUG
   if (not Matrix(r,c).RowMap().SameAs(mat.RowMap()))
@@ -448,7 +448,7 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> LINALG::Multiply(
           Cij->Complete(C->DomainMap(j),C->RangeMap(i));
 
         // assign Cij block
-        C->Assign(i,j,View,*Cij);
+        C->Assign(i,j,LINALG::View,*Cij);
       }
 
     }
@@ -498,10 +498,10 @@ Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > LIN
   Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > C = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(*domainMMex,*rangeMMex));
   //Teuchos::RCP<LINALG::BlockSparseMatrixBase> Cb = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(C);
   // assign matrices
-  C->Assign(0,0,View,A00);
-  C->Assign(0,1,View,A01);
-  C->Assign(1,0,View,A10);
-  C->Assign(1,1,View,A11);
+  C->Assign(0,0,LINALG::View,A00);
+  C->Assign(0,1,LINALG::View,A01);
+  C->Assign(1,0,LINALG::View,A10);
+  C->Assign(1,1,LINALG::View,A11);
 
   C->Complete();
 

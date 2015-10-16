@@ -693,7 +693,7 @@ void FSI::MonolithicFS::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
   // interface meshes.
   f->UnComplete();
 
-  mat.Assign(0,0,View,*f);
+  mat.Assign(0,0,LINALG::View,*f);
 
   (*aigtransform_)(a->FullRowMap(),
                    a->FullColMap(),
@@ -701,7 +701,7 @@ void FSI::MonolithicFS::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
                    1./timescale,
                    ADAPTER::CouplingSlaveConverter(*icoupfa_),
                    mat.Matrix(1,0));
-  mat.Assign(1,1,View,aii);
+  mat.Assign(1,1,LINALG::View,aii);
 
   /*----------------------------------------------------------------------*/
   // add optional fluid linearization with respect to mesh motion block

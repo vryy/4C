@@ -475,10 +475,10 @@ void POROELAST::PoroScatraMono::SetupSystemMatrix()
   mat_pp->UnComplete();
 
   // assign matrix block
-  systemmatrix_->Assign(0,0,View,mat_pp->Matrix(0,0));
-  systemmatrix_->Assign(0,1,View,mat_pp->Matrix(0,1));
-  systemmatrix_->Assign(1,0,View,mat_pp->Matrix(1,0));
-  systemmatrix_->Assign(1,1,View,mat_pp->Matrix(1,1));
+  systemmatrix_->Assign(0,0,LINALG::View,mat_pp->Matrix(0,0));
+  systemmatrix_->Assign(0,1,LINALG::View,mat_pp->Matrix(0,1));
+  systemmatrix_->Assign(1,0,LINALG::View,mat_pp->Matrix(1,0));
+  systemmatrix_->Assign(1,1,LINALG::View,mat_pp->Matrix(1,1));
 
   //----------------------------------------------------------------------
   // 2nd diagonal block (lower right): scatra weighting - scatra solution
@@ -490,7 +490,7 @@ void POROELAST::PoroScatraMono::SetupSystemMatrix()
   mat_ss->UnComplete();
 
   // assign matrix block
-  systemmatrix_->Assign(2,2,View,*mat_ss);
+  systemmatrix_->Assign(2,2,LINALG::View,*mat_ss);
 
   // complete scatra block matrix
   systemmatrix_->Complete();
@@ -513,8 +513,8 @@ void POROELAST::PoroScatraMono::SetupSystemMatrix()
   k_pfs_->UnComplete();
 
   // assign matrix block
-  systemmatrix_->Assign(0,2,View,*(k_pss_));
-  systemmatrix_->Assign(1,2,View,*(k_pfs_));
+  systemmatrix_->Assign(0,2,LINALG::View,*(k_pss_));
+  systemmatrix_->Assign(1,2,LINALG::View,*(k_pfs_));
 
   //----------------------------------------------------------------------
   // 2nd off-diagonal block (lower left): scatra weighting - poro solution
@@ -533,8 +533,8 @@ void POROELAST::PoroScatraMono::SetupSystemMatrix()
   k_spf_->UnComplete();
 
   // assign matrix block
-  systemmatrix_->Assign(2,0,View,*(k_sps_));
-  systemmatrix_->Assign(2,1,View,*(k_spf_));
+  systemmatrix_->Assign(2,0,LINALG::View,*(k_sps_));
+  systemmatrix_->Assign(2,1,LINALG::View,*(k_spf_));
 
   // complete block matrix
   systemmatrix_->Complete();
@@ -1342,7 +1342,7 @@ void POROELAST::PoroScatraMono::FDCheck()
 
   Teuchos::RCP<LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
   Teuchos::RCP<LINALG::SparseMatrix> sparse_copy = Teuchos::rcp(
-      new LINALG::SparseMatrix(sparse->EpetraMatrix(),Copy));
+      new LINALG::SparseMatrix(sparse->EpetraMatrix(),LINALG::Copy));
 
   if (false)
   {
@@ -1440,7 +1440,7 @@ void POROELAST::PoroScatraMono::FDCheck()
   stiff_approx->FillComplete();
 
   Teuchos::RCP<LINALG::SparseMatrix> stiff_approx_sparse = Teuchos::null;
-  stiff_approx_sparse = Teuchos::rcp(new LINALG::SparseMatrix(stiff_approx,Copy));
+  stiff_approx_sparse = Teuchos::rcp(new LINALG::SparseMatrix(stiff_approx,LINALG::Copy));
 
   stiff_approx_sparse->Add(*sparse_copy, false, -1.0, 1.0);
 

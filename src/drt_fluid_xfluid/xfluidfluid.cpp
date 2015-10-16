@@ -437,13 +437,13 @@ void FLD::XFluidFluid::AssembleMatAndRHS(
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat_block = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(xff_state_->xffluidsysmat_,false);
   if (sysmat_block != Teuchos::null)
   {
-    sysmat_block->Assign(1,1,View,*xff_state_->sysmat_);
-    sysmat_block->Assign(1,0,View,*coup_state->C_xs_);
-    sysmat_block->Assign(0,1,View,*coup_state->C_sx_);
+    sysmat_block->Assign(1,1,LINALG::View,*xff_state_->sysmat_);
+    sysmat_block->Assign(1,0,LINALG::View,*coup_state->C_xs_);
+    sysmat_block->Assign(0,1,LINALG::View,*coup_state->C_sx_);
     embedded_fluid_->SystemMatrix()->UnComplete();
     embedded_fluid_->SystemMatrix()->Add(*coup_state->C_ss_,false,1.0,1.0);
     Teuchos::RCP<LINALG::SparseMatrix> alesysmat_sparse = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(embedded_fluid_->SystemMatrix());
-    sysmat_block->Assign(0,0,View,*alesysmat_sparse);
+    sysmat_block->Assign(0,0,LINALG::View,*alesysmat_sparse);
   }
   else
   {
@@ -517,7 +517,7 @@ void FLD::XFluidFluid::AddEosPresStabToEmbLayer()
 
   Teuchos::RCP<LINALG::SparseMatrix> sysmat_linalg = Teuchos::rcp(
     new LINALG::SparseMatrix(
-        Teuchos::rcp_static_cast<Epetra_CrsMatrix>(sysmat_FE),View,true,true,LINALG::SparseMatrix::FE_MATRIX));
+        Teuchos::rcp_static_cast<Epetra_CrsMatrix>(sysmat_FE),LINALG::View,true,true,LINALG::SparseMatrix::FE_MATRIX));
 
   //------------------------------------------------------------
   // loop over row faces

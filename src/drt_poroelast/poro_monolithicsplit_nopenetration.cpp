@@ -315,7 +315,7 @@ void POROELAST::MonolithicSplitNoPenetration::SetupSystemMatrix(LINALG::BlockSpa
 
   /*----------------------------------------------------------------------*/
   // pure structural part
-  mat.Assign(0,0,View,*s);
+  mat.Assign(0,0,LINALG::View,*s);
 
   // structure coupling part
   mat.Matrix(0,1).Add(k_sf->Matrix(sidx_other,fidx_other),false,1.0,0.0);
@@ -546,7 +546,7 @@ void POROELAST::MonolithicSplitNoPenetration::ApplyFluidCouplMatrix(
 
   //------------------------------Invert D Matrix!-----------------------------------------------
   tmp_k_D->Complete();
-  Teuchos::RCP<LINALG::SparseMatrix> invd = Teuchos::rcp(new LINALG::SparseMatrix(*tmp_k_D,Copy));
+  Teuchos::RCP<LINALG::SparseMatrix> invd = Teuchos::rcp(new LINALG::SparseMatrix(*tmp_k_D,LINALG::Copy));
   //invd->Complete();
 
   Teuchos::RCP<Epetra_Vector> diag = LINALG::CreateVector(*FluidField()->Interface()->FSICondMap(),true);
@@ -646,7 +646,7 @@ void POROELAST::MonolithicSplitNoPenetration::Update()
   lambda_->Update(1.0,*lambdanp_,0.0);
 
   //copy D matrix from current time step to old D matrix
-  k_Dn_ = Teuchos::rcp(new LINALG::SparseMatrix(*k_D_,Copy)); //store D-Matrix from last timestep
+  k_Dn_ = Teuchos::rcp(new LINALG::SparseMatrix(*k_D_,LINALG::Copy)); //store D-Matrix from last timestep
   return;
 }
 
@@ -771,7 +771,7 @@ void POROELAST::MonolithicSplitNoPenetration::ReadRestart(const int step)
     Evaluate(zeros_);
 
     //copy D matrix from current time step to old D matrix
-    k_Dn_ = Teuchos::rcp(new LINALG::SparseMatrix(*k_D_,Copy)); //store D-Matrix from last timestep
+    k_Dn_ = Teuchos::rcp(new LINALG::SparseMatrix(*k_D_,LINALG::Copy)); //store D-Matrix from last timestep
   }
 }
 

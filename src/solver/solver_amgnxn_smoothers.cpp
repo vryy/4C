@@ -614,7 +614,7 @@ void LINALG::SOLVER::AMGNXN::SingleFieldAMG::Setup()
     {
       myA    = this_level->Get< Teuchos::RCP<Matrix> >("A");
       myAcrs = MueLu::Utils<double,int,int,Node>::Op2NonConstEpetraCrs(myA);
-      myAspa = Teuchos::rcp(new SparseMatrix(myAcrs,Copy,explicitdirichlet,savegraph));
+      myAspa = Teuchos::rcp(new SparseMatrix(myAcrs,LINALG::Copy,explicitdirichlet,savegraph));
       Avec[level] = myAspa;
     }
     else
@@ -626,7 +626,7 @@ void LINALG::SOLVER::AMGNXN::SingleFieldAMG::Setup()
       {
         myA    = this_level->Get< Teuchos::RCP<Matrix> >("P");
         myAcrs = MueLu::Utils<double,int,int,Node>::Op2NonConstEpetraCrs(myA);
-        myAspa = Teuchos::rcp(new SparseMatrix(myAcrs,Copy,explicitdirichlet,savegraph));
+        myAspa = Teuchos::rcp(new SparseMatrix(myAcrs,LINALG::Copy,explicitdirichlet,savegraph));
         Pvec[level-1]=myAspa;
       }
       else
@@ -636,7 +636,7 @@ void LINALG::SOLVER::AMGNXN::SingleFieldAMG::Setup()
       {
         myA = this_level->Get< Teuchos::RCP<Matrix> >("R");
         myAcrs =MueLu::Utils<double,int,int,Node>::Op2NonConstEpetraCrs(myA);
-        myAspa = Teuchos::rcp(new SparseMatrix(myAcrs,Copy,explicitdirichlet,savegraph));
+        myAspa = Teuchos::rcp(new SparseMatrix(myAcrs,LINALG::Copy,explicitdirichlet,savegraph));
         Rvec[level-1]=myAspa;
       }
       else

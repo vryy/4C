@@ -1119,7 +1119,7 @@ void STR::TimInt::DetermineMassDampConsistAccel()
   //Meier 2015: Here, we apply a deep copy in order to not perform the Dirichlet conditions on the constant matrix mass_ later on.
   //This is necessary since we need the original mass matrix mass_ (without blanked rows) on the Dirichlet DoFs
   //in order to calculate correct reaction forces (Christoph Meier)
-  mass = Teuchos::rcp(new LINALG::SparseMatrix(*MassMatrix(),Copy));
+  mass = Teuchos::rcp(new LINALG::SparseMatrix(*MassMatrix(),LINALG::Copy));
 
   /* calculate consistent initial accelerations
    * WE MISS:

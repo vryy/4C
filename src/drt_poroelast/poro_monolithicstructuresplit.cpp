@@ -323,7 +323,7 @@ void POROELAST::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseM
   // structural one. (Tet elements in fluid can cause this.) We should do
   // this just once...
   //f->UnComplete();
-  mat.Assign(1,1,View,*f);
+  mat.Assign(1,1,LINALG::View,*f);
 
   // fluid coupling part
   mat.Matrix(1,0).Add(k_fs->Matrix(0,0),false,1.0,0.0);
