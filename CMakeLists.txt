@@ -1121,6 +1121,14 @@ set(OBJS_DRT_THERMO_LIB
 set(OBJS_DRT_REGISTER
   src/drt_lib/drt_parobjectregister.cpp
 )
+set(OBJS_DRT_REYNOLDS_LIB
+  src/drt_reynolds_ele/reynolds_ele.cpp
+  src/drt_reynolds_ele/reynolds_ele_evaluate.cpp
+  src/drt_reynolds_ele/reynolds_ele_factory.cpp
+  src/drt_reynolds_ele/reynolds_ele_calc.cpp
+  src/drt_reynolds_ele/reynolds_ele_parameter.cpp
+  
+)
 set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra_ele/scatra_ele_boundary_calc.cpp
   src/drt_scatra_ele/scatra_ele_boundary_calc_std.cpp
@@ -2207,6 +2215,7 @@ add_library(ele_bele3 ${OBJS_DRT_BELE3_LIB})
 add_library(ele_combust3 ${OBJS_DRT_COMBUST3_LIB})
 add_library(ele_opti ${OBJS_DRT_TOPOPT_LIB})
 add_library(ele_s8 ${OBJS_DRT_S8_LIB})
+add_library(ele_reynolds ${OBJS_DRT_REYNOLDS_LIB})
 add_library(ele_scatra ${OBJS_DRT_SCATRA_LIB})
 add_library(ele_sp3 ${OBJS_DRT_SP3_LIB})
 add_library(ele_meshfree_scatra ${OBJS_DRT_MESHFREE_SCATRA_LIB})
@@ -2237,6 +2246,7 @@ set(ELEMENT_LIBRARIES
   ele_meshfree_fluid
   ele_opti
   ele_s8
+  ele_reynolds
   ele_scatra
   ele_sp3
   ele_meshfree_scatra
