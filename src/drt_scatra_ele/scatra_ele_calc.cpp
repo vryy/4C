@@ -77,6 +77,7 @@ DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ScaTraEleCalc(const int numdofper
     weights_(true),      // initialized to zero
     myknots_(nsd_),      // size of vector
     eid_(0),
+    ele_(NULL),
     scatravarmanager_(Teuchos::rcp(new ScaTraEleInternalVariableManager<nsd_,nen_>(numscal_)))   // internal variable manager
 {
   dsassert(nsd_ >= nsd_ele_,"problem dimension has to be equal or larger than the element dimension!");
@@ -762,6 +763,10 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::BodyForce(
 
   if (myneumcond.size()==1)
   {
+
+    // (SPATIAL) FUNCTION BUSINESS
+    const std::vector<int>* funct = myneumcond[0]->Get<std::vector<int> >("funct");
+
     // check for potential time curve
     const std::vector<int>* curve  = myneumcond[0]->Get<std::vector<int> >("curve");
     int curvenum = -1;
@@ -785,11 +790,19 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::BodyForce(
     const std::vector<double>* val   = myneumcond[0]->Get<std::vector<double> >("val"  );
 
     // set this condition to the bodyforce array
-    for(int idof=0;idof<numdofpernode_;idof++)
+    for (int idof = 0; idof < numdofpernode_; idof++)
     {
-      for (int jnode=0; jnode<nen_; jnode++)
+      // function evaluation
+      const int functnum = (funct) ? (*funct)[idof] : -1;
+      for (int jnode = 0; jnode < nen_; jnode++)
       {
-        (bodyforce_[idof])(jnode) = (*onoff)[idof]*(*val)[idof]*curvefac;
+        const double functfac =
+            (functnum > 0) ?
+                DRT::Problem::Instance()->Funct(functnum - 1).Evaluate(idof,
+                    (ele->Nodes()[jnode])->X(), scatraparatimint_->Time(),
+                    NULL) :
+                1.0;
+        (bodyforce_[idof])(jnode) = (*onoff)[idof] * (*val)[idof] * curvefac * functfac;
       }
     }
   }
