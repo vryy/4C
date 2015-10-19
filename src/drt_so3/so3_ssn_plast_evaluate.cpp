@@ -1167,6 +1167,8 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
     double detF = -1.;
     LINALG::Matrix<nsd_,nsd_> invdefgrd(false);
     double f_bar_factor=1.;
+    // inverse and determinant
+    detF=invdefgrd.Invert(defgrd);
 
     // calculate modified deformation gradient
     if (fbar_)
@@ -1449,107 +1451,226 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
       }
 
       // elastic heating ******************************************************
-      LINALG::Matrix<3,3> defgrd_rate;
-      defgrd_rate.MultiplyTT(xcurrrate,N_XYZ);
-      double timefac_d=1./(theta*dt);
-      // Gough-Joule effect
-      plmat->HepDiss(gp)=0.;
-      plmat->dHepDT(gp) =0.;
-      plmat->dHepDissDd(gp).Size(numdofperelement_);
-      // Like this it should be easier to do EAS as well
-      LINALG::Matrix<3,3> RCGrate;
-      RCGrate.MultiplyTN(defgrd_rate,defgrd);
-      RCGrate.MultiplyTN(1.,defgrd,defgrd_rate,1.);
-      LINALG::Matrix<6,1> RCGrateVec;
-      for (int i=0; i<3; ++i) RCGrateVec(i,0) = RCGrate(i,i);
-      RCGrateVec(3,0) = 2.*RCGrate(0,1);
-      RCGrateVec(4,0) = 2.*RCGrate(1,2);
-      RCGrateVec(5,0) = 2.*RCGrate(0,2);
-
-      // enhance the deformation rate
-      if (eastype_!=soh8p_easnone)
+      if (eastype_==soh8p_easnone)
       {
-        Epetra_SerialDenseVector alpha_dot(neas_);
-        switch(eastype_)
+        plmat->HepDiss(gp)=0.;
+        plmat->dHepDT(gp) =0.;
+        plmat->dHepDissDd(gp).Size(numdofperelement_);
+        plmat->dHepDissDd(gp).Scale(0.);
+
+        if (fbar_)
         {
-        case soh8p_easmild:
-          // calculate EAS-rate
-          LINALG::DENSEFUNCTIONS::update<double,soh8p_easmild,1>(0.,alpha_dot,1.,*alpha_eas_);
-          LINALG::DENSEFUNCTIONS::update<double,soh8p_easmild,1>(1.,alpha_dot,-1.,*alpha_eas_last_timestep_);
-          alpha_dot.Scale(timefac_d);
-          // enhance the strain rate
-          // factor 2 because we deal with RCGrate and not GLrate
-          LINALG::DENSEFUNCTIONS::multiply<double,numstr_,soh8p_easmild,1>
-            (1.,RCGrateVec.A(),2.,M.A(),alpha_dot.A());
-          break;
-        case soh8p_easfull:
-          // calculate EAS-rate
-          LINALG::DENSEFUNCTIONS::update<double,soh8p_easfull,1>(0.,alpha_dot,1.,*alpha_eas_);
-          LINALG::DENSEFUNCTIONS::update<double,soh8p_easfull,1>(1.,alpha_dot,-1.,*alpha_eas_last_timestep_);
-          alpha_dot.Scale(timefac_d);
-          // enhance the strain rate
-          // factor 2 because we deal with RCGrate and not GLrate
-          LINALG::DENSEFUNCTIONS::multiply<double,numstr_,soh8p_easfull,1>
-            (1.,RCGrateVec.A(),2.,M.A(),alpha_dot.A());
-          break;
-        case soh8p_easnone: break;
-        default: dserror("Don't know what to do with EAS type %d", eastype_); break;
+          LINALG::Matrix<3,3> defgrd_rate_0;
+          defgrd_rate_0.MultiplyTT(xcurrrate,N_XYZ_0);
+
+          double he_fac;
+          double he_fac_deriv;
+          plmat->EvaluateGoughJoule(detF_0,Id(),he_fac,he_fac_deriv);
+
+          double fiddfdot =0.;
+          for (int i=0;i<3;++i)
+            for (int j=0;j<3;++j)
+              fiddfdot+=invdefgrd_0(j,i)*defgrd_rate_0(i,j);
+
+          double j_dot = 0.;
+          for (int i=0;i<3;++i)
+            for (int j=0;j<3;++j)
+              j_dot += detF_0 * invdefgrd_0(j,i)*defgrd_rate_0(i,j);
+
+          double He=-he_fac *gp_temp * j_dot;
+
+          plmat->HepDiss(gp)=He;
+
+          // derivative of elastic heating w.r.t. temperature *******************
+          plmat->dHepDT(gp) =He/gp_temp;
+
+          LINALG::Matrix<numdofperelement_,1> deriv_jdot_d(true);
+          LINALG::Matrix<numdofperelement_,1> deriv_j_d(true);
+
+          for (int i=0;i<3;++i)
+            for (int n=0;n<numdofperelement_;++n)
+              deriv_j_d(n) += detF_0 * invdefgrd_0(i,n%3) * N_XYZ_0(i,n/3);
+
+          double timefac_d=1./(theta*dt);
+          LINALG::Matrix<3,3> tmp;
+          tmp.Multiply(invdefgrd_0,defgrd_rate_0);
+          LINALG::Matrix<3,3> tmp2;
+          tmp2.Multiply(tmp,invdefgrd_0);
+          tmp.UpdateT(tmp2);
+
+          deriv_jdot_d.Update(fiddfdot,deriv_j_d,1.);
+          for (int i=0;i<3;++i)
+            for (int n=0;n<numdofperelement_;++n)
+              deriv_jdot_d(n) +=
+                                 detF_0 * invdefgrd_0(i,n%3) * N_XYZ_0(i,n/3) * timefac_d
+                                -detF_0 * tmp        (i,n%3) * N_XYZ_0(i,n/3)
+                                ;
+
+          LINALG::Matrix<numdofperelement_,1> dHedd(true);
+          dHedd.Update(-gp_temp*he_fac,deriv_jdot_d,1.);
+          dHedd.Update(-he_fac_deriv*gp_temp*j_dot,deriv_j_d,1.);
+
+          LINALG::DENSEFUNCTIONS::update<double,numdofperelement_,1>(plmat->dHepDissDd(gp).A(),dHedd.A());
         }
-      }// enhance the deformation rate
 
-      // heating ************************************************************
-      double He=-.5*gp_temp*cTvol.Dot(RCGrateVec);
+        else
+        {
+          LINALG::Matrix<3,3> defgrd_rate;
+          defgrd_rate.MultiplyTT(xcurrrate,N_XYZ);
 
-      plmat->HepDiss(gp)=He;
+          double he_fac;
+          double he_fac_deriv;
+          plmat->EvaluateGoughJoule(detF,Id(),he_fac,he_fac_deriv);
 
-      // derivative of elastic heating w.r.t. temperature *******************
-      plmat->dHepDT(gp) =He/gp_temp;
+          double fiddfdot =0.;
+          for (int i=0;i<3;++i)
+            for (int j=0;j<3;++j)
+              fiddfdot+=invdefgrd(j,i)*defgrd_rate(i,j);
 
-      // derivative of elastic heating w.r.t. displacement ******************
-      LINALG::Matrix<numdofperelement_,1> dHedd(true);
-      LINALG::Matrix<6,nen_*nsd_> boprate(false);  // (6x24)
-      CalculateBop(&boprate, &defgrd_rate, &N_XYZ);
+          double j_dot = 0.;
+          for (int i=0;i<3;++i)
+            for (int j=0;j<3;++j)
+              j_dot += detF * invdefgrd(j,i)*defgrd_rate(i,j);
 
-      LINALG::Matrix<6,1> tmp61;
-      tmp61.MultiplyTN(dcTvoldE,RCGrateVec);
-      if (fbar_)
-      {
-        dHedd.MultiplyTN(-.5*gp_temp*f_bar_factor*f_bar_factor,bop,tmp61,1.);
-        dHedd.Update(-.5*gp_temp * 2./3.*f_bar_factor*f_bar_factor * tmp61.Dot(RCG),htensor,1.);
+          double He=-he_fac *gp_temp * j_dot;
+
+          plmat->HepDiss(gp)=He;
+
+          // derivative of elastic heating w.r.t. temperature *******************
+          plmat->dHepDT(gp) =He/gp_temp;
+
+          LINALG::Matrix<numdofperelement_,1> deriv_jdot_d(true);
+          LINALG::Matrix<numdofperelement_,1> deriv_j_d(true);
+
+          for (int i=0;i<3;++i)
+            for (int n=0;n<numdofperelement_;++n)
+              deriv_j_d(n) += detF * invdefgrd(i,n%3) * N_XYZ(i,n/3);
+
+          double timefac_d=1./(theta*dt);
+          LINALG::Matrix<3,3> tmp;
+          tmp.Multiply(invdefgrd,defgrd_rate);
+          LINALG::Matrix<3,3> tmp2;
+          tmp2.Multiply(tmp,invdefgrd);
+          tmp.UpdateT(tmp2);
+
+          deriv_jdot_d.Update(fiddfdot,deriv_j_d,1.);
+          for (int i=0;i<3;++i)
+            for (int n=0;n<numdofperelement_;++n)
+              deriv_jdot_d(n) +=
+                                 detF * invdefgrd(i,n%3) * N_XYZ(i,n/3) * timefac_d
+                                -detF * tmp        (i,n%3) * N_XYZ(i,n/3)
+                                ;
+
+          LINALG::Matrix<numdofperelement_,1> dHedd(true);
+          dHedd.Update(-gp_temp*he_fac,deriv_jdot_d,1.);
+          dHedd.Update(-he_fac_deriv*gp_temp*j_dot,deriv_j_d,1.);
+
+          LINALG::DENSEFUNCTIONS::update<double,numdofperelement_,1>(plmat->dHepDissDd(gp).A(),dHedd.A());
+        }
       }
       else
       {
-        dHedd.MultiplyTN(-.5*gp_temp,bop,tmp61,1.);
-      }
+        LINALG::Matrix<3,3> defgrd_rate;
+        defgrd_rate.MultiplyTT(xcurrrate,N_XYZ);
+        double timefac_d=1./(theta*dt);
+        // Gough-Joule effect
+        plmat->HepDiss(gp)=0.;
+        plmat->dHepDT(gp) =0.;
+        plmat->dHepDissDd(gp).Size(numdofperelement_);
+        // Like this it should be easier to do EAS as well
+        LINALG::Matrix<3,3> RCGrate;
+        RCGrate.MultiplyTN(defgrd_rate,defgrd);
+        RCGrate.MultiplyTN(1.,defgrd,defgrd_rate,1.);
+        LINALG::Matrix<6,1> RCGrateVec;
+        for (int i=0; i<3; ++i) RCGrateVec(i,0) = RCGrate(i,i);
+        RCGrateVec(3,0) = 2.*RCGrate(0,1);
+        RCGrateVec(4,0) = 2.*RCGrate(1,2);
+        RCGrateVec(5,0) = 2.*RCGrate(0,2);
 
-      dHedd.MultiplyTN(-timefac_d*gp_temp,bop,cTvol,1.);
-      dHedd.MultiplyTN(-gp_temp,boprate,cTvol,1.);
-
-      // derivative of elastic heating w.r.t. EAS alphas *******************
-      if (eastype_!=soh8p_easnone)
-      {
-        switch(eastype_)
+        // enhance the deformation rate
+        if (eastype_!=soh8p_easnone)
         {
-        case soh8p_easmild:
-          LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easmild,numstr_,1>
-            (0.,dHda[gp].A(),-.5*gp_temp,M.A(),tmp61.A());
-          LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easmild,numstr_,1>
-            (1.,dHda[gp].A(),-gp_temp*timefac_d,M.A(),cTvol.A());
-          break;
-        case soh8p_easfull:
-          LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easfull,numstr_,1>
-            (0.,dHda[gp].A(),-.5*gp_temp,M.A(),tmp61.A());
-          LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easfull,numstr_,1>
-            (1.,dHda[gp].A(),-gp_temp*timefac_d,M.A(),cTvol.A());
-          break;
-        case soh8p_easnone: break;
-        default: dserror("Don't know what to do with EAS type %d", eastype_); break;
-        }
-      }
+          Epetra_SerialDenseVector alpha_dot(neas_);
+          switch(eastype_)
+          {
+          case soh8p_easmild:
+            // calculate EAS-rate
+            LINALG::DENSEFUNCTIONS::update<double,soh8p_easmild,1>(0.,alpha_dot,1.,*alpha_eas_);
+            LINALG::DENSEFUNCTIONS::update<double,soh8p_easmild,1>(1.,alpha_dot,-1.,*alpha_eas_last_timestep_);
+            alpha_dot.Scale(timefac_d);
+            // enhance the strain rate
+            // factor 2 because we deal with RCGrate and not GLrate
+            LINALG::DENSEFUNCTIONS::multiply<double,numstr_,soh8p_easmild,1>
+              (1.,RCGrateVec.A(),2.,M.A(),alpha_dot.A());
+            break;
+          case soh8p_easfull:
+            // calculate EAS-rate
+            LINALG::DENSEFUNCTIONS::update<double,soh8p_easfull,1>(0.,alpha_dot,1.,*alpha_eas_);
+            LINALG::DENSEFUNCTIONS::update<double,soh8p_easfull,1>(1.,alpha_dot,-1.,*alpha_eas_last_timestep_);
+            alpha_dot.Scale(timefac_d);
+            // enhance the strain rate
+            // factor 2 because we deal with RCGrate and not GLrate
+            LINALG::DENSEFUNCTIONS::multiply<double,numstr_,soh8p_easfull,1>
+              (1.,RCGrateVec.A(),2.,M.A(),alpha_dot.A());
+            break;
+          case soh8p_easnone: break;
+          default: dserror("Don't know what to do with EAS type %d", eastype_); break;
+          }
+        }// enhance the deformation rate
 
-      plmat->dHepDissDd(gp).Scale(0.);
-      LINALG::DENSEFUNCTIONS::update<double,numdofperelement_,1>(plmat->dHepDissDd(gp).A(),dHedd.A());
-      // volumetric part of K_dT = Gough-Joule effect**********************************
+        // heating ************************************************************
+        double He=-.5*gp_temp*cTvol.Dot(RCGrateVec);
+
+        plmat->HepDiss(gp)=He;
+
+        // derivative of elastic heating w.r.t. temperature *******************
+        plmat->dHepDT(gp) =He/gp_temp;
+
+        // derivative of elastic heating w.r.t. displacement ******************
+        LINALG::Matrix<numdofperelement_,1> dHedd(true);
+        LINALG::Matrix<6,nen_*nsd_> boprate(false);  // (6x24)
+        CalculateBop(&boprate, &defgrd_rate, &N_XYZ);
+
+        LINALG::Matrix<6,1> tmp61;
+        tmp61.MultiplyTN(dcTvoldE,RCGrateVec);
+        if (fbar_)
+        {
+          dHedd.MultiplyTN(-.5*gp_temp*f_bar_factor*f_bar_factor,bop,tmp61,1.);
+          dHedd.Update(-.5*gp_temp * 2./3.*f_bar_factor*f_bar_factor * tmp61.Dot(RCG),htensor,1.);
+        }
+        else
+        {
+          dHedd.MultiplyTN(-.5*gp_temp,bop,tmp61,1.);
+        }
+
+        dHedd.MultiplyTN(-timefac_d*gp_temp,bop,cTvol,1.);
+        dHedd.MultiplyTN(-gp_temp,boprate,cTvol,1.);
+
+        // derivative of elastic heating w.r.t. EAS alphas *******************
+        if (eastype_!=soh8p_easnone)
+        {
+          switch(eastype_)
+          {
+          case soh8p_easmild:
+            LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easmild,numstr_,1>
+              (0.,dHda[gp].A(),-.5*gp_temp,M.A(),tmp61.A());
+            LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easmild,numstr_,1>
+              (1.,dHda[gp].A(),-gp_temp*timefac_d,M.A(),cTvol.A());
+            break;
+          case soh8p_easfull:
+            LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easfull,numstr_,1>
+              (0.,dHda[gp].A(),-.5*gp_temp,M.A(),tmp61.A());
+            LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easfull,numstr_,1>
+              (1.,dHda[gp].A(),-gp_temp*timefac_d,M.A(),cTvol.A());
+            break;
+          case soh8p_easnone: break;
+          default: dserror("Don't know what to do with EAS type %d", eastype_); break;
+          }
+        }
+
+        plmat->dHepDissDd(gp).Scale(0.);
+        LINALG::DENSEFUNCTIONS::update<double,numdofperelement_,1>(plmat->dHepDissDd(gp).A(),dHedd.A());
+      }
     } // if (eval_tsi)
 
     // plastic modifications

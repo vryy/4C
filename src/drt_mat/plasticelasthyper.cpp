@@ -706,6 +706,37 @@ void MAT::PlasticElastHyper::EvaluateCTvol(
   return;
 }
 
+
+/*----------------------------------------------------------------------*
+ |  evaluate Gough Joule Effect                             seitz 10/15 |
+ *----------------------------------------------------------------------*/
+void MAT::PlasticElastHyper::EvaluateGoughJoule(const double j,
+    const int eleGID,
+    double& he_fac,
+    double& he_fac_deriv)
+{
+
+  // we are only interested in the volumetric response
+  // which is for decoupled strain energy functions defined by
+  // modinv_3 = J only.
+  LINALG::Matrix<3,1> modinv(true);
+  modinv(2) = j;
+  LINALG::Matrix<3,1> dPmodI;
+  LINALG::Matrix<6,1> ddPmodII;
+  double dddPmodIII =0.;
+
+  // loop map of associated potential summands
+  for (unsigned int p=0; p<potsum_.size(); ++p)
+  {
+    potsum_[p]->AddDerivativesModified(dPmodI,ddPmodII,modinv,eleGID);
+    potsum_[p]->Add3rdVolDeriv(modinv,dddPmodIII);
+  }
+
+  he_fac = -3.*Cte()*ddPmodII(2);
+  he_fac_deriv = -3.*Cte()*dddPmodIII;
+  return;
+}
+
 /*----------------------------------------------------------------------*
  |  evaluate plastic stress and stiffness                   seitz 05/14 |
  *----------------------------------------------------------------------*/

@@ -278,6 +278,12 @@ private:
                                const int gp,
                                const int eleGID);       ///< global ID of element
 
+    /// evaluate the Gough Joule Effect
+    virtual void EvaluateGoughJoule(const double j,
+        const int eleGID,
+        double& he_fac,
+        double& he_fac_deriv);
+
     /// evaluate everything needed for the condensation of the plastic deformation
     /// at element level. (with zero plastic spin)
     virtual void EvaluatePlast(const LINALG::Matrix<3,3>* defgrd,///< Deformation gradient
