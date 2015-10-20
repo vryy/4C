@@ -1300,4 +1300,3 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Write(const Teuchos::RCP<Hier
 
 
 #endif // HAVE_MueLu
-

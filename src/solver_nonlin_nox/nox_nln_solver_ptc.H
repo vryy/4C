@@ -126,7 +126,6 @@ namespace Solver {
             const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests);
     virtual void reset(const NOX::Abstract::Vector& initialGuess,
         const Teuchos::RCP<NOX::StatusTest::Generic>& outerTests);
-    virtual void reset(const NOX::Abstract::Vector& initialGuess);
 
     //! derived
     virtual NOX::StatusTest::StatusType step();

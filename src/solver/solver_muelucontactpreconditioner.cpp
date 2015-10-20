@@ -67,15 +67,6 @@ Author: wiesner
 
 #include "solver_muelucontactpreconditioner.H"
 
-// Read a parameter value from a parameter list and store it into a variable named 'varName'
-#define MUELU_READ_PARAM(paramList, paramStr, varType, defaultValue, varName) \
-  varType varName = defaultValue; if (paramList.isParameter(paramStr)) varName = paramList.get<varType>(paramStr);
-
-// Read a parameter value from a paraeter list and copy it into a new parameter list (with another parameter name)
-#define MUELU_COPY_PARAM(paramList, paramStr, varType, defaultValue, outParamList, outParamStr) \
-  if (paramList.isParameter(paramStr))                                  \
-    outParamList.set<varType>(outParamStr, paramList.get<varType>(paramStr)); \
-  else outParamList.set<varType>(outParamStr, defaultValue);
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
@@ -601,4 +592,3 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node> > LI
 }
 
 #endif
-

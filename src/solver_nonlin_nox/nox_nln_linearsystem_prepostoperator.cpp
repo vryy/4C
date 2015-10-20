@@ -51,6 +51,12 @@ NOX::NLN::LinSystem::PrePostOperator::PrePostOperator(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+NOX::NLN::LinSystem::PrePostOperator::~PrePostOperator()
+{
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void NOX::NLN::LinSystem::PrePostOperator::reset(
     Teuchos::ParameterList& linearSolverSubList)
 {
