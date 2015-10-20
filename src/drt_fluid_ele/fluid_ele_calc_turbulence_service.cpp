@@ -1839,6 +1839,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::StoreModelParametersForOutput
 
 template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex8,DRT::ELEMENTS::Fluid::none>;
 template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex8,DRT::ELEMENTS::Fluid::xwall>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::tet4,DRT::ELEMENTS::Fluid::xwall>;
 template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex20,DRT::ELEMENTS::Fluid::none>;
 template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex27,DRT::ELEMENTS::Fluid::none>;
 template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::tet4,DRT::ELEMENTS::Fluid::none>;

@@ -1697,11 +1697,6 @@ void ElementNodeNormal(
                        const bool isale
                        )
 {
-  // Check for elements
-  if (not ((distype == DRT::Element::quad4) or (distype == DRT::Element::line2)))
-  {
-    dserror("Please check, if the mass-consistent node normal is properly defined for your element and if yes, add another exception for it.");
-  }
 
   /*----------------------------------------------------------------------*
    |                          Initialization                              |

@@ -541,11 +541,13 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::EvalStdShapeFuncAndDeriv
    // shape functions and their first derivatives
    DRT::UTILS::shape_function<distype>(my::xsi_,funct_);
    DRT::UTILS::shape_function_deriv1<distype>(my::xsi_,deriv_);
-   if (my::is_higher_order_ele_)
+   if (my::is_higher_order_ele_ && distype == DRT::Element::hex8)
    {
      // get the second derivatives of standard element at current GP
      DRT::UTILS::shape_function_deriv2<distype>(my::xsi_,deriv2_);
    }
+   else
+     deriv2_.Clear();
 
   // get Jacobian matrix and determinant
   // actually compute its transpose....
@@ -580,7 +582,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::EvalStdShapeFuncAndDeriv
   //--------------------------------------------------------------
   //             compute global second derivatives
   //--------------------------------------------------------------
-  if (my::is_higher_order_ele_)
+  if (my::is_higher_order_ele_ && distype == DRT::Element::hex8)
   {
     DRT::UTILS::gder2<distype,enren_>(my::xjm_,derxy_,deriv2_,xyze_,derxy2_);
   }
@@ -969,7 +971,18 @@ double DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::CalcMK()
   if(my::is_higher_order_ele_==false)
     dserror("It is essential that the second derivatives exist!");
 
-  DRT::UTILS::GaussIntegration intpoints(cgp_);
+  DRT::UTILS::GaussIntegration intpoints(DRT::Element::hex8 ,1);
+  if(distype == DRT::Element::hex8)
+  {
+    DRT::UTILS::GaussIntegration intpointstmp(cgp_);
+    intpoints = intpointstmp;
+  }
+  else if(distype == DRT::Element::tet4)
+  {
+    DRT::UTILS::GaussIntegration intpointsplane( DRT::Element::tet4 ,2*numgpnorm_-1);
+    intpoints = intpointsplane;
+  }
+
   Epetra_SerialDenseMatrix      elemat_epetra1;
   Epetra_SerialDenseMatrix      elemat_epetra2;
   elemat_epetra1.Shape(my::nen_,my::nen_);
@@ -1043,7 +1056,12 @@ double DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::CalcMK()
   }
   else dserror("Element length not defined for dynamic determination of mk for your stabilization parameter");
 
-  if(1.0/(maxeigenvalue*h_u*h_u)>0.33)
+  if(abs(maxeigenvalue) < 1.e-9)
+  {
+    std::cout << "Warning: maxeigenvalue zero:  " << maxeigenvalue << std::endl;
+    return 0.33333333333;
+  }
+  else if(1.0/(maxeigenvalue*h_u*h_u)>0.33)
   {
     std::cout << "Warning: mk larger than 0.33:  " << maxeigenvalue*h_u*h_u << std::endl;
 
@@ -1363,4 +1381,5 @@ dserror("wrong");
   return;
 }
 
+template class DRT::ELEMENTS::FluidEleCalcXWall<DRT::Element::tet4,DRT::ELEMENTS::Fluid::xwall>;
 template class DRT::ELEMENTS::FluidEleCalcXWall<DRT::Element::hex8,DRT::ELEMENTS::Fluid::xwall>;

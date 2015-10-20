@@ -1677,6 +1677,42 @@ LINALG::Matrix<3,1> DRT::UTILS::getNodeCoordinates(   const int                 
                 dserror("node number does not exist");
         }
     }
+    else if(distype == DRT::Element::tet4) // bk
+      {
+        switch(nodeId)
+        {
+            case 0:
+            {
+                coord(0) =  0.0;
+                coord(1) =  0.0;
+                coord(2) =  0.0;
+                break;
+            }
+            case 1:
+            {
+                coord(0) =  1.0;
+                coord(1) =  0.0;
+                coord(2) =  0.0;
+                break;
+            }
+            case 2:
+            {
+                coord(0) =  0.0;
+                coord(1) =  1.0;
+                coord(2) =  0.0;
+                break;
+            }
+            case 3:
+            {
+                coord(0) =  0.0;
+                coord(1) =  0.0;
+                coord(2) =  1.0;
+                break;
+            }
+            default:
+                dserror("node number not correct");
+        }
+      }
     else
         dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
 

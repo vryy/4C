@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file fluid_ele_xwall_boundary.cpp
+ \file fluid_ele_xwall.cpp
 
  \brief
 
@@ -78,6 +78,11 @@ void DRT::ELEMENTS::FluidXWallType::SetupElementDefinition( std::map<std::string
 
   defsxwall["HEX8"]
     .AddIntVector("HEX8",8)
+    .AddNamedInt("MAT")
+    .AddNamedString("NA")
+    ;
+  defsxwall["TET4"]
+    .AddIntVector("TET4",4)
     .AddNamedInt("MAT")
     .AddNamedString("NA")
     ;

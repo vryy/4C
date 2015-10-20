@@ -133,11 +133,13 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemType
     return DRT::ELEMENTS::FluidEleCalcHDG<distype>::Instance();
   else if (problem == "xw")
   {
-    // for now we only build the hex8 element for xwall
+    // for now we only build the hex8 and tet4 elements for xwall
     // later we might consider other kinds of elements
     if (distype == DRT::Element::hex8)
       return DRT::ELEMENTS::FluidEleCalcXWall<DRT::Element::hex8,DRT::ELEMENTS::Fluid::xwall>::Instance();
-    else dserror("only hex8 element compiled for xwall");
+    else if(distype == DRT::Element::tet4)
+      return DRT::ELEMENTS::FluidEleCalcXWall<DRT::Element::tet4,DRT::ELEMENTS::Fluid::xwall>::Instance();
+    else dserror("only hex8 and tet4 elements compiled for xwall");
   }
   else
     dserror("Defined problem type does not exist!!");

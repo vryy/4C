@@ -43,7 +43,6 @@ Maintainer: Benjamin Krank
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::PrepareGaussRule()
 {
-  cgp_ = Teuchos::rcp( new DRT::UTILS::CollectedGaussPoints( numgpnorm_*numgpplane_*numgpplane_) );
   //which is the wall-normal element direction?
   //calculate jacobian at element center
   my::is_higher_order_ele_=false;
@@ -71,64 +70,73 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::PrepareGaussRule()
   if(minyp > 15.0)
     numgpnorm_ = numgpnormow_;
 
-  // get the quad9 gaussrule for the in plane integration
-  DRT::UTILS::GaussIntegration intpointsplane( DRT::Element::quad8 ,2*numgpplane_-1);
-  // get the quad9 gaussrule for the in normal integration
-  DRT::UTILS::GaussIntegration intpointsnormal( DRT::Element::line3 ,2*numgpnorm_-1);
+  if(distype == DRT::Element::tet4)
+  {
+    DRT::UTILS::GaussIntegration intpointsplane( DRT::Element::tet4 ,2*numgpnorm_-1);
+    my::intpoints_ = intpointsplane;
+  }
+  else //hex8
+  {
+    cgp_ = Teuchos::rcp( new DRT::UTILS::CollectedGaussPoints( numgpnorm_*numgpplane_*numgpplane_) );
+    // get the quad9 gaussrule for the in plane integration
+    DRT::UTILS::GaussIntegration intpointsplane( DRT::Element::quad8 ,2*numgpplane_-1);
+    // get the quad9 gaussrule for the in normal integration
+    DRT::UTILS::GaussIntegration intpointsnormal( DRT::Element::line3 ,2*numgpnorm_-1);
 
-  //0.9 corresponds to an angle of 25.8 deg
-  if(dot1<0.90&&dot2<0.90&&dot3<0.90)
-  { //element, where the wall normal direction does not point in one specific element direction, e.g. in corners
-    cgp_->IncreaseReserved((numgpnorm_*numgpnorm_*numgpnorm_)-(numgpnorm_*numgpplane_*numgpplane_) );
-    DRT::UTILS::GaussIntegration intpointsplane( DRT::Element::quad8 ,2*numgpnorm_-1);
-    // start loop over integration points in layer
-    for ( DRT::UTILS::GaussIntegration::iterator iquadplane=intpointsplane.begin(); iquadplane!=intpointsplane.end(); ++iquadplane )
-    {
+    //0.9 corresponds to an angle of 25.8 deg
+    if(dot1<0.90&&dot2<0.90&&dot3<0.90)
+    { //element, where the wall normal direction does not point in one specific element direction, e.g. in corners
+      cgp_->IncreaseReserved((numgpnorm_*numgpnorm_*numgpnorm_)-(numgpnorm_*numgpplane_*numgpplane_) );
+      DRT::UTILS::GaussIntegration intpointsplane( DRT::Element::quad8 ,2*numgpnorm_-1);
       // start loop over integration points in layer
-      for ( DRT::UTILS::GaussIntegration::iterator iquadnorm=intpointsnormal.begin(); iquadnorm!=intpointsnormal.end(); ++iquadnorm )
+      for ( DRT::UTILS::GaussIntegration::iterator iquadplane=intpointsplane.begin(); iquadplane!=intpointsplane.end(); ++iquadplane )
       {
-        cgp_->Append(iquadnorm.Point()[0],iquadplane.Point()[0],iquadplane.Point()[1],iquadplane.Weight()*iquadnorm.Weight());
+        // start loop over integration points in layer
+        for ( DRT::UTILS::GaussIntegration::iterator iquadnorm=intpointsnormal.begin(); iquadnorm!=intpointsnormal.end(); ++iquadnorm )
+        {
+          cgp_->Append(iquadnorm.Point()[0],iquadplane.Point()[0],iquadplane.Point()[1],iquadplane.Weight()*iquadnorm.Weight());
+        }
       }
     }
-  }
-  else if(dot1>dot2&&dot1>dot3)
-  {
-    // start loop over integration points in layer
-    for ( DRT::UTILS::GaussIntegration::iterator iquadplane=intpointsplane.begin(); iquadplane!=intpointsplane.end(); ++iquadplane )
+    else if(dot1>dot2&&dot1>dot3)
     {
       // start loop over integration points in layer
-      for ( DRT::UTILS::GaussIntegration::iterator iquadnorm=intpointsnormal.begin(); iquadnorm!=intpointsnormal.end(); ++iquadnorm )
+      for ( DRT::UTILS::GaussIntegration::iterator iquadplane=intpointsplane.begin(); iquadplane!=intpointsplane.end(); ++iquadplane )
       {
-        cgp_->Append(iquadnorm.Point()[0],iquadplane.Point()[0],iquadplane.Point()[1],iquadplane.Weight()*iquadnorm.Weight());
+        // start loop over integration points in layer
+        for ( DRT::UTILS::GaussIntegration::iterator iquadnorm=intpointsnormal.begin(); iquadnorm!=intpointsnormal.end(); ++iquadnorm )
+        {
+          cgp_->Append(iquadnorm.Point()[0],iquadplane.Point()[0],iquadplane.Point()[1],iquadplane.Weight()*iquadnorm.Weight());
+        }
       }
     }
-  }
-  else if(dot2>dot3)
-  {
-    // start loop over integration points in layer
-    for ( DRT::UTILS::GaussIntegration::iterator iquadplane=intpointsplane.begin(); iquadplane!=intpointsplane.end(); ++iquadplane )
+    else if(dot2>dot3)
     {
       // start loop over integration points in layer
-      for ( DRT::UTILS::GaussIntegration::iterator iquadnorm=intpointsnormal.begin(); iquadnorm!=intpointsnormal.end(); ++iquadnorm )
+      for ( DRT::UTILS::GaussIntegration::iterator iquadplane=intpointsplane.begin(); iquadplane!=intpointsplane.end(); ++iquadplane )
       {
-        cgp_->Append(iquadplane.Point()[0],iquadnorm.Point()[0],iquadplane.Point()[1],iquadplane.Weight()*iquadnorm.Weight());
+        // start loop over integration points in layer
+        for ( DRT::UTILS::GaussIntegration::iterator iquadnorm=intpointsnormal.begin(); iquadnorm!=intpointsnormal.end(); ++iquadnorm )
+        {
+          cgp_->Append(iquadplane.Point()[0],iquadnorm.Point()[0],iquadplane.Point()[1],iquadplane.Weight()*iquadnorm.Weight());
+        }
       }
     }
-  }
-  else
-  {
-    // start loop over integration points in layer
-    for ( DRT::UTILS::GaussIntegration::iterator iquadplane=intpointsplane.begin(); iquadplane!=intpointsplane.end(); ++iquadplane )
+    else
     {
       // start loop over integration points in layer
-      for ( DRT::UTILS::GaussIntegration::iterator iquadnorm=intpointsnormal.begin(); iquadnorm!=intpointsnormal.end(); ++iquadnorm )
+      for ( DRT::UTILS::GaussIntegration::iterator iquadplane=intpointsplane.begin(); iquadplane!=intpointsplane.end(); ++iquadplane )
       {
-        cgp_->Append(iquadplane.Point()[0],iquadplane.Point()[1],iquadnorm.Point()[0],iquadplane.Weight()*iquadnorm.Weight());
+        // start loop over integration points in layer
+        for ( DRT::UTILS::GaussIntegration::iterator iquadnorm=intpointsnormal.begin(); iquadnorm!=intpointsnormal.end(); ++iquadnorm )
+        {
+          cgp_->Append(iquadplane.Point()[0],iquadplane.Point()[1],iquadnorm.Point()[0],iquadplane.Weight()*iquadnorm.Weight());
+        }
       }
     }
+    DRT::UTILS::GaussIntegration grule(cgp_);
+    my::intpoints_=grule;
   }
-  DRT::UTILS::GaussIntegration grule(cgp_);
-  my::intpoints_=grule;
 
   return;
 }
@@ -226,3 +234,4 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::Sysmat(
 }
 
 template class DRT::ELEMENTS::FluidEleCalcXWall<DRT::Element::hex8,DRT::ELEMENTS::Fluid::xwall>;
+template class DRT::ELEMENTS::FluidEleCalcXWall<DRT::Element::tet4,DRT::ELEMENTS::Fluid::xwall>;
