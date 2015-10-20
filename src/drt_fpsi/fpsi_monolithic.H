@@ -88,9 +88,6 @@ public:
   //! read restart data
   virtual void ReadRestart(int step);
 
-  //! redistribute FPSI interface if running on parallel
-  void RedistributeInterface();
-
   //! start a new time step
   virtual void PrepareTimeStep();
 

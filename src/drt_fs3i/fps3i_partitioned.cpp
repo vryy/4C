@@ -315,6 +315,18 @@ void FS3I::PartFPS3I::RedistributeInterface()
   fpsi_->RedistributeInterface();
 
   DRT::Problem* problem = DRT::Problem::Instance();
+
+  if(comm_.NumProc() > 1) //if we have more than one processor, we need to redistribute at the FPSI interface
+  {
+    Teuchos::RCP<FPSI::Utils> FPSI_UTILS = FPSI::Utils::Instance();
+
+    Teuchos::RCP<std::map<int,int> > Fluid_PoroFluid_InterfaceMap = FPSI_UTILS->Get_Fluid_PoroFluid_InterfaceMap();
+    Teuchos::RCP<std::map<int,int> > PoroFluid_Fluid_InterfaceMap = FPSI_UTILS->Get_PoroFluid_Fluid_InterfaceMap();
+
+    FPSI_UTILS->RedistributeInterface(problem->GetDis("scatra1"),Teuchos::null,"",*PoroFluid_Fluid_InterfaceMap);
+    FPSI_UTILS->RedistributeInterface(problem->GetDis("scatra2"),Teuchos::null,"",*Fluid_PoroFluid_InterfaceMap);
+  }
+
   Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis("structure");
   Teuchos::RCP<DRT::Discretization> structscatradis = problem->GetDis("scatra2");
 

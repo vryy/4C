@@ -36,7 +36,7 @@ namespace FPSI
     virtual void ReadRestart(int restartstep) = 0;
 
     /// redistribute FPSI interface if running on parallel
-    virtual void RedistributeInterface() = 0;
+    void RedistributeInterface();
 
   };
 }

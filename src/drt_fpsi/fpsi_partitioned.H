@@ -37,9 +37,6 @@ namespace FPSI
 //////////////// FPSI_DYN
 //
     void ReadRestart(int restartstep);
-//
-    // redistribute FPSI interface if running on parallel
-    void RedistributeInterface();
 
     void SetupSystem();
 
