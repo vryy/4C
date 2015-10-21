@@ -21,7 +21,7 @@ Maintainer: Svenja Schoeder
 #include "acou_sol_ele.H"
 #include "acou_timeint.H"
 #include "acou_impl_euler.H"
-#include "acou_inv_analysis.H"
+#include "pat_imagereconstruction.H"
 #include "acou_expl.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_acou.H"
@@ -61,7 +61,7 @@ void acoustics_drt()
   const Teuchos::ParameterList& acouparams = DRT::Problem::Instance()->AcousticParams();
 
   // do we want to do inverse analysis?
-  bool invanalysis = (DRT::INPUT::IntegralValue<INPAR::ACOU::InvAnalysisType>(acouparams,"INV_ANALYSIS") != INPAR::ACOU::inv_none);
+  bool invanalysis = (DRT::INPUT::IntegralValue<INPAR::ACOU::InvAnalysisType>(acouparams,"INV_ANALYSIS") != INPAR::ACOU::pat_none);
 
   // access the discretization
   Teuchos::RCP<DRT::DiscretizationHDG> acoudishdg = Teuchos::rcp_dynamic_cast<DRT::DiscretizationHDG>(DRT::Problem::Instance()->GetDis("acou"));
@@ -301,12 +301,34 @@ void acoustics_drt()
                                       scatradis->Comm(),
                                       DRT::Problem::Instance()->ErrorFile()->Handle()));
 
+    // create scatra output
+    Teuchos::RCP<IO::DiscretizationWriter> scatraoutput = scatradis->Writer();
+
     // create and run the inverse problem
-    ACOU::InvAnalysis myinverseproblem(scatradis,acoudishdg,scatraparams,scatrasolver,params,solver,output);
-    myinverseproblem.Integrate();
+    Teuchos::RCP<ACOU::PatImageReconstruction> myinverseproblem;
+    switch(DRT::INPUT::IntegralValue<INPAR::ACOU::InvAnalysisType>(acouparams,"INV_ANALYSIS"))
+    {
+    case INPAR::ACOU::pat_none:
+      dserror("you should not be here");
+    break;
+    case INPAR::ACOU::pat_opti:
+      myinverseproblem = Teuchos::rcp(new ACOU::PatImageReconstructionOpti(scatradis,acoudishdg,scatraparams,params,scatrasolver,solver,scatraoutput,output));
+    break;
+    case INPAR::ACOU::pat_optiacou:
+      myinverseproblem = Teuchos::rcp(new ACOU::PatImageReconstructionOptiAcou(scatradis,acoudishdg,scatraparams,params,scatrasolver,solver,scatraoutput,output));
+    break;
+    case INPAR::ACOU::pat_segm:
+      myinverseproblem = Teuchos::rcp(new ACOU::PatImageReconstructionSegmentation(scatradis,acoudishdg,scatraparams,params,scatrasolver,solver,scatraoutput,output));
+    break;
+    default:
+      dserror("other pat types not listed");
+      break;
+    }
+    myinverseproblem->InitialRun();
+    myinverseproblem->Optimize();
 
     // do testing if required
-    DRT::Problem::Instance()->AddFieldTest(myinverseproblem.CreateFieldTest());
+    DRT::Problem::Instance()->AddFieldTest(myinverseproblem->CreateFieldTest());
     DRT::Problem::Instance()->TestAll(scatradis->Comm());
 
   } // else ** if(!invanalysis)

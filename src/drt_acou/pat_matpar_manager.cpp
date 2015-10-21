@@ -37,11 +37,9 @@ ACOU::AcouMatParManagerUniform::AcouMatParManagerUniform(Teuchos::RCP<DRT::Discr
 {}
 
 /*----------------------------------------------------------------------*/
-ACOU::OptMatParManagerPerElement::OptMatParManagerPerElement(Teuchos::RCP<DRT::Discretization> discret, bool scaleele)
+ACOU::OptMatParManagerPerElement::OptMatParManagerPerElement(Teuchos::RCP<DRT::Discretization> discret)
 :MatParManagerPerElement(discret)
-{
-  scalegradele_ = scaleele;
-}
+{}
 
 /*----------------------------------------------------------------------*/
 ACOU::AcouMatParManagerPerElement::AcouMatParManagerPerElement(Teuchos::RCP<DRT::Discretization> discret)
@@ -73,11 +71,6 @@ void ACOU::OptMatParManagerUniform::AddEvaluate(double time, Teuchos::RCP<Epetra
     // list to define routines at elementlevel
     Teuchos::ParameterList p;
     p.set<int>("action",SCATRA::calc_integr_grad_reac);
-
-    // this works if we optimize only with respect to reac
-    p.set<bool>("signum_mu",actele->Material()->Parameter()->GetParameter(1,Discret()->ElementColMap()->LID(actele->Id()))<0.0);
-    p.set<bool>("signum_D", actele->Material()->Parameter()->GetParameter(0,Discret()->ElementColMap()->LID(actele->Id()))<0.0);
-    p.set<bool>("scaleele",false);
 
     std::vector<int> actparams = ParaMap().at(elematid);
     std::vector<int>::const_iterator it;
@@ -207,7 +200,6 @@ void ACOU::OptMatParManagerPerElement::AddEvaluate(double time, Teuchos::RCP<Epe
     // set parameters
     p.set<bool>("signum_mu",actele->Material()->Parameter()->GetParameter(1,Discret()->ElementColMap()->LID(actele->Id()))<0.0);
     p.set<bool>("signum_D", actele->Material()->Parameter()->GetParameter(0,Discret()->ElementColMap()->LID(actele->Id()))<0.0);
-    p.set<bool>("scaleele",scalegradele_);
 
     std::vector<int> actparams = ParaMap().at( elematid );
     std::vector<int>::const_iterator it;

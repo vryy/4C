@@ -196,7 +196,7 @@ void ACOU::AcouExplicitTimeInt::SetInitialPhotoAcousticField(
 /*----------------------------------------------------------------------*
  |  Integrate                                            schoeder 03/15 |
  *----------------------------------------------------------------------*/
-void AcouExplicitTimeInt::Integrate(Teuchos::RCP<Epetra_MultiVector> history, Teuchos::RCP<LINALG::MapExtractor> splitter)
+void AcouExplicitTimeInt::Integrate(Teuchos::RCP<Epetra_MultiVector> history, Teuchos::RCP<Epetra_Map> splitter)
 {
   if(numdim_==2)
       wave2d_->run(history,splitter);
@@ -209,7 +209,7 @@ void AcouExplicitTimeInt::Integrate(Teuchos::RCP<Epetra_MultiVector> history, Te
 /*----------------------------------------------------------------------*
  |  Output                                               schoeder 03/15 |
  *----------------------------------------------------------------------*/
-void AcouExplicitTimeInt::Output(Teuchos::RCP<Epetra_MultiVector> history, Teuchos::RCP<LINALG::MapExtractor> splitter)
+void AcouExplicitTimeInt::Output(Teuchos::RCP<Epetra_MultiVector> history, Teuchos::RCP<Epetra_Map> splitter)
 {
   // first: get the deal values and put them in the baci elements (output is a bit more expensive than usually)
 
@@ -928,7 +928,7 @@ namespace
 
 template <int dim>
 void
-WaveEquationProblem<dim>::output_results (const unsigned int timestep_number, Teuchos::RCP<Epetra_MultiVector> history, Teuchos::RCP<LINALG::MapExtractor> splitter)
+WaveEquationProblem<dim>::output_results (const unsigned int timestep_number, Teuchos::RCP<Epetra_MultiVector> history, Teuchos::RCP<Epetra_Map> splitter)
 {
   Vector<double> norm_per_cell_p (triangulation.n_active_cells());
 
@@ -1029,7 +1029,7 @@ WaveEquationProblem<dim>::output_results (const unsigned int timestep_number, Te
 
 
 template<int dim>
-void WaveEquationProblem<dim>::run(Teuchos::RCP<Epetra_MultiVector> history, Teuchos::RCP<LINALG::MapExtractor> splitter)
+void WaveEquationProblem<dim>::run(Teuchos::RCP<Epetra_MultiVector> history, Teuchos::RCP<Epetra_Map> splitter)
 {
   previous_solutions = solutions;
 

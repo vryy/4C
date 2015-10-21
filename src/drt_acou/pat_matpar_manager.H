@@ -59,7 +59,7 @@ class OptMatParManagerPerElement : public INVANA::MatParManagerPerElement
 public:
 
   //! Constructor
-  OptMatParManagerPerElement(Teuchos::RCP<DRT::Discretization> discret, bool scaleele);
+  OptMatParManagerPerElement(Teuchos::RCP<DRT::Discretization> discret);
 
   //! Destructor
   ~OptMatParManagerPerElement(){};
@@ -73,9 +73,6 @@ public:
   //! set action for evaluation of adjacency matrix
   virtual void SetAction(Teuchos::ParameterList& p);
 
-private:
-
-  bool scalegradele_;
 };
 
 /*----------------------------------------------------------------------*/

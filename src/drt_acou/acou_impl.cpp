@@ -157,7 +157,7 @@ void ACOU::AcouImplicitTimeInt::SetInitialField(int startfuncno)
 /*----------------------------------------------------------------------*
  |  Time loop (public)                                   schoeder 01/14 |
  *----------------------------------------------------------------------*/
-void ACOU::AcouImplicitTimeInt::Integrate(Teuchos::RCP<Epetra_MultiVector> history, Teuchos::RCP<LINALG::MapExtractor> splitter)
+void ACOU::AcouImplicitTimeInt::Integrate(Teuchos::RCP<Epetra_MultiVector> history, Teuchos::RCP<Epetra_Map> splitter)
 {
   // time measurement: integration
   TEUCHOS_FUNC_TIME_MONITOR("ACOU::AcouImplicitTimeInt::Integrate");
@@ -785,7 +785,7 @@ namespace
 /*----------------------------------------------------------------------*
  |  Output (public)                                      schoeder 01/14 |
  *----------------------------------------------------------------------*/
-void ACOU::AcouImplicitTimeInt::Output(Teuchos::RCP<Epetra_MultiVector> history, Teuchos::RCP<LINALG::MapExtractor> splitter)
+void ACOU::AcouImplicitTimeInt::Output(Teuchos::RCP<Epetra_MultiVector> history, Teuchos::RCP<Epetra_Map> splitter)
 {
   TEUCHOS_FUNC_TIME_MONITOR("ACOU::AcouImplicitTimeInt::Output");
 
@@ -811,7 +811,7 @@ void ACOU::AcouImplicitTimeInt::Output(Teuchos::RCP<Epetra_MultiVector> history,
   if( history != Teuchos::null )
   {
     Teuchos::RCP<Epetra_Vector> interpolatedPressureint;
-    interpolatedPressureint.reset(new Epetra_Vector(*(splitter->CondMap())));
+    interpolatedPressureint.reset(new Epetra_Vector(*(splitter)));
 
     // absorbing boundary conditions
     std::string condname = "PressureMonitor";

@@ -49,7 +49,7 @@ public:
   ~WaveEquationProblem();
 
   // Integration, i.e. time loop
-  void run(Teuchos::RCP<Epetra_MultiVector> history, Teuchos::RCP<LINALG::MapExtractor> splitter);
+  void run(Teuchos::RCP<Epetra_MultiVector> history, Teuchos::RCP<Epetra_Map> splitter);
 
   // preparation for output in baci format
   void write_deal_cell_values();
@@ -71,7 +71,7 @@ public:
 
 private:
   void make_grid_and_dofs (Teuchos::RCP<DRT::DiscretizationHDG> discret, Teuchos::RCP<Epetra_MultiVector> adjoint_source);
-  void output_results (const unsigned int timestep_number, Teuchos::RCP<Epetra_MultiVector> history, Teuchos::RCP<LINALG::MapExtractor> splitter);
+  void output_results (const unsigned int timestep_number, Teuchos::RCP<Epetra_MultiVector> history, Teuchos::RCP<Epetra_Map> splitter);
   void compute_post_pressure();
 
   parallel::distributed::Vector<value_type> post_pressure;
@@ -140,10 +140,10 @@ public:
   void SetInitialPhotoAcousticField(Teuchos::RCP<Epetra_Vector> light, Teuchos::RCP<DRT::Discretization> scatradis, bool meshconform);
 
   /// run a complete simulation
-  void Integrate(Teuchos::RCP<Epetra_MultiVector> history = Teuchos::null, Teuchos::RCP<LINALG::MapExtractor> splitter = Teuchos::null);
+  void Integrate(Teuchos::RCP<Epetra_MultiVector> history = Teuchos::null, Teuchos::RCP<Epetra_Map> splitter = Teuchos::null);
 
   /// output routine: not inherited since it does something completely different than the one for the implicit integration
-  virtual void Output(Teuchos::RCP<Epetra_MultiVector> history = Teuchos::null, Teuchos::RCP<LINALG::MapExtractor> splitter = Teuchos::null);
+  virtual void Output(Teuchos::RCP<Epetra_MultiVector> history = Teuchos::null, Teuchos::RCP<Epetra_Map> splitter = Teuchos::null);
 
   /// Output nodal internal pressure field at new time step
   void NodalPressureField(Teuchos::RCP<Epetra_Vector> outvec);
@@ -215,13 +215,13 @@ public:
   }
 
   /// run a complete simulation
-  virtual void Integrate(Teuchos::RCP<Epetra_MultiVector> history = Teuchos::null, Teuchos::RCP<LINALG::MapExtractor> splitter = Teuchos::null)
+  virtual void Integrate(Teuchos::RCP<Epetra_MultiVector> history = Teuchos::null, Teuchos::RCP<Epetra_Map> splitter = Teuchos::null)
   {
     dserror("Explicit time integration requires interface to deal.II package");
   }
 
   /// output routine: not inherited since it does something completely different than the one for the implicit integration
-  virtual void Output(Teuchos::RCP<Epetra_MultiVector> history = Teuchos::null, Teuchos::RCP<LINALG::MapExtractor> splitter = Teuchos::null)
+  virtual void Output(Teuchos::RCP<Epetra_MultiVector> history = Teuchos::null, Teuchos::RCP<Epetra_Map> splitter = Teuchos::null)
   {
     dserror("Explicit time integration requires interface to deal.II package");
   }

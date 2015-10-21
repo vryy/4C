@@ -402,10 +402,6 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
     DRT::UTILS::ExtractMyValues(*dualphi,mydualphi,lm);
     DRT::UTILS::ExtractMyValues(*psi,mypsi,lm);
 
-    bool sign = params.get<bool>("signum_mu");
-    double sign_fac = 1.0;
-    if(sign) sign_fac = -1.0;
-
     // compute mass matrix
     Epetra_SerialDenseMatrix massmat;
     massmat.Shape(nen_,nen_);
@@ -420,13 +416,11 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
 
     Epetra_SerialDenseVector temp(nen_);
     for(int i=0;i<nen_;++i) temp(i) = mydualphi[i];
-    elevec1_epetra.Multiply('N','N',sign_fac,massmat,temp,0.0);
+    elevec1_epetra.Multiply('N','N',1.0,massmat,temp,0.0);
 
     for(int i=0;i<nen_;++i) temp(i) = mypsi[i];
 
-    bool scaleele = params.get<bool>("scaleele");
-    if(scaleele) elevec1_epetra += temp;
-    else         elevec1_epetra.Multiply('N','N',1.0,massmat,temp,1.0);
+    elevec1_epetra.Multiply('N','N',1.0,massmat,temp,1.0);
     break;
   }
 
@@ -436,10 +430,6 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
     if(dualphi==Teuchos::null ) dserror("Cannot get state vector 'dual phi' in action calc_integr_grad_reac");
     std::vector<double> mydualphi(lm.size());
     DRT::UTILS::ExtractMyValues(*dualphi,mydualphi,lm);
-
-    bool sign = params.get<bool>("signum_D");
-    double sign_fac = 1.0;
-    if(sign) sign_fac = 0.0;
 
     // compute stiffness matrix
     Epetra_SerialDenseMatrix stiffmat;
@@ -458,7 +448,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
     if(diffmanager_->GetIsotropicDiff(0)==0.0)
       elevec1_epetra.Scale(0.0);
     else
-      elevec1_epetra.Multiply('N','N',sign_fac/(diffmanager_->GetIsotropicDiff(0)),stiffmat,temp,0.0);
+      elevec1_epetra.Multiply('N','N',1.0/(diffmanager_->GetIsotropicDiff(0)),stiffmat,temp,0.0);
 
     break;
   }

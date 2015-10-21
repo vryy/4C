@@ -1611,13 +1611,14 @@ set(OBJS_DRT_ACOU
   src/drt_acou/acou_impl_euler.cpp
   src/drt_acou/acou_impl.cpp
   src/drt_acou/acou_timeint.cpp
-  src/drt_acou/acou_inv_analysis.cpp
   src/drt_acou/acou_inv_resulttest.cpp
   src/drt_acou/acou_resulttest.cpp
   src/drt_acou/acou_expl.cpp
   src/drt_acou/acou_expl_worker.cpp
   src/drt_acou/deal_tria_wrapper.cpp
+  src/drt_acou/pat_imagereconstruction.cpp
   src/drt_acou/pat_matpar_manager.cpp
+  src/drt_acou/pat_utils.cpp
 )
 set(OBJS_DRT_ACOU_LIB
   src/drt_acou/acou_ele_boundary_calc.cpp

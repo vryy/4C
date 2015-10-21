@@ -46,8 +46,10 @@ namespace INPAR
     /// Type of Inverse Analysis
     enum InvAnalysisType
     {
-      inv_none,          // no inverse analysis
-      inv_pat            // photoacoustic inverse analysis
+      pat_none,          // no inverse analysis
+      pat_opti,       // photoacoustic inverse analysis for optical parameters
+      pat_optiacou,   // photoacoustic inverse analysis for optical and acoustical parameters
+      pat_segm        // photoacoustic inverse analysis with segmentation
     };
 
     /// Type of Algorithm

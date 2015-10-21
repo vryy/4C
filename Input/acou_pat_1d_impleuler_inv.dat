@@ -23,7 +23,6 @@ DIM           2
 PROBLEMTYP                      Acoustics
 RESTART                         0
 --------------------------------------------------------------------------IO
-OUTPUT_BIN                      Yes
 ------------------------------------------------------------ACOUSTIC DYNAMIC
 LINEAR_SOLVER                   1
 TIMESTEP                        1e-8
@@ -36,18 +35,14 @@ PHOTOACOU                       Yes
 MESHCONFORM                     Yes
 ERRORMAPS                       No
 TIMEINT                         impleuler
-INV_ANALYSIS                    pat
+INV_ANALYSIS                    patopti
 ------------------------------------ACOUSTIC DYNAMIC/PA IMAGE RECONSTRUCTION
 MONITORFILE                     acou_pat_1d_impleuler_inv.monitor
 FDCHECK                         No
 INV_TOL                         1e-3
 INV_MAX_RUN                     20
-INV_TOL_GRAD_YN                 No
-INV_LS_MAX_RUN                  3
+INV_LS_MAX_RUN                  30
 OPTIMIZATION                    LBFGS
-ELE_SCALING                     No
-BACKPROJECTION                  No
-LS_STEPLENGTHRED                0.5
 -------------------------------------------------------STAT INVERSE ANALYSIS
 PARAMLIST                       2 REAC
 PARAMETRIZATION                 elementwise

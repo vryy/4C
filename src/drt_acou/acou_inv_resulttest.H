@@ -27,7 +27,7 @@ class Discretization;
 
 namespace ACOU
 {
-class InvAnalysis;
+class PatImageReconstruction;
 
 class AcouInvResultTest : public DRT::ResultTest
 {
@@ -36,7 +36,7 @@ public:
   /*!
   \brief constructor
   */
-  AcouInvResultTest(InvAnalysis& invalgo);
+  AcouInvResultTest(PatImageReconstruction& invalgo);
 
 
   /// our version of nodal value tests

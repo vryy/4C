@@ -14,7 +14,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "acou_inv_resulttest.H"
-#include "acou_inv_analysis.H"
+#include "pat_imagereconstruction.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
@@ -22,7 +22,7 @@
 /*----------------------------------------------------------------------*
  |                                                       schoeder 01/14 |
  *----------------------------------------------------------------------*/
-ACOU::AcouInvResultTest::AcouInvResultTest(InvAnalysis&  invalgo)
+ACOU::AcouInvResultTest::AcouInvResultTest(PatImageReconstruction& invalgo)
   : DRT::ResultTest("ACOUSTIC_INVANA")
 {
   dis_ = invalgo.ScatraDiscretization();

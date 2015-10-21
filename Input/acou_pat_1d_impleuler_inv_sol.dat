@@ -37,19 +37,15 @@ MESHCONFORM                     Yes
 PHYSICAL_TYPE                   solid
 ERRORMAPS                       No
 TIMEINT                         impleuler
-INV_ANALYSIS                    pat
+INV_ANALYSIS                    patopti
 WRITEMONITOR                    No
 ------------------------------------ACOUSTIC DYNAMIC/PA IMAGE RECONSTRUCTION
 MONITORFILE                     acou_pat_1d_impleuler_inv_sol.monitor
 FDCHECK                         No
 INV_TOL                         1e-3
 INV_MAX_RUN                     20
-INV_TOL_GRAD_YN                 No
-INV_LS_MAX_RUN                  3
+INV_LS_MAX_RUN                  30
 OPTIMIZATION                    LBFGS
-ELE_SCALING                     No
-BACKPROJECTION                  No
-LS_STEPLENGTHRED                0.5
 -------------------------------------------------------STAT INVERSE ANALYSIS
 PARAMLIST                       2 REAC
 PARAMETRIZATION                 elementwise

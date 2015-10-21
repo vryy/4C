@@ -93,7 +93,7 @@ public:
   virtual void NodalPressureField(Teuchos::RCP<Epetra_Vector> outvec) = 0;
 
   /// output routine: not inherited since it does something completely different than the one for the implicit integration
-  virtual void Output(Teuchos::RCP<Epetra_MultiVector> history = Teuchos::null, Teuchos::RCP<LINALG::MapExtractor> splitter = Teuchos::null) = 0;
+  virtual void Output(Teuchos::RCP<Epetra_MultiVector> history = Teuchos::null, Teuchos::RCP<Epetra_Map> splitter = Teuchos::null) = 0;
 
   // output of material parameters for inverse analysis
   void OutputDensityAndSpeedOfSound();
@@ -108,7 +108,7 @@ public:
   void PrintInformationToScreen();
 
   /// run a complete simulation
-  virtual void Integrate(Teuchos::RCP<Epetra_MultiVector> history = Teuchos::null, Teuchos::RCP<LINALG::MapExtractor> splitter = Teuchos::null) = 0;
+  virtual void Integrate(Teuchos::RCP<Epetra_MultiVector> history = Teuchos::null, Teuchos::RCP<Epetra_Map> splitter = Teuchos::null) = 0;
 
   /// increment time and step value
   void IncrementTimeAndStep()

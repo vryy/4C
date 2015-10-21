@@ -158,20 +158,8 @@ public:
   //! put vector index of a given material parameter <string> into loc (used for result testing)
   int GetParameterLocation(int eleid, std::string name);
 
-  /*----------------------------------------------------------------------*/
-  //! functions only used by ACOU inverse analysis
-
   //! Return optimization parameters
   const Teuchos::RCP<Epetra_MultiVector> GetParams(){return optparams_;}
-
-  //! Return optimization parameters of the last run
-  const Teuchos::RCP<Epetra_MultiVector> GetParamsOld(){return optparams_o_;}
-
-  //! update params
-  void UpdateParams(Teuchos::RCP<Epetra_MultiVector> toadd);
-
-  //! reset params
-  void ResetParams();
 
 protected:
 
@@ -202,9 +190,6 @@ protected:
 
   //! actual set of material parameters in some parametrization layout
   Teuchos::RCP<Epetra_MultiVector> optparams_;
-
-  //! old set of material parameters in some parametrization layout
-  Teuchos::RCP<Epetra_MultiVector> optparams_o_;
 
   //! initial guess of material parameters in some parametrization layout
   Teuchos::RCP<Epetra_MultiVector> optparams_initial_;

@@ -50,7 +50,7 @@ public:
   virtual void SetInitialField(int startfuncno);
 
   /// run a complete simulation
-  virtual void Integrate(Teuchos::RCP<Epetra_MultiVector> history = Teuchos::null, Teuchos::RCP<LINALG::MapExtractor> splitter = Teuchos::null);
+  virtual void Integrate(Teuchos::RCP<Epetra_MultiVector> history = Teuchos::null, Teuchos::RCP<Epetra_Map> splitter = Teuchos::null);
 
   /// solve the system for trace and interior variables
   virtual void Solve();
@@ -62,7 +62,7 @@ public:
   void ApplyDirichletToSystem();
 
   /// output
-  virtual void Output(Teuchos::RCP<Epetra_MultiVector> history = Teuchos::null, Teuchos::RCP<LINALG::MapExtractor> splitter = Teuchos::null);
+  virtual void Output(Teuchos::RCP<Epetra_MultiVector> history = Teuchos::null, Teuchos::RCP<Epetra_Map> splitter = Teuchos::null);
 
   /// function to output user information
   void OutputToScreen();

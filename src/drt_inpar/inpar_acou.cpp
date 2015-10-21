@@ -86,10 +86,14 @@ void INPAR::ACOU::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                  "Types of inverse analysis and on/off switch",
                  tuple<std::string>(
                    "none",
-                   "pat"), // here, backprojection could be added
+                   "patopti",
+                   "patoptiacou",
+                   "patsegm"),
                  tuple<int>(
-                   inv_none,
-                   inv_pat),
+                   pat_none,
+                   pat_opti,
+                   pat_optiacou,
+                   pat_segm),
                  &acousticdyn);
 
 
@@ -108,24 +112,12 @@ void INPAR::ACOU::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   StringParameter("MONITORFILE","none.monitor","Filename of file containing measured pressure values",&acou_inv);
   BoolParameter("FDCHECK","No","Finite difference check",&acou_inv);
   DoubleParameter("INV_TOL",1e-16,"Tolerance for objective function of inverse pat analysis",&acou_inv);
-  BoolParameter("INV_TOL_GRAD_YN","No","Flag to indicate check of the norm of the gradient",&acou_inv);
-  DoubleParameter("INV_TOL_GRAD",0.0,"Tolerance for norm of gradient of inverse pat analysis",&acou_inv);
-  BoolParameter("ELE_SCALING","No","Should gradient be scaled by element size?",&acou_inv);
   IntParameter("INV_MAX_RUN",10,"Maximal run number for inverse pat analysis",&acou_inv);
   IntParameter("INV_LS_MAX_RUN",10,"Maximal run number for line search in inverse pat analysis",&acou_inv);
-  DoubleParameter("LS_DECREASECOND",0.0,"coefficient for calculation of sufficient decrease condition",&acou_inv);
-  DoubleParameter("LS_STEPLENGTHRED",0.5,"step length is multiplied by this value if line search not yet sufficient",&acou_inv);
   DoubleParameter("EPSILON",-1.0,"tolerated distance in which measured curve=nod curve",&acou_inv);
-  BoolParameter("BACKPROJECTION","No","PreEstimation of material parameters with back projection",&acou_inv);
   StringParameter("ACOUPARAMLIST","none","list of std::string of acoustical parameters to be optimized",&acou_inv);
-  BoolParameter("SUCCESSIVEUPDATE","No","Optical and acoustical parameters update simultaneous or successive",&acou_inv);
-  BoolParameter("SEGMENTATION","No","Update of material parameters in dependence, material identification",&acou_inv);
   StringParameter("SEGMENTATIONMATS","none.material","Filename of file containing table of materials",&acou_inv);
-  DoubleParameter("ADAPTREGUPARAMS",0.0,"Adapt regularization paramaters for each iteration such that regularization contribution takes this relative value",&acou_inv);
-  StringParameter("TIKH_ACOU_PARAMS_BORDERS","0.0 0.0 0.0 0.0","lower and upper allowed value for rho and c (rho_min rho_max c_min c_max)",&acou_inv);
-  StringParameter("TIKH_OPTI_PARAMS_BORDERS","0.0 0.0 0.0 0.0","lower and upper allowed value for reac and D (reac_min reac_max D_min D_max)",&acou_inv);
   DoubleParameter("EQUALITYPENALTY",1.0,"penalty coefficient for the equality constraint for segmentation",&acou_inv);
-
 }
 
 

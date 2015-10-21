@@ -33,7 +33,6 @@ Maintainer: Sebastian Kehl
 /*----------------------------------------------------------------------*/
 INVANA::MatParManager::MatParManager(Teuchos::RCP<DRT::Discretization> discret):
 optparams_(Teuchos::null),
-optparams_o_(Teuchos::null),
 optparams_initial_(Teuchos::null),
 paramlayoutmap_(Teuchos::null),
 paramlayoutmapunique_(Teuchos::null),
@@ -282,34 +281,11 @@ Teuchos::RCP<Epetra_MultiVector> INVANA::MatParManager::GetMatParams()
 }
 
 /*----------------------------------------------------------------------*/
-/* update material parameters and keep them as "old"         keh 03/14  */
-/*----------------------------------------------------------------------*/
-void INVANA::MatParManager::UpdateParams(Teuchos::RCP<Epetra_MultiVector> toadd)
-{
-  optparams_o_->Scale(1.0, *optparams_);
-  optparams_->Update(1.0,*toadd,1.0);
-
-  // bring updated parameters to the elements
-  SetParams();
-}
-
-/*----------------------------------------------------------------------*/
 /* replace material parameters AND DONT touch old ones       keh 03/14  */
 /*----------------------------------------------------------------------*/
 void INVANA::MatParManager::ReplaceParams(const Epetra_MultiVector& toreplace)
 {
   optparams_->Update(1.0,toreplace,0.0);
-
-  // bring updated parameters to the elements
-  SetParams();
-}
-
-/*----------------------------------------------------------------------*/
-/* reset to last set of material parameters                  keh 03/14  */
-/*----------------------------------------------------------------------*/
-void INVANA::MatParManager::ResetParams()
-{
-  optparams_->Scale(1.0, *optparams_o_);
 
   // bring updated parameters to the elements
   SetParams();
