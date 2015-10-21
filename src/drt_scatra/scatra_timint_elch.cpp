@@ -49,7 +49,6 @@ SCATRA::ScaTraTimIntElch::ScaTraTimIntElch(
     frt_            (0.),
     gstatnumite_    (0),
     gstatincrement_ (0.),
-    sigma_          (Teuchos::null),
     dlcapexists_    (false),
     ektoggle_       (Teuchos::null),
     dctoggle_       (Teuchos::null),
@@ -100,27 +99,6 @@ void SCATRA::ScaTraTimIntElch::Init()
     std::cout<<"\nSetup of splitter: numscal = "<<numscal_<<std::endl;
     std::cout<<"Temperature value T (Kelvin)     = "<<elchparams_->get<double>("TEMPERATURE")<<std::endl;
     std::cout<<"Constant F/RT                    = "<<frt_<<std::endl;
-  }
-
-  sigma_= Teuchos::rcp(new Epetra_SerialDenseVector(numdofpernode_));
-  // conductivity must be stored for the galvanostatic condition in a global variable
-  ComputeConductivity(); // every processor has to do this call
-  if (myrank_==0)
-  {
-    for (int k=0;k < numscal_;k++)
-    {
-      std::cout<<"Electrolyte conductivity (species "<<k+1<<")    = "<<(*sigma_)[k]<<std::endl;
-    }
-    if (equpot_==INPAR::ELCH::equpot_enc_pde_elim)
-    {
-      double diff = (*sigma_)[0];
-      for (int k=1;k < numscal_;k++)
-      {
-        diff += (*sigma_)[k];
-      }
-      std::cout<<"Electrolyte conductivity (species elim) = "<<(*sigma_)[numscal_]-diff<<std::endl;
-    }
-    std::cout<<"Electrolyte conductivity (all species)  = "<<(*sigma_)[numscal_]<<std::endl<<std::endl;
   }
 
   // initialize vector for states of charge of resolved electrodes
@@ -1559,7 +1537,11 @@ void SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
 /*----------------------------------------------------------------------*
  |  calculate conductivity of electrolyte solution             gjb 07/09|
  *----------------------------------------------------------------------*/
-double SCATRA::ScaTraTimIntElch::ComputeConductivity(bool effCond, bool specresist)
+const double SCATRA::ScaTraTimIntElch::ComputeConductivity(
+    Epetra_SerialDenseVector&   sigma,       //! result vector
+    bool                        effCond,     //! flag for computation of effective conductivity
+    bool                        specresist   //! flag for computation of specific electrolyte resistance
+    )
 {
   // we perform the calculation on element level hiding the material access!
   // the initial concentration distribution has to be uniform to do so!!
@@ -1595,10 +1577,8 @@ double SCATRA::ScaTraTimIntElch::ComputeConductivity(bool effCond, bool specresi
   const double domint = (*sigma_domint)[numscal_+1];
 
   if(specresist == false)
-  for (int ii=0; ii<numscal_+1; ++ii)
-  {
-    (*sigma_)[ii] = (*sigma_domint)[ii]/domint;
-  }
+    for (int ii=0; ii<numscal_+1; ++ii)
+      sigma[ii] = (*sigma_domint)[ii]/domint;
   else
     specific_resistance = (*sigma_domint)[numscal_]/domint;
 
@@ -1765,10 +1745,8 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
       currtangent_cathode=(*currtangent)[condid_cathode];
 
       if(conditions.size()==2)
-      {
-        // mean electrode surface of the cathode abd anode
+        // mean electrode surface of the cathode and anode
         meanelectrodesurface=((*electrodesurface)[0]+(*electrodesurface)[1])/2;
-      }
       else
         meanelectrodesurface=(*electrodesurface)[condid_cathode];
 
@@ -1784,23 +1762,23 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
         if (myrank_==0)
         {
           // format output
-          std::cout<<"\n  GALVANOSTATIC MODE:\n";
-          std::cout<<"  +--------------------------------------------------------------------------" <<std::endl;
-          std::cout<<"  | Convergence check: " <<std::endl;
-          std::cout<<"  +--------------------------------------------------------------------------" <<std::endl;
-          std::cout<<"  | iteration:                          "<<std::setw(7)<<std::right<<gstatnumite_<<" / "<<gstatitemax<<std::endl;
-          std::cout<<"  | actual reaction current at cathode: "<<std::setprecision(8)<<std::scientific<<std::setw(12)<<std::right<<(*actualcurrent)[condid_cathode]<<std::endl;
-          std::cout<<"  | required total current at cathode:  "<<std::setw(12)<<std::right<<targetcurrent<<std::endl;
-          std::cout<<"  | negative residual (rhs):            "<<std::setw(12)<<std::right<<residual<<std::endl;
-          std::cout<<"  +--------------------------------------------------------------------------" <<std::endl;
+          std::cout << "Galvanostatic mode:" << std::endl;
+          std::cout << "+-----------------------------------------------------------------------+" << std::endl;
+          std::cout << "| Convergence check:                                                    |" << std::endl;
+          std::cout << "+-----------------------------------------------------------------------+" << std::endl;
+          std::cout << "| iteration:                                " << std::setw(14) << std::right << gstatnumite_ << " / " << gstatitemax << "         |" << std::endl;
+          std::cout << "| actual reaction current at cathode:            " << std::setprecision(6) << std::scientific << std::setw(14) << std::right << (*actualcurrent)[condid_cathode] << "         |" << std::endl;
+          std::cout << "| required total current at cathode:             " << std::setw(14) << std::right << targetcurrent << "         |" << std::endl;
+          std::cout << "| negative residual (rhs):                       " << std::setw(14) << std::right << residual << "         |" << std::endl;
+          std::cout << "+-----------------------------------------------------------------------+" << std::endl;
         }
 
         if (gstatnumite_ > gstatitemax)
         {
           if (myrank_==0)
           {
-            std::cout<<"  | --> converged: maximum number iterations reached. Not yet converged!"<<std::endl;
-            std::cout<<"  +--------------------------------------------------------------------------" <<std::endl <<std::endl;
+            std::cout<<"| --> converged: maximum number iterations reached. Not yet converged!  |" << std::endl;
+            std::cout<<"+-----------------------------------------------------------------------+" << std::endl << std::endl;
           }
           return true; // we proceed to next time step
         }
@@ -1808,8 +1786,8 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
         {
           if (myrank_==0)
           {
-            std::cout<<"  | --> converged: Newton-RHS-Residual is smaller than " << gstatcurrenttol<< "!" << std::endl;
-            std::cout<<"  +--------------------------------------------------------------------------" <<std::endl <<std::endl;
+            std::cout << "| --> converged: Newton-RHS-Residual is smaller than " << gstatcurrenttol << "!      |" << std::endl;
+            std::cout << "+-----------------------------------------------------------------------+" << std::endl << std::endl;
           }
           return true; // we proceed to next time step
         }
@@ -1818,8 +1796,8 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
         {
           if (myrank_==0)
           {
-            std::cout<<"  | --> converged: |"<<gstatincrement_<<"| < "<<(1+abs(potold))*tol<<std::endl;
-            std::cout<<"  +--------------------------------------------------------------------------" <<std::endl <<std::endl;
+            std::cout << "| --> converged: |" << gstatincrement_ << "| < " << (1+abs(potold))*tol << std::endl;
+            std::cout << "+-----------------------------------------------------------------------+" << std::endl << std::endl;
           }
           return true; // galvanostatic control has converged
         }
@@ -1842,9 +1820,37 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
         // => delta E_0 = (R_BV1(I_target, I)/J) + (R_ohmic(I_target, I)/J) - (-R_BV2(I_target, I)/J)
         // Attention: epsilon and tortuosity are missing in this framework
         //            -> use approxelctresist_efflenintegcond or approxelctresist_relpotcur
-        resistance = effective_length/((*sigma_)[numscal_]*meanelectrodesurface);
-        // potinc_ohm=(-1.0*effective_length)/((*sigma_)[numscal_]*(*electrodesurface)[condid_cathode])*residual/timefacrhs;
+
+        // initialize conductivity vector
+        Epetra_SerialDenseVector sigma(numdofpernode_);
+
+        // compute conductivity
+        ComputeConductivity(sigma);
+
+        // print conductivity
+        if(myrank_==0)
+        {
+          for(int k=0; k<numscal_; ++k)
+            std::cout << "| Electrolyte conductivity (species " << k+1 << "):          " << std::setw(14) << std::right << sigma[k] << "         |" << std::endl;
+
+          if(equpot_ == INPAR::ELCH::equpot_enc_pde_elim)
+          {
+            double diff = sigma[0];
+
+            for(int k=1; k<numscal_; ++k)
+              diff += sigma[k];
+
+            std::cout << "| Electrolyte conductivity (species elim) = " << sigma[numscal_]-diff << "         |" << std::endl;
+          }
+
+          std::cout << "| Electrolyte conductivity (all species):        " << std::setw(14) << std::right << sigma[numscal_] << "         |" << std::endl;
+          std::cout << "+-----------------------------------------------------------------------+" << std::endl;
+        }
+
+        // compute electrolyte resistance
+        resistance = effective_length/(sigma[numscal_]*meanelectrodesurface);
       }
+
       else if(approxelctresist==INPAR::ELCH::approxelctresist_relpotcur and conditions.size()==2)
       {
         // actual potential difference is used to calculate the current path length
@@ -1857,15 +1863,20 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
         // use of target current for the estimation of the resistance
         //resistance = -1.0*(potdiffbulk/(targetcurrent));
       }
+
       else if(approxelctresist==INPAR::ELCH::approxelctresist_efflenintegcond and conditions.size()==2)
       {
-        double specificresistance = ComputeConductivity(true,true);
+        // dummy conductivity vector
+        Epetra_SerialDenseVector sigma;
+
+        const double specificresistance = ComputeConductivity(sigma,true,true);
 
         resistance = specificresistance*effective_length/meanelectrodesurface;
         // actual current < 0,  since the reference electrode is the cathode
         // potdiffbulk > 0,     always positive (see definition)
         // -1.0,                resistance has to be positive
       }
+
       else
         dserror("The combination of the parameter GSTAT_APPROX_ELECT_RESIST %i and the number of electrodes %i\n"
                 "is not valid!",approxelctresist,conditions.size());
@@ -1882,10 +1893,9 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
       {
         if (myrank_==0)
         {
-          std::cout.precision(3);
-          std::cout << "Warning!!!" << std::endl;
-          std::cout << "The difference of the current flow at anode and cathode is " << abs((*actualcurrent)[condid_cathode]+(*actualcurrent)[condid_anode])
-                    << " larger than " << EPS8 << std::endl;
+          std::cout << "| WARNING: The difference of the current flow at anode and cathode      |" << std::endl;
+          std::cout << "| is " << abs((*actualcurrent)[condid_cathode]+(*actualcurrent)[condid_anode]) << " larger than " << EPS8 << "!                             |" << std::endl;
+          std::cout << "+-----------------------------------------------------------------------+" << std::endl;
         }
       }
 
@@ -1902,35 +1912,33 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
 
       if(myrank_==0)
       {
-        std::cout<<"  | ohmic potential increment is calculated based on" <<std::endl;
-        if(approxelctresist==INPAR::ELCH::approxelctresist_effleninitcond)
-          std::cout<<"  | the ohmic resistance is calculated based on GSTAT_LENGTH_CURRENTPATH and the initial conductivity!" <<std::endl;
-        else if (approxelctresist==INPAR::ELCH::approxelctresist_relpotcur)
-          std::cout<<"  | the ohmic resistance calculated from applied potential and current flow!" <<std::endl;
+        std::cout << "| The ohmic potential increment is calculated based on                  |" << std::endl;
+        std::cout << "| the ohmic electrolyte resistance obtained from                        |" << std::endl;;
+        if(approxelctresist == INPAR::ELCH::approxelctresist_effleninitcond)
+          std::cout << "| GSTAT_LENGTH_CURRENTPATH and the averaged electrolyte conductivity.   |" << std::endl;
+        else if (approxelctresist == INPAR::ELCH::approxelctresist_relpotcur)
+          std::cout << "| the applied potential and the resulting current flow.                 |" << std::endl;
         else
-          std::cout<<"  | the ohmic resistance is calculated based on GSTAT_LENGTH_CURRENTPATH and the integrated conductivity" <<std::endl;
-        std::cout<<"  +--------------------------------------------------------------------------" <<std::endl;
-        std::cout<<"  | Defined GSTAT_LENGTH_CURRENTPATH:               "<<std::setw(6)<<std::right<< effective_length << std::endl;
+          std::cout << "| GSTAT_LENGTH_CURRENTPATH and the integrated electrolyte conductivity. |" << std::endl;
 
-        if((*actualcurrent)[condid_cathode]!=0.0)
-          std::cout<<"  | Resistance based on the initial conductivity:    "<<std::setw(6)<<std::right<< effective_length/((*sigma_)[numscal_]*meanelectrodesurface) <<std::endl;
-        std::cout<<"  | Resistance based on .(see GSTAT_APPROX_ELECT_RESIST): "<<std::setw(6)<<std::right<< resistance <<std::endl;
-        std::cout<<"  | New guess for:                                  "<<std::endl;
-        std::cout<<"  | - ohmic potential increment:                    "<<std::setw(12)<<std::right<< potinc_ohm <<std::endl;
-        std::cout<<"  | - overpotential increment cathode (condid " << condid_cathode <<"):   " <<std::setw(12)<<std::right<< potinc_cathode << std::endl;
-        std::cout<<"  | - overpotential increment anode (condid " << condid_anode <<"):     " <<std::setw(12)<<std::right<< potinc_anode << std::endl;
-        std::cout<<"  | -> total increment for potential:               " <<std::setw(12)<<std::right<< gstatincrement_ << std::endl;
-        std::cout<<"  +--------------------------------------------------------------------------" <<std::endl;
-        std::cout<<"  | old potential at the cathode (condid "<<condid_cathode <<"):     "<<std::setw(12)<<std::right<<potold<<std::endl;
-        std::cout<<"  | new potential at the cathode (condid "<<condid_cathode <<"):     "<<std::setw(12)<<std::right<<potnew<<std::endl;
-        std::cout<<"  +--------------------------------------------------------------------------" <<std::endl<<std::endl;
+        std::cout << "+-----------------------------------------------------------------------+" << std::endl;
+        std::cout << "| Defined GSTAT_LENGTH_CURRENTPATH:              " << std::setw(14) << std::right << effective_length << "         |" << std::endl;
+        std::cout << "| Approximate electrolyte resistance:            " << std::setw(14) << std::right << resistance << "         |" << std::endl;
+        std::cout << "| New guess for:                                                        |" << std::endl;
+        std::cout << "| - ohmic potential increment:                   " << std::setw(14) << std::right << potinc_ohm << "         |" << std::endl;
+        std::cout << "| - overpotential increment cathode (condid " << condid_cathode <<"):  " << std::setw(14) << std::right << potinc_cathode << "         |" << std::endl;
+        std::cout << "| - overpotential increment anode (condid " << condid_anode <<"):    " << std::setw(14) << std::right << potinc_anode << "         |" << std::endl;
+        std::cout << "| -> total increment for potential:              " << std::setw(14) << std::right << gstatincrement_ << "         |" << std::endl;
+        std::cout << "+-----------------------------------------------------------------------+" << std::endl;
+        std::cout << "| old potential at the cathode (condid " << condid_cathode <<"):       " << std::setw(14) << std::right << potold << "         |" << std::endl;
+        std::cout << "| new potential at the cathode (condid " << condid_cathode <<"):       " << std::setw(14) << std::right << potnew << "         |" << std::endl;
+        std::cout << "+-----------------------------------------------------------------------+" << std::endl << std::endl;
       }
 
 //      // print additional information
 //      if (myrank_==0)
 //      {
 //        std::cout<< "  actualcurrent - targetcurrent = " << ((*actualcurrent)[condid_cathode]-targetcurrent) << std::endl;
-//        std::cout<< "  conductivity                  = " << (*sigma_)[numscal_] << std::endl<< std::endl;
 //        std::cout<< "  currtangent_cathode:  " << currtangent_cathode << std::endl;
 //        std::cout<< "  currtangent_anode:    " << currtangent_anode << std::endl;
 //        std::cout<< "  actualcurrent cathode:    " << (*actualcurrent)[condid_cathode] << std::endl;

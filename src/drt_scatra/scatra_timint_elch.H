@@ -208,7 +208,11 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   virtual void CalcInitialPotentialField();
 
   //! computes different conductivity expressions for electrolyte solutions (ELCH)
-  double  ComputeConductivity(bool effCond=false, bool specresist=false);
+  const double ComputeConductivity(
+      Epetra_SerialDenseVector&   sigma,               //! result vector
+      bool                        effCond = false,     //! flag for computation of effective conductivity
+      bool                        specresist = false   //! flag for computation of specific electrolyte resistance
+      );
 
   //! apply galvanostatic control (update electrode potential) (ELCH)
   bool ApplyGalvanostaticControl();
@@ -293,9 +297,6 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
 
   //! value of electric potential increment in galvanostatic mode (ELCH)
   double gstatincrement_;
-
-  //! conductivity of the single species and the whole electrolyte
-  Teuchos::RCP<Epetra_SerialDenseVector> sigma_;
 
   //! flag for (de)activation of double layer capacity
   bool dlcapexists_;

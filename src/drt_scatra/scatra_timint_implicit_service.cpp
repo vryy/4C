@@ -715,13 +715,14 @@ void SCATRA::ScaTraTimIntImpl::OutputMeanScalars(const int num)
     // print out results to screen and file
     if (myrank_ == 0)
     {
-     // screen output
-     for (int k = 0; k < numscal_; k++)
-      {
-        std::cout << "Mean scalar " << k+1 << ": " << std::setprecision (9) << (*scalars)[k]/domint << std::endl;
-      }
+      // screen output
+      std::cout << "Mean scalar values:" << std::endl;
+      std::cout << "+-------------------------------+" << std::endl;
+      for(int k = 0; k < numscal_; k++)
+        std::cout << "| Mean scalar " << k+1 << ":   " << std::setprecision(6) << (*scalars)[k]/domint << " |" << std::endl;
+      std::cout << "+-------------------------------+" << std::endl << std::endl;
 
-     // file output
+      // file output
       std::stringstream number;
       number << num;
       const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()+number.str()+".meanvalues.txt";
