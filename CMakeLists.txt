@@ -1700,6 +1700,7 @@ set(OBJS_SOLVER_NONLIN
   src/solver_nonlin/linesearch_fullstep.cpp
   src/solver_nonlin/linesearch_linear.cpp
   src/solver_nonlin/linesearch_polynomial.cpp
+  src/solver_nonlin/muelu_utils.cpp
   src/solver_nonlin/nln_operator_base.cpp
   src/solver_nonlin/nln_operator_dinverse.cpp
   src/solver_nonlin/nln_operator_factory.cpp
