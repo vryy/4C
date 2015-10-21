@@ -154,6 +154,8 @@ void NLNSOL::FAS::AMGHierarchy::Setup()
 /*----------------------------------------------------------------------------*/
 void NLNSOL::FAS::AMGHierarchy::SetupMueLuHierarchy()
 {
+#ifdef HAVE_MueLu
+
   // fine level matrix
   Teuchos::RCP<Xpetra::Matrix<double, int, int, Node> > mueLuOp =
       GetXpetraFineLevelMatrix();
@@ -205,6 +207,12 @@ void NLNSOL::FAS::AMGHierarchy::SetupMueLuHierarchy()
 
   // setup the MueLu Hierarchy
   mueLuFactory_->SetupHierarchy(*mueLuHierarchy_);
+
+#else
+  dserror("Setup of an AMG hierarchy requires MueLu.");
+#endif
+
+  return;
 }
 
 /*----------------------------------------------------------------------------*/
