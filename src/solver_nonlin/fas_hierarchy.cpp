@@ -177,7 +177,7 @@ void NLNSOL::FAS::AMGHierarchy::SetupMueLuHierarchy()
   Teuchos::ParameterList& MatrixList = multigridparams.sublist("Matrix");
   MatrixList.set<int>("DOF offset", 0);
   MatrixList.set<int>("number of equations", 3);
-  mueLuOp->SetFixedBlockSize(multigridparams.get<int>("number of equations"));
+  mueLuOp->SetFixedBlockSize(3);
 
   // create the MueLu Factory via a MueLu ParameterList interpreter
   mueLuFactory_ = Teuchos::rcp(new ParameterListInterpreter(multigridparams));
@@ -195,15 +195,15 @@ void NLNSOL::FAS::AMGHierarchy::SetupMueLuHierarchy()
   mueLuHierarchy_->Keep("P"); // keep P for faster RAPs later
   mueLuHierarchy_->Keep("RAP Pattern"); // keep sparsity pattern for faster RAPs later
 
-//  // keep the nullspace
-//  mueLuHierarchy_->Keep("Nullspace",
-//      mueLuFactory_->GetFactoryManager(0)->GetFactory("Nullspace").get());
-//  for (int level = 0; level < multigridparams.sublist("Hierarchy").get<int>("max levels"); ++level)
-//  {
-//    mueLuHierarchy_->AddNewLevel();
-//    mueLuHierarchy_->Keep("Nullspace",
-//        mueLuFactory_->GetFactoryManager(level)->GetFactory("Nullspace").get());
-//  }
+  // keep the nullspace
+  mueLuHierarchy_->Keep("Nullspace",
+      mueLuFactory_->GetFactoryManager(0)->GetFactory("Nullspace").get());
+  for (int level = 0; level < multigridparams.sublist("Hierarchy").get<int>("max levels"); ++level)
+  {
+    mueLuHierarchy_->AddNewLevel();
+    mueLuHierarchy_->Keep("Nullspace",
+        mueLuFactory_->GetFactoryManager(level)->GetFactory("Nullspace").get());
+  }
 
   // setup the MueLu Hierarchy
   mueLuFactory_->SetupHierarchy(*mueLuHierarchy_);
@@ -254,10 +254,6 @@ const bool NLNSOL::FAS::AMGHierarchy::SetupNlnSolHierarchy()
       myP = MueLu::Utils<double,int,int,Node>::Op2NonConstEpetraCrs(myProlongator);
 
       // nullspace
-//      std::cout << "Nullspace IsKept: "
-//          << muelulevel->IsKept("Nullspace",
-//              mueLuFactory_->GetFactoryManager(level)->GetFactory("Nullspace").get(),
-//              MueLu::All) << std::endl;
       Teuchos::RCP<MultiVector> myNullspace = muelulevel->Get<
           Teuchos::RCP<MultiVector> >("Nullspace",
               mueLuFactory_->GetFactoryManager(level)->GetFactory("Nullspace").get());
