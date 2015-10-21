@@ -211,6 +211,18 @@ namespace NLNSOL
       //! @name Setup
       //@{
 
+      /*! \brief Setup MueLu hierarchy
+       *
+       *  \author mayr.mt \date 10/2015
+       */
+      virtual void SetupMueLuHierarchy();
+
+      /*! \brief Setup NLNSOL hierarchy and fill it with MueLu content
+       *
+       *  \author mayr.mt \date 10/2015
+       */
+      virtual const bool SetupNlnSolHierarchy();
+
       /*! \brief Add new level at the end of level container
        *
        *  \author mayr.mt \date 06/2014
@@ -240,16 +252,39 @@ namespace NLNSOL
 
       /*! \brief Access to pre-computed null space as Xpetra::MultiVector
        *
-       *  Take pre-computed nullspace from Teuchos::ParameterList and transform
-       *  it into a Xpetra::MultiVector.
+       *  Baci pre-computes the null space and stores it in a
+       *  Teuchos::ParameterList. Take this null space and transform it into a
+       *  Xpetra::MultiVector.
+       *
+       *  \note Use NLNSOL::UTILS::GetXpetraNullSpaceFromBaci() for actual
+       *  computation
        *
        *  \return Teuchos::RCP<Xpetra::MultiVector> with \f$N\f$ vectors, that
        *  contains the \f$N\f$ null space vectors
        *
+       *  \sa NLNSOL::UTILS::GetXpetraNullSpaceFromBaci()
+       *
        *  \author mayr.mt \date 06/2015
        */
       Teuchos::RCP<Xpetra::MultiVector<double,int,int,Node> >
-      GetXpetraNullSpace() const;
+      GetXpetraNullSpaceFromBaci() const;
+
+      /*! \brief Debug-Tool: Check null space conservation properties
+       *
+       *  The null space is supposed to satisfy the following properties:
+       *  \f[
+       *  A_iVi=0
+       *  A_0\left(P_{i0}V_i\right)=0
+       *  \f]
+       *  with the level index \f$i\f$, the matrix \f$A_i\f$ on level \f$i\f$,
+       *  the prolongator \f$P_{i0}\f$ from level \f$i\f$ to level \f$0\f$ and
+       *  the null space \f$V_i\f$ on level \f$i\f$.
+       *
+       *  Here, this can be computed for levels 0, 1, and 2.
+       *
+       *  \author mayr.mt \date 10/2015
+       */
+      virtual const bool CheckNullSpaceProperties() const;
 #endif
       //@}
 

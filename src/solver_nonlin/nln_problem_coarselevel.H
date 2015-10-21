@@ -85,16 +85,16 @@ namespace NLNSOL
      *  It is desirable to initialize the residual corrections #fhat_ and #fbar_
      *  during Setup. However, the dof row map of the specific level is not
      *  accessible at that time, yet, so we can't do so. This has to be done
-     *  later by calling SetFHatFBar() with zeroed vectors.
+     *  later by calling SetupResidualModification() with zeroed vectors.
      *
      *  \sa NLNSOL::NlnProblem::Setup
-     *  \sa SetFHatFBar
+     *  \sa SetupResidualModification
      */
     virtual void Setup();
 
-    /*! \brief Set coarse level residual corrections for FAS
+    /*! \brief Set coarse level residual modifications for FAS
      *
-     *  Two coarse level residual corrections are needed for FAS:
+     *  Two coarse level residual modifications are needed for FAS:
      *  <ul>
      *  <li> \f$\hat{F}_c = R\cdot F_f(x_f)\f$: restriction of the current fine
      *       level residual </li>
@@ -103,11 +103,10 @@ namespace NLNSOL
      *       \f$\bar{x} = R\cdot x_f\f$ </li>
      *  </ul>
      *
-     *  Both residual corrections have to be computed by the calling algorithm.
-     *  Here, we just store them.
+     *  They are computed and stored for later use in ComputeF().
      */
-    virtual void SetFHatFBar(
-        Teuchos::RCP<const Epetra_MultiVector> fhat, ///< \f$\hat{F}\f$
+    virtual void SetupResidualModification(
+        Teuchos::RCP<const Epetra_MultiVector> xbar, ///< \f$\bar{x}\f$
         Teuchos::RCP<const Epetra_MultiVector> fbar ///< \f$\bar{F}\f$
         );
 
@@ -116,13 +115,15 @@ namespace NLNSOL
     //! @name Actions on the nonlinear problem at hand
     //@{
 
-    /*! \brief Compute the residual on a coarse level
+    /*! \brief Compute the modified residual on a coarse level
      *
-     *  This is an ComputeF() in a variational way. Hence, we compute
-     *  \f$Rf(Px)\f$, i.e. we first prolongate the current coarse level solution
-     *  to the fine level, then call ComputeF() on the fine level using the fine
-     *  level nonlinear problem NLNSOL::NlnProblem, and finally restrict the
-     *  residual to the current coarse level.
+     *  First, we evaluate the plain residual \f$F\f$ in a variational way
+     *  using ComputPlainF(). Due to FAS, we need to apply coarse level residual
+     *  corrections \f$\hat{F}\f$ and \f$\bar{F}\f$ afterwards. The modified
+     *  residual finally reads
+     *  \f[
+     *    F - \hat{F} + \bar{F} \rightarrow 0
+     *  \f]
      *
      *  The current coarse level ID is stored internally. Thus, the
      *  ComputeF()-call looks exactly like in the fine level case.
@@ -134,9 +135,25 @@ namespace NLNSOL
         Epetra_MultiVector& fc ///< current residual on coarse level (to be filled)
         ) const;
 
+    /*! \brief Compute the plain residual on a coarse level
+     *
+     *  This is an ComputeF() in a variational way. Hence, we compute
+     *  \f$RF(Px)\f$, i.e. we first prolongate the current coarse level solution
+     *  to the fine level, then call ComputeF() on the fine level using the fine
+     *  level nonlinear problem NLNSOL::NlnProblem, and restrict the
+     *  residual to the current coarse level, afterwards.
+     *
+     *  \return residual on coarse level
+     *
+     *  \author mayr.mt \date 10/2015
+     */
+    virtual Teuchos::RCP<Epetra_MultiVector> ComputePlainF(
+        const Epetra_MultiVector& xc ///< current solution on coarse level
+        ) const;
+
     /*! \brief Evaluate Jacobian (linearization of residual)
      *
-     *  Updating the solution variables in the marching time integrator hase
+     *  Updating the solution variables in the marching time integrator has
      *  already been done during computeF().
      *
      *  \author mayr.mt \date 06/2014
@@ -220,16 +237,16 @@ namespace NLNSOL
 
     /*! \brief Residual correction \f$\hat{F}_c\f$ on coarse level
      *
-     *  \f$\hat{F}_c = R\cdot F_f(x_f)\f$: restriction of the current fine
-     *  level residual
+     *  \f$\bar{F}_c = R\cdot F_f(P\bar{x})\f$: variationally evaluated
+     *  residual of the restricted fine level solution
+     *  \f$\bar{x} = R\cdot x_f\f$
      */
     Teuchos::RCP<const Epetra_MultiVector> fhat_;
 
     /*! \brief Residual correction \f$\bar{F}_c\f$ on coarse level
      *
-     *  \f$\bar{F}_c = R\cdot F_f(P\bar{x})\f$: variationally evaluated
-     *  residual of the restricted fine level solution
-     *  \f$\bar{x} = R\cdot x_f\f$
+     *  \f$\hat{F}_c = R\cdot F_f(x_f)\f$: restriction of the current fine
+     *  level residual
      */
     Teuchos::RCP<const Epetra_MultiVector> fbar_;
 

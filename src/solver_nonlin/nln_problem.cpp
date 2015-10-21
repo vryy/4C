@@ -126,7 +126,7 @@ void NLNSOL::NlnProblem::ComputeF(const Epetra_MultiVector& x,
 
   // set most recent solution to NOX group
   Teuchos::RCP<Epetra_Vector> xtemp = Teuchos::rcp(new Epetra_Vector(*(x(0))));
-  NOX::Epetra::Vector noxvec(xtemp, NOX::Epetra::Vector::CreateCopy); // ToDo (mayr) Change back to CreateView some day?
+  NOX::Epetra::Vector noxvec(xtemp, NOX::Epetra::Vector::CreateView); // ToDo (mayr) Change back to CreateView some day?
   NOXGroup().setX(noxvec);
 
   // ask time integrator to evaluate residual and apply DBCs etc.
@@ -145,14 +145,27 @@ void NLNSOL::NlnProblem::ComputeF(const Epetra_MultiVector& x,
   if (frcp.is_null())
     dserror("Could not extract Epetra_Vector from NOX::Epetra::Vector.");
 
-  // switch sign to obtain a residual in descent direction
+  // switch sign to obtain a residual in descent direction (=f_ext - f_int)
   int err = f.Update(-1.0, *frcp, 0.0);
   if (err != 0) { dserror("Update failed."); }
 
   // check for correctness of maps
+  if (not x.Map().PointSameAs(f.Map())) { dserror("Maps do not match."); }
   dsassert(x.Map().PointSameAs(f.Map()), "Maps do not match.");
 
   return;
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_MultiVector> NLNSOL::NlnProblem::ComputePlainF(
+    const Epetra_MultiVector& x) const
+{
+  Teuchos::RCP<Epetra_MultiVector> f =
+      Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
+  ComputeF(x, *f);
+
+  return f;
 }
 
 /*----------------------------------------------------------------------------*/

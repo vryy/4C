@@ -112,13 +112,15 @@ namespace NLNSOL
     //! Setup of nonlinear problem
     virtual void Setup();
 
-    /*! \brief Set coarse level residual corrections for FAS
+    /*! \brief Set coarse level residual modifications for FAS
      *
      *  \note Only needed for coarse levels. Implemented here only for purpose
      *  of inheritance.
+     *
+     *  \sa NLNSOL::NlnProblemCoarseLevel::SetupResidualModification
      */
-    virtual void SetFHatFBar(
-        Teuchos::RCP<const Epetra_MultiVector> fhat, ///< \f$\hat{F}\f$
+    virtual void SetupResidualModification(
+        Teuchos::RCP<const Epetra_MultiVector> xbar, ///< \f$\bar{x}\f$
         Teuchos::RCP<const Epetra_MultiVector> fbar ///< \f$\bar{F}\f$
         )
     {
@@ -159,6 +161,21 @@ namespace NLNSOL
      */
     virtual void ComputeF(const Epetra_MultiVector& x, ///< current solution
         Epetra_MultiVector& f ///< current residual (to be filled)
+        ) const;
+
+    /*! \brief Compute the plain residual on a coarse level
+     *
+     *  Since we are already on the fine level, we just call ComputeF().
+     *
+     *  \note Only needed for coarse levels. Implemented here only for purpose
+     *  of inheritance.
+     *
+     *  \sa NLNSOL::NlnProblemCoarseLevel::ComputePlainF
+     *
+     *  \author mayr.mt \date 10/2015
+     */
+    virtual Teuchos::RCP<Epetra_MultiVector> ComputePlainF(
+        const Epetra_MultiVector& xc ///< current solution on coarse level
         ) const;
 
     /*! \brief Evaluate Jacobian (linearization of residual)

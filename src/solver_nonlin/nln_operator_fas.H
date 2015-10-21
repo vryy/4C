@@ -121,6 +121,17 @@ namespace NLNSOL
      */
     virtual void RebuildPrec();
 
+    /*! \brief Rebuild preconditioner (as const routine)
+     *
+     *  \sa RebuildPrec()
+     *
+     *  \note Can be called from a function, that is not allowed to change
+     *  members.
+     *
+     *  \author mayr.mt \date 03/2015
+     */
+    virtual void RebuildPrecConst() const;
+
     //@}
 
     //! @name Mathematical functions
@@ -139,7 +150,7 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 03/2014
      */
-    virtual int ApplyInverse(const Epetra_MultiVector& f, ///< residual
+    virtual int ApplyInverse(const Epetra_MultiVector& f_do_not_use, ///< residual (do not use, just due to inheritance)
       Epetra_MultiVector& x ///< solution
       ) const;
 
@@ -174,15 +185,13 @@ namespace NLNSOL
 
     //! Entry to all kind of multigrid cycles
     virtual const int Cycle(
-        Teuchos::RCP<const Epetra_MultiVector> fbar, ///< residual from finer level
-        Teuchos::RCP<Epetra_MultiVector> xbar, ///< solution from finer level
+        Teuchos::RCP<Epetra_MultiVector>& xbar, ///< solution from finer level
         const int level ///< level ID
         ) const;
 
     //! V-Cycle (recursive definition)
     virtual const int VCycle(
-        Teuchos::RCP<const Epetra_MultiVector> fbar, ///< residual from finer level
-        Teuchos::RCP<Epetra_MultiVector> xbar, ///< solution from finer level
+        Teuchos::RCP<Epetra_MultiVector>& xbar, ///< solution from finer level
         const int level ///< level ID
         ) const;
 

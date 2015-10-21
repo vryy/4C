@@ -80,6 +80,31 @@ void NLNSOL::NlnProblemCoarseLevel::ComputeF(const Epetra_MultiVector& xc,
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
   if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
 
+  // evaluate the plain residual
+  Teuchos::RCP<Epetra_MultiVector> fcoarse = ComputePlainF(xc);
+
+  // apply coarse grid residual corrections
+  if (fhat_.is_null()) { dserror("Residual correction 'fhat_' not set, yet."); }
+  if (fbar_.is_null()) { dserror("Residual correction 'fbar_' not set, yet."); }
+  err = fcoarse->Update(-1.0, *fhat_, 1.0, *fbar_, 1.0);
+  if (err != 0) { dserror("Update failed."); }
+
+  // copy result to provided output variable
+  err = fc.Update(1.0, *fcoarse, 0.0);
+  if (err != 0) { dserror("Update failed."); }
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_MultiVector>
+NLNSOL::NlnProblemCoarseLevel::ComputePlainF(const Epetra_MultiVector& xc) const
+{
+  // time measurements
+  Teuchos::RCP<Teuchos::Time> time = Teuchos::TimeMonitor::getNewCounter(
+      "NLNSOL::NlnProblemCoarseLevel::ComputePlainF");
+  Teuchos::TimeMonitor monitor(*time);
+
   // prolongate current solution to fine level
   Teuchos::RCP<Epetra_MultiVector> xf =
       Hierarchy().ProlongateToFineLevel(xc, levelid_);
@@ -93,17 +118,10 @@ void NLNSOL::NlnProblemCoarseLevel::ComputeF(const Epetra_MultiVector& xc,
   Teuchos::RCP<Epetra_MultiVector> fcoarse =
       Hierarchy().RestrictToCoarseLevel(*ffine, levelid_);
 
-  // residual correction on coarse level
-  if (fhat_.is_null()) { dserror("Residual correction 'fhat_' not set, yet."); }
-  if (fbar_.is_null()) { dserror("Residual correction 'fbar_' not set, yet."); }
-  err = fcoarse->Update(-1.0, *fhat_, 1.0, *fbar_, -1.0);
-  if (err != 0) { dserror("Update failed."); }
+  if (fcoarse.is_null()) { dserror("fcoarse is a null pointer."); }
+  if (not fcoarse.is_valid_ptr()) { dserror("fcoarse is a not a valid pointer."); }
 
-  // copy result to provided output variable
-  err = fc.Update(-1.0, *fcoarse, 0.0);
-  if (err != 0) { dserror("Update failed."); }
-
-  return;
+  return fcoarse;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -127,26 +145,6 @@ NLNSOL::NlnProblemCoarseLevel::Hierarchy() const
 }
 
 /*----------------------------------------------------------------------------*/
-void NLNSOL::NlnProblemCoarseLevel::SetFHatFBar(
-    Teuchos::RCP<const Epetra_MultiVector> fhat,
-    Teuchos::RCP<const Epetra_MultiVector> fbar)
-{
-//  fhat_ = fhat; //ToDo (mayr) switch back to pointer assignment instead of allocating new vectors?
-//  fbar_ = fbar;
-
-  fhat_ = Teuchos::rcp(new Epetra_MultiVector(*fhat));
-  fbar_ = Teuchos::rcp(new Epetra_MultiVector(*fbar));
-
-  dsassert(not fhat_.is_null(), "fhat_ is Teuchos::null.");
-  dsassert(fhat_.is_valid_ptr(), "fhat_ is not a valid pointer.");
-  dsassert(not fbar_.is_null(), "fbar_ is Teuchos::null.");
-  dsassert(fbar_.is_valid_ptr(), "fbar_ is not a valid pointer.");
-
-  return;
-}
-
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Operator>
 NLNSOL::NlnProblemCoarseLevel::GetJacobianOperator() const
 {
@@ -162,16 +160,54 @@ NLNSOL::NlnProblemCoarseLevel::GetJacobianOperator() const
 }
 
 /*----------------------------------------------------------------------------*/
+void NLNSOL::NlnProblemCoarseLevel::SetupResidualModification(
+    Teuchos::RCP<const Epetra_MultiVector> xbar,
+    Teuchos::RCP<const Epetra_MultiVector> fbar)
+{
+  // time measurements
+  Teuchos::RCP<Teuchos::Time> time = Teuchos::TimeMonitor::getNewCounter(
+      "NLNSOL::NlnProblemCoarseLevel::SetupResidualModification");
+  Teuchos::TimeMonitor monitor(*time);
+
+  // Make sure that Init() and Setup() have been called
+  if (not IsInit()) { dserror("Init() has not been called, yet."); }
+  if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
+
+  // free the outdated vectors
+  fbar_ = Teuchos::null;
+  fhat_ = Teuchos::null;
+
+  // copy 'fbar'
+  fbar_ = Teuchos::rcp(new Epetra_MultiVector(*fbar));
+
+  // compute 'fhat'
+  fhat_ = ComputePlainF(*xbar);
+
+  // safety check
+  if (fhat_.is_null()) { dserror("fhat_ is Teuchos::null."); }
+  if (not fhat_.is_valid_ptr()) { dserror("fhat_ is not a valid pointer."); }
+  if (fbar_.is_null()) { dserror("fbar_ is Teuchos::null."); }
+  if (not fbar_.is_valid_ptr()) { dserror("fbar_ is not a valid pointer."); }
+
+  // safety check
+  dsassert(not fhat_.is_null(), "fhat_ is Teuchos::null.");
+  dsassert(fhat_.is_valid_ptr(), "fhat_ is not a valid pointer.");
+  dsassert(not fbar_.is_null(), "fbar_ is Teuchos::null.");
+  dsassert(fbar_.is_valid_ptr(), "fbar_ is not a valid pointer.");
+
+  return;
+}
+
 /*----------------------------------------------------------------------------*/
 void NLNSOL::NlnProblemCoarseLevel::WriteVector(
     Teuchos::RCP<const Epetra_MultiVector> vec, const std::string& description,
     const IO::DiscretizationWriter::VectorType vt) const
 {
-  if (not vec->Map().PointSameAs(DofRowMap()))
-    dserror("Map of vector does not match map of this level.");
+//  if (not vec->Map().PointSameAs(DofRowMap()))
+//    dserror("Map of vector does not match map of this level.");
 
   // Prolongate to fine level
-  Teuchos::RCP<Epetra_MultiVector> vecfine =
+  Teuchos::RCP<const Epetra_MultiVector> vecfine =
       Hierarchy().ProlongateToFineLevel(*vec, LevelID());
 
   // Write debug output on fine level
@@ -180,7 +216,6 @@ void NLNSOL::NlnProblemCoarseLevel::WriteVector(
   return;
 }
 
-/*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void NLNSOL::NlnProblemCoarseLevel::WriteVector(
     const Epetra_MultiVector& vec, const std::string& description,
