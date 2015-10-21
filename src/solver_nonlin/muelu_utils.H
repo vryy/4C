@@ -35,8 +35,6 @@ Maintainer: Matthias Mayr
 #include <MueLu_UseDefaultTypes.hpp> // => Scalar = double, LocalOrdinal = GlobalOrdinal = int
 //#include <MueLu_UseShortNames.hpp>
 
-#endif
-
 // Teuchos
 #include <Teuchos_RCP.hpp>
 
@@ -73,5 +71,7 @@ namespace UTILS
 
 } // namespace UTILS
 } // namespace NLNSOL
+
+#endif
 
 #endif /* NLN_UTILS_H */
