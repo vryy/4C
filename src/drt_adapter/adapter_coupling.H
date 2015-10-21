@@ -223,6 +223,8 @@ namespace ADAPTER
      *  We need some way to guess the tolerance for the octree. It must not be
      *  too small, otherwise we won't find matching nodes. Too large a tolerance
      *  will not hurt that much. It just means we will have to test more nodes.
+     *  (But it could hurt, if the geometry is very small. It should be
+     *   around the size of the smallest element)
      *
      *  \param masterdis   (i) master side mesh
      *  \param slavedis    (i) slave side mesh

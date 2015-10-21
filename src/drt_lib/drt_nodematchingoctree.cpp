@@ -51,7 +51,8 @@ DRT::UTILS::NodeMatchingOctree::NodeMatchingOctree(
   double                           tol
   ):
   // call constructor for "nontrivial" objects
-  discret_(actdis)
+  discret_(actdis),
+  tol_(tol)
 {
   // extract all masternodes on this proc from the list masternodeids
   std::vector <int> masternodesonthisproc;
@@ -86,8 +87,8 @@ DRT::UTILS::NodeMatchingOctree::NodeMatchingOctree(
     DRT::Node* actnode = discret_.gNode(masternodesonthisproc[0]);
     for (int dim=0;dim<3;dim++)
     {
-      initialboundingbox(dim,0)=actnode->X()[dim]-tol;
-      initialboundingbox(dim,1)=actnode->X()[dim]+tol;
+      initialboundingbox(dim,0)=actnode->X()[dim]-tol_;
+      initialboundingbox(dim,1)=actnode->X()[dim]+tol_;
 
       // store coordinates of one point in master plane (later on, one
       // coordinate of the masternode will be substituted by the coordinate
@@ -101,9 +102,9 @@ DRT::UTILS::NodeMatchingOctree::NodeMatchingOctree(
       for (int dim=0;dim<3;dim++)
       {
         initialboundingbox(dim,0)=std::min(initialboundingbox(dim,0),
-                                       actnode->X()[dim]-tol);
+                                       actnode->X()[dim]-tol_);
         initialboundingbox(dim,1)=std::max(initialboundingbox(dim,1),
-                                       actnode->X()[dim]+tol);
+                                       actnode->X()[dim]+tol_);
       }
     }
 
@@ -116,7 +117,7 @@ DRT::UTILS::NodeMatchingOctree::NodeMatchingOctree(
                                                        initialboundingbox,
                                                        initlayer,
                                                        maxnodeperleaf,
-                                                       tol));
+                                                       tol_));
   }
 
   return;
@@ -359,7 +360,7 @@ void DRT::UTILS::NodeMatchingOctree::CreateGlobalNodeMatching(
         {
 
           std::map<int,std::vector<int> >::iterator found
-	    = midtosid.find(idofclosestpoint);
+      = midtosid.find(idofclosestpoint);
 
           if( found != midtosid.end() )
           {
@@ -367,23 +368,23 @@ void DRT::UTILS::NodeMatchingOctree::CreateGlobalNodeMatching(
             // have to check whether this is a better value
             if(diststom[idofclosestpoint] > distofclosestpoint)
             {
-	      (midtosid[idofclosestpoint]).clear();
-	      (midtosid[idofclosestpoint]).push_back(actnode->Id());
+        (midtosid[idofclosestpoint]).clear();
+        (midtosid[idofclosestpoint]).push_back(actnode->Id());
               diststom[idofclosestpoint] = distofclosestpoint;
             }
-	    else if(diststom[idofclosestpoint]<distofclosestpoint+1e-9
-		    &&
-		    diststom[idofclosestpoint]>distofclosestpoint-1e-9
-	      )
-	    {
-	      (midtosid[idofclosestpoint]).push_back(actnode->Id());
-	    }
+      else if(diststom[idofclosestpoint]<distofclosestpoint+1e-9
+        &&
+        diststom[idofclosestpoint]>distofclosestpoint-1e-9
+        )
+      {
+        (midtosid[idofclosestpoint]).push_back(actnode->Id());
+      }
           }
           else
           {
             // this is the first estimate for a closest point
-	    (midtosid[idofclosestpoint]).clear();
-	    (midtosid[idofclosestpoint]).push_back(actnode->Id());
+      (midtosid[idofclosestpoint]).clear();
+      (midtosid[idofclosestpoint]).push_back(actnode->Id());
             diststom[idofclosestpoint] = distofclosestpoint;
 
           }
@@ -1037,6 +1038,7 @@ void DRT::UTILS::OctreeElement::SearchClosestNodeInLeaf(
   const std::vector <double> & x,
   int             & idofclosestpoint,
   double          & distofclosestpoint,
+  const double    & elesize,
   bool              searchsecond
   )
 {
@@ -1064,14 +1066,14 @@ void DRT::UTILS::OctreeElement::SearchClosestNodeInLeaf(
     }
     thisdist = sqrt(dx[0]*dx[0]+dx[1]*dx[1]+dx[2]*dx[2]);
 
-    if (thisdist < (distofclosestpoint - 1e-05))
+    if (thisdist < (distofclosestpoint - 1e-02*elesize))
     {
       distofclosestpoint = thisdist;
       idofclosestpoint = this->nodeids_[nn];
     }
     else
     {
-      if ((abs(thisdist - distofclosestpoint) < 1e-05) & (searchsecond == true))
+      if ((abs(thisdist - distofclosestpoint) < 1e-02*elesize) & (searchsecond == true))
       {
         distofclosestpoint = thisdist;
         idofclosestpoint = this->nodeids_[nn];

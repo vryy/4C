@@ -55,7 +55,9 @@ public:
   checked whether its coordinate is inside the bounding box of the
   octree element. This is done only with a tolerance tol to ensure that
   each node is guaranteed to be owned by one of the children an could
-  be found later on.
+  be found later on. The same tolerance is used for finding the smallest
+  distance between two nodes. Thus, it should be of the order or magnitude
+  of the smallest element size.
 
   </pre>
 
@@ -195,6 +197,8 @@ private:
 
   //! \brief all nodes in leafs are nodes of this discretization
   const DRT::Discretization&       discret_;
+  //! \brief order of magnitude of smallest element size (used for tolerances)
+  const double                     tol_;
   //! \brief root of the local search tree
   Teuchos::RCP<OctreeElement>      octreeroot_;
   //! \brief coordinate of one point in the master plane
@@ -334,6 +338,7 @@ public:
     const std::vector<double> & x,
     int                       & idofclosestpoint,
     double                    & distofclosestpoint,
+    const double              & elesize,
     bool                        searchsecond = false
   );
 
