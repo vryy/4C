@@ -218,6 +218,7 @@ void NLNSOL::FAS::AMGHierarchy::SetupMueLuHierarchy()
 /*----------------------------------------------------------------------------*/
 const bool NLNSOL::FAS::AMGHierarchy::SetupNlnSolHierarchy()
 {
+#ifdef HAVE_MueLu
   // ---------------------------------------------------------------------------
   // Create NLNSOL::FAS::NlnLevel instances and feed MueLu data to them
   // ---------------------------------------------------------------------------
@@ -307,6 +308,10 @@ const bool NLNSOL::FAS::AMGHierarchy::SetupNlnSolHierarchy()
     newlevel->Setup();
     // -------------------------------------------------------------------------
   }
+
+#else
+  dserror("Setup of an AMG hierarchy requires MueLu.");
+#endif
 
   // validity check
   return CheckValidity();
