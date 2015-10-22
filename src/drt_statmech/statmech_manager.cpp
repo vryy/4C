@@ -3465,13 +3465,13 @@ void STATMECH::StatMechManager::GenerateGaussianRandomNumbers(Teuchos::RCP<Epetr
       for (int j=0; j<randomnumbersrow->NumVectors(); j++)
       {
         (*randomnumbersrow)[j][i] = standarddeviation*(*normalgen_)() + meanvalue;
-        if((*randomnumbersrow)[j][i]>maxrandforcefac*standarddeviation)
+        if((*randomnumbersrow)[j][i]>maxrandforcefac*standarddeviation + meanvalue)
         {
-          (*randomnumbersrow)[j][i]=maxrandforcefac*standarddeviation;
+          (*randomnumbersrow)[j][i]=maxrandforcefac*standarddeviation + meanvalue;
         }
-        else if((*randomnumbersrow)[j][i]<-maxrandforcefac*standarddeviation)
+        else if((*randomnumbersrow)[j][i]<-maxrandforcefac*standarddeviation + meanvalue)
         {
-          (*randomnumbersrow)[j][i]=-maxrandforcefac*standarddeviation;
+          (*randomnumbersrow)[j][i]=-maxrandforcefac*standarddeviation + meanvalue;
         }
       }
   }

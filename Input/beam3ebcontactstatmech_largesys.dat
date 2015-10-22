@@ -85,7 +85,7 @@ BINDINGSITESEARCH   volpart                    // search routine: volpart, binni
 SEARCHRES           25                    // resolution for search routine linkers x binding spots
 CHECKORIENT         No                    // check orientation betw. two filaments before linking them
 FIXEDSEED           Yes                    // (de)activate pesudo-randomness
-INITIALSEED         1                     // manipulate initial seed of pseudo random numbers
+INITIALSEED         2                     // manipulate initial seed of pseudo random numbers
 RANDNUMTIMEINT      0.001                 // fix random number within prescribed time interval
 MAXRANDFORCE        2.0                   // cutoff for random numbers as multiple of standard derivation. For larger random number, this value will be used
 //============== OUTPUT SET UP ==============
@@ -20773,8 +20773,8 @@ CURVE1 on EXPR FUNC sin(2*pi*5*(t-10000)) t1 10000 t2 10000
 ------------------------------------------------------------CURVE2
 CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 10000.0 FACTOR 1.0 1.0
 ------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 1730 QUANTITY dispx VALUE 4.45332732502136674e-02 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 1730 QUANTITY dispy VALUE -2.14631854103349493e-02 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 1730 QUANTITY dispz VALUE -1.12595883811724556e-02 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 1730 QUANTITY dispx VALUE 1.26014087551303503e-02 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 1730 QUANTITY dispy VALUE 2.62964833327446260e-02 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 1730 QUANTITY dispz VALUE 1.54684041402198651e-02 TOLERANCE 1e-10
 ---------------------------------------------------------------END
 // END

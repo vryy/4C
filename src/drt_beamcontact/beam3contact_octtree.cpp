@@ -987,7 +987,7 @@ bool Beam3ContactOctTree::locateAll()
   numcrit2_ = 0;
 
   // Convert Epetra_MultiVector allbboxes_ to vector(std::vector<double>)
-  std::cout<<allbboxes_->MyLength()<<", "<<allbboxes_->NumVectors()<<std::endl;
+//  std::cout<<allbboxes_->MyLength()<<", "<<allbboxes_->NumVectors()<<std::endl;
   std::vector<std::vector<double> > allbboxesstdvec(allbboxes_->MyLength(), std::vector<double>(allbboxes_->NumVectors(),0.0));
   EpetraMultiVecToStdVec(*allbboxes_,allbboxesstdvec);
 

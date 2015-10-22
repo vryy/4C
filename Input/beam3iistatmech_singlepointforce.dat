@@ -68,7 +68,7 @@ CHECKORIENT                     Yes                     // check orientation bet
 FIXEDSEED                       Yes                     // (de)activate pesudo-randomness
 INITIALSEED                     1                       // manipulate initial seed of pseudo random numbers
 //==============OUTPUT SET UP ==============
-GMSHOUTPUT                      No                     // visualization via Gmsh
+GMSHOUTPUT                      No                      // visualization via Gmsh
 GMSHNETSTRUCT                   No                      // visualize structure detection
 PlotFactorThick                 0                       // 0 = gmsh line output, >0 = gmsh wedge output (c * (real thickness))
 SPECIAL_OUTPUT                  none                    // densitydensitycorr viscoelasticity
@@ -84,7 +84,7 @@ PERIODLENGTH                    5 5 5                   // edge lengths of the c
 SEARCHRES                       50                      // resolution for search routine linkers x binding spots
 HISTOGRAMBINS                   60                      // number of bins for specialoutput densitydensitycorr
 NUMRASTERPOINTS                 15                      // creates numrasterpoints^3 rasterpoints, preferably numrasterpoints=2*n+1, n=1,2,3,...
-SHEARAMPLITUDE                  0.18                    // amplitude of shear in micrometers (give half the value of actual displacement in case of affineshear
+SHEARAMPLITUDE                  0.0                    // amplitude of shear in micrometers (give half the value of actual displacement in case of affineshear
 ETA                             0.00044022              // ~ 1e-3 / 2.27 according to Cyron2011 eq 52 ff, viscosity of surrounding fluid
 KT                              1e-7                    // thermal energy
 KTACT                           1e-7                    // thermal energy after starttimeact_
@@ -280,6 +280,6 @@ CURVE1 on EXPR FUNC sin(2*pi*1000*(t-0.05)) t1 0.05 t2 10000
 ----------------------------------------------------------------------CURVE2
 CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 10000.0 FACTOR 1.0 1.0
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 32 QUANTITY dispx VALUE -9.05158121915196562e-04 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 32 QUANTITY dispx VALUE -3.89885098413237340e-03 TOLERANCE 1e-6
 -------------------------------------------------------------------------END
 //                              END
