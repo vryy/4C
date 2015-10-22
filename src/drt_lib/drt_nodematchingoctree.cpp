@@ -670,7 +670,7 @@ bool DRT::UTILS::NodeMatchingOctree::SearchClosestNodeOnThisProc(
     }
 
     // now get closest point in leaf
-    octreeele->SearchClosestNodeInLeaf(x,idofclosestpoint,distofclosestpoint,searchsecond);
+    octreeele->SearchClosestNodeInLeaf(x,idofclosestpoint,distofclosestpoint,tol_,searchsecond);
   }
 
   return nodeisinbox;

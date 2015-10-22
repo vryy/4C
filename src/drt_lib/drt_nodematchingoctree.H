@@ -329,6 +329,8 @@ public:
   \param   x                  (i) coordinate of point
   \param   idofclosestpoint   (o) global id of closest point
   \param   distofclosestpoint (o) distance of closest point
+  \param   elesize            (i) tolerance for node matching
+  \param   x                  (i) flag for search of second match
 
   \return void
 
@@ -339,7 +341,7 @@ public:
     int                       & idofclosestpoint,
     double                    & distofclosestpoint,
     const double              & elesize,
-    bool                        searchsecond = false
+    bool                        searchsecond
   );
 
 
