@@ -14,8 +14,12 @@ Maintainer: Christiane Förster
 #include <stdio.h>
 
 #include "fluidimpedancecondition.H"
+#include "fluid_utils.H"
 
 #include "../linalg/linalg_ana.H"
+#include "../linalg/linalg_blocksparsematrix.H"
+#include "../linalg/linalg_sparsematrixbase.H"
+
 #include "../drt_fluid_ele/fluid_ele_action.H"
 
 
@@ -167,14 +171,14 @@ void FLD::UTILS::FluidImpedanceWrapper::getResultsOfAPeriod(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::FluidImpedanceWrapper::FlowRateCalculation(const double time, const double dta)
+void FLD::UTILS::FluidImpedanceWrapper::FlowRateCalculation(const double time)
 {
   // get an iterator to my map
   std::map<const int, Teuchos::RCP<class FluidImpedanceBc> >::iterator mapiter;
 
   for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++ )
   {
-    mapiter->second->FluidImpedanceBc::FlowRateCalculation(time,dta,mapiter->first);
+    mapiter->second->FluidImpedanceBc::FlowRateCalculation(time,mapiter->first);
   }
   return;
 }
@@ -236,7 +240,7 @@ void FLD::UTILS::FluidImpedanceWrapper::TimeUpdateImpedances(const double time, 
   for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++ )
   {
     //update flowrate and pressure vector
-    mapiter->second->FluidImpedanceBc::FlowRateCalculation(time,dta,mapiter->first);
+    mapiter->second->FluidImpedanceBc::FlowRateCalculation(time,mapiter->first);
     const double pressure = mapiter->second->FluidImpedanceBc::OutflowBoundary(time,dta,mapiter->first);
     //update errors
     mapiter->second->FluidImpedanceBc::TimeUpdateImpedance(time,pressure);
@@ -316,18 +320,41 @@ void FLD::UTILS::FluidImpedanceWrapper::GetWindkesselParams(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- |  Wrap update of residual                                 chfoe 06/08 |
+ |  Split linearization matrix to a BlockSparseMatrixBase    Thon 07/15 |
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::FluidImpedanceWrapper::UpdateResidual(Teuchos::RCP<Epetra_Vector>& residual )
+void FLD::UTILS::FluidImpedanceWrapper::UseBlockMatrix(Teuchos::RCP<std::set<int> >     condelements,
+                                                       const LINALG::MultiMapExtractor& domainmaps,
+                                                       const LINALG::MultiMapExtractor& rangemaps,
+                                                       bool                             splitmatrix)
 {
   std::map<const int, Teuchos::RCP<class FluidImpedanceBc> >::iterator mapiter;
 
   for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++ )
   {
-    mapiter->second->FluidImpedanceBc::UpdateResidual(residual);
+    mapiter->second->FluidImpedanceBc::UseBlockMatrix(condelements,domainmaps,rangemaps,splitmatrix);
+  }
+  return;
+}
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |  Wrap update of residual                                 chfoe 06/08 |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::UTILS::FluidImpedanceWrapper::UpdateResidual(Teuchos::RCP<Epetra_Vector>& residual, Teuchos::RCP<LINALG::SparseOperator>& sysmat )
+{
+  std::map<const int, Teuchos::RCP<class FluidImpedanceBc> >::iterator mapiter;
+
+  for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++ )
+  {
+    mapiter->second->FluidImpedanceBc::UpdateResidual(residual,sysmat);
   }
   return;
 }
@@ -443,6 +470,9 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(const Teuchos::RCP<DRT::Discretiz
   // ---------------------------------------------------------------------
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
   impedancetbc_ = LINALG::CreateVector(*dofrowmap,true);
+  impedancetbcsysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true));
+  //Note: do not call impedancetbcsysmat_->Complete() before it is filled, since
+  // this is our check if it has already been initialized
 
   // initialize all of the variables
   Pin_n_  = 0.0;
@@ -503,7 +533,7 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(const Teuchos::RCP<DRT::Discretiz
   }
 
   // ---------------------------------------------------------------------
-  // initialize the pressures vecotrs
+  // initialize the pressures vectors
   // ---------------------------------------------------------------------
   pressures_ = Teuchos::rcp(new  std::vector<double>);
   pressures_->push_back(0.0);
@@ -571,15 +601,6 @@ void FLD::UTILS::FluidImpedanceBc::WriteRestart( IO::DiscretizationWriter&  outp
   dpstream<<"dP"<<condnum;
   output.WriteDouble(dpstream.str(), dP_);
 
-
-  /*
-  double norm = 0.0;
-  impedancetbc_->Norm2(&norm);
-  if (!myrank_)
-  {
-    printf("impedancetbc_NORM: %10.5e\n",norm);
-  }
-  */
   return;
 }
 
@@ -923,7 +944,7 @@ void FLD::UTILS::FluidImpedanceBc::Impedances( const double area, const double d
   very last cycle!
 
 */
-void FLD::UTILS::FluidImpedanceBc::FlowRateCalculation(const double time, const double dta, const int condid)
+void FLD::UTILS::FluidImpedanceBc::FlowRateCalculation(const double time, const int condid)
 {
   // fill in parameter list for subsequent element evaluation
   // there's no assembly required here
@@ -983,7 +1004,7 @@ void FLD::UTILS::FluidImpedanceBc::FlowRateCalculation(const double time, const 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- |  Apply Impedance to outflow boundary                ac | chfoe 05/08 |
+ |  Apply Impedance to outflow boundary                      thon 10/15 |
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1049,8 +1070,6 @@ double FLD::UTILS::FluidImpedanceBc::OutflowBoundary(const double time, const do
   // action for elements
   eleparams.set<int>("action",FLD::Outletimpedance);
 
-  eleparams.set("total time",time);
-  eleparams.set("delta time",dta);
   eleparams.set("ConvolutedPressure",pressure);
 
 //  if (myrank_ == 0)
@@ -1062,6 +1081,57 @@ double FLD::UTILS::FluidImpedanceBc::OutflowBoundary(const double time, const do
   const std::string condstring("ImpedanceCond");
   discret_->EvaluateCondition(eleparams,impedancetbc_,condstring,condid);
 
+
+  // ---------------------------------------------------------------------
+  // initialize the linearization matrix (iff not done already)
+  // ---------------------------------------------------------------------
+  if ( not impedancetbcsysmat_->Filled() )
+  {
+    //calculate dQ/du = ( \phi o n )_Gamma
+    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+    Teuchos::RCP<Epetra_Vector> dQdu = LINALG::CreateVector(*dofrowmap,true);
+
+    Teuchos::ParameterList eleparams2;
+    // action for elements
+    eleparams2.set<int>("action",FLD::dQdu);
+
+    discret_->EvaluateCondition(eleparams2,dQdu,condstring,condid);
+
+    //now move dQdu to one proc
+    Teuchos::RCP<Epetra_Map> dofrowmapred =  LINALG::AllreduceEMap(*dofrowmap);
+    Teuchos::RCP<Epetra_Vector> dQdu_full = Teuchos::rcp(new Epetra_Vector(*dofrowmapred,true));
+
+    LINALG::Export(*dQdu, *dQdu_full); //!!! add off proc components
+
+
+    //calculate d wk/du = d/du ( (v,n)_gamma n,phi)_Gamma were (d wk/du)_i,j= timefacs* (phi_i,n)_Gamma * (phi_j,n)_Gamma
+    // Note: this derivative cannot be build on element level, hence we have to to it here!
+    impedancetbcsysmat_->Zero();
+
+    const double tfaclhs = eleparams2.get<double>("tfaclhs",0.0);
+    const double tfaclhs_wkfac = tfaclhs * dta / period_ * impvalues_[cyclesteps_-1];
+
+    for (int lid = 0; lid <dQdu->MyLength();lid++)
+    {
+      const int gid    =  dofrowmap->GID(lid);
+      const double val = (*dQdu)[lid];
+      if (abs(val)>1e-12)
+      {
+        for (int lid2 = 0; lid2 <dQdu_full->MyLength();lid2++)
+        {
+          const int gid2    =  dofrowmapred->GID(lid2);
+          const double val2 = (*dQdu_full)[lid2];
+
+          if (abs(val2)>1e-12)
+            impedancetbcsysmat_->Assemble(tfaclhs_wkfac*val*val2,gid,gid2);
+        }
+      }
+    }
+
+    impedancetbcsysmat_->Complete();
+    //  std::cout<<__FILE__<<__LINE__<<*((Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(impedancetbcsysmat_))->EpetraMatrix())<<std::endl;
+  }
+
   return pressure;
 } //FluidImplicitTimeInt::OutflowBoundary
 
@@ -1069,7 +1139,7 @@ double FLD::UTILS::FluidImpedanceBc::OutflowBoundary(const double time, const do
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- |  Update flowrate and pressure vetor                       Thon 07/15 |
+ |  Update flowrate and pressure vector                       Thon 07/15 |
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1097,15 +1167,15 @@ void FLD::UTILS::FluidImpedanceBc::TimeUpdateImpedance(const double time, const 
     // replace the element that was computed exactly a cycle ago
     int pos = pressurespos_ % (cyclesteps_);
 
-    dP_ = pressure - (*pressures_)[pos];
-
-    if ( pressures_->at(pos) != 0.0 )
-      WKrelerror_ = dP_ /(*pressures_)[pos];
-    else
-      WKrelerror_ = dP_;
-
     if (pos == 0)
     {
+      dP_ = pressure - (*pressures_)[pos];
+
+      if ( pressures_->at(pos) != 0.0 )
+        WKrelerror_ = dP_ /(*pressures_)[pos];
+      else
+        WKrelerror_ = dP_;
+
       endOfCycle_ = true;
     }
     else
@@ -1152,21 +1222,51 @@ void FLD::UTILS::FluidImpedanceBc::PrepareTimeStepImpedance(const double time)
   return;
 }
 
-
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- |  Update of residual vector                               chfoe 03/08 |
+ |  Split linearization matrix to a BlockSparseMatrixBase   Thon 07/15  |
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*!
 */
-void FLD::UTILS::FluidImpedanceBc::UpdateResidual(Teuchos::RCP<Epetra_Vector>& residual )
+void FLD::UTILS::FluidImpedanceBc::UseBlockMatrix(Teuchos::RCP<std::set<int> >     condelements,
+                                                  const LINALG::MultiMapExtractor& domainmaps,
+                                                  const LINALG::MultiMapExtractor& rangemaps,
+                                                  bool                             splitmatrix)
+{
+  Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy> > mat;
+
+  if (splitmatrix)
+  {
+    // (re)allocate system matrix
+    mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
+    mat->SetCondElements(condelements);
+    impedancetbcsysmat_ = mat;
+  }
+
+}
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |  Update of residual vector and its linearization         Thon 07/15  |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*!
+*/
+void FLD::UTILS::FluidImpedanceBc::UpdateResidual(Teuchos::RCP<Epetra_Vector>& residual, Teuchos::RCP<LINALG::SparseOperator>& sysmat)
 {
   residual->Update(1.0,*impedancetbc_,1.0);
+
+  sysmat->Add(*impedancetbcsysmat_,true,1.0,1.0);
+
   Pin_n_ = Pin_np_;
   Pc_n_  = Pc_np_;
 }

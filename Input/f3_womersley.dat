@@ -93,7 +93,7 @@ UPRES                           5
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          Aztec_MSR                     // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        0                             // output every so often, 0 no output
+AZOUTPUT                        0                            // output every so often, 0 no output
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          MLFLUID2                      // none ML MLFLUID MLFLUID2 ILU ILUT ICC LU Jacobi SymmGaussSeidel Least_Squares Neumann
 AZREUSE                         10                            // how often to recompute some preconditioners
@@ -1609,8 +1609,9 @@ FLUID DIS fluid NODE 397 QUANTITY velz VALUE -1.809823994e+02 TOLERANCE 1e-7
 //FLUID DIS fluid NODE 396 QUANTITY velz VALUE -1.725093122e+02 TOLERANCE 1e-7
 FLUID DIS fluid NODE 397 QUANTITY pressure VALUE 1.13859770758145714e+04 TOLERANCE 1e-2
 FLUID DIS fluid NODE 396 QUANTITY pressure VALUE 1.13860155860161867e+04 TOLERANCE 1e-2
-FLUID DIS fluid NODE 396 QUANTITY velx VALUE 4.35804249953310296e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 396 QUANTITY vely VALUE 3.60940889512321283e-01 TOLERANCE 1e-9
+
+FLUID DIS fluid NODE 396 QUANTITY velx VALUE 4.35804259319385434e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 396 QUANTITY vely VALUE 3.60940909699493329e-01 TOLERANCE 1e-9
 FLUID DIS fluid NODE 396 QUANTITY velz VALUE -1.725093122e+02 TOLERANCE 1e-7
 -------------------------------------------------------------------------END
 //                              END

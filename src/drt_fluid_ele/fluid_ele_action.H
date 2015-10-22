@@ -94,6 +94,7 @@ enum BoundaryAction {
     calc_flowrate,
     flowratederiv,
     Outletimpedance,
+    dQdu,
     ba_calc_node_normal,
     calc_node_curvature,
     calc_surface_tension,

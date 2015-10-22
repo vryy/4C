@@ -64,8 +64,7 @@ public:
   /*!
   \brief Wrapper for FluidImpedanceBc::FlowRateCalculation
   */
-  void FlowRateCalculation(const double time, const double dta);
-
+  void FlowRateCalculation(const double time);
 
   /*!
   \brief Wrapper for FluidImpedacnceBc::OutflowBoundary
@@ -88,9 +87,17 @@ public:
   void Impedances();
 
   /*!
+    \brief Wrapper for FluidImpedacnceBc::UseBlockMatrix
+  */
+  void UseBlockMatrix(Teuchos::RCP<std::set<int> >     condelements,
+                      const LINALG::MultiMapExtractor& domainmaps,
+                      const LINALG::MultiMapExtractor& rangemaps,
+                      bool                             splitmatrix);
+
+  /*!
   \brief Wrapper for FluidImpedacnceBc::UpdateResidual
   */
-  void UpdateResidual(Teuchos::RCP<Epetra_Vector>& residual );
+  void UpdateResidual(Teuchos::RCP<Epetra_Vector>& residual, Teuchos::RCP<LINALG::SparseOperator>& sysmat );
 
   /*!
   \brief Wrapper for FluidImpedacnceBc::WriteRestart
@@ -189,7 +196,6 @@ protected:
   */
   void FlowRateCalculation(
       const double time,
-      const double dta,
       const int condid );
 
   /*!
@@ -226,7 +232,18 @@ protected:
   */
   void getResultsOfAPeriod(Teuchos::ParameterList & params, const int condid);
 
-  void UpdateResidual( Teuchos::RCP<Epetra_Vector>& residual );
+  /*!
+  \brief Split linearization matrix to a BlockSparseMatrixBase
+  */
+  void UseBlockMatrix(Teuchos::RCP<std::set<int> >     condelements,
+                      const LINALG::MultiMapExtractor& domainmaps,
+                      const LINALG::MultiMapExtractor& rangemaps,
+                      bool                             splitmatrix);
+
+  /*!
+  \brief Update of residual vector and its linearization
+  */
+  void UpdateResidual( Teuchos::RCP<Epetra_Vector>& residual, Teuchos::RCP<LINALG::SparseOperator>& sysmat );
 
 private:
   /*!
@@ -302,11 +319,11 @@ private:
                    const double time);
 
 
-protected:
+private:
 
   Teuchos::RCP<Epetra_Vector> impedancetbc_;
 
-private:
+  Teuchos::RCP<LINALG::SparseOperator> impedancetbcsysmat_;
 
   //! time period of present cyclic problem
   double period_;

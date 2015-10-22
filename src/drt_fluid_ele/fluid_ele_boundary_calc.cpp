@@ -170,6 +170,17 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateAction(DRT::ELEMENTS::Fl
         elevec1);
     break;
   }
+
+  case FLD::dQdu:
+  {
+    dQdu(
+        ele1,
+        params,
+        discretization,
+        lm,
+        elevec1);
+    break;
+  }
   case FLD::ba_calc_node_normal:
   {
     Teuchos::RCP<const Epetra_Vector> dispnp;
@@ -1731,7 +1742,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CenterOfMassCalculation(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ComputeFlowRate(
-                                                                DRT::ELEMENTS::FluidBoundary*    ele,
+                                                                DRT::ELEMENTS::FluidBoundary*     ele,
                                                                 Teuchos::ParameterList&           params,
                                                                 DRT::Discretization&              discretization,
                                                                 std::vector<int>&                 lm,
@@ -1853,7 +1864,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ComputeFlowRate(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowRateDeriv(
-                                                 DRT::ELEMENTS::FluidBoundary*   ele,
+                                                 DRT::ELEMENTS::FluidBoundary*    ele,
                                                  Teuchos::ParameterList&          params,
                                                  DRT::Discretization&             discretization,
                                                  std::vector<int>&                lm,
@@ -2127,16 +2138,15 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowRateDeriv(
   *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ImpedanceIntegration(
-                  DRT::ELEMENTS::FluidBoundary*    ele,
+                  DRT::ELEMENTS::FluidBoundary*     ele,
                   Teuchos::ParameterList&           params,
                   DRT::Discretization&              discretization,
                   std::vector<int>&                 lm,
                   Epetra_SerialDenseVector&         elevec1)
 {
-  //  const double thsl = params.get("thsl",0.0);
-  const double tfac = fldparatimint_->TimeFacRhs();
+  const double tfacrhs = fldparatimint_->TimeFacRhs();
 
-  double pressure = params.get<double>("ConvolutedPressure");
+  const double pressure = params.get<double>("ConvolutedPressure");
 
   // get Gaussrule
   const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
@@ -2147,11 +2157,11 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ImpedanceIntegration(
 
   // Add the deformation of the ALE mesh to the nodes coordinates
   // displacements
-  Teuchos::RCP<const Epetra_Vector>  dispnp;
-  std::vector<double>                mydispnp;
-
   if (ele->ParentElement()->IsAle())
   {
+    Teuchos::RCP<const Epetra_Vector>  dispnp;
+    std::vector<double>                mydispnp;
+
     dispnp = discretization.GetState("dispnp");
     if (dispnp!=Teuchos::null)
     {
@@ -2168,6 +2178,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ImpedanceIntegration(
     }
   }
 
+  // add traction in the inward normal direction with norm 'pressure'
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
   {
     // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
@@ -2177,20 +2188,79 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ImpedanceIntegration(
                                                     intpoints,gpid,NULL,NULL,
                                                     IsNurbs<distype>::isnurbs);
 
-    const double fac_thsl_pres_inve = fac_ * tfac * pressure;
+    const double fac_facrhs_pres = fac_ * tfacrhs * pressure;
 
     for (int inode=0;inode<bdrynen_;++inode)
       for(int idim=0;idim<nsd_;++idim)
-        // inward pointing normal of unit length
-        elevec1[inode*numdofpernode_+idim] += funct_(inode) * fac_thsl_pres_inve * (-unitnormal_(idim));
+        elevec1[inode*numdofpernode_+idim] += fac_facrhs_pres * funct_(inode) * (-unitnormal_(idim));
   }
-  //  cout<<"Pressure: "<<pressure<<endl;
-  //  cout<<"thsl: "<<thsl<<endl;
-  //  cout<<"density: "<<1.0/invdensity<<endl;
-  //  exit(1);
 
   return;
 } //DRT::ELEMENTS::FluidSurface::ImpedanceIntegration
+
+
+/*---------------------------------------------------------------------------*
+ |  linearization of flux w.r.t velocities on boundary elements  Thon 10/15  |
+ *---------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::FluidBoundaryImpl<distype>::dQdu(
+                  DRT::ELEMENTS::FluidBoundary*     ele,
+                  Teuchos::ParameterList&           params,
+                  DRT::Discretization&              discretization,
+                  std::vector<int>&                 lm,
+                  Epetra_SerialDenseVector&         elevec1)
+{
+  // get Gaussrule
+  const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+
+  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary element!)
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze_);
+
+  // Add the deformation of the ALE mesh to the nodes coordinates
+  // displacements
+  if (ele->ParentElement()->IsAle())
+  {
+    Teuchos::RCP<const Epetra_Vector>  dispnp;
+    std::vector<double>                mydispnp;
+
+    dispnp = discretization.GetState("dispnp");
+    if (dispnp!=Teuchos::null)
+    {
+      mydispnp.resize(lm.size());
+      DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
+    }
+    dsassert(mydispnp.size()!=0,"paranoid");
+    for (int inode=0;inode<bdrynen_;++inode)
+    {
+      for (int idim=0; idim<nsd_; ++idim)
+      {
+        xyze_(idim,inode)+=mydispnp[numdofpernode_*inode+idim];
+      }
+    }
+  }
+
+  // compute dQ/du were (dQ/du)_i= (\phi_i \dot n)_Gamma
+  for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
+  {
+    // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
+    // Computation of the unit normal vector at the Gauss points
+    // Computation of nurb specific stuff is not activated here
+    DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(funct_,deriv_,fac_,unitnormal_,drs_,xsi_,xyze_,
+                                                    intpoints,gpid,NULL,NULL,
+                                                    IsNurbs<distype>::isnurbs);
+
+    for (int node=0;node<bdrynen_;++node)
+    {
+      for (int dim=0;dim<nsd_;++dim)
+      {
+        elevec1[node*numdofpernode_+dim] += funct_(node) * unitnormal_(dim,0) * fac_;
+      }
+      elevec1[node*numdofpernode_+nsd_] = 0.0;
+    }
+  }
+
+  params.set<double>("tfaclhs",fldparatimint_->TimeFac());
+}
 
 
 /*----------------------------------------------------------------------*

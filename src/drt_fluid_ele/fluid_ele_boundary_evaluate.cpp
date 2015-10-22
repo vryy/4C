@@ -47,6 +47,7 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
   case FLD::calc_flowrate:
   case FLD::flowratederiv:
   case FLD::Outletimpedance:
+  case FLD::dQdu:
   case FLD::ba_calc_node_normal:
   case FLD::calc_node_curvature:
   case FLD::calc_surface_tension:

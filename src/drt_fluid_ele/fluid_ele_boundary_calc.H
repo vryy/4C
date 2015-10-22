@@ -78,7 +78,7 @@ public:
   /// Constructor
   FluidBoundaryImpl();
 
-  void EvaluateAction(DRT::ELEMENTS::FluidBoundary*  ele1,
+  void EvaluateAction(DRT::ELEMENTS::FluidBoundary*   ele1,
                       Teuchos::ParameterList&         params,
                       DRT::Discretization&            discretization,
                       std::vector<int>&               lm,
@@ -121,7 +121,7 @@ protected:
     \param elevec1 (out)      : vector to be filled by element. If NULL on input,
     */
   virtual void IntegrateShapeFunction(
-      DRT::ELEMENTS::FluidBoundary*    ele,
+      DRT::ELEMENTS::FluidBoundary*     ele,
       Teuchos::ParameterList&           params,
       DRT::Discretization&              discretization,
       std::vector<int>&                 lm,
@@ -137,7 +137,7 @@ protected:
       \param enormals (in)      : Node normals
     */
   void ElementMeanCurvature(
-      DRT::ELEMENTS::FluidBoundary*    ele,
+      DRT::ELEMENTS::FluidBoundary*     ele,
       Teuchos::ParameterList&           params,
       DRT::Discretization&              discretization,
       std::vector<int>&                 lm,
@@ -154,7 +154,7 @@ protected:
       \param curvature (in)     : Interpolated curvature
     */
   void ElementSurfaceTension(
-      DRT::ELEMENTS::FluidBoundary*   ele,
+      DRT::ELEMENTS::FluidBoundary*    ele,
       Teuchos::ParameterList&          params,
       DRT::Discretization&             discretization,
       std::vector<int>&                lm,
@@ -198,7 +198,7 @@ protected:
     \param lm (in)            : location vector of this element
     */
   void CenterOfMassCalculation(
-      DRT::ELEMENTS::FluidBoundary*    ele,
+      DRT::ELEMENTS::FluidBoundary*     ele,
       Teuchos::ParameterList&           params,
       DRT::Discretization&              discretization,
       std::vector<int>&                 lm);
@@ -213,7 +213,7 @@ protected:
     \param elevec1 (out)      : vector to be filled by element. If NULL on input,
     */
   void CalcTractionVelocityComponent(
-      DRT::ELEMENTS::FluidBoundary*    ele,
+      DRT::ELEMENTS::FluidBoundary*     ele,
       Teuchos::ParameterList&           params,
       DRT::Discretization&              discretization,
       std::vector<int>&                 lm,
@@ -229,7 +229,7 @@ protected:
     \param elevec1 (out)      : vector to be filled by element. If NULL on input,
     */
   void ComputeNeumannUvIntegral(
-      DRT::ELEMENTS::FluidBoundary*    ele,
+      DRT::ELEMENTS::FluidBoundary*     ele,
       Teuchos::ParameterList&           params,
       DRT::Discretization&              discretization,
       std::vector<int>&                 lm,
@@ -244,7 +244,7 @@ protected:
      \param lm (in)            : location vector of this element
      */
   void ComputeFlowRate(
-      DRT::ELEMENTS::FluidBoundary*    ele,
+      DRT::ELEMENTS::FluidBoundary*     ele,
       Teuchos::ParameterList&           params,
       DRT::Discretization&              discretization,
       std::vector<int>&                 lm,
@@ -265,7 +265,7 @@ protected:
     \param elevec3 (out)      : flowrate
     */
   void FlowRateDeriv(
-      DRT::ELEMENTS::FluidBoundary*   ele,
+      DRT::ELEMENTS::FluidBoundary*    ele,
       Teuchos::ParameterList&          params,
       DRT::Discretization&             discretization,
       std::vector<int>&                lm,
@@ -290,6 +290,22 @@ protected:
       DRT::Discretization&              discretization,
       std::vector<int>&                 lm,
       Epetra_SerialDenseVector&         elevec1);
+
+  /*!
+  \brief linearisation of flux w.r.t velocities on boundary elements
+
+  \param params (in/out)    : ParameterList for communication between control routine
+                              and elements
+  \param discretization (in): A reference to the underlying discretization
+  \param lm (in)            : location vector of this element
+  \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+  */
+void dQdu(
+    DRT::ELEMENTS::FluidBoundary*     ele,
+    Teuchos::ParameterList&           params,
+    DRT::Discretization&              discretization,
+    std::vector<int>&                 lm,
+    Epetra_SerialDenseVector&         elevec1);
 
     /*!
     \brief apply outflow boundary condition which is necessary for the conservative

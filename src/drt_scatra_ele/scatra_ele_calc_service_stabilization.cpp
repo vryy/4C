@@ -589,6 +589,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcArtificialDiff(
   // get characteristic element length as cubic root of element volume
   // (2D: square root of element area, 1D: element length)
   const double h = std::pow(vol,(1.0/dim));
+//  const double h = CalcCharEleLength(vol,convelint.Norm2(),convelint); //std::pow(vol,(1.0/dim));
 
   // artificial diffusivity
   double artdiff = 0.0;
@@ -629,13 +630,13 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcArtificialDiff(
   }
   else if (scatrapara_->ASSGDType() == INPAR::SCATRA::assgd_yzbeta)
   {
-    // phiref is the tuning parameter for this form of artifical diffusion
+   // phiref is the tuning parameter for this form of artificial diffusion
     const double phiref = 0.01;
 
     // gradient norm
     const double grad_norm = gradphi.Norm2();
 
-    if (phiref > EPS8 and grad_norm > EPS8)
+    if (phiref > EPS12 and grad_norm > EPS12)
     {
       // normalized gradient of phi
       LINALG::Matrix<nsd_,1> normalized_gradphi(true);
@@ -653,7 +654,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcArtificialDiff(
         h_sum += std::abs(val);
       }
       double h_dc(0.0);
-      if (h_sum > EPS8)
+      if (h_sum > EPS12)
         h_dc = 2.0/h_sum;
       else
         h_dc = h;
@@ -665,7 +666,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcArtificialDiff(
         double val = gradphi(idim,0)/phiref;
         kappa_inter += (val*val);
       }
-      if (kappa_inter < EPS10) dserror("Too low value");
+//      if (kappa_inter < EPS10) dserror("Too low value");
 
       // smoothness parameter beta: 1 (smoother layers) or 2 (sharper layers)
       // note for 1.0, this form is equivalent to the Codina form above, except
@@ -810,14 +811,16 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcArtificialDiff(
       artdiff = sigma*scatrares*specific_term/(grad_norm*grad_norm);
       if (artdiff < 0.0)
       {
-        std::cout << "WARNING: isotropic artificial diffusion sgdiff < 0.0\n";
-        std::cout << "         -> set sgdiff to abs(sgdiff)!" << std::endl;
+//        std::cout << "WARNING: isotropic artificial diffusion sgdiff < 0.0\n";
+//        std::cout << "         -> set sgdiff to abs(sgdiff)!" << std::endl;
         artdiff = abs(sigma*scatrares*specific_term/(grad_norm*grad_norm));
       }
     }
     else artdiff = 0.0;
   }
 
+//  if (artdiff>EPS8)
+//    std::cout<<__FILE__<<__LINE__<<"\t artdiff=\t"<<artdiff<<std::endl;
   diffmanager_->SetIsotropicSubGridDiff(artdiff,k);
 
   return;

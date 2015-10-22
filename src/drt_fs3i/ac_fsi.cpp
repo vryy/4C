@@ -431,10 +431,13 @@ void FS3I::ACFSI::IsFsiPeriodic()
 
   const double wk_rel_tol = DRT::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<double>("WINDKESSEL_REL_TOL");
 
+  if (Comm().MyPID()==0)
+    std::cout<<std::endl;
+
   for (unsigned int i=0; i<wk_rel_errors.size(); i++)
   {
     if (Comm().MyPID()==0)
-      std::cout<<"\n"<<std::scientific<<std::setprecision(2)<<"The "<<i+1<<"-th Windkessel has an relative error of "<<abs(wk_rel_errors[i])<<std::endl;
+      std::cout<<std::scientific<<std::setprecision(2)<<"The "<<i+1<<"-th Windkessel has an relative error of "<<abs(wk_rel_errors[i])<<std::endl;
 
     if ( abs(wk_rel_errors[i]) > wk_rel_tol)
       fsiisperiodic_ = false;
@@ -512,7 +515,7 @@ void FS3I::ACFSI::DoFSIStepPeriodic()
     std::cout<<"\n************************************************************************"
                "\n                         PERIODICAL FSI STEP"
                "\n************************************************************************\n"
-               "\n Using results from timestep "<<previousperiodstep<<" as solution of the current FSI step"<<std::endl;
+               "\nUsing results from timestep "<<previousperiodstep<<" as solution of the current FSI step"<<std::endl;
   }
 
   //do the reading

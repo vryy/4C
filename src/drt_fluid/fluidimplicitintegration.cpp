@@ -1257,10 +1257,10 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
       discret_->SetState("dispnp", dispn_);
 
     //Do actual calculations
-    impedancebc_->FlowRateCalculation(time_,dta_);
+    impedancebc_->FlowRateCalculation(time_);
     impedancebc_->OutflowBoundary(time_,dta_);
-    // update impedance boundary condition
-    impedancebc_->UpdateResidual(residual_);
+    // update residual and sysmat with impedance boundary conditions
+    impedancebc_->UpdateResidual(residual_,sysmat_);
   }
 
   //----------------------------------------------------------------------
@@ -5237,6 +5237,14 @@ void FLD::FluidImplicitTimeInt::UseBlockMatrix(Teuchos::RCP<std::set<int> >     
     mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
     mat->SetCondElements(condelements);
     sysmat_ = mat;
+
+    if (nonlinearbc_)
+    {
+      if (isimpedancebc_)
+      {
+        impedancebc_->UseBlockMatrix(condelements,domainmaps,rangemaps,splitmatrix);
+      }
+    }
   }
 
   // if we never build the matrix nothing will be done
