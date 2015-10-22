@@ -2328,10 +2328,21 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
     // subtract EAS matrices from disp-based Kdd to "soften" element
     if (eastype_ != soh8_easnone)
     {
-      // we need the inverse of Kaa
-      Epetra_SerialDenseSolver solve_for_inverseKaa;
-      solve_for_inverseKaa.SetMatrix(Kaa);
-      solve_for_inverseKaa.Invert();
+      // we need the inverse of Kaa. Catch Inf/NaN case
+      const double norm1 = Kaa.OneNorm();
+      if (std::isnan(norm1) || std::isinf(norm1) || norm1 == 0.)
+      {
+        for (int i=0; i<Kaa.N(); ++i)
+          for (int j=0; j<Kaa.M(); ++j)
+            Kaa(j,i) = std::numeric_limits<double>::quiet_NaN();
+      }
+      else
+      {
+        Epetra_SerialDenseSolver solve_for_inverseKaa;
+        solve_for_inverseKaa.SetMatrix(Kaa);
+        solve_for_inverseKaa.Invert();
+      }
+
       // EAS-stiffness matrix is: Kdd - Kda^T . Kaa^-1 . Kda
       // EAS-internal force is: fint - Kda^T . Kaa^-1 . feas
 
