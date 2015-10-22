@@ -23,10 +23,7 @@ Maintainer: Matthias Mayr
 #include <Xpetra_MultiVectorFactory.hpp>
 
 // MueLu
-//#include <MueLu_Hierarchy.hpp>
 #include <MueLu_HierarchyManager.hpp>
-#include <MueLu_MapTransferFactory_fwd.hpp>
-#include <MueLu_MLParameterListInterpreter.hpp> // ToDo (mayr) To be removed
 #include <MueLu_ParameterListInterpreter.hpp>
 #include <MueLu_Utilities.hpp>
 
@@ -41,12 +38,6 @@ Maintainer: Matthias Mayr
 #include <Epetra_Comm.h>
 #include <Epetra_MultiVector.h>
 #include <Epetra_Vector.h>
-
-// NOX
-#include <NOX_Abstract_Group.H>
-#include <NOX_Epetra_MultiVector.H>
-#include <NOX_Epetra_Vector.H>
-#include <NOX_StatusTest_Combo.H>
 
 // standard
 #include <iostream>
