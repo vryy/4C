@@ -1591,13 +1591,17 @@ void CAVITATION::Algorithm::SetupGhosting(
       redufluideleset.insert(iter->second.begin(),iter->second.end());
     }
 
-    // add fluid elements from standard ghosting
-    // -> this is necessary to recover standard ghosting in case bins are smaller than fluid elements
-    // this leads to ghost elements which are essential for evaluating the fluid and not for coupling with particles
-    std::map<int, std::set<int> >::const_iterator ghostiter;
-    for(ghostiter=ghostfluideles.begin(); ghostiter!= ghostfluideles.end(); ++ghostiter)
+    // add all standard fluid elements (row + ghost)
+    // -> this is necessary to recover at least standard ghosting
+    // this leads to fluid elements which are essential for evaluating the fluid and not for coupling with particles
+    for(iter=ghostfluideles.begin(); iter!= ghostfluideles.end(); ++iter)
     {
-      redufluideleset.insert(ghostiter->second.begin(), ghostiter->second.end());
+      redufluideleset.insert(iter->second.begin(), iter->second.end());
+    }
+    // ownership must not be changed during setup of extended ghosting
+    for(iter=rowfluideles.begin(); iter!= rowfluideles.end(); ++iter)
+    {
+      redufluideleset.insert(iter->second.begin(),iter->second.end());
     }
 
     std::vector<int> fluidcolgids(redufluideleset.begin(),redufluideleset.end());
