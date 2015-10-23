@@ -133,6 +133,14 @@ namespace NLNSOL
         Epetra_MultiVector& fc ///< current residual on coarse level (to be filled)
         ) const;
 
+    /*! \brief Compute the modified residual on a coarse level
+     *
+     *  \author mayr.mt \date 06/2014
+     */
+    virtual Teuchos::RCP<const Epetra_MultiVector> ComputeF(
+        const Epetra_MultiVector& xc ///< current solution on coarse level
+        ) const;
+
     /*! \brief Compute the plain residual on a coarse level
      *
      *  This is an ComputeF() in a variational way. Hence, we compute
@@ -145,7 +153,7 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 10/2015
      */
-    virtual Teuchos::RCP<Epetra_MultiVector> ComputePlainF(
+    virtual Teuchos::RCP<const Epetra_MultiVector> ComputePlainF(
         const Epetra_MultiVector& xc ///< current solution on coarse level
         ) const;
 

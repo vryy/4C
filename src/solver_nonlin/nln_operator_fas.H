@@ -185,14 +185,23 @@ namespace NLNSOL
 
     //! Entry to all kind of multigrid cycles
     virtual const int Cycle(
-        Teuchos::RCP<Epetra_MultiVector>& xbar, ///< solution from finer level
-        const int level ///< level ID
+        Teuchos::RCP<Epetra_MultiVector> xbar ///< solution from finer level
         ) const;
 
     //! V-Cycle (recursive definition)
     virtual const int VCycle(
-        Teuchos::RCP<Epetra_MultiVector>& xbar, ///< solution from finer level
+        Teuchos::RCP<Epetra_MultiVector> xbar, ///< solution from finer level
         const int level ///< level ID
+        ) const;
+
+    //! V-Cycle with 2 levels (explicit definition)
+    virtual const int VCycleTwoLevel(
+        Teuchos::RCP<Epetra_MultiVector> x ///< solution on level 0
+        ) const;
+
+    //! V-Cycle with 3 levels (explicit definition)
+    virtual const int VCycleThreeLevel(
+        Teuchos::RCP<Epetra_MultiVector> x ///< solution on level 0
         ) const;
 
     //! W-Cycle // ToDo (mayr) implement W-Cycle

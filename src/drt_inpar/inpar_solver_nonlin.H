@@ -30,7 +30,9 @@ namespace FAS
   enum CycleType
   {
     cycle_none, ///< no type chosen
-    cycle_v, ///< V-cycle
+    cycle_v, ///< V-cycle (recursive definition)
+    cycle_v_two_level, ///< V-cycle with 2 levels (explicit definition)
+    cycle_v_three_level, ///< V-cycle with 3 levels (explicit definition)
     cycle_w ///< W-cycle
   };
 } // namespace FAS

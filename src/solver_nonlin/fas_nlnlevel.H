@@ -227,7 +227,7 @@ namespace FAS
      *  \date 10/2013
      */
     virtual int DoPreSmoothing(
-        const Epetra_MultiVector& fhatbar, ///< residual correction \f$-\hat{F}+\bar{F}\f$
+        const Epetra_MultiVector& f, ///< residual
         Epetra_MultiVector& x ///< solution
         ) const;
 
@@ -239,7 +239,7 @@ namespace FAS
      *  \date 10/2013
      */
     virtual int DoPostSmoothing(
-        const Epetra_MultiVector& fhatbar, ///< residual correction \f$-\hat{F}+\bar{F}\f$
+        const Epetra_MultiVector& f, ///< residual
         Epetra_MultiVector& x ///< solution
         ) const;
 

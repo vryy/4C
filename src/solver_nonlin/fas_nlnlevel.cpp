@@ -103,7 +103,7 @@ void NLNSOL::FAS::NlnLevel::Setup()
   NLNSOL::NlnOperatorFactory operatorfactory;
 
   // create coarse level solver if this level is the coarsest level
-  if (LevelID() == NumLevels() - 1)
+  if (IsCoarsestLevel())
   {
     coarsesolver_ =
         operatorfactory.Create(Params().sublist("Coarse Level Solver"));
@@ -367,9 +367,8 @@ Teuchos::RCP<NLNSOL::NlnProblem> NLNSOL::FAS::NlnLevel::NlnProblem() const
 }
 
 /*----------------------------------------------------------------------------*/
-int NLNSOL::FAS::NlnLevel::DoPreSmoothing(const Epetra_MultiVector& fhatbar,
-                                          Epetra_MultiVector& x
-                                          ) const
+int NLNSOL::FAS::NlnLevel::DoPreSmoothing(const Epetra_MultiVector& f,
+    Epetra_MultiVector& x) const
 {
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
   if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
@@ -381,13 +380,15 @@ int NLNSOL::FAS::NlnLevel::DoPreSmoothing(const Epetra_MultiVector& fhatbar,
              << std::endl;
   }
 
-  return presmoother_->ApplyInverse(fhatbar, x);
+  if (not DofRowMap().PointSameAs(x.Map()))
+    dserror("Maps do not match.");
+
+  return presmoother_->ApplyInverse(f, x);
 }
 
 /*----------------------------------------------------------------------------*/
-int NLNSOL::FAS::NlnLevel::DoPostSmoothing(const Epetra_MultiVector& fhatbar,
-                                           Epetra_MultiVector& x
-                                           ) const
+int NLNSOL::FAS::NlnLevel::DoPostSmoothing(const Epetra_MultiVector& f,
+    Epetra_MultiVector& x) const
 {
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
   if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
@@ -399,13 +400,15 @@ int NLNSOL::FAS::NlnLevel::DoPostSmoothing(const Epetra_MultiVector& fhatbar,
              << std::endl;
   }
 
-  return postsmoother_->ApplyInverse(fhatbar,x);
+  if (not DofRowMap().PointSameAs(x.Map()))
+    dserror("Maps do not match.");
+
+  return postsmoother_->ApplyInverse(f,x);
 }
 
 /*----------------------------------------------------------------------------*/
 int NLNSOL::FAS::NlnLevel::DoCoarseLevelSolve(const Epetra_MultiVector& f,
-                                              Epetra_MultiVector& x
-                                              ) const
+    Epetra_MultiVector& x) const
 {
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
   if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
@@ -420,6 +423,9 @@ int NLNSOL::FAS::NlnLevel::DoCoarseLevelSolve(const Epetra_MultiVector& f,
         << ", now."
         << std::endl;
   }
+
+  if (not DofRowMap().PointSameAs(x.Map()))
+    dserror("Maps do not match.");
 
   return coarsesolver_->ApplyInverse(f,x);
 }

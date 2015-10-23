@@ -81,23 +81,34 @@ void NLNSOL::NlnProblemCoarseLevel::ComputeF(const Epetra_MultiVector& xc,
   if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
 
   // evaluate the plain residual
-  Teuchos::RCP<Epetra_MultiVector> fcoarse = ComputePlainF(xc);
+  Teuchos::RCP<const Epetra_MultiVector> fcoarse = ComputePlainF(xc);
+
+  // copy result to provided output variable
+  err = fc.Update(1.0, *fcoarse, 0.0);
+  if (err != 0) { dserror("Update failed."); }
 
   // apply coarse grid residual corrections
   if (fhat_.is_null()) { dserror("Residual correction 'fhat_' not set, yet."); }
   if (fbar_.is_null()) { dserror("Residual correction 'fbar_' not set, yet."); }
-  err = fcoarse->Update(-1.0, *fhat_, 1.0, *fbar_, 1.0);
-  if (err != 0) { dserror("Update failed."); }
-
-  // copy result to provided output variable
-  err = fc.Update(1.0, *fcoarse, 0.0);
+  err = fc.Update(-1.0, *fhat_, 1.0, *fbar_, 1.0);
   if (err != 0) { dserror("Update failed."); }
 
   return;
 }
 
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector>
+Teuchos::RCP<const Epetra_MultiVector> NLNSOL::NlnProblemCoarseLevel::ComputeF(
+    const Epetra_MultiVector& x) const
+{
+  Teuchos::RCP<Epetra_MultiVector> f =
+      Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
+  ComputeF(x, *f);
+
+  return f;
+}
+
+/*----------------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_MultiVector>
 NLNSOL::NlnProblemCoarseLevel::ComputePlainF(const Epetra_MultiVector& xc) const
 {
   // time measurements
@@ -106,7 +117,7 @@ NLNSOL::NlnProblemCoarseLevel::ComputePlainF(const Epetra_MultiVector& xc) const
   Teuchos::TimeMonitor monitor(*time);
 
   // prolongate current solution to fine level
-  Teuchos::RCP<Epetra_MultiVector> xf =
+  Teuchos::RCP<const Epetra_MultiVector> xf =
       Hierarchy().ProlongateToFineLevel(xc, levelid_);
 
   // call evaluate on the fine level
@@ -115,7 +126,7 @@ NLNSOL::NlnProblemCoarseLevel::ComputePlainF(const Epetra_MultiVector& xc) const
   NLNSOL::NlnProblem::ComputeF(*xf,*ffine);
 
   // restrict fine level residual to current coarse level
-  Teuchos::RCP<Epetra_MultiVector> fcoarse =
+  Teuchos::RCP<const Epetra_MultiVector> fcoarse =
       Hierarchy().RestrictToCoarseLevel(*ffine, levelid_);
 
   if (fcoarse.is_null()) { dserror("fcoarse is a null pointer."); }

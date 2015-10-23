@@ -163,6 +163,14 @@ namespace NLNSOL
         Epetra_MultiVector& f ///< current residual (to be filled)
         ) const;
 
+    /*! \brief Compute nonlinear residual \f$F(x)\f$
+     *
+     *  \author mayr.mt \date 10/2015
+     */
+    virtual Teuchos::RCP<const Epetra_MultiVector> ComputeF(
+        const Epetra_MultiVector& x ///< current solution
+        ) const;
+
     /*! \brief Compute the plain residual on a coarse level
      *
      *  Since we are already on the fine level, we just call ComputeF().
@@ -174,7 +182,7 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 10/2015
      */
-    virtual Teuchos::RCP<Epetra_MultiVector> ComputePlainF(
+    virtual Teuchos::RCP<const Epetra_MultiVector> ComputePlainF(
         const Epetra_MultiVector& xc ///< current solution on coarse level
         ) const;
 

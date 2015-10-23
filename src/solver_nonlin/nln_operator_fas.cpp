@@ -71,6 +71,10 @@ void NLNSOL::NlnOperatorFas::Setup()
 //      Params().sublist("FAS: MueLu Parameters").get<std::string>("cycle type");
   if (cycletype == "V")
     cycletype_ = INPAR::NLNSOL::FAS::cycle_v;
+  else if (cycletype == "V 2-level")
+    cycletype_ = INPAR::NLNSOL::FAS::cycle_v_two_level;
+  else if (cycletype == "V 3-level")
+    cycletype_ = INPAR::NLNSOL::FAS::cycle_v_three_level;
   else if (cycletype == "W")
     cycletype_ = INPAR::NLNSOL::FAS::cycle_w;
   else
@@ -78,18 +82,6 @@ void NLNSOL::NlnOperatorFas::Setup()
 
   // Setup() has been called
   SetIsSetup();
-
-  return;
-}
-
-/*----------------------------------------------------------------------------*/
-void NLNSOL::NlnOperatorFas::RebuildPrecConst() const
-{
-  if (hierarchy_.is_null())
-    dserror("Hierarchy of multigrid levels 'hierarchy_' is not set, yet.");
-
-  NlnProblem()->ComputeJacobian();
-  hierarchy_->RefreshRAPs();
 
   return;
 }
@@ -109,20 +101,19 @@ int NLNSOL::NlnOperatorFas::ApplyInverse(const Epetra_MultiVector& f_do_not_use,
   if (not IsInit())  { dserror("Init() has not been called, yet."); }
   if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
 
-  // local copy of residual that can be modified
-  Teuchos::RCP<Epetra_MultiVector> f =
-      Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
-  NlnProblem()->ComputeF(x, *f);
-
   // local copy of solution to work with
   Teuchos::RCP<Epetra_MultiVector> xtmp =
       Teuchos::rcp(new Epetra_MultiVector(x));
 
+  // residual
+  Teuchos::RCP<Epetra_MultiVector> f =
+      Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
+  NlnProblem()->ComputeF(*xtmp, *f);
+
+  // initial residual norm
   double fnorm2 = 1.0e+12;
   bool converged = NlnProblem()->ConvergenceCheck(*f, fnorm2);
-
-  *getOStream() << std::setprecision(12) << std::scientific;
-  *getOStream() << "Starting FAS with residual norm = " << fnorm2 << std::endl;
+  PrintIterSummary(0, fnorm2);
 
   Teuchos::RCP<NLNSOL::UTILS::StagnationDetection> stagdetect =
       Teuchos::rcp(new NLNSOL::UTILS::StagnationDetection());
@@ -141,7 +132,7 @@ int NLNSOL::NlnOperatorFas::ApplyInverse(const Epetra_MultiVector& f_do_not_use,
     }
 
     // call generic cycling routine
-    Cycle(xtmp, 0);
+    Cycle(xtmp);
 
     // Evaluate and check for convergence
     NlnProblem()->ComputeF(*xtmp, *f);
@@ -189,8 +180,8 @@ int NLNSOL::NlnOperatorFas::ApplyInverse(const Epetra_MultiVector& f_do_not_use,
 }
 
 /*----------------------------------------------------------------------------*/
-const int NLNSOL::NlnOperatorFas::Cycle(Teuchos::RCP<Epetra_MultiVector>& x,
-    const int level) const
+const int NLNSOL::NlnOperatorFas::Cycle(
+    Teuchos::RCP<Epetra_MultiVector> x) const
 {
   // error code
   int err = 0;
@@ -206,7 +197,17 @@ const int NLNSOL::NlnOperatorFas::Cycle(Teuchos::RCP<Epetra_MultiVector>& x,
   }
   case INPAR::NLNSOL::FAS::cycle_v:
   {
-    err = VCycle(x, level);
+    err = VCycle(x, 0); // start recursive V-Cycle on level 0
+    break;
+  }
+  case INPAR::NLNSOL::FAS::cycle_v_two_level:
+  {
+    err = VCycleTwoLevel(x);
+    break;
+  }
+  case INPAR::NLNSOL::FAS::cycle_v_three_level:
+  {
+    err = VCycleThreeLevel(x);
     break;
   }
   case INPAR::NLNSOL::FAS::cycle_w:
@@ -226,10 +227,10 @@ const int NLNSOL::NlnOperatorFas::Cycle(Teuchos::RCP<Epetra_MultiVector>& x,
 }
 
 /*----------------------------------------------------------------------------*/
-const int NLNSOL::NlnOperatorFas::VCycle(Teuchos::RCP<Epetra_MultiVector>& xbar,
+const int NLNSOL::NlnOperatorFas::VCycle(Teuchos::RCP<Epetra_MultiVector> xbar,
     const int level) const
 {
-  *getOStream() << "Entering VCycle on level " << level << std::endl;
+  *getOStream() << "Entering recursive V-Cycle on level " << level << std::endl;
 
   // error code
   int err = 0;
@@ -257,8 +258,8 @@ const int NLNSOL::NlnOperatorFas::VCycle(Teuchos::RCP<Epetra_MultiVector>& xbar,
       xc = Hierarchy()->NlnLevel(level + 1)->RestrictToNextCoarserLevel(xc);
 
       // restrict current residual (this will be 'fbar' on next coarser level)
-      Teuchos::RCP<Epetra_MultiVector> fc =
-          Hierarchy()->NlnLevel(level)->NlnProblem()->ComputePlainF(*x);
+      Teuchos::RCP<const Epetra_MultiVector> fc =
+          Hierarchy()->NlnLevel(level)->NlnProblem()->ComputeF(*x);
       fc = Hierarchy()->NlnLevel(level + 1)->RestrictToNextCoarserLevel(fc);
 
       Hierarchy()->NlnLevel(level + 1)->NlnProblem()->SetupResidualModification(
@@ -297,6 +298,147 @@ const int NLNSOL::NlnOperatorFas::VCycle(Teuchos::RCP<Epetra_MultiVector>& xbar,
   *getOStream() << "Leaving VCycle on level " << level << std::endl;
 
   return err;
+}
+
+/*----------------------------------------------------------------------------*/
+const int NLNSOL::NlnOperatorFas::VCycleTwoLevel(
+    Teuchos::RCP<Epetra_MultiVector> x) const
+{
+  *getOStream() << "Starting explicit 2-level V-Cycle." << std::endl;
+
+  // error code
+  int err = 0;
+
+  // level 0
+  {
+    PreSmoothing(*x, 0);
+  }
+
+  // level 1 (= coarse level)
+  Teuchos::RCP<Epetra_MultiVector> xc = // solution vector on coarse level
+        Teuchos::rcp(new Epetra_MultiVector(*x));
+  {
+    // -----------------------------------------------------------------------
+    // prepare next coarser level
+    // -----------------------------------------------------------------------
+    // restrict current solution
+    xc = Hierarchy()->NlnLevel(1)->RestrictToNextCoarserLevel(xc);
+
+    // store 'xc' as 'xbar'
+    Teuchos::RCP<const Epetra_MultiVector> xbar =
+        Teuchos::rcp(new Epetra_MultiVector(*xc));
+
+    // restrict current residual (this will be 'fbar' on next coarser level)
+    Teuchos::RCP<const Epetra_MultiVector> fc =
+        Hierarchy()->NlnLevel(0)->NlnProblem()->ComputePlainF(*x);
+    fc = Hierarchy()->NlnLevel(1)->RestrictToNextCoarserLevel(fc);
+
+    Hierarchy()->NlnLevel(1)->NlnProblem()->SetupResidualModification(xc, fc);
+
+    CoarseLevelSolve(*xc, 1);
+
+    // compute coarse level correction
+    err = xc->Update(-1.0, *xbar, 1.0);
+    if (err != 0) { dserror("Update failed."); }
+  }
+
+  // level 0
+  {
+    // apply coarse level correction
+    xc = Hierarchy()->NlnLevel(1)->ProlongateToNextFinerLevel(xc);
+    err = x->Update(1.0, *xc, 1.0);
+    if (err != 0) { dserror("Update failed."); }
+
+    PostSmoothing(*x, 0);
+  }
+
+  *getOStream() << "Leaving explicit 2-level V-Cycle." << std::endl;
+
+  return 0;
+}
+
+/*----------------------------------------------------------------------------*/
+const int NLNSOL::NlnOperatorFas::VCycleThreeLevel(
+    Teuchos::RCP<Epetra_MultiVector> x) const
+{
+  *getOStream() << "Starting explicit 3-level V-Cycle." << std::endl;
+
+  // error code
+  int err = 0;
+
+  // level 0 (= fine level)
+  PreSmoothing(*x, 0);
+
+  // level 1 (= medium level)
+  Teuchos::RCP<Epetra_MultiVector> xc = // solution vector on medium level
+      Teuchos::rcp(new Epetra_MultiVector(*x));
+  // -----------------------------------------------------------------------
+  // prepare next coarser level
+  // -----------------------------------------------------------------------
+  // restrict current solution
+  xc = Hierarchy()->NlnLevel(1)->RestrictToNextCoarserLevel(xc);
+
+  // store 'xc' as 'xbar'
+  Teuchos::RCP<const Epetra_MultiVector> xcbar =
+      Teuchos::rcp(new Epetra_MultiVector(*xc));
+
+  // restrict current residual (this will be 'fbar' on next coarser level)
+  Teuchos::RCP<const Epetra_MultiVector> fc =
+      Hierarchy()->NlnLevel(0)->NlnProblem()->ComputeF(*x);
+  fc = Hierarchy()->NlnLevel(1)->RestrictToNextCoarserLevel(fc);
+
+  Hierarchy()->NlnLevel(1)->NlnProblem()->SetupResidualModification(xc, fc);
+
+  PreSmoothing(*xc, 1);
+
+  // level 2 (= coarse level)
+  Teuchos::RCP<Epetra_MultiVector> xcc = // solution vector on coarse level
+      Teuchos::rcp(new Epetra_MultiVector(*xc));
+  // -----------------------------------------------------------------------
+  // prepare next coarser level
+  // -----------------------------------------------------------------------
+  // restrict current solution
+  xcc = Hierarchy()->NlnLevel(2)->RestrictToNextCoarserLevel(xcc);
+
+  // store 'xc' as 'xbar'
+  Teuchos::RCP<const Epetra_MultiVector> xccbar =
+      Teuchos::rcp(new Epetra_MultiVector(*xcc));
+
+  // restrict current residual (this will be 'fbar' on next coarser level)
+  Teuchos::RCP<const Epetra_MultiVector> fcc =
+      Hierarchy()->NlnLevel(1)->NlnProblem()->ComputeF(*xc);
+  fcc = Hierarchy()->NlnLevel(2)->RestrictToNextCoarserLevel(fcc);
+
+  Hierarchy()->NlnLevel(2)->NlnProblem()->SetupResidualModification(xcc, fcc);
+
+  CoarseLevelSolve(*xcc, 2);
+
+  // compute coarse level correction
+  err = xcc->Update(-1.0, *xccbar, 1.0);
+  if (err != 0) { dserror("Update failed."); }
+
+  // apply coarse level correction
+  xcc = Hierarchy()->NlnLevel(2)->ProlongateToNextFinerLevel(xcc);
+  err = xc->Update(1.0, *xcc, 1.0);
+  if (err != 0) { dserror("Update failed."); }
+
+  PostSmoothing(*xc, 1);
+
+  // compute coarse level correction
+  err = xc->Update(-1.0, *xcbar, 1.0);
+  if (err != 0) { dserror("Update failed."); }
+
+  // level 0 (= fine level)
+  // apply coarse level correction
+  xc = Hierarchy()->NlnLevel(1)->ProlongateToNextFinerLevel(xc);
+  err = x->Update(1.0, *xc, 1.0);
+  if (err != 0) { dserror("Update failed."); }
+
+  PostSmoothing(*x, 0);
+
+  *getOStream() << "Leaving explicit 3-level V-Cycle." << std::endl;
+
+  return 0;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -365,6 +507,18 @@ NLNSOL::NlnOperatorFas::Hierarchy() const
 
 /*----------------------------------------------------------------------------*/
 void NLNSOL::NlnOperatorFas::RebuildPrec()
+{
+  if (hierarchy_.is_null())
+    dserror("Hierarchy of multigrid levels 'hierarchy_' is not set, yet.");
+
+  NlnProblem()->ComputeJacobian();
+  hierarchy_->RefreshRAPs();
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*/
+void NLNSOL::NlnOperatorFas::RebuildPrecConst() const
 {
   if (hierarchy_.is_null())
     dserror("Hierarchy of multigrid levels 'hierarchy_' is not set, yet.");

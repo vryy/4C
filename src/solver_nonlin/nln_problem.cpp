@@ -158,7 +158,19 @@ void NLNSOL::NlnProblem::ComputeF(const Epetra_MultiVector& x,
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> NLNSOL::NlnProblem::ComputePlainF(
+Teuchos::RCP<const Epetra_MultiVector> NLNSOL::NlnProblem::ComputeF(
+    const Epetra_MultiVector& x) const
+{
+  Teuchos::RCP<Epetra_MultiVector> f =
+      Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
+  ComputeF(x, *f);
+
+  return f;
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_MultiVector> NLNSOL::NlnProblem::ComputePlainF(
     const Epetra_MultiVector& x) const
 {
   Teuchos::RCP<Epetra_MultiVector> f =
