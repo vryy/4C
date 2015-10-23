@@ -78,13 +78,14 @@ void cpp_dserror_func(const char* text, ...)
   MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
   MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
 
-  char errbuf[4096];
+  const std::size_t BUFLEN = 8192;
+  char errbuf[BUFLEN];
 
   va_list ap;
   va_start(ap, text);
 
-  sprintf(errbuf,"PROC %d ERROR in %s, line %i:\n",myrank,latest_file.c_str(),latest_line);
-  vsprintf(&errbuf[strlen(errbuf)],text,ap);
+  snprintf(errbuf,BUFLEN,"PROC %d ERROR in %s, line %i:\n",myrank,latest_file.c_str(),latest_line);
+  vsnprintf(&errbuf[strlen(errbuf)],BUFLEN-strlen(errbuf),text,ap);
 
 #ifdef ENABLE_STACKTR
 // print stacktrace
@@ -95,7 +96,7 @@ void cpp_dserror_func(const char* text, ...)
   nptrs   = backtrace(buffer, 100);
   strings = backtrace_symbols(buffer, nptrs);
 
-  sprintf(&errbuf[strlen(errbuf)], "\n\n--- stacktrace ---");
+  snprintf(&errbuf[strlen(errbuf)], BUFLEN-strlen(errbuf), "\n\n--- stacktrace ---");
 
   // start stack trace where we actually got the error, not this function
   int frame = 0;
@@ -163,19 +164,19 @@ void cpp_dserror_func(const char* text, ...)
     int status;
     char *p = abi::__cxa_demangle(functionname.c_str(), 0, 0, &status);
     if (status == 0)
-      sprintf(&errbuf[strlen(errbuf)], "\n[%2d]: %s%s", frame-startframe, p, filename.c_str());
+      snprintf(&errbuf[strlen(errbuf)], BUFLEN-strlen(errbuf), "\n[%2d]: %s%s", frame-startframe, p, filename.c_str());
     else
-      sprintf(&errbuf[strlen(errbuf)], "\n[%2d]: %s%s", frame-startframe, functionname.c_str(), filename.c_str());
+      snprintf(&errbuf[strlen(errbuf)], BUFLEN-strlen(errbuf), "\n[%2d]: %s%s", frame-startframe, functionname.c_str(), filename.c_str());
     free(p);
 
     if (functionname == "main")
       break;
 
 #else
-    sprintf(&errbuf[strlen(errbuf)], "\n[%2d]: %s", frame-startframe, entry.c_str());
+    snprintf(&errbuf[strlen(errbuf)], BUFLEN-strlen(errbuf), "\n[%2d]: %s", frame-startframe, entry.c_str());
 #endif
   }
-  sprintf(&errbuf[strlen(errbuf)], "\n------------------\n");
+  snprintf(&errbuf[strlen(errbuf)], BUFLEN-strlen(errbuf), "\n------------------\n");
 
   free(strings);
 #endif
