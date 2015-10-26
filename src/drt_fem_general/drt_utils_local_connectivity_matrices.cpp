@@ -377,202 +377,227 @@ std::vector< std::vector<int> > DRT::UTILS::getEleNodeNumberingFaces(
 std::vector< std::vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(
     const DRT::Element::DiscretizationType&     distype)
 {
-    std::vector< std::vector<int> >   map;
+  std::vector< std::vector<int> >   map;
 
-    switch(distype)
+  switch(distype)
+  {
+  case DRT::Element::hex8:
+  {
+    const int nSurf = 6;
+    const int nNode = 4;
+    std::vector<int> submap(nNode, 0);
+    for(int i = 0; i < nSurf; i++)
     {
-        case DRT::Element::hex8:
-        {
-            const int nSurf = 6;
-            const int nNode = 4;
-            std::vector<int> submap(nNode, 0);
-            for(int i = 0; i < nSurf; i++)
-            {
-                map.push_back(submap);
-                for(int j = 0; j < nNode; j++)
-                    map[i][j] = eleNodeNumbering_hex27_surfaces[i][j];
-            }
-            break;
-        }
-        case DRT::Element::hex16:
-        {
-          const int nSurf_8=2;
-          const int nSurf_6=4;
-          const int nNode_8=8;
-          const int nNode_6=6;
-          std::vector<int> submap_8(nNode_8);
-          std::vector<int> submap_6(nNode_6);
-          for (int i=0; i<nSurf_8; i++)
-          {
-            for (int j=0; j<nNode_8; j++)
-              submap_8[j] = eleNodeNumbering_hex16_surfaces_q8[i][j];
-            map.push_back(submap_8);
-          }
-          for (int i=0; i<nSurf_6; i++)
-          {
-            for (int j=0; j<nNode_6; j++)
-              submap_6[j] = eleNodeNumbering_hex16_surfaces_q6[i][j];
-            map.push_back(submap_6);
-          }
-          break;
-        }
-        case DRT::Element::hex18:
-        {
-          const int nSurf_9=2;
-          const int nSurf_6=4;
-          const int nNode_9=9;
-          const int nNode_6=6;
-          std::vector<int> submap_9(nNode_9);
-          std::vector<int> submap_6(nNode_6);
-          for (int i=0; i<nSurf_9; i++)
-          {
-            for (int j=0; j<nNode_9; j++)
-              submap_9[j] = eleNodeNumbering_hex18_surfaces_q9[i][j];
-            map.push_back(submap_9);
-          }
-          for (int i=0; i<nSurf_6; i++)
-          {
-            for (int j=0; j<nNode_6; j++)
-              submap_6[j] = eleNodeNumbering_hex18_surfaces_q6[i][j];
-            map.push_back(submap_6);
-          }
-          break;
-        }
-        case DRT::Element::hex20:
-        {
-            const int nSurf = 6;
-            const int nNode = 8;
-            std::vector<int> submap(nNode, 0);
-            for(int i = 0; i < nSurf; i++)
-            {
-                map.push_back(submap);
-                for(int j = 0; j < nNode; j++)
-                    map[i][j] = eleNodeNumbering_hex27_surfaces[i][j];
-            }
-            break;
-        }
-        case DRT::Element::hex27:
-        {
-            const int nSurf = 6;
-            const int nNode = 9;
-            std::vector<int> submap(nNode, 0);
-            for(int i = 0; i < nSurf; i++)
-            {
-                map.push_back(submap);
-                for(int j = 0; j < nNode; j++)
-                    map[i][j] = eleNodeNumbering_hex27_surfaces[i][j];
-            }
-            break;
-        }
-        case DRT::Element::tet4:
-        {
-            const int nSurf = 4;
-            const int nNode = 3;
-            std::vector<int> submap(nNode, 0);
-            for(int i = 0; i < nSurf; i++)
-            {
-                map.push_back(submap);
-                for(int j = 0; j < nNode; j++)
-                    map[i][j] = eleNodeNumbering_tet10_surfaces[i][j];
-            }
-            break;
-        }
-        case DRT::Element::tet10:
-        {
-            const int nSurf = 4;
-            const int nNode = 6;
-            std::vector<int> submap(nNode, 0);
-            for(int i = 0; i < nSurf; i++)
-            {
-                map.push_back(submap);
-                for(int j = 0; j < nNode; j++)
-                    map[i][j] = eleNodeNumbering_tet10_surfaces[i][j];
-            }
-            break;
-        }
-        case DRT::Element::wedge6:
-        {
-            // quad surfaces
-            const int nqSurf = 3;
-            const int nqNode = 4;
-            std::vector<int> submapq(nqNode, 0);
-            for(int i = 0; i < nqSurf; i++)
-            {
-                map.push_back(submapq);
-                for(int j = 0; j < nqNode; j++)
-                    map[i][j] = eleNodeNumbering_wedge15_quadsurfaces[i][j];
-            }
-
-            // tri surfaces
-            const int ntSurf = 2;
-            const int ntNode = 3;
-            std::vector<int> submapt(ntNode, 0);
-            for(int i = 0; i < ntSurf; i++)
-            {
-                map.push_back(submapt);
-                for(int j = 0; j < ntNode; j++)
-                    map[i+nqSurf][j] = eleNodeNumbering_wedge15_trisurfaces[i][j];
-            }
-            break;
-        }
-        case DRT::Element::pyramid5:
-        {
-          // quad surfaces
-          const int nqSurf = 1;
-          const int nqNode = 4;
-          std::vector<int> submapq(nqNode, 0);
-          for(int i = 0; i < nqSurf; i++)
-          {
-              map.push_back(submapq);
-              for(int j = 0; j < nqNode; j++)
-                  map[i][j] = eleNodeNumbering_pyramid5_quadsurfaces[i][j];
-          }
-
-          // tri surfaces
-          const int ntSurf = 4;
-          const int ntNode = 3;
-          std::vector<int> submapt(ntNode, 0);
-          for(int i = 0; i < ntSurf; i++)
-          {
-              map.push_back(submapt);
-              for(int j = 0; j < ntNode; j++)
-                  map[i+1][j] = eleNodeNumbering_pyramid5_trisurfaces[i][j];
-          }
-          break;
-        }
-        case DRT::Element::nurbs8:
-        {
-          // nurbs 4 surfaces --- valid only on interpolated boundaries
-          const int nSurf = 6;
-          const int nNode = 4;
-          std::vector<int> submap(nNode, 0);
-          for(int i = 0; i < nSurf; i++)
-          {
-            map.push_back(submap);
-            for(int j = 0; j < nNode; j++)
-              map[i][j] = eleNodeNumbering_nurbs8_surfaces[i][j];
-          }
-          break;
-        }
-        case DRT::Element::nurbs27:
-        {
-          // nurbs 9 surfaces --- valid only on interpolated boundaries
-          const int nSurf = 6;
-          const int nNode = 9;
-          std::vector<int> submap(nNode, 0);
-          for(int i = 0; i < nSurf; i++)
-          {
-            map.push_back(submap);
-            for(int j = 0; j < nNode; j++)
-              map[i][j] = eleNodeNumbering_nurbs27_surfaces[i][j];
-          }
-          break;
-        }
-        default:
-          dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
+      map.push_back(submap);
+      for(int j = 0; j < nNode; j++)
+        map[i][j] = eleNodeNumbering_hex27_surfaces[i][j];
+    }
+    break;
+  }
+  case DRT::Element::hex16:
+  {
+    const int nSurf_8=2;
+    const int nSurf_6=4;
+    const int nNode_8=8;
+    const int nNode_6=6;
+    std::vector<int> submap_8(nNode_8);
+    std::vector<int> submap_6(nNode_6);
+    for (int i=0; i<nSurf_8; i++)
+    {
+      for (int j=0; j<nNode_8; j++)
+        submap_8[j] = eleNodeNumbering_hex16_surfaces_q8[i][j];
+      map.push_back(submap_8);
+    }
+    for (int i=0; i<nSurf_6; i++)
+    {
+      for (int j=0; j<nNode_6; j++)
+        submap_6[j] = eleNodeNumbering_hex16_surfaces_q6[i][j];
+      map.push_back(submap_6);
+    }
+    break;
+  }
+  case DRT::Element::hex18:
+  {
+    const int nSurf_9=2;
+    const int nSurf_6=4;
+    const int nNode_9=9;
+    const int nNode_6=6;
+    std::vector<int> submap_9(nNode_9);
+    std::vector<int> submap_6(nNode_6);
+    for (int i=0; i<nSurf_9; i++)
+    {
+      for (int j=0; j<nNode_9; j++)
+        submap_9[j] = eleNodeNumbering_hex18_surfaces_q9[i][j];
+      map.push_back(submap_9);
+    }
+    for (int i=0; i<nSurf_6; i++)
+    {
+      for (int j=0; j<nNode_6; j++)
+        submap_6[j] = eleNodeNumbering_hex18_surfaces_q6[i][j];
+      map.push_back(submap_6);
+    }
+    break;
+  }
+  case DRT::Element::hex20:
+  {
+    const int nSurf = 6;
+    const int nNode = 8;
+    std::vector<int> submap(nNode, 0);
+    for(int i = 0; i < nSurf; i++)
+    {
+      map.push_back(submap);
+      for(int j = 0; j < nNode; j++)
+        map[i][j] = eleNodeNumbering_hex27_surfaces[i][j];
+    }
+    break;
+  }
+  case DRT::Element::hex27:
+  {
+    const int nSurf = 6;
+    const int nNode = 9;
+    std::vector<int> submap(nNode, 0);
+    for(int i = 0; i < nSurf; i++)
+    {
+      map.push_back(submap);
+      for(int j = 0; j < nNode; j++)
+        map[i][j] = eleNodeNumbering_hex27_surfaces[i][j];
+    }
+    break;
+  }
+  case DRT::Element::tet4:
+  {
+    const int nSurf = 4;
+    const int nNode = 3;
+    std::vector<int> submap(nNode, 0);
+    for(int i = 0; i < nSurf; i++)
+    {
+      map.push_back(submap);
+      for(int j = 0; j < nNode; j++)
+        map[i][j] = eleNodeNumbering_tet10_surfaces[i][j];
+    }
+    break;
+  }
+  case DRT::Element::tet10:
+  {
+    const int nSurf = 4;
+    const int nNode = 6;
+    std::vector<int> submap(nNode, 0);
+    for(int i = 0; i < nSurf; i++)
+    {
+      map.push_back(submap);
+      for(int j = 0; j < nNode; j++)
+        map[i][j] = eleNodeNumbering_tet10_surfaces[i][j];
+    }
+    break;
+  }
+  case DRT::Element::wedge6:
+  {
+    // quad surfaces
+    const int nqSurf = 3;
+    const int nqNode = 4;
+    std::vector<int> submapq(nqNode, 0);
+    for(int i = 0; i < nqSurf; i++)
+    {
+      map.push_back(submapq);
+      for(int j = 0; j < nqNode; j++)
+        map[i][j] = eleNodeNumbering_wedge15_quadsurfaces[i][j];
     }
 
-    return map;
+    // tri surfaces
+    const int ntSurf = 2;
+    const int ntNode = 3;
+    std::vector<int> submapt(ntNode, 0);
+    for(int i = 0; i < ntSurf; i++)
+    {
+      map.push_back(submapt);
+      for(int j = 0; j < ntNode; j++)
+        map[i+nqSurf][j] = eleNodeNumbering_wedge15_trisurfaces[i][j];
+    }
+    break;
+  }
+  case DRT::Element::wedge15:
+  {
+    // quad surfaces
+    const int nqSurf = 3;
+    const int nqNode = 8;
+    std::vector<int> submapq(nqNode, 0);
+    for(int i = 0; i < nqSurf; i++)
+    {
+      map.push_back(submapq);
+      for(int j = 0; j < nqNode; j++)
+        map[i][j] = eleNodeNumbering_wedge15_quadsurfaces[i][j];
+    }
+
+    // tri surfaces
+    const int ntSurf = 2;
+    const int ntNode = 6;
+    std::vector<int> submapt(ntNode, 0);
+    for(int i = 0; i < ntSurf; i++)
+    {
+      map.push_back(submapt);
+      for(int j = 0; j < ntNode; j++)
+        map[i+nqSurf][j] = eleNodeNumbering_wedge15_trisurfaces[i][j];
+    }
+    break;
+  }
+  case DRT::Element::pyramid5:
+  {
+    // quad surfaces
+    const int nqSurf = 1;
+    const int nqNode = 4;
+    std::vector<int> submapq(nqNode, 0);
+    for(int i = 0; i < nqSurf; i++)
+    {
+      map.push_back(submapq);
+      for(int j = 0; j < nqNode; j++)
+        map[i][j] = eleNodeNumbering_pyramid5_quadsurfaces[i][j];
+    }
+
+    // tri surfaces
+    const int ntSurf = 4;
+    const int ntNode = 3;
+    std::vector<int> submapt(ntNode, 0);
+    for(int i = 0; i < ntSurf; i++)
+    {
+      map.push_back(submapt);
+      for(int j = 0; j < ntNode; j++)
+        map[i+1][j] = eleNodeNumbering_pyramid5_trisurfaces[i][j];
+    }
+    break;
+  }
+  case DRT::Element::nurbs8:
+  {
+    // nurbs 4 surfaces --- valid only on interpolated boundaries
+    const int nSurf = 6;
+    const int nNode = 4;
+    std::vector<int> submap(nNode, 0);
+    for(int i = 0; i < nSurf; i++)
+    {
+      map.push_back(submap);
+      for(int j = 0; j < nNode; j++)
+        map[i][j] = eleNodeNumbering_nurbs8_surfaces[i][j];
+    }
+    break;
+  }
+  case DRT::Element::nurbs27:
+  {
+    // nurbs 9 surfaces --- valid only on interpolated boundaries
+    const int nSurf = 6;
+    const int nNode = 9;
+    std::vector<int> submap(nNode, 0);
+    for(int i = 0; i < nSurf; i++)
+    {
+      map.push_back(submap);
+      for(int j = 0; j < nNode; j++)
+        map[i][j] = eleNodeNumbering_nurbs27_surfaces[i][j];
+    }
+    break;
+  }
+  default:
+    dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
+  }
+
+  return map;
 }
 
 
