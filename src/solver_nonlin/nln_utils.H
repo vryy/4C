@@ -276,7 +276,7 @@ namespace UTILS
     {
       if (not list.isParameter(param.c_str()))
         dserror("Parameter '%s' does not exist in parameter list '%s'.",
-            list.name().c_str());
+            param.c_str(), list.name().c_str());
 
       return list.get<ParamType>(param);
     };
