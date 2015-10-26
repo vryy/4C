@@ -23,6 +23,9 @@ Maintainer: Matthias Mayr
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_VerboseObject.hpp>
 
+// baci
+#include "../drt_lib/drt_dserror.H"
+
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
 
@@ -171,6 +174,123 @@ namespace UTILS
     bool active_;
 
   }; // class StagnationDetection
+
+  // ---------------------------------------------------------------------------
+
+  /*! \brief Store and manage access to configuration of NLNSOL parameter list
+   *
+   *  We monitor the reduction in the residual norm to heuristically detect
+   *  stagnation during the nonlinear iterations. An iterative process is
+   *  considered in stagnation if the residual reduction in #stagitermax_
+   *  subsequent iterations is below #stagthreshold_.
+   *
+   *  \author mayr.mt \date 10/2015
+   */
+  class NlnConfig : public Teuchos::VerboseObject<StagnationDetection>
+  {
+  public:
+
+    //! @name Construction / Destruction
+    //@{
+
+    //! constructor
+    NlnConfig();
+
+    //! destructor
+    virtual ~NlnConfig(){};
+
+    //@}
+
+    //! @name Setup
+    //@{
+
+    virtual const bool Setup(const std::string filename ///< file name of xml-file
+        );
+
+    //@}
+
+    //! @name Access to parameter lists
+    //@{
+
+    //! Access to parameter list \c listname
+    virtual const Teuchos::ParameterList& GetSubList(
+        const std::string listname ///< name of sublist
+        ) const;
+
+    //! Access to parameter list \c listname
+    virtual Teuchos::ParameterList& GetSubListNonConst(
+        const std::string listname ///< name of sublist
+        ) const;
+
+    /*! \brief Access to parameter \c param in sublist \c list
+     *
+     *  First, we check, whether the requested parameter \c param in the sublist
+     *  \c list is available. Then, we return it.
+     *
+     *  ToDo (mayr) Return default value, if parameter does not exist.
+     *
+     *  \author mayr.mt \date 10/2015
+     */
+    template <typename ParamType> ParamType GetParameter(
+        const std::string list, ///< name of sublist
+        const std::string param ///< name of parameter
+        ) const
+    {
+      if (not params_->isSublist(list))
+        dserror("Sublist '%s' does not exist.", list.c_str());
+
+      const Teuchos::ParameterList& params = params_->sublist(list);
+
+      return GetParameter<ParamType>(params, param);
+    };
+
+    /*! \brief Access to parameter \c param in top level parameter list
+     *
+     *  First, we check, whether the requested parameter \c param in the top
+     *  level parameter list #params_ is available. Then, we return it.
+     *
+     *  ToDo (mayr) Return default value, if parameter does not exist.
+     *
+     *  \author mayr.mt \date 10/2015
+     */
+    template <typename ParamType> ParamType GetParameter(
+        const std::string param ///< name of parameter
+        ) const
+    {
+      return GetParameter<ParamType>(*params_, param);
+    };
+
+    /*! \brief Access to parameter \c param in given parameter list \c list
+     *
+     *  First, we check, whether the requested parameter \c param in the
+     *  parameter list \c list is available. Then, we return it.
+     *
+     *  ToDo (mayr) Return default value, if parameter does not exist.
+     *
+     *  \author mayr.mt \date 10/2015
+     */
+    template <typename ParamType> ParamType GetParameter(
+        const Teuchos::ParameterList& list, ///< sublist
+        const std::string param ///< name of parameter
+        ) const
+    {
+      if (not list.isParameter(param.c_str()))
+        dserror("Parameter '%s' does not exist in parameter list '%s'.",
+            list.name().c_str());
+
+      return list.get<ParamType>(param);
+    };
+
+    //!
+    virtual Teuchos::RCP<Teuchos::ParameterList> GetAllNonConstRcp() const;
+
+    //@}
+
+  private:
+
+    //! global parameter list
+    Teuchos::RCP<Teuchos::ParameterList> params_;
+  };
 
   // ---------------------------------------------------------------------------
 

@@ -189,6 +189,79 @@ NLNSOL::UTILS::StagnationDetection::Params() const
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////// BEGIN OF CLASS /////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+NLNSOL::UTILS::NlnConfig::NlnConfig()
+: params_(Teuchos::null)
+{
+  return;
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+const bool NLNSOL::UTILS::NlnConfig::Setup(const std::string filename)
+{
+  params_ = Teuchos::rcp(new Teuchos::ParameterList());
+
+  NLNSOL::UTILS::CreateParamListFromXML(filename, *params_);
+
+  if (params_.is_null())
+  {
+    dserror("Filling the parameter list from the XML-file failed.");
+    return false;
+  }
+
+  return true;
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+const Teuchos::ParameterList& NLNSOL::UTILS::NlnConfig::GetSubList(
+    const std::string listname) const
+{
+  if (params_.is_null())
+    dserror("Parameter list 'params_' not properly initialized.");
+
+  if (not params_->isSublist(listname))
+    dserror("There is no sublist '%s'.", listname.c_str());
+
+  return params_->sublist(listname);
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+Teuchos::ParameterList& NLNSOL::UTILS::NlnConfig::GetSubListNonConst(
+    const std::string listname) const
+{
+  if (params_.is_null())
+    dserror("Parameter list 'params_' not properly initialized.");
+
+  if (not params_->isSublist(listname))
+    dserror("There is no sublist '%s'.", listname.c_str());
+
+  return params_->sublist(listname);
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+Teuchos::RCP<Teuchos::ParameterList>
+NLNSOL::UTILS::NlnConfig::GetAllNonConstRcp() const
+{
+  Teuchos::RCP<Teuchos::ParameterList> params =
+      Teuchos::rcp(new Teuchos::ParameterList(*params_));
+  return params;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////// END OF CLASS //////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 Teuchos::RCP<Teuchos::ParameterList> NLNSOL::UTILS::CreateParamListFromXML()
