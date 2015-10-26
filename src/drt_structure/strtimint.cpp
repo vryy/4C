@@ -1313,9 +1313,7 @@ void STR::TimInt::UpdateStepContactVUM()
           cmtbridge_->GetStrategy().Params(), "CONTACTFORCE_ENDTIME");
       if (do_end == false)
       {
-        std::cout
-            << "***** WARNING: VelUpdate ONLY for contact force evaluated at the end time -> skipping ****"
-            << std::endl;
+        dserror("***** WARNING: VelUpdate ONLY for contact force evaluated at the end time -> skipping ****");
         return;
       }
 
@@ -1343,9 +1341,7 @@ void STR::TimInt::UpdateStepContactVUM()
       }
       else
       {
-        std::cout
-            << "***** WARNING: VelUpdate ONLY for Gen-alpha and GEMM -> skipping ****"
-            << std::endl;
+        dserror("***** WARNING: VelUpdate ONLY for Gen-alpha and GEMM -> skipping ****");
         return;
       }
 
@@ -1371,9 +1367,7 @@ void STR::TimInt::UpdateStepContactVUM()
       // the lumped mass matrix and its inverse
       if (lumpmass_ == false)
       {
-        std::cout
-            << "***** WARNING: VelUpdate ONLY for lumped mass matrix -> skipping ****"
-            << std::endl;
+        dserror("***** WARNING: VelUpdate ONLY for lumped mass matrix -> skipping ****");
         return;
       }
       Teuchos::RCP<LINALG::SparseMatrix> Mass = Teuchos::rcp_dynamic_cast<
