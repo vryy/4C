@@ -237,7 +237,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::SetupXFEMDiscretization(
   SetupXFEMDiscretization(xgen_params,xdis,numdof);
 
   DRT::UTILS::PrintParallelDistribution(*dis);
-  DRT::UTILS::PrintParallelDistribution(*xdis);
+  DRT::UTILS::PrintParallelDistribution(*embedded_dis);
 
   return;
 }
