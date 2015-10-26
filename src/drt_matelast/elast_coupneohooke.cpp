@@ -47,6 +47,20 @@ MAT::ELASTIC::CoupNeoHooke::CoupNeoHooke(MAT::ELASTIC::PAR::CoupNeoHooke* params
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void MAT::ELASTIC::CoupNeoHooke::AddShearMod(
+  bool& haveshearmod,  ///< non-zero shear modulus was added
+  double& shearmod     ///< variable to add upon
+  ) const
+{
+  haveshearmod = true;
+
+  shearmod += 2*params_->c_;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupNeoHooke::AddStrainEnergy(
     double& psi,
     const LINALG::Matrix<3,1>& prinv,

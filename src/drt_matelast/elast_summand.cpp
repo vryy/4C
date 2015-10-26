@@ -341,6 +341,7 @@ void MAT::ELASTIC::Summand::AddShearMod(
   double& shearmod
   ) const
 {
+  dserror("MAT::ELASTIC::Summand::AddShearMod: Add Shear Modulus not implemented - do so!");
   return;
 }
 
