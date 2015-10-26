@@ -632,6 +632,13 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputElement(
     press_f << "SY(";
     if(acc_output) acc_f << "VY(";
     break;
+  case DRT::Element::tet4:
+  case DRT::Element::tet10:
+    numnode=4;
+    vel_f << "VS(";
+    press_f << "SS(";
+    if(acc_output) acc_f << "VS(";
+    break;
   default:
   {
     dserror( "unsupported shape" );
@@ -989,6 +996,34 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
           const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::wedge6>::numNodePerElement;
           LINALG::Matrix<numnodes,1> funct;
           DRT::UTILS::shape_function_3D( funct, rst( 0 ), rst( 1 ), rst( 2 ), DRT::Element::wedge6 );
+          LINALG::Matrix<3,numnodes> velocity( vel, true );
+          LINALG::Matrix<1,numnodes> pressure( press, true );
+          LINALG::Matrix<3,numnodes> acceleration( acc, true );
+
+          v.Multiply( 1, velocity, funct, 1 );
+          p.Multiply( 1, pressure, funct, 1 );
+          if(acc_output) a.Multiply( 1, acceleration, funct, 1 );
+          break;
+        }
+        case DRT::Element::tet4:
+        {
+          const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet4>::numNodePerElement;
+          LINALG::Matrix<numnodes,1> funct;
+          DRT::UTILS::shape_function_3D( funct, rst( 0 ), rst( 1 ), rst( 2 ), DRT::Element::tet4 );
+          LINALG::Matrix<3,numnodes> velocity( vel, true );
+          LINALG::Matrix<1,numnodes> pressure( press, true );
+          LINALG::Matrix<3,numnodes> acceleration( acc, true );
+
+          v.Multiply( 1, velocity, funct, 1 );
+          p.Multiply( 1, pressure, funct, 1 );
+          if(acc_output) a.Multiply( 1, acceleration, funct, 1 );
+          break;
+        }
+        case DRT::Element::tet10:
+        {
+          const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet10>::numNodePerElement;
+          LINALG::Matrix<numnodes,1> funct;
+          DRT::UTILS::shape_function_3D( funct, rst( 0 ), rst( 1 ), rst( 2 ), DRT::Element::tet10 );
           LINALG::Matrix<3,numnodes> velocity( vel, true );
           LINALG::Matrix<1,numnodes> pressure( press, true );
           LINALG::Matrix<3,numnodes> acceleration( acc, true );
