@@ -212,6 +212,21 @@ void FluidFilter::WriteAllResults(PostField* field)
   writer_->WriteResult("pressure_hdg", "pressure", nodebased, 1);
   writer_->WriteResult("tracevel_hdg", "trace_velocity", nodebased, field->problem()->num_dim());
 
+
+  // additional output for XFluid level-set boundaries: write combined level-set field created from all level-set coupling objects
+  writer_->WriteResult("fluid_levelset_boundary", "combined_ls_bound", nodebased, 1);
+
+  // additional output for XFluid level-set boundaries: write single level-set fields for all level-set coupling objects
+  int num_levelsets = 20;
+
+  for(int k = 0; k < num_levelsets; k++)
+  {
+    std::ostringstream temp;
+    temp << k;
+    std::string name = "phinp_"+temp.str();
+    writer_->WriteResult(name, name, nodebased, 1);
+  }
+
   WriteElementResults(field);
 }
 

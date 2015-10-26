@@ -311,7 +311,16 @@ void runEnsightVtuFilter(PostProblem    &problem)
 
       int numfield = problem.num_discr();
 
+      std::cout << "Number of discretizations: " << numfield << std::endl;
+      for(int i=0; i<numfield;i++)
+      {
+        std::cout << "dis-name i=" << i << ": " << problem.get_discretization(i)->name() << std::endl;
+      }
+
+
       std::string basename = problem.outname();
+
+      std::cout << "\nStart postprocessing for discretizations: \n" << std::endl;
 
       std::cout << "  Structural Field ( "<< problem.get_discretization(0)->name() << " )" << std::endl;
       PostField* structfield = problem.get_discretization(0);
@@ -325,17 +334,18 @@ void runEnsightVtuFilter(PostProblem    &problem)
 
       // start index for interface discretizations
       int idx_int = 2;
-      if (numfield > 1 && problem.get_discretization(2)->name()=="xfluid")
+
+      if (numfield > 2 && problem.get_discretization(2)->name()=="xfluid") // currently the name of the embedded fluid!
       {
         std::cout << "  XFluid Field ( "<< problem.get_discretization(2)->name() << " )" << std::endl;
         PostField* xfluidfield = problem.get_discretization(2);
         FluidFilter xfluidwriter(xfluidfield, basename);
         xfluidwriter.WriteFiles();
-        idx_int += 1;
+        idx_int += 1; // increase the index
       }
 
       // all other fields are interface or ale fields
-      for(int i=2; i<numfield;i++)
+      for(int i=idx_int; i<numfield;i++)
       {
         if (problem.get_discretization(i)->name() != "ale")
         {
@@ -352,7 +362,6 @@ void runEnsightVtuFilter(PostProblem    &problem)
           alewriter.WriteFiles();
         }
       }
-
 
       break;
     }
