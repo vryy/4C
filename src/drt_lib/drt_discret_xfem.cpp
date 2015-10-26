@@ -86,6 +86,8 @@ void DRT::DiscretizationXFEM::StoreInitialDofs()
 
   int numdofspernode = 0;
   fsds->GetReservedMaxNumDofperNode(numdofspernode);
+
+  if(NumMyColNodes() == 0 ) dserror("no column node on this proc available!");
   int numdofspernodedofset = fsds->NumDof(lColNode(0));
   int numdofsetspernode = 0;
 
