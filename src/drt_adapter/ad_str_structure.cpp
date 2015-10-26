@@ -28,6 +28,7 @@ Maintainer: Georg Hammerl
 
 #include "../drt_timestepping/timintmstep.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils_parmetis.cpp"
 #include "../drt_mat/matpar_bundle.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_utils.H"
@@ -154,6 +155,12 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
   {
     IO::DiscretizationReader reader(actdis, restart);
     reader.ReadMesh(restart);
+
+    // repartition problem for a good load distribution in case of altered number of procs
+    if(reader.GetNumOutputProc(restart) != actdis->Comm().NumProc())
+    {
+      DRT::UTILS::WeightedRepartitioning(actdis, true, true, true);
+    }
   }
   // set degrees of freedom in the discretization
   else if (not actdis->Filled() || not actdis->HaveDofs())

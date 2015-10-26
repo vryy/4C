@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_timint_caridac_monodomain_scheme.cpp
+\file scatra_timint_cardiac_monodomain_scheme.cpp
 \brief time-integration scheme with extensions for
        cardiac monodomain problems
 
@@ -100,7 +100,7 @@ void SCATRA::TimIntCardiacMonodomainOST::ReadRestart(int step)
 
   // Cardiac Monodomain specific
   reader.ReadVector(activation_time_np_, "activation_time_np");
-  reader.ReadMesh(step); // Read all saved data in nodes and elements und call nodal and element Unpacking each global variable has to be read
+  reader.ReadHistoryData(step); // Read all saved data in nodes and elements und call nodal and element Unpacking each global variable has to be read
 
   return;
 }
@@ -188,7 +188,7 @@ void SCATRA::TimIntCardiacMonodomainBDF2::ReadRestart(int step)
 
   // Cardiac Monodomain specific
   reader.ReadVector(activation_time_np_, "activation_time_np");
-  reader.ReadMesh(step); // Read all saved data in nodes and elements und call nodal and element Unpacking each global variable has to be read
+  reader.ReadHistoryData(step); // Read all saved data in nodes and elements und call nodal and element Unpacking each global variable has to be read
 
   return;
 }
@@ -275,7 +275,7 @@ void SCATRA::TimIntCardiacMonodomainGenAlpha::ReadRestart(int step)
 
   // Cardiac Monodomain specific
   reader.ReadVector(activation_time_np_, "activation_time_np");
-  reader.ReadMesh(step); // Read all saved data in nodes and elements und call nodal and element Unpacking each global variable has to be read
+  reader.ReadHistoryData(step); // Read all saved data in nodes and elements und call nodal and element Unpacking each global variable has to be read
 
   return;
 }

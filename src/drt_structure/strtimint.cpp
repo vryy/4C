@@ -1887,7 +1887,7 @@ void STR::TimInt::ReadRestartState()
   vel_->UpdateSteps(*veln_);
   reader.ReadVector(accn_, "acceleration");
   acc_->UpdateSteps(*accn_);
-  reader.ReadMesh(step_);
+  reader.ReadHistoryData(step_);
 
   return;
 }

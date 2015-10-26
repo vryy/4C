@@ -158,6 +158,38 @@ void IO::DiscretizationReader::ReadNodesOnly(int step)
 }
 
 
+/*----------------------------------------------------------------------*
+ * Read history data from restart files                                 *
+ *----------------------------------------------------------------------*/
+void IO::DiscretizationReader::ReadHistoryData(int step)
+{
+  FindMeshGroup(step, input_->ControlFile());
+
+  Teuchos::RCP<std::vector<char> > nodedata =
+    meshreader_->ReadNodeData(step,dis_->Comm().NumProc(),dis_->Comm().MyPID());
+
+  Teuchos::RCP<std::vector<char> > elementdata =
+    meshreader_->ReadElementData(step,dis_->Comm().NumProc(),dis_->Comm().MyPID());
+
+  // before we unpack nodes/elements we store a copy of the nodal row/col map
+  Teuchos::RCP<Epetra_Map> noderowmap = Teuchos::rcp(new Epetra_Map(*dis_->NodeRowMap()));
+  Teuchos::RCP<Epetra_Map> nodecolmap = Teuchos::rcp(new Epetra_Map(*dis_->NodeColMap()));
+
+  // unpack nodes and elements and redistributed to current layout
+
+  // take care --- we are just adding elements to the discretisation
+  // that means depending on the current distribution and the
+  // distribution of the data read we might increase the
+  // number of elements in dis_
+  // the call to redistribute deletes the unnecessary elements,
+  // so everything should be OK
+  dis_->UnPackMyNodes(nodedata);
+  dis_->UnPackMyElements(elementdata);
+  dis_->Redistribute(*noderowmap,*nodecolmap);
+  return;
+}
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void IO::DiscretizationReader::ReadRedundantDoubleVector( Teuchos::RCP<std::vector<double> >& doublevec,
@@ -375,6 +407,25 @@ IO::DiscretizationReader::OpenFiles(const char* filestring,
   Teuchos::RCP<HDFReader> reader = Teuchos::rcp(new HDFReader(dirname));
   reader->Open(filename,numoutputproc,comm.NumProc(),comm.MyPID());
   return reader;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+int IO::DiscretizationReader::GetNumOutputProc(int step)
+{
+  MAP *result_info = NULL;
+  MAP *file_info = NULL;
+
+  FindGroup(step,input_->ControlFile(),"result","result_file",result_info,file_info);
+
+  int numoutputproc;
+  if (!map_find_int(result_info,"num_output_proc",&numoutputproc))
+  {
+    numoutputproc = 1;
+  }
+
+  return numoutputproc;
 }
 
 

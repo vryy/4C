@@ -93,6 +93,9 @@ public:
   /// read nodes into the discretization given in the constructor
   void ReadNodesOnly(int step);
 
+  /// Read the history data of elements and nodes from restart files
+  void ReadHistoryData(int step);
+
   //! read a non discretisation based vector of doubles
   /*!
     This vector should have been written only by proc0.
@@ -108,6 +111,9 @@ public:
     It is read from proc0 again and then communicated to all present procs.
    */
   void ReadRedundantIntVector( Teuchos::RCP<std::vector<int> >& intvec, const std::string name);
+
+  /// return number of procs which were used for restart output (read from control file)
+  int GetNumOutputProc(int step);
 
 protected:
 

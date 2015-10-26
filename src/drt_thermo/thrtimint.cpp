@@ -369,7 +369,7 @@ void THR::TimInt::ReadRestartState()
   temp_->UpdateSteps(*tempn_);
   reader.ReadVector(raten_, "rate");
   rate_->UpdateSteps(*raten_);
-  reader.ReadMesh(step_);
+  reader.ReadHistoryData(step_);
   return;
 
 }  // ReadRestartState()

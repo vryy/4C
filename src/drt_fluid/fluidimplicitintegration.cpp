@@ -3825,7 +3825,7 @@ void FLD::FluidImplicitTimeInt::ReadRestart(int step)
   // read the previously written elements including the history data
   // only avalaible+required for time-dependent subgrid scales!
   if ((params_->sublist("RESIDUAL-BASED STABILIZATION").get<std::string>("TDS")) != "quasistatic")
-    reader.ReadMesh(step_);
+    reader.ReadHistoryData(step_);
 
     // ensure that the overall dof numbering is identical to the one
   // that was used when the restart data was written. Especially
