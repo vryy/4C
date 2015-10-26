@@ -647,7 +647,10 @@ void DRT::Discretization::SetState(unsigned nds,const std::string& name,Teuchos:
   // maps.
   if (vecmap.PointSameAs(*colmap))
   {
-    state_[nds][name] = state;
+    // make a copy as in parallel such that no additional RCP points to the state vector
+    Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*colmap,false);
+    tmp->Update(1.0, *state, 0.0);
+    state_[nds][name] = tmp;
   }
   else // if it's not in column map export and allocate
   {
