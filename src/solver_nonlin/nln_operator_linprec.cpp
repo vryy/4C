@@ -35,8 +35,6 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 // baci
-#include "linesearch_base.H"
-#include "linesearch_factory.H"
 #include "nln_operator_linprec.H"
 #include "nln_problem.H"
 
@@ -47,7 +45,6 @@
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_sparsematrix.H"
 
 #include "../solver/solver_preconditionertype.H"
 #include "../solver/solver_ifpackpreconditioner.H"
@@ -97,8 +94,6 @@ void NLNSOL::NlnOperatorLinPrec::Setup()
   // ---------------------------------------------------------------------------
   if (solverparams.isSublist("IFPACK Parameters"))
   {
-    solverparams.sublist("IFPACK Parameters").print(std::cout);
-
     linprec_ = Teuchos::rcp(
         new LINALG::SOLVER::IFPACKPreconditioner(
             DRT::Problem::Instance()->ErrorFile()->Handle(),
