@@ -33,6 +33,7 @@ public:
   explicit LevelSetCoupling(
       Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
       const std::string &                 cond_name, ///< name of the condition, by which the derived cutter discretization is identified
+      const int                           coupling_id,///< id of composite of coupling conditions
       const double                        time,      ///< time
       const int                           step       ///< time step
   );
@@ -45,19 +46,25 @@ public:
   }
 
 
-  /// set levelset field by function
-  void SetLevelSetField(const double time);
+  /// set levelset field by function, return if interface moved compared to last time step
+  bool SetLevelSetField(const double time);
+
+  virtual void SetLevelSetBooleanType();
+
+  virtual bool ApplyComplementaryOperator();
 
   virtual void Output(
       const int step,
       const double time,
-      const bool write_restart_data
+      const bool write_restart_data,
+      const int lsc_idx = 0
   );
 
-  Teuchos::RCP<Epetra_Vector> GetLevelSetField(){ return phinp_; }
+  Teuchos::RCP<Epetra_Vector> & GetLevelSetField(){ return phinp_; }
 
   virtual void ReadRestart(
-      const int step
+      const int step,
+      const int lsc_idx = 0
   );
 
   virtual bool HasMovingInterface(){ return true; }
@@ -70,9 +77,19 @@ public:
     mat = Teuchos::null;
   }
 
+  XFEM::CouplingBase::LevelSetBooleanType GetBooleanCombination(){ return ls_boolean_type_; }
+
+
 private:
 
   void SetConditionsToCopy();
+
+  /// set level-set field implemented in this routine
+  double FunctImplementation(
+      const int      func_no,
+      const double * coords,
+      const double t
+  );
 
 protected:
 
@@ -86,6 +103,9 @@ protected:
   Teuchos::RCP<Epetra_Vector>        curvaturenp_node_;
   Teuchos::RCP<Epetra_MultiVector>   gradphinp_smoothed_node_;
   Teuchos::RCP<Epetra_MultiVector>   gradphi2np_smoothed_node_;
+
+  //! boolean operation type on level-set for current ls-field and previous combination of level-set fields
+  XFEM::CouplingBase::LevelSetBooleanType ls_boolean_type_;
 
   //! Output specific
   Teuchos::RCP<IO::DiscretizationWriter> ls_output_;
@@ -102,10 +122,10 @@ public:
   explicit LevelSetCouplingBC(
       Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
       const std::string &                 cond_name,///< name of the condition, by which the derived cutter discretization is identified
+      const int                           coupling_id,///< id of composite of coupling conditions
       const double                        time,      ///< time
       const int                           step       ///< time step
-  ) : LevelSetCoupling(bg_dis, cond_name, time, step)
-  {}
+  );
 
   //! destructor
   virtual ~LevelSetCouplingBC()
@@ -113,9 +133,14 @@ public:
     return;
   }
 
-protected:
 
   virtual void PrepareSolve();
+
+  virtual bool HasMovingInterface();
+
+private:
+
+  bool has_interface_moved_; ///< did interface move compared to the last time step?
 
 };
 
@@ -131,9 +156,10 @@ public:
   explicit LevelSetCouplingWeakDirichlet(
       Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
       const std::string &                 cond_name, ///< name of the condition, by which the derived cutter discretization is identified
+      const int                           coupling_id,///< id of composite of coupling conditions
       const double                        time,      ///< time
       const int                           step       ///< time step
-  ) : LevelSetCouplingBC(bg_dis, cond_name, time, step)
+  ) : LevelSetCouplingBC(bg_dis, cond_name, coupling_id, time, step)
   {}
 
 
@@ -173,9 +199,10 @@ public:
   explicit LevelSetCouplingNeumann(
       Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
       const std::string &                 cond_name, ///< name of the condition, by which the derived cutter discretization is identified
+      const int                           coupling_id,///< id of composite of coupling conditions
       const double                        time,      ///< time
       const int                           step       ///< time step
-  ) : LevelSetCouplingBC(bg_dis, cond_name, time, step)
+  ) : LevelSetCouplingBC(bg_dis, cond_name, coupling_id, time, step)
   {}
 
 
@@ -212,9 +239,10 @@ public:
   explicit LevelSetCouplingTwoPhase(
       Teuchos::RCP<DRT::Discretization>&  bg_dis,    ///< background discretization
       const std::string &                 cond_name, ///< name of the condition, by which the derived cutter discretization is identified
+      const int                           coupling_id,///< id of composite of coupling conditions
       const double                        time,      ///< time
       const int                           step       ///< time step
-  ) : LevelSetCoupling(bg_dis, cond_name, time, step),
+  ) : LevelSetCoupling(bg_dis, cond_name, coupling_id, time, step),
       surfacetension_init_(false)
   {}
 
@@ -540,7 +568,8 @@ public:
   }
 
   void ReadRestart(
-      const int step
+      const int step,
+      const int lsc_idx = 0
   );
 
 private:

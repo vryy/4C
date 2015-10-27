@@ -179,7 +179,7 @@ E 1 - fluid NUMMODES 4 ONOFF 0 0 0 1 integration
 --------------------------DESIGN XFEM LEVELSET WEAK DIRICHLET VOL CONDITIONS
 DVOL 1
 // fluid_volume
-E 1 - LEVELSETFIELDNO 3 LEVELSETCURVE none NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 CURVE none none none FUNCT 2 2 2
+E 1 - COUPLINGID 1 LEVELSETFIELDNO 3 LEVELSETCURVE none BOOLEANTYPE none COMPLEMENTARY 0 NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 CURVE none none none FUNCT 2 2 2
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY

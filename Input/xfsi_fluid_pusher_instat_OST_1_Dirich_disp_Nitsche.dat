@@ -236,12 +236,12 @@ E 12 - 1 structure conforming
 ---------------------------------DESIGN XFEM FSI PARTITIONED SURF CONDITIONS
 // DOBJECT COUPLING BCFLUID
 DSURF 6
-E 7 - 1
-E 8 - 1
-E 9 - 1
-E 10 - 1
-E 11 - 1
-E 12 - 1
+E 7 - COUPLINGID 1
+E 8 - COUPLINGID 1
+E 9 - COUPLINGID 1
+E 10 - COUPLINGID 1
+E 11 - COUPLINGID 1
+E 12 - COUPLINGID 1
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 26 DNODE 1
 NODE 31 DNODE 1

@@ -233,7 +233,7 @@ E 6 - 1 structure conforming
 ----------------------------------DESIGN XFEM FSI MONOLITHIC SURF CONDITIONS
 DSURF 1
 // FSI
-E 6 - 1
+E 6 - COUPLINGID 1
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY

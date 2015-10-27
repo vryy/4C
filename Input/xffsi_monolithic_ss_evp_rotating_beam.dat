@@ -196,7 +196,7 @@ E 5 - 1
 --------------------------------------DESIGN XFEM FLUIDFLUID SURF CONDITIONS
 DSURF 1
 // xfem
-E 4 - 1 embedded
+E 4 - COUPLINGID 1 embedded
 ---------------------------------DESIGN FLUID FLUID COUPLING SURF CONDITIONS
 DSURF 1
 // fluid-fluid

@@ -60,28 +60,34 @@ void XFEM::CouplingBase::SetElementConditions()
     // loop all possible XFEM-coupling conditions
     for(size_t cond=0; cond < conditions_to_copy_.size(); cond++)
     {
-      // get all conditions with given condition name
-      std::vector<DRT::Condition*> mycond;
-      DRT::UTILS::FindElementConditions(cutele, conditions_to_copy_[cond], mycond);
-
-      // safety checks
-      if (mycond.size()>1)
-      {
-//        dserror("%i conditions of the same name for element %i! %s coupling-condition not unique!", mycond.size(), cutele->Id(), conditions_to_copy_[cond].c_str());
-      }
-      else if(mycond.size() == 0)
-      {
-        continue; // try the next condition type
-      }
-      else
-      {
-//        std::cout << "unique condition found!" << std::endl;
-      }
-
       INPAR::XFEM::EleCouplingCondType cond_type = CondType_stringToEnum(conditions_to_copy_[cond]);
 
       // non-coupling condition found (e.g. FSI coupling)
       if(cond_type == INPAR::XFEM::CouplingCond_NONE) continue;
+
+      // get all conditions with given condition name
+      std::vector<DRT::Condition*> mycond;
+      DRT::UTILS::FindElementConditions(cutele, conditions_to_copy_[cond], mycond);
+
+      std::vector<DRT::Condition*> mynewcond;
+      GetConditionByCouplingId(mycond, coupling_id_, mynewcond);
+
+      DRT::Condition* cond_unique = NULL;
+
+      // safety checks
+      if(mynewcond.size() == 0)
+      {
+        continue; // try the next condition type
+      }
+      else if(mynewcond.size() == 1) // unique condition found
+      {
+        cond_unique = mynewcond[0];
+      }
+      else if(mynewcond.size()>1)
+      {
+        // get the right condition
+        dserror("%i conditions of the same name with coupling id %i, for element %i! %s coupling-condition not unique!", mynewcond.size(), coupling_id_, cutele->Id(), conditions_to_copy_[cond].c_str());
+      }
 
       // non-unique conditions for one cutter element
       if( cutterele_conds_[lid].first != INPAR::XFEM::CouplingCond_NONE )
@@ -91,7 +97,7 @@ void XFEM::CouplingBase::SetElementConditions()
       }
 
       // store the unique condition pointer to the cutting element
-      cutterele_conds_[lid] = EleCoupCond(cond_type, mycond[0]);
+      cutterele_conds_[lid] = EleCoupCond(cond_type, cond_unique);
     }
   }
 
@@ -106,6 +112,24 @@ void XFEM::CouplingBase::SetElementConditions()
 
 }
 
+void XFEM::CouplingBase::GetConditionByCouplingId(
+    const std::vector<DRT::Condition*> & mycond,
+    const int coupling_id,
+    std::vector<DRT::Condition*> & mynewcond
+)
+{
+  mynewcond.clear();
+
+  // select the conditions with specified "couplingID"
+  for(size_t i=0; i< mycond.size(); ++i)
+  {
+    DRT::Condition* cond = mycond[i];
+    const int id = cond->GetInt("label");
+
+    if(id == coupling_id)
+      mynewcond.push_back(cond);
+  }
+}
 
 void XFEM::CouplingBase::Status(
     const int coupling_idx,
@@ -117,11 +141,12 @@ void XFEM::CouplingBase::Status(
   // -------------------------------------------------------------------
   if (myrank_==0)
   {
-    printf("   +----------+-----------+-----------------------------+-----------------------------+-----------------------------+-----------------------------+-----------------------------+\n");
-    printf("   | %8i | %9i | %27s | %27s | %27s | %27s | %27s |\n",
+    printf("   +----------+-----------+-----------------------------+---------+-----------------------------+-----------------------------+-----------------------------+-----------------------------+\n");
+    printf("   | %8i | %9i | %27s | %7i | %27s | %27s | %27s | %27s |\n",
         coupling_idx ,
         side_start_gid,
         TypeToStringForPrint(CondType_stringToEnum(cond_name_)).c_str(),
+        coupling_id_,
         DisNameToString(cutter_dis_).c_str(),
         DisNameToString(cond_dis_).c_str(),
         DisNameToString(coupl_dis_).c_str(),
@@ -282,6 +307,11 @@ void XFEM::CouplingBase::EvaluateFunction(
   const std::vector<double>* val       = cond->Get<std::vector<double> >("val"  );
   const std::vector<int>*    functions = cond->Get<std::vector<int>    >("funct");
 
+  // uniformly distributed random noise
+
+  DRT::Condition& secondary = const_cast<DRT::Condition&>(*cond);
+  const std::vector<double>* percentage = secondary.GetMutable<std::vector<double> >("randnoise");
+
   if(time < -1e-14) dserror("Negative time in curve/function evaluation: time = %f", time);
 
   //---------------------------------------
@@ -301,7 +331,7 @@ void XFEM::CouplingBase::EvaluateFunction(
     double functionfac = 1.0;
     double curvefac = 1.0;
 
-        // compute potential time curve or set time-curve factor to one
+    // compute potential time curve or set time-curve factor to one
     if (curvenum >= 0)
     {
       curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
@@ -314,6 +344,20 @@ void XFEM::CouplingBase::EvaluateFunction(
       functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof%numdof,x,time,NULL);
     }
 
-    final_values[dof] = num*functionfac;
+    // uniformly distributed noise
+    double noise = 0.0;
+    if( percentage != NULL )
+    {
+      if(percentage->size() != 1) dserror("expect vector of length one!");
+      const double perc = percentage->at(0);
+
+      if(fabs(perc)> 1e-14 )
+      {
+        const double randomnumber = DRT::Problem::Instance()->Random()->Uni(); // uniformly distributed between -1.0, 1.0
+        noise = perc * randomnumber;
+      }
+    }
+
+    final_values[dof] = num*(functionfac+noise);
   } // loop dofs
 }

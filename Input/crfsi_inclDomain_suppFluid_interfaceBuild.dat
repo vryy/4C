@@ -217,7 +217,7 @@ E 1 - 1
 -----------------DESIGN XFEM CRACK FSI PARTITIONED SURF CONDITIONS
 DSURF 1
 // cut_surface
-E 1 - 1
+E 1 - COUPLINGID 1
 ---------------------------------------DESIGN CRACK MASTER SURFACE
 DSURF  1
 // master_crack

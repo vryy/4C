@@ -153,7 +153,7 @@ E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.2 0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 
 --------------------------------------DESIGN XFEM FLUIDFLUID SURF CONDITIONS
 DSURF 1
 // Fluid_xfem
-E 2 - 1 xfluid
+E 2 - COUPLINGID 1 xfluid
 ------------------------------------------DESIGN FLUID MESH VOL CONDITIONS
 DVOL 1
 // Fluid_volume

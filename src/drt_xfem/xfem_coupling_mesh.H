@@ -32,6 +32,7 @@ public:
       Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
       const std::string &                 cond_name,///< name of the condition, by which the derived cutter discretization is identified
       Teuchos::RCP<DRT::Discretization>&  cond_dis, ///< discretization from which cutter discretization can be derived
+      const int                           coupling_id,///< id of composite of coupling conditions
       const double                        time,      ///< time
       const int                           step       ///< time step
   );
@@ -80,6 +81,9 @@ public:
   // zero interface state vectors for FSI
   virtual void ZeroStateVectors_FSI(){};
 
+  /// clear state vectors
+  virtual void ClearState();
+
   /// set state vectors for cutter discretization
   virtual void SetState();
 
@@ -107,7 +111,7 @@ public:
       const int step,
       const double time,
       const bool write_restart_data
-  ){};
+  );
 
   virtual void PrepareCutterOutput();
 
@@ -181,6 +185,10 @@ protected:
 
   //! @name output discretization writers
   Teuchos::RCP<IO::DiscretizationWriter> cutter_output_;
+  bool firstoutputofrun_;
+
+  //@}
+
 };
 
 
@@ -198,6 +206,7 @@ public:
       Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
       const std::string &                 cond_name,///< name of the condition, by which the derived cutter discretization is identified
       Teuchos::RCP<DRT::Discretization>&  cond_dis,  ///< discretization from which cutter discretization can be derived
+      const int                           coupling_id,///< id of composite of coupling conditions
       const double                        time,      ///< time
       const int                           step       ///< time step
   );
@@ -271,6 +280,7 @@ public:
       Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
       const std::string &                 cond_name,///< name of the condition, by which the derived cutter discretization is identified
       Teuchos::RCP<DRT::Discretization>&  cond_dis,  ///< discretization from which cutter discretization can be derived
+      const int                           coupling_id,///< id of composite of coupling conditions
       const double                        time,      ///< time
       const int                           step       ///< time step
   );
@@ -313,9 +323,10 @@ public:
       Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
       const std::string &                 cond_name,///< name of the condition, by which the derived cutter discretization is identified
       Teuchos::RCP<DRT::Discretization>&  cond_dis,  ///< discretization from which cutter discretization can be derived
+      const int                           coupling_id,///< id of composite of coupling conditions
       const double                        time,      ///< time
       const int                           step       ///< time step
-  ) : MeshCouplingBC(bg_dis,cond_name,cond_dis, time, step)
+  ) : MeshCouplingBC(bg_dis,cond_name,cond_dis, coupling_id, time, step)
   {}
 
   //! destructor
@@ -358,6 +369,7 @@ public:
       Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
       const std::string &                 cond_name,///< name of the condition, by which the derived cutter discretization is identified
       Teuchos::RCP<DRT::Discretization>&  cond_dis,  ///< discretization from which cutter discretization can be derived
+      const int                           coupling_id,///< id of composite of coupling conditions
       const double                        time,      ///< time
       const int                           step       ///< time step
   );
@@ -422,9 +434,6 @@ protected:
   //@}
 
 
-  //---------------------------------output----------------------------
-
-  bool firstoutputofrun_;
   //@}
 
 };
@@ -441,6 +450,7 @@ public:
       Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
       const std::string &                 cond_name,///< name of the condition, by which the derived cutter discretization is identified
       Teuchos::RCP<DRT::Discretization>&  cond_dis,  ///< discretization from which cutter discretization can be derived
+      const int                           coupling_id,///< id of composite of coupling conditions
       const double                        time,      ///< time
       const int                           step       ///< time step
   );
@@ -492,6 +502,7 @@ public:
       Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
       const std::string &                 cond_name,///< name of the condition, by which the derived cutter discretization is identified
       Teuchos::RCP<DRT::Discretization>&  cond_dis,  ///< discretization from which cutter discretization can be derived
+      const int                           coupling_id,///< id of composite of coupling conditions
       const double                        time,      ///< time
       const int                           step       ///< time step
   );

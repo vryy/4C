@@ -258,7 +258,7 @@ E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 1.0 1.0 0.0 0.0 CURVE none none none none FUNCT
 --------------------------------DESIGN XFEM LEVELSET TWOPHASE VOL CONDITIONS
 DVOL                           1
 //                              fluid_volume
-E 1 - LEVELSETFIELDNO 1 LEVELSETCURVE none
+E 1 - COUPLINGID 1 LEVELSETFIELDNO 1 LEVELSETCURVE none BOOLEANTYPE none COMPLEMENTARY 0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    1 DNODE 1
 NODE    2 DNODE 1

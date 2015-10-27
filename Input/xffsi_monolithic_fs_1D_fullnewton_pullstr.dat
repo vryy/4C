@@ -120,7 +120,7 @@ E 4 - 1
 --------------------------------------DESIGN XFEM FLUIDFLUID SURF CONDITIONS
 DSURF 1
 // xfem
-E 2 - 1 xfluid
+E 2 - COUPLINGID 1 xfluid
 ------------------------------------------DESIGN FLUID MESH VOL CONDITIONS
 DVOL 1
 // embedded volume

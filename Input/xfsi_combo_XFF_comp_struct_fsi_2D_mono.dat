@@ -241,11 +241,11 @@ E 2 - 1
 ----------------------------DESIGN XFEM FLUIDFLUID SURF CONDITIONS
 DSURF  1
 // FFI
-E 1 - 1 xfluid sided
+E 1 - COUPLINGID 1 xfluid
 ------------------------DESIGN XFEM FSI MONOLITHIC SURF CONDITIONS
 DSURF  1
 // FSI
-E 5 - 1
+E 5 - COUPLINGID 1
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    4989 DNODE 1
 NODE    4990 DNODE 1

@@ -30,6 +30,35 @@ class VolumeCell;
 
 namespace XFEM
 {
+
+template<typename _Tp>
+inline const _Tp&
+argmin(const _Tp& __a, const _Tp& __b, int & arg)
+{
+  //return __comp(__b, __a) ? __b : __a;
+  if (__b < __a)
+  {
+    arg = 2;
+    return __b;
+  }
+  arg = 1;
+  return __a;
+}
+
+template<typename _Tp>
+inline const _Tp&
+argmax(const _Tp& __a, const _Tp& __b, int & arg)
+{
+  //return __comp(__a, __b) ? __b : __a;
+  if (__a < __b)
+  {
+    arg = 2;
+    return __b;
+  }
+  arg = 1;
+  return __a;
+}
+
 /*!
 \brief Manages the conditions for the xfluid (i.e. levelset/mesh cut and what BC are applied at these)
  */
@@ -56,71 +85,83 @@ public:
       const int step
   );
 
+  void GetCouplingIds(
+      const DRT::Discretization & cond_dis,
+      const std::string &         condition_name,
+      std::set<int> &             coupling_ids
+  );
+
   void Status();
 
   void IncrementTimeAndStep(
       const double dt);
 
-  void CreateNewLevelSetCoupling(const std::string& cond_name);
+  void CreateNewLevelSetCoupling(
+      const std::string& cond_name,
+      const int coupling_id
+  );
 
   void CreateNewMeshCoupling(
       const std::string& cond_name,
-      Teuchos::RCP<DRT::Discretization> cond_dis         ///< discretization from which the cutter discretization can be derived
+      Teuchos::RCP<DRT::Discretization> cond_dis,         ///< discretization from which the cutter discretization can be derived
+      const int coupling_id
   );
 
   /// create a new mesh-coupling object based on the given coupling discretization
   void AddMeshCoupling(
       const std::string &                 cond_name,
-      Teuchos::RCP<DRT::Discretization>   cond_dis
+      Teuchos::RCP<DRT::Discretization>   cond_dis,
+      const int coupling_id
   )
   {
     if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_CRACK_FSI_PART)
     {
-      mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFSICrack(bg_dis_, cond_name, cond_dis, time_, step_)));
+      mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFSICrack(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
     }
     else if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_FSI_PART or
         CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_FSI_MONO)
     {
-      mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFSI(bg_dis_, cond_name, cond_dis, time_, step_)));
+      mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFSI(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
     }
     else if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET)
     {
-      mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingWeakDirichlet(bg_dis_, cond_name, cond_dis, time_, step_)));
+      mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingWeakDirichlet(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
     }
     else if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_NEUMANN)
     {
-      mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingNeumann(bg_dis_, cond_name, cond_dis, time_, step_)));
+      mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingNeumann(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
     }
     else if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_FLUIDFLUID)
     {
-      mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFluidFluid(bg_dis_, cond_name, cond_dis, time_, step_)));
+      mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFluidFluid(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
     }
     else
     {
-      mesh_coupl_.push_back(Teuchos::rcp(new MeshCoupling(bg_dis_, cond_name, cond_dis, time_, step_)));
+      mesh_coupl_.push_back(Teuchos::rcp(new MeshCoupling(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
     }
   }
 
   /// add a new level-set-coupling object based on the given coupling discretization
   void AddLevelSetCoupling(
-      const std::string &                 cond_name
+      const std::string &                 cond_name,
+      const int                           coupling_id
   )
   {
     if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_LEVELSET_WEAK_DIRICHLET)
     {
-      levelset_coupl_.push_back(Teuchos::rcp(new LevelSetCouplingWeakDirichlet(bg_dis_, cond_name, time_, step_)));
+      levelset_coupl_.push_back(Teuchos::rcp(new LevelSetCouplingWeakDirichlet(bg_dis_, cond_name, coupling_id, time_, step_)));
     }
     else if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_LEVELSET_NEUMANN)
     {
-      levelset_coupl_.push_back(Teuchos::rcp(new LevelSetCouplingNeumann(bg_dis_, cond_name, time_, step_)));
+      levelset_coupl_.push_back(Teuchos::rcp(new LevelSetCouplingNeumann(bg_dis_, cond_name, coupling_id, time_, step_)));
     }
     else if (CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_LEVELSET_TWOPHASE)
     {
-      levelset_coupl_.push_back(Teuchos::rcp(new LevelSetCouplingTwoPhase(bg_dis_, cond_name, time_, step_)));
+      levelset_coupl_.push_back(Teuchos::rcp(new LevelSetCouplingTwoPhase(bg_dis_, cond_name, coupling_id, time_, step_)));
     }
     else
     {
-      levelset_coupl_.push_back(Teuchos::rcp(new LevelSetCoupling(bg_dis_, cond_name, time_, step_)));
+      levelset_coupl_.push_back(Teuchos::rcp(new LevelSetCoupling(bg_dis_, cond_name, coupling_id, time_, step_)));
     }
   }
 
@@ -312,11 +353,15 @@ public:
 
   /// ...
   int GetLevelSetCouplingIndex(
-      const int back_eid
+      const int back_eid ///< global element id
   )
   {
-    // TODO: find out which level-set index is the active one for the given background element
-    int lsc_idx = 0;
+    // find out which level-set index is the active one for the given background element
+
+    const Epetra_Map* elecolmap  = bg_dis_->ElementColMap();
+    const int lid = elecolmap->LID(back_eid);
+
+    const int lsc_idx = (*ele_lsc_coup_idx_col_)[lid];
 
     return lsc_idx;
   }
@@ -532,7 +577,7 @@ public:
       Teuchos::RCP<DRT::Discretization> scatradis
   );
 
-  Teuchos::RCP<Epetra_Vector> GetLevelSetField()
+  Teuchos::RCP<Epetra_Vector> & GetLevelSetField()
   {
     if(!is_levelset_uptodate_) UpdateLevelSetField(); // update the unique level-set field based on the background discretization
 
@@ -540,6 +585,8 @@ public:
   }
 
   Teuchos::RCP<const Epetra_Vector> GetLevelSetFieldCol();
+
+  void ClearState();
 
   void SetState();
 
@@ -612,6 +659,49 @@ private:
 
   void UpdateLevelSetField();
 
+  /// combine two levelset fields via boolean type set operations and set result into vec1
+  void CombineLevelSetField(
+      Teuchos::RCP<Epetra_Vector> & vec1,
+      Teuchos::RCP<Epetra_Vector> & vec2,
+      const int                     lsc_index_2,
+      Teuchos::RCP<Epetra_IntVector> &        node_lsc_coup_idx,
+      XFEM::CouplingBase::LevelSetBooleanType ls_boolean_type
+  );
+
+  /// combine two levelset fields via boolean type "union" set operation and put result into vec1
+  void SetMinimum(
+      Teuchos::RCP<Epetra_Vector> & vec1,
+      Teuchos::RCP<Epetra_Vector> & vec2,
+      const int                     lsc_index_2,
+      Teuchos::RCP<Epetra_IntVector> &        node_lsc_coup_idx
+  );
+
+  /// combine two levelset fields via boolean type "cut" set operation and put result into vec1
+  void SetMaximum(
+      Teuchos::RCP<Epetra_Vector> & vec1,
+      Teuchos::RCP<Epetra_Vector> & vec2,
+      const int                     lsc_index_2,
+      Teuchos::RCP<Epetra_IntVector> &        node_lsc_coup_idx
+  );
+
+  /// combine two levelset fields via boolean type "difference" set operation and put result into vec1
+  void SetDifference(
+      Teuchos::RCP<Epetra_Vector> & vec1,
+      Teuchos::RCP<Epetra_Vector> & vec2,
+      const int                     lsc_index_2,
+      Teuchos::RCP<Epetra_IntVector> &        node_lsc_coup_idx
+  );
+
+  /// combine two levelset fields via boolean type "sym_difference" set operation and put result into vec1
+  void SetSymmetricDifference(
+      Teuchos::RCP<Epetra_Vector> & vec1,
+      Teuchos::RCP<Epetra_Vector> & vec2,
+      const int                     lsc_index_2,
+      Teuchos::RCP<Epetra_IntVector> &        node_lsc_coup_idx
+  );
+
+  void BuildComplementaryLevelSet( Teuchos::RCP<Epetra_Vector> & vec1 );
+
   ///< background discretiaztion w.r.t for which the couling manager is constructed
   Teuchos::RCP<DRT::Discretization> bg_dis_;
 
@@ -640,6 +730,7 @@ private:
 
   //! background-dis state vectors for levelset applications
   bool is_levelset_uptodate_;
+  Teuchos::RCP<Epetra_IntVector> ele_lsc_coup_idx_col_;
   Teuchos::RCP<Epetra_Vector>    bg_phinp_;
   //@}
 

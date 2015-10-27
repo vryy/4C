@@ -302,7 +302,7 @@ void INPAR::XFEM::SetValidConditions(const std::vector<Teuchos::RCP<DRT::INPUT::
           DRT::Condition::Surface));
 
   xfem_surf_displacement->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("COUPLINGID")));
-  xfem_surf_displacement->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("couplingID", 1, false, false, false)));
+  xfem_surf_displacement->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("label", 1, false, false, false)));
   xfem_surf_displacement->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("EVALTYPE")));
   xfem_surf_displacement->AddComponent(
     Teuchos::rcp(
@@ -327,11 +327,28 @@ void INPAR::XFEM::SetValidConditions(const std::vector<Teuchos::RCP<DRT::INPUT::
 
   std::vector<Teuchos::RCP<ConditionComponent> > levelsetfield_components;
 
+  levelsetfield_components.push_back(Teuchos::rcp(new SeparatorConditionComponent("COUPLINGID")));
+  levelsetfield_components.push_back(Teuchos::rcp(new IntVectorConditionComponent("label", 1, false, false, false)));
+
   levelsetfield_components.push_back(Teuchos::rcp(new SeparatorConditionComponent("LEVELSETFIELDNO")));
   levelsetfield_components.push_back(Teuchos::rcp(new IntVectorConditionComponent("levelsetfieldno", 1, false, false, false)));
 
   levelsetfield_components.push_back(Teuchos::rcp(new SeparatorConditionComponent("LEVELSETCURVE")));
   levelsetfield_components.push_back(Teuchos::rcp(new IntVectorConditionComponent("levelsetcurve", 1, true, true, false)));
+
+  // define which boolean operator is used for combining this level-set field with the previous one with smaller coupling id
+  levelsetfield_components.push_back(Teuchos::rcp(new SeparatorConditionComponent("BOOLEANTYPE")));
+  levelsetfield_components.push_back(
+      Teuchos::rcp(
+        new StringConditionComponent(
+          "booleantype","none",
+          Teuchos::tuple<std::string>("none","cut","union","difference","sym_difference"),
+          Teuchos::tuple<std::string>("none","cut","union","difference","sym_difference"),
+          false)));
+
+  // define which complementary operator is applied after combining the level-set field with a boolean operator with the previous one
+  levelsetfield_components.push_back(Teuchos::rcp(new SeparatorConditionComponent("COMPLEMENTARY")));
+  levelsetfield_components.push_back(Teuchos::rcp(new IntVectorConditionComponent("complementary", 1, false, false, false)));
 
 
   //*----------------*/
@@ -350,10 +367,15 @@ void INPAR::XFEM::SetValidConditions(const std::vector<Teuchos::RCP<DRT::INPUT::
   {
     xfem_levelset_wdbc->AddComponent(levelsetfield_components[i]);
   }
+
   for (unsigned i=0; i<dirichletbundcomponents.size(); ++i)
   {
     xfem_levelset_wdbc->AddComponent(dirichletbundcomponents[i]);
   }
+
+  // optional: allow for random noise, set percentage used in uniform random distribution
+  xfem_levelset_wdbc->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("RANDNOISE", true)));
+  xfem_levelset_wdbc->AddComponent(Teuchos::rcp(new RealVectorConditionComponent("randnoise", 1, true)));
 
   condlist.push_back(xfem_levelset_wdbc);
 
@@ -373,6 +395,7 @@ void INPAR::XFEM::SetValidConditions(const std::vector<Teuchos::RCP<DRT::INPUT::
   {
     xfem_levelset_neumann->AddComponent(levelsetfield_components[i]);
   }
+
   for (unsigned i=0; i<neumanncomponents.size(); ++i)
   {
     xfem_levelset_neumann->AddComponent(neumanncomponents[i]);
@@ -424,7 +447,9 @@ void INPAR::XFEM::SetValidConditions(const std::vector<Teuchos::RCP<DRT::INPUT::
 
   std::vector<Teuchos::RCP<ConditionComponent> > xfluidfluidsurfcomponents;
 
-  xfluidfluidsurfcomponents.push_back(Teuchos::rcp(new IntConditionComponent("label")));
+  xfluidfluidsurfcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("COUPLINGID")));
+  xfluidfluidsurfcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("label", 1, false, false, false)));
+
   xfluidfluidsurfcomponents.push_back(
       Teuchos::rcp(
            new StringConditionComponent(
@@ -464,6 +489,9 @@ void INPAR::XFEM::SetValidConditions(const std::vector<Teuchos::RCP<DRT::INPUT::
           true,
           DRT::Condition::Surface));
 
+  xfem_surf_fsi_part->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("COUPLINGID")));
+  xfem_surf_fsi_part->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("label", 1, false, false, false)));
+
   condlist.push_back(xfem_surf_fsi_part);
 
   //*----------------*/
@@ -477,6 +505,9 @@ void INPAR::XFEM::SetValidConditions(const std::vector<Teuchos::RCP<DRT::INPUT::
           DRT::Condition::XFEM_Surf_FSIMono,
           true,
           DRT::Condition::Surface));
+
+  xfem_surf_fsi_mono->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("COUPLINGID")));
+  xfem_surf_fsi_mono->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("label", 1, false, false, false)));
 
   condlist.push_back(xfem_surf_fsi_mono);
 
@@ -492,6 +523,9 @@ void INPAR::XFEM::SetValidConditions(const std::vector<Teuchos::RCP<DRT::INPUT::
           DRT::Condition::XFEM_Surf_CrackFSIPart,
           true,
           DRT::Condition::Surface));
+
+  xfem_surf_crfsi_part->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("COUPLINGID")));
+  xfem_surf_crfsi_part->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("label", 1, false, false, false)));
 
   condlist.push_back(xfem_surf_crfsi_part);
 
@@ -509,7 +543,7 @@ void INPAR::XFEM::SetValidConditions(const std::vector<Teuchos::RCP<DRT::INPUT::
           DRT::Condition::Surface));
 
   xfem_surf_wdbc->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("COUPLINGID")));
-  xfem_surf_wdbc->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("couplingID", 1, false, false, false)));
+  xfem_surf_wdbc->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("label", 1, false, false, false)));
   xfem_surf_wdbc->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("EVALTYPE")));
   xfem_surf_wdbc->AddComponent(
     Teuchos::rcp(
@@ -538,6 +572,10 @@ void INPAR::XFEM::SetValidConditions(const std::vector<Teuchos::RCP<DRT::INPUT::
     xfem_surf_wdbc->AddComponent(dirichletbundcomponents[i]);
   }
 
+  // optional: allow for random noise, set percentage used in uniform random distribution
+  xfem_surf_wdbc->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("RANDNOISE", true)));
+  xfem_surf_wdbc->AddComponent(Teuchos::rcp(new RealVectorConditionComponent("randnoise", 1, true)));
+
   condlist.push_back(xfem_surf_wdbc);
 
 
@@ -552,6 +590,9 @@ void INPAR::XFEM::SetValidConditions(const std::vector<Teuchos::RCP<DRT::INPUT::
           DRT::Condition::XFEM_Surf_Neumann,
           true,
           DRT::Condition::Surface));
+
+  xfem_surf_neumann->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("COUPLINGID")));
+  xfem_surf_neumann->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("couplingID", 1, false, false, false)));
 
   for (unsigned i=0; i<neumanncomponents.size(); ++i)
   {

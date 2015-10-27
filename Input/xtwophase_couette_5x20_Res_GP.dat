@@ -251,7 +251,7 @@ DVOL                            0
 --------------------------------DESIGN XFEM LEVELSET TWOPHASE VOL CONDITIONS
 DVOL                           1
 //                              fluid_volume
-E 1 - LEVELSETFIELDNO 1 LEVELSETCURVE none
+E 1 - COUPLINGID 1 LEVELSETFIELDNO 1 LEVELSETCURVE none BOOLEANTYPE none COMPLEMENTARY 0
 ------------------------------------DESIGN POINT TRANSPORT DIRICH CONDITIONS
 DPOINT                          0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY

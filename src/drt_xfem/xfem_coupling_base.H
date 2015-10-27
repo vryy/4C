@@ -36,20 +36,33 @@ INPAR::XFEM::EleCouplingCondType CondType_stringToEnum(const std::string& condna
 class CouplingBase
 {
 
+
+
 public:
 
+  //! which boolean set operator used to combine current field with previous one
+  enum LevelSetBooleanType
+  {
+    ls_none = 0,           // used for first Boundary condition level-setcoupling
+    ls_cut = 1,            // latex: \cap:         Omega 1 \cap \Omega 2
+    ls_union = 2,          // latex: \cup          Omega 1 \cup \Omega 2
+    ls_difference = 3,     // latex: \backslash    Omega 1 - Omega 2
+    ls_sym_difference =4   // latex: \triangle     (Omega 1 - Omega 2) \cup (Omega 2 - \Omega 1)
+  };
 
   //! constructor
   explicit CouplingBase(
       Teuchos::RCP<DRT::Discretization>&  bg_dis,    ///< background discretization
       const std::string &                 cond_name, ///< name of the condition, by which the derived cutter discretization is identified
       Teuchos::RCP<DRT::Discretization>&  cond_dis,  ///< full discretization from which the cutter discretization is derived
+      const int                           coupling_id,///< id of composite of coupling conditions
       const double                        time,      ///< time
       const int                           step       ///< time step
   ) :
   bg_dis_(bg_dis),
   cond_name_(cond_name),
   cond_dis_(cond_dis),
+  coupling_id_(coupling_id),
   cutter_dis_(Teuchos::null),
   coupl_dis_(Teuchos::null),
   averaging_strategy_(INPAR::XFEM::invalid),
@@ -83,6 +96,12 @@ public:
     time_ += dt;
     step_ += 1;
   }
+
+  void GetConditionByCouplingId(
+      const std::vector<DRT::Condition*> & mycond,
+      const int coupling_id,
+      std::vector<DRT::Condition*> & mynewcond
+  );
 
   void Status(
       const int coupling_idx,
@@ -214,6 +233,9 @@ protected:
 
   ///< discretization from which the cutter discretization is derived
   Teuchos::RCP<DRT::Discretization> cond_dis_;
+
+  ///< id of composite of coupling conditions
+  const int coupling_id_;
 
   ///< discretization w.r.t which the interface is described and w.r.t which the state vectors describing the interface position are defined (bgdis for LevelSetCoupling and boundary dis for MeshCoupling)
   Teuchos::RCP<DRT::Discretization> cutter_dis_;
