@@ -633,6 +633,9 @@ GEO::CUT::SideHandle* XFEM::XFEM_EdgeStab::GetFace(
   {
     nodeids[inode] = faceele->NodeIds()[inode];
   }
+
+  std::sort (nodeids.begin(), nodeids.end());
+
   return wizard->GetSide(nodeids);
 
 }
