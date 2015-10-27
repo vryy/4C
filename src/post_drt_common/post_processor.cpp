@@ -407,6 +407,13 @@ void runEnsightVtuFilter(PostProblem    &problem)
       std::cout << "Output FLUID-XFEM Problem" << std::endl;
 
       int numfield = problem.num_discr();
+
+      std::cout << "Number of discretizations: " << numfield << std::endl;
+      for(int i=0; i<numfield;i++)
+      {
+        std::cout << "dis-name i=" << i << ": " << problem.get_discretization(i)->name() << std::endl;
+      }
+
       if (numfield == 0)
         dserror("we expect at least a fluid field, numfield=%i",numfield);
       std::string basename = problem.outname();
