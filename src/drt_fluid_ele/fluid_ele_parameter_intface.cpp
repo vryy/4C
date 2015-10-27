@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fluid_ele_parameter.cpp
+\file fluid_ele_parameter_intface.cpp
 
 \brief Setting of general fluid parameter for internal faces evaluation
 
@@ -183,6 +183,8 @@ void DRT::ELEMENTS::FluidEleParameterIntFace::SetFaceGeneralFluidParameter(
       EOS_whichtau_ = INPAR::FLUID::EOS_tau_burman_fernandez_hansbo_wo_dt;
     if (EOS_whichtau_ == INPAR::FLUID::EOS_tau_burman_hansbo_dangelo_zunino)
       EOS_whichtau_ = INPAR::FLUID::EOS_tau_burman_hansbo_dangelo_zunino_wo_dt;
+    if (EOS_whichtau_ == INPAR::FLUID::EOS_tau_schott_massing_burman_dangelo_zunino)
+      EOS_whichtau_ = INPAR::FLUID::EOS_tau_schott_massing_burman_dangelo_zunino_wo_dt;
   }
 
   return;
