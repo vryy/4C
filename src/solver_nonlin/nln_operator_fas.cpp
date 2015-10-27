@@ -63,7 +63,8 @@ void NLNSOL::NlnOperatorFas::Setup()
 
   // create the multigrid level hierarchy
   hierarchy_ = Teuchos::rcp(new NLNSOL::FAS::AMGHierarchy());
-  hierarchy_->Init(Comm(), Params(), NlnProblem(),
+  hierarchy_->Init(Comm(), Configuration(),
+      MyGetParameter<std::string>("AMG Hierarchy"), NlnProblem(),
       BaciLinearSolver()->Params().sublist("ML Parameters"));
   hierarchy_->Setup();
 
@@ -117,8 +118,9 @@ int NLNSOL::NlnOperatorFas::ApplyInverse(const Epetra_MultiVector& f_do_not_use,
 
   Teuchos::RCP<NLNSOL::UTILS::StagnationDetection> stagdetect =
       Teuchos::rcp(new NLNSOL::UTILS::StagnationDetection());
-  stagdetect->Init(
-      Params().sublist("Nonlinear Operator: Stagnation Detection"), fnorm2);
+  stagdetect->Init(Configuration(),
+      MyGetParameter<std::string>("nonlinear operator: stagnation detection"),
+      fnorm2);
 
   int iter = 0;
   while (ContinueIterations(iter, converged))

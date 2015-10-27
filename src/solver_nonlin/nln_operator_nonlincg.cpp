@@ -65,8 +65,7 @@ void NLNSOL::NlnOperatorNonlinCG::Setup()
   SetupPreconditioner();
 
   // Determine the type of beta to be used
-  const std::string betatype =
-      Params().get<std::string>("Nonlinear CG: Beta Type");
+  const std::string betatype = MyGetParameter<std::string>("Nonlinear CG: Beta Type");
   if (betatype == "fletcherreeves")
     betatype_ = INPAR::NLNSOL::NONLINCG::beta_fletcherreeves;
   else if (betatype == "polakribiere")
@@ -76,7 +75,7 @@ void NLNSOL::NlnOperatorNonlinCG::Setup()
   else
     dserror("'%s' is an unknown type for the parameter beta", betatype.c_str());
 
-  restartevery_ = Params().get<int>("Nonlinear CG: Restart Every Iterations");
+  restartevery_ = MyGetParameter<int>("Nonlinear CG: Restart Every Iterations");
 
   // Setup() has been called
   SetIsSetup();
@@ -88,8 +87,8 @@ void NLNSOL::NlnOperatorNonlinCG::Setup()
 void NLNSOL::NlnOperatorNonlinCG::SetupLineSearch()
 {
   NLNSOL::LineSearchFactory linesearchfactory;
-  linesearch_ = linesearchfactory.Create(
-      Params().sublist("Nonlinear Operator: Line Search"));
+  linesearch_ = linesearchfactory.Create(Configuration(),
+      MyGetParameter<std::string>("line search"));
 
   return;
 }
@@ -97,12 +96,13 @@ void NLNSOL::NlnOperatorNonlinCG::SetupLineSearch()
 /*----------------------------------------------------------------------------*/
 void NLNSOL::NlnOperatorNonlinCG::SetupPreconditioner()
 {
-  const Teuchos::ParameterList& precparams =
-      Params().sublist("Nonlinear CG: Nonlinear Preconditioner");
+  const std::string opname = MyGetParameter<std::string>(
+      "Nonlinear CG: Nonlinear Preconditioner");
 
   NlnOperatorFactory nlnopfactory;
-  nlnprec_ = nlnopfactory.Create(precparams);
-  nlnprec_->Init(Comm(), precparams, NlnProblem(), BaciLinearSolver(), Nested()+1);
+  nlnprec_ = nlnopfactory.Create(Configuration(), opname);
+  nlnprec_->Init(Comm(), Configuration(), opname, NlnProblem(),
+      BaciLinearSolver(), Nested() + 1);
   nlnprec_->Setup();
 
   return;
@@ -337,10 +337,12 @@ void NLNSOL::NlnOperatorNonlinCG::ComputeStepLength(const Epetra_MultiVector& x,
     const Epetra_MultiVector& f, const Epetra_MultiVector& inc, double fnorm2,
     double& lsparam, bool& suffdecr) const
 {
-  linesearch_->Init(NlnProblem(),
-      Params().sublist("Nonlinear Operator: Line Search"), x, f, inc, fnorm2);
+  const std::string lslist = MyGetParameter<std::string>("line search");
+
+  linesearch_->Init(NlnProblem(), Configuration(), lslist, x, f, inc, fnorm2);
   linesearch_->Setup();
   linesearch_->ComputeLSParam(lsparam, suffdecr);
+
 
   return;
 }

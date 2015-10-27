@@ -36,6 +36,11 @@ namespace NLNSOL
 {
   class NlnOperatorBase;
   class NlnProblem;
+
+  namespace UTILS
+  {
+    class NlnConfig;
+  } // namespace UTILS
 } // namespace NLNSOL
 
 /*----------------------------------------------------------------------------*/
@@ -87,7 +92,8 @@ namespace FAS
         Teuchos::RCP<const Epetra_CrsMatrix> R, ///< restriction operator
         Teuchos::RCP<const Epetra_CrsMatrix> P, ///< prolongation operator
         const Epetra_Comm& comm, ///< communicator
-        const Teuchos::ParameterList& params, ///< parameter list
+        Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config, ///< configuration of nonlinear solver
+        const std::string listname, ///< name of sublist with configuration of this operator
         Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem, ///< reference to nonlinear problem evaluator
         Teuchos::RCP<const Epetra_MultiVector> nullspace = Teuchos::null ///< set of null space vectors
         );
@@ -276,8 +282,11 @@ namespace FAS
     //! Returns pointer to Epetra_Comm associated with this operator.
     virtual const Epetra_Comm& Comm() const;
 
-    //! Return parameter list
-    virtual const Teuchos::ParameterList& Params() const;
+    //! Access to global configuration
+    virtual Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> Configuration() const;
+
+    //! Get name of this operator's parameter list in the global configuration
+    virtual const std::string& MyListName() const { return listname_; }
 
     //! Has Init() already been called?
     virtual const bool IsInit() const { return isinit_; }
@@ -356,8 +365,16 @@ namespace FAS
     //! communicator
     Teuchos::RCP<const Epetra_Comm> comm_;
 
-    //! parameter list
-    Teuchos::RCP<const Teuchos::ParameterList> params_;
+    //! @name Configuration
+    //@{
+
+    //! Configuration of this nonlinear operator
+    Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config_;
+
+    //! Name of sublist in #config_ for this operator
+    std::string listname_;
+
+    //@}
 
     //! @name Smoothers for this level
     //@{

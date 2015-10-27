@@ -32,6 +32,7 @@ Maintainer: Matthias Mayr
 #include "nln_operator_base.H"
 #include "nln_operator_factory.H"
 #include "nln_problem.H"
+#include "nln_utils.H"
 
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_pstream.H"
@@ -55,7 +56,8 @@ NLNSOL::FAS::NlnLevel::NlnLevel()
   fhat_(Teuchos::null),
   nlnproblem_(Teuchos::null),
   comm_(Teuchos::null),
-  params_(Teuchos::null),
+  config_(Teuchos::null),
+  listname_(""),
   presmoother_(Teuchos::null),
   postsmoother_(Teuchos::null),
   coarsesolver_(Teuchos::null),
@@ -71,7 +73,8 @@ void NLNSOL::FAS::NlnLevel::Init(const int levelid,
     Teuchos::RCP<const Epetra_CrsMatrix> R,
     Teuchos::RCP<const Epetra_CrsMatrix> P,
     const Epetra_Comm& comm,
-    const Teuchos::ParameterList& params,
+    Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config,
+    const std::string listname,
     Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem,
     Teuchos::RCP<const Epetra_MultiVector> nullspace
     )
@@ -85,7 +88,8 @@ void NLNSOL::FAS::NlnLevel::Init(const int levelid,
   SetNullSpace(nullspace);
 
   comm_ = Teuchos::rcp(&comm, false);
-  params_ = Teuchos::rcp(&params, false);
+  config_ = config;
+  listname_ = listname;
   nlnproblem_ = nlnproblem;
 
   // Init() has been called
@@ -105,23 +109,32 @@ void NLNSOL::FAS::NlnLevel::Setup()
   // create coarse level solver if this level is the coarsest level
   if (IsCoarsestLevel())
   {
-    coarsesolver_ =
-        operatorfactory.Create(Params().sublist("Coarse Level Solver"));
-    coarsesolver_->Init(Comm(), Params().sublist("Coarse Level Solver"),
-        NlnProblem());
+    const std::string oplistname = Configuration()->GetParameter<std::string>(
+        MyListName(), "coarse level solver");
+    coarsesolver_ = operatorfactory.Create(Configuration(), oplistname);
+    coarsesolver_->Init(Comm(), Configuration(), oplistname, NlnProblem());
     coarsesolver_->Setup();
   }
   else // otherwise create pre- and post-smoother
   {
     // create presmoother
-    presmoother_ = operatorfactory.Create(Params().sublist("Presmoother"));
-    presmoother_->Init(Comm(), Params().sublist("Presmoother"), NlnProblem());
-    presmoother_->Setup();
+    {
+      const std::string presmoothername = Configuration()->GetParameter<
+          std::string>(MyListName(), "presmoother");
+      presmoother_ = operatorfactory.Create(Configuration(), presmoothername);
+      presmoother_->Init(Comm(), Configuration(), presmoothername, NlnProblem());
+      presmoother_->Setup();
+    }
 
     // create postsmoother
-    postsmoother_ = operatorfactory.Create(Params().sublist("Postsmoother"));
-    postsmoother_->Init(Comm(), Params().sublist("Postsmoother"), NlnProblem());
-    postsmoother_->Setup();
+    {
+      const std::string postsmoothername = Configuration()->GetParameter<
+          std::string>(MyListName(), "postsmoother");
+      postsmoother_ = operatorfactory.Create(Configuration(), postsmoothername);
+      postsmoother_->Init(Comm(), Configuration(), postsmoothername,
+          NlnProblem());
+      postsmoother_->Setup();
+    }
   }
 
   // Setup() has been called
@@ -339,12 +352,14 @@ const Epetra_Comm& NLNSOL::FAS::NlnLevel::Comm() const
 }
 
 /*----------------------------------------------------------------------------*/
-const Teuchos::ParameterList& NLNSOL::FAS::NlnLevel::Params() const
+Teuchos::RCP<const NLNSOL::UTILS::NlnConfig>
+NLNSOL::FAS::NlnLevel::Configuration() const
 {
-  if (params_.is_null())
-    dserror("Parameter list has not been set, yet.");
+  // check if parameter list has already been set
+  if (config_.is_null())
+    dserror("Configuration 'config_' has not been initialized, yet.");
 
-  return *params_;
+  return config_;
 }
 
 /*----------------------------------------------------------------------------*/

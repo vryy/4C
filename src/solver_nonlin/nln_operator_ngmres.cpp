@@ -36,6 +36,7 @@ Maintainer: Matthias Mayr
 #include "nln_operator_factory.H"
 #include "nln_operator_ngmres.H"
 #include "nln_problem.H"
+#include "nln_utils.H"
 
 #include "linesearch_base.H"
 #include "linesearch_factory.H"
@@ -91,8 +92,8 @@ void NLNSOL::NlnOperatorNGmres::Setup()
 void NLNSOL::NlnOperatorNGmres::SetupLineSearch()
 {
   NLNSOL::LineSearchFactory linesearchfactory;
-  linesearch_ = linesearchfactory.Create(
-      Params().sublist("Nonlinear Operator: Line Search"));
+  linesearch_ = linesearchfactory.Create(Configuration(),
+      MyGetParameter<std::string>("line search"));
 
   return;
 }
@@ -100,12 +101,13 @@ void NLNSOL::NlnOperatorNGmres::SetupLineSearch()
 /*----------------------------------------------------------------------------*/
 void NLNSOL::NlnOperatorNGmres::SetupPreconditioner()
 {
-  const Teuchos::ParameterList& precparams =
-      Params().sublist("NGMRES: Nonlinear Preconditioner");
+  const std::string opname = MyGetParameter<std::string>(
+      "NGMRES: Nonlinear Preconditioner");
 
   NlnOperatorFactory nlnopfactory;
-  nlnprec_ = nlnopfactory.Create(precparams);
-  nlnprec_->Init(Comm(), precparams, NlnProblem(), BaciLinearSolver(), Nested()+1);
+  nlnprec_ = nlnopfactory.Create(Configuration(), opname);
+  nlnprec_->Init(Comm(), Configuration(), opname, NlnProblem(),
+      BaciLinearSolver(), Nested() + 1);
   nlnprec_->Setup();
 
   return;
@@ -130,8 +132,8 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
   //----------------------------------------------------------------------------
   // prepare storage for solution iterates, corresponding residuals and norms
   //----------------------------------------------------------------------------
-  std::vector<Teuchos::RCP<Epetra_MultiVector> > sol; // previous iterates
-  std::vector<Teuchos::RCP<Epetra_MultiVector> > res; // previous residuals
+  std::vector<Teuchos::RCP<const Epetra_MultiVector> > sol; // previous iterates
+  std::vector<Teuchos::RCP<const Epetra_MultiVector> > res; // previous residuals
 
   //----------------------------------------------------------------------------
   // some variables needed during the NGmres iteration loop
@@ -195,8 +197,8 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
   //----------------------------------------------------------------------------
   Teuchos::RCP<NLNSOL::UTILS::StagnationDetection> stagdetect =
       Teuchos::rcp(new NLNSOL::UTILS::StagnationDetection());
-  stagdetect->Init(Params().sublist("Nonlinear Operator: Stagnation Detection"),
-      fnorm2);
+  stagdetect->Init(Configuration(), MyGetParameter<std::string>(
+      "nonlinear operator: stagnation detection"), fnorm2);
   //----------------------------------------------------------------------------
 
   // print initial state of convergence
@@ -440,11 +442,13 @@ const int NLNSOL::NlnOperatorNGmres::ComputeTentativeIterate(
 const bool NLNSOL::NlnOperatorNGmres::ComputeAcceleratedIterate(
     const Teuchos::RCP<const Epetra_MultiVector> xbar,
     const Teuchos::RCP<const Epetra_MultiVector> fbar,
-    const std::vector<Teuchos::RCP<Epetra_MultiVector> >& sol,
-    const std::vector<Teuchos::RCP<Epetra_MultiVector> >& res,
+    const std::vector<Teuchos::RCP<const Epetra_MultiVector> >& sol,
+    const std::vector<Teuchos::RCP<const Epetra_MultiVector> >& res,
     Teuchos::RCP<Epetra_MultiVector> xhat
     ) const
 {
+  int err = 0;
+
   bool success = true; // suppose success of acceleration step
 
   if (sol.size() != res.size() or sol.size() < 1 or res. size() < 1)
@@ -470,7 +474,7 @@ const bool NLNSOL::NlnOperatorNGmres::ComputeAcceleratedIterate(
   std::vector<Teuchos::RCP<Epetra_MultiVector> > P;
   P.clear();
   {
-    for (std::vector<Teuchos::RCP<Epetra_MultiVector> >::const_iterator it =
+    for (std::vector<Teuchos::RCP<const Epetra_MultiVector> >::const_iterator it =
         res.begin(); it < res.end(); ++it)
     {
       // allocate new vector as column of matrix P
@@ -479,7 +483,8 @@ const bool NLNSOL::NlnOperatorNGmres::ComputeAcceleratedIterate(
 
       /* difference between most recent residual and the one from the 'it'
        * previous iteration */
-      p->Update(1.0, *fbar, -1.0, *(*it), 0.0);
+      err = p->Update(1.0, *fbar, -1.0, *(*it), 0.0);
+      if (err != 0) { dserror("Update failed."); }
 
       // insert this as last column into matrix 'P'
       P.push_back(p);
@@ -564,12 +569,14 @@ const bool NLNSOL::NlnOperatorNGmres::ComputeAcceleratedIterate(
   // ---------------------------------------------------------------------------
 
   // sum up last iterates to new solution, i.e. do the linear combination
-  xhat->Update(1.0, *xbar, 0.0);
+  err = xhat->Update(1.0, *xbar, 0.0);
+  if (err != 0) { dserror("Update failed."); }
   if (success)
   {
     for (int i = 0; i < alpha.Length(); ++i)
     {
-      xhat->Update(alpha[i], *xbar, -alpha[i], *(sol[i]), 1.0);
+      err = xhat->Update(alpha[i], *xbar, -alpha[i], *(sol[i]), 1.0);
+      if (err != 0) { dserror("Update failed."); }
     }
   }
 
@@ -605,7 +612,7 @@ void NLNSOL::NlnOperatorNGmres::PerformLineSearchStep(
 /*----------------------------------------------------------------------------*/
 const unsigned int NLNSOL::NlnOperatorNGmres::GetMaxWindowSize() const
 {
-  return Params().get<int>("NGMRES: Max Window Size");
+  return MyGetParameter<int>("NGMRES: max window size");
 }
 
 /*----------------------------------------------------------------------------*/
@@ -613,10 +620,12 @@ void NLNSOL::NlnOperatorNGmres::ComputeStepLength(const Epetra_MultiVector& x,
     const Epetra_MultiVector& f, const Epetra_MultiVector& inc, double fnorm2,
     double& lsparam, bool& suffdecr) const
 {
-  linesearch_->Init(NlnProblem(),
-      Params().sublist("Nonlinear Operator: Line Search"), x, f, inc, fnorm2);
+  const std::string lslist = MyGetParameter<std::string>("line search");
+
+  linesearch_->Init(NlnProblem(), Configuration(), lslist, x, f, inc, fnorm2);
   linesearch_->Setup();
   linesearch_->ComputeLSParam(lsparam, suffdecr);
+
 
   return;
 }
@@ -624,9 +633,9 @@ void NLNSOL::NlnOperatorNGmres::ComputeStepLength(const Epetra_MultiVector& x,
 /*----------------------------------------------------------------------------*/
 void NLNSOL::NlnOperatorNGmres::AddToWindow(
     Teuchos::RCP<const Epetra_MultiVector> vec,
-    std::vector<Teuchos::RCP<Epetra_MultiVector> >& history) const
+    std::vector<Teuchos::RCP<const Epetra_MultiVector> >& history) const
 {
-  Teuchos::RCP<Epetra_MultiVector> veccopy =
+  Teuchos::RCP<const Epetra_MultiVector> veccopy =
       Teuchos::rcp(new Epetra_MultiVector(*vec));
   history.push_back(veccopy);
 

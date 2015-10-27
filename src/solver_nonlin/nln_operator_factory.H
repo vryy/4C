@@ -27,7 +27,12 @@ Maintainer: Matthias Mayr
 
 namespace NLNSOL
 {
-  class NlnOperator;
+  class NlnOperatorBase;
+
+  namespace UTILS
+  {
+    class NlnConfig;
+  } // namespace UTILS
 } // namespace NLNSOL
 
 namespace Teuchos
@@ -74,15 +79,17 @@ namespace NLNSOL
       //! @name Creation on nonlinear operators
       //@{
 
-      /*! \brief Returns the result of a NlnOperator inverse applied to an
-       *  Epetra_MultiVector X in Y.
+      /*! \brief Create a user-given nonlinear operator
        *
-       *  \return Integer error code, set to 0 if successful.
+       *  The nonlinear operator to be created is configured via the parameter
+       *  "nonlinear operator: type" in the parameter list \c list in the global configuration
+       *  list \c config.
        *
-       *  \author mayr.mt \date 06/2014
+       *  \author mayr.mt \date 10/2015
        */
       virtual Teuchos::RCP<NLNSOL::NlnOperatorBase> Create(
-          const Teuchos::ParameterList& params ///< parameter list to configure the nonlinear operator
+          Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config, ///< configuration of nonlinear solver
+          const std::string listname ///< name of sublist with configuration of nonlinear operator
           );
 
       //@}

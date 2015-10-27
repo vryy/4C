@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file linesearch_backtracking.cpp
+\file linesearch_bruteforce.cpp
 
 <pre>
 Maintainer: Matthias Mayr
@@ -54,8 +54,7 @@ void NLNSOL::LineSearchBruteForce::Setup()
   // make sure that Init() has been called
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
 
-  trialstepsize_ =
-      Params().sublist("Brute Force").get<double>("trial step size");
+  trialstepsize_ = MyGetParameter<double>("line search: trial step size");
 
   // SetupLineSearch() has been called
   SetIsSetup();

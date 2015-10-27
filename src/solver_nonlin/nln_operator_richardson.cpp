@@ -34,6 +34,7 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 // baci
+#include "nln_operator_factory.H"
 #include "nln_operator_richardson.H"
 #include "nln_problem.H"
 
@@ -53,7 +54,7 @@
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 NLNSOL::NlnOperatorRichardson::NlnOperatorRichardson()
-: linprec_(Teuchos::null)
+: nlnprec_(Teuchos::null)
 {
   return;
 }
@@ -70,39 +71,26 @@ void NLNSOL::NlnOperatorRichardson::Setup()
   // Make sure that Init() has been called
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
 
-  // ---------------------------------------------------------------------------
-  // Get parameter list for linear preconditioner from input file
-  // ---------------------------------------------------------------------------
-  Teuchos::RCP<Teuchos::ParameterList> solverparams =
-      CreateIFPACKParameterList();
-
-
-  // ---------------------------------------------------------------------------
-  // Create the linear preconditioner based on user's choice
-  // ---------------------------------------------------------------------------
-  if (solverparams->isSublist("IFPACK Parameters"))
-  {
-    linprec_ = Teuchos::rcp(
-        new LINALG::SOLVER::IFPACKPreconditioner(
-            DRT::Problem::Instance()->ErrorFile()->Handle(),
-            solverparams->sublist("IFPACK Parameters"),
-            solverparams->sublist("Aztec Parameters")));
-  }
-  else
-  {
-    dserror("This type of linear preconditioner is not implemented, yet. "
-        "Or maybe you just chose a wrong configuration in the input file.");
-  }
-
-  Teuchos::RCP<Epetra_MultiVector> tmp =
-      Teuchos::rcp(new Epetra_MultiVector(NlnProblem()->DofRowMap(), true));
-
-  // Setup with dummy vectors
-  linprec_->Setup(true, &*(NlnProblem()->GetJacobianOperator()),
-      &*tmp, &*tmp);
+  SetupPreconditioner();
 
   // Setup() has been called
   SetIsSetup();
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void NLNSOL::NlnOperatorRichardson::SetupPreconditioner()
+{
+  const std::string opname = MyGetParameter<std::string>(
+      "nonlinear richardson: nonlinear preconditioner");
+
+  NlnOperatorFactory nlnopfactory;
+  nlnprec_ = nlnopfactory.Create(Configuration(), opname);
+  nlnprec_->Init(Comm(), Configuration(), opname, NlnProblem(),
+      BaciLinearSolver(), Nested() + 1);
+  nlnprec_->Setup();
 
   return;
 }
@@ -144,8 +132,8 @@ int NLNSOL::NlnOperatorRichardson::ApplyInverse(const Epetra_MultiVector& f,
       Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
 
   int iter = 0; // iteration counter
-  double omega =
-      Params().get<double>("Richardson iteration: relaxation parameter"); // relaxation parameter
+  double omega = MyGetParameter<double>(
+      "nonlinear richardson: relaxation parameter"); // relaxation parameter
 
   while (iter < GetMaxIter())
   {
@@ -158,7 +146,7 @@ int NLNSOL::NlnOperatorRichardson::ApplyInverse(const Epetra_MultiVector& f,
     if (err != 0) { dserror("Update failed."); }
 
     // compute new iterative increment
-    err = linprec_->ApplyInverse(*r, *inc);
+    err = nlnprec_->ApplyInverse(*r, *inc);
     if (err != 0) { dserror("ApplyInverse() failed."); }
 
     // update solution increment
@@ -199,57 +187,16 @@ void NLNSOL::NlnOperatorRichardson::ComputeStepLength(const Epetra_MultiVector& 
     const Epetra_MultiVector& f, const Epetra_MultiVector& inc, double fnorm2,
     double& lsparam, bool& suffdecr) const
 {
-  dserror("There is no line search algorithm available for a Richardson "
-      "iteration preconditioner object.");
+  dserror("There is no line search algorithm available for nonlinear "
+      "Richardson iteration.");
 
   return;
 }
 
 /*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
-Teuchos::RCP<Teuchos::ParameterList>
-NLNSOL::NlnOperatorRichardson::CreateIFPACKParameterList() const
+void NLNSOL::NlnOperatorRichardson::RebuildPrec()
 {
-  // ---------------------------------------------------------------------------
-  // Get parameter list for linear preconditioner from input file
-  // ---------------------------------------------------------------------------
-  // define parameter list (to be filled)
-  Teuchos::RCP<Teuchos::ParameterList> params =
-      Teuchos::rcp(new Teuchos::ParameterList());
+  nlnprec_->RebuildPrec();
 
-  // get the solver number to read from input file
-  const int linsolvernumber = Params().get<int>(
-      "Richardson iteration: linear solver");
-
-  // check if the solver ID is valid
-  if (linsolvernumber == (-1)) { dserror("No valid linear solver defined!"); }
-
-  // linear solver parameter list
-  const Teuchos::ParameterList& inputparams =
-      DRT::Problem::Instance()->SolverParams(linsolvernumber);
-
-  // ---------------------------------------------------------------------------
-  // Perform some safety checks on the parameter configuration
-  // ---------------------------------------------------------------------------
-  const std::string prectype =
-      inputparams.get<std::string>("AZPREC");
-  if (prectype == "Jacobi" or prectype == "SymmGaussSeidel")
-  {
-    if (inputparams.get<int>("IFPACKGFILL") != 1)
-    {
-      dserror("Iterations are performed by %s. "
-          "Set input parameter IFPACKGFILL to 1.", Label());
-    }
-  }
-
-  // ---------------------------------------------------------------------------
-
-  // ---------------------------------------------------------------------------
-  // Transform Baci solver parameters to Trilinos solver parameters
-  // ---------------------------------------------------------------------------
-  *params = LINALG::Solver::TranslateSolverParameters(inputparams);
-
-  // ---------------------------------------------------------------------------
-
-  return params;
+  return;
 }

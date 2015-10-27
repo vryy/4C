@@ -29,6 +29,7 @@ Maintainer: Matthias Mayr
 #include "nln_operator_nonlincg.H"
 #include "nln_operator_richardson.H"
 #include "nln_operator_sd.H"
+#include "nln_utils.H"
 
 #include "../drt_lib/drt_dserror.H"
 
@@ -42,9 +43,12 @@ NLNSOL::NlnOperatorFactory::NlnOperatorFactory()
 
 /*----------------------------------------------------------------------------*/
 Teuchos::RCP<NLNSOL::NlnOperatorBase>
-NLNSOL::NlnOperatorFactory::Create(const Teuchos::ParameterList& params)
+NLNSOL::NlnOperatorFactory::Create(
+    Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config,
+    const std::string listname)
 {
-  const std::string optype = params.get<std::string>("Nonlinear Operator Type");
+  const std::string optype =
+      config->GetParameter<std::string>(listname, "nonlinear operator: type");
   if (optype == "Newton")
   {
     return Teuchos::rcp(new NLNSOL::NlnOperatorNewton());

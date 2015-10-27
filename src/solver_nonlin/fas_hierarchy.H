@@ -63,6 +63,11 @@ namespace NLNSOL
   {
     class NlnLevel;
   } // namespace FAS
+
+  namespace UTILS
+  {
+    class NlnConfig;
+  } // namespace UTILS
 } // namespace NLNSOL
 
 namespace Teuchos
@@ -115,7 +120,8 @@ namespace NLNSOL
 
       //! Initialization of member variables
       virtual void Init(const Epetra_Comm& comm, ///< communicator
-          const Teuchos::ParameterList& params, ///< parameter list
+          Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config, ///< configuration
+          const std::string listname, ///< name of sublist with configuration of this operator
           Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem, ///< nonlinear problem to solve
           const Teuchos::ParameterList& mlparams ///< ML parameter list from baci linear solver (just for null space)
           );
@@ -291,8 +297,11 @@ namespace NLNSOL
       //! Access to communicator
       virtual const Epetra_Comm& Comm() const;
 
-      //! Access to parameter list
-      virtual const Teuchos::ParameterList& Params() const;
+      //! Access to global configuration
+      virtual Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> Configuration() const;
+
+      //! Get name of this operator's parameter list in the global configuration
+      virtual const std::string& MyListName() const { return listname_; }
 
       //! Access to the nonlinear problem
       virtual Teuchos::RCP<NLNSOL::NlnProblem> NlnProblem() const;
@@ -317,8 +326,17 @@ namespace NLNSOL
       //! communicator
       Teuchos::RCP<const Epetra_Comm> comm_;
 
-      //! parameter list
-      Teuchos::RCP<const Teuchos::ParameterList> params_;
+      //! @name Configuration
+      //@{
+
+      //! Configuration of this line search operator
+      Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config_;
+
+      //! Name of sublist in #config_ for this operator
+      std::string listname_;
+
+      //@}
+
 
       //! Nonlinear problem to be evaluated and solved
       Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem_;

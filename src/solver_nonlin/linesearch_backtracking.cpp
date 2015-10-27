@@ -56,8 +56,8 @@ void NLNSOL::LineSearchBacktracking::Setup()
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
 
   // fill member variables
-  itermax_ = Params().sublist("Backtracking").get<int>("max number of backtracking steps");
-  backtrackfac_ = Params().sublist("Backtracking").get<double>("factor for step size reduction");
+  itermax_ = MyGetParameter<int>("line search: max number of backtracking steps");
+  backtrackfac_ = MyGetParameter<double>("line search: factor for step size reduction");
 
   // SetupLineSearch() has been called
   SetIsSetup();

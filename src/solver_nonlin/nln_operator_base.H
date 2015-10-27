@@ -130,7 +130,8 @@ namespace NLNSOL
 
       //! Initialization: Fill base class member variables
       virtual void Init(const Epetra_Comm& comm, ///< communicator
-          const Teuchos::ParameterList& params, ///< parameter list for configuration
+          Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config, ///< configuration
+          const std::string listname, ///< name of sublist for this operator
           Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem, ///< nonlinear problem to solve
           Teuchos::RCP<LINALG::Solver> bacisolver = Teuchos::null, ///< linear solver from Baci
           const int nested = 0 ///< How nested is this algorithm?
@@ -210,8 +211,18 @@ namespace NLNSOL
       //! Access to communicator
       virtual const Epetra_Comm& Comm() const;
 
-      //! Access to parameter list
-      virtual const Teuchos::ParameterList& Params() const;
+      //! Access to global configuration
+      virtual Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> Configuration() const;
+
+      //! Access to a parameter of this operator's configuration
+      template <typename ParamType> ParamType MyGetParameter(
+          const std::string param) const
+      {
+        return Configuration()->GetParameter<ParamType>(MyListName(), param);
+      }
+
+      //! Get name of this operator's parameter list in the global configuration
+      virtual const std::string& MyListName() const { return listname_; }
 
       //! Access to the nonlinear problem
       virtual Teuchos::RCP<NLNSOL::NlnProblem> NlnProblem() const;
@@ -363,8 +374,16 @@ namespace NLNSOL
       //! Communicator
       Teuchos::RCP<const Epetra_Comm> comm_;
 
-      //! Parameter list for configuration of this nonlinear operator
-      Teuchos::RCP<const Teuchos::ParameterList> params_;
+      //! @name Configuration
+      //@{
+
+      //! Configuration of this nonlinear operator
+      Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config_;
+
+      //! Name of sublist in #config_ for this operator
+      std::string listname_;
+
+      //@}
 
       //! Nonlinear problem to be evaluated and solved
       Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem_;

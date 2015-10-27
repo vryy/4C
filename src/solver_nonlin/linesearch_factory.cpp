@@ -38,10 +38,12 @@ NLNSOL::LineSearchFactory::LineSearchFactory()
 }
 
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<NLNSOL::LineSearchBase>
-NLNSOL::LineSearchFactory::Create(const Teuchos::ParameterList& params)
+Teuchos::RCP<NLNSOL::LineSearchBase> NLNSOL::LineSearchFactory::Create(
+    Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config,
+    const std::string listname)
 {
-  const std::string lstype = params.get<std::string>("Line Search: Type");
+  const std::string lstype =
+      config->GetParameter<std::string>(listname, "line search: type");
   if (lstype == "brute force")
   {
     return Teuchos::rcp(new NLNSOL::LineSearchBruteForce());

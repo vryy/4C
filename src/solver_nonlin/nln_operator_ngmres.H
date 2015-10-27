@@ -217,8 +217,8 @@ namespace NLNSOL
     (
       const Teuchos::RCP<const Epetra_MultiVector> xbar, ///< tentative iterate / current solution
       const Teuchos::RCP<const Epetra_MultiVector> fbar, ///< residual based on tentative iterate / current solution
-      const std::vector<Teuchos::RCP<Epetra_MultiVector> >& sol, ///< collection of previous solution iterates
-      const std::vector<Teuchos::RCP<Epetra_MultiVector> >& res, ///< collection of previous residuals
+      const std::vector<Teuchos::RCP<const Epetra_MultiVector> >& sol, ///< collection of previous solution iterates
+      const std::vector<Teuchos::RCP<const Epetra_MultiVector> >& res, ///< collection of previous residuals
       Teuchos::RCP<Epetra_MultiVector> xhat ///< accelerated iterate (to be determined)
     ) const;
 
@@ -252,7 +252,7 @@ namespace NLNSOL
      */
     virtual void AddToWindow(
         Teuchos::RCP<const Epetra_MultiVector> vec, ///< vector to add to history
-        std::vector<Teuchos::RCP<Epetra_MultiVector> >& history ///< collection of history vectors
+        std::vector<Teuchos::RCP<const Epetra_MultiVector> >& history ///< collection of history vectors
         ) const;
 
     //@}

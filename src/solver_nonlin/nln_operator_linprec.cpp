@@ -23,6 +23,7 @@
 
 // Ifpack
 #include <Ifpack.h>
+#include <Ifpack_Preconditioner.h>
 
 // standard
 #include <iostream>
@@ -77,7 +78,7 @@ void NLNSOL::NlnOperatorLinPrec::Setup()
   // Get parameter list for linear preconditioner from input file
   // ---------------------------------------------------------------------------
   // get the solver number
-  const int linsolvernumber = Params().get<int>(
+  const int linsolvernumber = MyGetParameter<int>(
       "Linear Preconditioner: Linear Solver");
 
   // check if the solver ID is valid
@@ -96,6 +97,8 @@ void NLNSOL::NlnOperatorLinPrec::Setup()
   // ---------------------------------------------------------------------------
   if (solverparams.isSublist("IFPACK Parameters"))
   {
+    solverparams.sublist("IFPACK Parameters").print(std::cout);
+
     linprec_ = Teuchos::rcp(
         new LINALG::SOLVER::IFPACKPreconditioner(
             DRT::Problem::Instance()->ErrorFile()->Handle(),

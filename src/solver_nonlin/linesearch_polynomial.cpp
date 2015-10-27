@@ -49,7 +49,7 @@ void NLNSOL::LineSearchPolynomial::Setup()
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
 
   // fill member variables
-  itermax_ = Params().sublist("Polynomial2").get<int>("max number of recursive polynomials");
+  itermax_ = MyGetParameter<int>("line search: max number of recursive polynomials");
 
   // SetupLineSearch() has been called
   SetIsSetup();

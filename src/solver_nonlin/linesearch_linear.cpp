@@ -39,6 +39,9 @@ NLNSOL::LineSearchLinear::LineSearchLinear()
 /*----------------------------------------------------------------------------*/
 void NLNSOL::LineSearchLinear::Setup()
 {
+  dserror("This algorithm is considered as deprecated. Please check carefully"
+      "before using it.");
+
   // make sure that Init() has been called
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
 

@@ -67,8 +67,7 @@ void NLNSOL::NlnOperatorNewton::Setup()
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
 
   {
-    if (Params().isParameter("Newton: update jacobian every"))
-      jacevery_ = Params().get<int>("Newton: update jacobian every");
+    jacevery_ = MyGetParameter<int>("Newton: update jacobian every");
 
     switch (jacevery_)
     {
@@ -114,7 +113,7 @@ void NLNSOL::NlnOperatorNewton::Setup()
 void NLNSOL::NlnOperatorNewton::SetupLinearSolver()
 {
   // get the solver number used for structural problems
-  const int linsolvernumber = Params().get<int>("Newton: Linear Solver");
+  const int linsolvernumber = MyGetParameter<int>("Newton: Linear Solver");
 
   switch (linsolvernumber)
   {
@@ -153,8 +152,8 @@ void NLNSOL::NlnOperatorNewton::SetupLinearSolver()
 void NLNSOL::NlnOperatorNewton::SetupLineSearch()
 {
   NLNSOL::LineSearchFactory linesearchfactory;
-  linesearch_ = linesearchfactory.Create(
-      Params().sublist("Nonlinear Operator: Line Search"));
+  linesearch_ = linesearchfactory.Create(Configuration(),
+      MyGetParameter<std::string>("line search"));
 
   return;
 }
@@ -197,8 +196,9 @@ int NLNSOL::NlnOperatorNewton::ApplyInverse(const Epetra_MultiVector& f,
   // check for stagnation of iterations
   Teuchos::RCP<NLNSOL::UTILS::StagnationDetection> stagdetect =
       Teuchos::rcp(new NLNSOL::UTILS::StagnationDetection());
-  stagdetect->Init(
-        Params().sublist("Nonlinear Operator: Stagnation Detection"), fnorm2);
+  stagdetect->Init(Configuration(),
+      MyGetParameter<std::string>("nonlinear operator: stagnation detection"),
+      fnorm2);
   Teuchos::RCP<Teuchos::ParameterList> statusparams =
       Teuchos::rcp(new Teuchos::ParameterList());
 
@@ -300,8 +300,9 @@ void NLNSOL::NlnOperatorNewton::ComputeStepLength(const Epetra_MultiVector& x,
     const Epetra_MultiVector& f, const Epetra_MultiVector& inc, double fnorm2,
     double& lsparam, bool& suffdecr) const
 {
-  linesearch_->Init(NlnProblem(),
-      Params().sublist("Nonlinear Operator: Line Search"), x, f, inc, fnorm2);
+  const std::string lslist = MyGetParameter<std::string>("line search");
+
+  linesearch_->Init(NlnProblem(), Configuration(), lslist, x, f, inc, fnorm2);
   linesearch_->Setup();
   linesearch_->ComputeLSParam(lsparam, suffdecr);
 

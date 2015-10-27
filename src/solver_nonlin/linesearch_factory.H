@@ -71,8 +71,17 @@ namespace NLNSOL
     //! @name Creation of line search algorithms
     //@{
 
+    /*! \brief Create a user-given line search algorithm
+     *
+     *  The line search to be created is configured via the parameter "line
+     *  search" in the parameter list \c listname in the global configuration
+     *  list.
+     *
+     *  \author mayr.mt \date 10/2015
+     */
     virtual Teuchos::RCP<NLNSOL::LineSearchBase> Create(
-        const Teuchos::ParameterList& params ///< line search parameter list
+        Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config, ///< configuration of nonlinear solver
+        const std::string listname ///< name of sublist with configuration of line search algorithm
         );
 
     //@}

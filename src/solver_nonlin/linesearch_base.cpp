@@ -24,7 +24,6 @@ Maintainer: Matthias Mayr
 // baci
 #include "linesearch_base.H"
 #include "nln_problem.H"
-#include "nln_utils.H"
 
 #include "../drt_lib/drt_dserror.H"
 
@@ -33,7 +32,8 @@ Maintainer: Matthias Mayr
 /*----------------------------------------------------------------------------*/
 NLNSOL::LineSearchBase::LineSearchBase()
  : nlnproblem_(Teuchos::null),
-   params_(Teuchos::null),
+   config_(Teuchos::null),
+   listname_(""),
    xold_(Teuchos::null),
    fold_(Teuchos::null),
    inc_(Teuchos::null),
@@ -48,7 +48,8 @@ NLNSOL::LineSearchBase::LineSearchBase()
 /*----------------------------------------------------------------------------*/
 void NLNSOL::LineSearchBase::Init(
     Teuchos::RCP<const NLNSOL::NlnProblem> nlnproblem,
-    const Teuchos::ParameterList& params,
+    Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config,
+    const std::string listname,
     const Epetra_MultiVector& xold,
     const Epetra_MultiVector& fold,
     const Epetra_MultiVector& inc,
@@ -59,7 +60,8 @@ void NLNSOL::LineSearchBase::Init(
 
   // Initialize the member variables
   nlnproblem_ = nlnproblem;
-  params_ = Teuchos::rcp(&params, false);
+  config_ = config;
+  listname_ = listname;
   xold_ = Teuchos::rcp(&xold, false);
   fold_ = Teuchos::rcp(&fold, false);
   inc_ = Teuchos::rcp(&inc, false);
@@ -74,23 +76,15 @@ void NLNSOL::LineSearchBase::Init(
     dserror("Old residual norm 'resnormold_' = %f, but has to be greater than "
         "0.0!", resnormold_);
 
-  // set verbosity level
-  if (Params().isParameter("Line Search: Verbosity"))
-  {
-    const std::string verblevel =
-        Params().get<std::string>("Line Search: Verbosity");
-    setVerbLevel(NLNSOL::UTILS::TranslateVerbosityLevel(verblevel));
-  }
-  else
-  {
-    setDefaultVerbLevel(Teuchos::VERB_MEDIUM);
-  }
+  const std::string verblevel = MyGetParameter<std::string>(
+      "line search: verbosity");
+  setVerbLevel(NLNSOL::UTILS::TranslateVerbosityLevel(verblevel));
 
   if (getVerbLevel() > Teuchos::VERB_HIGH)
   {
     *getOStream() << "Parameter list passed to Line Search algorithm:"
         << std::endl;
-    Params().print(*getOStream());
+    Configuration()->GetSubList(MyListName()).print(*getOStream());
   }
 
   // Init() has been called
@@ -211,13 +205,15 @@ bool NLNSOL::LineSearchBase::ConvergenceCheck(const Epetra_MultiVector& f,
 }
 
 /*----------------------------------------------------------------------------*/
-const Teuchos::ParameterList& NLNSOL::LineSearchBase::Params() const
+/*----------------------------------------------------------------------------*/
+Teuchos::RCP<const NLNSOL::UTILS::NlnConfig>
+NLNSOL::LineSearchBase::Configuration() const
 {
   // check if parameter list has already been set
-  if (params_.is_null())
-    dserror("Parameter list 'params_' has not been initialized, yet.");
+  if (config_.is_null())
+    dserror("Configuration 'config_' has not been initialized, yet.");
 
-  return *params_;
+  return config_;
 }
 
 /*----------------------------------------------------------------------------*/

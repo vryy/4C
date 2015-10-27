@@ -46,7 +46,8 @@ NLNSOL::NlnOperatorBase::NlnOperatorBase()
 : isinit_(false),
   issetup_(false),
   comm_(Teuchos::null),
-  params_(Teuchos::null),
+  config_(Teuchos::null),
+  listname_(""),
   nlnproblem_(Teuchos::null),
   outparams_(Teuchos::null),
   nested_(0)
@@ -57,8 +58,8 @@ NLNSOL::NlnOperatorBase::NlnOperatorBase()
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void NLNSOL::NlnOperatorBase::Init(const Epetra_Comm& comm,
-    const Teuchos::ParameterList& params,
-    Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem,
+    Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config,
+    const std::string listname, Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem,
     Teuchos::RCP<LINALG::Solver> bacisolver, const int nested)
 {
   // Enforce to call Setup() after Init()
@@ -66,7 +67,8 @@ void NLNSOL::NlnOperatorBase::Init(const Epetra_Comm& comm,
 
   // fill member variables with given values
   comm_ = Teuchos::rcp(&comm, false);
-  params_ = Teuchos::rcp(&params, false);
+  config_ = config;
+  listname_ = listname;
   nlnproblem_ = nlnproblem;
   bacisolver_ = bacisolver;
   nested_ = nested;
@@ -74,16 +76,8 @@ void NLNSOL::NlnOperatorBase::Init(const Epetra_Comm& comm,
   // initialize member variables
   outparams_ = Teuchos::rcp(new Teuchos::ParameterList());
 
-  if (Params().isParameter("Nonlinear Operator: Verbosity"))
-  {
-    setVerbLevel(
-        NLNSOL::UTILS::TranslateVerbosityLevel(
-            Params().get<std::string>("Nonlinear Operator: Verbosity")));
-  }
-  else
-  {
-    setDefaultVerbLevel(Teuchos::VERB_MEDIUM);
-  }
+  setVerbLevel(NLNSOL::UTILS::TranslateVerbosityLevel(
+            MyGetParameter<std::string>("nonlinear operator: verbosity")));
 
   // Init() has been called
   SetIsInit();
@@ -103,13 +97,14 @@ const Epetra_Comm& NLNSOL::NlnOperatorBase::Comm() const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-const Teuchos::ParameterList& NLNSOL::NlnOperatorBase::Params() const
+Teuchos::RCP<const NLNSOL::UTILS::NlnConfig>
+NLNSOL::NlnOperatorBase::Configuration() const
 {
   // check if parameter list has already been set
-  if (params_.is_null())
-    dserror("Parameter list 'params_' has not been initialized, yet.");
+  if (config_.is_null())
+    dserror("Configuration 'config_' has not been initialized, yet.");
 
-  return *params_;
+  return config_;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -130,7 +125,7 @@ void NLNSOL::NlnOperatorBase::PrintIterSummary(const int iter,
     const double fnorm2) const
 {
   if (getVerbLevel() > Teuchos::VERB_NONE
-      and Params().get<bool>("Nonlinear Operator: Print Iterations"))
+      and MyGetParameter<bool>("Nonlinear Operator: Print Iterations"))
   {
     *getOStream() << LabelShort() << " iteration " << iter
         << ":\t|f| = " << std::scientific << std::setprecision(6) << fnorm2
@@ -185,14 +180,14 @@ const bool NLNSOL::NlnOperatorBase::CheckSuccessfulConvergence(
 /*----------------------------------------------------------------------------*/
 const bool NLNSOL::NlnOperatorBase::IsSolver() const
 {
-  return Params().get<bool>("Nonlinear Operator: Is Solver");
+  return MyGetParameter<bool>("Nonlinear Operator: Is Solver");
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 const int NLNSOL::NlnOperatorBase::GetMaxIter() const
 {
-  return Params().get<int>("Nonlinear Operator: Max Iter");
+  return MyGetParameter<int>("Nonlinear Operator: Max Iter");
 }
 
 /*----------------------------------------------------------------------------*/

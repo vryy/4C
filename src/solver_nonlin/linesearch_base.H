@@ -23,6 +23,8 @@ Maintainer: Matthias Mayr
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_VerboseObject.hpp>
 
+// baci
+#include "nln_utils.H"
 #include "../drt_inpar/inpar_solver_nonlin.H"
 
 /*----------------------------------------------------------------------------*/
@@ -75,7 +77,8 @@ namespace NLNSOL
 
     //! Initialize some member variables
     virtual void Init(Teuchos::RCP<const NLNSOL::NlnProblem> nlnproblem, ///< nonlinear problem to solve
-        const Teuchos::ParameterList& params, ///< parameter list for configuration of line search algorithm
+        Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config, ///< configuration
+        const std::string listname, ///< name of sublist with configuration of this operator
         const Epetra_MultiVector& xold, ///< last iterate
         const Epetra_MultiVector& fold, ///< residual at last iterate
         const Epetra_MultiVector& inc, ///< the Newton direction (full step)
@@ -197,8 +200,18 @@ namespace NLNSOL
     //! Access to residual norm of last iterate
     virtual const double GetFNormOld() const { return resnormold_; }
 
-    //! Access to parameter list
-    virtual const Teuchos::ParameterList& Params() const;
+    //! Access to global configuration
+    virtual Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> Configuration() const;
+
+    //! Access to a parameter of my configuration
+    template <typename ParamType> ParamType MyGetParameter(
+        const std::string param) const
+    {
+      return Configuration()->GetParameter<ParamType>(MyListName(), param);
+    }
+
+    //! Get name of this operator's parameter list in the global configuration
+    virtual const std::string& MyListName() const { return listname_; }
 
     //@}
 
@@ -268,8 +281,16 @@ namespace NLNSOL
     //! nonlinear operator that has initiated this line search
     Teuchos::RCP<const NLNSOL::NlnProblem> nlnproblem_;
 
-    //! parameter list
-    Teuchos::RCP<const Teuchos::ParameterList> params_;
+    //! @name Configuration
+    //@{
+
+    //! Configuration of this line search operator
+    Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config_;
+
+    //! Name of sublist in #config_ for this operator
+    std::string listname_;
+
+    //@}
 
     //! last iterate
     Teuchos::RCP<const Epetra_MultiVector> xold_;

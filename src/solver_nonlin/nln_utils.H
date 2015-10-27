@@ -42,6 +42,165 @@ namespace NLNSOL
 //! NLNSOL::UTILS: Utilities for nonlinear solver NLNSOL
 namespace UTILS
 {
+  /*! \brief Store and manage access to configuration of NLNSOL parameter list
+   *
+   *  Input to the NLNSOL framework is done via an xml-file. The path to this
+   *  file is specified in the dat-file parameter --NONLINEAR SOLVER/XML_FILE.
+   *
+   *  The xml-file has just a one-level hierarchy, i.e. the global list contains
+   *  only one layer of sublists. Each sublist describes a single algorithmic
+   *  part/object. In case, that further (sublist) specifications are required
+   *  for nested algorithms/objects, we set at std::string parameter with the
+   *  name of the sublist that contains these additional parameters.
+   *
+   *  \author mayr.mt \date 10/2015
+   */
+  class NlnConfig : public Teuchos::VerboseObject<NlnConfig>
+  {
+  public:
+
+    //! @name Construction / Destruction
+    //@{
+
+    //! constructor
+    NlnConfig();
+
+    //! destructor
+    virtual ~NlnConfig(){};
+
+    //@}
+
+    //! @name Setup
+    //@{
+
+    /*! \brief Setup the configuration object
+     *
+     *  Read a user-given xml-file into the Teuchos::ParameterList #params_.
+     *
+     *  ToDo (mayr) Add some sense of parameter validation and input checking.
+     *
+     *  \author mayr.mt \date 10/2015
+     */
+    virtual const bool Setup(const std::string filename ///< file name of xml-file
+        );
+
+    //@}
+
+    //! @name Access to parameter lists
+    //@{
+
+    /*! \brief Access to parameter (sub-)list \c listname
+     *
+     *  This is the recommended way of accessing a sublist, since it protects
+     *  the user-given configuration from changes during runtime.
+     *
+     *  \author mayr.mt \date 10/2015
+     */
+    virtual const Teuchos::ParameterList& GetSubList(
+        const std::string listname ///< name of sublist
+        ) const;
+
+    /*! \brief Access to parameter (sub-)list \c listname (non-const)
+     *
+     *  \note Returning a non-const list is necessary for certain NOX packages.
+     *  If these issues are resolved, this routine should go away.
+     *
+     *  \warning Do not use this routine since it allows for modifications of
+     *  the requested list during runtime which might be dangerous.
+     *
+     *  \author mayr.mt \date 10/2015
+     */
+    virtual Teuchos::ParameterList& GetSubListNonConst(
+        const std::string listname ///< name of sublist
+        ) const;
+
+    /*! \brief Access to parameter \c param in sublist \c list
+     *
+     *  First, we check whether the requested parameter \c param in the sublist
+     *  \c list is available. Otherwise, we throw an error.
+     *
+     *  If available, the requested parameter is finally returned.
+     *
+     *  ToDo (mayr) Return default value, if parameter does not exist.
+     *
+     *  \author mayr.mt \date 10/2015
+     */
+    template <typename ParamType> ParamType GetParameter(
+        const std::string list, ///< name of sublist
+        const std::string param ///< name of parameter
+        ) const
+    {
+      if (not params_->isSublist(list))
+        dserror("Sublist '%s' does not exist.", list.c_str());
+
+      const Teuchos::ParameterList& params = params_->sublist(list);
+
+      return GetParameter<ParamType>(params, param);
+    };
+
+    /*! \brief Access to parameter \c param in top level parameter list
+     *
+     *  First, we check, whether the requested parameter \c param in the top
+     *  level parameter list #params_ is available. Otherwise, we throw an error.
+     *
+     *  If available, the requested parameter is finally returned.
+     *
+     *  ToDo (mayr) Return default value, if parameter does not exist.
+     *
+     *  \author mayr.mt \date 10/2015
+     */
+    template <typename ParamType> ParamType GetParameter(
+        const std::string param ///< name of parameter
+        ) const
+    {
+      return GetParameter<ParamType>(*params_, param);
+    };
+
+    /*! \brief Access to parameter \c param in given parameter list \c list
+     *
+     *  First, we check, whether the requested parameter \c param in the
+     *  parameter list \c list is available. Otherwise, we throw an error.
+     *
+     *  If available, the requested parameter is finally returned.
+     *
+     *  ToDo (mayr) Return default value, if parameter does not exist.
+     *
+     *  \author mayr.mt \date 10/2015
+     */
+    template <typename ParamType> ParamType GetParameter(
+        const Teuchos::ParameterList& list, ///< sublist
+        const std::string param ///< name of parameter
+        ) const
+    {
+      if (not list.isParameter(param.c_str()))
+        dserror("Parameter '%s' does not exist in parameter list '%s'.",
+            param.c_str(), list.name().c_str());
+
+      return list.get<ParamType>(param);
+    };
+
+    /*! \brief Access to global parameter list
+     *
+     *  \note Returning a non-const list is necessary for certain NOX packages.
+     *  If these issues are resolved, this routine should go away.
+     *
+     *  \warning Do not use this routine since it allows for modifications of
+     *  the requested list during runtime which might be dangerous.
+     *
+     *  \author mayr.mt \date 10/2015
+     */
+    virtual Teuchos::RCP<Teuchos::ParameterList> GetAllNonConstRcp() const;
+
+    //@}
+
+  private:
+
+    //! global parameter list
+    Teuchos::RCP<Teuchos::ParameterList> params_;
+  };
+
+  // ---------------------------------------------------------------------------
+
   /*! \brief Detect stagnation during iterations
    *
    *  We monitor the reduction in the residual norm to heuristically detect
@@ -71,7 +230,8 @@ namespace UTILS
 
     //! Initialization
     virtual void Init(
-        const Teuchos::ParameterList& params,
+        Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config, ///< configuration of nonlinear solver
+        const std::string listname, ///< name of sublist with configuration of this operator
         const double norminitial ///< initial residual norm
         );
 
@@ -129,9 +289,6 @@ namespace UTILS
     //! @name Access routines
     //@{
 
-    //! Access to configuring parameter list
-    virtual Teuchos::RCP<const Teuchos::ParameterList> Params() const;
-
     //! Has stagnation detection been activated?
     virtual const bool IsActive() const { return active_; }
 
@@ -153,7 +310,7 @@ namespace UTILS
     bool isinit_;
 
     //! Teuchos::ParameterList for configuration
-    Teuchos::RCP<const Teuchos::ParameterList> params_;
+    Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config_;
 
     //! number of subsequent iterations with stagnation
     int stagiter_;
@@ -174,123 +331,6 @@ namespace UTILS
     bool active_;
 
   }; // class StagnationDetection
-
-  // ---------------------------------------------------------------------------
-
-  /*! \brief Store and manage access to configuration of NLNSOL parameter list
-   *
-   *  We monitor the reduction in the residual norm to heuristically detect
-   *  stagnation during the nonlinear iterations. An iterative process is
-   *  considered in stagnation if the residual reduction in #stagitermax_
-   *  subsequent iterations is below #stagthreshold_.
-   *
-   *  \author mayr.mt \date 10/2015
-   */
-  class NlnConfig : public Teuchos::VerboseObject<StagnationDetection>
-  {
-  public:
-
-    //! @name Construction / Destruction
-    //@{
-
-    //! constructor
-    NlnConfig();
-
-    //! destructor
-    virtual ~NlnConfig(){};
-
-    //@}
-
-    //! @name Setup
-    //@{
-
-    virtual const bool Setup(const std::string filename ///< file name of xml-file
-        );
-
-    //@}
-
-    //! @name Access to parameter lists
-    //@{
-
-    //! Access to parameter list \c listname
-    virtual const Teuchos::ParameterList& GetSubList(
-        const std::string listname ///< name of sublist
-        ) const;
-
-    //! Access to parameter list \c listname
-    virtual Teuchos::ParameterList& GetSubListNonConst(
-        const std::string listname ///< name of sublist
-        ) const;
-
-    /*! \brief Access to parameter \c param in sublist \c list
-     *
-     *  First, we check, whether the requested parameter \c param in the sublist
-     *  \c list is available. Then, we return it.
-     *
-     *  ToDo (mayr) Return default value, if parameter does not exist.
-     *
-     *  \author mayr.mt \date 10/2015
-     */
-    template <typename ParamType> ParamType GetParameter(
-        const std::string list, ///< name of sublist
-        const std::string param ///< name of parameter
-        ) const
-    {
-      if (not params_->isSublist(list))
-        dserror("Sublist '%s' does not exist.", list.c_str());
-
-      const Teuchos::ParameterList& params = params_->sublist(list);
-
-      return GetParameter<ParamType>(params, param);
-    };
-
-    /*! \brief Access to parameter \c param in top level parameter list
-     *
-     *  First, we check, whether the requested parameter \c param in the top
-     *  level parameter list #params_ is available. Then, we return it.
-     *
-     *  ToDo (mayr) Return default value, if parameter does not exist.
-     *
-     *  \author mayr.mt \date 10/2015
-     */
-    template <typename ParamType> ParamType GetParameter(
-        const std::string param ///< name of parameter
-        ) const
-    {
-      return GetParameter<ParamType>(*params_, param);
-    };
-
-    /*! \brief Access to parameter \c param in given parameter list \c list
-     *
-     *  First, we check, whether the requested parameter \c param in the
-     *  parameter list \c list is available. Then, we return it.
-     *
-     *  ToDo (mayr) Return default value, if parameter does not exist.
-     *
-     *  \author mayr.mt \date 10/2015
-     */
-    template <typename ParamType> ParamType GetParameter(
-        const Teuchos::ParameterList& list, ///< sublist
-        const std::string param ///< name of parameter
-        ) const
-    {
-      if (not list.isParameter(param.c_str()))
-        dserror("Parameter '%s' does not exist in parameter list '%s'.",
-            param.c_str(), list.name().c_str());
-
-      return list.get<ParamType>(param);
-    };
-
-    //!
-    virtual Teuchos::RCP<Teuchos::ParameterList> GetAllNonConstRcp() const;
-
-    //@}
-
-  private:
-
-    //! global parameter list
-    Teuchos::RCP<Teuchos::ParameterList> params_;
-  };
 
   // ---------------------------------------------------------------------------
 
@@ -322,6 +362,20 @@ namespace UTILS
    *  The parameter list is read into parameters list 'params' from a file
    *  whose filename is given as input to this routine.
    *
+   *  We follow the 'advanced XML style' in MueLu.
+   *
+   *  \author mayr.mt \date 10/2015
+   */
+  void CreateParamListFromXML(
+      const std::string filename, ///< filename of xml file to be read
+      Teuchos::ParameterList& params ///< parameter list to be filled
+      );
+
+  /*! \brief Create Teuchos::ParameterList from XML-File
+   *
+   *  The parameter list is read into parameters list 'params' from a file
+   *  whose filename is given as input to this routine.
+   *
    *  We allow that sublists are read from separate xml-files. So, we need to
    *  loop over the read parameter list and check, whether we need to read
    *  additional sublists from another xml-file. This is done recursively.
@@ -333,7 +387,7 @@ namespace UTILS
    *
    *  \author mayr.mt \date 01/2015
    */
-  void CreateParamListFromXML(
+  void CreateParamListFromXMLOld(
       const std::string filename, ///< filename of xml file to be read
       Teuchos::ParameterList& params ///< parameter list to be filled
       );

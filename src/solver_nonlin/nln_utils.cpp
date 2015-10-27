@@ -33,11 +33,90 @@ Maintainer: Matthias Mayr
 
 /*----------------------------------------------------------------------------*/
 
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////// BEGIN OF CLASS /////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+NLNSOL::UTILS::NlnConfig::NlnConfig()
+: params_(Teuchos::null)
+{
+  return;
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+const bool NLNSOL::UTILS::NlnConfig::Setup(const std::string filename)
+{
+  params_ = Teuchos::rcp(new Teuchos::ParameterList());
+
+  NLNSOL::UTILS::CreateParamListFromXML(filename, *params_);
+
+  if (params_.is_null())
+  {
+    dserror("Filling the parameter list from the XML-file failed.");
+    return false;
+  }
+
+  return true;
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+const Teuchos::ParameterList& NLNSOL::UTILS::NlnConfig::GetSubList(
+    const std::string listname) const
+{
+  if (params_.is_null())
+    dserror("Parameter list 'params_' not properly initialized.");
+
+  if (not params_->isSublist(listname))
+    dserror("There is no sublist '%s'.", listname.c_str());
+
+  return params_->sublist(listname);
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+Teuchos::ParameterList& NLNSOL::UTILS::NlnConfig::GetSubListNonConst(
+    const std::string listname) const
+{
+  if (params_.is_null())
+    dserror("Parameter list 'params_' not properly initialized.");
+
+  if (not params_->isSublist(listname))
+    dserror("There is no sublist '%s'.", listname.c_str());
+
+  return params_->sublist(listname);
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+Teuchos::RCP<Teuchos::ParameterList>
+NLNSOL::UTILS::NlnConfig::GetAllNonConstRcp() const
+{
+  Teuchos::RCP<Teuchos::ParameterList> params =
+      Teuchos::rcp(new Teuchos::ParameterList(*params_));
+  return params;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////// END OF CLASS //////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////// BEGIN OF CLASS /////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 NLNSOL::UTILS::StagnationDetection::StagnationDetection()
 : isinit_(false),
-  params_(Teuchos::null),
+  config_(Teuchos::null),
   stagiter_(1),
   stagitermax_(0),
   stagratio_(0.0),
@@ -51,36 +130,35 @@ NLNSOL::UTILS::StagnationDetection::StagnationDetection()
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void NLNSOL::UTILS::StagnationDetection::Init(
-    const Teuchos::ParameterList& params,
-    const double norminitial)
+    Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config,
+    const std::string listname, const double norminitial)
 {
   // Init() may be called only once
   if (IsInit())
     dserror("Init() has already been called. Don't call it again!");
 
   // initialize
-  params_ = Teuchos::rcp(&params, false);
+  config_ = config;
 
-  if (Params()->get<bool>("Stagnation Detection: on off"))
+  if (config_->GetParameter<bool>(listname, "Stagnation Detection: on off"))
   {
     active_ = true;
-    stagitermax_ = Params()->get<int>("Stagnation Detection: max iterations");
-    stagthreshold_ = Params()->get<double>("Stagnation Detection: reduction threshold");
+    stagitermax_ = config_->GetParameter<int>(listname, "stagnation detection: max iterations");
+    stagthreshold_ = config_->GetParameter<double>(listname, "stagnation detection: reduction threshold");
     normprev_ = norminitial;
   }
   else
     active_ = false;
 
   // configure output to screen
-  setVerbLevel(
-      NLNSOL::UTILS::TranslateVerbosityLevel(
-          Params()->get<std::string>("Stagnation Detection: Verbosity")));
+  setVerbLevel(NLNSOL::UTILS::TranslateVerbosityLevel(
+      config_->GetParameter<std::string>(listname, "Stagnation Detection: Verbosity")));
 
   if (getVerbLevel() > Teuchos::VERB_HIGH)
   {
     *getOStream() << "Parmeter List passed to Stagnation Detection: "
         << std::endl;
-    Params()->print(*getOStream());
+//    )->print(*getOStream());
   }
 
   if (getVerbLevel() > Teuchos::VERB_MEDIUM)
@@ -91,7 +169,7 @@ void NLNSOL::UTILS::StagnationDetection::Init(
         << "  Stagnation Detection: reduction threshold = " << stagthreshold_
         << std::endl
         << "  Stagnation Detection: Verbosity = "
-        << Params()->get<std::string>("Stagnation Detection: Verbosity")
+        << config_->GetParameter<std::string>(listname, "Stagnation Detection: Verbosity")
         << std::endl;
   }
 
@@ -172,90 +250,6 @@ NLNSOL::UTILS::StagnationDetection::StatusParams() const
   return oparams;
 }
 
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
-Teuchos::RCP<const Teuchos::ParameterList>
-NLNSOL::UTILS::StagnationDetection::Params() const
-{
-  if (params_.is_null())
-    dserror("Parameter list 'params_' has not been set, yet.");
-
-  return params_;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////// END OF CLASS //////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////// BEGIN OF CLASS /////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-
-NLNSOL::UTILS::NlnConfig::NlnConfig()
-: params_(Teuchos::null)
-{
-  return;
-}
-
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
-const bool NLNSOL::UTILS::NlnConfig::Setup(const std::string filename)
-{
-  params_ = Teuchos::rcp(new Teuchos::ParameterList());
-
-  NLNSOL::UTILS::CreateParamListFromXML(filename, *params_);
-
-  if (params_.is_null())
-  {
-    dserror("Filling the parameter list from the XML-file failed.");
-    return false;
-  }
-
-  return true;
-}
-
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
-const Teuchos::ParameterList& NLNSOL::UTILS::NlnConfig::GetSubList(
-    const std::string listname) const
-{
-  if (params_.is_null())
-    dserror("Parameter list 'params_' not properly initialized.");
-
-  if (not params_->isSublist(listname))
-    dserror("There is no sublist '%s'.", listname.c_str());
-
-  return params_->sublist(listname);
-}
-
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
-Teuchos::ParameterList& NLNSOL::UTILS::NlnConfig::GetSubListNonConst(
-    const std::string listname) const
-{
-  if (params_.is_null())
-    dserror("Parameter list 'params_' not properly initialized.");
-
-  if (not params_->isSublist(listname))
-    dserror("There is no sublist '%s'.", listname.c_str());
-
-  return params_->sublist(listname);
-}
-
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
-Teuchos::RCP<Teuchos::ParameterList>
-NLNSOL::UTILS::NlnConfig::GetAllNonConstRcp() const
-{
-  Teuchos::RCP<Teuchos::ParameterList> params =
-      Teuchos::rcp(new Teuchos::ParameterList(*params_));
-  return params;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////// END OF CLASS //////////////////////////////////
@@ -296,6 +290,24 @@ Teuchos::RCP<Teuchos::ParameterList> NLNSOL::UTILS::CreateParamListFromXML(
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void NLNSOL::UTILS::CreateParamListFromXML(const std::string filename,
+    Teuchos::ParameterList& params)
+{
+  // check for reasonable filename of xml-file to be read
+  if (filename.length() && filename.rfind(".xml"))
+  {
+    // fill parameter list with content of xml-file
+    params = *(Teuchos::getParametersFromXmlFile(filename));
+  }
+  else
+    dserror("The file name '%s' is not a valid XML file name.",
+        filename.c_str());
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void NLNSOL::UTILS::CreateParamListFromXMLOld(const std::string filename,
     Teuchos::ParameterList& params)
 {
   // time measurements

@@ -77,8 +77,8 @@ void NLNSOL::NlnOperatorDInverse::Setup()
 void NLNSOL::NlnOperatorDInverse::SetupLineSearch()
 {
   NLNSOL::LineSearchFactory linesearchfactory;
-  linesearch_ = linesearchfactory.Create(
-      Params().sublist("Nonlinear Operator: Line Search"));
+  linesearch_ = linesearchfactory.Create(Configuration(),
+      MyGetParameter<std::string>("line search"));
 
   return;
 }
@@ -190,8 +190,9 @@ void NLNSOL::NlnOperatorDInverse::ComputeStepLength(const Epetra_MultiVector& x,
     const Epetra_MultiVector& f, const Epetra_MultiVector& inc, double fnorm2,
     double& lsparam, bool& suffdecr) const
 {
-  linesearch_->Init(NlnProblem(),
-      Params().sublist("Nonlinear Operator: Line Search"), x, f, inc, fnorm2);
+  const std::string lslist = MyGetParameter<std::string>("line search");
+
+  linesearch_->Init(NlnProblem(), Configuration(), lslist, x, f, inc, fnorm2);
   linesearch_->Setup();
   linesearch_->ComputeLSParam(lsparam, suffdecr);
 

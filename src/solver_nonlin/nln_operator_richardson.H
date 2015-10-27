@@ -2,7 +2,7 @@
 /*!
  \file nln_operator_richardson.H
 
- \brief Richardson iterations with relaxation and preconditioning
+ \brief Nonlinear preconditioned Richardson iterations with relaxation
 
  <pre>
  Maintainer: Matthias Mayr
@@ -33,14 +33,6 @@
 class Epetra_Comm;
 class Epetra_MultiVector;
 
-namespace LINALG
-{
-namespace SOLVER
-{
-class PreconditionerType;
-} // namespace SOLVER
-} // namespace LINALG
-
 namespace NLNSOL
 {
 class LineSearchBase;
@@ -58,22 +50,15 @@ namespace NLNSOL
 /*! \class NlnOperatorRichardson
  *  \brief Richardson iteration with relaxation and preconditioning
  *
- *  This algorithm implements a Richardson iteration with IFPACK
- *  preconditioning (denoted by \f$M^{-1}\f$. We allow for a user defined
- *  relaxation parameter \f$\omega\f$. The iterative procedure reads
+ *  This algorithm implements a Richardson iteration with any nonlinear operator
+ *  from the NLNSOL framework (denoted by \f$M^{-1}\f$. We allow for a
+ *  user-defined relaxation parameter \f$\omega\f$. The iterative procedure
+ *  reads
  *  \f[
  *  x_{i+1} = x_i - \omega\left(f + M^{-1}x_i\right)
  *  \f]
  *
- *  As IFPACK preconditioners, we allow for
- *  <ul>
- *  <li> Jacobi </li>
- *  <li> Symmetric Gauss-Seidel </li>
- *  <li> Chebyshev </li>
- *  </ul>
- *
- *
- *  \note In case of relaxation-type preconditioning, set the number of sweeps to 1
+ *  \note In case of IFPACK preconditioners, set the number of sweeps to 1
  *  for the IFPACK configuration. Sweeps/iterations as well as the damping are
  *  performed by the Richardson algorithm.
  *
@@ -106,11 +91,9 @@ public:
 
   /*! \brief Rebuild preconditioner
    *
-   *  No action required.
-   *
    *  \author mayr.mt \date 04/2015
    */
-  virtual void RebuildPrec(){ /* no action required */ };
+  virtual void RebuildPrec();
 
   //@}
 
@@ -145,6 +128,14 @@ protected:
 
 private:
 
+  //! @name Setup
+  //@{
+
+  //! Setup nonlinear preconditioner
+  virtual void SetupPreconditioner();
+
+  //@}
+
   //! @name Search Direction
   //@{
 
@@ -160,22 +151,8 @@ private:
 
   //@}
 
-  /*! \brief Create the IFPACK parameter list
-   *
-   *  The IFPACK parameter list is read from a SOLVER block from the Baci input
-   *  file.
-   *
-   *  Some additional checks are performed. Especially, we have to ensure that
-   *  the IFPACK preconditioner is applied only once when calling
-   *  #linprec_->ApplyInverse() since the iterative application is handled by
-   *  the Richardson iteration.
-   *
-   *  \author mayr.mt \date 04/2015
-   */
-  Teuchos::RCP<Teuchos::ParameterList> CreateIFPACKParameterList() const;
-
   //! preconditioner
-  Teuchos::RCP<LINALG::SOLVER::PreconditionerType> linprec_;
+  Teuchos::RCP<NLNSOL::NlnOperatorBase> nlnprec_;
 
 }; // class NlnOperatorRichardson
 } // namespace NLNSOL

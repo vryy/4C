@@ -58,6 +58,7 @@ Maintainer: Matthias Mayr
 #include "nln_operator_fas.H"
 #include "nln_problem.H"
 #include "nln_problem_coarselevel.H"
+#include "nln_utils.H"
 
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_pstream.H"
@@ -76,7 +77,8 @@ NLNSOL::FAS::AMGHierarchy::AMGHierarchy()
 : isinit_(false),
   issetup_(false),
   comm_(Teuchos::null),
-  params_(Teuchos::null),
+  config_(Teuchos::null),
+  listname_(""),
   nlnproblem_(Teuchos::null),
   mlparams_(Teuchos::null),
   nlnlevels_(0)
@@ -91,13 +93,14 @@ NLNSOL::FAS::AMGHierarchy::AMGHierarchy()
 
 /*----------------------------------------------------------------------------*/
 void NLNSOL::FAS::AMGHierarchy::Init(const Epetra_Comm& comm,
-    const Teuchos::ParameterList& params,
-    Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem,
+    Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config,
+    const std::string listname, Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem,
     const Teuchos::ParameterList& mlparams)
 {
   // fill member variables
   comm_ = Teuchos::rcp(&comm, false);
-  params_ = Teuchos::rcp(&params, false);
+  config_ = config;
+  listname_ = listname;
   nlnproblem_ = nlnproblem;
   mlparams_ = Teuchos::rcp(&mlparams, false);
 
@@ -128,8 +131,8 @@ void NLNSOL::FAS::AMGHierarchy::Setup()
   SetupNlnSolHierarchy();
 
   // Print all levels
-  if (getVerbLevel() > Teuchos::VERB_NONE
-      and Params().sublist("Printing").get<bool>("print Nln levels"))
+  if (getVerbLevel() > Teuchos::VERB_NONE) // ToDo (mayr) control printing via xml-input
+//      and Configuration())Params().sublist("Printing").get<bool>("print Nln levels"))
     PrintNlnLevels(std::cout);
 
   // Setup() has been called
@@ -159,8 +162,10 @@ void NLNSOL::FAS::AMGHierarchy::SetupMueLuHierarchy()
    * extract local copy of MueLu parameter list that is needed for an
    * easy-to-handle setup of the MueLu hierarchy
    */
-  Teuchos::ParameterList multigridparams =
-      Params().sublist("FAS: MueLu Parameters");
+  const std::string mueluconfiglistname = Configuration()->GetParameter<
+      std::string>(MyListName(), "AMG Hierarchy: MueLu configuration");
+  Teuchos::ParameterList multigridparams = Configuration()->GetSubList(
+      mueluconfiglistname);
 
 //    mueLuOp->SetFixedBlockSize(multigridparams.get<int>("number of equations"), 0);
 
@@ -219,7 +224,7 @@ const bool NLNSOL::FAS::AMGHierarchy::SetupNlnSolHierarchy()
     const Teuchos::RCP<Level>& muelulevel = mueLuHierarchy_->GetLevel(level);
 
     // print the MueLu level
-    if (Params().sublist("Printing").get<bool>("print MueLu levels"))
+    if (Configuration()->GetParameter<bool>(MyListName(), "AMG Hierarchy: print MueLu levels"))
       muelulevel->print(*getFancyOStream(Teuchos::rcpFromRef(std::cout)), MueLu::High);
 
     Teuchos::RCP<Epetra_CrsMatrix> myAcrs = Teuchos::null;
@@ -250,12 +255,6 @@ const bool NLNSOL::FAS::AMGHierarchy::SetupNlnSolHierarchy()
               mueLuFactory_->GetFactoryManager(level)->GetFactory("Nullspace").get());
       myNsp = MueLu::Utils<double,int,int,Node>::MV2EpetraMV(myNullspace);
     }
-
-    // get the level parameter list
-    std::stringstream ss;
-    ss << "Level " << level;
-    std::string levelstring = ss.str();
-    const Teuchos::ParameterList& levelparams = Params().sublist(levelstring);
 
     // the nonlinear problem to hand into each level
     Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem;
@@ -290,9 +289,20 @@ const bool NLNSOL::FAS::AMGHierarchy::SetupNlnSolHierarchy()
     newlevel->setVerbLevel(getVerbLevel());
 
     // initialize and setup
-    newlevel->Init(muelulevel->GetLevelID(), mueLuHierarchy_->GetNumLevels(),
-        myAcrs, myR, myP, Comm(), levelparams, nlnproblem, myNsp);
-    newlevel->Setup();
+    {
+      // get string of current level in format "Level i" with level ID 'i'
+      std::stringstream levelname;
+      levelname << "Level " << level;
+
+      // extract sublist name that described the current level
+      const std::string levellistname = Configuration()->GetParameter<
+          std::string>(MyListName(), levelname.str());
+
+      // setup of current NLNSOL::NlnLevel
+      newlevel->Init(muelulevel->GetLevelID(), mueLuHierarchy_->GetNumLevels(),
+          myAcrs, myR, myP, Comm(), Configuration(), levellistname, nlnproblem, myNsp);
+      newlevel->Setup();
+    }
     // -------------------------------------------------------------------------
   }
 
@@ -453,7 +463,7 @@ const bool NLNSOL::FAS::AMGHierarchy::CheckValidity() const
   // matrix has to be set also on fine level
   if (not NlnLevel(0)->HaveMatrix())
   {
-    dserror("Matrix misses on fine level 0.");
+    dserror("Matrix is missing on fine level 0.");
     isvalid = false;
   }
 
@@ -463,12 +473,12 @@ const bool NLNSOL::FAS::AMGHierarchy::CheckValidity() const
     // check if R and P exist (on coarse levels only)
     if (not NlnLevel(i+1)->HaveROp())
     {
-      dserror("Operator R misses on level %d.", i+1);
+      dserror("Operator R is missing on level %d.", i+1);
       isvalid = false;
     }
     if (not NlnLevel(i+1)->HavePOp())
     {
-      dserror("Operator P misses on level %d.", i+1);
+      dserror("Operator P is missing on level %d.", i+1);
       isvalid = false;
     }
 
@@ -517,13 +527,14 @@ const Epetra_Comm& NLNSOL::FAS::AMGHierarchy::Comm() const
 }
 
 /*----------------------------------------------------------------------------*/
-const Teuchos::ParameterList& NLNSOL::FAS::AMGHierarchy::Params() const
+Teuchos::RCP<const NLNSOL::UTILS::NlnConfig>
+NLNSOL::FAS::AMGHierarchy::Configuration() const
 {
   // check if parameter list has already been set
-  if (params_.is_null())
-    dserror("Parameter list 'params_' has not been initialized, yet.");
+  if (config_.is_null())
+    dserror("Configuration 'config_' has not been initialized, yet.");
 
-  return *params_;
+  return config_;
 }
 
 /*----------------------------------------------------------------------------*/
