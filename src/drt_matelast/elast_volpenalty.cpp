@@ -31,6 +31,8 @@ MAT::ELASTIC::PAR::VolPenalty::VolPenalty(
   eps_(matdata->GetDouble("EPSILON")),
   gam_(matdata->GetDouble("GAMMA"))
 {
+  if (eps_<0. || gam_<=0.)
+    dserror("VolPenalty parameters EPSILON and GAMMA have to be greater zero");
 }
 
 
