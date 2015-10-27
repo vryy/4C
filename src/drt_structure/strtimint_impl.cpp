@@ -2586,8 +2586,20 @@ int STR::TimIntImpl::NlnSolver()
   // ---------------------------------------------------------------------------
   // Create / read parameter list for configuration of nonlinear solver
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<Teuchos::ParameterList> params =
-      NLNSOL::UTILS::CreateParamListFromXML();
+  std::string filename =
+      DRT::Problem::Instance()->NonlinearSolverParams().get<std::string>(
+          "XML_FILE");
+
+  // check for reasonable xml file
+  if (filename == "none")
+  {
+    dserror("Seems like you forgot to set the XML file for configuration of "
+        "the nonlinear solver.");
+  }
+
+  Teuchos::RCP<NLNSOL::UTILS::NlnConfig> nlnconfig =
+      Teuchos::rcp(new NLNSOL::UTILS::NlnConfig());
+  nlnconfig->Setup(filename);
 
   // ---------------------------------------------------------------------------
   // Create NOX group
@@ -2598,23 +2610,24 @@ int STR::TimIntImpl::NlnSolver()
 
   // create NOX linear system to provide access to Jacobian
   Teuchos::RCP<NOX::Epetra::LinearSystem> linSys =
-      NoxCreateLinearSystem(*params, noxSoln, noxutils_);
+      NoxCreateLinearSystem(*nlnconfig->GetAllNonConstRcp(), noxSoln, noxutils_);
 
   /* use NOX::STR::Group to enable access to time integration
    * Note: NOX::Epetra::Group would be sufficient. */
   Teuchos::RCP<NOX::STR::Group> noxgrp =
       Teuchos::rcp(new NOX::STR::Group(*this,
-          params->sublist("Nonlinear Problem"), Teuchos::rcp(this, false),
+          nlnconfig->GetSubListNonConst("Nonlinear Problem"), Teuchos::rcp(this, false),
           noxSoln, linSys));
 
   // ---------------------------------------------------------------------------
-  // Create interface to nonlinear problem
-  // ---------------------------------------------------------------------------
-  Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem =
-      Teuchos::rcp(new NLNSOL::NlnProblem());
-  nlnproblem->Init(Discretization()->Comm(),
-      params->sublist("Nonlinear Problem"), *noxgrp, stiff_);
-  nlnproblem->Setup();
+    // Create interface to nonlinear problem
+    // ---------------------------------------------------------------------------
+    Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem =
+        Teuchos::rcp(new NLNSOL::NlnProblem());
+    nlnproblem->Init(Discretization()->Comm(),
+        nlnconfig->GetSubList("Nonlinear Problem"), *noxgrp, stiff_,
+        Teuchos::null);
+    nlnproblem->Setup();
 
   /* Evaluate once more to guarantee valid quantities inside of the
    * NOX::STR::Group() */
@@ -2625,13 +2638,14 @@ int STR::TimIntImpl::NlnSolver()
   // Create the nonlinear operator to solve the nonlinear problem
   // ---------------------------------------------------------------------------
   // use factory to create the nonlinear operator
-  NLNSOL::NlnOperatorFactory opfactory;
-  Teuchos::RCP<NLNSOL::NlnOperatorBase> nlnoperator =
-      opfactory.Create(params->sublist("Nonlinear Operator"));
+  const std::string nlnopname = nlnconfig->GetParameter<std::string>(
+      "outer nonlinear operator");
 
-  // setup
-  nlnoperator->Init(Discretization()->Comm(),
-      params->sublist("Nonlinear Operator"), nlnproblem);
+  NLNSOL::NlnOperatorFactory opfactory;
+  Teuchos::RCP<NLNSOL::NlnOperatorBase> nlnoperator = opfactory.Create(
+      nlnconfig, nlnopname);
+  nlnoperator->Init(Discretization()->Comm(), nlnconfig, nlnopname, nlnproblem,
+      solver_, 0);
   nlnoperator->Setup();
 
   // ---------------------------------------------------------------------------
