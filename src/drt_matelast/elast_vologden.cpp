@@ -56,6 +56,8 @@ void MAT::ELASTIC::VolOgden::AddStrainEnergy(
   // add to overall strain energy
   if (beta != 0)
     psi += kappa/(beta*beta)*(beta*log(modinv(2))+pow(modinv(2),-beta)-1.);
+  else
+    psi += kappa/2.*pow(std::log(modinv(2)),2.);
 
 }
 
@@ -72,10 +74,16 @@ void MAT::ELASTIC::VolOgden::AddDerivativesModified(
   const double kappa = params_ -> kappa_;
   const double beta = params_ -> beta_;
 
-  dPmodI(2) += kappa/(beta*beta)*(beta/modinv(2)-beta*pow(modinv(2),-beta-1.));
-
-  ddPmodII(2) += kappa/(beta*beta)*(-beta/(modinv(2)*modinv(2))+beta*(beta+1.)*pow(modinv(2),-beta-2.));
-
+  if (beta!=0.)
+  {
+    dPmodI(2)   += kappa/(beta*beta)*(beta/modinv(2)-beta*pow(modinv(2),-beta-1.));
+    ddPmodII(2) += kappa/(beta*beta)*(-beta/(modinv(2)*modinv(2))+beta*(beta+1.)*pow(modinv(2),-beta-2.));
+  }
+  else
+  {
+    dPmodI(2)   += kappa*std::log(modinv(2))/modinv(2);
+    ddPmodII(2) += kappa*(1.-std::log(modinv(2)))/(modinv(2)*modinv(2));
+  }
   return;
 }
 
@@ -86,7 +94,10 @@ void MAT::ELASTIC::VolOgden::Add3rdVolDeriv(const LINALG::Matrix<3,1>& modinv, d
   const double kappa = params_ -> kappa_;
   const double beta = params_ -> beta_;
   const double J=modinv(2);
-  d3PsiVolDJ3 += kappa/(beta*J*J*J)*(2.-pow(J,-beta)*(beta*beta+3.*beta+2.));
+  if (beta!=0.)
+    d3PsiVolDJ3 += kappa/(beta*J*J*J)*(2.-pow(J,-beta)*(beta*beta+3.*beta+2.));
+  else
+    d3PsiVolDJ3 += kappa*(-3.+2.*std::log(modinv(2)))/(modinv(2)*modinv(2)*modinv(2));
   return;
 }
 
