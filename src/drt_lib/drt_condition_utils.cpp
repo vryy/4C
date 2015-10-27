@@ -296,12 +296,24 @@ void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
 /*----------------------------------------------------------------------*/
 void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
                                       std::map<int, Teuchos::RCP<DRT::Element> >& elements,
-                                      const std::string& condname)
+                                      const std::string& condname,
+                                      const int label)
 {
   std::vector<DRT::Condition*> conds;
   dis.GetCondition(condname, conds);
+
+  bool checklabel = (label >=0);
+
   for (unsigned i = 0; i < conds.size(); ++i)
   {
+    if(checklabel)
+    {
+      const int condlabel = conds[i]->GetInt("label");
+
+      if(condlabel != label)
+        continue; // do not consider conditions with wrong label
+    }
+
     // get this condition's elements
     std::map< int, Teuchos::RCP< DRT::Element > >& geo = conds[i]->Geometry();
     std::map< int, Teuchos::RCP< DRT::Element > >::iterator iter, pos;
@@ -500,7 +512,8 @@ Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
         const std::string&                  condname,
         const std::string&                  discret_name,
         const std::string&                  element_name,
-        const std::vector<std::string>&     conditions_to_copy
+        const std::vector<std::string>&     conditions_to_copy,
+        const int                           label
         )
 {
   Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(sourcedis->Comm().Clone());
@@ -517,7 +530,7 @@ Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
   // We need to test for all elements (including ghosted ones) to
   // catch all nodes
   std::map<int, Teuchos::RCP<DRT::Element> >  sourceelements;
-  DRT::UTILS::FindConditionObjects(*sourcedis, sourceelements, condname);
+  DRT::UTILS::FindConditionObjects(*sourcedis, sourceelements, condname, label);
 
   std::set<int> rownodeset;
   std::set<int> colnodeset;

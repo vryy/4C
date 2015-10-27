@@ -177,7 +177,8 @@ namespace DRT
      */
     void FindConditionObjects(const DRT::Discretization& dis,
                               std::map<int, Teuchos::RCP<DRT::Element> >& elements,
-                              const std::string& condname);
+                              const std::string& condname,
+                              const int label = -1);
 
 
     /// Create element map to given condition
@@ -226,7 +227,8 @@ namespace DRT
       const std::string&                condname,     ///< name of the condition, by which the derived discretization is identified
       const std::string&                discret_name, ///< name of the new discretization
       const std::string&                element_name,  ///< name/type of the elements to be created
-      const std::vector<std::string>&   conditions_to_copy  ///< list of conditions that will be copied to the new discretization
+      const std::vector<std::string>&   conditions_to_copy,  ///< list of conditions that will be copied to the new discretization
+      const int                         label = -1     ///< consider only conditions with specified label
       );
 
 
