@@ -184,6 +184,8 @@ namespace INPAR
       EOS_tau_burman_fernandez,
       EOS_tau_burman_hansbo_dangelo_zunino,
       EOS_tau_burman_hansbo_dangelo_zunino_wo_dt,
+      EOS_tau_schott_massing_burman_dangelo_zunino,
+      EOS_tau_schott_massing_burman_dangelo_zunino_wo_dt,
       EOS_tau_Taylor_Hughes_Zarins_Whiting_Jansen_Codina_scaling,
       EOS_tau_not_defined
     };
