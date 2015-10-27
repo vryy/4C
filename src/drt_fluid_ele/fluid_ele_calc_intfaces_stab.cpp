@@ -370,8 +370,8 @@ DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype,ndistype>::FluidInterna
 
 
   // is the face a higher order face with higher order neighboring elements?
-  ishigherorder_ = ( (pdistype != DRT::Element::tet4 or ndistype != DRT::Element::tet4)
-                  or (pdistype != DRT::Element::tri3 or ndistype != DRT::Element::tri3));
+  ishigherorder_ = ( (nsd_ == 3 and (pdistype != DRT::Element::tet4 or ndistype != DRT::Element::tet4))
+                  or (nsd_ == 2 and (pdistype != DRT::Element::tri3 or ndistype != DRT::Element::tri3)));
 
   return;
 }
@@ -3730,6 +3730,83 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Comput
       tau_p_ = gamma_p * p_hk_squared_ / (r_min_visc * kinvisc_ * density_ / p_hk_ + r_min_conv * density_ * max_vel_L2_norm / 6.0);
     else
       tau_p_ = gamma_p * p_hk_squared_ / (density_* p_hk_ / (timefac * 12.0) + r_min_visc * kinvisc_ * density_ / p_hk_ + r_min_conv * density_ * max_vel_L2_norm / 6.0);
+
+  }
+  break;
+  case INPAR::FLUID::EOS_tau_schott_massing_burman_dangelo_zunino:
+  case INPAR::FLUID::EOS_tau_schott_massing_burman_dangelo_zunino_wo_dt:
+  {
+    // this definition is derived form the following papers
+    // A. Massing, B. Schott, W.A. Wall
+    // "Cut finite element method for Oseen problem"
+    // E. Burman, P. Hansbo
+    // "Edge stabilization for the generalized Stokes problem: A continuous interior penalty method"
+    // Comput. Methods Appl. Mech. Engrg. 2006
+    // C. D'Angelo, P. Zunino
+    // "Numerical approximation with Nitsche's coupling of transient Stokes'/Darcy's flow problems applied to hemodynamics"
+    // Applied Numerical Mathematics 2012
+    // Braack et al. 2007
+    //"..."
+    // Burman hp
+
+    //-----------------------------------------------
+    // get the dimension and element-shape dependent stabilization scaling factors
+    // the polynomial degree is included directly in the computation of the respective stabilization scaling tau
+
+    if(nsd_ == 3)
+    {
+      // 3D pure tetrahedral element combinations
+      if (  (pdistype == DRT::Element::tet4  and ndistype == DRT::Element::tet4)
+         or (pdistype == DRT::Element::tet10 and ndistype == DRT::Element::tet10))
+      {
+        gamma_p= 0.01;
+      }
+      // 3D wedge/hexahedral elements
+      else gamma_p = 0.05;
+    }
+    else if(nsd_ == 2)
+    {
+      // 2D triangular elements combinations
+      if (   (pdistype == DRT::Element::tri3  and ndistype == DRT::Element::tri3)
+          or (pdistype == DRT::Element::tri6  and ndistype == DRT::Element::tri6))
+      {
+        gamma_p= 0.1;
+      }
+      // 2D quadrilateral elements
+      else gamma_p = 0.25;
+    }
+    else dserror("no valid dimension");
+
+    gamma_u   = gamma_p;
+    gamma_div = gamma_p*0.05;
+
+//    double regime_scaling = r_min_visc * kinvisc_ + r_min_conv * p_hk_ * 100*max_vel_L2_norm / 6.0 ;
+    double regime_scaling_wodt = r_min_visc * kinvisc_ + r_min_conv * p_hk_ * 10.0*max_vel_L2_norm ;
+
+    double regime_scaling_dt = regime_scaling_wodt;
+
+    if (tautype != INPAR::FLUID::EOS_tau_burman_hansbo_dangelo_zunino_wo_dt)
+      regime_scaling_dt += p_hk_squared_ / (timefac * 12.0);
+
+    regime_scaling_dt *=density_;
+    regime_scaling_wodt *= density_;
+
+    //-----------------------------------------------
+    // streamline
+//    tau_u_ = density_ * gamma_u * p_hk_squared_ * normal_vel_lin_space / r_min_conv; // Braack et al. 2006
+//    tau_u_ = gamma_u * density_ * p_hk_squared_ * normal_vel_lin_space / r_min_conv; // Braack et al. 2006
+    tau_u_ = gamma_u * normal_vel_lin_space * normal_vel_lin_space * p_hk_squared_*p_hk_ / regime_scaling_dt;
+
+    //-----------------------------------------------
+    // divergence
+//    tau_div_= density_ * gamma_div * max_vel_L2_norm * p_hk_squared_ / r_min_conv; // Braack et al. 2006
+//    tau_div_= density_ * gamma_div * max_vel_L2_norm * p_hk_squared_ / r_min_conv; // Braack et al. 2006
+    tau_div_= gamma_div * regime_scaling_dt * p_hk_; // Braack et al. 2006
+
+
+    //-----------------------------------------------
+    // pressure
+    tau_p_ = gamma_p * p_hk_squared_*p_hk_ / regime_scaling_dt;
 
   }
   break;
