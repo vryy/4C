@@ -110,6 +110,14 @@ class SparseMatrix : public SparseMatrixBase
         bool                savegraph=false,
         MatrixType          matrixtype = CRS_MATRIX);
 
+    /// construction of sparse matrix using an individual estimate for number of non-zeros per row
+    SparseMatrix(
+        const Epetra_Map&   rowmap,
+        std::vector<int> &  numentries,
+        bool                explicitdirichlet=true,
+        bool                savegraph=false,
+        MatrixType          matrixtype = CRS_MATRIX);
+
     /// construction of sparse matrix
     /*!
        Makes either a deep copy of the Epetra_CrsMatrix or Epetra_FECrsMatrix.
@@ -188,6 +196,9 @@ class SparseMatrix : public SparseMatrixBase
 
     /// throw away the matrix and its graph and start anew
     void Reset();
+
+    /// destroy the underlying Epetra objects
+    virtual bool Destroy();
 
     /// assemble method for Epetra_CrsMatrices, if ONLY local values are assembled
     virtual void Assemble(int eid,

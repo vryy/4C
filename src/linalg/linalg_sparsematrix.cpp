@@ -61,6 +61,34 @@ LINALG::SparseMatrix::SparseMatrix(
     dserror("matrix type is not correct");
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+LINALG::SparseMatrix::SparseMatrix(
+    const Epetra_Map&   rowmap,
+    std::vector<int> &  numentries,
+    bool                explicitdirichlet,
+    bool                savegraph,
+    MatrixType          matrixtype)
+  : graph_(Teuchos::null),
+    dbcmaps_(Teuchos::null),
+    explicitdirichlet_(explicitdirichlet),
+    savegraph_(savegraph),
+    matrixtype_(matrixtype)
+{
+  if (!rowmap.UniqueGIDs())
+    dserror("Row map is not unique");
+
+  if((int)(numentries.size()) != rowmap.NumMyElements())
+    dserror("estimate for non zero entries per row does not match the size of row map");
+
+  if(matrixtype_ == CRS_MATRIX)
+    sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(::Copy,rowmap,&numentries[0],false));
+  else if(matrixtype_ == FE_MATRIX)
+    sysmat_ = Teuchos::rcp(new Epetra_FECrsMatrix(::Copy,rowmap,&numentries[0],false));
+  else
+    dserror("matrix type is not correct");
+}
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -161,6 +189,31 @@ LINALG::SparseMatrix::SparseMatrix(
   }
 }
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool LINALG::SparseMatrix::Destroy()
+{
+  // delete first the epetra matrix object
+  if(sysmat_.strong_count() > 1)
+    dserror("Epetra_CrsMatrix cannot be finally deleted - any other RCP (%i>1) still points to it", sysmat_.strong_count());
+
+  sysmat_ = Teuchos::null;
+
+  // delete now also the matrix' graph
+  if(graph_.strong_count() > 1)
+    dserror("Epetra_CrsGraph cannot be finally deleted - any RCP (%i>1) still points to it", graph_.strong_count());
+
+  graph_ = Teuchos::null;
+
+  // delete now also the matrix' graph
+  if(dbcmaps_.strong_count() > 1)
+    dserror("DBCMaps cannot be finally deleted - any RCP (%i>1) still points to it", dbcmaps_.strong_count());
+
+  dbcmaps_ = Teuchos::null;
+
+  return true;
+}
 
 
 /*----------------------------------------------------------------------*
@@ -281,15 +334,26 @@ void LINALG::SparseMatrix::Reset()
 {
   const Epetra_Map rowmap = sysmat_->RowMap();
   std::vector<int> numentries( rowmap.NumMyElements() );
+
+  const Epetra_CrsGraph & graph = sysmat_->Graph();
+
   if ( Filled() )
   {
-    const Epetra_CrsGraph & graph = sysmat_->Graph();
     for ( unsigned i=0; i<numentries.size(); ++i )
     {
       int *indices;
       int err = graph.ExtractMyRowView(i, numentries[i], indices);
       if ( err!=0 )
         dserror( "ExtractMyRowView failed" );
+    }
+  }
+  else
+  {
+    // use information about number of allocated entries not to fall back to matrix with zero size
+    // otherwise assembly would be extremly expensive!
+    for ( unsigned i=0; i<numentries.size(); ++i )
+    {
+      numentries[i] = graph.NumAllocatedMyIndices(i);
     }
   }
   // Remove old matrix before creating a new one so we do not have old and
