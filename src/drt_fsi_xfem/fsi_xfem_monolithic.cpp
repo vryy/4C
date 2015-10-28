@@ -1968,7 +1968,7 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
   const Teuchos::ParameterList& xfsisolverparams = DRT::Problem::Instance()->SolverParams(linsolvernumber);
 
   // safety check if the hard-coded solver number is the XFSI-solver
-  if(xfsisolverparams.get<string>("NAME") != "XFSI_SOLVER")
+  if(xfsisolverparams.get<std::string>("NAME") != "XFSI_SOLVER")
     dserror("check whether solver with number 1 is the XFSI_solver and has this name!");
 
 
