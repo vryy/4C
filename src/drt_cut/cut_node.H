@@ -57,6 +57,9 @@ public:
   /// return the composite of all connected volumecells between elements and the element's sub-elements
   const std::set<plain_volumecell_set, Cmp>& VolumeCellComposite() const { return volumecell_composite_; }
 
+  /// collect cut sides of the entire volumecell composite
+  void CollectCutSides ( plain_int_set & cutside_ids ) const;
+
   /// is the nodal dofset a standard dofset?
   bool Is_Standard_DofSet() const { return is_std_dofset_; }
 

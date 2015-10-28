@@ -73,17 +73,17 @@ public:
 
   //! constructor
   explicit XFluidTimeInt(
-      const bool                                                            is_newton_increment_transfer, /// monolithic newton increment transfer or time step transfer?
-      const Teuchos::RCP<DRT::Discretization>                               dis,                    /// discretization
-      const Teuchos::RCP<XFEM::ConditionManager>                            condition_manager ,     /// condition manager
-      const Teuchos::RCP<GEO::CutWizard>                                    wizard_old,             /// cut wizard at t^n
-      const Teuchos::RCP<GEO::CutWizard>                                    wizard_new,             /// cut wizard at t^(n+1)
-      const Teuchos::RCP<XFEM::XFEMDofSet>                                  dofset_old,             /// XFEM dofset at t^n
-      const Teuchos::RCP<XFEM::XFEMDofSet>                                  dofset_new,             /// XFEM dofset at t^(n+1)
-      const INPAR::XFEM::XFluidTimeIntScheme                                xfluid_timintapproach,  /// xfluid_timintapproch
-      std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >&              node_to_reconstr_method,/// reconstruction map for nodes and its dofsets
-      std::map<INPAR::XFEM::XFluidTimeInt, std::map<int,std::set<int> > >&  reconstr_method_to_node,/// inverse reconstruction map for nodes and its dofsets
-      const int                                                             step                    /// global time step
+      const bool                                                                  is_newton_increment_transfer, /// monolithic newton increment transfer or time step transfer?
+      const Teuchos::RCP<DRT::Discretization> &                                   dis,                    /// discretization
+      const Teuchos::RCP<XFEM::ConditionManager> &                                condition_manager,      /// condition manager
+      const Teuchos::RCP<GEO::CutWizard> &                                        wizard_old,             /// cut wizard at t^n
+      const Teuchos::RCP<GEO::CutWizard> &                                        wizard_new,             /// cut wizard at t^(n+1)
+      const Teuchos::RCP<XFEM::XFEMDofSet> &                                      dofset_old,             /// XFEM dofset at t^n
+      const Teuchos::RCP<XFEM::XFEMDofSet> &                                      dofset_new,             /// XFEM dofset at t^(n+1)
+      const INPAR::XFEM::XFluidTimeIntScheme                                      xfluid_timintapproach,  /// xfluid_timintapproch
+      std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> > &                   node_to_reconstr_method,/// reconstruction map for nodes and its dofsets
+      std::map<INPAR::XFEM::XFluidTimeInt, std::map<int,std::set<int> > >&        reconstr_method_to_node,/// inverse reconstruction map for nodes and its dofsets
+      const int                                                                   step                    /// global time step
   );
 
   //! destructor
@@ -115,7 +115,7 @@ public:
   std::map<INPAR::XFEM::XFluidTimeInt,int>& Get_Reconstr_Counts(){return reconstr_counts_;};
 
   /// get for each type of reconstruction method the node ids with corresponding dof its for that this method has to be applied on this proc
-  std::map<int,std::set<int> >& Get_NodeToDofMap_For_Reconstr(INPAR::XFEM::XFluidTimeInt reconstr);
+  std::map<int,std::set<int> > & Get_NodeToDofMap_For_Reconstr(INPAR::XFEM::XFluidTimeInt reconstr);
 
   /// get permutation map for ghost dofs
   Teuchos::RCP<std::map<int, int> > GetPermutationMap(){return permutation_map_;};
@@ -208,7 +208,7 @@ public:
   /// check if the node has changed the side w.r.t identified sides at t^n and t^(n+1), return if check was successful
   bool SpecialCheck_InterfaceTips(
       bool&                                                          changed_side,        /// did the node change the side ?
-      std::set<int> &                                                identified_sides,    /// side Id of identified side
+      std::vector<int> &                                             identified_sides,    /// side Id of identified side
       const GEO::CUT::Node *                                         n_old,               /// node w.r.t to old wizard
       const GEO::CUT::Node *                                         n_new                /// node w.r.t to new wizard
   );
@@ -273,9 +273,9 @@ public:
 
   INPAR::XFEM::XFluidTimeIntScheme timeint_scheme_; /// which type of time integration scheme shall be used for reconstructing values
 
-  std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >& node_to_reconstr_method_; /// map of nodeIds and reconstruction method for all nodal dofsets
+  std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> > & node_to_reconstr_method_; /// map of nodeIds and reconstruction method for all nodal dofsets
 
-  std::map<INPAR::XFEM::XFluidTimeInt, std::map<int,std::set<int> > >& reconstr_method_to_node_;/// map of reconstruction method to map of node-id and nodal dofset-id (inverse to node_to_reconstr_method)
+  std::map<INPAR::XFEM::XFluidTimeInt, std::map<int,std::set<int> > > & reconstr_method_to_node_;/// map of reconstruction method to map of node-id and nodal dofset-id (inverse to node_to_reconstr_method)
 
   std::map<INPAR::XFEM::XFluidTimeInt,int> reconstr_counts_; /// counts the number of dofsets that have to be reconstructed using each method
 

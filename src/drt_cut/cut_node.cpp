@@ -71,7 +71,6 @@ bool GEO::CUT::Cmp::Compare(
   | Operator () to compare two volume cells via the ids of their points
   |                                                             shahmiri 06/12
  *-----------------------------------------------------------------------------*/
-
 bool GEO::CUT::Cmp::Compare(
     VolumeCell* vc1,
     VolumeCell* vc2 )
@@ -117,6 +116,8 @@ bool GEO::CUT::Cmp::Compare(
 }
 
 
+/*-----------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------*/
 GEO::CUT::NodalDofSet::NodalDofSet(
     std::set<plain_volumecell_set,Cmp>& connected_volumecells,
     bool is_std_dofset
@@ -166,6 +167,29 @@ bool GEO::CUT::NodalDofSet::Contains( GEO::CUT::Point* p)
   return false;
 }
 
+
+/*-----------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------*/
+void GEO::CUT::NodalDofSet::CollectCutSides( GEO::CUT::plain_int_set & cutside_ids ) const
+{
+  // collect all cut sides
+  for(std::set<plain_volumecell_set,Cmp>::iterator it = volumecell_composite_.begin();
+      it!=volumecell_composite_.end();
+      it++)
+  {
+    const plain_volumecell_set & vc_set = *it;
+    for(plain_volumecell_set::const_iterator vcs = vc_set.begin();
+        vcs!=vc_set.end();
+        vcs++)
+    {
+      (*vcs)->CollectCutSides(cutside_ids);
+    }
+  }
+}
+
+
+/*-----------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------*/
 void GEO::CUT::NodalDofSet::Print()
 {
   std::cout << "GEO::CUT::NodalDofSet: "
@@ -174,6 +198,9 @@ void GEO::CUT::NodalDofSet::Print()
       << std::endl;
 }
 
+
+/*-----------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------*/
 void GEO::CUT::CompositeNodalDofSet::Print()
 {
   std::cout << "GEO::CUT::CompositeNodalDofSet which contains " << nodal_dofsets_.size() << " combined GEO::CUT::NodalDofSet: "

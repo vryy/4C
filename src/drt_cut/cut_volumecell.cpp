@@ -230,6 +230,21 @@ void GEO::CUT::VolumeCell::GetBoundaryCells( std::map<int, std::vector<GEO::CUT:
   }
 }
 
+void GEO::CUT::VolumeCell::CollectCutSides( plain_int_set & cutside_ids)
+{
+  for ( plain_facet_set::iterator i=facets_.begin(); i!=facets_.end(); ++i )
+  {
+    Facet * f = *i;
+    int sid = f->SideId();
+    if ( sid > -1 )
+    {
+      // usually there are more facets with the same side id as the cutting sides have been subdivided into subsides
+      // which produce own facets for each subside
+      cutside_ids.insert(sid);
+    }
+  }
+}
+
 int GEO::CUT::VolumeCell::GetParentElementId() const
 {
   return element_->GetParentId();

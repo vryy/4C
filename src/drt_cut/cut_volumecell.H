@@ -105,6 +105,10 @@ public:
    */
   void GetBoundaryCells( std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells );
 
+  /// collect cut sides
+  void CollectCutSides( plain_int_set & cutside_ids);
+
+  ///
   void ConnectNodalDOFSets( bool include_inner );
 
   /*!

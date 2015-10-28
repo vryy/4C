@@ -57,38 +57,38 @@ Maintainer: Benedikt Schott
 // constructor
 // -------------------------------------------------------------------
 XFEM::XFluidTimeInt::XFluidTimeInt(
-    const bool                                                            is_newton_increment_transfer, /// monolithic newton increment transfer or time step transfer?
-    const Teuchos::RCP<DRT::Discretization>                               dis,                    /// discretization
-    const Teuchos::RCP<XFEM::ConditionManager>                            condition_manager,      /// condition manager
-    const Teuchos::RCP<GEO::CutWizard>                                    wizard_old,             /// cut wizard at t^n
-    const Teuchos::RCP<GEO::CutWizard>                                    wizard_new,             /// cut wizard at t^(n+1)
-    const Teuchos::RCP<XFEM::XFEMDofSet>                                  dofset_old,             /// XFEM dofset at t^n
-    const Teuchos::RCP<XFEM::XFEMDofSet>                                  dofset_new,             /// XFEM dofset at t^(n+1)
-    const INPAR::XFEM::XFluidTimeIntScheme                                xfluid_timintapproach,  /// xfluid_timintapproch
-    std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >&              node_to_reconstr_method,/// reconstruction map for nodes and its dofsets
-    std::map<INPAR::XFEM::XFluidTimeInt, std::map<int,std::set<int> > >&  reconstr_method_to_node,/// inverse reconstruction map for nodes and its dofsets
-    const int                                                             step                    /// global time step
-  ) :
-  is_newton_increment_transfer_(is_newton_increment_transfer),
-  dis_(dis),
-  condition_manager_(condition_manager),
-  wizard_old_(wizard_old),
-  wizard_new_(wizard_new),
-  dofset_old_(dofset_old),
-  dofset_new_(dofset_new),
-  timeint_scheme_ (xfluid_timintapproach),
-  node_to_reconstr_method_(node_to_reconstr_method),
-  reconstr_method_to_node_(reconstr_method_to_node),
-  step_(step)
-  {
+    const bool                                                                  is_newton_increment_transfer, /// monolithic newton increment transfer or time step transfer?
+    const Teuchos::RCP<DRT::Discretization> &                                   dis,                    /// discretization
+    const Teuchos::RCP<XFEM::ConditionManager> &                                condition_manager,      /// condition manager
+    const Teuchos::RCP<GEO::CutWizard> &                                        wizard_old,             /// cut wizard at t^n
+    const Teuchos::RCP<GEO::CutWizard> &                                        wizard_new,             /// cut wizard at t^(n+1)
+    const Teuchos::RCP<XFEM::XFEMDofSet> &                                      dofset_old,             /// XFEM dofset at t^n
+    const Teuchos::RCP<XFEM::XFEMDofSet> &                                      dofset_new,             /// XFEM dofset at t^(n+1)
+    const INPAR::XFEM::XFluidTimeIntScheme                                      xfluid_timintapproach,  /// xfluid_timintapproch
+    std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> > &                   node_to_reconstr_method,/// reconstruction map for nodes and its dofsets
+    std::map<INPAR::XFEM::XFluidTimeInt, std::map<int,std::set<int> > > &       reconstr_method_to_node,/// inverse reconstruction map for nodes and its dofsets
+    const int                                                                   step                    /// global time step
+) :
+is_newton_increment_transfer_(is_newton_increment_transfer),
+dis_(dis),
+condition_manager_(condition_manager),
+wizard_old_(wizard_old),
+wizard_new_(wizard_new),
+dofset_old_(dofset_old),
+dofset_new_(dofset_new),
+timeint_scheme_ (xfluid_timintapproach),
+node_to_reconstr_method_(node_to_reconstr_method),
+reconstr_method_to_node_(reconstr_method_to_node),
+step_(step)
+{
 
-    myrank_  = dis->Comm().MyPID();
-    numproc_ = dis->Comm().NumProc();
+  myrank_  = dis->Comm().MyPID();
+  numproc_ = dis->Comm().NumProc();
 
-    permutation_map_ = Teuchos::rcp(new std::map<int,int>);
+  permutation_map_ = Teuchos::rcp(new std::map<int,int>);
 
-    return;
-  } // end constructor
+  return;
+} // end constructor
 
 
 // -------------------------------------------------------------------
@@ -98,13 +98,13 @@ void XFEM::XFluidTimeInt::SetAndPrintStatus(const bool screenout)
 {
 
   reconstr_counts_.clear();
-  for(std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >::iterator node_it=node_to_reconstr_method_.begin();
+  for(std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >::const_iterator node_it=node_to_reconstr_method_.begin();
       node_it!= node_to_reconstr_method_.end();
       node_it++)
   {
-    std::vector<INPAR::XFEM::XFluidTimeInt> nodesets = node_it->second;
+    const std::vector<INPAR::XFEM::XFluidTimeInt> & nodesets = node_it->second;
 
-    for(std::vector<INPAR::XFEM::XFluidTimeInt>::iterator sets= nodesets.begin();
+    for(std::vector<INPAR::XFEM::XFluidTimeInt>::const_iterator sets= nodesets.begin();
         sets != nodesets.end();
         sets++)
     {
@@ -777,7 +777,7 @@ void XFEM::XFluidTimeInt::TransferNodalDofsToNewMap(
 // -------------------------------------------------------------------
 // get nodes and dofsets for given reconstruction method
 // -------------------------------------------------------------------
-std::map<int,std::set<int> >& XFEM::XFluidTimeInt::Get_NodeToDofMap_For_Reconstr(INPAR::XFEM::XFluidTimeInt reconstr)
+std::map<int,std::set<int> > & XFEM::XFluidTimeInt::Get_NodeToDofMap_For_Reconstr(INPAR::XFEM::XFluidTimeInt reconstr)
 {
   // returns empty map if reconstruction method is not present
   return reconstr_method_to_node_[reconstr];
@@ -1202,32 +1202,18 @@ int XFEM::XFluidTimeInt::IdentifyOldSets(
 
   const GEO::CUT::Point::PointPosition pos_new = cell_set_new->Position();
 
-  // set of side-ids involved in cutting the current connection of volumecells at t^(n+1)
-  std::map<int, std::vector<GEO::CUT::BoundaryCell*> >  bcells_new;
-
-  const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> & vc_composite = cell_set_new->VolumeCellComposite();
-
   //--------------------------------------------------------
   // t^(n+1)
+  // set of side-ids involved in cutting the current connection of volumecells at t^(n+1)
   // get all side-ids w.r.t to all volumecells contained in current new set around the current node
-  for(std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp>::const_iterator adj_eles = vc_composite.begin(); adj_eles!=vc_composite.end(); adj_eles++)
-  {
-    const GEO::CUT::plain_volumecell_set ele_vc = *adj_eles;
 
-    for(GEO::CUT::plain_volumecell_set::const_iterator vcs=ele_vc.begin(); vcs!=ele_vc.end(); vcs++)
-    {
-      GEO::CUT::VolumeCell* vc = *vcs;
-
-      // get sides involved in creation boundary cells (std::map<sideId,bcells>)
-      vc->GetBoundaryCells(bcells_new);
-    }
-  }
-
+  GEO::CUT::plain_int_set cutsides_new;
+  cell_set_new->CollectCutSides( cutsides_new );
 
   //--------------------------------------------------------
   // t^n
 
-  std::map<int, std::set<int> > identified_old_sets; // map of possible nds_sets and related identified sides
+  std::map<int, std::vector<int> > identified_old_sets; // map of possible nds_sets and related identified sides
 
   //--------------------------------------------------------
   // PRESELECTION via common cutting sides (for level-sets all sets have the same level-set side and are possible sets)
@@ -1239,37 +1225,61 @@ int XFEM::XFluidTimeInt::IdentifyOldSets(
   {
     const int setnumber = old_sets - dof_cellsets_old.begin();
 
-    const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> & old_set = (*old_sets)->VolumeCellComposite();
-
-    // for each set a new map of bcs
-    std::map<int, std::vector<GEO::CUT::BoundaryCell*> >  bcells_old;
-
-    // get all side-ids w.r.t to all volumecells contained in this set around the current node
-    for(std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp>::const_iterator adj_eles = old_set.begin(); adj_eles!=old_set.end(); adj_eles++)
-    {
-      const GEO::CUT::plain_volumecell_set ele_vc = *adj_eles;
-
-      for(GEO::CUT::plain_volumecell_set::const_iterator vcs=ele_vc.begin(); vcs!=ele_vc.end(); vcs++)
-      {
-        GEO::CUT::VolumeCell* vc = *vcs;
-
-        // get sides involved in creation boundary cells (std::map<sideId,bcells>)
-        vc->GetBoundaryCells(bcells_old);
-      }
-    }
+    GEO::CUT::plain_int_set cutsides_old;
+    (*old_sets)->CollectCutSides( cutsides_old );
 
     //--------------------------------------------------------------
     // check if identification of sets is possible
     // -> check if any side is involved in both cuts (find side-Id involved at time t^(n+1) in set of involved side-Ids at t^n)
     //--------------------------------------------------------------
-    for(std::map<int, std::vector<GEO::CUT::BoundaryCell*> >::iterator old_sides=bcells_old.begin();
-        old_sides!=bcells_old.end();
-        old_sides++)
+
+    // get the common sides of both sets!
+    std::vector<int> common_sides;
+    common_sides.reserve(std::max(cutsides_new.size(), cutsides_old.size()));
+
+    // sorted vectors are already sorted
+    if(cutsides_old.size()> 0 and cutsides_new.size()>0)
+    std::set_intersection (cutsides_new.begin(), cutsides_new.end(), cutsides_old.begin(), cutsides_old.end(), std::back_inserter(common_sides)); // back_inserter uses pushback
+
+
+    if(common_sides.size() > 0)
+      identified_old_sets[setnumber] = common_sides; // [] creates a new vector of common side-ids if not created yet
+  }
+
+  // "rotation" of interface around a point outside the volumecell composite, such that no common cut side is available for the two sets of cut-sides
+  // Nevertheless the standard dofset (if there exists one) could be still a good choice
+  // check if there is a standard dofset which is reasonable nevertheless
+  if(identified_old_sets.size() == 0 // no identification via common cutsides possible
+     and is_std_set_np // it is a standard dofset at the new time step, for which the alternative would be only to use SemiLagrangean
+     and timeint_scheme_ == INPAR::XFEM::Xf_TimeIntScheme_STD_by_Copy_AND_GHOST_by_Copy_or_GP // just when we need to copy data, otherwise simulation will stop
+  )
+  {
+    // look again in the old sets if there was a standard dofset
+    for(std::vector<Teuchos::RCP<GEO::CUT::NodalDofSet> >::const_iterator old_sets=dof_cellsets_old.begin();
+        old_sets!=dof_cellsets_old.end();
+        old_sets++)
     {
-      if(bcells_new.find((old_sides->first)) != bcells_new.end())
+      if((*old_sets)->Is_Standard_DofSet()) // this set is a unique standard set at tn, might it be a good choice nevertheless?
       {
-        std::set<int>& sides = identified_old_sets[setnumber]; // [] creates a new std::set if not created yet
-        sides.insert(old_sides->first);
+        const int setnumber = old_sets - dof_cellsets_old.begin();
+
+        bool use_old_std_set = false; // shall the unique standard set be used for further checks?
+
+#if(1) // use the standard dofset, however this might be unsafe
+        use_old_std_set = true; // use the standard set just in case that there is at least a common node which is shared by the two sets of cutsides
+
+        // NOTE: an alternative would be to check if there is at least one common node or a common edge between the two sets of cutsides, this might be more safe!
+#endif
+
+        if(use_old_std_set)
+        {
+          IO::cout << "WARNING (xfluid_timeInt.cpp): for std-dofset (t^(n+1)) at node " << n_new->Id()
+              << " no std dofset at t^n could be identified via common sides."
+              << " However, there is a std-dofset (t^n) which could be used nevertheless! This might be unsafe! Be aware of that!" << IO::endl;
+
+          std::vector<int> dummy; // dummy for common sides ( actually no common sides available! )
+          identified_old_sets[setnumber] = dummy; // [] creates a new vector of common side-ids if not created yet
+        }
       }
     }
   }
@@ -1285,7 +1295,7 @@ int XFEM::XFluidTimeInt::IdentifyOldSets(
 
     bool unique_set_found = false;
 
-    for(std::map<int, std::set<int> >::iterator it= identified_old_sets.begin();
+    for(std::map<int, std::vector<int> >::iterator it= identified_old_sets.begin();
         it!=identified_old_sets.end();
         it++)
     {
@@ -1400,7 +1410,7 @@ int XFEM::XFluidTimeInt::IdentifyOldSets(
     // special check for interface tips if the node has changed the side w.r.t identified sides at t^n and t^(n+1)
     if( (is_std_set_np and is_std_set_n) or (!is_std_set_np and !is_std_set_n))
     {
-      std::set<int> & identified_sides = identified_old_sets[nds_old];
+      std::vector<int> & identified_sides = identified_old_sets[nds_old];
       successful_check = SpecialCheck_InterfaceTips(did_node_change_side, identified_sides, n_old,n_new);
 
       if(!successful_check or (successful_check and did_node_change_side))
@@ -1576,7 +1586,7 @@ bool XFEM::XFluidTimeInt::SpecialCheck_Crack(
 // -------------------------------------------------------------------
 bool XFEM::XFluidTimeInt::SpecialCheck_InterfaceTips(
     bool&                                                          changed_side,        /// did the node change the side ?
-    std::set<int> &                                                identified_sides,    /// side Id of identified side
+    std::vector<int> &                                             identified_sides,    /// side Id of identified side
     const GEO::CUT::Node *                                         n_old,               /// node w.r.t to old wizard
     const GEO::CUT::Node *                                         n_new                /// node w.r.t to new wizard
     )
@@ -1650,7 +1660,7 @@ bool XFEM::XFluidTimeInt::SpecialCheck_InterfaceTips(
   int side_count = 0;
 
   // loop sides
-  for(std::set<int>::iterator sides=identified_sides.begin(); sides!= identified_sides.end(); sides++)
+  for(std::vector<int>::iterator sides=identified_sides.begin(); sides!= identified_sides.end(); sides++)
   {
     side_count++;
 
@@ -2136,7 +2146,7 @@ void XFEM::XFluidTimeInt::Output()
       const DRT::Node* actnode = dis_->lRowNode(i);
       const LINALG::Matrix<3,1> pos(actnode->X());
 
-      std::map<int,std::vector<INPAR::XFEM::XFluidTimeInt> >::iterator it = node_to_reconstr_method_.find(actnode->Id());
+      std::map<int,std::vector<INPAR::XFEM::XFluidTimeInt> >::const_iterator it = node_to_reconstr_method_.find(actnode->Id());
 
       if(it == node_to_reconstr_method_.end())
       {
@@ -2145,7 +2155,7 @@ void XFEM::XFluidTimeInt::Output()
       }
 
       // time integration reconstruction methods for the node's different dofsets
-      std::vector<INPAR::XFEM::XFluidTimeInt>& nds_methods = it->second;
+      const std::vector<INPAR::XFEM::XFluidTimeInt> & nds_methods = it->second;
 
       for(size_t j=0; j<nds_methods.size(); j++ )
       {
