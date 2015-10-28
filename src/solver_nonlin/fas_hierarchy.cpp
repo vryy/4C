@@ -104,9 +104,10 @@ void NLNSOL::FAS::AMGHierarchy::Init(const Epetra_Comm& comm,
   nlnproblem_ = nlnproblem;
   mlparams_ = Teuchos::rcp(&mlparams, false);
 
-  setVerbLevel(NLNSOL::UTILS::TranslateVerbosityLevel("medium")); // ToDo (mayr) read from parameter list
-//          Params().sublist("FAS: MueLu Parameters").get<std::string>(
-//              "verbosity")));
+  setVerbLevel(
+      NLNSOL::UTILS::TranslateVerbosityLevelToTeuchos(
+          Configuration()->GetParameter<std::string>(MyListName(),
+              "AMG Hierarchy: NLNSOL verbosity")));
 
   // Init() has been called.
   SetIsInit();
@@ -131,8 +132,7 @@ void NLNSOL::FAS::AMGHierarchy::Setup()
   SetupNlnSolHierarchy();
 
   // Print all levels
-  if (getVerbLevel() > Teuchos::VERB_NONE) // ToDo (mayr) control printing via xml-input
-//      and Configuration())Params().sublist("Printing").get<bool>("print Nln levels"))
+  if (getVerbLevel() > Teuchos::VERB_MEDIUM)
     PrintNlnLevels(std::cout);
 
   // Setup() has been called
@@ -175,6 +175,12 @@ void NLNSOL::FAS::AMGHierarchy::SetupMueLuHierarchy()
   MatrixList.set<int>("number of equations", 3);
   mueLuOp->SetFixedBlockSize(3);
 
+  // verbosity for MueLu
+  const MueLu::MsgType mueluverbosity =
+      NLNSOL::UTILS::TranslateVerbosityLevelToMueLu(
+          Configuration()->GetParameter<std::string>(MyListName(),
+              "AMG Hierarchy: MueLu verbosity"));
+
   // create the MueLu Factory via a MueLu ParameterList interpreter
   mueLuFactory_ = Teuchos::rcp(new ParameterListInterpreter(multigridparams));
 
@@ -182,7 +188,7 @@ void NLNSOL::FAS::AMGHierarchy::SetupMueLuHierarchy()
   mueLuHierarchy_ = mueLuFactory_->CreateHierarchy();
 
   // configure MueLu Hierarchy
-  mueLuHierarchy_->SetDefaultVerbLevel(MueLu::Extreme); // ToDo (mayr) sure?
+  mueLuHierarchy_->SetDefaultVerbLevel(mueluverbosity);
   mueLuHierarchy_->GetLevel(0)->Set("A", mueLuOp); // set fine level matrix
   mueLuHierarchy_->GetLevel(0)->Set("Nullspace", nullspace); // set nullspace
   mueLuHierarchy_->GetLevel(0)->setlib(Xpetra::UseEpetra);
@@ -572,7 +578,7 @@ NLNSOL::FAS::AMGHierarchy::GetXpetraFineLevelMatrix() const
   Teuchos::RCP<Xpetra::CrsMatrix<double,int,int,Node> > mueluA =
       Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A_crs));
   Teuchos::RCP<Xpetra::Matrix<double,int,int,Node> > mueLuOp =
-        Teuchos::rcp(new Xpetra::CrsMatrixWrap<double,int,int,Node>(mueluA));
+      Teuchos::rcp(new Xpetra::CrsMatrixWrap<double,int,int,Node>(mueluA));
 
   // ToDo (mayr) Use MueLu-Utils to transform Epetra to Xpetra
 

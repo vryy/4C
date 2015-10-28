@@ -33,7 +33,6 @@ Maintainer: Matthias Mayr
 //#include <MueLu_Hierarchy.hpp>
 #include <MueLu_HierarchyManager.hpp>
 #include <MueLu_MapTransferFactory_fwd.hpp>
-#include <MueLu_MLParameterListInterpreter.hpp> // ToDo (mayr) To be removed
 #include <MueLu_ParameterListInterpreter.hpp>
 #include <MueLu_Utilities.hpp>
 

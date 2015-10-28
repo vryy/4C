@@ -78,7 +78,7 @@ void NLNSOL::LineSearchBase::Init(
 
   const std::string verblevel = MyGetParameter<std::string>(
       "line search: verbosity");
-  setVerbLevel(NLNSOL::UTILS::TranslateVerbosityLevel(verblevel));
+  setVerbLevel(NLNSOL::UTILS::TranslateVerbosityLevelToTeuchos(verblevel));
 
   if (getVerbLevel() > Teuchos::VERB_HIGH)
   {

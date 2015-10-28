@@ -44,7 +44,6 @@ namespace Teuchos
 
 /*----------------------------------------------------------------------------*/
 /* definition of classes */
-//! NLNSOL: a nonlinear solver tool box
 namespace NLNSOL
 {
   /*! \class NlnOperatorFactory

@@ -85,7 +85,7 @@ void NLNSOL::NlnProblem::Init(const Epetra_Comm& comm,
 
   // set the verbosity level
   setVerbLevel(
-      NLNSOL::UTILS::TranslateVerbosityLevel(
+      NLNSOL::UTILS::TranslateVerbosityLevelToTeuchos(
           Params().get<std::string>("Nonlinear Problem: Verbosity")));
 
   // Init() has been called
@@ -126,7 +126,7 @@ void NLNSOL::NlnProblem::ComputeF(const Epetra_MultiVector& x,
 
   // set most recent solution to NOX group
   Teuchos::RCP<Epetra_Vector> xtemp = Teuchos::rcp(new Epetra_Vector(*(x(0))));
-  NOX::Epetra::Vector noxvec(xtemp, NOX::Epetra::Vector::CreateView); // ToDo (mayr) Change back to CreateView some day?
+  NOX::Epetra::Vector noxvec(xtemp, NOX::Epetra::Vector::CreateView);
   NOXGroup().setX(noxvec);
 
   // ask time integrator to evaluate residual and apply DBCs etc.

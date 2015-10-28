@@ -64,12 +64,11 @@ void NLNSOL::NlnOperatorFas::Setup()
   // create the multigrid level hierarchy
   hierarchy_ = Teuchos::rcp(new NLNSOL::FAS::AMGHierarchy());
   hierarchy_->Init(Comm(), Configuration(),
-      MyGetParameter<std::string>("AMG Hierarchy"), NlnProblem(),
+      MyGetParameter<std::string>("FAS: AMG Hierarchy"), NlnProblem(),
       BaciLinearSolver()->Params().sublist("ML Parameters"));
   hierarchy_->Setup();
 
-  std::string cycletype = "V"; // ToDo (mayr) read from parameter list
-//      Params().sublist("FAS: MueLu Parameters").get<std::string>("cycle type");
+  const std::string cycletype = MyGetParameter<std::string>("FAS: cycle type");
   if (cycletype == "V")
     cycletype_ = INPAR::NLNSOL::FAS::cycle_v;
   else if (cycletype == "V 2-level")
@@ -142,7 +141,7 @@ int NLNSOL::NlnOperatorFas::ApplyInverse(const Epetra_MultiVector& f_do_not_use,
 
     stagdetect->Check(fnorm2);
 
-    RebuildPrecConst();
+//    RebuildPrecConst();
 
     PrintIterSummary(iter, fnorm2);
   }
@@ -152,8 +151,8 @@ int NLNSOL::NlnOperatorFas::ApplyInverse(const Epetra_MultiVector& f_do_not_use,
   if (err != 0) { dserror("Update failed."); }
 
   bool stagnation = false;
-  if (stagdetect->Status() or Hierarchy()->CheckAllLevelStagnation())
-    stagnation = true;
+//  if (stagdetect->Status() or Hierarchy()->CheckAllLevelStagnation())
+//    stagnation = true;
 
   // ---------------------------------------------------------------------------
   // Finish ApplyInverse()

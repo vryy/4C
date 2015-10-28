@@ -76,7 +76,7 @@ void NLNSOL::NlnOperatorBase::Init(const Epetra_Comm& comm,
   // initialize member variables
   outparams_ = Teuchos::rcp(new Teuchos::ParameterList());
 
-  setVerbLevel(NLNSOL::UTILS::TranslateVerbosityLevel(
+  setVerbLevel(NLNSOL::UTILS::TranslateVerbosityLevelToTeuchos(
             MyGetParameter<std::string>("nonlinear operator: verbosity")));
 
   // Init() has been called

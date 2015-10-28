@@ -59,13 +59,14 @@ namespace Teuchos
  *  A collection of nonlinear solver routines and methods to build a
  *  user-configured nonlinear solver. Configuration works via a xml-file.
  *
- *  <h3> Major contributors </h3>
+ *  <h3> Major algorithmic parts </h3>
  *  <ul>
  *  <li> Nonlinear solvers/operators inherit from NLNSOL::NlnOperatorBase. </li>
  *  <li> Possible line search strategies are derived from
  *       NLNSOL::LineSearchBase. </li>
  *  <li> An interface to the nonlinear problem to be solved is provided by
  *       NLNSOL::NlnProblem. </li>
+ *  <li> A collection of helpful utilities can be found in NLNSOL::UTILS. </li>
  *  </ul>
  *
  *  \author mayr.mt \date 05/2014
@@ -83,7 +84,11 @@ namespace NLNSOL
    *  initializations. The operator is fed with:
    *  <ul>
    *  <li> an Epetra_Comm </li>
-   *  <li> a Teuchos::ParameterList for configuration </li>
+   *  <li> a Teuchos::RCP<const Teuchos::NLNSOL::UTILS::NlnConfig> object that
+   *       controls access to the global configuration of the NLNSOL framework
+   *       </li>
+   *  <li> a const std::string that describes the name of the sublist of this
+   *       operator in the global configuration object. </li>
    *  <li> a Teuchos::RCP to the nonlinear problem interface class (connection
    *       to time integration) </li>
    *  <li> a parameter that reflects how deep the operator is nested in the

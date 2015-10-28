@@ -19,6 +19,11 @@ Maintainer: Matthias Mayr
 /*----------------------------------------------------------------------------*/
 /* headers */
 
+#ifdef HAVE_MueLu
+// MueLu
+#include <MueLu_VerbosityLevel.hpp>
+#endif
+
 // Teuchos
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_VerboseObject.hpp>
@@ -401,14 +406,28 @@ namespace UTILS
    *  this to Teuchos::EVerbosityLevel to feed it to the Teuchos::VerboseObject.
    *
    *  Basically, we allow for all verbosity levels that are known in
-   *  Teuchos::VerboseObject, thoug we use the std::string notation used in
+   *  Teuchos::VerboseObject, though we use the std::string notation used in
    *  MueLu.
    *
    *  \author mayr.mt \date 03/2015
    */
-  const Teuchos::EVerbosityLevel TranslateVerbosityLevel(
+  const Teuchos::EVerbosityLevel TranslateVerbosityLevelToTeuchos(
       const std::string verblevel = "default" ///< std::string describing the verosity level
       );
+
+#ifdef HAVE_MueLu
+  /*! \brief Translate verbosity level from std::string to
+   *  MueLu::MsgType
+   *
+   *  Verbosity level is given as std::string in xml-input. We need to translate
+   *  this to MueLu::MsgType to feed it to MueLu.
+   *
+   *  \author mayr.mt \date 10/2015
+   */
+  const MueLu::MsgType TranslateVerbosityLevelToMueLu(
+      const std::string verblevel = "default" ///< std::string describing the verosity level
+      );
+#endif
 
   /*! \brief Status of ApplyInverse()
    *

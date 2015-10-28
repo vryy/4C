@@ -151,7 +151,7 @@ void NLNSOL::UTILS::StagnationDetection::Init(
     active_ = false;
 
   // configure output to screen
-  setVerbLevel(NLNSOL::UTILS::TranslateVerbosityLevel(
+  setVerbLevel(NLNSOL::UTILS::TranslateVerbosityLevelToTeuchos(
       config_->GetParameter<std::string>(listname, "Stagnation Detection: Verbosity")));
 
   if (getVerbLevel() > Teuchos::VERB_HIGH)
@@ -371,7 +371,7 @@ void NLNSOL::UTILS::CreateParamListFromXMLOld(const std::string filename,
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-const Teuchos::EVerbosityLevel NLNSOL::UTILS::TranslateVerbosityLevel(
+const Teuchos::EVerbosityLevel NLNSOL::UTILS::TranslateVerbosityLevelToTeuchos(
     const std::string verblevelstring)
 {
   Teuchos::EVerbosityLevel verblevel = Teuchos::VERB_DEFAULT;
@@ -393,3 +393,30 @@ const Teuchos::EVerbosityLevel NLNSOL::UTILS::TranslateVerbosityLevel(
 
   return verblevel;
 }
+
+#ifdef HAVE_MueLu
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+const MueLu::MsgType NLNSOL::UTILS::TranslateVerbosityLevelToMueLu(
+    const std::string verblevelstring)
+{
+  MueLu::MsgType verblevel = MueLu::Default;
+
+  if (verblevelstring == "default")
+    verblevel = MueLu::Default;
+  else if (verblevelstring == "none")
+    verblevel = MueLu::None;
+  else if (verblevelstring == "low")
+    verblevel = MueLu::Low;
+  else if (verblevelstring == "medium")
+    verblevel = MueLu::Medium;
+  else if (verblevelstring == "high")
+    verblevel = MueLu::High;
+  else if (verblevelstring == "extreme")
+    verblevel = MueLu::Extreme;
+  else
+    dserror("Unknown verbosity level '%s'.", verblevelstring.c_str());
+
+  return verblevel;
+}
+#endif
