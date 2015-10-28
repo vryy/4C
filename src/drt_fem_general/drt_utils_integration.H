@@ -75,40 +75,44 @@ enum GaussRule3D
 /// \note: Open means that no integration point is on the boundary of the integrated domain
 inline bool IntRuleIsOpen(DRT::UTILS::GaussRule3D intrule)
 {
+  bool open = false;
+
   switch (intrule)
   {
-  case intrule_hex_1point:             return true;
-  case intrule_hex_8point:             return true;
-  case intrule_hex_27point:            return true;
-  case intrule_hex_64point:            return true;
-  case intrule_hex_125point:           return true;
-  case intrule_hex_216point:           return true;
-  case intrule_hex_343point:           return true;
-  case intrule_hex_512point:           return true;
-  case intrule_hex_729point:           return true;
-  case intrule_hex_1000point:          return true;
-  case intrule_tet_1point:             return true;
-  case intrule_tet_4point:             return true;
-  case intrule_tet_4point_gauss_radau: return false;
-  case intrule_tet_5point:             return true;
-  case intrule_tet_10point:            return false;
-  case intrule_tet_11point:            return true;
-  case intrule_tet_15point:            return false;
-  case intrule_tet_24point:            return true;
-  case intrule_tet_64point_peano:      return true;
-  case intrule_tet_45point:            return true;
-  case intrule_tet_125point_peano:     return true;
-  case intrule_tet_343point_peano:     return true;
-  case intrule_tet_729point_peano:     return true;
-  case intrule_wedge_1point:           return true;
-  case intrule_wedge_6point:           return true;
-  case intrule_wedge_9point:           return true;
-  case intrule_pyramid_1point:         return true;
-  case intrule_pyramid_8point:         return true;
+  case intrule_hex_1point:             open=true; break;
+  case intrule_hex_8point:             open=true; break;
+  case intrule_hex_27point:            open=true; break;
+  case intrule_hex_64point:            open=true; break;
+  case intrule_hex_125point:           open=true; break;
+  case intrule_hex_216point:           open=true; break;
+  case intrule_hex_343point:           open=true; break;
+  case intrule_hex_512point:           open=true; break;
+  case intrule_hex_729point:           open=true; break;
+  case intrule_hex_1000point:          open=true; break;
+  case intrule_tet_1point:             open=true; break;
+  case intrule_tet_4point:             open=true; break;
+  case intrule_tet_4point_gauss_radau: open=false; break;
+  case intrule_tet_5point:             open=true; break;
+  case intrule_tet_10point:            open=false; break;
+  case intrule_tet_11point:            open=true; break;
+  case intrule_tet_15point:            open=false; break;
+  case intrule_tet_24point:            open=true; break;
+  case intrule_tet_64point_peano:      open=true; break;
+  case intrule_tet_45point:            open=true; break;
+  case intrule_tet_125point_peano:     open=true; break;
+  case intrule_tet_343point_peano:     open=true; break;
+  case intrule_tet_729point_peano:     open=true; break;
+  case intrule_wedge_1point:           open=true; break;
+  case intrule_wedge_6point:           open=true; break;
+  case intrule_wedge_9point:           open=true; break;
+  case intrule_pyramid_1point:         open=true; break;
+  case intrule_pyramid_8point:         open=true; break;
   default:
     std::cout << "Integration rule not categorized" << std::endl;
     std::exit(1);
   }
+
+  return open;
 }
 
 
@@ -147,6 +151,47 @@ enum GaussRule2D
     intrule_tri_64point              ///< degree of precision: 15 (open)   (essentially a product of two 8 point 1D Gauss-Legendre rules)
 };
 
+/// allow to verify the openness of an integration rule
+///
+/// \note: Open means that no integration point is on the boundary of the integrated domain
+inline bool IntRuleIsOpen(DRT::UTILS::GaussRule2D intrule)
+{
+  bool open = false;
+
+  switch (intrule)
+  {
+  case intrule_quad_1point:             open=true; break;
+  case intrule_quad_4point:             open=true; break;
+  case intrule_quad_6point:             open=true; break;
+  case intrule_quad_9point:             open=true; break;
+  case intrule_quad_16point:            open=true; break;
+  case intrule_quad_25point:            open=true; break;
+  case intrule_quad_lobatto25point:     open=false; break;
+  case intrule_quad_36point:            open=true; break;
+  case intrule_quad_49point:            open=true; break;
+  case intrule_quad_64point:            open=true; break;
+  case intrule_quad_81point:            open=true; break;
+  case intrule_quad_100point:           open=true; break;
+  case intrule_quad_256point:           open=true; break;
+  case intrule_quad_400point:           open=true; break;
+  case intrule_quad_1024point:          open=true; break;
+  case intrule_tri_1point:              open=true; break;
+  case intrule_tri_3point:              open=true; break;
+  case intrule_tri_3point_gauss_radau:  open=false; break;
+  case intrule_tri_6point:              open=true; break;
+  case intrule_tri_7point:              open=true; break;
+  case intrule_tri_12point:             open=true; break;
+  case intrule_tri_16point:             open=true; break;
+  case intrule_tri_37point:             open=true; break;
+  case  intrule_tri_64point:            open=true; break;
+  default:
+    std::cout << "Integration rule not categorized" << std::endl;
+    std::exit(1);
+  }
+
+  return open;
+}
+
 //! supported 1d integration rules
 
 /*note: the following enum should be renamed the following way: GaussRule1D -> IntRule1D,
@@ -183,6 +228,48 @@ enum GaussRule1D
 
 };
 
+/// allow to verify the openness of an integration rule
+///
+/// \note: Open means that no integration point is on the boundary of the integrated domain
+inline bool IntRuleIsOpen(DRT::UTILS::GaussRule1D intrule)
+{
+  bool open = false;
+
+  switch (intrule)
+  {
+  case intrule_line_1point:           open=true; break;
+  case intrule_line_2point:           open=true; break;
+  case intrule_line_3point:           open=true; break;
+  case intrule_line_4point:           open=true; break;
+  case intrule_line_5point:           open=true; break;
+  case intrule_line_6point:           open=true; break;
+  case intrule_line_7point:           open=true; break;
+  case intrule_line_8point:           open=true; break;
+  case intrule_line_9point:           open=true; break;
+  case intrule_line_10point:          open=true; break;
+  case intrule_line_16point:          open=true; break;
+  case intrule_line_20point:          open=true; break;
+  case intrule_line_32point:          open=true; break;
+  case intrule_line_lobatto2point:    open=false; break;
+  case intrule_line_lobatto3point:    open=false; break;
+  case intrule_line_lobatto4point:    open=false; break;
+  case intrule_line_lobatto5point:    open=false; break;
+  case intrule_line_lobatto6point:    open=false; break;
+  case intrule_line_lobatto7point:    open=false; break;
+  case intrule_line_lobatto8point:    open=false; break;
+  case intrule_line_lobatto9point:    open=false; break;
+  case intrule_line_lobatto10point:   open=false; break;
+  case intrule_line_lobatto11point:   open=false; break;
+  case intrule_line_lobatto12point:   open=false; break;
+  case intrule_line_lobatto13point:   open=false; break;
+  case intrule_line_lobatto14point:   open=false; break;
+  default:
+    std::cout << "Integration rule not categorized" << std::endl;
+    std::exit(1);
+  }
+
+  return open;
+}
 
 /*!
  \brief a point with a position and an associated weight
