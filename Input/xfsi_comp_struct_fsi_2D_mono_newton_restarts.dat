@@ -155,7 +155,7 @@ EOS_DIV                         none                          //vel_jump_xfem_gp
 EOS_DEFINITION_TAU              Burman_Hansbo_DAngelo_Zunino
 EOS_H_DEFINITION                EOS_he_max_diameter_to_opp_surf
 --------------------------------------------------------------------SOLVER 1
-NAME                            XFSI_Solver
+NAME                            XFSI_SOLVER
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
 NAME                            Structural_Solver
