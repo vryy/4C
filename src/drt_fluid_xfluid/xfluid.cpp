@@ -89,6 +89,7 @@ FLD::XFluid::XFluid(
   meshcoupl_dis_.clear();
   meshcoupl_dis_.push_back(coupdis);
 
+  //TODO: remove this after fixing the SemiLagrangean time integration for multiple mesh coupling objects!
   mc_idx_ = 0; // using this constructor only one mesh coupling discretization is supported so far
 
   return;
@@ -230,11 +231,13 @@ void FLD::XFluid::SetupFluidDiscretization()
 
   Teuchos::RCP<DRT::Discretization> xfluiddis;
 
+  //TODO: we should try to resolve this confusing meaning of fluid dis and xfluid dis for xfluid and xfluidfluid!!!
+
   // XFF-case
   if (DRT::Problem::Instance()->DoesExistDis("xfluid"))
   {
-    Teuchos::RCP<DRT::Discretization> fluiddis  = DRT::Problem::Instance()->GetDis("fluid");
-    xfluiddis = DRT::Problem::Instance()->GetDis("xfluid");
+    Teuchos::RCP<DRT::Discretization> fluiddis  = DRT::Problem::Instance()->GetDis("fluid"); // fluid dis is here the embedded mesh (required for XFFSI)
+    xfluiddis = DRT::Problem::Instance()->GetDis("xfluid"); // xfluid dis is here the cut mesh
     xdisbuilder.SetupXFEMDiscretization(
       DRT::Problem::Instance()->XFEMGeneralParams(),
       xfluiddis,
@@ -243,7 +246,7 @@ void FLD::XFluid::SetupFluidDiscretization()
   }
   else // standard xfluid case
   {
-    xfluiddis = DRT::Problem::Instance()->GetDis("fluid");
+    xfluiddis = DRT::Problem::Instance()->GetDis("fluid"); // fluid dis is here the cut mesh
     xdisbuilder.SetupXFEMDiscretization(
       DRT::Problem::Instance()->XFEMGeneralParams(),
       xfluiddis
@@ -2313,6 +2316,9 @@ void FLD::XFluid::Solve()
 
       GenAlphaIntermediateValues();
     }
+
+    std::cout << "MAXNUMENTRIES: " << state_->sysmat_->EpetraMatrix()->MaxNumEntries() << std::endl;
+
   }
 
   // Reset the solver and so release the system matrix' pointer (enables to delete the state_->systemmatrix)
@@ -2749,6 +2755,9 @@ void FLD::XFluid::Evaluate(
 
     Teuchos::RCP<Epetra_Vector> velnp_tmp = LINALG::CreateVector(*discret_->DofRowMap(),true);
 
+    state_->incvel_->Update(1.0, *stepinc, -1.0, *state_->velnp_, 0.0);
+    state_->incvel_->Update(1.0, *state_->veln_, 1.0);
+
     // update the current u^(n+1,i+1) = u^n + (u^(n+1,i+1)-u^n) = veln_ + stepinc
     velnp_tmp->Update(1.0, *state_->veln_, 1.0, *stepinc, 0.0);
 
@@ -2782,6 +2791,15 @@ void FLD::XFluid::Evaluate(
   // - apply Dirichlet and Neumann boundary conditions
   //--------------------------------------------------------------------------------------------
 
+  output_service_->GmshIncrementOutputDebug( "DEBUG_icnr", step_, itnum_out_, state_ );
+
+  // TODO:maybe we can choose a more intelligent update such that we can reuse graphs of the matrix during the monolithic
+  // xfsi solve...
+  // currently we use fixed itnum = 1, it is okay as a new graph of the systemmatrix is created in the state-class evaluate routine
+  int itnum = 1;
+  itnum_out_++;
+
+
   PrepareXFEMSolve();
 
 
@@ -2789,11 +2807,7 @@ void FLD::XFluid::Evaluate(
   // THIRD: evaluate systemmatrix and rhs
   //--------------------------------------------------------------------------------------------
 
-  // TODO:maybe we can choose a more intelligent update such that we can reuse graphs of the matrix during the monolithic
-  // xfsi solve...
-  // currently we use fixed itnum = 1, it is okay as a new graph of the systemmatrix is created in the state-class evaluate routine
-  int itnum = 1;
-  itnum_out_++;
+
   // -------------------------------------------------------------------
   // call elements to calculate system matrix and RHS
   // -------------------------------------------------------------------
@@ -2812,7 +2826,7 @@ void FLD::XFluid::Evaluate(
   // write gmsh debug output for fluid residual directly after the fluid is evaluated
   // -------------------------------------------------------------------
   output_service_->GmshResidualOutputDebug( "DEBUG_residual_wo_DBC", step_, itnum_out_, state_ );
-  output_service_->GmshSolutionOutputDebug("DEBUG_sol", step_, itnum_out_, state_ );
+  output_service_->GmshSolutionOutputDebug( "DEBUG_sol", step_, itnum_out_, state_ );
 
   return;
 }
