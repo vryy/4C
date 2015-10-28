@@ -148,6 +148,10 @@ void FLD::XFluidFluid::Init()
 
 void FLD::XFluidFluid::UseBlockMatrix(bool splitmatrix)
 {
+  //TODO: is it reasonable to init Block Matrix with npr > 0 when just blocks are assigned later? Think about memory in this context
+
+  // should we shift this creation to xfluidfluidstate-class?
+
   if (splitmatrix)
     xff_state_->xffluidsysmat_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
         *XFluidFluidMapExtractor(),*XFluidFluidMapExtractor(),108,false,true));
@@ -358,8 +362,10 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluidFluid::GetNewState()
 
 void FLD::XFluidFluid::CreateState()
 {
-  // new cut for this time step
+  // free the pointer to state_ object to enable to destroy the state_ object
+  xff_state_ = Teuchos::null;
 
+  // new cut for this time step
   XFluid::CreateState();
   xff_state_ = Teuchos::rcp_dynamic_cast<FLD::XFluidFluidState>(XFluid::state_);
 
@@ -434,6 +440,8 @@ void FLD::XFluidFluid::AssembleMatAndRHS(
       xff_state_->xffluidresidual_);
 
   // assemble XFluid and embedded fluid system matrices into one
+
+  // TODO: when creation is shifted state-class, we can ask the state class for this
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat_block = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(xff_state_->xffluidsysmat_,false);
   if (sysmat_block != Teuchos::null)
   {
@@ -447,6 +455,7 @@ void FLD::XFluidFluid::AssembleMatAndRHS(
   }
   else
   {
+    // TODO introduce a ZeroFluidFluidSysmat in xfluidfluid state (use PutScalar if explicitDirichlet = false)
     xff_state_->xffluidsysmat_->Zero();
     xff_state_->xffluidsysmat_->Add(*xff_state_->sysmat_,false,1.0,0.0);
     xff_state_->xffluidsysmat_->Add(*embedded_fluid_->SystemMatrix(),false,1.0,1.0);
@@ -510,11 +519,13 @@ void FLD::XFluidFluid::AddEosPresStabToEmbLayer()
   //------------------------------------------------------------
   const Epetra_Map* rmap = NULL;
 
+  //TODO: do not create a new matrix all the time, why not creating an epetraFE matrix in fluidimplicit directly?
   Teuchos::RCP<Epetra_FECrsMatrix> sysmat_FE;
 
   rmap = &(embedded_fluid_->SystemMatrix()->OperatorRangeMap());
   sysmat_FE = Teuchos::rcp(new Epetra_FECrsMatrix(::Copy,*rmap,256,false));
 
+  //TODO: think about the dirichlet and savegraph flags when ApplyDirichlet or Zero is called
   Teuchos::RCP<LINALG::SparseMatrix> sysmat_linalg = Teuchos::rcp(
     new LINALG::SparseMatrix(
         Teuchos::rcp_static_cast<Epetra_CrsMatrix>(sysmat_FE),LINALG::View,true,true,LINALG::SparseMatrix::FE_MATRIX));

@@ -139,6 +139,7 @@ public:
   /// get merged fluid dofmap
   Teuchos::RCP<const Epetra_Map> DofRowMap()
   {
+//    return Teuchos::rcp((xff_state_->xffluiddofrowmap_).get(), false); // TODO: does not work at the moment, no nox structure split gives segfault!
     return xff_state_->xffluiddofrowmap_;
   }
 

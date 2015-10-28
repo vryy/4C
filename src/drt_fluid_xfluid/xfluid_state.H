@@ -62,6 +62,8 @@ namespace UTILS
 {
   class KSPMapExtractor;
 }
+
+
 /**
  * Container class for the state vectors and maps of the intersected background
  * fluid - tied to a specific intersection state (interface position,
@@ -93,13 +95,13 @@ public:
 
     //! ctor  Initialize coupling matrices with fluid sysmat and fluid rhs vector
     CouplingState(
-        Teuchos::RCP<LINALG::SparseMatrix> C_sx,
-        Teuchos::RCP<LINALG::SparseMatrix> C_xs,
-        Teuchos::RCP<LINALG::SparseMatrix> C_ss,
-        Teuchos::RCP<Epetra_Vector> rhC_s,
-        Teuchos::RCP<Epetra_Vector> rhC_s_col
+        const Teuchos::RCP<LINALG::SparseMatrix> & C_sx,
+        const Teuchos::RCP<LINALG::SparseMatrix> & C_xs,
+        const Teuchos::RCP<LINALG::SparseMatrix> & C_ss,
+        const Teuchos::RCP<Epetra_Vector> & rhC_s,
+        const Teuchos::RCP<Epetra_Vector> & rhC_s_col
     ):
-      C_sx_(C_sx),
+      C_sx_(C_sx), // this rcp constructor using const references copies also the ownership and increases the specific weak/strong reference counter
       C_xs_(C_xs),
       C_ss_(C_ss),
       rhC_s_(rhC_s),
@@ -109,7 +111,7 @@ public:
     }
 
     //! ctor  Initialize coupling matrices
-    CouplingState(Teuchos::RCP<const Epetra_Map>& xfluiddofrowmap, const Teuchos::RCP<DRT::Discretization>&  slavediscret);
+    CouplingState(const Teuchos::RCP<const Epetra_Map>& xfluiddofrowmap, const Teuchos::RCP<DRT::Discretization>&  slavediscret);
 
     //! zero coupling matrices and rhs vectors
     void ZeroCouplingMatricesAndRhs();
@@ -119,6 +121,9 @@ public:
         const Epetra_Map & xfluiddofrowmap,
         const Epetra_Map & slavedofrowmap
     );
+
+    //! destroy the coupling objects and it's content
+    void Destroy(bool throw_exception = true);
 
     //! @name coupling matrices x: xfluid, s: coupling slave (structure, ALE-fluid, xfluid-element with other active dofset, etc.)
     //@{
@@ -138,11 +143,11 @@ public:
    @param xfluiddofrowmap dof-rowmap of intersected fluid
    */
   explicit XFluidState(
-      Teuchos::RCP<XFEM::ConditionManager>& condition_manager,
-      Teuchos::RCP<GEO::CutWizard>& wizard,
-      Teuchos::RCP<XFEM::XFEMDofSet>& dofset,
-      Teuchos::RCP<const Epetra_Map> & xfluiddofrowmap,
-      Teuchos::RCP<const Epetra_Map> & xfluiddofcolmap
+      const Teuchos::RCP<XFEM::ConditionManager>& condition_manager,
+      const Teuchos::RCP<GEO::CutWizard>& wizard,
+      const Teuchos::RCP<XFEM::XFEMDofSet>& dofset,
+      const Teuchos::RCP<const Epetra_Map> & xfluiddofrowmap,
+      const Teuchos::RCP<const Epetra_Map> & xfluiddofcolmap
   );
 
   /// dtor
@@ -154,11 +159,17 @@ public:
     const double & time
     );
 
-  /// zero all coupling matrices and rhs vectors for all coupling objects
-  void ZeroCouplingMatricesAndRhs();
+  /// zero system matrix and related rhs vectors
+  virtual void ZeroSystemMatrixAndRhs();
 
-  /// Initialize state vectors
-  void CompleteCouplingMatricesAndRhs();
+  /// zero all coupling matrices and rhs vectors for all coupling objects
+  virtual void ZeroCouplingMatricesAndRhs();
+
+  /// Complete coupling matrices and rhs vectors
+  virtual void CompleteCouplingMatricesAndRhs();
+
+  /// destroy the stored objects
+  virtual bool Destroy();
 
   //! @name Accessors
   //@{
@@ -285,7 +296,23 @@ protected:
   void InitSystemMatrix();
 
   /// initialize coupling matrices and rhs vectors for all coupling objects
-  void InitCouplingMatricesAndRhs( Teuchos::RCP<XFEM::ConditionManager> & condition_manager );
+  void InitCouplingMatricesAndRhs();
+
+  /// Complete coupling matrices and rhs vectors
+  void CompleteCouplingMatricesAndRhs( const Teuchos::RCP<const Epetra_Map> & fluiddofrowmap );
+
+
+public:
+
+  /*!
+   \brief initialize ALE state vectors
+   @param dispnp and grivnp vectors w.r.t initial full dofrowmap
+   */
+  void InitALEStateVectors(
+      const Teuchos::RCP<DRT::DiscretizationXFEM>& xdiscret,
+      Teuchos::RCP<const Epetra_Vector> dispnp_initmap,
+      Teuchos::RCP<const Epetra_Vector> gridvnp_initmap
+  );
 
   /// XFEM dofset
   Teuchos::RCP<XFEM::XFEMDofSet> dofset_;

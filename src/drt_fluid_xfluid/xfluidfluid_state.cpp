@@ -14,6 +14,10 @@ Maintainer:  Raffaela Kruse
 
 #include "xfluidfluid_state.H"
 
+#include "../drt_xfem/xfem_condition_manager.H"
+
+#include "xfluid_state.H"
+
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../linalg/linalg_mapextractor.H"
@@ -22,16 +26,18 @@ Maintainer:  Raffaela Kruse
 #include "../drt_fluid/fluid_utils.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 
+#include "xfluid_utils.H"
+
 /*----------------------------------------------------------------------*
  |  Constructor for XFluidFluidState                         kruse 01/15 |
  *----------------------------------------------------------------------*/
 FLD::XFluidFluidState::XFluidFluidState(
-  Teuchos::RCP<XFEM::ConditionManager>& condition_manager,
-  Teuchos::RCP<GEO::CutWizard>& wizard,
-  Teuchos::RCP<XFEM::XFEMDofSet>& dofset,
-  Teuchos::RCP<const Epetra_Map> & xfluiddofrowmap,
-  Teuchos::RCP<const Epetra_Map> & xfluiddofcolmap,
-  Teuchos::RCP<const Epetra_Map> & embfluiddofrowmap) :
+  const Teuchos::RCP<XFEM::ConditionManager>& condition_manager,
+  const Teuchos::RCP<GEO::CutWizard>& wizard,
+  const Teuchos::RCP<XFEM::XFEMDofSet>& dofset,
+  const Teuchos::RCP<const Epetra_Map> & xfluiddofrowmap,
+  const Teuchos::RCP<const Epetra_Map> & xfluiddofcolmap,
+  const Teuchos::RCP<const Epetra_Map> & embfluiddofrowmap) :
   XFluidState(condition_manager,wizard,dofset,xfluiddofrowmap, xfluiddofcolmap),
   xffluiddofrowmap_(LINALG::MergeMap(xfluiddofrowmap,embfluiddofrowmap,false)),
   xffluidsplitter_(Teuchos::rcp(new FLD::UTILS::XFluidFluidMapExtractor())),
@@ -76,6 +82,26 @@ Teuchos::RCP<LINALG::SparseMatrix> FLD::XFluidFluidState::SystemMatrix()
 }
 
 /*----------------------------------------------------------------------*
+ | Complete coupling matrices and rhs vectors              schott 12/14 |
+ *----------------------------------------------------------------------*/
+void FLD::XFluidFluidState::CompleteCouplingMatricesAndRhs()
+{
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat_block = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(xffluidsysmat_,false);
+
+  // in case that fluid-fluid sysmat is merged (no block matrix), we have to complete the coupling blocks (e.g. fluid-structure) w.r.t.
+  // xff sysmat instead of just the xfluid block
+
+  if(sysmat_block == Teuchos::null) // merged matrix
+  {
+    XFluidState::CompleteCouplingMatricesAndRhs(xffluiddofrowmap_);
+  }
+  else // block matrix
+  {
+    XFluidState::CompleteCouplingMatricesAndRhs(xfluiddofrowmap_);
+  }
+}
+
+/*----------------------------------------------------------------------*
  |  Create merged DBC map extractor                         kruse 01/15 |
  *----------------------------------------------------------------------*/
 void FLD::XFluidFluidState::CreateMergedDBCMapExtractor(Teuchos::RCP<const LINALG::MapExtractor> embfluiddbcmaps)
@@ -108,4 +134,44 @@ void FLD::XFluidFluidState::SetupMapExtractors( const Teuchos::RCP<DRT::Discreti
 
   FLD::UTILS::SetupFluidFluidVelPresSplit(*xfluiddiscret,DRT::Problem::Instance()->NDim(),
       *embfluiddiscret,*xffluidvelpressplitter_,xffluiddofrowmap_);
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool FLD::XFluidFluidState::Destroy()
+{
+  // destroy system matrix
+#if(1)
+  std::cout << "Destroying the xffluidsysmat_ is not possible at the moment. Internally more strong RCPs point to the EpetraMatrix. This has to be checked!!!" << std::endl;
+# else
+  DestroyMatrix(xffluidsysmat_);
+#endif
+
+
+  DestroyRCPObject(xffluidvelnp_);
+  DestroyRCPObject(xffluidveln_);
+
+  DestroyRCPObject(xffluidresidual_);
+
+  DestroyRCPObject(xffluidzeros_);
+  DestroyRCPObject(xffluidincvel_);
+
+
+  DestroyRCPObject(xffluidsplitter_);
+  DestroyRCPObject(xffluidvelpressplitter_);
+  DestroyRCPObject(xffluiddbcmaps_);
+
+  // destroy dofrowmap
+  DestroyRCPObject(embfluiddofrowmap_);
+
+  //TODO: actually it should be possible to delete the dofrowmap, however this causes problems in xffsi applications! (CHECK THIS!!!)
+  // DofRowMap() in Xfluidfluid currently returns a strong RCP
+  if(xffluiddofrowmap_.strong_count() == 1)    xffluiddofrowmap_ = Teuchos::null;
+  else // dserror("could not destroy object: %i!=1 pointers", xffluiddofrowmap_.strong_count());
+    std::cout << "could not destroy xffluiddofrowmap_: number of pointers is " << xffluiddofrowmap_.strong_count() << "!=1" ;
+
+  XFluidState::Destroy();
+
+  return true;
 }

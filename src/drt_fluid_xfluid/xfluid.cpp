@@ -67,6 +67,8 @@ Maintainer:  Benedikt Schott
 #include "../drt_mat/matlist.H"
 #include "../drt_mat/matpar_bundle.H"
 
+#include <Epetra_Time.h>
+
 
 /*----------------------------------------------------------------------*
  |  Constructor for basic XFluid class                     schott 03/12 |
@@ -468,8 +470,14 @@ void FLD::XFluid::CreateInitialState()
  *----------------------------------------------------------------------*/
 void FLD::XFluid::CreateState()
 {
+  discret_->Comm().Barrier();
+  TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::CreateState" );
+
   // ---------------------------------------------------------------------
   // create a new state class
+  DestroyState();
+
+  // create new state object
   state_ = GetNewState();
 
   //--------------------------------------------------------------------------------------
@@ -484,11 +492,30 @@ void FLD::XFluid::CreateState()
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FLD::XFluid::DestroyState()
+{
+  if( state_ != Teuchos::null  and state_.strong_count() > 1)
+    dserror("deleting old state class object does not work properly, more than one rcp pointer existent!!!");
+
+  if(state_ != Teuchos::null)
+  {
+    if(!state_->Destroy())
+      dserror("destroying XFluidState object failed");
+
+    // delete the old state object and its content (if no ownership given anymore) not to have two objects in memory at the same time
+    state_ = Teuchos::null;
+  }
+}
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<FLD::XFluidState> FLD::XFluid::GetNewState()
 {
+  if(state_!=Teuchos::null)
+    dserror("please destroy the old state-class before creating a new one!");
 
   //-------------------------------------------------------------
   // export background mesh ale displacements
@@ -519,7 +546,7 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluid::GetNewState()
 
   //--------------------------------------------------------------------------------------
   // initialize ALE state vectors
-  if(alefluid_) state_creator_->InitALEStateVectors(xdiscret_, dispnp_, gridvnp_);
+  if(alefluid_) state->InitALEStateVectors(xdiscret_, dispnp_, gridvnp_);
 
   return state;
 }
@@ -530,21 +557,9 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluid::GetNewState()
  *----------------------------------------------------------------------*/
 void FLD::XFluid::AssembleMatAndRHS( int itnum )
 {
+  discret_->Comm().Barrier();
 
   TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate" );
-
-  //----------------------------------------------------------------------
-
-  // create a new sysmat with reusing the old graph (without the DBC modification) when savegraph-flag is switched on
-  // for the first iteration we need to create a new matrix without reusing the graph as the matrix could have been used
-  // for another assembly (e.g. time integration)
-  if(itnum == 1)
-    state_->sysmat_->Reset();
-  else
-    state_->sysmat_->Zero();
-
-  // zero the column residual vector for assembly over row elements that has to be communicated at the end to state_->residual_
-  state_->residual_col_->PutScalar(0.0);
 
   //----------------------------------------------------------------------
   // set state vectors for cutter discretization
@@ -555,6 +570,9 @@ void FLD::XFluid::AssembleMatAndRHS( int itnum )
   condition_manager_->ZeroStateVectors_FSI();
 
   //----------------------------------------------------------------------
+  // clear the system matrix and related rhs vectors
+  state_->ZeroSystemMatrixAndRhs();
+
   // clear the coupling matrices and rhs vectors
   state_->ZeroCouplingMatricesAndRhs();
 
@@ -578,9 +596,7 @@ void FLD::XFluid::AssembleMatAndRHS( int itnum )
 
 
   //----------------------------------------------------------------------
-  int itemax = params_->get<int>("max nonlin iter steps");
-
-  if (itnum != itemax)
+  if (itnum != itemax_)
   {
 
     //-------------------------------------------------------------------------------
@@ -595,10 +611,7 @@ void FLD::XFluid::AssembleMatAndRHS( int itnum )
 
     //-------------------------------------------------------------------------------
     // evaluate and assemble face-oriented fluid and ghost penalty stabilizations
-    AssembleMatAndRHS_FaceTerms();
-
-    //-------------------------------------------------------------------------------
-    discret_->ClearState();
+    AssembleMatAndRHS_FaceTerms(state_->sysmat_, state_->residual_col_, state_->wizard_);
 
     //-------------------------------------------------------------------------------
     //-------------------------------------------------------------------------------
@@ -639,6 +652,12 @@ void FLD::XFluid::AssembleMatAndRHS( int itnum )
     state_->trueresidual_->Update(-1.0*ResidualScaling(),*state_->residual_,0.0);
 
   }
+
+  //-------------------------------------------------------------------------------
+  discret_->ClearState();
+
+  condition_manager_->ClearState();
+
 }
 
 void FLD::XFluid::AssembleMatAndRHS_VolTerms()
@@ -1072,7 +1091,12 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
 
 
 
-void FLD::XFluid::AssembleMatAndRHS_FaceTerms(bool is_ghost_penalty_reconstruct)
+void FLD::XFluid::AssembleMatAndRHS_FaceTerms(
+    const Teuchos::RCP<LINALG::SparseMatrix> & sysmat,
+    const Teuchos::RCP<Epetra_Vector> & residual_col,
+    const Teuchos::RCP<GEO::CutWizard> & wizard,
+    bool is_ghost_penalty_reconstruct
+    )
 {
   // call edge stabilization
   if( eval_eos_ || is_ghost_penalty_reconstruct)
@@ -1103,7 +1127,7 @@ void FLD::XFluid::AssembleMatAndRHS_FaceTerms(bool is_ghost_penalty_reconstruct)
 
       bool gmsh_EOS_out(DRT::INPUT::IntegralValue<int>(params_->sublist("XFEM"),"GMSH_EOS_OUT"));
       edgestab_->EvaluateEdgeStabGhostPenalty(
-          faceparams, discret_, face_ele, state_->sysmat_, state_->residual_col_, state_->Wizard(), include_inner_, gmsh_EOS_out);
+          faceparams, discret_, face_ele, sysmat, residual_col, wizard, include_inner_, gmsh_EOS_out);
     }
   }
 }
@@ -1301,12 +1325,15 @@ void FLD::XFluid::IntegrateShapeFunction(
   vec->Scale(1.0,vec_tmp);
 }
 
+
 /*----------------------------------------------------------------------*
  |  evaluate gradient penalty terms to reconstruct ghost values  schott 03/12 |
  *----------------------------------------------------------------------*/
 void FLD::XFluid::AssembleMatAndRHS_GradientPenalty(
-    Teuchos::RCP<Epetra_Vector> vec,
-    int itnum
+    Teuchos::RCP<LINALG::MapExtractor>         ghost_penaly_dbcmaps,
+    Teuchos::RCP<LINALG::SparseMatrix> sysmat_gp,
+    Teuchos::RCP<Epetra_Vector> residual_gp,
+    Teuchos::RCP<Epetra_Vector> vec
 )
 {
   TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::AssembleMatAndRHS_GradientPenalty" );
@@ -1314,14 +1341,12 @@ void FLD::XFluid::AssembleMatAndRHS_GradientPenalty(
   // create a new sysmat with reusing the old graph (without the DBC modification) when savegraph-flag is switched on
   // for the first iteration we need to create a new matrix without reusing the graph as the matrix could have been used
   // for another assembly
-  if(itnum == 1)
-    state_->sysmat_->Reset();
-  else
-    state_->sysmat_->Zero();
 
-  // add Neumann loads
-  state_->residual_->PutScalar(0.0);
-  state_->residual_col_->PutScalar(0.0);
+  //TODO: check if this is necessary or worse!
+//  sysmat_gp->Zero()
+
+  residual_gp->PutScalar(0.0);
+  Teuchos::RCP<Epetra_Vector> residual_gp_col = LINALG::CreateVector(*state_->xfluiddofcolmap_, true);
 
   //----------------------------------------------------------------------
   // set general vector values needed by elements
@@ -1341,30 +1366,55 @@ void FLD::XFluid::AssembleMatAndRHS_GradientPenalty(
 
 
   //----------------------------------------------------------------------
-  int itemax = params_->get<int>("max nonlin iter steps");
 
-  if (itnum != itemax)
+  // call loop over face-elements
+  AssembleMatAndRHS_FaceTerms(sysmat_gp, residual_gp_col, state_->wizard_, true);
+
+  discret_->ClearState();
+
+
+  //----------------------------------------------------------------------
+
+  // insert already dummy ones such that Complete does not clear the memory for all rows
+  // for which not ghost-penalty term has been assembled
+  // for these rows we later have to assemble ones, as we solve for the whole vector
+
+  const Epetra_Map & dbctoggle = *(ghost_penaly_dbcmaps->CondMap());
+
+  bool diagonalblock = true;
+
+  for (int i=0; i<sysmat_gp->EpetraMatrix()->NumMyRows(); ++i)
   {
-    // call loop over face-elements
-    AssembleMatAndRHS_FaceTerms(true);
+    int row = sysmat_gp->EpetraMatrix()->GRID(i);
 
-    discret_->ClearState();
-
-
-    //-------------------------------------------------------------------------------
-    // need to export residual_col to systemvector1 (residual_)
-    Epetra_Vector res_tmp(state_->residual_->Map(),false);
-    Epetra_Export exporter(state_->residual_col_->Map(),res_tmp.Map());
-    int err2 = res_tmp.Export(*state_->residual_col_,exporter,Add);
-    if (err2) dserror("Export using exporter returned err=%d",err2);
-    state_->residual_->Update(1.0,res_tmp,1.0);
-
-    //-------------------------------------------------------------------------------
-    // finalize the complete matrix
-    // REMARK: for EpetraFECrs matrices Complete() calls the GlobalAssemble() routine to gather entries from all processors
-    state_->sysmat_->Complete();
-
+    // check if there is already a value set, otherwise set at least a diagonal entry
+    if (dbctoggle.MyGID(row))
+    {
+      if (diagonalblock)
+      {
+        double v = 1.0;
+#ifdef DEBUG
+        int err = sysmat_gp->EpetraMatrix()->InsertGlobalValues(row,1,&v,&row);
+        if (err<0) dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d",err);
+#else
+        sysmat_gp->EpetraMatrix()->InsertGlobalValues(row,1,&v,&row);
+#endif
+      }
+    }
   }
+
+  //-------------------------------------------------------------------------------
+  // need to export residual_col to systemvector1 (residual_)
+  Epetra_Vector res_tmp(residual_gp->Map(),false);
+  Epetra_Export exporter(residual_gp_col->Map(),res_tmp.Map());
+  int err2 = res_tmp.Export(*residual_gp_col,exporter,Add);
+  if (err2) dserror("Export using exporter returned err=%d",err2);
+  residual_gp->Update(1.0,res_tmp,1.0);
+
+  //-------------------------------------------------------------------------------
+  // finalize the complete matrix
+  // REMARK: for EpetraFECrs matrices Complete() calls the GlobalAssemble() routine to gather entries from all processors
+  sysmat_gp->Complete();
 
   return;
 }
@@ -1622,6 +1672,8 @@ void FLD::XFluid::ComputeErrorNorms(
   discret_->ClearState();
   discret_->SetState("u and p at time n+1 (converged)", state_->velnp_);
 
+  condition_manager_->SetState();
+
   // evaluate domain error norms and interface/boundary error norms at XFEM-interface
   // loop row elements
   const int numrowele = discret_->NumMyRowElements();
@@ -1789,6 +1841,12 @@ void FLD::XFluid::ComputeErrorNorms(
 
   for (int i=0; i<num_interf_norms; ++i) (*glob_interf_norms)(i) = 0.0;
   discret_->Comm().SumAll(cpu_interf_norms.Values(), glob_interf_norms->Values(), num_interf_norms);
+
+
+  //--------------------------------------------------------
+  discret_->ClearState();
+  condition_manager_->ClearState();
+
 }
 
 
@@ -2087,8 +2145,6 @@ void FLD::XFluid::Solve()
   int  itnum = 0;
   bool stopnonliniter = false;
 
-  int itemax = params_->get<int>("max nonlin iter steps");
-
   dtsolve_  = 0.0;
   dtele_    = 0.0;
   dtfilter_ = 0.0;
@@ -2147,7 +2203,7 @@ void FLD::XFluid::Solve()
     if (projector_ != Teuchos::null)
       projector_->ApplyPT(*state_->Residual());
 
-    if (ConvergenceCheck(itnum,itemax,ittol))
+    if (ConvergenceCheck(itnum,itemax_,ittol))
       break;
 
     //--------- Apply Dirichlet boundary conditions to system of equations
@@ -2221,6 +2277,9 @@ void FLD::XFluid::Solve()
 
      solver_->Solve(state_->SystemMatrix()->EpetraOperator(),state_->IncVel(),state_->Residual(),true,itnum==1, projector_);
 
+     //TODO: here needed because of apply Dirichlet with explicit Dirichlet flag!? CHECK THIS
+     solver_->Reset();
+
 
       // unscale solution
       if (fluid_infnormscaling_!= Teuchos::null)
@@ -2255,6 +2314,9 @@ void FLD::XFluid::Solve()
       GenAlphaIntermediateValues();
     }
   }
+
+  // Reset the solver and so release the system matrix' pointer (enables to delete the state_->systemmatrix)
+  solver_->Reset();
 
 
 #if(0)
@@ -2923,7 +2985,6 @@ void FLD::XFluid::CutAndSetStateVectors()
   XTimint_DoTimeStepTransfer(screen_out);
 
 
-
   //----------------------------------------------------------------
   //-------- TRANSFER velnp_Int_n+1_i -> velnp_Int_n+1_i+1  --------
   //----------------------------------------------------------------
@@ -3286,6 +3347,8 @@ void FLD::XFluid::XTimint_DoTimeStepTransfer(const bool screen_out)
 
   }
 
+  condition_manager_->ClearState();
+
   return;
 }
 
@@ -3540,6 +3603,8 @@ bool FLD::XFluid::XTimint_DoIncrementStepTransfer(
     );
   }
 
+  condition_manager_->ClearState();
+
   return true;
 }
 
@@ -3689,7 +3754,6 @@ void FLD::XFluid::XTimint_GhostPenalty(
 {
   if(myrank_==0 and screen_out) std::cout << "\t ...Ghost Penalty Reconstruction..." << std::endl;
 
-
   //----------------------------------------
   // object holds maps/subsets for DOFs subjected to Dirichlet BCs
   // which will not be modified by the ghost-penalty reconstruction
@@ -3711,8 +3775,6 @@ void FLD::XFluid::XTimint_GhostPenalty(
   return;
 }
 
-
-
 /*----------------------------------------------------------------------*
  |  reconstruct ghost values via ghost penalties           schott 03/12 |
  *----------------------------------------------------------------------*/
@@ -3722,23 +3784,70 @@ void FLD::XFluid::XTimint_ReconstructGhostValues(
     const bool                                 screen_out                  ///< screen output?
 )
 {
-  state_->residual_->PutScalar(0.0);
-  state_->incvel_->PutScalar(0.0);
-  state_->hist_->PutScalar(0.0);
+  discret_->Comm().Barrier();
 
-  // ---------------------------------------------- nonlinear iteration
-  // ------------------------------- stop nonlinear iteration when both
-  //                                 increment-norms are below this bound
-  const double  ittol        = params_->get<double>("tolerance for nonlin iter");
+  TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XTimint_ReconstructGhostValues" );
 
-//  //------------------------------ turn adaptive solver tolerance on/off
-//  const bool   isadapttol    = params_->get<bool>("ADAPTCONV");
-//  const double adaptolbetter = params_->get<double>("ADAPTCONV_BETTER",0.01);
+  // ---------------------------------------------- setup solver
 
-  int  itnum = 0;
-  bool stopnonliniter = false;
+  Teuchos::RCP<Teuchos::ParameterList> solverparams = Teuchos::rcp(new Teuchos::ParameterList);
 
-  int itemax = params_->get<int>("max nonlin iter steps");
+#if(0) // use direct solver
+  solverparams->set("solver","umfpack");
+#else  // use iterative solver
+  Teuchos::ParameterList& azlist = solverparams->sublist("Aztec Parameters");
+  azlist.set<int>("reuse", 0);
+  azlist.set<double>("AZ_tol", 1.0e-12);
+  //azlist.set("AZ_kspace",inparams.get<int>("AZSUB")); //AZSUB
+  azlist.set("AZ_overlap",0);
+
+#if 0 // suppress output
+  azlist.set("AZ_output",0);
+#else
+  azlist.set("AZ_output",50);
+#endif
+  solverparams->sublist("IFPACK Parameters");
+
+  solverparams->set("solver","aztec");
+#endif
+
+  Teuchos::RCP<LINALG::Solver> solver_gp =
+      Teuchos::rcp(new LINALG::Solver( solverparams, discret_->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle() ));
+
+  // ---------------------------------------------- new matrix and vectors
+
+  // TODO: use the matrix more than once when this step becomes expensive!
+
+  // get a good estimate for the non-zeros!
+  // create a map (Dirichlet values get ones, non-Dirichlet values get the 162)
+
+  int numentries_dbc_row = 1;
+  int numentries_ghost_penalty_row = 162;
+
+  std::vector<int> numentries( state_->xfluiddofrowmap_->NumMyElements() );
+
+  const Epetra_Map & rowmap = *state_->xfluiddofrowmap_;
+  const Epetra_Map & condmap = *(ghost_penaly_dbcmaps->CondMap());
+
+  for ( unsigned i=0; i<numentries.size(); ++i )
+  {
+    int gid = rowmap.GID(i);
+    int dbclid = condmap.LID(gid);
+    if (dbclid < 0) // non-dbc-row
+      numentries[i] = numentries_ghost_penalty_row;
+    else // dbc-row
+      numentries[i] = numentries_dbc_row;
+  }
+
+  // note: we use explicitdirichlet =  false, as we don't want to create a new sysmat when applying Dirichlet bcs
+  // note: savegraph = true as we assemble the matrix more than once
+  Teuchos::RCP<LINALG::SparseMatrix> sysmat_gp =
+      Teuchos::rcp(new LINALG::SparseMatrix(*state_->xfluiddofrowmap_,numentries,false,true,LINALG::SparseMatrix::FE_MATRIX));
+
+
+  Teuchos::RCP<Epetra_Vector> zeros_gp        = LINALG::CreateVector(*state_->xfluiddofrowmap_,true);
+  Teuchos::RCP<Epetra_Vector> residual_gp     = LINALG::CreateVector(*state_->xfluiddofrowmap_,true);
+  Teuchos::RCP<Epetra_Vector> incvel_gp       = LINALG::CreateVector(*state_->xfluiddofrowmap_,true);
 
   dtsolve_  = 0.0;
   dtele_    = 0.0;
@@ -3747,209 +3856,75 @@ void FLD::XFluid::XTimint_ReconstructGhostValues(
   if (myrank_ == 0 and screen_out)
   {
     printf("\n+++++++++++++++++++++ Gradient Penalty Ghost value reconstruction ++++++++++++++++++++++++++++\n");
-    printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
-    printf("|- step/max -|- tol      [norm] -|-- vel-res ---|-- pre-res ---|-- vel-inc ---|-- pre-inc ---|\n");
   }
 
-  while (stopnonliniter==false)
+  // do only one solve (as the system is linear!)
   {
-    itnum++;
+    discret_->Comm().Barrier();
 
-    // -------------------------------------------------------------------
-    // call elements to calculate system matrix and RHS
-    // -------------------------------------------------------------------
-    {
-      // get cpu time
-      const double tcpu=Teuchos::Time::wallTime();
+    // get cpu time
+    const double tcpu=Teuchos::Time::wallTime();
 
-      // evaluate routine
-      AssembleMatAndRHS_GradientPenalty(vec, itnum);
+    // evaluate routine
+    AssembleMatAndRHS_GradientPenalty(ghost_penaly_dbcmaps, sysmat_gp, residual_gp, vec);
 
-      // end time measurement for element
-      dtele_=Teuchos::Time::wallTime()-tcpu;
-    }
-
-    // blank residual DOFs which are on Dirichlet BC
-    // We can do this because the values at the dirichlet positions
-    // are not used anyway.
-    // We could avoid this though, if velrowmap_ and prerowmap_ would
-    // not include the dirichlet values as well. But it is expensive
-    // to avoid that.
-
-    ghost_penaly_dbcmaps->InsertCondVector(ghost_penaly_dbcmaps->ExtractCondVector(state_->zeros_), state_->residual_);
-
-
-    //TODO: use the convergence check
-
-    double incvelnorm_L2;
-    double incprenorm_L2;
-
-    double velnorm_L2;
-    double prenorm_L2;
-
-    double vresnorm;
-    double presnorm;
-
-    Teuchos::RCP<Epetra_Vector> onlyvel = state_->velpressplitter_->ExtractOtherVector(state_->residual_);
-    onlyvel->Norm2(&vresnorm);
-
-    state_->velpressplitter_->ExtractOtherVector(state_->incvel_,onlyvel);
-    onlyvel->Norm2(&incvelnorm_L2);
-
-    state_->velpressplitter_->ExtractOtherVector(vec,onlyvel);
-    onlyvel->Norm2(&velnorm_L2);
-
-    Teuchos::RCP<Epetra_Vector> onlypre = state_->velpressplitter_->ExtractCondVector(state_->residual_);
-    onlypre->Norm2(&presnorm);
-
-    state_->velpressplitter_->ExtractCondVector(state_->incvel_,onlypre);
-    onlypre->Norm2(&incprenorm_L2);
-
-    state_->velpressplitter_->ExtractCondVector(vec,onlypre);
-    onlypre->Norm2(&prenorm_L2);
-
-    // care for the case that nothing really happens in the velocity
-    // or pressure field
-    if (velnorm_L2 < 1e-5) velnorm_L2 = 1.0;
-    if (prenorm_L2 < 1e-5) prenorm_L2 = 1.0;
-
-    //-------------------------------------------------- output to screen
-    /* special case of very first iteration step:
-        - solution increment is not yet available
-        - convergence check is not required (we solve at least once!)    */
-    if (itnum == 1)
-    {
-      if (myrank_ == 0 and screen_out)
-      {
-        printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |      --      |      --      |",
-               itnum,itemax,ittol,vresnorm,presnorm);
-        printf(" (      --     ,te=%10.3E",dtele_);
-        printf(")\n");
-      }
-    }
-    /* ordinary case later iteration steps:
-        - solution increment can be printed
-        - convergence check should be done*/
-    else
-    {
-    // this is the convergence check
-    // We always require at least one solve. Otherwise the
-    // perturbation at the FSI interface might get by unnoticed.
-      if (vresnorm <= ittol and presnorm <= ittol and
-          incvelnorm_L2/velnorm_L2 <= ittol and incprenorm_L2/prenorm_L2 <= ittol)
-      {
-        stopnonliniter=true;
-        if (myrank_ == 0 and screen_out)
-        {
-          printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
-                 itnum,itemax,ittol,vresnorm,presnorm,
-                 incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
-          printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
-          printf(")\n");
-          printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
-
-          FILE* errfile = params_->get<FILE*>("err file",NULL);
-          if (errfile!=NULL)
-          {
-            fprintf(errfile,"fluid solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
-                    itnum,itemax,ittol,vresnorm,presnorm,
-                    incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
-          }
-        }
-        break;
-      }
-      else // if not yet converged
-        if (myrank_ == 0 and screen_out)
-        {
-          printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
-                 itnum,itemax,ittol,vresnorm,presnorm,
-                 incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
-          printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
-          if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky or turbmodel_ == INPAR::FLUID::scale_similarity)
-          {
-            printf(",tf=%10.3E",dtfilter_);
-          }
-          printf(")\n");
-        }
-    }
-
-    // warn if itemax is reached without convergence, but proceed to
-    // next timestep...
-    if ((itnum == itemax) and (vresnorm > ittol or presnorm > ittol or
-                             incvelnorm_L2/velnorm_L2 > ittol or
-                             incprenorm_L2/prenorm_L2 > ittol))
-    {
-      stopnonliniter=true;
-      if (myrank_ == 0) // not converged output also in case of !screen_out
-      {
-        printf("+---------------------------------------------------------------+\n");
-        printf("|            >>>>>> not converged in itemax steps!              |\n");
-        printf("+---------------------------------------------------------------+\n");
-
-        FILE* errfile = params_->get<FILE*>("err file",NULL);
-        if (errfile!=NULL)
-        {
-          fprintf(errfile,"fluid unconverged solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
-                  itnum,itemax,ittol,vresnorm,presnorm,
-                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
-        }
-      }
-      break;
-    }
-
-    //--------- Apply Dirichlet boundary conditions to system of equations
-    //          residual displacements are supposed to be zero at
-    //          boundary conditions
-    state_->incvel_->PutScalar(0.0);
-
-    LINALG::ApplyDirichlettoSystem(state_->sysmat_,state_->incvel_,state_->residual_,state_->zeros_,*(ghost_penaly_dbcmaps->CondMap()));
-
-#if(0)
-    //-------solve for residual displacements to correct incremental displacements
-    {
-      // get cpu time
-      const double tcpusolve=Teuchos::Time::wallTime();
-
-      // do adaptive linear solver tolerance (not in first solve)
-      if (isadapttol && itnum>1)
-      {
-        double currresidual = std::max(vresnorm,presnorm);
-        currresidual = std::max(currresidual,incvelnorm_L2/velnorm_L2);
-        currresidual = std::max(currresidual,incprenorm_L2/prenorm_L2);
-        solver_->AdaptTolerance(ittol,currresidual,adaptolbetter);
-      }
-
-      solver_->Solve(state_->sysmat_->EpetraOperator(),state_->incvel_,state_->residual_,true,itnum==1);
-
-      solver_->ResetTolerance();
-
-      // end time measurement for solver
-      dtsolve_ = Teuchos::Time::wallTime()-tcpusolve;
-    }
-#else // use a direct solver for these small systems
-
-
-    Teuchos::RCP<Teuchos::ParameterList> solverparams = Teuchos::rcp(new Teuchos::ParameterList);
-    solverparams->set("solver","umfpack");
-
-    Teuchos::RCP<LINALG::Solver> direct_solver = Teuchos::rcp(new LINALG::Solver( solverparams, discret_->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle() ));
-
-    direct_solver->Solve(state_->sysmat_->EpetraOperator(),state_->incvel_,state_->residual_,true,itnum==1);
-
-#endif
-
-
-    // -------------------------------------------------------------------
-    // update velocity and pressure values by increments
-    // -------------------------------------------------------------------
-    vec->Update(1.0,*state_->incvel_,1.0);
-
-
+    // end time measurement for element
+    dtele_=Teuchos::Time::wallTime()-tcpu;
   }
+
+  // blank residual DOFs which are on Dirichlet BC
+  // We can do this because the values at the dirichlet positions
+  // are not used anyway.
+  // We could avoid this though, if velrowmap_ and prerowmap_ would
+  // not include the dirichlet values as well. But it is expensive
+  // to avoid that.
+
+  {
+    discret_->Comm().Barrier();
+
+    TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XTimint_ReconstructGhostValues::ghost_penaly_dbcmaps->InsertCondVector" );
+
+    ghost_penaly_dbcmaps->InsertCondVector(ghost_penaly_dbcmaps->ExtractCondVector(zeros_gp), residual_gp);
+  }
+
+  //--------- Apply Dirichlet boundary conditions to system of equations
+  //          residual displacements are supposed to be zero at
+  //          boundary conditions
+  incvel_gp->PutScalar(0.0);
+
+  {
+    discret_->Comm().Barrier();
+    TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XTimint_ReconstructGhostValues::ApplyDirichlettoSystem" );
+
+    Epetra_Time tf(discret_->Comm());
+
+    LINALG::ApplyDirichlettoSystem(sysmat_gp,incvel_gp,residual_gp,zeros_gp,*(ghost_penaly_dbcmaps->CondMap()));
+
+    //IO::cout << "fluid time : ApplyDirichlettoSystem " << tf.ElapsedTime() << IO::endl;
+  }
+
+  //-------solve for residual displacements to correct incremental displacements
+  {
+    discret_->Comm().Barrier();
+
+    TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XTimint_ReconstructGhostValues::Solve" );
+
+    // get cpu time
+    const double tcpusolve=Teuchos::Time::wallTime();
+
+    solver_gp->Solve(sysmat_gp->EpetraOperator(),incvel_gp,residual_gp,true, true);
+
+    // end time measurement for solver
+    dtsolve_ = Teuchos::Time::wallTime()-tcpusolve;
+  }
+
+  // -------------------------------------------------------------------
+  // update velocity and pressure values by increments
+  // -------------------------------------------------------------------
+  vec->Update(1.0,*incvel_gp,1.0);
 
   return;
 } // ReconstructGhostValues
-
 
 
 /*----------------------------------------------------------------------*
@@ -4053,6 +4028,8 @@ void FLD::XFluid::XTimint_SemiLagrangean(
     timeIntStd_->compute(newRowStateVectors);     // call computation
 
   } //totalit
+
+  condition_manager_->ClearState();
 
   if(myrank_==0) std::cout << " done\n" << std::flush;
 
@@ -4518,9 +4495,22 @@ void FLD::XFluid::PredictTangVelConsistAcc()
   // free-DOFs hold zeros
   dbcinc->Update(-1.0, *state_->veln_, 1.0);
 
+  // -------------------------------------------------------------------
   // compute residual forces residual_ and stiffness sysmat_
   // at velnp_, etc which are unchanged
-  Evaluate(Teuchos::null);
+
+  // -------------------------------------------------------------------
+  // set old part of righthandside
+  SetOldPartOfRighthandside();
+
+  // -------------------------------------------------------------------
+  // evaluate Dirichlet and Neumann boundary conditions
+  SetDirichletNeumannBC();
+
+  // -------------------------------------------------------------------
+  // assemble matrix and rhs based on the last interface position (note, this is done before a new state class is created after performing the predictor!)
+  AssembleMatAndRHS( 1 );
+
 
   // add linear reaction forces to residual
   // linear reactions
@@ -4560,6 +4550,9 @@ void FLD::XFluid::PredictTangVelConsistAcc()
 
   // reset to zero
   state_->incvel_->PutScalar(0.0);
+
+  // free the system matrix to get the matrix deleted
+  solver_->Reset();
 
   return;
 }

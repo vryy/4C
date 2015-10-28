@@ -194,6 +194,18 @@ void FSI::MonolithicXFEM::SetupSystem()
   /*----------------------------------------------------------------------
     Initialise XFSI-systemmatrix_
    ----------------------------------------------------------------------*/
+  CreateSystemMatrix();
+
+}
+
+/*----------------------------------------------------------------------*
+ | setup of the monolithic XFSI system,                    schott 08/14 |
+ | setup a new combined block row map and a new block matrix            |
+ *----------------------------------------------------------------------*/
+void FSI::MonolithicXFEM::CreateSystemMatrix()
+{
+  if(Comm().MyPID() == 0)
+    std::cout << "Create a new global systemmatrix (BlockSparseMatrix)" << std::endl;
 
   //TODO: check the savegraph option and explicit Dirichlet flag for the matrix!
   //TODO: check if it is okay to use a BlockSparseMatrix without the FE-flag for the fluid-submatrix and the coupling submatrices?
@@ -201,17 +213,27 @@ void FSI::MonolithicXFEM::SetupSystem()
   //TODO: check the number of non-zeros predicted
   /*----------------------------------------------------------------------*/
 
+  if(systemmatrix_.strong_count() > 1)
+    dserror("deleting systemmatrix does not work properly, the number of RCPs pointing to it is %i", systemmatrix_.strong_count());
+
+  // do not want to have two sysmats in memory at the same time
+  if(systemmatrix_ != Teuchos::null)
+  {
+    if(Comm().MyPID() == 0)
+      std::cout << "Delete the global systemmatrix (BlockSparseMatrix)" << std::endl;
+    systemmatrix_ = Teuchos::null;
+  }
+
   systemmatrix_
   = Teuchos::rcp(
       new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
           Extractor(),
           Extractor(),
-          81,
-          false,
-          true
+          0,
+          false, // explicit dirichlet, do not change the graph and do not create a new matrix when applying Dirichlet values
+          false  // savegraph (used when submatrices will be reset), we create new fluid sysmats anyway
       )
   );
-
 }
 
 
@@ -223,11 +245,12 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicXFEM::SetupSystemMatrix");
 
+  // TODO: no reset necessary anymore as we called SetupSystem before
   // reset the block system matrix
   // note: Zero() is not sufficient for the coupling blocks,
   // as the couplings between fluid and structure can change (structure moves between iterations)
   // while the fluid dofsets remain unchanged
-  systemmatrix_->Reset();
+//  systemmatrix_->Reset();
 
   /*----------------------------------------------------------------------*/
   // extract Jacobian matrices and put them into composite system
@@ -288,6 +311,12 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
   // to the coupling block C_ss yet
   s->UnComplete();
 
+  // NOTE: UnComplete creates a new Matrix and a new matrix graph as well which is not allocated with staticprofile
+  // Therefore, the savegraph = true option set in structural timint has no effect, as a new graph is created
+  // whenever UnComplete is called
+  // then, due to memory fragmentation the evaluate time for the structure can vary a lot!
+  // UPDATE: actually after the next complete with store the graph
+
   // scale the structure system matrix
   s->Scale(scaling_S);
 
@@ -315,13 +344,13 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
   // add the coupling block C_ss on the already existing diagonal block
   C_ss_block.Add(*C_ss, false, scaling_F*scaling_FSI, 1.0);
 
-#if(0) // use assign for off diagonal blocks
+#if(1) // use assign for off diagonal blocks
   // scale the off diagonal coupling blocks
   C_sf->Scale(scaling_F);              //<   1/(theta_f*dt)                    = 1/weight(t^f_np)
   C_fs->Scale(scaling_F*scaling_FSI);  //<   1/(theta_f*dt) * 1/(theta_FSI*dt) = 1/weight(t^f_np) * 1/weight(t^FSI_np)
 
-  systemmatrix_->Assign(0,1,View,*C_sf);
-  systemmatrix_->Assign(1,0,View,*C_fs);
+  systemmatrix_->Assign(0,1,LINALG::View,*C_sf);
+  systemmatrix_->Assign(1,0,LINALG::View,*C_fs);
 #else
   LINALG::SparseMatrix& C_sf_block = (*systemmatrix_)(0,1);
   LINALG::SparseMatrix& C_fs_block = (*systemmatrix_)(1,0);
@@ -896,6 +925,18 @@ bool FSI::MonolithicXFEM::Newton()
     // * check if dofsets between last two Newton iterations drastically changed or maybe simply permuted
     /*----------------------------------------------------------------------*/
 
+    if(systemmatrix_.strong_count() > 1)
+      dserror("deleting block sparse matrix does not work properly, the number of RCPs pointing to it is %i", systemmatrix_.strong_count());
+
+    // reduce counter in the rcp-pointers pointing to underlying epetra matrix objects which actually hold large chunks of memory
+    // this ensures that the single field matrices can be really deleted (memory can be freed)
+    // before we can create a new state class in fluid's Evaluate
+    // NOTE: the blocksparsematrix' sparse matrices hold strong RCP's to the single-fields EpetraMatrix objects
+    // NOTE: fluid's Evaluate will create a new LINALG::SparseMatrix and coupling matrices anyway
+    systemmatrix_ = Teuchos::null;
+    //TODO: can we delete the solver here? this is done in solver_->Reset after solving the last system
+//    solver_ = Teuchos::null;
+
     const bool changed_fluid_dofsets = Evaluate();
 
 
@@ -934,6 +975,8 @@ bool FSI::MonolithicXFEM::Newton()
     if(iter_ > 1)
     {
       if(changed_fluid_dofsets) return false;
+
+      SetupSystem(); // set new blockdofrowmap and create a new global block sparse matrix
     }
     else if(iter_ == 1) // the first run
     {
@@ -947,7 +990,7 @@ bool FSI::MonolithicXFEM::Newton()
       //-------------------
       // setup a new system since the size of the system has changed when NewtonFull is called
       //-------------------
-      SetupSystem();
+      SetupSystem(); // set new blockdofrowmap and create a new global block sparse matrix
 
 
       //-------------------
@@ -1265,13 +1308,15 @@ bool FSI::MonolithicXFEM::Evaluate()
   // structure field
   //-------------------
   {
+    Comm().Barrier();
+
     // structural field
     Epetra_Time ts(Comm());
 
     // call the structure evaluate with the current step increment  Delta d = d^(n+1,i+1) - d^n
     StructureField()->Evaluate(sx);
 
-    IO::cout  << "structure time: " << ts.ElapsedTime() << IO::endl;
+    if(Comm().MyPID() == 0) IO::cout  << "structure time: " << ts.ElapsedTime() << IO::endl;
 
     if (HaveAle())
       EvaluateAle(ax);
@@ -1352,6 +1397,10 @@ bool FSI::MonolithicXFEM::Evaluate()
   // * call evaluate routine to assemble fluid rhs and systemmatrix
   //
   {
+    Comm().Barrier();
+
+    Teuchos::TimeMonitor::zeroOutTimers();
+
     // fluid field
     Epetra_Time tf(Comm());
 
@@ -1362,7 +1411,10 @@ bool FSI::MonolithicXFEM::Evaluate()
     // whereas the x_sum_ has to preserve the order of dofs during the Newton
     FluidField()->Evaluate(fx_permuted);
 
-    IO::cout << "fluid time : " << tf.ElapsedTime() << IO::endl;
+    if(Comm().MyPID() == 0) IO::cout << "fluid time : " << tf.ElapsedTime() << IO::endl;
+
+    //Teuchos::TimeMonitor::summarize();
+
   }
 
   //--------------------------------------------------------
@@ -1915,6 +1967,11 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
   // get solver parameter list of linear XFSI solver
   const Teuchos::ParameterList& xfsisolverparams = DRT::Problem::Instance()->SolverParams(linsolvernumber);
 
+  // safety check if the hard-coded solver number is the XFSI-solver
+  if(xfsisolverparams.get<string>("NAME") != "XFSI_SOLVER")
+    dserror("check whether solver with number 1 is the XFSI_solver and has this name!");
+
+
   const int solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>( xfsisolverparams, "SOLVER" );
 
   //----------------------------------------------
@@ -2040,7 +2097,6 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
       solver_->Params().sublist("Inverse2")
       );
 
-
     if(azprectype==INPAR::SOLVER::azprec_CheapSIMPLE)
     {
     // Tell to the LINALG::SOLVER::SimplePreconditioner that we use the general implementation
@@ -2142,8 +2198,8 @@ void FSI::MonolithicXFEM::LinearSolve()
         systemmatrix_->EpetraOperator(),
         iterinc_,
         rhs_,
-        true,
-        iter_==1
+        true,     // refactorize the preconditioner?
+        iter_==1  // build completely new solver including preconditioner
     );
 
     // Infnormscaling: unscale system after solving
@@ -2173,6 +2229,11 @@ void FSI::MonolithicXFEM::LinearSolve()
         iter_==1
     );
   }  // MergeBlockMatrix
+
+  //TODO: can we do this?!
+  // reset the solver (frees the pointer to the LINALG:: matrix' EpetraOperator and vectors also!)
+  //std::cout << "reset the solver" << std::endl;
+  solver_->Reset();
 
 //  {
 //
@@ -2494,6 +2555,21 @@ void FSI::MonolithicXFEM::PrintNewtonIter()
 void FSI::MonolithicXFEM::ReadRestart(int step)
 {
   //--------------------------------
+  // read structural field
+  StructureField()->ReadRestart(step);
+
+  //--------------------------------
+  // read fluid field
+  FluidField()->ReadRestart(step);
+
+  //--------------------------------
+  // setup a new system as dofrowmaps could have been changed!
+  SetupSystem();
+
+  //--------------------------------
+  // NOTE: do the following after StructureField()->ReadRestart and after FluidField()->ReadRestart
+  // as ReadMesh can change the discretization and the dofrowmaps!!!
+
   // read Lagrange multiplier (ie forces onto the structure, Robin-type forces
   // consisting of fluid forces and the Nitsche penalty term contribution)
   {
@@ -2503,13 +2579,8 @@ void FSI::MonolithicXFEM::ReadRestart(int step)
     lambda_ = StructureField()->Interface()->ExtractFSICondVector(lambdafull);
   }
 
-  //--------------------------------
-  // read structural field
-  StructureField()->ReadRestart(step);
+  //
 
-  //--------------------------------
-  // read fluid field
-  FluidField()->ReadRestart(step);
 
   SetTimeStep(FluidField()->Time(),FluidField()->Step());
 }

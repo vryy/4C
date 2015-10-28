@@ -111,15 +111,6 @@ public:
       const double &                                    time                //!< current time
   );
 
-  /*!
-   \brief initialize ALE state vectors
-   @param dispnp and grivnp vectors w.r.t initial full dofrowmap
-   */
-  void InitALEStateVectors(
-      const Teuchos::RCP<DRT::DiscretizationXFEM>& xdiscret,
-      Teuchos::RCP<const Epetra_Vector> dispnp_initmap,
-      Teuchos::RCP<const Epetra_Vector> gridvnp_initmap
-  );
 
 private:
 
@@ -151,9 +142,6 @@ private:
   const int maxnumdofsets_;
   int minnumdofsets_;
   //@}
-
-  /// state class
-  Teuchos::RCP<FLD::XFluidState> state_;
 
   bool include_inner_;
 

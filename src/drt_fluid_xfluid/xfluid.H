@@ -213,8 +213,10 @@ namespace FLD
 
     virtual Teuchos::RCP<const Epetra_Map> DofRowMap()
     {
-      return state_->xfluiddofrowmap_; // no ownership, //TODO: otherwise we have to create a new system all the time!
+//      return state_->xfluiddofrowmap_; // no ownership, //TODO: otherwise we have to create a new system all the time!
 //      return Teuchos::rcpFromRef(*state_->xfluiddofrowmap_); // no ownership, //TODO: otherwise we have to create a new system all the time!
+//      return Teuchos::rcp((state_->xfluiddofrowmap_).get(), false);
+      return state_->xfluiddofrowmap_.create_weak(); // return a weak rcp
     }
 
     Teuchos::RCP<LINALG::MapExtractor> VelPresSplitter() { return state_->velpressplitter_; }
@@ -307,10 +309,14 @@ namespace FLD
     /// (pseudo-)timeloop finished?
     bool NotFinished();
 
+    /// create a new state class object
     virtual void CreateState();
 
-    virtual Teuchos::RCP<FLD::XFluidState> GetNewState();
+    /// destroy state class' data (free memory of matrices, vectors ... )
+    virtual void DestroyState();
 
+    /// get a new state class
+    virtual Teuchos::RCP<FLD::XFluidState> GetNewState();
 
     /// call the loop over elements to assemble volume and interface integrals
     virtual void AssembleMatAndRHS(
@@ -322,19 +328,24 @@ namespace FLD
 
     /// evaluate and assemble face-oriented fluid and ghost penalty stabilizations
     void AssembleMatAndRHS_FaceTerms(
+        const Teuchos::RCP<LINALG::SparseMatrix> & sysmat,
+        const Teuchos::RCP<Epetra_Vector> & residual_col,
+        const Teuchos::RCP<GEO::CutWizard> & wizard,
         bool is_ghost_penalty_reconstruct = false
     );
 
-    /// call the loop over elements to assemble volume and interface integrals
+    /// evaluate gradient penalty terms to reconstruct ghost values
     void AssembleMatAndRHS_GradientPenalty(
-        Teuchos::RCP<Epetra_Vector> vec,
-        int itnum                           ///< iteration number
+        Teuchos::RCP<LINALG::MapExtractor> ghost_penaly_dbcmaps,
+        Teuchos::RCP<LINALG::SparseMatrix> sysmat_gp,
+        Teuchos::RCP<Epetra_Vector> residual_gp,
+        Teuchos::RCP<Epetra_Vector> vec
     );
 
     /// integrate the shape function and assemble into a vector for KrylovSpaceProjection
     void IntegrateShapeFunction(
         Teuchos::ParameterList & eleparams, ///< element parameters
-        DRT::Discretization & discret,       ///< background fluid discretization
+        DRT::Discretization & discret,      ///< background fluid discretization
         Teuchos::RCP<Epetra_Vector> vec     ///< vector into which we assemble
     );
 

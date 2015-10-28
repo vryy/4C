@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file fsi_monolithic_xfem.cpp
+\file fsi_xfem_monolithic.H
 \brief  Control routine for monolithic FSI (XFSI) solved via a classical Newton scheme
         taking into account changing fluid dofsets
 
@@ -71,6 +71,7 @@ namespace FSI
     //! setup of the monolithic XFSI system, setup a new combined block row map and a new block matrix
     virtual void SetupSystem();
 
+    virtual void CreateSystemMatrix();
     //@}
 
 

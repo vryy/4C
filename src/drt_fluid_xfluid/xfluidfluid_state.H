@@ -46,12 +46,13 @@ public:
 
   /// ctor
   explicit XFluidFluidState(
-    Teuchos::RCP<XFEM::ConditionManager>& condition_manager,
-    Teuchos::RCP<GEO::CutWizard>& wizard,
-    Teuchos::RCP<XFEM::XFEMDofSet>& dofset,
-    Teuchos::RCP<const Epetra_Map> & xfluiddofrowmap,
-    Teuchos::RCP<const Epetra_Map> & xfluiddofcolmap,
-    Teuchos::RCP<const Epetra_Map> & embfluiddofrowmap);
+      const Teuchos::RCP<XFEM::ConditionManager>& condition_manager,
+      const Teuchos::RCP<GEO::CutWizard>& wizard,
+      const Teuchos::RCP<XFEM::XFEMDofSet>& dofset,
+      const Teuchos::RCP<const Epetra_Map> & xfluiddofrowmap,
+      const Teuchos::RCP<const Epetra_Map> & xfluiddofcolmap,
+      const Teuchos::RCP<const Epetra_Map> & embfluiddofrowmap
+  );
 
   /// dtor
   virtual ~XFluidFluidState(){}
@@ -79,12 +80,16 @@ public:
     return xffluidvelpressplitter_;
   }
 
+  virtual bool Destroy();
+
   Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
   Teuchos::RCP<Epetra_Vector>& Residual() { return xffluidresidual_; }
   Teuchos::RCP<Epetra_Vector>& Zeros()    { return xffluidzeros_; }
   Teuchos::RCP<Epetra_Vector>& IncVel()   { return xffluidincvel_; }
   Teuchos::RCP<Epetra_Vector>& Velnp()    { return xffluidvelnp_; }
   //@}
+
+  void CompleteCouplingMatricesAndRhs();
 
   //@name Map of the merged system
   //@{

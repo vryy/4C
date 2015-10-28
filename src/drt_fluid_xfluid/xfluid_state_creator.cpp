@@ -36,6 +36,7 @@ Maintainer:  Raffaela Kruse and Benedikt Schott
 
 #include "../drt_inpar/inpar_parameterlist_utils.H"
 
+#include <Teuchos_TimeMonitor.hpp>
 
 
 /*----------------------------------------------------------------------*
@@ -76,12 +77,12 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluidStateCreator::Create(
   Teuchos::RCP<const Epetra_Map> xfluiddofcolmap = Teuchos::rcp(
         new Epetra_Map(*xdiscret->DofColMap()));
 
-  state_ = Teuchos::rcp(new FLD::XFluidState(condition_manager_, wizard, dofset, xfluiddofrowmap, xfluiddofcolmap));
+  Teuchos::RCP<XFluidState> state = Teuchos::rcp(new FLD::XFluidState(condition_manager_, wizard, dofset, xfluiddofrowmap, xfluiddofcolmap));
 
   //--------------------------------------------------------------------------------------
-  state_->SetupMapExtractors(xdiscret,time);
+  state->SetupMapExtractors(xdiscret,time);
 
-  return state_;
+  return state;
 }
 
 
@@ -132,8 +133,6 @@ Teuchos::RCP<FLD::XFluidFluidState> FLD::XFluidStateCreator::Create(
 
   //--------------------------------------------------------------------------------------
   state->SetupMapExtractors(xdiscret,embfluiddiscret,time);
-
-  state_ = state;
 
   return state;
 }
@@ -228,24 +227,5 @@ void FLD::XFluidStateCreator::CreateNewCutState(
   // REMARK: this has to be done after replacing the discret' dofset (via discret_->ReplaceDofSet)
   xdiscret->ComputeNullSpaceIfNecessary(solver_params,true);
 
-}
-
-
-/*----------------------------------------------------------------------*
- |  Initialize ALE state vectors                           schott 12/14 |
- *----------------------------------------------------------------------*/
-void FLD::XFluidStateCreator::InitALEStateVectors(
-    const Teuchos::RCP<DRT::DiscretizationXFEM>& xdiscret,
-    Teuchos::RCP<const Epetra_Vector> dispnp_initmap,
-    Teuchos::RCP<const Epetra_Vector> gridvnp_initmap
-)
-{
-  //! @name Ale Displacement at time n+1
-  state_->dispnp_ = LINALG::CreateVector(*state_->xfluiddofrowmap_,true);
-  xdiscret->ExportInitialtoActiveVector(dispnp_initmap,state_->dispnp_);
-
-  //! @name Grid Velocity at time n+1
-  state_->gridvnp_ = LINALG::CreateVector(*state_->xfluiddofrowmap_,true);
-  xdiscret->ExportInitialtoActiveVector(gridvnp_initmap,state_->gridvnp_);
 }
 
