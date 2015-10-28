@@ -2,7 +2,7 @@
 /*!
  \file nln_operator_richardson.H
 
- \brief Nonlinear preconditioned Richardson iterations with relaxation
+ \brief Nonlinear preconditioned Richardson iterations with damping
 
  <pre>
  Maintainer: Matthias Mayr
@@ -55,7 +55,7 @@ namespace NLNSOL
  *  user-defined relaxation parameter \f$\omega\f$. The iterative procedure
  *  reads
  *  \f[
- *  x_{i+1} = x_i - \omega\left(f + M^{-1}x_i\right)
+ *  x_{i+1} = x_i - \omega M^{-1}F(x_i)
  *  \f]
  *
  *  \note In case of IFPACK preconditioners, set the number of sweeps to 1

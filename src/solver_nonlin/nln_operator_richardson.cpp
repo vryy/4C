@@ -111,58 +111,47 @@ int NLNSOL::NlnOperatorRichardson::ApplyInverse(const Epetra_MultiVector& f,
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
   if (not IsSetup()) { dserror("Setup() has not been called, yet."); }
 
-  // ---------------------------------------------------------------------------
-  // initialize stuff for Richardson iteration loop
-  // ---------------------------------------------------------------------------
-  // increment to solve for
-  Teuchos::RCP<Epetra_MultiVector> dx =
-      Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
-
-  // evaluate at current solution
-  Teuchos::RCP<Epetra_MultiVector> fnew =
-      Teuchos::rcp(new Epetra_MultiVector(f.Map(), true));
-  NlnProblem()->ComputeF(x, *fnew);
-
-  // linear residual
-  Teuchos::RCP<Epetra_MultiVector> r =
-      Teuchos::rcp(new Epetra_MultiVector(*fnew));
-
-  // auxiliary iterative increment to feed to preconditioner
+  Teuchos::RCP<Epetra_MultiVector> xprec =
+      Teuchos::rcp(new Epetra_MultiVector(x));
   Teuchos::RCP<Epetra_MultiVector> inc =
       Teuchos::rcp(new Epetra_MultiVector(x.Map(), true));
 
-  int iter = 0; // iteration counter
-  double omega = MyGetParameter<double>(
-      "nonlinear richardson: relaxation parameter"); // relaxation parameter
+  // initial residual
+  Teuchos::RCP<Epetra_MultiVector> fnew =
+      Teuchos::rcp(new Epetra_MultiVector(xprec->Map(), true));
+  NlnProblem()->ComputeF(*xprec, *fnew);
+  double fnorm2 = 1.0e+12;
+  bool converged = NlnProblem()->ConvergenceCheck(*fnew, fnorm2);
+  PrintIterSummary(0, fnorm2);
 
-  while (iter < GetMaxIter())
+  Teuchos::RCP<NLNSOL::UTILS::StagnationDetection> stagdetect =
+      Teuchos::rcp(new NLNSOL::UTILS::StagnationDetection());
+  stagdetect->Init(Configuration(),
+      MyGetParameter<std::string>("nonlinear operator: stagnation detection"),
+      fnorm2);
+
+  // damping parameter
+  const double omega = MyGetParameter<double>(
+      "nonlinear richardson: damping parameter");
+
+  int iter = 0;
+  while (ContinueIterations(iter, converged))
   {
     ++iter;
 
-    err = NlnProblem()->GetJacobianOperator()->Apply(*dx, *r);
-    if (err != 0) { dserror("Apply failed."); }
-
-    err = r->Update(-1.0, *fnew, -1.0);
+    nlnprec_->ApplyInverse(*fnew, *xprec);
+    err = inc->Update(1.0, *xprec, -1.0, x, 0.0);
     if (err != 0) { dserror("Update failed."); }
 
-    // compute new iterative increment
-    err = nlnprec_->ApplyInverse(*r, *inc);
-    if (err != 0) { dserror("ApplyInverse() failed."); }
-
-    // update solution increment
-    err = dx->Update(omega, *inc, 1.0);
+    err = x.Update(omega, *inc, 1.0);
     if (err != 0) { dserror("Update failed."); }
+    err = xprec->Update(1.0, x, 0.0);
+    if (err != 0) { dserror("Update failed."); }
+
+    NlnProblem()->ComputeF(x, *fnew);
+    converged = NlnProblem()->ConvergenceCheck(*fnew, fnorm2);
+    PrintIterSummary(iter, fnorm2);
   }
-
-  // update solution
-  err = x.Update(1.0, *dx, 1.0);
-  if (err != 0) { dserror("Update failed."); }
-
-  // evaluate at the new solution
-  NlnProblem()->ComputeF(x, *fnew);
-  double fnorm2 = 1.0e+12;
-  bool converged = NlnProblem()->ConvergenceCheck(*fnew, fnorm2);
-  PrintIterSummary(iter, fnorm2);
 
   // ---------------------------------------------------------------------------
   // Finish ApplyInverse()
@@ -187,8 +176,15 @@ void NLNSOL::NlnOperatorRichardson::ComputeStepLength(const Epetra_MultiVector& 
     const Epetra_MultiVector& f, const Epetra_MultiVector& inc, double fnorm2,
     double& lsparam, bool& suffdecr) const
 {
-  dserror("There is no line search algorithm available for nonlinear "
-      "Richardson iteration.");
+  if (MyGetParameter<std::string>("nonlinear richardson: damping strategy") == "fixed damping parameter")
+  {
+    lsparam = MyGetParameter<double>(
+        "nonlinear richardson: damping parameter");
+  }
+  else if (MyGetParameter<std::string>("nonlinear richardson: damping strategy") == "line search")
+    dserror("Not implemented, yet.");
+  else
+    dserror("Unknown strategy ");
 
   return;
 }
