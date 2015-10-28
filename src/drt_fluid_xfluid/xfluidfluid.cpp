@@ -701,46 +701,62 @@ Teuchos::RCP<std::vector<double> > FLD::XFluidFluid::EvaluateErrorComparedToAnal
   //--------------------------------------
   // background domain
   //--------------------------------------
+  //
   // standard domain errors
-  // 1.   || u - u_b ||_L2(Omega)            =   standard L2-norm for velocity
-  // 2.   || grad( u - u_b ) ||_L2(Omega)    =   standard H1-seminorm for velocity
-  // 3.   || u - u_b ||_H1(Omega)            =   standard H1-norm for velocity
-  //                                         =   sqrt( || u - u_b ||^2_L2(Omega) + || grad( u - u_b ) ||^2_L2(Omega) )
-  // 4.   || p - p_b ||_L2(Omega)            =   standard L2-norm for pressure
+  // 1.   || u - u_h ||_L2(Omega)              =   standard L2-norm for velocity
+  // 2.   || grad( u - u_h ) ||_L2(Omega)      =   standard H1-seminorm for velocity
+  // 3.   || u - u_h ||_H1(Omega)              =   standard H1-norm for velocity
+  //                                           =   sqrt( || u - u_h ||^2_L2(Omega) + || grad( u - u_h ) ||^2_L2(Omega) )
+  // 4.   || p - p_h ||_L2(Omega)              =   standard L2-norm for pressure
   //
   // viscosity-scaled domain errors
-  // 5.   || nu^(+1/2) grad( u - u_b ) ||_L2(Omega)   =   visc-scaled H1-seminorm for velocity
-  //                                                  =   nu^(+1/2) * || grad( u - u_b ) ||_L2(Omega) (for homogeneous visc)
-  // 6.   || nu^(-1/2) ( p - p_b ) ||_L2(Omega)       =   visc-scaled L2-norm for pressure
-  //                                                  =   nu^(-1/2) * || p - p_b ||_L2(Omega) (for homogeneous visc)
+  // 5.   || nu^(+1/2) grad( u - u_h ) ||_L2(Omega)      =   visc-scaled H1-seminorm for velocity
+  //                                                     =   nu^(+1/2) * || grad( u - u_h ) ||_L2(Omega) (for homogeneous visc)
+  // 6.   || nu^(-1/2) (p - p_h) ||_L2(Omega)            =   visc-scaled L2-norm for pressure
+  //                                                     =   nu^(-1/2) * || p - p_h ||_L2(Omega) (for homogeneous visc)
+  // 7.   || sigma^(+1/2) ( u - u_h ) ||_L2(Omega)       =   sigma-scaled L2-norm for velocity
+  //                                                     =   sigma^(+1/2) * || u - u_h ||_L2(Omega) (for homogeneous sigma)
+  // 8.   || Phi^(+1/2) (p - p_h) ||_L2(Omega)           =   Phi-scaled L2-norm for pressure
+  //                                                     =   Phi^(+1/2) * || p - p_h ||_L2(Omega) (for homogeneous Phi)
+  // with Phi^{-1} = sigma*CP^2 + |beta|*CP + nu + (|beta|*CP/sqrt(sigma*CP^2 + nu))^2, see Massing,Schott,Wall Oseen paper
   //
-  // Error on Functionals from solution (Sudhakar)
-  // 7.   | sin(x) ( u,x - u,x exact ) | (background)
+  // 9. functional G=sin(x)( u,x - u,x exact ) (Sudhakar)
   //
   //
   //--------------------------------------
   // embedded domain
   //--------------------------------------
-  // 1.   || u - u_e ||_L2(Omega)            =   standard L2-norm for velocity
-  // 2.   || grad( u - u_e ) ||_L2(Omega)    =   standard H1-seminorm for velocity
-  // 3.   || u - u_e ||_H1(Omega)            =   standard H1-norm for velocity
-  //                                         =   sqrt( || u - u_e ||^2_L2(Omega) + || grad( u - u_e ) ||^2_L2(Omega) )
-  // 4.  || p - p_e ||_L2(Omega)            =   standard L2-norm for pressure
+  //-------------------------------------------------------------------------------------------------------------------
+  // domain error norms w.r.t incompressible Navier-Stokes/ Oseen equations
+  //
+  // standard domain errors
+  // 1.   || u - u_h ||_L2(Omega)              =   standard L2-norm for velocity
+  // 2.   || grad( u - u_h ) ||_L2(Omega)      =   standard H1-seminorm for velocity
+  // 3.   || u - u_h ||_H1(Omega)              =   standard H1-norm for velocity
+  //                                           =   sqrt( || u - u_h ||^2_L2(Omega) + || grad( u - u_h ) ||^2_L2(Omega) )
+  // 4.   || p - p_h ||_L2(Omega)              =   standard L2-norm for pressure
   //
   // viscosity-scaled domain errors
-  // 5.  || nu^(+1/2) grad( u - u_e ) ||_L2(Omega)   =   visc-scaled H1-seminorm for velocity
-  //                                                  =   nu^(+1/2) * || grad( u - u_e ) ||_L2(Omega) (for homogeneous visc)
-  // 6.  || nu^(-1/2) ( p - p_e ) ||_L2(Omega)       =   visc-scaled L2-norm for pressure
-  //                                                  =   nu^(-1/2) * || p - p_e ||_L2(Omega) (for homogeneous visc)
-  // Error on Functionals from solution (Sudhakar)
-  // 7.  | sin(x) ( u,x - u,x exact ) | (embedded)
+  // 5.   || nu^(+1/2) grad( u - u_h ) ||_L2(Omega)      =   visc-scaled H1-seminorm for velocity
+  //                                                     =   nu^(+1/2) * || grad( u - u_h ) ||_L2(Omega) (for homogeneous visc)
+  // 6.   || nu^(-1/2) (p - p_h) ||_L2(Omega)            =   visc-scaled L2-norm for pressure
+  //                                                     =   nu^(-1/2) * || p - p_h ||_L2(Omega) (for homogeneous visc)
+  // 7.   || sigma^(+1/2) ( u - u_h ) ||_L2(Omega)       =   sigma-scaled L2-norm for velocity
+  //                                                     =   sigma^(+1/2) * || u - u_h ||_L2(Omega) (for homogeneous sigma)
+  // 8.   || Phi^(+1/2) (p - p_h) ||_L2(Omega)           =   Phi-scaled L2-norm for pressure
+  //                                                     =   Phi^(+1/2) * || p - p_h ||_L2(Omega) (for homogeneous Phi)
+  // with Phi^{-1} = sigma*CP^2 + |beta|*CP + nu + (|beta|*CP/sqrt(sigma*CP^2 + nu))^2, see Massing,Schott,Wall Oseen paper
+  //
+  // 9. functional G=sin(x)( u,x - u,x exact ) (Sudhakar)
   //-------------------------------------------------------------------------------------------------------------------
   // interface/boundary error norms at the XFEM-interface, boundary
   // w.r.t Nitsche's method to enforce interface/boundary conditions
   //
-  // 1.   || nu^(+1/2) (u_b - u_e) ||_H1/2(Gamma)          =  broken H1/2 Sobolev norm for boundary/coupling condition
-  // 2.   || nu^(+1/2) grad( u_b - u_e )*n ||_H-1/2(Gamma) =  standard H-1/2 Sobolev norm for normal flux (velocity part)
-  // 3.   || nu^(-1/2) ( p_b - p_e )*n ||_H-1/2(Gamma)     =  standard H-1/2 Sobolev norm for normal flux (pressure part)
+  // 1.   || nu^(+1/2) (u - u*) ||_H1/2(Gamma)             =  broken H1/2 Sobolev norm for boundary/coupling condition
+  // 2.   || nu^(+1/2) grad( u - u_h )*n ||_H-1/2(Gamma)   =  standard H-1/2 Sobolev norm for normal flux (velocity part)
+  // 3.   || nu^(-1/2) (p - p_h)*n ||_H-1/2(Gamma)         =  standard H-1/2 Sobolev norm for normal flux (pressure part)
+  // 4.   || (u*n)_inflow (u - u*) ||_L2(Gamma)            =  L^2 Sobolev norm for inflow boundary/coupling condition
+  // 5.   || (sigma*h+|u|+nu/h)^(+1/2) (u - u*)*n ||_L2(Gamma) =  L^2 Sobolev norm for mass conservation coupling condition
   //
   //-------------------------------------------------------------------------------------------------------------------
   // errors introduced by stabilizations (edge-based fluid stabilizations and ghost-penalty stabilizations)
@@ -749,8 +765,8 @@ Teuchos::RCP<std::vector<double> > FLD::XFluidFluid::EvaluateErrorComparedToAnal
   //-------------------------------------------------------------------------------------------------------------------
 
   // number of norms that have to be calculated
-  const int num_dom_norms    = 7;
-  const int num_interf_norms = 5;
+  const int num_dom_norms    = 10;
+  const int num_interf_norms = 8;
   const int num_stab_norms   = 3;
 
   Epetra_SerialDenseVector cpu_dom_norms(num_dom_norms);
@@ -841,6 +857,8 @@ Teuchos::RCP<std::vector<double> > FLD::XFluidFluid::EvaluateErrorComparedToAnal
   // viscosity-scaled domain errors
   double dom_bg_err_vel_H1_semi_nu_scaled = 0.0;  //  || nu^(+1/2) grad( u - u_b ) ||_L2(Omega)  =   visc-scaled H1-seminorm for velocity
   double dom_bg_err_pre_L2_nu_scaled      = 0.0;  //  || nu^(-1/2) (p - p_b) ||_L2(Omega)        =   visc-scaled L2-norm for pressure
+  double dom_bg_err_vel_L2_sigma_scaled   = 0.0;  //  || sigma^(+1/2) ( u - u_h ) ||_L2(Omega)       =   sigma-scaled L2-norm for velocity
+  double dom_bg_err_pre_L2_Phi_scaled     = 0.0;  //  || Phi^(+1/2) (p - p_h) ||_L2(Omega)           =   Phi-scaled L2-norm for pressure
 
   // standard domain errors bg-dis
   double dom_emb_err_vel_L2      = 0.0;         //  || u - u_e ||_L2(Omega)           =   standard L2-norm for velocity
@@ -851,11 +869,19 @@ Teuchos::RCP<std::vector<double> > FLD::XFluidFluid::EvaluateErrorComparedToAnal
   // viscosity-scaled domain errors
   double dom_emb_err_vel_H1_semi_nu_scaled = 0.0;  //  || nu^(+1/2) grad( u - u_e ) ||_L2(Omega)  =   visc-scaled H1-seminorm for velocity
   double dom_emb_err_pre_L2_nu_scaled      = 0.0;  //  || nu^(-1/2) (p - p_e) ||_L2(Omega)        =   visc-scaled L2-norm for pressure
+  double dom_emb_err_vel_L2_sigma_scaled   = 0.0;  //  || sigma^(+1/2) ( u - u_h ) ||_L2(Omega)       =   sigma-scaled L2-norm for velocity
+  double dom_emb_err_pre_L2_Phi_scaled     = 0.0;  //  || Phi^(+1/2) (p - p_h) ||_L2(Omega)           =   Phi-scaled L2-norm for pressure
 
   // interface errors
   double interf_err_Honehalf    = 0.0;         //  || nu^(+1/2) (u_b - u_e) ||_H1/2(Gamma)          =  broken H1/2 Sobolev norm for boundary/coupling condition
   double interf_err_Hmonehalf_u = 0.0;         //  || nu^(+1/2) grad( u_b - u_e )*n ||_H-1/2(Gamma) =  broken H-1/2 Sobolev norm for normal flux (velocity part)
   double interf_err_Hmonehalf_p = 0.0;         //  || nu^(-1/2) (p_b - p_e)*n ||_H-1/2(Gamma)         =  broken H-1/2 Sobolev norm for normal flux (pressure part)
+  double interf_err_inflow      = 0.0;         //  || (u*n)_inflow (u - u*) ||_L2(Gamma)            =  L^2 Sobolev norm for inflow boundary/coupling condition
+  double interf_err_mass_cons   = 0.0;         //  || (sigma*h+|u|+nu/h)^(+1/2) (u - u*)*n ||_L2(Gamma) =  L^2 Sobolev norm for mass conservation coupling condition
+
+  // sudhakar functional for testing integration
+  double functional_bg  = 0.0;
+  double functional_emb = 0.0;
 
   dom_bg_err_vel_L2             = sqrt((*glob_dom_norms_bg)[0]);
   dom_bg_err_vel_H1_semi        = sqrt((*glob_dom_norms_bg)[1]);
@@ -864,6 +890,10 @@ Teuchos::RCP<std::vector<double> > FLD::XFluidFluid::EvaluateErrorComparedToAnal
 
   dom_bg_err_vel_H1_semi_nu_scaled = sqrt((*glob_dom_norms_bg)[4]);
   dom_bg_err_pre_L2_nu_scaled      = sqrt((*glob_dom_norms_bg)[5]);
+  dom_bg_err_vel_L2_sigma_scaled   = sqrt((*glob_dom_norms_bg)[6]);
+  dom_bg_err_pre_L2_Phi_scaled     = sqrt((*glob_dom_norms_bg)[7]);
+
+  functional_bg                    = (*glob_dom_norms_bg)[8];
 
   dom_emb_err_vel_L2             = sqrt((*glob_dom_norms_emb)[0]);
   dom_emb_err_vel_H1_semi        = sqrt((*glob_dom_norms_emb)[1]);
@@ -872,10 +902,17 @@ Teuchos::RCP<std::vector<double> > FLD::XFluidFluid::EvaluateErrorComparedToAnal
 
   dom_emb_err_vel_H1_semi_nu_scaled = sqrt((*glob_dom_norms_emb)[4]);
   dom_emb_err_pre_L2_nu_scaled      = sqrt((*glob_dom_norms_emb)[5]);
+  dom_emb_err_vel_L2_sigma_scaled   = sqrt((*glob_dom_norms_emb)[6]);
+  dom_emb_err_pre_L2_Phi_scaled     = sqrt((*glob_dom_norms_emb)[7]);
+
+  functional_emb                    = (*glob_dom_norms_emb)[8];
+
 
   interf_err_Honehalf           = sqrt((*glob_interf_norms)[0]);
   interf_err_Hmonehalf_u        = sqrt((*glob_interf_norms)[1]);
   interf_err_Hmonehalf_p        = sqrt((*glob_interf_norms)[2]);
+  interf_err_inflow             = sqrt((*glob_interf_norms)[3]);
+  interf_err_mass_cons          = sqrt((*glob_interf_norms)[4]);
 
   if (myrank_ == 0)
   {
@@ -897,18 +934,24 @@ Teuchos::RCP<std::vector<double> > FLD::XFluidFluid::EvaluateErrorComparedToAnal
       IO::cout << "----viscosity-scaled domain error norms (background)------"       << IO::endl;
       IO::cout << "|| nu^(+1/2) grad( u - u_b ) ||_L2(Omega)      =  " << dom_bg_err_vel_H1_semi_nu_scaled << IO::endl;
       IO::cout << "|| nu^(-1/2) (p - p_b) ||_L2(Omega)            =  " << dom_bg_err_pre_L2_nu_scaled      << IO::endl;
+      IO::cout << "|| sigma^(+1/2) ( u - u_h ) ||_L2(Omega)       =  " << dom_bg_err_vel_L2_sigma_scaled   << IO::endl;
+      IO::cout << "|| Phi^(+1/2) (p - p_h) ||_L2(Omega)           =  " << dom_bg_err_pre_L2_Phi_scaled     << IO::endl;
       IO::cout << "----viscosity-scaled domain error norms (embedded) ------"       << IO::endl;
       IO::cout << "|| nu^(+1/2) grad( u - u_e ) ||_L2(Omega)      =  " << dom_emb_err_vel_H1_semi_nu_scaled<< IO::endl;
       IO::cout << "|| nu^(-1/2) (p - p_e) ||_L2(Omega)            =  " << dom_emb_err_pre_L2_nu_scaled     << IO::endl;
+      IO::cout << "|| sigma^(+1/2) ( u - u_h ) ||_L2(Omega)       =  " << dom_emb_err_vel_L2_sigma_scaled  << IO::endl;
+      IO::cout << "|| Phi^(+1/2) (p - p_h) ||_L2(Omega)           =  " << dom_emb_err_pre_L2_Phi_scaled    << IO::endl;
       IO::cout << "---------------------------------------------------------"       << IO::endl;
       IO::cout << "-------------- interface/boundary error norms -----------"       << IO::endl;
       IO::cout << "|| nu^(+1/2) (u_b - u_e) ||_H1/2(Gamma)            =  " << interf_err_Honehalf          << IO::endl;
       IO::cout << "|| nu^(+1/2) grad( u_b - u_e )*n ||_H-1/2(Gamma)   =  " << interf_err_Hmonehalf_u       << IO::endl;
       IO::cout << "|| nu^(-1/2) (p_b - p_e)*n ||_H-1/2(Gamma)         =  " << interf_err_Hmonehalf_p       << IO::endl;
+      IO::cout << "|| (u*n)_inflow (u_b - u_e) ||_L2(Gamma)           =  " << interf_err_inflow            << IO::endl;
+      IO::cout << "|| (sigma*h+|u|+nu/h)^(+1/2) (u_b - u_e)*n ||_L2(Gamma)  =  " << interf_err_mass_cons   << IO::endl;
       IO::cout << "---------------------------------------------------------"       << IO::endl;
       IO::cout << "-------------- Error on Functionals from solution  ------------"       << IO::endl;
-      IO::cout << " | sin(x) ( u,x - u,x exact ) | (background)        = " << (*glob_dom_norms_bg)[6]      << IO::endl;
-      IO::cout << " | sin(x) ( u,x - u,x exact ) | (embedded)          = " << (*glob_dom_norms_emb)[6]     << IO::endl;
+      IO::cout << " | sin(x) ( u,x - u,x exact ) | (background)        = " << functional_bg      << IO::endl;
+      IO::cout << " | sin(x) ( u,x - u,x exact ) | (embedded)          = " << functional_emb     << IO::endl;
     }
 
     // append error of the last time step to the error file
@@ -929,15 +972,21 @@ Teuchos::RCP<std::vector<double> > FLD::XFluidFluid::EvaluateErrorComparedToAnal
         << " | || p - p_b ||_L2(Omega)"
         << " | || nu^(+1/2) grad( u - u_b ) ||_L2(Omega)"
         << " | || nu^(-1/2) ( p - p_b ) ||_L2(Omega)"
+        << " | || sigma^(+1/2) ( u - u_h ) ||_L2(Omega)"
+        << " | || Phi^(+1/2) (p - p_h) ||_L2(Omega)"
         << " | || u - u_e ||_L2(Omega)"
         << " | || grad( u - u_e ) ||_L2(Omega)"
         << " | || u - u_e ||_H1(Omega)"
         << " | || p - p_e ||_L2(Omega)"
+        << " | || sigma^(+1/2) ( u - u_h ) ||_L2(Omega)"
+        << " | || Phi^(+1/2) (p - p_h) ||_L2(Omega)"
         << " | || nu^(+1/2) grad( u - u_e ) ||_L2(Omega)"
         << " | || nu^(-1/2) ( p - p_e) ||_L2(Omega)"
         << " | || nu^(+1/2) (u_b - u_e) ||_H1/2(Gamma)"
         << " | || nu^(+1/2) grad( u_b - u_e )*n ||_H-1/2(Gamma)"
         << " | || nu^(-1/2) (p_b - p_e)*n |_H-1/2(Gamma)"
+        << " | || (u*n)_inflow (u_b - u_e) ||_L2(Gamma)"
+        << " | || (sigma*h+|u|+nu/h)^(+1/2) (u_b - u_e)*n ||_L2(Gamma)"
         << " |  | sin(x) ( u,x - u,x exact ) | (background)"
         << " |  | sin(x) ( u,x - u,x exact ) | (embedded)"
         << " |\n";
@@ -949,17 +998,23 @@ Teuchos::RCP<std::vector<double> > FLD::XFluidFluid::EvaluateErrorComparedToAnal
         << dom_bg_err_pre_L2 << " "
         << dom_bg_err_vel_H1_semi_nu_scaled << " "
         << dom_bg_err_pre_L2_nu_scaled << " "
+        << dom_bg_err_vel_L2_sigma_scaled << " "
+        << dom_bg_err_pre_L2_Phi_scaled << " "
         << dom_emb_err_vel_L2 << " "
         << dom_emb_err_vel_H1_semi << " "
         << dom_emb_err_vel_H1 << " "
         << dom_emb_err_pre_L2 << " "
         << dom_emb_err_vel_H1_semi_nu_scaled << " "
         << dom_emb_err_pre_L2_nu_scaled << " "
+        << dom_emb_err_vel_L2_sigma_scaled << " "
+        << dom_emb_err_pre_L2_Phi_scaled << " "
         << interf_err_Honehalf << " "
         << interf_err_Hmonehalf_u << " "
         << interf_err_Hmonehalf_p << " "
-        << (*glob_dom_norms_bg)[6] << " "
-        << (*glob_dom_norms_emb)[6] << " "
+        << interf_err_inflow << " "
+        << interf_err_mass_cons << " "
+        << functional_bg << " "
+        << functional_emb << " "
         <<"\n";
       f.flush();
       f.close();
@@ -990,6 +1045,8 @@ Teuchos::RCP<std::vector<double> > FLD::XFluidFluid::EvaluateErrorComparedToAnal
         << " | || nu^(+1/2) (u_b - u_e) ||_H1/2(Gamma)"
         << " | || nu^(+1/2) grad( u_b - u_e )*n ||_H-1/2(Gamma)"
         << " | || nu^(-1/2) (p_b - p_e)*n |_H-1/2(Gamma)"
+        << " | || (u*n)_inflow (u_b - u_e) ||_L2(Gamma)"
+        << " | || (sigma*h+|u|+nu/h)^(+1/2) (u_b - u_e)*n ||_L2(Gamma)"
         << " |  | sin(x) ( u,x - u,x exact ) | (background)"
         << " |  | sin(x) ( u,x - u,x exact ) | (embedded)"
         << " |\n";
@@ -1001,17 +1058,23 @@ Teuchos::RCP<std::vector<double> > FLD::XFluidFluid::EvaluateErrorComparedToAnal
         << dom_bg_err_pre_L2 << " "
         << dom_bg_err_vel_H1_semi_nu_scaled << " "
         << dom_bg_err_pre_L2_nu_scaled << " "
+        << dom_bg_err_vel_L2_sigma_scaled << " "
+        << dom_bg_err_pre_L2_Phi_scaled << " "
         << dom_emb_err_vel_L2 << " "
         << dom_emb_err_vel_H1_semi << " "
         << dom_emb_err_vel_H1 << " "
         << dom_emb_err_pre_L2 << " "
         << dom_emb_err_vel_H1_semi_nu_scaled << " "
         << dom_emb_err_pre_L2_nu_scaled << " "
+        << dom_emb_err_vel_L2_sigma_scaled << " "
+        << dom_emb_err_pre_L2_Phi_scaled << " "
         << interf_err_Honehalf << " "
         << interf_err_Hmonehalf_u << " "
         << interf_err_Hmonehalf_p << " "
-        << (*glob_dom_norms_bg)[6] << " "
-        << (*glob_dom_norms_emb)[6] << " "
+        << interf_err_inflow << " "
+        << interf_err_mass_cons << " "
+        << functional_bg << " "
+        << functional_emb << " "
         <<"\n";
 
       f.flush();
@@ -1029,17 +1092,23 @@ Teuchos::RCP<std::vector<double> > FLD::XFluidFluid::EvaluateErrorComparedToAnal
         << dom_bg_err_pre_L2 << " "
         << dom_bg_err_vel_H1_semi_nu_scaled << " "
         << dom_bg_err_pre_L2_nu_scaled << " "
+        << dom_bg_err_vel_L2_sigma_scaled << " "
+        << dom_bg_err_pre_L2_Phi_scaled << " "
         << dom_emb_err_vel_L2 << " "
         << dom_emb_err_vel_H1_semi << " "
         << dom_emb_err_vel_H1 << " "
         << dom_emb_err_pre_L2 << " "
         << dom_emb_err_vel_H1_semi_nu_scaled << " "
         << dom_emb_err_pre_L2_nu_scaled << " "
+        << dom_emb_err_vel_L2_sigma_scaled << " "
+        << dom_emb_err_pre_L2_Phi_scaled << " "
         << interf_err_Honehalf << " "
         << interf_err_Hmonehalf_u << " "
         << interf_err_Hmonehalf_p << " "
-        << (*glob_dom_norms_bg)[6] << " "
-        << (*glob_dom_norms_emb)[6] << " "
+        << interf_err_inflow << " "
+        << interf_err_mass_cons << " "
+        << functional_bg << " "
+        << functional_emb << " "
         <<"\n";
 
         f.flush();
