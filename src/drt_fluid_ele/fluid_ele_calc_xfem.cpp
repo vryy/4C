@@ -329,6 +329,14 @@ int FluidEleCalcXFEM<distype>::ComputeError(
     //                                                     =   nu^(+1/2) * || grad( u - u_h ) ||_L2(Omega) (for homogeneous visc)
     // 6.   || nu^(-1/2) (p - p_h) ||_L2(Omega)            =   visc-scaled L2-norm for pressure
     //                                                     =   nu^(-1/2) * || p - p_h ||_L2(Omega) (for homogeneous visc)
+    // 7.   || sigma^(+1/2) ( u - u_h ) ||_L2(Omega)       =   sigma-scaled L2-norm for velocity
+    //                                                     =   sigma^(+1/2) * || u - u_h ||_L2(Omega) (for homogeneous sigma)
+    // 8.   || Phi^(+1/2) (p - p_h) ||_L2(Omega)           =   Phi-scaled L2-norm for pressure
+    //                                                     =   Phi^(+1/2) * || p - p_h ||_L2(Omega) (for homogeneous Phi)
+    // with Phi^{-1} = sigma*CP^2 + |beta|*CP + nu + (|beta|*CP/sqrt(sigma*CP^2 + nu))^2, see Massing,Schott,Wall Oseen paper
+    //
+    // 9. functional G=sin(x)( u,x - u,x exact ) (Sudhakar)
+
 
     double u_err_squared      = 0.0;
     double grad_u_err_squared = 0.0;
@@ -348,6 +356,13 @@ int FluidEleCalcXFEM<distype>::ComputeError(
 
     p_err_squared = p_err*p_err*my::fac_;
 
+    double Poincare_const = 1.0; // scales as upper bound for mesh size
+    double beta_maximum   = 1.0; // maximal advective velocity in domain
+    double sigma = 1./my::fldparatimint_->TimeFac(); // sigma scaling in Oseen results from time discretization
+
+    double Phi_tmp = beta_maximum * Poincare_const/sqrt(sigma * Poincare_const*Poincare_const + my::visc_);
+    double Phi_inverse_squared = sigma * Poincare_const*Poincare_const + beta_maximum * Poincare_const + my::visc_ + Phi_tmp*Phi_tmp;
+
     // standard domain errors
     ele_dom_norms[0] += u_err_squared;
     ele_dom_norms[1] += grad_u_err_squared;
@@ -357,9 +372,11 @@ int FluidEleCalcXFEM<distype>::ComputeError(
     // viscosity-scaled domain errors
     ele_dom_norms[4] += my::visc_ * grad_u_err_squared;
     ele_dom_norms[5] += 1.0/my::visc_ * p_err_squared;
+    ele_dom_norms[6] += sigma * u_err_squared;
+    ele_dom_norms[7] += 1.0/Phi_inverse_squared * p_err_squared;
 
     // error for predefined functional
-    ele_dom_norms[6] += funcerr;
+    ele_dom_norms[8] += funcerr;
 
 
   } // loop gaussian points
@@ -717,6 +734,7 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
     Epetra_SerialDenseVector&                                           ele_interf_norms,  /// squared element interface norms
     const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,            ///< boundary cells
     const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
+    const GEO::CUT::plain_volumecell_set &                              vcSet,             ///< set of plain volume cells
     Teuchos::ParameterList&                                             params             ///< parameter list
 )
 {
@@ -792,9 +810,11 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
 
   // element length
   double h_k = 0.0;
+  double inv_hk = 0.0;
 
   // take a volume based element length
   h_k = ComputeVolEqDiameter(vol);
+  inv_hk = 1.0/h_k;
 
 
   // evaluate shape function derivatives
@@ -933,6 +953,11 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
       }
     }
 
+    if (cond_manager->HasAveragingStrategy(INPAR::XFEM::Xfluid_Sided))
+    {
+      h_k = ComputeCharEleLength(ele, ele_xyze, cond_manager, vcSet, bcells, bintpoints);
+      inv_hk = 1.0 / h_k;
+    }
 
     //--------------------------------------------
     // loop boundary cells w.r.t current cut side
@@ -1039,6 +1064,56 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
         // get convective velocity at integration point
         my::SetConvectiveVelint(ele->IsAle());
 
+#if(0)
+        // FOR INTERPOLATION ERRORS
+        // I_h(u_analyt) - u_analyt
+        // grad(I_h(u_analyt) - u_analyt)
+        // I_h(p_analyt) - p_analyt
+        //---------------------------------------------------------------
+        LINALG::Matrix<my::nsd_,1> u_analyt_interpolated(true);
+        LINALG::Matrix<my::nsd_,my::nsd_> grad_u_analyt_interpolated(true);
+        double p_analyt_interpolated = 0.0;
+
+        LINALG::Matrix<my::nsd_,my::nen_> u_analyt_element(true);
+        LINALG::Matrix<my::nen_,1> p_analyt_element(true);
+
+
+        //---------------------------------------------------------------
+        for(int i=0; i<my::nen_; ++i)
+        {
+          LINALG::Matrix<my::nsd_,1> u_analyt_node(true);
+          LINALG::Matrix<my::nsd_,my::nsd_> grad_u_analyt_node(true);
+          double p_analyt_node = 0.0;
+
+
+          LINALG::Matrix<my::nsd_,1> x_node(true);
+          x_node(0) = my::xyze_(0,i);
+          x_node(1) = my::xyze_(1,i);
+          x_node(2) = my::xyze_(2,i);
+
+          AnalyticalReference(
+               calcerr,          ///< which reference solution
+               u_analyt_node,         ///< exact velocity (onesided), exact jump vector (coupled)
+               grad_u_analyt_node,    ///< exact velocity gradient
+               p_analyt_node,         ///< exact pressure
+               x_node,           ///< xyz position of node
+               t,                ///< time t
+               mat
+           );
+
+          u_analyt_element(0,i) = u_analyt_node(0);
+          u_analyt_element(1,i) = u_analyt_node(1);
+          u_analyt_element(2,i) = u_analyt_node(2);
+
+          p_analyt_element(i)=p_analyt_node;
+        }
+
+        u_analyt_interpolated.Multiply(u_analyt_element, my::funct_);
+        grad_u_analyt_interpolated.MultiplyNT(u_analyt_element,my::derxy_);
+
+        p_analyt_interpolated = my::funct_.Dot(p_analyt_element);
+#endif
+
         //--------------------------------------------
         // compute errors
 
@@ -1051,7 +1126,7 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
             u_analyt,         ///< exact velocity (onesided), exact jump vector (coupled)
             grad_u_analyt,    ///< exact velocity gradient
             p_analyt,         ///< exact pressure
-            x_side,           ///< xyz position of gaussian point which lies on the real side, projected from linearized interface
+            x_gp_lin,         ///< xyz position of gaussian point
             t,                ///< time t
             mat
         );
@@ -1079,10 +1154,15 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
         else
         {
           u_err.Update(1.0, my::velint_, -1.0, u_analyt, 0.0);
-
-
           grad_u_err.Update(1.0, my::vderxy_, -1.0, grad_u_analyt, 0.0);
           p_err = press - p_analyt;
+
+#if(0)
+          // FOR interpolation error
+          u_err.Update(1.0, u_analyt_interpolated, -1.0, u_analyt, 0.0);
+          grad_u_err.Update(1.0, grad_u_analyt_interpolated, -1.0, grad_u_analyt, 0.0);
+          p_err = p_analyt_interpolated - p_analyt;
+#endif
         }
 
         flux_u_err.Multiply(grad_u_err,normal);
@@ -1097,20 +1177,24 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
          *                    \   h      6               12 * \theta * dt /
          *
          *                             interface errors
-         *  1.   || NIT * (u_b - u_e - u_jump) ||_L_2(Gamma)        =  broken H1/2 Sobolev norm for boundary/coupling condition
-         *  2.   || nu^(+1/2) grad( u_b - u_e )*n ||_H-1/2(Gamma)   =  standard H-1/2 Sobolev norm for normal flux (velocity part)
-         *  3.   || (p_b - p_e)*n ||_H-1/2(Gamma)         =  standard H-1/2 Sobolev norm for normal flux (pressure part)
+         *  1.   || nu/h * (u_b - u_e - u_jump) ||_L_2(Gamma)        =  broken H1/2 Sobolev norm for boundary/coupling condition
+         *  2.   || nu^(+1/2) grad( u_b - u_e )*n ||_H-1/2(Gamma)    =  standard H-1/2 Sobolev norm for normal flux (velocity part)
+         *  3.   || (p_b - p_e)*n ||_H-1/2(Gamma)                    =  standard H-1/2 Sobolev norm for normal flux (pressure part)
+         *  4.   || (u*n)_inflow (u - u*) ||_L2(Gamma)               =  L^2 Sobolev norm for inflow boundary/coupling condition
+         *  5.   || (sigma*h+|u|+nu/h)^(+1/2) (u - u*)*n ||_L2(Gamma) = L^2 Sobolev norm for mass conservation coupling condition
          */
-        double u_err_squared      = 0.0;
-        double flux_u_err_squared = 0.0;
-        double flux_p_err_squared = 0.0;
+        double u_err_squared        = 0.0;
+        double u_err_squared_normal = 0.0;
+        double flux_u_err_squared   = 0.0;
+        double flux_p_err_squared   = 0.0;
 
         // evaluate squared errors at gaussian point
         for (int isd=0;isd<my::nsd_;isd++)
         {
-          u_err_squared += u_err(isd)*u_err(isd)*surf_fac;
-          flux_u_err_squared += flux_u_err(isd)*flux_u_err(isd)*surf_fac;
-          flux_p_err_squared += flux_p_err(isd)*flux_p_err(isd)*surf_fac;
+          u_err_squared        += u_err(isd)*u_err(isd)*surf_fac;
+          u_err_squared_normal += u_err(isd)*normal(isd)*normal(isd)*u_err(isd)*surf_fac;
+          flux_u_err_squared   += flux_u_err(isd)*flux_u_err(isd)*surf_fac;
+          flux_p_err_squared   += flux_p_err(isd)*flux_p_err(isd)*surf_fac;
         }
 
         // interface errors
@@ -1119,10 +1203,17 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
         //Needs coupling condition to get kappas!
         const double kappa_m = 1.0;
         const double kappa_s = 0.0;
-        NIT_Compute_FullPenalty_Stabfac(nit_stabfac,normal,h_k,kappa_m,kappa_s,my::convvelint_,velint_s,NIT_Compute_ViscPenalty_Stabfac(distype,1/h_k,1.0,0.0),true);
-        ele_interf_norms[0] += nit_stabfac * u_err_squared;
-        ele_interf_norms[1] += h_k     * my::visc_ * flux_u_err_squared;
-        ele_interf_norms[2] += h_k     * flux_p_err_squared;
+        const double visc_stab_fac = NIT_Compute_ViscPenalty_Stabfac(distype,inv_hk,1.0,0.0);
+        NIT_Compute_FullPenalty_Stabfac(nit_stabfac,normal,h_k,kappa_m,kappa_s,my::convvelint_,velint_s,visc_stab_fac,true);
+
+        const double veln_normal = my::convvelint_.Dot(normal); // TODO: shift this to routine
+        double NIT_inflow_stab = std::max(0.0,-veln_normal);
+
+        ele_interf_norms[0] += visc_stab_fac * u_err_squared;
+        ele_interf_norms[1] += h_k * my::visc_ * flux_u_err_squared;
+        ele_interf_norms[2] += h_k * flux_p_err_squared;
+        ele_interf_norms[3] += NIT_inflow_stab * u_err_squared;
+        ele_interf_norms[4] += nit_stabfac * u_err_squared_normal;
 
       } // end loop gauss points of boundary cell
     } // end loop boundary cells of side

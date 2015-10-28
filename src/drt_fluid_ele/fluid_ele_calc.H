@@ -452,6 +452,7 @@ public:
       Epetra_SerialDenseVector&                                           ele_interf_norms,  /// squared element interface norms
       const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > &        bcells,            ///< boundary cells
       const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > &   bintpoints,        ///< boundary integration points
+      const GEO::CUT::plain_volumecell_set &                              vcSet,             ///< set of plain volume cells
       Teuchos::ParameterList&                                             params             ///< parameter list
       ){dserror("Implemented in derived xfem class!"); return 1;};
 
