@@ -181,7 +181,7 @@ namespace NLNSOL
       //! Returns a character string describing the operator briefly
       virtual const char* LabelShort() const = 0;
 
-      //! Output parameter list
+      //! Access to output parameter list
       virtual Teuchos::RCP<const Teuchos::ParameterList> GetOutParams() const;
 
       //! Has Init() already been called?
@@ -221,7 +221,8 @@ namespace NLNSOL
 
       //! Access to a parameter of this operator's configuration
       template <typename ParamType> ParamType MyGetParameter(
-          const std::string param) const
+          const std::string param ///< name of parameter
+          ) const
       {
         return Configuration()->GetParameter<ParamType>(MyListName(), param);
       }
@@ -232,7 +233,7 @@ namespace NLNSOL
       //! Access to the nonlinear problem
       virtual Teuchos::RCP<NLNSOL::NlnProblem> NlnProblem() const;
 
-      //! Access to Baci linear sovler
+      //! Access to Baci linear solver
       virtual Teuchos::RCP<LINALG::Solver> BaciLinearSolver() const;
 
       /*! \brief Is this nonlinear operator a solver or a smoother?

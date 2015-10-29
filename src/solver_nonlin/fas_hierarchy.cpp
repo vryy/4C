@@ -321,6 +321,14 @@ const bool NLNSOL::FAS::AMGHierarchy::SetupNlnSolHierarchy()
 }
 
 /*----------------------------------------------------------------------------*/
+void NLNSOL::FAS::AMGHierarchy::AddNlnLevel(
+    Teuchos::RCP<NLNSOL::FAS::NlnLevel> newlevel)
+{
+  nlnlevels_.push_back(newlevel);
+  return;
+}
+
+/*----------------------------------------------------------------------------*/
 void NLNSOL::FAS::AMGHierarchy::RefreshRAPs()
 {
   // time measurements

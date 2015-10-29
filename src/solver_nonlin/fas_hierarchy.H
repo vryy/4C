@@ -136,13 +136,19 @@ namespace NLNSOL
       //! @name Multigrid helpers
       //@{
 
-      //! Restrict fine level vector to given coarse level
+      /*! \brief Restrict fine level vector to given coarse level \c targetlevel
+       *
+       *  \return Coarse level vector on level \c targetlevel
+       */
       Teuchos::RCP<Epetra_MultiVector> RestrictToCoarseLevel(
           const Epetra_MultiVector& vec, ///< vector
           const int targetlevel ///< target level (some coarse level)
       ) const;
 
-      //! Prolongate vector from a given coarse level to fine level
+      /*! \brief Prolongate vector from a given coarse level \c sourcelevel to fine level
+       *
+       *  \return Fine level vector
+       */
       Teuchos::RCP<Epetra_MultiVector> ProlongateToFineLevel(
           const Epetra_MultiVector& veccoarse, ///< vector
           const int sourcelevel ///< source level (some coarse level)
@@ -173,13 +179,12 @@ namespace NLNSOL
       //! Print all levels
       virtual void PrintNlnLevels(std::ostream& os) const;
 
-      /*! \brief Check validity of mutligrid hierarchy
+      /*! \brief Check validity of multigrid hierarchy
        *
        *  Check important stuff like if maps of matrices and transfer operator
        *  match.
        *
-       *  \return Boolean flag indicating whether hierarchy has been set up
-       *  correctly
+       *  \return bool: true if setup was correct, false otherwise
        *
        *  \author mayr.mt \date 06/2014
        */
@@ -190,7 +195,7 @@ namespace NLNSOL
        *  Level ID has to be in admissible range, i.e. between zero and the
        *  number of levels. Throw dserror() if level ID is not admissible.
        *
-       *  \return Boolean flag indicating whether level ID is admissible
+       *  \return bool: true if level ID is admissible, false otherwise
        *
        *  \sa NumLevels()
        *
@@ -202,6 +207,8 @@ namespace NLNSOL
        *
        *  Loop over all levels and check, whether at least one level smoother
        *  got stuck in stagnation.
+       *
+       *  \return bool: true if stagnation has been detected, false otherwise
        *
        *  \author mayr.mt \date 03/2015
        */
@@ -224,6 +231,8 @@ namespace NLNSOL
 
       /*! \brief Setup NLNSOL hierarchy and fill it with MueLu content
        *
+       *  \return bool: true if setup was successful, false otherwise
+       *
        *  \author mayr.mt \date 10/2015
        */
       virtual const bool SetupNlnSolHierarchy();
@@ -232,11 +241,9 @@ namespace NLNSOL
        *
        *  \author mayr.mt \date 06/2014
        */
-      virtual void AddNlnLevel(Teuchos::RCP<NLNSOL::FAS::NlnLevel> newlevel)
-      {
-        nlnlevels_.push_back(newlevel);
-        return;
-      }
+      virtual void AddNlnLevel(
+          Teuchos::RCP<NLNSOL::FAS::NlnLevel> newlevel ///< level to be added to level container #nlnlevels_
+          );
 
       //! Init() has been called
       virtual void SetIsInit() { isinit_ = true; return; }
@@ -249,6 +256,8 @@ namespace NLNSOL
        *
        *  Ask the #nlnproblem_ for the fine level Epetra_Operator and wrap it
        *  into Xpetra::Matrix.
+       *
+       *  \return Fine level matrix as Xpetra::Matrix
        *
        *  \author mayr.mt \date 03/2015
        */
@@ -286,6 +295,8 @@ namespace NLNSOL
        *  the null space \f$V_i\f$ on level \f$i\f$.
        *
        *  Here, this can be computed for levels 0, 1, and 2.
+       *
+       *  \return bool: true if check was successful, false otherwise
        *
        *  \author mayr.mt \date 10/2015
        */

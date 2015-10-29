@@ -150,11 +150,19 @@ namespace FAS
 
     //@}
 
-    //! Check convergence
+    /*! \brief Check convergence
+     *
+     *  \return bool: true if converged, false otherwise
+     */
     virtual bool ConvergenceCheck(const Epetra_MultiVector& f ///< residual
         ) const;
 
-    //! Check convergence
+    /*! \brief Check convergence
+     *
+     *  Provide L2-norm of residual as well.
+     *
+     *  \return bool: true if converged, false otherwise
+     */
     virtual bool ConvergenceCheck(const Epetra_MultiVector& f, ///< residual
         double& fnorm2 /// L2-norm of residual (to be filled)
         ) const;
@@ -163,7 +171,8 @@ namespace FAS
     //@{
 
     //! Print method
-    virtual void Print(std::ostream& os) const;
+    virtual void Print(std::ostream& os ///< output stream used for printing
+        ) const;
 
     //! Returns a character string describing the operator
     virtual const char* Label() const { return "NLNSOL::FAS::NlnLevel"; }
@@ -229,8 +238,7 @@ namespace FAS
      *
      *  \return Integer error code, set to 0 if successful.
      *
-     *  \author mayr.mt
-     *  \date 10/2013
+     *  \author mayr.mt \date 10/2013
      */
     virtual int DoPreSmoothing(
         const Epetra_MultiVector& f, ///< residual
@@ -241,8 +249,7 @@ namespace FAS
      *
      *  \return Integer error code, set to 0 if successful.
      *
-     *  \author mayr.mt
-     *  \date 10/2013
+     *  \author mayr.mt \date 10/2013
      */
     virtual int DoPostSmoothing(
         const Epetra_MultiVector& f, ///< residual
@@ -253,8 +260,7 @@ namespace FAS
      *
      *  \return Integer error code, set to 0 if successful.
      *
-     *  \author mayr.mt
-     *  \date 10/2013
+     *  \author mayr.mt \date 10/2013
      */
     virtual int DoCoarseLevelSolve(
         const Epetra_MultiVector& f, ///< current residual
@@ -268,8 +274,13 @@ namespace FAS
 
     /*! \brief Check for stagnation of level smoother
      *
-     *  We currently just check post-smoothing and coarse level solve, since pre-
-     *  smoothing stagnation might be cured by coarser levels. // ToDo Fix this comment
+     *  We check for stagnation in all pre- and poststmoothers and in the coarse
+     *  level solver.
+     *
+     *  One might don't care for stagtnation in the presmoother since this might
+     *  be cured by the coarser levels.
+     *
+     *  \return bool: true if stagnation is detected, false otherwise
      *
      *  \author mayr.mt \date 03/2015
      */
@@ -298,22 +309,32 @@ namespace FAS
     //@{
 
     //! Set level ID
-    virtual void SetLevelID(const int levelid) { levelid_ = levelid; }
+    virtual void SetLevelID(const int levelid ///< level ID (to be set)
+        ) { levelid_ = levelid; return; }
 
     //! Set total number of levels
-    virtual void SetNumLevels(const int numlevels) { numlevels_ = numlevels; }
+    virtual void SetNumLevels(const int numlevels ///< total number of levels (to be set)
+        ) { numlevels_ = numlevels; return; }
 
     //! Set matrix
-    virtual void SetMatrix(Teuchos::RCP<const Epetra_CrsMatrix> A);
+    virtual void SetMatrix(
+        Teuchos::RCP<const Epetra_CrsMatrix> A ///< matrix for this level
+        );
 
     //! Set restriction operator
-    virtual void SetROp(Teuchos::RCP<const Epetra_CrsMatrix> R);
+    virtual void SetROp(
+        Teuchos::RCP<const Epetra_CrsMatrix> R ///< restriction operator from next finer level to this level
+        );
 
     //! Set prolongation operator
-    virtual void SetPOp(Teuchos::RCP<const Epetra_CrsMatrix> P);
+    virtual void SetPOp(
+        Teuchos::RCP<const Epetra_CrsMatrix> P ///< prolongation operator from this level to next finer level
+        );
 
     //! Set null space
-    virtual void SetNullSpace(Teuchos::RCP<const Epetra_MultiVector> nullspace);
+    virtual void SetNullSpace(
+        Teuchos::RCP<const Epetra_MultiVector> nullspace ///< set of null space vectors on this level
+        );
 
     //! Init() has been called?
     bool isinit_;
