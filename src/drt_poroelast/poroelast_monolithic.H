@@ -23,8 +23,6 @@
 #include "poro_base.H"
 #include "poroelast_utils.H"
 
-//#include "../linalg/linalg_mapextractor.H"
-
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
@@ -356,8 +354,6 @@ namespace POROELAST
 
       //@}
 
-//    private:
-
       //! build block vector from field vectors, e.g. rhs, increment vector
       void SetupVector(Epetra_Vector &f, //!< vector of length of all dofs
           Teuchos::RCP<const Epetra_Vector> sv, //!< vector containing only structural dofs
@@ -413,9 +409,6 @@ namespace POROELAST
 
       //! @name Various global forces
 
-      //Teuchos::RCP<Epetra_Vector> cond_rhs_;  //!< additional rhs-Terms for no penetration condition
-
-      Teuchos::RCP<Epetra_Vector> freact_;    //!< reaction force
       Teuchos::RCP<Epetra_Vector> iterinc_;   //!< increment between Newton steps k and k+1
       //!< \f$\Delta{x}^{<k>}_{n+1}\f$
 
@@ -435,11 +428,12 @@ namespace POROELAST
       //! Aitken factor
       double mu_;
 
+      //@}
+
+      //! @name matrix equilibration
+
       //! inverse sums of absolute values of row entries in global system matrix
       Teuchos::RCP<Epetra_Vector> invrowsums_;
-
-      //! inverse sums of absolute values of column entries in global system matrix
-      Teuchos::RCP<Epetra_Vector> invcolsums_;
 
       //! flag for row equilibration of global system of equations
       bool rowequilibration_;
