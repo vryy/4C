@@ -77,7 +77,7 @@ NODE 3 COORD 12.00 2.000 0.000
 NODE 1 DNODE 1
 NODE 3 DNODE 2
 ----------------------------------------------------------RESULT DESCRIPTION
-RED_AIRWAY DIS red_airway NODE 2 QUANTITY pressure VALUE 9.99998813962293980e+02 TOLERANCE 1.0e-6
-RED_AIRWAY DIS red_airway ELEMENT 2 QUANTITY acini_volume VALUE 5.23663126580673861e+02 TOLERANCE 1.0e-6
+RED_AIRWAY DIS red_airway NODE 2 QUANTITY pressure VALUE 9.99998938541779125e+02 TOLERANCE 1.0e-6
+RED_AIRWAY DIS red_airway ELEMENT 2 QUANTITY acini_volume VALUE 5.23654094094680886e+02 TOLERANCE 1.0e-6
 -------------------------------------------------------------------------END
 //                              END
