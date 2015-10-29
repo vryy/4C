@@ -186,4 +186,20 @@ void INPAR::POROELAST::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> l
 
   // number of linear solver used for poroelasticity
   IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for poroelasticity problems",&poroelastdyn);
+
+  // flag for equilibration of global system of equations
+  setStringToIntegralParameter<int>(
+      "EQUILIBRATION",
+      "none",
+      "flag for equilibration of global system of equations",
+      tuple<std::string>(
+          "none",
+          "rows"
+          ),
+      tuple<int>(
+          equilibration_none,
+          equilibration_rows
+          ),
+      &poroelastdyn
+      );
 }

@@ -263,6 +263,23 @@ namespace POROELAST
           Teuchos::RCP<const Epetra_Vector>& fx,
           bool firstcall=false);
 
+      //! equilibrate global system of equations if necessary
+      void EquilibrateSystem(
+          const Teuchos::RCP<LINALG::SparseOperator>&   systemmatrix,   //! system matrix
+          const Teuchos::RCP<Epetra_Vector>&            residual        //! residual vector
+          );
+
+      //! compute inverse sums of absolute values of matrix row entries
+      void ComputeInvRowSums(
+          const LINALG::SparseMatrix&          matrix,      //! matrix
+          const Teuchos::RCP<Epetra_Vector>&   invrowsums   //! inverse sums of absolute values of row entries in matrix
+          );
+
+      //! equilibrate matrix rows
+      void EquilibrateMatrixRows(
+          LINALG::SparseMatrix&                matrix,      //! matrix
+          const Teuchos::RCP<Epetra_Vector>&   invrowsums   //! sums of absolute values of row entries in matrix
+          );
 
       //! @name General purpose algorithm members
       //@{
@@ -417,6 +434,15 @@ namespace POROELAST
       Teuchos::RCP<Epetra_Vector> delhist_;
       //! Aitken factor
       double mu_;
+
+      //! inverse sums of absolute values of row entries in global system matrix
+      Teuchos::RCP<Epetra_Vector> invrowsums_;
+
+      //! inverse sums of absolute values of column entries in global system matrix
+      Teuchos::RCP<Epetra_Vector> invcolsums_;
+
+      //! flag for row equilibration of global system of equations
+      bool rowequilibration_;
 
       //@}
   }; // Monolithic
