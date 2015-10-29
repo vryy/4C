@@ -55,6 +55,13 @@ ELCH::MovingBoundaryAlgorithm::MovingBoundaryAlgorithm(
   {
     SolveScaTra(); // set-up trueresidual_
   }
+
+  // transfer moving mesh data
+  ScaTraField()->ApplyMeshMovement(
+      AleField()->Dispnp(),
+      2
+  );
+
   // initialize the multivector for all possible cases
   fluxn_ = ScaTraField()->CalcFluxAtBoundary(condnames,false);
 
@@ -78,15 +85,14 @@ void ELCH::MovingBoundaryAlgorithm::TimeLoop()
   // provide information about initial field (do not do for restarts!)
   if (Step()==0)
   {
-    // write out initial state
-    Output();
-
-    ScaTraField()->OutputProblemSpecific();
-    ScaTraField()->OutputMeanScalars();
-
-    // compute error for problems with analytical solution (initial field!)
-    ScaTraField()->EvaluateErrorComparedToAnalyticalSol();
+    FluidField()->StatisticsAndOutput();
+    if (AlgoParameters().get<int>("RESTARTEVRY") != 0)
+      FluidField()->DiscWriter()->WriteVector("idispn",idispnp_);
+    AleField()->Output();
   }
+
+  // prepare scatra field
+  ScaTraField()->PrepareTimeLoop();
 
   if (not pseudotransient_)
   {
@@ -96,15 +102,14 @@ void ELCH::MovingBoundaryAlgorithm::TimeLoop()
         FluidField()->Hist(),
         Teuchos::null,
         Teuchos::null,
-        Teuchos::null,
-        FluidField()->Discretization()
+        1
     );
   }
 
   // transfer moving mesh data
   ScaTraField()->ApplyMeshMovement(
-      FluidField()->Dispnp(),
-      FluidField()->Discretization()
+      AleField()->Dispnp(),
+      2
   );
 
   // time loop
@@ -252,8 +257,7 @@ void ELCH::MovingBoundaryAlgorithm::SolveScaTra()
         FluidField()->Hist(),
         Teuchos::null,
         Teuchos::null,
-        Teuchos::null,
-        FluidField()->Discretization()
+        1
       );
     }
   }
@@ -265,8 +269,8 @@ void ELCH::MovingBoundaryAlgorithm::SolveScaTra()
 
   // transfer moving mesh data
   ScaTraField()->ApplyMeshMovement(
-      FluidField()->Dispnp(),
-      FluidField()->Discretization()
+      AleField()->Dispnp(),
+      2
   );
 
   // solve coupled electrochemistry equations

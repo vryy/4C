@@ -133,6 +133,13 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
   // clear fluid's memory to flamefront
   Teuchos::rcp_dynamic_cast<FLD::CombustFluidImplicitTimeInt>(FluidField())->ImportFlameFront(Teuchos::null,true);
 
+  // access the scatra discretization
+  Teuchos::RCP<DRT::Discretization> scatradis = DRT::Problem::Instance()->GetDis("scatra");
+
+  // add proxy of fluid transport degrees of freedom to scatra discretization
+  if(scatradis->AddDofSet(Teuchos::rcp_const_cast<DRT::DofSet>(FluidField()->DofSet())) != 1)
+    dserror("Scatra discretization has illegal number of dofsets!");
+
   // transfer the initial convective velocity from initial fluid field to scalar transport field
   // subgrid scales not transferred since they are zero at time t=0.0
   // this step has already been done in the ScaTraFluidCouplingAlgorithm(), however, for problems
@@ -900,8 +907,6 @@ void COMBUST::Algorithm::SetVelocityLevelSet(bool init)
                                                                                               Teuchos::null,
                                                                                               Teuchos::null,
                                                                                               FluidField()->FsVel(),
-                                                                                              FluidField()->DofSet(),
-                                                                                              FluidField()->Discretization(),
                                                                                               false,
                                                                                               init);
       else // temporary solution, since level-set algorithm does not yet support gen-alpha
@@ -913,8 +918,7 @@ void COMBUST::Algorithm::SetVelocityLevelSet(bool init)
                                         Teuchos::null,
                                         Teuchos::null,
                                         FluidField()->FsVel(),
-                                        FluidField()->DofSet(),
-                                        FluidField()->Discretization());
+                                        1);
       }
 
       // transfer history vector only for subgrid-velocity: remark: complete RBVMM with cross- and Reynolds-stress term
@@ -930,8 +934,6 @@ void COMBUST::Algorithm::SetVelocityLevelSet(bool init)
                                                                                               Teuchos::null,
                                                                                               Teuchos::null,
                                                                                               FluidField()->FsVel(),
-                                                                                              FluidField()->DofSet(),
-                                                                                              FluidField()->Discretization(),
                                                                                               false,
                                                                                               init);
       else // temporary solution, since level-set algorithm does not yet support gen-alpha
@@ -943,8 +945,7 @@ void COMBUST::Algorithm::SetVelocityLevelSet(bool init)
                                         Teuchos::null,
                                         Teuchos::null,
                                         FluidField()->FsVel(),
-                                        FluidField()->DofSet(),
-                                        FluidField()->Discretization());
+                                        1);
       }
 
       break;

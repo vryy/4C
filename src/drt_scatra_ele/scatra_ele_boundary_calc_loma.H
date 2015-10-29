@@ -70,7 +70,7 @@ namespace DRT
           DRT::FaceElement*                 ele,
           Teuchos::ParameterList&           params,
           DRT::Discretization&              discretization,
-          std::vector<int>&                 lm
+          DRT::Element::LocationArray&      la
           );
 
       //! calculate Neumann inflow boundary conditions
@@ -78,7 +78,7 @@ namespace DRT
           const DRT::FaceElement*                   ele,
           Teuchos::ParameterList&                   params,
           DRT::Discretization&                      discretization,
-          std::vector<int>&                         lm,
+          DRT::Element::LocationArray&              la,
           Epetra_SerialDenseMatrix&                 emat,
           Epetra_SerialDenseVector&                 erhs
           );

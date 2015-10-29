@@ -24,6 +24,13 @@ Maintainer: Andreas Ehrl
 
 #include "../drt_inpar/inpar_elch.H"
 
+#include "../drt_fluid_ele/fluid_ele.H"
+
+namespace FLD
+{
+  template<DRT::Element::DiscretizationType distype,int numdofpernode, DRT::ELEMENTS::Fluid::EnrichmentType enrtype> class RotationallySymmetricPeriodicBC;
+}
+
   /// Internal Scalar transport element implementation
   /*!
     This internal class keeps all the working arrays needed to
@@ -267,7 +274,7 @@ public:
       const DRT::FaceElement*                   ele,
       Teuchos::ParameterList&                   params,
       DRT::Discretization&                      discretization,
-      std::vector<int>&                         lm,
+      DRT::Element::LocationArray&              la,
       Epetra_SerialDenseMatrix&                 emat,
       Epetra_SerialDenseVector&                 erhs
       );
@@ -371,6 +378,8 @@ public:
   LINALG::Matrix<nsd_+1,1> velint_;
   //! metric tensor at integration point
   LINALG::Matrix<nsd_,nsd_>  metrictensor_;
+  //! for the handling of rotationally symmetric periodic boundary conditions
+  Teuchos::RCP<FLD::RotationallySymmetricPeriodicBC<distype,nsd_+2,DRT::ELEMENTS::Fluid::none> > rotsymmpbc_;
 };
 }
 }

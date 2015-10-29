@@ -70,6 +70,14 @@ FS3I::ACFSI::ACFSI(const Epetra_Comm& comm)
    fsineedsupdate_(false),
    extractjthscalar_(BuildMapExtractor())
 {
+  // add proxy of fluid degrees of freedom to scatra discretization
+  if(scatravec_[0]->ScaTraField()->Discretization()->AddDofSet(fsi_->FluidField()->Discretization()->GetDofSetProxy()) != 1)
+    dserror("Scatra discretization has illegal number of dofsets!");
+
+  // add proxy of structure degrees of freedom to scatra discretization
+  if(scatravec_[1]->ScaTraField()->Discretization()->AddDofSet(fsi_->StructureField()->Discretization()->GetDofSetProxy()) != 1)
+    dserror("Scatra discretization has illegal number of dofsets!");
+
   // build a proxy of the scatra discretization for the structure field
   Teuchos::RCP<DRT::DofSet> scatradofset
     = scatravec_[1]->ScaTraField()->Discretization()->GetDofSetProxy();
@@ -233,14 +241,15 @@ void FS3I::ACFSI::ReadRestart()
  *----------------------------------------------------------------------*/
 void FS3I::ACFSI::Timeloop()
 {
+  // prepare time loop
+  fsi_->PrepareTimeloop();
+  SetMeshDisp();
+  SetVelocityFields(); //doing this we can use the flag SKIPINITDER
+
   // output of initial state
   fsi_->PrepareOutput();
   FsiOutput();
   ScatraOutput();
-
-  // prepare time loop
-  fsi_->PrepareTimeloop();
-  SetVelocityFields(); //doing this we can use the flag SKIPINITDER
 
   // do time loop
   while (NotFinished())

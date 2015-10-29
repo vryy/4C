@@ -50,6 +50,10 @@
 FS3I::PartFPS3I_1WC::PartFPS3I_1WC(const Epetra_Comm& comm)
   :PartFPS3I(comm)
 {
+  // add proxy of fluid degrees of freedom to scatra discretization
+  if(scatravec_[0]->ScaTraField()->Discretization()->AddDofSet(fpsi_->FluidField()->Discretization()->GetDofSetProxy()) != 1)
+    dserror("Scatra discretization has illegal number of dofsets!");
+
   // build a proxy of the poro (structure) discretization for the scatra field
   Teuchos::RCP<DRT::DofSet> structdofset
     = fpsi_->PoroField()->StructureField()->Discretization()->GetDofSetProxy();
@@ -65,16 +69,20 @@ FS3I::PartFPS3I_1WC::PartFPS3I_1WC(const Epetra_Comm& comm)
  *----------------------------------------------------------------------*/
 void FS3I::PartFPS3I_1WC::Timeloop()
 {
+  // write FPSI solution into scatra field
+  SetFPSISolution();
+
   // output of initial state
   ScatraOutput();
+
   fpsi_->PrepareTimeloop();
 
   while (NotFinished())
   {
     IncrementTimeAndStep();
 
-    DoFPSIStep(); //TODO: One could think about skipping the very costly FSI/FPSI calculation for the case that it is stationary at some point (Thon)
-    SetFPSISolution(); //write FPSI solution into scatra field
+    DoFPSIStep(); // TODO: One could think about skipping the very costly FSI/FPSI calculation for the case that it is stationary at some point (Thon)
+    SetFPSISolution(); // write FPSI solution into scatra field
     DoScatraStep();
   }
 }

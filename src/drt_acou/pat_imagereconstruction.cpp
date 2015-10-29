@@ -1152,7 +1152,7 @@ void ACOU::PatImageReconstruction::SolveStandardScatra()
       scatraalgo_ = Teuchos::rcp(new SCATRA::TimIntStationary(scatra_discret_, scatrasolver_, scatraparams_, scatraextraparams_, scatraoutput_));
 
       scatraalgo_->Init();
-      scatraalgo_->SetVelocityField();
+      scatraalgo_->SetVelocityField(1);
 
       scatraalgo_->TimeLoop();
 

@@ -101,16 +101,12 @@ LOMA::Algorithm::Algorithm(
     if (linearization != INPAR::FLUID::fixed_point_like)
       dserror("Only a fixed-point-like iteration scheme is enabled for monolithic low-Mach-number solver, for the time being!");
 
-    // generate proxy of fluid dof set to be used by scatra field
-    Teuchos::RCP<DRT::DofSet> fluiddofset = FluidField()->Discretization()->GetDofSetProxy();
     // generate proxy of scatra dof set to be used by fluid field
     Teuchos::RCP<DRT::DofSet> scatradofset = ScaTraField()->Discretization()->GetDofSetProxy();
 
     // check number of dof sets in respective fields
     if (FluidField()->Discretization()->AddDofSet(scatradofset)!=1)
       dserror("Incorrect number of dof sets in fluid field!");
-    if (ScaTraField()->Discretization()->AddDofSet(fluiddofset)!=1)
-      dserror("Incorrect number of dof sets in scatra field!");
 
     // create combined map for loma problem
     std::vector<Teuchos::RCP<const Epetra_Map> > dofrowmaps;
@@ -251,8 +247,7 @@ void LOMA::Algorithm::InitialCalculations()
                                  Teuchos::null,
                                  Teuchos::null,
                                  FluidField()->FsVel(),
-                                 Teuchos::null,
-                                 FluidField()->Discretization());
+                                 1);
 
   // set initial value of thermodynamic pressure in SCATRA
   Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraField())->SetInitialThermPressure();
@@ -462,8 +457,7 @@ void LOMA::Algorithm::SetFluidValuesInScaTra()
                                    FluidField()->Accam(),
                                    Teuchos::null,
                                    FluidField()->FsVel(),
-                                   Teuchos::null,
-                                   FluidField()->Discretization(),
+                                   1,
                                    true);
   }
   break;
@@ -474,8 +468,7 @@ void LOMA::Algorithm::SetFluidValuesInScaTra()
                                    FluidField()->Hist(),
                                    Teuchos::null,
                                    FluidField()->FsVel(),
-                                   Teuchos::null,
-                                   FluidField()->Discretization(),
+                                   1,
                                    true);
   }
   break;

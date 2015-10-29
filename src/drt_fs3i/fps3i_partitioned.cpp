@@ -518,16 +518,10 @@ void FS3I::PartFPS3I::SetStructScatraSolution()
 void FS3I::PartFPS3I::SetMeshDisp()
 {
   // fluid field
-  Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> fluidscatra = scatravec_[0];
-  ADAPTER::Fluid& fluidadapter = *(fpsi_->FluidField());
-  fluidscatra->ScaTraField()->ApplyMeshMovement(fluidadapter.Dispnp(),
-                                               fluidadapter.Discretization());
+  scatravec_[0]->ScaTraField()->ApplyMeshMovement(fpsi_->FluidField()->Dispnp(),1);
 
   // Poro field
-  Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> structscatra = scatravec_[1];
-  const Teuchos::RCP<ADAPTER::Fluid>& structadapter = fpsi_->PoroField()->FluidField();
-  structscatra->ScaTraField()->ApplyMeshMovement(structadapter->Dispnp(),
-                                                structadapter->Discretization());
+  scatravec_[1]->ScaTraField()->ApplyMeshMovement(fpsi_->PoroField()->StructureField()->Dispnp(),1);
 }
 
 
@@ -548,7 +542,7 @@ void FS3I::PartFPS3I::SetVelocityFields()
       for (unsigned i=0; i<scatravec_.size(); ++i)
       {
       Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-      scatra->ScaTraField()->SetVelocityField();
+      scatra->ScaTraField()->SetVelocityField(1);
       }
       break;
     }
@@ -558,12 +552,6 @@ void FS3I::PartFPS3I::SetVelocityFields()
       std::vector<Teuchos::RCP<const Epetra_Vector> > vel;
       ExtractVel(convel, vel);
 
-
-      std::vector<Teuchos::RCP<DRT::Discretization> > discret;
-
-      discret.push_back(fpsi_->FluidField()->Discretization());
-      discret.push_back(fpsi_->PoroField()->FluidField()->Discretization());
-
       for (unsigned i=0; i<scatravec_.size(); ++i)
       {
         Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
@@ -571,8 +559,7 @@ void FS3I::PartFPS3I::SetVelocityFields()
                                                Teuchos::null,
                                                vel[i],
                                                Teuchos::null,
-                                               Teuchos::null,
-                                               discret[i]);
+                                               1);
       }
       break;
     }

@@ -76,8 +76,7 @@ void FS3I::ACFSI::PrepareLargeTimeScaleLoop()
                                          Teuchos::null,
                                          zeros,
                                          Teuchos::null,
-                                         Teuchos::null,
-                                         fsi_->StructureField()->Discretization() );
+                                         1);
 
   fsineedsupdate_=false;
   growth_updates_counter_ = 0;
@@ -522,12 +521,12 @@ void FS3I::ACFSI::LargeTimeScaleDoGrowthUpdate()
 
   //Set zeros velocities since we assume that the large time scale can not see the deformation of the small time scale
   Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(fsi_->StructureField()->Velnp()->Map(),true));
+
   structurescatra->SetVelocityField(zeros,
                                     Teuchos::null,
                                     zeros,
                                     Teuchos::null,
-                                    Teuchos::null,
-                                    fsi_->StructureField()->Discretization() );
+                                    1);
 
   //----------------------------------------------------------------------
   // higher growth counter

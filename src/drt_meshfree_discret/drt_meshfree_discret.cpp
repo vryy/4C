@@ -526,10 +526,6 @@ void DRT::MESHFREE::MeshfreeDiscretization::ComputeValuesAtNodes(
   if (!Filled())
     dserror("Fill complete meshfree discretisation before computing values at nodes!");
 
-  // check if we have only single dofset in meshfree discretisation
-  if (dofsets_.size()!=1)
-    dserror("Up to now values at nodes can only be computes for single dofset meshfree discretisations!");
-
   // get number of dofs per node from first row node
   const int nummyrownode = NumMyRowNodes();
   if (nummyrownode==0) dserror("can't be!");//return;

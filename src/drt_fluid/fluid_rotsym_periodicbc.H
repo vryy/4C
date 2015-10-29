@@ -33,8 +33,8 @@ Maintainer: Andreas Ehrl
 
 namespace FLD
 {
-
-template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+/// numdofpernode = number of dofs per node for fluid problem
+template <DRT::Element::DiscretizationType distype, int numdofpernode, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 class RotationallySymmetricPeriodicBC
 {
 public:
@@ -43,15 +43,12 @@ public:
   static const int elenumnode = DRT::ELEMENTS::MultipleNumNode<enrtype>::multipleNode * DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
   /// number of nodes for this element type (only real nodes)
   static const int elenumnodereal = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-  /// number of dofs per node for fluid problem = 1 + space dimension
-  static const int numdofpernode = 1 + DRT::UTILS::DisTypeToDim<distype>::dim;
 
   /// standard constructor
   explicit RotationallySymmetricPeriodicBC():
     rotangle_(0.0),
     rotmat_(true)
     {return;};
-
 
     /// empty destructor
     virtual ~RotationallySymmetricPeriodicBC()
@@ -70,7 +67,6 @@ public:
         return(true);
       }
     }
-
 
     /// prepare the class for this element
     void Setup(DRT::Element* ele)
@@ -115,7 +111,6 @@ public:
       return;
     }
 
-
     /// rotate velocity vector used in element routine if necessary
     void RotateMyValuesIfNecessary(std::vector<double>& myvalues)
     {
@@ -136,6 +131,46 @@ public:
       return;
     }
 
+    /// rotate velocity vector used in element routine if necessary
+    void RotateMyValuesIfNecessary(LINALG::Matrix<numdofpernode-1,elenumnode>& myvalues)
+    {
+      if(HasRotSymmPBC())
+      {
+        // rotate velocity vectors to right position (use transposed rotation matrix!!)
+        const double c = cos(rotangle_);
+        const double s = sin(rotangle_);
+        for(unsigned int slnodes=0 ; slnodes < slavenodelids_.size(); slnodes++)
+        {
+          const int i = slavenodelids_[slnodes];
+          const double xvalue = myvalues(0,i);
+          const double yvalue = myvalues(1,i);
+          myvalues(0,i) = c*xvalue - s*yvalue;
+          myvalues(1,i) = s*xvalue + c*yvalue;
+        }
+      }
+      return;
+    }
+
+    /// rotate velocity vector used in element routine if necessary
+    template <int rows, int cols>
+    void RotateMyValuesIfNecessary(LINALG::Matrix<rows,cols>& myvalues)
+    {
+      if(HasRotSymmPBC())
+      {
+        // rotate velocity vectors to right position (use transposed rotation matrix!!)
+        const double c = cos(rotangle_);
+        const double s = sin(rotangle_);
+        for(unsigned int slnodes=0 ; slnodes < slavenodelids_.size(); slnodes++)
+        {
+          const int i = slavenodelids_[slnodes];
+          const double xvalue = myvalues(0,i);
+          const double yvalue = myvalues(1,i);
+          myvalues(0,i) = c*xvalue - s*yvalue;
+          myvalues(1,i) = s*xvalue + c*yvalue;
+        }
+      }
+      return;
+    }
 
     /// rotate element matrix and vectors if necessary (first version)
     void RotateMatandVecIfNecessary(

@@ -1210,22 +1210,9 @@ void POROELAST::PoroScatraMono::EvaluateODBlockMatScatra()
   sparams_struct.set("delta time", Dt());
   sparams_struct.set("total time", Time());
 
-  ScaTraField()->Discretization()->AddMultiVectorToParameterList(
-      sparams_struct,
-      "velocity field",
-      ScaTraField()->Vel());
-  ScaTraField()->Discretization()->AddMultiVectorToParameterList(
-      sparams_struct,
-      "convective velocity field",
-      ScaTraField()->ConVel());
-  ScaTraField()->Discretization()->AddMultiVectorToParameterList(
-      sparams_struct,
-      "dispnp",
-      ScaTraField()->Disp());
-  ScaTraField()->Discretization()->AddMultiVectorToParameterList(
-      sparams_struct,
-      "pressure field",
-      ScaTraField()->Pre());
+  // provide element parameter list with numbers of dofsets associated with displacement and velocity dofs on scatra discretization
+  sparams_struct.set<int>("ndsdisp",ScaTraField()->NdsDisp());
+  sparams_struct.set<int>("ndsvel",ScaTraField()->NdsVel());
 
   ScaTraField()->Discretization()->ClearState();
   ScaTraField()->Discretization()->SetState(0,"hist",ScaTraField()->Hist());
@@ -1248,7 +1235,7 @@ void POROELAST::PoroScatraMono::EvaluateODBlockMatScatra()
   ScaTraField()->Discretization()->EvaluateCondition( sparams_struct, scatrastrategy_struct,"PoroCoupling" );
   //StructureField()->Discretization()->Evaluate( sparams, structuralstrategy);
 
-  ScaTraField()->Discretization()->ClearState(true);
+  ScaTraField()->Discretization()->ClearState();
 //dserror("stop");
   //************************************************************************************
   //************************************************************************************
@@ -1263,22 +1250,9 @@ void POROELAST::PoroScatraMono::EvaluateODBlockMatScatra()
   sparams_fluid.set("delta time", Dt());
   sparams_fluid.set("total time", Time());
 
-  ScaTraField()->Discretization()->AddMultiVectorToParameterList(
-      sparams_fluid,
-      "velocity field",
-      ScaTraField()->Vel());
-  ScaTraField()->Discretization()->AddMultiVectorToParameterList(
-      sparams_fluid,
-      "convective velocity field",
-      ScaTraField()->ConVel());
-  ScaTraField()->Discretization()->AddMultiVectorToParameterList(
-      sparams_fluid,
-      "dispnp",
-      ScaTraField()->Disp());
-  ScaTraField()->Discretization()->AddMultiVectorToParameterList(
-      sparams_fluid,
-      "pressure field",
-      ScaTraField()->Pre());
+  // provide element parameter list with numbers of dofsets associated with displacement and velocity dofs on scatra discretization
+  sparams_fluid.set<int>("ndsdisp",ScaTraField()->NdsDisp());
+  sparams_fluid.set<int>("ndsvel",ScaTraField()->NdsVel());
 
   ScaTraField()->Discretization()->ClearState();
   ScaTraField()->Discretization()->SetState(0,"hist",ScaTraField()->Hist());
@@ -1300,7 +1274,7 @@ void POROELAST::PoroScatraMono::EvaluateODBlockMatScatra()
   // evaluate the mechanical-fluid system matrix on the structural element
   ScaTraField()->Discretization()->EvaluateCondition( sparams_fluid, scatrastrategy_fluid,"PoroCoupling" );
   //StructureField()->Discretization()->Evaluate( sparams, structuralstrategy);
-  ScaTraField()->Discretization()->ClearState(true);
+  ScaTraField()->Discretization()->ClearState();
 
   return;
 }
@@ -1402,10 +1376,10 @@ void POROELAST::PoroScatraMono::FDCheck()
         std::cout << "iterinc_" << std::endl << *iterinc_ << std::endl;
         std::cout << "iterinc" << std::endl << *iterinc << std::endl;
         std::cout << "meshdisp: " << std::endl << *(PoroField()->FluidField()->Dispnp());
-        std::cout << "meshdisp scatra: " << std::endl << *(ScaTraField()->Disp());
+        std::cout << "meshdisp scatra: " << std::endl << *(ScaTraField()->Discretization()->GetState(ScaTraField()->NdsDisp(),"dispnp"));
         std::cout << "disp: " << std::endl << *(PoroField()->StructureField()->Dispnp());
         std::cout << "fluid vel" << std::endl << *(PoroField()->FluidField()->Velnp());
-        std::cout << "scatra vel" << std::endl << *(ScaTraField()->Vel());
+        std::cout << "scatra vel" << std::endl << *(ScaTraField()->Discretization()->GetState(ScaTraField()->NdsVel(),"velocity field"));
         std::cout << "fluid acc" << std::endl << *(PoroField()->FluidField()->Accnp());
         std::cout << "gridvel fluid" << std::endl << *(PoroField()->FluidField()->GridVel());
         std::cout << "gridvel struct" << std::endl << *(PoroField()->StructureField()->Velnp());

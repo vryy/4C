@@ -27,6 +27,8 @@ Maintainer: Rui Fang
 #include "scatra_ele.H"
 #include "scatra_ele_boundary_calc_loma.H"
 
+#include "../drt_fluid/fluid_rotsym_periodicbc.H"
+
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 02/15 |
@@ -117,7 +119,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::EvaluateAction(
         ele,
         params,
         discretization,
-        la[0].lm_
+        la
         );
 
     break;
@@ -154,9 +156,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::CalcLomaThermPress(
     DRT::FaceElement*                 ele,
     Teuchos::ParameterList&           params,
     DRT::Discretization&              discretization,
-    std::vector<int>&                 lm
+    DRT::Element::LocationArray&      la
     )
 {
+  // get location vector associated with primary dofset
+  std::vector<int>& lm = la[0].lm_;
+
   DRT::Element* parentele = ele->ParentElement();
   // we dont know the parent element's lm vector; so we have to build it here
   const int nenparent = parentele->NumNode();
@@ -165,12 +170,25 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::CalcLomaThermPress(
   std::vector<int> lmparentstride;
   parentele->LocationVector(discretization,lmparent,lmparentowner,lmparentstride);
 
-  // get velocity values at nodes
-  const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("convective velocity field",Teuchos::null);
+  // get number of dofset associated with velocity related dofs
+  const int ndsvel = params.get<int>("ndsvel");
 
-  // we deal with a (my::nsd_+1)-dimensional flow field
-  Epetra_SerialDenseVector evel((my::nsd_+1)*nenparent);
-  DRT::UTILS::ExtractMyNodeBasedValues(parentele,evel,velocity,my::nsd_+1);
+  // get velocity values at nodes
+  const Teuchos::RCP<const Epetra_Vector> convel = discretization.GetState(ndsvel,"convective velocity field");
+
+  // safety check
+  if(convel == Teuchos::null)
+    dserror("Cannot get state vector convective velocity");
+
+  // get values of velocity field from secondary dof-set
+  const std::vector<int>& lmvel = la[ndsvel].lm_;
+  std::vector<double> myconvel(lmvel.size());
+
+  // extract local values of the global vectors
+  DRT::UTILS::ExtractMyValues(*convel,myconvel,lmvel);
+
+  // rotate the vector field in the case of rotationally symmetric boundary conditions
+  my::rotsymmpbc_->RotateMyValuesIfNecessary(myconvel);
 
   // define vector for normal diffusive and velocity fluxes
   std::vector<double> mynormdiffflux(lm.size());
@@ -203,7 +221,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::CalcLomaThermPress(
       for (int l=0; l<my::nsd_+1; l++)
       {
         mynormdiffflux[i] += eflux(l,j)*my::normal_(l);
-        mynormvel[i]      += evel[i*(my::nsd_+1)+l]*my::normal_(l);
+        mynormvel[i]      += myconvel[i*(my::nsd_+1)+l]*my::normal_(l);
       }
     }
   }
@@ -225,7 +243,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::NeumannInflow(
     const  DRT::FaceElement*                  ele,
     Teuchos::ParameterList&                   params,
     DRT::Discretization&                      discretization,
-    std::vector<int>&                         lm,
+    DRT::Element::LocationArray&              la,
     Epetra_SerialDenseMatrix&                 emat,
     Epetra_SerialDenseVector&                 erhs
     )
@@ -234,7 +252,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::NeumannInflow(
   thermpress_ = params.get<double>("thermodynamic pressure");
 
   // call base class routine
-  my::NeumannInflow(ele,params,discretization,lm,emat,erhs);
+  my::NeumannInflow(ele,params,discretization,la,emat,erhs);
 
   return;
 } // DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::NeumannInflow

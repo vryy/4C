@@ -28,6 +28,7 @@
 #include "../drt_lib/drt_globalproblem.H"   // in BodyForce(): DRT::Problem::Instance()
 #include "../drt_lib/drt_utils.H"           // in Evaluate(): ExtractMyValues()
 #include "../drt_lib/drt_condition_utils.H" // in BodyForce(): FindElementConditions()
+#include "../drt_fluid/fluid_rotsym_periodicbc.H"
 
 /*==========================================================================*
  * class MeshfreeScaTraCellCalc                                                 *
@@ -49,6 +50,7 @@ DRT::ELEMENTS::MeshfreeScaTraCellCalc<distype>::MeshfreeScaTraCellCalc(const int
   ephinp_(numscal_),
   ephiam_(numscal_),
   ehist_(numdofpernode_),
+  rotsymmpbc_(Teuchos::rcp(new FLD::RotationallySymmetricPeriodicBC<distype,nsd_+1,DRT::ELEMENTS::Fluid::none>())),
   evelnp_(),
   econvelnp_(),
   eaccnp_(),
@@ -80,15 +82,15 @@ DRT::ELEMENTS::MeshfreeScaTraCellCalc<distype>::MeshfreeScaTraCellCalc(const int
  *--------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::MeshfreeScaTraCellCalc<distype>::Evaluate(
-  DRT::ELEMENTS::MeshfreeTransport* ele,
-  Teuchos::ParameterList&    params,
-  DRT::Discretization&       discretization,
-  const std::vector<int>&    lm,
-  Epetra_SerialDenseMatrix&  elemat1_epetra,
-  Epetra_SerialDenseMatrix&  elemat2_epetra,
-  Epetra_SerialDenseVector&  elevec1_epetra,
-  Epetra_SerialDenseVector&  elevec2_epetra,
-  Epetra_SerialDenseVector&  elevec3_epetra
+  DRT::ELEMENTS::MeshfreeTransport*   ele,
+  Teuchos::ParameterList&             params,
+  DRT::Discretization&                discretization,
+  DRT::Element::LocationArray&        la,
+  Epetra_SerialDenseMatrix&           elemat1_epetra,
+  Epetra_SerialDenseMatrix&           elemat2_epetra,
+  Epetra_SerialDenseVector&           elevec1_epetra,
+  Epetra_SerialDenseVector&           elevec2_epetra,
+  Epetra_SerialDenseVector&           elevec3_epetra
   )
 {
   // --------mandatory are performed here at first ------------
@@ -130,27 +132,61 @@ int DRT::ELEMENTS::MeshfreeScaTraCellCalc<distype>::Evaluate(
   }
   bodyforce_[numdofpernode_-1].LightSize(nen_);
 
+  // rotationally symmetric periodic bc's: do setup for current element
+  rotsymmpbc_->Setup(ele);
+
   // check for the action parameter
   const SCATRA::Action action = DRT::INPUT::get<SCATRA::Action>(params,"action");
   switch (action)
   {
   case SCATRA::calc_mat_and_rhs:
   {
-    // get velocity at nodes
-    const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("velocity field");
-    DRT::UTILS::ExtractMyNodeBasedValues(cell,evelnp_,velocity,nsd_);
-    const Teuchos::RCP<Epetra_MultiVector> convelocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("convective velocity field");
-    DRT::UTILS::ExtractMyNodeBasedValues(cell,econvelnp_,convelocity,nsd_);
+    // get number of dof-set associated with velocity related dofs
+    const int ndsvel = params.get<int>("ndsvel");
+
+    // get velocity values at nodes
+    const Teuchos::RCP<const Epetra_Vector> convel = discretization.GetState(ndsvel,"convective velocity field");
+    const Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(ndsvel,"velocity field");
+
+    // safety checks
+    if(convel == Teuchos::null)
+      dserror("Cannot get state vector convective velocity");
+    if(vel == Teuchos::null)
+      dserror("Cannot get state vector velocity");
+
+    // get values of velocity field from secondary dof-set
+    const std::vector<int>& lmvel = la[ndsvel].lm_;
+    std::vector<double> myconvel(lmvel.size());
+    std::vector<double> myvel(lmvel.size());
+
+    // extract local values of the global vectors
+    DRT::UTILS::ExtractMyValues(*convel,myconvel,lmvel);
+    DRT::UTILS::ExtractMyValues(*vel,myvel,lmvel);
+
+    // rotate the vector field in the case of rotationally symmetric boundary conditions
+    rotsymmpbc_->RotateMyValuesIfNecessary(myconvel);
+    rotsymmpbc_->RotateMyValuesIfNecessary(myvel);
+
+    // loop over number of nodes
+    for (int inode=0; inode<nen_; ++inode)
+    {
+      // loop over number of dimensions
+      for(int idim=0; idim<nsd_; ++idim)
+      {
+        econvelnp_(idim,inode) = myconvel[idim+(inode*(nsd_+1))];
+        evelnp_(idim,inode) = myvel[idim+(inode*(nsd_+1))];
+      }
+    }
 
     // extract local values from the global vectors
     Teuchos::RCP<const Epetra_Vector> hist = discretization.GetState("hist");
     Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
     if (hist==Teuchos::null || phinp==Teuchos::null)
       dserror("Cannot get state vector 'hist' and/or 'phinp'");
-    std::vector<double> myhist(lm.size());
-    std::vector<double> myphinp(lm.size());
-    DRT::UTILS::ExtractMyValues(*hist,myhist,lm);
-    DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
+    std::vector<double> myhist(la[0].lm_.size());
+    std::vector<double> myphinp(la[0].lm_.size());
+    DRT::UTILS::ExtractMyValues(*hist,myhist,la[0].lm_);
+    DRT::UTILS::ExtractMyValues(*phinp,myphinp,la[0].lm_);
 
     // fill all element arrays
     for (int i=0;i<nen_;++i)
@@ -170,8 +206,8 @@ int DRT::ELEMENTS::MeshfreeScaTraCellCalc<distype>::Evaluate(
       // extract additional local values from global vector
       Teuchos::RCP<const Epetra_Vector> phin = discretization.GetState("phin");
       if (phin==Teuchos::null) dserror("Cannot get state vector 'phin'");
-      std::vector<double> myphin(lm.size());
-      DRT::UTILS::ExtractMyValues(*phin,myphin,lm);
+      std::vector<double> myphin(la[0].lm_.size());
+      DRT::UTILS::ExtractMyValues(*phin,myphin,la[0].lm_);
 
       // fill element array
       for (int i=0;i<nen_;++i)

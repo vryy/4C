@@ -50,9 +50,6 @@ void levelset_dyn(int restart)
   // access the scatra-specific parameter list
   const Teuchos::ParameterList& scatradyn = problem->ScalarTransportDynamicParams();
 
-  // ensure that all dofs are assigned in the right order
-  scatradis->FillComplete();
-
   // check velocity field
   const INPAR::SCATRA::VelocityField veltype
     = DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(scatradyn,"VELOCITYFIELD");
@@ -62,6 +59,13 @@ void levelset_dyn(int restart)
   // we directly use the elements from the scalar transport elements section
   if (scatradis->NumGlobalNodes()==0)
     dserror("No elements in the ---TRANSPORT ELEMENTS section");
+
+  // add proxy of velocity related degrees of freedom to scatra discretization
+  if (scatradis->BuildDofSetAuxProxy(DRT::Problem::Instance()->NDim()+1, 0, 0, true ) != 1)
+    dserror("Scatra discretization has illegal number of dofsets!");
+
+  // finalize discretization
+  scatradis->FillComplete();
 
   // get linear solver id from SCALAR TRANSPORT DYNAMIC
   const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");

@@ -221,8 +221,7 @@ void SSI::SSI_Base::SetVelocityFields( Teuchos::RCP<const Epetra_Vector> vel)
         Teuchos::null, //acceleration
         vel, //velocity
         Teuchos::null, //fsvel
-        Teuchos::null, //dofset
-        structure_->Discretization()); //discretization
+        1);
   }
   else
   {
@@ -231,10 +230,7 @@ void SSI::SSI_Base::SetVelocityFields( Teuchos::RCP<const Epetra_Vector> vel)
         Teuchos::null, //acceleration
         adaptermeshtying_->MasterToSlave(extractor_->ExtractCondVector(vel)), //velocity
         Teuchos::null, //fsvel
-        Teuchos::null, //dofset
-        scatra_->ScaTraField()->Discretization(),
-        false,
-        1); //discretization
+        1);
   }
 }
 
@@ -246,13 +242,12 @@ void SSI::SSI_Base::SetMeshDisp( Teuchos::RCP<const Epetra_Vector> disp )
   {
     scatra_->ScaTraField()->ApplyMeshMovement(
         disp,
-        structure_->Discretization());
+        1);
   }
   else
   {
     scatra_->ScaTraField()->ApplyMeshMovement(
         adaptermeshtying_->MasterToSlave(extractor_->ExtractCondVector(disp)),
-        scatra_->ScaTraField()->Discretization(),
         1);
   }
 }

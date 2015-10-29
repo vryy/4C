@@ -34,6 +34,8 @@ Maintainer: Andreas Ehrl
 
 #include "scatra_ele_calc_elch.H"
 
+#include "../drt_fluid/fluid_rotsym_periodicbc.H"
+
 
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 02/15 |
@@ -76,11 +78,33 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateAction(
     // extract element based or nodal values
     //--------------------------------------------------------------------------------
 
-    // get velocity values at the nodes
-    const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("velocity field");
-    DRT::UTILS::ExtractMyNodeBasedValues(ele,my::evelnp_,velocity,my::nsd_);
-    const Teuchos::RCP<Epetra_MultiVector> convelocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("convective velocity field");
-    DRT::UTILS::ExtractMyNodeBasedValues(ele,my::econvelnp_,convelocity,my::nsd_);
+    // get number of dofset associated with velocity related dofs
+    const int ndsvel = params.get<int>("ndsvel");
+
+    // get velocity values at nodes
+    const Teuchos::RCP<const Epetra_Vector> convel = discretization.GetState(ndsvel,"convective velocity field");
+    const Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(ndsvel,"velocity field");
+
+    // safety check
+    if(convel == Teuchos::null or vel == Teuchos::null)
+      dserror("Cannot get state vector");
+
+    // determine number of velocity related dofs per node
+    const int numveldofpernode = la[ndsvel].lm_.size()/my::nen_;
+
+    // construct location vector for velocity related dofs
+    std::vector<int> lmvel(my::nsd_*my::nen_,-1);
+    for (int inode=0; inode<my::nen_; ++inode)
+      for (int idim=0; idim<my::nsd_; ++idim)
+        lmvel[inode*my::nsd_+idim] = la[ndsvel].lm_[inode*numveldofpernode+idim];
+
+    // extract local values of (convective) velocity field from global state vector
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nsd_,my::nen_> >(*convel,my::econvelnp_,lmvel);
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nsd_,my::nen_> >(*vel,my::evelnp_,lmvel);
+
+    // rotate the vector field in the case of rotationally symmetric boundary conditions
+    my::rotsymmpbc_->RotateMyValuesIfNecessary(my::econvelnp_);
+    my::rotsymmpbc_->RotateMyValuesIfNecessary(my::evelnp_);
 
     // need current values of transported scalar
     // -> extract local values from global vectors

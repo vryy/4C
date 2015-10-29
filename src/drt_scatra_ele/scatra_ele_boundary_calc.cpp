@@ -39,6 +39,7 @@ Maintainer: Andreas Ehrl
 
 #include "../drt_nurbs_discret/drt_nurbs_utils.H"
 
+#include "../drt_fluid/fluid_rotsym_periodicbc.H"
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
@@ -62,7 +63,8 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ScaTraEleBoundaryCalc(const int n
    derxy_(true),
    normal_(true),
    velint_(true),
-   metrictensor_(true)
+   metrictensor_(true),
+   rotsymmpbc_(Teuchos::rcp(new FLD::RotationallySymmetricPeriodicBC<distype,nsd_+2,DRT::ELEMENTS::Fluid::none>()))
 {
   return;
 }
@@ -89,6 +91,9 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::SetupCalc(DRT::FaceElement*  
     // if we have a zero sized element due to a interpolated point -> exit here
     if(zero_size) return -1;
   } // Nurbs specific stuff
+
+  // rotationally symmetric periodic bc's: do setup for current element
+  rotsymmpbc_->Setup(ele);
 
   return 0;
 }
@@ -152,9 +157,25 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ExtractElementAndNodeValues(
   // get additional state vector for ALE case: grid displacement
   if(scatraparams_->IsAle())
   {
-    const Teuchos::RCP<Epetra_MultiVector> dispnp = params.get< Teuchos::RCP<Epetra_MultiVector> >("dispnp",Teuchos::null);
-    if (dispnp==Teuchos::null) dserror("Cannot get state vector 'dispnp'");
-    DRT::UTILS::ExtractMyNodeBasedValues(ele,edispnp_,dispnp,nsd_+1);
+    // get number of dof-set associated with displacement related dofs
+    const int ndsdisp = params.get<int>("ndsdisp");
+
+    Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState(ndsdisp, "dispnp");
+    if (dispnp==Teuchos::null)
+      dserror("Cannot get state vector 'dispnp'");
+
+    // determine number of displacement related dofs per node
+    const int numdispdofpernode = la[ndsdisp].lm_.size()/nen_;
+
+    // construct location vector for displacement related dofs
+    std::vector<int> lmdisp((nsd_+1)*nen_,-1);
+    for (int inode=0; inode<nen_; ++inode)
+      for (int idim=0; idim<nsd_+1; ++idim)
+        lmdisp[inode*(nsd_+1)+idim] = la[ndsdisp].lm_[inode*numdispdofpernode+idim];
+
+    // extract local values of displacement field from global state vector
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_+1,nen_> >(*dispnp,edispnp_,lmdisp);
+
     // add nodal displacements
     xyze_ += edispnp_;
   }
@@ -213,7 +234,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
         ele,
         params,
         discretization,
-        lm,
+        la,
         elemat1_epetra,
         elevec1_epetra
         );
@@ -459,15 +480,34 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
     std::vector<LINALG::Matrix<nen_,1> > ephinp(numdofpernode_,LINALG::Matrix<nen_,1>(true));
     DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*phinp,ephinp,lm);
 
-    // get velocity values at nodes
-    const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("velocity field",Teuchos::null);
+    // get number of dofset associated with velocity related dofs
+    const int ndsvel = params.get<int>("ndsvel");
+
+    // get convective (velocity - mesh displacement) velocity at nodes
+    Teuchos::RCP<const Epetra_Vector> convel = discretization.GetState(ndsvel, "convective velocity field");
+    if(convel == Teuchos::null)
+      dserror("Cannot get state vector convective velocity");
+
+    // determine number of velocity related dofs per node
+    const int numveldofpernode = la[ndsvel].lm_.size()/nen_;
+
+    // construct location vector for velocity related dofs
+    std::vector<int> lmvel((nsd_+1)*nen_,-1);
+    for (int inode=0; inode<nen_; ++inode)
+      for (int idim=0; idim<nsd_+1; ++idim)
+        lmvel[inode*(nsd_+1)+idim] = la[ndsvel].lm_[inode*numveldofpernode+idim];
 
     // we deal with a (nsd_+1)-dimensional flow field
-    LINALG::Matrix<nsd_+1,nen_>  evel(true);
-    DRT::UTILS::ExtractMyNodeBasedValues(ele,evel,velocity,nsd_+1);
+    LINALG::Matrix<nsd_+1,nen_>  econvel(true);
+
+    // extract local values of convective velocity field from global state vector
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_+1,nen_> >(*convel,econvel,lmvel);
+
+    // rotate the vector field in the case of rotationally symmetric boundary conditions
+    rotsymmpbc_->RotateMyValuesIfNecessary(econvel);
 
     // for the moment we ignore the return values of this method
-    CalcConvectiveFlux(ele,ephinp,evel,elevec1_epetra);
+    CalcConvectiveFlux(ele,ephinp,econvel,elevec1_epetra);
     //vector<double> locfluxintegral = CalcConvectiveFlux(ele,ephinp,evel,elevec1_epetra);
     //std::cout<<"locfluxintegral[0] = "<<locfluxintegral[0]<<std::endl;
 
@@ -664,11 +704,14 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::NeumannInflow(
     const DRT::FaceElement*                   ele,
     Teuchos::ParameterList&                   params,
     DRT::Discretization&                      discretization,
-    std::vector<int>&                         lm,
+    DRT::Element::LocationArray&              la,
     Epetra_SerialDenseMatrix&                 emat,
     Epetra_SerialDenseVector&                 erhs
     )
 {
+  // get location vector associated with primary dofset
+  std::vector<int>& lm = la[0].lm_;
+
   // get parent element
   DRT::Element* parentele = ele->ParentElement();
 
@@ -690,22 +733,31 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::NeumannInflow(
   std::vector<LINALG::Matrix<nen_,1> > ephinp(numdofpernode_,LINALG::Matrix<nen_,1>(true));
   DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*phinp,ephinp,lm);
 
-  // get velocity values at nodes
-  const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("convective velocity field",Teuchos::null);
+  // get number of dofset associated with velocity related dofs
+  const int ndsvel = params.get<int>("ndsvel");
+
+  // get convective (velocity - mesh displacement) velocity at nodes
+  Teuchos::RCP<const Epetra_Vector> convel = discretization.GetState(ndsvel, "convective velocity field");
+  if(convel == Teuchos::null)
+    dserror("Cannot get state vector convective velocity");
+
+  // determine number of velocity related dofs per node
+  const int numveldofpernode = la[ndsvel].lm_.size()/nen_;
+
+  // construct location vector for velocity related dofs
+  std::vector<int> lmvel((nsd_+1)*nen_,-1);
+  for (int inode=0; inode<nen_; ++inode)
+    for (int idim=0; idim<nsd_+1; ++idim)
+      lmvel[inode*(nsd_+1)+idim] = la[ndsvel].lm_[inode*numveldofpernode+idim];
 
   // we deal with a (nsd_+1)-dimensional flow field
-  Epetra_SerialDenseVector evel((nsd_+1)*nenparent);
-  DRT::UTILS::ExtractMyNodeBasedValues(parentele,evel,velocity,nsd_+1);
+  LINALG::Matrix<nsd_+1,nen_>  econvel(true);
 
-  // insert velocity field into element array
-  LINALG::Matrix<nsd_+1,nen_> evelnp;
-  for (int i=0;i<nen_;++i)
-  {
-    for (int idim=0 ; idim < nsd_+1 ; idim++)
-    {
-      evelnp(idim,i) = evel[idim + i*(nsd_+1)];
-    }
-  }
+  // extract local values of convective velocity field from global state vector
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_+1,nen_> >(*convel,econvel,lmvel);
+
+  // rotate the vector field in the case of rotationally symmetric boundary conditions
+  rotsymmpbc_->RotateMyValuesIfNecessary(econvel);
 
   // integration points and weights
   const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
@@ -719,7 +771,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::NeumannInflow(
       const double fac = EvalShapeFuncAndIntFac(intpoints,iquad,&normal_);
 
       // get velocity at integration point
-      velint_.Multiply(evelnp,funct_);
+      velint_.Multiply(econvel,funct_);
 
       // normal velocity
       const double normvel = velint_.Dot(normal_);
@@ -1553,37 +1605,43 @@ template <DRT::Element::DiscretizationType bdistype,
   // number of parent element nodes
   static const int pnen = DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
 
-  // parent element lm vector
-  std::vector<int>  plm ;
-  std::vector<int>  plmowner;
-  std::vector<int>  plmstride;
-  pele->LocationVector(discretization,plm,plmowner,plmstride);
+  // parent element location array
+  DRT::Element::LocationArray pla(discretization.NumDofSets());
+  pele->LocationVector(discretization,pla,false);
 
-  // get velocity values at parent element nodes
-  const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("convective velocity field",Teuchos::null);
-  Epetra_SerialDenseVector evel(pnsd*pnen);
-  DRT::UTILS::ExtractMyNodeBasedValues(pele,evel,velocity,pnsd);
+  // get number of dofset associated with velocity related dofs
+  const int ndsvel = params.get<int>("ndsvel");
+
+  // get convective (velocity - mesh displacement) velocity at nodes
+  Teuchos::RCP<const Epetra_Vector> convel = discretization.GetState(ndsvel, "convective velocity field");
+  if(convel == Teuchos::null)
+    dserror("Cannot get state vector convective velocity");
+
+  // determine number of velocity related dofs per node
+  const int numveldofpernode = pla[ndsvel].lm_.size()/pnen;
+
+  // construct location vector for velocity related dofs
+  std::vector<int> plmvel(pnsd*pnen,-1);
+  for (int inode=0; inode<pnen; ++inode)
+    for (int idim=0; idim<pnsd; ++idim)
+      plmvel[inode*pnsd+idim] = pla[ndsvel].lm_[inode*numveldofpernode+idim];
+
+  // we deal with a (nsd_+1)-dimensional flow field
+  LINALG::Matrix<pnsd,pnen>  econvel(true);
+
+  // extract local values of convective velocity field from global state vector
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<pnsd,pnen> >(*convel,econvel,plmvel);
+
+  // rotate the vector field in the case of rotationally symmetric boundary conditions
+  rotsymmpbc_->template RotateMyValuesIfNecessary<pnsd,pnen>(econvel);
 
   // get scalar values at parent element nodes
   Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
   if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
 
   // extract local values from global vectors for parent element
-  // matrix and vector definition
-  LINALG::Matrix<pnsd,pnen>       evelnp;
   std::vector<LINALG::Matrix<pnen,1> > ephinp(numscal_);
-
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<pnen,1> >(*phinp,ephinp,plm);
-
-  // insert into element arrays
-  for (int i=0;i<pnen;++i)
-  {
-    // insert velocity field into element array
-    for (int idim=0 ; idim < pnsd; idim++)
-    {
-      evelnp(idim,i) = evel[idim + i*pnsd];
-    }
-  }
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<pnen,1> >(*phinp,ephinp,pla[0].lm_);
 
   //------------------------------------------------------------------------
   // preliminary definitions for integration loop
@@ -2055,7 +2113,7 @@ template <DRT::Element::DiscretizationType bdistype,
         const double alpha = nitsche_stab_para*diffus_[k]/h;
 
         // get velocity at integration point
-        velint.Multiply(evelnp,pfunct);
+        velint.Multiply(econvel,pfunct);
 
         // normal velocity
         const double normvel = velint.Dot(bnormal);

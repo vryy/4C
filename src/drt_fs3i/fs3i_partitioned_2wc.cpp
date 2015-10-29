@@ -45,6 +45,14 @@ FS3I::PartFS3I_2WC::PartFS3I_2WC(const Epetra_Comm& comm)
   fluidscatra_     = scatravec_[0];
   structurescatra_ = scatravec_[1];
 
+  // add proxy of fluid degrees of freedom to scatra discretization
+  if(fluidscatra_->ScaTraField()->Discretization()->AddDofSet(fsi_->FluidField()->Discretization()->GetDofSetProxy()) != 1)
+    dserror("Scatra discretization has illegal number of dofsets!");
+
+  // add proxy of structure degrees of freedom to scatra discretization
+  if(structurescatra_->ScaTraField()->Discretization()->AddDofSet(fsi_->StructureField()->Discretization()->GetDofSetProxy()) != 1)
+    dserror("Scatra discretization has illegal number of dofsets!");
+
   // generate proxy of dof set for structure-based scalar transport
   // problem to be used by structure field
   Teuchos::RCP<DRT::DofSet> structurescatradofset = structurescatra_->ScaTraField()->Discretization()->GetDofSetProxy();
@@ -86,8 +94,7 @@ void FS3I::PartFS3I_2WC::InitialCalculations()
                                                Teuchos::null,
                                                Teuchos::null,
                                                Teuchos::null,
-                                               Teuchos::null,
-                                               fsi_->FluidField()->Discretization());
+                                               1);
 
   // set initial value of thermodynamic pressure in fluid-based scalar
   // transport

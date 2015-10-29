@@ -424,10 +424,8 @@ void IMMERSED::ImmersedPartitionedCellMigration::BackgroundOp(Teuchos::RCP<Epetr
 
       Teuchos::ParameterList sparams_struct;
 
-      scatradis_->AddMultiVectorToParameterList(sparams_struct,
-                                                "dispnp",
-                                                poroelast_subproblem_->ScaTraField()->Disp()
-                                               );
+      // provide element parameter list with number of dofset associated with displacement dofs on scatra discretization
+      sparams_struct.set<int>("ndsdisp",poroelast_subproblem_->ScaTraField()->NdsDisp());
 
       sparams_struct.set<int>("action",(int)SCATRA::calc_immersed_element_source);
       sparams_struct.set<double>("segregation_constant",segregationconstant_);
@@ -747,6 +745,7 @@ void IMMERSED::ImmersedPartitionedCellMigration::PrepareTimeStep()
   if(myrank_==0)
     std::cout<<"Poro Predictor: "<<std::endl;
   poroelast_subproblem_->PrepareTimeStep();
+  poroelast_subproblem_->SetPoroSolution();
 }
 
 

@@ -22,6 +22,12 @@ Maintainer: Andreas Ehrl
 #include "scatra_ele_calc_utils.H"
 #include "scatra_ele_interface.H"
 
+#include "../drt_fluid_ele/fluid_ele.H"
+
+namespace FLD
+{
+  template<DRT::Element::DiscretizationType distype,int numdofpernode, DRT::ELEMENTS::Fluid::EnrichmentType enrtype> class RotationallySymmetricPeriodicBC;
+}
 
 namespace DRT
 {
@@ -330,10 +336,10 @@ namespace ELEMENTS
 
     //! calculate filtered fields for turbulent Prandtl number
     void CalcBoxFilter(
-        DRT::Element*               ele,
-        Teuchos::ParameterList&     params,
-        DRT::Discretization&        discretization,
-        const std::vector<int>&     lm
+        DRT::Element*                  ele,
+        Teuchos::ParameterList&        params,
+        DRT::Discretization&           discretization,
+        DRT::Element::LocationArray&   la
         );
 
     //! calculate error of numerical solution with respect to analytical solution
@@ -619,7 +625,7 @@ namespace ELEMENTS
       Teuchos::ParameterList&               params,          //!< parameter list
       DRT::Element*                         ele,             //!< pointer to element
       DRT::Discretization&                  discretization,  //!< scatra discretization
-      const std::vector<int>&               lm               //!< location matrix
+      DRT::Element::LocationArray&          la               //!< location array
     );
 
     /*========================================================================*/
@@ -1063,6 +1069,8 @@ namespace ELEMENTS
     //! @name velocity, pressure, and related
     /*========================================================================*/
 
+    //! for the handling of rotationally symmetric periodic boundary conditions
+    Teuchos::RCP<FLD::RotationallySymmetricPeriodicBC<distype,nsd_+1,DRT::ELEMENTS::Fluid::none> > rotsymmpbc_;
     //! nodal velocity values at t_(n+1) or t_(n+alpha_F)
     LINALG::Matrix<nsd_,nen_> evelnp_;
     //! nodal convective velocity values at t_(n+1) or t_(n+alpha_F)

@@ -22,7 +22,7 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 // forward declarations
 namespace FLD
 {
-  template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype = DRT::ELEMENTS::Fluid::none>
+  template <DRT::Element::DiscretizationType distype, int numdofpernode, DRT::ELEMENTS::Fluid::EnrichmentType enrtype = DRT::ELEMENTS::Fluid::none>
   class RotationallySymmetricPeriodicBC;
 
   class TDSEleData;
@@ -1339,7 +1339,7 @@ protected:
      */
   void ExtractValuesFromGlobalVector(const DRT::Discretization&                       discretization, ///< discretization
                                      const std::vector<int>&                          lm,             ///<
-                                     FLD::RotationallySymmetricPeriodicBC<distype,enrtype>  & rotsymmpbc, ///<
+                                     FLD::RotationallySymmetricPeriodicBC<distype,nsd_+1,enrtype>  & rotsymmpbc, ///<
                                      LINALG::Matrix<nsd_,nen_> *                      matrixtofill,   ///< vector field
                                      LINALG::Matrix<nen_,1> *                         vectortofill,   ///< scalar field
                                      const std::string                                state);          ///< state of the global vector
@@ -1452,7 +1452,7 @@ protected:
 
 
   //! for the handling of rotationally symmetric periodic boundary conditions
-  Teuchos::RCP<FLD::RotationallySymmetricPeriodicBC<distype,enrtype> > rotsymmpbc_;
+  Teuchos::RCP<FLD::RotationallySymmetricPeriodicBC<distype,nsd_+1,enrtype> > rotsymmpbc_;
   //! element id
   int eid_;
   //! Flag to (de)activate higher order elements

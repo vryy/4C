@@ -127,15 +127,10 @@ void SCATRA::ScaTraTimIntLoma::ComputeInitialThermPressureDeriv()
   discret_->ClearState();
   discret_->SetState("phinp",phin_);
 
-  // provide velocity field and potentially acceleration/pressure field
-  // (export to column map necessary for parallel evaluation)
-  discret_->AddMultiVectorToParameterList(eleparams,"convective velocity field",convel_);
-  discret_->AddMultiVectorToParameterList(eleparams,"velocity field",vel_);
-  discret_->AddMultiVectorToParameterList(eleparams,"acceleration field",acc_);
-  discret_->AddMultiVectorToParameterList(eleparams,"pressure field",pre_);
-
-  // provide displacement field in case of ALE
-  if (isale_) discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+  // provide numbers of dofsets associated with velocity and displacement dofs
+  eleparams.set<int>("ndsvel",nds_vel_);
+  if (isale_)
+    eleparams.set<int>("ndsdisp",nds_disp_);
 
   // set parameters for element evaluation
   eleparams.set<int>("action",SCATRA::calc_domain_and_bodyforce);
@@ -219,7 +214,8 @@ void SCATRA::ScaTraTimIntLoma::ComputeInitialMass()
   eleparams.set("inverting",true);
 
   //provide displacement field in case of ALE
-  if (isale_) discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+  if (isale_)
+    eleparams.set<int>("ndsdisp",nds_disp_);
 
   // evaluate integral of inverse temperature
   Teuchos::RCP<Epetra_SerialDenseVector> scalars
@@ -258,7 +254,8 @@ void SCATRA::ScaTraTimIntLoma::ComputeThermPressureFromMassCons()
   eleparams.set("inverting",true);
 
   //provide displacement field in case of ALE
-  if (isale_) discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+  if (isale_)
+    eleparams.set<int>("ndsdisp",nds_disp_);
 
   // evaluate integral of inverse temperature
   Teuchos::RCP<Epetra_SerialDenseVector> scalars

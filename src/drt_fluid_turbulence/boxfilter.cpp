@@ -174,15 +174,15 @@ void FLD::Boxfilter::ApplyFilter(
 }
 
 void FLD::Boxfilter::ApplyFilterScatra(
-  const Teuchos::RCP<const Epetra_MultiVector> velocity,
   const Teuchos::RCP<const Epetra_Vector>      scalar,
   const double                                 thermpress,
-  const Teuchos::RCP<const Epetra_Vector>      dirichtoggle
+  const Teuchos::RCP<const Epetra_Vector>      dirichtoggle,
+  const int                                    ndsvel
   )
 {
 
   // perform filtering depending on the LES model
-  ApplyBoxFilterScatra(velocity,scalar,thermpress,dirichtoggle);
+  ApplyBoxFilterScatra(scalar,thermpress,dirichtoggle,ndsvel);
 
   return;
 }
@@ -1022,10 +1022,10 @@ return;
  |                                                      rasthofer 08/12 |
  *----------------------------------------------------------------------*/
 void FLD::Boxfilter::ApplyBoxFilterScatra(
-  const Teuchos::RCP<const Epetra_MultiVector> velocity,
   const Teuchos::RCP<const Epetra_Vector>      scalar,
   const double                                 thermpress,
-  const Teuchos::RCP<const Epetra_Vector>      dirichtoggle
+  const Teuchos::RCP<const Epetra_Vector>      dirichtoggle,
+  const int                                    ndsvel
   )
 {
   TEUCHOS_FUNC_TIME_MONITOR("ApplyFilterForDynamicComputationOfPrt");
@@ -1038,8 +1038,8 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(
   // action for elements
   filterparams.set<int>("action",SCATRA::calc_scatra_box_filter);
 
-  // add velocity
-  scatradiscret_->AddMultiVectorToParameterList(filterparams, "velocity", velocity);
+  // add number of dofset associated with velocity related dofs to parameter list
+  filterparams.set<int>("ndsvel",ndsvel);
 
   filterparams.set("thermpress",thermpress);
 
@@ -1142,7 +1142,7 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(
     double volume_contribution = 0.0;
 
     // get element location vector, dirichlet flags and ownerships
-    DRT::Element::LocationArray la(1);
+    DRT::Element::LocationArray la(scatradiscret_->NumDofSets());
     ele->LocationVector(*scatradiscret_,la,false);
 
     // call the element evaluate method to integrate functions
@@ -1393,6 +1393,11 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(
   }
 
   // ---------------------------------------------------------------
+  // extract convective velocity from scatra discretization
+  Teuchos::RCP<const Epetra_Vector> convel = scatradiscret_->GetState(ndsvel,"convective velocity field");
+  if (convel == Teuchos::null)
+    dserror("Cannot extract convective velocity field");
+
   // replace values at dirichlet nodes
   {
     // get a rowmap for the dofs
@@ -1408,6 +1413,7 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(
     {
       // get the processor local node
       DRT::Node*  lnode = scatradiscret_->lRowNode(lnodeid);
+      std::vector<int> nodedofs = scatradiscret_->Dof(ndsvel,lnode);
       // get the corresponding porcessor local fluid node
       DRT::Node*  fluidlnode = discret_->lRowNode(lnodeid);
 
@@ -1429,7 +1435,12 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(
         int no_slip_node = 0;
         for (int idim=0; idim<numdim; idim++)
         {
-          double vel_i = ((*((*velocity)(idim)))[lnodeid]);
+          // get global and local dof IDs
+          const int gid = nodedofs[idim];
+          const int lid = convel->Map().LID(gid);
+          if (lid < 0) dserror("Local ID not found in map for given global ID!");
+
+          double vel_i = (*convel)[lid];
           if (abs(vel_i) < 1e-12)
             no_slip_node++;
         }
@@ -1487,7 +1498,12 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(
 
           for (int idim=0; idim<numdim; idim++)
           {
-            double valvel_i = ((*((*velocity)(idim)))[lnodeid]);
+            // get global and local dof IDs
+            const int gid = nodedofs[idim];
+            const int lid = convel->Map().LID(gid);
+            if (lid < 0) dserror("Local ID not found in map for given global ID!");
+
+            double valvel_i = (*convel)[lid];
             err += ((*filtered_vel_)(idim))->ReplaceMyValues(1,&valvel_i,&lnodeid);
 
             double valdensvel_i = dens*valvel_i;

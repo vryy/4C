@@ -95,14 +95,15 @@ void DRT::UTILS::PrintParallelDistribution(const DRT::Discretization& dis)
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> DRT::UTILS::GetColVersionOfRowVector(
     const Teuchos::RCP<const DRT::Discretization> dis,
-    const Teuchos::RCP<const Epetra_Vector> state)
+    const Teuchos::RCP<const Epetra_Vector> state,
+    const int nds)
 {
   // note that this routine has the same functionality as SetState,
   // although here we do not store the new vector anywhere
   // maybe this routine can be used in SetState or become a member function of the discretization class
 
   if (!dis->HaveDofs()) dserror("FillComplete() was not called");
-  const Epetra_Map* colmap = dis->DofColMap();
+  const Epetra_Map* colmap = dis->DofColMap(nds);
   const Epetra_BlockMap& vecmap = state->Map();
 
   // if it's already in column map just set a reference

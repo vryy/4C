@@ -28,12 +28,20 @@
 #include "../drt_lib/drt_singletondestruction.H" // inheritance
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H" // DRT::UTILS::DisTypeToDim
 
+#include "../drt_fluid_ele/fluid_ele.H"
+
+
 /*==========================================================================*/
 // forward declarations
 /*==========================================================================*/
 
 class Epetra_SerialDenseMatrix;
 class Epetra_SerialDenseVector;
+
+namespace FLD
+{
+  template<DRT::Element::DiscretizationType distype, int numdofpernode, DRT::ELEMENTS::Fluid::EnrichmentType enrtype> class RotationallySymmetricPeriodicBC;
+}
 
 namespace Teuchos
 {
@@ -126,7 +134,7 @@ public:
     DRT::ELEMENTS::MeshfreeTransport* ele,            //!< the element to which sysmat belongs
     Teuchos::ParameterList&           params,         //!< ?
     DRT::Discretization&              discretization, //!< ?
-    const std::vector<int>&           lm,             //!< ?
+    DRT::Element::LocationArray&      la,             //!< ?
     Epetra_SerialDenseMatrix&         elemat1_epetra, //!< ?
     Epetra_SerialDenseMatrix&         elemat2_epetra, //!< ?
     Epetra_SerialDenseVector&         elevec1_epetra, //!< ?
@@ -268,6 +276,8 @@ protected:
   //! @name Velocity, pressure, and related
   /*========================================================================*/
 
+  //! for the handling of rotationally symmetric periodic boundary conditions
+  Teuchos::RCP<FLD::RotationallySymmetricPeriodicBC<distype,nsd_+1,DRT::ELEMENTS::Fluid::none> > rotsymmpbc_;
   //! nodal velocity values at t_(n+1) or t_(n+alpha_F): size(nsd_ x nen_)
   LINALG::SerialDenseMatrix evelnp_;
   //! nodal convective velocity values at t_(n+1) or t_(n+alpha_F): size(nsd_ x nen_)

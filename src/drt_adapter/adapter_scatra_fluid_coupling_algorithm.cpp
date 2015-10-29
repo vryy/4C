@@ -86,8 +86,7 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
       Teuchos::null,
       Teuchos::null,
       Teuchos::null,
-      Teuchos::null,
-      FluidField()->Discretization()
+      1
     );
   }
 

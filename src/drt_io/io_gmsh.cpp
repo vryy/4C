@@ -140,12 +140,13 @@ void IO::GMSH::VectorFieldDofBasedToGmsh(
     const Teuchos::RCP<DRT::Discretization> discret,
     const Teuchos::RCP<const Epetra_Vector> vectorfield_row,
     std::ostream&                           s,
+    const int                               nds,
     bool                                    displacenodes
 )
 {
 #ifdef PARALLEL
   // tranform solution vector from DofRowMap to DofColMap
-  const Teuchos::RCP<const Epetra_Vector> vectorfield = DRT::UTILS::GetColVersionOfRowVector(discret,vectorfield_row);
+  const Teuchos::RCP<const Epetra_Vector> vectorfield = DRT::UTILS::GetColVersionOfRowVector(discret,vectorfield_row,nds);
 #else
   const Teuchos::RCP<const Epetra_Vector> vectorfield = vectorfield_row;
 #endif
@@ -167,14 +168,12 @@ void IO::GMSH::VectorFieldDofBasedToGmsh(
       xyze(idim,inode) = nodes[inode]->X()[idim];
     }
 
-    std::vector<int> lm;
-    std::vector<int> lmowner;
-    std::vector<int> lmstride;
-    ele->LocationVector(*discret, lm, lmowner, lmstride);
+    DRT::Element::LocationArray la(discret->NumDofSets());
+    ele->LocationVector(*discret,la,false);
 
     // extract local values from the global vector
-    Epetra_SerialDenseVector extractmyvectorfield(lm.size());
-    DRT::UTILS::ExtractMyValues(*vectorfield, extractmyvectorfield, lm);
+    Epetra_SerialDenseVector extractmyvectorfield(la[nds].lm_.size());
+    DRT::UTILS::ExtractMyValues(*vectorfield, extractmyvectorfield, la[nds].lm_);
 
     // Extract velocity from local velnp_
     LINALG::SerialDenseMatrix myvectorfield(nsd,numnode);

@@ -258,7 +258,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
         break;
       }
       default:
-        dserror("Unknown time integration scheme for loMa!");
+        dserror("Unknown time integration scheme for electrochemistry!");
         break;
     }
   }

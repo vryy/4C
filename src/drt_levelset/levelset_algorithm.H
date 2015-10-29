@@ -85,8 +85,6 @@ namespace SCATRA
       Teuchos::RCP<const Epetra_Vector> acc,
       Teuchos::RCP<const Epetra_Vector> vel,
       Teuchos::RCP<const Epetra_Vector> fsvel,
-      Teuchos::RCP<const DRT::DofSet>   dofset,
-      Teuchos::RCP<DRT::Discretization> dis,
       bool setpressure=false,
       bool init=false);
 
@@ -103,7 +101,7 @@ namespace SCATRA
     void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph);
 
     /// return velocity at intermediate time n+theta
-    const Teuchos::RCP<Epetra_MultiVector> ConVelTheta(double theta);
+    const Teuchos::RCP<Epetra_Vector> ConVelTheta(double theta);
 
     /// perform result test
     void TestResults();
@@ -168,7 +166,7 @@ namespace SCATRA
     INPAR::SCATRA::ReInitialAction reinitaction_;
 
     /// convective velocity at time n
-    Teuchos::RCP<Epetra_MultiVector> conveln_;
+    Teuchos::RCP<const Epetra_Vector> conveln_;
 
     /// flag to switch between standard integration and sub-time loop for reinitialization
     bool switchreinit_;

@@ -1008,7 +1008,7 @@ void IMMERSED::ImmersedBase::EvaluateScaTraWithInternalCommunication(Teuchos::RC
       params.set<std::map<int,LINALG::Matrix<3,1> >* >("currpositions_struct",&currpositions_struct);
       params.set<int>("Physical Type",INPAR::FLUID::poro_p1);
 
-      DRT::Element::LocationArray la(1);
+      DRT::Element::LocationArray la(dis->NumDofSets());
       immersedelebase->LocationVector(*dis,la,false);
       strategy->ClearElementStorage( la[row].Size(), la[col].Size() );
 

@@ -117,6 +117,10 @@ void two_phase_dyn(int restart)
     else
       dserror("Fluid AND ScaTra discretization present. This is not supported.");
 
+    // add proxy of fluid degrees of freedom to scatra discretization
+    if(scatradis->AddDofSet(fluiddis->GetDofSetProxy()) != 1)
+      dserror("Scatra discretization has illegal number of dofsets!");
+
     // get linear solver id from SCALAR TRANSPORT DYNAMIC
     const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
     if (linsolvernumber == (-1))
@@ -268,6 +272,10 @@ void fluid_xfem_ls_drt(int restart)
        else
          element->SetImplType(INPAR::SCATRA::impltype_levelset);
      }
+
+     // add proxy of fluid degrees of freedom to scatra discretization
+     if(scatradis->AddDofSet(Teuchos::rcp(new DRT::DofSet(Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(fluiddis)->InitialDofSet()))) != 1)
+       dserror("Scatra discretization has illegal number of dofsets!");
 
      // print all dofsets
      //---FLUID---|---SCATRA---|

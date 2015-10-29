@@ -107,11 +107,11 @@ public:
     );
 
   void ApplyFilterForDynamicComputationOfPrt(
-    const Teuchos::RCP<const Epetra_MultiVector>        velocity,
     const Teuchos::RCP<const Epetra_Vector>             scalar,
     const double                                        thermpress,
     const Teuchos::RCP<const Epetra_Vector>             dirichtoggle,
-    Teuchos::ParameterList&                             extraparams
+    Teuchos::ParameterList&                             extraparams,
+    const int                                           ndsvel
     );
 
 

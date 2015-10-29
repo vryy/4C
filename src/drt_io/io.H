@@ -241,7 +241,7 @@ public:
     \param vec  : the result data vector
     \param vt   : vector type
   */
-  virtual void WriteVector(const std::string name, Teuchos::RCP<Epetra_MultiVector> vec, VectorType vt=dofvector);
+  virtual void WriteVector(const std::string name, Teuchos::RCP<const Epetra_MultiVector> vec, VectorType vt=dofvector);
 
   //! write a result vector
   /*!

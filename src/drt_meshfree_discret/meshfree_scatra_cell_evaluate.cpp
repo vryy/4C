@@ -51,13 +51,32 @@ void DRT::ELEMENTS::MeshfreeTransportType::PreEvaluate(
   return;
 }
 
+
+/*----------------------------------------------------------------------*
+ |  evaluate the element (public)                        hoermann 08/15 |
+ *----------------------------------------------------------------------*/
+int DRT::ELEMENTS::MeshfreeTransport::Evaluate(
+    Teuchos::ParameterList&   params,
+    DRT::Discretization&      discretization,
+    std::vector<int>&         lm,
+    Epetra_SerialDenseMatrix& elemat1,
+    Epetra_SerialDenseMatrix& elemat2,
+    Epetra_SerialDenseVector& elevec1,
+    Epetra_SerialDenseVector& elevec2,
+    Epetra_SerialDenseVector& elevec3)
+{
+  dserror("not implemented. Use the Evaluate() method with Location Array instead!");
+  return -1;
+}
+
+
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                             nis Mar12 |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::MeshfreeTransport::Evaluate(
     Teuchos::ParameterList&   params,
     DRT::Discretization&      discretization,
-    std::vector<int>&         lm,
+    LocationArray&            la,
     Epetra_SerialDenseMatrix& elemat1,
     Epetra_SerialDenseMatrix& elemat2,
     Epetra_SerialDenseVector& elevec1,
@@ -80,7 +99,7 @@ int DRT::ELEMENTS::MeshfreeTransport::Evaluate(
               this,
               params,
               discretization,
-              lm,
+              la,
               elemat1,
               elemat2,
               elevec1,

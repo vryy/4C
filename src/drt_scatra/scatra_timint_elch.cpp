@@ -248,6 +248,13 @@ void SCATRA::ScaTraTimIntElch::PrepareTimeLoop()
   // call base class routine
   ScaTraTimIntImpl::PrepareTimeLoop();
 
+  // check validity of material and element formulation
+  Teuchos::ParameterList eleparams;
+  eleparams.set<int>("action",SCATRA::check_scatra_element_parameter);
+  if(isale_)
+    eleparams.set<int>("ndsdisp",nds_disp_);
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+
   return;
 } // SCATRA::ScaTraTimIntElch::PrepareTimeLoop
 
@@ -257,13 +264,6 @@ void SCATRA::ScaTraTimIntElch::PrepareTimeLoop()
  *------------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::PrepareFirstTimeStep()
 {
-  // check validity of element and material parameters
-  Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action",SCATRA::check_scatra_element_parameter);
-  if(isale_)
-    discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
-  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-
   // calculate initial electric potential field
   if(DRT::INPUT::IntegralValue<int>(*elchparams_,"INITPOTCALC"))
     CalcInitialPotentialField();
@@ -312,7 +312,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
     eleparams.set<int>("calcerrorflag",calcerr);
     //provide displacement field in case of ALE
     if (isale_)
-      discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+      eleparams.set<int>("ndsdisp",nds_disp_);
 
     // set vector values needed by elements
     discret_->ClearState();
@@ -403,7 +403,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
     eleparams.set<int>("calcerrorflag",calcerr);
     //provide displacement field in case of ALE
     if (isale_)
-      discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+      eleparams.set<int>("ndsdisp",nds_disp_);
 
     // set vector values needed by elements
     discret_->ClearState();
@@ -439,7 +439,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
     eleparams.set<int>("calcerrorflag",calcerr);
     //provide displacement field in case of ALE
     if (isale_)
-      discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+      eleparams.set<int>("ndsdisp",nds_disp_);
 
     // set vector values needed by elements
     discret_->ClearState();
@@ -602,7 +602,7 @@ Teuchos::RCP<Epetra_SerialDenseVector> SCATRA::ScaTraTimIntElch::EvaluateSingleE
 
   //provide displacement field in case of ALE
   if (isale_)
-    discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+    eleparams.set<int>("ndsdisp",nds_disp_);
 
   // Since we just want to have the status output for t_{n+1},
   // we have to take care for Gen.Alpha!
@@ -694,7 +694,7 @@ Teuchos::RCP<Epetra_SerialDenseVector> SCATRA::ScaTraTimIntElch::EvaluateSingleE
 
     // provide displacement field in case of ALE
     if(isale_)
-      discret_->AddMultiVectorToParameterList(condparams,"dispnp",dispnp_);
+      condparams.set<int>("ndsdisp",nds_disp_);
 
     // get node
     DRT::Node* node = discret_->gNode(nodeid);
@@ -1123,7 +1123,7 @@ void SCATRA::ScaTraTimIntElch::SetupNatConv()
 
   // provide displacement field in case of ALE
   if (isale_)
-    discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+    eleparams.set<int>("ndsdisp",nds_disp_);
 
   // evaluate integrals of concentrations and domain
   Teuchos::RCP<Epetra_SerialDenseVector> scalars
@@ -1563,7 +1563,7 @@ const double SCATRA::ScaTraTimIntElch::ComputeConductivity(
 
   //provide displacement field in case of ALE
   if (isale_)
-    discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+    eleparams.set<int>("ndsdisp",nds_disp_);
 
   // set vector values needed by elements
   discret_->ClearState();
@@ -1982,7 +1982,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateElectrodeKineticsConditions(
     dserror("Illegal action for electrode kinetics evaluation!");
 
   if (isale_)   // provide displacement field in case of ALE
-    discret_->AddMultiVectorToParameterList(condparams,"dispnp",dispnp_);
+    condparams.set<int>("ndsdisp",nds_disp_);
 
   // add element parameters and set state vectors according to time-integration scheme
   AddTimeIntegrationSpecificVectors();
@@ -2021,7 +2021,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateElectrodeBoundaryKineticsPointConditions(
 
   // provide displacement field in case of ALE
   if(isale_)
-    discret_->AddMultiVectorToParameterList(condparams,"dispnp",dispnp_);
+    condparams.set<int>("ndsdisp",nds_disp_);
 
   // set state vectors according to time-integration scheme
   AddTimeIntegrationSpecificVectors();

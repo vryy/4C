@@ -237,18 +237,18 @@ void FLD::DynSmagFilter::ApplyFilterForDynamicComputationOfCs(
  |                                                       rasthofer 08/12|
  *----------------------------------------------------------------------*/
 void FLD::DynSmagFilter::ApplyFilterForDynamicComputationOfPrt(
-  const Teuchos::RCP<const Epetra_MultiVector>        velocity,
   const Teuchos::RCP<const Epetra_Vector>             scalar,
   const double                                        thermpress,
   const Teuchos::RCP<const Epetra_Vector>             dirichtoggle,
-  Teuchos::ParameterList&                             extraparams
+  Teuchos::ParameterList&                             extraparams,
+  const int                                           ndsvel
   )
 {
 
   const Epetra_Map* nodecolmap = scatradiscret_->NodeColMap();
 
   // perform filtering
-  Boxfsc_->ApplyFilterScatra(velocity,scalar,thermpress,dirichtoggle);
+  Boxfsc_->ApplyFilterScatra(scalar,thermpress,dirichtoggle,ndsvel);
   col_filtered_vel_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,3,true));
   col_filtered_dens_vel_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,3,true));
   col_filtered_dens_vel_temp_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,3,true));
@@ -828,7 +828,7 @@ void FLD::DynSmagFilter::DynSmagComputePrt(
     DRT::Element* ele = scatradiscret_->lRowElement(nele);
 
     // get element location vector, dirichlet flags and ownerships
-    DRT::Element::LocationArray la(1);
+    DRT::Element::LocationArray la(scatradiscret_->NumDofSets());
     ele->LocationVector(*scatradiscret_,la,false);
 
     // call the element evaluate method to integrate functions

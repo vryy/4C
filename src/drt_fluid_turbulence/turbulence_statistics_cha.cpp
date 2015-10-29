@@ -3169,8 +3169,9 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
   const double                         thermpressam,
   const double                         thermpressdtaf,
   const double                         thermpressdtam,
-  std::map<std::string,Teuchos::RCP<Epetra_Vector> >      scatrastatevecs,
-  std::map<std::string,Teuchos::RCP<Epetra_MultiVector> > scatrafieldvecs)
+  std::map<std::string,Teuchos::RCP<Epetra_Vector> > scatrastatevecs,
+  std::map<std::string,Teuchos::RCP<Epetra_MultiVector> > scatrafieldvecs,
+  const int                            scatrandsvel)
 {
 
   if(subgrid_dissipation_)
@@ -3252,14 +3253,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
      scatraeleparams_.set<double>("time derivative of thermodynamic pressure",thermpressdtaf);
      scatraeleparams_.set<double>("thermodynamic pressure",thermpressaf);
      scatraeleparams_.set<double>("thermodynamic pressure at n+alpha_M",thermpressam);
-
-     // add convective velocity field
-     for(std::map<std::string,Teuchos::RCP<Epetra_MultiVector> >::iterator field =scatrafieldvecs.begin();
-                                                        field!=scatrafieldvecs.end()  ;
-                                                        ++field                 )
-     {
-       scatradiscret_->AddMultiVectorToParameterList(scatraeleparams_,field->first,field->second);
-     }
+     scatraeleparams_.set<int>("ndsvel",scatrandsvel);
 
      // set state vectors for element call
      for(std::map<std::string,Teuchos::RCP<Epetra_Vector> >::iterator state =scatrastatevecs.begin();

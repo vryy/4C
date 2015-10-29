@@ -96,7 +96,7 @@ void SSI::SSI_Part1WC::DoScatraStep()
   scatra_->ScaTraField()->Output();
 
   //cleanup
-  scatra_->ScaTraField()->Discretization()->ClearState(true);
+  scatra_->ScaTraField()->Discretization()->ClearState();
 }
 
 /*----------------------------------------------------------------------*/
@@ -225,8 +225,12 @@ SSI::SSI_Part1WC_ScatraToSolid::SSI_Part1WC_ScatraToSolid(const Epetra_Comm& com
     if (structure_->Discretization()->AddDofSet(scatradofset)!=1)
       dserror("unexpected dof sets in structure field");
 
-    if (scatra_->ScaTraField()->Discretization()->NumDofSets()!=1)
-      dserror("unexpected dof sets in scatra field");
+    // add proxy of velocity related degrees of freedom to scatra discretization
+    if (scatra_->ScaTraField()->Discretization()->BuildDofSetAuxProxy(DRT::Problem::Instance()->NDim()+1, 0, 0, true) != 1)
+      dserror("Scatra discretization has illegal number of dofsets!");
+
+    // finalize discretization
+    scatra_->ScaTraField()->Discretization()->FillComplete(true, false, false);
   }
   else
   {
@@ -270,6 +274,9 @@ void SSI::SSI_Part1WC_ScatraToSolid::Timeloop()
   {
     dserror("Timestepsize of solid should be equal or bigger than scatra timestep in scatra to solid interaction");
   }
+
+  // set zero velocity field for scatra
+  scatra_->ScaTraField()->SetVelocityField(1);
 
   const int diffsteps = structure_->Dt()/scatra_->ScaTraField()->Dt();
   while (NotFinished())

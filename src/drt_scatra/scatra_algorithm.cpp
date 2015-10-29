@@ -220,8 +220,7 @@ void SCATRA::ScaTraAlgorithm::PrepareTimeStepConvection()
         FluidField()->Hist(),
         Teuchos::null,
         Teuchos::null,
-        Teuchos::null,
-        FluidField()->Discretization());
+        1);
 
   // prepare time step (+ initialize one-step-theta scheme correctly with
   // velocity given above)
@@ -282,8 +281,7 @@ void SCATRA::ScaTraAlgorithm::DoTransportStep()
         FluidField()->Accam(),
         FluidField()->Velaf(),
         FluidField()->FsVel(),
-        Teuchos::null,
-        FluidField()->Discretization());
+        1);
     break;
   }
   case INPAR::FLUID::timeint_one_step_theta:
@@ -291,12 +289,11 @@ void SCATRA::ScaTraAlgorithm::DoTransportStep()
   case INPAR::FLUID::timeint_stationary:
   {
     ScaTraField()->SetVelocityField(
-      FluidField()->Velnp(),
+        FluidField()->Velnp(),
         FluidField()->Hist(),
         FluidField()->Velnp(),
         FluidField()->FsVel(),
-        Teuchos::null,
-        FluidField()->Discretization());
+        1);
     break;
   }
   default:

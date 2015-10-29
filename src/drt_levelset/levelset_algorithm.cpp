@@ -121,21 +121,6 @@ void SCATRA::LevelSetAlgorithm::Init()
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
   // -------------------------------------------------------------------
-  //                  additional state vectors
-  // -------------------------------------------------------------------
-  // velocity at time n (required for particle coupling)
-  // velocities (always three velocity components per node)
-  // (get noderowmap of discretization for creating this multivector)
-  if (particle_ != Teuchos::null) // to save memory, we only initalize in case of particles
-  {
-    const Epetra_Map* noderowmap = discret_->NodeRowMap();
-    conveln_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
-  }
-  // remark: conveln_ cannot be initialized here, since the convective velocity is
-  //         set after all Init()-calls and a potential in the dyn-classes (pure level-set
-  //         problems) or handled down in coupled problems.
-
-  // -------------------------------------------------------------------
   //         initialize reinitialization
   // -------------------------------------------------------------------
   // get reinitialization strategy
@@ -515,14 +500,18 @@ void SCATRA::LevelSetAlgorithm::Output(const int num)
 /*----------------------------------------------------------------------*
  | return velocity at intermediate time n+theta         rasthofer 01/14 |
  *----------------------------------------------------------------------*/
-const Teuchos::RCP< Epetra_MultiVector> SCATRA::LevelSetAlgorithm::ConVelTheta(double theta)
+const Teuchos::RCP< Epetra_Vector> SCATRA::LevelSetAlgorithm::ConVelTheta(double theta)
 {
   if (conveln_==Teuchos::null)
    dserror("Set convective velocity of previous time step!");
 
-  const Epetra_Map* noderowmap = discret_->NodeRowMap();
-  Teuchos::RCP< Epetra_MultiVector> tmpvel = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
-  tmpvel->Update((1.0-theta),*conveln_,theta,*convel_,0.0);
+  Teuchos::RCP<const Epetra_Vector> convel = discret_->GetState(nds_vel_, "convective velocity field");
+  if(convel == Teuchos::null)
+    dserror("Cannot get state vector convective velocity");
+  Teuchos::RCP<Epetra_Vector> tmpvel = Teuchos::rcp(new Epetra_Vector(*discret_->DofColMap(nds_vel_),true));
+
+  tmpvel->Update((1.0-theta),*conveln_,theta,*convel,0.0);
+
   return tmpvel;
 }
 

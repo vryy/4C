@@ -1494,7 +1494,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::EvaluateAnalyticSolutionPoint
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::ExtractValuesFromGlobalVector( const DRT::Discretization&   discretization, ///< discretization
                                     const std::vector<int>&      lm,             ///<
-                                    FLD::RotationallySymmetricPeriodicBC<distype,enrtype> & rotsymmpbc, ///<
+                                    FLD::RotationallySymmetricPeriodicBC<distype,nsd_+1,enrtype> & rotsymmpbc, ///<
                                     LINALG::Matrix<nsd_,nen_> *  matrixtofill,   ///< vector field
                                     LINALG::Matrix<nen_,1> *     vectortofill,   ///< scalar field
                                     const std::string            state)          ///< state of the global vector

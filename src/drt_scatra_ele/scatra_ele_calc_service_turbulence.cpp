@@ -29,6 +29,8 @@ Maintainer: Ursula Rasthofer
 
 #include "../drt_lib/drt_dserror.H"
 
+#include "../drt_fluid/fluid_rotsym_periodicbc.H"
+
 
 /*-----------------------------------------------------------------------------*
  | calculate filtered quantities for dynamic Smagorinsky model  rasthofer 08/12|
@@ -1423,10 +1425,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::StoreModelParametersForOutpu
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDissipation(
-     Teuchos::ParameterList&               params,
-     DRT::Element*                         ele,
-     DRT::Discretization&                  discretization,
-     const std::vector<int>&               lm)
+    Teuchos::ParameterList&               params,          //!< parameter list
+    DRT::Element*                         ele,             //!< pointer to element
+    DRT::Discretization&                  discretization,  //!< scatra discretization
+    DRT::Element::LocationArray&          la               //!< location array
+    )
 {
   // do some checks first
   if (numscal_!=1 or numdofpernode_!=1)
@@ -1470,31 +1473,58 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDissipation(
   // get all nodal values
   // ---------------------------------------------------------------------
 
-  // get velocity at nodes
-  const Teuchos::RCP<Epetra_MultiVector> convelocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("convective velocity field");
+  // get number of dofset associated with velocity related dofs
+  const int ndsvel = params.get<int>("ndsvel");
+
+  // get velocity values at nodes
+  const Teuchos::RCP<const Epetra_Vector> convel = discretization.GetState(ndsvel,"convective velocity field");
+
+  // safety check
+  if(convel == Teuchos::null)
+    dserror("Cannot get state vector convective velocity");
+
+  // determine number of velocity related dofs per node
+  const int numveldofpernode = la[ndsvel].lm_.size()/nen_;
+
+  // construct location vector for velocity related dofs
+  std::vector<int> lmvel(nsd_*nen_,-1);
+  for (int inode=0; inode<nen_; ++inode)
+    for (int idim=0; idim<nsd_; ++idim)
+      lmvel[inode*nsd_+idim] = la[ndsvel].lm_[inode*numveldofpernode+idim];
+
+  // extract local values of convective velocity field from global state vector
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_,nen_> >(*convel,econvelnp_,lmvel);
+
+  // rotate the vector field in the case of rotationally symmetric boundary conditions
+  rotsymmpbc_->RotateMyValuesIfNecessary(econvelnp_);
+
   // set econvelnp_ equal to evelnp_ since ale is not supported
-  DRT::UTILS::ExtractMyNodeBasedValues(ele,econvelnp_,convelocity,nsd_);
-  DRT::UTILS::ExtractMyNodeBasedValues(ele,evelnp_,convelocity,nsd_);
+  evelnp_ = econvelnp_;
 
   // get data required for subgrid-scale velocity: acceleration and pressure
   if (scatrapara_->RBSubGrVel())
   {
-    const Teuchos::RCP<Epetra_MultiVector> acc = params.get< Teuchos::RCP<Epetra_MultiVector> >("acceleration field");
-    const Teuchos::RCP<Epetra_MultiVector> pre = params.get< Teuchos::RCP<Epetra_MultiVector> >("pressure field");
-    LINALG::Matrix<nsd_,nen_> eaccnp;
-    LINALG::Matrix<1,nen_> eprenp;
-    DRT::UTILS::ExtractMyNodeBasedValues(ele,eaccnp,acc,nsd_);
-    DRT::UTILS::ExtractMyNodeBasedValues(ele,eprenp,pre,nsd_);
+    // get acceleration values at nodes
+    const Teuchos::RCP<const Epetra_Vector> acc = discretization.GetState(ndsvel,"acceleration field");
+    if(acc == Teuchos::null)
+      dserror("Cannot get state vector acceleration field");
 
-    // split acceleration and pressure values
-    for (int i=0;i<nen_;++i)
-    {
-      for (int j=0;j<nsd_;++j)
-      {
-        eaccnp_(j,i) = eaccnp(j,i);
-      }
-      eprenp_(i) = eprenp(0,i);
-    }
+    // extract local values of acceleration field from global state vector
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_,nen_> >(*acc,eaccnp_,lmvel);
+
+    // rotate the vector field in the case of rotationally symmetric boundary conditions
+    rotsymmpbc_->RotateMyValuesIfNecessary(eaccnp_);
+
+    // construct location vector for pressure dofs
+    std::vector<int> lmpre(nen_,-1);
+    for (int inode=0; inode<nen_; ++inode)
+      lmpre[inode] = la[ndsvel].lm_[inode*numveldofpernode+nsd_];
+
+    // extract local values of pressure field from global state vector
+    std::vector<double> mypre(lmpre.size(),0.);
+    DRT::UTILS::ExtractMyValues(*convel,mypre,lmpre);
+    for (int inode=0; inode<nen_; ++inode)
+      eprenp_(inode) = mypre[inode];
   }
 
   // extract local values from the global vectors
@@ -1502,8 +1532,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDissipation(
   Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
   if (hist==Teuchos::null || phinp==Teuchos::null)
     dserror("Cannot get state vector 'hist' and/or 'phinp'");
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*hist,ehist_,lm);
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*phinp,ephinp_,lm);
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*hist,ehist_,la[0].lm_);
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*phinp,ephinp_,la[0].lm_);
 
   // reset to zero; used in GetMaterialParams if not incremental -> used to calculate densn which is not required here
   for (int k=0; k<numdofpernode_; ++k)
@@ -1517,7 +1547,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDissipation(
     Teuchos::RCP<const Epetra_Vector> gfsphinp = discretization.GetState("fsphinp");
     if (gfsphinp==Teuchos::null) dserror("Cannot get state vector 'fsphinp'");
 
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*gfsphinp,fsphinp_,lm);
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*gfsphinp,fsphinp_,la[0].lm_);
 
     // get fine-scale velocity at nodes
     const Teuchos::RCP<Epetra_MultiVector> fsvelocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("fine-scale velocity field");

@@ -414,11 +414,57 @@ public:
    *                             input, the controling method does not epxect
    *                             the element to fill this vector.
    * \return 0 if successful, negative otherwise
-   *///                                                   (public) nis Feb12
+   *///                                               (public) hoermann 08/15
   /*------------------------------------------------------------------------*/
   int Evaluate(Teuchos::ParameterList&   params,
                DRT::Discretization&      discretization,
                std::vector<int>&         lm,
+               Epetra_SerialDenseMatrix& elemat1,
+               Epetra_SerialDenseMatrix& elemat2,
+               Epetra_SerialDenseVector& elevec1,
+               Epetra_SerialDenseVector& elevec2,
+               Epetra_SerialDenseVector& elevec3);
+
+
+  /*------------------------------------------------------------------------*/
+  /*!
+   * \brief Evaluate an element, i.e. call the implementation to evaluate MeshfreeTransport
+   * element stiffness, mass, internal forces or evaluate errors, statistics or updates
+   * etc. directly.
+   *
+   * Following implementations of the element are allowed:
+   * <pre>
+   *   o Evaluation of condif system matrix and residual for the One-Step-Theta or BDF2
+   *     method
+   *
+   *   o Evaluation of condif system matrix and residual for the stationary fluid solver
+   * </pre>
+   *
+   * \param params (in/out)    : ParameterList for communication between
+   *                             control routine and elements
+   * \param discretization (in): A reference to the underlying discretization
+   * \param la (in)            : location array of this element
+   * \param elemat1 (out)      : matrix to be filled by element. If NULL on
+   *                             input, the controling method does not epxect
+   *                             the element to fill this matrix.
+   * \param elemat2 (out)      : matrix to be filled by element. If NULL on
+   *                             input, the controling method does not epxect
+   *                             the element to fill this matrix.
+   * \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+   *                             input, the controling method does not epxect
+   *                             the element to fill this vector.
+   * \param elevec2 (out)      : vector to be filled by element. If NULL on input,
+   *                             input, the controling method does not epxect
+   *                             the element to fill this vector.
+   * \param elevec3 (out)      : vector to be filled by element. If NULL on input,
+   *                             input, the controling method does not epxect
+   *                             the element to fill this vector.
+   * \return 0 if successful, negative otherwise
+   *///                                                   (public) nis Feb12
+  /*------------------------------------------------------------------------*/
+  int Evaluate(Teuchos::ParameterList&   params,
+               DRT::Discretization&      discretization,
+               LocationArray&            la,
                Epetra_SerialDenseMatrix& elemat1,
                Epetra_SerialDenseMatrix& elemat2,
                Epetra_SerialDenseVector& elevec1,

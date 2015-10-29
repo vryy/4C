@@ -109,11 +109,11 @@ void FLD::Vreman::ApplyFilterForDynamicComputationOfCv(
 }
 
 void FLD::Vreman::ApplyFilterForDynamicComputationOfDt(
-  const Teuchos::RCP<const Epetra_MultiVector>        velocity,
   const Teuchos::RCP<const Epetra_Vector>             scalar,
   const double                                        thermpress,
   const Teuchos::RCP<const Epetra_Vector>             dirichtoggle,
-  Teuchos::ParameterList&                             extraparams
+  Teuchos::ParameterList&                             extraparams,
+  const int                                           ndsvel
   )
 {
   const Epetra_Map* nodecolmap = scatradiscret_->NodeColMap();
@@ -125,7 +125,7 @@ void FLD::Vreman::ApplyFilterForDynamicComputationOfDt(
 
 
   // perform filtering
-  Boxfsc_->ApplyFilterScatra(velocity,scalar,thermpress,dirichtoggle);
+  Boxfsc_->ApplyFilterScatra(scalar,thermpress,dirichtoggle,ndsvel);
   Boxfsc_->GetFilteredPhi(col_filtered_phi_);
   Boxfsc_->GetFilteredPhi2(col_filtered_phi2_);
   Boxfsc_->GetFilteredPhiexpression(col_filtered_phiexpression_);

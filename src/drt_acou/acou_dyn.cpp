@@ -217,6 +217,13 @@ void acoustics_drt()
           if (scatradis->NumGlobalNodes()==0)
             dserror("No elements in the ---TRANSPORT ELEMENTS section");
 
+          // add proxy of velocity related degrees of freedom to scatra discretization
+          if (scatradis->BuildDofSetAuxProxy(DRT::Problem::Instance()->NDim()+1, 0, 0, true ) != 1)
+            dserror("Scatra discretization has illegal number of dofsets!");
+
+          // finalize discretization
+          scatradis->FillComplete(true, false, false);
+
           // get linear solver id from SCALAR TRANSPORT DYNAMIC
           const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
           if (linsolvernumber == (-1))
@@ -227,7 +234,7 @@ void acoustics_drt()
 
           // set velocity field
           //(this is done only once. Time-dependent velocity fields are not supported)
-          (scatraonly->ScaTraField())->SetVelocityField();
+          (scatraonly->ScaTraField())->SetVelocityField(1);
 
           // enter time loop to solve problem with given convective velocity
           (scatraonly->ScaTraField())->TimeLoop();
@@ -288,6 +295,13 @@ void acoustics_drt()
 
     if ( scatradis->NumGlobalElements() == 0 )
       dserror("you said you want to do photoacoustics but you did not supply TRANSP elements");
+
+    // add proxy of velocity related degrees of freedom to scatra discretization
+    if (scatradis->BuildDofSetAuxProxy(DRT::Problem::Instance()->NDim()+1, 0, 0, true ) != 1)
+      dserror("Scatra discretization has illegal number of dofsets!");
+
+    // finalize discretization
+    scatradis->FillComplete(true, false, false);
 
     // till here it was all the same...
     // now, we set up the inverse analysis algorithm

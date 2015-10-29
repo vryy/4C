@@ -34,13 +34,13 @@ Maintainer: Ursula Rasthofer
 void SCATRA::LevelSetAlgorithm::SetVelocityField(bool init)
 {
   // call function of base class
-  ScaTraTimIntImpl::SetVelocityField();
+  ScaTraTimIntImpl::SetVelocityField(1);
 
   // if the velocity field is initialized at the beginning of the simulation
   // or set after restart according to the restart time, we have to initialize
   // the velocity at time n
   if (init and (particle_ != Teuchos::null))
-    conveln_->Update(1.0,*convel_,0.0);
+    conveln_ = discret_->GetState(nds_vel_, "convective velocity field");
 
   // note: This function is only called from the level-set dyn. This is ok, since
   //       we only want to initialize conveln_ at the beginning of the simulation.
@@ -58,13 +58,11 @@ void SCATRA::LevelSetAlgorithm::SetVelocityField(
   Teuchos::RCP<const Epetra_Vector> acc,
   Teuchos::RCP<const Epetra_Vector> vel,
   Teuchos::RCP<const Epetra_Vector> fsvel,
-  Teuchos::RCP<const DRT::DofSet>   dofset,
-  Teuchos::RCP<DRT::Discretization> dis,
   bool setpressure,
   bool init)
 {
   // call routine of base class
-  ScaTraTimIntImpl::SetVelocityField(convvel, acc, vel, fsvel, dofset, dis, setpressure);
+  ScaTraTimIntImpl::SetVelocityField(convvel, acc, vel, fsvel, 1, setpressure);
 
   // manipulate velocity field away from the interface
   if (extract_interface_vel_)
@@ -78,7 +76,7 @@ void SCATRA::LevelSetAlgorithm::SetVelocityField(
   // or set after restart according to the restart time, we have to initialize
   // the velocity at time n
   if (init and (particle_ != Teuchos::null))
-    conveln_->Update(1.0,*convel_,0.0);
+    conveln_ = discret_->GetState(nds_vel_, "convective velocity field");
 
   return;
 }
@@ -333,13 +331,12 @@ void SCATRA::LevelSetAlgorithm::ApplyContactPointBoundaryCondition()
   // map to store node gid and corrected values
   std::map<int,std::vector<double> > nodal_correction;
 
-  // export velocity vector to col map
-  // this is necessary here, since the elements adjacent to a row node may have
-  // ghosted nodes, which are only contained in the col format
-  const Epetra_Map* nodecolmap = discret_->NodeColMap();
-  int numcol = convel_->NumVectors();
-  Teuchos::RCP<Epetra_MultiVector> tmp = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,numcol));
-  LINALG::Export(*convel_,*tmp);
+  // extract convective velocity field
+  Teuchos::RCP<const Epetra_Vector> convel = discret_->GetState(nds_vel_, "convective velocity field");
+  if(convel == Teuchos::null)
+    dserror("Cannot get state vector convective velocity");
+
+  Teuchos::RCP<Epetra_Vector> convel_new = Teuchos::rcp(new Epetra_Vector(*convel));
 
   // loop all conditions
   for (std::size_t icond=0; icond<lscontactpoint.size(); icond++)
@@ -385,10 +382,25 @@ void SCATRA::LevelSetAlgorithm::ApplyContactPointBoundaryCondition()
               //get number of space dimensions
               const int nsd = DRT::UTILS::DisTypeToDim<distype>::dim;
 
-              // get nodal velocities
+              // get nodal values of velocity field from secondary dofset
+              DRT::Element::LocationArray la(discret_->NumDofSets());
+              adjelements[iele]->LocationVector(*discret_,la,false);
+              const std::vector<int>& lmvel = la[nds_vel_].lm_;
+              std::vector<double> myconvel(lmvel.size());
+
+              // extract local values from global vector
+              DRT::UTILS::ExtractMyValues(*convel,myconvel,lmvel);
+
+              // determine number of velocity related dofs per node
+              const int numveldofpernode = lmvel.size()/nen;
+
               LINALG::Matrix<nsd,nen> evel(true);
-              // extract nodal values
-              DRT::UTILS::ExtractMyNodeBasedValues(adjelements[iele],evel,tmp,nsd);
+
+              // loop over number of nodes
+              for (int inode=0; inode<nen; ++inode)
+                // loop over number of dimensions
+                for(int idim=0; idim<nsd; ++idim)
+                  evel(idim,inode) = myconvel[idim+(inode*numveldofpernode)];
 
               // use one-point Gauss rule to do calculations at the element center
               // used here to get center coordinates
@@ -430,17 +442,26 @@ void SCATRA::LevelSetAlgorithm::ApplyContactPointBoundaryCondition()
   {
     const int gnodeid = iter->first;
     const int lnodeid = noderowmap->LID(gnodeid);
+    DRT::Node* lnode = discret_->lRowNode(lnodeid);
+
+    std::vector<int> nodedofs = discret_->Dof(nds_vel_,lnode);
+
     std::vector<double > myvel = iter->second;
     for (int index=0; index<3; ++index)
     {
+      // get global and local dof IDs
+      const int gid = nodedofs[index];
+      const int lid = convel_new->Map().LID(gid);
+      if (lid < 0) dserror("Local ID not found in map for given global ID!");
       const double convelocity = myvel[index];
-      int err = convel_->ReplaceMyValue(lnodeid,index,convelocity);
-      if (err != 0) dserror("Error while inserting value into vector convel_!");
+      int err = convel_new->ReplaceMyValue(lid,0,convelocity);
+      if (err != 0) dserror("Error while inserting value into vector convel!");
     }
   }
 
-  // update also velocity vector
-  vel_->Update(1.0,*convel_,0.0);
+  // update velocity vectors
+  discret_->SetState(nds_vel_,"convective velocity field", convel_new);
+  discret_->SetState(nds_vel_,"velocity field", convel_new);
 
   return;
 }
@@ -459,11 +480,16 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
   if (myrank_ == 0)
     IO::cout << "--- extension of flow field in interface region to entire domain" << IO::endl;
 
+  Teuchos::RCP<const Epetra_Vector> convel_col = discret_->GetState(nds_vel_, "convective velocity field");
+  if(convel_col == Teuchos::null)
+    dserror("Cannot get state vector convective velocity");
+  Teuchos::RCP<Epetra_Vector> convel = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(nds_vel_),true));
+  LINALG::Export(*convel_col,*convel);
+
   // temporary vector for convective velocity (based on dofrowmap of standard (non-XFEM) dofset)
   // remark: operations must not be performed on 'convel', because the vector is accessed by both
   //         master and slave nodes, if periodic bounday conditions are present
-  const Epetra_Map* noderowmap = discret_->NodeRowMap();
-  Teuchos::RCP<Epetra_MultiVector> conveltmp = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
+  Teuchos::RCP<Epetra_Vector> conveltmp = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(nds_vel_),true));
 
   const int numproc  = discret_->Comm().NumProc();
   int allproc[numproc];
@@ -708,12 +734,17 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
 
     if (elementcount < 8)
     {
+      std::vector<int> nodedofs = discret_->Dof(nds_vel_,node);
       LINALG::Matrix<3,2> coordandvel;
       const double* coord = node->X();
       for (int i = 0; i < 3; ++i)
       {
+        // get global and local dof IDs
+        const int gid = nodedofs[i];
+        const int lid = convel->Map().LID(gid);
+        if (lid < 0) dserror("Local ID not found in map for given global ID!");
         coordandvel(i,0) = coord[i];
-        coordandvel(i,1) = (*((*convel_)(i)))[nodelid];
+        coordandvel(i,1) = (*convel)[lid];
       }
       surfacenodes->push_back(coordandvel);
     }
@@ -734,13 +765,19 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
   for(int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); ++lnodeid)
   {
     DRT::Node* lnode = discret_->lRowNode(lnodeid);
+    std::vector<int> nodedofs = discret_->Dof(nds_vel_,lnode);
 
     LINALG::Matrix<3,1> fluidvel(true);
 
     // extract velocity values (no pressure!) from global velocity vector
     for (int i = 0; i < 3; ++i)
     {
-      fluidvel(i) = (*((*convel_)(i)))[lnodeid];
+      // get global and local dof IDs
+      const int gid = nodedofs[i];
+      const int lid = convel->Map().LID(gid);
+      if (lid < 0) dserror("Local ID not found in map for given global ID!");
+
+      fluidvel(i) = (*convel)[lid];
     }
 
     std::set<int>::const_iterator foundit = allcollectednodes->find(lnode->Id());
@@ -835,7 +872,12 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
       // write new velocities to the current node's dofs
       for (int icomp=0; icomp<3; ++icomp)
       {
-        const int err = conveltmp->ReplaceMyValue (lnodeid, icomp, closestnodedata(icomp,1));
+        // get global and local dof IDs
+        const int gid = nodedofs[icomp];
+        const int lid = convel->Map().LID(gid);
+        if (lid < 0) dserror("Local ID not found in map for given global ID!");
+
+        int err = conveltmp->ReplaceMyValue (lid, 0, closestnodedata(icomp,1));
         if (err)
           dserror("could not replace values for convective velocity");
       }
@@ -844,16 +886,22 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
     {
       for (int icomp=0; icomp<3; ++icomp)
       {
-        const int err = conveltmp->ReplaceMyValue (lnodeid, icomp, fluidvel(icomp));
+        // get global and local dof IDs
+        const int gid = nodedofs[icomp];
+        const int lid = convel->Map().LID(gid);
+        if (lid < 0) dserror("Local ID not found in map for given global ID!");
+
+        int err = conveltmp->ReplaceMyValue (lid, 0, fluidvel(icomp));
         if (err)
           dserror("could not replace values for convective velocity");
       }
     }
   }
 
-  // update velocity vector
-  convel_->Update(1.0,*conveltmp,0.0);
-  vel_->Update(1.0,*conveltmp,0.0);
+  // update velocity vectors
+  discret_->SetState(nds_vel_,"convective velocity field", conveltmp);
+  discret_->SetState(nds_vel_,"velocity field", conveltmp);
+
 
   return;
 }
@@ -1133,46 +1181,11 @@ void SCATRA::LevelSetAlgorithm::Redistribute(const Teuchos::RCP<Epetra_CrsGraph>
 
   // velocities (always three velocity components per node)
   // (get noderowmap of discretization for creating this multivector)
-  if (convel_ != Teuchos::null)
-  {
-    oldMulti = convel_;
-    convel_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
-    LINALG::Export(*oldMulti, *convel_);
-  }
-  if (vel_ != Teuchos::null)
-  {
-    oldMulti = vel_;
-    vel_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
-    LINALG::Export(*oldMulti, *vel_);
-  }
   if (fsvel_ != Teuchos::null)
   {
     oldMulti = fsvel_;
     fsvel_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
     LINALG::Export(*oldMulti, *fsvel_);
-  }
-
-  // acceleration and pressure required for computation of subgrid-scale
-  // velocity (always four components per node)
-  if (acc_ != Teuchos::null)
-  {
-    oldMulti = acc_;
-    acc_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
-    LINALG::Export(*oldMulti, *acc_);
-  }
-
-  if (pre_ != Teuchos::null)
-  {
-    oldMulti = pre_;
-    pre_ = LINALG::CreateVector(*noderowmap,true);
-    LINALG::Export(*oldMulti, *pre_);
-  }
-
-  if (dispnp_ != Teuchos::null)
-  {
-    oldMulti = dispnp_;
-    dispnp_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
-    LINALG::Export(*oldMulti, *dispnp_);
   }
 
   // -------------------------------------------------------------------

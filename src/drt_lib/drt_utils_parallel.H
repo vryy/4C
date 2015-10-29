@@ -50,7 +50,8 @@ namespace UTILS
   */
   Teuchos::RCP<const Epetra_Vector> GetColVersionOfRowVector(
       const Teuchos::RCP<const DRT::Discretization> dis,
-      const Teuchos::RCP<const Epetra_Vector> state);
+      const Teuchos::RCP<const Epetra_Vector> state,
+      const int nds = 0);
 
 
   ///recompute nodecolmap of standard discretization to include all nodes as of subdicretization

@@ -3162,16 +3162,32 @@ void PARTICLE::ScatraParticleCoupling::GetVelParticle(
   LINALG::Matrix<3,1>& vel,           ///< velocity of level-set field at particle position
   DRT::Element* scatraele,            ///< corresponding scatra element
   const LINALG::Matrix<3,1> elecoord, ///< matrix containing particle coordinates in element space
-  const Teuchos::RCP<Epetra_MultiVector> lsvel ///< vector containing level-set values (col map)
+  const Teuchos::RCP<Epetra_Vector> lsvel ///< vector containing level-set values (colmap)
   )
 {
   if (scatraele->Shape() != DRT::Element::hex8)
     dserror("Other element than hex8 not yet supported!");
   const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
 
-  // get nodal velocity values
+  // get nodal values of velocity field from secondary dofset on scatra discretization
+  DRT::Element::LocationArray la(scatra_->Discretization()->NumDofSets());
+  scatraele->LocationVector(*scatra_->Discretization(),la,false);
+  const std::vector<int>& lmvel = la[scatra_->NdsVel()].lm_;
+  std::vector<double> myconvel(lmvel.size());
+
+  // extract local values from global vector
+  DRT::UTILS::ExtractMyValues(*lsvel,myconvel,lmvel);
+
+  // determine number of velocity related dofs per node
+  const int numveldofpernode = lmvel.size()/numnode;
+
   LINALG::Matrix<3,numnode> convel(true);
-  DRT::UTILS::ExtractMyNodeBasedValues(scatraele,convel,lsvel,3);
+
+  // loop over number of nodes
+  for (int inode=0; inode<numnode; ++inode)
+    // loop over number of dimensions
+    for(int idim=0; idim<3; ++idim)
+      convel(idim,inode) = myconvel[idim+(inode*numveldofpernode)];
 
   // shape functions
   LINALG::Matrix<numnode,1> funct(true);
@@ -3197,11 +3213,7 @@ Teuchos::RCP<Epetra_Vector> PARTICLE::ScatraParticleCoupling::GetVelocity(const 
   Teuchos::RCP< Epetra_Vector> vel = LINALG::CreateVector(*dofrowmap,true);
 
   // get velocity field from scatra
-  const Teuchos::RCP< Epetra_MultiVector> lsvel_row = Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(scatra_)->ConVelTheta(theta);
-  const Epetra_Map* scatranodecolmap = scatradis_->NodeColMap();
-  int numcol = lsvel_row->NumVectors();
-  RCP<Epetra_MultiVector> lsvel = Teuchos::rcp(new Epetra_MultiVector(*scatranodecolmap,numcol));
-  LINALG::Export(*lsvel_row,*lsvel);
+  const Teuchos::RCP< Epetra_Vector> lsvel = Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(scatra_)->ConVelTheta(theta);
 
   // loop all particles
   for (int inode=0; inode<particledis_->NumMyRowNodes(); inode++)

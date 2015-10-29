@@ -31,7 +31,7 @@ THERM_HEATFLUX                  None
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                       Structure_Scalar_Interaction // Cardiac_Monodomain //      // TO CHANGE WHEN DOING ONLY SCATRA OR SSI
+PROBLEMTYP                      Structure_Scalar_Interaction // Cardiac_Monodomain //      // TO CHANGE WHEN DOING ONLY SCATRA OR SSI
 RESTART                         0
 SHAPEFCT                        Polynomial
 --------------------------------------------------------------------SOLVER 1
@@ -64,7 +64,7 @@ NORM_DISP                       Abs
 NORM_INCO                       Abs
 NORM_PRES                       Abs
 NORM_RESF                       Abs
-NUMSTEP                         10000000
+NUMSTEP                         20
 PREDICT                         ConstDisVelAcc
 PRESTRESS                       none
 PRESTRESSTIME                   0
@@ -92,11 +92,11 @@ SOLVERTYPE                      nonlinear
 TIMEINTEGR                      One_Step_Theta
 UPRES                           1
 RESTARTEVRY                     1
-NUMSTEP                         1000000
+NUMSTEP                         20
 MAXTIME                         5.0
 TIMESTEP                        0.05
 THETA                           0.5
-VELOCITYFIELD                    Navier_Stokes  // zero //     // TO CHANGE WHEN DOING ONLY SCATRA OR SSI
+VELOCITYFIELD                   zero
 INITIALFIELD                    zero_field
 INITFUNCNO                      -1
 FSSUGRDIFF                      No
@@ -116,7 +116,7 @@ EVALUATION_TAU                  integration_point
 -----------------------------------------------------------------SSI CONTROL
 UPRES                           1
 RESTARTEVRY                     1
-NUMSTEP                         100000000
+NUMSTEP                         20
 MAXTIME                         1.0
 TIMESTEP                        0.05
 COUPALGO                        ssi_OneWay_ScatraToSolid

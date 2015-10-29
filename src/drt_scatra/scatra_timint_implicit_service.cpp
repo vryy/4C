@@ -121,7 +121,8 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
     eleparams.set("dofids",dofids);
 
     if (isale_)
-      discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+      eleparams.set<int>("ndsdisp",nds_disp_);
+
     // evaluate fluxes in the whole computational domain
     // (e.g., for visualization of particle path-lines) or L2 projection for better consistency
     discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,integratedshapefcts,Teuchos::null,Teuchos::null);
@@ -133,14 +134,11 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
 
   // provide velocity field and potentially acceleration/pressure field
   // (export to column map necessary for parallel evaluation)
-  discret_->AddMultiVectorToParameterList(params,"convective velocity field",convel_);
-  discret_->AddMultiVectorToParameterList(params,"velocity field",vel_);
-  discret_->AddMultiVectorToParameterList(params,"acceleration field",acc_);
-  discret_->AddMultiVectorToParameterList(params,"pressure field",pre_);
+  params.set<int>("ndsvel",nds_vel_);
 
   //provide displacement field in case of ALE
   if (isale_)
-    discret_->AddMultiVectorToParameterList(params,"dispnp",dispnp_);
+    params.set<int>("ndsdisp",nds_disp_);
 
   // set vector values needed by elements
   discret_->ClearState();
@@ -238,17 +236,14 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
 
       // provide velocity field and potentially acceleration/pressure field
       // (export to column map necessary for parallel evaluation)
-      discret_->AddMultiVectorToParameterList(eleparams,"convective velocity field",convel_);
-      discret_->AddMultiVectorToParameterList(eleparams,"velocity field",vel_);
-      discret_->AddMultiVectorToParameterList(eleparams,"acceleration field",acc_);
-      discret_->AddMultiVectorToParameterList(eleparams,"pressure field",pre_);
+      eleparams.set<int>("ndsvel",nds_vel_);
       // and provide fine-scale velocity for multifractal subgrid-scale modeling only
       if (turbmodel_==INPAR::FLUID::multifractal_subgrid_scales or fssgd_ == INPAR::SCATRA::fssugrdiff_smagorinsky_small)
         discret_->AddMultiVectorToParameterList(eleparams,"fine-scale velocity field",fsvel_);
 
       //provide displacement field in case of ALE
       if (isale_)
-        discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+        eleparams.set<int>("ndsdisp",nds_disp_);
 
       // clear state
       discret_->ClearState();
@@ -309,12 +304,11 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
 
       // provide velocity field
       // (export to column map necessary for parallel evaluation)
-      discret_->AddMultiVectorToParameterList(params,"velocity field",convel_);
-      discret_->AddMultiVectorToParameterList(params,"pressure field",pre_);
+      params.set<int>("ndsvel",nds_vel_);
 
       //provide displacement field in case of ALE
       if (isale_)
-        discret_->AddMultiVectorToParameterList(params,"dispnp",dispnp_);
+        params.set<int>("ndsdisp",nds_disp_);
 
       // call loop over boundary elements and add integrated fluxes to trueresidual_
       discret_->EvaluateCondition(params,trueresidual_,condnames[i]);
@@ -384,7 +378,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
 
       //provide displacement field in case of ALE
       if (isale_)
-        discret_->AddMultiVectorToParameterList(params,"dispnp",dispnp_);
+        params.set<int>("ndsdisp",nds_disp_);
 
       // create vector (+ initialization with zeros)
       Teuchos::RCP<Epetra_Vector> integratedshapefunc = LINALG::CreateVector(*dofrowmap,true);
@@ -577,11 +571,9 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialTimeDerivative()
   // create and fill parameter list for elements
   Teuchos::ParameterList eleparams;
   eleparams.set<int>("action",SCATRA::calc_initial_time_deriv);
-  discret_->AddMultiVectorToParameterList(eleparams,"convective velocity field",convel_);
-  discret_->AddMultiVectorToParameterList(eleparams,"velocity field",vel_);
-  discret_->AddMultiVectorToParameterList(eleparams,"pressure field",pre_);
+  eleparams.set<int>("ndsvel",nds_vel_);
   if(isale_)
-    discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+    eleparams.set<int>("ndsdisp",nds_disp_);
   AddProblemSpecificParametersAndVectors(eleparams);
 
   // add state vectors according to time integration scheme
@@ -698,10 +690,9 @@ void SCATRA::ScaTraTimIntImpl::OutputMeanScalars(const int num)
 
     // provide displacement field in case of ALE
     if (isale_)
-      discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+      eleparams.set<int>("ndsdisp",nds_disp_);
 
-    discret_->AddMultiVectorToParameterList(eleparams,"velocity field",convel_);
-    discret_->AddMultiVectorToParameterList(eleparams,"pressure field",pre_);
+    eleparams.set<int>("ndsvel",nds_vel_);
 
     // evaluate integrals of scalar(s) and domain
     Teuchos::RCP<Epetra_SerialDenseVector> scalars
@@ -864,7 +855,8 @@ void SCATRA::ScaTraTimIntImpl::SurfacePermeability(
   condparams.set<int>("action",SCATRA::bd_calc_fs3i_surface_permeability);
 
   // provide displacement field in case of ALE
-  if (isale_) discret_->AddMultiVectorToParameterList(condparams,"dispnp",dispnp_);
+  if (isale_)
+    condparams.set<int>("ndsdisp",nds_disp_);
 
   // set vector values needed by elements
   discret_->ClearState();
@@ -909,16 +901,14 @@ void SCATRA::ScaTraTimIntImpl::KedemKatchalsky(
   condparams.set<int>("action",SCATRA::bd_calc_fps3i_surface_permeability);
 
   // provide displacement field in case of ALE
-  if (isale_) discret_->AddMultiVectorToParameterList(condparams,"dispnp",dispnp_);
+  if (isale_)
+    condparams.set<int>("ndsdisp",nds_disp_);
 
   // set vector values needed by elements
   discret_->ClearState();
 
   // add element parameters according to time-integration scheme
   AddTimeIntegrationSpecificVectors();
-
-  // provide velocity field
-  //discret_->AddMultiVectorToParameterList(condparams,"velocity field",convel_);
 
   // test if all necessary ingredients for the second Kedem-Katchalsky equations had been set
   if (wss_==Teuchos::null or pressure_==Teuchos::null or meanconc_==Teuchos::null)
@@ -1010,7 +1000,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeNormalVectors(
 
   //provide displacement field in case of ALE
   if (isale_)
-    discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+    eleparams.set<int>("ndsdisp",nds_disp_);
 
   // loop over all intended types of conditions
   for (unsigned int i=0; i < condnames.size(); i++)
@@ -1062,12 +1052,9 @@ void SCATRA::ScaTraTimIntImpl::ComputeNeumannInflow(
 
   // provide velocity field and potentially acceleration/pressure field
   // as well as displacement field in case of ALE
-  // (export to column map necessary for parallel evaluation)
-  discret_->AddMultiVectorToParameterList(condparams,"convective velocity field",convel_);
-  discret_->AddMultiVectorToParameterList(condparams,"velocity field",vel_);
-  discret_->AddMultiVectorToParameterList(condparams,"acceleration field",acc_);
-  discret_->AddMultiVectorToParameterList(condparams,"pressure field",pre_);
-  if (isale_) discret_->AddMultiVectorToParameterList(condparams,"dispnp",dispnp_);
+  condparams.set<int>("ndsvel",nds_vel_);
+  if (isale_)
+    condparams.set<int>("ndsdisp",nds_disp_);
 
   // clear state
   discret_->ClearState();
@@ -1156,8 +1143,14 @@ void SCATRA::ScaTraTimIntImpl::OutputToGmsh(
   {
     // add 'View' to Gmsh postprocessing file
     gmshfilecontent << "View \" " << "Convective Velocity \" {" << std::endl;
+
+    // extract convective velocity from discretization
+    Teuchos::RCP<const Epetra_Vector> convel = discret_->GetState(nds_vel_,"convective velocity field");
+    if (convel == Teuchos::null)
+      dserror("Cannot extract convective velocity field from discretization");
+
     // draw vector field 'Convective Velocity' for every element
-    IO::GMSH::VectorFieldNodeBasedToGmsh(discret_,convel_,gmshfilecontent);
+    IO::GMSH::VectorFieldDofBasedToGmsh(discret_,convel,gmshfilecontent,nds_vel_);
     gmshfilecontent << "};" << std::endl;
   }
   gmshfilecontent.close();
@@ -1333,7 +1326,7 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
 
   //provide displacement field in case of ALE
   if (isale_)
-    discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+    eleparams.set<int>("ndsdisp",nds_disp_);
 
   // add element parameters according to time-integration scheme
   AddTimeIntegrationSpecificVectors();
@@ -1565,13 +1558,16 @@ void SCATRA::ScaTraTimIntImpl::RecomputeMeanCsgsB()
 
     // generate a parameterlist for communication and control
     Teuchos::ParameterList myparams;
+
     // action for elements
     myparams.set<int>("action",SCATRA::calc_mean_Cai);
-    // add convective velocity
-    discret_->AddMultiVectorToParameterList(myparams,"convective velocity field",convel_);
+
+    // add number of dof-set associated with velocity related dofs
+    myparams.set<int>("ndsvel",nds_vel_);
 
     // add element parameters according to time-integration scheme
     AddTimeIntegrationSpecificVectors();
+
     // set thermodynamic pressure in case of loma
     AddProblemSpecificParametersAndVectors(myparams);
 
@@ -1582,7 +1578,7 @@ void SCATRA::ScaTraTimIntImpl::RecomputeMeanCsgsB()
       DRT::Element* ele = discret_->lRowElement(nele);
 
       // get element location vector, dirichlet flags and ownerships
-      DRT::Element::LocationArray la(1);
+      DRT::Element::LocationArray la(discret_->NumDofSets());
       ele->LocationVector(*discret_,la,false);
 
       // call the element evaluate method to integrate functions
@@ -2110,7 +2106,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
 
   //provide displacement field in case of ALE
   if (isale_)
-    discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+    eleparams.set<int>("ndsdisp",nds_disp_);
 
   // set vector values needed by elements
   discret_->ClearState();

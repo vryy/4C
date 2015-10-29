@@ -139,12 +139,10 @@ void SCATRA::TimIntLomaGenAlpha::ComputeThermPressure()
   discret_->ClearState();
   discret_->SetState("phinp",phiaf_);
 
-  // provide velocity field (export to column map necessary for parallel evaluation)
-  discret_->AddMultiVectorToParameterList(eleparams,"convective velocity field",convel_);
-  discret_->AddMultiVectorToParameterList(eleparams,"velocity field",vel_);
-
-  // provide displacement field in case of ALE
-  if (isale_) discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+  // provide numbers of dofsets associated with velocity and displacement dofs
+  eleparams.set<int>("ndsvel",nds_vel_);
+  if (isale_)
+    eleparams.set<int>("ndsdisp",nds_disp_);
 
   // set action for elements
   eleparams.set<int>("action",SCATRA::calc_domain_and_bodyforce);
@@ -347,7 +345,7 @@ void SCATRA::TimIntLomaGenAlpha::DynamicComputationOfCs()
     // perform filtering and computation of Prt
     // compute averaged values for LkMk and MkMk
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle = DirichletToggle();
-    DynSmag_->ApplyFilterForDynamicComputationOfPrt(convel_,phiaf_,thermpressaf_,dirichtoggle,*extraparams_);
+    DynSmag_->ApplyFilterForDynamicComputationOfPrt(phiaf_,thermpressaf_,dirichtoggle,*extraparams_,nds_vel_);
   }
 
   return;
@@ -362,7 +360,7 @@ void SCATRA::TimIntLomaGenAlpha::DynamicComputationOfCv()
   if (turbmodel_==INPAR::FLUID::dynamic_vreman)
   {
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle = DirichletToggle();
-    Vrem_->ApplyFilterForDynamicComputationOfDt(convel_,phiaf_,thermpressaf_,dirichtoggle,*extraparams_);
+    Vrem_->ApplyFilterForDynamicComputationOfDt(phiaf_,thermpressaf_,dirichtoggle,*extraparams_,nds_vel_);
   }
 
   return;

@@ -25,6 +25,7 @@
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_nurbs_discret/drt_nurbs_utils.H"
 #include "../drt_geometry/position_array.H"
+#include "../drt_fluid/fluid_rotsym_periodicbc.H"
 
 /*----------------------------------------------------------------------*
  |  Singleton access method                               hemmler 07/14 |
@@ -139,49 +140,70 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::EvaluateAction(
     std::vector<LINALG::Matrix<my::nen_,1> > ephinp(my::numdofpernode_,LINALG::Matrix<my::nen_,1>(true));
     DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*phinp,ephinp,la[0].lm_);
 
-    // get velocity values at nodes
-    const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("velocity field",Teuchos::null);
+    // get number of dofset associated with velocity related dofs
+    const int ndsvel = params.get<int>("ndsvel");
+
+    // get convective (velocity - mesh displacement) velocity at nodes
+    Teuchos::RCP<const Epetra_Vector> convel = discretization.GetState(ndsvel, "convective velocity field");
+    if(convel == Teuchos::null)
+      dserror("Cannot get state vector convective velocity");
+
+    // determine number of velocity related dofs per node
+    const int numveldofpernode = la[ndsvel].lm_.size()/my::nen_;
+
+    // construct location vector for velocity related dofs
+    std::vector<int> lmvel(my::nsd_*my::nen_,-1);
+    for (int inode=0; inode<my::nen_; ++inode)
+      for (int idim=0; idim<my::nsd_; ++idim)
+        lmvel[inode*my::nsd_+idim] = la[ndsvel].lm_[inode*numveldofpernode+idim];
 
     // we deal with a (nsd_+1)-dimensional flow field
-    LINALG::Matrix<my::nsd_+1,my::nen_>  evel(true);
-    DRT::UTILS::ExtractMyNodeBasedValues(ele,evel,velocity,my::nsd_+1);
+    LINALG::Matrix<my::nsd_+1,my::nen_> econvel(true);
 
+    // extract local values of convective velocity field from global state vector
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nsd_+1,my::nen_> >(*convel,econvel,lmvel);
+
+    // rotate the vector field in the case of rotationally symmetric boundary conditions
+    my::rotsymmpbc_->RotateMyValuesIfNecessary(econvel);
+
+    // construct location vector for pressure dofs
+    std::vector<int> lmpre(my::nen_,-1);
+    for (int inode=0; inode<my::nen_; ++inode)
+      lmpre[inode] = la[ndsvel].lm_[inode*numveldofpernode+my::nsd_];
+
+    // extract local values of pressure field from global state vector
+    std::vector<double> mypre(lmpre.size(),0.);
+    DRT::UTILS::ExtractMyValues(*convel,mypre,lmpre);
+    for (int inode=0; inode<my::nen_; ++inode)
+      eprenp_(inode) = mypre[inode];
+
+    // this is a hack. Check if the structure (assumed to be the dofset 1) has more DOFs than dimension. If so,
+    // we assume that this is the porosity
+    if( discretization.NumDof(1,ele->Nodes()[0])==my::nsd_+2 )
     {
-      const Teuchos::RCP<Epetra_MultiVector> pre = params.get< Teuchos::RCP<Epetra_MultiVector> >("pressure field");
-      LINALG::Matrix<1,my::nen_> eprenp;
-      DRT::UTILS::ExtractMyNodeBasedValues(ele,eprenp,pre,1);
+      isnodalporosity_=true;
 
-      //pressure values
-      for (int i=0;i<my::nen_;++i)
+      // get number of dofset associated with velocity related dofs
+      const int ndsdisp = params.get<int>("ndsdisp");
+
+      Teuchos::RCP<const Epetra_Vector> disp= discretization.GetState(ndsdisp,"dispnp");
+
+      if(disp!=Teuchos::null)
       {
-        eprenp_(i) = eprenp(0,i);
-      }
+        std::vector<double> mydisp(la[1].lm_.size());
+        DRT::UTILS::ExtractMyValues(*disp,mydisp,la[1].lm_);
 
-      // this is a hack. Check if the structure (assumed to be the dofset 1) has more DOFs than dimension. If so,
-      // we assume that this is the porosity
-      if( discretization.NumDof(1,ele->Nodes()[0])==my::nsd_+2 )
-      {
-        isnodalporosity_=true;
-
-        Teuchos::RCP<const Epetra_Vector> disp= discretization.GetState(1,"displacement");
-
-        if(disp!=Teuchos::null)
-        {
-          std::vector<double> mydisp(la[1].lm_.size());
-          DRT::UTILS::ExtractMyValues(*disp,mydisp,la[1].lm_);
-
-          for (int inode=0; inode<my::nen_; ++inode)  // number of nodes
-            eporosity_(inode,0) = mydisp[my::nsd_+1+(inode*(my::nsd_+2))];
-        }
-        else
-          dserror("Cannot get state vector displacement");
+        for (int inode=0; inode<my::nen_; ++inode)  // number of nodes
+          eporosity_(inode,0) = mydisp[my::nsd_+1+(inode*(my::nsd_+2))];
       }
       else
-        isnodalporosity_=false;
+        dserror("Cannot get state vector displacement");
     }
+    else
+      isnodalporosity_=false;
 
     // for the moment we ignore the return values of this method
-    CalcConvectiveFlux(ele,ephinp,evel,elevec1_epetra);
+    CalcConvectiveFlux(ele,ephinp,econvel,elevec1_epetra);
     //vector<double> locfluxintegral = CalcConvectiveFlux(ele,ephinp,evel,elevec1_epetra);
     //std::cout<<"locfluxintegral[0] = "<<locfluxintegral[0]<<std::endl;
 

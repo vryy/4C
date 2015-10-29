@@ -255,9 +255,7 @@ void FLD::TurbulenceStatisticsTgv::EvaluateResiduals(
   const double                         thermpressaf,
   const double                         thermpressam,
   const double                         thermpressdtaf,
-  const double                         thermpressdtam,
-  std::map<std::string,Teuchos::RCP<Epetra_Vector> >      scatrastatevecs,
-  std::map<std::string,Teuchos::RCP<Epetra_MultiVector> > scatrafieldvecs)
+  const double                         thermpressdtam)
 {
   //--------------------------------------------------------------------
   // set parameter list (time integration)

@@ -108,6 +108,7 @@ namespace IO
         const Teuchos::RCP<DRT::Discretization> discret, ///< discretization
         const Teuchos::RCP<const Epetra_Vector> vectorfield, ///< vector field to output
         std::ostream&                           s, ///< output stream
+        const int                               nds = 0, ///< number of dofset associated with vector field
         bool                                    displacenodes = false
         );
 

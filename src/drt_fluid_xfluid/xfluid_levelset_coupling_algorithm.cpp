@@ -65,6 +65,7 @@ XFLUIDLEVELSET::Algorithm::Algorithm(
 
   //Values of velocity field are transferred to ScaTra field. This function overwrites the previous initialization in the constructor
   //of ScaTraFluidCouplingAlgorithm(). This is necessary to correctly initialize a particle algorithm.
+  ScaTraField()->Discretization()->ReplaceDofSet(1,Teuchos::rcp(new DRT::DofSet(Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(FluidField()->Discretization())->InitialDofSet())),false);
   SetFluidValuesInScaTra(true);
 
   //  // flag for special flow and start of sampling period from fluid parameter list
@@ -361,8 +362,6 @@ void XFLUIDLEVELSET::Algorithm::SetFluidValuesInScaTra(bool init)
         Teuchos::null,
         Teuchos::null,
         Teuchos::null, //FluidField()->FsVel(),
-        stddofs, //stddofs, //FluidField()->Discretization()->GetDofSetProxy(), //(Unclear what to choose?)
-        FluidField()->Discretization(),
         false,
         init);
 

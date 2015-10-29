@@ -72,6 +72,7 @@ namespace FLD
     myfsscaaf_       (fluid.fsscaaf_       ),
     myxwall_         (fluid.xwall_       ),
     mystressmanager_ (fluid.stressmanager_),
+    myscatrandsvel_  (-1),
     flow_            (no_special_flow      ),
     withscatra_      (false                ),
     turbmodel_      (INPAR::FLUID::no_model),
@@ -1142,11 +1143,6 @@ namespace FLD
             scatrastatevecs.insert(std::pair<std::string,Teuchos::RCP<Epetra_Vector> >("hist",myscatrahist_));
           }
 
-          // further scatra fields
-          scatrafieldvecs.insert(std::pair<std::string,Teuchos::RCP<Epetra_MultiVector> >("convective velocity field",myscatraconvel_));
-          scatrafieldvecs.insert(std::pair<std::string,Teuchos::RCP<Epetra_MultiVector> >("acceleration field",myscatraacc_));
-          scatrafieldvecs.insert(std::pair<std::string,Teuchos::RCP<Epetra_MultiVector> >("pressure field",myscatrapre_));
-
           if (params_->sublist("TURBULENCE MODEL").get<std::string>("FSSUGRVISC")!= "No"
               or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
           {
@@ -1185,14 +1181,13 @@ namespace FLD
             {
               statistics_channel_->EvaluateResiduals(statevecs,statetenss,
                                                      thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,
-                                                     scatrastatevecs,scatrafieldvecs);
+                                                     scatrastatevecs,scatrafieldvecs,myscatrandsvel_);
               break;
             }
             case taylor_green_vortex:
             {
               statistics_tgv_->EvaluateResiduals(statevecs,statetenss,
-                                                 thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,
-                                                 scatrastatevecs,scatrafieldvecs);
+                                                 thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
               if (step==0) // sorry, this function is not called for step=0
               {
                 statistics_tgv_->DumpStatistics(0);
@@ -1819,9 +1814,7 @@ namespace FLD
     myphinp_ = scatra_timeint->Phinp();
     myphiaf_ = scatra_timeint->Phiaf();
     myphiam_ = scatra_timeint->Phiam();
-    myscatraconvel_ = scatra_timeint->ConVel();
-    myscatraacc_ = scatra_timeint->ConAcc();
-    myscatrapre_ = scatra_timeint->Pre();
+    myscatrandsvel_ = scatra_timeint->NdsVel();
     myscatrafsvel_ = scatra_timeint->ConFsVel();
     myscatrahist_ = scatra_timeint->Hist();
     myphidtam_ = scatra_timeint->Phidtam();

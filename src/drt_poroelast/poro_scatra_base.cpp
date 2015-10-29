@@ -182,10 +182,8 @@ void POROELAST::PoroScatraBase::SetVelocityFields()
       Teuchos::null, //acceleration
       velnp, //velocity
       Teuchos::null, //fsvel
-      Teuchos::null, //dofset
-      scatra_->ScaTraField()->Discretization(), //discretization
-      true, //set pressure
-      2//dof set
+      2,
+      true //set pressure
       );
 }
 
@@ -207,8 +205,6 @@ void POROELAST::PoroScatraBase::SetMeshDisp()
 
   scatra_->ScaTraField()->ApplyMeshMovement(
       dispnp,
-      //poro_->FluidField()->Discretization()
-      scatra_->ScaTraField()->Discretization(),
       2
       );
 

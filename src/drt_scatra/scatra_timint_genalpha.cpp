@@ -286,7 +286,7 @@ void SCATRA::TimIntGenAlpha::DynamicComputationOfCs()
     // perform filtering and computation of Prt
     // compute averaged values for LkMk and MkMk
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle = DirichletToggle();
-    DynSmag_->ApplyFilterForDynamicComputationOfPrt(convel_,phiaf_,0.0,dirichtoggle,*extraparams_);
+    DynSmag_->ApplyFilterForDynamicComputationOfPrt(phiaf_,0.0,dirichtoggle,*extraparams_,nds_vel_);
   }
 
   return;
@@ -300,7 +300,7 @@ void SCATRA::TimIntGenAlpha::DynamicComputationOfCv()
   if (turbmodel_==INPAR::FLUID::dynamic_vreman)
   {
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle = DirichletToggle();
-    Vrem_->ApplyFilterForDynamicComputationOfDt(convel_,phiaf_,0.0,dirichtoggle,*extraparams_);
+    Vrem_->ApplyFilterForDynamicComputationOfDt(phiaf_,0.0,dirichtoggle,*extraparams_,nds_vel_);
   }
 
   return;

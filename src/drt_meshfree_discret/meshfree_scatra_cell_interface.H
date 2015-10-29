@@ -1,5 +1,5 @@
 /*!-------------------------------------------------------------------------*\
- * \file meshfree_scatra_impl.H
+ * \file meshfree_scatra_cell_interface.H
  *
  * \brief Interface of meshfree scalar transport problems
  *
@@ -16,14 +16,16 @@
 #define MESHFREE_SCATRA_CELL_INTERFACE_H
 
 #include <vector>
-#include "Teuchos_ParameterList.hpp"
-#include "../drt_lib/drt_singletondestruction.H"
-#include "Epetra_SerialDenseVector.h"
 #include "Epetra_SerialDenseMatrix.h"
+#include "Epetra_SerialDenseVector.h"
+#include "Teuchos_ParameterList.hpp"
+
+#include "../drt_lib/drt_element.H"
+#include "../drt_lib/drt_singletondestruction.H"
 
 namespace DRT
 {
-class Discretization;
+  class Discretization;
 
 namespace ELEMENTS
 {
@@ -78,7 +80,7 @@ public:
     DRT::ELEMENTS::MeshfreeTransport* ele,
     Teuchos::ParameterList&           params,
     DRT::Discretization &             discretization,
-    const std::vector<int> &          lm,
+    DRT::Element::LocationArray&      la,
     Epetra_SerialDenseMatrix&         elemat1_epetra,
     Epetra_SerialDenseMatrix&         elemat2_epetra,
     Epetra_SerialDenseVector&         elevec1_epetra,

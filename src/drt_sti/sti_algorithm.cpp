@@ -335,8 +335,8 @@ void STI::Algorithm::PrepareTimeStep()
   IncrementTimeAndStep();
 
   // provide scatra and thermo fields with velocities
-  scatra_->SetVelocityField();
-  thermo_->SetVelocityField();
+  scatra_->SetVelocityField(2);
+  thermo_->SetVelocityField(2);
 
   // pass scatra degrees of freedom to thermo discretization and vice versa
   ExchangeStateVectors();

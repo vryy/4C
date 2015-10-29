@@ -22,12 +22,21 @@ Maintainers: Lena Yoshihara & Volker Gravemeier
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
+#include "../drt_adapter/ad_fld_fluid_fsi.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FS3I::PartFS3I_1WC::PartFS3I_1WC(const Epetra_Comm& comm)
   :PartFS3I(comm)
 {
+  // add proxy of fluid transport degrees of freedom to scatra discretization
+  if(scatravec_[0]->ScaTraField()->Discretization()->AddDofSet(fsi_->FluidField()->Discretization()->GetDofSetProxy()) != 1)
+    dserror("Scatra discretization has illegal number of dofsets!");
+
+  // add proxy of structure degrees of freedom to scatra discretization
+  if(scatravec_[1]->ScaTraField()->Discretization()->AddDofSet(fsi_->StructureField()->Discretization()->GetDofSetProxy()) != 1)
+    dserror("Scatra discretization has illegal number of dofsets!");
+
   // build a proxy of the scatra discretization for the structure field
   Teuchos::RCP<DRT::DofSet> scatradofset
     = scatravec_[1]->ScaTraField()->Discretization()->GetDofSetProxy();
@@ -42,12 +51,15 @@ FS3I::PartFS3I_1WC::PartFS3I_1WC(const Epetra_Comm& comm)
 /*----------------------------------------------------------------------*/
 void FS3I::PartFS3I_1WC::Timeloop()
 {
+  // prepare time loop
+  fsi_->PrepareTimeloop();
+  SetMeshDisp();
+  SetVelocityFields(); //doing this we can use the flag SKIPINITDER
+
   // output of initial state
   fsi_->PrepareOutput();
   fsi_->Output();
   ScatraOutput();
-
-  fsi_->PrepareTimeloop();
 
   while (NotFinished())
   {

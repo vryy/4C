@@ -1,6 +1,6 @@
 /*!
 
-\file Boxfilter.H
+\file boxfilter.H
 
 \brief Filter methods for the dynamic Smagorinsky, dynamic Vreman and any other model requiring a box filter
 
@@ -112,10 +112,10 @@ public:
     );
 
   void ApplyFilterScatra(
-    const Teuchos::RCP<const Epetra_MultiVector> velocity,
     const Teuchos::RCP<const Epetra_Vector>      scalar,
     const double                                 thermpress,
-    const Teuchos::RCP<const Epetra_Vector>      dirichtoggle
+    const Teuchos::RCP<const Epetra_Vector>      dirichtoggle,
+    const int                                    ndsvel
     );
 
 
@@ -710,10 +710,10 @@ private:
     );
 
   void ApplyBoxFilterScatra(
-    const Teuchos::RCP<const Epetra_MultiVector> velocity,
     const Teuchos::RCP<const Epetra_Vector> scalar,
     const double                            thermpress,
-    const Teuchos::RCP<const Epetra_Vector> dirichtoggle
+    const Teuchos::RCP<const Epetra_Vector> dirichtoggle,
+    const int                               ndsvel
     );
 
 

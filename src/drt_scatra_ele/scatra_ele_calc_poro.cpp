@@ -28,6 +28,8 @@
 
 #include "../drt_lib/standardtypes_cpp.H"  // for EPS13 and so on
 
+#include "../drt_fluid/fluid_rotsym_periodicbc.H"
+
 /*----------------------------------------------------------------------*
  |                                                           vuong 07/14 |
  *----------------------------------------------------------------------*/
@@ -267,14 +269,32 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ExtractElementAndNodeValuesPoro(
     DRT::Element::LocationArray&  la
 )
 {
-  const Teuchos::RCP<Epetra_MultiVector> pre = params.get< Teuchos::RCP<Epetra_MultiVector> >("pressure field");
-  LINALG::Matrix<1,my::nen_> eprenp;
-  DRT::UTILS::ExtractMyNodeBasedValues(ele,eprenp,pre,1);
+  // get number of dofset associated with velocity related dofs
+  const int ndsvel = params.get<int>("ndsvel");
 
-  //pressure values
-  for (int i=0;i<my::nen_;++i)
+  // get velocity values at nodes
+  const Teuchos::RCP<const Epetra_Vector> convel = discretization.GetState(ndsvel,"convective velocity field");
+
+  // safety check
+  if(convel == Teuchos::null)
+    dserror("Cannot get state vector convective velocity");
+
+  // determine number of velocity related dofs per node
+  const int numveldofpernode = la[ndsvel].lm_.size()/my::nen_;
+
+  // extract pressure if applicable
+  if(numveldofpernode > my::nsd_)
   {
-    my::eprenp_(i) = eprenp(0,i);
+    // construct location vector for pressure dofs
+    std::vector<int> lmpre(my::nen_,-1);
+    for (int inode=0; inode<my::nen_; ++inode)
+      lmpre[inode] = la[ndsvel].lm_[inode*numveldofpernode+my::nsd_];
+
+    // extract local values of pressure field from global state vector
+    std::vector<double> mypre(lmpre.size(),0.);
+    DRT::UTILS::ExtractMyValues(*convel,mypre,lmpre);
+    for (int inode=0; inode<my::nen_; ++inode)
+      my::eprenp_(inode) = mypre[inode];
   }
 
   // this is a hack. Check if the structure (assumed to be the dofset 1) has more DOFs than dimension. If so,
@@ -283,12 +303,15 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ExtractElementAndNodeValuesPoro(
   {
     isnodalporosity_=true;
 
-    Teuchos::RCP<const Epetra_Vector> disp= discretization.GetState(1,"displacement");
+    // get number of dof-set associated with velocity related dofs
+    const int ndsdisp = params.get<int>("ndsdisp");
+
+    Teuchos::RCP<const Epetra_Vector> disp= discretization.GetState(ndsdisp,"dispnp");
 
     if(disp!=Teuchos::null)
     {
-      std::vector<double> mydisp(la[1].lm_.size());
-      DRT::UTILS::ExtractMyValues(*disp,mydisp,la[1].lm_);
+      std::vector<double> mydisp(la[ndsdisp].lm_.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,la[ndsdisp].lm_);
 
       for (int inode=0; inode<my::nen_; ++inode)  // number of nodes
         eporosity_(inode,0) = mydisp[my::nsd_+(inode*(my::nsd_+1))];

@@ -151,7 +151,7 @@ namespace PARTICLE
       LINALG::Matrix<3,1>& vel,           ///< velocity of level-set field at particle position
       DRT::Element* scatraele,            ///< corresponding scatra element
       const LINALG::Matrix<3,1> elecoord, ///< matrix containing particle coordinates in element space
-      const Teuchos::RCP< Epetra_MultiVector> lsvel ///< vector containing level-set values (col map)
+      const Teuchos::RCP<Epetra_Vector> lsvel ///< vector containing level-set values (colmap)
     );
 
     /// delete particles outside of the physical domain

@@ -208,7 +208,7 @@ void SCATRA::LevelSetTimIntOneStepTheta::UpdateState()
   if (particle_ != Teuchos::null)
   {
     // update convective velocity
-    conveln_->Update(1.0,*convel_,0.0);
+    conveln_ = discret_->GetState(nds_vel_, "convective velocity field");
 
     particle_->Update();
   }

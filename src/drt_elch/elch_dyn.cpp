@@ -85,6 +85,13 @@ void elch_dyn(int restart)
     if (scatradis->NumGlobalNodes()==0)
       dserror("No elements in the ---TRANSPORT ELEMENTS section");
 
+    // add proxy of velocity related degrees of freedom to scatra discretization
+    if (scatradis->BuildDofSetAuxProxy(DRT::Problem::Instance()->NDim()+1, 0, 0, true ) != 1)
+      dserror("Scatra discretization has illegal number of dofsets!");
+
+    // finalize discretization
+    scatradis->FillComplete(true, false, false);
+
     // get linear solver id from SCALAR TRANSPORT DYNAMIC
     const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
     if (linsolvernumber == (-1))
@@ -99,7 +106,7 @@ void elch_dyn(int restart)
     // set velocity field
     // note: The order ReadRestart() before SetVelocityField() is important here!!
     // for time-dependent velocity fields, SetVelocityField() is additionally called in each PrepareTimeStep()-call
-    (scatraonly->ScaTraField())->SetVelocityField();
+    (scatraonly->ScaTraField())->SetVelocityField(1);
 
     // enter time loop to solve problem with given convective velocity
     (scatraonly->ScaTraField())->TimeLoop();
@@ -145,6 +152,10 @@ void elch_dyn(int restart)
     else
       dserror("Fluid AND ScaTra discretization present. This is not supported.");
 
+    // add proxy of fluid degrees of freedom to scatra discretization
+    if(scatradis->AddDofSet(fluiddis->GetDofSetProxy()) != 1)
+      dserror("Scatra discretization has illegal number of dofsets!");
+
     // support for turbulent flow statistics
     const Teuchos::ParameterList& fdyn = (problem->FluidDynamicParams());
 
@@ -169,6 +180,10 @@ void elch_dyn(int restart)
       }
       else
         dserror("Providing an ALE mesh is not supported for problemtype Electrochemistry.");
+
+      // add proxy of ALE degrees of freedom to scatra discretization
+      if(scatradis->AddDofSet(aledis->GetDofSetProxy()) != 2)
+        dserror("Scatra discretization has illegal number of dofsets!");
 
       // get linear solver id from SCALAR TRANSPORT DYNAMIC
       const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");

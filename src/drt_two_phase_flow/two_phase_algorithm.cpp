@@ -618,9 +618,6 @@ void TWOPHASEFLOW::Algorithm::SetFluidValuesInScaTra(bool init)
         Teuchos::null,
         Teuchos::null,
         FluidField()->FsVel(),
-        FluidField()->Discretization()->GetDofSetProxy(),
-        //FluidField()->DofSet(),
-        FluidField()->Discretization(),
         false,
         init);
   else // temporary solution, since level-set algorithm does not yet support gen-alpha
@@ -632,9 +629,7 @@ void TWOPHASEFLOW::Algorithm::SetFluidValuesInScaTra(bool init)
         Teuchos::null,
         Teuchos::null,
         FluidField()->FsVel(),
-        FluidField()->Discretization()->GetDofSetProxy(),
-//        FluidField()->DofSet(),
-        FluidField()->Discretization());
+        1);
   }
 
   return;

@@ -162,19 +162,17 @@ public:
   virtual void ExplicitPredictor() = 0;
 
   //! set the velocity field (zero or field by function)
-  virtual void SetVelocityField();
+  virtual void SetVelocityField(const int nds);
 
   //! set convective velocity field (+ pressure and acceleration field as
   //! well as fine-scale velocity field, if required)
   virtual void SetVelocityField(
-    Teuchos::RCP<const Epetra_Vector> convvel, //!< convective velocity/press. vector
-    Teuchos::RCP<const Epetra_Vector> acc,     //!< acceleration vector
-    Teuchos::RCP<const Epetra_Vector> vel,     //!< velocity vector
-    Teuchos::RCP<const Epetra_Vector> fsvel,   //!< fine-scale velocity vector
-    Teuchos::RCP<const DRT::DofSet>   dofset,  //!< dofset pointer
-    Teuchos::RCP<DRT::Discretization> dis,     //!< fluid/structure discretization
-    bool setpressure=false,                    //!< flag whether the fluid pressure needs to be known for the scatra
-    int nds=0                                  //!< number of the dofset the velocity/pressure state belongs to
+    Teuchos::RCP<const Epetra_Vector>   convvel,                   //!< convective velocity/press. vector
+    Teuchos::RCP<const Epetra_Vector>   acc,                       //!< acceleration vector
+    Teuchos::RCP<const Epetra_Vector>   vel,                       //!< velocity vector
+    Teuchos::RCP<const Epetra_Vector>   fsvel,                     //!< fine-scale velocity vector
+    int                                 nds,                       //!< number of the dofset the velocity/pressure state belongs to
+    bool                                setpressure=false          //!< flag whether the fluid pressure needs to be known for the scatra
     );
 
   void SetWallShearStresses(
@@ -211,8 +209,7 @@ public:
   //! apply moving mesh data
   void ApplyMeshMovement(
     Teuchos::RCP<const Epetra_Vector> dispnp, //!< displacement vector
-    Teuchos::RCP<DRT::Discretization> dis,    //!< fluid/structure discretization
-    int nds=0                                 //!< number of the dofset the displacement state belongs to
+    int nds                                   //!< number of the dofset the displacement state belongs to
   );
 
   //! calculate mass/heat flux vectors (in domain / at boundary)
@@ -281,20 +278,11 @@ public:
   //! return Krylov projector
   Teuchos::RCP<LINALG::KrylovProjector> Projector() { return projector_; }
 
-  //! return scalar field convective velocity at time step n+1
-  Teuchos::RCP<Epetra_MultiVector> ConVel() { return convel_; }
+  //! return number of dofset associated with velocity dofs
+  const int NdsVel() { return nds_vel_; }
 
-  //! return scalar field velocity at time step n+1
-  Teuchos::RCP<Epetra_MultiVector> Vel() { return vel_; }
-
-  //! return scalar field displacement at time step n+1
-  Teuchos::RCP<Epetra_MultiVector> Disp() { return dispnp_; }
-
-  //! return scalar field acceleration/history of convective velocity field at time step n+1
-  Teuchos::RCP<Epetra_MultiVector> ConAcc() { return acc_; }
-
-  //! return pressure required for computation of subgrid-scale velocity
-  Teuchos::RCP<Epetra_Vector> Pre() { return pre_; }
+  //! return number of dofset associated with displacement dofs
+  const int NdsDisp() { return nds_disp_; }
 
   //! return scalar field fine-scale convective velocity at time step n+1
   Teuchos::RCP<Epetra_MultiVector> ConFsVel() { return fsvel_; }
@@ -964,23 +952,8 @@ protected:
   //! @name velocity, pressure, and related
   /*========================================================================*/
 
-  //! fluid velocity
-  Teuchos::RCP<Epetra_MultiVector> vel_;
-
-  //! convective velocity
-  Teuchos::RCP<Epetra_MultiVector> convel_;
-
   //! subgrid-scale velocity required for multifractal subgrid-scale modeling
   Teuchos::RCP<Epetra_MultiVector> fsvel_;
-
-  //! acceleration required for computation of subgrid-scale velocity
-  Teuchos::RCP<Epetra_MultiVector> acc_;
-
-  //! pressure required for computation of subgrid-scale velocity
-  Teuchos::RCP<Epetra_Vector> pre_;
-
-  //! displacements at time n+1 for ALE formulation
-  Teuchos::RCP<Epetra_MultiVector> dispnp_;
 
   //! type of velocity field ? rename!!!
   const INPAR::SCATRA::VelocityField cdvel_;
@@ -993,6 +966,12 @@ protected:
 
   //! mean concentration in interface bewteen a scatracoupling (needed for instance for type fps3i)
   Teuchos::RCP<Epetra_Vector> meanconc_;
+
+  //! number of dofset associated with velocity related dofs
+  int nds_vel_;
+
+  //! number of dofset associated with displacement dofs
+  int nds_disp_;
 
   /*========================================================================*/
   //! @name coefficients and related

@@ -133,16 +133,13 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   phidtnp_(Teuchos::null),
   hist_(Teuchos::null),
   densafnp_(Teuchos::null),
-  vel_(Teuchos::null),
-  convel_(Teuchos::null),
   fsvel_(Teuchos::null),
-  acc_(Teuchos::null),
-  pre_(Teuchos::null),
-  dispnp_(Teuchos::null),
   cdvel_(DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(*params,"VELOCITYFIELD")),
   wss_(Teuchos::null),
   pressure_(Teuchos::null),
   meanconc_(Teuchos::null),
+  nds_vel_(-1),
+  nds_disp_(-1),
   densific_(0,0.0),
   c0_(0,0.0),
   discret_(actdis),
@@ -195,7 +192,16 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // -------------------------------------------------------------------
   // note: pbcs have to be correctly set up before extended ghosting is applied
   Teuchos::RCP<PeriodicBoundaryConditions> pbc = Teuchos::rcp(new PeriodicBoundaryConditions (discret_, false));
-  pbc->UpdateDofsForPeriodicBoundaryConditions();
+  if (pbc->HasPBC())
+  {
+    pbc->UpdateDofsForPeriodicBoundaryConditions();
+
+    if(DRT::Problem::Instance()->DoesExistDis("fluid") and DRT::Problem::Instance()->GetDis("fluid")->NumGlobalNodes() and DRT::Problem::Instance()->ProblemType() != prb_combust)
+    {
+      Teuchos::RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->GetDis("fluid");
+      discret_->ReplaceDofSet(1,fluiddis->GetDofSetProxy(),false);
+    }
+  }
 
   return;
 }
@@ -309,22 +315,9 @@ void SCATRA::ScaTraTimIntImpl::Init()
   // velocities (always three velocity components per node)
   // (get noderowmap of discretization for creating this multivector)
   const Epetra_Map* noderowmap = discret_->NodeRowMap();
-  convel_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,nsd_,true));
-  vel_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,nsd_,true));
   wss_ = LINALG::CreateVector(*dofrowmap,true);
   pressure_ = LINALG::CreateVector(*dofrowmap,true);
   meanconc_ = LINALG::CreateVector(*dofrowmap,true);
-
-  // acceleration and pressure required for computation of subgrid-scale
-  acc_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,nsd_,true));
-  pre_ = LINALG::CreateVector(*noderowmap,true);
-
-  if (isale_)
-  {
-    // displacement field for moving mesh applications using ALE
-    // (get noderowmap of discretization for creating this multivector)
-    dispnp_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,nsd_,true));
-  }
 
   // -------------------------------------------------------------------
   // create vectors associated to boundary conditions
@@ -465,7 +458,7 @@ void SCATRA::ScaTraTimIntImpl::SetupNatConv()
 
   // provide displacement field in case of ALE
   if (isale_)
-    discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+    eleparams.set<int>("ndsdisp",nds_disp_);
 
   // evaluate integrals of concentrations and domain
   Teuchos::RCP<Epetra_SerialDenseVector> scalars
@@ -890,7 +883,7 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   //     update velocity field if given by function AND time curve
   // -------------------------------------------------------------------
   if (cdvel_ == INPAR::SCATRA::velocity_function_and_curve)
-    SetVelocityField();
+    SetVelocityField(nds_vel_);
 
   // -------------------------------------------------------------------
   //           preparation of AVM3-based scale separation
@@ -952,15 +945,17 @@ void SCATRA::ScaTraTimIntImpl::PrepareLinearSolve()
 /*----------------------------------------------------------------------*
  | update the velocity field                                  gjb 04/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::SetVelocityField()
+void SCATRA::ScaTraTimIntImpl::SetVelocityField(const int nds)
 {
-  if (cdvel_ == INPAR::SCATRA::velocity_zero)
-  {
-    convel_->PutScalar(0.); // just to be sure!
-    vel_->PutScalar(0.);
-  }
-  else if ((cdvel_ == INPAR::SCATRA::velocity_function)
-      or (cdvel_ == INPAR::SCATRA::velocity_function_and_curve))
+  // safety check
+  if (nds >= discret_->NumDofSets())
+      dserror("Too few dofsets on scatra discretization!");
+
+  // initialize velocity vectors
+  Teuchos::RCP<Epetra_Vector> convel = LINALG::CreateVector(*discret_->DofRowMap(nds),true);
+  Teuchos::RCP<Epetra_Vector> vel = LINALG::CreateVector(*discret_->DofRowMap(nds),true);
+
+  if (cdvel_ == INPAR::SCATRA::velocity_function or cdvel_ == INPAR::SCATRA::velocity_function_and_curve)
   {
     int err(0);
     const int velfuncno = params_->get<int>("VELFUNCNO");
@@ -970,6 +965,10 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField()
     {
       // get the processor local node
       DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
+
+      // get dofs associated with current node
+      std::vector<int> nodedofs = discret_->Dof(nds,lnode);
+
       for(int index=0;index<nsd_;++index)
       {
         double value = DRT::Problem::Instance()->Funct(velfuncno-1).Evaluate(index,lnode->X(),time_,NULL);
@@ -977,15 +976,30 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField()
         {
           value *= DRT::Problem::Instance()->Curve(velcurveno-1).f(time_);
         }
-        err = convel_->ReplaceMyValue (lnodeid, index, value);
-        if (err!=0) dserror("error while inserting a value into convel_");
-        err = vel_->ReplaceMyValue (lnodeid, index, value);
-        if (err!=0) dserror("error while inserting a value into vel_");
+
+        // get global and local dof IDs
+        const int gid = nodedofs[index];
+        const int lid = convel->Map().LID(gid);
+
+        if (lid < 0) dserror("Local ID not found in map for given global ID!");
+        err = convel->ReplaceMyValue(lid, 0, value);
+        if (err!=0) dserror("error while inserting a value into convel");
+        err = vel->ReplaceMyValue(lid, 0, value);
+        if (err!=0) dserror("error while inserting a value into vel");
       }
     }
   }
   else
     dserror("Wrong SetVelocity() action for velocity field type %d!",cdvel_);
+
+  // store number of dof-set associated with velocity related dofs
+  nds_vel_ = nds;
+
+  // provide scatra discretization with convective velocity
+  discret_->SetState(nds_vel_,"convective velocity field",convel);
+
+  // provide scatra discretization with velocity
+  discret_->SetState(nds_vel_,"velocity field",vel);
 
   // initial velocity field has now been set
   if (step_ == 0) initialvelset_ = true;
@@ -1135,22 +1149,29 @@ return;
  | well as fine-scale velocity field, if required)            gjb 05/09 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::SetVelocityField(
-Teuchos::RCP<const Epetra_Vector> convvel,
-Teuchos::RCP<const Epetra_Vector> acc,
-Teuchos::RCP<const Epetra_Vector> vel,
-Teuchos::RCP<const Epetra_Vector> fsvel,
-Teuchos::RCP<const DRT::DofSet>   dofset,
-Teuchos::RCP<DRT::Discretization> dis,
-bool setpressure,
-int nds)
+    Teuchos::RCP<const Epetra_Vector>   convvel,        //!< convective velocity/press. vector
+    Teuchos::RCP<const Epetra_Vector>   acc,            //!< acceleration vector
+    Teuchos::RCP<const Epetra_Vector>   vel,            //!< velocity vector
+    Teuchos::RCP<const Epetra_Vector>   fsvel,          //!< fine-scale velocity vector
+    int                                 nds,            //!< number of the dofset the velocity/pressure state belongs to
+    bool                                setpressure     //!< flag whether the fluid pressure needs to be known for the scatra
+)
 {
+  // time measurement
+  TEUCHOS_FUNC_TIME_MONITOR("SCATRA: set convective velocity field");
+
   //---------------------------------------------------------------------------
   // preliminaries
   //---------------------------------------------------------------------------
+
+  if (convvel == Teuchos::null)
+    dserror("Velocity state is Teuchos::null");
+
   if (cdvel_ != INPAR::SCATRA::velocity_Navier_Stokes)
     dserror("Wrong SetVelocityField() called for velocity field type %d!",cdvel_);
 
-  TEUCHOS_FUNC_TIME_MONITOR("SCATRA: set convective velocity field");
+  if (nds >= discret_->NumDofSets())
+    dserror("Too few dofsets on scatra discretization!");
 
 //#ifdef DEBUG   // is this costly, when we do this test always?
   // We rely on the fact, that the nodal distribution of both fields is the same.
@@ -1159,17 +1180,12 @@ int nds)
   // have changed meanwhile (e.g., due to periodic boundary conditions applied only
   // to the fluid field)!
   // We have to be sure that everything is still matching.
-  if (not dis->NodeRowMap()->SameAs(*(discret_->NodeRowMap())))
-    dserror("Fluid/Structure and Scatra noderowmaps are NOT identical. Emergency!");
+  if (not convvel->Map().SameAs(*discret_->DofRowMap(nds)))
+    dserror("Fluid/Structure and Scatra dofrowmaps are NOT identical. Emergency!");
 //#endif
 
   // define error variable
   int err(0);
-
-  // boolean indicating whether acceleration vector exists
-  // -> if yes, subgrid-scale velocity may need to be computed on element level
-  //bool sgvelswitch = (acc != Teuchos::null);
-  const bool accswitch = (acc != Teuchos::null);
 
   // boolean indicating whether fine-scale velocity vector exists
   // -> if yes, multifractal subgrid-scale modeling is applied
@@ -1200,20 +1216,14 @@ int nds)
   for (int lnodeid=0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
   {
     // get local fluid/structure node with the same lnodeid
-    DRT::Node* lnode = dis->lRowNode(lnodeid);
+    DRT::Node* lnode = discret_->lRowNode(lnodeid);
 
     // care for the slave nodes of rotationally symm. periodic boundary conditions
     double rotangle(0.0);
     bool havetorotate = FLD::IsSlaveNodeOfRotSymPBC(lnode,rotangle);
 
     // get degrees of freedom associated with this fluid/structure node
-    // two particular cases have to be considered:
-    // - in non-XFEM case, the first dofset is always considered, allowing for
-    //   using multiple dof sets, e.g., for structure-based scalar transport
-    // - for XFEM, a different nodeset is required
-    std::vector<int> nodedofs;
-    if (dofset == Teuchos::null) nodedofs = dis->Dof(nds,lnode);
-    else                         nodedofs = (*dofset).Dof(lnode);
+    std::vector<int> nodedofs = discret_->Dof(nds,lnode);
 
     // determine number of space dimensions
     const int numdim = DRT::Problem::Instance()->NDim();
@@ -1228,58 +1238,6 @@ int nds)
       // const int lid = dofrowmap->LID(gid);
       const int lid = convvel->Map().LID(gid);
       if (lid < 0) dserror("Local ID not found in map for given global ID!");
-
-      //-----------------------------------------------------------------------
-      // get convective velocity
-      //-----------------------------------------------------------------------
-      double convelocity = (*convvel)[lid];
-
-      // component of rotated vector field
-      if (havetorotate)  convelocity = FLD::GetComponentOfRotatedVectorField(index,convvel,lid,rotangle);
-
-      // insert velocity value into node-based vector
-      err = convel_->ReplaceMyValue(lnodeid,index,convelocity);
-      if (err != 0) dserror("Error while inserting value into vector convel_!");
-
-      //-----------------------------------------------------------------------
-      // get velocity
-      //-----------------------------------------------------------------------
-      if (vel != Teuchos::null)
-      {
-        // get value of corresponding velocity component
-        double velocity = (*vel)[lid];
-
-        // component of rotated vector field
-        if (havetorotate) velocity = FLD::GetComponentOfRotatedVectorField(index,vel,lid,rotangle);
-
-        // insert velocity value into node-based vector
-        err = vel_->ReplaceMyValue(lnodeid,index,velocity);
-        if (err != 0) dserror("Error while inserting value into vector vel_!");
-      }
-      else
-      {
-        // if velocity vector is not provided by the respective algorithm, we
-        // assume that it equals the given convective velocity:
-        // insert velocity value into node-based vector
-        err = vel_->ReplaceMyValue(lnodeid,index,convelocity);
-        if (err != 0) dserror("Error while inserting value into vector vel_!");
-      }
-
-      //-----------------------------------------------------------------------
-      // get acceleration, if required
-      //-----------------------------------------------------------------------
-      if (accswitch)
-      {
-        // get value of corresponding acceleration component
-        double acceleration = (*acc)[lid];
-
-        // component of rotated vector field
-        if (havetorotate) acceleration = FLD::GetComponentOfRotatedVectorField(index,acc,lid,rotangle);
-
-        // insert acceleration value into node-based vector
-        err = acc_->ReplaceMyValue(lnodeid,index,acceleration);
-        if (err != 0) dserror("Error while inserting value into vector acc_!");
-      }
 
       //-----------------------------------------------------------------------
       // get fine-scale velocity, if required
@@ -1297,33 +1255,28 @@ int nds)
         if (err != 0) dserror("Error while inserting value into vector fsvel_!");
       }
     }
-
-    //-------------------------------------------------------------------------
-    // transfer of pressure dofs, if required
-    //-------------------------------------------------------------------------
-    if (setpressure)
-    {
-      if(convvel==Teuchos::null)
-        dserror("Velocity state is Teuchos::null. Velocity state is needed to extract pressure from");
-
-      // get global and local ID
-      const int gid = nodedofs[numdim];
-      // const int lid = dofrowmap->LID(gid);
-      const int lid = convvel->Map().LID(gid);
-      if (lid < 0) dserror("Local ID not found in map for given global ID!");
-
-      // get value of corresponding pressure component
-      double pressure = (*convvel)[lid];
-
-      // insert pressure value into node-based vector
-      err = pre_->ReplaceMyValue(lnodeid,0,pressure);
-      if (err != 0) dserror("Error while inserting value into vector pre_!");
-    }
-
   }
 
   // confirm that initial velocity field has now been set
   if (step_ == 0) initialvelset_ = true;
+
+  // store number of dofset associated with velocity related dofs
+  nds_vel_ = nds;
+
+  // provide scatra discretization with convective velocity
+  discret_->SetState(nds_vel_,"convective velocity field",convvel);
+
+  // provide scatra discretization with velocity
+  if (vel != Teuchos::null)
+    discret_->SetState(nds_vel_,"velocity field",vel);
+  else
+    // if velocity vector is not provided by the respective algorithm, we
+    // assume that it equals the given convective velocity:
+    discret_->SetState(nds_vel_,"velocity field",convvel);
+
+  // provide scatra discretization with acceleration field if required
+  if (acc != Teuchos::null)
+    discret_->SetState(nds_vel_,"acceleration field",acc);
 
   return;
 
@@ -1407,7 +1360,6 @@ void SCATRA::ScaTraTimIntImpl::Solve()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::ApplyMeshMovement(
     Teuchos::RCP<const Epetra_Vector> dispnp,
-    Teuchos::RCP<DRT::Discretization> dis,
     int nds
 )
 {
@@ -1421,48 +1373,11 @@ void SCATRA::ScaTraTimIntImpl::ApplyMeshMovement(
     // check existence of displacement vector
     if (dispnp == Teuchos::null) dserror("Got null pointer for displacements!");
 
-    // define error variable
-    int err(0);
+    // store number of dofset associated with displacement related dofs
+    nds_disp_ = nds;
 
-    // get dofrowmap of discretization
-    const Epetra_Map* dofrowmap = dis->DofRowMap(nds);
-
-    //-------------------------------------------------------------------------
-    // transfer of dofs
-    // (We rely on the fact that the scatra discretization is a clone of the
-    // fluid or structure mesh, respectively, meaning that a scatra node has the
-    // same local (and global) ID as its corresponding fluid/structure node.)
-    //-------------------------------------------------------------------------
-    // loop over all local nodes of scatra discretization
-    for (int lnodeid=0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
-    {
-      // get local fluid/structure node with the same lnodeid
-      DRT::Node* lnode = dis->lRowNode(lnodeid);
-
-      // get degrees of freedom associated with this fluid/structure node
-      // (first dofset always considered, allowing for using multiple
-      //  dof sets, e.g., for structure-based scalar transport)
-      std::vector<int> nodedofs = dis->Dof(nds,lnode);
-
-      // determine number of space dimensions
-      const int numdim = DRT::Problem::Instance()->NDim();
-
-      for (int index=0;index < numdim; ++index)
-      {
-        // get global and local ID
-        const int gid = nodedofs[index];
-        const int lid = dofrowmap->LID(gid);
-
-        //---------------------------------------------------------------------
-        // get displacement
-        //---------------------------------------------------------------------
-        double disp = (*dispnp)[lid];
-
-        // insert displacement value into node-based vector
-        err = dispnp_->ReplaceMyValue(lnodeid,index,disp);
-        if (err != 0) dserror("Error while inserting value into vector dispnp_!");
-      }
-    } // for lnodeid
+    // provide scatra discretization with displacement field
+    discret_->SetState(nds_disp_,"dispnp",dispnp);
   } // if (isale_)
 
   return;
@@ -2173,7 +2088,7 @@ void SCATRA::ScaTraTimIntImpl::UpdateKrylovSpaceProjection()
     // set parameters for elements that do not change over mode
     mode_params.set<int>("action",SCATRA::integrate_shape_functions);
     if (isale_)
-      discret_->AddMultiVectorToParameterList(mode_params,"dispnp",dispnp_);
+      mode_params.set<int>("ndsdisp",nds_disp_);
 
     // loop over all activemodes
     for (int imode = 0; imode < nummodes; ++imode)
@@ -2389,7 +2304,8 @@ void SCATRA::ScaTraTimIntImpl::ApplyNeumannBC
   SetTimeForNeumannEvaluation(condparams);
 
   // provide displacement field in case of ALE
-  if (isale_) discret_->AddMultiVectorToParameterList(condparams,"dispnp",dispnp_);
+  if (isale_)
+    condparams.set<int>("ndsdisp",nds_disp_);
 
   // evaluate Neumann boundary conditions at time t_{n+alpha_F} (generalized alpha) or time t_{n+1} (otherwise)
   discret_->EvaluateNeumann(condparams,*neumann_loads);
@@ -2489,17 +2405,14 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
 
   // provide velocity field and potentially acceleration/pressure field
   // (export to column map necessary for parallel evaluation)
-  discret_->AddMultiVectorToParameterList(eleparams,"convective velocity field",convel_);
-  discret_->AddMultiVectorToParameterList(eleparams,"velocity field",vel_);
-  discret_->AddMultiVectorToParameterList(eleparams,"acceleration field",acc_);
-  discret_->AddMultiVectorToParameterList(eleparams,"pressure field",pre_);
+  eleparams.set<int>("ndsvel",nds_vel_);
   // and provide fine-scale velocity for multifractal subgrid-scale modeling only
   if(turbmodel_==INPAR::FLUID::multifractal_subgrid_scales or fssgd_ == INPAR::SCATRA::fssugrdiff_smagorinsky_small)
     discret_->AddMultiVectorToParameterList(eleparams,"fine-scale velocity field",fsvel_);
 
   // provide displacement field in case of ALE
   if(isale_)
-    discret_->AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+    eleparams.set<int>("ndsdisp",nds_disp_);
 
   // set vector values needed by elements
   discret_->ClearState();
@@ -2540,8 +2453,7 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
     // set action for elements
     mhdbcparams.set<int>("action",SCATRA::bd_calc_weak_Dirichlet);
 
-    discret_->AddMultiVectorToParameterList(mhdbcparams,"convective velocity field",convel_);
-    discret_->AddMultiVectorToParameterList(mhdbcparams,"velocity field",vel_);
+    eleparams.set<int>("ndsvel",nds_vel_);
     AddTimeIntegrationSpecificVectors();
 
     // evaluate all mixed hybrid Dirichlet boundary conditions
@@ -3036,10 +2948,41 @@ void SCATRA::ScaTraTimIntImpl::OutputState()
 
   // convective velocity (not written in case of coupled simulations)
   if (cdvel_ != INPAR::SCATRA::velocity_zero)
-    output_->WriteVector("convec_velocity", convel_,IO::DiscretizationWriter::nodevector);
+  {
+    Teuchos::RCP<const Epetra_Vector> convel = discret_->GetState(nds_vel_, "convective velocity field");
+    if(convel == Teuchos::null)
+      dserror("Cannot get state vector convective velocity");
+
+    // convert dof-based Epetra vector into node-based Epetra multi-vector for postprocessing
+    Teuchos::RCP<Epetra_MultiVector> convel_multi = Teuchos::rcp(new Epetra_MultiVector(*discret_->NodeRowMap(),nsd_,true));
+    for (int inode=0; inode<discret_->NumMyRowNodes(); ++inode)
+    {
+      DRT::Node* node = discret_->lRowNode(inode);
+      for (int idim=0; idim<nsd_; ++idim)
+        (*convel_multi)[idim][discret_->NodeRowMap()->LID(node->Id())] = (*convel)[convel->Map().LID(discret_->Dof(nds_vel_,node,idim))];
+    }
+
+    output_->WriteVector("convec_velocity", convel_multi, IO::DiscretizationWriter::nodevector);
+  }
 
   // displacement field
-  if (isale_) output_->WriteVector("dispnp", dispnp_);
+  if (isale_)
+  {
+    Teuchos::RCP<const Epetra_Vector> dispnp = discret_->GetState(nds_disp_,"dispnp");
+    if (dispnp == Teuchos::null)
+      dserror("Cannot extract displacement field from discretization");
+
+    // convert dof-based Epetra vector into node-based Epetra multi-vector for postprocessing
+    Teuchos::RCP<Epetra_MultiVector> dispnp_multi = Teuchos::rcp(new Epetra_MultiVector(*discret_->NodeRowMap(),nsd_,true));
+    for (int inode=0; inode<discret_->NumMyRowNodes(); ++inode)
+    {
+      DRT::Node* node = discret_->lRowNode(inode);
+      for (int idim=0; idim<nsd_; ++idim)
+        (*dispnp_multi)[idim][discret_->NodeRowMap()->LID(node->Id())] = (*dispnp)[dispnp->Map().LID(discret_->Dof(nds_disp_,node,idim))];
+    }
+
+    output_->WriteVector("dispnp", dispnp_multi, IO::DiscretizationWriter::nodevector);
+  }
 
   return;
 } // ScaTraTimIntImpl::OutputState

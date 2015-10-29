@@ -135,11 +135,8 @@ int DRT::ELEMENTS::TransportBoundary::EvaluateNeumann(
   // add Neumann boundary condition to parameter list
   params.set<DRT::Condition*>("condition",&condition);
 
-  //build location array from location vector
-  //(this a little ugly. one could fix this by introducing a EvaluateNeumann() method
-  // with LocationArray as input in the DRT::Element ...)
-  LocationArray la(1);
-  la[0].lm_ = lm;
+  LocationArray la(discretization.NumDofSets());
+  DRT::Element::LocationVector(discretization,la,false);
 
   // evaluate boundary element
   return Evaluate(params,discretization,la,*elemat1,*elemat1,elevec1,elevec1,elevec1);
