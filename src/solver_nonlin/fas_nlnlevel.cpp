@@ -92,6 +92,9 @@ void NLNSOL::FAS::NlnLevel::Init(const int levelid,
   listname_ = listname;
   nlnproblem_ = nlnproblem;
 
+  setVerbLevel(NLNSOL::UTILS::TranslateVerbosityLevelToTeuchos(
+      Configuration()->GetParameter<std::string>(MyListName(), "verbosity")));
+
   // Init() has been called
   isinit_ = true;
 
