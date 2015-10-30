@@ -455,9 +455,9 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupFactor
   UCAggFact->SetParameter("aggregation: ordering",Teuchos::ParameterEntry(std::string("graph")));
 
   if(xSingleNodeAggMap != Teuchos::null) { // declare single node aggregates
-    UCAggFact->SetParameter("UseOnePtAggregationAlgorithm",Teuchos::ParameterEntry(true));
+    UCAggFact->SetParameter("aggregation: allow user-specified singletons",Teuchos::ParameterEntry(true));
     UCAggFact->SetParameter("OnePt aggregate map name", Teuchos::ParameterEntry(std::string("SingleNodeAggDofMap")));
-    UCAggFact->SetFactory("OnePt aggregate map factory", MueLu::NoFactory::getRCP());
+    UCAggFact->SetParameter("OnePt aggregate map factory", Teuchos::ParameterEntry(std::string("NoFactory")));
   }
 
   Teuchos::RCP<PFactory> PFact;
