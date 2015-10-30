@@ -126,7 +126,7 @@ int NLNSOL::NlnOperatorFas::ApplyInverse(const Epetra_MultiVector& f_do_not_use,
   {
     ++iter;
 
-    if (getVerbLevel() > Teuchos::VERB_NONE)
+    if (getVerbLevel() > Teuchos::VERB_LOW)
     {
       *getOStream() << "Start multigrid cycle for the " << iter << ". time."
           << std::endl;
@@ -172,7 +172,7 @@ int NLNSOL::NlnOperatorFas::ApplyInverse(const Epetra_MultiVector& f_do_not_use,
   status->set<bool>("Stagnation Detection: status", stagnation);
   SetOutParameterStagnation(status);
 
-  if (converged and getVerbLevel() > Teuchos::VERB_NONE)
+  if (converged and getVerbLevel() > Teuchos::VERB_LOW)
     *getOStream() << Label() << " seems to be converged in " << iter
         << " iterations." << std::endl;
 
@@ -231,7 +231,7 @@ const int NLNSOL::NlnOperatorFas::Cycle(
 const int NLNSOL::NlnOperatorFas::VCycle(Teuchos::RCP<Epetra_MultiVector> xbar,
     const int level) const
 {
-  if (getVerbLevel() > Teuchos::VERB_NONE)
+  if (getVerbLevel() > Teuchos::VERB_LOW)
     *getOStream() << "Entering recursive V-Cycle on level " << level
         << std::endl;
 
@@ -298,7 +298,7 @@ const int NLNSOL::NlnOperatorFas::VCycle(Teuchos::RCP<Epetra_MultiVector> xbar,
     if (err != 0) { dserror("Update failed."); }
   }
 
-  if (getVerbLevel() > Teuchos::VERB_NONE)
+  if (getVerbLevel() > Teuchos::VERB_LOW)
     *getOStream() << "Leaving VCycle on level " << level << std::endl;
 
   return err;
@@ -308,7 +308,7 @@ const int NLNSOL::NlnOperatorFas::VCycle(Teuchos::RCP<Epetra_MultiVector> xbar,
 const int NLNSOL::NlnOperatorFas::VCycleTwoLevel(
     Teuchos::RCP<Epetra_MultiVector> x) const
 {
-  if (getVerbLevel() > Teuchos::VERB_NONE)
+  if (getVerbLevel() > Teuchos::VERB_LOW)
     *getOStream() << "Starting explicit 2-level V-Cycle." << std::endl;
 
   // error code
@@ -357,7 +357,7 @@ const int NLNSOL::NlnOperatorFas::VCycleTwoLevel(
     PostSmoothing(*x, 0);
   }
 
-  if (getVerbLevel() > Teuchos::VERB_NONE)
+  if (getVerbLevel() > Teuchos::VERB_LOW)
     *getOStream() << "Leaving explicit 2-level V-Cycle." << std::endl;
 
   return 0;
@@ -367,7 +367,7 @@ const int NLNSOL::NlnOperatorFas::VCycleTwoLevel(
 const int NLNSOL::NlnOperatorFas::VCycleThreeLevel(
     Teuchos::RCP<Epetra_MultiVector> x) const
 {
-  if (getVerbLevel() > Teuchos::VERB_NONE)
+  if (getVerbLevel() > Teuchos::VERB_LOW)
     *getOStream() << "Starting explicit 3-level V-Cycle." << std::endl;
 
   // error code
@@ -443,7 +443,7 @@ const int NLNSOL::NlnOperatorFas::VCycleThreeLevel(
 
   PostSmoothing(*x, 0);
 
-  if (getVerbLevel() > Teuchos::VERB_NONE)
+  if (getVerbLevel() > Teuchos::VERB_LOW)
     *getOStream() << "Leaving explicit 3-level V-Cycle." << std::endl;
 
   return 0;
@@ -487,7 +487,7 @@ const int NLNSOL::NlnOperatorFas::PostSmoothing(
 const int NLNSOL::NlnOperatorFas::CoarseLevelSolve(
     Epetra_MultiVector& x, const int level) const
 {
-  if (getVerbLevel() > Teuchos::VERB_NONE)
+  if (getVerbLevel() > Teuchos::VERB_LOW)
   {
       *getOStream() << std::endl
           << "**************************" << std::endl
