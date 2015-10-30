@@ -164,7 +164,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Evaluate(
   //--------------------------------------------------------------------------------
 
   int nlayer = 0;
-  ExtractTurbulenceApproach(ele,params,discretization,la[0].lm_,nlayer);
+  ExtractTurbulenceApproach(ele,params,discretization,la,nlayer);
 
   //--------------------------------------------------------------------------------
   // calculate element coefficient matrix and rhs
@@ -333,11 +333,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ExtractElementAndNodeValues(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ExtractTurbulenceApproach(
-  DRT::Element*              ele,
-  Teuchos::ParameterList&    params,
-  DRT::Discretization&       discretization,
-  const std::vector<int>&    lm,
-  int&                       nlayer
+    DRT::Element*                  ele,
+    Teuchos::ParameterList&        params,
+    DRT::Discretization&           discretization,
+    DRT::Element::LocationArray&   la,
+    int&                           nlayer
 )
 {
   if (turbparams_->TurbModel()!=INPAR::FLUID::no_model or (scatraparatimint_->IsIncremental() and turbparams_->FSSGD()))
@@ -373,13 +373,29 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ExtractTurbulenceApproach(
     Teuchos::RCP<const Epetra_Vector> gfsphinp = discretization.GetState("fsphinp");
     if (gfsphinp==Teuchos::null) dserror("Cannot get state vector 'fsphinp'");
 
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*gfsphinp,fsphinp_,lm);
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*gfsphinp,fsphinp_,la[0].lm_);
 
-    // get fine-scale velocity at nodes
     if (turbparams_->WhichFssgd() == INPAR::SCATRA::fssugrdiff_smagorinsky_small or turbparams_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
     {
-      const Teuchos::RCP<Epetra_MultiVector> fsvelocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("fine-scale velocity field");
-      DRT::UTILS::ExtractMyNodeBasedValues(ele,efsvel_,fsvelocity,nsd_);
+      // get number of dofset associated with velocity-related dofs
+      const int ndsvel = params.get<int>("ndsvel");
+
+      // get fine-scale velocity at nodes
+      const Teuchos::RCP<const Epetra_Vector> fsvelocity = discretization.GetState(ndsvel,"fine-scale velocity field");
+      if(fsvelocity == Teuchos::null)
+        dserror("Cannot get fine-scale velocity field from scatra discretization!");
+
+      // determine number of velocity related dofs per node
+      const int numveldofpernode = la[ndsvel].lm_.size()/nen_;
+
+      // construct location vector for velocity related dofs
+      std::vector<int> lmvel(nsd_*nen_,-1);
+      for (int inode=0; inode<nen_; ++inode)
+        for (int idim=0; idim<nsd_; ++idim)
+          lmvel[inode*nsd_+idim] = la[ndsvel].lm_[inode*numveldofpernode+idim];
+
+      // extract local values of fine-scale velocity field from global state vector
+      DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_,nen_> >(*fsvelocity,efsvel_,lmvel);
     }
   }
 

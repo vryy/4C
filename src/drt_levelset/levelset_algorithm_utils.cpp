@@ -1121,7 +1121,6 @@ void SCATRA::LevelSetAlgorithm::Redistribute(const Teuchos::RCP<Epetra_CrsGraph>
   // vectors and matrices: local <-> global dof numbering
   // -------------------------------------------------------------------
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
-  const Epetra_Map* noderowmap = discret_->NodeRowMap();
 
   // initialize standard (stabilized) system matrix (and save its graph!)
   // in standard case, but do not save the graph if fine-scale subgrid
@@ -1177,15 +1176,6 @@ void SCATRA::LevelSetAlgorithm::Redistribute(const Teuchos::RCP<Epetra_CrsGraph>
     old = hist_;
     hist_ = LINALG::CreateVector(*dofrowmap,true);
     LINALG::Export(*old, *hist_);
-  }
-
-  // velocities (always three velocity components per node)
-  // (get noderowmap of discretization for creating this multivector)
-  if (fsvel_ != Teuchos::null)
-  {
-    oldMulti = fsvel_;
-    fsvel_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
-    LINALG::Export(*oldMulti, *fsvel_);
   }
 
   // -------------------------------------------------------------------

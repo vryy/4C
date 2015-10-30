@@ -191,11 +191,11 @@ namespace ELEMENTS
 
     //! extract turbulence approach
     void ExtractTurbulenceApproach(
-      DRT::Element*              ele,
-      Teuchos::ParameterList&    params,
-      DRT::Discretization&       discretization,
-      const std::vector<int>&    lm,
-      int&                       nlayer
+      DRT::Element*                  ele,
+      Teuchos::ParameterList&        params,
+      DRT::Discretization&           discretization,
+      DRT::Element::LocationArray&   la,
+      int&                           nlayer
     );
 
     //! calculate matrix and rhs. Here the whole thing is hidden.

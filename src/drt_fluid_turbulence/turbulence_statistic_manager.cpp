@@ -1164,7 +1164,6 @@ namespace FLD
               scatrastatevecs.insert(std::pair<std::string,Teuchos::RCP<Epetra_Vector> >("fsphinp",myfsphi_));
               if (myfsphi_==Teuchos::null)
                 dserror ("Have not got fsphi!");
-              scatrafieldvecs.insert(std::pair<std::string,Teuchos::RCP<Epetra_MultiVector> >("fine-scale velocity field",myscatrafsvel_));
             }
           }
           if (turbmodel_ == INPAR::FLUID::scale_similarity_basic)
@@ -1815,7 +1814,6 @@ namespace FLD
     myphiaf_ = scatra_timeint->Phiaf();
     myphiam_ = scatra_timeint->Phiam();
     myscatrandsvel_ = scatra_timeint->NdsVel();
-    myscatrafsvel_ = scatra_timeint->ConFsVel();
     myscatrahist_ = scatra_timeint->Hist();
     myphidtam_ = scatra_timeint->Phidtam();
     myfsphi_ = scatra_timeint->FsPhi();

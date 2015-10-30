@@ -1550,8 +1550,15 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDissipation(
     DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*gfsphinp,fsphinp_,la[0].lm_);
 
     // get fine-scale velocity at nodes
-    const Teuchos::RCP<Epetra_MultiVector> fsvelocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("fine-scale velocity field");
-    DRT::UTILS::ExtractMyNodeBasedValues(ele,efsvel_,fsvelocity,nsd_);
+    const Teuchos::RCP<const Epetra_Vector> fsvelocity = discretization.GetState(ndsvel,"fine-scale velocity field");
+    if(fsvelocity == Teuchos::null)
+      dserror("Cannot get fine-scale velocity field from scatra discretization!");
+
+    // extract local values of fine-scale velocity field from global state vector
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_,nen_> >(*fsvelocity,efsvel_,lmvel);
+
+    // rotate the vector field in the case of rotationally symmetric boundary conditions
+    rotsymmpbc_->RotateMyValuesIfNecessary(efsvel_);
   }
 
   //----------------------------------------------------------------------

@@ -284,9 +284,6 @@ public:
   //! return number of dofset associated with displacement dofs
   const int NdsDisp() { return nds_disp_; }
 
-  //! return scalar field fine-scale convective velocity at time step n+1
-  Teuchos::RCP<Epetra_MultiVector> ConFsVel() { return fsvel_; }
-
   //! return flux vector
   Teuchos::RCP<Epetra_MultiVector> Flux() { return flux_; };
 
