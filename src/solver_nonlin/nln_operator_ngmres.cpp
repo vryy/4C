@@ -246,8 +246,9 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
         {
           restart = true;
 
-          if (getVerbLevel() > Teuchos::VERB_NONE)
-            *getOStream() << "*** Acceleration failed in iteration    " << iter;
+          if (getVerbLevel() > Teuchos::VERB_LOW)
+            *getOStream() << "*** Acceleration failed in iteration    " << iter
+                << std::endl;
         }
 
         // evaluate the residual based on the accelerated solution
@@ -266,42 +267,45 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
         criterionD = false;
 
         //----------------------------------------------------------------------
-        // Accept the current iterate?
+        // Compute norms
+        //----------------------------------------------------------------------
+        double fnormhat = 0.0;
+        NlnProblem()->ConvergenceCheck(*fhat, fnormhat);
+
+        double fnormmin = fbarnorm2;
+        for (unsigned int i = 0; i < res.size(); ++i)
+        {
+          double tmpnorm = 1.0e+12;
+          NlnProblem()->ConvergenceCheck(*(res[i]), tmpnorm);
+          fnormmin = std::min(fnormmin, tmpnorm);
+        }
+
+        Teuchos::RCP<Epetra_MultiVector> vec =
+            Teuchos::rcp(new Epetra_MultiVector(xhat->Map(), true));
+        double xnormmin = 1.0e+12;
+        for (unsigned int i = 0; i < sol.size(); ++i)
+        {
+          double tmpnorm = 1.0e+12;
+          vec->Update(1.0, *xhat, -1.0, *(sol[i]), 0.0);
+          NlnProblem()->ConvergenceCheck(*vec, tmpnorm);
+          xnormmin = std::min(xnormmin, tmpnorm);
+        }
+
+        double xnormleft = 0.0;
+        vec->Update(1.0, *xhat, -1.0, *xbar, 0.0);
+        NlnProblem()->ConvergenceCheck(*vec, xnormleft);
+
+        //----------------------------------------------------------------------
+        // Check all criteria
         //----------------------------------------------------------------------
         // Criterion A
-        double fnormhat = 0.0;
-        double fnorm = 0.0;
-        NlnProblem()->ConvergenceCheck(*fhat, fnormhat);
-        NlnProblem()->ConvergenceCheck(*(res.back()), fnorm);
-        double fnormmin = std::min(1.0e+12, fnorm);
         if (fnormhat < gammaA * fnormmin)
           criterionA = true;
 
         // criterion B
-        Teuchos::RCP<Epetra_MultiVector> vec =
-            Teuchos::rcp(new Epetra_MultiVector(*xhat));
-        vec->Update(-1.0, *xbar, 1.0);
-
-        double xnormleft = 0.0;
-        NlnProblem()->ConvergenceCheck(*vec, xnormleft);
-
-        double xnorm = 0.0;
-        vec->Update(1.0, *xhat, -1.0, *(sol.back()), 0.0);
-        NlnProblem()->ConvergenceCheck(*vec, xnorm);
-        double xnormmin = std::min(xnorm, 1.0e+12);
         if (epsB * xnormleft < xnormmin or fnormhat < deltaB * fnormmin)
           criterionB = true;
 
-        if (criterionA and criterionB)
-        {
-          xbar->Update(1.0, *xhat, 0.0);
-          NlnProblem()->ComputeF(*xbar, *fbar);
-        }
-        //----------------------------------------------------------------------
-
-        //----------------------------------------------------------------------
-        // Restart?
-        //----------------------------------------------------------------------
         // Criterion C
         if (fnormhat > gammaC * fnormmin)
           criterionC = true;
@@ -310,60 +314,72 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
         if (epsB * xnormleft >= xnormmin and fnormhat >= deltaB * fnormmin)
           criterionD = true;
 
-        if (not success or (criterionC and criterionD and criterionCprev and criterionDprev))
+        //----------------------------------------------------------------------
+        // Restart necessary?
+        //----------------------------------------------------------------------
+        if (not success or (criterionC and criterionCprev) or (criterionD and criterionDprev))
         {
           restart = true;
-
-          if (getVerbLevel() > Teuchos::VERB_NONE)
-          {
-            *getOStream() << LabelShort()
-               << ": Perform restart in iteration      " << iter
-               << std::endl;
-          }
         }
-        //----------------------------------------------------------------------
 
+        //----------------------------------------------------------------------
+        // Accept current iterate?
+        //----------------------------------------------------------------------
+        if (criterionA and criterionB and not restart)
+        {
+          xbar->Update(1.0, *xhat, 0.0);
+          NlnProblem()->ComputeF(*xbar, *fbar);
+        }
       }
       //------------------------------------------------------------------------
 
       //------------------------------------------------------------------------
       // Step 3: Perform line search as in [Sterck (2012)]
       //------------------------------------------------------------------------
-      {
-        if (not success
-            or (criterionC and criterionD and criterionCprev and criterionDprev))
-        {
-          restart = true;
-        }
-        else // accepted iterate and, thus, perform a line search step
-        {
-          PerformLineSearchStep(xbar, xhat, fbar);
-          NlnProblem()->ComputeF(*xbar, *fbar);
-        }
-      }
+//      {
+//        if (not success
+//            or (criterionC and criterionD and criterionCprev and criterionDprev))
+//        {
+//          restart = true;
+//        }
+//        else // accepted iterate and, thus, perform a line search step
+//        {
+//          PerformLineSearchStep(xbar, xhat, fbar);
+//          NlnProblem()->ComputeF(*xbar, *fbar);
+//        }
+//      }
       //------------------------------------------------------------------------
 
-      if (not (sol.size() < GetMaxWindowSize())) // window size reached maximum
+      if (not (sol.size() <= GetMaxWindowSize())) // window size reached maximum ToDo (mayr) needs to be <=
       {
         // erase the oldest solution and residual vectors
         sol.erase(sol.begin());
         res.erase(res.begin());
       }
 
+      // perform the restart
       if (restart)
       {
-        if (getVerbLevel() > Teuchos::VERB_NONE)
+        if (getVerbLevel() > Teuchos::VERB_LOW)
         {
-          *getOStream() << "Perform restart in iteration        " << iter
-              << std::endl;
+          *getOStream() << LabelShort()
+             << ": Perform restart in iteration    " << iter
+             << std::endl;
         }
 
+        // clear history
         sol.clear();
         res.clear();
+
+        // reset restart criteria
+        criterionC = false;
+        criterionD = false;
+        criterionCprev = false;
+        criterionDprev = false;
       }
 
-      if (getVerbLevel() > Teuchos::VERB_NONE)
-        *getOStream() << "Current window size:   " << sol.size() << std::endl;
+      if (getVerbLevel() > Teuchos::VERB_LOW)
+        *getOStream() << LabelShort() << ": Current window size:   " << sol.size() << std::endl;
 
       converged = NlnProblem()->ConvergenceCheck(*fbar, fnorm2);
 
@@ -538,15 +554,6 @@ const bool NLNSOL::NlnOperatorNGmres::ComputeAcceleratedIterate(
     PtP(i,i) += delta;
   }
 
-  double mindiagentry = maxdiagentry;
-  for (int i = 0; i < PtP.RowDim(); ++i)
-  {
-    mindiagentry = std::min(mindiagentry, PtP(i,i));
-  }
-
-  if (mindiagentry < 1.0e-15)
-    success = false;
-  else
   {
     /* Solve normal equations with direct solver since it is just a very small
      * system (size = window size) */
@@ -625,7 +632,6 @@ void NLNSOL::NlnOperatorNGmres::ComputeStepLength(const Epetra_MultiVector& x,
   linesearch_->Init(NlnProblem(), Configuration(), lslist, x, f, inc, fnorm2);
   linesearch_->Setup();
   linesearch_->ComputeLSParam(lsparam, suffdecr);
-
 
   return;
 }
