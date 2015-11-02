@@ -31,6 +31,7 @@ Maintainer: Matthias Mayr
 // baci
 #include "fas_hierarchy.H"
 #include "fas_nlnlevel.H"
+#include "nln_problem.H"
 #include "nln_problem_coarselevel.H"
 
 #include "../drt_io/io.H"
@@ -53,16 +54,44 @@ NLNSOL::NlnProblemCoarseLevel::NlnProblemCoarseLevel()
 /*----------------------------------------------------------------------------*/
 void NLNSOL::NlnProblemCoarseLevel::Setup()
 {
+  // Make sure that Init() has been called
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
 
-  hierarchy_ = Params().get<Teuchos::RCP<const NLNSOL::FAS::AMGHierarchy> >(
+  // extract some parameters from parameter list
+  hierarchy_ = Params()->get<Teuchos::RCP<const NLNSOL::FAS::AMGHierarchy> >(
       "AMG Hierarchy");
-  levelid_ = Params().get<int>("Level ID");
+  levelid_ = Params()->get<int>("Level ID");
 
-  // call base class
-  NLNSOL::NlnProblem::Setup();
+  // setup the underlying fine level nonlinear problem
+  nlnproblem_->Setup();
+
+  // Setup() has been called
+  SetIsSetup();
 
   return;
+}
+
+/*----------------------------------------------------------------------------*/
+const bool NLNSOL::NlnProblemCoarseLevel::SetModelEvaluator()
+{
+  if (not Params()->isParameter("Field Problem"))
+  {
+    dserror("The parameter 'Field Problem' has not been set.");
+    return false;
+  }
+
+  if (not Params()->isType<Teuchos::RCP<NLNSOL::NlnProblem> >(
+      "Field Problem"))
+  {
+    dserror("Parameter 'Field Problem' isn't of type "
+        "'Teuchos::RCP<NLNSOL::NlnProblem>'.");
+    return false;
+  }
+
+  nlnproblem_ = Params()->get<Teuchos::RCP<NLNSOL::NlnProblem> >(
+      "Field Problem");
+
+  return true;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -123,7 +152,7 @@ NLNSOL::NlnProblemCoarseLevel::ComputePlainF(const Epetra_MultiVector& xc) const
   // call evaluate on the fine level
   Teuchos::RCP<Epetra_MultiVector> ffine =
       Teuchos::rcp(new Epetra_MultiVector(xf->Map(), true));
-  NLNSOL::NlnProblem::ComputeF(*xf,*ffine);
+  nlnproblem_->ComputeF(*xf,*ffine);
 
   // restrict fine level residual to current coarse level
   Teuchos::RCP<const Epetra_MultiVector> fcoarse =
@@ -222,7 +251,7 @@ void NLNSOL::NlnProblemCoarseLevel::WriteVector(
       Hierarchy().ProlongateToFineLevel(*vec, LevelID());
 
   // Write debug output on fine level
-  NLNSOL::NlnProblem::WriteVector(vecfine, description, vt);
+  nlnproblem_->WriteVector(vecfine, description, vt);
 
   return;
 }

@@ -57,6 +57,7 @@ Maintainer: Matthias Mayr
 #include "muelu_utils.H"
 #include "nln_operator_fas.H"
 #include "nln_problem.H"
+#include "nln_problem_base.H"
 #include "nln_problem_coarselevel.H"
 #include "nln_utils.H"
 
@@ -94,7 +95,7 @@ NLNSOL::FAS::AMGHierarchy::AMGHierarchy()
 /*----------------------------------------------------------------------------*/
 void NLNSOL::FAS::AMGHierarchy::Init(const Epetra_Comm& comm,
     Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config,
-    const std::string listname, Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem,
+    const std::string listname, Teuchos::RCP<NLNSOL::NlnProblemBase> nlnproblem,
     const Teuchos::ParameterList& mlparams)
 {
   // fill member variables
@@ -263,7 +264,7 @@ const bool NLNSOL::FAS::AMGHierarchy::SetupNlnSolHierarchy()
     }
 
     // the nonlinear problem to hand into each level
-    Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem;
+    Teuchos::RCP<NLNSOL::NlnProblemBase> nlnproblem;
     if (level == 0) // fine level
     {
       nlnproblem = NlnProblem();
@@ -271,13 +272,18 @@ const bool NLNSOL::FAS::AMGHierarchy::SetupNlnSolHierarchy()
     else  // any coarse level
     {
       Teuchos::RCP<Teuchos::ParameterList> coarseprobparams =
-          Teuchos::rcp(new Teuchos::ParameterList(NlnProblem()->Params()));
-      coarseprobparams->set<Teuchos::RCP<const NLNSOL::FAS::AMGHierarchy> >("AMG Hierarchy", Teuchos::rcp(this, false));
+          Teuchos::rcp(new Teuchos::ParameterList());
+      coarseprobparams->set<Teuchos::RCP<const NLNSOL::FAS::AMGHierarchy> >(
+          "AMG Hierarchy", Teuchos::rcp(this, false));
       coarseprobparams->set<int>("Level ID", level);
+      coarseprobparams->set<Teuchos::RCP<NLNSOL::NlnProblem> >(
+          "Field Problem", Teuchos::rcp_dynamic_cast<NLNSOL::NlnProblem>(NlnProblem()));
+      coarseprobparams->set("Jacobian Operator", myA);
 
       nlnproblem = Teuchos::rcp(new NLNSOL::NlnProblemCoarseLevel());
-      nlnproblem->Init(NlnProblem()->Comm(), *coarseprobparams,
-          NlnProblem()->NOXGroup(), myA, NlnProblem()->DebugWriter());
+      nlnproblem->Init(Comm(), Configuration(), "Nonlinear Problem",
+          *coarseprobparams, Teuchos::rcp(&myA->OperatorRangeMap(), false),
+          NlnProblem()->DebugWriter());
       nlnproblem->Setup();
     }
 
@@ -562,7 +568,8 @@ NLNSOL::FAS::AMGHierarchy::NlnLevel(const int i) const
 }
 
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<NLNSOL::NlnProblem> NLNSOL::FAS::AMGHierarchy::NlnProblem() const
+Teuchos::RCP<NLNSOL::NlnProblemBase>
+NLNSOL::FAS::AMGHierarchy::NlnProblem() const
 {
   // check if nonlinear problem has already been set
   if (nlnproblem_.is_null())

@@ -56,7 +56,7 @@ class Epetra_MultiVector;
 
 namespace NLNSOL
 {
-  class NlnProblem;
+  class NlnProblemBase;
 
   namespace FAS
   {
@@ -121,7 +121,7 @@ namespace NLNSOL
       virtual void Init(const Epetra_Comm& comm, ///< communicator
           Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config, ///< configuration
           const std::string listname, ///< name of sublist with configuration of this operator
-          Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem, ///< nonlinear problem to solve
+          Teuchos::RCP<NLNSOL::NlnProblemBase> nlnproblem, ///< nonlinear problem to solve
           const Teuchos::ParameterList& mlparams ///< ML parameter list from baci linear solver (just for null space)
           );
 
@@ -314,7 +314,7 @@ namespace NLNSOL
       virtual const std::string& MyListName() const { return listname_; }
 
       //! Access to the nonlinear problem
-      virtual Teuchos::RCP<NLNSOL::NlnProblem> NlnProblem() const;
+      virtual Teuchos::RCP<NLNSOL::NlnProblemBase> NlnProblem() const;
 
       //! @name Sanity and validity checks
       //@{
@@ -347,9 +347,8 @@ namespace NLNSOL
 
       //@}
 
-
       //! Nonlinear problem to be evaluated and solved
-      Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem_;
+      Teuchos::RCP<NLNSOL::NlnProblemBase> nlnproblem_;
 
       //! ML parameter list of baci linear solver (just for nullspace)
       Teuchos::RCP<const Teuchos::ParameterList> mlparams_;

@@ -31,7 +31,7 @@ Maintainer: Matthias Mayr
 #include "fas_nlnlevel.H"
 #include "nln_operator_base.H"
 #include "nln_operator_factory.H"
-#include "nln_problem.H"
+#include "nln_problem_base.H"
 #include "nln_utils.H"
 
 #include "../drt_io/io_control.H"
@@ -75,7 +75,7 @@ void NLNSOL::FAS::NlnLevel::Init(const int levelid,
     const Epetra_Comm& comm,
     Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config,
     const std::string listname,
-    Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem,
+    Teuchos::RCP<NLNSOL::NlnProblemBase> nlnproblem,
     Teuchos::RCP<const Epetra_MultiVector> nullspace
     )
 {
@@ -375,7 +375,7 @@ const Epetra_BlockMap& NLNSOL::FAS::NlnLevel::DofRowMap() const
 }
 
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<NLNSOL::NlnProblem> NLNSOL::FAS::NlnLevel::NlnProblem() const
+Teuchos::RCP<NLNSOL::NlnProblemBase> NLNSOL::FAS::NlnLevel::NlnProblem() const
 {
   if (nlnproblem_.is_null())
     dserror("Nonlinear problem 'nlnproblem_' has not been set, yet.");

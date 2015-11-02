@@ -107,7 +107,7 @@ void NLNSOL::NlnOperatorLinPrec::Setup()
   }
 
   Teuchos::RCP<Epetra_MultiVector> tmp =
-      Teuchos::rcp(new Epetra_MultiVector(NlnProblem()->DofRowMap(), true));
+      Teuchos::rcp(new Epetra_MultiVector(*NlnProblem()->DofRowMap(), true));
 
   // Setup with dummy vectors
   linprec_->Setup(true, &*(NlnProblem()->GetJacobianOperator()),

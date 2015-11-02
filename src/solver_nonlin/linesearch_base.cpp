@@ -23,7 +23,7 @@ Maintainer: Matthias Mayr
 
 // baci
 #include "linesearch_base.H"
-#include "nln_problem.H"
+#include "nln_problem_base.H"
 
 #include "../drt_lib/drt_dserror.H"
 
@@ -47,7 +47,7 @@ NLNSOL::LineSearchBase::LineSearchBase()
 
 /*----------------------------------------------------------------------------*/
 void NLNSOL::LineSearchBase::Init(
-    Teuchos::RCP<const NLNSOL::NlnProblem> nlnproblem,
+    Teuchos::RCP<const NLNSOL::NlnProblemBase> nlnproblem,
     Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config,
     const std::string listname,
     const Epetra_MultiVector& xold,

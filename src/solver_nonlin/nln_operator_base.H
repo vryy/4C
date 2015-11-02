@@ -41,7 +41,7 @@ namespace LINALG
 
 namespace NLNSOL
 {
-  class NlnProblem;
+  class NlnProblemBase;
 } // namespace NLNSOL
 
 namespace Teuchos
@@ -65,7 +65,7 @@ namespace Teuchos
  *  <li> Possible line search strategies are derived from
  *       NLNSOL::LineSearchBase. </li>
  *  <li> An interface to the nonlinear problem to be solved is provided by
- *       NLNSOL::NlnProblem. </li>
+ *       NLNSOL::NlnProblemBase. </li>
  *  <li> A collection of helpful utilities can be found in NLNSOL::UTILS. </li>
  *  </ul>
  *
@@ -137,7 +137,7 @@ namespace NLNSOL
       virtual void Init(const Epetra_Comm& comm, ///< communicator
           Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config, ///< configuration
           const std::string listname, ///< name of sublist for this operator
-          Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem, ///< nonlinear problem to solve
+          Teuchos::RCP<NLNSOL::NlnProblemBase> nlnproblem, ///< nonlinear problem to solve
           Teuchos::RCP<LINALG::Solver> bacisolver = Teuchos::null, ///< linear solver from Baci
           const int nested = 0 ///< How nested is this algorithm?
           );
@@ -231,7 +231,7 @@ namespace NLNSOL
       virtual const std::string& MyListName() const { return listname_; }
 
       //! Access to the nonlinear problem
-      virtual Teuchos::RCP<NLNSOL::NlnProblem> NlnProblem() const;
+      virtual Teuchos::RCP<NLNSOL::NlnProblemBase> NlnProblem() const;
 
       //! Access to Baci linear solver
       virtual Teuchos::RCP<LINALG::Solver> BaciLinearSolver() const;
@@ -392,7 +392,7 @@ namespace NLNSOL
       //@}
 
       //! Nonlinear problem to be evaluated and solved
-      Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem_;
+      Teuchos::RCP<NLNSOL::NlnProblemBase> nlnproblem_;
 
       /*! \brief Linear solver from Baci
        *

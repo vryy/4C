@@ -23,18 +23,23 @@ Maintainer: Matthias Mayr
 #include <Teuchos_RCP.hpp>
 
 // baci
-#include "nln_problem.H"
+#include "nln_problem_base.H"
 
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
 
-class Epetra_Comm;
 class Epetra_MultiVector;
 
 namespace Teuchos
 {
   class ParameterList;
 } // namespace Teuchos
+
+// baci
+namespace NLNSOL
+{
+  class NlnProblem;
+} // namespace NLNSOL
 
 /*----------------------------------------------------------------------------*/
 /* definition of classes */
@@ -56,7 +61,7 @@ namespace NLNSOL
    *
    *  \author mayr.mt \date 06/2014
    */
-  class NlnProblemCoarseLevel : public NlnProblem
+  class NlnProblemCoarseLevel : public NlnProblemBase
   {
   public:
 
@@ -89,6 +94,32 @@ namespace NLNSOL
      *  \sa SetupResidualModification
      */
     virtual void Setup();
+
+    /*! \brief Set actual model evaluator
+     *
+     *  Extract Teuchos::RCP to the actual BACI model evaluator form
+     *  Teuchos::ParameterList store it.
+     *
+     *  \note For the coarse level problem, the model evaluator is of type
+     *  NLNSOL::NlnProblem.
+     *
+     *  \return Bool: true if successful, false otherwise
+     *
+     *  \sa NLNSOL::NlnProblem()
+     *
+     *  \author mayr.mt \date 10/2015
+     */
+    virtual const bool SetModelEvaluator();
+
+    /*! \brief Set Jacobian operator
+     *
+     *  Extract Jacobian operator form Teuchos::ParameterList and store it.
+     *
+     *  \return Bool: true if successful, false otherwise
+     *
+     *  \author mayr.mt \date 10/2015
+     */
+    virtual const bool SetJacobianOperator() { /* nothing to do */ return true; }
 
     /*! \brief Set coarse level residual modifications for FAS
      *
@@ -138,22 +169,6 @@ namespace NLNSOL
      *  \author mayr.mt \date 06/2014
      */
     virtual Teuchos::RCP<const Epetra_MultiVector> ComputeF(
-        const Epetra_MultiVector& xc ///< current solution on coarse level
-        ) const;
-
-    /*! \brief Compute the plain residual on a coarse level
-     *
-     *  This is an ComputeF() in a variational way. Hence, we compute
-     *  \f$RF(Px)\f$, i.e. we first prolongate the current coarse level solution
-     *  to the fine level, then call ComputeF() on the fine level using the fine
-     *  level nonlinear problem NLNSOL::NlnProblem, and restrict the
-     *  residual to the current coarse level, afterwards.
-     *
-     *  \return residual on coarse level
-     *
-     *  \author mayr.mt \date 10/2015
-     */
-    virtual Teuchos::RCP<const Epetra_MultiVector> ComputePlainF(
         const Epetra_MultiVector& xc ///< current solution on coarse level
         ) const;
 
@@ -230,6 +245,22 @@ namespace NLNSOL
 
   private:
 
+    /*! \brief Compute the plain residual on a coarse level
+     *
+     *  This is an ComputeF() in a variational way. Hence, we compute
+     *  \f$RF(Px)\f$, i.e. we first prolongate the current coarse level solution
+     *  to the fine level, then call ComputeF() on the fine level using the fine
+     *  level nonlinear problem NLNSOL::NlnProblem, and restrict the
+     *  residual to the current coarse level, afterwards.
+     *
+     *  \return residual on coarse level
+     *
+     *  \author mayr.mt \date 10/2015
+     */
+    virtual Teuchos::RCP<const Epetra_MultiVector> ComputePlainF(
+        const Epetra_MultiVector& xc ///< current solution on coarse level
+        ) const;
+
     //! @name Access to members
     //@{
 
@@ -237,6 +268,9 @@ namespace NLNSOL
     virtual const NLNSOL::FAS::AMGHierarchy& Hierarchy() const;
 
     //@}
+
+    //! Field problem to be evaluated
+    Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem_;
 
     //! AMG-FAS object with level hierarchy
     Teuchos::RCP<const NLNSOL::FAS::AMGHierarchy> hierarchy_;

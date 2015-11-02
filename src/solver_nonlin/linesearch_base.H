@@ -40,7 +40,7 @@ namespace Teuchos
 namespace NLNSOL
 {
   class NlnOperator;
-  class NlnProblem;
+  class NlnProblemBase;
 } // namespace NLNSOL
 
 /*----------------------------------------------------------------------------*/
@@ -76,7 +76,7 @@ namespace NLNSOL
     //@{
 
     //! Initialize some member variables
-    virtual void Init(Teuchos::RCP<const NLNSOL::NlnProblem> nlnproblem, ///< nonlinear problem to solve
+    virtual void Init(Teuchos::RCP<const NLNSOL::NlnProblemBase> nlnproblem, ///< nonlinear problem to solve
         Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config, ///< configuration
         const std::string listname, ///< name of sublist with configuration of this operator
         const Epetra_MultiVector& xold, ///< last iterate
@@ -279,7 +279,7 @@ namespace NLNSOL
         ) const;
 
     //! nonlinear operator that has initiated this line search
-    Teuchos::RCP<const NLNSOL::NlnProblem> nlnproblem_;
+    Teuchos::RCP<const NLNSOL::NlnProblemBase> nlnproblem_;
 
     //! @name Configuration
     //@{

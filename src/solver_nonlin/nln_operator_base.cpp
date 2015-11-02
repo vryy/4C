@@ -29,7 +29,7 @@ Maintainer: Matthias Mayr
 
 // baci
 #include "nln_operator_base.H"
-#include "nln_problem.H"
+#include "nln_problem_base.H"
 
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_pstream.H"
@@ -59,7 +59,7 @@ NLNSOL::NlnOperatorBase::NlnOperatorBase()
 /*----------------------------------------------------------------------------*/
 void NLNSOL::NlnOperatorBase::Init(const Epetra_Comm& comm,
     Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config,
-    const std::string listname, Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem,
+    const std::string listname, Teuchos::RCP<NLNSOL::NlnProblemBase> nlnproblem,
     Teuchos::RCP<LINALG::Solver> bacisolver, const int nested)
 {
   // Enforce to call Setup() after Init()
@@ -100,7 +100,7 @@ const Epetra_Comm& NLNSOL::NlnOperatorBase::Comm() const
 Teuchos::RCP<const NLNSOL::UTILS::NlnConfig>
 NLNSOL::NlnOperatorBase::Configuration() const
 {
-  // check if parameter list has already been set
+  // check if configuration object has already been set
   if (config_.is_null())
     dserror("Configuration 'config_' has not been initialized, yet.");
 
@@ -109,7 +109,7 @@ NLNSOL::NlnOperatorBase::Configuration() const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<NLNSOL::NlnProblem> NLNSOL::NlnOperatorBase::NlnProblem() const
+Teuchos::RCP<NLNSOL::NlnProblemBase> NLNSOL::NlnOperatorBase::NlnProblem() const
 {
   // check if nonlinear problem has already been set
   if (nlnproblem_.is_null())

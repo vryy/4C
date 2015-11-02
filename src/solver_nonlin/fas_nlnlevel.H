@@ -35,7 +35,7 @@ class Epetra_Vector;
 namespace NLNSOL
 {
   class NlnOperatorBase;
-  class NlnProblem;
+  class NlnProblemBase;
 
   namespace UTILS
   {
@@ -94,7 +94,7 @@ namespace FAS
         const Epetra_Comm& comm, ///< communicator
         Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> config, ///< configuration of nonlinear solver
         const std::string listname, ///< name of sublist with configuration of this operator
-        Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem, ///< reference to nonlinear problem evaluator
+        Teuchos::RCP<NLNSOL::NlnProblemBase> nlnproblem, ///< reference to nonlinear problem evaluator
         Teuchos::RCP<const Epetra_MultiVector> nullspace = Teuchos::null ///< set of null space vectors
         );
 
@@ -270,7 +270,7 @@ namespace FAS
     //@}
 
     //! Access to problem where the smoother acts on
-    virtual Teuchos::RCP<NLNSOL::NlnProblem> NlnProblem() const;
+    virtual Teuchos::RCP<NLNSOL::NlnProblemBase> NlnProblem() const;
 
     /*! \brief Check for stagnation of level smoother
      *
@@ -381,7 +381,7 @@ namespace FAS
     //@}
 
     //! Access to nonlinear problem
-    Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem_;
+    Teuchos::RCP<NLNSOL::NlnProblemBase> nlnproblem_;
 
     //! communicator
     Teuchos::RCP<const Epetra_Comm> comm_;

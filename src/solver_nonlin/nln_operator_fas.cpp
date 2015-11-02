@@ -335,7 +335,7 @@ const int NLNSOL::NlnOperatorFas::VCycleTwoLevel(
 
     // restrict current residual (this will be 'fbar' on next coarser level)
     Teuchos::RCP<const Epetra_MultiVector> fc =
-        Hierarchy()->NlnLevel(0)->NlnProblem()->ComputePlainF(*x);
+        Hierarchy()->NlnLevel(0)->NlnProblem()->ComputeF(*x);
     fc = Hierarchy()->NlnLevel(1)->RestrictToNextCoarserLevel(fc);
 
     Hierarchy()->NlnLevel(1)->NlnProblem()->SetupResidualModification(xc, fc);

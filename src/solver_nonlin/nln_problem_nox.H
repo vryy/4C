@@ -1,8 +1,8 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file nln_problem.H
+\file nln_problem_nox.H
 
-\brief Field problem base class for different types of BACI problems
+\brief Field problem using NOX interface to BACI
 
 <pre>
 Maintainer: Matthias Mayr
@@ -13,17 +13,18 @@ Maintainer: Matthias Mayr
 
 /*----------------------------------------------------------------------------*/
 
-#ifndef NLN_PROBLEM_H
-#define NLN_PROBLEM_H
+#ifndef NLN_PROBLEM_NOX_H
+#define NLN_PROBLEM_NOX_H
 
 /*----------------------------------------------------------------------------*/
 /* headers */
 
 // Teuchos
 #include <Teuchos_RCP.hpp>
+#include <Teuchos_VerboseObject.hpp>
 
 // baci
-#include "nln_problem_base.H"
+#include "nln_problem.H"
 
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_dserror.H"
@@ -40,14 +41,6 @@ namespace LINALG
   class SparseOperator;
 } // namespace LINALG
 
-namespace NLNSOL
-{
-  namespace UTILS
-  {
-    class DebugWriterBase;
-  }  // namespace UTILS
-} // namespace NLNSOL
-
 namespace NOX
 {
   namespace Abstract
@@ -60,20 +53,19 @@ namespace NOX
 /* definition of classes */
 namespace NLNSOL
 {
-  /*! \class NlnProblem
-   *  \brief Field problem base class for different types of BACI problems
+  /*! \class NlnProblemNox
+   *  \brief Field problem using NOX interface to BACI
    *
-   *  This is a base class for field problems and acts as common entry to all
-   *  derived field problem classes. Derived classes wrap BACI time integrators
-   *  or NOX::Abstract::Groups that allow to evaluate the physical
-   *  problem at hand.
+   *  Interface class between the nonlinear solver and BACI. We utilize the
+   *  NOX::Abstract::Group() to access the time integration within BACI for
+   *  Evaluate() / computeF().
    *
-   *  Derive from NLNSOL::NlnProblem to implement the interface to a certain
-   *  time integrator in BACI.
+   *  NLNSOL::NlnProblem acts on the DofRowMap() of the (fine) level, only. For
+   *  coarse level representations, we use NLNSOL::NlnProblemCoarseLevel().
    *
-   *  \author mayr.mt \date 11/2015
+   *  \author mayr.mt \date 10/2015
    */
-  class NlnProblem : public NlnProblemBase
+  class NlnProblemNox : public NlnProblem
   {
   public:
 
@@ -81,10 +73,10 @@ namespace NLNSOL
     //@{
 
     //! constructor (empty)
-    NlnProblem();
+    NlnProblemNox();
 
     //! Destructor
-    virtual ~NlnProblem(){};
+    virtual ~NlnProblemNox(){};
 
     //@}
 
@@ -92,7 +84,7 @@ namespace NLNSOL
     //@{
 
     //! Setup of nonlinear problem
-    virtual void Setup() = 0;
+    virtual void Setup();
 
     /*! \brief Set actual model evaluator
      *
@@ -103,7 +95,7 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 10/2015
      */
-    virtual const bool SetModelEvaluator() = 0;
+    virtual const bool SetModelEvaluator();
 
     /*! \brief Set Jacobian operator
      *
@@ -113,23 +105,7 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 10/2015
      */
-    virtual const bool SetJacobianOperator() = 0;
-
-    /*! \brief Set coarse level residual modifications for FAS
-     *
-     *  \note Only needed for coarse levels. Implemented here only for purpose
-     *  of inheritance.
-     *
-     *  \sa NLNSOL::NlnProblemCoarseLevel::SetupResidualModification
-     */
-    virtual void SetupResidualModification(
-        Teuchos::RCP<const Epetra_MultiVector> xbar, ///< \f$\bar{x}\f$
-        Teuchos::RCP<const Epetra_MultiVector> fbar ///< \f$\bar{F}\f$
-        )
-    {
-      dserror("Not implemented in base class. This routine is needed only in "
-          "case of a coarse level problem within FAS-AMG.");
-    }
+    virtual const bool SetJacobianOperator();
 
     //@}
 
@@ -164,7 +140,7 @@ namespace NLNSOL
      */
     virtual void ComputeF(const Epetra_MultiVector& x, ///< current solution
         Epetra_MultiVector& f ///< current residual (to be filled)
-        ) const = 0;
+        ) const;
 
     /*! \brief Compute nonlinear residual \f$F(x)\f$
      *
@@ -172,7 +148,7 @@ namespace NLNSOL
      */
     virtual Teuchos::RCP<const Epetra_MultiVector> ComputeF(
         const Epetra_MultiVector& x ///< current solution
-        ) const = 0;
+        ) const;
 
     /*! \brief Evaluate Jacobian (linearization of residual)
      *
@@ -181,43 +157,7 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 06/2014
      */
-    virtual void ComputeJacobian() const = 0;
-
-    //@}
-
-    //! @name Get attributes
-    //@{
-
-    /*! \brief Level ID of level where this nonlinear problem lives on
-     *
-     *  Since this is the fine level problem, the level ID is always 0.
-     *
-     *  \author mayr.mt \date 03/2015
-     */
-    virtual const int LevelID() const { return 0; }
-
-    //@}
-
-    //! Debug output of data
-    //@{
-
-    /*! \brief Write Teuchos::RCP<Epetra_MultiVector> to output
-     *
-     *  \author mayr.mt \date 06/2015
-     */
-    virtual void WriteVector(Teuchos::RCP<const Epetra_MultiVector> vec, ///< vector with result data (to be outputted)
-        const std::string& description, ///< description of output quantity
-        const IO::DiscretizationWriter::VectorType vt = IO::DiscretizationWriter::dofvector ///< vector type
-        ) const;
-
-    /*! \brief Wrapper to write plain Epetra_MultiVector to output
-     *
-     *  \author mayr.mt \date 06/2015
-     */
-    virtual void WriteVector(const Epetra_MultiVector& vec, ///< vector with result data (to be outputted)
-        const std::string& description, ///< description of output quantity
-        const IO::DiscretizationWriter::VectorType vt = IO::DiscretizationWriter::dofvector ///< vector type
-        ) const;
+    virtual void ComputeJacobian() const;
 
     //@}
 
@@ -225,7 +165,7 @@ namespace NLNSOL
     //@{
 
     //! get Jacobian as Epetra_Operator
-    virtual Teuchos::RCP<Epetra_Operator> GetJacobianOperator() const = 0;
+    virtual Teuchos::RCP<Epetra_Operator> GetJacobianOperator() const;
 
     //@}
 
@@ -233,7 +173,7 @@ namespace NLNSOL
     //@{
 
     //! Returns a character string describing the operator
-    virtual const char* Label() const { return "NLNSOL::NlnProblem"; }
+    virtual const char* Label() const { return "NLNSOL::NlnProblemNox"; }
 
     //@}
 
@@ -241,7 +181,26 @@ namespace NLNSOL
 
   private:
 
-  }; // class NlnProblem
+    //! NOX group
+    virtual NOX::Abstract::Group& NOXGroup() const;
+
+    //! NOX group for access to time integrator via call-back routines
+    Teuchos::RCP<NOX::Abstract::Group> noxgrp_;
+
+    /*! \brief Pointer to Jacobian matrix of underlying problem
+     *
+     *  This needs to be a LINALG::SparseOperator since this is the base class
+     *  for all matrix types in BACI. We can always extract an Epetra_Operator
+     *  when we want to call a Trilinos package/solver.
+     *
+     *  \warning Access to time integration WIHTOUT using the NOX group
+     *  #noxgrp_. Seems to be inconsistent since all other accesses to time
+     *  integration are done via the NOX group #noxgrp_. However, usage of NOX
+     *  group might go away at some point.
+     */
+    Teuchos::RCP<LINALG::SparseOperator> jac_;
+
+  }; // class NlnProblemNox
 } // namespace NLNSOL
 
-#endif /* NLN_PROBLEM_H */
+#endif /* NLN_PROBLEM_NOXH */
