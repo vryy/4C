@@ -12,6 +12,7 @@
 #include "MueLu_FactoryManagerBase_fwd.hpp"
 #include "MueLu_SingleLevelFactoryBase.hpp"
 
+#include "MueLu_NodeDefinition.hpp"
 #include "muelu_ContactAFilterFactory_decl.hpp"
 #include "muelu_ContactSPAggregationFactory_decl.hpp"
 #include "MueLu_SelectiveSaPFactory_decl.hpp"
@@ -24,7 +25,7 @@ namespace MueLu {
     @brief FactoryFactory extension for special MueLu classes in BACI
 
    */
-  template <class Scalar = double, class LocalOrdinal = int, class GlobalOrdinal = LocalOrdinal, class Node = KokkosClassic::DefaultNode::DefaultNodeType>
+  template <class Scalar = double, class LocalOrdinal = int, class GlobalOrdinal = LocalOrdinal, class Node = KokkosSerialNode>
   class BaciFactoryFactory : public FactoryFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node> {
 #undef MUELU_BACIFACTORYFACTORY_SHORT
 #include "MueLu_UseShortNames.hpp"

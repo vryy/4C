@@ -311,7 +311,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     UCAggFact11->SetParameter("aggregation: min agg size",Teuchos::ParameterEntry(minPerAgg));
     UCAggFact11->SetParameter("aggregation: max agg size",Teuchos::ParameterEntry(maxPerAgg));
     UCAggFact11->SetParameter("aggregation: ordering",Teuchos::ParameterEntry(std::string("graph")));
-    UCAggFact11->SetParameter("UseIsolatedNodeAggregationAlgorithm",Teuchos::ParameterEntry(false));
+    UCAggFact11->SetParameter("aggregation: allow user-specified singletons",Teuchos::ParameterEntry(false));
 
 
     Teuchos::RCP<TentativePFactory> Ptent11Fact = Teuchos::rcp(new TentativePFactory());
