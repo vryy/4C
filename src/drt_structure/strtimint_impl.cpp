@@ -64,6 +64,8 @@ Maintainer: Alexander Popp
 #include "../solver_nonlin/nln_operator_base.H"
 #include "../solver_nonlin/nln_operator_factory.H"
 #include "../solver_nonlin/nln_problem.H"
+#include "../solver_nonlin/nln_problem_base.H"
+#include "../solver_nonlin/nln_problem_nox.H"
 #include "../solver_nonlin/nln_utils.H"
 #include "strtimint_noxgroup.H"
 
@@ -2620,14 +2622,20 @@ int STR::TimIntImpl::NlnSolver()
           noxSoln, linSys));
 
   // ---------------------------------------------------------------------------
-    // Create interface to nonlinear problem
-    // ---------------------------------------------------------------------------
-    Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem =
-        Teuchos::rcp(new NLNSOL::NlnProblem());
-    nlnproblem->Init(Discretization()->Comm(),
-        nlnconfig->GetSubList("Nonlinear Problem"), *noxgrp, stiff_,
-        Teuchos::null);
-    nlnproblem->Setup();
+  // Create interface to nonlinear problem
+  // ---------------------------------------------------------------------------
+  Teuchos::RCP<Teuchos::ParameterList> probparams =
+      Teuchos::rcp(new Teuchos::ParameterList());
+  probparams->set("NOX Group",
+      Teuchos::rcp_dynamic_cast<NOX::Abstract::Group>(noxgrp, true));
+  probparams->set("Jacobian Operator",
+      Teuchos::rcp_dynamic_cast<LINALG::SparseOperator>(stiff_));
+
+  Teuchos::RCP<NLNSOL::NlnProblem> nlnproblem =
+      Teuchos::rcp(new NLNSOL::NlnProblemNox());
+  nlnproblem->Init(Discretization()->Comm(), nlnconfig, "Nonlinear Problem",
+      *probparams, DofRowMap(), Teuchos::null);
+  nlnproblem->Setup();
 
   /* Evaluate once more to guarantee valid quantities inside of the
    * NOX::STR::Group() */
