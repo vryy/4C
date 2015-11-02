@@ -14,7 +14,7 @@ created by pre_exodus
 //NODES       36
 DIM           3
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Scalar_Transport
+PROBLEMTYP                      Reynolds
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -38,8 +38,8 @@ SOLVERTYPE                      nonlinear
 TIMEINTEGR                      Stationary // One_Step_Theta
 UPRES                           1
 RESTARTEVRY                     20
-NUMSTEP                         10
-MAXTIME                         0.1
+NUMSTEP                         3
+MAXTIME                         0.03
 TIMESTEP                        1.0e-2
 THETA                           1.0
 VELOCITYFIELD                   zero
@@ -48,7 +48,7 @@ INITIALFIELD                    zero_field
 INITFUNCNO                      0
 FSSUGRDIFF                      No
 WRITEFLUX                       No
-CALCERROR                       error_by_function
+CALCERROR                       No
 CALCERRORNO                     2
 OUTMEAN                         no
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR

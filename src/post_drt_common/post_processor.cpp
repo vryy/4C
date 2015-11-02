@@ -247,6 +247,7 @@ void runEnsightVtuFilter(PostProblem    &problem)
         break;
     }
     case prb_cardiac_monodomain:
+    case prb_reynolds:
     case prb_scatra:
     {
         std::string basename = problem.outname();

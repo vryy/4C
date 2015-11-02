@@ -14,7 +14,7 @@ created by pre_exodus
 //NODES       158
 DIM           2
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Scalar_Transport
+PROBLEMTYP                      Reynolds
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1

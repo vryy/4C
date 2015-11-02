@@ -63,6 +63,7 @@ typedef enum _PROBLEM_TYP
   prb_poroscatra,           // passive scalar transport in porous media
   prb_red_airways,          // reduced dimensional airways
   prb_redairways_tissue,    // coupling of reduced-dimensional airways with 3D tissue model
+  prb_reynolds,             // reynolds problem (reduced fluid model for elastohydrodynamic lubrication)
   prb_scatra,               // scalar transport problem (e.g. convection-diffusion)
   prb_ssi,                  // scalar structure interaction
   prb_statmech,             // structural problem

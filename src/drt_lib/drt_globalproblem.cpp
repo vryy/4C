@@ -1255,6 +1255,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     break;
   }
   case prb_cardiac_monodomain:
+  case prb_reynolds:
   case prb_scatra:
   {
     // create empty discretizations
