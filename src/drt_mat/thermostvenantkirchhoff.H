@@ -182,6 +182,13 @@ private:
       Teuchos::ParameterList& params  //!< parameter list
       );
 
+    /// add strain energy
+    virtual void StrainEnergy(
+        const LINALG::Matrix<6,1>& glstrain,   ///< Green-Lagrange strain
+        double& psi,                           ///< strain energy functions
+        const int eleGID                       ///< element GID
+    );
+
     //! computes isotropic elasticity tensor in matrix notion for 3d
     void SetupCmat(
       LINALG::Matrix<6,6>& cmat,

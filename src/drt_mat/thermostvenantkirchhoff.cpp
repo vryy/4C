@@ -161,6 +161,26 @@ void MAT::ThermoStVenantKirchhoff::Evaluate(
 
 }  // STR_Evaluate()
 
+/*----------------------------------------------------------------------*
+ | calculates strain energy                                 seitz 11/15 |
+ *----------------------------------------------------------------------*/
+void MAT::ThermoStVenantKirchhoff::StrainEnergy(
+        const LINALG::Matrix<6,1>& glstrain,   ///< Green-Lagrange strain
+        double& psi,                           ///< strain energy functions
+        const int eleGID                       ///< element GID
+    )
+{
+  if (params_->youngs_.size()>1)
+    dserror("Calculation of strain energy only for constant Young's modulus");
+  Teuchos::ParameterList p; p.set<int>("young_temp",0);
+  LINALG::Matrix<6,6> cmat;
+  SetupCmat(cmat,p);
+  LINALG::Matrix<6,1> s;
+  s.Multiply(cmat,glstrain);
+  psi+=.5*s.Dot(glstrain);
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
  | computes isotropic elasticity tensor in matrix notion     dano 02/10 |

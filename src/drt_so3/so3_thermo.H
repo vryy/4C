@@ -215,20 +215,21 @@ namespace ELEMENTS
     enum ActionType
     {
       none,
-      calc_struct_linstiff,  //!< geometrical linear analysis: stiffness matrix
-      calc_struct_nlnstiff,  //!< stiffness matrix
-      calc_struct_internalforce,  //!< internal force
+      calc_struct_linstiff,      //!< geometrical linear analysis: stiffness matrix
+      calc_struct_nlnstiff,      //!< stiffness matrix
+      calc_struct_internalforce, //!< internal force
       calc_struct_linstiffmass,  //!< geometrical linear analysis: internal force,
                                  //!< its stiffness and mass matrix
       calc_struct_nlnstiffmass,  //!< internal force, its stiffness and mass matrix
-      calc_struct_nlnstifflmass,  //!< internal force, its stiffness and lumped mass matrix
-      calc_struct_stress,  //!< calculate stresses
-      calc_struct_stifftemp,  //!< calculate coupling term k_dT for monolithic TSI
+      calc_struct_nlnstifflmass, //!< internal force, its stiffness and lumped mass matrix
+      calc_struct_stress,        //!< calculate stresses
+      calc_struct_stifftemp,     //!< calculate coupling term k_dT for monolithic TSI
       calc_struct_update_istep,  //!< update all at element level
-      calc_struct_reset_istep,  //!< reset elementwise internal variables
-                                //!< during iteration to last converged state
-                                //!< needed for predictor TangDis
-      postprocess_stress  //!< postprocess stresses
+      calc_struct_reset_istep,   //!< reset elementwise internal variables
+                                 //!< during iteration to last converged state
+                                 //!< needed for predictor TangDis
+      postprocess_stress,        //!< postprocess stresses
+      calc_struct_energy         //!< compute internal energy
     };
 
     //! vector of inverses of the jacobian in material frame

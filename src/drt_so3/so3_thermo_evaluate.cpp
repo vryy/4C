@@ -200,6 +200,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
   else if (action == "calc_struct_stress")        act = calc_struct_stress;
   else if (action == "calc_struct_reset_istep")   act = calc_struct_reset_istep;
   else if (action == "calc_struct_update_istep")  act = calc_struct_update_istep;
+  else if (action == "calc_struct_energy")        act = calc_struct_energy;
   else dserror("Unknown type of action for So3_Thermo: %s",action.c_str());
 
   // what should the element do
@@ -790,6 +791,21 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
     break;
   }  // calc_struct_stifftemp
 
+  // strain energy: the solid element knows what to do...
+  case calc_struct_energy:
+  {
+    so3_ele::Evaluate(
+      params,
+      discretization,
+      la[0].lm_,
+      elemat1_epetra,
+      elemat2_epetra,
+      elevec1_epetra,
+      elevec2_epetra,
+      elevec3_epetra
+      );
+    break;
+  }
   //============================================================================
   default:
     dserror("Unknown type of action for So3_Thermo");
