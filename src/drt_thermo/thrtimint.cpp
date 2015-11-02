@@ -954,51 +954,11 @@ void THR::TimInt::SetInitialField(
 
   case INPAR::THR::initfield_field_by_condition:
   {
-    // access the initial field condition
-    std::vector<DRT::Condition*> cond;
-    discret_->GetCondition("InitialField", cond);
+    std::vector<int> localdofs;
+    localdofs.push_back(0);
+    discret_->EvaluateInitialField("Temperature",(*temp_)(0),localdofs);
+    discret_->EvaluateInitialField("Temperature",tempn_,localdofs);
 
-    const Epetra_Map* dofrowmap = discret_->DofRowMap();
-
-    for (unsigned i=0; i<cond.size(); ++i)
-    {
-      std::cout << "Applied InitialField Condition " << i << std::endl;
-
-      // loop all nodes on the processor
-      for(int lnodeid=0; lnodeid<discret_->NumMyRowNodes(); lnodeid++)
-      {
-        // get the processor local node
-        DRT::Node* lnode = discret_->lRowNode(lnodeid);
-
-        std::vector<DRT::Condition*> mycond;
-        lnode->GetCondition("InitialField",mycond);
-
-        if (mycond.size() > 0)
-        {
-          // the set of degrees of freedom associated with the node
-          std::vector<int> nodedofset = discret_->Dof(lnode);
-
-          int numdofs = nodedofset.size();
-          for (int k=0; k<numdofs; ++k)
-          {
-            // set 1.0 as initial value if node belongs to condition
-            double temp0 = 1.0;
-            // set initial value
-            const int dofgid = nodedofset[k];
-            int doflid = dofrowmap->LID(dofgid);
-            // extract temperature vector at time t_n (temp_ contains various vectors of
-            // old(er) temperatures and is of type TimIntMStep<Epetra_Vector>)
-            Teuchos::RCP<Epetra_Vector> vec = (*temp_)(0);
-            int err1 = vec->ReplaceMyValues(1,&temp0,&doflid);
-            if (err1 != 0) dserror("dof not on proc");
-            // initialise also the solution vector. These values are a pretty good guess for the
-            // solution after the first time step (much better than starting with a zero vector)
-            int err2 = tempn_->ReplaceMyValues(1,&temp0,&doflid);
-            if (err2 != 0) dserror("dof not on proc");
-          }  // numdofs
-        }  // mycond.size
-      }  // loop nodes on proc
-    }  // cond.size
     break;
   }  // initfield_field_by_condition
 

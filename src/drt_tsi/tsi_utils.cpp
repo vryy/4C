@@ -63,6 +63,9 @@ std::map<std::string,std::string> TSI::UTILS::ThermoStructureCloneStrategy::Cond
   conditions_to_copy.insert(std::pair<std::string,std::string>("LinePeriodic","LinePeriodic"));
   conditions_to_copy.insert(std::pair<std::string,std::string>("SurfacePeriodic","SurfacePeriodic"));
 
+  /// initial field
+  conditions_to_copy.insert(std::pair<std::string,std::string>("ThermoInitfield","Initfield"));
+
   return conditions_to_copy;
 }  // ConditionsToCopy()
 
