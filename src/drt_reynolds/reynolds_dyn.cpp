@@ -15,20 +15,10 @@ Maintainer: Andy Wirtz
 
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 
-//#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_createdis.H"
 
 #include "../drt_scatra/scatra_timint_implicit.H"
 
-//#include "../drt_scatra_ele/scatra_ele.H"
-
-//#include <iostream>
-//#include <Teuchos_StandardParameterEntryValidators.hpp>
-//#include <Teuchos_TimeMonitor.hpp>
-
-//#include "scatra_algorithm.H"
-//#include "scatra_resulttest.H"
-//#include "scatra_utils_clonestrategy.H"
 #include "reynolds_dyn.H"
 
 /*----------------------------------------------------------------------*
@@ -51,6 +41,8 @@ void reynolds_dyn(int restart)
   }
 
   // access the problem-specific parameter list
+  const Teuchos::ParameterList& reynoldsdyn =
+      DRT::Problem::Instance()->ReynoldsDynamicParams();
   const Teuchos::ParameterList& scatradyn =
       DRT::Problem::Instance()->ScalarTransportDynamicParams();
 
@@ -73,14 +65,14 @@ void reynolds_dyn(int restart)
   scatradis->FillComplete(true, false, false);
 
   // get linear solver id from REYNOLDS DYNAMIC
-  const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
+  const int linsolvernumber = reynoldsdyn.get<int>("LINEAR_SOLVER");
   if (linsolvernumber == (-1))
     dserror(
         "no linear solver defined for REYNOLDS problem. Please set LINEAR_SOLVER in REYNOLDS DYNAMIC to a valid number!");
 
   // create instance of scalar transport basis algorithm (empty fluid discretization)
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly = Teuchos::rcp(
-      new ADAPTER::ScaTraBaseAlgorithm(scatradyn, scatradyn,
+      new ADAPTER::ScaTraBaseAlgorithm(reynoldsdyn, scatradyn,
           DRT::Problem::Instance()->SolverParams(linsolvernumber)));
 
   // set initial velocity field

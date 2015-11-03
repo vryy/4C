@@ -34,6 +34,7 @@ Maintainer: Martin Kronbichler
 #include "inpar_statmech.H"
 #include "inpar_fsi.H"
 #include "inpar_topopt.H"
+#include "inpar_reynolds.H"
 #include "inpar_scatra.H"
 #include "inpar_s2i.H"
 #include "inpar_structure.H"
@@ -610,6 +611,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   INPAR::COMBUST::SetValidParameters(list);
   INPAR::XFEM::SetValidParameters(list);
 
+  INPAR::REYNOLDS::SetValidParameters(list);
   INPAR::SCATRA::SetValidParameters(list);
   INPAR::LEVELSET::SetValidParameters(list);
   INPAR::ELCH::SetValidParameters(list);

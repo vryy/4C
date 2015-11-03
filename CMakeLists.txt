@@ -707,6 +707,7 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_poroscatra.cpp
   src/drt_inpar/inpar_potential.cpp
   src/drt_inpar/inpar_problemtype.cpp
+  src/drt_inpar/inpar_reynolds.cpp
   src/drt_inpar/inpar_s2i.cpp
   src/drt_inpar/inpar_scatra.cpp
   src/drt_inpar/inpar_searchtree.cpp
