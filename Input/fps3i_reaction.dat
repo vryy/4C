@@ -427,7 +427,7 @@ ML_DAMPCOARSE                   1.0                           // damping coarse 
 --------------------------------------------------------------------SOLVER 6
 NAME                            COUPLED_FS3I_SOLVER
 SOLVER                          Aztec_MSR                     // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        10                             // output every so often, 0 no output
+AZOUTPUT                        0                             // output every so often, 0 no output
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          BGS2x2                        // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
 AZREUSE                         0                             // how often to recompute some preconditioners
@@ -577,9 +577,9 @@ E 12 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0 Live Mid
 --------------------------------------DESIGN SCATRA COUPLING SURF CONDITIONS
 DSURF                           2
 // interface_lumen
-E 18 - NUMSCAL 2 ONOFF 1 0 COUPID 1 PERMCOEF 100.0 CONDUCT 100.0 FILTR 0.98 WSSONOFF 1 WSSCOEFFS 5e-2 1e-5 1e-6
+E 18 - NUMSCAL 2 ONOFF 1 0 COUPID 1 PERMCOEF 9.0 CONDUCT 100.0 FILTR 0.9982 WSSONOFF 1 WSSCOEFFS 5e-2 1e-5 1e-6
 // interface_intima
-E 17 - NUMSCAL 2 ONOFF 1 0 COUPID 1 PERMCOEF 100.0 CONDUCT 100.0 FILTR 0.98 WSSONOFF 1 WSSCOEFFS 5e-2 1e-5 1e-6
+E 17 - NUMSCAL 2 ONOFF 1 0 COUPID 1 PERMCOEF 9.0 CONDUCT 100.0 FILTR 0.9982 WSSONOFF 1 WSSCOEFFS 5e-2 1e-5 1e-6
 
 -------------------------------------DESIGN FLUID STRESS CALC SURF CONDITIONS
 DSURF  1
