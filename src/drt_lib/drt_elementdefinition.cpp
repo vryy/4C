@@ -109,8 +109,10 @@ void DRT::INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& 
   PrintElementLines(stream,"FLUIDPOROIMMERSED");
   PrintElementLines(stream,"MEFLUID");
 
-  PrintSectionHeader(stream,"TRANSPORT ELEMENTS");
+  PrintSectionHeader(stream,"REYNOLDS ELEMENTS");
   PrintElementLines(stream,"REYNOLDS");
+
+  PrintSectionHeader(stream,"TRANSPORT ELEMENTS");
   PrintElementLines(stream,"TRANSP");
   PrintElementLines(stream,"METRANSP");
 

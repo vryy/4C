@@ -106,7 +106,7 @@ FUNCT1 COMPONENT 0 EXPR 0 0 0 FUNCTION x/sqrt(x*x+y*y)
 ----------------------------------------------------------------------FUNCT2
 FUNCT2 COMPONENT 0 EXPR 0 0 0 FUNCTION -(z*z*1.0E12)/2+(z*1.0E12)/80+1.0E5
 -------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 7 QUANTITY phi VALUE 7.82249999999914914e+07 TOLERANCE 1e-13
+SCATRA DIS reynolds NODE 7 QUANTITY phi VALUE 7.82249999999914914e+07 TOLERANCE 1e-13
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  1
@@ -224,13 +224,14 @@ NODE        36 COORD  2.1650635094610966e-02  1.2500000000000004e-02  1.25000000
 ------------------------------------------------STRUCTURE ELEMENTS
 ----------------------------------------------------FLUID ELEMENTS
 ------------------------------------------------------ALE ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
+------------------------------------------------REYNOLDS ELEMENTS
    1 REYNOLDS QUAD9  1 2 3 4 5 6 7 8 9    MAT 1
    2 REYNOLDS QUAD9  4 3 10 11 7 12 13 14 15    MAT 1
    3 REYNOLDS QUAD9  11 10 16 17 13 18 19 20 21    MAT 1
    4 REYNOLDS QUAD9  17 16 22 23 19 24 25 26 27    MAT 1
    5 REYNOLDS QUAD9  23 22 28 29 25 30 31 32 33    MAT 1
    6 REYNOLDS QUAD9  29 28 2 1 31 34 5 35 36    MAT 1
+------------------------------------------------TRANSPORT ELEMENTS
 ---------------------------------------------------THERMO ELEMENTS
 ---------------------------------------------------ACOUSTIC ELEMENTS
 ---------------------------------------------------CELL ELEMENTS

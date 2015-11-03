@@ -432,6 +432,7 @@ void EXODUS::WriteDatEles(const std::vector<elem_def>& eledefs, const EXODUS::Me
   std::vector<EXODUS::elem_def> strus;
   std::vector<EXODUS::elem_def> fluids;
   std::vector<EXODUS::elem_def> ales;
+  std::vector<EXODUS::elem_def> reynolds;
   std::vector<EXODUS::elem_def> transport;
   std::vector<EXODUS::elem_def> thermo;
   std::vector<EXODUS::elem_def> acou;
@@ -443,6 +444,7 @@ void EXODUS::WriteDatEles(const std::vector<elem_def>& eledefs, const EXODUS::Me
     if (acte.sec.compare("STRUCTURE")==0) strus.push_back(acte);
     else if (acte.sec.compare("FLUID")==0) fluids.push_back(acte);
     else if (acte.sec.compare("ALE")==0) ales.push_back(acte);
+    else if (acte.sec.compare("REYNOLDS")==0) reynolds.push_back(acte);
     else if (acte.sec.compare("TRANSPORT")==0) transport.push_back(acte);
     else if (acte.sec.compare("THERMO")==0) thermo.push_back(acte);
     else if (acte.sec.compare("ACOUSTIC")==0) acou.push_back(acte);
@@ -477,6 +479,15 @@ void EXODUS::WriteDatEles(const std::vector<elem_def>& eledefs, const EXODUS::Me
   // print ale elements
   dat << "------------------------------------------------------ALE ELEMENTS" << std::endl;
   for(i_et=ales.begin();i_et!=ales.end();++i_et)
+  {
+    EXODUS::elem_def acte = *i_et;
+    Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
+    EXODUS::DatEles(eb,acte,startele,dat,elecenterlineinfo,acte.id);
+  }
+
+  // print Reynolds elements
+  dat << "------------------------------------------------REYNOLDS ELEMENTS" << std::endl;
+  for(i_et=reynolds.begin();i_et!=reynolds.end();++i_et)
   {
     EXODUS::elem_def acte = *i_et;
     Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);

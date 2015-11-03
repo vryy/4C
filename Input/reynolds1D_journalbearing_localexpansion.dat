@@ -106,7 +106,7 @@ FUNCT1 COMPONENT 0 EXPR 0 0 0 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT2
 FUNCT2 COMPONENT 0 EXPR 0 0 0 FUNCTION 0.5*0.025*0.025*1.0E8*(-(heaviside(x)*asin(y/0.025)+heaviside(-x)*(-asin(y/0.025)-pi))*(heaviside(x)*asin(y/0.025)+heaviside(-x)*(-asin(y/0.025)-pi))-pi*(heaviside(x)*asin(y/0.025)+heaviside(-x-1.0E-12)*(-asin(y/0.025)-pi))+0.75*pi*pi)+1.0E5
 -------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 80 QUANTITY phi VALUE 4.08384494025566964e+05 TOLERANCE 1e-10
+SCATRA DIS reynolds NODE 80 QUANTITY phi VALUE 4.08384494025566964e+05 TOLERANCE 1e-10
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 1
 NDLINE  1
@@ -445,7 +445,7 @@ NODE       158 COORD -9.9391287742314868e-04  2.4980234930682545e-02  0.00000000
 ------------------------------------------------STRUCTURE ELEMENTS
 ----------------------------------------------------FLUID ELEMENTS
 ------------------------------------------------------ALE ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
+------------------------------------------------REYNOLDS ELEMENTS
    1 REYNOLDS LINE2  1 2    MAT 1
    2 REYNOLDS LINE2  2 3    MAT 1
    3 REYNOLDS LINE2  3 4    MAT 1
@@ -604,6 +604,7 @@ NODE       158 COORD -9.9391287742314868e-04  2.4980234930682545e-02  0.00000000
    156 REYNOLDS LINE2  156 157    MAT 1
    157 REYNOLDS LINE2  157 158    MAT 1
    158 REYNOLDS LINE2  158 1    MAT 1
+------------------------------------------------TRANSPORT ELEMENTS
 ---------------------------------------------------THERMO ELEMENTS
 ---------------------------------------------------ACOUSTIC ELEMENTS
 ---------------------------------------------------CELL ELEMENTS

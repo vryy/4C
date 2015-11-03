@@ -27,7 +27,7 @@ Maintainer: Andy Wirtz
 void reynolds_dyn(int restart)
 {
   // access the communicator
-  const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("scatra")->Comm();
+  const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("reynolds")->Comm();
 
   // print problem type
   if (comm.MyPID() == 0)
@@ -46,23 +46,23 @@ void reynolds_dyn(int restart)
   const Teuchos::ParameterList& scatradyn =
       DRT::Problem::Instance()->ScalarTransportDynamicParams();
 
-  // access the scatra discretization
-  Teuchos::RCP<DRT::Discretization> scatradis =
-      DRT::Problem::Instance()->GetDis("scatra");
+  // access the reynolds discretization
+  Teuchos::RCP<DRT::Discretization> reynoldsdis =
+      DRT::Problem::Instance()->GetDis("reynolds");
 
-  scatradis->FillComplete();
+  reynoldsdis->FillComplete();
 
   // we directly use the elements from the scalar transport elements section
-  if (scatradis->NumGlobalNodes() == 0)
-    dserror("No elements in the ---TRANSPORT ELEMENTS section");
+  if (reynoldsdis->NumGlobalNodes() == 0)
+    dserror("No elements in the ---REYNOLDS ELEMENTS section");
 
   // add proxy of velocity related degrees of freedom to scatra discretization
-  if (scatradis->BuildDofSetAuxProxy(DRT::Problem::Instance()->NDim() + 1, 0, 0,
+  if (reynoldsdis->BuildDofSetAuxProxy(DRT::Problem::Instance()->NDim() + 1, 0, 0,
       true) != 1)
     dserror("Scatra discretization has illegal number of dofsets!");
 
   // finalize discretization
-  scatradis->FillComplete(true, false, false);
+  reynoldsdis->FillComplete(true, false, false);
 
   // get linear solver id from REYNOLDS DYNAMIC
   const int linsolvernumber = reynoldsdyn.get<int>("LINEAR_SOLVER");
@@ -73,7 +73,7 @@ void reynolds_dyn(int restart)
   // create instance of scalar transport basis algorithm (empty fluid discretization)
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly = Teuchos::rcp(
       new ADAPTER::ScaTraBaseAlgorithm(reynoldsdyn, scatradyn,
-          DRT::Problem::Instance()->SolverParams(linsolvernumber)));
+          DRT::Problem::Instance()->SolverParams(linsolvernumber),"reynolds"));
 
   // set initial velocity field
   // note: The order ReadRestart() before SetVelocityField() is important here!!
