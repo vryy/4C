@@ -1450,7 +1450,7 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(
         {
           // do we also have a temperature dirichlet boundary condition
           // get the set of temperature degrees of freedom associated with the node
-          std::vector<int> nodedofset = scatradiscret_->Dof(lnode);
+          std::vector<int> nodedofset = scatradiscret_->Dof(0,lnode);
           if (nodedofset.size()>1)
             dserror("Dynamic Smagorinsky or dynamic Vreman currently only implemented for one scalar field!");
 

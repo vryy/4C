@@ -906,7 +906,7 @@ void COMBUST::Algorithm::SetVelocityLevelSet(bool init)
         Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField())->SetVelocityField(convel,
                                                                                               Teuchos::null,
                                                                                               Teuchos::null,
-                                                                                              FluidField()->FsVel(),
+                                                                                              Teuchos::null,
                                                                                               false,
                                                                                               init);
       else // temporary solution, since level-set algorithm does not yet support gen-alpha
@@ -917,7 +917,7 @@ void COMBUST::Algorithm::SetVelocityLevelSet(bool init)
         ScaTraField()->SetVelocityField(convel,
                                         Teuchos::null,
                                         Teuchos::null,
-                                        FluidField()->FsVel(),
+                                        Teuchos::null,
                                         1);
       }
 
@@ -933,7 +933,7 @@ void COMBUST::Algorithm::SetVelocityLevelSet(bool init)
         Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField())->SetVelocityField(ComputeFlameVel(convel,FluidField()->DofSet()),
                                                                                               Teuchos::null,
                                                                                               Teuchos::null,
-                                                                                              FluidField()->FsVel(),
+                                                                                              Teuchos::null,
                                                                                               false,
                                                                                               init);
       else // temporary solution, since level-set algorithm does not yet support gen-alpha
@@ -944,7 +944,7 @@ void COMBUST::Algorithm::SetVelocityLevelSet(bool init)
         ScaTraField()->SetVelocityField(ComputeFlameVel(convel,FluidField()->DofSet()),
                                         Teuchos::null,
                                         Teuchos::null,
-                                        FluidField()->FsVel(),
+                                        Teuchos::null,
                                         1);
       }
 

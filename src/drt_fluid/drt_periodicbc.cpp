@@ -1355,7 +1355,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
       // the 'true' flag makes sure that the pbc dofset replaces the old
       // dofset also in the static_dofsets_.
       pbcdofset_ = Teuchos::rcp(new DRT::PBCDofSet(allcoupledcolnodes_));
-      discret_->ReplaceDofSet(pbcdofset_,true);
+      discret_->ReplaceDofSet(0,pbcdofset_,true);
     }
     else
     {

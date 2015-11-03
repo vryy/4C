@@ -435,7 +435,7 @@ void HomIsoTurbInitialScalarField::CalculateInitialField()
         xyz(idim,0) = node->X()[idim];
 
     // get global ids of all dofs of the node
-    std::vector<int> dofs = discret_->Dof(node);
+    std::vector<int> dofs = discret_->Dof(0,node);
     if (dofs.size()>1)
       dserror("Only one dof per node for homogeneous isotropic turbulence!");
 

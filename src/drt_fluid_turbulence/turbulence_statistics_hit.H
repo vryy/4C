@@ -116,7 +116,7 @@ protected:
   //! the discretisation (required for nodes, dofs etc;)
   Teuchos::RCP<DRT::Discretization> discret_;
 
-  //! thes scatra discretisation (required for nodes, dofs etc;)
+  //! the scatra discretisation (required for nodes, dofs etc;)
   Teuchos::RCP<DRT::Discretization> scatradiscret_;
 
   //! parameter list

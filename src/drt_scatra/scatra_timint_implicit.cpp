@@ -1581,7 +1581,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
       // get the processor local node
       DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
       // the set of degrees of freedom associated with the node
-      std::vector<int> nodedofset = discret_->Dof(lnode);
+      std::vector<int> nodedofset = discret_->Dof(0,lnode);
 
       // get coordinate
       const double x = lnode->X()[0];
@@ -1640,7 +1640,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
       // get the processor local node
       DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
       // the set of degrees of freedom associated with the node
-      std::vector<int> nodedofset = discret_->Dof(lnode);
+      std::vector<int> nodedofset = discret_->Dof(0,lnode);
 
       // get x2-coordinate
       const double x2 = lnode->X()[1];
@@ -1683,7 +1683,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
       // get the processor local node
       DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
       // the set of degrees of freedom associated with the node
-      std::vector<int> nodedofset = discret_->Dof(lnode);
+      std::vector<int> nodedofset = discret_->Dof(0,lnode);
 
       // get x1- and x2-coordinate
       const double x1 = lnode->X()[0];
@@ -1740,7 +1740,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
       // get the processor local node
       DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
       // the set of degrees of freedom associated with the node
-      std::vector<int> nodedofset = discret_->Dof(lnode);
+      std::vector<int> nodedofset = discret_->Dof(0,lnode);
 
       // get x1- and x2-coordinate
       const double x1 = lnode->X()[0];
@@ -1778,7 +1778,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
       // get the processor local node
       DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
       // the set of degrees of freedom associated with the node
-      std::vector<int> nodedofset = discret_->Dof(lnode);
+      std::vector<int> nodedofset = discret_->Dof(0,lnode);
 
       // get x1- and x2-coordinate
       const double x1 = lnode->X()[0];
@@ -1819,7 +1819,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
       // get the processor local node
       DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
       // the set of degrees of freedom associated with the node
-      std::vector<int> nodedofset = discret_->Dof(lnode);
+      std::vector<int> nodedofset = discret_->Dof(0,lnode);
 
       // get x1, x2 and x3-coordinate
       //const double x1 = lnode->X()[0];
@@ -2085,7 +2085,7 @@ void SCATRA::ScaTraTimIntImpl::UpdateKrylovSpaceProjection()
       for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
       {
         DRT::Node* node = discret_->lRowNode(inode);
-        std::vector<int> gdof = discret_->Dof(node);
+        std::vector<int> gdof = discret_->Dof(0,node);
         int err = c->ReplaceGlobalValue(gdof[modeids[imode]],imode,1);
         if (err != 0) dserror("error while inserting value into c");
       }

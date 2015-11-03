@@ -622,7 +622,7 @@ void SCATRA::ScaTraTimIntImpl::ComputeDensity()
     DRT::Node* lnode = discret_->lRowNode(lnodeid);
 
     // get associated degrees of freedom
-    std::vector<int> nodedofs = discret_->Dof(lnode);
+    std::vector<int> nodedofs = discret_->Dof(0,lnode);
     const int numdof = nodedofs.size();
 
     // initialize nodal density value
@@ -965,7 +965,7 @@ void SCATRA::ScaTraTimIntImpl::AddFluxApproxToParameterList(
     for (int i = 0;i<fluxk->MyLength();++i)
     {
       DRT::Node* actnode = discret_->lRowNode(i);
-      int dofgid = discret_->Dof(actnode,k);
+      int dofgid = discret_->Dof(0,actnode,k);
       fluxk->ReplaceMyValue(i,0,((*flux)[0])[(flux->Map()).LID(dofgid)]);
       fluxk->ReplaceMyValue(i,1,((*flux)[1])[(flux->Map()).LID(dofgid)]);
       fluxk->ReplaceMyValue(i,2,((*flux)[2])[(flux->Map()).LID(dofgid)]);

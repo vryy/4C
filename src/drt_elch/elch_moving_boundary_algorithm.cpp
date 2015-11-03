@@ -357,14 +357,14 @@ void ELCH::MovingBoundaryAlgorithm::ComputeInterfaceVectors(
     // get the processor's local fluid node with the same lnodeid
     DRT::Node* fluidlnode = fluiddis->lRowNode(lnodeid);
     // get the degrees of freedom associated with this fluid node
-    std::vector<int> fluidnodedofs = fluiddis->Dof(fluidlnode);
+    std::vector<int> fluidnodedofs = fluiddis->Dof(0,fluidlnode);
 
     if(ivelmap.MyGID(fluidnodedofs[0])) // is this GID (implies: node) relevant for iveln_?
     {
       // determine number of space dimensions (numdof - pressure dof)
       const int numdim = ((int) fluidnodedofs.size()) -1;
       // number of dof per node in ScaTra
-      int numscatradof = scatradis->NumDof(scatradis->lRowNode(lnodeid));
+      int numscatradof = scatradis->NumDof(0,scatradis->lRowNode(lnodeid));
 
       std::vector<double> Values(numdim);
       for(int index=0;index<numdim;++index)

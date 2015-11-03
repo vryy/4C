@@ -74,7 +74,7 @@ class HomIsoTurbInitialScalarField
     //! estimate energy form given scalar variance spectrum (function for E_phi)
     double CalculateEnergyFromSpectrum(double k);
 
-    //! fluid discretization
+    //! scatra discretization
     Teuchos::RCP<DRT::Discretization> discret_;
 
     //! state vectors to be initialized

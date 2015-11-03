@@ -599,7 +599,7 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
            {
              const int nodegid = nodeids[inode];
              DRT::Node* node = discret_->gNode(nodegid);
-             const int dofgid = discret_->Dof(node,0);
+             const int dofgid = discret_->Dof(0,node,0);
              const int doflid = phinpcol->Map().LID(dofgid);
              if (doflid < 0)
                dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",myrank_,dofgid);

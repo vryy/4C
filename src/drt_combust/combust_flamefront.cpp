@@ -321,10 +321,10 @@ void COMBUST::FlameFront::StorePhiVectors(
       // remark: we rely on identical parallel distributions of fluid and G-function discretizations, here
       DRT::Node* gfuncnode = gfuncdis_->lRowNode(lfluidnodeid);
 #ifdef DEBUG
-      if(gfuncdis_->NumDof(gfuncnode)!=1) dserror("G-function node should have 1 dof");
+      if(gfuncdis_->NumDof(0,gfuncnode)!=1) dserror("G-function node should have 1 dof");
 #endif
       // find out the local dof id of the dof at the scatra node
-      const int gfuncdofgid = gfuncdis_->Dof(gfuncnode,0);
+      const int gfuncdofgid = gfuncdis_->Dof(0,gfuncnode,0);
 
       const int lgfuncdofidn = phin->Map().LID(gfuncdofgid);
       const int lgfuncdofidnp = phinp->Map().LID(gfuncdofgid);
@@ -632,7 +632,10 @@ void COMBUST::FlameFront::FindIntersectionPoints(const Teuchos::RCP<COMBUST::Ref
     break;
   }
   default:
+  {
     dserror("FindIntersectionPoints() does not support this element shape!");
+    break;
+  }
   }
 
   //TEST
@@ -1186,7 +1189,11 @@ void COMBUST::FlameFront::CaptureFlameFront(
     }
     break;
   }
-  default: dserror("unknown type of XFEM integration");
+  default:
+  {
+    dserror("unknown type of XFEM integration");
+    break;
+  }
   }
 
   // - a refined linear element consisting of touched refinement cells is actually bisected, if there
@@ -2226,7 +2233,10 @@ void COMBUST::FlameFront::buildFlameFrontSegments(
       break;
     }
     default:
+    {
       dserror("unexpected number of intersectionpoints!");
+      break;
+    }
     }
   }
 
@@ -3035,7 +3045,10 @@ bool COMBUST::FlameFront::GetIntCellDomain(
     break;
   }
   default:
+  {
     dserror("Discretization Type (IntCell) not supported yet!");
+    break;
+  }
   }
 
   //calculate average Gfunc value
@@ -3098,7 +3111,10 @@ bool COMBUST::FlameFront::GetIntCellDomainInElement(
     break;
   }
   default:
+  {
     dserror("Discretization Type (IntCell) not supported yet!");
+    break;
+  }
   }
 
   int numelenodes = 0;

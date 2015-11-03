@@ -819,7 +819,7 @@ void SCATRA::LevelSetAlgorithm::ReinitGeo(
       const DRT::Node* lnode = discret_->lRowNode(lnodeid);
 
       // get the dof associated with this node
-      const int dofgid = discret_->Dof(lnode, 0); // since this is a scalar field the dof is always 0
+      const int dofgid = discret_->Dof(0,lnode,0); // since this is a scalar field the dof is always 0
       int doflid = dofrowmap->LID(dofgid);
       if (doflid < 0)
         dserror("Proc %d: Cannot find dof gid=%d in Epetra_Vector",myrank_,dofgid);

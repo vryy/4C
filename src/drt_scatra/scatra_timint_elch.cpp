@@ -1285,7 +1285,7 @@ void SCATRA::ScaTraTimIntElch::InitNernstBC()
             DRT::Node* node=discret_->gNode((*nodegids)[ii]);
 
             // get global dof ids of all dof's with global node id (*nodegids)[ii]
-            std::vector<int> nodedofs=discret_->Dof(node);
+            std::vector<int> nodedofs = discret_->Dof(0,node);
 
             // define electrode kinetics toggle
             // later on this toggle is used to blanck the sysmat and rhs
@@ -1324,7 +1324,7 @@ void SCATRA::ScaTraTimIntElch::CreateMeshtyingStrategy()
     strategy_ = Teuchos::rcp(new MeshtyingStrategyStdElch(this));
 
   return;
-} // ScaTraTimIntImpl::UpdateKrylovSpaceProjection
+} // SCATRA::ScaTraTimIntElch::CreateMeshtyingStrategy()
 
 
 /*----------------------------------------------------------------------*
@@ -2203,7 +2203,7 @@ void SCATRA::ScaTraTimIntElch::CheckConcentrationValues(Teuchos::RCP<Epetra_Vect
   {
     DRT::Node* lnode = discret_->lRowNode(i);
     std::vector<int> dofs;
-    dofs = discret_->Dof(lnode);
+    dofs = discret_->Dof(0,lnode);
 
     for (int k = 0; k < numscal_; k++)
     {

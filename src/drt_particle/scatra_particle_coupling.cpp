@@ -1133,7 +1133,7 @@ Teuchos::RCP<Epetra_Vector> PARTICLE::ScatraParticleCoupling::CorrectionStep()
       nodecoords(idim,0) = (actnode->X())[idim];
 
     // get dof of node
-    std::vector<int> dofs = scatradis_->Dof(actnode);
+    std::vector<int> dofs = scatradis_->Dof(0,actnode);
     if (dofs.size() != 1)
       dserror("Only one dof expected for level-set node!");
     const int doflid = scatradis_->DofRowMap()->LID(dofs[0]);
@@ -1257,7 +1257,7 @@ Teuchos::RCP<Epetra_Vector> PARTICLE::ScatraParticleCoupling::CorrectionStep()
           nodecoords(idim,0) = (actnode->X())[idim];
 
         // get dof of node
-        std::vector<int> dofs = scatradis_->Dof(actnode);
+        std::vector<int> dofs = scatradis_->Dof(0,actnode);
         if (dofs.size() != 1)
           dserror("Only one dof expected for level-set node!");
         const int doflid = scatradis_->DofRowMap()->LID(dofs[0]);
@@ -1485,7 +1485,7 @@ void PARTICLE::ScatraParticleCoupling::Reseeding()
       DRT::Element* first_scatraele = scatraelesinbin[0];
       // get first node of first scatra element
       const DRT::Node* first_scatranode = (first_scatraele->Nodes())[0];
-      const int scatra_dofgid = scatradis_->Dof(first_scatranode,0);
+      const int scatra_dofgid = scatradis_->Dof(0,first_scatranode,0);
       const int lid = scatra_dofcolmap->LID(scatra_dofgid);
       const double first_phi = (*phinp)[lid];
 
@@ -1582,7 +1582,7 @@ void PARTICLE::ScatraParticleCoupling::Reseeding()
       DRT::Element* scatraele = scatraelesinbin[0];
       // get first node of first scatra element
       const DRT::Node* first_scatranode = (scatraele->Nodes())[0];
-      const int scatra_dofgid = scatradis_->Dof(first_scatranode,0);
+      const int scatra_dofgid = scatradis_->Dof(0,first_scatranode,0);
       const int lid = scatra_dofcolmap->LID(scatra_dofgid);
       const double first_phi = (*phinp)[lid];
 

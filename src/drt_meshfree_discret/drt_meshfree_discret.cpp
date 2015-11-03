@@ -531,7 +531,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::ComputeValuesAtNodes(
   if (nummyrownode==0) dserror("can't be!");//return;
 
   // get number of dofs per node - prerequisite: equal for all nodes
-  const int numdofpernode = NumDof(noderowptr_[0]);
+  const int numdofpernode = NumDof(0,noderowptr_[0]);
 
   // check if we only have nodal dofs
   if (DofRowMap()->NumGlobalElements()!=numdofpernode*NumGlobalNodes())
@@ -562,8 +562,8 @@ void DRT::MESHFREE::MeshfreeDiscretization::ComputeValuesAtNodes(
       // loop over all dofs of this node
       for (int idof=0; idof<numdofpernode; ++idof)
       {
-        dofids[idof] = Dof(cnode,idof);
-        valuesatnode[idof] = (*nodalvalues)[DofRowMap()->LID(Dof(cnode,idof))];
+        dofids[idof] = Dof(0,cnode,idof);
+        valuesatnode[idof] = (*nodalvalues)[DofRowMap()->LID(Dof(0,cnode,idof))];
       }
 
       // write values at nodes into vector
@@ -606,12 +606,12 @@ void DRT::MESHFREE::MeshfreeDiscretization::ComputeValuesAtNodes(
       // loop over all dofs of this node
       for (int idof=0; idof<numdofpernode; ++idof)
       {
-        dofids[idof] = Dof(cnode,idof);
+        dofids[idof] = Dof(0,cnode,idof);
         double valueatnode = 0.0;
         // loop over all neighbours
         for (int n=0; n<nneighbour; ++n)
           // u(x_i) = sum N(x_i) u_i
-          valueatnode += (*funct)[n]*(*nodalvalues)[DofRowMap()->LID(Dof(neighbours[n],idof))];
+          valueatnode += (*funct)[n]*(*nodalvalues)[DofRowMap()->LID(Dof(0,neighbours[n],idof))];
         valuesatnode[idof] = valueatnode;
       }
 

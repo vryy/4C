@@ -255,7 +255,7 @@ void ACOU::AcouTimeInt::SetInitialPhotoAcousticField(Teuchos::RCP<Epetra_Vector>
               (*nodevals)[i*(numdim_+1)+j] = lightnodes[i]->X()[j];
             }
 
-            int dof = scatradis->Dof(lightnodes[i],0);
+            int dof = scatradis->Dof(0,lightnodes[i],0);
             int lid = lightcol->Map().LID(dof);
             if ( lid < 0 )
               dserror("given dof is not stored on proc %d although map is colmap",myrank_);
@@ -307,7 +307,7 @@ void ACOU::AcouTimeInt::SetInitialPhotoAcousticField(Teuchos::RCP<Epetra_Vector>
               (*nodevals)[i*(numdim_+1)+j] = lightnodes[i]->X()[j];
             }
 
-            int dof = scatradis->Dof(lightnodes[i],0);
+            int dof = scatradis->Dof(0,lightnodes[i],0);
             int lid = lightcol->Map().LID(dof);
             if ( lid < 0 )
               dserror("given dof is not stored on proc %d although map is colmap",myrank_);
@@ -537,7 +537,7 @@ void ACOU::AcouTimeInt::SetInitialPhotoAcousticField(Teuchos::RCP<Epetra_Vector>
               double values[4] = {0};
               for(int nd=0;nd<4;++nd) // quad4 has 4 nodes
               {
-                int dof = scatradis->Dof(ele->Nodes()[nd],0);
+                int dof = scatradis->Dof(0,ele->Nodes()[nd],0);
                 int lid = lightcol->Map().LID(dof);
                 if ( lid < 0 )
                   dserror("given dof is not stored on proc %d although map is colmap",myrank_);

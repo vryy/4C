@@ -89,7 +89,7 @@ class HomIsoTurbScalarForcing
     //! type of forcing
     INPAR::FLUID::ForcingType forcing_type_;
 
-    //! fluid discretization
+    //! scatra discretization
     Teuchos::RCP<DRT::Discretization> discret_;
 
     //! state vector of volume force to be computed

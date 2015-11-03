@@ -56,16 +56,16 @@ void levelset_dyn(int restart)
   if (veltype != INPAR::SCATRA::velocity_function and veltype != INPAR::SCATRA::velocity_function_and_curve)
     dserror("Other velocity fields than a field given by a function not yet supported for level-set problems");
 
-  // we directly use the elements from the scalar transport elements section
-  if (scatradis->NumGlobalNodes()==0)
-    dserror("No elements in the ---TRANSPORT ELEMENTS section");
-
   // add proxy of velocity related degrees of freedom to scatra discretization
   if (scatradis->BuildDofSetAuxProxy(DRT::Problem::Instance()->NDim()+1, 0, 0, true ) != 1)
     dserror("Scatra discretization has illegal number of dofsets!");
 
   // finalize discretization
   scatradis->FillComplete();
+
+  // we directly use the elements from the scalar transport elements section
+  if (scatradis->NumGlobalNodes() == 0)
+    dserror("No elements in the ---TRANSPORT ELEMENTS section");
 
   // get linear solver id from SCALAR TRANSPORT DYNAMIC
   const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");

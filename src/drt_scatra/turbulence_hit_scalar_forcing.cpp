@@ -329,7 +329,7 @@ void HomIsoTurbScalarForcing::CalculateForcing(const int step)
       xyz(idim,0) = node->X()[idim];
 
     // get global ids of all dofs of the node
-    std::vector<int> dofs = discret_->Dof(node);
+    std::vector<int> dofs = discret_->Dof(0,node);
 
     // determine position
     std::vector<int> loc(3);
@@ -677,7 +677,7 @@ void HomIsoTurbScalarForcing::UpdateForcing(const int step)
           xyz(idim,0) = node->X()[idim];
 
       // get global ids of all dofs of the node
-      std::vector<int> dofs = discret_->Dof(node);
+      std::vector<int> dofs = discret_->Dof(0,node);
 
       // determine position
       std::vector<int> loc(3);
@@ -800,7 +800,7 @@ void HomIsoTurbScalarForcing::UpdateForcing(const int step)
           xyz(idim,0) = node->X()[idim];
 
       // get global ids of all dofs of the node
-      std::vector<int> dofs = discret_->Dof(node);
+      std::vector<int> dofs = discret_->Dof(0,node);
 
       // determine position
       std::vector<int> loc(3);

@@ -1307,7 +1307,7 @@ void ACOU::PatImageReconstruction::SolveAdjointScatra()
   for(int i=0; i<node_reac_->MyLength(); ++i)
   {
     double mu_a = node_reac_->operator [](i);
-    int dofgid = scatra_discret_->Dof(scatra_discret_->lRowNode(i),0);
+    int dofgid = scatra_discret_->Dof(0,scatra_discret_->lRowNode(i),0);
     int doflid = scatra_discret_->DofRowMap()->LID(dofgid);
     rhsvec->operator [](doflid) *= -mu_a;
   }
@@ -1331,7 +1331,7 @@ void ACOU::PatImageReconstruction::SolveAdjointScatra()
     {
       if (dirichlets[i]->ContainsNode(nodegid))
       {
-        int dofgid = scatra_discret_->Dof(opti_node,0);
+        int dofgid = scatra_discret_->Dof(0,opti_node,0);
         int err = b->ReplaceGlobalValue(dofgid,0,0.0);
         if (err) dserror("could not replace global vector entry");
       }
@@ -1492,7 +1492,7 @@ Teuchos::RCP<Epetra_Vector> ACOU::PatImageReconstruction::CalculateAdjointOptiRh
       // ok, we got the value, we still need c, rho and mu_a, but they are stored on the nodemap of the scatra dis, so this should not be a problem
       if(scatra_discret_->Comm().MyPID() == optnodeowner)
       {
-        int dofgid = scatra_discret_->Dof(opti_node,0);
+        int dofgid = scatra_discret_->Dof(0,opti_node,0);
         int doflid = scatra_discret_->DofRowMap()->LID(dofgid);
         int err = rhsvec->ReplaceMyValue(doflid,0,glo_value);
         if (err) dserror("could not replace local vector entry");
@@ -1636,7 +1636,7 @@ Teuchos::RCP<Epetra_Vector> ACOU::PatImageReconstruction::CalculateAdjointOptiRh
       // set p value in node based vector
       if(myrank_==optnodeowner && glob_p != 0.0)
       {
-        int dof = scatra_discret_->Dof(optnode,0);
+        int dof = scatra_discret_->Dof(0,optnode,0);
         int lid = scatra_discret_->DofRowMap()->LID(dof);
         if(lid<0) dserror("cannot find dof for node %d ",optnd);
 

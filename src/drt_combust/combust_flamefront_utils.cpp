@@ -994,7 +994,7 @@ void COMBUST::FlameFront::ComputeL2ProjectedNodalCurvature(const Teuchos::Parame
     // remark: we rely on identical parallel distributions of fluid and G-function discretizations, here
     DRT::Node* gfuncnode = gfuncdis_->lRowNode(lfluidnodeid);
 
-    const int dofgid = gfuncdis_->Dof(gfuncnode,0);
+    const int dofgid = gfuncdis_->Dof(0,gfuncnode,0);
 
     const int lid = solcurve->Map().LID(dofgid);
 
@@ -1249,7 +1249,7 @@ void COMBUST::FlameFront::ComputeL2ProjectedGradPhi(const double eta_smooth,
       // remark: we rely on identical parallel distributions of fluid and G-function discretizations, here
       DRT::Node* gfuncnode = gfuncdis_->lRowNode(lfluidnodeid);
 
-      const int dofgid = gfuncdis_->Dof(gfuncnode,0);
+      const int dofgid = gfuncdis_->Dof(0,gfuncnode,0);
 
       const int lid = solgradphi->Map().LID(dofgid);
 
@@ -1517,7 +1517,7 @@ void COMBUST::FlameFront::ComputeL2ProjectedGrad2Phi(const double eta_smooth)
       // remark: we rely on identical parallel distributions of fluid and G-function discretizations, here
       DRT::Node* gfuncnode = gfuncdis_->lRowNode(lfluidnodeid);
 
-      const int dofgid = gfuncdis_->Dof(gfuncnode,0);
+      const int dofgid = gfuncdis_->Dof(0,gfuncnode,0);
 
       const int lid = solgrad2phi->Map().LID(dofgid);
 
@@ -1772,7 +1772,7 @@ const Teuchos::RCP<Epetra_Vector>  COMBUST::FlameFront::ComputeL2ProjectedPhi(co
     DRT::Node* gfuncnode = gfuncdis_->lRowNode(lfluidnodeid);
 
     // find out the local dof id of the dof at the scatra node
-    const int gfuncdofgid = gfuncdis_->Dof(gfuncnode,0);
+    const int gfuncdofgid = gfuncdis_->Dof(0,gfuncnode,0);
 
     const int lgfuncdofidn = solphi->Map().LID(gfuncdofgid);
 
